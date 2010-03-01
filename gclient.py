@@ -773,15 +773,12 @@ class GClient(object):
 
   def PrintRevInfo(self):
     """Output revision info mapping for the client and its dependencies. This
-    allows the capture of a overall "revision" for the source tree that can
+    allows the capture of an overall "revision" for the source tree that can
     be used to reproduce the same tree in the future. The actual output
     contains enough information (source paths, svn server urls and revisions)
     that it can be used either to generate external svn commands (without
     gclient) or as input to gclient's --rev option (with some massaging of
     the data).
-
-    NOTE: Unlike RunOnDeps this does not require a local checkout and is run
-    on the Pulse master. It MUST NOT execute hooks.
 
     Raises:
       Error: If the client has conflicting entries.
@@ -830,13 +827,18 @@ class GClient(object):
         raise gclient_utils.Error("solution %s specified more than once" % name)
       (url, rev) = GetURLAndRev(name, solution["url"])
       entries[name] = "%s@%s" % (url, rev)
-      # TODO(aharper): SVN/SCMWrapper cleanup (non-local commandset)
-      entries_deps_content[name] = gclient_scm.scm.SVN.Capture(
-                                     ["cat",
-                                      "%s/%s@%s" % (url,
-                                                    self._options.deps_file,
-                                                    rev)],
-                                     os.getcwd())
+      deps_file = solution.get("deps_file", self._options.deps_file)
+      if '/' in deps_file or '\\' in deps_file:
+        raise gclient_utils.Error('deps_file name must not be a path, just a '
+                                  'filename.')
+      try:
+        deps_content = gclient_utils.FileRead(
+            os.path.join(self._root_dir, name, deps_file))
+      except IOError, e:
+        if e.errno != errno.ENOENT:
+          raise
+        deps_content = ""
+      entries_deps_content[name] = deps_content
 
     # Process the dependencies next (sort alphanumerically to ensure that
     # containing directories get populated first and for readability)
@@ -863,7 +865,7 @@ class GClient(object):
         sub_deps = self._ParseSolutionDeps(deps[d].module_name, content, {})
         (url, rev) = GetURLAndRev(d, sub_deps[d])
         entries[d] = "%s@%s" % (url, rev)
-    print(";\n\n".join(["%s: %s" % (x, entries[x])
+    print(";\n".join(["%s: %s" % (x, entries[x])
                         for x in sorted(entries.keys())]))
 
 
