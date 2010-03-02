@@ -98,6 +98,7 @@ typedef struct _drm_intel_bufmgr_gem {
 	uint64_t gtt_size;
 	int available_fences;
 	int pci_device;
+	int gen;
 	char bo_reuse;
 	char fenced_relocs;
 } drm_intel_bufmgr_gem;
@@ -221,11 +222,11 @@ drm_intel_gem_bo_tile_size(drm_intel_bufmgr_gem *bufmgr_gem, unsigned long size,
 		return size;
 
 	/* 965+ just need multiples of page size for tiling */
-	if (!IS_GEN2(bufmgr_gem) && !IS_GEN3(bufmgr_gem))
+	if (bufmgr_gem->gen >= 4)
 		return ROUND_UP_TO(size, 4096);
 
 	/* Older chips need powers of two, of at least 512k or 1M */
-	if (!IS_GEN2(bufmgr_gem)) {
+	if (bufmgr_gem->gen == 2) {
 		min_size = 1024*1024;
 		max_size = 128*1024*1024;
 	} else {
@@ -260,7 +261,7 @@ drm_intel_gem_bo_tile_pitch(drm_intel_bufmgr_gem *bufmgr_gem,
 		return ROUND_UP_TO(pitch, tile_width);
 
 	/* 965 is flexible */
-	if (!IS_GEN2(bufmgr_gem) && !IS_GEN3(bufmgr_gem))
+	if (bufmgr_gem->gen >= 4)
 		return ROUND_UP_TO(pitch, tile_width);
 
 	/* Pre-965 needs power of two tile width */
@@ -438,8 +439,7 @@ drm_intel_bo_gem_set_in_aperture_size(drm_intel_bufmgr_gem *bufmgr_gem,
 	 * aperture. Optimal packing is for wimps.
 	 */
 	size = bo_gem->bo.size;
-	if ((IS_GEN2(bufmgr_gem) || IS_GEN3(bufmgr_gem))
-	    && bo_gem->tiling_mode != I915_TILING_NONE)
+	if (bufmgr_gem->gen < 4 && bo_gem->tiling_mode != I915_TILING_NONE)
 		size *= 2;
 
 	bo_gem->reloc_tree_size = size;
@@ -1270,7 +1270,7 @@ do_bo_emit_reloc(drm_intel_bo *bo, uint32_t offset,
 		need_fence = 0;
 
 	/* We never use HW fences for rendering on 965+ */
-	if (IS_GEN4(bufmgr_gem))
+	if (bufmgr_gem->gen >= 4)
 		need_fence = 0;
 
 	/* Create a new relocation list if needed */
@@ -1289,7 +1289,7 @@ do_bo_emit_reloc(drm_intel_bo *bo, uint32_t offset,
 	 */
 	assert(!bo_gem->used_as_reloc_target);
 	bo_gem->reloc_tree_size += target_bo_gem->reloc_tree_size;
-	/* An object needing a fence is a tiled buffer, and so it won't have
+	/* An object needing a fence is a tiled buffer, so it won't have
 	 * relocs to other buffers.
 	 */
 	if (need_fence)
@@ -1967,12 +1967,21 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
 		fprintf(stderr, "param: %d, val: %d\n", gp.param, *gp.value);
 	}
 
+	if (IS_GEN2(bufmgr_gem))
+		bufmgr_gem->gen = 2;
+	else if (IS_GEN3(bufmgr_gem))
+		bufmgr_gem->gen = 3;
+	else if (IS_GEN4(bufmgr_gem))
+		bufmgr_gem->gen = 4;
+	else
+		bufmgr_gem->gen = 6;
+
 	gp.param = I915_PARAM_HAS_EXECBUF2;
 	ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GETPARAM, &gp);
 	if (!ret)
 		exec2 = 1;
 
-	if (IS_GEN2(bufmgr_gem) || IS_GEN3(bufmgr_gem)) {
+	if (bufmgr_gem->gen < 4) {
 		gp.param = I915_PARAM_NUM_FENCES_AVAIL;
 		gp.value = &bufmgr_gem->available_fences;
 		ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GETPARAM, &gp);
