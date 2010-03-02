@@ -66,9 +66,11 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-bin_PROGRAMS = src/processor/minidump_dump$(EXEEXT) \
+bin_PROGRAMS = src/client/linux/linux_dumper_unittest_helper$(EXEEXT) \
+	src/processor/minidump_dump$(EXEEXT) \
 	src/processor/minidump_stackwalk$(EXEEXT)
-check_PROGRAMS = src/processor/address_map_unittest$(EXEEXT) \
+check_PROGRAMS = src/client/linux/linux_client_unittest$(EXEEXT) \
+	src/processor/address_map_unittest$(EXEEXT) \
 	src/processor/basic_source_line_resolver_unittest$(EXEEXT) \
 	src/processor/contained_range_map_unittest$(EXEEXT) \
 	src/processor/minidump_processor_unittest$(EXEEXT) \
@@ -88,7 +90,8 @@ DIST_COMMON = README $(am__configure_deps) $(dist_doc_DATA) \
 	autotools/config.sub autotools/depcomp autotools/install-sh \
 	autotools/ltmain.sh autotools/missing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/configure.ac
+am__aclocal_m4_deps = $(top_srcdir)/m4/ax_pthread.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
@@ -121,8 +124,19 @@ am__base_list = \
 am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(bindir)" \
 	"$(DESTDIR)$(docdir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
-src_libbreakpad_la_LIBADD =
+src_client_linux_libbreakpad_client_la_LIBADD =
 am__dirstamp = $(am__leading_dot)dirstamp
+am_src_client_linux_libbreakpad_client_la_OBJECTS =  \
+	src/client/linux/crash_generation/crash_generation_client.lo \
+	src/client/linux/handler/exception_handler.lo \
+	src/client/linux/minidump_writer/linux_dumper.lo \
+	src/client/linux/minidump_writer/minidump_writer.lo \
+	src/client/minidump_file_writer.lo src/common/convert_UTF.lo \
+	src/common/md5.lo src/common/string_conversion.lo \
+	src/common/linux/file_id.lo src/common/linux/guid_creator.lo
+src_client_linux_libbreakpad_client_la_OBJECTS =  \
+	$(am_src_client_linux_libbreakpad_client_la_OBJECTS)
+src_libbreakpad_la_LIBADD =
 am_src_libbreakpad_la_OBJECTS = src/processor/basic_code_modules.lo \
 	src/processor/basic_source_line_resolver.lo \
 	src/processor/call_stack.lo src/processor/logging.lo \
@@ -140,6 +154,27 @@ src_libbreakpad_la_OBJECTS = $(am_src_libbreakpad_la_OBJECTS)
 @SELFTEST_TRUE@am__EXEEXT_1 =  \
 @SELFTEST_TRUE@	src/processor/stackwalker_selftest$(EXEEXT)
 PROGRAMS = $(bin_PROGRAMS) $(noinst_PROGRAMS)
+am_src_client_linux_linux_client_unittest_OBJECTS = src/client/linux/handler/src_client_linux_linux_client_unittest-exception_handler_unittest.$(OBJEXT) \
+	src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-directory_reader_unittest.$(OBJEXT) \
+	src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-line_reader_unittest.$(OBJEXT) \
+	src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-linux_dumper_unittest.$(OBJEXT) \
+	src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-minidump_writer_unittest.$(OBJEXT) \
+	src/testing/gtest/src/src_client_linux_linux_client_unittest-gtest-all.$(OBJEXT) \
+	src/testing/gtest/src/src_client_linux_linux_client_unittest-gtest_main.$(OBJEXT) \
+	src/testing/src/src_client_linux_linux_client_unittest-gmock-all.$(OBJEXT)
+src_client_linux_linux_client_unittest_OBJECTS =  \
+	$(am_src_client_linux_linux_client_unittest_OBJECTS)
+am_src_client_linux_linux_dumper_unittest_helper_OBJECTS = src/client/linux/minidump_writer/src_client_linux_linux_dumper_unittest_helper-linux_dumper_unittest_helper.$(OBJEXT)
+src_client_linux_linux_dumper_unittest_helper_OBJECTS =  \
+	$(am_src_client_linux_linux_dumper_unittest_helper_OBJECTS)
+src_client_linux_linux_dumper_unittest_helper_LDADD = $(LDADD)
+src_client_linux_linux_dumper_unittest_helper_LINK = $(LIBTOOL) \
+	--tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
+	$(CXXLD) \
+	$(src_client_linux_linux_dumper_unittest_helper_CXXFLAGS) \
+	$(CXXFLAGS) \
+	$(src_client_linux_linux_dumper_unittest_helper_LDFLAGS) \
+	$(LDFLAGS) -o $@
 am_src_processor_address_map_unittest_OBJECTS =  \
 	src/processor/address_map_unittest.$(OBJEXT)
 src_processor_address_map_unittest_OBJECTS =  \
@@ -246,15 +281,6 @@ DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)/src
 depcomp = $(SHELL) $(top_srcdir)/autotools/depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
-CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
-	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
-LTCXXCOMPILE = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
-	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
-CXXLD = $(CXX)
-CXXLINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) \
-	$(LDFLAGS) -o $@
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 LTCOMPILE = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
@@ -264,7 +290,19 @@ CCLD = $(CC)
 LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-SOURCES = $(src_libbreakpad_la_SOURCES) \
+CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
+	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
+LTCXXCOMPILE = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+	--mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
+	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
+CXXLD = $(CXX)
+CXXLINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+	--mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) \
+	$(LDFLAGS) -o $@
+SOURCES = $(src_client_linux_libbreakpad_client_la_SOURCES) \
+	$(src_libbreakpad_la_SOURCES) \
+	$(src_client_linux_linux_client_unittest_SOURCES) \
+	$(src_client_linux_linux_dumper_unittest_helper_SOURCES) \
 	$(src_processor_address_map_unittest_SOURCES) \
 	$(src_processor_basic_source_line_resolver_unittest_SOURCES) \
 	$(src_processor_contained_range_map_unittest_SOURCES) \
@@ -276,7 +314,10 @@ SOURCES = $(src_libbreakpad_la_SOURCES) \
 	$(src_processor_postfix_evaluator_unittest_SOURCES) \
 	$(src_processor_range_map_unittest_SOURCES) \
 	$(src_processor_stackwalker_selftest_SOURCES)
-DIST_SOURCES = $(src_libbreakpad_la_SOURCES) \
+DIST_SOURCES = $(src_client_linux_libbreakpad_client_la_SOURCES) \
+	$(src_libbreakpad_la_SOURCES) \
+	$(src_client_linux_linux_client_unittest_SOURCES) \
+	$(src_client_linux_linux_dumper_unittest_helper_SOURCES) \
 	$(src_processor_address_map_unittest_SOURCES) \
 	$(src_processor_basic_source_line_resolver_unittest_SOURCES) \
 	$(src_processor_contained_range_map_unittest_SOURCES) \
@@ -362,6 +403,9 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PTHREAD_CC = @PTHREAD_CC@
+PTHREAD_CFLAGS = @PTHREAD_CFLAGS@
+PTHREAD_LIBS = @PTHREAD_LIBS@
 RANLIB = @RANLIB@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
@@ -380,6 +424,7 @@ am__leading_dot = @am__leading_dot@
 am__quote = @am__quote@
 am__tar = @am__tar@
 am__untar = @am__untar@
+ax_pthread_config = @ax_pthread_config@
 bindir = @bindir@
 build = @build@
 build_alias = @build_alias@
@@ -424,6 +469,9 @@ top_srcdir = @top_srcdir@
 
 # This allows #includes to be relative to src/
 AM_CPPFLAGS = -I$(top_srcdir)/src
+
+# Specify include paths for ac macros
+ACLOCAL_AMFLAGS = -I m4
 dist_doc_DATA = \
 	AUTHORS \
 	COPYING \
@@ -432,7 +480,19 @@ dist_doc_DATA = \
 	NEWS \
 	README
 
-lib_LTLIBRARIES = src/libbreakpad.la
+lib_LTLIBRARIES = src/libbreakpad.la src/client/linux/libbreakpad_client.la
+src_client_linux_libbreakpad_client_la_SOURCES = \
+	src/client/linux/crash_generation/crash_generation_client.cc \
+	src/client/linux/handler/exception_handler.cc \
+	src/client/linux/minidump_writer/linux_dumper.cc \
+	src/client/linux/minidump_writer/minidump_writer.cc \
+	src/client/minidump_file_writer.cc \
+	src/common/convert_UTF.c \
+	src/common/md5.c \
+	src/common/string_conversion.cc \
+	src/common/linux/file_id.cc \
+	src/common/linux/guid_creator.cc
+
 src_libbreakpad_la_SOURCES = \
 	src/google_breakpad/common/breakpad_types.h \
 	src/google_breakpad/common/minidump_format.h \
@@ -495,6 +555,41 @@ check_SCRIPTS = \
 
 TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 TESTS_ENVIRONMENT = 
+src_client_linux_linux_dumper_unittest_helper_SOURCES = \
+	src/client/linux/minidump_writer/linux_dumper_unittest_helper.cc
+
+src_client_linux_linux_dumper_unittest_helper_CXXFLAGS = $(PTHREAD_CFLAGS)
+src_client_linux_linux_dumper_unittest_helper_LDFLAGS = $(PTHREAD_CFLAGS)
+src_client_linux_linux_dumper_unittest_helper_CC = $(PTHREAD_CC)
+src_client_linux_linux_client_unittest_SOURCES = \
+	src/client/linux/handler/exception_handler_unittest.cc \
+	src/client/linux/minidump_writer/directory_reader_unittest.cc \
+	src/client/linux/minidump_writer/line_reader_unittest.cc \
+	src/client/linux/minidump_writer/linux_dumper_unittest.cc \
+	src/client/linux/minidump_writer/minidump_writer_unittest.cc \
+	src/testing/gtest/src/gtest-all.cc \
+	src/testing/gtest/src/gtest_main.cc \
+	src/testing/src/gmock-all.cc
+
+src_client_linux_linux_client_unittest_CPPFLAGS = \
+	-I$(top_srcdir)/src/testing/include \
+        -I$(top_srcdir)/src/testing/gtest/include \
+	-I$(top_srcdir)/src/testing/gtest \
+	-I$(top_srcdir)/src/testing
+
+src_client_linux_linux_client_unittest_LDADD = \
+	src/client/linux/handler/exception_handler.lo \
+	src/client/linux/crash_generation/crash_generation_client.lo \
+	src/client/linux/minidump_writer/linux_dumper.lo \
+	src/client/linux/minidump_writer/minidump_writer.lo \
+	src/client/minidump_file_writer.lo \
+	src/common/convert_UTF.lo \
+	src/common/md5.lo \
+	src/common/linux/file_id.lo \
+	src/common/linux/guid_creator.lo \
+	src/common/string_conversion.lo
+
+src_client_linux_linux_client_unittest_DEPENDENCIES = src/client/linux/linux_dumper_unittest_helper src/client/linux/libbreakpad_client.la
 src_processor_address_map_unittest_SOURCES = \
 	src/processor/address_map_unittest.cc
 
@@ -762,7 +857,7 @@ EXTRA_DIST = \
 all: all-am
 
 .SUFFIXES:
-.SUFFIXES: .cc .lo .o .obj
+.SUFFIXES: .c .cc .lo .o .obj
 am--refresh:
 	@:
 $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
@@ -845,6 +940,71 @@ clean-libLTLIBRARIES:
 	  echo "rm -f \"$${dir}/so_locations\""; \
 	  rm -f "$${dir}/so_locations"; \
 	done
+src/client/linux/crash_generation/$(am__dirstamp):
+	@$(MKDIR_P) src/client/linux/crash_generation
+	@: > src/client/linux/crash_generation/$(am__dirstamp)
+src/client/linux/crash_generation/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) src/client/linux/crash_generation/$(DEPDIR)
+	@: > src/client/linux/crash_generation/$(DEPDIR)/$(am__dirstamp)
+src/client/linux/crash_generation/crash_generation_client.lo:  \
+	src/client/linux/crash_generation/$(am__dirstamp) \
+	src/client/linux/crash_generation/$(DEPDIR)/$(am__dirstamp)
+src/client/linux/handler/$(am__dirstamp):
+	@$(MKDIR_P) src/client/linux/handler
+	@: > src/client/linux/handler/$(am__dirstamp)
+src/client/linux/handler/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) src/client/linux/handler/$(DEPDIR)
+	@: > src/client/linux/handler/$(DEPDIR)/$(am__dirstamp)
+src/client/linux/handler/exception_handler.lo:  \
+	src/client/linux/handler/$(am__dirstamp) \
+	src/client/linux/handler/$(DEPDIR)/$(am__dirstamp)
+src/client/linux/minidump_writer/$(am__dirstamp):
+	@$(MKDIR_P) src/client/linux/minidump_writer
+	@: > src/client/linux/minidump_writer/$(am__dirstamp)
+src/client/linux/minidump_writer/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) src/client/linux/minidump_writer/$(DEPDIR)
+	@: > src/client/linux/minidump_writer/$(DEPDIR)/$(am__dirstamp)
+src/client/linux/minidump_writer/linux_dumper.lo:  \
+	src/client/linux/minidump_writer/$(am__dirstamp) \
+	src/client/linux/minidump_writer/$(DEPDIR)/$(am__dirstamp)
+src/client/linux/minidump_writer/minidump_writer.lo:  \
+	src/client/linux/minidump_writer/$(am__dirstamp) \
+	src/client/linux/minidump_writer/$(DEPDIR)/$(am__dirstamp)
+src/client/$(am__dirstamp):
+	@$(MKDIR_P) src/client
+	@: > src/client/$(am__dirstamp)
+src/client/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) src/client/$(DEPDIR)
+	@: > src/client/$(DEPDIR)/$(am__dirstamp)
+src/client/minidump_file_writer.lo: src/client/$(am__dirstamp) \
+	src/client/$(DEPDIR)/$(am__dirstamp)
+src/common/$(am__dirstamp):
+	@$(MKDIR_P) src/common
+	@: > src/common/$(am__dirstamp)
+src/common/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) src/common/$(DEPDIR)
+	@: > src/common/$(DEPDIR)/$(am__dirstamp)
+src/common/convert_UTF.lo: src/common/$(am__dirstamp) \
+	src/common/$(DEPDIR)/$(am__dirstamp)
+src/common/md5.lo: src/common/$(am__dirstamp) \
+	src/common/$(DEPDIR)/$(am__dirstamp)
+src/common/string_conversion.lo: src/common/$(am__dirstamp) \
+	src/common/$(DEPDIR)/$(am__dirstamp)
+src/common/linux/$(am__dirstamp):
+	@$(MKDIR_P) src/common/linux
+	@: > src/common/linux/$(am__dirstamp)
+src/common/linux/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) src/common/linux/$(DEPDIR)
+	@: > src/common/linux/$(DEPDIR)/$(am__dirstamp)
+src/common/linux/file_id.lo: src/common/linux/$(am__dirstamp) \
+	src/common/linux/$(DEPDIR)/$(am__dirstamp)
+src/common/linux/guid_creator.lo: src/common/linux/$(am__dirstamp) \
+	src/common/linux/$(DEPDIR)/$(am__dirstamp)
+src/client/linux/$(am__dirstamp):
+	@$(MKDIR_P) src/client/linux
+	@: > src/client/linux/$(am__dirstamp)
+src/client/linux/libbreakpad_client.la: $(src_client_linux_libbreakpad_client_la_OBJECTS) $(src_client_linux_libbreakpad_client_la_DEPENDENCIES) src/client/linux/$(am__dirstamp)
+	$(CXXLINK) -rpath $(libdir) $(src_client_linux_libbreakpad_client_la_OBJECTS) $(src_client_linux_libbreakpad_client_la_LIBADD) $(LIBS)
 src/processor/$(am__dirstamp):
 	@$(MKDIR_P) src/processor
 	@: > src/processor/$(am__dirstamp)
@@ -949,6 +1109,51 @@ clean-noinstPROGRAMS:
 	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
 	echo " rm -f" $$list; \
 	rm -f $$list
+src/client/linux/handler/src_client_linux_linux_client_unittest-exception_handler_unittest.$(OBJEXT):  \
+	src/client/linux/handler/$(am__dirstamp) \
+	src/client/linux/handler/$(DEPDIR)/$(am__dirstamp)
+src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-directory_reader_unittest.$(OBJEXT):  \
+	src/client/linux/minidump_writer/$(am__dirstamp) \
+	src/client/linux/minidump_writer/$(DEPDIR)/$(am__dirstamp)
+src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-line_reader_unittest.$(OBJEXT):  \
+	src/client/linux/minidump_writer/$(am__dirstamp) \
+	src/client/linux/minidump_writer/$(DEPDIR)/$(am__dirstamp)
+src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-linux_dumper_unittest.$(OBJEXT):  \
+	src/client/linux/minidump_writer/$(am__dirstamp) \
+	src/client/linux/minidump_writer/$(DEPDIR)/$(am__dirstamp)
+src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-minidump_writer_unittest.$(OBJEXT):  \
+	src/client/linux/minidump_writer/$(am__dirstamp) \
+	src/client/linux/minidump_writer/$(DEPDIR)/$(am__dirstamp)
+src/testing/gtest/src/$(am__dirstamp):
+	@$(MKDIR_P) src/testing/gtest/src
+	@: > src/testing/gtest/src/$(am__dirstamp)
+src/testing/gtest/src/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) src/testing/gtest/src/$(DEPDIR)
+	@: > src/testing/gtest/src/$(DEPDIR)/$(am__dirstamp)
+src/testing/gtest/src/src_client_linux_linux_client_unittest-gtest-all.$(OBJEXT):  \
+	src/testing/gtest/src/$(am__dirstamp) \
+	src/testing/gtest/src/$(DEPDIR)/$(am__dirstamp)
+src/testing/gtest/src/src_client_linux_linux_client_unittest-gtest_main.$(OBJEXT):  \
+	src/testing/gtest/src/$(am__dirstamp) \
+	src/testing/gtest/src/$(DEPDIR)/$(am__dirstamp)
+src/testing/src/$(am__dirstamp):
+	@$(MKDIR_P) src/testing/src
+	@: > src/testing/src/$(am__dirstamp)
+src/testing/src/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) src/testing/src/$(DEPDIR)
+	@: > src/testing/src/$(DEPDIR)/$(am__dirstamp)
+src/testing/src/src_client_linux_linux_client_unittest-gmock-all.$(OBJEXT):  \
+	src/testing/src/$(am__dirstamp) \
+	src/testing/src/$(DEPDIR)/$(am__dirstamp)
+src/client/linux/linux_client_unittest$(EXEEXT): $(src_client_linux_linux_client_unittest_OBJECTS) $(src_client_linux_linux_client_unittest_DEPENDENCIES) src/client/linux/$(am__dirstamp)
+	@rm -f src/client/linux/linux_client_unittest$(EXEEXT)
+	$(CXXLINK) $(src_client_linux_linux_client_unittest_OBJECTS) $(src_client_linux_linux_client_unittest_LDADD) $(LIBS)
+src/client/linux/minidump_writer/src_client_linux_linux_dumper_unittest_helper-linux_dumper_unittest_helper.$(OBJEXT):  \
+	src/client/linux/minidump_writer/$(am__dirstamp) \
+	src/client/linux/minidump_writer/$(DEPDIR)/$(am__dirstamp)
+src/client/linux/linux_dumper_unittest_helper$(EXEEXT): $(src_client_linux_linux_dumper_unittest_helper_OBJECTS) $(src_client_linux_linux_dumper_unittest_helper_DEPENDENCIES) src/client/linux/$(am__dirstamp)
+	@rm -f src/client/linux/linux_dumper_unittest_helper$(EXEEXT)
+	$(src_client_linux_linux_dumper_unittest_helper_LINK) $(src_client_linux_linux_dumper_unittest_helper_OBJECTS) $(src_client_linux_linux_dumper_unittest_helper_LDADD) $(LIBS)
 src/processor/address_map_unittest.$(OBJEXT):  \
 	src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
@@ -975,21 +1180,9 @@ src/processor/minidump_dump$(EXEEXT): $(src_processor_minidump_dump_OBJECTS) $(s
 src/processor/src_processor_minidump_processor_unittest-minidump_processor_unittest.$(OBJEXT):  \
 	src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
-src/testing/gtest/src/$(am__dirstamp):
-	@$(MKDIR_P) src/testing/gtest/src
-	@: > src/testing/gtest/src/$(am__dirstamp)
-src/testing/gtest/src/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) src/testing/gtest/src/$(DEPDIR)
-	@: > src/testing/gtest/src/$(DEPDIR)/$(am__dirstamp)
 src/testing/gtest/src/src_processor_minidump_processor_unittest-gtest-all.$(OBJEXT):  \
 	src/testing/gtest/src/$(am__dirstamp) \
 	src/testing/gtest/src/$(DEPDIR)/$(am__dirstamp)
-src/testing/src/$(am__dirstamp):
-	@$(MKDIR_P) src/testing/src
-	@: > src/testing/src/$(am__dirstamp)
-src/testing/src/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) src/testing/src/$(DEPDIR)
-	@: > src/testing/src/$(DEPDIR)/$(am__dirstamp)
 src/testing/src/src_processor_minidump_processor_unittest-gmock-all.$(OBJEXT):  \
 	src/testing/src/$(am__dirstamp) \
 	src/testing/src/$(DEPDIR)/$(am__dirstamp)
@@ -1041,6 +1234,32 @@ src/processor/stackwalker_selftest$(EXEEXT): $(src_processor_stackwalker_selftes
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
+	-rm -f src/client/linux/crash_generation/crash_generation_client.$(OBJEXT)
+	-rm -f src/client/linux/crash_generation/crash_generation_client.lo
+	-rm -f src/client/linux/handler/exception_handler.$(OBJEXT)
+	-rm -f src/client/linux/handler/exception_handler.lo
+	-rm -f src/client/linux/handler/src_client_linux_linux_client_unittest-exception_handler_unittest.$(OBJEXT)
+	-rm -f src/client/linux/minidump_writer/linux_dumper.$(OBJEXT)
+	-rm -f src/client/linux/minidump_writer/linux_dumper.lo
+	-rm -f src/client/linux/minidump_writer/minidump_writer.$(OBJEXT)
+	-rm -f src/client/linux/minidump_writer/minidump_writer.lo
+	-rm -f src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-directory_reader_unittest.$(OBJEXT)
+	-rm -f src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-line_reader_unittest.$(OBJEXT)
+	-rm -f src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-linux_dumper_unittest.$(OBJEXT)
+	-rm -f src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-minidump_writer_unittest.$(OBJEXT)
+	-rm -f src/client/linux/minidump_writer/src_client_linux_linux_dumper_unittest_helper-linux_dumper_unittest_helper.$(OBJEXT)
+	-rm -f src/client/minidump_file_writer.$(OBJEXT)
+	-rm -f src/client/minidump_file_writer.lo
+	-rm -f src/common/convert_UTF.$(OBJEXT)
+	-rm -f src/common/convert_UTF.lo
+	-rm -f src/common/linux/file_id.$(OBJEXT)
+	-rm -f src/common/linux/file_id.lo
+	-rm -f src/common/linux/guid_creator.$(OBJEXT)
+	-rm -f src/common/linux/guid_creator.lo
+	-rm -f src/common/md5.$(OBJEXT)
+	-rm -f src/common/md5.lo
+	-rm -f src/common/string_conversion.$(OBJEXT)
+	-rm -f src/common/string_conversion.lo
 	-rm -f src/processor/address_map_unittest.$(OBJEXT)
 	-rm -f src/processor/basic_code_modules.$(OBJEXT)
 	-rm -f src/processor/basic_code_modules.lo
@@ -1082,14 +1301,33 @@ mostlyclean-compile:
 	-rm -f src/processor/stackwalker_sparc.lo
 	-rm -f src/processor/stackwalker_x86.$(OBJEXT)
 	-rm -f src/processor/stackwalker_x86.lo
+	-rm -f src/testing/gtest/src/src_client_linux_linux_client_unittest-gtest-all.$(OBJEXT)
+	-rm -f src/testing/gtest/src/src_client_linux_linux_client_unittest-gtest_main.$(OBJEXT)
 	-rm -f src/testing/gtest/src/src_processor_minidump_processor_unittest-gtest-all.$(OBJEXT)
 	-rm -f src/testing/gtest/src/src_processor_minidump_unittest-gtest-all.$(OBJEXT)
+	-rm -f src/testing/src/src_client_linux_linux_client_unittest-gmock-all.$(OBJEXT)
 	-rm -f src/testing/src/src_processor_minidump_processor_unittest-gmock-all.$(OBJEXT)
 	-rm -f src/testing/src/src_processor_minidump_unittest-gmock-all.$(OBJEXT)
 
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@src/client/$(DEPDIR)/minidump_file_writer.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/crash_generation/$(DEPDIR)/crash_generation_client.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/handler/$(DEPDIR)/exception_handler.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/handler/$(DEPDIR)/src_client_linux_linux_client_unittest-exception_handler_unittest.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/minidump_writer/$(DEPDIR)/linux_dumper.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/minidump_writer/$(DEPDIR)/minidump_writer.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/minidump_writer/$(DEPDIR)/src_client_linux_linux_client_unittest-directory_reader_unittest.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/minidump_writer/$(DEPDIR)/src_client_linux_linux_client_unittest-line_reader_unittest.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/minidump_writer/$(DEPDIR)/src_client_linux_linux_client_unittest-linux_dumper_unittest.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/minidump_writer/$(DEPDIR)/src_client_linux_linux_client_unittest-minidump_writer_unittest.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/minidump_writer/$(DEPDIR)/src_client_linux_linux_dumper_unittest_helper-linux_dumper_unittest_helper.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/convert_UTF.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/md5.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/string_conversion.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/linux/$(DEPDIR)/file_id.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/linux/$(DEPDIR)/guid_creator.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/address_map_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/basic_code_modules.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/basic_source_line_resolver.Plo@am__quote@
@@ -1116,10 +1354,37 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/stackwalker_selftest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/stackwalker_sparc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/stackwalker_x86.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/testing/gtest/src/$(DEPDIR)/src_client_linux_linux_client_unittest-gtest-all.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/testing/gtest/src/$(DEPDIR)/src_client_linux_linux_client_unittest-gtest_main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/gtest/src/$(DEPDIR)/src_processor_minidump_processor_unittest-gtest-all.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/gtest/src/$(DEPDIR)/src_processor_minidump_unittest-gtest-all.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/testing/src/$(DEPDIR)/src_client_linux_linux_client_unittest-gmock-all.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/src/$(DEPDIR)/src_processor_minidump_processor_unittest-gmock-all.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/src/$(DEPDIR)/src_processor_minidump_unittest-gmock-all.Po@am__quote@
+
+.c.o:
+@am__fastdepCC_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
+@am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
+@am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(COMPILE) -c -o $@ $<
+
+.c.obj:
+@am__fastdepCC_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.obj$$||'`;\
+@am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ `$(CYGPATH_W) '$<'` &&\
+@am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(COMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
+
+.c.lo:
+@am__fastdepCC_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.lo$$||'`;\
+@am__fastdepCC_TRUE@	$(LTCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
+@am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
 
 .cc.o:
 @am__fastdepCXX_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
@@ -1144,6 +1409,132 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LTCXXCOMPILE) -c -o $@ $<
+
+src/client/linux/handler/src_client_linux_linux_client_unittest-exception_handler_unittest.o: src/client/linux/handler/exception_handler_unittest.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/client/linux/handler/src_client_linux_linux_client_unittest-exception_handler_unittest.o -MD -MP -MF src/client/linux/handler/$(DEPDIR)/src_client_linux_linux_client_unittest-exception_handler_unittest.Tpo -c -o src/client/linux/handler/src_client_linux_linux_client_unittest-exception_handler_unittest.o `test -f 'src/client/linux/handler/exception_handler_unittest.cc' || echo '$(srcdir)/'`src/client/linux/handler/exception_handler_unittest.cc
+@am__fastdepCXX_TRUE@	$(am__mv) src/client/linux/handler/$(DEPDIR)/src_client_linux_linux_client_unittest-exception_handler_unittest.Tpo src/client/linux/handler/$(DEPDIR)/src_client_linux_linux_client_unittest-exception_handler_unittest.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/client/linux/handler/exception_handler_unittest.cc' object='src/client/linux/handler/src_client_linux_linux_client_unittest-exception_handler_unittest.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/client/linux/handler/src_client_linux_linux_client_unittest-exception_handler_unittest.o `test -f 'src/client/linux/handler/exception_handler_unittest.cc' || echo '$(srcdir)/'`src/client/linux/handler/exception_handler_unittest.cc
+
+src/client/linux/handler/src_client_linux_linux_client_unittest-exception_handler_unittest.obj: src/client/linux/handler/exception_handler_unittest.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/client/linux/handler/src_client_linux_linux_client_unittest-exception_handler_unittest.obj -MD -MP -MF src/client/linux/handler/$(DEPDIR)/src_client_linux_linux_client_unittest-exception_handler_unittest.Tpo -c -o src/client/linux/handler/src_client_linux_linux_client_unittest-exception_handler_unittest.obj `if test -f 'src/client/linux/handler/exception_handler_unittest.cc'; then $(CYGPATH_W) 'src/client/linux/handler/exception_handler_unittest.cc'; else $(CYGPATH_W) '$(srcdir)/src/client/linux/handler/exception_handler_unittest.cc'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) src/client/linux/handler/$(DEPDIR)/src_client_linux_linux_client_unittest-exception_handler_unittest.Tpo src/client/linux/handler/$(DEPDIR)/src_client_linux_linux_client_unittest-exception_handler_unittest.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/client/linux/handler/exception_handler_unittest.cc' object='src/client/linux/handler/src_client_linux_linux_client_unittest-exception_handler_unittest.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/client/linux/handler/src_client_linux_linux_client_unittest-exception_handler_unittest.obj `if test -f 'src/client/linux/handler/exception_handler_unittest.cc'; then $(CYGPATH_W) 'src/client/linux/handler/exception_handler_unittest.cc'; else $(CYGPATH_W) '$(srcdir)/src/client/linux/handler/exception_handler_unittest.cc'; fi`
+
+src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-directory_reader_unittest.o: src/client/linux/minidump_writer/directory_reader_unittest.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-directory_reader_unittest.o -MD -MP -MF src/client/linux/minidump_writer/$(DEPDIR)/src_client_linux_linux_client_unittest-directory_reader_unittest.Tpo -c -o src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-directory_reader_unittest.o `test -f 'src/client/linux/minidump_writer/directory_reader_unittest.cc' || echo '$(srcdir)/'`src/client/linux/minidump_writer/directory_reader_unittest.cc
+@am__fastdepCXX_TRUE@	$(am__mv) src/client/linux/minidump_writer/$(DEPDIR)/src_client_linux_linux_client_unittest-directory_reader_unittest.Tpo src/client/linux/minidump_writer/$(DEPDIR)/src_client_linux_linux_client_unittest-directory_reader_unittest.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/client/linux/minidump_writer/directory_reader_unittest.cc' object='src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-directory_reader_unittest.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-directory_reader_unittest.o `test -f 'src/client/linux/minidump_writer/directory_reader_unittest.cc' || echo '$(srcdir)/'`src/client/linux/minidump_writer/directory_reader_unittest.cc
+
+src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-directory_reader_unittest.obj: src/client/linux/minidump_writer/directory_reader_unittest.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-directory_reader_unittest.obj -MD -MP -MF src/client/linux/minidump_writer/$(DEPDIR)/src_client_linux_linux_client_unittest-directory_reader_unittest.Tpo -c -o src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-directory_reader_unittest.obj `if test -f 'src/client/linux/minidump_writer/directory_reader_unittest.cc'; then $(CYGPATH_W) 'src/client/linux/minidump_writer/directory_reader_unittest.cc'; else $(CYGPATH_W) '$(srcdir)/src/client/linux/minidump_writer/directory_reader_unittest.cc'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) src/client/linux/minidump_writer/$(DEPDIR)/src_client_linux_linux_client_unittest-directory_reader_unittest.Tpo src/client/linux/minidump_writer/$(DEPDIR)/src_client_linux_linux_client_unittest-directory_reader_unittest.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/client/linux/minidump_writer/directory_reader_unittest.cc' object='src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-directory_reader_unittest.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-directory_reader_unittest.obj `if test -f 'src/client/linux/minidump_writer/directory_reader_unittest.cc'; then $(CYGPATH_W) 'src/client/linux/minidump_writer/directory_reader_unittest.cc'; else $(CYGPATH_W) '$(srcdir)/src/client/linux/minidump_writer/directory_reader_unittest.cc'; fi`
+
+src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-line_reader_unittest.o: src/client/linux/minidump_writer/line_reader_unittest.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-line_reader_unittest.o -MD -MP -MF src/client/linux/minidump_writer/$(DEPDIR)/src_client_linux_linux_client_unittest-line_reader_unittest.Tpo -c -o src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-line_reader_unittest.o `test -f 'src/client/linux/minidump_writer/line_reader_unittest.cc' || echo '$(srcdir)/'`src/client/linux/minidump_writer/line_reader_unittest.cc
+@am__fastdepCXX_TRUE@	$(am__mv) src/client/linux/minidump_writer/$(DEPDIR)/src_client_linux_linux_client_unittest-line_reader_unittest.Tpo src/client/linux/minidump_writer/$(DEPDIR)/src_client_linux_linux_client_unittest-line_reader_unittest.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/client/linux/minidump_writer/line_reader_unittest.cc' object='src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-line_reader_unittest.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-line_reader_unittest.o `test -f 'src/client/linux/minidump_writer/line_reader_unittest.cc' || echo '$(srcdir)/'`src/client/linux/minidump_writer/line_reader_unittest.cc
+
+src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-line_reader_unittest.obj: src/client/linux/minidump_writer/line_reader_unittest.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-line_reader_unittest.obj -MD -MP -MF src/client/linux/minidump_writer/$(DEPDIR)/src_client_linux_linux_client_unittest-line_reader_unittest.Tpo -c -o src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-line_reader_unittest.obj `if test -f 'src/client/linux/minidump_writer/line_reader_unittest.cc'; then $(CYGPATH_W) 'src/client/linux/minidump_writer/line_reader_unittest.cc'; else $(CYGPATH_W) '$(srcdir)/src/client/linux/minidump_writer/line_reader_unittest.cc'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) src/client/linux/minidump_writer/$(DEPDIR)/src_client_linux_linux_client_unittest-line_reader_unittest.Tpo src/client/linux/minidump_writer/$(DEPDIR)/src_client_linux_linux_client_unittest-line_reader_unittest.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/client/linux/minidump_writer/line_reader_unittest.cc' object='src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-line_reader_unittest.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-line_reader_unittest.obj `if test -f 'src/client/linux/minidump_writer/line_reader_unittest.cc'; then $(CYGPATH_W) 'src/client/linux/minidump_writer/line_reader_unittest.cc'; else $(CYGPATH_W) '$(srcdir)/src/client/linux/minidump_writer/line_reader_unittest.cc'; fi`
+
+src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-linux_dumper_unittest.o: src/client/linux/minidump_writer/linux_dumper_unittest.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-linux_dumper_unittest.o -MD -MP -MF src/client/linux/minidump_writer/$(DEPDIR)/src_client_linux_linux_client_unittest-linux_dumper_unittest.Tpo -c -o src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-linux_dumper_unittest.o `test -f 'src/client/linux/minidump_writer/linux_dumper_unittest.cc' || echo '$(srcdir)/'`src/client/linux/minidump_writer/linux_dumper_unittest.cc
+@am__fastdepCXX_TRUE@	$(am__mv) src/client/linux/minidump_writer/$(DEPDIR)/src_client_linux_linux_client_unittest-linux_dumper_unittest.Tpo src/client/linux/minidump_writer/$(DEPDIR)/src_client_linux_linux_client_unittest-linux_dumper_unittest.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/client/linux/minidump_writer/linux_dumper_unittest.cc' object='src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-linux_dumper_unittest.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-linux_dumper_unittest.o `test -f 'src/client/linux/minidump_writer/linux_dumper_unittest.cc' || echo '$(srcdir)/'`src/client/linux/minidump_writer/linux_dumper_unittest.cc
+
+src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-linux_dumper_unittest.obj: src/client/linux/minidump_writer/linux_dumper_unittest.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-linux_dumper_unittest.obj -MD -MP -MF src/client/linux/minidump_writer/$(DEPDIR)/src_client_linux_linux_client_unittest-linux_dumper_unittest.Tpo -c -o src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-linux_dumper_unittest.obj `if test -f 'src/client/linux/minidump_writer/linux_dumper_unittest.cc'; then $(CYGPATH_W) 'src/client/linux/minidump_writer/linux_dumper_unittest.cc'; else $(CYGPATH_W) '$(srcdir)/src/client/linux/minidump_writer/linux_dumper_unittest.cc'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) src/client/linux/minidump_writer/$(DEPDIR)/src_client_linux_linux_client_unittest-linux_dumper_unittest.Tpo src/client/linux/minidump_writer/$(DEPDIR)/src_client_linux_linux_client_unittest-linux_dumper_unittest.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/client/linux/minidump_writer/linux_dumper_unittest.cc' object='src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-linux_dumper_unittest.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-linux_dumper_unittest.obj `if test -f 'src/client/linux/minidump_writer/linux_dumper_unittest.cc'; then $(CYGPATH_W) 'src/client/linux/minidump_writer/linux_dumper_unittest.cc'; else $(CYGPATH_W) '$(srcdir)/src/client/linux/minidump_writer/linux_dumper_unittest.cc'; fi`
+
+src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-minidump_writer_unittest.o: src/client/linux/minidump_writer/minidump_writer_unittest.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-minidump_writer_unittest.o -MD -MP -MF src/client/linux/minidump_writer/$(DEPDIR)/src_client_linux_linux_client_unittest-minidump_writer_unittest.Tpo -c -o src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-minidump_writer_unittest.o `test -f 'src/client/linux/minidump_writer/minidump_writer_unittest.cc' || echo '$(srcdir)/'`src/client/linux/minidump_writer/minidump_writer_unittest.cc
+@am__fastdepCXX_TRUE@	$(am__mv) src/client/linux/minidump_writer/$(DEPDIR)/src_client_linux_linux_client_unittest-minidump_writer_unittest.Tpo src/client/linux/minidump_writer/$(DEPDIR)/src_client_linux_linux_client_unittest-minidump_writer_unittest.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/client/linux/minidump_writer/minidump_writer_unittest.cc' object='src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-minidump_writer_unittest.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-minidump_writer_unittest.o `test -f 'src/client/linux/minidump_writer/minidump_writer_unittest.cc' || echo '$(srcdir)/'`src/client/linux/minidump_writer/minidump_writer_unittest.cc
+
+src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-minidump_writer_unittest.obj: src/client/linux/minidump_writer/minidump_writer_unittest.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-minidump_writer_unittest.obj -MD -MP -MF src/client/linux/minidump_writer/$(DEPDIR)/src_client_linux_linux_client_unittest-minidump_writer_unittest.Tpo -c -o src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-minidump_writer_unittest.obj `if test -f 'src/client/linux/minidump_writer/minidump_writer_unittest.cc'; then $(CYGPATH_W) 'src/client/linux/minidump_writer/minidump_writer_unittest.cc'; else $(CYGPATH_W) '$(srcdir)/src/client/linux/minidump_writer/minidump_writer_unittest.cc'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) src/client/linux/minidump_writer/$(DEPDIR)/src_client_linux_linux_client_unittest-minidump_writer_unittest.Tpo src/client/linux/minidump_writer/$(DEPDIR)/src_client_linux_linux_client_unittest-minidump_writer_unittest.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/client/linux/minidump_writer/minidump_writer_unittest.cc' object='src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-minidump_writer_unittest.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-minidump_writer_unittest.obj `if test -f 'src/client/linux/minidump_writer/minidump_writer_unittest.cc'; then $(CYGPATH_W) 'src/client/linux/minidump_writer/minidump_writer_unittest.cc'; else $(CYGPATH_W) '$(srcdir)/src/client/linux/minidump_writer/minidump_writer_unittest.cc'; fi`
+
+src/testing/gtest/src/src_client_linux_linux_client_unittest-gtest-all.o: src/testing/gtest/src/gtest-all.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/gtest/src/src_client_linux_linux_client_unittest-gtest-all.o -MD -MP -MF src/testing/gtest/src/$(DEPDIR)/src_client_linux_linux_client_unittest-gtest-all.Tpo -c -o src/testing/gtest/src/src_client_linux_linux_client_unittest-gtest-all.o `test -f 'src/testing/gtest/src/gtest-all.cc' || echo '$(srcdir)/'`src/testing/gtest/src/gtest-all.cc
+@am__fastdepCXX_TRUE@	$(am__mv) src/testing/gtest/src/$(DEPDIR)/src_client_linux_linux_client_unittest-gtest-all.Tpo src/testing/gtest/src/$(DEPDIR)/src_client_linux_linux_client_unittest-gtest-all.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/testing/gtest/src/gtest-all.cc' object='src/testing/gtest/src/src_client_linux_linux_client_unittest-gtest-all.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/gtest/src/src_client_linux_linux_client_unittest-gtest-all.o `test -f 'src/testing/gtest/src/gtest-all.cc' || echo '$(srcdir)/'`src/testing/gtest/src/gtest-all.cc
+
+src/testing/gtest/src/src_client_linux_linux_client_unittest-gtest-all.obj: src/testing/gtest/src/gtest-all.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/gtest/src/src_client_linux_linux_client_unittest-gtest-all.obj -MD -MP -MF src/testing/gtest/src/$(DEPDIR)/src_client_linux_linux_client_unittest-gtest-all.Tpo -c -o src/testing/gtest/src/src_client_linux_linux_client_unittest-gtest-all.obj `if test -f 'src/testing/gtest/src/gtest-all.cc'; then $(CYGPATH_W) 'src/testing/gtest/src/gtest-all.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/gtest/src/gtest-all.cc'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) src/testing/gtest/src/$(DEPDIR)/src_client_linux_linux_client_unittest-gtest-all.Tpo src/testing/gtest/src/$(DEPDIR)/src_client_linux_linux_client_unittest-gtest-all.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/testing/gtest/src/gtest-all.cc' object='src/testing/gtest/src/src_client_linux_linux_client_unittest-gtest-all.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/gtest/src/src_client_linux_linux_client_unittest-gtest-all.obj `if test -f 'src/testing/gtest/src/gtest-all.cc'; then $(CYGPATH_W) 'src/testing/gtest/src/gtest-all.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/gtest/src/gtest-all.cc'; fi`
+
+src/testing/gtest/src/src_client_linux_linux_client_unittest-gtest_main.o: src/testing/gtest/src/gtest_main.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/gtest/src/src_client_linux_linux_client_unittest-gtest_main.o -MD -MP -MF src/testing/gtest/src/$(DEPDIR)/src_client_linux_linux_client_unittest-gtest_main.Tpo -c -o src/testing/gtest/src/src_client_linux_linux_client_unittest-gtest_main.o `test -f 'src/testing/gtest/src/gtest_main.cc' || echo '$(srcdir)/'`src/testing/gtest/src/gtest_main.cc
+@am__fastdepCXX_TRUE@	$(am__mv) src/testing/gtest/src/$(DEPDIR)/src_client_linux_linux_client_unittest-gtest_main.Tpo src/testing/gtest/src/$(DEPDIR)/src_client_linux_linux_client_unittest-gtest_main.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/testing/gtest/src/gtest_main.cc' object='src/testing/gtest/src/src_client_linux_linux_client_unittest-gtest_main.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/gtest/src/src_client_linux_linux_client_unittest-gtest_main.o `test -f 'src/testing/gtest/src/gtest_main.cc' || echo '$(srcdir)/'`src/testing/gtest/src/gtest_main.cc
+
+src/testing/gtest/src/src_client_linux_linux_client_unittest-gtest_main.obj: src/testing/gtest/src/gtest_main.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/gtest/src/src_client_linux_linux_client_unittest-gtest_main.obj -MD -MP -MF src/testing/gtest/src/$(DEPDIR)/src_client_linux_linux_client_unittest-gtest_main.Tpo -c -o src/testing/gtest/src/src_client_linux_linux_client_unittest-gtest_main.obj `if test -f 'src/testing/gtest/src/gtest_main.cc'; then $(CYGPATH_W) 'src/testing/gtest/src/gtest_main.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/gtest/src/gtest_main.cc'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) src/testing/gtest/src/$(DEPDIR)/src_client_linux_linux_client_unittest-gtest_main.Tpo src/testing/gtest/src/$(DEPDIR)/src_client_linux_linux_client_unittest-gtest_main.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/testing/gtest/src/gtest_main.cc' object='src/testing/gtest/src/src_client_linux_linux_client_unittest-gtest_main.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/gtest/src/src_client_linux_linux_client_unittest-gtest_main.obj `if test -f 'src/testing/gtest/src/gtest_main.cc'; then $(CYGPATH_W) 'src/testing/gtest/src/gtest_main.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/gtest/src/gtest_main.cc'; fi`
+
+src/testing/src/src_client_linux_linux_client_unittest-gmock-all.o: src/testing/src/gmock-all.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/src/src_client_linux_linux_client_unittest-gmock-all.o -MD -MP -MF src/testing/src/$(DEPDIR)/src_client_linux_linux_client_unittest-gmock-all.Tpo -c -o src/testing/src/src_client_linux_linux_client_unittest-gmock-all.o `test -f 'src/testing/src/gmock-all.cc' || echo '$(srcdir)/'`src/testing/src/gmock-all.cc
+@am__fastdepCXX_TRUE@	$(am__mv) src/testing/src/$(DEPDIR)/src_client_linux_linux_client_unittest-gmock-all.Tpo src/testing/src/$(DEPDIR)/src_client_linux_linux_client_unittest-gmock-all.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/testing/src/gmock-all.cc' object='src/testing/src/src_client_linux_linux_client_unittest-gmock-all.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/src/src_client_linux_linux_client_unittest-gmock-all.o `test -f 'src/testing/src/gmock-all.cc' || echo '$(srcdir)/'`src/testing/src/gmock-all.cc
+
+src/testing/src/src_client_linux_linux_client_unittest-gmock-all.obj: src/testing/src/gmock-all.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/src/src_client_linux_linux_client_unittest-gmock-all.obj -MD -MP -MF src/testing/src/$(DEPDIR)/src_client_linux_linux_client_unittest-gmock-all.Tpo -c -o src/testing/src/src_client_linux_linux_client_unittest-gmock-all.obj `if test -f 'src/testing/src/gmock-all.cc'; then $(CYGPATH_W) 'src/testing/src/gmock-all.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/src/gmock-all.cc'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) src/testing/src/$(DEPDIR)/src_client_linux_linux_client_unittest-gmock-all.Tpo src/testing/src/$(DEPDIR)/src_client_linux_linux_client_unittest-gmock-all.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/testing/src/gmock-all.cc' object='src/testing/src/src_client_linux_linux_client_unittest-gmock-all.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/src/src_client_linux_linux_client_unittest-gmock-all.obj `if test -f 'src/testing/src/gmock-all.cc'; then $(CYGPATH_W) 'src/testing/src/gmock-all.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/src/gmock-all.cc'; fi`
+
+src/client/linux/minidump_writer/src_client_linux_linux_dumper_unittest_helper-linux_dumper_unittest_helper.o: src/client/linux/minidump_writer/linux_dumper_unittest_helper.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_client_linux_linux_dumper_unittest_helper_CXXFLAGS) $(CXXFLAGS) -MT src/client/linux/minidump_writer/src_client_linux_linux_dumper_unittest_helper-linux_dumper_unittest_helper.o -MD -MP -MF src/client/linux/minidump_writer/$(DEPDIR)/src_client_linux_linux_dumper_unittest_helper-linux_dumper_unittest_helper.Tpo -c -o src/client/linux/minidump_writer/src_client_linux_linux_dumper_unittest_helper-linux_dumper_unittest_helper.o `test -f 'src/client/linux/minidump_writer/linux_dumper_unittest_helper.cc' || echo '$(srcdir)/'`src/client/linux/minidump_writer/linux_dumper_unittest_helper.cc
+@am__fastdepCXX_TRUE@	$(am__mv) src/client/linux/minidump_writer/$(DEPDIR)/src_client_linux_linux_dumper_unittest_helper-linux_dumper_unittest_helper.Tpo src/client/linux/minidump_writer/$(DEPDIR)/src_client_linux_linux_dumper_unittest_helper-linux_dumper_unittest_helper.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/client/linux/minidump_writer/linux_dumper_unittest_helper.cc' object='src/client/linux/minidump_writer/src_client_linux_linux_dumper_unittest_helper-linux_dumper_unittest_helper.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_client_linux_linux_dumper_unittest_helper_CXXFLAGS) $(CXXFLAGS) -c -o src/client/linux/minidump_writer/src_client_linux_linux_dumper_unittest_helper-linux_dumper_unittest_helper.o `test -f 'src/client/linux/minidump_writer/linux_dumper_unittest_helper.cc' || echo '$(srcdir)/'`src/client/linux/minidump_writer/linux_dumper_unittest_helper.cc
+
+src/client/linux/minidump_writer/src_client_linux_linux_dumper_unittest_helper-linux_dumper_unittest_helper.obj: src/client/linux/minidump_writer/linux_dumper_unittest_helper.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_client_linux_linux_dumper_unittest_helper_CXXFLAGS) $(CXXFLAGS) -MT src/client/linux/minidump_writer/src_client_linux_linux_dumper_unittest_helper-linux_dumper_unittest_helper.obj -MD -MP -MF src/client/linux/minidump_writer/$(DEPDIR)/src_client_linux_linux_dumper_unittest_helper-linux_dumper_unittest_helper.Tpo -c -o src/client/linux/minidump_writer/src_client_linux_linux_dumper_unittest_helper-linux_dumper_unittest_helper.obj `if test -f 'src/client/linux/minidump_writer/linux_dumper_unittest_helper.cc'; then $(CYGPATH_W) 'src/client/linux/minidump_writer/linux_dumper_unittest_helper.cc'; else $(CYGPATH_W) '$(srcdir)/src/client/linux/minidump_writer/linux_dumper_unittest_helper.cc'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) src/client/linux/minidump_writer/$(DEPDIR)/src_client_linux_linux_dumper_unittest_helper-linux_dumper_unittest_helper.Tpo src/client/linux/minidump_writer/$(DEPDIR)/src_client_linux_linux_dumper_unittest_helper-linux_dumper_unittest_helper.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/client/linux/minidump_writer/linux_dumper_unittest_helper.cc' object='src/client/linux/minidump_writer/src_client_linux_linux_dumper_unittest_helper-linux_dumper_unittest_helper.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_client_linux_linux_dumper_unittest_helper_CXXFLAGS) $(CXXFLAGS) -c -o src/client/linux/minidump_writer/src_client_linux_linux_dumper_unittest_helper-linux_dumper_unittest_helper.obj `if test -f 'src/client/linux/minidump_writer/linux_dumper_unittest_helper.cc'; then $(CYGPATH_W) 'src/client/linux/minidump_writer/linux_dumper_unittest_helper.cc'; else $(CYGPATH_W) '$(srcdir)/src/client/linux/minidump_writer/linux_dumper_unittest_helper.cc'; fi`
 
 src/processor/src_processor_minidump_processor_unittest-minidump_processor_unittest.o: src/processor/minidump_processor_unittest.cc
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_minidump_processor_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/processor/src_processor_minidump_processor_unittest-minidump_processor_unittest.o -MD -MP -MF src/processor/$(DEPDIR)/src_processor_minidump_processor_unittest-minidump_processor_unittest.Tpo -c -o src/processor/src_processor_minidump_processor_unittest-minidump_processor_unittest.o `test -f 'src/processor/minidump_processor_unittest.cc' || echo '$(srcdir)/'`src/processor/minidump_processor_unittest.cc
@@ -1235,6 +1626,13 @@ mostlyclean-libtool:
 clean-libtool:
 	-rm -rf .libs _libs
 	-rm -rf src/.libs src/_libs
+	-rm -rf src/client/.libs src/client/_libs
+	-rm -rf src/client/linux/.libs src/client/linux/_libs
+	-rm -rf src/client/linux/crash_generation/.libs src/client/linux/crash_generation/_libs
+	-rm -rf src/client/linux/handler/.libs src/client/linux/handler/_libs
+	-rm -rf src/client/linux/minidump_writer/.libs src/client/linux/minidump_writer/_libs
+	-rm -rf src/common/.libs src/common/_libs
+	-rm -rf src/common/linux/.libs src/common/linux/_libs
 	-rm -rf src/processor/.libs src/processor/_libs
 
 distclean-libtool:
@@ -1584,6 +1982,19 @@ distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
 	-test . = "$(srcdir)" || test -z "$(CONFIG_CLEAN_VPATH_FILES)" || rm -f $(CONFIG_CLEAN_VPATH_FILES)
 	-rm -f src/$(am__dirstamp)
+	-rm -f src/client/$(DEPDIR)/$(am__dirstamp)
+	-rm -f src/client/$(am__dirstamp)
+	-rm -f src/client/linux/$(am__dirstamp)
+	-rm -f src/client/linux/crash_generation/$(DEPDIR)/$(am__dirstamp)
+	-rm -f src/client/linux/crash_generation/$(am__dirstamp)
+	-rm -f src/client/linux/handler/$(DEPDIR)/$(am__dirstamp)
+	-rm -f src/client/linux/handler/$(am__dirstamp)
+	-rm -f src/client/linux/minidump_writer/$(DEPDIR)/$(am__dirstamp)
+	-rm -f src/client/linux/minidump_writer/$(am__dirstamp)
+	-rm -f src/common/$(DEPDIR)/$(am__dirstamp)
+	-rm -f src/common/$(am__dirstamp)
+	-rm -f src/common/linux/$(DEPDIR)/$(am__dirstamp)
+	-rm -f src/common/linux/$(am__dirstamp)
 	-rm -f src/processor/$(DEPDIR)/$(am__dirstamp)
 	-rm -f src/processor/$(am__dirstamp)
 	-rm -f src/testing/gtest/src/$(DEPDIR)/$(am__dirstamp)
@@ -1602,7 +2013,7 @@ clean-am: clean-binPROGRAMS clean-checkPROGRAMS clean-generic \
 
 distclean: distclean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
-	-rm -rf src/processor/$(DEPDIR) src/testing/gtest/src/$(DEPDIR) src/testing/src/$(DEPDIR)
+	-rm -rf src/client/$(DEPDIR) src/client/linux/crash_generation/$(DEPDIR) src/client/linux/handler/$(DEPDIR) src/client/linux/minidump_writer/$(DEPDIR) src/common/$(DEPDIR) src/common/linux/$(DEPDIR) src/processor/$(DEPDIR) src/testing/gtest/src/$(DEPDIR) src/testing/src/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-hdr distclean-libtool distclean-tags
@@ -1650,7 +2061,7 @@ installcheck-am:
 maintainer-clean: maintainer-clean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
-	-rm -rf src/processor/$(DEPDIR) src/testing/gtest/src/$(DEPDIR) src/testing/src/$(DEPDIR)
+	-rm -rf src/client/$(DEPDIR) src/client/linux/crash_generation/$(DEPDIR) src/client/linux/handler/$(DEPDIR) src/client/linux/minidump_writer/$(DEPDIR) src/common/$(DEPDIR) src/common/linux/$(DEPDIR) src/processor/$(DEPDIR) src/testing/gtest/src/$(DEPDIR) src/testing/src/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

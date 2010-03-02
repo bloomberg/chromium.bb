@@ -33,6 +33,8 @@
 # This allows #includes to be relative to src/
 AM_CPPFLAGS = -I$(top_srcdir)/src
 
+# Specify include paths for ac macros
+ACLOCAL_AMFLAGS = -I m4
 
 ## Documentation
 docdir = $(prefix)/share/doc/$(PACKAGE)-$(VERSION)
@@ -47,7 +49,19 @@ dist_doc_DATA = \
 
 
 ## Libraries
-lib_LTLIBRARIES = src/libbreakpad.la
+lib_LTLIBRARIES = src/libbreakpad.la src/client/linux/libbreakpad_client.la
+
+src_client_linux_libbreakpad_client_la_SOURCES = \
+	src/client/linux/crash_generation/crash_generation_client.cc \
+	src/client/linux/handler/exception_handler.cc \
+	src/client/linux/minidump_writer/linux_dumper.cc \
+	src/client/linux/minidump_writer/minidump_writer.cc \
+	src/client/minidump_file_writer.cc \
+	src/common/convert_UTF.c \
+	src/common/md5.c \
+	src/common/string_conversion.cc \
+	src/common/linux/file_id.cc \
+	src/common/linux/guid_creator.cc
 
 src_libbreakpad_la_SOURCES = \
 	src/google_breakpad/common/breakpad_types.h \
@@ -107,12 +121,13 @@ src_libbreakpad_la_SOURCES = \
 
 ## Programs
 bin_PROGRAMS = \
+	src/client/linux/linux_dumper_unittest_helper \
 	src/processor/minidump_dump \
 	src/processor/minidump_stackwalk
 
-
 ## Tests
 check_PROGRAMS = \
+	src/client/linux/linux_client_unittest \
 	src/processor/address_map_unittest \
 	src/processor/basic_source_line_resolver_unittest \
 	src/processor/contained_range_map_unittest \
@@ -134,6 +149,40 @@ check_SCRIPTS = \
 
 TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 TESTS_ENVIRONMENT =
+
+src_client_linux_linux_dumper_unittest_helper_SOURCES = \
+	src/client/linux/minidump_writer/linux_dumper_unittest_helper.cc
+src_client_linux_linux_dumper_unittest_helper_CXXFLAGS=$(PTHREAD_CFLAGS)
+src_client_linux_linux_dumper_unittest_helper_LDFLAGS=$(PTHREAD_CFLAGS)
+src_client_linux_linux_dumper_unittest_helper_CC=$(PTHREAD_CC)
+
+src_client_linux_linux_client_unittest_SOURCES = \
+	src/client/linux/handler/exception_handler_unittest.cc \
+	src/client/linux/minidump_writer/directory_reader_unittest.cc \
+	src/client/linux/minidump_writer/line_reader_unittest.cc \
+	src/client/linux/minidump_writer/linux_dumper_unittest.cc \
+	src/client/linux/minidump_writer/minidump_writer_unittest.cc \
+	src/testing/gtest/src/gtest-all.cc \
+	src/testing/gtest/src/gtest_main.cc \
+	src/testing/src/gmock-all.cc
+
+src_client_linux_linux_client_unittest_CPPFLAGS = \
+	-I$(top_srcdir)/src/testing/include \
+        -I$(top_srcdir)/src/testing/gtest/include \
+	-I$(top_srcdir)/src/testing/gtest \
+	-I$(top_srcdir)/src/testing
+src_client_linux_linux_client_unittest_LDADD = \
+	src/client/linux/handler/exception_handler.lo \
+	src/client/linux/crash_generation/crash_generation_client.lo \
+	src/client/linux/minidump_writer/linux_dumper.lo \
+	src/client/linux/minidump_writer/minidump_writer.lo \
+	src/client/minidump_file_writer.lo \
+	src/common/convert_UTF.lo \
+	src/common/md5.lo \
+	src/common/linux/file_id.lo \
+	src/common/linux/guid_creator.lo \
+	src/common/string_conversion.lo
+src_client_linux_linux_client_unittest_DEPENDENCIES = src/client/linux/linux_dumper_unittest_helper src/client/linux/libbreakpad_client.la
 
 src_processor_address_map_unittest_SOURCES = \
 	src/processor/address_map_unittest.cc
@@ -399,3 +448,4 @@ EXTRA_DIST = \
 ## Additional rules
 libtool: $(LIBTOOL_DEPS)
 	$(SHELL) ./config.status --recheck
+

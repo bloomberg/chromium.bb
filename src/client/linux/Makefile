@@ -1,7 +1,7 @@
 CXX=g++
 CC=gcc
 
-CXXFLAGS=-gstabs+ -I../../ -I../../testing/gtest/include -I../../testing -I../../third_party/linux/include -I../../testing/include -I../../testing/gtest -D_REENTRANT -m32 -Wall
+CXXFLAGS=-gstabs+ -I../../ -I../../testing/gtest/include -I../../testing -I../../third_party/linux/include -I../../testing/include -I../../testing/gtest -D_REENTRANT -Wall
 CFLAGS=$(CXXFLAGS)
 LDFLAGS=-lpthread
 
@@ -37,7 +37,13 @@ LIB_C_SRC = ../../common/convert_UTF.c
 LIB_CC_OBJ=$(patsubst %.cc, $(OBJ_DIR)/%.o,$(LIB_CC_SRC))
 LIB_C_OBJ=$(patsubst %.c, $(OBJ_DIR)/%.o, $(LIB_C_SRC))
 
+DUMPER_HELPER_TEST_C_SRC=minidump_writer/linux_dumper_unittest_helper.c
+
+DUMPER_HELPER_TEST_C_OBJ=$(patsubst %.cc, $(OBJ_DIR)/%.o, \
+			   $(DUMPER_HELPER_TEST_C_SRC))
+
 # Unit tests for client library 
+
 TEST_CC_SRC=handler/exception_handler_unittest.cc \
 	    minidump_writer/directory_reader_unittest.cc \
 	    minidump_writer/line_reader_unittest.cc \
@@ -72,9 +78,11 @@ SENDER_UNITTEST_BIN=$(BIN_DIR)/google_crashdump_uploader_test
 # Sender CLI tool binary
 SENDER_CLI_TOOL_BIN=$(BIN_DIR)/google_crashdump_uploader
 
+DUMPER_HELPER_TEST_BIN=$(BIN_DIR)/linux_dumper_unittest_helper
+
 .PHONY:all clean
 
-all:$(BREAKPAD_LIBRARY) $(UNITTEST_BIN) $(SENDER_LIBRARY) $(SENDER_UNITTEST_BIN) $(SENDER_CLI_TOOL_BIN)
+all:$(BREAKPAD_LIBRARY) $(UNITTEST_BIN) #$(SENDER_LIBRARY) $(SENDER_UNITTEST_BIN) $(SENDER_CLI_TOOL_BIN)
 
 check:$(UNITTEST_BIN) $(SENDER_UNITTEST_BIN)
 	$(UNITTEST_BIN)
@@ -83,8 +91,11 @@ check:$(UNITTEST_BIN) $(SENDER_UNITTEST_BIN)
 $(BIN_DIR)/libbreakpad.a:$(LIB_CC_OBJ) $(LIB_C_OBJ)
 	$(AR) rcs $@ $^
 
-$(BIN_DIR)/linux_client_test:$(TEST_CC_OBJ) $(BREAKPAD_LIBRARY)
+$(BIN_DIR)/linux_dumper_unittest_helper:$(DUMPER_HELPER_TEST_C_OBJ)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ -o $@
+
+$(BIN_DIR)/linux_client_test:$(TEST_CC_OBJ) $(BREAKPAD_LIBRARY) $(DUMPER_HELPER_TEST_BIN)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(TEST_CC_OBJ) $(BREAKPAD_LIBRARY) -o $@
 
 $(BIN_DIR)/libcrash_sender.a:$(SENDER_LIBRARY_OBJ)
 	$(AR) rcs $@ $^
@@ -100,4 +111,5 @@ $(BIN_DIR)/google_crashdump_uploader:$(SENDER_TOOL_OBJ) $(SENDER_LIBRARY) \
 clean:
 	rm -f $(UNITTEST_BIN) $(BREAKPAD_LIBRARY) $(LIB_CC_OBJ) $(LIB_C_OBJ) \
 	$(TEST_CC_OBJ) $(SENDER_LIBRARY_OBJ) $(SENDER_LIBRARY) \
-	$(SENDER_TOOL_OBJ) $(SENDER_CLI_TOOL_BIN) $(SENDER_UNITTEST_BIN) core
+	$(SENDER_TOOL_OBJ) $(SENDER_CLI_TOOL_BIN) $(SENDER_UNITTEST_BIN) \
+	$(DUMPER_HELPER_TEST_BIN) core

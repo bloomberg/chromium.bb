@@ -1,4 +1,4 @@
-// Copyright (c) 2010 Google Inc.
+// Copyright (c) 2010, Google Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -26,63 +26,39 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+// Helper program for the linux_dumper class, which creates a bunch of
+// threads. The first word of each thread's stack is set to the thread
+// id.
 
+#include <pthread.h>
 #include <stdio.h>
-#include <sys/socket.h>
-#include <sys/types.h>
+#include <stdlib.h>
+#include <sys/syscall.h>
+#include <unistd.h>
 
-#include <algorithm>
+#pragma GCC optimize ("O0")
+void *thread_function(void *data) __attribute__((noinline, optimize("O2")));
 
-#include "client/linux/crash_generation/crash_generation_client.h"
-#include "common/linux/eintr_wrapper.h"
-#include "common/linux/linux_libc_support.h"
-#include "common/linux/linux_syscall_support.h"
-
-namespace google_breakpad {
-
-bool
-CrashGenerationClient::RequestDump(const void* blob, size_t blob_size)
-{
-  int fds[2];
-  sys_socketpair(AF_UNIX, SOCK_STREAM, 0, fds);
-  static const unsigned kControlMsgSize = CMSG_SPACE(sizeof(int));
-
-  struct kernel_msghdr msg;
-  my_memset(&msg, 0, sizeof(struct kernel_msghdr));
-  struct kernel_iovec iov[1];
-  iov[0].iov_base = const_cast<void*>(blob);
-  iov[0].iov_len = blob_size;
-
-  msg.msg_iov = iov;
-  msg.msg_iovlen = sizeof(iov) / sizeof(iov[0]);
-  char cmsg[kControlMsgSize];
-  my_memset(cmsg, 0, kControlMsgSize);
-  msg.msg_control = cmsg;
-  msg.msg_controllen = sizeof(cmsg);
-
-  struct cmsghdr* hdr = CMSG_FIRSTHDR(&msg);
-  hdr->cmsg_level = SOL_SOCKET;
-  hdr->cmsg_type = SCM_RIGHTS;
-  hdr->cmsg_len = CMSG_LEN(sizeof(int));
-  *((int*) CMSG_DATA(hdr)) = fds[1];
-
-  HANDLE_EINTR(sys_sendmsg(server_fd_, &msg, 0));
-  sys_close(fds[1]);
-
-  // wait for an ACK from the server
-  char b;
-  HANDLE_EINTR(sys_read(fds[0], &b, 1));
-
-  return true;
+void *thread_function(void *data) {
+  pid_t thread_id = syscall(SYS_gettid);
+  while (true) ;
+  asm("");
 }
 
-//static
-CrashGenerationClient*
-CrashGenerationClient::TryCreate(int server_fd)
-{
-  if (0 > server_fd)
-    return NULL;
-  return new CrashGenerationClient(server_fd);
-}
-
+int main(int argc, char *argv[]) {
+  int num_threads = atoi(argv[1]);
+  if (num_threads < 1) {
+    fprintf(stderr, "ERROR: number of threads is 0");
+    return 1;
+  }
+  pthread_t threads[num_threads];
+  pthread_attr_t thread_attributes;
+  pthread_attr_init(&thread_attributes);
+  pthread_attr_setdetachstate(&thread_attributes, PTHREAD_CREATE_DETACHED);
+  for (int i = 1; i < num_threads; i++) {
+    pthread_create(&threads[i], &thread_attributes, &thread_function, NULL);
+  }
+  thread_function(NULL);
+  return 0;
 }

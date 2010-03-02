@@ -46,6 +46,26 @@ AC_PROG_LIBTOOL
 AC_SUBST(LIBTOOL_DEPS)
 
 AC_HEADER_STDC
+m4_include(m4/ax_pthread.m4)
+AX_PTHREAD
+
+AC_ARG_ENABLE(m32,
+              AS_HELP_STRING([--enable-m32],
+                             [Compile/build with -m32]
+                             [(default is no)]),
+              [case "${enableval}" in
+                 yes)
+		   CFLAGS=$(CFLAGS) -m32
+                   usem32=true
+                   ;;
+                 no)
+                   usem32=false
+                   ;;
+                 *)
+                   AC_MSG_ERROR(bad value ${enableval} for --enable-m32)
+                   ;;
+               esac],
+              [usem32=false])
 
 AC_ARG_ENABLE(selftest,
               AS_HELP_STRING([--enable-selftest],
