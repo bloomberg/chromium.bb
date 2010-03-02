@@ -530,7 +530,8 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_CFInstanceRPCInternal) {
   SimpleBrowserTest(IE, kCFIRPCInternalPage, L"CFInstanceRPCInternal");
 }
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_CFInstanceRPCInternal) {
+// http://code.google.com/p/chromium/issues/detail?id=37204
+TEST_F(ChromeFrameTestWithWebServer, FLAKY_WidgetModeFF_CFInstanceRPCInternal) {
   SimpleBrowserTest(FIREFOX, kCFIRPCInternalPage, L"CFInstanceRPCInternal");
 }
 
