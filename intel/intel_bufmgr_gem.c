@@ -258,7 +258,7 @@ drm_intel_gem_bo_tile_pitch(drm_intel_bufmgr_gem *bufmgr_gem,
 	unsigned long i;
 
 	if (tiling_mode == I915_TILING_NONE)
-		return ROUND_UP_TO(pitch, tile_width);
+		return pitch;
 
 	/* 965 is flexible */
 	if (bufmgr_gem->gen >= 4)
