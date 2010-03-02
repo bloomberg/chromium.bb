@@ -449,7 +449,7 @@ void NavigateToFeedAndValidate(HTTPTestServer* server,
   ASSERT_STREQ(expected_error.c_str(), error.c_str());
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed1) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedValidFeed1) {
   HTTPTestServer* server = StartHTTPServer();
 
   ASSERT_TRUE(LoadExtension(
@@ -462,7 +462,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed1) {
                             "No error");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed2) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedValidFeed2) {
   HTTPTestServer* server = StartHTTPServer();
 
   ASSERT_TRUE(LoadExtension(
@@ -475,7 +475,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed2) {
                             "No error");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed3) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedValidFeed3) {
   HTTPTestServer* server = StartHTTPServer();
 
   ASSERT_TRUE(LoadExtension(
@@ -488,7 +488,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed3) {
                             "No error");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed4) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedValidFeed4) {
   HTTPTestServer* server = StartHTTPServer();
 
   ASSERT_TRUE(LoadExtension(
@@ -501,7 +501,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed4) {
                             "No error");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed0) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedValidFeed0) {
   HTTPTestServer* server = StartHTTPServer();
 
   ASSERT_TRUE(LoadExtension(
@@ -516,7 +516,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed0) {
                             "No error");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed5) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedValidFeed5) {
   HTTPTestServer* server = StartHTTPServer();
 
   ASSERT_TRUE(LoadExtension(
@@ -572,7 +572,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_ParseFeedInvalidFeed3) {
                             "Not a valid feed.");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeedNoLinks) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedValidFeedNoLinks) {
   HTTPTestServer* server = StartHTTPServer();
 
   ASSERT_TRUE(LoadExtension(
