@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/form_field_history_manager.h"
+#include "chrome/browser/autocomplete_history_manager.h"
 
 #include <vector>
 
@@ -19,23 +19,23 @@
 static const int kMaxAutofillMenuItems = 6;
 
 // static
-void FormFieldHistoryManager::RegisterUserPrefs(PrefService* prefs) {
+void AutocompleteHistoryManager::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kFormAutofillEnabled, true);
 }
 
-FormFieldHistoryManager::FormFieldHistoryManager(TabContents* tab_contents)
-    : tab_contents_(tab_contents),
-      pending_query_handle_(0),
-      query_id_(0) {
+AutocompleteHistoryManager::AutocompleteHistoryManager(
+    TabContents* tab_contents) : tab_contents_(tab_contents),
+                                 pending_query_handle_(0),
+                                 query_id_(0) {
   form_autofill_enabled_.Init(prefs::kFormAutofillEnabled,
       profile()->GetPrefs(), NULL);
 }
 
-FormFieldHistoryManager::~FormFieldHistoryManager() {
+AutocompleteHistoryManager::~AutocompleteHistoryManager() {
   CancelPendingQuery();
 }
 
-void FormFieldHistoryManager::CancelPendingQuery() {
+void AutocompleteHistoryManager::CancelPendingQuery() {
   if (pending_query_handle_) {
     SendSuggestions(NULL);
     WebDataService* web_data_service =
@@ -49,16 +49,16 @@ void FormFieldHistoryManager::CancelPendingQuery() {
   pending_query_handle_ = 0;
 }
 
-Profile* FormFieldHistoryManager::profile() {
+Profile* AutocompleteHistoryManager::profile() {
   return tab_contents_->profile();
 }
 
-void FormFieldHistoryManager::FormFieldValuesSubmitted(
+void AutocompleteHistoryManager::FormFieldValuesSubmitted(
     const webkit_glue::FormFieldValues& form) {
   StoreFormEntriesInWebDatabase(form);
 }
 
-bool FormFieldHistoryManager::GetFormFieldHistorySuggestions(int query_id,
+bool AutocompleteHistoryManager::GetFormFieldHistorySuggestions(int query_id,
                                                      const string16& name,
                                                      const string16& prefix) {
   if (!*form_autofill_enabled_)
@@ -80,8 +80,8 @@ bool FormFieldHistoryManager::GetFormFieldHistorySuggestions(int query_id,
   return true;
 }
 
-void FormFieldHistoryManager::RemoveFormFieldHistoryEntry(const string16& name,
-                                                  const string16& value) {
+void AutocompleteHistoryManager::RemoveFormFieldHistoryEntry(
+    const string16& name, const string16& value) {
   WebDataService* web_data_service =
       profile()->GetWebDataService(Profile::EXPLICIT_ACCESS);
   if (!web_data_service) {
@@ -92,7 +92,7 @@ void FormFieldHistoryManager::RemoveFormFieldHistoryEntry(const string16& name,
   web_data_service->RemoveFormValueForElementName(name, value);
 }
 
-void FormFieldHistoryManager::OnWebDataServiceRequestDone(
+void AutocompleteHistoryManager::OnWebDataServiceRequestDone(
     WebDataService::Handle h,
     const WDTypedResult* result) {
   DCHECK(pending_query_handle_);
@@ -106,7 +106,7 @@ void FormFieldHistoryManager::OnWebDataServiceRequestDone(
   }
 }
 
-void FormFieldHistoryManager::StoreFormEntriesInWebDatabase(
+void AutocompleteHistoryManager::StoreFormEntriesInWebDatabase(
     const webkit_glue::FormFieldValues& form) {
   if (!*form_autofill_enabled_)
     return;
@@ -134,7 +134,7 @@ void FormFieldHistoryManager::StoreFormEntriesInWebDatabase(
       AddFormFieldValues(form.elements);
 }
 
-void FormFieldHistoryManager::SendSuggestions(const WDTypedResult* result) {
+void AutocompleteHistoryManager::SendSuggestions(const WDTypedResult* result) {
   RenderViewHost* host = tab_contents_->render_view_host();
   if (!host)
     return;

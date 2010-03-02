@@ -390,7 +390,7 @@ class RenderViewHost : public RenderWidgetHost {
       const std::vector<string16>& labels,
       int default_suggestion_index);
 
-  // Called by the FormFieldHistoryManager when the list of suggestions is
+  // Called by the AutocompleteHistoryManager when the list of suggestions is
   // ready.
   void AutocompleteSuggestionsReturned(
       int query_id,

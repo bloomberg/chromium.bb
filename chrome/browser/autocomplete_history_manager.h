@@ -1,9 +1,9 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_FORM_FIELD_HISTORY_MANAGER_H_
-#define CHROME_BROWSER_FORM_FIELD_HISTORY_MANAGER_H_
+#ifndef CHROME_BROWSER_AUTOCOMPLETE_HISTORY_MANAGER_H_
+#define CHROME_BROWSER_AUTOCOMPLETE_HISTORY_MANAGER_H_
 
 #include <string>
 
@@ -18,13 +18,14 @@ class FormFieldValues;
 class Profile;
 class TabContents;
 
-// Per-tab form field history manager. Handles receiving form data from the
+// Per-tab Autocomplete history manager. Handles receiving form data from the
 // renderer and the storing and retrieving of form data through WebDataService.
-class FormFieldHistoryManager : public RenderViewHostDelegate::FormFieldHistory,
-                                public WebDataServiceConsumer {
+class AutocompleteHistoryManager
+    : public RenderViewHostDelegate::FormFieldHistory,
+      public WebDataServiceConsumer {
  public:
-  explicit FormFieldHistoryManager(TabContents* tab_contents);
-  virtual ~FormFieldHistoryManager();
+  explicit AutocompleteHistoryManager(TabContents* tab_contents);
+  virtual ~AutocompleteHistoryManager();
 
   Profile* profile();
 
@@ -58,7 +59,7 @@ class FormFieldHistoryManager : public RenderViewHostDelegate::FormFieldHistory,
   WebDataService::Handle pending_query_handle_;
   int query_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(FormFieldHistoryManager);
+  DISALLOW_COPY_AND_ASSIGN(AutocompleteHistoryManager);
 };
 
-#endif  // CHROME_BROWSER_FORM_FIELD_HISTORY_MANAGER_H_
+#endif  // CHROME_BROWSER_AUTOCOMPLETE_HISTORY_MANAGER_H_

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/browser_prefs.h"
 
+#include "chrome/browser/autocomplete_history_manager.h"
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser.h"
@@ -14,7 +15,6 @@
 #include "chrome/browser/extensions/extension_dom_ui.h"
 #include "chrome/browser/extensions/extensions_ui.h"
 #include "chrome/browser/external_protocol_handler.h"
-#include "chrome/browser/form_field_history_manager.h"
 #include "chrome/browser/geolocation/geolocation_prefs.h"
 #include "chrome/browser/google_url_tracker.h"
 #include "chrome/browser/host_content_settings_map.h"
@@ -96,7 +96,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   DownloadManager::RegisterUserPrefs(user_prefs);
   SSLManager::RegisterUserPrefs(user_prefs);
   bookmark_utils::RegisterUserPrefs(user_prefs);
-  FormFieldHistoryManager::RegisterUserPrefs(user_prefs);
+  AutocompleteHistoryManager::RegisterUserPrefs(user_prefs);
   TabContents::RegisterUserPrefs(user_prefs);
   TemplateURLPrepopulateData::RegisterUserPrefs(user_prefs);
   ExtensionDOMUI::RegisterUserPrefs(user_prefs);

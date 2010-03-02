@@ -69,7 +69,7 @@ class BlockedPopupContainer;
 class DOMUI;
 class DownloadItem;
 class Extension;
-class FormFieldHistoryManager;
+class AutocompleteHistoryManager;
 class LoadNotificationDetails;
 class OmniboxSearchHint;
 class PasswordManager;
@@ -993,8 +993,8 @@ class TabContents : public PageNavigator,
   // SavePackage, lazily created.
   scoped_refptr<SavePackage> save_package_;
 
-  // FormFieldHistoryManager, lazily created.
-  scoped_ptr<FormFieldHistoryManager> form_field_history_manager_;
+  // AutocompleteHistoryManager, lazily created.
+  scoped_ptr<AutocompleteHistoryManager> autocomplete_history_manager_;
 
   // AutoFillManager, lazily created.
   scoped_ptr<AutoFillManager> autofill_manager_;
