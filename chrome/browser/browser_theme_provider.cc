@@ -71,10 +71,11 @@ const SkColor kDefaultColorToolbar = SkColorSetRGB(230, 230, 230);
 const SkColor kDefaultColorToolbar = SkColorSetRGB(210, 225, 246);
 #endif
 const SkColor kDefaultColorTabText = SK_ColorBLACK;
-const SkColor kDefaultColorBackgroundTabText = SkColorSetRGB(64, 64, 64);
-#if defined (OS_MACOSX)
-const SkColor kDefaultColorBookmarkText = SkColorSetRGB(0, 0, 0);
+#if defined(OS_MACOSX)
+const SkColor kDefaultColorBackgroundTabText = SK_ColorBLACK;
+const SkColor kDefaultColorBookmarkText = SK_ColorBLACK;
 #else
+const SkColor kDefaultColorBackgroundTabText = SkColorSetRGB(64, 64, 64);
 const SkColor kDefaultColorBookmarkText = SkColorSetRGB(18, 50, 114);
 #endif
 #if defined(OS_WIN)
