@@ -226,7 +226,7 @@ drm_intel_gem_bo_tile_size(drm_intel_bufmgr_gem *bufmgr_gem, unsigned long size,
 		return ROUND_UP_TO(size, 4096);
 
 	/* Older chips need powers of two, of at least 512k or 1M */
-	if (bufmgr_gem->gen == 2) {
+	if (bufmgr_gem->gen == 3) {
 		min_size = 1024*1024;
 		max_size = 128*1024*1024;
 	} else {
