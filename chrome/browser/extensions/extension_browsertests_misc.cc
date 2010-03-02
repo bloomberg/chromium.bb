@@ -381,6 +381,37 @@ static const wchar_t* jscript_error =
     L"    \"No error\""
     L");";
 
+bool ValidatePageElement(TabContents* tab,
+                         const std::wstring& frame,
+                         const std::wstring& javascript,
+                         const std::string& expected_value) {
+  std::string returned_value;
+  std::string error;
+
+  // We are testing the actual feed sniffing + redirecting to the preview page
+  // so we can't pass the 'synchronous' test flag that we use for malformed
+  // feeds. Furthermore, the subscribe page loads resources such as the feed
+  // data asynchronously and we have no signals from the extension telling us
+  // when it is done loading resources, so we need to check and retry if we
+  // don't get the expected value.
+  int retries = 10;
+  while (retries--) {
+    if (!ui_test_utils::ExecuteJavaScriptAndExtractString(
+            tab->render_view_host(),
+            frame,
+            javascript, &returned_value))
+      return false;
+    if (expected_value == returned_value)
+      break;  // We are done.
+
+    MessageLoopForUI::current()->PostDelayedTask(
+        FROM_HERE, new MessageLoop::QuitTask(), 500);
+    ui_test_utils::RunMessageLoop();
+  }
+  EXPECT_STREQ(expected_value.c_str(), returned_value.c_str());
+  return expected_value == returned_value;
+}
+
 // Navigates to a feed page and, if |sniff_xml_type| is set, wait for the
 // extension to kick in, detect the feed and redirect to a feed preview page.
 // |sniff_xml_type| is generally set to true if the feed is sniffable and false
@@ -393,11 +424,6 @@ void NavigateToFeedAndValidate(HTTPTestServer* server,
                                const std::string& expected_item_title,
                                const std::string& expected_item_desc,
                                const std::string& expected_error) {
-  std::string feed_title;
-  std::string item_title;
-  std::string item_desc;
-  std::string error;
-
   ui_test_utils::NavigateToURL(browser,
                                GetFeedUrl(server, url, !sniff_xml_type));
 
@@ -410,43 +436,22 @@ void NavigateToFeedAndValidate(HTTPTestServer* server,
   }
 
   TabContents* tab = browser->GetSelectedTabContents();
-
-  int retries = 10;
-  while (retries--) {
-    ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-        tab->render_view_host(),
-        L"",  // Title is on the main page, all the rest is in the IFRAME.
-        jscript_feed_title, &feed_title));
-    if (expected_feed_title == feed_title)
-      break;  // We are done.
-
-    // We are testing the actual feed sniffing + redirecting to the preview page
-    // so we can't pass the 'synchronous' test flag that we use for malformed
-    // feeds. We also have no signals from the extension telling us when it is
-    // done parsing the feed, so we need to check periodically.
-    MessageLoopForUI::current()->PostDelayedTask(
-        FROM_HERE, new MessageLoop::QuitTask(), 500);
-    ui_test_utils::RunMessageLoop();
-  }
-  ASSERT_STREQ(expected_feed_title.c_str(), feed_title.c_str());
-
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-      tab->render_view_host(),
-      L"//html/body/div/iframe[1]",
-      jscript_anchor, &item_title));
-  ASSERT_STREQ(expected_item_title.c_str(), item_title.c_str());
-
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-      tab->render_view_host(),
-      L"//html/body/div/iframe[1]",
-      jscript_desc, &item_desc));
-  ASSERT_STREQ(expected_item_desc.c_str(), item_desc.c_str());
-
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-      tab->render_view_host(),
-      L"//html/body/div/iframe[1]",
-      jscript_error, &error));
-  ASSERT_STREQ(expected_error.c_str(), error.c_str());
+  ASSERT_TRUE(ValidatePageElement(tab,
+                                  L"",
+                                  jscript_feed_title,
+                                  expected_feed_title));
+  ASSERT_TRUE(ValidatePageElement(tab,
+                                  L"//html/body/div/iframe[1]",
+                                  jscript_anchor,
+                                  expected_item_title));
+  ASSERT_TRUE(ValidatePageElement(tab,
+                                  L"//html/body/div/iframe[1]",
+                                  jscript_desc,
+                                  expected_item_desc));
+  ASSERT_TRUE(ValidatePageElement(tab,
+                                  L"//html/body/div/iframe[1]",
+                                  jscript_error,
+                                  expected_error));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedValidFeed1) {
