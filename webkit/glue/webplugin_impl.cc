@@ -557,6 +557,8 @@ WebPluginImpl::RoutingStatus WebPluginImpl::RouteToFrame(
   SetReferrer(&request, referrer_flag);
 
   request.setHTTPMethod(WebString::fromUTF8(method));
+  // TODO(wtc): add a WebDocument::firstPartyForCookies method.
+  request.setFirstPartyForCookies(webframe_->top()->url());
   if (len > 0) {
     if (!SetPostData(&request, buf, len)) {
       // Uhoh - we're in trouble.  There isn't a good way
@@ -849,7 +851,7 @@ void WebPluginImpl::SetContainer(WebPluginContainer* container) {
 }
 
 void WebPluginImpl::HandleURLRequest(const char* url,
-                                     const char *method,
+                                     const char* method,
                                      const char* target,
                                      const char* buf,
                                      unsigned int len,
@@ -862,7 +864,7 @@ void WebPluginImpl::HandleURLRequest(const char* url,
 }
 
 void WebPluginImpl::HandleURLRequestInternal(const char* url,
-                                             const char *method,
+                                             const char* method,
                                              const char* target,
                                              const char* buf,
                                              unsigned int len,
@@ -952,6 +954,8 @@ bool WebPluginImpl::InitiateHTTPRequest(unsigned long resource_id,
   info.client = client;
   info.request.initialize();
   info.request.setURL(url);
+  // TODO(wtc): add a WebDocument::firstPartyForCookies method.
+  info.request.setFirstPartyForCookies(webframe_->top()->url());
   info.request.setRequestorProcessID(delegate_->GetProcessId());
   info.request.setTargetType(WebURLRequest::TargetIsObject);
   info.request.setHTTPMethod(WebString::fromUTF8(method));
