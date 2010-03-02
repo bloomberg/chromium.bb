@@ -17,3 +17,15 @@ Balloon* BalloonCollectionImpl::MakeBalloon(const Notification& notification,
   balloon->set_content_size(size);
   return balloon;
 }
+
+int BalloonCollectionImpl::Layout::InterBalloonMargin() const {
+  return 5;
+}
+
+int BalloonCollectionImpl::Layout::HorizontalEdgeMargin() const {
+  return 5;
+}
+
+int BalloonCollectionImpl::Layout::VerticalEdgeMargin() const {
+  return 5;
+}

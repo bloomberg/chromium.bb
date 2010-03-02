@@ -121,6 +121,11 @@ class BalloonCollectionImpl : public BalloonCollection {
       VERTICALLY_FROM_BOTTOM_RIGHT
     };
 
+    // Layout parameters
+    int VerticalEdgeMargin() const;
+    int HorizontalEdgeMargin() const;
+    int InterBalloonMargin() const;
+
     // Minimum and maximum size of balloon content.
     static const int kBalloonMinWidth = 300;
     static const int kBalloonMaxWidth = 300;

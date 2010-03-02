@@ -19,25 +19,15 @@ const double kPercentBalloonFillFactor = 0.7;
 // Allow at least this number of balloons on the screen.
 const int kMinAllowedBalloonCount = 2;
 
-// Margin from the edge of the work area
-const int kVerticalEdgeMargin = 5;
-const int kHorizontalEdgeMargin = 5;
-
-// Space between balloons.
-const int kInterBalloonMargin = 5;
-
 }  // namespace
 
 // static
-#if defined(OS_MACOSX)
-BalloonCollectionImpl::Layout::Placement
-    BalloonCollectionImpl::Layout::placement_ =
-        Layout::VERTICALLY_FROM_TOP_RIGHT;
-#else
+// Note that on MacOS, since the coordinate system is inverted vertically from
+// the others, this actually produces notifications coming from the TOP right,
+// which is what is desired.
 BalloonCollectionImpl::Layout::Placement
     BalloonCollectionImpl::Layout::placement_ =
         Layout::VERTICALLY_FROM_BOTTOM_RIGHT;
-#endif
 
 BalloonCollectionImpl::BalloonCollectionImpl()
     : space_change_listener_(NULL) {
@@ -153,20 +143,20 @@ gfx::Point BalloonCollectionImpl::Layout::GetLayoutOrigin() const {
   int y = 0;
   switch (placement_) {
     case HORIZONTALLY_FROM_BOTTOM_LEFT:
-      x = work_area_.x() + kHorizontalEdgeMargin;
-      y = work_area_.bottom() - kVerticalEdgeMargin;
+      x = work_area_.x() + HorizontalEdgeMargin();
+      y = work_area_.bottom() - VerticalEdgeMargin();
       break;
     case HORIZONTALLY_FROM_BOTTOM_RIGHT:
-      x = work_area_.right() - kHorizontalEdgeMargin;
-      y = work_area_.bottom() - kVerticalEdgeMargin;
+      x = work_area_.right() - HorizontalEdgeMargin();
+      y = work_area_.bottom() - VerticalEdgeMargin();
       break;
     case VERTICALLY_FROM_TOP_RIGHT:
-      x = work_area_.right() - kHorizontalEdgeMargin;
-      y = work_area_.y() + kVerticalEdgeMargin;
+      x = work_area_.right() - HorizontalEdgeMargin();
+      y = work_area_.y() + VerticalEdgeMargin();
       break;
     case VERTICALLY_FROM_BOTTOM_RIGHT:
-      x = work_area_.right() - kHorizontalEdgeMargin;
-      y = work_area_.bottom() - kVerticalEdgeMargin;
+      x = work_area_.right() - HorizontalEdgeMargin();
+      y = work_area_.bottom() - VerticalEdgeMargin();
       break;
     default:
       NOTREACHED();
@@ -187,11 +177,11 @@ gfx::Point BalloonCollectionImpl::Layout::NextPosition(
       x = position_iterator->x();
       y = position_iterator->y() - balloon_size.height();
       position_iterator->set_x(position_iterator->x() + balloon_size.width() +
-                               kInterBalloonMargin);
+                               InterBalloonMargin());
       break;
     case HORIZONTALLY_FROM_BOTTOM_RIGHT:
       position_iterator->set_x(position_iterator->x() - balloon_size.width() -
-                               kInterBalloonMargin);
+                               InterBalloonMargin());
       x = position_iterator->x();
       y = position_iterator->y() - balloon_size.height();
       break;
@@ -199,11 +189,11 @@ gfx::Point BalloonCollectionImpl::Layout::NextPosition(
       x = position_iterator->x() - balloon_size.width();
       y = position_iterator->y();
       position_iterator->set_y(position_iterator->y() + balloon_size.height() +
-                               kInterBalloonMargin);
+                               InterBalloonMargin());
       break;
     case VERTICALLY_FROM_BOTTOM_RIGHT:
       position_iterator->set_y(position_iterator->y() - balloon_size.height() -
-                               kInterBalloonMargin);
+                               InterBalloonMargin());
       x = position_iterator->x() - balloon_size.width();
       y = position_iterator->y();
       break;

@@ -16,3 +16,14 @@ Balloon* BalloonCollectionImpl::MakeBalloon(const Notification& notification,
   return balloon;
 }
 
+int BalloonCollectionImpl::Layout::InterBalloonMargin() const {
+  return 5;
+}
+
+int BalloonCollectionImpl::Layout::HorizontalEdgeMargin() const {
+  return 5;
+}
+
+int BalloonCollectionImpl::Layout::VerticalEdgeMargin() const {
+  return 18;
+}
