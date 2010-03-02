@@ -539,6 +539,7 @@ var rootsDiv = null;
 var currentlySelectedItems = new Array();
 var currentlySelectedPaths = new Array();
 var multiSelect = false;
+var selectFolder = false;
 var inSaveMode = false;
 var currentMenu = null;
 var mainColumn = null;
@@ -975,12 +976,18 @@ function load() {
       var args = JSON.parse(chrome.dialogArguments);
       if (args.type == 'open') {
         multiSelect = false;
+        selectFolder = false;
       } else if (args.type == 'save') {
         inSaveMode = true;
+        selectFolder = false;
       } else if (args.type == 'open_multiple') {
         multiSelect = true;
+        selectFolder = false;
+      } else if (args.type == 'folder') {
+        multiSelect = false;
+        selectFolder = true;
       } else {
-        alert ('got unknown type');
+        alert ('got unknown type' + args.type);
       }
       inSelectMode = true;
       if (inSaveMode) {
@@ -1094,6 +1101,10 @@ function descend(path, nodeNumber) {
   }
   jumpToNode(nodeNumber);
   currentNode++;
+  if (selectFolder) {
+    currentlySelectedPaths = [];
+    currentlySelectedPaths.push(path);
+  }
   pathArray.push(path);
   getDataForPath(path);
 };
@@ -1218,6 +1229,8 @@ function selectItem(elementid, path) {
       for (var x = 0; x < currentlySelectedItems.length; x++) {
         currentlySelectedItems[x].className = 'filebrowserow';
       }
+      currentlySelectedItems = [];
+      currentlySelectedPaths = [];
     }
     element.className = 'selected filebrowserow';
     currentlySelectedItems.push(element);
