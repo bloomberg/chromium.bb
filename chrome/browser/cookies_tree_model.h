@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "app/tree_node_model.h"
+#include "base/observer_list.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/browsing_data_appcache_helper.h"
 #include "chrome/browser/browsing_data_database_helper.h"
@@ -344,6 +345,17 @@ class CookieTreeLocalStoragesNode : public CookieTreeNode {
 
 class CookiesTreeModel : public TreeNodeModel<CookieTreeNode> {
  public:
+  // Because non-cookie nodes are fetched in a background thread, they are not
+  // present at the time the Model is created. The Model then notifies its
+  // observers for every item added from databases, local storage, and
+  // appcache. We extend the Observer interface to add notifications before and
+  // after these batch inserts.
+  class Observer : public TreeModelObserver {
+   public:
+    virtual void TreeModelBeginBatch(CookiesTreeModel* model) {}
+    virtual void TreeModelEndBatch(CookiesTreeModel* model) {}
+  };
+
   CookiesTreeModel(
       Profile* profile,
       BrowsingDataDatabaseHelper* database_helper,
@@ -367,6 +379,16 @@ class CookiesTreeModel : public TreeNodeModel<CookieTreeNode> {
 
   // Filter the origins to only display matched results.
   void UpdateSearchResults(const std::wstring& filter);
+
+  // Overload the Add/Remove observer methods so we can notify about
+  // CookiesTreeModel-specific things. Note that this is NOT overriding the
+  // method by the same name in TreeNodeModel because the argument type is
+  // different. Therefore, if this AddObserver(TreeModelObserver*) is called,
+  // the observer will NOT be notified about batching. This is also why we
+  // maintain a separate list of observers that are specifically Observer*
+  // objects.
+  virtual void AddObserver(Observer* observer);
+  virtual void RemoveObserver(Observer* observer);
 
  private:
   enum CookieIconIndex {
@@ -396,6 +418,9 @@ class CookiesTreeModel : public TreeNodeModel<CookieTreeNode> {
 
   std::wstring FormExtensionNodeName(const std::string& extension_id);
 
+  void NotifyObserverBeginBatch();
+  void NotifyObserverEndBatch();
+
   // The profile from which this model sources cookies.
   Profile* profile_;
   CookieList all_cookies_;
@@ -406,6 +431,15 @@ class CookiesTreeModel : public TreeNodeModel<CookieTreeNode> {
 
   scoped_refptr<BrowsingDataLocalStorageHelper> local_storage_helper_;
   LocalStorageInfoList local_storage_info_list_;
+
+  // The CookiesTreeModel maintains a separate list of observers that are
+  // specifically of the type CookiesTreeModel::Observer.
+  ObserverList<Observer> cookies_observer_list_;
+
+  // If this is non-zero, then this model is batching updates (there's a lot of
+  // notifications coming down the pipe). This is an integer is used to balance
+  // calls to Begin/EndBatch() if they're called in a nested manner.
+  int batch_update_;
 
   friend class CookieTreeAppCacheNode;
   friend class CookieTreeCookieNode;

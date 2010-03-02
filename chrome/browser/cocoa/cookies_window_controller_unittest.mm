@@ -345,7 +345,7 @@ TEST_F(CookiesWindowControllerTest, TreeNodeChanged) {
   EXPECT_TRUE([@"Silly Change" isEqualToString:[cocoa_node title]]);
 }
 
-TEST_F(CookiesWindowControllerTest, TestDeleteCookie) {
+TEST_F(CookiesWindowControllerTest, DeleteCookie) {
   const GURL url = GURL("http://foo.com");
   TestingProfile* profile = browser_helper_.profile();
   net::CookieMonster* cm = profile->GetCookieMonster();
@@ -379,7 +379,7 @@ TEST_F(CookiesWindowControllerTest, TestDeleteCookie) {
   [controller closeSheet:nil];
 }
 
-TEST_F(CookiesWindowControllerTest, TestDidExpandItem) {
+TEST_F(CookiesWindowControllerTest, DidExpandItem) {
   const GURL url = GURL("http://foo.com");
   TestingProfile* profile = browser_helper_.profile();
   net::CookieMonster* cm = profile->GetCookieMonster();

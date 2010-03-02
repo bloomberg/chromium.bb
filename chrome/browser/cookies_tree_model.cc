@@ -301,7 +301,8 @@ CookiesTreeModel::CookiesTreeModel(
       profile_(profile),
       appcache_helper_(appcache_helper),
       database_helper_(database_helper),
-      local_storage_helper_(local_storage_helper) {
+      local_storage_helper_(local_storage_helper),
+      batch_update_(0) {
   LoadCookies();
   DCHECK(database_helper_);
   database_helper_->StartFetching(NewCallback(
@@ -395,12 +396,14 @@ void CookiesTreeModel::LoadCookiesWithFilter(const std::wstring& filter) {
 }
 
 void CookiesTreeModel::DeleteAllStoredObjects() {
+  NotifyObserverBeginBatch();
   CookieTreeNode* root = GetRoot();
   root->DeleteStoredObjects();
   int num_children = root->GetChildCount();
   for (int i = num_children - 1; i >= 0; --i)
     delete Remove(root, i);
   NotifyObserverTreeNodeChanged(root);
+  NotifyObserverEndBatch();
 }
 
 void CookiesTreeModel::DeleteCookieNode(CookieTreeNode* cookie_node) {
@@ -414,6 +417,7 @@ void CookiesTreeModel::DeleteCookieNode(CookieTreeNode* cookie_node) {
 void CookiesTreeModel::UpdateSearchResults(const std::wstring& filter) {
   CookieTreeNode* root = GetRoot();
   int num_children = root->GetChildCount();
+  NotifyObserverBeginBatch();
   for (int i = num_children - 1; i >= 0; --i)
     delete Remove(root, i);
   LoadCookiesWithFilter(filter);
@@ -421,6 +425,19 @@ void CookiesTreeModel::UpdateSearchResults(const std::wstring& filter) {
   PopulateLocalStorageInfoWithFilter(filter);
   PopulateAppCacheInfoWithFilter(filter);
   NotifyObserverTreeNodeChanged(root);
+  NotifyObserverEndBatch();
+}
+
+void CookiesTreeModel::AddObserver(Observer* observer) {
+  cookies_observer_list_.AddObserver(observer);
+  // Call super so that TreeNodeModel can notify, too.
+  TreeNodeModel<CookieTreeNode>::AddObserver(observer);
+}
+
+void CookiesTreeModel::RemoveObserver(Observer* observer) {
+  cookies_observer_list_.RemoveObserver(observer);
+  // Call super so that TreeNodeModel doesn't have dead pointers.
+  TreeNodeModel<CookieTreeNode>::RemoveObserver(observer);
 }
 
 void CookiesTreeModel::OnAppCacheModelInfoLoaded() {
@@ -432,6 +449,7 @@ void CookiesTreeModel::PopulateAppCacheInfoWithFilter(
   if (!appcache_helper_ || appcache_helper_->info_list().empty())
     return;
   CookieTreeRootNode* root = static_cast<CookieTreeRootNode*>(GetRoot());
+  NotifyObserverBeginBatch();
   for (AppCacheInfoList::const_iterator info =
            appcache_helper_->info_list().begin();
        info != appcache_helper_->info_list().end(); ++info) {
@@ -447,6 +465,7 @@ void CookiesTreeModel::PopulateAppCacheInfoWithFilter(
     }
   }
   NotifyObserverTreeNodeChanged(root);
+  NotifyObserverEndBatch();
 }
 
 void CookiesTreeModel::OnDatabaseModelInfoLoaded(
@@ -460,6 +479,7 @@ void CookiesTreeModel::PopulateDatabaseInfoWithFilter(
   if (database_info_list_.empty())
     return;
   CookieTreeRootNode* root = static_cast<CookieTreeRootNode*>(GetRoot());
+  NotifyObserverBeginBatch();
   for (DatabaseInfoList::iterator database_info = database_info_list_.begin();
        database_info != database_info_list_.end();
        ++database_info) {
@@ -483,6 +503,7 @@ void CookiesTreeModel::PopulateDatabaseInfoWithFilter(
     }
   }
   NotifyObserverTreeNodeChanged(root);
+  NotifyObserverEndBatch();
 }
 
 void CookiesTreeModel::OnStorageModelInfoLoaded(
@@ -496,6 +517,7 @@ void CookiesTreeModel::PopulateLocalStorageInfoWithFilter(
   if (local_storage_info_list_.empty())
     return;
   CookieTreeRootNode* root = static_cast<CookieTreeRootNode*>(GetRoot());
+  NotifyObserverBeginBatch();
   for (LocalStorageInfoList::iterator local_storage_info =
        local_storage_info_list_.begin();
        local_storage_info != local_storage_info_list_.end();
@@ -520,6 +542,26 @@ void CookiesTreeModel::PopulateLocalStorageInfoWithFilter(
     }
   }
   NotifyObserverTreeNodeChanged(root);
+  NotifyObserverEndBatch();
+}
+
+void CookiesTreeModel::NotifyObserverBeginBatch() {
+  // Only notify the model once if we're batching in a nested manner.
+  if (batch_update_++ == 0) {
+    FOR_EACH_OBSERVER(Observer,
+                      cookies_observer_list_,
+                      TreeModelBeginBatch(this));
+  }
+}
+
+void CookiesTreeModel::NotifyObserverEndBatch() {
+  // Only notify the observers if this is the outermost call to EndBatch() if
+  // called in a nested manner.
+  if (--batch_update_ == 0) {
+    FOR_EACH_OBSERVER(Observer,
+                      cookies_observer_list_,
+                      TreeModelEndBatch(this));
+  }
 }
 
 std::wstring CookiesTreeModel::FormExtensionNodeName(

@@ -21,7 +21,7 @@ class CookiesWindowControllerTest;
 
 // Thin bridge to the window controller that performs model update actions
 // directly on the treeController_.
-class CookiesTreeModelObserverBridge : public TreeModelObserver {
+class CookiesTreeModelObserverBridge : public CookiesTreeModel::Observer {
  public:
   explicit CookiesTreeModelObserverBridge(CookiesWindowController* controller);
 
@@ -45,6 +45,9 @@ class CookiesTreeModelObserverBridge : public TreeModelObserver {
   // Notification that the contents of a node has changed.
   virtual void TreeNodeChanged(TreeModel* model, TreeModelNode* node);
 
+  virtual void TreeModelBeginBatch(CookiesTreeModel* model);
+  virtual void TreeModelEndBatch(CookiesTreeModel* model);
+
   // Invalidates the Cocoa model. This is used to tear down the Cocoa model
   // when we're about to entirely rebuild it.
   void InvalidateCocoaModel();
@@ -66,6 +69,11 @@ class CookiesTreeModelObserverBridge : public TreeModelObserver {
   bool HasCocoaModel();
 
   CookiesWindowController* window_controller_;  // weak, owns us.
+
+  // If this is true, then the Model has informed us that it is batching
+  // updates. Rather than updating the Cocoa side of the model, we ignore those
+  // small changes and rebuild once at the end.
+  bool batch_update_;
 };
 
 // Controller for the cookies manager. This class stores an internal copy of

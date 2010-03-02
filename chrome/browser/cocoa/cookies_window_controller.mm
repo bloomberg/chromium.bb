@@ -4,6 +4,7 @@
 
 #import "chrome/browser/cocoa/cookies_window_controller.h"
 
+#include <queue>
 #include <vector>
 
 #include "app/l10n_util_mac.h"
@@ -25,7 +26,8 @@ static NSString* const kCocoaTreeModel = @"cocoaTreeModel";
 
 CookiesTreeModelObserverBridge::CookiesTreeModelObserverBridge(
     CookiesWindowController* controller)
-    : window_controller_(controller) {
+    : window_controller_(controller),
+      batch_update_(false) {
 }
 
 // Notification that nodes were added to the specified parent.
@@ -34,7 +36,7 @@ void CookiesTreeModelObserverBridge::TreeNodesAdded(TreeModel* model,
                                                     int start,
                                                     int count) {
   // We're in for a major rebuild. Ignore this request.
-  if (!HasCocoaModel())
+  if (batch_update_ || !HasCocoaModel())
     return;
 
   CocoaCookieTreeNode* cocoa_parent = FindCocoaNode(parent, nil);
@@ -56,7 +58,7 @@ void CookiesTreeModelObserverBridge::TreeNodesRemoved(TreeModel* model,
                                                       int start,
                                                       int count) {
   // We're in for a major rebuild. Ignore this request.
-  if (!HasCocoaModel())
+  if (batch_update_ || !HasCocoaModel())
     return;
 
   CocoaCookieTreeNode* cocoa_parent = FindCocoaNode(parent, nil);
@@ -73,7 +75,7 @@ void CookiesTreeModelObserverBridge::TreeNodesRemoved(TreeModel* model,
 void CookiesTreeModelObserverBridge::TreeNodeChildrenReordered(TreeModel* model,
     TreeModelNode* parent) {
   // We're in for a major rebuild. Ignore this request.
-  if (!HasCocoaModel())
+  if (batch_update_ || !HasCocoaModel())
     return;
 
   CocoaCookieTreeNode* cocoa_parent = FindCocoaNode(parent, nil);
@@ -101,7 +103,7 @@ void CookiesTreeModelObserverBridge::TreeNodeChildrenReordered(TreeModel* model,
 void CookiesTreeModelObserverBridge::TreeNodeChanged(TreeModel* model,
                                                      TreeModelNode* node) {
   // If we don't have a Cocoa model, only let the root node change.
-  if (!HasCocoaModel() && model->GetRoot() != node)
+  if (batch_update_ || (!HasCocoaModel() && model->GetRoot() != node))
     return;
 
   if (HasCocoaModel()) {
@@ -116,6 +118,19 @@ void CookiesTreeModelObserverBridge::TreeNodeChanged(TreeModel* model,
   }
 }
 
+void CookiesTreeModelObserverBridge::TreeModelBeginBatch(
+    CookiesTreeModel* model) {
+  batch_update_ = true;
+}
+
+void CookiesTreeModelObserverBridge::TreeModelEndBatch(
+    CookiesTreeModel* model) {
+  DCHECK(batch_update_);
+  CocoaCookieTreeNode* root = CocoaNodeFromTreeNode(model->GetRoot());
+  [window_controller_ setCocoaTreeModel:root];
+  batch_update_ = false;
+}
+
 void CookiesTreeModelObserverBridge::InvalidateCocoaModel() {
   [[[window_controller_ cocoaTreeModel] mutableChildren] removeAllObjects];
 }
@@ -126,27 +141,41 @@ CocoaCookieTreeNode* CookiesTreeModelObserverBridge::CocoaNodeFromTreeNode(
   return [[[CocoaCookieTreeNode alloc] initWithNode:cookie_node] autorelease];
 }
 
-// Does a pre-order traversal on the tree to find |node|.
+// Does breadth-first search on the tree to find |node|. This method is most
+// commonly used to find origin/folder nodes, which are at the first level off
+// the root (hence breadth-first search).
 CocoaCookieTreeNode* CookiesTreeModelObserverBridge::FindCocoaNode(
-    TreeModelNode* node, CocoaCookieTreeNode* start) {
+    TreeModelNode* target, CocoaCookieTreeNode* start) {
   if (!start) {
     start = [window_controller_ cocoaTreeModel];
   }
-  if ([start treeNode] == node) {
+  if ([start treeNode] == target) {
     return start;
   }
 
-  NSArray* children = [start children];
-  for (CocoaCookieTreeNode* child in children) {
-    if ([child treeNode] == node) {
-      return child;
-    }
+  // Enqueue the root node of the search (sub-)tree.
+  std::queue<CocoaCookieTreeNode*> horizon;
+  horizon.push(start);
 
-    // Search the children. Return the result if we find one.
-    CocoaCookieTreeNode* recurse = FindCocoaNode(node, child);
-    if (recurse)
-      return recurse;
+  // Loop until we've looked at every node or we found the target.
+  while (!horizon.empty()) {
+    // Dequeue the item at the front.
+    CocoaCookieTreeNode* node = horizon.front();
+    horizon.pop();
+
+    // If this is the droid we're looking for, report it.
+    if ([node treeNode] == target)
+      return node;
+
+    // "Move along, move along." by adding all child nodes to the queue.
+    if (![node isLeaf]) {
+      NSArray* children = [node children];
+      for (CocoaCookieTreeNode* child in children) {
+        horizon.push(child);
+      }
+    }
   }
+
   return nil;  // We couldn't find the node.
 }
 

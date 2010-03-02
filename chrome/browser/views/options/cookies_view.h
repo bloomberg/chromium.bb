@@ -9,6 +9,7 @@
 
 #include "app/tree_model.h"
 #include "base/task.h"
+#include "chrome/browser/cookies_tree_model.h"
 #include "net/base/cookie_monster.h"
 #include "views/controls/button/button.h"
 #include "views/controls/tree/tree_view.h"
@@ -27,7 +28,6 @@ class NativeButton;
 
 class AppCacheInfoView;
 class CookieInfoView;
-class CookiesTreeModel;
 class CookiesTreeView;
 class DatabaseInfoView;
 class LocalStorageInfoView;
@@ -35,7 +35,7 @@ class Profile;
 class Timer;
 
 
-class CookiesView : public TreeModelObserver,
+class CookiesView : public CookiesTreeModel::Observer,
                     public views::View,
                     public views::DialogDelegate,
                     public views::ButtonListener,
