@@ -705,7 +705,7 @@ VerifyResult SyncerUtil::VerifyUpdateConsistency(
       } else {
         LOG(ERROR) << "Server update doesn't agree with previous updates. ";
         LOG(ERROR) << " Entry: " << *same_id;
-        LOG(ERROR) << " Update: " << SyncEntityDebugString(entry);
+        LOG(ERROR) << " Update: " << SyncerProtoUtil::SyncEntityDebugString(entry);
         return VERIFY_FAIL;
       }
     }
@@ -731,7 +731,7 @@ VerifyResult SyncerUtil::VerifyUpdateConsistency(
         model_type != same_id->GetModelType()) {
       LOG(ERROR) << "Server update doesn't agree with committed item. ";
       LOG(ERROR) << " Entry: " << *same_id;
-      LOG(ERROR) << " Update: " << SyncEntityDebugString(entry);
+      LOG(ERROR) << " Update: " << SyncerProtoUtil::SyncEntityDebugString(entry);
       return VERIFY_FAIL;
     }
     if (same_id->Get(BASE_VERSION) == entry.version() &&
@@ -741,13 +741,13 @@ VerifyResult SyncerUtil::VerifyUpdateConsistency(
       // fail the verification and deal with it when we ApplyUpdates.
       LOG(ERROR) << "Server update doesn't match local data with same "
           "version. A bug should be filed. Entry: " << *same_id <<
-          "Update: " << SyncEntityDebugString(entry);
+          "Update: " << SyncerProtoUtil::SyncEntityDebugString(entry);
       return VERIFY_FAIL;
     }
     if (same_id->Get(SERVER_VERSION) > entry.version()) {
       LOG(WARNING) << "We've already seen a more recent update from the server";
       LOG(WARNING) << " Entry: " << *same_id;
-      LOG(WARNING) << " Update: " << SyncEntityDebugString(entry);
+      LOG(WARNING) << " Update: " << SyncerProtoUtil::SyncEntityDebugString(entry);
       return VERIFY_SKIP;
     }
   }
@@ -762,7 +762,7 @@ VerifyResult SyncerUtil::VerifyUndelete(syncable::WriteTransaction* trans,
                                         syncable::MutableEntry* same_id) {
   CHECK(same_id->good());
   LOG(INFO) << "Server update is attempting undelete. " << *same_id
-            << "Update:" << SyncEntityDebugString(entry);
+            << "Update:" << SyncerProtoUtil::SyncEntityDebugString(entry);
   // Move the old one aside and start over.  It's too tricky to get the old one
   // back into a state that would pass CheckTreeInvariants().
   if (same_id->Get(IS_DEL)) {
@@ -774,7 +774,7 @@ VerifyResult SyncerUtil::VerifyUndelete(syncable::WriteTransaction* trans,
   }
   if (entry.version() < same_id->Get(SERVER_VERSION)) {
     LOG(WARNING) << "Update older than current server version for" <<
-        *same_id << "Update:" << SyncEntityDebugString(entry);
+        *same_id << "Update:" << SyncerProtoUtil::SyncEntityDebugString(entry);
     return VERIFY_SUCCESS;  // Expected in new sync protocol.
   }
   return VERIFY_UNDECIDED;

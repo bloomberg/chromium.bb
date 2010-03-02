@@ -61,6 +61,9 @@ void DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
       &update_response,
       session);
 
+  DLOG(INFO) << SyncerProtoUtil::ClientToServerResponseDebugString(
+      update_response);
+
   StatusController* status = session->status_controller();
   if (!ok) {
     status->increment_num_consecutive_errors();

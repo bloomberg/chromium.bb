@@ -201,10 +201,6 @@ bool SortedCollectionsIntersect(Iterator1 begin1, Iterator1 end1,
 void CopyServerFields(syncable::Entry* src, syncable::MutableEntry* dest);
 void ClearServerData(syncable::MutableEntry* entry);
 
-// Get update contents as a string. Intended for logging, and intended
-// to have a smaller footprint than the protobuf's built-in pretty printer.
-std::string SyncEntityDebugString(const sync_pb::SyncEntity& entry);
-
 }  // namespace browser_sync
 
 #endif  // CHROME_BROWSER_SYNC_ENGINE_SYNCER_H_

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync/engine/syncer_proto_util.h"
 
+#include "base/format_macros.h"
+#include "base/string_util.h"
 #include "chrome/browser/sync/engine/auth_watcher.h"
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
 #include "chrome/browser/sync/engine/syncer.h"
@@ -303,6 +305,46 @@ const std::string& SyncerProtoUtil::NameFromCommitEntryResponse(
   }
 
   return entry.name();
+}
+
+std::string SyncerProtoUtil::SyncEntityDebugString(
+    const sync_pb::SyncEntity& entry) {
+  return StringPrintf("id: %s, parent_id: %s, "
+                      "version: %"PRId64"d, "
+                      "mtime: %" PRId64"d (client: %" PRId64"d), "
+                      "ctime: %" PRId64"d (client: %" PRId64"d), "
+                      "name: %s, sync_timestamp: %" PRId64"d, "
+                      "%s ",
+                      entry.id_string().c_str(),
+                      entry.parent_id_string().c_str(),
+                      entry.version(),
+                      entry.mtime(), ServerTimeToClientTime(entry.mtime()),
+                      entry.ctime(), ServerTimeToClientTime(entry.ctime()),
+                      entry.name().c_str(), entry.sync_timestamp(),
+                      entry.deleted() ? "deleted, ":"");
+}
+
+namespace {
+std::string GetUpdatesResponseString(
+    const sync_pb::GetUpdatesResponse& response) {
+  std::string output;
+  output.append("GetUpdatesResponse:\n");
+  for (int i = 0; i < response.entries_size(); i++) {
+    output.append(SyncerProtoUtil::SyncEntityDebugString(response.entries(i)));
+    output.append("\n");
+  }
+  return output;
+}
+}  // namespace
+
+std::string SyncerProtoUtil::ClientToServerResponseDebugString(
+    const sync_pb::ClientToServerResponse& response) {
+  // Add more handlers as needed.
+  std::string output;
+  if (response.has_get_updates()) {
+    output.append(GetUpdatesResponseString(response.get_updates()));
+  }
+  return output;
 }
 
 }  // namespace browser_sync

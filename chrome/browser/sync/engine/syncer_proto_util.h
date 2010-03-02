@@ -79,6 +79,14 @@ class SyncerProtoUtil {
   static void AddToEntitySpecificDatatypesFilter(syncable::ModelType datatype,
       sync_pb::EntitySpecifics* filter);
 
+  // Get a debug string representation of the client to server response.
+  static std::string ClientToServerResponseDebugString(
+      const sync_pb::ClientToServerResponse& response);
+
+  // Get update contents as a string. Intended for logging, and intended
+  // to have a smaller footprint than the protobuf's built-in pretty printer.
+  static std::string SyncEntityDebugString(const sync_pb::SyncEntity& entry);
+
  private:
   SyncerProtoUtil() {}
 

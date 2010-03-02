@@ -4,7 +4,6 @@
 
 #include "chrome/browser/sync/engine/syncer.h"
 
-#include "base/format_macros.h"
 #include "base/message_loop.h"
 #include "base/time.h"
 #include "chrome/browser/chrome_thread.h"
@@ -308,22 +307,6 @@ void ClearServerData(syncable::MutableEntry* entry) {
   entry->Put(IS_UNAPPLIED_UPDATE, false);
   entry->Put(SERVER_SPECIFICS, sync_pb::EntitySpecifics::default_instance());
   entry->Put(SERVER_POSITION_IN_PARENT, 0);
-}
-
-std::string SyncEntityDebugString(const sync_pb::SyncEntity& entry) {
-  return StringPrintf("id: %s, parent_id: %s, "
-                      "version: %"PRId64"d, "
-                      "mtime: %" PRId64"d (client: %" PRId64"d), "
-                      "ctime: %" PRId64"d (client: %" PRId64"d), "
-                      "name: %s, sync_timestamp: %" PRId64"d, "
-                      "%s ",
-                      entry.id_string().c_str(),
-                      entry.parent_id_string().c_str(),
-                      entry.version(),
-                      entry.mtime(), ServerTimeToClientTime(entry.mtime()),
-                      entry.ctime(), ServerTimeToClientTime(entry.ctime()),
-                      entry.name().c_str(), entry.sync_timestamp(),
-                      entry.deleted() ? "deleted, ":"");
 }
 
 }  // namespace browser_sync
