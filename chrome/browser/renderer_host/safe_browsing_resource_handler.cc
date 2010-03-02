@@ -90,7 +90,7 @@ void SafeBrowsingResourceHandler::OnCheckUrlTimeout() {
   CHECK(state_ == STATE_CHECKING_URL);
   CHECK(defer_state_ != DEFERRED_NONE);
   safe_browsing_->CancelCheck(this);
-  OnUrlCheckResult(GURL(), SafeBrowsingService::URL_SAFE);
+  OnUrlCheckResult(deferred_url_, SafeBrowsingService::URL_SAFE);
 }
 
 bool SafeBrowsingResourceHandler::OnWillStart(int request_id,
@@ -147,7 +147,8 @@ void SafeBrowsingResourceHandler::OnUrlCheckResult(
     const GURL& url, SafeBrowsingService::UrlCheckResult result) {
   CHECK(state_ == STATE_CHECKING_URL);
   CHECK(defer_state_ != DEFERRED_NONE);
-  CHECK(url == deferred_url_);
+  CHECK(url == deferred_url_) << "Was expecting: " << deferred_url_
+                              << " but got: " << url;
 
   timer_.Stop();  // Cancel the timeout timer.
   safe_browsing_result_ = result;
