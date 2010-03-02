@@ -20,7 +20,7 @@ import http_server_base
 import path_utils
 
 # So we can import httpd_utils below to make ui_tests happy.
-sys.path.append(path_utils.path_from_base('tools', 'python'))
+sys.path.insert(0, path_utils.path_from_base('tools', 'python'))
 import google.httpd_utils
 
 

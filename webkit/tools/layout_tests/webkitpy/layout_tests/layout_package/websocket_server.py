@@ -19,7 +19,7 @@ import platform_utils
 import http_server
 
 # So we can import httpd_utils below to make ui_tests happy.
-sys.path.append(path_utils.path_from_base('tools', 'python'))
+sys.path.insert(0, path_utils.path_from_base('tools', 'python'))
 import google.httpd_utils
 
 _WS_LOG_PREFIX = 'pywebsocket.ws.log-'
