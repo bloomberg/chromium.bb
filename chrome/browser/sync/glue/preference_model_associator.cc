@@ -28,6 +28,7 @@ PreferenceModelAssociator::PreferenceModelAssociator(
   synced_preferences_.insert(prefs::kRestoreOnStartup);
   synced_preferences_.insert(prefs::kURLsToRestoreOnStartup);
   synced_preferences_.insert(prefs::kShowBookmarkBar);
+  synced_preferences_.insert(prefs::kShowHomeButton);
 }
 
 bool PreferenceModelAssociator::AssociateModels() {
