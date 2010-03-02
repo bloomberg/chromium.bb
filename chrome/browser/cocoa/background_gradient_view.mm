@@ -35,11 +35,10 @@
   BOOL isKey = [[self window] isKeyWindow];
   ThemeProvider* themeProvider = [[self window] themeProvider];
   if (themeProvider) {
-    NSImage* backgroundImage =
-        themeProvider->GetNSImageNamed(IDR_THEME_TOOLBAR, false);
-    if (backgroundImage) {
-      NSColor* color = [NSColor colorWithPatternImage:backgroundImage];
-      [color set];
+    NSColor* backgroundImageColor =
+        themeProvider->GetNSImageColorNamed(IDR_THEME_TOOLBAR, false);
+    if (backgroundImageColor) {
+      [backgroundImageColor set];
       NSRectFill([self bounds]);
     } else {
       CGFloat winHeight = NSHeight([[self window] frame]);

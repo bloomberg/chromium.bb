@@ -98,6 +98,9 @@ class FakeTheme : public ThemeProvider {
   virtual NSImage* GetNSImageNamed(int id, bool allow_default) const {
     return nil;
   }
+  virtual NSColor* GetNSImageColorNamed(int id, bool allow_default) const {
+    return nil;
+  }
   virtual NSColor* GetNSColor(int id, bool allow_default) const {
     return color_.get();
   }

@@ -77,6 +77,10 @@ class ThemeProvider {
   // this function will return nil.
   virtual NSImage* GetNSImageNamed(int id, bool allow_default) const = 0;
 
+  // Gets the NSImage that GetNSImageNamed (above) would return, but returns it
+  // as a pattern color.
+  virtual NSColor* GetNSImageColorNamed(int id, bool allow_default) const = 0;
+
   // Gets the NSColor with the specified |id|.
   //
   // The color is not assumed to exist. If a theme does not provide an color, if

@@ -26,15 +26,14 @@
   if (!themeProvider)
     return;
 
-  NSImage* backgroundImage = themeProvider->GetNSImageNamed(IDR_THEME_TOOLBAR,
-                                                            false);
-  if (backgroundImage) {
+  NSColor* backgroundImageColor =
+      themeProvider->GetNSImageColorNamed(IDR_THEME_TOOLBAR, false);
+  if (backgroundImageColor) {
     // We want our backgrounds for the shelf to be phased from the upper
     // left hand corner of the view.
     NSPoint phase = NSMakePoint(0, NSHeight([self bounds]));
     [[NSGraphicsContext currentContext] setPatternPhase:phase];
-    NSColor* color = [NSColor colorWithPatternImage:backgroundImage];
-    [color set];
+    [backgroundImageColor set];
     NSRectFill([self bounds]);
   } else {
     NSGradient* gradient = themeProvider->GetNSGradient(

@@ -137,7 +137,7 @@
   BOOL incognito = [[view window] themeIsIncognito];
 
   // Find a theme image.
-  NSImage* themeImage = nil;
+  NSColor* themeImageColor = nil;
   int themeImageID;
   if (active && incognito)
     themeImageID = IDR_THEME_FRAME_INCOGNITO;
@@ -148,19 +148,17 @@
   else
     themeImageID = IDR_THEME_FRAME_INACTIVE;
   if (themeProvider->HasCustomImage(IDR_THEME_FRAME))
-    themeImage = themeProvider->GetNSImageNamed(themeImageID, true);
+    themeImageColor = themeProvider->GetNSImageColorNamed(themeImageID, true);
 
   // If no theme image, use a gradient if incognito.
   NSGradient* gradient = nil;
-  if (!themeImage && incognito)
+  if (!themeImageColor && incognito)
     gradient = themeProvider->GetNSGradient(
         active ? BrowserThemeProvider::GRADIENT_FRAME_INCOGNITO :
                  BrowserThemeProvider::GRADIENT_FRAME_INCOGNITO_INACTIVE);
 
   BOOL themed = NO;
-  if (themeImage) {
-    NSColor* themeImageColor = [NSColor colorWithPatternImage:themeImage];
-
+  if (themeImageColor) {
     // The titlebar/tabstrip header on the mac is slightly smaller than on
     // Windows.  To keep the window background lined up with the tab and toolbar
     // patterns, we have to shift the pattern slightly, rather than simply

@@ -73,6 +73,32 @@ NSImage* BrowserThemeProvider::GetNSImageNamed(int id,
   return empty_image;
 }
 
+NSColor* BrowserThemeProvider::GetNSImageColorNamed(int id,
+                                                    bool allow_default) const {
+  DCHECK(CalledOnValidThread());
+
+  // Check to see if we already have the color in the cache.
+  NSColorMap::const_iterator nscolor_iter = nscolor_cache_.find(id);
+  if (nscolor_iter != nscolor_cache_.end()) {
+    bool cached_is_default = nscolor_iter->second.second;
+    if (!cached_is_default || allow_default)
+      return nscolor_iter->second.first;
+  }
+
+  NSImage* image = GetNSImageNamed(id, allow_default);
+  if (!image)
+    return nil;
+  NSColor* image_color = [NSColor colorWithPatternImage:image];
+
+  // We loaded successfully.  Cache the color.
+  if (image_color) {
+    nscolor_cache_[id] = std::make_pair([image_color retain],
+                                        !HasCustomImage(id));
+  }
+
+  return imageColor;
+}
+
 NSColor* BrowserThemeProvider::GetNSColor(int id,
                                           bool allow_default) const {
   DCHECK(CalledOnValidThread());

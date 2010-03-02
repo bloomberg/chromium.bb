@@ -191,19 +191,20 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
   // button background image, but the modest gradient used for themed buttons.
   // To make things even more modest, scale the hover alpha down by 40 percent
   // unless clicked.
-  NSImage* backgroundImage;
+  NSColor* backgroundImageColor;
   BOOL useThemeGradient;
   if (isFlatButton) {
-    backgroundImage = nil;
+    backgroundImageColor = nil;
     useThemeGradient = YES;
     if (!showClickedGradient)
       hoverAlpha *= 0.6;
   } else {
-    backgroundImage =
+    backgroundImageColor =
         themeProvider ?
-          themeProvider->GetNSImageNamed(IDR_THEME_BUTTON_BACKGROUND, false) :
+          themeProvider->GetNSImageColorNamed(IDR_THEME_BUTTON_BACKGROUND,
+                                              false) :
           nil;
-    useThemeGradient = backgroundImage ? YES : NO;
+    useThemeGradient = backgroundImageColor ? YES : NO;
   }
 
   // The basic gradient shown inside; see above.
@@ -218,9 +219,8 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
 
   // If we're drawing a background image, show that; else possibly show the
   // clicked gradient.
-  if (backgroundImage) {
-    NSColor* patternColor = [NSColor colorWithPatternImage:backgroundImage];
-    [patternColor set];
+  if (backgroundImageColor) {
+    [backgroundImageColor set];
     // Set the phase to match window.
     // TODO(avi) http://crbug.com/36485; base != window
     NSRect trueRect = [controlView convertRectToBase:cellFrame];

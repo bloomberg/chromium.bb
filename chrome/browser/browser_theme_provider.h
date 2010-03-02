@@ -134,6 +134,7 @@ class BrowserThemeProvider : public NonThreadSafe,
   virtual GdkPixbuf* GetRTLEnabledPixbufNamed(int id) const;
 #elif defined(OS_MACOSX)
   virtual NSImage* GetNSImageNamed(int id, bool allow_default) const;
+  virtual NSColor* GetNSImageColorNamed(int id, bool allow_default) const;
   virtual NSColor* GetNSColor(int id, bool allow_default) const;
   virtual NSColor* GetNSColorTint(int id, bool allow_default) const;
   virtual NSGradient* GetNSGradient(int id) const;

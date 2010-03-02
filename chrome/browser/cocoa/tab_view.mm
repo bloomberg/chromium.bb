@@ -662,12 +662,12 @@ const CGFloat kRapidCloseDist = 2.5;
         (themeProvider->HasCustomImage(IDR_THEME_TAB_BACKGROUND) ||
          themeProvider->HasCustomImage(IDR_THEME_FRAME));
 
-    NSImage* backgroundImage =
+    NSColor* backgroundImageColor =
         hasBackgroundImage ?
-          themeProvider->GetNSImageNamed(IDR_THEME_TAB_BACKGROUND, true) :
+          themeProvider->GetNSImageColorNamed(IDR_THEME_TAB_BACKGROUND, true) :
           nil;
-    if (backgroundImage) {
-      [[NSColor colorWithPatternImage:backgroundImage] set];
+    if (backgroundImageColor) {
+      [backgroundImageColor set];
       [path fill];
     } else {
       [[NSColor windowBackgroundColor] set];

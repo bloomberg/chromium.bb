@@ -36,6 +36,7 @@ class MockThemeProvider : public ThemeProvider {
 
   // OSX stuff
   MOCK_CONST_METHOD2(GetNSImageNamed, NSImage*(int, bool));
+  MOCK_CONST_METHOD2(GetNSImageColorNamed, NSColor*(int, bool));
   MOCK_CONST_METHOD2(GetNSColor, NSColor*(int, bool));
   MOCK_CONST_METHOD2(GetNSColorTint, NSColor*(int, bool));
   MOCK_CONST_METHOD1(GetNSGradient, NSGradient*(int));

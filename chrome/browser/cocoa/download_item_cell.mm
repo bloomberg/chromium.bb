@@ -96,6 +96,7 @@ public:
   virtual bool HasCustomImage(int id) const { return false; }
   virtual RefCountedMemory* GetRawData(int id) const { return NULL; }
   virtual NSImage* GetNSImageNamed(int id, bool allow_default) const;
+  virtual NSColor* GetNSImageColorNamed(int id, bool allow_default) const;
   virtual NSColor* GetNSColor(int id, bool allow_default) const;
   virtual NSColor* GetNSColorTint(int id, bool allow_default) const;
   virtual NSGradient* GetNSGradient(int id) const;
@@ -127,6 +128,11 @@ BackgroundTheme::BackgroundTheme(ThemeProvider* provider) :
 }
 
 NSImage* BackgroundTheme::GetNSImageNamed(int id, bool allow_default) const {
+  return nil;
+}
+
+NSColor* BackgroundTheme::GetNSImageColorNamed(int id,
+                                               bool allow_default) const {
   return nil;
 }
 

@@ -59,14 +59,13 @@
   // Paint button background image if there is one (otherwise the border won't
   // look right).
   ThemeProvider* themeProvider = [[controlView window] themeProvider];
-  NSImage* backgroundImage = nil;
+  NSColor* backgroundImageColor = nil;
   if (themeProvider) {
-    backgroundImage =
-        themeProvider->GetNSImageNamed(IDR_THEME_BUTTON_BACKGROUND, false);
+    backgroundImageColor =
+        themeProvider->GetNSImageColorNamed(IDR_THEME_BUTTON_BACKGROUND, false);
   }
-  if (backgroundImage) {
-    NSColor* patternColor = [NSColor colorWithPatternImage:backgroundImage];
-    [patternColor set];
+  if (backgroundImageColor) {
+    [backgroundImageColor set];
     // Set the phase to match window.
     // TODO(avi) http://crbug.com/36485; base != window
     NSRect trueRect = [controlView convertRectToBase:cellFrame];
