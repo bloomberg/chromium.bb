@@ -263,6 +263,7 @@ static ContentExceptionsWindowController*
 - (IBAction)removeException:(id)sender {
   updatesEnabled_ = NO;
   NSIndexSet* selection = [tableView_ selectedRowIndexes];
+  [tableView_ deselectAll:self];  // Else we'll get a |setObjectValue:| later.
   DCHECK_GT([selection count], 0U);
   NSUInteger index = [selection lastIndex];
   while (index != NSNotFound) {
@@ -278,6 +279,7 @@ static ContentExceptionsWindowController*
 
 - (IBAction)removeAllExceptions:(id)sender {
   updatesEnabled_ = NO;
+  [tableView_ deselectAll:self];  // Else we'll get a |setObjectValue:| later.
   newException_.reset();
   model_->RemoveAll();
   updatesEnabled_ = YES;
