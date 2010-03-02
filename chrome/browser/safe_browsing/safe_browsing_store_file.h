@@ -20,12 +20,12 @@
 // int32 version;           // format version
 //
 // // Counts for the various data which follows the header.
-// int32 add_chunk_count;   // Chunks seen, including empties.
-// int32 sub_chunk_count;   // Ditto.
-// int32 add_prefix_count;
-// int32 sub_prefix_count;
-// int32 add_hash_count;
-// int32 sub_hash_count;
+// uint32 add_chunk_count;   // Chunks seen, including empties.
+// uint32 sub_chunk_count;   // Ditto.
+// uint32 add_prefix_count;
+// uint32 sub_prefix_count;
+// uint32 add_hash_count;
+// uint32 sub_hash_count;
 //
 // array[add_chunk_count] {
 //   int32 chunk_id;
@@ -44,17 +44,14 @@
 // }
 // array[add_hash_count] {
 //   int32 chunk_id;
-//   // From base::Time::ToTimeT().  This data should never last long
-//   // enough for 32 bits to be a problem.
-//   int32 received_time;
+//   int32 received_time;     // From base::Time::ToTimeT().
 //   char[32] full_hash;
 // array[sub_hash_count] {
 //   int32 chunk_id;
 //   int32 add_chunk_id;
 //   char[32] add_full_hash;
 // }
-// TODO(shess): Would a checksum be worthwhile?  If so, check at open,
-// or at commit?
+// MD5Digest checksum;      // Checksum over preceeding data.
 //
 // During the course of an update, uncommitted data is stored in a
 // temporary file (which is later re-used to commit).  This is an
@@ -63,10 +60,10 @@
 // the list of chunks seen omitted, as that data is tracked in-memory:
 //
 // array[] {
-//   int32 add_prefix_count;
-//   int32 sub_prefix_count;
-//   int32 add_hash_count;
-//   int32 sub_hash_count;
+//   uint32 add_prefix_count;
+//   uint32 sub_prefix_count;
+//   uint32 add_hash_count;
+//   uint32 sub_hash_count;
 //   array[add_prefix_count] {
 //     int32 chunk_id;
 //     int32 prefix;
@@ -78,13 +75,12 @@
 //   }
 //   array[add_hash_count] {
 //     int32 chunk_id;
-//     int32 prefix;
-//     int64 received_time;
+//     int32 received_time;     // From base::Time::ToTimeT().
 //     char[32] full_hash;
+//   }
 //   array[sub_hash_count] {
 //     int32 chunk_id;
 //     int32 add_chunk_id;
-//     int32 add_prefix;
 //     char[32] add_full_hash;
 //   }
 // }
@@ -100,25 +96,12 @@
 //   - Rewind and write the buffers out to temp file.
 //   - Delete original file.
 //   - Rename temp file to original filename.
-//
-// TODO(shess): Does there need to be an fsync() before the rename?
-// important_file_writer.h seems to think that
-// http://valhenson.livejournal.com/37921.html means you don't, but I
-// don't think it follows (and, besides, this needs to run on other
-// operating systems).
-//
-// TODO(shess): Using a checksum to validate the file would allow
-// correctness without fsync, at the cost of periodically needing to
-// regenerate the database from scratch.
 
-// TODO(shess): Regeneration could be moderated by saving the previous
-// file, if valid, as a checkpoint.  During update, if the current
-// file is found to be invalid, rollback to the checkpoint and run the
-// updat forward from there.  This would require that the current file
-// be validated at BeginUpdate() rather than FinishUpdate(), because
-// the chunks-seen data may have changed.  [Does this have
-// implications for the pending_hashes, which were generated while
-// using a newer bloom filter?]
+// TODO(shess): By using a checksum, this code can avoid doing an
+// fsync(), at the possible cost of more frequently retrieving the
+// full dataset.  Measure how often this occurs, and if it occurs too
+// often, consider retaining the last known-good file for recovery
+// purposes, rather than deleting it.
 
 class SafeBrowsingStoreFile : public SafeBrowsingStore {
  public:

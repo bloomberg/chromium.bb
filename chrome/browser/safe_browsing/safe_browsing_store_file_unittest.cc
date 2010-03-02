@@ -4,6 +4,7 @@
 
 #include "chrome/browser/safe_browsing/safe_browsing_store_file.h"
 
+#include "base/callback.h"
 #include "chrome/browser/safe_browsing/safe_browsing_store_unittest_helper.h"
 #include "chrome/test/file_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -45,9 +46,14 @@ class SafeBrowsingStoreFileTest : public PlatformTest {
     PlatformTest::TearDown();
   }
 
+  void OnCorruptionDetected() {
+    corruption_detected_ = true;
+  }
+
   scoped_ptr<FileAutoDeleter> file_deleter_;
   FilePath filename_;
   scoped_ptr<SafeBrowsingStoreFile> store_;
+  bool corruption_detected_;
 };
 
 TEST_STORE(SafeBrowsingStoreFileTest, store_.get(), filename_);
@@ -77,6 +83,65 @@ TEST_F(SafeBrowsingStoreFileTest, DeleteTemp) {
   EXPECT_FALSE(file_util::PathExists(temp_file));
 }
 
-// TODO(shess): Test corruption-handling?
+// Test basic corruption-handling.
+TEST_F(SafeBrowsingStoreFileTest, DetectsCorruption) {
+  // Load a store with some data.
+  SafeBrowsingStoreTestStorePrefix(store_.get());
+
+  SafeBrowsingStoreFile test_store;
+  test_store.Init(
+      filename_,
+      NewCallback(static_cast<SafeBrowsingStoreFileTest*>(this),
+                  &SafeBrowsingStoreFileTest::OnCorruptionDetected));
+
+  corruption_detected_ = false;
+
+  // Can successfully open and read the store.
+  std::vector<SBAddFullHash> pending_adds;
+  std::vector<SBAddPrefix> orig_prefixes;
+  std::vector<SBAddFullHash> orig_hashes;
+  EXPECT_TRUE(test_store.BeginUpdate());
+  EXPECT_TRUE(test_store.FinishUpdate(pending_adds,
+                                      &orig_prefixes, &orig_hashes));
+  EXPECT_GT(orig_prefixes.size(), 0U);
+  EXPECT_GT(orig_hashes.size(), 0U);
+  EXPECT_FALSE(corruption_detected_);
+
+  // Corrupt the store.
+  file_util::ScopedFILE file(file_util::OpenFile(filename_, "rb+"));
+  const long kOffset = 60;
+  EXPECT_EQ(fseek(file.get(), kOffset, SEEK_SET), 0);
+  const int32 kZero = 0;
+  int32 previous = kZero;
+  EXPECT_EQ(fread(&previous, sizeof(previous), 1, file.get()), 1U);
+  EXPECT_NE(previous, kZero);
+  EXPECT_EQ(fseek(file.get(), kOffset, SEEK_SET), 0);
+  EXPECT_EQ(fwrite(&kZero, sizeof(kZero), 1, file.get()), 1U);
+  file.reset();
+
+  // Update fails and corruption callback is called.
+  std::vector<SBAddPrefix> add_prefixes;
+  std::vector<SBAddFullHash> add_hashes;
+  corruption_detected_ = false;
+  EXPECT_TRUE(test_store.BeginUpdate());
+  EXPECT_FALSE(test_store.FinishUpdate(pending_adds,
+                                       &add_prefixes, &add_hashes));
+  EXPECT_TRUE(corruption_detected_);
+  EXPECT_EQ(add_prefixes.size(), 0U);
+  EXPECT_EQ(add_hashes.size(), 0U);
+
+  // Make it look like there is a lot of add-chunks-seen data.
+  const long kAddChunkCountOffset = 2 * sizeof(int32);
+  const int32 kLargeCount = 1000 * 1000 * 1000;
+  file.reset(file_util::OpenFile(filename_, "rb+"));
+  EXPECT_EQ(fseek(file.get(), kAddChunkCountOffset, SEEK_SET), 0);
+  EXPECT_EQ(fwrite(&kLargeCount, sizeof(kLargeCount), 1, file.get()), 1U);
+  file.reset();
+
+  // Detects corruption and fails to even begin the update.
+  corruption_detected_ = false;
+  EXPECT_FALSE(test_store.BeginUpdate());
+  EXPECT_TRUE(corruption_detected_);
+}
 
 }  // namespace

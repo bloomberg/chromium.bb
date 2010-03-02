@@ -5,6 +5,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_store_file.h"
 
 #include "base/callback.h"
+#include "base/md5.h"
 
 namespace {
 
@@ -16,15 +17,15 @@ const int32 kFileVersion = 7;  // SQLite storage was 6...
 // Header at the front of the main database file.
 struct FileHeader {
   int32 magic, version;
-  int32 add_chunk_count, sub_chunk_count;
-  int32 add_prefix_count, sub_prefix_count;
-  int32 add_hash_count, sub_hash_count;
+  uint32 add_chunk_count, sub_chunk_count;
+  uint32 add_prefix_count, sub_prefix_count;
+  uint32 add_hash_count, sub_hash_count;
 };
 
 // Header for each chunk in the chunk-accumulation file.
 struct ChunkHeader {
-  int32 add_prefix_count, sub_prefix_count;
-  int32 add_hash_count, sub_hash_count;
+  uint32 add_prefix_count, sub_prefix_count;
+  uint32 add_hash_count, sub_hash_count;
 };
 
 // Rewind the file.  Using fseek(2) because rewind(3) errors are
@@ -35,30 +36,41 @@ bool FileRewind(FILE* fp) {
   return rv == 0;
 }
 
-// Read an array of |nmemb| items from |fp| into |ptr|.  Return true
-// on success.
+// Read an array of |nmemb| items from |fp| into |ptr|, and fold the
+// input data into the checksum in |context|, if non-NULL.  Return
+// true on success.
 template <class T>
-bool ReadArray(T* ptr, size_t nmemb, FILE* fp) {
+bool ReadArray(T* ptr, size_t nmemb, FILE* fp, MD5Context* context) {
   const size_t ret = fread(ptr, sizeof(T), nmemb, fp);
   if (ret != nmemb)
     return false;
+
+  if (context)
+    MD5Update(context, ptr, sizeof(T) * nmemb);
   return true;
 }
 
-// Write an array of |nmemb| items from |ptr| to |fp|.  Return true on
-// success.
+// Write an array of |nmemb| items from |ptr| to |fp|, and fold the
+// output data into the checksum in |context|, if non-NULL.  Return
+// true on success.
 template <class T>
-bool WriteArray(const T* ptr, size_t nmemb, FILE* fp) {
+bool WriteArray(const T* ptr, size_t nmemb, FILE* fp, MD5Context* context) {
   const size_t ret = fwrite(ptr, sizeof(T), nmemb, fp);
   if (ret != nmemb)
     return false;
+
+  if (context)
+    MD5Update(context, ptr, sizeof(T) * nmemb);
+
   return true;
 }
 
-// Expand |values| to fit |count| new items, and read those items from
-// |fp|.  Returns true on success.
+// Expand |values| to fit |count| new items, read those items from
+// |fp| and fold them into the checksum in |context|.  Returns true on
+// success.
 template <class T>
-bool ReadToVector(std::vector<T>* values, size_t count, FILE* fp) {
+bool ReadToVector(std::vector<T>* values, size_t count,
+                  FILE* fp, MD5Context* context) {
   // Pointers into an empty vector may not be valid.
   if (!count)
     return true;
@@ -71,7 +83,7 @@ bool ReadToVector(std::vector<T>* values, size_t count, FILE* fp) {
   // Sayeth Herb Sutter: Vectors are guaranteed to be contiguous.  So
   // get a pointer to where to read the data to.
   T* ptr = &((*values)[original_size]);
-  if (!ReadArray(ptr, count, fp)) {
+  if (!ReadArray(ptr, count, fp, context)) {
     values->resize(original_size);
     return false;
   }
@@ -79,9 +91,10 @@ bool ReadToVector(std::vector<T>* values, size_t count, FILE* fp) {
   return true;
 }
 
-// Write all of |values| to |fp|.  Returns true on succsess.
+// Write all of |values| to |fp|, and fold the data into the checksum
+// in |context|, if non-NULL.  Returns true on succsess.
 template <class T>
-bool WriteVector(const std::vector<T>& values, FILE* fp) {
+bool WriteVector(const std::vector<T>& values, FILE* fp, MD5Context* context) {
   // Pointers into empty vectors may not be valid.
   if (values.empty())
     return true;
@@ -89,7 +102,7 @@ bool WriteVector(const std::vector<T>& values, FILE* fp) {
   // Sayeth Herb Sutter: Vectors are guaranteed to be contiguous.  So
   // get a pointer to where to write from.
   const T* ptr = &(values[0]);
-  return WriteArray(ptr, values.size(), fp);
+  return WriteArray(ptr, values.size(), fp, context);
 }
 
 // Remove deleted items (|chunk_id| in |del_set|) from the vector
@@ -114,10 +127,11 @@ void RemoveDeleted(std::vector<T>* vec, size_t offset,
 // Combine |ReadToVector()| and |RemoveDeleted()|.  Returns true on
 // success.
 template <class T>
-bool ReadToVectorAndDelete(std::vector<T>* values, size_t count, FILE* fp,
+bool ReadToVectorAndDelete(std::vector<T>* values, size_t count,
+                           FILE* fp, MD5Context* context,
                            const base::hash_set<int32>& del_set) {
   const size_t original_size = values->size();
-  if (!ReadToVector(values, count, fp))
+  if (!ReadToVector(values, count, fp, context))
     return false;
 
   RemoveDeleted(values, original_size, del_set);
@@ -126,12 +140,13 @@ bool ReadToVectorAndDelete(std::vector<T>* values, size_t count, FILE* fp,
 
 // Read an array of |count| integers and add them to |values|.
 // Returns true on success.
-bool ReadToChunkSet(std::set<int32>* values, size_t count, FILE* fp) {
+bool ReadToChunkSet(std::set<int32>* values, size_t count,
+                    FILE* fp, MD5Context* context) {
   if (!count)
     return true;
 
   std::vector<int32> flat_values;
-  if (!ReadToVector(&flat_values, count, fp))
+  if (!ReadToVector(&flat_values, count, fp, context))
     return false;
 
   values->insert(flat_values.begin(), flat_values.end());
@@ -140,12 +155,13 @@ bool ReadToChunkSet(std::set<int32>* values, size_t count, FILE* fp) {
 
 // Write the contents of |values| as an array of integers.  Returns
 // true on success.
-bool WriteChunkSet(const std::set<int32>& values, FILE* fp) {
+bool WriteChunkSet(const std::set<int32>& values,
+                   FILE* fp, MD5Context* context) {
   if (values.empty())
     return true;
 
   const std::vector<int32> flat_values(values.begin(), values.end());
-  return WriteVector(flat_values, fp);
+  return WriteVector(flat_values, fp, context);
 }
 
 // Delete the chunks in |deleted| from |chunks|.
@@ -248,14 +264,39 @@ bool SafeBrowsingStoreFile::BeginUpdate() {
   }
 
   FileHeader header;
-  if (!ReadArray(&header, 1, file.get()))
-    return OnCorruptDatabase();
+  if (!ReadArray(&header, 1, file.get(), NULL))
+      return OnCorruptDatabase();
 
   if (header.magic != kFileMagic || header.version != kFileVersion)
     return OnCorruptDatabase();
 
-  if (!ReadToChunkSet(&add_chunks_cache_, header.add_chunk_count, file.get()) ||
-      !ReadToChunkSet(&sub_chunks_cache_, header.sub_chunk_count, file.get()))
+  // Check that the file size makes sense given the header.  This is a
+  // cheap way to protect against header corruption while deferring
+  // the checksum calculation until the end of the update.
+  // TODO(shess): Under POSIX it is possible that this could size a
+  // file different from the file which was opened.
+  int64 size = 0;
+  if (!file_util::GetFileSize(filename_, &size))
+    return OnCorruptDatabase();
+
+  int64 expected_size = sizeof(FileHeader);
+  expected_size += header.add_chunk_count * sizeof(int32);
+  expected_size += header.sub_chunk_count * sizeof(int32);
+  expected_size += header.add_prefix_count * sizeof(SBAddPrefix);
+  expected_size += header.sub_prefix_count * sizeof(SBSubPrefix);
+  expected_size += header.add_hash_count * sizeof(SBAddFullHash);
+  expected_size += header.sub_hash_count * sizeof(SBSubFullHash);
+  expected_size += sizeof(MD5Digest);
+  if (size != expected_size)
+    return OnCorruptDatabase();
+
+  // Pull in the chunks-seen data for purposes of implementing
+  // |GetAddChunks()| and |GetSubChunks()|.  This data is sent up to
+  // the server at the beginning of an update.
+  if (!ReadToChunkSet(&add_chunks_cache_, header.add_chunk_count,
+                      file.get(), NULL) ||
+      !ReadToChunkSet(&sub_chunks_cache_, header.sub_chunk_count,
+                      file.get(), NULL))
     return OnCorruptDatabase();
 
   file_.swap(file);
@@ -273,13 +314,13 @@ bool SafeBrowsingStoreFile::FinishChunk() {
   header.sub_prefix_count = sub_prefixes_.size();
   header.add_hash_count = add_hashes_.size();
   header.sub_hash_count = sub_hashes_.size();
-  if (!WriteArray(&header, 1, new_file_.get()))
+  if (!WriteArray(&header, 1, new_file_.get(), NULL))
     return false;
 
-  if (!WriteVector(add_prefixes_, new_file_.get()) ||
-      !WriteVector(sub_prefixes_, new_file_.get()) ||
-      !WriteVector(add_hashes_, new_file_.get()) ||
-      !WriteVector(sub_hashes_, new_file_.get()))
+  if (!WriteVector(add_prefixes_, new_file_.get(), NULL) ||
+      !WriteVector(sub_prefixes_, new_file_.get(), NULL) ||
+      !WriteVector(add_hashes_, new_file_.get(), NULL) ||
+      !WriteVector(sub_hashes_, new_file_.get(), NULL))
     return false;
 
   ++chunks_written_;
@@ -307,35 +348,45 @@ bool SafeBrowsingStoreFile::DoUpdate(
     if (!FileRewind(file_.get()))
       return OnCorruptDatabase();
 
+    MD5Context context;
+    MD5Init(&context);
+
     // Read the file header and make sure it looks right.
     FileHeader header;
-    if (!ReadArray(&header, 1, file_.get()))
+    if (!ReadArray(&header, 1, file_.get(), &context))
       return OnCorruptDatabase();
 
     if (header.magic != kFileMagic || header.version != kFileVersion)
       return OnCorruptDatabase();
 
     // Re-read the chunks-seen data to get to the later data in the
-    // file.  No new elements should be added to the sets.
-    // NOTE(shess): Reading rather than fseek() because calculating
-    // checksums (future CL) will need to scan all data.  The code
-    // could just remember state from |BeginUpdate()|, but that call
-    // may be far removed from this call in time, so this seems like a
-    // reasonable trade-off.
+    // file and calculate the checksum.  No new elements should be
+    // added to the sets.
     if (!ReadToChunkSet(&add_chunks_cache_, header.add_chunk_count,
-                        file_.get()) ||
+                        file_.get(), &context) ||
         !ReadToChunkSet(&sub_chunks_cache_, header.sub_chunk_count,
-                        file_.get()))
+                        file_.get(), &context))
       return OnCorruptDatabase();
 
     if (!ReadToVectorAndDelete(&add_prefixes, header.add_prefix_count,
-                               file_.get(), add_del_cache_) ||
+                               file_.get(), &context, add_del_cache_) ||
         !ReadToVectorAndDelete(&sub_prefixes, header.sub_prefix_count,
-                               file_.get(), sub_del_cache_) ||
+                               file_.get(), &context, sub_del_cache_) ||
         !ReadToVectorAndDelete(&add_full_hashes, header.add_hash_count,
-                               file_.get(), add_del_cache_) ||
+                               file_.get(), &context, add_del_cache_) ||
         !ReadToVectorAndDelete(&sub_full_hashes, header.sub_hash_count,
-                               file_.get(), sub_del_cache_))
+                               file_.get(), &context, sub_del_cache_))
+      return OnCorruptDatabase();
+
+    // Calculate the digest to this point.
+    MD5Digest calculated_digest;
+    MD5Final(&calculated_digest, &context);
+
+    // Read the stored checksum and verify it.
+    MD5Digest file_digest;
+    if (!ReadArray(&file_digest, 1, file_.get(), NULL))
+      return OnCorruptDatabase();
+    if (0 != memcmp(&file_digest, &calculated_digest, sizeof(file_digest)))
       return OnCorruptDatabase();
 
     // Close the file so we can later rename over it.
@@ -347,11 +398,11 @@ bool SafeBrowsingStoreFile::DoUpdate(
   if (!FileRewind(new_file_.get()))
     return false;
 
-  // Append the accumulated chunks onto the vectors from file_.
+  // Append the accumulated chunks onto the vectors read from |file_|.
   for (int i = 0; i < chunks_written_; ++i) {
     ChunkHeader header;
 
-    if (!ReadArray(&header, 1, new_file_.get()))
+    if (!ReadArray(&header, 1, new_file_.get(), NULL))
       return false;
 
     // TODO(shess): If the vectors were kept sorted, then this code
@@ -362,13 +413,13 @@ bool SafeBrowsingStoreFile::DoUpdate(
     // chunks pairwise, merge those chunks pairwise, and so on, then
     // merge the result with the main list).
     if (!ReadToVectorAndDelete(&add_prefixes, header.add_prefix_count,
-                               new_file_.get(), add_del_cache_) ||
+                               new_file_.get(), NULL, add_del_cache_) ||
         !ReadToVectorAndDelete(&sub_prefixes, header.sub_prefix_count,
-                               new_file_.get(), sub_del_cache_) ||
+                               new_file_.get(), NULL, sub_del_cache_) ||
         !ReadToVectorAndDelete(&add_full_hashes, header.add_hash_count,
-                               new_file_.get(), add_del_cache_) ||
+                               new_file_.get(), NULL, add_del_cache_) ||
         !ReadToVectorAndDelete(&sub_full_hashes, header.sub_hash_count,
-                               new_file_.get(), sub_del_cache_))
+                               new_file_.get(), NULL, sub_del_cache_))
       return false;
   }
 
@@ -388,15 +439,13 @@ bool SafeBrowsingStoreFile::DoUpdate(
   DeleteChunksFromSet(sub_del_cache_, &sub_chunks_cache_);
 
   // Write the new data to new_file_.
-  // TODO(shess): If we receive a lot of subs relative to adds,
-  // overwriting the temporary chunk data in new_file_ with the
-  // permanent data could leave additional data at the end.  Won't
-  // cause any problems, but does waste space.  There is no truncate()
-  // for stdio.  Could use ftruncate() or re-open the file.  Or maybe
-  // ignore it, since we'll likely rewrite the file soon enough.
   if (!FileRewind(new_file_.get()))
     return false;
 
+  MD5Context context;
+  MD5Init(&context);
+
+  // Write a file header.
   FileHeader header;
   header.magic = kFileMagic;
   header.version = kFileVersion;
@@ -406,16 +455,26 @@ bool SafeBrowsingStoreFile::DoUpdate(
   header.sub_prefix_count = sub_prefixes.size();
   header.add_hash_count = add_full_hashes.size();
   header.sub_hash_count = sub_full_hashes.size();
-  if (!WriteArray(&header, 1, new_file_.get()))
+  if (!WriteArray(&header, 1, new_file_.get(), &context))
     return false;
 
   // Write all the chunk data.
-  if (!WriteChunkSet(add_chunks_cache_, new_file_.get()) ||
-      !WriteChunkSet(sub_chunks_cache_, new_file_.get()) ||
-      !WriteVector(add_prefixes, new_file_.get()) ||
-      !WriteVector(sub_prefixes, new_file_.get()) ||
-      !WriteVector(add_full_hashes, new_file_.get()) ||
-      !WriteVector(sub_full_hashes, new_file_.get()))
+  if (!WriteChunkSet(add_chunks_cache_, new_file_.get(), &context) ||
+      !WriteChunkSet(sub_chunks_cache_, new_file_.get(), &context) ||
+      !WriteVector(add_prefixes, new_file_.get(), &context) ||
+      !WriteVector(sub_prefixes, new_file_.get(), &context) ||
+      !WriteVector(add_full_hashes, new_file_.get(), &context) ||
+      !WriteVector(sub_full_hashes, new_file_.get(), &context))
+    return false;
+
+  // Write the checksum at the end.
+  MD5Digest digest;
+  MD5Final(&digest, &context);
+  if (!WriteArray(&digest, 1, new_file_.get(), NULL))
+    return false;
+
+  // Trim any excess left over from the temporary chunk data.
+  if (!file_util::TruncateFile(new_file_.get()))
     return false;
 
   // Close the file handle and swizzle the file into place.
