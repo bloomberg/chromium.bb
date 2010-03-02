@@ -2532,7 +2532,7 @@ ExprNodeVector[2] = {
     InstMovd,
     2, {
       { Mmx_G_Operand, OpFlag(OpSet) },
-      { Edq_Operand, OpFlag(OpUse) },
+      { E_Operand, OpFlag(OpUse) },
   } };
 ExprNodeVector[8] = {
   { OperandReference[1] , 0, 0 },
@@ -2551,7 +2551,7 @@ ExprNodeVector[8] = {
     InstMovd,
     2, {
       { Mmx_G_Operand, OpFlag(OpSet) },
-      { Edq_Operand, OpFlag(OpUse) },
+      { E_Operand, OpFlag(OpUse) },
   } };
 ExprNodeVector[8] = {
   { OperandReference[1] , 0, 0 },
@@ -2570,7 +2570,7 @@ ExprNodeVector[8] = {
     InstMovd,
     2, {
       { Xmm_G_Operand, OpFlag(OpSet) },
-      { Edq_Operand, OpFlag(OpUse) },
+      { E_Operand, OpFlag(OpUse) },
   } };
 ExprNodeVector[8] = {
   { OperandReference[1] , 0, 0 },
@@ -2588,7 +2588,7 @@ ExprNodeVector[8] = {
     InstFlag(OpcodeUsesModRm),
     InstMovd,
     2, {
-      { Edq_Operand, OpFlag(OpSet) },
+      { E_Operand, OpFlag(OpSet) },
       { Mmx_G_Operand, OpFlag(OpUse) },
   } };
 ExprNodeVector[8] = {
@@ -2607,7 +2607,7 @@ ExprNodeVector[8] = {
     InstFlag(OpcodeUsesModRm),
     InstMovd,
     2, {
-      { Edq_Operand, OpFlag(OpSet) },
+      { E_Operand, OpFlag(OpSet) },
       { Mmx_G_Operand, OpFlag(OpUse) },
   } };
 ExprNodeVector[8] = {
@@ -2744,7 +2744,7 @@ ExprNodeVector[8] = {
 0000000000000000: 0f 71 d1 08                                  psrlw %mmx1, 0x8
   { 2, { 0x0f, 0x71, 0x00 },
     NACLi_MMX,
-    InstFlag(OpcodeInModRm) | InstFlag(OpcodeHasImmed_b),
+    InstFlag(OpcodeInModRm) | InstFlag(ModRmModIs0x3) | InstFlag(OpcodeHasImmed_b),
     InstPsrlw,
     3, {
       { Opcode2, OpFlag(OperandExtendsOpcode) },
@@ -2764,7 +2764,7 @@ ExprNodeVector[4] = {
     InstMovd,
     2, {
       { Mmx_G_Operand, OpFlag(OpSet) },
-      { Edq_Operand, OpFlag(OpUse) },
+      { E_Operand, OpFlag(OpUse) },
   } };
 ExprNodeVector[4] = {
   { OperandReference[1] , 0, 0 },

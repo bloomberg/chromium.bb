@@ -408,6 +408,14 @@ static Bool ConsumeModRm(NcInstState* state) {
                    byte));
       return FALSE;
     }
+    /* Note: Some instructions only allow values where the ModRm mod field
+     * is 0x3.
+     */
+    if ((state->opcode->flags & InstFlag(ModRmModIs0x3)) &&
+        modrm_mod(byte) != 0x3) {
+      DEBUG(printf("Can't match, modrm mod field not 0x3\n"));
+      return FALSE;
+    }
     state->modrm = byte;
     state->length++;
     state->num_disp_bytes = 0;

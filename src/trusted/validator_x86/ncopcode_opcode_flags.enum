@@ -26,6 +26,10 @@ OpcodeInModRm
 # NOTE: When this flag is set, so is OpcodeInModRm.
 OpcodeLtC0InModRm
 
+# Defines requirement during instruction matching that the ModRm mod field
+# must be 0x3.
+ModRmModIs0x3
+
 # Defines instruction that the ModR/M byte contains a register operand and
 # an r/m operand. Intel's notation is /r
 OpcodeUsesModRm

@@ -539,6 +539,8 @@ static void PrintlnOperandFlags(OperandFlags flags) {
   printf("\n");
 }
 
+static void ApplySanityChecksToOpcode();
+
 /* Same as previous function, except that sanity checks
  * are applied to see if inconsistent information is
  * being defined.
@@ -551,6 +553,12 @@ void DefineOperand(
         PrintlnOperandFlags(flags));
   if (MAX_NUM_OPERANDS <= index) {
     FatalOperand(index, "Opcode defines too many operands...\n");
+  }
+  /* Apply pseudonym Mmx_N_Operand if applicable. */
+  if (Mmx_N_Operand == kind) {
+    kind = Mmx_E_Operand;
+    current_opcode->flags |= InstFlag(ModRmModIs0x3);
+    ApplySanityChecksToOpcode();
   }
   /* Readjust counts if opcode appears in modrm. */
   if (index == 0) {
@@ -643,6 +651,13 @@ static void ApplySanityChecksToOpcode() {
     FatalOpcode(
         "Size implied by OperandSize_v, use OpcodeHasImmed "
         "rather than OpcodeHasImmed_v");
+  }
+  if ((current_opcode->flags & InstFlag(ModRmModIs0x3)) &&
+      (EmptyInstFlags == (current_opcode->flags &
+                          (InstFlag(OpcodeUsesModRm) |
+                           InstFlag(OpcodeInModRm))))) {
+    FatalOpcode(
+        "Can't specify ModRmModIs0x3 unless Opcode has modrm byte");
   }
 }
 

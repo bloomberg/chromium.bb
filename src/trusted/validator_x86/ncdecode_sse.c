@@ -61,8 +61,8 @@ static void DefineBinarySseOpcodes() {
 
   DEF_BINST(Vsd, Wsd)(NACLi_SSE2, 0x10, PrefixF20F, InstMovsd, Move);
   DEF_BINST(Wsd, Vsd)(NACLi_SSE2, 0x11, PrefixF20F, InstMovsd, Move);
-
   DEF_BINST(Vpd, Wsd)(NACLi_SSE3, 0x12, PrefixF20F, InstMovddup, Move);
+
   DEF_BINST(Vps, Wps)(NACLi_SSE3, 0x12, PrefixF30F, InstMovsldup, Move);
   DEF_BINST(Vps, Wps)(NACLi_SSE3, 0x16, PrefixF30F, InstMovshdup, Move);
 
@@ -173,7 +173,7 @@ static void DefineBinarySseOpcodes() {
   DEF_BINST(Vdq, Wdq)(NACLi_SSE2, 0x6b, Prefix660F, InstPackssdw, Binary);
   DEF_BINST(Vdq, Wq_)(NACLi_SSE2, 0x6c, Prefix660F, InstPunpcklqdq, Binary);
   DEF_BINST(Vdq, Wq_)(NACLi_SSE2, 0x6d, Prefix660F, InstPunpckhqdq, Binary);
-  DEF_BINST(Vdq, Edq)(NACLi_SSE2, 0x6e, Prefix660F, InstMovd, Move);
+  DEF_BINST(Vdq, EdQ)(NACLi_SSE2, 0x6e, Prefix660F, InstMovd, Move);
   DEF_BINST(Vdq, Wdq)(NACLi_SSE2, 0x6f, Prefix660F, InstMovdqa, Move);
 
   DEF_BINST(Pq_, Qq_)(NACLi_SSE, 0x70, Prefix0F, InstPshuflw, Binary);
@@ -226,7 +226,7 @@ static void DefineBinarySseOpcodes() {
   DEF_BINST(Vdq, Uq_)(NACLi_SSE4A, 0x79, Prefix660F, InstExtrq, Binary);
   DEF_BINST(Vpd, Wpd)(NACLi_SSE2, 0x7c, Prefix660F, InstHaddpd, Binary);
   DEF_BINST(Vpd, Wpd)(NACLi_SSE2, 0x7d, Prefix660F, InstHsubpd, Binary);
-  DEF_BINST(Edq, Vdq)(NACLi_SSE2, 0x7e, Prefix660F, InstMovd, Move);
+  DEF_BINST(EdQ, VdQ)(NACLi_SSE2, 0x7e, Prefix660F, InstMovd, Move);
   DEF_BINST(Wdq, Vdq)(NACLi_SSE2, 0x7f, Prefix660F, InstMovdqa, Move);
 
   DEF_BINST(Vdq, Uq_)(NACLi_SSE4A, 0x78, PrefixF20F, InstInsertq, Binary);
@@ -321,7 +321,7 @@ static void DefineMmxOpcodes() {
   DEF_BINST(Pq_, Qd_)(NACLi_MMX, 0x69, Prefix0F, InstPunpckhwd, Binary);
   DEF_BINST(Pq_, Qd_)(NACLi_MMX, 0x6a, Prefix0F, InstPunpckhdq, Binary);
   DEF_BINST(Pq_, Qd_)(NACLi_MMX, 0x6b, Prefix0F, InstPackssdw, Binary);
-  DEF_BINST(Pd_, Edq)(NACLi_MMX, 0x6e, Prefix0F, InstMovd, Move);
+  DEF_BINST(Pq_, EdQ)(NACLi_MMX, 0x6e, Prefix0F, InstMovd, Move);
   DEF_BINST(Pq_, Qq_)(NACLi_MMX, 0x6f, Prefix0F, InstMovq, Move);
 
   DEF_OINST(Nq_, I__)(NACLi_MMX, 0x71, Prefix0F, Opcode2, InstPsrlw, Binary);
@@ -346,7 +346,7 @@ static void DefineMmxOpcodes() {
   DEF_BINST(Pq_, Qq_)(NACLi_MMX, 0x76, Prefix0F, InstPcmpeqd, Binary);
   DEF_NULL_OPRDS_INST(NACLi_MMX, 0x77, Prefix0F, InstEmms);
 
-  DEF_BINST(Edq, Pdq)(NACLi_MMX, 0x7e, Prefix0F, InstMovd, Move);
+  DEF_BINST(EdQ, PdQ)(NACLi_MMX, 0x7e, Prefix0F, InstMovd, Move);
   DEF_BINST(Qq_, Pq_)(NACLi_MMX, 0x7f, Prefix0F, InstMovq, Move);
 
   DEF_BINST(Pq_, Qq_)(NACLi_MMX, 0xd1, Prefix0F, InstPsrlw, Binary);

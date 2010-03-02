@@ -46,6 +46,11 @@ void DEF_OPERAND(Edq)(NcInstCat icat, int operand_index) {
   DefineOperand(Edq_Operand, GetIcatFlags(icat, operand_index));
 }
 
+void DEF_OPERAND(EdQ)(NcInstCat icat, int operand_index) {
+  /* TODO(karl) fix measurement of size to use Rex.W */
+  DefineOperand(E_Operand, GetIcatFlags(icat, operand_index));
+}
+
 void DEF_OPERAND(Gd_)(NcInstCat icat, int operand_index) {
   DefineOperand(Gv_Operand, GetIcatFlags(icat, operand_index));
 }
@@ -63,17 +68,15 @@ void DEF_OPERAND(Md_)(NcInstCat icat, int operand_index) {
 }
 
 void DEF_OPERAND(Mdq)(NcInstCat icat, int operand_index) {
-  /* TODO(karl) Add dq size restriction. */
-  DefineOperand(M_Operand, GetIcatFlags(icat, operand_index));
+  DefineOperand(Mdq_Operand, GetIcatFlags(icat, operand_index));
 }
 
 void DEF_OPERAND(Mpd)(NcInstCat icat, int operand_index) {
-  /* TODO(karl) Add dq size restriction. */
-  DefineOperand(M_Operand, GetIcatFlags(icat, operand_index));
+  DefineOperand(Mdq_Operand, GetIcatFlags(icat, operand_index));
 }
 
 void DEF_OPERAND(Mps)(NcInstCat icat, int operand_index) {
-  DefineOperand(M_Operand, GetIcatFlags(icat, operand_index));
+  DefineOperand(Mdq_Operand, GetIcatFlags(icat, operand_index));
 }
 
 void DEF_OPERAND(Mq_)(NcInstCat icat, int operand_index) {
@@ -81,17 +84,20 @@ void DEF_OPERAND(Mq_)(NcInstCat icat, int operand_index) {
 }
 
 void DEF_OPERAND(Nq_)(NcInstCat icat, int operand_index) {
-  /* TODO(karl) add ModRm restrictions and size restrictions. */
-  DefineOperand(Mmx_E_Operand, GetIcatFlags(icat, operand_index));
+  DefineOperand(Mmx_N_Operand, GetIcatFlags(icat, operand_index));
 }
 
 void DEF_OPERAND(Pd_)(NcInstCat icat, int operand_index) {
-  /* TODO(karl) add d size restriction. */
-  DefineOperand(Mmx_G_Operand, GetIcatFlags(icat, operand_index));
+  DefineOperand(Mmx_Gd_Operand, GetIcatFlags(icat, operand_index));
 }
 
 void DEF_OPERAND(Pdq)(NcInstCat icat, int operand_index) {
   /* TODO(karl) add dq size restriction. */
+  DefineOperand(Mmx_G_Operand, GetIcatFlags(icat, operand_index));
+}
+
+void DEF_OPERAND(PdQ)(NcInstCat icat, int operand_index) {
+  /* TODO(karl) add d/q size restriction. */
   DefineOperand(Mmx_G_Operand, GetIcatFlags(icat, operand_index));
 }
 
@@ -148,6 +154,10 @@ void DEF_OPERAND(Uq_)(NcInstCat icat, int operand_index) {
 
 void DEF_OPERAND(Vdq)(NcInstCat icat, int operand_index) {
   /* TODO(karl) Add dq size restriction. */
+  DefineOperand(Xmm_G_Operand, GetIcatFlags(icat, operand_index));
+}
+void DEF_OPERAND(VdQ)(NcInstCat icat, int operand_index) {
+  /* TODO(karl) Add d/q size restriction. */
   DefineOperand(Xmm_G_Operand, GetIcatFlags(icat, operand_index));
 }
 
@@ -222,7 +232,11 @@ void DEF_BINST(XXX, YYY)(NaClInstType itype, uint8_t opbyte, \
 
 DEFINE_BINARY_INST(Edq, Pd_)
 
+DEFINE_BINARY_INST(EdQ, PdQ)
+
 DEFINE_BINARY_INST(Edq, Pdq)
+
+DEFINE_BINARY_INST(EdQ, VdQ)
 
 DEFINE_BINARY_INST(Edq, Vdq)
 
@@ -258,11 +272,11 @@ DEFINE_BINARY_INST(Mq_, Vq_)
 
 DEFINE_BINARY_INST(Mq_, Vsd)
 
-DEFINE_BINARY_INST(Pd_, Edq)
-
 DEFINE_BINARY_INST(Ppi, Wpd)
 
 DEFINE_BINARY_INST(Ppi, Wps)
+
+DEFINE_BINARY_INST(Pq_, EdQ)
 
 DEFINE_BINARY_INST(Pq_, Nq_)
 
@@ -279,6 +293,8 @@ DEFINE_BINARY_INST(Pq_, Wps)
 DEFINE_BINARY_INST(Qq_, Pq_)
 
 DEFINE_BINARY_INST(Vdq, Edq)
+
+DEFINE_BINARY_INST(Vdq, EdQ)
 
 DEFINE_BINARY_INST(Vdq, Mdq)
 

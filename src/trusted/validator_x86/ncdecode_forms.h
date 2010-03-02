@@ -80,6 +80,7 @@ OperandFlags GetIcatFlags(NcInstCat icat, int operand_index);
  * d - A doubleword (32 bits), irrespective of the effective operand size.
  * dq - A double-quadword (128 bits), irrespective to the effective operand
  *     size.
+ * dQ (AMD uses d/q) A 32/64 bit value, depending on Rex.W.
  * pd - A 128-bit double-precision floating-point vector operand (packed
  *      double).
  * pi - A 64-bit MMX operand (packed integer).
@@ -107,6 +108,8 @@ OperandFlags GetIcatFlags(NcInstCat icat, int operand_index);
  * operand types.
  */
 
+DECLARE_OPERAND(EdQ);
+
 DECLARE_OPERAND(Edq);
 
 DECLARE_OPERAND(Gd_);
@@ -129,6 +132,10 @@ DECLARE_OPERAND(Nq_);
 
 DECLARE_OPERAND(Pd_);
 
+DECLARE_OPERAND(Pdq);
+
+DECLARE_OPERAND(PdQ);
+
 DECLARE_OPERAND(Ppi);
 
 DECLARE_OPERAND(Pq_);
@@ -148,6 +155,8 @@ DECLARE_OPERAND(Ups);
 DECLARE_OPERAND(Uq_);
 
 DECLARE_OPERAND(Vdq);
+
+DECLARE_OPERAND(VdQ);
 
 DECLARE_OPERAND(Vpd);
 
@@ -205,7 +214,11 @@ DECLARE_BINARY_INST(Edq, Pd_);
 
 DECLARE_BINARY_INST(Edq, Pdq);
 
+DECLARE_BINARY_INST(EdQ, PdQ);
+
 DECLARE_BINARY_INST(Edq, Vdq);
+
+DECLARE_BINARY_INST(EdQ, VdQ);
 
 DECLARE_BINARY_INST(Gd_, Ups);
 
@@ -231,8 +244,6 @@ DECLARE_BINARY_INST(Mpd, Vpd);
 
 DECLARE_BINARY_INST(Mps, Vps);
 
-DECLARE_BINARY_INST(Pq_, Nq_);
-
 DECLARE_BINARY_INST(Mq_, Pq_);
 
 DECLARE_BINARY_INST(Mq_, Vps);
@@ -241,7 +252,9 @@ DECLARE_BINARY_INST(Mq_, Vq_);
 
 DECLARE_BINARY_INST(Mq_, Vsd);
 
-DECLARE_BINARY_INST(Pd_, Edq);
+DECLARE_BINARY_INST(Pq_, EdQ);
+
+DECLARE_BINARY_INST(Pq_, Nq_);
 
 DECLARE_BINARY_INST(Pq_, Qd_);
 
@@ -260,6 +273,8 @@ DECLARE_BINARY_INST(Pq_, Wps);
 DECLARE_BINARY_INST(Qq_, Pq_);
 
 DECLARE_BINARY_INST(Vdq, Edq);
+
+DECLARE_BINARY_INST(Vdq, EdQ);
 
 DECLARE_BINARY_INST(Vdq, Mdq);
 

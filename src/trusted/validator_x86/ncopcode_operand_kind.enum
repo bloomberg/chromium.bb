@@ -151,7 +151,10 @@ Mv_Operand
 Mo_Operand
 
 # A 128-bit operand in memory. Intel's notation is m128.
-Mqo_Operand
+# AMD's notation is Mdq.
+# Note: Because the size is the same, Mdq_Operand is a synonym for Mpd_Operand
+# and Mps_Operand.
+Mdq_Operand
 
 # A memory operand containing a far pointer composed of
 # a 16-bit selector and a 16 bit offset. Intel's notation
@@ -171,8 +174,15 @@ Mpo_Operand
 # Like E_Operand, but uses MMX registers instead.
 Mmx_E_Operand
 
+# Pseudonym for Mxx_E_Operand that automatically adds
+# OpFlag(ModRmModIs0x3).
+Mmx_N_Operand
+
 # Like G_Operand, but uses MMX registers instead.
 Mmx_G_Operand
+
+# Like Mmx_G_Operand, but size is always 32 bits.
+Mmx_Gd_Operand
 
 # Like E_Operand, but uses XMM registers instead.
 Xmm_E_Operand

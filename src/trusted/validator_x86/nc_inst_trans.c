@@ -614,6 +614,7 @@ static RegKind GetOperandKindRegKind(OperandKind kind) {
     case Mv_Operand:
     case Mpv_Operand:
     case Ov_Operand:
+    case Mmx_Gd_Operand:
       return RegSize32;
     case Ao_Operand:
     case Eo_Operand:
@@ -624,9 +625,14 @@ static RegKind GetOperandKindRegKind(OperandKind kind) {
     case Oo_Operand:
     case Xmm_Eo_Operand:
     case Xmm_Go_Operand:
+    case Mmx_E_Operand:
+    case Mmx_G_Operand:
       return RegSize64;
     case Edq_Operand:
     case Gdq_Operand:
+    case Mdq_Operand:
+    case Xmm_E_Operand:
+    case Xmm_G_Operand:
       return RegSize128;
     default:
       return RegUndefined;
@@ -1454,7 +1460,8 @@ static ExprNode* AppendOperand(NcInstState* state, Operand* operand) {
     case Mb_Operand:
     case Mw_Operand:
     case Mv_Operand:
-    case Mo_Operand: {
+    case Mo_Operand:
+    case Mdq_Operand: {
         ExprNode* address =
             AppendEffectiveAddress(state, operand, ModRmGeneral);
         /* Near operands are jump addresses. Mark them as such. */
@@ -1494,6 +1501,7 @@ static ExprNode* AppendOperand(NcInstState* state, Operand* operand) {
        * how to process the J operand (see Intel manual for call statement).
        */
       return AppendRelativeImmediate(state);
+    case Mmx_Gd_Operand:
     case Mmx_G_Operand:
       return AppendOperandRegister(state, operand, GetGenRegRegister(state),
                                    ModRmMmx);
