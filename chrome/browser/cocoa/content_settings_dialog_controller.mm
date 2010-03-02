@@ -13,7 +13,9 @@
 #import "chrome/browser/cocoa/content_exceptions_window_controller.h"
 #import "chrome/browser/cocoa/cookies_window_controller.h"
 #import "chrome/browser/host_content_settings_map.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "grit/locale_settings.h"
 
@@ -38,6 +40,7 @@ ContentSettingsDialogController* g_instance = nil;
 
 @interface ContentSettingsDialogController(Private)
 - (id)initWithProfile:(Profile*)profile;
+- (void)selectTab:(ContentSettingsType)settingsType;
 - (void)showExceptionsForType:(ContentSettingsType)settingsType;
 
 // Properties that the radio groups and checkboxes are bound to.
@@ -49,6 +52,29 @@ ContentSettingsDialogController* g_instance = nil;
 @property(assign, nonatomic) NSInteger popupsEnabledIndex;
 @property(assign, nonatomic) NSInteger pluginsEnabledIndex;
 @end
+
+// A C++ class registered for changes in preferences.
+class PrefObserverBridge : public NotificationObserver {
+ public:
+  PrefObserverBridge(ContentSettingsDialogController* controller)
+      : controller_(controller) {}
+
+  virtual ~PrefObserverBridge() {}
+
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) {
+    std::wstring* pref_name =  Details<std::wstring>(details).ptr();
+    if (type == NotificationType::PREF_CHANGED &&
+        *pref_name == prefs::kClearSiteDataOnExit) {
+      // Update UI.
+      [controller_ setClearSiteDataOnExit:[controller_ clearSiteDataOnExit]];
+    }
+  }
+
+ private:
+  ContentSettingsDialogController* controller_;  // weak, owns us
+};
 
 
 @implementation ContentSettingsDialogController
@@ -72,10 +98,9 @@ ContentSettingsDialogController* g_instance = nil;
     if (settingsType == CONTENT_SETTINGS_TYPE_DEFAULT)
       settingsType = CONTENT_SETTINGS_TYPE_COOKIES;
   }
-  // TODO(thakis): Actually select desired tab.
-  // TODO(thakis): Safe current tab on tab switch as well.
   // TODO(thakis): Autosave window pos.
 
+  [g_instance selectTab:settingsType];
   [g_instance showWindow:nil];
   return g_instance;
 }
@@ -88,7 +113,7 @@ ContentSettingsDialogController* g_instance = nil;
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
     profile_ = profile;
 
-    // TODO(thakis): Listen for kClearSiteDataOnExit pref change notifications.
+    observer_.reset(new PrefObserverBridge(self));
     clearSiteDataOnExit_.Init(prefs::kClearSiteDataOnExit,
                               profile->GetPrefs(), NULL);
 
@@ -104,9 +129,28 @@ ContentSettingsDialogController* g_instance = nil;
   DCHECK_EQ(self, [[self window] delegate]);
 }
 
+// NSWindowDelegate method.
 - (void)windowWillClose:(NSNotification*)notification {
   [self autorelease];
   g_instance = nil;
+}
+
+- (void)selectTab:(ContentSettingsType)settingsType {
+  [self window];  // Make sure the nib file is loaded.
+  DCHECK(tabView_);
+  [tabView_ selectTabViewItemAtIndex:settingsType];
+}
+
+// NSTabViewDelegate method.
+- (void)         tabView:(NSTabView*)tabView
+    didSelectTabViewItem:(NSTabViewItem*)tabViewItem {
+  DCHECK_EQ(tabView_, tabView);
+  NSInteger index = [tabView indexOfTabViewItem:tabViewItem];
+  DCHECK_GT(index, CONTENT_SETTINGS_TYPE_DEFAULT);
+  DCHECK_LT(index, CONTENT_SETTINGS_NUM_TYPES);
+  if (index > CONTENT_SETTINGS_TYPE_DEFAULT &&
+       index < CONTENT_SETTINGS_NUM_TYPES)
+    lastSelectedTab_.SetValue(index);
 }
 
 // Let esc close the window.

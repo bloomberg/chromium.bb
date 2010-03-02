@@ -5,19 +5,23 @@
 #import <Cocoa/Cocoa.h>
 
 #import "base/cocoa_protocols_mac.h"
+#include "base/scoped_ptr.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/browser/pref_member.h"
 
+class PrefObserverBridge;
 class Profile;
 
 // This controller manages a dialog that lets the user manage the content
 // settings for several content setting types.
 @interface ContentSettingsDialogController
-    : NSWindowController<NSWindowDelegate> {
+    : NSWindowController<NSWindowDelegate, NSTabViewDelegate> {
  @private
+  IBOutlet NSTabView* tabView_;
   Profile* profile_;  // weak
   IntegerPrefMember lastSelectedTab_;
   BooleanPrefMember clearSiteDataOnExit_;
+  scoped_ptr<PrefObserverBridge> observer_;  // Watches for pref changes.
 }
 
 // Show the content settings dialog associated with the given profile (or the
