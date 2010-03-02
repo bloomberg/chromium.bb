@@ -60,9 +60,18 @@ env.ComponentProgram('sel_universal',
 if ARGUMENTS.get('sdl', 'hermetic') == 'none':
   Return()
 
-# only linux support is tested for now
-if not env.Bit('linux'):
+# TODO(robertm): enable this ASAP
+# the problem is main() which appears doubly defined to the linker
+if env.Bit('mac'):
   Return()
+
+# TODO(robertm): enable this ASAP
+# the problem is:  error C2664: 'NaClThreadCtor' : cannot convert
+#  parameter 2 from 'ThreadRoutine' to 'void (__stdcall *)(void *)'
+#  this is a __cdecl vs __stdcall issue
+if env.Bit('windows'):
+  Return()
+
 
 # x86/64 has not been tested
 if env['TARGET_SUBARCH'] == '64':
@@ -98,8 +107,6 @@ def AddSdlRequirements(sdl_env, target):
   # TODO(robetrm): reinvestigate this
   if sdl_env['TARGET_ARCHITECTURE'] == 'arm':
     return
-  if not sdl_env.Bit('linux'):
-    return
   if ARGUMENTS.get('sdl', 'hermetic') == 'none':
     return
 
@@ -108,22 +115,41 @@ def AddSdlRequirements(sdl_env, target):
 
 def MakeSdlEnv(env):
   # TODO(robertm): consider always using SDL here and get rid of
-  #                this function
-  if not env.Bit('linux'):
-    return env
+  #                this function as we already make sure above that we
+  #                are in dsl mode
   if ARGUMENTS.get('sdl', 'hermetic') == 'none':
     return env
 
   sdl_env = env.Clone()
   sdl_env.Append(CPPDEFINES=['HAVE_SDL'])
-
   sdl_env.Tool('sdl')
   print '=' * 70
   print 'SDL build (%s) enabled for %s' % (ARGUMENTS.get('sdl', 'hermetic'),
                                            sdl_env['BUILD_TYPE'])
   print sdl_env.subst('Using version in ${SDL_DIR}')
   print '=' * 70
+
+  # TODO(bradnelson): this should probably go into the "Tool"
+  if sdl_env.Bit('windows'):
+    if sdl_env.Bit('debug'):
+      sdl_env.Append(LINKFLAGS = ['/SUBSYSTEM:CONSOLE'])
+    else:
+      sdl_env.Append(LINKFLAGS = ['/SUBSYSTEM:WINDOWS'])
+
   return sdl_env
+
+
+def MakeExtraSdlObjects(env):
+  if env.Bit('mac'):
+    env_sdlmain = env.Clone()
+    # TODO(robertm): explain why we need to disable this warning
+    env_sdlmain.FilterOut(CCFLAGS=['-Werror'])
+    return [env_sdlmain.ComponentObject(
+        'SDLApplication',
+        '${MAIN_DIR}/common/SDLApplication.m'),
+            ]
+  else:
+    return []
 
 
 sdl_env = MakeSdlEnv(env)
@@ -135,11 +161,13 @@ sdl_env.FilterOut(LINKFLAGS=['-static'])
 # NOTE: we need Cocoa because of the GetPluginDir() implementation
 #       on mac (nonnacl_util_c)
 
+extra_sdl_objs = MakeExtraSdlObjects(sdl_env)
+
 node = sdl_env.ComponentProgram('sel_universal_new',
                                 ['sel_universal_new.cc',
                                  'multimedia_sdl.cc',
                                  'multimedia_handler.cc'
-                                 ],
+                                 ] + extra_sdl_objs,
                                 EXTRA_LIBS=['nonnacl_util_c',
                                             'nonnacl_srpc',
                                             'nrd_xfer',
@@ -153,13 +181,16 @@ node = sdl_env.ComponentProgram('sel_universal_new',
 
 AddSdlRequirements(sdl_env, node)
 
-# manual test for multimedia
-sdl_env.ComponentProgram('multimedia_test',
-                         ['multimedia_test.cc',
-                          'multimedia_sdl.cc',
-                          ],
-                         EXTRA_LIBS=['platform',
-                                     'gio',
-                                     ],
-                         FRAMEWORKS=['Cocoa'],
-                         )
+# TODO(robertm): eliminate unistd.h include which does not exist on windows
+if not sdl_env.Bit('windows'):
+  # manual test for multimedia
+  sdl_env.ComponentProgram('multimedia_test',
+                           ['multimedia_test.cc',
+                            'multimedia_sdl.cc',
+                            ] + extra_sdl_objs,
+                           EXTRA_LIBS=['platform',
+                                       'gio',
+                                       ],
+                           FRAMEWORKS=['Cocoa'],
+                           )
+  AddSdlRequirements(sdl_env, node)

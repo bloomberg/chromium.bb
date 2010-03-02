@@ -23,9 +23,6 @@
 
 // Standard helper class to tie mutex lock/unlock to a scope.
 class ScopedMutexLock {
- private:
-  NaClMutex* mutex_;
-
  public:
   explicit ScopedMutexLock(NaClMutex* m)
     : mutex_(m) {
@@ -35,16 +32,15 @@ class ScopedMutexLock {
   ~ScopedMutexLock() {
     NaClMutexUnlock(mutex_);
   }
+
+ private:
+  NaClMutex* mutex_;
 };
 
 // Job to be put in a workqueue,
 // Intended to be subclassed.
 // The Action field is where all the work gets done.
 class Job {
- private:
-  NaClMutex mutex_;
-  NaClCondVar condvar_;
-
  public:
   Job() {
     NaClMutexCtor(&mutex_);
@@ -65,19 +61,16 @@ class Job {
   }
 
   virtual void Action() = 0;
+
+ private:
+  NaClMutex mutex_;
+  NaClCondVar condvar_;
 };
 
 
 // A workqueue starts a thread that waits for Jobs to be added
 // to the queue and then runs them.
 class ThreadedWorkQueue {
- private:
-  std::queue<Job*> queue_;
-  NaClMutex mutex_;
-  NaClSemaphore sem_;
-  NaClThread thread_;
-  typedef void (*ThreadRoutine) (void *arg);
-
  public:
   ThreadedWorkQueue() {
     NaClMutexCtor(&mutex_);
@@ -104,7 +97,9 @@ class ThreadedWorkQueue {
   }
 
   void StartInAnotherThread() {
+    typedef void (*ThreadRoutine) (void *arg);
     NaClThreadCtor(&thread_,
+                   // NOTE: Visual studio does not like any other cast
                    reinterpret_cast<ThreadRoutine>(ThreadedWorkQueue::Run),
                    this,
                    128 << 10);
@@ -127,5 +122,11 @@ class ThreadedWorkQueue {
     queue_.pop();
     return job;
   }
+
+ private:
+  std::queue<Job*> queue_;
+  NaClMutex mutex_;
+  NaClSemaphore sem_;
+  NaClThread thread_;
 };
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_SEL_LDR_UNIVERSAL_WORKQUEUE_H_ */

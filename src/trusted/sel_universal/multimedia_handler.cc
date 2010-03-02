@@ -174,12 +174,13 @@ void IntializeMultimediaHandler(NaClSrpcChannel* channel,
 
   NaClLog(1, "spawning multimedia service thread\n");
 
-  typedef void (*ThreadRoutine) (void* arg);
   NaClThread thread;
-  if (!NaClThreadCtor(&thread,
-                      reinterpret_cast<ThreadRoutine>(ServiceHandlerThread),
-                      descs[0],
-                      128 << 10)) {
+  typedef void (*ThreadRoutine) (void *arg);
+  if (!NaClThreadCtor(
+        &thread,
+        reinterpret_cast<ThreadRoutine>(ServiceHandlerThread),
+        descs[0],
+        128 << 10)) {
     NaClLog(LOG_FATAL, "cannot create service handler thread\n");
   }
 
