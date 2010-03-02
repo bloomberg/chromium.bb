@@ -86,14 +86,6 @@ bool NaClProcessHost::LaunchSelLdr() {
   CommandLine* cmd_line = new CommandLine(exe_path);
   nacl::CopyNaClCommandLineArguments(cmd_line);
 
-#if defined(OS_MACOSX)
-  // TODO(dspringer): NaCl is temporalrily disabled on the Mac by default, but
-  // it can be enabled with the --enable-nacl cmd-line switch. Remove this check
-  // when the security issues in the Mac PIC code are resolved.
-  if (!cmd_line->HasSwitch(switches::kEnableNaClOnMac))
-    return false;
-#endif
-
   cmd_line->AppendSwitchWithValue(switches::kProcessType,
                                   switches::kNaClLoaderProcess);
 
@@ -106,7 +98,7 @@ bool NaClProcessHost::LaunchSelLdr() {
     NaClBrokerService::GetInstance()->Init(resource_dispatcher_host_);
     NaClBrokerService::GetInstance()->LaunchLoader(this,
                                                    ASCIIToWide(channel_id()));
-  } else
+  } else  // NO_LINT
 #endif
     ChildProcessHost::Launch(
 #if defined(OS_WIN)

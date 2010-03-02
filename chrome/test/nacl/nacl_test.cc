@@ -55,9 +55,6 @@ NaClTest::NaClTest()
 #if defined(OS_MACOSX) || defined(OS_LINUX)
   launch_arguments_.AppendSwitch(switches::kNoSandbox);
 #endif
-#if defined(OS_MACOSX)
-  launch_arguments_.AppendSwitch(switches::kEnableNaClOnMac);
-#endif
 }
 
 NaClTest::~NaClTest() {}

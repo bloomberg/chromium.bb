@@ -27,10 +27,6 @@ namespace nacl {
       switches::kEnableDCHECK,
       switches::kSilentDumpOnDCHECK,
       switches::kMemoryProfiling,
-#if defined(OS_MACOSX)
-      // TODO(dspringer): remove this when NaCl x86-32 security issues are fixed
-      switches::kEnableNaClOnMac,
-#endif
     };
 
     for (size_t i = 0; i < arraysize(switch_names); ++i) {

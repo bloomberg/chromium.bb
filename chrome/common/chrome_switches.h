@@ -91,10 +91,6 @@ extern const char kEnableIPv6[];
 extern const char kEnableLogging[];
 extern const char kEnableMonitorProfile[];
 extern const char kEnableNativeWebWorkers[];
-#if defined(OS_MACOSX)
-// TODO(dspringer): remove this when NaCl x86-32 security issues are fixed
-extern const char kEnableNaClOnMac[];
-#endif
 extern const char kEnablePrivacyBlacklists[];
 extern const char kEnableRendererAccessibility[];
 extern const char kEnableSeccompSandbox[];
