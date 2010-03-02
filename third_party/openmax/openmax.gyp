@@ -1,4 +1,4 @@
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2010 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -26,9 +26,12 @@
         'include_dirs': [
           'il',
         ],
+        'defines': [
+          '__OMX_EXPORTS',
+        ],
       },
       'conditions': [
-        ['openmax_type=="stub"', {
+        ['OS!="linux"', {
           'type': '<(library)',
           'dependencies': [
             '../../base/base.gyp:base',
@@ -42,31 +45,64 @@
           'defines': [
             '__OMX_EXPORTS',
           ],
+        }],
+        ['OS=="linux"', {
+          'variables': {
+            'generate_stubs_script': '../../tools/generate_stubs/generate_stubs.py',
+            'sig_files': [
+              'il.sigs',
+            ],
+            'extra_header': 'il_stub_headers.fragment',
+            'outfile_type': 'posix_stubs',
+            'stubs_filename_root': 'il_stubs',
+            'project_path': 'third_party/openmax',
+            'intermediate_dir': '<(INTERMEDIATE_DIR)',
+            'output_root': '<(SHARED_INTERMEDIATE_DIR)/openmax',
+           },
+          'type': '<(library)',
+          'dependencies': [
+            '../../base/base.gyp:base',
+          ],
+          'defines': [
+            '__OMX_EXPORTS',
+          ],
+          'include_dirs': [
+            'il',
+            '<(output_root)',
+            '../..',  # The chromium 'src' directory.
+          ],
           'direct_dependent_settings': {
-            'defines': [
-              '__OMX_EXPORTS',
+            'include_dirs': [
+              '<(output_root)',
+              '../..',  # The chromium 'src' directory.
             ],
           },
-        }],
-        ['openmax_type=="bellagio"', {
-          'type': 'none',
-          'direct_dependent_settings': {
-            'link_settings': {
-              'libraries': [
-                '-lomxil-bellagio',
+          'actions': [
+            {
+              'action_name': 'generate_stubs',
+              'inputs': [
+                '<(generate_stubs_script)',
+                '<(extra_header)',
+                '<@(sig_files)',
               ],
-            },
-          },
-        }],
-        ['openmax_type=="omxcore"', {
-          'type': 'none',
-          'direct_dependent_settings': {
-            'link_settings': {
-              'libraries': [
-                '-lOmxCore',
+              'outputs': [
+                '<(intermediate_dir)/<(stubs_filename_root).cc',
+                '<(output_root)/<(project_path)/<(stubs_filename_root).h',
               ],
+              'action': ['python',
+                         '<(generate_stubs_script)',
+                         '-i', '<(intermediate_dir)',
+                         '-o', '<(output_root)/<(project_path)',
+                         '-t', '<(outfile_type)',
+                         '-e', '<(extra_header)',
+                         '-s', '<(stubs_filename_root)',
+                         '-p', '<(project_path)',
+                         '<@(_inputs)',
+              ],
+              'process_outputs_as_sources': 1,
+              'message': 'Generating OpenMAX IL stubs for dynamic loading.',
             },
-          },
+          ],
         }],
       ],
     },

@@ -320,6 +320,12 @@ int main(int argc, char** argv) {
     loop_count = 1;
   DCHECK_GE(loop_count, 1);
 
+  // Initialize OpenMAX.
+  if (!media::InitializeOpenMaxLibrary(FilePath())) {
+    LOG(ERROR) << "Unable to initialize OpenMAX library.";
+    return false;
+  }
+
   // If FFmpeg should be used for demuxing load the library here and do
   // the initialization.
   if (use_ffmpeg && !InitFFmpeg()) {

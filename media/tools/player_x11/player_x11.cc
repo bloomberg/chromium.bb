@@ -64,6 +64,14 @@ bool InitX11() {
 bool InitPipeline(MessageLoop* message_loop,
                   const char* filename, bool enable_audio,
                   scoped_refptr<media::PipelineImpl>* pipeline) {
+  // Initialize OpenMAX.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableOpenMax) &&
+      !media::InitializeOpenMaxLibrary(FilePath())) {
+    std::cout << "Unable to initialize OpenMAX library."<< std::endl;
+    return false;
+  }
+
   // Load media libraries.
   if (!media::InitializeMediaLibrary(FilePath())) {
     std::cout << "Unable to initialize the media library." << std::endl;

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,6 +31,7 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message_utils.h"
 #include "media/base/media.h"
+#include "media/base/media_switches.h"
 #include "native_client/src/trusted/plugin/nacl_entry_points.h"
 #include "webkit/glue/webkit_glue.h"
 
@@ -105,6 +106,12 @@ RenderProcess::RenderProcess()
   initialized_media_library_ =
       PathService::Get(base::DIR_MODULE, &module_path) &&
       media::InitializeMediaLibrary(module_path);
+
+  // TODO(hclam): Add more checks here. Currently this is not used.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableOpenMax)) {
+    media::InitializeOpenMaxLibrary(module_path);
+  }
 #endif
 }
 

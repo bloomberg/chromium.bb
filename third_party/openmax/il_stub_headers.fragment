@@ -1,0 +1,8 @@
+// These are some extra includes needed in the generated stub file for defining
+// various OpenMAX types.
+
+extern "C" {
+
+#include "third_party/openmax/il/OMX_Core.h"
+
+}

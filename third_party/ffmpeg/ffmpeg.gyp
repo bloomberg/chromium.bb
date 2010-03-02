@@ -592,7 +592,7 @@
   'targets': [
     {
       'variables': {
-        'generate_stubs_script': 'generate_stubs.py',
+        'generate_stubs_script': '../../tools/generate_stubs/generate_stubs.py',
         'sig_files': [
           # Note that these must be listed in dependency order.
           # (i.e. if A depends on B, then B must be listed before A.)
