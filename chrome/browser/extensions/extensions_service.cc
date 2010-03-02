@@ -552,14 +552,10 @@ bool ExtensionsService::IsIncognitoEnabled(const std::string& extension_id) {
 
 void ExtensionsService::SetIsIncognitoEnabled(const std::string& extension_id,
                                               bool enabled) {
-  Extension* extension = GetExtensionByIdInternal(extension_id, true, true);
   extension_prefs_->SetIsIncognitoEnabled(extension_id, enabled);
 
-  std::pair<Extension*, bool> details(extension, enabled);
-  NotificationService::current()->Notify(
-      NotificationType::EXTENSION_INCOGNITO_CHANGED,
-      Source<Profile>(profile_),
-      Details<std::pair<Extension*, bool> >(&details));
+  DCHECK(GetExtensionByIdInternal(extension_id, true, true));
+  ReloadExtension(extension_id);
 }
 
 void ExtensionsService::CheckForExternalUpdates() {

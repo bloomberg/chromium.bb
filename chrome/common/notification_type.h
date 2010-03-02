@@ -677,10 +677,6 @@ class NotificationType {
     // details are an Extension*, and the source is a Profile*.
     EXTENSION_UPDATE_DISABLED,
 
-    // Sent when an extension has been enabled/disabled in incognito. The
-    // details are std::pair<Extension*, bool>, and the source is a Profile.
-    EXTENSION_INCOGNITO_CHANGED,
-
     // Sent when an extension is about to be installed so we can (in the case of
     // themes) alert the user with a loading dialog. The source is the download
     // manager and the details are the download url.

@@ -217,6 +217,14 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
   localized_strings.SetString(L"content",
       l10n_util::GetStringF(IDS_NEW_TAB_OTR_MESSAGE,
                             GetUrlWithLang(kLearnMoreIncognitoUrl)));
+  localized_strings.SetString(L"extensionsmessage",
+      l10n_util::GetStringF(IDS_NEW_TAB_OTR_EXTENSIONS_MESSAGE,
+                            ASCIIToWide(chrome::kChromeUIExtensionsURL)));
+  bool show_extensions_disabled =
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExperimentalExtensionApis);
+  localized_strings.SetString(L"showextensionsmessage",
+      show_extensions_disabled ? "true" : "false");
   bool bookmark_bar_attached = profile_->GetPrefs()->GetBoolean(
       prefs::kShowBookmarkBar);
   localized_strings.SetString(L"bookmarkbarattached",

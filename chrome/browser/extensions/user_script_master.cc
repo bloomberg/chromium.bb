@@ -294,8 +294,6 @@ UserScriptMaster::UserScriptMaster(const FilePath& script_dir, Profile* profile)
                  Source<Profile>(profile_));
   registrar_.Add(this, NotificationType::EXTENSION_LOADED,
                  Source<Profile>(profile_));
-  registrar_.Add(this, NotificationType::EXTENSION_INCOGNITO_CHANGED,
-                 Source<Profile>(profile_));
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
                  Source<Profile>(profile_));
 }
@@ -350,23 +348,6 @@ void UserScriptMaster::Observe(NotificationType type,
         StartScan();
       break;
     }
-    case NotificationType::EXTENSION_INCOGNITO_CHANGED: {
-      // Toggle the incognito_enabled bit for any content scripts inside the
-      // extension.
-      Extension* extension =
-          Details<std::pair<Extension*, bool> >(details).ptr()->first;
-      bool incognito_enabled =
-          Details<std::pair<Extension*, bool> >(details).ptr()->second;
-      for (UserScriptList::iterator iter = lone_scripts_.begin();
-           iter != lone_scripts_.end(); ++iter) {
-        if (iter->extension_id() == extension->id())
-          (*iter).set_incognito_enabled(incognito_enabled);
-      }
-      if (extensions_service_ready_)
-        StartScan();
-      break;
-    }
-
     case NotificationType::EXTENSION_UNLOADED: {
       // Remove any content scripts.
       Extension* extension = Details<Extension>(details).ptr();
