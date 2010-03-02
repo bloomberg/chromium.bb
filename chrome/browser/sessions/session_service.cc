@@ -398,7 +398,7 @@ SessionService::Handle SessionService::GetCurrentSession(
   if (pending_window_close_ids_.empty()) {
     // If there are no pending window closes, we can get the current session
     // from memory.
-    InternalSessionRequest* request = new InternalSessionRequest(
+    scoped_refptr<InternalSessionRequest> request = new InternalSessionRequest(
         NewCallback(this, &SessionService::OnGotSessionCommands),
         callback);
     AddRequest(request, consumer);
