@@ -105,10 +105,6 @@ class RenderWidget : public IPC::Channel::Listener,
   // Close the underlying WebWidget.
   virtual void Close();
 
-  // Set owner widget who creates this popup menu. This is used to inform
-  // owner that popup menu is closed.
-  void SetPopupMenuOwnerWidget(RenderWidget* widget);
-
  protected:
   // Friend RefCounted so that the dtor can be non-public. Using this class
   // without ref-counting is an error.
@@ -209,9 +205,6 @@ class RenderWidget : public IPC::Channel::Listener,
   // Called by OnHandleInputEvent() to notify subclasses that a key event was
   // just handled.
   virtual void DidHandleKeyEvent() {}
-
-  // Reset the popup menu state when it is closed.
-  void PopupMenuClosed();
 
   // Routing ID that allows us to communicate to the parent browser process
   // RenderWidgetHost. When MSG_ROUTING_NONE, no messages may be sent.
@@ -323,15 +316,6 @@ class RenderWidget : public IPC::Channel::Listener,
 
   // Indicates if the next sequence of Char events should be suppressed or not.
   bool suppress_next_char_events_;
-
-  // These are for popup menu so the focus and blur events can be dispatched
-  // properly.
-  //
-  // Whether this RenderWidget is showing a popup menu widget.
-  bool showing_popup_menu_;
-  // This is for popup menu RenderWidget to remember its owner so it could
-  // inform the owner that popup menu is closed.
-  scoped_refptr<RenderWidget> popup_menu_owner_widget_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidget);
 };

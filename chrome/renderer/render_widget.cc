@@ -67,9 +67,7 @@ RenderWidget::RenderWidget(RenderThreadBase* render_thread, bool activatable)
       ime_control_busy_(false),
       activatable_(activatable),
       pending_window_rect_count_(0),
-      suppress_next_char_events_(false),
-      showing_popup_menu_(false),
-      popup_menu_owner_widget_(NULL) {
+      suppress_next_char_events_(false) {
   RenderProcess::current()->AddRefProcess();
   DCHECK(render_thread_);
 }
@@ -345,19 +343,8 @@ void RenderWidget::OnMouseCaptureLost() {
 
 void RenderWidget::OnSetFocus(bool enable) {
   has_focus_ = enable;
-  if (webwidget_) {
-    // Suppress focus / blur event if this RenderView creates a popup
-    // menu and the popup menu is showing.
-    // This is because the popup menu is a child of the RenderView and
-    // when user clicks select control to show popup, we should not
-    // consider this as focusing changes, so the focus / blur events
-    // after popup menu is showing should be suppressed. The flag
-    // will be reset once the popup menu is closed (see
-    // RenderWidget::PopupMenuClosed).
-    if (!showing_popup_menu_)
-      webwidget_->setFocus(enable);
-  }
-
+  if (webwidget_)
+    webwidget_->setFocus(enable);
   if (enable) {
     // Force to retrieve the state of the focused widget to determine if we
     // should activate IMEs next time when this process calls the UpdateIME()
@@ -633,11 +620,6 @@ void RenderWidget::didBlur() {
 }
 
 void RenderWidget::DoDeferredClose() {
-  if (popup_menu_owner_widget_.get()) {
-    popup_menu_owner_widget_->PopupMenuClosed();
-    popup_menu_owner_widget_ = NULL;
-  }
-
   Send(new ViewHostMsg_Close(routing_id_));
 }
 
@@ -884,12 +866,4 @@ void RenderWidget::CleanupWindowInPluginMoves(gfx::PluginWindowHandle window) {
       break;
     }
   }
-}
-
-void RenderWidget::SetPopupMenuOwnerWidget(RenderWidget* widget) {
-  popup_menu_owner_widget_ = widget;
-}
-
-void RenderWidget::PopupMenuClosed() {
-  showing_popup_menu_ = false;
 }
