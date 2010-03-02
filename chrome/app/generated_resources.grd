@@ -2941,6 +2941,20 @@ each locale. -->
         &amp;View
       </message>
 
+      <!-- Add Client Certificate Dialog -->
+      <message name="IDS_ADD_CERT_DIALOG_ADD" desc="Title of the button that adds the certificate in the Add Client Certificate dialog">
+        Add Certificate
+      </message>
+      <message name="IDS_ADD_CERT_FAILURE_TITLE" desc="Title of add-certificate error dialog">
+        Client Certificate Error
+      </message>
+      <message name="IDS_ADD_CERT_ERR_INVALID_CERT" desc="Error message when the server returns an invalid client certificate after key generation">
+        The server returned an invalid client certificate.
+      </message>
+      <message name="IDS_ADD_CERT_ERR_FAILED" desc="Generic error message for a failure to add the generated certificate to the cert store/keychain">
+        There was an error while trying to store the client certificate.
+      </message>
+
       <!-- Basic Auth Dialog -->
       <message name="IDS_LOGIN_DIALOG_TITLE" desc="String to be displayed in the title bar of the login prompt dialog">
         Authentication Required

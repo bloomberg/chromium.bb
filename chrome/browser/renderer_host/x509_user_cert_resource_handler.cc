@@ -10,9 +10,9 @@
 #include "chrome/browser/download/download_file.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
+#include "chrome/browser/ssl/ssl_add_cert_handler.h"
 #include "chrome/common/resource_response.h"
 #include "chrome/common/url_constants.h"
-#include "net/base/cert_database.h"
 #include "net/base/io_buffer.h"
 #include "net/base/mime_sniffer.h"
 #include "net/base/mime_util.h"
@@ -91,12 +91,18 @@ bool X509UserCertResourceHandler::OnResponseCompleted(
     int request_id,
     const URLRequestStatus& urs,
     const std::string& sec_info) {
+  if (urs.status() != URLRequestStatus::SUCCESS)
+    return false;
+
   // TODO(gauravsh): Verify that 'request_id' was actually a keygen form post
   // and only then import the certificate.
-  scoped_ptr<net::CertDatabase> cert_db(new net::CertDatabase());
   AssembleResource();
-
-  return cert_db->AddUserCert(resource_buffer_->data(), content_length_);
+  scoped_refptr<net::X509Certificate> cert =
+      net::X509Certificate::CreateFromBytes(resource_buffer_->data(),
+                                            content_length_);
+  // The handler will run the UI and delete itself when it's finished.
+  new SSLAddCertHandler(request_, cert);
+  return true;
 }
 
 void X509UserCertResourceHandler::OnRequestClosed() {
