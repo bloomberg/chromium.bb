@@ -8,6 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/sync/glue/change_processor.h"
+#include "chrome/browser/sync/glue/database_model_worker.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/glue/http_bridge.h"
 #include "webkit/glue/webkit_glue.h"
@@ -59,6 +60,7 @@ void SyncBackendHost::Initialize(
   // after the syncapi is destroyed.  Make sure to NULL-check workers_ indices
   // when a new type is synced as the worker may already exist and you just
   // need to update routing_info_.
+  registrar_.workers[GROUP_DB] = new DatabaseModelWorker();
   registrar_.workers[GROUP_UI] = new UIModelWorker(frontend_loop_);
   registrar_.workers[GROUP_PASSIVE] = new ModelSafeWorker();
 
@@ -121,8 +123,10 @@ void SyncBackendHost::Shutdown(bool sync_disabled) {
   core_thread_.Stop();
 
   registrar_.routing_info.clear();
+  registrar_.workers[GROUP_DB] = NULL;
   registrar_.workers[GROUP_UI] = NULL;
   registrar_.workers[GROUP_PASSIVE] = NULL;
+  registrar_.workers.erase(GROUP_DB);
   registrar_.workers.erase(GROUP_UI);
   registrar_.workers.erase(GROUP_PASSIVE);
   frontend_ = NULL;
@@ -329,19 +333,6 @@ void SyncBackendHost::Core::OnChangesApplied(
     return;
   ChangeProcessor* processor = it->second;
 
-  // ChangesApplied is the one exception that should come over from the sync
-  // backend already on the service_loop_ thanks to our UIModelWorker.
-  // SyncFrontend changes exclusively on the UI loop, because it updates
-  // the bookmark model.  As such, we don't need to worry about changes that
-  // have been made to the bookmark model but not yet applied to the sync
-  // model -- such changes only happen on the UI loop, and there's no
-  // contention.
-  if (host_->frontend_loop_ != MessageLoop::current()) {
-    // TODO(ncarter): Bug 1480644.  Make this a DCHECK once syncapi filters
-    // out all irrelevant changes.
-    DLOG(WARNING) << "Could not update bookmark model from non-UI thread";
-    return;
-  }
   processor->ApplyChangesFromSyncModel(trans, changes, change_count);
 }
 
