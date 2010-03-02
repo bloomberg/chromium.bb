@@ -2415,3 +2415,10 @@
    fun:main
 
 }
+{
+   bug_37168
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN22ProfileSyncFactoryImpl24CreateProfileSyncServiceEv
+   fun:_ZN14TestingProfile24CreateProfileSyncServiceEv
+}
