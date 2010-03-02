@@ -10,6 +10,7 @@
 #include <string>
 
 #include "chrome/browser/content_exceptions_table_model.h"
+#include "chrome/browser/content_setting_combo_model.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
 
@@ -41,16 +42,6 @@ class ContentExceptionEditor {
   // Returns true if we're adding a new item.
   bool is_new() const { return index_ == -1; }
 
-  // Returns the number of items in the |action_combo_|.
-  int GetItemCount();
-
-  // Returns the string representation for an item in |action_combo_|.
-  std::string GetTitleFor(int index);
-
-  // Changes an index from |action_combo_| into a ContentSetting and vice versa.
-  ContentSetting SettingForIndex(int index);
-  int IndexForSetting(ContentSetting setting);
-
   bool IsHostValid(const std::string& host) const;
 
   void UpdateImage(GtkWidget* image, bool is_valid);
@@ -66,7 +57,9 @@ class ContentExceptionEditor {
 
   Delegate* delegate_;
   ContentExceptionsTableModel* model_;
-  bool show_ask_;
+
+  // The model for Combobox widget.
+  ContentSettingComboModel cb_model_;
 
   // Index of the item being edited. If -1, indicates this is a new entry.
   const int index_;

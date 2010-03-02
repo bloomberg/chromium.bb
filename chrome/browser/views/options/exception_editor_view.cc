@@ -21,15 +21,6 @@
 
 namespace {
 
-// The settings shown in the combobox if show_ask_ is false.
-const ContentSetting kNoAskSettings[] = { CONTENT_SETTING_ALLOW,
-                                          CONTENT_SETTING_BLOCK };
-
-// The settings shown in the combobox if show_ask_ is true.
-const ContentSetting kAskSettings[] = { CONTENT_SETTING_ALLOW,
-                                        CONTENT_SETTING_ASK,
-                                        CONTENT_SETTING_BLOCK };
-
 // Returns true if the host name is valid.
 bool ValidHost(const std::string& host) {
   if (host.empty())
@@ -40,38 +31,6 @@ bool ValidHost(const std::string& host) {
 }
 
 }  // namespace
-
-int ExceptionEditorView::ActionComboboxModel::GetItemCount() {
-  return show_ask_ ? arraysize(kAskSettings) : arraysize(kNoAskSettings);
-}
-
-std::wstring ExceptionEditorView::ActionComboboxModel::GetItemAt(int index) {
-  switch (setting_for_index(index)) {
-    case CONTENT_SETTING_ALLOW:
-      return l10n_util::GetString(IDS_EXCEPTIONS_ALLOW_BUTTON);
-    case CONTENT_SETTING_BLOCK:
-      return l10n_util::GetString(IDS_EXCEPTIONS_BLOCK_BUTTON);
-    case CONTENT_SETTING_ASK:
-      return l10n_util::GetString(IDS_EXCEPTIONS_ASK_BUTTON);
-    default:
-      NOTREACHED();
-  }
-  return std::wstring();
-}
-
-ContentSetting ExceptionEditorView::ActionComboboxModel::setting_for_index(
-    int index) {
-  return show_ask_ ? kAskSettings[index] : kNoAskSettings[index];
-}
-
-int ExceptionEditorView::ActionComboboxModel::index_for_setting(
-    ContentSetting setting) {
-  for (int i = 0; i < GetItemCount(); ++i)
-    if (setting_for_index(i) == setting)
-      return i;
-  NOTREACHED();
-  return 0;
-}
 
 ExceptionEditorView::ExceptionEditorView(Delegate* delegate,
                                          ContentExceptionsTableModel* model,
@@ -120,7 +79,7 @@ bool ExceptionEditorView::Cancel() {
 bool ExceptionEditorView::Accept() {
   std::string new_host = UTF16ToUTF8(host_tf_->text());
   ContentSetting setting =
-      cb_model_.setting_for_index(action_cb_->selected_item());
+      cb_model_.SettingForIndex(action_cb_->selected_item());
   delegate_->AcceptExceptionEdit(new_host, setting, index_, is_new());
   return true;
 }
@@ -154,7 +113,7 @@ void ExceptionEditorView::Init() {
 
   action_cb_ = new views::Combobox(&cb_model_);
   if (!is_new())
-    action_cb_->SetSelectedItem(cb_model_.index_for_setting(setting_));
+    action_cb_->SetSelectedItem(cb_model_.IndexForSetting(setting_));
 
   GridLayout* layout = CreatePanelGridLayout(this);
   SetLayoutManager(layout);

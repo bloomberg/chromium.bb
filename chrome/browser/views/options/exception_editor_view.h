@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "app/combobox_model.h"
+#include "chrome/browser/content_setting_combo_model.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
 #include "views/window/dialog_delegate.h"
@@ -73,23 +73,6 @@ class ExceptionEditorView : public views::View,
                                const views::Textfield::Keystroke& key);
 
  private:
-  // Model for the combobox.
-  class ActionComboboxModel : public ComboboxModel {
-   public:
-    explicit ActionComboboxModel(bool show_ask) : show_ask_(show_ask) {}
-
-    virtual int GetItemCount();
-    virtual std::wstring GetItemAt(int index);
-
-    ContentSetting setting_for_index(int index);
-    int index_for_setting(ContentSetting);
-
-   private:
-    const bool show_ask_;
-
-    DISALLOW_COPY_AND_ASSIGN(ActionComboboxModel);
-  };
-
   void Init();
 
   views::Label* CreateLabel(int message_id);
@@ -103,7 +86,7 @@ class ExceptionEditorView : public views::View,
 
   Delegate* delegate_;
   ContentExceptionsTableModel* model_;
-  ActionComboboxModel cb_model_;
+  ContentSettingComboModel cb_model_;
 
   // Index of the item being edited. If -1, indices this is a new entry.
   const int index_;

@@ -732,6 +732,8 @@
         'browser/command_updater.h',
         'browser/content_exceptions_table_model.cc',
         'browser/content_exceptions_table_model.h',
+        'browser/content_setting_combo_model.cc',
+        'browser/content_setting_combo_model.h',
         'browser/cookie_modal_dialog.cc',
         'browser/cookie_modal_dialog.h',
         'browser/cookie_modal_dialog_mac.mm',

@@ -18,15 +18,6 @@
 
 namespace {
 
-// The settings shown in the combobox if show_ask_ is false;
-const ContentSetting kNoAskSettings[] = { CONTENT_SETTING_ALLOW,
-                                          CONTENT_SETTING_BLOCK };
-
-// The settings shown in the combobox if show_ask_ is true;
-const ContentSetting kAskSettings[] = { CONTENT_SETTING_ALLOW,
-                                        CONTENT_SETTING_ASK,
-                                        CONTENT_SETTING_BLOCK };
-
 // Returns true if the host name is valid.
 bool ValidHost(const std::string& host) {
   if (host.empty())
@@ -54,7 +45,7 @@ ContentExceptionEditor::ContentExceptionEditor(
     ContentSetting setting)
     : delegate_(delegate),
       model_(model),
-      show_ask_(model->content_type() == CONTENT_SETTINGS_TYPE_COOKIES),
+      cb_model_(model->content_type() == CONTENT_SETTINGS_TYPE_COOKIES),
       index_(index),
       host_(host),
       setting_(setting) {
@@ -80,12 +71,12 @@ ContentExceptionEditor::ContentExceptionEditor(
   host_image_ = gtk_image_new_from_pixbuf(NULL);
 
   action_combo_ = gtk_combo_box_new_text();
-  for (int i = 0; i < GetItemCount(); ++i) {
+  for (int i = 0; i < cb_model_.GetItemCount(); ++i) {
     gtk_combo_box_append_text(GTK_COMBO_BOX(action_combo_),
-                              GetTitleFor(i).c_str());
+        WideToUTF8(cb_model_.GetItemAt(i)).c_str());
   }
   gtk_combo_box_set_active(GTK_COMBO_BOX(action_combo_),
-                           IndexForSetting(setting_));
+                           cb_model_.IndexForSetting(setting_));
 
   GtkWidget* table = gtk_util::CreateLabeledControlsGroup(
       NULL,
@@ -107,36 +98,6 @@ ContentExceptionEditor::ContentExceptionEditor(
 
   g_signal_connect(dialog_, "response", G_CALLBACK(OnResponse), this);
   g_signal_connect(dialog_, "destroy", G_CALLBACK(OnWindowDestroy), this);
-}
-
-int ContentExceptionEditor::GetItemCount() {
-  return show_ask_ ? arraysize(kAskSettings) : arraysize(kNoAskSettings);
-}
-
-std::string ContentExceptionEditor::GetTitleFor(int index) {
-  switch (SettingForIndex(index)) {
-    case CONTENT_SETTING_ALLOW:
-      return l10n_util::GetStringUTF8(IDS_EXCEPTIONS_ALLOW_BUTTON);
-    case CONTENT_SETTING_BLOCK:
-      return l10n_util::GetStringUTF8(IDS_EXCEPTIONS_BLOCK_BUTTON);
-    case CONTENT_SETTING_ASK:
-      return l10n_util::GetStringUTF8(IDS_EXCEPTIONS_ASK_BUTTON);
-    default:
-      NOTREACHED();
-  }
-  return std::string();
-}
-
-ContentSetting ContentExceptionEditor::SettingForIndex(int index) {
-  return show_ask_ ? kAskSettings[index] : kNoAskSettings[index];
-}
-
-int ContentExceptionEditor::IndexForSetting(ContentSetting setting) {
-  for (int i = 0; i < GetItemCount(); ++i)
-    if (SettingForIndex(i) == setting)
-      return i;
-  NOTREACHED();
-  return 0;
 }
 
 bool ContentExceptionEditor::IsHostValid(const std::string& host) const {
@@ -171,8 +132,8 @@ void ContentExceptionEditor::OnResponse(
   if (response_id == GTK_RESPONSE_OK) {
     // Notify our delegate to update everything.
     std::string new_host = gtk_entry_get_text(GTK_ENTRY(window->entry_));
-    ContentSetting setting = window->SettingForIndex(gtk_combo_box_get_active(
-        GTK_COMBO_BOX(window->action_combo_)));
+    ContentSetting setting = window->cb_model_.SettingForIndex(
+        gtk_combo_box_get_active(GTK_COMBO_BOX(window->action_combo_)));
     window->delegate_->AcceptExceptionEdit(new_host, setting, window->index_,
                                            window->is_new());
   }
