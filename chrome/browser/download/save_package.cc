@@ -190,7 +190,15 @@ SavePackage::SavePackage(TabContents* tab_contents)
       wait_state_(INITIALIZE),
       tab_id_(tab_contents->GetRenderProcessHost()->id()),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
-  const GURL& current_page_url = tab_contents_->GetURL();
+
+  // Instead of using tab_contents_.GetURL here, we use url()
+  // (which is the "real" url of the page)
+  // from the NavigationEntry because its reflects their origin
+  // rather than the displayed one (returned by GetURL) which may be
+  // different (like having "view-source:" on the front).
+  NavigationEntry* active_entry =
+          tab_contents_->controller().GetActiveEntry();
+  const GURL& current_page_url = active_entry->url();
   DCHECK(current_page_url.is_valid());
   page_url_ = current_page_url;
   InternalInit();
