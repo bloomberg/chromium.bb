@@ -16,7 +16,7 @@ var SetTestResult = function(element_id, result) {
   element.className = result;
 }
 
-// The NaCl module.  Used to produce handles and for __shmFactory invocations.
+// The NaCl module.
 var server;
 // The default socket address for the plugin.
 var default_addr;
@@ -40,8 +40,8 @@ var expectFail = function(element, fp) {
   appendTest(new Array('fail', element, fp));
 }
 
+// Tests passing scalar types.
 var ScalarTypes = function() {
-  // Test passing scalar types.
   expectPass('bool_passret',
              true,
              function() {
@@ -67,8 +67,8 @@ var ScalarTypes = function() {
              });
 }
 
+// Tests passing array types.
 var ArrayTypes = function() {
-  // Test passing scalar types.
   expectPass('chararr_passret',
              true,
              function() {
@@ -110,8 +110,8 @@ var ArrayTypes = function() {
              });
 }
 
+// Tests passing more complex or special-purpose types.
 var SpecialTypes = function() {
-  // Test passing scalar types.
   expectPass('string_send',
              true,
              function() {
@@ -161,7 +161,7 @@ var SpecialTypes = function() {
              });
 }
 
-// The test run functions.
+// Functions to support running each of the tests.
 var testExpectedPass = function(element, has_return, fp) {
   var result = undefined;
   try {
