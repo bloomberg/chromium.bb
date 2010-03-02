@@ -6,6 +6,7 @@
 
 #include "chrome/browser/gpu_process_host.h"
 #include "chrome/browser/renderer_host/backing_store_proxy.h"
+#include "chrome/browser/renderer_host/video_layer_proxy.h"
 #include "chrome/common/gpu_messages.h"
 
 GpuViewHost::GpuViewHost(RenderWidgetHost* widget, GpuNativeWindowHandle parent)
@@ -29,6 +30,15 @@ BackingStore* GpuViewHost::CreateBackingStore(const gfx::Size& size) {
                                             size));
   return new BackingStoreProxy(widget_, size,
                                process_, backing_store_routing_id);
+}
+
+VideoLayer* GpuViewHost::CreateVideoLayer(const gfx::Size& size) {
+  int32 video_layer_routing_id = process_->GetNextRoutingId();
+  process_->Send(new GpuMsg_NewVideoLayer(routing_id_,
+                                          video_layer_routing_id,
+                                          size));
+  return new VideoLayerProxy(widget_, size,
+                             process_, video_layer_routing_id);
 }
 
 void GpuViewHost::OnWindowPainted() {

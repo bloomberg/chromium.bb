@@ -642,8 +642,11 @@ BackingStore* RenderWidgetHostViewGtk::AllocBackingStore(
 
 VideoLayer* RenderWidgetHostViewGtk::AllocVideoLayer(const gfx::Size& size) {
   if (enable_gpu_rendering_) {
-    NOTIMPLEMENTED();
-    return NULL;
+    // TODO(scherkus): is it possible for a video layer to be allocated before a
+    // backing store?
+    DCHECK(gpu_view_host_.get())
+        << "AllocVideoLayer() called before AllocBackingStore()";
+    return gpu_view_host_->CreateVideoLayer(size);
   }
 
   return new VideoLayerX(host_, size,

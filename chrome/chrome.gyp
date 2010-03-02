@@ -615,6 +615,8 @@
             'gpu/gpu_view_x.h',
             'gpu/x_util.cc',
             'gpu/x_util.h',
+            'gpu/gpu_video_layer_glx.cc',
+            'gpu/gpu_video_layer_glx.h',
           ],
           'dependencies': [
             '../gpu/gpu.gyp:gl_libs',

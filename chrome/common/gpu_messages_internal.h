@@ -21,7 +21,12 @@ IPC_BEGIN_MESSAGES(Gpu)
 
   // Creates a new backing store.
   IPC_MESSAGE_ROUTED2(GpuMsg_NewBackingStore,
-                      int32, /* backing_store_id */
+                      int32, /* backing_store_routing_id */
+                      gfx::Size /* size */)
+
+  // Creates a new video layer.
+  IPC_MESSAGE_ROUTED2(GpuMsg_NewVideoLayer,
+                      int32, /* video_layer_routing_id */
                       gfx::Size /* size */)
 
   // Updates the backing store with the given bitmap. The GPU process will send
@@ -45,6 +50,14 @@ IPC_BEGIN_MESSAGES(Gpu)
   // over the top.
   IPC_MESSAGE_ROUTED0(GpuMsg_WindowPainted)
 
+  // Updates the video layer with the given YUV data. The GPU process will send
+  // back a GpuHostMsg_PaintToVideoLayer_ACK after the paint is complete to
+  // let the caller know the TransportDIB can be freed or reused.
+  IPC_MESSAGE_ROUTED3(GpuMsg_PaintToVideoLayer,
+                      base::ProcessId, /* process */
+                      TransportDIB::Id, /* bitmap */
+                      gfx::Rect) /* bitmap_rect */
+
 IPC_END_MESSAGES(Gpu)
 
 //------------------------------------------------------------------------------
@@ -57,8 +70,10 @@ IPC_BEGIN_MESSAGES(GpuHost)
   IPC_MESSAGE_ROUTED1(GpuHostMsg_CreatedRenderWidgetHostView,
                       gfx::NativeViewId)
 
-  // Send in response to GpuMsg_PaintToBackingStore, see that for more.
+  // Sent in response to GpuMsg_PaintToBackingStore, see that for more.
   IPC_MESSAGE_ROUTED0(GpuHostMsg_PaintToBackingStore_ACK)
 
-IPC_END_MESSAGES(GpuHost)
+  // Sent in response to GpuMsg_PaintToVideoLayer, see that for more.
+  IPC_MESSAGE_ROUTED0(GpuHostMsg_PaintToVideoLayer_ACK)
 
+IPC_END_MESSAGES(GpuHost)

@@ -15,6 +15,7 @@ class VideoLayerX : public VideoLayer {
               int depth);
   virtual ~VideoLayerX();
 
+  // VideoLayer implementation.
   virtual void CopyTransportDIB(RenderProcessHost* process,
                                 TransportDIB::Id bitmap,
                                 const gfx::Rect& bitmap_rect);

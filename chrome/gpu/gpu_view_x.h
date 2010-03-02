@@ -13,6 +13,7 @@
 
 class GpuBackingStoreGLX;
 class GpuThread;
+class GpuVideoLayerGLX;
 
 namespace gfx {
 class Rect;
@@ -45,6 +46,7 @@ class GpuViewX
  private:
   // IPC message handlers.
   void OnNewBackingStore(int32 routing_id, const gfx::Size& size);
+  void OnNewVideoLayer(int32 routing_id, const gfx::Size& size);
   void OnWindowPainted();
 
   GpuThread* gpu_thread_;
@@ -53,6 +55,8 @@ class GpuViewX
   XID window_;
 
   scoped_ptr<GpuBackingStoreGLX> backing_store_;
+
+  scoped_ptr<GpuVideoLayerGLX> video_layer_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuViewX);
 };

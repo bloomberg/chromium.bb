@@ -11,6 +11,7 @@
 class BackingStore;
 class GpuProcessHost;
 class RenderWidgetHost;
+class VideoLayer;
 
 namespace gfx {
 class Size;
@@ -25,6 +26,10 @@ class GpuViewHost {
   // Creates a new backing store in the GPU process and returns ownership of
   // the new pointer to the caller.
   BackingStore* CreateBackingStore(const gfx::Size& size);
+
+  // Creates a new video layer in the GPU process and returns ownership of the
+  // new pointer to the caller.
+  VideoLayer* CreateVideoLayer(const gfx::Size& size);
 
   // Notification that the RenderWidgetHost has been asked to paint the window.
   // Depending on the backing store, the GPU backing store may have to repaint
