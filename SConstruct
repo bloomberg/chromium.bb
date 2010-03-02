@@ -1092,7 +1092,6 @@ nacl_env.Append(
     BUILD_SCONSCRIPTS = [
     ####  ALPHABETICALLY SORTED ####
     'tests/app_lib/nacl.scons',
-    'tests/arm_service_runtime/nacl.scons',
     'tests/autoloader/nacl.scons',
     'tests/bundle_size/nacl.scons',
     'tests/contest_issues/nacl.scons',

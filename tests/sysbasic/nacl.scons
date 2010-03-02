@@ -55,7 +55,51 @@ node = env.CommandSelLdrTestNacl(
     command=[env.File('tls_test.nexe')],
     exit_status='69',
     )
-
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
                        'run_tls_test')
+
+
+env.ComponentProgram(
+    'barebones_hello_world.nexe',
+    # NOTE: the x86 linker wants _start() to be the very first function
+    ['fake_startup.c',
+     'barebones_hello_world.c',
+     ],
+    LIBS=[],
+    EXTRA_LIBS=[],
+    LINKFLAGS=['-nostdlib', '-static', '-v'],
+    # NOTE: this are for ARM to really exclude libs and startup code
+    LINKFLAGS_FIRST=[],
+    LINKFLAGS_LAST=[],
+    )
+node = env.CommandSelLdrTestNacl(
+    'barebones_hello_world_test.out',
+    command=[env.File('barebones_hello_world.nexe')],
+    exit_status='69',
+    )
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'sel_ldr_tests'],
+                       'run_barebones_hello_world_test')
+
+env.ComponentProgram(
+    'barebones_exit.nexe',
+    # NOTE: the x86 linker wants _start() to be the very first function
+    ['fake_startup.c',
+     'barebones_exit.c',
+     ],
+    LIBS=[],
+    EXTRA_LIBS=[],
+    LINKFLAGS=['-nostdlib', '-static', '-v'],
+    # NOTE: this are for ARM to really exclude libs and startup code
+    LINKFLAGS_FIRST=[],
+    LINKFLAGS_LAST=[],
+    )
+node = env.CommandSelLdrTestNacl(
+    'barebones_exit_test.out',
+    command=[env.File('barebones_exit.nexe')],
+    exit_status='42',
+    )
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'sel_ldr_tests'],
+                       'run_barebones_exit_test')
