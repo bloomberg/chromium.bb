@@ -451,6 +451,10 @@ void TabContentsViewWin::OnWindowPosChanged(WINDOWPOS* window_pos) {
 }
 
 void TabContentsViewWin::OnSize(UINT param, const CSize& size) {
+  // NOTE: Because TabContentsViewWin handles OnWindowPosChanged without calling
+  // DefWindowProc, OnSize is NOT called on window resize. This handler
+  // is called only once when the window is created.
+
   WidgetWin::OnSize(param, size);
 
   // Hack for thinkpad touchpad driver.
@@ -509,6 +513,11 @@ void TabContentsViewWin::WasSized(const gfx::Size& size) {
   RenderWidgetHostView* rwhv = tab_contents()->GetRenderWidgetHostView();
   if (rwhv)
     rwhv->SetSize(size);
+
+  // Relayout root view. Usually root view layout happens in OnSize. But because
+  // we handle OnWindowPosChanged without calling DefWindowProc (it sends
+  // OnSize and OnMove) we don't receive OnSize so we have to make layout here.
+  LayoutRootView();
 }
 
 bool TabContentsViewWin::ScrollZoom(int scroll_type) {
