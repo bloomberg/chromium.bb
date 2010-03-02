@@ -64,6 +64,9 @@ void WaitForNavigations(NavigationController* controller,
 // Waits for a new tab to be added to |browser|.
 void WaitForNewTab(Browser* browser);
 
+// Waits for a tab to be parented.
+void WaitForTabParented();
+
 // Waits for a load stop for the specified |controller|.
 void WaitForLoadStop(NavigationController* controller);
 

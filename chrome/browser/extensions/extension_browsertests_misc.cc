@@ -28,8 +28,8 @@
 #include "chrome/test/ui_test_utils.h"
 #include "net/base/net_util.h"
 
-const std::wstring kSubscribePage =
-    L"files/extensions/subscribe_page_action/subscribe.html";
+const std::string kSubscribePage =
+    "chrome-extension://flpjckblglahjimhgaagkpdjdcojkgil/subscribe.html";
 const std::wstring kFeedPage = L"files/feeds/feed.html";
 const std::wstring kFeedPageMultiRel = L"files/feeds/feed_multi_rel.html";
 const std::wstring kNoFeedPage = L"files/feeds/no_feed.html";
@@ -341,11 +341,19 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationPageAction) {
                extension->page_action()->GetTitle(tab_id).c_str());
 }
 
-GURL GetFeedUrl(HTTPTestServer* server, const std::wstring& feed_page) {
-  static GURL base_url = server->TestServerPageW(kSubscribePage);
+GURL GetFeedUrl(HTTPTestServer* server, const std::wstring& feed_page,
+                bool direct_url) {
   GURL feed_url = server->TestServerPageW(feed_page);
-  return GURL(base_url.spec() + std::string("?") + feed_url.spec() +
-         std::string("&synchronous"));
+  if (direct_url) {
+    // We navigate directly to the subscribe page for feeds where the feed
+    // sniffing won't work, in other words, as is the case for malformed feeds.
+    return GURL(std::string(kSubscribePage) + std::string("?") +
+                feed_url.spec() + std::string("&synchronous"));
+  } else {
+    // Navigate to the feed content (which will cause the extension to try to
+    // sniff the type and display the subscribe page in another tab.
+    return GURL(feed_url.spec());
+  }
 }
 
 static const wchar_t* jscript_feed_title =
@@ -373,139 +381,209 @@ static const wchar_t* jscript_error =
     L"    \"No error\""
     L");";
 
-void GetParsedFeedData(HTTPTestServer* server,
-                       const std::wstring& url,
-                       Browser* browser,
-                       const std::string& expected_feed_title,
-                       const std::string& expected_item_title,
-                       const std::string& expected_item_desc,
-                       const std::string& expected_error) {
+// Navigates to a feed page and, if |sniff_xml_type| is set, wait for the
+// extension to kick in, detect the feed and redirect to a feed preview page.
+// |sniff_xml_type| is generally set to true if the feed is sniffable and false
+// for invalid feeds.
+void NavigateToFeedAndValidate(HTTPTestServer* server,
+                               const std::wstring& url,
+                               Browser* browser,
+                               bool sniff_xml_type,
+                               const std::string& expected_feed_title,
+                               const std::string& expected_item_title,
+                               const std::string& expected_item_desc,
+                               const std::string& expected_error) {
   std::string feed_title;
   std::string item_title;
   std::string item_desc;
   std::string error;
 
-  ui_test_utils::NavigateToURL(browser, GetFeedUrl(server, url));
+  ui_test_utils::NavigateToURL(browser,
+                               GetFeedUrl(server, url, !sniff_xml_type));
+
+  if (sniff_xml_type) {
+    // Navigate to the feed will cause the extension to sniff the type and
+    // create an extra tab showing the feed preview.
+    TabStripModel* tab_strip = browser->tabstrip_model();
+    if (tab_strip->count() == 1)
+      ui_test_utils::WaitForTabParented();
+  }
+
+  TabContents* tab = browser->GetSelectedTabContents();
+
+  int retries = 10;
+  while (retries--) {
+    ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
+        tab->render_view_host(),
+        L"",  // Title is on the main page, all the rest is in the IFRAME.
+        jscript_feed_title, &feed_title));
+    if (expected_feed_title == feed_title)
+      break;  // We are done.
+
+    // We are testing the actual feed sniffing + redirecting to the preview page
+    // so we can't pass the 'synchronous' test flag that we use for malformed
+    // feeds. We also have no signals from the extension telling us when it is
+    // done parsing the feed, so we need to check periodically.
+    MessageLoopForUI::current()->PostDelayedTask(
+        FROM_HERE, new MessageLoop::QuitTask(), 500);
+    ui_test_utils::RunMessageLoop();
+  }
+  ASSERT_STREQ(expected_feed_title.c_str(), feed_title.c_str());
 
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-      browser->GetSelectedTabContents()->render_view_host(),
-      L"",  // Title is on the main page, all the rest is in the IFRAME.
-      jscript_feed_title, &feed_title));
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-      browser->GetSelectedTabContents()->render_view_host(),
+      tab->render_view_host(),
       L"//html/body/div/iframe[1]",
       jscript_anchor, &item_title));
+  ASSERT_STREQ(expected_item_title.c_str(), item_title.c_str());
+
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-      browser->GetSelectedTabContents()->render_view_host(),
+      tab->render_view_host(),
       L"//html/body/div/iframe[1]",
       jscript_desc, &item_desc));
+  ASSERT_STREQ(expected_item_desc.c_str(), item_desc.c_str());
+
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-      browser->GetSelectedTabContents()->render_view_host(),
+      tab->render_view_host(),
       L"//html/body/div/iframe[1]",
       jscript_error, &error));
-
-  EXPECT_STREQ(expected_feed_title.c_str(), feed_title.c_str());
-  EXPECT_STREQ(expected_item_title.c_str(), item_title.c_str());
-  EXPECT_STREQ(expected_item_desc.c_str(), item_desc.c_str());
-  EXPECT_STREQ(expected_error.c_str(), error.c_str());
+  ASSERT_STREQ(expected_error.c_str(), error.c_str());
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_ParseFeedValidFeed1) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed1) {
   HTTPTestServer* server = StartHTTPServer();
-  GetParsedFeedData(server, kValidFeed1, browser(),
-                    "Feed for 'MyFeedTitle'",
-                    "Title 1",
-                    "Desc",
-                    "No error");
+
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("subscribe_page_action")));
+
+  NavigateToFeedAndValidate(server, kValidFeed1, browser(), true,
+                            "Feed for MyFeedTitle",
+                            "Title 1",
+                            "Desc",
+                            "No error");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_ParseFeedValidFeed2) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed2) {
   HTTPTestServer* server = StartHTTPServer();
-  GetParsedFeedData(server, kValidFeed2, browser(),
-                    "Feed for 'MyFeed2'",
-                    "My item title1",
-                    "This is a summary.",
-                    "No error");
+
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("subscribe_page_action")));
+
+  NavigateToFeedAndValidate(server, kValidFeed2, browser(), true,
+                            "Feed for MyFeed2",
+                            "My item title1",
+                            "This is a summary.",
+                            "No error");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_ParseFeedValidFeed3) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed3) {
   HTTPTestServer* server = StartHTTPServer();
-  GetParsedFeedData(server, kValidFeed3, browser(),
-                    "Feed for 'Google Code buglist rss feed'",
-                    "My dear title",
-                    "My dear content",
-                    "No error");
+
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("subscribe_page_action")));
+
+  NavigateToFeedAndValidate(server, kValidFeed3, browser(), true,
+                            "Feed for Google Code buglist rss feed",
+                            "My dear title",
+                            "My dear content",
+                            "No error");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_ParseFeedValidFeed4) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed4) {
   HTTPTestServer* server = StartHTTPServer();
-  GetParsedFeedData(server, kValidFeed4, browser(),
-                    "Feed for 'Title chars <script> %23 stop'",
-                    "Title chars ",
-                    "My dear content",
-                    "No error");
+
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("subscribe_page_action")));
+
+  NavigateToFeedAndValidate(server, kValidFeed4, browser(), true,
+                            "Feed for Title chars <script> %23 stop",
+                            "Title chars ",
+                            "My dear content",
+                            "No error");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_ParseFeedValidFeed0) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed0) {
   HTTPTestServer* server = StartHTTPServer();
+
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("subscribe_page_action")));
+
   // Try a feed with a link with an onclick handler (before r27440 this would
   // trigger a NOTREACHED).
-  GetParsedFeedData(server, kValidFeed0, browser(),
-                    "Feed for 'MyFeedTitle'",
-                    "Title 1",
-                    "Desc VIDEO",
-                    "No error");
+  NavigateToFeedAndValidate(server, kValidFeed0, browser(), true,
+                            "Feed for MyFeedTitle",
+                            "Title 1",
+                            "Desc VIDEO",
+                            "No error");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_ParseFeedValidFeed5) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed5) {
   HTTPTestServer* server = StartHTTPServer();
+
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("subscribe_page_action")));
+
   // Feed with valid but mostly empty xml.
-  GetParsedFeedData(server, kValidFeed5, browser(),
-                    "Feed for 'Unknown feed name'",
-                    "element 'anchor_0' not found",
-                    "element 'desc_0' not found",
-                    "This feed contains no entries.");
+  NavigateToFeedAndValidate(server, kValidFeed5, browser(), true,
+                            "Feed for Unknown feed name",
+                            "element 'anchor_0' not found",
+                            "element 'desc_0' not found",
+                            "This feed contains no entries.");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_ParseFeedInvalidFeed1) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedInvalidFeed1) {
   HTTPTestServer* server = StartHTTPServer();
+
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("subscribe_page_action")));
+
   // Try an empty feed.
-  GetParsedFeedData(server, kInvalidFeed1, browser(),
-                    "Feed for 'Unknown feed name'",
-                    "element 'anchor_0' not found",
-                    "element 'desc_0' not found",
-                    "Not a valid feed.");
+  NavigateToFeedAndValidate(server, kInvalidFeed1, browser(), false,
+                            "Feed for Unknown feed name",
+                            "element 'anchor_0' not found",
+                            "element 'desc_0' not found",
+                            "Not a valid feed.");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_ParseFeedInvalidFeed2) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedInvalidFeed2) {
   HTTPTestServer* server = StartHTTPServer();
+
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("subscribe_page_action")));
+
   // Try a garbage feed.
-  GetParsedFeedData(server, kInvalidFeed2, browser(),
-                    "Feed for 'Unknown feed name'",
-                    "element 'anchor_0' not found",
-                    "element 'desc_0' not found",
-                    "Not a valid feed.");
+  NavigateToFeedAndValidate(server, kInvalidFeed2, browser(), false,
+                            "Feed for Unknown feed name",
+                            "element 'anchor_0' not found",
+                            "element 'desc_0' not found",
+                            "Not a valid feed.");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_ParseFeedInvalidFeed3) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedInvalidFeed3) {
   HTTPTestServer* server = StartHTTPServer();
+
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("subscribe_page_action")));
+
   // Try a feed that doesn't exist.
-  GetParsedFeedData(server, L"foo.xml", browser(),
-                    "Feed for 'Unknown feed name'",
-                    "element 'anchor_0' not found",
-                    "element 'desc_0' not found",
-                    "Not a valid feed.");
+  NavigateToFeedAndValidate(server, L"foo.xml", browser(), false,
+                            "Feed for Unknown feed name",
+                            "element 'anchor_0' not found",
+                            "element 'desc_0' not found",
+                            "Not a valid feed.");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest,
-                       DISABLED_ParseFeedValidFeedNoLinks) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeedNoLinks) {
   HTTPTestServer* server = StartHTTPServer();
+
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("subscribe_page_action")));
+
   // Valid feed but containing no links.
-  GetParsedFeedData(server, kValidFeedNoLinks, browser(),
-                    "Feed for 'MyFeedTitle'",
-                    "Title with no link",
-                    "Desc",
-                    "No error");
+  NavigateToFeedAndValidate(server, kValidFeedNoLinks, browser(), true,
+                            "Feed for MyFeedTitle",
+                            "Title with no link",
+                            "Desc",
+                            "No error");
 }
 
 // Tests that an error raised during an async function still fires

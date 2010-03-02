@@ -100,6 +100,10 @@ body>* {
   padding-right: 10px;
 }
 
+.urlAssist {
+  padding-left: 30px;
+}
+
 .status {
   background-color: #FFF18A;
 }
@@ -119,12 +123,6 @@ body>* {
 function main() {
   document.title =
       chrome.i18n.getMessage("rss_subscription_edit_dialog_title");
-
-  substituteMessagesForTag("td");
-  substituteMessagesForTag("div");
-  substituteMessagesForTag("button");
-
-  substituteMessagesForTagAttribute("input", "value");
 
   // Make sure the dialog is not visible.
   document.getElementById('dialogBackground').style.display = "none";
@@ -230,7 +228,8 @@ function editReader(index) {
     var oldOption = readerListbox.options[editingIndex];
     document.getElementById('urlText').value = oldOption.value;
     document.getElementById('descriptionText').value =
-        oldOption.text.replace(' (default)', '');
+        oldOption.text.replace(
+            ' ' + chrome.i18n.getMessage("rss_subscription_default"), '');
     editingDefault = isDefaultReader(oldOption.value);
   }
 
@@ -329,18 +328,34 @@ function save() {
   main();
 }
 
+function init() {
+  i18nReplace('rss_subscription_options');
+  i18nReplaceImpl('addReader', 'rss_subscription_add_reader');
+  i18nReplaceImpl('editReader', 'rss_subscription_edit_reader');
+  i18nReplaceImpl('removeReader', 'rss_subscription_remove_reader');
+  i18nReplaceImpl('setDefault', 'rss_subscription_make_default_reader');
+  i18nReplaceImpl('resetList', 'rss_subscription_reset_list');
+  i18nReplace('rss_subscription_always_use_default');
+  i18nReplaceImpl('dialogHeader', 'rss_subscription_edit_dialog_title');
+  i18nReplace('rss_subscription_feed_description');
+  i18nReplace('rss_subscription_feed_url');
+  i18nReplaceImpl('save', 'rss_subscription_save_button', 'value');
+  i18nReplaceImpl('rss_subscription_close_button',
+                  'rss_subscription_close_button', 'value');
+  main();
+}
 </script>
 </head>
-<body onload="main()">
+<body onload="init()">
   <table border="0">
   <tr>
     <td valign="top" width="16">
       <img src="feed-icon-16x16.png" />
     </td>
     <td valign="middle">
-      <strong>__MSG_rss_subscription_options__</strong>
+      <strong id="rss_subscription_options"></strong>
     </td>
-    <td>
+    <td colspan="2">
     </td>
   </tr>
   <tr>
@@ -349,23 +364,25 @@ function save() {
             onchange="onSelectionChanged()"></select>
   </td>
   <td valign="top">
-    <button style="width:100%;" id="addReader" onclick="editReader(-1)">
-        __MSG_rss_subscription_add_reader__</button><br />
-    <button style="width:100%;" id="editReader" onclick="editReader(0)">
-        __MSG_rss_subscription_edit_reader__</button><br />
-    <button style="width:100%;" id="removeReader" onclick="removeReader()">
-        __MSG_rss_subscription_remove_reader__</button><br />
-    <button style="width:100%;" id="setDefault" onclick="setDefault()">
-        __MSG_rss_subscription_make_default_reader__</button><br />
-    <button style="width:100%;" id="resetList" onclick="resetList()">
-        __MSG_rss_subscription_reset_list__</button><br />
+    <button style="width:100%;" id="addReader" onclick="editReader(-1)"
+        ></button><br />
+    <button style="width:100%;" id="editReader" onclick="editReader(0)"
+        ></button><br />
+    <button style="width:100%;" id="removeReader" onclick="removeReader()"
+        ></button><br />
+    <button style="width:100%;" id="setDefault" onclick="setDefault()"
+        ></button><br />
+    <button style="width:100%;" id="resetList" onclick="resetList()"
+        ></button><br />
+  </td>
+  <td style="width: 200px;">
   </td>
   </tr>
   <tr>
-  <td colspan="3">
+  <td colspan="4">
     <input type="checkbox" id="alwaysUseDefault"
          value="alwaysUseDefault" onchange="toggleFeedPreview()"
-    >__MSG_rss_subscription_always_use_default__
+    ><span id="rss_subscription_always_use_default"></span>
   </td>
   </tr>
   </table>
@@ -374,9 +391,7 @@ function save() {
     <div id="dialogHBackground">
       <div id="dialog">
 
-        <div id="dialogHeader">
-          __MSG_rss_subscription_edit_dialog_title__
-        </div>
+        <div id="dialogHeader"></div>
 
         <div id="dialogBody">
 
@@ -385,36 +400,31 @@ function save() {
           </div>
 
           <div class="dialogRow">
-            <div>
-              __MSG_rss_subscription_feed_description__
-            </div>
+            <div id="rss_subscription_feed_description"></div>
             <div>
               <input type="text" id="descriptionText" onkeyup="validateInput()">
             </div>
           </div>
 
           <div class="dialogRow">
-            <div>
-              __MSG_rss_subscription_feed_url__
-            </div>
+            <div id="rss_subscription_feed_url"></div>
             <div>
               <input type="text" id="urlText" onkeyup="validateInput()">
             </div>
           </div>
 
           <div class="dialogRow">
-            <div id="urlAssist"></div>
+            <div id="urlAssist" class="urlAssist"></div>
           </div>
 
           <div class="dialogRow" id="dialogContentFooter">
             <div>
               <input type="button" id="save"
-                     value="__MSG_rss_subscription_save_button__"
                      onclick="save()">
             </div>
             <div>
               <input type="button"
-                     value="__MSG_rss_subscription_close_button__"
+                     id="rss_subscription_close_button"
                      onclick="hideDialog()">
             </div>
           </div>

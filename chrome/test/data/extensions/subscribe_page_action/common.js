@@ -1,3 +1,7 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 // Whether we can modify the list of readers.
 var storageEnabled = window.localStorage != null;
 
@@ -32,46 +36,23 @@ function isDefaultReader(url) {
 }
 
 /**
-* Given the tag, find if there is a __MSG_some__ message in
-* innerHTML, and replace it if there is.
+* Find an element with |id| and replace the text of it with i18n message with
+* |msg| key.
 */
-function substituteMessagesForTag(tag) {
-  var elements = document.getElementsByTagName(tag);
-  if (!elements)
-    return;
-
-  var message_format = "__MSG_([a-zA-Z0-9_@]+)__";
-  for (i = 0; i < elements.length; i++) {
-    var old_text = elements[i].innerHTML.match(message_format);
-    if (!old_text)
-      continue;
-
-    var new_text = chrome.i18n.getMessage(old_text[1]);
-    elements[i].innerHTML =
-        elements[i].innerHTML.replace(old_text[0], new_text);
+function i18nReplaceImpl(id, msg, attribute) {
+  var element = document.getElementById(id);
+  if (element) {
+    if (attribute)
+      element.setAttribute(attribute, chrome.i18n.getMessage(msg));
+    else
+      element.innerText = chrome.i18n.getMessage(msg);
   }
 }
 
 /**
-* Given the tag, find if the given attribute has __MSG_some__ message
-* and replace it if there is.
+* Same as i18nReplaceImpl but provided for convenience for elements that have
+* the same id as the i18n message id.
 */
-function substituteMessagesForTagAttribute(tag, attribute) {
-  var elements = document.getElementsByTagName(tag);
-  if (!elements)
-    return;
-
-  var message_format = "__MSG_([a-zA-Z0-9_@]+)__";
-  for (i = 0; i < elements.length; i++) {
-    var attribute_value = elements[i].getAttribute(attribute);
-    if (!attribute_value)
-      return;
-
-    var old_text = attribute_value.match(message_format);
-    if (!old_text)
-      continue;
-
-    elements[i].setAttribute(
-        attribute, chrome.i18n.getMessage(old_text[1]));
-  }
+function i18nReplace(msg) {
+  i18nReplaceImpl(msg, msg, '');
 }
