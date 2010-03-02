@@ -1448,7 +1448,7 @@ cleanup:
   }
   NaClLog(3, "NaClSysMmap: returning 0x%08"PRIxPTR"\n", map_result);
 
-  return (int32_t)map_result;
+  return (int32_t) map_result;
 }
 
 int32_t NaClCommonSysImc_MakeBoundSock(struct NaClAppThread *natp,

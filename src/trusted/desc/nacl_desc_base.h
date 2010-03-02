@@ -164,8 +164,7 @@ struct NaClDescVtbl {
    * UnmapUnsafe really unmaps and leaves a hole in the address space.
    * It is intended for use by Map (through the effector interface) to
    * clear out memory according to the memory object that is backing
-   * the memory, prior to putting new memory in place.  Should not
-   * invoke effp->vtbl->UpdateAddrMap.
+   * the memory, prior to putting new memory in place.
    */
   int (*UnmapUnsafe)(struct NaClDesc          *vself,
                      struct NaClDescEffector  *effp,
@@ -175,8 +174,6 @@ struct NaClDescVtbl {
    * Unmap is the version that removes the mapping but continues to
    * hold the address space in reserve, preventing it from being used
    * accidentally by other threads.  (Address-space squatting.)
-   *
-   * Should invoke effp->vtbl->UpdateAddrMap.
    */
   int (*Unmap)(struct NaClDesc          *vself,
                struct NaClDescEffector  *effp,
@@ -450,6 +447,15 @@ extern int NaClDescImcShmInternalize(struct NaClDesc          **baseptr,
                                      struct NaClDescXferState *xfer) NACL_WUR;
 
 #if NACL_LINUX
+/*
+ * Since the SysV shared memory abstraction does not permit mapping in
+ * only a portion of the shared memory object (offset==0), the SysV
+ * shm objects have their own fstat object type.  The user code should
+ * not encounter SysV shm objects normally and is unable to create any
+ * SysV shm objects; the only source of SysV shm objects is in the
+ * context of Pepper2d, and the Pepper2d library code should hide
+ * this implementation detail.
+ */
 extern struct NaClDescVtbl const kNaClDescSysvShmVtbl;
 
 struct NaClDescSysvShm {

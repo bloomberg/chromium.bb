@@ -43,26 +43,6 @@ int NaClDescEffectorShmReturnCreatedDesc(struct NaClDescEffector  *vself,
 }
 
 static
-void NaClDescEffectorShmUpdateAddrMap(struct NaClDescEffector *vself,
-                                      uintptr_t               sysaddr,
-                                      size_t                  nbytes,
-                                      int                     sysprot,
-                                      struct NaClDesc         *backing_desc,
-                                      size_t                  backing_obj_size,
-                                      off_t                   offset_bytes,
-                                      int                     delete_mem) {
-  UNREFERENCED_PARAMETER(vself);
-  UNREFERENCED_PARAMETER(sysaddr);
-  UNREFERENCED_PARAMETER(nbytes);
-  UNREFERENCED_PARAMETER(sysprot);
-  UNREFERENCED_PARAMETER(backing_desc);
-  UNREFERENCED_PARAMETER(backing_obj_size);
-  UNREFERENCED_PARAMETER(offset_bytes);
-  UNREFERENCED_PARAMETER(delete_mem);
-  return;
-}
-
-static
 int NaClDescEffectorShmUnmapMemory(struct NaClDescEffector  *vself,
                                    uintptr_t                sysaddr,
                                    size_t                   nbytes) {
@@ -106,7 +86,6 @@ static
 struct NaClDescEffectorVtbl kNaClDescEffectorShmVtbl = {
   NaClDescEffectorShmDtor,
   NaClDescEffectorShmReturnCreatedDesc,
-  NaClDescEffectorShmUpdateAddrMap,
   NaClDescEffectorShmUnmapMemory,
   NaClDescEffectorShmMapAnonymousMemory,
   NaClDescEffectorShmSourceSock,
@@ -213,15 +192,15 @@ NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap) {
             " prot=0x%x, flags=0x%x, offset=0x%"PRIxPTR"\n",
             text_sysaddr,
             NACL_MAP_PAGESIZE,
-            NACL_ABI_PROT_READ | NACL_ABI_PROT_EXEC,
-            NACL_ABI_MAP_SHARED,
+            NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
+            NACL_ABI_MAP_SHARED | NACL_ABI_MAP_FIXED,
             shm_offset);
     mmap_ret = (*shm->base.vtbl->Map)((struct NaClDesc *) shm,
                                       (struct NaClDescEffector *) &shm_effector,
                                       (void *) text_sysaddr,
                                       NACL_MAP_PAGESIZE,
-                                      NACL_ABI_PROT_WRITE,
-                                      NACL_ABI_MAP_SHARED,
+                                      NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
+                                      NACL_ABI_MAP_SHARED | NACL_ABI_MAP_FIXED,
                                       shm_offset);
     if (text_sysaddr != mmap_ret) {
       NaClLog(LOG_FATAL,
@@ -236,12 +215,20 @@ NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap) {
       NaClLog(LOG_FATAL,
               "Could not unmap shm for dynamic text region, post HLT fill.\n");
     }
+    NaClLog(4,
+            "NaClMakeDynamicTextShared: Map(,,0x%"PRIxPTR",size = 0x%x,"
+            " prot=0x%x, flags=0x%x, offset=0x%"PRIxPTR"\n",
+            text_sysaddr,
+            NACL_MAP_PAGESIZE,
+            NACL_ABI_PROT_READ | NACL_ABI_PROT_EXEC,
+            NACL_ABI_MAP_SHARED | NACL_ABI_MAP_FIXED,
+            shm_offset);
     mmap_ret = (*shm->base.vtbl->Map)((struct NaClDesc *) shm,
                                       (struct NaClDescEffector *) &shm_effector,
                                       (void *) text_sysaddr,
                                       NACL_MAP_PAGESIZE,
                                       NACL_ABI_PROT_READ | NACL_ABI_PROT_EXEC,
-                                      NACL_ABI_MAP_SHARED,
+                                      NACL_ABI_MAP_SHARED | NACL_ABI_MAP_FIXED,
                                       shm_offset);
     if (text_sysaddr != mmap_ret) {
       NaClLog(LOG_FATAL, "Could not map in shm for dynamic text region\n");

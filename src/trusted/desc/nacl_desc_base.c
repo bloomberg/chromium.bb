@@ -564,13 +564,15 @@ int NaClDescMapDescriptor(struct NaClDesc         *desc,
       continue;
     }
 #endif
+    NaClLog(4,
+            "NaClDescMapDescriptor: mapping to address %"PRIxPTR"\n",
+            (uintptr_t) map_addr);
     rval_ptr = (*desc->vtbl->Map)(desc,
                                   effector,
                                   map_addr,
                                   rounded_size,
-                                  NACL_ABI_PROT_READ
-                                  | NACL_ABI_PROT_WRITE,
-                                  NACL_ABI_MAP_SHARED,
+                                  NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
+                                  NACL_ABI_MAP_SHARED | NACL_ABI_MAP_FIXED,
                                   0);
     if (NaClIsNegErrno(rval_ptr)) {
       /*

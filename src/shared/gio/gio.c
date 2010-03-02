@@ -52,7 +52,7 @@ size_t GioFileRead(struct Gio  *vself,
 
 
 size_t GioFileWrite(struct Gio *vself,
-                    void       *buf,
+                    const void *buf,
                     size_t     count) {
   struct GioFile  *self = (struct GioFile *) vself;
   return fwrite(buf, 1, count, self->iop);

@@ -8,8 +8,8 @@
  * NaCl Generic I/O interface.
  */
 
-#ifndef SERVICE_RUNTIME_GIO_H__
-#define SERVICE_RUNTIME_GIO_H__ 1
+#ifndef NATIVE_CLIENT_SRC_SHARED_GIO_GIO_H_
+#define NATIVE_CLIENT_SRC_SHARED_GIO_GIO_H_
 
 /* is this needed? - maybe for size_t */
 #include "native_client/src/include/portability.h"
@@ -26,7 +26,7 @@ struct GioVtbl {
                   void        *buf,
                   size_t      count);  /* returns nbytes read */
   size_t  (*Write)(struct Gio *vself,
-                   void       *buf,
+                   const void *buf,
                    size_t     count);  /* returns nbytes written */
   size_t  (*Seek)(struct Gio  *vself,
                   off_t       offset,
@@ -54,7 +54,7 @@ size_t GioFileRead(struct Gio  *vself,
                    size_t      count);
 
 size_t GioFileWrite(struct Gio *vself,
-                    void       *buf,
+                    const void *buf,
                     size_t     count);
 
 size_t GioFileSeek(struct Gio  *vself,
@@ -88,7 +88,7 @@ size_t GioMemoryFileRead(struct Gio  *vself,
                          size_t      count);
 
 size_t GioMemoryFileWrite(struct Gio *vself,
-                          void       *buf,
+                          const void *buf,
                           size_t     count);
 
 size_t GioMemoryFileSeek(struct Gio  *vself,
@@ -124,4 +124,4 @@ size_t gvprintf(struct Gio *gp,
 
 EXTERN_C_END
 
-#endif
+#endif  /* NATIVE_CLIENT_SRC_SHARED_GIO_GIO_H_ */

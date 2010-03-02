@@ -32,6 +32,10 @@
 #include "native_client/src/trusted/service_runtime/sel_util.h"
 
 
+#if !defined(SIZE_T_MAX)
+# define SIZE_T_MAX (~((size_t) 0))
+#endif
+
 /*
  * This file contains the implementation of the NaClDescSysvShm
  * subclass of NaClDesc.
@@ -52,7 +56,9 @@ int NaClDescSysvShmImportCtor(struct NaClDescSysvShm  *self,
    * the size must be a multiple of 4K.
    */
   basep->vtbl = (struct NaClDescVtbl *) NULL;
-  if (size < 0 || (size_t) size != NaClRoundPage((size_t) size)) {
+  if ((size_t) size != NaClRoundPage((size_t) size)
+      || size < 0
+      || SIZE_T_MAX < (uint64_t) size) {
     return 0;
   }
 
@@ -73,8 +79,13 @@ int NaClDescSysvShmCtor(struct NaClDescSysvShm  *self,
   int id;
   int retval;
 
-  /* We only allow multiples of 64K for NaCl-created region sizes. */
-  if ((uintptr_t) size != NaClRoundAllocPage((uintptr_t) size)) {
+  /*
+   * We only allow multiples of 64K for NaCl-created region sizes.
+   * If size is negative or overflows a size_t, that's not good either.
+   */
+  if ((uintptr_t) size != NaClRoundAllocPage((uintptr_t) size)
+      || size < 0
+      || SIZE_T_MAX < (uint64_t) size) {
     return 0;
   }
   /* Create the region. */
@@ -104,6 +115,17 @@ void NaClDescSysvShmDtor(struct NaClDesc *vself) {
   NaClDescDtor(vself);
 }
 
+/*
+ * For now, we just use shmat.  This means that the NaCl module's mmap
+ * syscall must ask for the entire size, with a zero offset.  In the
+ * future, we may choose to shmat to elsewhere in the trusted address
+ * space, and then mremap from there into the untrusted address space,
+ * using MREMAP_FIXED to ask for the new location.  This approach has
+ * its own hazards, however since on x86-32 we are short on address
+ * space already, and requiring shmat, mremap, munmap means that we
+ * have to have enough trusted address space free to temporarily hold
+ * the maximum sized sysv shm object.
+ */
 uintptr_t NaClDescSysvShmMap(struct NaClDesc         *vself,
                              struct NaClDescEffector *effp,
                              void                    *start_addr,
@@ -116,13 +138,20 @@ uintptr_t NaClDescSysvShmMap(struct NaClDesc         *vself,
   int           nacl_flags;
   void          *result;
 
+  UNREFERENCED_PARAMETER(effp);
   /*
    * shm must have NACL_ABI_MAP_SHARED in flags, and all calls through
    * this API must supply a start_addr, so NACL_ABI_MAP_FIXED is
-   * assumed.
+   * required for now.  we check, and may relax this in the future.
    */
-  UNREFERENCED_PARAMETER(flags);
-  UNREFERENCED_PARAMETER(effp);
+  if ((NACL_ABI_MAP_SHARED | NACL_ABI_MAP_FIXED) !=
+      (flags & (NACL_ABI_MAP_SHARING_MASK | NACL_ABI_MAP_FIXED))) {
+    NaClLog(LOG_INFO,
+            ("NaClDescSysvShmMap: Mapping not"
+             " NACL_ABI_MAP_SHARED | NACL_ABI_MAP_FIXED\n"));
+    return -NACL_ABI_EINVAL;
+  }
+
   /*
    * shmat can only map the shared memory region starting at its beginning.
    */
@@ -206,27 +235,37 @@ int NaClDescSysvShmUnmapCommon(struct NaClDesc         *vself,
 
   UNREFERENCED_PARAMETER(vself);
   /*
-   * Note: we cannot detach from the shared memory region for risk of
-   * creating a security hole.  However, from Bennet:
-   * "0 == safe_mode should actually unmap. This is used by UnmapUnsafe the
-   * callers of which are acknowledging that it creates a squatting timing
-   * hole. This mode is currently only used in NaClApp dtor cleanup on linux,
-   * so it's not critical -- We don't use that code since the service runtime
-   * _exit when the NaCl module exits, but we may in the future need this. A
-   * TODO/WARNING would suffice. Since w/ sysv shm there's no way to unmap,
-   * we'd have to do it by side-effect: mmap anonymous memory on top, then
-   * munmap that."
+   * Note: we cannot detach the SysV shared memory since we would be
+   * risking creating a security hole, since doing so would create a
+   * hole in the untrusted address space for library code in other
+   * threads to map data (e.g., heap via mmap) that should not be
+   * accessible to the untrusted code.
    *
-   * TODO(sehr,bsy): in unsafe mode mmap then unmap.
+   * Note that "0 == safe_mode should actually unmap.  This is used by
+   * UnmapUnsafe the callers which are acknowledging that it creates a
+   * squatting timing hole -- for example, the trusted code may be a
+   * different application than the service runtime, or the mapping
+   * may be outside of the untrusted address space.
+   *
+   * Within the service runtime, this mode is currently only used in
+   * NaClApp dtor cleanup on linux, so it's not critical -- We don't
+   * use that code since the service runtime _exit when the NaCl
+   * module exits, but we may in the future need this. A TODO/WARNING
+   * would suffice. Since w/ sysv shm there's no way to unmap, we'd
+   * have to do it by side-effect: mmap anonymous memory on top, then
+   * munmap that."
    */
-  if (0 == safe_mode) {
+  if (!safe_mode) {
+    /* linux.  make a hole. */
+    if (-1 == munmap(start_addr, len)) {
+      NaClLog(LOG_FATAL, "NaClDescSysvShmUnmapCommon: could not unmap\n");
+    }
     return 0;
   }
 
   for (addr = (uintptr_t) start_addr, end_addr = addr + len;
        addr < end_addr;
        addr += NACL_MAP_PAGESIZE) {
-    /* there's still a race condition */
     if (NaClIsNegErrno((*effp->vtbl->MapAnonymousMemory)(effp,
                                                          addr,
                                                          NACL_MAP_PAGESIZE,
@@ -265,7 +304,7 @@ int NaClDescSysvShmFstat(struct NaClDesc         *vself,
 
   stbp->nacl_abi_st_dev = 0;
   stbp->nacl_abi_st_ino = 0x6c43614e;
-  stbp->nacl_abi_st_mode = (NACL_ABI_S_IFSHM |
+  stbp->nacl_abi_st_mode = (NACL_ABI_S_IFSHM_SYSV |
                             NACL_ABI_S_IRUSR |
                             NACL_ABI_S_IWUSR);
   stbp->nacl_abi_st_nlink = 1;

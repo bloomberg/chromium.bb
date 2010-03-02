@@ -68,7 +68,7 @@ size_t GioMemoryFileRead(struct Gio  *vself,
 
 
 size_t GioMemoryFileWrite(struct Gio *vself,
-                          void       *buf,
+                          const void *buf,
                           size_t     count) {
   struct GioMemoryFile  *self = (struct GioMemoryFile *) vself;
   size_t                remain;

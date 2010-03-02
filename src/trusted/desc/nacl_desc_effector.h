@@ -67,47 +67,6 @@ struct NaClDescEffectorVtbl {
   int (*ReturnCreatedDesc)(struct NaClDescEffector  *vself,
                            struct NaClDesc          *ndp);
 
-  /*
-   * Update addrss map for NaClApp.  The address is the system (flat
-   * 32) address, and the virtual function is responsible for
-   * translating it back to user (segment base relative) addresses.
-   * The sys_prot used are host OS memory protection bits, though on
-   * windows these are just a copy of *x values since there's no mmap
-   * interface there.  backing_desc is the NaClDesc that is providing
-   * backing store for the virtual memory.  offset_bytes is the offset
-   * into the backing_desc and must be a multiple of allocation size.
-   * the size of the mapping from the backing_desc is nbytes.
-   *
-   * NB: the calling code will ensure that offset_bytes + nbytes will
-   * be at most NaClRoundPage(file size).  If NaClRoundAllocPage(file
-   * size) is greater, then additional calls to put in padding pages
-   * -- with a NULL backing_desc (backed by system paging file) will
-   * be made for the difference.
-   *
-   * If delete_mem is non-zero, then the memory range specified by
-   * [sysaddr,sysaddr+nbytes) should be removed from the address map,
-   * and the other arguments are irrelevant.
-   *
-   * For trusted application code, this can be a no-op routine (a stub
-   * that does nothing; all method function pointers must be
-   * non-NULL).
-   *
-   * Note that because windows map things in 64K granularity and in
-   * order to allow independent overlapping allocations, we map the
-   * object in 64K chunks at a time.  Thus, it is critical that the
-   * unmapping is done via the corresponding unmap function using the
-   * descriptor object that was used to create the mapping in the
-   * first place, so some recording keeping is still needed for
-   * trusted application code.
-   */
-  void (*UpdateAddrMap)(struct NaClDescEffector *vself,
-                        uintptr_t               sysaddr,  /* flat 32 addr */
-                        size_t                  nbytes,
-                        int                     sysprot,
-                        struct NaClDesc         *backing_desc,
-                        size_t                  backing_obj_size_bytes,
-                        off_t                   offset_bytes,
-                        int                     delete_mem);
 
   /*
    * For service runtime, the NaClDesc's Map virtual function will

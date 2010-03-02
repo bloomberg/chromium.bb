@@ -25,8 +25,8 @@
  * overflows, can put the application at risk.
  */
 
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_SEL_LDR_H__
-#define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_SEL_LDR_H__ 1
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_SEL_LDR_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_SEL_LDR_H_ 1
 
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/portability.h"
@@ -479,4 +479,4 @@ void NaClThreadContextDtor(struct NaClThreadContext *ntcp);
 
 EXTERN_C_END
 
-#endif  /* NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_SEL_LDR_H__ */
+#endif  /* NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_SEL_LDR_H_ */

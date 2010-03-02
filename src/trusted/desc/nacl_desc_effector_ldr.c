@@ -49,21 +49,6 @@ static int NaClDescEffLdrReturnCreatedDesc(struct NaClDescEffector *vself,
   return d;
 }
 
-static void NaClDescEffLdrUpdateAddrMap(struct NaClDescEffector *vself,
-                                        uintptr_t               sysaddr,
-                                        size_t                  nbytes,
-                                        int                     sysprot,
-                                        struct NaClDesc         *backing_desc,
-                                        size_t                  backing_bytes,
-                                        off_t                   offset_bytes,
-                                        int                     delete_mem) {
-  struct NaClDescEffectorLdr  *self = (struct NaClDescEffectorLdr *) vself;
-
-  NaClCommonUtilUpdateAddrMap(self->natp, sysaddr, nbytes, sysprot,
-                              backing_desc, backing_bytes, offset_bytes,
-                              delete_mem);
-}
-
 #if NACL_WINDOWS
 static int NaClDescEffLdrUnmapMemory(struct NaClDescEffector  *vself,
                                      uintptr_t                sysaddr,
@@ -101,9 +86,6 @@ static int NaClDescEffLdrUnmapMemory(struct NaClDescEffector  *vself,
 
       backing_ndp = map_region->nmop->ndp;
 
-      /*
-       * UnmapUnsafe will never invoke the UpdateAddrMap method.
-       */
       retval = (*backing_ndp->vtbl->UnmapUnsafe)(backing_ndp,
                                                  vself,
                                                  (void *) addr,
@@ -159,7 +141,6 @@ static struct NaClDescImcBoundDesc *NaClDescEffLdrSourceSock(
 static struct NaClDescEffectorVtbl NaClDescEffectorLdrVtbl = {
   NaClDescEffLdrDtor,
   NaClDescEffLdrReturnCreatedDesc,
-  NaClDescEffLdrUpdateAddrMap,
   NaClDescEffLdrUnmapMemory,
   NaClDescEffLdrMapAnonMem,
   NaClDescEffLdrSourceSock,

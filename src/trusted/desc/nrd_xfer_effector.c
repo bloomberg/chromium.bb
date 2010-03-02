@@ -72,26 +72,6 @@ static int NaClNrdXferEffectorReturnCreatedDesc(struct NaClDescEffector *vself,
   return 0;
 }
 
-static void NaClNrdXferEffectorUpdateAddrMap(struct NaClDescEffector  *vself,
-                                             uintptr_t                sysaddr,
-                                             size_t                   nbytes,
-                                             int                      sysprot,
-                                             struct NaClDesc          *bkobj,
-                                             size_t                   bksize,
-                                             off_t                    offbytes,
-                                             int                      del_mem) {
-  UNREFERENCED_PARAMETER(vself);
-  UNREFERENCED_PARAMETER(sysaddr);
-  UNREFERENCED_PARAMETER(nbytes);
-  UNREFERENCED_PARAMETER(sysprot);
-  UNREFERENCED_PARAMETER(bkobj);
-  UNREFERENCED_PARAMETER(bksize);
-  UNREFERENCED_PARAMETER(offbytes);
-  UNREFERENCED_PARAMETER(del_mem);
-  /* No records are kept */
-  return;
-}
-
 static int NaClNrdXferEffectorUnmapMemory(struct NaClDescEffector *vself,
                                           uintptr_t               sysaddr,
                                           size_t                  nbytes) {
@@ -124,7 +104,6 @@ static struct NaClDescImcBoundDesc *NaClNrdXferEffectorSourceSock(
 static struct NaClDescEffectorVtbl NaClNrdXferEffectorVtbl = {
   NaClNrdXferEffectorDtor,
   NaClNrdXferEffectorReturnCreatedDesc,
-  NaClNrdXferEffectorUpdateAddrMap,
   NaClNrdXferEffectorUnmapMemory,
   NaClNrdXferEffectorMapAnonymousMemory,
   NaClNrdXferEffectorSourceSock,

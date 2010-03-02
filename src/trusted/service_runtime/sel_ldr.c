@@ -899,10 +899,13 @@ static NaClSrpcError NaClLoadModuleRpc(struct NaClSrpcChannel  *chan,
   size_t rounded_size;
   NaClErrorCode errcode;
 
-  int rval = NaClDescMapDescriptor(nexe_binary,
-                                   &chan->eff.base,
-                                   &map_addr,
-                                   &rounded_size);
+  int rval;
+
+  NaClLog(4, "NaClLoadModuleRpc: entered, mapping shm\n");
+  rval = NaClDescMapDescriptor(nexe_binary,
+                               &chan->eff.base,
+                               &map_addr,
+                               &rounded_size);
 
   if (0 != rval) {
     return NACL_SRPC_RESULT_NO_MEMORY;
@@ -933,17 +936,17 @@ static NaClSrpcError NaClLoadModuleRpc(struct NaClSrpcChannel  *chan,
     return NACL_SRPC_RESULT_APP_ERROR;
   }
 
-  rval = nexe_binary->vtbl->Unmap(nexe_binary,
-                                  &chan->eff.base,
-                                  map_addr,
-                                  rounded_size);
+  rval = (*nexe_binary->vtbl->Unmap)(nexe_binary,
+                                     &chan->eff.base,
+                                     map_addr,
+                                     rounded_size);
   if (0 != rval) {
     /* Fail the request even though we could go on. */
     return NACL_SRPC_RESULT_NO_MEMORY;
   }
 
-  rval = nexe_binary->vtbl->Close(nexe_binary,
-                                  &chan->eff.base);
+  rval = (*nexe_binary->vtbl->Close)(nexe_binary,
+                                     &chan->eff.base);
   if (0 != rval) {
     /* Fail the request even though we could go on. */
     return NACL_SRPC_RESULT_NO_MEMORY;

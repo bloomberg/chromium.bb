@@ -53,7 +53,7 @@ int NaClDescImcShmCtor(struct NaClDescImcShm  *self,
    * that are silently converted to negative values.
    */
   basep->vtbl = (struct NaClDescVtbl *) NULL;
-  if (size < 0) {
+  if (size < 0 || SIZE_T_MAX < (uint64_t) size) {
     return 0;
   }
 
@@ -71,7 +71,7 @@ int NaClDescImcShmAllocCtor(struct NaClDescImcShm  *self,
   NaClHandle h;
   int        rv;
 
-  if (0 > size || SIZE_T_MAX < (uint64_t) size) {
+  if (size < 0 || SIZE_T_MAX < (uint64_t) size) {
     NaClLog(4,
             "NaClDescImcShmAllocCtor: requested size 0x%08"PRIx64
             " (0x%08"PRId64") too large\n",
@@ -120,7 +120,15 @@ uintptr_t NaClDescImcShmMap(struct NaClDesc         *vself,
    * this API must supply a start_addr, so NACL_ABI_MAP_FIXED is
    * assumed.
    */
-  UNREFERENCED_PARAMETER(flags);
+  if ((NACL_ABI_MAP_SHARED | NACL_ABI_MAP_FIXED) !=
+      (flags & (NACL_ABI_MAP_SHARING_MASK | NACL_ABI_MAP_FIXED))) {
+    NaClLog(LOG_FATAL, "NaClDescImcShmMap: flags %x\n", flags);
+    /*
+     * Should return EINVAL eventually, but to track down our code
+     * that should be Doing The Right Things, we make it fatal.
+     */
+    return -NACL_ABI_EINVAL;
+  }
   /*
    * prot must be not be PROT_NONE nor contain other than PROT_{READ|WRITE}
    */
@@ -228,37 +236,47 @@ int NaClDescImcShmUnmapCommon(struct NaClDesc         *vself,
                               void                    *start_addr,
                               size_t                  len,
                               int                     safe_mode) {
-  int       status;
+  int       retval;
   uintptr_t addr;
   uintptr_t end_addr;
 
   UNREFERENCED_PARAMETER(vself);
 
+  retval = -NACL_ABI_EINVAL;
+
   for (addr = (uintptr_t) start_addr, end_addr = addr + len;
        addr < end_addr;
        addr += NACL_MAP_PAGESIZE) {
+#if NACL_WINDOWS
+    int       status;
+
     /*
-     * Do the unmap "properly" through NaClUnmap, in case that the IMC
-     * library is changed to do some bookkeeping.
+     * Do the unmap "properly" through NaClUnmap.
      */
     status = NaClUnmap((void *) addr, NACL_MAP_PAGESIZE);
-
     if (0 != status) {
       NaClLog(LOG_FATAL, "NaClDescImcShmUnmapCommon: NaClUnmap failed\n");
-      return -NACL_ABI_EINVAL;
+      goto done;
     }
     /* there's still a race condition */
+#elif NACL_LINUX || NACL_OSX
+#else
+# error "what platform?"
+#endif
     if (safe_mode) {
       if (NaClIsNegErrno((*effp->vtbl->MapAnonymousMemory)(effp,
                                                            addr,
                                                            NACL_MAP_PAGESIZE,
                                                            PROT_NONE))) {
         NaClLog(LOG_ERROR, "NaClDescImcShmUnmapCommon: could not fill hole\n");
-        return -NACL_ABI_E_MOVE_ADDRESS_SPACE;
+        retval = -NACL_ABI_E_MOVE_ADDRESS_SPACE;
+        goto done;
       }
     }
   }
-  return 0;
+  retval = 0;
+done:
+  return retval;
 }
 
 int NaClDescImcShmUnmapUnsafe(struct NaClDesc         *vself,

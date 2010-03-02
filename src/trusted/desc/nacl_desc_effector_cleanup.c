@@ -33,25 +33,6 @@ static int NaClDescEffCleanReturnCreatedDesc(struct NaClDescEffector *vself,
   return 0;
 }
 
-static void NaClDescEffCleanUpdateAddrMap(struct NaClDescEffector *vself,
-                                          uintptr_t               sysaddr,
-                                          size_t                  nbytes,
-                                          int                     sysprot,
-                                          struct NaClDesc         *backing_desc,
-                                          size_t                  backing_bytes,
-                                          off_t                   offset_bytes,
-                                          int                     delete_mem) {
-  UNREFERENCED_PARAMETER(vself);
-  UNREFERENCED_PARAMETER(sysaddr);
-  UNREFERENCED_PARAMETER(nbytes);
-  UNREFERENCED_PARAMETER(sysprot);
-  UNREFERENCED_PARAMETER(backing_desc);
-  UNREFERENCED_PARAMETER(backing_bytes);
-  UNREFERENCED_PARAMETER(offset_bytes);
-  UNREFERENCED_PARAMETER(delete_mem);
-  return;
-}
-
 static int NaClDescEffCleanUnmapMemory(struct NaClDescEffector  *vself,
                                        uintptr_t                sysaddr,
                                        size_t                   nbytes) {
@@ -84,7 +65,6 @@ static struct NaClDescImcBoundDesc *NaClDescEffCleanSourceSock(
 static struct NaClDescEffectorVtbl NaClDescEffectorCleanupVtbl = {
   NaClDescEffCleanDtor,
   NaClDescEffCleanReturnCreatedDesc,
-  NaClDescEffCleanUpdateAddrMap,
   NaClDescEffCleanUnmapMemory,
   NaClDescEffCleanMapAnonMem,
   NaClDescEffCleanSourceSock,

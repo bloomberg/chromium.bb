@@ -166,7 +166,7 @@ static NaClSrpcImcDescType SysvShmDesc() {
                                  aligned_mapaddr,
                                  kShmSize,
                                  NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
-                                 0,
+                                 NACL_ABI_MAP_SHARED | NACL_ABI_MAP_FIXED,
                                  0);
   if (aligned_mapaddr != kSysvShmAddr) {
     goto cleanup;
