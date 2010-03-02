@@ -86,18 +86,18 @@ PluginThread::PluginThread()
       NPAPI::PluginLib::CreatePluginLib(plugin_path_);
   if (plugin.get()) {
     plugin->NP_Initialize();
-  }
 
 #if defined(OS_MACOSX)
-  scoped_cftyperef<CFStringRef> plugin_name(base::SysWideToCFStringRef(
-      plugin->plugin_info().name));
-  scoped_cftyperef<CFStringRef> app_name(base::SysUTF16ToCFStringRef(
-      l10n_util::GetStringUTF16(IDS_SHORT_PLUGIN_APP_NAME)));
-  scoped_cftyperef<CFStringRef> process_name(CFStringCreateWithFormat(
-      kCFAllocatorDefault, NULL, CFSTR("%@ (%@)"),
-      plugin_name.get(), app_name.get()));
-  mac_util::SetProcessName(process_name);
+    scoped_cftyperef<CFStringRef> plugin_name(base::SysWideToCFStringRef(
+        plugin->plugin_info().name));
+    scoped_cftyperef<CFStringRef> app_name(base::SysUTF16ToCFStringRef(
+        l10n_util::GetStringUTF16(IDS_SHORT_PLUGIN_APP_NAME)));
+    scoped_cftyperef<CFStringRef> process_name(CFStringCreateWithFormat(
+        kCFAllocatorDefault, NULL, CFSTR("%@ (%@)"),
+        plugin_name.get(), app_name.get()));
+    mac_util::SetProcessName(process_name);
 #endif
+  }
 
   // Certain plugins, such as flash, steal the unhandled exception filter
   // thus we never get crash reports when they fault. This call fixes it.

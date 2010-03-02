@@ -70,7 +70,8 @@ void MacGPUPluginContainer::Draw(CGLContextObj context) {
   IOSurfaceSupport* io_surface_support = IOSurfaceSupport::Initialize();
   GLenum target = GL_TEXTURE_RECTANGLE_ARB;
   if (!texture_) {
-    if ((io_surface_support && !surface_) || transport_dib_.get() == NULL)
+    if ((io_surface_support && !surface_) ||
+        (!io_surface_support && !transport_dib_.get()))
       return;
     glGenTextures(1, &texture_);
     glBindTexture(target, texture_);
