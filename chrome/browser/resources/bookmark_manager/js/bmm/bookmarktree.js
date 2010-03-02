@@ -41,8 +41,11 @@ cr.define('bmm', function() {
    * backend.
    *
    * Since the bookmark tree only contains folders the index we get from certain
-   * callbacks is not very useful so we therefore have this async call which gets
-   * the children of the parent and adds the tree item at the desired index.
+   * callbacks is not very useful so we therefore have this async call which
+   * gets the children of the parent and adds the tree item at the desired
+   * index.
+   *
+   * This also exoands the parent so that newly added children are revealed.
    *
    * @param {!cr.ui.TreeItem} parent The parent tree item.
    * @param {!cr.ui.TreeItem} treeItem The tree item to add.
@@ -55,6 +58,7 @@ cr.define('bmm', function() {
         return item.id;
       }).indexOf(treeItem.bookmarkNode.id);
       parent.addAt(treeItem, index);
+      parent.expanded = true;
       if (opt_f)
         opt_f();
     });
@@ -104,15 +108,9 @@ cr.define('bmm', function() {
         var oldParentItem = treeLookup[moveInfo.oldParentId];
         oldParentItem.remove(treeItem);
         var newParentItem = treeLookup[moveInfo.parentId];
-        // If the new parent did not have any children before we expand it after
-        // adding the new item because the default state is to expand the folders.
-        var hadChildren = newParentItem.hasChildren;
         // The tree only shows folders so the index is not the index we want. We
         // therefore get the children need to adjust the index.
-        addTreeItem(newParentItem, treeItem, function() {
-          if (!hadChildren)
-            newParentItem.expanded = true;
-        });
+        addTreeItem(newParentItem, treeItem);
       }
     },
 

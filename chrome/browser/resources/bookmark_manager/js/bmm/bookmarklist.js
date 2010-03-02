@@ -13,6 +13,19 @@ cr.define('bmm', function() {
   var listLookup = {};
 
   /**
+   * Removes all children and appends a new child.
+   * @param {!Node} parent The node to remove all children from.
+   * @param {!Node} newChild The new child to append.
+   */
+  function replaceAllChildren(parent, newChild) {
+    var n;
+    while ((n = parent.lastChild)) {
+      parent.removeChild(n);
+    }
+    parent.appendChild(newChild);
+  }
+
+  /**
    * Creates a new bookmark list.
    * @param {Object=} opt_propertyBag Optional properties.
    * @constructor
@@ -122,7 +135,8 @@ cr.define('bmm', function() {
       var listItem = listLookup[id];
       if (listItem) {
         listItem.bookmarkNode.title = changeInfo.title;
-        listItem.bookmarkNode.url = changeInfo.url;
+        if ('url' in changeInfo)
+          listItem.bookmarkNode.url = changeInfo['url'];
         updateListItem(listItem, listItem.bookmarkNode, list.showFolder());
       }
     },
@@ -217,7 +231,7 @@ cr.define('bmm', function() {
 
       var url = this.bookmarkNode.url;
       var title = this.bookmarkNode.title;
-      var isFolder = !url;
+      var isFolder = bmm.isFolder(this.bookmarkNode);
       var listItem = this;
       var labelEl = this.firstChild;
       var urlEl = this.querySelector('.url');
@@ -236,8 +250,10 @@ cr.define('bmm', function() {
             if (!isFolder)
               urlInput.value = url;
             // fall through
+            cr.dispatchSimpleEvent(listItem, 'canceledit', true);
           case 'Enter':
-            listItem.parentNode.focus();
+            if (listItem.parentNode)
+              listItem.parentNode.focus();
         }
       }
 
@@ -260,7 +276,9 @@ cr.define('bmm', function() {
         this.draggable = false;
 
         labelInput = doc.createElement('input');
-        labelEl.replaceChild(labelInput, labelEl.firstChild);
+        labelInput.placeholder =
+            localStrings.getString('name_input_placeholder');
+        replaceAllChildren(labelEl, labelInput);
         labelInput.value = title;
 
         if (!isFolder) {
@@ -270,10 +288,13 @@ cr.define('bmm', function() {
           urlInput = doc.createElement('input');
           urlInput.type = 'url';
           urlInput.required = true;
+          urlInput.placeholder =
+              localStrings.getString('url_input_placeholder');
+
           // We also need a name for the input for the CSS to work.
           urlInput.name = '-url-input-' + cr.createUid();
           form.appendChild(urlInput);
-          urlEl.replaceChild(form, urlEl.firstChild);
+          replaceAllChildren(urlEl, form);
           urlInput.value = url;
         }
 
@@ -287,7 +308,7 @@ cr.define('bmm', function() {
         });
         labelInput.addEventListener('keydown', handleKeydown);
         labelInput.addEventListener('blur', handleBlur);
-        cr.ui.limitInputWidth(labelInput, this, 20);
+        cr.ui.limitInputWidth(labelInput, this, 200);
         labelInput.focus();
         labelInput.select();
 
@@ -297,27 +318,41 @@ cr.define('bmm', function() {
           });
           urlInput.addEventListener('keydown', handleKeydown);
           urlInput.addEventListener('blur', handleBlur);
-          cr.ui.limitInputWidth(urlInput, this, 20);
+          cr.ui.limitInputWidth(urlInput, this, 200);
         }
 
       } else {
 
         // Check that we have a valid URL and if not we do not change the
         // editing mode.
-        var newUrl;
         if (!isFolder) {
           var urlInput = this.querySelector('.url input');
+          var newUrl = urlInput.value;
           if (!urlInput.validity.valid) {
-            return;
+            // WebKit does not do URL fix up so we manually test if prepending
+            // 'http://' would make the URL valid.
+            // https://bugs.webkit.org/show_bug.cgi?id=29235
+            urlInput.value = 'http://' + newUrl;
+            if (!urlInput.validity.valid) {
+              // still invalid
+              urlInput.value = newUrl;
 
-          } else {
-            newUrl = urlInput.value;
-            urlEl.textContent = this.bookmarkNode.url = newUrl;
+              // In case the item was removed before getting here we should
+              // not alert.
+              if (listItem.parentNode) {
+                alert(localStrings.getString('invalid_url'));
+              }
+              urlInput.focus();
+              urlInput.select();
+              return;
+            }
+            newUrl = 'http://' + newUrl;
           }
+          urlEl.textContent = this.bookmarkNode.url = newUrl;
         }
 
         this.removeAttribute('editing');
-        this.draggable = false;
+        this.draggable = true;
 
         labelInput = this.querySelector('.label input');
         var newLabel = labelInput.value;
@@ -347,9 +382,8 @@ cr.define('bmm', function() {
 
   function updateListItem(el, bookmarkNode, showFolder) {
     var labelEl = el.firstChild;
-    const NBSP = '\u00a0';
-    labelEl.textContent = bookmarkNode.title || NBSP;
-    if (bookmarkNode.url) {
+    labelEl.textContent = bookmarkNode.title;
+    if (!bmm.isFolder(bookmarkNode)) {
       labelEl.style.backgroundImage = url('chrome://favicon/' +
                                           bookmarkNode.url);
       var urlEl = el.childNodes[1].firstChild;
@@ -379,6 +413,7 @@ cr.define('bmm', function() {
   })();
 
   return {
+    createListItem: createListItem,
     BookmarkList: BookmarkList,
     listLookup: listLookup
   };

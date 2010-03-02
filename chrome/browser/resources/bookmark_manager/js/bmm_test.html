@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+<!-- TODO(arv): Check in Closue unit tests and make this run as part of the
+     tests -->
+<script src="http://closure-library.googlecode.com/svn/trunk/closure/goog/base.js"></script>
+<script src="cr.js"></script>
+<script src="cr/promise.js"></script>
+<script src="bmm/treeiterator.js"></script>
+<script src="bmm.js"></script>
+<script>
+
+goog.require('goog.testing.jsunit');
+
+</script>
+</head>
+<body>
+<script>
+
+var tree = {
+  id: 0,
+  children: [
+    {
+      id: 1,
+      children: [
+        {id: 2},
+        {id: 3, children: []}
+      ]
+    },
+    {id: 4},
+    {id: 5}
+  ]
+};
+
+// Mock chrome.bookmarks.getTree
+crome = chrome || {};
+crome.bookmarks = chrome.bookmarks || {};
+chrome.bookmarks.getTree = function f(callback) {
+  f.callbacks_ = f.callbacks_ || [];
+  f.callbacks_.push(callback);
+  f.$calls++;
+};
+chrome.bookmarks.getTree.load = function(node) {
+  var callbacks = chrome.bookmarks.getTree.callbacks_;
+  for (var i = 0; i < callbacks.length; i++) {
+    callbacks[i].call(null, [node]);
+  }
+  chrome.bookmarks.getTree.callbacks_ = [];
+};
+
+function setUp() {
+  chrome.bookmarks.getTree.$calls = 0;
+}
+
+function testLoadSingle() {
+  var calls = 0;
+  function f(node) {
+    calls++;
+    assertEquals(tree, node);
+  }
+  var p = bmm.loadTree();
+  p.addListener(f);
+
+  chrome.bookmarks.getTree.load(tree);
+  assertEquals(1, calls);
+  assertEquals(1, chrome.bookmarks.getTree.$calls);
+}
+
+function testLoadMultiple() {
+  var calls1 = 0;
+  var calls2 = 0;
+  function f1(node) {
+    calls1++;
+    assertEquals(tree, node);
+  }
+  function f2(node) {
+    calls2++;
+    assertEquals(tree, node);
+  }
+
+  var p = bmm.loadTree();
+  p.addListener(f1);
+  p.addListener(f2);
+
+  chrome.bookmarks.getTree.load(tree);
+  assertEquals(1, calls1);
+  assertEquals(1, calls2);
+  assertEquals(1, chrome.bookmarks.getTree.$calls);
+}
+
+function testLoadSubtree() {
+  var calls = 0;
+  function f(node) {
+    calls++;
+    assertEquals(tree.children[0], node);
+  }
+  var p = bmm.loadSubtree(1);
+  p.addListener(f);
+
+  chrome.bookmarks.getTree.load(tree);
+  assertEquals(1, calls);
+  assertEquals(1, chrome.bookmarks.getTree.$calls);
+}
+
+function testLoadMixed() {
+  var calls1 = 0;
+  var calls2 = 0;
+  function f1(node) {
+    calls1++;
+    assertEquals(tree.children[0], node);
+  }
+  function f2(node) {
+    calls2++;
+    assertEquals(tree, node);
+  }
+  var p1 = bmm.loadSubtree(1);
+  p1.addListener(f1);
+  var p2 = bmm.loadTree(1);
+  p2.addListener(f2);
+
+  chrome.bookmarks.getTree.load(tree);
+  assertEquals(1, calls1);
+  assertEquals(1, calls2);
+  assertEquals(1, chrome.bookmarks.getTree.$calls);
+}
+
+function testLoadTwice() {
+  var calls1 = 0;
+  var calls2 = 0;
+  function f1(node) {
+    calls1++;
+    assertEquals(tree.children[0], node);
+  }
+  function f2(node) {
+    calls2++;
+    assertEquals(tree, node);
+  }
+  var p1 = bmm.loadSubtree(1);
+  p1.addListener(f1);
+
+  chrome.bookmarks.getTree.load(tree);
+  assertEquals(1, calls1);
+  assertEquals(0, calls2);
+  assertEquals(1, chrome.bookmarks.getTree.$calls);
+
+  var p2 = bmm.loadTree(1);
+  p2.addListener(f2);
+
+  chrome.bookmarks.getTree.load(tree);
+  assertEquals(1, calls1);
+  assertEquals(1, calls2);
+  assertEquals(2, chrome.bookmarks.getTree.$calls);
+}
+
+</script>
+</body>
+</html>

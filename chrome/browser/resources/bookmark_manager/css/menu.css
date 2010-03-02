@@ -26,7 +26,6 @@ menu > :not(hr) {
   background: transparent;
   font: inherit;
   border: 0;
-
   padding: 3px 8px;
   overflow: hidden;
   text-overflow: ellipsis;

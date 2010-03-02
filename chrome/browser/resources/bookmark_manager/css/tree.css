@@ -6,7 +6,6 @@ tree {
 
 .tree-item > .tree-row {
   color: black;
-  font: 11px verdana;
   -webkit-user-select: none;
   border: 1px solid rgba(255,255,255,0); /* transparent white */
   background-color: rgba(255,255,255,0);
@@ -114,6 +113,12 @@ html[dir=rtl] .tree-item[expanded] > .tree-row > .expand-icon {
   background-repeat: no-repeat;
   background-position: 0 50%;
   background-image: url("../images/folder_closed.png");
+}
+
+/* We need to ensure that even empty labels take up space */
+.tree-label:empty:after {
+  content: " ";
+  white-space: pre;
 }
 
 .tree-rename > .tree-row > .tree-label {

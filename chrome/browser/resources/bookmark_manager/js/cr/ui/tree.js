@@ -321,7 +321,7 @@ cr.define('cr.ui', function() {
      */
     reveal: function() {
       var pi = this.parentItem;
-      while (!(pi instanceof Tree)) {
+      while (pi && !(pi instanceof Tree)) {
         pi.expanded = true;
         pi = pi.parentItem;
       }
@@ -487,7 +487,10 @@ cr.define('cr.ui', function() {
         // the input loses focus we set editing to false again.
         input = this.ownerDocument.createElement('input');
         input.value = text;
-        labelEl.replaceChild(input, labelEl.firstChild);
+        if (labelEl.firstChild)
+          labelEl.replaceChild(input, labelEl.firstChild);
+        else
+          labelEl.appendChild(input);
 
         input.addEventListener('keydown', handleKeydown);
         input.addEventListener('blur', cr.bind(function() {

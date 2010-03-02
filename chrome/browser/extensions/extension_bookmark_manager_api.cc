@@ -376,7 +376,6 @@ bool BookmarkManagerGetStringsFunction::RunImpl() {
       l10n_util::GetString(IDS_BOOMARK_BAR_OPEN_ALL_INCOGNITO));
   localized_strings->SetString(L"remove",
       l10n_util::GetString(IDS_BOOKMARK_BAR_REMOVE));
-
   localized_strings->SetString(L"copy",
       l10n_util::GetString(IDS_CONTENT_CONTEXT_COPY));
   localized_strings->SetString(L"cut",
@@ -385,6 +384,14 @@ bool BookmarkManagerGetStringsFunction::RunImpl() {
       l10n_util::GetString(IDS_CONTENT_CONTEXT_PASTE));
   localized_strings->SetString(L"delete",
       l10n_util::GetString(IDS_CONTENT_CONTEXT_DELETE));
+  localized_strings->SetString(L"new_folder_name",
+      l10n_util::GetString(IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME));
+  localized_strings->SetString(L"name_input_placeholder",
+      l10n_util::GetString(IDS_BOOKMARK_MANAGER_NAME_INPUT_PLACE_HOLDER));
+  localized_strings->SetString(L"url_input_placeholder",
+      l10n_util::GetString(IDS_BOOKMARK_MANAGER_URL_INPUT_PLACE_HOLDER));
+  localized_strings->SetString(L"invalid_url",
+      l10n_util::GetString(IDS_BOOKMARK_MANAGER_INVALID_URL));
 
   ChromeURLDataManager::DataSource::SetFontAndTextDirection(localized_strings);
 

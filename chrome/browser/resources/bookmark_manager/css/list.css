@@ -5,7 +5,6 @@ list {
 }
 
 list > * {
-  font: 11px verdana;
   -webkit-user-select: none;
   border: 1px solid rgba(255,255,255,0); /* transparent white */
   background-color: rgba(255,255,255,0);

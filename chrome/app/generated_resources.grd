@@ -6147,6 +6147,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_BOOKMARK_MANAGER_SEARCH_TITLE" desc="Text shown before the search text field.">
         Search:
       </message>
+      <message name="IDS_BOOKMARK_MANAGER_NAME_INPUT_PLACE_HOLDER" desc="Text to show in the URL input field when editing or creating bookmarks.">
+        Name
+      </message>
+      <message name="IDS_BOOKMARK_MANAGER_URL_INPUT_PLACE_HOLDER" desc="Text to show in the URL input field when editing or creating bookmarks.">
+        URL
+      </message>
+      <message name="IDS_BOOKMARK_MANAGER_INVALID_URL" desc="Error message to display when the user tries to edit or create a bookmark with an invalud URL.">
+        Invalid URL.
+      </message>
 
       <!--Bookmark manager tooltip strings-->
       <message name="IDS_BOOKMARK_MANAGER_TOOLTIP_NEW_FOLDER_MAC" desc="Tooltip for bookmark manager New Folder button">
