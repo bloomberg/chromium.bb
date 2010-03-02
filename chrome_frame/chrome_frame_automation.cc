@@ -1130,14 +1130,13 @@ void ChromeFrameAutomationClient::SetPageFontSize(
 
 void ChromeFrameAutomationClient::OnResponseStarted(int request_id,
     const char* mime_type,  const char* headers, int size,
-    base::Time last_modified, const std::string& peristent_cookies,
-    const std::string& redirect_url, int redirect_status) {
+    base::Time last_modified, const std::string& redirect_url,
+    int redirect_status) {
   const IPC::AutomationURLResponse response = {
       mime_type,
       headers ? headers : "",
       size,
       last_modified,
-      peristent_cookies,
       redirect_url,
       redirect_status
   };

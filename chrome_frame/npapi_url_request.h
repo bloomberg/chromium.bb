@@ -48,8 +48,7 @@ class NPAPIUrlRequestManager : public PluginUrlRequestManager,
 
   // PluginUrlRequestDelegate implementation. Forwards back to delegate.
   virtual void OnResponseStarted(int request_id, const char* mime_type,
-      const char* headers, int size,
-      base::Time last_modified, const std::string& peristent_cookies,
+      const char* headers, int size, base::Time last_modified,
       const std::string& redirect_url, int redirect_status);
   virtual void OnReadComplete(int request_id, const void* buffer, int len);
   virtual void OnResponseEnd(int request_id, const URLRequestStatus& status);

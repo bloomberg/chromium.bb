@@ -477,34 +477,6 @@ STDMETHODIMP UrlmonUrlRequest::OnResponse(DWORD dwResponseCode,
     }
   }
 
-  std::string url_for_persistent_cookies;
-  std::string persistent_cookies;
-
-  if (status_.was_redirected())
-    url_for_persistent_cookies = status_.get_redirection().utf8_url;
-
-  if (url_for_persistent_cookies.empty())
-    url_for_persistent_cookies = url();
-
-  // Grab cookies for the specific Url from WININET.
-  {
-    DWORD cookie_size = 0;  // NOLINT
-    std::wstring url = UTF8ToWide(url_for_persistent_cookies);
-
-    // Note that there's really no way for us here to distinguish session
-    // cookies from persistent cookies here.  Session cookies should get
-    // filtered out on the chrome side as to not be added again.
-    InternetGetCookie(url.c_str(), NULL, NULL, &cookie_size);
-    if (cookie_size) {
-      scoped_array<wchar_t> cookies(new wchar_t[cookie_size + 1]);
-      if (!InternetGetCookie(url.c_str(), NULL, cookies.get(), &cookie_size)) {
-        NOTREACHED() << "InternetGetCookie failed. Error: " << GetLastError();
-      } else {
-        persistent_cookies = WideToUTF8(cookies.get());
-      }
-    }
-  }
-
   // Inform the delegate.
   headers_received_ = true;
   delegate_->OnResponseStarted(id(),
@@ -512,7 +484,6 @@ STDMETHODIMP UrlmonUrlRequest::OnResponse(DWORD dwResponseCode,
                     raw_headers.c_str(),  // headers
                     0,                    // size
                     base::Time(),         // last_modified
-                    persistent_cookies,
                     status_.get_redirection().utf8_url,
                     status_.get_redirection().http_code);
   return S_OK;
@@ -991,12 +962,12 @@ void UrlmonUrlRequestManager::StopAllWorker() {
 
 void UrlmonUrlRequestManager::OnResponseStarted(int request_id,
     const char* mime_type, const char* headers, int size,
-    base::Time last_modified, const std::string& peristent_cookies,
-    const std::string& redirect_url, int redirect_status) {
+    base::Time last_modified, const std::string& redirect_url,
+    int redirect_status) {
   DCHECK_EQ(worker_thread_.thread_id(), PlatformThread::CurrentId());
   DCHECK(LookupRequest(request_id).get() != NULL);
   delegate_->OnResponseStarted(request_id, mime_type, headers, size,
-      last_modified, peristent_cookies, redirect_url, redirect_status);
+      last_modified, redirect_url, redirect_status);
 }
 
 void UrlmonUrlRequestManager::OnReadComplete(int request_id, const void* buffer,

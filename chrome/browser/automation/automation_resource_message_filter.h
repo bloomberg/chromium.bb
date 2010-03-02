@@ -11,8 +11,14 @@
 #include "base/lock.h"
 #include "base/platform_thread.h"
 #include "ipc/ipc_channel_proxy.h"
+#include "net/base/completion_callback.h"
 
 class URLRequestAutomationJob;
+class GURL;
+
+namespace net {
+class CookieStore;
+}  // namespace net
 
 // This class filters out incoming automation IPC messages for network
 // requests and processes them on the IPC thread.  As a result, network
@@ -89,6 +95,20 @@ class AutomationResourceMessageFilter
   bool SendDownloadRequestToHost(int routing_id, int tab_handle,
                                  int request_id);
 
+  // Retrieves cookies for the url passed in from the external host. The
+  // callback passed in is notified on success or failure asynchronously.
+  void GetCookiesForUrl(int tab_handle, const GURL& url,
+                        net::CompletionCallback* callback,
+                        net::CookieStore* cookie_store);
+
+  // This function gets invoked when we receive a response from the external
+  // host for the cookie request sent in GetCookiesForUrl above. It sets the
+  // cookie temporarily on the cookie store and executes the completion
+  // callback which reads the cookie from the store. The cookie value is reset
+  // after the callback finishes executing.
+  void OnGetCookiesHostResponse(int tab_handle, bool success, const GURL& url,
+                                const std::string& cookies, int cookie_id);
+
  protected:
   // Retrieves the automation request id for the passed in chrome request
   // id and returns it in the automation_request_id parameter.
@@ -115,6 +135,10 @@ class AutomationResourceMessageFilter
       int tab_handle,
       AutomationResourceMessageFilter* old_filter,
       AutomationResourceMessageFilter* new_filter);
+
+  int GetNextCompletionCallbackId() {
+    return ++next_completion_callback_id_;
+  }
 
   // A unique renderer id is a combination of renderer process id and
   // it's routing id.
@@ -149,6 +173,25 @@ class AutomationResourceMessageFilter
 
   // Map of render views interested in diverting url requests over automation.
   static RenderViewMap filtered_render_views_;
+
+  // Contains information used for completing the request to read cookies from
+  // the host coming in from the renderer.
+  struct CookieCompletionInfo {
+    net::CompletionCallback* completion_callback;
+    scoped_refptr<net::CookieStore> cookie_store;
+  };
+
+  // Map of completion callback id to CookieCompletionInfo, which contains the
+  // actual callback which is invoked on successful retrieval of cookies from
+  // host. The mapping is setup when GetCookiesForUrl is invoked to retrieve
+  // cookies from the host and is removed when we receive a response from the
+  // host. Please see the OnGetCookiesHostResponse function.
+  typedef std::map<int, CookieCompletionInfo> CompletionCallbackMap;
+  CompletionCallbackMap completion_callback_map_;
+
+  // Contains the id of the next completion callback. This is passed to the the
+  // external host as a cookie referring to the completion callback.
+  int next_completion_callback_id_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationResourceMessageFilter);
 };

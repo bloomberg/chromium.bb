@@ -49,24 +49,6 @@ URLRequest::ProtocolFactory* URLRequestAutomationJob::old_http_factory_
 URLRequest::ProtocolFactory* URLRequestAutomationJob::old_https_factory_
     = NULL;
 
-namespace {
-
-// Returns true if the cookie passed in exists in the list of cookies
-// parsed from the HTTP response header.
-bool IsParsedCookiePresentInCookieHeader(
-    const net::CookieMonster::ParsedCookie& parsed_cookie,
-    const std::vector<std::string>& header_cookies) {
-  for (size_t i = 0; i < header_cookies.size(); ++i) {
-    net::CookieMonster::ParsedCookie parsed_header_cookie(header_cookies[i]);
-    if (parsed_header_cookie.Name() == parsed_cookie.Name())
-      return true;
-  }
-
-  return false;
-}
-
-}  // end namespace
-
 URLRequestAutomationJob::URLRequestAutomationJob(URLRequest* request, int tab,
     int request_id, AutomationResourceMessageFilter* filter, bool is_pending)
     : URLRequestJob(request),
@@ -296,79 +278,11 @@ void URLRequestAutomationJob::OnRequestStarted(int tab, int id,
   DCHECK(redirect_status_ == 0 || redirect_status_ == 200 ||
          (redirect_status_ >= 300 && redirect_status_ < 400));
 
-  GURL url_for_cookies =
-      GURL(redirect_url_.empty() ? request_->url().spec().c_str() :
-           redirect_url_.c_str());
-
-  URLRequestContext* ctx = request_->context();
-  std::vector<std::string> response_cookies;
-
-  // NOTE: We ignore Chrome's cookie policy to allow the automation to
-  // decide what cookies should be set.
-
   if (!response.headers.empty()) {
     headers_ = new net::HttpResponseHeaders(
         net::HttpUtil::AssembleRawHeaders(response.headers.data(),
                                           response.headers.size()));
-    // Parse and set HTTP cookies.
-    const std::string name = "Set-Cookie";
-    std::string value;
-
-    void* iter = NULL;
-    while (headers_->EnumerateHeader(&iter, name, &value)) {
-      if (request_->context()->InterceptResponseCookie(request_, value))
-        response_cookies.push_back(value);
-    }
-
-    if (response_cookies.size() && ctx && ctx->cookie_store()) {
-      net::CookieOptions options;
-      options.set_include_httponly();
-      ctx->cookie_store()->SetCookiesWithOptions(url_for_cookies,
-                                                 response_cookies,
-                                                 options);
-    }
   }
-
-  if (!response.persistent_cookies.empty() && ctx && ctx->cookie_store()) {
-    StringTokenizer cookie_parser(response.persistent_cookies, ";");
-
-    net::CookieMonster::CookieList existing_cookies;
-    net::CookieMonster* monster = ctx->cookie_store()->GetCookieMonster();
-    DCHECK(monster);
-    if (monster)
-      existing_cookies = monster->GetAllCookiesForURL(url_for_cookies);
-
-    while (cookie_parser.GetNext()) {
-      std::string cookie_string = cookie_parser.token();
-      // Only allow cookies with valid name value pairs.
-      if (cookie_string.find('=') != std::string::npos) {
-        // Workaround for not having path information with the persistent
-        // cookies.  When the path information is missing we assume path=/.
-        // If we don't do this the path of the cookie will be assumed to be
-        // the directory of url_for_cookies.
-        SetCookiePathToRootIfNotPresent(&cookie_string);
-
-        // Ignore duplicate cookies, i.e. cookies passed in from the host
-        // browser which also exist in the response header.
-        net::CookieMonster::ParsedCookie parsed_cookie(cookie_string);
-        net::CookieMonster::CookieList::const_iterator i;
-        for (i = existing_cookies.begin(); i != existing_cookies.end(); ++i) {
-          if (i->second.Name() == parsed_cookie.Name())
-            break;
-        }
-
-        if (i == existing_cookies.end() &&
-            !IsParsedCookiePresentInCookieHeader(parsed_cookie,
-                                                 response_cookies)) {
-          net::CookieOptions options;
-          ctx->cookie_store()->SetCookieWithOptions(url_for_cookies,
-                                                    cookie_string,
-                                                    options);
-        }
-      }
-    }
-  }
-
   NotifyHeadersComplete();
 }
 
@@ -534,32 +448,6 @@ void URLRequestAutomationJob::StartPendingJob(
   message_filter_ = new_filter;
   is_pending_ = false;
   Start();
-}
-
-// static
-bool URLRequestAutomationJob::IsCookiePresentInCookieHeader(
-    const std::string& cookie_name,
-    const std::vector<std::string>& header_cookies) {
-  net::CookieMonster::ParsedCookie parsed_cookie(cookie_name);
-  return IsParsedCookiePresentInCookieHeader(parsed_cookie, header_cookies);
-}
-
-// static
-void URLRequestAutomationJob::SetCookiePathToRootIfNotPresent(
-    std::string* cookie_string) {
-  DCHECK(cookie_string);
-  TrimWhitespace(*cookie_string, TRIM_ALL, cookie_string);
-
-  // First check if path is already specified.
-  net::CookieMonster::ParsedCookie parsed(*cookie_string);
-  if (parsed.IsValid() && !parsed.HasPath()) {
-    DCHECK(cookie_string->length() > 0);
-
-    // The path is not specified, add it at the end.
-    if ((*cookie_string)[cookie_string->length() - 1] != ';')
-      *cookie_string += ';';
-    cookie_string->append(" path=/");
-  }
 }
 
 void URLRequestAutomationJob::NotifyJobCompletionTask() {

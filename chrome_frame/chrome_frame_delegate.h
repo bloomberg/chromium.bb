@@ -113,6 +113,9 @@ class ChromeFrameDelegateImpl : public ChromeFrameDelegate {
   virtual void OnAttachExternalTab(int tab_handle, intptr_t cookie,
                                    int disposition) {}
   virtual void OnGoToHistoryEntryOffset(int tab_handle, int offset) {}
+
+  virtual void OnGetCookiesFromHost(int tab_handle, const GURL& url,
+                                    int cookie_id) {}
 };
 
 // This interface enables tasks to be marshalled to desired threads.

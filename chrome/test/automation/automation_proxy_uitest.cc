@@ -927,9 +927,6 @@ TEST_F(ExternalTabUITest, IncognitoMode) {
   GURL url("http://anatomyofmelancholy.net");
   std::string cookie = "robert=burton; expires=Thu, 13 Oct 2011 05:04:03 UTC;";
 
-  EXPECT_CALL(*mock_, OnSetCookieAsync(1, url, StrEq(cookie)))
-      .Times(1)
-      .WillOnce(QUIT_LOOP(&loop));
   EXPECT_CALL(*mock_, HandleClosed(1)).Times(1);
 
   IPC::ExternalTabSettings incognito =
@@ -942,9 +939,6 @@ TEST_F(ExternalTabUITest, IncognitoMode) {
   std::string value_result;
 
   EXPECT_TRUE(tab->SetCookie(url, cookie));
-  loop.RunFor(action_max_timeout_ms());
-  ASSERT_FALSE(loop.WasTimedOut());  // Expect QuitLoop from OnSetCookieAsync.
-
   EXPECT_TRUE(tab->GetCookieByName(url, "robert", &value_result));
   EXPECT_EQ("burton", value_result);
   mock_->DestroyHostWindow();

@@ -306,7 +306,6 @@ struct AutomationURLResponse {
   std::string headers;
   int64 content_length;
   base::Time last_modified;
-  std::string persistent_cookies;
   std::string redirect_url;
   int redirect_status;
 };
@@ -320,7 +319,6 @@ struct ParamTraits<AutomationURLResponse> {
     WriteParam(m, p.headers);
     WriteParam(m, p.content_length);
     WriteParam(m, p.last_modified);
-    WriteParam(m, p.persistent_cookies);
     WriteParam(m, p.redirect_url);
     WriteParam(m, p.redirect_status);
   }
@@ -329,7 +327,6 @@ struct ParamTraits<AutomationURLResponse> {
            ReadParam(m, iter, &p->headers) &&
            ReadParam(m, iter, &p->content_length) &&
            ReadParam(m, iter, &p->last_modified) &&
-           ReadParam(m, iter, &p->persistent_cookies) &&
            ReadParam(m, iter, &p->redirect_url) &&
            ReadParam(m, iter, &p->redirect_status);
   }
@@ -342,8 +339,6 @@ struct ParamTraits<AutomationURLResponse> {
     LogParam(p.content_length, l);
     l->append(L", ");
     LogParam(p.last_modified, l);
-    l->append(L", ");
-    LogParam(p.persistent_cookies, l);
     l->append(L", ");
     LogParam(p.redirect_url, l);
     l->append(L", ");

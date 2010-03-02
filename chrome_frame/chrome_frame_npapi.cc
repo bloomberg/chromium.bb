@@ -529,6 +529,55 @@ void ChromeFrameNPAPI::OnSetCookieAsync(int tab_handle, const GURL& url,
   }
 }
 
+void ChromeFrameNPAPI::OnGetCookiesFromHost(int tab_handle, const GURL& url,
+                                            int cookie_id) {
+  std::string cookie_string;
+  bool success = true;
+
+  if (npapi::VersionMinor() >= NPVERS_HAS_URL_AND_AUTH_INFO) {
+    char* cookies = NULL;
+    unsigned int cookie_length = 0;
+    NPError ret = npapi::GetValueForURL(instance_, NPNURLVCookie,
+                                        url.spec().c_str(), &cookies,
+                                        &cookie_length);
+    if (ret == NPERR_NO_ERROR) {
+      DLOG(INFO) << "Obtained cookies:" << cookies << " from host";
+      cookie_string.append(cookies, cookie_length);
+      npapi::MemFree(cookies);
+    } else {
+      success = false;
+    }
+  } else {
+    DLOG(INFO) << "Host does not support NPVERS_HAS_URL_AND_AUTH_INFO.";
+    if (url == GURL(document_url_)) {
+      DLOG(INFO) << "Reading document.cookie";
+      NPVariant cookies = {};
+      ExecuteScript("javascript:document.cookie", &cookies);
+      if (cookies.type == NPVariantType_String) {
+        cookie_string.append(cookies.value.stringValue.UTF8Characters,
+                             cookies.value.stringValue.UTF8Length);
+        DLOG(INFO) << "Obtained cookies:" << cookie_string.c_str()
+                   << " from host";
+        npapi::ReleaseVariantValue(&cookies);
+      } else {
+        success = false;
+      }
+    } else {
+      success = false;
+    }
+  }
+
+  if (!success)
+    DLOG(INFO) << "Failed to return cookies for url:" << url.spec().c_str();
+
+  if (automation_client_->automation_server()) {
+    automation_client_->automation_server()->Send(
+        new AutomationMsg_GetCookiesHostResponse(0, tab_handle, success,
+                                                 url, cookie_string,
+                                                 cookie_id));
+  }
+}
+
 bool ChromeFrameNPAPI::HasMethod(NPObject* obj, NPIdentifier name) {
   for (int i = 0; i < arraysize(plugin_methods_); ++i) {
     if (name == plugin_method_identifiers_[i])

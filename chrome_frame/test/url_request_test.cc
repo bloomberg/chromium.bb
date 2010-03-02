@@ -18,9 +18,8 @@ const int kChromeFrameLongNavigationTimeoutInSeconds = 10;
 
 class MockUrlDelegate : public PluginUrlRequestDelegate {
  public:
-  MOCK_METHOD8(OnResponseStarted, void(int request_id, const char* mime_type,
-      const char* headers, int size,
-      base::Time last_modified, const std::string& peristent_cookies,
+  MOCK_METHOD7(OnResponseStarted, void(int request_id, const char* mime_type,
+      const char* headers, int size, base::Time last_modified,
       const std::string& redirect_url, int redirect_status));
   MOCK_METHOD3(OnReadComplete, void(int request_id, const void* buffer,
                                     int len));
@@ -65,8 +64,7 @@ TEST(UrlmonUrlRequestTest, Simple1) {
 
   testing::InSequence s;
   EXPECT_CALL(mock, OnResponseStarted(1, testing::_, testing::_, testing::_,
-                                      testing::_, testing::_, testing::_,
-                                      testing::_))
+                                      testing::_, testing::_, testing::_))
     .Times(1)
     .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(CreateFunctor(
         &request, &UrlmonUrlRequest::Read, 512))));
@@ -133,8 +131,7 @@ TEST(UrlmonUrlRequestTest, ZeroLengthResponse) {
 
   // Expect headers
   EXPECT_CALL(mock, OnResponseStarted(1, testing::_, testing::_, testing::_,
-                                      testing::_, testing::_, testing::_,
-                                      testing::_))
+                                      testing::_, testing::_, testing::_))
     .Times(1)
     .WillOnce(QUIT_LOOP(loop));
 
@@ -168,7 +165,7 @@ TEST(UrlmonUrlRequestManagerTest, Simple1) {
       server.Resolve(L"files/chrome_frame_window_open.html").spec(), "get" };
 
   EXPECT_CALL(mock, OnResponseStarted(1, testing::_, testing::_, testing::_,
-                             testing::_, testing::_, testing::_, testing::_))
+                             testing::_, testing::_, testing::_))
       .Times(1)
       .WillOnce(testing::InvokeWithoutArgs(CreateFunctor(mgr.get(),
           &PluginUrlRequestManager::ReadUrlRequest, 0, 1, 512)));
@@ -199,7 +196,7 @@ TEST(UrlmonUrlRequestManagerTest, Abort1) {
       server.Resolve(L"files/chrome_frame_window_open.html").spec(), "get" };
 
   EXPECT_CALL(mock, OnResponseStarted(1, testing::_, testing::_, testing::_,
-                               testing::_, testing::_, testing::_, testing::_))
+                               testing::_, testing::_, testing::_))
     .Times(1)
     .WillOnce(testing::DoAll(
         testing::InvokeWithoutArgs(CreateFunctor(mgr.get(),

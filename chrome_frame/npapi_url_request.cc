@@ -1,4 +1,4 @@
-// Copyright 2009, Google Inc.
+// Copyright 2010, Google Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -134,8 +134,7 @@ NPError NPAPIUrlRequest::OnStreamCreated(const char* mime_type,
   // Add support for passing persistent cookies and information about any URL
   // redirects to Chrome.
   delegate_->OnResponseStarted(id(), mime_type, stream->headers, stream->end,
-      base::Time::FromTimeT(stream->lastmodified), std::string(),
-      std::string(), 0);
+      base::Time::FromTimeT(stream->lastmodified), std::string(), 0);
   return NPERR_NO_ERROR;
 }
 
@@ -250,10 +249,10 @@ void NPAPIUrlRequestManager::StopAll() {
 // Callbacks from NPAPIUrlRequest. Simply forward to the delegate.
 void NPAPIUrlRequestManager::OnResponseStarted(int request_id,
     const char* mime_type, const char* headers, int size,
-    base::Time last_modified, const std::string& peristent_cookies,
-    const std::string& redirect_url, int redirect_status) {
+    base::Time last_modified, const std::string& redirect_url,
+    int redirect_status) {
   delegate_->OnResponseStarted(request_id, mime_type, headers, size,
-      last_modified, peristent_cookies, redirect_url, redirect_status);
+      last_modified, redirect_url, redirect_status);
 }
 
 void NPAPIUrlRequestManager::OnReadComplete(int request_id, const void* buffer,

@@ -23,18 +23,9 @@ class PluginUrlRequestManager;
 
 class DECLSPEC_NOVTABLE PluginUrlRequestDelegate {
  public:
-  // Persistent cookies are read from the host browser and passed off to Chrome
-  // These cookies are sent when we receive a response for every URL request
-  // initiated by Chrome. Ideally we should only send cookies for the top level
-  // URL and any subframes. However we don't receive information from Chrome
-  // about the context for a URL, i.e. whether it is a subframe, etc.
-  // Additionally cookies for a URL should be sent once for the page. This
-  // is not done now as it is difficult to track URLs, specifically if they
-  // are redirected, etc.
   virtual void OnResponseStarted(int request_id, const char* mime_type,
     const char* headers, int size, base::Time last_modified,
-    const std::string& peristent_cookies, const std::string& redirect_url,
-    int redirect_status) = 0;
+    const std::string& redirect_url, int redirect_status) = 0;
   virtual void OnReadComplete(int request_id, const void* buffer, int len) = 0;
   virtual void OnResponseEnd(int request_id, const URLRequestStatus& status) = 0;
  protected:

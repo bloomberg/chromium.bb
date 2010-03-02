@@ -55,16 +55,6 @@ class URLRequestAutomationJob : public URLRequestJob {
     return request_id_;
   }
 
-  // Returns true if the cookie passed in exists in the list of cookies
-  // parsed from the HTTP response header.
-  static bool IsCookiePresentInCookieHeader(
-      const std::string& cookie_name,
-      const std::vector<std::string>& header_cookies);
-
-  // Parses a cookie string and if there's no path specified for the cookie
-  // it appends "; path=/" to the cookie string.
-  static void SetCookiePathToRootIfNotPresent(std::string* cookie_string);
-
   bool is_pending() const {
     return is_pending_;
   }

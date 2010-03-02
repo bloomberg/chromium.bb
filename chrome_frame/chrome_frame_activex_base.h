@@ -492,9 +492,14 @@ END_MSG_MAP()
       // Verify if the cookie is being deleted. The cookie format is as below
       // value[; expires=date][; domain=domain][; path=path][; secure]
       // If the first semicolon appears immediately after the name= string,
-      // it means that the cookie is being deleted.
-      if (!parsed_cookie.Value().empty())
+      // it means that the cookie is being deleted, in which case we should
+      // pass the data as is to the InternetSetCookie function.
+      if (!parsed_cookie.Value().empty()) {
+        name.clear();
+        data = cookie;
+      } else {
         data = cookie.substr(name_end + 1);
+      }
     } else {
       data = cookie;
     }
@@ -502,6 +507,34 @@ END_MSG_MAP()
     BOOL ret = InternetSetCookieA(url.spec().c_str(), name.c_str(),
                                   data.c_str());
     DCHECK(ret) << "InternetSetcookie failed. Error: " << GetLastError();
+  }
+
+  virtual void OnGetCookiesFromHost(int tab_handle, const GURL& url,
+                                    int cookie_id) {
+    DWORD cookie_size = 0;
+    bool success = true;
+    std::string cookie_string;
+    InternetGetCookieA(url.spec().c_str(), NULL, NULL, &cookie_size);
+    if (cookie_size) {
+      scoped_array<char> cookies(new char[cookie_size + 1]);
+      if (!InternetGetCookieA(url.spec().c_str(), NULL, cookies.get(),
+                              &cookie_size)) {
+        success = false;
+        NOTREACHED() << "InternetGetCookie failed. Error: " << GetLastError();
+      } else {
+        cookie_string = cookies.get();
+      }
+    } else {
+      success = false;
+      DLOG(INFO) << "InternetGetCookie failed. Error: " << GetLastError();
+    }
+
+    if (automation_client_->automation_server()) {
+      automation_client_->automation_server()->Send(
+          new AutomationMsg_GetCookiesHostResponse(0, tab_handle, success,
+                                                   url, cookie_string,
+                                                   cookie_id));
+    }
   }
 
   virtual void OnAttachExternalTab(int tab_handle,

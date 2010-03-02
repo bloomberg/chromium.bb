@@ -121,6 +121,12 @@ class ChromeURLRequestContext : public URLRequestContext {
   // False only if cookies are globally blocked without exception.
   bool AreCookiesEnabled() const;
 
+  // Returns true if this context is an external request context, like
+  // ChromeFrame.
+  virtual bool IsExternal() const {
+    return false;
+  }
+
  protected:
   // Copies the dependencies from |other| into |this|. If you use this
   // constructor, then you should hold a reference to |other|, as we

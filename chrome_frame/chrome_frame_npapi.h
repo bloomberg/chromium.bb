@@ -139,6 +139,9 @@ END_MSG_MAP()
   virtual void OnSetCookieAsync(int tab_handle, const GURL& url,
                                 const std::string& cookie);
 
+  virtual void OnGetCookiesFromHost(int tab_handle, const GURL& url,
+                                    int cookie_id);
+
   // ChromeFrameDelegate overrides
   virtual void OnLoadFailed(int error_code, const std::string& url);
   virtual void OnAutomationServerReady();

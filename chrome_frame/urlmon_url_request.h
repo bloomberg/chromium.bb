@@ -19,9 +19,9 @@
 
 class UrlmonUrlRequest;
 
-class UrlmonUrlRequestManager :
-    public PluginUrlRequestManager,
-    public PluginUrlRequestDelegate {
+class UrlmonUrlRequestManager
+    : public PluginUrlRequestManager,
+      public PluginUrlRequestDelegate {
  public:
   UrlmonUrlRequestManager();
   ~UrlmonUrlRequestManager();
@@ -59,8 +59,7 @@ class UrlmonUrlRequestManager :
   // PluginUrlRequestDelegate implementation
   virtual void OnResponseStarted(int request_id, const char* mime_type,
     const char* headers, int size, base::Time last_modified,
-    const std::string& peristent_cookies, const std::string& redirect_url,
-    int redirect_status);
+    const std::string& redirect_url, int redirect_status);
   virtual void OnReadComplete(int request_id, const void* buffer, int len);
   virtual void OnResponseEnd(int request_id, const URLRequestStatus& status);
 

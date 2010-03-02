@@ -16,8 +16,10 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/test/automation/automation_messages.h"
+#include "googleurl/src/gurl.h"
+#include "net/base/cookie_store.h"
+#include "net/base/net_errors.h"
 #include "net/url_request/url_request_filter.h"
-
 
 AutomationResourceMessageFilter::RenderViewMap
     AutomationResourceMessageFilter::filtered_render_views_;
@@ -87,7 +89,8 @@ bool AutomationResourceMessageFilter::OnMessageReceived(
                         OnGetFilteredInetHitCount)
     IPC_MESSAGE_HANDLER(AutomationMsg_RecordHistograms,
                         OnRecordHistograms)
-
+    IPC_MESSAGE_HANDLER(AutomationMsg_GetCookiesHostResponse,
+                        OnGetCookiesHostResponse)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -308,6 +311,54 @@ void AutomationResourceMessageFilter::OnRecordHistograms(
     const std::vector<std::string>& histogram_list) {
   for (size_t index = 0; index < histogram_list.size(); ++index) {
     Histogram::DeserializeHistogramInfo(histogram_list[index]);
+  }
+}
+
+void AutomationResourceMessageFilter::GetCookiesForUrl(
+    int tab_handle, const GURL& url, net::CompletionCallback* callback,
+    net::CookieStore* cookie_store) {
+  DCHECK(callback != NULL);
+  DCHECK(cookie_store != NULL);
+
+  int completion_callback_id = GetNextCompletionCallbackId();
+  DCHECK(!ContainsKey(completion_callback_map_, completion_callback_id));
+
+  CookieCompletionInfo cookie_info;
+  cookie_info.completion_callback = callback;
+  cookie_info.cookie_store = cookie_store;
+
+  completion_callback_map_[completion_callback_id] = cookie_info;
+
+  channel_->Send(new AutomationMsg_GetCookiesFromHost(0,
+      tab_handle, url, completion_callback_id));
+}
+
+void AutomationResourceMessageFilter::OnGetCookiesHostResponse(
+    int tab_handle, bool success, const GURL& url, const std::string& cookies,
+    int cookie_id) {
+  CompletionCallbackMap::iterator index =
+      completion_callback_map_.find(cookie_id);
+  if (index != completion_callback_map_.end()) {
+    net::CompletionCallback* callback = index->second.completion_callback;
+    scoped_refptr<net::CookieStore> cookie_store = index->second.cookie_store;
+
+    DCHECK(callback != NULL);
+    DCHECK(cookie_store.get() != NULL);
+
+    completion_callback_map_.erase(index);
+
+    // Set the cookie in the cookie store so that the callback can read it.
+    cookie_store->SetCookieWithOptions(url, cookies, net::CookieOptions());
+
+    Tuple1<int> params;
+    params.a = success ? net::OK : net::ERR_ACCESS_DENIED;
+    callback->RunWithParams(params);
+
+    // The cookie for this URL is only valid until it is read by the callback.
+    cookie_store->SetCookieWithOptions(url, "", net::CookieOptions());
+  } else {
+    NOTREACHED() << "Received invalid completion callback id:"
+                 << cookie_id;
   }
 }
 

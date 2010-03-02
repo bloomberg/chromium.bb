@@ -1199,4 +1199,17 @@ IPC_BEGIN_MESSAGES(Automation)
                       int /* tab handle */)
 #endif
 
+  // Used to get cookies for the given URL.
+  IPC_MESSAGE_ROUTED3(AutomationMsg_GetCookiesFromHost,
+                      int /* tab_handle */,
+                      GURL /* url */,
+                      int /* opaque_cookie_id */)
+
+  IPC_MESSAGE_ROUTED5(AutomationMsg_GetCookiesHostResponse,
+                      int /* tab_handle */,
+                      bool /* success */,
+                      GURL /* url */,
+                      std::string /* cookies */,
+                      int /* opaque_cookie_id */)
+
 IPC_END_MESSAGES(Automation)

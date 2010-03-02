@@ -158,7 +158,7 @@ class SetCookieCompletion : public net::CompletionCallback {
                       int render_view_id,
                       const GURL& url,
                       const std::string& cookie_line,
-                      URLRequestContext* context)
+                      ChromeURLRequestContext* context)
       : render_process_id_(render_process_id),
         render_view_id_(render_view_id),
         url_(url),
@@ -176,10 +176,12 @@ class SetCookieCompletion : public net::CompletionCallback {
       context_->cookie_store()->SetCookieWithOptions(url_, cookie_line_,
                                                      options);
     } else {
-      CallRenderViewHostResourceDelegate(
-          render_process_id_, render_view_id_,
-          &RenderViewHostDelegate::Resource::OnContentBlocked,
-          CONTENT_SETTINGS_TYPE_COOKIES);
+      if (!context_->IsExternal()) {
+        CallRenderViewHostResourceDelegate(
+            render_process_id_, render_view_id_,
+            &RenderViewHostDelegate::Resource::OnContentBlocked,
+            CONTENT_SETTINGS_TYPE_COOKIES);
+      }
     }
     delete this;
   }
@@ -189,7 +191,7 @@ class SetCookieCompletion : public net::CompletionCallback {
   int render_view_id_;
   GURL url_;
   std::string cookie_line_;
-  scoped_refptr<URLRequestContext> context_;
+  scoped_refptr<ChromeURLRequestContext> context_;
 };
 
 class GetCookiesCompletion : public net::CompletionCallback {
@@ -641,16 +643,21 @@ void ResourceMessageFilter::OnGetRawCookies(
     const GURL& url,
     const GURL& first_party_for_cookies,
     IPC::Message* reply_msg) {
-  // Only return raw cookies to trusted renderers.
-  if (!ChildProcessSecurityPolicy::GetInstance()->CanReadRawCookies(id())) {
+
+  ChromeURLRequestContext* context = GetRequestContextForURL(url);
+
+  // Only return raw cookies to trusted renderers or if this request is
+  // not targeted to an an external host like ChromeFrame.
+  // TODO(ananta) We need to support retreiving raw cookies from external
+  // hosts.
+  if (!ChildProcessSecurityPolicy::GetInstance()->CanReadRawCookies(id()) ||
+      context->IsExternal()) {
     ViewHostMsg_GetRawCookies::WriteReplyParams(
         reply_msg,
         std::vector<webkit_glue::WebCookie>());
     Send(reply_msg);
     return;
   }
-
-  URLRequestContext* context = GetRequestContextForURL(url);
 
   GetRawCookiesCompletion* callback =
       new GetRawCookiesCompletion(url, reply_msg, this, context);
