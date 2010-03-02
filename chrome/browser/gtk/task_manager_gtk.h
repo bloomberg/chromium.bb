@@ -215,7 +215,7 @@ class TaskManagerGtk : public TaskManagerModelObserver {
   // We edit the selection in the OnSelectionChanged handler, and we use this
   // variable to prevent ourselves from handling further changes that we
   // ourselves caused.
-  bool handling_selection_changed_;
+  bool ignore_selection_changed_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskManagerGtk);
 };

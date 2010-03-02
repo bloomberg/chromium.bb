@@ -275,7 +275,7 @@ TaskManagerGtk::TaskManagerGtk()
     treeview_(NULL),
     process_list_(NULL),
     process_count_(0),
-    handling_selection_changed_(false) {
+    ignore_selection_changed_(false) {
   Init();
 }
 
@@ -283,8 +283,8 @@ TaskManagerGtk::TaskManagerGtk()
 TaskManagerGtk* TaskManagerGtk::instance_ = NULL;
 
 TaskManagerGtk::~TaskManagerGtk() {
-  task_manager_->OnWindowClosed();
   model_->RemoveObserver(this);
+  task_manager_->OnWindowClosed();
 
   gtk_accel_group_disconnect_key(accel_group_, GDK_w, GDK_CONTROL_MASK);
   gtk_window_remove_accel_group(GTK_WINDOW(dialog_), accel_group_);
@@ -315,6 +315,8 @@ void TaskManagerGtk::OnItemsChanged(int start, int length) {
 }
 
 void TaskManagerGtk::OnItemsAdded(int start, int length) {
+  AutoReset autoreset(&ignore_selection_changed_, true);
+
   GtkTreeIter iter;
   if (start == 0) {
     gtk_list_store_prepend(process_list_, &iter);
@@ -338,6 +340,8 @@ void TaskManagerGtk::OnItemsAdded(int start, int length) {
 }
 
 void TaskManagerGtk::OnItemsRemoved(int start, int length) {
+  AutoReset autoreset(&ignore_selection_changed_, true);
+
   GtkTreeIter iter;
   gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(process_list_), &iter,
                                 NULL, start);
@@ -830,9 +834,9 @@ void TaskManagerGtk::OnTreeViewRealize(GtkTreeView* treeview,
 }
 
 void TaskManagerGtk::OnSelectionChanged(GtkTreeSelection* selection) {
-  if (handling_selection_changed_)
+  if (ignore_selection_changed_)
     return;
-  AutoReset autoreset(&handling_selection_changed_, true);
+  AutoReset autoreset(&ignore_selection_changed_, true);
 
   // The set of groups that should be selected.
   std::set<std::pair<int, int> > ranges;
