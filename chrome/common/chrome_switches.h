@@ -86,6 +86,7 @@ extern const char kEnableFastback[];
 extern const char kEnableFileCookies[];
 extern const char kEnableGeolocation[];
 extern const char kEnableGPUPlugin[];
+extern const char kEnableGPURendering[];
 extern const char kEnableIndexedDatabase[];
 extern const char kEnableIPv6[];
 extern const char kEnableLogging[];

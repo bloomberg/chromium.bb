@@ -102,6 +102,9 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView {
   // The native UI widget.
   OwnedWidgetGtk view_;
 
+  // Cached value of --enable-gpu-rendering for out-of-process painting.
+  bool enable_gpu_rendering_;
+
   // Non-NULL when we're doing out-of-process painting.
   scoped_ptr<GpuViewHost> gpu_view_host_;
 

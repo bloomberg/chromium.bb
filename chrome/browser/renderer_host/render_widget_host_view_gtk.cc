@@ -20,6 +20,7 @@
 
 #include "app/gfx/gtk_util.h"
 #include "app/l10n_util.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
@@ -32,6 +33,7 @@
 #include "chrome/browser/renderer_host/gtk_key_bindings_handler.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/browser/renderer_host/video_layer_x.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/x11_util.h"
 #include "third_party/WebKit/WebKit/chromium/public/gtk/WebInputEventFactory.h"
@@ -39,10 +41,6 @@
 
 static const int kMaxWindowWidth = 4000;
 static const int kMaxWindowHeight = 4000;
-
-// True if we're doing out-of-process painting via the GPU process.
-// TODO(brettw) make this a command line option.
-static const bool kUseGPURendering = false;
 
 static const char* kRenderWidgetHostViewKey = "__RENDER_WIDGET_HOST_VIEW__";
 
@@ -323,6 +321,7 @@ RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(
 
 RenderWidgetHostViewGtk::RenderWidgetHostViewGtk(RenderWidgetHost* widget_host)
     : host_(widget_host),
+      enable_gpu_rendering_(false),
       about_to_validate_and_paint_(false),
       is_hidden_(false),
       is_loading_(false),
@@ -333,6 +332,11 @@ RenderWidgetHostViewGtk::RenderWidgetHostViewGtk(RenderWidgetHost* widget_host)
       is_popup_first_mouse_release_(true),
       was_focused_before_grab_(false) {
   host_->set_view(this);
+
+  // Enable experimental out-of-process GPU rendering.
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  enable_gpu_rendering_ =
+      command_line->HasSwitch(switches::kEnableGPURendering);
 }
 
 RenderWidgetHostViewGtk::~RenderWidgetHostViewGtk() {
@@ -618,7 +622,7 @@ void RenderWidgetHostViewGtk::AppendInputMethodsContextMenu(MenuGtk* menu) {
 
 BackingStore* RenderWidgetHostViewGtk::AllocBackingStore(
     const gfx::Size& size) {
-  if (kUseGPURendering) {
+  if (enable_gpu_rendering_) {
     // Use a special GPU accelerated backing store.
     if (!gpu_view_host_.get()) {
       // Here we lazily make the GpuViewHost. This must be allocated when we
@@ -637,7 +641,7 @@ BackingStore* RenderWidgetHostViewGtk::AllocBackingStore(
 }
 
 VideoLayer* RenderWidgetHostViewGtk::AllocVideoLayer(const gfx::Size& size) {
-  if (kUseGPURendering) {
+  if (enable_gpu_rendering_) {
     NOTIMPLEMENTED();
     return NULL;
   }
@@ -653,7 +657,7 @@ void RenderWidgetHostViewGtk::SetBackground(const SkBitmap& background) {
 }
 
 void RenderWidgetHostViewGtk::Paint(const gfx::Rect& damage_rect) {
-  if (kUseGPURendering) {
+  if (enable_gpu_rendering_) {
     // When we're proxying painting, we don't actually display the web page
     // ourselves.
     if (gpu_view_host_.get())
