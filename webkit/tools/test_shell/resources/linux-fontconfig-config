@@ -111,4 +111,16 @@
       <string>Times New Roman</string>
     </edit>
   </match>
+
+  <match target="pattern">
+    <test name="family" compare="eq">
+      <string>NonAntiAliasedSans</string>
+    </test>
+    <edit name="family" mode="assign">
+      <string>Arial</string>
+    </edit>
+    <edit name="antialias" mode="assign">
+      <bool>false</bool>
+    </edit>
+  </match>
 </fontconfig>
