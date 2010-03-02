@@ -770,7 +770,8 @@ const wchar_t kFullTabModeBeforeUnloadEventTest[] =
 const wchar_t kFullTabModeBeforeUnloadEventMain[] =
     L"http://localhost:1337/files/fulltab_before_unload_event_main.html";
 
-TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_UnloadEventTest) {
+// http://code.google.com/p/chromium/issues/detail?id=37231
+TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_UnloadEventTest) {
   CloseIeAtEndOfScope last_resort_close_ie;
   chrome_frame_test::TimedMsgLoop loop;
   ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
