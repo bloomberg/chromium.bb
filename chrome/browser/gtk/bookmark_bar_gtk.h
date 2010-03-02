@@ -156,8 +156,9 @@ class BookmarkBarGtk : public AnimationDelegate,
   // Queue a paint on the event box.
   void PaintEventBox();
 
-  // Finds the size of the current tab contents. If the size cannot be found,
-  // DCHECKs and returns false. Otherwise, sets |size| to the correct value.
+  // Finds the size of the current tab contents, if it exists and sets |size|
+  // to the correct value. Returns false if there isn't a TabContents, a
+  // condition that can happen during testing.
   bool GetTabContentsSize(gfx::Size* size);
 
   // Makes the appropriate widget on the bookmark bar stop throbbing

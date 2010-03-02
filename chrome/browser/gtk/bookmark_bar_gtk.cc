@@ -690,7 +690,8 @@ bool BookmarkBarGtk::GetTabContentsSize(gfx::Size* size) {
   }
   TabContents* tab_contents = browser->GetSelectedTabContents();
   if (!tab_contents) {
-    NOTREACHED();
+    // It is possible to have a browser but no TabContents while under testing,
+    // so don't NOTREACHED() and error the program.
     return false;
   }
   if (!tab_contents->view()) {
