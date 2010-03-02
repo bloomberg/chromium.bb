@@ -9,7 +9,7 @@
 #define restrict restrict
 #define ASMALIGN(ZEROBITS) ".align 1 << " #ZEROBITS "\n\t"
 #define EXTERN_PREFIX ""
-#define EXTERN_ASM 
+#define EXTERN_ASM
 #define ARCH_ALPHA 0
 #define ARCH_ARM 0
 #define ARCH_AVR32 0
@@ -69,8 +69,8 @@
 #define HAVE_DLFCN_H 1
 #define HAVE_DLOPEN 1
 #define HAVE_DOS_PATHS 0
-#define HAVE_EBP_AVAILABLE 1
-#define HAVE_EBX_AVAILABLE 1
+#define HAVE_EBP_AVAILABLE 0
+#define HAVE_EBX_AVAILABLE 0
 #define HAVE_EXP2 1
 #define HAVE_EXP2F 1
 #define HAVE_FAST_64BIT 0
