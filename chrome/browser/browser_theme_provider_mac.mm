@@ -96,7 +96,7 @@ NSColor* BrowserThemeProvider::GetNSImageColorNamed(int id,
                                         !HasCustomImage(id));
   }
 
-  return imageColor;
+  return image_color;
 }
 
 NSColor* BrowserThemeProvider::GetNSColor(int id,
