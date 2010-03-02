@@ -106,17 +106,32 @@
   [[NSBezierPath bezierPathWithRect:rect] addClip];
 
   // Do the theming.
-  [BrowserFrameView drawWindowThemeInDirtyRect:rect
-                                       forView:self
-                                        bounds:windowRect];
+  BOOL themed = [BrowserFrameView drawWindowThemeInDirtyRect:rect
+                                                     forView:self
+                                                      bounds:windowRect];
+
+  // Pinstripe the top.
+  if (themed) {
+    windowRect = [window frame];
+    windowRect.origin = NSMakePoint(0, 0);
+    windowRect.origin.y -= 0.5;
+    windowRect.origin.x -= 0.5;
+    windowRect.size.width += 1.0;
+    [[NSColor colorWithCalibratedWhite:1.0 alpha:0.5] set];
+    NSBezierPath* path = [NSBezierPath bezierPathWithRoundedRect:windowRect
+                                                         xRadius:4
+                                                         yRadius:4];
+    [path setLineWidth:1.0];
+    [path stroke];
+  }
 }
 
-+ (void)drawWindowThemeInDirtyRect:(NSRect)dirtyRect
++ (BOOL)drawWindowThemeInDirtyRect:(NSRect)dirtyRect
                            forView:(NSView*)view
                             bounds:(NSRect)bounds {
   ThemeProvider* themeProvider = [[view window] themeProvider];
   if (!themeProvider)
-    return;
+    return NO;
 
   BOOL active = [[view window] isMainWindow];
   BOOL incognito = [[view window] themeIsIncognito];
@@ -142,6 +157,7 @@
         active ? BrowserThemeProvider::GRADIENT_FRAME_INCOGNITO :
                  BrowserThemeProvider::GRADIENT_FRAME_INCOGNITO_INACTIVE);
 
+  BOOL themed = NO;
   if (themeImage) {
     NSColor* themeImageColor = [NSColor colorWithPatternImage:themeImage];
 
@@ -163,6 +179,7 @@
     [[NSGraphicsContext currentContext] setPatternPhase:phase];
     [themeImageColor set];
     NSRectFill(dirtyRect);
+    themed = YES;
   } else if (gradient) {
     // Only paint the gradient at the top of the window. (This is at the maximum
     // when fullscreening; before adjusting check this case.)
@@ -173,6 +190,7 @@
     gradientRect.size.height = kBrowserFrameViewGradientHeight;
 
     [gradient drawInRect:gradientRect angle:270];
+    themed = YES;
   }
 
   // Check to see if we have an overlay image.
@@ -190,6 +208,8 @@
                     operation:NSCompositeSourceOver
                      fraction:1.0];
   }
+
+  return themed;
 }
 
 // Check to see if the mouse is currently in one of our window widgets.

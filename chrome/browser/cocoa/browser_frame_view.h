@@ -50,8 +50,10 @@
 // not.
 @interface BrowserFrameView : NSView
 
-// Draws the window theme into the specified rect.
-+ (void)drawWindowThemeInDirtyRect:(NSRect)dirtyRect
+// Draws the window theme into the specified rect. Returns whether a theme was
+// drawn (whether incognito or full pattern theme; an overlay image doesn't
+// count).
++ (BOOL)drawWindowThemeInDirtyRect:(NSRect)dirtyRect
                            forView:(NSView*)view
                             bounds:(NSRect)bounds;
 
