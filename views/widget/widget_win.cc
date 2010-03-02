@@ -59,7 +59,6 @@ WidgetWin::WidgetWin()
 }
 
 WidgetWin::~WidgetWin() {
-  MessageLoopForUI::current()->RemoveObserver(this);
 }
 
 // static
@@ -1180,8 +1179,10 @@ LRESULT WidgetWin::OnWndProc(UINT message, WPARAM w_param, LPARAM l_param) {
   // Otherwise we handle everything else.
   if (!ProcessWindowMessage(window, message, w_param, l_param, result))
     result = DefWindowProc(window, message, w_param, l_param);
-  if (message == WM_NCDESTROY)
+  if (message == WM_NCDESTROY) {
+    MessageLoopForUI::current()->RemoveObserver(this);
     OnFinalMessage(window);
+  }
   if (message == WM_ACTIVATE)
     PostProcessActivateMessage(this, LOWORD(w_param));
   if (message == WM_ENABLE && restore_focus_when_enabled_) {
