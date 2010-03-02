@@ -104,7 +104,7 @@ void CocoaTest::TearDown() {
 
     // Cover chains of delayed actions by spinning the loop at least
     // this many times.
-    const int kCloseSpins = 2;
+    const int kCloseSpins = 3;
 
     // Track the set of remaining windows so that everything can be
     // reset if progress is made.

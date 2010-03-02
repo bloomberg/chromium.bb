@@ -26,6 +26,8 @@ class BookmarkBubbleControllerTest : public CocoaTest {
   }
 
   virtual void TearDown() {
+    // TODO(shess): Figure out why CocoaTest::TearDown() needs 3
+    // passes through the event loop to fully close out these windows.
     [controller_ close];
     controller_ = nil;
     CocoaTest::TearDown();
