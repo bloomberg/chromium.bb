@@ -117,7 +117,6 @@ ConditionVariable::Event* ConditionVariable::GetEventForWaiting() {
     cv_event = new Event();
     cv_event->InitListElement();
     allocation_counter_++;
-    // CHECK_NE is not defined in our codebase, so we have to use CHECK
     CHECK(cv_event->handle());
   } else {
     cv_event = recycling_list_.PopFront();

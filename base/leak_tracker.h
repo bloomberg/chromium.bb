@@ -93,7 +93,7 @@ class LeakTracker : public LinkNode<LeakTracker<T> > {
       allocation_stack.OutputToStream(&LOG(ERROR));
     }
 
-    CHECK(0u == count);
+    CHECK_EQ(0u, count);
 
     // Hack to keep |stacktraces| and |count| alive (so compiler
     // doesn't optimize it out, and it will appear in mini-dumps).

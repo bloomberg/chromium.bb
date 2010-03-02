@@ -13,7 +13,7 @@ namespace base {
 // static
 void ThreadLocalPlatform::AllocateSlot(SlotType& slot) {
   int error = pthread_key_create(&slot, NULL);
-  CHECK(error == 0);
+  CHECK_EQ(error, 0);
 }
 
 // static
@@ -30,7 +30,7 @@ void* ThreadLocalPlatform::GetValueFromSlot(SlotType& slot) {
 // static
 void ThreadLocalPlatform::SetValueInSlot(SlotType& slot, void* value) {
   int error = pthread_setspecific(slot, value);
-  CHECK(error == 0);
+  CHECK_EQ(error, 0);
 }
 
 }  // namespace base

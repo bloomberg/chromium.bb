@@ -71,7 +71,7 @@ void PrivateKeyInfoCodec::PrependLength(size_t size, std::list<uint8>* data) {
       size >>= 8;
       num_bytes++;
     }
-    CHECK(num_bytes <= 4);
+    CHECK_LE(num_bytes, 4);
     data->push_front(0x80 | num_bytes);
   }
 }

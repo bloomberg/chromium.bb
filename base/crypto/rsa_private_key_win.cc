@@ -171,7 +171,7 @@ bool RSAPrivateKey::ExportPrivateKey(std::vector<uint8>* output) {
   pki.public_exponent()->assign(reinterpret_cast<uint8*>(&rsa_pub_key->pubexp),
       reinterpret_cast<uint8*>(&rsa_pub_key->pubexp) + 4);
 
-  CHECK((pos - blob_length) == reinterpret_cast<BYTE*>(publickey_struct));
+  CHECK_EQ(pos - blob_length, reinterpret_cast<BYTE*>(publickey_struct));
 
   return pki.Export(output);
 }
