@@ -8,7 +8,7 @@
 
 namespace gpu {
 
-const void* CommonDecoder::Bucket::GetData(size_t offset, size_t size) const {
+void* CommonDecoder::Bucket::GetData(size_t offset, size_t size) const {
   if (OffsetSizeValid(offset, size)) {
     return data_.get() + offset;
   }
@@ -33,8 +33,10 @@ bool CommonDecoder::Bucket::SetData(
 }
 
 void CommonDecoder::Bucket::SetFromString(const std::string& str) {
-  SetSize(str.size());
-  SetData(str.c_str(), 0, str.size());
+  // Strings are passed NULL terminated to distinguish between empty string
+  // and no string.
+  SetSize(str.size() + 1);
+  SetData(str.c_str(), 0, str.size() + 1);
 }
 
 void* CommonDecoder::GetAddressAndCheckSize(unsigned int shm_id,

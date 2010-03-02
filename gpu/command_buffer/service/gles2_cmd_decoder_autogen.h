@@ -1087,27 +1087,13 @@ error::Error GLES2DecoderImpl::HandleGetProgramInfoLog(
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
-  GLsizei bufsize = static_cast<GLsizei>(c.bufsize);
-  uint32 size_shm_id = c.length_shm_id;
-  uint32 size_shm_offset = c.length_shm_offset;
-  GLsizei* length = NULL;
-  if (size_shm_id != 0 || size_shm_offset != 0) {
-    length = GetSharedMemoryAs<GLsizei*>(
-        size_shm_id, size_shm_offset, sizeof(*length));
-    if (!length) {
-      return error::kOutOfBounds;
-    }
-  }
-  char* infolog = GetSharedMemoryAs<char*>(
-      c.infolog_shm_id, c.infolog_shm_offset, bufsize);
-  if (bufsize < 0) {
-    SetGLError(GL_INVALID_VALUE);
-    return error::kNoError;
-  }
-  if (infolog == NULL) {
-    return error::kOutOfBounds;
-  }
-  glGetProgramInfoLog(program, bufsize, length, infolog);
+  uint32 bucket_id = static_cast<uint32>(c.bucket_id);
+  GLint len = 0;
+  glGetProgramiv(program, GL_INFO_LOG_LENGTH, &len);
+  Bucket* bucket = CreateBucket(bucket_id);
+  bucket->SetSize(len + 1);
+  glGetProgramInfoLog(
+      program, len + 1, &len, bucket->GetDataAs<GLchar*>(0, len + 1));
   return error::kNoError;
 }
 
@@ -1155,7 +1141,7 @@ error::Error GLES2DecoderImpl::HandleGetShaderiv(
   if (params == NULL) {
     return error::kOutOfBounds;
   }
-  glGetShaderiv(shader, pname, params);
+  DoGetShaderiv(shader, pname, params);
   return error::kNoError;
 }
 
@@ -1166,27 +1152,13 @@ error::Error GLES2DecoderImpl::HandleGetShaderInfoLog(
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
-  GLsizei bufsize = static_cast<GLsizei>(c.bufsize);
-  uint32 size_shm_id = c.length_shm_id;
-  uint32 size_shm_offset = c.length_shm_offset;
-  GLsizei* length = NULL;
-  if (size_shm_id != 0 || size_shm_offset != 0) {
-    length = GetSharedMemoryAs<GLsizei*>(
-        size_shm_id, size_shm_offset, sizeof(*length));
-    if (!length) {
-      return error::kOutOfBounds;
-    }
-  }
-  char* infolog = GetSharedMemoryAs<char*>(
-      c.infolog_shm_id, c.infolog_shm_offset, bufsize);
-  if (bufsize < 0) {
-    SetGLError(GL_INVALID_VALUE);
-    return error::kNoError;
-  }
-  if (infolog == NULL) {
-    return error::kOutOfBounds;
-  }
-  glGetShaderInfoLog(shader, bufsize, length, infolog);
+  uint32 bucket_id = static_cast<uint32>(c.bucket_id);
+  GLint len = 0;
+  glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &len);
+  Bucket* bucket = CreateBucket(bucket_id);
+  bucket->SetSize(len + 1);
+  glGetShaderInfoLog(
+      shader, len + 1, &len, bucket->GetDataAs<GLchar*>(0, len + 1));
   return error::kNoError;
 }
 
@@ -1197,38 +1169,13 @@ error::Error GLES2DecoderImpl::HandleGetShaderSource(
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
-  GLsizei bufsize = static_cast<GLsizei>(c.bufsize);
-  uint32 size_shm_id = c.length_shm_id;
-  uint32 size_shm_offset = c.length_shm_offset;
-  GLsizei* length = NULL;
-  if (size_shm_id != 0 || size_shm_offset != 0) {
-    length = GetSharedMemoryAs<GLsizei*>(
-        size_shm_id, size_shm_offset, sizeof(*length));
-    if (!length) {
-      return error::kOutOfBounds;
-    }
-  }
-  char* source = GetSharedMemoryAs<char*>(
-      c.source_shm_id, c.source_shm_offset, bufsize);
-  if (bufsize < 0) {
-    SetGLError(GL_INVALID_VALUE);
-    return error::kNoError;
-  }
-  if (source == NULL) {
-    return error::kOutOfBounds;
-  }
-  DoGetShaderSource(shader, bufsize, length, source);
-  return error::kNoError;
-}
-
-error::Error GLES2DecoderImpl::HandleGetString(
-    uint32 immediate_data_size, const gles2::GetString& c) {
-  GLenum name = static_cast<GLenum>(c.name);
-  if (!ValidateGLenumStringType(name)) {
-    SetGLError(GL_INVALID_ENUM);
-    return error::kNoError;
-  }
-  glGetString(name);
+  uint32 bucket_id = static_cast<uint32>(c.bucket_id);
+  GLint len = 0;
+  DoGetShaderiv(shader, GL_SHADER_SOURCE_LENGTH, &len);
+  Bucket* bucket = CreateBucket(bucket_id);
+  bucket->SetSize(len + 1);
+  DoGetShaderSource(
+      shader, len + 1, &len, bucket->GetDataAs<GLchar*>(0, len + 1));
   return error::kNoError;
 }
 
