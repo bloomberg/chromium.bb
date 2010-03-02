@@ -774,6 +774,10 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_UnloadEventTest) {
   CloseIeAtEndOfScope last_resort_close_ie;
   chrome_frame_test::TimedMsgLoop loop;
   ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
+
+  EXPECT_CALL(mock, OnFileDownload(VARIANT_TRUE, _))
+      .Times(testing::AnyNumber()).WillRepeatedly(testing::Return());
+
   ::testing::InSequence sequence;   // Everything in sequence
 
   // We will get two BeforeNavigate2/OnNavigateComplete2 notifications due to
@@ -786,9 +790,6 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_UnloadEventTest) {
           _, _, _, _, _))
       .WillOnce(testing::Return(S_OK));
 
-  EXPECT_CALL(mock, OnFileDownload(VARIANT_TRUE, _))
-      .WillOnce(testing::Return());
-
   EXPECT_CALL(mock, OnNavigateComplete2(_, _))
       .WillOnce(testing::Return());
 
@@ -799,9 +800,6 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_UnloadEventTest) {
           testing::StrCaseEq(kFullTabModeBeforeUnloadEventTest)),
           _, _, _, _, _))
       .Times(testing::AnyNumber()).WillRepeatedly(testing::Return(S_OK));
-
-  EXPECT_CALL(mock, OnFileDownload(VARIANT_TRUE, _))
-      .WillOnce(testing::Return());
 
   EXPECT_CALL(mock, OnNavigateComplete2(_, _))
       .Times(testing::AnyNumber()).WillRepeatedly(testing::Return());
@@ -818,9 +816,6 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_UnloadEventTest) {
           _, _, _, _, _))
       .WillOnce(testing::Return(S_OK));
 
-  EXPECT_CALL(mock, OnFileDownload(VARIANT_TRUE, _))
-      .WillOnce(testing::Return());
-
   EXPECT_CALL(mock, OnNavigateComplete2(_, _))
       .WillOnce(testing::Return());
 
@@ -831,9 +826,6 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_UnloadEventTest) {
           testing::StrCaseEq(kFullTabModeBeforeUnloadEventMain)),
           _, _, _, _, _))
       .Times(testing::AnyNumber()).WillRepeatedly(testing::Return(S_OK));
-
-  EXPECT_CALL(mock, OnFileDownload(VARIANT_TRUE, _))
-      .WillOnce(testing::Return());
 
   EXPECT_CALL(mock, OnNavigateComplete2(_, _))
       .Times(testing::AnyNumber()).WillRepeatedly(testing::Return());
