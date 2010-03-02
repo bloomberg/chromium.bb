@@ -4,7 +4,6 @@
 
 #include "chrome/browser/browser_prefs.h"
 
-#include "chrome/browser/autocomplete_history_manager.h"
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser.h"
@@ -96,7 +95,6 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   DownloadManager::RegisterUserPrefs(user_prefs);
   SSLManager::RegisterUserPrefs(user_prefs);
   bookmark_utils::RegisterUserPrefs(user_prefs);
-  AutocompleteHistoryManager::RegisterUserPrefs(user_prefs);
   TabContents::RegisterUserPrefs(user_prefs);
   TemplateURLPrepopulateData::RegisterUserPrefs(user_prefs);
   ExtensionDOMUI::RegisterUserPrefs(user_prefs);

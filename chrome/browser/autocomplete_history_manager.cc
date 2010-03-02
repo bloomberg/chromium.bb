@@ -18,16 +18,11 @@
 // text input element in a form.
 static const int kMaxAutofillMenuItems = 6;
 
-// static
-void AutocompleteHistoryManager::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterBooleanPref(prefs::kFormAutofillEnabled, true);
-}
-
 AutocompleteHistoryManager::AutocompleteHistoryManager(
     TabContents* tab_contents) : tab_contents_(tab_contents),
                                  pending_query_handle_(0),
                                  query_id_(0) {
-  form_autofill_enabled_.Init(prefs::kFormAutofillEnabled,
+  form_autofill_enabled_.Init(prefs::kAutoFillEnabled,
       profile()->GetPrefs(), NULL);
 }
 
