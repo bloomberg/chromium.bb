@@ -157,6 +157,22 @@ TEST(FunctionNames, Mangled) {
   ASSERT_EQ(0U, function->lines.size());
 }
 
+// The GNU toolchain can omit functions that are not used; however,
+// when it does so, it doesn't clean up the debugging information that
+// refers to them. In STABS, this results in compilation units whose
+// SO addresses are zero.
+TEST(Omitted, Function) {
+  Module m("name", "os", "arch", "id");
+  DumpStabsHandler h(&m);
+
+  // The StartCompilationUnit and EndCompilationUnit calls may both have an
+  // address of zero if the compilation unit has had sections removed.
+  EXPECT_TRUE(h.StartCompilationUnit("compilation-unit", 0, "build-directory"));
+  EXPECT_TRUE(h.StartFunction("function", 0x2a133596));
+  EXPECT_TRUE(h.EndFunction(0));
+  EXPECT_TRUE(h.EndCompilationUnit(0));
+}
+
 // TODO --- if we actually cared about STABS. Even without these we've
 // got full coverage of non-failure source lines in dump_stabs.cc.
 

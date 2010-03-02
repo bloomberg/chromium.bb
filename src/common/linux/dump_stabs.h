@@ -63,6 +63,7 @@ class DumpStabsHandler: public google_breakpad::StabsHandler {
   // store it all in MODULE.
   DumpStabsHandler(Module *module) :
       module_(module),
+      in_compilation_unit_(false),
       comp_unit_base_address_(0),
       current_function_(NULL),
       current_source_file_(NULL),
@@ -108,6 +109,11 @@ class DumpStabsHandler: public google_breakpad::StabsHandler {
   // functions and lines, so we need to compute them ourselves by
   // finding the next object.
   vector<Module::Address> boundaries_;
+
+  // True if we are currently within a compilation unit: we have gotten a
+  // StartCompilationUnit call, but no matching EndCompilationUnit call
+  // yet. We use this for sanity checks.
+  bool in_compilation_unit_;
 
   // The base address of the current compilation unit.  We use this to
   // recognize functions we should omit from the symbol file.  (If you

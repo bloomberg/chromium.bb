@@ -58,7 +58,8 @@ static string Demangle(const string &mangled) {
 
 bool DumpStabsHandler::StartCompilationUnit(const char *name, uint64_t address,
                                             const char *build_directory) {
-  assert(!comp_unit_base_address_);
+  assert(!in_compilation_unit_);
+  in_compilation_unit_ = true;
   current_source_file_name_ = name;
   current_source_file_ = module_->FindFile(name);
   comp_unit_base_address_ = address;
@@ -67,7 +68,8 @@ bool DumpStabsHandler::StartCompilationUnit(const char *name, uint64_t address,
 }
 
 bool DumpStabsHandler::EndCompilationUnit(uint64_t address) {
-  assert(comp_unit_base_address_);
+  assert(in_compilation_unit_);
+  in_compilation_unit_ = false;
   comp_unit_base_address_ = 0;
   current_source_file_ = NULL;
   current_source_file_name_ = NULL;
