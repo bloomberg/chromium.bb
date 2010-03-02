@@ -4,11 +4,37 @@
 
 #import "chrome/browser/cocoa/tab_window_controller.h"
 
+#include "app/theme_provider.h"
 #include "base/logging.h"
 #import "chrome/browser/cocoa/tab_strip_view.h"
 
 @interface TabWindowController(PRIVATE)
 - (void)setUseOverlay:(BOOL)useOverlay;
+@end
+
+@interface TabWindowOverlayWindow : NSWindow
+@end
+
+@implementation TabWindowOverlayWindow
+
+- (ThemeProvider*)themeProvider {
+  if ([self parentWindow])
+    return [[[self parentWindow] windowController] themeProvider];
+  return NULL;
+}
+
+- (BOOL)themeIsIncognito {
+  if ([self parentWindow])
+    return [[[self parentWindow] windowController] themeIsIncognito];
+  return NO;
+}
+
+- (NSPoint)themePatternPhase {
+  if ([self parentWindow])
+    return [[[self parentWindow] windowController] themePatternPhase];
+  return NSZeroPoint;
+}
+
 @end
 
 @implementation TabWindowController
@@ -83,17 +109,18 @@
   NSWindow* window = [self window];
   if (useOverlay && !overlayWindow_) {
     DCHECK(!cachedContentView_);
-    overlayWindow_ = [[NSPanel alloc] initWithContentRect:[window frame]
-                                                styleMask:NSBorderlessWindowMask
-                                                  backing:NSBackingStoreBuffered
-                                                    defer:YES];
+    overlayWindow_ = [[TabWindowOverlayWindow alloc]
+                         initWithContentRect:[window frame]
+                                   styleMask:NSBorderlessWindowMask
+                                     backing:NSBackingStoreBuffered
+                                       defer:YES];
     [overlayWindow_ setTitle:@"overlay"];
     [overlayWindow_ setBackgroundColor:[NSColor clearColor]];
     [overlayWindow_ setOpaque:NO];
     [overlayWindow_ setDelegate:self];
     cachedContentView_ = [window contentView];
-    [self moveViewsBetweenWindowAndOverlay:useOverlay];
     [window addChildWindow:overlayWindow_ ordered:NSWindowAbove];
+    [self moveViewsBetweenWindowAndOverlay:useOverlay];
     [overlayWindow_ orderFront:nil];
   } else if (!useOverlay && overlayWindow_) {
     DCHECK(cachedContentView_);
