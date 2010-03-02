@@ -530,7 +530,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed5) {
                             "This feed contains no entries.");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedInvalidFeed1) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_ParseFeedInvalidFeed1) {
   HTTPTestServer* server = StartHTTPServer();
 
   ASSERT_TRUE(LoadExtension(
@@ -544,7 +544,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedInvalidFeed1) {
                             "Not a valid feed.");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedInvalidFeed2) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_ParseFeedInvalidFeed2) {
   HTTPTestServer* server = StartHTTPServer();
 
   ASSERT_TRUE(LoadExtension(
@@ -558,7 +558,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedInvalidFeed2) {
                             "Not a valid feed.");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedInvalidFeed3) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_ParseFeedInvalidFeed3) {
   HTTPTestServer* server = StartHTTPServer();
 
   ASSERT_TRUE(LoadExtension(
