@@ -38,7 +38,7 @@
     'conditions': [
       ['OS=="win"', {
         'include_dirs': [
-          '../third_party/platformsdk_win2008_6_1/files/Include',
+          '../third_party/platformsdk_win7/files/Include',
         ],
       }],
       ['OS=="linux" or OS=="mac" or OS=="freebsd" or OS=="openbsd"', {
