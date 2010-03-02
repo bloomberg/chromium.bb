@@ -71,7 +71,8 @@
       'filepath': '.*import.*',
     },
     'media': {
-      'filepath': 'media|Media|^third_party/ffmpeg/',
+      'filepath': 'media/.*|third_party/(ffmpeg|openmax)/.*|webmediaplayer|'\
+        'audio_message_filter|video_layer',
     },
     'ipc': {
       'filepath': 'ipc/ipc.*',
