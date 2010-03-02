@@ -5050,26 +5050,26 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </if>
       <if expr="pp_ifdef('use_titlecase') and os == 'linux2'">
         <message name="IDS_AUTOFILL_SETTING_WINDOWS_GROUP_NAME" desc="In Title Case and without trailing colon: The title of the form autofill group">
-          Form Autofill
+          Form AutoFill
         </message>
       </if>
       <message name="IDS_OPTIONS_AUTOFILL_ENABLE" desc="The label of the 'Ask me to enable autofill' radio button">
-        Enable Autofill to fill in web forms with a single click
+        Enable AutoFill to fill in web forms with a single click
       </message>
       <message name="IDS_OPTIONS_AUTOFILL_DISABLE" desc="The label of the 'Disable autofill' radio button">
-        Disable Autofill
+        Disable AutoFill
       </message>
       <message name="IDS_OPTIONS_AUTOFILL_SETTINGS" desc="The label of the 'Change autofill settings' button">
-        Change autofill settings
+        Change AutoFill settings
       </message>
       <message name="IDS_AUTOFILL_INFOBAR_ACCEPT" desc="Text to show for the autofill request infobar accept button.">
-        Set up Autofill...
+        Set up AutoFill...
       </message>
       <message name="IDS_AUTOFILL_INFOBAR_DENY" desc="Text to show for the autofill request infobar deny button.">
         Nope
       </message>
       <message name="IDS_AUTOFILL_DIALOG_TITLE" desc="The title of the AutoFill dialog.">
-        Autofill Profiles
+        AutoFill Profiles
       </message>
       <message name="IDS_AUTOFILL_ADDRESSES_GROUP_NAME" desc="The name of the Addresses group of the AutoFill dialog.">
         Addresses
