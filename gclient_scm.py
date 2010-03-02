@@ -251,10 +251,23 @@ class GitWrapper(SCMWrapper, scm.GIT):
     else:
       raise gclient_utils.Error('Invalid Upstream')
 
-    # Update the remotes first so we have all the refs
-    remote_output, remote_err = self.Capture(['remote'] + verbose + ['update'],
-                                             self.checkout_path,
-                                             print_error=False)
+    # Update the remotes first so we have all the refs.
+    for i in range(3):
+      try:
+        remote_output, remote_err = self.Capture(
+            ['remote'] + verbose + ['update'],
+            self.checkout_path,
+            print_error=False)
+        break
+      except gclient_utils.CheckCallError, e:
+        # Hackish but at that point, git is known to work so just checking for
+        # 502 in stderr should be fine.
+        if '502' in e.stderr:
+          print str(e)
+          print "Retrying..."
+          continue
+        raise e
+
     if verbose:
       print remote_output.strip()
       # git remote update prints to stderr when used with --verbose
