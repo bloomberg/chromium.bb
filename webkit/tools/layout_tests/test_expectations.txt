@@ -917,13 +917,9 @@ BUG10296 MAC : fast/text/international/bidi-menulist.html = FAIL
 BUG10296 LINUX : fast/transforms/transform-on-inline.html = FAIL
 BUG10296 LINUX : fast/transforms/transform-table-row.html = FAIL
 BUG10296 LINUX : svg/batik/paints/patternPreserveAspectRatioA.svg = FAIL TIMEOUT
-// Needs to be rebaselined.
+// Maybe need to be rebaselined - should be looked at in more detail.
 BUG10296 LINUX : svg/custom/foreign-object-skew.svg = FAIL
 BUG10296 LINUX : svg/batik/text/textLength.svg = FAIL
-BUG10296 LINUX : svg/batik/text/textProperties.svg = FAIL
-BUG10296 LINUX : svg/custom/gradient-stop-corner-cases.svg = FAIL
-BUG10296 LINUX : svg/custom/pattern-deep-referencing.svg = FAIL
-BUG10296 LINUX : svg/custom/text-dom-01-f.svg = FAIL
 
 // No anti-aliasing on the text.
 BUG10298 LINUX : svg/custom/use-on-disallowed-foreign-object-3.svg = FAIL
