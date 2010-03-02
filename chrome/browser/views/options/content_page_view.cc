@@ -207,7 +207,7 @@ void ContentPageView::InitControlLayout() {
   // Init member prefs so we can update the controls if prefs change.
   ask_to_save_passwords_.Init(prefs::kPasswordManagerEnabled,
                               profile()->GetPrefs(), this);
-  ask_to_save_form_autofill_.Init(prefs::kFormAutofillEnabled,
+  ask_to_save_form_autofill_.Init(prefs::kAutoFillEnabled,
                                   profile()->GetPrefs(), this);
   is_using_default_theme_.Init(prefs::kCurrentThemeID,
                                profile()->GetPrefs(), this);
@@ -221,7 +221,7 @@ void ContentPageView::NotifyPrefChanged(const std::wstring* pref_name) {
       passwords_neversave_radio_->SetChecked(true);
     }
   }
-  if (!pref_name || *pref_name == prefs::kFormAutofillEnabled) {
+  if (!pref_name || *pref_name == prefs::kAutoFillEnabled) {
     if (ask_to_save_form_autofill_.GetValue()) {
       form_autofill_enable_radio_->SetChecked(true);
     } else {

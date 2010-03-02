@@ -4,6 +4,8 @@
 
 #include "chrome/browser/gtk/options/content_page_gtk.h"
 
+#include <string>
+
 #include "app/gfx/gtk_util.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
@@ -72,7 +74,7 @@ ContentPageGtk::ContentPageGtk(Profile* profile)
   // Add preferences observers.
   ask_to_save_passwords_.Init(prefs::kPasswordManagerEnabled,
                               profile->GetPrefs(), this);
-  enable_form_autofill_.Init(prefs::kFormAutofillEnabled,
+  enable_form_autofill_.Init(prefs::kAutoFillEnabled,
                              profile->GetPrefs(), this);
   if (browser_defaults::kCanToggleSystemTitleBar) {
     use_custom_chrome_frame_.Init(prefs::kUseCustomChromeFrame,
@@ -124,7 +126,7 @@ void ContentPageGtk::NotifyPrefChanged(const std::wstring* pref_name) {
           GTK_TOGGLE_BUTTON(passwords_neversave_radio_), TRUE);
     }
   }
-  if (!pref_name || *pref_name == prefs::kFormAutofillEnabled) {
+  if (!pref_name || *pref_name == prefs::kAutoFillEnabled) {
     if (enable_form_autofill_.GetValue()) {
       gtk_toggle_button_set_active(
           GTK_TOGGLE_BUTTON(form_autofill_enable_radio_), TRUE);

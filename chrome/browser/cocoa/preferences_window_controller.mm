@@ -801,7 +801,7 @@ void PersonalDataManagerObserver::ShowAutoFillDialog(
   // Personal Stuff panel
   askSavePasswords_.Init(prefs::kPasswordManagerEnabled,
                          prefs_, observer_.get());
-  formAutofill_.Init(prefs::kFormAutofillEnabled, prefs_, observer_.get());
+  formAutofill_.Init(prefs::kAutoFillEnabled, prefs_, observer_.get());
   currentTheme_.Init(prefs::kCurrentThemeID, prefs_, observer_.get());
 
   // Under the hood panel
@@ -1237,7 +1237,7 @@ const int kDisabledIndex = 1;
     [self setPasswordManagerEnabledIndex:askSavePasswords_.GetValue() ?
         kEnabledIndex : kDisabledIndex];
   }
-  if (*prefName == prefs::kFormAutofillEnabled) {
+  if (*prefName == prefs::kAutoFillEnabled) {
     [self setFormAutofillEnabledIndex:formAutofill_.GetValue() ?
         kEnabledIndex : kDisabledIndex];
   }

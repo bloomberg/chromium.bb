@@ -43,7 +43,7 @@ void OptionsUtil::ResetToDefaults(Profile* profile) {
     prefs::kDownloadDefaultDirectory,
     prefs::kDownloadExtensionsToOpen,
     prefs::kEnableSpellCheck,
-    prefs::kFormAutofillEnabled,
+    prefs::kAutoFillEnabled,
     prefs::kHomePage,
     prefs::kHomePageIsNewTabPage,
     prefs::kMixedContentFiltering,
