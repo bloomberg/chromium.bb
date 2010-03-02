@@ -81,10 +81,14 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
 
  private:
   // The TabContents hosting this AutoFillManager.
+  // Weak reference.
+  // May not be NULL.
   TabContents* tab_contents_;
 
   // The personal data manager, used to save and load personal data to/from the
   // web database.
+  // Weak reference.
+  // May be NULL.  NULL indicates OTR.
   PersonalDataManager* personal_data_;
 
   // Our copy of the form data.

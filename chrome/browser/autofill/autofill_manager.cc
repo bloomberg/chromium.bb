@@ -22,7 +22,9 @@
 
 AutoFillManager::AutoFillManager(TabContents* tab_contents)
     : tab_contents_(tab_contents),
+      personal_data_(NULL),
       infobar_(NULL) {
+  DCHECK(tab_contents);
   personal_data_ = tab_contents_->profile()->GetPersonalDataManager();
 }
 
@@ -233,6 +235,8 @@ void AutoFillManager::OnPersonalDataLoaded() {
 
 void AutoFillManager::DeterminePossibleFieldTypes(
     FormStructure* form_structure) {
+  DCHECK(personal_data_);
+
   // TODO(jhawkins): Update field text.
 
   form_structure->GetHeuristicAutoFillTypes();
@@ -246,6 +250,8 @@ void AutoFillManager::DeterminePossibleFieldTypes(
 }
 
 void AutoFillManager::HandleSubmit() {
+  DCHECK(personal_data_);
+
   // If there wasn't enough data to import then we don't want to send an upload
   // to the server.
   if (!personal_data_->ImportFormData(form_structures_.get(), this))
