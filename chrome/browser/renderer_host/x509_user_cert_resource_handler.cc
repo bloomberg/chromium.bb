@@ -28,6 +28,12 @@ X509UserCertResourceHandler::X509UserCertResourceHandler(
       resource_buffer_(NULL) {
 }
 
+bool X509UserCertResourceHandler::OnUploadProgress(int request_id,
+                                                   uint64 position,
+                                                   uint64 size) {
+  return true;
+}
+
 bool X509UserCertResourceHandler::OnRequestRedirected(int request_id,
                                                       const GURL& url,
                                                       ResourceResponse* resp,
@@ -39,6 +45,12 @@ bool X509UserCertResourceHandler::OnRequestRedirected(int request_id,
 bool X509UserCertResourceHandler::OnResponseStarted(int request_id,
                                                     ResourceResponse* resp) {
   return (resp->response_head.mime_type == "application/x-x509-user-cert");
+}
+
+bool X509UserCertResourceHandler::OnWillStart(int request_id,
+                                              const GURL& url,
+                                              bool* defer) {
+  return true;
 }
 
 bool X509UserCertResourceHandler::OnWillRead(int request_id,
@@ -85,6 +97,9 @@ bool X509UserCertResourceHandler::OnResponseCompleted(
   AssembleResource();
 
   return cert_db->AddUserCert(resource_buffer_->data(), content_length_);
+}
+
+void X509UserCertResourceHandler::OnRequestClosed() {
 }
 
 void X509UserCertResourceHandler::AssembleResource() {

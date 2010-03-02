@@ -20,12 +20,17 @@ class X509UserCertResourceHandler : public ResourceHandler {
   X509UserCertResourceHandler(ResourceDispatcherHost* host,
                               URLRequest* request);
 
+  bool OnUploadProgress(int request_id, uint64 position, uint64 size);
+
   // Not needed, as this event handler ought to be the final resource.
   bool OnRequestRedirected(int request_id, const GURL& url,
                            ResourceResponse* resp, bool* defer);
 
   // Check if this indeed an X509 cert.
   bool OnResponseStarted(int request_id, ResourceResponse* resp);
+
+  // Pass-through implementation.
+  bool OnWillStart(int request_id, const GURL& url, bool* defer);
 
   // Create a new buffer to store received data.
   bool OnWillRead(int request_id, net::IOBuffer** buf, int* buf_size,
@@ -38,6 +43,8 @@ class X509UserCertResourceHandler : public ResourceHandler {
   bool OnResponseCompleted(int request_id,
                            const URLRequestStatus& urs,
                            const std::string& sec_info);
+
+  void OnRequestClosed();
 
 
  private:

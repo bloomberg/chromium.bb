@@ -38,6 +38,12 @@ DownloadResourceHandler::DownloadResourceHandler(
       is_paused_(false) {
 }
 
+bool DownloadResourceHandler::OnUploadProgress(int request_id,
+                                               uint64 position,
+                                               uint64 size) {
+  return true;
+}
+
 // Not needed, as this event handler ought to be the final resource.
 bool DownloadResourceHandler::OnRequestRedirected(int request_id,
                                                   const GURL& url,
@@ -79,6 +85,12 @@ bool DownloadResourceHandler::OnResponseStarted(int request_id,
       ChromeThread::FILE, FROM_HERE,
       NewRunnableMethod(
           download_manager_, &DownloadFileManager::StartDownload, info));
+  return true;
+}
+
+bool DownloadResourceHandler::OnWillStart(int request_id,
+                                          const GURL& url,
+                                          bool* defer) {
   return true;
 }
 
@@ -141,6 +153,9 @@ bool DownloadResourceHandler::OnResponseCompleted(
   // 'buffer_' is deleted by the DownloadFileManager.
   buffer_ = NULL;
   return true;
+}
+
+void DownloadResourceHandler::OnRequestClosed() {
 }
 
 // If the content-length header is not present (or contains something other

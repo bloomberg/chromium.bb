@@ -20,6 +20,8 @@ class SaveFileResourceHandler : public ResourceHandler {
                           const GURL& url,
                           SaveFileManager* manager);
 
+  bool OnUploadProgress(int request_id, uint64 position, uint64 size);
+
   // Saves the redirected URL to final_url_, we need to use the original
   // URL to match original request.
   bool OnRequestRedirected(int request_id, const GURL& url,
@@ -27,6 +29,9 @@ class SaveFileResourceHandler : public ResourceHandler {
 
   // Sends the download creation information to the download thread.
   bool OnResponseStarted(int request_id, ResourceResponse* response);
+
+  // Pass-through implementation.
+  bool OnWillStart(int request_id, const GURL& url, bool* defer);
 
   // Creates a new buffer, which will be handed to the download thread for file
   // writing and deletion.
@@ -39,6 +44,8 @@ class SaveFileResourceHandler : public ResourceHandler {
   bool OnResponseCompleted(int request_id,
                            const URLRequestStatus& status,
                            const std::string& security_info);
+
+  void OnRequestClosed();
 
   // If the content-length header is not present (or contains something other
   // than numbers), StringToInt64 returns 0, which indicates 'unknown size' and

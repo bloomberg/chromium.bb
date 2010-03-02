@@ -25,6 +25,12 @@ SyncResourceHandler::~SyncResourceHandler() {
   receiver_->Send(result_message_);
 }
 
+bool SyncResourceHandler::OnUploadProgress(int request_id,
+                                           uint64 position,
+                                           uint64 size) {
+  return true;
+}
+
 bool SyncResourceHandler::OnRequestRedirected(int request_id,
                                               const GURL& new_url,
                                               ResourceResponse* response,
@@ -46,6 +52,12 @@ bool SyncResourceHandler::OnResponseStarted(int request_id,
   result_.headers = response->response_head.headers;
   result_.mime_type = response->response_head.mime_type;
   result_.charset = response->response_head.charset;
+  return true;
+}
+
+bool SyncResourceHandler::OnWillStart(int request_id,
+                                      const GURL& url,
+                                      bool* defer) {
   return true;
 }
 
@@ -76,4 +88,7 @@ bool SyncResourceHandler::OnResponseCompleted(
   receiver_->Send(result_message_);
   result_message_ = NULL;
   return true;
+}
+
+void SyncResourceHandler::OnRequestClosed() {
 }

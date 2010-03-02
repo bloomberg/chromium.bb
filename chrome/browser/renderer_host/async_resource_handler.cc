@@ -128,6 +128,12 @@ bool AsyncResourceHandler::OnResponseStarted(int request_id,
   return true;
 }
 
+bool AsyncResourceHandler::OnWillStart(int request_id,
+                                       const GURL& url,
+                                       bool* defer) {
+  return true;
+}
+
 bool AsyncResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
                                       int* buf_size, int min_size) {
   DCHECK(min_size == -1);
@@ -211,6 +217,9 @@ bool AsyncResourceHandler::OnResponseCompleted(
     read_buffer_.swap(&g_spare_read_buffer);
   }
   return true;
+}
+
+void AsyncResourceHandler::OnRequestClosed() {
 }
 
 // static

@@ -29,12 +29,14 @@ class AsyncResourceHandler : public ResourceHandler {
   bool OnRequestRedirected(int request_id, const GURL& new_url,
                            ResourceResponse* response, bool* defer);
   bool OnResponseStarted(int request_id, ResourceResponse* response);
+  bool OnWillStart(int request_id, const GURL& url, bool* defer);
   bool OnWillRead(int request_id, net::IOBuffer** buf, int* buf_size,
                   int min_size);
   bool OnReadCompleted(int request_id, int* bytes_read);
   bool OnResponseCompleted(int request_id,
                            const URLRequestStatus& status,
                            const std::string& security_info);
+  void OnRequestClosed();
 
   static void GlobalCleanup();
 

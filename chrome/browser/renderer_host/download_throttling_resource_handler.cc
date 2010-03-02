@@ -65,6 +65,14 @@ bool DownloadThrottlingResourceHandler::OnResponseStarted(
   return true;
 }
 
+bool DownloadThrottlingResourceHandler::OnWillStart(int request_id,
+                                                    const GURL& url,
+                                                    bool* defer) {
+  if (download_handler_.get())
+    return download_handler_->OnWillStart(request_id, url, defer);
+  return true;
+}
+
 bool DownloadThrottlingResourceHandler::OnWillRead(int request_id,
                                                    net::IOBuffer** buf,
                                                    int* buf_size,
@@ -123,6 +131,11 @@ bool DownloadThrottlingResourceHandler::OnResponseCompleted(
     return false;
   NOTREACHED();
   return true;
+}
+
+void DownloadThrottlingResourceHandler::OnRequestClosed() {
+  if (download_handler_.get())
+    download_handler_->OnRequestClosed();
 }
 
 void DownloadThrottlingResourceHandler::CancelDownload() {

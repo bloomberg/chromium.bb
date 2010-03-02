@@ -893,12 +893,21 @@ class DummyResourceHandler : public ResourceHandler {
  public:
   DummyResourceHandler() {}
 
+  // Called as upload progress is made.
+  bool OnUploadProgress(int request_id, uint64 position, uint64 size) {
+    return true;
+  }
+
   bool OnRequestRedirected(int request_id, const GURL& url,
                            ResourceResponse* response, bool* defer) {
     return true;
   }
 
   bool OnResponseStarted(int request_id, ResourceResponse* response) {
+    return true;
+  }
+
+  bool OnWillStart(int request_id, const GURL& url, bool* defer) {
     return true;
   }
 
@@ -913,6 +922,8 @@ class DummyResourceHandler : public ResourceHandler {
     int request_id, const URLRequestStatus& status, const std::string& info) {
     return true;
   }
+
+  void OnRequestClosed() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DummyResourceHandler);

@@ -24,16 +24,19 @@ class CrossSiteResourceHandler : public ResourceHandler {
                            ResourceDispatcherHost* resource_dispatcher_host);
 
   // ResourceHandler implementation:
+  bool OnUploadProgress(int request_id, uint64 position, uint64 size);
   bool OnRequestRedirected(int request_id, const GURL& new_url,
                            ResourceResponse* response, bool* defer);
   bool OnResponseStarted(int request_id,
                          ResourceResponse* response);
+  bool OnWillStart(int request_id, const GURL& url, bool* defer);
   bool OnWillRead(int request_id, net::IOBuffer** buf, int* buf_size,
                   int min_size);
   bool OnReadCompleted(int request_id, int* bytes_read);
   bool OnResponseCompleted(int request_id,
                            const URLRequestStatus& status,
                            const std::string& security_info);
+  void OnRequestClosed();
 
   // We can now send the response to the new renderer, which will cause
   // TabContents to swap in the new renderer and destroy the old one.

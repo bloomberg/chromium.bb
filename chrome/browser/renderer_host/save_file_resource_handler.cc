@@ -24,6 +24,12 @@ SaveFileResourceHandler::SaveFileResourceHandler(int render_process_host_id,
       save_manager_(manager) {
 }
 
+bool SaveFileResourceHandler::OnUploadProgress(int request_id,
+                                               uint64 position,
+                                               uint64 size) {
+  return true;
+}
+
 bool SaveFileResourceHandler::OnRequestRedirected(int request_id,
                                                   const GURL& url,
                                                   ResourceResponse* response,
@@ -51,6 +57,12 @@ bool SaveFileResourceHandler::OnResponseStarted(int request_id,
       NewRunnableMethod(save_manager_,
                         &SaveFileManager::StartSave,
                         info));
+  return true;
+}
+
+bool SaveFileResourceHandler::OnWillStart(int request_id,
+                                          const GURL& url,
+                                          bool* defer) {
   return true;
 }
 
@@ -96,6 +108,9 @@ bool SaveFileResourceHandler::OnResponseCompleted(
                         status.is_success() && !status.is_io_pending()));
   read_buffer_ = NULL;
   return true;
+}
+
+void SaveFileResourceHandler::OnRequestClosed() {
 }
 
 void SaveFileResourceHandler::set_content_length(

@@ -32,6 +32,12 @@ CrossSiteResourceHandler::CrossSiteResourceHandler(
       response_(NULL),
       rdh_(resource_dispatcher_host) {}
 
+bool CrossSiteResourceHandler::OnUploadProgress(int request_id,
+                                                uint64 position,
+                                                uint64 size) {
+  return next_handler_->OnUploadProgress(request_id, position, size);
+}
+
 bool CrossSiteResourceHandler::OnRequestRedirected(int request_id,
                                                    const GURL& new_url,
                                                    ResourceResponse* response,
@@ -72,6 +78,12 @@ bool CrossSiteResourceHandler::OnResponseStarted(int request_id,
   // reply.
   StartCrossSiteTransition(request_id, response, global_id);
   return true;
+}
+
+bool CrossSiteResourceHandler::OnWillStart(int request_id,
+                                           const GURL& url,
+                                           bool* defer) {
+  return next_handler_->OnWillStart(request_id, url, defer);
 }
 
 bool CrossSiteResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
@@ -132,6 +144,10 @@ bool CrossSiteResourceHandler::OnResponseCompleted(
   // Return false to tell RDH not to notify the world or clean up the
   // pending request.  We will do so in ResumeResponse.
   return false;
+}
+
+void CrossSiteResourceHandler::OnRequestClosed() {
+  next_handler_->OnRequestClosed();
 }
 
 // We can now send the response to the new renderer, which will cause

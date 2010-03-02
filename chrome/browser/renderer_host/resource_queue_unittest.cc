@@ -21,6 +21,11 @@ class DummyResourceHandler : public ResourceHandler {
   DummyResourceHandler() {
   }
 
+  bool OnUploadProgress(int request_id, uint64 position, uint64 size) {
+    NOTREACHED();
+    return true;
+  }
+
   virtual bool OnRequestRedirected(int request_id, const GURL& url,
                                    ResourceResponse* response,
                                    bool* defer) {
@@ -30,6 +35,11 @@ class DummyResourceHandler : public ResourceHandler {
 
   virtual bool OnResponseStarted(int request_id,
                                  ResourceResponse* response) {
+    NOTREACHED();
+    return true;
+  }
+
+  virtual bool OnWillStart(int request_id, const GURL& url, bool* defer) {
     NOTREACHED();
     return true;
   }
@@ -52,6 +62,9 @@ class DummyResourceHandler : public ResourceHandler {
                                    const std::string& security_info) {
     NOTREACHED();
     return true;
+  }
+
+  virtual void OnRequestClosed() {
   }
 
  private:
@@ -101,7 +114,7 @@ class NeverDelayingDelegate : public ResourceQueueDelegate {
 
 class AlwaysDelayingDelegate : public ResourceQueueDelegate {
  public:
-  AlwaysDelayingDelegate(ResourceQueue* resource_queue)
+  explicit AlwaysDelayingDelegate(ResourceQueue* resource_queue)
       : resource_queue_(resource_queue) {
   }
 

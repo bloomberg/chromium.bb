@@ -31,12 +31,17 @@ class DownloadResourceHandler : public ResourceHandler {
                           bool save_as,
                           const DownloadSaveInfo& save_info);
 
+  bool OnUploadProgress(int request_id, uint64 position, uint64 size);
+
   // Not needed, as this event handler ought to be the final resource.
   bool OnRequestRedirected(int request_id, const GURL& url,
                            ResourceResponse* response, bool* defer);
 
   // Send the download creation information to the download thread.
   bool OnResponseStarted(int request_id, ResourceResponse* response);
+
+  // Pass-through implementation.
+  bool OnWillStart(int request_id, const GURL& url, bool* defer);
 
   // Create a new buffer, which will be handed to the download thread for file
   // writing and deletion.
@@ -48,6 +53,7 @@ class DownloadResourceHandler : public ResourceHandler {
   bool OnResponseCompleted(int request_id,
                            const URLRequestStatus& status,
                            const std::string& security_info);
+  void OnRequestClosed();
 
   // If the content-length header is not present (or contains something other
   // than numbers), the incoming content_length is -1 (unknown size).

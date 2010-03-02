@@ -99,6 +99,12 @@ void BufferedResourceHandler::OnRequestClosed() {
   real_handler_->OnRequestClosed();
 }
 
+bool BufferedResourceHandler::OnWillStart(int request_id,
+                                          const GURL& url,
+                                          bool* defer) {
+  return real_handler_->OnWillStart(request_id, url, defer);
+}
+
 // We'll let the original event handler provide a buffer, and reuse it for
 // subsequent reads until we're done buffering.
 bool BufferedResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
