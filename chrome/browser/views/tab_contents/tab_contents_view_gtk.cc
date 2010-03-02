@@ -358,9 +358,9 @@ gboolean TabContentsViewGtk::OnButtonPress(GtkWidget* widget,
 void TabContentsViewGtk::OnSizeAllocate(GtkWidget* widget,
                                         GtkAllocation* allocation) {
   gfx::Size new_size(allocation->width, allocation->height);
-  if (new_size == size_)
-    return;
 
+  // Always call WasSized() to allow checking to make sure the
+  // RenderWidgetHostView is the right size.
   WasSized(new_size);
 }
 
@@ -388,14 +388,23 @@ void TabContentsViewGtk::WasShown() {
 }
 
 void TabContentsViewGtk::WasSized(const gfx::Size& size) {
-  size_ = size;
-  if (tab_contents()->interstitial_page())
-    tab_contents()->interstitial_page()->SetSize(size);
+  // We have to check that the RenderWidgetHostView is the proper size.
+  // It can be wrong in cases where the renderer has died and the host
+  // view needed to be recreated.
+  bool needs_resize = size != size_;
+
+  if (needs_resize) {
+    size_ = size;
+    if (tab_contents()->interstitial_page())
+      tab_contents()->interstitial_page()->SetSize(size);
+  }
+
   RenderWidgetHostView* rwhv = tab_contents()->GetRenderWidgetHostView();
-  if (rwhv)
+  if (rwhv && rwhv->GetViewBounds().size() != size)
     rwhv->SetSize(size);
 
-  SetFloatingPosition(size);
+  if (needs_resize)
+    SetFloatingPosition(size);
 }
 
 void TabContentsViewGtk::SetFloatingPosition(const gfx::Size& size) {
