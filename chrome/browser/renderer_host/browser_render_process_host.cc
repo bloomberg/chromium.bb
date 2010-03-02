@@ -966,9 +966,16 @@ void BrowserRenderProcessHost::OnExtensionCloseChannel(int port_id) {
 }
 
 void BrowserRenderProcessHost::OnSpellCheckerRequestDictionary() {
-  // We may have gotten multiple requests from different renderers. We don't
-  // want to initialize multiple times in this case, so we set |force| to false.
-  profile()->ReinitializeSpellCheckHost(false);
+  if (profile()->GetSpellCheckHost()) {
+    // The spellchecker initialization already started and finished; just send
+    // it to the renderer.
+    InitSpellChecker();
+  } else {
+    // We may have gotten multiple requests from different renderers. We don't
+    // want to initialize multiple times in this case, so we set |force| to
+    // false.
+    profile()->ReinitializeSpellCheckHost(false);
+  }
 }
 
 void BrowserRenderProcessHost::AddSpellCheckWord(const std::string& word) {
