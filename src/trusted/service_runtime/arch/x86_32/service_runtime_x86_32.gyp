@@ -46,6 +46,9 @@
         'springboard.S',
         'tramp_32.S',
       ],
+      'dependencies': [
+        '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncvalidate_gen',
+      ],
       'conditions': [
         # TODO(dspringer): for now, official Chrome builds use the stubbed-out
         # NaClSyscallSeg code.  Remove this when the real code is in place.

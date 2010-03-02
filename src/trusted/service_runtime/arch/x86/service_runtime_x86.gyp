@@ -43,6 +43,7 @@
         ],
         'include_dirs': [
           '<(INTERMEDIATE_DIR)',
+          '<(SHARED_INTERMEDIATE_DIR)',
         ],
       }],
     ],
@@ -54,6 +55,12 @@
       'variables': {
         'target_base': 'srt_x86_cmn',
       },
+      'include_dirs': [
+        '<(SHARED_INTERMEDIATE_DIR)',
+      ],
+      'dependencies': [
+        '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncvalidate_gen',
+      ],
     },
   ],
   'conditions': [
@@ -66,6 +73,9 @@
             'target_base': 'srt_x86_cmn',
             'win_target': 'x64',
           },
+          'dependencies': [
+            '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncvalidate_gen64',
+          ],
         },
       ],
     }],

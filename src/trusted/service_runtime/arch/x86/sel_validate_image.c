@@ -13,6 +13,7 @@
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/validator_x86/ncvalidate.h"
+#include "native_client/src/trusted/validator_x86/ncvalidate_iter.h"
 
 static int g_ignore_validator_result = 0;
 void NaClIgnoreValidatorResult() {
@@ -22,7 +23,11 @@ void NaClIgnoreValidatorResult() {
 NaClErrorCode NaClValidateImage(struct NaClApp  *nap) {
   uintptr_t               memp;
   uintptr_t               endp;
+#if NACL_TARGET_SUBARCH == 32
   struct NCValidatorState *vstate;
+#else
+  struct NcValidatorState *vstate;
+#endif
   size_t                  regionsize;
   NaClErrorCode           rcode = LOAD_BAD_FILE;
 
@@ -32,13 +37,28 @@ NaClErrorCode NaClValidateImage(struct NaClApp  *nap) {
   if (endp < memp) {
     return LOAD_NO_MEMORY;
   }
-
+#if NACL_TARGET_SUBARCH == 32
   vstate = NCValidateInit(memp, endp, nap->bundle_size);
-  if (vstate == NULL) return LOAD_BAD_FILE;
+  if (NULL == vstate) return LOAD_BAD_FILE;
   NCValidateSegment((uint8_t *)memp, memp, regionsize, vstate);
   if (NCValidateFinish(vstate) == 0) {
     rcode = LOAD_OK;
-  } else {
+  }
+  NCValidateFreeState(&vstate);
+#else
+  vstate = NcValidatorStateCreate(memp,
+                                  regionsize,
+                                  nap->bundle_size,
+                                  RegR15,
+                                  0,
+                                  stdout);
+  NcValidateSegment((uint8_t*)memp, memp, regionsize, vstate);
+  if (NcValidatesOk(vstate)) {
+    rcode = LOAD_OK;
+  }
+  NcValidatorStateDestroy(vstate);
+#endif
+  if (LOAD_OK != rcode) {
     if (g_ignore_validator_result) {
       NaClLog(LOG_ERROR, "VALIDATION FAILED: continuing anyway...\n");
       rcode = LOAD_OK;
@@ -51,6 +71,5 @@ NaClErrorCode NaClValidateImage(struct NaClApp  *nap) {
       rcode = LOAD_VALIDATION_FAILED;
     }
   }
-  NCValidateFreeState(&vstate);
   return rcode;
 }

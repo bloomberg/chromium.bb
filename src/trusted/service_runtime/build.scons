@@ -286,7 +286,9 @@ if ((not env.get('COVERAGE_ENABLED') or not env.Bit('windows')) and
 
 
   if env['TARGET_ARCHITECTURE'] == 'x86':
-    VALIDATOR_LIBS = ['ncvalidate',]
+    VALIDATOR_LIBS = ['ncopcode_utils', 'ncvalidate']
+    if env['TARGET_SUBARCH']=='64':
+      VALIDATOR_LIBS = VALIDATOR_LIBS + ['ncvalidate_sfi']
   elif env['TARGET_ARCHITECTURE'] == 'arm':
     VALIDATOR_LIBS = ['ncvalidate_arm_v2', 'arm_validator_core']
   else:

@@ -74,6 +74,50 @@
         # below.
         'hard_dependency': 1,
       }],
+      ['target_base=="ncopcode_utils"', {
+        'sources': ['ncopcode_desc.c'],
+        'cflags!': [
+          '-Wextra',
+          '-Wswitch-enum',
+          '-Wsign-compare'
+        ],
+        'xcode_settings': {
+          'WARNING_CFLAGS!': [
+            '-Wextra',
+            '-Wswitch-enum',
+            '-Wsign-compare'
+          ]
+        },
+      }],
+      ['target_base=="ncvalidate_sfi"', {
+        'include_dirs': [
+          '<(SHARED_INTERMEDIATE_DIR)',
+        ],
+        # we depend on ncvalidate build to generate the headers
+        'sources': [ 'ncvalidate_iter.c',
+                     'nc_opcode_histogram.c',
+                     'nc_cpu_checks.c',
+                     'nc_illegal.c',
+                     'nc_protect_base.c',
+                     'nc_store_protect.c',
+                     'ncvalidate_utils.c',
+                     'nc_jumps.c',
+                     'ncval_driver.c'
+         ],
+        'cflags!': [
+          '-Wextra',
+          '-Wswitch-enum',
+          '-Wsign-compare'
+        ],
+        'xcode_settings': {
+          'WARNING_CFLAGS!': [
+            '-Wextra',
+            '-Wswitch-enum',
+            '-Wsign-compare'
+          ]
+        },
+        'include_dirs': ['<(SHARED_INTERMEDIATE_DIR)'],
+      }],
       ['target_base=="ncvalidate_gen"', {
         'hard_dependency': 1,
         'actions': [
@@ -189,20 +233,10 @@
     {
       'target_name': 'ncopcode_utils',
       'type': 'static_library',
-      'sources': [ 'ncopcode_desc.c' ],
-      'dependencies': ['ncopcode_utils_gen'],
-      'cflags!': [
-        '-Wextra',
-        '-Wswitch-enum',
-        '-Wsign-compare'
-      ],
-      'xcode_settings': {
-        'WARNING_CFLAGS!': [
-          '-Wextra',
-          '-Wswitch-enum',
-          '-Wsign-compare'
-        ]
+      'variables': {
+        'target_base': 'ncopcode_utils',
       },
+      'dependencies': ['ncopcode_utils_gen'],
     },
     # ----------------------------------------------------------------------
     {
@@ -358,7 +392,7 @@
       'dependencies': [
         'ncdecode_table',
         'ncdecode_tablegen',
-        'ncopcode_utils_gen',
+        'ncopcode_utils',
       ],
     },
     {
@@ -374,34 +408,10 @@
     # ----------------------------------------------------------------------
     { 'target_name': 'ncvalidate_sfi',
       'type': 'static_library',
-      'include_dirs': [
-        '<(SHARED_INTERMEDIATE_DIR)',
-      ],
-      # we depend on ncvalidate build to generate the headers
       'dependencies': ['ncvalidate' ],
-      'sources': [ 'ncvalidate_iter.c',
-                   'nc_opcode_histogram.c',
-                   'nc_cpu_checks.c',
-                   'nc_illegal.c',
-                   'nc_protect_base.c',
-                   'nc_store_protect.c',
-                   'ncvalidate_utils.c',
-                   'nc_jumps.c',
-                   'ncval_driver.c'
-       ],
-      'cflags!': [
-        '-Wextra',
-        '-Wswitch-enum',
-        '-Wsign-compare'
-      ],
-      'xcode_settings': {
-        'WARNING_CFLAGS!': [
-          '-Wextra',
-          '-Wswitch-enum',
-          '-Wsign-compare'
-        ]
+      'variables': {
+        'target_base': 'ncvalidate_sfi',
       },
-      'include_dirs': ['<(SHARED_INTERMEDIATE_DIR)'],
     },
     # ----------------------------------------------------------------------
     {
@@ -411,7 +421,7 @@
         '<(SHARED_INTERMEDIATE_DIR)',
       ],
       # we depend on ncvalidate build to generate the headers
-      'dependencies': ['ncvalidate' ],
+      'dependencies': ['ncvalidate_gen' ],
       'sources': [ 'ncdis_util.c' ],
       'cflags!': [
         '-Wextra',
@@ -463,8 +473,28 @@
           'dependencies': [
             'ncdecode_table64',
             'ncdecode_tablegen',
-            'ncopcode_utils_gen',
+            'ncopcode_utils64',
           ],
+        },
+        # ---------------------------------------------------------------------
+        {
+          'target_name': 'ncvalidate_sfi64',
+          'type': 'static_library',
+          'dependencies': ['ncvalidate64' ],
+          'variables': {
+            'target_base': 'ncvalidate_sfi',
+            'win_target': 'x64',
+          },
+        },
+        # ----------------------------------------------------------------------
+        {
+          'target_name': 'ncopcode_utils64',
+          'type': 'static_library',
+          'variables': {
+            'target_base': 'ncopcode_utils',
+            'win_target': 'x64',
+          },
+          'dependencies': ['ncopcode_utils_gen'],
         },
         {
           'target_name': 'ncvalidate64',

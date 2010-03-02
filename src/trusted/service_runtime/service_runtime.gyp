@@ -188,7 +188,7 @@
         ['target_arch=="ia32" or target_arch=="x64"', {
           'dependencies': [
             'arch/x86/service_runtime_x86.gyp:service_runtime_x86_common',
-            '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncvalidate',
+            '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncvalidate_sfi',
           ],
         }],
         ['target_arch == "ia32"', {
@@ -261,7 +261,7 @@
           'dependencies': [
             '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer64',
             '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio64',
-            '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncvalidate64',
+            '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncvalidate_sfi64',
             '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc64',
             'arch/x86/service_runtime_x86.gyp:service_runtime_x86_common64',
             'arch/x86_64/service_runtime_x86_64.gyp:service_runtime_x86_64',
