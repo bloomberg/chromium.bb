@@ -113,7 +113,7 @@ def main(argv):
   O3D_PLUGIN_VERSION_COMMAS = GetCommaVersion(plugin_version)
   O3D_SDK_VERSION = GetDotVersion(sdk_version)
   O3D_SDK_VERSION_COMMAS = GetCommaVersion(sdk_version)
-  O3D_PLUGIN_DESCRIPTION = '%s version: %s' % (O3D_PLUGIN_NAME,
+  O3D_PLUGIN_DESCRIPTION = '%s version:%s' % (O3D_PLUGIN_NAME,
                                               O3D_PLUGIN_VERSION)
   O3D_PLUGIN_NPAPI_FILENAME = FLAGS.set_npapi_filename
   O3D_PLUGIN_NPAPI_MIMETYPE = FLAGS.set_npapi_mimetype
