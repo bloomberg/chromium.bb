@@ -756,4 +756,3 @@ void BalsaHeaders::SetResponseReasonPhrase(const base::StringPiece& reason) {
 }
 
 }  // namespace net
-

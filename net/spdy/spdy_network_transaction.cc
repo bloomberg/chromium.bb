@@ -130,7 +130,7 @@ uint64 SpdyNetworkTransaction::GetUploadProgress() const {
 }
 
 void SpdyNetworkTransaction::DoCallback(int rv) {
-  CHECK(rv != ERR_IO_PENDING);
+  CHECK_NE(rv, ERR_IO_PENDING);
   CHECK(user_callback_);
 
   // Since Run may result in Read being called, clear user_callback_ up front.
