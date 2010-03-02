@@ -215,7 +215,7 @@
       windowRect.set_origin(WindowSizer::GetDefaultPopupOrigin(size));
     }
 
-    windowShim_->SetBounds(windowRect);
+    windowShim_->SetBounds(windowRect, BrowserWindow::WINDOW_BOUNDS);
 
     // Puts the incognito badge on the window frame, if necessary. Do this
     // before creating the tab strip to avoid redundant tab layout.
@@ -974,6 +974,10 @@
 
 - (void)setStarredState:(BOOL)isStarred {
   [toolbarController_ setStarredState:isStarred];
+}
+
+- (NSRect)tabContentsFrame {
+  return [[self tabContentArea] frame];
 }
 
 // Return the rect, in WebKit coordinates (flipped), of the window's grow box

@@ -348,7 +348,7 @@ bool CreateWindowFunction::RunImpl() {
   new_window->AddTabWithURL(*(url.get()), GURL(), PageTransition::LINK, true,
                             -1, false, NULL);
 
-  new_window->window()->SetBounds(bounds);
+  new_window->window()->SetBounds(bounds, BrowserWindow::WINDOW_BOUNDS);
   new_window->window()->Show();
 
   // TODO(rafaelw): support |focused|, |zIndex|
@@ -402,7 +402,7 @@ bool UpdateWindowFunction::RunImpl() {
     bounds.set_height(bounds_val);
   }
 
-  browser->window()->SetBounds(bounds);
+  browser->window()->SetBounds(bounds, BrowserWindow::WINDOW_BOUNDS);
   // TODO(rafaelw): Support |focused|.
   result_.reset(ExtensionTabUtil::CreateWindowValue(browser, false));
 

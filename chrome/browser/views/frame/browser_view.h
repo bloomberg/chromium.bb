@@ -238,7 +238,7 @@ class BrowserView : public BrowserBubbleHost,
 
   // Overridden from BrowserWindow:
   virtual void Show();
-  virtual void SetBounds(const gfx::Rect& bounds);
+  virtual void SetBounds(const gfx::Rect& bounds, BoundsType bounds_type);
   virtual void Close();
   virtual void Activate();
   virtual bool IsActive() const;
