@@ -56,7 +56,10 @@ DownloadItemDrag::DownloadItemDrag(const DownloadItem* item,
                    G_CALLBACK(OnDragEnd), this);
 
   GtkTargetList* list = GtkDndUtil::GetTargetListFromCodeMask(kCodeMask);
-  gtk_drag_begin(drag_widget_, list, kDragAction, 1, gtk_get_current_event());
+  GdkEvent* event = gtk_get_current_event();
+  gtk_drag_begin(drag_widget_, list, kDragAction, 1, event);
+  if (event)
+    gdk_event_free(event);
   gtk_target_list_unref(list);
 }
 
