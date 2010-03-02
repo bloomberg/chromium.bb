@@ -277,7 +277,8 @@ class ProfileSyncServiceAutofillTest : public testing::Test {
 
 // TODO(sync): Test unrecoverable error during MA.
 
-TEST_F(ProfileSyncServiceAutofillTest, EmptyNativeEmptySync) {
+// http://code.google.com/p/chromium/issues/detail?id=37244
+TEST_F(ProfileSyncServiceAutofillTest, DISABLED_EmptyNativeEmptySync) {
   EXPECT_CALL(web_database_, GetAllAutofillEntries(_)).WillOnce(Return(true));
   SetIdleChangeProcessorExpectations();
   StartSyncService();
@@ -286,7 +287,8 @@ TEST_F(ProfileSyncServiceAutofillTest, EmptyNativeEmptySync) {
   EXPECT_EQ(0U, sync_entries.size());
 }
 
-TEST_F(ProfileSyncServiceAutofillTest, HasNativeEmptySync) {
+// http://code.google.com/p/chromium/issues/detail?id=37244
+TEST_F(ProfileSyncServiceAutofillTest, DISABLED_HasNativeEmptySync) {
   std::vector<AutofillEntry> entries;
   entries.push_back(MakeAutofillEntry("foo", "bar", 1));
   EXPECT_CALL(web_database_, GetAllAutofillEntries(_)).
@@ -299,7 +301,8 @@ TEST_F(ProfileSyncServiceAutofillTest, HasNativeEmptySync) {
   EXPECT_TRUE(entries[0] == sync_entries[0]);
 }
 
-TEST_F(ProfileSyncServiceAutofillTest, HasNativeWithDuplicatesEmptySync) {
+// http://code.google.com/p/chromium/issues/detail?id=37244
+TEST_F(ProfileSyncServiceAutofillTest, DISABLED_HasNativeWithDuplicatesEmptySync) {
   // There is buggy autofill code that allows duplicate name/value
   // pairs to exist in the database with separate pair_ids.
   std::vector<AutofillEntry> entries;
