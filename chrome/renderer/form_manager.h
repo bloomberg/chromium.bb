@@ -75,6 +75,9 @@ class FormManager {
                              RequirementsMask requirements,
                              FormData* form);
 
+  // Returns the corresponding label for |element|.
+  static string16 LabelForElement(const WebKit::WebInputElement& element);
+
   // The map of form elements.
   WebFrameFormElementMap form_elements_map_;
 

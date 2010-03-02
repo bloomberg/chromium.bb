@@ -1550,6 +1550,7 @@ struct ParamTraits<FormData> {
     WriteParam(m, p.name);
     WriteParam(m, p.origin);
     WriteParam(m, p.action);
+    WriteParam(m, p.labels);
     WriteParam(m, p.elements);
     WriteParam(m, p.values);
     WriteParam(m, p.submit);
@@ -1559,6 +1560,7 @@ struct ParamTraits<FormData> {
       ReadParam(m, iter, &p->name) &&
       ReadParam(m, iter, &p->origin) &&
       ReadParam(m, iter, &p->action) &&
+      ReadParam(m, iter, &p->labels) &&
       ReadParam(m, iter, &p->elements) &&
       ReadParam(m, iter, &p->values) &&
       ReadParam(m, iter, &p->submit);

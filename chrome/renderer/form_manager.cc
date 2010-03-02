@@ -7,15 +7,23 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/stl_util-inl.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebLabelElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNode.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebNodeList.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
 
+using WebKit::WebDocument;
+using WebKit::WebElement;
 using WebKit::WebFormElement;
 using WebKit::WebFrame;
 using WebKit::WebInputElement;
+using WebKit::WebLabelElement;
 using WebKit::WebNode;
+using WebKit::WebNodeList;
 using WebKit::WebString;
 using WebKit::WebVector;
 
@@ -175,6 +183,7 @@ void FormManager::FormElementToFormData(WebFrame* frame,
         !input_element.isEnabledFormControl())
       continue;
 
+    form->labels.push_back(LabelForElement(input_element));
     form->elements.push_back(input_element.nameForAutofill());
     form->values.push_back(input_element.value());
 
@@ -184,4 +193,18 @@ void FormManager::FormElementToFormData(WebFrame* frame,
     if (input_element.inputType() == WebInputElement::Submit)
       form->submit = input_element.nameForAutofill();
   }
+}
+
+// static
+string16 FormManager::LabelForElement(const WebInputElement& element) {
+  WebNodeList labels = element.document().getElementsByTagName("label");
+  for (unsigned i = 0; i < labels.length(); ++i) {
+    WebElement e = labels.item(i).toElement<WebElement>();
+    if (e.hasTagName("label")) {
+      WebLabelElement label = e.toElement<WebLabelElement>();
+      if (label.correspondingControl() == element)
+        return label.innerText();
+    }
+  }
+  return string16();
 }

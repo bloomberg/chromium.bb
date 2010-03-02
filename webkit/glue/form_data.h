@@ -11,26 +11,19 @@
 
 // Holds information about a form to be filled and/or submitted.
 struct FormData {
-  FormData() {}
-  FormData(const FormData& data)
-      : name(data.name),
-        origin(data.origin),
-        action(data.action),
-        elements(data.elements),
-        values(data.values),
-        submit(data.submit) {}
-
   // The name of the form.
   string16 name;
   // The URL (minus query parameters) containing the form
   GURL origin;
   // The action target of the form
   GURL action;
-  // A list of element names to be filled
+  // A vector of element labels.
+  std::vector<string16> labels;
+  // A vector of element names.
   std::vector<string16> elements;
-  // A list of element values to be filled
+  // A vector of element values.
   std::vector<string16> values;
-  // The name of the submit button to be used to submit (optional)
+  // The name of the submit button to be used to submit (optional).
   string16 submit;
 };
 

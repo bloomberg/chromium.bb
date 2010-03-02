@@ -41,7 +41,12 @@ TEST_F(FormManagerTest, ExtractForms) {
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
   EXPECT_EQ(GURL(web_frame->url()), form.origin);
   EXPECT_EQ(GURL("http://cnn.com"), form.action);
-  EXPECT_EQ(ASCIIToUTF16("reply-send"), form.submit);
+
+  const std::vector<string16>& labels = form.labels;
+  ASSERT_EQ(3U, labels.size());
+  EXPECT_EQ(string16(), labels[0]);
+  EXPECT_EQ(string16(), labels[1]);
+  EXPECT_EQ(string16(), labels[2]);
 
   const std::vector<string16>& elements = form.elements;
   ASSERT_EQ(3U, elements.size());
@@ -81,7 +86,11 @@ TEST_F(FormManagerTest, ExtractMultipleForms) {
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
   EXPECT_EQ(GURL(web_frame->url()), form.origin);
   EXPECT_EQ(GURL("http://cnn.com"), form.action);
-  EXPECT_EQ(ASCIIToUTF16("reply-send"), form.submit);
+
+  const std::vector<string16>& labels = form.labels;
+  ASSERT_EQ(2U, labels.size());
+  EXPECT_EQ(string16(), labels[0]);
+  EXPECT_EQ(string16(), labels[1]);
 
   const std::vector<string16>& elements = form.elements;
   ASSERT_EQ(2U, elements.size());
@@ -98,7 +107,11 @@ TEST_F(FormManagerTest, ExtractMultipleForms) {
   EXPECT_EQ(ASCIIToUTF16("TestForm2"), form2.name);
   EXPECT_EQ(GURL(web_frame->url()), form2.origin);
   EXPECT_EQ(GURL("http://zoo.com"), form2.action);
-  EXPECT_EQ(ASCIIToUTF16("second"), form2.submit);
+
+  const std::vector<string16>& labels2 = form2.labels;
+  ASSERT_EQ(2U, labels2.size());
+  EXPECT_EQ(string16(), labels2[0]);
+  EXPECT_EQ(string16(), labels2[1]);
 
   const std::vector<string16>& elements2 = form2.elements;
   ASSERT_EQ(2U, elements2.size());
@@ -157,7 +170,11 @@ TEST_F(FormManagerTest, GetFormsAutocomplete) {
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
   EXPECT_EQ(GURL(web_frame->url()), form.origin);
   EXPECT_EQ(GURL("http://abc.com"), form.action);
-  EXPECT_EQ(ASCIIToUTF16("reply"), form.submit);
+
+  const std::vector<string16>& labels = form.labels;
+  ASSERT_EQ(2U, labels.size());
+  EXPECT_EQ(string16(), labels[0]);
+  EXPECT_EQ(string16(), labels[1]);
 
   const std::vector<string16>& elements = form.elements;
   ASSERT_EQ(2U, elements.size());
@@ -192,7 +209,11 @@ TEST_F(FormManagerTest, GetFormsElementsEnabled) {
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
   EXPECT_EQ(GURL(web_frame->url()), form.origin);
   EXPECT_EQ(GURL("http://xyz.com"), form.action);
-  EXPECT_EQ(ASCIIToUTF16("submit"), form.submit);
+
+  const std::vector<string16>& labels = form.labels;
+  ASSERT_EQ(2U, labels.size());
+  EXPECT_EQ(string16(), labels[0]);
+  EXPECT_EQ(string16(), labels[1]);
 
   const std::vector<string16>& elements = form.elements;
   ASSERT_EQ(2U, elements.size());
@@ -234,7 +255,12 @@ TEST_F(FormManagerTest, FindForm) {
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
   EXPECT_EQ(GURL(web_frame->url()), form.origin);
   EXPECT_EQ(GURL("http://buh.com"), form.action);
-  EXPECT_EQ(ASCIIToUTF16("reply-send"), form.submit);
+
+  const std::vector<string16>& labels = form.labels;
+  ASSERT_EQ(3U, labels.size());
+  EXPECT_EQ(string16(), labels[0]);
+  EXPECT_EQ(string16(), labels[1]);
+  EXPECT_EQ(string16(), labels[2]);
 
   const std::vector<string16>& elements = form.elements;
   ASSERT_EQ(3U, elements.size());
@@ -278,7 +304,12 @@ TEST_F(FormManagerTest, FillForm) {
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
   EXPECT_EQ(GURL(web_frame->url()), form.origin);
   EXPECT_EQ(GURL("http://buh.com"), form.action);
-  EXPECT_EQ(ASCIIToUTF16("reply-send"), form.submit);
+
+  const std::vector<string16>& labels = form.labels;
+  ASSERT_EQ(3U, labels.size());
+  EXPECT_EQ(string16(), labels[0]);
+  EXPECT_EQ(string16(), labels[1]);
+  EXPECT_EQ(string16(), labels[2]);
 
   const std::vector<string16>& elements = form.elements;
   ASSERT_EQ(3U, elements.size());
@@ -304,7 +335,12 @@ TEST_F(FormManagerTest, FillForm) {
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form2.name);
   EXPECT_EQ(GURL(web_frame->url()), form2.origin);
   EXPECT_EQ(GURL("http://buh.com"), form2.action);
-  EXPECT_EQ(ASCIIToUTF16("reply-send"), form2.submit);
+
+  const std::vector<string16>& labels2 = form2.labels;
+  ASSERT_EQ(3U, labels2.size());
+  EXPECT_EQ(string16(), labels2[0]);
+  EXPECT_EQ(string16(), labels2[1]);
+  EXPECT_EQ(string16(), labels2[2]);
 
   const std::vector<string16>& elements2 = form2.elements;
   ASSERT_EQ(3U, elements2.size());
@@ -343,4 +379,47 @@ TEST_F(FormManagerTest, Reset) {
   forms.clear();
   form_manager.GetForms(&forms, FormManager::REQUIRE_NONE);
   ASSERT_EQ(0U, forms.size());
+}
+
+TEST_F(FormManagerTest, Labels) {
+  LoadHTML("<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
+           "  <LABEL for=\"firstname\"> First name: </LABEL>"
+           "    <INPUT type=\"text\" id=\"firstname\" value=\"John\">"
+           "  <LABEL for=\"lastname\"> Last name: </LABEL>"
+           "    <INPUT type=\"text\" id=\"lastname\" value=\"Smith\">"
+           "  <INPUT type=\"submit\" name=\"reply-send\" value=\"Send\">"
+           "</FORM>");
+
+  WebFrame* web_frame = GetMainFrame();
+  ASSERT_TRUE(web_frame);
+
+  FormManager form_manager;
+  form_manager.ExtractForms(web_frame);
+
+  std::vector<FormData> forms;
+  form_manager.GetForms(&forms, FormManager::REQUIRE_NONE);
+  ASSERT_EQ(1U, forms.size());
+
+  const FormData& form = forms[0];
+  EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
+  EXPECT_EQ(GURL(web_frame->url()), form.origin);
+  EXPECT_EQ(GURL("http://cnn.com"), form.action);
+
+  const std::vector<string16>& labels = form.labels;
+  ASSERT_EQ(3U, labels.size());
+  EXPECT_EQ(ASCIIToUTF16("First name:"), labels[0]);
+  EXPECT_EQ(ASCIIToUTF16("Last name:"), labels[1]);
+  EXPECT_EQ(string16(), labels[2]);
+
+  const std::vector<string16>& elements = form.elements;
+  ASSERT_EQ(3U, elements.size());
+  EXPECT_EQ(ASCIIToUTF16("firstname"), elements[0]);
+  EXPECT_EQ(ASCIIToUTF16("lastname"), elements[1]);
+  EXPECT_EQ(ASCIIToUTF16("reply-send"), elements[2]);
+
+  const std::vector<string16>& values = form.values;
+  ASSERT_EQ(3U, values.size());
+  EXPECT_EQ(ASCIIToUTF16("John"), values[0]);
+  EXPECT_EQ(ASCIIToUTF16("Smith"), values[1]);
+  EXPECT_EQ(ASCIIToUTF16("Send"), values[2]);
 }
