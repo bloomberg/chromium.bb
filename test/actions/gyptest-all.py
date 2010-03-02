@@ -8,6 +8,8 @@
 Verifies simple actions when using an explicit build target of 'all'.
 """
 
+import glob
+import os
 import TestGyp
 
 test = TestGyp.TestGyp()
@@ -56,6 +58,37 @@ if test.format == 'xcode':
 else:
   chdir = 'relocate/src'
 test.run_built_executable('null_input', chdir=chdir, stdout=expect)
+
+
+# Clean out files which may have been created if test.ALL was run.
+def clean_dep_files():
+  for file in (glob.glob('relocate/src/dep_*.txt') +
+               glob.glob('relocate/src/deps_all_done_*.txt')):
+    if os.path.exists(file):
+      os.remove(file)
+
+# Confirm our clean.
+clean_dep_files()
+test.must_not_exist('relocate/src/dep_1.txt')
+test.must_not_exist('relocate/src/deps_all_done_first_123.txt')
+
+# Make sure all deps finish before an action is run on a 'None' target.
+# If using the Make builder, add -j to make things more difficult.
+arguments = []
+if test.format == 'make':
+  arguments = ['-j']
+test.build('actions.gyp', 'action_with_dependencies_123', chdir='relocate/src',
+           arguments=arguments)
+test.must_exist('relocate/src/deps_all_done_first_123.txt')
+
+# Try again with a target that has deps in reverse.  Output files from
+# previous tests deleted.  Confirm this execution did NOT run the ALL
+# target which would mess up our dep tests.
+clean_dep_files()
+test.build('actions.gyp', 'action_with_dependencies_321', chdir='relocate/src',
+           arguments=arguments)
+test.must_exist('relocate/src/deps_all_done_first_321.txt')
+test.must_not_exist('relocate/src/deps_all_done_first_123.txt')
 
 
 test.pass_test()

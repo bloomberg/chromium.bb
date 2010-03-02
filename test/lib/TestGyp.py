@@ -325,7 +325,7 @@ class TestGypMake(TestGypBase):
     Runs a Make build using the Makefiles generated from the specified
     gyp_file.
     """
-    arguments = kw.get('arguments', [])
+    arguments = kw.get('arguments', [])[:]
     if self.configuration:
       arguments.append('BUILDTYPE=' + self.configuration)
     if target not in (None, self.DEFAULT):
@@ -437,7 +437,7 @@ class TestGypMSVS(TestGypBase):
       build = '/Rebuild'
     else:
       build = '/Build'
-    arguments = kw.get('arguments', [])
+    arguments = kw.get('arguments', [])[:]
     arguments.extend([gyp_file.replace('.gyp', '.sln'),
                       build, configuration])
     # Note:  the Visual Studio generator doesn't add an explicit 'all'
@@ -505,7 +505,7 @@ class TestGypSCons(TestGypBase):
     Runs a scons build using the SCons configuration generated from the
     specified gyp_file.
     """
-    arguments = kw.get('arguments', [])
+    arguments = kw.get('arguments', [])[:]
     dirname = os.path.dirname(gyp_file)
     if dirname:
       arguments.extend(['-C', dirname])
@@ -527,7 +527,7 @@ class TestGypSCons(TestGypBase):
     for arg in up_to_date_targets.split():
       up_to_date_lines.append("scons: `%s' is up to date.\n" % arg)
     kw['stdout'] = ''.join(up_to_date_lines)
-    arguments = kw.get('arguments', [])
+    arguments = kw.get('arguments', [])[:]
     arguments.append('-Q')
     kw['arguments'] = arguments
     return self.build(gyp_file, target, **kw)
@@ -595,7 +595,9 @@ class TestGypXcode(TestGypBase):
     Runs an xcodebuild using the .xcodeproj generated from the specified
     gyp_file.
     """
-    arguments = kw.get('arguments', [])
+    # Be sure we're working with a copy of 'arguments' since we modify it.
+    # The caller may not be expecting it to be modified.
+    arguments = kw.get('arguments', [])[:]
     arguments.extend(['-project', gyp_file.replace('.gyp', '.xcodeproj')])
     if target == self.ALL:
       arguments.append('-alltargets',)

@@ -872,6 +872,11 @@ class MakefileWriter:
       self.WriteMakeRule([self.output], extra_outputs,
                          comment = 'Build our special outputs first.',
                          order_only = True)
+      self.WriteMakeRule(extra_outputs, deps,
+                         comment=('Preserve order dependency of '
+                                  'special output on deps.'),
+                         order_only = True,
+                         multiple_output_trick = False)
 
     if self.type not in ('settings', 'none'):
       for configname in sorted(configs.keys()):
@@ -966,7 +971,8 @@ class MakefileWriter:
 
 
   def WriteMakeRule(self, outputs, inputs, actions=None, comment=None,
-                    order_only=False, force=False, phony=False):
+                    order_only=False, force=False, phony=False,
+                    multiple_output_trick=True):
     """Write a Makefile rule, with some extra tricks.
 
     outputs: a list of outputs for the rule (note: this is not directly
@@ -979,6 +985,8 @@ class MakefileWriter:
     force: if true, include FORCE_DO_CMD as an order-only dep
     phony: if true, the rule does not actually generate the named output, the
            output is just a name to run the rule
+    multiple_output_trick: if true (the default), perform tricks such as dummy
+           rules to avoid problems with multiple outputs.
     """
     if comment:
       self.WriteLn('# ' + comment)
@@ -1000,7 +1008,7 @@ class MakefileWriter:
     if actions:
       for action in actions:
         self.WriteLn('\t%s' % action)
-    if len(outputs) > 1:
+    if multiple_output_trick and len(outputs) > 1:
       # If we have more than one output, a rule like
       #   foo bar: baz
       # that for *each* output we must run the action, potentially
