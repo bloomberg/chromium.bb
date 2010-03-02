@@ -257,9 +257,9 @@ bool ValidateExtension(Extension* extension, std::string* error) {
     FilePath page_path = ExtensionURLToRelativeFilePath(
         extension->background_url());
     const FilePath path = extension->GetResource(page_path).GetFilePath();
-    if (!file_util::PathExists(path)) {
+    if (path.empty() || !file_util::PathExists(path)) {
       *error = StringPrintf("Could not load background page '%s'.",
-                            WideToUTF8(path.ToWStringHack()).c_str());
+                            WideToUTF8(page_path.ToWStringHack()).c_str());
       return false;
     }
   }
