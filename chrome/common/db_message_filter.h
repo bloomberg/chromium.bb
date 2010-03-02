@@ -46,7 +46,7 @@ class DBMessageFilter : public IPC::ChannelProxy::MessageFilter {
   ResultType SendAndWait(IPC::Message* message,
                          int message_id,
                          ResultType default_result) {
-    ResultType result;
+    ResultType result = default_result;
     base::WaitableEvent waitable_event(false, false);
     DBMessageState state =
         { reinterpret_cast<intptr_t>(&result), &waitable_event };
@@ -58,13 +58,15 @@ class DBMessageFilter : public IPC::ChannelProxy::MessageFilter {
     Send(message);
 
     base::WaitableEvent* events[2] = { shutdown_event_, &waitable_event };
-    if (base::WaitableEvent::WaitMany(events, 2)) {
-      return result;
-    } else {
-      AutoLock msgs_awaiting_replies_autolock(messages_awaiting_replies_lock_);
-      messages_awaiting_replies_->Remove(message_id);
-      return default_result;
-    }
+    base::WaitableEvent::WaitMany(events, 2);
+
+    // Locking on messages_awaiting_replies_ guarantees that either the IO
+    // thread won't enter OnResponse(), or if it's already in OnResponse(),
+    // then WaitableEvent::Signal() will get a chance to do all its work
+    // before waitable_event is deleted.
+    AutoLock msgs_awaiting_replies_autolock(messages_awaiting_replies_lock_);
+    messages_awaiting_replies_->Remove(message_id);
+    return result;
   }
 
   // Processes incoming message |message| from the browser process.
@@ -97,7 +99,6 @@ class DBMessageFilter : public IPC::ChannelProxy::MessageFilter {
     AutoLock msgs_awaiting_replies_autolock(messages_awaiting_replies_lock_);
     DBMessageState *state = messages_awaiting_replies_->Lookup(message_id);
     if (state) {
-      messages_awaiting_replies_->Remove(message_id);
       *reinterpret_cast<ResultType*>(state->result_address_) = result;
       state->waitable_event_->Signal();
     }
