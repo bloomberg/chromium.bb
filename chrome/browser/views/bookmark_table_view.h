@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,9 +12,6 @@
 class BookmarkModel;
 class BookmarkNode;
 class BookmarkTableModel;
-namespace gfx {
-class Font;
-}
 class OSExchangeData;
 class PrefService;
 class Profile;
@@ -46,10 +43,6 @@ class BookmarkTableView : public views::TableView {
 
   // Saves the widths of the table columns.
   void SaveColumnConfiguration();
-
-  // Sets the text to display on top of the table. This is useful if the table
-  // is empty and you want to inform the user why.
-  void SetAltText(const std::wstring& alt_text);
 
  protected:
   // Overriden to draw a drop indicator when dropping between rows.
@@ -138,15 +131,6 @@ class BookmarkTableView : public views::TableView {
   // See ShowPathColumn for details.
   void UpdateColumns();
 
-  // Draws the alt_text_. Does nothing if there is no alt_text_.
-  void PaintAltText();
-
-  // Returns the bounds of the alt text.
-  gfx::Rect GetAltTextBounds();
-
-  // Returns the font used for alt text.
-  gfx::Font GetAltTextFont();
-
   Profile* profile_;
 
   const BookmarkNode* parent_node_;
@@ -154,8 +138,6 @@ class BookmarkTableView : public views::TableView {
   scoped_ptr<DropInfo> drop_info_;
 
   bool show_path_column_;
-
-  std::wstring alt_text_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkTableView);
 };

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,6 @@
 
 #include "app/drag_drop_types.h"
 #include "app/gfx/canvas.h"
-#include "app/gfx/font.h"
 #include "app/l10n_util.h"
 #include "app/os_exchange_data.h"
 #include "app/os_exchange_data_provider_win.h"
@@ -124,18 +123,6 @@ void BookmarkTableView::SaveColumnConfiguration() {
     prefs->SetInteger(prefs::kBookmarkTableURLWidth1,
                       GetColumnWidth(IDS_BOOKMARK_TABLE_URL));
   }
-}
-
-void BookmarkTableView::SetAltText(const std::wstring& alt_text) {
-  if (alt_text == alt_text_)
-    return;
-
-  alt_text_ = alt_text;
-  if (!GetNativeControlHWND())
-    return;
-
-  RECT alt_text_bounds = GetAltTextBounds().ToRECT();
-  InvalidateRect(GetNativeControlHWND(), &alt_text_bounds, FALSE);
 }
 
 void BookmarkTableView::SetShowPathColumn(bool show_path_column) {
@@ -414,36 +401,4 @@ void BookmarkTableView::UpdateColumns() {
   for (size_t i = 0; i < columns.size(); ++i)
     SetColumnVisibility(columns[i].id, true);
   OnModelChanged();
-}
-
-void BookmarkTableView::PaintAltText() {
-  if (alt_text_.empty())
-    return;
-
-  HDC dc = GetDC(GetNativeControlHWND());
-  gfx::Font font = GetAltTextFont();
-  gfx::Rect bounds = GetAltTextBounds();
-  gfx::Canvas canvas(bounds.width(), bounds.height(), false);
-  // Pad by 1 for halo.
-  canvas.DrawStringWithHalo(alt_text_, font, SK_ColorDKGRAY, SK_ColorWHITE, 1,
-                            1, bounds.width() - 2, bounds.height() - 2,
-                            l10n_util::DefaultCanvasTextAlignment());
-  canvas.getTopPlatformDevice().drawToHDC(dc, bounds.x(), bounds.y(), NULL);
-  ReleaseDC(GetNativeControlHWND(), dc);
-}
-
-gfx::Rect BookmarkTableView::GetAltTextBounds() {
-  static const int kXOffset = 16;
-  DCHECK(GetNativeControlHWND());
-  RECT client_rect_rect;
-  GetClientRect(GetNativeControlHWND(), &client_rect_rect);
-  gfx::Rect client_rect(client_rect_rect);
-  gfx::Font font = GetAltTextFont();
-  // Pad height by 2 for halo.
-  return gfx::Rect(kXOffset, content_offset(), client_rect.width() - kXOffset,
-                   std::max(kImageSize, font.height() + 2));
-}
-
-gfx::Font BookmarkTableView::GetAltTextFont() {
-  return ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::BaseFont);
 }

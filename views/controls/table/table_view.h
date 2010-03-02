@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,6 +22,10 @@ typedef struct tagNMLVCUSTOMDRAW NMLVCUSTOMDRAW;
 // TODO(port): remove the ifdef when native_control.h is ported.
 #include "views/controls/native_control.h"
 #endif  // defined(OS_WIN)
+
+namespace gfx {
+class Font;
+}
 
 struct TableColumn;
 class TableModel;
@@ -232,6 +236,10 @@ class TableView : public NativeControl,
     return view_to_model_.get() ? view_to_model_[view_index] : view_index;
   }
 
+  // Sets the text to display on top of the table. This is useful if the table
+  // is empty and you want to inform the user why.
+  void SetAltText(const std::wstring& alt_text);
+
  protected:
   // Overriden to return the position of the first selected row.
   virtual gfx::Point GetKeyboardContextMenuLocation();
@@ -292,6 +300,9 @@ class TableView : public NativeControl,
   // Returns the offset from the top of the client area to the start of the
   // content.
   int content_offset() const { return content_offset_; }
+
+  // Draws the alt_text_. Does nothing if there is no alt_text_.
+  void PaintAltText();
 
   // Size (width and height) of images.
   static const int kImageSize;
@@ -398,6 +409,12 @@ class TableView : public NativeControl,
   // Updates content_offset_ from the position of the header.
   void UpdateContentOffset();
 
+  // Returns the bounds of the alt text.
+  gfx::Rect GetAltTextBounds();
+
+  // Returns the font used for alt text.
+  gfx::Font GetAltTextFont();
+
   TableModel* model_;
   TableTypes table_type_;
   TableViewObserver* table_view_observer_;
@@ -462,6 +479,8 @@ class TableView : public NativeControl,
   // Mappings used when sorted.
   scoped_array<int> view_to_model_;
   scoped_array<int> model_to_view_;
+
+  std::wstring alt_text_;
 
   DISALLOW_COPY_AND_ASSIGN(TableView);
 };
