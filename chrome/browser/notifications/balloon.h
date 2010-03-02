@@ -65,6 +65,11 @@ class Balloon {
   // to this object.
   void set_view(BalloonView* balloon_view);
 
+  // Returns the balloon view associated with the balloon.
+  BalloonView* view() {
+    return balloon_view_.get();
+  }
+
   // Returns the viewing size for the balloon (content + frame).
   gfx::Size GetViewSize() const { return balloon_view_->GetSize(); }
 

@@ -33,6 +33,8 @@ class BalloonViewHost;
 class NotificationDetails;
 class NotificationSource;
 
+namespace chromeos {
+
 // A balloon view is the UI component for a notification panel.
 class BalloonViewImpl : public BalloonView,
                         public views::View,
@@ -106,5 +108,7 @@ class BalloonViewImpl : public BalloonView,
 
   DISALLOW_COPY_AND_ASSIGN(BalloonViewImpl);
 };
+
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_NOTIFICATIONS_BALLOON_VIEW_H_

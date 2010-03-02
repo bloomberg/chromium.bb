@@ -978,6 +978,11 @@
              ['include', 'browser/views/bookmark_context_menu_test.cc$'],
           ],
         }],
+        ['OS=="linux" and chromeos==1', {
+          'sources/': [
+            ['exclude',  'browser/notifications/desktop_notifications_unittest\\.cc$'],
+          ]
+        }],
         ['OS=="mac"', {
            # The test fetches resources which means Mac need the app bundle to
            # exist on disk so it can pull from it.

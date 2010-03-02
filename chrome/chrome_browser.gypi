@@ -294,6 +294,8 @@
         'browser/chrome_plugin_host.h',
         'browser/chrome_thread.cc',
         'browser/chrome_thread.h',
+        'browser/chromeos/notifications/balloon_collection_impl.h',
+        'browser/chromeos/notifications/balloon_collection_impl.cc',
         'browser/chromeos/notifications/balloon_view.h',
         'browser/chromeos/notifications/balloon_view.cc',
         'browser/chromeos/notifications/notification_panel.h',
@@ -1462,6 +1464,7 @@
         'browser/notifications/balloon.h',
         'browser/notifications/balloon_collection.cc',
         'browser/notifications/balloon_collection.h',
+        'browser/notifications/balloon_collection_impl.h',
         'browser/notifications/balloon_collection_win.cc',
         'browser/notifications/balloon_collection_mac.mm',
         'browser/notifications/balloon_collection_linux.cc',
@@ -2802,8 +2805,11 @@
               ],
             }],
             ['OS=="linux" and chromeos==1',{
+              'sources/': [
+                ['exclude', '^browser/notifications/balloon_collection_linux.cc'],
+                ['exclude', '^browser/notifications/balloon_collection_impl.h'],
+              ],
               'dependencies': [
-
                 '../third_party/protobuf2/protobuf.gyp:protobuf_lite',
                 '../third_party/protobuf2/protobuf.gyp:protoc#host',
                 '../third_party/chromeos_login_manager/chromeos_login_manager/chromeos_login_manager.gyp:session',

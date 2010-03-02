@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/notifications/balloon_collection.h"
-#include "chrome/browser/cocoa/notifications/balloon_view_bridge.h"
+#include "chrome/browser/notifications/balloon_collection_impl.h"
 
-#include "base/logging.h"
+#include "chrome/browser/cocoa/notifications/balloon_view_bridge.h"
 
 Balloon* BalloonCollectionImpl::MakeBalloon(const Notification& notification,
                                             Profile* profile) {
@@ -26,4 +25,9 @@ int BalloonCollectionImpl::Layout::HorizontalEdgeMargin() const {
 
 int BalloonCollectionImpl::Layout::VerticalEdgeMargin() const {
   return 18;
+}
+
+// static
+BalloonCollection* BalloonCollection::Create() {
+  return new BalloonCollectionImpl();
 }

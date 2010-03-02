@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/notifications/balloon_collection.h"
+#include "chrome/browser/notifications/balloon_collection_impl.h"
 
 #include "base/gfx/rect.h"
+#include "base/gfx/size.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "chrome/browser/notifications/balloon.h"
+#include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/window_sizer.h"
 
 namespace {
@@ -29,8 +31,7 @@ BalloonCollectionImpl::Layout::Placement
     BalloonCollectionImpl::Layout::placement_ =
         Layout::VERTICALLY_FROM_BOTTOM_RIGHT;
 
-BalloonCollectionImpl::BalloonCollectionImpl()
-    : space_change_listener_(NULL) {
+BalloonCollectionImpl::BalloonCollectionImpl() {
 }
 
 BalloonCollectionImpl::~BalloonCollectionImpl() {

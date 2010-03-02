@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/notifications/balloon_collection.h"
+#include "chrome/browser/notifications/balloon_collection_impl.h"
 
 #include "base/gfx/size.h"
-#include "base/logging.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/views/notifications/balloon_view.h"
 
@@ -29,4 +28,9 @@ int BalloonCollectionImpl::Layout::HorizontalEdgeMargin() const {
 
 int BalloonCollectionImpl::Layout::VerticalEdgeMargin() const {
   return 5;
+}
+
+// static
+BalloonCollection* BalloonCollection::Create() {
+  return new BalloonCollectionImpl();
 }

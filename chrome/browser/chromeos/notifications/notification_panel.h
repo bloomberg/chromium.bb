@@ -9,10 +9,13 @@
 
 #include "base/gfx/rect.h"
 #include "base/scoped_ptr.h"
-#include "base/singleton.h"
 #include "chrome/browser/chromeos/frame/panel_controller.h"
 
-class BalloonViewImpl;
+class Balloon;
+
+namespace views {
+class ScrollView;
+}  // namespace views
 
 namespace chromeos {
 
@@ -20,12 +23,11 @@ class BalloonContainer;
 
 class NotificationPanel : PanelController::Delegate {
  public:
-  // Returns the Singleton instance of NotificationPanel.
-  static NotificationPanel* Get();
+  NotificationPanel();
+  virtual ~NotificationPanel();
 
-  // Adds/Removes a ballon view.
-  void Add(BalloonViewImpl* view);
-  void Remove(BalloonViewImpl* view);
+  void Add(Balloon* balloon);
+  void Remove(Balloon* ballon);
 
   // Shows/Hides the Panel.
   void Show();
@@ -37,11 +39,6 @@ class NotificationPanel : PanelController::Delegate {
   virtual void ClosePanel();
 
  private:
-  friend struct DefaultSingletonTraits<NotificationPanel>;
-
-  NotificationPanel();
-  virtual ~NotificationPanel();
-
   void Init();
   // Returns the panel's bounds in the screen's coordinates.
   // The position will be controlled by window manager so
@@ -51,6 +48,9 @@ class NotificationPanel : PanelController::Delegate {
   BalloonContainer* balloon_container_;
   scoped_ptr<views::Widget> panel_widget_;
   scoped_ptr<PanelController> panel_controller_;
+  scoped_ptr<views::ScrollView> scroll_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(NotificationPanel);
 };
 
 }  // namespace chromeos

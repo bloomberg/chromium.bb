@@ -42,7 +42,7 @@ NotificationUIManager::~NotificationUIManager() {
 
 // static
 NotificationUIManager* NotificationUIManager::Create() {
-  BalloonCollectionImpl* balloons = new BalloonCollectionImpl();
+  BalloonCollection* balloons = BalloonCollection::Create();
   NotificationUIManager* instance = new NotificationUIManager();
   instance->Initialize(balloons);
   balloons->set_space_change_listener(instance);

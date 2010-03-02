@@ -12,7 +12,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/notifications/balloon.h"
-#include "chrome/browser/notifications/balloon_collection.h"
+#include "chrome/browser/notifications/balloon_collection_impl.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_object_proxy.h"

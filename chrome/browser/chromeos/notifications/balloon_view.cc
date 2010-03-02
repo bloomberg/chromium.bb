@@ -31,6 +31,8 @@ const int kRevokePermissionCommand = 0;
 
 }  // namespace
 
+namespace chromeos {
+
 BalloonViewImpl::BalloonViewImpl()
     : balloon_(NULL),
       html_contents_(NULL),
@@ -94,12 +96,6 @@ void BalloonViewImpl::Show(Balloon* balloon) {
             balloon_->content_size().width(),
             balloon_->content_size().height() +
             close_button_->GetPreferredSize().height());
-
-  // TODO(oshima): We're not sure if this is the right place to
-  // add & show in the panel. Revisit the deisgn once we have a collection
-  // for chromeos.
-  chromeos::NotificationPanel::Get()->Add(this);
-  chromeos::NotificationPanel::Get()->Show();
   notification_registrar_.Add(this,
     NotificationType::NOTIFY_BALLOON_DISCONNECTED, Source<Balloon>(balloon));
 }
@@ -222,8 +218,7 @@ void BalloonViewImpl::CreateOptionsMenu() {
 
 void BalloonViewImpl::DelayedClose(bool by_user) {
   html_contents_->Shutdown();
-  // Remove html_contents from panel.
-  chromeos::NotificationPanel::Get()->Remove(this);
-
   balloon_->OnClose(by_user);
 }
+
+}  // namespace chromeos
