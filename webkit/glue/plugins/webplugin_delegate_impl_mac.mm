@@ -21,13 +21,16 @@
 #include "webkit/default_plugin/plugin_impl.h"
 #include "webkit/glue/webplugin.h"
 #include "webkit/glue/plugins/coregraphics_private_symbols_mac.h"
-#include "webkit/glue/plugins/fake_plugin_window_tracker_mac.h"
 #include "webkit/glue/plugins/plugin_constants_win.h"
 #include "webkit/glue/plugins/plugin_instance.h"
 #include "webkit/glue/plugins/plugin_lib.h"
 #include "webkit/glue/plugins/plugin_list.h"
 #include "webkit/glue/plugins/plugin_stream_url.h"
 #include "webkit/glue/webkit_glue.h"
+
+#ifndef NP_NO_CARBON
+#include "webkit/glue/plugins/carbon_plugin_window_tracker_mac.h"
+#endif
 
 // If we're compiling support for the QuickDraw drawing model, turn off GCC
 // warnings about deprecated functions (since QuickDraw is a deprecated API).
@@ -204,7 +207,7 @@ WebPluginDelegateImpl::~WebPluginDelegateImpl() {
 
 #ifndef NP_NO_CARBON
   if (cg_context_.window) {
-    FakePluginWindowTracker::SharedInstance()->RemoveFakeWindowForDelegate(
+    CarbonPluginWindowTracker::SharedInstance()->DestroyDummyWindowForDelegate(
         this, reinterpret_cast<WindowRef>(cg_context_.window));
   }
 #endif
@@ -226,9 +229,9 @@ void WebPluginDelegateImpl::PlatformInitialize() {
   if (instance()->event_model() == NPEventModelCarbon) {
     // Create a stand-in for the browser window so that the plugin will have
     // a non-NULL WindowRef to which it can refer.
-    FakePluginWindowTracker* window_tracker =
-        FakePluginWindowTracker::SharedInstance();
-    cg_context_.window = window_tracker->GenerateFakeWindowForDelegate(this);
+    CarbonPluginWindowTracker* window_tracker =
+        CarbonPluginWindowTracker::SharedInstance();
+    cg_context_.window = window_tracker->CreateDummyWindowForDelegate(this);
     cg_context_.context = NULL;
     Rect window_bounds = { 0, 0, window_rect_.height(), window_rect_.width() };
     SetWindowBounds(reinterpret_cast<WindowRef>(cg_context_.window),

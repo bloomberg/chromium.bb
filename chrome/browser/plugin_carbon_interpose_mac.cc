@@ -6,7 +6,7 @@
 
 #include "base/gfx/rect.h"
 #include "chrome/plugin/plugin_interpose_util_mac.h"
-#include "webkit/glue/plugins/fake_plugin_window_tracker_mac.h"
+#include "webkit/glue/plugins/carbon_plugin_window_tracker_mac.h"
 
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
@@ -59,7 +59,7 @@ static void OnPluginWindowSelected(WindowRef window) {
 
 static Boolean ChromePluginIsWindowActive(WindowRef window) {
   const WebPluginDelegateImpl* delegate =
-      FakePluginWindowTracker::SharedInstance()->GetDelegateForFakeWindow(
+      CarbonPluginWindowTracker::SharedInstance()->GetDelegateForDummyWindow(
           window);
   return delegate ? IsContainingWindowActive(delegate)
                   : IsWindowActive(window);
@@ -67,7 +67,7 @@ static Boolean ChromePluginIsWindowActive(WindowRef window) {
 
 static Boolean ChromePluginIsWindowHilited(WindowRef window) {
   const WebPluginDelegateImpl* delegate =
-      FakePluginWindowTracker::SharedInstance()->GetDelegateForFakeWindow(
+      CarbonPluginWindowTracker::SharedInstance()->GetDelegateForDummyWindow(
           window);
   return delegate ? IsContainingWindowActive(delegate)
                   : IsWindowHilited(window);
@@ -124,8 +124,9 @@ static void ChromePluginDisposeDialog(DialogRef dialog) {
 
 static WindowPartCode ChromePluginFindWindow(Point point, WindowRef* window) {
   WebPluginDelegateImpl* delegate = mac_plugin_interposing::GetActiveDelegate();
-  FakePluginWindowTracker* tracker = FakePluginWindowTracker::SharedInstance();
-  WindowRef plugin_window = tracker->GetFakeWindowForDelegate(delegate);
+  CarbonPluginWindowTracker* tracker =
+      CarbonPluginWindowTracker::SharedInstance();
+  WindowRef plugin_window = tracker->GetDummyWindowForDelegate(delegate);
   if (plugin_window) {
     // If plugin_window is non-NULL, then we are in the middle of routing an
     // event to the plugin, so we know it's destined for this window already,

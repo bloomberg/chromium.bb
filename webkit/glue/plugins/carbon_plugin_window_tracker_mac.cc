@@ -3,23 +3,18 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
-#include "webkit/glue/plugins/fake_plugin_window_tracker_mac.h"
+#include "webkit/glue/plugins/carbon_plugin_window_tracker_mac.h"
 
-FakePluginWindowTracker::FakePluginWindowTracker() {
+CarbonPluginWindowTracker::CarbonPluginWindowTracker() {
 }
 
-FakePluginWindowTracker* FakePluginWindowTracker::SharedInstance() {
-  static FakePluginWindowTracker* tracker = new FakePluginWindowTracker();
+CarbonPluginWindowTracker* CarbonPluginWindowTracker::SharedInstance() {
+  static CarbonPluginWindowTracker* tracker = new CarbonPluginWindowTracker();
   return tracker;
 }
 
-WindowRef FakePluginWindowTracker::GenerateFakeWindowForDelegate(
+WindowRef CarbonPluginWindowTracker::CreateDummyWindowForDelegate(
     WebPluginDelegateImpl* delegate) {
-  // TODO(stuartmorgan): Eventually we will be interposing enough that we don't
-  // even need a window, and can just use made-up identifiers, but for now we
-  // create one so that things that we don't interpose won't crash trying to use
-  // a bad WindowRef.
-
   // The real size will be set by the plugin instance, once that size is known.
   Rect window_bounds = { 0, 0, 100, 100 };
   WindowRef new_ref = NULL;
@@ -33,7 +28,7 @@ WindowRef FakePluginWindowTracker::GenerateFakeWindowForDelegate(
   return new_ref;
 }
 
-WebPluginDelegateImpl* FakePluginWindowTracker::GetDelegateForFakeWindow(
+WebPluginDelegateImpl* CarbonPluginWindowTracker::GetDelegateForDummyWindow(
     WindowRef window) const {
   WindowToDelegateMap::const_iterator i = window_to_delegate_map_.find(window);
   if (i != window_to_delegate_map_.end())
@@ -41,7 +36,7 @@ WebPluginDelegateImpl* FakePluginWindowTracker::GetDelegateForFakeWindow(
   return NULL;
 }
 
-WindowRef FakePluginWindowTracker::GetFakeWindowForDelegate(
+WindowRef CarbonPluginWindowTracker::GetDummyWindowForDelegate(
     WebPluginDelegateImpl* delegate) const {
   DelegateToWindowMap::const_iterator i =
       delegate_to_window_map_.find(delegate);
@@ -50,9 +45,9 @@ WindowRef FakePluginWindowTracker::GetFakeWindowForDelegate(
   return NULL;
 }
 
-void FakePluginWindowTracker::RemoveFakeWindowForDelegate(
+void CarbonPluginWindowTracker::DestroyDummyWindowForDelegate(
     WebPluginDelegateImpl* delegate, WindowRef window) {
-  DCHECK(GetDelegateForFakeWindow(window) == delegate);
+  DCHECK(GetDelegateForDummyWindow(window) == delegate);
   window_to_delegate_map_.erase(window);
   delegate_to_window_map_.erase(delegate);
   if (window)  // Check just in case the initial window creation failed.
