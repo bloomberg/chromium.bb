@@ -4,7 +4,7 @@
 
 #include "chrome/browser/gtk/options/options_layout_gtk.h"
 
-#include "chrome/common/gtk_util.h"
+#include "chrome/browser/gtk/gtk_util.h"
 
 OptionsLayoutBuilderGtk::OptionsLayoutBuilderGtk() {
   page_ = gtk_vbox_new(FALSE, gtk_util::kContentAreaSpacing);

@@ -14,7 +14,7 @@
 #include "base/gfx/rect.h"
 #include "base/logging.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
-#include "chrome/common/gtk_util.h"
+#include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/common/notification_service.h"
 
 namespace {

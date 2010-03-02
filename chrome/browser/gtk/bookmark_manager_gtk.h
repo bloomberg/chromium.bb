@@ -14,9 +14,9 @@
 #include "base/task.h"
 #include "chrome/browser/bookmarks/bookmark_context_menu_controller.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
+#include "chrome/browser/gtk/gtk_tree.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/shell_dialogs.h"
-#include "chrome/common/gtk_tree.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
 class BookmarkModel;

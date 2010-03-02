@@ -4,9 +4,9 @@
 
 #include "chrome/browser/gtk/constrained_window_gtk.h"
 
+#include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view_gtk.h"
-#include "chrome/common/gtk_util.h"
 
 ConstrainedWindowGtk::ConstrainedWindowGtk(
     TabContents* owner, ConstrainedWindowGtkDelegate* delegate)

@@ -7,9 +7,9 @@
 #include "app/l10n_util.h"
 #include "base/logging.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
+#include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/views/cookie_prompt_view.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/common/gtk_util.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 

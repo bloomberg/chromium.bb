@@ -12,9 +12,9 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
+#include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/rounded_window.h"
 #include "chrome/browser/gtk/slide_animator_gtk.h"
-#include "chrome/common/gtk_util.h"
 #include "chrome/common/notification_service.h"
 #include "googleurl/src/gurl.h"
 

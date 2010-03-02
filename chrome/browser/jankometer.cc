@@ -22,7 +22,7 @@
 #include "chrome/common/chrome_switches.h"
 
 #if defined(OS_LINUX)
-#include "chrome/common/gtk_util.h"
+#include "chrome/browser/gtk/gtk_util.h"
 #endif
 
 using base::TimeDelta;

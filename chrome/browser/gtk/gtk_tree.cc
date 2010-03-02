@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/gtk_tree.h"
+#include "chrome/browser/gtk/gtk_tree.h"
 
 #include "app/gfx/gtk_util.h"
 #include "app/table_model.h"

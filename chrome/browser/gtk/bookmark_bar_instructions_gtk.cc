@@ -11,7 +11,7 @@
 #include "base/observer_list.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
-#include "chrome/common/gtk_util.h"
+#include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
 

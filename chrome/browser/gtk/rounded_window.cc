@@ -8,7 +8,7 @@
 #include <math.h>
 
 #include "app/l10n_util.h"
-#include "chrome/common/gtk_util.h"
+#include "chrome/browser/gtk/gtk_util.h"
 
 namespace gtk_util {
 

@@ -8,7 +8,7 @@
 
 #if defined(OS_LINUX)
 #include "chrome/browser/gtk/gtk_theme_provider.h"
-#include "chrome/common/gtk_util.h"
+#include "chrome/browser/gtk/gtk_util.h"
 #endif
 
 namespace renderer_preferences_util {

@@ -11,11 +11,11 @@
 #include "base/compiler_specific.h"
 #include "base/string_util.h"
 #include "chrome/browser/gtk/certificate_viewer.h"
+#include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/page_info_model.h"
 #include "chrome/browser/page_info_window.h"
-#include "chrome/common/gtk_util.h"
-#include "grit/locale_settings.h"
 #include "grit/generated_resources.h"
+#include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
 
 namespace {

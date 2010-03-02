@@ -6,8 +6,8 @@
 
 #include "app/l10n_util.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/shell_integration.h"
-#include "chrome/common/gtk_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"

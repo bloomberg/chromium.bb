@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_GTK_TREE_H_
-#define CHROME_COMMON_GTK_TREE_H_
+#ifndef CHROME_BROWSER_GTK_GTK_TREE_H_
+#define CHROME_BROWSER_GTK_GTK_TREE_H_
 
 #include <gtk/gtk.h>
 #include <set>
@@ -162,4 +162,4 @@ class TreeAdapter : public TreeModelObserver {
 
 }  // namespace gtk_tree
 
-#endif  // CHROME_COMMON_GTK_TREE_H_
+#endif  // CHROME_BROWSER_GTK_GTK_TREE_H_

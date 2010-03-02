@@ -82,7 +82,7 @@
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-#include "chrome/common/gtk_util.h"
+#include "chrome/browser/gtk/gtk_util.h"
 #endif
 
 // TODO(port): several win-only methods have been pulled out of this, but

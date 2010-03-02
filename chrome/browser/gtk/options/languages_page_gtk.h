@@ -17,9 +17,9 @@
 #include <string>
 
 #include "base/scoped_ptr.h"
+#include "chrome/browser/gtk/gtk_tree.h"
 #include "chrome/browser/pref_member.h"
 #include "chrome/browser/options_page_base.h"
-#include "chrome/common/gtk_tree.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
 class LanguageComboboxModel;

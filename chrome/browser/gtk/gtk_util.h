@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_GTK_UTIL_H_
-#define CHROME_COMMON_GTK_UTIL_H_
+#ifndef CHROME_BROWSER_GTK_GTK_UTIL_H_
+#define CHROME_BROWSER_GTK_GTK_UTIL_H_
 
 #include <gtk/gtk.h>
 #include <string>
@@ -274,4 +274,4 @@ WindowOpenDisposition DispositionForCurrentButtonPressEvent();
 
 }  // namespace gtk_util
 
-#endif  // CHROME_COMMON_GTK_UTIL_H_
+#endif  // CHROME_BROWSER_GTK_GTK_UTIL_H_

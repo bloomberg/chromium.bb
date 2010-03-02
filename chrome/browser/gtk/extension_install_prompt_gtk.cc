@@ -10,9 +10,9 @@
 #include "base/string_util.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
-#include "chrome/browser/gtk/browser_window_gtk.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
-#include "chrome/common/gtk_util.h"
+#include "chrome/browser/gtk/browser_window_gtk.h"
+#include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/common/extensions/extension.h"
 #include "grit/generated_resources.h"
 

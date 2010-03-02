@@ -4,13 +4,13 @@
 
 #include "chrome/browser/gtk/options/fonts_page_gtk.h"
 
+#include "app/gfx/font.h"
 #include "app/l10n_util.h"
 #include "app/l10n_util_collator.h"
-#include "app/gfx/font.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/options/options_layout_gtk.h"
 #include "chrome/browser/profile.h"
-#include "chrome/common/gtk_util.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 

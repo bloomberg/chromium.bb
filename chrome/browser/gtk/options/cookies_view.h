@@ -15,7 +15,7 @@
 #include "chrome/browser/browsing_data_appcache_helper.h"
 #include "chrome/browser/browsing_data_database_helper.h"
 #include "chrome/browser/browsing_data_local_storage_helper.h"
-#include "chrome/common/gtk_tree.h"
+#include "chrome/browser/gtk/gtk_tree.h"
 #include "net/base/cookie_monster.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 

@@ -8,8 +8,8 @@
 #include "app/l10n_util.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/gtk/gtk_floating_container.h"
+#include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/rounded_window.h"
-#include "chrome/common/gtk_util.h"
 #include "grit/app_strings.h"
 #include "grit/generated_resources.h"
 

@@ -7,7 +7,7 @@
 #include <stdlib.h>
 
 #include "base/logging.h"
-#include "chrome/common/gtk_util.h"
+#include "chrome/browser/gtk/gtk_util.h"
 
 static const gchar* kLinkMarkup = "<u><span color=\"%s\">%s</span></u>";
 

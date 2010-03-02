@@ -11,10 +11,10 @@
 
 #include "base/scoped_ptr.h"
 #include "chrome/browser/content_exceptions_table_model.h"
+#include "chrome/browser/gtk/gtk_tree.h"
 #include "chrome/browser/gtk/options/content_exception_editor.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
-#include "chrome/common/gtk_tree.h"
 
 class HostContentSettingsMap;
 

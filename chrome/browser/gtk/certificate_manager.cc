@@ -10,7 +10,7 @@
 
 #include "app/l10n_util.h"
 #include "chrome/browser/gtk/certificate_viewer.h"
-#include "chrome/common/gtk_util.h"
+#include "chrome/browser/gtk/gtk_util.h"
 #include "grit/generated_resources.h"
 
 namespace {

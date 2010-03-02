@@ -7,8 +7,8 @@
 #include "app/gfx/gtk_util.h"
 #include "app/l10n_util.h"
 #include "base/message_loop.h"
+#include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/options/content_exception_editor.h"
-#include "chrome/common/gtk_util.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 

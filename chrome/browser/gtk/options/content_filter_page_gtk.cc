@@ -5,11 +5,11 @@
 #include "chrome/browser/gtk/options/content_filter_page_gtk.h"
 
 #include "app/l10n_util.h"
+#include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/gtk/options/content_exceptions_window_gtk.h"
 #include "chrome/browser/gtk/options/options_layout_gtk.h"
-#include "chrome/common/gtk_util.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
