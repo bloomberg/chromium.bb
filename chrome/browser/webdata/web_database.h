@@ -44,7 +44,7 @@ struct IE7PasswordInfo;
 class WebDatabase {
  public:
   WebDatabase();
-  ~WebDatabase();
+  virtual ~WebDatabase();
 
   // Initialize the database given a name. The name defines where the sqlite
   // file is. If this returns an error code, no other method should be called.
@@ -201,20 +201,20 @@ class WebDatabase {
   bool RemoveFormElementForID(int64 pair_id);
 
   // Removes row from the autofill tables for the given |name| |value| pair.
-  bool RemoveFormElement(const string16& name, const string16& value);
+  virtual bool RemoveFormElement(const string16& name, const string16& value);
 
   // Retrieves all of the entries in the autofill table.
-  bool GetAllAutofillEntries(std::vector<AutofillEntry>* entries);
+  virtual bool GetAllAutofillEntries(std::vector<AutofillEntry>* entries);
 
   // Retrieves a single entry from the autofill table.
-  bool GetAutofillTimestamps(const string16& name,
+  virtual bool GetAutofillTimestamps(const string16& name,
                              const string16& value,
                              std::vector<base::Time>* timestamps);
 
   // Replaces existing autofill entries with the entries supplied in
   // the argument.  If the entry does not already exist, it will be
   // added.
-  bool UpdateAutofillEntries(const std::vector<AutofillEntry>& entries);
+  virtual bool UpdateAutofillEntries(const std::vector<AutofillEntry>& entries);
 
   // Records a single AutoFill profile in the autofill_profiles table.
   bool AddAutoFillProfile(const AutoFillProfile& profile);

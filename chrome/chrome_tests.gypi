@@ -840,6 +840,7 @@
         'browser/sync/profile_sync_factory_impl_unittest.cc',
         'browser/sync/profile_sync_factory_mock.cc',
         'browser/sync/profile_sync_factory_mock.h',
+        'browser/sync/profile_sync_service_autofill_unittest.cc',
         'browser/sync/profile_sync_service_preference_unittest.cc',
         'browser/sync/profile_sync_test_util.h',
         'browser/sync/sync_setup_wizard_unittest.cc',

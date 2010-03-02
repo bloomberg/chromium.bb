@@ -18,6 +18,7 @@
 #include "chrome/browser/webdata/autofill_entry.h"
 
 class ProfileSyncService;
+class WebDatabase;
 
 namespace browser_sync {
 
@@ -36,6 +37,7 @@ class AutofillModelAssociator
  public:
   static syncable::ModelType model_type() { return syncable::AUTOFILL; }
   AutofillModelAssociator(ProfileSyncService* sync_service,
+                          WebDatabase* web_database,
                           UnrecoverableErrorHandler* error_handler);
   virtual ~AutofillModelAssociator() { }
 
@@ -77,12 +79,16 @@ class AutofillModelAssociator
 
   // Returns whether a node with the given permanent tag was found and update
   // |sync_id| with that node's id.
-  bool GetSyncIdForTaggedNode(const std::string& tag, int64* sync_id);
+  virtual bool GetSyncIdForTaggedNode(const std::string& tag, int64* sync_id);
 
   static std::string KeyToTag(const string16& name, const string16& value);
   static bool MergeTimestamps(const sync_pb::AutofillSpecifics& autofill,
                               const std::vector<base::Time>& timestamps,
                               std::vector<base::Time>* new_timestamps);
+
+ protected:
+  // Returns sync service instance.
+  ProfileSyncService* sync_service() { return sync_service_; }
 
  private:
   typedef std::map<AutofillKey, int64> AutofillToSyncIdMap;
@@ -96,6 +102,7 @@ class AutofillModelAssociator
   void PersistAssociations();
 
   ProfileSyncService* sync_service_;
+  WebDatabase* web_database_;
   UnrecoverableErrorHandler* error_handler_;
   int64 autofill_node_id_;
 

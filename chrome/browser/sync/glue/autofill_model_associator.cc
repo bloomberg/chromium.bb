@@ -10,7 +10,6 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
 #include "chrome/browser/webdata/web_database.h"
-#include "chrome/browser/webdata/web_data_service.h"
 #include "net/base/escape.h"
 
 namespace browser_sync {
@@ -19,12 +18,15 @@ const char kAutofillTag[] = "google_chrome_autofill";
 
 AutofillModelAssociator::AutofillModelAssociator(
     ProfileSyncService* sync_service,
+    WebDatabase* web_database,
     UnrecoverableErrorHandler* error_handler)
     : sync_service_(sync_service),
+      web_database_(web_database),
       error_handler_(error_handler),
       autofill_node_id_(sync_api::kInvalidId),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   DCHECK(sync_service_);
+  DCHECK(web_database_);
   DCHECK(error_handler_);
 }
 
@@ -32,23 +34,25 @@ bool AutofillModelAssociator::AssociateModels() {
   LOG(INFO) << "Associating Autofill Models";
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
 
-  sync_api::WriteTransaction trans(
-      sync_service_->backend()->GetUserShareHandle());
-  WebDataService* web_data_service =
-      sync_service_->profile()->GetWebDataService(Profile::EXPLICIT_ACCESS);
-  if (!web_data_service) {
-    LOG(ERROR) << "Could not get the web data service.";
-    return false;
-  }
-
+  // TODO(zork): Attempt to load the model association from storage.
   std::vector<AutofillEntry> entries;
-  if (!web_data_service->GetDatabase()->GetAllAutofillEntries(&entries)) {
+  if (!web_database_->GetAllAutofillEntries(&entries)) {
     LOG(ERROR) << "Could not get the autofill entries.";
     return false;
   }
 
+  int64 root_id;
+  if (!GetSyncIdForTaggedNode(kAutofillTag, &root_id)) {
+    sync_service_->OnUnrecoverableError();
+    LOG(ERROR) << "Server did not create the top-level autofill node. We "
+               << "might be running against an out-of-date server.";
+    return false;
+  }
+
+  sync_api::WriteTransaction trans(
+      sync_service_->backend()->GetUserShareHandle());
   sync_api::ReadNode autofill_root(&trans);
-  if (!autofill_root.InitByTagLookup(kAutofillTag)) {
+  if (!autofill_root.InitByIdLookup(root_id)) {
     error_handler_->OnUnrecoverableError();
     LOG(ERROR) << "Server did not create the top-level autofill node. We "
                << "might be running against an out-of-date server.";
@@ -137,7 +141,8 @@ bool AutofillModelAssociator::AssociateModels() {
     sync_child_id = sync_child_node.GetSuccessorId();
   }
 
-  if (!web_data_service->GetDatabase()->UpdateAutofillEntries(new_entries)) {
+  if (new_entries.size() &&
+      !web_database_->UpdateAutofillEntries(new_entries)) {
     LOG(ERROR) << "Failed to update autofill entries.";
     sync_service_->OnUnrecoverableError();
     return false;

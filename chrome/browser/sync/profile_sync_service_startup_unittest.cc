@@ -10,6 +10,7 @@
 #include "chrome/browser/sync/glue/data_type_manager.h"
 #include "chrome/browser/sync/glue/data_type_manager_mock.h"
 #include "chrome/browser/sync/profile_sync_factory_mock.h"
+#include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_profile.h"
@@ -33,11 +34,6 @@ ACTION_P(InvokeCallback, callback_result) {
 #else
 #define SKIP_MACOSX(test) test
 #endif
-
-class ProfileSyncServiceObserverMock : public ProfileSyncServiceObserver {
- public:
-  MOCK_METHOD0(OnStateChanged, void());
-};
 
 class ProfileSyncServiceStartupTest : public testing::Test {
  public:

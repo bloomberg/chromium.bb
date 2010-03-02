@@ -7,6 +7,7 @@
 #include "base/task.h"
 #include "base/time.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/sync/glue/autofill_change_processor.h"
 #include "chrome/browser/sync/glue/autofill_data_type_controller.h"
 #include "chrome/browser/sync/glue/autofill_model_associator.h"
@@ -19,12 +20,15 @@ namespace browser_sync {
 
 AutofillDataTypeController::AutofillDataTypeController(
     ProfileSyncFactory* profile_sync_factory,
+    Profile* profile,
     ProfileSyncService* sync_service)
     : profile_sync_factory_(profile_sync_factory),
+      profile_(profile),
       sync_service_(sync_service),
       state_(NOT_RUNNING),
       merge_allowed_(false) {
   DCHECK(profile_sync_factory);
+  DCHECK(profile);
   DCHECK(sync_service);
 }
 
@@ -44,9 +48,8 @@ void AutofillDataTypeController::Start(bool merge_allowed,
   start_callback_.reset(start_callback);
   merge_allowed_ = merge_allowed;
 
-  WebDataService *service =
-    sync_service_->profile()->GetWebDataService(Profile::IMPLICIT_ACCESS);
-  if (service && service->IsDatabaseLoaded()) {
+  web_data_service_ = profile_->GetWebDataService(Profile::IMPLICIT_ACCESS);
+  if (web_data_service_.get() && web_data_service_->IsDatabaseLoaded()) {
     ChromeThread::PostTask(ChromeThread::DB, FROM_HERE,
                            NewRunnableMethod(
                                this,
@@ -95,7 +98,10 @@ void AutofillDataTypeController::StartImpl(bool merge_allowed) {
   // No additional services need to be started before we can proceed
   // with model association.
   ProfileSyncFactory::SyncComponents sync_components =
-      profile_sync_factory_->CreateAutofillSyncComponents(sync_service_, this);
+      profile_sync_factory_->CreateAutofillSyncComponents(
+          sync_service_,
+          web_data_service_->GetDatabase(),
+          this);
   model_associator_.reset(sync_components.model_associator);
   change_processor_.reset(sync_components.change_processor);
   bool needs_merge =  model_associator_->ChromeModelHasUserCreatedNodes() &&
@@ -119,6 +125,9 @@ void AutofillDataTypeController::StartImpl(bool merge_allowed) {
     return;
   }
 
+  sync_service_->ActivateDataType(this, change_processor_.get());
+  state_ = RUNNING;
+
   StartDone(first_run ? OK_FIRST_RUN : OK);
 }
 
@@ -137,11 +146,6 @@ void AutofillDataTypeController::StartDoneImpl(
     DataTypeController::StartResult result) {
   LOG(INFO) << "Autofill data type controller StartDoneImpl called.";
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-
-  if (result == OK_FIRST_RUN || result == OK) {
-    sync_service_->ActivateDataType(this, change_processor_.get());
-    state_ = RUNNING;
-  }
 
   start_callback_->Run(result);
   start_callback_.reset();

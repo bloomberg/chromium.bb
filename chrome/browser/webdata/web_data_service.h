@@ -448,10 +448,12 @@ class WebDataService
   void set_failed_init(bool value) { failed_init_ = value; }
 #endif
 
-  bool IsDatabaseLoaded();
-  WebDatabase* GetDatabase();
+  virtual bool IsDatabaseLoaded();
+  virtual WebDatabase* GetDatabase();
 
  protected:
+  virtual ~WebDataService();
+
   friend class TemplateURLModelTest;
   friend class TemplateURLModelTestingProfile;
   friend class WebDataServiceTest;
@@ -479,8 +481,6 @@ class WebDataService
 
   typedef GenericRequest2<std::vector<const TemplateURL*>,
                           std::vector<TemplateURL*> > SetKeywordsRequest;
-
-  ~WebDataService();
 
   // Invoked on the main thread if initializing the db fails.
   void DBInitFailed(sql::InitStatus init_status);

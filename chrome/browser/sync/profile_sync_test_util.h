@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SYNC_PROFILE_SYNC_TEST_UTIL_H_
 #define CHROME_BROWSER_SYNC_PROFILE_SYNC_TEST_UTIL_H_
 
+#include "chrome/browser/webdata/web_database.h"
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
 #include "chrome/browser/sync/glue/bookmark_data_type_controller.h"
 #include "chrome/browser/sync/glue/bookmark_model_associator.h"
@@ -26,6 +27,12 @@ class TestModelAssociator : public ModelAssociatorImpl {
  public:
   explicit TestModelAssociator(ProfileSyncService* service)
       : ModelAssociatorImpl(service) {
+  }
+
+  TestModelAssociator(ProfileSyncService* service,
+                      WebDatabase* web_database,
+                      browser_sync::UnrecoverableErrorHandler* error_handler)
+      : ModelAssociatorImpl(service, web_database, error_handler) {
   }
 
   virtual bool GetSyncIdForTaggedNode(const std::string& tag, int64* sync_id) {
@@ -72,6 +79,11 @@ class TestModelAssociator : public ModelAssociatorImpl {
   }
 
   ~TestModelAssociator() {}
+};
+
+class ProfileSyncServiceObserverMock : public ProfileSyncServiceObserver {
+ public:
+  MOCK_METHOD0(OnStateChanged, void());
 };
 
 #endif  // CHROME_BROWSER_SYNC_PROFILE_SYNC_TEST_UTIL_H_

@@ -10,6 +10,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 
+class Profile;
 class ProfileSyncFactory;
 class ProfileSyncService;
 
@@ -25,6 +26,7 @@ class AutofillDataTypeController : public DataTypeController,
  public:
   AutofillDataTypeController(
       ProfileSyncFactory* profile_sync_factory,
+      Profile* profile,
       ProfileSyncService* sync_service);
   virtual ~AutofillDataTypeController();
 
@@ -70,10 +72,11 @@ class AutofillDataTypeController : public DataTypeController,
   void OnUnrecoverableErrorImpl();
 
   ProfileSyncFactory* profile_sync_factory_;
+  Profile* profile_;
   ProfileSyncService* sync_service_;
-
   State state_;
 
+  scoped_refptr<WebDataService> web_data_service_;
   scoped_ptr<AssociatorInterface> model_associator_;
   scoped_ptr<ChangeProcessor> change_processor_;
   scoped_ptr<StartCallback> start_callback_;

@@ -18,11 +18,14 @@ namespace browser_sync {
 
 AutofillChangeProcessor::AutofillChangeProcessor(
     AutofillModelAssociator* model_associator,
+    WebDatabase* web_database,
     UnrecoverableErrorHandler* error_handler)
     : ChangeProcessor(error_handler),
       model_associator_(model_associator),
+      web_database_(web_database),
       observing_(false) {
   DCHECK(model_associator);
+  DCHECK(web_database);
   DCHECK(error_handler);
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
   StartObserving();
@@ -35,11 +38,9 @@ void AutofillChangeProcessor::Observe(NotificationType type,
   DCHECK(running());
   DCHECK(NotificationType::AUTOFILL_ENTRIES_CHANGED == type);
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
-  if (!observing_ || !web_data_service_.get()) {
+  if (!observing_) {
     return;
   }
-
-  DCHECK(web_data_service_->GetDatabase());
 
   AutofillChangeList* changes = Details<AutofillChangeList>(details).ptr();
 
@@ -70,10 +71,10 @@ void AutofillChangeProcessor::Observe(NotificationType type,
           }
 
           std::vector<base::Time> timestamps;
-          if (!web_data_service_->GetDatabase()->GetAutofillTimestamps(
-                   change->key().name(),
-                   change->key().value(),
-                   &timestamps)) {
+          if (!web_database_->GetAutofillTimestamps(
+                  change->key().name(),
+                  change->key().value(),
+                  &timestamps)) {
             LOG(ERROR) << "Failed to get timestamps.";
             error_handler()->OnUnrecoverableError();
             return;
@@ -112,7 +113,7 @@ void AutofillChangeProcessor::Observe(NotificationType type,
           }
 
           std::vector<base::Time> timestamps;
-          if (!web_data_service_->GetDatabase()->GetAutofillTimestamps(
+          if (!web_database_->GetAutofillTimestamps(
                    change->key().name(),
                    change->key().value(),
                    &timestamps)) {
@@ -155,8 +156,6 @@ void AutofillChangeProcessor::ApplyChangesFromSyncModel(
     const sync_api::SyncManager::ChangeRecord* changes,
     int change_count) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
-  DCHECK(web_data_service_.get());
-  DCHECK(web_data_service_->GetDatabase());
   if (!running())
     return;
   StopObserving();
@@ -186,8 +185,8 @@ void AutofillChangeProcessor::ApplyChangesFromSyncModel(
         sync_node.GetAutofillSpecifics());
     if (sync_api::SyncManager::ChangeRecord::ACTION_DELETE ==
         changes[i].action) {
-      if (!web_data_service_->GetDatabase()->RemoveFormElement(
-               UTF8ToUTF16(autofill.name()), UTF8ToUTF16(autofill.value()))) {
+      if (!web_database_->RemoveFormElement(
+              UTF8ToUTF16(autofill.name()), UTF8ToUTF16(autofill.value()))) {
         LOG(ERROR) << "Could not remove autofill node.";
         error_handler()->OnUnrecoverableError();
         return;
@@ -206,7 +205,7 @@ void AutofillChangeProcessor::ApplyChangesFromSyncModel(
       new_entries.push_back(new_entry);
     }
   }
-  if (!web_data_service_->GetDatabase()->UpdateAutofillEntries(new_entries)) {
+  if (!web_database_->UpdateAutofillEntries(new_entries)) {
     LOG(ERROR) << "Could not update autofill entries.";
     error_handler()->OnUnrecoverableError();
     return;
@@ -232,15 +231,13 @@ bool AutofillChangeProcessor::WriteAutofill(
 
 
 void AutofillChangeProcessor::StartImpl(Profile* profile) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  web_data_service_ = profile->GetWebDataService(Profile::IMPLICIT_ACCESS);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
   observing_ = true;
 }
 
 void AutofillChangeProcessor::StopImpl() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   observing_ = false;
-  web_data_service_.release();
 }
 
 

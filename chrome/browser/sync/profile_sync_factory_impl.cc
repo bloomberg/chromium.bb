@@ -50,7 +50,7 @@ ProfileSyncService* ProfileSyncFactoryImpl::CreateProfileSyncService() {
   // explicitly enabled.
   if (command_line_->HasSwitch(switches::kEnableSyncAutofill)) {
     pss->RegisterDataTypeController(
-        new AutofillDataTypeController(this, pss));
+        new AutofillDataTypeController(this, profile_, pss));
   }
 
   // Bookmark sync is enabled by default.  Register unless explicitly
@@ -78,12 +78,15 @@ DataTypeManager* ProfileSyncFactoryImpl::CreateDataTypeManager(
 ProfileSyncFactory::SyncComponents
 ProfileSyncFactoryImpl::CreateAutofillSyncComponents(
     ProfileSyncService* profile_sync_service,
+    WebDatabase* web_database,
     browser_sync::UnrecoverableErrorHandler* error_handler) {
   AutofillModelAssociator* model_associator =
       new AutofillModelAssociator(profile_sync_service,
+                                  web_database,
                                   error_handler);
   AutofillChangeProcessor* change_processor =
       new AutofillChangeProcessor(model_associator,
+                                  web_database,
                                   error_handler);
   return SyncComponents(model_associator, change_processor);
 }

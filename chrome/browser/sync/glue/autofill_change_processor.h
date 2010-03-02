@@ -12,7 +12,7 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
-class WebDataService;
+class WebDatabase;
 
 namespace browser_sync {
 
@@ -26,6 +26,7 @@ class AutofillChangeProcessor : public ChangeProcessor,
                                 public NotificationObserver {
  public:
   AutofillChangeProcessor(AutofillModelAssociator* model_associator,
+                          WebDatabase* web_database,
                           UnrecoverableErrorHandler* error_handler);
   virtual ~AutofillChangeProcessor() {}
 
@@ -54,13 +55,13 @@ class AutofillChangeProcessor : public ChangeProcessor,
   void StartObserving();
   void StopObserving();
 
-  // The model we are processing changes from. Non-NULL when |running_| is true.
-  // We keep a reference to web data service instead of the database because
-  // WebDatabase is not refcounted.
-  scoped_refptr<WebDataService> web_data_service_;
-
   // The two models should be associated according to this ModelAssociator.
   AutofillModelAssociator* model_associator_;
+
+  // The model we are processing changes from.  This is owned by the
+  // WebDataService which is kept alive by our data type controller
+  // holding a reference.
+  WebDatabase* web_database_;
 
   NotificationRegistrar notification_registrar_;
 

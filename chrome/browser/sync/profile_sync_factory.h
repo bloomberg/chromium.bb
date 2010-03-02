@@ -12,6 +12,7 @@
 #include "chrome/browser/sync/glue/model_associator.h"
 
 class ProfileSyncService;
+class WebDatabase;
 
 namespace browser_sync {
 class DataTypeManager;
@@ -50,6 +51,7 @@ class ProfileSyncFactory {
   // by the caller.
   virtual SyncComponents CreateAutofillSyncComponents(
       ProfileSyncService* profile_sync_service,
+      WebDatabase* web_database,
       browser_sync::UnrecoverableErrorHandler* error_handler) = 0;
 
   // Instantiates both a model associator and change processor for the

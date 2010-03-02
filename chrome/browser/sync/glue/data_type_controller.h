@@ -94,7 +94,6 @@ class DataTypeController
   friend class ChromeThread;
   friend class DeleteTask<DataTypeController>;
   friend class ShutdownTask;
-
 };
 
 }  // namespace browser_sync

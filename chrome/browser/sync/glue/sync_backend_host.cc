@@ -136,6 +136,8 @@ void SyncBackendHost::Shutdown(bool sync_disabled) {
 void SyncBackendHost::ActivateDataType(
     DataTypeController* data_type_controller,
     ChangeProcessor* change_processor) {
+  // TODO(skrul): Add some kind of lock here that prevents concurrent
+  // calls.
   // Ensure that the given data type is in the PASSIVE group.
   browser_sync::ModelSafeRoutingInfo::iterator i =
       registrar_.routing_info.find(data_type_controller->type());
