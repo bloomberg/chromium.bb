@@ -43,11 +43,13 @@ TEST_F(TemplateURLTest, URLRefTestSearchTerms) {
     const wchar_t* terms;
     const char* output;
   } search_term_cases[] = {
-    { L"http://foo{searchTerms}", L"sea rch", "http://foosea%20rch/" },
-    { L"http://foo{searchTerms}?boo=abc", L"sea rch",
-      "http://foosea%20rch/?boo=abc" },
-    { L"http://foo/?boo={searchTerms}", L"sea rch",
-      "http://foo/?boo=sea+rch" }
+    { L"http://foo{searchTerms}", L"sea rch/bar", "http://foosea%20rch/bar" },
+    { L"http://foo{searchTerms}?boo=abc", L"sea rch/bar",
+      "http://foosea%20rch/bar?boo=abc" },
+    { L"http://foo/?boo={searchTerms}", L"sea rch/bar",
+      "http://foo/?boo=sea+rch%2Fbar" },
+    { L"http://en.wikipedia.org/{searchTerms}", L"wiki/?",
+      "http://en.wikipedia.org/wiki/%3F" }
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(search_term_cases); ++i) {
     const SearchTermsCase& value = search_term_cases[i];
@@ -274,10 +276,10 @@ TEST_F(TemplateURLTest, ReplaceArbitrarySearchTerms) {
     const std::wstring url;
     const std::string expected_result;
   } data[] = {
-    { "BIG5",  L"\x60BD", L"http://foo/{searchTerms}{inputEncoding}",
-      "http://foo/%B1~BIG5" },
-    { "UTF-8", L"blah",   L"http://foo/{searchTerms}{inputEncoding}",
-      "http://foo/blahUTF-8" },
+    { "BIG5",  L"\x60BD", L"http://foo/?{searchTerms}{inputEncoding}",
+      "http://foo/?%B1~BIG5" },
+    { "UTF-8", L"blah",   L"http://foo/?{searchTerms}{inputEncoding}",
+      "http://foo/?blahUTF-8" },
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i) {
     TemplateURL turl;
