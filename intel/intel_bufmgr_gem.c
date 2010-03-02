@@ -680,6 +680,17 @@ drm_intel_gem_bo_alloc_tiled(drm_intel_bufmgr *bufmgr, const char *name,
 	unsigned long size, stride, aligned_y = y;
 	int ret;
 
+	/* If we're tiled, our allocations are in 8 or 32-row blocks,
+	 * so failure to align our height means that we won't allocate
+	 * enough pages.
+	 *
+	 * If we're untiled, we still have to align to 2 rows high
+	 * because the data port accesses 2x2 blocks even if the
+	 * bottom row isn't to be rendered, so failure to align means
+	 * we could walk off the end of the GTT and fault.  This is
+	 * documented on 965, and may be the case on older chipsets
+	 * too so we try to be careful.
+	 */
 	if (*tiling_mode == I915_TILING_NONE)
 		aligned_y = ALIGN(y, 2);
 	else if (*tiling_mode == I915_TILING_X)
