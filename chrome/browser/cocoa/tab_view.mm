@@ -652,11 +652,20 @@ const CGFloat kRapidCloseDist = 2.5;
 
   // Don't draw the window/tab bar background when selected, since the tab
   // background overlay drawn over it (see below) will be fully opaque.
+  BOOL hasBackgroundImage = NO;
   if (!selected) {
+    // ThemeProvider::HasCustomImage is true only if the theme provides the
+    // image. However, even if the theme doesn't provide a tab background, the
+    // theme machinery will make one if given a frame image. See
+    // BrowserThemePack::GenerateTabBackgroundImages for details.
+    hasBackgroundImage = themeProvider &&
+        (themeProvider->HasCustomImage(IDR_THEME_TAB_BACKGROUND) ||
+         themeProvider->HasCustomImage(IDR_THEME_FRAME));
+
     NSImage* backgroundImage =
-        themeProvider ? themeProvider->GetNSImageNamed(IDR_THEME_TAB_BACKGROUND,
-                                                       false) :
-        nil;
+        hasBackgroundImage ?
+          themeProvider->GetNSImageNamed(IDR_THEME_TAB_BACKGROUND, true) :
+          nil;
     if (backgroundImage) {
       [[NSColor colorWithPatternImage:backgroundImage] set];
       [path fill];
@@ -695,8 +704,7 @@ const CGFloat kRapidCloseDist = 2.5;
 
     // Draw a mouse hover gradient for the default themes.
     if (!selected && hoverAlpha > 0) {
-      if (themeProvider &&
-          !themeProvider->HasCustomImage(IDR_THEME_TAB_BACKGROUND)) {
+      if (themeProvider && !hasBackgroundImage) {
         scoped_nsobject<NSGradient> glow([NSGradient alloc]);
         [glow initWithStartingColor:[NSColor colorWithCalibratedWhite:1.0
                                         alpha:1.0 * hoverAlpha]
