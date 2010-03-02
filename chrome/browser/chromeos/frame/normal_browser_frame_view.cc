@@ -41,10 +41,10 @@
 const int kCustomFrameBackgroundVerticalOffset = 15;
 
 namespace {
+
 // The frame border is usually 0 as chromeos has no border. The border
 // can be enabled (4px fixed) with the command line option
 // "--chromeos-frame" so that one can resize the window on dev machine.
-const int kFrameBorderThickness = 0;
 const int kFrameBorderThicknessForDev = 4;
 
 // While resize areas on Windows are normally the same size as the window
@@ -52,22 +52,19 @@ const int kFrameBorderThicknessForDev = 4;
 // around with our thinner top grabbable strip.  (Incidentally, our side and
 // bottom resize areas don't match the frame border thickness either -- they
 // span the whole nonclient area, so there's no "dead zone" for the mouse.)
-
 const int kTopResizeAdjust = 1;
+
 // In the window corners, the resize areas don't actually expand bigger, but the
 // 16 px at the end of each edge triggers diagonal resizing.
-
 const int kResizeAreaCornerSize = 16;
+
 // The icon is inset 2 px from the left frame border.
-
 const int kIconLeftSpacing = 2;
-// The titlebar has a 2 px 3D edge along the top and bottom.
-
-const int kTitlebarTopAndBottomEdgeThickness = 2;
 
 // The top 1 px of the tabstrip is shadow; in maximized mode we push this off
 // the top of the screen so the tabs appear flush against the screen edge.
 const int kTabstripTopShadowThickness = 1;
+
 }  // namespace
 
 namespace chromeos {
@@ -95,12 +92,9 @@ NormalBrowserFrameView::~NormalBrowserFrameView() {
 
 gfx::Rect NormalBrowserFrameView::GetBoundsForTabStrip(
     BaseTabStrip* tabstrip) const {
-  int x_offset = 0;
-  int tabstrip_x = NonClientBorderThickness() + x_offset;
-  int tabstrip_width = RightEdge() - tabstrip_x;
-
-  return gfx::Rect(tabstrip_x, NonClientTopBorderHeight(),
-                   std::max(0, tabstrip_width),
+  int border_thickness = FrameBorderThickness();
+  return gfx::Rect(border_thickness, NonClientTopBorderHeight(),
+                   std::max(0, width() - (2 * border_thickness)),
                    tabstrip->GetPreferredHeight());
 }
 
@@ -110,11 +104,11 @@ void NormalBrowserFrameView::UpdateThrobber(bool running) {
 
 gfx::Size NormalBrowserFrameView::GetMinimumSize() {
   gfx::Size min_size(browser_view_->GetMinimumSize());
-  int border_thickness = NonClientBorderThickness();
+  int border_thickness = FrameBorderThickness();
   min_size.Enlarge(2 * border_thickness,
                    NonClientTopBorderHeight() + border_thickness);
 
-  int min_titlebar_width = (2 * FrameBorderThickness()) + kIconLeftSpacing;
+  int min_titlebar_width = (2 * border_thickness) + kIconLeftSpacing;
   min_size.set_width(std::max(min_size.width(), min_titlebar_width));
   return min_size;
 }
@@ -133,7 +127,7 @@ bool NormalBrowserFrameView::AlwaysUseNativeFrame() const {
 gfx::Rect NormalBrowserFrameView::GetWindowBoundsForClientBounds(
     const gfx::Rect& client_bounds) const {
   int top_height = NonClientTopBorderHeight();
-  int border_thickness = NonClientBorderThickness();
+  int border_thickness = FrameBorderThickness();
   return gfx::Rect(std::max(0, client_bounds.x() - border_thickness),
                    std::max(0, client_bounds.y() - top_height),
                    client_bounds.width() + (2 * border_thickness),
@@ -147,8 +141,10 @@ int NormalBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
       frame_->GetWindow()->GetClientView()->NonClientHitTest(point);
   if (frame_component != HTNOWHERE)
     return frame_component;
-  int window_component = GetHTComponentForFrame(point, TopResizeHeight(),
-      NonClientBorderThickness(), kResizeAreaCornerSize, kResizeAreaCornerSize,
+  int border_thickness = FrameBorderThickness();
+  int window_component = GetHTComponentForFrame(point,
+      std::max(0, border_thickness - kTopResizeAdjust), border_thickness,
+      kResizeAreaCornerSize, kResizeAreaCornerSize,
       frame_->GetWindow()->GetDelegate()->CanResize());
   // Fall back to the caption if no other component matches.
   return (window_component == HTNOWHERE) ? HTCAPTION : window_component;
@@ -180,14 +176,17 @@ void NormalBrowserFrameView::Paint(gfx::Canvas* canvas) {
 }
 
 void NormalBrowserFrameView::Layout() {
-  LayoutClientView();
+  int top_height = NonClientTopBorderHeight();
+  int border_thickness = FrameBorderThickness();
+  client_view_bounds_ = gfx::Rect(border_thickness, top_height,
+      std::max(0, width() - (2 * border_thickness)),
+      std::max(0, height() - top_height - border_thickness));
 }
 
 bool NormalBrowserFrameView::HitTest(const gfx::Point& l) const {
   // If the point is outside the bounds of the client area, claim it.
-  bool in_nonclient = NonClientFrameView::HitTest(l);
-  if (in_nonclient)
-    return in_nonclient;
+  if (NonClientFrameView::HitTest(l))
+    return true;
 
   // Otherwise claim it only if it's in a non-tab portion of the tabstrip.
   if (l.y() > browser_view_->tabstrip()->bounds().bottom())
@@ -253,27 +252,13 @@ SkBitmap NormalBrowserFrameView::GetFavIconForTabIconView() {
 int NormalBrowserFrameView::FrameBorderThickness() const {
   static int border_thickness_ =
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kChromeosFrame) ?
-      kFrameBorderThicknessForDev : kFrameBorderThickness;
+      kFrameBorderThicknessForDev : 0;
   return border_thickness_;
 }
 
-int NormalBrowserFrameView::TopResizeHeight() const {
-  return FrameBorderThickness() - kTopResizeAdjust;
-}
-
-int NormalBrowserFrameView::NonClientBorderThickness() const {
-  return FrameBorderThickness();
-}
-
 int NormalBrowserFrameView::NonClientTopBorderHeight() const {
-  if (browser_view_->IsTabStripVisible())
-    return FrameBorderThickness() - kTabstripTopShadowThickness;
-
-  return FrameBorderThickness();
-}
-
-int NormalBrowserFrameView::RightEdge() const {
-  return width() - FrameBorderThickness();
+  return std::max(0, FrameBorderThickness() -
+      (browser_view_->IsTabStripVisible() ? kTabstripTopShadowThickness : 0));
 }
 
 void NormalBrowserFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
@@ -286,14 +271,11 @@ void NormalBrowserFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
   // Never theme app and popup windows.
   if (!browser_view_->IsBrowserTypeNormal()) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    if (ShouldPaintAsActive())
-      theme_frame = rb.GetBitmapNamed(IDR_FRAME);
-    else
-      theme_frame = rb.GetBitmapNamed(IDR_THEME_FRAME_INACTIVE);
+    theme_frame = rb.GetBitmapNamed(ShouldPaintAsActive() ?
+        IDR_FRAME : IDR_FRAME_INACTIVE);
   } else if (!browser_view_->IsOffTheRecord()) {
-    theme_frame = ShouldPaintAsActive() ?
-        tp->GetBitmapNamed(IDR_THEME_FRAME) :
-        tp->GetBitmapNamed(IDR_THEME_FRAME_INACTIVE);
+    theme_frame = tp->GetBitmapNamed(ShouldPaintAsActive() ?
+        IDR_THEME_FRAME : IDR_THEME_FRAME_INACTIVE);
     // TODO(oshima): gtk based CHROMEOS is using non custom frame
     // mode which does this adjustment. This should be removed
     // once it's fully migrated to views. -1 is due to the layout
@@ -301,9 +283,8 @@ void NormalBrowserFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
     // See http://crbug.com/28580.
     y = -kCustomFrameBackgroundVerticalOffset - 1;
   } else {
-    theme_frame = ShouldPaintAsActive() ?
-        tp->GetBitmapNamed(IDR_THEME_FRAME_INCOGNITO) :
-        tp->GetBitmapNamed(IDR_THEME_FRAME_INCOGNITO_INACTIVE);
+    theme_frame = tp->GetBitmapNamed(ShouldPaintAsActive() ?
+        IDR_THEME_FRAME_INCOGNITO: IDR_THEME_FRAME_INCOGNITO_INACTIVE);
     y = -kCustomFrameBackgroundVerticalOffset - 1;
   }
   // Draw the theme frame.
@@ -312,9 +293,8 @@ void NormalBrowserFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
   // Draw the theme frame overlay
   if (tp->HasCustomImage(IDR_THEME_FRAME_OVERLAY) &&
       browser_view_->IsBrowserTypeNormal()) {
-    SkBitmap* theme_overlay = ShouldPaintAsActive() ?
-        tp->GetBitmapNamed(IDR_THEME_FRAME_OVERLAY) :
-        tp->GetBitmapNamed(IDR_THEME_FRAME_OVERLAY_INACTIVE);
+    SkBitmap* theme_overlay = tp->GetBitmapNamed(ShouldPaintAsActive() ?
+        IDR_THEME_FRAME_OVERLAY : IDR_THEME_FRAME_OVERLAY_INACTIVE);
     canvas->DrawBitmapInt(*theme_overlay, 0, 0);
   }
 
@@ -344,31 +324,31 @@ void NormalBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
                            this, &toolbar_origin);
   toolbar_bounds.set_origin(toolbar_origin);
 
-  SkColor theme_toolbar_color =
-      tp->GetColor(BrowserThemeProvider::COLOR_TOOLBAR);
-  canvas->FillRectInt(theme_toolbar_color,
-      toolbar_bounds.x(), toolbar_bounds.y() + 2,
-      toolbar_bounds.width(), toolbar_bounds.height() - 2);
-
-  int strip_height = browser_view_->GetTabStripHeight();
-  SkBitmap* theme_toolbar = tp->GetBitmapNamed(IDR_THEME_TOOLBAR);
-
-  canvas->TileImageInt(*theme_toolbar,
-      toolbar_bounds.x() - 1, strip_height - 1,  // crop src
-      toolbar_bounds.x() - 1, toolbar_bounds.y() + 2,
-      toolbar_bounds.width() + 2, theme_toolbar->height());
-
-  SkBitmap* toolbar_left =
-      tp->GetBitmapNamed(IDR_CONTENT_TOP_LEFT_CORNER);
-
   // Gross hack: We split the toolbar images into two pieces, since sometimes
   // (popup mode) the toolbar isn't tall enough to show the whole image.  The
   // split happens between the top shadow section and the bottom gradient
   // section so that we never break the gradient.
   int split_point = kFrameShadowThickness * 2;
   int bottom_y = toolbar_bounds.y() + split_point;
+  SkBitmap* toolbar_left =
+      tp->GetBitmapNamed(IDR_CONTENT_TOP_LEFT_CORNER);
   int bottom_edge_height =
       std::min(toolbar_left->height(), toolbar_bounds.height()) - split_point;
+
+  SkColor theme_toolbar_color =
+      tp->GetColor(BrowserThemeProvider::COLOR_TOOLBAR);
+  canvas->FillRectInt(theme_toolbar_color, toolbar_bounds.x(), bottom_y,
+                      toolbar_bounds.width(), bottom_edge_height);
+
+  int strip_height = browser_view_->GetTabStripHeight();
+  SkBitmap* theme_toolbar = tp->GetBitmapNamed(IDR_THEME_TOOLBAR);
+
+  canvas->TileImageInt(*theme_toolbar,
+      toolbar_bounds.x() - kClientEdgeThickness,
+      strip_height - kFrameShadowThickness,
+      toolbar_bounds.x() - kClientEdgeThickness, bottom_y,
+      toolbar_bounds.width() + (2 * kClientEdgeThickness),
+      theme_toolbar->height());
 
   canvas->DrawBitmapInt(*toolbar_left, 0, 0, toolbar_left->width(), split_point,
       toolbar_bounds.x() - toolbar_left->width(), toolbar_bounds.y(),
@@ -396,19 +376,6 @@ void NormalBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
   canvas->DrawLineInt(ResourceBundle::toolbar_separator_color,
       toolbar_bounds.x(), toolbar_bounds.bottom() - 1,
       toolbar_bounds.right() - 1, toolbar_bounds.bottom() - 1);
-}
-
-void NormalBrowserFrameView::LayoutClientView() {
-  client_view_bounds_ = CalculateClientAreaBounds(width(), height());
-}
-
-gfx::Rect NormalBrowserFrameView::CalculateClientAreaBounds(int width,
-                                                            int height) const {
-  int top_height = NonClientTopBorderHeight();
-  int border_thickness = NonClientBorderThickness();
-  return gfx::Rect(border_thickness, top_height,
-                   std::max(0, width - (2 * border_thickness)),
-                   std::max(0, height - top_height - border_thickness));
 }
 
 }  // namespace chromeos

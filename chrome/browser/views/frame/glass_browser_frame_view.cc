@@ -159,19 +159,17 @@ int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   if (!browser_view_->IsBrowserTypeNormal() || !bounds().Contains(point))
     return HTNOWHERE;
 
+  int frame_component =
+      frame_->GetWindow()->GetClientView()->NonClientHitTest(point);
+
   // See if we're in the sysmenu region.  We still have to check the tabstrip
   // first so that clicks in a tab don't get treated as sysmenu clicks.
   int nonclient_border_thickness = NonClientBorderThickness();
-  gfx::Rect sysmenu_rect(nonclient_border_thickness,
-                         GetSystemMetrics(SM_CXSIZEFRAME),
-                         GetSystemMetrics(SM_CXSMICON),
-                         GetSystemMetrics(SM_CYSMICON));
-  bool in_sysmenu = sysmenu_rect.Contains(point);
-
-  int frame_component =
-      frame_->GetWindow()->GetClientView()->NonClientHitTest(point);
-  if (in_sysmenu)
+  if (gfx::Rect(nonclient_border_thickness, GetSystemMetrics(SM_CXSIZEFRAME),
+                GetSystemMetrics(SM_CXSMICON),
+                GetSystemMetrics(SM_CYSMICON)).Contains(point))
     return (frame_component == HTCLIENT) ? HTCLIENT : HTSYSMENU;
+
   if (frame_component != HTNOWHERE)
     return frame_component;
 

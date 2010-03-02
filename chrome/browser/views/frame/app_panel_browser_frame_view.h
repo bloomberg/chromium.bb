@@ -84,10 +84,6 @@ class AppPanelBrowserFrameView : public BrowserNonClientFrameView,
   int TitleCoordinates(int* title_top_spacing_ptr,
                        int* title_thickness_ptr) const;
 
-  // Returns the right edge. This is the end the close button starts at (if a
-  // close button is shown).
-  int RightEdge() const;
-
   // Calculates multiple values related to icon layout.  Returns the size of the
   // icon (along one edge).
   int IconSize(int* title_top_spacing_ptr,
@@ -105,7 +101,6 @@ class AppPanelBrowserFrameView : public BrowserNonClientFrameView,
   // Layout various sub-components of this view.
   void LayoutWindowControls();
   void LayoutTitleBar();
-  void LayoutClientView();
 
   // Returns the bounds of the client area for the specified view size.
   gfx::Rect CalculateClientAreaBounds(int width, int height) const;

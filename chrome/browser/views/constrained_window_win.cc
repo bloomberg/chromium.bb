@@ -208,7 +208,6 @@ class ConstrainedWindowFrameView
   // Layout various sub-components of this view.
   void LayoutWindowControls();
   void LayoutTitleBar();
-  void LayoutClientView();
 
   // Returns the bounds of the client area for the specified view size.
   gfx::Rect CalculateClientAreaBounds(int width, int height) const;
@@ -255,15 +254,14 @@ const int kResizeAreaCornerSize = 16;
 // The titlebar never shrinks to less than 20 px tall, including the height of
 // the frame border and client edge.
 const int kTitlebarMinimumHeight = 20;
-// The icon is inset 2 px from the left frame border.
-const int kIconLeftSpacing = 2;
+// The title text starts 2 px from the right edge of the left frame border.
+const int kTitleLeftSpacing = 2;
 // The title text starts 2 px below the bottom of the top frame border.
 const int kTitleTopSpacing = 2;
 // There is a 5 px gap between the title text and the caption buttons.
 const int kTitleCaptionSpacing = 5;
 // The caption buttons are always drawn 1 px down from the visible top of the
-// window (the true top in restored mode, or the top of the screen in maximized
-// mode).
+// window.
 const int kCaptionTopSpacing = 1;
 
 const SkColor kContentsBorderShadow = SkColorSetARGB(51, 0, 0, 0);
@@ -379,7 +377,7 @@ void ConstrainedWindowFrameView::Paint(gfx::Canvas* canvas) {
 void ConstrainedWindowFrameView::Layout() {
   LayoutWindowControls();
   LayoutTitleBar();
-  LayoutClientView();
+  client_view_bounds_ = CalculateClientAreaBounds(width(), height());
 }
 
 void ConstrainedWindowFrameView::ThemeChanged() {
@@ -445,13 +443,12 @@ void ConstrainedWindowFrameView::PaintFrameBorder(gfx::Canvas* canvas) {
   // Fill with the frame color first so we have a constant background for
   // areas not covered by the theme image.
   canvas->FillRectInt(frame_color, 0, 0, width(), theme_frame->height());
-  // Now fill down the sides
-  canvas->FillRectInt(frame_color,
-      0, theme_frame->height(),
-      left_edge->width(), height() - theme_frame->height());
-  canvas->FillRectInt(frame_color,
-      width() - right_edge->width(), theme_frame->height(),
-      right_edge->width(), height() - theme_frame->height());
+  // Now fill down the sides.
+  canvas->FillRectInt(frame_color, 0, theme_frame->height(), left_edge->width(),
+                      height() - theme_frame->height());
+  canvas->FillRectInt(frame_color, width() - right_edge->width(),
+                      theme_frame->height(), right_edge->width(),
+                      height() - theme_frame->height());
   // Now fill the bottom area.
   canvas->FillRectInt(frame_color,
       left_edge->width(), height() - bottom_edge->height(),
@@ -470,19 +467,17 @@ void ConstrainedWindowFrameView::PaintFrameBorder(gfx::Canvas* canvas) {
 
   // Right.
   canvas->TileImageInt(*right_edge, width() - right_edge->width(),
-                       top_right_corner->height(), right_edge->width(),
-                       height() - top_right_corner->height() -
-                           bottom_right_corner->height());
+      top_right_corner->height(), right_edge->width(),
+      height() - top_right_corner->height() - bottom_right_corner->height());
 
   // Bottom.
   canvas->DrawBitmapInt(*bottom_right_corner,
                         width() - bottom_right_corner->width(),
                         height() - bottom_right_corner->height());
   canvas->TileImageInt(*bottom_edge, bottom_left_corner->width(),
-                       height() - bottom_edge->height(),
-                       width() - bottom_left_corner->width() -
-                           bottom_right_corner->width(),
-                       bottom_edge->height());
+      height() - bottom_edge->height(),
+      width() - bottom_left_corner->width() - bottom_right_corner->width(),
+      bottom_edge->height());
   canvas->DrawBitmapInt(*bottom_left_corner, 0,
                         height() - bottom_left_corner->height());
 
@@ -516,24 +511,20 @@ void ConstrainedWindowFrameView::PaintClientEdge(gfx::Canvas* canvas) {
 void ConstrainedWindowFrameView::LayoutWindowControls() {
   gfx::Size close_button_size = close_button_->GetPreferredSize();
   close_button_->SetBounds(
-      width() - close_button_size.width() - FrameBorderThickness(),
+      width() - FrameBorderThickness() - close_button_size.width(),
       kCaptionTopSpacing, close_button_size.width(),
       close_button_size.height());
 }
 
 void ConstrainedWindowFrameView::LayoutTitleBar() {
   // Size the title.
-  int title_x = FrameBorderThickness() + kIconLeftSpacing;
+  int title_x = FrameBorderThickness() + kTitleLeftSpacing;
   int title_top_spacing, title_thickness;
   TitleCoordinates(&title_top_spacing, &title_thickness);
   title_bounds_.SetRect(title_x,
       title_top_spacing + ((title_thickness - title_font_->height()) / 2),
       std::max(0, close_button_->x() - kTitleCaptionSpacing - title_x),
       title_font_->height());
-}
-
-void ConstrainedWindowFrameView::LayoutClientView() {
-  client_view_bounds_ = CalculateClientAreaBounds(width(), height());
 }
 
 gfx::Rect ConstrainedWindowFrameView::CalculateClientAreaBounds(
@@ -547,11 +538,9 @@ gfx::Rect ConstrainedWindowFrameView::CalculateClientAreaBounds(
 }
 
 void ConstrainedWindowFrameView::InitWindowResources() {
-  if (win_util::ShouldUseVistaFrame()) {
-    resources_.reset(new VistaWindowResources);
-  } else {
-    resources_.reset(new XPWindowResources);
-  }
+  resources_.reset(win_util::ShouldUseVistaFrame() ?
+    static_cast<views::WindowResources*>(new VistaWindowResources) :
+    new XPWindowResources);
 }
 
 // static
@@ -559,18 +548,12 @@ void ConstrainedWindowFrameView::InitClass() {
   static bool initialized = false;
   if (!initialized) {
     title_font_ = new gfx::Font(win_util::GetWindowTitleFont());
-
     initialized = true;
   }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // ConstrainedWindowWin, public:
-
-// The space (in pixels) between minimized pop-ups stacked horizontally and
-// vertically.
-static const int kPopupRepositionOffset = 5;
-static const int kConstrainedWindowEdgePadding = 10;
 
 ConstrainedWindowWin::~ConstrainedWindowWin() {
 }
@@ -604,13 +587,12 @@ void ConstrainedWindowWin::CloseConstrainedWindow() {
 }
 
 std::wstring ConstrainedWindowWin::GetWindowTitle() const {
-  std::wstring display_title;
   if (GetDelegate())
-    display_title = GetDelegate()->GetWindowTitle();
-  else
-    display_title = L"Untitled";
+    return GetDelegate()->GetWindowTitle();
 
-  return display_title;
+  // TODO(pkasting): Shouldn't this be using a localized string, or else calling
+  // NOTREACHED()?
+  return std::wstring(L"Untitled");
 }
 
 const gfx::Rect& ConstrainedWindowWin::GetCurrentBounds() const {

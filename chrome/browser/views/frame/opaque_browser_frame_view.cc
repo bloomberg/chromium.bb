@@ -273,6 +273,9 @@ int OpaqueBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   if (!bounds().Contains(point))
     return HTNOWHERE;
 
+  int frame_component =
+      frame_->GetWindow()->GetClientView()->NonClientHitTest(point);
+
   // See if we're in the sysmenu region.  We still have to check the tabstrip
   // first so that clicks in a tab don't get treated as sysmenu clicks.
   gfx::Rect sysmenu_rect(IconBounds());
@@ -281,12 +284,9 @@ int OpaqueBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   if (frame_->GetWindow()->IsMaximized())
     sysmenu_rect.SetRect(0, 0, sysmenu_rect.right(), sysmenu_rect.bottom());
   sysmenu_rect.set_x(MirroredLeftPointForRect(sysmenu_rect));
-  bool in_sysmenu = sysmenu_rect.Contains(point);
-
-  int frame_component =
-      frame_->GetWindow()->GetClientView()->NonClientHitTest(point);
-  if (in_sysmenu)
+  if (sysmenu_rect.Contains(point))
     return (frame_component == HTCLIENT) ? HTCLIENT : HTSYSMENU;
+
   if (frame_component != HTNOWHERE)
     return frame_component;
 
@@ -374,7 +374,7 @@ void OpaqueBrowserFrameView::Layout() {
   LayoutDistributorLogo();
   LayoutTitleBar();
   LayoutOTRAvatar();
-  LayoutClientView();
+  client_view_bounds_ = CalculateClientAreaBounds(width(), height());
 }
 
 bool OpaqueBrowserFrameView::HitTest(const gfx::Point& l) const {
@@ -510,10 +510,6 @@ int OpaqueBrowserFrameView::TitlebarBottomThickness() const {
       (frame_->GetWindow()->IsMaximized() ? 0 : kClientEdgeThickness);
 }
 
-int OpaqueBrowserFrameView::RightEdge() const {
-  return width() - FrameBorderThickness();
-}
-
 int OpaqueBrowserFrameView::IconSize() const {
 #if defined(OS_WIN)
   // This metric scales up if either the titlebar height or the titlebar font
@@ -585,7 +581,7 @@ void OpaqueBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
   SkBitmap* bottom_edge = tp->GetBitmapNamed(IDR_WINDOW_BOTTOM_CENTER);
 
 
-  // Window frame mode and color
+  // Window frame mode and color.
   SkBitmap* theme_frame;
   SkColor frame_color;
 
@@ -615,32 +611,29 @@ void OpaqueBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
       theme_frame = tp->GetBitmapNamed(IDR_THEME_FRAME_INACTIVE);
       frame_color = tp->GetColor(BrowserThemeProvider::COLOR_FRAME_INACTIVE);
     }
+  } else if (ShouldPaintAsActive()) {
+    theme_frame = tp->GetBitmapNamed(IDR_THEME_FRAME_INCOGNITO);
+    frame_color = tp->GetColor(BrowserThemeProvider::COLOR_FRAME_INCOGNITO);
   } else {
-    if (ShouldPaintAsActive()) {
-      theme_frame = tp->GetBitmapNamed(IDR_THEME_FRAME_INCOGNITO);
-      frame_color = tp->GetColor(BrowserThemeProvider::COLOR_FRAME_INCOGNITO);
-    } else {
-      theme_frame = tp->GetBitmapNamed(IDR_THEME_FRAME_INCOGNITO_INACTIVE);
-      frame_color = tp->GetColor(
-          BrowserThemeProvider::COLOR_FRAME_INCOGNITO_INACTIVE);
-    }
+    theme_frame = tp->GetBitmapNamed(IDR_THEME_FRAME_INCOGNITO_INACTIVE);
+    frame_color = tp->GetColor(
+        BrowserThemeProvider::COLOR_FRAME_INCOGNITO_INACTIVE);
   }
 
   // Fill with the frame color first so we have a constant background for
   // areas not covered by the theme image.
   canvas->FillRectInt(frame_color, 0, 0, width(), theme_frame->height());
-  // Now fill down the sides
-  canvas->FillRectInt(frame_color,
-                      0, theme_frame->height(),
-                      left_edge->width(), height() - theme_frame->height());
-  canvas->FillRectInt(frame_color,
-                      width() - right_edge->width(), theme_frame->height(),
-                      right_edge->width(), height() - theme_frame->height());
+  // Now fill down the sides.
+  canvas->FillRectInt(frame_color, 0, theme_frame->height(), left_edge->width(),
+                      height() - theme_frame->height());
+  canvas->FillRectInt(frame_color, width() - right_edge->width(),
+                      theme_frame->height(), right_edge->width(),
+                      height() - theme_frame->height());
   // Now fill the bottom area.
-  canvas->FillRectInt(frame_color,
-      left_edge->width(), height() - bottom_edge->height(),
-      width() - left_edge->width() - right_edge->width(),
-      bottom_edge->height());
+  canvas->FillRectInt(frame_color, left_edge->width(),
+                      height() - bottom_edge->height(),
+                      width() - left_edge->width() - right_edge->width(),
+                      bottom_edge->height());
 
   // Draw the theme frame.
   canvas->TileImageInt(*theme_frame, 0, 0, width(), theme_frame->height());
@@ -649,12 +642,8 @@ void OpaqueBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
   if (tp->HasCustomImage(IDR_THEME_FRAME_OVERLAY) &&
       browser_view_->IsBrowserTypeNormal() &&
       !browser_view_->IsOffTheRecord()) {
-    SkBitmap* theme_overlay;
-    if (ShouldPaintAsActive())
-      theme_overlay = tp->GetBitmapNamed(IDR_THEME_FRAME_OVERLAY);
-    else
-      theme_overlay = tp->GetBitmapNamed(IDR_THEME_FRAME_OVERLAY_INACTIVE);
-    canvas->DrawBitmapInt(*theme_overlay, 0, 0);
+    canvas->DrawBitmapInt(*tp->GetBitmapNamed(ShouldPaintAsActive() ?
+        IDR_THEME_FRAME_OVERLAY : IDR_THEME_FRAME_OVERLAY_INACTIVE), 0, 0);
   }
 
   // Top.
@@ -684,10 +673,9 @@ void OpaqueBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
                         width() - bottom_right_corner->width(),
                         height() - bottom_right_corner->height());
   canvas->TileImageInt(*bottom_edge, bottom_left_corner->width(),
-                       height() - bottom_edge->height(),
-                       width() - bottom_left_corner->width() -
-                           bottom_right_corner->width(),
-                       bottom_edge->height());
+      height() - bottom_edge->height(),
+      width() - bottom_left_corner->width() - bottom_right_corner->width(),
+      bottom_edge->height());
   canvas->DrawBitmapInt(*bottom_left_corner, 0,
                         height() - bottom_left_corner->height());
 
@@ -707,14 +695,11 @@ void OpaqueBrowserFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
   // Never theme app and popup windows.
   if (!browser_view_->IsBrowserTypeNormal()) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    if (ShouldPaintAsActive())
-      theme_frame = rb.GetBitmapNamed(IDR_FRAME);
-    else
-      theme_frame = rb.GetBitmapNamed(IDR_THEME_FRAME_INACTIVE);
+    theme_frame = rb.GetBitmapNamed(ShouldPaintAsActive() ?
+        IDR_FRAME : IDR_FRAME_INACTIVE);
   } else if (!browser_view_->IsOffTheRecord()) {
-    theme_frame = ShouldPaintAsActive() ?
-        tp->GetBitmapNamed(IDR_THEME_FRAME) :
-        tp->GetBitmapNamed(IDR_THEME_FRAME_INACTIVE);
+    theme_frame = tp->GetBitmapNamed(ShouldPaintAsActive() ?
+        IDR_THEME_FRAME : IDR_THEME_FRAME_INACTIVE);
 #if defined(OS_CHROMEOS)
     // TODO:(oshima): gtk based CHROMEOS is using non custom frame
     // mode which does this adjustment. This should be removed
@@ -724,9 +709,8 @@ void OpaqueBrowserFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
     y = -kCustomFrameBackgroundVerticalOffset - 1;
 #endif
   } else {
-    theme_frame = ShouldPaintAsActive() ?
-        tp->GetBitmapNamed(IDR_THEME_FRAME_INCOGNITO) :
-        tp->GetBitmapNamed(IDR_THEME_FRAME_INCOGNITO_INACTIVE);
+    theme_frame = tp->GetBitmapNamed(ShouldPaintAsActive() ?
+        IDR_THEME_FRAME_INCOGNITO: IDR_THEME_FRAME_INCOGNITO_INACTIVE);
 #if defined(OS_CHROMEOS)
     y = -kCustomFrameBackgroundVerticalOffset - 1;
 #endif
@@ -737,9 +721,8 @@ void OpaqueBrowserFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
   // Draw the theme frame overlay
   if (tp->HasCustomImage(IDR_THEME_FRAME_OVERLAY) &&
       browser_view_->IsBrowserTypeNormal()) {
-    SkBitmap* theme_overlay = ShouldPaintAsActive() ?
-        tp->GetBitmapNamed(IDR_THEME_FRAME_OVERLAY) :
-        tp->GetBitmapNamed(IDR_THEME_FRAME_OVERLAY_INACTIVE);
+    SkBitmap* theme_overlay = tp->GetBitmapNamed(ShouldPaintAsActive() ?
+        IDR_THEME_FRAME_OVERLAY : IDR_THEME_FRAME_OVERLAY_INACTIVE);
     canvas->DrawBitmapInt(*theme_overlay, 0, 0);
   }
 
@@ -786,31 +769,31 @@ void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
                            this, &toolbar_origin);
   toolbar_bounds.set_origin(toolbar_origin);
 
-  SkColor theme_toolbar_color =
-      tp->GetColor(BrowserThemeProvider::COLOR_TOOLBAR);
-  canvas->FillRectInt(theme_toolbar_color,
-      toolbar_bounds.x(), toolbar_bounds.y() + 2,
-      toolbar_bounds.width(), toolbar_bounds.height() - 2);
-
-  int strip_height = browser_view_->GetTabStripHeight();
-  SkBitmap* theme_toolbar = tp->GetBitmapNamed(IDR_THEME_TOOLBAR);
-
-  canvas->TileImageInt(*theme_toolbar,
-      toolbar_bounds.x() - 1, strip_height - 1,  // crop src
-      toolbar_bounds.x() - 1, toolbar_bounds.y() + 2,
-      toolbar_bounds.width() + 2, theme_toolbar->height());
-
-  SkBitmap* toolbar_left =
-      tp->GetBitmapNamed(IDR_CONTENT_TOP_LEFT_CORNER);
-
   // Gross hack: We split the toolbar images into two pieces, since sometimes
   // (popup mode) the toolbar isn't tall enough to show the whole image.  The
   // split happens between the top shadow section and the bottom gradient
   // section so that we never break the gradient.
   int split_point = kFrameShadowThickness * 2;
   int bottom_y = toolbar_bounds.y() + split_point;
+  SkBitmap* toolbar_left =
+      tp->GetBitmapNamed(IDR_CONTENT_TOP_LEFT_CORNER);
   int bottom_edge_height =
       std::min(toolbar_left->height(), toolbar_bounds.height()) - split_point;
+
+  SkColor theme_toolbar_color =
+      tp->GetColor(BrowserThemeProvider::COLOR_TOOLBAR);
+  canvas->FillRectInt(theme_toolbar_color, toolbar_bounds.x(), bottom_y,
+                      toolbar_bounds.width(), bottom_edge_height);
+
+  int strip_height = browser_view_->GetTabStripHeight();
+  SkBitmap* theme_toolbar = tp->GetBitmapNamed(IDR_THEME_TOOLBAR);
+
+  canvas->TileImageInt(*theme_toolbar,
+      toolbar_bounds.x() - kClientEdgeThickness,
+      strip_height - kFrameShadowThickness,
+      toolbar_bounds.x() - kClientEdgeThickness, bottom_y,
+      toolbar_bounds.width() + (2 * kClientEdgeThickness),
+      theme_toolbar->height());
 
   canvas->DrawBitmapInt(*toolbar_left, 0, 0, toolbar_left->width(), split_point,
       toolbar_bounds.x() - toolbar_left->width(), toolbar_bounds.y(),
@@ -836,8 +819,9 @@ void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
 
   // Draw the content/toolbar separator.
   canvas->DrawLineInt(ResourceBundle::toolbar_separator_color,
-      toolbar_bounds.x(), toolbar_bounds.bottom() - 1,
-      toolbar_bounds.right() - 1, toolbar_bounds.bottom() - 1);
+      toolbar_bounds.x(), toolbar_bounds.bottom() - kClientEdgeThickness,
+      toolbar_bounds.right() - kClientEdgeThickness,
+      toolbar_bounds.bottom() - kClientEdgeThickness);
 }
 
 void OpaqueBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
@@ -937,9 +921,7 @@ void OpaqueBrowserFrameView::LayoutWindowControls() {
     // of the edge of the view, so that when we remove the spacing it lines
     // up with the edge.
     minimize_button_->SetBounds(
-        RightEdge() + kNewTabCaptionMaximizedSpacing,
-        0,
-        0,
+        width() - FrameBorderThickness() + kNewTabCaptionMaximizedSpacing, 0, 0,
         0);
     return;
   }
@@ -953,8 +935,8 @@ void OpaqueBrowserFrameView::LayoutWindowControls() {
   int right_extra_width = is_maximized ?
       (kFrameBorderThickness - kFrameShadowThickness) : 0;
   gfx::Size close_button_size = close_button_->GetPreferredSize();
-  close_button_->SetBounds(RightEdge() - close_button_size.width() -
-      right_extra_width, caption_y,
+  close_button_->SetBounds(width() - FrameBorderThickness() -
+      right_extra_width - close_button_size.width(), caption_y,
       close_button_size.width() + right_extra_width,
       close_button_size.height());
 
@@ -1043,10 +1025,6 @@ void OpaqueBrowserFrameView::LayoutOTRAvatar() {
                               0,
                               top_height + tabstrip_height - otr_height,
                               preferred_size.width(), otr_height);
-}
-
-void OpaqueBrowserFrameView::LayoutClientView() {
-  client_view_bounds_ = CalculateClientAreaBounds(width(), height());
 }
 
 gfx::Rect OpaqueBrowserFrameView::CalculateClientAreaBounds(int width,
