@@ -27,10 +27,14 @@ BrowserFrameChromeos::~BrowserFrameChromeos() {
 }
 
 void BrowserFrameChromeos::Init() {
+  // Excludes a browser intance that requires icon/title. This is typically true
+  // for dev tools and javascript console.
   // TODO(oshima): handle app panels. This currently uses the default
   // implementation, which opens Chrome's app panel instead of
   // ChromeOS's panel.
-  if (!IsPanel()) {
+  if (!IsPanel() &&
+      !browser_view()->ShouldShowWindowIcon() &&
+      !browser_view()->ShouldShowWindowTitle()) {
     set_browser_frame_view(new NormalBrowserFrameView(this, browser_view()));
   }
   BrowserFrameGtk::Init();
