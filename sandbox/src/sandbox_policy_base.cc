@@ -72,7 +72,7 @@ PolicyBase::PolicyBase()
   memset(&ipc_targets_, NULL, sizeof(ipc_targets_));
   Dispatcher* dispatcher = NULL;
 #if !defined(_WIN64)
-  // Bug 27218: We don't have IPC yet.
+  // Bug 27218: We don't have dispatch for some x64 syscalls.
   dispatcher = new FilesystemDispatcher(this);
   ipc_targets_[IPC_NTCREATEFILE_TAG] = dispatcher;
   ipc_targets_[IPC_NTOPENFILE_TAG] = dispatcher;
@@ -103,7 +103,7 @@ PolicyBase::~PolicyBase() {
     delete target;
   }
 #if !defined(_WIN64)
-  // Bug 27218: We don't have IPC yet.
+  // Bug 27218: We don't have dispatch for some x64 syscalls.
   delete ipc_targets_[IPC_NTCREATEFILE_TAG];
   delete ipc_targets_[IPC_NTOPENTHREAD_TAG];
   delete ipc_targets_[IPC_CREATENAMEDPIPEW_TAG];
@@ -111,8 +111,8 @@ PolicyBase::~PolicyBase() {
   delete ipc_targets_[IPC_NTCREATEKEY_TAG];
   delete policy_maker_;
   delete policy_;
-  ::DeleteCriticalSection(&lock_);
 #endif
+  ::DeleteCriticalSection(&lock_);
 }
 
 DWORD PolicyBase::MakeJobObject(HANDLE* job) {
@@ -393,21 +393,15 @@ bool PolicyBase::SetupService(InterceptionManager* manager, int service) {
 // IPC subsystem. We receive a integer cookie and we are expected to return the
 // cookie times two (or three) and the current tick count.
 bool PolicyBase::Ping(IPCInfo* ipc, void* arg1) {
-  uint32 tag = ipc->ipc_tag;
-
-  switch (tag) {
-#ifndef _WIN64  // TODO(gregoryd): To build this code for 64-bits Windows we
-                // need to make sure IPC is fully ported to Win64.
+  switch (ipc->ipc_tag) {
     case IPC_PING1_TAG: {
-      uint32 cookie = bit_cast<uint32>(arg1);
-      COMPILE_ASSERT(sizeof(cookie) == sizeof(arg1), breaks_with_64_bit);
-
+      IPCInt ipc_int(arg1);
+      uint32 cookie = ipc_int.As32Bit();
       ipc->return_info.extended_count = 2;
       ipc->return_info.extended[0].unsigned_int = ::GetTickCount();
       ipc->return_info.extended[1].unsigned_int = 2 * cookie;
       return true;
     }
-#endif
     case IPC_PING2_TAG: {
       CountedBuffer* io_buffer = reinterpret_cast<CountedBuffer*>(arg1);
       if (sizeof(uint32) != io_buffer->Size())

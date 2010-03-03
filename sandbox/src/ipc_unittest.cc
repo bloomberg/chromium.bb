@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,10 +40,15 @@ TEST(IPCTest, ChannelMaker) {
   IPCControl* client_control = MakeChannels(12*64, 4096, &channel_start);
 
   // Test that our testing rig is computing offsets properly. We should have
-  // 5 channnels and the offset to the first channel is 108 bytes.
+  // 5 channnels and the offset to the first channel is 108 bytes in 32 bits
+  // and 216 in 64 bits.
   ASSERT_TRUE(NULL != client_control);
   EXPECT_EQ(5, client_control->channels_count);
+#if defined(_WIN64)
+  EXPECT_EQ(216, channel_start);
+#else
   EXPECT_EQ(108, channel_start);
+#endif
 
   delete [] reinterpret_cast<char*>(client_control);
 }
@@ -219,7 +224,7 @@ TEST(IPCTest, CrossCallValidation) {
   // First a sanity test with a well formed parameter object.
   unsigned long value = 124816;
   const uint32 kTag = 33;
-  ActualCallParams<1, 128> params_1(kTag);
+  ActualCallParams<1, 256> params_1(kTag);
   params_1.CopyParamIn(0, &value, sizeof(value), false, ULONG_TYPE);
   void* buffer = const_cast<void*>(params_1.GetBuffer());
 
@@ -240,7 +245,7 @@ TEST(IPCTest, CrossCallValidation) {
   const int32 kPtrDiffSz = sizeof(ptrdiff_t);
   for (int32 ix = -1; ix != 3; ++ix) {
     uint32 fake_num_params = (kuint32max / kPtrDiffSz) + ix;
-    ActualCallParams<1, 128> params_2(kTag, fake_num_params);
+    ActualCallParams<1, 256> params_2(kTag, fake_num_params);
     params_2.CopyParamIn(0, &value, sizeof(value), false, ULONG_TYPE);
     buffer = const_cast<void*>(params_2.GetBuffer());
 

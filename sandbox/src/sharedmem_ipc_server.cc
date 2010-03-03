@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -176,7 +176,8 @@ bool GetArgs(CrossCallParamsEx* params, IPCParams* ipc_params,
             ReleaseArgs(ipc_params, args);
             return false;
           }
-          args[i] = bit_cast<void*>(data);
+          IPCInt ipc_int(data);
+          args[i] = ipc_int.AsVoidPtr();
           break;
         }
         case INOUTPTR_TYPE: {

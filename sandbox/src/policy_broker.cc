@@ -89,7 +89,7 @@ bool SetupNtdllImports(TargetProcess *child) {
 
 bool SetupBasicInterceptions(InterceptionManager* manager) {
 #if !defined(_WIN64)
-  // Bug 27218: We don't have IPC yet.
+  // Bug 27218: We don't have dispatch for some x64 syscalls.
   // Interceptions provided by process_thread_policy, without actual policy.
   if (!INTERCEPT_NT(manager, NtOpenThread, OPEN_TREAD_ID, 20) ||
       !INTERCEPT_NT(manager, NtOpenProcess, OPEN_PROCESS_ID, 20) ||
@@ -105,7 +105,7 @@ bool SetupBasicInterceptions(InterceptionManager* manager) {
 
   if (win_util::GetWinVersion() >= win_util::WINVERSION_XP) {
 #if !defined(_WIN64)
-    // Bug 27218: We don't have IPC yet.
+    // Bug 27218: We don't have dispatch for some x64 syscalls.
     // This one is also provided by process_thread_policy.
     if (!INTERCEPT_NT(manager, NtOpenProcessTokenEx, OPEN_PROCESS_TOKEN_EX_ID,
                       20))

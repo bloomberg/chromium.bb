@@ -105,10 +105,7 @@ TargetProcess::~TargetProcess() {
     return;
   }
 
-#if !defined(_WIN64)
-  // Bug 27218: We don't have IPC yet.
   delete ipc_server_;
-#endif
 
   ::CloseHandle(lockdown_token_);
   ::CloseHandle(initial_token_);
@@ -302,14 +299,11 @@ DWORD TargetProcess::Init(Dispatcher* ipc_dispatcher, void* policy,
            ::GetLastError() : ERROR_INVALID_FUNCTION;
   }
 
-#if !defined(_WIN64)
-  // Bug 27218: We don't have IPC yet.
   ipc_server_ = new SharedMemIPCServer(sandbox_process_, sandbox_process_id_,
                                        job_, thread_pool_, ipc_dispatcher);
 
   if (!ipc_server_->Init(shared_memory, shared_IPC_size, kIPCChannelSize))
     return ERROR_NOT_ENOUGH_MEMORY;
-#endif
 
   // After this point we cannot use this handle anymore.
   sandbox_thread_ = NULL;

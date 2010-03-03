@@ -111,8 +111,9 @@ SBOX_TESTS_COMMAND int PolicyTargetTest_thread(int argc, wchar_t **argv) {
   HANDLE thread = ::OpenThread(SYNCHRONIZE, FALSE, thread_id);
   if (!thread)
     return ::GetLastError();
+  if (!::CloseHandle(thread))
+    return ::GetLastError();
 
-  ::CloseHandle(thread);
   return SBOX_TEST_SUCCEEDED;
 }
 
@@ -130,12 +131,15 @@ SBOX_TESTS_COMMAND int PolicyTargetTest_thread2(int argc, wchar_t **argv) {
                                  &thread_id);
   if (!thread)
     return ::GetLastError();
-  ::CloseHandle(thread);
+  if (!::CloseHandle(thread))
+    return ::GetLastError();
 
   thread = ::OpenThread(SYNCHRONIZE, FALSE, thread_id);
   if (!thread)
     return ::GetLastError();
-  ::CloseHandle(thread);
+
+  if (!::CloseHandle(thread))
+    return ::GetLastError();
 
   return SBOX_TEST_SUCCEEDED;
 }
@@ -191,7 +195,7 @@ TEST(PolicyTargetTest, OpenThreadTokenEx) {
 }
 
 #if !defined(_WIN64)
-// Bug 27218: We don't have IPC yet.
+// Bug 27218: We don't have dispatch for some x64 syscalls.
 TEST(PolicyTargetTest, OpenThread) {
   TestRunner runner;
   EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(L"PolicyTargetTest_thread")) <<
