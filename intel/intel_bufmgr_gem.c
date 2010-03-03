@@ -1710,9 +1710,10 @@ drm_intel_bufmgr_gem_enable_reuse(drm_intel_bufmgr *bufmgr)
 void
 drm_intel_bufmgr_gem_enable_fenced_relocs(drm_intel_bufmgr *bufmgr)
 {
-    drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *)bufmgr;
+	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *)bufmgr;
 
-    bufmgr_gem->fenced_relocs = 1;
+	if (bufmgr_gem->bufmgr.bo_exec == drm_intel_gem_bo_exec2)
+		bufmgr_gem->fenced_relocs = 1;
 }
 
 /**
