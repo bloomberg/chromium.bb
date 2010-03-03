@@ -3624,11 +3624,10 @@ void RenderView::OnEnableViewSourceMode() {
 
 void RenderView::OnEnablePreferredSizeChangedMode() {
   send_preferred_size_changes_ = true;
-  if (CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kProcessType) == switches::kExtensionProcess) {
+
+  if (ViewType::ShouldAutoResize(view_type_))
     preferred_size_change_timer_.Start(TimeDelta::FromMilliseconds(10), this,
                                        &RenderView::CheckPreferredSize);
-  }
 }
 
 void RenderView::OnDisableScrollbarsForSmallWindows(

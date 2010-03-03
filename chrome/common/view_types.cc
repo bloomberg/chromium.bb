@@ -10,3 +10,9 @@ const char* ViewType::kMole = "MOLE";
 const char* ViewType::kBackgroundPage = "BACKGROUND";
 const char* ViewType::kPopup = "POPUP";
 const char* ViewType::kAll = "ALL";
+
+bool ViewType::ShouldAutoResize(ViewType::Type view_type) {
+  return (view_type == EXTENSION_TOOLSTRIP ||
+          view_type == EXTENSION_MOLE ||
+          view_type == EXTENSION_POPUP);
+}
