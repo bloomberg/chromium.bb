@@ -1,6 +1,6 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "media/tools/omx_test/file_reader_util.h"
 
@@ -124,10 +124,20 @@ FFmpegFileReader::~FFmpegFileReader() {
 }
 
 bool FFmpegFileReader::Initialize() {
-  if (av_open_input_file(&format_context_,
-                         filename_.c_str(), NULL, 0, NULL) < 0) {
-    LOG(ERROR) << "can't open file " << filename_;
-    return false;;
+  int result = av_open_input_file(&format_context_, filename_.c_str(),
+                                  NULL, 0, NULL);
+  if (result < 0) {
+    switch (result) {
+      case AVERROR_NOFMT:
+        LOG(ERROR) << "Error: File format not supported "
+                  << filename_ << std::endl;
+        break;
+      default:
+        LOG(ERROR) << "Error: Could not open input for "
+                  << filename_ << std::endl;
+        break;
+    }
+    return false;
   }
   if (av_find_stream_info(format_context_) < 0) {
     LOG(ERROR) << "can't use FFmpeg to parse stream info";
