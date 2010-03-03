@@ -42,6 +42,7 @@
 #define GOOGLE_BREAKPAD_PROCESSOR_STACKWALKER_H__
 
 #include <set>
+#include <string>
 #include "google_breakpad/common/breakpad_types.h"
 
 namespace google_breakpad {
