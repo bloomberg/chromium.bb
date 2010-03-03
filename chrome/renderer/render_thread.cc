@@ -263,7 +263,7 @@ RenderThread::~RenderThread() {
   // Clean up plugin channels before this thread goes away.
   PluginChannelBase::CleanupChannels();
   // Don't call COM if the renderer is in the sandbox.
-  if (RenderProcessImpl::InProcessPlugins())
+  if (RenderProcess::InProcessPlugins())
     CoUninitialize();
 #endif
 }
