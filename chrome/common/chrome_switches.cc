@@ -693,6 +693,9 @@ const char kUseSpdy[]                       = "use-spdy";
 const char kFixedHttpPort[]                 = "testing-fixed-http-port";
 const char kFixedHttpsPort[]                = "testing-fixed-https-port";
 
+// Ignore certificate related errors.
+const char kIgnoreCertificateErrors[]       = "ignore-certificate-errors";
+
 // Use the low fragmentation heap for the CRT.
 const char kUseLowFragHeapCrt[]             = "use-lf-heap";
 

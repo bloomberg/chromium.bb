@@ -65,6 +65,7 @@
 #include "net/base/cookie_monster.h"
 #include "net/base/net_module.h"
 #include "net/http/http_network_session.h"
+#include "net/http/http_network_transaction.h"
 #include "net/socket/client_socket_pool_base.h"
 
 #if defined(OS_POSIX)
@@ -669,6 +670,9 @@ int BrowserMain(const MainFunctionParams& parameters) {
     net::HttpNetworkSession::set_fixed_https_port(StringToInt(
         parsed_command_line.GetSwitchValueASCII(switches::kFixedHttpsPort)));
   }
+
+  if (parsed_command_line.HasSwitch(switches::kIgnoreCertificateErrors))
+    net::HttpNetworkTransaction::IgnoreCertificateErrors(true);
 
   // Initialize histogram statistics gathering system.
   StatisticsRecorder statistics;
