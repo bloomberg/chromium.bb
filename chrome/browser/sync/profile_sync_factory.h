@@ -10,6 +10,7 @@
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/model_associator.h"
+#include "chrome/browser/sync/unrecoverable_error_handler.h"
 
 class ProfileSyncService;
 class WebDatabase;
@@ -58,13 +59,15 @@ class ProfileSyncFactory {
   // bookmark data type.  The pointers in the return struct are owned
   // by the caller.
   virtual SyncComponents CreateBookmarkSyncComponents(
-      ProfileSyncService* profile_sync_service) = 0;
+      ProfileSyncService* profile_sync_service,
+      browser_sync::UnrecoverableErrorHandler* error_handler) = 0;
 
   // Instantiates both a model associator and change processor for the
   // preference data type.  The pointers in the return struct are
   // owned by the caller.
   virtual SyncComponents CreatePreferenceSyncComponents(
-      ProfileSyncService* profile_sync_service) = 0;
+      ProfileSyncService* profile_sync_service,
+      browser_sync::UnrecoverableErrorHandler* error_handler) = 0;
 };
 
 #endif  // CHROME_BROWSER_SYNC_PROFILE_SYNC_FACTORY_H__

@@ -59,6 +59,9 @@ class BookmarkDataTypeController : public DataTypeController,
     return state_;
   }
 
+  // UnrecoverableErrorHandler interface.
+  virtual void OnUnrecoverableError();
+
   // NotificationObserver interface.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
@@ -77,6 +80,7 @@ class BookmarkDataTypeController : public DataTypeController,
 
   State state_;
   bool merge_allowed_;
+  bool unrecoverable_error_detected_;
 
   scoped_ptr<StartCallback> start_callback_;
   scoped_ptr<AssociatorInterface> model_associator_;

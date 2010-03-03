@@ -13,6 +13,7 @@
 #include "chrome/browser/sync/glue/data_type_manager_impl.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/unrecoverable_error_handler.h"
 #include "chrome/test/sync/test_http_bridge_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -25,8 +26,10 @@ ACTION(MakeDataTypeManager) {
 template <class ModelAssociatorImpl>
 class TestModelAssociator : public ModelAssociatorImpl {
  public:
-  explicit TestModelAssociator(ProfileSyncService* service)
-      : ModelAssociatorImpl(service) {
+  explicit TestModelAssociator(
+      ProfileSyncService* service,
+      browser_sync::UnrecoverableErrorHandler* error_handler)
+      : ModelAssociatorImpl(service, error_handler) {
   }
 
   TestModelAssociator(ProfileSyncService* service,

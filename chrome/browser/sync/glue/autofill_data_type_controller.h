@@ -21,7 +21,6 @@ class ChangeProcessor;
 
 // A class that manages the startup and shutdown of autofill sync.
 class AutofillDataTypeController : public DataTypeController,
-                                   public UnrecoverableErrorHandler,
                                    public NotificationObserver {
  public:
   AutofillDataTypeController(

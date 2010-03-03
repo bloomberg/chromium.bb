@@ -28,10 +28,12 @@ class ProfileSyncFactoryImpl : public ProfileSyncFactory {
       browser_sync::UnrecoverableErrorHandler* error_handler);
 
   virtual SyncComponents CreateBookmarkSyncComponents(
-      ProfileSyncService* profile_sync_service);
+      ProfileSyncService* profile_sync_service,
+      browser_sync::UnrecoverableErrorHandler* error_handler);
 
   virtual SyncComponents CreatePreferenceSyncComponents(
-      ProfileSyncService* profile_sync_service);
+      ProfileSyncService* profile_sync_service,
+      browser_sync::UnrecoverableErrorHandler* error_handler);
 
  private:
   Profile* profile_;

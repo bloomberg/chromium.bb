@@ -27,7 +27,8 @@ BookmarkDataTypeController::BookmarkDataTypeController(
       profile_(profile),
       sync_service_(sync_service),
       state_(NOT_RUNNING),
-      merge_allowed_(false) {
+      merge_allowed_(false),
+      unrecoverable_error_detected_(false) {
   DCHECK(profile_sync_factory);
   DCHECK(profile);
   DCHECK(sync_service);
@@ -39,6 +40,7 @@ BookmarkDataTypeController::~BookmarkDataTypeController() {
 void BookmarkDataTypeController::Start(bool merge_allowed,
                                        StartCallback* start_callback) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  unrecoverable_error_detected_ = false;
   if (state_ != NOT_RUNNING) {
     start_callback->Run(BUSY);
     delete start_callback;
@@ -71,7 +73,9 @@ void BookmarkDataTypeController::Stop() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   // If Stop() is called while Start() is waiting for the bookmark
   // model to load, abort the start.
-  if (state_ == MODEL_STARTING) {
+  if (unrecoverable_error_detected_) {
+    FinishStart(UNRECOVERABLE_ERROR);
+  } else if (state_ == MODEL_STARTING) {
     FinishStart(ABORTED);
   }
 
@@ -89,6 +93,12 @@ void BookmarkDataTypeController::Stop() {
   merge_allowed_ = false;
 }
 
+void BookmarkDataTypeController::OnUnrecoverableError() {
+  unrecoverable_error_detected_ = true;
+  // The ProfileSyncService will invoke our Stop() method in response to this.
+  sync_service_->OnUnrecoverableError();
+}
+
 void BookmarkDataTypeController::Observe(NotificationType type,
                                          const NotificationSource& source,
                                          const NotificationDetails& details) {
@@ -102,12 +112,15 @@ void BookmarkDataTypeController::Associate() {
   state_ = ASSOCIATING;
 
   ProfileSyncFactory::SyncComponents sync_components =
-      profile_sync_factory_->CreateBookmarkSyncComponents(sync_service_);
+      profile_sync_factory_->CreateBookmarkSyncComponents(sync_service_, this);
   model_associator_.reset(sync_components.model_associator);
   change_processor_.reset(sync_components.change_processor);
 
-  bool needs_merge =  model_associator_->ChromeModelHasUserCreatedNodes() &&
-      model_associator_->SyncModelHasUserCreatedNodes();
+  bool needs_merge =  model_associator_->ChromeModelHasUserCreatedNodes();
+  if (unrecoverable_error_detected_) return;
+  needs_merge &= model_associator_->SyncModelHasUserCreatedNodes();
+  if (unrecoverable_error_detected_) return;
+
   if (needs_merge && !merge_allowed_) {
     model_associator_.reset();
     change_processor_.reset();
@@ -118,7 +131,10 @@ void BookmarkDataTypeController::Associate() {
 
   base::TimeTicks start_time = base::TimeTicks::Now();
   bool first_run = !model_associator_->SyncModelHasUserCreatedNodes();
+  if (unrecoverable_error_detected_) return;
   bool merge_success = model_associator_->AssociateModels();
+  if (unrecoverable_error_detected_) return;
+
   UMA_HISTOGRAM_TIMES("Sync.BookmarkAssociationTime",
                       base::TimeTicks::Now() - start_time);
   if (!merge_success) {

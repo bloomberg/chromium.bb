@@ -49,12 +49,20 @@ class PreferenceDataTypeController : public DataTypeController {
     return state_;
   }
 
+  // UnrecoverableErrorHandler interface.
+  virtual void OnUnrecoverableError();
+
  private:
+  // Helper method to run the stashed start callback with a given result.
+  void FinishStart(StartResult result);
+
   ProfileSyncFactory* profile_sync_factory_;
   ProfileSyncService* sync_service_;
 
   State state_;
+  bool unrecoverable_error_detected_;
 
+  scoped_ptr<StartCallback> start_callback_;
   scoped_ptr<AssociatorInterface> model_associator_;
   scoped_ptr<ChangeProcessor> change_processor_;
 

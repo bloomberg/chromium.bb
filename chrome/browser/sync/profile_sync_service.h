@@ -20,27 +20,9 @@
 #include "chrome/browser/sync/notification_method.h"
 #include "chrome/browser/sync/sync_setup_wizard.h"
 #include "chrome/browser/sync/syncable/model_type.h"
+#include "chrome/browser/sync/unrecoverable_error_handler.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
-
-class ProfileSyncFactory;
-
-namespace browser_sync {
-
-class ChangeProcessor;
-
-class UnrecoverableErrorHandler {
- public:
-  // Call this when normal operation detects that the bookmark model and the
-  // syncer model are inconsistent, or similar.  The ProfileSyncService will
-  // try to avoid doing any work to avoid crashing or corrupting things
-  // further, and will report an error status if queried.
-  virtual void OnUnrecoverableError() = 0;
- protected:
-  virtual ~UnrecoverableErrorHandler() { }
-};
-
-}
 
 // Various UI components such as the New Tab page can be driven by observing
 // the ProfileSyncService through this interface.

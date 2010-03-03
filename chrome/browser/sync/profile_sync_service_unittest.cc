@@ -46,7 +46,7 @@ class TestBookmarkModelAssociator :
     public TestModelAssociator<BookmarkModelAssociator> {
  public:
   explicit TestBookmarkModelAssociator(ProfileSyncService* service)
-      : TestModelAssociator<BookmarkModelAssociator>(service) {
+      : TestModelAssociator<BookmarkModelAssociator>(service, service) {
   }
 };
 
@@ -236,7 +236,7 @@ class ProfileSyncServiceTest : public testing::Test {
       model_associator_ = new TestBookmarkModelAssociator(service_.get());
       change_processor_ = new BookmarkChangeProcessor(model_associator_,
                                                       service_.get());
-      EXPECT_CALL(factory_, CreateBookmarkSyncComponents(_)).
+      EXPECT_CALL(factory_, CreateBookmarkSyncComponents(_, _)).
           WillOnce(Return(ProfileSyncFactory::SyncComponents(
               model_associator_, change_processor_)));
       EXPECT_CALL(factory_, CreateDataTypeManager(_)).
@@ -1314,7 +1314,7 @@ TEST_F(ProfileSyncServiceTestWithData, MAYBE_TestStartupWithOldSyncData) {
     model_associator_ = new TestBookmarkModelAssociator(service_.get());
     change_processor_ = new BookmarkChangeProcessor(model_associator_,
                                                     service_.get());
-    EXPECT_CALL(factory_, CreateBookmarkSyncComponents(_)).
+    EXPECT_CALL(factory_, CreateBookmarkSyncComponents(_, _)).
         WillOnce(Return(ProfileSyncFactory::SyncComponents(
             model_associator_, change_processor_)));
     EXPECT_CALL(factory_, CreateDataTypeManager(_)).

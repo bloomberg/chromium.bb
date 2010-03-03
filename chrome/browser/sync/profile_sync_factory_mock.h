@@ -33,10 +33,12 @@ class ProfileSyncFactoryMock : public ProfileSyncFactory {
                    ProfileSyncService* profile_sync_service,
                    WebDatabase* web_database,
                    browser_sync::UnrecoverableErrorHandler* error_handler));
-  MOCK_METHOD1(CreateBookmarkSyncComponents,
-               SyncComponents(ProfileSyncService* profile_sync_service));
-  MOCK_METHOD1(CreatePreferenceSyncComponents,
-               SyncComponents(ProfileSyncService* profile_sync_service));
+  MOCK_METHOD2(CreateBookmarkSyncComponents,
+      SyncComponents(ProfileSyncService* profile_sync_service,
+                     browser_sync::UnrecoverableErrorHandler* error_handler));
+  MOCK_METHOD2(CreatePreferenceSyncComponents,
+      SyncComponents(ProfileSyncService* profile_sync_service,
+                     browser_sync::UnrecoverableErrorHandler* error_handler));
 
  private:
   SyncComponents MakeBookmarkSyncComponents();

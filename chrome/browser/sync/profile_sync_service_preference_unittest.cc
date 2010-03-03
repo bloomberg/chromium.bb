@@ -31,7 +31,7 @@ class TestPreferenceModelAssociator
     : public TestModelAssociator<PreferenceModelAssociator> {
  public:
   explicit TestPreferenceModelAssociator(ProfileSyncService* service)
-      : TestModelAssociator<PreferenceModelAssociator>(service) {
+      : TestModelAssociator<PreferenceModelAssociator>(service, service) {
   }
 };
 
@@ -62,7 +62,7 @@ class ProfileSyncServicePreferenceTest : public testing::Test {
       model_associator_ = new TestPreferenceModelAssociator(service_.get());
       change_processor_ = new PreferenceChangeProcessor(model_associator_,
                                                         service_.get());
-      EXPECT_CALL(factory_, CreatePreferenceSyncComponents(_)).
+      EXPECT_CALL(factory_, CreatePreferenceSyncComponents(_, _)).
           WillOnce(Return(ProfileSyncFactory::SyncComponents(
               model_associator_, change_processor_)));
       EXPECT_CALL(factory_, CreateDataTypeManager(_)).

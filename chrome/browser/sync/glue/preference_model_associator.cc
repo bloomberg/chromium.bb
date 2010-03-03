@@ -18,8 +18,10 @@
 namespace browser_sync {
 
 PreferenceModelAssociator::PreferenceModelAssociator(
-    ProfileSyncService* sync_service)
+    ProfileSyncService* sync_service,
+    UnrecoverableErrorHandler* error_handler)
     : sync_service_(sync_service),
+      error_handler_(error_handler),
       preferences_node_id_(sync_api::kInvalidId),
       ALLOW_THIS_IN_INITIALIZER_LIST(persist_associations_(this)) {
   DCHECK(sync_service_);
@@ -38,7 +40,7 @@ bool PreferenceModelAssociator::AssociateModels() {
 
   int64 root_id;
   if (!GetSyncIdForTaggedNode(kPreferencesTag, &root_id)) {
-    sync_service_->OnUnrecoverableError();
+    error_handler_->OnUnrecoverableError();
     LOG(ERROR) << "Server did not create the top-level preferences node. We "
                << "might be running against an out-of-date server.";
     return false;
@@ -48,7 +50,7 @@ bool PreferenceModelAssociator::AssociateModels() {
       sync_service()->backend()->GetUserShareHandle());
   sync_api::ReadNode root(&trans);
   if (!root.InitByIdLookup(root_id)) {
-    sync_service_->OnUnrecoverableError();
+    error_handler_->OnUnrecoverableError();
     LOG(ERROR) << "Server did not create the top-level preferences node. We "
                << "might be running against an out-of-date server.";
     return false;
@@ -71,7 +73,7 @@ bool PreferenceModelAssociator::AssociateModels() {
       if (!value.get()) {
         LOG(ERROR) << "Failed to deserialize preference value: "
                    << reader.error_message();
-        sync_service_->OnUnrecoverableError();
+        error_handler_->OnUnrecoverableError();
         return false;
       }
 
@@ -89,7 +91,7 @@ bool PreferenceModelAssociator::AssociateModels() {
       sync_api::WriteNode node(&trans);
       if (!node.InitUniqueByCreation(syncable::PREFERENCES, root, tag)) {
         LOG(ERROR) << "Failed to create preference sync node.";
-        sync_service_->OnUnrecoverableError();
+        error_handler_->OnUnrecoverableError();
         return false;
       }
 
@@ -105,7 +107,7 @@ bool PreferenceModelAssociator::AssociateModels() {
       JSONStringValueSerializer json(&serialized);
       if (!json.Serialize(*(pref->GetValue()))) {
         LOG(ERROR) << "Failed to serialize preference value.";
-        sync_service_->OnUnrecoverableError();
+        error_handler_->OnUnrecoverableError();
         return false;
       }
       sync_pb::PreferenceSpecifics preference;
@@ -221,7 +223,7 @@ void PreferenceModelAssociator::PersistAssociations() {
     int64 sync_id = *iter;
     sync_api::WriteNode sync_node(&trans);
     if (!sync_node.InitByIdLookup(sync_id)) {
-      sync_service_->OnUnrecoverableError();
+      error_handler_->OnUnrecoverableError();
       return;
     }
     // TODO(sync): Make ExternalId a string?

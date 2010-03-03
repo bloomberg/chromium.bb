@@ -16,7 +16,7 @@ ProfileSyncFactoryMock::ProfileSyncFactoryMock(
     ChangeProcessor* bookmark_change_processor)
     : bookmark_model_associator_(bookmark_model_associator),
       bookmark_change_processor_(bookmark_change_processor) {
-  ON_CALL(*this, CreateBookmarkSyncComponents(_)).
+  ON_CALL(*this, CreateBookmarkSyncComponents(_, _)).
       WillByDefault(
           InvokeWithoutArgs(
               this,

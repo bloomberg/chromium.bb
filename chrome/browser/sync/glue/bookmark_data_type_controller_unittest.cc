@@ -27,6 +27,8 @@ using browser_sync::ChangeProcessorMock;
 using browser_sync::DataTypeController;
 using browser_sync::ModelAssociatorMock;
 using testing::_;
+using testing::DoAll;
+using testing::Invoke;
 using testing::Return;
 
 class StartCallback {
@@ -70,7 +72,7 @@ class BookmarkDataTypeControllerTest : public testing::Test {
   }
 
   void SetAssociateExpectations() {
-    EXPECT_CALL(*profile_sync_factory_, CreateBookmarkSyncComponents(_));
+    EXPECT_CALL(*profile_sync_factory_, CreateBookmarkSyncComponents(_, _));
     EXPECT_CALL(*model_associator_, ChromeModelHasUserCreatedNodes()).
         WillRepeatedly(Return(false));
     EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes()).
@@ -150,7 +152,7 @@ TEST_F(BookmarkDataTypeControllerTest, StartBusy) {
 
 TEST_F(BookmarkDataTypeControllerTest, StartNeedsMerge) {
   SetStartExpectations();
-  EXPECT_CALL(*profile_sync_factory_, CreateBookmarkSyncComponents(_));
+  EXPECT_CALL(*profile_sync_factory_, CreateBookmarkSyncComponents(_, _));
   EXPECT_CALL(*model_associator_, ChromeModelHasUserCreatedNodes()).
       WillRepeatedly(Return(true));
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes()).
@@ -177,7 +179,7 @@ TEST_F(BookmarkDataTypeControllerTest, StartMergeAllowed) {
 TEST_F(BookmarkDataTypeControllerTest, StartAssociationFailed) {
   SetStartExpectations();
   // Set up association to fail.
-  EXPECT_CALL(*profile_sync_factory_, CreateBookmarkSyncComponents(_));
+  EXPECT_CALL(*profile_sync_factory_, CreateBookmarkSyncComponents(_, _));
   EXPECT_CALL(*model_associator_, ChromeModelHasUserCreatedNodes()).
       WillRepeatedly(Return(false));
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes()).
@@ -186,6 +188,30 @@ TEST_F(BookmarkDataTypeControllerTest, StartAssociationFailed) {
       WillRepeatedly(Return(false));
 
   EXPECT_CALL(start_callback_, Run(DataTypeController::ASSOCIATION_FAILED));
+  bookmark_dtc_->Start(true,
+                       NewCallback(&start_callback_, &StartCallback::Run));
+  EXPECT_EQ(DataTypeController::NOT_RUNNING, bookmark_dtc_->state());
+}
+
+TEST_F(BookmarkDataTypeControllerTest,
+       StartAssociationTriggersUnrecoverableError) {
+  SetStartExpectations();
+  // Set up association to fail with an unrecoverable error.
+  EXPECT_CALL(*profile_sync_factory_, CreateBookmarkSyncComponents(_, _));
+  EXPECT_CALL(*model_associator_, ChromeModelHasUserCreatedNodes()).
+      WillOnce(Return(false));
+  EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes()).
+      WillOnce(DoAll(Invoke(bookmark_dtc_.get(),
+                            &BookmarkDataTypeController::OnUnrecoverableError),
+                     Return(false)));
+  EXPECT_CALL(service_, OnUnrecoverableError()).
+      WillOnce(Invoke(bookmark_dtc_.get(),
+                      &BookmarkDataTypeController::Stop));
+  EXPECT_CALL(service_, DeactivateDataType(bookmark_dtc_.get(),
+                                           change_processor_));
+  EXPECT_CALL(*model_associator_, DisassociateModels());
+
+  EXPECT_CALL(start_callback_, Run(DataTypeController::UNRECOVERABLE_ERROR));
   bookmark_dtc_->Start(true,
                        NewCallback(&start_callback_, &StartCallback::Run));
   EXPECT_EQ(DataTypeController::NOT_RUNNING, bookmark_dtc_->state());
@@ -215,5 +241,4 @@ TEST_F(BookmarkDataTypeControllerTest, Stop) {
   EXPECT_EQ(DataTypeController::RUNNING, bookmark_dtc_->state());
   bookmark_dtc_->Stop();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, bookmark_dtc_->state());
-
 }

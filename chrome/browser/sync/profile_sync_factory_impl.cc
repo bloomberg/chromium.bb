@@ -30,9 +30,11 @@ using browser_sync::BookmarkModelAssociator;
 using browser_sync::DataTypeController;
 using browser_sync::DataTypeManager;
 using browser_sync::DataTypeManagerImpl;
+using browser_sync::PreferenceDataTypeController;
 using browser_sync::PreferenceChangeProcessor;
 using browser_sync::PreferenceDataTypeController;
 using browser_sync::PreferenceModelAssociator;
+using browser_sync::UnrecoverableErrorHandler;
 
 ProfileSyncFactoryImpl::ProfileSyncFactoryImpl(
     Profile* profile,
@@ -93,22 +95,26 @@ ProfileSyncFactoryImpl::CreateAutofillSyncComponents(
 
 ProfileSyncFactory::SyncComponents
 ProfileSyncFactoryImpl::CreateBookmarkSyncComponents(
-    ProfileSyncService* profile_sync_service) {
+    ProfileSyncService* profile_sync_service,
+    UnrecoverableErrorHandler* error_handler) {
   BookmarkModelAssociator* model_associator =
-      new BookmarkModelAssociator(profile_sync_service);
+      new BookmarkModelAssociator(profile_sync_service,
+                                  error_handler);
   BookmarkChangeProcessor* change_processor =
       new BookmarkChangeProcessor(model_associator,
-                                  profile_sync_service);
+                                  error_handler);
   return SyncComponents(model_associator, change_processor);
 }
 
 ProfileSyncFactory::SyncComponents
 ProfileSyncFactoryImpl::CreatePreferenceSyncComponents(
-    ProfileSyncService* profile_sync_service) {
+    ProfileSyncService* profile_sync_service,
+    UnrecoverableErrorHandler* error_handler) {
   PreferenceModelAssociator* model_associator =
-      new PreferenceModelAssociator(profile_sync_service);
+      new PreferenceModelAssociator(profile_sync_service,
+                                    error_handler);
   PreferenceChangeProcessor* change_processor =
       new PreferenceChangeProcessor(model_associator,
-                                    profile_sync_service);
+                                    error_handler);
   return SyncComponents(model_associator, change_processor);
 }

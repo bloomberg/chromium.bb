@@ -20,6 +20,8 @@ using browser_sync::ChangeProcessorMock;
 using browser_sync::DataTypeController;
 using browser_sync::ModelAssociatorMock;
 using testing::_;
+using testing::DoAll;
+using testing::Invoke;
 using testing::Return;
 
 class StartCallback {
@@ -40,12 +42,15 @@ class PreferenceDataTypeControllerTest : public testing::Test {
   }
 
  protected:
-  void SetAssociateExpectations() {
+  void SetStartExpectations() {
     model_associator_ = new ModelAssociatorMock();
     change_processor_ = new ChangeProcessorMock();
-    EXPECT_CALL(*profile_sync_factory_, CreatePreferenceSyncComponents(_)).
+    EXPECT_CALL(*profile_sync_factory_, CreatePreferenceSyncComponents(_, _)).
         WillOnce(Return(ProfileSyncFactory::SyncComponents(model_associator_,
                                                            change_processor_)));
+  }
+
+  void SetAssociateExpectations() {
     EXPECT_CALL(*model_associator_, ChromeModelHasUserCreatedNodes()).
         WillRepeatedly(Return(false));
     EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes()).
@@ -74,6 +79,7 @@ class PreferenceDataTypeControllerTest : public testing::Test {
 };
 
 TEST_F(PreferenceDataTypeControllerTest, Start) {
+  SetStartExpectations();
   SetAssociateExpectations();
   SetActivateExpectations();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, preference_dtc_->state());
@@ -84,6 +90,7 @@ TEST_F(PreferenceDataTypeControllerTest, Start) {
 }
 
 TEST_F(PreferenceDataTypeControllerTest, StartFirstRun) {
+  SetStartExpectations();
   SetAssociateExpectations();
   SetActivateExpectations();
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes()).
@@ -94,6 +101,7 @@ TEST_F(PreferenceDataTypeControllerTest, StartFirstRun) {
 }
 
 TEST_F(PreferenceDataTypeControllerTest, StartNeedsMerge) {
+  SetStartExpectations();
   SetAssociateExpectations();
   EXPECT_CALL(*model_associator_, ChromeModelHasUserCreatedNodes()).
       WillRepeatedly(Return(true));
@@ -106,6 +114,7 @@ TEST_F(PreferenceDataTypeControllerTest, StartNeedsMerge) {
 }
 
 TEST_F(PreferenceDataTypeControllerTest, StartMergeAllowed) {
+  SetStartExpectations();
   SetAssociateExpectations();
   SetActivateExpectations();
   EXPECT_CALL(*model_associator_, ChromeModelHasUserCreatedNodes()).
@@ -119,6 +128,7 @@ TEST_F(PreferenceDataTypeControllerTest, StartMergeAllowed) {
 }
 
 TEST_F(PreferenceDataTypeControllerTest, StartAssociationFailed) {
+  SetStartExpectations();
   SetAssociateExpectations();
   EXPECT_CALL(*model_associator_, AssociateModels()).
       WillRepeatedly(Return(false));
@@ -129,7 +139,32 @@ TEST_F(PreferenceDataTypeControllerTest, StartAssociationFailed) {
   EXPECT_EQ(DataTypeController::NOT_RUNNING, preference_dtc_->state());
 }
 
+TEST_F(PreferenceDataTypeControllerTest,
+       StartAssociationTriggersUnrecoverableError) {
+  SetStartExpectations();
+  // Set up association to fail with an unrecoverable error.
+  EXPECT_CALL(*model_associator_, ChromeModelHasUserCreatedNodes()).
+      WillOnce(Return(false));
+  EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes()).
+      WillOnce(DoAll(Invoke(
+          preference_dtc_.get(),
+          &PreferenceDataTypeController::OnUnrecoverableError),
+                     Return(false)));
+  EXPECT_CALL(service_, OnUnrecoverableError()).
+      WillOnce(Invoke(preference_dtc_.get(),
+                      &PreferenceDataTypeController::Stop));
+  EXPECT_CALL(service_, DeactivateDataType(preference_dtc_.get(),
+                                           change_processor_));
+  EXPECT_CALL(*model_associator_, DisassociateModels());
+
+  EXPECT_CALL(start_callback_, Run(DataTypeController::UNRECOVERABLE_ERROR));
+  preference_dtc_->Start(true,
+                         NewCallback(&start_callback_, &StartCallback::Run));
+  EXPECT_EQ(DataTypeController::NOT_RUNNING, preference_dtc_->state());
+}
+
 TEST_F(PreferenceDataTypeControllerTest, Stop) {
+  SetStartExpectations();
   SetAssociateExpectations();
   SetActivateExpectations();
   SetStopExpectations();
@@ -142,5 +177,4 @@ TEST_F(PreferenceDataTypeControllerTest, Stop) {
   EXPECT_EQ(DataTypeController::RUNNING, preference_dtc_->state());
   preference_dtc_->Stop();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, preference_dtc_->state());
-
 }

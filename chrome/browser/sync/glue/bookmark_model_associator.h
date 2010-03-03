@@ -26,6 +26,7 @@ class ProfileSyncService;
 namespace browser_sync {
 
 class BookmarkChangeProcessor;
+class UnrecoverableErrorHandler;
 
 // Contains all model association related logic:
 // * Algorithm to associate bookmark model and sync model.
@@ -35,7 +36,8 @@ class BookmarkModelAssociator
     : public PerDataTypeAssociatorInterface<BookmarkNode, int64> {
  public:
   static syncable::ModelType model_type() { return syncable::BOOKMARKS; }
-  explicit BookmarkModelAssociator(ProfileSyncService* sync_service);
+  BookmarkModelAssociator(ProfileSyncService* sync_service,
+                          UnrecoverableErrorHandler* error_handler);
   virtual ~BookmarkModelAssociator() { }
 
   // AssociatorInterface implementation.
@@ -122,6 +124,7 @@ class BookmarkModelAssociator
                   const sync_api::BaseNode* sync_node) const;
 
   ProfileSyncService* sync_service_;
+  UnrecoverableErrorHandler* error_handler_;
   BookmarkIdToSyncIdMap id_map_;
   SyncIdToBookmarkNodeMap id_map_inverse_;
   // Stores sync ids for dirty associations.

@@ -14,6 +14,7 @@
 #include "base/task.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/sync/glue/model_associator.h"
+#include "chrome/browser/sync/unrecoverable_error_handler.h"
 
 class ProfileSyncService;
 
@@ -31,7 +32,8 @@ class PreferenceModelAssociator
                                             std::wstring> {
  public:
   static syncable::ModelType model_type() { return syncable::PREFERENCES; }
-  explicit PreferenceModelAssociator(ProfileSyncService* sync_service);
+  PreferenceModelAssociator(ProfileSyncService* sync_service,
+                            UnrecoverableErrorHandler* error_handler);
   virtual ~PreferenceModelAssociator() { }
 
   // Returns the list of preference names that should be monitored for changes.
@@ -96,6 +98,7 @@ class PreferenceModelAssociator
   void PersistAssociations();
 
   ProfileSyncService* sync_service_;
+  UnrecoverableErrorHandler* error_handler_;
   std::set<std::wstring> synced_preferences_;
   int64 preferences_node_id_;
 

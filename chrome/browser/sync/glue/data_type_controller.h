@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/syncable/model_type.h"
+#include "chrome/browser/sync/unrecoverable_error_handler.h"
 
 namespace browser_sync {
 
@@ -17,7 +18,8 @@ namespace browser_sync {
 // need to run model associator or change processor on other threads.
 class DataTypeController
     : public base::RefCountedThreadSafe<DataTypeController,
-                                        ChromeThread::DeleteOnUIThread> {
+                                        ChromeThread::DeleteOnUIThread>,
+      public UnrecoverableErrorHandler {
  public:
   enum State {
     NOT_RUNNING,    // The controller has never been started or has
@@ -44,7 +46,8 @@ class DataTypeController
                         // merge_allowed = true will allow this data
                         // type to start.
     ASSOCIATION_FAILED, // An error occurred during model association.
-    ABORTED             // Start was aborted by calling Stop().
+    ABORTED,            // Start was aborted by calling Stop().
+    UNRECOVERABLE_ERROR // An unrecoverable error occured.
   };
 
   typedef Callback1<StartResult>::Type StartCallback;
