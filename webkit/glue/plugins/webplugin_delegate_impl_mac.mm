@@ -233,9 +233,7 @@ void WebPluginDelegateImpl::PlatformInitialize() {
         CarbonPluginWindowTracker::SharedInstance();
     cg_context_.window = window_tracker->CreateDummyWindowForDelegate(this);
     cg_context_.context = NULL;
-    Rect window_bounds = { 0, 0, window_rect_.height(), window_rect_.width() };
-    SetWindowBounds(reinterpret_cast<WindowRef>(cg_context_.window),
-                    kWindowContentRgn, &window_bounds);
+    UpdateDummyWindowBounds(gfx::Point(0, 0));
 #ifndef NP_NO_QUICKDRAW
     qd_port_.port =
         GetWindowPort(reinterpret_cast<WindowRef>(cg_context_.window));
