@@ -941,7 +941,6 @@ BUG32444 LINUX WIN : svg/hixie/text/003.html = FAIL
 
 // SVG combined with font metrics.
 BUG24198 LINUX : svg/hixie/text/001-broken.xml = FAIL
-BUG10300 LINUX : svg/text/text-text-08-b.svg = FAIL
 
 // SVG masks aren't quite working yet.
 // Might also be related to https://bugs.webkit.org/show_bug.cgi?id=21910
@@ -989,8 +988,6 @@ BUG10304 LINUX : svg/hixie/perf/005.xml = FAIL
 BUG10304 LINUX RELEASE : svg/hixie/perf/006.xml = FAIL
 BUG10304 LINUX DEBUG : svg/hixie/perf/006.xml = FAIL
 BUG10304 LINUX : svg/hixie/text/003b.xml = FAIL
-BUG10304 LINUX : svg/text/text-spacing-01-b.svg = FAIL
-BUG10304 LINUX : svg/text/text-text-01-b.svg = FAIL
 BUG10304 LINUX : svg/W3C-SVG-1.1/fonts-elem-01-t.svg = FAIL
 BUG10304 LINUX : svg/W3C-SVG-1.1/fonts-elem-02-t.svg = FAIL
 BUG10304 LINUX : svg/W3C-SVG-1.1/fonts-elem-03-b.svg = FAIL
@@ -1780,41 +1777,6 @@ BUG23485 MAC : editing/style/apply-through-end-of-document.html = IMAGE
 // Extra space at the end of the table cell
 BUG23484 MAC : editing/pasteboard/5387578.html = IMAGE
 
-// When finding, the reference image has a "found rectangle" and we do not
-BUG23481 MAC : editing/selection/4402375.html = IMAGE
-BUG23481 MAC : editing/selection/image-before-linebreak.html = IMAGE
-BUG23481 MAC : editing/selection/replaced-boundaries-1.html = IMAGE
-BUG23481 MAC : editing/selection/replaced-boundaries-2.html = IMAGE
-BUG23481 MAC : editing/selection/replaced-boundaries-3.html = IMAGE
-
-// SVG expected images have what looks like a "found rectangle" around them; variation of above?
-BUG23482 MAC : svg/text/text-align-01-b.svg = IMAGE
-BUG23482 MAC : svg/text/text-align-02-b.svg = IMAGE
-BUG23482 MAC : svg/text/text-align-03-b.svg = IMAGE
-BUG23482 MAC : svg/text/text-align-04-b.svg = IMAGE
-BUG23482 MAC : svg/text/text-align-05-b.svg = IMAGE
-BUG23482 MAC : svg/text/text-align-06-b.svg = IMAGE
-BUG23482 MAC : svg/text/text-altglyph-01-b.svg = IMAGE
-BUG23482 MAC : svg/text/text-deco-01-b.svg = IMAGE
-BUG23482 MAC : svg/text/text-fonts-01-t.svg = IMAGE
-BUG23482 MAC : svg/text/text-fonts-02-t.svg = IMAGE
-BUG23482 MAC : svg/text/text-intro-05-t.svg = IMAGE
-BUG23482 MAC : svg/text/text-path-01-b.svg = IMAGE
-BUG23482 MAC : svg/text/text-spacing-01-b.svg = IMAGE
-BUG23482 MAC : svg/text/text-text-01-b.svg = IMAGE
-BUG23482 MAC : svg/text/text-text-03-b.svg = IMAGE
-BUG23482 MAC : svg/text/text-text-04-t.svg = IMAGE
-BUG23482 MAC : svg/text/text-text-05-t.svg = IMAGE
-BUG23482 MAC : svg/text/text-text-06-t.svg = IMAGE
-BUG23482 MAC : svg/text/text-text-08-b.svg = IMAGE
-BUG23482 MAC : svg/text/text-tref-01-b.svg = IMAGE
-BUG23482 MAC : svg/text/text-tselect-01-b.svg = IMAGE
-BUG23482 MAC : svg/text/text-tselect-02-f.svg = IMAGE
-BUG23482 MAC : svg/text/text-tspan-01-b.svg = IMAGE
-BUG23482 MAC : svg/text/text-ws-01-t.svg = IMAGE
-BUG23482 MAC : svg/text/text-ws-02-t.svg = IMAGE
-BUG23482 MAC : svg/text/textPathBoundsBug.svg = IMAGE
-
 // Various drawing tests that are broken
 BUG23477 MAC : fast/backgrounds/bgCompositeCopy.html = IMAGE
 BUG23477 MAC : fast/canvas/canvas-as-image-incremental-repaint.html = IMAGE
@@ -1937,7 +1899,6 @@ BUG10405 WIN : svg/custom/struct-use-09-b.svg = FAIL
 // Renders the width of "600" off by 3.  Looks OK but could still be a bug
 // that we shouldn't rebaseline.
 BUG10417 LINUX : svg/W3C-SVG-1.1/text-fonts-02-t.svg = FAIL
-BUG10417 LINUX : svg/text/text-fonts-02-t.svg = FAIL
 
 // New test. We should fix it, but it doesn't need to block the current release
 BUG10418 SLOW MAC RELEASE : fast/events/click-count.html = PASS
@@ -1946,7 +1907,6 @@ BUG10418 WIN DEBUG : animations/change-keyframes-name.html = FAIL PASS
 
 // TODO(dsh): These started to fail after r9202.
 BUG10419 LINUX : svg/W3C-SVG-1.1/text-path-01-b.svg = FAIL
-BUG10419 LINUX : svg/text/text-path-01-b.svg = FAIL
 
 // We could fix this test for us and upstream it if the test shell user agent
 // would let us differentiate test_shell and WebKit DumpTreeNode.
@@ -2302,10 +2262,6 @@ BUG24126 : fast/dom/HTMLInputElement/size-attribute.html = FAIL
 // Started happening somewhere around http://trac.webkit.org/changeset/48989.
 BUG23955 LINUX MAC : fast/css/last-of-type-pseudo-class.html = FAIL
 
-
-// Fails since WebKit merge 49321:49372
-BUG24331 LINUX : svg/text/text-tselect-02-f.svg = FAIL
-
 // WebKit update: 49190:49206
 BUG_JPARENT LINUX DEBUG SLOW : fast/frames/calculate-fixed.html = PASS
 
@@ -2524,9 +2480,6 @@ BUG29167 MAC : fast/dom/replaceChild.html = IMAGE PASS
 
 // Failure from WebKit merge 51607:51613 (51608 is the cause)
 BUG29239 : fast/css/variables/misplaced-import-test.html = FAIL
-
-// Failures from WebKit merge 51618:51642
-BUG29344 MAC LINUX : svg/text/text-text-07-t.svg = FAIL
 
 // Failures from WebKit merge 51642:51681
 // Skip these tests since they all timeout and add ~1 minute to cycle time!
@@ -2825,7 +2778,6 @@ BUG33358 : fast/dom/Window/window-postmessage-clone-frames.html = TEXT
 BUG33486 WIN LINUX : fast/text/international/hebrew-vowels.html = IMAGE+TEXT
 BUG33486 LINUX : fast/text/international/thai-baht-space.html = IMAGE
 BUG33486 LINUX : fast/text/international/thai-line-breaks.html = IMAGE
-BUG33486 LINUX : svg/text/text-intro-05-t.svg = IMAGE
 
 // WebKit roll 54059 -> 54075
 BUG33538 : fast/dom/Window/anonymous-slot-with-changes.html = TEXT
@@ -2837,7 +2789,6 @@ BUG35064 WIN DEBUG : fast/forms/restore-selection-after-layout.html = TEXT PASS
 BUG35242 WIN : svg/W3C-SVG-1.1/filters-conv-01-f.svg = TEXT
 BUG35242 WIN : svg/W3C-SVG-1.1/text-intro-05-t.svg = TEXT
 BUG35242 WIN : svg/batik/text/textFeatures.svg = TEXT
-BUG35242 WIN : svg/text/text-intro-05-t.svg = TEXT
 BUG35240 MAC : svg/custom/use-clipped-hit.svg = IMAGE
 
 // WebKit roll 54493 to 54530: new tests.
@@ -2902,10 +2853,6 @@ BUG36019 : fast/borders/svg-as-border-image-2.html = IMAGE
 BUG36019 : fast/borders/svg-as-border-image.html = IMAGE
 BUG36019 : fast/images/svg-as-tiled-background.html = IMAGE
 
-// Flaky tests
-BUG36603 WIN RELEASE : svg/text/text-text-05-t.svg = CRASH PASS
-BUG36603 WIN RELEASE : svg/text/text-text-06-t.svg = CRASH PASS
-
 // WebKit roll 55161 to 55193
 BUG36681 : java/argument-to-object-type.html = TEXT
 BUG36681 : java/array-return.html = TEXT
@@ -2922,5 +2869,44 @@ BUG37049 WIN SKIP : websocket/tests/cookies/httponly-cookie.pl = PASS
 
 // WebKit roll 55373:55380
 BUG37136 : fast/loader/api-test-go-to-current-back-forward-item.html = TIMEOUT
+
+// These will be rebaselined after commit for bug 28646
+BUG28646 : svg/text/foreignObject-text-clipping-bug.xml = FAIL
+BUG28646 : svg/text/selection-doubleclick.svg = FAIL
+BUG28646 : svg/text/selection-tripleclick.svg = FAIL
+BUG23481 : editing/selection/4402375.html = FAIL
+BUG23481 : editing/selection/image-before-linebreak.html = FAIL
+BUG23481 : editing/selection/replaced-boundaries-1.html = FAIL
+BUG23481 : editing/selection/replaced-boundaries-2.html = FAIL
+BUG23481 : editing/selection/replaced-boundaries-3.html = FAIL
+BUG23482 : svg/text/text-align-01-b.svg = FAIL
+BUG23482 : svg/text/text-align-02-b.svg = FAIL
+BUG23482 : svg/text/text-align-03-b.svg = FAIL
+BUG23482 : svg/text/text-align-04-b.svg = FAIL
+BUG23482 : svg/text/text-align-05-b.svg = FAIL
+BUG23482 : svg/text/text-align-06-b.svg = FAIL
+BUG23482 : svg/text/text-altglyph-01-b.svg = FAIL
+BUG23482 : svg/text/text-deco-01-b.svg = FAIL
+BUG23482 : svg/text/text-fonts-01-t.svg = FAIL
+BUG23482 : svg/text/text-fonts-02-t.svg = FAIL
+BUG23482 : svg/text/text-intro-05-t.svg = FAIL
+BUG23482 : svg/text/text-path-01-b.svg = FAIL
+BUG23482 : svg/text/text-spacing-01-b.svg = FAIL
+BUG23482 : svg/text/text-text-01-b.svg = FAIL
+BUG23482 : svg/text/text-text-03-b.svg = FAIL
+BUG23482 : svg/text/text-text-04-t.svg = FAIL
+// Also flaky (crashes) on WIN RELESE. See BUG36603
+BUG23482 : svg/text/text-text-05-t.svg = FAIL CRASH
+// Also flaky (crashes) on WIN RELESE. See BUG36603
+BUG23482 : svg/text/text-text-06-t.svg = FAIL CRASH
+BUG23482 : svg/text/text-text-08-b.svg = FAIL
+BUG23482 : svg/text/text-tref-01-b.svg = FAIL
+BUG23482 : svg/text/text-tselect-01-b.svg = FAIL
+BUG23482 : svg/text/text-tselect-02-f.svg = FAIL
+BUG23482 : svg/text/text-tspan-01-b.svg = FAIL
+BUG23482 : svg/text/text-ws-01-t.svg = FAIL
+BUG23482 : svg/text/text-ws-02-t.svg = FAIL
+BUG23482 : svg/text/textPathBoundsBug.svg = FAIL
+BUG29344 : svg/text/text-text-07-t.svg = FAIL
 
 BUG37248 LINUX : svg/W3C-SVG-1.1/filters-displace-01-f.svg = IMAGE+TEXT PASS TEXT

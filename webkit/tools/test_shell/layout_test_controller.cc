@@ -52,6 +52,7 @@ bool LayoutTestController::dump_child_frame_scroll_positions_ = false;
 bool LayoutTestController::dump_child_frames_as_text_ = false;
 bool LayoutTestController::dump_window_status_changes_ = false;
 bool LayoutTestController::dump_title_changes_ = false;
+bool LayoutTestController::dump_selection_rect_ = false;
 bool LayoutTestController::accepts_editing_ = true;
 bool LayoutTestController::wait_until_done_ = false;
 bool LayoutTestController::can_open_windows_ = false;
@@ -130,11 +131,11 @@ LayoutTestController::LayoutTestController(TestShell* shell) :
   BindMethod("addUserScript", &LayoutTestController::addUserScript);
   BindMethod("pageNumberForElementById", &LayoutTestController::pageNumberForElementById);
   BindMethod("numberOfPages", &LayoutTestController::numberOfPages);
+  BindMethod("dumpSelectionRect", &LayoutTestController::dumpSelectionRect);
 
   // The following are stubs.
   BindMethod("dumpAsWebArchive", &LayoutTestController::dumpAsWebArchive);
   BindMethod("setMainFrameIsFirstResponder", &LayoutTestController::setMainFrameIsFirstResponder);
-  BindMethod("dumpSelectionRect", &LayoutTestController::dumpSelectionRect);
   BindMethod("display", &LayoutTestController::display);
   BindMethod("testRepaint", &LayoutTestController::testRepaint);
   BindMethod("repaintSweepHorizontally", &LayoutTestController::repaintSweepHorizontally);
@@ -462,6 +463,7 @@ void LayoutTestController::Reset() {
   dump_child_frame_scroll_positions_ = false;
   dump_child_frames_as_text_ = false;
   dump_window_status_changes_ = false;
+  dump_selection_rect_ = false;
   dump_title_changes_ = false;
   accepts_editing_ = true;
   wait_until_done_ = false;
@@ -805,6 +807,7 @@ void LayoutTestController::setMainFrameIsFirstResponder(
 
 void LayoutTestController::dumpSelectionRect(
     const CppArgumentList& args, CppVariant* result) {
+  dump_selection_rect_ = true;
   result->SetNull();
 }
 

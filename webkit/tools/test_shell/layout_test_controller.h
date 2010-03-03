@@ -176,13 +176,14 @@ class LayoutTestController : public CppBoundClass {
   void setIconDatabaseEnabled(const CppArgumentList& args,
                               CppVariant* result);
 
+  void dumpSelectionRect(const CppArgumentList& args, CppVariant* result);
+
   // The following are only stubs.  TODO(pamg): Implement any of these that
   // are needed to pass the layout tests.
   void dumpAsWebArchive(const CppArgumentList& args, CppVariant* result);
   void dumpTitleChanges(const CppArgumentList& args, CppVariant* result);
   void dumpResourceLoadCallbacks(const CppArgumentList& args, CppVariant* result);
   void setMainFrameIsFirstResponder(const CppArgumentList& args, CppVariant* result);
-  void dumpSelectionRect(const CppArgumentList& args, CppVariant* result);
   void display(const CppArgumentList& args, CppVariant* result);
   void testRepaint(const CppArgumentList& args, CppVariant* result);
   void repaintSweepHorizontally(const CppArgumentList& args, CppVariant* result);
@@ -260,6 +261,9 @@ class LayoutTestController : public CppBoundClass {
   }
   bool ShouldDumpStatusCallbacks() {
     return dump_window_status_changes_;
+  }
+  bool ShouldDumpSelectionRect() {
+    return dump_selection_rect_;
   }
   bool ShouldDumpBackForwardList() { return dump_back_forward_list_; }
   bool ShouldDumpTitleChanges() { return dump_title_changes_; }
@@ -350,6 +354,10 @@ class LayoutTestController : public CppBoundClass {
   // If true, the test_shell will write a descriptive line for each editing
   // command.
   static bool dump_editing_callbacks_;
+
+  // If true, the test_shell will draw the bounds of the current selection rect
+  // taking possible transforms of the selection rect into account.
+  static bool dump_selection_rect_;
 
   // If true, the test_shell will output a descriptive line for each frame
   // load callback.

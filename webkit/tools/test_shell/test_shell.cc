@@ -284,6 +284,26 @@ void TestShell::Dump(TestShell* shell) {
       } else {
         view_host->Paint();
       }
+
+      // See if we need to draw the selection bounds rect. Selection bounds
+      // rect is the rect enclosing the (possibly transformed) selection.
+      // The rect should be drawn after everything is laid out and painted.
+      if (shell->layout_test_controller_->ShouldDumpSelectionRect()) {
+        // If there is a selection rect - draw a red 1px border enclosing rect
+        WebRect wr = frame->selectionBoundsRect();
+        if (!wr.isEmpty()) {
+          // Render a red rectangle bounding selection rect
+          SkPaint paint;
+          paint.setColor(0xFFFF0000);  // Fully opaque red
+          paint.setStyle(SkPaint::kStroke_Style);
+          paint.setFlags(SkPaint::kAntiAlias_Flag);
+          paint.setStrokeWidth(1.0f);
+          SkIRect rect;  // Bounding rect
+          rect.set(wr.x, wr.y, wr.x + wr.width, wr.y + wr.height);
+          view_host->canvas()->drawIRect(rect, paint);
+        }
+      }
+
       std::string md5sum = DumpImage(view_host->canvas(),
           params->pixel_file_name, params->pixel_hash);
       printf("#MD5:%s\n", md5sum.c_str());
