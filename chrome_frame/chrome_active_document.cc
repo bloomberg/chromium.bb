@@ -435,7 +435,7 @@ HRESULT ChromeActiveDocument::ActiveXDocActivate(LONG verb) {
         ::ShowWindow(m_hWnd, SW_SHOW);
         SetFocus();
       } else {
-        m_hWnd = Create(parent_window, position_rect);
+        m_hWnd = Create(parent_window, position_rect, 0, 0, WS_EX_CLIENTEDGE);
       }
     }
     SetObjectRects(&position_rect, &clip_rect);
