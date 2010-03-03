@@ -5450,65 +5450,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
                desc="The 'Most Visited' heading on the new tab page">
         Most visited [<ph name="PROFILE_NAME">$1</ph>]
       </message>
-      <message name="IDS_NEW_TAB_SEARCHES"
-               desc="The 'Searches' heading on the new tab page">
-        Searches
-      </message>
-      <message name="IDS_NEW_TAB_SEARCHES_MANAGE"
-               desc="The 'manage' link by the 'Searches' heading on the new tab page">
-        Manage
-      </message>
-      <message name="IDS_NEW_TAB_SEARCHES_INTRO"
-               desc="Explains the searches concept to new users.">
-        The search boxes that you use most frequently on other sites will appear here.
-      </message>
-      <message name="IDS_NEW_TAB_BOOKMARKS"
-               desc="The 'Bookmarks' heading on the new tab page">
-        Recent bookmarks
-      </message>
-      <message name="IDS_NEW_TAB_RECENT"
-               desc="The text to show for the 'Recent' heading. It is used to describe recent activity such as recent history, bookmarks, tabs, searches etc.">
-        Recent
-      </message>
-      <message name="IDS_NEW_TAB_HISTORY_SHOW"
-               desc="The link on the new tab page that takes users to the dedicated History page">
-        Show full history
-      </message>
-      <message name="IDS_NEW_TAB_REMOVE_THUMBNAILS"
-         desc="The link on the new tab page that lets users remove one or more thumbnails">
-        Remove a thumbnail
-      </message>
-      <message name="IDS_NEW_TAB_MOST_VISITED_DONE_REMOVING_BUTTON"
-         desc="The caption of the button used to validate the removal of thumbnails">
-        Done
-      </message>
-      <message name="IDS_NEW_TAB_MOST_VISITED_CANCEL_REMOVING_BUTTON"
-         desc="The caption of the button used to cancel the current removal thumbnails mode">
-        Cancel
-      </message>
       <message name="IDS_NEW_TAB_RESTORE_THUMBNAILS_LINK"
          desc="The link that restores previously removed thumbnails">
         Restore all removed thumbnails
       </message>
-      <message name="IDS_NEW_TAB_MOST_VISITED_EDIT_MODE_HEADING"
-        desc="The new tab page heading when in edit thumbnails mode.">
-        Click <ph name="CROSS_IMAGE">&lt;div id="cross-image-container"&gt;&lt;/div&gt;</ph> to remove the thumbnail
-      </message>
-      <message name="IDS_NEW_TAB_HISTORY_SEARCH"
-               desc="The label for the field that searches the user's history on the new tab page">
-        Search your history
-      </message>
       <message name="IDS_NEW_TAB_RECENTLY_CLOSED"
                desc="The 'Recently Closed' heading on the new tab page">
         Recently closed
-      </message>
-      <message name="IDS_NEW_TAB_FOOTER_HELP"
-               desc="The help footer on the new tab page">
-        Help
-      </message>
-      <message name="IDS_NEW_TAB_FOOTER_HELP_URL"
-               desc="The help footer link on the new tab page">
-        http://www.google.com/chrome/help/
       </message>
       <message name="IDS_NEW_TAB_OTR_MESSAGE"
                desc="Used when a person opens an OTR window">
@@ -5541,65 +5489,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
                desc="Leading sentence above a custom logo that the theme artist has provided">
         Theme created by
       </message>
-      <message name="IDS_NEW_TAB_WEB_RESOURCE_CACHE"
-               desc="Title of block that holds tips, suggestions, and other new information gathered from web resources in the new tab page.">
-        Recommendations
-      </message>
-      <message name="IDS_NEW_TAB_RECENT_ACTIVITIES"
-               desc="Heading text for the section containing recent activities. Recent activies includes closed windows and tabs as well as downloads.">
-        Recent activities
-      </message>
       <message name="IDS_NEW_TAB_TIPS"
                desc="Menu item text for showing and hiding the tips section.">
         Tips
       </message>
-      <message name="IDS_NEW_TAB_DEFAULT_TIPS_TITLE"
-               desc="Default content of tip box when no tips are available.  This is a short advertisement and explanation for the tips and suggestions to come.">
-        Watch this space for tips and suggestions for better browsing!
-      </message>
-      <message name="IDS_NEW_TAB_EVEN_MORE_TITLE"
-               desc="Title for the section on the new tab page that is currently empty. In later releases we plan to show web clips and tips and recommendations here.">
-        Even more
-      </message>
-      <message name="IDS_NEW_TAB_EVEN_MORE_CONTENT"
-               desc="Content for the section on the new tab page that is currently empty. In later releases we plan to show web clips and tips and recommendations here. This is intended to be funny.">
-        What will we put here?
-      </message>
-      <message name="IDS_NEW_TAB_SHOW_EVEN_MORE"
-               desc="Menu item text used to show the even more section.">
-        Show even more
-      </message>
-      <message name="IDS_NEW_TAB_HIDE_EVEN_MORE"
-               desc="Menu item text used to hide the even more section.">
-        Hide even more
-      </message>
-      <message name="IDS_NEW_TAB_DOWNLOADS"
-               desc="The header text of the recent downloads section.">
-        Downloads
-      </message>
       <message name="IDS_NEW_TAB_VIEW_FULL_HISTORY"
                desc="The text of the link that takes the user to the history page. This is shown under recent activities.">
         View full history
-      </message>
-      <message name="IDS_NEW_TAB_VIEW_ALL_DOWNLOADS"
-               desc="The text of the link that takes the user to the downloads page. This is shown under recent activities.">
-        View all downloads
-      </message>
-      <message name="IDS_NEW_TAB_SHOW_THUMBNAILS"
-               desc="Menu item text used to show the thumbnail grid for the most visited pages.">
-        Show thumbnails
-      </message>
-      <message name="IDS_NEW_TAB_HIDE_THUMBNAILS"
-               desc="Menu item text used to hide the thumbnail grid for the most visited pages.">
-        Hide thumbnails
-      </message>
-      <message name="IDS_NEW_TAB_SHOW_LIST"
-               desc="Menu item text used to show the list of the most visited pages.">
-        Show list
-      </message>
-      <message name="IDS_NEW_TAB_HIDE_LIST"
-               desc="Menu item text used to hide the list of the most visited pages.">
-        Hide list
       </message>
       <message name="IDS_NEW_TAB_SHOW_RECENT"
                desc="Menu item text used to show recent activities.">
@@ -5608,22 +5504,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NEW_TAB_HIDE_RECENT"
                desc="Menu item text used to hide recent activities.">
         Hide recent activities
-      </message>
-      <message name="IDS_NEW_TAB_SHOW_TIPS"
-               desc="Menu item text used to show tips.">
-        Show recommendations
-      </message>
-      <message name="IDS_NEW_TAB_HIDE_TIPS"
-               desc="Menu item text used to hide tips.">
-        Hide recommendations
-      </message>
-      <message name="IDS_NEW_TAB_SHOW_RECENTLY_CLOSED_TABS"
-               desc="Menu item text used to show recently closed tabs.">
-        Show recently closed tabs
-      </message>
-      <message name="IDS_NEW_TAB_HIDE_RECENTLY_CLOSED_TABS"
-               desc="Menu item text used to hide recently closed tabs.">
-        Hide recently closed tabs
       </message>
       <message name="IDS_NEW_TAB_THUMBNAIL_REMOVED_NOTIFICATION"
                desc="Notification text shown when a thumbnail has been removed from the most visited section.">
@@ -5669,10 +5549,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NEW_TAB_THEMES_GALLERY_PAGE_TITLE"
          desc="Title for the hard coded thumbnail that represents the Google Chrome Themes Gallery page. This is used on the NTP when there aren't enough thumbnails to show.">
         Google Chrome Themes Gallery
-      </message>
-      <message name="IDS_NEW_TAB_SHOW_HIDE_BOOKMARK_SYNC"
-         desc="Menu item text used to show or hide the bookmark sync status.">
-        Bookmark sync
       </message>
       <message name="IDS_NEW_TAB_HOME_PAGE_SET_NOTIFICATION"
          desc="Notification text to show after the user has made the NTP his/her home page.">

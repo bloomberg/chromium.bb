@@ -272,33 +272,10 @@ void NTPResourceCache::CreateNewTabHTML() {
       "true" : "false");
   localized_strings.SetString(L"title", title);
   localized_strings.SetString(L"mostvisited", most_visited);
-  localized_strings.SetString(L"searches",
-      l10n_util::GetString(IDS_NEW_TAB_SEARCHES));
-  localized_strings.SetString(L"bookmarks",
-      l10n_util::GetString(IDS_NEW_TAB_BOOKMARKS));
-  localized_strings.SetString(L"recent",
-      l10n_util::GetString(IDS_NEW_TAB_RECENT));
-  localized_strings.SetString(L"showhistory",
-      l10n_util::GetString(IDS_NEW_TAB_HISTORY_SHOW));
-  localized_strings.SetString(L"showhistoryurl",
-      chrome::kChromeUIHistoryURL);
-  localized_strings.SetString(L"editthumbnails",
-      l10n_util::GetString(IDS_NEW_TAB_REMOVE_THUMBNAILS));
   localized_strings.SetString(L"restorethumbnails",
       l10n_util::GetString(IDS_NEW_TAB_RESTORE_THUMBNAILS_LINK));
-  localized_strings.SetString(L"editmodeheading",
-      l10n_util::GetString(IDS_NEW_TAB_MOST_VISITED_EDIT_MODE_HEADING));
-  localized_strings.SetString(L"doneediting",
-      l10n_util::GetString(IDS_NEW_TAB_MOST_VISITED_DONE_REMOVING_BUTTON));
-  localized_strings.SetString(L"cancelediting",
-      l10n_util::GetString(IDS_NEW_TAB_MOST_VISITED_CANCEL_REMOVING_BUTTON));
-  localized_strings.SetString(L"searchhistory",
-      l10n_util::GetString(IDS_NEW_TAB_HISTORY_SEARCH));
   localized_strings.SetString(L"recentlyclosed",
       l10n_util::GetString(IDS_NEW_TAB_RECENTLY_CLOSED));
-  localized_strings.SetString(L"mostvisitedintro",
-      l10n_util::GetStringF(IDS_NEW_TAB_MOST_VISITED_INTRO,
-          l10n_util::GetString(IDS_WELCOME_PAGE_URL)));
   localized_strings.SetString(L"closedwindowsingle",
       l10n_util::GetString(IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW_SINGLE));
   localized_strings.SetString(L"closedwindowmultiple",
@@ -307,24 +284,10 @@ void NTPResourceCache::CreateNewTabHTML() {
       l10n_util::GetString(IDS_NEW_TAB_ATTRIBUTION_INTRO));
   localized_strings.SetString(L"viewfullhistory",
       l10n_util::GetString(IDS_NEW_TAB_VIEW_FULL_HISTORY));
-  localized_strings.SetString(L"showthumbnails",
-      l10n_util::GetString(IDS_NEW_TAB_SHOW_THUMBNAILS));
-  localized_strings.SetString(L"hidethumbnails",
-      l10n_util::GetString(IDS_NEW_TAB_HIDE_THUMBNAILS));
-  localized_strings.SetString(L"showlist",
-      l10n_util::GetString(IDS_NEW_TAB_SHOW_LIST));
-  localized_strings.SetString(L"hidelist",
-      l10n_util::GetString(IDS_NEW_TAB_HIDE_LIST));
-  localized_strings.SetString(L"showrecentlyclosedtabs",
-      l10n_util::GetString(IDS_NEW_TAB_SHOW_RECENTLY_CLOSED_TABS));
-  localized_strings.SetString(L"hiderecentlyclosedtabs",
-      l10n_util::GetString(IDS_NEW_TAB_HIDE_RECENTLY_CLOSED_TABS));
   localized_strings.SetString(L"thumbnailremovednotification",
       l10n_util::GetString(IDS_NEW_TAB_THUMBNAIL_REMOVED_NOTIFICATION));
   localized_strings.SetString(L"undothumbnailremove",
       l10n_util::GetString(IDS_NEW_TAB_UNDO_THUMBNAIL_REMOVE));
-  localized_strings.SetString(L"otrmessage",
-      l10n_util::GetString(IDS_NEW_TAB_OTR_MESSAGE));
   localized_strings.SetString(L"removethumbnailtooltip",
       l10n_util::GetString(IDS_NEW_TAB_REMOVE_THUMBNAIL_TOOLTIP));
   localized_strings.SetString(L"pinthumbnailtooltip",
@@ -341,14 +304,8 @@ void NTPResourceCache::CreateNewTabHTML() {
       l10n_util::GetString(IDS_NEW_TAB_FIRST_RUN_NOTIFICATION));
   localized_strings.SetString(L"closefirstrunnotification",
       l10n_util::GetString(IDS_NEW_TAB_CLOSE_FIRST_RUN_NOTIFICATION));
-  localized_strings.SetString(L"makethishomepage",
-      l10n_util::GetString(IDS_NEW_TAB_MAKE_THIS_HOMEPAGE));
-  localized_strings.SetString(L"themelink",
-      l10n_util::GetString(IDS_THEMES_GALLERY_URL));
   localized_strings.SetString(L"tips",
       l10n_util::GetString(IDS_NEW_TAB_TIPS));
-  localized_strings.SetString(L"sync",
-      l10n_util::GetString(IDS_NEW_TAB_SHOW_HIDE_BOOKMARK_SYNC));
   localized_strings.SetString(L"promonew",
       l10n_util::GetString(IDS_NTP_PROMOTION_NEW));
   std::wstring extensionLink = ASCIIToWide(
