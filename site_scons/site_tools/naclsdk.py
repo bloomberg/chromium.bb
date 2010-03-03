@@ -249,7 +249,7 @@ def _SetEnvForSdkManually(env):
               CC=os.getenv('NACL_SDK_CC', 'MISSING_SDK_CC'),
               CXX=os.getenv('NACL_SDK_CXX', 'MISSING_SDK_CXX'),
               AR=os.getenv('NACL_SDK_AR', 'MISSING_SDK_AR'),
-              AS=os.getenv('NACL_SDK_AS', 'MISSING_SDK_AS'),
+              ASCOM=os.getenv('NACL_SDK_ASCOM', 'MISSING_SDK_ASCOM'),
               # NOTE: use g++ for linking so we can handle c AND c++
               LINK=os.getenv('NACL_SDK_LINK', 'MISSING_SDK_LINK'),
               RANLIB=os.getenv('NACL_SDK_RANLIB', 'MISSING_SDK_RANLIB'),
@@ -306,8 +306,9 @@ def generate(env):
   env.Replace(
       HOST_PLATFORMS=['*'],  # NaCl builds on all platforms.
 
-      COMPONENT_LINKFLAGS=['-Wl,-rpath-link,${COMPONENT_LIBRARY_DIR}'],
-      COMPONENT_LIBRARY_LINK_SUFFIXES=['.so', '.a'],
+      COMPONENT_LINKFLAGS=[''],
+      COMPONENT_LIBRARY_LINK_SUFFIXES=['.a'],
+      _RPATH='',
       COMPONENT_LIBRARY_DEBUG_SUFFIXES=[],
 
       # TODO: This is needed for now to work around unc paths.  Take this out

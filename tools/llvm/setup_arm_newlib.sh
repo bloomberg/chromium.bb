@@ -17,58 +17,59 @@ readonly NEWLIB_TARBALL=${NACL_ROOT}/../third_party/newlib/newlib-1.17.0.tar.gz
 readonly NEWLIB_TARGET=arm-none-linux-gnueabi
 
 ###########################################################
-readonly CS_BIN_PREFIX="${CS_ROOT}/bin/arm-none-linux-gnueabi-"
-
 readonly SCRATCH_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/newlib.arm.XXXXXX")"
-
-readonly LLVM_PREFIX=/usr/local/crosstool-untrusted/arm-none-linux-gnueabi/llvm-fake-
 
 readonly OBJ_ROOT="${SCRATCH_ROOT}/build"
 readonly SRC_ROOT="${SCRATCH_ROOT}/newlib-1.17.0"
 
+###########################################################
+# TODO(robertm): this should be merged with similar code in
+#                tools/llvm/setup_arm_untrusted_toolchain.sh
+readonly CS_BIN_PATH="${CS_ROOT}/bin"
+readonly LLVM_BIN_PATH=/usr/local/crosstool-untrusted/arm-none-linux-gnueabi
+readonly ILLEGAL_TOOL=${LLVM_BIN_PATH}/llvm-fake-illegal
 
 # we do not expect newlib to build any binaries
-readonly LD_FOR_TARGET="${LLVM_PREFIX}illegal"
+readonly LD_FOR_TARGET="${ILLEGAL_TOOL}"
 
 # we do not expect newlib to use objdump
-readonly OBJDUMP_FOR_TARGET="${LLVM_PREFIX}illegal"
+readonly OBJDUMP_FOR_TARGET="${ILLEGAL_TOOL}"
 
 # we do not expect newlib to use the assembler
-readonly AS_FOR_TARGET="${LLVM_PREFIX}illegal"
+readonly AS_FOR_TARGET="${ILLEGAL_TOOL}"
 
 # we do not expect newlib to use strip
-readonly STRIP_FOR_TARGET="${LLVM_PREFIX}illegal"
+readonly STRIP_FOR_TARGET="${ILLEGAL_TOOL}"
 
 # This config generates native sandboxed libraries
 ConfigSfi() {
-  readonly CC_FOR_TARGET="${LLVM_PREFIX}sfigcc"
-  readonly CXX_FOR_TARGET="${LLVM_PREFIX}sfig++"
+  readonly CC_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-sfigcc"
+  readonly CXX_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-sfig++"
 
-  readonly AR_FOR_TARGET="${CS_BIN_PREFIX}ar"
-  readonly NM_FOR_TARGET="${CS_BIN_PREFIX}nm"
-  readonly RANLIB_FOR_TARGET="${CS_BIN_PREFIX}ranlib"
+  readonly AR_FOR_TARGET="${CS_BIN_PATH}/arm-none-linux-gnueabi-ar"
+  readonly NM_FOR_TARGET="${CS_BIN_PATH}/arm-none-linux-gnueabi-nm"
+  readonly RANLIB_FOR_TARGET="${CS_BIN_PATH}/arm-none-linux-gnueabi-ranlib"
 }
 
 # NOTE: c.f. setup_arm_untrusted_toolchain.sh for switching to codesourcery
 #       This was used before we had a working sfi toolchain
-
 ConfigRegular() {
-  readonly CC_FOR_TARGET="${CS_BIN_PREFIX}gcc"
-  readonly CXX_FOR_TARGET="${CS_BIN_PREFIX}g++"
+  readonly CC_FOR_TARGET="${CS_BIN_PATH}/arm-none-linux-gnueabi-gcc"
+  readonly CXX_FOR_TARGET="${CS_BIN_PATH}/arm-none-linux-gnueabi-g++"
 
-  readonly AR_FOR_TARGET="${CS_BIN_PREFIX}ar"
-  readonly NM_FOR_TARGET="${CS_BIN_PREFIX}nm"
-  readonly RANLIB_FOR_TARGET="${CS_BIN_PREFIX}ranlib"
+  readonly AR_FOR_TARGET="${CS_BIN_PATH}/arm-none-linux-gnueabi-ar"
+  readonly NM_FOR_TARGET="${CS_BIN_PATH}/arm-none-linux-gnueabi-nm"
+  readonly RANLIB_FOR_TARGET="${CS_BIN_PATH}/arm-none-linux-gnueabi-ranlib"
 }
 
 # This config generates bitcode libraries
 ConfigBitcode() {
-  readonly CC_FOR_TARGET="${LLVM_PREFIX}bcgcc"
-  readonly CXX_FOR_TARGET="${LLVM_PREFIX}bcg++"
+  readonly CC_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-bcgcc"
+  readonly CXX_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-bcg++"
 
-  readonly AR_FOR_TARGET="${LLVM_PREFIX}bcar"
-  readonly NM_FOR_TARGET="${LLVM_PREFIX}nop"
-  readonly RANLIB_FOR_TARGET="${LLVM_PREFIX}nop"
+  readonly AR_FOR_TARGET="${LLVM_BIN_PATH}/llvm/bin/llvm-ar"
+  readonly NM_FOR_TARGET="${LLVM_BIN_PATH}/llvm/bin/llvm-nm"
+  readonly RANLIB_FOR_TARGET="${LLVM_BIN_PATH}/llvm/bin/llvm-ranlib"
 }
 
 # NOTE: pick one!
