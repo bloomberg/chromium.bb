@@ -9,20 +9,10 @@
 
 namespace {
 
-// Unit tests for autofill |CreditCard| class.
-class CreditCardTest : public testing::Test {
- protected:
-  CreditCardTest() {
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CreditCardTest);
-};
-
 // Tests credit card summary string generation.  This test simulates a variety
 // of different possible summary strings.  Variations occur based on the
 // existence of credit card number, month, and year fields.
-TEST_F(CreditCardTest, PreviewSummaryString) {
+TEST(CreditCardTest, PreviewSummaryString) {
   // Case 0: empty credit card.
   CreditCard credit_card0(string16(), 0);
   string16 summary0 = credit_card0.PreviewSummary();

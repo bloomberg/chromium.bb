@@ -26,10 +26,16 @@ class PhoneNumber : public FormGroup {
   virtual string16 GetFieldText(const AutoFillType& type) const;
   virtual void SetInfo(const AutoFillType& type, const string16& value);
 
-  string16 country_code() const { return country_code_; }
-  string16 city_code() const { return city_code_; }
-  string16 number() const { return number_; }
-  string16 extension() const { return extension_; }
+ protected:
+  explicit PhoneNumber(const PhoneNumber& phone_number);
+
+ private:
+  void operator=(const PhoneNumber& phone_number);
+
+  const string16& country_code() const { return country_code_; }
+  const string16& city_code() const { return city_code_; }
+  const string16& number() const { return number_; }
+  const string16& extension() const { return extension_; }
   string16 CityAndNumber() const { return city_code_ + number_; }
 
   // Returns the entire phone number as a string, without punctuation.
@@ -42,10 +48,6 @@ class PhoneNumber : public FormGroup {
   void set_number(const string16& number);
   void set_extension(const string16& extension) { extension_ = extension; }
 
- protected:
-  explicit PhoneNumber(const PhoneNumber& phone_number);
-  void operator=(const PhoneNumber& phone_number);
-
   // A helper function for FindInfoMatches that only handles matching the info
   // with the requested field type.
   bool FindInfoMatchesHelper(const FieldTypeSubGroup& subgroup,
@@ -54,11 +56,11 @@ class PhoneNumber : public FormGroup {
 
   // The numbers will be digits only (no punctuation), so any call to the IsX()
   // functions should first call StripPunctuation on the text.
-  virtual bool IsNumber(const string16& text) const;
-  virtual bool IsCityCode(const string16& text) const;
-  virtual bool IsCountryCode(const string16& text) const;
-  virtual bool IsCityAndNumber(const string16& text) const;
-  virtual bool IsWholeNumber(const string16& text) const;
+  bool IsNumber(const string16& text) const;
+  bool IsCityCode(const string16& text) const;
+  bool IsCountryCode(const string16& text) const;
+  bool IsCityAndNumber(const string16& text) const;
+  bool IsWholeNumber(const string16& text) const;
 
   // The following functions should return the field type for each part of the
   // phone number.  Currently, these are either fax or home phone number types.

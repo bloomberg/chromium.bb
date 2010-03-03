@@ -28,8 +28,35 @@ class CreditCard : public FormGroup {
   virtual string16 GetFieldText(const AutoFillType& type) const;
   virtual string16 GetPreviewText(const AutoFillType& type) const;
   virtual void SetInfo(const AutoFillType& type, const string16& value);
-  string16 Label() const { return label_; }
+  const string16& Label() const { return label_; }
 
+  // Credit card preview summary, for example: ******1234, Exp: 01/2020
+  string16 PreviewSummary() const;
+
+  const string16& billing_address() const { return billing_address_; }
+  const string16& shipping_address() const { return shipping_address_; }
+  int unique_id() const { return unique_id_; }
+
+  // The caller should verify that the corresponding AutoFillProfile exists.  If
+  // the shipping address should be the same as the billing address, send in an
+  // empty string to set_shipping_address.
+  void set_billing_address(const string16& address) {
+    billing_address_ = address;
+  }
+  void set_shipping_address(const string16& address) {
+    shipping_address_ = address;
+  }
+  void set_unique_id(int id) { unique_id_ = id; }
+
+  // For use in STL containers.
+  void operator=(const CreditCard&);
+
+  // Used by tests.
+  bool operator==(const CreditCard& creditcard) const;
+  bool operator!=(const CreditCard& creditcard) const;
+  void set_label(const string16& label) { label_ = label; }
+
+ private:
   // The month and year are zero if not present.
   int Expiration4DigitYear() const { return expiration_year_; }
   int Expiration2DigitYear() const { return expiration_year_ % 100; }
@@ -43,16 +70,13 @@ class CreditCard : public FormGroup {
   // Sets |expiration_year_| to the integer conversion of |text|.
   void SetExpirationYearFromString(const string16& text);
 
-  string16 number() const { return number_; }
-  string16 name_on_card() const { return name_on_card_; }
-  string16 type() const { return type_; }
-  string16 verification_code() const { return verification_code_; }
-  string16 last_four_digits() const { return last_four_digits_; }
+  const string16& number() const { return number_; }
+  const string16& name_on_card() const { return name_on_card_; }
+  const string16& type() const { return type_; }
+  const string16& verification_code() const { return verification_code_; }
+  const string16& last_four_digits() const { return last_four_digits_; }
   int expiration_month() const { return expiration_month_; }
   int expiration_year() const { return expiration_year_; }
-  string16 billing_address() const { return billing_address_; }
-  string16 shipping_address() const { return shipping_address_; }
-  int unique_id() const { return unique_id_; }
 
   void set_number(const string16& number) { number_ = number; }
   void set_name_on_card(const string16& name_on_card) {
@@ -65,35 +89,12 @@ class CreditCard : public FormGroup {
   void set_last_four_digits(const string16& last_four_digits) {
     last_four_digits_ = last_four_digits;
   }
-  void set_unique_id(int id) { unique_id_ = id; }
-
-  // The caller should verify that the corresponding AutoFillProfile exists.  If
-  // the shipping address should be the same as the billing address, send in an
-  // empty string to set_shipping_address.
-  void set_billing_address(const string16& address) {
-    billing_address_ = address;
-  }
-  void set_shipping_address(const string16& address) {
-    shipping_address_ = address;
-  }
 
   // These setters verify that the month and year are within appropriate
   // ranges.
   void set_expiration_month(int expiration_month);
   void set_expiration_year(int expiration_year);
 
-  // Credit card preview summary, for example: ******1234, Exp: 01/2020
-  string16 PreviewSummary() const;
-
-  // For use in STL containers.
-  void operator=(const CreditCard&);
-
-  // Used by tests.
-  bool operator==(const CreditCard& creditcard) const;
-  bool operator!=(const CreditCard& creditcard) const;
-  void set_label(const string16& label) { label_ = label; }
-
- private:
   // A helper function for FindInfoMatches that only handles matching the info
   // with the requested field type.
   bool FindInfoMatchesHelper(const AutoFillFieldType& field_type,

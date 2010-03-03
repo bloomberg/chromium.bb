@@ -17,7 +17,7 @@ class AutoFillField : public webkit_glue::FormField {
   AutoFillField(const webkit_glue::FormField& field,
                 const string16& unique_name);
 
-  string16 unique_name() const { return unique_name_; }
+  const string16& unique_name() const { return unique_name_; }
 
   AutoFillFieldType heuristic_type() const { return heuristic_type_; }
   const FieldTypeSet& possible_types() const { return possible_types_; }

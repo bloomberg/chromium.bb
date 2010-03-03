@@ -27,21 +27,24 @@ class ContactInfo : public FormGroup {
   virtual string16 GetFieldText(const AutoFillType& type) const;
   virtual void SetInfo(const AutoFillType& type, const string16& value);
 
+ private:
+  explicit ContactInfo(const ContactInfo& contact_info);
+  void operator=(const ContactInfo& info);
+
   // Returns the full name, which can include up to the first, middle, middle
   // initial, last name, and suffix.
   string16 FullName() const;
 
-  string16 first() const { return first_; }
-  string16 middle() const { return middle_; }
-  string16 last() const { return last_; }
+  // Returns the middle initial if |middle_| is non-empty.  Returns an empty
+  // string otherwise.
   string16 MiddleInitial() const;
-  string16 suffix() const { return suffix_; }
-  string16 email() const { return email_; }
-  string16 company_name() const { return company_name_; }
 
- private:
-  explicit ContactInfo(const ContactInfo& contact_info);
-  void operator=(const ContactInfo& info);
+  const string16& first() const { return first_; }
+  const string16& middle() const { return middle_; }
+  const string16& last() const { return last_; }
+  const string16& suffix() const { return suffix_; }
+  const string16& email() const { return email_; }
+  const string16& company_name() const { return company_name_; }
 
   // A helper function for FindInfoMatches that only handles matching the info
   // with the requested field type.

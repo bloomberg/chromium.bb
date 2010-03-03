@@ -203,65 +203,6 @@ void CreditCard::SetInfo(const AutoFillType& type, const string16& value) {
   }
 }
 
-string16 CreditCard::ExpirationMonthAsString() const {
-  if (expiration_month_ == 0)
-    return string16();
-
-  string16 month = IntToString16(expiration_month_);
-  if (expiration_month_ >= 10)
-    return month;
-
-  string16 zero = ASCIIToUTF16("0");
-  zero.append(month);
-  return zero;
-}
-
-string16 CreditCard::Expiration4DigitYearAsString() const {
-  if (expiration_year_ == 0)
-    return string16();
-
-  return IntToString16(Expiration4DigitYear());
-}
-
-string16 CreditCard::Expiration2DigitYearAsString() const {
-  if (expiration_year_ == 0)
-    return string16();
-
-  return IntToString16(Expiration2DigitYear());
-}
-
-void CreditCard::SetExpirationMonthFromString(const string16& text) {
-  int month;
-  if (!ConvertDate(text, &month))
-    return;
-
-  set_expiration_month(month);
-}
-
-void CreditCard::SetExpirationYearFromString(const string16& text) {
-  int year;
-  if (!ConvertDate(text, &year))
-    return;
-
-  set_expiration_year(year);
-}
-
-void CreditCard::set_expiration_month(int expiration_month) {
-  if (expiration_month < 0 || expiration_month > 12)
-    return;
-
-  expiration_month_ = expiration_month;
-}
-
-void CreditCard::set_expiration_year(int expiration_year) {
-  if (expiration_year != 0 &&
-      (expiration_year < 2006 || expiration_year > 10000)) {
-    return;
-  }
-
-  expiration_year_ = expiration_year;
-}
-
 string16 CreditCard::PreviewSummary() const {
   string16 preview;
   if (number().empty())
@@ -325,6 +266,65 @@ bool CreditCard::operator==(const CreditCard& creditcard) const {
 
 bool CreditCard::operator!=(const CreditCard& creditcard) const {
   return !operator==(creditcard);
+}
+
+string16 CreditCard::ExpirationMonthAsString() const {
+  if (expiration_month_ == 0)
+    return string16();
+
+  string16 month = IntToString16(expiration_month_);
+  if (expiration_month_ >= 10)
+    return month;
+
+  string16 zero = ASCIIToUTF16("0");
+  zero.append(month);
+  return zero;
+}
+
+string16 CreditCard::Expiration4DigitYearAsString() const {
+  if (expiration_year_ == 0)
+    return string16();
+
+  return IntToString16(Expiration4DigitYear());
+}
+
+string16 CreditCard::Expiration2DigitYearAsString() const {
+  if (expiration_year_ == 0)
+    return string16();
+
+  return IntToString16(Expiration2DigitYear());
+}
+
+void CreditCard::SetExpirationMonthFromString(const string16& text) {
+  int month;
+  if (!ConvertDate(text, &month))
+    return;
+
+  set_expiration_month(month);
+}
+
+void CreditCard::SetExpirationYearFromString(const string16& text) {
+  int year;
+  if (!ConvertDate(text, &year))
+    return;
+
+  set_expiration_year(year);
+}
+
+void CreditCard::set_expiration_month(int expiration_month) {
+  if (expiration_month < 0 || expiration_month > 12)
+    return;
+
+  expiration_month_ = expiration_month;
+}
+
+void CreditCard::set_expiration_year(int expiration_year) {
+  if (expiration_year != 0 &&
+      (expiration_year < 2006 || expiration_year > 10000)) {
+    return;
+  }
+
+  expiration_year_ = expiration_year;
 }
 
 bool CreditCard::FindInfoMatchesHelper(const AutoFillFieldType& field_type,

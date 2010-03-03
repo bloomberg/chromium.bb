@@ -120,6 +120,19 @@ void ContactInfo::SetInfo(const AutoFillType& type, const string16& value) {
     NOTREACHED();
 }
 
+ContactInfo::ContactInfo(const ContactInfo& contact_info)
+    : FormGroup(),
+      first_tokens_(contact_info.first_tokens_),
+      middle_tokens_(contact_info.middle_tokens_),
+      last_tokens_(contact_info.last_tokens_),
+      first_(contact_info.first_),
+      middle_(contact_info.middle_),
+      last_(contact_info.last_),
+      suffix_(contact_info.suffix_),
+      email_(contact_info.email_),
+      company_name_(contact_info.company_name_) {
+}
+
 string16 ContactInfo::FullName() const {
   if (first_.empty())
     return string16();
@@ -147,19 +160,6 @@ string16 ContactInfo::MiddleInitial() const {
   string16 initial;
   initial.push_back(middle_name[0]);
   return initial;
-}
-
-ContactInfo::ContactInfo(const ContactInfo& contact_info)
-    : FormGroup(),
-      first_tokens_(contact_info.first_tokens_),
-      middle_tokens_(contact_info.middle_tokens_),
-      last_tokens_(contact_info.last_tokens_),
-      first_(contact_info.first_),
-      middle_(contact_info.middle_),
-      last_(contact_info.last_),
-      suffix_(contact_info.suffix_),
-      email_(contact_info.email_),
-      company_name_(contact_info.company_name_) {
 }
 
 bool ContactInfo::FindInfoMatchesHelper(const AutoFillFieldType& field_type,

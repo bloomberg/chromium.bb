@@ -39,13 +39,13 @@ class Address : public FormGroup {
   // Vector of tokens in an address line.
   typedef std::vector<string16> LineTokens;
 
-  string16 line1() const { return line1_; }
-  string16 line2() const { return line2_; }
-  string16 apt_num() const { return apt_num_; }
-  string16 city() const { return city_; }
-  string16 state() const { return state_; }
-  string16 country() const { return country_; }
-  string16 zip_code() const { return zip_code_; }
+  const string16& line1() const { return line1_; }
+  const string16& line2() const { return line2_; }
+  const string16& apt_num() const { return apt_num_; }
+  const string16& city() const { return city_; }
+  const string16& state() const { return state_; }
+  const string16& country() const { return country_; }
+  const string16& zip_code() const { return zip_code_; }
 
   void set_line1(const string16& line1);
   void set_line2(const string16& line2);

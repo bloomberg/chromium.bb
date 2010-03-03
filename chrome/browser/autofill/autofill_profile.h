@@ -40,7 +40,7 @@ class AutoFillProfile : public FormGroup {
   // Returns a copy of the profile it is called on. The caller is responsible
   // for deleting profile when they are done with it.
   virtual FormGroup* Clone() const;
-  virtual string16 Label() const { return label_; }
+  virtual const string16& Label() const { return label_; }
 
   // NOTE: callers must write the profile to the WebDB after changing the value
   // of use_billing_address.
