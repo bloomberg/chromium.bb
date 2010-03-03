@@ -391,7 +391,7 @@ ALERT: PASS: window.CSSValue should be 'function CSSValue() { [native code] }' a
 ALERT: PASS: window.Document should be 'function Document() { [native code] }' and is.
 ALERT: PASS: window.DocumentFragment should be 'function DocumentFragment() { [native code] }' and is.
 ALERT: PASS: window.DocumentType should be 'function DocumentType() { [native code] }' and is.
-ALERT: PASS: window.DOMException should be 'function DOMCoreException() { [native code] }' and is.
+ALERT: PASS: window.DOMException should be 'function DOMException() { [native code] }' and is.
 ALERT: PASS: window.DOMImplementation should be 'function DOMImplementation() { [native code] }' and is.
 ALERT: PASS: window.DOMParser should be 'function DOMParser() { [native code] }' and is.
 ALERT: PASS: window.Element should be 'function Element() { [native code] }' and is.
