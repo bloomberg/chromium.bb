@@ -8,6 +8,9 @@
 #include "base/scoped_ptr.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/renderer/extensions/bindings_utils.h"
+#include "chrome/test/v8_unit_test.h"
+#include "grit/common_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -64,10 +67,15 @@ bool FindDictionaryWithProperyValue(ListValue* list,
 
 }
 
-class ExtensionApiJsonValidityTest : public testing::Test {
+class ExtensionApiJsonValidityTest : public V8UnitTest {
 };
 
-TEST(ExtensionApiJsonValidityTest, Basic) {
+// Read extension_api.json with JSONFileValueSerializer.  This test checks
+// that the file is valid without using V8 or grit generated code.
+// Unlike V8's JSON.Parse(), it produces easy to read error messages.
+// If this test passes, and ExtensionApiJsonValidityTest.WithV8 fails,
+// check to see if V8 or the grit build step is broken.
+TEST_F(ExtensionApiJsonValidityTest, Basic) {
   // Build the path to extension_api.json, and check that the file exists.
   FilePath extension_api_json;
   ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &extension_api_json));
@@ -110,4 +118,18 @@ TEST(ExtensionApiJsonValidityTest, Basic) {
       << error_message;
 }
 
-// TODO(skerner): Add a test that parses extension_api.json using v8.
+// Use V8 to load the string resource version of extension_api.json .
+// This test mimics the method extension_api.json is loaded in
+// chrome/renderer/resources/extension_process_bindings.js .
+TEST_F(ExtensionApiJsonValidityTest, WithV8) {
+  std::string ext_api_string =
+      bindings_utils::GetStringResource<IDR_EXTENSION_API_JSON>();
+
+  // Create a global variable holding the text of extension_api.json .
+  SetGlobalStringVar("ext_api_json_text", ext_api_string);
+
+  // Parse the text of extension_api.json .  If there is a parse error,
+  // an exception will be printed that includes a line number.
+  std::string test_js = "var extension_api = JSON.parse(ext_api_json_text);";
+  ExecuteScriptInContext(test_js, "ParseExtensionApiJson");
+}

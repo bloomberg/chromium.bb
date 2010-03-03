@@ -14,6 +14,13 @@ void V8UnitTest::SetUp() {
   context_ = v8::Context::New(NULL, global);
 }
 
+void V8UnitTest::SetGlobalStringVar(const std::string& var_name,
+                                    const std::string& value) {
+  v8::Context::Scope context_scope(context_);
+  context_->Global()->Set(v8::String::New(var_name.c_str(), var_name.length()),
+                          v8::String::New(value.c_str(), value.length()));
+}
+
 void V8UnitTest::ExecuteScriptInContext(const base::StringPiece& script_source,
                                         const base::StringPiece& script_name) {
   v8::Context::Scope context_scope(context_);

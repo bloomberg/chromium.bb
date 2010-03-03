@@ -28,6 +28,10 @@ class V8UnitTest : public testing::Test {
   virtual void ExecuteScriptInContext(const base::StringPiece& script_source,
                                       const base::StringPiece& script_name);
 
+  // Set a variable to a string value in the global scope.
+  virtual void SetGlobalStringVar(const std::string& var_name,
+                                  const std::string& value);
+
   // Converts a v8::TryCatch into a human readable string.
   virtual std::string ExceptionToString(v8::TryCatch* try_catch);
 
