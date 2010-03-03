@@ -11,6 +11,7 @@
 
 #include "base/singleton.h"
 #include "base/task.h"
+#include "chrome/browser/translate/translate_infobars_delegates.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
@@ -57,6 +58,13 @@ class TranslateManager : public NotificationObserver {
   // Initializes the |accept_languages_| language table based on the associated
   // preference in |prefs|.
   void InitAcceptLanguages(PrefService* prefs);
+
+  // Convenience method that adds a translate infobar to |tab|.
+  void AddTranslateInfoBar(TabContents* tab,
+                           TranslateInfoBarDelegate::TranslateState state,
+                           const GURL& url,
+                           const std::string& original_language,
+                           const std::string& target_language);
 
   NotificationRegistrar notification_registrar_;
 

@@ -41,36 +41,6 @@ void TranslateInfoBarDelegate::InfoBarClosed() {
 
 // TranslateInfoBarDelegate: public: -------------------------------------------
 
-TranslateInfoBarDelegate::TranslateInfoBarDelegate(TabContents* tab_contents,
-    PrefService* user_prefs, TranslateState state, const GURL& url,
-    const std::string& original_lang_code, const std::string& target_lang_code)
-    : InfoBarDelegate(tab_contents),
-      tab_contents_(tab_contents),
-      prefs_(user_prefs),
-      state_(state),
-      site_(url.HostNoBrackets()),
-      original_lang_index_(-1),
-      target_lang_index_(-1),
-      never_translate_language_(false),
-      never_translate_site_(false),
-      always_translate_(false) {
-  TranslationService::GetSupportedLanguages(&supported_languages_);
-  for (size_t i = 0; i < supported_languages_.size(); ++i) {
-    if (original_lang_code == supported_languages_[i]) {
-      original_lang_index_ = i;
-      break;
-    }
-  }
-  DCHECK(original_lang_index_ > -1);
-  for (size_t i = 0; i < supported_languages_.size(); ++i) {
-    if (target_lang_code == supported_languages_[i]) {
-      target_lang_index_ = i;
-      break;
-    }
-  }
-  DCHECK(target_lang_index_ > -1);
-}
-
 void TranslateInfoBarDelegate::UpdateState(TranslateState new_state) {
   if (state_ != new_state)
     state_ = new_state;
@@ -207,6 +177,38 @@ void TranslateInfoBarDelegate::GetMessageText(string16 *message_text,
 
 // TranslateInfoBarDelegate: static: -------------------------------------------
 
+TranslateInfoBarDelegate* TranslateInfoBarDelegate::Create(
+    TabContents* tab_contents, PrefService* user_prefs, TranslateState state,
+    const GURL& url,
+    const std::string& original_lang_code,
+    const std::string& target_lang_code) {
+  std::vector<std::string> supported_languages;
+  TranslationService::GetSupportedLanguages(&supported_languages);
+
+  int original_lang_index = -1;
+  for (size_t i = 0; i < supported_languages.size(); ++i) {
+    if (original_lang_code == supported_languages[i]) {
+      original_lang_index = i;
+      break;
+    }
+  }
+  if (original_lang_index == -1)
+    return NULL;
+
+  int target_lang_index = -1;
+  for (size_t i = 0; i < supported_languages.size(); ++i) {
+    if (target_lang_code == supported_languages[i]) {
+      target_lang_index = i;
+      break;
+    }
+  }
+  if (target_lang_index == -1)
+    return NULL;
+
+  return new TranslateInfoBarDelegate(tab_contents, user_prefs, state, url,
+                                      original_lang_index, target_lang_index);
+}
+
 string16 TranslateInfoBarDelegate::GetDisplayNameForLocale(
     const std::string& language_code) {
   return l10n_util::GetDisplayNameForLocale(
@@ -221,3 +223,24 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
   return NULL;
 }
 #endif  // !TOOLKIT_VIEWS
+
+// TranslateInfoBarDelegate: private: ------------------------------------------
+
+TranslateInfoBarDelegate::TranslateInfoBarDelegate(TabContents* tab_contents,
+    PrefService* user_prefs, TranslateState state, const GURL& url,
+    int original_lang_index, int target_lang_index)
+    : InfoBarDelegate(tab_contents),
+      tab_contents_(tab_contents),
+      prefs_(user_prefs),
+      state_(state),
+      site_(url.HostNoBrackets()),
+      original_lang_index_(original_lang_index),
+      target_lang_index_(target_lang_index),
+      never_translate_language_(false),
+      never_translate_site_(false),
+      always_translate_(false) {
+  TranslationService::GetSupportedLanguages(&supported_languages_);
+  DCHECK(original_lang_index_ > -1);
+  DCHECK(target_lang_index_ > -1);
+}
+

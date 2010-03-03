@@ -17,7 +17,6 @@
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/translate/translate_infobars_delegates.h"
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_service.h"
@@ -92,10 +91,9 @@ void TranslateManager::Observe(NotificationType type,
         if (entry) {
           std::pair<std::string, std::string>* language_pair =
               (Details<std::pair<std::string, std::string> >(details).ptr());
-          PrefService* prefs = tab->profile()->GetPrefs();
-          tab->AddInfoBar(new TranslateInfoBarDelegate(tab, prefs,
-              TranslateInfoBarDelegate::kAfterTranslate, entry->url(),
-              language_pair->first, language_pair->second));
+          AddTranslateInfoBar(tab, TranslateInfoBarDelegate::kAfterTranslate,
+                              entry->url(),
+                              language_pair->first, language_pair->second);
         }
       }
       break;
@@ -147,11 +145,15 @@ void TranslateManager::InitiateTranslation(TabContents* tab,
     return;
   }
 
-  if (!TranslationService::IsSupportedLanguage(page_lang))
-    return;  // Nothing to do, we don't support that language.
-
   std::string ui_lang = TranslationService::GetLanguageCode(
       g_browser_process->GetApplicationLocale());
+
+  // Nothing to do if the language Chrome is in or the language of the page is
+  // not supported by the translation server.
+  if (!TranslationService::IsSupportedLanguage(ui_lang) ||
+      !TranslationService::IsSupportedLanguage(page_lang)) {
+    return;
+  }
 
   // We don't want to translate:
   // - any Chrome specific page (New Tab Page, Download, History... pages).
@@ -178,9 +180,8 @@ void TranslateManager::InitiateTranslation(TabContents* tab,
   }
 
   // Prompts the user if he/she wants the page translated.
-  tab->AddInfoBar(new TranslateInfoBarDelegate(tab, prefs,
-      TranslateInfoBarDelegate::kBeforeTranslate, entry->url(),
-      page_lang, ui_lang));
+  AddTranslateInfoBar(tab, TranslateInfoBarDelegate::kBeforeTranslate,
+                      entry->url(), page_lang, ui_lang);
 }
 
 void TranslateManager::InitiateTranslationPosted(int process_id,
@@ -243,4 +244,20 @@ void TranslateManager::InitAcceptLanguages(PrefService* prefs) {
       accept_langs_set.insert(accept_lang);
   }
   accept_languages_[prefs] = accept_langs_set;
+}
+
+void TranslateManager::AddTranslateInfoBar(
+    TabContents* tab, TranslateInfoBarDelegate::TranslateState state,
+    const GURL& url,
+    const std::string& original_language, const std::string& target_language) {
+  PrefService* prefs = tab->profile()->GetPrefs();
+  TranslateInfoBarDelegate* infobar =
+      TranslateInfoBarDelegate::Create(tab, prefs, state, url,
+                                       original_language, target_language);
+  if (!infobar) {
+    NOTREACHED() << "Failed to create infobar for language " <<
+        original_language << " and " << target_language;
+    return;
+  }
+  tab->AddInfoBar(infobar);
 }

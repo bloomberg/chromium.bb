@@ -21,9 +21,14 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
     kTranslationFailed,
   };
 
-  TranslateInfoBarDelegate(TabContents* contents, PrefService* user_prefs,
-      TranslateState state, const GURL& url,
-      const std::string& original_language, const std::string& target_language);
+  // Instantiates a TranslateInfoBarDelegate. Can return NULL if the passed
+  // languages are not supported.
+  static TranslateInfoBarDelegate* Create(TabContents* contents,
+                                          PrefService* user_prefs,
+                                          TranslateState state,
+                                          const GURL& url,
+                                          const std::string& original_language,
+                                          const std::string& target_language);
 
   void UpdateState(TranslateState new_state);
   void GetAvailableOriginalLanguages(std::vector<std::string>* languages);
@@ -95,6 +100,13 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   virtual InfoBar* CreateInfoBar();
 
  private:
+  TranslateInfoBarDelegate(TabContents* contents,
+                           PrefService* user_prefs,
+                           TranslateState state,
+                           const GURL& url,
+                           int original_language_index,
+                           int target_language_index);
+
   TabContents* tab_contents_;  // Weak.
   TranslatePrefs prefs_;
   TranslateState state_;

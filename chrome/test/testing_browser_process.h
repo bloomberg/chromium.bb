@@ -25,7 +25,8 @@ class IOThread;
 class TestingBrowserProcess : public BrowserProcess {
  public:
   TestingBrowserProcess()
-      : shutdown_event_(new base::WaitableEvent(true, false)) {
+      : shutdown_event_(new base::WaitableEvent(true, false)),
+        app_locale_("en") {
   }
 
   virtual ~TestingBrowserProcess() {
@@ -140,12 +141,12 @@ class TestingBrowserProcess : public BrowserProcess {
   }
 
   virtual const std::string& GetApplicationLocale() {
-    static std::string* value = NULL;
-    if (!value)
-      value = new std::string("en");
-    return *value;
+    return app_locale_;
   }
-  virtual void set_application_locale(const std::string& app_locale) {}
+
+  virtual void set_application_locale(const std::string& app_locale) {
+    app_locale_ = app_locale;
+  }
 
   virtual base::WaitableEvent* shutdown_event() {
     return shutdown_event_.get();
@@ -161,6 +162,7 @@ class TestingBrowserProcess : public BrowserProcess {
   NotificationService notification_service_;
   scoped_ptr<base::WaitableEvent> shutdown_event_;
   scoped_ptr<Clipboard> clipboard_;
+  std::string app_locale_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingBrowserProcess);
 };
