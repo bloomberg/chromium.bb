@@ -28,18 +28,6 @@ IPConfigView::IPConfigView(const std::string& device_path)
   RefreshData();
 }
 
-bool IPConfigView::Cancel() {
-  return true;
-}
-
-bool IPConfigView::Accept() {
-  return true;
-}
-
-std::wstring IPConfigView::GetWindowTitle() const {
-  return l10n_util::GetString(IDS_OPTIONS_SETTINGS_SECTION_TITLE_OPTIONS);
-}
-
 void IPConfigView::RefreshData() {
   NetworkIPConfigVector ipconfigs =
       NetworkLibrary::Get()->GetIPConfigs(device_path_);

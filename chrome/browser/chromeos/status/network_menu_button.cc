@@ -11,6 +11,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/string_util.h"
+#include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -85,60 +86,79 @@ void NetworkMenuButton::ActivatedAt(int index) {
     return;
 
   NetworkLibrary* cros = NetworkLibrary::Get();
-
-  if (menu_items_[index].flags & FLAG_OPTIONS) {
+  int flags = menu_items_[index].flags;
+  if (flags & FLAG_OPTIONS) {
     host_->OpenButtonOptions(this);
-  } else if (menu_items_[index].flags & FLAG_TOGGLE_ETHERNET) {
+  } else if (flags & FLAG_TOGGLE_ETHERNET) {
     cros->EnableEthernetNetworkDevice(!cros->ethernet_enabled());
-  } else if (menu_items_[index].flags & FLAG_TOGGLE_WIFI) {
+  } else if (flags & FLAG_TOGGLE_WIFI) {
     cros->EnableWifiNetworkDevice(!cros->wifi_enabled());
-  } else if (menu_items_[index].flags & FLAG_TOGGLE_CELLULAR) {
+  } else if (flags & FLAG_TOGGLE_CELLULAR) {
     cros->EnableCellularNetworkDevice(!cros->cellular_enabled());
-  } else if (menu_items_[index].flags & FLAG_TOGGLE_OFFLINE) {
+  } else if (flags & FLAG_TOGGLE_OFFLINE) {
     cros->EnableOfflineMode(!cros->offline_mode());
-  } else if (menu_items_[index].flags & FLAG_WIFI) {
-    activated_wifi_network_ = menu_items_[index].wifi_network;
-
-    // If clicked on a network that we are already connected to or we are
-    // currently trying to connect to, then do nothing.
-    if (activated_wifi_network_.ssid == cros->wifi_ssid())
-      return;
-
-    // If wifi network is not encrypted, then directly connect.
-    // Otherwise, we open password dialog window.
-    if (!activated_wifi_network_.encrypted) {
-      cros->ConnectToWifiNetwork(activated_wifi_network_, string16());
-    } else {
-      PasswordDialogView* dialog = new PasswordDialogView(this,
-         activated_wifi_network_.ssid);
+  } else if (flags & FLAG_OTHER_NETWORK) {
+    views::Window* window = views::Window::CreateChromeWindow(
+        host_->GetNativeWindow(),
+        gfx::Rect(),
+        new NetworkConfigView());
+    window->SetIsAlwaysOnTop(true);
+    window->Show();
+  } else if (flags & FLAG_ETHERNET) {
+    if (cros->ethernet_connected()) {
       views::Window* window = views::Window::CreateChromeWindow(
-          host_->GetNativeWindow(), gfx::Rect(), dialog);
-      // Draw the password dialog right below this button and right aligned.
-      gfx::Size size = dialog->GetPreferredSize();
-      gfx::Rect rect = bounds();
-      gfx::Point point = gfx::Point(rect.width() - size.width(), rect.height());
-      ConvertPointToScreen(this, &point);
-      window->SetBounds(gfx::Rect(point, size), host_->GetNativeWindow());
+          host_->GetNativeWindow(),
+          gfx::Rect(),
+          new NetworkConfigView(cros->ethernet_network()));
+      window->SetIsAlwaysOnTop(true);
       window->Show();
     }
-  } else if (menu_items_[index].flags & FLAG_CELLULAR) {
-      // If clicked on a network that we are already connected to or we are
-      // currently trying to connect to, then do nothing.
-      if (menu_items_[index].cellular_network.name == cros->cellular_name())
-        return;
+  } else if (flags & FLAG_WIFI) {
+    WifiNetwork wifi = menu_items_[index].wifi_network;
 
-      cros->ConnectToCellularNetwork(menu_items_[index].cellular_network);
+    // If clicked on a network that we are already connected to or we are
+    // currently trying to connect to, then open config dialog.
+    if (wifi.ssid == cros->wifi_ssid()) {
+      if (cros->wifi_connected()) {
+        views::Window* window = views::Window::CreateChromeWindow(
+            host_->GetNativeWindow(),
+            gfx::Rect(),
+            new NetworkConfigView(wifi, false));
+        window->SetIsAlwaysOnTop(true);
+        window->Show();
+      }
+    } else {
+      // If wifi network is not encrypted, then directly connect.
+      // Otherwise, we open password dialog window.
+      if (!wifi.encrypted) {
+        cros->ConnectToWifiNetwork(wifi, string16());
+      } else {
+        views::Window* window = views::Window::CreateChromeWindow(
+            host_->GetNativeWindow(),
+            gfx::Rect(),
+            new NetworkConfigView(wifi, true));
+        window->SetIsAlwaysOnTop(true);
+        window->Show();
+      }
+    }
+  } else if (flags & FLAG_CELLULAR) {
+    CellularNetwork cellular = menu_items_[index].cellular_network;
+
+    // If clicked on a network that we are already connected to or we are
+    // currently trying to connect to, then open config dialog.
+    if (cellular.name == cros->cellular_name()) {
+      if (cros->cellular_connected()) {
+        views::Window* window = views::Window::CreateChromeWindow(
+            host_->GetNativeWindow(),
+            gfx::Rect(),
+            new NetworkConfigView(cellular));
+        window->SetIsAlwaysOnTop(true);
+        window->Show();
+      }
+    } else {
+      cros->ConnectToCellularNetwork(cellular);
+    }
   }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// NetworkMenuButton, PasswordDialogDelegate implementation:
-
-bool NetworkMenuButton::OnPasswordDialogAccept(const std::string& ssid,
-                                               const string16& password) {
-  NetworkLibrary::Get()->ConnectToWifiNetwork(activated_wifi_network_,
-                                              password);
-  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -438,6 +458,13 @@ void NetworkMenuButton::InitMenuItems() {
     menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
         SkBitmap(), WifiNetwork(), CellularNetwork(), FLAG_DISABLED));
   }
+
+  // Other networks
+  menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND,
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_OTHER_NETWORKS),
+      IconForDisplay(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0),
+                     SkBitmap()),
+      WifiNetwork(), CellularNetwork(), FLAG_OTHER_NETWORK));
 
   // Separator.
   menu_items_.push_back(MenuItem());

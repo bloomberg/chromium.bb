@@ -6843,8 +6843,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_TEXT_INPUT">
         Text Input
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_OPTIONS">
-        Options
+      <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_WIFI_CONFIG">
+        Wireless
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_IP_CONFIG">
+        Advanced Options
       </message>
       <message name="IDS_OPTIONS_SETTINGS_TIMEZONE_DESCRIPTION" desc="In the settings tab, the text next to the timezone combobox.">
         Timezone:
@@ -6869,6 +6872,21 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_OPTIONS_SETTINGS_OPTIONS" desc="In the settings tab, the text on the button to display more options.">
         Options...
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_OTHER_NETWORKS" desc="In the settings tab, the text on the button to display other networks.">
+        Other...
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SSID" desc="In settings internet options, the label for the ssid.">
+        Network id:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PASSPHRASE" desc="In settings internet options, the label for the passphrase.">
+        Network key:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_DONE" desc="In settings internet options, the label for the button done.">
+        Done
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_LOGIN" desc="In settings internet options, the label for the button login.">
+        Login
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CONFIGURE" desc="In settings internet options, the label for to configure the type of connection.">
         Configure:

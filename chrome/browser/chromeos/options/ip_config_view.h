@@ -7,35 +7,20 @@
 
 #include <string>
 
-#include "base/string16.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "views/window/dialog_delegate.h"
-
+#include "views/view.h"
 
 namespace views {
 class Textfield;
-class View;
-class Window;
 }
 
 namespace chromeos {
 
 // A dialog box for showing a password textfield.
-class IPConfigView : public views::View, public views::DialogDelegate {
+class IPConfigView : public views::View {
  public:
   explicit IPConfigView(const std::string& device_path);
   virtual ~IPConfigView() {}
-
-  // views::DialogDelegate methods.
-  virtual bool Cancel();
-  virtual bool Accept();
-
-  // views::WindowDelegate method.
-  virtual bool IsModal() const { return true; }
-  virtual views::View* GetContentsView() { return this; }
-
-  // views::View overrides.
-  virtual std::wstring GetWindowTitle() const;
 
  private:
   // Refreshes IP Config data.

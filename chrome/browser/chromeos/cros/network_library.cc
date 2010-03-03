@@ -113,6 +113,19 @@ void NetworkLibrary::ConnectToWifiNetwork(WifiNetwork network,
   }
 }
 
+void NetworkLibrary::ConnectToWifiNetwork(const string16& ssid,
+                                          const string16& password) {
+  if (CrosLibrary::EnsureLoaded()) {
+    // This call kicks off a request to connect to this network, the results of
+    // which we'll hear about through the monitoring we've set up in Init();
+    chromeos::ConnectToWifiNetwork(
+        UTF16ToUTF8(ssid).c_str(),
+        password.empty() ? NULL : UTF16ToUTF8(password).c_str(),
+        "rsn");
+    // TODO(chocobo): Make it support other encryptions.
+  }
+}
+
 void NetworkLibrary::ConnectToCellularNetwork(CellularNetwork network) {
   if (CrosLibrary::EnsureLoaded()) {
     // This call kicks off a request to connect to this network, the results of

@@ -11,7 +11,7 @@
 #include "app/throb_animation.h"
 #include "base/timer.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "chrome/browser/chromeos/status/password_dialog_view.h"
+#include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/menu/view_menu_delegate.h"
@@ -33,30 +33,26 @@ class StatusAreaHost;
 //
 // The network menu looks like this:
 //
-// <icon>  Wifi: <status>
-//         Turn Wifi <action>
-// <icon>     Wifi Network A
-// <check>    Wifi Network B
-// <icon>     Wifi Network C
+// <icon>  Ethernet
+// <icon>  Wifi Network A
+// <icon>  Wifi Network B
+// <icon>  Wifi Network C
+// <icon>  Cellular Network A
+// <icon>  Cellular Network B
+// <icon>  Cellular Network C
+// <icon>  Other...
 // --------------------------------
-// <icon>  Cellular: <status>
-//         Turn Cellular <action>
-// <icon>     Cellular Network A
-// <check>    Cellular Network B
-// <icon>     Cellular Network C
+//         Disable Wifi
+//         Disable Celluar
 // --------------------------------
-// <icon>  Ethernet: <status>
-//         Turn Ethernet <action>
+//         <IP Address>
+//         Network settings...
 //
-// <icon> will show the current state of the network device and the strength of
-//   the wifi/cellular networks.
-// <check> will be a check mark icon for the currently connected wifi.
-// <status> will be one of: Connected, Connecting, Disconnected, or Off.
-// <action> will be either On or Off depending on the current state.
+// <icon> will show the strength of the wifi/cellular networks.
+// The label will be BOLD if the network is currently connected.
 class NetworkMenuButton : public StatusAreaButton,
                           public views::ViewMenuDelegate,
                           public menus::MenuModel,
-                          public PasswordDialogDelegate,
                           public NetworkLibrary::Observer {
  public:
   explicit NetworkMenuButton(StatusAreaHost* host);
@@ -80,11 +76,6 @@ class NetworkMenuButton : public StatusAreaButton,
   virtual void HighlightChangedTo(int index) {}
   virtual void ActivatedAt(int index);
   virtual void MenuWillShow() {}
-
-  // PasswordDialogDelegate implementation.
-  virtual bool OnPasswordDialogCancel() { return true; }
-  virtual bool OnPasswordDialogAccept(const std::string& ssid,
-                                      const string16& password);
 
   // AnimationDelegate implementation.
   virtual void AnimationProgressed(const Animation* animation);
@@ -123,6 +114,7 @@ class NetworkMenuButton : public StatusAreaButton,
     FLAG_WIFI              = 1 << 7,
     FLAG_CELLULAR          = 1 << 8,
     FLAG_OPTIONS           = 1 << 9,
+    FLAG_OTHER_NETWORK     = 1 << 10,
   };
 
   struct MenuItem {
@@ -162,9 +154,6 @@ class NetworkMenuButton : public StatusAreaButton,
 
   // Our menu items.
   MenuItemVector menu_items_;
-
-  // The activated wifi network.
-  WifiNetwork activated_wifi_network_;
 
   // The status area host,
   StatusAreaHost* host_;

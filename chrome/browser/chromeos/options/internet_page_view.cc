@@ -8,7 +8,7 @@
 
 #include "app/combobox_model.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "chrome/browser/chromeos/options/ip_config_view.h"
+#include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/status/network_menu_button.h"
 #include "chrome/browser/chromeos/status/password_dialog_view.h"
 #include "grit/generated_resources.h"
@@ -27,7 +27,6 @@ namespace chromeos {
 class NetworkSection : public SettingsPageSection,
                        public views::Combobox::Listener,
                        public views::ButtonListener,
-                       public PasswordDialogDelegate,
                        public NetworkLibrary::Observer {
  public:
   explicit NetworkSection(Profile* profile);
@@ -40,11 +39,6 @@ class NetworkSection : public SettingsPageSection,
 
   // Overriden from views::Button::ButtonListener:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
-
-  // PasswordDialogDelegate implementation.
-  virtual bool OnPasswordDialogCancel();
-  virtual bool OnPasswordDialogAccept(const std::string& ssid,
-                                      const string16& password);
 
   // NetworkLibrary::Observer implementation.
   virtual void NetworkChanged(NetworkLibrary* obj);
@@ -156,11 +150,14 @@ void NetworkSection::ItemChanged(views::Combobox* sender,
   last_selected_wifi_ssid_index_ = prev_index;
   activated_wifi_network_ = wifi_ssid_model_.GetWifiNetworkAt(new_index);
   // Connect to wifi here. Open password page if appropriate.
+  // Immediately, change combobox to previous setting.
+  // If connection was successful, it will be change to new network.
+  wifi_ssid_combobox_->SetSelectedItem(last_selected_wifi_ssid_index_);
   if (activated_wifi_network_.encrypted) {
     views::Window* window = views::Window::CreateChromeWindow(
         NULL,
         gfx::Rect(),
-        new PasswordDialogView(this, activated_wifi_network_.ssid));
+        new NetworkConfigView(activated_wifi_network_, true));
     window->SetIsAlwaysOnTop(true);
     window->Show();
   } else {
@@ -175,32 +172,25 @@ void NetworkSection::ButtonPressed(views::Button* sender,
     views::Window* window = views::Window::CreateChromeWindow(
         NULL,
         gfx::Rect(),
-        new IPConfigView(
-            NetworkLibrary::Get()->ethernet_network().device_path));
+        new NetworkConfigView(NetworkLibrary::Get()->ethernet_network()));
     window->SetIsAlwaysOnTop(true);
     window->Show();
   } else if (sender == wifi_options_button_) {
     views::Window* window = views::Window::CreateChromeWindow(
         NULL,
         gfx::Rect(),
-        new IPConfigView(activated_wifi_network_.device_path));
+        new NetworkConfigView(activated_wifi_network_, false));
     window->SetIsAlwaysOnTop(true);
     window->Show();
   } else if (sender == cellular_options_button_) {
+    // TODO(chocobo): Fix to use real cellular networks.
+    views::Window* window = views::Window::CreateChromeWindow(
+        NULL,
+        gfx::Rect(),
+        new NetworkConfigView(CellularNetwork()));
+    window->SetIsAlwaysOnTop(true);
+    window->Show();
   }
-}
-
-bool NetworkSection::OnPasswordDialogCancel() {
-  // Change combobox to previous setting.
-  wifi_ssid_combobox_->SetSelectedItem(last_selected_wifi_ssid_index_);
-  return true;
-}
-
-bool NetworkSection::OnPasswordDialogAccept(const std::string& ssid,
-                                            const string16& password) {
-  NetworkLibrary::Get()->ConnectToWifiNetwork(activated_wifi_network_,
-                                              password);
-  return true;
 }
 
 void NetworkSection::NetworkChanged(NetworkLibrary* obj) {

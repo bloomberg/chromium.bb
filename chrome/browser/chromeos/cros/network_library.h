@@ -191,6 +191,9 @@ class NetworkLibrary : public URLRequestJobTracker::JobObserver {
   // Connect to the specified wireless network with password.
   void ConnectToWifiNetwork(WifiNetwork network, const string16& password);
 
+  // Connect to the specified wifi ssid with password.
+  void ConnectToWifiNetwork(const string16& ssid, const string16& password);
+
   // Connect to the specified cellular network.
   void ConnectToCellularNetwork(CellularNetwork network);
 
