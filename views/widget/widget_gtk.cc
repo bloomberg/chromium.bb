@@ -807,13 +807,16 @@ gboolean WidgetGtk::OnMotionNotify(GtkWidget* widget, GdkEventMotion* event) {
 }
 
 gboolean WidgetGtk::OnButtonPress(GtkWidget* widget, GdkEventButton* event) {
-  ProcessMousePressed(event);
-  return true;
+  return ProcessMousePressed(event);
 }
 
 gboolean WidgetGtk::OnButtonRelease(GtkWidget* widget, GdkEventButton* event) {
   ProcessMouseReleased(event);
   return true;
+}
+
+gboolean WidgetGtk::OnScroll(GtkWidget* widget, GdkEventScroll* event) {
+  return ProcessScroll(event);
 }
 
 gboolean WidgetGtk::OnFocusIn(GtkWidget* widget, GdkEventFocus* event) {
@@ -936,18 +939,10 @@ bool WidgetGtk::ProcessMousePressed(GdkEventButton* event) {
     return true;
   }
 
-  // An event may come from a child widget which has its own gdk window.
-  // Translate it to the widget's cooridnate.
-  int x = event->x;
-  int y = event->y;
-  GdkWindow* dest = GTK_WIDGET(window_contents_)->window;
-  if (event->window != dest) {
-    int dest_x, dest_y;
-    gdk_window_get_root_origin(dest, &dest_x, &dest_y);
-    x = event->x_root - dest_x;
-    y = event->y_root - dest_y;
-  }
-
+  // An event may come from a contained widget which has its own gdk window.
+  // Translate it to the widget's coordinates.
+  int x, y;
+  GetContainedWidgetEventCoordinates(event, &x, &y);
   last_mouse_event_was_move_ = false;
   MouseEvent mouse_pressed(Event::ET_MOUSE_PRESSED, x, y,
                            GetFlagsForEventButton(*event));
@@ -968,13 +963,44 @@ void WidgetGtk::ProcessMouseReleased(GdkEventButton* event) {
                       GetFlagsForEventButton(*event));
   // Release the capture first, that way we don't get confused if
   // OnMouseReleased blocks.
-
   if (has_capture_ && ReleaseCaptureOnMouseReleased())
     ReleaseGrab();
   is_mouse_down_ = false;
   // GTK generates a mouse release at the end of dnd. We need to ignore it.
   if (!drag_data_)
     root_view_->OnMouseReleased(mouse_up, false);
+}
+
+bool WidgetGtk::ProcessScroll(GdkEventScroll* event) {
+  // An event may come from a contained widget which has its own gdk window.
+  // Translate it to the widget's coordinates.
+  int x, y;
+  GetContainedWidgetEventCoordinates(event, &x, &y);
+  int flags = Event::GetFlagsFromGdkState(event->state);
+  int increment = 0;
+  bool is_horizontal;
+  switch (event->direction) {
+    case GDK_SCROLL_UP:
+      increment = -1;
+      is_horizontal = false;
+      break;
+    case GDK_SCROLL_DOWN:
+      increment = 1;
+      is_horizontal = false;
+      break;
+    case GDK_SCROLL_LEFT:
+      increment = -1;
+      is_horizontal = true;
+      break;
+    case GDK_SCROLL_RIGHT:
+      increment = 1;
+      is_horizontal = false;
+      break;
+  }
+  increment *= is_horizontal ? root_view_->width() / 5 :
+      root_view_->height() / 5;
+  MouseWheelEvent wheel_event(increment, x, y, flags);
+  return root_view_->ProcessMouseWheelEvent(wheel_event);
 }
 
 // static

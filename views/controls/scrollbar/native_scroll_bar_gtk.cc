@@ -80,7 +80,7 @@ bool NativeScrollBarGtk::OnKeyPressed(const KeyEvent& event) {
 }
 
 bool NativeScrollBarGtk::OnMouseWheel(const MouseWheelEvent& e) {
-  if (!native_view() || native_scroll_bar_->IsHorizontal())
+  if (!native_view())
     return false;
   MoveBy(e.GetOffset());
   return true;
@@ -180,6 +180,10 @@ void NativeScrollBarGtk::MoveStep(bool positive) {
 }
 
 void NativeScrollBarGtk::MoveTo(int p) {
+  if (p < native_scroll_bar_->GetMinPosition())
+    p = native_scroll_bar_->GetMinPosition();
+  if (p > native_scroll_bar_->GetMaxPosition())
+    p = native_scroll_bar_->GetMaxPosition();
   GtkAdjustment* adj = gtk_range_get_adjustment(GTK_RANGE(native_view()));
   gtk_adjustment_set_value(adj, p);
 }

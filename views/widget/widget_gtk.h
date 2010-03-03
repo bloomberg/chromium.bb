@@ -186,6 +186,26 @@ class WidgetGtk
   virtual View* GetFocusTraversableParentView();
 
  protected:
+  // If widget containes another widget, translates event coordinates to the
+  // contained widget's coordinates, else returns original event coordinates.
+  template<class Event> bool GetContainedWidgetEventCoordinates(Event* event,
+                                                                int* x,
+                                                                int* y) {
+    if (event == NULL || x == NULL || y == NULL)
+      return false;
+    *x = event->x;
+    *y = event->y;
+    GdkWindow* dest = GTK_WIDGET(window_contents_)->window;
+    if (event->window != dest) {
+      int dest_x, dest_y;
+      gdk_window_get_root_origin(dest, &dest_x, &dest_y);
+      *x = event->x_root - dest_x;
+      *y = event->y_root - dest_y;
+      return true;
+    }
+    return false;
+  }
+
   // Returns the view::Event::flags for a GdkEventButton.
   static int GetFlagsForEventButton(const GdkEventButton& event);
 
@@ -228,9 +248,7 @@ class WidgetGtk
                                   gint y,
                                   gboolean keyboard_mode,
                                   GtkTooltip* tooltip);
-  virtual gboolean OnScroll(GtkWidget* widget, GdkEventScroll* event) {
-    return false;
-  }
+  virtual gboolean OnScroll(GtkWidget* widget, GdkEventScroll* event);
   virtual gboolean OnVisibilityNotify(GtkWidget* widget,
                                       GdkEventVisibility* event) {
     return false;
@@ -271,6 +289,8 @@ class WidgetGtk
   // Process a mouse click.
   bool ProcessMousePressed(GdkEventButton* event);
   void ProcessMouseReleased(GdkEventButton* event);
+  // Process scroll event.
+  bool ProcessScroll(GdkEventScroll* event);
 
   static void SetRootViewForWidget(GtkWidget* widget, RootView* root_view);
 
