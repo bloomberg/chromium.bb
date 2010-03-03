@@ -2733,6 +2733,8 @@
                 ['include', '^browser/gtk/clear_browsing_data_dialog_gtk.h'],
                 ['include', '^browser/gtk/constrained_window_gtk.cc'],
                 ['include', '^browser/gtk/constrained_window_gtk.h'],
+                ['include', '^browser/gtk/cookie_display_gtk.cc'],
+                ['include', '^browser/gtk/cookie_display_gtk.h'],
                 ['include', '^browser/gtk/download_started_animation_gtk.cc'],
                 ['include', '^browser/gtk/edit_search_engine_dialog.cc'],
                 ['include', '^browser/gtk/edit_search_engine_dialog.h'],
