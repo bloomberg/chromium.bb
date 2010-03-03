@@ -20,10 +20,10 @@
 #include "base/process_util.h"
 #include "base/scoped_comptr_win.h"
 #include "base/scoped_variant_win.h"
+#include "gmock/gmock.h"
 
 #include "chrome_frame/test_utils.h"
 #include "chrome_frame/test/simulate_input.h"
-#include "testing/gmock/include/gmock/gmock.h"
 
 // Include without path to make GYP build see it.
 #include "chrome_tab.h"  // NOLINT
