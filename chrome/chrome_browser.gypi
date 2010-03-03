@@ -1068,6 +1068,8 @@
         'browser/gtk/constrained_window_gtk.h',
         'browser/gtk/content_blocked_bubble_gtk.cc',
         'browser/gtk/content_blocked_bubble_gtk.h',
+        'browser/gtk/cookie_display_gtk.cc',
+        'browser/gtk/cookie_display_gtk.h',
         'browser/gtk/create_application_shortcuts_dialog_gtk.cc',
         'browser/gtk/create_application_shortcuts_dialog_gtk.h',
         'browser/gtk/custom_button.cc',
