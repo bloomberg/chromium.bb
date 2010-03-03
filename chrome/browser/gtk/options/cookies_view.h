@@ -19,7 +19,6 @@
 #include "net/base/cookie_monster.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
-class CookieDisplayGtk;
 class CookiesTreeModel;
 class CookiesViewTest;
 class Profile;
@@ -57,11 +56,50 @@ class CookiesView : public gtk_tree::TreeAdapter::Delegate {
   // Initialize the dialog contents and layout.
   void Init(GtkWindow* parent);
 
+  // Initialize the widget styles and display the dialog.
+  void InitStylesAndShow();
+
+  // Helper for initializing cookie / local storage details table.
+  void InitDetailRow(int row, int label_id,
+                     GtkWidget* details_table, GtkWidget** display_label);
+
   // Set the initial selection and tree expanded state.
   void SetInitialTreeState();
 
   // Set sensitivity of buttons based on selection and filter state.
   void EnableControls();
+
+  // Set sensitivity of cookie details.
+  void SetCookieDetailsSensitivity(gboolean enabled);
+
+  // Set sensitivity of database details.
+  void SetDatabaseDetailsSensitivity(gboolean enabled);
+
+  // Set sensitivity of local storage details.
+  void SetLocalStorageDetailsSensitivity(gboolean enabled);
+
+  // Set sensitivity of appcache details.
+  void SetAppCacheDetailsSensitivity(gboolean enabled);
+
+  // Show the details of the currently selected cookie.
+  void PopulateCookieDetails(const std::string& domain,
+                             const net::CookieMonster::CanonicalCookie& cookie);
+
+  // Show the details of the currently selected database.
+  void PopulateDatabaseDetails(
+      const BrowsingDataDatabaseHelper::DatabaseInfo& database_info);
+
+  // Show the details of the currently selected local storage.
+  void PopulateLocalStorageDetails(
+      const BrowsingDataLocalStorageHelper::LocalStorageInfo&
+      local_storage_info);
+
+  // Show the details of the currently selected appcache.
+  void PopulateAppCacheDetails(
+      const BrowsingDataAppCacheHelper::AppCacheInfo& info);
+
+  // Reset the cookie details display.
+  void ClearCookieDetails();
 
   // Remove any cookies that are currently selected.
   void RemoveSelectedItems();
@@ -88,6 +126,9 @@ class CookiesView : public gtk_tree::TreeAdapter::Delegate {
   // Filter the list against the text in |filter_entry_|.
   void UpdateFilterResults();
 
+  // Sets which of the detailed info table is visible.
+  void UpdateVisibleDetailedInfo(GtkWidget* table);
+
   // Callbacks for user actions filtering the list.
   static void OnFilterEntryActivated(GtkEntry* entry, CookiesView* window);
   static void OnFilterEntryChanged(GtkEditable* editable, CookiesView* window);
@@ -108,7 +149,35 @@ class CookiesView : public gtk_tree::TreeAdapter::Delegate {
   GtkWidget* tree_;
   GtkTreeSelection* selection_;
 
-  scoped_ptr<CookieDisplayGtk> cookie_display_gtk_;
+  // The cookie details widgets.
+  GtkWidget* cookie_details_table_;
+  GtkWidget* cookie_name_entry_;
+  GtkWidget* cookie_content_entry_;
+  GtkWidget* cookie_domain_entry_;
+  GtkWidget* cookie_path_entry_;
+  GtkWidget* cookie_send_for_entry_;
+  GtkWidget* cookie_created_entry_;
+  GtkWidget* cookie_expires_entry_;
+
+  // The database details widgets.
+  GtkWidget* database_details_table_;
+  GtkWidget* database_name_entry_;
+  GtkWidget* database_description_entry_;
+  GtkWidget* database_size_entry_;
+  GtkWidget* database_last_modified_entry_;
+
+  // The local storage details widgets.
+  GtkWidget* local_storage_details_table_;
+  GtkWidget* local_storage_origin_entry_;
+  GtkWidget* local_storage_size_entry_;
+  GtkWidget* local_storage_last_modified_entry_;
+
+  // The appcache details widgets.
+  GtkWidget* appcache_details_table_;
+  GtkWidget* appcache_manifest_entry_;
+  GtkWidget* appcache_size_entry_;
+  GtkWidget* appcache_created_entry_;
+  GtkWidget* appcache_last_accessed_entry_;
 
   // The profile and related helpers.
   Profile* profile_;
