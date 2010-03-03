@@ -28,8 +28,7 @@
 #include "chrome/test/ui_test_utils.h"
 #include "net/base/net_util.h"
 
-const std::string kSubscribePage =
-    "chrome-extension://flpjckblglahjimhgaagkpdjdcojkgil/subscribe.html";
+const std::string kSubscribePage = "/subscribe.html";
 const std::wstring kFeedPage = L"files/feeds/feed.html";
 const std::wstring kFeedPageMultiRel = L"files/feeds/feed_multi_rel.html";
 const std::wstring kNoFeedPage = L"files/feeds/no_feed.html";
@@ -342,13 +341,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationPageAction) {
 }
 
 GURL GetFeedUrl(HTTPTestServer* server, const std::wstring& feed_page,
-                bool direct_url) {
+                bool direct_url, std::string extension_id) {
   GURL feed_url = server->TestServerPageW(feed_page);
   if (direct_url) {
     // We navigate directly to the subscribe page for feeds where the feed
     // sniffing won't work, in other words, as is the case for malformed feeds.
-    return GURL(std::string(kSubscribePage) + std::string("?") +
-                feed_url.spec() + std::string("&synchronous"));
+    return GURL(std::string(chrome::kExtensionScheme) +
+        chrome::kStandardSchemeSeparator +
+        extension_id + std::string(kSubscribePage) + std::string("?") +
+        feed_url.spec() + std::string("&synchronous"));
   } else {
     // Navigate to the feed content (which will cause the extension to try to
     // sniff the type and display the subscribe page in another tab.
@@ -424,8 +425,18 @@ void NavigateToFeedAndValidate(HTTPTestServer* server,
                                const std::string& expected_item_title,
                                const std::string& expected_item_desc,
                                const std::string& expected_error) {
+  std::string extension_id;
+  if (!sniff_xml_type) {
+    // There should be only one extension in the list (ours). Get its id.
+    ExtensionsService* service = browser->profile()->GetExtensionsService();
+    ASSERT_EQ(1u, service->extensions()->size());
+    Extension* extension = (*service->extensions())[0];
+    extension_id = extension->id();
+  }
+
   ui_test_utils::NavigateToURL(browser,
-                               GetFeedUrl(server, url, !sniff_xml_type));
+                               GetFeedUrl(server, url,
+                                          !sniff_xml_type, extension_id));
 
   if (sniff_xml_type) {
     // Navigate to the feed will cause the extension to sniff the type and
@@ -535,7 +546,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedValidFeed5) {
                             "This feed contains no entries.");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_ParseFeedInvalidFeed1) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedInvalidFeed1) {
   HTTPTestServer* server = StartHTTPServer();
 
   ASSERT_TRUE(LoadExtension(
@@ -549,7 +560,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_ParseFeedInvalidFeed1) {
                             "Not a valid feed.");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_ParseFeedInvalidFeed2) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedInvalidFeed2) {
   HTTPTestServer* server = StartHTTPServer();
 
   ASSERT_TRUE(LoadExtension(
@@ -563,7 +574,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_ParseFeedInvalidFeed2) {
                             "Not a valid feed.");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_ParseFeedInvalidFeed3) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedInvalidFeed3) {
   HTTPTestServer* server = StartHTTPServer();
 
   ASSERT_TRUE(LoadExtension(
