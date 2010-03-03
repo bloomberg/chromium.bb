@@ -488,14 +488,36 @@ void ClipboardUtil::CFHtmlToHtml(const std::string& cf_html,
     }
   }
 
-  // Find the markup between "<!--StartFragment -->" and "<!--EndFragment-->".
+  // Find the markup between "<!--StartFragment-->" and "<!--EndFragment-->".
+  // If the comments cannot be found, like copying from OpenOffice Writer,
+  // we simply fall back to using StartFragment/EndFragment bytecount values
+  // to get the markup.
   if (html) {
+    size_t fragment_start = std::string::npos;
+    size_t fragment_end = std::string::npos;
+
     std::string cf_html_lower = StringToLowerASCII(cf_html);
     size_t markup_start = cf_html_lower.find("<html", 0);
-    size_t tag_start = cf_html.find("StartFragment", markup_start);
-    size_t fragment_start = cf_html.find('>', tag_start) + 1;
-    size_t tag_end = cf_html.rfind("EndFragment", std::string::npos);
-    size_t fragment_end = cf_html.rfind('<', tag_end);
+    size_t tag_start = cf_html.find("<!--StartFragment", markup_start);
+    if (tag_start == std::string::npos) {
+      static std::string start_fragment_str("StartFragment:");
+      size_t start_fragment_start = cf_html.find(start_fragment_str);
+      if (start_fragment_start != std::string::npos) {
+        fragment_start = static_cast<size_t>(atoi(cf_html.c_str() +
+            start_fragment_start + start_fragment_str.length()));
+      }
+
+      static std::string end_fragment_str("EndFragment:");
+      size_t end_fragment_start = cf_html.find(end_fragment_str);
+      if (end_fragment_start != std::string::npos) {
+        fragment_end = static_cast<size_t>(atoi(cf_html.c_str() +
+            end_fragment_start + end_fragment_str.length()));
+      }
+    } else {
+      fragment_start = cf_html.find('>', tag_start) + 1;
+      size_t tag_end = cf_html.rfind("<!--EndFragment", std::string::npos);
+      fragment_end = cf_html.rfind('<', tag_end);
+    }
     if (fragment_start != std::string::npos &&
         fragment_end != std::string::npos) {
       *html = cf_html.substr(fragment_start, fragment_end - fragment_start);

@@ -5,6 +5,9 @@
 #include <string>
 
 #include "app/clipboard/clipboard.h"
+#if defined(OS_WIN)
+#include "app/clipboard/clipboard_util_win.h"
+#endif
 #include "app/clipboard/scoped_clipboard_writer.h"
 #include "base/basictypes.h"
 #include "base/gfx/size.h"
@@ -333,6 +336,48 @@ TEST_F(ClipboardTest, BitmapTest) {
 
   EXPECT_TRUE(clipboard.IsFormatAvailable(Clipboard::GetBitmapFormatType(),
                                           Clipboard::BUFFER_STANDARD));
+}
+
+void HtmlTestHelper(const std::string& cf_html,
+                    const std::string& expected_html) {
+  std::string html;
+  ClipboardUtil::CFHtmlToHtml(cf_html, &html, NULL);
+  EXPECT_EQ(html, expected_html);
+}
+
+TEST_F(ClipboardTest, HtmlTest) {
+  // Test converting from CF_HTML format data with <!--StartFragment--> and
+  // <!--EndFragment--> comments, like from MS Word.
+  HtmlTestHelper("Version:1.0\r\n"
+                 "StartHTML:0000000105\r\n"
+                 "EndHTML:0000000199\r\n"
+                 "StartFragment:0000000123\r\n"
+                 "EndFragment:0000000161\r\n"
+                 "\r\n"
+                 "<html>\r\n"
+                 "<body>\r\n"
+                 "<!--StartFragment-->\r\n"
+                 "\r\n"
+                 "<p>Foo</p>\r\n"
+                 "\r\n"
+                 "<!--EndFragment-->\r\n"
+                 "</body>\r\n"
+                 "</html>\r\n\r\n",
+                 "<p>Foo</p>");
+
+  // Test converting from CF_HTML format data without <!--StartFragment--> and
+  // <!--EndFragment--> comments, like from OpenOffice Writer.
+  HtmlTestHelper("Version:1.0\r\n"
+                 "StartHTML:0000000105\r\n"
+                 "EndHTML:0000000151\r\n"
+                 "StartFragment:0000000121\r\n"
+                 "EndFragment:0000000131\r\n"
+                 "<html>\r\n"
+                 "<body>\r\n"
+                 "<p>Foo</p>\r\n"
+                 "</body>\r\n"
+                 "</html>\r\n\r\n",
+                 "<p>Foo</p>");
 }
 #endif  // defined(OS_WIN)
 
