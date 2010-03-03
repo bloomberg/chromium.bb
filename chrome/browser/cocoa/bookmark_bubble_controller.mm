@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "chrome/browser/cocoa/bookmark_bubble_controller.h"
 #include "app/l10n_util_mac.h"
 #include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
-#import "chrome/browser/cocoa/bookmark_bubble_controller.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "grit/generated_resources.h"
 
@@ -67,6 +67,15 @@
   [super dealloc];
 }
 
+// Close the bookmark bubble without changing anything.  Unlike a
+// typical dialog's OK/Cancel, where Cancel is "do nothing", all
+// buttons on the bubble have the capacity to change the bookmark
+// model.  This is an IBOutlet-looking entry point to remove the
+// dialog without touching the model.
+- (void)dismissWithoutEditing:(id)sender {
+  [self close];
+}
+
 - (void)parentWindowWillClose:(NSNotification*)notification {
   [self close];
 }
@@ -74,6 +83,7 @@
 - (void)windowWillClose:(NSNotification*)notification {
   // We caught a close so we don't need to watch for the parent closing.
   [[NSNotificationCenter defaultCenter] removeObserver:self];
+  observer_.reset(NULL);
   [self autorelease];
 }
 
@@ -98,6 +108,15 @@
   }
 
   [self fillInFolderList];
+
+  // Ping me when things change out from under us.  Unlike a normal
+  // dialog, the bookmark bubble's cancel: means "don't add this as a
+  // bookmark", not "cancel editing".  We must take extra care to not
+  // touch the bookmark in this selector.
+  observer_.reset(new BookmarkModelObserverForCocoa(
+                      node_, model_,
+                      self,
+                      @selector(dismissWithoutEditing:)));
 
   [window makeKeyAndOrderFront:self];
 }

@@ -4,7 +4,8 @@
 
 #import <Cocoa/Cocoa.h>
 #import "base/cocoa_protocols_mac.h"
-#include "base/scoped_nsobject.h"
+#include "base/scoped_ptr.h"
+#import "chrome/browser/cocoa/bookmark_model_observer_for_cocoa.h"
 
 class BookmarkModel;
 class BookmarkNode;
@@ -24,6 +25,9 @@ class BookmarkNode;
   const BookmarkNode* node_;  // weak
 
   BOOL alreadyBookmarked_;
+
+  // Ping me when things change out from under us.
+  scoped_ptr<BookmarkModelObserverForCocoa> observer_;
 
   IBOutlet NSTextField* bigTitle_;   // "Bookmark" or "Bookmark Added!"
   IBOutlet NSTextField* nameTextField_;

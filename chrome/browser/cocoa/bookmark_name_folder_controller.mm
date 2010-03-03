@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "chrome/browser/cocoa/bookmark_name_folder_controller.h"
 #include "app/l10n_util.h"
 #include "app/l10n_util_mac.h"
 #include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/profile.h"
-#import "chrome/browser/cocoa/bookmark_name_folder_controller.h"
+#include "chrome/browser/cocoa/bookmark_model_observer_for_cocoa.h"
 #include "grit/generated_resources.h"
 
 @implementation BookmarkNameFolderController
@@ -37,8 +38,13 @@
   [nameField_ setStringValue:initialName_.get()];
 }
 
-// TODO(jrg): consider NSModalSession.
 - (void)runAsModalSheet {
+  // Ping me when things change out from under us.
+  observer_.reset(new BookmarkModelObserverForCocoa(
+                    node_, profile_->GetBookmarkModel(),
+                    self,
+                    @selector(cancel:)));
+
   [NSApp beginSheet:[self window]
      modalForWindow:parentWindow_
       modalDelegate:self
@@ -72,6 +78,7 @@
          returnCode:(int)returnCode
         contextInfo:(void*)contextInfo {
   [[self window] orderOut:self];
+  observer_.reset(NULL);
   [self autorelease];
 }
 

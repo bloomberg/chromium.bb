@@ -7,9 +7,11 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/scoped_ptr.h"
 #include "base/scoped_nsobject.h"
+#include "base/scoped_ptr.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+
+class BookmarkModelObserverForCocoa;
 
 // A controller for dialog to let the user create a new folder or
 // rename an existing folder.  Accessible from a context menu on a
@@ -21,8 +23,12 @@
 
   NSWindow* parentWindow_;  // weak
   Profile* profile_;  // weak
-  const BookmarkNode* node_;  // weak; owned by the model
+  // Weak; owned by the model.  Can be NULL (see below).
+  const BookmarkNode* node_;
   scoped_nsobject<NSString> initialName_;
+
+  // Ping me when things change out from under us.
+  scoped_ptr<BookmarkModelObserverForCocoa> observer_;
 }
 // If |node| is NULL, this is an "add folder" request.
 // Else it is a "rename an existing folder" request.
