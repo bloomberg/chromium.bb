@@ -816,7 +816,8 @@ void WebPluginDelegatePepper::ScheduleHandleRepaint(
 
 void WebPluginDelegatePepper::ForwardHandleRepaint(
     NPP npp, NPDeviceContext3D* context) {
-  context->repaintCallback(npp, context);
+  if (context->repaintCallback)
+    context->repaintCallback(npp, context);
   ScheduleHandleRepaint(npp, context);
 }
 
