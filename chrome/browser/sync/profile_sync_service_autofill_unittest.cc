@@ -20,7 +20,6 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
-#include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/browser/webdata/autofill_entry.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/common/notification_service.h"
@@ -40,6 +39,35 @@ using testing::DoAll;
 using testing::DoDefault;
 using testing::Return;
 using testing::SetArgumentPointee;
+
+class TestingProfileSyncService : public ProfileSyncService {
+ public:
+  explicit TestingProfileSyncService(ProfileSyncFactory* factory,
+                                     Profile* profile,
+                                     bool bootstrap_sync_authentication)
+      : ProfileSyncService(factory, profile, bootstrap_sync_authentication) {
+    RegisterPreferences();
+    SetSyncSetupCompleted();
+  }
+  virtual ~TestingProfileSyncService() {
+  }
+
+  virtual void InitializeBackend(bool delete_sync_data_folder) {
+    browser_sync::TestHttpBridgeFactory* factory =
+        new browser_sync::TestHttpBridgeFactory();
+    browser_sync::TestHttpBridgeFactory* factory2 =
+        new browser_sync::TestHttpBridgeFactory();
+    backend()->InitializeForTestMode(L"testuser", factory, factory2,
+        delete_sync_data_folder, browser_sync::kDefaultNotificationMethod);
+  }
+
+ private:
+  // When testing under ChromiumOS, this method must not return an empty
+  // value value in order for the profile sync service to start.
+  virtual std::string GetLsidForAuthBootstraping() {
+    return "foo";
+  }
+};
 
 class TestAutofillModelAssociator
     : public TestModelAssociator<AutofillModelAssociator> {
@@ -163,7 +191,8 @@ class ProfileSyncServiceAutofillTest : public testing::Test {
 
   void StartSyncService() {
     if (!service_.get()) {
-      service_.reset(new TestProfileSyncService(&factory_, &profile_, false));
+      service_.reset(
+          new TestingProfileSyncService(&factory_, &profile_, false));
       service_->AddObserver(&observer_);
       AutofillDataTypeController* data_type_controller =
           new AutofillDataTypeController(&factory_,
@@ -267,7 +296,7 @@ class ProfileSyncServiceAutofillTest : public testing::Test {
   WaitableEvent done_event_;
   scoped_refptr<DBThreadNotificationService> notification_service_;
 
-  scoped_ptr<TestProfileSyncService> service_;
+  scoped_ptr<TestingProfileSyncService> service_;
   ProfileMock profile_;
   ProfileSyncFactoryMock factory_;
   ProfileSyncServiceObserverMock observer_;
@@ -277,8 +306,7 @@ class ProfileSyncServiceAutofillTest : public testing::Test {
 
 // TODO(sync): Test unrecoverable error during MA.
 
-// http://code.google.com/p/chromium/issues/detail?id=37244
-TEST_F(ProfileSyncServiceAutofillTest, DISABLED_EmptyNativeEmptySync) {
+TEST_F(ProfileSyncServiceAutofillTest, EmptyNativeEmptySync) {
   EXPECT_CALL(web_database_, GetAllAutofillEntries(_)).WillOnce(Return(true));
   SetIdleChangeProcessorExpectations();
   StartSyncService();
@@ -287,8 +315,7 @@ TEST_F(ProfileSyncServiceAutofillTest, DISABLED_EmptyNativeEmptySync) {
   EXPECT_EQ(0U, sync_entries.size());
 }
 
-// http://code.google.com/p/chromium/issues/detail?id=37244
-TEST_F(ProfileSyncServiceAutofillTest, DISABLED_HasNativeEmptySync) {
+TEST_F(ProfileSyncServiceAutofillTest, HasNativeEmptySync) {
   std::vector<AutofillEntry> entries;
   entries.push_back(MakeAutofillEntry("foo", "bar", 1));
   EXPECT_CALL(web_database_, GetAllAutofillEntries(_)).
@@ -301,8 +328,7 @@ TEST_F(ProfileSyncServiceAutofillTest, DISABLED_HasNativeEmptySync) {
   EXPECT_TRUE(entries[0] == sync_entries[0]);
 }
 
-// http://code.google.com/p/chromium/issues/detail?id=37244
-TEST_F(ProfileSyncServiceAutofillTest, DISABLED_HasNativeWithDuplicatesEmptySync) {
+TEST_F(ProfileSyncServiceAutofillTest, HasNativeWithDuplicatesEmptySync) {
   // There is buggy autofill code that allows duplicate name/value
   // pairs to exist in the database with separate pair_ids.
   std::vector<AutofillEntry> entries;
