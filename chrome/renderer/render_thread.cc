@@ -777,6 +777,9 @@ void RenderThread::EnsureWebKitInitialized() {
 
   WebRuntimeFeatures::enableGeolocation(
       command_line.HasSwitch(switches::kEnableGeolocation));
+
+  WebRuntimeFeatures::enableWebGL(
+      command_line.HasSwitch(switches::kEnableExperimentalWebGL));
 }
 
 void RenderThread::IdleHandler() {

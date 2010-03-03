@@ -541,6 +541,11 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     // We propagate the Chrome Frame command line here as well in case the
     // renderer is not run in the sandbox.
     switches::kChromeFrame,
+    // We need to propagate this flag to determine whether to make the
+    // WebGLArray constructors on the DOMWindow visible. This
+    // information is needed very early during bringup. We prefer to
+    // use the WebPreferences to set this flag on a page-by-page basis.
+    switches::kEnableExperimentalWebGL,
 #if defined(OS_MACOSX)
     // Allow this to be set when invoking the browser and relayed along.
     switches::kEnableSandboxLogging,
