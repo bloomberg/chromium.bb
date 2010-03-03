@@ -5,7 +5,8 @@
 #ifndef CHROME_RENDERER_PEPPER_DEVICES_H_
 #define CHROME_RENDERER_PEPPER_DEVICES_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/scoped_ptr.h"
 #include "base/shared_memory.h"
 #include "base/simple_thread.h"
@@ -59,7 +60,7 @@ class AudioDeviceContext : public AudioMessageFilter::Delegate,
                      NPDeviceContextAudio* context);
 
   base::SharedMemory* shared_memory() { return shared_memory_.get(); }
-  int32 shared_memory_size() { return shared_memory_size_; }
+  uint32_t shared_memory_size() { return shared_memory_size_; }
   base::SyncSocket* socket() { return socket_.get(); }
 
  private:
