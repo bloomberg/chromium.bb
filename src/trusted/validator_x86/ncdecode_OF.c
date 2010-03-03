@@ -78,6 +78,7 @@ static void DefineBswap() {
 }
 
 void Define0FOpcodes() {
+  int i;
   DefineOpcodePrefix(Prefix0F);
 
   /* Note: The SSE instructions that begin with 0F are not defined here. Look
@@ -110,6 +111,11 @@ void Define0FOpcodes() {
                InstPrefetcht2);
   DefineOperand(Opcode3, OpFlag(OperandExtendsOpcode));
   DefineOperand(Mb_Operand, (OperandFlags) 0);
+
+  for (i = 4; i < 8; ++i) {
+    DefineOpcode(0x18, NACLi_386, InstFlag(OpcodeInModRm), InstNop);
+    DefineOperand(Opcode0 + i, OpFlag(OperandExtendsOpcode));
+  }
 
   /* TODO(karl) Should we verify the contents of the nop matches table 4.1
    * in Intel manual? (i.e. only allow valid forms of modrm data and

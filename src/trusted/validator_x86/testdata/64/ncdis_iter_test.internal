@@ -614,7 +614,7 @@ ExprNodeVector[4] = {
 0000000000000000: 48 8d 2d 0f 07 20 00                         lea %rbp, [%rip+0x20070f]
   { 1, { 0x8d, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeUsesRexW) | InstFlag(OpcodeUsesModRm) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
+    InstFlag(OpcodeUsesRexW) | InstFlag(OpcodeLtC0InModRm) | InstFlag(OpcodeUsesModRm) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
     InstLea,
     2, {
       { G_Operand, OpFlag(OpSet) },
@@ -1832,7 +1832,7 @@ ExprNodeVector[8] = {
 0000000000000000: 8d 04 85 ff ff ff ff                         lea %eax, [%rax*4-0x1]
   { 1, { 0x8d, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+    InstFlag(OpcodeLtC0InModRm) | InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
     InstLea,
     2, {
       { G_Operand, OpFlag(OpSet) | OpFlag(OperandZeroExtends_v) },
@@ -2832,7 +2832,7 @@ ExprNodeVector[8] = {
 0000000000000000: 0f e7 0e                                     movntq [%rsi], %mmx1
   { 2, { 0x0f, 0xe7, 0x00 },
     NACLi_MMX,
-    InstFlag(OpcodeUsesModRm),
+    InstFlag(OpcodeLtC0InModRm) | InstFlag(OpcodeUsesModRm),
     InstMovntq,
     2, {
       { Mo_Operand, OpFlag(OpSet) },
@@ -3319,7 +3319,7 @@ ExprNodeVector[4] = {
 0000000000000000: 0f 18 86 00 03 00 00                         prefetchnta [%rsi+0x300]
   { 2, { 0x0f, 0x18, 0x00 },
     NACLi_SSE,
-    InstFlag(OpcodeInModRm),
+    InstFlag(OpcodeInModRm) | InstFlag(OpcodeLtC0InModRm),
     InstPrefetchnta,
     2, {
       { Opcode0, OpFlag(OperandExtendsOpcode) },
@@ -3336,7 +3336,7 @@ ExprNodeVector[6] = {
 0000000000000000: 48 0f c3 07                                  movnti [%rdi], %rax
   { 2, { 0x0f, 0xc3, 0x00 },
     NACLi_SSE2,
-    InstFlag(OpcodeUsesModRm) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
+    InstFlag(OpcodeLtC0InModRm) | InstFlag(OpcodeUsesModRm) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
     InstMovnti,
     2, {
       { M_Operand, OpFlag(OpSet) },

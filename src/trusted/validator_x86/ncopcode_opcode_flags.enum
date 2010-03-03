@@ -24,6 +24,8 @@ OpcodeInModRm
 # Defines an OpcodeInModRm, where the value of ModRm must also be less
 # than 0xC0 (see x87 instructions for examples of this).
 # NOTE: When this flag is set, so is OpcodeInModRm.
+# NOTE: Also automatically added when an M_Operand is specified, so that
+# none of the mod=0x3 registers are allowed.
 OpcodeLtC0InModRm
 
 # Defines requirement during instruction matching that the ModRm mod field

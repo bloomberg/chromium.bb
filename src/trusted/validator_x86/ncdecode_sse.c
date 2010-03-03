@@ -31,7 +31,7 @@ static void DefineBinarySseOpcodes() {
   /* TODO(karl): Turn off recognition of instruction for now, until we
    * can distinquish between:
    * DEF_BINST(Vps, _Mq)t(NACLi_SSE, 0x12, Prefix0F, InstMovlps, Move);
-   * DEF_BINST(Vps, Uq_)(NACLi_SSE, 0x12, InstMovhlps, Move);
+   * DEF_BINST(Vps, Uq_)(NACLi_SSE, 0x12, Prefix0F, InstMovhlps, Move);
    */
   DEF_BINST(Vps, Mq_)(NACLi_SSE, 0x12, Prefix0F, InstMovlps, Move);
   AddOpcodeFlags(InstFlag(NaclIllegal));

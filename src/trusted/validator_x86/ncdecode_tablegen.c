@@ -554,11 +554,29 @@ void DefineOperand(
   if (MAX_NUM_OPERANDS <= index) {
     FatalOperand(index, "Opcode defines too many operands...\n");
   }
-  /* Apply pseudonym Mmx_N_Operand if applicable. */
-  if (Mmx_N_Operand == kind) {
-    kind = Mmx_E_Operand;
-    current_opcode->flags |= InstFlag(ModRmModIs0x3);
-    ApplySanityChecksToOpcode();
+  /* If one of the M_Operands, make sure that the ModRm mod field isn't 0x3,
+   * so that we don't return registers.
+   */
+  switch (kind) {
+    case M_Operand:
+    case Mb_Operand:
+    case Mw_Operand:
+    case Mv_Operand:
+    case Mo_Operand:
+    case Mdq_Operand:
+    case Mpw_Operand:
+    case Mpv_Operand:
+    case Mpo_Operand:
+      current_opcode->flags |= InstFlag(OpcodeLtC0InModRm);
+      ApplySanityChecksToOpcode();
+      break;
+    case Mmx_N_Operand:
+      kind = Mmx_E_Operand;
+      current_opcode->flags |= InstFlag(ModRmModIs0x3);
+      ApplySanityChecksToOpcode();
+      break;
+    default:
+      break;
   }
   /* Readjust counts if opcode appears in modrm. */
   if (index == 0) {
