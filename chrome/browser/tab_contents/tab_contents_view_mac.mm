@@ -328,14 +328,6 @@ void TabContentsViewMac::Observe(NotificationType type,
   [super dealloc];
 }
 
-- (BOOL)isOpaque {
-  // TabContentsViewCocoa does not draw itself in any way, but its subviews do
-  // paint their entire frames. Declaring opaqueness here prevents needless
-  // drawing of the window background, which also avoids flicker if the theme is
-  // dark.
-  return YES;
-}
-
 // Registers for the view for the appropriate drag types.
 - (void)registerDragTypes {
   NSArray* types = [NSArray arrayWithObjects:NSStringPboardType,
