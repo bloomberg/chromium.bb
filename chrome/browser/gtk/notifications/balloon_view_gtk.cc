@@ -227,6 +227,8 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   balloon_ = balloon;
   frame_container_ = gtk_window_new(GTK_WINDOW_POPUP);
 
+  InitToolbarStyle();
+
   // Construct the options menu.
   options_menu_model_.reset(new NotificationOptionsMenuModel(balloon_));
   options_menu_.reset(new MenuGtk(this, options_menu_model_.get()));
@@ -264,8 +266,6 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   gtk_container_add(GTK_CONTAINER(alignment2), toolbar_);
   gtk_container_add(GTK_CONTAINER(shelf_), alignment2);
   gtk_widget_show_all(vbox);
-
-  InitToolbarStyle();
 
   g_signal_connect(frame_container_, "expose-event",
                    G_CALLBACK(HandleExposeThunk), this);
