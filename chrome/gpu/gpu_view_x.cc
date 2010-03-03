@@ -87,6 +87,11 @@ void GpuViewX::Repaint() {
   glEnd();
   DCHECK(glGetError() == GL_NO_ERROR);
 
+  if (video_layer_.get()) {
+    video_layer_->Render(backing_store_->size());
+    DCHECK(glGetError() == GL_NO_ERROR);
+  }
+
   // TODO(brettw) when we no longer stretch non-fitting bitmaps, we should
   // paint white over any unpainted area here.
 
