@@ -383,8 +383,12 @@ drm_intel_add_validate_buffer2(drm_intel_bo *bo, int need_fence)
 	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *)bo;
 	int index;
 
-	if (bo_gem->validate_index != -1)
+	if (bo_gem->validate_index != -1) {
+		if (need_fence)
+			bufmgr_gem->exec2_objects[bo_gem->validate_index].flags |=
+				EXEC_OBJECT_NEEDS_FENCE;
 		return;
+	}
 
 	/* Extend the array of validation entries as necessary. */
 	if (bufmgr_gem->exec_count == bufmgr_gem->exec_size) {
