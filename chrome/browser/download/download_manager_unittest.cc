@@ -161,6 +161,33 @@ const struct {
    "http://www.goodguy.com/evil.exe",
    "application/rss+xml",
    L"evil.download"},
+
+  // Test truncation of trailing dots and spaces
+  {"filename=evil.exe ",
+   "http://www.goodguy.com/evil.exe ",
+   "binary/octet-stream",
+   L"evil.exe"},
+
+  {"filename=evil.exe.",
+   "http://www.goodguy.com/evil.exe.",
+   "binary/octet-stream",
+   L"evil.exe"},
+
+  {"filename=evil.exe.  .  .",
+   "http://www.goodguy.com/evil.exe.  .  .",
+   "binary/octet-stream",
+   L"evil.exe"},
+
+  {"filename=evil.",
+   "http://www.goodguy.com/evil.",
+   "binary/octet-stream",
+   L"evil"},
+
+  {"filename=. . . . .",
+   "http://www.goodguy.com/. . . . .",
+   "binary/octet-stream",
+   L"download"},
+
 #endif  // OS_WIN
 
   {"filename=utils.js",
