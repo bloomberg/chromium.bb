@@ -82,7 +82,7 @@ ACCEPTABLE_ARGUMENTS = {
     'sdl': None,
     # disable printing of sys info with sysinfo=
     'sysinfo': None,
-    'target_platform': None,
+    'targetplatform': None,
   }
 
 
