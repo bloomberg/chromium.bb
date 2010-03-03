@@ -309,65 +309,68 @@ bool GlesVideoRenderer::InitializeGles() {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glEnable(GL_TEXTURE_2D);
 
-  GLuint program_ = glCreateProgram();
+  GLuint program = glCreateProgram();
 
   // Create our YUV->RGB shader.
-  GLuint vertex_shader_ = glCreateShader(GL_VERTEX_SHADER);
+  GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
   const char* vs_source = kVertexShader;
   int vs_size = sizeof(kVertexShader);
-  glShaderSource(vertex_shader_, 1, &vs_source, &vs_size);
-  glCompileShader(vertex_shader_);
+  glShaderSource(vertex_shader, 1, &vs_source, &vs_size);
+  glCompileShader(vertex_shader);
   int result = GL_FALSE;
-  glGetShaderiv(vertex_shader_, GL_COMPILE_STATUS, &result);
+  glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &result);
   if (!result) {
     char log[kErrorSize];
     int len;
-    glGetShaderInfoLog(vertex_shader_, kErrorSize - 1, &len, log);
+    glGetShaderInfoLog(vertex_shader, kErrorSize - 1, &len, log);
     log[kErrorSize - 1] = 0;
     LOG(FATAL) << log;
   }
-  glAttachShader(program_, vertex_shader_);
+  glAttachShader(program, vertex_shader);
+  glDeleteShader(vertex_shader);
 
-  GLuint fragment_shader_ = glCreateShader(GL_FRAGMENT_SHADER);
+  GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
   const char* ps_source = kFragmentShader;
   int ps_size = sizeof(kFragmentShader);
-  glShaderSource(fragment_shader_, 1, &ps_source, &ps_size);
-  glCompileShader(fragment_shader_);
+  glShaderSource(fragment_shader, 1, &ps_source, &ps_size);
+  glCompileShader(fragment_shader);
   result = GL_FALSE;
-  glGetShaderiv(fragment_shader_, GL_COMPILE_STATUS, &result);
+  glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &result);
   if (!result) {
     char log[kErrorSize];
     int len;
-    glGetShaderInfoLog(fragment_shader_, kErrorSize - 1, &len, log);
+    glGetShaderInfoLog(fragment_shader, kErrorSize - 1, &len, log);
     log[kErrorSize - 1] = 0;
     LOG(FATAL) << log;
   }
-  glAttachShader(program_, fragment_shader_);
+  glAttachShader(program, fragment_shader);
+  glDeleteShader(fragment_shader);
 
-  glLinkProgram(program_);
+  glLinkProgram(program);
   result = GL_FALSE;
-  glGetProgramiv(program_, GL_LINK_STATUS, &result);
+  glGetProgramiv(program, GL_LINK_STATUS, &result);
   if (!result) {
     char log[kErrorSize];
     int len;
-    glGetProgramInfoLog(program_, kErrorSize - 1, &len, log);
+    glGetProgramInfoLog(program, kErrorSize - 1, &len, log);
     log[kErrorSize - 1] = 0;
     LOG(FATAL) << log;
   }
-  glUseProgram(program_);
+  glUseProgram(program);
+  glDeleteProgram(program);
 
   // Bind parameters.
-  glUniform1i(glGetUniformLocation(program_, "y_tex"), 0);
-  glUniform1i(glGetUniformLocation(program_, "u_tex"), 1);
-  glUniform1i(glGetUniformLocation(program_, "v_tex"), 2);
-  int yuv2rgb_location = glGetUniformLocation(program_, "yuv2rgb");
+  glUniform1i(glGetUniformLocation(program, "y_tex"), 0);
+  glUniform1i(glGetUniformLocation(program, "u_tex"), 1);
+  glUniform1i(glGetUniformLocation(program, "v_tex"), 2);
+  int yuv2rgb_location = glGetUniformLocation(program, "yuv2rgb");
   glUniformMatrix3fv(yuv2rgb_location, 1, GL_FALSE, kYUV2RGB);
 
-  int pos_location = glGetAttribLocation(program_, "in_pos");
+  int pos_location = glGetAttribLocation(program, "in_pos");
   glEnableVertexAttribArray(pos_location);
   glVertexAttribPointer(pos_location, 2, GL_FLOAT, GL_FALSE, 0, kVertices);
 
-  int tc_location = glGetAttribLocation(program_, "in_tc");
+  int tc_location = glGetAttribLocation(program, "in_tc");
   glEnableVertexAttribArray(tc_location);
   glVertexAttribPointer(tc_location, 2, GL_FLOAT, GL_FALSE, 0,
                         kTextureCoords);

@@ -25,12 +25,14 @@
 #if defined(RENDERER_GL)
 #include "media/tools/player_x11/gl_video_renderer.h"
 typedef GlVideoRenderer Renderer;
-#elif RENDERER_GLES
+#elif defined(RENDERER_GLES)
 #include "media/tools/player_x11/gles_video_renderer.h"
 typedef GlesVideoRenderer Renderer;
-#elif RENDERER_X11
+#elif defined(RENDERER_X11)
 #include "media/tools/player_x11/x11_video_renderer.h"
 typedef X11VideoRenderer Renderer;
+#else
+#error No video renderer defined.
 #endif
 
 Display* g_display = NULL;

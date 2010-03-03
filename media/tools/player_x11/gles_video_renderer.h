@@ -64,11 +64,6 @@ class GlesVideoRenderer : public media::VideoRendererBase {
   // 3 textures, one for each plane.
   GLuint textures_[3];
 
-  // Shaders and program for YUV->RGB conversion.
-  GLuint vertex_shader_;
-  GLuint fragment_shader_;
-  GLuint program_;
-
   static GlesVideoRenderer* instance_;
 
   DISALLOW_COPY_AND_ASSIGN(GlesVideoRenderer);
