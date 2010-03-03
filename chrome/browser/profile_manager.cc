@@ -205,23 +205,9 @@ void ProfileManager::Observe(
 #endif
 }
 
-#if defined(OS_WIN)
-#pragma optimize("", off)
-#pragma warning(disable:4748)
-#endif
 void ProfileManager::SuspendProfile(Profile* profile) {
-  CHECK(profile);
+  DCHECK(profile);
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-
-  // TODO(rvargas): remove this after finding the cause for bug 31723.
-  URLRequestJob* job_list[50] = { NULL };
-  int count = 0;
-  for (URLRequestJobTracker::JobIterator i = g_url_request_job_tracker.begin();
-       i != g_url_request_job_tracker.end(); ++i) {
-    if (count < 50)
-      job_list[count] = *i;
-    count++;
-  }
 
   for (URLRequestJobTracker::JobIterator i = g_url_request_job_tracker.begin();
        i != g_url_request_job_tracker.end(); ++i)
@@ -230,10 +216,6 @@ void ProfileManager::SuspendProfile(Profile* profile) {
   profile->GetRequestContext()->GetURLRequestContext()->
       http_transaction_factory()->Suspend(true);
 }
-#if defined(OS_WIN)
-#pragma warning(default:4748)
-#pragma optimize("", on)
-#endif
 
 void ProfileManager::ResumeProfile(Profile* profile) {
   DCHECK(profile);
