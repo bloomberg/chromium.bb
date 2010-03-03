@@ -15,6 +15,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define ARRAY_SIZE(x) (sizeof (x) / sizeof (x)[0])
+
 /*
  * On x86, we cannot have more than just shy of 8192 threads running
  * simultaneously.  This is a NaCl architectural limitation.
@@ -38,7 +40,6 @@ int g_errors = 0;
 
 int g_verbose = 0;
 
-
 #define PRINT(cond, mesg) do { if (cond) { \
                                  printf("%s:%d:%d: ", \
                                         __FUNCTION__, \
@@ -51,10 +52,11 @@ int g_verbose = 0;
 
 #define PRINT_ERROR do { PRINT(1, ("Error")); g_errors++; } while (0)
 
-#define EXPECT_EQ(A, B) if ((A)!=(B)) PRINT_ERROR
-#define EXPECT_NE(A, B) if ((A)==(B)) PRINT_ERROR
-#define EXPECT_GE(A, B) if ((A)<(B)) PRINT_ERROR
-#define EXPECT_LE(A, B) if ((A)>(B)) PRINT_ERROR
+/* TODO(adonovan): display informative errors. */
+#define EXPECT_EQ(A, B) do { if ((A)!=(B)) PRINT_ERROR; } while (0)
+#define EXPECT_NE(A, B) do { if ((A)==(B)) PRINT_ERROR; } while (0)
+#define EXPECT_GE(A, B) do { if ((A)<(B)) PRINT_ERROR; } while (0)
+#define EXPECT_LE(A, B) do { if ((A)>(B)) PRINT_ERROR; } while (0)
 
 
 #define TEST_FUNCTION_START int local_error = g_errors; PRINT(1, ("Start\n"))
@@ -253,10 +255,11 @@ void TestSemaphoreInitDestroy() {
 
 pthread_once_t once_control = PTHREAD_ONCE_INIT;
 
+typedef int AtomicInt32;  /* Why is this needed? We included pthread already. */
+
 void pthread_once_routine() {
-  static AtomicWord count = 0;
-  AtomicWord res;
-  res = AtomicIncrement(&count, 1);
+  static AtomicInt32 count = 0;
+  AtomicInt32 res =  __sync_fetch_and_add(&count, 1);
   EXPECT_LE(res, 1);
 }
 
@@ -494,6 +497,92 @@ void TestRealloc() {
 }
 
 
+/* Worker threads should spin-wait for this condition before starting work. */
+static volatile int workers_begin;
+
+/* Which intrinsic are we testing? */
+static enum { COMPARE_AND_SWAP, FETCH_AND_ADD } intrinsic;
+
+/* Perform 1 million atomic increments of the counter pointed to by
+ * |data|, and checks the final result.  Uses the increment strategy
+ * specified by the |intrinsic| global. */
+static void* WorkerThread(void *data) {
+  volatile AtomicInt32* counter = (volatile AtomicInt32*) data;
+  int ii;
+
+  /* NB, gets stuck on ARM QEMU. */
+  while (!workers_begin)
+    ;
+
+  for (ii = 0; ii < 1000000; ++ii) {
+    switch (intrinsic) {
+      case COMPARE_AND_SWAP:
+        /* NB, not atomic on ARM QEMU. */
+        for (;;) {
+          AtomicInt32 prev = *counter;
+          if (__sync_val_compare_and_swap(counter, prev, prev + 1) == prev)
+            break;
+        }
+        break;
+      case FETCH_AND_ADD:
+        __sync_fetch_and_add(counter, 1);
+        break;
+      default:
+        abort();
+    }
+  }
+  return NULL;
+}
+
+/* Runs 10 copies of WorkerThread in parallel.  The address of a
+ * shared volatile AtomicInt32 counter is passed to each thread.
+ */
+static void CheckAtomicityUnderConcurrency() {
+  volatile AtomicInt32 counter = 0;
+  pthread_t threads[10];
+  int ii;
+
+  workers_begin = 0; /* Hold on... */
+  for (ii = 0; ii < ARRAY_SIZE(threads); ++ii)
+    EXPECT_EQ(0, pthread_create(&threads[ii], NULL, &WorkerThread,
+                                (void*) &counter));
+  workers_begin = 1; /* Thunderbirds are go! */
+  for (ii = 0; ii < ARRAY_SIZE(threads); ++ii)
+    EXPECT_EQ(0, pthread_join(threads[ii], NULL));
+  EXPECT_EQ(10000000, counter);
+}
+
+/* Test hand-written intrinsics for ARM. */
+static void TestIntrinsics() {
+  TEST_FUNCTION_START;
+
+  /* Test uncontended behaviour: */
+  {
+    /* COMPARE_AND_SWAP */
+    volatile AtomicInt32 x = 123;
+    EXPECT_EQ(123, __sync_val_compare_and_swap(&x, 123, 42));  /* matches */
+    EXPECT_EQ(42, x);  /* => swapped */
+    EXPECT_EQ(42, __sync_val_compare_and_swap(&x, 43, 9876));  /* no match */
+    EXPECT_EQ(42, x);  /* => unchanged */
+
+    /* FETCH_AND_ADD */
+    x = 123;
+    EXPECT_EQ(123, __sync_fetch_and_add(&x, 42));
+    EXPECT_EQ(165, x);
+    EXPECT_EQ(165, __sync_fetch_and_add(&x, 1));
+    EXPECT_EQ(166, x);
+  }
+
+  /* Test behaviour with concurrency: */
+  intrinsic = COMPARE_AND_SWAP;
+  CheckAtomicityUnderConcurrency();
+
+  intrinsic = FETCH_AND_ADD;
+  CheckAtomicityUnderConcurrency();
+
+  TEST_FUNCTION_END;
+}
+
 int main(int argc, char *argv[]) {
   if (argc == 2) {
     g_num_test_loops = atoi(argv[1]);
@@ -509,6 +598,7 @@ int main(int argc, char *argv[]) {
   TestTSD();
   TestMalloc();
   TestRealloc();
+  TestIntrinsics();
 
   return g_errors;
 }

@@ -1065,7 +1065,10 @@ if (nacl_env['BUILD_ARCHITECTURE'] == 'arm' and
   nacl_env['LINKCOM'] = linkcom
 
   nacl_env.Prepend(
-      LINKFLAGS_FIRST = ['${NACL_SDK_LIB}/crt1.o','${NACL_SDK_LIB}/crti.o',],
+      LINKFLAGS_FIRST = ['${NACL_SDK_LIB}/crt1.o',
+                         '${NACL_SDK_LIB}/crti.o',
+                         '${NACL_SDK_LIB}/intrinsics.o',
+                         ],
       LIBS = [],
       # NOTE: order and replication is/may be important
       LINKFLAGS_LAST = ['-lsrpc',

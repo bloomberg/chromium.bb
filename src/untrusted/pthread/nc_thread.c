@@ -269,35 +269,25 @@ static void nc_release_tls_node(nc_thread_memory_block_t *block) {
   }
 }
 
-
-#if NACL_ARCH(NACL_TARGET_ARCH) == NACL_x86
-/* internal initialization spinlock */
-/* NOTE: this is a global function - protos in pthread_types.h */
-
-/*
- * TODO(gregoryd) - Make static. Use local labels to prevent redefinition errors
- * when the definition is moved to a header file.
+/* Implements this, atomically:
+ *  old = *ptr;
+ *  if (*ptr == old_value)
+ *    *ptr = new_value;
+ *  return old;
  */
-void nc_spinlock_lock(volatile int *lock) {
-  __asm__("mov %0, %%ecx \n\t"
-          "mov 0x1, %%eax \n\t"
-          "loop: xchg    (%%ecx), %%eax    \n\t"
-          "test    %%eax, %%eax         \n\t"
-          "jnz     loop                 \n\t"
-          :"=r"(lock): "0"(lock));
+static AtomicInt32 CompareAndSwap(volatile AtomicInt32* ptr,
+                                  AtomicInt32 old_value,
+                                  AtomicInt32 new_value) {
+  /* GCC intrinsic; see:
+   * http://gcc.gnu.org/onlinedocs/gcc/Atomic-Builtins.html.
+   * The x86-{32,64} compilers generate inline code.  The ARM
+   * implementation is external: instrincs/crt1_arm.S.
+   */
+  return __sync_val_compare_and_swap(ptr, old_value, new_value);
 }
-
-void nc_spinlock_unlock(volatile int *lock) {
-  __asm__("mov %0, %%ecx \n\t"
-          "mov 0, %%eax \n\t"
-          "xchg (%%ecx), %%eax":"=r"(lock));
-}
-
-#elif NACL_ARCH(NACL_TARGET_ARCH) == NACL_arm
 
 void nc_spinlock_lock(volatile int *lock) {
   uint32_t val;
-
   do {
     val = CompareAndSwap(lock, 0, 1);
   } while (val != 0);
@@ -306,31 +296,6 @@ void nc_spinlock_lock(volatile int *lock) {
 void nc_spinlock_unlock(volatile int *lock) {
   *lock = 0;
 }
-
-#else
-
-#error "unknown platform"
-
-#endif
-
-/* TODO(robertm): the assembly code above should be replace with this at some point */
-/*                on x86 this does not quite work yet and thread_test fails */
-#if 0
-/* TODO(robertm): switch from int -> Atomic32, this will require
-   touching a bunch of headers */
-
-void nc_spinlock_lock(volatile int *lock) {
-  int old_value;
-  do {
-    old_value = AtomicExchange(lock, 1);
-  } while(0 != old_value);
-}
-
-void nc_spinlock_unlock(volatile int *lock) {
-  AtomicExchange(lock, 0);
-}
-#endif
-
 
 uint32_t __nacl_tdb_id_function(nc_hash_entry_t *entry) {
   nc_basic_thread_data_t *basic_data =
@@ -756,7 +721,7 @@ int pthread_key_create (pthread_key_t *key,
          * the last even generation */
         (__nc_thread_specific_storage[i].generation != UINT_MAX - 1) &&
         (generation == CompareAndSwap(
-            (AtomicWord*)&__nc_thread_specific_storage[i].generation,
+            (AtomicInt32*) &__nc_thread_specific_storage[i].generation,
             generation,
             generation + 1))) {
       *key = i;
@@ -777,9 +742,10 @@ int pthread_key_delete (pthread_key_t key) {
   }
 
   if (generation !=
-      CompareAndSwap((AtomicWord*)&__nc_thread_specific_storage[key].generation,
-                     generation,
-                     generation + 1)) {
+      CompareAndSwap(
+          (AtomicInt32*) &__nc_thread_specific_storage[key].generation,
+          generation,
+          generation + 1)) {
     /* Somebody incremented the generation counter before we did, i.e. the key
      * has already been deleted.
      */

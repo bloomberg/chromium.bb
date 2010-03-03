@@ -19,7 +19,6 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/un.h>
-#include "native_client/src/include/atomic_ops.h"
 
 namespace nacl {
 

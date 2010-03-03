@@ -193,6 +193,8 @@
 /* 16-byte bundles, 256MB code segment*/
 # define NACL_CONTROL_FLOW_MASK      0xF000000F
 
+# define NACL_DATA_FLOW_MASK      0xC0000000
+
 # define NACL_USERRET_FIX         (0x4)
 # define NACL_SYSARGS_FIX         (NACL_USERRET_FIX + 0x4)
 # define NACL_SYSCALLRET_FIX      (NACL_USERRET_FIX + 0x4)

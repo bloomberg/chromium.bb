@@ -27,11 +27,11 @@ __thread char tls_var_bss_string[100];
 
 int GlobalCounter = 0;
 
-AtomicWord GlobalError = 0;
+AtomicInt32 GlobalError = 0;
 
 
 void IncError() {
-  AtomicIncrement(&GlobalError, 1);
+  __sync_fetch_and_add(&GlobalError, 1);
 }
 
 

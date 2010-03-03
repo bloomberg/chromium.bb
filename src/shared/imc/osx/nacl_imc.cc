@@ -47,7 +47,6 @@
 #endif  // OSX_BLEMISH_HEURISTIC
 
 #include <algorithm>
-#include "native_client/src/include/atomic_ops.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
 
 namespace nacl {

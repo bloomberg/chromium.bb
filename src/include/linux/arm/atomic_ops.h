@@ -33,32 +33,27 @@
 #ifndef NATIVE_CLIENT_SRC_INCLUDE_LINUX_ARM_ATOMIC_OPS_LINUX_ARM_H_
 #define NATIVE_CLIENT_SRC_INCLUDE_LINUX_ARM_ATOMIC_OPS_LINUX_ARM_H_ 1
 
+// Used only by trusted code.  Untrusted code uses gcc intrinsics.
+
 #include <stdint.h>
 
 typedef intptr_t AtomicWord;
 typedef int32_t Atomic32;
-
-#ifdef __native_client__
-#define SFI_ATOMIC_OPS
-#endif
 
 static inline AtomicWord CompareAndSwap(volatile AtomicWord* ptr,
                                  AtomicWord old_value,
                                  AtomicWord new_value) {
   uint32_t old, tmp;
 
+  // TODO(adonovan): bne may loop forever if old_value is bogus.  We
+  // should instead break out of the loop if the first condition fails.
+
   __asm__ __volatile__(
-#ifdef SFI_ATOMIC_OPS
-      ".align 4\n"
-#endif
-      "1: @ atomic cmpxchg\n"
+      "1:\n"
       "ldrex %1, [%2]\n"
       "teq %1, %3\n"
-#ifdef SFI_ATOMIC_OPS
-      "sfi_data_mask %2, eq\n"
-#endif
       "strexeq %0, %4, [%2]\n"
-      "teq %0, #0\n"
+      "teqeq %0, #0\n"
       "bne 1b"
       : "=&r" (tmp), "=&r" (old)
       : "r" (ptr), "Ir" (old_value),
@@ -72,14 +67,8 @@ static inline AtomicWord AtomicExchange(volatile AtomicWord* ptr,
   uint32_t tmp, old;
 
   __asm__ __volatile__(
-#ifdef SFI_ATOMIC_OPS
-      ".align 4\n"
-#endif
-      "1: @ atomic xchg\n"
+      "1:\n"
       "ldrex %1, [%2]\n"
-#ifdef SFI_ATOMIC_OPS
-      "sfi_data_mask %2, al\n"
-#endif
       "strex %0, %3, [%2]\n"
       "teq %0, #0\n"
       "bne 1b"
@@ -95,15 +84,9 @@ static inline AtomicWord AtomicIncrement(volatile AtomicWord* ptr,
   uint32_t tmp, res;
 
   __asm__ __volatile__(
-#ifdef SFI_ATOMIC_OPS
-      ".align 4\n"
-#endif
-      "1: @atomic inc\n"
+      "1:\n"
       "ldrex %1, [%2]\n"
       "add %1, %1, %3\n"
-#ifdef SFI_ATOMIC_OPS
-      "sfi_data_mask %2, al\n"
-#endif
       "strex %0, %1, [%2]\n"
       "teq %0, #0\n"
       "bne 1b"
@@ -112,7 +95,5 @@ static inline AtomicWord AtomicIncrement(volatile AtomicWord* ptr,
       : "cc");
   return res;
 }
-
-#undef SFI_ATOMIC_OPS
 
 #endif  /* NATIVE_CLIENT_SRC_INCLUDE_LINUX_ARM_ATOMIC_OPS_LINUX_ARM_H_ */

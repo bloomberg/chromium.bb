@@ -31,15 +31,18 @@
 Import('env')
 
 if env.get('TARGET_ARCHITECTURE') == 'x86':
-  crt1_target = env.ComponentObject('crt1', [ 'crt1_x86.S' ])
-  crti_target = env.ComponentObject('crti', [ 'crti_x86.S' ])
-  crtn_target = env.ComponentObject('crtn', [ 'crtn_x86.S' ])
+  objects = [env.ComponentObject('crt1', ['crt1_x86.S' ]),
+             env.ComponentObject('crti', ['crti_x86.S' ]),
+             env.ComponentObject('crtn', ['crtn_x86.S' ]),
+             ]
 elif env.get('TARGET_ARCHITECTURE') == 'arm':
-  crt1_target = env.ComponentObject('crt1', [ 'crt1_arm.S' ])
-  crti_target = env.ComponentObject('crti', [ 'crti_arm.S' ])
-  crtn_target = env.ComponentObject('crtn', [ 'crtn_arm.S' ])
+  objects = [env.ComponentObject('crt1', ['crt1_arm.S']),
+             env.ComponentObject('crti', ['crti_arm.S']),
+             env.ComponentObject('crtn', ['crtn_arm.S']),
+             env.ComponentObject('intrinsics', ['intrinsics_arm.S']),
+             ]
 else:
-  assert 0
+  raise Exception, (
+    'Unexpected TARGET_ARCHITECTURE: %s' % env.get('TARGET_ARCHITECTURE'))
 
-# NOTE: must use crt1_target rather than 'crt1' - don't know why
-env.AddObjectToSdk([crt1_target, crti_target, crtn_target])
+env.AddObjectToSdk(objects)

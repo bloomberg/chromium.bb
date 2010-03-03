@@ -18,15 +18,17 @@
 #define _PTHREAD_H 1
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
+#include <stdint.h>
 #include <sys/nacl_nice.h>
 #include <sys/queue.h>
 #include <sys/types.h>
-/* NOTE: we assume the header file is the right one for the target */
-/* NOTE: For x86 we rely on the default 32 bit behavior of
-         src/include/linux/x86/atomic_ops.h */
-/* TODO(robertm): make this less of a hack */
 
-#include "atomic_ops.h"
+/*
+ * Signed 32-bit integer supporting CompareAndSwap and AtomicIncrement
+ * (see implementations), as well as atomic loads and stores.
+ * Instances must be naturally aligned.
+ */
+typedef int AtomicInt32;
 
 #ifdef __cplusplus
 extern "C" {
@@ -631,7 +633,7 @@ extern void *pthread_getspecific(pthread_key_t key);
  */
 typedef struct {
   /** A flag: 1 if the function was already called, 0 if it wasn't */
-  AtomicWord      done;
+  AtomicInt32      done;
 
   /** Synchronization lock for the flag */
   pthread_mutex_t lock;

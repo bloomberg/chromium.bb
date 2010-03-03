@@ -145,26 +145,25 @@ int pthread_mutex_unlock (pthread_mutex_t *mutex) {
  */
 int pthread_once(pthread_once_t* __once_control,
                   void (*__init_routine) (void)) {
-/* TODO(khim): uncomment the body once x86-64 GCC will have a threading model */
+/* BUG(khim): uncomment the body once x86-64 GCC will have a threading model */
 #if !defined(__x86_64__) || !defined(__native_client__)
 /*
  * NOTE(gregoryd): calling pthread_once from __init_routine providing the same
  * __once_control argument is an error and will cause a deadlock
  */
-  AtomicWord res;
-  res = AtomicIncrement(&__once_control->done, 0);
-  if (!res) {
+  volatile AtomicInt32* pdone = &__once_control->done;
+  if (*pdone == 0) {
     /* not done yet */
     pthread_mutex_lock(&__once_control->lock);
-    res = AtomicIncrement(&__once_control->done, 0);
-    if (!res) {
+    if (*pdone == 0) {
       /* still not done - but this time we own the lock */
       (*__init_routine)();
-      AtomicIncrement(&__once_control->done, 1);
-
+      __sync_fetch_and_add(pdone, 1);
     }
     pthread_mutex_unlock(&__once_control->lock);
   }
+#else
+#warn pthread_once is currently a no-op on this platform!
 #endif
   return 0;
 }

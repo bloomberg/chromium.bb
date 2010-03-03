@@ -170,7 +170,7 @@ def generate(env):
   elif sdl_mode == 'none':
     return
   else:
-    assert False
+    assert False, 'Unknown SDL_MODE: %s' % sdl_mode
 
   validate_paths = env['SDL_VALIDATE_PATHS']
 

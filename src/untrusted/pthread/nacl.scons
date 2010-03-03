@@ -39,16 +39,7 @@ env.ComponentLibrary('libpthread', ['nc_thread.c',
 
 env.AddLibraryToSdk(['libpthread'])
 
-
-if env.get('TARGET_ARCHITECTURE') == 'x86':
-  ATOMIC_OPS = env.File('${SCONSTRUCT_DIR}/src/include/linux/x86/atomic_ops.h')
-elif env.get('TARGET_ARCHITECTURE') == 'arm':
-  ATOMIC_OPS = env.File('${SCONSTRUCT_DIR}/src/include/linux/arm/atomic_ops.h')
-else:
-  assert 0
-
 Alias('install_libpthread',
        # Copy the header file to the include directory.
        [env.Replicate('${NACL_SDK_INCLUDE}', ['pthread.h',
-                                              ATOMIC_OPS,
                                               'semaphore.h' ])])
