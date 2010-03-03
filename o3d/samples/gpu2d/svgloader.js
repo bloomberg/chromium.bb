@@ -156,6 +156,14 @@ SVGLoader.prototype.parse_ = function(svgText,
    */
   this.transformStack_ = [];
 
+  /**
+   * The current polygon offset. Each successive path parsed
+   * increments this.
+   * @type {number}
+   * @private
+   */
+  this.polygonOffset_ = 0;
+
   this.matrixStack_.push(o3djs.math.identity(4));
   this.transformStack_.push(transform);
   var parser = new SAXDriver();
@@ -255,8 +263,9 @@ SVGLoader.prototype.translate_ = function(x, y) {
  * @private
  */
 SVGLoader.prototype.scale_ = function(sx, sy) {
-  // TODO(kbr): implement
-  throw 'scale command not yet implemented';
+  var tmp = o3djs.math.matrix4.scaling([sx, sy, 1]);
+  this.setCurrentMatrix_(
+      o3djs.math.mulMatrixMatrix(tmp, this.currentMatrix_()));
 };
 
 /**
@@ -326,6 +335,8 @@ SVGLoader.prototype.parsePath_ = function(pathData,
   if (this.fill_) {
     path.setFill(this.fill_);
   }
+  path.setPolygonOffset(-2 * this.polygonOffset_, -3 * this.polygonOffset_);
+  ++this.polygonOffset_;
   this.currentTransform_().addShape(path.shape);
 };
 
@@ -413,6 +424,7 @@ BaseDataParser_ = function(loader,
   this.loader_ = loader;
   this.lineNumber_ = lineNumber;
   this.putBackToken_ = null;
+  this.singleLetterWords_ = false;
 }
 
 /**
@@ -561,15 +573,18 @@ BaseDataParser_.prototype.nextToken_ = function(parseState, data) {
                                             parseState.lastIndex)) };
   } else if ((curChar >= 'A' && curChar <= 'Z') ||
              (curChar >= 'a' && curChar <= 'z')) {
-    // Consume all adjacent letters -- this is satisfactory both for
-    // the grammars of the "transform" and "d" attributes
-    while (true) {
-      var t = data.charAt(parseState.lastIndex);
-      if ((t >= 'A' && t <= 'Z') ||
-          (t >= 'a' && t <= 'z')) {
-        ++parseState.lastIndex;
-      } else {
-        break;
+    if (!this.singleLetterWords_) {
+      // Consume all adjacent letters -- this is satisfactory for the
+      // grammar of the "transform" attribute, but not the "d"
+      // attribute
+      while (true) {
+        var t = data.charAt(parseState.lastIndex);
+        if ((t >= 'A' && t <= 'Z') ||
+            (t >= 'a' && t <= 'z')) {
+          ++parseState.lastIndex;
+        } else {
+          break;
+        }
       }
     }
     return { kind: BaseDataParser_.TokenTypes.WORD,
@@ -660,6 +675,7 @@ PathDataParser_ = function(loader,
   this.drawList_ = drawList;
   this.curX_ = 0;
   this.curY_ = 0;
+  this.singleLetterWords_ = true;
 };
 
 o3djs.base.inherit(PathDataParser_, BaseDataParser_);

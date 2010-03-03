@@ -304,6 +304,24 @@ o3djs.gpu2d.Path.prototype.update = function() {
   }
 };
 
+/**
+ * Sets the polygon offset parameters for the triangles associated
+ * with this Path.
+ * @param {number} slopeFactor polygon offset slope factor.
+ * @param {number} depthBias polygon offset depth bias.
+ */
+o3djs.gpu2d.Path.prototype.setPolygonOffset = function(slopeFactor,
+                                                       depthBias) {
+  this.exteriorMaterial_.state.getStateParam('o3d.PolygonOffset1').value =
+      slopeFactor;
+  this.exteriorMaterial_.state.getStateParam('o3d.PolygonOffset2').value =
+      depthBias;
+  this.interiorMaterial_.state.getStateParam('o3d.PolygonOffset1').value =
+      slopeFactor;
+  this.interiorMaterial_.state.getStateParam('o3d.PolygonOffset2').value =
+      depthBias;
+}
+
 //----------------------------------------------------------------------
 // Fills
 
