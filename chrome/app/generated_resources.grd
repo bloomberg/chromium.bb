@@ -2741,7 +2741,7 @@ each locale. -->
         Issuer: <ph name="CERTIFICATE_AUTHORITY">$1<ex>VeriSign</ex></ph>
       </message>
       <message name="IDS_CERT_SERIAL_NUMBER_FORMAT" desc="format for serial number in certificate extensions details">
-        Serial Number: <ph name="Serail Number">$1<ex>19 EB 8E 93</ex></ph>
+        Serial Number: <ph name="SERIAL_NUMBER">$1<ex>19 EB 8E 93</ex></ph>
       </message>
       <message name="IDS_CERT_X509_KEY_USAGE" desc="description of extension Certificate Key Usage">
         Certificate Key Usage
