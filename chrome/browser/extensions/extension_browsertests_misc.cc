@@ -389,26 +389,12 @@ bool ValidatePageElement(TabContents* tab,
   std::string returned_value;
   std::string error;
 
-  // We are testing the actual feed sniffing + redirecting to the preview page
-  // so we can't pass the 'synchronous' test flag that we use for malformed
-  // feeds. Furthermore, the subscribe page loads resources such as the feed
-  // data asynchronously and we have no signals from the extension telling us
-  // when it is done loading resources, so we need to check and retry if we
-  // don't get the expected value.
-  int retries = 10;
-  while (retries--) {
-    if (!ui_test_utils::ExecuteJavaScriptAndExtractString(
-            tab->render_view_host(),
-            frame,
-            javascript, &returned_value))
-      return false;
-    if (expected_value == returned_value)
-      break;  // We are done.
+  if (!ui_test_utils::ExecuteJavaScriptAndExtractString(
+          tab->render_view_host(),
+          frame,
+          javascript, &returned_value))
+    return false;
 
-    MessageLoopForUI::current()->PostDelayedTask(
-        FROM_HERE, new MessageLoop::QuitTask(), 500);
-    ui_test_utils::RunMessageLoop();
-  }
   EXPECT_STREQ(expected_value.c_str(), returned_value.c_str());
   return expected_value == returned_value;
 }
@@ -425,26 +411,26 @@ void NavigateToFeedAndValidate(HTTPTestServer* server,
                                const std::string& expected_item_title,
                                const std::string& expected_item_desc,
                                const std::string& expected_error) {
-  std::string extension_id;
-  if (!sniff_xml_type) {
-    // There should be only one extension in the list (ours). Get its id.
-    ExtensionsService* service = browser->profile()->GetExtensionsService();
-    ASSERT_EQ(1u, service->extensions()->size());
-    Extension* extension = (*service->extensions())[0];
-    extension_id = extension->id();
-  }
-
-  ui_test_utils::NavigateToURL(browser,
-                               GetFeedUrl(server, url,
-                                          !sniff_xml_type, extension_id));
-
   if (sniff_xml_type) {
     // Navigate to the feed will cause the extension to sniff the type and
     // create an extra tab showing the feed preview.
+    ui_test_utils::NavigateToURL(browser, GetFeedUrl(server, url, false, ""));
+
+    // Validate that we have a new tab.
     TabStripModel* tab_strip = browser->tabstrip_model();
     if (tab_strip->count() == 1)
       ui_test_utils::WaitForTabParented();
+    ASSERT_EQ(2, tab_strip->count());
   }
+
+  // There should be only one extension in the list (ours). Get its id.
+  ExtensionsService* service = browser->profile()->GetExtensionsService();
+  ASSERT_EQ(1u, service->extensions()->size());
+  Extension* extension = (*service->extensions())[0];
+  std::string id = extension->id();
+
+  // Navigate to the subscribe page directly.
+  ui_test_utils::NavigateToURL(browser, GetFeedUrl(server, url, true, id));
 
   TabContents* tab = browser->GetSelectedTabContents();
   ASSERT_TRUE(ValidatePageElement(tab,
