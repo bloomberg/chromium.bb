@@ -64,7 +64,11 @@ static bool IsAPIPermission(const std::string& str) {
     if (str == Extension::kPermissionNames[i]) {
       if (str == Extension::kExperimentalPermission &&
           !CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kEnableExperimentalExtensionApis)) {
+              switches::kEnableExperimentalExtensionApis) &&
+          // TODO(arv): Tighten this so that not all extensions can access the
+          // experimental APIs.
+          !CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kEnableTabbedBookmarkManager)) {
         return false;
       }
       return true;
@@ -1284,7 +1288,8 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
       // this check, but let's keep it simple for now.
       // TODO(erikkay) enable other pages as well
       std::string val;
-      if ((page != chrome::kChromeUINewTabHost) ||
+      if ((page != chrome::kChromeUINewTabHost &&
+           page != chrome::kChromeUIBookmarksHost) ||
           !overrides->GetStringWithoutPathExpansion(*iter, &val)) {
         *error = errors::kInvalidChromeURLOverrides;
         return false;

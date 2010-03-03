@@ -100,6 +100,7 @@ extern const char kEnableSync[];
 extern const char kEnableSyncAutofill[];
 extern const char kEnableSyncBookmarks[];
 extern const char kEnableSyncPreferences[];
+extern const char kEnableTabbedBookmarkManager[];
 extern const char kEnableUserDataDirProfiles[];
 extern const char kEnableVerticalTabs[];
 extern const char kEnableVideoLayering[];

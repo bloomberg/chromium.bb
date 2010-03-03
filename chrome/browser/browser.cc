@@ -1289,7 +1289,12 @@ void Browser::ToggleExtensionShelf() {
 
 void Browser::OpenBookmarkManager() {
   UserMetrics::RecordAction("ShowBookmarkManager", profile_);
-  window_->ShowBookmarkManager();
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableTabbedBookmarkManager)) {
+    ShowBookmarkManagerTab();
+  } else {
+    window_->ShowBookmarkManager();
+  }
 }
 
 void Browser::ShowAppMenu() {
@@ -1300,6 +1305,11 @@ void Browser::ShowAppMenu() {
 void Browser::ShowPageMenu() {
   UserMetrics::RecordAction("ShowPageMenu", profile_);
   window_->ShowPageMenu();
+}
+
+void Browser::ShowBookmarkManagerTab() {
+  UserMetrics::RecordAction("ShowBookmarks", profile_);
+  ShowSingletonTab(GURL(chrome::kChromeUIBookmarksURL));
 }
 
 void Browser::ShowHistoryTab() {

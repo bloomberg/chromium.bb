@@ -294,6 +294,9 @@ const char kEnableSyncBookmarks[]           = "enable-sync-bookmarks";
 // Enable syncing browser preferences.
 const char kEnableSyncPreferences[]         = "enable-sync-preferences";
 
+// Enable the tabbed bookmark manager
+const char kEnableTabbedBookmarkManager[]   = "enable-tabbed-bookmark-manager";
+
 // Whether the multiple profiles feature based on the user-data-dir flag is
 // enabled or not.
 const char kEnableUserDataDirProfiles[]     = "enable-udd-profiles";

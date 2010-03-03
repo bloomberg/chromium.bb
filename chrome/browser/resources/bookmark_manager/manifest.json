@@ -9,5 +9,8 @@
     "bookmarks",
     "experimental",
     "tabs"
-  ]
+  ],
+  "chrome_url_overrides": {
+    "bookmarks": "main.html"
+  }
 }

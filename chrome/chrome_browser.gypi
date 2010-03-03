@@ -763,6 +763,8 @@
         'browser/dock_info.cc',
         'browser/dock_info.h',
         'browser/dom_operation_notification_details.h',
+        'browser/dom_ui/bookmarks_ui.cc',
+        'browser/dom_ui/bookmarks_ui.h',
         'browser/dom_ui/chrome_url_data_manager.cc',
         'browser/dom_ui/chrome_url_data_manager.h',
         'browser/dom_ui/devtools_ui.cc',

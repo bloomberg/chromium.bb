@@ -16,6 +16,7 @@
 
 class ListValue;
 class PrefService;
+class RefCountedMemory;
 class RenderViewHost;
 class TabContents;
 

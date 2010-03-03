@@ -4,6 +4,7 @@
 
 #include "chrome/browser/dom_ui/dom_ui_factory.h"
 
+#include "chrome/browser/dom_ui/bookmarks_ui.h"
 #include "chrome/browser/dom_ui/downloads_ui.h"
 #include "chrome/browser/dom_ui/devtools_ui.h"
 #include "chrome/browser/dom_ui/history_ui.h"
@@ -83,14 +84,16 @@ static DOMUIFactoryFunction GetDOMUIFactoryFunction(const GURL& url) {
 
   // We must compare hosts only since some of the DOM UIs append extra stuff
   // after the host name.
-  if (url.host() == chrome::kChromeUIHistoryHost)
-    return &NewDOMUI<HistoryUI>;
+    if (url.host() == chrome::kChromeUIBookmarksHost)
+    return &NewDOMUI<BookmarksUI>;
+  if (url.host() == chrome::kChromeUIDevToolsHost)
+    return &NewDOMUI<DevToolsUI>;
   if (url.host() == chrome::kChromeUIDownloadsHost)
     return &NewDOMUI<DownloadsUI>;
   if (url.host() == chrome::kChromeUIExtensionsHost)
     return &NewDOMUI<ExtensionsUI>;
-  if (url.host() == chrome::kChromeUIDevToolsHost)
-    return &NewDOMUI<DevToolsUI>;
+  if (url.host() == chrome::kChromeUIHistoryHost)
+    return &NewDOMUI<HistoryUI>;
 
 #if defined(OS_CHROMEOS)
   if (url.host() == chrome::kChromeUIFileBrowseHost)
@@ -129,19 +132,18 @@ DOMUI* DOMUIFactory::CreateDOMUIForURL(TabContents* tab_contents,
 }
 
 // static
-RefCountedMemory* DOMUIFactory::GetFaviconResourceBytes(
-    const GURL& page_url) {
+RefCountedMemory* DOMUIFactory::GetFaviconResourceBytes(const GURL& page_url) {
   if (!HasDOMUIScheme(page_url))
     return NULL;
 
-  if (page_url.host() == chrome::kChromeUIHistoryHost)
-    return HistoryUI::GetFaviconResourceBytes();
+  if (page_url.host() == chrome::kChromeUIBookmarksHost)
+    return BookmarksUI::GetFaviconResourceBytes();
 
   if (page_url.host() == chrome::kChromeUIDownloadsHost)
     return DownloadsUI::GetFaviconResourceBytes();
 
-  if (page_url.host() == chrome::kChromeUIExtensionsHost)
-    return ExtensionsUI::GetFaviconResourceBytes();
+  if (page_url.host() == chrome::kChromeUIHistoryHost)
+    return HistoryUI::GetFaviconResourceBytes();
 
   return NULL;
 }
