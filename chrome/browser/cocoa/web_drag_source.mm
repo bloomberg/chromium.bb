@@ -233,8 +233,7 @@ void PromiseWriterTask::Run() {
     rvh->DragSourceSystemDragEnded();
 
     // Convert |screenPoint| to view coordinates and flip it.
-    // TODO(avi) http://crbug.com/36485; base != window
-    NSPoint localPoint = [contentsView_ convertPointFromBase:screenPoint];
+    NSPoint localPoint = [contentsView_ convertPoint:screenPoint fromView:nil];
     NSRect viewFrame = [contentsView_ frame];
     localPoint.y = viewFrame.size.height - localPoint.y;
     // Flip |screenPoint|.
@@ -254,8 +253,7 @@ void PromiseWriterTask::Run() {
   RenderViewHost* rvh = [contentsView_ tabContents]->render_view_host();
   if (rvh) {
     // Convert |screenPoint| to view coordinates and flip it.
-    // TODO(avi) http://crbug.com/36485; base != window
-    NSPoint localPoint = [contentsView_ convertPointFromBase:screenPoint];
+    NSPoint localPoint = [contentsView_ convertPoint:screenPoint fromView:nil];
     NSRect viewFrame = [contentsView_ frame];
     localPoint.y = viewFrame.size.height - localPoint.y;
     // Flip |screenPoint|.

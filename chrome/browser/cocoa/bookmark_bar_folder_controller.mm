@@ -140,11 +140,11 @@
     NSPoint buttonBottomLeftInScreen =
         [[parentButton_ window]
             convertBaseToScreen:[parentButton_
-                                    convertPointToBase:NSZeroPoint]];
+                                    convertPoint:NSZeroPoint toView:nil]];
     NSPoint bookmarkBarBottomLeftInScreen =
         [[parentButton_ window]
             convertBaseToScreen:[[parentButton_ superview]
-                                    convertPointToBase:NSMakePoint(0,0)]];
+                                    convertPoint:NSZeroPoint toView:nil]];
     newWindowTopLeft = NSMakePoint(buttonBottomLeftInScreen.x,
                                    bookmarkBarBottomLeftInScreen.y);
   } else {
@@ -159,7 +159,7 @@
     NSPoint topOfWindow =
         [[parentButton_ window]
             convertBaseToScreen:[[parentButton_ superview]
-                                    convertPointToBase:top]];
+                                    convertPoint:top toView:nil]];
     newWindowTopLeft.y = topOfWindow.y;
   }
   return newWindowTopLeft;

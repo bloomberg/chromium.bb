@@ -344,8 +344,7 @@ private:
     // enable the tracking areas.  Otherwise we won't get hover states
     // or tab gradients if we load the window up under the mouse.
     NSPoint mouseLoc = [[view window] mouseLocationOutsideOfEventStream];
-    // TODO(avi) http://crbug.com/36485; base != window
-    mouseLoc = [view convertPointFromBase:mouseLoc];
+    mouseLoc = [view convertPoint:mouseLoc fromView:nil];
     if (NSPointInRect(mouseLoc, [view bounds])) {
       [self setTabTrackingAreasEnabled:YES];
       mouseInside_ = YES;

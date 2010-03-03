@@ -222,8 +222,7 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
   if (backgroundImageColor) {
     [backgroundImageColor set];
     // Set the phase to match window.
-    // TODO(avi) http://crbug.com/36485; base != window
-    NSRect trueRect = [controlView convertRectToBase:cellFrame];
+    NSRect trueRect = [controlView convertRect:cellFrame toView:nil];
     [[NSGraphicsContext currentContext]
         setPatternPhase:NSMakePoint(NSMinX(trueRect), NSMaxY(trueRect))];
     [innerPath fill];

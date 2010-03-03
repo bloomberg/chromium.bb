@@ -114,8 +114,7 @@ private:
   }
 
   NSPoint origin = [tabContentsView frame].origin;
-  // TODO(avi) http://crbug.com/36485; base != window
-  origin = [tabContentsView convertPointToBase:origin];
+  origin = [tabContentsView convertPoint:origin toView:nil];
   origin = [parentWindow convertBaseToScreen:origin];
 
   // Create a window to host a layer that animates the sliding and fading.

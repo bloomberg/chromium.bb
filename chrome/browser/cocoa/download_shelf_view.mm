@@ -39,10 +39,10 @@
     NSGradient* gradient = themeProvider->GetNSGradient(
         isKey ? BrowserThemeProvider::GRADIENT_TOOLBAR :
                 BrowserThemeProvider::GRADIENT_TOOLBAR_INACTIVE);
-    // TODO(avi) http://crbug.com/36485; base != window
-    NSPoint startPoint = [self convertPointFromBase:NSMakePoint(0, 0)];
-    NSPoint endPoint = [self convertPointFromBase:
-        NSMakePoint(0, [self frame].size.height)];
+    NSPoint startPoint = [self convertPoint:NSMakePoint(0, 0) fromView:nil];
+    NSPoint endPoint =
+        [self convertPoint:NSMakePoint(0, [self frame].size.height)
+                  fromView:nil];
 
     [gradient drawFromPoint:startPoint
                     toPoint:endPoint
