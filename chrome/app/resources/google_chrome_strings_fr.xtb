@@ -12,6 +12,7 @@
 <translation id="2370289711218562573">Google Chrome importe actuellement vos signets/favoris.</translation>
 <translation id="8970027151245482499">Google Chrome n'est pas installé ou le répertoire d'installation est introuvable. Veuillez télécharger de nouveau Google Chrome.</translation>
 <translation id="2040709530900803995">Moteur de rendu de Google Chrome</translation>
+<translation id="3044696659294460858">Une nouvelle version de Google Chrome prenant en charge les extensions est disponible.</translation>
 <translation id="4281844954008187215">Conditions d'utilisation</translation>
 <translation id="1137776625614346046">La zone &quot;Les plus visités&quot; montre les sites Web que vous consultez le plus souvent. Après avoir utilisé Google Chrome pendant un certain temps, vous verrez la liste de vos sites les plus visités chaque fois que vous ouvrirez un nouvel onglet. Pour en savoir plus sur cette fonction et d'autres, accédez à la page <ph name="BEGIN_LINK"/>Mise en route<ph name="END_LINK"/>.</translation>
 <translation id="3555616473548901994">Désinstallation terminée</translation>
@@ -67,7 +68,7 @@
 <translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="8865765905101981392">Navigateur Internet</translation>
 <translation id="8776515774046280928">Google Chrome est déjà installé et disponible pour tous les utilisateurs de cet ordinateur. Si vous souhaitez désinstaller Google Chrome pour un utilisateur particulier, désinstallez tout d'abord la version système installée par un administrateur.</translation>
-<translation id="2189123953385179981">Google Chrome OS ne prend pas en charge une application externe qui permet de gérer les liens <ph name="SCHEME"/>. Le lien demandé est <ph name="PROTOLINK"/>.</translation>
+<translation id="2189123953385179981">Google Chrome OS ne permet pas de lancer une application externe qui gère les liens <ph name="SCHEME"/>. Le lien demandé est <ph name="PROTOLINK"/>.</translation>
 <translation id="7196020411877309443">Pourquoi ce message s'affiche-t-il ?</translation>
 <translation id="2769762047821873045">Google Chrome n'est pas votre navigateur par défaut.</translation>
 <translation id="7825851276765848807">Échec de l'installation en raison d'erreurs non spécifiées. Veuillez télécharger Google Chrome à nouveau.</translation>

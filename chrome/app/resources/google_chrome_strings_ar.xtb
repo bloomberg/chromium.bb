@@ -12,6 +12,7 @@
 <translation id="2370289711218562573">يقوم Google Chrome الآن باستيراد المفضلة/الإشارات.</translation>
 <translation id="8970027151245482499">لم يتم تثبيت Google Chrome، أو فشل البرنامج في العثور على دليل التثبيت. يُرجى تنزيل Google Chrome مرة أخرى.</translation>
 <translation id="2040709530900803995">عارض Google Chrome</translation>
+<translation id="3044696659294460858">يتوفر إصدار جديد من Google Chrome يتضمن الإضافات.</translation>
 <translation id="4281844954008187215">شروط الخدمة</translation>
 <translation id="1137776625614346046">تعرض منطقة &quot;المواقع الأكثر زيارةً&quot; المواقع التي تتردّد إليها. فبعد مرور مدّة قصيرة على استخدام Google Chrome يمكنك مشاهدة المواقع الأكثر زيارةً كلّما فتحت علامة تبويب جديدة. لمزيد من المعلومات عن هذه الميزة وعن سواها من الميزات، اذهب إلى الرّابط <ph name="BEGIN_LINK"/>صفحة بدء التشغيل<ph name="END_LINK"/>.</translation>
 <translation id="3555616473548901994">تمت عملية الإزالة.</translation>
@@ -20,7 +21,7 @@
 <translation id="4149882025268051530">فشلت أداة المثبِّت في فك ضغط الأرشيف. يُرجى تنزيل Google Chrome مرة أخرى.</translation>
 <translation id="5744005218040929396">أداة Google Chrome</translation>
 <translation id="4343226815564935778">يبدو أن دليل تثبيت Google Chrome قيد الاستخدام. الرجاء إعادة تشغيل الكمبيوتر والمحاولة من جديد.</translation>
-<translation id="6817660909204164466">المساعدة في تحسين Google Chrome عن طريق إرسال إحصائيات الاستخدام وتقارير الأعطال تلقائيًا إلى Google</translation>
+<translation id="6817660909204164466">المساعدة في تحسين Google Chrome بإرسال إحصائيات الاستخدام وتقارير الأعطال إلى Google تلقائيًا </translation>
 <translation id="8227755444512189073">تقتضي معالجة روابط <ph name="SCHEME"/> تشغيل تطبيق خارجيّ. والرّابط المطلوب هو <ph name="PROTOLINK"/>.</translation>
 <translation id="1281036569101707544"><ph name="TERMS_OF_SERVICE_LINK"/> في Google Chrome</translation>
 <translation id="8815061062167142136">عذرًا! لقد طرأ عطل على Google Chrome. هل تريد إعادة تشغيله؟</translation>

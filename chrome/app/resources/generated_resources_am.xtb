@@ -43,7 +43,6 @@ When you enable sync, your bookmarks will get stored online in your Google Accou
 
 Each additional computer on which you enable sync will receive the same bookmarks.&quot;</translation>
 <translation id="1383861834909034572">ሲጠናቀቅ መክፈት</translation>
-<translation id="4211171103079968550">ጃቫን አንቃ</translation>
 <translation id="1076818208934827215">ማይክሮሶፍት ኢንተርኔት ኤክስፕሎረር</translation>
 <translation id="760641807227525561">ሙሉ ገጽ</translation>
 <translation id="3315158641124845231"><ph name="PRODUCT_NAME"/>ን ደብቅ</translation>
@@ -66,7 +65,6 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="5008715825902408241">ድንክየዎችን ደብቅ</translation>
 <translation id="762917759028004464">አሁን ያለው መነሻ አሳሽ <ph name="BROWSER_NAME"/> ነው።</translation>
 <translation id="9213479837033539041"><ph name="NUMBER_MANY"/> ሰከንድ ይቀራል</translation>
-<translation id="7740287852186792672">የፍለጋ ውጤቶች</translation>
 <translation id="8487678622945914333">አጉላ</translation>
 <translation id="6391832066170725637">ፋይሉ ወይም ማውጫው ሊገኘም አልቻለም።</translation>
 <translation id="8256087479641463867">ቅንጅትዎን ያብጁ</translation>
@@ -90,11 +88,9 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="5819484510464120153">የመተግበሪያ &amp;አቋራጮች ፍጠር…</translation>
 <translation id="1748246833559136615">አቁም</translation>
 <translation id="8927064607636892008">ይህን ድረ-ገጽ በሚያሳይበት ጊዜ አንድ ነገር በትክክል እየሄደ አልነበረም። ለመቀጠል፣ ዳግም ጫንን ይጫኑ ወይም ወደ ሌላ ገጽ ይሂዱ።</translation>
-<translation id="3593566984437245095">አዲስ በክሮም ውስጥ</translation>
 <translation id="5667293444945855280">ክፋተ ጡር / ማልዌር</translation>
 <translation id="5613020302032141669">ግራ ቀስት</translation>
 <translation id="3433489605821183222">የአገልጋይ ሰርቲፊኬት ስህተቶች ይዟል</translation>
-<translation id="6479177161510354016">ማስጠንቀቂያ <ph name="SITE"/></translation>
 <translation id="6698381487523150993">ተፈጠረ:</translation>
 <translation id="4684748086689879921">ከውጪ የሚመጣውን ዝለል</translation>
 <translation id="5516565854418269276">&amp;ሁልጊዜ የዕልባቶች አሞሌን አሳይ</translation>
@@ -102,7 +98,6 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="4194570336751258953">በመጠኑ-ጠቅ ማድረግን አንቃ</translation>
 <translation id="5111692334209731439">&amp;ዕልባት አቀናባሪ</translation>
 <translation id="443008484043213881">መሳሪያዎች</translation>
-<translation id="314605055819837597">የተጣቃሚ ውሂብ</translation>
 <translation id="8534801226027872331">በዚህ ሁኔታ፣ ለአሳሽዎ የቀረበው ሰርቲፊኬት ስህተቶች አሉት እናም መረዳት አይቻልም። ይህም ማለት በሰርቲፊኬቱ ውሰጥ ያለውን የማንነት መረጃ መረዳት አልቻልንም፤ ወይም በሰርቲፊኬቱ ውሰጥ ያለ የተወሰነ ሌላ መረጃ የግንኙነቱን ደህንነት ለመጠበቅ ተጠቅሟል። መቀጠል አይኖርብዎትም።</translation>
 <translation id="1486408090387743835"><ph name="PRODUCT_NAME"/> አሁን <ph name="BEGIN_LINK"/>ቅጥያዎች<ph name="END_LINK"/> እና <ph name="BEGIN_BUTTON"/>የዕልባት ማመሳሰል ማዘጋጃ<ph name="END_BUTTON"/>አለው።</translation>
 <translation id="3147949335879360642">ዕልባቶችዎ ይዋሃዳሉ።</translation>
@@ -117,7 +112,6 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="6370820475163108109"><ph name="ORGANIZATION_NAME"/> (<ph name="DOMAIN_NAME"/>)</translation>
 <translation id="8820817407110198400">ዕልባቶች</translation>
 <translation id="5191625995327478163">&amp;የቋንቋ ቅንጅቶች…</translation>
-<translation id="2994458892329442723">ተሰኪዎችን አንቃ</translation>
 <translation id="1674989413181946727">ኮምፒውተር-ሰፊ የኤስኤስኤል ቅንጅቶች፡</translation>
 <translation id="8703575177326907206">ከ<ph name="DOMAIN"/> ጋር ያለዎት ግንኙነት አልተመሰጠረም</translation>
 <translation id="4197577448076628265">ይህ ቅጥያ የአሰሳ ታሪክዎን እና የግል ውሂብዎን በ<ph name="HOST"/> ላይ የመዳረስ መብት ይኖረዋል።</translation>
@@ -125,7 +119,6 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="2518917559152314023">አ&amp;ክል…</translation>
 <translation id="6583406242234752719">ዕልባቶችዎን ከሌሎች ኮምፒውተሮችዎ ጋር ለማሳመር አላዋቀሩም።</translation>
 <translation id="4510290974676570902">ሚሜ አይነት</translation>
-<translation id="5565725983873655007">የተቀላቀለ ይዘት ደህንነታቸው በተጠበቀ(ኤስኤስኤል) ገፆች በሚኖርበት ጊዜ፡</translation>
 <translation id="5155055381903895958">መገለጫ ከውጪ ማስገባት፡</translation>
 <translation id="4419098590196511435">አንድ የሆነ ነገር ጠፍቷል</translation>
 <translation id="4256316378292851214">ቪዲዮ አስ&amp;ቀምጥ እንደ…</translation>
@@ -145,10 +138,7 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="144136026008224475">ተጨማሪ ቅጥያዎችን ያግኙ ››</translation>
 <translation id="8584280235376696778">&amp;ቪዲዮ በአዲስ ትር ክፈት</translation>
 <translation id="2845382757467349449">ሁልጊዜ የዕልባቶች አሞሌን አሳይ</translation>
-<translation id="6827094223626760756">ቅድመ እይታ</translation>
 <translation id="7511635910912978956"><ph name="NUMBER_FEW"/> ሰዓታት ይቀራሉ</translation>
-<translation id="1720675772864601791">ደኀንነታቸው ያልተጠበቁ ምስሎችን ፍቀድ</translation>
-<translation id="471372654970523967"><ph name="NETWORKDEVICE"/>ን አብራ</translation>
 <translation id="4001299999465067131">ከዚህ በላይ በሚገኘው ምስል የሚገኙትን ፊደሎች ያስገቡ።</translation>
 <translation id="2167276631610992935">ጃቫ ስክሪፕት</translation>
 <translation id="5233638681132016545">አዲስ ትር</translation>
@@ -157,13 +147,11 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="2551763528995812091">የይለፍ ቁልፎች እና የተለዩ/ህገ ወጦች</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="2263497240924215535">(የተሰናከለ)</translation>
-<translation id="1110535155349301542">አስወግድ</translation>
 <translation id="8571852575982769756">ምንም ተሰኪዎች አልተጫኑም</translation>
 <translation id="8017335670460187064"><ph name="LABEL"/></translation>
 <translation id="7925285046818567682"><ph name="HOST_NAME"/> በመጠበቅ ላይ…</translation>
 <translation id="5850800573054873412">ይህ ቅጥያ የአሰሳ ታሪክዎን እና የግል ውሂብዎን በሁሉም የድር ጣቢያዎች ላይ የመዳረስ መብት ይኖረዋል።</translation>
 <translation id="3280237271814976245">አስቀምጥ &amp;እንደ…</translation>
-<translation id="5300471193642408424">ገፆች አሳይ</translation>
 <translation id="7658239707568436148">ሰርዝ</translation>
 <translation id="6996264303975215450">ድረ ገጽ ፣ ተጠናቋል</translation>
 <translation id="8744320793514149773">ይህ ቅጥያ የግል ውሂብዎን በሁሉም የድር ጣቢያዎች ላይ የመዳረስ መብት ይኖረዋል።</translation>
@@ -175,10 +163,8 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="6746124502594467657">ዝቅ አድርግ</translation>
 <translation id="4657169630710541069">የንብረት ስህተት</translation>
 <translation id="3383487468758466563">ቅርጸ ቍምፊዎች እና ቋንቋዎች፡-</translation>
-<translation id="7339949551808462689">የቅጥያ ማስጠንቀቂያ <ph name="EXTENSION_NAME"/></translation>
 <translation id="6163363155248589649">&amp;መደበኛ</translation>
 <translation id="7222373446505536781">F11</translation>
-<translation id="3873963583678942942">(ርእስ አልባ)</translation>
 <translation id="8725178340343806893">ተወዳጆች/ዕልባቶች</translation>
 <translation id="5177526793333269655">ድንክዬ ትይታ</translation>
 <translation id="8926389886865778422">ደግመህ አትጠይቅ</translation>
@@ -217,7 +203,6 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="692135145298539227">ሰርዝ</translation>
 <translation id="8343477974731263456">የዕልባቶች ማመሳሰል አዘጋጅን በማዋቀር ላይ</translation>
 <translation id="5999606216064768721">የሥርዓት ርእሰ አሞሌ እና ጠርዞች</translation>
-<translation id="1635247229519770914">መጫን ቀጥል</translation>
 <translation id="8945419807169257367">የአገልጋይ ሰርቲፊኬት ሊረጋገጥ አልቻለም</translation>
 <translation id="1464570622807304272">ይሞክሩት - ‹‹አበባዎች›› ብለው ይጻፉና Enterን ይጫኑ።</translation>
 <translation id="2678063897982469759">እንደገና አንቃ</translation>
@@ -225,7 +210,6 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="1965338962645102116">የመሳሪያ አሞሌ ዕልባቶችን ወደ ክሮም ለማስመጣት፣ ወደ ጉግል መለያዎ መግባት ይኖርብዎታል። እባክዎ ከፍተው ይግቡና እንደገና ለማስመጣት ይሞክሩ።</translation>
 <translation id="5035846689029228055">ለተመሳሰለ ዕልባት አዘጋጅ</translation>
 <translation id="5922220455727404691">SSL 3.0 ተጠቀም</translation>
-<translation id="5903264686717710770">ርእስ፡-</translation>
 <translation id="8899851313684471736">አገናኙን በአዲስ &amp;መስኮት ክፈት</translation>
 <translation id="2019718679933488176">&amp;ተሰሚ በአዲስ ትር ክፈት</translation>
 <translation id="7421925624202799674">የ&amp;ክፍለ ገጽ ድር ምንጭ አሳይ</translation>
@@ -244,7 +228,6 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="350069200438440499">የፋይል ስም፡</translation>
 <translation id="8494979374722910010">ከአገልጋዩ ጋር ለመገናኘት የተደረገው ሙከራ ከሽፏል።</translation>
 <translation id="8795916974678578410">አዲስ መስኮት</translation>
-<translation id="3400618317772401692">አርእስተ-ዜናዎችን፣ የብሎግ ጽሁፎችን፣ አርኤስኤስ እና አቶም ምገባዎችን ለማግኘት የሚወዱዋቸውን ምንጮች በዚህ ሳጥን ይጨምሩ። <ph name="BEGIN_LINK"/>ተጨማሪ ይወቁ<ph name="END_LINK"/></translation>
 <translation id="5764483294734785780">ተሰሚ አስ&amp;ቀምጥ እንደ…</translation>
 <translation id="8507996248087185956"><ph name="NUMBER_DEFAULT"/> ደቂቃ</translation>
 <translation id="8214489666383623925">ፋይል ክፈት …</translation>
@@ -314,15 +297,12 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="6786747875388722282">ቅጥያዎች</translation>
 <translation id="9053965862400494292">ማመሳሰያን ለማዋቀር በሚሞከርበት ጊዜ ስህተት ተፈጥሯል።</translation>
 <translation id="2815500128677761940">የዕልባት አሞሌ</translation>
-<translation id="8041183585493091279">የአስተያየት ግልጋሎት ዩአርኤል፡</translation>
-<translation id="9189691339671500905">የፍለጋ ፕሮግራሙን በኦምኒቦክስ ውስጥ እንዲጠቅም አድርገህ አዘጋጀው።</translation>
 <translation id="2734328706317076756">ዕልባቶቼን አመሳስል ...</translation>
 <translation id="4571852245489094179">ዕልባቶችን እና ቅንጅቶችን ከውጭ አስመጣ</translation>
 <translation id="6514771739083339959">መነሻ ገጽ፡</translation>
 <translation id="4421917670248123270">የሚወርዱ ዝጋ እና ሰርዝ</translation>
 <translation id="5605623530403479164">ሌላ የፍለጋ ፕሮገራሞች</translation>
 <translation id="5710435578057952990">የዚህ ድረ-ገጽ ማንነት አልተረጋገጠም።</translation>
-<translation id="5287240709317226393">ኩኪዎችን አሳይ</translation>
 <translation id="5451646087589576080">የክፍለ ገጽ ድር &amp;መረጃ አሳይ</translation>
 <translation id="3368922792935385530">ተያይዟል</translation>
 <translation id="8486154204771389705">በዚህ ገጽ ላይ አቆይ</translation>
@@ -353,10 +333,8 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="5039804452771397117">ፍቀድ</translation>
 <translation id="2266011376676382776">ገጹ(ፆቹ) ምላሽ አይሰጥም(ጡም)</translation>
 <translation id="1805966933547717780">http://www.google.com/chrome/help/</translation>
-<translation id="5782620817391526544">የዕልባት አሞሌ</translation>
 <translation id="1319824869167805246">ሀሉንም እልባቶች በአዲስ መስኮት ክፈት</translation>
 <translation id="3493653833301553455">ቅጽ ራስ ሙላ ፡-</translation>
-<translation id="3895288786311724904">ታክሏል</translation>
 <translation id="3371861036502301517">የቅጥያ መጫን መሳን</translation>
 <translation id="644038709730536388">ራስዎን ከመስመር ላይ ጎጂ ሶፍትዌር እንዴት መከላከል እንደሚችሉ ተጨማሪ ይማሩ።</translation>
 <translation id="4172706149171596436">የተኪ ቅንጅቶችን ለውጥ</translation>
@@ -392,7 +370,6 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="1936157145127842922">በአቃፊ አሳይ</translation>
 <translation id="6982279413068714821">ከ<ph name="NUMBER_DEFAULT"/> ደቂቃ በፊት</translation>
 <translation id="7977590112176369853">‹ጥያቄ ያስገቡ›</translation>
-<translation id="994771890067000105">ባህሪያት ያሉት ተጨማሪ</translation>
 <translation id="5155632014218747366">&quot;ከእዚህ ጣቢያ ጋር ላሉት ችግሮች ዝርዝር መረጃ፣ ጉግልን <ph name="DIAGNOSTIC_PAGE"/>ለ <ph name="DOMAIN"/> ይጎብኙ።</translation>
 <translation id="1120026268649657149">ቁልፍ ቃል ባዶ ወይም የተለየ መሆን ይኖርበታል</translation>
 <translation id="7954187762705269222"><ph name="HOUR"/>:<ph name="MIUTE"/>ጡ</translation>
@@ -452,7 +429,6 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="2135787500304447609">&amp;ከቆመበት ቀጥል</translation>
 <translation id="1813414402673211292">የእሰሳ ውሂብ አጽዳ</translation>
 <translation id="2356762928523809690">የማዘመኛ አገልጋይ የለም (ስህተት፡ <ph name="ERROR_NUMBER"/>)</translation>
-<translation id="6356865038429301391">ባህሪያት ያሉት ገጽታ</translation>
 <translation id="219008588003277019">የውስጥ ተገልጋይ ሞዱል፡ <ph name="NEXE_NAME"/></translation>
 <translation id="5436510242972373446">ፍለጋ ከ<ph name="SITE_NAME"/>፡-</translation>
 <translation id="6719684875142564568"><ph name="NUMBER_ZERO"/> ሰዓት</translation>
@@ -482,7 +458,6 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="1545775234664667895">የተጫነ ገጽታ &quot;<ph name="THEME_NAME"/>&quot;</translation>
 <translation id="5329858601952122676">&amp;ሠርዝ</translation>
 <translation id="6100736666660498114">ጀምር ምናሌ</translation>
-<translation id="1120098871254928930">ሁሉም ይዘቶች እንዲጫኑ ፍቀድ</translation>
 <translation id="3994878504415702912">&amp;ማጉሊያ</translation>
 <translation id="9009369504041480176">በማስገባት ላይ (<ph name="PROGRESS_PERCENT"/>%)...</translation>
 <translation id="5602600725402519729">ዳግም &amp;ጫን</translation>
@@ -558,18 +533,14 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="8398877366907290961">ለማንኛውም ቀጥል</translation>
 <translation id="290414493736480793">ምስጋናዎች / ማረጋገጫዎች</translation>
 <translation id="5463856536939868464">የተደበቁ ዕልባቶችን የያዘ ምናሌ</translation>
-<translation id="6261915643960475695">ቢዝነስ</translation>
 <translation id="6449085810994685586">&amp;የዚህን መስክ ፊደል አርም</translation>
-<translation id="8789544147407756448">የሚከተለው ቅጥያ ተሰናክሏል፡- <ph name="EXTENSION_NAME"/></translation>
 <translation id="50960180632766478"><ph name="NUMBER_FEW"/> ደቂቃ ይቀራል</translation>
 <translation id="2022540532491530427">&amp;ፋይል ቅዳ</translation>
 <translation id="1099979722614954862"><ph name="PRODUCT_NAME"/> አሁን <ph name="BEGIN_LINK"/>ቅጥያዎች<ph name="END_LINK"/> እና <ph name="BEGIN2_LINK"/>የዕልባት ማመሳሰል ማዘጋጃ<ph name="END2_LINK"/>አለው።</translation>
 <translation id="5966654788342289517">የግል ነገሮች</translation>
-<translation id="2576802705154232609">የድር ክሊፖች</translation>
 <translation id="8664389313780386848">የ&amp;ክፍለ ገጽ ድር ምንጭ አሳይ</translation>
 <translation id="3089982169226026948">መገለጫ ምረጥ</translation>
 <translation id="57646104491463491">የተቀየረበት ቀን</translation>
-<translation id="6402372417119601621">ያስገቡት ምግብ ሊጫን አልቻለም።</translation>
 <translation id="3867260226944967367">ይህ ድረ-ገጽ አልተገኘም።</translation>
 <translation id="6507969014813375884">ቀላል ቻይንኛ</translation>
 <translation id="1767991048059195456">ሪፖርት ላክ</translation>
@@ -591,7 +562,6 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="6639554308659482635">ኤስኪውላይት ማህደረ ትውስታ</translation>
 <translation id="8141503649579618569"><ph name="DOWNLOAD_RECEIVED"/>/<ph name="DOWNLOAD_TOTAL"/>, <ph name="TIME_LEFT"/></translation>
 <translation id="6550769511678490130">ሀሉንም እልባቶች ክፈት</translation>
-<translation id="2534091581909016888"><ph name="SITE"/></translation>
 <translation id="6659594942844771486">ትር</translation>
 <translation id="4624768044135598934">ተሳክቷል!</translation>
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME"/> ጭነትዎን ለማጠናቀቅ ዝግጁ ነው</translation>
@@ -606,14 +576,12 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="6549689063733911810">የቅርብ ጊዜ</translation>
 <translation id="5552632479093547648">ክፋተ ጡር እና አስጋሪ ተገኝቷል!</translation>
 <translation id="4988273303304146523">ከ<ph name="NUMBER_DEFAULT"/> ቀን በፊት</translation>
-<translation id="5087864757604726239">ወደ ኋላ</translation>
 <translation id="2819994928625218237">&amp;የፊደል አማራጮች የሉም</translation>
 <translation id="4316305410440790958">አንጓ ስእሉን በአዲስ &amp;ትር ክፈት</translation>
 <translation id="9142623379911037913"><ph name="SITE"/> የዴስክቶፕ ማስታወቂያዎችን እንዲያሳይ ይፈቅዳሉ?</translation>
 <translation id="4196320913210960460">በመሳሪያዎች ምናሌ ውስጥ ቅጥያዎች የሚለውን በመጫን፣ የጫኗቸውን ቅጥያዎች ማቀናበር ይችላሉ።</translation>
 <translation id="9118804773997839291">ከዚህ በታች ለገጹ ሁሉንም ጤናማ ያልሆኑ አባሎችን ዝርዝር የሚያሳይ ነው። ለተጨማሪ መረጃ የማስተካከያ አገናኝ ላይ፣ ለአንድ የተወሰነ አባል ከሆነ ደግሞ የራሱ ቅደም ተከተል ላይ ጠቅ ያድርጉ።</translation>
 <translation id="3664021239099029884">ሁሉንም የሚወርዱ አሳይ</translation>
-<translation id="2207746515960750386">ከ<ph name="MINUTE"/> ደቂቃ በፊት</translation>
 <translation id="7754704193130578113">ከማውረድ በፊት እያንዳንዱ ፋይል የት እንደሚቀመጥ ጠይቅ</translation>
 <translation id="2497284189126895209">ሁሉም ፋይሎች</translation>
 <translation id="5360606537916580043">ባለፈው ቀን</translation>
@@ -625,7 +593,6 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="8888930795132369495">የፋይል &amp;ዱካ ቅዳ</translation>
 <translation id="4517036173149081027">የሚወርድ ዝጋ እና ሰርዝ</translation>
 <translation id="6281636957902664775">ወደ <ph name="URL"/> ሂድ</translation>
-<translation id="9148058034647219655">ውጣ</translation>
 <translation id="630065524203833229">ው&amp;ጣ</translation>
 <translation id="2649204054376361687"><ph name="CITY"/>፣ <ph name="COUNTRY"/></translation>
 <translation id="5738216285593517904">ምክሮችን አሳይ</translation>
@@ -633,13 +600,11 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="1168020859489941584">በዚህ ጊዜ ውስጥ ይከፍታል <ph name="TIME_REMAINING"/>...</translation>
 <translation id="7814458197256864873">&amp;ቅዳ</translation>
 <translation id="4692623383562244444">የፍለጋ ፕሮግራሞች</translation>
-<translation id="2233040275795129413">የአኗኗር ሁኔታ</translation>
 <translation id="2526590354069164005">ዴስክቶፕ</translation>
 <translation id="4890284164788142455">ታይኛ</translation>
 <translation id="3889424535448813030">ቀኝ  ቀስት</translation>
 <translation id="5435666907653217300">ሌላ ችግር</translation>
 <translation id="4479639480957787382">ኤተርኔት</translation>
-<translation id="1264974993859112054">ሰፖርቶች</translation>
 <translation id="5167270755190684957">ጉግል ክሮም ቤተ-ገጽታዎች</translation>
 <translation id="8382913212082956454">&amp;ኢሜይል አድራሻ ቅዳ</translation>
 <translation id="4229495110203539533">ከ<ph name="NUMBER_ONE"/> ሰከንድ በፊት</translation>
@@ -660,13 +625,11 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="7073704676847768330">ይህ ምናልባት እየፈለጉ ያሉት ጣቢያ ላይሆን ይችላል!</translation>
 <translation id="7642109201157405070">ከውጭ ማምጣት ቀጥል</translation>
 <translation id="6463795194797719782">&amp;አርትዕ</translation>
-<translation id="5720119176273625078">አጣቃሹ አልተላከም</translation>
 <translation id="4775879719735953715">ነባሪ አሳሽ፡</translation>
 <translation id="4805261289453566571">እንደገና ይግቡ</translation>
 <translation id="4188026131102273494">ቁልፍ ቃል፡</translation>
 <translation id="2290414052248371705">ሁሉንም ይዘት አሳይ</translation>
 <translation id="6434892175081553796">በዚህ ትር የተከፈቱ ትሮችን ዝጋ</translation>
-<translation id="3268761268932257769">ምስሎችን አውቶማቲካሊ ጫን</translation>
 <translation id="7227780179130368205">አስጋሪ ተገኝቷል!</translation>
 <translation id="5149131957118398098"><ph name="NUMBER_ZERO"/> ሰዓት ይቀራል</translation>
 <translation id="2912839854477398763">እርግጠኛ ነዎት ይህን ቅጥያ ማራገፍ ይፈልጋሉ?</translation>
@@ -682,7 +645,6 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="8978540966440585844">አ&amp;ስስ…</translation>
 <translation id="6690744523875189208"><ph name="NUMBER_TWO"/> ሰዓታት</translation>
 <translation id="3678156199662914018">ቅጥያ፡- <ph name="EXTENSION_NAME"/></translation>
-<translation id="5104499318017527547">ጨዋታ</translation>
 <translation id="3577682619813191010">&amp;ፋይል ቅዳ</translation>
 <translation id="10122177803156699">አሳየኝ</translation>
 <translation id="5260878308685146029"><ph name="NUMBER_TWO"/> ደቂቃ ይቀራል</translation>
@@ -692,7 +654,6 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="6192792657125177640">የተለዩ</translation>
 <translation id="4568660204877256194">ዕልባቶችን ወደ ውጭ ላክ…</translation>
 <translation id="4577070033074325641">ዕልባቶችን ከውጭ አስመጣ…</translation>
-<translation id="2822650824848709219">ሁሉንም ደኀንነታቸው ያልተጠበቁ ይዘቶች አግድ</translation>
 <translation id="1715941336038158809">የተሳሳተ የተጠቃሚ ስም ወይም የይለፍ ቃ።</translation>
 <translation id="1901303067676059328">&amp;ሁሉንም ምረጥ</translation>
 <translation id="1559333154119355392"><ph name="DOWNLOAD_SIZE"/>፣ ተጠናቋል</translation>
@@ -708,7 +669,6 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="6463061331681402734"><ph name="NUMBER_MANY"/> ደቂቃ</translation>
 <translation id="8717266507183354698">እነዚህን ያካተቱ <ph name="SEARCH_TERMS"/> በታሪክ ውስጥ ያሉትን ሁሉንም ገፆች ይመልከቱ።</translation>
 <translation id="2466804342846034717">ትክክለኛውን የይለፍ ቃል ከዚህ በላይ ያስገቡና ከዚህ በታች በሚታየው ምስል ላይ ያሉትን ቁምፊዎች ይፃፉ።</translation>
-<translation id="2922560965807694149">ደብቅ</translation>
 <translation id="5645845270586517071">የደህንነት ጥበቃ ስህተት</translation>
 <translation id="8695758493354644945">እነዚህን ያካተቱ <ph name="SEARCH_TERMS"/> በታሪክ ውስጥ ያሉ <ph name="NUM_MATCHES"/> የቅርብ ጊዜ ገፆች ይመልከቱ።</translation>
 <translation id="3827774300009121996">&amp;ሙሉ ገጽ አሳይ</translation>
@@ -716,20 +676,17 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="7525067979554623046">ፍጠር</translation>
 <translation id="4711094779914110278">ቱርክኛ</translation>
 <translation id="7136984461011502314">ወደ <ph name="PRODUCT_NAME"/> እንኳን ደህና መጡ</translation>
-<translation id="7227751526271321205">ከቅጾች ላይ ፈጽሞ ጽሁፍ አታስቀምጥ</translation>
 <translation id="4002066346123236978">ርእስ</translation>
 <translation id="1974178770588939828">ዝርዝር አሳይ</translation>
 <translation id="4087089424473531098">ቅጥያውን ፈጥሯል፡ <ph name="EXTENSION_FILE"/></translation>
 <translation id="9015241028623917394">የአሁኑን ገጽ ይቆጣጠራል</translation>
 <translation id="2378982052244864789">የቅጥያውን ማውጫ ይምረጡ።</translation>
 <translation id="7861215335140947162">&amp;የሚወርዱ</translation>
-<translation id="5821668936183240062">ቀጣይ</translation>
 <translation id="4708849949179781599"><ph name="PRODUCT_NAME"/>ን አቋርጥ</translation>
 <translation id="2505402373176859469"><ph name="RECEIVED_AMOUNT"/> ከ <ph name="TOTAL_SIZE"/></translation>
 <translation id="6644512095122093795">የይለፍ ቃሎችን ለማስቀመጥ ጠይቅ</translation>
 <translation id="5384051050210890146">ታማኝ የኤስኤስኤል ሰርቲፊኬቶች ምረጥ።</translation>
 <translation id="6865323153634004209">እነዚህን ቅንጅቶች አብጅ</translation>
-<translation id="7487067081878637334">ቴክኖሎጂ</translation>
 <translation id="154603084978752493">እንደ ፍለጋ ፕሮ&amp;ግራም አክል…</translation>
 <translation id="2079545284768500474">ቀልብስ</translation>
 <translation id="114140604515785785">የቅጥያ ስርወ ማውጫ፡</translation>
@@ -748,7 +705,6 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="5433207235435438329">የፊደል አራሚ ቋንቋ፡-</translation>
 <translation id="1358741672408003399">እረማ ሆሄ እና ሰዋስው</translation>
 <translation id="2527167509808613699">ማንኛውም አይነት ግንኙነት</translation>
-<translation id="3491001008184346538">ተወግዷል</translation>
 <translation id="1234466194727942574">ትር መስመር</translation>
 <translation id="4035758313003622889">&amp;ተግባር አስተዳዳሪ</translation>
 <translation id="558442360746014982">ከዚህ በታች ኦርጂናሉ የስህተት መልእክት ይገኛል</translation>
@@ -760,9 +716,7 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="881799181680267069">ሌሎቹን ደብቅ</translation>
 <translation id="8318945219881683434">የተሻረ እንዳለ ለመፈተሽ አልታቸለም።</translation>
 <translation id="4928961172107035048">ለተመሳሰለ ዕልባት የማዘጋጀት ስህተት!</translation>
-<translation id="5086103144359029476">ባህሪያት ያሉት ገጽታዎች</translation>
 <translation id="994289308992179865">&amp;መላልስ</translation>
-<translation id="3191701650141760424">ከመጫን ውጣ</translation>
 <translation id="305803244554250778">በነዚህ ቦታዎች ላይ የመተግበሪያ አቋራጮችን ፍጠር፡</translation>
 <translation id="3745810751851099214">ላክ ለ፡</translation>
 <translation id="8877448029301136595">‹ወላጅማውጫ›</translation>
@@ -789,7 +743,6 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="4056561919922437609"><ph name="TAB_COUNT"/> ትሮች</translation>
 <translation id="4373894838514502496">ከ<ph name="NUMBER_FEW"/> ደቂቃ በፊት</translation>
 <translation id="6264365405983206840">&amp;ሁሉንም ምረጥ</translation>
-<translation id="2533050964672183510">ቀዳሚ</translation>
 <translation id="1017280919048282932">&amp;ወደ መዝገበ ቃላት አክል</translation>
 <translation id="1829244130665387512">በ .. ገጽ ውስጥ የተገኘ</translation>
 <translation id="4115153316875436289"><ph name="NUMBER_TWO"/> ቀናት</translation>
@@ -813,7 +766,6 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="8940262601983387853">የኩኩ ስም</translation>
 <translation id="8053959338015477773">አንዳንድ አባሎችን በዚህ ገጽ ለማሳየት ተጨማሪ ተሰኪ ያስፈልጋል።</translation>
 <translation id="5020734739305654865">በዚህ ይግቡ</translation>
-<translation id="5825982513659277632">ከ<ph name="HOUR"/> ሰዓት/ሰዓታት በፊት</translation>
 <translation id="7414887922320653780"><ph name="NUMBER_ONE"/> ሰዓት ይቀራል</translation>
 <translation id="399179161741278232">ከውጭ የመጣ</translation>
 <translation id="3927932062596804919">ከልክል</translation>
@@ -859,8 +811,6 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="3494444535872870968">&amp;ንዑስ ክፈፍ አስቀምጥ እንደ…</translation>
 <translation id="5731247495086897348">ለ&amp;ጥፍና እና ሂድ</translation>
 <translation id="3413103074007669042">ይህ ገጽ አንዳንድ ደኅንነቱ ያልተጠበቀ ይዘት ይዟል</translation>
-<translation id="4887833561977827087">እስካሁን እዚህ ለማሳየት ንጥሎች የሉም። 
-የድር ክሊፖችዎን <ph name="BEGIN_LINK"/>ያብጁ<ph name="END_LINK"/> እና ተጨማሪ ምንጮች ያክሉ።</translation>
 <translation id="5285267187067365830">ተሰኪ ጫን…</translation>
 <translation id="1166212789817575481">በቀኝ በኩል ያሉ ትሮችን ዝጋ</translation>
 <translation id="6472893788822429178">መነሻ አዝራር አሳይ</translation>
@@ -889,7 +839,6 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="7646591409235458998">ኢሜይል፡</translation>
 <translation id="703748601351783580">ሀሉንም እልባቶች በአዲስ መስኮት ክፈት</translation>
 <translation id="8409023599530904397">የመሳሪያ አሞሌ፡</translation>
-<translation id="770273299705142744">ቅጽ ራስ ሙላ ፡-</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="8414273245158967435"><ph name="NAME_OF_EXTENSION"/> ተሰናክሏል። የዕልባት ማመሳሰለ ማዘጋጂያን ካጠፉት፣ ይህን ቅጥያ በመሳሪያዎች ምናሌ በሚገኘው የቅጥያዎች ገጽ ላይ ዳገም ማንቃት ይችላሉ።</translation>
 <translation id="4478664379124702289">አገ&amp;ናኝ አስቀምጥ እንደ…</translation>
@@ -900,12 +849,9 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="8502249598105294518">አብጅ እና ተቆጣጠር <ph name="PRODUCT_NAME"/></translation>
 <translation id="2797524280730715045">ከ<ph name="NUMBER_DEFAULT"/> ሰዓት በፊት</translation>
 <translation id="768570155019561996">ይህ ቅጥያ የግል ውሂብዎን በበርካታ የድር ጣቢያዎች ላይ የመዳረስ መብት ይኖረዋል።</translation>
-<translation id="7180865173735832675">አብጅ</translation>
-<translation id="1430594899542257414">ጠቃሚ ምክሮች እና ብልሀቶች</translation>
 <translation id="2115926821277323019">ትክክለኛ ዩአርኤል መሆን ይኖርበታል</translation>
 <translation id="7397054681783221164">የሚከተሉትን ንጥሎች ደምስስ፡-</translation>
 <translation id="4891251785049117953">የተቀመጠ የቅጽ ውሂብ አጽዳ</translation>
-<translation id="1531836666020185856">ባህሪያት ያሉት</translation>
 <translation id="580571955903695899">በርእስ ቅደም ተከተል አስይዝ</translation>
 <translation id="5230516054153933099">መስኮት</translation>
 <translation id="7554791636758816595">አዲስ ትር</translation>
@@ -928,7 +874,6 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="5771816112378578655">መጫን በሂደት ላይ…</translation>
 <translation id="7796411525793830031">የቅጥያ መጠቅለል መሳካት</translation>
 <translation id="3228279582454007836">ይህን ጣቢያ ከዛሬ በፊት ፈጽሞ ጎብኝተውት አያውቁም።</translation>
-<translation id="4890855023395992542">የግልጋሎት ዩአርኤል፡-</translation>
 <translation id="2814489978934728345">ይህን ገጽ መጫን አቁም</translation>
 <translation id="2354001756790975382">ሌላ እልባቶች</translation>
 <translation id="8561574028787046517"><ph name="PRODUCT_NAME"/> ዘምኗል</translation>
@@ -942,7 +887,6 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="7326526699920221209">ባትሪ፡ <ph name="PRECENTAGE"/>%</translation>
 <translation id="601778514741867265">ኩኪዎችን ከጎበኘኋቸው ጣቢያዎች ብቻ ተቀበል</translation>
 <translation id="8299269255470343364">ጃፓንኛ</translation>
-<translation id="7280343984261969618">ተሰኪዎችን ያለምንም ልዩ መብቶች በአሸዋሳጥን ውስጥ ማሄድ አንዳንድ ተሰኪዎች በትክክል እንዳይሰሩ ያደርጋል።</translation>
 <translation id="50030952220075532"><ph name="NUMBER_ONE"/> ቀን ይቀራል</translation>
 <translation id="2885378588091291677">ተግባር መሪ</translation>
 <translation id="1215711112676250731">ኮታ፡</translation>
@@ -978,9 +922,7 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="4474796446011988286">የሚከተሉት ኩኪዎች ከኮንፒውተርዎ ተቀምጠዋል፡</translation>
 <translation id="884923133447025588">ምንም የመሻሪያ ዘዴ አልተገኘም።</translation>
 <translation id="7240072072812590475">የጊርስ ቅንጅቶችን ቀይር</translation>
-<translation id="6001785649757655903">የክብረ ገመና የቅጣት መዝገብ ስህተት</translation>
 <translation id="2480155717379390016"><ph name="NAME_OF_EXTENSION"/>ንን አሰናክል</translation>
-<translation id="492643400682328128"><ph name="NETWORKDEVICE"/>ን አጥፋ</translation>
 <translation id="7671130400130574146">የሥርዓት ርእሰ አሞሌ እና ጠርዞች</translation>
 <translation id="9170848237812810038">&amp;ቀልብስ</translation>
 <translation id="8135557862853121765"><ph name="NUM_KILOBYTES"/>K</translation>
@@ -1038,7 +980,6 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="5280833172404792470">ከሙሉ ገጽ ማያ ውጣ (<ph name="ACCELERATOR"/>)</translation>
 <translation id="129553762522093515">በቅርብ ጊዜ የተዘጉ</translation>
 <translation id="8355915647418390920"><ph name="NUMBER_FEW"/> ቀናት</translation>
-<translation id="3891357445869647828">ጃቫስክሪፕትን አንቃ</translation>
 <translation id="6451458296329894277">እንደገና ለማስገባት የማረጋገጫ ቅጽ</translation>
 <translation id="5116333507878097773"><ph name="NUMBER_ONE"/> ሰዓት</translation>
 <translation id="1851266746056575977">አሁን አዘምን</translation>
@@ -1048,7 +989,6 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="8788572795284305350">ከ<ph name="NUMBER_ZERO"/> ሰዓት በፊት</translation>
 <translation id="8236028464988198644">ከአድራሻ አሞሌ ፈልግ።</translation>
 <translation id="4867297348137739678">ያለፈው ሳምንት</translation>
-<translation id="4881695831933465202">ክፈት</translation>
 <translation id="5457793226917888578">ይህ ገጽ ደኅንነቱ ያልተጠበቀ ይዘት ይዟል</translation>
 <translation id="5988520580879236902">ተዋናይ እይታዎችን መርምር፡</translation>
 <translation id="5981759340456370804">ስታትስቲክስ ለሊቆች</translation>
@@ -1061,7 +1001,6 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="7009102566764819240">ከዚህ በታች ለገጹ ሁሉንም ጤናማ ያልሆኑ አባሎችን ዝርዝር የሚያሳይ ነው። ለተጨማሪ መረጃ የማስተካከያ አገናኝ ላይ፣ ለአንድ የተወሰነ ንብረት ከሆነ ደግሞ የማልዌር ቅደም ተከተል ላይ ጠቅ ያድርጉ። ንብረቱ በስህተት እንደ አስጋሪ የተዘገበ መሆኑን ካወቁ፣ ‹ስህተት ሪፖርት አድርግ› የሚለውን አገናኝ ጠቅ ያድርጉ።</translation>
 <translation id="676327646545845024">ለእንደዚህ አይነት አገናኞች መገናኛውን ዳግም አታሳይ።</translation>
 <translation id="494645311413743213"><ph name="NUMBER_TWO"/> ሰከንድ ይቀራል</translation>
-<translation id="6863682319656084809">የቅጥያ ማስጠንቀቂያ <ph name="EXTENSION_NAME"/></translation>
 <translation id="1485146213770915382">የፍለጋ ቃላቱ በሚታዩበት ቦታ <ph name="SEARCH_TERMS_LITERAL"/>ን ዩአርኤሉ ውስጥ ያስገቡ።</translation>
 <translation id="4839303808932127586">ቪዲዮ አስ&amp;ቀምጥ እንደ…</translation>
 <translation id="5626134646977739690">ስም፡</translation>
@@ -1078,11 +1017,8 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="8241707690549784388">እየፈለጉት ያሉት ገጽ ያስገቡትን መረጃ ተጥቅሟል። ወደዛ ገጽ መመለስ ወስደውት የነበረውን ርምጃ እንዲደገም ሊያደርግ ይችላል። ለመቀጠል ይፈልጋሉ?</translation>
 <translation id="486595306984036763">የአስጋሪ ሪፖርት ክፈት</translation>
 <translation id="4860787810836767172">ከ<ph name="NUMBER_FEW"/> ሰከንድ በፊት</translation>
-<translation id="7335974883498105858">ባህሪያት ያሉት ተጨማሪዎች</translation>
-<translation id="1248790313843954917">ከፍለጋ መጥየቅዎ ጋር ተዛማጅ የሆኑ ምግቦች የሉም።</translation>
 <translation id="5963026469094486319">ገጽታዎች አግኝ</translation>
 <translation id="2441719842399509963">ወደ እንደወረዱ አስተካክል</translation>
-<translation id="170407012880898501">ለመሙላት ቀላል ይሆኑ ዘንድ ጽሁፍ ከቅፆች ላይ አስቀምጥ</translation>
 <translation id="8116972784401310538">&amp;ዕልባት አቀናባሪ</translation>
 <translation id="1849632043866553433">የመተግበሪያ መሸጎጫዎች</translation>
 <translation id="4927301649992043040">ቅጥያ ሸክፍ</translation>
@@ -1132,7 +1068,6 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="2108475813351458355">ጥብቅ የሆነ ግንኙነት ከ<ph name="DOMAIN"/> ጋር</translation>
 <translation id="942671148946453043">ማንነትን የማያሳውቅ መስኮት ከፍተዋል። በዚህ መስኮት የከፈቷቸው ገፆች በታሪክዎ ውስጥ አይታዩም።</translation>
 <translation id="8912362522468806198">የጉግል መለያ</translation>
-<translation id="3503975005768721305">አዲስ የድር ክሊፕ አክል</translation>
 <translation id="6996505290426962909">&amp;ዕልባቶች እና &amp;ቅንጅቶች ከውጭ አስመጣ…</translation>
 <translation id="6165508094623778733">ተጨማሪ ይወቁ</translation>
 <translation id="822618367988303761">ከ<ph name="NUMBER_TWO"/> ቀናት በፊት</translation>
@@ -1164,7 +1099,6 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="7607002721634913082">ላፍታ ቆሟል</translation>
 <translation id="480990236307250886">መነሻ ገጹን ክፈት</translation>
 <translation id="5757539081890243754">መነሻ ገጽ፡</translation>
-<translation id="6709133671862442373">ዜና</translation>
 <translation id="5906719743126878045"><ph name="NUMBER_TWO"/> ሰዓታት ይቀራሉ</translation>
 <translation id="6550675742724504774">አማራጮች</translation>
 <translation id="8959208747503200525">ከ<ph name="NUMBER_TWO"/> ሰዓታት በፊት</translation>
@@ -1179,7 +1113,6 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="566920818739465183">ይህን ጣቢያ ለመጀመሪያ ጊዜ የጎበኙት በ<ph name="VISIT_DATE"/> ነው።</translation>
 <translation id="2961695502793809356">ወደ ፊት ለመሄድ ጠቅ ያድርጉ፣ ታሪክ ለማየት ይያዙ</translation>
 <translation id="923083373181549309">እባክዎ <ph name="PRODUCT_NAME"/>ን እንደገና ያስጀምሩ</translation>
-<translation id="8678305583783039525">ኩኪዎችን እና የድር ጣቢያ ፍቃዶችን አሳይ</translation>
 <translation id="8421864404045570940"><ph name="NUMBER_DEFAULT"/> ሰከንድ</translation>
 <translation id="176587472219019965">&amp;አዲስ መስኮት</translation>
 <translation id="8689341121182997459">ጊዜው አልፎበታል ፡</translation>
@@ -1200,7 +1133,6 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="988159990683914416">የገንቢ ግንብ</translation>
 <translation id="921175996768281472">የቅጥያ መጠቅለል መሳን</translation>
 <translation id="2183426022964444701">የቅጥያ ስረወ ማውጫ ይምረጡ።</translation>
-<translation id="6790650291892352751">በርእስ ወይም በዩአርኤል ፈልግ፡</translation>
 <translation id="5398353896536222911">&amp;የፊደል መምረጫ ፓናልን አሳይ</translation>
 <translation id="8046048349148382412"><ph name="HOUR"/>:<ph name="MIUTE"/> ሙሉ እስኪሆን</translation>
 <translation id="3705722231355495246">-</translation>
@@ -1224,7 +1156,6 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="6264485186158353794">ወደ አስተማማኝ ተመለስ</translation>
 <translation id="5037676449506322593">ሁሉንም ምረጥ</translation>
 <translation id="3807747707162121253">&amp;ሰርዝ</translation>
-<translation id="2850243184678184884">ለምሳሌ፡ ሆኪ፣ ቢቢሲ፣ http://engadget.com/rss.xml</translation>
 <translation id="77999321721642562">ከጊዜ በኋላ፣ ከዚህ በታች ያለው ቦታ በብዛት የጎበኟቸውን ስምንት ጣቢያዎች ያሳይዎታል።</translation>
 <translation id="5864830997591220873">ሁሉንም ኩኪዎች አግድ</translation>
 <translation id="7447718177945067973">አገልጋዩ ሊገኝ አልቻለም</translation>
@@ -1255,7 +1186,6 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="1038842779957582377">ያልታወቀ ስም</translation>
 <translation id="5327248766486351172">ስም</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION"/> [<ph name="COUNTRY"/>]</translation>
-<translation id="2052895926110224873">የክብረ ገመናዎ የቅጣት መዝገቦችዎ ለመጫን አልቻለም።</translation>
 <translation id="2445081178310039857">የቅጥያ ስርወ ማውጫ ያስፈልጋል።</translation>
 <translation id="8251578425305135684">ድንክዬ ተወግዷል።</translation>
 <translation id="3037605927509011580">ኦው ፣ ተሰናከለ!</translation>
@@ -1277,14 +1207,11 @@ Each additional computer on which you enable sync will receive the same bookmark
 <translation id="5941711191222866238">አሳንስ</translation>
 <translation id="253434972992662860">&amp;ላፍታ አቁም</translation>
 <translation id="335985608243443814">አስስ…</translation>
-<translation id="3812064265539952796">ማስታወሻ፡</translation>
 <translation id="3569713929051927529">አቃፊ አክል…</translation>
 <translation id="7167486101654761064">&amp;ሁልጊዜ እንዲህ አይነት ፋይሎችን ክፈት</translation>
-<translation id="3030701886340141944">ተጨማሪ ጣቢያዎች በአንድ ቦታ ላይ በመስመር እንዲቀመጡ ትፈልጋለህ? <ph name="BEGIN_LINK"/>ጉግል Reader<ph name="END_LINK"/>ን ይሞክሩ።</translation>
 <translation id="2770465223704140727">ከዝርዝር  አስወግድ</translation>
 <translation id="6053401458108962351">&amp;የአሰሳ ውሂብ አጽዳ…</translation>
 <translation id="2339641773402824483">ማዘመኛዎች በመፈተሽ ላይ ነው...</translation>
-<translation id="8600200086690278232">ባህሪያት ያሉት የድር ክሊፖች</translation>
 <translation id="2766006623206032690">ለ&amp;ጥፍና እና ሂድ</translation>
 <translation id="9071050381089585305">ምላሽ የማይሰጥ ስክሪፕት</translation>
 <translation id="4394049700291259645">አሰናክል</translation>

@@ -12,6 +12,7 @@
 <translation id="2370289711218562573">Google Chrome şu anda Sık Kullanılanları/Yer İmlerini içe aktarıyor.</translation>
 <translation id="8970027151245482499">Google Chrome yüklenmedi veya yükleme dizinini bulamadı. Lütfen Google Chrome'u yeniden indirin.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
+<translation id="3044696659294460858">Google Crome&amp;#39;un uzantıları içeren yeni bir sürümü kullanıma sunuldu.</translation>
 <translation id="4281844954008187215">Hizmet Şartları</translation>
 <translation id="1137776625614346046">&quot;En çok ziyaret edilenler&quot; alanında en sık kullandığınız web siteleri gösterilir. Google Chrome'u bir süre kullandıktan sonra, yeni bir sekme açtığınızda en sık ziyaret ettiğiniz siteleri görürsünüz. <ph name="BEGIN_LINK"/>Başlarken sayfasında<ph name="END_LINK"/> bu ve diğer özellikler hakkında daha fazla bilgi edinebilirsiniz.</translation>
 <translation id="3555616473548901994">Kaldırma işlemi tamamlandı.</translation>
@@ -67,7 +68,7 @@
 <translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="8865765905101981392">İnternet Tarayıcı</translation>
 <translation id="8776515774046280928">Google Chrome zaten yüklü ve bu bilgisayarın tüm kullanıcıları için kullanılabilir durumda. Google Chrome'u kullanıcı düzeyinde yüklemek istiyorsanız, yönetici tarafından yüklenmiş olan sistem düzeyindeki sürümü kaldırmanız gerekir.</translation>
-<translation id="2189123953385179981">Google ChromeOS, <ph name="SCHEME"/> bağlantılarını işlemek için bir dış uygulamanın başlatılmasını desteklemez. İstenen bağlantı: <ph name="PROTOLINK"/>.</translation>
+<translation id="2189123953385179981">Google ChromeOS, <ph name="SCHEME"/> bağlantılarını kullanmak için bir dış uygulamanın başlatılmasını desteklemez. İstenen bağlantı:  <ph name="PROTOLINK"/>.</translation>
 <translation id="7196020411877309443">Neden bunu görüyorum?</translation>
 <translation id="2769762047821873045">Google Chrome varsayılan tarayıcınız değil.</translation>
 <translation id="7825851276765848807">Yükleme belirtilmeyen bir hata nedeniyle başarısız oldu. Lütfen Google Chrome'u tekrar yükleyin.</translation>
