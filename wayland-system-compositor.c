@@ -38,8 +38,10 @@
 #include <libudev.h>
 
 #define GL_GLEXT_PROTOTYPES
+#define EGL_EGLEXT_PROTOTYPES
 #include <GL/gl.h>
-#include <eagle.h>
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
 
 #include "wayland.h"
 #include "wayland-protocol.h"
@@ -77,6 +79,7 @@ struct wlsc_output {
 
 	GLuint rbo[2];
 	uint32_t fb_id[2];
+	EGLImageKHR image[2];
 	uint32_t current;	
 };
 
@@ -102,6 +105,7 @@ struct wlsc_compositor {
 
 	EGLDisplay display;
 	EGLContext context;
+	int drm_fd;
 	GLuint fbo;
 	struct wl_display *wl_display;
 
@@ -147,6 +151,7 @@ struct wlsc_surface {
 	struct wlsc_compositor *compositor;
 	struct wl_visual *visual;
 	GLuint texture;
+	EGLImageKHR image;
 	struct wl_map map;
 	int width, height;
 	struct wl_list link;
@@ -582,7 +587,6 @@ repaint_output(struct wlsc_output *output)
 	struct wlsc_surface *es;
 	struct wlsc_input_device *eid;
 	double s = 3000;
-	int fd;
 
 	glViewport(0, 0, output->width, output->height);
 	glMatrixMode(GL_PROJECTION);
@@ -606,14 +610,13 @@ repaint_output(struct wlsc_output *output)
 	wl_list_for_each(eid, &ec->input_device_list, link)
 		wlsc_surface_draw(eid->sprite);
 
-	fd = eglGetDisplayFD(ec->display);
 	output->current ^= 1;
 
 	glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER_EXT,
 				  GL_COLOR_ATTACHMENT0_EXT,
 				  GL_RENDERBUFFER_EXT,
 				  output->rbo[output->current]);
-	drmModePageFlip(fd, output->crtc_id,
+	drmModePageFlip(ec->drm_fd, output->crtc_id,
 			output->fb_id[output->current ^ 1],
 			DRM_MODE_PAGE_FLIP_EVENT, output);
 }
@@ -639,15 +642,13 @@ static void
 wlsc_compositor_schedule_repaint(struct wlsc_compositor *compositor)
 {
 	struct wlsc_output *output;
-	int fd;
 
 	compositor->repaint_needed = 1;
 	if (compositor->repaint_on_timeout)
 		return;
 
-	fd = eglGetDisplayFD(compositor->display);
 	wl_list_for_each(output, &compositor->output_list, link)
-		drmModePageFlip(fd, output->crtc_id,
+		drmModePageFlip(compositor->drm_fd, output->crtc_id,
 				output->fb_id[output->current ^ 1],
 				DRM_MODE_PAGE_FLIP_EVENT, output);
 }
@@ -672,6 +673,14 @@ surface_attach(struct wl_client *client,
 {
 	struct wlsc_surface *es = (struct wlsc_surface *) surface;
 	struct wlsc_compositor *ec = es->compositor;
+	EGLint attribs[] = {
+		EGL_IMAGE_WIDTH_INTEL,	0,
+		EGL_IMAGE_HEIGHT_INTEL,	0,
+		EGL_IMAGE_NAME_INTEL,	0,
+		EGL_IMAGE_STRIDE_INTEL,	0,
+		EGL_IMAGE_FORMAT_INTEL,	EGL_FORMAT_RGBA_8888_KHR,
+		EGL_NONE
+	};
 
 	es->width = width;
 	es->height = height;
@@ -690,8 +699,19 @@ surface_attach(struct wl_client *client,
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTextureExternalINTEL(GL_TEXTURE_2D, GL_RGBA, 4,
-			       width, height, stride / 4, name);
+
+	if (es->image)
+		eglDestroyImageKHR(ec->display, es->image);
+
+	attribs[1] = width;
+	attribs[3] = height;
+	attribs[5] = name;
+	attribs[7] = stride / 4;
+
+	es->image = eglCreateImageKHR(ec->display, ec->context,
+				       EGL_SYSTEM_IMAGE_INTEL,
+				       NULL, attribs);
+	glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, es->image);
 	
 }
 
@@ -1055,10 +1075,12 @@ static int
 init_egl(struct wlsc_compositor *ec, struct udev_device *device)
 {
 	struct wl_event_loop *loop;
+	EGLDisplayTypeDRMMESA display;
 	EGLint major, minor;
-	int fd;
 
-	ec->display = eglCreateDisplayNative(device);
+	display.type = EGL_DISPLAY_TYPE_DRM_MESA;
+	display.device = udev_device_get_devnode(device);
+	ec->display = eglGetDisplay((EGLNativeDisplayType) &display);
 	if (ec->display == NULL) {
 		fprintf(stderr, "failed to create display\n");
 		return -1;
@@ -1084,9 +1106,9 @@ init_egl(struct wlsc_compositor *ec, struct udev_device *device)
 	glBindFramebuffer(GL_FRAMEBUFFER_EXT, ec->fbo);
 
 	loop = wl_display_get_event_loop(ec->wl_display);
-	fd = eglGetDisplayFD(ec->display);
+	ec->drm_fd = display.fd;
 	ec->drm_source =
-		wl_event_loop_add_fd(loop, fd,
+		wl_event_loop_add_fd(loop, ec->drm_fd,
 				     WL_EVENT_READABLE, on_drm_input, ec);
 
 	return 0;
@@ -1110,10 +1132,15 @@ create_output_for_connector(struct wlsc_compositor *ec,
 	struct wlsc_output *output;
 	drmModeEncoder *encoder;
 	drmModeModeInfo *mode;
-	GLint handle, stride;
-	int i, ret, fd;
-
-	fd = eglGetDisplayFD(ec->display);
+	int i, ret;
+	EGLint name, handle, stride, attribs[] = {
+		EGL_IMAGE_WIDTH_INTEL,	0,
+		EGL_IMAGE_HEIGHT_INTEL,	0,
+		EGL_IMAGE_FORMAT_INTEL,	EGL_FORMAT_RGBA_8888_KHR,
+		EGL_IMAGE_USE_INTEL,	EGL_IMAGE_USE_SHARE_INTEL |
+					EGL_IMAGE_USE_SCANOUT_INTEL,
+		EGL_NONE
+	};
 
 	output = malloc(sizeof *output);
 	if (output == NULL)
@@ -1124,7 +1151,7 @@ create_output_for_connector(struct wlsc_compositor *ec,
 	else
 		mode = &builtin_1024x768;
 
-	encoder = drmModeGetEncoder(fd, connector->encoders[0]);
+	encoder = drmModeGetEncoder(ec->drm_fd, connector->encoders[0]);
 	if (encoder == NULL) {
 		fprintf(stderr, "No encoder for connector.\n");
 		return -1;
@@ -1159,19 +1186,18 @@ create_output_for_connector(struct wlsc_compositor *ec,
 	glGenRenderbuffers(2, output->rbo);
 	for (i = 0; i < 2; i++) {
 		glBindRenderbuffer(GL_RENDERBUFFER_EXT, output->rbo[i]);
-		glRenderbufferStorage(GL_RENDERBUFFER_EXT,
-				      GL_RGBA,
-				      output->width,
-				      output->height);
-		glGetRenderbufferParameteriv(GL_RENDERBUFFER_EXT,
-					     GL_RENDERBUFFER_STRIDE_INTEL,
-					     &stride);
-		glGetRenderbufferParameteriv(GL_RENDERBUFFER_EXT,
-					     GL_RENDERBUFFER_HANDLE_INTEL,
-					     &handle);
 
-		ret = drmModeAddFB(fd, output->width, output->height,
-				   32, 32, stride, handle, &output->fb_id[i]);
+		attribs[1] = output->width;
+		attribs[3] = output->height;
+		output->image[i] = eglCreateImageKHR(ec->display, ec->context,
+						     EGL_SYSTEM_IMAGE_INTEL,
+						     NULL, attribs);
+		glEGLImageTargetRenderbufferStorageOES(GL_RENDERBUFFER, output->image[i]);
+		eglShareImageINTEL(ec->display, ec->context,
+				   output->image[i], 0, &name, &handle, &stride);
+
+		ret = drmModeAddFB(ec->drm_fd, output->width, output->height,
+				   32, 32, stride * 4, handle, &output->fb_id[i]);
 		if (ret) {
 			fprintf(stderr, "failed to add fb %d: %m\n", i);
 			return -1;
@@ -1183,7 +1209,7 @@ create_output_for_connector(struct wlsc_compositor *ec,
 				  GL_COLOR_ATTACHMENT0_EXT,
 				  GL_RENDERBUFFER_EXT,
 				  output->rbo[output->current]);
-	ret = drmModeSetCrtc(fd, output->crtc_id,
+	ret = drmModeSetCrtc(ec->drm_fd, output->crtc_id,
 			     output->fb_id[output->current ^ 1], 0, 0,
 			     &output->connector_id, 1, &output->mode);
 	if (ret) {
@@ -1206,17 +1232,16 @@ create_outputs(struct wlsc_compositor *ec)
 {
 	drmModeConnector *connector;
 	drmModeRes *resources;
-	int fd, i;
+	int i;
 
-	fd = eglGetDisplayFD(ec->display);
-	resources = drmModeGetResources(fd);
+	resources = drmModeGetResources(ec->drm_fd);
 	if (!resources) {
 		fprintf(stderr, "drmModeGetResources failed\n");
 		return -1;
 	}
 
 	for (i = 0; i < resources->count_connectors; i++) {
-		connector = drmModeGetConnector(fd, resources->connectors[i]);
+		connector = drmModeGetConnector(ec->drm_fd, resources->connectors[i]);
 		if (connector == NULL)
 			continue;
 
@@ -1268,10 +1293,9 @@ static void on_enter_vt(int signal_number, void *data)
 {
 	struct wlsc_compositor *ec = data;
 	struct wlsc_output *output;
-	int ret, fd;
+	int ret;
 
-	fd = eglGetDisplayFD(ec->display);
-	ret = drmSetMaster(fd);
+	ret = drmSetMaster(ec->drm_fd);
 	if (ret) {
 		fprintf(stderr, "failed to set drm master\n");
 		return;
@@ -1281,7 +1305,7 @@ static void on_enter_vt(int signal_number, void *data)
 	ec->vt_active = TRUE;
 
 	wl_list_for_each(output, &ec->output_list, link) {
-		ret = drmModeSetCrtc(fd, output->crtc_id,
+		ret = drmModeSetCrtc(ec->drm_fd, output->crtc_id,
 				     output->fb_id[output->current ^ 1], 0, 0,
 				     &output->connector_id, 1, &output->mode);
 		if (ret)
@@ -1293,10 +1317,9 @@ static void on_enter_vt(int signal_number, void *data)
 static void on_leave_vt(int signal_number, void *data)
 {
 	struct wlsc_compositor *ec = data;
-	int ret, fd;
+	int ret;
 
-	fd = eglGetDisplayFD(ec->display);
-	ret = drmDropMaster(fd);
+	ret = drmDropMaster(ec->drm_fd);
 	if (ret) {
 		fprintf(stderr, "failed to drop drm master\n");
 		return;

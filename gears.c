@@ -33,8 +33,10 @@
 #include <cairo-drm.h>
 
 #define GL_GLEXT_PROTOTYPES
+#define EGL_EGLEXT_PROTOTYPES
 #include <GL/gl.h>
-#include <eagle.h>
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
 
 #include "wayland-util.h"
 #include "wayland-client.h"
@@ -54,6 +56,8 @@ struct gears {
 
 	EGLDisplay display;
 	EGLContext context;
+	EGLImageKHR image;
+	int drm_fd;
 	int resized;
 	GLfloat angle;
 	cairo_surface_t *cairo_surface;
@@ -244,6 +248,15 @@ draw_gears(struct gears *gears)
 static void
 resize_window(struct gears *gears)
 {
+	EGLint attribs[] = {
+		EGL_IMAGE_WIDTH_INTEL,	0,
+		EGL_IMAGE_HEIGHT_INTEL,	0,
+		EGL_IMAGE_FORMAT_INTEL,	EGL_FORMAT_RGBA_8888_KHR,
+		EGL_IMAGE_USE_INTEL,	EGL_IMAGE_USE_SHARE_INTEL |
+					EGL_IMAGE_USE_SCANOUT_INTEL,
+		EGL_NONE
+	};
+
 	/* Constrain child size to be square and at least 300x300 */
 	window_get_child_rectangle(gears->window, &gears->rectangle);
 	if (gears->rectangle.width > gears->rectangle.height)
@@ -258,11 +271,16 @@ resize_window(struct gears *gears)
 
 	window_draw(gears->window);
 
+	if (gears->image)
+		eglDestroyImageKHR(gears->display, gears->image);
+	attribs[1] = gears->rectangle.width;
+	attribs[1] = gears->rectangle.height;
+	gears->image = eglCreateImageKHR(gears->display, gears->context,
+					 EGL_SYSTEM_IMAGE_INTEL,
+					 NULL, attribs);
+
 	glBindRenderbuffer(GL_RENDERBUFFER_EXT, gears->color_rbo);
-	glRenderbufferStorage(GL_RENDERBUFFER_EXT,
-			      GL_RGBA,
-			      gears->rectangle.width,
-			      gears->rectangle.height);
+	glEGLImageTargetRenderbufferStorageOES(GL_RENDERBUFFER, gears->image);
 
 	glBindRenderbuffer(GL_RENDERBUFFER_EXT, gears->depth_rbo);
 	glRenderbufferStorage(GL_RENDERBUFFER_EXT,
@@ -323,15 +341,10 @@ handle_frame(void *data,
 	     uint32_t frame, uint32_t timestamp)
 {
   	struct gears *gears = data;
-	GLint name, stride;
+	EGLint name, handle, stride;
 
-	glBindRenderbuffer(GL_RENDERBUFFER_EXT, gears->color_rbo);
-	glGetRenderbufferParameteriv(GL_RENDERBUFFER_EXT,
-				     GL_RENDERBUFFER_STRIDE_INTEL,
-				     &stride);
-	glGetRenderbufferParameteriv(GL_RENDERBUFFER_EXT,
-				     GL_RENDERBUFFER_NAME_INTEL,
-				     &name);
+	eglShareImageINTEL(gears->display, gears->context,
+			   gears->image, 0, &name, &handle, &stride);
 	
 	window_copy(gears->window, &gears->rectangle, name, stride);
 
@@ -346,17 +359,13 @@ static const struct wl_compositor_listener compositor_listener = {
 };
 
 static struct gears *
-gears_create(struct display *display)
+gears_create(struct display *display, int drm_fd)
 {
 	const int x = 200, y = 200, width = 450, height = 500;
 	EGLint major, minor;
-	struct udev *udev;
-	struct udev_device *device;
+	EGLDisplayTypeDRMMESA drm_display;
 	struct gears *gears;
 	int i;
-
-	udev = udev_new();
-	device = udev_device_new_from_syspath(udev, "/sys/class/drm/card0");
 
 	gears = malloc(sizeof *gears);
 	memset(gears, 0, sizeof *gears);
@@ -364,7 +373,10 @@ gears_create(struct display *display)
 	gears->window = window_create(display, "Wayland Gears",
 				      x, y, width, height);
 
-	gears->display = eglCreateDisplayNative(device);
+	drm_display.type = EGL_DISPLAY_TYPE_DRM_MESA;
+	drm_display.device = NULL;
+	drm_display.fd = drm_fd;
+	gears->display = eglGetDisplay((EGLNativeDisplayType) &drm_display);
 	if (gears->display == NULL)
 		die("failed to create egl display\n");
 
@@ -460,7 +472,7 @@ int main(int argc, char *argv[])
 	source = wl_glib_source_new(display);
 	g_source_attach(source, NULL);
 
-	gears = gears_create(d);
+	gears = gears_create(d, fd);
 
 	g_main_loop_run(loop);
 
