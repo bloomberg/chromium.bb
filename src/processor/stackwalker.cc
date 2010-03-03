@@ -93,6 +93,8 @@ bool Stackwalker::Walk(CallStack *stack) {
         frame->module = module;
         if (resolver_ &&
             !resolver_->HasModule(frame->module->code_file()) &&
+            no_symbol_modules_.find(
+                module->code_file()) == no_symbol_modules_.end() &&
             supplier_) {
           string symbol_data, symbol_file;
           SymbolSupplier::SymbolResult symbol_result =
@@ -105,6 +107,7 @@ bool Stackwalker::Walk(CallStack *stack) {
                                                   symbol_data);
               break;
             case SymbolSupplier::NOT_FOUND:
+              no_symbol_modules_.insert(module->code_file());
               break;  // nothing to do
             case SymbolSupplier::INTERRUPT:
               return false;

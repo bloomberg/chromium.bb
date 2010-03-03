@@ -34,6 +34,7 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <map>
 #include "breakpad_googletest_includes.h"
 #include "google_breakpad/processor/basic_source_line_resolver.h"
 #include "google_breakpad/processor/call_stack.h"
@@ -46,6 +47,8 @@
 #include "google_breakpad/processor/symbol_supplier.h"
 #include "processor/logging.h"
 #include "processor/scoped_ptr.h"
+
+using std::map;
 
 namespace google_breakpad {
 class MockMinidump : public Minidump {
@@ -74,6 +77,10 @@ using google_breakpad::scoped_ptr;
 using google_breakpad::SymbolSupplier;
 using google_breakpad::SystemInfo;
 using std::string;
+using ::testing::_;
+using ::testing::Mock;
+using ::testing::Ne;
+using ::testing::Property;
 using ::testing::Return;
 
 static const char *kSystemInfoOS = "Windows NT";
@@ -155,6 +162,19 @@ SymbolSupplier::SymbolResult TestSymbolSupplier::GetSymbolFile(
   return s;
 }
 
+// A mock symbol supplier that always returns NOT_FOUND; one current
+// use for testing the processor's caching of symbol lookups.
+class MockSymbolSupplier : public SymbolSupplier {
+ public:
+  MockSymbolSupplier() { }
+  MOCK_METHOD3(GetSymbolFile, SymbolResult(const CodeModule*,
+                                           const SystemInfo*,
+                                           string*));
+  MOCK_METHOD4(GetSymbolFile, SymbolResult(const CodeModule*,
+                                           const SystemInfo*,
+                                           string*,
+                                           string*));
+};
 
 class MinidumpProcessorTest : public ::testing::Test {
 
@@ -184,6 +204,43 @@ TEST_F(MinidumpProcessorTest, TestCorruptMinidumps) {
       WillOnce(Return((MinidumpThreadList*)NULL));
   EXPECT_EQ(processor.Process(&dump, &state),
             google_breakpad::PROCESS_ERROR_NO_THREAD_LIST);
+}
+
+// This test case verifies that the symbol supplier is only consulted
+// once per minidump per module.
+TEST_F(MinidumpProcessorTest, TestSymbolSupplierLookupCounts) {
+  MockSymbolSupplier supplier;
+  BasicSourceLineResolver resolver;
+  MinidumpProcessor processor(&supplier, &resolver);
+
+  string minidump_file = string(getenv("srcdir") ? getenv("srcdir") : ".") +
+                         "/src/processor/testdata/minidump2.dmp";
+  ProcessState state;
+  EXPECT_CALL(supplier, GetSymbolFile(
+      Property(&google_breakpad::CodeModule::code_file,
+               "c:\\test_app.exe"),
+      _, _, _)).WillOnce(Return(SymbolSupplier::NOT_FOUND));
+  EXPECT_CALL(supplier, GetSymbolFile(
+      Property(&google_breakpad::CodeModule::code_file,
+               Ne("c:\\test_app.exe")),
+      _, _, _)).WillRepeatedly(Return(SymbolSupplier::NOT_FOUND));
+  ASSERT_EQ(processor.Process(minidump_file, &state),
+            google_breakpad::PROCESS_OK);
+
+  ASSERT_TRUE(Mock::VerifyAndClearExpectations(&supplier));
+
+  // We need to verify that across minidumps, the processor will refetch
+  // symbol files, even with the same symbol supplier.
+  EXPECT_CALL(supplier, GetSymbolFile(
+      Property(&google_breakpad::CodeModule::code_file,
+               "c:\\test_app.exe"),
+      _, _, _)).WillOnce(Return(SymbolSupplier::NOT_FOUND));
+  EXPECT_CALL(supplier, GetSymbolFile(
+      Property(&google_breakpad::CodeModule::code_file,
+               Ne("c:\\test_app.exe")),
+      _, _, _)).WillRepeatedly(Return(SymbolSupplier::NOT_FOUND));
+  ASSERT_EQ(processor.Process(minidump_file, &state),
+            google_breakpad::PROCESS_OK);
 }
 
 TEST_F(MinidumpProcessorTest, TestBasicProcessing) {

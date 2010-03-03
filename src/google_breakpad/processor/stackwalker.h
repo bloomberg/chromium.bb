@@ -41,12 +41,13 @@
 #ifndef GOOGLE_BREAKPAD_PROCESSOR_STACKWALKER_H__
 #define GOOGLE_BREAKPAD_PROCESSOR_STACKWALKER_H__
 
-#include <vector>
+#include <set>
 #include "google_breakpad/common/breakpad_types.h"
 
 namespace google_breakpad {
 
 class CallStack;
+class CodeModule;
 class CodeModules;
 class MemoryRegion;
 class MinidumpContext;
@@ -55,7 +56,7 @@ struct StackFrame;
 class SymbolSupplier;
 class SystemInfo;
 
-using std::vector;
+using std::set;
 
 
 class Stackwalker {
@@ -139,6 +140,11 @@ class Stackwalker {
 
   // The optional SymbolSupplier for resolving source line info.
   SymbolSupplier *supplier_;
+
+  // A list of modules that we haven't found symbols for.  We track
+  // this in order to avoid repeatedly looking them up again within
+  // one minidump.
+  set<std::string> no_symbol_modules_;
 };
 
 
