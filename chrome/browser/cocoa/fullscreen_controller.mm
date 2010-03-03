@@ -100,6 +100,12 @@ const CGFloat kTabStripVerticalOffset = 14;
 - (void)scheduleShowForMouse;
 - (void)scheduleHideForMouse;
 
+// Set up the tracking area used to activate the sliding bar or keep it active
+// using with the rectangle in |trackingAreaBounds_|, or remove the tracking
+// area if one was previously set up.
+- (void)setupTrackingArea;
+- (void)removeTrackingAreaIfNecessary;
+
 // Returns YES if the mouse is currently in any current tracking rectangle, NO
 // otherwise.
 - (BOOL)mouseInsideTrackingRect;
@@ -224,30 +230,7 @@ const CGFloat kTabStripVerticalOffset = 14;
   if (currentAnimation_)
     return;
 
-  NSWindow* window = [browserController_ window];
-  // TODO(avi) http://crbug.com/36485; base != window
-  NSPoint mouseLoc =
-      [contentView_ convertPointFromBase:
-                      [window mouseLocationOutsideOfEventStream]];
-
-  if (trackingArea_) {
-    // If the tracking rectangle is already |rect|, quit early.
-    NSRect oldRect = [trackingArea_ rect];
-    if (NSEqualRects(trackingAreaBounds_, oldRect))
-      return;
-
-    // Otherwise, remove it.
-    [contentView_ removeTrackingArea:trackingArea_];
-  }
-
-  // Create and add a new tracking area for |frame|.
-  trackingArea_.reset(
-      [[NSTrackingArea alloc] initWithRect:trackingAreaBounds_
-                                   options:NSTrackingMouseEnteredAndExited |
-                                           NSTrackingActiveInKeyWindow
-                                     owner:self
-                                  userInfo:nil]);
-  [contentView_ addTrackingArea:trackingArea_];
+  [self setupTrackingArea];
 }
 
 - (void)ensureOverlayShownWithAnimation:(BOOL)animate delay:(BOOL)delay {
@@ -335,10 +318,8 @@ const CGFloat kTabStripVerticalOffset = 14;
   // Invariant says that the tracking area is not installed while animations are
   // in progress. Ensure this is true.
   DCHECK(!trackingArea_);
-  if (trackingArea_) {
-    [contentView_ removeTrackingArea:trackingArea_];
-    trackingArea_.reset();
-  }
+  [self removeTrackingAreaIfNecessary];  // For paranoia.
+
   // Don't automatically set up a new tracking area. When explicitly stopped,
   // either another animation is going to start immediately or the state will be
   // changed immediately.
@@ -348,15 +329,9 @@ const CGFloat kTabStripVerticalOffset = 14;
   [self animationDidStop:animation];
 
   // |trackingAreaBounds_| contains the correct tracking area bounds, including
-  // |any updates that may have come while the animation was running.  Install a
-  // |new tracking area with these bounds.
-  trackingArea_.reset(
-      [[NSTrackingArea alloc] initWithRect:trackingAreaBounds_
-                                   options:NSTrackingMouseEnteredAndExited |
-                                           NSTrackingActiveInKeyWindow
-                                     owner:self
-                                  userInfo:nil]);
-  [contentView_ addTrackingArea:trackingArea_];
+  // |any updates that may have come while the animation was running. Install a
+  // new tracking area with these bounds.
+  [self setupTrackingArea];
 
   // TODO(viettrungluu): Better would be to check during the animation; doing it
   // here means that the timing is slightly off.
@@ -410,10 +385,7 @@ const CGFloat kTabStripVerticalOffset = 14;
 
   // If there is an existing tracking area, remove it. We do not track mouse
   // movements during animations (see class comment in the header file).
-  if (trackingArea_) {
-    [contentView_ removeTrackingArea:trackingArea_];
-    trackingArea_.reset();
-  }
+  [self removeTrackingAreaIfNecessary];
 
   [currentAnimation_ startAnimation];
 }
@@ -428,6 +400,36 @@ const CGFloat kTabStripVerticalOffset = 14;
   [browserController_ releaseBarVisibilityForOwner:self
                                      withAnimation:YES
                                              delay:YES];
+}
+
+- (void)setupTrackingArea {
+  if (trackingArea_) {
+    // If the tracking rectangle is already |trackingAreaBounds_|, quit early.
+    NSRect oldRect = [trackingArea_ rect];
+    if (NSEqualRects(trackingAreaBounds_, oldRect))
+      return;
+
+    // Otherwise, remove it.
+    [self removeTrackingAreaIfNecessary];
+  }
+
+  // Create and add a new tracking area for |frame|.
+  trackingArea_.reset(
+      [[NSTrackingArea alloc] initWithRect:trackingAreaBounds_
+                                   options:NSTrackingMouseEnteredAndExited |
+                                           NSTrackingActiveInKeyWindow
+                                     owner:self
+                                  userInfo:nil]);
+  DCHECK(contentView_);
+  [contentView_ addTrackingArea:trackingArea_];
+}
+
+- (void)removeTrackingAreaIfNecessary {
+  if (trackingArea_) {
+    DCHECK(contentView_);  // |contentView_| better be valid.
+    [contentView_ removeTrackingArea:trackingArea_];
+    trackingArea_.reset();
+  }
 }
 
 - (BOOL)mouseInsideTrackingRect {
@@ -528,10 +530,8 @@ const CGFloat kTabStripVerticalOffset = 14;
   [self cancelAnimationAndTimers];
   [[NSNotificationCenter defaultCenter] removeObserver:self];
 
-  [contentView_ removeTrackingArea:trackingArea_];
+  [self removeTrackingAreaIfNecessary];
   contentView_ = nil;
-
-  trackingArea_.reset();
 
   // This isn't tracked when not in fullscreen mode.
   [browserController_ releaseBarVisibilityForOwner:self
