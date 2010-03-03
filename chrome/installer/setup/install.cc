@@ -346,6 +346,11 @@ bool DoPostInstallTasks(HKEY reg_root,
       rename_cmd += installer_util::switches::kChromeFrame;
     }
 
+    if (InstallUtil::IsChromeSxSProcess()) {
+      rename_cmd += L" --";
+      rename_cmd += installer_util::switches::kChromeSxS;
+    }
+
     inuse_list->AddSetRegValueWorkItem(reg_root,
                                        version_key,
                                        google_update::kRegRenameCmdField,
