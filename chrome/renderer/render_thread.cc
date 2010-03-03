@@ -753,7 +753,7 @@ void RenderThread::EnsureWebKitInitialized() {
   }
 
   WebRuntimeFeatures::enableMediaPlayer(
-      RenderProcess::current()->HasInitializedMediaLibrary());
+      RenderProcess::current()->initialized_media_library());
 
   WebRuntimeFeatures::enableSockets(
       !command_line.HasSwitch(switches::kDisableWebSockets));

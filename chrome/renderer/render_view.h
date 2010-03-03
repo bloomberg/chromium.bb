@@ -76,9 +76,7 @@ class GeolocationDispatcher;
 class GURL;
 class ListValue;
 class NavigationState;
-class PepperDeviceTest;
 class PrintWebViewHelper;
-class WebPluginDelegatePepper;
 class WebPluginDelegateProxy;
 struct ContextMenuMediaParams;
 struct ThumbnailScore;
@@ -441,11 +439,6 @@ class RenderView : public RenderWidget,
                  const std::string& css,
                  const std::string& id);
 
-  // Informs us that the given pepper plugin we created is being deleted the
-  // pointer must not be dereferenced as this is called from the destructor of
-  // the plugin.
-  void OnPepperPluginDestroy(WebPluginDelegatePepper* pepper_plugin);
-
   // Whether content state (such as form state and scroll position) should be
   // sent to the browser immediately. This is normally false, but set to true
   // by some tests.
@@ -498,8 +491,7 @@ class RenderView : public RenderWidget,
   virtual void Close();
   virtual void OnResize(const gfx::Size& new_size,
                         const gfx::Rect& resizer_rect);
-  virtual void DidInitiatePaint();
-  virtual void DidFlushPaint();
+  virtual void DidPaint();
   virtual void DidHandleKeyEvent();
 #if OS_MACOSX
   virtual void OnSetFocus(bool enable);
@@ -510,7 +502,6 @@ class RenderView : public RenderWidget,
  private:
   // For unit tests.
   friend class RenderViewTest;
-  friend class PepperDeviceTest;
   FRIEND_TEST(RenderViewTest, OnLoadAlternateHTMLText);
   FRIEND_TEST(RenderViewTest, OnNavStateChanged);
   FRIEND_TEST(RenderViewTest, OnImeStateChanged);
@@ -1144,10 +1135,6 @@ class RenderView : public RenderWidget,
   // Page translation related objects.
   TextTranslatorImpl text_translator_;
   scoped_ptr<PageTranslator> page_translator_;
-
-  // A list of all pepper plugins that we've created that haven't been
-  // destroyed yet.
-  std::set<WebPluginDelegatePepper*> current_pepper_plugins_;
 
   // The FormManager for this RenderView.
   FormManager form_manager_;

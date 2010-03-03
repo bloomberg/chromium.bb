@@ -58,17 +58,6 @@ void PluginList::RegisterInternalPlugin(const PluginVersionInfo& info) {
   internal_plugins_.push_back(info);
 }
 
-void PluginList::UnregisterInternalPlugin(const FilePath& path) {
-  AutoLock lock(lock_);
-  for (size_t i = 0; i < internal_plugins_.size(); i++) {
-    if (internal_plugins_[i].path == path) {
-      internal_plugins_.erase(internal_plugins_.begin() + i);
-      return;
-    }
-  }
-  NOTREACHED();
-}
-
 bool PluginList::ReadPluginInfo(const FilePath &filename,
                                 WebPluginInfo* info,
                                 const PluginEntryPoints** entry_points) {
