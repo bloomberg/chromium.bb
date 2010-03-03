@@ -62,6 +62,8 @@ LLC_SFI = [BASE + '/arm-none-linux-gnueabi/llvm/bin/llc-sfi',
 
 LLVM_LINK = BASE + '/arm-none-linux-gnueabi/llvm/bin/llvm-link'
 
+LLVM_LD = BASE + '/arm-none-linux-gnueabi/llvm/bin/llvm-ld'
+
 OPT = [BASE + '/arm-none-linux-gnueabi/llvm/bin/opt',
        '-O3',
        '-std-compile-opts'
@@ -70,7 +72,7 @@ OPT = [BASE + '/arm-none-linux-gnueabi/llvm/bin/opt',
 AS = ([BASE + '/codesourcery/arm-2007q3/bin/arm-none-linux-gnueabi-as', ] +
       LLVM_GCC_ASSEMBLER_FLAGS)
 
-AR = BASE + '/codesourcery/arm-2007q3/bin/arm-none-linux-gnueabi-ar'
+LD = BASE + '/codesourcery/arm-2007q3/bin/arm-none-linux-gnueabi-ld'
 
 # Note: this works around an assembler bug that has been fixed only recently
 # We probably can drop this once we have switched to codesourcery 2009Q4
@@ -88,20 +90,16 @@ def Run(a):
 
 
 
-def SfiCompile(argv, out_pos, is_sfi):
+def SfiCompile(argv, out_pos, mode):
   filename = argv[out_pos]
 
   argv[out_pos] = filename + '.bc'
   argv.append('--emit-llvm')
   Run(argv)
 
-  OPT.append(filename + '.bc')
-  OPT.append('-f')
-  OPT.append('-o')
-  OPT.append(filename + '.opt.bc')
-  Run(OPT)
+  Run(OPT + [filename + '.bc', '-f', '-o', filename + '.opt.bc'])
 
-  if is_sfi:
+  if mode == 'sfi':
     llc = LLC_SFI
   else:
     llc = LLC
@@ -111,14 +109,9 @@ def SfiCompile(argv, out_pos, is_sfi):
   llc.append(filename + '.s')
   Run(llc)
 
-  HACK_ASM.append('-i.orig')
-  HACK_ASM.append(filename + '.s')
-  Run(HACK_ASM)
+  Run(HACK_ASM + ['-i.orig', filename + '.s'])
 
-  AS.append(filename + '.s')
-  AS.append('-o')
-  AS.append(filename )
-  Run(AS)
+  Run(AS + [filename + '.s', '-o', filename])
 
 
 def PatchAbiVersionIntoElfHeader(filename):
@@ -183,60 +176,14 @@ def FindLinkPos(argv):
   return pos
 
 
-
-def Link(argv, llvm_binary, is_sfi):
-  """Generate a binary/executable.
-
-  NOTE: you cannot specify source files here.
-        Hence "-o foo.o" is not allowed
-  """
-  link_pos = FindLinkPos(argv)
-  assert link_pos
-  # see above
-  obj_pos = FindObjectFilePos(argv)
-  assert not obj_pos
-
-  argv[0] = llvm_binary
-  Run(argv)
-  if is_sfi:
-    PatchAbiVersionIntoElfHeader(argv[link_pos])
-
-
 def IsDiagnosticMode(argv):
   return ('--v' in argv or
           '-print-search-dirs' in argv or
           '-print-libgcc-file-name' in argv)
 
 
-def Compile(argv, llvm_binary, is_sfi):
+def Compile(argv, llvm_binary, mode):
   """ Compile to .o file."""
-  # TODO(robertm): channel linking through separate program
-  link_pos = FindLinkPos(argv)
-  if link_pos:
-    Link(argv, llvm_binary, is_sfi)
-    return
-
-  argv[0] = llvm_binary
-
-  obj_pos = FindObjectFilePos(argv)
-
-  if not obj_pos:
-    assert IsDiagnosticMode(argv)
-    Run(argv)
-    return
-
-  # TODO(robertm): remove support for .S files
-  if HasAssemblerFiles(argv):
-    assert TOLERATE_COMPILATION_OF_ASM_CODE
-    Run(argv + LLVM_GCC_ASSEMBLER_FLAGS)
-    return
-
-  SfiCompile(argv, obj_pos, is_sfi)
-
-
-
-def CompileToBitcode(argv, llvm_binary):
-  """Compile to .o file which really is a bitcode files."""
   assert not FindLinkPos(argv)
 
   argv[0] = llvm_binary
@@ -254,32 +201,36 @@ def CompileToBitcode(argv, llvm_binary):
     Run(argv + LLVM_GCC_ASSEMBLER_FLAGS)
     return
 
-  argv.append('--emit-llvm')
-  Run(argv)
+  if mode == 'bitcode':
+    argv.append('--emit-llvm')
+    Run(argv)
+  else:
+    SfiCompile(argv, obj_pos, mode)
+
 
 
 def Incarnation_sfigcc(argv):
-  Compile(argv, LLVM_PREFIX + '-gcc', True)
+  Compile(argv, LLVM_PREFIX + '-gcc', 'sfi')
 
 
 def Incarnation_sfigplusplus(argv):
-  Compile(argv, LLVM_PREFIX + '-g++', True)
+  Compile(argv, LLVM_PREFIX + '-g++', 'sfi')
 
 
 def Incarnation_gcc(argv):
-  Compile(argv, LLVM_PREFIX + '-gcc', False)
+  Compile(argv, LLVM_PREFIX + '-gcc', 'regular')
 
 
 def Incarnation_gplusplus(argv):
-  Compile(argv, LLVM_PREFIX + '-g++', False)
+  Compile(argv, LLVM_PREFIX + '-g++', 'regular')
 
 
 def Incarnation_bcgcc(argv):
-  CompileToBitcode(argv, LLVM_PREFIX + '-gcc')
+  Compile(argv, LLVM_PREFIX + '-gcc', 'bitcode')
 
 
 def Incarnation_bcgplusplus(argv):
-  CompileToBitcode(argv, LLVM_PREFIX + '-g++')
+  Compile(argv, LLVM_PREFIX + '-g++', 'bitcode')
 
 
 def Incarnation_nop(argv):
@@ -288,38 +239,137 @@ def Incarnation_nop(argv):
 
 
 def Incarnation_illegal(argv):
-  raise Exception, "UNEXPECTED " + repr(argv)
+  print
+  print 'ILLEGAL COMMAND'
+  print
+  print repr(argv)
+  sys.exit(-1)
 
-
-def Incarnation_as(argv):
-  raise Exception, "UNEXPECTED " + repr(argv)
-
-
-def Incarnation_sfiar(argv):
-  argv[0] = AR
-  Run(argv)
-
-def Incarnation_bcar(argv):
-  """Emulate the behavior or ar on .o files with llvm-link on .bc files."""
-  print '@' * 70
-  print 'ar ', repr(argv)
-  print '@' * 70
-
-  # 'x' indicates "extract from archive"
-  if argv[1] == 'x':
-    src = argv[2]
-    dst = src.replace('.', '').replace('/', '_')
-    dst = dst + ".o"
-    Run(['cp', src, dst])
+def FindLib(lib, lpaths):
+  for p in lpaths:
+    fn = os.path.join(p, 'lib' + lib + '.a')
+    if os.path.exists(fn):
+      return fn
   else:
-    # 'c' indicates "create archive"
-    # TODO(robertm): we may have to add more cases in the future
-    assert argv[1].startswith('c') or argv[1].startswith('rc')
-    # NOTE: the incomming command looks something like
-    # ..../llvm-fake-bcar cru lib.a dummy.o add.o sep.o
-    Run([LLVM_LINK, '-o'] + argv[2:])
+    print 'ERROR: cannot find library: ' % lib
+    sys.exit(-1)
 
 
+INIT_OBJS = {
+    'crt1.o': True,
+    'crti.o': True,
+}
+
+
+FINI_OBJS = {
+    'crtn.o': True,
+    'libgcc.a': True,
+    'libgcc_eh.a': True,
+}
+
+
+NATIVE_ARGS = {
+    '-lgcc' : True,
+    '-lgcc_eh': True,
+    '-static': True,
+}
+
+
+DROP_ARGS = {
+    # we do not currently have c++
+    '-lstdc++': True,
+}
+
+
+def Incarnation_bcld(argv):
+  """The ld step for bitcode is quite elaborate:
+     1) Run llvm-ld to produce a single bitcode file
+     2) Run llc to convert to .s
+     3) Run as to convert to .o
+     4) Run ld
+     5) Patch ABI
+
+     The tricky part is that some args apply to phase 1 and some to phase 4.
+     Most of the code below is dedicated to pick those apart.
+  """
+  args_bit_ld = []
+  args_native_ld = []
+  output = None
+  first_obj_pos = None
+  last = None
+
+  for a in argv[1:]:
+    if last:
+      # combine current item with prev
+      a = last + '$' + a
+      last = None
+
+    if a in ['-o', '-T']:
+      # combine two arg items into one arg
+      last = a
+    elif a in DROP_ARGS:
+      pass
+    elif a.endswith('.o'):
+      dir, base = os.path.split(a)
+      if base in INIT_OBJS or base in FINI_OBJS:
+        args_native_ld.append(a)
+      else:
+        if not first_obj_pos:
+          first_obj_pos = len(args_native_ld)
+          args_native_ld.append('DUMMY_FOR_NATIVE_OBJ')
+        args_bit_ld.append(a)
+    elif a in NATIVE_ARGS:
+      args_native_ld.append(a)
+    elif a.startswith('-l'):
+      args_bit_ld.append(a)
+    elif a.startswith('-L'):
+      # we replicate library search paths to both arg lists
+      args_bit_ld.append(a)
+      args_native_ld.append(a)
+    elif a.startswith('-T$'):
+      args_native_ld += a.split('$')
+    elif a.startswith('-o$'):
+      tokens = a.split('$')
+      output = tokens[1]
+      args_native_ld += tokens
+    else:
+      print
+      print 'ERROR: unexpect ld arg: ', a
+      print
+      sys.exit(-1)
+
+  assert first_obj_pos
+  assert output
+
+  bitcode_combined = output + ".bc"
+  asm_combined = output + ".bc.s"
+  native_combined = output + ".bc.o"
+
+
+  # NOTE: LLVM_LD automagically appends .bc to the output
+  Run([LLVM_LD] + args_bit_ld + ['-o', output])
+
+  Run(LLC_SFI + ['-f', bitcode_combined, '-o', asm_combined])
+
+  Run(HACK_ASM + ['-i.orig', asm_combined])
+
+  Run(AS + [asm_combined, '-o', native_combined])
+
+  args_native_ld[first_obj_pos] = native_combined
+  Run([LD] +  args_native_ld)
+
+  PatchAbiVersionIntoElfHeader(output)
+
+
+def Incarnation_sfild(argv):
+  """Run the regular linker and then patch the ABI"""
+  pos = FindLinkPos(argv)
+  assert pos
+  output = argv[pos]
+  Run([LD] +  argv[1:])
+
+  PatchAbiVersionIntoElfHeader(output)
+######################################################################
 INCARNATIONS = {
    'llvm-fake-sfigcc': Incarnation_sfigcc,
    'llvm-fake-sfig++': Incarnation_sfigplusplus,
@@ -330,16 +380,11 @@ INCARNATIONS = {
    'llvm-fake-bcgcc': Incarnation_bcgcc,
    'llvm-fake-bcg++': Incarnation_bcgplusplus,
 
-   'llvm-fake-sfiar': Incarnation_sfiar,
-   'llvm-fake-bcar': Incarnation_bcar,
+   'llvm-fake-sfild': Incarnation_sfild,
+   'llvm-fake-bcld': Incarnation_bcld,
 
-   'llvm-fake-sfiranlib': Incarnation_nop,
-   'llvm-fake-bcranlib': Incarnation_nop,
-
-   'llvm-fake-as': Incarnation_as,
-
-   'llvm-fake-nop': Incarnation_nop,
    'llvm-fake-illegal': Incarnation_illegal,
+   'llvm-fake-nop': Incarnation_nop,
    }
 
 
