@@ -282,6 +282,17 @@ RegisterList VectorLoad::defs(Instruction i) const {
   return kRegisterNone;
 }
 
+RegisterList VectorLoad::immediate_addressing_defs(Instruction i) const {
+  // Rm == SP indicates automatic update based on size of load.
+  if (i.reg(3, 0) == kRegisterStack) {
+    // Rn is updated by a small static displacement.
+    return i.reg(19, 16);
+  }
+
+  // Any writeback is not treated as immediate otherwise.
+  return kRegisterNone;
+}
+
 
 SafetyLevel VectorStore::safety(Instruction i) const {
   if (defs(i)[kRegisterPc]) return FORBIDDEN_OPERANDS;
@@ -295,6 +306,17 @@ RegisterList VectorStore::defs(Instruction i) const {
     return base_address_register(i);
   }
 
+  return kRegisterNone;
+}
+
+RegisterList VectorStore::immediate_addressing_defs(Instruction i) const {
+  // Rm == SP indicates automatic update based on size of store.
+  if (i.reg(3, 0) == kRegisterStack) {
+    // Rn is updated by a small static displacement.
+    return base_address_register(i);
+  }
+
+  // Any writeback is not treated as immediate otherwise.
   return kRegisterNone;
 }
 

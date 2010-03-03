@@ -609,6 +609,7 @@ class VectorLoad : public ClassDecoder {
 
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
+  virtual RegisterList immediate_addressing_defs(Instruction i) const;
 };
 
 /*
@@ -620,6 +621,7 @@ class VectorStore : public ClassDecoder {
 
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
+  virtual RegisterList immediate_addressing_defs(Instruction i) const;
   virtual bool writes_memory(Instruction i) const;
   virtual Register base_address_register(Instruction i) const;
 };
