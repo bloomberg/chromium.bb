@@ -167,6 +167,13 @@ installLLVMGCC() {
   runAndLog "Building libstdc++" ${LLVMGCC_OBJ_DIR}/libstdc++-build.log \
       make CC=llvm-fake-sfigcc CXX=llvm-fake-sfig++ CFLAGS=-O2
 
+  # Remove any previous versions to ensure we install
+  cd /usr/local/crosstool-untrusted/
+  local LIBDIR="arm-none-linux-gnueabi/llvm-gcc-4.2/"
+  rm ${LIBDIR}/arm-none-linux-gnueabi/lib/libstdc++{.a,.so,.la,.so.6.0.9,.so.6}
+  rm ${LIBDIR}/arm-none-linux-gnueabi/lib/{libgcc_s.so.1,libgcc_s.so}
+  rm ${LIBDIR}/lib/gcc/arm-none-linux-gnueabi/4.2.1/libgcc{_eh,}.a
+  cd -
   cd ../..
   runAndLog "Installing phase2 gcc output" ${LLVMGCC_OBJ_DIR}/install.log \
       make install
