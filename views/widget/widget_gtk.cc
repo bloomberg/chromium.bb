@@ -974,11 +974,11 @@ void WidgetGtk::ProcessMouseReleased(GdkEventButton* event) {
 bool WidgetGtk::ProcessScroll(GdkEventScroll* event) {
   // An event may come from a contained widget which has its own gdk window.
   // Translate it to the widget's coordinates.
-  int x, y;
+  int x = 0, y = 0;
   GetContainedWidgetEventCoordinates(event, &x, &y);
   int flags = Event::GetFlagsFromGdkState(event->state);
   int increment = 0;
-  bool is_horizontal;
+  bool is_horizontal = true;
   switch (event->direction) {
     case GDK_SCROLL_UP:
       increment = -1;
