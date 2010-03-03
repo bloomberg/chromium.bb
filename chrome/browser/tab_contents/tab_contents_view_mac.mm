@@ -453,7 +453,4 @@ void TabContentsViewMac::Observe(NotificationType type,
   tabContentsView_->CloseTab();
 }
 
-// Tons of stuff goes here, where we grab events going on in Cocoaland and send
-// them into the C++ system. TODO(avi): all that jazz
-
 @end

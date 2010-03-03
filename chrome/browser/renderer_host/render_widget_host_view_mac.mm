@@ -740,9 +740,6 @@ bool RenderWidgetHostViewMac::ContainsNativeView(
 
 @implementation RenderWidgetHostViewCocoa
 
-// Tons of stuff goes here, where we grab events going on in Cocoaland and send
-// them into the C++ system. TODO(avi): all that jazz
-
 - (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)r {
   self = [super initWithFrame:NSZeroRect];
   if (self != nil) {
