@@ -546,6 +546,14 @@ END_MSG_MAP()
     OnOpenURL(tab_handle, GURL(url), GURL(), disposition);
   }
 
+  virtual void OnHandleContextMenu(int tab_handle, HANDLE menu_handle,
+                                   int align_flags,
+                                   const IPC::ContextMenuParams& params) {
+    scoped_refptr<Base> ref(this);
+    ChromeFramePlugin<T>::OnHandleContextMenu(tab_handle, menu_handle,
+                                              align_flags, params);
+  }
+
   LRESULT OnCreate(UINT message, WPARAM wparam, LPARAM lparam,
                    BOOL& handled) {  // NO_LINT
     ModifyStyle(0, WS_CLIPCHILDREN | WS_CLIPSIBLINGS, 0);

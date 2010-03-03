@@ -25,7 +25,7 @@ class ChromeFramePlugin : public ChromeFrameDelegateImpl {
     Uninitialize();
   }
 
-BEGIN_MSG_MAP(ChromeFrameActivex)
+BEGIN_MSG_MAP(T)
   MESSAGE_HANDLER(WM_SETFOCUS, OnSetFocus)
   MESSAGE_HANDLER(WM_SIZE, OnSize)
   MESSAGE_HANDLER(WM_PARENTNOTIFY, OnParentNotify)
@@ -43,7 +43,7 @@ END_MSG_MAP()
   }
 
   void Uninitialize() {
-    if (automation_client_.get()) {
+    if (IsValid()) {
       automation_client_->Uninitialize();
       automation_client_ = NULL;
     }
@@ -52,6 +52,7 @@ END_MSG_MAP()
   bool InitializeAutomation(const std::wstring& profile_name,
                             const std::wstring& extra_chrome_arguments,
                             bool incognito) {
+    DCHECK(IsValid());
     // We don't want to do incognito when privileged, since we're
     // running in browser chrome or some other privileged context.
     bool incognito_mode = !is_privileged_ && incognito;
@@ -78,7 +79,7 @@ END_MSG_MAP()
   virtual void OnAutomationServerReady() {
     // Issue the extension automation request if we're privileged to
     // allow this control to handle extension requests from Chrome.
-    if (is_privileged_)
+    if (is_privileged_ && IsValid())
       automation_client_->SetEnableExtensionAutomation(functions_enabled_);
   }
 
@@ -87,7 +88,8 @@ END_MSG_MAP()
   }
 
   virtual void OnHostMoved() {
-    automation_client_->OnChromeFrameHostMoved();
+    if (IsValid())
+      automation_client_->OnChromeFrameHostMoved();
   }
 
  protected:
@@ -123,7 +125,8 @@ END_MSG_MAP()
                                        params.screen_y, GetWindow(), NULL);
       // Menu is over now give focus back to chrome
       GiveFocusToChrome();
-      if (selected != 0 && !self->HandleContextMenuCommand(selected, params)) {
+      if (IsValid() && selected != 0 &&
+          !self->HandleContextMenuCommand(selected, params)) {
         automation_client_->SendContextMenuCommandToChromeFrame(selected);
       }
     }
@@ -133,7 +136,7 @@ END_MSG_MAP()
 
   LRESULT OnSetFocus(UINT message, WPARAM wparam, LPARAM lparam,
                      BOOL& handled) {  // NO_LINT
-    if (!ignore_setfocus_ && automation_client_ != NULL) {
+    if (!ignore_setfocus_ && IsValid()) {
       GiveFocusToChrome();
     }
     return 0;
@@ -143,7 +146,7 @@ END_MSG_MAP()
                  BOOL& handled) {  // NO_LINT
     handled = FALSE;
     // When we get resized, we need to resize the external tab window too.
-    if (automation_client_.get())
+    if (IsValid())
       automation_client_->Resize(LOWORD(lparam), HIWORD(lparam),
                                  SWP_NOACTIVATE | SWP_NOZORDER);
     return 0;
@@ -197,11 +200,13 @@ END_MSG_MAP()
   }
 
   void GiveFocusToChrome() {
-    TabProxy* tab = automation_client_->tab();
-    HWND chrome_window = automation_client_->tab_window();
-    if (tab && ::IsWindow(chrome_window)) {
-      DLOG(INFO) << "Setting initial focus";
-      tab->SetInitialFocus(win_util::IsShiftPressed());
+    if (IsValid()) {
+      TabProxy* tab = automation_client_->tab();
+      HWND chrome_window = automation_client_->tab_window();
+      if (tab && ::IsWindow(chrome_window)) {
+        DLOG(INFO) << "Setting initial focus";
+        tab->SetInitialFocus(win_util::IsShiftPressed());
+      }
     }
   }
 
