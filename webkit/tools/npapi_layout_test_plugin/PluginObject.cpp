@@ -126,7 +126,8 @@ static bool identifiersInitialized = false;
 #define ID_PROPERTY_LOG_DESTROY                 4
 #define ID_PROPERTY_RETURN_ERROR_FROM_NEWSTREAM 5
 #define ID_PROPERTY_TEST_OBJECT_COUNT           6
-#define NUM_PROPERTY_IDENTIFIERS                7
+#define ID_PROPERTY_THROW_EXCEPTION_PROPERTY    7
+#define NUM_PROPERTY_IDENTIFIERS                8
 
 static NPIdentifier pluginPropertyIdentifiers[NUM_PROPERTY_IDENTIFIERS];
 static const NPUTF8 *pluginPropertyIdentifierNames[NUM_PROPERTY_IDENTIFIERS] = {
@@ -137,6 +138,7 @@ static const NPUTF8 *pluginPropertyIdentifierNames[NUM_PROPERTY_IDENTIFIERS] = {
     "logDestroy",
     "returnErrorFromNewStream",
     "testObjectCount",
+    "testThrowExceptionProperty",
 };
 
 enum {
@@ -167,6 +169,8 @@ enum {
     ID_TEST_HAS_METHOD,
     ID_TEST_THROW_EXCEPTION_METHOD,
     ID_TEST_FAIL_METHOD,
+    ID_TEST_GET_BROWSER_PROPERTY,
+    ID_TEST_SET_BROWSER_PROPERTY,
     NUM_METHOD_IDENTIFIERS
 };
 
@@ -199,7 +203,9 @@ static const NPUTF8 *pluginMethodIdentifierNames[NUM_METHOD_IDENTIFIERS] = {
     "testHasProperty",
     "testHasMethod",
     "testThrowException",
-    "testFail"
+    "testFail",
+    "testGetBrowserProperty",
+    "testSetBrowserProperty"
 };
 
 static NPUTF8* createCStringFromNPVariant(const NPVariant* variant)
@@ -259,6 +265,9 @@ static bool pluginGetProperty(NPObject* obj, NPIdentifier name, NPVariant* resul
     } else if (name == pluginPropertyIdentifiers[ID_PROPERTY_TEST_OBJECT_COUNT]) {
         INT32_TO_NPVARIANT(getTestObjectCount(), *result);
         return true;
+    } else if (name == pluginPropertyIdentifiers[ID_PROPERTY_THROW_EXCEPTION_PROPERTY]) {
+        browser->setexception(obj, "plugin object testThrowExceptionProperty SUCCESS");
+        return true;
     }
     return false;
 }
@@ -274,6 +283,9 @@ static bool pluginSetProperty(NPObject* obj, NPIdentifier name, const NPVariant*
         return true;
     } else if (name == pluginPropertyIdentifiers[ID_PROPERTY_RETURN_ERROR_FROM_NEWSTREAM]) {
         plugin->returnErrorFromNewStream = NPVARIANT_TO_BOOLEAN(*variant);
+        return true;
+    } else if (name == pluginPropertyIdentifiers[ID_PROPERTY_THROW_EXCEPTION_PROPERTY]) {
+        browser->setexception(obj, "plugin object testThrowExceptionProperty SUCCESS");
         return true;
     }
 
@@ -920,6 +932,12 @@ static bool pluginInvoke(NPObject* header, NPIdentifier name, const NPVariant* a
         return testHasMethod(plugin, args, argCount, result);
     else if (name == pluginMethodIdentifiers[ID_TEST_THROW_EXCEPTION_METHOD]) {
         browser->setexception(header, "plugin object testThrowException SUCCESS");
+        return true;
+    } else if (name == pluginMethodIdentifiers[ID_TEST_GET_BROWSER_PROPERTY]) {
+        browser->getproperty(plugin->npp, NPVARIANT_TO_OBJECT(args[0]), stringVariantToIdentifier(args[1]), result);
+        return true;
+    } else if (name == pluginMethodIdentifiers[ID_TEST_SET_BROWSER_PROPERTY]) {
+        browser->setproperty(plugin->npp, NPVARIANT_TO_OBJECT(args[0]), stringVariantToIdentifier(args[1]), &args[2]);
         return true;
     }// else if (name == pluginMethodIdentifiers[ID_TEST_FAIL_METHOD])
     //    return browser->invoke(plugin->npp, 0, name, args, argCount, result);
