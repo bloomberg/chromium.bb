@@ -5,6 +5,7 @@
 #include "chrome/browser/views/frame/glass_browser_frame_view.h"
 
 #include "app/gfx/canvas.h"
+#include "app/gfx/icon_util.h"
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
 #include "chrome/app/chrome_dll_resource.h"
@@ -411,10 +412,27 @@ void GlassBrowserFrameView::StopThrobber() {
   if (throbber_running_) {
     throbber_running_ = false;
 
+    HICON frame_icon = NULL;
+
+    // Check if hosted BrowserView has a window icon to use.
+    if (browser_view_->ShouldShowWindowIcon()) {
+      SkBitmap icon = browser_view_->GetWindowIcon();
+      if (!icon.isNull())
+        frame_icon = IconUtil::CreateHICONFromSkBitmap(icon);
+    }
+
+    // Fallback to class icon.
+    if (!frame_icon) {
+      frame_icon = reinterpret_cast<HICON>(GetClassLongPtr(
+          frame_->GetWindow()->GetNativeWindow(), GCLP_HICONSM));
+    }
+
     // This will reset the small icon which we set in the throbber code.
-    // Windows will then pick up the default icon from the window class.
+    // WM_SETICON with NULL icon restores the icon for title bar but not
+    // for taskbar. See http://crbug.com/29996
     SendMessage(frame_->GetWindow()->GetNativeWindow(), WM_SETICON,
-                static_cast<WPARAM>(ICON_SMALL), NULL);
+                static_cast<WPARAM>(ICON_SMALL),
+                reinterpret_cast<LPARAM>(frame_icon));
   }
 }
 
