@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "base/mac_util.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 
@@ -29,11 +28,11 @@ const CGFloat kTabStripVerticalOffset = 14;
 
 
 // Helper class to manage animations for the fullscreen dropdown bar.  Calls
-// back to [BrowserWindowController setFloatingBarShownFraction] once per
-// animation step.
+// [FullscreenController changeFloatingBarShownFraction] once per animation
+// step.
 @interface DropdownAnimation : NSAnimation {
  @private
-  BrowserWindowController* controller_;
+  FullscreenController* controller_;
   CGFloat startFraction_;
   CGFloat endFraction_;
 }
@@ -47,7 +46,7 @@ const CGFloat kTabStripVerticalOffset = 14;
 - (id)initWithFraction:(CGFloat)fromFraction
           fullDuration:(CGFloat)fullDuration
         animationCurve:(NSInteger)animationCurve
-            controller:(BrowserWindowController*)controller;
+            controller:(FullscreenController*)controller;
 
 @end
 
@@ -59,7 +58,7 @@ const CGFloat kTabStripVerticalOffset = 14;
 - (id)initWithFraction:(CGFloat)toFraction
           fullDuration:(CGFloat)fullDuration
         animationCurve:(NSInteger)animationCurve
-            controller:(BrowserWindowController*)controller {
+            controller:(FullscreenController*)controller {
   // Calculate the effective duration, based on the current shown fraction.
   DCHECK(controller);
   CGFloat fromFraction = [controller floatingBarShownFraction];
@@ -79,7 +78,7 @@ const CGFloat kTabStripVerticalOffset = 14;
 - (void)setCurrentProgress:(NSAnimationProgress)progress {
   CGFloat fraction =
       startFraction_ + (progress * (endFraction_ - startFraction_));
-  [controller_ setFloatingBarShownFraction:fraction];
+  [controller_ changeFloatingBarShownFraction:fraction];
 }
 
 @end
@@ -89,6 +88,10 @@ const CGFloat kTabStripVerticalOffset = 14;
 
 // Returns YES if the fullscreen window is on the primary screen.
 - (BOOL)isWindowOnPrimaryScreen;
+
+// Returns |kFullScreenModeHideAll| when the overlay is hidden and
+// |kFullScreenModeHideDock| when the overlay is shown.
+- (mac_util::FullScreenMode)desiredFullscreenMode;
 
 // Change the overlay to the given fraction, with or without animation. Only
 // guaranteed to work properly with |fraction == 0| or |fraction == 1|. This
@@ -153,6 +156,7 @@ const CGFloat kTabStripVerticalOffset = 14;
 - (id)initWithBrowserController:(BrowserWindowController*)controller {
   if ((self == [super init])) {
     browserController_ = controller;
+    currentFullscreenMode_ = mac_util::kFullScreenModeNormal;
   }
   return self;
 }
@@ -167,7 +171,7 @@ const CGFloat kTabStripVerticalOffset = 14;
   DCHECK(!isFullscreen_);
   isFullscreen_ = YES;
   contentView_ = contentView;
-  [browserController_ setFloatingBarShownFraction:(showDropdown ? 1 : 0)];
+  [self changeFloatingBarShownFraction:(showDropdown ? 1 : 0)];
 
   // Register for notifications.  Self is removed as an observer in |-cleanup|.
   NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
@@ -275,6 +279,24 @@ const CGFloat kTabStripVerticalOffset = 14;
   currentAnimation_.reset();
 }
 
+- (CGFloat)floatingBarShownFraction {
+  return [browserController_ floatingBarShownFraction];
+}
+
+- (void)changeFloatingBarShownFraction:(CGFloat)fraction {
+  [browserController_ setFloatingBarShownFraction:fraction];
+
+  mac_util::FullScreenMode desiredMode = [self desiredFullscreenMode];
+  if (desiredMode != currentFullscreenMode_ &&
+      [[browserController_ window] isMainWindow]) {
+    if (currentFullscreenMode_ == mac_util::kFullScreenModeNormal)
+      mac_util::RequestFullScreen(desiredMode);
+    else
+      mac_util::SwitchFullScreenModes(currentFullscreenMode_, desiredMode);
+    currentFullscreenMode_ = desiredMode;
+  }
+}
+
 // Used to activate the floating bar in fullscreen mode.
 - (void)mouseEntered:(NSEvent*)event {
   DCHECK(isFullscreen_);
@@ -350,12 +372,18 @@ const CGFloat kTabStripVerticalOffset = 14;
   return (screen == primaryScreen);
 }
 
+- (mac_util::FullScreenMode)desiredFullscreenMode {
+  if ([browserController_ floatingBarShownFraction] >= 1.0)
+    return mac_util::kFullScreenModeHideDock;
+  return mac_util::kFullScreenModeHideAll;
+}
+
 - (void)changeOverlayToFraction:(CGFloat)fraction
                   withAnimation:(BOOL)animate {
   // The non-animated case is really simple, so do it and return.
   if (!animate) {
     [currentAnimation_ stopAnimation];
-    [browserController_ setFloatingBarShownFraction:fraction];
+    [self changeFloatingBarShownFraction:fraction];
     return;
   }
 
@@ -378,7 +406,7 @@ const CGFloat kTabStripVerticalOffset = 14;
       [[DropdownAnimation alloc] initWithFraction:fraction
                                      fullDuration:kDropdownAnimationDuration
                                    animationCurve:NSAnimationEaseOut
-                                       controller:browserController_]);
+                                       controller:self]);
   DCHECK(currentAnimation_);
   [currentAnimation_ setAnimationBlockingMode:NSAnimationNonblocking];
   [currentAnimation_ setDelegate:self];
@@ -544,21 +572,26 @@ const CGFloat kTabStripVerticalOffset = 14;
 }
 
 - (void)showActiveWindowUI {
-  if (!menubarIsHidden_) {
-    // Only hide the menubar if the window is on the primary screen.
-    if ([self isWindowOnPrimaryScreen]) {
-      mac_util::RequestFullScreen();
-      menubarIsHidden_ = YES;
-    }
+  DCHECK_EQ(currentFullscreenMode_, mac_util::kFullScreenModeNormal);
+  if (currentFullscreenMode_ != mac_util::kFullScreenModeNormal)
+    return;
+
+  // Only hide the menubar if the window is on the primary screen.
+  if ([self isWindowOnPrimaryScreen]) {
+    mac_util::FullScreenMode desiredMode = [self desiredFullscreenMode];
+    mac_util::RequestFullScreen(desiredMode);
+    currentFullscreenMode_ = desiredMode;
   }
+
   // TODO(rohitrao): Insert the Exit Fullscreen button.  http://crbug.com/35956
 }
 
 - (void)hideActiveWindowUI {
-  if (menubarIsHidden_) {
-    mac_util::ReleaseFullScreen();
-    menubarIsHidden_ = NO;
+  if (currentFullscreenMode_ != mac_util::kFullScreenModeNormal) {
+    mac_util::ReleaseFullScreen(currentFullscreenMode_);
+    currentFullscreenMode_ = mac_util::kFullScreenModeNormal;
   }
+
   // TODO(rohitrao): Remove the Exit Fullscreen button.  http://crbug.com/35956
 }
 

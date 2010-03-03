@@ -8,6 +8,7 @@
 #import <Cocoa/Cocoa.h>
 
 #import "base/cocoa_protocols_mac.h"
+#include "base/mac_util.h"
 #include "chrome/browser/cocoa/location_bar_view_mac.h"
 
 @class BrowserWindowController;
@@ -57,12 +58,15 @@
   // completes.
   NSRect trackingAreaBounds_;
 
-  // YES if we are currently hiding the menubar.  While this should generally
-  // match the window's main status, it can get out of sync if we miss a
-  // notification (which can happen when a fullscreen window is closed).  Used
-  // to make sure we properly restore the menubar when this controller is
+  // Tracks the currently requested fullscreen mode.  This should be
+  // |kFullScreenModeNormal| when the window is not main or not fullscreen,
+  // |kFullScreenModeHideAll| while the overlay is hidden, and
+  // |kFullScreenModeHideDock| while the overlay is shown.  This value can get
+  // out of sync with the correct state if we miss a notification (which can
+  // happen when a fullscreen window is closed).  Used to track the current
+  // state and make sure we properly restore the menubar when this controller is
   // destroyed.
-  BOOL menubarIsHidden_;
+  mac_util::FullScreenMode currentFullscreenMode_;
 }
 
 @property(readonly, nonatomic) BOOL isFullscreen;
@@ -95,6 +99,13 @@
 
 // Cancels any running animation and timers.
 - (void)cancelAnimationAndTimers;
+
+// Gets the current floating bar shown fraction.
+- (CGFloat)floatingBarShownFraction;
+
+// Sets a new current floating bar shown fraction.  NOTE: This function has side
+// effects, such as modifying the fullscreen mode (menubar shown state).
+- (void)changeFloatingBarShownFraction:(CGFloat)fraction;
 
 @end
 

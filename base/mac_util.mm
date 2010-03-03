@@ -1,4 +1,4 @@
-// Copyright (c) 2008-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,45 @@
 #include "base/message_loop.h"
 #include "base/scoped_cftyperef.h"
 #include "base/sys_string_conversions.h"
+
+namespace {
+
+// a count of currently outstanding requests for full screen mode from browser
+// windows, plugins, etc.
+int g_full_screen_requests[mac_util::kNumFullScreenModes] = { 0, 0, 0};
+
+// Sets the appropriate SystemUIMode based on the current full screen requests.
+// Since only one SystemUIMode can be active at a given time, full screen
+// requests are ordered by priority.  If there are no outstanding full screen
+// requests, reverts to normal mode.  If the correct SystemUIMode is already
+// set, does nothing.
+void SetUIMode() {
+  // Get the current UI mode.
+  SystemUIMode current_mode;
+  GetSystemUIMode(&current_mode, NULL);
+
+  // Determine which mode should be active, based on which requests are
+  // currently outstanding.  More permissive requests take precedence.  For
+  // example, plugins request |kFullScreenModeAutoHideAll|, while browser
+  // windows request |kFullScreenModeHideDock| when the fullscreen overlay is
+  // down.  Precedence goes to plugins in this case, so AutoHideAll wins over
+  // HideDock.
+  SystemUIMode desired_mode = kUIModeNormal;
+  SystemUIOptions desired_options = 0;
+  if (g_full_screen_requests[mac_util::kFullScreenModeAutoHideAll] > 0) {
+    desired_mode = kUIModeAllHidden;
+    desired_options = kUIOptionAutoShowMenuBar;
+  } else if (g_full_screen_requests[mac_util::kFullScreenModeHideDock] > 0) {
+    desired_mode = kUIModeContentHidden;
+  } else if (g_full_screen_requests[mac_util::kFullScreenModeHideAll] > 0) {
+    desired_mode = kUIModeAllHidden;
+  }
+
+  if (current_mode != desired_mode)
+    SetSystemUIMode(desired_mode, desired_options);
+}
+
+}  // end namespace
 
 namespace mac_util {
 
@@ -145,26 +184,43 @@ CGColorSpaceRef GetSystemColorSpace() {
   return g_system_color_space;
 }
 
-// a count of currently outstanding requests for full screen mode from browser
-// windows, plugins, etc.
-static int g_full_screen_requests = 0;
+// Add a request for full screen mode.  Must be called on the main thread.
+void RequestFullScreen(FullScreenMode mode) {
+  DCHECK_LT(mode, kNumFullScreenModes);
+  if (mode >= kNumFullScreenModes)
+    return;
 
-// Add a request for full screen mode.  If the menu bar is not currently
-// hidden, hide it.  Must be called on main thread.
-void RequestFullScreen() {
-  DCHECK_GE(g_full_screen_requests, 0);
-  if (g_full_screen_requests == 0)
-    SetSystemUIMode(kUIModeAllSuppressed, kUIOptionAutoShowMenuBar);
-  ++g_full_screen_requests;
+  DCHECK_GE(g_full_screen_requests[mode], 0);
+  g_full_screen_requests[mode] = std::max(g_full_screen_requests[mode] + 1, 1);
+  SetUIMode();
 }
 
-// Release a request for full screen mode.  If there are no other outstanding
-// requests, show the menu bar. Must be called on main thread.
-void ReleaseFullScreen() {
-  DCHECK_GT(g_full_screen_requests, 0);
-  --g_full_screen_requests;
-  if (g_full_screen_requests == 0)
-    SetSystemUIMode(kUIModeNormal, 0);
+// Release a request for full screen mode.  Must be called on the main thread.
+void ReleaseFullScreen(FullScreenMode mode) {
+  DCHECK_LT(mode, kNumFullScreenModes);
+  if (mode >= kNumFullScreenModes)
+    return;
+
+  DCHECK_GT(g_full_screen_requests[mode], 0);
+  g_full_screen_requests[mode] = std::max(g_full_screen_requests[mode] - 1, 0);
+  SetUIMode();
+}
+
+// Switches full screen modes.  Releases a request for |from_mode| and adds a
+// new request for |to_mode|.  Must be called on the main thread.
+void SwitchFullScreenModes(FullScreenMode from_mode, FullScreenMode to_mode) {
+  DCHECK_LT(from_mode, kNumFullScreenModes);
+  DCHECK_LT(to_mode, kNumFullScreenModes);
+  if (from_mode >= kNumFullScreenModes || to_mode >= kNumFullScreenModes)
+    return;
+
+  DCHECK_GT(g_full_screen_requests[from_mode], 0);
+  DCHECK_GE(g_full_screen_requests[to_mode], 0);
+  g_full_screen_requests[from_mode] =
+      std::max(g_full_screen_requests[from_mode] - 1, 0);
+  g_full_screen_requests[to_mode] =
+      std::max(g_full_screen_requests[to_mode] + 1, 1);
+  SetUIMode();
 }
 
 void SetCursorVisibility(bool visible) {

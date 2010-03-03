@@ -44,7 +44,8 @@ void PluginProcessHost::OnPluginShowWindow(uint32 window_id,
     // otherwise our refcounting can get skewed).
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
-        NewRunnableFunction(mac_util::RequestFullScreen));
+        NewRunnableFunction(mac_util::RequestFullScreen,
+                            mac_util::kFullScreenModeHideAll));
   }
 }
 
@@ -55,7 +56,7 @@ static void ReleasePluginFullScreen(pid_t plugin_pid) {
   // Releasing full screen only works if we are the frontmost process; grab
   // focus, but give it back to the plugin process if requested.
   mac_util::ActivateProcess(base::GetCurrentProcId());
-  mac_util::ReleaseFullScreen();
+  mac_util::ReleaseFullScreen(mac_util::kFullScreenModeHideAll);
   if (plugin_pid != -1) {
     mac_util::ActivateProcess(plugin_pid);
   }

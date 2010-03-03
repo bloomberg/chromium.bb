@@ -1,4 +1,4 @@
-// Copyright (c) 2008-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,6 +27,19 @@ typedef unsigned int NSSearchPathDirectory;
 #endif
 
 namespace mac_util {
+
+// Full screen modes, in increasing order of priority.  More permissive modes
+// take predecence.
+enum FullScreenMode {
+  kFullScreenModeHideAll = 0,
+  kFullScreenModeHideDock = 1,
+  kFullScreenModeAutoHideAll = 2,
+  kNumFullScreenModes = 3,
+
+  // kFullScreenModeNormal is not a valid FullScreenMode, but it is useful to
+  // other classes, so we include it here.
+  kFullScreenModeNormal = 10,
+};
 
 std::string PathFromFSRef(const FSRef& ref);
 bool FSRefFromPath(const std::string& path, FSRef* ref);
@@ -75,17 +88,24 @@ CGColorSpaceRef GetSRGBColorSpace();
 // is a static value; do not release it!
 CGColorSpaceRef GetSystemColorSpace();
 
-// Add a request for full screen mode.  This does not by itself create a
-// fullscreen window; rather, it manages per-application state related to
-// fullscreen windows.  For example, if the menu bar is not currently
-// hidden, this will hide it.  Must be called on main thread.
-void RequestFullScreen();
+// Add a full screen request for the given |mode|.  Must be paired with a
+// ReleaseFullScreen() call for the same |mode|.  This does not by itself create
+// a fullscreen window; rather, it manages per-application state related to
+// hiding the dock and menubar.  Must be called on the main thread.
+void RequestFullScreen(FullScreenMode mode);
 
-// Release a request for full screen mode.  As with RequestFullScree(), this
-// does not affect windows directly, but rather manages per-application state.
-// For example, if there are no other outstanding requests for full screen,
-// this will show the menu bar.  Must be called on main thread.
-void ReleaseFullScreen();
+// Release a request for full screen mode.  Must be matched with a
+// RequestFullScreen() call for the same |mode|.  As with RequestFullScreen(),
+// this does not affect windows directly, but rather manages per-application
+// state.  For example, if there are no other outstanding
+// |kFullScreenModeAutoHideAll| requests, this will reshow the menu bar.  Must
+// be called on main thread.
+void ReleaseFullScreen(FullScreenMode mode);
+
+// Convenience method to switch the current fullscreen mode.  This has the same
+// net effect as a ReleaseFullScreen(from_mode) call followed immediately by a
+// RequestFullScreen(to_mode).  Must be called on the main thread.
+void SwitchFullScreenModes(FullScreenMode from_mode, FullScreenMode to_mode);
 
 // Set the visibility of the cursor.
 void SetCursorVisibility(bool visible);

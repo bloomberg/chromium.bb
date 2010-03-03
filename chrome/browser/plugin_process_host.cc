@@ -318,11 +318,12 @@ PluginProcessHost::~PluginProcessHost() {
        window_index != plugin_fullscreen_windows_set_.end();
        window_index++) {
     if (ChromeThread::CurrentlyOn(ChromeThread::UI)) {
-      mac_util::ReleaseFullScreen();
+      mac_util::ReleaseFullScreen(mac_util::kFullScreenModeHideAll);
     } else {
       ChromeThread::PostTask(
           ChromeThread::UI, FROM_HERE,
-          NewRunnableFunction(mac_util::ReleaseFullScreen));
+          NewRunnableFunction(mac_util::ReleaseFullScreen,
+                              mac_util::kFullScreenModeHideAll));
     }
   }
   // If the plugin hid the cursor, reset that.
