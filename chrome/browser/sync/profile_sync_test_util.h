@@ -32,12 +32,6 @@ class TestModelAssociator : public ModelAssociatorImpl {
       : ModelAssociatorImpl(service, error_handler) {
   }
 
-  TestModelAssociator(ProfileSyncService* service,
-                      WebDatabase* web_database,
-                      browser_sync::UnrecoverableErrorHandler* error_handler)
-      : ModelAssociatorImpl(service, web_database, error_handler) {
-  }
-
   virtual bool GetSyncIdForTaggedNode(const std::string& tag, int64* sync_id) {
     std::wstring tag_wide;
     if (!UTF8ToWide(tag.c_str(), tag.length(), &tag_wide)) {

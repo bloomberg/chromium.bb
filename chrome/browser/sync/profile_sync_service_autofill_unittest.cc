@@ -20,9 +20,11 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
+#include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/webdata/autofill_entry.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/test/sync/engine/test_id_factory.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -32,11 +34,30 @@ using browser_sync::AutofillChangeProcessor;
 using browser_sync::AutofillDataTypeController;
 using browser_sync::AutofillModelAssociator;
 using browser_sync::SyncBackendHost;
+using browser_sync::TestIdFactory;
 using browser_sync::UnrecoverableErrorHandler;
 using sync_api::SyncManager;
+using sync_api::UserShare;
+using syncable::BASE_VERSION;
+using syncable::CREATE;
+using syncable::DirectoryManager;
+using syncable::ID;
+using syncable::IS_DEL;
+using syncable::IS_DIR;
+using syncable::IS_UNAPPLIED_UPDATE;
+using syncable::IS_UNSYNCED;
+using syncable::MutableEntry;
+using syncable::SERVER_IS_DIR;
+using syncable::SERVER_VERSION;
+using syncable::SPECIFICS;
+using syncable::ScopedDirLookup;
+using syncable::UNIQUE_SERVER_TAG;
+using syncable::UNITTEST;
+using syncable::WriteTransaction;
 using testing::_;
 using testing::DoAll;
 using testing::DoDefault;
+using testing::Invoke;
 using testing::Return;
 using testing::SetArgumentPointee;
 
@@ -66,17 +87,6 @@ class TestingProfileSyncService : public ProfileSyncService {
   // value value in order for the profile sync service to start.
   virtual std::string GetLsidForAuthBootstraping() {
     return "foo";
-  }
-};
-
-class TestAutofillModelAssociator
-    : public TestModelAssociator<AutofillModelAssociator> {
- public:
-  TestAutofillModelAssociator(ProfileSyncService* service,
-                              WebDatabase* web_database,
-                              UnrecoverableErrorHandler* error_handler)
-      : TestModelAssociator<AutofillModelAssociator>(
-          service, web_database, error_handler) {
   }
 };
 
@@ -160,7 +170,7 @@ ACTION(QuitUIMessageLoop) {
 ACTION_P3(MakeAutofillSyncComponents, service, wd, dtc) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
   AutofillModelAssociator* model_associator =
-      new TestAutofillModelAssociator(service, wd, dtc);
+      new AutofillModelAssociator(service, wd, dtc);
   AutofillChangeProcessor* change_processor =
       new AutofillChangeProcessor(model_associator, wd, service);
   return ProfileSyncFactory::SyncComponents(model_associator, change_processor);
@@ -211,7 +221,8 @@ class ProfileSyncServiceAutofillTest : public testing::Test {
 
       // State changes once for the backend init and once for startup done.
       EXPECT_CALL(observer_, OnStateChanged()).
-          WillOnce(DoDefault()).
+          WillOnce(Invoke(this,
+                          &ProfileSyncServiceAutofillTest::CreateAutofillRoot)).
           WillOnce(QuitUIMessageLoop());
       service_->RegisterDataTypeController(data_type_controller);
       service_->Initialize();
@@ -219,15 +230,37 @@ class ProfileSyncServiceAutofillTest : public testing::Test {
     }
   }
 
-  void GetAutofillEntriesFromSyncDB(std::vector<AutofillEntry>* entries) {
-    sync_api::ReadTransaction trans(service_->backend()->GetUserShareHandle());
-    int64 autofill_root_id =
-        GetFakeServerTaggedNode(&trans, "google_chrome_autofill");
-    if (autofill_root_id == sync_api::kInvalidId)
+  void CreateAutofillRoot() {
+    UserShare* user_share = service_->backend()->GetUserShareHandle();
+    DirectoryManager* dir_manager = user_share->dir_manager.get();
+
+    ScopedDirLookup dir(dir_manager, user_share->authenticated_name);
+    if (!dir.good())
       return;
 
+    WriteTransaction wtrans(dir, UNITTEST, __FILE__, __LINE__);
+    MutableEntry node(&wtrans,
+                      CREATE,
+                      wtrans.root_id(),
+                      browser_sync::kAutofillTag);
+    node.Put(UNIQUE_SERVER_TAG, browser_sync::kAutofillTag);
+    node.Put(IS_DIR, true);
+    node.Put(SERVER_IS_DIR, false);
+    node.Put(IS_UNSYNCED, false);
+    node.Put(IS_UNAPPLIED_UPDATE, false);
+    node.Put(SERVER_VERSION, 20);
+    node.Put(BASE_VERSION, 20);
+    node.Put(IS_DEL, false);
+    node.Put(ID, ids_.MakeServer(browser_sync::kAutofillTag));
+    sync_pb::EntitySpecifics specifics;
+    specifics.MutableExtension(sync_pb::autofill);
+    node.Put(SPECIFICS, specifics);
+  }
+
+  void GetAutofillEntriesFromSyncDB(std::vector<AutofillEntry>* entries) {
+    sync_api::ReadTransaction trans(service_->backend()->GetUserShareHandle());
     sync_api::ReadNode autofill_root(&trans);
-    if (!autofill_root.InitByIdLookup(autofill_root_id))
+    if (!autofill_root.InitByTagLookup(browser_sync::kAutofillTag))
       return;
 
     int64 child_id = autofill_root.GetFirstChildId();
@@ -251,29 +284,6 @@ class ProfileSyncServiceAutofillTest : public testing::Test {
     }
   }
 
-  int64 GetFakeServerTaggedNode(sync_api::ReadTransaction* trans,
-                                const std::string& tag) {
-    std::wstring tag_wide;
-    if (!UTF8ToWide(tag.c_str(), tag.length(), &tag_wide))
-      return sync_api::kInvalidId;
-
-    sync_api::ReadNode root(trans);
-    root.InitByRootLookup();
-
-    int64 last_child_id = sync_api::kInvalidId;
-    for (int64 id = root.GetFirstChildId(); id != sync_api::kInvalidId; /***/) {
-      sync_api::ReadNode child(trans);
-      child.InitByIdLookup(id);
-      last_child_id = id;
-      if (tag_wide == child.GetTitle()) {
-        return id;
-      }
-      id = child.GetSuccessorId();
-    }
-
-    return sync_api::kInvalidId;
-  }
-
   void SetIdleChangeProcessorExpectations() {
     EXPECT_CALL(web_database_, RemoveFormElement(_, _)).Times(0);
     EXPECT_CALL(web_database_, GetAutofillTimestamps(_, _, _)).Times(0);
@@ -289,7 +299,6 @@ class ProfileSyncServiceAutofillTest : public testing::Test {
         AutofillKey(ASCIIToUTF16(name), ASCIIToUTF16(value)), timestamps);
   }
 
-
   MessageLoopForUI message_loop_;
   ChromeThread ui_thread_;
   ChromeThread db_thread_;
@@ -302,6 +311,8 @@ class ProfileSyncServiceAutofillTest : public testing::Test {
   ProfileSyncServiceObserverMock observer_;
   WebDatabaseMock web_database_;
   scoped_refptr<WebDataService> web_data_service_;
+
+  TestIdFactory ids_;
 };
 
 // TODO(sync): Test unrecoverable error during MA.

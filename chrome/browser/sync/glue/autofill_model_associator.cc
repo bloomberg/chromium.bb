@@ -41,18 +41,10 @@ bool AutofillModelAssociator::AssociateModels() {
     return false;
   }
 
-  int64 root_id;
-  if (!GetSyncIdForTaggedNode(kAutofillTag, &root_id)) {
-    sync_service_->OnUnrecoverableError();
-    LOG(ERROR) << "Server did not create the top-level autofill node. We "
-               << "might be running against an out-of-date server.";
-    return false;
-  }
-
   sync_api::WriteTransaction trans(
       sync_service_->backend()->GetUserShareHandle());
   sync_api::ReadNode autofill_root(&trans);
-  if (!autofill_root.InitByIdLookup(root_id)) {
+  if (!autofill_root.InitByTagLookup(kAutofillTag)) {
     error_handler_->OnUnrecoverableError();
     LOG(ERROR) << "Server did not create the top-level autofill node. We "
                << "might be running against an out-of-date server.";

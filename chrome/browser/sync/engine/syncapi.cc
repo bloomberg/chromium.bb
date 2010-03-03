@@ -1580,7 +1580,8 @@ void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncApi(
     const syncable::DirectoryChangeEvent& event) {
   // We have been notified about a user action changing the bookmark model.
   DCHECK_EQ(event.todo, syncable::DirectoryChangeEvent::CALCULATE_CHANGES);
-  DCHECK_EQ(event.writer, syncable::SYNCAPI);
+  DCHECK(event.writer == syncable::SYNCAPI ||
+         event.writer == syncable::UNITTEST);
   LOG_IF(WARNING, !ChangeBuffersAreEmpty()) <<
       "CALCULATE_CHANGES called with unapplied old changes.";
 
@@ -1614,7 +1615,8 @@ void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncer(
   // We only expect one notification per sync step, so change_buffers_ should
   // contain no pending entries.
   DCHECK_EQ(event.todo, syncable::DirectoryChangeEvent::CALCULATE_CHANGES);
-  DCHECK_EQ(event.writer, syncable::SYNCER);
+  DCHECK(event.writer == syncable::SYNCER ||
+         event.writer == syncable::UNITTEST);
   LOG_IF(WARNING, !ChangeBuffersAreEmpty()) <<
       "CALCULATE_CHANGES called with unapplied old changes.";
 

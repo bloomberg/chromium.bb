@@ -258,7 +258,6 @@ void ProfileSyncService::OnUnrecoverableError() {
 
 void ProfileSyncService::OnBackendInitialized() {
   backend_initialized_ = true;
-  StartProcessingChangesIfReady();
 
   // The very first time the backend initializes is effectively the first time
   // we can say we successfully "synced".  last_synced_time_ will only be null
@@ -266,6 +265,8 @@ void ProfileSyncService::OnBackendInitialized() {
   if (last_synced_time_.is_null())
     UpdateLastSyncedTime();
   FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
+
+  StartProcessingChangesIfReady();
 }
 
 void ProfileSyncService::OnSyncCycleCompleted() {
