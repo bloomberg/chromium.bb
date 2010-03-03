@@ -458,8 +458,7 @@ PAGE_CYCLER_FILE_TESTS("morejs", MorejsFile);
 PAGE_CYCLER_EXTENSIONS_FILE_TESTS("morejs", MorejsFile);
 
 // http (localhost) tests
-// This test is disabled. See bug 36871.
-// PAGE_CYCLER_HTTP_TESTS("moz", MozHttp);
+PAGE_CYCLER_HTTP_TESTS("moz", MozHttp);
 PAGE_CYCLER_HTTP_TESTS("intl1", Intl1Http);
 PAGE_CYCLER_HTTP_TESTS("intl2", Intl2Http);
 PAGE_CYCLER_HTTP_TESTS("dom", DomHttp);
