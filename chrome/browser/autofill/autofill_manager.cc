@@ -46,7 +46,7 @@ void AutoFillManager::RegisterUserPrefs(PrefService* prefs) {
 
 void AutoFillManager::FormFieldValuesSubmitted(
     const webkit_glue::FormFieldValues& form) {
-  if (!IsAutoFillEnabled())
+  if (!personal_data_)
     return;
 
   // Grab a copy of the form data.
@@ -63,7 +63,7 @@ void AutoFillManager::FormFieldValuesSubmitted(
   if (!infobar_shown) {
     // Ask the user for permission to save form information.
     infobar_.reset(new AutoFillInfoBarDelegate(tab_contents_, this));
-  } else {
+  } else if (IsAutoFillEnabled()) {
     HandleSubmit();
   }
 }
@@ -233,6 +233,24 @@ void AutoFillManager::OnPersonalDataLoaded() {
       this, personal_data_->profiles(), personal_data_->credit_cards());
 }
 
+void AutoFillManager::OnInfoBarAccepted() {
+  DCHECK(personal_data_);
+
+  PrefService* prefs = tab_contents_->profile()->GetPrefs();
+  prefs->SetBoolean(prefs::kAutoFillEnabled, true);
+
+  // If the personal data manager has not loaded the data yet, set ourselves as
+  // its observer so that we can listen for the OnPersonalDataLoaded signal.
+  if (!personal_data_->IsDataLoaded())
+    personal_data_->SetObserver(this);
+  else
+    OnPersonalDataLoaded();
+}
+
+void AutoFillManager::Reset() {
+  upload_form_structure_.reset();
+}
+
 void AutoFillManager::DeterminePossibleFieldTypes(
     FormStructure* form_structure) {
   DCHECK(personal_data_);
@@ -260,30 +278,12 @@ void AutoFillManager::HandleSubmit() {
   UploadFormData();
 }
 
-void AutoFillManager::OnInfoBarAccepted() {
-  DCHECK(personal_data_);
-
-  PrefService* prefs = tab_contents_->profile()->GetPrefs();
-  prefs->SetBoolean(prefs::kAutoFillEnabled, true);
-
-  // If the personal data manager has not loaded the data yet, set ourselves as
-  // its observer so that we can listen for the OnPersonalDataLoaded signal.
-  if (!personal_data_->IsDataLoaded())
-    personal_data_->SetObserver(this);
-  else
-    OnPersonalDataLoaded();
-}
-
 void AutoFillManager::UploadFormData() {
   std::string xml;
   bool ok = upload_form_structure_->EncodeUploadRequest(false, &xml);
   DCHECK(ok);
 
   // TODO(jhawkins): Initiate the upload request thread.
-}
-
-void AutoFillManager::Reset() {
-  upload_form_structure_.reset();
 }
 
 bool AutoFillManager::IsAutoFillEnabled() {

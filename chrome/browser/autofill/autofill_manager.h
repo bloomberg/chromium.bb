@@ -60,6 +60,12 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
   // PersonalDataManager::Observer implementation:
   virtual void OnPersonalDataLoaded();
 
+  // Called by the AutoFillInfoBarDelegate when the user accepts the infobar.
+  virtual void OnInfoBarAccepted();
+
+  // Resets the stored form data.
+  virtual void Reset();
+
   // Uses heuristics and existing personal data to determine the possible field
   // types.
   void DeterminePossibleFieldTypes(FormStructure* form_structure);
@@ -67,14 +73,9 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
   // Handles the form data submitted by the user.
   void HandleSubmit();
 
-  // Called by the AutoFillInfoBarDelegate when the user accepts the infobar.
-  void OnInfoBarAccepted();
 
   // Uploads the form data to the autofill server.
   void UploadFormData();
-
-  // Resets the stored form data.
-  void Reset();
 
   // Returns the value of the AutoFillEnabled pref.
   bool IsAutoFillEnabled();
