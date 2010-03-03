@@ -11,11 +11,10 @@
 #include "base/ref_counted.h"
 
 class GeolocationDispatcherHost;
-class GURL;
 class Profile;
 class RenderViewHost;
 
-// GeolocationPermissionContext manages Geolocation permissions per origin.
+// GeolocationPermissionContext manages Geolocation permissions per host.
 // It keeps an in-memory cache of permissions, and if not available, loads
 // from disk. If there's no data, it'll trigger the UI elements to ask the
 // user for permission.
@@ -31,14 +30,14 @@ class GeolocationPermissionContext
   // Must be called from the IO thread.
   void RequestGeolocationPermission(
       int render_process_id, int render_view_id, int bridge_id,
-      const GURL& origin);
+      const std::string& host);
 
   // Called once the user sets the geolocation permission.
   // It'll update the internal state on different threads via
   // SetPermissionMemoryCacheOnIOThread and SetPermissionOnFileThread.
   void SetPermission(
       int render_process_id, int render_view_id, int bridge_id,
-      const GURL& origin, bool allowed);
+      const std::string& host, bool allowed);
 
  private:
   friend class base::RefCountedThreadSafe<GeolocationPermissionContext>;
@@ -55,12 +54,12 @@ class GeolocationPermissionContext
   // - If not available, it'll delegate to RequestPermissionDataFromUI.
   void HandlePermissionMemoryCacheMiss(
       int render_process_id, int render_view_id, int bridge_id,
-      const GURL& origin);
+      const std::string& host);
 
   // Triggers the associated UI element to request permission.
   void RequestPermissionFromUI(
       int render_process_id, int render_view_id, int bridge_id,
-      const GURL& origin);
+      const std::string& host);
 
   // Notifies whether or not the corresponding render is allowed to use
   // geolocation.
@@ -69,9 +68,10 @@ class GeolocationPermissionContext
       bool allowed);
 
   // Sets permissions_ cache (if not on IO thread, will forward to it).
-  void SetPermissionMemoryCacheOnIOThread(const GURL& origin, bool allowed);
+  void SetPermissionMemoryCacheOnIOThread(
+      const std::string& host, bool allowed);
   // Sets permissions file data (if not on FILE thread, will forward to it).
-  void SetPermissionOnFileThread(const GURL& origin, bool allowed);
+  void SetPermissionOnFileThread(const std::string& host, bool allowed);
 
   // This should only be accessed from the UI thread.
   Profile* const profile_;

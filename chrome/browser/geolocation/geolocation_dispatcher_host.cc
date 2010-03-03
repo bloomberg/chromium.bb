@@ -60,75 +60,84 @@ void GeolocationDispatcherHost::OnLocationUpdate(
        geo != geolocation_renderers_.end();
        ++geo) {
     IPC::Message* message;
-    if (geoposition.error_code == Geoposition::ERROR_CODE_NONE) {
+    if (geoposition.IsValidFix()) {
       message = new ViewMsg_Geolocation_PositionUpdated(
-          geo->route_id, geoposition);
+          geo->render_view_id, geoposition);
     } else {
+      DCHECK(geoposition.IsInitialized());
       message = new ViewMsg_Geolocation_Error(
-          geo->route_id, geoposition.error_code,
+          geo->render_view_id, geoposition.error_code,
           WideToUTF8(geoposition.error_message));
     }
     CallRenderViewHost(
-        geo->process_id, geo->route_id, &RenderViewHost::Send, message);
+        geo->process_id, geo->render_view_id,
+        &RenderViewHost::Send, message);
   }
 }
 
-void GeolocationDispatcherHost::OnRegisterDispatcher(int route_id) {
+void GeolocationDispatcherHost::OnRegisterDispatcher(int render_view_id) {
   // TODO(bulach): is this the right way to get the RendererViewHost process id
   // to be used by RenderViewHost::FromID?
-  RegisterDispatcher(resource_message_filter_process_id_, route_id);
+  RegisterDispatcher(
+      resource_message_filter_process_id_, render_view_id);
 }
 
-void GeolocationDispatcherHost::OnUnregisterDispatcher(int route_id) {
-  UnregisterDispatcher(resource_message_filter_process_id_, route_id);
+void GeolocationDispatcherHost::OnUnregisterDispatcher(int render_view_id) {
+  UnregisterDispatcher(
+      resource_message_filter_process_id_, render_view_id);
 }
 
 void GeolocationDispatcherHost::OnRequestPermission(
-    int route_id, int bridge_id, const GURL& origin) {
+    int render_view_id, int bridge_id, const std::string& host) {
   LOG(INFO) << "permission request";
   geolocation_permission_context_->RequestGeolocationPermission(
-      resource_message_filter_process_id_, route_id, bridge_id, origin);
+      resource_message_filter_process_id_, render_view_id, bridge_id,
+      host);
 }
 
 void GeolocationDispatcherHost::OnStartUpdating(
-    int route_id, int bridge_id, bool high_accuracy) {
-  LOG(INFO) << "start updating" << route_id;
+    int render_view_id, int bridge_id, bool high_accuracy) {
+  LOG(INFO) << "start updating" << render_view_id;
   if (!location_arbitrator_)
     location_arbitrator_ = GeolocationArbitrator::GetInstance();
   location_arbitrator_->AddObserver(
       this, GeolocationArbitrator::UpdateOptions(high_accuracy));
 }
 
-void GeolocationDispatcherHost::OnStopUpdating(int route_id, int bridge_id) {
-  LOG(INFO) << "stop updating" << route_id;
+void GeolocationDispatcherHost::OnStopUpdating(
+    int render_view_id, int bridge_id) {
+  LOG(INFO) << "stop updating" << render_view_id;
   if (location_arbitrator_)
     location_arbitrator_->RemoveObserver(this);
   location_arbitrator_ = NULL;
 }
 
-void GeolocationDispatcherHost::OnSuspend(int route_id, int bridge_id) {
-  LOG(INFO) << "suspend" << route_id;
+void GeolocationDispatcherHost::OnSuspend(
+    int render_view_id, int bridge_id) {
+  LOG(INFO) << "suspend" << render_view_id;
   // TODO(bulach): connect this with GeolocationServiceProvider.
 }
 
-void GeolocationDispatcherHost::OnResume(int route_id, int bridge_id) {
-  LOG(INFO) << "resume" << route_id;
+void GeolocationDispatcherHost::OnResume(
+    int render_view_id, int bridge_id) {
+  LOG(INFO) << "resume" << render_view_id;
   // TODO(bulach): connect this with GeolocationServiceProvider.
 }
 
 void GeolocationDispatcherHost::RegisterDispatcher(
-    int process_id, int route_id) {
+    int process_id, int render_view_id) {
   if (!ChromeThread::CurrentlyOn(ChromeThread::IO)) {
     ChromeThread::PostTask(
         ChromeThread::IO, FROM_HERE,
         NewRunnableMethod(
-            this, &GeolocationDispatcherHost::RegisterDispatcher, process_id,
-            route_id));
+            this, &GeolocationDispatcherHost::RegisterDispatcher,
+            process_id, render_view_id));
     return;
   }
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
-  GeolocationServiceRenderId geolocation_render_id(process_id, route_id);
+  GeolocationServiceRenderId geolocation_render_id(
+      process_id, render_view_id);
   std::set<GeolocationServiceRenderId>::const_iterator existing =
       geolocation_renderers_.find(geolocation_render_id);
   DCHECK(existing == geolocation_renderers_.end());
@@ -136,16 +145,19 @@ void GeolocationDispatcherHost::RegisterDispatcher(
 }
 
 void GeolocationDispatcherHost::UnregisterDispatcher(
-    int process_id, int route_id) {
+    int process_id, int render_view_id) {
   if (!ChromeThread::CurrentlyOn(ChromeThread::IO)) {
     ChromeThread::PostTask(
         ChromeThread::IO, FROM_HERE,
         NewRunnableMethod(
-            this, &GeolocationDispatcherHost::UnregisterDispatcher, process_id,
-            route_id));
+            this, &GeolocationDispatcherHost::UnregisterDispatcher,
+            process_id, render_view_id));
     return;
   }
-  GeolocationServiceRenderId geolocation_render_id(process_id, route_id);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+
+  GeolocationServiceRenderId geolocation_render_id(
+      process_id, render_view_id);
   std::set<GeolocationServiceRenderId>::iterator existing =
       geolocation_renderers_.find(geolocation_render_id);
   DCHECK(existing != geolocation_renderers_.end());

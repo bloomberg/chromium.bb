@@ -40,35 +40,40 @@ class GeolocationDispatcherHost
   friend class base::RefCountedThreadSafe<GeolocationDispatcherHost>;
   virtual ~GeolocationDispatcherHost();
 
-  void OnRegisterDispatcher(int route_id);
-  void OnUnregisterDispatcher(int route_id);
-  void OnRequestPermission(int route_id, int bridge_id, const GURL& origin);
-  void OnStartUpdating(int route_id, int bridge_id, bool high_accuracy);
-  void OnStopUpdating(int route_id, int bridge_id);
-  void OnSuspend(int route_id, int bridge_id);
-  void OnResume(int route_id, int bridge_id);
+  void OnRegisterDispatcher(int render_view_id);
+  void OnUnregisterDispatcher(int render_view_id);
+  void OnRequestPermission(
+      int render_view_id, int bridge_id,
+      const std::string& host);
+  void OnStartUpdating(int render_view_id, int bridge_id, bool high_accuracy);
+  void OnStopUpdating(int render_view_id, int bridge_id);
+  void OnSuspend(int render_view_id, int bridge_id);
+  void OnResume(int render_view_id, int bridge_id);
 
   // Registers the bridge created in the renderer side. They'll delegate to the
   // UI thread if not already in there.
-  void RegisterDispatcher(int process_id, int route_id);
-  void UnregisterDispatcher(int process_id, int route_id);
+  void RegisterDispatcher(int process_id, int render_view_id);
+  void UnregisterDispatcher(int process_id, int render_view_id);
 
   int resource_message_filter_process_id_;
   scoped_refptr<GeolocationPermissionContext> geolocation_permission_context_;
 
   struct GeolocationServiceRenderId {
     int process_id;
-    int route_id;
-    GeolocationServiceRenderId(int process_id, int route_id)
-        : process_id(process_id), route_id(route_id) {
+    int render_view_id;
+    GeolocationServiceRenderId(
+        int process_id, int render_view_id)
+        : process_id(process_id),
+          render_view_id(render_view_id) {
     }
     bool operator==(const GeolocationServiceRenderId& rhs) const {
-      return process_id == rhs.route_id &&
-             route_id == rhs.route_id;
+      return process_id == rhs.process_id &&
+             render_view_id == rhs.render_view_id;
     }
     bool operator<(const GeolocationServiceRenderId& rhs) const {
-      return process_id < rhs.route_id &&
-             route_id < rhs.route_id;
+      if (process_id == rhs.process_id)
+        return render_view_id < rhs.render_view_id;
+      return process_id < rhs.process_id;
     }
   };
   // Only used on the IO thread.

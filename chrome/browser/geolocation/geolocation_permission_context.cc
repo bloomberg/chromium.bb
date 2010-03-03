@@ -7,7 +7,6 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/file_util.h"
-#include "googleurl/src/gurl.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/chrome_thread.h"
@@ -37,10 +36,10 @@ class GeolocationConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
   GeolocationConfirmInfoBarDelegate(
       TabContents* tab_contents, GeolocationPermissionContext* context,
       int render_process_id, int render_view_id, int bridge_id,
-      const GURL& origin)
+      const std::string& host)
     : ConfirmInfoBarDelegate(tab_contents), context_(context),
       render_process_id_(render_process_id), render_view_id_(render_view_id),
-      bridge_id_(bridge_id), origin_(origin) {
+      bridge_id_(bridge_id), host_(host) {
   }
 
   // ConfirmInfoBarDelegate
@@ -64,7 +63,7 @@ class GeolocationConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   virtual std::wstring GetMessageText() const {
     return l10n_util::GetStringF(
-        IDS_GEOLOCATION_INFOBAR_QUESTION, UTF8ToWide(origin_.host()));
+        IDS_GEOLOCATION_INFOBAR_QUESTION, UTF8ToWide(host_));
   }
 
   virtual SkBitmap* GetIcon() const {
@@ -75,7 +74,7 @@ class GeolocationConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
  private:
   bool SetPermission(bool confirm) {
     context_->SetPermission(
-        render_process_id_, render_view_id_, bridge_id_, origin_, confirm);
+        render_process_id_, render_view_id_, bridge_id_, host_, confirm);
     return true;
   }
 
@@ -83,7 +82,7 @@ class GeolocationConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
   int render_process_id_;
   int render_view_id_;
   int bridge_id_;
-  GURL origin_;
+  std::string host_;
 };
 
 // TODO(bulach): use HostContentSettingsMap instead!
@@ -95,22 +94,17 @@ FilePath::StringType StdStringToFilePathString(const std::string& std_string) {
 #endif
 }
 
-std::string GURLToCacheKey(const GURL& gurl) {
-  return gurl.host();
-}
-
 // Returns true if permission was successfully read from file, and *allowed
 // be set accordingly.
 // Returns false otherwise.
 bool ReadPermissionFromFile(
-    const GURL& origin, const FilePath& permissions_path, bool* allowed) {
+    const std::string& host, const FilePath& permissions_path, bool* allowed) {
   DCHECK(allowed);
   *allowed = false;
   // TODO(bulach): this is probably wrong! is there any utility to convert a URL
   // to FilePath?
   FilePath permission_file(
-      permissions_path.Append(StdStringToFilePathString(
-          GURLToCacheKey(origin))));
+      permissions_path.Append(StdStringToFilePathString(host)));
   if (!file_util::PathExists(permission_file))
     return false;
   JSONFileValueSerializer serializer(permission_file);
@@ -123,7 +117,7 @@ bool ReadPermissionFromFile(
 }
 
 void SavePermissionToFile(
-    const GURL& origin, const FilePath& permissions_path, bool allowed) {
+    const std::string& host, const FilePath& permissions_path, bool allowed) {
 #if 0
   if (!file_util::DirectoryExists(permissions_path))
     file_util::CreateDirectory(permissions_path);
@@ -131,7 +125,7 @@ void SavePermissionToFile(
   // to FilePath?
   FilePath permission_file(
       permissions_path.Append(StdStringToFilePathString(
-          GURLToCacheKey(origin))));
+          host)));
   DictionaryValue dictionary;
   dictionary.SetBoolean(kAllowedDictionaryKey, allowed);
   std::string permission_data;
@@ -157,63 +151,63 @@ GeolocationPermissionContext::~GeolocationPermissionContext() {
 
 void GeolocationPermissionContext::RequestGeolocationPermission(
     int render_process_id, int render_view_id, int bridge_id,
-    const GURL& origin) {
+    const std::string& host) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   std::map<std::string, bool>::const_iterator permission =
-      permissions_.find(GURLToCacheKey(origin));
+      permissions_.find(host);
   if (permission != permissions_.end()) {
     NotifyPermissionSet(
         render_process_id, render_view_id, bridge_id, permission->second);
   } else {
     HandlePermissionMemoryCacheMiss(
-        render_process_id, render_view_id, bridge_id, origin);
+        render_process_id, render_view_id, bridge_id, host);
   }
 }
 
 void GeolocationPermissionContext::SetPermission(
     int render_process_id, int render_view_id, int bridge_id,
-    const GURL& origin, bool allowed) {
-  SetPermissionMemoryCacheOnIOThread(origin, allowed);
-  SetPermissionOnFileThread(origin, allowed);
+    const std::string& host, bool allowed) {
+  SetPermissionMemoryCacheOnIOThread(host, allowed);
+  SetPermissionOnFileThread(host, allowed);
   NotifyPermissionSet(render_process_id, render_view_id, bridge_id, allowed);
 }
 
 void GeolocationPermissionContext::HandlePermissionMemoryCacheMiss(
     int render_process_id, int render_view_id, int bridge_id,
-    const GURL& origin) {
+    const std::string& host) {
   if (!ChromeThread::CurrentlyOn(ChromeThread::FILE)) {
     ChromeThread::PostTask(
         ChromeThread::FILE, FROM_HERE,
         NewRunnableMethod(
             this,
             &GeolocationPermissionContext::HandlePermissionMemoryCacheMiss,
-            render_process_id, render_view_id, bridge_id, origin));
+            render_process_id, render_view_id, bridge_id, host));
     return;
   }
 
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
-  // TODO(bulach): should we save a file per origin or have some smarter
+  // TODO(bulach): should we save a file per host or have some smarter
   // storage? Use HostContentSettingsMap instead.
   bool allowed;
   if (is_off_the_record_ ||
-      !ReadPermissionFromFile(origin, permissions_path_, &allowed)) {
+      !ReadPermissionFromFile(host, permissions_path_, &allowed)) {
     RequestPermissionFromUI(
-        render_process_id, render_view_id, bridge_id, origin);
+        render_process_id, render_view_id, bridge_id, host);
   } else {
-    SetPermissionMemoryCacheOnIOThread(origin, allowed);
+    SetPermissionMemoryCacheOnIOThread(host, allowed);
     NotifyPermissionSet(render_process_id, render_view_id, bridge_id, allowed);
   }
 }
 
 void GeolocationPermissionContext::RequestPermissionFromUI(
     int render_process_id, int render_view_id, int bridge_id,
-    const GURL& origin) {
+    const std::string& host) {
   if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
         NewRunnableMethod(
             this, &GeolocationPermissionContext::RequestPermissionFromUI,
-            render_process_id, render_view_id, bridge_id, origin));
+            render_process_id, render_view_id, bridge_id, host));
     return;
   }
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
@@ -224,7 +218,7 @@ void GeolocationPermissionContext::RequestPermissionFromUI(
   tab_contents->AddInfoBar(
       new GeolocationConfirmInfoBarDelegate(
           tab_contents, this, render_process_id, render_view_id,
-          bridge_id, origin));
+          bridge_id, host));
 }
 
 void GeolocationPermissionContext::NotifyPermissionSet(
@@ -247,23 +241,23 @@ void GeolocationPermissionContext::NotifyPermissionSet(
 }
 
 void GeolocationPermissionContext::SetPermissionMemoryCacheOnIOThread(
-    const GURL& origin, bool allowed) {
+    const std::string& host, bool allowed) {
   if (!ChromeThread::CurrentlyOn(ChromeThread::IO)) {
     ChromeThread::PostTask(
         ChromeThread::IO, FROM_HERE,
         NewRunnableMethod(
             this,
             &GeolocationPermissionContext::SetPermissionMemoryCacheOnIOThread,
-            origin, allowed));
+            host, allowed));
     return;
   }
 
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  permissions_[GURLToCacheKey(origin)] = allowed;
+  permissions_[host] = allowed;
 }
 
 void GeolocationPermissionContext::SetPermissionOnFileThread(
-    const GURL& origin, bool allowed) {
+    const std::string& host, bool allowed) {
   if (is_off_the_record_)
     return;
   if (!ChromeThread::CurrentlyOn(ChromeThread::FILE)) {
@@ -271,15 +265,15 @@ void GeolocationPermissionContext::SetPermissionOnFileThread(
         ChromeThread::FILE, FROM_HERE,
         NewRunnableMethod(
             this, &GeolocationPermissionContext::SetPermissionOnFileThread,
-            origin, allowed));
+            host, allowed));
     return;
   }
 
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
 
-  // TODO(bulach): should we save a file per origin or have some smarter
+  // TODO(bulach): should we save a file per host or have some smarter
   // storage? Use HostContentSettingsMap instead.
 #if 0
-  SavePermissionToFile(origin, permissions_path_, allowed);
+  SavePermissionToFile(host, permissions_path_, allowed);
 #endif
 }
