@@ -62,3 +62,9 @@ bundle7:
   nop                     @ without a mask: ERROR.
   smlad sp, r0, r1, r2    @ Attempt to write SP using a MAC instruction,
   bic sp, sp, #0xC0000000 @ with a mask: ERROR - affects flags
+
+bundle8:
+  ldrd r0, [sp], r1       @ Post-index SP with a register on LDRD,
+  nop                     @ without a mask: ERROR.
+  ldrd r0, [sp], r1       @ Same case,
+  bic sp, sp, #0xC0000000 @ with a mask - should pass.

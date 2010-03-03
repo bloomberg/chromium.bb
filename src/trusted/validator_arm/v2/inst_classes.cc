@@ -226,12 +226,12 @@ RegisterList LoadImmediate::immediate_addressing_defs(const Instruction i)
 
 
 RegisterList LoadDoubleI::defs(const Instruction i) const {
-  return AbstractLoad::defs(i) + Register(i.bits(15, 12) + 1);
+  return LoadImmediate::defs(i) + Register(i.bits(15, 12) + 1);
 }
 
 
 RegisterList LoadDoubleR::defs(const Instruction i) const {
-  return AbstractLoad::defs(i) + Register(i.bits(15, 12) + 1);
+  return LoadRegister::defs(i) + Register(i.bits(15, 12) + 1);
 }
 
 RegisterList LoadDoubleExclusive::defs(const Instruction i) const {
