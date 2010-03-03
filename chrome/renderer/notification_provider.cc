@@ -88,7 +88,7 @@ bool NotificationProvider::OnMessageReceived(const IPC::Message& message) {
 }
 
 void NotificationProvider::OnNavigate() {
-  //  manager_.Clear();
+  manager_.Clear();
 }
 
 bool NotificationProvider::ShowHTML(const WebNotification& notification,
