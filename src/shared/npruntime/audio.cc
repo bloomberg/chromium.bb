@@ -189,25 +189,14 @@ static NPError FlushContext(NPP instance,
                             NPDeviceContext* context,
                             NPDeviceFlushContextCallbackPtr callback,
                             void* userData) {
-  NPDeviceContextAudio* context_audio =
-      reinterpret_cast<NPDeviceContextAudio*>(context);
-  NPNavigator* nav = NPNavigator::GetNavigator();
-  NaClSrpcChannel* channel = nav->channel();
-  int32_t error;
-  NaClSrpcError retval =
-      AudioRpcClient::AudioFlush(
-          channel,
-          NPPToWireFormat(instance),
-          &error);
-  if (NACL_SRPC_RESULT_OK != retval) {
-    return NPERR_GENERIC_ERROR;
-  }
-  // Invoke the callback.
-  // TODO(sehr): the callback seems to be invoked from the wrong place.
-  if (NULL != callback) {
-    (*callback)(instance, context_audio, NPERR_NO_ERROR, userData);
-  }
-  return static_cast<NPError>(error);
+  // UNREFERENCED_PARAMETER(instance);
+  // UNREFERENCED_PARAMETER(context);
+  // UNREFERENCED_PARAMETER(callback);
+  // UNREFERENCED_PARAMETER(userData);
+  // NOTE: this method does not appear to be used in the current version of the
+  // Pepper API.  Instead, the callback from InitializeContext invokes a method
+  // that will synchronize by means of impl->sync_desc.
+  return NPERR_GENERIC_ERROR;
 }
 
 static NPError DestroyContext(NPP instance, NPDeviceContext* context) {

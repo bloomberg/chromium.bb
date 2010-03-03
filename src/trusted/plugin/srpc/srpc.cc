@@ -170,9 +170,10 @@ void SRPC_Plugin::set_module(nacl::NPModule* module) {
                               argc(),
                               argn(),
                               argv());
-    dprintf(("New result %x\n", err));
     // Remember the scriptable version of the NaCl instance.
-    nacl_instance_ = module_->GetScriptableInstance(npp_);
+    err = module_->GetValue(npp_,
+                            NPPVpluginScriptableNPObject,
+                            reinterpret_cast<void*>(&nacl_instance_));
     // Send an initial NPP_SetWindow to the plugin.
     NPWindow window;
     window.height = plugin->height();

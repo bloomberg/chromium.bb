@@ -16,12 +16,6 @@
                      ],
            'outputs': []
           },
-          {'name': 'AudioFlush',
-           'inputs': [['npp', 'int32_t'],
-                     ],
-           'outputs': [['error', 'int32_t']
-                      ]
-          },
           {'name': 'AudioDestroy',
            'inputs': [['npp', 'int32_t'],
                      ],

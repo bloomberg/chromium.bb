@@ -14,15 +14,6 @@
                        ['put_offset', 'int32_t'],
                       ]
           },
-          {'name': 'Device3DFlush',
-           'inputs': [['npp', 'int32_t'],
-                      ['put_offset', 'int32_t'],
-                     ],
-           'outputs': [['get_offset', 'int32_t'],
-                       ['token', 'int32_t'],
-                       ['error', 'int32_t'],
-                      ]
-          },
           {'name': 'Device3DDestroy',
            'inputs': [['npp', 'int32_t'],
                      ],

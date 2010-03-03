@@ -60,6 +60,23 @@ env.Command(target=npnavigator_rpc_files,
                    ],
            )
 
+npupcall_specinputs = ['npupcall.srpc']
+
+npupcall_rpc_h = GENERATED + '/npupcall_rpc.h'
+npupcall_rpc_cc = GENERATED + '/npupcall_rpc_client.cc'
+npupcall_rpc_files = [ npupcall_rpc_h, npupcall_rpc_cc ]
+env.Command(target=npupcall_rpc_files,
+            source=[SRPCGEN, npupcall_specinputs],
+            action=[Action('${PYTHON} ${SOURCES[0]} '
+                           '-c '
+                           'NPNavigatorRpcs '
+                           'GEN_NPRUNTIME_NPUPCALL_RPC_H_ '
+                           + npupcall_rpc_h + ' '
+                           + npupcall_rpc_cc + ' '
+                           ' ${SOURCES[1:]}'),
+                   ],
+           )
+
 env.ComponentLibrary('google_nacl_npruntime',
                      ['audio.cc',
                       'device2d.cc',
@@ -78,6 +95,7 @@ env.ComponentLibrary('google_nacl_npruntime',
                       'npobject_stub.cc',
                       'nprpc.cc',
                       'npstub_rpc_impl.cc',
+                      npupcall_rpc_cc,
                       'pointer_translations.cc',
                       ])
 

@@ -58,14 +58,6 @@ NPError NPP_GetValue(NPP instance,
   }
 }
 
-// Needed for legacy compatibility.
-extern "C" NPObject* NPP_GetScriptableInstance(NPP instance) {
-  if (NULL == instance->pdata) {
-    return NULL;
-  }
-  return NPN_RetainObject(reinterpret_cast<NPObject*>(instance->pdata));
-}
-
 NPError NPP_SetWindow(NPP instance,
                       NPWindow* window) {
   return NPERR_NO_ERROR;

@@ -25,6 +25,9 @@
         'npnavigator.srpc',
         'npobjectstub.srpc',
       ],
+      'npupcall_specs': [
+        'npupcall.srpc',
+      ],
     },
     'target_conditions': [
       ['target_base=="npruntime"', {
@@ -45,6 +48,7 @@
         'nprpc.h',
         'npmodule_rpc_impl.cc',
         'npstub_rpc_impl.cc',
+        'npupcall_server.cc',
         'pointer_translations.cc',
         'pointer_translations.h',
         ],
@@ -130,6 +134,32 @@
         ],
         'process_outputs_as_sources': 1,
         'message': 'Creating npnavigator_rpc.h and npnavigator_rpc_client.cc',
+      },
+      {
+        'action_name': 'npupcall_rpc_header',
+        'inputs': [
+          '<(SRPCGEN)',
+          '<@(npupcall_specs)',
+        ],
+        'action':
+          # TODO(gregoryd): find out how to generate a file
+          # in such a location that can be found in both
+          # NaCl and Chrome builds.
+          ['<@(python_exe)', '<(SRPCGEN)',
+           '-s',
+           'NPUpcallRpcs',
+           'GEN_NPRUNTIME_NPUPCALL_RPC_H_',
+           '<@(_outputs)',
+           '<@(npupcall_specs)'],
+
+        'msvs_cygwin_shell': 0,
+        'msvs_quote_cmd': 0,
+        'outputs': [
+          '<(NPRUNTIME_DIR)/npupcall_rpc.h',
+          '<(NPRUNTIME_DIR)/npupcall_rpc_server.cc',
+        ],
+        'process_outputs_as_sources': 1,
+        'message': 'Creating npupcall_rpc.h and npupcall_rpc_server.cc',
       },
     ],
   },

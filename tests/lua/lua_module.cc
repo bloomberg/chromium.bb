@@ -880,18 +880,6 @@ NPError NPP_Destroy(NPP instance, NPSavedData** save) {
   return NPERR_NO_ERROR;
 }
 
-NPObject* NPP_GetScriptableInstance(NPP instance) {
-  if (instance == NULL) {
-    return NULL;
-  }
-
-  NPObject* object = static_cast<NPObject*>(instance->pdata);
-  if (object) {
-    NPN_RetainObject(object);
-  }
-  return object;
-}
-
 NPError NPP_SetWindow(NPP instance, NPWindow* window) {
   if (instance == NULL) {
     return NPERR_INVALID_INSTANCE_ERROR;
@@ -908,12 +896,17 @@ NPError NPP_SetWindow(NPP instance, NPWindow* window) {
 
 NPError NPP_GetValue(NPP instance, NPPVariable variable, void* ret_value) {
   if (NPPVpluginScriptableNPObject == variable) {
-    *reinterpret_cast<NPObject**>(ret_value) =
-        NPP_GetScriptableInstance(instance);
+    if (instance == NULL) {
+      return NPERR_INVALID_INSTANCE_ERROR;
+    }
+    NPObject* object = static_cast<NPObject*>(instance->pdata);
+    if (NULL != object) {
+      NPN_RetainObject(object);
+    }
+    *reinterpret_cast<NPObject**>(ret_value) = object;
     return NPERR_NO_ERROR;
-  } else {
-    return NPERR_GENERIC_ERROR;
   }
+  return NPERR_INVALID_PARAM;
 }
 
 /*

@@ -239,24 +239,6 @@ NaClSrpcError Device2DRpcServer::Device2DInitialize(
                                     bottom);
 }
 
-NaClSrpcError Device2DRpcServer::Device2DFlush(NaClSrpcChannel* channel,
-                                               int32_t wire_npp,
-                                               int32_t* stride,
-                                               int32_t* left,
-                                               int32_t* top,
-                                               int32_t* right,
-                                               int32_t* bottom) {
-  UNREFERENCED_PARAMETER(channel);
-  NPModule* module = NPModule::GetModule(wire_npp);
-
-  return module->Device2DFlush(WireFormatToNPP(wire_npp),
-                               stride,
-                               left,
-                               top,
-                               right,
-                               bottom);
-}
-
 NaClSrpcError Device2DRpcServer::Device2DDestroy(NaClSrpcChannel* channel,
                                                  int32_t wire_npp) {
   UNREFERENCED_PARAMETER(channel);
@@ -282,22 +264,6 @@ NaClSrpcError Device3DRpcServer::Device3DInitialize(
                                     entries_obtained,
                                     get_offset,
                                     put_offset);
-}
-
-NaClSrpcError Device3DRpcServer::Device3DFlush(NaClSrpcChannel* channel,
-                                               int32_t wire_npp,
-                                               int32_t put_offset,
-                                               int32_t* get_offset,
-                                               int32_t* token,
-                                               int32_t* error) {
-  UNREFERENCED_PARAMETER(channel);
-  NPModule* module = NPModule::GetModule(wire_npp);
-
-  return module->Device3DFlush(WireFormatToNPP(wire_npp),
-                               put_offset,
-                               get_offset,
-                               token,
-                               error);
 }
 
 NaClSrpcError Device3DRpcServer::Device3DDestroy(NaClSrpcChannel* channel,
@@ -377,15 +343,6 @@ NaClSrpcError AudioRpcServer::AudioInitialize(
                                  input_channel_map,
                                  sample_frame_count,
                                  flags);
-}
-
-NaClSrpcError AudioRpcServer::AudioFlush(NaClSrpcChannel* channel,
-                                         int32_t wire_npp,
-                                         int32_t* error) {
-  UNREFERENCED_PARAMETER(channel);
-  NPModule* module = NPModule::GetModule(wire_npp);
-
-  return module->AudioFlush(WireFormatToNPP(wire_npp), error);
 }
 
 NaClSrpcError AudioRpcServer::AudioDestroy(NaClSrpcChannel* channel,

@@ -14,6 +14,7 @@
 #include "native_client/src/include/portability_string.h"
 #include "gen/native_client/src/shared/npruntime/npmodule_rpc.h"
 #include "gen/native_client/src/shared/npruntime/npnavigator_rpc.h"
+#include "gen/native_client/src/shared/npruntime/npupcall_rpc.h"
 #include "native_client/src/shared/npruntime/audio.h"
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/shared/npruntime/npcapability.h"
@@ -223,17 +224,20 @@ NPError NPNavigator::Destroy(NPP npp) {
 }
 
 NPCapability* NPNavigator::GetScriptableInstance(NPP npp) {
-  DebugPrintf("SII: npp=%p\n", reinterpret_cast<void*>(npp));
-  NPObject* object = NPP_GetScriptableInstance(npp);
-  DebugPrintf("SII: %p\n", reinterpret_cast<void*>(object));
-  if (NULL != object) {
+  NPObject* object;
+  NPError err = plugin_funcs.getvalue(npp,
+                                      NPPVpluginScriptableNPObject,
+                                      &object);
+  DebugPrintf("GetScriptableInstance %d %p\n",
+              static_cast<int>(err),
+              reinterpret_cast<void*>(object));
+  if (NPERR_NO_ERROR == err && NULL != object) {
     NPCapability* capability = new(std::nothrow) NPCapability;
     if (NULL != capability) {
       NPObjectStub::CreateStub(npp, object, capability);
     }
     return capability;
   }
-  DebugPrintf("SII: was null\n");
   return NULL;
 }
 
@@ -522,6 +526,7 @@ void NPNavigator::PluginThreadAsyncCall(NPP instance,
                                         NPClosureTable::FunctionPointer func,
                                         void* user_data) {
   uint32_t id;
+
   DebugPrintf("PluginThreadAsyncCall %p %p %p\n", instance, func, user_data);
   // Add a closure to the table.
   if (NULL == closure_table_ ||
@@ -529,18 +534,63 @@ void NPNavigator::PluginThreadAsyncCall(NPP instance,
       !closure_table_->Add(func, user_data, &id)) {
     return;
   }
-  // There may be out-of-order responses to calls from different threads.
-  // Hence we guard the accesses by a mutex.
+  // RPCs through the NPUpcallRpcClient are guarded by a mutex.
   pthread_mutex_lock(&upcall_mu_);
   // Send an RPC to the NPAPI upcall thread in the browser plugin.
-  NaClSrpcInvokeByName(
-      upcall_channel_,
-      "NPN_PluginThreadAsyncCall",
-      NPPToWireFormat(instance),
-      static_cast<int32_t>(id));
+  NPUpcallRpcClient::NPN_PluginThreadAsyncCall(upcall_channel_,
+                                               NPPToWireFormat(instance),
+                                               static_cast<int32_t>(id));
+  // Release the mutex.
   pthread_mutex_unlock(&upcall_mu_);
 }
 
+NaClSrpcError NPNavigator::Device2DFlush(int32_t wire_npp,
+                                         int32_t* stride,
+                                         int32_t* left,
+                                         int32_t* top,
+                                         int32_t* right,
+                                         int32_t* bottom) {
+  // RPCs through the NPUpcallRpcClient are guarded by a mutex.
+  pthread_mutex_lock(&upcall_mu_);
+  NaClSrpcError retval =
+      NPUpcallRpcClient::Device2DFlush(upcall_channel_,
+                                       wire_npp,
+                                       stride,
+                                       left,
+                                       top,
+                                       right,
+                                       bottom);
+  // Release the mutex.
+  pthread_mutex_unlock(&upcall_mu_);
+  // Return the RPC result.
+  return retval;
+}
+
+NaClSrpcError NPNavigator::Device3DFlush(int32_t wire_npp,
+                                         int32_t putOffset,
+                                         int32_t* getOffset,
+                                         int32_t* token,
+                                         int32_t* error) {
+  // RPCs through the NPUpcallRpcClient are guarded by a mutex.
+  pthread_mutex_lock(&upcall_mu_);
+  NaClSrpcError retval =
+      NPUpcallRpcClient::Device3DFlush(upcall_channel_,
+                                       wire_npp,
+                                       putOffset,
+                                       getOffset,
+                                       token,
+                                       error);
+  // Release the mutex.
+  pthread_mutex_unlock(&upcall_mu_);
+  // Return the RPC result.
+  return retval;
+}
+
+// We placed a closure on the browser's NPAPI thread when the NaCl module
+// invoked NPN_PluginThreadAsyncCall.  When the browser runs that thunk, the
+// browser will make an RPC to the NaCl module on the NPAPI channel.  That
+// RPC invokes this method, which performs the NaCl-side portion of the
+// NPN_PluginThreadAsyncCall.
 NaClSrpcError NPNavigator::DoAsyncCall(int32_t number) {
   uint32_t id = static_cast<uint32_t>(number);
   NPClosureTable::FunctionPointer func;

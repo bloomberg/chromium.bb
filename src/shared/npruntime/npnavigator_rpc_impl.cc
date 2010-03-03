@@ -29,9 +29,7 @@ namespace {
 
 NPP TranslateOrSetLocalNPP(int32_t wire_npp, nacl::NPNavigator* nav) {
   // Look up the NaCl NPP copy corresponding to the wire_npp and set the local
-  // copy if needed.  Setting the local copy should only need to be done by
-  // NPP_New, but we apparently get calls to NPP_SetWindow before that.
-  // TODO(sehr): we shouldn't be calling NPP_SetWindow before NPP_New.
+  // copy if needed.
   NPP npp = WireFormatToNPP(wire_npp);
   if (NULL == npp) {
     // Allocate a new NPP for the NaCl module.
@@ -131,9 +129,10 @@ NaClSrpcError NPNavigatorRpcServer::NPP_SetWindow(NaClSrpcChannel* channel,
                                                   int32_t* nperr) {
   NPNavigator* nav = NPNavigator::GetNavigator();
 
-  NPP npp = TranslateOrSetLocalNPP(wire_npp, nav);
+  NPP npp = WireFormatToNPP(wire_npp);
   if (NULL == npp) {
-    *nperr = NPERR_OUT_OF_MEMORY_ERROR;
+    nacl::DebugPrintf("SetWindow called before nacl NPP was set.\n");
+    *nperr = NPERR_GENERIC_ERROR;
     return NACL_SRPC_RESULT_OK;
   }
 
@@ -152,7 +151,7 @@ NaClSrpcError NPNavigatorRpcServer::NPP_Destroy(NaClSrpcChannel* channel,
   return NACL_SRPC_RESULT_OK;
 }
 
-NaClSrpcError NPNavigatorRpcServer::NPP_GetScriptableInstance(
+NaClSrpcError NPNavigatorRpcServer::GetScriptableInstance(
     NaClSrpcChannel* channel,
     int32_t wire_npp,
     nacl_abi_size_t* cap_bytes,
@@ -205,8 +204,8 @@ NaClSrpcError NPNavigatorRpcServer::NPP_URLNotify(NaClSrpcChannel* channel,
   return NACL_SRPC_RESULT_OK;
 }
 
-NaClSrpcError NPNavigatorRpcServer::NPP_DoAsyncCall(NaClSrpcChannel* channel,
-                                                    int32_t number) {
+NaClSrpcError NPNavigatorRpcServer::DoAsyncCall(NaClSrpcChannel* channel,
+                                                int32_t number) {
   NPNavigator* nav = NPNavigator::GetNavigator();
 
   nav->DoAsyncCall(number);
@@ -214,12 +213,11 @@ NaClSrpcError NPNavigatorRpcServer::NPP_DoAsyncCall(NaClSrpcChannel* channel,
   return NACL_SRPC_RESULT_OK;
 }
 
-NaClSrpcError NPNavigatorRpcServer::NPP_AudioCallback(
-    NaClSrpcChannel* channel,
-    int32_t number,
-    int shm_desc,
-    int32_t shm_size,
-    int sync_desc) {
+NaClSrpcError NPNavigatorRpcServer::AudioCallback(NaClSrpcChannel* channel,
+                                                  int32_t number,
+                                                  int shm_desc,
+                                                  int32_t shm_size,
+                                                  int sync_desc) {
   NPNavigator* nav = NPNavigator::GetNavigator();
 
   nav->AudioCallback(number, shm_desc, shm_size, sync_desc);

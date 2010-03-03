@@ -56,6 +56,7 @@ class NPModule : public NPBridge {
                                    int32_t* top,
                                    int32_t* right,
                                    int32_t* bottom);
+  // Flush may be called from other than the NPAPI thread.
   NaClSrpcError Device2DFlush(NPP npp,
                               int32_t* stride,
                               int32_t* left,
@@ -69,6 +70,7 @@ class NPModule : public NPBridge {
                                    int32_t* entries_obtained,
                                    int32_t* get_offset,
                                    int32_t* put_offset);
+  // Flush may be called from other than the NPAPI thread.
   NaClSrpcError Device3DFlush(NPP npp,
                               int32_t put_offset,
                               int32_t* get_offset,
@@ -95,8 +97,6 @@ class NPModule : public NPBridge {
                                 int32_t input_channel_map,
                                 int32_t sample_frame_count,
                                 int32_t flags);
-  NaClSrpcError AudioFlush(NPP npp,
-                           int32_t* error);
   NaClSrpcError AudioDestroy(NPP npp);
   NaClSrpcError AudioGetState(NPP npp,
                               int32_t state,
@@ -121,8 +121,6 @@ class NPModule : public NPBridge {
   NPError GetValue(NPP npp, NPPVariable variable, void *value);
   // Processes NPP_HandleEvent() invocation from the browser.
   int16_t HandleEvent(NPP npp, void* event);
-  // Processes NPP_GetScriptableInstance() invocation from the browser.
-  NPObject* GetScriptableInstance(NPP npp);
   // Processes NPP_NewStream() invocation from the browser.
   NPError NewStream(NPP npp,
                     NPMIMEType type,

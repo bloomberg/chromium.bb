@@ -87,6 +87,24 @@ env.Command(target=npnavigator_rpc_files,
                    ],
            )
 
+npupcall_specinputs = ['npupcall.srpc']
+
+npupcall_rpc_h = GENERATED + '/npupcall_rpc.h'
+npupcall_rpc_cc = GENERATED + '/npupcall_rpc_server.cc'
+npupcall_rpc_files = [ npupcall_rpc_h, npupcall_rpc_cc ]
+
+env.Command(target=npupcall_rpc_files,
+            source=[SRPCGEN, npupcall_specinputs],
+            action=[Action('${PYTHON} ${SOURCES[0]} '
+                           '-s '
+                           'NPUpcallRpcs '
+                           'GEN_NPRUNTIME_NPUPCALL_RPC_H_ '
+                           + npupcall_rpc_h + ' '
+                           + npupcall_rpc_cc + ' '
+                           '${SOURCES[1:]}'),
+                   ],
+           )
+
 NACL_NPRUNTIME_INPUTS = [
     'naclnp_util.cc',
     'npbridge.cc',
@@ -98,6 +116,8 @@ NACL_NPRUNTIME_INPUTS = [
     npnavigator_rpc_cc,
     'npmodule_rpc_impl.cc',
     'npstub_rpc_impl.cc',
+    'npupcall_server.cc',
+    npupcall_rpc_cc,
     'pointer_translations.cc',
 ]
 env.ComponentLibrary('google_nacl_npruntime', NACL_NPRUNTIME_INPUTS)

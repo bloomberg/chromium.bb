@@ -183,16 +183,13 @@ static NPError FlushContext(NPP instance,
                             void* userData) {
   NPDeviceContext3D* context3d = reinterpret_cast<NPDeviceContext3D*>(context);
   NPNavigator* nav = NPNavigator::GetNavigator();
-  NaClSrpcChannel* channel = nav->channel();
   int32_t error;
   NaClSrpcError retval =
-      Device3DRpcClient::Device3DFlush(
-          channel,
-          NPPToWireFormat(instance),
-          context3d->putOffset,
-          &context3d->getOffset,
-          &context3d->token,
-          &error);
+      nav->Device3DFlush(NPPToWireFormat(instance),
+                         context3d->putOffset,
+                         &context3d->getOffset,
+                         &context3d->token,
+                         &error);
   if (NACL_SRPC_RESULT_OK != retval) {
     return NPERR_GENERIC_ERROR;
   }

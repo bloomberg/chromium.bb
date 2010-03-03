@@ -178,20 +178,6 @@ int16_t NPP_HandleEvent(NPP instance, void* event) {
   return 0;
 }
 
-// NOTE: This may never be called as there is an alternative:
-//   NPP_GetValue(NPPVpluginScriptableNPObject)
-NPObject* NPP_GetScriptableInstance(NPP instance) {
-  DebugPrintf("NPP_GetScriptableInstance\n");
-  if (instance == NULL) {
-    return NULL;
-  }
-  nacl::NPInstance* module = static_cast<nacl::NPInstance*>(instance->pdata);
-  if (module != NULL) {
-    return module->GetScriptableInstance();
-  }
-  return NULL;
-}
-
 NPError NPP_NewStream(NPP instance, NPMIMEType type,
                       NPStream* stream, NPBool seekable,
                       uint16_t* stype) {

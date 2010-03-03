@@ -54,17 +54,8 @@ NPError NPP_GetValue(NPP instance,
     *reinterpret_cast<NPObject**>(ret_value) =
         NPN_RetainObject(reinterpret_cast<NPObject*>(instance->pdata));
     return NPERR_NO_ERROR;
-  } else {
-    return NPERR_GENERIC_ERROR;
   }
-}
-
-// Needed for legacy compatibility.
-extern "C" NPObject* NPP_GetScriptableInstance(NPP instance) {
-  if (NULL == instance->pdata) {
-    return NULL;
-  }
-  return NPN_RetainObject(reinterpret_cast<NPObject*>(instance->pdata));
+  return NPERR_INVALID_PARAM;
 }
 
 NPError NPP_SetWindow(NPP instance,
@@ -114,7 +105,7 @@ void NPP_StreamAsFile(NPP instance,
   FILE* iob = NULL;
   char* buf = NULL;
   size_t size = 0;
-  size_t nchar = 0;;
+  size_t nchar = 0;
   int ch;
 
   if (-1 == fd) {

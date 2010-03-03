@@ -48,19 +48,20 @@ NPError NPP_Destroy(NPP instance, NPSavedData** save) {
   return NPERR_NO_ERROR;
 }
 
-// NPP_GetScriptableInstance retruns the NPObject pointer that corresponds to
-// NPPVpluginScriptableNPObject queried by NPP_GetValue() from the browser.
-NPObject* NPP_GetScriptableInstance(NPP instance) {
-  if (instance == NULL) {
-    return NULL;
+NPError NPP_GetValue(NPP instance, NPPVariable variable, void *value) {
+  if (NPPVpluginScriptableNPObject == variable) {
+    if (instance == NULL) {
+      return NPERR_INVALID_INSTANCE_ERROR;
+    }
+    NPObject* object = NULL;
+    Plugin* plugin = static_cast<Plugin*>(instance->pdata);
+    if (NULL != plugin) {
+      object = plugin->GetScriptableObject();
+    }
+    *reinterpret_cast<NPObject**>(value) = object;
+    return NPERR_NO_ERROR;
   }
-
-  NPObject* object = NULL;
-  Plugin* plugin = static_cast<Plugin*>(instance->pdata);
-  if (plugin) {
-    object = plugin->GetScriptableObject();
-  }
-  return object;
+  return NPERR_INVALID_PARAM;
 }
 
 int16_t NPP_HandleEvent(NPP instance, void* event) {
@@ -87,5 +88,6 @@ NPError NP_Initialize(NPNetscapeFuncs* browser_funcs,
   plugin_funcs->destroy = NPP_Destroy;
   plugin_funcs->setwindow = NPP_SetWindow;
   plugin_funcs->event = NPP_HandleEvent;
+  plugin_funcs->getvalue = NPP_GetValue;
   return NPERR_NO_ERROR;
 }

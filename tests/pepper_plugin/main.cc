@@ -190,8 +190,14 @@ NPError NPP_GetValue(NPP instance, NPPVariable variable, void* value) {
     case NPPVpluginScriptableNPObject: {
       void** v = reinterpret_cast<void**>(value);
       PluginObject* obj = static_cast<PluginObject*>(instance->pdata);
-      // Return value is expected to be retained.
-      browser->retainobject(reinterpret_cast<NPObject*>(obj));
+      if (NULL == obj) {
+        obj = reinterpret_cast<PluginObject*>(
+            browser->createobject(instance, PluginObject::GetPluginClass()));
+        instance->pdata = reinterpret_cast<void*>(obj);
+      } else {
+        // Return value is expected to be retained.
+        browser->retainobject(reinterpret_cast<NPObject*>(obj));
+      }
       *v = obj;
       break;
     }
@@ -206,10 +212,6 @@ NPError NPP_GetValue(NPP instance, NPPVariable variable, void* value) {
 
 NPError NPP_SetValue(NPP instance, NPNVariable variable, void* value) {
   return NPERR_GENERIC_ERROR;
-}
-
-NPObject *NPP_GetScriptableInstance(NPP instance) {
-  return browser->createobject(instance, PluginObject::GetPluginClass());
 }
 
 NPError NP_GetValue(void* instance, NPPVariable variable, void* value) {

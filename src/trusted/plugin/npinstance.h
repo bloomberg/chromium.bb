@@ -29,8 +29,6 @@ class NPInstance {
   virtual NPError GetValue(NPPVariable variable, void *value) = 0;
   // Processes NPP_HandleEvent() invocation from the browser.
   virtual int16_t HandleEvent(void* event) = 0;
-  // Processes NPP_GetScriptableInstance() invocation from the browser.
-  virtual NPObject* GetScriptableInstance() = 0;
   // Processes NPP_NewStream() invocation from the browser.
   virtual NPError NewStream(NPMIMEType type,
                             NPStream* stream, NPBool seekable,

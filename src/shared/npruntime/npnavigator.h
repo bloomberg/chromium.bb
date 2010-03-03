@@ -80,7 +80,7 @@ class NPNavigator : public NPBridge {
   // Processes NPP_URLNotify request from the plugin.
   void URLNotify(NPP npp, NaClSrpcImcDescType received_handle, uint32_t reason);
 
-  // Processes NPP_GetScriptableInstance request from the plugin.
+  // Processes GetScriptableInstance request from the plugin.
   NPCapability* GetScriptableInstance(NPP npp);
 
   // Sends NPN_Status request to the plugin.
@@ -101,10 +101,25 @@ class NPNavigator : public NPBridge {
                        const char* target,
                        void* notifyData);
 
-  // Signals the browser to invoke a function on the navigator thread.
+  // The following three methods send RPCs to the browser on the upcall thread,
+  // which allows them to be invoked from any thread in the NaCl module.  These
+  // APIs synchronize the calls on the upcall channel.
   void PluginThreadAsyncCall(NPP instance,
                              NPClosureTable::FunctionPointer func,
                              void* user_data);
+
+  NaClSrpcError Device2DFlush(int32_t wire_npp,
+                              int32_t* stride,
+                              int32_t* left,
+                              int32_t* top,
+                              int32_t* right,
+                              int32_t* bottom);
+
+  NaClSrpcError Device3DFlush(int32_t wire_npp,
+                              int32_t putOffset,
+                              int32_t* getOffset,
+                              int32_t* token,
+                              int32_t* error);
 
   static void AddIntIdentifierMapping(int32_t intid, NPIdentifier identifier);
   static void AddStringIdentifierMapping(const NPUTF8* name,

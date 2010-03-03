@@ -15,6 +15,7 @@
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/shared/npruntime/npobject_proxy.h"
 #include "native_client/src/shared/npruntime/npobject_stub.h"
+#include "native_client/src/shared/npruntime/npupcall_server.h"
 #include "native_client/src/shared/npruntime/pointer_translations.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/trusted/desc/nacl_desc_invalid.h"
@@ -87,133 +88,32 @@ void NPModule::InvalidateRect(NPP npp, const NPRect* nprect) {
   }
 }
 
-// NPN_PluginThreadAsyncCall support
-
-namespace {
-
-class NppClosure {
- public:
-  NppClosure(uint32_t number, NPModule* module) {
-    number_ = number;
-    module_ = module;
-  }
-  uint32_t number() const { return number_; }
-  NPModule* module() const { return module_; }
- private:
-  uint32_t number_;
-  NPModule* module_;
-};
-
-// The thunk enqueued on the browser's foreground thread.
-static void doNppAsyncCall(void* arg) {
-  NppClosure* closure = reinterpret_cast<NppClosure*>(arg);
-  if (NULL != closure) {
-    NPNavigatorRpcClient::NPP_DoAsyncCall(closure->module()->channel(),
-                                          closure->number());
-  }
-  delete closure;
-}
-
-static NaClSrpcError handleAsyncCall(NaClSrpcChannel* channel,
-                                     NaClSrpcArg** inputs,
-                                     NaClSrpcArg** outputs) {
-  UNREFERENCED_PARAMETER(channel);
-  UNREFERENCED_PARAMETER(outputs);
-  DebugPrintf("handleAsyncCall\n");
-  NPP npp = WireFormatToNPP(inputs[0]->u.ival);
-  NPModule* module = static_cast<NPModule*>(NPBridge::LookupBridge(npp));
-  uint32_t number = static_cast<uint32_t>(inputs[1]->u.ival);
-
-  // Place a closure on the browser's javascript foreground thread.
-  NppClosure* closure = new(std::nothrow) NppClosure(number, module);
-  if (NULL == closure) {
-    return NACL_SRPC_RESULT_APP_ERROR;
-  }
-  NPN_PluginThreadAsyncCall(npp,
-                            doNppAsyncCall,
-                            static_cast<void*>(closure));
-  return NACL_SRPC_RESULT_OK;
-}
-
-}  // namespace
-
-// Structure for passing information to the thread.  Shares ownership of
-// the descriptor with the creating routine.  This allows passing ownership
-// to the upcall thread.
-struct UpcallInfo {
- public:
-  DescWrapper* desc_;
-  NPModule* module_;
-  UpcallInfo(DescWrapper* desc, NPModule* module) {
-    desc_ = desc;
-    module_ = module;
-  }
-  ~UpcallInfo() {
-    DebugPrintf("deleting upcall info\n");
-    desc_->Delete();
-  }
-};
-
-static void WINAPI UpcallThread(void* arg) {
-  UpcallInfo* info = reinterpret_cast<UpcallInfo*>(arg);
-  NaClSrpcHandlerDesc handlers[] = {
-    { "NPN_PluginThreadAsyncCall:ii:", handleAsyncCall },
-    { NULL, NULL }
-  };
-  DebugPrintf("UpcallThread(%p)\n", arg);
-  // Run the SRPC server.
-  NaClSrpcServerLoop(info->desc_->desc(), handlers, info->module_);
-  // Free the info node.
-  delete info;
-  DebugPrintf("UpcallThread: End\n");
-}
-
 NPError NPModule::Initialize() {
-  NaClSrpcError retval;
-  DescWrapperFactory factory;
-  DescWrapper* pair[2] = { NULL, NULL };
-  UpcallInfo* info = NULL;
   NPError err = NPERR_GENERIC_ERROR;
+  DescWrapper* wrapper = NULL;
 
   DebugPrintf("Initialize\n");
-
-  // Create a socket pair for the upcall server.
-  if (factory.MakeSocketPair(pair)) {
-    goto done;
+  // Start the upcall server on a separate thread.
+  wrapper = NPUpcallServer::Start(this, &upcall_thread_);
+  if (NULL != wrapper) {
+    // Invoke the NaCl module's NP_Initialize function.
+    int32_t nacl_pid;
+    NaClSrpcError retval =
+        NPNavigatorRpcClient::NP_Initialize(channel(),
+                                            GETPID(),
+                                            static_cast<int>(sizeof(NPVariant)),
+                                            wrapper->desc(),
+                                            &nacl_pid);
+    // Return the appropriate error code.
+    if (NACL_SRPC_RESULT_OK != retval) {
+      goto done;
+    }
+    set_peer_pid(nacl_pid);
+    err = NPERR_NO_ERROR;
   }
-  // Create an info node to pass to the thread.
-  info = new(std::nothrow) UpcallInfo(pair[0], this);
-  if (NULL == info) {
-    goto done;
-  }
-  // info takes ownership of pair[0].
-  pair[0] = NULL;
-  // Create a thread and an SRPC "upcall" server.
-  if (!NaClThreadCtor(&upcall_thread_, UpcallThread, info, 128 << 10)) {
-    goto done;
-  }
-  // On success, ownership of info passes to the thread.
-  info = NULL;
-  // Invoke the NaCl module's NP_Initialize function.
-  int32_t nacl_pid;
-  retval =
-      NPNavigatorRpcClient::NP_Initialize(channel(),
-                                          GETPID(),
-                                          static_cast<int>(sizeof(NPVariant)),
-                                          pair[1]->desc(),
-                                          &nacl_pid);
-  // Return the appropriate error code.
-  if (NACL_SRPC_RESULT_OK != retval) {
-    goto done;
-  }
-  set_peer_pid(nacl_pid);
-  err = NPERR_NO_ERROR;
 
  done:
-  DebugPrintf("deleting pairs\n");
-  DescWrapper::SafeDelete(pair[0]);
-  DescWrapper::SafeDelete(pair[1]);
-  delete info;
+  DescWrapper::SafeDelete(wrapper);
   return err;
 }
 
@@ -336,15 +236,29 @@ NPError NPModule::GetValue(NPP npp, NPPVariable variable, void *value) {
       "A plug-in for NPAPI based NativeClient modules.";
     return NPERR_NO_ERROR;
   } else if (NPPVpluginScriptableNPObject == variable) {
-    *reinterpret_cast<NPObject**>(value) = GetScriptableInstance(npp);
-    if (*reinterpret_cast<NPObject**>(value)) {
-      return NPERR_NO_ERROR;
-    } else {
-      return NPERR_GENERIC_ERROR;
+    DebugPrintf("Getting scriptable instance: npp %p\n", npp);
+    if (NULL == proxy_) {
+      NPCapability capability;
+      nacl_abi_size_t cap_size = capability.size();
+      char* cap_ptr = capability.char_addr();
+      NaClSrpcError retval =
+          NPNavigatorRpcClient::GetScriptableInstance(channel(),
+                                                      NPPToWireFormat(npp),
+                                                      &cap_size,
+                                                      cap_ptr);
+      if (NACL_SRPC_RESULT_OK != retval) {
+        return NULL;
+      }
+      proxy_ = NPBridge::CreateProxy(npp, capability);
     }
-  } else {
-    return NPERR_INVALID_PARAM;
+    if (NULL == proxy_) {
+      return NPERR_GENERIC_ERROR;
+    } else {
+      *reinterpret_cast<NPObject**>(value) = NPN_RetainObject(proxy_);
+      return NPERR_NO_ERROR;
+    }
   }
+  return NPERR_INVALID_PARAM;
 }
 
 int16_t NPModule::HandleEvent(NPP npp, void* event) {
@@ -363,31 +277,6 @@ int16_t NPModule::HandleEvent(NPP npp, void* event) {
   } else {
     return -1;
   }
-}
-
-NPObject* NPModule::GetScriptableInstance(NPP npp) {
-  DebugPrintf("GetScriptableInstance: npp %p\n", npp);
-  if (NULL == proxy_) {
-    // TODO(sehr): Not clear we should be caching on the browser plugin side.
-    NPCapability capability;
-    nacl_abi_size_t cap_size = static_cast<nacl_abi_size_t>(sizeof(capability));
-    char* cap_ptr = reinterpret_cast<char*>(&capability);
-    NaClSrpcError retval =
-        NPNavigatorRpcClient::NPP_GetScriptableInstance(channel(),
-                                                        NPPToWireFormat(npp),
-                                                        &cap_size,
-                                                        cap_ptr);
-    if (NACL_SRPC_RESULT_OK != retval) {
-      DebugPrintf("    Got return code %x\n", retval);
-      return NULL;
-    }
-    proxy_ = NPBridge::CreateProxy(npp, capability);
-    DebugPrintf("    Proxy is %p\n", reinterpret_cast<void*>(proxy_));
-  }
-  if (NULL != proxy_) {
-    NPN_RetainObject(proxy_);
-  }
-  return proxy_;
 }
 
 NPError NPModule::NewStream(NPP npp,
@@ -508,6 +397,7 @@ NaClSrpcError NPModule::Device2DInitialize(NPP npp,
   return NACL_SRPC_RESULT_OK;
 }
 
+// Note: this function may be invoked from other than the NPAPI thread.
 NaClSrpcError NPModule::Device2DFlush(NPP npp,
                                       int32_t* stride,
                                       int32_t* left,
@@ -632,6 +522,7 @@ NaClSrpcError NPModule::Device3DInitialize(NPP npp,
 #endif  // defined(NACL_STANDALONE)
 }
 
+// Note: this function may be invoked from other than the NPAPI thread.
 NaClSrpcError NPModule::Device3DFlush(NPP npp,
                                       int32_t put_offset,
                                       int32_t* get_offset,
@@ -815,12 +706,11 @@ void AudioCallback(NPDeviceContextAudio* user_data) {
 
   // Send the RPC to the NaCl module, conveying the descriptors and
   // starting the thread and the prefill.
-  NPNavigatorRpcClient::NPP_AudioCallback(
-      info->channel_,
-      info->closure_number_,
-      NaClDescRef(shm_wrapper->desc()),
-      size,
-      NaClDescRef(sync_wrapper->desc()));
+  NPNavigatorRpcClient::AudioCallback(info->channel_,
+                                      info->closure_number_,
+                                      NaClDescRef(shm_wrapper->desc()),
+                                      size,
+                                      NaClDescRef(sync_wrapper->desc()));
 
   DescWrapper::SafeDelete(shm_wrapper);
   DescWrapper::SafeDelete(sync_wrapper);
@@ -894,17 +784,6 @@ NaClSrpcError NPModule::AudioInitialize(NPP npp,
 
   return NACL_SRPC_RESULT_OK;
 #endif  // defined(NACL_STANDALONE)
-}
-
-NaClSrpcError NPModule::AudioFlush(NPP npp,
-                                   int32_t* error) {
-  if (NULL == device_audio_ || NULL == context_audio_) {
-    return NACL_SRPC_RESULT_APP_ERROR;
-  }
-  NPError retval =
-      device_audio_->flushContext(npp, context_audio_, NULL, NULL);
-  *error = static_cast<int32_t>(retval);
-  return NACL_SRPC_RESULT_OK;
 }
 
 NaClSrpcError NPModule::AudioDestroy(NPP npp) {

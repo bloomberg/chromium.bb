@@ -12,6 +12,8 @@
 #include <nacl/nacl_npapi.h>
 #include <nacl/npupp.h>
 
+extern NPClass* GetNPSimpleClass();
+
 struct PlugIn {
   NPP npp;
   NPObject *npobject;
@@ -39,7 +41,7 @@ NPError NPP_New(NPMIMEType mime_type,
   }
 
   /* avoid malloc */
-  plugin = (struct PlugIn *)malloc(sizeof(*plugin));
+  plugin = (struct PlugIn *) malloc(sizeof(*plugin));
   plugin->npp = instance;
   plugin->npobject = NULL;
 
@@ -47,11 +49,6 @@ NPError NPP_New(NPMIMEType mime_type,
   return NPERR_NO_ERROR;
 }
 
-/*
- * Please refer to the Gecko Plugin API Reference for the description of
- * NPP_Destroy.
- * In the NaCl module, NPP_Destroy is called from NaClNP_MainLoop().
- */
 NPError NPP_Destroy(NPP instance, NPSavedData** save) {
   printf("*** NPP_Destroy\n");
 
@@ -64,36 +61,22 @@ NPError NPP_Destroy(NPP instance, NPSavedData** save) {
   return NPERR_NO_ERROR;
 }
 
-NPObject *NPP_GetScriptableInstance(NPP instance) {
-  struct PlugIn* plugin;
-
-  extern NPClass *GetNPSimpleClass();
-  printf("*** NPP_GetScriptableInstance\n");
-
-  if (NULL == instance) {
-    printf("NULL NPP\n");
-    return NULL;
-  }
-  plugin = (struct PlugIn *)instance->pdata;
-  if (NULL == plugin->npobject) {
-    printf("Creating the plugin object\n");
-    plugin->npobject = NPN_CreateObject(instance, GetNPSimpleClass());
-  }
-  if (NULL != plugin->npobject) {
-    printf("Retaining the plugin object\n");
-    NPN_RetainObject(plugin->npobject);
-  }
-  printf("The plugin object %p\n", (void*) plugin->npobject);
-  return plugin->npobject;
-}
-
 NPError NPP_GetValue(NPP instance, NPPVariable variable, void* ret_value) {
+  printf("*** NPP_GetValue\n");
   if (NPPVpluginScriptableNPObject == variable) {
-    *((NPObject**) ret_value) = NPP_GetScriptableInstance(instance);
+    if (NULL == instance) {
+      return NPERR_INVALID_INSTANCE_ERROR;
+    }
+    struct PlugIn* plugin = (struct PlugIn*) instance->pdata;
+    if (NULL == plugin->npobject) {
+      plugin->npobject = NPN_CreateObject(instance, GetNPSimpleClass());
+    } else {
+      NPN_RetainObject(plugin->npobject);
+    }
+    *((NPObject**) ret_value) = plugin->npobject;
     return NPERR_NO_ERROR;
-  } else {
-    return NPERR_GENERIC_ERROR;
   }
+  return NPERR_INVALID_PARAM;
 }
 
 NPError NPP_SetWindow(NPP instance, NPWindow* window) {

@@ -41,7 +41,7 @@
            'outputs': [['nperr', 'int32_t'],
                       ]
           },
-          {'name': 'NPP_GetScriptableInstance',
+          {'name': 'GetScriptableInstance',
            'inputs': [['npp', 'int32_t'],
                      ],
            'outputs': [['capability', 'char[]'],
@@ -68,12 +68,12 @@
                      ],
            'outputs': []
           },
-          {'name': 'NPP_DoAsyncCall',
+          {'name': 'DoAsyncCall',
            'inputs': [['number', 'int32_t'],
                      ],
            'outputs': []
           },
-          {'name': 'NPP_AudioCallback',
+          {'name': 'AudioCallback',
            'inputs': [['number', 'int32_t'],
                       ['shm_desc', 'handle'],
                       ['shm_size', 'int32_t'],
