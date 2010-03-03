@@ -449,7 +449,8 @@ def FileProperties(filename, data):
   d = {}
   d['name'] = filename
   _, ext = os.path.splitext(filename)
-  d[ext] = True
+  if ext:
+    d[ext] = True
 
   if 'akefile' in filename:
     d['is_makefile'] = True

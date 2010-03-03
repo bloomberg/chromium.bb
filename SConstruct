@@ -93,6 +93,7 @@ def CheckArguments():
       print 'ERROR'
       print 'ERROR bad argument: ', key
       print 'ERROR'
+      sys.exit(-1)
 
 # ----------------------------------------------------------
 environment_list = []
