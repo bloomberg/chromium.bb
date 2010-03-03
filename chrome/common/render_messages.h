@@ -1553,7 +1553,6 @@ struct ParamTraits<FormData> {
     WriteParam(m, p.labels);
     WriteParam(m, p.elements);
     WriteParam(m, p.values);
-    WriteParam(m, p.submit);
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
     return
@@ -1562,8 +1561,7 @@ struct ParamTraits<FormData> {
       ReadParam(m, iter, &p->action) &&
       ReadParam(m, iter, &p->labels) &&
       ReadParam(m, iter, &p->elements) &&
-      ReadParam(m, iter, &p->values) &&
-      ReadParam(m, iter, &p->submit);
+      ReadParam(m, iter, &p->values);
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(L"<FormData>");

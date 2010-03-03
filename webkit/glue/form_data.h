@@ -23,8 +23,6 @@ struct FormData {
   std::vector<string16> elements;
   // A vector of element values.
   std::vector<string16> values;
-  // The name of the submit button to be used to submit (optional).
-  string16 submit;
 };
 
 #endif  // WEBKIT_GLUE_FORM_DATA_H__

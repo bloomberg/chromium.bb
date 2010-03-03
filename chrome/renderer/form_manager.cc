@@ -186,12 +186,6 @@ void FormManager::FormElementToFormData(WebFrame* frame,
     form->labels.push_back(LabelForElement(input_element));
     form->elements.push_back(input_element.nameForAutofill());
     form->values.push_back(input_element.value());
-
-    // TODO(jhawkins): It's possible for a form to have more than one submit
-    // input element.  The FormData structure probably doesn't need to keep
-    // track of the name of any submit button.
-    if (input_element.inputType() == WebInputElement::Submit)
-      form->submit = input_element.nameForAutofill();
   }
 }
 

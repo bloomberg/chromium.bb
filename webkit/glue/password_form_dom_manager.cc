@@ -13,8 +13,7 @@ using WebKit::WebPasswordFormData;
 namespace webkit_glue {
 
 PasswordForm* PasswordFormDomManager::CreatePasswordForm(
-    const WebFormElement& webform)
-{
+    const WebFormElement& webform) {
   WebPasswordFormData web_password_form(webform);
   if (web_password_form.isValid())
     return new PasswordForm(web_password_form);
@@ -36,7 +35,6 @@ void PasswordFormDomManager::InitFillData(
   result->basic_data.values.push_back(preferred_match->username_value);
   result->basic_data.elements.push_back(form_on_page.password_element);
   result->basic_data.values.push_back(preferred_match->password_value);
-  result->basic_data.submit = form_on_page.submit_element;
   result->wait_for_username = wait_for_username_before_autofill;
 
   // Copy additional username/value pairs.
