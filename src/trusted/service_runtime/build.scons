@@ -90,12 +90,12 @@ ldr_inputs = [
     'elf_util.c',
 ]
 
-if env['BUILD_ARCHITECTURE'] == 'x86':
+if env['TARGET_ARCHITECTURE'] == 'x86':
   ldr_inputs += [
       'arch/x86/nacl_ldt_x86.c',
       'arch/x86/sel_validate_image.c',
       ]
-  if env['BUILD_SUBARCH'] == '32':
+  if env['TARGET_SUBARCH'] == '32':
     ldr_inputs += [
         'arch/x86_32/nacl_app_32.c',
         'arch/x86_32/nacl_switch_32.S',
@@ -108,7 +108,7 @@ if env['BUILD_ARCHITECTURE'] == 'x86':
         'arch/x86_32/springboard.S',
         'arch/x86_32/tramp_32.S',
         ]
-  elif env['BUILD_SUBARCH'] == '64':
+  elif env['TARGET_SUBARCH'] == '64':
     ldr_inputs += [
         'arch/x86_64/nacl_app_64.c',
         'arch/x86_64/nacl_switch_64.S',
