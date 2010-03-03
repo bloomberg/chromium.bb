@@ -504,8 +504,9 @@ STDMETHODIMP WebBrowserEventSink::OnBeforeNavigate2Internal(
   // Reset any existing reference to chrome frame since this is a new
   // navigation.
   chrome_frame_ = NULL;
-  return OnBeforeNavigate2(dispatch, url, flags, target_frame_name,
-                           post_data, headers, cancel);
+  OnBeforeNavigate2(dispatch, url, flags, target_frame_name, post_data,
+                    headers, cancel);
+  return S_OK;
 }
 
 STDMETHODIMP_(void) WebBrowserEventSink::OnNavigateComplete2Internal(

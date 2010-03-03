@@ -13,6 +13,11 @@
 #define GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 #include "testing/gmock_mutant.h"
 
+namespace chrome_frame_test {
+
+using ::testing::Expectation;
+using ::testing::ExpectationSet;
+
 // This class provides functionality to add expectations to IE full tab mode
 // tests.
 class MockWebBrowserEventSink : public chrome_frame_test::WebBrowserEventSink {
@@ -23,7 +28,7 @@ class MockWebBrowserEventSink : public chrome_frame_test::WebBrowserEventSink {
   }
 
   MOCK_METHOD7_WITH_CALLTYPE(__stdcall, OnBeforeNavigate2,
-                             HRESULT (IDispatch* dispatch,  // NOLINT
+                             void (IDispatch* dispatch,  // NOLINT
                                       VARIANT* url,
                                       VARIANT* flags,
                                       VARIANT* target_frame_name,
@@ -67,7 +72,18 @@ class MockWebBrowserEventSink : public chrome_frame_test::WebBrowserEventSink {
                                 const wchar_t* source));    // NOLINT
   MOCK_METHOD2(OnNewBrowserWindow, void (IDispatch* dispatch,  // NOLINT
                                          const wchar_t* url));
+
+  // Test expectations
+  ExpectationSet ExpectNavigationCardinality(const std::wstring& url,
+                                             testing::Cardinality cardinality);
+  ExpectationSet ExpectNavigation(const std::wstring& url);
+  ExpectationSet ExpectNavigationAndSwitch(const std::wstring& url);
+  ExpectationSet ExpectNavigationAndSwitchSequence(const std::wstring& url);
+  ExpectationSet ExpectNewWindow(MockWebBrowserEventSink* new_window_mock);
+
 };
+
+}  // namespace chrome_frame_test
 
 #endif  // CHROME_FRAME_TEST_MOCK_WITH_WEB_SERVER_H_
 

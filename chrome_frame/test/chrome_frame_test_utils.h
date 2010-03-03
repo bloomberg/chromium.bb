@@ -23,6 +23,8 @@
 
 #include "chrome_frame/test_utils.h"
 #include "chrome_frame/test/simulate_input.h"
+#include "testing/gmock/include/gmock/gmock.h"
+
 // Include without path to make GYP build see it.
 #include "chrome_tab.h"  // NOLINT
 
@@ -208,13 +210,10 @@ END_SINK_MAP()
     DLOG(INFO) << __FUNCTION__;
   }
 
-  STDMETHOD(OnBeforeNavigate2)(IDispatch* dispatch, VARIANT* url,
+  STDMETHOD_(void, OnBeforeNavigate2)(IDispatch* dispatch, VARIANT* url,
                                VARIANT* flags, VARIANT* target_frame_name,
                                VARIANT* post_data, VARIANT* headers,
-                               VARIANT_BOOL* cancel) {
-    return S_OK;
-  }
-
+                               VARIANT_BOOL* cancel) {}
   STDMETHOD_(void, OnDownloadBegin)() {}
   STDMETHOD_(void, OnNavigateComplete2)(IDispatch* dispatch, VARIANT* url) {}
   STDMETHOD_(void, OnNewWindow2)(IDispatch** dispatch, VARIANT_BOOL* cancel) {}
