@@ -83,6 +83,32 @@
 
 @end
 
+// Remembers if a notification callback was called.
+@interface BookmarkBarControllerNotificationPong : BookmarkBarControllerNoOpen {
+  BOOL windowWillCloseReceived_;
+  BOOL windowDidResignKeyReceived_;
+}
+@property(readonly) BOOL windowWillCloseReceived;
+@property(readonly) BOOL windowDidResignKeyReceived;
+@end
+
+@implementation BookmarkBarControllerNotificationPong
+@synthesize windowWillCloseReceived = windowWillCloseReceived_;
+@synthesize windowDidResignKeyReceived = windowDidResignKeyReceived_;
+
+// Override NSNotificationCenter callback.
+- (void)parentWindowWillClose:(NSNotification*)notification {
+  windowWillCloseReceived_ = YES;
+}
+
+// NSNotificationCenter callback.
+- (void)parentWindowDidResignKey:(NSNotification*)notification {
+  windowDidResignKeyReceived_ = YES;
+}
+@end
+
+
+
 class FakeTheme : public ThemeProvider {
  public:
   FakeTheme(NSColor* color) : color_(color) { }
@@ -1065,6 +1091,58 @@ TEST_F(BookmarkBarControllerTest, DropDestination) {
               [bar_ buttonForDroppingOnAtPoint:NSMakePoint(x, 11)]);
   }
 }
+
+class BookmarkBarControllerNotificationTest : public CocoaTest {
+ public:
+  BookmarkBarControllerNotificationTest() {
+    resizeDelegate_.reset([[ViewResizerPong alloc] init]);
+    NSRect parent_frame = NSMakeRect(0, 0, 800, 50);
+    parent_view_.reset([[NSView alloc] initWithFrame:parent_frame]);
+    [parent_view_ setHidden:YES];
+    bar_.reset(
+      [[BookmarkBarControllerNotificationPong alloc]
+          initWithBrowser:helper_.browser()
+             initialWidth:NSWidth(parent_frame)
+                 delegate:nil
+           resizeDelegate:resizeDelegate_.get()]);
+
+    // Force loading of the nib.
+    [bar_ view];
+    // Awkwardness to look like we've been installed.
+    [parent_view_ addSubview:[bar_ view]];
+    NSRect frame = [[[bar_ view] superview] frame];
+    frame.origin.y = 100;
+    [[[bar_ view] superview] setFrame:frame];
+
+    // Do not add the bar to a window, yet.
+  }
+
+  BrowserTestHelper helper_;
+  scoped_nsobject<NSView> parent_view_;
+  scoped_nsobject<ViewResizerPong> resizeDelegate_;
+  scoped_nsobject<BookmarkBarControllerNotificationPong> bar_;
+};
+
+TEST_F(BookmarkBarControllerNotificationTest, DeregistersForNotifications) {
+  NSWindow* window = [[CocoaTestHelperWindow alloc] init];
+  [window setReleasedWhenClosed:YES];
+
+  // First add the bookmark bar to the temp window, then to another window.
+  [[window contentView] addSubview:parent_view_];
+  [[test_window() contentView] addSubview:parent_view_];
+
+  // Post a fake windowDidResignKey notification for the temp window and make
+  // sure the bookmark bar controller wasn't listening.
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:NSWindowDidResignKeyNotification
+                    object:window];
+  EXPECT_FALSE([bar_ windowDidResignKeyReceived]);
+
+  // Close the temp window and make sure no notification was received.
+  [window close];
+  EXPECT_FALSE([bar_ windowWillCloseReceived]);
+}
+
 
 // TODO(jrg): draggingEntered: and draggingExited: trigger timers so
 // they are hard to test.  Factor out "fire timers" into routines

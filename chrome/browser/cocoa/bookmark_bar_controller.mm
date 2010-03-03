@@ -318,6 +318,15 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 // earlier (such as in awakeFromNib).
 - (void)viewDidMoveToWindow {
   NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
+
+  // Remove any existing notifications before registering for new ones.
+  [defaultCenter removeObserver:self
+                           name:NSWindowWillCloseNotification
+                         object:nil];
+  [defaultCenter removeObserver:self
+                           name:NSWindowDidResignKeyNotification
+                         object:nil];
+
   [defaultCenter addObserver:self
                     selector:@selector(parentWindowWillClose:)
                         name:NSWindowWillCloseNotification
