@@ -383,7 +383,7 @@ void ExtensionsDOMHandler::HandleInspectMessage(const Value* value) {
     return;
   }
 
-  DevToolsManager::GetInstance()->OpenDevToolsWindow(host);
+  DevToolsManager::GetInstance()->ToggleDevToolsWindow(host, true);
 }
 
 void ExtensionsDOMHandler::HandleReloadMessage(const Value* value) {
