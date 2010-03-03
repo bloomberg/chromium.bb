@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "media/base/limits.h"
 #include "media/base/media_format.h"
 #include "media/base/media_switches.h"
 #include "media/filters/ffmpeg_audio_decoder.h"
@@ -481,17 +482,34 @@ void WebMediaPlayerImpl::paint(WebCanvas* canvas,
 #if WEBKIT_USING_SKIA
   proxy_->Paint(canvas, rect);
 #elif WEBKIT_USING_CG
+  // Get the current scaling in X and Y.
+  CGAffineTransform mat = CGContextGetCTM(canvas);
+  float scale_x = sqrt(mat.a * mat.a + mat.b * mat.b);
+  float scale_y = sqrt(mat.c * mat.c + mat.d * mat.d);
+  float inverse_scale_x = SkScalarNearlyZero(scale_x) ? 0.0f : 1.0f / scale_x;
+  float inverse_scale_y = SkScalarNearlyZero(scale_y) ? 0.0f : 1.0f / scale_y;
+  int scaled_width = static_cast<int>(rect.width * fabs(scale_x));
+  int scaled_height = static_cast<int>(rect.height * fabs(scale_y));
+
+  // Make sure we don't create a huge canvas.
+  // TODO(hclam): Respect the aspect ratio.
+  if (scaled_width > static_cast<int>(media::Limits::kMaxCanvas))
+    scaled_width = media::Limits::kMaxCanvas;
+  if (scaled_height > static_cast<int>(media::Limits::kMaxCanvas))
+    scaled_height = media::Limits::kMaxCanvas;
+
   // If there is no preexisting platform canvas, or if the size has
   // changed, recreate the canvas.  This is to avoid recreating the bitmap
   // buffer over and over for each frame of video.
   if (!skia_canvas_.get() ||
-      skia_canvas_->getDevice()->width() != rect.width ||
-      skia_canvas_->getDevice()->height() != rect.height) {
-    skia_canvas_.reset(new skia::PlatformCanvas(rect.width, rect.height, true));
+      skia_canvas_->getDevice()->width() != scaled_width ||
+      skia_canvas_->getDevice()->height() != scaled_height) {
+    skia_canvas_.reset(
+        new skia::PlatformCanvas(scaled_width, scaled_height, true));
   }
 
   // Draw to our temporary skia canvas.
-  gfx::Rect normalized_rect(rect.width, rect.height);
+  gfx::Rect normalized_rect(scaled_width, scaled_height);
   proxy_->Paint(skia_canvas_.get(), normalized_rect);
 
   // The mac coordinate system is flipped vertical from the normal skia
@@ -500,7 +518,7 @@ void WebMediaPlayerImpl::paint(WebCanvas* canvas,
   // start at 0,0.
   CGContextSaveGState(canvas);
   CGContextTranslateCTM(canvas, rect.x, rect.height + rect.y);
-  CGContextScaleCTM(canvas, 1.0, -1.0);
+  CGContextScaleCTM(canvas, inverse_scale_x, -inverse_scale_y);
 
   // We need a local variable CGRect version for DrawToContext.
   CGRect normalized_cgrect =
