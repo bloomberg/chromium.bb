@@ -202,6 +202,7 @@
                 'source/patched-ffmpeg-mt/libavcodec/ituh263dec.c', # TODO(fbarchard): Review this file.
 		'source/patched-ffmpeg-mt/libavcodec/ituh263enc.c', # TODO(fbarchard): For mpeg4 bsf. Review this file.
 		'source/patched-ffmpeg-mt/libavcodec/jfdctint.c', # TODO(fbarchard): For mpeg4 bsf. Review this file.
+		'source/patched-ffmpeg-mt/libavcodec/jfdctfst.c', # TODO(fbarchard): For mpeg4 bsf. Review this file.
 		'source/patched-ffmpeg-mt/libavcodec/motion_est.c', # TODO(fbarchard): For mpeg4 bsf. Review this file.
                 'source/patched-ffmpeg-mt/libavcodec/mpeg4data.h', # TODO(fbarchard): Review this file.
                 'source/patched-ffmpeg-mt/libavcodec/mpeg4video.c', # TODO(fbarchard): Review this file.
@@ -223,6 +224,8 @@
                 'source/patched-ffmpeg-mt/libavcodec/wmadec.c',
                 'source/patched-ffmpeg-mt/libavcodec/wmv2.c',
                 'source/patched-ffmpeg-mt/libavcodec/wmv2dec.c',
+                'source/patched-ffmpeg-mt/libavcodec/vc1_asftoannexg_bsf.c', # TODO(fbarchard): Review this file.
+                'source/patched-ffmpeg-mt/libavcodec/vc1_asftorcv_bsf.c', # TODO(fbarchard): Review this file.
                 'source/patched-ffmpeg-mt/libavformat/asf.c',
                 'source/patched-ffmpeg-mt/libavformat/asfcrypt.c',
                 'source/patched-ffmpeg-mt/libavformat/asfdec.c',
