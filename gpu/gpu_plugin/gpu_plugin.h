@@ -19,7 +19,7 @@ NPError API_CALL NP_GetEntryPoints(NPPluginFuncs* funcs);
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 NPError API_CALL NP_Initialize(NPNetscapeFuncs *browser_funcs,
-                      NPPluginFuncs* plugin_funcs);
+                               NPPluginFuncs* plugin_funcs);
 #else
 NPError API_CALL NP_Initialize(NPNetscapeFuncs* browser_funcs);
 #endif

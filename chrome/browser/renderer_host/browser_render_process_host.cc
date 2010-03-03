@@ -51,7 +51,7 @@
 #include "chrome/common/process_watcher.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/result_codes.h"
-#include "chrome/renderer/render_process.h"
+#include "chrome/renderer/render_process_impl.h"
 #include "chrome/renderer/render_thread.h"
 #include "grit/generated_resources.h"
 #include "ipc/ipc_logging.h"
@@ -89,7 +89,7 @@ class RendererMainThread : public base::Thread {
     CoInitialize(NULL);
 #endif
 
-    render_process_ = new RenderProcess();
+    render_process_ = new RenderProcessImpl();
     render_process_->set_main_thread(new RenderThread(channel_id_));
     // It's a little lame to manually set this flag.  But the single process
     // RendererThread will receive the WM_QUIT.  We don't need to assert on

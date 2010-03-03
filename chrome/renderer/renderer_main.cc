@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,7 +23,7 @@
 #include "chrome/common/main_function_params.h"
 #include "chrome/common/net/net_resource_provider.h"
 #include "chrome/renderer/renderer_main_platform_delegate.h"
-#include "chrome/renderer/render_process.h"
+#include "chrome/renderer/render_process_impl.h"
 #include "chrome/renderer/render_thread.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_module.h"
@@ -219,7 +219,7 @@ int RendererMain(const MainFunctionParams& parameters) {
 #else
   // The main message loop of the renderer services doesn't have IO or UI tasks,
   // unless in-process-plugins is used.
-  MessageLoop main_message_loop(RenderProcess::InProcessPlugins() ?
+  MessageLoop main_message_loop(RenderProcessImpl::InProcessPlugins() ?
               MessageLoop::TYPE_UI : MessageLoop::TYPE_DEFAULT);
 #endif
 
@@ -255,7 +255,7 @@ int RendererMain(const MainFunctionParams& parameters) {
 #if !defined(OS_LINUX)
     // TODO(markus): Check if it is OK to unconditionally move this
     // instruction down.
-    RenderProcess render_process;
+    RenderProcessImpl render_process;
     render_process.set_main_thread(new RenderThread());
 #endif
     bool run_loop = true;
@@ -263,7 +263,7 @@ int RendererMain(const MainFunctionParams& parameters) {
       run_loop = platform.EnableSandbox();
     }
 #if defined(OS_LINUX)
-    RenderProcess render_process;
+    RenderProcessImpl render_process;
     render_process.set_main_thread(new RenderThread());
 #endif
 

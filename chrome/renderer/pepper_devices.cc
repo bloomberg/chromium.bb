@@ -3,17 +3,27 @@
 // found in the LICENSE file.
 
 #include "chrome/renderer/pepper_devices.h"
+#include "chrome/renderer/webplugin_delegate_pepper.h"
 #include "skia/ext/platform_canvas.h"
+#include "webkit/glue/plugins/plugin_instance.h"
+#include "webkit/glue/webplugin.h"
 
 namespace {
-  const uint32 kBytesPerPixel = 4;  // Only 8888 RGBA for now.
+
+const uint32 kBytesPerPixel = 4;  // Only 8888 RGBA for now.
+
 }  // namespace
 
 int Graphics2DDeviceContext::next_buffer_id_ = 0;
 
+Graphics2DDeviceContext::Graphics2DDeviceContext(
+    WebPluginDelegatePepper* plugin_delegate)
+    : plugin_delegate_(plugin_delegate) {
+}
+
 NPError Graphics2DDeviceContext::Initialize(
-        gfx::Rect window_rect, const NPDeviceContext2DConfig* config,
-        NPDeviceContext2D* context) {
+    gfx::Rect window_rect, const NPDeviceContext2DConfig* config,
+    NPDeviceContext2D* context) {
   int width = window_rect.width();
   int height = window_rect.height();
   uint32 buffer_size = width * height * kBytesPerPixel;
@@ -75,22 +85,47 @@ NPError Graphics2DDeviceContext::Flush(SkBitmap* committed_bitmap,
   paint.setXfermodeMode(SkXfermode::kSrc_Mode);
   committed_canvas.drawBitmapRect(
       canvas_->getTopPlatformDevice().accessBitmap(false),
-      &src_rect, dest_rect);
+      &src_rect, dest_rect, &paint);
 
   committed_bitmap->setIsOpaque(false);
 
-  // Invoke the callback to inform the caller the work was done.
-  // TODO(brettw) this is not how we want this to work, this should
-  // happen when the frame is painted so the plugin knows when it can draw
-  // the next frame.
-  //
-  // This should also be called in the failure cases as well.
-  if (callback != NULL)
-    (*callback)(id, context, NPERR_NO_ERROR, user_data);
+  // Cause the updated part of the screen to be repainted. This will happen
+  // asynchronously.
+  // TODO(brettw) is this the coorect coordinate system?
+  gfx::Rect dest_gfx_rect(context->dirty.left, context->dirty.top,
+                          context->dirty.right - context->dirty.left,
+                          context->dirty.bottom - context->dirty.top);
+
+  plugin_delegate_->instance()->webplugin()->InvalidateRect(dest_gfx_rect);
+
+  // Save the callback to execute later. See |unpainted_flush_callbacks_| in
+  // the header file.
+  if (callback) {
+    unpainted_flush_callbacks_.push_back(
+        FlushCallbackData(callback, id, context, user_data));
+  }
 
   return NPERR_NO_ERROR;
 }
 
+void Graphics2DDeviceContext::RenderViewInitiatedPaint() {
+  // Move all "unpainted" callbacks to the painted state. See
+  // |unpainted_flush_callbacks_| in the header for more.
+  std::copy(unpainted_flush_callbacks_.begin(),
+            unpainted_flush_callbacks_.end(),
+            std::back_inserter(painted_flush_callbacks_));
+  unpainted_flush_callbacks_.clear();
+}
+
+void Graphics2DDeviceContext::RenderViewFlushedPaint() {
+  // Notify all "painted" callbacks. See |unpainted_flush_callbacks_| in the
+  // header for more.
+  for (size_t i = 0; i < painted_flush_callbacks_.size(); i++) {
+    const FlushCallbackData& data = painted_flush_callbacks_[i];
+    data.function(data.npp, data.context, NPERR_NO_ERROR, data.user_data);
+  }
+  painted_flush_callbacks_.clear();
+}
 
 AudioDeviceContext::~AudioDeviceContext() {
   if (stream_id_) {

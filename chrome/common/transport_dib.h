@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -90,10 +90,15 @@ class TransportDIB {
   static Handle DefaultHandleValue() { return -1; }
 #endif
 
-  // Create a new TransportDIB
-  //   size: the minimum size, in bytes
-  //   epoch: Windows only: a global counter. See comment above.
-  //   returns: NULL on failure
+  // Create a new TransportDIB, returning NULL on failure.
+  //
+  // The size is the minimum size in bytes of the memory backing the transport
+  // DIB (we may actually allocate more than that to give us better reuse when
+  // cached).
+  //
+  // The sequence number is used to uniquely identify the transport DIB. It
+  // should be unique for all transport DIBs ever created in the same
+  // renderer.
   static TransportDIB* Create(size_t size, uint32 sequence_num);
 
   // Map the referenced transport DIB. Returns NULL on failure.

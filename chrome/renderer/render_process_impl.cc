@@ -4,13 +4,13 @@
 
 #include "build/build_config.h"
 
+#include "chrome/renderer/render_process_impl.h"
+
 #if defined(OS_WIN)
 #include <windows.h>
 #include <objidl.h>
 #include <mlang.h>
 #endif
-
-#include "chrome/renderer/render_process.h"
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
@@ -31,7 +31,6 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message_utils.h"
 #include "media/base/media.h"
-#include "media/base/media_switches.h"
 #include "native_client/src/trusted/plugin/nacl_entry_points.h"
 #include "webkit/glue/webkit_glue.h"
 
@@ -39,112 +38,13 @@
 #include "base/mac_util.h"
 #endif
 
-//-----------------------------------------------------------------------------
+namespace {
 
-RenderProcess::RenderProcess()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(shared_mem_cache_cleaner_(
-          base::TimeDelta::FromSeconds(5),
-          this, &RenderProcess::ClearTransportDIBCache)),
-      sequence_number_(0) {
-  in_process_plugins_ = InProcessPlugins();
-  for (size_t i = 0; i < arraysize(shared_mem_cache_); ++i)
-    shared_mem_cache_[i] = NULL;
-
-#if defined(OS_WIN)
-  // HACK:  See http://b/issue?id=1024307 for rationale.
-  if (GetModuleHandle(L"LPK.DLL") == NULL) {
-    // Makes sure lpk.dll is loaded by gdi32 to make sure ExtTextOut() works
-    // when buffering into a EMF buffer for printing.
-    typedef BOOL (__stdcall *GdiInitializeLanguagePack)(int LoadedShapingDLLs);
-    GdiInitializeLanguagePack gdi_init_lpk =
-        reinterpret_cast<GdiInitializeLanguagePack>(GetProcAddress(
-            GetModuleHandle(L"GDI32.DLL"),
-            "GdiInitializeLanguagePack"));
-    DCHECK(gdi_init_lpk);
-    if (gdi_init_lpk) {
-      gdi_init_lpk(0);
-    }
-  }
-#endif
-
-  // Out of process dev tools rely upon auto break behavior.
-  webkit_glue::SetJavaScriptFlags(
-      L"--debugger-auto-break"
-      // Enable lazy in-memory profiling.
-      L" --prof --prof-lazy --logfile=* --compress-log");
-
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kJavaScriptFlags)) {
-    webkit_glue::SetJavaScriptFlags(
-      command_line.GetSwitchValue(switches::kJavaScriptFlags));
-  }
-
-  if (command_line.HasSwitch(switches::kEnableWatchdog)) {
-    // TODO(JAR): Need to implement renderer IO msgloop watchdog.
-  }
-
-  if (command_line.HasSwitch(switches::kDumpHistogramsOnExit)) {
-    StatisticsRecorder::set_dump_on_exit(true);
-  }
-
-#ifndef DISABLE_NACL
-  if (command_line.HasSwitch(switches::kInternalNaCl))
-    RegisterInternalNaClPlugin(RenderProcess::LaunchNaClProcess);
-#endif
-
-  if (!command_line.HasSwitch(switches::kDisableByteRangeSupport)) {
-    webkit_glue::SetMediaCacheEnabled(true);
-  }
-
-#if defined(OS_MACOSX)
-  FilePath bundle_path = mac_util::MainAppBundlePath();
-
-  initialized_media_library_ =
-     media::InitializeMediaLibrary(bundle_path.Append("Libraries"));
-#else
-  FilePath module_path;
-  initialized_media_library_ =
-      PathService::Get(base::DIR_MODULE, &module_path) &&
-      media::InitializeMediaLibrary(module_path);
-
-  // TODO(hclam): Add more checks here. Currently this is not used.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableOpenMax)) {
-    media::InitializeOpenMaxLibrary(module_path);
-  }
-#endif
-}
-
-RenderProcess::~RenderProcess() {
-  // TODO(port): Try and limit what we pull in for our non-Win unit test bundle.
-#ifndef NDEBUG
-  // log important leaked objects
-  webkit_glue::CheckForLeaks();
-#endif
-
-  GetShutDownEvent()->Signal();
-  ClearTransportDIBCache();
-}
-
-bool RenderProcess::InProcessPlugins() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-#if defined(OS_LINUX)
-  // Plugin processes require a UI message loop, and the Linux message loop
-  // implementation only allows one UI loop per process.
-  if (command_line.HasSwitch(switches::kInProcessPlugins))
-    NOTIMPLEMENTED() << ": in process plugins not supported on Linux";
-  return command_line.HasSwitch(switches::kInProcessPlugins);
-#else
-  return command_line.HasSwitch(switches::kInProcessPlugins) ||
-         command_line.HasSwitch(switches::kSingleProcess);
-#endif
-}
-
-bool RenderProcess::LaunchNaClProcess(const char* url,
-                                      int imc_fd,
-                                      nacl::Handle* imc_handle,
-                                      nacl::Handle* nacl_process_handle,
-                                      int* nacl_process_id) {
+bool LaunchNaClProcess(const char* url,
+                       int imc_fd,
+                       nacl::Handle* imc_handle,
+                       nacl::Handle* nacl_process_handle,
+                       int* nacl_process_id) {
   // TODO(gregoryd): nacl::FileDescriptor will be soon merged with
   // base::FileDescriptor
   nacl::FileDescriptor imc_descriptor;
@@ -162,45 +62,91 @@ bool RenderProcess::LaunchNaClProcess(const char* url,
   return true;
 }
 
-// -----------------------------------------------------------------------------
-// Platform specific code for dealing with bitmap transport...
+}  // namespace
 
-TransportDIB* RenderProcess::CreateTransportDIB(size_t size) {
-#if defined(OS_WIN) || defined(OS_LINUX)
-  // Windows and Linux create transport DIBs inside the renderer
-  return TransportDIB::Create(size, sequence_number_++);
-#elif defined(OS_MACOSX)  // defined(OS_WIN) || defined(OS_LINUX)
-  // Mac creates transport DIBs in the browser, so we need to do a sync IPC to
-  // get one.
-  TransportDIB::Handle handle;
-  IPC::Message* msg = new ViewHostMsg_AllocTransportDIB(size, &handle);
-  if (!main_thread()->Send(msg))
-    return NULL;
-  if (handle.fd < 0)
-    return NULL;
-  return TransportDIB::Map(handle);
-#endif  // defined(OS_MACOSX)
-}
+//-----------------------------------------------------------------------------
 
-void RenderProcess::FreeTransportDIB(TransportDIB* dib) {
-  if (!dib)
-    return;
+RenderProcessImpl::RenderProcessImpl()
+    : RenderProcess(),
+      ALLOW_THIS_IN_INITIALIZER_LIST(shared_mem_cache_cleaner_(
+          base::TimeDelta::FromSeconds(5),
+          this, &RenderProcessImpl::ClearTransportDIBCache)),
+      transport_dib_next_sequence_number_(0) {
+  in_process_plugins_ = InProcessPlugins();
+  for (size_t i = 0; i < arraysize(shared_mem_cache_); ++i)
+    shared_mem_cache_[i] = NULL;
 
-#if defined(OS_MACOSX)
-  // On Mac we need to tell the browser that it can drop a reference to the
-  // shared memory.
-  IPC::Message* msg = new ViewHostMsg_FreeTransportDIB(dib->id());
-  main_thread()->Send(msg);
+#if defined(OS_WIN)
+  // HACK:  See http://b/issue?id=1024307 for rationale.
+  if (GetModuleHandle(L"LPK.DLL") == NULL) {
+    // Makes sure lpk.dll is loaded by gdi32 to make sure ExtTextOut() works
+    // when buffering into a EMF buffer for printing.
+    typedef BOOL (__stdcall *GdiInitializeLanguagePack)(int LoadedShapingDLLs);
+    GdiInitializeLanguagePack gdi_init_lpk =
+        reinterpret_cast<GdiInitializeLanguagePack>(GetProcAddress(
+            GetModuleHandle(L"GDI32.DLL"),
+            "GdiInitializeLanguagePack"));
+    DCHECK(gdi_init_lpk);
+    if (gdi_init_lpk)
+      gdi_init_lpk(0);
+  }
 #endif
 
-  delete dib;
+  // Out of process dev tools rely upon auto break behavior.
+  webkit_glue::SetJavaScriptFlags(
+      L"--debugger-auto-break"
+      // Enable lazy in-memory profiling.
+      L" --prof --prof-lazy --logfile=* --compress-log");
+
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kJavaScriptFlags)) {
+    webkit_glue::SetJavaScriptFlags(
+        command_line.GetSwitchValue(switches::kJavaScriptFlags));
+  }
+
+  if (command_line.HasSwitch(switches::kEnableWatchdog)) {
+    // TODO(JAR): Need to implement renderer IO msgloop watchdog.
+  }
+
+  if (command_line.HasSwitch(switches::kDumpHistogramsOnExit)) {
+    StatisticsRecorder::set_dump_on_exit(true);
+  }
+
+#ifndef DISABLE_NACL
+  if (command_line.HasSwitch(switches::kInternalNaCl))
+    RegisterInternalNaClPlugin(LaunchNaClProcess);
+#endif
+
+  if (!command_line.HasSwitch(switches::kDisableByteRangeSupport))
+    webkit_glue::SetMediaCacheEnabled(true);
+
+#if defined(OS_MACOSX)
+  FilePath bundle_path = mac_util::MainAppBundlePath();
+
+  initialized_media_library_ =
+     media::InitializeMediaLibrary(bundle_path.Append("Libraries"));
+#else
+  FilePath module_path;
+  initialized_media_library_ =
+      PathService::Get(base::DIR_MODULE, &module_path) &&
+      media::InitializeMediaLibrary(module_path);
+#endif
 }
 
-// -----------------------------------------------------------------------------
+RenderProcessImpl::~RenderProcessImpl() {
+  // TODO(port): Try and limit what we pull in for our non-Win unit test bundle.
+#ifndef NDEBUG
+  // log important leaked objects
+  webkit_glue::CheckForLeaks();
+#endif
 
+  GetShutDownEvent()->Signal();
+  ClearTransportDIBCache();
+}
 
-skia::PlatformCanvas* RenderProcess::GetDrawingCanvas(
-    TransportDIB** memory, const gfx::Rect& rect) {
+skia::PlatformCanvas* RenderProcessImpl::GetDrawingCanvas(
+    TransportDIB** memory,
+    const gfx::Rect& rect) {
   int width = rect.width();
   int height = rect.height();
   const size_t stride = skia::PlatformCanvas::StrideForWidth(rect.width());
@@ -221,13 +167,13 @@ skia::PlatformCanvas* RenderProcess::GetDrawingCanvas(
   if (!GetTransportDIBFromCache(memory, size)) {
     *memory = CreateTransportDIB(size);
     if (!*memory)
-      return false;
+      return NULL;
   }
 
   return (*memory)->GetPlatformCanvas(width, height);
 }
 
-void RenderProcess::ReleaseTransportDIB(TransportDIB* mem) {
+void RenderProcessImpl::ReleaseTransportDIB(TransportDIB* mem) {
   if (PutSharedMemInCache(mem)) {
     shared_mem_cache_cleaner_.Reset();
     return;
@@ -236,8 +182,31 @@ void RenderProcess::ReleaseTransportDIB(TransportDIB* mem) {
   FreeTransportDIB(mem);
 }
 
-bool RenderProcess::GetTransportDIBFromCache(TransportDIB** mem,
-                                             size_t size) {
+bool RenderProcessImpl::UseInProcessPlugins() const {
+  return in_process_plugins_;
+}
+
+bool RenderProcessImpl::HasInitializedMediaLibrary() const {
+  return initialized_media_library_;
+}
+
+// static
+bool RenderProcessImpl::InProcessPlugins() {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+#if defined(OS_LINUX)
+  // Plugin processes require a UI message loop, and the Linux message loop
+  // implementation only allows one UI loop per process.
+  if (command_line.HasSwitch(switches::kInProcessPlugins))
+    NOTIMPLEMENTED() << ": in process plugins not supported on Linux";
+  return command_line.HasSwitch(switches::kInProcessPlugins);
+#else
+  return command_line.HasSwitch(switches::kInProcessPlugins) ||
+         command_line.HasSwitch(switches::kSingleProcess);
+#endif
+}
+
+bool RenderProcessImpl::GetTransportDIBFromCache(TransportDIB** mem,
+                                                 size_t size) {
   // look for a cached object that is suitable for the requested size.
   for (size_t i = 0; i < arraysize(shared_mem_cache_); ++i) {
     if (shared_mem_cache_[i] &&
@@ -251,7 +220,25 @@ bool RenderProcess::GetTransportDIBFromCache(TransportDIB** mem,
   return false;
 }
 
-int RenderProcess::FindFreeCacheSlot(size_t size) {
+bool RenderProcessImpl::PutSharedMemInCache(TransportDIB* mem) {
+  const int slot = FindFreeCacheSlot(mem->size());
+  if (slot == -1)
+    return false;
+
+  shared_mem_cache_[slot] = mem;
+  return true;
+}
+
+void RenderProcessImpl::ClearTransportDIBCache() {
+  for (size_t i = 0; i < arraysize(shared_mem_cache_); ++i) {
+    if (shared_mem_cache_[i]) {
+      FreeTransportDIB(shared_mem_cache_[i]);
+      shared_mem_cache_[i] = NULL;
+    }
+  }
+}
+
+int RenderProcessImpl::FindFreeCacheSlot(size_t size) {
   // simple algorithm:
   //  - look for an empty slot to store mem, or
   //  - if full, then replace smallest entry which is smaller than |size|
@@ -279,20 +266,33 @@ int RenderProcess::FindFreeCacheSlot(size_t size) {
   return smallest_index;
 }
 
-bool RenderProcess::PutSharedMemInCache(TransportDIB* mem) {
-  const int slot = FindFreeCacheSlot(mem->size());
-  if (slot == -1)
-    return false;
-
-  shared_mem_cache_[slot] = mem;
-  return true;
+TransportDIB* RenderProcessImpl::CreateTransportDIB(size_t size) {
+#if defined(OS_WIN) || defined(OS_LINUX)
+  // Windows and Linux create transport DIBs inside the renderer
+  return TransportDIB::Create(size, transport_dib_next_sequence_number_++);
+#elif defined(OS_MACOSX)  // defined(OS_WIN) || defined(OS_LINUX)
+  // Mac creates transport DIBs in the browser, so we need to do a sync IPC to
+  // get one.
+  TransportDIB::Handle handle;
+  IPC::Message* msg = new ViewHostMsg_AllocTransportDIB(size, &handle);
+  if (!main_thread()->Send(msg))
+    return NULL;
+  if (handle.fd < 0)
+    return NULL;
+  return TransportDIB::Map(handle);
+#endif  // defined(OS_MACOSX)
 }
 
-void RenderProcess::ClearTransportDIBCache() {
-  for (size_t i = 0; i < arraysize(shared_mem_cache_); ++i) {
-    if (shared_mem_cache_[i]) {
-      FreeTransportDIB(shared_mem_cache_[i]);
-      shared_mem_cache_[i] = NULL;
-    }
-  }
+void RenderProcessImpl::FreeTransportDIB(TransportDIB* dib) {
+  if (!dib)
+    return;
+
+#if defined(OS_MACOSX)
+  // On Mac we need to tell the browser that it can drop a reference to the
+  // shared memory.
+  IPC::Message* msg = new ViewHostMsg_FreeTransportDIB(dib->id());
+  main_thread()->Send(msg);
+#endif
+
+  delete dib;
 }

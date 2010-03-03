@@ -1,11 +1,11 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/gfx/rect.h"
 #include "base/sys_info.h"
 #include "base/string_util.h"
-#include "chrome/renderer/render_process.h"
+#include "chrome/renderer/render_process_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -17,7 +17,7 @@ class RenderProcessTest : public testing::Test {
   virtual void SetUp() {
     // Need a MODE_SERVER to make MODE_CLIENTs (like a RenderThread) happy.
     channel_ = new IPC::Channel(kThreadName, IPC::Channel::MODE_SERVER, NULL);
-    render_process_.reset(new RenderProcess());
+    render_process_.reset(new RenderProcessImpl);
   }
 
   virtual void TearDown() {
@@ -34,7 +34,7 @@ class RenderProcessTest : public testing::Test {
 
  private:
   MessageLoopForIO message_loop_;
-  scoped_ptr<RenderProcess> render_process_;
+  scoped_ptr<RenderProcessImpl> render_process_;
   IPC::Channel *channel_;
 };
 

@@ -37,6 +37,8 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
       const std::string& mime_type,
       const base::WeakPtr<RenderView>& render_view);
 
+  NPAPI::PluginInstance* instance() { return instance_.get(); }
+
   // WebPluginDelegate implementation
   virtual bool Initialize(const GURL& url,
                           const std::vector<std::string>& arg_names,
@@ -144,6 +146,12 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
   // Returns the path for the library implementing this plugin.
   FilePath GetPluginPath();
 
+  // Notifications when the RenderView painted the screen (InitiatedPaint) and
+  // when an ack was received that the browser copied it to the screen
+  // (FlushedPaint).
+  void RenderViewInitiatedPaint();
+  void RenderViewFlushedPaint();
+
  private:
   WebPluginDelegatePepper(
       const base::WeakPtr<RenderView>& render_view,
@@ -156,8 +164,6 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
 
   //-----------------------------------------
   // used for windowed and windowless plugins
-
-  NPAPI::PluginInstance* instance() { return instance_.get(); }
 
   // Closes down and destroys our plugin instance.
   void DestroyInstance();
@@ -191,7 +197,8 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
   std::vector<gfx::Rect> cutout_rects_;
 
   // Open device contexts
-  IDMap<Graphics2DDeviceContext, IDMapOwnPointer> graphic2d_contexts_;
+  typedef IDMap<Graphics2DDeviceContext, IDMapOwnPointer> Graphics2DMap;
+  Graphics2DMap graphic2d_contexts_;
   IDMap<AudioDeviceContext, IDMapOwnPointer> audio_contexts_;
 
   // Plugin graphics context implementation

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,7 +28,7 @@ class RenderWidgetTest : public testing::Test {
  private:
   // testing::Test
   virtual void SetUp() {
-    mock_process_.reset(new MockProcess());
+    mock_process_.reset(new MockRenderProcess);
     render_thread_.set_routing_id(kRouteId);
     widget_ = RenderWidget::Create(kOpenerId, &render_thread_, true);
     ASSERT_TRUE(widget_);
@@ -38,7 +38,7 @@ class RenderWidgetTest : public testing::Test {
     mock_process_.reset();
   }
 
-  scoped_ptr<MockProcess> mock_process_;
+  scoped_ptr<MockRenderProcess> mock_process_;
 };
 
 TEST_F(RenderWidgetTest, CreateAndCloseWidget) {

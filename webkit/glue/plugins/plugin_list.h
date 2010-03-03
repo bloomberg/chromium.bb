@@ -91,6 +91,12 @@ class PluginList {
   // be loaded using PluginList::LoadPlugin().
   void RegisterInternalPlugin(const PluginVersionInfo& info);
 
+  // Removes a specified internal plugin from the list. The search will match
+  // on the path from the version info previously registered.
+  //
+  // This is generally only necessary for tests.
+  void UnregisterInternalPlugin(const FilePath& path);
+
   // Creates a WebPluginInfo structure given a plugin's path.  On success
   // returns true, with the information being put into "info".  If it's an
   // internal plugin, "entry_points" is filled in as well with a
