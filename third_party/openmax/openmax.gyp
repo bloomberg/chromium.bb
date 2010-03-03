@@ -71,6 +71,7 @@
             '<(output_root)',
             '../..',  # The chromium 'src' directory.
           ],
+          'hard_dependency': 1,
           'direct_dependent_settings': {
             'include_dirs': [
               '<(output_root)',
