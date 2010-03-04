@@ -504,7 +504,10 @@ HistoryView.prototype.displayResults_ = function() {
     resultTable.border = 0;
 
     for (var i = 0, page; page = results[i]; i++) {
-      resultTable.appendChild(page.getSearchResultDOM());
+      if (!page.isRendered) {
+        resultTable.appendChild(page.getSearchResultDOM());
+        this.setPageRendered_(page);
+      }
     }
     this.resultDiv_.appendChild(resultTable);
   } else {
