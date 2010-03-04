@@ -155,10 +155,14 @@
 @implementation BrowserWindowController
 
 + (BrowserWindowController*)browserWindowControllerForView:(NSView*)view {
-  BrowserWindowController* controller = [[view window] windowController];
-  if (![controller isKindOfClass:[BrowserWindowController class]])
-    return nil;
-  return controller;
+  NSWindow* window = [view window];
+  while (window) {
+    id controller = [window windowController];
+    if ([controller isKindOfClass:[BrowserWindowController class]])
+      return (BrowserWindowController*)controller;
+    window = [window parentWindow];
+  }
+  return nil;
 }
 
 // Load the browser window nib and do any Cocoa-specific initialization.

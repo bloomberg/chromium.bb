@@ -119,7 +119,9 @@ class TabStripModelObserverBridge;
 
 // A convenience class method which gets the controller for window containing
 // the given view, casted to a |BrowserWindowController|. Returns nil if the
-// window controller is not a |BrowserWindowController|.
+// window controller is not a |BrowserWindowController|.  If the window
+// containing |view| does not have a |BrowserWindowController|, this method will
+// also walk up the chain of parent windows.
 + (BrowserWindowController*)browserWindowControllerForView:(NSView*)view;
 
 // Load the browser window nib and do any Cocoa-specific initialization.
