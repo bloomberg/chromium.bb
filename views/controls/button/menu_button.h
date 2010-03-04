@@ -89,6 +89,10 @@ class MenuButton : public TextButton {
   // Whether or not we're showing a drop marker.
   bool show_menu_marker_;
 
+  // The down arrow used to differentiate the menu button from normal
+  // text buttons.
+  const SkBitmap* const menu_marker_;
+
   DISALLOW_COPY_AND_ASSIGN(MenuButton);
 };
 

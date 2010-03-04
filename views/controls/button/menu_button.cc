@@ -27,10 +27,6 @@ namespace views {
 // pressed event to show the menu.
 static const int64 kMinimumTimeBetweenButtonClicks = 100;
 
-// The down arrow used to differentiate the menu button from normal
-// text buttons.
-static const SkBitmap* kMenuMarker = NULL;
-
 // How much padding to put on the left and right of the menu marker.
 static const int kMenuMarkerPaddingLeft = 3;
 static const int kMenuMarkerPaddingRight = -1;
@@ -51,11 +47,9 @@ MenuButton::MenuButton(ButtonListener* listener,
     : TextButton(listener, text),
       menu_visible_(false),
       menu_delegate_(menu_delegate),
-      show_menu_marker_(show_menu_marker) {
-  if (kMenuMarker == NULL) {
-    kMenuMarker = ResourceBundle::GetSharedInstance()
-        .GetBitmapNamed(IDR_MENU_DROPARROW);
-  }
+      show_menu_marker_(show_menu_marker),
+      menu_marker_(ResourceBundle::GetSharedInstance().GetBitmapNamed(
+          IDR_MENU_DROPARROW)) {
   set_alignment(TextButton::ALIGN_LEFT);
 }
 
@@ -71,7 +65,7 @@ MenuButton::~MenuButton() {
 gfx::Size MenuButton::GetPreferredSize() {
   gfx::Size prefsize = TextButton::GetPreferredSize();
   if (show_menu_marker_) {
-    prefsize.Enlarge(kMenuMarker->width() + kMenuMarkerPaddingLeft +
+    prefsize.Enlarge(menu_marker_->width() + kMenuMarkerPaddingLeft +
                          kMenuMarkerPaddingRight,
                      0);
   }
@@ -89,12 +83,12 @@ void MenuButton::Paint(gfx::Canvas* canvas, bool for_drag) {
     // regarding why we can not flip the canvas). Therefore, we need to
     // manually mirror the position of the down arrow.
     gfx::Rect arrow_bounds(width() - insets.right() -
-                           kMenuMarker->width() - kMenuMarkerPaddingRight,
-                           height() / 2 - kMenuMarker->height() / 2,
-                           kMenuMarker->width(),
-                           kMenuMarker->height());
+                           menu_marker_->width() - kMenuMarkerPaddingRight,
+                           height() / 2 - menu_marker_->height() / 2,
+                           menu_marker_->width(),
+                           menu_marker_->height());
     arrow_bounds.set_x(MirroredLeftPointForRect(arrow_bounds));
-    canvas->DrawBitmapInt(*kMenuMarker, arrow_bounds.x(), arrow_bounds.y());
+    canvas->DrawBitmapInt(*menu_marker_, arrow_bounds.x(), arrow_bounds.y());
   }
 }
 
