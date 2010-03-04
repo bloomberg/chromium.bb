@@ -6,6 +6,7 @@
 #define NET_SOCKET_TCP_PINGER_H_
 
 #include "base/compiler_specific.h"
+#include "base/dynamic_annotations.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
@@ -106,7 +107,10 @@ class TCPPinger {
 
     int TimedWaitForResult(base::TimeDelta tryTimeout) {
       event_.TimedWait(tryTimeout);
-      return net_error_;
+      // In case of timeout, the value of net_error_ should be ERR_IO_PENDING.
+      // However, a harmless data race can happen if TimedWait times out right
+      // before event_.Signal() is called in ConnectDone().
+      return ANNOTATE_UNPROTECTED_READ(net_error_);
     }
 
     int WaitForResult() {
