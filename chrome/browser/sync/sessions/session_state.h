@@ -33,7 +33,8 @@ class UpdateProgress;
 struct SyncerStatus {
   SyncerStatus()
       : over_quota(false), invalid_store(false), syncer_stuck(false),
-        syncing(false), num_successful_commits(0) {}
+        syncing(false), num_successful_commits(0),
+        num_successful_bookmark_commits(0) {}
 
   bool over_quota;
   // True when we get such an INVALID_STORE error from the server.
