@@ -84,11 +84,6 @@ std::string ProcessExtension(CERTCertExtension* extension) {
   return rv;
 }
 
-std::string ProcessSubjectPublicKeyInfo(CERTSubjectPublicKeyInfo* spki) {
-  // TODO(mattm): firefox decodes the key and displays modulus and exponent.
-  return psm::ProcessRawBits(&spki->subjectPublicKey);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // Gtk utility functions.
 
@@ -485,7 +480,7 @@ void CertificateViewer::FillTreeStoreWithCertFields(GtkTreeStore* store,
       FIELDS_NAME,
       l10n_util::GetStringUTF8(IDS_CERT_DETAILS_SUBJECT_KEY).c_str(),
       FIELDS_VALUE,
-      ProcessSubjectPublicKeyInfo(&cert->subjectPublicKeyInfo).c_str(),
+      psm::ProcessSubjectPublicKeyInfo(&cert->subjectPublicKeyInfo).c_str(),
       -1);
 
   if (cert->extensions) {

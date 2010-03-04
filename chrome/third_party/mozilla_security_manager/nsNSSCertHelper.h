@@ -92,6 +92,7 @@ std::string ProcessKeyUsageBitString(SECItem* bitstring, char sep);
 std::string ProcessKeyUsageExtension(SECItem* extension_data);
 std::string ProcessExtKeyUsage(SECItem* extension_data);
 std::string ProcessExtensionData(SECOidTag oid_tag, SECItem* extension_data);
+std::string ProcessSubjectPublicKeyInfo(CERTSubjectPublicKeyInfo* spki);
 
 }  // namespace mozilla_security_manager
 

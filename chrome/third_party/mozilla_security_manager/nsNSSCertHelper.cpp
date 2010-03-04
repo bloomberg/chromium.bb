@@ -40,6 +40,7 @@
 
 #include "chrome/third_party/mozilla_security_manager/nsNSSCertHelper.h"
 
+#include <keyhi.h>
 #include <prprf.h>
 
 #include "app/l10n_util.h"
@@ -830,6 +831,29 @@ std::string ProcessExtensionData(SECOidTag oid_tag, SECItem* extension_data) {
         return ProcessBMPString(extension_data);
       return ProcessRawBytes(extension_data);
   }
+}
+
+std::string ProcessSubjectPublicKeyInfo(CERTSubjectPublicKeyInfo* spki) {
+  std::string rv;
+  SECKEYPublicKey* key = SECKEY_ExtractPublicKey(spki);
+  if (key) {
+    switch (key->keyType) {
+      case rsaKey: {
+        rv = l10n_util::GetStringFUTF8(
+            IDS_CERT_RSA_PUBLIC_KEY_DUMP_FORMAT,
+            UintToString16(key->u.rsa.modulus.len * 8),
+            UTF8ToUTF16(ProcessRawBytes(&key->u.rsa.modulus)),
+            UintToString16(key->u.rsa.publicExponent.len * 8),
+            UTF8ToUTF16(ProcessRawBytes(&key->u.rsa.publicExponent)));
+        break;
+      }
+      default:
+        rv = ProcessRawBits(&spki->subjectPublicKey);
+        break;
+    }
+    SECKEY_DestroyPublicKey(key);
+  }
+  return rv;
 }
 
 }  // namespace mozilla_security_manager

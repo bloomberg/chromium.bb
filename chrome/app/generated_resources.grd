@@ -2666,6 +2666,9 @@ each locale. -->
       <message name="IDS_CERT_DETAILS_SUBJECT_KEY" desc="The label of the Subject's Public Key element in the details page of the certificate info dialog. (In this case, subject refers to the entity the certificate was issued to.)">
         Subject's Public Key
       </message>
+      <message name="IDS_CERT_RSA_PUBLIC_KEY_DUMP_FORMAT" desc="Format for displaying a textual dump of an RSA public key.">
+        Modulus (<ph name="MODULUS_NUM_BITS">$1<ex>1024</ex></ph> bits):\n<ph name="MODULUS_HEX_DUMP">$2<ex>00 0A 38 CF ...</ex></ph>\n\nPublic Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):\n<ph name="EXPONENT_HEX_DUMP">$4<ex>01 00 01</ex></ph>
+      </message>
       <message name="IDS_CERT_DETAILS_EXTENSIONS" desc="The label of the Extensions element in the details page of the certificate info dialog.">
         Extensions
       </message>
