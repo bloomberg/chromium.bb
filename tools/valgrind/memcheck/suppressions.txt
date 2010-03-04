@@ -2386,21 +2386,6 @@
    fun:_ZN2v88internal4Heap24PerformGarbageCollectionENS0_15AllocationSpaceENS0_16GarbageCollectorEPNS0_8GCTracerE
 }
 {
-   bug_37092
-   Memcheck:Addr4
-   fun:_ZN18ProfileSyncService26GetLsidForAuthBootstrapingEv
-   fun:_ZN18ProfileSyncService10InitializeEv
-   fun:_ZN14TestingProfile24CreateProfileSyncServiceEv
-   fun:_ZN34TabContentsTest_NTPViewSource_Test8TestBodyEv
-   fun:_ZN7testing4Test3RunEv
-   fun:_ZN7testing8internal12TestInfoImpl3RunEv
-   fun:_ZN7testing8TestCase3RunEv
-   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
-   fun:_ZN7testing8UnitTest3RunEv
-   fun:_ZN9TestSuite3RunEv
-   fun:main
-}
-{
    bug_37168
    Memcheck:Leak
    fun:_Znw*
