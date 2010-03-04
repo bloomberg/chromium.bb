@@ -2163,11 +2163,7 @@ void RenderView::willClose(WebFrame* frame) {
 bool RenderView::allowPlugins(WebFrame* frame, bool enabled_per_settings) {
   if (!enabled_per_settings)
     return false;
-  if (!AllowContentType(CONTENT_SETTINGS_TYPE_PLUGINS)) {
-    DidBlockContentType(CONTENT_SETTINGS_TYPE_PLUGINS);
-    return false;
-  }
-  return true;
+  return AllowContentType(CONTENT_SETTINGS_TYPE_PLUGINS);
 }
 
 bool RenderView::allowImages(WebFrame* frame, bool enabled_per_settings) {
@@ -2871,6 +2867,10 @@ bool RenderView::allowScript(WebFrame* frame, bool enabled_per_settings) {
 
 void RenderView::didNotAllowScript(WebKit::WebFrame* frame) {
   DidBlockContentType(CONTENT_SETTINGS_TYPE_JAVASCRIPT);
+}
+
+void RenderView::didNotAllowPlugins(WebKit::WebFrame* frame) {
+  DidBlockContentType(CONTENT_SETTINGS_TYPE_PLUGINS);
 }
 
 void RenderView::didExhaustMemoryAvailableForScript(WebFrame* frame) {
