@@ -145,8 +145,6 @@ int pthread_mutex_unlock (pthread_mutex_t *mutex) {
  */
 int pthread_once(pthread_once_t* __once_control,
                   void (*__init_routine) (void)) {
-/* BUG(khim): uncomment the body once x86-64 GCC will have a threading model */
-#if !defined(__x86_64__) || !defined(__native_client__)
 /*
  * NOTE(gregoryd): calling pthread_once from __init_routine providing the same
  * __once_control argument is an error and will cause a deadlock
@@ -168,7 +166,6 @@ int pthread_once(pthread_once_t* __once_control,
     }
     pthread_mutex_unlock(&__once_control->lock);
   }
-#endif
   return 0;
 }
 
