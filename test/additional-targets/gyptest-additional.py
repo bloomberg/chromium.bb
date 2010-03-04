@@ -28,7 +28,9 @@ file_content = 'Hello from emit.py\n'
 test.built_file_must_match('out2.txt', file_content, chdir=chdir)
 
 test.built_file_must_not_exist('out.txt', chdir='relocate/src')
-test.built_file_must_not_exist('lib1.dll', chdir='relocate/src')
+test.built_file_must_not_exist('foolib1',
+                               type=test.SHARED_LIB,
+                               chdir=chdir)
 
 # TODO(mmoss) Make consistent with scons, with 'dir1' before 'out/Default'?
 if test.format == 'make':
@@ -46,13 +48,8 @@ test.built_file_must_exist('out.txt', chdir=chdir)
 # Build the shared library explicitly.
 test.build('actions.gyp', 'foolib1', chdir=chdir)
 
-if test.format == 'make':
-  # TODO(mmoss) Make consistent with scons, with 'dir1' before 'out/Default'?
-  test.must_exist('relocate/src/out/Default/lib.target/dir1/'
-                  + test.dll_ + 'foolib1' + test._dll)
-else:
-  test.built_file_must_exist('foolib1',
-                             type=test.SHARED_LIB,
-                             chdir=chdir)
+test.built_file_must_exist('foolib1',
+                           type=test.SHARED_LIB,
+                           chdir=chdir)
 
 test.pass_test()

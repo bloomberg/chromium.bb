@@ -815,7 +815,6 @@ class MakefileWriter:
         target = target[3:]
       target_prefix = 'lib'
       target_ext = '.so'
-      path = os.path.join('$(builddir)', 'lib.' + self.toolset, self.path)
     elif self.type == 'none':
       target = '%s.stamp' % target
     elif self.type == 'settings':
@@ -908,7 +907,9 @@ class MakefileWriter:
       print "WARNING: no output for", self.type, target
 
     # Add an alias for each target (if there are any outputs).
-    if self.output and self.output != self.target:
+    # Installable target aliases are created below.
+    if ((self.output and self.output != self.target) and
+        (self.type not in self._INSTALLABLE_TARGETS)):
       self.WriteMakeRule([self.target], [self.output],
                          comment='Add target alias')
 
@@ -926,6 +927,9 @@ class MakefileWriter:
         file_desc = 'executable'
         binpath = '$(builddir)/' + self.alias
       installable_deps = [self.output]
+      # Point the target alias to the final binary output.
+      self.WriteMakeRule([self.target], [binpath],
+                         comment='Add target alias')
       if binpath != self.output:
         self.WriteDoCmd([binpath], [self.output], 'copy',
                         comment = 'Copy this to the %s output path.' %
