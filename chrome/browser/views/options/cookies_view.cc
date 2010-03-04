@@ -246,10 +246,7 @@ void CookiesView::OnTreeViewKeyDown(base::KeyboardCode keycode) {
 
 void CookiesView::UpdateSearchResults() {
   cookies_tree_model_->UpdateSearchResults(search_field_->text());
-  remove_button_->SetEnabled(cookies_tree_model_->GetRoot()->
-      GetTotalNodeCount() > 1);
-  remove_all_button_->SetEnabled(cookies_tree_model_->GetRoot()->
-      GetTotalNodeCount() > 1);
+  UpdateRemoveButtonsState();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -376,7 +373,7 @@ void CookiesView::UpdateRemoveButtonsState() {
   remove_button_->SetEnabled(cookies_tree_model_->GetRoot()->
       GetTotalNodeCount() > 1 && cookies_tree_->GetSelectedNode());
   remove_all_button_->SetEnabled(cookies_tree_model_->GetRoot()->
-      GetTotalNodeCount() > 1 && cookies_tree_->GetSelectedNode());
+      GetTotalNodeCount() > 1);
 }
 
 void CookiesView::UpdateVisibleDetailedInfo(views::View* view) {
