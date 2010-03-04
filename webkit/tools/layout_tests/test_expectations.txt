@@ -2760,10 +2760,6 @@ BUG32949 WIN LINUX MAC : fast/dom/Window/invalid-protocol.html = TEXT
 BUG33099 : media/video-reverse-play-duration.html = TIMEOUT
 BUG33099 : media/video-timeupdate-reverse-play.html = TIMEOUT
 
-// Flaky storage tests
-BUG33343 : storage/database-lock-after-reload.html = CRASH TEXT PASS
-BUG33343 DEBUG : storage/multiple-databases-garbage-collection.html = CRASH PASS
-
 BUG21852 DEFER SKIP LINUX WIN : fast/canvas/webgl = CRASH
 
 // Disabled until we get history.{back,forward,go} changed to always be
