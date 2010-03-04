@@ -83,3 +83,8 @@ WorkerTest.MultipleTabsQueuedSharedWorker
 WorkerTest.QueuedSharedWorkerStartedFromOtherTab
 WorkerTest.QueuedSharedWorkerShutdown
 WorkerTest.WorkerClose
+
+# TODO(rsesek): This is temporary to see if Valgrind succeeds if this is
+# disabled. Mac-UI-Valgrind has been red due to tiemouts. Will be removed
+# after two Valgrind runs.
+WorkerTest.*
