@@ -489,7 +489,12 @@ def GenerateSConscript(output_filename, spec, build_file, build_file_data):
            '    %s,\n'
            '    GYPCopy(\'$TARGET\', \'$SOURCE\'))\n')
     for f in copy['files']:
-      dest = os.path.join(destdir, os.path.basename(f))
+      # Remove trailing separators so basename() acts like Unix basename and
+      # always returns the last element, whether a file or dir. Without this,
+      # only the contents, not the directory itself, are copied (and nothing
+      # might be copied if dest already exists, since scons thinks nothing needs
+      # to be done).
+      dest = os.path.join(destdir, os.path.basename(f.rstrip(os.sep)))
       f = FixPath(f, src_subdir_)
       dest = FixPath(dest, src_subdir_)
       fp.write(fmt % (repr(dest), repr(f)))

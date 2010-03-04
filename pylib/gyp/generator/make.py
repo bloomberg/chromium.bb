@@ -171,7 +171,8 @@ quiet_cmd_touch = TOUCH $@
 cmd_touch = touch $@
 
 quiet_cmd_copy = COPY $@
-cmd_copy = ln -f $< $@ || cp -af $< $@
+# send stderr to /dev/null to ignore messages when linking directories.
+cmd_copy = ln -f $< $@ 2>/dev/null || cp -af $< $@
 
 # Due to circular dependencies between libraries :(, we wrap the
 # special "figure out circular dependencies" flags around the entire
