@@ -27,6 +27,9 @@ std::string getFontFamilyForCharacters(const uint16_t* utf16, size_t num_utf16);
 void getRenderStyleForStrike(const char* family, int sizeAndStyle,
                              WebKit::WebFontRenderStyle* out);
 
+// Returns a file descriptor for a shared memory segment.
+int MakeSharedMemorySegmentViaIPC(size_t length);
+
 };  // namespace render_sandbox_support
 
 #endif  // CHROME_RENDERER_RENDERER_SANDBOX_SUPPORT_LINUX_H_

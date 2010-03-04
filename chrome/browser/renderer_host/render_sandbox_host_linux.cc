@@ -19,6 +19,7 @@
 #include "base/pickle.h"
 #include "base/process_util.h"
 #include "base/scoped_ptr.h"
+#include "base/shared_memory.h"
 #include "base/string_util.h"
 #include "base/unix_domain_socket_posix.h"
 #include "chrome/common/sandbox_methods_linux.h"
@@ -136,6 +137,8 @@ class SandboxIPCProcess  {
       HandleGetChildWithInode(fd, pickle, iter, fds);
     } else if (kind == LinuxSandbox::METHOD_GET_STYLE_FOR_STRIKE) {
       HandleGetStyleForStrike(fd, pickle, iter, fds);
+    } else if (kind == LinuxSandbox::METHOD_MAKE_SHARED_MEMORY_SEGMENT) {
+      HandleMakeSharedMemorySegment(fd, pickle, iter, fds);
     }
 
   error:
@@ -327,6 +330,19 @@ class SandboxIPCProcess  {
     Pickle reply;
     reply.WriteInt(pid);
     SendRendererReply(fds, reply, -1);
+  }
+
+  void HandleMakeSharedMemorySegment(int fd, const Pickle& pickle, void* iter,
+                                     std::vector<int>& fds) {
+    uint32_t shm_size;
+    if (!pickle.ReadUInt32(&iter, &shm_size))
+      return;
+    int shm_fd = -1;
+    base::SharedMemory shm;
+    if (shm.Create(L"", false, false, shm_size))
+      shm_fd = shm.handle().fd;
+    Pickle reply;
+    SendRendererReply(fds, reply, shm_fd);
   }
 
   void SendRendererReply(const std::vector<int>& fds, const Pickle& reply,
