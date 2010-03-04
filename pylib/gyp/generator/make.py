@@ -87,6 +87,7 @@ BUILDTYPE ?= __default_configuration__
 # as they reach into the src/ directory for data with relative paths.
 builddir ?= $(builddir_name)/$(BUILDTYPE)
 abs_builddir := $(abspath $(builddir))
+depsdir := $(builddir)/.deps
 
 # Object output directory.
 obj := $(builddir)/obj
@@ -124,7 +125,7 @@ RANLIB.host ?= ranlib
 # careful here to use the flags that ccache and distcc can understand.
 # We write to a temporary dep file first and then rename at the end
 # so we can't end up with a broken dep file.
-depfile = $@.d
+depfile = $(depsdir)/$@.d
 DEPFLAGS = -MMD -MF $(depfile).tmp
 
 # We have to fixup the deps output in a few ways.
@@ -225,7 +226,7 @@ prereq_changed = $(filter-out $|,$?)
 define do_cmd
 $(if $(or $(command_changed),$(prereq_changed)),
   @echo '  $($(quiet)cmd_$(1))'
-  @mkdir -p $(dir $@)
+  @mkdir -p $(dir $@) $(dir $(depfile))
   @$(cmd_$(1))
   @echo '$(call escape_vars,$(call escape_quotes,cmd_$@ := $(cmd_$(1))))' > $(depfile)
   @$(if $(2),$(fixup_dep))
@@ -376,7 +377,7 @@ all: $(all_targets)
 # built, as unbuilt targets will be built regardless of dependency info:
 all_deps := $(wildcard $(sort $(all_deps)))
 # Of those, only consider the ones with .d (dependency) info:
-d_files := $(wildcard $(foreach f,$(all_deps),$(f).d))
+d_files := $(wildcard $(foreach f,$(all_deps),$(depsdir)/$(f).d))
 ifneq ($(d_files),)
   include $(d_files)
 endif
