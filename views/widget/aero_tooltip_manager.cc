@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,11 +39,10 @@ void AeroTooltipManager::OnMouse(UINT u_msg, WPARAM w_param, LPARAM l_param) {
       ::MapWindowPoints(HWND_DESKTOP, GetParent(), &temp, 1);
       mouse_pos.SetPoint(temp.x, temp.y);
     }
-    if (last_mouse_x_ != mouse_pos.x() || last_mouse_y_ != mouse_pos.y()) {
-      last_mouse_x_ = mouse_pos.x();
-      last_mouse_y_ = mouse_pos.y();
+    if (last_mouse_pos_ != mouse_pos) {
+      last_mouse_pos_ = mouse_pos;
       HideKeyboardTooltip();
-      UpdateTooltip(mouse_pos.x(), mouse_pos.y());
+      UpdateTooltip(mouse_pos);
     }
 
     // Delay opening of the tooltip just in case the user moves their
@@ -64,7 +63,7 @@ void AeroTooltipManager::OnMouse(UINT u_msg, WPARAM w_param, LPARAM l_param) {
 }
 
 void AeroTooltipManager::OnMouseLeave() {
-  last_mouse_x_ = last_mouse_y_ = -1;
+  last_mouse_pos_.SetPoint(-1, -1);
   UpdateTooltip();
 }
 
@@ -99,9 +98,7 @@ void AeroTooltipManager::Init() {
 void AeroTooltipManager::OnTimer() {
   initial_timer_ = NULL;
 
-  POINT pt;
-  pt.x = last_mouse_x_;
-  pt.y = last_mouse_y_;
+  POINT pt = last_mouse_pos_.ToPOINT();
   ::ClientToScreen(GetParent(), &pt);
 
   // Set the position and visibility.

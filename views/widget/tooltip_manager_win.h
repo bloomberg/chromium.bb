@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,11 +11,12 @@
 
 #include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
+#include "base/gfx/point.h"
 #include "base/task.h"
 #include "views/widget/tooltip_manager.h"
 
 namespace gfx {
-class Font;
+class Point;
 }
 
 namespace views {
@@ -84,7 +85,7 @@ class TooltipManagerWin : public TooltipManager {
   gfx::NativeView GetParent();
 
   // Updates the tooltip for the specified location.
-  void UpdateTooltip(int x, int y);
+  void UpdateTooltip(const gfx::Point& location);
 
   // Tooltip control window.
   HWND tooltip_hwnd_;
@@ -93,8 +94,7 @@ class TooltipManagerWin : public TooltipManager {
   TOOLINFO toolinfo_;
 
   // Last location of the mouse. This is in the coordinates of the rootview.
-  int last_mouse_x_;
-  int last_mouse_y_;
+  gfx::Point last_mouse_pos_;
 
   // Whether or not the tooltip is showing.
   bool tooltip_showing_;
