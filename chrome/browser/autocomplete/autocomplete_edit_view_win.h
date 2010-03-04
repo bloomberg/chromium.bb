@@ -25,7 +25,6 @@
 #include "views/controls/menu/menu_2.h"
 
 class AutocompletePopupModel;
-class CommandUpdater;
 class Profile;
 class TabContents;
 namespace views {
@@ -121,6 +120,7 @@ class AutocompleteEditViewWin
   virtual void OnBeforePossibleChange();
   virtual bool OnAfterPossibleChange();
   virtual gfx::NativeView GetNativeView() const;
+  virtual CommandUpdater* GetCommandUpdater();
 
   // Exposes custom IAccessible implementation to the overall MSAA hierarchy.
   IAccessible* GetIAccessible();

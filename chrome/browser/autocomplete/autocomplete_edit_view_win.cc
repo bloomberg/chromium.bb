@@ -851,6 +851,10 @@ gfx::NativeView AutocompleteEditViewWin::GetNativeView() const {
   return m_hWnd;
 }
 
+CommandUpdater* AutocompleteEditViewWin::GetCommandUpdater() {
+  return command_updater_;
+}
+
 void AutocompleteEditViewWin::PasteAndGo(const std::wstring& text) {
   if (CanPasteAndGo(text))
     model_->PasteAndGo();

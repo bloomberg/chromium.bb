@@ -18,6 +18,7 @@
 #include "webkit/glue/window_open_disposition.h"
 
 class AutocompleteEditModel;
+class CommandUpdater;
 class GURL;
 class TabContents;
 
@@ -128,6 +129,9 @@ class AutocompleteEditView {
 
   // Returns the gfx::NativeView of the edit view.
   virtual gfx::NativeView GetNativeView() const = 0;
+
+  // Returns the command updater for this view.
+  virtual CommandUpdater* GetCommandUpdater() = 0;
 
  protected:
   virtual ~AutocompleteEditView() {}

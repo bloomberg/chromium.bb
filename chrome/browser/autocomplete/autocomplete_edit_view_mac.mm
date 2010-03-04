@@ -565,6 +565,10 @@ gfx::NativeView AutocompleteEditViewMac::GetNativeView() const {
   return field_;
 }
 
+CommandUpdater* AutocompleteEditViewMac::GetCommandUpdater() {
+  return command_updater_;
+}
+
 void AutocompleteEditViewMac::OnDidBeginEditing() {
   // We should only arrive here when the field is focussed.
   DCHECK([field_ currentEditor]);

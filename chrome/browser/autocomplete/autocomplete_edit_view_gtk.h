@@ -25,7 +25,6 @@ class AutocompleteEditController;
 class AutocompleteEditModel;
 class AutocompletePopupView;
 class BubblePositioner;
-class CommandUpdater;
 class Profile;
 class TabContents;
 
@@ -111,6 +110,7 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   virtual void OnBeforePossibleChange();
   virtual bool OnAfterPossibleChange();
   virtual gfx::NativeView GetNativeView() const;
+  virtual CommandUpdater* GetCommandUpdater();
 
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,

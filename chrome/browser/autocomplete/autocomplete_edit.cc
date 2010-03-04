@@ -8,9 +8,11 @@
 
 #include "base/basictypes.h"
 #include "base/string_util.h"
+#include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/autocomplete/keyword_provider.h"
+#include "chrome/browser/command_updater.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/dns_global.h"
 #include "chrome/browser/net/url_fixer_upper.h"
@@ -186,6 +188,9 @@ void AutocompleteEditModel::StartAutocomplete(
 }
 
 bool AutocompleteEditModel::CanPasteAndGo(const std::wstring& text) const {
+  if (!view_->GetCommandUpdater()->IsCommandEnabled(IDC_OPEN_CURRENT_URL))
+    return false;
+
   paste_and_go_url_ = GURL();
   paste_and_go_transition_ = PageTransition::TYPED;
   paste_and_go_alternate_nav_url_ = GURL();

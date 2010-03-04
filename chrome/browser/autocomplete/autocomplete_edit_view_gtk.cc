@@ -560,6 +560,10 @@ gfx::NativeView AutocompleteEditViewGtk::GetNativeView() const {
   return alignment_.get();
 }
 
+CommandUpdater* AutocompleteEditViewGtk::GetCommandUpdater() {
+  return command_updater_;
+}
+
 void AutocompleteEditViewGtk::Observe(NotificationType type,
                                       const NotificationSource& source,
                                       const NotificationDetails& details) {
@@ -926,6 +930,8 @@ void AutocompleteEditViewGtk::HandlePopulatePopup(GtkMenu* menu) {
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), search_engine_menuitem);
   g_signal_connect(search_engine_menuitem, "activate",
                    G_CALLBACK(HandleEditSearchEnginesThunk), this);
+  gtk_widget_set_sensitive(search_engine_menuitem,
+      command_updater_->IsCommandEnabled(IDC_EDIT_SEARCH_ENGINES));
   gtk_widget_show(search_engine_menuitem);
 
   // We need to update the paste and go controller before we know what text
@@ -936,7 +942,6 @@ void AutocompleteEditViewGtk::HandlePopulatePopup(GtkMenu* menu) {
   gchar* text = gtk_clipboard_wait_for_text(x_clipboard);
   std::wstring text_wstr = UTF8ToWide(text);
   g_free(text);
-  bool can_paste_and_go = model_->CanPasteAndGo(text_wstr);
 
   // Paste and Go menu item.
   GtkWidget* paste_go_menuitem = gtk_menu_item_new_with_mnemonic(
@@ -946,7 +951,8 @@ void AutocompleteEditViewGtk::HandlePopulatePopup(GtkMenu* menu) {
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), paste_go_menuitem);
   g_signal_connect(paste_go_menuitem, "activate",
                    G_CALLBACK(HandlePasteAndGoThunk), this);
-  gtk_widget_set_sensitive(paste_go_menuitem, can_paste_and_go);
+  gtk_widget_set_sensitive(paste_go_menuitem,
+                           model_->CanPasteAndGo(text_wstr));
   gtk_widget_show(paste_go_menuitem);
 }
 

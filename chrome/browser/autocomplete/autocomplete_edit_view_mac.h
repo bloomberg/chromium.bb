@@ -15,7 +15,6 @@ class AutocompleteEditController;
 class AutocompletePopupViewMac;
 class BubblePositioner;
 class Clipboard;
-class CommandUpdater;
 class Profile;
 class ToolbarModel;
 
@@ -76,6 +75,7 @@ class AutocompleteEditViewMac : public AutocompleteEditView,
   virtual void OnBeforePossibleChange();
   virtual bool OnAfterPossibleChange();
   virtual gfx::NativeView GetNativeView() const;
+  virtual CommandUpdater* GetCommandUpdater();
 
   // Implement the AutocompleteTextFieldObserver interface.
   virtual void OnControlKeyChanged(bool pressed);
