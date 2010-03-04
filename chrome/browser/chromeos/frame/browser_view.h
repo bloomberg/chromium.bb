@@ -26,13 +26,14 @@ class BrowserStatusAreaView;
 class CompactLocationBar;
 class CompactLocationBarHost;
 class CompactNavigationBar;
+class AppLauncher;
 class StatusAreaButton;
 
 // chromeos::BrowserView adds ChromeOS specific controls and menus to a
 // BrowserView created with Browser::TYPE_NORMAL. This extender adds controls
 // to the title bar as follows:
 //                  ____  __ __
-//      [MainMenu] /    \   \  \     [StatusArea]
+//      [AppLauncher] /    \   \  \     [StatusArea]
 //
 // and adds the system context menu to the remaining arae of the titlebar.
 class BrowserView : public ::BrowserView,
@@ -93,8 +94,11 @@ class BrowserView : public ::BrowserView,
  private:
   void InitSystemMenu();
 
-  // Main menu button.
-  views::ImageButton* main_menu_;
+  // AppLauncher instance.
+  scoped_ptr<AppLauncher> main_menu_;
+
+  // AppLauncher button.
+  views::ImageButton* main_menu_button_;
 
   // Status Area view.
   BrowserStatusAreaView* status_area_;

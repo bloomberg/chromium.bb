@@ -117,6 +117,8 @@ class NavigationBar : public views::View,
   }
 
   virtual ~NavigationBar() {
+    if (location_entry_view_->native_view())
+      location_entry_view_->Detach();
   }
 
   // views::View overrides.
@@ -285,28 +287,6 @@ void AppLauncher::BubbleContainer::Layout() {
 ////////////////////////////////////////////////////////////////////////////////
 // AppLauncher
 
-// static
-void AppLauncher::Show(Browser* browser) {
-  AppLauncher::Get()->ShowImpl(browser);
-}
-
-// static
-void AppLauncher::ScheduleCreation() {
-  MessageLoop::current()->PostDelayedTask(FROM_HERE, new LoadTask(), 5000);
-}
-
-AppLauncher::~AppLauncher() {
-  // NOTE: we leak the contents_rvh_ and popup_ as by the time we get here the
-  // message loop and notification services have been shutdown.
-  // TODO(sky): fix this.
-  // contents_rvh_->Shutdown();
-  // popup_->CloseNow();
-  // if (location_entry_view_->native_view())
-  //   location_entry_view_->Detach();
-  // etc
-  ActiveWindowWatcherX::RemoveObserver(this);
-}
-
 AppLauncher::AppLauncher()
     : browser_(NULL),
       popup_(NULL),
@@ -365,9 +345,10 @@ AppLauncher::AppLauncher()
   ActiveWindowWatcherX::AddObserver(this);
 }
 
-// static
-AppLauncher* AppLauncher::Get() {
-  return Singleton<AppLauncher>::get();
+AppLauncher::~AppLauncher() {
+  contents_rvh_->Shutdown();
+  popup_->CloseNow();
+  ActiveWindowWatcherX::RemoveObserver(this);
 }
 
 void AppLauncher::Update(Browser* browser) {
@@ -387,7 +368,7 @@ void AppLauncher::Update(Browser* browser) {
   top_container_->Layout();
 }
 
-void AppLauncher::ShowImpl(Browser* browser) {
+void AppLauncher::Show(Browser* browser) {
   Cleanup();
 
   Update(browser);
@@ -511,15 +492,6 @@ void AppLauncher::TabContentsDelegateImpl::OpenURLFromTab(
   app_launcher_->browser_->OpenURL(url, referrer, NEW_FOREGROUND_TAB,
                                    PageTransition::LINK);
   app_launcher_->Hide();
-}
-
-// LoadTask -------------------------------------------------------------------
-
-void AppLauncher::LoadTask::Run() {
-  if (BrowserList::begin() == BrowserList::end())
-    return;  // No browser are around. Generally only happens during testing.
-
-  AppLauncher::Get();
 }
 
 }  // namespace chromeos

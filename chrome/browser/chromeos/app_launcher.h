@@ -9,7 +9,6 @@
 
 #include "app/active_window_watcher_x.h"
 #include "base/scoped_ptr.h"
-#include "base/singleton.h"
 #include "base/task.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
@@ -56,37 +55,18 @@ class NavigationBar;
 //
 // When a new url is opened, or the user clicks outsides the bounds of the
 // widget the app launcher is closed.
-//
-// AppLauncher manages its own lifetime and currently creates one instance for
-// the life of the browser. This is done to make sure we have the html page
-// loaded when the user clicks on it.
 class AppLauncher : public RenderViewHostDelegate,
                     public RenderViewHostDelegate::View,
                     public ActiveWindowWatcherX::Observer,
                     public views::AcceleratorTarget {
  public:
-  // Shows the app launcher.
-  static void Show(Browser* browser);
-
-  // Schedules creation of the shared AppLauncher.
-  static void ScheduleCreation();
-
+  AppLauncher();
   ~AppLauncher();
 
+  // Shows the menu.
+  void Show(Browser* browser);
+
  private:
-  friend struct DefaultSingletonTraits<AppLauncher>;
-
-  // Task used to ask for the AppLauncher instance. This is scheduled from
-  // ScheduleCreation.
-  class LoadTask : public Task {
-   public:
-    LoadTask() {}
-    virtual void Run();
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(LoadTask);
-  };
-
   // TabContentsDelegate and RenderViewHostDelegate::View have some methods
   // in common (with differing signatures). The TabContentsDelegate methods are
   // implemented by this class.
@@ -153,14 +133,6 @@ class AppLauncher : public RenderViewHostDelegate,
   friend class NavigationBar;
   friend class TabContentsDelegateImpl;
   friend class TopContainer;
-
-  AppLauncher();
-
-  // Returns the single AppLauncher instance.
-  static AppLauncher* Get();
-
-  // Shows the app launcher for the specified browser.
-  void ShowImpl(Browser* browser);
 
   // Hides the app launcher.
   void Hide();
