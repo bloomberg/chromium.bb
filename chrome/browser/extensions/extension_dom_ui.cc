@@ -30,13 +30,9 @@ ExtensionDOMUI::ExtensionDOMUI(TabContents* tab_contents)
 
   // For chrome:// overrides, some of the defaults are a little different.
   GURL url = tab_contents->GetURL();
-  if (url.SchemeIs(chrome::kChromeUIScheme)) {
-    if (url.host() == chrome::kChromeUINewTabHost) {
-      focus_location_bar_by_default_ = true;
-    } else {
-      // Current behavior of other chrome:// pages is to display the URL.
-      should_hide_url_ = false;
-    }
+  if (url.SchemeIs(chrome::kChromeUIScheme) &&
+      url.host() == chrome::kChromeUINewTabHost) {
+    focus_location_bar_by_default_ = true;
   }
 }
 
