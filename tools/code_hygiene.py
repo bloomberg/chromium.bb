@@ -497,7 +497,6 @@ CHECKS = [# fatal checks
           (1, 'extern', ExternChecker()),
           (1, 'untrusted_ifdef', UntrustedIfDefChecker()),
           (1, 'untrusted_asm', UntrustedAsmChecker()),
-          (1, 'scons_gyp_matching', SconsGypMatchingChecker()),
           # Non fatal checks
           (0, 'open_curly', OpenCurlyChecker()),
           (0, 'line_length', LineLengthChecker()),
@@ -506,6 +505,7 @@ CHECKS = [# fatal checks
           (0, 'tidy', TidyChecker()),
           (0, 'pychecker', PyChecker()),
           (0, 'cpplint', CppLintChecker()),
+          (0, 'scons_gyp_matching', SconsGypMatchingChecker()),
           ]
 
 
