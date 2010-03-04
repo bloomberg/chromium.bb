@@ -1463,6 +1463,8 @@
         'browser/net/url_request_slow_http_job.h',
         'browser/net/url_request_tracking.cc',
         'browser/net/url_request_tracking.h',
+        'browser/net/view_net_internals_job_factory.cc',
+        'browser/net/view_net_internals_job_factory.h',
         'browser/net/websocket_experiment/websocket_experiment_runner.cc',
         'browser/net/websocket_experiment/websocket_experiment_runner.h',
         'browser/net/websocket_experiment/websocket_experiment_task.cc',

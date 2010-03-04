@@ -1,14 +1,15 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/url_request/url_request_view_net_internals_job.h"
+#include "chrome/browser/net/view_net_internals_job_factory.h"
 
 #include <sstream>
 
 #include "base/format_macros.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
+#include "chrome/common/url_constants.h"
 #include "net/base/escape.h"
 #include "net/base/host_resolver_impl.h"
 #include "net/base/load_log_util.h"
@@ -19,11 +20,48 @@
 #include "net/socket_stream/socket_stream.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_simple_job.h"
 #include "net/url_request/view_cache_helper.h"
 
 namespace {
 
 const char kViewHttpCacheSubPath[] = "view-cache";
+
+std::string GetDetails(const GURL& url) {
+  DCHECK(ViewNetInternalsJobFactory::IsSupportedURL(url));
+  size_t start = strlen(chrome::kNetworkViewInternalsURL);
+  if (start >= url.spec().size())
+    return std::string();
+  return url.spec().substr(start);
+}
+
+GURL MakeURL(const std::string& details) {
+  return GURL(std::string(chrome::kNetworkViewInternalsURL) + details);
+}
+
+// A job subclass that implements a protocol to inspect the internal
+// state of the network stack.
+class ViewNetInternalsJob : public URLRequestSimpleJob {
+ public:
+
+  explicit ViewNetInternalsJob(URLRequest* request)
+      : URLRequestSimpleJob(request) {}
+
+  // URLRequestSimpleJob methods:
+  virtual bool GetData(std::string* mime_type,
+                       std::string* charset,
+                       std::string* data) const;
+
+  // Overridden methods from URLRequestJob:
+  virtual bool IsRedirectResponse(GURL* location, int* http_status_code);
+
+ private:
+  ~ViewNetInternalsJob() {}
+
+  // Returns true if the current request is for a "view-cache" URL.
+  // If it is, then |key| is assigned the particular cache URL of the request.
+  bool GetViewCacheKeyForRequest(std::string* key) const;
+};
 
 //------------------------------------------------------------------------------
 // Format helpers.
@@ -82,13 +120,10 @@ class SubSection {
   virtual void OutputBody(URLRequestContext* context, std::string* out) {}
 
   // Outputs this subsection, and all of its children.
-  void OutputRecursive(URLRequestContext* context,
-                       URLRequestViewNetInternalsJob::URLFormat* url_format,
-                       std::string* out) {
+  void OutputRecursive(URLRequestContext* context, std::string* out) {
     if (!is_root()) {
       // Canonicalizing the URL escapes characters which cause problems in HTML.
-      std::string section_url =
-          url_format->MakeURL(GetFullyQualifiedName()).spec();
+      std::string section_url = MakeURL(GetFullyQualifiedName()).spec();
 
       // Print the heading.
       StringAppendF(
@@ -107,7 +142,7 @@ class SubSection {
     OutputBody(context, out);
 
     for (size_t i = 0; i < children_.size(); ++i)
-      children_[i]->OutputRecursive(context, url_format, out);
+      children_[i]->OutputRecursive(context, out);
 
     if (!is_root())
       out->append("</div>");
@@ -662,11 +697,9 @@ void DrawControlsHeader(URLRequestContext* context, std::string* data) {
   data->append("</div>");
 }
 
-}  // namespace
-
-bool URLRequestViewNetInternalsJob::GetData(std::string* mime_type,
-                                            std::string* charset,
-                                            std::string* data) const {
+bool ViewNetInternalsJob::GetData(std::string* mime_type,
+                                  std::string* charset,
+                                  std::string* data) const {
   mime_type->assign("text/html");
   charset->assign("UTF-8");
 
@@ -677,7 +710,7 @@ bool URLRequestViewNetInternalsJob::GetData(std::string* mime_type,
   // Use a different handler for "view-cache/*" subpaths.
   std::string cache_key;
   if (GetViewCacheKeyForRequest(&cache_key)) {
-    GURL url = url_format_->MakeURL(kViewHttpCacheSubPath + std::string("/"));
+    GURL url = MakeURL(kViewHttpCacheSubPath + std::string("/"));
     ViewCacheHelper::GetEntryInfoHTML(cache_key, context, url.spec(), data);
     return true;
   }
@@ -690,7 +723,7 @@ bool URLRequestViewNetInternalsJob::GetData(std::string* mime_type,
     return true;
   }
 
-  std::string details = url_format_->GetDetails(request_->url());
+  std::string details = GetDetails(request_->url());
 
   data->append("<!DOCTYPE HTML>"
                "<html><head><title>Network internals</title>"
@@ -731,7 +764,7 @@ bool URLRequestViewNetInternalsJob::GetData(std::string* mime_type,
     section = all->FindSubSectionByName(details);
 
   if (section) {
-    section->OutputRecursive(context, url_format_, data);
+    section->OutputRecursive(context, data);
   } else {
     data->append("<i>Nothing found for \"");
     data->append(EscapeForHTML(details));
@@ -743,8 +776,8 @@ bool URLRequestViewNetInternalsJob::GetData(std::string* mime_type,
   return true;
 }
 
-bool URLRequestViewNetInternalsJob::IsRedirectResponse(GURL* location,
-                                                       int* http_status_code) {
+bool ViewNetInternalsJob::IsRedirectResponse(GURL* location,
+                                             int* http_status_code) {
   if (request_->url().has_query() && !GetViewCacheKeyForRequest(NULL)) {
     // Strip the query parameters.
     GURL::Replacements replacements;
@@ -756,9 +789,9 @@ bool URLRequestViewNetInternalsJob::IsRedirectResponse(GURL* location,
   return false;
 }
 
-bool URLRequestViewNetInternalsJob::GetViewCacheKeyForRequest(
+bool ViewNetInternalsJob::GetViewCacheKeyForRequest(
     std::string* key) const {
-  std::string path = url_format_->GetDetails(request_->url());
+  std::string path = GetDetails(request_->url());
   if (!StartsWithASCII(path, kViewHttpCacheSubPath, true))
     return false;
 
@@ -770,4 +803,20 @@ bool URLRequestViewNetInternalsJob::GetViewCacheKeyForRequest(
     *key = path.substr(strlen(kViewHttpCacheSubPath) + 1);
 
   return true;
+}
+
+}  // namespace
+
+// static
+bool ViewNetInternalsJobFactory::IsSupportedURL(const GURL& url) {
+  // Note that kNetworkViewInternalsURL is terminated by a '/'.
+  return StartsWithASCII(url.spec(),
+                         chrome::kNetworkViewInternalsURL,
+                         true /*case_sensitive*/);
+}
+
+// static
+URLRequestJob* ViewNetInternalsJobFactory::CreateJobForRequest(
+    URLRequest* request) {
+  return new ViewNetInternalsJob(request);
 }
