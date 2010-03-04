@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_VIEWS_INFO_BUBBLE_H_
 #define CHROME_BROWSER_VIEWS_INFO_BUBBLE_H_
 
-#include "chrome/browser/views/bubble_border.h"
-
+#include "third_party/skia/include/core/SkColor.h"
+#include "views/accelerator.h"
 #if defined(OS_WIN)
 #include "views/widget/widget_win.h"
 #elif defined(OS_LINUX)

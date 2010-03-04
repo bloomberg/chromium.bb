@@ -11,10 +11,10 @@
 #include "app/menus/simple_menu_model.h"
 #include "app/theme_provider.h"
 #include "chrome/app/chrome_dll_resource.h"
+#include "chrome/browser/chromeos/app_launcher.h"
 #include "chrome/browser/chromeos/compact_location_bar_host.h"
 #include "chrome/browser/chromeos/compact_navigation_bar.h"
 #include "chrome/browser/chromeos/frame/panel_browser_view.h"
-#include "chrome/browser/chromeos/main_menu.h"
 #include "chrome/browser/chromeos/status/browser_status_area_view.h"
 #include "chrome/browser/chromeos/status/network_menu_button.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
@@ -124,8 +124,8 @@ namespace chromeos {
 
 // LayoutManager for BrowserView, which layouts extra components such as
 // main menu, stataus views as follows:
-//                  ____  __ __
-//      [MainMenu] /    \   \  \     [StatusArea]
+//                     ____  __ __
+//      [AppLauncher] /    \   \  \     [StatusArea]
 //
 class BrowserViewLayout : public ::BrowserViewLayout {
  public:
@@ -361,7 +361,7 @@ void BrowserView::Init() {
   main_menu_->SetID(VIEW_ID_MAIN_MENU);
   ThemeProvider* theme_provider =
       frame()->GetThemeProviderForFrame();
-  SkBitmap* image = theme_provider->GetBitmapNamed(IDR_MAIN_MENU_BUTTON);
+  SkBitmap* image = theme_provider->GetBitmapNamed(IDR_APP_LAUNCHER_BUTTON);
   main_menu_->SetImage(views::CustomButton::BS_NORMAL, image);
   main_menu_->SetImage(views::CustomButton::BS_HOT, image);
   main_menu_->SetImage(views::CustomButton::BS_PUSHED, image);
@@ -387,7 +387,7 @@ void BrowserView::Init() {
   AddChildView(spacer_);
 
   InitSystemMenu();
-  chromeos::MainMenu::ScheduleCreation();
+  chromeos::AppLauncher::ScheduleCreation();
 
   // The ContextMenuController has to be set to a NonClientView but
   // not to a NonClientFrameView because a TabStrip is not a child of
@@ -458,7 +458,7 @@ void BrowserView::ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {
 // views::ButtonListener overrides.
 void BrowserView::ButtonPressed(views::Button* sender,
                                 const views::Event& event) {
-  chromeos::MainMenu::Show(browser());
+  chromeos::AppLauncher::Show(browser());
 }
 
 // views::ContextMenuController overrides.

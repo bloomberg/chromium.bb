@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_MAIN_MENU_H_
-#define CHROME_BROWSER_CHROMEOS_MAIN_MENU_H_
+#ifndef CHROME_BROWSER_CHROMEOS_APP_LAUNCHER_H_
+#define CHROME_BROWSER_CHROMEOS_APP_LAUNCHER_H_
 
 #include <gtk/gtk.h>
 
@@ -15,6 +15,7 @@
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/common/renderer_preferences.h"
+#include "views/view.h"
 
 class Browser;
 class RenderWidgetHostViewGtk;
@@ -33,18 +34,18 @@ namespace chromeos {
 
 class NavigationBar;
 
-// MainMenu manages showing the main menu and optionally the
-// navigation bar in compact navigation bar mode. The menu is
+// AppLauncher manages showing the application launcher and optionally the
+// navigation bar in compact navigation bar mode. The app launcher is
 // currently an HTML page. When the user clicks a link on the page a
-// new tab is added to the current browser and the menu is hidden.
+// new tab is added to the current browser and the app launcher is hidden.
 // When the user opens a new page from the navigation bar, it opens a
 // new tab on left, on right or clobbers the current tab depending on
 // the configuration.
 //
-// To show the menu invoke Show.
+// To show the app launcher invoke Show.
 //
-// MainMenu creates a RenderViewHost and corresponding RenderWidgetHostView
-// to display the html page. MainMenu acts as the RenderViewHostDelegate for
+// AppLauncher creates a RenderViewHost and corresponding RenderWidgetHostView
+// to display the html page. AppLauncher acts as the RenderViewHostDelegate for
 // the RenderViewHost. Clicking on a link results in creating a new
 // TabContents (assigned to pending_contents_). One of two things can then
 // happen:
@@ -54,27 +55,28 @@ class NavigationBar;
 //   invoked on the browser.
 //
 // When a new url is opened, or the user clicks outsides the bounds of the
-// widget the menu is closed.
+// widget the app launcher is closed.
 //
-// MainMenu manages its own lifetime and currently creates one instance for
+// AppLauncher manages its own lifetime and currently creates one instance for
 // the life of the browser. This is done to make sure we have the html page
 // loaded when the user clicks on it.
-class MainMenu : public RenderViewHostDelegate,
-                 public RenderViewHostDelegate::View,
-                 public ActiveWindowWatcherX::Observer {
+class AppLauncher : public RenderViewHostDelegate,
+                    public RenderViewHostDelegate::View,
+                    public ActiveWindowWatcherX::Observer,
+                    public views::AcceleratorTarget {
  public:
-  // Shows the menu.
+  // Shows the app launcher.
   static void Show(Browser* browser);
 
-  // Schedules creation of the shared MainMenu.
+  // Schedules creation of the shared AppLauncher.
   static void ScheduleCreation();
 
-  ~MainMenu();
+  ~AppLauncher();
 
  private:
-  friend struct DefaultSingletonTraits<MainMenu>;
+  friend struct DefaultSingletonTraits<AppLauncher>;
 
-  // Task used to ask for the MainMenu instance. This is scheduled from
+  // Task used to ask for the AppLauncher instance. This is scheduled from
   // ScheduleCreation.
   class LoadTask : public Task {
    public:
@@ -90,7 +92,7 @@ class MainMenu : public RenderViewHostDelegate,
   // implemented by this class.
   class TabContentsDelegateImpl : public TabContentsDelegate {
    public:
-    explicit TabContentsDelegateImpl(MainMenu* menu) : menu_(menu) {}
+    explicit TabContentsDelegateImpl(AppLauncher* app_launcher);
 
     // TabContentsDelegate.
     virtual void OpenURLFromTab(TabContents* source,
@@ -114,37 +116,61 @@ class MainMenu : public RenderViewHostDelegate,
     virtual void UpdateTargetURL(TabContents* source, const GURL& url) {}
 
    private:
-    MainMenu* menu_;
+    AppLauncher* app_launcher_;
 
     DISALLOW_COPY_AND_ASSIGN(TabContentsDelegateImpl);
   };
 
-  friend class TabContentsDelegateImpl;
-  friend class AppMenuContainer;
+  class TopContainer : public views::View {
+   public:
+    explicit TopContainer(AppLauncher* app_launcher);
+    virtual ~TopContainer() {}
+
+    // views::View overrides.
+    virtual void Layout();
+    virtual bool OnMousePressed(const views::MouseEvent& event);
+
+   private:
+    AppLauncher* app_launcher_;
+
+    DISALLOW_COPY_AND_ASSIGN(TopContainer);
+  };
+
+  class BubbleContainer : public views::View {
+   public:
+    explicit BubbleContainer(AppLauncher* app_launcher);
+
+    // views::View overrides.
+    virtual void Layout();
+
+   private:
+    AppLauncher* app_launcher_;
+
+    DISALLOW_COPY_AND_ASSIGN(BubbleContainer);
+  };
+
+  friend class BubbleContainer;
   friend class NavigationBar;
+  friend class TabContentsDelegateImpl;
+  friend class TopContainer;
 
-  MainMenu();
+  AppLauncher();
 
-  // Returns the single MainMenu instance.
-  static MainMenu* Get();
+  // Returns the single AppLauncher instance.
+  static AppLauncher* Get();
 
-  // Shows the menu for the specified browser.
+  // Shows the app launcher for the specified browser.
   void ShowImpl(Browser* browser);
 
-  // Hides the menu.
+  // Hides the app launcher.
   void Hide();
 
   // Cleans up state. This is invoked before showing and after a delay when
   // hidden.
   void Cleanup();
 
-  // Updates the main menu's state and layout with the |browser|.
+  // Updates the app launcher's state and layout with the |browser|.
   void Update(Browser* browser);
-
-  // Returns the size of the popup. By default the popup is positioned
-  // and sized to cover the entire browser window, but its size can be
-  // overriden by the command line switch kMenuSizeSwitch.
-  gfx::Rect GetPopupBounds();
 
   // RenderViewHostDelegate overrides.
   virtual int GetBrowserWindowID() const {
@@ -186,6 +212,9 @@ class MainMenu : public RenderViewHostDelegate,
   // ActiveWindowWatcherX::Observer implementation.
   virtual void ActiveWindowChanged(GdkWindow* active_window);
 
+  // views::AcceleratorTarget implementation:
+  virtual bool AcceleratorPressed(const views::Accelerator& accelerator);
+
   void AddTabWithURL(const GURL& url, PageTransition::Type transition);
 
   // The currently active browser. We use this to open urls.
@@ -197,10 +226,10 @@ class MainMenu : public RenderViewHostDelegate,
   // SiteInstance for the RenderViewHosts we create.
   SiteInstance* site_instance_;
 
-  // RenderViewHost for the menu.
-  RenderViewHost* menu_rvh_;
+  // RenderViewHost for the contents.
+  RenderViewHost* contents_rvh_;
 
-  // RenderWidgetHostView from the menu_rvh_.
+  // RenderWidgetHostView from the contents_rvh_.
   RenderWidgetHostViewGtk* rwhv_;
 
   // Handles creating the child TabContents.
@@ -212,23 +241,26 @@ class MainMenu : public RenderViewHostDelegate,
   // TabContents created when the user clicks a link.
   scoped_ptr<TabContents> pending_contents_;
 
-  ScopedRunnableMethodFactory<MainMenu> method_factory_;
+  ScopedRunnableMethodFactory<AppLauncher> method_factory_;
 
-  // Container of NavigationBar and Renderer.
-  views::View* menu_container_;
+  // Container of the background, NavigationBar and Renderer.
+  views::View* top_container_;
+
+  // Container of the NavigationBar and Renderer (shown in a bubble).
+  views::View* bubble_container_;
 
   // The navigation bar. Only shown in compact navigation bar mode.
   NavigationBar* navigation_bar_;
 
-  // The Renderer view.
-  views::NativeViewHost* menu_content_view_;
+  // The view containing the renderer view.
+  views::NativeViewHost* render_view_container_;
 
   // True if the popup has ever been shown.
   bool has_shown_;
 
-  DISALLOW_COPY_AND_ASSIGN(MainMenu);
+  DISALLOW_COPY_AND_ASSIGN(AppLauncher);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_MAIN_MENU_H_
+#endif  // CHROME_BROWSER_CHROMEOS_APP_LAUNCHER_H_

@@ -446,7 +446,7 @@ void RenderWidgetHostViewGtk::SetSize(const gfx::Size& size) {
   } else {
 #if defined(TOOLKIT_VIEWS)
     // TOOLKIT_VIEWS' resize logic flow matches windows. so we go ahead and
-    // size the widget.  In GTK+, the size of the widget is determined by it's
+    // size the widget.  In GTK+, the size of the widget is determined by its
     // children.
     gtk_widget_set_size_request(view_.get(), width, height);
 #endif

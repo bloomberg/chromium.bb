@@ -438,13 +438,11 @@
        </if>
 
       <if expr="(pp_ifdef('chromeos') or pp_ifdef('toolkit_views')) and pp_ifdef('_google_chrome')">
-        <include name="IDR_MAIN_MENU_BUTTON" file="google_chrome/button_menu.png" type="BINDATA" />
-        <include name="IDR_MAIN_MENU_BUTTON_DROP_DOWN" file="google_chrome/button_menu_drop_down.png" type="BINDATA" />
+        <include name="IDR_APP_LAUNCHER_BUTTON" file="google_chrome/app_launcher_button.png" type="BINDATA" />
       </if>
 
       <if expr="(pp_ifdef('chromeos') or pp_ifdef('toolkit_views')) and not pp_ifdef('_google_chrome')">
-        <include name="IDR_MAIN_MENU_BUTTON" file="chromium/button_menu.png" type="BINDATA" />
-        <include name="IDR_MAIN_MENU_BUTTON_DROP_DOWN" file="chromium/button_menu_drop_down.png" type="BINDATA" />
+        <include name="IDR_APP_LAUNCHER_BUTTON" file="chromium/app_launcher_button.png" type="BINDATA" />
       </if>
 
       <if expr="not pp_ifdef('chromeos') and not pp_ifdef('toolkit_views')">

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/main_menu.h"
+#include "chrome/browser/chromeos/app_launcher.h"
 
 #include <string>
 #include <vector>
@@ -33,6 +33,7 @@
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/views/bubble_border.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -43,7 +44,6 @@
 #include "views/screen.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget_gtk.h"
-
 
 namespace {
 
@@ -56,13 +56,9 @@ const int kNavigationEntryYMargin = 1;
 const int kNavigationBarWidth = 300;
 const int kNavigationBarHeight = 25;
 
-// Insets defining the regions that are stretched and titled to create the
-// background of the popup. These constants are fed into
-// Painter::CreateImagePainter as the insets, see it for details.
-const int kBackgroundImageTop = 27;
-const int kBackgroundImageLeft = 85;
-const int kBackgroundImageBottom = 10;
-const int kBackgroundImageRight = 8;
+// Padding for the bubble info window.
+const int kBubbleWindowXPadding = 6;
+const int kBubbleWindowYPadding = 16;
 
 // Command line switch for specifying url of the page.
 const wchar_t kURLSwitch[] = L"main-menu-url";
@@ -83,19 +79,37 @@ static GURL GetMenuURL() {
   return GURL(kMenuURL);
 }
 
+// RenderWidgetHostViewGtk propagates the mouse press events (see
+// render_widget_host_view_gtk.cc).  We subclass to stop the propagation here,
+// as if the click event was propagated it would reach the TopContainer view and
+// it would close the popup.
+class RWHVNativeViewHost : public views::NativeViewHost {
+ public:
+  RWHVNativeViewHost() {}
+
+  virtual bool OnMousePressed(const views::MouseEvent& event) { return true; }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(RWHVNativeViewHost);
+};
+
 }  // namspace
 
 namespace chromeos {
 
-// A navigation bar that is shown in the main menu in
-// compact navigation bar mode.
+////////////////////////////////////////////////////////////////////////////////
+// NavigationBar
+//
+// A navigation bar that is shown in the app launcher in compact navigation bar
+// mode.
+
 class NavigationBar : public views::View,
                       public AutocompleteEditController,
                       public BubblePositioner {
  public:
-  explicit NavigationBar(MainMenu* main_menu)
+  explicit NavigationBar(AppLauncher* app_launcher)
       : views::View(),
-        main_menu_(main_menu),
+        app_launcher_(app_launcher),
         location_entry_view_(NULL) {
     SetFocusable(true);
     location_entry_view_ = new views::NativeViewHost;
@@ -153,8 +167,8 @@ class NavigationBar : public views::View,
                                     WindowOpenDisposition disposition,
                                     PageTransition::Type transition,
                                     const GURL& alternate_nav_url) {
-    main_menu_->AddTabWithURL(url, transition);
-    main_menu_->Hide();
+    app_launcher_->AddTabWithURL(url, transition);
+    app_launcher_->Hide();
   }
   virtual void OnChanged() {}
   virtual void OnInputInProgress(bool in_progress) {}
@@ -193,82 +207,99 @@ class NavigationBar : public views::View,
   }
 
  private:
-  MainMenu* main_menu_;
+  AppLauncher* app_launcher_;
   views::NativeViewHost* location_entry_view_;
   scoped_ptr<AutocompleteEditViewGtk> location_entry_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationBar);
 };
 
-// A container for the main menu's contents (navigation bar and renderer).
-class AppMenuContainer : public views::View {
- public:
-  explicit AppMenuContainer(MainMenu* main_menu)
-      : View(),
-        main_menu_(main_menu) {
+////////////////////////////////////////////////////////////////////////////////
+// TopContainer
+//
+// A view that grays-out the browser and contains the navigation bar and
+// renderer view.
+
+AppLauncher::TopContainer::TopContainer(AppLauncher* app_launcher)
+    : app_launcher_(app_launcher) {
+  // Use a transparent black background so the browser appears grayed-out.
+  set_background(views::Background::CreateSolidBackground(0, 0, 0, 100));
+}
+
+void AppLauncher::TopContainer::Layout() {
+  if (bounds().IsEmpty())
+    return;
+
+  // We only expect to contain the BubbleContents.
+  DCHECK(GetChildViewCount() == 1);
+  GetChildViewAt(0)->SetBounds(kBubbleWindowXPadding, kBubbleWindowYPadding,
+                               width() * 2 / 3, height() * 4 / 5);
+}
+
+bool AppLauncher::TopContainer::OnMousePressed(const views::MouseEvent& event) {
+  // Clicking outside the bubble closes the bubble.
+  app_launcher_->Hide();
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// BubbleContainer
+//
+// The view that contains the navigation bar and render view.  It has a bubble
+// border.
+
+AppLauncher::BubbleContainer::BubbleContainer(AppLauncher* app_launcher)
+    : app_launcher_(app_launcher) {
+  BubbleBorder* bubble_border = new BubbleBorder();
+  bubble_border->set_arrow_location(BubbleBorder::TOP_LEFT);
+  set_border(bubble_border);
+  set_background(new BubbleBackground(bubble_border));
+}
+
+void AppLauncher::BubbleContainer::Layout() {
+  if (bounds().IsEmpty() || GetChildViewCount() == 0)
+    return;
+
+  gfx::Rect bounds = GetLocalBounds(false);
+  // TODO(jcampan): figure-out why we need to inset for the contained view not
+  //                to paint over the bubble border.
+  bounds.Inset(2, 2);
+
+  if (app_launcher_->navigation_bar_->IsVisible()) {
+    app_launcher_->navigation_bar_->SetBounds(bounds.x(), bounds.y(),
+                                              bounds.width(),
+                                              kNavigationBarHeight);
+  } else {
+    app_launcher_->navigation_bar_->SetBounds(bounds.x(), bounds.y(), 0, 0);
   }
+  int render_y = app_launcher_->navigation_bar_->bounds().bottom();
+  gfx::Size rwhv_size =
+      gfx::Size(bounds.width(),
+                std::max(0, bounds.height() - render_y + bounds.y()));
+  app_launcher_->render_view_container_->SetBounds(bounds.x(), render_y,
+                                                   rwhv_size.width(),
+                                                   rwhv_size.height());
+  app_launcher_->rwhv_->SetSize(rwhv_size);
+}
 
-  virtual ~AppMenuContainer() {
-  }
-
-  // views::View overrides.
-  virtual void Layout() {
-    if (GetChildViewCount() == 2 && !bounds().IsEmpty()) {
-      int render_width = width() - kBackgroundImageRight;
-      if (main_menu_->navigation_bar_->IsVisible()) {
-        main_menu_->navigation_bar_->SetBounds(
-            0, kBackgroundImageTop, render_width, kNavigationBarHeight);
-      } else {
-        main_menu_->navigation_bar_->SetBounds(
-            gfx::Rect(0, kBackgroundImageTop, 0, 0));
-      }
-      int render_y = main_menu_->navigation_bar_->bounds().bottom();
-      int render_height =
-          std::max(0, height() - kBackgroundImageBottom - render_y);
-      gfx::Size rwhv_size = gfx::Size(render_width, render_height);
-
-      main_menu_->menu_content_view_->SetBounds(
-          0, render_y, rwhv_size.width(), rwhv_size.height());
-      main_menu_->rwhv_->SetSize(rwhv_size);
-    }
-  }
-
-  virtual gfx::Size GetPreferredSize() {
-    // Not really used.
-    return gfx::Size();
-  }
-
-  // Hide if a mouse is clicked outside of the content area.
-  virtual bool OnMousePressed(const views::MouseEvent& event) {
-    if (HitTest(event.location()) &&
-        event.y() > main_menu_->navigation_bar_->y()) {
-      return false;
-    }
-    main_menu_->Hide();
-    return false;
-  }
-
- private:
-  MainMenu* main_menu_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppMenuContainer);
-};
+////////////////////////////////////////////////////////////////////////////////
+// AppLauncher
 
 // static
-void MainMenu::Show(Browser* browser) {
-  MainMenu::Get()->ShowImpl(browser);
+void AppLauncher::Show(Browser* browser) {
+  AppLauncher::Get()->ShowImpl(browser);
 }
 
 // static
-void MainMenu::ScheduleCreation() {
+void AppLauncher::ScheduleCreation() {
   MessageLoop::current()->PostDelayedTask(FROM_HERE, new LoadTask(), 5000);
 }
 
-MainMenu::~MainMenu() {
-  // NOTE: we leak the menu_rvh_ and popup_ as by the time we get here the
+AppLauncher::~AppLauncher() {
+  // NOTE: we leak the contents_rvh_ and popup_ as by the time we get here the
   // message loop and notification services have been shutdown.
   // TODO(sky): fix this.
-  // menu_rvh_->Shutdown();
+  // contents_rvh_->Shutdown();
   // popup_->CloseNow();
   // if (location_entry_view_->native_view())
   //   location_entry_view_->Detach();
@@ -276,44 +307,41 @@ MainMenu::~MainMenu() {
   ActiveWindowWatcherX::RemoveObserver(this);
 }
 
-MainMenu::MainMenu()
+AppLauncher::AppLauncher()
     : browser_(NULL),
       popup_(NULL),
       site_instance_(NULL),
-      menu_rvh_(NULL),
+      contents_rvh_(NULL),
       rwhv_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(tab_contents_delegate_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
-      menu_container_(NULL),
+      top_container_(NULL),
+      bubble_container_(NULL),
       navigation_bar_(NULL),
-      menu_content_view_(NULL),
+      render_view_container_(NULL),
       has_shown_(false) {
-  SkBitmap* drop_down_image = ResourceBundle::GetSharedInstance().
-      GetBitmapNamed(IDR_MAIN_MENU_BUTTON_DROP_DOWN);
-  views::WidgetGtk* menu_popup =
-      new views::WidgetGtk(views::WidgetGtk::TYPE_WINDOW);
-  popup_ = menu_popup;
+  popup_ = new views::WidgetGtk(views::WidgetGtk::TYPE_WINDOW);
   // The background image has transparency, so we make the window transparent.
-  menu_popup->MakeTransparent();
+  popup_->MakeTransparent();
   popup_->Init(NULL, gfx::Rect());
   WmIpc::instance()->SetWindowType(
       popup_->GetNativeView(),
       WmIpc::WINDOW_TYPE_CHROME_INFO_BUBBLE,
       NULL);
 
-  views::Painter* painter = views::Painter::CreateImagePainter(
-      *drop_down_image,
-      gfx::Insets(kBackgroundImageTop, kBackgroundImageLeft,
-                  kBackgroundImageBottom, kBackgroundImageRight),
-      false);
-  menu_popup->GetRootView()->set_background(
-      views::Background::CreateBackgroundPainter(true, painter));
+  // Register Esc as an accelerator for closing the app launcher.
+  views::FocusManager* focus_manager = popup_->GetFocusManager();
+  focus_manager->RegisterAccelerator(views::Accelerator(base::VKEY_ESCAPE,
+                                                        false, false, false),
+                                     this);
 
-  menu_container_ = new AppMenuContainer(this);
-  menu_popup->SetContentsView(menu_container_);
+  top_container_ = new TopContainer(this);
+  popup_->SetContentsView(top_container_);
 
+  bubble_container_ = new BubbleContainer(this);
+  top_container_->AddChildView(bubble_container_);
   navigation_bar_ = new NavigationBar(this);
-  menu_container_->AddChildView(navigation_bar_);
+  bubble_container_->AddChildView(navigation_bar_);
 
   GURL menu_url(GetMenuURL());
   DCHECK(BrowserList::begin() != BrowserList::end());
@@ -322,27 +350,27 @@ MainMenu::MainMenu()
   int64 session_storage_namespace_id = profile->GetWebKitContext()->
       dom_storage_context()->AllocateSessionStorageNamespaceId();
   site_instance_ = SiteInstance::CreateSiteInstanceForURL(profile, menu_url);
-  menu_rvh_ = new RenderViewHost(site_instance_, this, MSG_ROUTING_NONE,
-                                 session_storage_namespace_id);
+  contents_rvh_ = new RenderViewHost(site_instance_, this, MSG_ROUTING_NONE,
+                                     session_storage_namespace_id);
 
-  rwhv_ = new RenderWidgetHostViewGtk(menu_rvh_);
+  rwhv_ = new RenderWidgetHostViewGtk(contents_rvh_);
   rwhv_->InitAsChild();
-  menu_rvh_->CreateRenderView(profile->GetRequestContext());
+  contents_rvh_->CreateRenderView(profile->GetRequestContext());
 
-  menu_content_view_ = new views::NativeViewHost;
-  menu_container_->AddChildView(menu_content_view_);
-  menu_content_view_->Attach(rwhv_->GetNativeView());
-  menu_rvh_->NavigateToURL(menu_url);
+  render_view_container_ = new RWHVNativeViewHost;
+  bubble_container_->AddChildView(render_view_container_);
+  render_view_container_->Attach(rwhv_->GetNativeView());
+  contents_rvh_->NavigateToURL(menu_url);
 
   ActiveWindowWatcherX::AddObserver(this);
 }
 
 // static
-MainMenu* MainMenu::Get() {
-  return Singleton<MainMenu>::get();
+AppLauncher* AppLauncher::Get() {
+  return Singleton<AppLauncher>::get();
 }
 
-void MainMenu::Update(Browser* browser) {
+void AppLauncher::Update(Browser* browser) {
   if (browser_ != browser) {
     browser_ = browser;
     navigation_bar_->Update(browser);
@@ -355,33 +383,11 @@ void MainMenu::Update(Browser* browser) {
 
   BrowserView* bview = static_cast<BrowserView*>(browser_->window());
   navigation_bar_->SetVisible(bview->is_compact_style());
-  popup_->SetBounds(GetPopupBounds());
-  menu_container_->Layout();
+  popup_->SetBounds(browser_->window()->GetRestoredBounds());
+  top_container_->Layout();
 }
 
-gfx::Rect MainMenu::GetPopupBounds() {
-  gfx::Rect window_bounds = browser_->window()->GetRestoredBounds();
-  std::wstring cl_size =
-      CommandLine::ForCurrentProcess()->GetSwitchValue(kMenuSizeSwitch);
-  if (!cl_size.empty()) {
-    std::vector<std::string> chunks;
-    SplitString(WideToUTF8(cl_size), 'x', &chunks);
-    if (chunks.size() == 2) {
-      return gfx::Rect(window_bounds.origin(),
-                       gfx::Size(StringToInt(chunks[0]),
-                                 StringToInt(chunks[1])));
-    }
-  }
-
-  gfx::Size window_size = window_bounds.size();
-  // We don't want to see the drop shadow. Adjust the width
-  // so the drop shadow ends up off screen.
-  window_size.Enlarge(kBackgroundImageRight, kBackgroundImageBottom);
-  window_bounds.set_size(window_size);
-  return window_bounds;
-}
-
-void MainMenu::ShowImpl(Browser* browser) {
+void AppLauncher::ShowImpl(Browser* browser) {
   Cleanup();
 
   Update(browser);
@@ -394,28 +400,34 @@ void MainMenu::ShowImpl(Browser* browser) {
   }
 }
 
-void MainMenu::ActiveWindowChanged(GdkWindow* active_window) {
+void AppLauncher::ActiveWindowChanged(GdkWindow* active_window) {
   if (!popup_->IsActive())
     Hide();
   else
     navigation_bar_->RequestFocus();
 }
 
-void MainMenu::Hide() {
+bool AppLauncher::AcceleratorPressed(const views::Accelerator& accelerator) {
+  DCHECK(accelerator.GetKeyCode() == base::VKEY_ESCAPE);
+  popup_->Hide();
+  return true;
+}
+
+void AppLauncher::Hide() {
   popup_->Hide();
   // The stack may have pending_contents_ on it. Delay deleting the
   // pending_contents_ as TabContents doesn't deal well with being deleted
   // while on the stack.
   MessageLoop::current()->PostTask(FROM_HERE,
-      method_factory_.NewRunnableMethod(&MainMenu::Cleanup));
+      method_factory_.NewRunnableMethod(&AppLauncher::Cleanup));
 }
 
-void MainMenu::Cleanup() {
+void AppLauncher::Cleanup() {
   pending_contents_.reset(NULL);
   method_factory_.RevokeAll();
 }
 
-void MainMenu::RequestMove(const gfx::Rect& new_bounds) {
+void AppLauncher::RequestMove(const gfx::Rect& new_bounds) {
   // Invoking PositionChild results in a gtk signal that triggers attempting to
   // to resize the window. We need to set the size request so that it resizes
   // correctly when this happens.
@@ -424,13 +436,13 @@ void MainMenu::RequestMove(const gfx::Rect& new_bounds) {
   popup_->SetBounds(new_bounds);
 }
 
-RendererPreferences MainMenu::GetRendererPrefs(Profile* profile) const {
+RendererPreferences AppLauncher::GetRendererPrefs(Profile* profile) const {
   RendererPreferences preferences;
   renderer_preferences_util::UpdateFromSystemSettings(&preferences, profile);
   return preferences;
 }
 
-void MainMenu::AddTabWithURL(const GURL& url,
+void AppLauncher::AddTabWithURL(const GURL& url,
                              PageTransition::Type transition) {
   switch (StatusAreaView::GetOpenTabsMode()) {
     case StatusAreaView::OPEN_TABS_ON_LEFT: {
@@ -452,7 +464,7 @@ void MainMenu::AddTabWithURL(const GURL& url,
   }
 }
 
-void MainMenu::CreateNewWindow(int route_id) {
+void AppLauncher::CreateNewWindow(int route_id) {
   if (pending_contents_.get()) {
     NOTREACHED();
     return;
@@ -465,7 +477,7 @@ void MainMenu::CreateNewWindow(int route_id) {
   pending_contents_->set_delegate(&tab_contents_delegate_);
 }
 
-void MainMenu::ShowCreatedWindow(int route_id,
+void AppLauncher::ShowCreatedWindow(int route_id,
                                  WindowOpenDisposition disposition,
                                  const gfx::Rect& initial_pos,
                                  bool user_gesture) {
@@ -477,32 +489,37 @@ void MainMenu::ShowCreatedWindow(int route_id,
   }
 }
 
-void MainMenu::StartDragging(const WebDropData& drop_data,
+void AppLauncher::StartDragging(const WebDropData& drop_data,
                              WebKit::WebDragOperationsMask allowed_ops) {
   // We're not going to do any drag & drop, but we have to tell the renderer the
   // drag & drop ended, othewise the renderer thinks the drag operation is
   // underway and mouse events won't work.
-  menu_rvh_->DragSourceSystemDragEnded();
+  contents_rvh_->DragSourceSystemDragEnded();
 }
 
-void MainMenu::TabContentsDelegateImpl::OpenURLFromTab(
+AppLauncher::TabContentsDelegateImpl::TabContentsDelegateImpl(
+    AppLauncher* app_launcher)
+    : app_launcher_(app_launcher) {
+}
+
+void AppLauncher::TabContentsDelegateImpl::OpenURLFromTab(
     TabContents* source,
     const GURL& url,
     const GURL& referrer,
     WindowOpenDisposition disposition,
     PageTransition::Type transition) {
-  menu_->browser_->OpenURL(url, referrer, NEW_FOREGROUND_TAB,
-                           PageTransition::LINK);
-  menu_->Hide();
+  app_launcher_->browser_->OpenURL(url, referrer, NEW_FOREGROUND_TAB,
+                                   PageTransition::LINK);
+  app_launcher_->Hide();
 }
 
 // LoadTask -------------------------------------------------------------------
 
-void MainMenu::LoadTask::Run() {
+void AppLauncher::LoadTask::Run() {
   if (BrowserList::begin() == BrowserList::end())
     return;  // No browser are around. Generally only happens during testing.
 
-  MainMenu::Get();
+  AppLauncher::Get();
 }
 
 }  // namespace chromeos
