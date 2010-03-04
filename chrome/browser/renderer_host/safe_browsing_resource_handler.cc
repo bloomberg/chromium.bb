@@ -47,8 +47,6 @@ SafeBrowsingResourceHandler::~SafeBrowsingResourceHandler() {
 bool SafeBrowsingResourceHandler::OnUploadProgress(int request_id,
                                                    uint64 position,
                                                    uint64 size) {
-  CHECK(state_ == STATE_NONE);
-  CHECK(defer_state_ = DEFERRED_NONE);
   return next_handler_->OnUploadProgress(request_id, position, size);
 }
 
