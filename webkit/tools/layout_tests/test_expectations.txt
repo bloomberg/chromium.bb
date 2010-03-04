@@ -745,7 +745,6 @@ BUG13907 SKIP : http/tests/media = FAIL
 BUG13907 BUG25094 LINUX DEBUG : media = PASS FAIL TIMEOUT
 
 // These tests should be passing.  Remove them once confirmed they're not flaky.
-BUG9798 BUG13907 : media/video-currentTime-set.html = PASS FAIL
 BUG9798 BUG13907 SLOW WIN LINUX : media/video-played-collapse.html = PASS FAIL
 BUG9798 BUG13907 SLOW MAC : media/video-played-collapse.html = PASS
 
@@ -2812,6 +2811,7 @@ BUG35492 MAC LINUX : media/video-played-ranges-1.html = FAIL PASS
 BUG35492 : media/video-played-reset.html = FAIL
 BUG35492 : media/video-display-toggle.html = CRASH FAIL PASS
 BUG35492 : media/controls-drag-timebar.html = FAIL TIMEOUT
+BUG35492 : media/video-currentTime-set.html = FAIL TIMEOUT
 // Previous to FFmpeg roll expectations
 //BUG9798 BUG13907 SLOW LINUX MAC RELEASE : media/video-played-ranges-1.html = FAIL
 //BUG9798 BUG13907 SLOW WIN RELEASE : media/video-played-ranges-1.html = FAIL
@@ -2821,7 +2821,7 @@ BUG35492 : media/controls-drag-timebar.html = FAIL TIMEOUT
 //BUG9798 BUG13907 SLOW WIN RELEASE : media/video-played-ranges-1.html = PASS FAIL
 //BUG9798 BUG13907 SLOW MAC WIN RELEASE : media/video-played-reset.html = PASS
 //BUG9798 BUG13907 SLOW LINUX DEBUG : media/video-played-reset.html = PASS
-
+//BUG9798 BUG13907 : media/video-currentTime-set.html = PASS FAIL
 // The test was added in WebKit r54766 and timeouts in Chromium
 BUG13907 : media/video-display-aspect-ratio.html = TIMEOUT PASS
 
