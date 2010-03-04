@@ -48,6 +48,9 @@ class BalloonCollection {
   // Request the resizing of a balloon.
   virtual void ResizeBalloon(Balloon* balloon, const gfx::Size& size) = 0;
 
+  // Update for new screen dimensions.
+  virtual void DisplayChanged() = 0;
+
   // Inform the collection that a balloon was closed.
   virtual void OnBalloonClosed(Balloon* source) = 0;
 

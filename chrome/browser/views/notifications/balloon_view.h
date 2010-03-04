@@ -23,6 +23,7 @@
 #include "views/controls/label.h"
 #include "views/controls/menu/view_menu_delegate.h"
 #include "views/view.h"
+#include "views/widget/widget_delegate.h"
 
 namespace views {
 class ButtonListener;
@@ -32,6 +33,7 @@ class WidgetWin;
 class Menu2;
 }  // namespace views
 
+class BalloonCollection;
 class BalloonViewHost;
 class NotificationDetails;
 class NotificationSource;
@@ -42,11 +44,12 @@ class SlideAnimation;
 class BalloonViewImpl : public BalloonView,
                         public views::View,
                         public views::ViewMenuDelegate,
+                        public views::WidgetDelegate,
                         public menus::SimpleMenuModel::Delegate,
                         public NotificationObserver,
                         public AnimationDelegate {
  public:
-  BalloonViewImpl();
+  explicit BalloonViewImpl(BalloonCollection* collection);
   ~BalloonViewImpl();
 
   // BalloonView interface.
@@ -66,6 +69,9 @@ class BalloonViewImpl : public BalloonView,
 
   // views::ViewMenuDelegate interface.
   void RunMenu(views::View* source, const gfx::Point& pt);
+
+  // views::WidgetDelegate interface.
+  void DisplayChanged();
 
   // menus::SimpleMenuModel::Delegate interface.
   virtual bool IsCommandIdChecked(int command_id) const;
@@ -127,6 +133,9 @@ class BalloonViewImpl : public BalloonView,
 
   // Non-owned pointer to the balloon which owns this object.
   Balloon* balloon_;
+
+  // Non-owned pointer to the balloon collection this is a part of.
+  BalloonCollection* collection_;
 
   // The window that contains the frame of the notification.
   // Pointer owned by the View subclass.

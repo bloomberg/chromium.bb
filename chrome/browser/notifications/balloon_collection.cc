@@ -90,6 +90,11 @@ void BalloonCollectionImpl::ResizeBalloon(Balloon* balloon,
   PositionBalloons(true);
 }
 
+void BalloonCollectionImpl::DisplayChanged() {
+  layout_.RefreshSystemMetrics();
+  PositionBalloons(true);
+}
+
 void BalloonCollectionImpl::OnBalloonClosed(Balloon* source) {
   // We want to free the balloon when finished.
   scoped_ptr<Balloon> closed(source);

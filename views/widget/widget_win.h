@@ -122,6 +122,7 @@ class WidgetWin : public app::WindowImpl,
     MSG_WM_COMMAND(OnCommand)
     MSG_WM_CREATE(OnCreate)
     MSG_WM_DESTROY(OnDestroy)
+    MSG_WM_DISPLAYCHANGE(OnDisplayChange)
     MSG_WM_ERASEBKGND(OnEraseBkgnd)
     MSG_WM_ENDSESSION(OnEndSession)
     MSG_WM_ENTERSIZEMOVE(OnEnterSizeMove)
@@ -180,6 +181,8 @@ class WidgetWin : public app::WindowImpl,
 
   // Overridden from Widget:
   virtual void Init(gfx::NativeView parent, const gfx::Rect& bounds);
+  virtual WidgetDelegate* GetWidgetDelegate();
+  virtual void SetWidgetDelegate(WidgetDelegate* delegate);
   virtual void SetContentsView(View* view);
   virtual void GetBounds(gfx::Rect* out, bool including_frame) const;
   virtual void SetBounds(const gfx::Rect& bounds);
@@ -325,6 +328,7 @@ class WidgetWin : public app::WindowImpl,
   // WARNING: If you override this be sure and invoke super, otherwise we'll
   // leak a few things.
   virtual void OnDestroy();
+  virtual void OnDisplayChange(UINT bits_per_pixel, CSize screen_size);
   virtual LRESULT OnDwmCompositionChanged(UINT msg,
                                           WPARAM w_param,
                                           LPARAM l_param);
@@ -544,6 +548,10 @@ class WidgetWin : public app::WindowImpl,
   ScopedComPtr<IAccessible> accessibility_root_;
 
   scoped_ptr<DefaultThemeProvider> default_theme_provider_;
+
+  // Non owned pointer to optional delegate.  May be NULL if no delegate is
+  // being used.
+  WidgetDelegate* delegate_;
 };
 
 }  // namespace views

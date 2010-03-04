@@ -137,6 +137,8 @@ class WidgetGtk
 
   // Overridden from Widget:
   virtual void Init(gfx::NativeView parent, const gfx::Rect& bounds);
+  virtual WidgetDelegate* GetWidgetDelegate();
+  virtual void SetWidgetDelegate(WidgetDelegate* delegate);
   virtual void SetContentsView(View* view);
   virtual void GetBounds(gfx::Rect* out, bool including_frame) const;
   virtual void SetBounds(const gfx::Rect& bounds);
@@ -469,6 +471,10 @@ class WidgetGtk
   // focus-out event. We can get multiple focus-out events in a row, we use
   // this to determine whether we should process the event.
   bool has_focus_;
+
+  // Non owned pointer to optional delegate.  May be NULL if no delegate is
+  // being used.
+  WidgetDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(WidgetGtk);
 };

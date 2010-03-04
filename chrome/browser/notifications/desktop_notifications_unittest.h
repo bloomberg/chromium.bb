@@ -71,6 +71,7 @@ class MockBalloonCollection : public BalloonCollectionImpl {
   virtual bool HasSpace() const { return count() < kMockBalloonSpace; }
   virtual Balloon* MakeBalloon(const Notification& notification,
                                Profile* profile);
+  virtual void DisplayChanged() {}
   virtual void OnBalloonClosed(Balloon* source);
 
   // Number of balloons being shown.

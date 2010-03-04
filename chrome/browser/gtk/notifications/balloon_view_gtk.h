@@ -18,7 +18,7 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
-
+class BalloonCollection;
 class BalloonViewHost;
 class MenuGtk;
 class NineBox;
@@ -34,7 +34,7 @@ class BalloonViewImpl : public BalloonView,
                         public NotificationObserver,
                         public AnimationDelegate {
  public:
-  BalloonViewImpl();
+  explicit BalloonViewImpl(BalloonCollection* collection);
   ~BalloonViewImpl();
 
   // BalloonView interface.

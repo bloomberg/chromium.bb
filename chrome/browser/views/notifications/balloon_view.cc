@@ -15,6 +15,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/notifications/balloon.h"
+#include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
@@ -95,8 +96,9 @@ class BalloonCloseButtonListener : public views::ButtonListener {
   BalloonView* view_;
 };
 
-BalloonViewImpl::BalloonViewImpl()
+BalloonViewImpl::BalloonViewImpl(BalloonCollection* collection)
     : balloon_(NULL),
+      collection_(collection),
       frame_container_(NULL),
       html_container_(NULL),
       html_contents_(NULL),
@@ -146,6 +148,10 @@ gfx::Size BalloonViewImpl::GetSize() const {
 
 void BalloonViewImpl::RunMenu(views::View* source, const gfx::Point& pt) {
   RunOptionsMenu(pt);
+}
+
+void BalloonViewImpl::DisplayChanged() {
+  collection_->DisplayChanged();
 }
 
 void BalloonViewImpl::DelayedClose(bool by_user) {
@@ -315,6 +321,7 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   frame_container_ = Widget::CreatePopupWidget(Widget::Transparent,
                                                Widget::AcceptEvents,
                                                Widget::DeleteOnDestroy);
+  frame_container_->SetWidgetDelegate(this);
   frame_container_->SetAlwaysOnTop(true);
   frame_container_->Init(NULL, balloon_rect);
   frame_container_->SetContentsView(this);

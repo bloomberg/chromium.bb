@@ -105,7 +105,8 @@ WidgetGtk::WidgetGtk(Type type)
       is_active_(false),
       transient_to_parent_(false),
       got_initial_focus_in_(false),
-      has_focus_(false) {
+      has_focus_(false),
+      delegate_(NULL) {
   static bool installed_message_loop_observer = false;
   if (!installed_message_loop_observer) {
     installed_message_loop_observer = true;
@@ -377,6 +378,14 @@ void WidgetGtk::Init(GtkWidget* parent,
       gtk_window_resize(GTK_WINDOW(widget_), bounds.width(), bounds.height());
     gtk_window_move(GTK_WINDOW(widget_), bounds.x(), bounds.y());
   }
+}
+
+WidgetDelegate* WidgetWin::GetWidgetDelegate() {
+  return delegate_;
+}
+
+void WidgetDelegate::SetWidgetDelegate(WidgetDelegate* delegate) {
+  delegate_ = delegate;
 }
 
 void WidgetGtk::SetContentsView(View* view) {

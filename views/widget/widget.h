@@ -26,6 +26,7 @@ class FocusManager;
 class RootView;
 class TooltipManager;
 class View;
+class WidgetDelegate;
 class Window;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -90,6 +91,12 @@ class Widget {
   // the caller is responsible for populating the RootView, and sizing its
   // contents as the window is sized.
   virtual void Init(gfx::NativeView parent, const gfx::Rect& bounds) = 0;
+
+  // Returns the WidgetDelegate for delegating certain events.
+  virtual WidgetDelegate* GetWidgetDelegate() = 0;
+
+  // Sets the WidgetDelegate.
+  virtual void SetWidgetDelegate(WidgetDelegate* delegate) = 0;
 
   // Sets the specified view as the contents of this Widget. There can only
   // be one contents view child of this Widget's RootView. This view is sized to

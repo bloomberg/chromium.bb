@@ -20,6 +20,7 @@
 #include "views/widget/default_theme_provider.h"
 #include "views/widget/drop_target_win.h"
 #include "views/widget/root_view.h"
+#include "views/widget/widget_delegate.h"
 #include "views/window/window_win.h"
 
 namespace views {
@@ -55,7 +56,8 @@ WidgetWin::WidgetWin()
       last_mouse_event_was_move_(false),
       is_mouse_down_(false),
       is_window_(false),
-      restore_focus_when_enabled_(false) {
+      restore_focus_when_enabled_(false),
+      delegate_(NULL) {
 }
 
 WidgetWin::~WidgetWin() {
@@ -158,6 +160,14 @@ void WidgetWin::Init(gfx::NativeView parent, const gfx::Rect& bounds) {
   // Bug 964884: detach the IME attached to this window.
   // We should attach IMEs only when we need to input CJK strings.
   ImmAssociateContextEx(hwnd(), NULL, 0);
+}
+
+WidgetDelegate* WidgetWin::GetWidgetDelegate() {
+  return delegate_;
+}
+
+void WidgetWin::SetWidgetDelegate(WidgetDelegate* delegate) {
+  delegate_ = delegate;
 }
 
 void WidgetWin::SetContentsView(View* view) {
@@ -532,6 +542,11 @@ void WidgetWin::OnDestroy() {
   }
 
   RemoveProp(hwnd(), kRootViewWindowProperty);
+}
+
+void WidgetWin::OnDisplayChange(UINT bits_per_pixel, CSize screen_size) {
+  if (GetWidgetDelegate())
+    GetWidgetDelegate()->DisplayChanged();
 }
 
 LRESULT WidgetWin::OnDwmCompositionChanged(UINT msg,

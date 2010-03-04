@@ -83,7 +83,7 @@ const int kDefaultShelfHeight = 24;
 
 }  // namespace
 
-BalloonViewImpl::BalloonViewImpl()
+BalloonViewImpl::BalloonViewImpl(BalloonCollection* collection)
     : balloon_(NULL),
       frame_container_(NULL),
       html_container_(NULL),
