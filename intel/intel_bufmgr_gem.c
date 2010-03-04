@@ -1099,10 +1099,12 @@ static int drm_intel_gem_bo_unmap(drm_intel_bo *bo)
 			    DRM_IOCTL_I915_GEM_SW_FINISH,
 			    &sw_finish);
 	} while (ret == -1 && errno == EINTR);
+	ret = ret == -1 ? -errno : 0;
 
 	bo->virtual = NULL;
 	pthread_mutex_unlock(&bufmgr_gem->lock);
-	return 0;
+
+	return ret;
 }
 
 static int
@@ -1125,12 +1127,14 @@ drm_intel_gem_bo_subdata(drm_intel_bo *bo, unsigned long offset,
 			    &pwrite);
 	} while (ret == -1 && errno == EINTR);
 	if (ret != 0) {
+		ret = -errno;
 		fprintf(stderr,
 			"%s:%d: Error writing data to buffer %d: (%d %d) %s .\n",
 			__FILE__, __LINE__, bo_gem->gem_handle, (int)offset,
 			(int)size, strerror(errno));
 	}
-	return 0;
+
+	return ret;
 }
 
 static int
@@ -1182,6 +1186,7 @@ drm_intel_gem_bo_get_subdata(drm_intel_bo *bo, unsigned long offset,
 			__FILE__, __LINE__, bo_gem->gem_handle, (int)offset,
 			(int)size, strerror(errno));
 	}
+
 	return ret;
 }
 
@@ -1551,15 +1556,18 @@ drm_intel_gem_bo_exec2(drm_intel_bo *bo, int used,
 			    &execbuf);
 	} while (ret != 0 && errno == EAGAIN);
 
-	if (ret != 0 && errno == ENOMEM) {
-		fprintf(stderr,
-			"Execbuffer fails to pin. "
-			"Estimate: %u. Actual: %u. Available: %u\n",
-			drm_intel_gem_estimate_batch_space(bufmgr_gem->exec_bos,
-							   bufmgr_gem->exec_count),
-			drm_intel_gem_compute_batch_space(bufmgr_gem->exec_bos,
-							  bufmgr_gem->exec_count),
-			(unsigned int) bufmgr_gem->gtt_size);
+	if (ret != 0) {
+		ret = -errno;
+		if (ret == -ENOMEM) {
+			fprintf(stderr,
+				"Execbuffer fails to pin. "
+				"Estimate: %u. Actual: %u. Available: %u\n",
+				drm_intel_gem_estimate_batch_space(bufmgr_gem->exec_bos,
+								   bufmgr_gem->exec_count),
+				drm_intel_gem_compute_batch_space(bufmgr_gem->exec_bos,
+								  bufmgr_gem->exec_count),
+				(unsigned int) bufmgr_gem->gtt_size);
+		}
 	}
 	drm_intel_update_buffer_offsets2(bufmgr_gem);
 
@@ -1577,7 +1585,7 @@ drm_intel_gem_bo_exec2(drm_intel_bo *bo, int used,
 	bufmgr_gem->exec_count = 0;
 	pthread_mutex_unlock(&bufmgr_gem->lock);
 
-	return 0;
+	return ret;
 }
 
 static int
