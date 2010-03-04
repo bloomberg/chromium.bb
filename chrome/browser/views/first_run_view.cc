@@ -11,6 +11,7 @@
 #include "chrome/browser/first_run.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/views/first_run_customize_view.h"
+#include "chrome/installer/util/browser_distribution.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -55,7 +56,8 @@ void FirstRunView::SetupControls() {
   using views::Label;
   using views::Link;
 
-  default_browser_->SetChecked(true);
+  if (default_browser_)
+    default_browser_->SetChecked(true);
 
   welcome_label_ = new Label(l10n_util::GetString(IDS_FIRSTRUN_DLG_TEXT));
   welcome_label_->SetColor(SK_ColorBLACK);
@@ -156,7 +158,7 @@ void FirstRunView::OpenCustomizeDialog() {
       new FirstRunCustomizeView(profile_,
                                 importer_host_,
                                 this,
-                                default_browser_->checked(),
+                                default_browser_ && default_browser_->checked(),
                                 homepage_defined_,
                                 import_items_,
                                 dont_import_items_))->Show();
@@ -189,7 +191,7 @@ bool FirstRunView::Accept() {
       importer_host_->GetSourceProfileInfoAt(0).browser_type,
       GetImportItems(), window()->GetNativeWindow());
   UserMetrics::RecordAction("FirstRunDef_Accept", profile_);
-  if (default_browser_->checked())
+  if (default_browser_ && default_browser_->checked())
     SetDefaultBrowser();
 
   accepted_ = true;

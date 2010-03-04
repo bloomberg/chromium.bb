@@ -28,6 +28,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/installer/util/browser_distribution.h"
 #include "grit/app_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -671,6 +672,15 @@ void GeneralPageView::SetDefaultBrowserUIState(
   }
 }
 
+void GeneralPageView::SetDefaultBrowserUIStateForSxS() {
+  default_browser_use_as_default_button_->SetEnabled(false);
+  default_browser_status_label_->SetText(
+    l10n_util::GetStringF(IDS_OPTIONS_DEFAULTBROWSER_SXS,
+                          l10n_util::GetString(IDS_PRODUCT_NAME)));
+  default_browser_status_label_->SetColor(kNotDefaultBrowserLabelColor);
+  Layout();
+}
+
 void GeneralPageView::InitStartupGroup() {
   startup_homepage_radio_ = new views::RadioButton(
       l10n_util::GetString(IDS_OPTIONS_STARTUP_SHOW_DEFAULT_AND_NEWTAB),
@@ -882,7 +892,10 @@ void GeneralPageView::InitDefaultBrowserGroup() {
       contents, l10n_util::GetString(IDS_OPTIONS_DEFAULTBROWSER_GROUP_NAME),
       std::wstring(), false);
 
-  default_browser_worker_->StartCheckDefaultBrowser();
+  if (BrowserDistribution::GetDistribution()->CanSetAsDefault())
+    default_browser_worker_->StartCheckDefaultBrowser();
+  else
+    SetDefaultBrowserUIStateForSxS();
 }
 
 void GeneralPageView::SaveStartupPref() {

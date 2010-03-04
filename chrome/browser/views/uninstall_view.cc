@@ -9,6 +9,7 @@
 #include "base/process_util.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/common/result_codes.h"
+#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/shell_util.h"
 #include "views/controls/button/checkbox.h"
 #include "views/controls/label.h"
@@ -62,7 +63,8 @@ void UninstallView::SetupControls() {
   layout->AddView(delete_profile_);
 
   // Set default browser combo box
-  if (ShellIntegration::IsDefaultBrowser()) {
+  if (BrowserDistribution::GetDistribution()->CanSetAsDefault() &&
+      ShellIntegration::IsDefaultBrowser()) {
     browsers_.reset(new BrowsersMap());
     ShellUtil::GetRegisteredBrowsers(browsers_.get());
     if (!browsers_->empty()) {
@@ -146,4 +148,3 @@ std::wstring UninstallView::GetItemAt(int index) {
   std::advance(it, index);
   return (*it).first;
 }
-

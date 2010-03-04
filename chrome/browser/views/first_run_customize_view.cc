@@ -10,6 +10,7 @@
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/first_run.h"
 #include "chrome/browser/metrics/user_metrics.h"
+#include "chrome/installer/util/browser_distribution.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -45,7 +46,8 @@ FirstRunCustomizeView::FirstRunCustomizeView(Profile* profile,
   // the customize view, so that the user selection isn't lost when you uncheck
   // and then open the Customize dialog. Therefore, we propagate the selection
   // status of the default browser here.
-  default_browser_->SetChecked(default_browser_checked);
+  if (default_browser_)
+    default_browser_->SetChecked(default_browser_checked);
 }
 
 FirstRunCustomizeView::~FirstRunCustomizeView() {
@@ -209,7 +211,7 @@ bool FirstRunCustomizeView::Accept() {
         importer_host_->GetSourceProfileInfoAt(browser_selected).browser_type,
         GetImportItems(), window()->GetNativeWindow());
   }
-  if (default_browser_->checked())
+  if (default_browser_ && default_browser_->checked())
     SetDefaultBrowser();
 
   if (customize_observer_)

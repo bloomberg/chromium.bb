@@ -11,6 +11,7 @@
 
 namespace views {
 class Checkbox;
+class Label;
 class Window;
 class ImageView;
 class Separator;
@@ -81,6 +82,7 @@ class FirstRunViewBase : public views::View,
   scoped_refptr<ImporterHost> importer_host_;
   Profile* profile_;
   views::Checkbox* default_browser_;
+  views::Label* non_default_browser_label_;
 
  protected:
   bool homepage_defined_;

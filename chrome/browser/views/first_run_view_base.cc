@@ -17,6 +17,7 @@
 #include "chrome/browser/shell_integration.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/installer/util/browser_distribution.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -36,6 +37,7 @@ FirstRunViewBase::FirstRunViewBase(Profile* profile, bool homepage_defined,
       background_image_(NULL),
       separator_1_(NULL),
       default_browser_(NULL),
+      non_default_browser_label_(NULL),
       separator_2_(NULL),
       importer_host_(NULL),
       profile_(profile),
@@ -88,11 +90,21 @@ void FirstRunViewBase::SetupControls() {
   separator_1_ = new views::Separator;
   AddChildView(separator_1_);
 
-  // The "make us default browser" check box.
-  default_browser_ = new views::Checkbox(
-      l10n_util::GetString(IDS_FR_CUSTOMIZE_DEFAULT_BROWSER));
-  default_browser_->SetMultiLine(true);
-  AddChildView(default_browser_);
+  if (BrowserDistribution::GetDistribution()->CanSetAsDefault()) {
+    // The "make us default browser" check box.
+    default_browser_ = new views::Checkbox(
+        l10n_util::GetString(IDS_FR_CUSTOMIZE_DEFAULT_BROWSER));
+    default_browser_->SetMultiLine(true);
+    AddChildView(default_browser_);
+  } else {
+    non_default_browser_label_ = new Label(
+        l10n_util::GetStringF(IDS_OPTIONS_DEFAULTBROWSER_SXS,
+                              l10n_util::GetString(IDS_PRODUCT_NAME)));
+    non_default_browser_label_->SetMultiLine(true);
+    non_default_browser_label_->SetHorizontalAlignment(
+        views::Label::ALIGN_LEFT);
+    AddChildView(non_default_browser_label_);
+  }
 
   // The second separator marks the start of buttons.
   separator_2_ = new views::Separator;
@@ -134,9 +146,16 @@ void FirstRunViewBase::Layout() {
   next_v_space = separator_2_->y() + separator_2_->height() + kVertSpacing;
 
   int width = canvas.width() - 2 * kPanelHorizMargin;
-  int height = default_browser_->GetHeightForWidth(width);
-  default_browser_->SetBounds(kPanelHorizMargin, next_v_space, width, height);
-  AdjustDialogWidth(default_browser_);
+  if (default_browser_) {
+    int height = default_browser_->GetHeightForWidth(width);
+    default_browser_->SetBounds(kPanelHorizMargin, next_v_space, width, height);
+    AdjustDialogWidth(default_browser_);
+  } else {
+    int height = non_default_browser_label_->GetHeightForWidth(width);
+    non_default_browser_label_->SetBounds(kPanelHorizMargin, next_v_space,
+                                          width, height);
+    AdjustDialogWidth(non_default_browser_label_);
+  }
 }
 
 bool FirstRunViewBase::CanResize() const {
@@ -186,7 +205,8 @@ void FirstRunViewBase::DisableButtons() {
   views::DialogClientView* dcv = GetDialogClientView();
   dcv->ok_button()->SetEnabled(false);
   dcv->cancel_button()->SetEnabled(false);
-  default_browser_->SetEnabled(false);
+  if (default_browser_)
+    default_browser_->SetEnabled(false);
 }
 
 bool FirstRunViewBase::CreateDesktopShortcut() {

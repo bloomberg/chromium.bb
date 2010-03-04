@@ -71,6 +71,10 @@ class GeneralPageView : public OptionsPageView,
   virtual void SetDefaultBrowserUIState(
       ShellIntegration::DefaultBrowserUIState state);
 
+  // For Side by Side installs, this will disable the Default Browser setting
+  // and display an explanitory message.
+  void SetDefaultBrowserUIStateForSxS();
+
   // Init all the dialog controls
   void InitStartupGroup();
   void InitHomepageGroup();
