@@ -110,16 +110,6 @@ class PersonalDataManager : public WebDataServiceConsumer,
   // This will create and reserve a new unique ID for a profile.
   int CreateNextUniqueID(std::set<int>* unique_ids);
 
-  // Parses value to extract the components of a phone number and adds them to
-  // profile.
-  //
-  // TODO(jhawkins): Investigate if this can be moved to PhoneField.
-  void ParsePhoneNumber(AutoFillProfile* profile,
-                        string16* value,
-                        AutoFillFieldType number,
-                        AutoFillFieldType city_code,
-                        AutoFillFieldType country_code) const;
-
   // Loads the saved profiles from the web database.
   void LoadProfiles();
 

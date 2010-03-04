@@ -11,18 +11,13 @@
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/autofill/autofill_field.h"
 #include "chrome/browser/autofill/form_structure.h"
+#include "chrome/browser/autofill/phone_number.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/webdata/web_data_service.h"
 
 // The minimum number of fields that must contain user data and have known types
 // before autofill will attempt to import the data into a profile.
 static const int kMinImportSize = 5;
-
-// The number of digits in a phone number.
-static const int kPhoneNumberLength = 7;
-
-// The number of digits in an area code.
-static const int kPhoneCityCodeLength = 3;
 
 PersonalDataManager::~PersonalDataManager() {
   CancelPendingQuery(&pending_profiles_query_);
@@ -149,12 +144,27 @@ bool PersonalDataManager::ImportFormData(
         // In the case of a phone number, if the whole phone number was entered
         // into a single field, then parse it and set the sub components.
         if (field_type.subgroup() == AutoFillType::PHONE_WHOLE_NUMBER) {
+          string16 number;
+          string16 city_code;
+          string16 country_code;
           if (group == AutoFillType::PHONE_HOME) {
-            ParsePhoneNumber(imported_profile_.get(), &value, PHONE_HOME_NUMBER,
-                             PHONE_HOME_CITY_CODE, PHONE_HOME_COUNTRY_CODE);
+            PhoneNumber::ParsePhoneNumber(
+                value, &number, &city_code, &country_code);
+            imported_profile_->SetInfo(
+                AutoFillType(PHONE_HOME_COUNTRY_CODE), country_code);
+            imported_profile_->SetInfo(
+                AutoFillType(PHONE_HOME_CITY_CODE), city_code);
+            imported_profile_->SetInfo(
+                AutoFillType(PHONE_HOME_NUMBER), number);
           } else if (group == AutoFillType::PHONE_FAX) {
-            ParsePhoneNumber(imported_profile_.get(), &value, PHONE_FAX_NUMBER,
-                             PHONE_FAX_CITY_CODE, PHONE_FAX_COUNTRY_CODE);
+            PhoneNumber::ParsePhoneNumber(
+                value, &number, &city_code, &country_code);
+            imported_profile_->SetInfo(
+                AutoFillType(PHONE_FAX_COUNTRY_CODE), country_code);
+            imported_profile_->SetInfo(
+                AutoFillType(PHONE_FAX_CITY_CODE), city_code);
+            imported_profile_->SetInfo(
+                AutoFillType(PHONE_FAX_NUMBER), number);
           }
           continue;
         }
@@ -371,32 +381,6 @@ int PersonalDataManager::CreateNextUniqueID(std::set<int>* unique_ids) {
     ++id;
   unique_ids->insert(id);
   return id;
-}
-
-void PersonalDataManager::ParsePhoneNumber(
-    AutoFillProfile* profile,
-    string16* value,
-    AutoFillFieldType number,
-    AutoFillFieldType city_code,
-    AutoFillFieldType country_code) const {
-  // Treat the last 7 digits as the number.
-  string16 number_str = value->substr(kPhoneNumberLength,
-                                      value->size() - kPhoneNumberLength);
-  profile->SetInfo(AutoFillType(number), number_str);
-  value->resize(value->size() - kPhoneNumberLength);
-  if (value->empty())
-    return;
-
-  // Treat the next three digits as the city code.
-  string16 city_code_str = value->substr(kPhoneCityCodeLength,
-                                         value->size() - kPhoneCityCodeLength);
-  profile->SetInfo(AutoFillType(city_code), city_code_str);
-  value->resize(value->size() - kPhoneCityCodeLength);
-  if (value->empty())
-    return;
-
-  // Treat any remaining digits as the country code.
-  profile->SetInfo(AutoFillType(country_code), *value);
 }
 
 void PersonalDataManager::LoadProfiles() {

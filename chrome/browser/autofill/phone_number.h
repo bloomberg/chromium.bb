@@ -26,6 +26,15 @@ class PhoneNumber : public FormGroup {
   virtual string16 GetFieldText(const AutoFillType& type) const;
   virtual void SetInfo(const AutoFillType& type, const string16& value);
 
+  // Parses |value| to extract the components of a phone number.  |number|
+  // returns the trailing 7 digits, |city_code| returns the next 3 digits, and
+  // |country_code| returns any remaining digits.
+  // Separator characters are stripped before parsing the digits.
+  static void ParsePhoneNumber(const string16& value,
+                               string16* number,
+                               string16* city_code,
+                               string16* country_code);
+
  protected:
   explicit PhoneNumber(const PhoneNumber& phone_number);
 
@@ -74,7 +83,7 @@ class PhoneNumber : public FormGroup {
   bool Validate(const string16& number) const;
 
   // Removes any punctuation characters from |number|.
-  void StripPunctuation(string16* number) const;
+  static void StripPunctuation(string16* number);
 
   // The pieces of the phone number.
   string16 country_code_;

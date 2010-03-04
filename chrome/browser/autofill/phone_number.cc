@@ -6,12 +6,21 @@
 
 #include "base/basictypes.h"
 #include "base/string_util.h"
+#include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/field_types.h"
 
-static const string16 kPhoneNumberSeparators = ASCIIToUTF16(" .()-");
+namespace {
 
-static const AutoFillType::FieldTypeSubGroup kAutoFillPhoneTypes[] = {
+const char16 kPhoneNumberSeparators[] = { ' ', '.', '(', ')', '-', 0 };
+
+// The number of digits in a phone number.
+const size_t kPhoneNumberLength = 7;
+
+// The number of digits in an area code.
+const size_t kPhoneCityCodeLength = 3;
+
+const AutoFillType::FieldTypeSubGroup kAutoFillPhoneTypes[] = {
   AutoFillType::PHONE_NUMBER,
   AutoFillType::PHONE_CITY_CODE,
   AutoFillType::PHONE_COUNTRY_CODE,
@@ -19,7 +28,9 @@ static const AutoFillType::FieldTypeSubGroup kAutoFillPhoneTypes[] = {
   AutoFillType::PHONE_WHOLE_NUMBER,
 };
 
-static const int kAutoFillPhoneLength = arraysize(kAutoFillPhoneTypes);
+const int kAutoFillPhoneLength = arraysize(kAutoFillPhoneTypes);
+
+}  // namespace
 
 void PhoneNumber::GetPossibleFieldTypes(const string16& text,
                                         FieldTypeSet* possible_types) const {
@@ -107,6 +118,46 @@ void PhoneNumber::SetInfo(const AutoFillType& type, const string16& value) {
   // TODO(jhawkins): Add extension support.
   // else if (subgroup == AutoFillType::PHONE_EXTENSION)
   //   set_extension(number);
+}
+
+// Static.
+void PhoneNumber::ParsePhoneNumber(const string16& value,
+                                   string16* number,
+                                   string16* city_code,
+                                   string16* country_code) {
+  DCHECK(number);
+  DCHECK(city_code);
+  DCHECK(country_code);
+
+  // Make a working copy of value.
+  string16 working = value;
+
+  *number = string16();
+  *city_code = string16();
+  *country_code = string16();
+
+  // First remove any punctuation.
+  StripPunctuation(&working);
+
+  if (working.size() < kPhoneNumberLength)
+    return;
+
+  // Treat the last 7 digits as the number.
+  *number = working.substr(working.size() - kPhoneNumberLength,
+                           kPhoneNumberLength);
+  working.resize(working.size() - kPhoneNumberLength);
+  if (working.size() < kPhoneCityCodeLength)
+    return;
+
+  // Treat the next three digits as the city code.
+  *city_code = working.substr(working.size() - kPhoneCityCodeLength,
+                              kPhoneCityCodeLength);
+  working.resize(working.size() - kPhoneCityCodeLength);
+  if (working.empty())
+    return;
+
+  // Treat any remaining digits as the country code.
+  *country_code = working;
 }
 
 string16 PhoneNumber::WholeNumber() const {
@@ -212,6 +263,7 @@ bool PhoneNumber::Validate(const string16& number) const {
   return true;
 }
 
-void PhoneNumber::StripPunctuation(string16* number) const {
-  RemoveChars(*number, kPhoneNumberSeparators.c_str(), number);
+// Static.
+void PhoneNumber::StripPunctuation(string16* number) {
+  RemoveChars(*number, kPhoneNumberSeparators, number);
 }
