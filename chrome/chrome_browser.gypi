@@ -2537,6 +2537,7 @@
                 '<(INTERMEDIATE_DIR)/chrome',
               ],
               'sources/': [
+                ['exclude', '^browser/cookie_modal_dialog_views.cc'],
                 ['include', '^browser/back_forward_menu_model_views.cc'],
                 ['include', '^browser/back_forward_menu_model_views.h'],
                 ['include', '^browser/dock_info_gtk.cc'],
@@ -2720,7 +2721,6 @@
                 ['include', '^browser/views/unhandled_keyboard_event_handler.h'],
                 ['include', '^browser/window_sizer.cc'],
                 ['include', '^browser/window_sizer.h'],
-
                 # Exclude all of browser/gtk, then include the things we want.
                 ['exclude', '^browser/gtk'],
                 ['include', '^browser/gtk/accessibility_event_router_gtk.cc'],
