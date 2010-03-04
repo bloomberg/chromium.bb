@@ -29,8 +29,6 @@ using views::Widget;
 
 namespace {
 
-const int kCornerRadius = 12;
-const int kShadow = 10;
 const int kWelcomeLabelY = 150;
 const int kOfflineButtonX = 30;
 const int kSpacing = 25;
@@ -39,8 +37,6 @@ const int kHorizontalSpacing = 25;
 const int kNetworkComboboxWidth = 250;
 const int kNetworkComboboxHeight = 30;
 const SkColor kWelcomeColor = 0x0054A4;
-const SkColor kBackground = SK_ColorWHITE;
-const SkColor kShadowColor = 0x40223673;
 
 }  // namespace
 
@@ -59,11 +55,8 @@ NetworkSelectionView::~NetworkSelectionView() {
 void NetworkSelectionView::Init() {
   // TODO(nkostylev): Add UI language and logo.
   // Use rounded rect background.
-  views::Painter* painter = new chromeos::RoundedRectPainter(
-      0, 0x00000000,              // no padding
-      kShadow, kShadowColor,      // gradient shadow
-      kCornerRadius,              // corner radius
-      kBackground, kBackground);  // backgound without gradient
+  views::Painter* painter = chromeos::CreateWizardPainter(
+      &chromeos::BorderDefinition::kScreenBorder);
   set_background(
       views::Background::CreateBackgroundPainter(true, painter));
 

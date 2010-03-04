@@ -344,6 +344,8 @@
         'browser/chromeos/gview_request_interceptor.h',
         'browser/chromeos/login/account_creation_view.cc',
         'browser/chromeos/login/account_creation_view.h',
+        'browser/chromeos/login/account_screen.cc',
+        'browser/chromeos/login/account_screen.h',
         'browser/chromeos/login/authenticator.h',
         'browser/chromeos/login/google_authenticator.cc',
         'browser/chromeos/login/google_authenticator.h',

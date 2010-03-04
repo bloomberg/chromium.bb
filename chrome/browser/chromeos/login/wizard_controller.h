@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/status/status_area_host.h"
 #include "views/window/window_delegate.h"
 
+class AccountScreen;
 class WizardContentsView;
 class WizardScreen;
 namespace chromeos {
@@ -29,7 +30,7 @@ class WizardController : public views::WindowDelegate,
                          public WizardScreenDelegate {
  public:
   WizardController();
-  virtual ~WizardController() {}
+  virtual ~WizardController();
 
   // Shows the first screen defined by |first_screen_name| or by default
   // if the parameter is empty.

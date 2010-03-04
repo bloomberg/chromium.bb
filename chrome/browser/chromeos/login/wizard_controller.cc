@@ -9,6 +9,7 @@
 
 #include "app/gfx/canvas.h"
 #include "base/logging.h"  // For NOTREACHED.
+#include "chrome/browser/chromeos/login/account_screen.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/status/clock_menu_button.h"
@@ -19,12 +20,7 @@
 namespace {
 
 const int kWizardScreenWidth = 512;
-const int kWizardScreenHeight = 384;
-const int kCornerRadius = 12;
-const int kBackgroundPadding = 10;
-const SkColor kBackgroundTopColor = SkColorSetRGB(82, 139, 224);
-const SkColor kBackgroundBottomColor = SkColorSetRGB(50, 102, 204);
-const SkColor kBackgroundPaddingColor = SK_ColorBLACK;
+const int kWizardScreenHeight = 416;
 
 const char kNetworkScreenName[] = "network";
 const char kLoginScreenName[] = "login";
@@ -42,11 +38,8 @@ class WizardContentsView : public views::View {
   ~WizardContentsView() {}
 
   void Init() {
-    views::Painter* painter = new chromeos::RoundedRectPainter(
-        kBackgroundPadding, kBackgroundPaddingColor,    // black padding
-        0, SK_ColorBLACK,                               // no shadow
-        kCornerRadius,                                  // corner radius
-        kBackgroundTopColor, kBackgroundBottomColor);   // gradient
+    views::Painter* painter = chromeos::CreateWizardPainter(
+        &chromeos::BorderDefinition::kWizardBorder);
     set_background(views::Background::CreateBackgroundPainter(true, painter));
     AddChildView(status_area_);
   }
@@ -57,7 +50,9 @@ class WizardContentsView : public views::View {
   }
 
   virtual void Layout() {
-    int right_top_padding = kBackgroundPadding + kCornerRadius / 2;
+    int right_top_padding =
+        chromeos::BorderDefinition::kWizardBorder.padding +
+        chromeos::BorderDefinition::kWizardBorder.corner_radius / 2;
     gfx::Size status_area_size = status_area_->GetPreferredSize();
     status_area_->SetBounds(
         width() - status_area_size.width() - right_top_padding,
@@ -89,6 +84,9 @@ WizardController::WizardController()
     : contents_(NULL),
       status_area_(NULL),
       current_screen_(NULL) {
+}
+
+WizardController::~WizardController() {
 }
 
 void WizardController::ShowFirstScreen(const std::string& first_screen_name) {

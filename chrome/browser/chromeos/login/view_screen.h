@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_VIEW_SCREEN_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_VIEW_SCREEN_H_
 
-#include "chrome/browser/chromeos/login/account_creation_view.h"
 #include "chrome/browser/chromeos/login/login_manager_view.h"
 #include "chrome/browser/chromeos/login/network_selection_view.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
@@ -20,12 +19,28 @@ class ViewScreen : public WizardScreen {
   virtual void Show();
   virtual void Hide();
 
- private:
-  void InitView();
+ protected:
+  // Creates view object and adds it to views hierarchy.
+  virtual void InitView();
+  // Creates view object.
+  virtual V* CreateView() = 0;
 
+  V* view() { return view_; }
+
+ private:
   V* view_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewScreen);
+};
+
+template <class V>
+class DefaultViewScreen : public ViewScreen<V> {
+ public:
+  explicit DefaultViewScreen(WizardScreenDelegate* delegate)
+      : ViewScreen<V>(delegate) {}
+  V* CreateView() {
+    return new V(ViewScreen<V>::delegate()->GetObserver(this));
+  }
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -57,18 +72,17 @@ void ViewScreen<V>::Hide() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// ViewScreen, private:
+// ViewScreen, protected:
 template <class V>
 void ViewScreen<V>::InitView() {
-  view_ = new V(delegate()->GetObserver(this));
+  view_ = CreateView();
   delegate()->GetWizardView()->AddChildView(view_);
   view_->Init();
   view_->SetVisible(false);
 }
 
-typedef ViewScreen<LoginManagerView> LoginScreen;
-typedef ViewScreen<AccountCreationView> AccountScreen;
-typedef ViewScreen<NetworkSelectionView> NetworkScreen;
+typedef DefaultViewScreen<LoginManagerView> LoginScreen;
+typedef DefaultViewScreen<NetworkSelectionView> NetworkScreen;
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_VIEW_SCREEN_H_
 
