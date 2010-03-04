@@ -401,18 +401,18 @@
    fun:ChromeMain
    fun:main
 }
-{	
-   bug_33394_b	
-   Memcheck:Leak	
-   fun:calloc	
-   fun:PR_Calloc	
-   fun:PR_NewMonitor	
-   fun:_PR_UnixInit	
-   fun:_PR_ImplicitInitialization	
-   ...	
-   fun:_ZN4base14EnsureNSPRInitEv	
-   fun:ChromeMain	
-   fun:main	
+{
+   bug_33394_b
+   Memcheck:Leak
+   fun:calloc
+   fun:PR_Calloc
+   fun:PR_NewMonitor
+   fun:_PR_UnixInit
+   fun:_PR_ImplicitInitialization
+   ...
+   fun:_ZN4base14EnsureNSPRInitEv
+   fun:ChromeMain
+   fun:main
 }
 #-----------------------------------------------------------------------
 # 2. intentional unit test errors, or stuff that is somehow a false positive
@@ -1198,11 +1198,11 @@
    fun:_ZN12RenderThread15OnCreateNewViewEiRK19RendererPreferencesRK14WebPreferencesi
 }
 {
-   # See comment in main_menu.cc
-   main_menu_leak
+   # See comment in app_launcher.cc
+   app_launcher_leak
    Memcheck:Leak
    ...
-   fun:_ZN8chromeos8MainMenuC1Ev
+   fun:_ZN8chromeos11AppLauncherC1Ev
 }
 # The following three suppressions are related to the workers code.
 {
