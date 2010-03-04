@@ -126,6 +126,7 @@ void CreateTestExtensions(int count, ExtensionList *list,
     FilePath path(StringPrintf("/extension%i", i));
 #endif
     Extension* e = new Extension(path);
+    e->set_location(Extension::INTERNAL);
     input.SetString(extension_manifest_keys::kVersion,
                     StringPrintf("%d.0.0.0", i));
     input.SetString(extension_manifest_keys::kName,

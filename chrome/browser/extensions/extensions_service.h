@@ -66,6 +66,22 @@ class ExtensionsService
       public ExtensionUpdateService,
       public NotificationObserver {
  public:
+  // Information about a registered component extension.
+  struct ComponentExtensionInfo {
+    ComponentExtensionInfo(const std::string& manifest,
+                           const FilePath& root_directory)
+        : manifest(manifest),
+          root_directory(root_directory) {
+    }
+
+    // The extension's manifest. This is required for component extensions so
+    // that ExtensionsService doesn't need to go to disk to load them.
+    std::string manifest;
+
+    // Directory where the extension is stored.
+    FilePath root_directory;
+  };
+
   // The name of the directory inside the profile where extensions are
   // installed to.
   static const char* kInstallDirectoryName;
@@ -95,6 +111,11 @@ class ExtensionsService
   virtual const ExtensionList* extensions() const { return &extensions_; }
   virtual const ExtensionList* disabled_extensions() const {
     return &disabled_extensions_;
+  }
+
+  // Registers an extension to be loaded as a component extension.
+  void register_component_extension(const ComponentExtensionInfo& info) {
+    component_extension_manifests_.push_back(info);
   }
 
   // Returns true if any extensions are installed.
@@ -154,6 +175,9 @@ class ExtensionsService
 
   // Load the extension from the directory |extension_path|.
   void LoadExtension(const FilePath& extension_path);
+
+  // Load any component extensions.
+  void LoadComponentExtensions();
 
   // Load all known extensions (used by startup and testing code).
   void LoadAllExtensions();
@@ -329,6 +353,10 @@ class ExtensionsService
   OrphanedDevTools orphaned_dev_tools_;
 
   NotificationRegistrar registrar_;
+
+  // List of registered component extensions (see Extension::Location).
+  typedef std::vector<ComponentExtensionInfo> RegisteredComponentExtensions;
+  RegisteredComponentExtensions component_extension_manifests_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsService);
 };

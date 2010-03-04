@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -111,7 +111,7 @@ bool PathProvider(int key, FilePath* result) {
       if (!GetUserDesktop(&cur))
         return false;
       break;
-    case chrome::DIR_INSPECTOR:
+    case chrome::DIR_RESOURCES:
 #if defined(OS_MACOSX)
       cur = mac_util::MainAppBundlePath();
       cur = cur.Append(FILE_PATH_LITERAL("Resources"));
@@ -120,6 +120,15 @@ bool PathProvider(int key, FilePath* result) {
         return false;
       cur = cur.Append(FILE_PATH_LITERAL("resources"));
 #endif
+      break;
+    case chrome::DIR_BOOKMARK_MANAGER:
+      if (!PathService::Get(chrome::DIR_RESOURCES, &cur))
+        return false;
+      cur = cur.Append(FILE_PATH_LITERAL("bookmark_manager"));
+      break;
+    case chrome::DIR_INSPECTOR:
+      if (!PathService::Get(chrome::DIR_RESOURCES, &cur))
+        return false;
       cur = cur.Append(FILE_PATH_LITERAL("inspector"));
       break;
     case chrome::DIR_APP_DICTIONARIES:

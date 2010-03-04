@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- This comment is only here because changes to resources are not picked up
-without changes to the corresponding grd file.  taaaag -->
+without changes to the corresponding grd file. aa1 -->
 <grit latest_public_release="0" current_release="1">
   <outputs>
     <output filename="grit/browser_resources.h" type="rc_header">
@@ -42,6 +42,7 @@ without changes to the corresponding grd file.  taaaag -->
   <include name="IDR_FILEBROWSE_HTML" file="resources\filebrowse.html" flattenhtml="true" type="BINDATA" />
   <include name="IDR_OS_CREDITS_HTML" file="resources\about_os_credits.html" flattenhtml="true" type="BINDATA" />
       </if>
+      <include name="IDR_BOOKMARKS_MANIFEST" file="resources\bookmark_manager\manifest.json" type="BINDATA" />
       <include name="IDR_DOWNLOADS_HTML" file="resources\downloads.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_LOCAL_STRINGS_JS" file="resources\local_strings.js" type="BINDATA" />
       <include name="IDR_DOM_UI_CSS" file="resources\dom_ui.css" flattenhtml="true" type="BINDATA" />

@@ -1684,3 +1684,42 @@ TEST_F(ExtensionsServiceTest, StorageQuota) {
   EXPECT_EQ(profile_->GetDatabaseTracker()->GetDefaultQuota(), limited_quota);
   EXPECT_EQ(kint64max, unlimited_quota);
 }
+
+// Tests ExtensionsService::register_component_extension().
+TEST_F(ExtensionsServiceTest, ComponentExtensions) {
+  InitializeEmptyExtensionsService();
+
+  FilePath path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &path));
+  path = path.AppendASCII("extensions")
+      .AppendASCII("good")
+      .AppendASCII("Extensions")
+      .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
+      .AppendASCII("1.0.0.0");
+
+  std::string manifest;
+  ASSERT_TRUE(file_util::ReadFileToString(
+      path.Append(Extension::kManifestFilename), &manifest));
+
+  service_->register_component_extension(
+      ExtensionsService::ComponentExtensionInfo(manifest, path));
+  service_->Init();
+
+  // Note that we do not pump messages -- the extension should be loaded
+  // immediately.
+
+  EXPECT_EQ(0u, GetErrors().size());
+  ASSERT_EQ(1u, loaded_.size());
+  EXPECT_EQ(Extension::COMPONENT, loaded_[0]->location());
+  EXPECT_EQ(1u, service_->extensions()->size());
+
+  // Component extensions shouldn't get recourded in the prefs.
+  ValidatePrefKeyCount(0);
+
+  // Reload all extensions, and make sure it comes back.
+  std::string extension_id = service_->extensions()->at(0)->id();
+  loaded_.clear();
+  service_->ReloadExtensions();
+  ASSERT_EQ(1u, service_->extensions()->size());
+  EXPECT_EQ(extension_id, service_->extensions()->at(0)->id());
+}

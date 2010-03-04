@@ -25,6 +25,17 @@ namespace errors = extension_manifest_errors;
 class ExtensionTest : public testing::Test {
 };
 
+// We persist location values in the preferences, so this is a sanity test that
+// someone doesn't accidentally change them.
+TEST(ExtensionTest, LocationValuesTest) {
+  ASSERT_EQ(0, Extension::INVALID);
+  ASSERT_EQ(1, Extension::INTERNAL);
+  ASSERT_EQ(2, Extension::EXTERNAL_PREF);
+  ASSERT_EQ(3, Extension::EXTERNAL_REGISTRY);
+  ASSERT_EQ(4, Extension::LOAD);
+  ASSERT_EQ(5, Extension::COMPONENT);
+}
+
 TEST(ExtensionTest, InitFromValueInvalid) {
 #if defined(OS_WIN)
   FilePath path(FILE_PATH_LITERAL("c:\\foo"));

@@ -48,6 +48,24 @@
 #include "net/base/net_util.h"
 #include "webkit/glue/image_decoder.h"
 
+namespace {
+
+static bool ShouldShowExtension(Extension* extension) {
+  // Don't show the themes since this page's UI isn't really useful for
+  // themes.
+  if (extension->IsTheme())
+    return false;
+
+  // Don't show component extensions because they are only extensions as an
+  // implementation detail of Chrome.
+  if (extension->location() == Extension::COMPONENT)
+    return false;
+
+  return true;
+}
+
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // ExtensionsHTMLSource
@@ -289,9 +307,7 @@ void ExtensionsDOMHandler::HandleRequestExtensionsData(const Value* value) {
   const ExtensionList* extensions = extensions_service_->extensions();
   for (ExtensionList::const_iterator extension = extensions->begin();
        extension != extensions->end(); ++extension) {
-    // Don't show the themes since this page's UI isn't really useful for
-    // themes.
-    if (!(*extension)->IsTheme()) {
+    if (ShouldShowExtension(*extension)) {
       extensions_list->Append(CreateExtensionDetailValue(
           extensions_service_.get(),
           *extension, GetActivePagesForExtension((*extension)->id()), true));
@@ -301,7 +317,7 @@ void ExtensionsDOMHandler::HandleRequestExtensionsData(const Value* value) {
   extensions = extensions_service_->disabled_extensions();
   for (ExtensionList::const_iterator extension = extensions->begin();
        extension != extensions->end(); ++extension) {
-    if (!(*extension)->IsTheme()) {
+    if (ShouldShowExtension(*extension)) {
       extensions_list->Append(CreateExtensionDetailValue(
           extensions_service_.get(),
           *extension, GetActivePagesForExtension((*extension)->id()), false));

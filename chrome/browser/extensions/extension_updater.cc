@@ -553,6 +553,13 @@ void ExtensionUpdater::CheckNow() {
   for (ExtensionList::const_iterator iter = extensions->begin();
        iter != extensions->end(); ++iter) {
     Extension* extension = (*iter);
+
+    // Only internal and external extensions can be autoupdated.
+    if (extension->location() != Extension::INTERNAL &&
+        !Extension::IsExternalLocation(extension->location())) {
+      continue;
+    }
+
     const GURL& update_url = extension->update_url();
 
     // Collect histogram data and skip extensions with no update url.

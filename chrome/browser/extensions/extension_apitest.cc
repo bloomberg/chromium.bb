@@ -87,13 +87,25 @@ bool ExtensionApiTest::RunExtensionTest(const char* extension_name) {
 // Test that exactly one extension loaded.
 Extension* ExtensionApiTest::GetSingleLoadedExtension() {
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
-  if (service->extensions()->size() != 1u) {
-    message_ = StringPrintf(
-        "Expected only one extension to be present.  Found %u.",
-        static_cast<unsigned>(service->extensions()->size()));
-    return NULL;
+
+  int found_extension_index = -1;
+  for (size_t i = 0; i < service->extensions()->size(); ++i) {
+    // Ignore any component extensions. They are automatically loaded into all
+    // profiles and aren't the extension we're looking for here.
+    if (service->extensions()->at(i)->location() == Extension::COMPONENT)
+      continue;
+
+    if (found_extension_index != -1) {
+      message_ = StringPrintf(
+          "Expected only one extension to be present.  Found %u.",
+          static_cast<unsigned>(service->extensions()->size()));
+      return NULL;
+    }
+
+    found_extension_index = static_cast<int>(i);
   }
-  Extension* extension = service->extensions()->at(0);
+
+  Extension* extension = service->extensions()->at(found_extension_index);
   if (!extension) {
     message_ = "extension pointer is NULL.";
     return NULL;

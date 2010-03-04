@@ -38,6 +38,7 @@
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
+#include "chrome/common/json_value_serializer.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "webkit/database/database_tracker.h"
@@ -321,8 +322,36 @@ void ExtensionsService::LoadExtension(const FilePath& extension_path) {
           extension_path, scoped_refptr<ExtensionsService>(this)));
 }
 
+void ExtensionsService::LoadComponentExtensions() {
+  for (RegisteredComponentExtensions::iterator it =
+           component_extension_manifests_.begin();
+       it != component_extension_manifests_.end(); ++it) {
+    JSONStringValueSerializer serializer(it->manifest);
+    scoped_ptr<Value> manifest(serializer.Deserialize(NULL));
+    DCHECK(manifest.get());
+
+    scoped_ptr<Extension> extension(new Extension(it->root_directory));
+    extension->set_location(Extension::COMPONENT);
+
+    std::string error;
+    if (!extension->InitFromValue(
+            *static_cast<DictionaryValue*>(manifest.get()),
+            true,  // require key
+            &error)) {
+      NOTREACHED();
+      return;
+    }
+
+    OnExtensionLoaded(extension.release(), false);  // Don't allow privilege
+                                                    // increase.
+  }
+}
+
 void ExtensionsService::LoadAllExtensions() {
   base::TimeTicks start_time = base::TimeTicks::Now();
+
+  // Load any component extensions.
+  LoadComponentExtensions();
 
   // Load the previously installed extensions.
   scoped_ptr<ExtensionPrefs::ExtensionsInfo> info(
@@ -363,43 +392,46 @@ void ExtensionsService::ContinueLoadAllExtensions(
   UMA_HISTOGRAM_COUNTS_100("Extensions.LoadAll", extensions_.size());
   UMA_HISTOGRAM_COUNTS_100("Extensions.Disabled", disabled_extensions_.size());
 
-  if (extensions_.size()) {
-    UMA_HISTOGRAM_TIMES("Extensions.LoadAllTime",
-                        base::TimeTicks::Now() - start_time);
+  UMA_HISTOGRAM_TIMES("Extensions.LoadAllTime",
+                      base::TimeTicks::Now() - start_time);
 
-    int user_script_count = 0;
-    int extension_count = 0;
-    int theme_count = 0;
-    int external_count = 0;
-    int page_action_count = 0;
-    int browser_action_count = 0;
-    ExtensionList::iterator ex;
-    for (ex = extensions_.begin(); ex != extensions_.end(); ++ex) {
-      if ((*ex)->IsTheme()) {
-        theme_count++;
-      } else if ((*ex)->converted_from_user_script()) {
-        user_script_count++;
-      } else {
-        extension_count++;
-      }
-      if (Extension::IsExternalLocation((*ex)->location())) {
-        external_count++;
-      }
-      if ((*ex)->page_action() != NULL) {
-        page_action_count++;
-      }
-      if ((*ex)->browser_action() != NULL) {
-        browser_action_count++;
-      }
+  int user_script_count = 0;
+  int extension_count = 0;
+  int theme_count = 0;
+  int external_count = 0;
+  int page_action_count = 0;
+  int browser_action_count = 0;
+  ExtensionList::iterator ex;
+  for (ex = extensions_.begin(); ex != extensions_.end(); ++ex) {
+    // Don't count component extensions, since they are only extensions as an
+    // implementation detail.
+    if ((*ex)->location() == Extension::COMPONENT)
+      continue;
+
+    if ((*ex)->IsTheme()) {
+      theme_count++;
+    } else if ((*ex)->converted_from_user_script()) {
+      user_script_count++;
+    } else {
+      extension_count++;
     }
-    UMA_HISTOGRAM_COUNTS_100("Extensions.LoadExtension", extension_count);
-    UMA_HISTOGRAM_COUNTS_100("Extensions.LoadUserScript", user_script_count);
-    UMA_HISTOGRAM_COUNTS_100("Extensions.LoadTheme", theme_count);
-    UMA_HISTOGRAM_COUNTS_100("Extensions.LoadExternal", external_count);
-    UMA_HISTOGRAM_COUNTS_100("Extensions.LoadPageAction", page_action_count);
-    UMA_HISTOGRAM_COUNTS_100("Extensions.LoadBrowserAction",
-                             browser_action_count);
+    if (Extension::IsExternalLocation((*ex)->location())) {
+      external_count++;
+    }
+    if ((*ex)->page_action() != NULL) {
+      page_action_count++;
+    }
+    if ((*ex)->browser_action() != NULL) {
+      browser_action_count++;
+    }
   }
+  UMA_HISTOGRAM_COUNTS_100("Extensions.LoadExtension", extension_count);
+  UMA_HISTOGRAM_COUNTS_100("Extensions.LoadUserScript", user_script_count);
+  UMA_HISTOGRAM_COUNTS_100("Extensions.LoadTheme", theme_count);
+  UMA_HISTOGRAM_COUNTS_100("Extensions.LoadExternal", external_count);
+  UMA_HISTOGRAM_COUNTS_100("Extensions.LoadPageAction", page_action_count);
+  UMA_HISTOGRAM_COUNTS_100("Extensions.LoadBrowserAction",
+                           browser_action_count);
 }
 
 void ExtensionsService::LoadInstalledExtension(const ExtensionInfo& info,

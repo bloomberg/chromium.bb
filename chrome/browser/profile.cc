@@ -4,6 +4,7 @@
 
 #include "chrome/browser/profile.h"
 
+#include "app/resource_bundle.h"
 #include "app/theme_provider.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
@@ -60,6 +61,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
+#include "grit/browser_resources.h"
 #include "grit/locale_settings.h"
 #include "net/base/transport_security_state.h"
 #include "webkit/database/database_tracker.h"
@@ -659,6 +661,23 @@ void ProfileImpl::InitExtensions() {
       GetPrefs(),
       GetPath().AppendASCII(ExtensionsService::kInstallDirectoryName),
       true);
+
+  // Register the bookmark manager extension.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableTabbedBookmarkManager)) {
+    FilePath bookmark_manager_path;
+    if (PathService::Get(chrome::DIR_BOOKMARK_MANAGER,
+                         &bookmark_manager_path)) {
+      std::string manifest =
+          ResourceBundle::GetSharedInstance().GetRawDataResource(
+              IDR_BOOKMARKS_MANIFEST).as_string();
+      extensions_service_->register_component_extension(
+          ExtensionsService::ComponentExtensionInfo(manifest,
+                                                    bookmark_manager_path));
+    } else {
+      NOTREACHED();
+    }
+  }
 
   extensions_service_->Init();
 

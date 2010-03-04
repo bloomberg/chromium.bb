@@ -58,25 +58,6 @@ static void ConvertHexadecimalToIDAlphabet(std::string* id) {
     (*id)[i] = HexStringToInt(id->substr(i, 1)) + 'a';
 }
 
-// Returns true if the given string is an API permission (see kPermissionNames).
-static bool IsAPIPermission(const std::string& str) {
-  for (size_t i = 0; i < Extension::kNumPermissions; ++i) {
-    if (str == Extension::kPermissionNames[i]) {
-      if (str == Extension::kExperimentalPermission &&
-          !CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kEnableExperimentalExtensionApis) &&
-          // TODO(arv): Tighten this so that not all extensions can access the
-          // experimental APIs.
-          !CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kEnableTabbedBookmarkManager)) {
-        return false;
-      }
-      return true;
-    }
-  }
-  return false;
-}
-
 }  // namespace
 
 const FilePath::CharType Extension::kManifestFilename[] =
@@ -175,19 +156,6 @@ GURL Extension::GetResourceURL(const GURL& extension_url,
   DCHECK(StartsWithASCII(ret_val.spec(), extension_url.spec(), false));
 
   return ret_val;
-}
-
-Extension::Location Extension::ExternalExtensionInstallType(
-    std::string registry_path) {
-#if defined(OS_WIN)
-  HKEY reg_root = HKEY_LOCAL_MACHINE;
-  RegKey key;
-  registry_path.append("\\");
-  registry_path.append(id_);
-  if (key.Open(reg_root, ASCIIToWide(registry_path).c_str()))
-    return Extension::EXTERNAL_REGISTRY;
-#endif
-  return Extension::EXTERNAL_PREF;
 }
 
 bool Extension::GenerateId(const std::string& input, std::string* output) {
@@ -788,7 +756,7 @@ void Extension::DecodeIconFromPath(const FilePath& icon_path,
   result->swap(decoded);
 }
 
-bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
+bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
                               std::string* error) {
   if (source.HasKey(keys::kPublicKey)) {
     std::string public_key_bytes;
@@ -798,7 +766,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
       *error = errors::kInvalidKey;
       return false;
     }
-  } else if (require_id) {
+  } else if (require_key) {
     *error = errors::kInvalidKey;
     return false;
   } else {
@@ -1445,5 +1413,27 @@ bool Extension::HasAccessToAllHosts() const {
     }
   }
 
+  return false;
+}
+
+bool Extension::IsAPIPermission(const std::string& str) {
+  for (size_t i = 0; i < Extension::kNumPermissions; ++i) {
+    if (str == Extension::kPermissionNames[i]) {
+      // Only allow the experimental API permission if the command line
+      // flag is present, or if the extension is a component of Chrome.
+      if (str == Extension::kExperimentalPermission) {
+        if (CommandLine::ForCurrentProcess()->HasSwitch(
+                switches::kEnableExperimentalExtensionApis)) {
+          return true;
+        } else if (location() == Extension::COMPONENT) {
+          return true;
+        } else {
+          return false;
+        }
+      } else {
+        return true;
+      }
+    }
+  }
   return false;
 }

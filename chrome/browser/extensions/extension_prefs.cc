@@ -538,14 +538,22 @@ ExtensionPrefs::ExtensionsInfo* ExtensionPrefs::CollectExtensionsInfo(
       NOTREACHED();
       continue;
     }
+
+    // Only internal and external extensions can be installed permanently in the
+    // preferences.
+    Extension::Location location =
+        static_cast<Extension::Location>(location_value);
+    if (location != Extension::INTERNAL &&
+        !Extension::IsExternalLocation(location)) {
+      NOTREACHED();
+      continue;
+    }
+
     DictionaryValue* manifest = NULL;
     if (!ext->GetDictionary(kPrefManifest, &manifest)) {
       LOG(WARNING) << "Missing manifest for extension " << *extension_id;
       // Just a warning for now.
     }
-
-    Extension::Location location =
-        static_cast<Extension::Location>(location_value);
 
     extensions_info->push_back(linked_ptr<ExtensionInfo>(new ExtensionInfo(
         manifest, WideToASCII(*extension_id), FilePath(path), location)));
