@@ -62,8 +62,7 @@ class AutoFillInfoBarDelegateTest : public RenderViewHostTestHarness {
 
   virtual void SetUp() {
     RenderViewHostTestHarness::SetUp();
-    tab_contents_.reset(new TestTabContents(profile_.get(), NULL));
-    autofill_manager_.reset(new MockAutoFillManager(tab_contents_.get()));
+    autofill_manager_.reset(new MockAutoFillManager(contents()));
     infobar_.reset(new AutoFillInfoBarDelegate(NULL, autofill_manager_.get()));
   }
 
@@ -72,8 +71,6 @@ class AutoFillInfoBarDelegateTest : public RenderViewHostTestHarness {
   scoped_ptr<AutoFillInfoBarDelegate> infobar_;
 
  private:
-  scoped_ptr<TestTabContents> tab_contents_;
-
   DISALLOW_COPY_AND_ASSIGN(AutoFillInfoBarDelegateTest);
 };
 
