@@ -699,10 +699,8 @@ static std::string ProcessBitField(SECItem* bitfield,
                                    char separator) {
   unsigned int bits = 0;
   std::string rv;
-  // NSS bit flags like KU_DIGITAL_SIGNATURE, etc. are defined with the
-  // assumption that the bitfields have at most 8 bits.
-  if (bitfield->len)
-    bits = bitfield->data[0];
+  for (size_t i = 0; i * 8 < bitfield->len && i < sizeof(bits); ++i)
+    bits |= bitfield->data[i] << (i * 8);
   for (size_t i = 0; i < len; ++i) {
     if (bits & string_map[i].mask) {
       if (!rv.empty())
