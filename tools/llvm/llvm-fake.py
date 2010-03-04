@@ -79,14 +79,27 @@ LD = BASE + '/codesourcery/arm-2007q3/bin/arm-none-linux-gnueabi-ld'
 HACK_ASM = ['sed', '-e', 's/vmrs.*apsr_nzcv, fpscr/fmrx r15, fpscr/g']
 
 
+def LogInfo(m):
+  print m
+
+
+def LogFatal(m, ret=-1):
+  print
+  print "FATAL:", m
+  print
+  sys.exit(ret)
+
+
+def StringifyCommand(a):
+  return repr(a)
+
+
 def Run(a):
-  if VERBOSE: print a
+  if VERBOSE:
+    LogInfo('\n' + StringifyCommand(a))
   ret = subprocess.call(a)
   if ret:
-    print
-    print "ERROR"
-    print
-    sys.exit(ret)
+    LogFatal('failed command: ' + StringifyCommand(a), ret)
 
 
 
@@ -234,16 +247,12 @@ def Incarnation_bcgplusplus(argv):
 
 
 def Incarnation_nop(argv):
-  print "IGNORING " + repr(argv)
+  LogInfo('\nIGNORING: ' + StringifyCommand(argv))
   return
 
 
 def Incarnation_illegal(argv):
-  print
-  print 'ILLEGAL COMMAND'
-  print
-  print repr(argv)
-  sys.exit(-1)
+  LogFatal('illegal command ' + StringifyCommand(argv))
 
 def FindLib(lib, lpaths):
   for p in lpaths:
@@ -251,34 +260,40 @@ def FindLib(lib, lpaths):
     if os.path.exists(fn):
       return fn
   else:
-    print 'ERROR: cannot find library: ' % lib
-    sys.exit(-1)
+    LogFatal('cannot find library: %s' % lib)
 
 
-INIT_OBJS = {
-    'crt1.o': True,
-    'crti.o': True,
-}
+INIT_OBJS = set([
+    'crt1.o',
+    'crti.o',
+    'intrinsics.o',
+    # special hack for tests/syscall_return_sandboxing
+    'sandboxed_x86_32.o',
+    'sandboxed_x86_64.o',
+    'sandboxed_arm.o',
+    ])
 
 
-FINI_OBJS = {
-    'crtn.o': True,
-    'libgcc.a': True,
-    'libgcc_eh.a': True,
-}
+FINI_OBJS = set([
+    'crtn.o',
+    'libgcc.a',
+    'libgcc_eh.a',
+    ])
 
 
-NATIVE_ARGS = {
-    '-lgcc' : True,
-    '-lgcc_eh': True,
-    '-static': True,
-}
+NATIVE_ARGS = set([
+    '-lgcc' ,
+    '-lgcc_eh',
+    '-static',
+    # NOTE: neeeded for some barebone tests
+    '-nostdlib',
+    ])
 
 
-DROP_ARGS = {
-    # we do not currently have c++
-    '-lstdc++': True,
-}
+DROP_ARGS = set([
+    # we do not currently have a working c++ library
+    '-lstdc++',
+    ])
 
 
 def Incarnation_bcld(argv):
@@ -291,6 +306,10 @@ def Incarnation_bcld(argv):
 
      The tricky part is that some args apply to phase 1 and some to phase 4.
      Most of the code below is dedicated to pick those apart.
+
+
+     TODO(robertm): llvm-ld does NOT complain when passed a native .o file.
+                    It will discard it silently.
   """
   args_bit_ld = []
   args_native_ld = []
@@ -310,7 +329,7 @@ def Incarnation_bcld(argv):
     elif a in DROP_ARGS:
       pass
     elif a.endswith('.o'):
-      dir, base = os.path.split(a)
+      _, base = os.path.split(a)
       if base in INIT_OBJS or base in FINI_OBJS:
         args_native_ld.append(a)
       else:
@@ -333,10 +352,8 @@ def Incarnation_bcld(argv):
       output = tokens[1]
       args_native_ld += tokens
     else:
-      print
-      print 'ERROR: unexpect ld arg: ', a
-      print
-      sys.exit(-1)
+      LogFatal('Unexpected ld arg: %s' % a)
+
 
   assert first_obj_pos
   assert output
@@ -347,7 +364,9 @@ def Incarnation_bcld(argv):
 
 
   # NOTE: LLVM_LD automagically appends .bc to the output
-  Run([LLVM_LD] + args_bit_ld + ['-o', output])
+  # NOTE: without -disable-internalize only the symbol 'main'
+  #       is exported, but we need some more for the startup code
+  Run([LLVM_LD] + args_bit_ld + ['-disable-internalize', '-o', output])
 
   Run(LLC_SFI + ['-f', bitcode_combined, '-o', asm_combined])
 
@@ -391,8 +410,8 @@ INCARNATIONS = {
 def main(argv):
   basename = os.path.basename(argv[0])
   if basename not in INCARNATIONS:
-    print  "ERROR: unknown command: " + repr(argv)
-    return -1
+    LogFatal("unknown command: " + StringifyCommand(argv))
+
 
   INCARNATIONS[basename](argv)
   return 0

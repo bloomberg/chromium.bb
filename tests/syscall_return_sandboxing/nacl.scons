@@ -5,22 +5,25 @@
 
 Import('env')
 
-# env's BUILD_ARCH, BUILD_SUBARCH controls what assembly files to
-# use.
 
-if env['BUILD_ARCHITECTURE'] == 'x86':
-  if env['BUILD_SUBARCH'] == '32':
-    sandboxing_asm = 'sandboxed_x86_32.S'
-  elif env['BUILD_SUBARCH'] == '64':
-    sandboxing_asm = 'sandboxed_x86_64.S'
+# NOTE:  because we want to compile everything to bitcode before linking
+# NOTE:  assembler source files requires special trickery, for now we
+# NOTE:  have hacked tools/llvm/llvm-fake.py
+# NOTE:  to recognize sandboxed_*.S as special
+
+# env's BUILD_ARCH, BUILD_SUBARCH controls what assembly files to use.
+def GetAssemblerFile(env):
+  if env['BUILD_ARCHITECTURE'] == 'x86':
+    if env['BUILD_SUBARCH'] == '32':
+      return 'sandboxed_x86_32.S'
+    elif env['BUILD_SUBARCH'] == '64':
+      return 'sandboxed_x86_64.S'
+    else:
+      raise Exception, 'unknown x86 subarchitecture'
+  elif env['BUILD_ARCHITECTURE'] == 'arm':
+    return 'sandboxed_arm.S'
   else:
-    print >>sys.stderr, 'unknown x86 subarchitecture'
-    assert 0
-elif env['BUILD_ARCHITECTURE'] == 'arm':
-  sandboxing_asm = 'sandboxed_arm.S'
-else:
-  print >>sys.stderr, 'unknown archtecture'
-  assert 0
+    raise Exception, 'unknown architecture'
 
 
 # TODO(bsy): remove adding pthread once we figure out how to eliminate
@@ -28,17 +31,13 @@ else:
 # actually need srpc, so all we're doing is bloating the nexe
 # unnecessarily.
 #
-# env.FilterOut(LIBS=['srpc'])
-env.Append(LIBS=['pthread'])
-
 env.ComponentProgram('syscall_return_sandboxing.nexe',
-                     [ 'syscall_return_sandboxing.c',
-                       sandboxing_asm ])
-
+                     ['syscall_return_sandboxing.c', GetAssemblerFile(env)],
+                     EXTRA_LIBS=['pthread'],
+                     )
 node = env.CommandSelLdrTestNacl(
     'syscall_return_sandboxing.out',
     command=[env.File('syscall_return_sandboxing.nexe')])
-
-env.AddNodeToTestSuite(node, ['small_tests',
-                              'sel_ldr_tests'],
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'sel_ldr_tests'],
                        'run_syscall_return_sandboxing_test')

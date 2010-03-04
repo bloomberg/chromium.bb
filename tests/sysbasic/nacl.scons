@@ -68,7 +68,7 @@ env.ComponentProgram(
      ],
     LIBS=[],
     EXTRA_LIBS=[],
-    LINKFLAGS=['-nostdlib', '-static', '-v'],
+    LINKFLAGS=['-nostdlib', '-static'],
     # NOTE: this are for ARM to really exclude libs and startup code
     LINKFLAGS_FIRST=[],
     LINKFLAGS_LAST=[],
@@ -90,7 +90,7 @@ env.ComponentProgram(
      ],
     LIBS=[],
     EXTRA_LIBS=[],
-    LINKFLAGS=['-nostdlib', '-static', '-v'],
+    LINKFLAGS=['-nostdlib', '-static'],
     # NOTE: this are for ARM to really exclude libs and startup code
     LINKFLAGS_FIRST=[],
     LINKFLAGS_LAST=[],

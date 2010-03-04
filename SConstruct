@@ -1068,6 +1068,7 @@ if (nacl_env['BUILD_ARCHITECTURE'] == 'arm' and
       LINKFLAGS_FIRST = ['${NACL_SDK_LIB}/crt1.o',
                          '${NACL_SDK_LIB}/crti.o',
                          '${NACL_SDK_LIB}/intrinsics.o',
+                         '${NACL_SDK_LIB}/reachable_function_symbols.o',
                          ],
       LIBS = [],
       # NOTE: order and replication is/may be important
@@ -1269,6 +1270,7 @@ nacl_extra_sdk_env.Append(
       'src/untrusted/av/nacl.scons',
       'src/untrusted/nacl/nacl.scons',
       'src/untrusted/pthread/nacl.scons',
+      'src/untrusted/reachable_function_symbols/nacl.scons',
       'src/untrusted/stubs/nacl.scons',
       'src/untrusted/unimpl/nacl.scons',
       ####  ALPHABETICALLY SORTED ####
