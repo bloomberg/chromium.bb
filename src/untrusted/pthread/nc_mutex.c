@@ -158,12 +158,16 @@ int pthread_once(pthread_once_t* __once_control,
     if (*pdone == 0) {
       /* still not done - but this time we own the lock */
       (*__init_routine)();
+
+      /* GCC intrinsic; see:
+       * http://gcc.gnu.org/onlinedocs/gcc/Atomic-Builtins.html.
+       * The x86-{32,64} compilers generate inline code.  The ARM
+       * implementation is external: stubs/intrinsics_arm.S.
+       */
       __sync_fetch_and_add(pdone, 1);
     }
     pthread_mutex_unlock(&__once_control->lock);
   }
-#else
-#warn pthread_once is currently a no-op on this platform!
 #endif
   return 0;
 }
