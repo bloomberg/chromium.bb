@@ -57,6 +57,8 @@
         # The only thing used from browser is Browser::Type.
         'browser/browser.h',
         'browser/cocoa/browser_test_helper.h',
+        'browser/geolocation/mock_location_provider.cc',
+        'browser/geolocation/mock_location_provider.h',
         'browser/mock_browsing_data_appcache_helper.cc',
         'browser/mock_browsing_data_appcache_helper.h',
         'browser/mock_browsing_data_database_helper.cc',
@@ -1169,6 +1171,7 @@
         'browser/extensions/extension_browsertest.h',
         'browser/extensions/extension_browsertests_misc.cc',
         'browser/extensions/extension_crash_recovery_browsertest.cc',
+        'browser/extensions/extension_geolocation_apitest.cc',
         'browser/extensions/extension_history_apitest.cc',
         'browser/extensions/extension_i18n_apitest.cc',
         'browser/extensions/extension_incognito_apitest.cc',

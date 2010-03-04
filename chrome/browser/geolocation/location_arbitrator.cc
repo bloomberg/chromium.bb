@@ -20,8 +20,9 @@
 
 namespace {
 const char* kDefaultNetworkProviderUrl = "https://www.google.com/loc/json";
-bool g_use_mock_provider = false;
-static GeolocationArbitrator* g_instance_ = NULL;
+GeolocationArbitrator* g_instance_ = NULL;
+GeolocationArbitrator::LocationProviderFactoryFunction
+    g_provider_factory_function_for_test = NULL;
 }  // namespace
 
 class GeolocationArbitratorImpl
@@ -132,8 +133,8 @@ void GeolocationArbitratorImpl::OnAccessTokenStoresLoaded(
   DCHECK(provider_ == NULL)
       << "OnAccessTokenStoresLoaded : has existing location "
       << "provider. Race condition caused repeat load of tokens?";
-  if (g_use_mock_provider) {
-    provider_.reset(NewMockLocationProvider());
+  if (g_provider_factory_function_for_test) {
+    provider_.reset(g_provider_factory_function_for_test());
   } else {
     // TODO(joth): Once we have arbitration implementation, iterate the whole
     // set rather than cherry-pick our defaul url.
@@ -195,8 +196,9 @@ GeolocationArbitrator* GeolocationArbitrator::GetInstance() {
   return g_instance_;
 }
 
-void GeolocationArbitrator::SetUseMockProvider(bool use_mock) {
-  g_use_mock_provider = use_mock;
+void GeolocationArbitrator::SetProviderFactoryForTest(
+      LocationProviderFactoryFunction factory_function) {
+  g_provider_factory_function_for_test = factory_function;
 }
 
 GeolocationArbitrator::GeolocationArbitrator() {

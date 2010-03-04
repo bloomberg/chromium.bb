@@ -8,6 +8,7 @@
 #include "base/ref_counted.h"
 
 class AccessTokenStore;
+class LocationProviderBase;
 class URLRequestContextGetter;
 struct Geoposition;
 
@@ -62,9 +63,11 @@ class GeolocationArbitrator : public base::RefCounted<GeolocationArbitrator> {
   // via AddObserver(). Returns true if the observer was removed.
   virtual bool RemoveObserver(Delegate* delegate) = 0;
 
-  // TODO(joth): This is a stop-gap for testing; once we have decoupled
-  // provider factory we should extract mock creation from the arbitrator.
-  static void SetUseMockProvider(bool use_mock);
+  // For testing, a factory functino can be set which will be used to create
+  // a specified test provider. Pass NULL to reset to the default behavior.
+  typedef LocationProviderBase* (*LocationProviderFactoryFunction)(void);
+  static void SetProviderFactoryForTest(
+      LocationProviderFactoryFunction factory_function);
 
  protected:
   friend class base::RefCounted<GeolocationArbitrator>;

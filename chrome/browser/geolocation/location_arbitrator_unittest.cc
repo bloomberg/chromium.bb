@@ -7,6 +7,7 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/geolocation/fake_access_token_store.h"
 #include "chrome/browser/geolocation/location_provider.h"
+#include "chrome/browser/geolocation/mock_location_provider.h"
 #include "chrome/common/geoposition.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -42,7 +43,7 @@ class GeolocationLocationArbitratorTest : public testing::Test {
  protected:
   virtual void SetUp() {
     access_token_store_ = new FakeAccessTokenStore;
-    GeolocationArbitrator::SetUseMockProvider(true);
+    GeolocationArbitrator::SetProviderFactoryForTest(&NewMockLocationProvider);
     arbitrator_ = GeolocationArbitrator::Create(access_token_store_.get(),
                                                 NULL);
   }

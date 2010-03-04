@@ -87,32 +87,8 @@ class LocationProviderBase : public NonThreadSafe {
   ListenerMap listeners_;
 };
 
-// Mock implementation of a location provider for testing.
-// TODO(joth): Move this and the implementation of this back in the unit_tests
-// once the location_arbitrator mock/factory situation is resolved.
-class MockLocationProvider : public LocationProviderBase {
- public:
-  MockLocationProvider();
-  virtual ~MockLocationProvider();
-
-  using LocationProviderBase::UpdateListeners;
-  using LocationProviderBase::InformListenersOfMovement;
-
-  // LocationProviderBase implementation.
-  virtual bool StartProvider();
-  virtual void GetPosition(Geoposition *position);
-
-  Geoposition position_;
-  int started_count_;
-
-  static MockLocationProvider* instance_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockLocationProvider);
-};
-
 // Factory functions for the various types of location provider to abstract over
 // the platform-dependent implementations.
-LocationProviderBase* NewMockLocationProvider();
 LocationProviderBase* NewGpsLocationProvider();
 LocationProviderBase* NewNetworkLocationProvider(
     AccessTokenStore* access_token_store,

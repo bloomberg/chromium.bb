@@ -2,12 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This file implements a mock location provider and the factory functions for
-// creating various types of location provider.
-
 #include "chrome/browser/geolocation/location_provider.h"
 
-#include <assert.h>
 #include "base/logging.h"
 
 LocationProviderBase::LocationProviderBase() {
@@ -73,29 +69,3 @@ void LocationProviderBase::InformListenersOfMovement() {
 LocationProviderBase* NewGpsLocationProvider() {
   return NULL;
 }
-
-MockLocationProvider::MockLocationProvider() : started_count_(0) {
-  CHECK(instance_ == NULL);
-  instance_ = this;
-}
-
-MockLocationProvider::~MockLocationProvider() {
-  CHECK(instance_ == this);
-  instance_ = NULL;
-}
-
-bool MockLocationProvider::StartProvider() {
-  ++started_count_;
-  return true;
-}
-
-void MockLocationProvider::GetPosition(Geoposition *position) {
-  *position = position_;
-}
-
-MockLocationProvider* MockLocationProvider::instance_ = NULL;
-
-LocationProviderBase* NewMockLocationProvider() {
-  return new MockLocationProvider;
-}
-

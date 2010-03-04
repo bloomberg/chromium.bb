@@ -214,7 +214,14 @@ void GeolocationPermissionContext::RequestPermissionFromUI(
 
   TabContents* tab_contents =
       tab_util::GetTabContentsByID(render_process_id, render_view_id);
-  DCHECK(tab_contents);
+  if (!tab_contents) {
+    // The tab may have gone away, or the request may not be from a tab at all.
+    LOG(WARNING) << "Attempt to use geolocaiton tabless renderer: "
+        << render_process_id << "," << render_view_id << "," << bridge_id
+        << " (geolocation is not supported in extensions)";
+    NotifyPermissionSet(render_process_id, render_view_id, bridge_id, false);
+    return;
+  }
   tab_contents->AddInfoBar(
       new GeolocationConfirmInfoBarDelegate(
           tab_contents, this, render_process_id, render_view_id,

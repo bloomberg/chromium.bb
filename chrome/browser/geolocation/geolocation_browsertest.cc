@@ -7,6 +7,7 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/geolocation/location_arbitrator.h"
+#include "chrome/browser/geolocation/mock_location_provider.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -70,7 +71,7 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
   };
 
   void Initialize(InitializationOptions options) {
-    GeolocationArbitrator::SetUseMockProvider(true);
+    GeolocationArbitrator::SetProviderFactoryForTest(&NewMockLocationProvider);
     if (!server_.get()) {
       server_ = StartHTTPServer();
     }
@@ -175,7 +176,7 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
     command_line->AppendSwitch(switches::kEnableGeolocation);
   }
   virtual void TearDownInProcessBrowserTestFixture() {
-    GeolocationArbitrator::SetUseMockProvider(false);
+    GeolocationArbitrator::SetProviderFactoryForTest(NULL);
   }
 
   scoped_refptr<HTTPTestServer> server_;
