@@ -1,0 +1,370 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/gtk/gtk_chrome_cookie_view.h"
+
+#include "app/l10n_util.h"
+#include "base/i18n/time_formatting.h"
+#include "chrome/browser/gtk/gtk_util.h"
+#include "grit/generated_resources.h"
+
+namespace {
+
+void InitBrowserDetailStyle(GtkWidget* entry, GtkStyle* label_style,
+                            GtkStyle* dialog_style) {
+  gtk_widget_modify_fg(entry, GTK_STATE_NORMAL,
+                       &label_style->fg[GTK_STATE_NORMAL]);
+  gtk_widget_modify_fg(entry, GTK_STATE_INSENSITIVE,
+                       &label_style->fg[GTK_STATE_INSENSITIVE]);
+  // GTK_NO_WINDOW widgets like GtkLabel don't draw their own background, so we
+  // combine the normal or insensitive foreground of the label style with the
+  // normal background of the window style to achieve the "normal label" and
+  // "insensitive label" colors.
+  gtk_widget_modify_base(entry, GTK_STATE_NORMAL,
+                         &dialog_style->bg[GTK_STATE_NORMAL]);
+  gtk_widget_modify_base(entry, GTK_STATE_INSENSITIVE,
+                         &dialog_style->bg[GTK_STATE_NORMAL]);
+}
+
+GtkWidget* InitDetailRow(int row, int label_id,
+                         GtkWidget* details_table, GtkWidget** entry) {
+  GtkWidget* name_label = gtk_label_new(
+      l10n_util::GetStringUTF8(label_id).c_str());
+  gtk_misc_set_alignment(GTK_MISC(name_label), 1, 0.5);
+  gtk_table_attach(GTK_TABLE(details_table), name_label,
+                   0, 1, row, row + 1, GTK_FILL, GTK_FILL, 0, 0);
+
+  *entry = gtk_entry_new();
+
+  gtk_entry_set_editable(GTK_ENTRY(*entry), FALSE);
+  gtk_entry_set_has_frame(GTK_ENTRY(*entry), FALSE);
+  gtk_table_attach_defaults(GTK_TABLE(details_table), *entry,
+                            1, 2, row, row + 1);
+
+  return name_label;
+}
+
+void InitStyles(GtkChromeCookieView *self) {
+  GtkStyle* label_style = gtk_widget_get_style(self->first_label_);
+  GtkStyle* dialog_style = gtk_widget_get_style(GTK_WIDGET(self));
+
+  // Cookie details.
+  InitBrowserDetailStyle(self->cookie_name_entry_, label_style, dialog_style);
+  InitBrowserDetailStyle(self->cookie_content_entry_, label_style,
+                         dialog_style);
+  InitBrowserDetailStyle(self->cookie_domain_entry_, label_style, dialog_style);
+  InitBrowserDetailStyle(self->cookie_path_entry_, label_style, dialog_style);
+  InitBrowserDetailStyle(self->cookie_send_for_entry_, label_style,
+                         dialog_style);
+  InitBrowserDetailStyle(self->cookie_created_entry_, label_style,
+                         dialog_style);
+  InitBrowserDetailStyle(self->cookie_expires_entry_, label_style,
+                         dialog_style);
+
+  // Database details.
+  InitBrowserDetailStyle(self->database_name_entry_, label_style, dialog_style);
+  InitBrowserDetailStyle(self->database_description_entry_, label_style,
+                         dialog_style);
+  InitBrowserDetailStyle(self->database_size_entry_, label_style, dialog_style);
+  InitBrowserDetailStyle(self->database_last_modified_entry_, label_style,
+                         dialog_style);
+
+  // Local storage details.
+  InitBrowserDetailStyle(self->local_storage_origin_entry_, label_style,
+                         dialog_style);
+  InitBrowserDetailStyle(self->local_storage_size_entry_, label_style,
+                         dialog_style);
+  InitBrowserDetailStyle(self->local_storage_last_modified_entry_, label_style,
+                         dialog_style);
+
+  // AppCache details.
+  InitBrowserDetailStyle(self->appcache_manifest_entry_, label_style,
+                         dialog_style);
+  InitBrowserDetailStyle(self->appcache_size_entry_, label_style, dialog_style);
+  InitBrowserDetailStyle(self->appcache_created_entry_, label_style,
+                         dialog_style);
+  InitBrowserDetailStyle(self->appcache_last_accessed_entry_, label_style,
+                         dialog_style);
+}
+
+void SetCookieDetailsSensitivity(GtkChromeCookieView *self,
+                                 gboolean enabled) {
+  gtk_widget_set_sensitive(self->cookie_name_entry_, enabled);
+  gtk_widget_set_sensitive(self->cookie_content_entry_, enabled);
+  gtk_widget_set_sensitive(self->cookie_domain_entry_, enabled);
+  gtk_widget_set_sensitive(self->cookie_path_entry_, enabled);
+  gtk_widget_set_sensitive(self->cookie_send_for_entry_, enabled);
+  gtk_widget_set_sensitive(self->cookie_created_entry_, enabled);
+  gtk_widget_set_sensitive(self->cookie_expires_entry_, enabled);
+}
+
+void SetDatabaseDetailsSensitivity(GtkChromeCookieView *self,
+                                   gboolean enabled) {
+  gtk_widget_set_sensitive(self->database_name_entry_, enabled);
+  gtk_widget_set_sensitive(self->database_description_entry_, enabled);
+  gtk_widget_set_sensitive(self->database_size_entry_, enabled);
+  gtk_widget_set_sensitive(self->database_last_modified_entry_, enabled);
+}
+
+void SetLocalStorageDetailsSensitivity(GtkChromeCookieView *self,
+                                       gboolean enabled) {
+  gtk_widget_set_sensitive(self->local_storage_origin_entry_, enabled);
+  gtk_widget_set_sensitive(self->local_storage_size_entry_, enabled);
+  gtk_widget_set_sensitive(self->local_storage_last_modified_entry_, enabled);
+}
+
+void SetAppCacheDetailsSensitivity(GtkChromeCookieView *self,
+                                   gboolean enabled) {
+  gtk_widget_set_sensitive(self->appcache_manifest_entry_, enabled);
+  gtk_widget_set_sensitive(self->appcache_size_entry_, enabled);
+  gtk_widget_set_sensitive(self->appcache_created_entry_, enabled);
+  gtk_widget_set_sensitive(self->appcache_last_accessed_entry_, enabled);
+}
+
+void ClearCookieDetails(GtkChromeCookieView *self) {
+  std::string no_cookie =
+      l10n_util::GetStringUTF8(IDS_COOKIES_COOKIE_NONESELECTED);
+  gtk_entry_set_text(GTK_ENTRY(self->cookie_name_entry_),
+                     no_cookie.c_str());
+  gtk_entry_set_text(GTK_ENTRY(self->cookie_content_entry_),
+                     no_cookie.c_str());
+  gtk_entry_set_text(GTK_ENTRY(self->cookie_domain_entry_),
+                     no_cookie.c_str());
+  gtk_entry_set_text(GTK_ENTRY(self->cookie_path_entry_),
+                     no_cookie.c_str());
+  gtk_entry_set_text(GTK_ENTRY(self->cookie_created_entry_),
+                     no_cookie.c_str());
+  gtk_entry_set_text(GTK_ENTRY(self->cookie_expires_entry_),
+                     no_cookie.c_str());
+  gtk_entry_set_text(GTK_ENTRY(self->cookie_send_for_entry_),
+                     no_cookie.c_str());
+  SetCookieDetailsSensitivity(self, FALSE);
+}
+
+void UpdateVisibleDetailedInfo(GtkChromeCookieView *self, GtkWidget* table) {
+  SetCookieDetailsSensitivity(self, table == self->cookie_details_table_);
+  SetDatabaseDetailsSensitivity(self, table == self->database_details_table_);
+  SetLocalStorageDetailsSensitivity(self,
+      table == self->local_storage_details_table_);
+  SetAppCacheDetailsSensitivity(self, table == self->appcache_details_table_);
+  // Toggle the parent (the table frame) visibility and sensitivity.
+  gtk_widget_show(self->table_box_);
+  gtk_widget_show(table);
+  // Toggle the other tables.
+  if (table != self->cookie_details_table_)
+    gtk_widget_hide(self->cookie_details_table_);
+  if (table != self->database_details_table_)
+    gtk_widget_hide(self->database_details_table_);
+  if (table != self->local_storage_details_table_)
+    gtk_widget_hide(self->local_storage_details_table_);
+  if (table != self->appcache_details_table_)
+    gtk_widget_hide(self->appcache_details_table_);
+}
+
+}  // namespace
+
+G_DEFINE_TYPE(GtkChromeCookieView, gtk_chrome_cookie_view, GTK_TYPE_FRAME)
+
+
+static void gtk_chrome_cookie_view_class_init(GtkChromeCookieViewClass *klass) {
+}
+
+static void gtk_chrome_cookie_view_init(GtkChromeCookieView *self) {
+  self->table_box_ = gtk_vbox_new(FALSE, 0);
+
+  // Cookie details.
+  self->cookie_details_table_ = gtk_table_new(7, 2, FALSE);
+  gtk_container_add(GTK_CONTAINER(self->table_box_),
+                    self->cookie_details_table_);
+  gtk_table_set_col_spacing(GTK_TABLE(self->cookie_details_table_), 0,
+                            gtk_util::kLabelSpacing);
+
+  int row = 0;
+  self->first_label_ = InitDetailRow(row++, IDS_COOKIES_COOKIE_NAME_LABEL,
+                self->cookie_details_table_, &self->cookie_name_entry_);
+  InitDetailRow(row++, IDS_COOKIES_COOKIE_CONTENT_LABEL,
+                self->cookie_details_table_, &self->cookie_content_entry_);
+  InitDetailRow(row++, IDS_COOKIES_COOKIE_DOMAIN_LABEL,
+                self->cookie_details_table_, &self->cookie_domain_entry_);
+  InitDetailRow(row++, IDS_COOKIES_COOKIE_PATH_LABEL,
+                self->cookie_details_table_, &self->cookie_path_entry_);
+  InitDetailRow(row++, IDS_COOKIES_COOKIE_SENDFOR_LABEL,
+                self->cookie_details_table_, &self->cookie_send_for_entry_);
+  InitDetailRow(row++, IDS_COOKIES_COOKIE_CREATED_LABEL,
+                self->cookie_details_table_, &self->cookie_created_entry_);
+  InitDetailRow(row++, IDS_COOKIES_COOKIE_EXPIRES_LABEL,
+                self->cookie_details_table_, &self->cookie_expires_entry_);
+
+  // Database details.
+  self->database_details_table_ = gtk_table_new(4, 2, FALSE);
+  gtk_container_add(GTK_CONTAINER(self->table_box_),
+                    self->database_details_table_);
+  gtk_table_set_col_spacing(GTK_TABLE(self->database_details_table_), 0,
+                            gtk_util::kLabelSpacing);
+
+  InitDetailRow(row++, IDS_COOKIES_COOKIE_NAME_LABEL,
+                self->database_details_table_, &self->database_name_entry_);
+  InitDetailRow(row++, IDS_COOKIES_WEB_DATABASE_DESCRIPTION_LABEL,
+                self->database_details_table_,
+                &self->database_description_entry_);
+  InitDetailRow(row++, IDS_COOKIES_LOCAL_STORAGE_SIZE_ON_DISK_LABEL,
+                self->database_details_table_, &self->database_size_entry_);
+  InitDetailRow(row++, IDS_COOKIES_LOCAL_STORAGE_LAST_MODIFIED_LABEL,
+                self->database_details_table_,
+                &self->database_last_modified_entry_);
+
+  // Local storage details.
+  self->local_storage_details_table_ = gtk_table_new(3, 2, FALSE);
+  gtk_container_add(GTK_CONTAINER(self->table_box_),
+                    self->local_storage_details_table_);
+  gtk_table_set_col_spacing(GTK_TABLE(self->local_storage_details_table_), 0,
+                            gtk_util::kLabelSpacing);
+
+  row = 0;
+  InitDetailRow(row++, IDS_COOKIES_LOCAL_STORAGE_ORIGIN_LABEL,
+                self->local_storage_details_table_,
+                &self->local_storage_origin_entry_);
+  InitDetailRow(row++, IDS_COOKIES_LOCAL_STORAGE_SIZE_ON_DISK_LABEL,
+                self->local_storage_details_table_,
+                &self->local_storage_size_entry_);
+  InitDetailRow(row++, IDS_COOKIES_LOCAL_STORAGE_LAST_MODIFIED_LABEL,
+                self->local_storage_details_table_,
+                &self->local_storage_last_modified_entry_);
+
+  // AppCache details.
+  self->appcache_details_table_ = gtk_table_new(4, 2, FALSE);
+  gtk_container_add(GTK_CONTAINER(self->table_box_),
+                    self->appcache_details_table_);
+  gtk_table_set_col_spacing(GTK_TABLE(self->appcache_details_table_), 0,
+                            gtk_util::kLabelSpacing);
+
+  row = 0;
+  InitDetailRow(row++, IDS_COOKIES_APPLICATION_CACHE_MANIFEST_LABEL,
+                self->appcache_details_table_,
+                &self->appcache_manifest_entry_);
+  InitDetailRow(row++, IDS_COOKIES_SIZE_LABEL,
+                self->appcache_details_table_, &self->appcache_size_entry_);
+  InitDetailRow(row++, IDS_COOKIES_COOKIE_CREATED_LABEL,
+                self->appcache_details_table_, &self->appcache_created_entry_);
+  InitDetailRow(row++, IDS_COOKIES_LAST_ACCESSED_LABEL,
+                self->appcache_details_table_,
+                &self->appcache_last_accessed_entry_);
+
+  gtk_frame_set_shadow_type(GTK_FRAME(self), GTK_SHADOW_ETCHED_IN);
+  gtk_container_add(GTK_CONTAINER(self), self->table_box_);
+}
+
+GtkChromeCookieView* gtk_chrome_cookie_view_new() {
+  GtkChromeCookieView* view = GTK_CHROME_COOKIE_VIEW(
+      g_object_new(GTK_TYPE_CHROME_COOKIE_VIEW, NULL));
+  g_signal_connect(view, "realize", G_CALLBACK(InitStyles), NULL);
+  return view;
+}
+
+void gtk_chrome_cookie_view_clear(GtkChromeCookieView* self) {
+  UpdateVisibleDetailedInfo(self, self->cookie_details_table_);
+  ClearCookieDetails(self);
+}
+
+// Switches the display to showing the passed in cookie.
+void gtk_chrome_cookie_view_display_cookie(
+    GtkChromeCookieView* self,
+    const std::string& domain,
+    const net::CookieMonster::CanonicalCookie& cookie) {
+  UpdateVisibleDetailedInfo(self, self->cookie_details_table_);
+
+  gtk_entry_set_text(GTK_ENTRY(self->cookie_name_entry_),
+                     cookie.Name().c_str());
+  gtk_entry_set_text(GTK_ENTRY(self->cookie_content_entry_),
+                     cookie.Value().c_str());
+  gtk_entry_set_text(GTK_ENTRY(self->cookie_domain_entry_),
+                     domain.c_str());
+  gtk_entry_set_text(GTK_ENTRY(self->cookie_path_entry_),
+                     cookie.Path().c_str());
+  gtk_entry_set_text(GTK_ENTRY(self->cookie_created_entry_),
+                     WideToUTF8(base::TimeFormatFriendlyDateAndTime(
+                         cookie.CreationDate())).c_str());
+  if (cookie.DoesExpire()) {
+    gtk_entry_set_text(GTK_ENTRY(self->cookie_expires_entry_),
+                       WideToUTF8(base::TimeFormatFriendlyDateAndTime(
+                           cookie.ExpiryDate())).c_str());
+  } else {
+    gtk_entry_set_text(GTK_ENTRY(self->cookie_expires_entry_),
+                       l10n_util::GetStringUTF8(
+                           IDS_COOKIES_COOKIE_EXPIRES_SESSION).c_str());
+  }
+  gtk_entry_set_text(
+      GTK_ENTRY(self->cookie_send_for_entry_),
+      l10n_util::GetStringUTF8(cookie.IsSecure() ?
+                               IDS_COOKIES_COOKIE_SENDFOR_SECURE :
+                               IDS_COOKIES_COOKIE_SENDFOR_ANY).c_str());
+  SetCookieDetailsSensitivity(self, TRUE);
+}
+
+// Switches the display to showing the passed in database.
+void gtk_chrome_cookie_view_display_database(
+    GtkChromeCookieView* self,
+    const BrowsingDataDatabaseHelper::DatabaseInfo& database_info) {
+  UpdateVisibleDetailedInfo(self, self->database_details_table_);
+
+  gtk_entry_set_text(
+      GTK_ENTRY(self->database_name_entry_),
+      database_info.database_name.empty() ?
+          l10n_util::GetStringUTF8(
+              IDS_COOKIES_WEB_DATABASE_UNNAMED_NAME).c_str() :
+          database_info.database_name.c_str());
+  gtk_entry_set_text(GTK_ENTRY(self->database_description_entry_),
+                     database_info.description.c_str());
+  gtk_entry_set_text(GTK_ENTRY(self->database_size_entry_),
+                     WideToUTF8(FormatBytes(
+                         database_info.size,
+                         GetByteDisplayUnits(database_info.size),
+                         true)).c_str());
+  gtk_entry_set_text(GTK_ENTRY(self->database_last_modified_entry_),
+                     WideToUTF8(base::TimeFormatFriendlyDateAndTime(
+                         database_info.last_modified)).c_str());
+  SetDatabaseDetailsSensitivity(self, TRUE);
+}
+
+// Switches the display to showing the passed in local storage data.
+void gtk_chrome_cookie_view_display_local_storage(
+    GtkChromeCookieView* self,
+    const BrowsingDataLocalStorageHelper::LocalStorageInfo&
+    local_storage_info) {
+  UpdateVisibleDetailedInfo(self, self->local_storage_details_table_);
+
+  gtk_entry_set_text(GTK_ENTRY(self->local_storage_origin_entry_),
+                     local_storage_info.origin.c_str());
+  gtk_entry_set_text(GTK_ENTRY(self->local_storage_size_entry_),
+                     WideToUTF8(FormatBytes(
+                         local_storage_info.size,
+                         GetByteDisplayUnits(local_storage_info.size),
+                         true)).c_str());
+  gtk_entry_set_text(GTK_ENTRY(self->local_storage_last_modified_entry_),
+                     WideToUTF8(base::TimeFormatFriendlyDateAndTime(
+                         local_storage_info.last_modified)).c_str());
+  SetLocalStorageDetailsSensitivity(self, TRUE);
+}
+
+// Switches the display to showing the passed in app cache.
+void gtk_chrome_cookie_view_display_app_cache(
+    GtkChromeCookieView* self,
+    const BrowsingDataAppCacheHelper::AppCacheInfo& info) {
+  UpdateVisibleDetailedInfo(self, self->appcache_details_table_);
+
+  gtk_entry_set_text(GTK_ENTRY(self->appcache_manifest_entry_),
+                     info.manifest_url.spec().c_str());
+  gtk_entry_set_text(GTK_ENTRY(self->appcache_size_entry_),
+                     WideToUTF8(FormatBytes(
+                         info.size,
+                         GetByteDisplayUnits(info.size),
+                         true)).c_str());
+  gtk_entry_set_text(GTK_ENTRY(self->appcache_created_entry_),
+                     WideToUTF8(base::TimeFormatFriendlyDateAndTime(
+                         info.creation_time)).c_str());
+  gtk_entry_set_text(GTK_ENTRY(self->appcache_last_accessed_entry_),
+                     WideToUTF8(base::TimeFormatFriendlyDateAndTime(
+                         info.last_access_time)).c_str());
+  SetAppCacheDetailsSensitivity(self, TRUE);
+}

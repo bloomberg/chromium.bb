@@ -13,6 +13,7 @@
 #include "chrome/browser/mock_browsing_data_appcache_helper.h"
 #include "chrome/browser/mock_browsing_data_database_helper.h"
 #include "chrome/browser/mock_browsing_data_local_storage_helper.h"
+#include "chrome/browser/gtk/gtk_chrome_cookie_view.h"
 #include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/test/testing_profile.h"
 #include "net/url_request/url_request_context.h"
@@ -44,45 +45,59 @@ class CookiesViewTest : public testing::Test {
                                const CookiesView& cookies_view) {
     // Cookies
     EXPECT_EQ(expected_cookies,
-              GTK_WIDGET_SENSITIVE(cookies_view.cookie_name_entry_));
+              GTK_WIDGET_SENSITIVE(cookies_view.cookie_display_->
+                                   cookie_name_entry_));
     EXPECT_EQ(expected_cookies,
-              GTK_WIDGET_SENSITIVE(cookies_view.cookie_content_entry_));
+              GTK_WIDGET_SENSITIVE(cookies_view.cookie_display_->
+                                   cookie_content_entry_));
     EXPECT_EQ(expected_cookies,
-              GTK_WIDGET_SENSITIVE(cookies_view.cookie_domain_entry_));
+              GTK_WIDGET_SENSITIVE(cookies_view.cookie_display_->
+                                   cookie_domain_entry_));
     EXPECT_EQ(expected_cookies,
-              GTK_WIDGET_SENSITIVE(cookies_view.cookie_path_entry_));
+              GTK_WIDGET_SENSITIVE(cookies_view.cookie_display_->
+                                   cookie_path_entry_));
     EXPECT_EQ(expected_cookies,
-              GTK_WIDGET_SENSITIVE(cookies_view.cookie_send_for_entry_));
+              GTK_WIDGET_SENSITIVE(cookies_view.cookie_display_->
+                                   cookie_send_for_entry_));
     EXPECT_EQ(expected_cookies,
-              GTK_WIDGET_SENSITIVE(cookies_view.cookie_created_entry_));
+              GTK_WIDGET_SENSITIVE(cookies_view.cookie_display_->
+                                   cookie_created_entry_));
     EXPECT_EQ(expected_cookies,
-              GTK_WIDGET_SENSITIVE(cookies_view.cookie_expires_entry_));
+              GTK_WIDGET_SENSITIVE(cookies_view.cookie_display_->
+                                   cookie_expires_entry_));
     // Database
     EXPECT_EQ(expected_database,
-              GTK_WIDGET_SENSITIVE(cookies_view.database_description_entry_));
+              GTK_WIDGET_SENSITIVE(cookies_view.cookie_display_->
+                                   database_description_entry_));
     EXPECT_EQ(expected_database,
-              GTK_WIDGET_SENSITIVE(cookies_view.database_size_entry_));
+              GTK_WIDGET_SENSITIVE(cookies_view.cookie_display_->
+                                   database_size_entry_));
     EXPECT_EQ(expected_database,
-              GTK_WIDGET_SENSITIVE(
-                  cookies_view.database_last_modified_entry_));
+              GTK_WIDGET_SENSITIVE(cookies_view.cookie_display_->
+                                   database_last_modified_entry_));
     // Local Storage
     EXPECT_EQ(expected_local_storage,
-              GTK_WIDGET_SENSITIVE(cookies_view.local_storage_origin_entry_));
+              GTK_WIDGET_SENSITIVE(cookies_view.cookie_display_->
+                                   local_storage_origin_entry_));
     EXPECT_EQ(expected_local_storage,
-              GTK_WIDGET_SENSITIVE(cookies_view.local_storage_size_entry_));
+              GTK_WIDGET_SENSITIVE(cookies_view.cookie_display_->
+                                   local_storage_size_entry_));
     EXPECT_EQ(expected_local_storage,
-              GTK_WIDGET_SENSITIVE(
-                  cookies_view.local_storage_last_modified_entry_));
+              GTK_WIDGET_SENSITIVE(cookies_view.cookie_display_->
+                                   local_storage_last_modified_entry_));
     // AppCache
     EXPECT_EQ(expected_appcache,
-              GTK_WIDGET_SENSITIVE(cookies_view.appcache_manifest_entry_));
+              GTK_WIDGET_SENSITIVE(cookies_view.cookie_display_->
+                                   appcache_manifest_entry_));
     EXPECT_EQ(expected_appcache,
-              GTK_WIDGET_SENSITIVE(cookies_view.appcache_size_entry_));
+              GTK_WIDGET_SENSITIVE(cookies_view.cookie_display_->
+                                   appcache_size_entry_));
     EXPECT_EQ(expected_appcache,
-              GTK_WIDGET_SENSITIVE(cookies_view.appcache_created_entry_));
+              GTK_WIDGET_SENSITIVE(cookies_view.cookie_display_->
+                                   appcache_created_entry_));
     EXPECT_EQ(expected_appcache,
-              GTK_WIDGET_SENSITIVE(
-                  cookies_view.appcache_last_accessed_entry_));
+              GTK_WIDGET_SENSITIVE(cookies_view.cookie_display_->
+                                   appcache_last_accessed_entry_));
   }
 
   // Get the cookie names in the cookie list, as a comma seperated string.
@@ -201,6 +216,7 @@ TEST_F(CookiesViewTest, Empty) {
                            mock_browsing_data_database_helper_,
                            mock_browsing_data_local_storage_helper_,
                            mock_browsing_data_appcache_helper_);
+  cookies_view.TestDestroySyncrhonously();
   EXPECT_EQ(FALSE, GTK_WIDGET_SENSITIVE(cookies_view.remove_all_button_));
   EXPECT_EQ(FALSE, GTK_WIDGET_SENSITIVE(cookies_view.remove_button_));
   CheckDetailsSensitivity(FALSE, FALSE, FALSE, FALSE, cookies_view);
@@ -221,6 +237,7 @@ TEST_F(CookiesViewTest, Noop) {
                            mock_browsing_data_database_helper_,
                            mock_browsing_data_local_storage_helper_,
                            mock_browsing_data_appcache_helper_);
+  cookies_view.TestDestroySyncrhonously();
   mock_browsing_data_database_helper_->AddDatabaseSamples();
   mock_browsing_data_database_helper_->Notify();
   mock_browsing_data_local_storage_helper_->AddLocalStorageSamples();
@@ -247,6 +264,7 @@ TEST_F(CookiesViewTest, RemoveAll) {
                            mock_browsing_data_database_helper_,
                            mock_browsing_data_local_storage_helper_,
                            mock_browsing_data_appcache_helper_);
+  cookies_view.TestDestroySyncrhonously();
   mock_browsing_data_database_helper_->AddDatabaseSamples();
   mock_browsing_data_database_helper_->Notify();
   mock_browsing_data_local_storage_helper_->AddLocalStorageSamples();
@@ -293,6 +311,7 @@ TEST_F(CookiesViewTest, RemoveAllWithDefaultSelected) {
                            mock_browsing_data_database_helper_,
                            mock_browsing_data_local_storage_helper_,
                            mock_browsing_data_appcache_helper_);
+  cookies_view.TestDestroySyncrhonously();
   mock_browsing_data_database_helper_->AddDatabaseSamples();
   mock_browsing_data_database_helper_->Notify();
   mock_browsing_data_local_storage_helper_->AddLocalStorageSamples();
@@ -341,6 +360,7 @@ TEST_F(CookiesViewTest, Remove) {
                            mock_browsing_data_database_helper_,
                            mock_browsing_data_local_storage_helper_,
                            mock_browsing_data_appcache_helper_);
+  cookies_view.TestDestroySyncrhonously();
   mock_browsing_data_database_helper_->AddDatabaseSamples();
   mock_browsing_data_database_helper_->Notify();
   mock_browsing_data_local_storage_helper_->AddLocalStorageSamples();
@@ -496,6 +516,7 @@ TEST_F(CookiesViewTest, RemoveCookiesByType) {
                            mock_browsing_data_database_helper_,
                            mock_browsing_data_local_storage_helper_,
                            mock_browsing_data_appcache_helper_);
+  cookies_view.TestDestroySyncrhonously();
   mock_browsing_data_database_helper_->AddDatabaseSamples();
   mock_browsing_data_database_helper_->Notify();
   mock_browsing_data_local_storage_helper_->AddLocalStorageSamples();
@@ -660,6 +681,7 @@ TEST_F(CookiesViewTest, RemoveByDomain) {
                            mock_browsing_data_database_helper_,
                            mock_browsing_data_local_storage_helper_,
                            mock_browsing_data_appcache_helper_);
+  cookies_view.TestDestroySyncrhonously();
   mock_browsing_data_database_helper_->AddDatabaseSamples();
   mock_browsing_data_database_helper_->Notify();
   mock_browsing_data_local_storage_helper_->AddLocalStorageSamples();
@@ -785,6 +807,7 @@ TEST_F(CookiesViewTest, RemoveDefaultSelection) {
                            mock_browsing_data_database_helper_,
                            mock_browsing_data_local_storage_helper_,
                            mock_browsing_data_appcache_helper_);
+  cookies_view.TestDestroySyncrhonously();
   mock_browsing_data_database_helper_->AddDatabaseSamples();
   mock_browsing_data_database_helper_->Notify();
   mock_browsing_data_local_storage_helper_->AddLocalStorageSamples();
@@ -892,6 +915,7 @@ TEST_F(CookiesViewTest, Filter) {
                            mock_browsing_data_database_helper_,
                            mock_browsing_data_local_storage_helper_,
                            mock_browsing_data_appcache_helper_);
+  cookies_view.TestDestroySyncrhonously();
   mock_browsing_data_database_helper_->AddDatabaseSamples();
   mock_browsing_data_database_helper_->Notify();
   mock_browsing_data_local_storage_helper_->AddLocalStorageSamples();
@@ -961,6 +985,7 @@ TEST_F(CookiesViewTest, FilterRemoveAll) {
                            mock_browsing_data_database_helper_,
                            mock_browsing_data_local_storage_helper_,
                            mock_browsing_data_appcache_helper_);
+  cookies_view.TestDestroySyncrhonously();
   mock_browsing_data_database_helper_->AddDatabaseSamples();
   mock_browsing_data_database_helper_->Notify();
   mock_browsing_data_local_storage_helper_->AddLocalStorageSamples();
@@ -1029,6 +1054,7 @@ TEST_F(CookiesViewTest, FilterRemove) {
                            mock_browsing_data_database_helper_,
                            mock_browsing_data_local_storage_helper_,
                            mock_browsing_data_appcache_helper_);
+  cookies_view.TestDestroySyncrhonously();
   mock_browsing_data_database_helper_->AddDatabaseSamples();
   mock_browsing_data_database_helper_->Notify();
   mock_browsing_data_local_storage_helper_->AddLocalStorageSamples();
