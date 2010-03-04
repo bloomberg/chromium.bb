@@ -35,6 +35,7 @@ enum MouseButton { LEFT, RIGHT, MIDDLE, X };
 void SendMouseClick(HWND window, int x, int y, MouseButton button);
 
 // Translates a single char to a virtual key and calls SendVirtualKey.
+void SendScanCode(short scan_code, bool shift, bool control, bool alt);
 void SendChar(char c, bool control, bool alt);
 void SendChar(wchar_t c, bool control, bool alt);
 
@@ -49,7 +50,7 @@ void SendString(const char_type* s) {
   while (*s) {
     char_type ch = *s;
     SendChar(ch, false, false);
-    Sleep(100);
+    Sleep(10);
     s++;
   }
 }

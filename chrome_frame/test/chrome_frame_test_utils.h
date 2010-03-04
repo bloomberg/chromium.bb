@@ -23,6 +23,7 @@
 
 #include "chrome_frame/test_utils.h"
 #include "chrome_frame/test/simulate_input.h"
+#include "chrome_frame/test/window_watchdog.h"
 
 // Include without path to make GYP build see it.
 #include "chrome_tab.h"  // NOLINT
@@ -129,7 +130,8 @@ HRESULT LaunchIEAsComServer(IWebBrowser2** web_browser);
 class WebBrowserEventSink
     : public CComObjectRootEx<CComMultiThreadModel>,
       public IDispEventSimpleImpl<0, WebBrowserEventSink,
-                                  &DIID_DWebBrowserEvents2> {
+                                  &DIID_DWebBrowserEvents2>,
+      public WindowObserver {
  public:
   typedef IDispEventSimpleImpl<0, WebBrowserEventSink,
                                &DIID_DWebBrowserEvents2> DispEventsImpl;
@@ -147,37 +149,6 @@ class WebBrowserEventSink
   ~WebBrowserEventSink() {
     Uninitialize();
   }
-
-  void Attach(IDispatch* browser_disp);
-  void Uninitialize();
-
-  // Helper function to launch IE and navigate to a URL.
-  // Returns S_OK on success, S_FALSE if the test was not run, other
-  // errors on failure.
-  HRESULT LaunchIEAndNavigate(const std::wstring& navigate_url);
-
-  virtual HRESULT Navigate(const std::wstring& navigate_url);
-
-  // Set input focus to chrome frame window.
-  void SetFocusToChrome();
-
-  // Send keyboard input to the renderer window hosted in chrome using
-  // SendInput API
-  void SendKeys(const wchar_t* input_string);
-
-  // Send mouse click to the renderer window hosted in chrome using
-  // SendInput API
-  void SendMouseClick(int x, int y, simulate_input::MouseButton button);
-
-  void Exec(const GUID* cmd_group_guid, DWORD command_id,
-            DWORD cmd_exec_opt, VARIANT* in_args, VARIANT* out_args);
-
-  // Navigates to the next item in history by sending the Shift+Back key
-  // combination
-  void NavigateForward();
-
-  // Navigates to the next item in history by sending the Backstroke key.
-  void NavigateBackward();
 
 BEGIN_COM_MAP(WebBrowserEventSink)
 END_COM_MAP()
@@ -203,6 +174,42 @@ BEGIN_SINK_MAP(WebBrowserEventSink)
                   OnQuitInternal, &kVoidMethodInfo)
 END_SINK_MAP()
 
+  void Attach(IDispatch* browser_disp);
+  void Uninitialize();
+
+  // Helper function to launch IE and navigate to a URL.
+  // Returns S_OK on success, S_FALSE if the test was not run, other
+  // errors on failure.
+  HRESULT LaunchIEAndNavigate(const std::wstring& navigate_url);
+
+  virtual HRESULT Navigate(const std::wstring& navigate_url);
+
+  // Set input focus to chrome frame window.
+  void SetFocusToChrome();
+
+  // Send keyboard input to the renderer window hosted in chrome using
+  // SendInput API
+  void SendKeys(const wchar_t* input_string);
+
+  // Send mouse click to the renderer window hosted in chrome using
+  // SendInput API
+  void SendMouseClick(int x, int y, simulate_input::MouseButton button);
+
+  void Exec(const GUID* cmd_group_guid, DWORD command_id,
+            DWORD cmd_exec_opt, VARIANT* in_args, VARIANT* out_args);
+
+  // Watch for new window created
+  void WatchChromeWindow(const wchar_t* window_class);
+  void StopWatching();
+
+  // Navigates to the next item in history by sending the Shift+Back key
+  // combination
+  void NavigateForward();
+
+  // Navigates to the next item in history by sending the Backstroke key.
+  void NavigateBackward();
+
+  // Overridable methods for the mock
   STDMETHOD_(void, OnNavigateError)(IDispatch* dispatch, VARIANT* url,
                                     VARIANT* frame_name, VARIANT* status_code,
                                     VARIANT* cancel) {
@@ -252,12 +259,14 @@ END_SINK_MAP()
   virtual void OnLoadError(const wchar_t* url) {}
   virtual void OnMessage(const wchar_t* message, const wchar_t* origin,
                          const wchar_t* source) {}
+  virtual void OnNewBrowserWindow(IDispatch* new_window, const wchar_t* url) {}
+
+  // Window watchdog override
+  virtual void OnWindowDetected(HWND hwnd, const std::string& caption) {};
 
   IWebBrowser2* web_browser2() {
     return web_browser2_.get();
   }
-
-  virtual void OnNewBrowserWindow(IDispatch* new_window, const wchar_t* url) {}
 
   HRESULT SetWebBrowser(IWebBrowser2* web_browser2);
   void ExpectRendererWindowHasfocus();
@@ -311,6 +320,8 @@ END_SINK_MAP()
   static _ATL_FUNC_INFO kVoidMethodInfo;
   static _ATL_FUNC_INFO kDocumentCompleteInfo;
   static _ATL_FUNC_INFO kFileDownloadInfo;
+
+  WindowWatchdog window_watcher_;
 };
 
 }  // namespace chrome_frame_test

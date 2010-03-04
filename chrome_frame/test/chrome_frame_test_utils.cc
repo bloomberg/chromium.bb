@@ -750,6 +750,15 @@ void WebBrowserEventSink::Exec(const GUID* cmd_group_guid, DWORD command_id,
       command_id, cmd_exec_opt, in_args, out_args));
 }
 
+void WebBrowserEventSink::WatchChromeWindow(const wchar_t* window_class) {
+  DCHECK(window_class);
+  window_watcher_.AddObserver(this, WideToUTF8(window_class));
+}
+
+void WebBrowserEventSink::StopWatching() {
+  window_watcher_.RemoveObserver(this);
+}
+
 void WebBrowserEventSink::NavigateBackward() {
   SetFocusToChrome();
   simulate_input::SendMnemonic(VK_BACK, false, false, false, false, false);

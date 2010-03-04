@@ -65,13 +65,15 @@ class MockWebBrowserEventSink : public chrome_frame_test::WebBrowserEventSink {
   MOCK_METHOD0_WITH_CALLTYPE(__stdcall, OnQuit,
                              void ());
 
-  MOCK_METHOD1(OnLoad, void (const wchar_t* url));    // NOLINT
-  MOCK_METHOD1(OnLoadError, void (const wchar_t* url));    // NOLINT
+  MOCK_METHOD1(OnLoad, void (const wchar_t* url));  // NOLINT
+  MOCK_METHOD1(OnLoadError, void (const wchar_t* url));  // NOLINT
   MOCK_METHOD3(OnMessage, void (const wchar_t* message,
                                 const wchar_t* origin,
-                                const wchar_t* source));    // NOLINT
+                                const wchar_t* source));  // NOLINT
   MOCK_METHOD2(OnNewBrowserWindow, void (IDispatch* dispatch,  // NOLINT
                                          const wchar_t* url));
+  MOCK_METHOD2(OnWindowDetected, void (HWND hwnd,  // NOLINT
+                                       const std::string& caption));
 
   // Test expectations
   ExpectationSet ExpectNavigationCardinality(const std::wstring& url,

@@ -33,7 +33,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome_frame/utils.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
-#include "chrome_frame/test/net/dialog_watchdog.h"
+#include "chrome_frame/test/simulate_input.h"
+#include "chrome_frame/test/window_watchdog.h"
 #include "chrome_frame/test/net/test_automation_resource_message_filter.h"
 
 namespace {
@@ -68,7 +69,101 @@ bool PromptAfterSetup() {
   return CommandLine::ForCurrentProcess()->HasSwitch(kPromptAfterSetup);
 }
 
-}  // end namespace
+// Uses the IAccessible interface for the window to set the focus.
+// This can be useful when you don't have control over the thread that
+// owns the window.
+// NOTE: this depends on oleacc.lib which the net tests already depend on
+// but other unit tests don't depend on oleacc so we can't just add the method
+// directly into chrome_frame_test_utils.cc (without adding a
+// #pragma comment(lib, "oleacc.lib")).
+bool SetFocusToAccessibleWindow(HWND hwnd) {
+  bool ret = false;
+  ScopedComPtr<IAccessible> acc;
+  AccessibleObjectFromWindow(hwnd, OBJID_WINDOW, IID_IAccessible,
+      reinterpret_cast<void**>(acc.Receive()));
+  if (acc) {
+    VARIANT self = { VT_I4 };
+    self.lVal = CHILDID_SELF;
+    ret = SUCCEEDED(acc->accSelect(SELFLAG_TAKEFOCUS, self));
+  }
+  return ret;
+}
+
+}  // namespace
+
+
+class SupplyProxyCredentials : public WindowObserver {
+ public:
+  SupplyProxyCredentials(const char* username, const char* password);
+
+ protected:
+  struct DialogProps {
+    HWND username_;
+    HWND password_;
+  };
+
+  virtual void OnWindowDetected(HWND hwnd, const std::string& caption);
+  static BOOL CALLBACK EnumChildren(HWND hwnd, LPARAM param);
+
+ protected:
+  std::string username_;
+  std::string password_;
+};
+
+
+SupplyProxyCredentials::SupplyProxyCredentials(const char* username,
+                                               const char* password)
+    : username_(username), password_(password) {
+}
+
+void SupplyProxyCredentials::OnWindowDetected(HWND hwnd,
+                                              const std::string& caption) {
+  // IE's dialog caption (en-US).
+  if (caption.compare("Windows Security") != 0)
+    return;
+
+  DialogProps props = {0};
+  ::EnumChildWindows(hwnd, EnumChildren, reinterpret_cast<LPARAM>(&props));
+  DCHECK(::IsWindow(props.username_));
+  DCHECK(::IsWindow(props.password_));
+
+  // We can't use SetWindowText to set the username/password, so simulate
+  // keyboard input instead.
+  simulate_input::ForceSetForegroundWindow(hwnd);
+  CHECK(SetFocusToAccessibleWindow(props.username_));
+  simulate_input::SendString(username_.c_str());
+  Sleep(100);
+
+  simulate_input::SendChar(static_cast<char>(VK_TAB), false, false);
+  Sleep(100);
+  simulate_input::SendString(password_.c_str());
+
+  Sleep(100);
+  simulate_input::SendChar(static_cast<char>(VK_RETURN), false, false);
+}
+
+// static
+BOOL SupplyProxyCredentials::EnumChildren(HWND hwnd, LPARAM param) {
+  if (!::IsWindowVisible(hwnd))
+    return TRUE;  // Ignore but continue to enumerate.
+
+  DialogProps* props = reinterpret_cast<DialogProps*>(param);
+
+  char class_name[MAX_PATH] = {0};
+  ::GetClassNameA(hwnd, class_name, arraysize(class_name));
+  if (lstrcmpiA(class_name, "Edit") == 0) {
+    if (props->username_ == NULL || props->username_ == hwnd) {
+      props->username_ = hwnd;
+    } else if (props->password_ == NULL) {
+      props->password_ = hwnd;
+    }
+  } else {
+    EnumChildWindows(hwnd, EnumChildren, param);
+  }
+
+  return TRUE;
+}
+
 
 FakeExternalTab::FakeExternalTab() {
   PathService::Get(chrome::DIR_USER_DATA, &overridden_user_dir_);
@@ -369,10 +464,11 @@ void FilterDisabledTests() {
 }
 
 int main(int argc, char** argv) {
-  DialogWatchdog watchdog;
+  WindowWatchdog watchdog;
   // See url_request_unittest.cc for these credentials.
   SupplyProxyCredentials credentials("user", "secret");
-  watchdog.AddObserver(&credentials);
+  // Check for a dialog class ("#32770")
+  watchdog.AddObserver(&credentials, "#32770");
   testing::InitGoogleTest(&argc, argv);
   FilterDisabledTests();
   PluginService::EnableChromePlugins(false);

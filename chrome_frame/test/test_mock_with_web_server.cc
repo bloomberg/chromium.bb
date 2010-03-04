@@ -22,6 +22,7 @@ const int kChromeFrameLongNavigationTimeoutInSeconds = 10;
 
 const wchar_t kChromeFrameFileUrl[] = L"gcf:file:///C:/";
 const wchar_t enter_key[] = { VK_RETURN, 0 };
+const wchar_t escape_key[] = { VK_ESCAPE, 0 };
 const wchar_t tab_enter_keys[] = { VK_TAB, VK_RETURN, 0 };
 
 // A convenience class to close all open IE windows at the end
@@ -239,7 +240,7 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_FocusTest) {
 
   mock.ExpectNavigationAndSwitch(kAboutVersionUrl);
 
-  EXPECT_CALL(mock, OnLoad(testing::StrEq(kAboutVersion)))
+  EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kAboutVersion)))
       .WillOnce(testing::DoAll(
           testing::InvokeWithoutArgs(CreateFunctor(&mock,
               &MockWebBrowserEventSink::ExpectRendererWindowHasfocus)),
@@ -274,7 +275,7 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_WindowOpenInChrome) {
   mock.ExpectNavigationAndSwitch(kFullTabWindowOpenTestUrl);
 
   const wchar_t* input = L"A";
-  EXPECT_CALL(mock, OnLoad(testing::StrEq(kFullTabWindowOpenTestUrl)))
+  EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kFullTabWindowOpenTestUrl)))
       .WillOnce(testing::InvokeWithoutArgs(CreateFunctor(&loop,
           &chrome_frame_test::TimedMsgLoop::PostDelayedTask, FROM_HERE,
           NewRunnableMethod(
@@ -285,7 +286,7 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_WindowOpenInChrome) {
   mock.ExpectNewWindow(&new_window_mock);
 
   EXPECT_CALL(new_window_mock,
-              OnLoad(testing::StrEq(kFullTabWindowOpenPopupUrl)))
+              OnLoad(testing::StrCaseEq(kFullTabWindowOpenPopupUrl)))
       .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(
               CreateFunctor(&new_window_mock,
                   &MockWebBrowserEventSink::CloseWebBrowser))));
@@ -327,7 +328,7 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_AboutChromeFrame) {
 
   mock.ExpectNavigationAndSwitch(kSubFrameUrl1);
 
-  EXPECT_CALL(mock, OnLoad(testing::StrEq(kSubFrameUrl1)))
+  EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kSubFrameUrl1)))
       .WillOnce(testing::DoAll(
           testing::InvokeWithoutArgs(CreateFunctor(&mock,
               &MockWebBrowserEventSink::SendMouseClick, 10, 10,
@@ -347,7 +348,7 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_AboutChromeFrame) {
   ComStackObjectWithUninitialize<MockWebBrowserEventSink> new_window_mock;
   mock.ExpectNewWindow(&new_window_mock);
 
-  EXPECT_CALL(new_window_mock, OnLoad(testing::StrEq(kAboutVersion)))
+  EXPECT_CALL(new_window_mock, OnLoad(testing::StrCaseEq(kAboutVersion)))
       .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(
               CreateFunctor(&new_window_mock,
                   &MockWebBrowserEventSink::CloseWebBrowser))));
@@ -396,7 +397,7 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_BackForward) {
   mock.ExpectNavigationAndSwitchSequence(kSubFrameUrl1);
 
   // Navigate to url 2 after the previous navigation is complete.
-  EXPECT_CALL(mock, OnLoad(testing::StrEq(kSubFrameUrl1)))
+  EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kSubFrameUrl1)))
       .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(
           CreateFunctor(
               &mock, &chrome_frame_test::WebBrowserEventSink::Navigate,
@@ -404,7 +405,7 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_BackForward) {
   mock.ExpectNavigationAndSwitchSequence(kSubFrameUrl2);
 
   // Navigate to url 3 after the previous navigation is complete
-  EXPECT_CALL(mock, OnLoad(testing::StrEq(kSubFrameUrl2)))
+  EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kSubFrameUrl2)))
       .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(
           CreateFunctor(
               &mock, &chrome_frame_test::WebBrowserEventSink::Navigate,
@@ -413,7 +414,7 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_BackForward) {
   // We have reached url 3 and have two back entries for url 1 & 2
   // Go back to url 2 now
   mock.ExpectNavigationAndSwitchSequence(kSubFrameUrl3);
-  EXPECT_CALL(mock, OnLoad(testing::StrEq(kSubFrameUrl3)))
+  EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kSubFrameUrl3)))
       .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(
           CreateFunctor(ReceivePointer(mock.web_browser2_),
                         &IWebBrowser::GoBack))));
@@ -421,7 +422,7 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_BackForward) {
   // We have reached url 2 and have 1 back & 1 forward entries for url 1 & 3
   // Go back to url 1 now
   mock.ExpectNavigation(kSubFrameUrl2);
-  EXPECT_CALL(mock, OnLoad(testing::StrEq(kSubFrameUrl2)))
+  EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kSubFrameUrl2)))
       .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(
           CreateFunctor(ReceivePointer(mock.web_browser2_),
                         &IWebBrowser::GoBack))));
@@ -429,7 +430,7 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_BackForward) {
   // We have reached url 1 and have 0 back & 2 forward entries for url 2 & 3
   // Go back to url 1 now
   mock.ExpectNavigation(kSubFrameUrl1);
-  EXPECT_CALL(mock, OnLoad(testing::StrEq(kSubFrameUrl1)))
+  EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kSubFrameUrl1)))
       .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(
               CreateFunctor(&mock,
                   &MockWebBrowserEventSink::CloseWebBrowser))));
@@ -480,7 +481,7 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_BackForwardAnchor) {
   //   It's better to send input as PostDelayedTask since the Activex
   //   message loop on the other side might be blocked when we get
   //   called in Onload.
-  EXPECT_CALL(mock, OnLoad(testing::StrEq(kAnchorUrl)))
+  EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kAnchorUrl)))
       .WillOnce(testing::DoAll(
           testing::InvokeWithoutArgs(CreateFunctor(&mock,
               &chrome_frame_test::WebBrowserEventSink::SetFocusToChrome)),
@@ -495,7 +496,7 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_BackForwardAnchor) {
   // Back/Forward state at this point:
   // Back: 1 (kAnchorUrl)
   // Forward: 0
-  EXPECT_CALL(mock, OnLoad(testing::StrEq(kAnchor1Url)))
+  EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kAnchor1Url)))
       .WillOnce(testing::InvokeWithoutArgs(
           CreateFunctor(
               &loop, &chrome_frame_test::TimedMsgLoop::PostDelayedTask,
@@ -509,7 +510,7 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_BackForwardAnchor) {
   // Back/Forward state at this point:
   // Back: 2 (kAnchorUrl, kAnchor1Url)
   // Forward: 0
-  EXPECT_CALL(mock, OnLoad(testing::StrEq(kAnchor2Url)))
+  EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kAnchor2Url)))
       .WillOnce(testing::InvokeWithoutArgs(
           CreateFunctor(
               &loop, &chrome_frame_test::TimedMsgLoop::PostDelayedTask,
@@ -524,7 +525,7 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_BackForwardAnchor) {
   // Back/Forward state at this point:
   // Back: 3 (kAnchorUrl, kAnchor1Url, kAnchor2Url)
   // Forward: 0
-  EXPECT_CALL(mock, OnLoad(testing::StrEq(kAnchor3Url)))
+  EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kAnchor3Url)))
       .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(
           CreateFunctor(ReceivePointer(mock.web_browser2_),
                         &IWebBrowser::GoBack))));
@@ -535,7 +536,7 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_BackForwardAnchor) {
   // Back/Forward state at this point:
   // Back: 3 (kAnchorUrl, kAnchor1Url, kAnchor2Url)
   // Forward: 1 (kAnchor3Url)
-  EXPECT_CALL(mock, OnLoad(testing::StrEq(kAnchor2Url)))
+  EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kAnchor2Url)))
       .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(
           CreateFunctor(ReceivePointer(mock.web_browser2_),
                         &IWebBrowser::GoBack))));
@@ -546,7 +547,7 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_BackForwardAnchor) {
   // Back/Forward state at this point:
   // Back: 2 (kAnchorUrl, kAnchor1Url)
   // Forward: 2 (kAnchor2Url, kAnchor3Url)
-  EXPECT_CALL(mock, OnLoad(testing::StrEq(kAnchor1Url)))
+  EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kAnchor1Url)))
       .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(
           CreateFunctor(ReceivePointer(mock.web_browser2_),
                         &IWebBrowser::GoForward))));
@@ -556,14 +557,14 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_BackForwardAnchor) {
   // Back/Forward state at this point:
   // Back: 3 (kAnchorUrl, kAnchor1Url, kAnchor2Url)
   // Forward: 1 (kAnchor3Url)
-  EXPECT_CALL(mock, OnLoad(testing::StrEq(kAnchor2Url)))
+  EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kAnchor2Url)))
       .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(
           CreateFunctor(ReceivePointer(mock.web_browser2_),
                         &IWebBrowser::GoForward))));
   mock.ExpectNavigation(kAnchor3Url);
 
   // We have gone a few steps back and forward, this should be enough for now.
-  EXPECT_CALL(mock, OnLoad(testing::StrEq(kAnchor3Url)))
+  EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kAnchor3Url)))
       .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(
               CreateFunctor(&mock,
                   &MockWebBrowserEventSink::CloseWebBrowser))));
@@ -592,7 +593,7 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_ViewSource) {
   mock.ExpectNavigationAndSwitchSequence(kAnchorUrl);
 
   VARIANT empty = ScopedVariant::kEmptyVariant;
-  EXPECT_CALL(mock, OnLoad(testing::StrEq(kAnchorUrl)))
+  EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kAnchorUrl)))
       .WillOnce(testing::InvokeWithoutArgs(
           CreateFunctor(&mock, &MockWebBrowserEventSink::Exec, &CGID_MSHTML,
                         static_cast<OLECMDID>(IDM_VIEWSOURCE),
@@ -609,7 +610,7 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_ViewSource) {
 
   ComStackObjectWithUninitialize<MockWebBrowserEventSink> view_source_mock;
   mock.ExpectNewWindow(&view_source_mock);
-  EXPECT_CALL(view_source_mock, OnLoad(testing::StrEq(view_source_url)))
+  EXPECT_CALL(view_source_mock, OnLoad(testing::StrCaseEq(view_source_url)))
       .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(
               CreateFunctor(&view_source_mock,
                   &MockWebBrowserEventSink::CloseWebBrowser))));
@@ -732,7 +733,7 @@ TEST_F(ChromeFrameTestWithWebServer,
 
   // Navigate to url 2 after the previous navigation is complete.
   mock.ExpectNavigationAndSwitchSequence(kSubFrameUrl1);
-  EXPECT_CALL(mock, OnLoad(testing::StrEq(kSubFrameUrl1)))
+  EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kSubFrameUrl1)))
       .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(
           CreateFunctor(&mock,
                         &chrome_frame_test::WebBrowserEventSink::Navigate,
@@ -741,7 +742,7 @@ TEST_F(ChromeFrameTestWithWebServer,
   mock.ExpectNavigationAndSwitchSequence(kSubFrameUrl2);
 
   // Go back using Rt-Click + DOWN + ENTER
-  EXPECT_CALL(mock, OnLoad(testing::StrEq(kSubFrameUrl2)))
+  EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kSubFrameUrl2)))
       .WillOnce(testing::DoAll(
           testing::InvokeWithoutArgs(CreateFunctor(&mock,
               &MockWebBrowserEventSink::SendMouseClick, 10, 10,
@@ -761,7 +762,7 @@ TEST_F(ChromeFrameTestWithWebServer,
   mock.ExpectNavigation(kSubFrameUrl1);
 
   // Go forward using Rt-Click + DOWN + DOWN + ENTER
-  EXPECT_CALL(mock, OnLoad(testing::StrEq(kSubFrameUrl1)))
+  EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kSubFrameUrl1)))
       .WillOnce(testing::DoAll(
           testing::InvokeWithoutArgs(CreateFunctor(&mock,
               &MockWebBrowserEventSink::SendMouseClick, 10, 10,
@@ -786,7 +787,7 @@ TEST_F(ChromeFrameTestWithWebServer,
 
   mock.ExpectNavigation(kSubFrameUrl2);
 
-  EXPECT_CALL(mock, OnLoad(testing::StrEq(kSubFrameUrl2)))
+  EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kSubFrameUrl2)))
       .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(
               CreateFunctor(&mock,
                   &MockWebBrowserEventSink::CloseWebBrowser))));
@@ -814,7 +815,7 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_ContextMenuReload) {
   mock.ExpectNavigationAndSwitchSequence(kSubFrameUrl1);
 
   // Reload using Rt-Click + DOWN + DOWN + DOWN + ENTER
-  EXPECT_CALL(mock, OnLoad(testing::StrEq(kSubFrameUrl1)))
+  EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kSubFrameUrl1)))
       .WillOnce(testing::DoAll(
           testing::InvokeWithoutArgs(CreateFunctor(&mock,
               &MockWebBrowserEventSink::SendMouseClick, 10, 10,
@@ -843,7 +844,7 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_ContextMenuReload) {
                   simulate_input::SendString<wchar_t>, &enter_key[0]),
               800))));
 
-  EXPECT_CALL(mock, OnLoad(testing::StrEq(kSubFrameUrl1)))
+  EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kSubFrameUrl1)))
       .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(
               CreateFunctor(&mock,
                   &MockWebBrowserEventSink::CloseWebBrowser))));
@@ -867,9 +868,9 @@ TEST_F(ChromeFrameTestWithWebServer,
   ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
   ::testing::InSequence sequence;   // Everything in sequence
 
-  // view source using Rt-Click + UP + UP + UP + UP + ENTER
+  // View source using Rt-Click + UP + UP + UP + UP + ENTER
   mock.ExpectNavigationAndSwitchSequence(kAnchorUrl);
-  EXPECT_CALL(mock, OnLoad(testing::StrEq(kAnchorUrl)))
+  EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kAnchorUrl)))
       .WillOnce(testing::DoAll(
           testing::InvokeWithoutArgs(CreateFunctor(&mock,
               &MockWebBrowserEventSink::SendMouseClick, 10, 10,
@@ -915,7 +916,7 @@ TEST_F(ChromeFrameTestWithWebServer,
 
   ComStackObjectWithUninitialize<MockWebBrowserEventSink> view_source_mock;
   mock.ExpectNewWindow(&view_source_mock);
-  EXPECT_CALL(view_source_mock, OnLoad(testing::StrEq(view_source_url)))
+  EXPECT_CALL(view_source_mock, OnLoad(testing::StrCaseEq(view_source_url)))
       .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(
               CreateFunctor(&view_source_mock,
                   &MockWebBrowserEventSink::CloseWebBrowser))));
@@ -932,6 +933,227 @@ TEST_F(ChromeFrameTestWithWebServer,
 
   ASSERT_TRUE(mock.web_browser2() != NULL);
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+}
+
+TEST_F(ChromeFrameTestWithWebServer,
+       FLAKY_FullTabModeIE_ContextMenuPageInfo) {
+  CloseIeAtEndOfScope last_resort_close_ie;
+  chrome_frame_test::TimedMsgLoop loop;
+  ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
+  ::testing::InSequence sequence;   // Everything in sequence
+
+  // View page information using Rt-Click + UP + UP + UP + ENTER
+  const wchar_t* kPageInfoWindowClass = L"Chrome_WidgetWin_0";
+  mock.ExpectNavigationAndSwitchSequence(kAnchorUrl);
+  EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kAnchorUrl)))
+      .WillOnce(testing::DoAll(
+          testing::InvokeWithoutArgs(CreateFunctor(&mock,
+              &MockWebBrowserEventSink::WatchChromeWindow,
+              kPageInfoWindowClass)),
+          testing::InvokeWithoutArgs(CreateFunctor(&mock,
+              &MockWebBrowserEventSink::SendMouseClick, 10, 10,
+              simulate_input::RIGHT)),
+          testing::InvokeWithoutArgs(CreateFunctor(&loop,
+              &chrome_frame_test::TimedMsgLoop::PostDelayedTask, FROM_HERE,
+              NewRunnableFunction(
+                  simulate_input::SendExtendedKey, VK_UP, false, false,
+                  false),
+              500)),
+          testing::InvokeWithoutArgs(CreateFunctor(&loop,
+              &chrome_frame_test::TimedMsgLoop::PostDelayedTask, FROM_HERE,
+              NewRunnableFunction(
+                  simulate_input::SendExtendedKey, VK_UP, false, false,
+                  false),
+              600)),
+          testing::InvokeWithoutArgs(CreateFunctor(&loop,
+              &chrome_frame_test::TimedMsgLoop::PostDelayedTask, FROM_HERE,
+              NewRunnableFunction(
+                  simulate_input::SendExtendedKey, VK_UP, false, false,
+                  false),
+              700)),
+          testing::InvokeWithoutArgs(CreateFunctor(&loop,
+              &chrome_frame_test::TimedMsgLoop::PostDelayedTask, FROM_HERE,
+              NewRunnableFunction(
+                  simulate_input::SendString<wchar_t>, &enter_key[0]),
+              800))));
+
+  // Expect page info dialog to pop up. Dismiss the dialog with 'Esc' key
+  const char* kPageInfoCaption = "Security Information";
+  EXPECT_CALL(mock, OnWindowDetected(_, testing::StrCaseEq(kPageInfoCaption)))
+      .WillOnce(testing::DoAll(
+          testing::WithArgs<0>(testing::Invoke(
+              simulate_input::SetKeyboardFocusToWindow)),
+          testing::InvokeWithoutArgs(CreateFunctor(&loop,
+              &chrome_frame_test::TimedMsgLoop::PostDelayedTask, FROM_HERE,
+              NewRunnableFunction(
+                  simulate_input::SendString<wchar_t>, &escape_key[0]),
+              100)),
+          testing::InvokeWithoutArgs(CreateFunctor(&loop,
+              &chrome_frame_test::TimedMsgLoop::PostDelayedTask, FROM_HERE,
+              NewRunnableMethod(&mock,
+                  &MockWebBrowserEventSink::CloseWebBrowser),
+              600))));
+
+  EXPECT_CALL(mock, OnQuit()).WillOnce(QUIT_LOOP(loop));
+
+  HRESULT hr = mock.LaunchIEAndNavigate(kAnchorUrl);
+  ASSERT_HRESULT_SUCCEEDED(hr);
+  if (hr == S_FALSE)
+    return;
+
+  ASSERT_TRUE(mock.web_browser2() != NULL);
+  loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+}
+
+TEST_F(ChromeFrameTestWithWebServer,
+       FLAKY_FullTabModeIE_ContextMenuInspector) {
+  CloseIeAtEndOfScope last_resort_close_ie;
+  chrome_frame_test::TimedMsgLoop loop;
+  ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
+  ::testing::InSequence sequence;   // Everything in sequence
+
+  // Open developer tools using Rt-Click + UP + UP + ENTER
+  const wchar_t* kPageInfoWindowClass = L"Chrome_WidgetWin_0";
+  mock.ExpectNavigationAndSwitchSequence(kAnchorUrl);
+  EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kAnchorUrl)))
+      .WillOnce(testing::DoAll(
+          testing::InvokeWithoutArgs(CreateFunctor(&mock,
+              &MockWebBrowserEventSink::WatchChromeWindow,
+              kPageInfoWindowClass)),
+          testing::InvokeWithoutArgs(CreateFunctor(&mock,
+              &MockWebBrowserEventSink::SendMouseClick, 10, 10,
+              simulate_input::RIGHT)),
+          testing::InvokeWithoutArgs(CreateFunctor(&loop,
+              &chrome_frame_test::TimedMsgLoop::PostDelayedTask, FROM_HERE,
+              NewRunnableFunction(
+                  simulate_input::SendExtendedKey, VK_UP, false, false,
+                  false),
+              500)),
+          testing::InvokeWithoutArgs(CreateFunctor(&loop,
+              &chrome_frame_test::TimedMsgLoop::PostDelayedTask, FROM_HERE,
+              NewRunnableFunction(
+                  simulate_input::SendExtendedKey, VK_UP, false, false,
+                  false),
+              600)),
+          testing::InvokeWithoutArgs(CreateFunctor(&loop,
+              &chrome_frame_test::TimedMsgLoop::PostDelayedTask, FROM_HERE,
+              NewRunnableFunction(
+                  simulate_input::SendString<wchar_t>, &enter_key[0]),
+              800))));
+
+  // Devtools begins life with "Untitled" caption and it changes
+  // later to the 'Developer Tools - <url> form.
+  const char* kPageInfoCaption = "Untitled";
+  EXPECT_CALL(mock, OnWindowDetected(_, testing::StartsWith(kPageInfoCaption)))
+      .WillOnce(testing::DoAll(
+          testing::InvokeWithoutArgs(CreateFunctor(&mock,
+              &MockWebBrowserEventSink::StopWatching)),
+          testing::WithArgs<0>(testing::Invoke(
+              simulate_input::SetKeyboardFocusToWindow)),
+          testing::InvokeWithoutArgs(CreateFunctor(&loop,
+              &chrome_frame_test::TimedMsgLoop::PostDelayedTask, FROM_HERE,
+              NewRunnableMethod(&mock,
+                  &MockWebBrowserEventSink::CloseWebBrowser),
+              2000))));
+
+  EXPECT_CALL(mock, OnQuit()).WillOnce(QUIT_LOOP(loop));
+
+  HRESULT hr = mock.LaunchIEAndNavigate(kAnchorUrl);
+  ASSERT_HRESULT_SUCCEEDED(hr);
+  if (hr == S_FALSE)
+    return;
+
+  ASSERT_TRUE(mock.web_browser2() != NULL);
+  loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+}
+
+TEST_F(ChromeFrameTestWithWebServer,
+       FLAKY_FullTabModeIE_ContextMenuSaveAs) {
+  CloseIeAtEndOfScope last_resort_close_ie;
+  chrome_frame_test::TimedMsgLoop loop;
+  ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
+  ::testing::InSequence sequence;   // Everything in sequence
+
+  // Open'Save As' dialog using Rt-Click + DOWN + DOWN + DOWN + DOWN + ENTER
+  const wchar_t* kSaveDlgClass = L"#32770";
+  mock.ExpectNavigationAndSwitchSequence(kAnchorUrl);
+  EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kAnchorUrl)))
+      .WillOnce(testing::DoAll(
+          testing::InvokeWithoutArgs(CreateFunctor(&mock,
+              &MockWebBrowserEventSink::WatchChromeWindow,
+              kSaveDlgClass)),
+          testing::InvokeWithoutArgs(CreateFunctor(&mock,
+              &MockWebBrowserEventSink::SendMouseClick, 10, 10,
+              simulate_input::RIGHT)),
+          testing::InvokeWithoutArgs(CreateFunctor(&loop,
+              &chrome_frame_test::TimedMsgLoop::PostDelayedTask, FROM_HERE,
+              NewRunnableFunction(
+                  simulate_input::SendExtendedKey, VK_DOWN, false, false,
+                  false),
+              500)),
+          testing::InvokeWithoutArgs(CreateFunctor(&loop,
+              &chrome_frame_test::TimedMsgLoop::PostDelayedTask, FROM_HERE,
+              NewRunnableFunction(
+                  simulate_input::SendExtendedKey, VK_DOWN, false, false,
+                  false),
+              600)),
+          testing::InvokeWithoutArgs(CreateFunctor(&loop,
+              &chrome_frame_test::TimedMsgLoop::PostDelayedTask, FROM_HERE,
+              NewRunnableFunction(
+                  simulate_input::SendExtendedKey, VK_DOWN, false, false,
+                  false),
+              700)),
+          testing::InvokeWithoutArgs(CreateFunctor(&loop,
+              &chrome_frame_test::TimedMsgLoop::PostDelayedTask, FROM_HERE,
+              NewRunnableFunction(
+                  simulate_input::SendExtendedKey, VK_DOWN, false, false,
+                  false),
+              800)),
+          testing::InvokeWithoutArgs(CreateFunctor(&loop,
+              &chrome_frame_test::TimedMsgLoop::PostDelayedTask, FROM_HERE,
+              NewRunnableFunction(
+                  simulate_input::SendString<wchar_t>, &enter_key[0]),
+              900))));
+
+  FilePath temp_file_path;
+  EXPECT_TRUE(file_util::CreateTemporaryFile(&temp_file_path));
+
+  const wchar_t* kSaveFileName = temp_file_path.value().c_str();
+  const char* kSaveDlgCaption = "Save As";
+  EXPECT_CALL(mock, OnWindowDetected(_, testing::StrCaseEq(kSaveDlgCaption)))
+      .WillOnce(testing::DoAll(
+          testing::InvokeWithoutArgs(CreateFunctor(&mock,
+              &MockWebBrowserEventSink::StopWatching)),
+          testing::WithArgs<0>(testing::Invoke(
+              simulate_input::SetKeyboardFocusToWindow)),
+          testing::InvokeWithoutArgs(CreateFunctor(&loop,
+              &chrome_frame_test::TimedMsgLoop::PostDelayedTask, FROM_HERE,
+              NewRunnableFunction(
+                  simulate_input::SendString<wchar_t>, kSaveFileName),
+              100)),
+          testing::InvokeWithoutArgs(CreateFunctor(&loop,
+              &chrome_frame_test::TimedMsgLoop::PostDelayedTask, FROM_HERE,
+              NewRunnableFunction(
+                  simulate_input::SendString<wchar_t>, &enter_key[0]),
+              200)),
+          testing::InvokeWithoutArgs(CreateFunctor(&loop,
+              &chrome_frame_test::TimedMsgLoop::PostDelayedTask, FROM_HERE,
+              NewRunnableMethod(&mock,
+                  &MockWebBrowserEventSink::CloseWebBrowser),
+              4000))));
+
+  EXPECT_CALL(mock, OnQuit()).WillOnce(QUIT_LOOP(loop));
+
+  HRESULT hr = mock.LaunchIEAndNavigate(kAnchorUrl);
+  ASSERT_HRESULT_SUCCEEDED(hr);
+  if (hr == S_FALSE)
+    return;
+
+  ASSERT_TRUE(mock.web_browser2() != NULL);
+  loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+
+  ASSERT_NE(INVALID_FILE_ATTRIBUTES, GetFileAttributes(kSaveFileName));
+  ASSERT_TRUE(DeleteFile(kSaveFileName));
 }
 
 // Marking this test FLAKY as it fails at times on the buildbot.
@@ -953,14 +1175,14 @@ TEST_F(ChromeFrameTestWithWebServer,
   // 4. Sends the Shift + VK_BACK keystroke to IE which should navigate
   //    forward to http://localhost:1337/files/sub_frame2.html
   mock.ExpectNavigationAndSwitchSequence(kSubFrameUrl1);
-  EXPECT_CALL(mock, OnLoad(testing::StrEq(kSubFrameUrl1)))
+  EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kSubFrameUrl1)))
       .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(
           CreateFunctor(
               &mock, &chrome_frame_test::WebBrowserEventSink::Navigate,
               std::wstring(kSubFrameUrl2)))));
 
   mock.ExpectNavigationAndSwitchSequence(kSubFrameUrl2);
-  EXPECT_CALL(mock, OnLoad(testing::StrEq(kSubFrameUrl2)))
+  EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kSubFrameUrl2)))
       .WillOnce(testing::InvokeWithoutArgs(CreateFunctor(&loop,
           &chrome_frame_test::TimedMsgLoop::PostDelayedTask, FROM_HERE,
           NewRunnableMethod(
@@ -968,7 +1190,7 @@ TEST_F(ChromeFrameTestWithWebServer,
               &MockWebBrowserEventSink::NavigateBackward), 500)));
 
   mock.ExpectNavigation(kSubFrameUrl1);
-  EXPECT_CALL(mock, OnLoad(testing::StrEq(kSubFrameUrl1)))
+  EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kSubFrameUrl1)))
       .WillOnce(testing::InvokeWithoutArgs(CreateFunctor(&loop,
           &chrome_frame_test::TimedMsgLoop::PostDelayedTask, FROM_HERE,
           NewRunnableMethod(
@@ -976,7 +1198,7 @@ TEST_F(ChromeFrameTestWithWebServer,
               &MockWebBrowserEventSink::NavigateForward), 500)));
 
   mock.ExpectNavigation(kSubFrameUrl2);
-  EXPECT_CALL(mock, OnLoad(testing::StrEq(kSubFrameUrl2)))
+  EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kSubFrameUrl2)))
       .Times(1)
       .WillOnce(QUIT_LOOP_SOON(loop, 2));
 

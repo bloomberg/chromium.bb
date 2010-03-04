@@ -111,12 +111,24 @@ bool EnsureProcessInForeground(base::ProcessId process_id) {
   return ret;
 }
 
+void SendScanCode(short scan_code, bool shift, bool control, bool alt) {
+  DCHECK(-1 != scan_code);
+
+  // High order byte in |scan_code| is SHIFT/CTRL/ALT key state.
+  shift |= !!(HIBYTE(scan_code) & 0x1);
+  control |= !!(HIBYTE(scan_code) & 0x2);
+  alt |= !!(HIBYTE(scan_code) & 0x4);
+
+  // Low order byte in |scan_code| is the actual scan code.
+  SendMnemonic(LOBYTE(scan_code), shift, control, alt, false, true);
+}
+
 void SendChar(char c, bool control, bool alt) {
-  SendMnemonic(toupper(c), !!isupper(c), control, alt, false, false);
+  SendScanCode(VkKeyScanA(c), false, control, alt);
 }
 
 void SendChar(wchar_t c, bool control, bool alt) {
-  SendMnemonic(towupper(c), !!iswupper(c), control, alt, false, true);
+  SendScanCode(VkKeyScanW(c), false, control, alt);
 }
 
 // Sends a keystroke to the currently active application with optional
@@ -164,7 +176,7 @@ void SendMnemonic(WORD mnemonic_char, bool shift_pressed, bool control_pressed,
     SendInput(1, &keys[ i ], sizeof(keys[0]));
     keys[i].ki.dwFlags |= KEYEVENTF_KEYUP;
     if (should_sleep) {
-      Sleep(100);
+      Sleep(10);
     }
   }
 
@@ -172,7 +184,7 @@ void SendMnemonic(WORD mnemonic_char, bool shift_pressed, bool control_pressed,
   for (int i = key_count; i; i--) {
     SendInput(1, &keys[ i - 1 ], sizeof(keys[0]));
     if (should_sleep) {
-      Sleep(100);
+      Sleep(10);
     }
   }
 }
