@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,8 +61,12 @@ std::wstring AutoFillInfoBarDelegate::GetButtonLabel(
     ConfirmInfoBarDelegate::InfoBarButton button) const {
   if (button == BUTTON_OK)
     return l10n_util::GetString(IDS_AUTOFILL_INFOBAR_ACCEPT);
+  else if (button == BUTTON_CANCEL)
+    return l10n_util::GetString(IDS_AUTOFILL_INFOBAR_DENY);
+  else
+    NOTREACHED();
 
-  return l10n_util::GetString(IDS_AUTOFILL_INFOBAR_DENY);
+  return std::wstring();
 }
 
 bool AutoFillInfoBarDelegate::Accept() {

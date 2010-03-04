@@ -52,4 +52,3 @@ void SetCreditCardInfo(CreditCard* credit_card,
 }
 
 }  // namespace
-

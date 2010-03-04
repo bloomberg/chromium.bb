@@ -33,4 +33,3 @@ void SetCreditCardInfo(CreditCard* credit_card,
 }  // namespace
 
 #endif  // CHROME_BROWSER_AUTOFILL_AUTOFILL_COMMON_UNITTEST_H_
-
