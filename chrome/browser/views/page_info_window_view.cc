@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,6 +35,8 @@
 
 #if defined(OS_WIN)
 #include "app/win_util.h"
+#elif defined(OS_LINUX)
+#include "chrome/browser/gtk/certificate_viewer.h"
 #endif
 
 namespace {
@@ -357,6 +359,8 @@ void PageInfoWindowView::ShowCertDialog(int cert_id) {
   // This next call blocks but keeps processing windows messages, making it
   // modal to the browser window.
   BOOL rv = ::CryptUIDlgViewCertificate(&view_info, &properties_changed);
+#elif defined(OS_LINUX)
+  ShowCertificateViewer(window()->GetNativeWindow(), cert_id);
 #else
   NOTIMPLEMENTED();
 #endif
