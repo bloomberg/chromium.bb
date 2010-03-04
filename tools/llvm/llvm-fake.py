@@ -18,6 +18,12 @@ import sys
 # enable this for manual debugging of this script only
 VERBOSE = 0
 TOLERATE_COMPILATION_OF_ASM_CODE = 1
+# NOTE: set this to somethinh like:
+# OUT = open('/tmp/fake.log', 'a')
+# if you want a log of all the action
+OUT = None
+
+
 BASE = '/usr/local/crosstool-untrusted'
 
 
@@ -80,12 +86,17 @@ HACK_ASM = ['sed', '-e', 's/vmrs.*apsr_nzcv, fpscr/fmrx r15, fpscr/g']
 
 
 def LogInfo(m):
-  print m
+  if VERBOSE:
+    print m
+  if OUT:
+    print >> OUT, m
 
 
 def LogFatal(m, ret=-1):
   print
   print "FATAL:", m
+  if OUT:
+    print >> OUT, "FATAL:", m
   print
   sys.exit(ret)
 
@@ -95,8 +106,7 @@ def StringifyCommand(a):
 
 
 def Run(a):
-  if VERBOSE:
-    LogInfo('\n' + StringifyCommand(a))
+  LogInfo('\n' + StringifyCommand(a))
   ret = subprocess.call(a)
   if ret:
     LogFatal('failed command: ' + StringifyCommand(a), ret)
@@ -190,22 +200,33 @@ def FindLinkPos(argv):
 
 
 def IsDiagnosticMode(argv):
-  return ('--v' in argv or
+  return (# used by configure
+          'conftest.c' in argv or
+          '--print-multi-lib' in argv or
+          # used by scons harness
+          '--v' in argv or
+          '-v' in argv or
           '-print-search-dirs' in argv or
           '-print-libgcc-file-name' in argv)
 
 
 def Compile(argv, llvm_binary, mode):
   """ Compile to .o file."""
-  assert not FindLinkPos(argv)
-
   argv[0] = llvm_binary
+
+  if FindLinkPos(argv):
+    # NOTE: this happens when using the toolchain builer scripts
+    LogInfo('found .o -> exe compilation')
+    Run(argv)
 
   obj_pos = FindObjectFilePos(argv)
 
   if not obj_pos:
-    assert IsDiagnosticMode(argv)
-    Run(argv)
+    if IsDiagnosticMode(argv):
+      LogInfo('operating in diagnostic mode')
+      Run(argv)
+    else:
+      LogFatal('weird invocation ' + StringifyCommand(argv))
     return
 
   # TODO(robertm): remove support for .S files
@@ -408,6 +429,7 @@ INCARNATIONS = {
 
 
 def main(argv):
+  LogInfo('\nRUNNNG\n ' + StringifyCommand(argv))
   basename = os.path.basename(argv[0])
   if basename not in INCARNATIONS:
     LogFatal("unknown command: " + StringifyCommand(argv))

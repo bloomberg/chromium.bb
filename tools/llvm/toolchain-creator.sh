@@ -28,8 +28,6 @@ export LLVMGCC_SVN_REV=88663
 export TMP=/tmp/crosstool-untrusted
 export CODE_SOURCERY_PKG_PATH=${INSTALL_ROOT}/codesourcery
 
-readonly LLVM_BUILD_SCRIPT=${TMP}/build-install-linux.sh
-
 ######################################################################
 # Helper
 ######################################################################
@@ -154,18 +152,6 @@ DownloadOrCopyCodeSourceryTarball() {
 }
 
 
-# Extract the script to build llvm and llvm-gcc into *this* directory.
-# We also patch it a little because we need to get rid of the sudo stuff
-# to enable automatic builds.
-ExtractLlvmBuildScript() {
-  Banner "Extracting ${LLVM_BUILD_SCRIPT}"
-  local in_archive_path=llvm/utils/crosstool/ARM/build-install-linux.sh
-  tar jxf ${LLVM_PKG_PATH}/llvm-88663.tar.bz2 ${in_archive_path} -O \
-      | sed -e 's/sudo//' > ${LLVM_BUILD_SCRIPT}
-  chmod a+rx ${LLVM_BUILD_SCRIPT}
-}
-
-
 # Run the script extracted by ExtractLlvmBuildScript().
 # The mygcc32 and myg++32 trickery ensures that all binaries
 # are statically linked and 32-bit.
@@ -175,7 +161,7 @@ ConfigureAndBuildLlvm() {
   export CC=$(readlink -f tools/llvm/mygcc32)
   export CXX=$(readlink -f tools/llvm/myg++32)
 
-  ${LLVM_BUILD_SCRIPT}
+  tools/llvm/build-phase1-llvmgcc.sh
 }
 
 
@@ -348,7 +334,6 @@ if [ ${MODE} = 'untrusted_sdk' ] ; then
   PathSanityCheck
   ClearInstallDir
   DownloadOrCopyCodeSourceryTarball
-  ExtractLlvmBuildScript
   ConfigureAndBuildLlvm
   UntarPatchConfigureAndBuildSfiLlc
   InstallUntrustedLinkerScript
@@ -460,6 +445,8 @@ if [ ${MODE} = 'tar' ] ; then
   CreateTarBall $1
   exit 0
 fi
+
+ExtractLlvmBuildScript
 
 echo "ERROR: unknown mode ${MODE}"
 exit -1

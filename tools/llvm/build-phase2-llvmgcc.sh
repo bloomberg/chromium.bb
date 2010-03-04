@@ -17,7 +17,7 @@ readonly PATCH_ROOT="$(pwd)/tools/patches"
 
 readonly INSTALL_ROOT="${INSTALL_ROOT:-/usr/local/crosstool}"
 # Both $USER and root *must* have read/write access to this dir.
-readonly SCRATCH_ROOT=$(mktemp -d "${TMPDIR:-/tmp}/llvm-project.XXXXXX")
+readonly SCRATCH_ROOT=$(mktemp -d "${TMPDIR:-/tmp}/llvm-phase2.XXXXXX")
 readonly SRC_ROOT="${SCRATCH_ROOT}/src"
 readonly OBJ_ROOT="${SCRATCH_ROOT}/obj"
 
@@ -212,5 +212,8 @@ createDir ${OBJ_ROOT}
 
 buildLLVM
 installLLVMGCC
+
+# NOTE: for now we leave the dir around when a failure occurs
+rm -rf ${SCRATCH_ROOT}
 
 echo "Done."
