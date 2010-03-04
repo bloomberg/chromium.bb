@@ -19,6 +19,7 @@ namespace webkit_glue {
 class WebKitClientImpl : public WebKit::WebKitClient {
  public:
   WebKitClientImpl();
+  virtual ~WebKitClientImpl() {}
 
   // WebKitClient methods (partial implementation):
   virtual WebKit::WebThemeEngine* themeEngine();

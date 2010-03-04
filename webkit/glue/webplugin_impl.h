@@ -50,7 +50,7 @@ class WebPluginImpl : public WebPlugin,
       WebKit::WebFrame* frame,
       const WebKit::WebPluginParams& params,
       const base::WeakPtr<WebPluginPageDelegate>& page_delegate);
-  ~WebPluginImpl();
+  virtual ~WebPluginImpl();
 
   // Helper function for sorting post data.
   static bool SetPostData(WebKit::WebURLRequest* request,

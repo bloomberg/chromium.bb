@@ -41,18 +41,14 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
 #include "webkit/glue/glue_serialize.h"
-#include "webkit/glue/media/buffered_data_source.h"
-#include "webkit/glue/media/media_resource_loader_bridge_factory.h"
-#include "webkit/glue/media/simple_data_source.h"
-#include "webkit/glue/media/video_renderer_impl.h"
 #include "webkit/glue/webdropdata.h"
 #include "webkit/glue/webplugin_impl.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/plugins/plugin_list.h"
 #include "webkit/glue/plugins/webplugin_delegate_impl.h"
-#include "webkit/glue/webmediaplayer_impl.h"
 #include "webkit/glue/window_open_disposition.h"
+#include "webkit/support/webkit_support.h"
 #include "webkit/tools/test_shell/accessibility_controller.h"
 #include "webkit/tools/test_shell/mock_spellcheck.h"
 #include "webkit/tools/test_shell/test_navigation_controller.h"
@@ -642,34 +638,7 @@ WebWorker* TestWebViewDelegate::createWorker(
 
 WebMediaPlayer* TestWebViewDelegate::createMediaPlayer(
     WebFrame* frame, WebMediaPlayerClient* client) {
-  scoped_refptr<media::FilterFactoryCollection> factory =
-      new media::FilterFactoryCollection();
-
-  WebApplicationCacheHostImpl* appcache_host =
-      WebApplicationCacheHostImpl::FromFrame(frame);
-
-  // TODO(hclam): this is the same piece of code as in RenderView, maybe they
-  // should be grouped together.
-  webkit_glue::MediaResourceLoaderBridgeFactory* bridge_factory =
-      new webkit_glue::MediaResourceLoaderBridgeFactory(
-          GURL(),  // referrer
-          "null",  // frame origin
-          "null",  // main_frame_origin
-          base::GetCurrentProcId(),
-          appcache_host ? appcache_host->host_id() : appcache::kNoHostId,
-          0);
-  // A simple data source that keeps all data in memory.
-  media::FilterFactory* simple_data_source_factory =
-      webkit_glue::SimpleDataSource::CreateFactory(MessageLoop::current(),
-                                                   bridge_factory);
-  // A sophisticated data source that does memory caching.
-  media::FilterFactory* buffered_data_source_factory =
-      webkit_glue::BufferedDataSource::CreateFactory(MessageLoop::current(),
-                                                     bridge_factory);
-  factory->AddFactory(buffered_data_source_factory);
-  factory->AddFactory(simple_data_source_factory);
-  return new webkit_glue::WebMediaPlayerImpl(
-      client, factory, new webkit_glue::VideoRendererImpl::FactoryFactory());
+  return webkit_support::CreateMediaPlayer(frame, client);
 }
 
 bool TestWebViewDelegate::allowPlugins(WebFrame* frame,

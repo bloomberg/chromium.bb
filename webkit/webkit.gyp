@@ -7,6 +7,7 @@
     '../third_party/WebKit/WebKit/chromium/features.gypi',
     '../third_party/WebKit/WebKit/chromium/WebKit.gypi',
     '../third_party/WebKit/WebCore/WebCore.gypi',
+    'support/webkit_support.gypi',
     'tools/test_shell/test_shell.gypi',
   ],
   'variables': {
