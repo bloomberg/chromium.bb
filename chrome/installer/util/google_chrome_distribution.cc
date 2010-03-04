@@ -584,7 +584,7 @@ void GoogleChromeDistribution::InactiveUserToastExperiment(int flavor,
   // The user wants to uninstall. This is a best effort operation. Note that
   // we waited for chrome to exit so the uninstall would not detect chrome
   // running.
-  base::LaunchApp(InstallUtil::GetChromeUninstallCmd(false),
+  base::LaunchApp(InstallUtil::GetChromeUninstallCmd(system_install),
                   false, false, NULL);
 }
 #endif
