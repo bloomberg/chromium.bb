@@ -1,3 +1,35 @@
+diff -uNr newlib-1.17.0.orig/config-ml.in newlib-1.17.0/config-ml.in
+--- newlib-1.17.0.orig/config-ml.in	2008-11-27 17:14:58.000000000 +0000
++++ newlib-1.17.0/config-ml.in	2010-03-03 15:09:29.000000000 +0000
+@@ -652,6 +652,8 @@
+ # We must freshly configure each subdirectory.  This bit of code is
+ # actually partially stolen from the main configure script.  FIXME.
+ 
++multilib_host=${host}
++
+ if [ -n "${multidirs}" ] && [ -z "${ml_norecursion}" ]; then
+ 
+   if [ "${ml_verbose}" = --verbose ]; then
+@@ -759,6 +761,9 @@
+ 	GCJ_=$GCJ' '
+ 	GFORTRAN_=$GFORTRAN' '
+     else
++	if [ "${ml_dir}" = "32" -a "${host}" = "x86_64-pc-nacl" ]; then
++	  multilib_host="i386-pc-nacl"
++	fi
+ 	# Create a regular expression that matches any string as long
+ 	# as ML_POPDIR.
+ 	popdir_rx=`echo "${ML_POPDIR}" | sed 's,.,.,g'`
+@@ -859,7 +864,8 @@
+ 
+     if eval ${ml_config_env} ${ml_config_shell} ${ml_recprog} \
+ 	--with-multisubdir=${ml_dir} --with-multisrctop=${multisrctop} \
+-	${ac_configure_args} ${ml_config_env} ${ml_srcdiroption} ; then
++	${ac_configure_args} ${ml_config_env} ${ml_srcdiroption} \
++	--host=${multilib_host} ; then
+       true
+     else
+       exit 1
 diff -uNr newlib-1.17.0.orig/config.sub newlib-1.17.0/config.sub
 --- newlib-1.17.0.orig/config.sub	2008-12-18 04:26:46.000000000 +0100
 +++ newlib-1.17.0/config.sub	2009-12-17 13:51:54.000000000 +0100
@@ -248,6 +280,29 @@ diff -uNr newlib-1.17.0.orig/newlib/libc/include/machine/setjmp.h newlib-1.17.0/
  #endif
  
  #ifdef __i960__
+diff -uNr newlib-1.17.0.orig/newlib/libc/include/math.h newlib-1.17.0/newlib/libc/include/math.h
+--- newlib-1.17.0.orig/newlib/libc/include/math.h	2008-04-24 00:10:54.000000000 +0100
++++ newlib-1.17.0/newlib/libc/include/math.h	2010-03-03 15:03:05.000000000 +0000
+@@ -226,7 +226,9 @@
+ extern double tgamma _PARAMS((double));
+ extern double nearbyint _PARAMS((double));
+ extern long int lrint _PARAMS((double));
++#ifndef __x86_64__
+ extern _LONG_LONG_TYPE int llrint _PARAMS((double));
++#endif
+ extern double round _PARAMS((double));
+ extern long int lround _PARAMS((double));
+ extern double trunc _PARAMS((double));
+@@ -293,7 +295,9 @@
+ extern float tgammaf _PARAMS((float));
+ extern float nearbyintf _PARAMS((float));
+ extern long int lrintf _PARAMS((float));
++#ifndef __x86_64__
+ extern _LONG_LONG_TYPE llrintf _PARAMS((float));
++#endif
+ extern float roundf _PARAMS((float));
+ extern long int lroundf _PARAMS((float));
+ extern float truncf _PARAMS((float));
 diff -uNr newlib-1.17.0.orig/newlib/libc/include/sys/config.h newlib-1.17.0/newlib/libc/include/sys/config.h
 --- newlib-1.17.0.orig/newlib/libc/include/sys/config.h	2008-11-19 22:05:31.000000000 +0100
 +++ newlib-1.17.0/newlib/libc/include/sys/config.h	2009-12-17 13:51:54.000000000 +0100
