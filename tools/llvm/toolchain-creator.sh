@@ -36,14 +36,14 @@ readonly LLVM_BUILD_SCRIPT=${TMP}/build-install-linux.sh
 
 Banner() {
   echo "######################################################################"
-  echo $*
+  echo "$@"
   echo "######################################################################"
 }
 
 
 SubBanner() {
   echo "......................................................................"
-  echo $*
+  echo "$@"
   echo "......................................................................"
 }
 
@@ -63,6 +63,38 @@ DownloadOrCopy() {
     SubBanner "copying from $1"
     cp $1 $2
   fi
+}
+
+
+# Use this when not a lot of output is expected
+Run() {
+  local message=$1
+  shift
+  SubBanner "${message}"
+  echo "COMMMAND: $@"
+  "$@" || {
+    echo
+    Banner "ERROR: $@"
+    exit -1
+  }
+}
+
+
+RunWithLog() {
+  local message=$1
+  local log=$2
+  shift 2
+  SubBanner "${message}"
+  echo "LOGFILE: ${log}"
+  echo "COMMMAND: $@"
+  "$@" > ${log} 2>&1 || {
+    cat ${log}
+    echo
+    Banner "ERROR"
+    echo "LOGFILE: ${log}"
+    echo "COMMMAND: $@"
+    exit -1
+  }
 }
 
 ######################################################################
@@ -143,7 +175,7 @@ ConfigureAndBuildLlvm() {
   export CC=$(readlink -f tools/llvm/mygcc32)
   export CXX=$(readlink -f tools/llvm/myg++32)
 
-  nice ${LLVM_BUILD_SCRIPT}
+  ${LLVM_BUILD_SCRIPT}
 }
 
 
@@ -161,19 +193,22 @@ UntarPatchConfigureAndBuildSfiLlc() {
   rm -rf ${tmpdir}
   mkdir ${tmpdir}
   cd ${tmpdir}
-  SubBanner "Untaring"
-  tar jxf  ${LLVM_PKG_PATH}/llvm-${LLVM_SVN_REV}.tar.bz2
+
+  Run "Untaring" tar jxf  ${LLVM_PKG_PATH}/llvm-${LLVM_SVN_REV}.tar.bz2
   cd llvm
-  SubBanner "Patching"
-  patch -p0 < ${patch}
-  SubBanner "Configure"
-  ./configure\
+
+  Run "Patching" patch -p0 < ${patch}
+
+  RunWithLog "Configure" /tmp/llvm.sfi/llvm.sfi.configure.log\
+      ./configure\
       --disable-jit\
       --enable-optimized\
       --enable-targets=arm\
       --target=arm-none-linux-gnueabi
-  SubBanner "Make"
-  nice make ${MAKE_OPTS} tools-only
+
+  RunWithLog "Make" /tmp/llvm.sfi/llvm.sfi.make.log\
+      make ${MAKE_OPTS} tools-only
+
   SubBanner "Install"
   cp Release/bin/llc ${INSTALL_ROOT}/arm-none-linux-gnueabi/llvm/bin/llc-sfi
   cd ${saved_dir}
@@ -196,16 +231,17 @@ InstallSecondPhaseLlvmGccLibs() {
   export CC=$(readlink -f tools/llvm/mygcc32)
   export CXX=$(readlink -f tools/llvm/myg++32)
 
-  nice tools/llvm/build-phase2-llvmgcc.sh
+  tools/llvm/build-phase2-llvmgcc.sh
 }
 
 
 # we copy some useful tools after building them first
 InstallMiscTools() {
    Banner "building and installing misc tools"
-   SubBanner "sel loader"
+
    # TODO(robertm): revisit some of these options
-  ./scons MODE=nacl,opt-linux \
+   Run "sel loader" \
+          ./scons MODE=nacl,opt-linux \
           platform=arm \
           sdl_mode=none \
           sdl=none \
@@ -218,8 +254,8 @@ InstallMiscTools() {
    cp scons-out/opt-linux-arm/obj/src/trusted/service_runtime/sel_ldr\
      ${INSTALL_ROOT}/tools-arm
 
-   SubBanner "validator"
-   ./scons MODE=opt-linux \
+   Run "validator" \
+           ./scons MODE=opt-linux \
            naclsdk_mode=manual \
            targetplatform=arm \
            sysinfo= \
@@ -251,6 +287,7 @@ InstallDriver() {
 #
 InstallNewlibAndNaClRuntime() {
   Banner "building and installing nacl runtime"
+
   SubBanner "building newib"
   rm -rf src/third_party/nacl_sdk/arm-newlib/
   tools/llvm/setup_arm_newlib.sh
@@ -354,6 +391,15 @@ fi
 if [ ${MODE} = 'llvm-gcc' ] ; then
   ExtractLlvmBuildScript
   ConfigureAndBuildLlvm
+  exit 0
+fi
+
+#@
+#@ phase2
+#@
+#@   build libgcc and libstdc++
+if [ ${MODE} = 'phase2' ] ; then
+  InstallSecondPhaseLlvmGccLibs
   exit 0
 fi
 

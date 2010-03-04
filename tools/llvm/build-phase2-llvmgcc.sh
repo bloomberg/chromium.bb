@@ -71,64 +71,89 @@ createDir() {
   fi
 }
 
-# Prints out and runs the command, but without logging -- intended for use with
-# lightweight commands that don't have useful output to parse, e.g. mkdir, tar,
-# etc.
-runCommand() {
-  local message="$1"
-  shift
-  echo "=> $message"
-  echo "==> Running: $*"
-  $*
+# NOTE: these and other functions were copied from toolchain-creator.sh
+Banner() {
+  echo "######################################################################"
+  echo "$@"
+  echo "######################################################################"
 }
 
-runAndLog() {
-  local message="$1"
-  local log_file="$2"
+
+SubBanner() {
+  echo "......................................................................"
+  echo "$@"
+  echo "......................................................................"
+}
+
+
+# Use this when not a lot of output is expected
+Run() {
+  local message=$1
+  shift
+  SubBanner "${message}"
+  echo "COMMMAND: $@"
+  "$@" || {
+    echo
+    Banner "ERROR: $@"
+    exit -1
+  }
+}
+
+
+RunWithLog() {
+  local message=$1
+  local log=$2
   shift 2
-  echo "=> $message; log in $log_file"
-  echo "==> Running: $*"
-  # Pop-up a terminal with the output of the current command?
-  # e.g.: xterm -e /bin/bash -c "$* >| tee $log_file"
-  $* &> $log_file
-  if [[ $? != 0 ]]; then
-    echo "Error occurred: see most recent log file for details."
-    exit
-  fi
+  SubBanner "${message}"
+  echo "LOGFILE: ${log}"
+  echo "COMMMAND: $@"
+  "$@" > ${log} 2>&1 || {
+    cat ${log}
+    echo
+    Banner "ERROR"
+    echo "LOGFILE: ${log}"
+    echo "COMMMAND: $@"
+    exit -1
+  }
 }
 
 buildLLVM() {
+  Banner "buildLLVM"
   # Unpack LLVM tarball; should create the directory "llvm".
   cd ${SRC_ROOT}
-  runCommand "Unpacking LLVM" tar jxf ${LLVM_PKG_PATH}/${LLVM_PKG}
+  Run "Unpacking LLVM" tar jxf ${LLVM_PKG_PATH}/${LLVM_PKG}
 
   # Configure, build, and install LLVM.
   createDir ${LLVM_OBJ_DIR}
   cd ${LLVM_OBJ_DIR}
-  runAndLog "Configuring LLVM" ${LLVM_OBJ_DIR}/llvm-configure.log \
+  RunWithLog "Configuring LLVM" ${LLVM_OBJ_DIR}/llvm-configure.log \
       ${LLVM_SRC_DIR}/configure \
       --disable-jit \
       --enable-optimized \
       --prefix=${LLVM_INSTALL_DIR} \
       --target=${CROSS_TARGET} \
       --with-llvmgccdir=${LLVMGCC_INSTALL_DIR}
-  runAndLog "Building LLVM" ${LLVM_OBJ_DIR}/llvm-build.log \
+
+  RunWithLog "Building LLVM" ${LLVM_OBJ_DIR}/llvm-build.log \
       make ${MAKE_OPTS}
 }
 
 installLLVMGCC() {
+  Banner "installLLVMGCC"
   # Unpack LLVM-GCC tarball; should create the directory "llvm-gcc-4.2".
   cd ${SRC_ROOT}
-  runCommand "Unpacking LLVM-GCC" tar jxf ${LLVM_PKG_PATH}/${LLVMGCC_PKG}
 
-  runCommand "Patching libgcc sources" \
+  Run "Unpacking LLVM-GCC" \
+    tar jxf ${LLVM_PKG_PATH}/${LLVMGCC_PKG}
+
+  Run "Patching libgcc sources" \
     patch ${LLVMGCC_SRC_DIR}/gcc/config/arm/lib1funcs.asm \
-          ${PATCH_ROOT}/libgcc-arm-lib1funcs.patch
+    ${PATCH_ROOT}/libgcc-arm-lib1funcs.patch
 
   # Configure, build, and install LLVM-GCC.
   createDir ${LLVMGCC_OBJ_DIR}
   cd ${LLVMGCC_OBJ_DIR}
-  runAndLog "Configuring LLVM-GCC" ${LLVMGCC_OBJ_DIR}/llvmgcc-configure.log \
+  RunWithLog "Configuring LLVM-GCC" ${LLVMGCC_OBJ_DIR}/llvmgcc-configure.log \
       ${LLVMGCC_SRC_DIR}/configure \
       --enable-languages=c,c++ \
       --enable-llvm=${LLVM_INSTALL_DIR} \
@@ -140,14 +165,14 @@ installLLVMGCC() {
       --with-ld=${CROSS_TARGET_LD} \
       --with-sysroot=${SYSROOT}
   # LOCALMOD: this envvar dance forces use of our compiler driver.
-  runAndLog "Building LLVM-GCC" ${LLVMGCC_OBJ_DIR}/llvmgcc-build.log \
+  RunWithLog "Building LLVM-GCC" ${LLVMGCC_OBJ_DIR}/llvmgcc-build.log \
       make CC_FOR_TARGET=llvm-fake-sfigcc CXX_FOR_TARGET=llvm-fake-sfig++ \
            GCC_FOR_TARGET=llvm-fake-sfigcc CFLAGS=-O2
 
   # LOCALMOD: the full set of C/C++ compiler envvars isn't propagated into the
   # libstdc++ build, so we get to do it all over again.
   cd arm-none-linux-gnueabi/libstdc++-v3
-  runAndLog "Configuring libstdc++" ${LLVMGCC_OBJ_DIR}/libstdc++-configure.log \
+  RunWithLog "Configuring libstdc++" ${LLVMGCC_OBJ_DIR}/libstdc++-configure.log \
       ${LLVMGCC_SRC_DIR}/libstdc++-v3/configure \
       --host=arm-none-linux-gnueabi \
       --target=arm-none-linux-gnueabi \
@@ -164,10 +189,11 @@ installLLVMGCC() {
       --program-transform-name='s,^,llvm-,' \
       --with-target-subdir=arm-none-linux-gnueabi \
       --srcdir=${LLVMGCC_SRC_DIR}/libstdc++-v3
-  runAndLog "Building libstdc++" ${LLVMGCC_OBJ_DIR}/libstdc++-build.log \
+
+  RunWithLog "Building libstdc++" ${LLVMGCC_OBJ_DIR}/libstdc++-build.log \
       make CC=llvm-fake-sfigcc CXX=llvm-fake-sfig++ CFLAGS=-O2
 
-  # Remove any previous versions to ensure we install
+  SubBanner "Remove any previous versions to ensure we install"
   cd /usr/local/crosstool-untrusted/
   local LIBDIR="arm-none-linux-gnueabi/llvm-gcc-4.2/"
   rm ${LIBDIR}/arm-none-linux-gnueabi/lib/libstdc++{.a,.so,.la,.so.6.0.9,.so.6}
@@ -175,7 +201,7 @@ installLLVMGCC() {
   rm ${LIBDIR}/lib/gcc/arm-none-linux-gnueabi/4.2.1/libgcc{_eh,}.a
   cd -
   cd ../..
-  runAndLog "Installing phase2 gcc output" ${LLVMGCC_OBJ_DIR}/install.log \
+  RunWithLog "Installing phase2 gcc output" ${LLVMGCC_OBJ_DIR}/install.log \
       make install
 }
 
