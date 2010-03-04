@@ -47,6 +47,8 @@ void CloseAllChromeProcesses() {
           (GetLastError() == ERROR_TIMEOUT)) {
         base::CleanupProcesses(installer_util::kChromeExe, 0,
                                ResultCodes::HUNG, NULL);
+        base::CleanupProcesses(installer_util::kNaClExe, 0,
+                               ResultCodes::HUNG, NULL);
         return;
       }
     }
@@ -56,6 +58,8 @@ void CloseAllChromeProcesses() {
   // chrome.exe. This check is just in case Chrome is ignoring WM_CLOSE
   // messages.
   base::CleanupProcesses(installer_util::kChromeExe, 15000,
+                         ResultCodes::HUNG, NULL);
+  base::CleanupProcesses(installer_util::kNaClExe, 15000,
                          ResultCodes::HUNG, NULL);
 }
 

@@ -87,6 +87,7 @@ extern const wchar_t kInstallUserDataDir[];
 extern const wchar_t kChromeExe[];
 extern const wchar_t kChromeOldExe[];
 extern const wchar_t kChromeNewExe[];
+extern const wchar_t kNaClExe[];
 extern const wchar_t kChromeDll[];
 extern const wchar_t kChromeNaCl64Dll[];
 extern const wchar_t kChromeFrameDll[];

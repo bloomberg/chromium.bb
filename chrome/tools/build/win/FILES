@@ -2,7 +2,9 @@ avcodec-52.dll
 avformat-52.dll
 avutil-50.dll
 chrome.exe
+nacl64.exe
 chrome.dll
+nacl64.dll
 crash_service.exe
 First Run
 gears.dll

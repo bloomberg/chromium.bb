@@ -120,6 +120,7 @@ const wchar_t kInstallUserDataDir[] = L"User Data";
 const wchar_t kChromeExe[] = L"chrome.exe";
 const wchar_t kChromeOldExe[] = L"old_chrome.exe";
 const wchar_t kChromeNewExe[] = L"new_chrome.exe";
+const wchar_t kNaClExe[] = L"nacl64.exe";
 const wchar_t kChromeDll[] = L"chrome.dll";
 const wchar_t kChromeNaCl64Dll[] = L"nacl64.dll";
 const wchar_t kChromeFrameDll[] = L"npchrome_frame.dll";

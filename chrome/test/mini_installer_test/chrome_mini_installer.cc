@@ -209,6 +209,7 @@ void ChromeMiniInstaller::Repair(
     ChromeMiniInstaller::RepairChrome repair_type) {
   InstallFullInstaller(false);
   MiniInstallerTestUtil::CloseProcesses(installer_util::kChromeExe);
+  MiniInstallerTestUtil::CloseProcesses(installer_util::kNaClExe);
   if (repair_type == ChromeMiniInstaller::VERSION_FOLDER) {
     DeleteFolder(L"version_folder");
     printf("Deleted folder. Now trying to launch chrome\n");
@@ -248,6 +249,7 @@ void ChromeMiniInstaller::UnInstall() {
   if (is_chrome_frame_)
     MiniInstallerTestUtil::CloseProcesses(L"IEXPLORE.EXE");
   MiniInstallerTestUtil::CloseProcesses(installer_util::kChromeExe);
+  MiniInstallerTestUtil::CloseProcesses(installer_util::kNaClExe);
   std::wstring uninstall_path = GetUninstallPath();
   if (uninstall_path == L"") {
     printf("\n %ls install is in a weird state. Cleaning the machine...\n",
@@ -340,6 +342,10 @@ bool ChromeMiniInstaller::CloseChromeBrowser() {
   }
   if (base::GetProcessCount(installer_util::kChromeExe, NULL) > 0) {
     printf("Chrome.exe is still running even after closing all windows\n");
+    return false;
+  }
+  if (base::GetProcessCount(installer_util::kNaClExe, NULL) > 0) {
+    printf("NaCl.exe is still running even after closing all windows\n");
     return false;
   }
   return true;
