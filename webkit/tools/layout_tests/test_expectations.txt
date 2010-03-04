@@ -203,6 +203,9 @@ WONTFIX SKIP : webarchive/adopt-attribute-styled-body-webarchive.html = FAIL
 WONTFIX SKIP : webarchive/adopt-attribute-styled-node-webarchive.html = FAIL
 WONTFIX SKIP : webarchive/adopt-inline-styled-node-webarchive.html = FAIL
 
+// Chrome does not support Java LiveConnect.
+WONTFIX SKIP : java/lc3 = TEXT
+
 // -----------------------------------------------------------------
 // WONTFIX TESTS
 // -----------------------------------------------------------------
