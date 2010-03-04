@@ -298,6 +298,7 @@ class ChromeTests:
     cmd = self._DefaultCommand("webkit")
     cmd.append("--trace_children")
     cmd.append("--indirect")
+    cmd.append("--ignore_exit_code")
     # Now build script_cmd, the run_webkits_tests.py commandline
     # Store each chunk in its own directory so that we can find the data later
     chunk_dir = os.path.join("layout", "chunk_%05d" % chunk_num)

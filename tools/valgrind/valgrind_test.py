@@ -84,6 +84,10 @@ class ValgrindTool(object):
     self._parser.add_option("", "--nocleanup_on_exit", action="store_true",
                             default=False,
                             help="don't delete directory with logs on exit")
+    self._parser.add_option("", "--ignore_exit_code", action="store_true",
+                            default=False,
+                            help="ignore exit code of the test "
+                                 "(e.g. test failures)")
     self.ExtendOptionParser(self._parser)
     self._parser.description = __doc__
 
@@ -124,6 +128,7 @@ class ValgrindTool(object):
     self._suppressions = self._options.suppressions
     self._source_dir = self._options.source_dir
     self._nocleanup_on_exit = self._options.nocleanup_on_exit
+    self._ignore_exit_code = self._options.ignore_exit_code
     if self._options.gtest_filter != "":
       self._args.append("--gtest_filter=%s" % self._options.gtest_filter)
     if self._options.gtest_repeat:
@@ -318,7 +323,7 @@ class ValgrindTool(object):
       common.RunSubprocess([os.environ.get('WINESERVER'), '-k'])
     return True
 
-  def RunTestsAndAnalyze(self, check_sanity=False):
+  def RunTestsAndAnalyze(self, check_sanity):
     self.PrepareForTest()
     exec_retcode = self.Execute()
     analyze_retcode = self.Analyze(check_sanity)
@@ -328,10 +333,17 @@ class ValgrindTool(object):
       return analyze_retcode
 
     if exec_retcode:
-      logging.error("Test Execution failed.")
-      return exec_retcode
+      if self._ignore_exit_code:
+        logging.info("Test execution failed, but the exit code is ignored.")
+      else:
+        logging.error("Test execution failed.")
+        return exec_retcode
+    else:
+      logging.info("Test execution completed successfully.")
 
-    logging.info("Execution and analysis completed successfully.")
+    if not analyze_retcode:
+      logging.info("Analysis completed successfully.")
+
     return 0
 
   def CreateBrowserWrapper(self, command):
@@ -351,7 +363,7 @@ class ValgrindTool(object):
     os.putenv("BROWSER_WRAPPER", indirect_fname)
     logging.info('export BROWSER_WRAPPER=' + indirect_fname)
 
-  def Main(self, args, check_sanity=False):
+  def Main(self, args, check_sanity):
     '''Call this to run through the whole process: Setup, Execute, Analyze'''
     start = datetime.datetime.now()
     retcode = -1
