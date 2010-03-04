@@ -43,7 +43,7 @@ int __NaClSrpcDebugPrintCheckEnv() {
 /*
  * Get the printable form of an error code.
  */
-char* NaClSrpcErrorString(NaClSrpcError error_code) {
+const char* NaClSrpcErrorString(NaClSrpcError error_code) {
   switch (error_code) {
    case NACL_SRPC_RESULT_OK:
      return "No error";

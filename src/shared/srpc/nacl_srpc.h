@@ -106,7 +106,7 @@ typedef enum NaClSrpcResultCodes {
  *  @return If error_val is valid, returns a string.  Otherwise returns the
  *  string "Unrecognized NaClSrpcError value"
  */
-extern char* NaClSrpcErrorString(NaClSrpcError error_val);
+extern const char* NaClSrpcErrorString(NaClSrpcError error_val);
 
 /**
  * Type tag values for NaClSrpcArg unions.

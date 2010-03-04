@@ -54,7 +54,7 @@
 bool bool_value;
 double double_value;
 pthread_t pthread_t_value;
-char* char_ptr_value;
+const char* char_ptr_value;
 char char_array_value[128];
 
 extern "C" {
