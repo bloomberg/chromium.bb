@@ -1172,8 +1172,7 @@ void RenderView::UpdateURL(WebFrame* frame) {
   }
 
   GetRedirectChain(ds, &params.redirects);
-  params.should_update_history = !ds->hasUnreachableURL() &&
-      !response.isMultipartPayload();
+  params.should_update_history = !ds->hasUnreachableURL();
 
   params.searchable_form_url = navigation_state->searchable_form_url();
   params.searchable_form_encoding =

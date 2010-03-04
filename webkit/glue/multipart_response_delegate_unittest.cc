@@ -603,35 +603,4 @@ TEST(MultipartResponseTest, MultipartContentRangesTest) {
   EXPECT_EQ(result, false);
 }
 
-TEST(MultipartResponseTest, MultipartPayloadSet) {
-  WebURLResponse response;
-  response.initialize();
-  response.setMIMEType(WebString::fromUTF8("multipart/x-mixed-replace"));
-  MockWebURLLoaderClient client;
-  MultipartResponseDelegate delegate(&client, NULL, response, "bound");
-
-  string data(
-      "--bound\n"
-      "Content-type: text/plain\n\n"
-      "response data\n"
-      "--bound\n");
-  delegate.OnReceivedData(data.c_str(), static_cast<int>(data.length()));
-  EXPECT_EQ(1,
-            client.received_response_);
-  EXPECT_EQ(string("response data\n"),
-            client.data_);
-  EXPECT_EQ(false, client.response_.isMultipartPayload());
-
-  string data2(
-      "Content-type: text/plain\n\n"
-      "response data2\n"
-      "--bound\n");
-  delegate.OnReceivedData(data2.c_str(), static_cast<int>(data2.length()));
-  EXPECT_EQ(2,
-            client.received_response_);
-  EXPECT_EQ(string("response data2\n"),
-            client.data_);
-  EXPECT_EQ(true, client.response_.isMultipartPayload());
-}
-
 }  // namespace

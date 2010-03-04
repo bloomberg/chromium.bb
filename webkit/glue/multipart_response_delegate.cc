@@ -64,8 +64,7 @@ MultipartResponseDelegate::MultipartResponseDelegate(
       boundary_("--"),
       first_received_data_(true),
       processing_headers_(false),
-      stop_sending_(false),
-      has_sent_first_response_(false) {
+      stop_sending_(false) {
   // Some servers report a boundary prefixed with "--".  See bug 5786.
   if (StartsWithASCII(boundary, "--", true)) {
     boundary_.assign(boundary);
@@ -228,12 +227,6 @@ bool MultipartResponseDelegate::ParseHeaders() {
                                   WebString::fromUTF8(value));
     }
   }
-  // To avoid recording every multipart load as a separate visit in
-  // the history database, we want to keep track of whether the response
-  // is part of a multipart payload.  We do want to record the first visit,
-  // so we only set isMultipartPayload to true after the first visit.
-  response.setIsMultipartPayload(has_sent_first_response_);
-  has_sent_first_response_ = true;
   // Send the response!
   client_->didReceiveResponse(loader_, response);
 

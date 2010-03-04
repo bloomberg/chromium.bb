@@ -130,9 +130,6 @@ class MultipartResponseDelegate {
   // processing AddData requests.
   bool stop_sending_;
 
-  // true after we've sent our first response to the WebURLLoaderClient.
-  bool has_sent_first_response_;
-
   DISALLOW_COPY_AND_ASSIGN(MultipartResponseDelegate);
 };
 
