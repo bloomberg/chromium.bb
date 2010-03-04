@@ -33,6 +33,12 @@ void AeroTooltipManager::OnMouse(UINT u_msg, WPARAM w_param, LPARAM l_param) {
 
   if (u_msg == WM_MOUSEMOVE || u_msg == WM_NCMOUSEMOVE) {
     gfx::Point mouse_pos(l_param);
+    if (u_msg == WM_NCMOUSEMOVE) {
+      // NC message coordinates are in screen coordinates.
+      POINT temp = mouse_pos.ToPOINT();
+      ::MapWindowPoints(HWND_DESKTOP, GetParent(), &temp, 1);
+      mouse_pos.SetPoint(temp.x, temp.y);
+    }
     if (last_mouse_x_ != mouse_pos.x() || last_mouse_y_ != mouse_pos.y()) {
       last_mouse_x_ = mouse_pos.x();
       last_mouse_y_ = mouse_pos.y();
