@@ -59,7 +59,11 @@ class WorkerTest : public UILayoutTest {
     // The 1 is for the browser process.
     int number_of_processes = 1 + workers +
         (UITest::in_process_renderer() ? 0 : tabs);
-#if defined(OS_LINUX)
+#if defined(OS_CHROMEOS)
+    // On Chromeos, we also have a zygote process, a sandbox host process
+    // and app launcher's renderer.
+    number_of_processes += 3;
+#elif defined(OS_LINUX)
     // On Linux, we also have a zygote process and a sandbox host process.
     number_of_processes += 2;
 #endif
