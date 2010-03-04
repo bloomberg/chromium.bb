@@ -102,6 +102,12 @@ views::View* CookiePromptView::GetContentsView() {
   return this;
 }
 
+bool CookiePromptView::Accept() {
+  parent_->AllowSiteData(remember_radio_->checked(), session_expire_);
+  signaled_ = true;
+  return true;
+}
+
 // CookieInfoViewDelegate overrides:
 void CookiePromptView::ModifyExpireDate(bool session_expire) {
   session_expire_ = session_expire;
@@ -114,8 +120,7 @@ void CookiePromptView::ModifyExpireDate(bool session_expire) {
 void CookiePromptView::ButtonPressed(views::Button* sender,
                                      const views::Event& event) {
   if (sender == allow_button_) {
-    parent_->AllowSiteData(remember_radio_->checked(), session_expire_);
-    signaled_ = true;
+    Accept();
     GetWindow()->Close();
   } else if (sender == block_button_) {
     parent_->BlockSiteData(remember_radio_->checked());

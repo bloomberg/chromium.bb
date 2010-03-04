@@ -234,6 +234,18 @@ int BrowserFrameWin::GetShowState() const {
   return browser_view_->GetShowState();
 }
 
+void BrowserFrameWin::Activate() {
+  // When running under remote desktop, if the remote desktop client is not
+  // active on the users desktop, then none of the windows contained in the
+  // remote desktop will be activated.  However, WindowWin::Activate will still
+  // bring this browser window to the foreground.  We explicitly set ourselves
+  // as the last active browser window to ensure that we get treated as such by
+  // the rest of Chrome.
+  BrowserList::SetLastActive(browser_view_->browser());
+
+  WindowWin::Activate();
+}
+
 views::NonClientFrameView* BrowserFrameWin::CreateFrameViewForWindow() {
   if (AlwaysUseNativeFrame())
     browser_frame_view_ = new GlassBrowserFrameView(this, browser_view_);

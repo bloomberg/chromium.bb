@@ -12,14 +12,6 @@
 
 // TODO(zelidrag): Make this work on Linux (views).
 
-int CookiePromptModalDialog::GetDialogButtons() {
-#if defined(OS_WIN)
-  return dialog_->GetDialogButtons();
-#else
-  return 0;
-#endif
-}
-
 void CookiePromptModalDialog::AcceptWindow() {
 #if defined(OS_WIN)
   views::DialogClientView* client_view =

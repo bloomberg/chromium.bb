@@ -124,10 +124,6 @@ void CookiePromptModalDialog::CreateAndShowDialog() {
 }
 
 // The functions below are used by the automation framework.
-int CookiePromptModalDialog::GetDialogButtons() {
-  NOTIMPLEMENTED();
-  return 0;
-}
 
 void CookiePromptModalDialog::AcceptWindow() {
   NOTIMPLEMENTED();

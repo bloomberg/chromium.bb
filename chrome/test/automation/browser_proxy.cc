@@ -395,6 +395,25 @@ bool BrowserProxy::SetBooleanPreference(const std::wstring& name,
   return result;
 }
 
+bool BrowserProxy::SetDefaultContentSetting(ContentSettingsType content_type,
+                                            ContentSetting setting) {
+  return SetContentSetting(std::string(), content_type, setting);
+}
+
+bool BrowserProxy::SetContentSetting(const std::string& host,
+                                     ContentSettingsType content_type,
+                                     ContentSetting setting) {
+  if (!is_valid())
+    return false;
+
+  bool result = false;
+
+  sender_->Send(new AutomationMsg_SetContentSetting(0, handle_, host,
+                                                    content_type, setting,
+                                                    &result));
+  return result;
+}
+
 bool BrowserProxy::TerminateSession() {
   if (!is_valid())
     return false;

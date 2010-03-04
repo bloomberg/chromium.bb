@@ -15,6 +15,7 @@
 #include "base/gfx/point.h"
 #include "base/gfx/rect.h"
 #include "base/string16.h"
+#include "chrome/common/content_settings.h"
 #include "chrome/common/navigation_types.h"
 #include "chrome/test/automation/autocomplete_edit_proxy.h"
 #include "googleurl/src/gurl.h"
@@ -1211,5 +1212,14 @@ IPC_BEGIN_MESSAGES(Automation)
                       GURL /* url */,
                       std::string /* cookies */,
                       int /* opaque_cookie_id */)
+
+  // If the given host is empty, then the default content settings are
+  // modified.
+  IPC_SYNC_MESSAGE_ROUTED4_1(AutomationMsg_SetContentSetting,
+                             int /* browser handle */,
+                             std::string /* host */,
+                             ContentSettingsType /* content type */,
+                             ContentSetting /* setting */,
+                             bool /* success */)
 
 IPC_END_MESSAGES(Automation)

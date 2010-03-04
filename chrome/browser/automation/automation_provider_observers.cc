@@ -118,7 +118,8 @@ NavigationNotificationObserver::NavigationNotificationObserver(
     NavigationController* controller,
     AutomationProvider* automation,
     IPC::Message* reply_message,
-    int number_of_navigations)
+    int number_of_navigations,
+    bool include_current_navigation)
   : automation_(automation),
     reply_message_(reply_message),
     controller_(controller),
@@ -131,6 +132,9 @@ NavigationNotificationObserver::NavigationNotificationObserver(
   registrar_.Add(this, NotificationType::LOAD_STOP, source);
   registrar_.Add(this, NotificationType::AUTH_NEEDED, source);
   registrar_.Add(this, NotificationType::AUTH_SUPPLIED, source);
+
+  if (include_current_navigation && controller->tab_contents()->is_loading())
+    navigation_started_ = true;
 }
 
 NavigationNotificationObserver::~NavigationNotificationObserver() {
@@ -241,7 +245,8 @@ void TabAppendedNotificationObserver::ObserveTab(
     return;
   }
 
-  automation_->AddNavigationStatusListener(controller, reply_message_, 1);
+  automation_->AddNavigationStatusListener(controller, reply_message_, 1,
+                                           false);
 }
 
 TabClosedNotificationObserver::TabClosedNotificationObserver(
@@ -447,6 +452,7 @@ void AppModalDialogShownObserver::Observe(
     NotificationType type, const NotificationSource& source,
     const NotificationDetails& details) {
   DCHECK(type == NotificationType::APP_MODAL_DIALOG_SHOWN);
+
   AutomationMsg_WaitForAppModalDialogToBeShown::WriteReplyParams(
       reply_message_, true);
   automation_->Send(reply_message_);
@@ -506,7 +512,7 @@ bool ExecuteBrowserCommandObserver::CreateAndRegisterObserver(
     case IDC_RELOAD: {
       automation->AddNavigationStatusListener(
           &browser->GetSelectedTabContents()->controller(),
-          reply_message, 1);
+          reply_message, 1, false);
       break;
     }
     default: {

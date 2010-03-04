@@ -27,10 +27,6 @@ void CookiePromptModalDialog::CreateAndShowDialog() {
     gtk_widget_set_size_request(dialog_, width, -1);
 }
 
-int CookiePromptModalDialog::GetDialogButtons() {
-  return 0;
-}
-
 void CookiePromptModalDialog::AcceptWindow() {
   HandleDialogResponse(GTK_DIALOG(dialog_), GTK_RESPONSE_ACCEPT);
 }

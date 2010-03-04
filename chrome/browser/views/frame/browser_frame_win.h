@@ -67,6 +67,7 @@ class BrowserFrameWin : public BrowserFrame, public views::WindowWin {
 
   // Overridden from views::Window:
   virtual int GetShowState() const;
+  virtual void Activate();
   virtual bool IsAppWindow() const { return true; }
   virtual views::NonClientFrameView* CreateFrameViewForWindow();
   virtual void UpdateFrameAfterFrameChange();

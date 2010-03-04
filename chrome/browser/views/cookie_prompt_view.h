@@ -61,6 +61,7 @@ class CookiePromptView : public views::View,
   virtual void WindowClosing();
   virtual views::View* GetContentsView();
   virtual bool IsModal() const { return true; }
+  virtual bool Accept();
 
   // views::ButtonListener overrides.
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);

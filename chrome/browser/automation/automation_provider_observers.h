@@ -91,7 +91,8 @@ class NavigationNotificationObserver : public NotificationObserver {
   NavigationNotificationObserver(NavigationController* controller,
                                  AutomationProvider* automation,
                                  IPC::Message* reply_message,
-                                 int number_of_navigations);
+                                 int number_of_navigations,
+                                 bool include_current_navigation);
   ~NavigationNotificationObserver();
 
   virtual void Observe(NotificationType type,

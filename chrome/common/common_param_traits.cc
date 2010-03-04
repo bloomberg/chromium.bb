@@ -181,20 +181,15 @@ void ParamTraits<gfx::Size>::Log(const gfx::Size& p, std::wstring* l) {
 
 void ParamTraits<ContentSettings>::Write(
     Message* m, const ContentSettings& settings) {
-  for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i)
-    WriteParam(m, static_cast<int>(settings.settings[i]));
+  for (size_t i = 0; i < arraysize(settings.settings); ++i)
+    WriteParam(m, settings.settings[i]);
 }
 
 bool ParamTraits<ContentSettings>::Read(
     const Message* m, void** iter, ContentSettings* r) {
-  for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
-    int local_setting;
-    if (!m->ReadInt(iter, &local_setting))
+  for (size_t i = 0; i < arraysize(r->settings); ++i) {
+    if (!ReadParam(m, iter, &r->settings[i]))
       return false;
-    if (local_setting < 0 ||
-        local_setting >= static_cast<int>(CONTENT_SETTING_NUM_SETTINGS))
-      return false;
-    r->settings[i] = static_cast<ContentSetting>(local_setting);
   }
   return true;
 }

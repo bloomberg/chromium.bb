@@ -14,6 +14,7 @@
 #include <string>
 
 #include "chrome/browser/browser.h"
+#include "chrome/common/content_settings.h"
 #include "chrome/test/automation/automation_handle_tracker.h"
 
 class GURL;
@@ -199,6 +200,15 @@ class BrowserProxy : public AutomationResourceProxy {
 
   // Sets the boolean value of the specified preference.
   bool SetBooleanPreference(const std::wstring& name, bool value);
+
+  // Sets default content settings.
+  bool SetDefaultContentSetting(ContentSettingsType content_type,
+                                ContentSetting setting);
+
+  // Sets content settings for a particular host (overriding the default).
+  bool SetContentSetting(const std::string& host,
+                         ContentSettingsType content_type,
+                         ContentSetting setting);
 
   // Simulates a termination the browser session (as if the user logged off the
   // mahine).

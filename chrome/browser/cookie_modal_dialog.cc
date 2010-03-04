@@ -4,6 +4,7 @@
 
 #include "chrome/browser/cookie_modal_dialog.h"
 
+#include "app/message_box_flags.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -105,4 +106,10 @@ void CookiePromptModalDialog::BlockSiteData(bool remember) {
 // static
 void CookiePromptModalDialog::RegisterPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kCookiePromptExpanded, false);
+}
+
+int CookiePromptModalDialog::GetDialogButtons() {
+  // Enable the automation interface to accept/dismiss this dialog.
+  return MessageBoxFlags::DIALOGBUTTON_OK |
+         MessageBoxFlags::DIALOGBUTTON_CANCEL;
 }
