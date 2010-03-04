@@ -795,16 +795,6 @@ const char kChromeosFrame[]                 = "chromeos-frame";
 const char kUseNSSForSSL[]                  = "use-nss-for-ssl";
 #endif
 
-#if defined(OS_LINUX)
-// A temporary switch before we implement the client certificate selection UI.
-// When an SSL server requests client authentication, select a client
-// certificate automatically.
-// WARNING: This switch has privacy issues because it reveals the user's
-// identity to any server that requests a client certificate without the
-// user's consent.
-const char kAutoSSLClientAuth[]             = "auto-ssl-client-auth";
-#endif
-
 #if defined(OS_POSIX)
 // Bypass the error dialog when the profile lock couldn't be attained.
 // A flag, generated internally by Chrome for renderer and other helper process

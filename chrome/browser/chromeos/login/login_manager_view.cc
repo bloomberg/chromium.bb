@@ -321,13 +321,6 @@ void LoginManagerView::SetupSession(const std::string& username) {
   if (observer_) {
     observer_->OnExit(chromeos::ScreenObserver::LOGIN_SIGN_IN_SELECTED);
   }
-  if (username.find("@google.com") != std::string::npos) {
-    // This isn't thread-safe.  However, the login window is specifically
-    // supposed to be run in a blocking fashion, before any other threads are
-    // created by the initial browser process.
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kAutoSSLClientAuth);
-  }
   if (chromeos::LoginLibrary::EnsureLoaded())
     chromeos::LoginLibrary::Get()->StartSession(username, "");
 }

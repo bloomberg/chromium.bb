@@ -19,10 +19,7 @@
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
- *   Ian McGreer <mcgreer@netscape.com>
- *   Javier Delgadillo <javi@netscape.com>
- *   Kai Engert <kengert@redhat.com>
- *   Jesper Kristensen <mail@jesperkristensen.dk>
+ *  John Gardiner Myers <jgmyers@speakeasy.net>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -38,41 +35,19 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-#include "chrome/third_party/mozilla_security_manager/nsNSSCertificate.h"
+#ifndef CHROME_THIRD_PARTY_MOZILLA_SECURITY_MANAGER_NSUSAGEARRAYHELPER_H_
+#define CHROME_THIRD_PARTY_MOZILLA_SECURITY_MANAGER_NSUSAGEARRAYHELPER_H_
 
-#include <pk11func.h>
+#include <cert.h>
 
-#include "app/l10n_util.h"
-#include "grit/generated_resources.h"
+#include <string>
+#include <vector>
 
 namespace mozilla_security_manager {
 
-std::string GetCertTitle(CERTCertificate* cert) {
-  std::string rv;
-  if (cert->nickname) {
-    rv = cert->nickname;
-  } else {
-    char* cn = CERT_GetCommonName(&cert->subject);
-    if (cn) {
-      rv = cn;
-      PORT_Free(cn);
-    } else if (cert->subjectName) {
-      rv = cert->subjectName;
-    } else if (cert->emailAddr) {
-      rv = cert->emailAddr;
-    }
-  }
-  // TODO(mattm): Should we return something other than an empty string when all
-  // the checks fail?
-  return rv;
-}
-
-std::string GetCertTokenName(CERTCertificate* cert) {
-  std::string token;
-  if (cert->slot) {
-    token = PK11_GetTokenName(cert->slot);
-  }
-  return token;
-}
+// Based on nsUsageArrayHelper::GetUsagesArray.
+void GetCertUsageStrings(CERTCertificate* cert, std::vector<std::string>* out);
 
 }  // namespace mozilla_security_manager
+
+#endif  // CHROME_THIRD_PARTY_MOZILLA_SECURITY_MANAGER_NSUSAGEARRAYHELPER_H_

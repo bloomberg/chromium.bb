@@ -88,6 +88,7 @@ std::string ProcessAuthInfoAccess(SECItem* extension_data);
 std::string ProcessIA5String(SECItem* extension_data);
 std::string ProcessBMPString(SECItem* extension_data);
 std::string ProcessNSCertTypeExtension(SECItem* extension_data);
+std::string ProcessKeyUsageBitString(SECItem* bitstring, char sep);
 std::string ProcessKeyUsageExtension(SECItem* extension_data);
 std::string ProcessExtKeyUsage(SECItem* extension_data);
 std::string ProcessExtensionData(SECOidTag oid_tag, SECItem* extension_data);

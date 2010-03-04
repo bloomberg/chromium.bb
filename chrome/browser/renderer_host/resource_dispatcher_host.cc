@@ -969,14 +969,6 @@ void ResourceDispatcherHost::OnCertificateRequested(
     net::SSLCertRequestInfo* cert_request_info) {
   DCHECK(request);
 
-#if defined(OS_LINUX)
-  bool select_first_cert = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kAutoSSLClientAuth);
-  net::X509Certificate* cert =
-      select_first_cert && !cert_request_info->client_certs.empty() ?
-      cert_request_info->client_certs[0] : NULL;
-  request->ContinueWithCertificate(cert);
-#else
   if (cert_request_info->client_certs.empty()) {
     // No need to query the user if there are no certs to choose from.
     request->ContinueWithCertificate(NULL);
@@ -989,7 +981,6 @@ void ResourceDispatcherHost::OnCertificateRequested(
   info->set_ssl_client_auth_handler(
       new SSLClientAuthHandler(request, cert_request_info));
   info->ssl_client_auth_handler()->SelectCertificate();
-#endif
 }
 
 void ResourceDispatcherHost::OnSSLCertificateError(

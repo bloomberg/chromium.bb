@@ -233,10 +233,6 @@ extern const char kChromeosFrame[];
 extern const char kUseNSSForSSL[];
 #endif
 
-#if defined(OS_LINUX)
-extern const char kAutoSSLClientAuth[];
-#endif
-
 #if defined(OS_POSIX)
 extern const char kEnableCrashReporter[];
 extern const char kNoProcessSingletonDialog[];

@@ -688,13 +688,34 @@ std::string ProcessBMPString(SECItem* extension_data) {
 }
 
 struct MaskIdPair {
-  unsigned char mask;
+  unsigned int mask;
   int string_id;
 };
 
+static std::string ProcessBitField(SECItem* bitfield,
+                                   const MaskIdPair* string_map,
+                                   size_t len,
+                                   char separator) {
+  unsigned int bits = 0;
+  std::string rv;
+  // NSS bit flags like KU_DIGITAL_SIGNATURE, etc. are defined with the
+  // assumption that the bitfields have at most 8 bits.
+  if (bitfield->len)
+    bits = bitfield->data[0];
+  for (size_t i = 0; i < len; ++i) {
+    if (bits & string_map[i].mask) {
+      if (!rv.empty())
+        rv += separator;
+      rv += l10n_util::GetStringUTF8(string_map[i].string_id);
+    }
+  }
+  return rv;
+}
+
 static std::string ProcessBitStringExtension(SECItem* extension_data,
                                              const MaskIdPair* string_map,
-                                             size_t len) {
+                                             size_t len,
+                                             char separator) {
   SECItem decoded;
   decoded.type = siBuffer;
   decoded.data = NULL;
@@ -702,19 +723,13 @@ static std::string ProcessBitStringExtension(SECItem* extension_data,
   if (SEC_ASN1DecodeItem(NULL, &decoded, SEC_ASN1_GET(SEC_BitStringTemplate),
                          extension_data) != SECSuccess)
     return l10n_util::GetStringUTF8(IDS_CERT_EXTENSION_DUMP_ERROR);
-
-  std::string rv;
-  for (size_t i = 0; i < len; ++i) {
-    if (decoded.data[0] & string_map[i].mask) {
-      rv += l10n_util::GetStringUTF8(string_map[i].string_id) + '\n';
-    }
-  }
+  std::string rv = ProcessBitField(&decoded, string_map, len, separator);
   PORT_Free(decoded.data);
   return rv;
 }
 
 std::string ProcessNSCertTypeExtension(SECItem* extension_data) {
-  MaskIdPair usage_string_map[] = {
+  static const MaskIdPair usage_string_map[] = {
     {NS_CERT_TYPE_SSL_CLIENT, IDS_CERT_USAGE_SSL_CLIENT},
     {NS_CERT_TYPE_SSL_SERVER, IDS_CERT_USAGE_SSL_SERVER},
     {NS_CERT_TYPE_EMAIL, IDS_CERT_EXT_NS_CERT_TYPE_EMAIL},
@@ -724,21 +739,30 @@ std::string ProcessNSCertTypeExtension(SECItem* extension_data) {
     {NS_CERT_TYPE_OBJECT_SIGNING_CA, IDS_CERT_USAGE_OBJECT_SIGNER},
   };
   return ProcessBitStringExtension(extension_data, usage_string_map,
-                                   ARRAYSIZE_UNSAFE(usage_string_map));
+                                   ARRAYSIZE_UNSAFE(usage_string_map), '\n');
+}
+
+static const MaskIdPair key_usage_string_map[] = {
+  {KU_DIGITAL_SIGNATURE, IDS_CERT_X509_KEY_USAGE_SIGNING},
+  {KU_NON_REPUDIATION, IDS_CERT_X509_KEY_USAGE_NONREP},
+  {KU_KEY_ENCIPHERMENT, IDS_CERT_X509_KEY_USAGE_ENCIPHERMENT},
+  {KU_DATA_ENCIPHERMENT, IDS_CERT_X509_KEY_USAGE_DATA_ENCIPHERMENT},
+  {KU_KEY_AGREEMENT, IDS_CERT_X509_KEY_USAGE_KEY_AGREEMENT},
+  {KU_KEY_CERT_SIGN, IDS_CERT_X509_KEY_USAGE_CERT_SIGNER},
+  {KU_CRL_SIGN, IDS_CERT_X509_KEY_USAGE_CRL_SIGNER},
+  {KU_ENCIPHER_ONLY, IDS_CERT_X509_KEY_USAGE_ENCIPHER_ONLY},
+  // NSS is missing a flag for dechiperOnly, see:
+  // https://bugzilla.mozilla.org/show_bug.cgi?id=549952
+};
+
+std::string ProcessKeyUsageBitString(SECItem* bitstring, char sep) {
+  return ProcessBitField(bitstring, key_usage_string_map,
+                         arraysize(key_usage_string_map), sep);
 }
 
 std::string ProcessKeyUsageExtension(SECItem* extension_data) {
-  MaskIdPair usage_string_map[] = {
-    {KU_DIGITAL_SIGNATURE, IDS_CERT_X509_KEY_USAGE_SIGNING},
-    {KU_NON_REPUDIATION, IDS_CERT_X509_KEY_USAGE_NONREP},
-    {KU_KEY_ENCIPHERMENT, IDS_CERT_X509_KEY_USAGE_ENCIPHERMENT},
-    {KU_DATA_ENCIPHERMENT, IDS_CERT_X509_KEY_USAGE_DATA_ENCIPHERMENT},
-    {KU_KEY_AGREEMENT, IDS_CERT_X509_KEY_USAGE_KEY_AGREEMENT},
-    {KU_KEY_CERT_SIGN, IDS_CERT_X509_KEY_USAGE_CERT_SIGNER},
-    {KU_CRL_SIGN, IDS_CERT_X509_KEY_USAGE_CRL_SIGNER},
-  };
-  return ProcessBitStringExtension(extension_data, usage_string_map,
-                                   ARRAYSIZE_UNSAFE(usage_string_map));
+  return ProcessBitStringExtension(extension_data, key_usage_string_map,
+                                   arraysize(key_usage_string_map), '\n');
 }
 
 std::string ProcessExtKeyUsage(SECItem* extension_data) {

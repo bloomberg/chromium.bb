@@ -19,10 +19,7 @@
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
- *   Ian McGreer <mcgreer@netscape.com>
- *   Javier Delgadillo <javi@netscape.com>
- *   Kai Engert <kengert@redhat.com>
- *   Jesper Kristensen <mail@jesperkristensen.dk>
+ *  John Gardiner Myers <jgmyers@speakeasy.net>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -38,41 +35,39 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-#include "chrome/third_party/mozilla_security_manager/nsNSSCertificate.h"
-
-#include <pk11func.h>
+#include "chrome/third_party/mozilla_security_manager/nsUsageArrayHelper.h"
 
 #include "app/l10n_util.h"
 #include "grit/generated_resources.h"
 
 namespace mozilla_security_manager {
 
-std::string GetCertTitle(CERTCertificate* cert) {
-  std::string rv;
-  if (cert->nickname) {
-    rv = cert->nickname;
-  } else {
-    char* cn = CERT_GetCommonName(&cert->subject);
-    if (cn) {
-      rv = cn;
-      PORT_Free(cn);
-    } else if (cert->subjectName) {
-      rv = cert->subjectName;
-    } else if (cert->emailAddr) {
-      rv = cert->emailAddr;
+void GetCertUsageStrings(CERTCertificate* cert, std::vector<std::string>* out) {
+  SECCertificateUsage usages = 0;
+  // TODO(wtc): See if we should use X509Certificate::Verify instead.
+  if (CERT_VerifyCertificateNow(CERT_GetDefaultCertDB(), cert, PR_TRUE,
+                                certificateUsageCheckAllUsages,
+                                NULL, &usages) == SECSuccess) {
+    static const struct {
+      SECCertificateUsage usage;
+      int string_id;
+    } usage_string_map[] = {
+      {certificateUsageSSLClient, IDS_CERT_USAGE_SSL_CLIENT},
+      {certificateUsageSSLServer, IDS_CERT_USAGE_SSL_SERVER},
+      {certificateUsageSSLServerWithStepUp,
+        IDS_CERT_USAGE_SSL_SERVER_WITH_STEPUP},
+      {certificateUsageEmailSigner, IDS_CERT_USAGE_EMAIL_SIGNER},
+      {certificateUsageEmailRecipient, IDS_CERT_USAGE_EMAIL_RECEIVER},
+      {certificateUsageObjectSigner, IDS_CERT_USAGE_OBJECT_SIGNER},
+      {certificateUsageSSLCA, IDS_CERT_USAGE_SSL_CA},
+      {certificateUsageStatusResponder, IDS_CERT_USAGE_STATUS_RESPONDER},
+    };
+    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(usage_string_map); ++i) {
+      if (usages & usage_string_map[i].usage)
+        out->push_back(l10n_util::GetStringUTF8(
+            usage_string_map[i].string_id));
     }
   }
-  // TODO(mattm): Should we return something other than an empty string when all
-  // the checks fail?
-  return rv;
-}
-
-std::string GetCertTokenName(CERTCertificate* cert) {
-  std::string token;
-  if (cert->slot) {
-    token = PK11_GetTokenName(cert->slot);
-  }
-  return token;
 }
 
 }  // namespace mozilla_security_manager

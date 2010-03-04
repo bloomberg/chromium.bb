@@ -2497,6 +2497,49 @@ each locale. -->
         Unknown server certificate error
       </message>
 
+
+      <!-- Certificate selector dialog strings.  These are only used on platforms that don't have a native certificate selection dialog, such as Linux. -->
+      <message name="IDS_CERT_SELECTOR_DIALOG_TITLE" desc="Title of dialog asking user to select a certificate for SSL client certificate authentication">
+        Client Certificate Request: <ph name="REQUESTING_HOST_AND_PORT">$1<ex>pip.verisignlabs.com:443</ex></ph>
+      </message>
+      <message name="IDS_CERT_SELECTOR_SITE_DESCRIPTION_LABEL" desc="Text in the certificate selection dialog before the site">
+        This site has requested that you identify yourself with a certificate:
+      </message>
+      <message name="IDS_CERT_SELECTOR_CHOOSE_DESCRIPTION_LABEL" desc="Text in the certificate selection dialog describing the certificate selector combobox and certificate details">
+        Choose a certificate to present as identification:
+      </message>
+      <message name="IDS_CERT_SELECTOR_DETAILS_DESCRIPTION_LABEL" desc="Text in the certificate selection dialog in the 'choose a certificate' section describing the certificate details">
+        Details of selected certificate:
+      </message>
+      <message name="IDS_CERT_SELECTOR_CERT_EXPIRED" desc="In the certificate selection dialog's combobox for choosing certificates, this text will be appended to any of the user's certs which are expired.">
+        (expired)
+      </message>
+      <message name="IDS_CERT_SELECTOR_CERT_NOT_YET_VALID" desc="In the certificate selection dialog's combobox for choosing certificates, this text will be appended to any of the user's certs which are not yet valid.">
+        (not yet valid)
+      </message>
+      <message name="IDS_CERT_SUBJECTNAME_FORMAT" desc="Format for detailed certificate subject in certificate details">
+        Issued to: <ph name="NAME">$1<ex>CN=VeriSign Browser Certificate,OU=Device Identifier - r1923847</ex></ph>
+      </message>
+      <message name="IDS_CERT_ISSUERNAME_FORMAT" desc="Format for detailed certificate issuer in certificate details">
+        Issued by: <ph name="NAME">$1<ex>CN=VeriSign Device CA,O="VeriSign, Inc.",C=US</ex></ph>
+      </message>
+      <message name="IDS_CERT_VALIDITY_RANGE_FORMAT" desc="Format for showing the range of dates a certificate is valid in the certificate details">
+        Valid from <ph name="START_DATE_TIME">$1<ex>7/2/09 7:18:34 PM</ex></ph> to <ph name="END_DATE_TIME">$2<ex>7/2/10 7:28:34 PM</ex></ph>
+      </message>
+      <message name="IDS_CERT_X509_EXTENDED_KEY_USAGE_FORMAT" desc="Format for showing the usages a certificate is valid for in the certificate details">
+        Purposes: <ph name="USAGES">$1<ex>SSL Client Certificate,Email Signer Certificate</ex></ph>
+      </message>
+      <message name="IDS_CERT_X509_KEY_USAGE_FORMAT" desc="Format for showing the key usages a certificate is valid for in the certificate details">
+        Certificate Key Usage: <ph name="USAGES">$1<ex>Signing,Key Encipherment</ex></ph>
+      </message>
+      <message name="IDS_CERT_EMAIL_ADDRESSES_FORMAT" desc="Format for showing the email address(es) a certificate is associated with in the certificate details">
+        Email: <ph name="EMAIL_ADDRESSES">$1<ex>foo@example.com</ex></ph>
+      </message>
+      <message name="IDS_CERT_TOKEN_FORMAT" desc="Format for showing the location a certificate is stored">
+        Stored in: <ph name="CERT_LOCATION">$1<ex>NSS Certificate Database</ex></ph>
+      </message>
+
+
       <!-- Certificate viewer dialog strings.  These are only used on platforms that don't have a native certificate info dialog, such as Linux. -->
       <message name="IDS_CERT_INFO_DIALOG_TITLE" desc="Title of dialog displaying info about a certificate">
         Certificate Viewer: <ph name="CERTIFICATE_NAME">$1<ex>www.google.com</ex></ph>
@@ -2799,6 +2842,9 @@ each locale. -->
       </message>
       <message name="IDS_CERT_X509_KEY_USAGE_CRL_SIGNER" desc="description of certificate usage CRL Signer">
         CRL Signer
+      </message>
+      <message name="IDS_CERT_X509_KEY_USAGE_ENCIPHER_ONLY" desc="description of certificate usage Encipher Only">
+        Encipher Only
       </message>
       <message name="IDS_CERT_X509_BASIC_CONSTRAINT_IS_CA" desc="description of certificate constraint Is a Certificate Authority">
         Is a Certificate Authority

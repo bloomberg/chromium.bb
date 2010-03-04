@@ -2291,6 +2291,8 @@
             'third_party/mozilla_security_manager/nsNSSCertHelper.h',
             'third_party/mozilla_security_manager/nsNSSCertificate.cpp',
             'third_party/mozilla_security_manager/nsNSSCertificate.h',
+            'third_party/mozilla_security_manager/nsUsageArrayHelper.cpp',
+            'third_party/mozilla_security_manager/nsUsageArrayHelper.h',
           ],
           'conditions': [
             ['linux_breakpad==1', {
@@ -2733,6 +2735,8 @@
                 ['include', '^browser/gtk/cairo_cached_surface.h'],
                 ['include', '^browser/gtk/clear_browsing_data_dialog_gtk.cc'],
                 ['include', '^browser/gtk/clear_browsing_data_dialog_gtk.h'],
+                ['include', '^browser/gtk/certificate_viewer.cc'],
+                ['include', '^browser/gtk/certificate_viewer.h'],
                 ['include', '^browser/gtk/constrained_window_gtk.cc'],
                 ['include', '^browser/gtk/constrained_window_gtk.h'],
                 ['include', '^browser/gtk/download_started_animation_gtk.cc'],

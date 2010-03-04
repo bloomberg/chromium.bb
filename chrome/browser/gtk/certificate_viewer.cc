@@ -21,6 +21,7 @@
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/third_party/mozilla_security_manager/nsNSSCertHelper.h"
 #include "chrome/third_party/mozilla_security_manager/nsNSSCertificate.h"
+#include "chrome/third_party/mozilla_security_manager/nsUsageArrayHelper.h"
 #include "grit/generated_resources.h"
 
 // PSM = Mozilla's Personal Security Manager.
@@ -255,37 +256,14 @@ void CertificateViewer::InitGeneralPage() {
           l10n_util::GetStringUTF8(IDS_CERT_INFO_VERIFIED_USAGES_GROUP)),
       FALSE, FALSE, 0);
 
-  SECCertificateUsage usages = 0;
-  // TODO(wtc): See if we should use X509Certificate::Verify instead.
-  if (CERT_VerifyCertificateNow(CERT_GetDefaultCertDB(), cert, PR_TRUE,
-                                certificateUsageCheckAllUsages,
-                                NULL, &usages) == SECSuccess) {
-    // List of usages to display is borrowed from
-    // mozilla/source/security/manager/ssl/src/nsUsageArrayHelper.cpp
-    static const struct {
-      SECCertificateUsage usage;
-      int string_id;
-    } usage_string_map[] = {
-      {certificateUsageSSLClient, IDS_CERT_USAGE_SSL_CLIENT},
-      {certificateUsageSSLServer, IDS_CERT_USAGE_SSL_SERVER},
-      {certificateUsageSSLServerWithStepUp,
-        IDS_CERT_USAGE_SSL_SERVER_WITH_STEPUP},
-      {certificateUsageEmailSigner, IDS_CERT_USAGE_EMAIL_SIGNER},
-      {certificateUsageEmailRecipient, IDS_CERT_USAGE_EMAIL_RECEIVER},
-      {certificateUsageObjectSigner, IDS_CERT_USAGE_OBJECT_SIGNER},
-      {certificateUsageSSLCA, IDS_CERT_USAGE_SSL_CA},
-      {certificateUsageStatusResponder, IDS_CERT_USAGE_STATUS_RESPONDER},
-    };
-    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(usage_string_map); ++i) {
-      if (usages & usage_string_map[i].usage)
-        gtk_box_pack_start(
-            GTK_BOX(uses_vbox),
-            gtk_util::IndentWidget(gtk_util::LeftAlignMisc(gtk_label_new(
-                l10n_util::GetStringUTF8(
-                    usage_string_map[i].string_id).c_str()))),
-            FALSE, FALSE, 0);
-    }
-  }
+  std::vector<std::string> usages;
+  psm::GetCertUsageStrings(cert, &usages);
+  for (size_t i = 0; i < usages.size(); ++i)
+    gtk_box_pack_start(
+        GTK_BOX(uses_vbox),
+        gtk_util::IndentWidget(gtk_util::LeftAlignMisc(gtk_label_new(
+            usages[i].c_str()))),
+        FALSE, FALSE, 0);
 
   gtk_box_pack_start(GTK_BOX(general_page_vbox_), gtk_hseparator_new(),
                      FALSE, FALSE, 0);
