@@ -2392,3 +2392,13 @@
    fun:_ZN22ProfileSyncFactoryImpl24CreateProfileSyncServiceEv
    fun:_ZN14TestingProfile24CreateProfileSyncServiceEv
 }
+{
+   bug_37439
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEj
+   fun:_ZN3WTF13FastAllocBasenwEj
+   fun:_ZN7WebCore12V8DOMWrapper20wrapNativeNodeFilterEN2v86HandleINS1_5ValueEEE
+   fun:_ZN7WebCore16DocumentInternal26createNodeIteratorCallbackERKN2v89ArgumentsE
+   fun:_ZN2v88internal19HandleApiCallHelperILb0EEEPNS0_6ObjectENS0_99_GLOBAL__N__b_slave_webkit_rel_linux_valgrind_layout_build_src_v8_src_builtins.cc_00000000_3065E90216BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEE
+}
