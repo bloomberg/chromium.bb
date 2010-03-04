@@ -2407,3 +2407,10 @@
    fun:_ZN22ProfileSyncFactoryImpl24CreateProfileSyncServiceEv
    fun:_ZN14TestingProfile24CreateProfileSyncServiceEv
 }
+{
+    bug_37385
+    Memcheck:Leak
+    fun:_Znw*
+    fun:_ZNK28MockRenderProcessHostFactory23CreateRenderProcessHostEP7Profile
+    fun:_ZN12SiteInstance10GetProcessEv
+}
