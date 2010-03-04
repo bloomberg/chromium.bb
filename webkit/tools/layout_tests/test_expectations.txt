@@ -1001,9 +1001,6 @@ BUG10304 LINUX : svg/W3C-SVG-1.1/fonts-elem-07-b.svg = FAIL
 BUG19559 WIN LINUX : svg/W3C-SVG-1.1/pservers-grad-08-b.svg = FAIL
 BUG10304 LINUX : svg/carto.net/button.svg = FAIL
 
-// New tests. We should fix these, but they don't need to block the current release
-BUG10305 : svg/custom/use-instanceRoot-event-listeners.xhtml = FAIL
-
 // Probably need to change the test upstream to describe it better and use no
 // hard coded numbers.
 BUG19897 WIN LINUX : svg/custom/getscreenctm-in-mixed-content2.xhtml = FAIL
@@ -1211,7 +1208,6 @@ BUG10351 MAC : plugins/inner-html-display-none.html = FAIL
 BUG10351 MAC DEBUG : plugins/invoke.html = PASS FAIL
 BUG10351 MAC : plugins/mouse-events.html = FAIL
 BUG10351 MAC DEBUG : http/tests/plugins/npapi-response-headers.html = PASS FAIL
-BUG10667 MAC : plugins/iframe-shims.html = FAIL
 // BUG10667 SLOW MAC RELEASE : plugins/iframe-shims.html = FAIL
 
 // NEW FOR MERGE 36102:37604
@@ -1685,7 +1681,6 @@ BUG23496 MAC : fast/forms/radio-nested-labels.html = IMAGE
 BUG23496 MAC : fast/forms/radio_checked.html = IMAGE
 BUG23496 MAC : fast/forms/radio_checked_dynamic.html = IMAGE
 // BUG23496 MAC : fast/forms/search-vertical-alignment.html = IMAGE
-BUG23496 MAC : fast/forms/search-zoomed.html = IMAGE
 BUG23496 MAC : fast/inline/positionedLifetime.html = IMAGE
 BUG23496 MAC : fast/parser/bad-xml-slash.html = IMAGE
 BUG23496 MAC : fast/replaced/replaced-breaking.html = IMAGE
@@ -1737,7 +1732,6 @@ BUG23488 MAC : fast/box-shadow/basic-shadows.html = IMAGE
 BUG23488 MAC : fast/box-shadow/inset.html = IMAGE
 BUG23488 MAC : fast/box-shadow/transform-fringing.html = IMAGE
 BUG23488 MAC : fast/canvas/canvas-incremental-repaint-2.html = IMAGE
-BUG23488 MAC : fast/css/pseudo-cache-stale.html = IMAGE
 BUG23488 MAC : fast/css/shadow-multiple.html = IMAGE
 BUG23488 MAC : fast/forms/search-vertical-alignment.html = IMAGE
 BUG23488 MAC : fast/frames/content-opacity-1.html = IMAGE
@@ -1776,9 +1770,6 @@ BUG23489 MAC : fast/table/empty-section-crash.html = IMAGE
 // Selection glow is thinner than expected
 BUG23485 MAC : editing/style/apply-through-end-of-document.html = IMAGE
 
-// Extra space at the end of the table cell
-BUG23484 MAC : editing/pasteboard/5387578.html = IMAGE
-
 // Various drawing tests that are broken
 BUG23477 MAC : fast/backgrounds/bgCompositeCopy.html = IMAGE
 BUG23477 MAC : fast/canvas/canvas-as-image-incremental-repaint.html = IMAGE
@@ -1807,22 +1798,28 @@ BUG23475 MAC : svg/custom/junk-data.svg = IMAGE
 BUG23473 MAC : fast/repaint = IMAGE
 BUG23473 MAC : fast/repaint/block-no-inflow-children.html = PASS
 BUG23473 MAC : fast/repaint/block-selection-gap-stale-cache.html = PASS
+BUG23473 MAC : fast/repaint/block-selection-gap-stale-cache-2.html = PASS
+BUG23473 MAC : fast/repaint/fixed.html = PASS
 BUG23473 MAC : fast/repaint/flexible-box-overflow.html = PASS
+BUG23473 MAC : fast/repaint/flexible-box-overflow-horizontal.html = PASS
 BUG23473 MAC : fast/repaint/float-new-in-block.html = PASS
 BUG23473 MAC : fast/repaint/focus-layers.html = PASS
 BUG23473 MAC : fast/repaint/focus-ring.html = PASS
 BUG23473 MAC : fast/repaint/inline-block-overflow.html = PASS
 BUG23473 MAC : fast/repaint/layer-child-outline.html = PASS
 BUG23473 MAC : fast/repaint/layer-outline.html = PASS
-BUG23473 MAC : fast/repaint/list-marker.html = PASS
-BUG23473 MAC : fast/repaint/table-cell-vertical-overflow.html = PASS
-BUG23473 MAC : fast/repaint/text-shadow.html = PASS
-BUG23473 MAC : fast/repaint/flexible-box-overflow-horizontal.html = PASS
 BUG23473 MAC : fast/repaint/layer-outline-horizontal.html = PASS
+BUG23473 MAC : fast/repaint/line-flow-with-floats-1.html = PASS
+BUG23473 MAC : fast/repaint/line-flow-with-floats-6.html = PASS
+BUG23473 MAC : fast/repaint/list-marker.html = PASS
+BUG23473 MAC : fast/repaint/repaint-during-scroll.html = PASS
+BUG23473 MAC : fast/repaint/selection-gap-overflow-scroll-2.html = PASS
 BUG23473 MAC : fast/repaint/shadow-multiple-horizontal.html = PASS
 BUG23473 MAC : fast/repaint/shadow-multiple-strict-horizontal.html = PASS
 BUG23473 MAC : fast/repaint/shadow-multiple-strict-vertical.html = PASS
 BUG23473 MAC : fast/repaint/shadow-multiple-vertical.html = PASS
+BUG23473 MAC : fast/repaint/table-cell-vertical-overflow.html = PASS
+BUG23473 MAC : fast/repaint/text-shadow.html = PASS
 BUG23473 MAC : fast/repaint/text-shadow-horizontal.html = PASS
 
 // Thicker shadow than expected
@@ -1840,9 +1837,6 @@ BUG23466 MAC : svg/custom/foreign-object-skew.svg = IMAGE
 // Failing on the bots but not locally; need investigation
 BUG23560 MAC : fast/images/animated-svg-as-image.html = IMAGE PASS
 BUG23560 MAC : svg/W3C-SVG-1.1/filters-conv-01-f.svg = FAIL
-
-// Fails the first run, passes the flaky-check: corruption from a prior test?
-BUG31362 MAC : fast/forms/select-style.html = IMAGE
 
 // -----------------------------------------------------------------
 // END MAC PORT TESTS
@@ -2180,14 +2174,6 @@ BUG16240 WIN DEBUG : http/tests/cache/subresource-expiration.html = TIMEOUT
 BUG16240 MAC WIN RELEASE : http/tests/cache/subresource-expiration.html = TIMEOUT
 BUG16240 MAC DEBUG : http/tests/cache/subresource-expiration.html = PASS TIMEOUT
 BUG14752 LINUX SLOW : http/tests/cache/subresource-expiration.html = PASS
-
-// Failure since WebKit merge 45873:45916
-BUG17015 MAC : editing/pasteboard/drag-drop-modifies-page.html = FAIL
-BUG17015 MAC : editing/selection/4895428-1.html = FAIL
-BUG17015 MAC : editing/selection/4895428-4.html = FAIL
-BUG17015 MAC : editing/selection/contains-boundaries.html = FAIL
-BUG17015 MAC : fast/lists/drag-into-marker.html = FAIL
-
 
 // New tests with WebKit merge 46288:46363
 BUG18116 : fast/dom/constructed-objects-prototypes.html = TEXT
