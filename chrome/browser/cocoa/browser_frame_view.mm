@@ -14,6 +14,9 @@
 #import "chrome/browser/cocoa/themed_window.h"
 #include "grit/theme_resources.h"
 
+static const CGFloat kBrowserFrameViewPaintHeight = 52.0;
+static const NSPoint kBrowserFrameViewPatternPhaseOffset = { -5, 3 };
+
 @interface NSView (Swizzles)
 - (void)drawRectOriginal:(NSRect)rect;
 - (BOOL)_mouseInGroup:(NSButton*)widget;
@@ -89,17 +92,32 @@
 
 // Here is our custom drawing for our frame.
 - (void)drawRect:(NSRect)rect {
-  [self drawRectOriginal:rect];
   // If this isn't the window class we expect, then pass it on to the
   // original implementation.
   if (![[self window] isKindOfClass:[ChromeBrowserWindow class]]) {
+    [self drawRectOriginal:rect];
     return;
   }
 
-  // Set up our clip.
+  // WARNING: There is an obvious optimization opportunity here that you DO NOT
+  // want to take. To save painting cycles, you might think it would be a good
+  // idea to call out to -drawRectOriginal: only if no theme were drawn. In
+  // reality, however, if you fail to call -drawRectOriginal:, or if you call it
+  // after a clipping path is set, the rounded corners at the top of the window
+  // will not draw properly. Do not try to be smart here.
+
+  // Only paint the top of the window.
   NSWindow* window = [self window];
   NSRect windowRect = [window frame];
   windowRect.origin = NSMakePoint(0, 0);
+
+  NSRect paintRect = windowRect;
+  paintRect.origin.y = NSMaxY(paintRect) - kBrowserFrameViewPaintHeight;
+  paintRect.size.height = kBrowserFrameViewPaintHeight;
+  rect = NSIntersectionRect(paintRect, rect);
+  [self drawRectOriginal:rect];
+
+  // Set up our clip.
   [[NSBezierPath bezierPathWithRoundedRect:windowRect
                                    xRadius:4
                                    yRadius:4] addClip];
@@ -168,7 +186,6 @@
     // This will make the themes look slightly different than in Windows/Linux
     // because of the differing heights between window top and tab top, but this
     // has been approved by UI.
-    static const NSPoint kBrowserFrameViewPatternPhaseOffset = { -5, 3 };
     NSPoint phase = kBrowserFrameViewPatternPhaseOffset;
     phase.y += NSHeight(bounds);
 
@@ -179,15 +196,10 @@
     NSRectFill(dirtyRect);
     themed = YES;
   } else if (gradient) {
-    // Only paint the gradient at the top of the window. (This is at the maximum
-    // when fullscreening; before adjusting check this case.)
-    static const CGFloat kBrowserFrameViewGradientHeight = 52.0;
-    NSRect gradientRect = bounds;
-    gradientRect.origin.y = NSMaxY(gradientRect) -
-        kBrowserFrameViewGradientHeight;
-    gradientRect.size.height = kBrowserFrameViewGradientHeight;
-
-    [gradient drawInRect:gradientRect angle:270];
+    NSPoint startPoint = NSMakePoint(NSMinX(bounds), NSMaxY(bounds));
+    NSPoint endPoint = startPoint;
+    endPoint.y -= kBrowserFrameViewPaintHeight;
+    [gradient drawFromPoint:startPoint toPoint:endPoint options:0];
     themed = YES;
   }
 
