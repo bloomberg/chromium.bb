@@ -74,11 +74,13 @@ void DraggedTabControllerGtk::CaptureDragInfo(const gfx::Point& mouse_offset) {
 }
 
 void DraggedTabControllerGtk::Drag() {
-  if (!source_tab_)
+  if (!source_tab_ || !dragged_contents_)
     return;
 
   bring_to_front_timer_.Stop();
   pin_timer_.Stop();
+
+  EnsureDraggedTab();
 
   // Before we get to dragging anywhere, ensure that we consider ourselves
   // attached to the source tabstrip.
@@ -239,8 +241,6 @@ void DraggedTabControllerGtk::SetDraggedContents(TabContents* new_contents) {
 }
 
 void DraggedTabControllerGtk::ContinueDragging() {
-  EnsureDraggedTab();
-
   // TODO(jhawkins): We don't handle the situation where the last tab is dragged
   // out of a window, so we'll just go with the way Windows handles dragging for
   // now.
@@ -476,7 +476,6 @@ void DraggedTabControllerGtk::Attach(TabStripGtk* attached_tabstrip,
   double unselected_width = 0, selected_width = 0;
   attached_tabstrip_->GetDesiredTabWidths(tab_count, pinned_tab_count,
                                           &unselected_width, &selected_width);
-  EnsureDraggedTab();
   int dragged_tab_width = static_cast<int>(selected_width);
   dragged_tab_->set_tab_width(dragged_tab_width);
   bool pinned = false;
@@ -697,12 +696,6 @@ TabGtk* DraggedTabControllerGtk::GetTabMatchingDraggedContents(
 }
 
 bool DraggedTabControllerGtk::EndDragImpl(EndDragType type) {
-  // In gtk, it's possible to receive a drag-begin signal and an drag-end signal
-  // without ever getting a drag-motion signal.  In this case, dragged_tab_ has
-  // never been created, so bail out.
-  if (!dragged_tab_.get())
-    return true;
-
   pin_timer_.Stop();
   bring_to_front_timer_.Stop();
 
@@ -713,22 +706,27 @@ bool DraggedTabControllerGtk::EndDragImpl(EndDragType type) {
   // type == TAB_DESTROYED.
 
   bool destroy_now = true;
-  if (type != TAB_DESTROYED) {
-    if (type == CANCELED) {
-      RevertDrag();
-    } else {
-      destroy_now = CompleteDrag();
-    }
-
-    if (dragged_contents_ && dragged_contents_->delegate() == this)
-      dragged_contents_->set_delegate(original_delegate_);
-  } else {
+  if (type == TAB_DESTROYED) {
     // If we get here it means the NavigationController is going down. Don't
     // attempt to do any cleanup other than resetting the delegate (if we're
     // still the delegate).
     if (dragged_contents_ && dragged_contents_->delegate() == this)
       dragged_contents_->set_delegate(NULL);
     dragged_contents_ = NULL;
+  } else {
+    // If we never received a drag-motion event, the drag will never have
+    // started in the sense that |dragged_tab_| will be NULL. We don't need to
+    // revert or complete the drag in that case.
+    if (dragged_tab_.get()) {
+      if (type == CANCELED) {
+        RevertDrag();
+      } else {
+        destroy_now = CompleteDrag();
+      }
+    }
+
+    if (dragged_contents_ && dragged_contents_->delegate() == this)
+      dragged_contents_->set_delegate(original_delegate_);
   }
 
   // The delegate of the dragged contents should have been reset. Unset the

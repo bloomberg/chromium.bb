@@ -667,8 +667,7 @@ bool TabStripGtk::IsAnimating() const {
 }
 
 void TabStripGtk::DestroyDragController() {
-  if (IsDragSessionActive())
-    drag_controller_.reset(NULL);
+  drag_controller_.reset();
 }
 
 void TabStripGtk::DestroyDraggedSourceTab(TabGtk* tab) {
