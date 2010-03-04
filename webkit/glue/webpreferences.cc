@@ -53,7 +53,7 @@ void WebPreferences::Apply(WebView* web_view) const {
   settings->setDownloadableBinaryFontsEnabled(remote_fonts_enabled);
   settings->setXSSAuditorEnabled(xss_auditor_enabled);
   settings->setLocalStorageEnabled(local_storage_enabled);
-  settings->setDatabasesEnabled(
+  WebRuntimeFeatures::enableDatabase(
       WebRuntimeFeatures::isDatabaseEnabled() || databases_enabled);
   settings->setOfflineWebApplicationCacheEnabled(application_cache_enabled);
 
