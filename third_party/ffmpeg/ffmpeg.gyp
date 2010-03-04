@@ -270,6 +270,13 @@
                 'source/patched-ffmpeg-mt/libavcodec/x86/vc1dsp_mmx.c',
               ],
             }],
+            ['target_arch=="ia32"', {
+              'cflags!': [
+                # Turn off valgrind build option that breaks ffmpeg builds.
+		# Allows config.h HAVE_EBP_AVAILABLE 1 and HAVE_EBX_AVAILABLE 1
+                '-fno-omit-frame-pointer',
+              ],
+            }],  # target_arch=="ia32"
             ['target_arch=="x64"', {
               # x64 requires PIC for shared libraries. This is opposite
               # of ia32 where due to a slew of inline assembly using ebx,
@@ -317,9 +324,6 @@
             }],  # target_arch=="arm"
             ['target_arch=="arm" and (ffmpeg_branding=="Chrome" or ffmpeg_branding=="ChromeOS")', {
               'sources': [
-	        # TODO(fbarchard): dsputil_neon code should be used by chromium
-		# for ogg, but with h264 references only if CONFIG_H264_DECODER
-		# is enabled.
                 'source/patched-ffmpeg-mt/libavcodec/arm/h264pred_init_arm.c',
                 'source/patched-ffmpeg-mt/libavcodec/arm/mpegvideo_arm.c',
                 'source/patched-ffmpeg-mt/libavcodec/arm/mpegvideo_armv5te.c',
