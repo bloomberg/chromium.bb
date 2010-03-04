@@ -96,6 +96,10 @@ std::wstring ChromeFrameDistribution::GetVersionKey() {
   return key;
 }
 
+bool ChromeFrameDistribution::CanSetAsDefault() {
+  return false;
+}
+
 void ChromeFrameDistribution::UpdateDiffInstallStatus(bool system_install,
     bool incremental_install, installer_util::InstallStatus install_status) {
   HKEY reg_root = (system_install) ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;

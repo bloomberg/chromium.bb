@@ -518,9 +518,11 @@ installer_util::InstallStatus installer_setup::UninstallChrome(
   // Delete shared registry keys as well (these require admin rights) if
   // remove_all option is specified.
   if (remove_all) {
-    if (!InstallUtil::IsChromeSxSProcess()) {
+    if (!InstallUtil::IsChromeSxSProcess() &&
+        !InstallUtil::IsChromeFrameProcess()) {
       // Delete media player registry key that exists only in HKLM.
-      // We don't delete this key in SxS uninstall.
+      // We don't delete this key in SxS uninstall or Chrome Frame uninstall
+      // as we never set the key for those products.
       RegKey hklm_key(HKEY_LOCAL_MACHINE, L"", KEY_ALL_ACCESS);
       std::wstring reg_path(installer::kMediaPlayerRegPath);
       file_util::AppendToPath(&reg_path, installer_util::kChromeExe);
