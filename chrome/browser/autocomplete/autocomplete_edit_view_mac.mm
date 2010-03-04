@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -394,16 +394,16 @@ void AutocompleteEditViewMac::SetText(const std::wstring& display_text) {
   [as addAttribute:NSParagraphStyleAttributeName value:paragraph_style
              range:NSMakeRange(0, [as length])];
 
-  url_parse::Parsed parts;
-  AutocompleteInput::Parse(display_text, model_->GetDesiredTLD(),
-                           &parts, NULL);
-  const bool emphasize = model_->CurrentTextIsURL() && (parts.host.len > 0);
+  url_parse::Component scheme, host;
+  AutocompleteInput::ParseForEmphasizeComponents(
+      display_text, model_->GetDesiredTLD(), &scheme, &host);
+  const bool emphasize = model_->CurrentTextIsURL() && (host.len > 0);
   if (emphasize) {
     [as addAttribute:NSForegroundColorAttributeName value:BaseTextColor()
                range:NSMakeRange(0, [as length])];
 
     [as addAttribute:NSForegroundColorAttributeName value:HostTextColor()
-               range:ComponentToNSRange(parts.host)];
+               range:ComponentToNSRange(host)];
   }
 
   // TODO(shess): GTK has this as a member var, figure out why.
@@ -424,7 +424,7 @@ void AutocompleteEditViewMac::SetText(const std::wstring& display_text) {
   }
 
   // Emphasize the scheme for security UI display purposes (if necessary).
-  if (!model_->user_input_in_progress() && parts.scheme.is_nonempty() &&
+  if (!model_->user_input_in_progress() && scheme.is_nonempty() &&
       (scheme_security_level != ToolbarModel::NORMAL)) {
     NSColor* color;
     if (scheme_security_level == ToolbarModel::SECURE) {
@@ -434,10 +434,10 @@ void AutocompleteEditViewMac::SetText(const std::wstring& display_text) {
       // Add a strikethrough through the scheme.
       [as addAttribute:NSStrikethroughStyleAttributeName
                  value:[NSNumber numberWithInt:NSUnderlineStyleSingle]
-                 range:ComponentToNSRange(parts.scheme)];
+                 range:ComponentToNSRange(scheme)];
     }
     [as addAttribute:NSForegroundColorAttributeName value:color
-               range:ComponentToNSRange(parts.scheme)];
+               range:ComponentToNSRange(scheme)];
   }
 
   [field_ setAttributedStringValue:as];

@@ -1307,10 +1307,11 @@ void AutocompleteEditViewGtk::EmphasizeURLComponents() {
   // this input.  This can tell us whether an UNKNOWN input string is going to
   // be treated as a search or a navigation, and is the same method the Paste
   // And Go system uses.
-  url_parse::Parsed parts;
-  std::wstring text = GetText();
-  AutocompleteInput::Parse(text, model_->GetDesiredTLD(), &parts, NULL);
-  bool emphasize = model_->CurrentTextIsURL() && (parts.host.len > 0);
+  url_parse::Component scheme, host;
+  std::wstring text(GetText());
+  AutocompleteInput::ParseForEmphasizeComponents(
+      text, model_->GetDesiredTLD(), &scheme, &host);
+  const bool emphasize = model_->CurrentTextIsURL() && (host.len > 0);
 
   // Set the baseline emphasis.
   GtkTextIter start, end;
@@ -1322,10 +1323,10 @@ void AutocompleteEditViewGtk::EmphasizeURLComponents() {
     // We've found a host name, give it more emphasis.
     gtk_text_buffer_get_iter_at_line_index(text_buffer_, &start, 0,
                                            GetUTF8Offset(text,
-                                                         parts.host.begin));
+                                                         host.begin));
     gtk_text_buffer_get_iter_at_line_index(text_buffer_, &end, 0,
                                            GetUTF8Offset(text,
-                                                         parts.host.end()));
+                                                         host.end()));
 
     gtk_text_buffer_apply_tag(text_buffer_, normal_text_tag_, &start, &end);
   } else {
@@ -1334,10 +1335,10 @@ void AutocompleteEditViewGtk::EmphasizeURLComponents() {
 
   strikethrough_ = CharRange();
   // Emphasize the scheme for security UI display purposes (if necessary).
-  if (!model_->user_input_in_progress() && parts.scheme.is_nonempty() &&
+  if (!model_->user_input_in_progress() && scheme.is_nonempty() &&
       (scheme_security_level_ != ToolbarModel::NORMAL)) {
-    CharRange scheme_range = CharRange(GetUTF8Offset(text, parts.scheme.begin),
-                                       GetUTF8Offset(text, parts.scheme.end()));
+    CharRange scheme_range = CharRange(GetUTF8Offset(text, scheme.begin),
+                                       GetUTF8Offset(text, scheme.end()));
     ItersFromCharRange(scheme_range, &start, &end);
 
     if (scheme_security_level_ == ToolbarModel::SECURE) {
