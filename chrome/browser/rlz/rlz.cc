@@ -303,7 +303,8 @@ class DelayedInitTask : public Task {
     const wchar_t** found = std::find(&kBrands[0], end, brand);
     if (found != end)
       return true;
-    if (StartsWith(brand, L"EUB", true) || StartsWith(brand, L"EUC", true))
+    if (StartsWith(brand, L"EUB", true) || StartsWith(brand, L"EUC", true) ||
+        StartsWith(brand, L"GGR", true))
       return true;
     return false;
   }
