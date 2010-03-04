@@ -11,6 +11,7 @@
 
 #include "app/gfx/blit.h"
 #include "base/file_util.h"
+#include "base/md5.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "base/scoped_ptr.h"
@@ -279,6 +280,19 @@ NPError WebPluginDelegatePepper::Device2DGetStateContext(
     if (!ctx)
       return NPERR_INVALID_PARAM;
     *value = reinterpret_cast<intptr_t>(ctx->transport_dib());
+    return NPERR_NO_ERROR;
+  } else if (state == NPExtensionsReservedStateSharedMemoryChecksum) {
+    if (!context)
+      return NPERR_INVALID_PARAM;
+    int32 row_count = context->dirty.bottom - context->dirty.top + 1;
+    int32 stride = context->dirty.right - context->dirty.left + 1;
+    size_t length = row_count * stride * sizeof(uint32);
+    MD5Digest md5_result;   // 128-bit digest
+    MD5Sum(context->region, length, &md5_result);
+    std::string hex_md5 = MD5DigestToBase16(md5_result);
+    // Return the least significant 8 characters (i.e. 4 bytes)
+    // of the 32 character hexadecimal result as an int.
+    *value = HexStringToInt(hex_md5.substr(24));
     return NPERR_NO_ERROR;
   }
   return NPERR_GENERIC_ERROR;

@@ -16,9 +16,12 @@ typedef enum {
   NPExtensionsReservedStateSharedMemorySize = 66537,
   // Used by the Audio device to return a pointer to the
   // structure used to implement the shared memory buffer for the device.
-  NPExtensionsReservedStateSyncChannel = 66538
+  NPExtensionsReservedStateSyncChannel = 66538,
   // Used by the Audio device to return a pointer to the
   // structure used to implement the synchronization channel for the device.
+  NPExtensionsReservedStateSharedMemoryChecksum = 66539
+  // Used by the Device2D to return the CRC32 checksum of the content
+  // stored in the shared memory buffer for the device.
 } NPExtensionsReservedStates;
 
 #endif  /* _NP_EXTENSIONS_PRIVATE_H_ */
