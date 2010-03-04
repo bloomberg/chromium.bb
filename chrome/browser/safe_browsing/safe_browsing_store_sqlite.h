@@ -102,10 +102,6 @@ class SafeBrowsingStoreSqlite : public SafeBrowsingStore {
   }
 
  private:
-  // For on-the-fly migration.
-  // TODO(shess): Remove (entire class) after migration.
-  friend class SafeBrowsingStoreFile;
-
   // The following routines return true on success, or false on
   // failure.  Failure is presumed to be persistent, so the caller
   // should stop trying and unwind the transaction.
