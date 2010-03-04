@@ -598,8 +598,15 @@ void ChromeActiveDocument::UpdateNavigationState(
   if (is_internal_navigation) {
     ScopedComPtr<IDocObjectService> doc_object_svc;
     ScopedComPtr<IWebBrowserEventsService> web_browser_events_svc;
+
     DoQueryService(__uuidof(web_browser_events_svc), m_spClientSite,
                    web_browser_events_svc.Receive());
+
+    if (!web_browser_events_svc.get()) {
+      DoQueryService(SID_SShellBrowser, m_spClientSite,
+                     doc_object_svc.Receive());
+    }
+
     // web_browser_events_svc can be NULL on IE6.
     if (web_browser_events_svc) {
       VARIANT_BOOL should_cancel = VARIANT_FALSE;
