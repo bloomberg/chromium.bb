@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
+#include "base/scoped_handle.h"
 #include "base/win_util.h"
 #include "chrome/browser/browser_init.h"
 #include "chrome/browser/browser_process.h"
@@ -18,6 +19,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/result_codes.h"
+#include "chrome/installer/util/browser_distribution.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 
@@ -37,12 +39,38 @@ BOOL CALLBACK BrowserWindowEnumeration(HWND window, LPARAM param) {
 // Look for a Chrome instance that uses the same profile directory.
 ProcessSingleton::ProcessSingleton(const FilePath& user_data_dir)
     : window_(NULL), locked_(false), foreground_window_(NULL) {
-  // FindWindoEx and Create() should be one atomic operation in order to not
-  // have a race condition.
-  remote_window_ = FindWindowEx(HWND_MESSAGE, NULL, chrome::kMessageWindowClass,
-                                user_data_dir.ToWStringHack().c_str());
-  if (!remote_window_)
-    Create();
+  std::wstring user_data_dir_str(user_data_dir.ToWStringHack());
+  remote_window_ = FindWindowEx(HWND_MESSAGE, NULL,
+                                chrome::kMessageWindowClass,
+                                user_data_dir_str.c_str());
+  if (!remote_window_) {
+    // Make sure we will be the one and only process creating the window.
+    // We use a named Mutex since we are protecting against multi-process
+    // access. As documented, it's clearer to NOT request ownership on creation
+    // since it isn't guaranteed we will get it. It is better to create it
+    // without ownership and explicitly get the ownership afterward.
+    std::wstring mutex_name(L"Local\\ProcessSingletonStartup!");
+    mutex_name += BrowserDistribution::GetDistribution()->GetAppGuid();
+    ScopedHandle only_me(CreateMutex(NULL, FALSE, mutex_name.c_str()));
+    DCHECK(only_me.Get() != NULL) << "GetLastError = " << GetLastError();
+
+    // This is how we acquire the mutex (as opposed to the initial ownership).
+    DWORD result = WaitForSingleObject(only_me, INFINITE);
+    DCHECK(result == WAIT_OBJECT_0) << "Result = " << result <<
+        "GetLastError = " << GetLastError();
+
+    // We now own the mutex so we are the only process that can create the
+    // window at this time, but we must still check if someone created it
+    // between the time where we looked for it above and the time the mutex
+    // was given to us.
+    remote_window_ = FindWindowEx(HWND_MESSAGE, NULL,
+                                  chrome::kMessageWindowClass,
+                                  user_data_dir_str.c_str());
+    if (!remote_window_)
+      Create();
+    BOOL success = ReleaseMutex(only_me);
+    DCHECK(success) << "GetLastError = " << GetLastError();
+  }
 }
 
 ProcessSingleton::~ProcessSingleton() {

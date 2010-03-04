@@ -291,6 +291,7 @@
         'browser/pref_service_uitest.cc',
         'browser/printing/printing_layout_uitest.cc',
         'browser/process_singleton_linux_uitest.cc',
+        'browser/process_singleton_win_uitest.cc',
         'browser/renderer_host/resource_dispatcher_host_uitest.cc',
         'browser/sanity_uitest.cc',
         'browser/session_history_uitest.cc',
@@ -391,6 +392,9 @@
             'browser/extensions/extension_uitest.cc',
             'browser/media_uitest.cc',
             'browser/printing/printing_layout_uitest.cc',
+            # TODO(port)? (this one compiles fine on mac and linux, but it fails
+            # to LaunchApp and thus have not been tested for success either).
+            'browser/process_singleton_win_uitest.cc',
             'browser/views/find_bar_host_uitest.cc',
             'common/logging_chrome_uitest.cc',
             'test/ui/sandbox_uitests.cc',
