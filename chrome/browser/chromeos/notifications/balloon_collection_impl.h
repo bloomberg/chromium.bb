@@ -32,6 +32,7 @@ class BalloonCollectionImpl : public BalloonCollection {
   virtual bool Remove(const Notification& notification);
   virtual bool HasSpace() const;
   virtual void ResizeBalloon(Balloon* balloon, const gfx::Size& size);
+  virtual void DisplayChanged();
   virtual void OnBalloonClosed(Balloon* source);
 
  protected:

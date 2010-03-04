@@ -380,11 +380,11 @@ void WidgetGtk::Init(GtkWidget* parent,
   }
 }
 
-WidgetDelegate* WidgetWin::GetWidgetDelegate() {
+WidgetDelegate* WidgetGtk::GetWidgetDelegate() {
   return delegate_;
 }
 
-void WidgetDelegate::SetWidgetDelegate(WidgetDelegate* delegate) {
+void WidgetGtk::SetWidgetDelegate(WidgetDelegate* delegate) {
   delegate_ = delegate;
 }
 
