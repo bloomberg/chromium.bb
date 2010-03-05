@@ -202,7 +202,17 @@ class TabContentsTest : public RenderViewHostTestHarness {
   // is not supposed to overwrite a profile if it's already created.
   virtual void SetUp() {
     profile_.reset(new TabContentsTestingProfile());
+
+    // The sync service must be created to host the sync NTP advertisement.
+    profile_->CreateProfileSyncService();
+
     RenderViewHostTestHarness::SetUp();
+  }
+
+  virtual void TearDown() {
+    RenderViewHostTestHarness::TearDown();
+
+    profile_.reset(NULL);
   }
 
   ChromeThread ui_thread_;
@@ -226,9 +236,6 @@ TEST_F(TabContentsTest, NTPViewSource) {
   const GURL kGURL(kUrl);
 
   process()->sink().ClearMessages();
-
-  // The sync service must be created to host the sync NTP advertisement.
-  profile_->CreateProfileSyncService();
 
   controller().LoadURL(kGURL, GURL(), PageTransition::TYPED);
   rvh()->delegate()->RenderViewCreated(rvh());
