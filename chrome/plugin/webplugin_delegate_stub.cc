@@ -140,6 +140,8 @@ void WebPluginDelegateStub::OnMessageReceived(const IPC::Message& msg) {
                         OnHTTPRangeRequestReply)
     IPC_MESSAGE_HANDLER(PluginMsg_CreateCommandBuffer,
                         OnCreateCommandBuffer)
+    IPC_MESSAGE_HANDLER(PluginMsg_DestroyCommandBuffer,
+                        OnDestroyCommandBuffer)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(PluginMsg_SetFakeGPUPluginWindowHandle,
                         OnSetFakeGPUPluginWindowHandle)
@@ -404,6 +406,12 @@ void WebPluginDelegateStub::OnCreateCommandBuffer(int* route_id) {
 #else
   *route_id = 0;
 #endif  // ENABLE_GPU
+}
+
+void WebPluginDelegateStub::OnDestroyCommandBuffer() {
+#if defined(ENABLE_GPU)
+  command_buffer_stub_.reset();
+#endif
 }
 
 void WebPluginDelegateStub::CreateSharedBuffer(

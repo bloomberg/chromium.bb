@@ -607,6 +607,11 @@ IPC_BEGIN_MESSAGES(View)
   // into a full window).
   IPC_MESSAGE_ROUTED0(ViewMsg_DisassociateFromPopupCount)
 
+  // The browser sends this to a renderer process in response to a
+  // ViewHostMsg_EstablishGpuChannel message.
+  IPC_MESSAGE_ROUTED1(ViewMsg_GpuChannelEstablished,
+                      IPC::ChannelHandle /* handle to channel */)
+
   // Notifies the renderer of the appcache that has been selected for a
   // a particular host. This is sent in reply to AppCacheMsg_SelectCache.
   IPC_MESSAGE_CONTROL3(AppCacheMsg_CacheSelected,
@@ -1329,6 +1334,12 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               std::wstring /* locale */,
                               IPC::ChannelHandle /* handle to channel */,
                               WebPluginInfo /* info */)
+
+  // A renderer sends this to the browser process when it wants to
+  // create connect to the GPU.  The browser will create the GPU process if
+  // necessary, and will return a handle to the channel via
+  // a GpuChannelEstablished message.
+  IPC_MESSAGE_ROUTED0(ViewHostMsg_EstablishGpuChannel)
 
   // A renderer sends this to the browser process when it wants to start
   // a new instance of the Native Client process. The browser will launch

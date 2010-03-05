@@ -123,6 +123,13 @@ void WebPluginDelegatePepper::DestroyInstance() {
   // rendering commands after the GPU plugin has stopped processing them and
   // responding to them.
   if (nested_delegate_) {
+#if defined(ENABLE_GPU)
+    if (command_buffer_) {
+      nested_delegate_->DestroyCommandBuffer(command_buffer_);
+      command_buffer_ = NULL;
+    }
+#endif
+
     nested_delegate_->PluginDestroyed();
     nested_delegate_ = NULL;
   }
@@ -159,7 +166,7 @@ void WebPluginDelegatePepper::UpdateGeometry(
   // Send the new window size to the command buffer service code so it
   // can allocate a new backing store. The handle to the new backing
   // store is sent back to the browser asynchronously.
-  if (command_buffer_.get()) {
+  if (command_buffer_) {
     command_buffer_->SetWindowSize(window_rect_.width(),
                                    window_rect_.height());
   }
@@ -364,8 +371,8 @@ NPError WebPluginDelegatePepper::Device3DInitializeContext(
     plugin_->SetAcceptsInputEvents(true);
 
     // Ask the GPU plugin to create a command buffer and return a proxy.
-    command_buffer_.reset(nested_delegate_->CreateCommandBuffer());
-    if (command_buffer_.get()) {
+    command_buffer_ = nested_delegate_->CreateCommandBuffer();
+    if (command_buffer_) {
       // Initialize the proxy command buffer.
       if (command_buffer_->Initialize(config->commandBufferSize)) {
         // Get the initial command buffer state.
@@ -395,14 +402,15 @@ NPError WebPluginDelegatePepper::Device3DInitializeContext(
 
         // Save the implementation information (the CommandBuffer).
         Device3DImpl* impl = new Device3DImpl;
-        impl->command_buffer = command_buffer_.get();
+        impl->command_buffer = command_buffer_;
         context->reserved = impl;
 
         return NPERR_NO_ERROR;
       }
     }
 
-    command_buffer_.reset();
+    nested_delegate_->DestroyCommandBuffer(command_buffer_);
+    command_buffer_ = NULL;
   }
 
   nested_delegate_->PluginDestroyed();
@@ -482,9 +490,12 @@ NPError WebPluginDelegatePepper::Device3DDestroyContext(
   delete static_cast<Device3DImpl*>(context->reserved);
   context->reserved = NULL;
 
-  command_buffer_.reset();
-
   if (nested_delegate_) {
+    if (command_buffer_) {
+      nested_delegate_->DestroyCommandBuffer(command_buffer_);
+      command_buffer_ = NULL;
+    }
+
     nested_delegate_->PluginDestroyed();
     nested_delegate_ = NULL;
   }
@@ -849,7 +860,7 @@ void WebPluginDelegatePepper::Device3DUpdateState(
     NPDeviceContext3D* context,
     NPDeviceFlushContextCallbackPtr callback,
     void* user_data) {
-  if (command_buffer_.get()) {
+  if (command_buffer_) {
     Synchronize3DContext(context, command_buffer_->GetLastState());
     if (callback)
       callback(npp, context, NPERR_NO_ERROR, user_data);

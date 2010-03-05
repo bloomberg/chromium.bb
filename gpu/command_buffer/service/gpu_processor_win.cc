@@ -11,10 +11,8 @@ using ::base::SharedMemory;
 namespace gpu {
 
 bool GPUProcessor::Initialize(gfx::PluginWindowHandle handle) {
-  DCHECK(handle);
-
   // Cannot reinitialize.
-  if (decoder_->hwnd() != NULL)
+  if (parser_.get())
     return false;
 
   // Map the ring buffer and create the parser.
@@ -37,8 +35,8 @@ bool GPUProcessor::Initialize(gfx::PluginWindowHandle handle) {
 }
 
 void GPUProcessor::Destroy() {
-  // Destroy GAPI if window handle has not already become invalid.
-  if (decoder_->hwnd()) {
+  // Destroy decoder if initialized.
+  if (parser_.get()) {
     decoder_->Destroy();
     decoder_->set_hwnd(NULL);
   }

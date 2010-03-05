@@ -106,6 +106,8 @@ class WebPluginDelegateProxy
       unsigned long resource_id, int range_request_id);
 
   CommandBufferProxy* CreateCommandBuffer();
+  void DestroyCommandBuffer(CommandBufferProxy* command_buffer);
+
   gfx::PluginWindowHandle GetPluginWindowHandle();
 
  protected:

@@ -8,6 +8,7 @@
 #include "base/histogram.h"
 #include "base/keyboard_codes.h"
 #include "base/message_loop.h"
+#include "chrome/browser/gpu_process_host.h"
 #include "chrome/browser/renderer_host/backing_store.h"
 #include "chrome/browser/renderer_host/backing_store_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/renderer_host/render_widget_host_painting_observer.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/renderer_host/video_layer.h"
+#include "chrome/common/gpu_messages.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/render_messages.h"
 #include "webkit/glue/webcursor.h"
@@ -137,6 +139,8 @@ void RenderWidgetHost::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeChanged, OnMsgFocusedNodeChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetCursor, OnMsgSetCursor)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ImeUpdateStatus, OnMsgImeUpdateStatus)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_EstablishGpuChannel,
+        OnMsgEstablishGpuChannel)
 #if defined(OS_LINUX)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreatePluginContainer,
                         OnMsgCreatePluginContainer)
@@ -859,6 +863,10 @@ void RenderWidgetHost::OnMsgImeUpdateStatus(int control,
   if (view_) {
     view_->IMEUpdateStatus(control, caret_rect);
   }
+}
+
+void RenderWidgetHost::OnMsgEstablishGpuChannel() {
+  GpuProcessHost::Get()->EstablishGpuChannel(process_->id(), routing_id_);
 }
 
 #if defined(OS_LINUX)

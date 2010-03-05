@@ -287,8 +287,14 @@ class GLES2DecoderImpl : public GLES2Decoder {
     return group_->texture_manager();
   }
 
+#if defined(OS_WIN)
+  static bool InitializeOneOff(bool anti_aliased);
+#endif
+
+
   bool InitPlatformSpecific();
-  bool InitGlew();
+  static bool InitGlew();
+  void DestroyPlatformSpecific();
 
   // Template to help call glGenXXX functions.
   template <void gl_gen_function(GLES2DecoderImpl*, GLsizei, GLuint*)>
@@ -615,8 +621,10 @@ class GLES2DecoderImpl : public GLES2Decoder {
 
 #if defined(UNIT_TEST)
 #elif defined(OS_WIN)
-  HDC device_context_;
+  static int pixel_format_;
+  HDC gl_device_context_;
   HGLRC gl_context_;
+  HPBUFFERARB pbuffer_;
 #elif defined(OS_MACOSX)
   CGLContextObj gl_context_;
   CGLPBufferObj pbuffer_;
@@ -657,6 +665,11 @@ GLES2Decoder* GLES2Decoder::Create(ContextGroup* group) {
   return new GLES2DecoderImpl(group);
 }
 
+#if defined(UNIT_TEST)
+#elif defined(OS_WIN)
+int GLES2DecoderImpl::pixel_format_;
+#endif
+
 GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
     : GLES2Decoder(group),
       error_bits_(0),
@@ -668,8 +681,9 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       black_cube_texture_id_(0),
 #if defined(UNIT_TEST)
 #elif defined(OS_WIN)
-      device_context_(NULL),
+      gl_device_context_(NULL),
       gl_context_(NULL),
+      pbuffer_(NULL),
 #elif defined(OS_MACOSX)
       gl_context_(NULL),
       pbuffer_(NULL),
@@ -685,49 +699,62 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
 }
 
 bool GLES2DecoderImpl::Initialize() {
-  bool success = false;
-
-  if (InitPlatformSpecific()) {
-    if (MakeCurrent()) {
-      if (InitGlew()) {
-        CHECK_GL_ERROR();
-        success = group_->Initialize();
-        if (success) {
-          vertex_attrib_infos_.reset(
-              new VertexAttribInfo[group_->max_vertex_attribs()]);
-          texture_units_.reset(
-              new TextureUnit[group_->max_texture_units()]);
-          GLuint ids[2];
-          glGenTextures(2, ids);
-          // Make black textures for replacing non-renderable textures.
-          black_2d_texture_id_ = ids[0];
-          black_cube_texture_id_ = ids[1];
-          static int8 black[] = {0, 0, 0, 0};
-          glBindTexture(GL_TEXTURE_2D, black_2d_texture_id_);
-          glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA,
-                       GL_UNSIGNED_BYTE, black);
-          glBindTexture(GL_TEXTURE_2D, 0);
-          glBindTexture(GL_TEXTURE_CUBE_MAP, black_cube_texture_id_);
-          static GLenum faces[] = {
-              GL_TEXTURE_CUBE_MAP_POSITIVE_X,
-              GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
-              GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
-              GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
-              GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
-              GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
-          };
-          for (size_t ii = 0; ii < arraysize(faces); ++ii) {
-            glTexImage2D(faces[ii], 0, GL_RGBA, 1, 1, 0, GL_RGBA,
-                         GL_UNSIGNED_BYTE, black);
-          }
-          glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-          CHECK_GL_ERROR();
-        }
-      }
-    }
+  if (!InitPlatformSpecific()) {
+    Destroy();
+    return false;
+  }
+  if (!MakeCurrent()) {
+    Destroy();
+    return false;
   }
 
-  return success;
+  // This happens in InitializeOneOff in windows. TODO(apatrick): generalize to
+  // other platforms.
+#if !defined(OS_WIN)
+  if (!InitGlew()) {
+    Destroy();
+    return false;
+  }
+#endif
+
+  CHECK_GL_ERROR();
+
+  if (!group_->Initialize()) {
+    Destroy();
+    return false;
+  }
+
+  vertex_attrib_infos_.reset(
+      new VertexAttribInfo[group_->max_vertex_attribs()]);
+  texture_units_.reset(
+      new TextureUnit[group_->max_texture_units()]);
+  GLuint ids[2];
+  glGenTextures(2, ids);
+  // Make black textures for replacing non-renderable textures.
+  black_2d_texture_id_ = ids[0];
+  black_cube_texture_id_ = ids[1];
+  static int8 black[] = {0, 0, 0, 0};
+  glBindTexture(GL_TEXTURE_2D, black_2d_texture_id_);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA,
+               GL_UNSIGNED_BYTE, black);
+  glBindTexture(GL_TEXTURE_2D, 0);
+  glBindTexture(GL_TEXTURE_CUBE_MAP, black_cube_texture_id_);
+  static GLenum faces[] = {
+      GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+      GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
+      GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
+      GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+      GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
+      GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
+  };
+  for (size_t ii = 0; ii < arraysize(faces); ++ii) {
+    glTexImage2D(faces[ii], 0, GL_RGBA, 1, 1, 0, GL_RGBA,
+                 GL_UNSIGNED_BYTE, black);
+  }
+  glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+  CHECK_GL_ERROR();
+
+  return true;
 }
 
 // TODO(kbr): the use of this anonymous namespace core dumps the
@@ -764,11 +791,9 @@ LRESULT CALLBACK IntermediateWindowProc(HWND window,
   return ::DefWindowProc(window, message, w_param, l_param);
 }
 
-// Helper routine that returns the highest quality pixel format supported on
-// the current platform.  Returns true upon success.
-bool GetWindowsPixelFormat(HWND window,
-                           bool anti_aliased,
-                           int* pixel_format) {
+// Helper routine that does one-off initialization like determining the
+// pixel format and initializing glew.
+bool GLES2DecoderImpl::InitializeOneOff(bool anti_aliased) {
   // We must initialize a GL context before we can determine the multi-sampling
   // supported on the current hardware, so we create an intermediate window
   // and context here.
@@ -815,9 +840,9 @@ bool GetWindowsPixelFormat(HWND window,
   }
 
   HDC intermediate_dc = ::GetDC(intermediate_window);
-  int format_index = ::ChoosePixelFormat(intermediate_dc,
-                                         &kPixelFormatDescriptor);
-  if (format_index == 0) {
+  pixel_format_ = ::ChoosePixelFormat(intermediate_dc,
+                                      &kPixelFormatDescriptor);
+  if (pixel_format_ == 0) {
     DLOG(ERROR) << "Unable to get the pixel format for GL context.";
     ::ReleaseDC(intermediate_window, intermediate_dc);
     ::DestroyWindow(intermediate_window);
@@ -825,7 +850,7 @@ bool GetWindowsPixelFormat(HWND window,
                       module_handle);
     return false;
   }
-  if (!::SetPixelFormat(intermediate_dc, format_index,
+  if (!::SetPixelFormat(intermediate_dc, pixel_format_,
                         &kPixelFormatDescriptor)) {
     DLOG(ERROR) << "Unable to set the pixel format for GL context.";
     ::ReleaseDC(intermediate_window, intermediate_dc);
@@ -835,18 +860,14 @@ bool GetWindowsPixelFormat(HWND window,
     return false;
   }
 
-  // Store the pixel format without multisampling.
-  *pixel_format = format_index;
+  // Create a temporary GL context to query for multisampled pixel formats.
   HGLRC gl_context = ::wglCreateContext(intermediate_dc);
   if (::wglMakeCurrent(intermediate_dc, gl_context)) {
     // GL context was successfully created and applied to the window's DC.
     // Startup GLEW, the GL extensions wrangler.
-    GLenum glew_error = ::glewInit();
-    if (glew_error == GLEW_OK) {
+    if (InitGlew()) {
       DLOG(INFO) << "Initialized GLEW " << ::glewGetString(GLEW_VERSION);
     } else {
-      DLOG(ERROR) << "Unable to initialise GLEW : "
-                  << ::glewGetErrorString(glew_error);
       ::wglMakeCurrent(intermediate_dc, NULL);
       ::wglDeleteContext(gl_context);
       ::ReleaseDC(intermediate_window, intermediate_dc);
@@ -887,7 +908,7 @@ bool GetWindowsPixelFormat(HWND window,
                                                  1,
                                                  &msaa_pixel_format,
                                                  &num_formats)) {
-          *pixel_format = msaa_pixel_format;
+          pixel_format_ = msaa_pixel_format;
           break;
         }
       }
@@ -968,11 +989,11 @@ bool GLES2DecoderImpl::MakeCurrent() {
 #if defined(UNIT_TEST)
   return true;
 #elif defined(OS_WIN)
-  if (::wglGetCurrentDC() == device_context_ &&
+  if (::wglGetCurrentDC() == gl_device_context_ &&
       ::wglGetCurrentContext() == gl_context_) {
     return true;
   }
-  if (!::wglMakeCurrent(device_context_, gl_context_)) {
+  if (!::wglMakeCurrent(gl_device_context_, gl_context_)) {
     DLOG(ERROR) << "Unable to make gl context current.";
     return false;
   }
@@ -1040,26 +1061,51 @@ void GLES2DecoderImpl::UnregisterObjects(
 bool GLES2DecoderImpl::InitPlatformSpecific() {
 #if defined(UNIT_TEST)
 #elif defined(OS_WIN)
-  device_context_ = ::GetDC(hwnd());
-
-  int pixel_format;
-
-  if (!GetWindowsPixelFormat(hwnd(),
-                             anti_aliased_,
-                             &pixel_format)) {
-      DLOG(ERROR) << "Unable to determine optimal pixel format for GL context.";
-      return false;
-  }
-
-  if (!::SetPixelFormat(device_context_, pixel_format,
-                        &kPixelFormatDescriptor)) {
-    DLOG(ERROR) << "Unable to set the pixel format for GL context.";
+  // Do one-off initialization.
+  static bool success = InitializeOneOff(anti_aliased_);
+  if (!success)
     return false;
+
+  if (hwnd()) {
+    // The GL context will render to this window.
+    gl_device_context_ = ::GetDC(hwnd());
+
+    if (!::SetPixelFormat(gl_device_context_,
+                          pixel_format_,
+                          &kPixelFormatDescriptor)) {
+      DLOG(ERROR) << "Unable to set the pixel format for GL context.";
+      DestroyPlatformSpecific();
+      return false;
+    }
+  } else {
+    // Create a device context compatible with the primary display.
+    HDC display_device_context = ::CreateDC(L"DISPLAY", NULL, NULL, NULL);
+
+    // Create a 1 x 1 pbuffer suitable for use with the device.
+    const int kNoAttributes[] = { 0 };
+    pbuffer_ = ::wglCreatePbufferARB(display_device_context,
+                                     pixel_format_,
+                                     1, 1,
+                                     kNoAttributes);
+    ::DeleteDC(display_device_context);
+    if (!pbuffer_) {
+      DLOG(ERROR) << "Unable to create pbuffer.";
+      DestroyPlatformSpecific();
+      return false;
+    }
+
+    gl_device_context_ = ::wglGetPbufferDCARB(pbuffer_);
+    if (!gl_device_context_) {
+      DLOG(ERROR) << "Unable to get pbuffer device context.";
+      DestroyPlatformSpecific();
+      return false;
+    }
   }
 
-  gl_context_ = ::wglCreateContext(device_context_);
+  gl_context_ = ::wglCreateContext(gl_device_context_);
   if (!gl_context_) {
     DLOG(ERROR) << "Failed to create GL context.";
+    DestroyPlatformSpecific();
     return false;
   }
 #elif defined(OS_LINUX)
@@ -1072,20 +1118,20 @@ bool GLES2DecoderImpl::InitPlatformSpecific() {
     (CGLPixelFormatAttribute) kCGLPFAPBuffer,
     (CGLPixelFormatAttribute) 0
   };
-  CGLPixelFormatObj pixelFormat;
-  GLint numPixelFormats;
+  CGLPixelFormatObj pixel_format;
+  GLint num_pixel_formats;
   if (CGLChoosePixelFormat(attribs,
-                           &pixelFormat,
-                           &numPixelFormats) != kCGLNoError) {
+                           &pixel_format,
+                           &num_pixel_formats) != kCGLNoError) {
     DLOG(ERROR) << "Error choosing pixel format.";
     return false;
   }
-  if (!pixelFormat) {
+  if (!pixel_format) {
     return false;
   }
   CGLContextObj context;
-  CGLError res = CGLCreateContext(pixelFormat, 0, &context);
-  CGLDestroyPixelFormat(pixelFormat);
+  CGLError res = CGLCreateContext(pixel_format, 0, &context);
+  CGLDestroyPixelFormat(pixel_format);
   if (res != kCGLNoError) {
     DLOG(ERROR) << "Error creating context.";
     return false;
@@ -1168,6 +1214,29 @@ bool GLES2DecoderImpl::InitGlew() {
 #endif
 
   return true;
+}
+
+void GLES2DecoderImpl::DestroyPlatformSpecific() {
+#if defined(UNIT_TEST)
+#elif defined(OS_WIN)
+  if (gl_context_) {
+    ::wglDeleteContext(gl_context_);
+  }
+
+  if (gl_device_context_) {
+    if (hwnd())
+      ::ReleaseDC(hwnd(), gl_device_context_);
+    else
+      ::wglReleasePbufferDCARB(pbuffer_, gl_device_context_);
+
+    gl_device_context_ = NULL;
+  }
+
+  if (pbuffer_) {
+    ::wglDestroyPbufferARB(pbuffer_);
+    pbuffer_ = NULL;
+  }
+#endif
 }
 
 #if defined(OS_MACOSX)
@@ -1402,6 +1471,8 @@ void GLES2DecoderImpl::Destroy() {
   if (pbuffer_)
     CGLDestroyPBuffer(pbuffer_);
 #endif
+
+  DestroyPlatformSpecific();
 }
 
 const char* GLES2DecoderImpl::GetCommandName(unsigned int command_id) const {
@@ -1652,7 +1723,7 @@ void GLES2DecoderImpl::DoLinkProgram(GLuint program) {
 void GLES2DecoderImpl::DoSwapBuffers() {
 #if defined(UNIT_TEST)
 #elif defined(OS_WIN)
-  ::SwapBuffers(device_context_);
+  ::SwapBuffers(gl_device_context_);
 #elif defined(OS_LINUX)
   DCHECK(window());
   window()->SwapBuffers();

@@ -45,11 +45,12 @@ enum IPCMessageStart {
   WorkerMsgStart,
   WorkerHostMsgStart,
   NaClProcessMsgStart,
-  CommandBufferMsgStart,
+  GpuCommandBufferMsgStart,
   UtilityMsgStart,
   UtilityHostMsgStart,
   GpuMsgStart,
   GpuHostMsgStart,
+  GpuChannelMsgStart,
   // NOTE: When you add a new message class, also update
   // IPCStatusView::IPCStatusView to ensure logging works.
   LastMsgIndex

@@ -13,6 +13,7 @@
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/timer.h"
+#include "ipc/ipc_channel_handle.h"
 #include "chrome/common/edit_command.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/property_bag.h"
@@ -443,6 +444,11 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // Using int instead of ViewHostMsg_ImeControl for control's type to avoid
   // having to bring in render_messages.h in a header file.
   void OnMsgImeUpdateStatus(int control, const gfx::Rect& caret_rect);
+
+  // Renderer process is requesting that the browser process establish a GPU
+  // channel.
+  void OnMsgEstablishGpuChannel();
+
 #if defined(OS_LINUX)
   void OnMsgCreatePluginContainer(gfx::PluginWindowHandle id);
   void OnMsgDestroyPluginContainer(gfx::PluginWindowHandle id);

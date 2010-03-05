@@ -664,12 +664,17 @@
       'msvs_guid': 'F10F1ECD-D84D-4C33-8468-9DDFE19F4D8A',
       'dependencies': [
         '../base/base.gyp:base',
+        '../gpu/gpu.gyp:command_buffer_service',
         'common',
         '../skia/skia.gyp:skia',
       ],
       'sources': [
         'gpu/gpu_backing_store_win.cc',
         'gpu/gpu_backing_store_win.h',
+        'gpu/gpu_channel.cc',
+        'gpu/gpu_channel.h',
+        'gpu/gpu_command_buffer_stub.cc',
+        'gpu/gpu_command_buffer_stub.h',
         'gpu/gpu_config.h',
         'gpu/gpu_main.cc',
         'gpu/gpu_process.cc',

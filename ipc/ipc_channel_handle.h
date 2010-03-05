@@ -5,6 +5,8 @@
 #ifndef IPC_IPC_CHANNEL_HANDLE_H_
 #define IPC_IPC_CHANNEL_HANDLE_H_
 
+#include <string>
+
 #include "build/build_config.h"
 
 #if defined(OS_POSIX)

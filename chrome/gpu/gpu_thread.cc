@@ -5,7 +5,9 @@
 #include "chrome/gpu/gpu_thread.h"
 
 #include "build/build_config.h"
+#include "chrome/common/child_process.h"
 #include "chrome/common/gpu_messages.h"
+#include "chrome/gpu/gpu_channel.h"
 #include "chrome/gpu/gpu_config.h"
 
 #if defined(OS_WIN)
@@ -37,9 +39,28 @@ GpuBackingStoreGLXContext* GpuThread::GetGLXContext() {
 void GpuThread::OnControlMessageReceived(const IPC::Message& msg) {
   bool msg_is_ok = true;
   IPC_BEGIN_MESSAGE_MAP_EX(GpuThread, msg, msg_is_ok)
+    IPC_MESSAGE_HANDLER(GpuMsg_EstablishChannel,
+                        OnEstablishChannel)
     IPC_MESSAGE_HANDLER(GpuMsg_NewRenderWidgetHostView,
                         OnNewRenderWidgetHostView)
   IPC_END_MESSAGE_MAP_EX()
+}
+
+void GpuThread::OnEstablishChannel(int renderer_id) {
+  scoped_refptr<GpuChannel> channel =
+      GpuChannel::EstablishGpuChannel(renderer_id);
+  IPC::ChannelHandle channel_handle;
+  if (channel.get()) {
+    channel_handle.name = channel->channel_name();
+#if defined(OS_POSIX)
+    // On POSIX, pass the renderer-side FD. Also mark it as auto-close so that
+    // it gets closed after it has been sent.
+    int renderer_fd = channel->DisownRendererFd();
+    channel_handle.socket = base::FileDescriptor(renderer_fd, true);
+#endif
+  }
+
+  Send(new GpuHostMsg_ChannelEstablished(channel_handle));
 }
 
 void GpuThread::OnNewRenderWidgetHostView(GpuNativeWindowHandle parent_window,

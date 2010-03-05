@@ -14,9 +14,11 @@
 #include "base/gfx/size.h"
 #include "base/ref_counted.h"
 #include "base/shared_memory.h"
+#include "chrome/renderer/gpu_channel_host.h"
 #include "chrome/renderer/paint_aggregator.h"
 #include "chrome/renderer/render_process.h"
 #include "ipc/ipc_channel.h"
+#include "ipc/ipc_channel_handle.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCompositionCommand.h"
@@ -105,6 +107,15 @@ class RenderWidget : public IPC::Channel::Listener,
   // Close the underlying WebWidget.
   virtual void Close();
 
+  // Asynchronously establish a channel to the GPU plugin if not previously
+  // established or if it has been lost (for example if the GPU plugin crashed).
+  // Use GetGpuChannel() to determine when the channel is ready for use.
+  void EstablishGpuChannel();
+
+  // Get the GPU channel. Returns NULL if the channel is not established or
+  // has been lost.
+  GpuChannelHost* GetGpuChannel();
+
  protected:
   // Friend RefCounted so that the dtor can be non-public. Using this class
   // without ref-counting is an error.
@@ -160,6 +171,7 @@ class RenderWidget : public IPC::Channel::Listener,
                            const string16& ime_string);
   void OnMsgRepaint(const gfx::Size& size_to_paint);
   void OnSetTextDirection(WebKit::WebTextDirection direction);
+  void OnGpuChannelEstablished(const IPC::ChannelHandle& channel_handle);
 
   // Override point to notify that a paint has happened. This fires after the
   // browser side has updated the screen for a newly painted region.
@@ -316,6 +328,9 @@ class RenderWidget : public IPC::Channel::Listener,
 
   // Indicates if the next sequence of Char events should be suppressed or not.
   bool suppress_next_char_events_;
+
+  // The channel from the renderer process to the GPU process.
+  scoped_refptr<GpuChannelHost> gpu_channel_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidget);
 };

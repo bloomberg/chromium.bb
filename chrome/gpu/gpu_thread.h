@@ -34,6 +34,7 @@ class GpuThread : public ChildThread {
   virtual void OnControlMessageReceived(const IPC::Message& msg);
 
   // Message handlers.
+  void OnEstablishChannel(int renderer_id);
   void OnNewRenderWidgetHostView(GpuNativeWindowHandle parent_window,
                                  int32 routing_id);
 

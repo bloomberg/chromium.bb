@@ -94,6 +94,8 @@
         'renderer/form_manager.h',
         'renderer/geolocation_dispatcher.cc',
         'renderer/geolocation_dispatcher.h',
+        'renderer/gpu_channel_host.cc',
+        'renderer/gpu_channel_host.h',
         'renderer/localized_error.cc',
         'renderer/localized_error.h',
         'renderer/navigation_state.h',

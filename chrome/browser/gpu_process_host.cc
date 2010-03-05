@@ -11,9 +11,11 @@
 #include "chrome/browser/child_process_host.h"
 #include "chrome/browser/child_process_launcher.h"
 #include "chrome/browser/io_thread.h"
+#include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/common/child_process_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/gpu_messages.h"
+#include "chrome/common/render_messages.h"
 #include "ipc/ipc_switches.h"
 
 GpuProcessHost::GpuProcessHost() : last_routing_id_(1) {
@@ -93,8 +95,7 @@ bool GpuProcessHost::Send(IPC::Message* msg) {
 
 void GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
   if (message.routing_id() == MSG_ROUTING_CONTROL) {
-    // We don't currently have any control messages.
-    // OnControlMessageReceived(message);
+    OnControlMessageReceived(message);
   } else {
     router_.OnMessageReceived(message);
   }
@@ -120,4 +121,41 @@ void GpuProcessHost::AddRoute(int32 routing_id,
 
 void GpuProcessHost::RemoveRoute(int32 routing_id) {
   router_.RemoveRoute(routing_id);
+}
+
+void GpuProcessHost::EstablishGpuChannel(
+    int renderer_id,
+    int routing_id) {
+  if (Send(new GpuMsg_EstablishChannel(renderer_id)))
+    sent_requests_.push(ChannelRequest(renderer_id, routing_id));
+  else
+    ReplyToRenderer(renderer_id, routing_id, IPC::ChannelHandle());
+}
+
+void GpuProcessHost::OnControlMessageReceived(const IPC::Message& message) {
+  IPC_BEGIN_MESSAGE_MAP(GpuProcessHost, message)
+    IPC_MESSAGE_HANDLER(GpuHostMsg_ChannelEstablished, OnChannelEstablished)
+    IPC_MESSAGE_UNHANDLED_ERROR()
+  IPC_END_MESSAGE_MAP()
+}
+
+void GpuProcessHost::OnChannelEstablished(
+    const IPC::ChannelHandle& channel_handle) {
+  const ChannelRequest& request = sent_requests_.front();
+
+  ReplyToRenderer(request.renderer_id, request.routing_id, channel_handle);
+  sent_requests_.pop();
+}
+
+void GpuProcessHost::ReplyToRenderer(
+    int renderer_id,
+    int routing_id,
+    const IPC::ChannelHandle& channel) {
+  // Check whether the renderer process is still around.
+  RenderProcessHost* process_host = RenderProcessHost::FromID(renderer_id);
+  if (!process_host)
+    return;
+
+  CHECK(process_host->Send(new ViewMsg_GpuChannelEstablished(routing_id,
+                                                             channel)));
 }

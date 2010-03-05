@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/gfx/rect.h"
 #include "base/gfx/size.h"
 #include "base/process.h"
 #include "chrome/common/transport_dib.h"

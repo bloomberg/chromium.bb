@@ -98,6 +98,8 @@ class WebPluginDelegateStub : public IPC::Channel::Listener,
                                int notify_id);
   void OnHTTPRangeRequestReply(unsigned long resource_id, int range_request_id);
   void OnCreateCommandBuffer(int* route_id);
+  void OnDestroyCommandBuffer();
+
   void CreateSharedBuffer(uint32 size,
                           base::SharedMemory* shared_buf,
                           base::SharedMemoryHandle* remote_handle);

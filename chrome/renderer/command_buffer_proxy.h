@@ -27,9 +27,7 @@ class CommandBufferProxy : public gpu::CommandBuffer,
                            public IPC::Channel::Listener,
                            public IPC::Message::Sender {
  public:
-  explicit CommandBufferProxy(
-      PluginChannelHost* channel,
-      int route_id);
+  CommandBufferProxy(IPC::Channel::Sender* channel, int route_id);
   virtual ~CommandBufferProxy();
 
   // IPC::Channel::Listener implementation:
@@ -38,6 +36,8 @@ class CommandBufferProxy : public gpu::CommandBuffer,
 
   // IPC::Message::Sender implementation:
   virtual bool Send(IPC::Message* msg);
+
+  int route_id() const { return route_id_; }
 
   // CommandBuffer implementation:
   virtual bool Initialize(int32 size);
@@ -90,7 +90,7 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   // The last cached state received from the service.
   State last_state_;
 
-  scoped_refptr<PluginChannelHost> channel_;
+  IPC::Channel::Sender* channel_;
   int route_id_;
 
   // Pending asynchronous flush callbacks.

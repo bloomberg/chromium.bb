@@ -134,7 +134,7 @@
       'target_name': 'gles2_cmd_helper',
       'type': 'static_library',
       'dependencies': [
-        'command_buffer_common',
+        'command_buffer_client',
       ],
       'sources': [
         'command_buffer/client/gles2_cmd_helper.cc',

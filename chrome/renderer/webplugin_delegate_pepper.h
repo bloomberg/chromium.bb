@@ -205,7 +205,7 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
 
 #if defined(ENABLE_GPU)
   // The command buffer used to issue commands to the nested GPU plugin.
-  scoped_ptr<CommandBufferProxy> command_buffer_;
+  CommandBufferProxy* command_buffer_;
 #endif
 
   // Tells the browser out-of-band where the nested delegate lives on

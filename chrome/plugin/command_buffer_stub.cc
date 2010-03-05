@@ -5,7 +5,7 @@
 #include "base/callback.h"
 #include "base/scoped_open_process.h"
 #include "base/shared_memory.h"
-#include "chrome/common/command_buffer_messages.h"
+#include "chrome/common/gpu_messages.h"
 #include "chrome/common/plugin_messages.h"
 #include "chrome/plugin/command_buffer_stub.h"
 #include "chrome/plugin/plugin_channel.h"
@@ -29,19 +29,19 @@ CommandBufferStub::~CommandBufferStub() {
 
 void CommandBufferStub::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(CommandBufferStub, message)
-    IPC_MESSAGE_HANDLER(CommandBufferMsg_Initialize, OnInitialize);
-    IPC_MESSAGE_HANDLER(CommandBufferMsg_GetState, OnGetState);
-    IPC_MESSAGE_HANDLER(CommandBufferMsg_AsyncGetState, OnAsyncGetState);
-    IPC_MESSAGE_HANDLER(CommandBufferMsg_Flush, OnFlush);
-    IPC_MESSAGE_HANDLER(CommandBufferMsg_AsyncFlush, OnAsyncFlush);
-    IPC_MESSAGE_HANDLER(CommandBufferMsg_CreateTransferBuffer,
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_Initialize, OnInitialize);
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_GetState, OnGetState);
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_AsyncGetState, OnAsyncGetState);
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_Flush, OnFlush);
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_AsyncFlush, OnAsyncFlush);
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_CreateTransferBuffer,
                         OnCreateTransferBuffer);
-    IPC_MESSAGE_HANDLER(CommandBufferMsg_DestroyTransferBuffer,
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_DestroyTransferBuffer,
                         OnDestroyTransferBuffer);
-    IPC_MESSAGE_HANDLER(CommandBufferMsg_GetTransferBuffer,
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_GetTransferBuffer,
                         OnGetTransferBuffer);
 #if defined(OS_MACOSX)
-    IPC_MESSAGE_HANDLER(CommandBufferMsg_SetWindowSize, OnSetWindowSize);
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SetWindowSize, OnSetWindowSize);
 #endif
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()
@@ -127,7 +127,7 @@ void CommandBufferStub::OnGetState(gpu::CommandBuffer::State* state) {
 
 void CommandBufferStub::OnAsyncGetState() {
   gpu::CommandBuffer::State state = command_buffer_->GetState();
-  Send(new CommandBufferMsg_UpdateState(route_id_, state));
+  Send(new GpuCommandBufferMsg_UpdateState(route_id_, state));
 }
 
 void CommandBufferStub::OnFlush(int32 put_offset,
@@ -137,7 +137,7 @@ void CommandBufferStub::OnFlush(int32 put_offset,
 
 void CommandBufferStub::OnAsyncFlush(int32 put_offset) {
   gpu::CommandBuffer::State state = command_buffer_->Flush(put_offset);
-  Send(new CommandBufferMsg_UpdateState(route_id_, state));
+  Send(new GpuCommandBufferMsg_UpdateState(route_id_, state));
 }
 
 void CommandBufferStub::OnCreateTransferBuffer(int32 size, int32* id) {
