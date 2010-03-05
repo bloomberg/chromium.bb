@@ -53,6 +53,19 @@
   fun:*Syncer*SyncShare*
 }
 
+{
+  bug_37408
+  ThreadSanitizer:Race
+  fun:*browser_sync*Syncer*ExitRequested*
+  fun:*browser_sync*Syncer*SyncShare*
+}
+
+{
+  bug_37496
+  ThreadSanitizer:Race
+  fun:*browser_sync*SyncShareIntercept*Observe*
+}
+
 # The race happens during enumeration of ChromeThreads.
 # For each ChromeThread we check whether its message_loop()
 # equals MessageLoop::current().
