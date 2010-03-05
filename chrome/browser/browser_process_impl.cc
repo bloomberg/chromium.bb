@@ -270,6 +270,8 @@ bool BrowserProcessImpl::ShouldClearLocalState(FilePath* profile_path) {
 
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   profile = profile_manager_->GetDefaultProfile(user_data_dir);
+  if (!profile)
+    return false;
   *profile_path = profile->GetPath();
   return profile->GetPrefs()->GetBoolean(prefs::kClearSiteDataOnExit);
 }
