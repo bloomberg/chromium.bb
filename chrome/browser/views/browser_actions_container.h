@@ -410,7 +410,7 @@ class BrowserActionsContainer
 
   // Animate to the target value (unless testing, in which case we go straight
   // to the target size).
-  void Animate(SlideAnimation::TweenType tween_type);
+  void Animate(SlideAnimation::TweenType tween_type, int target_size);
 
   // Returns true if this extension should be shown in this toolbar. This can
   // return false if we are in an incognito window and the extension is disabled

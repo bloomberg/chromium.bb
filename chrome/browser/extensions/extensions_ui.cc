@@ -119,8 +119,6 @@ void ExtensionsUIHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetString(IDS_EXTENSIONS_DISABLE));
   localized_strings.SetString(L"enable",
       l10n_util::GetString(IDS_EXTENSIONS_ENABLE));
-  localized_strings.SetString(L"disableIncognito",
-      l10n_util::GetString(IDS_EXTENSIONS_DISABLE_INCOGNITO));
   localized_strings.SetString(L"enableIncognito",
       l10n_util::GetString(IDS_EXTENSIONS_ENABLE_INCOGNITO));
   localized_strings.SetString(L"enableIncognitoWarning",

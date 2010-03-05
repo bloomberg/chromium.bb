@@ -988,13 +988,13 @@ void BrowserActionsContainer::BrowserActionAdded(Extension* extension,
     OnBrowserActionVisibilityChanged();
   } else {
     // Container was at max, increase the size of it by one icon.
-    animation_target_size_ = IconCountToWidth(visible_actions + 1);
+    int target_size = IconCountToWidth(visible_actions + 1);
 
     // We don't want the chevron to appear while we animate. See documentation
     // in the header for why we do this.
     suppress_chevron_ = !chevron_->IsVisible();
 
-    Animate(SlideAnimation::NONE);
+    Animate(SlideAnimation::NONE, target_size);
   }
 }
 
@@ -1029,10 +1029,10 @@ void BrowserActionsContainer::BrowserActionRemoved(Extension* extension) {
       // and there are other icons there). We don't decrement visible_actions
       // because we want the container to stay the same size (clamping will take
       // care of shrinking the container if there aren't enough icons to show).
-      animation_target_size_ =
+      int target_size =
           ClampToNearestIconCount(IconCountToWidth(visible_actions), true);
 
-      Animate(SlideAnimation::EASE_OUT);
+      Animate(SlideAnimation::EASE_OUT, target_size);
       return;
     }
   }
@@ -1078,13 +1078,16 @@ int BrowserActionsContainer::ContainerMinSize() const {
 }
 
 void BrowserActionsContainer::Animate(
-    SlideAnimation::TweenType tween_type) {
+    SlideAnimation::TweenType tween_type, int target_size) {
   if (!disable_animations_during_testing_) {
-    // Animate!
+    // Animate! We have to set the animation_target_size_ after calling Reset(),
+    // because that could end up calling AnimationEnded which clears the value.
     resize_animation_->Reset();
     resize_animation_->SetTweenType(tween_type);
+    animation_target_size_ = target_size;
     resize_animation_->Show();
   } else {
+    animation_target_size_ = target_size;
     AnimationEnded(resize_animation_.get());
   }
 }

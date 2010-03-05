@@ -586,8 +586,12 @@ void ExtensionsService::SetIsIncognitoEnabled(const std::string& extension_id,
                                               bool enabled) {
   extension_prefs_->SetIsIncognitoEnabled(extension_id, enabled);
 
-  DCHECK(GetExtensionByIdInternal(extension_id, true, true));
-  ReloadExtension(extension_id);
+  Extension* extension = GetExtensionByIdInternal(extension_id, true, true);
+  DCHECK(extension);
+
+  // Broadcast unloaded and loaded events to update browser state.
+  NotifyExtensionUnloaded(extension);
+  NotifyExtensionLoaded(extension);
 }
 
 void ExtensionsService::CheckForExternalUpdates() {

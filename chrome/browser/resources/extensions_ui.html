@@ -189,21 +189,10 @@ html[dir='rtl'] #get-moar-extensions {
 }
 
 .extension-actions {
-  float: right;
-  white-space: nowrap;
-}
-
-html[dir='rtl'] .extension-actions {
-  float: left;
-  white-space: nowrap;
 }
 
 .extension-actions-div {
-  text-align: right;
-}
-
-html[dir='rtl'] .extension-actions-div {
-  text-align: left;
+  margin-top: 0.4em;
 }
 
 .extension-options-cell {
@@ -555,15 +544,19 @@ function handleEnableExtension(node, enable) {
 }
 
 /**
- * Handles a 'enableIncognito' or 'disableIncognito' button getting clicked.
+ * Handles the 'enableIncognito' checkbox getting changed.
  */
-function handleEnableExtensionIncognito(node, enable) {
-  // Tell the C++ ExtensionDOMHandler to reload the extension.
-  if (enable && !node.incognitoSafe) {
-    if (!confirm(templateData["enableIncognitoWarning"]))
+function handleToggleExtensionIncognito(node, toggleCheckbox) {
+  if (toggleCheckbox)
+    node.checked = !node.checked;
+
+  if (node.checked && !node.incognitoSafe) {
+    if (!confirm(templateData["enableIncognitoWarning"])) {
+      node.checked = false;
       return;
+    }
   }
-  chrome.send('enableIncognito', [node.extensionId, String(enable)]);
+  chrome.send('enableIncognito', [node.extensionId, String(node.checked)]);
   requestExtensionsData();
 }
 
@@ -821,8 +814,6 @@ function autoUpdate() {
                 </ul>
               </div>
             </div>
-          </td>
-          <td width="300">
             <div class="extension-actions-div">
               <span class="extension-actions">
                 <a
@@ -833,21 +824,6 @@ function autoUpdate() {
                   i18n-content="reload"
                   >RELOAD</a>
                 <span jsdisplay="enabled && allow_reload">-</span>
-                <a
-                  jsvalues=".extensionId:id;.enabled:enabled"
-                  jsdisplay="enabled && enabledIncognito && experimentalIncognito"
-                  onclick="handleEnableExtensionIncognito(this, false)"
-                  href="javascript:void();"
-                  i18n-content="disableIncognito"
-                  >DISABLE INCOGNITO</a>
-                <a
-                  jsvalues=".extensionId:id;.enabled=enabled"
-                  jsdisplay="enabled && !enabledIncognito && experimentalIncognito"
-                  onclick="handleEnableExtensionIncognito(this, true)"
-                  href="javascript:void();"
-                  i18n-content="enableIncognito"
-                  >ENABLE INCOGNITO</a>
-                <span jsdisplay="enabled && experimentalIncognito">-</span>
                 <a
                   jsvalues=".extensionId:id"
                   jsdisplay="enabled"
@@ -868,23 +844,29 @@ function autoUpdate() {
                   href="javascript:void();"
                   i18n-content="uninstall"
                   >UNINSTALL</a>
-              </span>
-            </div>
-          </td>
-          <td class="extension-options-cell" valign="center" width="90">
-                <button
+                <span jsdisplay="options_url && enabled">-</span>
+                <a
                   jsdisplay="options_url && enabled"
                   jsvalues=".extensionId:id"
                   onclick="handleOptions(this)"
+                  href="javascript:void();"
                   i18n-content="options"
-                  >OPTIONS</button>
-                <button
-                  jsdisplay="!enabled ||
-                             typeof(options_url) == 'undefined' ||
-                             options_url.length == 0"
-                  disabled="true"
-                  i18n-content="options"
-                  >OPTIONS</button>
+                  >OPTIONS</a>
+                <span
+                  jsdisplay="enabled && experimentalIncognito"
+                  >|</span>
+                <input type="checkbox"
+                  jsvalues=".extensionId:id;.enabled=enabled"
+                  jsdisplay="enabled && experimentalIncognito"
+                  jseval="this.checked = enabledIncognito"
+                  onchange="handleToggleExtensionIncognito(this, false)" />
+                <label
+                  jsdisplay="enabled && experimentalIncognito"
+                  onclick="handleToggleExtensionIncognito(this.previousSibling.previousSibling, true)"
+                  i18n-content="enableIncognito">
+                  ALLOW THIS EXTENSION TO RUN IN INCOGNITO</label>
+              </span>
+            </div>
           </td>
           </tr>
           </table>

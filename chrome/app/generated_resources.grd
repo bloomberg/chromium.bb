@@ -3293,11 +3293,8 @@ each locale. -->
       <message name="IDS_EXTENSIONS_ENABLE" desc="The link for enabling extensions.">
         Enable
       </message>
-      <message name="IDS_EXTENSIONS_ENABLE_INCOGNITO" desc="The link for enabling extensions in incognito.">
-        Enable in Incognito
-      </message>
-      <message name="IDS_EXTENSIONS_DISABLE_INCOGNITO" desc="The link for disabling extensions in incognito.">
-        Disable in Incognito
+      <message name="IDS_EXTENSIONS_ENABLE_INCOGNITO" desc="The checkbox for enabling extensions in incognito.">
+        Allow this extension to run in incognito
       </message>
       <message name="IDS_EXTENSIONS_ENABLE_INCOGNITO_WARNING" desc="A warning message displayed when the user attempts to enable a non-incognito-safe extension in incognito.">
         This extension doesn't officially support running in incognito mode. Enable anyway?

@@ -71,19 +71,10 @@ bool ExtensionBrowserTest::LoadExtensionImpl(const FilePath& path,
   if (incognito_enabled) {
     // Enable the incognito bit in the extension prefs. The call to
     // OnExtensionInstalled ensures the other extension prefs are set up with
-    // the defaults. Note that toggling incognito reloads the extension, so
-    // we have to run a modal loop to wait for that.
-    NotificationRegistrar registrar;
-    registrar.Add(this, NotificationType::EXTENSION_LOADED,
-                  NotificationService::AllSources());
-
+    // the defaults.
     Extension* extension = service->extensions()->at(num_after - 1);
     service->extension_prefs()->OnExtensionInstalled(extension);
     service->SetIsIncognitoEnabled(extension->id(), true);
-
-    MessageLoop::current()->PostDelayedTask(
-        FROM_HERE, new MessageLoop::QuitTask, kTimeoutMs);
-    ui_test_utils::RunMessageLoop();
   }
 
   return WaitForExtensionHostsToLoad();
