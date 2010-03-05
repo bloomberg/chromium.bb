@@ -246,7 +246,9 @@ TEST_F(WorkerTest, WorkerLocation) {
 TEST_F(WorkerTest, WorkerMessagePort) {
   RunWorkerFastLayoutTest("worker-messageport.html");
 }
-TEST_F(WorkerTest, WorkerMessagePortGC) {
+
+// http://crbug.com/37499.
+TEST_F(WorkerTest, DISABLED_WorkerMessagePortGC) {
   RunWorkerFastLayoutTest("worker-messageport-gc.html");
 }
 TEST_F(WorkerTest, WorkerMultiPort) {
