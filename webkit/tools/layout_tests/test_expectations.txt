@@ -2729,7 +2729,7 @@ BUG32691 MAC DEBUG : svg/batik/text/textEffect.svg = TEXT PASS
 BUG32692 MAC DEBUG : svg/custom/visibility-override-filter.svg = TEXT PASS
 BUG32693 MAC DEBUG : svg/dom/SVGRectElement/rect-modify-rx.svg = TEXT PASS
 BUG32666 MAC DEBUG : svg/custom/use-detach.svg = IMAGE PASS
-BUG35773 : inspector/console-dir.html = CRASH TEXT PASS
+BUG35773 WIN LINUX : inspector/console-dir.html = CRASH TEXT PASS
 
 BUG33293 SKIP : fast/media/lifetime.html = TIMEOUT
 
@@ -2855,3 +2855,7 @@ BUG37473 : svg/text/text-intro-05-t.svg = TEXT
 
 BUG37248 LINUX : svg/W3C-SVG-1.1/filters-displace-01-f.svg = IMAGE+TEXT PASS TEXT
 BUG37463 MAC DEBUG : svg/custom/transform-ignore-after-invalid.svg = PASS CRASH
+
+// WebKit roll 55512:55584
+BUG37540 MAC SKIP : inspector/console-dir.html = CRASH TEXT PASS
+
