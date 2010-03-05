@@ -434,14 +434,6 @@ class GLES2DecoderImpl : public GLES2Decoder {
   // Wrapper for glBindTexture since we need to track the current targets.
   void DoBindTexture(GLenum target, GLuint texture);
 
-  // Wrapper for BufferData.
-  void DoBufferData(
-    GLenum target, GLsizeiptr size, const GLvoid * data, GLenum usage);
-
-  // Wrapper for BufferSubData.
-  void DoBufferSubData(
-    GLenum target, GLintptr offset, GLsizeiptr size, const GLvoid * data);
-
   // Wrapper for glCompileShader.
   void DoCompileShader(GLuint shader);
 
@@ -1511,14 +1503,9 @@ void GLES2DecoderImpl::DoBindBuffer(GLenum target, GLuint buffer) {
   BufferManager::BufferInfo* info = NULL;
   if (buffer) {
     info = GetBufferInfo(buffer);
-    // Check the buffer exists
-    // Check that we are not trying to bind it to a different target.
-    if (!info || (info->target() != 0 && info->target() != target)) {
+    if (!info) {
       SetGLError(GL_INVALID_OPERATION);
       return;
-    }
-    if (info->target() == 0) {
-      info->set_target(target);
     }
   }
   switch (target) {
@@ -1932,19 +1919,28 @@ error::Error GLES2DecoderImpl::HandleDrawElements(
                !ValidateGLenumIndexType(type)) {
       SetGLError(GL_INVALID_ENUM);
     } else {
-      GLuint max_vertex_accessed;
-      if (!bound_element_array_buffer_->GetMaxValueForRange(
-          offset, count, type, &max_vertex_accessed)) {
+      GLsizeiptr buffer_size = bound_element_array_buffer_->size();
+      if (offset > buffer_size) {
         SetGLError(GL_INVALID_OPERATION);
       } else {
-        if (IsDrawValid(max_vertex_accessed)) {
-          bool has_non_renderable_textures;
-          SetBlackTextureForNonRenderableTextures(
-              &has_non_renderable_textures);
+        GLsizei usable_size = buffer_size - offset;
+        GLsizei num_elements =
+            usable_size / GLES2Util::GetGLTypeSizeForTexturesAndBuffers(type);
+        if (count > num_elements) {
+          SetGLError(GL_INVALID_OPERATION);
+        } else {
           const GLvoid* indices = reinterpret_cast<const GLvoid*>(offset);
-          glDrawElements(mode, count, type, indices);
-          if (has_non_renderable_textures) {
-            RestoreStateForNonRenderableTextures();
+          GLuint max_vertex_accessed =
+              bound_element_array_buffer_->GetMaxValueForRange(
+                  offset, count, type);
+          if (IsDrawValid(max_vertex_accessed)) {
+            bool has_non_renderable_textures;
+            SetBlackTextureForNonRenderableTextures(
+                &has_non_renderable_textures);
+            glDrawElements(mode, count, type, indices);
+            if (has_non_renderable_textures) {
+              RestoreStateForNonRenderableTextures();
+            }
           }
         }
       }
@@ -2276,40 +2272,6 @@ error::Error GLES2DecoderImpl::HandleGetString(
   return error::kNoError;
 }
 
-void GLES2DecoderImpl::DoBufferData(
-  GLenum target, GLsizeiptr size, const GLvoid * data, GLenum usage) {
-  if (!ValidateGLenumBufferTarget(target) ||
-      !ValidateGLenumBufferUsage(usage)) {
-    SetGLError(GL_INVALID_ENUM);
-    return;
-  }
-  if (size < 0) {
-    SetGLError(GL_INVALID_VALUE);
-    DoBufferData(target, size, data, usage);
-  }
-  BufferManager::BufferInfo* info = GetBufferInfoForTarget(target);
-  if (!info) {
-    SetGLError(GL_INVALID_OPERATION);
-    DoBufferData(target, size, data, usage);
-  }
-  // Clear the buffer to 0 if no initial data was passed in.
-  scoped_array<int8> zero;
-  if (!data) {
-    zero.reset(new int8[size]);
-    memset(zero.get(), 0, size);
-    data = zero.get();
-  }
-  CopyRealGLErrorsToWrapper();
-  glBufferData(target, size, data, usage);
-  GLenum error = glGetError();
-  if (error != GL_NO_ERROR) {
-    SetGLError(error);
-  } else {
-    info->SetSize(size);
-    info->SetRange(0, size, data);
-  }
-}
-
 error::Error GLES2DecoderImpl::HandleBufferData(
     uint32 immediate_data_size, const gles2::BufferData& c) {
   GLenum target = static_cast<GLenum>(c.target);
@@ -2324,7 +2286,35 @@ error::Error GLES2DecoderImpl::HandleBufferData(
       return error::kOutOfBounds;
     }
   }
-  DoBufferData(target, size, data, usage);
+  if (!ValidateGLenumBufferTarget(target) ||
+      !ValidateGLenumBufferUsage(usage)) {
+    SetGLError(GL_INVALID_ENUM);
+    return error::kNoError;
+  }
+  if (size < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
+  BufferManager::BufferInfo* info = GetBufferInfoForTarget(target);
+  if (!info) {
+    SetGLError(GL_INVALID_OPERATION);
+    return error::kNoError;
+  }
+  // Clear the buffer to 0 if no initial data was passed in.
+  scoped_array<int8> zero;
+  if (!data) {
+    zero.reset(new int8[size]);
+    memset(zero.get(), 0, size);
+    data = zero.get();
+  }
+  CopyRealGLErrorsToWrapper();
+  glBufferData(target, size, data, usage);
+  GLenum error = glGetError();
+  if (error != GL_NO_ERROR) {
+    SetGLError(error);
+  } else {
+    info->set_size(size);
+  }
   return error::kNoError;
 }
 
@@ -2338,21 +2328,29 @@ error::Error GLES2DecoderImpl::HandleBufferDataImmediate(
     return error::kOutOfBounds;
   }
   GLenum usage = static_cast<GLenum>(c.usage);
-  DoBufferData(target, size, data, usage);
-  return error::kNoError;
-}
-
-void GLES2DecoderImpl::DoBufferSubData(
-  GLenum target, GLintptr offset, GLsizeiptr size, const GLvoid * data) {
+  if (!ValidateGLenumBufferTarget(target) ||
+      !ValidateGLenumBufferUsage(usage)) {
+    SetGLError(GL_INVALID_ENUM);
+    return error::kNoError;
+  }
+  if (size < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   BufferManager::BufferInfo* info = GetBufferInfoForTarget(target);
   if (!info) {
     SetGLError(GL_INVALID_OPERATION);
+    return error::kNoError;
   }
-  if (!info->SetRange(offset, size, data)) {
-    SetGLError(GL_INVALID_VALUE);
+  CopyRealGLErrorsToWrapper();
+  glBufferData(target, size, data, usage);
+  GLenum error = glGetError();
+  if (error != GL_NO_ERROR) {
+    SetGLError(error);
   } else {
-    glBufferSubData(target, offset, size, data);
+    info->set_size(size);
   }
+  return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::DoCompressedTexImage2D(

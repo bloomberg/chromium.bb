@@ -7,9 +7,7 @@
 
 #include <map>
 #include "base/basictypes.h"
-#include "base/logging.h"
 #include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 
 namespace gpu {
@@ -29,7 +27,6 @@ class BufferManager {
 
     explicit BufferInfo(GLuint buffer_id)
         : buffer_id_(buffer_id),
-          target_(0),
           size_(0) {
     }
 
@@ -37,32 +34,17 @@ class BufferManager {
       return buffer_id_;
     }
 
-    GLenum target() const {
-      return target_;
-    }
-
-    void set_target(GLenum target) {
-      DCHECK_EQ(target_, 0u);  // you can only set this once.
-      target_ = target;
-    }
-
     GLsizeiptr size() const {
       return size_;
     }
 
-    void SetSize(GLsizeiptr size);
+    void set_size(GLsizeiptr size) {
+      size_ = size;
+    }
 
-    // Sets a range of data for this buffer. Returns false if the offset or size
-    // is out of range.
-    bool SetRange(
-      GLintptr offset, GLsizeiptr size, const GLvoid * data);
-
-    // Gets the maximum value in the buffer for the given range interpreted as
-    // the given type. Returns false if offset and count are out of range.
-    // offset is in bytes.
-    // count is in elements of type.
-    bool GetMaxValueForRange(GLuint offset, GLsizei count, GLenum type,
-                             GLuint* max_value);
+    // Returns the maximum value in the buffer for the given range
+    // interpreted as the given type.
+    GLuint GetMaxValueForRange(GLuint offset, GLsizei count, GLenum type);
 
     bool IsDeleted() {
       return buffer_id_ == 0;
@@ -72,63 +54,14 @@ class BufferManager {
     friend class BufferManager;
     friend class base::RefCounted<BufferInfo>;
 
-    // Represents a range in a buffer.
-    class Range {
-     public:
-      Range(GLuint offset, GLsizei count, GLenum type)
-          : offset_(offset),
-            count_(count),
-            type_(type) {
-      }
-
-      // A less functor provided for std::map so it can find ranges.
-      struct Less {
-        bool operator() (const Range& lhs, const Range& rhs) {
-          if (lhs.offset_ != rhs.offset_) {
-            return lhs.offset_ < rhs.offset_;
-          }
-          if (lhs.count_ != rhs.count_) {
-            return lhs.count_ < rhs.count_;
-          }
-          return lhs.type_ < rhs.type_;
-        }
-      };
-
-     private:
-      GLuint offset_;
-      GLsizei count_;
-      GLenum type_;
-    };
-
     ~BufferInfo() { }
 
     void MarkAsDeleted() {
       buffer_id_ = 0;
-      shadow_.reset();
-      ClearCache();
     }
 
-    // Clears any cache of index ranges.
-    void ClearCache();
-
-    // Service side buffer id.
     GLuint buffer_id_;
-
-    // The type of buffer. 0 = unset, GL_BUFFER_ARRAY = vertex data,
-    // GL_ELEMENT_BUFFER_ARRAY = index data.
-    // Once set a buffer can not be used for something else.
-    GLenum target_;
-
-    // Size of buffer.
     GLsizeiptr size_;
-
-    // A copy of the data in the buffer. This data is only kept if the target
-    // is GL_ELEMENT_BUFFER_ARRAY
-    scoped_array<int8> shadow_;
-
-    // A map of ranges to the highest value in that range of a certain type.
-    typedef std::map<Range, GLuint, Range::Less> RangeToMaxValueMap;
-    RangeToMaxValueMap range_set_;
   };
 
   BufferManager() { }

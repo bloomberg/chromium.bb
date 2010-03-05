@@ -18,13 +18,12 @@ namespace gles2 {
 // returns true.
 template <typename T>
 inline bool SafeMultiply(T a, T b, T* dst) {
+  *dst = 0;
   if (b == 0) {
-    *dst = 0;
     return true;
   }
   T v = a * b;
   if (v / b != a) {
-    *dst = 0;
     return false;
   }
   *dst = v;
@@ -39,8 +38,8 @@ inline bool SafeMultiplyUint32(uint32 a, uint32 b, uint32* dst) {
 // Does an add checking for overflow.  If there was no overflow returns true.
 template <typename T>
 inline bool SafeAdd(T a, T b, T* dst) {
+  *dst = 0;
   if (a + b < a) {
-    *dst = 0;
     return false;
   }
   *dst = a + b;
