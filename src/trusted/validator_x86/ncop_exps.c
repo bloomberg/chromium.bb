@@ -334,57 +334,46 @@ void PrintNcInstStateInstruction(FILE* file, NcInstState* state) {
   putc('\n', file);
 }
 
-char* PrintNcInstStateInstructionToString(NcInstState* state) {
+char* PrintNcInstStateInstructionToString(struct NcInstState* state) {
   FILE* file;
   char* out_string;
   struct stat st;
   size_t file_size;
-  size_t bytes_read;
-  size_t bytes_read_now;
+  size_t fread_items;
 
-  file = fopen("out_file", "w");
-
-  if (file == NULL)
-    goto cleanup;
+  do {
+    file = fopen("out_file", "w");
+    if (file == NULL) break;
 
 #if NACL_LINUX || NACL_OSX
-  chmod("out_file", S_IRUSR | S_IWUSR);
+    chmod("out_file", S_IRUSR | S_IWUSR);
 #endif
 
-  PrintNcInstStateInstruction(file, state);
-  fclose(file);
-
-  if (stat("out_file", &st))
-    goto cleanup;
-
-  file_size = (size_t) st.st_size;
-  if (file_size == 0)
-    goto cleanup;
-
-  out_string = (char*) malloc(file_size + 1);
-  if (out_string == NULL)
-    goto cleanup;
-
-  file = fopen("out_file", "r");
-  if (file == NULL)
-    goto cleanup;
-
-  bytes_read = 0;
-  bytes_read_now = 0;
-  while (bytes_read_now != 0) {
-    bytes_read_now = fread(out_string, file_size - bytes_read, 1, file);
-    bytes_read += bytes_read_now;
-  }
-
-  out_string[bytes_read+1] = 0;
-
-  fclose(file);
-  unlink("out_file");
-  return out_string;
-
- cleanup:
-  if (file != NULL)
+    PrintNcInstStateInstruction(file, state);
     fclose(file);
+
+    if (stat("out_file", &st)) break;
+
+    file_size = (size_t) st.st_size;
+    if (file_size == 0) break;
+
+    out_string = (char*) malloc(file_size + 1);
+    if (out_string == NULL) break;
+
+    file = fopen("out_file", "r");
+    if (file == NULL) break;
+
+    fread_items = fread(out_string, file_size, 1, file);
+    if (fread_items != 1) break;
+
+    fclose(file);
+    unlink("out_file");
+    out_string[file_size] = 0;
+    return out_string;
+  } while (0);
+
+  /* failure */
+  if (file != NULL) fclose(file);
   unlink("out_file");
   return NULL;
 }
