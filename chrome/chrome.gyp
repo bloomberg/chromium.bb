@@ -664,7 +664,6 @@
       'msvs_guid': 'F10F1ECD-D84D-4C33-8468-9DDFE19F4D8A',
       'dependencies': [
         '../base/base.gyp:base',
-        '../gpu/gpu.gyp:command_buffer_service',
         'common',
         '../skia/skia.gyp:skia',
       ],
@@ -708,6 +707,11 @@
           ],
           'dependencies': [
             '../gpu/gpu.gyp:gl_libs',
+          ],
+        }],
+        ['enable_gpu==1', {
+          'dependencies': [
+            '../gpu/gpu.gyp:command_buffer_service',
           ],
         }],
       ],
