@@ -43,6 +43,10 @@ void AutomationResourceMessageFilter::OnFilterAdded(IPC::Channel* channel) {
   channel_ = channel;
 }
 
+void AutomationResourceMessageFilter::OnFilterRemoved() {
+  channel_ = NULL;
+}
+
 // Called on the IPC thread:
 void AutomationResourceMessageFilter::OnChannelConnected(int32 peer_pid) {
 }
@@ -329,8 +333,8 @@ void AutomationResourceMessageFilter::GetCookiesForUrl(
 
   completion_callback_map_[completion_callback_id] = cookie_info;
 
-  channel_->Send(new AutomationMsg_GetCookiesFromHost(0,
-      tab_handle, url, completion_callback_id));
+  Send(new AutomationMsg_GetCookiesFromHost(0, tab_handle, url,
+                                            completion_callback_id));
 }
 
 void AutomationResourceMessageFilter::OnGetCookiesHostResponse(

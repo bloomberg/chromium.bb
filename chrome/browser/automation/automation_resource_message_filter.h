@@ -59,6 +59,8 @@ class AutomationResourceMessageFilter
 
   // IPC::ChannelProxy::MessageFilter methods:
   virtual void OnFilterAdded(IPC::Channel* channel);
+  virtual void OnFilterRemoved();
+
   virtual void OnChannelConnected(int32 peer_pid);
   virtual void OnChannelClosing();
   virtual bool OnMessageReceived(const IPC::Message& message);
