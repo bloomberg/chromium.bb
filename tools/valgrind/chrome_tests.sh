@@ -22,4 +22,4 @@ PATH="${CHROME_VALGRIND}/bin:$PATH"
 export VALGRIND_LIB="$CHROME_VALGRIND/lib/valgrind"
 export VALGRIND_LIB_INNER="$CHROME_VALGRIND/lib/valgrind"
 
-PYTHONPATH=$THISDIR/../../webkit/tools/layout_tests/webkitpy/layout_tests:$THISDIR/../python "$THISDIR/chrome_tests.py" "$@"
+PYTHONPATH=$THISDIR/../python "$THISDIR/chrome_tests.py" "$@"
