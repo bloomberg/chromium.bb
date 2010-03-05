@@ -116,10 +116,17 @@ typedef NPDevice* (*NPAcquireDevicePtr)(
     NPP instance,
     NPDeviceID device);
 
+/* Copy UTF-8 string into clipboard */
+typedef void (*NPCopyTextToClipboardPtr)(
+    NPP instance,
+    const char* content);
+
 /* Pepper extensions */
 struct NPExtensions {
   /* Device interface acquisition */
   NPAcquireDevicePtr acquireDevice;
+  /* Clipboard functionality */
+  NPCopyTextToClipboardPtr copyTextToClipboard;
 };
 
 /* Events -------------------------------------------------------------------*/

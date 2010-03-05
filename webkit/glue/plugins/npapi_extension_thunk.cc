@@ -5,8 +5,11 @@
 #include "webkit/glue/plugins/npapi_extension_thunk.h"
 
 #include "base/logging.h"
+#include "base/utf_string_conversions.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
 #include "webkit/glue/plugins/plugin_instance.h"
+#include "webkit/glue/scoped_clipboard_writer_glue.h"
+#include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webplugin.h"
 #include "webkit/glue/webplugin_delegate.h"
 
@@ -374,11 +377,17 @@ static NPDevice* AcquireDevice(NPP id, NPDeviceID device_id) {
   }
 }
 
+static void CopyTextToClipboard(NPP id, const char* content) {
+  ScopedClipboardWriterGlue scw(webkit_glue::ClipboardGetClipboard());
+  scw.WriteText(UTF8ToUTF16(content));
+}
+
 namespace NPAPI {
 
 NPError GetPepperExtensionsFunctions(void* value) {
   static const NPExtensions kExtensions = {
     &AcquireDevice,
+    &CopyTextToClipboard,
   };
 
   // Return a pointer to the canonical function table.
