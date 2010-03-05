@@ -270,7 +270,7 @@ void DOMStorageDispatcherHost::OnSetItem(
 
   ScopedStorageEventContext scope(this, &url);
   WebStorageArea::Result result;
-  NullableString16 old_value = storage_area->SetItem(key, value, &result);
+  NullableString16 old_value = storage_area->SetItem(key, value, &result, this);
   ViewHostMsg_DOMStorageSetItem::WriteReplyParams(reply_msg, result, old_value);
   Send(reply_msg);
 }
