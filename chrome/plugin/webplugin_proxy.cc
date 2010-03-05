@@ -395,6 +395,13 @@ void WebPluginProxy::Paint(const gfx::Rect& rect) {
   windowless_canvas_->restore();
 #elif defined(OS_MACOSX)
   CGContextSaveGState(windowless_context_);
+  // It is possible for windowless_context_ to change during plugin painting
+  // (since the plugin can make a synchronous call during paint event handling),
+  // in which case we don't want to try to restore it later. Not an owning ref
+  // since owning the ref without owning the shared backing memory doesn't make
+  // sense, so this should only be used for pointer comparisons.
+  CGContextRef saved_context_weak = windowless_context_.get();
+
   if (!background_context_.get()) {
     CGContextSetFillColorWithColor(windowless_context_,
                                    CGColorGetConstantColor(kCGColorBlack));
@@ -411,7 +418,8 @@ void WebPluginProxy::Paint(const gfx::Rect& rect) {
   }
   CGContextClipToRect(windowless_context_, rect.ToCGRect());
   delegate_->Paint(windowless_context_, rect);
-  CGContextRestoreGState(windowless_context_);
+  if (windowless_context_.get() == saved_context_weak)
+    CGContextRestoreGState(windowless_context_);
 #endif
 }
 

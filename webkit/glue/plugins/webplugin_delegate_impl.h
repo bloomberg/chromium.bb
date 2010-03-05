@@ -292,8 +292,9 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   gfx::PluginWindowHandle parent_;
   NPWindow window_;
 #if defined(OS_MACOSX)
+  CGContextRef buffer_context_;  // Weak ref.
 #ifndef NP_NO_CARBON
-  NP_CGContext cg_context_;
+  NP_CGContext np_cg_context_;
 #endif
 #ifndef NP_NO_QUICKDRAW
   NP_Port qd_port_;
@@ -353,6 +354,11 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
 #ifndef NP_NO_CARBON
   // Moves our dummy window to match the current screen location of the plugin.
   void UpdateDummyWindowBounds(const gfx::Point& plugin_origin);
+  
+#ifndef NP_NO_QUICKDRAW
+  // Scrapes the contents of our dummy window into the given context.
+  void ScrapeDummyWindowIntoContext(CGContextRef context);
+#endif
 
   // Adjusts the idle event rate for a Carbon plugin based on its current
   // visibility.

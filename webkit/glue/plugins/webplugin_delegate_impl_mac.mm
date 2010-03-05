@@ -178,6 +178,7 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
       plugin_(NULL),
       instance_(instance),
       parent_(containing_view),
+      buffer_context_(NULL),
       quirks_(0),
       have_focus_(false),
       focus_notifier_(NULL),
@@ -188,7 +189,7 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
       handle_event_depth_(0) {
   memset(&window_, 0, sizeof(window_));
 #ifndef NP_NO_CARBON
-  memset(&cg_context_, 0, sizeof(cg_context_));
+  memset(&np_cg_context_, 0, sizeof(np_cg_context_));
 #endif
 #ifndef NP_NO_QUICKDRAW
   memset(&qd_port_, 0, sizeof(qd_port_));
@@ -206,9 +207,9 @@ WebPluginDelegateImpl::~WebPluginDelegateImpl() {
   DestroyInstance();
 
 #ifndef NP_NO_CARBON
-  if (cg_context_.window) {
+  if (np_cg_context_.window) {
     CarbonPluginWindowTracker::SharedInstance()->DestroyDummyWindowForDelegate(
-        this, reinterpret_cast<WindowRef>(cg_context_.window));
+        this, reinterpret_cast<WindowRef>(np_cg_context_.window));
   }
 #endif
 }
@@ -231,12 +232,12 @@ void WebPluginDelegateImpl::PlatformInitialize() {
     // a non-NULL WindowRef to which it can refer.
     CarbonPluginWindowTracker* window_tracker =
         CarbonPluginWindowTracker::SharedInstance();
-    cg_context_.window = window_tracker->CreateDummyWindowForDelegate(this);
-    cg_context_.context = NULL;
+    np_cg_context_.window = window_tracker->CreateDummyWindowForDelegate(this);
+    np_cg_context_.context = NULL;
     UpdateDummyWindowBounds(gfx::Point(0, 0));
 #ifndef NP_NO_QUICKDRAW
     qd_port_.port =
-        GetWindowPort(reinterpret_cast<WindowRef>(cg_context_.window));
+        GetWindowPort(reinterpret_cast<WindowRef>(np_cg_context_.window));
 #endif
   }
 #endif
@@ -251,7 +252,7 @@ void WebPluginDelegateImpl::PlatformInitialize() {
     case NPDrawingModelCoreGraphics:
 #ifndef NP_NO_CARBON
       if (instance()->event_model() == NPEventModelCarbon)
-        window_.window = &cg_context_;
+        window_.window = &np_cg_context_;
 #endif
       window_.type = NPWindowTypeDrawable;
       break;
@@ -288,22 +289,36 @@ void WebPluginDelegateImpl::PlatformDestroyInstance() {
 }
 
 void WebPluginDelegateImpl::UpdateContext(CGContextRef context) {
+  buffer_context_ = context;
 #ifndef NP_NO_CARBON
-  // Flash on the Mac apparently caches the context from the struct it receives
-  // in NPP_SetWindow, and continues to use it even when the contents of the
-  // struct have changed, so we need to call NPP_SetWindow again if the context
-  // changes.
+  // Under the Carbon event model, CoreGraphics plugins can cache the context
+  // they are given in NPP_SetWindow (and at least Flash does), and continue to
+  // use it even when the contents of the struct have changed, so we need to
+  // call NPP_SetWindow again if the context changes.
+  // In the Cocoa event model plugins are only given a context during paint
+  // events, so we don't have to tell the plugin anything here.
   if (instance()->event_model() == NPEventModelCarbon &&
-      context != cg_context_.context) {
-    cg_context_.context = context;
+      instance()->drawing_model() == NPDrawingModelCoreGraphics &&
+      context != np_cg_context_.context) {
+    np_cg_context_.context = context;
     WindowlessSetWindow(true);
   }
 #endif
 }
 
 void WebPluginDelegateImpl::Paint(CGContextRef context, const gfx::Rect& rect) {
-  DCHECK(windowless_);
   WindowlessPaint(context, rect);
+
+#ifndef NP_NO_QUICKDRAW
+  // Paint events are our cue to scrape the dummy window into the real context
+  // if we are dealing with a QuickDraw plugin.
+  // Note that we use buffer_context_ rather than the Paint parameter
+  // because the buffer might have changed during the NPP_HandleEvent call
+  // in WindowlessPaint.
+  if (instance()->drawing_model() == NPDrawingModelQuickDraw) {
+    ScrapeDummyWindowIntoContext(buffer_context_);
+  }
+#endif
 }
 
 void WebPluginDelegateImpl::Print(CGContextRef context) {
@@ -366,14 +381,10 @@ void WebPluginDelegateImpl::WindowlessUpdateGeometry(
 
 void WebPluginDelegateImpl::WindowlessPaint(gfx::NativeDrawingContext context,
                                             const gfx::Rect& damage_rect) {
-#ifndef NP_NO_CARBON
-  if (instance()->event_model() == NPEventModelCarbon) {
-    // If we somehow get a paint before we've set up the plugin window, bail.
-    if (!cg_context_.context)
-      return;
-    DCHECK(cg_context_.context == context);
-  }
-#endif
+  // If we somehow get a paint before we've set up the plugin buffer, bail.
+  if (!buffer_context_)
+    return;
+  DCHECK(buffer_context_ == context);
 
   static StatsRate plugin_paint("Plugin.Paint");
   StatsScope<StatsRate> scope(plugin_paint);
@@ -386,56 +397,37 @@ void WebPluginDelegateImpl::WindowlessPaint(gfx::NativeDrawingContext context,
 
   ScopedActiveDelegate active_delegate(this);
 
-  switch (instance()->drawing_model()) {
-#ifndef NP_NO_QUICKDRAW
-    case NPDrawingModelQuickDraw: {
-      // Plugins using the QuickDraw drawing model do not restrict their
-      // drawing to update events the way that CoreGraphics-based plugins
-      // do.  When we are asked to paint, we therefore just copy from the
-      // plugin's hidden window into our shared memory bitmap context.
-      CGRect window_bounds = CGRectMake(0, 0,
-                                        window_rect_.width(),
-                                        window_rect_.height());
-      CGWindowID window_id = HIWindowGetCGWindowID(
-          reinterpret_cast<WindowRef>(cg_context_.window));
-      CGContextSaveGState(context);
-      CGContextTranslateCTM(context, 0, window_rect_.height());
-      CGContextScaleCTM(context, 1.0, -1.0);
-      CGContextCopyWindowCaptureContentsToRect(context, window_bounds,
-                                               _CGSDefaultConnection(),
-                                               window_id, 0);
-      CGContextRestoreGState(context);
+  CGContextSaveGState(context);
+
+  switch (instance()->event_model()) {
+#ifndef NP_NO_CARBON
+    case NPEventModelCarbon: {
+      NPEvent paint_event = { 0 };
+      paint_event.what = updateEvt;
+      paint_event.message = reinterpret_cast<uint32>(np_cg_context_.window);
+      paint_event.when = TickCount();
+      instance()->NPP_HandleEvent(&paint_event);
+      break;
     }
 #endif
-    case NPDrawingModelCoreGraphics: {
-      CGContextSaveGState(context);
-      switch (instance()->event_model()) {
-#ifndef NP_NO_CARBON
-        case NPEventModelCarbon: {
-          NPEvent paint_event = { 0 };
-          paint_event.what = updateEvt;
-          paint_event.message = reinterpret_cast<uint32>(cg_context_.window);
-          paint_event.when = TickCount();
-          instance()->NPP_HandleEvent(&paint_event);
-          break;
-        }
-#endif
-        case NPEventModelCocoa: {
-          NPCocoaEvent paint_event;
-          memset(&paint_event, 0, sizeof(NPCocoaEvent));
-          paint_event.type = NPCocoaEventDrawRect;
-          paint_event.data.draw.context = context;
-          paint_event.data.draw.x = paint_rect.x();
-          paint_event.data.draw.y = paint_rect.y();
-          paint_event.data.draw.width = paint_rect.width();
-          paint_event.data.draw.height = paint_rect.height();
-          instance()->NPP_HandleEvent(&paint_event);
-          break;
-        }
-      }
-      CGContextRestoreGState(context);
+    case NPEventModelCocoa: {
+      NPCocoaEvent paint_event;
+      memset(&paint_event, 0, sizeof(NPCocoaEvent));
+      paint_event.type = NPCocoaEventDrawRect;
+      paint_event.data.draw.context = context;
+      paint_event.data.draw.x = paint_rect.x();
+      paint_event.data.draw.y = paint_rect.y();
+      paint_event.data.draw.width = paint_rect.width();
+      paint_event.data.draw.height = paint_rect.height();
+      instance()->NPP_HandleEvent(&paint_event);
+      break;
     }
   }
+
+  // The backing buffer can change during the call to NPP_HandleEvent, in which
+  // case the old context is (or is about to be) invalid.
+  if (context == buffer_context_)
+    CGContextRestoreGState(context);
 }
 
 void WebPluginDelegateImpl::WindowlessSetWindow(bool force_set_window) {
@@ -536,7 +528,8 @@ void WebPluginDelegateImpl::SetWindowHasFocus(bool has_focus) {
       focus_event.what = activateEvt;
       if (has_focus)
         focus_event.modifiers |= activeFlag;
-      focus_event.message = reinterpret_cast<unsigned long>(cg_context_.window);
+      focus_event.message =
+          reinterpret_cast<unsigned long>(np_cg_context_.window);
       focus_event.when = TickCount();
       instance()->NPP_HandleEvent(&focus_event);
       break;
@@ -548,6 +541,7 @@ void WebPluginDelegateImpl::SetWindowHasFocus(bool has_focus) {
       focus_event.type = NPCocoaEventWindowFocusChanged;
       focus_event.data.focus.hasFocus = has_focus;
       instance()->NPP_HandleEvent(&focus_event);
+      break;
     }
   }
 }
@@ -629,7 +623,7 @@ void WebPluginDelegateImpl::PluginScreenLocationChanged() {
 #ifndef NP_NO_CARBON
 void WebPluginDelegateImpl::UpdateDummyWindowBounds(
     const gfx::Point& plugin_origin) {
-  WindowRef window = reinterpret_cast<WindowRef>(cg_context_.window);
+  WindowRef window = reinterpret_cast<WindowRef>(np_cg_context_.window);
   Rect current_bounds;
   GetWindowBounds(window, kWindowContentRgn, &current_bounds);
 
@@ -651,6 +645,26 @@ void WebPluginDelegateImpl::UpdateDummyWindowBounds(
       new_bounds.bottom != current_bounds.bottom)
     SetWindowBounds(window, kWindowContentRgn, &new_bounds);
 }
+
+#ifndef NP_NO_QUICKDRAW
+void WebPluginDelegateImpl::ScrapeDummyWindowIntoContext(CGContextRef context) {
+  if (!context)
+    return;
+
+  CGRect window_bounds = CGRectMake(0, 0,
+                                    window_rect_.width(),
+                                    window_rect_.height());
+  CGWindowID window_id = HIWindowGetCGWindowID(
+      reinterpret_cast<WindowRef>(np_cg_context_.window));
+  CGContextSaveGState(context);
+  CGContextTranslateCTM(context, 0, window_rect_.height());
+  CGContextScaleCTM(context, 1.0, -1.0);
+  CGContextCopyWindowCaptureContentsToRect(context, window_bounds,
+                                           _CGSDefaultConnection(),
+                                           window_id, 0);
+  CGContextRestoreGState(context);
+}
+#endif  // !NP_NO_QUICKDRAW
 
 void WebPluginDelegateImpl::UpdateIdleEventRate() {
   bool plugin_visible = container_is_visible_ && !clip_rect_.IsEmpty();
@@ -931,10 +945,12 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
     const WebInputEvent& event, WebCursorInfo* cursor_info) {
   DCHECK(cursor_info != NULL);
 
+  // If we somehow get an event before we've set up the plugin, bail.
+  if (!have_called_set_window_)
+    return false;
 #ifndef NP_NO_CARBON
   if (instance()->event_model() == NPEventModelCarbon &&
-      !cg_context_.context) {
-    // If we somehow get an event before we've set up the plugin window, bail.
+      !np_cg_context_.context) {
     return false;
   }
 #endif
@@ -974,28 +990,15 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
       return true;  // The recurring OnNull will send null events.
     }
 
-    switch (instance()->drawing_model()) {
 #ifndef NP_NO_QUICKDRAW
-      case NPDrawingModelQuickDraw:
-        SetPort(qd_port_.port);
-        break;
-#endif
-      case NPDrawingModelCoreGraphics:
-        CGContextSaveGState(cg_context_.context);
-        break;
+    if (instance()->drawing_model() == NPDrawingModelQuickDraw) {
+      SetPort(qd_port_.port);
     }
+#endif
   }
 #endif
 
   ScopedActiveDelegate active_delegate(this);
-
-#ifndef NP_NO_CARBON
-  // cgcontext_.context can change during event handling (because of a geometry
-  // change triggered by the event); we need to know if that happens so we
-  // don't keep trying to use the context. It is not an owning ref, so shouldn't
-  // be used for anything but pointer comparison.
-  CGContextRef old_context_weak = cg_context_.context;
-#endif
 
   // Create the plugin event structure, and send it to the plugin.
   bool ret = false;
@@ -1030,13 +1033,6 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
     // we'll need to be careful about things like Command-keys.
     ret = true;
   }
-
-#ifndef NP_NO_CARBON
-  if (instance() && instance()->event_model() == NPEventModelCarbon &&
-      instance()->drawing_model() == NPDrawingModelCoreGraphics &&
-      cg_context_.context == old_context_weak)
-    CGContextRestoreGState(cg_context_.context);
-#endif
 
   return ret;
 }
