@@ -29,12 +29,16 @@ const float kWindowEdge = 0.7f;
 
 // Sets the string displayed in the bubble. A copy of the string is made.
 - (void)setContent:(NSString*)content {
+  if ([content_ isEqualToString:content])
+    return;
   content_.reset([content copy]);
   [self setNeedsDisplay:YES];
 }
 
 // Sets which corners will be rounded.
 - (void)setCornerFlags:(unsigned long)flags {
+  if (cornerFlags_ == flags)
+    return;
   cornerFlags_ = flags;
   [self setNeedsDisplay:YES];
 }
