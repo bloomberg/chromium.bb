@@ -32,18 +32,19 @@ struct EthernetNetwork {
 struct WifiNetwork {
   WifiNetwork()
       : encrypted(false),
-        encryption(chromeos::NONE),
+        encryption(chromeos::SECURITY_UNKNOWN),
         strength(0),
         connecting(false),
-        connected(false) {}
-  WifiNetwork(const std::string& device_path, const std::string& ssid,
-              bool encrypted, chromeos::EncryptionType encryption, int strength,
-              bool connecting, bool connected, const std::string& ip_address)
-      : device_path(device_path),
-        ssid(ssid),
-        encrypted(encrypted),
-        encryption(encryption),
-        strength(strength),
+        connected(false),
+        auto_connect(false) {}
+  WifiNetwork(ServiceInfo service, bool connecting, bool connected,
+              const std::string& ip_address)
+      : service_path(service.service_path),
+        device_path(service.device_path),
+        ssid(service.name),
+        encrypted(service.passphrase_required),
+        encryption(service.security),
+        strength(service.strength),
         connecting(connecting),
         connected(connected),
         ip_address(ip_address) {}
@@ -53,13 +54,15 @@ struct WifiNetwork {
     return ssid < other.ssid;
   }
 
+  std::string service_path;
   std::string device_path;
   std::string ssid;
   bool encrypted;
-  chromeos::EncryptionType encryption;
+  chromeos::ConnectionSecurity encryption;
   int strength;
   bool connecting;
   bool connected;
+  bool auto_connect;
   std::string ip_address;
 };
 typedef std::vector<WifiNetwork> WifiNetworkVector;
@@ -68,13 +71,14 @@ struct CellularNetwork {
   CellularNetwork()
       : strength(strength),
         connecting(false),
-        connected(false) {}
-  CellularNetwork(const std::string& device_path, const std::string& name,
-                  int strength, bool connecting, bool connected,
+        connected(false),
+        auto_connect(false) {}
+  CellularNetwork(ServiceInfo service, bool connecting, bool connected,
                   const std::string& ip_address)
-      : device_path(device_path),
-        name(name),
-        strength(strength),
+      : service_path(service.service_path),
+        device_path(service.device_path),
+        name(service.name),
+        strength(service.strength),
         connecting(connecting),
         connected(connected),
         ip_address(ip_address) {}
@@ -84,11 +88,13 @@ struct CellularNetwork {
     return name < other.name;
   }
 
+  std::string service_path;
   std::string device_path;
   std::string name;
   int strength;
   bool connecting;
   bool connected;
+  bool auto_connect;
   std::string ip_address;
 };
 typedef std::vector<CellularNetwork> CellularNetworkVector;
@@ -197,9 +203,12 @@ class NetworkLibrary : public URLRequestJobTracker::JobObserver {
   // Connect to the specified cellular network.
   void ConnectToCellularNetwork(CellularNetwork network);
 
-  bool ethernet_enabled() const { return network_devices_ & TYPE_ETHERNET; }
-  bool wifi_enabled() const { return network_devices_ & TYPE_WIFI; }
-  bool cellular_enabled() const { return network_devices_ & TYPE_CELLULAR; }
+  bool ethernet_enabled() const {
+      return network_devices_ & (1 << TYPE_ETHERNET); }
+  bool wifi_enabled() const {
+      return network_devices_ & (1 << TYPE_WIFI); }
+  bool cellular_enabled() const {
+      return network_devices_ & (1 << TYPE_CELLULAR); }
   bool offline_mode() const { return offline_mode_; }
 
   // Enables/disables the ethernet network device.

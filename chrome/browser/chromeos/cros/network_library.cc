@@ -87,50 +87,28 @@ void NetworkLibrary::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-static const char* GetEncryptionString(chromeos::EncryptionType encryption) {
-  switch (encryption) {
-    case chromeos::NONE:
-      return "none";
-    case chromeos::RSN:
-      return "rsn";
-    case chromeos::WEP:
-      return "wep";
-    case chromeos::WPA:
-      return "wpa";
-  }
-  return "none";
-}
-
 void NetworkLibrary::ConnectToWifiNetwork(WifiNetwork network,
                                           const string16& password) {
   if (CrosLibrary::EnsureLoaded()) {
-    // This call kicks off a request to connect to this network, the results of
-    // which we'll hear about through the monitoring we've set up in Init();
-    chromeos::ConnectToWifiNetwork(
-        network.ssid.c_str(),
-        password.empty() ? NULL : UTF16ToUTF8(password).c_str(),
-        GetEncryptionString(network.encryption));
+    chromeos::ConnectToNetwork(network.service_path.c_str(),
+        password.empty() ? NULL : UTF16ToUTF8(password).c_str());
   }
 }
 
 void NetworkLibrary::ConnectToWifiNetwork(const string16& ssid,
                                           const string16& password) {
   if (CrosLibrary::EnsureLoaded()) {
-    // This call kicks off a request to connect to this network, the results of
-    // which we'll hear about through the monitoring we've set up in Init();
-    chromeos::ConnectToWifiNetwork(
-        UTF16ToUTF8(ssid).c_str(),
-        password.empty() ? NULL : UTF16ToUTF8(password).c_str(),
-        "rsn");
-    // TODO(chocobo): Make it support other encryptions.
+    // TODO(chocobo): Implement connect to hidden network.
+    // First create a service from hidden network.
+    // Now connect to that service..
+//    chromeos::ConnectToNetwork(service_path,
+//        password.empty() ? NULL : UTF16ToUTF8(password).c_str());
   }
 }
 
 void NetworkLibrary::ConnectToCellularNetwork(CellularNetwork network) {
   if (CrosLibrary::EnsureLoaded()) {
-    // This call kicks off a request to connect to this network, the results of
-    // which we'll hear about through the monitoring we've set up in Init();
-    chromeos::ConnectToWifiNetwork(network.name.c_str(), NULL, NULL);
+    chromeos::ConnectToNetwork(network.service_path.c_str(), NULL);
   }
 }
 
@@ -207,11 +185,16 @@ void NetworkLibrary::ParseNetworks(
   for (int i = 0; i < service_status.size; i++) {
     const chromeos::ServiceInfo& service = service_status.services[i];
     DLOG(INFO) << "  (" << service.type <<
-                  ") " << service.ssid <<
-                  " sta=" << service.state <<
-                  " pas=" << service.needs_passphrase <<
-                  " enc=" << service.encryption <<
-                  " sig=" << service.signal_strength;
+                  ") " << service.name <<
+                  " mode=" << service.mode <<
+                  " state=" << service.state <<
+                  " sec=" << service.security <<
+                  " req=" << service.passphrase_required <<
+                  " pass=" << service.passphrase <<
+                  " str=" << service.strength <<
+                  " fav=" << service.favorite <<
+                  " auto=" << service.auto_connect <<
+                  " error=" << service.error;
     bool connecting = service.state == chromeos::STATE_ASSOCIATION ||
                       service.state == chromeos::STATE_CONFIGURATION ||
                       service.state == chromeos::STATE_CARRIER;
@@ -247,22 +230,12 @@ void NetworkLibrary::ParseNetworks(
                                                     std::string();
       ethernet->ip_address = ip_address;
     } else if (service.type == chromeos::TYPE_WIFI) {
-      wifi_networks->push_back(WifiNetwork(service.device_path ?
-                                               service.device_path :
-                                               std::string(),
-                                           service.ssid,
-                                           service.needs_passphrase,
-                                           service.encryption,
-                                           service.signal_strength,
+      wifi_networks->push_back(WifiNetwork(service,
                                            connecting,
                                            connected,
                                            ip_address));
     } else if (service.type == chromeos::TYPE_CELLULAR) {
-      cellular_networks->push_back(CellularNetwork(service.device_path ?
-                                                       service.device_path :
-                                                       std::string(),
-                                                   service.ssid,
-                                                   service.signal_strength,
+      cellular_networks->push_back(CellularNetwork(service,
                                                    connecting,
                                                    connected,
                                                    ip_address));
@@ -304,22 +277,22 @@ void NetworkLibrary::EnableNetworkDevice(chromeos::ConnectionType device,
     return;
 
   // If network device is already enabled/disabled, then don't do anything.
-  if (enable && (network_devices_ & device)) {
-    LOG(INFO) << "Trying to enable a network device that's already enabled: "
-              << device;
+  if (enable && (network_devices_ & (1 << device))) {
+    LOG(WARNING) << "Trying to enable a device that's already enabled: "
+                 << device;
     return;
   }
-  if (!enable && !(network_devices_ & device)) {
-    LOG(INFO) << "Trying to disable a network device that's already disabled: "
-              << device;
+  if (!enable && !(network_devices_ & (1 << device))) {
+    LOG(WARNING) << "Trying to disable a device that's already disabled: "
+                 << device;
     return;
   }
 
   if (chromeos::EnableNetworkDevice(device, enable)) {
     if (enable)
-      network_devices_ |= device;
+      network_devices_ |= (1 << device);
     else
-      network_devices_ &= ~device;
+      network_devices_ &= ~(1 << device);
   }
 }
 
