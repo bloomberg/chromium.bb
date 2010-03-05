@@ -137,13 +137,8 @@ Array.stddev = function(array) {
 // Object to summarize everything
 var totals = {};
 
-// Computes min/max/mean/stddev, etc all up front.
-function computeResults(data) {
-  totals = {};
-  totals.mean = 0;
-  totals.paintMean = 0;
-  totals.docLoadMean = 0;
-
+// Compute the results for a data set.
+function computeDisplayResults(data) {
   var count = data.data.length;
   for (var i = 0; i < count; i++) {
     var obj = data.data[i];
@@ -157,17 +152,98 @@ function computeResults(data) {
     obj.readKB = obj.bytesRead / 1024;
     obj.writeKB = obj.bytesWritten / 1024;
     obj.paintMean = Array.avg(obj.paintResults);
+    obj.startLoadMean = Array.avg(obj.startLoadResults);
+    obj.commitLoadMean = Array.avg(obj.commitLoadResults);
     obj.docLoadMean = Array.avg(obj.docLoadResults);
 
+    obj.displayRequests = obj.requests;
+    obj.displayConnects = obj.connects
+    obj.displaySpdySessions = obj.spdySessions;
+  }
+  return count;
+}
+
+// Subtract the results from two data sets.
+// This function could be smarter about what it subtracts,
+// for now it just subtracts everything.
+// Returns true if it was able to compare the two data sets.
+function subtractData(data, baseline) {
+  var count = data.data.length;
+  if (baseline.data.length != count) {
+    return false;
+  }
+  for (var i = 0; i < count; i++) {
+    var obj = data.data[i];
+    var obj2 = baseline.data[i];
+
+    // The data sets are different.
+    if (obj.url != obj2.url ||
+        obj.iterations != obj2.iterations) {
+      return false;
+    }
+
+    obj.mean -= obj2.mean;
+    obj.stddev -= obj2.stddev;
+    obj.min -= obj2.min;
+    obj.max -= obj2.max;
+    obj.readbps -= obj2.readbps;
+    obj.writebps -= obj2.writebps;
+    obj.readKB -= obj2.readKB;
+    obj.writeKB -= obj2.writeKB;
+    obj.paintMean -= obj2.paintMean;
+    obj.startLoadMean -= obj2.startLoadMean;
+    obj.commitLoadMean -= obj2.commitLoadMean;
+    obj.docLoadMean -= obj2.docLoadMean;
+
+    obj.displayRequests -= obj2.displayRequests;
+    obj.displayConnects -= obj2.displayConnects;
+    obj.displaySpdySessions -= obj2.displaySpdySessions;
+  }
+  return true;
+}
+
+// Compute totals based on a data set.
+function computeTotals(data) {
+  var count = data.data.length;
+  for (var i = 0; i < count; i++) {
+    var obj = data.data[i];
     totals.mean += obj.mean;
     totals.paintMean += obj.paintMean;
+    totals.startLoadMean += obj.startLoadMean;
+    totals.commitLoadMean += obj.commitLoadMean;
     totals.docLoadMean += obj.docLoadMean;
   }
+}
 
+// Compute results for the data with an optional baseline.
+// If |baseline| is undefined, will compute the results of this
+// run.  Otherwise, computes the diff between this data and the baseline.
+function computeResults(data, baseline) {
+  totals = {};
+  totals.mean = 0;
+  totals.paintMean = 0;
+  totals.startLoadMean = 0;
+  totals.commitLoadMean = 0;
+  totals.docLoadMean = 0;
+
+  var count = computeDisplayResults(data);
+
+  if (baseline) {
+    computeDisplayResults(baseline);
+    if (!subtractData(data, baseline)) {
+      alert("These data sets are different");
+      document.getElementById("baseline").value = "";
+      return;
+    }
+  }
+
+  computeTotals(data);
   totals.url = "(" + count + " urls)";
   if (count > 0) {
     totals.mean /= count;
     totals.paintMean /= count;
+    totals.startLoadMean /= count;
+    totals.commitLoadMean /= count;
     totals.docLoadMean /= count;
   }
 
@@ -185,7 +261,21 @@ function jsinit() {
 
   // Run the template to show results
   var data = extension.results;
-  computeResults(data);
+
+  // Get the baseline results
+  var elt = document.getElementById("baseline");
+  var baseline_json = document.getElementById("baseline").value;
+  var baseline;
+  if (baseline_json) {
+    try {
+      baseline = JSON.parse(baseline_json);
+    } catch (e) {
+      alert("JSON parse error: " + e);
+    }
+  }
+
+  // Compute
+  computeResults(data, baseline);
 
   var context = new JsEvalContext(data);
   context.setVariable('$width', 0);
@@ -197,11 +287,21 @@ function jsinit() {
   document.getElementById("iterations").value = extension.iterations;
   document.getElementById("clearconns").checked = extension.clearConnections;
   document.getElementById("clearcache").checked = extension.clearCache;
+  document.getElementById("newtabs").checked = extension.useNewTabs;
   setUrl(extension.testUrl);
+
+  if (!baseline) {
+    var json_data = JSON.stringify(data);
+    document.getElementById("json").value = json_data;
+  }
 }
 
 function getWidth(mean, obj) {
+  var kMinWidth = 200;
   var max_width = obj.offsetWidth;
+  if (max_width < kMinWidth) {
+    max_width = kMinWidth;
+  }
   return Math.floor(max_width * (mean / max_sample));
 }
 
@@ -211,22 +311,27 @@ function config() {
   var iterations = parseInt(document.getElementById("iterations").value);
   var clearConnections = document.getElementById("clearconns").checked;
   var clearCache = document.getElementById("clearcache").checked;
+  var useNewTabs = document.getElementById("newtabs").checked;
   if (iterations > 0) {
     extension.iterations = iterations;
     extension.clearConnections = clearConnections;
     extension.clearCache = clearCache;
+    extension.useNewTabs = useNewTabs;
   }
 }
 
 // Set the url in the benchmark url box.
 function setUrl(url) {
   document.getElementById("testurl").value = url;
-  console.log(url);
-  console.log(document.getElementById("testurl").value);
 }
 
 // Start the benchmark.
 function run() {
+  if (!chrome.benchmarking) {
+    alert("Warning:  Looks like you forgot to run chrome with " +
+          " --enable-benchmarking set.");
+    return;
+  }
   var extension = chrome.extension.getBackgroundPage();
   var testUrl = document.getElementById("testurl").value;
   extension.testUrl = testUrl;
@@ -238,7 +343,19 @@ function clearResults() {
   var extension = chrome.extension.getBackgroundPage();
   extension.results = {};
   extension.results.data = new Array();
+  document.getElementById("json").value = "";
+  document.getElementById("baseline").value = "";
   jsinit();
+}
+
+// Toggle display of an element
+function toggle(id) {
+  var elt = document.getElementById(id);
+  if (elt.style.display == "none") {
+    elt.style.display = "block";
+  } else {
+    elt.style.display = "none";
+  }
 }
 </script>
 
@@ -255,6 +372,7 @@ function clearResults() {
 <input type="button" value="Clear Results" onclick="clearResults();">
 Clear Connections?<input id="clearconns" type="checkbox">
 Clear Cache?<input id="clearcache" type="checkbox">
+Use New Tabs Per Page?<input id="newtabs" type="checkbox">
 <form onsubmit="config(); run()">
   URL to load <input type="text" id="testurl" size=100>
   <input type="submit" value="Run"><P>
@@ -265,8 +383,10 @@ Clear Cache?<input id="clearcache" type="checkbox">
 
 <table id="t" class="list" width="100%">
   <tr>
-  <th width=30%>url</th>
+  <th width=200px>url</th>
   <th width=50>iterations</th>
+  <th width=50>start load mean</th>
+  <th width=50>commit load mean</th>
   <th width=50>doc load mean</th>
   <th width=50>paint mean</th>
   <th width=50>total mean</th>
@@ -274,19 +394,25 @@ Clear Cache?<input id="clearcache" type="checkbox">
   <th width=50>min</th>
   <th width=50>max</th>
   <th width=50># Requests</th>
+  <th width=50># Connects</th>
+  <th width=50># SPDY Sessions</th>
   <th width=50>Read KB</th>
   <th width=50>Write KB</th>
   <th width=50>Read KBps</th>
   <th width=50>Write KBps</th>
-  <th samples</th>
+  <th samples></th>
   </tr>
 
   <tr id="t.total" jsselect="totals">
   <td class="url">TOTALS <span jscontent="url"></span></td>
   <td class="avg" jseval="1"></td>
+  <td class="avg"><span jseval="val = startLoadMean.toFixed(1)" jscontent="val"></span></td>
+  <td class="avg"><span jseval="val = commitLoadMean.toFixed(1)" jscontent="val"></span></td>
   <td class="avg"><span jseval="val = docLoadMean.toFixed(1)" jscontent="val"></span></td>
   <td class="avg"><span jseval="val = paintMean.toFixed(1)" jscontent="val"></span></td>
   <td class="avg"><span jseval="val = mean.toFixed(1)" jscontent="val"></span></td>
+  <td class="avg" jseval="1"></td>
+  <td class="avg" jseval="1"></td>
   <td class="avg" jseval="1"></td>
   <td class="avg" jseval="1"></td>
   <td class="avg" jseval="1"></td>
@@ -301,13 +427,17 @@ Clear Cache?<input id="clearcache" type="checkbox">
   <tr jsselect="data">
   <td class="url" jseval="$width = getWidth($this.mean, this)"><div jsvalues=".style.width:$width" class="bggraph"><a jsvalues="href:$this.url" jscontent="url"></a></div></td>
   <td class="avg" jseval="val = iterations" jscontent="val"></td>
+  <td class="avg" jseval="val = startLoadMean.toFixed(1)" jscontent="val"></td>
+  <td class="avg" jseval="val = commitLoadMean.toFixed(1)" jscontent="val"></td>
   <td class="avg" jseval="val = docLoadMean.toFixed(1)" jscontent="val"></td>
   <td class="avg" jseval="val = paintMean.toFixed(1)" jscontent="val"></td>
   <td class="avg" jseval="val = mean.toFixed(1)" jscontent="val"></td>
   <td class="avg" jseval="val = stddev.toFixed(1)" jscontent="val"></td>
   <td class="avg" jseval="val = min.toFixed(1)" jscontent="val"></td>
   <td class="avg" jseval="val = max.toFixed(1)" jscontent="val"></td>
-  <td class="avg" jseval="val = requests" jscontent="val"></td>
+  <td class="avg" jseval="val = displayRequests" jscontent="val"></td>
+  <td class="avg" jseval="val = displayConnects" jscontent="val"></td>
+  <td class="avg" jseval="val = displaySpdySessions" jscontent="val"></td>
   <td class="avg" jseval="val = readKB.toFixed(1)" jscontent="val"></td>
   <td class="avg" jseval="val = writeKB.toFixed(1)" jscontent="val"></td>
   <td class="avg" jseval="val = readbps.toFixed(1)" jscontent="val"></td>
@@ -319,7 +449,11 @@ Clear Cache?<input id="clearcache" type="checkbox">
   </tr>
 </table>
 
-<script>
-</script>
+<hr>
+<span onclick="toggle('json')">JSON data</span><br>
+<textarea style="display: none" type=text id=json rows=10 cols=50></textarea><p>
 
+<span onclick="toggle('baseline')">COMPARE to</span><br>
+<textarea style="display: none" type=text id=baseline rows=10 cols=50
+onchange="jsinit()"></textarea><p>
 </body>

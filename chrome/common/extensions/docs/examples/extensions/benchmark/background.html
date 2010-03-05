@@ -32,6 +32,7 @@ function formatNumber(str) {
 window.iterations = 10;
 window.clearConnections = true;
 window.clearCache = true;
+window.useNewTabs = true;
 window.results = {};
 window.results.data = new Array();
 window.testUrl = "";
@@ -41,6 +42,8 @@ window.windowId = 0;
 var kTCPReadBytes = "tcp.read_bytes";
 var kTCPWriteBytes = "tcp.write_bytes";
 var kRequestCount = "HttpNetworkTransaction.Count";
+var kConnectCount = "tcp.connect";
+var kSpdySessionCount = "spdy.sessions";
 
 // The list of currently running benchmarks
 var benchmarks = new Array();
@@ -141,6 +144,8 @@ function Benchmark() {
 
     current_ = {};
     current_.url = url;
+    current_.startLoadResults = new Array();  // times to start
+    current_.commitLoadResults = new Array();  // times to commit
     current_.docLoadResults = new Array();  // times to docload
     current_.paintResults = new Array();    // times to paint
     current_.totalResults = new Array();    // times to complete load
@@ -149,6 +154,8 @@ function Benchmark() {
     current_.totalTime = 0;
     current_.iterations = 0;
     current_.requests = 0;
+    current_.connects = 0;
+    current_.spdySessions = 0;
   }
 
   // Is the benchmark currently in progress.
@@ -165,6 +172,7 @@ function Benchmark() {
 
     // Push the result.
     window.results.data.push(current_);
+
 
     // If we're the last benchmark, close the window.
     if (benchmarks.length == 0) {
@@ -201,6 +209,8 @@ function Benchmark() {
     initialReadBytes_ = chrome.benchmarking.counter(kTCPReadBytes);
     initialWriteBytes_ = chrome.benchmarking.counter(kTCPWriteBytes);
     initialRequestCount_ = chrome.benchmarking.counter(kRequestCount);
+    initialConnectCount_ = chrome.benchmarking.counter(kConnectCount);
+    initialSpdySessionCount_ = chrome.benchmarking.counter(kSpdySessionCount);
   }
 
   // Run a single page in the benchmark
@@ -216,7 +226,14 @@ function Benchmark() {
     if (benchmarkWindow) {
       var benchmark = nextBenchmark();
       benchmark.pageStart();
-      chrome.tabs.update(benchmarkWindow.id, {"url": benchmark.url() });
+
+      if (window.useNewTabs) {
+        chrome.tabs.remove(benchmarkWindow.id);
+        chrome.tabs.create({"url": benchmark.url() },
+                           function(tab) { benchmarkWindow = tab; });
+      } else {
+        chrome.tabs.update(benchmarkWindow.id, {"url": benchmark.url() });
+      }
     } else {
       this.pageStart();
       chrome.tabs.create({"url": current_.url },
@@ -226,12 +243,20 @@ function Benchmark() {
 
   // Called when a page finishes loading.
   this.pageFinished = function(csi) {
+    var requested = csi.requestTime;
+    var started = csi.startLoadTime;
+    var startLoadTime =
+        Math.round((csi.startLoadTime - requested) * 1000.0);
+    var commitLoadTime =
+        Math.round((csi.commitLoadTime - started) * 1000.0);
     var docLoadTime =
-        Math.round((csi.finishDocumentLoadTime - csi.startLoadTime) * 1000.0);
+        Math.round((csi.finishDocumentLoadTime - started) * 1000.0);
     var paintTime =
-        Math.round((csi.firstPaintTime - csi.startLoadTime) * 1000.0);
+        Math.round((csi.firstPaintTime - started) * 1000.0);
     var totalTime =
-        Math.round((csi.finishLoadTime - csi.startLoadTime) * 1000.0);
+        Math.round((csi.finishLoadTime - started) * 1000.0);
+    var firstPaintAfterLoadTime = 
+        Math.round((csi.firstPaintAfterLoadTime - started) * 1000.0);
 
     if (paintTime < 0) {
       // If the user navigates away from the test while it is running,
@@ -249,6 +274,8 @@ function Benchmark() {
 
     // Record the result
     current_.iterations++;
+    current_.startLoadResults.push(startLoadTime);
+    current_.commitLoadResults.push(commitLoadTime);
     current_.docLoadResults.push(docLoadTime);
     current_.paintResults.push(paintTime);
     current_.totalResults.push(totalTime);
@@ -258,6 +285,10 @@ function Benchmark() {
                              initialWriteBytes_;
     current_.requests += chrome.benchmarking.counter(kRequestCount) -
                          initialRequestCount_;
+    current_.connects += chrome.benchmarking.counter(kConnectCount) -
+                         initialConnectCount_;
+    current_.spdySessions += chrome.benchmarking.counter(kSpdySessionCount) -
+                         initialSpdySessionCount_;
     current_.totalTime += totalTime;
 
     if (--runCount_ == 0) {
@@ -266,6 +297,10 @@ function Benchmark() {
 
     // If there are more tests, schedule them
     if (runCount_ > 0 || benchmarks.length > 0) {
+      if (window.clearConnections) {
+        chrome.benchmarking.closeConnections();
+      }
+
       setTimeout(me_.runPage, 100);
     }
 
