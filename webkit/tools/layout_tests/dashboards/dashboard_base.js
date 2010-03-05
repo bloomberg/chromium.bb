@@ -68,6 +68,12 @@ function isFailingResult(value) {
   return 'FSTOCIZ'.indexOf(value) != -1;
 }
 
+function reloadWindowIfKeyHasNewValue(key) {
+  // Changing certain keys requires reloading the page since it would result
+  // in pulling different JSON files.
+  if (oldState && oldState[key] != currentState[key])
+    window.location.reload();
+}
 
 /**
  * Takes a key and a value and sets the currentState[key] = value iff key is
@@ -92,6 +98,21 @@ function handleValidHashParameterWrapper(key, value) {
     case 'useWebKitCanary':
       currentState[key] = value == 'true';
       return true;
+
+    case 'referringBuilder':
+      if (stringContains(value, "(webkit.org)")) {
+        currentState.useWebKitCanary = true;
+        reloadWindowIfKeyHasNewValue('useWebKitCanary');
+        return true;
+      }
+
+      if (stringContains(value, "(V8-Latest)")) {
+        currentState.useV8Canary = true;
+        reloadWindowIfKeyHasNewValue('useV8Canary');
+        return true;
+      }
+
+      return false;
 
     case 'buildDir':
       currentState['testType'] = 'layout-test-results';
@@ -155,6 +176,7 @@ function validateParameter(state, key, value, validateFn) {
  * Parses window.location.hash and set the currentState values appropriately.
  */
 function parseParameters(parameterStr) {
+  oldState = currentState;
   currentState = {};
 
   var params = window.location.hash.substring(1).split('&');
@@ -200,6 +222,10 @@ function appendScript(path) {
 
 // Permalinkable state of the page.
 var currentState;
+
+// Saved value of previous currentState. This is used to detect changing from
+// one set of builders to another, which requires reloading the page.
+var oldState;
 
 // Parse cross-dashboard parameters before using them.
 parseParameters();
