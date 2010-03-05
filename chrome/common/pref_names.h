@@ -244,6 +244,7 @@ extern const wchar_t kDevToolsSplitLocation[];
 
 extern const wchar_t kSyncLastSyncedTime[];
 extern const wchar_t kSyncHasSetupCompleted[];
+extern const wchar_t kSyncBootstrappedAuth[];
 
 extern const wchar_t kWebAppCreateOnDesktop[];
 extern const wchar_t kWebAppCreateInAppsMenu[];

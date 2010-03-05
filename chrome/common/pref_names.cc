@@ -664,6 +664,9 @@ const wchar_t kSyncLastSyncedTime[] = L"sync.last_synced_time";
 // Boolean specifying whether the user finished setting up sync.
 const wchar_t kSyncHasSetupCompleted[] = L"sync.has_setup_completed";
 
+// Whether sync auth was bootstrapped for Chrome OS.
+const wchar_t kSyncBootstrappedAuth[] = L"sync.bootstrapped_auth";
+
 // Create web application shortcut dialog preferences.
 const wchar_t kWebAppCreateOnDesktop[] = L"browser.web_app.create_on_desktop";
 const wchar_t kWebAppCreateInAppsMenu[] =

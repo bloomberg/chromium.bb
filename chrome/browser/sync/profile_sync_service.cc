@@ -72,8 +72,14 @@ void ProfileSyncService::Initialize() {
     // If the LSID is empty, we're in a UI test that is not testing sync
     // behavior, so we don't want the sync service to start.
     if (bootstrap_sync_authentication_ &&
-        !GetLsidForAuthBootstraping().empty())
-    StartUp();  // We always start sync for Chromium OS.
+        !profile()->GetPrefs()->GetBoolean(prefs::kSyncBootstrappedAuth) &&
+        !GetLsidForAuthBootstraping().empty()) {
+      // If we're under Chromium OS and have never bootstrapped the
+      // authentication (ie. this is the first time we start sync for this
+      // profile,) then bootstrap it.
+      StartUp();
+      profile()->GetPrefs()->SetBoolean(prefs::kSyncBootstrappedAuth, true);
+    }
   } else {
     StartUp();
   }
@@ -120,13 +126,18 @@ void ProfileSyncService::RegisterPreferences() {
     return;
   pref_service->RegisterInt64Pref(prefs::kSyncLastSyncedTime, 0);
   pref_service->RegisterBooleanPref(prefs::kSyncHasSetupCompleted, false);
+
+  // TODO(albertb): Consider getting rid of this preference once we have a UI
+  // for per-data type disabling.
+  if (bootstrap_sync_authentication_ &&
+      !pref_service->FindPreference(prefs::kSyncBootstrappedAuth))
+    pref_service->RegisterBooleanPref(prefs::kSyncBootstrappedAuth, false);
 }
 
 void ProfileSyncService::ClearPreferences() {
   PrefService* pref_service = profile_->GetPrefs();
   pref_service->ClearPref(prefs::kSyncLastSyncedTime);
   pref_service->ClearPref(prefs::kSyncHasSetupCompleted);
-
   pref_service->ScheduleSavePersistentPrefs();
 }
 
