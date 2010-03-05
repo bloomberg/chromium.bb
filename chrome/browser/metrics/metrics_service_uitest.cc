@@ -73,7 +73,7 @@ TEST_F(MetricsServiceTest, CloseRenderersNormally) {
 
 #if defined(OS_WIN)
 // http://crbug.com/32048
-#define CrashRenderes FLAKY_CrashRenders
+#define CrashRenderers FLAKY_CrashRenders
 #endif
 TEST_F(MetricsServiceTest, CrashRenderers) {
   // This doesn't make sense to test in single process mode.
