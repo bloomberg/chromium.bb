@@ -17,6 +17,7 @@
 #include "base/scoped_handle_win.h"
 #include "base/string_util.h"
 #include "base/win_util.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/installer/setup/install.h"
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/setup/setup_util.h"
@@ -151,12 +152,37 @@ installer_util::InstallStatus RenameChromeExecutables(bool system_install) {
 bool CheckPreInstallConditions(const installer::Version* installed_version,
                                bool system_install,
                                installer_util::InstallStatus& status) {
+  bool is_first_install = (NULL == installed_version);
   // Check to avoid simultaneous per-user and per-machine installs.
   scoped_ptr<installer::Version>
       chrome_version(InstallUtil::GetChromeVersion(!system_install));
   if (chrome_version.get()) {
     LOG(ERROR) << "Already installed version " << chrome_version->GetString()
                << " conflicts with the current install mode.";
+    if (!system_install && is_first_install) {
+      // This is user-level install and there is a system-level chrome
+      // installation. Instruct omaha to launch the existing one. There
+      // should be no error dialog.
+      std::wstring chrome_exe(installer::GetChromeInstallPath(!system_install));
+      if (chrome_exe.empty()) {
+        // If we failed to construct install path. Give up.
+        status = installer_util::OS_ERROR;
+        InstallUtil::WriteInstallerResult(system_install, status,
+                                          IDS_INSTALL_OS_ERROR_BASE, NULL);
+        return false;
+      } else {
+        status = installer_util::EXISTING_VERSION_LAUNCHED;
+        file_util::AppendToPath(&chrome_exe, installer_util::kChromeExe);
+        chrome_exe = L"\"" + chrome_exe + L"\" --"
+                     + ASCIIToWide(switches::kFirstRun);
+        InstallUtil::WriteInstallerResult(system_install, status,
+                                          0, &chrome_exe);
+        LOG(INFO) << "Launching existing system-level chrome instead.";
+        return false;
+      }
+    }
+    // This is an update, not an install. Omaha should know the difference
+    // and not show a dialog.
     status = system_install ? installer_util::USER_LEVEL_INSTALL_EXISTS :
                               installer_util::SYSTEM_LEVEL_INSTALL_EXISTS;
     int str_id = system_install ? IDS_INSTALL_USER_LEVEL_EXISTS_BASE :
@@ -164,11 +190,10 @@ bool CheckPreInstallConditions(const installer::Version* installed_version,
     InstallUtil::WriteInstallerResult(system_install, status, str_id, NULL);
     return false;
   }
-
   // If no previous installation of Chrome, make sure installation directory
   // either does not exist or can be deleted (i.e. is not locked by some other
   // process).
-  if (!installed_version) {
+  if (is_first_install) {
     FilePath install_path = FilePath::FromWStringHack(
         installer::GetChromeInstallPath(system_install));
     if (file_util::PathExists(install_path) &&
