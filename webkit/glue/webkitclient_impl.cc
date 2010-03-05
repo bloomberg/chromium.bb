@@ -4,14 +4,23 @@
 
 #include "webkit/glue/webkitclient_impl.h"
 
+#if defined(OS_LINUX)
+#include <malloc.h>
+#endif
+
 #include <math.h>
+
+#include <vector>
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/lock.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "base/platform_file.h"
+#include "base/singleton.h"
 #include "base/stats_counters.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/trace_event.h"
 #include "grit/webkit_resources.h"
@@ -31,6 +40,10 @@
 #include "webkit/glue/websocketstreamhandle_impl.h"
 #include "webkit/glue/weburlloader_impl.h"
 
+#if defined(OS_LINUX)
+#include "v8/include/v8.h"
+#endif
+
 using WebKit::WebApplicationCacheHost;
 using WebKit::WebApplicationCacheHostClient;
 using WebKit::WebCookie;
@@ -43,6 +56,58 @@ using WebKit::WebThemeEngine;
 using WebKit::WebURL;
 using WebKit::WebURLLoader;
 using WebKit::WebVector;
+
+namespace {
+
+// A simple class to cache the memory usage for a given amount of time.
+class MemoryUsageCache {
+ public:
+  // Retrieves the Singleton.
+  static MemoryUsageCache* Get() {
+    return Singleton<MemoryUsageCache>::get();
+  }
+
+  MemoryUsageCache() : memory_value_(0) { Init(); }
+  ~MemoryUsageCache() {}
+
+  void Init() {
+    const unsigned int kCacheSeconds = 1;
+    cache_valid_time_ = base::TimeDelta::FromSeconds(kCacheSeconds);
+  }
+
+  // Returns true if the cached value is fresh.
+  // Returns false if the cached value is stale, or if |cached_value| is NULL.
+  bool IsCachedValueValid(size_t* cached_value) {
+    AutoLock scoped_lock(lock_);
+    if (!cached_value)
+      return false;
+    if (base::Time::Now() - last_updated_time_ > cache_valid_time_)
+      return false;
+    *cached_value = memory_value_;
+    return true;
+  };
+
+  // Setter for |memory_value_|, refreshes |last_updated_time_|.
+  void SetMemoryValue(const size_t value) {
+    AutoLock scoped_lock(lock_);
+    memory_value_ = value;
+    last_updated_time_ = base::Time::Now();
+  }
+
+ private:
+  // The cached memory value.
+  size_t memory_value_;
+
+  // How long the cached value should remain valid.
+  base::TimeDelta cache_valid_time_;
+
+  // The last time the cached value was updated.
+  base::Time last_updated_time_;
+
+  Lock lock_;
+};
+
+}  // anonymous namespace
 
 namespace webkit_glue {
 
@@ -143,7 +208,7 @@ void WebKitClientImpl::getPluginList(bool refresh,
         WideToUTF16Hack(plugin.desc),
         FilePathStringToWebString(plugin.path.BaseName().value()));
 
-    for (size_t j = 0; j < plugin.mime_types.size(); ++ j) {
+    for (size_t j = 0; j < plugin.mime_types.size(); ++j) {
       const WebPluginMimeType& mime_type = plugin.mime_types[j];
 
       builder->addMediaTypeToLastPlugin(
@@ -309,19 +374,62 @@ WebKit::WebString WebKitClientImpl::signedPublicKeyAndChallengeString(
   return WebKit::WebString();
 }
 
-size_t WebKitClientImpl::memoryUsageMB() {
+#if defined(OS_LINUX)
+static size_t memoryUsageMBLinux() {
+  struct mallinfo minfo = mallinfo();
+  uint64_t mem_usage =
+#if defined(USE_TCMALLOC)
+      minfo.uordblks
+#else
+      (minfo.hblkhd + minfo.arena)
+#endif
+      >> 20;
+
+  v8::HeapStatistics stat;
+  v8::V8::GetHeapStatistics(&stat);
+  return mem_usage + (static_cast<uint64_t>(stat.total_heap_size()) >> 20);
+}
+#endif
+
+#if defined(OS_MACOSX)
+static size_t memoryUsageMBMac() {
   using base::ProcessMetrics;
   static ProcessMetrics* process_metrics =
-#if !defined(OS_MACOSX)
-      ProcessMetrics::CreateProcessMetrics(base::GetCurrentProcessHandle());
-#else
       // The default port provider is sufficient to get data for the current
       // process.
       ProcessMetrics::CreateProcessMetrics(base::GetCurrentProcessHandle(),
                                            NULL);
-#endif
   DCHECK(process_metrics);
   return process_metrics->GetPagefileUsage() >> 20;
+}
+#endif
+
+#if !defined(OS_LINUX) && !defined(OS_MACOSX)
+static size_t memoryUsageMBGeneric() {
+  using base::ProcessMetrics;
+  static ProcessMetrics* process_metrics =
+      ProcessMetrics::CreateProcessMetrics(base::GetCurrentProcessHandle());
+  DCHECK(process_metrics);
+  return process_metrics->GetPagefileUsage() >> 20;
+}
+#endif
+
+size_t WebKitClientImpl::memoryUsageMB() {
+  size_t current_mem_usage;
+  MemoryUsageCache* mem_usage_cache_singleton = MemoryUsageCache::Get();
+  if (mem_usage_cache_singleton->IsCachedValueValid(&current_mem_usage))
+    return current_mem_usage;
+
+  current_mem_usage =
+#if defined(OS_LINUX)
+      memoryUsageMBLinux();
+#elif defined(OS_MACOSX)
+      memoryUsageMBMac();
+#else
+      memoryUsageMBGeneric();
+#endif
+  mem_usage_cache_singleton->SetMemoryValue(current_mem_usage);
+  return current_mem_usage;
 }
 
 bool WebKitClientImpl::fileExists(const WebKit::WebString& path) {
