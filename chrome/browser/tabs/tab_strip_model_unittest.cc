@@ -1746,4 +1746,7 @@ TEST_F(TabStripModelTest, Phantom) {
 
     observer.ClearStates();
   }
+
+  // Clean up the phantom tabs.
+  tabstrip.CloseAllTabs();
 }
