@@ -713,6 +713,18 @@ class NotificationType {
     // Same as above, but for a disabled extension.
     EXTENSION_UNLOADED_DISABLED,
 
+    // Sent after a new ExtensionFunctionDispatcher is created. The details are
+    // an ExtensionFunctionDispatcher* and the source is a Profile*. This is
+    // similar in timing to EXTENSION_HOST_CREATED, but also fires when an
+    // extension view which is hosted in TabContents* is created.
+    EXTENSION_FUNCTION_DISPATCHER_CREATED,
+
+    // Sent before an ExtensionHost is destroyed. The details are
+    // an ExtensionFunctionDispatcher* and the source is a Profile*. This is
+    // similar in timing to EXTENSION_HOST_DESTROYED, but also fires when an
+    // extension view which is hosted in TabContents* is destroyed.
+    EXTENSION_FUNCTION_DISPATCHER_DESTROYED,
+
     // Sent after a new ExtensionHost is created. The details are
     // an ExtensionHost* and the source is an ExtensionProcessManager*.
     EXTENSION_HOST_CREATED,

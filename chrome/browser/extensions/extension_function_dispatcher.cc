@@ -265,7 +265,9 @@ ExtensionFunctionDispatcher::ExtensionFunctionDispatcher(
     RenderViewHost* render_view_host,
     Delegate* delegate,
     const GURL& url)
-  : render_view_host_(render_view_host),
+  : ALLOW_THIS_IN_INITIALIZER_LIST(
+        profile_(render_view_host->process()->profile())),
+    render_view_host_(render_view_host),
     delegate_(delegate),
     url_(url),
     ALLOW_THIS_IN_INITIALIZER_LIST(peer_(new Peer(this))) {
@@ -295,11 +297,21 @@ ExtensionFunctionDispatcher::ExtensionFunctionDispatcher(
       extension->url(), extension->host_permissions()));
   render_view_host->Send(new ViewMsg_Extension_ExtensionSetIncognitoEnabled(
       extension->id(), incognito_enabled));
+
+  NotificationService::current()->Notify(
+      NotificationType::EXTENSION_FUNCTION_DISPATCHER_CREATED,
+      Source<Profile>(profile_),
+      Details<ExtensionFunctionDispatcher>(this));
 }
 
 ExtensionFunctionDispatcher::~ExtensionFunctionDispatcher() {
   all_instances()->erase(this);
   peer_->dispatcher_ = NULL;
+
+  NotificationService::current()->Notify(
+      NotificationType::EXTENSION_FUNCTION_DISPATCHER_DESTROYED,
+      Source<Profile>(profile_),
+      Details<ExtensionFunctionDispatcher>(this));
 }
 
 Browser* ExtensionFunctionDispatcher::GetBrowser(bool include_incognito) {
@@ -381,7 +393,7 @@ void ExtensionFunctionDispatcher::HandleBadMessage(ExtensionFunction* api) {
 }
 
 Profile* ExtensionFunctionDispatcher::profile() {
-  return render_view_host_->process()->profile();
+  return profile_;
 }
 
 gfx::NativeWindow ExtensionFunctionDispatcher::GetFrameNativeWindow() {

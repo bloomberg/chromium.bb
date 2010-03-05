@@ -135,6 +135,11 @@ class ExtensionFunctionDispatcher {
   RenderViewHost* render_view_host() { return render_view_host_; }
 
  private:
+  // We need to keep a pointer to the profile because we use it in the dtor
+  // in sending EXTENSION_FUNCTION_DISPATCHER_DESTROYED, but by that point
+  // the render_view_host_ has been deleted.
+  Profile* profile_;
+
   RenderViewHost* render_view_host_;
 
   Delegate* delegate_;

@@ -20,6 +20,7 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_disabled_infobar_delegate.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
+#include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/extension_updater.h"
@@ -355,6 +356,11 @@ void ExtensionsDOMHandler::OnIconsLoaded(DictionaryValue* json) {
       NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_UPDATE_DISABLED,
       NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::EXTENSION_FUNCTION_DISPATCHER_CREATED,
+      NotificationService::AllSources());
+  registrar_.Add(this,
+      NotificationType::EXTENSION_FUNCTION_DISPATCHER_DESTROYED,
+      NotificationService::AllSources());
 }
 
 ExtensionResource ExtensionsDOMHandler::PickExtensionIcon(
@@ -646,6 +652,8 @@ void ExtensionsDOMHandler::Observe(NotificationType type,
     case NotificationType::EXTENSION_UNLOADED:
     case NotificationType::EXTENSION_UNLOADED_DISABLED:
     case NotificationType::EXTENSION_UPDATE_DISABLED:
+    case NotificationType::EXTENSION_FUNCTION_DISPATCHER_CREATED:
+    case NotificationType::EXTENSION_FUNCTION_DISPATCHER_DESTROYED:
       if (dom_ui_->tab_contents())
         HandleRequestExtensionsData(NULL);
       break;
@@ -769,6 +777,15 @@ std::vector<ExtensionPage> ExtensionsDOMHandler::GetActivePagesForExtension(
        all_instances->begin(); iter != all_instances->end(); ++iter) {
     RenderViewHost* view = (*iter)->render_view_host();
     if ((*iter)->extension_id() == extension_id && view) {
+      // We avoid adding views which are contained in popups to this list
+      // because clicking the link would cause the popup to loose focus and
+      // close. Instead, we display text that tells the developer to
+      // right-click on popups to inspect them.
+      if ((*iter)->GetExtensionHost() &&
+          (ViewType::EXTENSION_POPUP ==
+              (*iter)->GetExtensionHost()->extension_host_type()))
+        continue;
+
       result.push_back(ExtensionPage((*iter)->url(),
                                      view->process()->id(),
                                      view->routing_id()));
