@@ -464,6 +464,7 @@
         }],
         ['OS=="win"', {
           'dependencies': [
+            'chrome_nacl_win64',
             'installer/installer.gyp:installer_util',
             'installer/installer.gyp:installer_util_strings',
             '../breakpad/breakpad.gyp:breakpad_handler',
