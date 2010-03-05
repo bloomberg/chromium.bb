@@ -41,7 +41,7 @@ void AutoFillManager::RegisterBrowserPrefs(PrefService* prefs) {
 // static
 void AutoFillManager::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kAutoFillInfoBarShown, false);
-  prefs->RegisterBooleanPref(prefs::kAutoFillEnabled, false);
+  prefs->RegisterBooleanPref(prefs::kAutoFillEnabled, true);
 }
 
 void AutoFillManager::FormFieldValuesSubmitted(
