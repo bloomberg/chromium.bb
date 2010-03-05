@@ -166,7 +166,8 @@ NPPluginProxy::NPPluginProxy()
       NP_Initialize_(NULL),
       NP_GetEntryPoints_(NULL),
       NP_Shutdown_(NULL),
-      plugin_module_(0) {
+      plugin_module_(0),
+      initialized_(false) {
   npp_data_.ndata = npp_data_.pdata = NULL;
   memset(&plugin_funcs_, NULL, sizeof(plugin_funcs_));
 }
@@ -228,6 +229,7 @@ bool NPPluginProxy::Init(NPBrowserProxy* browser_proxy,
   ATLASSERT(plugin_module_ &&
             "Plugin module not loaded before initialization.");
   ATLASSERT(browser_proxy && "Browser environment required for plugin init.");
+  ATLASSERT(!initialized_ && "Duplicate initialization");
   browser_proxy_ = browser_proxy;
 
   // Store a pointer to the browser proxy instance in the netscape data
@@ -254,7 +256,6 @@ bool NPPluginProxy::Init(NPBrowserProxy* browser_proxy,
         reinterpret_cast<char**>(argn.get()),
         reinterpret_cast<char**>(argv.get()),
         NULL)) {
-    NP_Shutdown_();
     ATLASSERT(false && "Unknown failure creating NPAPI plugin instance.");
     return false;
   }
@@ -263,7 +264,6 @@ bool NPPluginProxy::Init(NPBrowserProxy* browser_proxy,
           GetNPP(),
           const_cast<NPWindow*>(&window))) {
     plugin_funcs_.destroy(GetNPP(), NULL);
-    NP_Shutdown_();
     ATLASSERT(false  && "Unknown failure binding plugin window.");
     return false;
   }
@@ -276,7 +276,6 @@ bool NPPluginProxy::Init(NPBrowserProxy* browser_proxy,
           NPPVpluginScriptableNPObject,
           static_cast<void*>(&np_object))) {
     plugin_funcs_.destroy(GetNPP(), NULL);
-    NP_Shutdown_();
     ATLASSERT(false  && "Unable to initialize NPAPI scripting interface.");
     return false;
   }
@@ -286,16 +285,21 @@ bool NPPluginProxy::Init(NPBrowserProxy* browser_proxy,
 
   NPBrowserProxy::GetBrowserFunctions()->releaseobject(np_object);
 
+  initialized_ = true;
+
   return true;
 }
 
 bool NPPluginProxy::SetWindow(const NPWindow& window) {
+  // The ATLASSERT() upon failed NPP_New() can generate a reentrant
+  // SetWindow() call, which we must be prepared to ignore.
+  if (!initialized_) return false;
+
   if (plugin_funcs_.setwindow != NULL &&
       NPERR_NO_ERROR != plugin_funcs_.setwindow(
           GetNPP(),
           const_cast<NPWindow*>(&window))) {
     plugin_funcs_.destroy(GetNPP(), NULL);
-    NP_Shutdown_();
     ATLASSERT(false  && "Unknown failure re-setting plugin window.");
     return false;
   }
@@ -359,6 +363,8 @@ void NPPluginProxy::TearDown() {
     scriptable_object_ = NULL;
     plugin_funcs_.destroy(GetNPP(), NULL);
   }
+
+  initialized_ = false;
 }
 
 void NPPluginProxy::RegisterStreamOperation(StreamOperation* stream_op) {

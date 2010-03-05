@@ -242,12 +242,14 @@ class RendererD3D9 : public Renderer {
 
   // Indicates we're rendering fullscreen rather than in the plugin region.
   bool fullscreen_;
+#ifdef O3D_PLUGIN_ENABLE_FULLSCREEN_MSG
   // Indicates we're showing the "Press Escape..." banner.
   bool showing_fullscreen_message_;
   // We want to show the message for about 3 seconds.
   ElapsedTimeTimer fullscreen_message_timer_;
   // Draws the actual message.
   void ShowFullscreenMessage(float elapsedTime, float display_duration);
+#endif
 
   // Invalidates all resources which are in D3DPOOL_DEFAULT.
   // Used before we try to reset the device, when the device is lost.
@@ -269,10 +271,12 @@ class RendererD3D9 : public Renderer {
   // Returns true on success.
   bool ResetDevice();
 
+#ifdef O3D_PLUGIN_ENABLE_FULLSCREEN_MSG
   // The font to use to display the message when we go to fullscreen.
   CComPtr<ID3DXFont> fullscreen_message_font_;
   // The line used to draw the background for the message.
   CComPtr<ID3DXLine> fullscreen_message_line_;
+#endif
 };
 
 }  // namespace o3d

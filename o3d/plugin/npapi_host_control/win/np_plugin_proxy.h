@@ -147,6 +147,9 @@ class NPPluginProxy {
   // by the plugin.
   StreamOpArray active_stream_ops_;
 
+  // Whether this plugin instance is in an initialized state.
+  bool initialized_;
+
   // Global count of the number of currently live plugin instances.  Used
   // to ensure that NP_Initialize and NP_Shutdown are called only once
   // per loading of the plugin module.

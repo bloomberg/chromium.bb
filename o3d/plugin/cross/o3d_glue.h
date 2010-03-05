@@ -226,6 +226,7 @@ class PluginObject: public NPObject {
                        GdkEvent *configure);
   void SetDisplay(Display *display);
 #elif defined(OS_MACOSX)
+#ifdef O3D_PLUGIN_ENABLE_FULLSCREEN_MSG
   void SetFullscreenOverlayMacWindow(WindowRef window) {
     mac_fullscreen_overlay_window_ = window;
   }
@@ -233,6 +234,7 @@ class PluginObject: public NPObject {
   WindowRef GetFullscreenOverlayMacWindow() {
     return mac_fullscreen_overlay_window_;
   }
+#endif
 
   void SetFullscreenMacWindow(WindowRef window) {
     mac_fullscreen_window_ = window;
@@ -269,13 +271,17 @@ class PluginObject: public NPObject {
 
   // Fullscreen related stuff.
 
+#ifdef O3D_PLUGIN_ENABLE_FULLSCREEN_MSG
   // FullscreenIdle gets repeatedly called while we are in fullscreen mode.
   // Currently its only task is to hide the fullscreen message at the right
   // time.
   void FullscreenIdle();
-  double  time_to_hide_overlay_;
+  double time_to_hide_overlay_;
+#endif
   WindowRef mac_fullscreen_window_;  // NULL if not in fullscreen modee
+#ifdef O3D_PLUGIN_ENABLE_FULLSCREEN_MSG
   WindowRef mac_fullscreen_overlay_window_;  // NULL if not in fullscreen mode
+#endif
   Ptr mac_fullscreen_state_;
 
 #endif  //  OS_MACOSX

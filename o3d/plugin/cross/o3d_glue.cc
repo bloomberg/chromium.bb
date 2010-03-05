@@ -125,7 +125,9 @@ PluginObject::PluginObject(NPP npp)
       event_model_(NPEventModelCarbon),
       mac_window_(0),
       mac_fullscreen_window_(0),
+#ifdef O3D_PLUGIN_ENABLE_FULLSCREEN_MSG
       mac_fullscreen_overlay_window_(0),
+#endif
       mac_window_selected_tab_(0),
       mac_cocoa_window_(0),
       mac_surface_hidden_(0),
@@ -133,8 +135,10 @@ PluginObject::PluginObject(NPP npp)
       mac_agl_context_(0),
       mac_cgl_context_(0),
       last_mac_event_time_(0),
+#ifdef O3D_PLUGIN_ENABLE_FULLSCREEN_MSG
       time_to_hide_overlay_(0.0),
 #endif
+#endif  // OS_MACOSX
 #ifdef OS_LINUX
       display_(NULL),
       window_(0),

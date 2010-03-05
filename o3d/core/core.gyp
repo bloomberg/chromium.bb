@@ -5,6 +5,8 @@
 {
   'variables': {
     'chromium_code': 1,
+    # Whether to enable the English-only, Win/Mac-only fullscreen message.
+    'plugin_enable_fullscreen_msg%': '1',
   },
   'target_defaults': {
     'include_dirs': [
@@ -20,6 +22,13 @@
       'O3D_PLUGIN_VERSION="<!(python ../plugin/version_info.py --version)"',
     ],
     'conditions': [
+      ['<(plugin_enable_fullscreen_msg) != 0',
+        {
+          'defines': [
+            'O3D_PLUGIN_ENABLE_FULLSCREEN_MSG=1',
+          ],
+        },
+      ],
       ['OS == "win"',
         {
           'msvs_settings': {

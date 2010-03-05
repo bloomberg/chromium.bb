@@ -51,6 +51,7 @@
 #include "plugin/cross/plugin_logging.h"
 #include "plugin/cross/plugin_metrics.h"
 #include "plugin/cross/out_of_memory.h"
+#include "plugin/cross/whitelist.h"
 #include "plugin/mac/plugin_mac.h"
 #include "plugin/mac/graphics_utils_mac.h"
 
@@ -811,6 +812,10 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode, int16 argc,
     g_logging_initialized = true;
   }
 #endif  // O3D_INTERNAL_PLUGIN
+
+  if (!IsDomainAuthorized(instance)) {
+    return NPERR_INVALID_URL;
+  }
 
   PluginObject* pluginObject = glue::_o3d::PluginObject::Create(
       instance);

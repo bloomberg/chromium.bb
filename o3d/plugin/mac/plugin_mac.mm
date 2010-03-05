@@ -239,9 +239,11 @@ void RenderTimer::TimerCallback(CFRunLoopTimerRef timer, void* info) {
 
     bool in_fullscreen = obj->GetFullscreenMacWindow();
 
+#ifdef O3D_PLUGIN_ENABLE_FULLSCREEN_MSG
     if (in_fullscreen) {
       obj->FullscreenIdle();
     }
+#endif
 
     // We're visible if (a) we are in fullscreen mode or (b) our cliprect
     // height and width are both a sensible size, ie > 1 pixel.
@@ -383,6 +385,8 @@ static SInt32 GetIntEventParam(EventRef inEvent, EventParamName    inName) {
 
 
 #pragma mark ____OVERLAY_WINDOW
+
+#ifdef O3D_PLUGIN_ENABLE_FULLSCREEN_MSG
 
 // Returns the unicode 16 chars that we need to display as the fullscreen
 // message. Should be disposed with free() after use.
@@ -569,6 +573,8 @@ static WindowRef CreateOverlayWindow(void) {
 
   return window;
 }
+
+#endif  // O3D_PLUGIN_ENABLE_FULLSCREEN_MSG
 
 
 // Maps the MacOS button numbers to the constants used by our
@@ -770,10 +776,14 @@ static WindowRef CreateFullscreenWindow(WindowRef window,
 
 void CleanupFullscreenWindow(PluginObject *obj) {
   WindowRef fs_window = obj->GetFullscreenMacWindow();
+#ifdef O3D_PLUGIN_ENABLE_FULLSCREEN_MSG
   WindowRef fs_o_window = obj->GetFullscreenOverlayMacWindow();
+#endif
 
   obj->SetFullscreenMacWindow(NULL);
+#ifdef O3D_PLUGIN_ENABLE_FULLSCREEN_MSG
   obj->SetFullscreenOverlayMacWindow(NULL);
+#endif
 
   if (fs_window) {
     HideWindow(fs_window);
@@ -781,11 +791,13 @@ void CleanupFullscreenWindow(PluginObject *obj) {
     DisposeWindow(fs_window);
   }
 
+#ifdef O3D_PLUGIN_ENABLE_FULLSCREEN_MSG
   if(fs_o_window) {
     HideWindow(fs_o_window);
     ReleaseWindowGroup(GetWindowGroup(fs_o_window));
     DisposeWindow(fs_o_window);
   }
+#endif
 }
 
 #pragma mark ____SCREEN_RESOLUTION_MANAGEMENT
@@ -990,6 +1002,7 @@ bool PluginObject::RequestFullscreenDisplay() {
   fullscreen_ = true;
   client()->SendResizeEvent(renderer_->width(), renderer_->height(), true);
 
+#ifdef O3D_PLUGIN_ENABLE_FULLSCREEN_MSG
   SetFullscreenOverlayMacWindow(o3d::CreateOverlayWindow());
   ShowWindow(mac_fullscreen_overlay_window_);
   o3d::SlideWindowToRect(mac_fullscreen_overlay_window_,
@@ -998,6 +1011,7 @@ bool PluginObject::RequestFullscreenDisplay() {
 
   // Hide the overlay text 4 seconds from now.
   time_to_hide_overlay_ = [NSDate timeIntervalSinceReferenceDate] + 4.0;
+#endif
 
   return true;
 }
@@ -1035,6 +1049,7 @@ void PluginObject::CancelFullscreenDisplay() {
   }
 }
 
+#ifdef O3D_PLUGIN_ENABLE_FULLSCREEN_MSG
 void PluginObject::FullscreenIdle() {
   if ((mac_fullscreen_overlay_window_ != NULL) &&
       (time_to_hide_overlay_ != 0.0) &&
@@ -1045,6 +1060,7 @@ void PluginObject::FullscreenIdle() {
                            kTransitionTime);
   }
 }
+#endif
 
 }  // namespace glue
 }  // namespace o3d

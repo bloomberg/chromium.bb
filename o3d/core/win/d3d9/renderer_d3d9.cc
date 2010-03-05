@@ -890,10 +890,14 @@ RendererD3D9::RendererD3D9(ServiceLocator* service_locator)
       current_d3d_surface_(NULL),
       current_d3d_depth_surface_(NULL),
       have_device_(false),
-      fullscreen_(false),
+      fullscreen_(false)
+#ifdef O3D_PLUGIN_ENABLE_FULLSCREEN_MSG
+      ,
       fullscreen_message_font_(NULL),
       fullscreen_message_line_(NULL),
-      showing_fullscreen_message_(false) {
+      showing_fullscreen_message_(false)
+#endif
+{
   // Setup state handlers
   AddStateHandler(State::kAlphaTestEnableParamName,
                   new StateEnableHandler<D3DRS_ALPHATESTENABLE>);
@@ -1037,6 +1041,7 @@ Renderer::InitStatus RendererD3D9::InitPlatformSpecific(
     }
   }
 
+#ifdef O3D_PLUGIN_ENABLE_FULLSCREEN_MSG
   if (S_OK !=
       D3DXCreateFont(d3d_device_,
                      27 /* font_height */,
@@ -1060,6 +1065,7 @@ Renderer::InitStatus RendererD3D9::InitPlatformSpecific(
     DLOG(ERROR) << "Failed to initialize line for message background.";
     return INITIALIZATION_ERROR;
   }
+#endif
 
   return SUCCESS;
 }
@@ -1173,6 +1179,7 @@ bool RendererD3D9::InvalidateDeviceObjects() {
     }
   }
 
+#ifdef O3D_PLUGIN_ENABLE_FULLSCREEN_MSG
   if (fullscreen_message_font_ &&
       S_OK != fullscreen_message_font_->OnLostDevice()) {
     return false;
@@ -1181,6 +1188,8 @@ bool RendererD3D9::InvalidateDeviceObjects() {
       S_OK != fullscreen_message_line_->OnLostDevice()) {
     return false;
   }
+#endif
+
   return true;
 }
 
@@ -1238,6 +1247,8 @@ bool RendererD3D9::RestoreDeviceObjects() {
       }
     }
   }
+
+#ifdef O3D_PLUGIN_ENABLE_FULLSCREEN_MSG
   if (fullscreen_message_font_ &&
       S_OK != fullscreen_message_font_->OnResetDevice()) {
     return false;
@@ -1246,6 +1257,7 @@ bool RendererD3D9::RestoreDeviceObjects() {
       S_OK != fullscreen_message_line_->OnResetDevice()) {
     return false;
   }
+#endif
 
   return true;
 }
@@ -1412,8 +1424,10 @@ bool RendererD3D9::GoFullscreen(const DisplayWindow& display,
         windowed = false;
       }
 
+#ifdef O3D_PLUGIN_ENABLE_FULLSCREEN_MSG
       showing_fullscreen_message_ = true;
       fullscreen_message_timer_.GetElapsedTimeAndReset();  // Reset the timer.
+#endif
 
       d3d_present_parameters_.FullScreen_RefreshRateInHz = refresh_rate;
       d3d_present_parameters_.hDeviceWindow = window;
@@ -1440,7 +1454,9 @@ bool RendererD3D9::CancelFullscreen(const DisplayWindow& display,
       const DisplayWindowWindows& platform_display =
           static_cast<const DisplayWindowWindows&>(display);
       HWND window = platform_display.hwnd();
+#ifdef O3D_PLUGIN_ENABLE_FULLSCREEN_MSG
       showing_fullscreen_message_ = false;
+#endif
       d3d_present_parameters_.FullScreen_RefreshRateInHz = 0;
       d3d_present_parameters_.hDeviceWindow = window;
       d3d_present_parameters_.Windowed = true;
@@ -1511,6 +1527,7 @@ void RendererD3D9::PlatformSpecificFinishRendering() {
     back_buffer_surface_ = NULL;
     back_buffer_depth_surface_ = NULL;
 
+#ifdef O3D_PLUGIN_ENABLE_FULLSCREEN_MSG
     if (showing_fullscreen_message_) {
       // Message should display for 3 seconds after transition to fullscreen.
       float elapsed_time =
@@ -1525,6 +1542,7 @@ void RendererD3D9::PlatformSpecificFinishRendering() {
         }
       }
     }
+#endif
   }
 }
 
@@ -1541,6 +1559,7 @@ void RendererD3D9::PlatformSpecificPresent() {
 void RendererD3D9::ApplyDirtyStates() {
 }
 
+#ifdef O3D_PLUGIN_ENABLE_FULLSCREEN_MSG
 // TODO(gman): Why is this code in here? Shouldn't this use O3D to render this
 //    instead of D3D?
 void RendererD3D9::ShowFullscreenMessage(float elapsed_time,
@@ -1599,6 +1618,7 @@ void RendererD3D9::ShowFullscreenMessage(float elapsed_time,
 
   d3d_device_->SetRenderState(D3DRS_ZENABLE, z_enable);
 }
+#endif
 
 void RendererD3D9::SetRenderSurfacesPlatformSpecific(
     const RenderSurface* surface,

@@ -47,6 +47,7 @@
 #include "core/cross/event.h"
 #include "plugin/cross/plugin_logging.h"
 #include "plugin/cross/out_of_memory.h"
+#include "plugin/cross/whitelist.h"
 #include "statsreport/metrics.h"
 #include "v8/include/v8.h"
 #include "breakpad/win/bluescreen_detector.h"
@@ -824,6 +825,10 @@ NPError NPP_New(NPMIMEType pluginType,
     g_logging_initialized = true;
   }
 #endif
+
+  if (!IsDomainAuthorized(instance)) {
+    return NPERR_INVALID_URL;
+  }
 
   PluginObject* pluginObject = glue::_o3d::PluginObject::Create(
       instance);

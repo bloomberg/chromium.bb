@@ -42,6 +42,7 @@
 #include "base/scoped_ptr.h"
 #include "plugin/cross/main.h"
 #include "plugin/cross/out_of_memory.h"
+#include "plugin/cross/whitelist.h"
 #include "plugin/linux/envvars.h"
 
 using glue::_o3d::PluginObject;
@@ -702,6 +703,10 @@ NPError PlatformNPPGetValue(NPP instance, NPPVariable variable, void *value) {
 NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode, int16 argc,
                 char *argn[], char *argv[], NPSavedData *saved) {
   HANDLE_CRASHES;
+
+  if (!IsDomainAuthorized(instance)) {
+    return NPERR_INVALID_URL;
+  }
 
   PluginObject* pluginObject = glue::_o3d::PluginObject::Create(
       instance);
