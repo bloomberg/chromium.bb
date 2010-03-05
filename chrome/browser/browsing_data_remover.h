@@ -8,6 +8,7 @@
 #include "base/observer_list.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
+#include "chrome/browser/appcache/chrome_appcache_service.h"
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/common/notification_registrar.h"
 #include "webkit/database/database_tracker.h"
@@ -104,13 +105,26 @@ class BrowsingDataRemover : public NotificationObserver {
   // Invoked on the FILE thread to delete HTML5 databases.
   void ClearDatabasesOnFILEThread(base::Time delete_begin);
 
+  // Callback when the appcache has been cleared. Invokes
+  // NotifyAndDeleteIfDone.
+  void OnClearedAppCache();
+
+  // Invoked on the IO thread to delete from the AppCache.
+  void ClearAppCacheOnIOThread(base::Time delete_begin);
+
+  // Lower level helpers.
+  void OnGotAppCacheInfo(int rv);
+  void OnAppCacheDeleted(int rv);
+  ChromeAppCacheService* GetAppCacheService();
+
   // Calculate the begin time for the deletion range specified by |time_period|.
   base::Time CalculateBeginDeleteTime(TimePeriod time_period);
 
   // Returns true if we're all done.
   bool all_done() {
     return registrar_.IsEmpty() && !waiting_for_clear_cache_ &&
-           !waiting_for_clear_history_ && !waiting_for_clear_databases_;
+           !waiting_for_clear_history_ && !waiting_for_clear_databases_ &&
+           !waiting_for_clear_appcache_;
   }
 
   NotificationRegistrar registrar_;
@@ -132,14 +146,18 @@ class BrowsingDataRemover : public NotificationObserver {
 
   net::CompletionCallbackImpl<BrowsingDataRemover> database_cleared_callback_;
 
-  // True if we're waiting for HTML5 databases to be deleted.
+  // Used to clear the appcache.
+  net::CompletionCallbackImpl<BrowsingDataRemover> appcache_got_info_callback_;
+  net::CompletionCallbackImpl<BrowsingDataRemover> appcache_deleted_callback_;
+  scoped_refptr<appcache::AppCacheInfoCollection> appcache_info_;
+  scoped_refptr<URLRequestContextGetter> request_context_getter_;
+  int appcaches_to_be_deleted_count_;
+
+  // True if we're waiting for various data to be deleted.
   bool waiting_for_clear_databases_;
-
-  // True if we're waiting for the history to be deleted.
   bool waiting_for_clear_history_;
-
-  // True if we're waiting for the cache to be cleared.
   bool waiting_for_clear_cache_;
+  bool waiting_for_clear_appcache_;
 
   ObserverList<Observer> observer_list_;
 

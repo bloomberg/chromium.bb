@@ -41,6 +41,7 @@ AppCacheGroup::AppCacheGroup(AppCacheService* service,
       manifest_url_(manifest_url),
       update_status_(IDLE),
       is_obsolete_(false),
+      is_being_deleted_(false),
       newest_complete_cache_(NULL),
       update_job_(NULL),
       service_(service),
@@ -137,9 +138,8 @@ void AppCacheGroup::RemoveCache(AppCache* cache) {
 
 void AppCacheGroup::AddNewlyDeletableResponseIds(
     std::vector<int64>* response_ids) {
-  if (!is_obsolete() && old_caches_.empty()) {
-    service_->storage()->DeleteResponses(
-        manifest_url_, *response_ids);
+  if (is_being_deleted() || (!is_obsolete() && old_caches_.empty())) {
+    service_->storage()->DeleteResponses(manifest_url_, *response_ids);
     response_ids->clear();
     return;
   }
@@ -156,6 +156,7 @@ void AppCacheGroup::AddNewlyDeletableResponseIds(
 
 void AppCacheGroup::StartUpdateWithNewMasterEntry(
     AppCacheHost* host, const GURL& new_master_resource) {
+  DCHECK(!is_obsolete() && !is_being_deleted());
   if (is_in_dtor_)
     return;
 
@@ -169,6 +170,14 @@ void AppCacheGroup::StartUpdateWithNewMasterEntry(
     restart_update_task_->Cancel();
     restart_update_task_ = NULL;
     RunQueuedUpdates();
+  }
+}
+
+void AppCacheGroup::CancelUpdate() {
+  if (update_job_) {
+    delete update_job_;
+    DCHECK(!update_job_);
+    DCHECK_EQ(IDLE, update_status_);
   }
 }
 
@@ -208,7 +217,7 @@ void AppCacheGroup::RunQueuedUpdates() {
       observers_.AddObserver(host);
     }
 
-    if (!is_obsolete())
+    if (!is_obsolete() && !is_being_deleted())
       StartUpdateWithNewMasterEntry(host, it->second);
   }
 }

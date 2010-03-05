@@ -432,7 +432,7 @@ void gtk_chrome_cookie_view_display_local_storage(
 // Switches the display to showing the passed in app cache.
 void gtk_chrome_cookie_view_display_app_cache(
     GtkChromeCookieView* self,
-    const BrowsingDataAppCacheHelper::AppCacheInfo& info) {
+    const appcache::AppCacheInfo& info) {
   UpdateVisibleDetailedInfo(self, self->appcache_details_table_);
 
   gtk_entry_set_text(GTK_ENTRY(self->appcache_manifest_entry_),

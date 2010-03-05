@@ -26,7 +26,7 @@ class AppCacheInfoView : public views::View {
   AppCacheInfoView();
   virtual ~AppCacheInfoView();
 
-  void SetAppCacheInfo(const BrowsingDataAppCacheHelper::AppCacheInfo* info);
+  void SetAppCacheInfo(const appcache::AppCacheInfo* info);
   void ClearAppCacheDisplay();
   void EnableAppCacheDisplay(bool enabled);
 

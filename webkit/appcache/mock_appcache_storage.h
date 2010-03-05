@@ -28,6 +28,7 @@ class MockAppCacheStorage : public AppCacheStorage {
   explicit MockAppCacheStorage(AppCacheService* service);
   virtual ~MockAppCacheStorage();
 
+  virtual void GetAllInfo(Delegate* delegate) {}  // not implemented
   virtual void LoadCache(int64 id, Delegate* delegate);
   virtual void LoadOrCreateGroup(const GURL& manifest_url, Delegate* delegate);
   virtual void StoreGroupAndNewestCache(

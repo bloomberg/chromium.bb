@@ -57,7 +57,7 @@ class CookieTreeNode : public TreeNode<CookieTreeNode> {
         const BrowsingDataDatabaseHelper::DatabaseInfo* database_info,
         const BrowsingDataLocalStorageHelper::LocalStorageInfo*
             local_storage_info,
-        const BrowsingDataAppCacheHelper::AppCacheInfo* appcache_info)
+        const appcache::AppCacheInfo* appcache_info)
         : origin(origin),
           node_type(node_type),
           cookie(cookie),
@@ -74,7 +74,7 @@ class CookieTreeNode : public TreeNode<CookieTreeNode> {
     const net::CookieMonster::CookieListPair* cookie;
     const BrowsingDataDatabaseHelper::DatabaseInfo* database_info;
     const BrowsingDataLocalStorageHelper::LocalStorageInfo* local_storage_info;
-    const BrowsingDataAppCacheHelper::AppCacheInfo* appcache_info;
+    const appcache::AppCacheInfo* appcache_info;
   };
 
   CookieTreeNode() {}
@@ -217,7 +217,7 @@ class CookieTreeAppCacheNode : public CookieTreeNode {
   // Does not take ownership of appcache_info, and appcache_info should remain
   // valid at least as long as the CookieTreeAppCacheNode is valid.
   explicit CookieTreeAppCacheNode(
-      const BrowsingDataAppCacheHelper::AppCacheInfo* appcache_info);
+      const appcache::AppCacheInfo* appcache_info);
   virtual ~CookieTreeAppCacheNode() {}
 
   virtual void DeleteStoredObjects();
@@ -228,7 +228,7 @@ class CookieTreeAppCacheNode : public CookieTreeNode {
   }
 
  private:
-  const BrowsingDataAppCacheHelper::AppCacheInfo* appcache_info_;
+  const appcache::AppCacheInfo* appcache_info_;
   DISALLOW_COPY_AND_ASSIGN(CookieTreeAppCacheNode);
 };
 
@@ -398,8 +398,6 @@ class CookiesTreeModel : public TreeNodeModel<CookieTreeNode> {
   };
   typedef net::CookieMonster::CookieList CookieList;
   typedef std::vector<net::CookieMonster::CookieListPair*> CookiePtrList;
-  typedef std::vector<BrowsingDataAppCacheHelper::AppCacheInfo>
-      AppCacheInfoList;
   typedef std::vector<BrowsingDataDatabaseHelper::DatabaseInfo>
       DatabaseInfoList;
   typedef std::vector<BrowsingDataLocalStorageHelper::LocalStorageInfo>
@@ -427,6 +425,7 @@ class CookiesTreeModel : public TreeNodeModel<CookieTreeNode> {
 
   scoped_refptr<BrowsingDataAppCacheHelper> appcache_helper_;
   scoped_refptr<BrowsingDataDatabaseHelper> database_helper_;
+  scoped_refptr<appcache::AppCacheInfoCollection> appcache_info_;
   DatabaseInfoList database_info_list_;
 
   scoped_refptr<BrowsingDataLocalStorageHelper> local_storage_helper_;

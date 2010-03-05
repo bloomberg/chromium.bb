@@ -131,14 +131,15 @@ class OriginNodeComparator {
 // CookieTreeAppCacheNode, public:
 
 CookieTreeAppCacheNode::CookieTreeAppCacheNode(
-    const BrowsingDataAppCacheHelper::AppCacheInfo* appcache_info)
+    const appcache::AppCacheInfo* appcache_info)
     : CookieTreeNode(UTF8ToWide(appcache_info->manifest_url.spec())),
       appcache_info_(appcache_info) {
 }
 
 void CookieTreeAppCacheNode::DeleteStoredObjects() {
   DCHECK(GetModel()->appcache_helper_);
-  GetModel()->appcache_helper_->DeleteAppCache(appcache_info_->group_id);
+  GetModel()->appcache_helper_->DeleteAppCacheGroup(
+      appcache_info_->manifest_url);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -441,27 +442,37 @@ void CookiesTreeModel::RemoveObserver(Observer* observer) {
 }
 
 void CookiesTreeModel::OnAppCacheModelInfoLoaded() {
+  appcache_info_ = appcache_helper_->info_collection();
   PopulateAppCacheInfoWithFilter(std::wstring());
 }
 
 void CookiesTreeModel::PopulateAppCacheInfoWithFilter(
     const std::wstring& filter) {
-  if (!appcache_helper_ || appcache_helper_->info_list().empty())
+  using appcache::AppCacheInfo;
+  using appcache::AppCacheInfoVector;
+  typedef std::map<GURL, AppCacheInfoVector> InfoByOrigin;
+
+  if (!appcache_info_ || appcache_info_->infos_by_origin.empty())
     return;
+
   CookieTreeRootNode* root = static_cast<CookieTreeRootNode*>(GetRoot());
   NotifyObserverBeginBatch();
-  for (AppCacheInfoList::const_iterator info =
-           appcache_helper_->info_list().begin();
-       info != appcache_helper_->info_list().end(); ++info) {
-    std::wstring origin_node_name = UTF8ToWide(info->manifest_url.host());
+  for (InfoByOrigin::const_iterator origin =
+           appcache_info_->infos_by_origin.begin();
+       origin != appcache_info_->infos_by_origin.end(); ++origin) {
+    std::wstring origin_node_name = UTF8ToWide(origin->first.host());
     if (filter.empty() ||
         (origin_node_name.find(filter) != std::wstring::npos)) {
       CookieTreeOriginNode* origin_node =
           root->GetOrCreateOriginNode(origin_node_name);
       CookieTreeAppCachesNode* appcaches_node =
           origin_node->GetOrCreateAppCachesNode();
-      appcaches_node->AddAppCacheNode(
-          new CookieTreeAppCacheNode(&(*info)));
+
+      for (AppCacheInfoVector::const_iterator info = origin->second.begin();
+           info != origin->second.end(); ++info) {
+        appcaches_node->AddAppCacheNode(
+            new CookieTreeAppCacheNode(&(*info)));
+      }
     }
   }
   NotifyObserverTreeNodeChanged(root);

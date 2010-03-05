@@ -24,6 +24,7 @@ void MockBrowsingDataAppCacheHelper::CancelNotification() {
   completion_callback_.reset(NULL);
 }
 
-void MockBrowsingDataAppCacheHelper::DeleteAppCache(int64 group_id) {
+void MockBrowsingDataAppCacheHelper::DeleteAppCacheGroup(
+    const GURL& manifest_url) {
 }
 

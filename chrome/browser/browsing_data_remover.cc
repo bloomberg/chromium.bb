@@ -11,6 +11,7 @@
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/metrics/user_metrics.h"
+#include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/search_engines/template_url_model.h"
@@ -46,9 +47,16 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       delete_end_(delete_end),
       ALLOW_THIS_IN_INITIALIZER_LIST(database_cleared_callback_(
           this, &BrowsingDataRemover::OnClearedDatabases)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(appcache_got_info_callback_(
+          this, &BrowsingDataRemover::OnGotAppCacheInfo)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(appcache_deleted_callback_(
+          this, &BrowsingDataRemover::OnAppCacheDeleted)),
+      request_context_getter_(profile->GetRequestContext()),
+      appcaches_to_be_deleted_count_(0),
       waiting_for_clear_databases_(false),
       waiting_for_clear_history_(false),
-      waiting_for_clear_cache_(false) {
+      waiting_for_clear_cache_(false),
+      waiting_for_clear_appcache_(false) {
   DCHECK(profile);
 }
 
@@ -60,9 +68,16 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       delete_end_(delete_end),
       ALLOW_THIS_IN_INITIALIZER_LIST(database_cleared_callback_(
           this, &BrowsingDataRemover::OnClearedDatabases)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(appcache_got_info_callback_(
+          this, &BrowsingDataRemover::OnGotAppCacheInfo)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(appcache_deleted_callback_(
+          this, &BrowsingDataRemover::OnAppCacheDeleted)),
+      request_context_getter_(profile->GetRequestContext()),
+      appcaches_to_be_deleted_count_(0),
       waiting_for_clear_databases_(false),
       waiting_for_clear_history_(false),
-      waiting_for_clear_cache_(false) {
+      waiting_for_clear_cache_(false),
+      waiting_for_clear_appcache_(false) {
   DCHECK(profile);
 }
 
@@ -146,7 +161,13 @@ void BrowsingDataRemover::Remove(int remove_mask) {
         profile_->GetTransportSecurityState();
     ts_state->DeleteSince(delete_begin_);
 
-    // TODO(michaeln): clear appcaches created in the date range
+    waiting_for_clear_appcache_ = true;
+    ChromeThread::PostTask(
+        ChromeThread::IO, FROM_HERE,
+        NewRunnableMethod(
+            this,
+            &BrowsingDataRemover::ClearAppCacheOnIOThread,
+            delete_begin_));  // we assume end time == now
   }
 
   if (remove_mask & REMOVE_PASSWORDS) {
@@ -335,4 +356,63 @@ void BrowsingDataRemover::ClearDatabasesOnFILEThread(base::Time delete_begin) {
       delete_begin, &database_cleared_callback_);
   if (rv != net::ERR_IO_PENDING)
     OnClearedDatabases(rv);
+}
+
+void BrowsingDataRemover::OnClearedAppCache() {
+  if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
+    bool result = ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableMethod(this, &BrowsingDataRemover::OnClearedAppCache));
+    DCHECK(result);
+    return;
+  }
+  waiting_for_clear_appcache_ = false;
+  NotifyAndDeleteIfDone();
+}
+
+void BrowsingDataRemover::ClearAppCacheOnIOThread(base::Time delete_begin) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(waiting_for_clear_appcache_);
+
+  appcache_info_ = new appcache::AppCacheInfoCollection;
+  GetAppCacheService()->GetAllAppCacheInfo(
+      appcache_info_, &appcache_got_info_callback_);
+  // continues in OnGotAppCacheInfo
+}
+
+void BrowsingDataRemover::OnGotAppCacheInfo(int rv) {
+  using appcache::AppCacheInfoVector;
+  typedef std::map<GURL, AppCacheInfoVector> InfoByOrigin;
+
+  for (InfoByOrigin::const_iterator origin =
+           appcache_info_->infos_by_origin.begin();
+       origin != appcache_info_->infos_by_origin.end(); ++origin) {
+    for (AppCacheInfoVector::const_iterator info = origin->second.begin();
+         info != origin->second.end(); ++info) {
+      if (info->creation_time > delete_begin_) {
+        ++appcaches_to_be_deleted_count_;
+        GetAppCacheService()->DeleteAppCacheGroup(
+            info->manifest_url, &appcache_deleted_callback_);
+      }
+    }
+  }
+
+  if (!appcaches_to_be_deleted_count_)
+    OnClearedAppCache();
+  // else continues in OnAppCacheDeleted
+}
+
+void BrowsingDataRemover::OnAppCacheDeleted(int rv) {
+  --appcaches_to_be_deleted_count_;
+  if (!appcaches_to_be_deleted_count_)
+    OnClearedAppCache();
+}
+
+ChromeAppCacheService* BrowsingDataRemover::GetAppCacheService() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  ChromeURLRequestContext* request_context =
+      reinterpret_cast<ChromeURLRequestContext*>(
+          request_context_getter_->GetURLRequestContext());
+  return request_context ? request_context->appcache_service()
+                         : NULL;
 }

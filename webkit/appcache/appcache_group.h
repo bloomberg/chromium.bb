@@ -55,6 +55,9 @@ class AppCacheGroup : public base::RefCounted<AppCacheGroup> {
   bool is_obsolete() const { return is_obsolete_; }
   void set_obsolete(bool value) { is_obsolete_ = value; }
 
+  bool is_being_deleted() const { return is_being_deleted_; }
+  void set_being_deleted(bool value) { is_being_deleted_ = value; }
+
   AppCache* newest_complete_cache() const { return newest_complete_cache_; }
 
   void AddCache(AppCache* complete_cache);
@@ -80,6 +83,9 @@ class AppCacheGroup : public base::RefCounted<AppCacheGroup> {
   // manifest url.
   void StartUpdateWithNewMasterEntry(AppCacheHost* host,
                                      const GURL& new_master_resource);
+
+  // Cancels an update if one is running.
+  void CancelUpdate();
 
  private:
   class HostObserver;
@@ -113,6 +119,7 @@ class AppCacheGroup : public base::RefCounted<AppCacheGroup> {
   const GURL manifest_url_;
   UpdateStatus update_status_;
   bool is_obsolete_;
+  bool is_being_deleted_;
   std::vector<int64> newly_deletable_response_ids_;
 
   // Old complete app caches.

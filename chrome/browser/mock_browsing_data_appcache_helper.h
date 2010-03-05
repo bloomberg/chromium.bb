@@ -17,7 +17,7 @@ class MockBrowsingDataAppCacheHelper
 
   virtual void StartFetching(Callback0::Type* completion_callback);
   virtual void CancelNotification();
-  virtual void DeleteAppCache(int64 group_id);
+  virtual void DeleteAppCacheGroup(const GURL& manifest_url);
 
  private:
   virtual ~MockBrowsingDataAppCacheHelper();

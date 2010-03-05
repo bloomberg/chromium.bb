@@ -5,8 +5,15 @@
 #ifndef WEBKIT_APPCACHE_APPCACHE_SERVICE_H_
 #define WEBKIT_APPCACHE_APPCACHE_SERVICE_H_
 
+#include <set>
+#include <vector>
+
 #include "base/file_path.h"
+#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "base/time.h"
+#include "net/base/completion_callback.h"
+#include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 #include "webkit/appcache/appcache_storage.h"
 
@@ -16,6 +23,36 @@ namespace appcache {
 
 class AppCacheBackendImpl;
 class AppCachePolicy;
+
+// Structure that contains basic info about an appcache.
+struct AppCacheInfo {
+  AppCacheInfo() {}
+  AppCacheInfo(const GURL& manifest_url,
+               int64 size,
+               base::Time creation_time,
+               base::Time last_access_time,
+               base::Time last_update_time)
+      : manifest_url(manifest_url),
+        size(size),
+        creation_time(creation_time),
+        last_access_time(last_access_time),
+        last_update_time(last_update_time) {
+  }
+  GURL manifest_url;
+  int64 size;
+  base::Time creation_time;
+  base::Time last_access_time;
+  base::Time last_update_time;
+};
+
+typedef std::vector<AppCacheInfo> AppCacheInfoVector;
+
+// Refcounted container to avoid copying the collection in callbacks.
+struct AppCacheInfoCollection
+    : public base::RefCountedThreadSafe<AppCacheInfoCollection> {
+  virtual ~AppCacheInfoCollection() {}
+  std::map<GURL, AppCacheInfoVector> infos_by_origin;
+};
 
 // Class that manages the application cache service. Sends notifications
 // to many frontends.  One instance per user-profile. Each instance has
@@ -27,10 +64,26 @@ class AppCacheService {
 
   void Initialize(const FilePath& cache_directory);
 
+  // Purges any memory not needed.
   void PurgeMemory() {
     if (storage_.get())
       storage_->PurgeMemory();
   }
+
+  // Populates 'collection' with info about all of the appcaches stored
+  // within the service, 'callback' is invoked upon completion. The service
+  // acquires a reference to the 'collection' until until completion.
+  // This method always completes asynchronously.
+  void GetAllAppCacheInfo(AppCacheInfoCollection* collection,
+                          net::CompletionCallback* callback);
+
+  // Deletes the group identified by 'manifest_url', 'callback' is
+  // invoked upon completion. Upon completion, the cache group and
+  // any resources within the group are no longer loadable and all
+  // subresource loads for pages associated with a deleted group
+  // will fail. This method always completes asynchronously.
+  void DeleteAppCacheGroup(const GURL& manifest_url,
+                           net::CompletionCallback* callback);
 
   // Context for use during cache updates, should only be accessed
   // on the IO thread. We do NOT add a reference to the request context,
@@ -49,7 +102,8 @@ class AppCacheService {
     appcache_policy_ = policy;
   }
 
-  // Track which processes are using this appcache service.
+  // Each child process in chrome uses a distinct backend instance.
+  // See chrome/browser/AppCacheDispatcherHost.
   void RegisterBackend(AppCacheBackendImpl* backend_impl);
   void UnregisterBackend(AppCacheBackendImpl* backend_impl);
   AppCacheBackendImpl* GetBackend(int id) const {
@@ -60,10 +114,18 @@ class AppCacheService {
   AppCacheStorage* storage() const { return storage_.get(); }
 
  protected:
+  class AsyncHelper;
+  class DeleteHelper;
+  class GetInfoHelper;
+
+  typedef std::set<AsyncHelper*> PendingAsyncHelpers;
+
   AppCachePolicy* appcache_policy_;
 
   // Deals with persistence.
   scoped_ptr<AppCacheStorage> storage_;
+
+  PendingAsyncHelpers pending_helpers_;
 
   // Track current processes.  One 'backend' per child process.
   typedef std::map<int, AppCacheBackendImpl*> BackendMap;

@@ -183,6 +183,49 @@ class AppCacheStorageImpl::DisableDatabaseTask : public DatabaseTask {
   virtual void Run() { database_->Disable(); }
 };
 
+// GetAllInfoTask -------
+
+class AppCacheStorageImpl::GetAllInfoTask : public DatabaseTask {
+ public:
+  explicit GetAllInfoTask(AppCacheStorageImpl* storage)
+      : DatabaseTask(storage),
+        info_collection_(new AppCacheInfoCollection()) {
+  }
+
+  virtual void Run();
+  virtual void RunCompleted();
+
+  scoped_refptr<AppCacheInfoCollection> info_collection_;
+};
+
+void AppCacheStorageImpl::GetAllInfoTask::Run() {
+  std::set<GURL> origins;
+  database_->FindOriginsWithGroups(&origins);
+  for (std::set<GURL>::const_iterator origin = origins.begin();
+       origin != origins.end(); ++origin) {
+    AppCacheInfoVector& infos =
+        info_collection_->infos_by_origin[*origin];
+    std::vector<AppCacheDatabase::GroupRecord> groups;
+    database_->FindGroupsForOrigin(*origin, &groups);
+    for (std::vector<AppCacheDatabase::GroupRecord>::const_iterator
+         group = groups.begin();
+         group != groups.end(); ++group) {
+      AppCacheDatabase::CacheRecord cache_record;
+      database_->FindCacheForGroup(group->group_id, &cache_record);
+      infos.push_back(
+          AppCacheInfo(
+              group->manifest_url, cache_record.cache_size,
+              group->creation_time, group->last_access_time,
+              cache_record.update_time));
+    }
+  }
+}
+
+void AppCacheStorageImpl::GetAllInfoTask::RunCompleted() {
+  DCHECK(delegates_.size() == 1);
+  FOR_EACH_DELEGATE(delegates_, OnAllInfo(info_collection_));
+}
+
 // StoreOrLoadTask -------
 
 class AppCacheStorageImpl::StoreOrLoadTask : public DatabaseTask {
@@ -812,6 +855,13 @@ void AppCacheStorageImpl::Disable() {
   task->Schedule();
 }
 
+void AppCacheStorageImpl::GetAllInfo(Delegate* delegate) {
+  DCHECK(delegate);
+  scoped_refptr<GetAllInfoTask> task = new GetAllInfoTask(this);
+  task->AddDelegate(GetOrCreateDelegateReference(delegate));
+  task->Schedule();
+}
+
 void AppCacheStorageImpl::LoadCache(int64 id, Delegate* delegate) {
   DCHECK(delegate);
   if (is_disabled_) {
@@ -993,6 +1043,17 @@ void AppCacheStorageImpl::FindResponseForSubRequest(
     AppCacheEntry* found_entry, AppCacheEntry* found_fallback_entry,
     bool* found_network_namespace) {
   DCHECK(cache && cache->is_complete());
+
+  // When a group is forcibly deleted, all subresource loads for pages
+  // using caches in the group will result in a synthesized network errors.
+  // Forcible deletion is not a function that is covered by the HTML5 spec.
+  if (cache->owning_group()->is_being_deleted()) {
+    *found_entry = AppCacheEntry();
+    *found_fallback_entry = AppCacheEntry();
+    *found_network_namespace = false;
+    return;
+  }
+
   GURL fallback_namespace_not_used;
   cache->FindResponseForRequest(
       url, found_entry, found_fallback_entry,

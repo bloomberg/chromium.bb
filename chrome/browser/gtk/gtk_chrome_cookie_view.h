@@ -141,7 +141,7 @@ void gtk_chrome_cookie_view_display_local_storage(
 // Switches the display to showing the passed in app cache.
 void gtk_chrome_cookie_view_display_app_cache(
     GtkChromeCookieView* widget,
-    const BrowsingDataAppCacheHelper::AppCacheInfo& info);
+    const appcache::AppCacheInfo& info);
 
 // Switches the display to an individual storage item.
 void gtk_chrome_cookie_view_display_local_storage_item(

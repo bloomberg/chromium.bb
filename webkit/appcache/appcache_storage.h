@@ -26,6 +26,7 @@ class AppCacheGroup;
 class AppCacheResponseReader;
 class AppCacheResponseWriter;
 class AppCacheService;
+struct AppCacheInfoCollection;
 struct HttpResponseInfoIOBuffer;
 
 class AppCacheStorage {
@@ -34,6 +35,9 @@ class AppCacheStorage {
   class Delegate {
    public:
     virtual ~Delegate() {}
+
+    // If retrieval fails, 'collection' will be NULL.
+    virtual void OnAllInfo(AppCacheInfoCollection* collection) {}
 
     // If a load fails the 'cache' will be NULL.
     virtual void OnCacheLoaded(AppCache* cache, int64 cache_id) {}
@@ -64,6 +68,11 @@ class AppCacheStorage {
 
   explicit AppCacheStorage(AppCacheService* service);
   virtual ~AppCacheStorage();
+
+  // Schedules a task to retrieve basic info about all groups and caches
+  // stored in the system. Upon completion the delegate will be called
+  // with the results.
+  virtual void GetAllInfo(Delegate* delegate) = 0;
 
   // Schedules a cache to be loaded from storage. Upon load completion
   // the delegate will be called back. If the cache already resides in

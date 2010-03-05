@@ -27,7 +27,8 @@ class AppCacheStorageImpl : public AppCacheStorage {
   void Disable();
   bool is_disabled() const { return is_disabled_; }
 
-  // AppCacheStorage methods
+  // AppCacheStorage methods, see the base class for doc comments.
+  virtual void GetAllInfo(Delegate* delegate);
   virtual void LoadCache(int64 id, Delegate* delegate);
   virtual void LoadOrCreateGroup(const GURL& manifest_url, Delegate* delegate);
   virtual void StoreGroupAndNewestCache(
@@ -59,6 +60,7 @@ class AppCacheStorageImpl : public AppCacheStorage {
   class InitTask;
   class CloseConnectionTask;
   class DisableDatabaseTask;
+  class GetAllInfoTask;
   class StoreOrLoadTask;
   class CacheLoadTask;
   class GroupLoadTask;

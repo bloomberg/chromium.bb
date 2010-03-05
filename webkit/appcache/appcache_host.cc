@@ -142,7 +142,7 @@ void AppCacheHost::DoPendingStartUpdate() {
   bool success = false;
   if (associated_cache_ && associated_cache_->owning_group()) {
     AppCacheGroup* group = associated_cache_->owning_group();
-    if (!group->is_obsolete()) {
+    if (!group->is_obsolete() && !group->is_being_deleted()) {
       success = true;
       group->StartUpdate();
     }
@@ -235,7 +235,7 @@ void AppCacheHost::LoadOrCreateGroup(const GURL& manifest_url) {
 }
 
 void AppCacheHost::OnGroupLoaded(AppCacheGroup* group,
-                                const GURL& manifest_url) {
+                                 const GURL& manifest_url) {
   DCHECK(manifest_url == pending_selected_manifest_url_);
   pending_selected_manifest_url_ = GURL();
   FinishCacheSelection(NULL, group);
@@ -270,11 +270,12 @@ void AppCacheHost::FinishCacheSelection(
     DCHECK(cache->owning_group());
     DCHECK(new_master_entry_url_.is_empty());
     AssociateCache(cache);
-    if (!cache->owning_group()->is_obsolete()) {
-      cache->owning_group()->StartUpdateWithHost(this);
-      ObserveGroupBeingUpdated(cache->owning_group());
+    AppCacheGroup* owing_group = cache->owning_group();
+    if (!owing_group->is_obsolete() && !owing_group->is_being_deleted()) {
+      owing_group->StartUpdateWithHost(this);
+      ObserveGroupBeingUpdated(owing_group);
     }
-  } else if (group) {
+  } else if (group && !group->is_being_deleted()) {
     // If document was loaded using HTTP GET or equivalent, and, there is a
     // manifest URL, and manifest URL has the same origin as document.
     // Invoke the application cache update process for manifest URL, with
@@ -287,6 +288,7 @@ void AppCacheHost::FinishCacheSelection(
     ObserveGroupBeingUpdated(group);
   } else {
     // Otherwise, the Document is not associated with any application cache.
+    new_master_entry_url_ = GURL();
     AssociateCache(NULL);
   }
 

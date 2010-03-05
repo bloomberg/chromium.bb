@@ -29,8 +29,7 @@ AppCacheInfoView::AppCacheInfoView()
 AppCacheInfoView::~AppCacheInfoView() {
 }
 
-void AppCacheInfoView::SetAppCacheInfo(
-    const BrowsingDataAppCacheHelper::AppCacheInfo* info) {
+void AppCacheInfoView::SetAppCacheInfo(const appcache::AppCacheInfo* info) {
   DCHECK(info);
   manifest_url_field_->SetText(UTF8ToWide(info->manifest_url.spec()));
   size_field_->SetText(
