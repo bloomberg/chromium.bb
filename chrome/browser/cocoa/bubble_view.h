@@ -41,8 +41,8 @@ enum {
 
 // Designated initializer. |provider| is the window from which we get the
 // current theme to draw text and backgrounds. If nil, the current window will
-// be checked. Defaults to all corners being rounded. The caller needs to
-// ensure |provider| can't go away as it will not be retained.
+// be checked. The caller needs to ensure |provider| can't go away as it will
+// not be retained. Defaults to all corners being rounded.
 - (id)initWithFrame:(NSRect)frame themeProvider:(NSWindow*)provider;
 
 // Sets the string displayed in the bubble. A copy of the string is made.
@@ -50,6 +50,9 @@ enum {
 
 // Sets which corners will be rounded.
 - (void)setCornerFlags:(unsigned long)flags;
+
+// Sets the window whose theme is used to draw.
+- (void)setThemeProvider:(NSWindow*)provider;
 
 // The font used to display the content string.
 - (NSFont*)font;

@@ -538,12 +538,14 @@ void StatusBubbleMac::SwitchParentWindow(NSWindow* parent) {
   // If not attached, just update our member variable and position.
   if (!is_attached()) {
     parent_ = parent;
+    [[window_ contentView] setThemeProvider:parent];
     UpdateSizeAndPosition();
     return;
   }
 
   Detach();
   parent_ = parent;
+  [[window_ contentView] setThemeProvider:parent];
   Attach();
   UpdateSizeAndPosition();
 }

@@ -17,8 +17,8 @@ const float kWindowEdge = 0.7f;
 
 // Designated initializer. |provider| is the window from which we get the
 // current theme to draw text and backgrounds. If nil, the current window will
-// be checked. Defaults to all corners being rounded. The caller needs to
-// ensure |provider| can't go away as it will not be retained.
+// be checked. The caller needs to ensure |provider| can't go away as it will
+// not be retained. Defaults to all corners being rounded.
 - (id)initWithFrame:(NSRect)frame themeProvider:(NSWindow*)provider {
   if ((self = [super initWithFrame:frame])) {
     cornerFlags_ = kRoundedAllCorners;
@@ -40,6 +40,13 @@ const float kWindowEdge = 0.7f;
   if (cornerFlags_ == flags)
     return;
   cornerFlags_ = flags;
+  [self setNeedsDisplay:YES];
+}
+
+- (void)setThemeProvider:(NSWindow*)provider {
+  if (themeProvider_ == provider)
+    return;
+  themeProvider_ = provider;
   [self setNeedsDisplay:YES];
 }
 
@@ -67,7 +74,9 @@ const float kWindowEdge = 0.7f;
   float bottomRightRadius =
       cornerFlags_ & kRoundedBottomRightCorner ? kBubbleCornerRadius : 0;
 
-  ThemeProvider* themeProvider = [themeProvider_ themeProvider];
+  ThemeProvider* themeProvider =
+      themeProvider_ ? [themeProvider_ themeProvider] :
+                       [[self window] themeProvider];
 
   // Background / Edge
 
