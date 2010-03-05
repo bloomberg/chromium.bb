@@ -13,6 +13,12 @@
 #include "base/callback.h"
 #include "base/file_util.h"
 
+// TODO(shess): Data is migrated from SafeBrowsingStoreSqlite as part
+// of the next update.  That way everyone doesn't pull a new database
+// when the code rolls out (and the migration code isn't gnarly).
+// After substantially everyone has migrated, the migration code can
+// be removed.  Make sure that it deletes any journal file.
+
 // Implement SafeBrowsingStore in terms of a flat file.  The file
 // format is pretty literal:
 //
@@ -103,6 +109,9 @@
 // often, consider retaining the last known-good file for recovery
 // purposes, rather than deleting it.
 
+// TODO(shess): Remove after migration.
+class SafeBrowsingStoreSqlite;
+
 class SafeBrowsingStoreFile : public SafeBrowsingStore {
  public:
   SafeBrowsingStoreFile();
@@ -189,6 +198,12 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore {
   // a convenience to the caller.
   bool OnCorruptDatabase();
 
+  // Helper for creating a corruption callback for |old_store_|.
+  // TODO(shess): Remove after migration.
+  void HandleCorruptDatabase() {
+    OnCorruptDatabase();
+  }
+
   // Clear temporary buffers used to accumulate chunk data.
   bool ClearChunkBuffers() {
     // NOTE: .clear() doesn't release memory.
@@ -230,6 +245,11 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore {
   file_util::ScopedFILE file_;
   file_util::ScopedFILE new_file_;
   bool empty_;
+
+  // If the main file existed, but was an SQLite store, this is a
+  // handle to it.
+  // TODO(shess): Remove this (and all references) after migration.
+  scoped_ptr<SafeBrowsingStoreSqlite> old_store_;
 
   // Cache of chunks which have been seen.  Loaded from the database
   // on BeginUpdate() so that it can be queried during the
