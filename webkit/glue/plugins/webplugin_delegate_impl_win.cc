@@ -18,6 +18,8 @@
 #include "base/win_util.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
+// TODO(jabdelmalek): remove me once two sided patch lands
+#include "third_party/WebKit/WebKit/chromium/public/WebPluginContainer.h"
 #include "webkit/default_plugin/plugin_impl.h"
 #include "webkit/glue/plugins/plugin_constants_win.h"
 #include "webkit/glue/plugins/plugin_instance.h"
@@ -1143,6 +1145,16 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
   handle_event_depth_++;
 
   bool ret = instance()->NPP_HandleEvent(&np_event) != 0;
+
+  // TODO(jabdelmalek): remove the ifdef, and include, once the WebKit side
+  // lands.
+#ifdef WEBPLUGINCONTAINER_DOESNT_MODIFY_HANDLED
+  // Flash and SilverLight always return false, even when they swallow the
+  // event.  Flash does this because it passes the event to its window proc,
+  // which is supposed to return 0 if an event was handled.  There are few
+  // exceptions, such as IME, where it sometimes returns true.
+  ret = true;
+#endif
 
   if (np_event.event == WM_MOUSEMOVE) {
     // Snag a reference to the current cursor ASAP in case the plugin modified
