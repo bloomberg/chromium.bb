@@ -122,11 +122,10 @@ uintptr_t NaClDescImcShmMap(struct NaClDesc         *vself,
    */
   if ((NACL_ABI_MAP_SHARED | NACL_ABI_MAP_FIXED) !=
       (flags & (NACL_ABI_MAP_SHARING_MASK | NACL_ABI_MAP_FIXED))) {
-    NaClLog(LOG_FATAL, "NaClDescImcShmMap: flags %x\n", flags);
-    /*
-     * Should return EINVAL eventually, but to track down our code
-     * that should be Doing The Right Things, we make it fatal.
-     */
+    NaClLog(LOG_INFO,
+            ("NaClDescImcShmMap: Mappig not NACL_ABI_MAP_FIXED,"
+             " flags 0x%x\n"),
+            flags);
     return -NACL_ABI_EINVAL;
   }
   /*
