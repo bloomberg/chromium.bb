@@ -1,3 +1,14 @@
+build both 32 and 64 versions of libgcc
+
+note: there is still an issue with gfortran, to build gcc one needs to disable
+fortran in tools/Makefile
+
+in the patch:
+* combined linux.h and i386/linux64.h into i386/nacl.h
+* removed LINUX target specifics when it was easy
+* target multilib definitions: i386/t-nacl64
+* config.gcc cleanup
+
 diff -uNr gcc-4.4.3.orig/gcc/config/i386/nacl.h gcc-4.4.3/gcc/config/i386/nacl.h
 --- gcc-4.4.3.orig/gcc/config/i386/nacl.h	2010-02-27 21:33:48.000000000 +0000
 +++ gcc-4.4.3/gcc/config/i386/nacl.h	2010-02-27 17:24:14.000000000 +0000
@@ -54,7 +65,7 @@ diff -uNr gcc-4.4.3.orig/gcc/config/i386/nacl.h gcc-4.4.3/gcc/config/i386/nacl.h
    "%{fnacl-library-mode:-nacl-library-mode} " \
    "%{fnacl-align-16:-nacl-align=4} " \
    "%{fnacl-align-32:-nacl-align=5} " \
--  "%{Ym,*} %{Yd,*} %{Wa,*:%*} %{m32:--32} %{m64:--64}"
+-  "%{Ym,*} %{Yd,*} %{Wa,*:%*}"
 +  "%{Ym,*} %{Yd,*} %{Wa,*:%*} %{m32:--32} %{m64:--64} " \
 +  "%{!mno-sse2avx:%{mavx:-msse2avx}} %{msse2avx:%{!mavx:-msse2avx}}"
  

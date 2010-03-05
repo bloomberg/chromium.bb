@@ -204,11 +204,10 @@ BUILD/gcc-$(GCC_VERSION): | BUILD
 	    cd .. ; \
 	  fi ; \
 	fi
-	cd BUILD && \
+	set -e; cd BUILD && \
 	  for i in ../patches/???-gcc-$(GCC_VERSION).patch ; do \
 	    patch -p0 < "$$i" ; \
-	  done && \
-	cd ..
+	  done
 
 # create gcc source directory, and mark that we've done that
 BUILD/stamp-gcc-$(GCC_VERSION): Makefile

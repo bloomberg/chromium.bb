@@ -6,16 +6,15 @@ although the validator is being overly cautious here.
 
 BUG: http://code.google.com/p/nativeclient/issues/detail?id=263
 
-diff --git a/gcc/config/i386/i386.md b/gcc/config/i386/i386.md
-index d9feab7..cfb4b16 100644
---- gcc-4.4.3/gcc/config/i386/i386.md
-+++ gcc-4.4.3/gcc/config/i386/i386.md
-@@ -14920,7 +14920,7 @@
+diff -uNr gcc-4.4.3.orig/gcc/config/i386/i386.md gcc-4.4.3/gcc/config/i386/i386.md
+--- gcc-4.4.3.orig/gcc/config/i386/i386.md	2010-03-05 11:03:27.000000000 +0000
++++ gcc-4.4.3/gcc/config/i386/i386.md	2010-03-05 11:08:50.000000000 +0000
+@@ -16500,7 +16500,7 @@
  	(plus:SI (unspec:SI [(const_int 0)] UNSPEC_TP)
  		 (match_operand:SI 1 "register_operand" "0")))
     (clobber (reg:CC FLAGS_REG))]
 -  "!TARGET_64BIT"
 +  "!TARGET_64BIT && !flag_control_integrity"
-   "add{l}\t{%%gs:0, %0|%0, DWORD PTR %%gs:0}"
+   "add{l}\t{%%gs:0, %0|%0, DWORD PTR gs:0}"
    [(set_attr "type" "alu")
     (set_attr "modrm" "0")
