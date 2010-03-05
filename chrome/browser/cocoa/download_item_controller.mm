@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -218,6 +218,10 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 
 - (void)clearDangerousMode {
   [self setState:kNormal];
+  // The state change hide the dangerouse download view and is now showing the
+  // download progress view.  This means the view is likely to be a different
+  // size, so trigger a shelf layout to fix up spacing.
+  [shelf_ layoutItems];
 }
 
 - (BOOL)isDangerousMode {
@@ -236,7 +240,9 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
     [progressView_ setHidden:YES];
     [dangerousDownloadView_ setHidden:NO];
   }
-  [shelf_ layoutItems];
+  // NOTE: Do not relayout the shelf, as this could get called during initial
+  // setup of the the item, so the localized text and sizing might not have
+  // happened yet.
 }
 
 // Called after the current theme has changed.
