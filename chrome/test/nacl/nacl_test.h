@@ -28,6 +28,7 @@ class NaClTest : public UITest {
   void SetUp();
   void TearDown();
   GURL GetTestUrl(const FilePath& filename);
+  int NaClTestTimeout();
  private:
   void PrepareSrpcHwTest(FilePath test_root_dir);
   void PrepareServerTest(FilePath test_root_dir);
