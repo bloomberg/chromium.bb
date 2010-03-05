@@ -3591,3 +3591,30 @@ ExprNodeVector[8] = {
   { ExprConstant[0] , 1, ExprSize8 },
   { ExprConstant[0] , 0x3020100, ExprSize32 | ExprUnsignedHex },
 };
+0000000000000000: 90                                           nop
+  { 1, { 0x90, 0x00, 0x00 },
+    NACLi_386,
+    0,
+    InstNop,
+    0, {
+  } };
+ExprNodeVector[0] = {
+};
+0000000000000000: 66 90                                        nop
+  { 1, { 0x90, 0x00, 0x00 },
+    NACLi_386,
+    0,
+    InstNop,
+    0, {
+  } };
+ExprNodeVector[0] = {
+};
+0000000000000000: 0f 1f 00                                     nop
+  { 1, { 0x1f, 0x00, 0x00 },
+    NACLi_386,
+    0,
+    InstNop,
+    0, {
+  } };
+ExprNodeVector[0] = {
+};

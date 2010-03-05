@@ -721,6 +721,44 @@ static Opcode* GetNextOpcodeCandidates(NcInstState* state,
   return cand_opcodes;
 }
 
+static Bool ConsumeOpcodeSequence(NcInstState* state) {
+  uint8_t next_byte;
+  NcOpcodeNode* root;
+  uint8_t orig_length;
+  Bool orig_legal;
+
+  /* Cut quick if first byte not applicable. */
+  if (state->length >= state->length_limit) return FALSE;
+  next_byte = state->mpc[state->length];
+  root = g_OpcodeSeq[0].succs[next_byte];
+  if (NULL == root) return FALSE;
+  DEBUG(printf("Consume opcode char: %"PRIx8"\n", next_byte));
+
+  /* If this point is reached, we are committed to attempting
+   * a match, and must reset state if it fails.
+   */
+  orig_length = state->length;
+  orig_legal = state->is_nacl_legal;
+  do {
+    state->length++;
+    if (NULL != root->matching_opcode) {
+      state->opcode = root->matching_opcode;
+      DEBUG(printf("matched opcode sequence!\n"));
+      return TRUE;
+    }
+    next_byte = state->mpc[state->length];
+    root = root->succs[next_byte];
+    if (root == NULL) break;
+    DEBUG(printf("Consume opcode char: %"PRIx8"\n", next_byte));
+  } while (state->length <= state->length_limit);
+
+  /* If reached, we updated the state, but did not find a match. Hence, revert
+   * the state.
+   */
+  ClearOpcodeState(state, orig_length, orig_legal);
+  return FALSE;
+}
+
 /* Given the current location of the (relative) pc of the given instruction
  * iterator, update the given state to hold the (found) matched opcode
  * (instruction) pattern. If no matching pattern exists, set the state
@@ -741,7 +779,14 @@ void DecodeInstruction(
    * on the consumed opcode bytes.
    */
   NcInstStateInit(iter, state);
-  if (ConsumePrefixBytes(state)) {
+  if (ConsumeOpcodeSequence(state)) {
+    /* TODO(karl) Make this more general. Currently assumes that all
+     * opcode sequences are nop's, and hence no additional processing
+     * (other than opcode selection) is needed.
+     */
+    is_nacl_legal = TRUE;
+    found_match = TRUE;
+  } else if (ConsumePrefixBytes(state)) {
     OpcodePrefixDescriptor prefix_desc;
     Bool continue_loop = TRUE;
     ConsumeOpcodeBytes(state, &prefix_desc);

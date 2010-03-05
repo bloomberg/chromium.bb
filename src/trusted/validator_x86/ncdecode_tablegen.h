@@ -117,6 +117,12 @@ void DefineOpcode(
     OpcodeFlags flags,
     const InstMnemonic name);
 
+/* Defines a specific sequence of byte codes for which the next DefineOpcode
+ * should apply. When specified, restricts the match to be only defined for
+ * that specific sequence of characters.
+ */
+void DefineOpcodeSequence(const char* opcode_seq);
+
 /* Add additional opcode flags to the current instruction being processed. */
 void AddOpcodeFlags(OpcodeFlags more_flags);
 

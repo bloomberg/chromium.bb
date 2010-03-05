@@ -85,6 +85,14 @@ typedef struct Opcode {
   struct Opcode* next_rule;
 } Opcode;
 
+/* Implements trie nodes for selecting instructions that must match
+ * a specific sequence of bytes. Used to handle NOP cases.
+ */
+typedef struct NcOpcodeNode {
+  Opcode* matching_opcode;
+  struct NcOpcodeNode* succs[256];
+} NcOpcodeNode;
+
 /* Returns the number of logical operands an Opcode has. That is,
  * returns field num_operands unless the first operand is
  * a special encoding that extends the opcode.

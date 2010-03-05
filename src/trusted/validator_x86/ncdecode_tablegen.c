@@ -33,6 +33,9 @@
 #include "native_client/src/trusted/validator_x86/ncdecode_tablegen.h"
 #include "native_client/src/include/portability.h"
 
+/* Define the number of possible bytes values. */
+#define NUM_BYTE_VALUES 256
+
 /* Model an Opcode, sorted by OpcodeInModRm values. */
 typedef struct MrmOpcode {
   Opcode opcode;
@@ -71,6 +74,19 @@ static OpcodePrefix default_opcode_prefix = NoPrefix;
 
 /* Holds the current opcode instruction being built. */
 Opcode* current_opcode = NULL;
+
+/* Holds the root of the trie of known opcode sequences. */
+static NcOpcodeNode* opcode_seq_root = NULL;
+
+/* Holds the current opcode sequence to be associated with the next
+ * defined opcode.
+ */
+static NcOpcodeNode* current_opcode_seq_node = NULL;
+
+/* Holds the candidate for the current_opcode_seq_node, when
+ * DefineOpcode is called.
+ */
+static NcOpcodeNode* current_cand_seq_node = NULL;
 
 /* Holds the current opcode with mrm extention being built. */
 MrmOpcode* current_opcode_mrm = NULL;
@@ -578,8 +594,11 @@ void DefineOperand(
     default:
       break;
   }
-  /* Readjust counts if opcode appears in modrm. */
-  if (index == 0) {
+
+  /* Readjust counts if opcode appears in modrm, and not a specific opcode
+   * sequence.
+   */
+  if ((index == 0) && (NULL == current_opcode_seq_node)) {
     switch (kind) {
       case Opcode0:
       case Opcode1:
@@ -881,6 +900,12 @@ void DefineOpcode(
    */
   int i;
 
+  /* Before starting, install an opcode sequence if applicable. */
+  if (NULL != current_cand_seq_node) {
+    current_opcode_seq_node = current_cand_seq_node;
+  }
+  current_cand_seq_node = NULL;
+
   /* Before starting, expand appropriate implicit flag assumnptions. */
   if (flags & InstFlag(OpcodeLtC0InModRm)) {
     flags |= InstFlag(OpcodeInModRm);
@@ -927,19 +952,98 @@ void DefineOpcode(
     return;
   }
 
-  /* Install Opcode. */
-  if (NULL == OpcodeTable[opcode][current_opcode_prefix]) {
-    OpcodeTable[opcode][current_opcode_prefix] = current_opcode;
-  } else {
-    Opcode* next = OpcodeTable[opcode][current_opcode_prefix];
-    while (NULL != next->next_rule) {
-      next = next->next_rule;
+  if (NULL == current_opcode_seq_node) {
+    /* Install Opcode. */
+    DEBUG(printf("  standard install\n"));
+    if (NULL == OpcodeTable[opcode][current_opcode_prefix]) {
+      OpcodeTable[opcode][current_opcode_prefix] = current_opcode;
+    } else {
+      Opcode* next = OpcodeTable[opcode][current_opcode_prefix];
+      while (NULL != next->next_rule) {
+        next = next->next_rule;
+      }
+      next->next_rule = current_opcode;
     }
-    next->next_rule = current_opcode;
+    /* Install assuming no modrm opcode. Let DefineOperand move if needed. */
+    InstallCurrentIntoOpcodeMrm(current_opcode_prefix, opcode,
+                                NO_MODRM_OPCODE_INDEX);
+  } else if (NULL == current_opcode_seq_node->matching_opcode) {
+    DEBUG(printf("  instruction sequence install\n"));
+    current_opcode_seq_node->matching_opcode = current_opcode;
+  } else {
+    FatalOpcode(
+        "Can't define more than one opcode for the same opcode sequence");
   }
-  /* Install assuming no modrm opcode. Let DefineOperand move if needed. */
-  InstallCurrentIntoOpcodeMrm(current_opcode_prefix, opcode,
-                              NO_MODRM_OPCODE_INDEX);
+}
+
+/* Simple (fast hack) routine to extract a byte value from a character string.
+ */
+static int ExtractByte(const char* chars, const char* opcode_seq) {
+  char buffer[3];
+  int i;
+  for (i = 0; i < 2; ++i) {
+    char ch = *(chars++);
+    if ('\0' == ch) {
+      fprintf(stderr,
+              "Odd number of characters in opcode sequence: '%s'\n",
+              opcode_seq);
+      fatal("Fix before continuing!");
+    }
+    buffer[i] = ch;
+  }
+  buffer[2] = '\0';
+  return strtoul(buffer, NULL, 16);
+}
+
+static NcOpcodeNode* NewNcOpcodeNode() {
+  int i;
+  NcOpcodeNode* root = (NcOpcodeNode*) malloc(sizeof(NcOpcodeNode));
+  root->matching_opcode = NULL;
+  for (i = 0; i < NUM_BYTE_VALUES; ++i) {
+    root->succs[i] = NULL;
+  }
+  return root;
+}
+
+/* Simple (fast hack) recursive routine to automatically install
+ * an opcode sequence into the rooted trie.
+ */
+static NcOpcodeNode* InstallOpcodeSequence(int index,
+                                           const char* opcode_seq,
+                                           const char* chars_left,
+                                           NcOpcodeNode** root_ptr) {
+  NcOpcodeNode* root = *root_ptr;
+  if (index >= MAX_BYTES_PER_X86_INSTRUCTION) {
+    fprintf(stderr,
+            "Too many bytes specified for opcode sequence: '%s'\n",
+            opcode_seq);
+    fatal("Fix before continuing!\n");
+  }
+  if (NULL == root) {
+    root = NewNcOpcodeNode();
+    *root_ptr = root;
+  }
+  if (*chars_left) {
+    int byte = ExtractByte(chars_left, opcode_seq);
+    return InstallOpcodeSequence(
+        index+2, opcode_seq, chars_left + 2, &(root->succs[byte]));
+  } else {
+    return root;
+  }
+}
+
+void DefineOpcodeSequence(const char* opcode_seq) {
+  /* First check that opcode sequence not defined twice without a corresponding
+   * call to DefineOpcode.
+   */
+  if (NULL != current_cand_seq_node) {
+    fprintf(stderr,
+            "Multiple definitions for opcode sequence: '%s'\n", opcode_seq);
+    fatal("Fix before continuing!");
+  }
+  /* Now install into lookup trie. */
+  current_cand_seq_node =
+      InstallOpcodeSequence(0, opcode_seq, opcode_seq, &opcode_seq_root);
 }
 
 void AddOpcodeFlags(OpcodeFlags more_flags) {
@@ -1009,6 +1113,18 @@ static void DefinePrefixBytes() {
   }
 }
 
+static void DefineNopSequence(const char* sequence, uint8_t opcode) {
+  DefineOpcodeSequence(sequence);
+  DefineOpcode(opcode, NACLi_386, EmptyInstFlags, InstNop);
+}
+
+static void DefineNops() {
+  DefineNopSequence("90", 0x90);     /* nop */
+  DefineNopSequence("6690", 0x90);   /* xchg %ax, %ax */
+  DefineNopSequence("0f1f00", 0x1f); /* nopl [%[re]ax] */
+  /* TODO(karl) add more nop's, including 32 and 64 specific examples. */
+}
+
 /* Build the set of x64 opcode (instructions). */
 static void BuildOpcodeTables() {
   InitializeOpcodeTables();
@@ -1022,6 +1138,8 @@ static void BuildOpcodeTables() {
   DefineSseOpcodes();
 
   DefineX87Opcodes();
+
+  DefineNops();
 }
 
 /* Return the number of opcode rules pointed to by the parameter. */
@@ -1130,17 +1248,103 @@ static void PrintPrefixTable(FILE* f) {
   fprintf(f, "\n};\n\n");
 }
 
+static int CountNumberOpcodeSequences(NcOpcodeNode* root) {
+  if (root == NULL) {
+    return 0;
+  } else {
+    int count = 0;
+    int index;
+    if (NULL != root->matching_opcode) count++;
+    for (index = 0; index < NUM_BYTE_VALUES; ++index) {
+      count += CountNumberOpcodeSequences(root->succs[index]);
+    }
+    return count;
+  }
+}
+
+static int CountNcOpcodeNodes(NcOpcodeNode* root) {
+  if (NULL == root) {
+    return 0;
+  } else {
+    int count = 1;
+    int index;
+    for (index = 0; index < NUM_BYTE_VALUES; ++index) {
+      count += CountNcOpcodeNodes(root->succs[index]);
+    }
+    return count;
+  }
+}
+
+static void PrintOpcodeTrieNode(NcOpcodeNode* root, int g_opcode_index,
+                                int root_index, FILE* f) {
+  if (NULL == root) {
+    return;
+  } else {
+    int i = 0;
+    int next_index = root_index + 1;
+    fprintf(f, "  /* %d */\n", root_index);
+    fprintf(f, "  { ");
+    if (NULL == root->matching_opcode) {
+      fprintf(f, "NULL");
+    } else {
+      fprintf(f, "g_Opcodes + %d", g_opcode_index);
+    }
+    fprintf(f, ", {\n");
+    for (i = 0; i < NUM_BYTE_VALUES; ++i) {
+      fprintf(f, "    /* %02x */ ", i);
+      if (NULL == root->succs[i]) {
+        fprintf(f, "NULL");
+      } else {
+        fprintf(f, "g_OpcodeSeq + %d", next_index);
+        next_index += CountNcOpcodeNodes(root->succs[i]);
+      }
+      fprintf(f, ",\n");
+    }
+    fprintf(f, "    } },\n");
+    next_index = root_index + 1;
+    for (i = 0; i < NUM_BYTE_VALUES; ++i) {
+      PrintOpcodeTrieNode(root->succs[i], g_opcode_index, next_index, f);
+      g_opcode_index += CountNumberOpcodeSequences(root->succs[i]);
+      next_index += CountNcOpcodeNodes(root->succs[i]);
+    }
+  }
+}
+
+/* Prints out the contents of the opcode sequence overrides into the
+ * given file.
+ */
+static void PrintOpcodeSequenceTrie(int g_opcode_index,
+                                    NcOpcodeNode* root,
+                                    FILE* f) {
+  /* Make sure trie isn't empty, since empty arrays create warning messages. */
+  int num_trie_nodes;
+  if (root == NULL) root = NewNcOpcodeNode();
+  num_trie_nodes = CountNcOpcodeNodes(root);
+  fprintf(f, "static NcOpcodeNode g_OpcodeSeq[%d] = {\n", num_trie_nodes);
+  PrintOpcodeTrieNode(root, g_opcode_index, 0, f);
+  fprintf(f, "};\n");
+}
+
+static void PrintOpcodesInOpcodeSeqs(int current_index,
+                                     NcOpcodeNode* root,
+                                     FILE* f) {
+  int index;
+  if (NULL == root) return;
+  if (NULL != root->matching_opcode) {
+    PrintOpcodeTablegen(f, current_index, root->matching_opcode, 0);
+    current_index++;
+  }
+  for (index = 0; index < NUM_BYTE_VALUES; ++index) {
+    PrintOpcodesInOpcodeSeqs(current_index, root->succs[index], f);
+    current_index += CountNumberOpcodeSequences(root->succs[index]);
+  }
+}
+
 /* Print out the contents of the defined instructions into the given file. */
 static void PrintDecodeTables(FILE* f) {
   int i;
   OpcodePrefix prefix;
   int count = 0;
-
-  /* Build table of all possible instructions. Note that we build
-   * build the list of instructions by using a "
-  */
-
-  int num_opcodes = CountNumberOpcodes();
 
   /* lookup_index holds the number of the opcode (instruction) that
    * begins the list of instructions for the corresponding opcode
@@ -1148,7 +1352,15 @@ static void PrintDecodeTables(FILE* f) {
    */
   int lookup_index[NCDTABLESIZE][OpcodePrefixEnumSize];
 
-  fprintf(f, "static Opcode g_Opcodes[%d] = {\n", num_opcodes);
+  /* Build table of all possible instructions. Note that we build
+   * build the list of instructions by using a "g_Opcodes" address.
+   */
+  int num_opcodes = CountNumberOpcodes();
+  int num_seq_opcodes = CountNumberOpcodeSequences(opcode_seq_root);
+
+  fprintf(f,
+          "static Opcode g_Opcodes[%d] = {\n",
+          num_opcodes + num_seq_opcodes);
   for (prefix = NoPrefix; prefix < OpcodePrefixEnumSize; ++prefix) {
     for (i = 0; i < NCDTABLESIZE; ++i) {
       /* Build the list of instructions by knowing that the next
@@ -1170,6 +1382,7 @@ static void PrintDecodeTables(FILE* f) {
       }
     }
   }
+  PrintOpcodesInOpcodeSeqs(num_opcodes, opcode_seq_root, f);
   fprintf(f, "};\n\n");
 
   /* Print out the undefined opcode */
@@ -1202,6 +1415,8 @@ static void PrintDecodeTables(FILE* f) {
   fprintf(f, "};\n\n");
 
   PrintPrefixTable(f);
+
+  PrintOpcodeSequenceTrie(num_opcodes, opcode_seq_root, f);
 }
 
 /* Open the given file using the given directives (how). */
