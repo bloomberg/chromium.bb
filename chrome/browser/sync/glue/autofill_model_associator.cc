@@ -7,6 +7,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/engine/syncapi.h"
+#include "chrome/browser/sync/glue/autofill_change_processor.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
 #include "chrome/browser/webdata/web_database.h"
@@ -76,6 +77,17 @@ bool AutofillModelAssociator::AssociateModels() {
         new_entries.push_back(AutofillEntry(
           AutofillKey(ix->key().name(), ix->key().value()),
           timestamps));
+
+        sync_api::WriteNode write_node(&trans);
+        if (!write_node.InitByClientTagLookup(syncable::AUTOFILL, tag)) {
+          LOG(ERROR) << "Failed to write autofill sync node.";
+          error_handler_->OnUnrecoverableError();
+          return false;
+        }
+        AutofillChangeProcessor::WriteAutofill(&write_node,
+                                               ix->key().name(),
+                                               ix->key().value(),
+                                               timestamps);
       }
 
       Associate(&(ix->key()), node.GetId());
@@ -89,17 +101,11 @@ bool AutofillModelAssociator::AssociateModels() {
 
       node.SetTitle(UTF16ToWide(ix->key().name() + ix->key().value()));
 
-      sync_pb::AutofillSpecifics autofill;
-      autofill.set_name(UTF16ToUTF8(ix->key().name()));
-      autofill.set_value(UTF16ToUTF8(ix->key().value()));
+      AutofillChangeProcessor::WriteAutofill(&node,
+                                             ix->key().name(),
+                                             ix->key().value(),
+                                             ix->timestamps());
 
-      for (std::vector<base::Time>::const_iterator timestamp =
-        ix->timestamps().begin(); timestamp != ix->timestamps().end();
-        ++timestamp) {
-        autofill.add_usage_timestamp(timestamp->ToInternalValue());
-      }
-
-      node.SetAutofillSpecifics(autofill);
       Associate(&(ix->key()), node.GetId());
     }
 

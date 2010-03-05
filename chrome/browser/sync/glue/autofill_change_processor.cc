@@ -83,12 +83,8 @@ void AutofillChangeProcessor::Observe(NotificationType type,
           sync_node.SetTitle(UTF16ToWide(change->key().name() +
                                          change->key().value()));
 
-          if (!WriteAutofill(&sync_node, change->key().name(),
-                             change->key().value(), timestamps)) {
-            LOG(ERROR) << "Failed to update autofill node.";
-            error_handler()->OnUnrecoverableError();
-            return;
-          }
+          WriteAutofill(&sync_node, change->key().name(),
+                        change->key().value(), timestamps);
 
           model_associator_->Associate(&(change->key()), sync_node.GetId());
         }
@@ -122,12 +118,8 @@ void AutofillChangeProcessor::Observe(NotificationType type,
             return;
           }
 
-          if (!WriteAutofill(&sync_node, change->key().name(),
-                             change->key().value(), timestamps)) {
-            LOG(ERROR) << "Failed to update autofill node.";
-            error_handler()->OnUnrecoverableError();
-            return;
-          }
+          WriteAutofill(&sync_node, change->key().name(),
+                        change->key().value(), timestamps);
         }
         break;
 
@@ -213,23 +205,6 @@ void AutofillChangeProcessor::ApplyChangesFromSyncModel(
   StartObserving();
 }
 
-bool AutofillChangeProcessor::WriteAutofill(
-    sync_api::WriteNode* node,
-    const string16& name,
-    const string16& value,
-    std::vector<base::Time>& timestamps) {
-  sync_pb::AutofillSpecifics autofill;
-  autofill.set_name(UTF16ToUTF8(name));
-  autofill.set_value(UTF16ToUTF8(value));
-  for (std::vector<base::Time>::iterator timestamp = timestamps.begin();
-       timestamp != timestamps.end(); ++timestamp) {
-    autofill.add_usage_timestamp(timestamp->ToInternalValue());
-  }
-  node->SetAutofillSpecifics(autofill);
-  return true;
-}
-
-
 void AutofillChangeProcessor::StartImpl(Profile* profile) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
   observing_ = true;
@@ -252,6 +227,22 @@ void AutofillChangeProcessor::StopObserving() {
   notification_registrar_.Remove(this,
                                  NotificationType::AUTOFILL_ENTRIES_CHANGED,
                                  NotificationService::AllSources());
+}
+
+// static
+void AutofillChangeProcessor::WriteAutofill(
+    sync_api::WriteNode* node,
+    const string16& name,
+    const string16& value,
+    const std::vector<base::Time>& timestamps) {
+  sync_pb::AutofillSpecifics autofill;
+  autofill.set_name(UTF16ToUTF8(name));
+  autofill.set_value(UTF16ToUTF8(value));
+  for (std::vector<base::Time>::const_iterator timestamp = timestamps.begin();
+       timestamp != timestamps.end(); ++timestamp) {
+    autofill.add_usage_timestamp(timestamp->ToInternalValue());
+  }
+  node->SetAutofillSpecifics(autofill);
 }
 
 }  // namespace browser_sync

@@ -42,16 +42,16 @@ class AutofillChangeProcessor : public ChangeProcessor,
       const sync_api::SyncManager::ChangeRecord* changes,
       int change_count);
 
+  static void WriteAutofill(sync_api::WriteNode* node,
+                            const string16& name,
+                            const string16& value,
+                            const std::vector<base::Time>& timestamps);
+
  protected:
   virtual void StartImpl(Profile* profile);
   virtual void StopImpl();
 
  private:
-  bool WriteAutofill(sync_api::WriteNode* node,
-                     const string16& name,
-                     const string16& value,
-                     std::vector<base::Time>& timestamps);
-
   void StartObserving();
   void StopObserving();
 
