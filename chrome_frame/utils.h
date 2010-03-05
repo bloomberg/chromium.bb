@@ -11,6 +11,8 @@
 #include <urlmon.h>
 
 #include "base/basictypes.h"
+#include "base/histogram.h"
+#include "base/lock.h"
 #include "base/logging.h"
 #include "base/thread.h"
 
@@ -349,5 +351,21 @@ std::wstring GetActualUrlFromMoniker(IMoniker* moniker,
 // Checks if a window is a top level window
 bool IsTopLevelWindow(HWND window);
 
+extern Lock g_ChromeFrameHistogramLock;
+
+// Thread safe versions of the UMA histogram macros we use for ChromeFrame.
+// These should be used for histograms in ChromeFrame. If other histogram
+// macros from base/histogram.h are needed then thread safe versions of those
+// should be defined and used.
+#define THREAD_SAFE_UMA_HISTOGRAM_CUSTOM_COUNTS(name, sample, min, max, \
+                                                bucket_count) { \
+  AutoLock lock(g_ChromeFrameHistogramLock); \
+  UMA_HISTOGRAM_CUSTOM_COUNTS(name, sample, min, max, bucket_count); \
+}
+
+#define THREAD_SAFE_UMA_HISTOGRAM_TIMES(name, sample) { \
+  AutoLock lock(g_ChromeFrameHistogramLock); \
+  UMA_HISTOGRAM_TIMES(name, sample); \
+}
 
 #endif  // CHROME_FRAME_UTILS_H_

@@ -239,8 +239,8 @@ STDMETHODIMP ChromeActiveDocument::Load(BOOL fully_avalable,
     url_fetcher_.UseMonikerForUrl(moniker_name, bind_context, url);
   }
 
-  UMA_HISTOGRAM_CUSTOM_COUNTS("ChromeFrame.FullTabLaunchType",
-                              is_chrome_protocol, 0, 1, 2);
+  THREAD_SAFE_UMA_HISTOGRAM_CUSTOM_COUNTS("ChromeFrame.FullTabLaunchType",
+                                          is_chrome_protocol, 0, 1, 2);
   return S_OK;
 }
 
