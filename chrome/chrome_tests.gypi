@@ -279,6 +279,7 @@
         'browser/download/save_page_uitest.cc',
         'browser/errorpage_uitest.cc',
         'browser/extensions/extension_uitest.cc',
+        'browser/history/multipart_uitest.cc',
         'browser/history/redirect_uitest.cc',
         'browser/iframe_uitest.cc',
         'browser/images_uitest.cc',
