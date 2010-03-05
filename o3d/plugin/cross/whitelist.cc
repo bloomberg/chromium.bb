@@ -144,7 +144,7 @@ static bool IsDomainWhitelisted(const std::string &in_url) {
       host[i] = tolower(host[i]);
     }
 
-    for (int i = 0; i < arraysize(kDomainWhitelist); ++i) {
+    for (size_t i = 0; i < arraysize(kDomainWhitelist); ++i) {
       size_t pos = host.rfind(kDomainWhitelist[i]);
       if (pos != std::string::npos &&
           ((pos + strlen(kDomainWhitelist[i]) == host.length())))
