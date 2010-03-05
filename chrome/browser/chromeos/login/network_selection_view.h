@@ -40,6 +40,7 @@ class NetworkSelectionView : public views::View,
 
   void Init();
   void UpdateLocalizedStrings();
+  void Refresh();
 
   // views::View: implementation:
   virtual gfx::Size GetPreferredSize();
@@ -80,17 +81,28 @@ class NetworkSelectionView : public views::View,
   void SelectNetwork(chromeos::NetworkList::NetworkType type,
                      const string16& id);
 
+  // Shows network connecting status or network selection otherwise.
+  void ShowConnectingStatus(bool connecting, const string16& network_id);
+
+  // Subscribe/unsubscribes from network change notification.
+  void ChangeNetworkNotification(bool subscribe);
+
   // Dialog controls.
   views::Combobox* network_combobox_;
   views::Label* welcome_label_;
   views::Label* select_network_label_;
+  views::Label* connecting_network_label_;
   views::NativeButton* offline_button_;
 
   // Notifications receiver.
   chromeos::ScreenObserver* observer_;
 
+  // True if subscribed to network change notification.
+  bool network_notification_;
+
   // Cached networks.
   chromeos::NetworkList networks_;
+  string16 network_id_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkSelectionView);
 };

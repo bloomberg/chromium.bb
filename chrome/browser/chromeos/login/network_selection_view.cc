@@ -44,12 +44,15 @@ NetworkSelectionView::NetworkSelectionView(chromeos::ScreenObserver* observer)
     : network_combobox_(NULL),
       welcome_label_(NULL),
       select_network_label_(NULL),
-      observer_(observer) {
-  chromeos::NetworkLibrary::Get()->AddObserver(this);
+      connecting_network_label_(NULL),
+      observer_(observer),
+      network_notification_(false) {
+  ChangeNetworkNotification(true);
 }
 
 NetworkSelectionView::~NetworkSelectionView() {
-  chromeos::NetworkLibrary::Get()->RemoveObserver(this);
+  if (network_notification_)
+    ChangeNetworkNotification(false);
 }
 
 void NetworkSelectionView::Init() {
@@ -62,15 +65,19 @@ void NetworkSelectionView::Init() {
 
   gfx::Font welcome_label_font =
       gfx::Font::CreateFont(L"Droid Sans", 20).DeriveFont(0, gfx::Font::BOLD);
-  gfx::Font network_label_font = gfx::Font::CreateFont(L"Droid Sans", 9);
-  gfx::Font button_font = network_label_font;
+  gfx::Font label_font = gfx::Font::CreateFont(L"Droid Sans", 9);
+  gfx::Font button_font = label_font;
 
   welcome_label_ = new views::Label();
   welcome_label_->SetColor(kWelcomeColor);
   welcome_label_->SetFont(welcome_label_font);
 
   select_network_label_ = new views::Label();
-  select_network_label_->SetFont(network_label_font);
+  select_network_label_->SetFont(label_font);
+
+  connecting_network_label_ = new views::Label();
+  connecting_network_label_->SetFont(label_font);
+  connecting_network_label_->SetVisible(false);
 
   network_combobox_ = new views::Combobox(this);
   network_combobox_->set_listener(this);
@@ -79,9 +86,11 @@ void NetworkSelectionView::Init() {
   offline_button_->set_font(button_font);
 
   UpdateLocalizedStrings();
+  Refresh();
 
   AddChildView(welcome_label_);
   AddChildView(select_network_label_);
+  AddChildView(connecting_network_label_);
   AddChildView(network_combobox_);
   AddChildView(offline_button_);
 }
@@ -93,6 +102,11 @@ void NetworkSelectionView::UpdateLocalizedStrings() {
       l10n_util::GetString(IDS_NETWORK_SELECTION_SELECT));
   offline_button_->SetLabel(
       l10n_util::GetString(IDS_NETWORK_SELECTION_OFFLINE_BUTTON));
+  connecting_network_label_->SetText(l10n_util::GetStringF(
+      IDS_NETWORK_SELECTION_CONNECTING, UTF16ToWide(network_id_)));
+}
+
+void NetworkSelectionView::Refresh() {
   NetworkChanged(chromeos::NetworkLibrary::Get());
 }
 
@@ -104,26 +118,32 @@ gfx::Size NetworkSelectionView::GetPreferredSize() {
 }
 
 void NetworkSelectionView::Layout() {
-  int x = (width() -
-           welcome_label_->GetPreferredSize().width()) / 2;
   int y = kWelcomeLabelY;
-  welcome_label_->SetBounds(x,
-                            y,
-                            welcome_label_->GetPreferredSize().width(),
-                            welcome_label_->GetPreferredSize().height());
+  welcome_label_->SetBounds(
+      (width() - welcome_label_->GetPreferredSize().width()) / 2,
+      y,
+      welcome_label_->GetPreferredSize().width(),
+      welcome_label_->GetPreferredSize().height());
 
-  x = (width() - select_network_label_->GetPreferredSize().width() -
-       kNetworkComboboxWidth) / 2;
+  int select_network_x = (width() -
+      select_network_label_->GetPreferredSize().width() -
+      kNetworkComboboxWidth) / 2;
   y += welcome_label_->GetPreferredSize().height() + kSpacing;
   select_network_label_->SetBounds(
-      x,
+      select_network_x,
       y,
       select_network_label_->GetPreferredSize().width(),
       select_network_label_->GetPreferredSize().height());
+  connecting_network_label_->SetBounds(
+      kHorizontalSpacing,
+      y,
+      width() - kHorizontalSpacing * 2,
+      connecting_network_label_->GetPreferredSize().height());
 
-  x += select_network_label_->GetPreferredSize().width() + kHorizontalSpacing;
+  select_network_x += select_network_label_->GetPreferredSize().width() +
+      kHorizontalSpacing;
   y -= kComboboxSpacing;
-  network_combobox_->SetBounds(x, y,
+  network_combobox_->SetBounds(select_network_x, y,
                                kNetworkComboboxWidth, kNetworkComboboxHeight);
 
   y = height() - offline_button_->GetPreferredSize().height() - kSpacing;
@@ -192,8 +212,6 @@ void NetworkSelectionView::ItemChanged(views::Combobox* sender,
       chromeos::NetworkLibrary::Get()->ConnectToCellularNetwork(
           network->cellular_network);
     }
-    // TODO(avayvod): Check for connection error.
-    NotifyOnConnection();
   }
 }
 
@@ -203,6 +221,7 @@ void NetworkSelectionView::ButtonPressed(views::Button* sender,
                                          const views::Event& event) {
   if (observer_) {
     observer_->OnExit(chromeos::ScreenObserver::NETWORK_OFFLINE);
+    ChangeNetworkNotification(false);
   }
 }
 
@@ -218,7 +237,6 @@ bool NetworkSelectionView::OnPasswordDialogAccept(const std::string& ssid,
       chromeos::NetworkList::NETWORK_WIFI == network->network_type) {
     chromeos::NetworkLibrary::Get()->ConnectToWifiNetwork(network->wifi_network,
                                                           password);
-    NotifyOnConnection();
   }
   return true;
 }
@@ -238,6 +256,14 @@ void NetworkSelectionView::NetworkChanged(
     network_id = network->label;
   }
   networks_.NetworkChanged(network_lib);
+  // TODO(nkostylev): Check for connection error.
+  if (networks_.connected_network()) {
+    NotifyOnConnection();
+  }
+  network = networks_.connecting_network();
+  if (network) {
+    ShowConnectingStatus(true, network->label);
+  }
   network_combobox_->ModelChanged();
   SelectNetwork(network_type, network_id);
 }
@@ -256,6 +282,7 @@ chromeos::NetworkList::NetworkItem* NetworkSelectionView::GetSelectedNetwork() {
 void NetworkSelectionView::NotifyOnConnection() {
   if (observer_) {
     observer_->OnExit(chromeos::ScreenObserver::NETWORK_CONNECTED);
+    ChangeNetworkNotification(false);
   }
 }
 
@@ -281,4 +308,21 @@ void NetworkSelectionView::SelectNetwork(
   } else {
     network_combobox_->SetSelectedItem(0);
   }
+}
+
+void NetworkSelectionView::ShowConnectingStatus(bool connecting,
+                                                const string16& network_id) {
+  select_network_label_->SetVisible(!connecting);
+  network_combobox_->SetVisible(!connecting);
+  connecting_network_label_->SetVisible(connecting);
+  network_id_ = network_id;
+  UpdateLocalizedStrings();
+}
+
+void NetworkSelectionView::ChangeNetworkNotification(bool subscribe) {
+  network_notification_ = subscribe;
+  if (subscribe)
+    chromeos::NetworkLibrary::Get()->AddObserver(this);
+  else
+    chromeos::NetworkLibrary::Get()->RemoveObserver(this);
 }

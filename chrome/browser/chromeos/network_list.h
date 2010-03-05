@@ -52,6 +52,16 @@ class NetworkList  {
     return networks_.empty();
   }
 
+  // Returns currently connected network if there is one.
+  NetworkList::NetworkItem* connected_network() const {
+    return connected_network_;
+  }
+
+  // Returns currently connecting network if there is one.
+  NetworkList::NetworkItem* connecting_network() const {
+    return connecting_network_;
+  }
+
   // Returns network by it's type and ssid (Wifi) or id (Cellular).
   // If network is not available NULL is returned.
   NetworkList::NetworkItem* GetNetworkById(NetworkType type,
@@ -78,11 +88,13 @@ class NetworkList  {
   // Cached list of all available networks.
   NetworkItemVector networks_;
 
-  // True if Ethernet network is connected.
-  bool ethernet_connected_;
+  // Currently connected network or NULL if there's none.
+  // If several networks are connected than single one is selected by priority:
+  // Ethernet > WiFi > Cellular.
+  NetworkList::NetworkItem* connected_network_;
 
-  // Index of currently connected network. Ethernet has priority.
-  int connected_network_;
+  // Currently connecting network or NULL if there's none.
+  NetworkList::NetworkItem* connecting_network_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkList);
 };

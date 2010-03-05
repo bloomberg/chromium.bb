@@ -11,8 +11,8 @@
 namespace chromeos {
 
 NetworkList::NetworkList()
-    : ethernet_connected_(false),
-      connected_network_(-1) {
+    : connected_network_(NULL),
+      connecting_network_(NULL) {
 }
 
 NetworkList::NetworkItem* NetworkList::GetNetworkAt(int index) {
@@ -55,18 +55,24 @@ int NetworkList::GetNetworkIndexById(NetworkType type,
 }
 
 void NetworkList::NetworkChanged(chromeos::NetworkLibrary* network_lib) {
+  connected_network_ = NULL;
+  connecting_network_ = NULL;
   networks_.clear();
   if (!network_lib || !network_lib->EnsureLoaded())
     return;
 
-  ethernet_connected_ = network_lib->ethernet_connected();
-  if (ethernet_connected_) {
+  if (network_lib->ethernet_connected() || network_lib->ethernet_connecting()) {
     string16 label = l10n_util::GetStringUTF16(
         IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
     networks_.push_back(NetworkItem(NETWORK_ETHERNET,
                                     label,
                                     WifiNetwork(),
                                     CellularNetwork()));
+    if (network_lib->ethernet_connected()) {
+      connected_network_ = &networks_.back();
+    } else if (network_lib->ethernet_connecting()) {
+      connecting_network_ = &networks_.back();
+    }
   }
 
   // TODO(nkostylev): Show public WiFi networks first.
@@ -77,6 +83,13 @@ void NetworkList::NetworkChanged(chromeos::NetworkLibrary* network_lib) {
                                     ASCIIToUTF16(it->ssid),
                                     *it,
                                     CellularNetwork()));
+    if (!connected_network_ && network_lib->wifi_ssid() == it->ssid) {
+      if (network_lib->wifi_connected()) {
+        connected_network_ = &networks_.back();
+      } else if (network_lib->wifi_connecting()) {
+        connecting_network_ = &networks_.back();
+      }
+    }
   }
 
   CellularNetworkVector cellular = network_lib->cellular_networks();
@@ -86,6 +99,13 @@ void NetworkList::NetworkChanged(chromeos::NetworkLibrary* network_lib) {
                                     ASCIIToUTF16(it->name),
                                     WifiNetwork(),
                                     *it));
+    if (!connected_network_ && network_lib->cellular_name() == it->name) {
+      if (network_lib->cellular_connected()) {
+        connected_network_ = &networks_.back();
+      } else if (network_lib->cellular_connecting()) {
+        connecting_network_ = &networks_.back();
+      }
+    }
   }
 }
 
