@@ -15,18 +15,16 @@ NaClBrokerService* NaClBrokerService::GetInstance() {
 NaClBrokerService::NaClBrokerService()
     : broker_started_(false),
       broker_host_(NULL),
-      loaders_running_(0),
       resource_dispatcher_host_(NULL),
       initialized_(false) {
 }
 
 void NaClBrokerService::Init(ResourceDispatcherHost* resource_dispatcher_host) {
-  if (!initialized_)
-    resource_dispatcher_host_ = resource_dispatcher_host;
-
-  if (broker_host_ == NULL)
-    StartBroker();
-
+  if (initialized_) {
+    return;
+  }
+  resource_dispatcher_host_ = resource_dispatcher_host;
+  StartBroker();
   initialized_ = true;
 }
 
@@ -53,9 +51,9 @@ bool NaClBrokerService::LaunchLoader(NaClProcessHost* nacl_process_host,
 
 void NaClBrokerService::OnBrokerStarted() {
   PendingLaunchesMap::iterator it;
-  for (it  = pending_launches_.begin(); it != pending_launches_.end(); it++)
+  for (it  = pending_launches_.begin(); it != pending_launches_.end(); it++) {
     broker_host_->LaunchLoader(it->first);
-
+  }
   broker_started_ = true;
 }
 
@@ -63,28 +61,10 @@ void NaClBrokerService::OnLoaderLaunched(const std::wstring& channel_id,
                                          base::ProcessHandle handle) {
   NaClProcessHost* client;
   PendingLaunchesMap::iterator it = pending_launches_.find(channel_id);
-  if (pending_launches_.end() == it)
+  if (pending_launches_.end() == it) {
     NOTREACHED();
-
+  }
   client = it->second;
   client->OnProcessLaunchedByBroker(handle);
   pending_launches_.erase(it);
-  ++loaders_running_;
-}
-
-void NaClBrokerService::OnLoaderDied() {
-  --loaders_running_;
-  // Stop the broker only if there are no loaders running or being launched.
-  if (loaders_running_ + pending_launches_.size() == 0 &&
-      broker_host_ != NULL) {
-    broker_host_->StopBroker();
-    // Reset the pointer to the broker host.
-    OnBrokerDied();
-  }
-}
-
-void NaClBrokerService::OnBrokerDied() {
-  // NaClBrokerHost object will be destructed by ChildProcessHost
-  broker_started_ = false;
-  broker_host_.release();
 }

@@ -118,12 +118,12 @@ class ChildProcessHost : public ResourceDispatcherHost::Receiver,
 
   virtual bool DidChildCrash();
 
-  // Called when the child process goes away.
-  virtual void OnChildDied();
-
  private:
   // Sends the given notification to the notification service on the UI thread.
   void Notify(NotificationType type);
+
+  // Called when the child process goes away.
+  void OnChildDied();
 
   // By using an internal class as the IPC::Channel::Listener, we can intercept
   // OnMessageReceived/OnChannelConnected and do our own processing before
