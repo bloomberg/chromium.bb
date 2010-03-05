@@ -46,7 +46,8 @@ void SSLClientAuthHandler::DoSelectCertificate() {
   if (cert_context) {
     cert = net::X509Certificate::CreateFromHandle(
         cert_context,
-        net::X509Certificate::SOURCE_LONE_CERT_IMPORT);
+        net::X509Certificate::SOURCE_LONE_CERT_IMPORT,
+        net::X509Certificate::OSCertHandles());
   }
 
   ok = CertCloseStore(client_certs, CERT_CLOSE_STORE_CHECK_FLAG);

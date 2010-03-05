@@ -112,7 +112,8 @@ static net::X509Certificate* LoadTemporaryCert(const FilePath& filename) {
       const_cast<void*>(CFArrayGetValueAtIndex(cert_array, 0)));
   CFRetain(cert_ref);
   return net::X509Certificate::CreateFromHandle(cert_ref,
-      net::X509Certificate::SOURCE_FROM_NETWORK);
+      net::X509Certificate::SOURCE_LONE_CERT_IMPORT,
+      net::X509Certificate::OSCertHandles());
 }
 #endif
 
