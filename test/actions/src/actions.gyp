@@ -16,6 +16,7 @@
     {
       'target_name': 'depend_on_always_run_action',
       'type': 'none',
+      'dependencies': [ 'subdir1/executable.gyp:counter' ],
       'actions': [
         {
           'action_name': 'use_always_run_output',
