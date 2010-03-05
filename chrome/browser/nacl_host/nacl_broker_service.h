@@ -36,6 +36,12 @@ class NaClBrokerService {
   void OnLoaderLaunched(const std::wstring& channel_id,
                         base::ProcessHandle handle);
 
+  // Called by NaClProcessHost when a loader process is terminated
+  void OnLoaderDied();
+
+  // Called by NaClBrokerHost when the broker process is terminated.
+  void OnBrokerDied();
+
  private:
   typedef std::map<std::wstring, NaClProcessHost*>
       PendingLaunchesMap;
@@ -47,6 +53,7 @@ class NaClBrokerService {
 
   bool broker_started_;
   scoped_ptr<NaClBrokerHost> broker_host_;
+  int loaders_running_;
   bool initialized_;
   ResourceDispatcherHost* resource_dispatcher_host_;
   PendingLaunchesMap pending_launches_;

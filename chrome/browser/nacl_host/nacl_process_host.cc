@@ -125,10 +125,17 @@ bool NaClProcessHost::DidChildCrash() {
   return ChildProcessHost::DidChildCrash();
 }
 
+void NaClProcessHost::OnChildDied() {
+#if defined(OS_WIN)
+  NaClBrokerService::GetInstance()->OnLoaderDied();
+#endif
+  ChildProcessHost::OnChildDied();
+}
+
 void NaClProcessHost::OnProcessLaunched() {
   nacl::FileDescriptor imc_handle;
   base::ProcessHandle nacl_process_handle;
-#if NACL_WINDOWS
+#if defined(OS_WIN)
   // Duplicate the IMC handle
   // We assume the size of imc_handle has the same size as HANDLE, so the cast
   // below is safe.

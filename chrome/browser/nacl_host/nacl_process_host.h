@@ -37,6 +37,7 @@ class NaClProcessHost : public ChildProcessHost {
 
  protected:
   virtual bool DidChildCrash();
+  virtual void OnChildDied();
 
  private:
   bool LaunchSelLdr();

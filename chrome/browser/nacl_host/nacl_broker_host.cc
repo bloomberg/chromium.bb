@@ -16,7 +16,8 @@
 
 NaClBrokerHost::NaClBrokerHost(
     ResourceDispatcherHost* resource_dispatcher_host)
-    : ChildProcessHost(NACL_BROKER_PROCESS, resource_dispatcher_host) {
+    : ChildProcessHost(NACL_BROKER_PROCESS, resource_dispatcher_host),
+      stopping_(false) {
 }
 
 NaClBrokerHost::~NaClBrokerHost() {
@@ -71,4 +72,19 @@ bool NaClBrokerHost::LaunchLoader(
 void NaClBrokerHost::OnLoaderLaunched(const std::wstring& loader_channel_id,
                                       base::ProcessHandle handle) {
   NaClBrokerService::GetInstance()->OnLoaderLaunched(loader_channel_id, handle);
+}
+
+void NaClBrokerHost::StopBroker() {
+  stopping_ = true;
+  Send(new NaClProcessMsg_StopBroker());
+}
+
+void NaClBrokerHost::OnChildDied() {
+  if (!stopping_) {
+    // If the broker stops unexpectedly (and not when asked by the broker
+    // service), we need to notify the broker service. In any other case
+    // the broker service may have a new broker host pointer by this time.
+    NaClBrokerService::GetInstance()->OnBrokerDied();
+  }
+  ChildProcessHost::OnChildDied();
 }
