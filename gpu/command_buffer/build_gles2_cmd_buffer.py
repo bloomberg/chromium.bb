@@ -849,7 +849,7 @@ _FUNCTION_INFO = {
   'BindRenderbuffer': {'decoder_func': 'glBindRenderbufferEXT'},
   'BindTexture': {'decoder_func': 'DoBindTexture'},
   'BufferData': {'type': 'Manual', 'immediate': True},
-  'BufferSubData': {'type': 'Data'},
+  'BufferSubData': {'type': 'Data', 'decoder_func': 'DoBufferSubData'},
   'CheckFramebufferStatus': {'decoder_func': 'glCheckFramebufferStatusEXT'},
   'ClearDepthf': {'decoder_func': 'glClearDepth'},
   'CompileShader': {'decoder_func': 'DoCompileShader', 'unit_test': False},
@@ -1715,20 +1715,19 @@ class DataHandler(TypeHandler):
     name = func.name
     if name.endswith("Immediate"):
       name = name[0:-9]
-    if name == 'BufferData':
+    if name == 'BufferData' or name == 'BufferSubData':
       file.Write("  uint32 data_size = size;\n")
-    elif name == 'BufferSubData':
-      file.Write("  uint32 data_size = size;\n")
-    elif name == 'CompressedTexImage2D':
+    elif (name == 'CompressedTexImage2D' or
+          name == 'CompressedTexSubImage2D'):
       file.Write("  uint32 data_size = imageSize;\n")
-    elif name == 'CompressedTexSubImage2D':
-      file.Write("  uint32 data_size = imageSize;\n")
-    elif name == 'TexImage2D':
-      file.Write("  uint32 data_size = GLES2Util::ComputeImageDataSize(\n")
-      file.Write("      width, height, format, type, unpack_alignment_);\n")
-    elif name == 'TexSubImage2D':
-      file.Write("  uint32 data_size = GLES2Util::ComputeImageDataSize(\n")
-      file.Write("      width, height, format, type, unpack_alignment_);\n")
+    elif name == 'TexImage2D' or name == 'TexSubImage2D':
+      code = """  uint32 data_size;
+  if (!GLES2Util::ComputeImageDataSize(
+      width, height, format, type, unpack_alignment_, &data_size)) {
+    return error::kOutOfBounds;
+  }
+"""
+      file.Write(code)
     else:
       file.Write("// uint32 data_size = 0;  // TODO(gman): get correct size!\n")
 
@@ -1819,7 +1818,12 @@ class GENnHandler(TypeHandler):
 
   def WriteGetDataSizeCode(self, func, file):
     """Overrriden from TypeHandler."""
-    file.Write("  uint32 data_size = n * sizeof(GLuint);\n")
+    code = """  uint32 data_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+    return error::kOutOfBounds;
+  }
+"""
+    file.Write(code)
 
   def WriteHandlerImplementation (self, func, file):
     """Overrriden from TypeHandler."""
@@ -2072,7 +2076,12 @@ class DELnHandler(TypeHandler):
 
   def WriteGetDataSizeCode(self, func, file):
     """Overrriden from TypeHandler."""
-    file.Write("  uint32 data_size = n * sizeof(GLuint);\n")
+    code = """  uint32 data_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+    return error::kOutOfBounds;
+  }
+"""
+    file.Write(code)
 
   def WriteServiceUnitTest(self, func, file):
     """Overrriden from TypeHandler."""
@@ -2283,11 +2292,17 @@ class GETnHandler(TypeHandler):
     for arg in all_but_last_args:
       arg.WriteGetCode(file)
 
-    file.Write("  %s params;\n" % last_arg.type)
-    file.Write("  GLsizei num_values = util_.GLGetNumValuesReturned(pname);\n")
-    file.Write("  uint32 params_size = num_values * sizeof(*params);\n")
-    file.Write("  params = GetSharedMemoryAs<%s>(\n" % last_arg.type)
-    file.Write("      c.params_shm_id, c.params_shm_offset, params_size);\n")
+    code = """
+  %(last_arg_type)s params;
+  GLsizei num_values = util_.GLGetNumValuesReturned(pname);
+  uint32 params_size;
+  if (!SafeMultiplyUint32(num_values, sizeof(*params), &params_size)) {
+    return error::kOutOfBounds;
+  }
+  params = GetSharedMemoryAs<%(last_arg_type)s>(
+      c.params_shm_id, c.params_shm_offset, params_size);
+"""
+    file.Write(code % {'last_arg_type': last_arg.type})
     func.WriteHandlerValidation(file)
     func.WriteHandlerImplementation(file)
     file.Write("  return error::kNoError;\n")
@@ -2366,9 +2381,16 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
 
   def WriteGetDataSizeCode(self, func, file):
     """Overrriden from TypeHandler."""
-    file.Write("  uint32 data_size = ComputeImmediateDataSize("
-               "immediate_data_size, 1, sizeof(%s), %d);\n" %
-               (func.info.data_type, func.info.count))
+    code = """  uint32 data_size;
+  if (!ComputeDataSize(1, sizeof(%s), %d, &data_size)) {
+    return error::kOutOfBounds;
+  }
+"""
+    file.Write(code % (func.info.data_type, func.info.count))
+    if func.is_immediate:
+      file.Write("  if (data_size > immediate_data_size) {\n")
+      file.Write("    return error::kOutOfBounds;\n")
+      file.Write("  }\n")
 
   def WriteGLES2ImplementationHeader(self, func, file):
     """Overrriden from TypeHandler."""
@@ -2537,9 +2559,16 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
 
   def WriteGetDataSizeCode(self, func, file):
     """Overrriden from TypeHandler."""
-    file.Write("  uint32 data_size = ComputeImmediateDataSize("
-               "immediate_data_size, 1, sizeof(%s), %d);\n" %
-               (func.info.data_type, func.info.count))
+    code = """  uint32 data_size;
+  if (!ComputeDataSize(1, sizeof(%s), %d, &data_size)) {
+    return error::kOutOfBounds;
+  }
+"""
+    file.Write(code % (func.info.data_type, func.info.count))
+    if func.is_immediate:
+      file.Write("  if (data_size > immediate_data_size) {\n")
+      file.Write("    return error::kOutOfBounds;\n")
+      file.Write("  }\n")
 
   def WriteGLES2ImplementationHeader(self, func, file):
     """Overrriden from TypeHandler."""
@@ -3125,15 +3154,17 @@ class STRnHandler(TypeHandler):
     code = """%(return_type)s %(func_name)s(%(args)s) {
   helper_->SetBucketSize(kResultBucketId, 0);
   helper_->%(func_name)s(%(id_name)s, kResultBucketId);
-  std::string str;
-  if (GetBucketAsString(kResultBucketId, &str)) {
-    GLsizei max_size =
-        std::min(static_cast<size_t>(%(bufsize_name)s) - 1, str.size());
-    if (%(length_name)s != NULL) {
-      *%(length_name)s = max_size;
+  if (bufsize > 0) {
+    std::string str;
+    if (GetBucketAsString(kResultBucketId, &str)) {
+      GLsizei max_size =
+          std::min(static_cast<size_t>(%(bufsize_name)s) - 1, str.size());
+      if (%(length_name)s != NULL) {
+        *%(length_name)s = max_size;
+      }
+      memcpy(%(dest_name)s, str.c_str(), max_size);
+      %(dest_name)s[max_size] = '\\0';
     }
-    memcpy(%(dest_name)s, str.c_str(), max_size);
-    %(dest_name)s[max_size] = '\\0';
   }
 }
 """
