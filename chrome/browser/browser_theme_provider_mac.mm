@@ -202,14 +202,6 @@ NSGradient* BrowserThemeProvider::GetNSGradient(int id) const {
                                                        blue:140/255.0
                                                       alpha:1.0];
 
-      CGFloat luminance = [base_color gtm_luminance];
-
-      // Adjust luminance so it never hits black.
-      if (luminance < 0.5) {
-        CGFloat adjustment = (0.5 - luminance) / 1.5;
-        base_color = [base_color gtm_colorByAdjustingLuminance:adjustment];
-      }
-
       NSColor *start_color =
           [base_color gtm_colorAdjustedFor:GTMColorationBaseMidtone
                                      faded:!active];
