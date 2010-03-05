@@ -996,12 +996,10 @@ void AutomationProvider::OnRedirectQueryComplete(
   DCHECK(reply_message_ != NULL);
 
   std::vector<GURL> redirects_gurl;
+  reply_message_->WriteBool(success);
   if (success) {
-    reply_message_->WriteBool(true);
     for (size_t i = 0; i < redirects->size(); i++)
       redirects_gurl.push_back(redirects->at(i));
-  } else {
-    reply_message_->WriteInt(-1);  // Negative count indicates failure.
   }
 
   IPC::ParamTraits<std::vector<GURL> >::Write(reply_message_, redirects_gurl);
