@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,16 +46,17 @@ const double kDraggedTabBorderColor[] = { 103.0 / 0xff,
 
 DraggedTabGtk::DraggedTabGtk(TabContents* datasource,
                              const gfx::Point& mouse_tab_offset,
-                             const gfx::Size& contents_size)
+                             const gfx::Size& contents_size,
+                             bool mini)
     : data_source_(datasource),
       renderer_(new TabRendererGtk(datasource->profile()->GetThemeProvider())),
       attached_(false),
       mouse_tab_offset_(mouse_tab_offset),
       attached_tab_size_(TabRendererGtk::GetMinimumSelectedSize()),
       contents_size_(contents_size),
-      close_animation_(this),
-      tab_width_(0) {
-  renderer_->UpdateData(datasource, false);
+      close_animation_(this) {
+  renderer_->UpdateData(datasource, false, false);
+  renderer_->set_mini(mini);
 
   container_ = gtk_window_new(GTK_WINDOW_POPUP);
   SetContainerColorMap();
@@ -99,23 +100,7 @@ void DraggedTabGtk::Resize(int width) {
   ResizeContainer();
 }
 
-void DraggedTabGtk::set_pinned(bool pinned) {
-  renderer_->set_pinned(pinned);
-}
-
-bool DraggedTabGtk::is_pinned() const {
-  return renderer_->is_pinned();
-}
-
 void DraggedTabGtk::Detach() {
-  // Detached tabs are never pinned.
-  renderer_->set_pinned(false);
-
-  if (attached_tab_size_.width() != tab_width_) {
-    // The attached tab size differs from current tab size. Resize accordingly.
-    Resize(tab_width_);
-  }
-
   attached_ = false;
   ResizeContainer();
 

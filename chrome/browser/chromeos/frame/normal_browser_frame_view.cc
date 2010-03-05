@@ -19,26 +19,17 @@
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/tabs/tab_strip.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/x11_util.h"
 #include "grit/app_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/image_view.h"
+#include "views/window/hit_test.h"
 #include "views/widget/root_view.h"
 #include "views/window/window.h"
 #include "views/window/window_resources.h"
-
-#if defined(OS_WIN)
-#include "app/win_util.h"
-#endif
-
-#if defined(OS_LINUX)
-#include "chrome/common/x11_util.h"
-#include "views/window/hit_test.h"
-#endif
-
-const int kCustomFrameBackgroundVerticalOffset = 15;
 
 namespace {
 
@@ -64,6 +55,8 @@ const int kIconLeftSpacing = 2;
 // The top 1 px of the tabstrip is shadow; in maximized mode we push this off
 // the top of the screen so the tabs appear flush against the screen edge.
 const int kTabstripTopShadowThickness = 1;
+
+const int kCustomFrameBackgroundVerticalOffset = 15;
 
 }  // namespace
 

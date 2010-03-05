@@ -65,8 +65,6 @@ extern const bool kSizeTabButtonToTopOfTabStrip;
 extern const bool kBootstrapSyncAuthentication;
 
 // Are pinned tabs enabled?
-// TODO: if you're the last to make this true on all platforms, remove the
-// field.
 extern const bool kEnablePinnedTabs;
 
 // Should other browsers be shown in about:memory page?

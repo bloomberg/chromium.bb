@@ -43,6 +43,7 @@ static const int kStandardTitleWidth = 175;
 static const int kCloseButtonVertFuzz = 0;
 static const int kCloseButtonHorzFuzz = 5;
 static const int kSelectedTitleColor = SK_ColorBLACK;
+
 // When a non-mini-tab becomes a mini-tab the width of the tab animates. If
 // the width of a mini-tab is >= kMiniTabRendererAsNormalTabWidth then the tab
 // is rendered as a normal tab. This is done to avoid having the title

@@ -110,12 +110,16 @@ class TabStripGtk : public TabStripModelObserver,
                         int to_index);
   virtual void TabChangedAt(TabContents* contents, int index,
                             TabChangeType change_type);
-  virtual void TabPinnedStateChanged(TabContents* contents, int index);
+  virtual void TabReplacedAt(TabContents* old_contents,
+                             TabContents* new_contents,
+                             int index);
+  virtual void TabMiniStateChanged(TabContents* contents, int index);
   virtual void TabBlockedStateChanged(TabContents* contents,
                                       int index);
 
   // TabGtk::TabDelegate implementation:
   virtual bool IsTabSelected(const TabGtk* tab) const;
+  virtual bool IsTabPinned(const TabGtk* tab) const;
   virtual bool IsTabDetached(const TabGtk* tab) const;
   virtual void SelectTab(TabGtk* tab);
   virtual void CloseTab(TabGtk* tab);
@@ -143,15 +147,17 @@ class TabStripGtk : public TabStripModelObserver,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // Horizontal gap between pinned and non-pinned tabs.
-  static const int pinned_to_non_pinned_gap_;
+  // Horizontal gap between mini-tabs and normal tabs.
+  static const int mini_to_non_mini_gap_;
 
  private:
   friend class BrowserWindowGtk;
   friend class DraggedTabControllerGtk;
   friend class InsertTabAnimation;
-  friend class RemoveTabAnimation;
+  friend class MiniMoveAnimation;
+  friend class MiniTabAnimation;
   friend class MoveTabAnimation;
+  friend class RemoveTabAnimation;
   friend class ResizeLayoutAnimation;
   friend class TabAnimation;
 
@@ -272,8 +278,8 @@ class TabStripGtk : public TabStripModelObserver,
   // Gets the number of Tabs in the collection.
   int GetTabCount() const;
 
-  // Returns the number of pinned tabs.
-  int GetPinnedTabCount() const;
+  // Returns the number of mini-tabs.
+  int GetMiniTabCount() const;
 
   // Retrieves the Tab at the specified index. Take care in using this, you may
   // need to use GetTabAtAdjustForAnimation.
@@ -296,10 +302,10 @@ class TabStripGtk : public TabStripModelObserver,
   // desired strip width and number of tabs.  If
   // |width_of_tabs_for_mouse_close_| is nonnegative we use that value in
   // calculating the desired strip width; otherwise we use the current width.
-  // |pinned_tab_count| gives the number of pinned tabs, and |tab_count| the
-  // number of pinned and non-pinned tabs.
+  // |mini_tab_count| gives the number of mini-tabs, and |tab_count| the
+  // number of mini and non-mini-tabs.
   void GetDesiredTabWidths(int tab_count,
-                           int pinned_tab_count,
+                           int mini_tab_count,
                            double* unselected_width,
                            double* selected_width) const;
 
@@ -383,6 +389,10 @@ class TabStripGtk : public TabStripModelObserver,
   void StartInsertTabAnimation(int index);
   void StartRemoveTabAnimation(int index, TabContents* contents);
   void StartMoveTabAnimation(int from_index, int to_index);
+  void StartMiniTabAnimation(int index);
+  void StartMiniMoveTabAnimation(int from_index,
+                                 int to_index,
+                                 const gfx::Rect& start_bounds);
   void StartResizeLayoutAnimation();
 
   // Notifies the TabStrip that the specified TabAnimation has completed.

@@ -592,7 +592,7 @@ void OpaqueBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
     if (ShouldPaintAsActive()) {
       theme_frame = rb.GetBitmapNamed(is_off_the_record ?
                                       IDR_THEME_FRAME_INCOGNITO : IDR_FRAME);
-      frame_color =  is_off_the_record ?
+      frame_color = is_off_the_record ?
           ResourceBundle::frame_color_incognito :
           ResourceBundle::frame_color;
     } else {

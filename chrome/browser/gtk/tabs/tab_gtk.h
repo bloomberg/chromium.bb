@@ -28,6 +28,9 @@ class TabGtk : public TabRendererGtk,
     // Returns true if the specified Tab is selected.
     virtual bool IsTabSelected(const TabGtk* tab) const = 0;
 
+    // Returns true if the specified Tab is pinned.
+    virtual bool IsTabPinned(const TabGtk* tab) const = 0;
+
     // Returns true if the specified Tab is detached.
     virtual bool IsTabDetached(const TabGtk* tab) const = 0;
 
@@ -95,7 +98,9 @@ class TabGtk : public TabRendererGtk,
   virtual bool IsVisible() const;
   virtual void SetVisible(bool visible) const;
   virtual void CloseButtonClicked();
-  virtual void UpdateData(TabContents* contents, bool loading_only);
+  virtual void UpdateData(TabContents* contents,
+                          bool phantom,
+                          bool loading_only);
   virtual void SetBounds(const gfx::Rect& bounds);
 
  private:

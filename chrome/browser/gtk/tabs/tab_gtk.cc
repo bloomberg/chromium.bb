@@ -58,7 +58,7 @@ class TabGtk::ContextMenuController : public menus::SimpleMenuModel::Delegate {
   virtual bool IsCommandIdChecked(int command_id) const {
     if (!tab_ || command_id != TabStripModel::CommandTogglePinned)
       return false;
-    return tab_->is_pinned();
+    return tab_->delegate()->IsTabPinned(tab_);
   }
   virtual bool IsCommandIdEnabled(int command_id) const {
     return tab_ && tab_->delegate()->IsCommandEnabledForTab(
@@ -328,8 +328,10 @@ void TabGtk::CloseButtonClicked() {
   delegate_->CloseTab(this);
 }
 
-void TabGtk::UpdateData(TabContents* contents, bool loading_only) {
-  TabRendererGtk::UpdateData(contents, loading_only);
+void TabGtk::UpdateData(TabContents* contents,
+                        bool phantom,
+                        bool loading_only) {
+  TabRendererGtk::UpdateData(contents, phantom, loading_only);
   // Cache the title width so we don't recalculate it every time the tab is
   // resized.
   title_width_ = GetTitleWidth(title_font(), GetTitle());

@@ -46,12 +46,6 @@ const bool kCanToggleSystemTitleBar = true;
 
 #endif
 
-#if defined(TOOLKIT_VIEWS)
-const bool kEnablePinnedTabs = true;
-#else
-const bool kEnablePinnedTabs = false;
-#endif
-
 #if !defined(OS_CHROMEOS)
 
 const SessionStartupPref::Type kDefaultSessionStartupType =
@@ -76,8 +70,11 @@ const bool kShowOtherBrowsersInAboutMemory = true;
 
 #if defined(OS_MACOSX)
 const bool kBrowserAliveWithNoWindows = true;
+// When this gets enabled on Mac, remove this default.
+const bool kEnablePinnedTabs = false;
 #else
 const bool kBrowserAliveWithNoWindows = false;
+const bool kEnablePinnedTabs = true;
 #endif
 
 }  // namespace browser_defaults

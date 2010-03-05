@@ -102,18 +102,26 @@ class TabRendererGtk : public AnimationDelegate,
   // TabContents. If only the loading state was updated, the loading_only flag
   // should be specified. If other things change, set this flag to false to
   // update everything.
-  virtual void UpdateData(TabContents* contents, bool loading_only);
+  virtual void UpdateData(TabContents* contents,
+                          bool phantom,
+                          bool loading_only);
 
-  // Sets the pinned state of the tab.
+  // Sets the blocked state of the tab.
   void SetBlocked(bool pinned);
   bool is_blocked() const;
 
-  // Sets the pinned state of the tab.
-  void set_pinned(bool pinned);
-  bool is_pinned() const;
+  // Sets the mini-state of the tab.
+  void set_mini(bool mini) { data_.mini = mini; }
+  bool mini() const { return data_.mini; }
 
-  // Are we in the process of animating a pinned state change on this tab?
-  void set_animating_pinned_change(bool value);
+  // Sets the phantom state of the tab.
+  void set_phantom(bool phantom) { data_.phantom = phantom; }
+  bool phantom() const { return data_.phantom; }
+
+  // Are we in the process of animating a mini tab state change on this tab?
+  void set_animating_mini_change(bool value) {
+    data_.animating_mini_change = value;
+  }
 
   // Updates the display to reflect the contents of this TabRenderer's model.
   void UpdateFromModel();
@@ -170,8 +178,8 @@ class TabRendererGtk : public AnimationDelegate,
   // available.
   static gfx::Size GetStandardSize();
 
-  // Returns the width for pinned tabs. Pinned tabs always have this width.
-  static int GetPinnedWidth();
+  // Returns the width for mini-tabs. Mini-tabs always have this width.
+  static int GetMiniWidth();
 
   // Loads the images to be used for the tab background.
   static void LoadTabImages();
@@ -200,9 +208,9 @@ class TabRendererGtk : public AnimationDelegate,
 
   GtkWidget* widget() const { return tab_.get(); }
 
-  // Start/stop the pinned tab title animation.
-  void StartPinnedTabTitleAnimation();
-  void StopPinnedTabTitleAnimation();
+  // Start/stop the mini-tab title animation.
+  void StartMiniTabTitleAnimation();
+  void StopMiniTabTitleAnimation();
 
   void set_vertical_offset(int offset) { background_offset_y_ = offset; }
 
@@ -239,6 +247,18 @@ class TabRendererGtk : public AnimationDelegate,
   // model, which is tricky since instances of this object can outlive the
   // corresponding objects in the underlying model.
   struct TabData {
+    TabData()
+        : is_default_favicon(false),
+          loading(false),
+          crashed(false),
+          off_the_record(false),
+          show_icon(true),
+          mini(false),
+          blocked(false),
+          animating_mini_change(false),
+          phantom(false) {
+    }
+
     SkBitmap favicon;
     bool is_default_favicon;
     string16 title;
@@ -246,9 +266,10 @@ class TabRendererGtk : public AnimationDelegate,
     bool crashed;
     bool off_the_record;
     bool show_icon;
-    bool pinned;
+    bool mini;
     bool blocked;
-    bool animating_pinned_change;
+    bool animating_mini_change;
+    bool phantom;
   };
 
   // TODO(jhawkins): Move into TabResources class.
@@ -325,7 +346,7 @@ class TabRendererGtk : public AnimationDelegate,
 
   // Gets the throb value for the tab. When a tab is not selected the
   // active background is drawn at |GetThrobValue()|%. This is used for hover
-  // and pinned tab title change effects.
+  // and mini-tab title change effects.
   double GetThrobValue();
 
   // Handles the clicked signal for the close button.
@@ -398,8 +419,8 @@ class TabRendererGtk : public AnimationDelegate,
   // Hover animation.
   scoped_ptr<SlideAnimation> hover_animation_;
 
-  // Animation used when the title of an inactive pinned tab changes.
-  scoped_ptr<ThrobAnimation> pinned_title_animation_;
+  // Animation used when the title of an inactive mini-tab changes.
+  scoped_ptr<ThrobAnimation> mini_title_animation_;
 
   // Contains the loading animation state.
   LoadingAnimation loading_animation_;
