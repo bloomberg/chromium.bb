@@ -54,9 +54,10 @@
 int wmain(int argc, wchar_t* argv[], wchar_t* envp[]) {
   wchar_t newpath[MAX_PATH+64];
   wchar_t oldpath[MAX_PATH];
+  wchar_t selector[] = { L'-', 0, L'3', L'2', L'\0' };
   wchar_t *delimeter = oldpath;
   int nacl64 = 0, done;
-  
+
   if (GetModuleFileNameW(NULL, oldpath, MAX_PATH) == 0)
     ERROR;
   while (*delimeter)
@@ -120,11 +121,51 @@ int wmain(int argc, wchar_t* argv[], wchar_t* envp[]) {
   if (nacl64) {
     wmemcpy(newpath + done, L"\\libexec\\nacl64-", 16);
     done += 16; delimeter += 12;
+    selector[2] = L'6';
+    selector[3] = L'4';
   } else {
     wmemcpy(newpath + done, L"\\libexec\\nacl-", 14);
     done += 14; delimeter += 10;
   }
   wcscpy(newpath + done, delimeter);
+  if ((delimeter[0] == L'a' || delimeter[0] == L'A') &&
+      (delimeter[1] == L's' || delimeter[0] == L'S') &&
+      (delimeter[2] == '.'))
+    selector[1] = '-';
+  else if (((delimeter[0] == L'c' || delimeter[0] == L'C') &&
+            (delimeter[1] == L'+') && (delimeter[2] == L'+') &&
+            (delimeter[3] == '.')) ||
+           ((delimeter[0] == L'c' || delimeter[0] == L'C') &&
+            (delimeter[1] == L'p' || delimeter[1] == L'P') &&
+            (delimeter[2] == L'p' || delimeter[2] == L'P') &&
+            (delimeter[3] == '.')) ||
+           ((delimeter[0] == L'g' || delimeter[0] == L'G') &&
+            (delimeter[1] == L'+') && (delimeter[2] == L'+') &&
+            (delimeter[3] == '.')) ||
+           ((delimeter[0] == L'g' || delimeter[0] == L'G') &&
+            (delimeter[1] == L'c' || delimeter[1] == L'C') &&
+            (delimeter[2] == L'c' || delimeter[2] == L'C') &&
+            (delimeter[3] == '.') || (delimeter[3] == '-')) ||
+           ((delimeter[0] == L'g' || delimeter[0] == L'G') &&
+            (delimeter[1] == L'f' || delimeter[1] == L'F') &&
+            (delimeter[2] == L'o' || delimeter[2] == L'O') &&
+            (delimeter[3] == L'r' || delimeter[3] == L'R') &&
+            (delimeter[4] == L't' || delimeter[4] == L'T') &&
+            (delimeter[5] == L'r' || delimeter[5] == L'R') &&
+            (delimeter[6] == L'a' || delimeter[6] == L'A') &&
+            (delimeter[7] == L'n' || delimeter[7] == L'N') &&
+            (delimeter[8] == '.')))
+    selector[1] = 'm';
+  if (selector[1]) {
+    memcpy(((wchar_t**)oldpath)+2, argv+1, sizeof(wchar_t*)*(argc-1));
+    argv = (wchar_t**)oldpath;
+    argv[1] = selector;
+    argv[argc+1] = 0;
+  } else {
+    memcpy(((wchar_t**)oldpath)+1, argv+1, sizeof(wchar_t*)*(argc-1));
+    argv = (wchar_t**)oldpath;
+    argv[argc] = 0;
+  }
   argv[0] = newpath;
   return _wspawnvpe(_P_WAIT, newpath, argv, envp);
 }
