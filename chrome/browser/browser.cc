@@ -3086,8 +3086,9 @@ void Browser::OpenURLAtIndex(TabContents* source,
   // carpet-bombing here.
   PageTransition::Type baseTransitionType =
     PageTransition::StripQualifier(transition);
-  if (baseTransitionType == PageTransition::TYPED ||
-      baseTransitionType == PageTransition::AUTO_BOOKMARK) {
+  if ((baseTransitionType == PageTransition::TYPED ||
+      baseTransitionType == PageTransition::AUTO_BOOKMARK) &&
+      current_tab != NULL) {
     RenderViewHostDelegate::BrowserIntegration* delegate = current_tab;
     delegate->OnUserGesture();
   }
