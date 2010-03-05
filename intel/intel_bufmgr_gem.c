@@ -254,11 +254,16 @@ static unsigned long
 drm_intel_gem_bo_tile_pitch(drm_intel_bufmgr_gem *bufmgr_gem,
 			    unsigned long pitch, uint32_t tiling_mode)
 {
-	unsigned long tile_width = 512;
+	unsigned long tile_width;
 	unsigned long i;
 
 	if (tiling_mode == I915_TILING_NONE)
 		return pitch;
+
+	if (tiling_mode == I915_TILING_X)
+		tile_width = 512;
+	else
+		tile_width = 128;
 
 	/* 965 is flexible */
 	if (bufmgr_gem->gen >= 4)
