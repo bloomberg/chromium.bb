@@ -22,6 +22,7 @@
 #import "chrome/browser/cocoa/extensions/extension_action_context_menu.h"
 #import "chrome/browser/cocoa/extensions/extension_popup_controller.h"
 #include "chrome/browser/command_updater.h"
+#include "chrome/browser/content_setting_image_model.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
@@ -105,17 +106,17 @@ LocationBarViewMac::LocationBarViewMac(
       toolbar_model_(toolbar_model),
       transition_(PageTransition::TYPED) {
   for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
-    ContentBlockedImageView* content_blocked_view =
-        new ContentBlockedImageView(static_cast<ContentSettingsType>(i), this,
+    ContentSettingImageView* content_setting_view =
+        new ContentSettingImageView(static_cast<ContentSettingsType>(i), this,
                                     profile_);
-    content_blocked_views_.push_back(content_blocked_view);
-    content_blocked_view->SetVisible(false);
+    content_setting_views_.push_back(content_setting_view);
+    content_setting_view->SetVisible(false);
   }
 
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
   [cell setSecurityImageView:&security_image_view_];
   [cell setPageActionViewList:&page_action_views_];
-  [cell setContentBlockedViewList:&content_blocked_views_];
+  [cell setContentSettingViewsList:&content_setting_views_];
 
   registrar_.Add(this,
       NotificationType::EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
@@ -166,8 +167,8 @@ void LocationBarViewMac::FocusSearch() {
   edit_view_->SetForcedQuery();
 }
 
-void LocationBarViewMac::UpdateContentBlockedIcons() {
-  RefreshContentBlockedViews();
+void LocationBarViewMac::UpdateContentSettingsIcons() {
+  RefreshContentSettingsViews();
   [field_ updateCursorAndToolTipRects];
   [field_ setNeedsDisplay:YES];
 }
@@ -204,7 +205,7 @@ void LocationBarViewMac::Update(const TabContents* contents,
                                 bool should_restore_state) {
   SetSecurityIcon(toolbar_model_->GetIcon());
   page_action_views_.RefreshViews();
-  RefreshContentBlockedViews();
+  RefreshContentSettingsViews();
   // AutocompleteEditView restores state if the tab is non-NULL.
   edit_view_->Update(should_restore_state ? contents : NULL);
 }
@@ -515,13 +516,13 @@ void LocationBarViewMac::PostNotification(const NSString* notification) {
                                         object:[NSValue valueWithPointer:this]];
 }
 
-void LocationBarViewMac::RefreshContentBlockedViews() {
+void LocationBarViewMac::RefreshContentSettingsViews() {
   const TabContents* tab_contents = browser_->GetSelectedTabContents();
-  for (ContentBlockedViews::iterator it(content_blocked_views_.begin());
-      it != content_blocked_views_.end();
+  for (ContentSettingViews::iterator it(content_setting_views_.begin());
+      it != content_setting_views_.end();
       ++it) {
-    (*it)->SetVisible((!toolbar_model_->input_in_progress() && tab_contents) ?
-        tab_contents->IsContentBlocked((*it)->settings_type()) : false);
+    (*it)->UpdateFromTabContents(
+        toolbar_model_->input_in_progress() ? NULL : tab_contents);
   }
 }
 
@@ -823,43 +824,20 @@ void LocationBarViewMac::PageActionImageView::Observe(
 }
 
 // ContentSettingsImageView-----------------------------------------------------
-
-LocationBarViewMac::ContentBlockedImageView::ContentBlockedImageView(
+LocationBarViewMac::ContentSettingImageView::ContentSettingImageView(
     ContentSettingsType settings_type,
     LocationBarViewMac* owner,
     Profile* profile)
-    : settings_type_(settings_type),
+    : content_setting_image_model_(
+          ContentSettingImageModel::CreateContentSettingImageModel(
+              settings_type)),
       owner_(owner),
       profile_(profile) {
-  // TODO(thakis): We should use pdfs for these icons on OSX.
-  // http://crbug.com/35847
-  static const int kIconIDs[] = {
-    IDR_BLOCKED_COOKIES,
-    IDR_BLOCKED_IMAGES,
-    IDR_BLOCKED_JAVASCRIPT,
-    IDR_BLOCKED_PLUGINS,
-    IDR_BLOCKED_POPUPS,
-  };
-  DCHECK_EQ(arraysize(kIconIDs),
-            static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  SetImage(rb.GetNSImageNamed(kIconIDs[settings_type]));
-
-  static const int kTooltipIDs[] = {
-    IDS_BLOCKED_COOKIES_TITLE,
-    IDS_BLOCKED_IMAGES_TITLE,
-    IDS_BLOCKED_JAVASCRIPT_TITLE,
-    IDS_BLOCKED_PLUGINS_TITLE,
-    IDS_BLOCKED_POPUPS_TOOLTIP,
-  };
-  DCHECK_EQ(arraysize(kTooltipIDs),
-            static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
-  SetToolTip(l10n_util::GetNSStringWithFixup(kTooltipIDs[settings_type]));
 }
 
-LocationBarViewMac::ContentBlockedImageView::~ContentBlockedImageView() {}
+LocationBarViewMac::ContentSettingImageView::~ContentSettingImageView() {}
 
-void LocationBarViewMac::ContentBlockedImageView::OnMousePressed(NSRect bounds)
+void LocationBarViewMac::ContentSettingImageView::OnMousePressed(NSRect bounds)
 {
   // Get host. This should be shared shared on linux/win/osx medium-term.
   TabContents* tabContents =
@@ -880,20 +858,37 @@ void LocationBarViewMac::ContentBlockedImageView::OnMousePressed(NSRect bounds)
 
   // Open bubble.
   NSPoint anchor = NSMakePoint(NSMidX(bounds) + 1, NSMinY(bounds));
-  [[ContentBlockedBubbleController showForType:settings_type_
-                                  parentWindow:window
-                                    anchoredAt:anchor
-                                          host:url.host()
-                                displayHost:base::SysWideToNSString(displayHost)
-                                   tabContents:tabContents
-                                       profile:profile_] showWindow:nil];
+  [[ContentBlockedBubbleController
+        showForType:content_setting_image_model_->get_content_settings_type()
+       parentWindow:window
+         anchoredAt:anchor
+               host:url.host()
+        displayHost:base::SysWideToNSString(displayHost)
+        tabContents:tabContents
+            profile:profile_] showWindow:nil];
 }
 
-const NSString* LocationBarViewMac::ContentBlockedImageView::GetToolTip() {
+const NSString* LocationBarViewMac::ContentSettingImageView::GetToolTip() {
   return tooltip_.get();
 }
 
-void LocationBarViewMac::ContentBlockedImageView::SetToolTip(NSString* tooltip)
+void LocationBarViewMac::ContentSettingImageView::UpdateFromTabContents(
+    const TabContents* tab_contents) {
+  content_setting_image_model_->UpdateFromTabContents(tab_contents);
+  if (content_setting_image_model_->is_visible()) {
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    // TODO(thakis): We should use pdfs for these icons on OSX.
+    // http://crbug.com/35847
+    SetImage(rb.GetNSImageNamed(content_setting_image_model_->get_icon()));
+    SetToolTip(base::SysUTF8ToNSString(
+        content_setting_image_model_->get_tooltip()));
+    SetVisible(true);
+  } else {
+    SetVisible(false);
+  }
+}
+
+void LocationBarViewMac::ContentSettingImageView::SetToolTip(NSString* tooltip)
 {
   tooltip_.reset([tooltip retain]);
 }

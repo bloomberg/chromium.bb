@@ -2191,7 +2191,7 @@ void Browser::ContentsZoomChange(bool zoom_in) {
 
 void Browser::OnBlockedContentChange(TabContents* source) {
   if (source == GetSelectedTabContents())
-    window_->GetLocationBar()->UpdateContentBlockedIcons();
+    window_->GetLocationBar()->UpdateContentSettingsIcons();
 }
 
 void Browser::SetTabContentBlocked(TabContents* contents, bool blocked) {

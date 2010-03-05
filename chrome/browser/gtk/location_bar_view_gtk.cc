@@ -20,6 +20,7 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/command_updater.h"
+#include "chrome/browser/content_setting_image_model.h"
 #include "chrome/browser/extensions/extension_accessibility_api_constants.h"
 #include "chrome/browser/extensions/extension_action_context_menu_model.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
@@ -170,7 +171,7 @@ LocationBarViewGtk::LocationBarViewGtk(
 LocationBarViewGtk::~LocationBarViewGtk() {
   // All of our widgets should have be children of / owned by the alignment.
   hbox_.Destroy();
-  content_blocking_hbox_.Destroy();
+  content_setting_hbox_.Destroy();
   page_action_hbox_.Destroy();
 }
 
@@ -327,20 +328,19 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   gtk_box_pack_end(GTK_BOX(hbox_.get()), security_icon_event_box_,
                    FALSE, FALSE, 0);
 
-  content_blocking_hbox_.Own(gtk_hbox_new(FALSE, kInnerPadding));
-  gtk_widget_set_name(content_blocking_hbox_.get(),
-                      "chrome-content-blocking-hbox");
-  gtk_box_pack_end(GTK_BOX(hbox_.get()), content_blocking_hbox_.get(),
+  content_setting_hbox_.Own(gtk_hbox_new(FALSE, kInnerPadding));
+  gtk_widget_set_name(content_setting_hbox_.get(),
+                      "chrome-content-setting-hbox");
+  gtk_box_pack_end(GTK_BOX(hbox_.get()), content_setting_hbox_.get(),
                    FALSE, FALSE, 0);
 
   for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
-    ContentBlockedViewGtk* content_blocked_view =
-        new ContentBlockedViewGtk(static_cast<ContentSettingsType>(i), this,
-                                  profile_);
-    content_blocked_views_.push_back(content_blocked_view);
-    gtk_box_pack_end(GTK_BOX(content_blocking_hbox_.get()),
-                     content_blocked_view->widget(), FALSE, FALSE, 0);
-    content_blocked_view->SetVisible(false);
+    ContentSettingImageViewGtk* content_setting_view =
+        new ContentSettingImageViewGtk(
+            static_cast<ContentSettingsType>(i), this, profile_);
+    content_setting_views_.push_back(content_setting_view);
+    gtk_box_pack_end(GTK_BOX(content_setting_hbox_.get()),
+                     content_setting_view->widget(), FALSE, FALSE, 0);
   }
 
   page_action_hbox_.Own(gtk_hbox_new(FALSE, kInnerPadding));
@@ -395,7 +395,7 @@ GtkWidget* LocationBarViewGtk::GetPageActionWidget(
 
 void LocationBarViewGtk::Update(const TabContents* contents) {
   SetSecurityIcon(toolbar_model_->GetIcon());
-  UpdateContentBlockedIcons();
+  UpdateContentSettingsIcons();
   UpdatePageActions();
   SetInfoText();
   location_entry_->Update(contents);
@@ -537,24 +537,23 @@ void LocationBarViewGtk::FocusSearch() {
   location_entry_->SetForcedQuery();
 }
 
-void LocationBarViewGtk::UpdateContentBlockedIcons() {
+void LocationBarViewGtk::UpdateContentSettingsIcons() {
   const TabContents* tab_contents = GetTabContents();
   bool any_visible = false;
-  for (ScopedVector<ContentBlockedViewGtk>::iterator i(
-           content_blocked_views_.begin());
-       i != content_blocked_views_.end(); ++i) {
-    bool is_visible = (!toolbar_model_->input_in_progress() && tab_contents) ?
-        tab_contents->IsContentBlocked((*i)->content_type()) : false;
-    any_visible = is_visible || any_visible;
-    (*i)->SetVisible(is_visible);
+  for (ScopedVector<ContentSettingImageViewGtk>::iterator i(
+           content_setting_views_.begin());
+       i != content_setting_views_.end(); ++i) {
+    (*i)->UpdateFromTabContents(
+        toolbar_model_->input_in_progress() ? NULL : tab_contents);
+    any_visible = (*i)->IsVisible() || any_visible;
   }
 
   // If there are no visible content things, hide the top level box so it
   // doesn't mess with padding.
   if (any_visible)
-    gtk_widget_show(content_blocking_hbox_.get());
+    gtk_widget_show(content_setting_hbox_.get());
   else
-    gtk_widget_hide(content_blocking_hbox_.get());
+    gtk_widget_hide(content_setting_hbox_.get());
 }
 
 void LocationBarViewGtk::UpdatePageActions() {
@@ -952,12 +951,14 @@ void LocationBarViewGtk::AdjustChildrenVisibility() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// LocationBarViewGtk::ContentBlockedViewGtk
-LocationBarViewGtk::ContentBlockedViewGtk::ContentBlockedViewGtk(
+// LocationBarViewGtk::ContentSettingImageViewGtk
+LocationBarViewGtk::ContentSettingImageViewGtk::ContentSettingImageViewGtk(
     ContentSettingsType content_type,
     const LocationBarViewGtk* parent,
     Profile* profile)
-    : content_type_(content_type),
+    : content_setting_image_model_(
+          ContentSettingImageModel::CreateContentSettingImageModel(
+              content_type)),
       parent_(parent),
       profile_(profile),
       info_bubble_(NULL) {
@@ -970,35 +971,10 @@ LocationBarViewGtk::ContentBlockedViewGtk::ContentBlockedViewGtk(
 
   image_.Own(gtk_image_new());
   gtk_container_add(GTK_CONTAINER(event_box_.get()), image_.get());
-
-  static const int kIconIDs[CONTENT_SETTINGS_NUM_TYPES] = {
-    IDR_BLOCKED_COOKIES,
-    IDR_BLOCKED_IMAGES,
-    IDR_BLOCKED_JAVASCRIPT,
-    IDR_BLOCKED_PLUGINS,
-    IDR_BLOCKED_POPUPS,
-  };
-  DCHECK_EQ(arraysize(kIconIDs),
-            static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
-  gtk_image_set_from_pixbuf(GTK_IMAGE(image_.get()),
-                            ResourceBundle::GetSharedInstance().GetPixbufNamed(
-                                kIconIDs[content_type]));
-
-  static const int kTooltipIDs[CONTENT_SETTINGS_NUM_TYPES] = {
-    IDS_BLOCKED_COOKIES_TITLE,
-    IDS_BLOCKED_IMAGES_TITLE,
-    IDS_BLOCKED_JAVASCRIPT_TITLE,
-    IDS_BLOCKED_PLUGINS_TITLE,
-    IDS_BLOCKED_POPUPS_TOOLTIP,
-  };
-  DCHECK_EQ(arraysize(kTooltipIDs),
-            static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
-  gtk_widget_set_tooltip_text(
-      widget(),
-      l10n_util::GetStringUTF8(kTooltipIDs[content_type_]).c_str());
+  gtk_widget_hide(widget());
 }
 
-LocationBarViewGtk::ContentBlockedViewGtk::~ContentBlockedViewGtk() {
+LocationBarViewGtk::ContentSettingImageViewGtk::~ContentSettingImageViewGtk() {
   image_.Destroy();
   event_box_.Destroy();
 
@@ -1006,14 +982,25 @@ LocationBarViewGtk::ContentBlockedViewGtk::~ContentBlockedViewGtk() {
     info_bubble_->Close();
 }
 
-void LocationBarViewGtk::ContentBlockedViewGtk::SetVisible(bool visible) {
-  if (visible)
+void LocationBarViewGtk::ContentSettingImageViewGtk::UpdateFromTabContents(
+    const TabContents* tab_contents) {
+  int old_icon = content_setting_image_model_->get_icon();
+  content_setting_image_model_->UpdateFromTabContents(tab_contents);
+  if (content_setting_image_model_->is_visible()) {
+    if (old_icon != content_setting_image_model_->get_icon()) {
+      gtk_image_set_from_pixbuf(GTK_IMAGE(image_.get()),
+          ResourceBundle::GetSharedInstance().GetPixbufNamed(
+              content_setting_image_model_->get_icon()));
+    }
+    gtk_widget_set_tooltip_text(widget(),
+        content_setting_image_model_->get_tooltip().c_str());
     gtk_widget_show(widget());
-  else
+  } else {
     gtk_widget_hide(widget());
+  }
 }
 
-gboolean LocationBarViewGtk::ContentBlockedViewGtk::OnButtonPressed(
+gboolean LocationBarViewGtk::ContentSettingImageViewGtk::OnButtonPressed(
     GtkWidget* sender, GdkEvent* event) {
   gfx::Rect bounds =
       gtk_util::GetWidgetRectRelativeToToplevel(sender);
@@ -1030,12 +1017,13 @@ gboolean LocationBarViewGtk::ContentBlockedViewGtk::OnButtonPressed(
   GtkWindow* toplevel = GTK_WINDOW(gtk_widget_get_toplevel(sender));
 
   info_bubble_ = new ContentBlockedBubbleGtk(
-      toplevel, bounds, this, content_type_, url.host(), display_host, profile_,
-      tab_contents);
+      toplevel, bounds, this,
+      content_setting_image_model_->get_content_settings_type(), url.host(),
+      display_host, profile_, tab_contents);
   return TRUE;
 }
 
-void LocationBarViewGtk::ContentBlockedViewGtk::InfoBubbleClosing(
+void LocationBarViewGtk::ContentSettingImageViewGtk::InfoBubbleClosing(
     InfoBubbleGtk* info_bubble,
     bool closed_by_escape) {
   info_bubble_ = NULL;

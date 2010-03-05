@@ -217,9 +217,9 @@ CGFloat WidthForKeyword(NSAttributedString* keywordString) {
   security_image_view_ = view;
 }
 
-- (void)setContentBlockedViewList:
-    (LocationBarViewMac::ContentBlockedViews*)views {
-  content_blocked_views_ = views;
+- (void)setContentSettingViewsList:
+    (LocationBarViewMac::ContentSettingViews*)views {
+  content_setting_views_ = views;
 }
 
 // Overriden to account for the hint strings and hint icons.
@@ -430,13 +430,13 @@ CGFloat WidthForKeyword(NSAttributedString* keywordString) {
     }
   }
 
-  if (content_blocked_views_) {
+  if (content_setting_views_) {
     // We use a reverse_iterator here because we're laying out the views from
     // right to left but in the vector they're ordered left to right.
-    for (LocationBarViewMac::ContentBlockedViews::const_reverse_iterator
-            it(content_blocked_views_->rbegin());
-        it != const_cast<const LocationBarViewMac::ContentBlockedViews*>(
-            content_blocked_views_)->rend();
+    for (LocationBarViewMac::ContentSettingViews::const_reverse_iterator
+            it(content_setting_views_->rbegin());
+        it != const_cast<const LocationBarViewMac::ContentSettingViews*>(
+            content_setting_views_)->rend();
         ++it) {
       if ((*it)->IsVisible()) {
         NSImage* image = (*it)->GetImage();

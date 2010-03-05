@@ -36,6 +36,7 @@
 
 class BubblePositioner;
 class CommandUpdater;
+class ContentSettingImageModel;
 class ExtensionAction;
 class ExtensionPopup;
 class GURL;
@@ -164,7 +165,7 @@ class LocationBarView : public LocationBar,
   virtual void AcceptInputWithDisposition(WindowOpenDisposition);
   virtual void FocusLocation();
   virtual void FocusSearch();
-  virtual void UpdateContentBlockedIcons();
+  virtual void UpdateContentSettingsIcons();
   virtual void UpdatePageActions();
   virtual void InvalidatePageActions();
   virtual void SaveStateToContents(TabContents* contents);
@@ -364,17 +365,17 @@ class LocationBarView : public LocationBar,
     DISALLOW_COPY_AND_ASSIGN(SecurityImageView);
   };
 
-  class ContentBlockedImageView : public views::ImageView,
+  class ContentSettingImageView : public views::ImageView,
                                   public InfoBubbleDelegate {
    public:
-    ContentBlockedImageView(ContentSettingsType content_type,
+    ContentSettingImageView(ContentSettingsType content_type,
                             const LocationBarView* parent,
                             Profile* profile,
                             const BubblePositioner* bubble_positioner);
-    virtual ~ContentBlockedImageView();
+    virtual ~ContentSettingImageView();
 
-    ContentSettingsType content_type() const { return content_type_; }
     void set_profile(Profile* profile) { profile_ = profile; }
+    void UpdateFromTabContents(const TabContents* tab_contents);
 
    private:
     // views::ImageView overrides:
@@ -386,10 +387,7 @@ class LocationBarView : public LocationBar,
                                    bool closed_by_escape);
     virtual bool CloseOnEscape();
 
-    static SkBitmap* icons_[CONTENT_SETTINGS_NUM_TYPES];
-
-    // The type of content handled by this view.
-    ContentSettingsType content_type_;
+    scoped_ptr<ContentSettingImageModel> content_setting_image_model_;
 
     // The owning LocationBarView.
     const LocationBarView* parent_;
@@ -404,9 +402,9 @@ class LocationBarView : public LocationBar,
     // caller maintains ownership of this and must ensure it's kept alive.
     const BubblePositioner* bubble_positioner_;
 
-    DISALLOW_IMPLICIT_CONSTRUCTORS(ContentBlockedImageView);
+    DISALLOW_IMPLICIT_CONSTRUCTORS(ContentSettingImageView);
   };
-  typedef std::vector<ContentBlockedImageView*> ContentBlockedViews;
+  typedef std::vector<ContentSettingImageView*> ContentSettingViews;
 
   // PageActionImageView is used to display the icon for a given PageAction
   // and notify the extension when the icon is clicked.
@@ -552,7 +550,7 @@ class LocationBarView : public LocationBar,
 
   // Update the visibility state of the Content Blocked icons to reflect what is
   // actually blocked on the current page.
-  void RefreshContentBlockedViews();
+  void RefreshContentSettingViews();
 
   // Delete all page action views that we have created.
   void DeletePageActionViews();
@@ -632,8 +630,8 @@ class LocationBarView : public LocationBar,
   // The view that shows the lock/warning when in HTTPS mode.
   SecurityImageView security_image_view_;
 
-  // The content blocked views.
-  ContentBlockedViews content_blocked_views_;
+  // The content setting views.
+  ContentSettingViews content_setting_views_;
 
   // The page action icon views.
   PageActionViews page_action_views_;

@@ -55,7 +55,7 @@ class ExtensionAction;
   LocationBarViewMac::PageActionViewList* page_action_views_;
 
   // List of content blocked icons. This may be NULL during testing.
-  LocationBarViewMac::ContentBlockedViews* content_blocked_views_;
+  LocationBarViewMac::ContentSettingViews* content_setting_views_;
 }
 
 // Chooses |partialString| if |width| won't fit |fullString|.  Strings
@@ -79,8 +79,8 @@ class ExtensionAction;
 
 - (void)setSecurityImageView:(LocationBarViewMac::SecurityImageView*)view;
 - (void)setPageActionViewList:(LocationBarViewMac::PageActionViewList*)list;
-- (void)setContentBlockedViewList:
-    (LocationBarViewMac::ContentBlockedViews*)views;
+- (void)setContentSettingViewsList:
+    (LocationBarViewMac::ContentSettingViews*)views;
 
 // Returns an array of the visible AutocompleteTextFieldIcon objects. Returns
 // only visible icons.

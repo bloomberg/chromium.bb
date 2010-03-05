@@ -565,6 +565,7 @@
         'browser/browser_theme_pack_unittest.cc',
         'browser/browser_theme_provider_unittest.cc',
         'browser/browser_unittest.cc',
+        'browser/content_setting_image_model_unittest.cc',        
         'browser/chrome_browser_application_mac_unittest.mm',
         'browser/debugger/devtools_remote_message_unittest.cc',
         'browser/debugger/devtools_remote_listen_socket_unittest.cc',

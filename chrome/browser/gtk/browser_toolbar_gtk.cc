@@ -248,7 +248,7 @@ void BrowserToolbarGtk::Init(Profile* profile,
 
   // Because the above does a recursive show all on all widgets we need to
   // update the icon visibility to hide them.
-  location_bar_->UpdateContentBlockedIcons();
+  location_bar_->UpdateContentSettingsIcons();
 
   SetViewIDs();
 }

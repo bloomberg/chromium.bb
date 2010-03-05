@@ -25,6 +25,7 @@
 @class AutocompleteTextField;
 class BubblePositioner;
 class CommandUpdater;
+class ContentSettingImageModel;
 @class ExtensionPopupController;
 class Profile;
 class ToolbarModel;
@@ -55,7 +56,7 @@ class LocationBarViewMac : public AutocompleteEditController,
   virtual void AcceptInputWithDisposition(WindowOpenDisposition disposition);
   virtual void FocusLocation();
   virtual void FocusSearch();
-  virtual void UpdateContentBlockedIcons();
+  virtual void UpdateContentSettingsIcons();
   virtual void UpdatePageActions();
   virtual void InvalidatePageActions();
   virtual void SaveStateToContents(TabContents* contents);
@@ -306,20 +307,20 @@ class LocationBarViewMac : public AutocompleteEditController,
     DISALLOW_COPY_AND_ASSIGN(PageActionImageView);
   };
 
-  // ContentBlockedImageView is used to display the content settings images
-  // when types of contents are blocked on the current page.
-  class ContentBlockedImageView : public LocationBarImageView {
+  // ContentSettingImageView is used to display the content settings images
+  // on the current page.
+  class ContentSettingImageView : public LocationBarImageView {
    public:
-    ContentBlockedImageView(ContentSettingsType settings_type,
+    ContentSettingImageView(ContentSettingsType settings_type,
                             LocationBarViewMac* owner,
                             Profile* profile);
-    virtual ~ContentBlockedImageView();
+    virtual ~ContentSettingImageView();
 
     // Shows a content settings bubble.
     void OnMousePressed(NSRect bounds);
 
-    // Returns the settings type this shows up for.
-    ContentSettingsType settings_type() { return settings_type_; }
+    // Updates the image and visibility state based on the supplied TabContents.
+    void UpdateFromTabContents(const TabContents* tab_contents);
 
     // Returns the tooltip for this Page Action image or |nil| if there is none.
     virtual const NSString* GetToolTip();
@@ -327,16 +328,15 @@ class LocationBarViewMac : public AutocompleteEditController,
    private:
     void SetToolTip(NSString* tooltip);
 
-    // The type of content handled by this view.
-    ContentSettingsType settings_type_;
+    scoped_ptr<ContentSettingImageModel> content_setting_image_model_;
 
     LocationBarViewMac* owner_;
     Profile* profile_;
     scoped_nsobject<NSString> tooltip_;
 
-    DISALLOW_COPY_AND_ASSIGN(ContentBlockedImageView);
+    DISALLOW_COPY_AND_ASSIGN(ContentSettingImageView);
   };
-  typedef ScopedVector<ContentBlockedImageView> ContentBlockedViews;
+  typedef ScopedVector<ContentSettingImageView> ContentSettingViews;
 
   class PageActionViewList {
    public:
@@ -386,9 +386,9 @@ class LocationBarViewMac : public AutocompleteEditController,
   // Posts |notification| to the default notification center.
   void PostNotification(const NSString* notification);
 
-  // Updates visibility of the content blocked icons based on the current
+  // Updates visibility of the content settings icons based on the current
   // tab contents state.
-  void RefreshContentBlockedViews();
+  void RefreshContentSettingsViews();
 
   scoped_ptr<AutocompleteEditViewMac> edit_view_;
 
@@ -411,7 +411,7 @@ class LocationBarViewMac : public AutocompleteEditController,
   PageActionViewList page_action_views_;
 
   // The content blocked views.
-  ContentBlockedViews content_blocked_views_;
+  ContentSettingViews content_setting_views_;
 
   Profile* profile_;
 

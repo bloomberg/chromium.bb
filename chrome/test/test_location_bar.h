@@ -37,7 +37,7 @@ class TestLocationBar : public LocationBar {
   virtual void AcceptInputWithDisposition(WindowOpenDisposition) {}
   virtual void FocusLocation() {}
   virtual void FocusSearch() {}
-  virtual void UpdateContentBlockedIcons() {}
+  virtual void UpdateContentSettingsIcons() {}
   virtual void UpdatePageActions() {}
   virtual void InvalidatePageActions() {}
   virtual void SaveStateToContents(TabContents* contents) {}

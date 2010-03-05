@@ -50,8 +50,8 @@ class LocationBar {
   // focus to it.
   virtual void FocusSearch() = 0;
 
-  // Updates the state of the images showing what content was blocked.
-  virtual void UpdateContentBlockedIcons() = 0;
+  // Updates the state of the images showing the content settings status.
+  virtual void UpdateContentSettingsIcons() = 0;
 
   // Updates the state of the page actions.
   virtual void UpdatePageActions() = 0;

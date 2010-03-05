@@ -20,6 +20,7 @@
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/bubble_positioner.h"
 #include "chrome/browser/command_updater.h"
+#include "chrome/browser/content_setting_image_model.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profile.h"
@@ -27,6 +28,7 @@
 #include "chrome/browser/view_ids.h"
 #include "chrome/browser/views/extensions/extension_popup.h"
 #include "chrome/browser/views/content_blocked_bubble_contents.h"
+#include "chrome/common/content_settings.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -222,10 +224,10 @@ void LocationBarView::Init() {
   security_image_view_.set_parent_owned(false);
 
   for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
-    ContentBlockedImageView* content_blocked_view =
-        new ContentBlockedImageView(static_cast<ContentSettingsType>(i), this,
+    ContentSettingImageView* content_blocked_view =
+        new ContentSettingImageView(static_cast<ContentSettingsType>(i), this,
                                     profile_, bubble_positioner_);
-    content_blocked_views_.push_back(content_blocked_view);
+    content_setting_views_.push_back(content_blocked_view);
     AddChildView(content_blocked_view);
     content_blocked_view->SetVisible(false);
   }
@@ -298,7 +300,7 @@ SkColor LocationBarView::GetColor(bool is_secure, ColorKind kind) {
 
 void LocationBarView::Update(const TabContents* tab_for_state_restoring) {
   SetSecurityIcon(model_->GetIcon());
-  RefreshContentBlockedViews();
+  RefreshContentSettingViews();
   RefreshPageActionViews();
   std::wstring info_text, info_tooltip;
   ToolbarModel::InfoTextType info_text_type =
@@ -309,8 +311,8 @@ void LocationBarView::Update(const TabContents* tab_for_state_restoring) {
   SchedulePaint();
 }
 
-void LocationBarView::UpdateContentBlockedIcons() {
-  RefreshContentBlockedViews();
+void LocationBarView::UpdateContentSettingsIcons() {
+  RefreshContentSettingViews();
 
   Layout();
   SchedulePaint();
@@ -353,8 +355,8 @@ void LocationBarView::SetProfile(Profile* profile) {
     location_entry_->model()->SetProfile(profile);
     selected_keyword_view_.set_profile(profile);
     keyword_hint_view_.set_profile(profile);
-    for (ContentBlockedViews::const_iterator i(content_blocked_views_.begin());
-         i != content_blocked_views_.end(); ++i)
+    for (ContentSettingViews::const_iterator i(content_setting_views_.begin());
+         i != content_setting_views_.end(); ++i)
       (*i)->set_profile(profile);
     security_image_view_.set_profile(profile);
   }
@@ -545,8 +547,8 @@ void LocationBarView::DoLayout(const bool force_layout) {
     if ((*i)->IsVisible())
       entry_width -= (*i)->GetPreferredSize().width() + kInnerPadding;
   }
-  for (ContentBlockedViews::const_iterator i(content_blocked_views_.begin());
-       i != content_blocked_views_.end(); ++i) {
+  for (ContentSettingViews::const_iterator i(content_setting_views_.begin());
+       i != content_setting_views_.end(); ++i) {
     if ((*i)->IsVisible())
       entry_width -= (*i)->GetPreferredSize().width() + kInnerPadding;
   }
@@ -613,8 +615,8 @@ void LocationBarView::DoLayout(const bool force_layout) {
   }
   // We use a reverse_iterator here because we're laying out the views from
   // right to left but in the vector they're ordered left to right.
-  for (ContentBlockedViews::const_reverse_iterator
-       i(content_blocked_views_.rbegin()); i != content_blocked_views_.rend();
+  for (ContentSettingViews::const_reverse_iterator
+       i(content_setting_views_.rbegin()); i != content_setting_views_.rend();
        ++i) {
     if ((*i)->IsVisible()) {
       int content_blocked_width = (*i)->GetPreferredSize().width();
@@ -755,12 +757,12 @@ void LocationBarView::SetSecurityIcon(ToolbarModel::Icon icon) {
   }
 }
 
-void LocationBarView::RefreshContentBlockedViews() {
+void LocationBarView::RefreshContentSettingViews() {
   const TabContents* tab_contents = delegate_->GetTabContents();
-  for (ContentBlockedViews::const_iterator i(content_blocked_views_.begin());
-       i != content_blocked_views_.end(); ++i) {
-    (*i)->SetVisible((!model_->input_in_progress() && tab_contents) ?
-        tab_contents->IsContentBlocked((*i)->content_type()) : false);
+  for (ContentSettingViews::const_iterator i(content_setting_views_.begin());
+       i != content_setting_views_.end(); ++i) {
+    (*i)->UpdateFromTabContents(
+        model_->input_in_progress() ? NULL : tab_contents);
   }
 }
 
@@ -1278,8 +1280,6 @@ void LocationBarView::LocationBarImageView::ShowInfoBubbleImpl(
 // static
 SkBitmap* LocationBarView::SecurityImageView::lock_icon_ = NULL;
 SkBitmap* LocationBarView::SecurityImageView::warning_icon_ = NULL;
-SkBitmap* LocationBarView::
-    ContentBlockedImageView::icons_[CONTENT_SETTINGS_NUM_TYPES] = { NULL };
 
 LocationBarView::SecurityImageView::SecurityImageView(
     const LocationBarView* parent,
@@ -1335,52 +1335,44 @@ void LocationBarView::SecurityImageView::ShowInfoBubble() {
       SECURITY_INFO_BUBBLE_TEXT));
 }
 
-// ContentBlockedImageView------------------------------------------------------
+// ContentSettingImageView------------------------------------------------------
 
-LocationBarView::ContentBlockedImageView::ContentBlockedImageView(
+LocationBarView::ContentSettingImageView::ContentSettingImageView(
     ContentSettingsType content_type,
     const LocationBarView* parent,
     Profile* profile,
     const BubblePositioner* bubble_positioner)
-    : content_type_(content_type),
+    : content_setting_image_model_(
+          ContentSettingImageModel::CreateContentSettingImageModel(
+              content_type)),
       parent_(parent),
       profile_(profile),
       info_bubble_(NULL),
       bubble_positioner_(bubble_positioner) {
-  if (!icons_[CONTENT_SETTINGS_TYPE_COOKIES]) {
-    static const int kIconIDs[CONTENT_SETTINGS_NUM_TYPES] = {
-      IDR_BLOCKED_COOKIES,
-      IDR_BLOCKED_IMAGES,
-      IDR_BLOCKED_JAVASCRIPT,
-      IDR_BLOCKED_PLUGINS,
-      IDR_BLOCKED_POPUPS,
-    };
-    DCHECK_EQ(arraysize(kIconIDs),
-              static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i)
-      icons_[i] = rb.GetBitmapNamed(kIconIDs[i]);
-  }
-  SetImage(icons_[content_type_]);
-
-  static const int kTooltipIDs[CONTENT_SETTINGS_NUM_TYPES] = {
-    IDS_BLOCKED_COOKIES_TITLE,
-    IDS_BLOCKED_IMAGES_TITLE,
-    IDS_BLOCKED_JAVASCRIPT_TITLE,
-    IDS_BLOCKED_PLUGINS_TITLE,
-    IDS_BLOCKED_POPUPS_TOOLTIP,
-  };
-  DCHECK_EQ(arraysize(kTooltipIDs),
-            static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
-  SetTooltipText(l10n_util::GetString(kTooltipIDs[content_type_]));
 }
 
-LocationBarView::ContentBlockedImageView::~ContentBlockedImageView() {
+LocationBarView::ContentSettingImageView::~ContentSettingImageView() {
   if (info_bubble_)
     info_bubble_->Close();
 }
 
-bool LocationBarView::ContentBlockedImageView::OnMousePressed(
+void LocationBarView::ContentSettingImageView::UpdateFromTabContents(
+    const TabContents* tab_contents) {
+  int old_icon = content_setting_image_model_->get_icon();
+  content_setting_image_model_->UpdateFromTabContents(tab_contents);
+  if (content_setting_image_model_->is_visible()) {
+    if (old_icon != content_setting_image_model_->get_icon()) {
+      ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+      SetImage(rb.GetBitmapNamed(content_setting_image_model_->get_icon()));
+    }
+    SetTooltipText(UTF8ToWide(content_setting_image_model_->get_tooltip()));
+    SetVisible(true);
+  } else {
+    SetVisible(false);
+  }
+}
+
+bool LocationBarView::ContentSettingImageView::OnMousePressed(
     const views::MouseEvent& event) {
   gfx::Rect bounds(bubble_positioner_->GetLocationStackBounds());
   gfx::Point location;
@@ -1397,28 +1389,29 @@ bool LocationBarView::ContentBlockedImageView::OnMousePressed(
       profile_->GetPrefs()->GetString(prefs::kAcceptLanguages), &display_host,
       NULL, NULL);
   ContentBlockedBubbleContents* bubble_contents =
-      new ContentBlockedBubbleContents(content_type_, url.host(), display_host,
-                                       profile_, tab_contents);
+      new ContentBlockedBubbleContents(
+          content_setting_image_model_->get_content_settings_type(), url.host(),
+          display_host, profile_, tab_contents);
   DCHECK(!info_bubble_);
   info_bubble_ = InfoBubble::Show(GetWindow(), bounds, bubble_contents, this);
   bubble_contents->set_info_bubble(info_bubble_);
   return true;
 }
 
-void LocationBarView::ContentBlockedImageView::VisibilityChanged(
+void LocationBarView::ContentSettingImageView::VisibilityChanged(
     View* starting_from,
     bool is_visible) {
   if (!is_visible && info_bubble_)
     info_bubble_->Close();
 }
 
-void LocationBarView::ContentBlockedImageView::InfoBubbleClosing(
+void LocationBarView::ContentSettingImageView::InfoBubbleClosing(
     InfoBubble* info_bubble,
     bool closed_by_escape) {
   info_bubble_ = NULL;
 }
 
-bool LocationBarView::ContentBlockedImageView::CloseOnEscape() {
+bool LocationBarView::ContentSettingImageView::CloseOnEscape() {
   return true;
 }
 

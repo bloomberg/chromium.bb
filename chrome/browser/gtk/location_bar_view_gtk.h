@@ -32,6 +32,7 @@ class BubblePositioner;
 class Browser;
 class CommandUpdater;
 class ContentBlockedBubbleGtk;
+class ContentSettingImageModel;
 class ExtensionAction;
 class ExtensionActionContextMenuModel;
 class GtkThemeProvider;
@@ -99,7 +100,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
   virtual void AcceptInputWithDisposition(WindowOpenDisposition);
   virtual void FocusLocation();
   virtual void FocusSearch();
-  virtual void UpdateContentBlockedIcons();
+  virtual void UpdateContentSettingsIcons();
   virtual void UpdatePageActions();
   virtual void InvalidatePageActions();
   virtual void SaveStateToContents(TabContents* contents);
@@ -126,25 +127,24 @@ class LocationBarViewGtk : public AutocompleteEditController,
   static const GdkColor kBackgroundColorByLevel[3];
 
  private:
-  class ContentBlockedViewGtk : public InfoBubbleGtkDelegate {
+  class ContentSettingImageViewGtk : public InfoBubbleGtkDelegate {
    public:
-    ContentBlockedViewGtk(ContentSettingsType content_type,
-                          const LocationBarViewGtk* parent,
-                          Profile* profile);
-    virtual ~ContentBlockedViewGtk();
+    ContentSettingImageViewGtk(ContentSettingsType content_type,
+                               const LocationBarViewGtk* parent,
+                               Profile* profile);
+    virtual ~ContentSettingImageViewGtk();
 
     GtkWidget* widget() { return event_box_.get(); }
 
-    ContentSettingsType content_type() const { return content_type_; }
     void set_profile(Profile* profile) { profile_ = profile; }
 
     bool IsVisible() { return GTK_WIDGET_VISIBLE(widget()); }
-    void SetVisible(bool visible);
+    void UpdateFromTabContents(const TabContents* tab_contents);
 
    private:
     static gboolean OnButtonPressedThunk(GtkWidget* sender,
                                          GdkEvent* event,
-                                         ContentBlockedViewGtk* view) {
+                                         ContentSettingImageViewGtk* view) {
       return view->OnButtonPressed(sender, event);
     }
     gboolean OnButtonPressed(GtkWidget* sender, GdkEvent* event);
@@ -153,12 +153,11 @@ class LocationBarViewGtk : public AutocompleteEditController,
     virtual void InfoBubbleClosing(InfoBubbleGtk* info_bubble,
                                    bool closed_by_escape);
 
-    // The widgets for this content blocked view.
+    scoped_ptr<ContentSettingImageModel> content_setting_image_model_;
+
+    // The widgets for this content settings view.
     OwnedWidgetGtk event_box_;
     OwnedWidgetGtk image_;
-
-    // The type of content handled by this view.
-    ContentSettingsType content_type_;
 
     // The owning LocationBarViewGtk.
     const LocationBarViewGtk* parent_;
@@ -169,7 +168,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
     // The currently shown info bubble if any.
     ContentBlockedBubbleGtk* info_bubble_;
 
-    DISALLOW_COPY_AND_ASSIGN(ContentBlockedViewGtk);
+    DISALLOW_COPY_AND_ASSIGN(ContentSettingImageViewGtk);
   };
 
   class PageActionViewGtk : public ImageLoadingTracker::Observer {
@@ -313,9 +312,9 @@ class LocationBarViewGtk : public AutocompleteEditController,
   // Toolbar info text (EV cert info).
   GtkWidget* info_label_;
 
-  // Content blocking icons.
-  OwnedWidgetGtk content_blocking_hbox_;
-  ScopedVector<ContentBlockedViewGtk> content_blocked_views_;
+  // Content setting icons.
+  OwnedWidgetGtk content_setting_hbox_;
+  ScopedVector<ContentSettingImageViewGtk> content_setting_views_;
 
   // Extension page action icons.
   OwnedWidgetGtk page_action_hbox_;
