@@ -32,8 +32,14 @@ TEST_F(BufferManagerTest, Basic) {
   // Check buffer got created.
   BufferManager::BufferInfo* info1 = manager_.GetBufferInfo(kBuffer1Id);
   ASSERT_TRUE(info1 != NULL);
+  EXPECT_EQ(0u, info1->target());
+  EXPECT_EQ(0, info1->size());
+  EXPECT_FALSE(info1->IsDeleted());
+  EXPECT_EQ(kBuffer1Id, info1->buffer_id());
+  info1->set_target(GL_ELEMENT_ARRAY_BUFFER);
+  EXPECT_EQ(GL_ELEMENT_ARRAY_BUFFER, info1->target());
   // Check we and set its size.
-  info1->set_size(kBuffer1Size);
+  info1->SetSize(kBuffer1Size);
   EXPECT_EQ(kBuffer1Size, info1->size());
   // Check we get nothing for a non-existent buffer.
   EXPECT_TRUE(manager_.GetBufferInfo(kBuffer2Id) == NULL);
@@ -44,7 +50,80 @@ TEST_F(BufferManagerTest, Basic) {
   EXPECT_TRUE(manager_.GetBufferInfo(kBuffer1Id) == NULL);
 }
 
-// TODO(gman): Test GetMaxValueForRange.
+TEST_F(BufferManagerTest, SetRange) {
+  const GLuint kBufferId = 1;
+  const uint8 data[] = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
+  const uint8 new_data[] = {100, 120, 110};
+  manager_.CreateBufferInfo(kBufferId);
+  BufferManager::BufferInfo* info = manager_.GetBufferInfo(kBufferId);
+  ASSERT_TRUE(info != NULL);
+  info->set_target(GL_ELEMENT_ARRAY_BUFFER);
+  info->SetSize(sizeof(data));
+  EXPECT_TRUE(info->SetRange(0, sizeof(data), data));
+  EXPECT_TRUE(info->SetRange(sizeof(data), 0, data));
+  EXPECT_FALSE(info->SetRange(sizeof(data), 1, data));
+  EXPECT_FALSE(info->SetRange(0, sizeof(data) + 1, data));
+}
+
+TEST_F(BufferManagerTest, GetMaxValueForRangeUint8) {
+  const GLuint kBufferId = 1;
+  const uint8 data[] = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
+  const uint8 new_data[] = {100, 120, 110};
+  manager_.CreateBufferInfo(kBufferId);
+  BufferManager::BufferInfo* info = manager_.GetBufferInfo(kBufferId);
+  ASSERT_TRUE(info != NULL);
+  info->set_target(GL_ELEMENT_ARRAY_BUFFER);
+  info->SetSize(sizeof(data));
+  EXPECT_TRUE(info->SetRange(0, sizeof(data), data));
+  GLuint max_value;
+  // Check entire range succeeds.
+  EXPECT_TRUE(info->GetMaxValueForRange(0, 10, GL_UNSIGNED_BYTE, &max_value));
+  EXPECT_EQ(10u, max_value);
+  // Check sub range succeeds.
+  EXPECT_TRUE(info->GetMaxValueForRange(4, 3, GL_UNSIGNED_BYTE, &max_value));
+  EXPECT_EQ(6u, max_value);
+  // Check changing sub range succeeds.
+  EXPECT_TRUE(info->SetRange(4, sizeof(new_data), new_data));
+  EXPECT_TRUE(info->GetMaxValueForRange(4, 3, GL_UNSIGNED_BYTE, &max_value));
+  EXPECT_EQ(120u, max_value);
+  max_value = 0;
+  EXPECT_TRUE(info->GetMaxValueForRange(0, 10, GL_UNSIGNED_BYTE, &max_value));
+  EXPECT_EQ(120u, max_value);
+  // Check out of range fails.
+  EXPECT_FALSE(info->GetMaxValueForRange(0, 11, GL_UNSIGNED_BYTE, &max_value));
+  EXPECT_FALSE(info->GetMaxValueForRange(10, 1, GL_UNSIGNED_BYTE, &max_value));
+}
+
+TEST_F(BufferManagerTest, GetMaxValueForRangeUint16) {
+  const GLuint kBufferId = 1;
+  const uint16 data[] = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
+  const uint16 new_data[] = {100, 120, 110};
+  manager_.CreateBufferInfo(kBufferId);
+  BufferManager::BufferInfo* info = manager_.GetBufferInfo(kBufferId);
+  ASSERT_TRUE(info != NULL);
+  info->set_target(GL_ELEMENT_ARRAY_BUFFER);
+  info->SetSize(sizeof(data));
+  EXPECT_TRUE(info->SetRange(0, sizeof(data), data));
+  GLuint max_value;
+  // Check entire range succeeds.
+  EXPECT_TRUE(info->GetMaxValueForRange(0, 10, GL_UNSIGNED_SHORT, &max_value));
+  EXPECT_EQ(10u, max_value);
+  // Check odd offset fails for GL_UNSIGNED_SHORT.
+  EXPECT_FALSE(info->GetMaxValueForRange(1, 10, GL_UNSIGNED_SHORT, &max_value));
+  // Check sub range succeeds.
+  EXPECT_TRUE(info->GetMaxValueForRange(8, 3, GL_UNSIGNED_SHORT, &max_value));
+  EXPECT_EQ(6u, max_value);
+  // Check changing sub range succeeds.
+  EXPECT_TRUE(info->SetRange(8, sizeof(new_data), new_data));
+  EXPECT_TRUE(info->GetMaxValueForRange(8, 3, GL_UNSIGNED_SHORT, &max_value));
+  EXPECT_EQ(120u, max_value);
+  max_value = 0;
+  EXPECT_TRUE(info->GetMaxValueForRange(0, 10, GL_UNSIGNED_SHORT, &max_value));
+  EXPECT_EQ(120u, max_value);
+  // Check out of range fails.
+  EXPECT_FALSE(info->GetMaxValueForRange(0, 11, GL_UNSIGNED_SHORT, &max_value));
+  EXPECT_FALSE(info->GetMaxValueForRange(20, 1, GL_UNSIGNED_SHORT, &max_value));
+}
 
 }  // namespace gles2
 }  // namespace gpu

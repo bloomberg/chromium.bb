@@ -194,12 +194,12 @@ TEST_F(GLES2DecoderWithShaderTest, DrawElementsNoAttributesSucceeds) {
   SetupIndexBuffer();
   EXPECT_CALL(*gl_, DrawElements(GL_TRIANGLES, kValidIndexRangeCount,
                                  GL_UNSIGNED_SHORT,
-                                 BufferOffset(kValidIndexRangeStart)))
+                                 BufferOffset(kValidIndexRangeStart * 2)))
       .Times(1)
       .RetiresOnSaturation();
   DrawElements cmd;
   cmd.Init(GL_TRIANGLES, kValidIndexRangeCount, GL_UNSIGNED_SHORT,
-           kValidIndexRangeStart);
+           kValidIndexRangeStart * 2);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -212,7 +212,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawElementsMissingAttributesFails) {
       .Times(0);
   DrawElements cmd;
   cmd.Init(GL_TRIANGLES, kValidIndexRangeCount, GL_UNSIGNED_SHORT,
-           kValidIndexRangeStart);
+           kValidIndexRangeStart * 2);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
@@ -225,12 +225,12 @@ TEST_F(GLES2DecoderWithShaderTest, DrawElementsValidAttributesSucceeds) {
 
   EXPECT_CALL(*gl_, DrawElements(GL_TRIANGLES, kValidIndexRangeCount,
                                  GL_UNSIGNED_SHORT,
-                                 BufferOffset(kValidIndexRangeStart)))
+                                 BufferOffset(kValidIndexRangeStart * 2)))
       .Times(1)
       .RetiresOnSaturation();
   DrawElements cmd;
   cmd.Init(GL_TRIANGLES, kValidIndexRangeCount, GL_UNSIGNED_SHORT,
-           kValidIndexRangeStart);
+           kValidIndexRangeStart * 2);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -245,7 +245,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawElementsDeletedBufferFails) {
       .Times(0);
   DrawElements cmd;
   cmd.Init(GL_TRIANGLES, kValidIndexRangeCount, GL_UNSIGNED_SHORT,
-           kValidIndexRangeStart);
+           kValidIndexRangeStart * 2);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
@@ -260,7 +260,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawElementsDeletedProgramSucceedsNoGLCall) {
       .Times(0);
   DrawElements cmd;
   cmd.Init(GL_TRIANGLES, kValidIndexRangeCount, GL_UNSIGNED_SHORT,
-           kValidIndexRangeStart);
+           kValidIndexRangeStart * 2);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -274,7 +274,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawElementsWithInvalidModeFails) {
       .Times(0);
   DrawElements cmd;
   cmd.Init(GL_QUADS, kValidIndexRangeCount, GL_UNSIGNED_SHORT,
-           kValidIndexRangeStart);
+           kValidIndexRangeStart * 2);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
   cmd.Init(GL_POLYGON, kValidIndexRangeCount, GL_UNSIGNED_SHORT,
@@ -291,7 +291,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawElementsInvalidCountFails) {
   // Try start > 0
   EXPECT_CALL(*gl_, DrawElements(_, _, _, _)).Times(0);
   DrawElements cmd;
-  cmd.Init(GL_TRIANGLES, kNumIndices, GL_UNSIGNED_SHORT, 1);
+  cmd.Init(GL_TRIANGLES, kNumIndices, GL_UNSIGNED_SHORT, 2);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
@@ -303,7 +303,6 @@ TEST_F(GLES2DecoderWithShaderTest, DrawElementsInvalidCountFails) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-#if 0  // TODO(gman): Turn on this test once buffer validation is in
 TEST_F(GLES2DecoderWithShaderTest, DrawElementsOutOfRangeIndicesFails) {
   SetupVertexBuffer();
   SetupIndexBuffer();
@@ -312,12 +311,24 @@ TEST_F(GLES2DecoderWithShaderTest, DrawElementsOutOfRangeIndicesFails) {
   EXPECT_CALL(*gl_, DrawElements(_, _, _, _)).Times(0);
   DrawElements cmd;
   cmd.Init(GL_TRIANGLES, kInvalidIndexRangeCount, GL_UNSIGNED_SHORT,
-           kInvalidIndexRangeStart);
+           kInvalidIndexRangeStart * 2);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
-#endif
+
+TEST_F(GLES2DecoderWithShaderTest, DrawElementsOddOffsetForUint16Fails) {
+  SetupVertexBuffer();
+  SetupIndexBuffer();
+  DoVertexAttribPointer(1, 2, GL_FLOAT, 0, 0);
+
+  EXPECT_CALL(*gl_, DrawElements(_, _, _, _)).Times(0);
+  DrawElements cmd;
+  cmd.Init(GL_TRIANGLES, kInvalidIndexRangeCount, GL_UNSIGNED_SHORT, 1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
 
 TEST_F(GLES2DecoderWithShaderTest, GetVertexAttribPointervSucceeds) {
   const float dummy = 0;
@@ -990,6 +1001,18 @@ TEST_F(GLES2DecoderWithShaderTest, Uniform1ivImmediateValidArgs) {
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 
+TEST_F(GLES2DecoderWithShaderTest, BindBufferToDifferentTargetFails) {
+  // Bind the buffer to GL_ARRAY_BUFFER
+  DoBindBuffer(GL_ARRAY_BUFFER, client_buffer_id_, kServiceBufferId);
+  // Attempt to rebind to GL_ELEMENT_ARRAY_BUFFER
+  // NOTE: Real GLES2 does not have this restriction but WebGL and we do.
+  EXPECT_CALL(*gl_, BindBuffer(_, _))
+      .Times(0);
+  BindBuffer cmd;
+  cmd.Init(GL_ELEMENT_ARRAY_BUFFER, client_buffer_id_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+}
 
 // TODO(gman): BindAttribLocation
 

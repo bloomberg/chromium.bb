@@ -231,7 +231,7 @@ error::Error GLES2DecoderImpl::HandleBufferSubData(
   if (data == NULL) {
     return error::kOutOfBounds;
   }
-  glBufferSubData(target, offset, size, data);
+  DoBufferSubData(target, offset, size, data);
   return error::kNoError;
 }
 
@@ -254,7 +254,7 @@ error::Error GLES2DecoderImpl::HandleBufferSubDataImmediate(
   if (data == NULL) {
     return error::kOutOfBounds;
   }
-  glBufferSubData(target, offset, size, data);
+  DoBufferSubData(target, offset, size, data);
   return error::kNoError;
 }
 
