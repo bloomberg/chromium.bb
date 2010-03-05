@@ -228,7 +228,7 @@ def FindFileByName(files, name):
   for f in files:
     if f.endswith(name):
       return f
-  FatalError('ERROR: no file named %d specified on commandline' % name)
+  FatalError('ERROR: no file named %s specified on commandline' % name)
   return None
 
 def InstallSuccess(sel_ldr):
