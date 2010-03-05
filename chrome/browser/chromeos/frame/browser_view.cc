@@ -388,7 +388,6 @@ void BrowserView::Init() {
   AddChildView(spacer_);
 
   InitSystemMenu();
-  main_menu_.reset(new AppLauncher());
 
   // The ContextMenuController has to be set to a NonClientView but
   // not to a NonClientFrameView because a TabStrip is not a child of
@@ -459,6 +458,9 @@ void BrowserView::ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {
 // views::ButtonListener overrides.
 void BrowserView::ButtonPressed(views::Button* sender,
                                 const views::Event& event) {
+  if (!main_menu_.get()) {
+    main_menu_.reset(new AppLauncher());
+  }
   main_menu_->Show(browser());
 }
 
