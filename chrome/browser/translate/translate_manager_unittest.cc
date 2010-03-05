@@ -149,6 +149,34 @@ class TranslateManagerTest : public RenderViewHostTestHarness,
   DISALLOW_COPY_AND_ASSIGN(TranslateManagerTest);
 };
 
+// An observer that keeps track of whether a navigation entry was committed.
+class NavEntryCommittedObserver : public NotificationObserver {
+ public:
+  explicit NavEntryCommittedObserver(TabContents* tab_contents) {
+    registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
+                   Source<NavigationController>(&tab_contents->controller()));
+  }
+
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) {
+    DCHECK(type == NotificationType::NAV_ENTRY_COMMITTED);
+    details_ =
+        *(Details<NavigationController::LoadCommittedDetails>(details).ptr());
+  }
+
+  const NavigationController::LoadCommittedDetails&
+      get_load_commited_details() const {
+    return details_;
+  }
+
+ private:
+  NavigationController::LoadCommittedDetails details_;
+  NotificationRegistrar registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(NavEntryCommittedObserver);
+};
+
 TEST_F(TranslateManagerTest, NormalTranslate) {
   // Simulate navigating to a page.
   SimulateNavigation(GURL("http://www.google.fr"), 0, L"Le Google", "fr");
@@ -267,7 +295,45 @@ TEST_F(TranslateManagerTest, Reload) {
   EXPECT_TRUE(CloseTranslateInfoBar());
 
   // Reload should bring back the infobar.
+  NavEntryCommittedObserver nav_observer(contents());
   Reload();
+
+  // Ensures it is really handled a reload.
+  const NavigationController::LoadCommittedDetails& nav_details =
+      nav_observer.get_load_commited_details();
+  EXPECT_TRUE(nav_details.entry != NULL);  // There was a navigation.
+  EXPECT_EQ(NavigationType::EXISTING_PAGE, nav_details.type);
+
+  // The TranslateManager class processes the navigation entry committed
+  // notification in a posted task; process that task.
+  MessageLoop::current()->RunAllPending();
+  EXPECT_TRUE(GetTranslateInfoBar() != NULL);
+}
+
+// Test that reloading the page by way of typing again the URL in the
+// location bar brings back the infobar.
+TEST_F(TranslateManagerTest, ReloadFromLocationBar) {
+  GURL url("http://www.google.fr");
+
+  // Simulate navigating to a page and getting its language.
+  SimulateNavigation(url, 0, L"Le Google", "fr");
+
+  // Close the infobar.
+  EXPECT_TRUE(CloseTranslateInfoBar());
+
+  // Create a pending navigation and simulate a page load.  That should be the
+  // equivalent of typing the URL again in the location bar.
+  NavEntryCommittedObserver nav_observer(contents());
+  contents()->controller().LoadURL(url, GURL(), PageTransition::TYPED);
+  rvh()->SendNavigate(0, url);
+
+  // Test that we are really getting a same page navigation, the test would be
+  // useless if it was not the case.
+  const NavigationController::LoadCommittedDetails& nav_details =
+      nav_observer.get_load_commited_details();
+  EXPECT_TRUE(nav_details.entry != NULL);  // There was a navigation.
+  EXPECT_EQ(NavigationType::SAME_PAGE, nav_details.type);
+
   // The TranslateManager class processes the navigation entry committed
   // notification in a posted task; process that task.
   MessageLoop::current()->RunAllPending();

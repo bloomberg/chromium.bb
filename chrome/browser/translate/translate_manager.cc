@@ -37,13 +37,17 @@ void TranslateManager::Observe(NotificationType type,
     case NotificationType::NAV_ENTRY_COMMITTED: {
       NavigationController* controller =
           Source<NavigationController>(source).ptr();
+      NavigationController::LoadCommittedDetails* load_details =
+          Details<NavigationController::LoadCommittedDetails>(details).ptr();
       NavigationEntry* entry = controller->GetActiveEntry();
       if (!entry) {
         NOTREACHED();
         return;
       }
-      if (entry->transition_type() != PageTransition::RELOAD)
+      if (entry->transition_type() != PageTransition::RELOAD &&
+          load_details->type != NavigationType::SAME_PAGE) {
         return;
+      }
       // When doing a page reload, we don't get a TAB_LANGUAGE_DETERMINED
       // notification.  So we need to explictly initiate the translation.
       // Note that we delay it as the TranslateManager gets this notification
