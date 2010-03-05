@@ -1609,6 +1609,29 @@ static ExprNode* AppendOperand(NcInstState* state, Operand* operand) {
     case RegST5:
     case RegST6:
     case RegST7:
+    case RegMMX1:
+    case RegMMX2:
+    case RegMMX3:
+    case RegMMX4:
+    case RegMMX5:
+    case RegMMX6:
+    case RegMMX7:
+    case RegXMM0:
+    case RegXMM1:
+    case RegXMM2:
+    case RegXMM3:
+    case RegXMM4:
+    case RegXMM5:
+    case RegXMM6:
+    case RegXMM7:
+    case RegXMM8:
+    case RegXMM9:
+    case RegXMM10:
+    case RegXMM11:
+    case RegXMM12:
+    case RegXMM13:
+    case RegXMM14:
+    case RegXMM15:
       return AppendRegister(operand->kind, &state->nodes);
     case RegRESP:
       return AppendRegister(state->address_size == 64 ? RegRSP : RegESP,
