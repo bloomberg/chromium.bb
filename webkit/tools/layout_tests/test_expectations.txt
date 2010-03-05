@@ -2851,45 +2851,7 @@ BUG37049 WIN SKIP : websocket/tests/cookies/httponly-cookie.pl = PASS
 // WebKit roll 55373:55380
 BUG37136 : fast/loader/api-test-go-to-current-back-forward-item.html = TIMEOUT
 
-// These will be rebaselined after commit for bug 28646
-BUG28646 : svg/text/foreignObject-text-clipping-bug.xml = FAIL
-BUG28646 : svg/text/selection-doubleclick.svg = FAIL
-BUG28646 : svg/text/selection-tripleclick.svg = FAIL
-BUG23481 : editing/selection/4402375.html = FAIL
-BUG23481 : editing/selection/image-before-linebreak.html = FAIL
-BUG23481 : editing/selection/replaced-boundaries-1.html = FAIL
-BUG23481 : editing/selection/replaced-boundaries-2.html = FAIL
-BUG23481 : editing/selection/replaced-boundaries-3.html = FAIL
-BUG23482 : svg/text/text-align-01-b.svg = FAIL
-BUG23482 : svg/text/text-align-02-b.svg = FAIL
-BUG23482 : svg/text/text-align-03-b.svg = FAIL
-BUG23482 : svg/text/text-align-04-b.svg = FAIL
-BUG23482 : svg/text/text-align-05-b.svg = FAIL
-BUG23482 : svg/text/text-align-06-b.svg = FAIL
-BUG23482 : svg/text/text-altglyph-01-b.svg = FAIL
-BUG23482 : svg/text/text-deco-01-b.svg = FAIL
-BUG23482 : svg/text/text-fonts-01-t.svg = FAIL
-BUG23482 : svg/text/text-fonts-02-t.svg = FAIL
-BUG23482 : svg/text/text-intro-05-t.svg = FAIL
-BUG23482 : svg/text/text-path-01-b.svg = FAIL
-BUG23482 : svg/text/text-spacing-01-b.svg = FAIL
-BUG23482 : svg/text/text-text-01-b.svg = FAIL
-BUG23482 : svg/text/text-text-03-b.svg = FAIL
-BUG23482 : svg/text/text-text-04-t.svg = FAIL
-// Also flaky (crashes) on WIN RELESE. See BUG36603
-BUG23482 : svg/text/text-text-05-t.svg = FAIL CRASH
-// Also flaky (crashes) on WIN RELESE. See BUG36603
-BUG23482 : svg/text/text-text-06-t.svg = FAIL CRASH
-BUG23482 : svg/text/text-text-08-b.svg = FAIL
-BUG23482 : svg/text/text-tref-01-b.svg = FAIL
-BUG23482 : svg/text/text-tselect-01-b.svg = FAIL
-BUG23482 : svg/text/text-tselect-02-f.svg = FAIL
-BUG23482 : svg/text/text-tspan-01-b.svg = FAIL
-BUG23482 : svg/text/text-ws-01-t.svg = FAIL
-BUG23482 : svg/text/text-ws-02-t.svg = FAIL
-BUG23482 : svg/text/textPathBoundsBug.svg = FAIL
-BUG29344 : svg/text/text-text-07-t.svg = FAIL
+BUG37473 : svg/text/text-intro-05-t.svg = TEXT
 
 BUG37248 LINUX : svg/W3C-SVG-1.1/filters-displace-01-f.svg = IMAGE+TEXT PASS TEXT
-
 BUG37463 MAC DEBUG : svg/custom/transform-ignore-after-invalid.svg = PASS CRASH
