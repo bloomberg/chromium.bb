@@ -244,25 +244,6 @@ void AutomationProvider::GetFocusedViewID(int handle, int* view_id) {
   }
 }
 
-void AutomationProvider::GetBookmarkBarVisibility(int handle, bool* visible,
-                                                  bool* animating) {
-  *visible = false;
-  *animating = false;
-
-  if (browser_tracker_->ContainsHandle(handle)) {
-    Browser* browser = browser_tracker_->GetResource(handle);
-    if (browser) {
-      BrowserWindowTesting* testing =
-          browser->window()->GetBrowserWindowTesting();
-      BookmarkBarView* bookmark_bar = testing->GetBookmarkBarView();
-      if (bookmark_bar) {
-        *animating = bookmark_bar->IsAnimating();
-        *visible = browser->window()->IsBookmarkBarVisible();
-      }
-    }
-  }
-}
-
 void AutomationProvider::GetWindowBounds(int handle, gfx::Rect* bounds,
                                          bool* success) {
   *success = false;

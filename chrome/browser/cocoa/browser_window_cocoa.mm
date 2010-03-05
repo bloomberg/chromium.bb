@@ -241,6 +241,10 @@ bool BrowserWindowCocoa::IsBookmarkBarVisible() const {
   return browser_->profile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
 }
 
+bool BrowserWindowCocoa::IsBookmarkBarAnimating() const {
+  return [controller_ isBookmarkBarAnimating];
+}
+
 bool BrowserWindowCocoa::IsToolbarVisible() const {
   return browser_->SupportsWindowFeature(Browser::FEATURE_TOOLBAR) ||
          browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR);

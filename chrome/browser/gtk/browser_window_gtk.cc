@@ -787,6 +787,12 @@ bool BrowserWindowGtk::IsBookmarkBarVisible() const {
       bookmark_bar_.get();
 }
 
+bool BrowserWindowGtk::IsBookmarkBarAnimating() const {
+  if (IsBookmarkBarSupported() && bookmark_bar_->IsAnimating())
+    return true;
+  return false;
+}
+
 bool BrowserWindowGtk::IsToolbarVisible() const {
   return IsToolbarSupported();
 }

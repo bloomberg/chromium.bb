@@ -182,6 +182,9 @@ class TabStripModelObserverBridge;
 
 - (BOOL)isBookmarkBarVisible;
 
+// Returns YES if the bookmark bar is currently animating.
+- (BOOL)isBookmarkBarAnimating;
+
 // Called after bookmark bar visibility changes (due to pref change or change in
 // tab/tab contents).
 - (void)updateBookmarkBarVisibilityWithAnimation:(BOOL)animate;

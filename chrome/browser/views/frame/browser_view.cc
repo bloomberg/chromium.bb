@@ -893,6 +893,13 @@ bool BrowserView::IsBookmarkBarVisible() const {
       (active_bookmark_bar_->GetPreferredSize().height() != 0);
 }
 
+bool BrowserView::IsBookmarkBarAnimating() const {
+  if (bookmark_bar_view_.get() &&
+      bookmark_bar_view_->IsAnimating())
+    return true;
+  return false;
+}
+
 bool BrowserView::IsToolbarVisible() const {
   return browser_->SupportsWindowFeature(Browser::FEATURE_TOOLBAR) ||
          browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR);

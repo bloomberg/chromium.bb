@@ -265,6 +265,7 @@ class BrowserView : public BrowserBubbleHost,
   virtual void FocusToolbar();
   virtual void DestroyBrowser();
   virtual bool IsBookmarkBarVisible() const;
+  virtual bool IsBookmarkBarAnimating() const;
   virtual bool IsToolbarVisible() const;
   virtual gfx::Rect GetRootWindowResizerRect() const;
   virtual void DisableInactiveFrame();

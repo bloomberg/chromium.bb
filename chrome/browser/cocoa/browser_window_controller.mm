@@ -1197,6 +1197,10 @@
   return [bookmarkBarController_ isVisible];
 }
 
+- (BOOL)isBookmarkBarAnimating {
+  return [bookmarkBarController_ isAnimationRunning];
+}
+
 - (void)updateBookmarkBarVisibilityWithAnimation:(BOOL)animate {
   [bookmarkBarController_
       updateAndShowNormalBar:[self shouldShowBookmarkBar]

@@ -117,13 +117,6 @@ void AutomationProvider::SetInitialFocus(const IPC::Message& message,
   NOTIMPLEMENTED();
 }
 
-void AutomationProvider::GetBookmarkBarVisibility(int handle, bool* visible,
-                                                  bool* animating) {
-  *visible = false;
-  *animating = false;
-  NOTIMPLEMENTED();
-}
-
 void AutomationProvider::WindowSimulateDrag(int handle,
                                             std::vector<gfx::Point> drag_path,
                                             int flags,

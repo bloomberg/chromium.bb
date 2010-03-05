@@ -116,3 +116,16 @@ bool PyUITestSuite::InstallExtension(const FilePath& crx_file) {
   return automation()->InstallExtension(crx_file);
 }
 
+bool PyUITestSuite::GetBookmarkBarVisibility() {
+  scoped_refptr<BrowserProxy> browser_proxy =
+      automation()->GetBrowserWindow(0);  // Window doesn't matter.
+  EXPECT_TRUE(browser_proxy.get());
+  if (!browser_proxy.get())
+    return false;
+
+  // We have no use for animating in this context.
+  bool visible, animating;
+  EXPECT_TRUE(browser_proxy->GetBookmarkBarVisibility(&visible, &animating));
+  return visible;
+}
+

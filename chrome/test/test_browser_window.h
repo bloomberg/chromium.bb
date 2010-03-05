@@ -61,6 +61,7 @@ class TestBrowserWindow : public BrowserWindow {
 #endif  // defined(TOOLKIT_VIEWS)
 
   virtual bool IsBookmarkBarVisible() const { return false; }
+  virtual bool IsBookmarkBarAnimating() const { return false; }
   virtual bool IsToolbarVisible() const { return false; }
   virtual gfx::Rect GetRootWindowResizerRect() const { return gfx::Rect(); }
   virtual void ConfirmAddSearchProvider(const TemplateURL* template_url,

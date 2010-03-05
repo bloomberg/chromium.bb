@@ -1266,6 +1266,21 @@ void AutomationProvider::HandleFindWindowLocationRequest(int handle, int* x,
   *y = position.y();
 }
 
+void AutomationProvider::GetBookmarkBarVisibility(int handle,
+                                                  bool* visible,
+                                                  bool* animating) {
+  *visible = false;
+  *animating = false;
+
+  if (browser_tracker_->ContainsHandle(handle)) {
+    Browser* browser = browser_tracker_->GetResource(handle);
+    if (browser) {
+      *visible = browser->window()->IsBookmarkBarVisible();
+      *animating = browser->window()->IsBookmarkBarAnimating();
+    }
+  }
+}
+
 void AutomationProvider::HandleInspectElementRequest(
     int handle, int x, int y, IPC::Message* reply_message) {
   TabContents* tab_contents = GetTabContentsForHandle(handle, NULL);

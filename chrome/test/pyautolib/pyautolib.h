@@ -83,6 +83,13 @@ class PyUITestSuite : public UITestSuite, public UITestBase {
   // and loaded successfully. Overinstalls will fail.
   bool InstallExtension(const FilePath& crx_file);
 
+  // Returns bookmark bar visibility state.
+  bool GetBookmarkBarVisibility();
+
+  // Returns bookmark bar animation state.  Warning: timing issues may
+  // change this return value unexpectedly.
+  bool IsBookmarkBarAnimating();
+
  private:
   base::ScopedNSAutoreleasePool pool_;
 };

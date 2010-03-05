@@ -151,6 +151,9 @@ class BrowserWindow {
   // Returns whether the bookmark bar is visible or not.
   virtual bool IsBookmarkBarVisible() const = 0;
 
+  // Returns whether the bookmark bar is animating or not.
+  virtual bool IsBookmarkBarAnimating() const = 0;
+
   // Returns whether the tool bar is visible or not.
   virtual bool IsToolbarVisible() const = 0;
 

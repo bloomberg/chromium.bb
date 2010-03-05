@@ -123,6 +123,11 @@ class PyUITestSuite {
            "given or first browser window.") IsDownloadShelfVisible;
   bool IsDownloadShelfVisible(int window_index=0);
 
+  %feature("docstring", "Determine if the bookmark bar is visible.  "
+           "If the NTP is visible, only return true if attached "
+	   "(to the chrome).") GetBookmarkBarVisibility;
+  bool GetBookmarkBarVisibility();
+
   %feature("docstring", "Open the Find box in the given or first browser "
            "window.") OpenFindInPage;
   void OpenFindInPage(int window_index=0);
