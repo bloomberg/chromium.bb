@@ -2751,6 +2751,9 @@ void RenderView::willSendRequest(
       request.setCachePolicy(state->cache_policy_override());
   }
   request.setRequestorID(routing_id_);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoReferrers)) {
+    request.clearHTTPHeaderField("Referer");
+  }
 }
 
 void RenderView::didReceiveResponse(

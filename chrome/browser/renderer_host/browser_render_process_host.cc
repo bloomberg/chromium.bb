@@ -501,6 +501,7 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
 #endif  // GOOGLE_CHROME_BUILD
     switches::kDomAutomationController,
     switches::kUserAgent,
+    switches::kNoReferrers,
     switches::kJavaScriptFlags,
     switches::kRecordMode,
     switches::kPlaybackMode,
