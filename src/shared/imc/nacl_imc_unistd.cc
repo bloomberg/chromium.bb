@@ -32,6 +32,10 @@
 
 #include "native_client/src/shared/imc/nacl_imc.h"
 
+#if defined(CHROMIUM_BUILD) && NACL_LINUX
+#include "chrome/renderer/renderer_sandbox_support_linux.h"
+#endif
+
 namespace nacl {
 
 namespace {
@@ -86,6 +90,14 @@ Handle CreateMemoryObject(size_t length) {
       return m;
     }
     if (errno != EEXIST) {
+#if defined(CHROMIUM_BUILD) && NACL_LINUX
+      // As a temporary measure, we try shm_open() as well as calling
+      // the unsandboxed browser process.  This code runs in the
+      // context of both the renderer and (Chromium's compiled-in)
+      // sel_ldr.  Currently sel_ldr is not sandboxed and doesn't have
+      // the appropriate socket FD set up for talking to the browser.
+      return renderer_sandbox_support::MakeSharedMemorySegmentViaIPC(length);
+#endif
       return -1;
     }
   }

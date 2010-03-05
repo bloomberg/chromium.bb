@@ -124,6 +124,19 @@ static uint8_t NaClSecureRngGenByte(struct NaClSecureRngIf *vself) {
 
 static int             rng_d = -1;  /* open descriptor for /dev/urandom */
 
+# ifdef CHROMIUM_BUILD
+
+# include "base/rand_util_c.h"
+
+void NaClSecureRngModuleInit(void) {
+  rng_d = GetUrandomFD();
+}
+
+void NaClSecureRngModuleFini(void) {
+}
+
+# else
+
 void NaClSecureRngModuleInit(void) {
   rng_d = open(NACL_SECURE_RANDOM_SYSTEM_RANDOM_SOURCE, O_RDONLY, 0);
   if (-1 == rng_d) {
@@ -135,6 +148,8 @@ void NaClSecureRngModuleInit(void) {
 void NaClSecureRngModuleFini(void) {
   (void) close(rng_d);
 }
+
+# endif /* CHROMIUM_BUILD */
 
 int NaClSecureRngCtor(struct NaClSecureRng *self) {
   self->base.vtbl = &kNaClSecureRngVtbl;
