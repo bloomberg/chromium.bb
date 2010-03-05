@@ -17,6 +17,8 @@
 #include "chrome_frame/npapi_url_request.h"
 
 class MessageLoop;
+class nsICookieService;
+class nsIURI;
 
 // ChromeFrameNPAPI: Implementation of the NPAPI plugin, which is responsible
 // for hosting a chrome frame, i.e. an iframe like widget which hosts the the
@@ -281,6 +283,18 @@ END_MSG_MAP()
 
   static LRESULT CALLBACK DropKillFocusHook(int code, WPARAM wparam,
                                             LPARAM lparam);  // NO_LINT
+
+  // Helper functions to set and get cookies using the XPCOM cookie service
+  // interfaces. This would only work in Firefox.
+  bool SetCookiesUsingXPCOMCookieService(const GURL& url,
+                                         const std::string& cookie);
+  bool GetCookiesUsingXPCOMCookieService(const GURL& url,
+                                         std::string* cookie_string);
+  // Helper function to return the XPCOM nsICookieService interface and
+  // nsIURI interface representing the url passed in.
+  bool GetXPCOMCookieServiceAndURI(const GURL& url,
+                                   nsICookieService** cookie_service,
+                                   nsIURI** uri);
 
   // The plugins opaque instance handle
   NPP instance_;

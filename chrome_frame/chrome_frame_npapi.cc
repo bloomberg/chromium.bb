@@ -11,7 +11,14 @@
 #include "base/win_util.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome_frame/ff_privilege_check.h"
+#include "chrome_frame/scoped_ns_ptr_win.h"
 #include "chrome_frame/utils.h"
+
+#include "third_party/xulrunner-sdk/win/include/xpcom/nsXPCOM.h"
+#include "third_party/xulrunner-sdk/win/include/necko/nsICookieService.h"
+#include "third_party/xulrunner-sdk/win/include/necko/nsIIOService.h"
+#include "third_party/xulrunner-sdk/win/sdk/include/nsIURI.h"
+#include "third_party/xulrunner-sdk/win/sdk/include/nsStringAPI.h"
 
 MessageLoop* ChromeFrameNPAPI::message_loop_ = NULL;
 int ChromeFrameNPAPI::instance_count_ = 0;
@@ -108,6 +115,18 @@ static const char kPluginChromeFunctionsAutomatedAttribute[] =
     "chrome_functions_automated";
 // If chrome network stack is to be used
 static const char kPluginUseChromeNetwork[] = "usechromenetwork";
+
+static const char kMozillaIOServiceContractID[] =
+    "@mozilla.org/network/io-service;1";
+
+static const char kMozillaCookieServiceContractID[] =
+    "@mozilla.org/cookieService;1";
+
+namespace {
+nsIID IID_nsIIOService = NS_IIOSERVICE_IID;
+nsIID IID_nsICookieService = NS_ICOOKIESERVICE_IID;
+nsIID IID_nsIUri = NS_IURI_IID;
+}  // namespace
 
 // ChromeFrameNPAPI member defines.
 
@@ -518,14 +537,15 @@ void ChromeFrameNPAPI::OnSetCookieAsync(int tab_handle, const GURL& url,
   if (npapi::VersionMinor() >= NPVERS_HAS_URL_AND_AUTH_INFO) {
     npapi::SetValueForURL(instance_, NPNURLVCookie, url.spec().c_str(),
                           cookie.c_str(), cookie.length());
-  } else if (url == GURL(document_url_)) {
-    std::string script = "javascript:document.cookie=";
-    script.append(cookie);
-    script.append(1, ';');
-    ExecuteScript(script, NULL);
   } else {
-    // Third party cookie, use nsICookieService to set the cookie.
-    NOTREACHED();
+    DLOG(INFO) << "Host does not support NPVERS_HAS_URL_AND_AUTH_INFO.";
+    DLOG(INFO) << "Attempting to set cookie using XPCOM cookie service";
+    if (SetCookiesUsingXPCOMCookieService(url, cookie)) {
+      DLOG(INFO) << "Successfully set cookies using XPCOM cookie service";
+      DLOG(INFO) << cookie.c_str();
+    } else {
+      NOTREACHED() << "Failed to set cookies for host";
+    }
   }
 }
 
@@ -549,19 +569,10 @@ void ChromeFrameNPAPI::OnGetCookiesFromHost(int tab_handle, const GURL& url,
     }
   } else {
     DLOG(INFO) << "Host does not support NPVERS_HAS_URL_AND_AUTH_INFO.";
-    if (url == GURL(document_url_)) {
-      DLOG(INFO) << "Reading document.cookie";
-      NPVariant cookies = {};
-      ExecuteScript("javascript:document.cookie", &cookies);
-      if (cookies.type == NPVariantType_String) {
-        cookie_string.append(cookies.value.stringValue.UTF8Characters,
-                             cookies.value.stringValue.UTF8Length);
-        DLOG(INFO) << "Obtained cookies:" << cookie_string.c_str()
-                   << " from host";
-        npapi::ReleaseVariantValue(&cookies);
-      } else {
-        success = false;
-      }
+    DLOG(INFO) << "Attempting to read cookie using XPCOM cookie service";
+    if (GetCookiesUsingXPCOMCookieService(url, &cookie_string)) {
+      DLOG(INFO) << "Successfully read cookies using XPCOM cookie service";
+      DLOG(INFO) << cookie_string.c_str();
     } else {
       success = false;
     }
@@ -1485,3 +1496,84 @@ int32 ChromeFrameNPAPI::Write(NPStream* stream, int32 offset, int32 len,
 NPError ChromeFrameNPAPI::DestroyStream(NPStream* stream, NPReason reason) {
   return url_fetcher_.DestroyStream(stream, reason);
 }
+
+bool ChromeFrameNPAPI::GetXPCOMCookieServiceAndURI(const GURL&url,
+    nsICookieService** cookie_service, nsIURI** uri) {
+  DCHECK(cookie_service);
+  DCHECK(uri);
+
+  ScopedNsPtr<nsIServiceManager> service_manager;
+  NPError nperr = npapi::GetValue(instance_, NPNVserviceManager,
+                                  service_manager.Receive());
+  if (nperr != NPERR_NO_ERROR || !service_manager.get())
+    return false;
+
+  ScopedNsPtr<nsIIOService, &IID_nsIIOService> io_service;
+  service_manager->GetServiceByContractID(
+      kMozillaIOServiceContractID, nsIIOService::GetIID(),
+      reinterpret_cast<void**>(io_service.Receive()));
+  if (!io_service.get()) {
+    NOTREACHED() << "Failed to get nsIIOService";
+    return false;
+  }
+
+  ScopedNsPtr<nsICookieService, &IID_nsICookieService> nsi_cookie_service;
+  service_manager->GetServiceByContractID(
+      kMozillaCookieServiceContractID, nsICookieService::GetIID(),
+      reinterpret_cast<void**>(nsi_cookie_service.Receive()));
+  if (!io_service.get()) {
+    NOTREACHED() << "Failed to get nsICookieService";
+    return false;
+  }
+
+  nsCString url_string;
+  url_string.Assign(url.spec().c_str());
+
+  ScopedNsPtr<nsIURI, &IID_nsIUri> nsi_uri;
+  io_service->NewURI(url_string, NULL, NULL, nsi_uri.Receive());
+  if (!nsi_uri.get()) {
+    NOTREACHED() << "Failed to covert url to nsIURI";
+    return false;
+  }
+
+  *cookie_service = nsi_cookie_service.Detach();
+  *uri = nsi_uri.Detach();
+  return true;
+}
+
+bool ChromeFrameNPAPI::GetCookiesUsingXPCOMCookieService(
+    const GURL& url, std::string* cookie_string) {
+  DCHECK(cookie_string);
+
+  ScopedNsPtr<nsICookieService, &IID_nsICookieService> cookie_service;
+  ScopedNsPtr<nsIURI, &IID_nsIUri> uri;
+
+  if (!GetXPCOMCookieServiceAndURI(url, cookie_service.Receive(),
+                                   uri.Receive()))
+    return false;
+
+  nsCString cookie_value;
+  nsresult ret = cookie_service->GetCookieString(uri, NULL,
+                                                 getter_Copies(cookie_value));
+  if (NS_SUCCEEDED(ret)) {
+    *cookie_string = cookie_value.get();
+  }
+  return NS_SUCCEEDED(ret);
+}
+
+bool ChromeFrameNPAPI::SetCookiesUsingXPCOMCookieService(
+    const GURL& url, const std::string& cookie_string) {
+  ScopedNsPtr<nsICookieService, &IID_nsICookieService> cookie_service;
+  ScopedNsPtr<nsIURI, &IID_nsIUri> uri;
+
+  if (!GetXPCOMCookieServiceAndURI(url, cookie_service.Receive(),
+                                   uri.Receive())) {
+    return false;
+  }
+
+  nsCString cookie_value;
+  nsresult ret = cookie_service->SetCookieString(uri, NULL,
+                                                 cookie_string.c_str(), NULL);
+  return NS_SUCCEEDED(ret);
+}
+
