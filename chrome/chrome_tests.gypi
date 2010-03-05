@@ -1606,7 +1606,13 @@
         }],
         ['OS=="linux"', {
           'dependencies': [
-            '../build/linux/system.gyp:gtk'
+            '../build/linux/system.gyp:gtk',
+            'packed_resources'
+          ],
+        }],
+        ['OS=="mac"', {
+          'dependencies': [
+            'helper_app'
           ],
         }],
       ],
