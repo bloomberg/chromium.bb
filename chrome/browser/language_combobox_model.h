@@ -13,9 +13,10 @@
 #include "chrome/browser/profile.h"
 
 ///////////////////////////////////////////////////////////////////////////////
-// LanguageComboboxModel
-//  The model that fills the dropdown of valid UI languages.
-class LanguageComboboxModel : public ComboboxModel {
+// LanguageList
+//  Provides code to enumerate locale names for language selection lists.
+//  To be used by combobox, menu or other models.
+class LanguageList {
  public:
   struct LocaleData {
     LocaleData() { }
@@ -27,6 +28,40 @@ class LanguageComboboxModel : public ComboboxModel {
   };
   typedef std::map<std::wstring, LocaleData> LocaleDataMap;
 
+  LanguageList();
+
+  explicit LanguageList(const std::vector<std::string>& locale_codes);
+
+  virtual ~LanguageList() {}
+
+  virtual int get_languages_count() const;
+
+  virtual std::wstring GetLanguageNameAt(int index) const;
+
+  // Return the locale for the given index.  E.g., may return pt-BR.
+  std::string GetLocaleFromIndex(int index) const;
+
+  // Returns the index for the given locale.  Returns -1 if the locale is not
+  // in the combobox model.
+  int GetIndexFromLocale(const std::string& locale) const;
+
+ private:
+  // The names of all the locales in the current application locale.
+  std::vector<std::wstring> locale_names_;
+
+  // A map of some extra data (LocaleData) keyed off the name of the locale.
+  LocaleDataMap native_names_;
+
+  void InitNativeNames(const std::vector<std::string>& locale_codes);
+
+  DISALLOW_COPY_AND_ASSIGN(LanguageList);
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// LanguageComboboxModel
+//  The combobox model implementation.
+class LanguageComboboxModel : public LanguageList, public ComboboxModel {
+ public:
   LanguageComboboxModel();
 
   // Temporary compatibility constructor.
@@ -35,19 +70,9 @@ class LanguageComboboxModel : public ComboboxModel {
 
   virtual ~LanguageComboboxModel() {}
 
-  void InitNativeNames(const std::vector<std::string>& locale_codes);
+  virtual int GetItemCount() { return get_languages_count(); }
 
-  // Overridden from ComboboxModel:
-  virtual int GetItemCount();
-
-  virtual std::wstring GetItemAt(int index);
-
-  // Return the locale for the given index.  E.g., may return pt-BR.
-  std::string GetLocaleFromIndex(int index);
-
-  // Returns the index for the given locale.  Returns -1 if the locale is not
-  // in the combobox model.
-  int GetIndexFromLocale(const std::string& locale);
+  virtual std::wstring GetItemAt(int index) { return GetLanguageNameAt(index); }
 
   // Returns the index of the language currently specified in the user's
   // preference file.  Note that it's possible for language A to be picked
@@ -59,12 +84,6 @@ class LanguageComboboxModel : public ComboboxModel {
   int GetSelectedLanguageIndex(const std::wstring& prefs);
 
  private:
-  // The names of all the locales in the current application locale.
-  std::vector<std::wstring> locale_names_;
-
-  // A map of some extra data (LocaleData) keyed off the name of the locale.
-  LocaleDataMap native_names_;
-
   // Profile.
   Profile* profile_;
 

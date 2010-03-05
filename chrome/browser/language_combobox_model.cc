@@ -13,25 +13,23 @@
 #include "unicode/uloc.h"
 
 ///////////////////////////////////////////////////////////////////////////////
-// LanguageComboboxModel used to populate a combobox with native names
-// corresponding to the language code (e.g. English (United States) for en-US)
+// LanguageList used to enumerate native names corresponding to the
+// language code (e.g. English (United States) for en-US)
 //
 
-LanguageComboboxModel::LanguageComboboxModel()
-    : profile_(NULL) {
+LanguageList::LanguageList() {
   // Enumerate the languages we know about.
   const std::vector<std::string>& locale_codes =
       l10n_util::GetAvailableLocales();
   InitNativeNames(locale_codes);
 }
 
-LanguageComboboxModel::LanguageComboboxModel(
-    Profile* profile, const std::vector<std::string>& locale_codes)
-    : profile_(profile) {
+LanguageList::LanguageList(
+    const std::vector<std::string>& locale_codes) {
   InitNativeNames(locale_codes);
 }
 
-void LanguageComboboxModel::InitNativeNames(
+void LanguageList::InitNativeNames(
     const std::vector<std::string>& locale_codes) {
   const std::string app_locale = g_browser_process->GetApplicationLocale();
   for (size_t i = 0; i < locale_codes.size(); ++i) {
@@ -57,11 +55,11 @@ void LanguageComboboxModel::InitNativeNames(
 }
 
 // Overridden from ComboboxModel:
-int LanguageComboboxModel::GetItemCount() {
+int LanguageList::get_languages_count() const {
   return static_cast<int>(locale_names_.size());
 }
 
-std::wstring LanguageComboboxModel::GetItemAt(int index) {
+std::wstring LanguageList::GetLanguageNameAt(int index) const {
   DCHECK(static_cast<int>(locale_names_.size()) > index);
   LocaleDataMap::const_iterator it =
       native_names_.find(locale_names_[index]);
@@ -106,7 +104,7 @@ std::wstring LanguageComboboxModel::GetItemAt(int index) {
 }
 
 // Return the locale for the given index.  E.g., may return pt-BR.
-std::string LanguageComboboxModel::GetLocaleFromIndex(int index) {
+std::string LanguageList::GetLocaleFromIndex(int index) const {
   DCHECK(static_cast<int>(locale_names_.size()) > index);
   LocaleDataMap::const_iterator it =
       native_names_.find(locale_names_[index]);
@@ -115,7 +113,7 @@ std::string LanguageComboboxModel::GetLocaleFromIndex(int index) {
   return it->second.locale_code;
 }
 
-int LanguageComboboxModel::GetIndexFromLocale(const std::string& locale) {
+int LanguageList::GetIndexFromLocale(const std::string& locale) const {
   for (size_t i = 0; i < locale_names_.size(); ++i) {
     LocaleDataMap::const_iterator it =
         native_names_.find(locale_names_[i]);
@@ -124,6 +122,20 @@ int LanguageComboboxModel::GetIndexFromLocale(const std::string& locale) {
       return static_cast<int>(i);
   }
   return -1;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// LanguageComboboxModel used to populate a combobox with native names
+//
+
+LanguageComboboxModel::LanguageComboboxModel()
+    : profile_(NULL) {
+}
+
+LanguageComboboxModel::LanguageComboboxModel(
+    Profile* profile, const std::vector<std::string>& locale_codes)
+    : LanguageList(locale_codes),
+      profile_(profile) {
 }
 
 // Returns the index of the language currently specified in the user's
