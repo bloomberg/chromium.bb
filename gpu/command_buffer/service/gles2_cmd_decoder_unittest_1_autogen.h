@@ -1117,10 +1117,8 @@ TEST_F(GLES2DecoderTest1, GetProgramInfoLogValidArgs) {
   const char* kInfo = "hello";
   const uint32 kBucketId = 123;
   SpecializedSetup<GetProgramInfoLog, 0>();
-  EXPECT_CALL(
-      *gl_, GetProgramiv(
-          kServiceProgramId, GL_INFO_LOG_LENGTH, _))    .WillOnce(
-              SetArgumentPointee<2>(strlen(kInfo)));
+  EXPECT_CALL(*gl_, GetProgramiv(kServiceProgramId, GL_INFO_LOG_LENGTH, _))
+      .WillOnce(SetArgumentPointee<2>(strlen(kInfo)));
   EXPECT_CALL(
       *gl_, GetProgramInfoLog(kServiceProgramId, strlen(kInfo) + 1, _, _))
       .WillOnce(DoAll(SetArgumentPointee<2>(strlen(kInfo)),
@@ -1211,10 +1209,8 @@ TEST_F(GLES2DecoderTest1, GetShaderInfoLogValidArgs) {
   const char* kInfo = "hello";
   const uint32 kBucketId = 123;
   SpecializedSetup<GetShaderInfoLog, 0>();
-  EXPECT_CALL(
-      *gl_, GetShaderiv(
-          kServiceShaderId, GL_INFO_LOG_LENGTH, _))    .WillOnce(
-              SetArgumentPointee<2>(strlen(kInfo)));
+  EXPECT_CALL(*gl_, GetShaderiv(kServiceShaderId, GL_INFO_LOG_LENGTH, _))
+      .WillOnce(SetArgumentPointee<2>(strlen(kInfo)));
   EXPECT_CALL(
       *gl_, GetShaderInfoLog(kServiceShaderId, strlen(kInfo) + 1, _, _))
       .WillOnce(DoAll(SetArgumentPointee<2>(strlen(kInfo)),

@@ -362,6 +362,12 @@ void GLES2Implementation::TexImage2D(
     SetGLError(GL_INVALID_VALUE);
     return;
   }
+  uint32 size;
+  if (!GLES2Util::ComputeImageDataSize(
+      width, height, format, type, unpack_alignment_, &size)) {
+    SetGLError(GL_INVALID_VALUE);
+    return;
+  }
   helper_->TexImage2D(
       target, level, internalformat, width, height, border, format, type, 0, 0);
   if (pixels) {
@@ -378,10 +384,23 @@ void GLES2Implementation::TexSubImage2D(
   }
   const int8* source = static_cast<const int8*>(pixels);
   GLsizeiptr max_size = transfer_buffer_.GetLargestFreeOrPendingSize();
-  GLsizeiptr unpadded_row_size = GLES2Util::ComputeImageDataSize(
-      width, 1, format, type, unpack_alignment_);
-  GLsizeiptr padded_row_size = GLES2Util::ComputeImageDataSize(
-      width, 2, format, type, unpack_alignment_) - unpadded_row_size;
+  uint32 temp_size;
+  if (!GLES2Util::ComputeImageDataSize(
+      width, 1, format, type, unpack_alignment_, &temp_size)) {
+    SetGLError(GL_INVALID_VALUE);
+    return;
+  }
+  GLsizeiptr unpadded_row_size = temp_size;
+  if (!GLES2Util::ComputeImageDataSize(
+      width, 2, format, type, unpack_alignment_, &temp_size)) {
+    SetGLError(GL_INVALID_VALUE);
+    return;
+  }
+  GLsizeiptr padded_row_size = temp_size - unpadded_row_size;
+  if (padded_row_size < 0 || unpadded_row_size < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return;
+  }
 
   if (padded_row_size <= max_size) {
     // Transfer by rows.
@@ -401,8 +420,10 @@ void GLES2Implementation::TexSubImage2D(
     }
   } else {
     // Transfer by sub rows. Beacuse GL has no maximum texture dimensions.
-    GLsizeiptr element_size = GLES2Util::ComputeImageDataSize(
-       1, 1, format, type, unpack_alignment_);
+    uint32 temp;
+    GLES2Util::ComputeImageDataSize(
+       1, 1, format, type, unpack_alignment_, &temp);
+    GLsizeiptr element_size = temp;
     max_size -= max_size % element_size;
     GLint max_sub_row_pixels = max_size / element_size;
     for (; height; --height) {
@@ -606,10 +627,23 @@ void GLES2Implementation::ReadPixels(
   Result* result = static_cast<Result*>(result_buffer_);
   int8* dest = reinterpret_cast<int8*>(pixels);
   GLsizeiptr max_size = transfer_buffer_.GetLargestFreeOrPendingSize();
-  GLsizeiptr unpadded_row_size = GLES2Util::ComputeImageDataSize(
-      width, 1, format, type, pack_alignment_);
-  GLsizeiptr padded_row_size = GLES2Util::ComputeImageDataSize(
-      width, 2, format, type, pack_alignment_) - unpadded_row_size;
+  uint32 temp_size;
+  if (!GLES2Util::ComputeImageDataSize(
+      width, 1, format, type, pack_alignment_, &temp_size)) {
+    SetGLError(GL_INVALID_VALUE);
+    return;
+  }
+  GLsizeiptr unpadded_row_size = temp_size;
+  if (!GLES2Util::ComputeImageDataSize(
+      width, 2, format, type, pack_alignment_, &temp_size)) {
+    SetGLError(GL_INVALID_VALUE);
+    return;
+  }
+  GLsizeiptr padded_row_size = temp_size - unpadded_row_size;
+  if (padded_row_size < 0 || unpadded_row_size < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return;
+  }
   if (padded_row_size <= max_size) {
     // Transfer by rows.
     GLint max_rows = max_size / padded_row_size;
@@ -635,8 +669,9 @@ void GLES2Implementation::ReadPixels(
     }
   } else {
     // Transfer by sub rows. Beacuse GL has no maximum texture dimensions.
-    GLsizeiptr element_size = GLES2Util::ComputeImageDataSize(
-       1, 1, format, type, pack_alignment_);
+    GLES2Util::ComputeImageDataSize(
+       1, 1, format, type, pack_alignment_, &temp_size);
+    GLsizeiptr element_size = temp_size;
     max_size -= max_size % element_size;
     GLint max_sub_row_pixels = max_size / element_size;
     for (; height; --height) {

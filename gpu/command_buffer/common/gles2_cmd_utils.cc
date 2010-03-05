@@ -341,17 +341,35 @@ int BytesPerElement(int type) {
 }  // anonymous namespace
 
 // Returns the amount of data glTexImage2D or glTexSubImage2D will access.
-uint32 GLES2Util::ComputeImageDataSize(
-    int width, int height, int format, int type, int unpack_alignment) {
+bool GLES2Util::ComputeImageDataSize(
+    int width, int height, int format, int type, int unpack_alignment,
+    uint32* size) {
   uint32 bytes_per_group =
       BytesPerElement(type) * ElementsPerGroup(format, type);
-  uint32 row_size = width * bytes_per_group;
-  if (height > 1) {
-    uint32 padded_row_size = ((row_size + unpack_alignment - 1) /
-                              unpack_alignment) * unpack_alignment;
-    return (height - 1) * padded_row_size + row_size;
+  uint32 row_size;
+  if (!SafeMultiplyUint32(width, bytes_per_group, &row_size)) {
+    return false;
   }
-  return height * row_size;
+  if (height > 1) {
+    uint32 temp;
+    if (!SafeAddUint32(row_size, unpack_alignment - 1, &temp)) {
+      return false;
+    }
+    uint32 padded_row_size = (temp / unpack_alignment) * unpack_alignment;
+    uint32 size_of_all_but_last_row;
+    if (!SafeMultiplyUint32((height - 1), padded_row_size,
+                            &size_of_all_but_last_row)) {
+      return false;
+    }
+    if (!SafeAddUint32(size_of_all_but_last_row, row_size, size)) {
+      return false;
+    }
+  } else {
+    if (!SafeMultiplyUint32(height, row_size, size)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 uint32 GLES2Util::GetGLDataTypeSizeForUniforms(int type) {

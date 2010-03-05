@@ -481,7 +481,10 @@ error::Error GLES2DecoderImpl::HandleCullFace(
 error::Error GLES2DecoderImpl::HandleDeleteBuffers(
     uint32 immediate_data_size, const gles2::DeleteBuffers& c) {
   GLsizei n = static_cast<GLsizei>(c.n);
-  uint32 data_size = n * sizeof(GLuint);
+  uint32 data_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+    return error::kOutOfBounds;
+  }
   const GLuint* buffers = GetSharedMemoryAs<const GLuint*>(
       c.buffers_shm_id, c.buffers_shm_offset, data_size);
   if (n < 0) {
@@ -498,7 +501,10 @@ error::Error GLES2DecoderImpl::HandleDeleteBuffers(
 error::Error GLES2DecoderImpl::HandleDeleteBuffersImmediate(
     uint32 immediate_data_size, const gles2::DeleteBuffersImmediate& c) {
   GLsizei n = static_cast<GLsizei>(c.n);
-  uint32 data_size = n * sizeof(GLuint);
+  uint32 data_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+    return error::kOutOfBounds;
+  }
   const GLuint* buffers = GetImmediateDataAs<const GLuint*>(
       c, data_size, immediate_data_size);
   if (n < 0) {
@@ -515,7 +521,10 @@ error::Error GLES2DecoderImpl::HandleDeleteBuffersImmediate(
 error::Error GLES2DecoderImpl::HandleDeleteFramebuffers(
     uint32 immediate_data_size, const gles2::DeleteFramebuffers& c) {
   GLsizei n = static_cast<GLsizei>(c.n);
-  uint32 data_size = n * sizeof(GLuint);
+  uint32 data_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+    return error::kOutOfBounds;
+  }
   const GLuint* framebuffers = GetSharedMemoryAs<const GLuint*>(
       c.framebuffers_shm_id, c.framebuffers_shm_offset, data_size);
   if (n < 0) {
@@ -532,7 +541,10 @@ error::Error GLES2DecoderImpl::HandleDeleteFramebuffers(
 error::Error GLES2DecoderImpl::HandleDeleteFramebuffersImmediate(
     uint32 immediate_data_size, const gles2::DeleteFramebuffersImmediate& c) {
   GLsizei n = static_cast<GLsizei>(c.n);
-  uint32 data_size = n * sizeof(GLuint);
+  uint32 data_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+    return error::kOutOfBounds;
+  }
   const GLuint* framebuffers = GetImmediateDataAs<const GLuint*>(
       c, data_size, immediate_data_size);
   if (n < 0) {
@@ -549,7 +561,10 @@ error::Error GLES2DecoderImpl::HandleDeleteFramebuffersImmediate(
 error::Error GLES2DecoderImpl::HandleDeleteRenderbuffers(
     uint32 immediate_data_size, const gles2::DeleteRenderbuffers& c) {
   GLsizei n = static_cast<GLsizei>(c.n);
-  uint32 data_size = n * sizeof(GLuint);
+  uint32 data_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+    return error::kOutOfBounds;
+  }
   const GLuint* renderbuffers = GetSharedMemoryAs<const GLuint*>(
       c.renderbuffers_shm_id, c.renderbuffers_shm_offset, data_size);
   if (n < 0) {
@@ -566,7 +581,10 @@ error::Error GLES2DecoderImpl::HandleDeleteRenderbuffers(
 error::Error GLES2DecoderImpl::HandleDeleteRenderbuffersImmediate(
     uint32 immediate_data_size, const gles2::DeleteRenderbuffersImmediate& c) {
   GLsizei n = static_cast<GLsizei>(c.n);
-  uint32 data_size = n * sizeof(GLuint);
+  uint32 data_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+    return error::kOutOfBounds;
+  }
   const GLuint* renderbuffers = GetImmediateDataAs<const GLuint*>(
       c, data_size, immediate_data_size);
   if (n < 0) {
@@ -583,7 +601,10 @@ error::Error GLES2DecoderImpl::HandleDeleteRenderbuffersImmediate(
 error::Error GLES2DecoderImpl::HandleDeleteTextures(
     uint32 immediate_data_size, const gles2::DeleteTextures& c) {
   GLsizei n = static_cast<GLsizei>(c.n);
-  uint32 data_size = n * sizeof(GLuint);
+  uint32 data_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+    return error::kOutOfBounds;
+  }
   const GLuint* textures = GetSharedMemoryAs<const GLuint*>(
       c.textures_shm_id, c.textures_shm_offset, data_size);
   if (n < 0) {
@@ -600,7 +621,10 @@ error::Error GLES2DecoderImpl::HandleDeleteTextures(
 error::Error GLES2DecoderImpl::HandleDeleteTexturesImmediate(
     uint32 immediate_data_size, const gles2::DeleteTexturesImmediate& c) {
   GLsizei n = static_cast<GLsizei>(c.n);
-  uint32 data_size = n * sizeof(GLuint);
+  uint32 data_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+    return error::kOutOfBounds;
+  }
   const GLuint* textures = GetImmediateDataAs<const GLuint*>(
       c, data_size, immediate_data_size);
   if (n < 0) {
@@ -789,7 +813,10 @@ error::Error GLES2DecoderImpl::HandleFrontFace(
 error::Error GLES2DecoderImpl::HandleGenBuffers(
     uint32 immediate_data_size, const gles2::GenBuffers& c) {
   GLsizei n = static_cast<GLsizei>(c.n);
-  uint32 data_size = n * sizeof(GLuint);
+  uint32 data_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+    return error::kOutOfBounds;
+  }
   GLuint* buffers = GetSharedMemoryAs<GLuint*>(
       c.buffers_shm_id, c.buffers_shm_offset, data_size);
   if (n < 0) {
@@ -808,7 +835,10 @@ error::Error GLES2DecoderImpl::HandleGenBuffers(
 error::Error GLES2DecoderImpl::HandleGenBuffersImmediate(
     uint32 immediate_data_size, const gles2::GenBuffersImmediate& c) {
   GLsizei n = static_cast<GLsizei>(c.n);
-  uint32 data_size = n * sizeof(GLuint);
+  uint32 data_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+    return error::kOutOfBounds;
+  }
   GLuint* buffers = GetImmediateDataAs<GLuint*>(
       c, data_size, immediate_data_size);
   if (n < 0) {
@@ -838,7 +868,10 @@ error::Error GLES2DecoderImpl::HandleGenerateMipmap(
 error::Error GLES2DecoderImpl::HandleGenFramebuffers(
     uint32 immediate_data_size, const gles2::GenFramebuffers& c) {
   GLsizei n = static_cast<GLsizei>(c.n);
-  uint32 data_size = n * sizeof(GLuint);
+  uint32 data_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+    return error::kOutOfBounds;
+  }
   GLuint* framebuffers = GetSharedMemoryAs<GLuint*>(
       c.framebuffers_shm_id, c.framebuffers_shm_offset, data_size);
   if (n < 0) {
@@ -857,7 +890,10 @@ error::Error GLES2DecoderImpl::HandleGenFramebuffers(
 error::Error GLES2DecoderImpl::HandleGenFramebuffersImmediate(
     uint32 immediate_data_size, const gles2::GenFramebuffersImmediate& c) {
   GLsizei n = static_cast<GLsizei>(c.n);
-  uint32 data_size = n * sizeof(GLuint);
+  uint32 data_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+    return error::kOutOfBounds;
+  }
   GLuint* framebuffers = GetImmediateDataAs<GLuint*>(
       c, data_size, immediate_data_size);
   if (n < 0) {
@@ -876,7 +912,10 @@ error::Error GLES2DecoderImpl::HandleGenFramebuffersImmediate(
 error::Error GLES2DecoderImpl::HandleGenRenderbuffers(
     uint32 immediate_data_size, const gles2::GenRenderbuffers& c) {
   GLsizei n = static_cast<GLsizei>(c.n);
-  uint32 data_size = n * sizeof(GLuint);
+  uint32 data_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+    return error::kOutOfBounds;
+  }
   GLuint* renderbuffers = GetSharedMemoryAs<GLuint*>(
       c.renderbuffers_shm_id, c.renderbuffers_shm_offset, data_size);
   if (n < 0) {
@@ -895,7 +934,10 @@ error::Error GLES2DecoderImpl::HandleGenRenderbuffers(
 error::Error GLES2DecoderImpl::HandleGenRenderbuffersImmediate(
     uint32 immediate_data_size, const gles2::GenRenderbuffersImmediate& c) {
   GLsizei n = static_cast<GLsizei>(c.n);
-  uint32 data_size = n * sizeof(GLuint);
+  uint32 data_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+    return error::kOutOfBounds;
+  }
   GLuint* renderbuffers = GetImmediateDataAs<GLuint*>(
       c, data_size, immediate_data_size);
   if (n < 0) {
@@ -914,7 +956,10 @@ error::Error GLES2DecoderImpl::HandleGenRenderbuffersImmediate(
 error::Error GLES2DecoderImpl::HandleGenTextures(
     uint32 immediate_data_size, const gles2::GenTextures& c) {
   GLsizei n = static_cast<GLsizei>(c.n);
-  uint32 data_size = n * sizeof(GLuint);
+  uint32 data_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+    return error::kOutOfBounds;
+  }
   GLuint* textures = GetSharedMemoryAs<GLuint*>(
       c.textures_shm_id, c.textures_shm_offset, data_size);
   if (n < 0) {
@@ -933,7 +978,10 @@ error::Error GLES2DecoderImpl::HandleGenTextures(
 error::Error GLES2DecoderImpl::HandleGenTexturesImmediate(
     uint32 immediate_data_size, const gles2::GenTexturesImmediate& c) {
   GLsizei n = static_cast<GLsizei>(c.n);
-  uint32 data_size = n * sizeof(GLuint);
+  uint32 data_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+    return error::kOutOfBounds;
+  }
   GLuint* textures = GetImmediateDataAs<GLuint*>(
       c, data_size, immediate_data_size);
   if (n < 0) {
@@ -952,9 +1000,13 @@ error::Error GLES2DecoderImpl::HandleGenTexturesImmediate(
 error::Error GLES2DecoderImpl::HandleGetBooleanv(
     uint32 immediate_data_size, const gles2::GetBooleanv& c) {
   GLenum pname = static_cast<GLenum>(c.pname);
+
   GLboolean* params;
   GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  uint32 params_size = num_values * sizeof(*params);
+  uint32 params_size;
+  if (!SafeMultiplyUint32(num_values, sizeof(*params), &params_size)) {
+    return error::kOutOfBounds;
+  }
   params = GetSharedMemoryAs<GLboolean*>(
       c.params_shm_id, c.params_shm_offset, params_size);
   if (params == NULL) {
@@ -968,9 +1020,13 @@ error::Error GLES2DecoderImpl::HandleGetBufferParameteriv(
     uint32 immediate_data_size, const gles2::GetBufferParameteriv& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLenum pname = static_cast<GLenum>(c.pname);
+
   GLint* params;
   GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  uint32 params_size = num_values * sizeof(*params);
+  uint32 params_size;
+  if (!SafeMultiplyUint32(num_values, sizeof(*params), &params_size)) {
+    return error::kOutOfBounds;
+  }
   params = GetSharedMemoryAs<GLint*>(
       c.params_shm_id, c.params_shm_offset, params_size);
   if (!ValidateGLenumBufferTarget(target)) {
@@ -999,9 +1055,13 @@ error::Error GLES2DecoderImpl::HandleGetError(
 error::Error GLES2DecoderImpl::HandleGetFloatv(
     uint32 immediate_data_size, const gles2::GetFloatv& c) {
   GLenum pname = static_cast<GLenum>(c.pname);
+
   GLfloat* params;
   GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  uint32 params_size = num_values * sizeof(*params);
+  uint32 params_size;
+  if (!SafeMultiplyUint32(num_values, sizeof(*params), &params_size)) {
+    return error::kOutOfBounds;
+  }
   params = GetSharedMemoryAs<GLfloat*>(
       c.params_shm_id, c.params_shm_offset, params_size);
   if (params == NULL) {
@@ -1017,9 +1077,13 @@ error::Error GLES2DecoderImpl::HandleGetFramebufferAttachmentParameteriv(
   GLenum target = static_cast<GLenum>(c.target);
   GLenum attachment = static_cast<GLenum>(c.attachment);
   GLenum pname = static_cast<GLenum>(c.pname);
+
   GLint* params;
   GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  uint32 params_size = num_values * sizeof(*params);
+  uint32 params_size;
+  if (!SafeMultiplyUint32(num_values, sizeof(*params), &params_size)) {
+    return error::kOutOfBounds;
+  }
   params = GetSharedMemoryAs<GLint*>(
       c.params_shm_id, c.params_shm_offset, params_size);
   if (!ValidateGLenumFrameBufferTarget(target)) {
@@ -1044,9 +1108,13 @@ error::Error GLES2DecoderImpl::HandleGetFramebufferAttachmentParameteriv(
 error::Error GLES2DecoderImpl::HandleGetIntegerv(
     uint32 immediate_data_size, const gles2::GetIntegerv& c) {
   GLenum pname = static_cast<GLenum>(c.pname);
+
   GLint* params;
   GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  uint32 params_size = num_values * sizeof(*params);
+  uint32 params_size;
+  if (!SafeMultiplyUint32(num_values, sizeof(*params), &params_size)) {
+    return error::kOutOfBounds;
+  }
   params = GetSharedMemoryAs<GLint*>(
       c.params_shm_id, c.params_shm_offset, params_size);
   if (params == NULL) {
@@ -1064,9 +1132,13 @@ error::Error GLES2DecoderImpl::HandleGetProgramiv(
     return error::kNoError;
   }
   GLenum pname = static_cast<GLenum>(c.pname);
+
   GLint* params;
   GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  uint32 params_size = num_values * sizeof(*params);
+  uint32 params_size;
+  if (!SafeMultiplyUint32(num_values, sizeof(*params), &params_size)) {
+    return error::kOutOfBounds;
+  }
   params = GetSharedMemoryAs<GLint*>(
       c.params_shm_id, c.params_shm_offset, params_size);
   if (!ValidateGLenumProgramParameter(pname)) {
@@ -1101,9 +1173,13 @@ error::Error GLES2DecoderImpl::HandleGetRenderbufferParameteriv(
     uint32 immediate_data_size, const gles2::GetRenderbufferParameteriv& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLenum pname = static_cast<GLenum>(c.pname);
+
   GLint* params;
   GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  uint32 params_size = num_values * sizeof(*params);
+  uint32 params_size;
+  if (!SafeMultiplyUint32(num_values, sizeof(*params), &params_size)) {
+    return error::kOutOfBounds;
+  }
   params = GetSharedMemoryAs<GLint*>(
       c.params_shm_id, c.params_shm_offset, params_size);
   if (!ValidateGLenumRenderBufferTarget(target)) {
@@ -1129,9 +1205,13 @@ error::Error GLES2DecoderImpl::HandleGetShaderiv(
     return error::kNoError;
   }
   GLenum pname = static_cast<GLenum>(c.pname);
+
   GLint* params;
   GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  uint32 params_size = num_values * sizeof(*params);
+  uint32 params_size;
+  if (!SafeMultiplyUint32(num_values, sizeof(*params), &params_size)) {
+    return error::kOutOfBounds;
+  }
   params = GetSharedMemoryAs<GLint*>(
       c.params_shm_id, c.params_shm_offset, params_size);
   if (!ValidateGLenumShaderParameter(pname)) {
@@ -1183,9 +1263,13 @@ error::Error GLES2DecoderImpl::HandleGetTexParameterfv(
     uint32 immediate_data_size, const gles2::GetTexParameterfv& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLenum pname = static_cast<GLenum>(c.pname);
+
   GLfloat* params;
   GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  uint32 params_size = num_values * sizeof(*params);
+  uint32 params_size;
+  if (!SafeMultiplyUint32(num_values, sizeof(*params), &params_size)) {
+    return error::kOutOfBounds;
+  }
   params = GetSharedMemoryAs<GLfloat*>(
       c.params_shm_id, c.params_shm_offset, params_size);
   if (!ValidateGLenumTextureTarget(target)) {
@@ -1207,9 +1291,13 @@ error::Error GLES2DecoderImpl::HandleGetTexParameteriv(
     uint32 immediate_data_size, const gles2::GetTexParameteriv& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLenum pname = static_cast<GLenum>(c.pname);
+
   GLint* params;
   GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  uint32 params_size = num_values * sizeof(*params);
+  uint32 params_size;
+  if (!SafeMultiplyUint32(num_values, sizeof(*params), &params_size)) {
+    return error::kOutOfBounds;
+  }
   params = GetSharedMemoryAs<GLint*>(
       c.params_shm_id, c.params_shm_offset, params_size);
   if (!ValidateGLenumTextureTarget(target)) {
@@ -1231,9 +1319,13 @@ error::Error GLES2DecoderImpl::HandleGetVertexAttribfv(
     uint32 immediate_data_size, const gles2::GetVertexAttribfv& c) {
   GLuint index = static_cast<GLuint>(c.index);
   GLenum pname = static_cast<GLenum>(c.pname);
+
   GLfloat* params;
   GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  uint32 params_size = num_values * sizeof(*params);
+  uint32 params_size;
+  if (!SafeMultiplyUint32(num_values, sizeof(*params), &params_size)) {
+    return error::kOutOfBounds;
+  }
   params = GetSharedMemoryAs<GLfloat*>(
       c.params_shm_id, c.params_shm_offset, params_size);
   if (!ValidateGLenumVertexAttribute(pname)) {
@@ -1251,9 +1343,13 @@ error::Error GLES2DecoderImpl::HandleGetVertexAttribiv(
     uint32 immediate_data_size, const gles2::GetVertexAttribiv& c) {
   GLuint index = static_cast<GLuint>(c.index);
   GLenum pname = static_cast<GLenum>(c.pname);
+
   GLint* params;
   GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  uint32 params_size = num_values * sizeof(*params);
+  uint32 params_size;
+  if (!SafeMultiplyUint32(num_values, sizeof(*params), &params_size)) {
+    return error::kOutOfBounds;
+  }
   params = GetSharedMemoryAs<GLint*>(
       c.params_shm_id, c.params_shm_offset, params_size);
   if (!ValidateGLenumVertexAttribute(pname)) {
@@ -1570,8 +1666,10 @@ error::Error GLES2DecoderImpl::HandleTexParameterfv(
     uint32 immediate_data_size, const gles2::TexParameterfv& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLenum pname = static_cast<GLenum>(c.pname);
-  uint32 data_size =
-      ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLfloat), 1);
+  uint32 data_size;
+  if (!ComputeDataSize(1, sizeof(GLfloat), 1, &data_size)) {
+    return error::kOutOfBounds;
+  }
   const GLfloat* params = GetSharedMemoryAs<const GLfloat*>(
       c.params_shm_id, c.params_shm_offset, data_size);
   if (!ValidateGLenumTextureBindTarget(target)) {
@@ -1593,8 +1691,13 @@ error::Error GLES2DecoderImpl::HandleTexParameterfvImmediate(
     uint32 immediate_data_size, const gles2::TexParameterfvImmediate& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLenum pname = static_cast<GLenum>(c.pname);
-  uint32 data_size =
-      ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLfloat), 1);
+  uint32 data_size;
+  if (!ComputeDataSize(1, sizeof(GLfloat), 1, &data_size)) {
+    return error::kOutOfBounds;
+  }
+  if (data_size > immediate_data_size) {
+    return error::kOutOfBounds;
+  }
   const GLfloat* params = GetImmediateDataAs<const GLfloat*>(
       c, data_size, immediate_data_size);
   if (!ValidateGLenumTextureBindTarget(target)) {
@@ -1633,8 +1736,10 @@ error::Error GLES2DecoderImpl::HandleTexParameteriv(
     uint32 immediate_data_size, const gles2::TexParameteriv& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLenum pname = static_cast<GLenum>(c.pname);
-  uint32 data_size =
-      ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLint), 1);
+  uint32 data_size;
+  if (!ComputeDataSize(1, sizeof(GLint), 1, &data_size)) {
+    return error::kOutOfBounds;
+  }
   const GLint* params = GetSharedMemoryAs<const GLint*>(
       c.params_shm_id, c.params_shm_offset, data_size);
   if (!ValidateGLenumTextureBindTarget(target)) {
@@ -1656,8 +1761,13 @@ error::Error GLES2DecoderImpl::HandleTexParameterivImmediate(
     uint32 immediate_data_size, const gles2::TexParameterivImmediate& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLenum pname = static_cast<GLenum>(c.pname);
-  uint32 data_size =
-      ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLint), 1);
+  uint32 data_size;
+  if (!ComputeDataSize(1, sizeof(GLint), 1, &data_size)) {
+    return error::kOutOfBounds;
+  }
+  if (data_size > immediate_data_size) {
+    return error::kOutOfBounds;
+  }
   const GLint* params = GetImmediateDataAs<const GLint*>(
       c, data_size, immediate_data_size);
   if (!ValidateGLenumTextureBindTarget(target)) {
@@ -1685,8 +1795,11 @@ error::Error GLES2DecoderImpl::HandleTexSubImage2D(
   GLsizei height = static_cast<GLsizei>(c.height);
   GLenum format = static_cast<GLenum>(c.format);
   GLenum type = static_cast<GLenum>(c.type);
-  uint32 data_size = GLES2Util::ComputeImageDataSize(
-      width, height, format, type, unpack_alignment_);
+  uint32 data_size;
+  if (!GLES2Util::ComputeImageDataSize(
+      width, height, format, type, unpack_alignment_, &data_size)) {
+    return error::kOutOfBounds;
+  }
   const void* pixels = GetSharedMemoryAs<const void*>(
       c.pixels_shm_id, c.pixels_shm_offset, data_size);
   if (!ValidateGLenumTextureTarget(target)) {
@@ -1727,8 +1840,11 @@ error::Error GLES2DecoderImpl::HandleTexSubImage2DImmediate(
   GLsizei height = static_cast<GLsizei>(c.height);
   GLenum format = static_cast<GLenum>(c.format);
   GLenum type = static_cast<GLenum>(c.type);
-  uint32 data_size = GLES2Util::ComputeImageDataSize(
-      width, height, format, type, unpack_alignment_);
+  uint32 data_size;
+  if (!GLES2Util::ComputeImageDataSize(
+      width, height, format, type, unpack_alignment_, &data_size)) {
+    return error::kOutOfBounds;
+  }
   const void* pixels = GetImmediateDataAs<const void*>(
       c, data_size, immediate_data_size);
   if (!ValidateGLenumTextureTarget(target)) {
@@ -1771,8 +1887,10 @@ error::Error GLES2DecoderImpl::HandleUniform1fv(
     uint32 immediate_data_size, const gles2::Uniform1fv& c) {
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
-  uint32 data_size =
-      ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLfloat), 1);
+  uint32 data_size;
+  if (!ComputeDataSize(1, sizeof(GLfloat), 1, &data_size)) {
+    return error::kOutOfBounds;
+  }
   const GLfloat* v = GetSharedMemoryAs<const GLfloat*>(
       c.v_shm_id, c.v_shm_offset, data_size);
   if (count < 0) {
@@ -1790,8 +1908,13 @@ error::Error GLES2DecoderImpl::HandleUniform1fvImmediate(
     uint32 immediate_data_size, const gles2::Uniform1fvImmediate& c) {
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
-  uint32 data_size =
-      ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLfloat), 1);
+  uint32 data_size;
+  if (!ComputeDataSize(1, sizeof(GLfloat), 1, &data_size)) {
+    return error::kOutOfBounds;
+  }
+  if (data_size > immediate_data_size) {
+    return error::kOutOfBounds;
+  }
   const GLfloat* v = GetImmediateDataAs<const GLfloat*>(
       c, data_size, immediate_data_size);
   if (count < 0) {
@@ -1817,8 +1940,10 @@ error::Error GLES2DecoderImpl::HandleUniform1iv(
     uint32 immediate_data_size, const gles2::Uniform1iv& c) {
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
-  uint32 data_size =
-      ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLint), 1);
+  uint32 data_size;
+  if (!ComputeDataSize(1, sizeof(GLint), 1, &data_size)) {
+    return error::kOutOfBounds;
+  }
   const GLint* v = GetSharedMemoryAs<const GLint*>(
       c.v_shm_id, c.v_shm_offset, data_size);
   if (count < 0) {
@@ -1836,8 +1961,13 @@ error::Error GLES2DecoderImpl::HandleUniform1ivImmediate(
     uint32 immediate_data_size, const gles2::Uniform1ivImmediate& c) {
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
-  uint32 data_size =
-      ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLint), 1);
+  uint32 data_size;
+  if (!ComputeDataSize(1, sizeof(GLint), 1, &data_size)) {
+    return error::kOutOfBounds;
+  }
+  if (data_size > immediate_data_size) {
+    return error::kOutOfBounds;
+  }
   const GLint* v = GetImmediateDataAs<const GLint*>(
       c, data_size, immediate_data_size);
   if (count < 0) {
@@ -1864,8 +1994,10 @@ error::Error GLES2DecoderImpl::HandleUniform2fv(
     uint32 immediate_data_size, const gles2::Uniform2fv& c) {
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
-  uint32 data_size =
-      ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLfloat), 2);
+  uint32 data_size;
+  if (!ComputeDataSize(1, sizeof(GLfloat), 2, &data_size)) {
+    return error::kOutOfBounds;
+  }
   const GLfloat* v = GetSharedMemoryAs<const GLfloat*>(
       c.v_shm_id, c.v_shm_offset, data_size);
   if (count < 0) {
@@ -1883,8 +2015,13 @@ error::Error GLES2DecoderImpl::HandleUniform2fvImmediate(
     uint32 immediate_data_size, const gles2::Uniform2fvImmediate& c) {
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
-  uint32 data_size =
-      ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLfloat), 2);
+  uint32 data_size;
+  if (!ComputeDataSize(1, sizeof(GLfloat), 2, &data_size)) {
+    return error::kOutOfBounds;
+  }
+  if (data_size > immediate_data_size) {
+    return error::kOutOfBounds;
+  }
   const GLfloat* v = GetImmediateDataAs<const GLfloat*>(
       c, data_size, immediate_data_size);
   if (count < 0) {
@@ -1911,8 +2048,10 @@ error::Error GLES2DecoderImpl::HandleUniform2iv(
     uint32 immediate_data_size, const gles2::Uniform2iv& c) {
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
-  uint32 data_size =
-      ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLint), 2);
+  uint32 data_size;
+  if (!ComputeDataSize(1, sizeof(GLint), 2, &data_size)) {
+    return error::kOutOfBounds;
+  }
   const GLint* v = GetSharedMemoryAs<const GLint*>(
       c.v_shm_id, c.v_shm_offset, data_size);
   if (count < 0) {
@@ -1930,8 +2069,13 @@ error::Error GLES2DecoderImpl::HandleUniform2ivImmediate(
     uint32 immediate_data_size, const gles2::Uniform2ivImmediate& c) {
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
-  uint32 data_size =
-      ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLint), 2);
+  uint32 data_size;
+  if (!ComputeDataSize(1, sizeof(GLint), 2, &data_size)) {
+    return error::kOutOfBounds;
+  }
+  if (data_size > immediate_data_size) {
+    return error::kOutOfBounds;
+  }
   const GLint* v = GetImmediateDataAs<const GLint*>(
       c, data_size, immediate_data_size);
   if (count < 0) {
@@ -1959,8 +2103,10 @@ error::Error GLES2DecoderImpl::HandleUniform3fv(
     uint32 immediate_data_size, const gles2::Uniform3fv& c) {
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
-  uint32 data_size =
-      ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLfloat), 3);
+  uint32 data_size;
+  if (!ComputeDataSize(1, sizeof(GLfloat), 3, &data_size)) {
+    return error::kOutOfBounds;
+  }
   const GLfloat* v = GetSharedMemoryAs<const GLfloat*>(
       c.v_shm_id, c.v_shm_offset, data_size);
   if (count < 0) {
@@ -1978,8 +2124,13 @@ error::Error GLES2DecoderImpl::HandleUniform3fvImmediate(
     uint32 immediate_data_size, const gles2::Uniform3fvImmediate& c) {
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
-  uint32 data_size =
-      ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLfloat), 3);
+  uint32 data_size;
+  if (!ComputeDataSize(1, sizeof(GLfloat), 3, &data_size)) {
+    return error::kOutOfBounds;
+  }
+  if (data_size > immediate_data_size) {
+    return error::kOutOfBounds;
+  }
   const GLfloat* v = GetImmediateDataAs<const GLfloat*>(
       c, data_size, immediate_data_size);
   if (count < 0) {
@@ -2007,8 +2158,10 @@ error::Error GLES2DecoderImpl::HandleUniform3iv(
     uint32 immediate_data_size, const gles2::Uniform3iv& c) {
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
-  uint32 data_size =
-      ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLint), 3);
+  uint32 data_size;
+  if (!ComputeDataSize(1, sizeof(GLint), 3, &data_size)) {
+    return error::kOutOfBounds;
+  }
   const GLint* v = GetSharedMemoryAs<const GLint*>(
       c.v_shm_id, c.v_shm_offset, data_size);
   if (count < 0) {
@@ -2026,8 +2179,13 @@ error::Error GLES2DecoderImpl::HandleUniform3ivImmediate(
     uint32 immediate_data_size, const gles2::Uniform3ivImmediate& c) {
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
-  uint32 data_size =
-      ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLint), 3);
+  uint32 data_size;
+  if (!ComputeDataSize(1, sizeof(GLint), 3, &data_size)) {
+    return error::kOutOfBounds;
+  }
+  if (data_size > immediate_data_size) {
+    return error::kOutOfBounds;
+  }
   const GLint* v = GetImmediateDataAs<const GLint*>(
       c, data_size, immediate_data_size);
   if (count < 0) {
@@ -2056,8 +2214,10 @@ error::Error GLES2DecoderImpl::HandleUniform4fv(
     uint32 immediate_data_size, const gles2::Uniform4fv& c) {
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
-  uint32 data_size =
-      ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLfloat), 4);
+  uint32 data_size;
+  if (!ComputeDataSize(1, sizeof(GLfloat), 4, &data_size)) {
+    return error::kOutOfBounds;
+  }
   const GLfloat* v = GetSharedMemoryAs<const GLfloat*>(
       c.v_shm_id, c.v_shm_offset, data_size);
   if (count < 0) {
@@ -2075,8 +2235,13 @@ error::Error GLES2DecoderImpl::HandleUniform4fvImmediate(
     uint32 immediate_data_size, const gles2::Uniform4fvImmediate& c) {
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
-  uint32 data_size =
-      ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLfloat), 4);
+  uint32 data_size;
+  if (!ComputeDataSize(1, sizeof(GLfloat), 4, &data_size)) {
+    return error::kOutOfBounds;
+  }
+  if (data_size > immediate_data_size) {
+    return error::kOutOfBounds;
+  }
   const GLfloat* v = GetImmediateDataAs<const GLfloat*>(
       c, data_size, immediate_data_size);
   if (count < 0) {
@@ -2105,8 +2270,10 @@ error::Error GLES2DecoderImpl::HandleUniform4iv(
     uint32 immediate_data_size, const gles2::Uniform4iv& c) {
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
-  uint32 data_size =
-      ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLint), 4);
+  uint32 data_size;
+  if (!ComputeDataSize(1, sizeof(GLint), 4, &data_size)) {
+    return error::kOutOfBounds;
+  }
   const GLint* v = GetSharedMemoryAs<const GLint*>(
       c.v_shm_id, c.v_shm_offset, data_size);
   if (count < 0) {
@@ -2124,8 +2291,13 @@ error::Error GLES2DecoderImpl::HandleUniform4ivImmediate(
     uint32 immediate_data_size, const gles2::Uniform4ivImmediate& c) {
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
-  uint32 data_size =
-      ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLint), 4);
+  uint32 data_size;
+  if (!ComputeDataSize(1, sizeof(GLint), 4, &data_size)) {
+    return error::kOutOfBounds;
+  }
+  if (data_size > immediate_data_size) {
+    return error::kOutOfBounds;
+  }
   const GLint* v = GetImmediateDataAs<const GLint*>(
       c, data_size, immediate_data_size);
   if (count < 0) {
@@ -2144,8 +2316,10 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix2fv(
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
   GLboolean transpose = static_cast<GLboolean>(c.transpose);
-  uint32 data_size =
-      ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLfloat), 4);
+  uint32 data_size;
+  if (!ComputeDataSize(1, sizeof(GLfloat), 4, &data_size)) {
+    return error::kOutOfBounds;
+  }
   const GLfloat* value = GetSharedMemoryAs<const GLfloat*>(
       c.value_shm_id, c.value_shm_offset, data_size);
   if (count < 0) {
@@ -2168,8 +2342,13 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix2fvImmediate(
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
   GLboolean transpose = static_cast<GLboolean>(c.transpose);
-  uint32 data_size =
-      ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLfloat), 4);
+  uint32 data_size;
+  if (!ComputeDataSize(1, sizeof(GLfloat), 4, &data_size)) {
+    return error::kOutOfBounds;
+  }
+  if (data_size > immediate_data_size) {
+    return error::kOutOfBounds;
+  }
   const GLfloat* value = GetImmediateDataAs<const GLfloat*>(
       c, data_size, immediate_data_size);
   if (count < 0) {
@@ -2192,8 +2371,10 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix3fv(
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
   GLboolean transpose = static_cast<GLboolean>(c.transpose);
-  uint32 data_size =
-      ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLfloat), 9);
+  uint32 data_size;
+  if (!ComputeDataSize(1, sizeof(GLfloat), 9, &data_size)) {
+    return error::kOutOfBounds;
+  }
   const GLfloat* value = GetSharedMemoryAs<const GLfloat*>(
       c.value_shm_id, c.value_shm_offset, data_size);
   if (count < 0) {
@@ -2216,8 +2397,13 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix3fvImmediate(
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
   GLboolean transpose = static_cast<GLboolean>(c.transpose);
-  uint32 data_size =
-      ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLfloat), 9);
+  uint32 data_size;
+  if (!ComputeDataSize(1, sizeof(GLfloat), 9, &data_size)) {
+    return error::kOutOfBounds;
+  }
+  if (data_size > immediate_data_size) {
+    return error::kOutOfBounds;
+  }
   const GLfloat* value = GetImmediateDataAs<const GLfloat*>(
       c, data_size, immediate_data_size);
   if (count < 0) {
@@ -2240,8 +2426,10 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix4fv(
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
   GLboolean transpose = static_cast<GLboolean>(c.transpose);
-  uint32 data_size =
-      ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLfloat), 16);
+  uint32 data_size;
+  if (!ComputeDataSize(1, sizeof(GLfloat), 16, &data_size)) {
+    return error::kOutOfBounds;
+  }
   const GLfloat* value = GetSharedMemoryAs<const GLfloat*>(
       c.value_shm_id, c.value_shm_offset, data_size);
   if (count < 0) {
@@ -2264,8 +2452,13 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix4fvImmediate(
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
   GLboolean transpose = static_cast<GLboolean>(c.transpose);
-  uint32 data_size =
-      ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLfloat), 16);
+  uint32 data_size;
+  if (!ComputeDataSize(1, sizeof(GLfloat), 16, &data_size)) {
+    return error::kOutOfBounds;
+  }
+  if (data_size > immediate_data_size) {
+    return error::kOutOfBounds;
+  }
   const GLfloat* value = GetImmediateDataAs<const GLfloat*>(
       c, data_size, immediate_data_size);
   if (count < 0) {
@@ -2316,8 +2509,10 @@ error::Error GLES2DecoderImpl::HandleVertexAttrib1f(
 error::Error GLES2DecoderImpl::HandleVertexAttrib1fv(
     uint32 immediate_data_size, const gles2::VertexAttrib1fv& c) {
   GLuint indx = static_cast<GLuint>(c.indx);
-  uint32 data_size =
-      ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLfloat), 1);
+  uint32 data_size;
+  if (!ComputeDataSize(1, sizeof(GLfloat), 1, &data_size)) {
+    return error::kOutOfBounds;
+  }
   const GLfloat* values = GetSharedMemoryAs<const GLfloat*>(
       c.values_shm_id, c.values_shm_offset, data_size);
   if (values == NULL) {
@@ -2330,8 +2525,13 @@ error::Error GLES2DecoderImpl::HandleVertexAttrib1fv(
 error::Error GLES2DecoderImpl::HandleVertexAttrib1fvImmediate(
     uint32 immediate_data_size, const gles2::VertexAttrib1fvImmediate& c) {
   GLuint indx = static_cast<GLuint>(c.indx);
-  uint32 data_size =
-      ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLfloat), 1);
+  uint32 data_size;
+  if (!ComputeDataSize(1, sizeof(GLfloat), 1, &data_size)) {
+    return error::kOutOfBounds;
+  }
+  if (data_size > immediate_data_size) {
+    return error::kOutOfBounds;
+  }
   const GLfloat* values = GetImmediateDataAs<const GLfloat*>(
       c, data_size, immediate_data_size);
   if (values == NULL) {
@@ -2353,8 +2553,10 @@ error::Error GLES2DecoderImpl::HandleVertexAttrib2f(
 error::Error GLES2DecoderImpl::HandleVertexAttrib2fv(
     uint32 immediate_data_size, const gles2::VertexAttrib2fv& c) {
   GLuint indx = static_cast<GLuint>(c.indx);
-  uint32 data_size =
-      ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLfloat), 2);
+  uint32 data_size;
+  if (!ComputeDataSize(1, sizeof(GLfloat), 2, &data_size)) {
+    return error::kOutOfBounds;
+  }
   const GLfloat* values = GetSharedMemoryAs<const GLfloat*>(
       c.values_shm_id, c.values_shm_offset, data_size);
   if (values == NULL) {
@@ -2367,8 +2569,13 @@ error::Error GLES2DecoderImpl::HandleVertexAttrib2fv(
 error::Error GLES2DecoderImpl::HandleVertexAttrib2fvImmediate(
     uint32 immediate_data_size, const gles2::VertexAttrib2fvImmediate& c) {
   GLuint indx = static_cast<GLuint>(c.indx);
-  uint32 data_size =
-      ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLfloat), 2);
+  uint32 data_size;
+  if (!ComputeDataSize(1, sizeof(GLfloat), 2, &data_size)) {
+    return error::kOutOfBounds;
+  }
+  if (data_size > immediate_data_size) {
+    return error::kOutOfBounds;
+  }
   const GLfloat* values = GetImmediateDataAs<const GLfloat*>(
       c, data_size, immediate_data_size);
   if (values == NULL) {
@@ -2391,8 +2598,10 @@ error::Error GLES2DecoderImpl::HandleVertexAttrib3f(
 error::Error GLES2DecoderImpl::HandleVertexAttrib3fv(
     uint32 immediate_data_size, const gles2::VertexAttrib3fv& c) {
   GLuint indx = static_cast<GLuint>(c.indx);
-  uint32 data_size =
-      ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLfloat), 3);
+  uint32 data_size;
+  if (!ComputeDataSize(1, sizeof(GLfloat), 3, &data_size)) {
+    return error::kOutOfBounds;
+  }
   const GLfloat* values = GetSharedMemoryAs<const GLfloat*>(
       c.values_shm_id, c.values_shm_offset, data_size);
   if (values == NULL) {
@@ -2405,8 +2614,13 @@ error::Error GLES2DecoderImpl::HandleVertexAttrib3fv(
 error::Error GLES2DecoderImpl::HandleVertexAttrib3fvImmediate(
     uint32 immediate_data_size, const gles2::VertexAttrib3fvImmediate& c) {
   GLuint indx = static_cast<GLuint>(c.indx);
-  uint32 data_size =
-      ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLfloat), 3);
+  uint32 data_size;
+  if (!ComputeDataSize(1, sizeof(GLfloat), 3, &data_size)) {
+    return error::kOutOfBounds;
+  }
+  if (data_size > immediate_data_size) {
+    return error::kOutOfBounds;
+  }
   const GLfloat* values = GetImmediateDataAs<const GLfloat*>(
       c, data_size, immediate_data_size);
   if (values == NULL) {
@@ -2430,8 +2644,10 @@ error::Error GLES2DecoderImpl::HandleVertexAttrib4f(
 error::Error GLES2DecoderImpl::HandleVertexAttrib4fv(
     uint32 immediate_data_size, const gles2::VertexAttrib4fv& c) {
   GLuint indx = static_cast<GLuint>(c.indx);
-  uint32 data_size =
-      ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLfloat), 4);
+  uint32 data_size;
+  if (!ComputeDataSize(1, sizeof(GLfloat), 4, &data_size)) {
+    return error::kOutOfBounds;
+  }
   const GLfloat* values = GetSharedMemoryAs<const GLfloat*>(
       c.values_shm_id, c.values_shm_offset, data_size);
   if (values == NULL) {
@@ -2444,8 +2660,13 @@ error::Error GLES2DecoderImpl::HandleVertexAttrib4fv(
 error::Error GLES2DecoderImpl::HandleVertexAttrib4fvImmediate(
     uint32 immediate_data_size, const gles2::VertexAttrib4fvImmediate& c) {
   GLuint indx = static_cast<GLuint>(c.indx);
-  uint32 data_size =
-      ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLfloat), 4);
+  uint32 data_size;
+  if (!ComputeDataSize(1, sizeof(GLfloat), 4, &data_size)) {
+    return error::kOutOfBounds;
+  }
+  if (data_size > immediate_data_size) {
+    return error::kOutOfBounds;
+  }
   const GLfloat* values = GetImmediateDataAs<const GLfloat*>(
       c, data_size, immediate_data_size);
   if (values == NULL) {

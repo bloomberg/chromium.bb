@@ -78,12 +78,20 @@ RETURN_TYPE GetImmediateDataAs(const COMMAND_TYPE& pod,
 }
 
 // Computes the data size for certain gl commands like glUniform.
-uint32 ComputeImmediateDataSize(
-    uint32 immediate_data_size,
+bool ComputeDataSize(
     GLuint count,
     size_t size,
-    unsigned int elements_per_unit) {
-  return count * size * elements_per_unit;
+    unsigned int elements_per_unit,
+    uint32* dst) {
+  uint32 value;
+  if (!SafeMultiplyUint32(count, size, &value)) {
+    return false;
+  }
+  if (!SafeMultiplyUint32(value, elements_per_unit, &value)) {
+    return false;
+  }
+  *dst = value;
+  return true;
 }
 
 // A struct to hold info about each command.
@@ -1905,7 +1913,7 @@ error::Error GLES2DecoderImpl::HandleDrawElements(
     GLsizei count = c.count;
     GLenum type = c.type;
     int32 offset = c.index_offset;
-    if (count < 0) {
+    if (count < 0 || offset < 0) {
       SetGLError(GL_INVALID_VALUE);
     } else if (!ValidateGLenumDrawMode(mode) ||
                !ValidateGLenumIndexType(type)) {
@@ -2025,6 +2033,8 @@ void GLES2DecoderImpl::DoGetShaderSource(
     SetGLError(GL_INVALID_OPERATION);
     return;
   }
+  // bufsize is set by the service side code and should always be positive.
+  DCHECK_GT(bufsize, 0);
   const std::string& source = info->source();
   GLsizei size = std::min(bufsize - 1, static_cast<GLsizei>(source.size()));
   if (length) {
@@ -2085,8 +2095,11 @@ error::Error GLES2DecoderImpl::HandleReadPixels(
   GLenum type = c.type;
   // TODO(gman): Handle out of range rectangles.
   typedef gles2::ReadPixels::Result Result;
-  uint32 pixels_size = GLES2Util::ComputeImageDataSize(
-      width, height, format, type, pack_alignment_);
+  uint32 pixels_size;
+  if (!GLES2Util::ComputeImageDataSize(
+      width, height, format, type, pack_alignment_, &pixels_size)) {
+    return error::kOutOfBounds;
+  }
   void* pixels = GetSharedMemoryAs<void*>(
       c.pixels_shm_id, c.pixels_shm_offset, pixels_size);
   Result* result = GetSharedMemoryAs<Result*>(
@@ -2473,8 +2486,11 @@ error::Error GLES2DecoderImpl::HandleTexImage2D(
   GLenum type = static_cast<GLenum>(c.type);
   uint32 pixels_shm_id = static_cast<uint32>(c.pixels_shm_id);
   uint32 pixels_shm_offset = static_cast<uint32>(c.pixels_shm_offset);
-  uint32 pixels_size = GLES2Util::ComputeImageDataSize(
-      width, height, format, type, unpack_alignment_);
+  uint32 pixels_size;
+  if (!GLES2Util::ComputeImageDataSize(
+      width, height, format, type, unpack_alignment_, &pixels_size)) {
+    return error::kOutOfBounds;
+  }
   const void* pixels = NULL;
   if (pixels_shm_id != 0 || pixels_shm_offset != 0) {
     pixels = GetSharedMemoryAs<const void*>(
@@ -2498,8 +2514,11 @@ error::Error GLES2DecoderImpl::HandleTexImage2DImmediate(
   GLint border = static_cast<GLint>(c.border);
   GLenum format = static_cast<GLenum>(c.format);
   GLenum type = static_cast<GLenum>(c.type);
-  uint32 size = GLES2Util::ComputeImageDataSize(
-      width, height, format, type, unpack_alignment_);
+  uint32 size;
+  if (!GLES2Util::ComputeImageDataSize(
+      width, height, format, type, unpack_alignment_, &size)) {
+    return error::kOutOfBounds;
+  }
   const void* pixels = GetImmediateDataAs<const void*>(
       c, size, immediate_data_size);
   if (!pixels) {

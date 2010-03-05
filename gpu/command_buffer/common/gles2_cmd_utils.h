@@ -14,6 +14,43 @@
 namespace gpu {
 namespace gles2 {
 
+// Does a multiply and checks for overflow.  If the multiply did not overflow
+// returns true.
+template <typename T>
+inline bool SafeMultiply(T a, T b, T* dst) {
+  *dst = 0;
+  if (b == 0) {
+    return true;
+  }
+  T v = a * b;
+  if (v / b != a) {
+    return false;
+  }
+  *dst = v;
+  return true;
+}
+
+// A wrapper for SafeMultiply to remove the need to cast.
+inline bool SafeMultiplyUint32(uint32 a, uint32 b, uint32* dst) {
+  return SafeMultiply(a, b, dst);
+}
+
+// Does an add checking for overflow.  If there was no overflow returns true.
+template <typename T>
+inline bool SafeAdd(T a, T b, T* dst) {
+  *dst = 0;
+  if (a + b < a) {
+    return false;
+  }
+  *dst = a + b;
+  return true;
+}
+
+// A wrapper for SafeAdd to remove the need to cast.
+inline bool SafeAddUint32(uint32 a, uint32 b, uint32* dst) {
+  return SafeAdd(a, b, dst);
+}
+
 // Utilties for GLES2 support.
 class GLES2Util {
  public:
@@ -27,8 +64,9 @@ class GLES2Util {
   int GLGetNumValuesReturned(int id) const;
 
   // Computes the size of image data for TexImage2D and TexSubImage2D.
-  static uint32 ComputeImageDataSize(
-    int width, int height, int format, int type, int unpack_alignment);
+  static bool ComputeImageDataSize(
+    int width, int height, int format, int type, int unpack_alignment,
+    uint32* size);
 
   static uint32 GetGLDataTypeSizeForUniforms(int type);
 

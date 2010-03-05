@@ -334,15 +334,17 @@ void GetProgramInfoLog(
     GLuint program, GLsizei bufsize, GLsizei* length, char* infolog) {
   helper_->SetBucketSize(kResultBucketId, 0);
   helper_->GetProgramInfoLog(program, kResultBucketId);
-  std::string str;
-  if (GetBucketAsString(kResultBucketId, &str)) {
-    GLsizei max_size =
-        std::min(static_cast<size_t>(bufsize) - 1, str.size());
-    if (length != NULL) {
-      *length = max_size;
+  if (bufsize > 0) {
+    std::string str;
+    if (GetBucketAsString(kResultBucketId, &str)) {
+      GLsizei max_size =
+          std::min(static_cast<size_t>(bufsize) - 1, str.size());
+      if (length != NULL) {
+        *length = max_size;
+      }
+      memcpy(infolog, str.c_str(), max_size);
+      infolog[max_size] = '\0';
     }
-    memcpy(infolog, str.c_str(), max_size);
-    infolog[max_size] = '\0';
   }
 }
 void GetRenderbufferParameteriv(GLenum target, GLenum pname, GLint* params) {
@@ -366,15 +368,17 @@ void GetShaderInfoLog(
     GLuint shader, GLsizei bufsize, GLsizei* length, char* infolog) {
   helper_->SetBucketSize(kResultBucketId, 0);
   helper_->GetShaderInfoLog(shader, kResultBucketId);
-  std::string str;
-  if (GetBucketAsString(kResultBucketId, &str)) {
-    GLsizei max_size =
-        std::min(static_cast<size_t>(bufsize) - 1, str.size());
-    if (length != NULL) {
-      *length = max_size;
+  if (bufsize > 0) {
+    std::string str;
+    if (GetBucketAsString(kResultBucketId, &str)) {
+      GLsizei max_size =
+          std::min(static_cast<size_t>(bufsize) - 1, str.size());
+      if (length != NULL) {
+        *length = max_size;
+      }
+      memcpy(infolog, str.c_str(), max_size);
+      infolog[max_size] = '\0';
     }
-    memcpy(infolog, str.c_str(), max_size);
-    infolog[max_size] = '\0';
   }
 }
 void GetShaderPrecisionFormat(
@@ -384,15 +388,17 @@ void GetShaderSource(
     GLuint shader, GLsizei bufsize, GLsizei* length, char* source) {
   helper_->SetBucketSize(kResultBucketId, 0);
   helper_->GetShaderSource(shader, kResultBucketId);
-  std::string str;
-  if (GetBucketAsString(kResultBucketId, &str)) {
-    GLsizei max_size =
-        std::min(static_cast<size_t>(bufsize) - 1, str.size());
-    if (length != NULL) {
-      *length = max_size;
+  if (bufsize > 0) {
+    std::string str;
+    if (GetBucketAsString(kResultBucketId, &str)) {
+      GLsizei max_size =
+          std::min(static_cast<size_t>(bufsize) - 1, str.size());
+      if (length != NULL) {
+        *length = max_size;
+      }
+      memcpy(source, str.c_str(), max_size);
+      source[max_size] = '\0';
     }
-    memcpy(source, str.c_str(), max_size);
-    source[max_size] = '\0';
   }
 }
 const GLubyte* GetString(GLenum name);
