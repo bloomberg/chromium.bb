@@ -159,7 +159,7 @@ NTSTATUS WINAPI TargetNtOpenKey(NtOpenKeyFunction orig_OpenKey, PHANDLE key,
 NTSTATUS WINAPI TargetNtOpenKeyEx(NtOpenKeyExFunction orig_OpenKeyEx,
                                   PHANDLE key, ACCESS_MASK desired_access,
                                   POBJECT_ATTRIBUTES object_attributes,
-                                  DWORD open_options) {
+                                  ULONG open_options) {
   // Check if the process can open it first.
   NTSTATUS status = orig_OpenKeyEx(key, desired_access, object_attributes,
                                    open_options);

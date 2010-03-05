@@ -29,7 +29,7 @@ SANDBOX_INTERCEPT NTSTATUS WINAPI TargetNtOpenKey(
 // It should never be called directly
 SANDBOX_INTERCEPT NTSTATUS WINAPI TargetNtOpenKeyEx(
     NtOpenKeyExFunction orig_OpenKeyEx, PHANDLE key, ACCESS_MASK desired_access,
-    POBJECT_ATTRIBUTES object_attributes, DWORD open_options);
+    POBJECT_ATTRIBUTES object_attributes, ULONG open_options);
 
 }  // extern "C"
 
