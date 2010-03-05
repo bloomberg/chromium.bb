@@ -13,6 +13,27 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
+@interface BookmarkBarFolderControllerPong : BookmarkBarFolderController {
+  BOOL childFolderWillShow_;
+  BOOL childFolderWillClose_;
+}
+@property(readonly) BOOL childFolderWillShow;
+@property(readonly) BOOL childFolderWillClose;
+@end
+
+@implementation BookmarkBarFolderControllerPong
+@synthesize childFolderWillShow = childFolderWillShow_;
+@synthesize childFolderWillClose = childFolderWillClose_;
+
+- (void)childFolderWillShow:(id<BookmarkButtonControllerProtocol>)child {
+  childFolderWillShow_ = YES;
+}
+
+- (void)childFolderWillClose:(id<BookmarkButtonControllerProtocol>)child {
+  childFolderWillClose_ = YES;
+}
+@end
+
 class BookmarkBarFolderControllerTest : public CocoaTest {
  public:
   BrowserTestHelper helper_;
@@ -50,7 +71,7 @@ class BookmarkBarFolderControllerTest : public CocoaTest {
   BookmarkBarFolderController* SimpleBookmarkBarFolderController() {
     BookmarkButton* parentButton = [[parentBarController_ buttons]
                                      objectAtIndex:0];
-    return [[BookmarkBarFolderController alloc]
+    return [[BookmarkBarFolderControllerPong alloc]
                initWithParentButton:parentButton
                    parentController:parentBarController_];
   }
@@ -194,6 +215,20 @@ TEST_F(BookmarkBarFolderControllerTest, OpenFolder) {
   // Close it --> all gone!
   [bbfc closeBookmarkFolder:nil];
   EXPECT_FALSE([bbfc folderController]);
+}
+
+TEST_F(BookmarkBarFolderControllerTest, ChildFolderCallbacks) {
+  scoped_nsobject<BookmarkBarFolderControllerPong> bbfc;
+  bbfc.reset(SimpleBookmarkBarFolderController());
+  EXPECT_TRUE(bbfc.get());
+
+  EXPECT_FALSE([bbfc childFolderWillShow]);
+  [bbfc openBookmarkFolderFromButton:[[bbfc buttons] objectAtIndex:0]];
+  EXPECT_TRUE([bbfc childFolderWillShow]);
+
+  EXPECT_FALSE([bbfc childFolderWillClose]);
+  [bbfc closeBookmarkFolder:nil];
+  EXPECT_TRUE([bbfc childFolderWillClose]);
 }
 
 // TODO(jrg): draggingEntered: and draggingExited: trigger timers so

@@ -11,7 +11,7 @@
 #import "chrome/browser/cocoa/bookmark_bar_controller.h" // namespace bookmarks
 #import "chrome/browser/cocoa/bookmark_bar_folder_view.h"
 #import "chrome/browser/cocoa/bookmark_button_cell.h"
-
+#import "chrome/browser/cocoa/browser_window_controller.h"
 
 @interface BookmarkBarFolderController(Private)
 - (void)configureWindow;
@@ -50,6 +50,13 @@
   // Because all of our performSelector: calls use withDelay: which
   // retains us.
   [super dealloc];
+}
+
+// Overriden from NSWindowController to call childFolderWillShow: before showing
+// the window.
+- (void)showWindow:(id)sender {
+  [parentController_ childFolderWillShow:self];
+  [super showWindow:sender];
 }
 
 // Update theme information for all our buttons.
@@ -224,6 +231,14 @@
   return [parentController_ themeProvider];
 }
 
+- (void)childFolderWillShow:(id<BookmarkButtonControllerProtocol>)child {
+  // Do nothing.
+}
+
+- (void)childFolderWillClose:(id<BookmarkButtonControllerProtocol>)child {
+  // Do nothing.
+}
+
 // Recursively close all bookmark folders.
 - (void)closeAllBookmarkFolders {
   // Closing the top level implicitly closes all children.
@@ -255,6 +270,7 @@
 
 // Delegate callback.
 - (void)windowWillClose:(NSNotification*)notification {
+  [parentController_ childFolderWillClose:self];
   [[self parentWindow] removeChildWindow:[self window]];
   [self closeBookmarkFolder:self];
   [self autorelease];

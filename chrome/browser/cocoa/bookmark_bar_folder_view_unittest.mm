@@ -91,6 +91,12 @@
   return nil;
 }
 
+- (void)childFolderWillShow:(id<BookmarkButtonControllerProtocol>)child {
+}
+
+- (void)childFolderWillClose:(id<BookmarkButtonControllerProtocol>)child {
+}
+
 @end
 
 namespace {

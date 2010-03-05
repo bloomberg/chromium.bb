@@ -25,6 +25,7 @@
 #import "chrome/browser/cocoa/bookmark_menu.h"
 #import "chrome/browser/cocoa/bookmark_menu_cocoa_controller.h"
 #import "chrome/browser/cocoa/bookmark_name_folder_controller.h"
+#import "chrome/browser/cocoa/browser_window_controller.h"
 #import "chrome/browser/cocoa/event_utils.h"
 #import "chrome/browser/cocoa/menu_button.h"
 #import "chrome/browser/cocoa/themed_window.h"
@@ -896,6 +897,27 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 - (ThemeProvider*)themeProvider {
   return browser_->profile()->GetThemeProvider();
 }
+
+- (void)childFolderWillShow:(id<BookmarkButtonControllerProtocol>)child {
+  // Lock bar visibility, forcing the overlay to stay open when in fullscreen
+  // mode.
+  BrowserWindowController* browserController =
+      [BrowserWindowController browserWindowControllerForView:[self view]];
+  [browserController lockBarVisibilityForOwner:child
+                                 withAnimation:NO
+                                         delay:NO];
+}
+
+- (void)childFolderWillClose:(id<BookmarkButtonControllerProtocol>)child {
+  // Release bar visibility, allowing the overlay to close if in fullscreen
+  // mode.
+  BrowserWindowController* browserController =
+      [BrowserWindowController browserWindowControllerForView:[self view]];
+  [browserController releaseBarVisibilityForOwner:child
+                                    withAnimation:NO
+                                            delay:NO];
+}
+
 
 // Enable or disable items.  We are the menu delegate for both the bar
 // and for bookmark folder buttons.
