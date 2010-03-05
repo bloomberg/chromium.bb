@@ -699,6 +699,9 @@ const char kFixedHttpsPort[]                = "testing-fixed-https-port";
 // Ignore certificate related errors.
 const char kIgnoreCertificateErrors[]       = "ignore-certificate-errors";
 
+// Set the maximum SPDY sessions per domain.
+const char kMaxSpdySessionsPerDomain[]      = "max-spdy-sessions-per-domain";
+
 // Use the low fragmentation heap for the CRT.
 const char kUseLowFragHeapCrt[]             = "use-lf-heap";
 

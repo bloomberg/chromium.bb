@@ -67,6 +67,7 @@
 #include "net/http/http_network_session.h"
 #include "net/http/http_network_transaction.h"
 #include "net/socket/client_socket_pool_base.h"
+#include "net/spdy/spdy_session_pool.h"
 
 #if defined(OS_POSIX)
 // TODO(port): get rid of this include. It's used just to provide declarations
@@ -673,6 +674,14 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   if (parsed_command_line.HasSwitch(switches::kIgnoreCertificateErrors))
     net::HttpNetworkTransaction::IgnoreCertificateErrors(true);
+
+  if (parsed_command_line.HasSwitch(switches::kMaxSpdySessionsPerDomain)) {
+    int value = StringToInt(
+        parsed_command_line.GetSwitchValueASCII(
+            switches::kMaxSpdySessionsPerDomain));
+    net::SpdySessionPool::set_max_sessions_per_domain(value);
+  }
+
 
   // Initialize histogram statistics gathering system.
   StatisticsRecorder statistics;

@@ -198,6 +198,7 @@ extern const char kUseSpdy[];
 extern const char kFixedHttpPort[];
 extern const char kFixedHttpsPort[];
 extern const char kIgnoreCertificateErrors[];
+extern const char kMaxSpdySessionsPerDomain[];
 extern const char kUseLowFragHeapCrt[];
 extern const char kUserAgent[];
 extern const char kUserDataDir[];
