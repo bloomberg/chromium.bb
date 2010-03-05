@@ -7,10 +7,14 @@
 
 #include <gtk/gtk.h>
 
+#include <string>
+
 #include "chrome/browser/browsing_data_appcache_helper.h"
 #include "chrome/browser/browsing_data_database_helper.h"
 #include "chrome/browser/browsing_data_local_storage_helper.h"
 #include "net/base/cookie_monster.h"
+
+class GURL;
 
 G_BEGIN_DECLS
 
@@ -36,6 +40,10 @@ G_BEGIN_DECLS
   (G_TYPE_INSTANCE_GET_CLASS((obj), \
   GTK_TYPE_CHROME_COOKIE_VIEW, GtkChromeCookieViewClass))
 
+// TODO(erg): Refactor the following class. It's continuously grown as more
+// things have been added to it and should probably become a general key/value
+// table. The problem is that any implementation for that would be much more
+// complicated and would require changing a whole lot of code.
 typedef struct {
   GtkFrame parent;
 
@@ -76,6 +84,17 @@ typedef struct {
   GtkWidget* appcache_size_entry_;
   GtkWidget* appcache_created_entry_;
   GtkWidget* appcache_last_accessed_entry_;
+
+  // The local storage item widgets.
+  GtkWidget* local_storage_item_table_;
+  GtkWidget* local_storage_item_origin_entry_;
+  GtkWidget* local_storage_item_key_entry_;
+  GtkWidget* local_storage_item_value_entry_;
+
+  // The database accessed widgets.
+  GtkWidget* database_accessed_table_;
+  GtkWidget* database_accessed_origin_entry_;
+  GtkWidget* database_accessed_name_entry_;
 } GtkChromeCookieView;
 
 typedef struct {
@@ -102,6 +121,12 @@ void gtk_chrome_cookie_view_display_cookie(
     const std::string& domain,
     const net::CookieMonster::CanonicalCookie& cookie);
 
+// Looks up the cookie_line in CookieMonster and displays that.
+void gtk_chrome_cookie_view_display_cookie_string(
+    GtkChromeCookieView* widget,
+    const GURL& url,
+    const std::string& cookie_line);
+
 // Switches the display to showing the passed in database.
 void gtk_chrome_cookie_view_display_database(
     GtkChromeCookieView* widget,
@@ -117,5 +142,17 @@ void gtk_chrome_cookie_view_display_local_storage(
 void gtk_chrome_cookie_view_display_app_cache(
     GtkChromeCookieView* widget,
     const BrowsingDataAppCacheHelper::AppCacheInfo& info);
+
+// Switches the display to an individual storage item.
+void gtk_chrome_cookie_view_display_local_storage_item(
+    GtkChromeCookieView* widget,
+    const std::string& host,
+    const string16& key,
+    const string16& value);
+
+void gtk_chrome_cookie_view_display_database_accessed(
+    GtkChromeCookieView* self,
+    const std::string& host,
+    const string16& database_name);
 
 #endif  // CHROME_BROWSER_GTK_GTK_CHROME_COOKIE_VIEW_H_

@@ -8,6 +8,7 @@
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_shutdown.h"
+#include "chrome/browser/cookie_modal_dialog.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/dom_ui/new_tab_ui.h"
 #include "chrome/browser/download/download_manager.h"
@@ -47,11 +48,6 @@
 #include "chrome/browser/chromeos/preferences.h"
 #endif
 
-#if defined(OS_WIN)
-// TODO: port me.
-#include "chrome/browser/cookie_modal_dialog.h"
-#endif
-
 namespace browser {
 
 void RegisterAllPrefs(PrefService* user_prefs, PrefService* local_state) {
@@ -78,9 +74,7 @@ void RegisterLocalState(PrefService* local_state) {
   BrowserView::RegisterBrowserViewPrefs(local_state);
 #endif
   TaskManager::RegisterPrefs(local_state);
-#if defined(OS_WIN)
   CookiePromptModalDialog::RegisterPrefs(local_state);
-#endif
   geolocation::RegisterPrefs(local_state);
   AutoFillManager::RegisterBrowserPrefs(local_state);
 }

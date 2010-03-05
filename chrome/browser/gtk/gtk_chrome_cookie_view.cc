@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "base/i18n/time_formatting.h"
+#include "base/string_util.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "grit/generated_resources.h"
 
@@ -86,6 +87,20 @@ void InitStyles(GtkChromeCookieView *self) {
                          dialog_style);
   InitBrowserDetailStyle(self->appcache_last_accessed_entry_, label_style,
                          dialog_style);
+
+  // Local storage item.
+  InitBrowserDetailStyle(self->local_storage_item_origin_entry_, label_style,
+                         dialog_style);
+  InitBrowserDetailStyle(self->local_storage_item_key_entry_, label_style,
+                         dialog_style);
+  InitBrowserDetailStyle(self->local_storage_item_value_entry_, label_style,
+                         dialog_style);
+
+  // Database accessed item.
+  InitBrowserDetailStyle(self->database_accessed_origin_entry_, label_style,
+                         dialog_style);
+  InitBrowserDetailStyle(self->database_accessed_name_entry_, label_style,
+                         dialog_style);
 }
 
 void SetCookieDetailsSensitivity(GtkChromeCookieView *self,
@@ -122,6 +137,19 @@ void SetAppCacheDetailsSensitivity(GtkChromeCookieView *self,
   gtk_widget_set_sensitive(self->appcache_last_accessed_entry_, enabled);
 }
 
+void SetLocalStorageItemSensitivity(GtkChromeCookieView* self,
+                                    gboolean enabled) {
+  gtk_widget_set_sensitive(self->local_storage_item_origin_entry_, enabled);
+  gtk_widget_set_sensitive(self->local_storage_item_key_entry_, enabled);
+  gtk_widget_set_sensitive(self->local_storage_item_value_entry_, enabled);
+}
+
+void SetDatabaseAccessedSensitivity(GtkChromeCookieView* self,
+                                    gboolean enabled) {
+  gtk_widget_set_sensitive(self->database_accessed_origin_entry_, enabled);
+  gtk_widget_set_sensitive(self->database_accessed_name_entry_, enabled);
+}
+
 void ClearCookieDetails(GtkChromeCookieView *self) {
   std::string no_cookie =
       l10n_util::GetStringUTF8(IDS_COOKIES_COOKIE_NONESELECTED);
@@ -148,10 +176,14 @@ void UpdateVisibleDetailedInfo(GtkChromeCookieView *self, GtkWidget* table) {
   SetLocalStorageDetailsSensitivity(self,
       table == self->local_storage_details_table_);
   SetAppCacheDetailsSensitivity(self, table == self->appcache_details_table_);
-  // Toggle the parent (the table frame) visibility and sensitivity.
+  SetLocalStorageItemSensitivity(self,
+      table == self->local_storage_item_table_);
+  SetDatabaseAccessedSensitivity(self,
+      table == self->database_accessed_table_);
+  // Display everything
   gtk_widget_show(self->table_box_);
-  gtk_widget_show(table);
-  // Toggle the other tables.
+  gtk_widget_show_all(table);
+  // Hide everything that isn't us.
   if (table != self->cookie_details_table_)
     gtk_widget_hide(self->cookie_details_table_);
   if (table != self->database_details_table_)
@@ -160,18 +192,22 @@ void UpdateVisibleDetailedInfo(GtkChromeCookieView *self, GtkWidget* table) {
     gtk_widget_hide(self->local_storage_details_table_);
   if (table != self->appcache_details_table_)
     gtk_widget_hide(self->appcache_details_table_);
+  if (table != self->local_storage_item_table_)
+    gtk_widget_hide(self->local_storage_item_table_);
+  if (table != self->database_accessed_table_)
+    gtk_widget_hide(self->database_accessed_table_);
 }
 
 }  // namespace
 
 G_DEFINE_TYPE(GtkChromeCookieView, gtk_chrome_cookie_view, GTK_TYPE_FRAME)
 
-
 static void gtk_chrome_cookie_view_class_init(GtkChromeCookieViewClass *klass) {
 }
 
 static void gtk_chrome_cookie_view_init(GtkChromeCookieView *self) {
   self->table_box_ = gtk_vbox_new(FALSE, 0);
+  gtk_widget_set_no_show_all(self->table_box_, TRUE);
 
   // Cookie details.
   self->cookie_details_table_ = gtk_table_new(7, 2, FALSE);
@@ -251,6 +287,39 @@ static void gtk_chrome_cookie_view_init(GtkChromeCookieView *self) {
                 self->appcache_details_table_,
                 &self->appcache_last_accessed_entry_);
 
+  // Local storage item.
+  self->local_storage_item_table_ = gtk_table_new(3, 2, FALSE);
+  gtk_container_add(GTK_CONTAINER(self->table_box_),
+                    self->local_storage_item_table_);
+  gtk_table_set_col_spacing(GTK_TABLE(self->local_storage_item_table_), 0,
+                            gtk_util::kLabelSpacing);
+
+  row = 0;
+  InitDetailRow(row++, IDS_COOKIES_COOKIE_DOMAIN_LABEL,
+                self->local_storage_item_table_,
+                &self->local_storage_item_origin_entry_);
+  InitDetailRow(row++, IDS_COOKIES_COOKIE_NAME_LABEL,
+                self->local_storage_item_table_,
+                &self->local_storage_item_key_entry_);
+  InitDetailRow(row++, IDS_COOKIES_COOKIE_CONTENT_LABEL,
+                self->local_storage_item_table_,
+                &self->local_storage_item_value_entry_);
+
+  // Database accessed item.
+  self->database_accessed_table_ = gtk_table_new(2, 2, FALSE);
+  gtk_container_add(GTK_CONTAINER(self->table_box_),
+                    self->database_accessed_table_);
+  gtk_table_set_col_spacing(GTK_TABLE(self->local_storage_item_table_), 0,
+                            gtk_util::kLabelSpacing);
+
+  row = 0;
+  InitDetailRow(row++, IDS_COOKIES_COOKIE_DOMAIN_LABEL,
+                self->database_accessed_table_,
+                &self->database_accessed_origin_entry_);
+  InitDetailRow(row++, IDS_COOKIES_COOKIE_NAME_LABEL,
+                self->database_accessed_table_,
+                &self->database_accessed_name_entry_);
+
   gtk_frame_set_shadow_type(GTK_FRAME(self), GTK_SHADOW_ETCHED_IN);
   gtk_container_add(GTK_CONTAINER(self), self->table_box_);
 }
@@ -300,6 +369,19 @@ void gtk_chrome_cookie_view_display_cookie(
                                IDS_COOKIES_COOKIE_SENDFOR_SECURE :
                                IDS_COOKIES_COOKIE_SENDFOR_ANY).c_str());
   SetCookieDetailsSensitivity(self, TRUE);
+}
+
+void gtk_chrome_cookie_view_display_cookie_string(
+    GtkChromeCookieView* self,
+    const GURL& url,
+    const std::string& cookie_line) {
+  net::CookieMonster::ParsedCookie pc(cookie_line);
+  net::CookieMonster::CanonicalCookie cookie(url, pc);
+
+  gtk_chrome_cookie_view_display_cookie(
+      self,
+      pc.HasDomain() ? pc.Domain() : url.host(),
+      cookie);
 }
 
 // Switches the display to showing the passed in database.
@@ -367,4 +449,33 @@ void gtk_chrome_cookie_view_display_app_cache(
                      WideToUTF8(base::TimeFormatFriendlyDateAndTime(
                          info.last_access_time)).c_str());
   SetAppCacheDetailsSensitivity(self, TRUE);
+}
+
+void gtk_chrome_cookie_view_display_local_storage_item(
+    GtkChromeCookieView* self,
+    const std::string& host,
+    const string16& key,
+    const string16& value) {
+  UpdateVisibleDetailedInfo(self, self->local_storage_item_table_);
+
+  gtk_entry_set_text(GTK_ENTRY(self->local_storage_item_origin_entry_),
+                     host.c_str());
+  gtk_entry_set_text(GTK_ENTRY(self->local_storage_item_key_entry_),
+                     UTF16ToUTF8(key).c_str());
+  gtk_entry_set_text(GTK_ENTRY(self->local_storage_item_value_entry_),
+                     UTF16ToUTF8(value).c_str());
+  SetLocalStorageItemSensitivity(self, TRUE);
+}
+
+void gtk_chrome_cookie_view_display_database_accessed(
+    GtkChromeCookieView* self,
+    const std::string& host,
+    const string16& database_name) {
+  UpdateVisibleDetailedInfo(self, self->database_accessed_table_);
+
+  gtk_entry_set_text(GTK_ENTRY(self->database_accessed_origin_entry_),
+                     host.c_str());
+  gtk_entry_set_text(GTK_ENTRY(self->database_accessed_name_entry_),
+                     UTF16ToUTF8(database_name).c_str());
+  SetDatabaseAccessedSensitivity(self, TRUE);
 }

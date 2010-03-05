@@ -6,16 +6,30 @@
 
 #include "app/l10n_util.h"
 #include "base/logging.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/gtk/gtk_chrome_cookie_view.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/gtk/gtk_util.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/browser/views/cookie_prompt_view.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 
+namespace {
+
+void OnExpanderActivate(GtkExpander* expander) {
+  g_browser_process->local_state()->
+      SetBoolean(prefs::kCookiePromptExpanded,
+                 gtk_expander_get_expanded(GTK_EXPANDER(expander)));
+}
+
+}  // namespace
+
 void CookiePromptModalDialog::CreateAndShowDialog() {
   dialog_ = CreateNativeDialog();
-  gtk_widget_show_all(GTK_WIDGET(GTK_DIALOG(dialog_)));
+  gtk_widget_show_all(GTK_WIDGET(dialog_));
 
   // Suggest a minimum size.
   gint width;
@@ -78,19 +92,37 @@ NativeDialog CookiePromptModalDialog::CreateNativeDialog() {
 
   gtk_box_pack_start(GTK_BOX(content_area), radio_box, FALSE, FALSE, 0);
 
-  // Now we create the details link and align it left in the button box.
-  GtkWidget* details_button = gtk_chrome_link_button_new(
+  GtkWidget* expander = gtk_expander_new(
       l10n_util::GetStringUTF8(IDS_COOKIE_SHOW_DETAILS_LABEL).c_str());
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->action_area),
-                     details_button, FALSE, FALSE, 0);
-  gtk_widget_set_sensitive(details_button, FALSE);
-  gtk_button_box_set_child_secondary(
-      GTK_BUTTON_BOX(GTK_DIALOG(dialog)->action_area),
-      details_button,
-      TRUE);
+  gtk_expander_set_expanded(GTK_EXPANDER(expander),
+                            g_browser_process->local_state()->
+                            GetBoolean(prefs::kCookiePromptExpanded));
+  g_signal_connect(expander, "notify::expanded",
+                   G_CALLBACK(OnExpanderActivate), NULL);
 
-  // TODO(erg): http://crbug.com/35178 : Needs to implement the cookie details
-  // box here.
+  GtkChromeCookieView* cookie_view = gtk_chrome_cookie_view_new();
+  gtk_chrome_cookie_view_clear(cookie_view);
+  if (type == CookiePromptModalDialog::DIALOG_TYPE_COOKIE) {
+    gtk_chrome_cookie_view_display_cookie_string(cookie_view,
+                                                 origin(), cookie_line());
+  } else if (type == CookiePromptModalDialog::DIALOG_TYPE_LOCAL_STORAGE) {
+    gtk_chrome_cookie_view_display_local_storage_item(
+        cookie_view,
+        origin().host(),
+        local_storage_key(),
+        local_storage_value());
+  } else if (type == CookiePromptModalDialog::DIALOG_TYPE_DATABASE) {
+    gtk_chrome_cookie_view_display_database_accessed(
+        cookie_view,
+        origin().host(),
+        database_name());
+  } else {
+    NOTIMPLEMENTED();
+  }
+  gtk_container_add(GTK_CONTAINER(expander), GTK_WIDGET(cookie_view));
+
+  gtk_box_pack_end(GTK_BOX(content_area), GTK_WIDGET(expander),
+                   FALSE, FALSE, 0);
 
   gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
   g_signal_connect(dialog, "response",
