@@ -117,11 +117,10 @@ class TabStripModelObserverBridge;
   BOOL barVisibilityUpdatesEnabled_;
 }
 
-// A convenience class method which gets the controller for window containing
-// the given view, casted to a |BrowserWindowController|. Returns nil if the
-// window controller is not a |BrowserWindowController|.  If the window
-// containing |view| does not have a |BrowserWindowController|, this method will
-// also walk up the chain of parent windows.
+// A convenience class method which gets the |BrowserWindowController| for a
+// given view.  This is the controller for the window containing |view|, if it
+// is a BWC, or the first controller in the parent-window chain that is a
+// BWC. This method returns nil if no window in the chain has a BWC.
 + (BrowserWindowController*)browserWindowControllerForView:(NSView*)view;
 
 // Load the browser window nib and do any Cocoa-specific initialization.
