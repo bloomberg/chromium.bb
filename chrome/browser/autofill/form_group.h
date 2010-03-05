@@ -24,6 +24,7 @@ class FormGroup {
 
   // Used to determine the type of a field based on the text that a user enters
   // into the field. The field types can then be reported back to the server.
+  // This method is additive on |possible_types|.
   virtual void GetPossibleFieldTypes(const string16& text,
                                      FieldTypeSet* possible_types) const = 0;
 
@@ -39,7 +40,7 @@ class FormGroup {
   // Used to determine if the text being typed into a field matches the
   // information in this FormGroup object. This is used by the preview
   // functionality.  |matched_text| will be populated with all of the possible
-  // matches given the type.
+  // matches given the type.  This method is additive on |matched_text|.
   virtual void FindInfoMatches(const AutoFillType& type,
                                const string16& info,
                                std::vector<string16>* matched_text) const = 0;

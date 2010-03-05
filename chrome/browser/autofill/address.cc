@@ -9,20 +9,23 @@
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/field_types.h"
 
-#define U(x) (UTF16ToUTF8(x).c_str())
+namespace {
 
-static const string16 kAddressSplitChars = ASCIIToUTF16("-,#. ");
+const char16 kAddressSplitChars[] = {'-', ',', '#', '.', ' ', 0};
 
-static const AutoFillType::FieldTypeSubGroup kAutoFillAddressTypes[] = {
+const AutoFillType::FieldTypeSubGroup kAutoFillAddressTypes[] = {
   AutoFillType::ADDRESS_LINE1,
   AutoFillType::ADDRESS_LINE2,
+  AutoFillType::ADDRESS_APT_NUM,
   AutoFillType::ADDRESS_CITY,
   AutoFillType::ADDRESS_STATE,
   AutoFillType::ADDRESS_ZIP,
   AutoFillType::ADDRESS_COUNTRY,
 };
 
-static const int kAutoFillAddressLength = arraysize(kAutoFillAddressTypes);
+const int kAutoFillAddressLength = arraysize(kAutoFillAddressTypes);
+
+}  // namespace
 
 void Address::GetPossibleFieldTypes(const string16& text,
                                     FieldTypeSet* possible_types) const {
@@ -60,10 +63,9 @@ void Address::GetPossibleFieldTypes(const string16& text,
 void Address::FindInfoMatches(const AutoFillType& type,
                               const string16& info,
                               std::vector<string16>* matched_text) const {
-  if (matched_text == NULL) {
-    DLOG(ERROR) << "NULL matched vector passed in";
+  DCHECK(matched_text);
+  if (!matched_text)
     return;
-  }
 
   string16 match;
   if (type.field_type() == UNKNOWN_TYPE) {
@@ -207,10 +209,7 @@ bool Address::IsZipCode(const string16& text) const {
 bool Address::FindInfoMatchesHelper(const FieldTypeSubGroup& subgroup,
                                     const string16& info,
                                     string16* match) const {
-  if (match == NULL) {
-    DLOG(ERROR) << "NULL match string passed in";
-    return false;
-  }
+  DCHECK(match);
 
   match->clear();
   if (subgroup == AutoFillType::ADDRESS_LINE1 &&
@@ -220,7 +219,7 @@ bool Address::FindInfoMatchesHelper(const FieldTypeSubGroup& subgroup,
              StartsWith(line2(), info, false)) {
     *match = line2();
   } else if (subgroup == AutoFillType::ADDRESS_APT_NUM &&
-             StartsWith(apt_num(), info, true)) {
+             StartsWith(apt_num(), info, false)) {
     *match = apt_num();
   } else if (subgroup == AutoFillType::ADDRESS_CITY &&
              StartsWith(city(), info, false)) {
