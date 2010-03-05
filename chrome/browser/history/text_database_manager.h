@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -124,14 +124,13 @@ class TextDatabaseManager {
   // file AddPageURL/Title/Body that may not be committed to the database yet.
   // This function removes entires from this list happening between the given
   // time range. It is called when the user clears their history for a time
-  // range, and we don't want any of our data to "leak."
+  // range, and we don't want any of our data to "leak." If restrict_urls is
+  // not empty, only changes on those URLs are deleted.
   //
   // Either or both times my be is_null to be unbounded in that direction. When
   // non-null, the range is [begin, end).
-  void DeleteFromUncommitted(base::Time begin, base::Time end);
-
-  // Same as DeleteFromUncommitted but for a single URL.
-  void DeleteURLFromUncommitted(const GURL& url);
+  void DeleteFromUncommitted(const std::set<GURL>& restrict_urls,
+                             base::Time begin, base::Time end);
 
   // Deletes all full text search data by removing the files from the disk.
   // This must be called OUTSIDE of a transaction since it actually deletes the
@@ -161,6 +160,7 @@ class TextDatabaseManager {
   FRIEND_TEST(TextDatabaseManagerTest, PartialComplete);
   FRIEND_TEST(ExpireHistoryTest, DISABLED_DeleteURLAndFavicon);
   FRIEND_TEST(ExpireHistoryTest, FlushRecentURLsUnstarred);
+  FRIEND_TEST(ExpireHistoryTest, FlushRecentURLsUnstarredRestricted);
 
   // Stores "recent stuff" that has happened with the page, since the page
   // visit, title, and body all come in at different times.

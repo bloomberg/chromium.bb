@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -82,8 +82,10 @@ class ExpireHistoryBackend {
   // Deletes everything associated with a URL.
   void DeleteURL(const GURL& url);
 
-  // Removes all visits in the given time range, updating the URLs accordingly.
-  void ExpireHistoryBetween(base::Time begin_time, base::Time end_time);
+  // Removes all visits to restrict_urls (or all URLs if empty) in the given
+  // time range, updating the URLs accordingly,
+  void ExpireHistoryBetween(const std::set<GURL>& restrict_urls,
+                            base::Time begin_time, base::Time end_time);
 
   // Archives all visits before and including the given time, updating the URLs
   // accordingly. This function is intended for migrating old databases

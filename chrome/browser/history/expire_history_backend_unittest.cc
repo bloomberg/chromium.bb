@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -529,7 +529,8 @@ TEST_F(ExpireHistoryTest, FlushRecentURLsUnstarred) {
                        visits[0].visit_time);
 
   // This should delete the last two visits.
-  expirer_.ExpireHistoryBetween(visit_times[2], Time());
+  std::set<GURL> restrict_urls;
+  expirer_.ExpireHistoryBetween(restrict_urls, visit_times[2], Time());
 
   // Run the text database expirer. This will flush any pending entries so we
   // can check that nothing was committed. We use a time far in the future so
@@ -562,6 +563,63 @@ TEST_F(ExpireHistoryTest, FlushRecentURLsUnstarred) {
   EXPECT_FALSE(HasFavIcon(url_row2.favicon_id()));
 }
 
+// Expires only a specific URLs more recent than a given time, with no starred
+// items.  Our time threshold is such that the URL should be updated (we delete
+// one of the two visits).
+TEST_F(ExpireHistoryTest, FlushRecentURLsUnstarredRestricted) {
+  URLID url_ids[3];
+  Time visit_times[4];
+  AddExampleData(url_ids, visit_times);
+
+  URLRow url_row1, url_row2;
+  ASSERT_TRUE(main_db_->GetURLRow(url_ids[1], &url_row1));
+  ASSERT_TRUE(main_db_->GetURLRow(url_ids[2], &url_row2));
+
+  // In this test we also make sure that any pending entries in the text
+  // database manager are removed.
+  VisitVector visits;
+  main_db_->GetVisitsForURL(url_ids[2], &visits);
+  ASSERT_EQ(1U, visits.size());
+  text_db_->AddPageURL(url_row2.url(), url_row2.id(), visits[0].visit_id,
+                       visits[0].visit_time);
+
+  // This should delete the last two visits.
+  std::set<GURL> restrict_urls;
+  restrict_urls.insert(url_row1.url());
+  expirer_.ExpireHistoryBetween(restrict_urls, visit_times[2], Time());
+
+  // Run the text database expirer. This will flush any pending entries so we
+  // can check that nothing was committed. We use a time far in the future so
+  // that anything added recently will get flushed.
+  TimeTicks expiration_time = TimeTicks::Now() + TimeDelta::FromDays(1);
+  text_db_->FlushOldChangesForTime(expiration_time);
+
+  // Verify that the middle URL had its last visit deleted only.
+  visits.clear();
+  main_db_->GetVisitsForURL(url_ids[1], &visits);
+  EXPECT_EQ(1U, visits.size());
+  EXPECT_EQ(0, CountTextMatchesForURL(url_row1.url()));
+
+  // Verify that the middle URL visit time and visit counts were updated.
+  URLRow temp_row;
+  ASSERT_TRUE(main_db_->GetURLRow(url_ids[1], &temp_row));
+  EXPECT_TRUE(visit_times[2] == url_row1.last_visit());  // Previous value.
+  EXPECT_TRUE(visit_times[1] == temp_row.last_visit());  // New value.
+  EXPECT_EQ(2, url_row1.visit_count());
+  EXPECT_EQ(1, temp_row.visit_count());
+  EXPECT_EQ(1, url_row1.typed_count());
+  EXPECT_EQ(0, temp_row.typed_count());
+
+  // Verify that the middle URL's favicon and thumbnail is still there.
+  EXPECT_TRUE(HasFavIcon(url_row1.favicon_id()));
+  EXPECT_TRUE(HasThumbnail(url_row1.id()));
+
+  // Verify that the last URL was not touched.
+  EXPECT_TRUE(main_db_->GetURLRow(url_ids[2], &temp_row));
+  EXPECT_TRUE(HasFavIcon(url_row2.favicon_id()));
+  EXPECT_TRUE(HasThumbnail(url_row2.id()));
+}
+
 // Expire a starred URL, it shouldn't get deleted
 TEST_F(ExpireHistoryTest, FlushRecentURLsStarred) {
   URLID url_ids[3];
@@ -577,7 +635,8 @@ TEST_F(ExpireHistoryTest, FlushRecentURLsStarred) {
   StarURL(url_row2.url());
 
   // This should delete the last two visits.
-  expirer_.ExpireHistoryBetween(visit_times[2], Time());
+  std::set<GURL> restrict_urls;
+  expirer_.ExpireHistoryBetween(restrict_urls, visit_times[2], Time());
 
   // The URL rows should still exist.
   URLRow new_url_row1, new_url_row2;

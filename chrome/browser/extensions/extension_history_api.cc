@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -336,8 +336,10 @@ bool DeleteRangeHistoryFunction::RunAsyncImpl() {
   base::Time end_time;
   EXTENSION_FUNCTION_VALIDATE(GetTimeFromValue(value, &end_time));
 
+  std::set<GURL> restrict_urls;
   HistoryService* hs = profile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
   hs->ExpireHistoryBetween(
+      restrict_urls,
       begin_time,
       end_time,
       &cancelable_consumer_,
@@ -351,8 +353,10 @@ void DeleteRangeHistoryFunction::DeleteComplete() {
 }
 
 bool DeleteAllHistoryFunction::RunAsyncImpl() {
+  std::set<GURL> restrict_urls;
   HistoryService* hs = profile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
   hs->ExpireHistoryBetween(
+      restrict_urls,
       base::Time::FromDoubleT(0),  // From the beginning of the epoch.
       base::Time::Now(),           // To the current time.
       &cancelable_consumer_,

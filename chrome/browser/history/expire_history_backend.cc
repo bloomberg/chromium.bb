@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -212,19 +212,32 @@ void ExpireHistoryBackend::DeleteURL(const GURL& url) {
   BroadcastDeleteNotifications(&dependencies);
 }
 
-void ExpireHistoryBackend::ExpireHistoryBetween(Time begin_time,
-                                                Time end_time) {
+void ExpireHistoryBackend::ExpireHistoryBetween(
+    const std::set<GURL>& restrict_urls, Time begin_time, Time end_time) {
   if (!main_db_)
     return;
 
   // There may be stuff in the text database manager's temporary cache.
   if (text_db_)
-    text_db_->DeleteFromUncommitted(begin_time, end_time);
+    text_db_->DeleteFromUncommitted(restrict_urls, begin_time, end_time);
 
   // Find the affected visits and delete them.
   // TODO(brettw): bug 1171164: We should query the archived database here, too.
   VisitVector visits;
   main_db_->GetAllVisitsInRange(begin_time, end_time, 0, &visits);
+  if (!restrict_urls.empty()) {
+    std::set<URLID> url_ids;
+    for (std::set<GURL>::const_iterator url = restrict_urls.begin();
+        url != restrict_urls.end(); ++url)
+      url_ids.insert(main_db_->GetRowForURL(*url, NULL));
+    VisitVector all_visits;
+    all_visits.swap(visits);
+    for (VisitVector::iterator visit = all_visits.begin();
+         visit != all_visits.end(); ++visit) {
+      if (url_ids.find(visit->url_id) != url_ids.end())
+        visits.push_back(*visit);
+    }
+  }
   if (visits.empty())
     return;
 
@@ -375,8 +388,11 @@ void ExpireHistoryBackend::DeleteOneURL(
   main_db_->DeleteSegmentForURL(url_row.id());
 
   // The URL may be in the text database manager's temporary cache.
-  if (text_db_)
-    text_db_->DeleteURLFromUncommitted(url_row.url());
+  if (text_db_) {
+    std::set<GURL> restrict_urls;
+    restrict_urls.insert(url_row.url());
+    text_db_->DeleteFromUncommitted(restrict_urls, base::Time(), base::Time());
+  }
 
   if (!is_bookmarked) {
     dependencies->deleted_urls.push_back(url_row);

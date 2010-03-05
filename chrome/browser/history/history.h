@@ -359,7 +359,7 @@ class HistoryService : public CancelableRequestProvider,
   // Delete all the information related to a single url.
   void DeleteURL(const GURL& url);
 
-  // Implemented by the caller of 'ExpireHistory(Since|Between)' below, and
+  // Implemented by the caller of ExpireHistoryBetween, and
   // is called when the history service has deleted the history.
   typedef Callback0::Type ExpireHistoryCallback;
 
@@ -369,7 +369,10 @@ class HistoryService : public CancelableRequestProvider,
   // if they are no longer referenced. |callback| runs when the expiration is
   // complete. You may use null Time values to do an unbounded delete in
   // either direction.
-  void ExpireHistoryBetween(base::Time begin_time, base::Time end_time,
+  // If |restrict_urls| is not empty, only visits to the URLs in this set are
+  // removed.
+  void ExpireHistoryBetween(const std::set<GURL>& restrict_urls,
+                            base::Time begin_time, base::Time end_time,
                             CancelableRequestConsumerBase* consumer,
                             ExpireHistoryCallback* callback);
 

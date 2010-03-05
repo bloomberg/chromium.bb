@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -337,7 +337,8 @@ void TextDatabaseManager::DeletePageData(Time time, const GURL& url,
   db->DeletePageData(time, URLDatabase::GURLToDatabaseURL(url));
 }
 
-void TextDatabaseManager::DeleteFromUncommitted(Time begin, Time end) {
+void TextDatabaseManager::DeleteFromUncommitted(
+    const std::set<GURL>& restrict_urls, Time begin, Time end) {
   // First find the beginning of the range to delete. Recall that the list
   // has the most recent item at the beginning. There won't normally be very
   // many items, so a brute-force search is fine.
@@ -352,15 +353,17 @@ void TextDatabaseManager::DeleteFromUncommitted(Time begin, Time end) {
   // Now delete all visits up to the oldest one we were supposed to delete.
   // Note that if begin is_null, it will be less than or equal to any other
   // time.
-  while (cur != recent_changes_.end() && cur->second.visit_time() >= begin)
-    cur = recent_changes_.Erase(cur);
-}
-
-void TextDatabaseManager::DeleteURLFromUncommitted(const GURL& url) {
-  RecentChangeList::iterator found = recent_changes_.Peek(url);
-  if (found == recent_changes_.end())
-    return;  // We don't know about this page, give up.
-  recent_changes_.Erase(found);
+  if (restrict_urls.empty()) {
+    while (cur != recent_changes_.end() && cur->second.visit_time() >= begin)
+      cur = recent_changes_.Erase(cur);
+  } else {
+    while (cur != recent_changes_.end() && cur->second.visit_time() >= begin) {
+      if (restrict_urls.find(cur->first) != restrict_urls.end())
+        cur = recent_changes_.Erase(cur);
+      else
+        ++cur;
+    }
+  }
 }
 
 void TextDatabaseManager::DeleteAll() {

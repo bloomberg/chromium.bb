@@ -222,8 +222,17 @@ each locale. -->
           $1<ex>pie</ex>
         </ph>'
       </message>
-      <message name="IDS_HISTORY_DELETE_PRIOR_VISITS_LINK" desc="Title of the link that allows the user to delete visits prior to the specified point">
-        Delete history for this day
+      <message name="IDS_HISTORY_START_EDITING_HISTORY" desc="Title of the link that allows the user to enable controls for deleting single history items">
+        Edit items...
+      </message>
+      <message name="IDS_HISTORY_STOP_EDITING_HISTORY" desc="Title of the link that allows the user to disable controls for deleting single history items">
+        Done removing items
+      </message>
+      <message name="IDS_HISTORY_REMOVE_SELECTED_ITEMS" desc="Title of the button that allows the user to remove the selected history items">
+        Remove selected items
+      </message>
+      <message name="IDS_HISTORY_OPEN_CLEAR_BROWSING_DATA_DIALOG" desc="Title of the button that will open the clear browsing data dialog.">
+        Clear all browsing data...
       </message>
       <message name="IDS_HISTORY_DELETE_PRIOR_VISITS_WARNING" desc="Warning shown before deleting">
         Are you sure you want to delete these pages from your history?

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -664,14 +664,15 @@ void HistoryService::DeleteURL(const GURL& url) {
 }
 
 void HistoryService::ExpireHistoryBetween(
+    const std::set<GURL>& restrict_urls,
     Time begin_time, Time end_time,
     CancelableRequestConsumerBase* consumer,
     ExpireHistoryCallback* callback) {
 
   // We will update the visited links when we observe the delete notifications.
   Schedule(PRIORITY_UI, &HistoryBackend::ExpireHistoryBetween, consumer,
-                        new history::ExpireHistoryRequest(callback),
-                        begin_time, end_time);
+           new history::ExpireHistoryRequest(callback),
+           restrict_urls, begin_time, end_time);
 }
 
 void HistoryService::BroadcastNotifications(

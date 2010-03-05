@@ -37,6 +37,9 @@ var localStrings;
 var pageState;
 var deleteQueue = [];
 var deleteInFlight = false;
+var selectionAnchor = -1;
+var selectionEnd = -1;
+var id2checkbox = [];
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -47,12 +50,13 @@ var deleteInFlight = false;
  * @param {boolean} continued Whether this page is on the same day as the
  *     page before it
  */
-function Page(result, continued, model) {
+function Page(result, continued, model, id) {
   this.model_ = model;
   this.title_ = result.title;
   this.url_ = result.url;
   this.starred_ = result.starred;
   this.snippet_ = result.snippet || "";
+  this.id_ = id;
 
   this.changed = false;
 
@@ -82,6 +86,15 @@ function Page(result, continued, model) {
 Page.prototype.getBrowseResultDOM = function() {
   var node = createElementWithClassName('div', 'entry');
   var time = createElementWithClassName('div', 'time');
+  if (this.model_.getEditMode()) {
+    var checkbox = document.createElement('input');
+    checkbox.type = "checkbox";
+    checkbox.name = this.id_;
+    checkbox.time = this.time.toString();
+    checkbox.addEventListener("click", checkboxClicked, false);
+    id2checkbox[this.id_] = checkbox;
+    time.appendChild(checkbox);
+  }
   time.appendChild(document.createTextNode(this.dateTimeOfDay));
   node.appendChild(time);
   node.appendChild(this.getTitleDOM_());
@@ -131,6 +144,7 @@ Page.prototype.getTitleDOM_ = function() {
   link.style.backgroundImage =
       'url(chrome://favicon/' + encodeURIForCSS(this.url_) + ')';
   link.appendChild(document.createTextNode(this.title_));
+  link.id = "id-" + this.id_;
   this.highlightNodeContent_(link);
 
   node.appendChild(link);
@@ -180,6 +194,7 @@ Page.pregQuote_ = function(str) {
  */
 function HistoryModel() {
   this.clearModel_();
+  this.setEditMode(false);
   this.view_;
 }
 
@@ -266,7 +281,8 @@ HistoryModel.prototype.addResults = function(info, results) {
       if (!lastURL || lastURL != thisURL) {
         // Figure out if this page is in the same day as the previous page,
         // this is used to determine how day headers should be drawn.
-        this.pages_.push(new Page(thisResult, thisDay == lastDay, this));
+        this.pages_.push(new Page(thisResult, thisDay == lastDay, this,
+            this.last_id_++));
         lastDay = thisDay;
         lastURL = thisURL;
       }
@@ -307,12 +323,31 @@ HistoryModel.prototype.getNumberedRange = function(start, end) {
   return this.pages_.slice(start, end);
 }
 
+/**
+ * @return {boolean} Whether we are in edit mode where history items can be
+ *    deleted
+ */
+HistoryModel.prototype.getEditMode = function() {
+  return this.editMode_;
+}
+
+/**
+ * @param {boolean} edit_mode Control whether we are in edit mode.
+ */
+HistoryModel.prototype.setEditMode = function(edit_mode) {
+  this.editMode_ = edit_mode;
+}
+
 // HistoryModel, Private: -----------------------------------------------------
 HistoryModel.prototype.clearModel_ = function() {
   this.inFlight_ = false; // Whether a query is inflight.
   this.searchText_ = '';
   this.searchDepth_ = 0;
   this.pages_ = []; // Date-sorted list of pages.
+  this.last_id_ = 0;
+  selectionAnchor = -1;
+  selectionEnd = -1;
+  id2checkbox = [];
 
   // The page that the view wants to see - we only fetch slightly past this
   // point. If the view requests a page that we don't have data for, we try
@@ -404,8 +439,10 @@ HistoryModel.prototype.canFillPage_ = function(page) {
  * @param {HistoryModel} model The model backing this view.
  */
 function HistoryView(model) {
-  this.summaryDiv_ = $('results-summary');
-  this.summaryDiv_.innerHTML = localStrings.getString('loading');
+  this.summaryTd_ = $('results-summary');
+  this.summaryTd_.innerHTML = localStrings.getString('loading');
+  this.editButtonTd_ = $('edit-button');
+  this.editingControlsDiv_ = $('editing-controls');
   this.resultDiv_ = $('results-display');
   this.pageDiv_ = $('results-pagination');
   this.model_ = model
@@ -420,6 +457,7 @@ function HistoryView(model) {
   window.onresize = function() {
     self.updateEntryAnchorWidth_();
   };
+  self.updateEditControls_();
 }
 
 // HistoryView, public: -------------------------------------------------------
@@ -433,7 +471,30 @@ HistoryView.prototype.setSearch = function(term, opt_page) {
   this.pageIndex_ = parseInt(opt_page || 0, 10);
   window.scrollTo(0, 0);
   this.model_.setSearchText(term, this.pageIndex_);
-  pageState.setUIState(term, this.pageIndex_);
+  if (term) {
+    this.setEditMode(false);
+  }
+  this.updateEditControls_();
+  pageState.setUIState(this.model_.getEditMode(), term, this.pageIndex_);
+}
+
+/**
+ * Controls edit mode where history can be deleted.
+ * @param {boolean} edit_mode Whether to enable edit mode.
+ */
+HistoryView.prototype.setEditMode = function(edit_mode) {
+  this.model_.setEditMode(edit_mode);
+  pageState.setUIState(this.model_.getEditMode(), this.model_.getSearchText(),
+                       this.pageIndex_);
+}
+
+/**
+ * Toggles the edit mode and triggers UI update.
+ */
+HistoryView.prototype.toggleEditMode = function() {
+  var editMode = !this.model_.getEditMode();
+  this.setEditMode(editMode);
+  this.updateEditControls_();
 }
 
 /**
@@ -452,7 +513,8 @@ HistoryView.prototype.setPage = function(page) {
   this.pageIndex_ = parseInt(page, 10);
   window.scrollTo(0, 0);
   this.model_.requestPage(page);
-  pageState.setUIState(this.model_.getSearchText(), this.pageIndex_);
+  pageState.setUIState(this.model_.getEditMode(), this.model_.getSearchText(),
+      this.pageIndex_);
 }
 
 /**
@@ -528,13 +590,6 @@ HistoryView.prototype.displayResults_ = function() {
               localStrings.getString('cont')));
         }
 
-        var link = createElementWithClassName('button', 'delete-day');
-        link.time = page.time.toString();
-        link.onclick = deleteDay;
-        link.appendChild(
-            document.createTextNode(localStrings.getString("deleteday")));
-
-        day.appendChild(link);
         this.resultDiv_.appendChild(day);
       } else if (lastTime - thisTime > BROWSING_GAP_TIME) {
         this.resultDiv_.appendChild(createElementWithClassName('div', 'gap'));
@@ -558,10 +613,51 @@ HistoryView.prototype.displayResults_ = function() {
 HistoryView.prototype.displaySummaryBar_ = function() {
   var searchText = this.model_.getSearchText();
   if (searchText != '') {
-    this.summaryDiv_.textContent = localStrings.formatString('searchresultsfor',
+    this.summaryTd_.textContent = localStrings.formatString('searchresultsfor',
         searchText);
   } else {
-    this.summaryDiv_.innerHTML = localStrings.getString('history');
+    this.summaryTd_.innerHTML = localStrings.getString('history');
+  }
+}
+
+/**
+ * Update the widgets related to edit mode.
+ */
+HistoryView.prototype.updateEditControls_ = function() {
+  // Display a button (looking like a link) to enable/disable edit mode.
+  var oldButton = this.editButtonTd_.firstChild;
+  if (this.model_.getSearchText()) {
+    this.editButtonTd_.replaceChild(document.createElement('p'), oldButton);
+    while (this.editingControlsDiv_.hasChildNodes()) {
+      this.editingControlsDiv_.removeChild(this.editingControlsDiv_.firstChild);
+    }
+    return;
+  }
+
+  var editMode = this.model_.getEditMode();
+  var button = createElementWithClassName('button', 'edit-button');
+  button.onclick = toggleEditMode;
+  button.appendChild(document.createTextNode(editMode ?
+      localStrings.getString("doneediting") :
+      localStrings.getString("edithistory")));
+  this.editButtonTd_.replaceChild(button, oldButton);
+  if (editMode) {
+    // Button to delete the selected items.
+    button = document.createElement('button');
+    button.onclick = removeItems;
+    button.appendChild(document.createTextNode(
+        localStrings.getString("removeselected")));
+    this.editingControlsDiv_.appendChild(button);
+    // Button that opens up the clear browsing data dialog.
+    button = document.createElement('button');
+    button.onclick = openClearBrowsingData;
+    button.appendChild(document.createTextNode(
+        localStrings.getString("clearallhistory")));
+    this.editingControlsDiv_.appendChild(button);
+  } else {
+    while (this.editingControlsDiv_.hasChildNodes()) {
+      this.editingControlsDiv_.removeChild(this.editingControlsDiv_.firstChild);
+    }
   }
 }
 
@@ -592,7 +688,8 @@ HistoryView.prototype.displayNavBar_ = function() {
  * @return {string} HTML representation of the pagination link
  */
 HistoryView.prototype.createPageNavHTML_ = function(page, name) {
-  var hashString = PageState.getHashString(this.model_.getSearchText(), page);
+  var hashString = PageState.getHashString(this.model_.getEditMode(),
+                                           this.model_.getSearchText(), page);
   return '<a href="chrome://history/' +
               (hashString ? '#' + hashString : '') +
               '"' +
@@ -613,23 +710,24 @@ HistoryView.prototype.updateEntryAnchorWidth_ = function() {
     return;
 
   // Create new CSS rules and add them last to the last stylesheet.
-  if (!this.entryAnchorRule_) {
-    var styleSheets = document.styleSheets;
-    var styleSheet = styleSheets[styleSheets.length - 1];
-    var rules = styleSheet.cssRules;
-    var createRule = function(selector) {
-      styleSheet.insertRule(selector + '{}', rules.length);
-      return rules[rules.length - 1];
-    };
-    this.entryAnchorRule_ = createRule('.entry .title > a');
-    // The following rule needs to be more specific to have higher priority.
-    this.entryAnchorStarredRule_ = createRule('.entry .title.starred > a');
-  }
-
-  var anchorMaxWith = titleElement.offsetWidth;
-  this.entryAnchorRule_.style.maxWidth = anchorMaxWith + 'px';
-  // Adjust by the width of star plus its margin.
-  this.entryAnchorStarredRule_.style.maxWidth = anchorMaxWith - 23 + 'px';
+  // TODO(jochen): The following code does not work due to WebKit bug #32309
+  // if (!this.entryAnchorRule_) {
+  //   var styleSheets = document.styleSheets;
+  //   var styleSheet = styleSheets[styleSheets.length - 1];
+  //   var rules = styleSheet.cssRules;
+  //   var createRule = function(selector) {
+  //     styleSheet.insertRule(selector + '{}', rules.length);
+  //     return rules[rules.length - 1];
+  //   };
+  //   this.entryAnchorRule_ = createRule('.entry .title > a');
+  //   // The following rule needs to be more specific to have higher priority.
+  //   this.entryAnchorStarredRule_ = createRule('.entry .title.starred > a');
+  // }
+  //
+  // var anchorMaxWith = titleElement.offsetWidth;
+  // this.entryAnchorRule_.style.maxWidth = anchorMaxWith + 'px';
+  // // Adjust by the width of star plus its margin.
+  // this.entryAnchorStarredRule_.style.maxWidth = anchorMaxWith - 23 + 'px';
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -672,6 +770,7 @@ PageState.instance = null;
  */
 PageState.prototype.getHashData = function() {
   var result = {
+    e : 0,
     q : '',
     p : 0
   };
@@ -698,12 +797,13 @@ PageState.prototype.getHashData = function() {
  * @param {string} term The current search string.
  * @param {string} page The page currently being viewed.
  */
-PageState.prototype.setUIState = function(term, page) {
+PageState.prototype.setUIState = function(editMode, term, page) {
   // Make sure the form looks pretty.
   document.forms[0].term.value = term;
   var currentHash = this.getHashData();
-  if (currentHash.q != term || currentHash.p != page) {
-    window.location.hash = PageState.getHashString(term, page);
+  if (Boolean(currentHash.e) != editMode || currentHash.q != term || 
+      currentHash.p != page) {
+    window.location.hash = PageState.getHashString(editMode, term, page);
   }
 }
 
@@ -713,8 +813,11 @@ PageState.prototype.setUIState = function(term, page) {
  * @param {string} page The page currently being viewed.
  * @return {string} The string to be used in a hash.
  */
-PageState.getHashString = function(term, page) {
+PageState.getHashString = function(editMode, term, page) {
   var newHash = [];
+  if (editMode) {
+    newHash.push("e=1");
+  }
   if (term) {
     newHash.push("q=" + encodeURIComponent(term));
   }
@@ -740,6 +843,9 @@ function load() {
 
   // Create default view.
   var hashData = pageState.getHashData();
+  if (Boolean(hashData.e)) {
+    historyView.toggleEditMode();
+  }
   historyView.setSearch(hashData.q, hashData.p);
 }
 
@@ -766,25 +872,14 @@ function setPage(page) {
 }
 
 /**
- * Delete a day from history.
- * TODO: Add UI to indicate that something is happening.
- * @param {number} time A time from the day we wish to delete.
+ * TODO(glen): Get rid of this function.
+ * Toggles edit mode.
  */
-function deleteDay() {
-  var time = this.time;
-
-  // Check to see if item is already being deleted.
-  for (var i = 0, deleting; deleting = deleteQueue[i]; i++) {
-    if (deleting == time)
-      return false;
+function toggleEditMode() {
+  if (historyView) {
+    historyView.toggleEditMode();
+    historyView.reload();
   }
-
-  if (confirm(localStrings.getString("deletedaywarning"))) {
-    deleteQueue.push(time);
-    deleteNextInQueue();
-  }
-
-  return false;
 }
 
 /**
@@ -793,7 +888,101 @@ function deleteDay() {
 function deleteNextInQueue() {
   if (!deleteInFlight && deleteQueue.length) {
     deleteInFlight = true;
-    chrome.send("deleteDay", [deleteQueue[0]]);
+    chrome.send("removeURLsOnOneDay",
+                [String(deleteQueue[0])].concat(deleteQueue[1]));
+  }
+}
+
+/**
+ * Open the clear browsing data dialog.
+ */
+function openClearBrowsingData() {
+  chrome.send("clearBrowsingData", []);
+  return false;
+}
+
+/**
+ * Collect IDs from checked checkboxes and send to Chrome for deletion.
+ */
+function removeItems() {
+  var checkboxes = document.getElementsByTagName('input');
+  var ids = [];
+  var queue = [];
+  var date = new Date();
+  for (var i = 0; i < checkboxes.length; i++) {
+    if (checkboxes[i].type == "checkbox" && checkboxes[i].checked &&
+        !checkboxes[i].disabled) {
+      var cbDate = new Date(checkboxes[i].time);
+      if (date.getFullYear() != cbDate.getFullYear() ||
+          date.getMonth() != cbDate.getMonth() ||
+          date.getDate() != cbDate.getDate()) {
+        if (ids.length > 0) {
+          queue.push(date.valueOf() / 1000);
+          queue.push(ids);
+        }
+        ids = [];
+        date = cbDate;
+      }
+      var link = $("id-" + checkboxes[i].name);
+      checkboxes[i].disabled = true;
+      link.style.setProperty("text-decoration", "line-through");
+      ids.push(link.href);
+    }
+  }
+  if (ids.length > 0) {
+    queue.push(date.valueOf() / 1000);
+    queue.push(ids);
+  }
+  if (queue.length > 0) {
+    if (confirm(localStrings.getString("deletewarning"))) {
+      deleteQueue = deleteQueue.concat(queue);
+      deleteNextInQueue();
+    }
+  }
+  return false;
+}
+
+/**
+ * Toggle state of checkbox and handle CTRL and Shift modifiers
+ */
+function checkboxClicked(event) {
+  if ((selectionAnchor == -1) || !event.shiftKey) {
+    selectionAnchor = this.name;
+    selectionEnd = this.name;
+  }
+  if (event.shiftKey) {
+    if (((selectionAnchor >= selectionEnd) && (selectionAnchor >= this.name)) ||
+        ((selectionAnchor <= selectionEnd) && (selectionAnchor <= this.name))) {
+      // If the click was on the same side of the anchor as the last click,
+      // extend the current selection.
+      var begin = selectionEnd < this.name ? selectionEnd : this.name;
+      var end = selectionEnd < this.name ? this.name : selectionEnd;
+      var checked = true;
+      if (((selectionAnchor <= this.name) && (this.name <= selectionEnd)) ||
+          ((selectionEnd <= this.name) && (this.name <= selectionAnchor))) {
+        checked = false;
+      }
+      for (var i = begin; i <= end; i++) {
+        if (!id2checkbox[i].disabled) {
+          id2checkbox[i].checked = checked;
+        }
+      }
+      this.checked = true;
+      selectionEnd = this.name;
+    } else {
+      // Otherwise, the last clicked checkbox becomes the new anchor, and
+      // everything between the last anchor and the newly clicked checkbox is
+      // enabled.
+      var begin = selectionAnchor < this.name ? selectionAnchor : this.name;
+      var end = selectionAnchor < this.name ? this.name : selectionAnchor;
+      for (var i = begin; i <= end; i++) {
+        if (!id2checkbox[i].disabled) {
+          id2checkbox[i].checked = true;
+        }
+      }
+      selectionAnchor = selectionEnd;
+      selectionEnd = this.name;
+    }
   }
 }
 
@@ -813,8 +1002,11 @@ function deleteComplete() {
   window.console.log("Delete complete");
   deleteInFlight = false;
   if (deleteQueue.length > 1) {
-    deleteQueue = deleteQueue.slice(1, deleteQueue.length);
+    deleteQueue = deleteQueue.slice(2);
     deleteNextInQueue();
+  } else {
+    deleteQueue = [];
+    historyView.reload();
   }
 }
 
@@ -840,13 +1032,33 @@ function historyDeleted() {
 </script>
 <link rel="stylesheet" href="dom_ui.css">
 <style>
-#results-summary {
+#results-separator {
   margin-top:12px;
   border-top:1px solid #9cc2ef;
   background-color:#ebeff9;
   font-weight:bold;
   padding:3px;
   margin-bottom:-8px;
+}
+#results-separator table {
+  width: 100%;
+}
+#results-summary {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  width: 50%;
+}
+#edit-button {
+  text-align: right;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  width: 50%;
+}
+#editing-controls button {
+  margin-top: 18px;
+  margin-bottom: -8px;
 }
 #results-display {
   max-width:740px;
@@ -856,7 +1068,7 @@ function historyDeleted() {
   padding:0px 3px;
   display:inline-block;
 }
-.delete-day {
+.edit-button {
   display: inline;
   -webkit-appearance: none;
   background: none;
@@ -952,7 +1164,12 @@ html[dir='rtl'] .entry .title > a {
   </form>
 </div>
 <div class="main">
-  <div id="results-summary"></div>
+  <div id="results-separator">
+    <table border="0" cellPadding="0" cellSpacing="0">
+      <tr><td id="results-summary"></td><td id="edit-button"><p></p></td></tr>
+    </table>
+  </div>
+  <div id="editing-controls"></div>
   <div id="results-display"></div>
   <div id="results-pagination"></div>
 </div>

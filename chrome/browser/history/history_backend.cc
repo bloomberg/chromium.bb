@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1740,19 +1740,20 @@ void HistoryBackend::DeleteURL(const GURL& url) {
 
 void HistoryBackend::ExpireHistoryBetween(
     scoped_refptr<ExpireHistoryRequest> request,
+    const std::set<GURL>& restrict_urls,
     Time begin_time,
     Time end_time) {
   if (request->canceled())
     return;
 
   if (db_.get()) {
-    if (begin_time.is_null() && end_time.is_null()) {
+    if (begin_time.is_null() && end_time.is_null() && restrict_urls.empty()) {
       // Special case deleting all history so it can be faster and to reduce the
       // possibility of an information leak.
       DeleteAllHistory();
     } else {
       // Clearing parts of history, have the expirer do the depend
-      expirer_.ExpireHistoryBetween(begin_time, end_time);
+      expirer_.ExpireHistoryBetween(restrict_urls, begin_time, end_time);
 
       // Force a commit, if the user is deleting something for privacy reasons,
       // we want to get it on disk ASAP.
@@ -1765,7 +1766,7 @@ void HistoryBackend::ExpireHistoryBetween(
 
   request->ForwardResult(ExpireHistoryRequest::TupleType());
 
-  if (history_publisher_.get())
+  if (history_publisher_.get() && restrict_urls.empty())
     history_publisher_->DeleteUserHistoryBetween(begin_time, end_time);
 }
 

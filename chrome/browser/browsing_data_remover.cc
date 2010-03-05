@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -78,9 +78,11 @@ void BrowsingDataRemover::Remove(int remove_mask) {
     HistoryService* history_service =
         profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
     if (history_service) {
+      std::set<GURL> restrict_urls;
       UserMetrics::RecordAction("ClearBrowsingData_History", profile_);
       waiting_for_clear_history_ = true;
-      history_service->ExpireHistoryBetween(delete_begin_, delete_end_,
+      history_service->ExpireHistoryBetween(restrict_urls,
+          delete_begin_, delete_end_,
           &request_consumer_,
           NewCallback(this, &BrowsingDataRemover::OnHistoryDeletionDone));
     }

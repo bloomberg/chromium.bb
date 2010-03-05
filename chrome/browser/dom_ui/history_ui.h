@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/dom_ui/dom_ui.h"
 #include "chrome/browser/cancelable_request.h"
@@ -38,8 +37,7 @@ class HistoryUIHTMLSource : public ChromeURLDataManager::DataSource {
 
 // The handler for Javascript messages related to the "history" view.
 class BrowsingHistoryHandler : public DOMMessageHandler,
-                               public NotificationObserver,
-                               public BrowsingDataRemover::Observer {
+                               public NotificationObserver {
  public:
   BrowsingHistoryHandler();
   virtual ~BrowsingHistoryHandler();
@@ -54,21 +52,24 @@ class BrowsingHistoryHandler : public DOMMessageHandler,
   // Callback for the "searchHistory" message.
   void HandleSearchHistory(const Value* value);
 
-  // Callback for the "deleteDay" message.
-  void HandleDeleteDay(const Value* value);
+  // Callback for the "removeURLsOnOneDay" message.
+  void HandleRemoveURLsOnOneDay(const Value* value);
+
+  // Handle for "clearBrowsingData" message.
+  void HandleClearBrowsingData(const Value* value);
 
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // BrowsingDataRemover observer implementation.
-  void OnBrowsingDataRemoverDone();
-
  private:
   // Callback from the history system when the history list is available.
   void QueryComplete(HistoryService::Handle request_handle,
                      history::QueryResults* results);
+
+  // Callback from the history system when visits were deleted.
+  void RemoveComplete();
 
   // Extract the arguments from the call to HandleSearchHistory.
   void ExtractSearchHistoryArguments(const Value* value,
@@ -82,9 +83,6 @@ class BrowsingHistoryHandler : public DOMMessageHandler,
 
   // Current search text.
   std::wstring search_text_;
-
-  // Browsing history remover
-  BrowsingDataRemover* remover_;
 
   // Our consumer for the history service.
   CancelableRequestConsumerT<int, 0> cancelable_consumer_;
