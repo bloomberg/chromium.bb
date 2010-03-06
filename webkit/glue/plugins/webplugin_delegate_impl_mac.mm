@@ -288,22 +288,22 @@ void WebPluginDelegateImpl::PlatformDestroyInstance() {
 #endif
 }
 
-void WebPluginDelegateImpl::UpdateContext(CGContextRef context) {
+void WebPluginDelegateImpl::UpdateGeometryAndContext(
+    const gfx::Rect& window_rect, const gfx::Rect& clip_rect,
+    CGContextRef context) {
   buffer_context_ = context;
 #ifndef NP_NO_CARBON
-  // Under the Carbon event model, CoreGraphics plugins can cache the context
-  // they are given in NPP_SetWindow (and at least Flash does), and continue to
-  // use it even when the contents of the struct have changed, so we need to
-  // call NPP_SetWindow again if the context changes.
-  // In the Cocoa event model plugins are only given a context during paint
-  // events, so we don't have to tell the plugin anything here.
-  if (instance()->event_model() == NPEventModelCarbon &&
-      instance()->drawing_model() == NPDrawingModelCoreGraphics &&
-      context != np_cg_context_.context) {
+  if (instance()->event_model() == NPEventModelCarbon) {
+    // Update the structure that is passed to Carbon+CoreGraphics plugins in
+    // NPP_SetWindow before calling UpdateGeometry, since that will trigger an
+    // NPP_SetWindow call if the geometry changes (which is the only time the
+    // context would be different), and some plugins (e.g., Flash) have an
+    // internal cache of the context that they only update when NPP_SetWindow
+    // is called.
     np_cg_context_.context = context;
-    WindowlessSetWindow(true);
   }
 #endif
+  UpdateGeometry(window_rect, clip_rect);
 }
 
 void WebPluginDelegateImpl::Paint(CGContextRef context, const gfx::Rect& rect) {

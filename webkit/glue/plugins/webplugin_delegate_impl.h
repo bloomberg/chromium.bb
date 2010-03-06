@@ -112,9 +112,11 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   int GetQuirks() const { return quirks_; }
 
 #if defined(OS_MACOSX)
-  // Informs the delegate that the context used for painting windowless plugins
-  // has changed.
-  void UpdateContext(gfx::NativeDrawingContext context);
+  // Informs the plugin that the geometry has changed, as with UpdateGeometry,
+  // but also includes the new buffer context for that new geometry.
+  void UpdateGeometryAndContext(const gfx::Rect& window_rect,
+                                const gfx::Rect& clip_rect,
+                                gfx::NativeDrawingContext context);
   // Returns the delegate currently processing events.
   static WebPluginDelegateImpl* GetActiveDelegate();
   // Returns a vector of currently active delegates in this process.

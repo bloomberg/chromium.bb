@@ -84,7 +84,6 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
   // Plugins that we know don't work at all.
   const char* blacklisted_plugin_mimes[] = {
     "application/x-googlegears",          // Safari-specific.
-    "application/x-vnd.movenetworks.qm",  // Crashes on Snow Leopard.
     "application/vnd.o3d.auto",           // Doesn't render, and having it
                                           // detected can prevent fallbacks.
     "video/divx",                         // Crashes on 10.5.

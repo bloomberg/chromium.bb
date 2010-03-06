@@ -140,7 +140,8 @@ class WebPluginProxy : public webkit_glue::WebPlugin {
 
   // Updates the shared memory section where windowless plugins paint.
   void SetWindowlessBuffer(const TransportDIB::Handle& windowless_buffer,
-                           const TransportDIB::Handle& background_buffer);
+                           const TransportDIB::Handle& background_buffer,
+                           const gfx::Rect& window_rect);
 
   typedef base::hash_map<int, webkit_glue::WebPluginResourceClient*>
       ResourceClientMap;

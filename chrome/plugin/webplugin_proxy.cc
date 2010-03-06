@@ -436,11 +436,20 @@ void WebPluginProxy::UpdateGeometry(
   gfx::Rect old = delegate_->GetRect();
   gfx::Rect old_clip_rect = delegate_->GetClipRect();
 
-  delegate_->UpdateGeometry(window_rect, clip_rect);
+  // Update the buffers before doing anything that could call into plugin code,
+  // so that we don't process buffer changes out of order if plugins make
+  // synchronous calls that lead to nested UpdateGeometry calls.
   if (TransportDIB::is_valid(windowless_buffer)) {
     // The plugin's rect changed, so now we have a new buffer to draw into.
-    SetWindowlessBuffer(windowless_buffer, background_buffer);
+    SetWindowlessBuffer(windowless_buffer, background_buffer, window_rect);
   }
+
+#if defined(OS_MACOSX)
+  delegate_->UpdateGeometryAndContext(window_rect, clip_rect,
+                                      windowless_context_);
+#else
+  delegate_->UpdateGeometry(window_rect, clip_rect);
+#endif
 
   // Send over any pending invalidates which occured when the plugin was
   // off screen.
@@ -460,14 +469,15 @@ void WebPluginProxy::UpdateGeometry(
 #if defined(OS_WIN)
 void WebPluginProxy::SetWindowlessBuffer(
     const TransportDIB::Handle& windowless_buffer,
-    const TransportDIB::Handle& background_buffer) {
+    const TransportDIB::Handle& background_buffer,
+    const gfx::Rect& window_rect) {
   // Create a canvas that will reference the shared bits. We have to handle
   // errors here since we're mapping a large amount of memory that may not fit
   // in our address space, or go wrong in some other way.
   windowless_canvas_.reset(new skia::PlatformCanvas);
   if (!windowless_canvas_->initialize(
-          delegate_->GetRect().width(),
-          delegate_->GetRect().height(),
+          window_rect.width(),
+          window_rect.height(),
           true,
           win_util::GetSectionFromProcess(windowless_buffer,
               channel_->renderer_handle(), false))) {
@@ -479,8 +489,8 @@ void WebPluginProxy::SetWindowlessBuffer(
   if (background_buffer) {
     background_canvas_.reset(new skia::PlatformCanvas);
     if (!background_canvas_->initialize(
-            delegate_->GetRect().width(),
-            delegate_->GetRect().height(),
+            window_rect.width(),
+            window_rect.height(),
             true,
             win_util::GetSectionFromProcess(background_buffer,
                 channel_->renderer_handle(), false))) {
@@ -495,46 +505,44 @@ void WebPluginProxy::SetWindowlessBuffer(
 
 void WebPluginProxy::SetWindowlessBuffer(
     const TransportDIB::Handle& windowless_buffer,
-    const TransportDIB::Handle& background_buffer) {
+    const TransportDIB::Handle& background_buffer,
+    const gfx::Rect& window_rect) {
   // Convert the shared memory handle to a handle that works in our process,
   // and then use that to create a CGContextRef.
   windowless_dib_.reset(TransportDIB::Map(windowless_buffer));
   background_dib_.reset(TransportDIB::Map(background_buffer));
   windowless_context_.reset(CGBitmapContextCreate(
       windowless_dib_->memory(),
-      delegate_->GetRect().width(),
-      delegate_->GetRect().height(),
-      8, 4 * delegate_->GetRect().width(),
+      window_rect.width(),
+      window_rect.height(),
+      8, 4 * window_rect.width(),
       mac_util::GetSystemColorSpace(),
       kCGImageAlphaPremultipliedFirst |
       kCGBitmapByteOrder32Host));
-  CGContextTranslateCTM(windowless_context_, 0, delegate_->GetRect().height());
+  CGContextTranslateCTM(windowless_context_, 0, window_rect.height());
   CGContextScaleCTM(windowless_context_, 1, -1);
   if (background_dib_.get()) {
     background_context_.reset(CGBitmapContextCreate(
         background_dib_->memory(),
-        delegate_->GetRect().width(),
-        delegate_->GetRect().height(),
-        8, 4 * delegate_->GetRect().width(),
+        window_rect.width(),
+        window_rect.height(),
+        8, 4 * window_rect.width(),
         mac_util::GetSystemColorSpace(),
         kCGImageAlphaPremultipliedFirst |
         kCGBitmapByteOrder32Host));
-    CGContextTranslateCTM(background_context_, 0,
-                          delegate_->GetRect().height());
+    CGContextTranslateCTM(background_context_, 0, window_rect.height());
     CGContextScaleCTM(background_context_, 1, -1);
   }
-
-  static_cast<WebPluginDelegateImpl*>(delegate_)->UpdateContext(
-      windowless_context_);
 }
 
 #elif defined(OS_LINUX)
 
 void WebPluginProxy::SetWindowlessBuffer(
     const TransportDIB::Handle& windowless_buffer,
-    const TransportDIB::Handle& background_buffer) {
-  int width = delegate_->GetRect().width();
-  int height = delegate_->GetRect().height();
+    const TransportDIB::Handle& background_buffer,
+    const gfx::Rect& window_rect) {
+  int width = window_rect.width();
+  int height = window_rect.height();
   windowless_dib_.reset(TransportDIB::Map(windowless_buffer));
   if (windowless_dib_.get()) {
     windowless_canvas_.reset(windowless_dib_->GetPlatformCanvas(width, height));
