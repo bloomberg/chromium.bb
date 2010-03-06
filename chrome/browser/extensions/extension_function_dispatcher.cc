@@ -265,8 +265,7 @@ ExtensionFunctionDispatcher::ExtensionFunctionDispatcher(
     RenderViewHost* render_view_host,
     Delegate* delegate,
     const GURL& url)
-  : ALLOW_THIS_IN_INITIALIZER_LIST(
-        profile_(render_view_host->process()->profile())),
+  : profile_(render_view_host->process()->profile()),
     render_view_host_(render_view_host),
     delegate_(delegate),
     url_(url),

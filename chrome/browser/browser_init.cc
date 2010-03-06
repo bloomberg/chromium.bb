@@ -520,6 +520,7 @@ bool BrowserInit::LaunchWithProfile::OpenApplicationURL(Profile* profile) {
 
   if (command_line_.HasSwitch(switches::kEnableExtensionApps)) {
     if (command_line_.HasSwitch(switches::kAppId)) {
+      // http://crbug.com/37548
       // TODO(rafaelw): There are two legitimate cases where the extensions
       // service could not be ready at this point which need to be handled:
       // 1) The locale has changed and the manifests stored in the preferences
