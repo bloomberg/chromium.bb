@@ -19,8 +19,6 @@
 @interface ContentExceptionsWindowController(Private)
 - (id)initWithType:(ContentSettingsType)settingsType
        settingsMap:(HostContentSettingsMap*)settingsMap;
-- (void)updateRow:(NSInteger)row
-        withEntry:(const HostContentSettingsMap::HostSettingPair&)entry;
 - (void)adjustEditingButtons;
 - (void)modelDidChange;
 - (size_t)menuItemCount;
@@ -162,7 +160,6 @@ static ContentExceptionsWindowController*
     model_.reset(new ContentExceptionsTableModel(settingsMap_, settingsType_));
     showAsk_ = settingsType_ == CONTENT_SETTINGS_TYPE_COOKIES;
     tableObserver_.reset(new UpdatingContentSettingsObserver(self));
-    updatesEnabled_ = YES;
 
     // TODO(thakis): autoremember window rect.
     // TODO(thakis): sorting support.
@@ -210,10 +207,6 @@ static ContentExceptionsWindowController*
   [self autorelease];
 }
 
-- (BOOL)editingNewException {
-  return newException_.get() != NULL;
-}
-
 // Let esc close the window.
 - (void)cancel:(id)sender {
   if ([tableView_ currentEditor] != nil) {
@@ -255,21 +248,15 @@ static ContentExceptionsWindowController*
 }
 
 - (IBAction)addException:(id)sender {
-  if (newException_.get()) {
-    // The invariant is that |newException_| is non-NULL exactly if the host of
-    // a new exception is currently being edited - so there's nothing to do in
-    // that case.
-    return;
-  }
   newException_.reset(new HostContentSettingsMap::HostSettingPair);
   newException_->first = "example.com";
   newException_->second = CONTENT_SETTING_BLOCK;
   [tableView_ reloadData];
-
   [self adjustEditingButtons];
+
   int index = model_->RowCount();
-  NSIndexSet* selectedSet = [NSIndexSet indexSetWithIndex:index];
-  [tableView_ selectRowIndexes:selectedSet byExtendingSelection:NO];
+  [tableView_ selectRowIndexes:[NSIndexSet indexSetWithIndex:index]
+          byExtendingSelection:NO];
   [tableView_ editColumn:0 row:index withEvent:nil select:YES];
 }
 
@@ -326,40 +313,10 @@ static ContentExceptionsWindowController*
   return result;
 }
 
-// Updates exception at |row| to contain the data in |entry|.
-- (void)updateRow:(NSInteger)row
-        withEntry:(const HostContentSettingsMap::HostSettingPair&)entry {
-  // TODO(thakis): This apparently moves an edited row to the back of the list.
-  // It's what windows and linux do, but it's kinda sucky. Fix.
-  // http://crbug.com/36904
-  updatesEnabled_ = NO;
-  if (row < model_->RowCount())
-    model_->RemoveException(row);
-  model_->AddException(entry.first, entry.second);
-  updatesEnabled_ = YES;
-  [self modelDidChange];
-
-  // For now, at least re-select the edited element.    
-  int newIndex = model_->IndexOfExceptionByHost(entry.first);
-  DCHECK(newIndex != -1);
-  [tableView_ selectRowIndexes:[NSIndexSet indexSetWithIndex:newIndex]
-          byExtendingSelection:NO];
-}
-
 - (void) tableView:(NSTableView*)tv
     setObjectValue:(id)object
     forTableColumn:(NSTableColumn*)tableColumn
                row:(NSInteger)row {
-  // |-remove:| and |-removeAll:| both call |tableView_ deselectAll:|, which
-  // calls this method if a cell is currently being edited. Do not commit edits
-  // of rows that are about to be deleted.
-  if (!updatesEnabled_) {
-    // If this method gets called, the host filed of the new exception can no
-    // longer be being edited. Reset |newException_| to keep the invariant true.
-    newException_.reset();
-    return;
-  }
-
   // Get model object.
   bool isNewRow = newException_.get() && row >= model_->RowCount();
   const HostContentSettingsMap::HostSettingPair* originalEntry =
@@ -377,26 +334,32 @@ static ContentExceptionsWindowController*
   }
 
   // Commit modification, if any.
-  if (isNewRow) {
-    newException_.reset();
-    if (![identifier isEqualToString:@"hostname"]) {
-      [tableView_ reloadData];
-      [self adjustEditingButtons];
-      return;  // Commit new rows only when the hostname has been set.
-    }
+  // TODO(thakis): This apparently moves an edited row to the back of the list.
+  // It's what windows and linux do, but it's kinda sucky. Fix.
+  // http://crbug.com/36904
+  if (entry != *originalEntry) {
+    updatesEnabled_ = NO;
+    if (!isNewRow) {
+      model_->RemoveException(row);
+    } else {
+      newException_.reset();
+      if (![identifier isEqualToString:@"hostname"]) {
+        [tableView_ reloadData];
+        [self adjustEditingButtons];
+        return;  // Commit new rows only when the hostname has been set.
+      }
+    }      
+
+    model_->AddException(entry.first, entry.second);
+    updatesEnabled_ = YES;
+    [self modelDidChange];
+
+    // For now, at least re-select the edited element.    
     int newIndex = model_->IndexOfExceptionByHost(entry.first);
-    if (newIndex != -1) {
-      // The new host was already in the table. Focus existing row instead of
-      // overwriting it with a new one.
-      [tableView_ selectRowIndexes:[NSIndexSet indexSetWithIndex:newIndex]
-              byExtendingSelection:NO];
-      [tableView_ reloadData];
-      [self adjustEditingButtons];
-      return;
-    }
+    DCHECK(newIndex != -1);
+    [tableView_ selectRowIndexes:[NSIndexSet indexSetWithIndex:newIndex]
+            byExtendingSelection:NO];
   }
-  if (entry != *originalEntry || isNewRow)
-    [self updateRow:row withEntry:entry];
 }
 
 
