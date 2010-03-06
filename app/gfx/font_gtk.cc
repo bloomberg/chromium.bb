@@ -7,7 +7,9 @@
 #include <fontconfig/fontconfig.h>
 #include <gtk/gtk.h>
 
-#include "base/string_util.h"
+#include "base/logging.h"
+#include "base/string_piece.h"
+#include "base/utf_string_conversions.h"
 
 namespace gfx {
 

@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/string16.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 
 BiDiLineIterator::~BiDiLineIterator() {
   if (bidi_) {

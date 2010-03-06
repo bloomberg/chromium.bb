@@ -5,6 +5,12 @@
 #ifndef APP_L10N_UTIL_COLLATOR_H_
 #define APP_L10N_UTIL_COLLATOR_H_
 
+#include <algorithm>
+#include <functional>
+#include <string>
+#include <vector>
+
+#include "base/utf_string_conversions.h"
 #include "unicode/coll.h"
 
 namespace l10n_util {

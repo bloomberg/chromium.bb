@@ -14,6 +14,7 @@
 #include "base/message_loop.h"
 #include "base/pickle.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -44,7 +45,7 @@ bool ClipboardContentsIsExpected(const string16& copied_markup,
 #endif
 }
 
-} // namespace
+}  // namespace
 
 TEST_F(ClipboardTest, ClearTest) {
   Clipboard clipboard;

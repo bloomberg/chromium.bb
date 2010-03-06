@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <vector>
+
 #include "app/gfx/font.h"
 #include "app/gfx/text_elider.h"
 #include "app/l10n_util.h"
 #include "base/file_path.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
@@ -70,7 +73,7 @@ std::wstring ElideUrl(const GURL& url,
     url_domain = url_host;
 
   // Add port if required.
-  if (!url.port().empty()){
+  if (!url.port().empty()) {
     url_host += L":" + UTF8ToWide(url.port());
     url_domain += L":" + UTF8ToWide(url.port());
   }
@@ -92,7 +95,7 @@ std::wstring ElideUrl(const GURL& url,
     // Split the path string using ":"
     std::vector<std::wstring> file_path_split;
     SplitString(url_path, L':', &file_path_split);
-    if (file_path_split.size() > 1) { // File is of type "file:///C:/.."
+    if (file_path_split.size() > 1) {  // File is of type "file:///C:/.."
       url_host.clear();
       url_domain.clear();
       url_subdomain.clear();
@@ -246,7 +249,7 @@ std::wstring ElideUrl(const GURL& url,
   std::wstring final_elided_url_string(url_elided_domain);
   if ((available_pixel_width - font.GetStringWidth(url_elided_domain)) >
       pixel_width_dot_dot_slash + pixel_width_dots_trailer +
-      font.GetStringWidth(L"UV")) // A hack to prevent trailing "../...".
+      font.GetStringWidth(L"UV"))  // A hack to prevent trailing "../...".
     final_elided_url_string += elided_path;
   else
     final_elided_url_string += url_path;
@@ -296,7 +299,7 @@ std::wstring ElideFilename(const FilePath& filename,
 // does not fit the given pixel width.
 std::wstring ElideText(const std::wstring& text,
                        const gfx::Font& font,
-                       int available_pixel_width){
+                       int available_pixel_width) {
   if (text.empty())
     return text;
 
@@ -416,4 +419,4 @@ string16 SortedDisplayURL::AfterHost() const {
   return display_url_.substr(slash_index + sort_host_.length());
 }
 
-} // namespace gfx.
+}  // namespace gfx.

@@ -12,7 +12,7 @@
 #include "app/gfx/font.h"
 #include "base/gfx/rect.h"
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 
 namespace {
 

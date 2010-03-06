@@ -7,6 +7,8 @@
 #include "app/gfx/font.h"
 #include "app/l10n_util.h"
 #include "base/logging.h"
+#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 
 namespace gfx {
 
@@ -15,7 +17,7 @@ int GetLocalizedContentsWidthForFont(int col_resource_id,
   double chars = 0;
   StringToDouble(WideToUTF8(l10n_util::GetString(col_resource_id)), &chars);
   int width = font.GetExpectedTextWidth(static_cast<int>(chars));
-  DCHECK(width > 0);
+  DCHECK_GT(width, 0);
   return width;
 }
 
@@ -24,7 +26,7 @@ int GetLocalizedContentsHeightForFont(int row_resource_id,
   double lines = 0;
   StringToDouble(WideToUTF8(l10n_util::GetString(row_resource_id)), &lines);
   int height = static_cast<int>(font.height() * lines);
-  DCHECK(height > 0);
+  DCHECK_GT(height, 0);
   return height;
 }
 
@@ -36,4 +38,3 @@ gfx::Size GetLocalizedContentsSizeForFont(int col_resource_id,
 }
 
 }  // namespace gfx
-
