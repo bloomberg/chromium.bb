@@ -1,6 +1,6 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved. Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "views/controls/menu/menu_2.h"
 
@@ -23,20 +23,6 @@ gfx::NativeMenu Menu2::GetNativeMenu() const {
 }
 
 void Menu2::RunMenuAt(const gfx::Point& point, Alignment alignment) {
-  // On RTL systems menu alignment must be reversed.
-  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) {
-    switch (alignment) {
-      case ALIGN_TOPRIGHT:
-        alignment = ALIGN_TOPLEFT;
-        break;
-      case ALIGN_TOPLEFT:
-        alignment = ALIGN_TOPRIGHT;
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
-  }
   wrapper_->RunMenuAt(point, alignment);
 }
 

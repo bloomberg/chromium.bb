@@ -1,6 +1,6 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved. Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "views/controls/menu/native_menu_gtk.h"
 
@@ -9,6 +9,7 @@
 
 #include "app/gfx/font.h"
 #include "app/gfx/gtk_util.h"
+#include "app/l10n_util.h"
 #include "app/menus/menu_model.h"
 #include "base/keyboard_code_conversion_gtk.h"
 #include "base/keyboard_codes.h"
@@ -323,10 +324,23 @@ void NativeMenuGtk::MenuPositionFunc(GtkMenu* menu,
   GtkRequisition menu_req;
   gtk_widget_size_request(GTK_WIDGET(menu), &menu_req);
 
-  // TODO(beng): RTL
   *x = position->point.x();
   *y = position->point.y();
-  if (position->alignment == Menu2::ALIGN_TOPRIGHT)
+  views::Menu2::Alignment alignment = position->alignment;
+  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) {
+    switch (alignment) {
+      case Menu2::ALIGN_TOPRIGHT:
+        alignment = Menu2::ALIGN_TOPLEFT;
+        break;
+      case Menu2::ALIGN_TOPLEFT:
+        alignment = Menu2::ALIGN_TOPRIGHT;
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+  if (alignment == Menu2::ALIGN_TOPRIGHT)
     *x -= menu_req.width;
 
   // Make sure the popup fits on screen.

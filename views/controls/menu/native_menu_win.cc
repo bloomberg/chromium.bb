@@ -482,7 +482,6 @@ void NativeMenuWin::UpdateMenuItemInfoForString(
 }
 
 UINT NativeMenuWin::GetAlignmentFlags(int alignment) const {
-  bool rtl = l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT;
   UINT alignment_flags = TPM_TOPALIGN;
   if (alignment == Menu2::ALIGN_TOPLEFT)
     alignment_flags |= TPM_LEFTALIGN;
