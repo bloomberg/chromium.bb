@@ -32,7 +32,7 @@
   // Methods and objects from dashboard_base.js to override.
   //////////////////////////////////////////////////////////////////////////////
   function generatePage() {
-    var html = '';
+    var html = getHTMLForTestTypeSwitcher() + '<br>';
     for (var builder in builders) {
       html += getHTMLForBuilder(builder);
     }
@@ -48,14 +48,18 @@
     // around and just assume all keys have the same number of builders for a
     // given builder.
     var numColumns = results[ALL_FIXABLE_COUNT_KEY].length;
-    return '<div class=container><h2>' + builder + '</h2>' +
+    var html = '<div class=container><h2>' + builder + '</h2>' +
         getHTMLForSummaryTable(results, numColumns) +
         getHTMLForTestType(results, FIXABLE_COUNTS_KEY, FIXABLE_DESCRIPTION,
-            numColumns) +
-        getHTMLForTestType(results, DEFERRED_COUNTS_KEY, DEFERRED_DESCRIPTION,
-            numColumns) +
-        getHTMLForTestType(results, WONTFIX_COUNTS_KEY, WONTFIX_DESCRIPTION,
-            numColumns) + '</div>';
+            numColumns);
+    if (isLayoutTestResults()) {
+      html +=
+          getHTMLForTestType(results, DEFERRED_COUNTS_KEY,
+              DEFERRED_DESCRIPTION, numColumns) +
+          getHTMLForTestType(results, WONTFIX_COUNTS_KEY, WONTFIX_DESCRIPTION,
+              numColumns);
+    }
+    return html + '</div>';
   }
 
   function getHTMLForRevisionRows(results, numColumns) {
@@ -93,7 +97,7 @@
 
     var valuesForEachRow = {};
     for (var i = 0; i < numColumns; i++) {
-      for (var expectation in EXPECTATIONS_MAP) {
+      for (var expectation in getExpectationsMap()) {
         if (expectation in counts[i]) {
           var count = counts[i][expectation];
 
@@ -106,7 +110,7 @@
     }
 
     for (var expectation in valuesForEachRow) {
-      html += getHTMLForTableRow(EXPECTATIONS_MAP[expectation],
+      html += getHTMLForTableRow(getExpectationsMap()[expectation],
           valuesForEachRow[expectation]);
     }
 

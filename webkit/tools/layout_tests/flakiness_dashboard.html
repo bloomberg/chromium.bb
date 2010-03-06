@@ -282,8 +282,10 @@
     'MAC': 'ALL'
   };
   var BUILD_TYPES = {'DEBUG': 'DBG', 'RELEASE': 'RELEASE'};
-  var BASE_TABLE_HEADERS = ['bugs', 'modifiers', 'expectations', 'missing',
-      'extra', 'slowest run', '% fail', 'flakiness (numbers are runtimes in seconds)'];
+  var BASE_TABLE_HEADERS = ['slowest run', '% fail',
+      'flakiness (numbers are runtimes in seconds)'];
+  var LAYOUT_TEST_TABLE_HEADERS = ['bugs', 'modifiers', 'expectations',
+      'missing', 'extra'].concat(BASE_TABLE_HEADERS);
   var MIN_SECONDS_FOR_SLOW_TEST = 4;
   var MIN_SECONDS_FOR_SLOW_TEST_DEBUG = 2 * MIN_SECONDS_FOR_SLOW_TEST;
   var FAIL_RESULTS = ['IMAGE', 'IMAGE+TEXT', 'TEXT', 'SIMPLIFIED', 'MISSING'];
@@ -386,18 +388,18 @@
   defaultStateValues = {
     sortOrder: BACKWARD,
     sortColumn: 'flakiness',
-    showCorrectExpectations: false,
-    showWrongExpectations: false,
     showExpectations: false,
     showFlaky: true,
     showLargeExpectations: false,
     legacyExpectationsSemantics: true,
-    showWontFixSkip: false,
-    showSlow: false,
-    showSkipped: false,
+    showCorrectExpectations: !isLayoutTestResults(),
+    showWrongExpectations: !isLayoutTestResults(),
+    showWontFixSkip: !isLayoutTestResults(),
+    showSlow: !isLayoutTestResults(),
+    showSkipped: !isLayoutTestResults(),
     expectationsUpdate: false,
     updateIndex: 0,
-    builder: 'Webkit'
+    builder: defaultBuilderName
   };
 
   //////////////////////////////////////////////////////////////////////////////
@@ -449,7 +451,9 @@
   }
 
   function getMaxResults() {
-    if (currentState.expectationsUpdate ||
+    // Max results is just a way of making the page performant. For now, the
+    // non layout test results pages are fast even showing max results.
+    if (!isLayoutTestResults() || currentState.expectationsUpdate ||
         currentState.tests && !currentState.maxResults) {
       return 750;
     }
@@ -500,7 +504,7 @@
     if (result == 'N')
       return '';
 
-    return EXPECTATIONS_MAP[result];
+    return getExpectationsMap()[result];
   }
 
   // Map of all tests to true values. This is just so we can have the list of
@@ -1135,8 +1139,8 @@
       extraExpectations.push('SLOW');
     }
 
-    resultsForTest.meetsExpectations =
-        !missingExpectations.length && !extraExpectations.length;
+    resultsForTest.meetsExpectations = !isLayoutTestResults() ||
+        (!missingExpectations.length && !extraExpectations.length);
     resultsForTest.missing = missingExpectations.sort().join(' ');
     resultsForTest.extra = extraExpectations.sort().join(' ');
   }
@@ -1199,7 +1203,7 @@
       '</li>';
 
     var chromeRevision = resultsByBuilder[builder].chromeRevision[index];
-    if (chromeRevision) {
+    if (chromeRevision && isLayoutTestResults()) {
       html += '<li><a href="' + TEST_RESULTS_BASE_PATH + builders[builder] +
           '/' + chromeRevision + '/layout-test-results.zip' +
           '">layout-test-results.zip</a></li>';
@@ -1375,20 +1379,23 @@
       '<span class="link" onclick="showPopupForTest(event, \'' + test.test +
       '\');selectContents(this);return false;">' + test.test + '</span>';
 
-    return '<tr class="' +
+    var html = '<tr class="' +
       (test.meetsExpectations ? '' : 'wrong-expectations') +
-      // TODO(ojan): If a test is a chrome/ or a pending/ test, point to
-      // src.chromium.org instead of trac.webkit.org.
-      '"><td class=test-link>' + testCellHTML +
-      '</td><td class=options-container>' + 
-      (test.bugsHTML ? test.bugsHTML : getCreateBugHTML(test)) +
-      '</td><td class=options-container>' + test.modifiersHTML +
-      '</td><td class=options-container>' + test.expectationsHTML +
-      '</td><td>' + test.missing +
-      '</td><td>' + test.extra +
-      '</td><td>' + (test.slowestTime ? test.slowestTime + 's' : '') +
-      '</td><td>' + test.percentFailed +
-      '</td>' + getHtmlForTestResults(test) + '</tr>';
+      '"><td class=test-link>' + testCellHTML;
+      
+    if (isLayoutTestResults()) {
+      html += '</td><td class=options-container>' + 
+          (test.bugsHTML ? test.bugsHTML : getCreateBugHTML(test)) +
+          '</td><td class=options-container>' + test.modifiersHTML +
+          '</td><td class=options-container>' + test.expectationsHTML +
+          '</td><td>' + test.missing +
+          '</td><td>' + test.extra;
+    }
+    
+    return html +
+        '</td><td>' + (test.slowestTime ? test.slowestTime + 's' : '') +
+        '</td><td>' + test.percentFailed +
+        '</td>' + getHtmlForTestResults(test) + '</tr>';
   }
 
   function getSortColumnFromTableHeader(headerText) {
@@ -1630,10 +1637,14 @@
     var testResults = testToResultsMap[test];
     var html = '';
     if (testResults && testResults.length) {
-      var tracURL = TEST_URL_BASE_PATH + test
-      html += getLinkHTMLToOpenWindow(tracURL, tracURL) +
-          '<div><b>If a builder is not listed, that means the builder does ' +
-          'not run that test or all runs of the test passed.</b></div>';
+      if (isLayoutTestResults()) {
+        var tracURL = TEST_URL_BASE_PATH + test
+        html += getLinkHTMLToOpenWindow(tracURL, tracURL);
+      }
+
+      html +='<div><b>If a builder is not listed, that means the builder ' +
+          'does not run that test (e.g. it is skipped) or all runs of the ' +
+          'test passed.</b></div>';
 
       for (var j = 0; j < testResults.length; j++) {
         html += getHTMLForSingleTestRow(testResults[j], true);
@@ -1649,11 +1660,16 @@
       html += '<div class="not-found">Test not found. Either it does ' +
           'not exist, is skipped or passes on all platforms.</div>';
     }
-    return html + '<div class=expectations test=' + test + '><div>' +
-        getLinkHTMLToToggleState('showExpectations', 'expectations') + ' | ' +
-        getLinkHTMLToToggleState('showLargeExpectations', 'large thumbnails') +
-        ' | <b>Only shows actual results/diffs from the most recent *failure*' +
-        ' on each bot.</b></div></div>';
+    
+    if (isLayoutTestResults()) {
+      html += '<div class=expectations test=' + test + '><div>' +
+          getLinkHTMLToToggleState('showExpectations', 'expectations') + ' | ' +
+          getLinkHTMLToToggleState('showLargeExpectations',
+              'large thumbnails') +
+          ' | <b>Only shows actual results/diffs from the most recent' +
+          ' *failure* on each bot.</b></div></div>';
+    }
+    return html;
   }
 
   function getExpectationsContainer(expectationsContainers, parentContainer,
@@ -2014,7 +2030,8 @@
   }
 
   function getHTMLForNavBar(opt_builderName) {
-    var html = '<div id=builders>';
+    var html = '<div id=builders>' + getHTMLForTestTypeSwitcher();
+    
     for (var builder in builders) {
       var className = builder == opt_builderName ? 'current-builder' : 'link';
       html += '<span class=' + className + ' id="' + builder +
@@ -2022,20 +2039,24 @@
           builder + '</span>';
     }
 
-    return html + '</div>' +
+    html += '</div>' +
         '<form id=tests-form ' +
-        'onsubmit="setState(\'tests\', tests.value);return false;"><div>' +
-        getHTMLForCanaryLink('Main builders', false, false) +
-        getHTMLForCanaryLink('WebKit.org Canary', true, false) +
-        getHTMLForCanaryLink('V8 Canary', false, true) +
-        '<span class=link ' +
-        'onclick="setState(\'tests\', \'allIncorrectExpectations\')">' +
-        'All incorrect expectations</span> | '+
-        '<span class=link ' +
-        'onclick="setState(\'tests\', \'allSlowTests\')">All SLOW' +
-        '</span> | <span class=link ' +
-        'onclick="setState(\'tests\', \'allNeedSlowTests\')">All need ' +
-        'SLOW</span> | Show tests on all platforms: </div><input name=tests ' +
+        'onsubmit="setState(\'tests\', tests.value);return false;"><div>';
+        
+    if (isLayoutTestResults()) {
+      html += getHTMLForCanaryLink('Main builders', false, false) +
+          getHTMLForCanaryLink('WebKit.org Canary', true, false) +
+          getHTMLForCanaryLink('V8 Canary', false, true) +
+          '<span class=link ' +
+          'onclick="setState(\'tests\', \'allIncorrectExpectations\')">' +
+          'All incorrect expectations</span> | '+
+          '<span class=link ' +
+          'onclick="setState(\'tests\', \'allSlowTests\')">All SLOW' +
+          '</span> | <span class=link ' +
+          'onclick="setState(\'tests\', \'allNeedSlowTests\')">All need ' +
+          'SLOW</span> | ';
+    }
+    return html + 'Show tests on all platforms: </div><input name=tests ' +
         'placeholder="Comma or space-separated list of tests or partial ' +
         'paths to show test results across all builders, e.g., ' +
         'foo/bar.html,foo/baz,domstorage" ' +
@@ -2066,19 +2087,23 @@
     var testsHTML = tableRowsHTML ? getHTMLForTestTable(tableRowsHTML) :
         '<div>No tests. Try showing tests with correct expectations.</div>';
 
-    var html = getHTMLForNavBar(builderName) +
-        getHTMLForTestsWithExpectationsButNoFailures(builderName) +
-        '<h2>Failing tests</h2><div>' +
-        getLinkHTMLToToggleState('showWontFixSkip', 'WONTFIX/SKIP') +
-        ' | ' +
-        getLinkHTMLToToggleState('showCorrectExpectations',
-            'tests with correct expectations') + ' | ' +
-        getLinkHTMLToToggleState('showWrongExpectations',
-            'tests with wrong expectations') + ' | ' +
-        getLinkHTMLToToggleState('showFlaky', 'flaky') + ' | ' +
-        getLinkHTMLToToggleState('showSlow', 'slow') + ' | ' +
-        'All columns are sortable. | ' +
-        'Flakiness reader order is newer --> older runs.</div>' +
+    var html = getHTMLForNavBar(builderName);
+    
+    if (isLayoutTestResults()) {
+      html += getHTMLForTestsWithExpectationsButNoFailures(builderName) +
+          '<h2>Failing tests</h2>' +
+          getLinkHTMLToToggleState('showWontFixSkip', 'WONTFIX/SKIP') +
+          ' | ' +
+          getLinkHTMLToToggleState('showCorrectExpectations',
+              'tests with correct expectations') + ' | ' +
+          getLinkHTMLToToggleState('showWrongExpectations',
+              'tests with wrong expectations') + ' | ' +
+          getLinkHTMLToToggleState('showFlaky', 'flaky') + ' | ' +
+          getLinkHTMLToToggleState('showSlow', 'slow');
+    }
+    
+    html += ' | All columns are sortable. | ' +
+        'Flakiness reader order is newer --> older runs.<br>' +
         testsHTML;
 
     appendHTML(html);
@@ -2102,7 +2127,9 @@
   }
 
   function createTableHeadersArray(firstColumnHeader) {
-    tableHeaders = [firstColumnHeader].concat(BASE_TABLE_HEADERS);
+    var baseHeaders = isLayoutTestResults() ? LAYOUT_TEST_TABLE_HEADERS :
+        BASE_TABLE_HEADERS;
+    tableHeaders = [firstColumnHeader].concat(baseHeaders);
   }
 
   /**
@@ -2200,25 +2227,31 @@
       document.body.appendChild(legend);
     }
 
-    var innerHTML = '<div id=legend-toggle onclick="hideLegend()">Hide ' +
+    var html = '<div id=legend-toggle onclick="hideLegend()">Hide ' +
         'legend [type esc]</div><div>Number of flaky tests listed next to ' +
         'each builder</div><div id=legend-contents>';
-    for (var expectation in EXPECTATIONS_MAP) {
-      innerHTML += '<div class=' + expectation + '>' +
-          EXPECTATIONS_MAP[expectation] + '</div>';
+    for (var expectation in getExpectationsMap()) {
+      html += '<div class=' + expectation + '>' +
+          getExpectationsMap()[expectation] + '</div>';
     }
-    innerHTML += '<div class=wrong-expectations>WRONG EXPECTATIONS</div>' +
-        '<div class=merge>WEBKIT MERGE</div></div><br style="clear:both">' +
-        '</div><h3>Test expectatons fallback order.</h3>';
 
-    for (var platform in fallbacksMap) {
-      innerHTML += '<div class=fallback-header>' + platform + '</div>' +
-        htmlForFallbackHelp(fallbacksMap[platform]);
+    html += '<div class=merge>WEBKIT MERGE</div>';
+    if (isLayoutTestResults()) {
+      html += '<div class=wrong-expectations>WRONG EXPECTATIONS</div>' +
+          '</div><br style="clear:both">' +
+          '</div><h3>Test expectatons fallback order.</h3>';
+
+      for (var platform in fallbacksMap) {
+        html += '<div class=fallback-header>' + platform + '</div>' +
+          htmlForFallbackHelp(fallbacksMap[platform]);
+      }
+      html += '<div>TIMES:</div>' +
+          getHtmlForSlowTimes(MIN_SECONDS_FOR_SLOW_TEST) +
+          '<div>DEBUG TIMES:</div>' +
+          getHtmlForSlowTimes(MIN_SECONDS_FOR_SLOW_TEST_DEBUG);
     }
-    legend.innerHTML = innerHTML + '<div>TIMES:</div>' +
-        getHtmlForSlowTimes(MIN_SECONDS_FOR_SLOW_TEST) +
-        '<div>DEBUG TIMES:</div>' +
-        getHtmlForSlowTimes(MIN_SECONDS_FOR_SLOW_TEST_DEBUG);
+
+    legend.innerHTML = html;
   }
 
   function getHtmlForSlowTimes(minTime) {

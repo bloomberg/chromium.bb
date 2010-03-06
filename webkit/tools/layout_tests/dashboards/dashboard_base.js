@@ -35,19 +35,23 @@ var defaultStateValues = {};
 //////////////////////////////////////////////////////////////////////////////
 // CONSTANTS
 //////////////////////////////////////////////////////////////////////////////
-var EXPECTATIONS_MAP = {
-  'T': 'TIMEOUT',
-  'C': 'CRASH',
+var BASE_EXPECTATIONS_MAP_ = {
   'P': 'PASS',
   'F': 'TEXT',
+  'N': 'NO DATA',
+  'X': 'SKIP'
+};
+
+var LAYOUT_TEST_EXPECTATIONS_MAP_ = {
+  'T': 'TIMEOUT',
+  'C': 'CRASH',
   'I': 'IMAGE',
   'Z': 'IMAGE+TEXT',
   // We used to glob a bunch of expectations into "O" as OTHER. Expectations
   // are more precise now though and it just means MISSING.
-  'O': 'MISSING',
-  'N': 'NO DATA',
-  'X': 'SKIP'
+  'O': 'MISSING'
 };
+LAYOUT_TEST_EXPECTATIONS_MAP_.__proto__ = BASE_EXPECTATIONS_MAP_;
 
 // Keys in the JSON files.
 var WONTFIX_COUNTS_KEY = 'wontfixCounts';
@@ -60,6 +64,11 @@ var FIXABLE_COUNT_KEY = 'fixableCount';
 var ALL_FIXABLE_COUNT_KEY = 'allFixableCount';
 var CHROME_REVISIONS_KEY = 'chromeRevision';
 var WEBKIT_REVISIONS_KEY = 'webkitRevision';
+
+var TEST_TYPES = ['app_unittests', 'courgette_unittests', 'googleurl_unittests',
+    'installer_util_unittests', 'ipc_tests', 'layout_test_results',
+    'media_unittests', 'mini_installer_test', 'printing_unittests',
+    'sync_unit_tests', 'ui_tests', 'unit_tests'];
 
 /**
  * @return {boolean} Whether the value represents a failing result.
@@ -88,7 +97,7 @@ function handleValidHashParameterWrapper(key, value) {
     case 'testType':
       validateParameter(currentState, key, value,
           function() {
-            return isValidName(value);
+            return TEST_TYPES.indexOf(value) != -1;
           });
 
       return true;
@@ -154,10 +163,6 @@ function startsWith(a, b) {
 
 function endsWidth(a, b) {
   return a.lastIndexOf(b) == a.length - b.length;
-}
-
-function isValidName(str) {
-  return str.match(/[A-Za-z0-9\-\_,]/);
 }
 
 function trimString(str) {
@@ -230,47 +235,85 @@ var oldState;
 // Parse cross-dashboard parameters before using them.
 parseParameters();
 
-var builders, builderBase;
+function isLayoutTestResults() {
+  return currentState.testType == 'layout_test_results';
+}
+
+var defaultBuilderName, builders, builderBase;
 if (currentState.buildDir) {
   // If buildDir is set, point to the results.json and expectations.json in the
   // local tree. Useful for debugging changes to the python JSON generator.
+  defaultBuilderName = 'DUMMY_BUILDER_NAME';
   builders = {'DUMMY_BUILDER_NAME': ''};
   var loc = document.location.toString();
   var offset = loc.indexOf('webkit/');
   builderBase = loc.substr(loc, offset + 7) + currentState.buildDir + "/";
 } else {
-  // Map of builderName (the name shown in the waterfall)
-  // to builderPath (the path used in the builder's URL)
-  // TODO(ojan): Make this switch based off of the testType.
-  if (currentState.useWebKitCanary) {
-    builders = {
-      'Webkit (webkit.org)': 'webkit-rel-webkit-org',
-      'Webkit Linux (webkit.org)': 'webkit-rel-linux-webkit-org',
-      'Webkit Mac (webkit.org)': 'webkit-rel-mac-webkit-org'
-    };
-  } else if (currentState.useV8Canary) {
-    builders = {
-      'Webkit (V8-Latest)': 'webkit-rel-v8',
-      'Webkit Mac (V8-Latest)': 'webkit-rel-mac-v8',
-      'Webkit Linux (V8-Latest)': 'webkit-rel-linux-v8'
-    }
-  } else {
-    builders = {
-      'Webkit': 'webkit-rel',
-      'Webkit (dbg)(1)': 'webkit-dbg-1',
-      'Webkit (dbg)(2)': 'webkit-dbg-2',
-      'Webkit (dbg)(3)': 'webkit-dbg-3',
-      'Webkit Linux': 'webkit-rel-linux',
-      'Webkit Linux (dbg)(1)': 'webkit-dbg-linux-1',
-      'Webkit Linux (dbg)(2)': 'webkit-dbg-linux-2',
-      'Webkit Linux (dbg)(3)': 'webkit-dbg-linux-3',
-      'Webkit Mac10.5': 'webkit-rel-mac5',
-      'Webkit Mac10.5 (dbg)(1)': 'webkit-dbg-mac5-1',
-      'Webkit Mac10.5 (dbg)(2)': 'webkit-dbg-mac5-2',
-      'Webkit Mac10.5 (dbg)(3)': 'webkit-dbg-mac5-3'
-    };
-  }
   builderBase = 'http://build.chromium.org/buildbot/';
+
+  switch (currentState.testType) {
+    case 'layout_test_results':
+      defaultBuilderName = 'Webkit';
+      // Map of builderName (the name shown in the waterfall)
+      // to builderPath (the path used in the builder's URL)
+      // TODO(ojan): Make this switch based off of the testType.
+      if (currentState.useWebKitCanary) {
+        builders = {
+          'Webkit (webkit.org)': 'webkit-rel-webkit-org',
+          'Webkit Linux (webkit.org)': 'webkit-rel-linux-webkit-org',
+          'Webkit Mac (webkit.org)': 'webkit-rel-mac-webkit-org'
+        };
+      } else if (currentState.useV8Canary) {
+        builders = {
+          'Webkit (V8-Latest)': 'webkit-rel-v8',
+          'Webkit Mac (V8-Latest)': 'webkit-rel-mac-v8',
+          'Webkit Linux (V8-Latest)': 'webkit-rel-linux-v8'
+        }
+      } else {
+        builders = {
+          'Webkit': 'webkit-rel',
+          'Webkit (dbg)(1)': 'webkit-dbg-1',
+          'Webkit (dbg)(2)': 'webkit-dbg-2',
+          'Webkit (dbg)(3)': 'webkit-dbg-3',
+          'Webkit Linux': 'webkit-rel-linux',
+          'Webkit Linux (dbg)(1)': 'webkit-dbg-linux-1',
+          'Webkit Linux (dbg)(2)': 'webkit-dbg-linux-2',
+          'Webkit Linux (dbg)(3)': 'webkit-dbg-linux-3',
+          'Webkit Mac10.5': 'webkit-rel-mac5',
+          'Webkit Mac10.5 (dbg)(1)': 'webkit-dbg-mac5-1',
+          'Webkit Mac10.5 (dbg)(2)': 'webkit-dbg-mac5-2',
+          'Webkit Mac10.5 (dbg)(3)': 'webkit-dbg-mac5-3'
+        };
+      }
+
+      break;
+
+    case 'app_unittests':
+    case 'courgette_unittests':
+    case 'googleurl_unittests':
+    case 'installer_util_unittests':
+    case 'ipc_tests':
+    case 'media_unittests':
+    case 'mini_installer_test':
+    case 'printing_unittests':
+    case 'sync_unit_tests':
+    case 'ui_tests':
+    case 'unit_tests':
+      defaultBuilderName = 'XP Tests';
+      builders = {
+        // TODO(ojan): Uncomment this and add more builders.
+        // This builder current has bogus data (the builderName in the JSON
+        // files points to "Vista Tests" or "XP Tests" instead of "Chromium XP"
+        // 'Chromium XP': 'chromium-tests',
+        'Vista Tests': 'chromium-rel-vista-tests',
+        'XP Tests': 'chromium-rel-xp-tests'
+      }
+
+      break;
+
+    default:
+      console.log('invalid testType paramenter');
+  }
 }
 
 // Append JSON script elements.
@@ -286,15 +329,25 @@ function ADD_RESULTS(builds) {
 }
 
 function getPathToBuilderResultsFile(builderName) {
-  return builderBase + currentState['testType'] + '/' +
-      builders[builderName] + '/';
+  var rootPath, subPath;
+  if (isLayoutTestResults()) {
+    rootPath = currentState.testType;
+    subPath = '';
+  } else {
+    rootPath = 'gtest_results';
+    subPath = currentState.testType + '/';
+  }
+  return builderBase + rootPath + '/' + builders[builderName] + '/' + subPath;
 }
 
-var expectationsLoaded = false;
-function ADD_EXPECTATIONS(expectations) {
-  expectationsLoaded = true;
-  expectationsByTest = expectations;
-  handleResourceLoad();
+// Only webkit tests have a sense of test expectations.
+var waitingOnExpectations = isLayoutTestResults();
+if (waitingOnExpectations) {
+  function ADD_EXPECTATIONS(expectations) {
+    waitingOnExpectations = false;
+    expectationsByTest = expectations;
+    handleResourceLoad();
+  }
 }
 
 function appendJSONScriptElements() {
@@ -310,7 +363,10 @@ function appendJSONScriptElements() {
   }
 
   // Grab expectations file from any builder.
-  appendScript(getPathToBuilderResultsFile(builderName) + 'expectations.json');
+  if (waitingOnExpectations) {
+    appendScript(getPathToBuilderResultsFile(builderName) +
+        'expectations.json');
+  }
 }
 
 var hasDoneInitialPageGeneration = false;
@@ -323,7 +379,7 @@ function handleResourceLoad() {
 }
 
 function handleLocationChange() {
-  if (!expectationsLoaded)
+  if (waitingOnExpectations)
     return;
 
   for (var build in builders) {
@@ -435,6 +491,28 @@ function getKeys(obj) {
     res.push(key);
   }
   return res;
+}
+
+/**
+ * Returns the appropriate expectatiosn map for the current testType.
+ */
+function getExpectationsMap() {
+  return isLayoutTestResults() ? LAYOUT_TEST_EXPECTATIONS_MAP_ :
+      BASE_EXPECTATIONS_MAP_;
+}
+
+/**
+ * Returns the HTML for the select element to switch to different testTypes.
+ */
+function getHTMLForTestTypeSwitcher() {
+  var html = '<select onchange="setQueryParameter(\'testType\',' +
+      'this[this.selectedIndex].innerHTML);window.location.reload()">';
+
+  TEST_TYPES.forEach(function(elem) {
+    html += '<option' + (elem == currentState.testType ? ' selected' : '') +
+        '>' + elem + '</option>';
+  });
+  return html + '</select>';
 }
 
 appendJSONScriptElements();
