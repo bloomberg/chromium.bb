@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/transport_dib.h"
 #include "chrome/renderer/render_process.h"
+#include "chrome/renderer/render_thread.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCursorInfo.h"
@@ -271,8 +272,8 @@ void RenderWidget::OnUpdateRectAck() {
     current_paint_buf_ = NULL;
   }
 
-  // Notify subclasses
-  DidPaint();
+  // Notify subclasses.
+  DidFlushPaint();
 
   // Continue painting if necessary...
   CallDoDeferredUpdate();
@@ -498,6 +499,9 @@ void RenderWidget::DoDeferredUpdate() {
   next_paint_flags_ = 0;
 
   UpdateIME();
+
+  // Let derived classes know we've painted.
+  DidInitiatePaint();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

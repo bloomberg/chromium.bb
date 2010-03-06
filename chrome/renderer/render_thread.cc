@@ -53,7 +53,7 @@
 #include "chrome/renderer/loadtimes_extension_bindings.h"
 #include "chrome/renderer/net/render_dns_master.h"
 #include "chrome/renderer/plugin_channel_host.h"
-#include "chrome/renderer/render_process.h"
+#include "chrome/renderer/render_process_impl.h"
 #include "chrome/renderer/render_view.h"
 #include "chrome/renderer/render_view_visitor.h"
 #include "chrome/renderer/renderer_webkitclient_impl.h"
@@ -203,7 +203,7 @@ void RenderThread::Init() {
 #if defined(OS_WIN)
   // If you are running plugins in this thread you need COM active but in
   // the normal case you don't.
-  if (RenderProcess::InProcessPlugins())
+  if (RenderProcessImpl::InProcessPlugins())
     CoInitialize(0);
 #endif
 
@@ -263,7 +263,7 @@ RenderThread::~RenderThread() {
   // Clean up plugin channels before this thread goes away.
   PluginChannelBase::CleanupChannels();
   // Don't call COM if the renderer is in the sandbox.
-  if (RenderProcess::InProcessPlugins())
+  if (RenderProcessImpl::InProcessPlugins())
     CoUninitialize();
 #endif
 }
@@ -755,7 +755,7 @@ void RenderThread::EnsureWebKitInitialized() {
   }
 
   WebRuntimeFeatures::enableMediaPlayer(
-      RenderProcess::current()->initialized_media_library());
+      RenderProcess::current()->HasInitializedMediaLibrary());
 
   WebRuntimeFeatures::enableSockets(
       !command_line.HasSwitch(switches::kDisableWebSockets));

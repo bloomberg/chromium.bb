@@ -4,13 +4,13 @@
 
 #include "build/build_config.h"
 
-#include "chrome/renderer/render_process_impl.h"
-
 #if defined(OS_WIN)
 #include <windows.h>
 #include <objidl.h>
 #include <mlang.h>
 #endif
+
+#include "chrome/renderer/render_process_impl.h"
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
@@ -31,6 +31,7 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message_utils.h"
 #include "media/base/media.h"
+#include "media/base/media_switches.h"
 #include "native_client/src/trusted/plugin/nacl_entry_points.h"
 #include "webkit/glue/webkit_glue.h"
 
@@ -67,8 +68,7 @@ bool LaunchNaClProcess(const char* url,
 //-----------------------------------------------------------------------------
 
 RenderProcessImpl::RenderProcessImpl()
-    : RenderProcess(),
-      ALLOW_THIS_IN_INITIALIZER_LIST(shared_mem_cache_cleaner_(
+    : ALLOW_THIS_IN_INITIALIZER_LIST(shared_mem_cache_cleaner_(
           base::TimeDelta::FromSeconds(5),
           this, &RenderProcessImpl::ClearTransportDIBCache)),
       transport_dib_next_sequence_number_(0) {
@@ -87,8 +87,9 @@ RenderProcessImpl::RenderProcessImpl()
             GetModuleHandle(L"GDI32.DLL"),
             "GdiInitializeLanguagePack"));
     DCHECK(gdi_init_lpk);
-    if (gdi_init_lpk)
+    if (gdi_init_lpk) {
       gdi_init_lpk(0);
+    }
   }
 #endif
 
@@ -101,7 +102,7 @@ RenderProcessImpl::RenderProcessImpl()
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kJavaScriptFlags)) {
     webkit_glue::SetJavaScriptFlags(
-        command_line.GetSwitchValue(switches::kJavaScriptFlags));
+      command_line.GetSwitchValue(switches::kJavaScriptFlags));
   }
 
   if (command_line.HasSwitch(switches::kEnableWatchdog)) {
@@ -117,8 +118,9 @@ RenderProcessImpl::RenderProcessImpl()
     RegisterInternalNaClPlugin(LaunchNaClProcess);
 #endif
 
-  if (!command_line.HasSwitch(switches::kDisableByteRangeSupport))
+  if (!command_line.HasSwitch(switches::kDisableByteRangeSupport)) {
     webkit_glue::SetMediaCacheEnabled(true);
+  }
 
 #if defined(OS_MACOSX)
   FilePath bundle_path = mac_util::MainAppBundlePath();
@@ -130,6 +132,12 @@ RenderProcessImpl::RenderProcessImpl()
   initialized_media_library_ =
       PathService::Get(base::DIR_MODULE, &module_path) &&
       media::InitializeMediaLibrary(module_path);
+
+  // TODO(hclam): Add more checks here. Currently this is not used.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableOpenMax)) {
+    media::InitializeOpenMaxLibrary(module_path);
+  }
 #endif
 }
 
@@ -144,53 +152,6 @@ RenderProcessImpl::~RenderProcessImpl() {
   ClearTransportDIBCache();
 }
 
-skia::PlatformCanvas* RenderProcessImpl::GetDrawingCanvas(
-    TransportDIB** memory,
-    const gfx::Rect& rect) {
-  int width = rect.width();
-  int height = rect.height();
-  const size_t stride = skia::PlatformCanvas::StrideForWidth(rect.width());
-#if defined(OS_LINUX)
-  const size_t max_size = base::SysInfo::MaxSharedMemorySize();
-#else
-  const size_t max_size = 0;
-#endif
-
-  // If the requested size is too big, reduce the height. Ideally we might like
-  // to reduce the width as well to make the size reduction more "balanced", but
-  // it rarely comes up in practice.
-  if ((max_size != 0) && (height * stride > max_size))
-    height = max_size / stride;
-
-  const size_t size = height * stride;
-
-  if (!GetTransportDIBFromCache(memory, size)) {
-    *memory = CreateTransportDIB(size);
-    if (!*memory)
-      return NULL;
-  }
-
-  return (*memory)->GetPlatformCanvas(width, height);
-}
-
-void RenderProcessImpl::ReleaseTransportDIB(TransportDIB* mem) {
-  if (PutSharedMemInCache(mem)) {
-    shared_mem_cache_cleaner_.Reset();
-    return;
-  }
-
-  FreeTransportDIB(mem);
-}
-
-bool RenderProcessImpl::UseInProcessPlugins() const {
-  return in_process_plugins_;
-}
-
-bool RenderProcessImpl::HasInitializedMediaLibrary() const {
-  return initialized_media_library_;
-}
-
-// static
 bool RenderProcessImpl::InProcessPlugins() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 #if defined(OS_LINUX)
@@ -205,66 +166,8 @@ bool RenderProcessImpl::InProcessPlugins() {
 #endif
 }
 
-bool RenderProcessImpl::GetTransportDIBFromCache(TransportDIB** mem,
-                                                 size_t size) {
-  // look for a cached object that is suitable for the requested size.
-  for (size_t i = 0; i < arraysize(shared_mem_cache_); ++i) {
-    if (shared_mem_cache_[i] &&
-        size <= shared_mem_cache_[i]->size()) {
-      *mem = shared_mem_cache_[i];
-      shared_mem_cache_[i] = NULL;
-      return true;
-    }
-  }
-
-  return false;
-}
-
-bool RenderProcessImpl::PutSharedMemInCache(TransportDIB* mem) {
-  const int slot = FindFreeCacheSlot(mem->size());
-  if (slot == -1)
-    return false;
-
-  shared_mem_cache_[slot] = mem;
-  return true;
-}
-
-void RenderProcessImpl::ClearTransportDIBCache() {
-  for (size_t i = 0; i < arraysize(shared_mem_cache_); ++i) {
-    if (shared_mem_cache_[i]) {
-      FreeTransportDIB(shared_mem_cache_[i]);
-      shared_mem_cache_[i] = NULL;
-    }
-  }
-}
-
-int RenderProcessImpl::FindFreeCacheSlot(size_t size) {
-  // simple algorithm:
-  //  - look for an empty slot to store mem, or
-  //  - if full, then replace smallest entry which is smaller than |size|
-  for (size_t i = 0; i < arraysize(shared_mem_cache_); ++i) {
-    if (shared_mem_cache_[i] == NULL)
-      return i;
-  }
-
-  size_t smallest_size = size;
-  int smallest_index = -1;
-
-  for (size_t i = 1; i < arraysize(shared_mem_cache_); ++i) {
-    const size_t entry_size = shared_mem_cache_[i]->size();
-    if (entry_size < smallest_size) {
-      smallest_size = entry_size;
-      smallest_index = i;
-    }
-  }
-
-  if (smallest_index != -1) {
-    FreeTransportDIB(shared_mem_cache_[smallest_index]);
-    shared_mem_cache_[smallest_index] = NULL;
-  }
-
-  return smallest_index;
-}
+// -----------------------------------------------------------------------------
+// Platform specific code for dealing with bitmap transport...
 
 TransportDIB* RenderProcessImpl::CreateTransportDIB(size_t size) {
 #if defined(OS_WIN) || defined(OS_LINUX)
@@ -295,4 +198,113 @@ void RenderProcessImpl::FreeTransportDIB(TransportDIB* dib) {
 #endif
 
   delete dib;
+}
+
+// -----------------------------------------------------------------------------
+
+
+skia::PlatformCanvas* RenderProcessImpl::GetDrawingCanvas(
+    TransportDIB** memory, const gfx::Rect& rect) {
+  int width = rect.width();
+  int height = rect.height();
+  const size_t stride = skia::PlatformCanvas::StrideForWidth(rect.width());
+#if defined(OS_LINUX)
+  const size_t max_size = base::SysInfo::MaxSharedMemorySize();
+#else
+  const size_t max_size = 0;
+#endif
+
+  // If the requested size is too big, reduce the height. Ideally we might like
+  // to reduce the width as well to make the size reduction more "balanced", but
+  // it rarely comes up in practice.
+  if ((max_size != 0) && (height * stride > max_size))
+    height = max_size / stride;
+
+  const size_t size = height * stride;
+
+  if (!GetTransportDIBFromCache(memory, size)) {
+    *memory = CreateTransportDIB(size);
+    if (!*memory)
+      return false;
+  }
+
+  return (*memory)->GetPlatformCanvas(width, height);
+}
+
+void RenderProcessImpl::ReleaseTransportDIB(TransportDIB* mem) {
+  if (PutSharedMemInCache(mem)) {
+    shared_mem_cache_cleaner_.Reset();
+    return;
+  }
+
+  FreeTransportDIB(mem);
+}
+
+bool RenderProcessImpl::UseInProcessPlugins() const {
+  return in_process_plugins_;
+}
+
+bool RenderProcessImpl::HasInitializedMediaLibrary() const {
+  return initialized_media_library_;
+}
+
+bool RenderProcessImpl::GetTransportDIBFromCache(TransportDIB** mem,
+                                             size_t size) {
+  // look for a cached object that is suitable for the requested size.
+  for (size_t i = 0; i < arraysize(shared_mem_cache_); ++i) {
+    if (shared_mem_cache_[i] &&
+        size <= shared_mem_cache_[i]->size()) {
+      *mem = shared_mem_cache_[i];
+      shared_mem_cache_[i] = NULL;
+      return true;
+    }
+  }
+
+  return false;
+}
+
+int RenderProcessImpl::FindFreeCacheSlot(size_t size) {
+  // simple algorithm:
+  //  - look for an empty slot to store mem, or
+  //  - if full, then replace smallest entry which is smaller than |size|
+  for (size_t i = 0; i < arraysize(shared_mem_cache_); ++i) {
+    if (shared_mem_cache_[i] == NULL)
+      return i;
+  }
+
+  size_t smallest_size = size;
+  int smallest_index = -1;
+
+  for (size_t i = 1; i < arraysize(shared_mem_cache_); ++i) {
+    const size_t entry_size = shared_mem_cache_[i]->size();
+    if (entry_size < smallest_size) {
+      smallest_size = entry_size;
+      smallest_index = i;
+    }
+  }
+
+  if (smallest_index != -1) {
+    FreeTransportDIB(shared_mem_cache_[smallest_index]);
+    shared_mem_cache_[smallest_index] = NULL;
+  }
+
+  return smallest_index;
+}
+
+bool RenderProcessImpl::PutSharedMemInCache(TransportDIB* mem) {
+  const int slot = FindFreeCacheSlot(mem->size());
+  if (slot == -1)
+    return false;
+
+  shared_mem_cache_[slot] = mem;
+  return true;
+}
+
+void RenderProcessImpl::ClearTransportDIBCache() {
+  for (size_t i = 0; i < arraysize(shared_mem_cache_); ++i) {
+    if (shared_mem_cache_[i]) {
+      FreeTransportDIB(shared_mem_cache_[i]);
+      shared_mem_cache_[i] = NULL;
+    }
+  }
 }

@@ -53,6 +53,7 @@
 #include "chrome/renderer/plugin_channel_host.h"
 #include "chrome/renderer/print_web_view_helper.h"
 #include "chrome/renderer/render_process.h"
+#include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/renderer_webstoragenamespace_impl.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
 #include "chrome/renderer/user_script_slave.h"
@@ -1348,29 +1349,6 @@ void RenderView::OpenURL(
 }
 
 // WebViewDelegate ------------------------------------------------------------
-
-void RenderView::DidPaint() {
-  WebFrame* main_frame = webview()->mainFrame();
-
-  if (main_frame->provisionalDataSource()) {
-    // If we have a provisional frame we are between the start
-    // and commit stages of loading...ignore this paint.
-    return;
-  }
-
-  WebDataSource* ds = main_frame->dataSource();
-  NavigationState* navigation_state = NavigationState::FromDataSource(ds);
-  DCHECK(navigation_state);
-
-  Time now = Time::Now();
-  if (navigation_state->first_paint_time().is_null()) {
-    navigation_state->set_first_paint_time(now);
-  }
-  if (navigation_state->first_paint_after_load_time().is_null() &&
-      !navigation_state->finish_load_time().is_null()) {
-    navigation_state->set_first_paint_after_load_time(now);
-  }
-}
 
 void RenderView::LoadNavigationErrorPage(WebFrame* frame,
                                          const WebURLRequest& failed_request,
@@ -2988,7 +2966,7 @@ webkit_glue::WebPluginDelegate* RenderView::CreatePluginDelegate(
     mime_type_to_use = &mime_type;
 
   bool use_pepper_host = false;
-  bool in_process_plugin = RenderProcess::current()->in_process_plugins();
+  bool in_process_plugin = RenderProcess::current()->UseInProcessPlugins();
   // Check for trusted Pepper plugins.
   const char kPepperPrefix[] = "pepper-";
   if (StartsWithASCII(*mime_type_to_use, kPepperPrefix, true)) {
@@ -3010,10 +2988,11 @@ webkit_glue::WebPluginDelegate* RenderView::CreatePluginDelegate(
   }
   if (in_process_plugin) {
     if (use_pepper_host) {
-      return WebPluginDelegatePepper::Create(
-          path,
-          *mime_type_to_use,
-          AsWeakPtr());
+      WebPluginDelegatePepper* pepper_plugin =
+           WebPluginDelegatePepper::Create(path, *mime_type_to_use,
+                                           AsWeakPtr());
+      current_pepper_plugins_.insert(pepper_plugin);
+      return pepper_plugin;
     } else {
 #if defined(OS_WIN)  // In-proc plugins aren't supported on Linux or Mac.
       return WebPluginDelegateImpl::Create(
@@ -3470,6 +3449,17 @@ void RenderView::InsertCSS(const std::wstring& frame_xpath,
     return;
 
   web_frame->insertStyleText(WebString::fromUTF8(css), WebString::fromUTF8(id));
+}
+
+void RenderView::OnPepperPluginDestroy(
+    WebPluginDelegatePepper* pepper_plugin) {
+  std::set<WebPluginDelegatePepper*>::iterator found_pepper =
+      current_pepper_plugins_.find(pepper_plugin);
+  if (found_pepper == current_pepper_plugins_.end()) {
+    NOTREACHED();
+    return;
+  }
+  current_pepper_plugins_.erase(found_pepper);
 }
 
 void RenderView::OnScriptEvalRequest(const std::wstring& frame_xpath,
@@ -3949,6 +3939,53 @@ void RenderView::OnResize(const gfx::Size& new_size,
 
   RenderWidget::OnResize(new_size, resizer_rect);
 }
+
+void RenderView::DidInitiatePaint() {
+  // Notify any pepper plugins that we started painting. The plugin "should"
+  // never notified that we started painting, this is used for internal
+  // bookkeeping only, so we know that the set can not change under us.
+  for (std::set<WebPluginDelegatePepper*>::iterator i =
+           current_pepper_plugins_.begin();
+       i != current_pepper_plugins_.end(); ++i)
+    (*i)->RenderViewInitiatedPaint();
+}
+
+void RenderView::DidFlushPaint() {
+  // Notify any pepper plugins that we painted. This will call into the plugin,
+  // and we it may ask to close itself as a result. This will, in turn, modify
+  // our set, possibly invalidating the iterator. So we iterate on a copy that
+  // won't change out from under us.
+  std::set<WebPluginDelegatePepper*> plugins = current_pepper_plugins_;
+  for (std::set<WebPluginDelegatePepper*>::iterator i = plugins.begin();
+       i != plugins.end(); ++i) {
+    // The copy above makes sure our iterator is never invalid if some plugins
+    // are destroyed. But some plugin may decide to close all of its views in
+    // response to a paint in one of them, so we need to make sure each one is
+    // still "current" before using it.
+    if (current_pepper_plugins_.find(*i) != current_pepper_plugins_.end())
+      (*i)->RenderViewFlushedPaint();
+  }
+
+  WebFrame* main_frame = webview()->mainFrame();
+
+  // If we have a provisional frame we are between the start and commit stages
+  // of loading and we don't want to save stats.
+  if (!main_frame->provisionalDataSource()) {
+    WebDataSource* ds = main_frame->dataSource();
+    NavigationState* navigation_state = NavigationState::FromDataSource(ds);
+    DCHECK(navigation_state);
+
+    Time now = Time::Now();
+    if (navigation_state->first_paint_time().is_null()) {
+      navigation_state->set_first_paint_time(now);
+    }
+    if (navigation_state->first_paint_after_load_time().is_null() &&
+        !navigation_state->finish_load_time().is_null()) {
+      navigation_state->set_first_paint_after_load_time(now);
+    }
+  }
+}
+
 
 void RenderView::OnClearFocusedNode() {
   if (webview())

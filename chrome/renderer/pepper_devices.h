@@ -5,8 +5,8 @@
 #ifndef CHROME_RENDERER_PEPPER_DEVICES_H_
 #define CHROME_RENDERER_PEPPER_DEVICES_H_
 
-#include <stdint.h>
-
+#include "base/basictypes.h"
+#include "base/gfx/rect.h"
 #include "base/scoped_ptr.h"
 #include "base/shared_memory.h"
 #include "base/simple_thread.h"
@@ -18,12 +18,16 @@
 #include "third_party/npapi/bindings/npapi_extensions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
+class WebPluginDelegatePepper;
+
 // Lists all contexts currently open for painting. These are ones requested by
 // the plugin but not destroyed by it yet. The source pointer is the raw
 // pixels. We use this to look up the corresponding transport DIB when the
 // plugin tells us to flush or destroy it.
 class Graphics2DDeviceContext {
  public:
+  explicit Graphics2DDeviceContext(WebPluginDelegatePepper* plugin_delegate);
+
   NPError Initialize(gfx::Rect window_rect,
                      const NPDeviceContext2DConfig* config,
                      NPDeviceContext2D* context);
@@ -32,15 +36,57 @@ class Graphics2DDeviceContext {
                 NPDeviceFlushContextCallbackPtr callback, NPP id,
                 void* user_data);
 
+  // Notifications that the render view has rendered the page and that it has
+  // been flushed to the screen.
+  void RenderViewInitiatedPaint();
+  void RenderViewFlushedPaint();
+
   TransportDIB* transport_dib() { return transport_dib_.get(); }
 
  private:
+  struct FlushCallbackData {
+    FlushCallbackData(NPDeviceFlushContextCallbackPtr f,
+                      NPP n,
+                      NPDeviceContext2D* c,
+                      NPUserData* u)
+        : function(f),
+          npp(n),
+          context(c),
+          user_data(u) {
+    }
+
+    NPDeviceFlushContextCallbackPtr function;
+    NPP npp;
+    NPDeviceContext2D* context;
+    NPUserData* user_data;
+  };
+  typedef std::vector<FlushCallbackData> FlushCallbackVector;
+
+  WebPluginDelegatePepper* plugin_delegate_;
+
   static int32 next_buffer_id_;
   scoped_ptr<TransportDIB> transport_dib_;
 
   // The canvas associated with the transport DIB, containing the mapped
   // memory of the image.
   scoped_ptr<skia::PlatformCanvas> canvas_;
+
+  // The plugin may be constantly giving us paint messages. "Unpainted" ones
+  // are paint requests which have never been painted. These could have been
+  // done while the RenderView was already waiting for an ACK from a previous
+  // paint, so won't generate a new one yet.
+  //
+  // "Painted" ones are those paints that have been painted by RenderView, but
+  // for which the ACK from the browser has not yet been received.
+  //
+  // When we get updates from a plugin with a callback, it is first added to
+  // the unpainted callbacks. When the renderer has initiated a paint, we'll
+  // move it to the painted callbacks list. When the renderer receives a flush,
+  // we'll execute the callback and remove it from the list.
+  FlushCallbackVector unpainted_flush_callbacks_;
+  FlushCallbackVector painted_flush_callbacks_;
+
+  DISALLOW_COPY_AND_ASSIGN(Graphics2DDeviceContext);
 };
 
 
@@ -60,7 +106,7 @@ class AudioDeviceContext : public AudioMessageFilter::Delegate,
                      NPDeviceContextAudio* context);
 
   base::SharedMemory* shared_memory() { return shared_memory_.get(); }
-  uint32_t shared_memory_size() { return shared_memory_size_; }
+  uint32 shared_memory_size() { return shared_memory_size_; }
   base::SyncSocket* socket() { return socket_.get(); }
 
  private:

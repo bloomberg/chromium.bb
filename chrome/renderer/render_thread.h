@@ -52,6 +52,12 @@ class WebStorageEventDispatcher;
 // The RenderThreadBase is the minimal interface that a RenderView/Widget
 // expects from a render thread. The interface basically abstracts a way to send
 // and receive messages.
+//
+// TODO(brettw) this should be refactored like RenderProcess/RenderProcessImpl:
+// This class should be named RenderThread and the implementation below should
+// be RenderThreadImpl. The ::current() getter on the impl should then be moved
+// here so we can provide another implementation of RenderThread for tests
+// without having to check for NULL all the time.
 class RenderThreadBase {
  public:
   virtual ~RenderThreadBase() {}
@@ -91,6 +97,10 @@ class RenderThread : public RenderThreadBase,
 
   // Returns the one render thread for this process.  Note that this should only
   // be accessed when running on the render thread itself
+  //
+  // TODO(brettw) this should be on the abstract base class instead of here,
+  // and return the base class' interface instead. Currently this causes
+  // problems with testing. See the comment above RenderThreadBase above.
   static RenderThread* current();
 
   // Returns the routing ID of the RenderWidget containing the current script

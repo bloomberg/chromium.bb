@@ -225,6 +225,24 @@ FilePath WebPluginDelegatePepper::GetPluginPath() {
   return instance()->plugin_lib()->plugin_info().path;
 }
 
+void WebPluginDelegatePepper::RenderViewInitiatedPaint() {
+  // Broadcast event to all 2D contexts.
+  Graphics2DMap::iterator iter2d(&graphic2d_contexts_);
+  while (!iter2d.IsAtEnd()) {
+    iter2d.GetCurrentValue()->RenderViewInitiatedPaint();
+    iter2d.Advance();
+  }
+}
+
+void WebPluginDelegatePepper::RenderViewFlushedPaint() {
+  // Broadcast event to all 2D contexts.
+  Graphics2DMap::iterator iter2d(&graphic2d_contexts_);
+  while (!iter2d.IsAtEnd()) {
+    iter2d.GetCurrentValue()->RenderViewFlushedPaint();
+    iter2d.Advance();
+  }
+}
+
 WebPluginResourceClient* WebPluginDelegatePepper::CreateResourceClient(
     unsigned long resource_id, const GURL& url, int notify_id) {
   return instance()->CreateStream(resource_id, url, std::string(), notify_id);
@@ -259,7 +277,7 @@ NPError WebPluginDelegatePepper::Device2DInitializeContext(
   // it will have a window handle.
   plugin_->SetWindow(NULL);
 
-  scoped_ptr<Graphics2DDeviceContext> g2d(new Graphics2DDeviceContext());
+  scoped_ptr<Graphics2DDeviceContext> g2d(new Graphics2DDeviceContext(this));
   NPError status = g2d->Initialize(window_rect_, config, context);
   if (NPERR_NO_ERROR == status) {
     context->reserved = reinterpret_cast<void *>(
@@ -662,6 +680,9 @@ WebPluginDelegatePepper::WebPluginDelegatePepper(
 
 WebPluginDelegatePepper::~WebPluginDelegatePepper() {
   DestroyInstance();
+
+  if (render_view_)
+    render_view_->OnPepperPluginDestroy(this);
 }
 
 void WebPluginDelegatePepper::ForwardSetWindow() {

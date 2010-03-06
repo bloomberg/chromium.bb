@@ -1,4 +1,4 @@
-// Copyright (c) 2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,7 @@ class RenderThreadTest : public testing::Test {
   virtual void SetUp() {
     // Need a MODE_SERVER to make MODE_CLIENTs (like a RenderThread) happy.
     channel_ = new IPC::Channel(kThreadName, IPC::Channel::MODE_SERVER, NULL);
-    mock_process_.reset(new MockProcess());
+    mock_process_.reset(new MockRenderProcess);
     mock_process_->set_main_thread(new RenderThread(kThreadName));
   }
 
@@ -36,7 +36,7 @@ class RenderThreadTest : public testing::Test {
 
  protected:
   MessageLoop message_loop_;
-  scoped_ptr<MockProcess> mock_process_;
+  scoped_ptr<MockRenderProcess> mock_process_;
   IPC::Channel *channel_;
 };
 

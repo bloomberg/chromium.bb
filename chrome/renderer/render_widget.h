@@ -173,9 +173,12 @@ class RenderWidget : public IPC::Channel::Listener,
   void OnSetTextDirection(WebKit::WebTextDirection direction);
   void OnGpuChannelEstablished(const IPC::ChannelHandle& channel_handle);
 
-  // Override point to notify that a paint has happened. This fires after the
-  // browser side has updated the screen for a newly painted region.
-  virtual void DidPaint() {}
+  // Override point to notify derived classes that a paint has happened.
+  // DidInitiatePaint happens when we've generated a new bitmap and sent it to
+  // the browser. DidFlushPaint happens once we've received the ACK that the
+  // screen has actually been updated.
+  virtual void DidInitiatePaint() {}
+  virtual void DidFlushPaint() {}
 
   // Sets the "hidden" state of this widget.  All accesses to is_hidden_ should
   // use this method so that we can properly inform the RenderThread of our

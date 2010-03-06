@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "chrome/renderer/extensions/extension_process_bindings.h"
 #include "chrome/renderer/extensions/js_only_v8_extensions.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
+#include "chrome/renderer/mock_render_process.h"
 #include "chrome/renderer/renderer_main_platform_delegate.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
@@ -33,6 +34,12 @@ namespace {
 const int32 kRouteId = 5;
 const int32 kOpenerId = 7;
 }  // namespace
+
+RenderViewTest::RenderViewTest() {
+}
+
+RenderViewTest::~RenderViewTest() {
+}
 
 void RenderViewTest::ProcessPendingMessages() {
   msg_loop_.PostTask(FROM_HERE, new MessageLoop::QuitTask());
@@ -89,7 +96,7 @@ void RenderViewTest::SetUp() {
       Extension::kPermissionNames + Extension::kNumPermissions);
   ExtensionProcessBindings::SetAPIPermissions("", permissions);
 
-  mock_process_.reset(new MockProcess());
+  mock_process_.reset(new MockRenderProcess);
 
   render_thread_.set_routing_id(kRouteId);
 
@@ -102,6 +109,7 @@ void RenderViewTest::SetUp() {
   // Attach a pseudo keyboard device to this object.
   mock_keyboard_.reset(new MockKeyboard());
 }
+
 void RenderViewTest::TearDown() {
   // Try very hard to collect garbage before shutting down.
   GetMainFrame()->collectGarbage();
