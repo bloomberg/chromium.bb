@@ -144,7 +144,7 @@ class TestingBrowserProcess : public BrowserProcess {
     return app_locale_;
   }
 
-  virtual void set_application_locale(const std::string& app_locale) {
+  virtual void SetApplicationLocale(const std::string& app_locale) {
     app_locale_ = app_locale;
   }
 

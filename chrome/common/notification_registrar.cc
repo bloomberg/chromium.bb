@@ -15,7 +15,7 @@ struct NotificationRegistrar::Record {
   NotificationObserver* observer;
   NotificationType type;
   NotificationSource source;
-  ChromeThread::ID thread_id;
+  PlatformThreadId thread_id;
 };
 
 bool NotificationRegistrar::Record::operator==(const Record& other) const {
@@ -35,7 +35,7 @@ NotificationRegistrar::~NotificationRegistrar() {
 void NotificationRegistrar::Add(NotificationObserver* observer,
                                 NotificationType type,
                                 const NotificationSource& source) {
-  Record record = { observer, type, source, GetCurrentThreadIdentifier() };
+  Record record = { observer, type, source, PlatformThread::CurrentId() };
 
   DCHECK(std::find(registered_.begin(), registered_.end(), record) ==
          registered_.end()) << "Duplicate registration.";
@@ -55,7 +55,7 @@ void NotificationRegistrar::Remove(NotificationObserver* observer,
         type.value << " from list of size " << registered_.size() << ".";
     return;
   }
-  CheckCalledOnValidWellKnownThread(found->thread_id);
+  CheckCalledOnValidThread(found->thread_id);
 
   registered_.erase(found);
 
@@ -82,7 +82,7 @@ void NotificationRegistrar::RemoveAll() {
   NotificationService* service = NotificationService::current();
   if (service) {
     for (size_t i = 0; i < registered_.size(); i++) {
-      CheckCalledOnValidWellKnownThread(registered_[i].thread_id);
+      CheckCalledOnValidThread(registered_[i].thread_id);
       service->RemoveObserver(registered_[i].observer,
                               registered_[i].type,
                               registered_[i].source);
@@ -95,19 +95,11 @@ bool NotificationRegistrar::IsEmpty() const {
   return registered_.empty();
 }
 
-ChromeThread::ID NotificationRegistrar::GetCurrentThreadIdentifier() {
-  ChromeThread::ID thread_id;
-  if (!ChromeThread::GetCurrentThreadIdentifier(&thread_id)) {
-    // If we are not created in well known thread, GetCurrentThreadIdentifier
-    // fails. Assign thread_id to an ID not used.
-    thread_id = ChromeThread::ID_COUNT;
-  }
-  return thread_id;
-}
-
-void NotificationRegistrar::CheckCalledOnValidWellKnownThread(
-    ChromeThread::ID thread_id) {
-  if (ChromeThread::IsWellKnownThread(thread_id)) {
-    CHECK(ChromeThread::CurrentlyOn(thread_id));
-  }
+// static
+void NotificationRegistrar::CheckCalledOnValidThread(
+    PlatformThreadId thread_id) {
+  PlatformThreadId current_thread_id = PlatformThread::CurrentId();
+  CHECK(current_thread_id == thread_id) << "called on invalid thread: "
+                                        << thread_id << " vs. "
+                                        << current_thread_id;
 }

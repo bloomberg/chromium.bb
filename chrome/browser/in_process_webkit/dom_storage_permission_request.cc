@@ -5,6 +5,7 @@
 #include "chrome/browser/in_process_webkit/dom_storage_permission_request.h"
 
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/message_box_handler.h"
 
 DOMStoragePermissionRequest::DOMStoragePermissionRequest(

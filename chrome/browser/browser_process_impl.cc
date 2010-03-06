@@ -41,6 +41,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -423,6 +424,11 @@ void BrowserProcessImpl::CreateNotificationUIManager() {
   DCHECK(notification_ui_manager_.get() == NULL);
   notification_ui_manager_.reset(NotificationUIManager::Create());
   created_notification_ui_manager_ = true;
+}
+
+void BrowserProcessImpl::SetApplicationLocale(const std::string& locale) {
+  locale_ = locale;
+  extension_l10n_util::SetProcessLocale(locale);
 }
 
 // The BrowserProcess object must outlive the file thread so we use traits

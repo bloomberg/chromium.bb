@@ -6,6 +6,8 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/logging.h"
+
 AppModalDialog::~AppModalDialog() {
 }
 

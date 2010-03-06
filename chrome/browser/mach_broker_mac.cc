@@ -5,6 +5,7 @@
 #include "chrome/browser/mach_broker_mac.h"
 
 #include "base/logging.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/common/child_process_info.h"

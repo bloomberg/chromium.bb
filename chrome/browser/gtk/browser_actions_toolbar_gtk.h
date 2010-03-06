@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/linked_ptr.h"
+#include "base/task.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"

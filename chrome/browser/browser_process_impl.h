@@ -194,9 +194,7 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
     DCHECK(!locale_.empty());
     return locale_;
   }
-  virtual void set_application_locale(const std::string& locale) {
-    locale_ = locale;
-  }
+  virtual void SetApplicationLocale(const std::string& locale);
 
   virtual base::WaitableEvent* shutdown_event() {
     return shutdown_event_.get();

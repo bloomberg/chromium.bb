@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/browsing_data_appcache_helper.h"
+
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/profile.h"
 #include "webkit/appcache/appcache_database.h"

@@ -445,7 +445,7 @@ TEST_F(TranslateManagerTest, UnsupportedUILanguage) {
   TestingBrowserProcess* browser_process =
       static_cast<TestingBrowserProcess*>(g_browser_process);
   std::string original_lang = browser_process->GetApplicationLocale();
-  browser_process->set_application_locale("qbz");
+  browser_process->SetApplicationLocale("qbz");
 
   // Simulate navigating to a page in a language supported by the translate
   // server.
@@ -454,7 +454,7 @@ TEST_F(TranslateManagerTest, UnsupportedUILanguage) {
   // No info-bar should be shown.
   EXPECT_TRUE(GetTranslateInfoBar() == NULL);
 
-  browser_process->set_application_locale(original_lang);
+  browser_process->SetApplicationLocale(original_lang);
 }
 
 // Tests that the translate preference is honored.

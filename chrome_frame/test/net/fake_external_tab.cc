@@ -221,7 +221,7 @@ void FakeExternalTab::Initialize() {
   // BrowserProcessImpl's constructor should set g_browser_process.
   DCHECK(g_browser_process);
   // Set the app locale and create the child threads.
-  g_browser_process->set_application_locale("en-US");
+  g_browser_process->SetApplicationLocale("en-US");
   g_browser_process->db_thread();
   g_browser_process->file_thread();
   g_browser_process->io_thread();

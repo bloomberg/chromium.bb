@@ -13,7 +13,6 @@
 #include "base/linked_ptr.h"
 #include "base/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_file_util.h"
@@ -174,8 +173,7 @@ std::string NormalizeLocale(const std::string& locale) {
 }
 
 std::string CurrentLocaleOrDefault() {
-  std::string current_locale =
-      NormalizeLocale(g_browser_process->GetApplicationLocale());
+  std::string current_locale = NormalizeLocale(*GetProcessLocale());
   if (current_locale.empty())
     current_locale = "en";
 

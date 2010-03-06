@@ -6,10 +6,11 @@
 
 #include "app/l10n_util_mac.h"
 #include "base/compiler_specific.h"
+#include "base/message_loop.h"
+#include "base/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/profile.h"
 #include "grit/generated_resources.h"
-#include "base/scoped_nsobject.h"
 
 // Obj-C bridge class that is the target of all items in the context menu.
 // Relies on the tag being set to the command id. Uses |context_| to
