@@ -472,6 +472,7 @@
             'win_target': 'x64',
           },
           'dependencies': [
+            'ncdecode_table',
             'ncdecode_table64',
             'ncdecode_tablegen',
             'ncopcode_utils64',
