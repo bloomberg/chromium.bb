@@ -59,7 +59,7 @@
         '<(SHARED_INTERMEDIATE_DIR)',
       ],
       'dependencies': [
-        '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncvalidate_gen',
+        '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncvalidate',
       ],
     },
   ],

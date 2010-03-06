@@ -188,7 +188,6 @@
         ['target_arch=="ia32" or target_arch=="x64"', {
           'dependencies': [
             'arch/x86/service_runtime_x86.gyp:service_runtime_x86_common',
-            '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncvalidate_sfi',
           ],
         }],
         ['target_arch == "ia32"', {
@@ -199,6 +198,7 @@
         ['target_arch == "x64"', {
           'dependencies': [
             'arch/x86_64/service_runtime_x86_64.gyp:service_runtime_x86_64',
+            '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncvalidate_sfi',
           ],
         }],
         ['nacl_standalone==0 and OS=="win"', {

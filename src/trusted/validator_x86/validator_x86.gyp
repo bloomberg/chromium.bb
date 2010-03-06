@@ -72,7 +72,6 @@
         # When ncvalidate is a dependency, it needs to be a hard dependency
         # because dependents may rely on ncvalidate to create header files
         # below.
-        'hard_dependency': 1,
       }],
       ['target_base=="ncopcode_utils"', {
         'sources': ['ncopcode_desc.c'],
@@ -119,7 +118,6 @@
         'include_dirs': ['<(SHARED_INTERMEDIATE_DIR)'],
       }],
       ['target_base=="ncvalidate_gen"', {
-        'hard_dependency': 1,
         'actions': [
           {
             'action_name': 'ncdecode_table',
@@ -233,6 +231,7 @@
     {
       'target_name': 'ncopcode_utils',
       'type': 'static_library',
+      'hard_dependency': 1,
       'variables': {
         'target_base': 'ncopcode_utils',
       },
@@ -404,6 +403,7 @@
       'dependencies': [
         'ncvalidate_gen',
       ],
+      'hard_dependency': 1,
     },
     # ----------------------------------------------------------------------
     { 'target_name': 'ncvalidate_sfi',
@@ -412,6 +412,7 @@
       'variables': {
         'target_base': 'ncvalidate_sfi',
       },
+      'hard_dependency': 1,
     },
     # ----------------------------------------------------------------------
     {
@@ -485,11 +486,13 @@
             'target_base': 'ncvalidate_sfi',
             'win_target': 'x64',
           },
+          'hard_dependency': 1,
         },
         # ----------------------------------------------------------------------
         {
           'target_name': 'ncopcode_utils64',
           'type': 'static_library',
+          'hard_dependency': 1,
           'variables': {
             'target_base': 'ncopcode_utils',
             'win_target': 'x64',
@@ -506,6 +509,7 @@
           'dependencies': [
             'ncvalidate_gen64',
           ],
+          'hard_dependency': 1,
         },
       ],
     }],
