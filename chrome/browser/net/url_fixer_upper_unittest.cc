@@ -342,8 +342,16 @@ TEST(URLFixerUpperTest, FixupFile) {
     // should be returned just converted to a file: URL.
     {"\\\\SomeNonexistentHost\\foo\\bar.txt", "",
      "file://somenonexistenthost/foo/bar.txt"},
+    // We do this strictly, like IE8, which only accepts this form using
+    // backslashes and not forward ones. Its a bit weird that the host/path is
+    // "more canonicalized" in the UNC case above, and in the http case it
+    // isn't lowercased, etc. That level of canonicalization will happen when
+    // it's actually turned into a GURL, so we don't care about it here. Turning
+    // "//foo" into "http" matches Firefox and IE, silly though it may seem
+    // (it falls out of adding "http" as the default protocol if you haven't
+    // entered one).
     {"//SomeNonexistentHost\\foo/bar.txt", "",
-     "file://somenonexistenthost/foo/bar.txt"},
+     "http://SomeNonexistentHost\\foo/bar.txt"},
     {"file:///C:/foo/bar", "", "file:///C:/foo/bar"},
 
     // These are fixups we don't do, but could consider:

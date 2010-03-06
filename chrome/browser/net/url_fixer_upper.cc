@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -399,7 +399,7 @@ string URLFixerUpper::SegmentURL(const string& text,
 #if defined(OS_WIN)
   int trimmed_length = static_cast<int>(trimmed.length());
   if (url_parse::DoesBeginWindowsDriveSpec(trimmed.data(), 0, trimmed_length) ||
-      url_parse::DoesBeginUNCPath(trimmed.data(), 0, trimmed_length, false))
+      url_parse::DoesBeginUNCPath(trimmed.data(), 0, trimmed_length, true))
     return "file";
 #elif defined(OS_POSIX)
   if (FilePath::IsSeparator(trimmed.data()[0]) || trimmed.data()[0] == '~')
@@ -417,7 +417,7 @@ string URLFixerUpper::SegmentURL(const string& text,
 
   // Not segmenting file schemes or nonstandard schemes.
   if ((scheme == chrome::kFileScheme) ||
-      !url_util::IsStandard(scheme.c_str(), static_cast<int>(scheme.length()),
+      !url_util::IsStandard(scheme.c_str(),
       url_parse::Component(0, static_cast<int>(scheme.length()))))
     return scheme;
 
@@ -476,7 +476,7 @@ string URLFixerUpper::FixupURL(const string& text,
     return (parts.scheme.is_valid() ? text : FixupPath(text));
 
   // For some schemes whose layouts we understand, we rebuild it.
-  if (url_util::IsStandard(scheme.c_str(), static_cast<int>(scheme.length()),
+  if (url_util::IsStandard(scheme.c_str(),
           url_parse::Component(0, static_cast<int>(scheme.length())))) {
     string url(scheme);
     url.append("://");

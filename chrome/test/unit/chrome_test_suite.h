@@ -22,6 +22,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/testing_browser_process.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/base/net_util.h"
@@ -94,6 +95,7 @@ class ChromeTestSuite : public TestSuite {
 
     TestSuite::Initialize();
 
+    chrome::RegisterChromeSchemes();
     host_resolver_proc_ = new WarningHostResolverProc();
     scoped_host_resolver_proc_.Init(host_resolver_proc_.get());
 

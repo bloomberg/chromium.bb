@@ -83,6 +83,10 @@ extern const char kSyncSetupDonePath[];
 extern const char kNetworkViewCacheURL[];
 extern const char kNetworkViewInternalsURL[];
 
+// Call near the beginning of startup to register Chrome's internal URLs that
+// should be parsed as "standard" with the googleurl library.
+void RegisterChromeSchemes();
+
 }  // namespace chrome
 
 #endif  // CHROME_COMMON_URL_CONSTANTS_H_

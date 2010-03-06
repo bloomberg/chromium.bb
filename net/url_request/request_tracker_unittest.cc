@@ -199,30 +199,32 @@ TEST(RequestTrackerTest, GraveyardCanBeFiltered) {
   tracker.SetGraveyardFilter(ShouldRequestBeAddedToGraveyard);
 
   // This will be excluded.
-  TestRequest req1(GURL("chrome://dontcare"));
+  GURL url1("chrome://dontcare/");
+  TestRequest req1(url1);
   tracker.Add(&req1);
   tracker.Remove(&req1);
 
   // This will be be added to graveyard.
-  TestRequest req2(GURL("chrome2://dontcare"));
+  GURL url2("chrome2://dontcare/");
+  TestRequest req2(url2);
   tracker.Add(&req2);
   tracker.Remove(&req2);
 
   // This will be be added to graveyard.
-  TestRequest req3(GURL("http://foo"));
+  GURL url3("http://foo/");
+  TestRequest req3(url3);
   tracker.Add(&req3);
   tracker.Remove(&req3);
 
   // This will be be excluded.
-  TestRequest req4(GURL("data:sup"));
+  GURL url4("data:sup");
+  TestRequest req4(url4);
   tracker.Add(&req4);
   tracker.Remove(&req4);
 
   ASSERT_EQ(2u, tracker.GetRecentlyDeceased().size());
-  EXPECT_EQ("chrome2://dontcare/",
-            tracker.GetRecentlyDeceased()[0].original_url.spec());
-  EXPECT_EQ("http://foo/",
-            tracker.GetRecentlyDeceased()[1].original_url.spec());
+  EXPECT_EQ(url2, tracker.GetRecentlyDeceased()[0].original_url);
+  EXPECT_EQ(url3, tracker.GetRecentlyDeceased()[1].original_url);
 }
 
 // Convert an unbounded tracker back to being bounded.

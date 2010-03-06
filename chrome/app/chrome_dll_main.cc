@@ -55,6 +55,7 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/main_function_params.h"
 #include "chrome/common/sandbox_init_wrapper.h"
+#include "chrome/common/url_constants.h"
 #include "ipc/ipc_switches.h"
 
 #if defined(USE_NSS)
@@ -643,6 +644,11 @@ int ChromeMain(int argc, char** argv) {
     file_state = logging::DELETE_OLD_LOG_FILE;
   }
   logging::InitChromeLogging(parsed_command_line, file_state);
+
+  // Register internal Chrome schemes so they'll be parsed correctly. This must
+  // happen before we process any URLs with the affected schemes, and must be
+  // done in all processes that work with these URLs (i.e. including renderers).
+  chrome::RegisterChromeSchemes();
 
 #ifdef NDEBUG
   if (parsed_command_line.HasSwitch(switches::kSilentDumpOnDCHECK) &&

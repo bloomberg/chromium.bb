@@ -347,6 +347,7 @@
             '../webkit/glue/webkit_glue_dummy.cc',
             'common/resource_dispatcher_dummy.cc',
             'common/socket_stream_dispatcher_dummy.cc',
+            'common/url_constants.cc',
           ],
           'export_dependent_settings': [
             '../app/app.gyp:app_base_nacl_win64',

@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 #include "chrome/common/url_constants.h"
+#include "googleurl/src/url_util.h"
 
 namespace chrome {
 
@@ -81,5 +82,12 @@ const char kSyncSetupDonePath[] = "setupdone";
 
 const char kNetworkViewInternalsURL[] = "chrome://net-internals/";
 const char kNetworkViewCacheURL[] = "chrome://net-internals/view-cache";
+
+void RegisterChromeSchemes() {
+  // Don't need "chrome-internal" which was used in old versions of Chrome for
+  // the new tab page.
+  url_util::AddStandardScheme(kChromeUIScheme);
+  url_util::AddStandardScheme(kExtensionScheme);
+}
 
 }  // namespace chrome

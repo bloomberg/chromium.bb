@@ -12,6 +12,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/browser/extensions/extension_dom_ui.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_message_service.h"
@@ -137,7 +138,7 @@ bool PopupShowFunction::RunImpl() {
   // extension view's extension.
   const std::string& extension_id = url.host();
   if (extension_id != dispatcher()->GetExtension()->id() ||
-      !url.SchemeIs("chrome-extension")) {
+      !url.SchemeIs(chrome::kExtensionScheme)) {
     error_ = kInvalidURLError;
     return false;
   }

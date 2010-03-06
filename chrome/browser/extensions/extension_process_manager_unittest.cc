@@ -41,9 +41,9 @@ TEST_F(ExtensionProcessManagerTest, ProcessGrouping) {
 
   // Extensions with common origins ("scheme://id/") should be grouped in the
   // same SiteInstance.
-  GURL ext1_url1("chrome-extensions://ext1_id/index.html");
-  GURL ext1_url2("chrome-extensions://ext1_id/toolstrips/toolstrip.html");
-  GURL ext2_url1("chrome-extensions://ext2_id/index.html");
+  GURL ext1_url1("chrome-extension://ext1_id/index.html");
+  GURL ext1_url2("chrome-extension://ext1_id/toolstrips/toolstrip.html");
+  GURL ext2_url1("chrome-extension://ext2_id/index.html");
 
   scoped_refptr<SiteInstance> site11 =
       manager1->GetSiteInstanceForURL(ext1_url1);
