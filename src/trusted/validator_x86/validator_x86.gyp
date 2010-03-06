@@ -123,7 +123,7 @@
             'action_name': 'ncdecode_table',
             'msvs_cygwin_shell': 0,
             'inputs': [
-              '<(PRODUCT_DIR)/ncdecode_table',
+              '<(PRODUCT_DIR)/ncdecode_table<(EXECUTABLE_SUFFIX)',
             ],
             'outputs': [
               # TODO(gregoryd): keeping the long include path for now to be
@@ -131,7 +131,8 @@
               '<(validate_gen_out)/ncdecodetab.h',
               '<(validate_gen_out)/ncdisasmtab.h',
             ],
-            'action': ['<(PRODUCT_DIR)/ncdecode_table', '-m32', '<@(_outputs)'],
+            'action': ['<(PRODUCT_DIR)/ncdecode_table<(EXECUTABLE_SUFFIX)',
+                       '-m32', '<@(_outputs)'],
             'message': 'Running ncdecode_table',
             'process_outputs_as_sources': 1,
           },
@@ -139,7 +140,7 @@
             'action_name': 'ncdecode_tablegen',
             'msvs_cygwin_shell': 0,
             'inputs': [
-              '<(PRODUCT_DIR)/ncdecode_tablegen',
+              '<(PRODUCT_DIR)/ncdecode_tablegen<(EXECUTABLE_SUFFIX)',
             ],
             'outputs': [
               '<(validate_gen_out)/nc_opcode_table.h',
