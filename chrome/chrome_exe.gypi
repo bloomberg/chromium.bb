@@ -503,6 +503,7 @@
             '../breakpad/breakpad.gyp:breakpad_handler_win64',
             '../breakpad/breakpad.gyp:breakpad_sender_win64',
             '../base/base.gyp:base_nacl_win64',
+            '../build/temp_gyp/googleurl.gyp:googleurl',
             '../chrome_frame/chrome_frame.gyp:npchrome_frame',
             # TODO(gregoryd): build sandbox for 64 bit
             # '../sandbox/sandbox.gyp:sandbox',

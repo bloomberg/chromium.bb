@@ -327,7 +327,6 @@
             '../app/app.gyp:app_base_nacl_win64',
             '../app/app.gyp:app_resources',
             '../base/base.gyp:base_nacl_win64',
-            '../build/temp_gyp/googleurl.gyp:googleurl',
             '../ipc/ipc.gyp:ipc_win64',
           ],
           'include_dirs': [
