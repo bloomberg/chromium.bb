@@ -288,7 +288,7 @@ void BookmarkBarGtk::Init(Profile* profile) {
 }
 
 void BookmarkBarGtk::Show(bool animate) {
-  gtk_widget_show(widget());
+  gtk_widget_show_all(widget());
   bool old_floating = floating_;
   UpdateFloatingState();
   // TODO(estade): animate the transition between floating and non.
