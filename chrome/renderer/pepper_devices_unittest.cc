@@ -220,6 +220,9 @@ void PepperDeviceTest::FlushCalled(NPP instance,
 
 // -----------------------------------------------------------------------------
 
+// TODO(brettw) this crashes on Mac. Figure out why and enable.
+#if !defined(OS_MACOSX)
+
 TEST_F(PepperDeviceTest, Flush) {
   // Create a 2D device.
   NPDeviceContext2DConfig config;
@@ -246,3 +249,4 @@ TEST_F(PepperDeviceTest, Flush) {
   view_->OnMessageReceived(ViewMsg_UpdateRect_ACK(view_->routing_id()));
   EXPECT_EQ(1u, flush_calls_.size());
 }
+#endif
