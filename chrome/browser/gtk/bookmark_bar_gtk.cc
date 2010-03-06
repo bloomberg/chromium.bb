@@ -213,7 +213,7 @@ void BookmarkBarGtk::Init(Profile* profile) {
   instructions_gtk_.reset(new BookmarkBarInstructionsGtk(this, profile));
   gtk_container_add(GTK_CONTAINER(instructions_), instructions_gtk_->widget());
   gtk_box_pack_start(GTK_BOX(bookmark_hbox_), instructions_,
-                     FALSE, FALSE, 0);
+                     TRUE, TRUE, 0);
 
   gtk_drag_dest_set(instructions_,
       GtkDestDefaults(GTK_DEST_DEFAULT_DROP | GTK_DEST_DEFAULT_MOTION),
@@ -273,7 +273,7 @@ void BookmarkBarGtk::Init(Profile* profile) {
           ResourceBundle::GetSharedInstance().GetPixbufNamed(IDR_WARNING)));
   g_signal_connect(sync_error_button_, "button-press-event",
                    G_CALLBACK(OnSyncErrorButtonPressed), this);
-  gtk_box_pack_start(GTK_BOX(bookmark_hbox_), sync_error_button_ ,
+  gtk_box_pack_start(GTK_BOX(bookmark_hbox_), sync_error_button_,
                      FALSE, FALSE, 0);
 
   gtk_widget_set_size_request(event_box_.get(), -1, kBookmarkBarMinimumHeight);
@@ -282,10 +282,13 @@ void BookmarkBarGtk::Init(Profile* profile) {
 
   ViewIDUtil::SetID(other_bookmarks_button_, VIEW_ID_OTHER_BOOKMARKS);
   ViewIDUtil::SetID(widget(), VIEW_ID_BOOKMARK_BAR);
+
+  gtk_widget_show_all(widget());
+  gtk_widget_hide(widget());
 }
 
 void BookmarkBarGtk::Show(bool animate) {
-  gtk_widget_show_all(widget());
+  gtk_widget_show(widget());
   bool old_floating = floating_;
   UpdateFloatingState();
   // TODO(estade): animate the transition between floating and non.
@@ -326,10 +329,14 @@ void BookmarkBarGtk::Show(bool animate) {
 
   // Maybe show the instructions
   if (show_instructions_) {
+    gtk_widget_hide(bookmark_toolbar_.get());
     gtk_widget_show(instructions_);
   } else {
     gtk_widget_hide(instructions_);
+    gtk_widget_show(bookmark_toolbar_.get());
   }
+
+  SetChevronState();
 }
 
 void BookmarkBarGtk::Hide(bool animate) {
@@ -510,15 +517,22 @@ void BookmarkBarGtk::CreateAllBookmarkButtons() {
 void BookmarkBarGtk::SetInstructionState() {
   show_instructions_ = (model_->GetBookmarkBarNode()->GetChildCount() == 0);
   if (show_instructions_) {
+    gtk_widget_hide(bookmark_toolbar_.get());
     gtk_widget_show_all(instructions_);
   } else {
     gtk_widget_hide(instructions_);
+    gtk_widget_show(bookmark_toolbar_.get());
   }
 }
 
 void BookmarkBarGtk::SetChevronState() {
   if (!GTK_WIDGET_VISIBLE(bookmark_hbox_))
     return;
+
+  if (show_instructions_) {
+    gtk_widget_hide(overflow_button_);
+    return;
+  }
 
   int extra_space = 0;
   if (GTK_WIDGET_VISIBLE(overflow_button_))

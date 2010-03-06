@@ -1119,6 +1119,8 @@
         'browser/gtk/gtk_chrome_button.h',
         'browser/gtk/gtk_chrome_link_button.cc',
         'browser/gtk/gtk_chrome_link_button.h',
+        'browser/gtk/gtk_chrome_shrinkable_hbox.cc',
+        'browser/gtk/gtk_chrome_shrinkable_hbox.h',
         'browser/gtk/gtk_expanded_container.cc',
         'browser/gtk/gtk_expanded_container.h',
         'browser/gtk/gtk_floating_container.cc',

@@ -10,26 +10,49 @@
 #include "app/l10n_util.h"
 #include "base/observer_list.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
+#include "chrome/browser/gtk/gtk_chrome_shrinkable_hbox.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
 
+namespace {
+
+// Calculates the real size request of a label and set its ellipsize mode to
+// PANGO_ELLIPSIZE_END.
+// It must be done when the label is mapped (become visible on the screen),
+// to make sure the pango can get correct font information for the calculation.
+void InitLabelSizeRequestAndEllipsizeMode(GtkWidget* label) {
+  GtkRequisition size;
+  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_NONE);
+  gtk_widget_set_size_request(label, -1, -1);
+  gtk_widget_size_request(label, &size);
+  gtk_widget_set_size_request(label, size.width, size.height);
+  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
+}
+
+}  // namespace
+
 BookmarkBarInstructionsGtk::BookmarkBarInstructionsGtk(Delegate* delegate,
                                                        Profile* profile)
     : delegate_(delegate),
       profile_(profile) {
-  instructions_hbox_ = gtk_hbox_new(FALSE, 0);
+  instructions_hbox_ = gtk_chrome_shrinkable_hbox_new(FALSE, FALSE, 0);
+  gtk_widget_set_size_request(instructions_hbox_, 0, -1);
 
-  instructions_label_ =
-      gtk_label_new(l10n_util::GetStringUTF8(IDS_BOOKMARKS_NO_ITEMS).c_str());
   instructions_label_ = gtk_label_new(
       l10n_util::GetStringUTF8(IDS_BOOKMARKS_NO_ITEMS).c_str());
+  gtk_misc_set_alignment(GTK_MISC(instructions_label_), 0, 0.5);
   gtk_util::CenterWidgetInHBox(instructions_hbox_, instructions_label_,
                                false, 1);
+  g_signal_connect(instructions_label_, "map",
+                   G_CALLBACK(InitLabelSizeRequestAndEllipsizeMode),
+                   NULL);
 
   instructions_link_ = gtk_chrome_link_button_new(
       l10n_util::GetStringUTF8(IDS_BOOKMARK_BAR_IMPORT_LINK).c_str());
+  gtk_misc_set_alignment(
+      GTK_MISC(GTK_CHROME_LINK_BUTTON(instructions_link_)->label), 0, 0.5);
   g_signal_connect(instructions_link_, "clicked",
                    G_CALLBACK(OnButtonClick), this);
   gtk_util::SetButtonTriggersNavigation(instructions_link_);
@@ -38,7 +61,10 @@ BookmarkBarInstructionsGtk::BookmarkBarInstructionsGtk(Delegate* delegate,
   gtk_util::ForceFontSizePixels(
       GTK_CHROME_LINK_BUTTON(instructions_link_)->label, 13.4);
   gtk_util::CenterWidgetInHBox(instructions_hbox_, instructions_link_,
-                               false, 1);
+                               false, 6);
+  g_signal_connect(GTK_CHROME_LINK_BUTTON(instructions_link_)->label, "map",
+                   G_CALLBACK(InitLabelSizeRequestAndEllipsizeMode),
+                   NULL);
 
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());

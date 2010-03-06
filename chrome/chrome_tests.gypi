@@ -740,6 +740,7 @@
         'browser/google_update_settings_unittest.cc',
         'browser/gtk/bookmark_bar_gtk_unittest.cc',
         'browser/gtk/bookmark_editor_gtk_unittest.cc',
+        'browser/gtk/gtk_chrome_shrinkable_hbox_unittest.cc',
         'browser/gtk/gtk_expanded_container_unittest.cc',
         'browser/gtk/gtk_theme_provider_unittest.cc',
         'browser/gtk/go_button_gtk_unittest.cc',
