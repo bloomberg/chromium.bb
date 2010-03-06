@@ -5,7 +5,7 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/path_service.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "net/http/http_cache.h"
 #include "net/url_request/url_request_context.h"
 #include "testing/gtest/include/gtest/gtest.h"

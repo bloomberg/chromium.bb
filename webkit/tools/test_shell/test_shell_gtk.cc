@@ -18,7 +18,7 @@
 #include "base/path_service.h"
 #include "base/string16.h"
 #include "base/string_piece.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "grit/test_shell_resources.h"
 #include "grit/webkit_resources.h"
 #include "net/base/mime_util.h"

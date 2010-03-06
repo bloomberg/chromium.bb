@@ -12,7 +12,7 @@
 #include "app/gfx/gtk_util.h"
 #include "base/gfx/point.h"
 #include "base/message_loop.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "net/base/net_errors.h"
 #include "chrome/common/page_transition_types.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCString.h"

@@ -4,6 +4,7 @@
 
 #include "base/format_macros.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/tools/test_shell/mock_spellcheck.h"
 
