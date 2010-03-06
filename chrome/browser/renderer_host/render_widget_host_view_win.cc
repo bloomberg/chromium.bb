@@ -1334,7 +1334,7 @@ LRESULT RenderWidgetHostViewWin::OnKeyEvent(UINT message, WPARAM wparam,
   // window. This code filters out these messages.
   bool ignore_keyboard_event = false;
   if (wparam == VK_RETURN) {
-    if (message == WM_KEYDOWN) {
+    if (message == WM_KEYDOWN || message == WM_SYSKEYDOWN) {
       if (KF_REPEAT & HIWORD(lparam)) {
         // this is a repeated key
         if (!capture_enter_key_)
@@ -1342,7 +1342,7 @@ LRESULT RenderWidgetHostViewWin::OnKeyEvent(UINT message, WPARAM wparam,
       } else {
         capture_enter_key_ = true;
       }
-    } else if (message == WM_KEYUP) {
+    } else if (message == WM_KEYUP || message == WM_SYSKEYUP) {
       if (!capture_enter_key_)
         ignore_keyboard_event = true;
       capture_enter_key_ = false;
