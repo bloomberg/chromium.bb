@@ -495,6 +495,7 @@
             'app/chrome_dll_main.cc',
             'app/chrome_dll_resource.h',
             'browser/renderer_host/render_process_host_dummy.cc',
+            'common/googleurl_dummy.cc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome_dll_version/chrome_dll_version.rc',
 
             # TODO:  It would be nice to have these pulled in
