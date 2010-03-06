@@ -6738,8 +6738,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
     <!-- Chrome OS Strings -->
     <if expr="pp_ifdef('chromeos')">
+      <message name="IDS_INSTALLING_UPDATE" desc="Label shown on the updates installation screen">
+        Please wait while <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph> installs an important update.
+      </message>
       <message name="IDS_LOGIN_DISABLED_NO_LIBCROS" desc="On the login screen, the text we put on the screen in the event that we cannot load the Chromium OS shared library and must therefore disable login.">
-	libcros.so cannot be loaded. Login disabled.
+        libcros.so cannot be loaded. Login disabled.
       </message>
       <message name="IDS_NETWORK_SELECTION_TITLE" desc="Welcome title shown on network selection screen">
         Welcome to <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph>

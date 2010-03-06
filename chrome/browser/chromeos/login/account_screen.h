@@ -51,5 +51,3 @@ class AccountScreen : public ViewScreen<AccountCreationView>,
 };
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_ACCOUNT_SCREEN_H_
-
-

@@ -359,6 +359,8 @@
         'browser/chromeos/login/rounded_rect_painter.cc',
         'browser/chromeos/login/rounded_rect_painter.h',
         'browser/chromeos/login/screen_observer.h',
+        'browser/chromeos/login/update_view.cc',
+        'browser/chromeos/login/update_view.h',
         'browser/chromeos/login/user_manager.cc',
         'browser/chromeos/login/user_manager.h',
         'browser/chromeos/login/view_screen.h',

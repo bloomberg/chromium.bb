@@ -25,6 +25,7 @@ const int kWizardScreenHeight = 416;
 const char kNetworkScreenName[] = "network";
 const char kLoginScreenName[] = "login";
 const char kAccountScreenName[] = "account";
+const char kUpdateScreenName[] = "update";
 
 }  // namespace
 
@@ -96,6 +97,8 @@ void WizardController::ShowFirstScreen(const std::string& first_screen_name) {
     SetCurrentScreen(GetLoginScreen());
   } else if (first_screen_name == kAccountScreenName) {
     SetCurrentScreen(GetAccountScreen());
+  } else if (first_screen_name == kUpdateScreenName) {
+    SetCurrentScreen(GetUpdateScreen());
   } else {
     if (chromeos::UserManager::Get()->GetUsers().empty()) {
       SetCurrentScreen(GetNetworkScreen());
@@ -150,6 +153,12 @@ AccountScreen* WizardController::GetAccountScreen() {
   if (!account_screen_.get())
     account_screen_.reset(new AccountScreen(this));
   return account_screen_.get();
+}
+
+UpdateScreen* WizardController::GetUpdateScreen() {
+  if (!update_screen_.get())
+    update_screen_.reset(new UpdateScreen(this));
+  return update_screen_.get();
 }
 
 void WizardController::SetCurrentScreen(WizardScreen* new_current) {

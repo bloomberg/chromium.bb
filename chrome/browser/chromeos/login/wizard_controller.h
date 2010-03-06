@@ -67,6 +67,7 @@ class WizardController : public views::WindowDelegate,
   NetworkScreen* GetNetworkScreen();
   LoginScreen* GetLoginScreen();
   AccountScreen* GetAccountScreen();
+  UpdateScreen* GetUpdateScreen();
 
   // Switches from one screen to another.
   void SetCurrentScreen(WizardScreen* screen);
@@ -81,6 +82,7 @@ class WizardController : public views::WindowDelegate,
   scoped_ptr<NetworkScreen> network_screen_;
   scoped_ptr<LoginScreen> login_screen_;
   scoped_ptr<AccountScreen> account_screen_;
+  scoped_ptr<UpdateScreen> update_screen_;
 
   // Screen that's currently active.
   WizardScreen* current_screen_;

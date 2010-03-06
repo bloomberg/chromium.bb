@@ -19,7 +19,6 @@ const char kCreateAccountPageUrl[] =
 
 }  // namespace
 
-
 ///////////////////////////////////////////////////////////////////////////////
 // AccountScreen, public:
 AccountScreen::AccountScreen(WizardScreenDelegate* delegate)

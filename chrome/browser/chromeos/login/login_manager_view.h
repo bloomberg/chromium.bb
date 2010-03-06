@@ -16,21 +16,21 @@
 #include "views/view.h"
 #include "views/widget/widget_gtk.h"
 
-namespace chromeos {
-class ScreenObserver;
-}  // namespace chromeos
-
 namespace views {
 class Label;
 class NativeButton;
 }  // namespace views
+
+namespace chromeos {
+
+class ScreenObserver;
 
 class LoginManagerView : public views::View,
                          public LoginStatusConsumer,
                          public views::Textfield::Controller,
                          public views::ButtonListener {
  public:
-  explicit LoginManagerView(chromeos::ScreenObserver* observer);
+  explicit LoginManagerView(ScreenObserver* observer);
   virtual ~LoginManagerView();
 
   void Init();
@@ -83,7 +83,7 @@ class LoginManagerView : public views::View,
   void SetupSession(const std::string& username);
 
   // Callback from chromeos::VersionLoader giving the version.
-  void OnOSVersion(chromeos::VersionLoader::Handle handle,
+  void OnOSVersion(VersionLoader::Handle handle,
                    std::string version);
 
   // Attempt to login with the current field values.
@@ -105,13 +105,13 @@ class LoginManagerView : public views::View,
   views::NativeButton* sign_in_button_;
 
   // Handles asynchronously loading the version.
-  chromeos::VersionLoader loader_;
+  VersionLoader loader_;
 
   // Used to request the version.
   CancelableRequestConsumer consumer_;
 
   // Notifications receiver.
-  chromeos::ScreenObserver* observer_;
+  ScreenObserver* observer_;
 
   // String ID for the current error message.
   // Set to -1 if no messages is shown.
@@ -127,5 +127,7 @@ class LoginManagerView : public views::View,
 
   DISALLOW_COPY_AND_ASSIGN(LoginManagerView);
 };
+
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_LOGIN_MANAGER_VIEW_H_

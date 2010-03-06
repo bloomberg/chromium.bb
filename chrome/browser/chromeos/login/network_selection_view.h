@@ -18,24 +18,24 @@
 #include "views/widget/widget_gtk.h"
 #include "views/window/window_delegate.h"
 
-namespace chromeos {
-class ScreenObserver;
-}  // namespace chromeos
-
 namespace views {
 class Label;
 class NativeButton;
 }  // namespace views
+
+namespace chromeos {
+
+class ScreenObserver;
 
 // View for the network selection/initial welcome screen.
 class NetworkSelectionView : public views::View,
                              public ComboboxModel,
                              public views::Combobox::Listener,
                              public views::ButtonListener,
-                             public chromeos::PasswordDialogDelegate,
-                             public chromeos::NetworkLibrary::Observer {
+                             public PasswordDialogDelegate,
+                             public NetworkLibrary::Observer {
  public:
-  explicit NetworkSelectionView(chromeos::ScreenObserver* observer);
+  explicit NetworkSelectionView(ScreenObserver* observer);
   virtual ~NetworkSelectionView();
 
   void Init();
@@ -64,21 +64,21 @@ class NetworkSelectionView : public views::View,
                                       const string16& password);
 
   // NetworkLibrary::Observer implementation:
-  virtual void NetworkChanged(chromeos::NetworkLibrary* network_lib);
-  virtual void NetworkTraffic(chromeos::NetworkLibrary* cros, int traffic_type);
+  virtual void NetworkChanged(NetworkLibrary* network_lib);
+  virtual void NetworkTraffic(NetworkLibrary* cros, int traffic_type);
 
  private:
   // Returns currently selected network in the combobox.
-  chromeos::NetworkList::NetworkItem* GetSelectedNetwork();
+  NetworkList::NetworkItem* GetSelectedNetwork();
 
   // Notifies wizard on successful connection.
   void NotifyOnConnection();
 
   // Opens password dialog for the encrypted networks.
-  void OpenPasswordDialog(chromeos::WifiNetwork network);
+  void OpenPasswordDialog(WifiNetwork network);
 
   // Selects network by type and id.
-  void SelectNetwork(chromeos::NetworkList::NetworkType type,
+  void SelectNetwork(NetworkList::NetworkType type,
                      const string16& id);
 
   // Shows network connecting status or network selection otherwise.
@@ -95,16 +95,18 @@ class NetworkSelectionView : public views::View,
   views::NativeButton* offline_button_;
 
   // Notifications receiver.
-  chromeos::ScreenObserver* observer_;
+  ScreenObserver* observer_;
 
   // True if subscribed to network change notification.
   bool network_notification_;
 
   // Cached networks.
-  chromeos::NetworkList networks_;
+  NetworkList networks_;
   string16 network_id_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkSelectionView);
 };
+
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_NETWORK_SELECTION_VIEW_H_

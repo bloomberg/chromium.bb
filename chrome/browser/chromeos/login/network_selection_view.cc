@@ -40,14 +40,15 @@ const SkColor kWelcomeColor = 0x0054A4;
 
 }  // namespace
 
-NetworkSelectionView::NetworkSelectionView(chromeos::ScreenObserver* observer)
+namespace chromeos {
+
+NetworkSelectionView::NetworkSelectionView(ScreenObserver* observer)
     : network_combobox_(NULL),
       welcome_label_(NULL),
       select_network_label_(NULL),
       connecting_network_label_(NULL),
       observer_(observer),
       network_notification_(false) {
-  ChangeNetworkNotification(true);
 }
 
 NetworkSelectionView::~NetworkSelectionView() {
@@ -58,8 +59,8 @@ NetworkSelectionView::~NetworkSelectionView() {
 void NetworkSelectionView::Init() {
   // TODO(nkostylev): Add UI language and logo.
   // Use rounded rect background.
-  views::Painter* painter = chromeos::CreateWizardPainter(
-      &chromeos::BorderDefinition::kScreenBorder);
+  views::Painter* painter = CreateWizardPainter(
+      &BorderDefinition::kScreenBorder);
   set_background(
       views::Background::CreateBackgroundPainter(true, painter));
 
@@ -173,7 +174,7 @@ std::wstring NetworkSelectionView::GetItemAt(int index) {
         l10n_util::GetString(IDS_STATUSBAR_NO_NETWORKS_MESSAGE) :
         l10n_util::GetString(IDS_NETWORK_SELECTION_NONE);
   }
-  chromeos::NetworkList::NetworkItem* network =
+  NetworkList::NetworkItem* network =
       networks_.GetNetworkAt(index - 1);
   return network ? UTF16ToWide(network->label) : std::wstring();
 }
@@ -196,20 +197,20 @@ void NetworkSelectionView::ItemChanged(views::Combobox* sender,
   if (networks_.IsEmpty())
     return;
 
-  chromeos::NetworkList::NetworkItem* network =
+  NetworkList::NetworkItem* network =
       networks_.GetNetworkAt(new_index - 1);
   if (network) {
-    if (chromeos::NetworkList::NETWORK_WIFI == network->network_type) {
+    if (NetworkList::NETWORK_WIFI == network->network_type) {
       if (network->wifi_network.encrypted) {
         OpenPasswordDialog(network->wifi_network);
         return;
       } else {
-        chromeos::NetworkLibrary::Get()->ConnectToWifiNetwork(
+        NetworkLibrary::Get()->ConnectToWifiNetwork(
             network->wifi_network, string16());
       }
-    } else if (chromeos::NetworkList::NETWORK_CELLULAR ==
+    } else if (NetworkList::NETWORK_CELLULAR ==
                network->network_type) {
-      chromeos::NetworkLibrary::Get()->ConnectToCellularNetwork(
+      NetworkLibrary::Get()->ConnectToCellularNetwork(
           network->cellular_network);
     }
   }
@@ -220,7 +221,7 @@ void NetworkSelectionView::ItemChanged(views::Combobox* sender,
 void NetworkSelectionView::ButtonPressed(views::Button* sender,
                                          const views::Event& event) {
   if (observer_) {
-    observer_->OnExit(chromeos::ScreenObserver::NETWORK_OFFLINE);
+    observer_->OnExit(ScreenObserver::NETWORK_OFFLINE);
     ChangeNetworkNotification(false);
   }
 }
@@ -230,12 +231,12 @@ void NetworkSelectionView::ButtonPressed(views::Button* sender,
 
 bool NetworkSelectionView::OnPasswordDialogAccept(const std::string& ssid,
                                                   const string16& password) {
-  chromeos::NetworkList::NetworkItem* network =
-      networks_.GetNetworkById(chromeos::NetworkList::NETWORK_WIFI,
+  NetworkList::NetworkItem* network =
+      networks_.GetNetworkById(NetworkList::NETWORK_WIFI,
                                ASCIIToUTF16(ssid));
   if (network &&
-      chromeos::NetworkList::NETWORK_WIFI == network->network_type) {
-    chromeos::NetworkLibrary::Get()->ConnectToWifiNetwork(network->wifi_network,
+      NetworkList::NETWORK_WIFI == network->network_type) {
+    NetworkLibrary::Get()->ConnectToWifiNetwork(network->wifi_network,
                                                           password);
   }
   return true;
@@ -245,12 +246,11 @@ bool NetworkSelectionView::OnPasswordDialogAccept(const std::string& ssid,
 // NetworkLibrary::Observer implementation:
 
 void NetworkSelectionView::NetworkChanged(
-    chromeos::NetworkLibrary* network_lib) {
+    NetworkLibrary* network_lib) {
   // Save network selection in case it would be available after refresh.
-  chromeos::NetworkList::NetworkType network_type =
-    chromeos::NetworkList::NETWORK_EMPTY;
+  NetworkList::NetworkType network_type = NetworkList::NETWORK_EMPTY;
   string16 network_id;
-  chromeos::NetworkList::NetworkItem* network = GetSelectedNetwork();
+  NetworkList::NetworkItem* network = GetSelectedNetwork();
   if (network) {
     network_type = network->network_type;
     network_id = network->label;
@@ -268,27 +268,27 @@ void NetworkSelectionView::NetworkChanged(
   SelectNetwork(network_type, network_id);
 }
 
-void NetworkSelectionView::NetworkTraffic(chromeos::NetworkLibrary* cros,
+void NetworkSelectionView::NetworkTraffic(NetworkLibrary* cros,
                                           int traffic_type) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkSelectionView, private:
 
-chromeos::NetworkList::NetworkItem* NetworkSelectionView::GetSelectedNetwork() {
+NetworkList::NetworkItem* NetworkSelectionView::GetSelectedNetwork() {
   return networks_.GetNetworkAt(network_combobox_->selected_item() - 1);
 }
 
 void NetworkSelectionView::NotifyOnConnection() {
   if (observer_) {
-    observer_->OnExit(chromeos::ScreenObserver::NETWORK_CONNECTED);
+    observer_->OnExit(ScreenObserver::NETWORK_CONNECTED);
     ChangeNetworkNotification(false);
   }
 }
 
-void NetworkSelectionView::OpenPasswordDialog(chromeos::WifiNetwork network) {
+void NetworkSelectionView::OpenPasswordDialog(WifiNetwork network) {
   // TODO(nkostylev): Reuse this code in network menu button.
-  chromeos::PasswordDialogView* dialog = new chromeos::PasswordDialogView(
+  PasswordDialogView* dialog = new PasswordDialogView(
       this, network.ssid);
   views::Window* window = views::Window::CreateChromeWindow(
       GetWindow()->GetNativeWindow(), gfx::Rect(), dialog);
@@ -301,7 +301,7 @@ void NetworkSelectionView::OpenPasswordDialog(chromeos::WifiNetwork network) {
 }
 
 void NetworkSelectionView::SelectNetwork(
-    chromeos::NetworkList::NetworkType type, const string16& id) {
+    NetworkList::NetworkType type, const string16& id) {
   int index = networks_.GetNetworkIndexById(type, id);
   if (index >= 0) {
     network_combobox_->SetSelectedItem(index + 1);
@@ -326,3 +326,5 @@ void NetworkSelectionView::ChangeNetworkNotification(bool subscribe) {
   else
     chromeos::NetworkLibrary::Get()->RemoveObserver(this);
 }
+
+}  // namespace chromeos

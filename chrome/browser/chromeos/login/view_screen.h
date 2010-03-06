@@ -7,6 +7,7 @@
 
 #include "chrome/browser/chromeos/login/login_manager_view.h"
 #include "chrome/browser/chromeos/login/network_selection_view.h"
+#include "chrome/browser/chromeos/login/update_view.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
 
 template <class V>
@@ -81,8 +82,8 @@ void ViewScreen<V>::InitView() {
   view_->SetVisible(false);
 }
 
-typedef DefaultViewScreen<LoginManagerView> LoginScreen;
-typedef DefaultViewScreen<NetworkSelectionView> NetworkScreen;
+typedef DefaultViewScreen<chromeos::LoginManagerView> LoginScreen;
+typedef DefaultViewScreen<chromeos::NetworkSelectionView> NetworkScreen;
+typedef DefaultViewScreen<chromeos::UpdateView> UpdateScreen;
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_VIEW_SCREEN_H_
-

@@ -64,7 +64,9 @@ const bool kStubOutLogin = false;
 
 }  // namespace
 
-LoginManagerView::LoginManagerView(chromeos::ScreenObserver* observer)
+namespace chromeos {
+
+LoginManagerView::LoginManagerView(ScreenObserver* observer)
     : username_field_(NULL),
       password_field_(NULL),
       os_version_label_(NULL),
@@ -90,8 +92,8 @@ LoginManagerView::~LoginManagerView() {
 
 void LoginManagerView::Init() {
   // Use rounded rect background.
-  views::Painter* painter = chromeos::CreateWizardPainter(
-      &chromeos::BorderDefinition::kScreenBorder);
+  views::Painter* painter = CreateWizardPainter(
+      &BorderDefinition::kScreenBorder);
   set_background(
       views::Background::CreateBackgroundPainter(true, painter));
 
@@ -147,8 +149,7 @@ void LoginManagerView::Init() {
   UpdateLocalizedStrings();
 
   // Restore previously logged in user.
-  std::vector<chromeos::UserManager::User> users =
-      chromeos::UserManager::Get()->GetUsers();
+  std::vector<UserManager::User> users = UserManager::Get()->GetUsers();
   if (users.size() > 0) {
     username_field_->SetText(UTF8ToUTF16(users[0].email()));
   }
@@ -157,7 +158,7 @@ void LoginManagerView::Init() {
   // Controller to handle events from textfields
   username_field_->SetController(this);
   password_field_->SetController(this);
-  if (chromeos::LoginLibrary::EnsureLoaded()) {
+  if (LoginLibrary::EnsureLoaded()) {
     loader_.GetVersion(
         &consumer_, NewCallback(this, &LoginManagerView::OnOSVersion));
   } else if (!kStubOutLogin) {
@@ -245,8 +246,8 @@ void LoginManagerView::Layout() {
   y += (setViewBounds(sign_in_button_, x, y, max_width, false) + kRowPad);
   y += (setViewBounds(error_label_, x, y, max_width, true) + kRowPad);
 
-  int padding = chromeos::BorderDefinition::kScreenBorder.shadow +
-                chromeos::BorderDefinition::kScreenBorder.corner_radius / 2;
+  int padding = BorderDefinition::kScreenBorder.shadow +
+                BorderDefinition::kScreenBorder.corner_radius / 2;
   setViewBounds(
       os_version_label_,
       padding,
@@ -273,7 +274,7 @@ void LoginManagerView::ButtonPressed(
 
 void LoginManagerView::OnLoginFailure() {
   LOG(INFO) << "LoginManagerView: OnLoginFailure()";
-  chromeos::NetworkLibrary* network = chromeos::NetworkLibrary::Get();
+  NetworkLibrary* network = NetworkLibrary::Get();
   // Check networking after trying to login in case user is
   // cached locally or the local admin account.
   if (!network || !network->EnsureLoaded())
@@ -288,7 +289,7 @@ void LoginManagerView::OnLoginSuccess(const std::string& username) {
   LOG(INFO) << "LoginManagerView: OnLoginSuccess()";
   // TODO(cmasone): something sensible if errors occur.
   SetupSession(username);
-  chromeos::UserManager::Get()->UserLoggedIn(username);
+  UserManager::Get()->UserLoggedIn(username);
 
   // Now launch the initial browser window.
   BrowserInit browser_init;
@@ -301,7 +302,7 @@ void LoginManagerView::OnLoginSuccess(const std::string& username) {
   Profile* profile = profile_manager->GetDefaultProfile(user_data_dir);
   int return_code;
 
-  chromeos::ExternalCookieHandler::GetCookies(command_line, profile);
+  ExternalCookieHandler::GetCookies(command_line, profile);
   LOG(INFO) << "OnLoginSuccess: Preparing to launch browser";
   browser_init.LaunchBrowser(command_line,
                              profile,
@@ -312,10 +313,10 @@ void LoginManagerView::OnLoginSuccess(const std::string& username) {
 
 void LoginManagerView::SetupSession(const std::string& username) {
   if (observer_) {
-    observer_->OnExit(chromeos::ScreenObserver::LOGIN_SIGN_IN_SELECTED);
+    observer_->OnExit(ScreenObserver::LOGIN_SIGN_IN_SELECTED);
   }
-  if (chromeos::LoginLibrary::EnsureLoaded())
-    chromeos::LoginLibrary::Get()->StartSession(username, "");
+  if (LoginLibrary::EnsureLoaded())
+    LoginLibrary::Get()->StartSession(username, "");
 }
 
 void LoginManagerView::Login() {
@@ -345,7 +346,7 @@ void LoginManagerView::ShowError(int error_id) {
 
 bool LoginManagerView::HandleKeystroke(views::Textfield* s,
     const views::Textfield::Keystroke& keystroke) {
-  if (!kStubOutLogin && !chromeos::LoginLibrary::EnsureLoaded())
+  if (!kStubOutLogin && !LoginLibrary::EnsureLoaded())
     return false;
 
   if (keystroke.GetKeyboardCode() == base::VKEY_TAB) {
@@ -365,7 +366,7 @@ bool LoginManagerView::HandleKeystroke(views::Textfield* s,
   } else if (keystroke.GetKeyboardCode() == base::VKEY_ESCAPE) {
     // TODO(nkostylev): Implement non-textfield dependent keystroke handler.
     if (observer_) {
-      observer_->OnExit(chromeos::ScreenObserver::LOGIN_BACK);
+      observer_->OnExit(ScreenObserver::LOGIN_BACK);
     }
     return true;
   }
@@ -374,7 +375,9 @@ bool LoginManagerView::HandleKeystroke(views::Textfield* s,
 }
 
 void LoginManagerView::OnOSVersion(
-    chromeos::VersionLoader::Handle handle,
+    VersionLoader::Handle handle,
     std::string version) {
   os_version_label_->SetText(ASCIIToWide(version));
 }
+
+}  // namespace chromeos
