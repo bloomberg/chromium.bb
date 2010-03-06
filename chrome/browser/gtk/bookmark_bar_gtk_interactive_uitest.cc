@@ -54,7 +54,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBarGtkBrowserTest, FindBarTest) {
 }
 
 // Makes sure that you can click on the floating bookmark bar.
-IN_PROC_BROWSER_TEST_F(BookmarkBarGtkBrowserTest, ClickOnFloatingTest) {
+IN_PROC_BROWSER_TEST_F(BookmarkBarGtkBrowserTest, DISABLED_ClickOnFloatingTest) {
   scoped_refptr<HTTPTestServer> server =
       HTTPTestServer::CreateServer(kDocRoot, NULL);
   ASSERT_TRUE(NULL != server.get());
