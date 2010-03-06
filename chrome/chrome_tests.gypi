@@ -991,8 +991,11 @@
           ],
         }],
         ['OS=="linux" and chromeos==1', {
+          'sources': [
+             'browser/chromeos/notifications/desktop_notifications_unittest.cc',
+          ],
           'sources/': [
-            ['exclude',  'browser/notifications/desktop_notifications_unittest\\.cc$'],
+             ['exclude', 'browser/notifications/desktop_notifications_unittest.cc'],
           ]
         }],
         ['OS=="mac"', {

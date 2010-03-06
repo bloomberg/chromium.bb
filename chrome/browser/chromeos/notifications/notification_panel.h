@@ -10,6 +10,7 @@
 #include "base/gfx/rect.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/frame/panel_controller.h"
+#include "chrome/browser/chromeos/notifications/balloon_collection_impl.h"
 
 class Balloon;
 
@@ -21,17 +22,21 @@ namespace chromeos {
 
 class BalloonContainer;
 
-class NotificationPanel : PanelController::Delegate {
+class NotificationPanel : public PanelController::Delegate,
+                          public BalloonCollectionImpl::NotificationUI {
  public:
   NotificationPanel();
   virtual ~NotificationPanel();
 
-  void Add(Balloon* balloon);
-  void Remove(Balloon* ballon);
-
   // Shows/Hides the Panel.
   void Show();
   void Hide();
+
+  // BalloonCollectionImpl::NotificationUI overrides..
+  virtual void Add(Balloon* balloon);
+  virtual void Remove(Balloon* balloon);
+  virtual void ResizeNotification(Balloon* balloon,
+                                  const gfx::Size& size);
 
   // PanelController overrides.
   virtual string16 GetPanelTitle();
@@ -40,10 +45,14 @@ class NotificationPanel : PanelController::Delegate {
 
  private:
   void Init();
-  // Returns the panel's bounds in the screen's coordinates.
+
+  // Update the Panel Size to the preferred size.
+  void UpdateSize();
+
+  // Returns the panel's preferred bounds in the screen's coordinates.
   // The position will be controlled by window manager so
   // the origin is always (0, 0).
-  gfx::Rect GetPanelBounds();
+  gfx::Rect GetPreferredBounds();
 
   BalloonContainer* balloon_container_;
   scoped_ptr<views::Widget> panel_widget_;

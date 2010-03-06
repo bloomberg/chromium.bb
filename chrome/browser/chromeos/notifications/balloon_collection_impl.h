@@ -13,9 +13,11 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/notifications/balloon_collection.h"
 
-namespace chromeos {
+namespace gfx {
+class Size;
+}  // namespace gfx
 
-class NotificationPanel;
+namespace chromeos {
 
 // A balloon collection represents a set of notification balloons being
 // shown in the chromeos notification panel. Unlike other platforms,
@@ -23,6 +25,22 @@ class NotificationPanel;
 // this class does not manage the location of balloons.
 class BalloonCollectionImpl : public BalloonCollection {
  public:
+  // An interface to display balloons on the screen.
+  // This is used for unit tests to inject a mock ui implementation.
+  class NotificationUI {
+   public:
+    NotificationUI() {}
+    virtual ~NotificationUI() {}
+
+    // Add, remove and resize the balloon.
+    virtual void Add(Balloon* balloon) = 0;
+    virtual void Remove(Balloon* balloon) = 0;
+    virtual void ResizeNotification(Balloon* balloon,
+                                    const gfx::Size& size) = 0;
+   private:
+    DISALLOW_COPY_AND_ASSIGN(NotificationUI);
+  };
+
   BalloonCollectionImpl();
   virtual ~BalloonCollectionImpl();
 
@@ -34,6 +52,11 @@ class BalloonCollectionImpl : public BalloonCollection {
   virtual void ResizeBalloon(Balloon* balloon, const gfx::Size& size);
   virtual void DisplayChanged() {}
   virtual void OnBalloonClosed(Balloon* source);
+
+  // Injects notification ui. Used to inject a mock implementation in tests.
+  void set_notification_ui(NotificationUI* ui) {
+    panel_.reset(ui);
+  }
 
  protected:
   // Creates a new balloon. Overridable by unit tests.  The caller is
@@ -49,7 +72,7 @@ class BalloonCollectionImpl : public BalloonCollection {
   typedef std::deque<Balloon*> Balloons;
   Balloons balloons_;
 
-  scoped_ptr<NotificationPanel> panel_;
+  scoped_ptr<NotificationUI> panel_;
 
   DISALLOW_COPY_AND_ASSIGN(BalloonCollectionImpl);
 };

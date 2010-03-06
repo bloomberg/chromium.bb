@@ -70,19 +70,7 @@ bool BalloonCollectionImpl::HasSpace() const {
 
 void BalloonCollectionImpl::ResizeBalloon(Balloon* balloon,
                                           const gfx::Size& size) {
-  // Minimum and maximum size of balloon content.
-  const int kBalloonMinWidth = 300;
-  const int kBalloonMaxWidth = 300;
-  const int kBalloonMinHeight = 24;
-  const int kBalloonMaxHeight = 120;
-
-  // restrict to the min & max sizes
-  gfx::Size real_size(
-      std::max(kBalloonMinWidth,
-               std::min(kBalloonMaxWidth, size.width())),
-      std::max(kBalloonMinHeight,
-               std::min(kBalloonMaxHeight, size.height())));
-  balloon->set_content_size(real_size);
+  panel_->ResizeNotification(balloon, size);
 }
 
 void BalloonCollectionImpl::OnBalloonClosed(Balloon* source) {
@@ -104,15 +92,8 @@ void BalloonCollectionImpl::OnBalloonClosed(Balloon* source) {
 
 Balloon* BalloonCollectionImpl::MakeBalloon(const Notification& notification,
                                             Profile* profile) {
-  // TODO(oshima): Move resize logic to Panel.
-  const int kInitialBalloonWidth = 300;
-  const int kInitialBalloonHeight = 60;
-
   Balloon* balloon = new Balloon(notification, profile, this);
-
   balloon->set_view(new chromeos::BalloonViewImpl());
-  gfx::Size size(kInitialBalloonWidth, kInitialBalloonHeight);
-  balloon->set_content_size(size);
   return balloon;
 }
 

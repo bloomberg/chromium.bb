@@ -14,6 +14,8 @@
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
+#include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/views/notifications/balloon_view_host.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_source.h"
@@ -122,10 +124,19 @@ void BalloonViewImpl::RepositionToBalloon() {
 void BalloonViewImpl::Layout() {
   gfx::Size button_size = close_button_->GetPreferredSize();
 
+  SetBounds(x(), y(),
+            balloon_->content_size().width(),
+            balloon_->content_size().height() +
+            button_size.height());
   int x = width() - button_size.width();
   int y = height() - button_size.height();
 
   html_contents_->SetBounds(0, 0, width(), y);
+  if (html_contents_->render_view_host()) {
+    RenderWidgetHostView* view = html_contents_->render_view_host()->view();
+    if (view)
+      view->SetSize(gfx::Size(width(), y));
+  }
 
   close_button_->SetBounds(x, y, button_size.width(), button_size.height());
   x -= close_button_->GetPreferredSize().width();

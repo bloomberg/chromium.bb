@@ -42,10 +42,12 @@ class BalloonViewImpl : public BalloonView,
                         public menus::SimpleMenuModel::Delegate,
                         public NotificationObserver,
                         public views::ButtonListener {
-  // views::View interface.
  public:
   BalloonViewImpl();
   ~BalloonViewImpl();
+
+  // views::View interface.
+  virtual void Layout();
 
   // BalloonView interface.
   void Show(Balloon* balloon);
@@ -58,7 +60,6 @@ class BalloonViewImpl : public BalloonView,
   virtual gfx::Size GetPreferredSize() {
     return gfx::Size(1000, 1000);
   }
-  virtual void Layout();
 
   // views::ViewMenuDelegate interface.
   virtual void RunMenu(views::View* source, const gfx::Point& pt);
