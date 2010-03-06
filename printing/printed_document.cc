@@ -4,7 +4,10 @@
 
 #include "printing/printed_document.h"
 
+#include <algorithm>
 #include <set>
+#include <string>
+#include <vector>
 
 #include "app/gfx/font.h"
 #include "app/gfx/text_elider.h"
@@ -13,6 +16,7 @@
 #include "base/message_loop.h"
 #include "base/singleton.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/time.h"
 #include "base/i18n/time_formatting.h"
 #include "printing/page_number.h"

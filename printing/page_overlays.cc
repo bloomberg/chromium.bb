@@ -7,6 +7,7 @@
 #include "app/gfx/text_elider.h"
 #include "base/logging.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "printing/printed_document.h"
 #include "printing/printed_page.h"
 
@@ -133,7 +134,7 @@ void PageOverlays::SetOverlay(HorizontalPosition x,
   }
 }
 
-//static
+// static
 std::wstring PageOverlays::ReplaceVariables(const std::wstring& input,
                                             const PrintedDocument& document,
                                             const PrintedPage& page) {
@@ -141,7 +142,6 @@ std::wstring PageOverlays::ReplaceVariables(const std::wstring& input,
   for (size_t offset = output.find(L'{', 0);
        offset != std::wstring::npos;
        offset = output.find(L'{', offset)) {
-
     if (0 == output.compare(offset,
                             wcslen(kTitle),
                             kTitle)) {
