@@ -985,6 +985,7 @@
              ['exclude', 'browser/gtk/bookmark_bar_gtk_unittest\\.cc$'],
              ['exclude', 'browser/gtk/bookmark_editor_gtk_unittest\\.cc$'],
              ['exclude', 'browser/gtk/go_button_gtk_unittest\\.cc$'],
+             ['exclude', 'browser/gtk/gtk_chrome_shrinkable_hbox_unittest\\.cc$'],
              ['exclude', 'browser/gtk/gtk_expanded_container_unittest\\.cc$'],
              ['exclude', 'browser/gtk/tabs/tab_renderer_gtk_unittest\\.cc$'],
              ['exclude', 'browser/gtk/options/cookies_view_unittest\\.cc$'],
