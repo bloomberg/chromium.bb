@@ -154,12 +154,13 @@ void NetworkSection::ItemChanged(views::Combobox* sender,
   // If connection was successful, it will be change to new network.
   wifi_ssid_combobox_->SetSelectedItem(last_selected_wifi_ssid_index_);
   if (activated_wifi_network_.encrypted) {
+    NetworkConfigView* view =
+        new NetworkConfigView(activated_wifi_network_, true);
     views::Window* window = views::Window::CreateChromeWindow(
-        NULL,
-        gfx::Rect(),
-        new NetworkConfigView(activated_wifi_network_, true));
+        NULL, gfx::Rect(), view);
     window->SetIsAlwaysOnTop(true);
     window->Show();
+    view->SetLoginTextfieldFocus();
   } else {
     NetworkLibrary::Get()->ConnectToWifiNetwork(activated_wifi_network_,
                                                 string16());
@@ -169,25 +170,24 @@ void NetworkSection::ItemChanged(views::Combobox* sender,
 void NetworkSection::ButtonPressed(views::Button* sender,
                                    const views::Event& event) {
   if (sender == ethernet_options_button_) {
+    NetworkConfigView* view =
+        new NetworkConfigView(NetworkLibrary::Get()->ethernet_network());
     views::Window* window = views::Window::CreateChromeWindow(
-        NULL,
-        gfx::Rect(),
-        new NetworkConfigView(NetworkLibrary::Get()->ethernet_network()));
+        NULL, gfx::Rect(), view);
     window->SetIsAlwaysOnTop(true);
     window->Show();
   } else if (sender == wifi_options_button_) {
+    NetworkConfigView* view =
+        new NetworkConfigView(activated_wifi_network_, false);
     views::Window* window = views::Window::CreateChromeWindow(
-        NULL,
-        gfx::Rect(),
-        new NetworkConfigView(activated_wifi_network_, false));
+        NULL, gfx::Rect(), view);
     window->SetIsAlwaysOnTop(true);
     window->Show();
   } else if (sender == cellular_options_button_) {
     // TODO(chocobo): Fix to use real cellular networks.
+    NetworkConfigView* view = new NetworkConfigView(CellularNetwork());
     views::Window* window = views::Window::CreateChromeWindow(
-        NULL,
-        gfx::Rect(),
-        new NetworkConfigView(CellularNetwork()));
+        NULL, gfx::Rect(), view);
     window->SetIsAlwaysOnTop(true);
     window->Show();
   }

@@ -26,6 +26,9 @@ class WifiConfigView : public views::View {
   // Get the typed in passphrase.
   const string16& GetPassphrase() const;
 
+  // Focus the first field in the UI.
+  void FocusFirstField();
+
  private:
   // Initializes UI.
   void Init();

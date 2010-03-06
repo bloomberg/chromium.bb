@@ -54,6 +54,9 @@ class NetworkConfigView : public views::View,
   // views::TabbedPane::Listener overrides.
   virtual void TabSelectedAt(int index);
 
+  // Sets the focus on the login tab's first textfield.
+  void SetLoginTextfieldFocus();
+
  protected:
   // views::View overrides:
   virtual void Layout();

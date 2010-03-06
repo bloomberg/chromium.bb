@@ -39,6 +39,13 @@ const string16& WifiConfigView::GetPassphrase() const {
   return passphrase_textfield_->text();
 }
 
+void WifiConfigView::FocusFirstField() {
+  if (ssid_textfield_)
+    ssid_textfield_->RequestFocus();
+  else if (passphrase_textfield_)
+    passphrase_textfield_->RequestFocus();
+}
+
 void WifiConfigView::Init() {
   views::GridLayout* layout = CreatePanelGridLayout(this);
   SetLayoutManager(layout);

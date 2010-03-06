@@ -91,6 +91,10 @@ std::wstring NetworkConfigView::GetWindowTitle() const {
 void NetworkConfigView::TabSelectedAt(int index) {
 }
 
+void NetworkConfigView::SetLoginTextfieldFocus() {
+  wificonfig_view_->FocusFirstField();
+}
+
 void NetworkConfigView::Layout() {
   static const int kDialogBottomPadding = 7;
   tabs_->SetBounds(0, 0, width(), height() - kDialogBottomPadding);

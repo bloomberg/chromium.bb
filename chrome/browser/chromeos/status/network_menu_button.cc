@@ -98,18 +98,17 @@ void NetworkMenuButton::ActivatedAt(int index) {
   } else if (flags & FLAG_TOGGLE_OFFLINE) {
     cros->EnableOfflineMode(!cros->offline_mode());
   } else if (flags & FLAG_OTHER_NETWORK) {
+    NetworkConfigView* view = new NetworkConfigView();
     views::Window* window = views::Window::CreateChromeWindow(
-        host_->GetNativeWindow(),
-        gfx::Rect(),
-        new NetworkConfigView());
+        host_->GetNativeWindow(), gfx::Rect(), view);
     window->SetIsAlwaysOnTop(true);
     window->Show();
+    view->SetLoginTextfieldFocus();
   } else if (flags & FLAG_ETHERNET) {
     if (cros->ethernet_connected()) {
+      NetworkConfigView* view = new NetworkConfigView(cros->ethernet_network());
       views::Window* window = views::Window::CreateChromeWindow(
-          host_->GetNativeWindow(),
-          gfx::Rect(),
-          new NetworkConfigView(cros->ethernet_network()));
+            host_->GetNativeWindow(), gfx::Rect(), view);
       window->SetIsAlwaysOnTop(true);
       window->Show();
     }
@@ -120,10 +119,9 @@ void NetworkMenuButton::ActivatedAt(int index) {
     // currently trying to connect to, then open config dialog.
     if (wifi.ssid == cros->wifi_ssid()) {
       if (cros->wifi_connected()) {
+        NetworkConfigView* view = new NetworkConfigView(wifi, false);
         views::Window* window = views::Window::CreateChromeWindow(
-            host_->GetNativeWindow(),
-            gfx::Rect(),
-            new NetworkConfigView(wifi, false));
+            host_->GetNativeWindow(), gfx::Rect(), view);
         window->SetIsAlwaysOnTop(true);
         window->Show();
       }
@@ -133,12 +131,12 @@ void NetworkMenuButton::ActivatedAt(int index) {
       if (!wifi.encrypted) {
         cros->ConnectToWifiNetwork(wifi, string16());
       } else {
+        NetworkConfigView* view = new NetworkConfigView(wifi, true);
         views::Window* window = views::Window::CreateChromeWindow(
-            host_->GetNativeWindow(),
-            gfx::Rect(),
-            new NetworkConfigView(wifi, true));
+            host_->GetNativeWindow(), gfx::Rect(), view);
         window->SetIsAlwaysOnTop(true);
         window->Show();
+        view->SetLoginTextfieldFocus();
       }
     }
   } else if (flags & FLAG_CELLULAR) {
@@ -148,10 +146,9 @@ void NetworkMenuButton::ActivatedAt(int index) {
     // currently trying to connect to, then open config dialog.
     if (cellular.name == cros->cellular_name()) {
       if (cros->cellular_connected()) {
+        NetworkConfigView* view = new NetworkConfigView(cellular);
         views::Window* window = views::Window::CreateChromeWindow(
-            host_->GetNativeWindow(),
-            gfx::Rect(),
-            new NetworkConfigView(cellular));
+            host_->GetNativeWindow(), gfx::Rect(), view);
         window->SetIsAlwaysOnTop(true);
         window->Show();
       }
