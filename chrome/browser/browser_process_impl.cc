@@ -38,6 +38,7 @@
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/status_icons/status_tray_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -429,6 +430,11 @@ void BrowserProcessImpl::CreateNotificationUIManager() {
 void BrowserProcessImpl::SetApplicationLocale(const std::string& locale) {
   locale_ = locale;
   extension_l10n_util::SetProcessLocale(locale);
+}
+
+void BrowserProcessImpl::CreateStatusTrayManager() {
+  DCHECK(status_tray_manager_.get() == NULL);
+  status_tray_manager_.reset(new StatusTrayManager());
 }
 
 // The BrowserProcess object must outlive the file thread so we use traits

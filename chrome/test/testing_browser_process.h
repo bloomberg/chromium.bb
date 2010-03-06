@@ -110,6 +110,10 @@ class TestingBrowserProcess : public BrowserProcess {
     return NULL;
   }
 
+  virtual StatusTrayManager* status_tray_manager() {
+    return NULL;
+  }
+
   virtual GoogleURLTracker* google_url_tracker() {
     return NULL;
   }

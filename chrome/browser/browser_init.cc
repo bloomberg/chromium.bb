@@ -33,6 +33,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/net/url_fixer_upper.h"
+#include "chrome/browser/status_icons/status_tray_manager.h"
 #include "chrome/browser/user_data_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -389,6 +390,17 @@ bool BrowserInit::LaunchBrowser(
     lib->AddObserver(observe);
   }
 #endif
+#if defined(OS_MACOSX)
+  // TODO(atwilson): Status tray UI is currently only supported on the mac
+  // (http://crbug.com/37375).
+  if (command_line.HasSwitch(switches::kLongLivedExtensions)) {
+    // Create status icons
+    StatusTrayManager* tray = g_browser_process->status_tray_manager();
+    if (tray)
+      tray->Init(profile);
+  }
+#endif
+
   return true;
 }
 

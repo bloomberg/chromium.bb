@@ -140,6 +140,13 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
     return notification_ui_manager_.get();
   }
 
+  virtual StatusTrayManager* status_tray_manager() {
+    DCHECK(CalledOnValidThread());
+    if (!status_tray_manager_.get())
+      CreateStatusTrayManager();
+    return status_tray_manager_.get();
+  }
+
   virtual IconManager* icon_manager() {
     DCHECK(CalledOnValidThread());
     if (!created_icon_manager_)
@@ -235,6 +242,7 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
   void CreateGoogleURLTracker();
   void CreateIntranetRedirectDetector();
   void CreateNotificationUIManager();
+  void CreateStatusTrayManager();
 
 #if defined(IPC_MESSAGE_LOG_ENABLED)
   void SetIPCLoggingEnabledForChildProcesses(bool enabled);
@@ -287,6 +295,9 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
   // Manager for desktop notification UI.
   bool created_notification_ui_manager_;
   scoped_ptr<NotificationUIManager> notification_ui_manager_;
+
+  // Manager for status tray.
+  scoped_ptr<StatusTrayManager> status_tray_manager_;
 
   scoped_ptr<AutomationProviderList> automation_provider_list_;
 

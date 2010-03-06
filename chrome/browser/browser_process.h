@@ -29,6 +29,7 @@ class PrefService;
 class ProfileManager;
 class DebuggerWrapper;
 class ResourceDispatcherHost;
+class StatusTrayManager;
 class SuspendController;
 class ThumbnailGenerator;
 class WebAppInstallerService;
@@ -75,6 +76,10 @@ class BrowserProcess {
 
   // Returns the manager for desktop notifications.
   virtual NotificationUIManager* notification_ui_manager() = 0;
+
+  // Returns the status tray manager (provides APIs for manipulating status
+  // icons).
+  virtual StatusTrayManager* status_tray_manager() = 0;
 
   // Returns the thread that we perform I/O coordination on (network requests,
   // communication with renderers, etc.

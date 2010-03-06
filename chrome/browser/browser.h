@@ -192,9 +192,12 @@ class Browser : public TabStripModelDelegate,
   // no windows).
   static void OpenHistoryWindow(Profile* profile);
   static void OpenDownloadsWindow(Profile* profile);
-  static void OpenExtensionsWindow(Profile* profile);
   static void OpenHelpWindow(Profile* profile);
 #endif
+
+  // Opens a window with the extensions tab in it - needed by long-lived
+  // extensions which may run with no windows open.
+  static void OpenExtensionsWindow(Profile* profile);
 
   // State Storage and Retrieval for UI ///////////////////////////////////////
 
