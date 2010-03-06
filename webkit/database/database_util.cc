@@ -4,7 +4,7 @@
 
 #include "webkit/database/database_util.h"
 
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "webkit/database/database_tracker.h"

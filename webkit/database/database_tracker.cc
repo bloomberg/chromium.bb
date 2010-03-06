@@ -13,7 +13,7 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "net/base/net_errors.h"
 #include "webkit/database/databases_table.h"
 #include "webkit/database/quota_table.h"
