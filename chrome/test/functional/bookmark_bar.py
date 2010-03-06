@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import time
 import unittest
 
 import pyauto
@@ -18,6 +19,25 @@ class BookmarkBarTest(pyauto.PyUITest):
     self.ApplyAccelerator(pyauto.IDC_SHOW_BOOKMARK_BAR)
     self.assertFalse(self.GetBookmarkBarVisibility())
 
+  def _timeAndWaitForBookmarkBarVisibilityChange(self, wait_for_open):
+    """Wait for a bookmark bar visibility change and print the wait time.
+
+    We cannot use timeit since we need to reference self.
+    """
+    start = time.time()
+    self.assertTrue(self.WaitForBookmarkBarVisibilityChange(wait_for_open))
+    end = time.time()
+    print 'Wait for bookmark bar animation complete: %2.2fsec' % (end - start)
+
+  def testBookmarkBarVisibleWait(self):
+    """Test waiting for the animation to finish."""
+    self.assertFalse(self.GetBookmarkBarVisibility())
+    self.ApplyAccelerator(pyauto.IDC_SHOW_BOOKMARK_BAR)
+    self._timeAndWaitForBookmarkBarVisibilityChange(True);
+    self.assertTrue(self.GetBookmarkBarVisibility())
+    self.ApplyAccelerator(pyauto.IDC_SHOW_BOOKMARK_BAR)
+    self._timeAndWaitForBookmarkBarVisibilityChange(False);
+    self.assertFalse(self.GetBookmarkBarVisibility())
 
 if __name__ == '__main__':
   unittest.main()

@@ -129,3 +129,19 @@ bool PyUITestSuite::GetBookmarkBarVisibility() {
   return visible;
 }
 
+bool PyUITestSuite::WaitForBookmarkBarVisibilityChange(bool wait_for_open) {
+  scoped_refptr<BrowserProxy> browser_proxy =
+      automation()->GetBrowserWindow(0);  // Window doesn't matter.
+  EXPECT_TRUE(browser_proxy.get());
+  if (!browser_proxy.get())
+    return false;
+
+  // This has a 20sec timeout.  If that's not enough we have serious problems.
+  bool completed = UITestBase::WaitForBookmarkBarVisibilityChange(
+      browser_proxy.get(),
+      wait_for_open);
+  EXPECT_TRUE(completed);
+  return completed;
+}
+
+

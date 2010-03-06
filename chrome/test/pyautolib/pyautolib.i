@@ -128,6 +128,11 @@ class PyUITestSuite {
 	   "(to the chrome).") GetBookmarkBarVisibility;
   bool GetBookmarkBarVisibility();
 
+  %feature("docstring", "Wait for the bookmark bar animation to complete.  "
+           "|wait_for_open| specifies which kind of change we wait for.")
+      WaitForBookmarkBarVisibilityChange;
+  bool WaitForBookmarkBarVisibilityChange(bool wait_for_open);
+
   %feature("docstring", "Open the Find box in the given or first browser "
            "window.") OpenFindInPage;
   void OpenFindInPage(int window_index=0);

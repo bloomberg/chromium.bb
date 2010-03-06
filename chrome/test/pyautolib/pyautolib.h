@@ -90,6 +90,11 @@ class PyUITestSuite : public UITestSuite, public UITestBase {
   // change this return value unexpectedly.
   bool IsBookmarkBarAnimating();
 
+  // Wait for the bookmark bar animation to complete.
+  // If |wait_for_open| is true, wait for it to open.
+  // If |wait_for_open| is false, wait for it to close.
+  bool WaitForBookmarkBarVisibilityChange(bool wait_for_open);
+
  private:
   base::ScopedNSAutoreleasePool pool_;
 };
