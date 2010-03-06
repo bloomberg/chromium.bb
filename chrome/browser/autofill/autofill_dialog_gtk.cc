@@ -17,6 +17,7 @@
 #include "chrome/browser/autofill/form_group.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/options/options_layout_gtk.h"
+#include "chrome/browser/profile.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -893,7 +894,8 @@ void AutoFillDialog::AddCreditCard(const CreditCard& credit_card) {
 
 void ShowAutoFillDialog(AutoFillDialogObserver* observer,
                         const std::vector<AutoFillProfile*>& profiles,
-                        const std::vector<CreditCard*>& credit_cards) {
+                        const std::vector<CreditCard*>& credit_cards,
+                        Profile *profile) {
   if (!dialog) {
     dialog = new AutoFillDialog(observer, profiles, credit_cards);
   }

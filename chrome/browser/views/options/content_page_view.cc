@@ -118,7 +118,8 @@ void ContentPageView::ButtonPressed(
     } else {
       ShowAutoFillDialog(profile()->GetPersonalDataManager(),
                          profile()->GetPersonalDataManager()->profiles(),
-                         profile()->GetPersonalDataManager()->credit_cards());
+                         profile()->GetPersonalDataManager()->credit_cards(),
+                         profile());
     }
   } else if (sender == themes_reset_button_) {
     UserMetricsRecordAction("Options_ThemesReset", profile()->GetPrefs());
@@ -420,7 +421,8 @@ void ContentPageView::OnConfirmMessageAccept() {
 void ContentPageView::OnPersonalDataLoaded() {
   ShowAutoFillDialog(profile()->GetPersonalDataManager(),
                      profile()->GetPersonalDataManager()->profiles(),
-                     profile()->GetPersonalDataManager()->credit_cards());
+                     profile()->GetPersonalDataManager()->credit_cards(),
+                     profile());
   profile()->GetPersonalDataManager()->RemoveObserver(this);
 }
 

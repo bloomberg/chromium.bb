@@ -29,7 +29,7 @@
 }
 
 // Override the default |viewWillDraw| to indicate to drawing machinery proper
-// arrangement of subvies.
+// arrangement of subviews.
 - (void)viewWillDraw {
   // Reposition child views prior to super's descent into its |viewWillDraw|
   // pass.

@@ -126,6 +126,7 @@ extern const wchar_t kClearSiteDataOnExit[];
 extern const wchar_t kPerHostZoomLevels[];
 extern const wchar_t kAutoFillInfoBarShown[];
 extern const wchar_t kAutoFillEnabled[];
+extern const wchar_t kAutoFillAuxiliaryProfilesEnabled[];
 extern const wchar_t kAutoFillDialogPlacement[];
 extern const wchar_t kPrivacyFilterRules[];
 extern const wchar_t kUseVerticalTabs[];

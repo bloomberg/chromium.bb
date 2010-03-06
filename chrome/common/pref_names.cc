@@ -327,6 +327,11 @@ const wchar_t kAutoFillInfoBarShown[] = L"autofill.infobar_shown";
 // Boolean that is true if autofill is enabled and allowed to save profile data.
 const wchar_t kAutoFillEnabled[] = L"autofill.enabled";
 
+// Boolean that is true when auxiliary autofill profiles are enabled.
+// Currently applies to Address Book "me" card on Mac.  False on Win and Linux.
+const wchar_t kAutoFillAuxiliaryProfilesEnabled[] =
+    L"autofill.auxiliary_profiles_enabled";
+
 // Position and size of the autofill dialog.
 const wchar_t kAutoFillDialogPlacement[] = L"autofill.dialog_placement";
 

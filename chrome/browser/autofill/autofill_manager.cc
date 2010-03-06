@@ -42,6 +42,7 @@ void AutoFillManager::RegisterBrowserPrefs(PrefService* prefs) {
 void AutoFillManager::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kAutoFillInfoBarShown, false);
   prefs->RegisterBooleanPref(prefs::kAutoFillEnabled, true);
+  prefs->RegisterBooleanPref(prefs::kAutoFillAuxiliaryProfilesEnabled, false);
 }
 
 void AutoFillManager::FormFieldValuesSubmitted(
@@ -230,7 +231,10 @@ void AutoFillManager::OnPersonalDataLoaded() {
   personal_data_->RemoveObserver(this);
 
   ShowAutoFillDialog(
-      this, personal_data_->profiles(), personal_data_->credit_cards());
+      this,
+      personal_data_->profiles(),
+      personal_data_->credit_cards(),
+      tab_contents_->profile()->GetOriginalProfile());
 }
 
 void AutoFillManager::OnInfoBarAccepted() {

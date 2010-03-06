@@ -180,7 +180,7 @@ void ContentPageGtk::OnPersonalDataLoaded() {
 
   ShowAutoFillDialog(
       personal_data_, personal_data_->profiles(),
-      personal_data_->credit_cards());
+      personal_data_->credit_cards(), profile());
 }
 
 GtkWidget* ContentPageGtk::InitPasswordSavingGroup() {

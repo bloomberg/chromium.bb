@@ -10,13 +10,16 @@
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/common/pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 class AutoFillDialogObserverTester : public AutoFillDialogObserver {
  public:
-  AutoFillDialogObserverTester() : hit_(false) {}
+  AutoFillDialogObserverTester()
+    : hit_(false) {}
   virtual ~AutoFillDialogObserverTester() {}
 
   virtual void OnAutoFillDialogApply(
@@ -51,7 +54,8 @@ class AutoFillDialogControllerTest : public CocoaTest {
     controller_ = [AutoFillDialogController
         controllerWithObserver:&observer_
               autoFillProfiles:profiles_
-                   creditCards:credit_cards_];
+                   creditCards:credit_cards_
+                       profile:helper_.profile()];
     [controller_ window];
   }
 
@@ -388,5 +392,45 @@ TEST_F(AutoFillDialogControllerTest, TwoCreditCardsDeleteOne) {
   ASSERT_EQ(observer_.credit_cards_[0], credit_card);
 }
 
+TEST_F(AutoFillDialogControllerTest, AuxiliaryProfilesFalse) {
+  LoadDialog();
+  [controller_ save:nil];
+
+  // Should hit our observer.
+  ASSERT_TRUE(observer_.hit_);
+
+  // Auxiliary profiles setting should be unchanged.
+  ASSERT_FALSE(helper_.profile()->GetPrefs()->GetBoolean(
+      prefs::kAutoFillAuxiliaryProfilesEnabled));
+}
+
+TEST_F(AutoFillDialogControllerTest, AuxiliaryProfilesTrue) {
+  helper_.profile()->GetPrefs()->SetBoolean(
+      prefs::kAutoFillAuxiliaryProfilesEnabled, true);
+  LoadDialog();
+  [controller_ save:nil];
+
+  // Should hit our observer.
+  ASSERT_TRUE(observer_.hit_);
+
+  // Auxiliary profiles setting should be unchanged.
+  ASSERT_TRUE(helper_.profile()->GetPrefs()->GetBoolean(
+      prefs::kAutoFillAuxiliaryProfilesEnabled));
+}
+
+TEST_F(AutoFillDialogControllerTest, AuxiliaryProfilesChanged) {
+  helper_.profile()->GetPrefs()->SetBoolean(
+      prefs::kAutoFillAuxiliaryProfilesEnabled, false);
+  LoadDialog();
+  [controller_ setAuxiliaryEnabled:YES];
+  [controller_ save:nil];
+
+  // Should hit our observer.
+  ASSERT_TRUE(observer_.hit_);
+
+  // Auxiliary profiles setting should be unchanged.
+  ASSERT_TRUE(helper_.profile()->GetPrefs()->GetBoolean(
+      prefs::kAutoFillAuxiliaryProfilesEnabled));
+}
 
 }

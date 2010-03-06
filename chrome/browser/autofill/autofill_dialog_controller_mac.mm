@@ -13,6 +13,7 @@
 #import "chrome/browser/cocoa/disclosure_view_controller.h"
 #import "chrome/browser/cocoa/section_separator_view.h"
 #import "chrome/browser/cocoa/window_size_autosaver.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
@@ -24,13 +25,17 @@
 
 @implementation AutoFillDialogController
 
+@synthesize auxiliaryEnabled = auxiliaryEnabled_;
+
 + (void)showAutoFillDialogWithObserver:(AutoFillDialogObserver*)observer
                 autoFillProfiles:(const std::vector<AutoFillProfile*>&)profiles
-                     creditCards:(const std::vector<CreditCard*>&)creditCards {
+                     creditCards:(const std::vector<CreditCard*>&)creditCards
+                         profile:(Profile*)profile {
   AutoFillDialogController* controller =
       [AutoFillDialogController controllerWithObserver:observer
-                                      autoFillProfiles:profiles
-                                           creditCards:creditCards];
+          autoFillProfiles:profiles
+               creditCards:creditCards
+                   profile:profile];
 
   // Only run modal dialog if it is not already being shown.
   if (![controller isWindowLoaded]) {
@@ -78,6 +83,8 @@
       [creditCardFormViewController copyModelToCreditCard:&creditCards_[j]];
       j++;
     }
+    profile_->GetPrefs()->SetBoolean(prefs::kAutoFillAuxiliaryProfilesEnabled,
+                                     auxiliaryEnabled_);
     observer_->OnAutoFillDialogApply(&profiles_, &creditCards_);
   }
   [self closeDialog];
@@ -221,13 +228,15 @@
 + (AutoFillDialogController*)controllerWithObserver:
       (AutoFillDialogObserver*)observer
       autoFillProfiles:(const std::vector<AutoFillProfile*>&)profiles
-           creditCards:(const std::vector<CreditCard*>&)creditCards {
+      creditCards:(const std::vector<CreditCard*>&)creditCards
+      profile:(Profile*)profile {
 
   // Deallocation is done upon window close.  See |windowWillClose:|.
   AutoFillDialogController* controller =
       [[self alloc] initWithObserver:observer
                     autoFillProfiles:profiles
-                         creditCards:creditCards];
+                         creditCards:creditCards
+                             profile:profile];
   return controller;
 }
 
@@ -237,7 +246,9 @@
 // |creditCards| are non-retained immutable list of credit card info.
 - (id)initWithObserver:(AutoFillDialogObserver*)observer
       autoFillProfiles:(const std::vector<AutoFillProfile*>&)profiles
-           creditCards:(const std::vector<CreditCard*>&)creditCards {
+           creditCards:(const std::vector<CreditCard*>&)creditCards
+               profile:(Profile*)profile {
+  CHECK(profile);
   // Use initWithWindowNibPath: instead of initWithWindowNibName: so we
   // can override it in a unit test.
   NSString* nibpath = [mac_util::MainAppBundle()
@@ -255,6 +266,12 @@
     std::vector<CreditCard*>::const_iterator j;
     for (j = creditCards.begin(); j != creditCards.end(); ++j)
       creditCards_.push_back(**j);
+
+    profile_ = profile;
+
+    // Use property here to trigger KVO binding.
+    [self setAuxiliaryEnabled:profile_->GetPrefs()->GetBoolean(
+        prefs::kAutoFillAuxiliaryProfilesEnabled)];
 
     // Initialize array of sub-controllers.
     addressFormViewControllers_.reset([[NSMutableArray array] retain]);

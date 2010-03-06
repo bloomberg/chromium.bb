@@ -10,6 +10,8 @@
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
 
+class Profile;
+
 // An interface the AutoFill dialog uses to notify its clients (observers) when
 // the user has applied changes to the AutoFill profile data.
 class AutoFillDialogObserver {
@@ -36,6 +38,7 @@ class AutoFillDialogObserver {
 // whenever the web database is updated.
 void ShowAutoFillDialog(AutoFillDialogObserver* observer,
                         const std::vector<AutoFillProfile*>& profiles,
-                        const std::vector<CreditCard*>& credit_cards);
+                        const std::vector<CreditCard*>& credit_cards,
+                        Profile* profile);
 
 #endif  // CHROME_BROWSER_AUTOFILL_AUTOFILL_DIALOG_H_

@@ -45,10 +45,9 @@ class PersonalDataManager : public WebDataServiceConsumer,
   virtual void OnWebDataServiceRequestDone(WebDataService::Handle h,
                                            const WDTypedResult* result);
 
-  // AutoFillDialogObserver implementation
+  // AutoFillDialogObserver implementation:
   virtual void OnAutoFillDialogApply(std::vector<AutoFillProfile>* profiles,
                                      std::vector<CreditCard>* credit_cards);
-
 
   // Sets the listener to be notified of PersonalDataManager events.
   void SetObserver(PersonalDataManager::Observer* observer);

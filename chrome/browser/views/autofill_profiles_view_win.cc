@@ -1124,7 +1124,8 @@ void AutoFillProfilesView::AutoFillScrollView::Layout() {
 // Declared in "chrome/browser/autofill/autofill_dialog.h"
 void ShowAutoFillDialog(AutoFillDialogObserver* observer,
                         const std::vector<AutoFillProfile*>& profiles,
-                        const std::vector<CreditCard*>& credit_cards) {
+                        const std::vector<CreditCard*>& credit_cards,
+                        Profile* profile) {
   AutoFillProfilesView::Show(observer, profiles, credit_cards);
 }
 

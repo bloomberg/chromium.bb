@@ -14,6 +14,7 @@
 
 @class AutoFillAddressViewController;
 @class AutoFillCreditCardViewController;
+class Profile;
 @class SectionSeparatorView;
 @class WindowSizeAutosaver;
 
@@ -40,9 +41,14 @@
   AutoFillDialogObserver* observer_;  // Weak, not retained.
   std::vector<AutoFillProfile> profiles_;
   std::vector<CreditCard> creditCards_;
-
+  Profile* profile_;  // Weak, not retained.
+  BOOL auxiliaryEnabled_;
   scoped_nsobject<WindowSizeAutosaver> sizeSaver_;
 }
+
+// Property representing state of Address Book "me" card usage.  Checkbox is
+// bound to this in nib.
+@property (nonatomic) BOOL auxiliaryEnabled;
 
 // Main interface for displaying an application modal autofill dialog on screen.
 // This class method creates a new |AutoFillDialogController| and runs it as a
@@ -53,9 +59,11 @@
 // information.
 // |profiles| and |creditCards| must have non-NULL entries (zero or more).
 // These provide the initial data that is presented to the user.
+// |profile| must be non-NULL.
 + (void)showAutoFillDialogWithObserver:(AutoFillDialogObserver*)observer
                 autoFillProfiles:(const std::vector<AutoFillProfile*>&)profiles
-                     creditCards:(const std::vector<CreditCard*>&)creditCards;
+                     creditCards:(const std::vector<CreditCard*>&)creditCards
+                     profile:(Profile*)profile;
 
 // IBActions for the dialog buttons.
 - (IBAction)save:(id)sender;
@@ -87,11 +95,13 @@
 + (AutoFillDialogController*)controllerWithObserver:
       (AutoFillDialogObserver*)observer
       autoFillProfiles:(const std::vector<AutoFillProfile*>&)profiles
-           creditCards:(const std::vector<CreditCard*>&)creditCards;
+      creditCards:(const std::vector<CreditCard*>&)creditCards
+      profile:(Profile*)profile;
 
 - (id)initWithObserver:(AutoFillDialogObserver*)observer
       autoFillProfiles:(const std::vector<AutoFillProfile*>&)profiles
-           creditCards:(const std::vector<CreditCard*>&)creditCards;
+      creditCards:(const std::vector<CreditCard*>&)creditCards
+      profile:(Profile*)profile;
 - (NSMutableArray*)addressFormViewControllers;
 - (NSMutableArray*)creditCardFormViewControllers;
 - (void)closeDialog;
