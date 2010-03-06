@@ -138,7 +138,7 @@ TEST_F(StatusBubbleMacTest, SetURL) {
   EXPECT_TRUE([GetURLText() isEqualToString:@"about:blank"]);
   bubble_->SetURL(GURL("foopy://"), L"");
   EXPECT_TRUE(IsVisible());
-  EXPECT_TRUE([GetURLText() isEqualToString:@"foopy:"]);
+  EXPECT_TRUE([GetURLText() isEqualToString:@"foopy://"]);
   bubble_->SetURL(GURL("http://www.cnn.com"), L"");
   EXPECT_TRUE(IsVisible());
   EXPECT_TRUE([GetURLText() isEqualToString:@"http://www.cnn.com/"]);
