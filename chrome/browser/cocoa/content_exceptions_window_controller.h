@@ -40,7 +40,8 @@ class UpdatingContentSettingsObserver;
   // is used to suppress updates at bad times.
   BOOL updatesEnabled_;
 
-  // This is non-NULL only while a new element is being added.
+  // This is non-NULL only while a new element is being added and its host
+  // is being edited.
   scoped_ptr<HostContentSettingsMap::HostSettingPair> newException_;
 }
 
@@ -51,4 +52,9 @@ class UpdatingContentSettingsObserver;
 - (IBAction)removeException:(id)sender;
 - (IBAction)removeAllExceptions:(id)sender;
 
+@end
+
+@interface ContentExceptionsWindowController(VisibleForTesting)
+- (void)cancel:(id)sender;
+- (BOOL)editingNewException;
 @end
