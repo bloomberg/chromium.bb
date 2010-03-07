@@ -143,6 +143,8 @@ bool GetBookmarkDragData(const DragData* data,
 #if defined(TOOLKIT_VIEWS)
   // On TOOLKIT_VIEWS DragData is OSExchangeData.
   return bookmark_drag_data->Read(*data);
+#elif defined(OS_MACOSX)
+  return bookmark_drag_data->ReadFromDragClipboard();
 #else
   NOTIMPLEMENTED();
   return false;

@@ -15,6 +15,9 @@
 #include "base/time.h"
 #include "chrome/browser/bookmarks/bookmark_drag_data.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#if defined(OS_MACOSX)
+#include "chrome/browser/bookmarks/bookmark_pasteboard_helper_mac.h"
+#endif
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
@@ -252,31 +255,23 @@ int PerformBookmarkDrop(Profile* profile,
                         const BookmarkDragData& data,
                         const BookmarkNode* parent_node,
                         int index) {
-  const std::vector<const BookmarkNode*> dragged_nodes = data.GetNodes(profile);
   BookmarkModel* model = profile->GetBookmarkModel();
-  if (!dragged_nodes.empty()) {
-    // Drag from same profile. Move nodes.
-    for (size_t i = 0; i < dragged_nodes.size(); ++i) {
-      model->Move(dragged_nodes[i], parent_node, index);
-      index = parent_node->IndexOfChild(dragged_nodes[i]) + 1;
+  if (data.IsFromProfile(profile)) {
+    const std::vector<const BookmarkNode*> dragged_nodes =
+        data.GetNodes(profile);
+    if (!dragged_nodes.empty()) {
+      // Drag from same profile. Move nodes.
+      for (size_t i = 0; i < dragged_nodes.size(); ++i) {
+        model->Move(dragged_nodes[i], parent_node, index);
+        index = parent_node->IndexOfChild(dragged_nodes[i]) + 1;
+      }
+      return DragDropTypes::DRAG_MOVE;
     }
-    return DragDropTypes::DRAG_MOVE;
-  } else if (data.has_single_url()) {
-    // New URL, add it at the specified location.
-    string16 title = data.elements[0].title;
-    if (title.empty()) {
-      // No title, use the host.
-      title = UTF8ToUTF16(data.elements[0].url.host());
-      if (title.empty())
-        title = TabContents::GetDefaultTitle();
-    }
-    model->AddURL(parent_node, index, title, data.elements[0].url);
-    return DragDropTypes::DRAG_COPY | DragDropTypes::DRAG_LINK;
-  } else {
-    // Dropping a group from different profile. Always accept.
-    bookmark_utils::CloneDragData(model, data.elements, parent_node, index);
-    return DragDropTypes::DRAG_COPY;
+    return DragDropTypes::DRAG_NONE;
   }
+  // Dropping a group from different profile. Always accept.
+  bookmark_utils::CloneDragData(model, data.elements, parent_node, index);
+  return DragDropTypes::DRAG_COPY;
 }
 
 bool IsValidDropLocation(Profile* profile,
@@ -348,8 +343,14 @@ void DragBookmarks(Profile* profile,
       DragDropTypes::DRAG_LINK);
 
   MessageLoop::current()->SetNestableTasksAllowed(was_nested);
+#elif defined(OS_MACOSX)
+  // Allow nested message loop so we get DnD events as we drag this around.
+  bool was_nested = MessageLoop::current()->IsNested();
+  MessageLoop::current()->SetNestableTasksAllowed(true);
+  bookmark_pasteboard_helper_mac::StartDrag(profile, nodes, view);
+  MessageLoop::current()->SetNestableTasksAllowed(was_nested);
 #else
-  // TODO(arv): Implement for GTK and Cocoa.
+  // TODO(arv): Implement for GTK.
   NOTIMPLEMENTED();
 #endif
 }

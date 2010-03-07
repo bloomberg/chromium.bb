@@ -59,6 +59,9 @@ struct BookmarkDragData {
     // Children, only used for non-URL nodes.
     std::vector<Element> children;
 
+    int64 get_id() {
+      return id_;
+    }
    private:
     friend struct BookmarkDragData;
 
@@ -83,9 +86,14 @@ struct BookmarkDragData {
   // Writes elements to the clipboard.
   void WriteToClipboard(Profile* profile) const;
 
-  // Reads bookmarks from the clipboard. Prefers data written via
-  // WriteToClipboard but will also attempt to read a plain bookmark.
+  // Reads bookmarks from the general copy/paste clipboard. Prefers data
+  // written via WriteToClipboard but will also attempt to read a plain bookmark.
   bool ReadFromClipboard();
+#if defined(OS_MACOSX)
+  // Reads bookmarks that are being dragged from the drag and drop
+  // pasteboard.
+  bool ReadFromDragClipboard();
+#endif
 
 #if defined(TOOLKIT_VIEWS)
   // Writes elements to data. If there is only one element and it is a URL

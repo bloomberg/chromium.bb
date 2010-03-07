@@ -150,11 +150,17 @@ bool BookmarkDragData::ClipboardContainsBookmarks() {
 }
 #else
 void BookmarkDragData::WriteToClipboard(Profile* profile) const {
-  bookmark_pasteboard_helper_mac::WriteToClipboard(elements);
+  bookmark_pasteboard_helper_mac::WriteToClipboard(elements, profile_path_);
 }
 
 bool BookmarkDragData::ReadFromClipboard() {
-  return bookmark_pasteboard_helper_mac::ReadFromClipboard(elements);
+  return bookmark_pasteboard_helper_mac::ReadFromClipboard(elements,
+                                                           &profile_path_);
+}
+
+bool BookmarkDragData::ReadFromDragClipboard() {
+  return bookmark_pasteboard_helper_mac::ReadFromDragClipboard(elements,
+                                                               &profile_path_);
 }
 
 bool BookmarkDragData::ClipboardContainsBookmarks() {

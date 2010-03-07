@@ -5,6 +5,7 @@
 #import "chrome/browser/cocoa/web_drop_target.h"
 
 #include "base/sys_string_conversions.h"
+#include "chrome/browser/bookmarks/bookmark_pasteboard_helper_mac.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #import "third_party/mozilla/include/NSPasteboard+Utils.h"
@@ -78,6 +79,12 @@ using WebKit::WebDragOperationsMask;
     return NSDragOperationNone;
   }
 
+  // If the tab is showing the boomark manager, send BookmarkDrag events
+  RenderViewHostDelegate::BookmarkDrag* dragDelegate =
+      tabContents_->GetBookmarkDragDelegate();
+  if(dragDelegate)
+    dragDelegate->OnDragEnter(NULL);
+
   // Fill out a WebDropData from pasteboard.
   WebDropData data;
   [self populateWebDropData:&data fromPasteboard:[info draggingPasteboard]];
@@ -132,6 +139,11 @@ using WebKit::WebDragOperationsMask;
       gfx::Point(screenPoint.x, screenPoint.y),
       static_cast<WebDragOperationsMask>(mask));
 
+  // If the tab is showing the boomark manager, send BookmarkDrag events
+  RenderViewHostDelegate::BookmarkDrag* dragDelegate =
+      tabContents_->GetBookmarkDragDelegate();
+  if(dragDelegate)
+    dragDelegate->OnDragOver(NULL);
   return current_operation_;
 }
 
@@ -152,6 +164,12 @@ using WebKit::WebDragOperationsMask;
     }
     return NO;
   }
+
+  // If the tab is showing the boomark manager, send BookmarkDrag events
+  RenderViewHostDelegate::BookmarkDrag* dragDelegate =
+      tabContents_->GetBookmarkDragDelegate();
+  if(dragDelegate)
+    dragDelegate->OnDrop(NULL);
 
   currentRVH_ = NULL;
 
