@@ -69,8 +69,9 @@ int GetLastErrorString(char* buffer, size_t length) {
 #endif
 }
 
+static AtomicWord memory_object_count = 0;
+
 Handle CreateMemoryObject(size_t length) {
-  static AtomicWord memory_object_count;
   if (0 == length) {
     return -1;
   }
@@ -80,13 +81,13 @@ Handle CreateMemoryObject(size_t length) {
     snprintf(name, sizeof name, "%s-%u.%u", kShmPrefix,
              getpid(),
              static_cast<uint32_t>(AtomicIncrement(&memory_object_count, 1)));
-    int m = shm_open(name, O_RDWR | O_CREAT | O_EXCL, 0600);
+    int m = shm_open(name, O_RDWR | O_CREAT | O_EXCL, 0);
     if (0 <= m) {
+      (void) shm_unlink(name);
       if (ftruncate(m, length) == -1) {
         close(m);
         m = -1;
       }
-      shm_unlink(name);
       return m;
     }
     if (errno != EEXIST) {
