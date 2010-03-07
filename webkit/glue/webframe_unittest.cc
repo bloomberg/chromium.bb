@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebData.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"

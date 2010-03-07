@@ -4,7 +4,6 @@
 
 #import <AppKit/AppKit.h>
 #import "base/scoped_nsobject.h"
-#include "base/string_util.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/cocoa/bookmark_menu_bridge.h"

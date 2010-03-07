@@ -4,9 +4,6 @@
 
 #include "chrome/browser/notifications/desktop_notifications_unittest.h"
 
-#include "base/string_util.h"
-#include "base/utf_string_conversions.h"
-
 // static
 const int MockBalloonCollection::kMockBalloonSpace = 5;
 

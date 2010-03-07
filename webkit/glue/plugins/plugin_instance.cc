@@ -9,7 +9,6 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
 #include "webkit/glue/webplugin.h"
 #include "webkit/glue/webplugin_delegate.h"
 #include "webkit/glue/webkit_glue.h"

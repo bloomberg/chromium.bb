@@ -7,7 +7,6 @@
 #include "app/clipboard/clipboard.h"
 #include "base/logging.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "third_party/skia/include/core/SkBitmap.h"

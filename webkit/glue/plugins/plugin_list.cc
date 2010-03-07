@@ -7,7 +7,6 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
 #include "base/time.h"
 #include "net/base/mime_util.h"
 #include "webkit/default_plugin/plugin_main.h"

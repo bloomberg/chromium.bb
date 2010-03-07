@@ -13,7 +13,6 @@
 
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
-#include "base/utf_string_conversions.h"
 #include "webkit/glue/plugins/plugin_list.h"
 
 // These headers must be included in this order to make the declaration gods
