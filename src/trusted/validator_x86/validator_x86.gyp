@@ -444,28 +444,6 @@
       'targets': [
         # ---------------------------------------------------------------------
         {
-          'target_name': 'ncdecode_table64',
-          'type': 'executable',
-          'variables': {
-            'target_arch': 'x64',
-            'win_target': 'x64',
-          },
-          'sources': ['ncdecode_table.c'],
-          'cflags!': [
-            '-Wextra',
-            '-Wswitch-enum',
-            '-Wsign-compare'
-          ],
-          'xcode_settings': {
-            'WARNING_CFLAGS!': [
-              '-Wextra',
-              '-Wswitch-enum',
-              '-Wsign-compare'
-            ]
-          },
-        },
-        # ---------------------------------------------------------------------
-        {
           'target_name': 'ncvalidate_gen64',
           'type': 'none',
           'variables': {
@@ -474,7 +452,6 @@
           },
           'dependencies': [
             'ncdecode_table',
-            'ncdecode_table64',
             'ncdecode_tablegen',
             'ncopcode_utils64',
           ],
