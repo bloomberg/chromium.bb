@@ -6,7 +6,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/hash_tables.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request_context.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCString.h"

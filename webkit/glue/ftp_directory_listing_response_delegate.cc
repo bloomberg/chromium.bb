@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "base/time.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
