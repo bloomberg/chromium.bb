@@ -111,6 +111,7 @@ static const char* const g_executables[] = {
   "msi",
   "msp",
   "mst",
+  "ocx",
   "ops",
   "pcd",
   "pif",
