@@ -1559,7 +1559,7 @@ drm_intel_gem_bo_exec2(drm_intel_bo *bo, int used,
 	do {
 		ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_EXECBUFFER2,
 			    &execbuf);
-	} while (ret != 0 && errno == EAGAIN);
+	} while (ret != 0 && errno == EINTR);
 
 	if (ret != 0) {
 		ret = -errno;
