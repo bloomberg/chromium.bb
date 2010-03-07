@@ -542,6 +542,7 @@
         'browser/autofill/autofill_credit_card_model_mac_unittest.mm',
         'browser/autofill/autofill_credit_card_view_controller_mac_unittest.mm',
         'browser/autofill/autofill_dialog_controller_mac_unittest.mm',
+        'browser/autofill/autofill_field_unittest.cc',
         'browser/autofill/autofill_infobar_delegate_unittest.cc',
         'browser/autofill/autofill_profile_unittest.cc',
         'browser/autofill/billing_address_unittest.cc',

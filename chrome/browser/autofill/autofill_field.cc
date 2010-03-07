@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,6 +38,14 @@ AutoFillField::AutoFillField(const webkit_glue::FormField& field,
       heuristic_type_(UNKNOWN_TYPE) {
 }
 
+void AutoFillField::set_heuristic_type(const AutoFillFieldType& type) {
+  DCHECK(type >= 0 && type < MAX_VALID_FIELD_TYPE);
+  if (type >= 0 && type < MAX_VALID_FIELD_TYPE)
+    heuristic_type_ = type;
+  else
+    heuristic_type_ = UNKNOWN_TYPE;
+}
+
 AutoFillFieldType AutoFillField::type() const {
   if (server_type_ != NO_SERVER_DATA)
     return server_type_;
@@ -54,14 +62,6 @@ std::string AutoFillField::FieldSignature() const {
   std::string type = UTF16ToUTF8(form_control_type());
   std::string field_string = field_name + "&" + type;
   return Hash32Bit(field_string);
-}
-
-void AutoFillField::set_heuristic_type(const AutoFillFieldType& type) {
-  DCHECK(type >= 0 && type < MAX_VALID_FIELD_TYPE);
-  if (type >= 0 && type < MAX_VALID_FIELD_TYPE)
-    heuristic_type_ = type;
-  else
-    heuristic_type_ = UNKNOWN_TYPE;
 }
 
 bool AutoFillField::IsFieldFillable() const {

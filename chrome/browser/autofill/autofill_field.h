@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,12 @@ class AutoFillField : public webkit_glue::FormField {
   const string16& unique_name() const { return unique_name_; }
 
   AutoFillFieldType heuristic_type() const { return heuristic_type_; }
+  AutoFillFieldType server_type() const { return server_type_; }
   const FieldTypeSet& possible_types() const { return possible_types_; }
+
+  // Sets the heuristic type of this field, validating the input.
+  void set_heuristic_type(const AutoFillFieldType& type);
+  void set_server_type(const AutoFillFieldType& type) { server_type_ = type; }
   void set_possible_types(const FieldTypeSet& possible_types) {
     possible_types_ = possible_types;
   }
@@ -35,9 +40,6 @@ class AutoFillField : public webkit_glue::FormField {
   // The unique signature of this field, composed of the field name and the html
   // input type in a 32-bit hash.
   std::string FieldSignature() const;
-
-  // Sets the heuristic type of this field, validating the input.
-  void set_heuristic_type(const AutoFillFieldType& type);
 
   // Returns true if the field type has been determined (without the text in the
   // field).
