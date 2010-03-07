@@ -12,11 +12,13 @@
 #endif
 
 #include "base/file_version_info.h"
+#include "base/logging.h"
 #include "base/singleton.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/sys_info.h"
 #include "base/sys_string_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "net/base/escape.h"
 #include "skia/ext/platform_canvas.h"
 #if defined(OS_MACOSX)

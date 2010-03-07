@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/scoped_vector.h"
+#include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser.h"

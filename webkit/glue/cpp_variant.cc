@@ -9,6 +9,7 @@
 #include "webkit/glue/cpp_variant.h"
 #include "base/logging.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 
 using WebKit::WebBindings;
 

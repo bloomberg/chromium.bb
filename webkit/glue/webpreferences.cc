@@ -5,6 +5,7 @@
 #include "webkit/glue/webpreferences.h"
 
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRuntimeFeatures.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSettings.h"
