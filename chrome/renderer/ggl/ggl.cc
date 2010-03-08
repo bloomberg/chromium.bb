@@ -11,11 +11,14 @@
 #include "chrome/renderer/ggl/ggl.h"
 #include "chrome/renderer/gpu_channel_host.h"
 #include "chrome/renderer/render_widget.h"
+#include "ipc/ipc_channel_handle.h"
+
+#if defined(ENABLE_GPU)
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
 #include "gpu/command_buffer/common/constants.h"
-#include "ipc/ipc_channel_handle.h"
+#endif  // ENABLE_GPU
 
 namespace ggl {
 
