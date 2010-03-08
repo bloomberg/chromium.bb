@@ -6,6 +6,7 @@
 
 #include "app/clipboard/scoped_clipboard_writer.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"

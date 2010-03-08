@@ -4,9 +4,12 @@
 
 #include "chrome/browser/net/url_request_mock_net_error_job.h"
 
+#include <string>
+#include <vector>
+
 #include "base/file_util.h"
 #include "base/message_loop.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request_filter.h"

@@ -9,6 +9,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_file.h"
@@ -200,8 +201,8 @@ static void AddDesiredTLD(const string& desired_tld,
 
   // Add the suffix at the end of the domain.
   const size_t domain_length(domain->length());
-  DCHECK(domain_length > 0);
-  DCHECK(desired_tld[0] != '.');
+  DCHECK_GT(domain_length, 0U);
+  DCHECK_NE(desired_tld[0], '.');
   if ((*domain)[domain_length - 1] != '.')
     domain->push_back('.');
   domain->append(desired_tld);
@@ -255,7 +256,7 @@ static void FixupHost(const string& text,
     domain.erase(0, first_nondot);
     size_t last_nondot(domain.find_last_not_of('.'));
     DCHECK(last_nondot != string::npos);
-    last_nondot += 2; // Point at second period in ending string
+    last_nondot += 2;  // Point at second period in ending string
     if (last_nondot < domain.length())
       domain.erase(last_nondot);
   }

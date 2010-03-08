@@ -7,6 +7,7 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "net/base/net_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_filter.h"

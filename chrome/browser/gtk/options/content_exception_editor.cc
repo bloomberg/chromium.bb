@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/message_loop.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/content_exceptions_table_model.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/host_content_settings_map.h"

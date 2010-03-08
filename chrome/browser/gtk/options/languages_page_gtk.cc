@@ -6,10 +6,12 @@
 
 #include <set>
 #include <string>
+#include <vector>
 
 #include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/language_combobox_model.h"

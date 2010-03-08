@@ -5,7 +5,7 @@
 #include "chrome/browser/tab_contents/navigation_entry.h"
 
 #include "app/resource_bundle.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/site_instance.h"

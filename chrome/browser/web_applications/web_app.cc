@@ -8,6 +8,10 @@
 #include <ShellAPI.h>
 #endif  // defined(OS_WIN)
 
+#include <algorithm>
+#include <string>
+#include <vector>
+
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "base/md5.h"
@@ -15,7 +19,7 @@
 #include "base/path_service.h"
 #include "base/thread.h"
 #include "base/scoped_ptr.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"

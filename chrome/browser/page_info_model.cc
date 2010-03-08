@@ -4,9 +4,12 @@
 
 #include "chrome/browser/page_info_model.h"
 
+#include <string>
+
 #include "app/l10n_util.h"
 #include "base/callback.h"
 #include "base/i18n/time_formatting.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/cert_store.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"

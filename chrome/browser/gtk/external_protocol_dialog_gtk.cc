@@ -6,9 +6,12 @@
 
 #include <gtk/gtk.h>
 
+#include <string>
+
 #include "app/l10n_util.h"
 #include "base/histogram.h"
 #include "base/message_loop.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/external_protocol_handler.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"

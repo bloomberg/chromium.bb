@@ -7,7 +7,7 @@
 #include "app/gfx/gtk_util.h"
 #include "app/table_model.h"
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 

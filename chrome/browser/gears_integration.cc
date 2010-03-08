@@ -4,11 +4,14 @@
 
 #include "chrome/browser/gears_integration.h"
 
+#include <string>
+#include <vector>
+
 #include "app/gfx/codec/png_codec.h"
 #include "base/base64.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chrome_plugin_host.h"
 #include "chrome/common/chrome_plugin_util.h"
 #include "chrome/common/gears_api.h"

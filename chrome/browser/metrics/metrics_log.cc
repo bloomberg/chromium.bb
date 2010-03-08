@@ -12,6 +12,7 @@
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/sys_info.h"
+#include "base/utf_string_conversions.h"
 #include "base/third_party/nspr/prtime.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/browser_process.h"

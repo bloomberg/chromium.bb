@@ -4,10 +4,12 @@
 
 #include "chrome/browser/gtk/tab_contents_drag_source.h"
 
+#include <string>
+
 #include "app/gtk_dnd_util.h"
 #include "base/file_util.h"
 #include "base/mime_util.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/drag_download_file.h"
 #include "chrome/browser/download/drag_download_util.h"

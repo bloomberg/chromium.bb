@@ -4,12 +4,16 @@
 
 #include "chrome/browser/pref_service.h"
 
+#include <algorithm>
+#include <string>
+
 #include "app/l10n_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/common/notification_service.h"

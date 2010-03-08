@@ -4,9 +4,12 @@
 
 #include "chrome/browser/login_prompt.h"
 
+#include <vector>
+
 #include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/lock.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"

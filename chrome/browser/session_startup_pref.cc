@@ -4,7 +4,9 @@
 
 #include "chrome/browser/session_startup_pref.h"
 
-#include "base/string_util.h"
+#include <string>
+
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"

@@ -4,9 +4,11 @@
 
 #include "chrome/browser/tab_contents/web_drag_dest_gtk.h"
 
+#include <string>
+
 #include "app/gtk_dnd_util.h"
 #include "base/file_path.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
