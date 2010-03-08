@@ -48,6 +48,9 @@ static bool GetTabById(int tab_id, Profile* profile,
                        TabContents** contents,
                        int* tab_index, std::string* error_message);
 
+// Return the type name for a browser window type.
+static std::string GetWindowTypeText(Browser::Type type);
+
 int ExtensionTabUtil::GetWindowId(const Browser* browser) {
   return browser->session_id().id();
 }
@@ -139,8 +142,7 @@ DictionaryValue* ExtensionTabUtil::CreateTabValue(
 DictionaryValue* ExtensionTabUtil::CreateWindowValue(const Browser* browser,
                                                      bool populate_tabs) {
   DictionaryValue* result = new DictionaryValue();
-  result->SetInteger(keys::kIdKey, ExtensionTabUtil::GetWindowId(
-      browser));
+  result->SetInteger(keys::kIdKey, ExtensionTabUtil::GetWindowId(browser));
   bool focused = false;
   if (browser->window())
     focused = browser->window()->IsActive();
@@ -155,6 +157,7 @@ DictionaryValue* ExtensionTabUtil::CreateWindowValue(const Browser* browser,
   result->SetInteger(keys::kTopKey, bounds.y());
   result->SetInteger(keys::kWidthKey, bounds.width());
   result->SetInteger(keys::kHeightKey, bounds.height());
+  result->SetString(keys::kWindowTypeKey, GetWindowTypeText(browser->type()));
 
   if (populate_tabs) {
     result->Set(keys::kTabsKey, ExtensionTabUtil::CreateTabList(browser));
@@ -315,9 +318,13 @@ bool CreateWindowFunction::RunImpl() {
                                       GetBrowser(), &bounds,
                                       &maximized);
 
-  // Any part of the bounds can optionally be set by the caller.
+  Profile* window_profile = profile();
+  Browser::Type window_type = Browser::TYPE_NORMAL;
+
   if (args_->IsType(Value::TYPE_DICTIONARY)) {
     const DictionaryValue *args = args_as_dictionary();
+
+    // Any part of the bounds can optionally be set by the caller.
     int bounds_val;
     if (args->HasKey(keys::kLeftKey)) {
       EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kLeftKey,
@@ -342,9 +349,31 @@ bool CreateWindowFunction::RunImpl() {
                                                    &bounds_val));
       bounds.set_height(bounds_val);
     }
+
+    bool incognito = false;
+    if (args->HasKey(keys::kIncognitoKey)) {
+      EXTENSION_FUNCTION_VALIDATE(args->GetBoolean(keys::kIncognitoKey,
+                                                   &incognito));
+      if (incognito)
+        window_profile = window_profile->GetOffTheRecordProfile();
+    }
+
+    std::string type_str;
+    if (args->HasKey(keys::kWindowTypeKey)) {
+      EXTENSION_FUNCTION_VALIDATE(args->GetString(keys::kWindowTypeKey,
+                                                  &type_str));
+      if (type_str == keys::kWindowTypeValueNormal) {
+        window_type = Browser::TYPE_NORMAL;
+      } else if (type_str == keys::kWindowTypeValuePopup) {
+        window_type = Browser::TYPE_POPUP;
+      } else {
+        EXTENSION_FUNCTION_VALIDATE(false);
+      }
+    }
   }
 
-  Browser* new_window = Browser::Create(dispatcher()->profile());
+  Browser* new_window = new Browser(window_type, window_profile);
+  new_window->CreateBrowserWindow();
   new_window->AddTabWithURL(*(url.get()), GURL(), PageTransition::LINK, true,
                             -1, false, NULL);
 
@@ -352,8 +381,12 @@ bool CreateWindowFunction::RunImpl() {
   new_window->window()->Show();
 
   // TODO(rafaelw): support |focused|, |zIndex|
-
-  result_.reset(ExtensionTabUtil::CreateWindowValue(new_window, false));
+  if (new_window->profile()->IsOffTheRecord() && !include_incognito()) {
+    // Don't expose incognito windows if the extension isn't allowed.
+    result_.reset(Value::CreateNullValue());
+  } else {
+    result_.reset(ExtensionTabUtil::CreateWindowValue(new_window, false));
+  }
 
   return true;
 }
@@ -982,4 +1015,15 @@ static bool GetTabById(int tab_id, Profile* profile,
         keys::kTabNotFoundError, IntToString(tab_id));
 
   return false;
+}
+
+static std::string GetWindowTypeText(Browser::Type type) {
+  // Note: for app popups, we report "app".
+  if ((type & Browser::TYPE_APP) != 0)
+    return keys::kWindowTypeValueApp;
+  if ((type & Browser::TYPE_POPUP) != 0)
+    return keys::kWindowTypeValuePopup;
+
+  DCHECK(type == Browser::TYPE_NORMAL);
+  return keys::kWindowTypeValueNormal;
 }

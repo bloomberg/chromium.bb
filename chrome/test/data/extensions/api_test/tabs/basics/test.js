@@ -467,10 +467,24 @@ chrome.test.runTests([
     chrome.windows.create({url: "relative.html"});
   },
 
+  function windowCreate() {
+    chrome.windows.create({type: "popup"}, pass(function(window) {
+      assertEq(window.type, "popup");
+      assertTrue(!window.incognito);
+    }));
+    chrome.windows.create({incognito: true}, pass(function(window) {
+      // This extension is not incognito-enabled, so it shouldn't be able to
+      // see the incognito window.
+      assertEq(window, null);
+    }));
+  },
+
   function windowsOnCreated() {
     chrome.test.listenOnce(chrome.windows.onCreated, function(window) {
-      chrome.test.assertTrue(window.width > 0);
-      chrome.test.assertTrue(window.height > 0);
+      assertTrue(window.width > 0);
+      assertTrue(window.height > 0);
+      assertEq(window.type, "normal");
+      assertTrue(!window.incognito);
       windowEventsWindow = window;
       chrome.tabs.getAllInWindow(window.id, pass(function(tabs) {
         assertEq(pageUrl("a"), tabs[0].url);

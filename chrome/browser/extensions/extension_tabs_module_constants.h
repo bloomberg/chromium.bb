@@ -37,10 +37,14 @@ extern const wchar_t kUrlKey[];
 extern const wchar_t kWidthKey[];
 extern const wchar_t kWindowIdKey[];
 extern const wchar_t kIncognitoKey[];
+extern const wchar_t kWindowTypeKey[];
 
 // Value consts.
 extern const char kStatusValueComplete[];
 extern const char kStatusValueLoading[];
+extern const char kWindowTypeValueNormal[];
+extern const char kWindowTypeValuePopup[];
+extern const char kWindowTypeValueApp[];
 
 // Error messages.
 extern const char kNoCurrentWindowError[];

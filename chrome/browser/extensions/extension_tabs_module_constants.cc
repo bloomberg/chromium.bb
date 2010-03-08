@@ -33,9 +33,16 @@ const wchar_t kUrlKey[] = L"url";
 const wchar_t kWidthKey[] = L"width";
 const wchar_t kWindowIdKey[] = L"windowId";
 const wchar_t kIncognitoKey[] = L"incognito";
+const wchar_t kWindowTypeKey[] = L"type";
 
 const char kStatusValueComplete[] = "complete";
 const char kStatusValueLoading[] = "loading";
+
+// TODO(mpcomplete): should we expose more specific detail, like devtools, app
+// panel, etc?
+const char kWindowTypeValueNormal[] = "normal";
+const char kWindowTypeValuePopup[] = "popup";
+const char kWindowTypeValueApp[] = "app";
 
 const char kNoCurrentWindowError[] = "No current window";
 const char kNoLastFocusedWindowError[] = "No last-focused window";

@@ -337,7 +337,7 @@ class ExtensionTestBrowserEvents : public ExtensionUITest {
 const char* ExtensionTestBrowserEvents::events_[] = {
   // Window events.
   "[\"windows.onCreated\", \"[{'id':42,'focused':true,'top':0,'left':0,"
-      "'width':100,'height':100,'incognito':false}]\"]",
+      "'width':100,'height':100,'incognito':false,'type':'normal'}]\"]",
 
   "[\"windows.onRemoved\", \"[42]\"]",
 
