@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,11 +12,16 @@
 #include "base/path_service.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
-#include "base/time.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebData.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebImage.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebImageDecoder.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSize.h"
 
 using base::Time;
 
 namespace {
+
+const int kFirstFrameIndex = 0;
 
 // Determine if we should test with file specified by |path| based
 // on |file_selection| and the |threshold| for the file size.
@@ -33,11 +38,11 @@ bool ShouldSkipFile(const FilePath& path,
 
 }  // anonymous namespace
 
-void ReadFileToVector(const FilePath& path, Vector<char>* contents) {
-  std::string contents_str;
-  file_util::ReadFileToString(path, &contents_str);
-  contents->resize(contents_str.size());
-  memcpy(&contents->first(), contents_str.data(), contents_str.size());
+void ReadFileToVector(const FilePath& path, std::vector<char>* contents) {
+  std::string raw_image_data;
+  file_util::ReadFileToString(path, &raw_image_data);
+  contents->resize(raw_image_data.size());
+  memcpy(&contents->at(0), raw_image_data.data(), raw_image_data.size());
 }
 
 FilePath GetMD5SumPath(const FilePath& path) {
@@ -46,48 +51,43 @@ FilePath GetMD5SumPath(const FilePath& path) {
   return FilePath(path.value() + kDecodedDataExtension);
 }
 
-#ifdef CALCULATE_MD5_SUMS
-void SaveMD5Sum(const std::wstring& path, WebCore::RGBA32Buffer* buffer) {
+#if defined(CALCULATE_MD5_SUMS)
+void SaveMD5Sum(const std::wstring& path, const WebKit::WebImage& web_image) {
   // Calculate MD5 sum.
   MD5Digest digest;
-  scoped_ptr<NativeImageSkia> image_data(buffer->asNewNativeImage());
-  {
-    SkAutoLockPixels bmp_lock(*image_data);
-    MD5Sum(image_data->getPixels(),
-           image_data->width() * image_data->height() * sizeof(uint32_t),
-           &digest);
-  }
+  web_image.getSkBitmap().lockPixels();
+  MD5Sum(web_image.getSkBitmap().getPixels(),
+         web_image.getSkBitmap().width() * web_image.getSkBitmap().height() *
+         sizeof(uint32_t),
+         &digest);
 
   // Write sum to disk.
   int bytes_written = file_util::WriteFile(path,
       reinterpret_cast<const char*>(&digest), sizeof digest);
   ASSERT_EQ(sizeof digest, bytes_written);
+  web_image.getSkBitmap().unlockPixels();
 }
-#else
-void VerifyImage(WebCore::ImageDecoder* decoder,
+#endif
+
+#if !defined(CALCULATE_MD5_SUMS)
+void VerifyImage(const WebKit::WebImageDecoder& decoder,
                  const FilePath& path,
                  const FilePath& md5_sum_path,
                  size_t frame_index) {
   // Make sure decoding can complete successfully.
-  EXPECT_TRUE(decoder->isSizeAvailable()) << path.value();
-  EXPECT_GE(decoder->frameCount(), frame_index) << path.value();
-  WebCore::RGBA32Buffer* image_buffer =
-      decoder->frameBufferAtIndex(frame_index);
-  ASSERT_NE(static_cast<WebCore::RGBA32Buffer*>(NULL), image_buffer) <<
-      path.value();
-  EXPECT_EQ(WebCore::RGBA32Buffer::FrameComplete, image_buffer->status()) <<
-      path.value();
-  EXPECT_FALSE(decoder->failed()) << path.value();
+  EXPECT_TRUE(decoder.isSizeAvailable()) << path.value();
+  EXPECT_GE(decoder.frameCount(), frame_index) << path.value();
+  EXPECT_TRUE(decoder.isFrameCompleteAtIndex(frame_index)) << path.value();
+  EXPECT_FALSE(decoder.isFailed());
 
   // Calculate MD5 sum.
   MD5Digest actual_digest;
-  scoped_ptr<NativeImageSkia> image_data(image_buffer->asNewNativeImage());
-  {
-    SkAutoLockPixels bmp_lock(*image_data);
-    MD5Sum(image_data->getPixels(),
-           image_data->width() * image_data->height() * sizeof(uint32_t),
-           &actual_digest);
-  }
+  const WebKit::WebImage& web_image = decoder.getFrameAtIndex(frame_index);
+  web_image.getSkBitmap().lockPixels();
+  MD5Sum(web_image.getSkBitmap().getPixels(),
+         web_image.getSkBitmap().width() * web_image.getSkBitmap().height() *
+         sizeof(uint32_t),
+         &actual_digest);
 
   // Read the MD5 sum off disk.
   std::string file_bytes;
@@ -97,8 +97,9 @@ void VerifyImage(WebCore::ImageDecoder* decoder,
   memcpy(&expected_digest, file_bytes.data(), sizeof expected_digest);
 
   // Verify that the sums are the same.
-  EXPECT_EQ(0, memcmp(&expected_digest, &actual_digest, sizeof(MD5Digest))) <<
-      path.value();
+  EXPECT_EQ(0, memcmp(&expected_digest, &actual_digest, sizeof(MD5Digest)))
+    << path.value();
+  web_image.getSkBitmap().unlockPixels();
 }
 #endif
 
@@ -143,94 +144,74 @@ bool ImageDecoderTest::ShouldImageFail(const FilePath& path) const {
                                 kBadSuffix.length(), kBadSuffix));
 }
 
-WebCore::ImageDecoder* ImageDecoderTest::SetupDecoder(
-    const FilePath& path,
-    bool split_at_random) const {
-  Vector<char> image_contents;
-  ReadFileToVector(path, &image_contents);
-
-  WebCore::ImageDecoder* decoder = CreateDecoder();
-  RefPtr<WebCore::SharedBuffer> shared_contents(
-      WebCore::SharedBuffer::create());
-
-  if (split_at_random) {
-    // Split the file at an arbitrary point.
-    const int partial_size = static_cast<int>(
-        (static_cast<double>(rand()) / RAND_MAX) * image_contents.size());
-    shared_contents->append(image_contents.data(), partial_size);
-
-    // Make sure the image decoder doesn't fail when we ask for the frame buffer
-    // for this partial image.
-    decoder->setData(shared_contents.get(), false);
-    EXPECT_FALSE(decoder->failed()) << path.value();
-    // NOTE: We can't check that frame 0 is non-NULL, because if this is an ICO
-    // and we haven't yet supplied enough data to read the directory, there is
-    // no framecount and thus no first frame.
-
-    // Make sure passing the complete image results in successful decoding.
-    shared_contents->append(
-        &image_contents.data()[partial_size],
-        static_cast<int>(image_contents.size() - partial_size));
-  } else {
-    shared_contents->append(image_contents.data(),
-                            static_cast<int>(image_contents.size()));
-  }
-
-  decoder->setData(shared_contents.get(), true);
-  return decoder;
-}
-
 void ImageDecoderTest::TestDecoding(
     ImageDecoderTestFileSelection file_selection,
-    const int64 threshold) const {
+    const int64 threshold) {
   const std::vector<FilePath> image_files(GetImageFiles());
   for (std::vector<FilePath>::const_iterator i = image_files.begin();
        i != image_files.end(); ++i) {
     if (ShouldSkipFile(*i, file_selection, threshold))
       continue;
+    const FilePath md5_sum_path(GetMD5SumPath(*i));
+    TestWebKitImageDecoder(*i, md5_sum_path, kFirstFrameIndex);
+  }
+}
 
-    scoped_ptr<WebCore::ImageDecoder> decoder(SetupDecoder(*i, false));
-    if (ShouldImageFail(*i)) {
-      // We may get a non-NULL frame buffer, but it should be incomplete, and
-      // the decoder should have failed.
-      WebCore::RGBA32Buffer* const image_buffer =
-          decoder->frameBufferAtIndex(0);
-      if (image_buffer) {
-        EXPECT_NE(image_buffer->status(),
-                  WebCore::RGBA32Buffer::FrameComplete) << i->value();
-      }
-      EXPECT_TRUE(decoder->failed()) << i->value();
-      continue;
+void  ImageDecoderTest::TestWebKitImageDecoder(const FilePath& image_path,
+  const FilePath& md5_sum_path, int desired_frame_index) const {
+  bool should_test_chunking = true;
+  bool should_test_failed_images = true;
+#ifdef CALCULATE_MD5_SUMS
+    // Do not test anything just get the md5 sums.
+    should_test_chunking = false;
+    should_test_failed_images = false;
+#endif
+
+  std::vector<char> image_contents;
+  ReadFileToVector(image_path, &image_contents);
+  EXPECT_TRUE(image_contents.size());
+  scoped_ptr<WebKit::WebImageDecoder> decoder(CreateWebKitImageDecoder());
+  EXPECT_FALSE(decoder->isFailed());
+
+  if (should_test_chunking) {
+    // Test chunking file into half.
+    const int partial_size = image_contents.size()/2;
+
+    WebKit::WebData partial_data(
+      reinterpret_cast<const char*>(&(image_contents.at(0))), partial_size);
+
+    // Make Sure the image decoder doesn't fail when we ask for the frame
+    // buffer for this partial image.
+    // NOTE: We can't check that frame 0 is non-NULL, because if this is an
+    // ICO and we haven't yet supplied enough data to read the directory,
+    // there is no framecount and thus no first frame.
+    decoder->setData(const_cast<WebKit::WebData&>(partial_data), false);
+    EXPECT_FALSE(decoder->isFailed()) << image_path.value();
+  }
+
+  // Make sure passing the complete image results in successful decoding.
+  WebKit::WebData data(reinterpret_cast<const char*>(&(image_contents.at(0))),
+    image_contents.size());
+  decoder->setData(const_cast<WebKit::WebData&>(data), true);
+
+  if (should_test_failed_images) {
+    if (ShouldImageFail(image_path)) {
+      EXPECT_FALSE(decoder->isFrameCompleteAtIndex(kFirstFrameIndex));
+      EXPECT_TRUE(decoder->isFailed());
+         return;
     }
+  }
+
+  EXPECT_FALSE(decoder->isFailed()) << image_path.value();
 
 #ifdef CALCULATE_MD5_SUMS
-    SaveMD5Sum(GetMD5SumPath(*i), decoder->frameBufferAtIndex(0));
+  // Since WebImage does not expose get data by frame, get the size
+  // through decoder and pass it to fromData so that the closest
+  // image dats to the size is returned.
+  WebKit::WebSize size(decoder->getImage(desired_frame_index).size());
+  const WebKit::WebImage& image = WebKit::WebImage::fromData(data, size);
+  SaveMD5Sum(md5_sum_path.value(), image);
 #else
-    VerifyImage(decoder.get(), *i, GetMD5SumPath(*i), 0);
+  VerifyImage(*decoder, image_path, md5_sum_path, desired_frame_index);
 #endif
-  }
 }
-
-#ifndef CALCULATE_MD5_SUMS
-void ImageDecoderTest::TestChunkedDecoding(
-    ImageDecoderTestFileSelection file_selection,
-    const int64 threshold) const {
-  // Init random number generator with current day, so a failing case will fail
-  // consistently over the course of a whole day.
-  const Time today = Time::Now().LocalMidnight();
-  srand(static_cast<unsigned int>(today.ToInternalValue()));
-
-  const std::vector<FilePath> image_files(GetImageFiles());
-  for (std::vector<FilePath>::const_iterator i = image_files.begin();
-       i != image_files.end(); ++i) {
-    if (ShouldSkipFile(*i, file_selection, threshold))
-      continue;
-
-    if (ShouldImageFail(*i))
-      continue;
-
-    scoped_ptr<WebCore::ImageDecoder> decoder(SetupDecoder(*i, true));
-    VerifyImage(decoder.get(), *i, GetMD5SumPath(*i), 0);
-  }
-}
-#endif

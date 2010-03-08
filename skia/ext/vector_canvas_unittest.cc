@@ -5,13 +5,13 @@
 #include "config.h"
 #include "build/build_config.h"
 
-#include "webkit/tools/test_shell/image_decoder_unittest.h"
-
 #if !defined(OS_WIN)
 #include <unistd.h>
 #endif
 
 #include "PNGImageDecoder.h"
+
+#undef LOG
 
 #include "app/gfx/codec/png_codec.h"
 #include "base/command_line.h"
@@ -27,6 +27,13 @@ namespace skia {
 namespace {
 
 const wchar_t* const kGenerateSwitch = L"vector-canvas-generate";
+
+void ReadFileToVector(const FilePath& path, Vector<char>* contents) {
+  std::string contents_str;
+  file_util::ReadFileToString(path, &contents_str);
+  contents->resize(contents_str.size());
+  memcpy(&contents->first(), contents_str.data(), contents_str.size());
+}
 
 // Lightweight HDC management.
 class Context {

@@ -1,5 +1,4 @@
-// Copyright (c) 2008, Google Inc.
-// All rights reserved.
+// Copyright (c) 2008, Google Inc. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -28,17 +27,17 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "config.h"
-#include "webkit/tools/test_shell/image_decoder_unittest.h"
 
-#include "BMPImageDecoder.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebImageDecoder.h"
+#include "webkit/tools/test_shell/image_decoder_unittest.h"
 
 class BMPImageDecoderTest : public ImageDecoderTest {
  public:
   BMPImageDecoderTest() : ImageDecoderTest("bmp") { }
 
  protected:
-  virtual WebCore::ImageDecoder* CreateDecoder() const {
-    return new WebCore::BMPImageDecoder();
+  virtual WebKit::WebImageDecoder* CreateWebKitImageDecoder() const {
+    return new WebKit::WebImageDecoder(WebKit::WebImageDecoder::TypeBMP);
   }
 
   // The BMPImageDecoderTest tests are really slow under Valgrind.
@@ -55,13 +54,3 @@ TEST_F(BMPImageDecoderTest, DecodingFast) {
 TEST_F(BMPImageDecoderTest, DecodingSlow) {
   TestDecoding(TEST_BIGGER, kThresholdSize);
 }
-
-#ifndef CALCULATE_MD5_SUMS
-TEST_F(BMPImageDecoderTest, ChunkedDecodingFast) {
-  TestChunkedDecoding(TEST_SMALLER, kThresholdSize);
-}
-
-TEST_F(BMPImageDecoderTest, ChunkedDecodingSlow) {
-  TestChunkedDecoding(TEST_BIGGER, kThresholdSize);
-}
-#endif
