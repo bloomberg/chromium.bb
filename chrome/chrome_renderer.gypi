@@ -55,6 +55,8 @@
         'renderer/extensions/js_only_v8_extensions.h',
         'renderer/extensions/renderer_extension_bindings.cc',
         'renderer/extensions/renderer_extension_bindings.h',
+        'renderer/ggl/ggl.cc',
+        'renderer/ggl/ggl.h',
         'renderer/loadtimes_extension_bindings.h',
         'renderer/loadtimes_extension_bindings.cc',
         'renderer/media/audio_renderer_impl.cc',
@@ -204,6 +206,9 @@
           ],
         }],
         ['enable_gpu==1', {
+          'dependencies': [
+            '../gpu/gpu.gyp:gles2_c_lib',
+          ],
           'sources': [
             'renderer/command_buffer_proxy.cc',
             'renderer/command_buffer_proxy.h',
