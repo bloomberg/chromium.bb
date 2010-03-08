@@ -49,11 +49,6 @@ NetworkLibrary* NetworkLibrary::Get() {
   return Singleton<NetworkLibrary>::get();
 }
 
-// static
-bool NetworkLibrary::EnsureLoaded() {
-  return CrosLibrary::EnsureLoaded();
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkLibrary, URLRequestJobTracker::JobObserver implementation:
 

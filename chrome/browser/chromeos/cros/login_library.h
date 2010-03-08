@@ -24,10 +24,6 @@ class LoginLibrary {
   // This gets the singleton LoginLibrary.
   static LoginLibrary* Get();
 
-  // Makes sure the library is loaded, loading it if necessary. Returns true if
-  // the library has been successfully loaded.
-  static bool EnsureLoaded();
-
   // Requests that the Upstart signal login-prompt-ready be emitted.
   bool EmitLoginPromptReady();
 

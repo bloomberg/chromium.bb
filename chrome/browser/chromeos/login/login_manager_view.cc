@@ -20,6 +20,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/browser_init.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/external_cookie_handler.h"
@@ -158,11 +159,12 @@ void LoginManagerView::Init() {
   // Controller to handle events from textfields
   username_field_->SetController(this);
   password_field_->SetController(this);
-  if (LoginLibrary::EnsureLoaded()) {
+  if (CrosLibrary::EnsureLoaded()) {
     loader_.GetVersion(
         &consumer_, NewCallback(this, &LoginManagerView::OnOSVersion));
   } else if (!kStubOutLogin) {
-    ShowError(IDS_LOGIN_DISABLED_NO_LIBCROS);
+    error_label_->SetText(
+        ASCIIToWide(CrosLibrary::load_error_string()));
     username_field_->SetReadOnly(true);
     password_field_->SetReadOnly(true);
   }
@@ -244,10 +246,17 @@ void LoginManagerView::Layout() {
   y += (setViewBounds(password_label_, x, y, max_width, false) + kLabelPad);
   y += (setViewBounds(password_field_, x, y, kTextfieldWidth, true) + kRowPad);
   y += (setViewBounds(sign_in_button_, x, y, max_width, false) + kRowPad);
-  y += (setViewBounds(error_label_, x, y, max_width, true) + kRowPad);
 
   int padding = BorderDefinition::kScreenBorder.shadow +
                 BorderDefinition::kScreenBorder.corner_radius / 2;
+
+  y += setViewBounds(
+      error_label_,
+      padding,
+      y,
+      width() - 2 * padding,
+      true);
+
   setViewBounds(
       os_version_label_,
       padding,
@@ -277,7 +286,7 @@ void LoginManagerView::OnLoginFailure() {
   NetworkLibrary* network = NetworkLibrary::Get();
   // Check networking after trying to login in case user is
   // cached locally or the local admin account.
-  if (!network || !network->EnsureLoaded())
+  if (!network || !CrosLibrary::EnsureLoaded())
     ShowError(IDS_LOGIN_ERROR_NO_NETWORK_LIBRARY);
   else if (!network->Connected())
     ShowError(IDS_LOGIN_ERROR_NETWORK_NOT_CONNECTED);
@@ -315,7 +324,7 @@ void LoginManagerView::SetupSession(const std::string& username) {
   if (observer_) {
     observer_->OnExit(ScreenObserver::LOGIN_SIGN_IN_SELECTED);
   }
-  if (LoginLibrary::EnsureLoaded())
+  if (CrosLibrary::EnsureLoaded())
     LoginLibrary::Get()->StartSession(username, "");
 }
 
@@ -346,7 +355,7 @@ void LoginManagerView::ShowError(int error_id) {
 
 bool LoginManagerView::HandleKeystroke(views::Textfield* s,
     const views::Textfield::Keystroke& keystroke) {
-  if (!kStubOutLogin && !LoginLibrary::EnsureLoaded())
+  if (!kStubOutLogin && !CrosLibrary::EnsureLoaded())
     return false;
 
   if (keystroke.GetKeyboardCode() == base::VKEY_TAB) {

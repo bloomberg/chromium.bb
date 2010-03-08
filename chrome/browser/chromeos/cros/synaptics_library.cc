@@ -15,11 +15,6 @@ SynapticsLibrary* SynapticsLibrary::Get() {
   return Singleton<SynapticsLibrary>::get();
 }
 
-// static
-bool SynapticsLibrary::EnsureLoaded() {
-  return CrosLibrary::EnsureLoaded();
-}
-
 void SynapticsLibrary::SetBoolParameter(SynapticsParameter param, bool value) {
   SetParameter(param, value ? 1 : 0);
 }

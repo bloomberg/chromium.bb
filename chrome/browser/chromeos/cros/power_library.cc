@@ -36,11 +36,6 @@ PowerLibrary* PowerLibrary::Get() {
   return Singleton<PowerLibrary>::get();
 }
 
-// static
-bool PowerLibrary::EnsureLoaded() {
-  return CrosLibrary::EnsureLoaded();
-}
-
 void PowerLibrary::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }

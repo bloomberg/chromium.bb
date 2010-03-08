@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/process_util.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/views/browser_dialogs.h"
@@ -111,7 +112,7 @@ void ShowLoginWizard(const std::string& first_screen_name,
                      const gfx::Size& size) {
   views::WindowGtk* window = WizardWindow::Create(first_screen_name, size);
   window->Show();
-  if (chromeos::LoginLibrary::EnsureLoaded()) {
+  if (chromeos::CrosLibrary::EnsureLoaded()) {
     chromeos::LoginLibrary::Get()->EmitLoginPromptReady();
   }
 }

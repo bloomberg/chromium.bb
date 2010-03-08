@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_CROS_CROS_LIBRARY_H_
 #define CHROME_BROWSER_CHROMEOS_CROS_CROS_LIBRARY_H_
 
+#include <string>
 #include "base/basictypes.h"
 
 namespace chromeos {
@@ -16,11 +17,21 @@ class CrosLibrary {
   // could not be loaded, returns false.
   static bool EnsureLoaded();
 
+  // Returns an unlocalized string describing the last load error (if any).
+  static const std::string& load_error_string() {
+    return load_error_string_;
+  }
+
  private:
   CrosLibrary() {}
   ~CrosLibrary() {}
 
+  // True if libcros was successfully loaded.
   static bool loaded_;
+  // True if the last load attempt had an error.
+  static bool load_error_;
+  // Contains the error string from the last load attempt.
+  static std::string load_error_string_;
 
   DISALLOW_COPY_AND_ASSIGN(CrosLibrary);
 };

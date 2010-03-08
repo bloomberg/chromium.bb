@@ -24,11 +24,6 @@ MountLibrary* MountLibrary::Get() {
   return Singleton<MountLibrary>::get();
 }
 
-// static
-bool MountLibrary::EnsureLoaded() {
-  return CrosLibrary::EnsureLoaded();
-}
-
 void MountLibrary::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }

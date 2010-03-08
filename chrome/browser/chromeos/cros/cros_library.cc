@@ -18,19 +18,23 @@ namespace chromeos {
 bool CrosLibrary::loaded_ = false;
 
 // static
+bool CrosLibrary::load_error_ = false;
+
+// static
+std::string CrosLibrary::load_error_string_;
+
+// static
 bool CrosLibrary::EnsureLoaded() {
-  static bool initialized = false;
-  if (!initialized) {
+  if (!loaded_ && !load_error_) {
     FilePath path;
     if (PathService::Get(chrome::FILE_CHROMEOS_API, &path))
-      loaded_ = LoadCros(path.value().c_str());
+      loaded_ = LoadLibcros(path.value().c_str(), load_error_string_);
 
     if (!loaded_) {
-      char* error = dlerror();
-      if (error)
-        LOG(ERROR) << "Problem loading chromeos shared object: " << error;
+      load_error_ = true;
+      LOG(ERROR) << "Problem loading chromeos shared object: "
+                 << load_error_string_;
     }
-    initialized = true;
   }
   return loaded_;
 }

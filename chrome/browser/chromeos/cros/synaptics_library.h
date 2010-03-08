@@ -19,10 +19,6 @@ class SynapticsLibrary {
   // This gets the singleton SynapticsLibrary.
   static SynapticsLibrary* Get();
 
-  // Makes sure the library is loaded, loading it if necessary. Returns true if
-  // the library has been successfully loaded.
-  static bool EnsureLoaded();
-
   // Sets a boolean parameter. The actual call will be run on the FILE thread.
   void SetBoolParameter(SynapticsParameter param, bool value);
 

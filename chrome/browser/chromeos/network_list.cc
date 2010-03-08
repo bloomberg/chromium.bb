@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "grit/generated_resources.h"
 
 namespace chromeos {
@@ -58,7 +59,7 @@ void NetworkList::NetworkChanged(chromeos::NetworkLibrary* network_lib) {
   connected_network_ = NULL;
   connecting_network_ = NULL;
   networks_.clear();
-  if (!network_lib || !network_lib->EnsureLoaded())
+  if (!network_lib || !CrosLibrary::EnsureLoaded())
     return;
 
   if (network_lib->ethernet_connected() || network_lib->ethernet_connecting()) {

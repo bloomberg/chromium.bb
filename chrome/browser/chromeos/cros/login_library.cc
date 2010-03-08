@@ -9,19 +9,10 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 
 namespace chromeos {
-// static
-bool LoginLibrary::tried_and_failed = false;
 
 // static
 LoginLibrary* LoginLibrary::Get() {
   return Singleton<LoginLibrary>::get();
-}
-
-// static
-bool LoginLibrary::EnsureLoaded() {
-  if (!LoginLibrary::tried_and_failed)
-    LoginLibrary::tried_and_failed = !CrosLibrary::EnsureLoaded();
-  return !LoginLibrary::tried_and_failed;
 }
 
 bool LoginLibrary::EmitLoginPromptReady() {

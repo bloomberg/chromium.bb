@@ -8,6 +8,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/time.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 
@@ -123,7 +124,7 @@ void PowerMenuButton::DrawPowerIcon(gfx::Canvas* canvas, SkBitmap icon) {
 void PowerMenuButton::UpdateIcon() {
   PowerLibrary* cros = PowerLibrary::Get();
   int id = IDR_STATUSBAR_BATTERY_UNKNOWN;
-  if (PowerLibrary::EnsureLoaded()) {
+  if (CrosLibrary::EnsureLoaded()) {
     if (!cros->battery_is_present()) {
       id = IDR_STATUSBAR_BATTERY_MISSING;
     } else if (cros->line_power_on() && cros->battery_fully_charged()) {

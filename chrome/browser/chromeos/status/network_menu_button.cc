@@ -12,6 +12,7 @@
 #include "app/resource_bundle.h"
 #include "base/string_util.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -295,7 +296,7 @@ void NetworkMenuButton::DrawIcon(gfx::Canvas* canvas) {
 
 void NetworkMenuButton::NetworkChanged(NetworkLibrary* cros) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  if (cros->EnsureLoaded()) {
+  if (CrosLibrary::EnsureLoaded()) {
     if (cros->wifi_connecting() || cros->cellular_connecting()) {
       // Start the connecting animation if not running.
       if (!animation_connecting_.IsAnimating()) {

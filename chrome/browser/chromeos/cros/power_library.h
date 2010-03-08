@@ -25,10 +25,6 @@ class PowerLibrary {
   // This gets the singleton PowerLibrary
   static PowerLibrary* Get();
 
-  // Makes sure the library is loaded, loading it if necessary. Returns true if
-  // the library has been successfully loaded.
-  static bool EnsureLoaded();
-
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
