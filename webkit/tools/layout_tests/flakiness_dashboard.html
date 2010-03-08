@@ -1183,8 +1183,23 @@
       return 'At ' + repo + ' revision: ' + thisRevision;
     }
   }
+  
+  /**
+   * Returns whether the result for index'th result for testName on builder was
+   * a failure.
+   */
+  function isFailure(builder, testName, index) {
+    var currentIndex = 0;
+    var rawResults = resultsByBuilder[builder].tests[testName].results;
+    for (var i = 0; i < rawResults.length; i++) {
+      currentIndex += rawResults[i][0];
+      if (currentIndex > index)
+        return isFailingResult(rawResults[i][1]);
+    }
+    console.error('Index exceeds number of results: ' + index);
+  }
 
-  function showPopupForBuild(e, builder, index) {
+  function showPopupForBuild(e, builder, index, opt_testName) {
     var html = '';
 
     var time = resultsByBuilder[builder].secondsSinceEpoch[index];
@@ -1209,10 +1224,18 @@
           '">layout-test-results.zip</a></li>';
     }
 
-    var buildNumbers = resultsByBuilder[builder].buildNumbers;
-    html += '<li>' +
-        getLinkHTMLToOpenWindow(BUILDERS_BASE_PATH + builder + '/builds/' +
-        buildNumbers[index], 'Build log') + '</li></ul>';
+    var buildNumber = resultsByBuilder[builder].buildNumbers[index];
+    var buildBasePath = BUILDERS_BASE_PATH + builder + '/builds/' + buildNumber;
+
+    if (!isLayoutTestResults() && opt_testName &&
+        isFailure(builder, opt_testName, index)) {
+      html += '<li>' + getLinkHTMLToOpenWindow(buildBasePath + '/steps/' +
+          currentState.testType + '/logs/' + opt_testName.split('.')[1],
+          'Failure log') + '</li>';
+    }
+
+    html += '<li>' + getLinkHTMLToOpenWindow(buildBasePath, 'Build log') +
+        '</li></ul>';
 
     showPopup(e, html);
   }
@@ -1266,7 +1289,7 @@
       html += '<td title="' + resultString + '. Click for more info." ' +
           'class="results ' + currentResult +
           '" onclick=\'showPopupForBuild(event, "' + builder + '",' + i +
-          ')\'>' + innerHTML + '</td>';
+          ',"' + test.test + '")\'>' + innerHTML + '</td>';
 
       var webkitRevision = resultsByBuilder[builder].webkitRevision;
       var isWebkitMerge = webkitRevision[i + 1] &&
