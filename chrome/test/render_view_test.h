@@ -55,11 +55,20 @@ class RenderViewTest : public testing::Test {
 
   virtual void TearDown();
 
+  // A special WebKitClientImpl class for getting rid off the dependency to the
+  // sandbox, which is not available in RenderViewTest.
+  class RendererWebKitClientImplNoSandbox : public RendererWebKitClientImpl {
+   public:
+    virtual WebKit::WebSandboxSupport* sandboxSupport() {
+      return NULL;
+    }
+  };
+
   MessageLoop msg_loop_;
   MockRenderThread render_thread_;
   scoped_ptr<MockRenderProcess> mock_process_;
   scoped_refptr<RenderView> view_;
-  RendererWebKitClientImpl webkitclient_;
+  RendererWebKitClientImplNoSandbox webkitclient_;
   scoped_ptr<MockKeyboard> mock_keyboard_;
 
   // Used to setup the process so renderers can run.
