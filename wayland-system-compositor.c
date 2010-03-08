@@ -305,8 +305,8 @@ wlsc_matrix_rotate(struct wlsc_matrix *matrix,
 	GLdouble s = sin(angle);
 	struct wlsc_matrix rotate = {
 		{ x * x * (1 - c) + c,     y * x * (1 - c) + z * s, x * z * (1 - c) - y * s, 0,
-		  x * y * (1 - c) - z * s, y * y * (1 - c) + c,     y * z * (1 - c) - x * s, 0, 
-		  x * z * (1 - c) + y * x, y * z * (1 - c) - x * s, z * z * (1 - c) + c,     0,
+		  x * y * (1 - c) - z * s, y * y * (1 - c) + c,     y * z * (1 - c) + x * s, 0, 
+		  x * z * (1 - c) + y * s, y * z * (1 - c) - x * s, z * z * (1 - c) + c,     0,
 		  0, 0, 0, 1 }
 	};
 
