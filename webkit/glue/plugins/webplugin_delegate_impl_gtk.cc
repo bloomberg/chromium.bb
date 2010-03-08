@@ -20,8 +20,6 @@
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
-// TODO(jabdelmalek): remove me once two sided patch lands
-#include "third_party/WebKit/WebKit/chromium/public/WebPluginContainer.h"
 #include "webkit/glue/webplugin.h"
 #include "webkit/glue/plugins/gtk_plugin_container.h"
 #include "webkit/glue/plugins/plugin_constants_win.h"
@@ -698,12 +696,8 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
   }
   bool ret = instance()->NPP_HandleEvent(&np_event) != 0;
 
-  // TODO(jabdelmalek): remove the ifdef, and include, once the WebKit side
-  // lands.
-#ifdef WEBPLUGINCONTAINER_DOESNT_MODIFY_HANDLED
   // Flash always returns false, even when the event is handled.
   ret = true;
-#endif
 
 #if 0
   if (event->event == WM_MOUSEMOVE) {
