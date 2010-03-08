@@ -1,3 +1,7 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 #include <errno.h>
 #include <fcntl.h>
 #include <iostream>
@@ -42,18 +46,18 @@ Maps::Maps(int proc_self_maps) :
         while (*ptr == ' ' || *ptr == '\t') ++ptr;
         char *perm_ptr = ptr;
         while (*ptr && *ptr != ' ' && *ptr != '\t') ++ptr;
-        std::string perm(perm_ptr, ptr - perm_ptr);
+        string perm(perm_ptr, ptr - perm_ptr);
         unsigned long offset = strtoul(ptr, &ptr, 16);
         while (*ptr == ' ' || *ptr == '\t') ++ptr;
         char *id_ptr = ptr;
         while (*ptr && *ptr != ' ' && *ptr != '\t') ++ptr;
         while (*ptr == ' ' || *ptr == '\t') ++ptr;
         while (*ptr && *ptr != ' ' && *ptr != '\t') ++ptr;
-        std::string id(id_ptr, ptr - id_ptr);
+        string id(id_ptr, ptr - id_ptr);
         while (*ptr == ' ' || *ptr == '\t') ++ptr;
         char *library_ptr = ptr;
         while (*ptr && *ptr != ' ' && *ptr != '\t' && *ptr != '\n') ++ptr;
-        std::string library(library_ptr, ptr - library_ptr);
+        string library(library_ptr, ptr - library_ptr);
         bool isVDSO = false;
         if (library == "[vdso]") {
           // /proc/self/maps has a misleading file offset in the [vdso] entry.
@@ -66,13 +70,13 @@ Maps::Maps(int proc_self_maps) :
           goto skip_entry;
         }
         int prot = 0;
-        if (perm.find('r') != std::string::npos) {
+        if (perm.find('r') != string::npos) {
           prot |= PROT_READ;
         }
-        if (perm.find('w') != std::string::npos) {
+        if (perm.find('w') != string::npos) {
           prot |= PROT_WRITE;
         }
-        if (perm.find('x') != std::string::npos) {
+        if (perm.find('x') != string::npos) {
           prot |= PROT_EXEC;
         }
         if ((prot & (PROT_EXEC | PROT_READ)) == 0) {
@@ -146,7 +150,7 @@ bool Maps::Iterator::operator!=(const Maps::Iterator& iter) const {
   return !operator==(iter);
 }
 
-std::string Maps::Iterator::name() const {
+Maps::string Maps::Iterator::name() const {
   return getIterator()->first;
 }
 

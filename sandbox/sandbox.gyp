@@ -141,6 +141,8 @@
             ['target_arch!="arm"', {
               'sources': [
                 'linux/seccomp/access.cc',
+                'linux/seccomp/allocator.cc',
+                'linux/seccomp/allocator.h',
                 'linux/seccomp/clone.cc',
                 'linux/seccomp/exit.cc',
                 'linux/seccomp/debug.cc',

@@ -1,3 +1,7 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 #include "library.h"
 #include "sandbox_impl.h"
 #include "syscall_table.h"
@@ -372,9 +376,10 @@ int Sandbox::supportsSeccompSandbox(int proc_fd) {
     case 0: {
       int devnull = sys.open("/dev/null", O_RDWR, 0);
       if (devnull >= 0) {
-        dup2(devnull, 0);
-        dup2(devnull, 1);
-        dup2(devnull, 2);
+        sys.dup2(devnull, 0);
+        sys.dup2(devnull, 1);
+        sys.dup2(devnull, 2);
+        sys.close(devnull);
       }
       if (proc_fd >= 0) {
         setProcSelfMaps(sys.openat(proc_fd, "self/maps", O_RDONLY, 0));
@@ -423,7 +428,7 @@ void Sandbox::startSandbox() {
 
   SysCalls sys;
   if (proc_self_maps_ < 0) {
-    proc_self_maps_              = sys.open("/proc/self/maps", O_RDONLY, 0);
+    proc_self_maps_        = sys.open("/proc/self/maps", O_RDONLY, 0);
     if (proc_self_maps_ < 0) {
       die("Cannot access \"/proc/self/maps\"");
     }
@@ -431,21 +436,21 @@ void Sandbox::startSandbox() {
 
   // The pid is unchanged for the entire program, so we can retrieve it once
   // and store it in a global variable.
-  pid_                           = sys.getpid();
+  pid_                     = sys.getpid();
 
   // Block all signals, except for the RDTSC handler
   setupSignalHandlers();
 
   // Get socketpairs for talking to the trusted process
   int pair[4];
-  if (socketpair(AF_UNIX, SOCK_STREAM, 0, pair) ||
-      socketpair(AF_UNIX, SOCK_STREAM, 0, pair+2)) {
+  if (sys.socketpair(AF_UNIX, SOCK_STREAM, 0, pair) ||
+      sys.socketpair(AF_UNIX, SOCK_STREAM, 0, pair+2)) {
     die("Failed to create trusted thread");
   }
-  processFdPub_                  = pair[0];
-  cloneFdPub_                    = pair[2];
-  SecureMemArgs::Args* secureMem = createTrustedProcess(pair[0], pair[1],
-                                                        pair[2], pair[3]);
+  processFdPub_            = pair[0];
+  cloneFdPub_              = pair[2];
+  SecureMemArgs* secureMem = createTrustedProcess(pair[0], pair[1],
+                                                  pair[2], pair[3]);
 
   // We find all libraries that have system calls and redirect the system
   // calls to the sandbox. If we miss any system calls, the application will be
@@ -454,7 +459,7 @@ void Sandbox::startSandbox() {
   // correctly.
   {
     Maps maps(proc_self_maps_);
-    const char *libs[] = { "ld", "libc", "librt", "libpthread", NULL };
+    const char *libs[]     = { "ld", "libc", "librt", "libpthread", NULL };
 
     // Intercept system calls in the VDSO segment (if any). This has to happen
     // before intercepting system calls in any of the other libraries, as

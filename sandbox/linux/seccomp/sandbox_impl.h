@@ -1,3 +1,7 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 #ifndef SANDBOX_IMPL_H__
 #define SANDBOX_IMPL_H__
 
@@ -360,7 +364,6 @@ class Sandbox {
         void* edx;
         void* ecx;
         void* ebx;
-        void* ret2;
       } regs32 __attribute__((packed));
     #else
     #error Unsupported target platform
