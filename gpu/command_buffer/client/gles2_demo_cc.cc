@@ -6,6 +6,7 @@
 // includes where appropriate.
 
 #include "gpu/command_buffer/client/gles2_demo_cc.h"
+#include "gpu/command_buffer/common/logging.h"
 
 #include <math.h>
 #include <GLES2/gl2.h>

@@ -10,8 +10,20 @@
 
 #include <GLES2/gl2types.h>
 
-#ifdef __cplusplus
-#include "gpu/command_buffer/client/gles2_lib.h"
+// Note: If your program is written in C++ you can define
+// GLES2_INLINE_OPTIMIZATION to get an inline version of the OpenGL ES 2.0
+// code for your program. The advantage is a program compiled with high
+// optimization settings can generate very efficient code for issuing OpenGL ES
+// commands. The disadvantage is there is a small possibility of conflicts with
+// your code as we need to include lots of class definitions and a few
+// macros.
+
+#if defined(__cplusplus) && defined(GLES2_INLINE_OPTIMIZATION)
+#include "gpu/command_buffer/command_buffer/client/gles2_lib.h"
+#define GLES2_USE_CPP_BINDINGS
+#endif
+
+#if defined(GLES2_USE_CPP_BINDINGS)
 #define GLES2_GET_FUN(name) gles2::GetGLContext()->name
 #else
 #define GLES2_GET_FUN(name) GLES2 ## name
@@ -168,7 +180,11 @@
 #define glVertexAttribPointer GLES2_GET_FUN(VertexAttribPointer)
 #define glViewport GLES2_GET_FUN(Viewport)
 
-#ifndef __cplusplus
+#if !defined(GLES2_USE_CPP_BINDINGS)
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
 GL_APICALL void         GL_APIENTRY glActiveTexture (GLenum texture);
 GL_APICALL void         GL_APIENTRY glAttachShader (GLuint program, GLuint shader);
@@ -313,7 +329,11 @@ GL_APICALL void         GL_APIENTRY glVertexAttrib4fv (GLuint indx, const GLfloa
 GL_APICALL void         GL_APIENTRY glVertexAttribPointer (GLuint indx, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void* ptr);
 GL_APICALL void         GL_APIENTRY glViewport (GLint x, GLint y, GLsizei width, GLsizei height);
 
-#endif  // __cplusplus
+#if defined(__cplusplus)
+}
+#endif
+
+#endif  // !GLES2_USE_CPP_BINDINGS
 
 #endif /* __gl2_h_ */
 
