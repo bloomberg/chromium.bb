@@ -86,6 +86,7 @@ class Zygote {
     }
 
     for (;;) {
+      // This function call can return multiple times, once per fork().
       if (HandleRequestFromBrowser(kBrowserDescriptor))
         return true;
     }
@@ -123,15 +124,18 @@ class Zygote {
     if (pickle.ReadInt(&iter, &kind)) {
       switch (kind) {
         case ZygoteHost::kCmdFork:
+          // This function call can return multiple times, once per fork().
           return HandleForkRequest(fd, pickle, iter, fds);
         case ZygoteHost::kCmdReap:
           if (!fds.empty())
             break;
-          return HandleReapRequest(fd, pickle, iter);
+          HandleReapRequest(fd, pickle, iter);
+          return false;
         case ZygoteHost::kCmdDidProcessCrash:
           if (!fds.empty())
             break;
-          return HandleDidProcessCrash(fd, pickle, iter);
+          HandleDidProcessCrash(fd, pickle, iter);
+          return false;
         default:
           NOTREACHED();
           break;
@@ -145,35 +149,33 @@ class Zygote {
     return false;
   }
 
-  bool HandleReapRequest(int fd, const Pickle& pickle, void* iter) {
+  void HandleReapRequest(int fd, const Pickle& pickle, void* iter) {
     base::ProcessId child;
     base::ProcessId actual_child;
 
     if (!pickle.ReadInt(&iter, &child)) {
       LOG(WARNING) << "Error parsing reap request from browser";
-      return false;
+      return;
     }
 
     if (g_suid_sandbox_active) {
       actual_child = real_pids_to_sandbox_pids[child];
       if (!actual_child)
-        return false;
+        return;
       real_pids_to_sandbox_pids.erase(child);
     } else {
       actual_child = child;
     }
 
     ProcessWatcher::EnsureProcessTerminated(actual_child);
-
-    return false;
   }
 
-  bool HandleDidProcessCrash(int fd, const Pickle& pickle, void* iter) {
+  void HandleDidProcessCrash(int fd, const Pickle& pickle, void* iter) {
     base::ProcessHandle child;
 
     if (!pickle.ReadInt(&iter, &child)) {
       LOG(WARNING) << "Error parsing DidProcessCrash request from browser";
-      return false;
+      return;
     }
 
     bool child_exited;
@@ -189,8 +191,6 @@ class Zygote {
     write_pickle.WriteBool(did_crash);
     write_pickle.WriteBool(child_exited);
     HANDLE_EINTR(write(fd, write_pickle.data(), write_pickle.size()));
-
-    return false;
   }
 
   // Handle a 'fork' request from the browser: this means that the browser
@@ -263,6 +263,7 @@ class Zygote {
       CommandLine::Init(0, NULL);
       CommandLine::ForCurrentProcess()->InitFromArgv(args);
       CommandLine::SetProcTitle();
+      // The fork() request is handled further up the call stack.
       return true;
     } else if (child < 0) {
       LOG(ERROR) << "Zygote could not fork";
@@ -646,5 +647,6 @@ bool ZygoteMain(const MainFunctionParams& params) {
 #endif  // ARCH_CPU_X86_FAMILY
 
   Zygote zygote;
+  // This function call can return multiple times, once per fork().
   return zygote.ProcessRequests();
 }

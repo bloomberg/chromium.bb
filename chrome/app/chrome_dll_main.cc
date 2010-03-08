@@ -736,6 +736,7 @@ int ChromeMain(int argc, char** argv) {
 #endif
   } else if (process_type == switches::kZygoteProcess) {
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
+    // This function call can return multiple times, once per fork().
     if (ZygoteMain(main_params)) {
       // Zygote::HandleForkRequest may have reallocated the command
       // line so update it here with the new version.
