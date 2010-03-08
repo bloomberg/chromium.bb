@@ -441,6 +441,19 @@ TEST_F(ProfileSyncServiceTest, InitialState) {
   ExpectModelMatch();
 }
 
+TEST_F(ProfileSyncServiceTest, AbortedByShutdown) {
+  service_.reset(new TestProfileSyncService(&factory_, profile_.get(), false));
+  EXPECT_CALL(factory_, CreateDataTypeManager(_)).
+      WillOnce(MakeDataTypeManager());
+  EXPECT_CALL(factory_, CreateBookmarkSyncComponents(_, _)).Times(0);
+  service_->RegisterDataTypeController(
+      new browser_sync::BookmarkDataTypeController(&factory_,
+                                                   profile_.get(),
+                                                   service_.get()));
+  service_->Initialize();
+  service_.reset();
+}
+
 TEST_F(ProfileSyncServiceTest, BookmarkModelOperations) {
   LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);
   StartSyncService();
