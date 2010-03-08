@@ -168,7 +168,12 @@ void LanguageLibrary::UpdatePropertyHandler(
 
 bool LanguageLibrary::EnsureStarted() {
   if (language_status_connection_) {
-    return true;
+    if (chromeos::LanguageStatusConnectionIsAlive(
+            language_status_connection_)) {
+      return true;
+    }
+    DLOG(WARNING) << "IBus/XKB connection is closed. Trying to reconnect...";
+    chromeos::DisconnectLanguageStatus(language_status_connection_);
   }
   chromeos::LanguageStatusMonitorFunctions monitor_functions;
   monitor_functions.current_language = &LanguageChangedHandler;
