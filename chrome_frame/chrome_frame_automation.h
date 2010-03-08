@@ -253,7 +253,8 @@ class ChromeFrameAutomationClient
                     PluginUrlRequestManager* url_fetcher);
 
   // Attaches an existing external tab to this automation client instance.
-  void AttachExternalTab(intptr_t external_tab_cookie);
+  void AttachExternalTab(uint64 external_tab_cookie);
+  void BlockExternalTab(uint64 cookie);
 
   void SetPageFontSize(enum AutomationPageFontSize);
 
@@ -330,7 +331,7 @@ class ChromeFrameAutomationClient
   ProxyFactory* proxy_factory_;
   int tab_handle_;
   // Only used if we attach to an existing tab.
-  intptr_t external_tab_cookie_;
+  uint64 external_tab_cookie_;
 
   // Set to true if we received a navigation request prior to the automation
   // server being initialized.

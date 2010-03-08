@@ -55,11 +55,11 @@ class ExternalTabUITestMockClient : public AutomationProxy {
 
 
   MOCK_METHOD4(OnOpenURL, void(int tab_handle, const GURL& url,
-    const GURL& referrer, int open_disposition));
+      const GURL& referrer, int open_disposition));
   MOCK_METHOD3(OnNavigationStateChanged, void(int tab_handle, int flags,
-    const IPC::NavigationInfo& nav_info));
-  MOCK_METHOD3(OnAttachExternalTab, void(int tab_handle, intptr_t cookie,
-    int disposition));
+      const IPC::NavigationInfo& nav_info));
+  MOCK_METHOD2(OnAttachExternalTab, void(int tab_handle,
+      const IPC::AttachExternalTabParams& params));
   MOCK_METHOD2(OnLoad, void(int tab_handle, const GURL&url));
 
 
@@ -84,7 +84,8 @@ class ExternalTabUITestMockClient : public AutomationProxy {
   void NavigateThroughUserGesture();
   void IgnoreFavIconNetworkRequest();
 
-  void ConnectToExternalTab(gfx::NativeWindow parent, intptr_t cookie);
+  void ConnectToExternalTab(gfx::NativeWindow parent,
+      const IPC::AttachExternalTabParams& attach_params);
   // Helper for network requests.
   void ServeHTMLData(int tab_handle, const GURL& url, const std::string& data);
   // Destroys the host window.

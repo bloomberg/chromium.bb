@@ -436,7 +436,8 @@ void AutomationProvider::OnForwardContextMenuCommandToChrome(int tab_handle,
 }
 
 void AutomationProvider::ConnectExternalTab(
-    intptr_t cookie,
+    uint64 cookie,
+    bool allow,
     gfx::NativeWindow* tab_container_window,
     gfx::NativeWindow* tab_window,
     int* tab_handle) {
@@ -445,13 +446,13 @@ void AutomationProvider::ConnectExternalTab(
   *tab_window = NULL;
 
   scoped_refptr<ExternalTabContainer> external_tab_container =
-      ExternalTabContainer::RemovePendingTab(cookie);
+      ExternalTabContainer::RemovePendingTab(static_cast<uintptr_t>(cookie));
   if (!external_tab_container.get()) {
     NOTREACHED();
     return;
   }
 
-  if (AddExternalTab(external_tab_container)) {
+  if (allow && AddExternalTab(external_tab_container)) {
     external_tab_container->Reinitialize(this,
                                          automation_resource_message_filter_);
     TabContents* tab_contents = external_tab_container->tab_contents();

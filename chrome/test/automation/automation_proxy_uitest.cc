@@ -808,13 +808,13 @@ void ExternalTabUITestMockClient::NavigateInExternalTab(int tab_handle,
 }
 
 void ExternalTabUITestMockClient::ConnectToExternalTab(gfx::NativeWindow parent,
-                                                       intptr_t cookie) {
+    const IPC::AttachExternalTabParams& attach_params) {
   gfx::NativeWindow tab_container = NULL;
   gfx::NativeWindow tab_window = NULL;
   int tab_handle = 0;
 
-  IPC::SyncMessage* message = new AutomationMsg_ConnectExternalTab(0, cookie,
-      &tab_container, &tab_window, &tab_handle);
+  IPC::SyncMessage* message = new AutomationMsg_ConnectExternalTab(0,
+      attach_params.cookie, true, &tab_container, &tab_window, &tab_handle);
   channel_->Send(message);
 
   RECT rect;
@@ -1276,12 +1276,12 @@ TEST_F(ExternalTabUITestPopupEnabled, WindowDotOpen) {
       CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,  CW_USEDEFAULT,
       NULL, NULL, NULL, NULL);
 
-  EXPECT_CALL(*mock_, OnAttachExternalTab(1, _, _))
+  EXPECT_CALL(*mock_, OnAttachExternalTab(1, _))
       .Times(1)
       .WillOnce(testing::WithArgs<1>(testing::Invoke(CreateFunctor(mock_,
           &ExternalTabUITestMockClient::ConnectToExternalTab, popup1_host))));
 
-  EXPECT_CALL(*mock_, OnAttachExternalTab(2, _, _))
+  EXPECT_CALL(*mock_, OnAttachExternalTab(2, _))
     .Times(1)
     .WillOnce(testing::WithArgs<1>(testing::Invoke(CreateFunctor(mock_,
         &ExternalTabUITestMockClient::ConnectToExternalTab, popup2_host))));
@@ -1327,7 +1327,7 @@ TEST_F(ExternalTabUITestPopupEnabled, UserGestureTargetBlank) {
       .WillOnce(testing::InvokeWithoutArgs(testing::CreateFunctor(mock_,
           &ExternalTabUITestMockClient::NavigateThroughUserGesture)));
 
-  EXPECT_CALL(*mock_, OnAttachExternalTab(1, _, _))
+  EXPECT_CALL(*mock_, OnAttachExternalTab(1, _))
       .Times(1)
       .WillOnce(testing::WithArgs<1>(testing::Invoke(CreateFunctor(mock_,
           &ExternalTabUITestMockClient::ConnectToExternalTab, foo_host))));

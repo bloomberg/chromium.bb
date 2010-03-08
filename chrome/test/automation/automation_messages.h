@@ -524,6 +524,47 @@ struct ParamTraits<ContextMenuParams> {
   }
 };
 
+struct AttachExternalTabParams {
+  uint64 cookie;
+  GURL url;
+  gfx::Rect dimensions;
+  int disposition;
+  bool user_gesture;
+};
+
+template <>
+struct ParamTraits<AttachExternalTabParams> {
+  typedef AttachExternalTabParams param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.cookie);
+    WriteParam(m, p.url);
+    WriteParam(m, p.dimensions);
+    WriteParam(m, p.disposition);
+    WriteParam(m, p.user_gesture);
+  }
+
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    return ReadParam(m, iter, &p->cookie) &&
+        ReadParam(m, iter, &p->url) &&
+        ReadParam(m, iter, &p->dimensions) &&
+        ReadParam(m, iter, &p->disposition) &&
+        ReadParam(m, iter, &p->user_gesture);
+  }
+
+  static void Log(const param_type& p, std::wstring* l) {
+    l->append(L"(");
+    LogParam(p.cookie, l);
+    l->append(L", ");
+    LogParam(p.url, l);
+    l->append(L", ");
+    LogParam(p.dimensions, l);
+    l->append(L", ");
+    LogParam(p.disposition, l);
+    l->append(L", ");
+    LogParam(p.user_gesture, l);
+    l->append(L")");
+  }
+};
 
 }  // namespace IPC
 

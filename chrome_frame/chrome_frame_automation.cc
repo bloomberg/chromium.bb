@@ -253,6 +253,8 @@ void ProxyFactory::CreateProxy(ProxyFactory::ProxyCacheEntry* entry,
   // Chrome Frame never wants Chrome to start up with a First Run UI.
   command_line->AppendSwitch(switches::kNoFirstRun);
 
+  command_line->AppendSwitch(switches::kDisablePopupBlocking);
+
   // Disable the "Whoa! Chrome has crashed." dialog, because that isn't very
   // useful for Chrome Frame users.
 #ifndef NDEBUG
@@ -433,7 +435,7 @@ ChromeFrameAutomationClient::ChromeFrameAutomationClient()
       proxy_factory_(g_proxy_factory.get()),
       handle_top_level_requests_(false),
       tab_handle_(-1),
-      external_tab_cookie_(NULL),
+      external_tab_cookie_(0),
       url_fetcher_(NULL),
       navigate_after_initialization_(false) {
 }
@@ -839,15 +841,15 @@ void ChromeFrameAutomationClient::LaunchComplete(
       // If we have a valid tab_handle here it means that we are attaching to
       // an existing ExternalTabContainer instance, in which case we don't
       // want to create an external tab instance in Chrome.
-      if (external_tab_cookie_ == NULL) {
+      if (external_tab_cookie_ == 0) {
         // Continue with Initialization - Create external tab
         CreateExternalTab();
       } else {
         // Send a notification to Chrome that we are ready to connect to the
         // ExternalTab.
         IPC::SyncMessage* message =
-            new AutomationMsg_ConnectExternalTab(0, external_tab_cookie_, NULL,
-                                                 NULL, NULL);
+            new AutomationMsg_ConnectExternalTab(0, external_tab_cookie_, true,
+              NULL, NULL, NULL);
         automation_server_->SendAsAsync(message, NewCallback(this,
             &ChromeFrameAutomationClient::CreateExternalTabComplete), this);
       }
@@ -1110,11 +1112,18 @@ bool ChromeFrameAutomationClient::Reinitialize(
 }
 
 void ChromeFrameAutomationClient::AttachExternalTab(
-    intptr_t external_tab_cookie) {
+    uint64 external_tab_cookie) {
   DCHECK_EQ(static_cast<TabProxy*>(NULL), tab_.get());
   DCHECK_EQ(-1, tab_handle_);
 
   external_tab_cookie_ = external_tab_cookie;
+}
+
+void ChromeFrameAutomationClient::BlockExternalTab(uint64 cookie) {
+  // The host does not want this tab to be shown (due popup blocker).
+  IPC::SyncMessage* message =
+      new AutomationMsg_ConnectExternalTab(0, cookie, false, NULL, NULL, NULL);
+  automation_server_->SendAsAsync(message, NULL, this);
 }
 
 void ChromeFrameAutomationClient::SetPageFontSize(

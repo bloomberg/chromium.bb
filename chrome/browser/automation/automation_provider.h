@@ -317,7 +317,8 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
                          gfx::NativeWindow* tab_window,
                          int* tab_handle);
 
-  void ConnectExternalTab(intptr_t cookie,
+  void ConnectExternalTab(uint64 cookie,
+                          bool allow,
                           gfx::NativeWindow* tab_container_window,
                           gfx::NativeWindow* tab_window,
                           int* tab_handle);

@@ -355,16 +355,16 @@ void ExternalTabContainer::AddNewContents(TabContents* source,
       GURL());
 
   if (result) {
-    pending_tabs_[reinterpret_cast<intptr_t>(new_container.get())] =
-        new_container;
-
+    uintptr_t cookie = reinterpret_cast<uintptr_t>(new_container.get());
+    pending_tabs_[cookie] = new_container;
     new_container->set_pending(true);
-
-    automation_->Send(new AutomationMsg_AttachExternalTab(
-        0,
-        tab_handle_,
-        reinterpret_cast<intptr_t>(new_container.get()),
-        disposition));
+    IPC::AttachExternalTabParams attach_params_;
+    attach_params_.cookie = static_cast<uint64>(cookie);
+    attach_params_.dimensions = initial_pos;
+    attach_params_.user_gesture = user_gesture;
+    attach_params_.disposition = disposition;
+    automation_->Send(new AutomationMsg_AttachExternalTab(0,
+        tab_handle_, attach_params_));
   } else {
     NOTREACHED();
   }
@@ -739,7 +739,7 @@ bool ExternalTabContainer::InitNavigationInfo(IPC::NavigationInfo* nav_info,
 }
 
 scoped_refptr<ExternalTabContainer> ExternalTabContainer::RemovePendingTab(
-    intptr_t cookie) {
+    uintptr_t cookie) {
   PendingTabs::iterator index = pending_tabs_.find(cookie);
   if (index != pending_tabs_.end()) {
     scoped_refptr<ExternalTabContainer> container = (*index).second;

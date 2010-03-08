@@ -207,6 +207,8 @@ STDMETHODIMP ChromeActiveDocument::Load(BOOL fully_avalable,
 
   if (client_site) {
     SetClientSite(client_site);
+    DoQueryService(IID_INewWindowManager, client_site,
+                   popup_manager_.Receive());
   }
 
   Bho* chrome_frame_bho = Bho::GetCurrentThreadBhoInstance();
@@ -678,7 +680,7 @@ void ChromeActiveDocument::OnViewSource() {
   DCHECK(navigation_info_.url.is_valid());
   std::string url_to_open = "view-source:";
   url_to_open += navigation_info_.url.spec();
-  OnOpenURL(0, GURL(url_to_open), GURL(), NEW_WINDOW);
+  HostNavigate(GURL(url_to_open), GURL(), NEW_WINDOW);
 }
 
 void ChromeActiveDocument::OnDetermineSecurityZone(const GUID* cmd_group_guid,
@@ -708,6 +710,27 @@ void ChromeActiveDocument::OnOpenURL(int tab_handle,
   }
 
   Base::OnOpenURL(tab_handle, url_to_open, referrer, open_disposition);
+}
+
+void ChromeActiveDocument::OnAttachExternalTab(int tab_handle,
+    const IPC::AttachExternalTabParams& params) {
+  DWORD flags = 0;
+  if (params.user_gesture)
+    flags = NWMF_USERREQUESTED;
+
+  HRESULT hr = S_OK;
+  if (popup_manager_) {
+    hr = popup_manager_->EvaluateNewWindow(
+        UTF8ToWide(params.url.spec()).c_str(), NULL, url_, NULL, FALSE, flags,
+        0);
+  }
+  // Allow popup
+  if (hr == S_OK) {
+    Base::OnAttachExternalTab(tab_handle, params);
+    return;
+  }
+
+  automation_client_->BlockExternalTab(params.cookie);
 }
 
 bool ChromeActiveDocument::PreProcessContextMenu(HMENU menu) {
@@ -867,11 +890,11 @@ bool ChromeActiveDocument::LaunchUrl(const std::wstring& url,
     // Skip over kChromeAttachExternalTabPrefix
     tokenizer.GetNext();
 
-    intptr_t external_tab_cookie = 0;
-
-    if (tokenizer.GetNext())
-      StringToInt(tokenizer.token(),
-                  reinterpret_cast<int*>(&external_tab_cookie));
+    uint64 external_tab_cookie = 0;
+    if (tokenizer.GetNext()) {
+      wchar_t* end_ptr = 0;
+      external_tab_cookie = _wcstoui64(tokenizer.token().c_str(), &end_ptr, 10);
+    }
 
     if (external_tab_cookie == 0) {
       NOTREACHED() << "invalid url for attach tab: " << url;

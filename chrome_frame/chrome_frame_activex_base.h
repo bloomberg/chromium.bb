@@ -300,7 +300,7 @@ END_MSG_MAP()
                                 const IPC::ContextMenuParams& params) {
     if (cmd == IDC_ABOUT_CHROME_FRAME) {
       int tab_handle = automation_client_->tab()->handle();
-      OnOpenURL(tab_handle, GURL("about:version"), GURL(), NEW_WINDOW);
+      HostNavigate(GURL("about:version"), GURL(), NEW_WINDOW);
       return true;
     } else {
       switch (cmd) {
@@ -380,92 +380,8 @@ END_MSG_MAP()
 
   virtual void OnOpenURL(int tab_handle, const GURL& url_to_open,
                          const GURL& referrer, int open_disposition) {
-    ScopedComPtr<IWebBrowser2> web_browser2;
-    DoQueryService(SID_SWebBrowserApp, m_spClientSite, web_browser2.Receive());
-    DCHECK(web_browser2);
-
-    ScopedVariant url;
-    // Check to see if the URL uses a "view-source:" prefix, if so, open it
-    // using chrome frame full tab mode by using 'cf:' protocol handler.
-    // Also change the disposition to NEW_WINDOW since IE6 doesn't have tabs.
-    if (url_to_open.has_scheme() &&
-        (url_to_open.SchemeIs(chrome::kViewSourceScheme) ||
-        url_to_open.SchemeIs(chrome::kAboutScheme))) {
-      std::wstring chrome_url;
-      chrome_url.append(kChromeProtocolPrefix);
-      chrome_url.append(UTF8ToWide(url_to_open.spec()));
-      url.Set(chrome_url.c_str());
-      open_disposition = NEW_WINDOW;
-    } else {
-      url.Set(UTF8ToWide(url_to_open.spec()).c_str());
-    }
-
-    VARIANT flags = { VT_I4 };
-    V_I4(&flags) = 0;
-
-    IEVersion ie_version = GetIEVersion();
-    DCHECK(ie_version != NON_IE && ie_version != IE_UNSUPPORTED);
-    // Since IE6 doesn't support tabs, so we just use window instead.
-    if (ie_version == IE_6) {
-      if (open_disposition == NEW_FOREGROUND_TAB ||
-          open_disposition == NEW_BACKGROUND_TAB ||
-          open_disposition == NEW_WINDOW ||
-          open_disposition == NEW_POPUP) {
-        V_I4(&flags) = navOpenInNewWindow;
-      } else if (open_disposition != CURRENT_TAB) {
-        NOTREACHED() << "Unsupported open disposition in IE6";
-      }
-    } else {
-      switch (open_disposition) {
-        case NEW_FOREGROUND_TAB:
-          V_I4(&flags) = navOpenInNewTab;
-          break;
-        case NEW_BACKGROUND_TAB:
-          V_I4(&flags) = navOpenInBackgroundTab;
-          break;
-        case NEW_WINDOW:
-        case NEW_POPUP:
-          V_I4(&flags) = navOpenInNewWindow;
-          break;
-        default:
-          break;
-      }
-    }
-
-    // TODO(sanjeevr): The navOpenInNewWindow flag causes IE to open this
-    // in a new window ONLY if the user has specified
-    // "Always open popups in a new window". Otherwise it opens in a new tab.
-    // We need to investigate more and see if we can force IE to display the
-    // link in a new window. MSHTML uses the below code to force an open in a
-    // new window. But this logic also fails for us. Perhaps this flag is not
-    // honoured if the ActiveDoc is not MSHTML.
-    // Even the HLNF_DISABLEWINDOWRESTRICTIONS flag did not work.
-    // Start of MSHTML-like logic.
-    // CComQIPtr<ITargetFramePriv2> target_frame = web_browser2;
-    // if (target_frame) {
-    //   CComPtr<IUri> uri;
-    //   CreateUri(UTF8ToWide(open_url_command->url_.spec()).c_str(),
-    //             Uri_CREATE_IE_SETTINGS, 0, &uri);
-    //   CComPtr<IBindCtx> bind_ctx;
-    //   CreateBindCtx(0, &bind_ctx);
-    //   target_frame->AggregatedNavigation2(
-    //       HLNF_TRUSTFIRSTDOWNLOAD|HLNF_OPENINNEWWINDOW, bind_ctx, NULL,
-    //       L"No_Name", uri, L"");
-    // }
-    // End of MSHTML-like logic
-    VARIANT empty = ScopedVariant::kEmptyVariant;
-    ScopedVariant http_headers;
-
-    if (referrer.is_valid()) {
-      std::wstring referrer_header = L"Referer: ";
-      referrer_header += UTF8ToWide(referrer.spec());
-      referrer_header += L"\r\n\r\n";
-      http_headers.Set(referrer_header.c_str());
-    }
-
-    web_browser2->Navigate2(url.AsInput(), &flags, &empty, &empty,
-                            http_headers.AsInput());
-    web_browser2->put_Visible(VARIANT_TRUE);
+    DCHECK_EQ(CURRENT_TAB, open_disposition);
+    HostNavigate(url_to_open, referrer, open_disposition);
   }
 
   virtual void OnDownloadRequestInHost(int tab_handle, int request_id) {
@@ -538,12 +454,11 @@ END_MSG_MAP()
   }
 
   virtual void OnAttachExternalTab(int tab_handle,
-                                   intptr_t cookie,
-                                   int disposition) {
+      const IPC::AttachExternalTabParams& params) {
     std::string url;
-    url = StringPrintf("%lsattach_external_tab&%d&%d", kChromeProtocolPrefix,
-                       cookie, disposition);
-    OnOpenURL(tab_handle, GURL(url), GURL(), disposition);
+    url = StringPrintf("%lsattach_external_tab&%ls&%d", kChromeProtocolPrefix,
+        Uint64ToWString(params.cookie).c_str(), params.disposition);
+    HostNavigate(GURL(url), GURL(), params.disposition);
   }
 
   virtual void OnHandleContextMenu(int tab_handle, HANDLE menu_handle,
@@ -1095,6 +1010,96 @@ END_MSG_MAP()
   }
 
  protected:
+  void HostNavigate(const GURL& url_to_open,
+                    const GURL& referrer, int open_disposition) {
+    ScopedComPtr<IWebBrowser2> web_browser2;
+    DoQueryService(SID_SWebBrowserApp, m_spClientSite, web_browser2.Receive());
+    DCHECK(web_browser2);
+
+    ScopedVariant url;
+    // Check to see if the URL uses a "view-source:" prefix, if so, open it
+    // using chrome frame full tab mode by using 'cf:' protocol handler.
+    // Also change the disposition to NEW_WINDOW since IE6 doesn't have tabs.
+    if (url_to_open.has_scheme() &&
+        (url_to_open.SchemeIs(chrome::kViewSourceScheme) ||
+        url_to_open.SchemeIs(chrome::kAboutScheme))) {
+      std::wstring chrome_url;
+      chrome_url.append(kChromeProtocolPrefix);
+      chrome_url.append(UTF8ToWide(url_to_open.spec()));
+      url.Set(chrome_url.c_str());
+      open_disposition = NEW_WINDOW;
+    } else {
+      url.Set(UTF8ToWide(url_to_open.spec()).c_str());
+    }
+
+    VARIANT flags = { VT_I4 };
+    V_I4(&flags) = 0;
+
+    IEVersion ie_version = GetIEVersion();
+    DCHECK(ie_version != NON_IE && ie_version != IE_UNSUPPORTED);
+    // Since IE6 doesn't support tabs, so we just use window instead.
+    if (ie_version == IE_6) {
+      if (open_disposition == NEW_FOREGROUND_TAB ||
+          open_disposition == NEW_BACKGROUND_TAB ||
+          open_disposition == NEW_WINDOW ||
+          open_disposition == NEW_POPUP) {
+        V_I4(&flags) = navOpenInNewWindow;
+      } else if (open_disposition != CURRENT_TAB) {
+        NOTREACHED() << "Unsupported open disposition in IE6";
+      }
+    } else {
+      switch (open_disposition) {
+        case NEW_FOREGROUND_TAB:
+          V_I4(&flags) = navOpenInNewTab;
+          break;
+        case NEW_BACKGROUND_TAB:
+          V_I4(&flags) = navOpenInBackgroundTab;
+          break;
+        case NEW_WINDOW:
+        case NEW_POPUP:
+          V_I4(&flags) = navOpenInNewWindow;
+          break;
+        default:
+          break;
+      }
+    }
+
+    // TODO(sanjeevr): The navOpenInNewWindow flag causes IE to open this
+    // in a new window ONLY if the user has specified
+    // "Always open popups in a new window". Otherwise it opens in a new tab.
+    // We need to investigate more and see if we can force IE to display the
+    // link in a new window. MSHTML uses the below code to force an open in a
+    // new window. But this logic also fails for us. Perhaps this flag is not
+    // honoured if the ActiveDoc is not MSHTML.
+    // Even the HLNF_DISABLEWINDOWRESTRICTIONS flag did not work.
+    // Start of MSHTML-like logic.
+    // CComQIPtr<ITargetFramePriv2> target_frame = web_browser2;
+    // if (target_frame) {
+    //   CComPtr<IUri> uri;
+    //   CreateUri(UTF8ToWide(open_url_command->url_.spec()).c_str(),
+    //             Uri_CREATE_IE_SETTINGS, 0, &uri);
+    //   CComPtr<IBindCtx> bind_ctx;
+    //   CreateBindCtx(0, &bind_ctx);
+    //   target_frame->AggregatedNavigation2(
+    //       HLNF_TRUSTFIRSTDOWNLOAD|HLNF_OPENINNEWWINDOW, bind_ctx, NULL,
+    //       L"No_Name", uri, L"");
+    // }
+    // End of MSHTML-like logic
+    VARIANT empty = ScopedVariant::kEmptyVariant;
+    ScopedVariant http_headers;
+
+    if (referrer.is_valid()) {
+      std::wstring referrer_header = L"Referer: ";
+      referrer_header += UTF8ToWide(referrer.spec());
+      referrer_header += L"\r\n\r\n";
+      http_headers.Set(referrer_header.c_str());
+    }
+
+    web_browser2->Navigate2(url.AsInput(), &flags, &empty, &empty,
+                            http_headers.AsInput());
+    web_browser2->put_Visible(VARIANT_TRUE);
+  }
+
   ScopedBstr url_;
   ScopedComPtr<IOleDocumentSite> doc_site_;
 

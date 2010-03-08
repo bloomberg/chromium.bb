@@ -29,6 +29,7 @@ const char* kAllowedSwitches[] = {
   switches::kNoErrorDialogs,
   switches::kNoFirstRun,
   switches::kUserDataDir,
+  switches::kDisablePopupBlocking,
 };
 
 CommandLine* CreateLaunchCommandLine() {

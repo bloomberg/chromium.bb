@@ -1091,14 +1091,14 @@ IPC_BEGIN_MESSAGES(Automation)
   IPC_MESSAGE_ROUTED1(AutomationMsg_RecordHistograms,
                       std::vector<std::string> /* histogram_list */)
 
-  IPC_MESSAGE_ROUTED3(AutomationMsg_AttachExternalTab,
-                      int /* tab_handle */,
-                      intptr_t /* cookie */,
-                      int /* disposition */)
+  IPC_MESSAGE_ROUTED2(AutomationMsg_AttachExternalTab,
+                      int     /* 'source' tab_handle */,
+                      IPC::AttachExternalTabParams)
 
   // Sent when the automation client connects to an existing tab.
-  IPC_SYNC_MESSAGE_ROUTED1_3(AutomationMsg_ConnectExternalTab,
-                             intptr_t /* cookie */,
+  IPC_SYNC_MESSAGE_ROUTED2_3(AutomationMsg_ConnectExternalTab,
+                             uint64 /* cookie */,
+                             bool   /* allow/block tab*/,
                              gfx::NativeWindow  /* Tab container window */,
                              gfx::NativeWindow  /* Tab window */,
                              int  /* Handle to the new tab */)

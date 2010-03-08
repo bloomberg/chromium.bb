@@ -252,7 +252,8 @@ END_EXEC_COMMAND_MAP()
   // ChromeFrameActivexBase overrides
   virtual void OnOpenURL(int tab_handle, const GURL& url_to_open,
                          const GURL& referrer, int open_disposition);
-
+  virtual void OnAttachExternalTab(int tab_handle,
+      const IPC::AttachExternalTabParams& params);
   virtual void OnGoToHistoryEntryOffset(int tab_handle, int offset);
 
   // A helper method that updates our internal navigation state
@@ -329,7 +330,7 @@ END_EXEC_COMMAND_MAP()
   bool is_automation_client_reused_;
 
   ScopedComPtr<IInternetSecurityManager> security_manager_;
-
+  ScopedComPtr<INewWindowManager> popup_manager_;
   HACCEL accelerator_table_;
 
  public:
