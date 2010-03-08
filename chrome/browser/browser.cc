@@ -382,12 +382,14 @@ void Browser::OpenApplicationWindow(Profile* profile, const GURL& url,
   //                focus explicitly.
   tab_contents->view()->SetInitialFocus();
 
-  // Set UPDATE_SHORTCUT as the pending web app action. This action is picked
-  // up in LoadingStateChanged to schedule a GetApplicationInfo. And when
-  // the web app info is available, TabContents notifies Browser via
-  // OnDidGetApplicationInfo, which calls web_app::UpdateShortcutForTabContents
-  // when it sees UPDATE_SHORTCUT as pending web app action.
-  browser->pending_web_app_action_ = UPDATE_SHORTCUT;
+  if (!as_panel) {
+    // Set UPDATE_SHORTCUT as the pending web app action. This action is picked
+    // up in LoadingStateChanged to schedule a GetApplicationInfo. And when
+    // the web app info is available, TabContents notifies Browser via
+    // OnDidGetApplicationInfo, which calls web_app::UpdateShortcutForTabContents
+    // when it sees UPDATE_SHORTCUT as pending web app action.
+    browser->pending_web_app_action_ = UPDATE_SHORTCUT;
+  }
 }
 
 #if defined(OS_MACOSX)

@@ -427,7 +427,12 @@ void WindowWin::UpdateWindowIcon() {
                     reinterpret_cast<LPARAM>(windows_icon)));
     if (old_icon)
       DestroyIcon(old_icon);
-    old_icon = reinterpret_cast<HICON>(
+  }
+
+  icon = window_delegate_->GetWindowAppIcon();
+  if (!icon.isNull()) {
+    HICON windows_icon = IconUtil::CreateHICONFromSkBitmap(icon);
+    HICON old_icon = reinterpret_cast<HICON>(
         SendMessage(GetNativeView(), WM_SETICON, ICON_BIG,
                     reinterpret_cast<LPARAM>(windows_icon)));
     if (old_icon)

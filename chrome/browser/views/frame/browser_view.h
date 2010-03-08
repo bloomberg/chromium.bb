@@ -352,6 +352,7 @@ class BrowserView : public BrowserBubbleHost,
   virtual std::wstring GetWindowTitle() const;
   virtual views::View* GetInitiallyFocusedView();
   virtual bool ShouldShowWindowTitle() const;
+  virtual SkBitmap GetWindowAppIcon();
   virtual SkBitmap GetWindowIcon();
   virtual bool ShouldShowWindowIcon() const;
   virtual bool ExecuteWindowsCommand(int command_id);

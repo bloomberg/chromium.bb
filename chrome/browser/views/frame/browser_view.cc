@@ -1387,6 +1387,16 @@ bool BrowserView::ShouldShowWindowTitle() const {
   return browser_->SupportsWindowFeature(Browser::FEATURE_TITLEBAR);
 }
 
+SkBitmap BrowserView::GetWindowAppIcon() {
+  if (browser_->type() & Browser::TYPE_APP) {
+    TabContents* contents = browser_->GetSelectedTabContents();
+    if (contents && !contents->app_icon().isNull())
+      return contents->app_icon();
+  }
+
+  return GetWindowIcon();
+}
+
 SkBitmap BrowserView::GetWindowIcon() {
   if (browser_->type() & Browser::TYPE_APP)
     return browser_->GetCurrentPageIcon();

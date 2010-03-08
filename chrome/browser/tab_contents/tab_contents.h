@@ -263,6 +263,14 @@ class TabContents : public PageNavigator,
     return web_app_info_;
   }
 
+  SkBitmap app_icon() const {
+    return app_icon_;
+  }
+
+  // Sets an app icon associated with TabContents and fires an INVALIDATE_TITLE
+  // navigation state change to trigger repaint of title.
+  void SetAppIcon(const SkBitmap& app_icon);
+
   // Internal state ------------------------------------------------------------
 
   // This flag indicates whether the tab contents is currently being
@@ -1016,6 +1024,9 @@ class TabContents : public PageNavigator,
 
   // Cached web app info data.
   webkit_glue::WebApplicationInfo web_app_info_;
+
+  // Cached web app icon.
+  SkBitmap app_icon_;
 
   // Data for loading state ----------------------------------------------------
 

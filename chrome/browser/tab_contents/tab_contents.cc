@@ -2865,3 +2865,8 @@ void TabContents::SetSuppressMessageBoxes(bool suppress_message_boxes) {
 void TabContents::set_encoding(const std::string& encoding) {
   encoding_ = CharacterEncoding::GetCanonicalEncodingNameByAliasName(encoding);
 }
+
+void TabContents::SetAppIcon(const SkBitmap& app_icon) {
+  app_icon_ = app_icon;
+  NotifyNavigationStateChanged(INVALIDATE_TITLE);
+}

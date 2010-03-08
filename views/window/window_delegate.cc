@@ -17,6 +17,11 @@ WindowDelegate::~WindowDelegate() {
   ReleaseWindow();
 }
 
+SkBitmap WindowDelegate::GetWindowAppIcon() {
+  // Use the window icon as app icon by default.
+  return GetWindowIcon();
+}
+
 // Returns the icon to be displayed in the window.
 SkBitmap WindowDelegate::GetWindowIcon() {
   return SkBitmap();

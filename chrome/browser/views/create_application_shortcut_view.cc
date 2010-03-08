@@ -387,6 +387,7 @@ bool CreateApplicationShortcutView::Accept() {
                           shortcut_info_,
                           NULL);
 
+  tab_contents_->SetAppIcon(shortcut_info_.favicon);
   if (tab_contents_->delegate())
     tab_contents_->delegate()->ConvertContentsToApplication(tab_contents_);
   return true;
