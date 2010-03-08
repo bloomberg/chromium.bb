@@ -287,13 +287,11 @@ static CommandLine* CreateHttpServerCommandLine() {
   PathService::Get(base::DIR_SOURCE_ROOT, &src_path);
 
   FilePath script_path(src_path);
-  script_path = script_path.AppendASCII("webkit");
-  script_path = script_path.AppendASCII("tools");
-  script_path = script_path.AppendASCII("layout_tests");
-  script_path = script_path.AppendASCII("webkitpy");
-  script_path = script_path.AppendASCII("layout_tests");
-  script_path = script_path.AppendASCII("layout_package");
-  script_path = script_path.AppendASCII("http_server.py");
+  script_path = script_path.AppendASCII("third_party");
+  script_path = script_path.AppendASCII("WebKit");
+  script_path = script_path.AppendASCII("WebKitTools");
+  script_path = script_path.AppendASCII("Scripts");
+  script_path = script_path.AppendASCII("new-run-webkit-httpd");
 
   CommandLine* cmd_line = CreatePythonCommandLine();
   cmd_line->AppendLooseValue(script_path.ToWStringHack());
