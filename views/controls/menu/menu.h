@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,9 @@
 #include "views/controls/menu/controller.h"
 
 class SkBitmap;
+namespace gfx {
+class Point;
+}
 
 namespace views {
 
@@ -71,13 +74,12 @@ class Menu {
     // user does the appropriate gesture to show a context menu. The id
     // identifies the id of the menu to show the context menu for.
     // is_mouse_gesture is true if this is the result of a mouse gesture.
-    // If this is not the result of a mouse gesture x/y is the recommended
-    // location to display the content menu at. In either case, x/y is in
+    // If this is not the result of a mouse gesture |p| is the recommended
+    // location to display the content menu at. In either case, |p| is in
     // screen coordinates.
     virtual void ShowContextMenu(Menu* source,
                                  int id,
-                                 int x,
-                                 int y,
+                                 const gfx::Point& p,
                                  bool is_mouse_gesture) {
     }
 

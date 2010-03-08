@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -550,15 +550,13 @@ bool BookmarkManagerView::HandleKeystroke(
 }
 
 void BookmarkManagerView::ShowContextMenu(views::View* source,
-                                          int x,
-                                          int y,
+                                          const gfx::Point& p,
                                           bool is_mouse_gesture) {
   DCHECK(source == table_view_ || source == tree_view_);
   bool is_table = (source == table_view_);
-  ShowMenu(x, y,
-           is_table ?
-               BookmarkContextMenuControllerViews::BOOKMARK_MANAGER_TABLE :
-               BookmarkContextMenuControllerViews::BOOKMARK_MANAGER_TREE);
+  ShowMenu(p, is_table ?
+      BookmarkContextMenuControllerViews::BOOKMARK_MANAGER_TABLE :
+      BookmarkContextMenuControllerViews::BOOKMARK_MANAGER_TREE);
 }
 
 void BookmarkManagerView::RunMenu(views::View* source, const gfx::Point& pt) {
@@ -568,14 +566,14 @@ void BookmarkManagerView::RunMenu(views::View* source, const gfx::Point& pt) {
   if (!GetBookmarkModel()->IsLoaded())
     return;
 
-  int menu_x = pt.x();
-  menu_x += UILayoutIsRightToLeft() ? (source->width() - 5) :
-                                      (-source->width() + 5);
+  gfx::Point menu_pt(pt);
+  menu_pt.Offset(UILayoutIsRightToLeft() ?
+      (source->width() - 5) : (-source->width() + 5), 2);
   if (source->GetID() == kOrganizeMenuButtonID) {
-    ShowMenu(menu_x, pt.y() + 2,
+    ShowMenu(menu_pt,
         BookmarkContextMenuControllerViews::BOOKMARK_MANAGER_ORGANIZE_MENU);
   } else if (source->GetID() == kToolsMenuButtonID) {
-    ShowToolsMenu(menu_x, pt.y() + 2);
+    ShowToolsMenu(menu_pt);
   } else {
     NOTREACHED();
   }
@@ -718,40 +716,30 @@ BookmarkModel* BookmarkManagerView::GetBookmarkModel() const {
 }
 
 void BookmarkManagerView::ShowMenu(
-    int x, int y,
+    const gfx::Point& p,
     BookmarkContextMenuControllerViews::ConfigurationType config) {
   if (!GetBookmarkModel()->IsLoaded())
     return;
 
-  if (config == BookmarkContextMenuControllerViews::BOOKMARK_MANAGER_TABLE ||
-      (config ==
-          BookmarkContextMenuControllerViews::BOOKMARK_MANAGER_ORGANIZE_MENU &&
+  const BookmarkNode* parent = GetSelectedFolder();
+  std::vector<const BookmarkNode*> nodes;
+  typedef BookmarkContextMenuControllerViews BCMCV;  // Such a long name!
+  if (config == BCMCV::BOOKMARK_MANAGER_TABLE ||
+      (config == BCMCV::BOOKMARK_MANAGER_ORGANIZE_MENU &&
        table_view_->HasFocus())) {
-    std::vector<const BookmarkNode*> nodes = GetSelectedTableNodes();
-    const BookmarkNode* parent = GetSelectedFolder();
+    nodes = GetSelectedTableNodes();
     if (!parent) {
-      if (config ==
-          BookmarkContextMenuControllerViews::BOOKMARK_MANAGER_TABLE) {
-        config =
-            BookmarkContextMenuControllerViews::BOOKMARK_MANAGER_TABLE_OTHER;
-      } else {
-        config =
-            BookmarkContextMenuControllerViews::
-                BOOKMARK_MANAGER_ORGANIZE_MENU_OTHER;
-      }
+      config = (config == BCMCV::BOOKMARK_MANAGER_TABLE) ?
+          BCMCV::BOOKMARK_MANAGER_TABLE_OTHER :
+          BCMCV::BOOKMARK_MANAGER_ORGANIZE_MENU_OTHER;
     }
-    BookmarkContextMenu menu(GetWindow()->GetNativeWindow(), profile_, NULL,
-                             parent, nodes, config);
-    menu.RunMenuAt(gfx::Point(x, y));
   } else {
-    const BookmarkNode* node = GetSelectedFolder();
-    std::vector<const BookmarkNode*> nodes;
-    if (node)
-      nodes.push_back(node);
-    BookmarkContextMenu menu(GetWidget()->GetNativeView(), profile_, NULL,
-                             node, nodes, config);
-    menu.RunMenuAt(gfx::Point(x, y));
+    if (parent)
+      nodes.push_back(parent);
   }
+  BookmarkContextMenu menu(GetWidget()->GetNativeView(), profile_, NULL, parent,
+                           nodes, config);
+  menu.RunMenuAt(p);
 }
 
 void BookmarkManagerView::OnCutCopyPaste(CutCopyPasteType type,
@@ -779,7 +767,7 @@ void BookmarkManagerView::OnCutCopyPaste(CutCopyPasteType type,
   }
 }
 
-void BookmarkManagerView::ShowToolsMenu(int x, int y) {
+void BookmarkManagerView::ShowToolsMenu(const gfx::Point& p) {
   views::MenuItemView menu(this);
   menu.AppendMenuItemWithLabel(
           IDS_BOOKMARK_MANAGER_IMPORT_MENU,
@@ -787,10 +775,9 @@ void BookmarkManagerView::ShowToolsMenu(int x, int y) {
   menu.AppendMenuItemWithLabel(
           IDS_BOOKMARK_MANAGER_EXPORT_MENU,
           l10n_util::GetString(IDS_BOOKMARK_MANAGER_EXPORT_MENU));
-  views::MenuItemView::AnchorPosition anchor =
-      UILayoutIsRightToLeft() ? views::MenuItemView::TOPRIGHT :
-                                views::MenuItemView::TOPLEFT;
-  menu.RunMenuAt(GetWidget()->GetNativeView(), NULL, gfx::Rect(x, y, 0, 0),
+  views::MenuItemView::AnchorPosition anchor = UILayoutIsRightToLeft() ?
+      views::MenuItemView::TOPRIGHT : views::MenuItemView::TOPLEFT;
+  menu.RunMenuAt(GetWidget()->GetNativeView(), NULL, gfx::Rect(p, gfx::Size()),
                  anchor, true);
 }
 

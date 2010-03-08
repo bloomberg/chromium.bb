@@ -43,8 +43,7 @@ class BrowserActionOverflowMenuController : public views::MenuDelegate {
   virtual void ExecuteCommand(int id);
   virtual bool ShowContextMenu(views::MenuItemView* source,
                                int id,
-                               int x,
-                               int y,
+                               const gfx::Point& p,
                                bool is_mouse_gesture);
   virtual void DropMenuClosed(views::MenuItemView* menu);
   // These drag functions offer support for dragging icons into the overflow

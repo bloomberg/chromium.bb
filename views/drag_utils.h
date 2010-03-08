@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,8 @@
 
 namespace gfx {
 class Canvas;
+class Point;
+class Size;
 }
 class GURL;
 class OSExchangeData;
@@ -37,10 +39,8 @@ void CreateDragImageForFile(const FilePath::StringType& file_name,
 // are the size of the image to use, and the offsets give the location of
 // the hotspot for the drag image.
 void SetDragImageOnDataObject(const gfx::Canvas& canvas,
-                              int width,
-                              int height,
-                              int cursor_x_offset,
-                              int cursor_y_offset,
+                              const gfx::Size& size,
+                              const gfx::Point& cursor_offset,
                               OSExchangeData* data_object);
 } // namespace drag_utils
 

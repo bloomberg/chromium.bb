@@ -58,15 +58,14 @@ class Window;
 //
 class ContextMenuController {
  public:
-  // Invoked to show the context menu for the source view. If is_mouse_gesture
-  // is true, the x/y coordinate are the location of the mouse. If
-  // is_mouse_gesture is false, this method was not invoked by a mouse gesture
-  // and x/y is the recommended location to show the menu at.
+  // Invoked to show the context menu for the source view. If |is_mouse_gesture|
+  // is true, |p| is the location of the mouse. If |is_mouse_gesture| is false,
+  // this method was not invoked by a mouse gesture and |p| is the recommended
+  // location to show the menu at.
   //
-  // x/y is in screen coordinates.
+  // |p| is in screen coordinates.
   virtual void ShowContextMenu(View* source,
-                               int x,
-                               int y,
+                               const gfx::Point& p,
                                bool is_mouse_gesture) = 0;
 
  protected:
@@ -81,22 +80,19 @@ class DragController {
  public:
   // Writes the data for the drag.
   virtual void WriteDragData(View* sender,
-                             int press_x,
-                             int press_y,
+                             const gfx::Point& press_pt,
                              OSExchangeData* data) = 0;
 
   // Returns the supported drag operations (see DragDropTypes for possible
   // values). A drag is only started if this returns a non-zero value.
-  virtual int GetDragOperations(View* sender, int x, int y) = 0;
+  virtual int GetDragOperations(View* sender, const gfx::Point& p) = 0;
 
   // Returns true if a drag operation can be started.
-  // |press_x| and |press_y| represent coordinates where mouse was initially
-  // pressed down. |x| and |y| are the current mouse coordinates.
+  // |press_pt| represents the coordinates where the mouse was initially
+  // pressed down. |p| is the current mouse coordinates.
   virtual bool CanStartDrag(View* sender,
-                            int press_x,
-                            int press_y,
-                            int x,
-                            int y) = 0;
+                            const gfx::Point& press_pt,
+                            const gfx::Point& p) = 0;
 
  protected:
   virtual ~DragController() {}
@@ -275,7 +271,7 @@ class View : public AcceleratorTarget {
   // visible. View's implementation passes the call onto the parent View (after
   // adjusting the coordinates). It is up to views that only show a portion of
   // the child view, such as Viewport, to override appropriately.
-  virtual void ScrollRectToVisible(int x, int y, int width, int height);
+  virtual void ScrollRectToVisible(const gfx::Rect& rect);
 
   // Layout functions
 
@@ -391,10 +387,6 @@ class View : public AcceleratorTarget {
   // Mark the entire View's bounds as dirty. Painting will occur as soon as
   // possible.
   virtual void SchedulePaint();
-
-  // Convenience to schedule a paint given some ints. Painting will occur as
-  // soon as possible.
-  virtual void SchedulePaint(int x, int y, int w, int h);
 
   // Paint the receiving view. g is prepared such as it is in
   // receiver's coordinate system. g's state is restored after this
@@ -854,8 +846,7 @@ class View : public AcceleratorTarget {
   // to provide right-click menu display triggerd by the keyboard (i.e. for the
   // Chrome toolbar Back and Forward buttons). No source needs to be specified,
   // as it is always equal to the current View.
-  virtual void ShowContextMenu(int x,
-                               int y,
+  virtual void ShowContextMenu(const gfx::Point& p,
                                bool is_mouse_gesture);
 
   // The background object is owned by this object and may be NULL.
@@ -877,8 +868,7 @@ class View : public AcceleratorTarget {
   // platform to platform. On Windows, the cursor is a shared resource but in
   // Gtk, the framework destroys the returned cursor after setting it.
   virtual gfx::NativeCursor GetCursorForPoint(Event::EventType event_type,
-                                              int x,
-                                              int y);
+                                              const gfx::Point& p);
 
   // Convenience to test whether a point is within this view's bounds
   virtual bool HitTest(const gfx::Point& l) const;
@@ -888,13 +878,13 @@ class View : public AcceleratorTarget {
   // the supplied string and return true.
   // Any time the tooltip text that a View is displaying changes, it must
   // invoke TooltipTextChanged.
-  // The x/y provide the coordinates of the mouse (relative to this view).
-  virtual bool GetTooltipText(int x, int y, std::wstring* tooltip);
+  // |p| provides the coordinates of the mouse (relative to this view).
+  virtual bool GetTooltipText(const gfx::Point& p, std::wstring* tooltip);
 
   // Returns the location (relative to this View) for the text on the tooltip
   // to display. If false is returned (the default), the tooltip is placed at
   // a default position.
-  virtual bool GetTooltipTextOrigin(int x, int y, gfx::Point* loc);
+  virtual bool GetTooltipTextOrigin(const gfx::Point& p, gfx::Point* loc);
 
   // Set whether this view is owned by its parent. A view that is owned by its
   // parent is automatically deleted when the parent is deleted. The default is
@@ -1074,8 +1064,8 @@ class View : public AcceleratorTarget {
   // the DragController. Subclasses may wish to override rather than install
   // a DragController.
   // See DragController for a description of these methods.
-  virtual int GetDragOperations(int press_x, int press_y);
-  virtual void WriteDragData(int press_x, int press_y, OSExchangeData* data);
+  virtual int GetDragOperations(const gfx::Point& press_pt);
+  virtual void WriteDragData(const gfx::Point& press_pt, OSExchangeData* data);
 
   // Invoked from DoDrag after the drag completes. This implementation does
   // nothing, and is intended for subclasses to do cleanup.
@@ -1109,17 +1099,16 @@ class View : public AcceleratorTarget {
     // RootView prior to invoke ProcessMousePressed.
     void Reset();
 
-    // Sets possible_drag to true and start_x/y to the specified coordinates.
+    // Sets possible_drag to true and start_pt to the specified point.
     // This is invoked by the target view if it detects the press may generate
     // a drag.
-    void PossibleDrag(int x, int y);
+    void PossibleDrag(const gfx::Point& p);
 
     // Whether the press may generate a drag.
     bool possible_drag;
 
     // Coordinates of the mouse press.
-    int start_x;
-    int start_y;
+    gfx::Point start_pt;
   };
 
   // RootView invokes these. These in turn invoke the appropriate OnMouseXXX
@@ -1131,7 +1120,7 @@ class View : public AcceleratorTarget {
   // Starts a drag and drop operation originating from this view. This invokes
   // WriteDragData to write the data and GetDragOperations to determine the
   // supported drag operations. When done, OnDragDone is invoked.
-  void DoDrag(const MouseEvent& e, int press_x, int press_y);
+  void DoDrag(const MouseEvent& e, const gfx::Point& press_pt);
 
   // Removes |view| from the hierarchy tree.  If |update_focus_cycle| is true,
   // the next and previous focusable views of views pointing to this view are

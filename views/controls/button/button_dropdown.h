@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,8 +39,7 @@ class ButtonDropDown : public ImageButton {
   // Overridden from View. Used to display the right-click menu, as triggered
   // by the keyboard, for instance. Using the member function ShowDropDownMenu
   // for the actual display.
-  virtual void ShowContextMenu(int x,
-                               int y,
+  virtual void ShowContextMenu(const gfx::Point& p,
                                bool is_mouse_gesture);
 
   // Overridden from CustomButton. Returns true if the button should become

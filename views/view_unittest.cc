@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -429,7 +429,7 @@ TEST_F(ViewTest, DISABLED_Painting) {
   v2->Reset();
   v3->Reset();
   v4->Reset();
-  v3->SchedulePaint(10, 10, 10, 10);
+  v3->SchedulePaint(gfx::Rect(10, 10, 10, 10), false);
   PaintRootView(root, empty_paint);
 
   SkRect tmp_rect;

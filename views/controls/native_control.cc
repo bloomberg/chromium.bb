@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -260,16 +260,10 @@ void NativeControl::OnContextMenu(const POINT& location) {
   if (!GetContextMenuController())
     return;
 
-  int x = location.x;
-  int y = location.y;
-  bool is_mouse = true;
-  if (x == -1 && y == -1) {
-    gfx::Point point = GetKeyboardContextMenuLocation();
-    x = point.x();
-    y = point.y();
-    is_mouse = false;
-  }
-  ShowContextMenu(x, y, is_mouse);
+  if (location.x == -1 && location.y == -1)
+    ShowContextMenu(GetKeyboardContextMenuLocation(), false);
+  else
+    ShowContextMenu(gfx::Point(location), true);
 }
 
 void NativeControl::Focus() {

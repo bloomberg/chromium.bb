@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -96,7 +96,7 @@ class MenuHostWindow : public app::WindowImpl {
   void OnRButtonUp(UINT w_param, const CPoint& loc) {
     int id;
     if (menu_->delegate() && FindMenuIDByLocation(menu_, loc, &id))
-      menu_->delegate()->ShowContextMenu(menu_, id, loc.x, loc.y, true);
+      menu_->delegate()->ShowContextMenu(menu_, id, gfx::Point(loc), true);
   }
 
   void OnMeasureItem(WPARAM w_param, MEASUREITEMSTRUCT* lpmis) {

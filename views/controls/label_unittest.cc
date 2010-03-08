@@ -116,42 +116,42 @@ TEST(LabelTest, TooltipProperty) {
   label.SetText(test_text);
 
   std::wstring tooltip;
-  EXPECT_TRUE(label.GetTooltipText(0, 0, &tooltip));
+  EXPECT_TRUE(label.GetTooltipText(gfx::Point(), &tooltip));
   EXPECT_EQ(test_text, tooltip);
 
   std::wstring tooltip_text(L"The tooltip!");
   label.SetTooltipText(tooltip_text);
-  EXPECT_TRUE(label.GetTooltipText(0, 0, &tooltip));
+  EXPECT_TRUE(label.GetTooltipText(gfx::Point(), &tooltip));
   EXPECT_EQ(tooltip_text, tooltip);
 
   std::wstring empty_text;
   label.SetTooltipText(empty_text);
-  EXPECT_TRUE(label.GetTooltipText(0, 0, &tooltip));
+  EXPECT_TRUE(label.GetTooltipText(gfx::Point(), &tooltip));
   EXPECT_EQ(test_text, tooltip);
 
   // Make the label big enough to hold the text
   // and expect there to be no tooltip.
   label.SetBounds(0, 0, 1000, 40);
-  EXPECT_FALSE(label.GetTooltipText(0, 0, &tooltip));
+  EXPECT_FALSE(label.GetTooltipText(gfx::Point(), &tooltip));
 
   // Verify that setting the tooltip still shows it.
   label.SetTooltipText(tooltip_text);
-  EXPECT_TRUE(label.GetTooltipText(0, 0, &tooltip));
+  EXPECT_TRUE(label.GetTooltipText(gfx::Point(), &tooltip));
   EXPECT_EQ(tooltip_text, tooltip);
   // Clear out the tooltip.
   label.SetTooltipText(empty_text);
 
   // Shrink the bounds and the tooltip should come back.
   label.SetBounds(0, 0, 1, 1);
-  EXPECT_TRUE(label.GetTooltipText(0, 0, &tooltip));
+  EXPECT_TRUE(label.GetTooltipText(gfx::Point(), &tooltip));
 
   // Make the label multiline and there is no tooltip again.
   label.SetMultiLine(true);
-  EXPECT_FALSE(label.GetTooltipText(0, 0, &tooltip));
+  EXPECT_FALSE(label.GetTooltipText(gfx::Point(), &tooltip));
 
   // Verify that setting the tooltip still shows it.
   label.SetTooltipText(tooltip_text);
-  EXPECT_TRUE(label.GetTooltipText(0, 0, &tooltip));
+  EXPECT_TRUE(label.GetTooltipText(gfx::Point(), &tooltip));
   EXPECT_EQ(tooltip_text, tooltip);
   // Clear out the tooltip.
   label.SetTooltipText(empty_text);

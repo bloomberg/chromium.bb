@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -114,15 +114,12 @@ class ToolbarView : public AccessibleToolbarView,
  private:
   // Overridden from views::DragController:
   virtual void WriteDragData(View* sender,
-                             int press_x,
-                             int press_y,
+                             const gfx::Point& press_pt,
                              OSExchangeData* data);
-  virtual int GetDragOperations(View* sender, int x, int y);
+  virtual int GetDragOperations(View* sender, const gfx::Point& p);
   virtual bool CanStartDrag(View* sender,
-                            int press_x,
-                            int press_y,
-                            int x,
-                            int y) {
+                            const gfx::Point& press_pt,
+                            const gfx::Point& p) {
     return true;
   }
 

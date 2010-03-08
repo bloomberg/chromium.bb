@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,22 +16,18 @@
 namespace drag_utils {
 
 static void SetDragImageOnDataObject(HBITMAP hbitmap,
-                                     int width,
-                                     int height,
-                                     int cursor_offset_x,
-                                     int cursor_offset_y,
+                                     const gfx::Size& size,
+                                     const gfx::Point& cursor_offset,
                                      IDataObject* data_object) {
   IDragSourceHelper* helper = NULL;
   HRESULT rv = CoCreateInstance(CLSID_DragDropHelper, 0, CLSCTX_INPROC_SERVER,
       IID_IDragSourceHelper, reinterpret_cast<LPVOID*>(&helper));
   if (SUCCEEDED(rv)) {
     SHDRAGIMAGE sdi;
-    sdi.sizeDragImage.cx = width;
-    sdi.sizeDragImage.cy = height;
+    sdi.sizeDragImage = size.ToSIZE();
     sdi.crColorKey = 0xFFFFFFFF;
     sdi.hbmpDragImage = hbitmap;
-    sdi.ptOffset.x = cursor_offset_x;
-    sdi.ptOffset.y = cursor_offset_y;
+    sdi.ptOffset = cursor_offset.ToPOINT();
     helper->InitializeFromBitmap(&sdi, data_object);
   }
 };
@@ -60,18 +56,15 @@ static HBITMAP CreateBitmapFromCanvas(const gfx::Canvas& canvas,
 }
 
 void SetDragImageOnDataObject(const gfx::Canvas& canvas,
-                              int width,
-                              int height,
-                              int cursor_x_offset,
-                              int cursor_y_offset,
+                              const gfx::Size& size,
+                              const gfx::Point& cursor_offset,
                               OSExchangeData* data_object) {
-  DCHECK(data_object && width > 0 && height > 0);
+  DCHECK(data_object && !size.IsEmpty());
   // SetDragImageOnDataObject(HBITMAP) takes ownership of the bitmap.
-  HBITMAP bitmap = CreateBitmapFromCanvas(canvas, width, height);
+  HBITMAP bitmap = CreateBitmapFromCanvas(canvas, size.width(), size.height());
 
   // Attach 'bitmap' to the data_object.
-  SetDragImageOnDataObject(
-      bitmap, width, height, cursor_x_offset, cursor_y_offset,
+  SetDragImageOnDataObject(bitmap, size, cursor_offset,
       OSExchangeDataProviderWin::GetIDataObject(*data_object));
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -236,8 +236,7 @@ void BookmarkEditorView::Close() {
 }
 
 void BookmarkEditorView::ShowContextMenu(View* source,
-                                         int x,
-                                         int y,
+                                         const gfx::Point& p,
                                          bool is_mouse_gesture) {
   DCHECK(source == tree_view_);
   if (!tree_view_->GetSelectedNode())
@@ -253,7 +252,7 @@ void BookmarkEditorView::ShowContextMenu(View* source,
         IDS_BOOMARK_EDITOR_NEW_FOLDER_MENU_ITEM);
     context_menu_.reset(new views::Menu2(context_menu_contents_.get()));
   }
-  context_menu_->RunContextMenuAt(gfx::Point(x, y));
+  context_menu_->RunContextMenuAt(p);
 }
 
 void BookmarkEditorView::Init() {

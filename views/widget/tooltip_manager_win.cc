@@ -165,8 +165,7 @@ LRESULT TooltipManagerWin::OnNotify(int w_param,
           gfx::Point view_loc = last_mouse_pos_;
           View::ConvertPointToView(widget_->GetRootView(),
                                    last_tooltip_view_, &view_loc);
-          if (last_tooltip_view_->GetTooltipText(view_loc.x(), view_loc.y(),
-                                                 &tooltip_text_) &&
+          if (last_tooltip_view_->GetTooltipText(view_loc, &tooltip_text_) &&
               !tooltip_text_.empty()) {
             // View has a valid tip, copy it into TOOLTIPINFO.
             clipped_text_ = tooltip_text_;
@@ -199,8 +198,7 @@ LRESULT TooltipManagerWin::OnNotify(int w_param,
         gfx::Point view_loc = last_mouse_pos_;
         View::ConvertPointToView(widget_->GetRootView(),
                                  last_tooltip_view_, &view_loc);
-        if (last_tooltip_view_->GetTooltipTextOrigin(
-              view_loc.x(), view_loc.y(), &text_origin) &&
+        if (last_tooltip_view_->GetTooltipTextOrigin(view_loc, &text_origin) &&
             SetTooltipPosition(text_origin.x(), text_origin.y())) {
           // Return true, otherwise the rectangle we specified is ignored.
           return TRUE;
@@ -284,8 +282,8 @@ void TooltipManagerWin::UpdateTooltip(const gfx::Point& mouse_pos) {
     gfx::Point view_point = mouse_pos;
     View::ConvertPointToView(root_view, last_tooltip_view_, &view_point);
     std::wstring new_tooltip_text;
-    bool has_tooltip_text = last_tooltip_view_->GetTooltipText(
-        view_point.x(), view_point.y(), &new_tooltip_text);
+    bool has_tooltip_text =
+        last_tooltip_view_->GetTooltipText(view_point, &new_tooltip_text);
     if (!has_tooltip_text || (new_tooltip_text != tooltip_text_)) {
       // The text has changed, hide the popup.
       SendMessage(tooltip_hwnd_, TTM_POP, 0, 0);
@@ -328,7 +326,7 @@ void TooltipManagerWin::ShowKeyboardTooltip(View* focused_view) {
   }
   HideKeyboardTooltip();
   std::wstring tooltip_text;
-  if (!focused_view->GetTooltipText(0, 0, &tooltip_text))
+  if (!focused_view->GetTooltipText(gfx::Point(), &tooltip_text))
     return;
   gfx::Rect focused_bounds = focused_view->bounds();
   gfx::Point screen_point;

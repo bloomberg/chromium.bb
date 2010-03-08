@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -168,7 +168,7 @@ void Tab::OnMouseReleased(const views::MouseEvent& event, bool canceled) {
     delegate_->CloseTab(this);
 }
 
-bool Tab::GetTooltipText(int x, int y, std::wstring* tooltip) {
+bool Tab::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
   std::wstring title = GetTitle();
   if (!title.empty()) {
     // Only show the tooltip if the title is truncated.
@@ -181,7 +181,7 @@ bool Tab::GetTooltipText(int x, int y, std::wstring* tooltip) {
   return false;
 }
 
-bool Tab::GetTooltipTextOrigin(int x, int y, gfx::Point* origin) {
+bool Tab::GetTooltipTextOrigin(const gfx::Point& p, gfx::Point* origin) {
   gfx::Font font;
   origin->set_x(title_bounds().x() + 10);
   origin->set_y(-views::TooltipManager::GetTooltipHeight() - 4);
@@ -203,11 +203,12 @@ bool Tab::GetAccessibleName(std::wstring* name) {
 ///////////////////////////////////////////////////////////////////////////////
 // Tab, views::ContextMenuController implementation:
 
-void Tab::ShowContextMenu(views::View* source, int x, int y,
+void Tab::ShowContextMenu(views::View* source,
+                          const gfx::Point& p,
                           bool is_mouse_gesture) {
   if (!context_menu_contents_.get())
     context_menu_contents_.reset(new TabContextMenuContents(this));
-  context_menu_contents_->RunMenuAt(gfx::Point(x, y));
+  context_menu_contents_->RunMenuAt(p);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

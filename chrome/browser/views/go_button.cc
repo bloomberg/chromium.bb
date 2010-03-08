@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -85,7 +85,7 @@ void GoButton::OnMouseExited(const views::MouseEvent& e) {
     SetState(BS_NORMAL);
 }
 
-bool GoButton::GetTooltipText(int x, int y, std::wstring* tooltip) {
+bool GoButton::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
   if (visible_mode_ == MODE_STOP) {
     tooltip->assign(l10n_util::GetString(IDS_TOOLTIP_STOP));
     return true;

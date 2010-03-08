@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,15 +19,15 @@ class Viewport : public View {
   Viewport() {}
   virtual ~Viewport() {}
 
-  virtual void ScrollRectToVisible(int x, int y, int width, int height) {
+  virtual void ScrollRectToVisible(const gfx::Rect& rect) {
     if (!GetChildViewCount() || !GetParent())
       return;
 
     View* contents = GetChildViewAt(0);
-    x -= contents->x();
-    y -= contents->y();
+    gfx::Rect scroll_rect(rect);
+    scroll_rect.Offset(-contents->x(), -contents->y());
     static_cast<ScrollView*>(GetParent())->ScrollContentsRegionToBeVisible(
-        x, y, width, height);
+        scroll_rect);
   }
 
  private:
@@ -268,10 +268,7 @@ gfx::Rect ScrollView::GetVisibleRect() const {
   return gfx::Rect(x, y, viewport_->width(), viewport_->height());
 }
 
-void ScrollView::ScrollContentsRegionToBeVisible(int x,
-                                                 int y,
-                                                 int width,
-                                                 int height) {
+void ScrollView::ScrollContentsRegionToBeVisible(const gfx::Rect& rect) {
   if (!contents_ || ((!horiz_sb_ || !horiz_sb_->IsVisible()) &&
                      (!vert_sb_ || !vert_sb_->IsVisible()))) {
     return;
@@ -284,16 +281,15 @@ void ScrollView::ScrollContentsRegionToBeVisible(int x,
       std::max(viewport_->height(), contents_->height());
 
   // Make sure x and y are within the bounds of [0,contents_max_*].
-  x = std::max(0, std::min(contents_max_x, x));
-  y = std::max(0, std::min(contents_max_y, y));
+  int x = std::max(0, std::min(contents_max_x, rect.x()));
+  int y = std::max(0, std::min(contents_max_y, rect.y()));
 
   // Figure out how far and down the rectangle will go taking width
   // and height into account.  This will be "clipped" by the viewport.
   const int max_x = std::min(contents_max_x,
-                             x + std::min(width, viewport_->width()));
+                             x + std::min(rect.width(), viewport_->width()));
   const int max_y = std::min(contents_max_y,
-                             y + std::min(height,
-                                          viewport_->height()));
+                             y + std::min(rect.height(), viewport_->height()));
 
   // See if the rect is already visible. Note the width is (max_x - x)
   // and the height is (max_y - y) to take into account the clipping of

@@ -882,8 +882,9 @@ void BrowserActionsContainer::RunMenu(View* source, const gfx::Point& pt) {
   }
 }
 
-void BrowserActionsContainer::WriteDragData(
-    View* sender, int press_x, int press_y, OSExchangeData* data) {
+void BrowserActionsContainer::WriteDragData(View* sender,
+                                            const gfx::Point& press_pt,
+                                            OSExchangeData* data) {
   DCHECK(data);
 
   for (size_t i = 0; i < browser_action_views_.size(); ++i) {
@@ -892,8 +893,8 @@ void BrowserActionsContainer::WriteDragData(
       // Set the dragging image for the icon.
       scoped_ptr<gfx::Canvas> canvas(
           browser_action_views_[i]->GetIconWithBadge());
-      drag_utils::SetDragImageOnDataObject(*canvas, button->width(),
-          button->height(), press_x, press_y, data);
+      drag_utils::SetDragImageOnDataObject(*canvas, button->size(), press_pt,
+                                           data);
 
       // Fill in the remaining info.
       BrowserActionDragData drag_data(
@@ -904,12 +905,14 @@ void BrowserActionsContainer::WriteDragData(
   }
 }
 
-int BrowserActionsContainer::GetDragOperations(View* sender, int x, int y) {
+int BrowserActionsContainer::GetDragOperations(View* sender,
+                                               const gfx::Point& p) {
   return DragDropTypes::DRAG_MOVE;
 }
 
-bool BrowserActionsContainer::CanStartDrag(
-    View* sender, int press_x, int press_y, int x, int y) {
+bool BrowserActionsContainer::CanStartDrag(View* sender,
+                                           const gfx::Point& press_pt,
+                                           const gfx::Point& p) {
   return true;
 }
 

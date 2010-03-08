@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,9 +50,8 @@ void SetURLAndDragImage(const GURL& url,
   // Render the image.
   gfx::Canvas canvas(prefsize.width(), prefsize.height(), false);
   button.Paint(&canvas, true);
-  SetDragImageOnDataObject(canvas, prefsize.width(), prefsize.height(),
-                           prefsize.width() / 2, prefsize.height() / 2,
-                           data);
+  SetDragImageOnDataObject(canvas, prefsize,
+      gfx::Point(prefsize.width() / 2, prefsize.height() / 2), data);
 }
 
 void CreateDragImageForFile(const FilePath::StringType& file_name,
@@ -88,8 +87,9 @@ void CreateDragImageForFile(const FilePath::StringType& file_name,
                        width, font.height(), gfx::Canvas::TEXT_ALIGN_CENTER);
 #endif
 
-  SetDragImageOnDataObject(canvas, width, height, width / 2,
-                           kLinkDragImageVPadding, data_object);
+  SetDragImageOnDataObject(canvas, gfx::Size(width, height),
+                           gfx::Point(width / 2, kLinkDragImageVPadding),
+                           data_object);
 }
 
 } // namespace drag_utils

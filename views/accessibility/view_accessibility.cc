@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -379,12 +379,13 @@ STDMETHODIMP ViewAccessibility::get_accDescription(VARIANT var_id, BSTR* desc) {
   std::wstring temp_desc;
 
   if (var_id.lVal == CHILDID_SELF) {
-    view_->GetTooltipText(0, 0, &temp_desc);
+    view_->GetTooltipText(gfx::Point(), &temp_desc);
   } else {
     if (!IsValidChild((var_id.lVal - 1), view_)) {
       return E_INVALIDARG;
     }
-    view_->GetChildViewAt(var_id.lVal - 1)->GetTooltipText(0, 0, &temp_desc);
+    view_->GetChildViewAt(var_id.lVal - 1)->GetTooltipText(gfx::Point(),
+                                                           &temp_desc);
   }
   if (!temp_desc.empty()) {
     *desc = SysAllocString(temp_desc.c_str());

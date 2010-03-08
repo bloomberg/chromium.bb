@@ -72,8 +72,7 @@ class BrowserView : public ::BrowserView,
 
   // views::ContextMenuController overrides.
   virtual void ShowContextMenu(views::View* source,
-                               int x,
-                               int y,
+                               const gfx::Point& p,
                                bool is_mouse_gesture);
 
   // StatusAreaHost overrides.

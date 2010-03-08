@@ -363,7 +363,7 @@ void Label::SetTooltipText(const std::wstring& tooltip_text) {
   tooltip_text_ = tooltip_text;
 }
 
-bool Label::GetTooltipText(int x, int y, std::wstring* tooltip) {
+bool Label::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
   DCHECK(tooltip);
 
   // If a tooltip has been explicitly set, use it.

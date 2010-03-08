@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,7 +27,7 @@ class AccessibleToolbarView : public views::View {
   virtual bool OnKeyPressed(const views::KeyEvent& e);
   virtual bool OnKeyReleased(const views::KeyEvent& e);
   virtual bool SkipDefaultKeyEventProcessing(const views::KeyEvent& e);
-  virtual void ShowContextMenu(int x, int y, bool is_mouse_gesture);
+  virtual void ShowContextMenu(const gfx::Point& p, bool is_mouse_gesture);
   virtual void RequestFocus();
   virtual bool GetAccessibleName(std::wstring* name);
   virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);

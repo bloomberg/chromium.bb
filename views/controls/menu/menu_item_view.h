@@ -72,7 +72,7 @@ class MenuItemView : public View {
   virtual ~MenuItemView();
 
   // Overridden from View:
-  virtual bool GetTooltipText(int x, int y, std::wstring* tooltip);
+  virtual bool GetTooltipText(const gfx::Point& p, std::wstring* tooltip);
 
   // Returns the preferred height of menu items. This is only valid when the
   // menu is about to be shown.

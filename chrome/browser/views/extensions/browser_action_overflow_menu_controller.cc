@@ -84,11 +84,13 @@ void BrowserActionOverflowMenuController::ExecuteCommand(int id) {
 }
 
 bool BrowserActionOverflowMenuController::ShowContextMenu(
-    views::MenuItemView* source, int id, int x, int y, bool is_mouse_gesture) {
+    views::MenuItemView* source,
+    int id,
+    const gfx::Point& p,
+    bool is_mouse_gesture) {
   // This blocks until the user choses something or dismisses the menu.
   owner_->GetContextMenu()->Run(
-      (*views_)[start_index_ + id - 1]->button()->extension(),
-      gfx::Point(x, y));
+      (*views_)[start_index_ + id - 1]->button()->extension(), p);
 
   // The user is done with the context menu, so we can close the underlying
   // menu.

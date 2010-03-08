@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1375,7 +1375,7 @@ void TabStrip::MaybeStartDrag(Tab* tab, const views::MouseEvent& event) {
     return;
   }
   drag_controller_.reset(new DraggedTabController(tab, this));
-  drag_controller_->CaptureDragInfo(gfx::Point(event.x(), event.y()));
+  drag_controller_->CaptureDragInfo(event.location());
 }
 
 void TabStrip::ContinueDrag(const views::MouseEvent& event) {

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -520,8 +520,7 @@ void TreeView::OnContextMenu(const POINT& location) {
     TVHITTESTINFO hit_info;
     gfx::Point local_loc(location);
     ConvertPointToView(NULL, this, &local_loc);
-    hit_info.pt.x = local_loc.x();
-    hit_info.pt.y = local_loc.y();
+    hit_info.pt = local_loc.ToPOINT();
     HTREEITEM hit_item = TreeView_HitTest(tree_view_, &hit_info);
     if (!hit_item ||
         GetNodeDetails(GetSelectedNode())->tree_item != hit_item ||
@@ -530,7 +529,7 @@ void TreeView::OnContextMenu(const POINT& location) {
       return;
     }
   }
-  ShowContextMenu(location.x, location.y, true);
+  ShowContextMenu(gfx::Point(location), true);
 }
 
 TreeModelNode* TreeView::GetNodeForTreeItem(HTREEITEM tree_item) {

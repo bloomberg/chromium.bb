@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -151,8 +151,7 @@ class BookmarkManagerView : public views::View,
 
   // ContextMenuController.
   virtual void ShowContextMenu(views::View* source,
-                               int x,
-                               int y,
+                               const gfx::Point& p,
                                bool is_mouse_gesture);
 
   // ViewMenuDelegate.
@@ -193,7 +192,7 @@ class BookmarkManagerView : public views::View,
 
   // Shows the menu. This is invoked to show the context menu for table/tree
   // as well as to show the menu from the organize button.
-  void ShowMenu(int x, int y,
+  void ShowMenu(const gfx::Point& p,
                 BookmarkContextMenuControllerViews::ConfigurationType config);
 
   // Invoked to handle cut/copy/paste from the table or tree. If |from_table|
@@ -201,7 +200,7 @@ class BookmarkManagerView : public views::View,
   void OnCutCopyPaste(CutCopyPasteType type, bool from_table);
 
   // Shows the tools menu.
-  void ShowToolsMenu(int x, int y);
+  void ShowToolsMenu(const gfx::Point& p);
 
   // Shows the import/export file chooser. These invoke
   // FileSelected/FileSelectionCanceled when done.

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -112,7 +112,7 @@ class BookmarkBarView : public DetachableToolbarView,
   virtual int OnDragUpdated(const views::DropTargetEvent& event);
   virtual void OnDragExited();
   virtual int OnPerformDrop(const views::DropTargetEvent& event);
-  virtual void ShowContextMenu(int x, int y, bool is_mouse_gesture);
+  virtual void ShowContextMenu(const gfx::Point& p, bool is_mouse_gesture);
 
   // AccessibleToolbarView methods:
   virtual bool IsAccessibleViewTraversable(views::View* view);
@@ -331,21 +331,17 @@ class BookmarkBarView : public DetachableToolbarView,
   // DragController method. Determines the node representing sender and invokes
   // WriteDragData to write the actual data.
   virtual void WriteDragData(views::View* sender,
-                             int press_x,
-                             int press_y,
+                             const gfx::Point& press_pt,
                              OSExchangeData* data);
 
+  virtual int GetDragOperations(views::View* sender, const gfx::Point& p);
+
   virtual bool CanStartDrag(views::View* sender,
-                            int press_x,
-                            int press_y,
-                            int x,
-                            int y);
+                            const gfx::Point& press_pt,
+                            const gfx::Point& p);
 
   // Writes a BookmarkDragData for node to data.
   void WriteDragData(const BookmarkNode* node, OSExchangeData* data);
-
-  // Returns the drag operations for the specified button.
-  virtual int GetDragOperations(views::View* sender, int x, int y);
 
   // ViewMenuDelegate method. Ends up creating a BookmarkMenuController to
   // show the menu.
@@ -358,8 +354,7 @@ class BookmarkBarView : public DetachableToolbarView,
   // Invoked for this View, one of the buttons or the 'other' button. Shows the
   // appropriate context menu.
   virtual void ShowContextMenu(views::View* source,
-                               int x,
-                               int y,
+                               const gfx::Point& p,
                                bool is_mouse_gesture);
 
   // Creates the button for rendering the specified bookmark node.

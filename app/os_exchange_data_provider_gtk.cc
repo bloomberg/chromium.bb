@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,17 +17,13 @@ OSExchangeDataProviderGtk::OSExchangeDataProviderGtk(
     : known_formats_(known_formats),
       known_custom_formats_(known_custom_formats),
       formats_(0),
-      drag_image_(NULL),
-      cursor_offset_x_(0),
-      cursor_offset_y_(0) {
+      drag_image_(NULL) {
 }
 
 OSExchangeDataProviderGtk::OSExchangeDataProviderGtk()
     : known_formats_(0),
       formats_(0),
-      drag_image_(NULL),
-      cursor_offset_x_(0),
-      cursor_offset_y_(0) {
+      drag_image_(NULL) {
 }
 
 OSExchangeDataProviderGtk::~OSExchangeDataProviderGtk() {
@@ -227,14 +223,12 @@ bool OSExchangeDataProviderGtk::GetPlainTextURL(GURL* url) const {
 }
 
 void OSExchangeDataProviderGtk::SetDragImage(GdkPixbuf* drag_image,
-                                             int cursor_offset_x,
-                                             int cursor_offset_y) {
+                                             const gfx::Point& cursor_offset) {
   if (drag_image_)
     g_object_unref(drag_image_);
   g_object_ref(drag_image);
   drag_image_ = drag_image;
-  cursor_offset_x_ = cursor_offset_x;
-  cursor_offset_y_ = cursor_offset_y;
+  cursor_offset_ = cursor_offset;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

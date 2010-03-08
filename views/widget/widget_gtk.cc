@@ -196,8 +196,8 @@ void WidgetGtk::DoDrag(const OSExchangeData& data, int operation) {
   if (provider.drag_image())
     gtk_drag_set_icon_pixbuf(context,
                              provider.drag_image(),
-                             provider.cursor_offset_x(),
-                             provider.cursor_offset_y());
+                             provider.cursor_offset().x(),
+                             provider.cursor_offset().y());
   if (current_event)
     gdk_event_free(current_event);
   gtk_target_list_unref(targets);

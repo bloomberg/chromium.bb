@@ -73,7 +73,7 @@ MenuItemView::~MenuItemView() {
   delete submenu_;
 }
 
-bool MenuItemView::GetTooltipText(int x, int y, std::wstring* tooltip) {
+bool MenuItemView::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
   *tooltip = tooltip_;
   return !tooltip_.empty();
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -172,7 +172,7 @@ bool MenuButton::OnMousePressed(const MouseEvent& e) {
     // If we're draggable (GetDragOperations returns a non-zero value), then
     // don't pop on press, instead wait for release.
     if (e.IsOnlyLeftMouseButton() && HitTest(e.location()) &&
-        GetDragOperations(e.x(), e.y()) == DragDropTypes::DRAG_NONE) {
+        GetDragOperations(e.location()) == DragDropTypes::DRAG_NONE) {
       TimeDelta delta = Time::Now() - menu_closed_time_;
       int64 delta_in_milliseconds = delta.InMilliseconds();
       if (delta_in_milliseconds > kMinimumTimeBetweenButtonClicks) {
@@ -189,7 +189,7 @@ void MenuButton::OnMouseReleased(const MouseEvent& e,
   // !IsTriggerableEvent it could lead to a situation where we end up showing
   // the menu and context menu (this would happen if the right button is not
   // triggerable and there's a context menu).
-  if (GetDragOperations(e.x(), e.y()) != DragDropTypes::DRAG_NONE &&
+  if (GetDragOperations(e.location()) != DragDropTypes::DRAG_NONE &&
       state() != BS_DISABLED && !canceled && !InDrag() &&
       e.IsOnlyLeftMouseButton() && HitTest(e.location())) {
     Activate();

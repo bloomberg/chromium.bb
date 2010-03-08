@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -546,13 +546,12 @@ enum ScrollBarContextMenuCommands {
 };
 
 void BitmapScrollBar::ShowContextMenu(View* source,
-                                      int x,
-                                      int y,
+                                      const gfx::Point& p,
                                       bool is_mouse_gesture) {
   Widget* widget = GetWidget();
   gfx::Rect widget_bounds;
   widget->GetBounds(&widget_bounds, true);
-  gfx::Point temp_pt(x - widget_bounds.x(), y - widget_bounds.y());
+  gfx::Point temp_pt(p.x() - widget_bounds.x(), p.y() - widget_bounds.y());
   View::ConvertPointFromWidget(this, &temp_pt);
   context_menu_mouse_position_ = IsHorizontal() ? temp_pt.x() : temp_pt.y();
 
@@ -568,7 +567,7 @@ void BitmapScrollBar::ShowContextMenu(View* source,
   menu->AppendSeparator();
   menu->AppendDelegateMenuItem(ScrollBarContextMenuCommand_ScrollPrev);
   menu->AppendDelegateMenuItem(ScrollBarContextMenuCommand_ScrollNext);
-  menu->RunMenuAt(x, y);
+  menu->RunMenuAt(p.x(), p.y());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

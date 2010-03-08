@@ -183,14 +183,16 @@ void View::DidChangeBounds(const gfx::Rect& previous,
   Layout();
 }
 
-void View::ScrollRectToVisible(int x, int y, int width, int height) {
+void View::ScrollRectToVisible(const gfx::Rect& rect) {
   View* parent = GetParent();
 
   // We must take RTL UI mirroring into account when adjusting the position of
   // the region.
-  if (parent)
-    parent->ScrollRectToVisible(
-        GetX(APPLY_MIRRORING_TRANSFORMATION) + x, View::y() + y, width, height);
+  if (parent) {
+    gfx::Rect scroll_rect(rect);
+    scroll_rect.Offset(GetX(APPLY_MIRRORING_TRANSFORMATION), y());
+    parent->ScrollRectToVisible(scroll_rect);
+  }
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -322,10 +324,6 @@ void View::SchedulePaint() {
   SchedulePaint(GetLocalBounds(true), false);
 }
 
-void View::SchedulePaint(int x, int y, int w, int h) {
-  SchedulePaint(gfx::Rect(x, y, w, h), false);
-}
-
 void View::Paint(gfx::Canvas* canvas) {
   PaintBackground(canvas);
   PaintFocusBorder(canvas);
@@ -421,8 +419,8 @@ gfx::Insets View::GetInsets() const {
   return insets;
 }
 
-gfx::NativeCursor View::GetCursorForPoint(Event::EventType event_type, int x,
-                                          int y) {
+gfx::NativeCursor View::GetCursorForPoint(Event::EventType event_type,
+                                          const gfx::Point& p) {
   return NULL;
 }
 
@@ -450,11 +448,11 @@ void View::SetContextMenuController(ContextMenuController* menu_controller) {
   context_menu_controller_ = menu_controller;
 }
 
-void View::ShowContextMenu(int x, int y, bool is_mouse_gesture) {
+void View::ShowContextMenu(const gfx::Point& p, bool is_mouse_gesture) {
   if (!context_menu_controller_)
     return;
 
-  context_menu_controller_->ShowContextMenu(this, x, y, is_mouse_gesture);
+  context_menu_controller_->ShowContextMenu(this, p, is_mouse_gesture);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -465,13 +463,11 @@ void View::ShowContextMenu(int x, int y, bool is_mouse_gesture) {
 
 bool View::ProcessMousePressed(const MouseEvent& e, DragInfo* drag_info) {
   const bool enabled = enabled_;
-  int drag_operations;
-  if (enabled && e.IsOnlyLeftMouseButton() && HitTest(e.location()))
-    drag_operations = GetDragOperations(e.x(), e.y());
-  else
-    drag_operations = 0;
-  ContextMenuController* context_menu_controller =
-      e.IsRightMouseButton() ? context_menu_controller_ : 0;
+  int drag_operations =
+      (enabled && e.IsOnlyLeftMouseButton() && HitTest(e.location())) ?
+      GetDragOperations(e.location()) : 0;
+  ContextMenuController* context_menu_controller = e.IsRightMouseButton() ?
+      context_menu_controller_ : 0;
 
   const bool result = OnMousePressed(e);
   // WARNING: we may have been deleted, don't use any View variables;
@@ -480,7 +476,7 @@ bool View::ProcessMousePressed(const MouseEvent& e, DragInfo* drag_info) {
     return result;
 
   if (drag_operations != DragDropTypes::DRAG_NONE) {
-    drag_info->PossibleDrag(e.x(), e.y());
+    drag_info->PossibleDrag(e.location());
     return true;
   }
   return !!context_menu_controller || result;
@@ -491,15 +487,11 @@ bool View::ProcessMouseDragged(const MouseEvent& e, DragInfo* drag_info) {
   // done.
   ContextMenuController* context_menu_controller = context_menu_controller_;
   const bool possible_drag = drag_info->possible_drag;
-  if (possible_drag && ExceededDragThreshold(drag_info->start_x - e.x(),
-                                             drag_info->start_y - e.y())) {
+  if (possible_drag && ExceededDragThreshold(drag_info->start_pt.x() - e.x(),
+                                             drag_info->start_pt.y() - e.y())) {
     if (!drag_controller_ ||
-        drag_controller_->CanStartDrag(this,
-                                       drag_info->start_x,
-                                       drag_info->start_y,
-                                       e.x(),
-                                       e.y()))
-      DoDrag(e, drag_info->start_x, drag_info->start_y);
+        drag_controller_->CanStartDrag(this, drag_info->start_pt, e.location()))
+      DoDrag(e, drag_info->start_pt);
   } else {
     if (OnMouseDragged(e))
       return true;
@@ -517,7 +509,7 @@ void View::ProcessMouseReleased(const MouseEvent& e, bool canceled) {
     OnMouseReleased(e, canceled);
     if (HitTest(location)) {
       ConvertPointToScreen(this, &location);
-      ShowContextMenu(location.x(), location.y(), true);
+      ShowContextMenu(location, true);
     }
   } else {
     OnMouseReleased(e, canceled);
@@ -576,13 +568,13 @@ void View::RemoveAllChildViews(bool delete_views) {
   UpdateTooltip();
 }
 
-void View::DoDrag(const MouseEvent& e, int press_x, int press_y) {
-  int drag_operations = GetDragOperations(press_x, press_y);
+void View::DoDrag(const MouseEvent& e, const gfx::Point& press_pt) {
+  int drag_operations = GetDragOperations(press_pt);
   if (drag_operations == DragDropTypes::DRAG_NONE)
     return;
 
   OSExchangeData data;
-  WriteDragData(press_x, press_y, &data);
+  WriteDragData(press_pt, &data);
 
   // Message the RootView to do the drag and drop. That way if we're removed
   // the RootView can detect it and avoid calling us back.
@@ -1101,15 +1093,15 @@ void View::UnregisterAccelerators(bool leave_data_intact) {
   }
 }
 
-int View::GetDragOperations(int press_x, int press_y) {
-  if (!drag_controller_)
-    return DragDropTypes::DRAG_NONE;
-  return drag_controller_->GetDragOperations(this, press_x, press_y);
+int View::GetDragOperations(const gfx::Point& press_pt) {
+  return drag_controller_ ?
+      drag_controller_->GetDragOperations(this, press_pt) :
+      DragDropTypes::DRAG_NONE;
 }
 
-void View::WriteDragData(int press_x, int press_y, OSExchangeData* data) {
+void View::WriteDragData(const gfx::Point& press_pt, OSExchangeData* data) {
   DCHECK(drag_controller_);
-  drag_controller_->WriteDragData(this, press_x, press_y, data);
+  drag_controller_->WriteDragData(this, press_pt, data);
 }
 
 void View::OnDragDone() {
@@ -1339,11 +1331,11 @@ bool View::ExceededDragThreshold(int delta_x, int delta_y) {
 }
 
 // Tooltips -----------------------------------------------------------------
-bool View::GetTooltipText(int x, int y, std::wstring* tooltip) {
+bool View::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
   return false;
 }
 
-bool View::GetTooltipTextOrigin(int x, int y, gfx::Point* loc) {
+bool View::GetTooltipTextOrigin(const gfx::Point& p, gfx::Point* loc) {
   return false;
 }
 
@@ -1459,13 +1451,12 @@ void View::RemoveDescendantToNotify(View* view) {
 
 void View::DragInfo::Reset() {
   possible_drag = false;
-  start_x = start_y = 0;
+  start_pt = gfx::Point();
 }
 
-void View::DragInfo::PossibleDrag(int x, int y) {
+void View::DragInfo::PossibleDrag(const gfx::Point& p) {
   possible_drag = true;
-  start_x = x;
-  start_y = y;
+  start_pt = p;
 }
 
 }  // namespace

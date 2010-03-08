@@ -1101,10 +1101,7 @@ void AutoFillProfilesView::AutoFillScrollView::RebuildView() {
   // Deletes the old contents view and takes ownership of
   // |scroll_contents_view_|.
   scroll_view_->SetContents(scroll_contents_view_);
-  scroll_contents_view_->ScrollRectToVisible(visible_rectangle.x(),
-                                             visible_rectangle.y(),
-                                             visible_rectangle.width(),
-                                             visible_rectangle.height());
+  scroll_contents_view_->ScrollRectToVisible(visible_rectangle);
 }
 
 

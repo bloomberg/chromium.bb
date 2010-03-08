@@ -188,11 +188,10 @@ class BookmarkButton : public views::TextButton {
     }
   }
 
-  bool GetTooltipText(int x, int y, std::wstring* tooltip) {
-    gfx::Point location(x, y);
+  bool GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
+    gfx::Point location(p);
     ConvertPointToScreen(this, &location);
-    *tooltip = CreateToolTipForURLAndTitle(
-        gfx::Point(location.x(), location.y()), url_, text(),
+    *tooltip = CreateToolTipForURLAndTitle(location, url_, text(),
         profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
     return !tooltip->empty();
   }
@@ -716,8 +715,9 @@ int BookmarkBarView::OnPerformDrop(const DropTargetEvent& event) {
                                              index);
 }
 
-void BookmarkBarView::ShowContextMenu(int x, int y, bool is_mouse_gesture) {
-  ShowContextMenu(this, x, y, is_mouse_gesture);
+void BookmarkBarView::ShowContextMenu(const gfx::Point& p,
+                                      bool is_mouse_gesture) {
+  ShowContextMenu(this, p, is_mouse_gesture);
 }
 
 bool BookmarkBarView::IsAccessibleViewTraversable(views::View* view) {
@@ -1094,8 +1094,7 @@ void BookmarkBarView::BookmarkNodeFavIconLoaded(BookmarkModel* model,
 }
 
 void BookmarkBarView::WriteDragData(View* sender,
-                                    int press_x,
-                                    int press_y,
+                                    const gfx::Point& press_pt,
                                     OSExchangeData* data) {
   UserMetrics::RecordAction("BookmarkBar_DragButton", profile_);
 
@@ -1104,9 +1103,8 @@ void BookmarkBarView::WriteDragData(View* sender,
       views::TextButton* button = GetBookmarkButton(i);
       gfx::Canvas canvas(button->width(), button->height(), false);
       button->Paint(&canvas, true);
-      drag_utils::SetDragImageOnDataObject(canvas, button->width(),
-                                           button->height(), press_x,
-                                           press_y, data);
+      drag_utils::SetDragImageOnDataObject(canvas, button->size(), press_pt,
+                                           data);
       WriteDragData(model_->GetBookmarkBarNode()->GetChild(i), data);
       return;
     }
@@ -1114,39 +1112,7 @@ void BookmarkBarView::WriteDragData(View* sender,
   NOTREACHED();
 }
 
-void BookmarkBarView::WriteDragData(const BookmarkNode* node,
-                                    OSExchangeData* data) {
-  DCHECK(node && data);
-  BookmarkDragData drag_data(node);
-  drag_data.Write(profile_, data);
-}
-
-bool BookmarkBarView::CanStartDrag(views::View* sender,
-                                   int press_x,
-                                   int press_y,
-                                   int x,
-                                   int y) {
-  // Check if we have not moved enough horizontally but we have moved downward
-  // vertically - downward drag.
-  if (!View::ExceededDragThreshold(press_x - x, 0) && press_y < y) {
-    for (int i = 0; i < GetBookmarkButtonCount(); ++i) {
-      if (sender == GetBookmarkButton(i)) {
-        const BookmarkNode* node = model_->GetBookmarkBarNode()->GetChild(i);
-        // If the folder button was dragged, show the menu instead.
-        if (node && node->is_folder()) {
-          views::MenuButton* menu_button =
-              static_cast<views::MenuButton*>(sender);
-          menu_button->Activate();
-          return false;
-        }
-        break;
-      }
-    }
-  }
-  return true;
-}
-
-int BookmarkBarView::GetDragOperations(View* sender, int x, int y) {
+int BookmarkBarView::GetDragOperations(View* sender, const gfx::Point& p) {
   if (size_animation_->IsAnimating() ||
       (size_animation_->GetCurrentValue() == 0 && !OnNewTabPage())) {
     // Don't let the user drag while animating open or we're closed (and not on
@@ -1164,6 +1130,37 @@ int BookmarkBarView::GetDragOperations(View* sender, int x, int y) {
   }
   NOTREACHED();
   return DragDropTypes::DRAG_NONE;
+}
+
+bool BookmarkBarView::CanStartDrag(views::View* sender,
+                                   const gfx::Point& press_pt,
+                                   const gfx::Point& p) {
+  // Check if we have not moved enough horizontally but we have moved downward
+  // vertically - downward drag.
+  if (!View::ExceededDragThreshold(press_pt.x() - p.x(), 0) &&
+      press_pt.y() < p.y()) {
+    for (int i = 0; i < GetBookmarkButtonCount(); ++i) {
+      if (sender == GetBookmarkButton(i)) {
+        const BookmarkNode* node = model_->GetBookmarkBarNode()->GetChild(i);
+        // If the folder button was dragged, show the menu instead.
+        if (node && node->is_folder()) {
+          views::MenuButton* menu_button =
+              static_cast<views::MenuButton*>(sender);
+          menu_button->Activate();
+          return false;
+        }
+        break;
+      }
+    }
+  }
+  return true;
+}
+
+void BookmarkBarView::WriteDragData(const BookmarkNode* node,
+                                    OSExchangeData* data) {
+  DCHECK(node && data);
+  BookmarkDragData drag_data(node);
+  drag_data.Write(profile_, data);
 }
 
 void BookmarkBarView::RunMenu(views::View* view, const gfx::Point& pt) {
@@ -1222,8 +1219,7 @@ void BookmarkBarView::ButtonPressed(views::Button* sender,
 }
 
 void BookmarkBarView::ShowContextMenu(View* source,
-                                      int x,
-                                      int y,
+                                      const gfx::Point& p,
                                       bool is_mouse_gesture) {
   if (!model_->IsLoaded()) {
     // Don't do anything if the model isn't loaded.
@@ -1255,9 +1251,9 @@ void BookmarkBarView::ShowContextMenu(View* source,
   PageNavigator* navigator =
       browser() ? browser()->GetSelectedTabContents() : NULL;
   BookmarkContextMenu controller(GetWindow()->GetNativeWindow(), GetProfile(),
-                                 navigator, parent, nodes,
-                                 BookmarkContextMenuControllerViews::BOOKMARK_BAR);
-  controller.RunMenuAt(gfx::Point(x, y));
+      navigator, parent, nodes,
+      BookmarkContextMenuControllerViews::BOOKMARK_BAR);
+  controller.RunMenuAt(p);
 }
 
 views::View* BookmarkBarView::CreateBookmarkButton(const BookmarkNode* node) {

@@ -277,11 +277,9 @@ gfx::Rect CompactLocationBarView::GetLocationStackBounds() const {
 ////////////////////////////////////////////////////////////////////////////////
 // views::DragController overrides:
 void CompactLocationBarView::WriteDragData(views::View* sender,
-                                           int press_x,
-                                           int press_y,
+                                           const gfx::Point& press_pt,
                                            OSExchangeData* data) {
-  DCHECK(
-      GetDragOperations(sender, press_x, press_y) != DragDropTypes::DRAG_NONE);
+  DCHECK(GetDragOperations(sender, press_pt) != DragDropTypes::DRAG_NONE);
 
   UserMetrics::RecordAction("CompactLocationBar_DragStar",
                             browser()->profile());
@@ -309,8 +307,7 @@ void CompactLocationBarView::WriteDragData(views::View* sender,
 }
 
 int CompactLocationBarView::GetDragOperations(views::View* sender,
-                                              int x,
-                                              int y) {
+                                              const gfx::Point& p) {
   DCHECK(sender == star_);
   TabContents* tab = browser()->GetSelectedTabContents();
   if (!tab || !tab->ShouldDisplayURL() || !tab->GetURL().is_valid()) {

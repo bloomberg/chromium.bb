@@ -34,7 +34,7 @@ std::string ResizeGripper::GetClassName() const {
 }
 
 gfx::NativeCursor ResizeGripper::GetCursorForPoint(Event::EventType event_type,
-                                                   int x, int y) {
+                                                   const gfx::Point& p) {
   if (!enabled_)
     return NULL;
 #if defined(OS_WIN)

@@ -154,7 +154,7 @@ class Label : public View {
   // when the label is multiline, in which case it just returns false (no
   // tooltip).  If a custom tooltip has been specified with SetTooltipText()
   // it is returned instead.
-  virtual bool GetTooltipText(int x, int y, std::wstring* tooltip);
+  virtual bool GetTooltipText(const gfx::Point& p, std::wstring* tooltip);
 
   // Mouse enter/exit are overridden to render mouse over background color.
   // These invoke SetContainsMouse as necessary.

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -111,8 +111,7 @@ void Rect::Inset(int left, int top, int right, int bottom) {
 }
 
 void Rect::Offset(int horizontal, int vertical) {
-  set_x(x() + horizontal);
-  set_y(y() + vertical);
+  origin_.Offset(horizontal, vertical);
 }
 
 bool Rect::operator==(const Rect& other) const {

@@ -1,8 +1,10 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved. Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "views/controls/native_control_win.h"
+
+#include <windowsx.h>
 
 #include "app/l10n_util_win.h"
 #include "base/logging.h"
@@ -36,7 +38,7 @@ bool NativeControlWin::ProcessMessage(UINT message, WPARAM w_param,
                                       LPARAM l_param, LRESULT* result) {
   switch (message) {
     case WM_CONTEXTMENU:
-      ShowContextMenu(gfx::Point(LOWORD(l_param), HIWORD(l_param)));
+      ShowContextMenu(gfx::Point(GET_X_LPARAM(l_param), GET_Y_LPARAM(l_param)));
       *result = 0;
       return true;
     case WM_CTLCOLORBTN:
@@ -99,16 +101,10 @@ void NativeControlWin::ShowContextMenu(const gfx::Point& location) {
   if (!GetContextMenuController())
     return;
 
-  int x = location.x();
-  int y = location.y();
-  bool is_mouse = true;
-  if (x == -1 && y == -1) {
-    gfx::Point point = GetKeyboardContextMenuLocation();
-    x = point.x();
-    y = point.y();
-    is_mouse = false;
-  }
-  View::ShowContextMenu(x, y, is_mouse);
+  if (location.x() == -1 && location.y() == -1)
+    View::ShowContextMenu(GetKeyboardContextMenuLocation(), false);
+  else
+    View::ShowContextMenu(location, true);
 }
 
 void NativeControlWin::NativeControlCreated(HWND native_control) {

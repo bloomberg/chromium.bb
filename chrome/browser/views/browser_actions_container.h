@@ -319,15 +319,12 @@ class BrowserActionsContainer
 
   // Overridden from views::DragController:
   virtual void WriteDragData(View* sender,
-                             int press_x,
-                             int press_y,
+                             const gfx::Point& press_pt,
                              OSExchangeData* data);
-  virtual int GetDragOperations(View* sender, int x, int y);
+  virtual int GetDragOperations(View* sender, const gfx::Point& p);
   virtual bool CanStartDrag(View* sender,
-                            int press_x,
-                            int press_y,
-                            int x,
-                            int y);
+                            const gfx::Point& press_pt,
+                            const gfx::Point& p);
 
   // Overridden from ResizeGripper::ResizeGripperDelegate:
   virtual void OnResize(int resize_amount, bool done_resizing);

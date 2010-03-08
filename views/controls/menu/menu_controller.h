@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -386,14 +386,12 @@ class MenuController : public MessageLoopForUI::Dispatcher {
   bool possible_drag_;
 
   // Location the mouse was pressed at. Used to detect d&d.
-  int press_x_;
-  int press_y_;
+  gfx::Point press_pt_;
 
   // We get a slew of drag updated messages as the mouse is over us. To avoid
   // continually processing whether we can drop, we cache the coordinates.
   bool valid_drop_coordinates_;
-  int drop_x_;
-  int drop_y_;
+  gfx::Point drop_pt_;
   int last_drop_operation_;
 
   // If true, we're in the middle of invoking ShowAt on a submenu.

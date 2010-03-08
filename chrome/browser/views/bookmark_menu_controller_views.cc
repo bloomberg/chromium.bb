@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -194,8 +194,7 @@ int BookmarkMenuController::OnPerformDrop(MenuItemView* menu,
 
 bool BookmarkMenuController::ShowContextMenu(MenuItemView* source,
                                              int id,
-                                             int x,
-                                             int y,
+                                             const gfx::Point& p,
                                              bool is_mouse_gesture) {
   DCHECK(menu_id_to_node_map_.find(id) != menu_id_to_node_map_.end());
   std::vector<const BookmarkNode*> nodes;
@@ -209,7 +208,7 @@ bool BookmarkMenuController::ShowContextMenu(MenuItemView* source,
           nodes,
           BookmarkContextMenuControllerViews::BOOKMARK_BAR));
   context_menu_->set_observer(this);
-  context_menu_->RunMenuAt(gfx::Point(x, y));
+  context_menu_->RunMenuAt(p);
   context_menu_.reset(NULL);
   return true;
 }

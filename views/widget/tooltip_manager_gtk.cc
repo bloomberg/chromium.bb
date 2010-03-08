@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -161,7 +161,7 @@ bool TooltipManagerGtk::ShowTooltip(int x, int y, bool for_keyboard,
     return false;
 
   std::wstring text;
-  if (!view->GetTooltipText(view_loc.x(), view_loc.y(), &text))
+  if (!view->GetTooltipText(view_loc, &text))
     return false;
 
   AdjustLabel(tooltip);
@@ -169,7 +169,7 @@ bool TooltipManagerGtk::ShowTooltip(int x, int y, bool for_keyboard,
   // Sets the area of the tooltip. This way if different views in the same
   // widget have tooltips the tooltip doesn't get stuck at the same location.
   gfx::Rect vis_bounds = view->GetVisibleBounds();
-  gfx::Point widget_loc(vis_bounds.x(), vis_bounds.y());
+  gfx::Point widget_loc(vis_bounds.origin());
   View::ConvertPointToWidget(view, &widget_loc);
   GdkRectangle tip_area = { widget_loc.x(), widget_loc.y(),
                             vis_bounds.width(), vis_bounds.height() };
@@ -209,7 +209,7 @@ void TooltipManagerGtk::ShowKeyboardTooltip(View* view) {
   HideKeyboardTooltip();
 
   std::wstring tooltip_text;
-  if (!view->GetTooltipText(0, 0, &tooltip_text))
+  if (!view->GetTooltipText(gfx::Point(), &tooltip_text))
     return;  // The view doesn't have a tooltip, nothing to do.
 
   keyboard_view_ = view;

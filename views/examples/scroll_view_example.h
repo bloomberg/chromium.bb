@@ -101,7 +101,8 @@ class ScrollViewExample : public ExampleBase,
       scrollable_->SetBounds(0, 0, 100, 100);
       scrollable_->SetColor(SK_ColorYELLOW, SK_ColorGREEN);
     } else if (sender == scroll_to_) {
-      scroll_view_->ScrollContentsRegionToBeVisible(20, 500, 1000, 500);
+      scroll_view_->ScrollContentsRegionToBeVisible(
+          gfx::Rect(20, 500, 1000, 500));
     }
     scroll_view_->Layout();
   }

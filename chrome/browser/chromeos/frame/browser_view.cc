@@ -465,17 +465,18 @@ void BrowserView::ButtonPressed(views::Button* sender,
 }
 
 // views::ContextMenuController overrides.
-void BrowserView::ShowContextMenu(views::View* source, int x, int y,
+void BrowserView::ShowContextMenu(views::View* source,
+                                  const gfx::Point& p,
                                   bool is_mouse_gesture) {
   // Only show context menu if point is in unobscured parts of browser, i.e.
   // if NonClientHitTest returns :
   // - HTCAPTION: in title bar or unobscured part of tabstrip
   // - HTNOWHERE: as the name implies.
-  gfx::Point point_in_parent_coords(x, y);
+  gfx::Point point_in_parent_coords(p);
   views::View::ConvertPointToView(NULL, GetParent(), &point_in_parent_coords);
   int hit_test = NonClientHitTest(point_in_parent_coords);
   if (hit_test == HTCAPTION || hit_test == HTNOWHERE)
-    system_menu_menu_->RunMenuAt(gfx::Point(x, y), views::Menu2::ALIGN_TOPLEFT);
+    system_menu_menu_->RunMenuAt(p, views::Menu2::ALIGN_TOPLEFT);
 }
 
 // StatusAreaHost overrides.

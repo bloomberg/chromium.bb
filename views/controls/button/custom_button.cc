@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -197,14 +197,14 @@ void CustomButton::OnDragDone() {
   SetState(BS_NORMAL);
 }
 
-void CustomButton::ShowContextMenu(int x, int y, bool is_mouse_gesture) {
+void CustomButton::ShowContextMenu(const gfx::Point& p, bool is_mouse_gesture) {
   if (GetContextMenuController()) {
     // We're about to show the context menu. Showing the context menu likely
     // means we won't get a mouse exited and reset state. Reset it now to be
     // sure.
     if (state_ != BS_DISABLED)
       SetState(BS_NORMAL);
-    View::ShowContextMenu(x, y, is_mouse_gesture);
+    View::ShowContextMenu(p, is_mouse_gesture);
   }
 }
 

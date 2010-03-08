@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,7 +33,7 @@ class Button : public View {
   int mouse_event_flags() const { return mouse_event_flags_; }
 
   // Overridden from View:
-  virtual bool GetTooltipText(int x, int y, std::wstring* tooltip);
+  virtual bool GetTooltipText(const gfx::Point& p, std::wstring* tooltip);
   virtual bool GetAccessibleKeyboardShortcut(std::wstring* shortcut);
   virtual bool GetAccessibleName(std::wstring* name);
   virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);

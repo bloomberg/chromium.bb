@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -89,7 +89,7 @@ class ToggleImageButton : public ImageButton {
   virtual void SetImage(ButtonState aState, SkBitmap* anImage);
 
   // Overridden from View:
-  virtual bool GetTooltipText(int x, int y, std::wstring* tooltip);
+  virtual bool GetTooltipText(const gfx::Point& p, std::wstring* tooltip);
 
  private:
   // The parent class's images_ member is used for the current images,

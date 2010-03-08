@@ -479,11 +479,9 @@ void ToolbarView::ThemeChanged() {
 // ToolbarView, views::DragController implementation:
 
 void ToolbarView::WriteDragData(views::View* sender,
-                                int press_x,
-                                int press_y,
+                                const gfx::Point& press_pt,
                                 OSExchangeData* data) {
-  DCHECK(
-      GetDragOperations(sender, press_x, press_y) != DragDropTypes::DRAG_NONE);
+  DCHECK(GetDragOperations(sender, press_pt) != DragDropTypes::DRAG_NONE);
 
   UserMetrics::RecordAction("Toolbar_DragStar", profile_);
 
@@ -508,7 +506,7 @@ void ToolbarView::WriteDragData(views::View* sender,
   }
 }
 
-int ToolbarView::GetDragOperations(views::View* sender, int x, int y) {
+int ToolbarView::GetDragOperations(views::View* sender, const gfx::Point& p) {
   DCHECK(sender == star_);
   TabContents* tab = browser_->GetSelectedTabContents();
   if (!tab || !tab->ShouldDisplayURL() || !tab->GetURL().is_valid()) {

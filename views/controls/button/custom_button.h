@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,7 +76,7 @@ class CustomButton : public Button,
   virtual bool OnKeyPressed(const KeyEvent& e);
   virtual bool OnKeyReleased(const KeyEvent& e);
   virtual void OnDragDone();
-  virtual void ShowContextMenu(int x, int y, bool is_mouse_gesture);
+  virtual void ShowContextMenu(const gfx::Point& p, bool is_mouse_gesture);
   virtual void ViewHierarchyChanged(bool is_add, View *parent, View *child);
   virtual void SetHotTracked(bool flag);
   virtual bool IsHotTracked() const;

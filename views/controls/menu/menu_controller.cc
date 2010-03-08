@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,7 +42,7 @@ namespace views {
 
 // Convenience for scrolling the view such that the origin is visible.
 static void ScrollToVisible(View* view) {
-  view->ScrollRectToVisible(0, 0, view->width(), view->height());
+  view->ScrollRectToVisible(gfx::Rect(gfx::Point(), view->size()));
 }
 
 // MenuScrollTask --------------------------------------------------------------
@@ -97,14 +97,10 @@ class MenuController::MenuScrollTask {
     const int delta_y = static_cast<int>(
         (Time::Now() - start_scroll_time_).InMilliseconds() *
         pixels_per_second_ / 1000);
-    int target_y = start_y_;
-    if (is_scrolling_up_)
-      target_y = std::max(0, target_y - delta_y);
-    else
-      target_y = std::min(submenu_->height() - vis_rect.height(),
-                          target_y + delta_y);
-    submenu_->ScrollRectToVisible(vis_rect.x(), target_y, vis_rect.width(),
-                                  vis_rect.height());
+    vis_rect.set_y(is_scrolling_up_ ?
+        std::max(0, start_y_ - delta_y) :
+        std::min(submenu_->height() - vis_rect.height(), start_y_ + delta_y));
+    submenu_->ScrollRectToVisible(vis_rect);
   }
 
   // SubmenuView being scrolled.
@@ -347,8 +343,7 @@ void MenuController::OnMousePressed(SubmenuView* source,
   } else {
     if (part.menu->GetDelegate()->CanDrag(part.menu)) {
       possible_drag_ = true;
-      press_x_ = event.x();
-      press_y_ = event.y();
+      press_pt_ = event.location();
     }
     if (part.menu->HasSubmenu())
       open_submenu = true;
@@ -370,27 +365,23 @@ void MenuController::OnMouseDragged(SubmenuView* source,
     return;
 
   if (possible_drag_) {
-    if (View::ExceededDragThreshold(event.x() - press_x_,
-                                    event.y() - press_y_)) {
+    if (View::ExceededDragThreshold(event.x() - press_pt_.x(),
+                                    event.y() - press_pt_.y())) {
       MenuItemView* item = state_.item;
       DCHECK(item);
       // Points are in the coordinates of the submenu, need to map to that of
       // the selected item. Additionally source may not be the parent of
       // the selected item, so need to map to screen first then to item.
-      gfx::Point press_loc(press_x_, press_y_);
+      gfx::Point press_loc(press_pt_);
       View::ConvertPointToScreen(source->GetScrollViewContainer(), &press_loc);
       View::ConvertPointToView(NULL, item, &press_loc);
-      gfx::Point drag_loc(event.location());
-      View::ConvertPointToScreen(source->GetScrollViewContainer(), &drag_loc);
-      View::ConvertPointToView(NULL, item, &drag_loc);
       gfx::Canvas canvas(item->width(), item->height(), false);
       item->Paint(&canvas, true);
 
       OSExchangeData data;
       item->GetDelegate()->WriteDragData(item, &data);
-      drag_utils::SetDragImageOnDataObject(canvas, item->width(),
-                                           item->height(), press_loc.x(),
-                                           press_loc.y(), &data);
+      drag_utils::SetDragImageOnDataObject(canvas, item->size(), press_loc,
+                                           &data);
       StopScrolling();
       int drag_ops = item->GetDelegate()->GetDragOperations(item);
       item->GetRootView()->StartDragForViewFromMouseEvent(
@@ -437,8 +428,8 @@ void MenuController::OnMouseReleased(SubmenuView* source,
     View::ConvertPointToScreen(source->GetScrollViewContainer(), &loc);
 
     // If we open a context menu just return now
-    if (part.menu->GetDelegate()->ShowContextMenu(
-        part.menu, part.menu->GetCommand(), loc.x(), loc.y(), true))
+    if (part.menu->GetDelegate()->ShowContextMenu(part.menu,
+        part.menu->GetCommand(), loc, true))
       return;
   }
 
@@ -521,12 +512,9 @@ int MenuController::OnDragUpdated(SubmenuView* source,
 
   gfx::Point screen_loc(event.location());
   View::ConvertPointToScreen(source, &screen_loc);
-  if (valid_drop_coordinates_ && screen_loc.x() == drop_x_ &&
-      screen_loc.y() == drop_y_) {
+  if (valid_drop_coordinates_ && screen_loc == drop_pt_)
     return last_drop_operation_;
-  }
-  drop_x_ = screen_loc.x();
-  drop_y_ = screen_loc.y();
+  drop_pt_ = screen_loc;
   valid_drop_coordinates_ = true;
 
   MenuItemView* menu_item = GetMenuItemAt(source, event.x(), event.y());
@@ -549,10 +537,9 @@ int MenuController::OnDragUpdated(SubmenuView* source,
           (menu_item_loc.y() > kDropBetweenPixels &&
            menu_item_loc.y() < (menu_item_height - kDropBetweenPixels))) {
         drop_position = MenuDelegate::DROP_ON;
-      } else if (menu_item_loc.y() < menu_item_height / 2) {
-        drop_position = MenuDelegate::DROP_BEFORE;
       } else {
-        drop_position = MenuDelegate::DROP_AFTER;
+        drop_position = (menu_item_loc.y() < menu_item_height / 2) ?
+            MenuDelegate::DROP_BEFORE : MenuDelegate::DROP_AFTER;
       }
       query_menu_item = menu_item;
     } else {
@@ -562,17 +549,12 @@ int MenuController::OnDragUpdated(SubmenuView* source,
     drop_operation = menu_item->GetDelegate()->GetDropOperation(
         query_menu_item, event, &drop_position);
 
-    if (menu_item->HasSubmenu()) {
-      // The menu has a submenu, schedule the submenu to open.
-      SetSelection(menu_item, true, false);
-    } else {
-      SetSelection(menu_item, false, false);
-    }
+    // If the menu has a submenu, schedule the submenu to open.
+    SetSelection(menu_item, menu_item->HasSubmenu(), false);
 
     if (drop_position == MenuDelegate::DROP_NONE ||
-        drop_operation == DragDropTypes::DRAG_NONE) {
+        drop_operation == DragDropTypes::DRAG_NONE)
       menu_item = NULL;
-    }
   } else {
     SetSelection(source->GetMenuItem(), true, false);
   }
@@ -666,8 +648,8 @@ bool MenuController::Dispatch(const MSG& msg) {
       if (item && item->GetRootMenuItem() != item) {
         gfx::Point screen_loc(0, item->height());
         View::ConvertPointToScreen(item, &screen_loc);
-        item->GetDelegate()->ShowContextMenu(
-            item, item->GetCommand(), screen_loc.x(), screen_loc.y(), false);
+        item->GetDelegate()->ShowContextMenu(item, item->GetCommand(),
+                                             screen_loc, false);
       }
       return true;
     }

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,9 +52,6 @@ class RootView : public View,
 
   // Convenience to schedule the whole view
   virtual void SchedulePaint();
-
-  // Convenience to schedule a paint given some ints
-  virtual void SchedulePaint(int x, int y, int w, int h);
 
   // Paint this RootView and its child Views.
   virtual void ProcessPaint(gfx::Canvas* canvas);

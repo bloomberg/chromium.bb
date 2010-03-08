@@ -40,7 +40,7 @@ class ResizeGripper : public ImageView {
   // Overridden from views::View:
   virtual std::string GetClassName() const;
   virtual gfx::NativeCursor GetCursorForPoint(Event::EventType event_type,
-                                              int x, int y);
+                                              const gfx::Point& p);
   virtual bool OnMousePressed(const views::MouseEvent& event);
   virtual bool OnMouseDragged(const views::MouseEvent& event);
   virtual void OnMouseReleased(const views::MouseEvent& event, bool canceled);

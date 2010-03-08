@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -182,13 +182,12 @@ std::wstring ImageView::GetTooltipText() {
   return tooltip_text_;
 }
 
-bool ImageView::GetTooltipText(int x, int y, std::wstring* tooltip) {
-  if (tooltip_text_.empty()) {
+bool ImageView::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
+  if (tooltip_text_.empty())
     return false;
-  } else {
-    *tooltip = GetTooltipText();
-    return true;
-  }
+
+  *tooltip = GetTooltipText();
+  return true;
 }
 
 }  // namespace views

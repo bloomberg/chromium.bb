@@ -43,8 +43,7 @@ class ContentBlockedBubbleContents::Favicon : public views::ImageView {
   virtual void OnMouseReleased(const views::MouseEvent& event, bool canceled);
   virtual gfx::NativeCursor GetCursorForPoint(
       views::Event::EventType event_type,
-      int x,
-      int y);
+      const gfx::Point& p);
 
   ContentBlockedBubbleContents* parent_;
   views::Link* link_;
@@ -82,8 +81,7 @@ void ContentBlockedBubbleContents::Favicon::OnMouseReleased(
 
 gfx::NativeCursor ContentBlockedBubbleContents::Favicon::GetCursorForPoint(
     views::Event::EventType event_type,
-    int x,
-    int y) {
+    const gfx::Point& p) {
 #if defined(OS_WIN)
   if (!g_hand_cursor)
     g_hand_cursor = LoadCursor(NULL, IDC_HAND);

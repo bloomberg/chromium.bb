@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -231,8 +231,7 @@ class TaskManagerView : public views::View,
 
   // Menu::Delegate
   virtual void ShowContextMenu(views::View* source,
-                               int x,
-                               int y,
+                               const gfx::Point& p,
                                bool is_mouse_gesture);
   virtual bool IsItemChecked(int id) const;
   virtual void ExecuteCommand(int id);
@@ -597,7 +596,8 @@ void TaskManagerView::LinkActivated(views::Link* source, int event_flags) {
   task_manager_->OpenAboutMemory();
 }
 
-void TaskManagerView::ShowContextMenu(views::View* source, int x, int y,
+void TaskManagerView::ShowContextMenu(views::View* source,
+                                      const gfx::Point& p,
                                       bool is_mouse_gesture) {
   UpdateStatsCounters();
   scoped_ptr<views::Menu> menu(views::Menu::Create(
@@ -606,7 +606,7 @@ void TaskManagerView::ShowContextMenu(views::View* source, int x, int y,
        columns_.begin(); i != columns_.end(); ++i) {
     menu->AppendMenuItem(i->id, i->title, views::Menu::CHECKBOX);
   }
-  menu->RunMenuAt(x, y);
+  menu->RunMenuAt(p.x(), p.y());
 }
 
 bool TaskManagerView::IsItemChecked(int id) const {

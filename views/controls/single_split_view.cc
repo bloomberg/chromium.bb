@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -115,9 +115,10 @@ gfx::Size SingleSplitView::GetPreferredSize() {
   return gfx::Size(width, height);
 }
 
-gfx::NativeCursor SingleSplitView::GetCursorForPoint(Event::EventType event_type,
-                                                     int x, int y) {
-  if (IsPointInDivider(x, y)) {
+gfx::NativeCursor SingleSplitView::GetCursorForPoint(
+    Event::EventType event_type,
+    const gfx::Point& p) {
+  if (IsPointInDivider(p)) {
 #if defined(OS_WIN)
     static HCURSOR we_resize_cursor = LoadCursor(NULL, IDC_SIZEWE);
     static HCURSOR ns_resize_cursor = LoadCursor(NULL, IDC_SIZENS);
@@ -132,7 +133,7 @@ gfx::NativeCursor SingleSplitView::GetCursorForPoint(Event::EventType event_type
 }
 
 bool SingleSplitView::OnMousePressed(const MouseEvent& event) {
-  if (!IsPointInDivider(event.x(), event.y()))
+  if (!IsPointInDivider(event.location()))
     return false;
   drag_info_.initial_mouse_offset = GetPrimaryAxisSize(event.x(), event.y());
   drag_info_.initial_divider_offset = divider_offset_;
@@ -172,7 +173,7 @@ void SingleSplitView::OnMouseReleased(const MouseEvent& event, bool canceled) {
   }
 }
 
-bool SingleSplitView::IsPointInDivider(int x, int y) {
+bool SingleSplitView::IsPointInDivider(const gfx::Point& p) {
   if (GetChildViewCount() < 2)
     return false;
 
@@ -182,9 +183,9 @@ bool SingleSplitView::IsPointInDivider(int x, int y) {
   int divider_relative_offset;
   if (is_horizontal_) {
     divider_relative_offset =
-        x - GetChildViewAt(UILayoutIsRightToLeft() ? 1 : 0)->width();
+        p.x() - GetChildViewAt(UILayoutIsRightToLeft() ? 1 : 0)->width();
   } else {
-    divider_relative_offset = y - GetChildViewAt(0)->height();
+    divider_relative_offset = p.y() - GetChildViewAt(0)->height();
   }
   return (divider_relative_offset >= 0 &&
       divider_relative_offset < kDividerSize);

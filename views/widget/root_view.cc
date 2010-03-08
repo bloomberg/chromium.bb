@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -132,10 +132,6 @@ void RootView::SchedulePaint(const gfx::Rect& r, bool urgent) {
 }
 
 void RootView::SchedulePaint() {
-  View::SchedulePaint();
-}
-
-void RootView::SchedulePaint(int x, int y, int w, int h) {
   View::SchedulePaint();
 }
 
@@ -412,7 +408,7 @@ void RootView::UpdateCursor(const MouseEvent& e) {
   if (v && v != this) {
     gfx::Point l(e.location());
     View::ConvertPointToView(this, v, &l);
-    cursor = v->GetCursorForPoint(e.GetType(), l.x(), l.y());
+    cursor = v->GetCursorForPoint(e.GetType(), l);
   }
   SetActiveCursor(cursor);
 }
@@ -477,7 +473,7 @@ void RootView::OnMouseMoved(const MouseEvent& e) {
     mouse_move_handler_->OnMouseMoved(moved_event);
 
     gfx::NativeCursor cursor = mouse_move_handler_->GetCursorForPoint(
-        moved_event.GetType(), moved_event.x(), moved_event.y());
+        moved_event.GetType(), moved_event.location());
     SetActiveCursor(cursor);
   } else if (mouse_move_handler_ != NULL) {
     MouseEvent exited_event(Event::ET_MOUSE_EXITED, 0, 0, 0);
@@ -798,8 +794,7 @@ bool RootView::ProcessKeyEvent(const KeyEvent& event) {
   // keyboard.
   if (v && v->IsEnabled() && ((event.GetKeyCode() == base::VKEY_APPS) ||
      (event.GetKeyCode() == base::VKEY_F10 && event.IsShiftDown()))) {
-    gfx::Point screen_loc = v->GetKeyboardContextMenuLocation();
-    v->ShowContextMenu(screen_loc.x(), screen_loc.y(), false);
+    v->ShowContextMenu(v->GetKeyboardContextMenuLocation(), false);
     return true;
   }
   for (; v && v != this && !consumed; v = v->GetParent()) {
