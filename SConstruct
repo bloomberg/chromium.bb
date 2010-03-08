@@ -642,6 +642,19 @@ else:
   )
 
 # ----------------------------------------------------------
+def CheckPlatformPreconditions():
+  "Check and fail fast if platform-specific preconditions are unmet."
+
+  if base_env['TARGET_ARCHITECTURE'] == 'arm':
+    assert os.getenv('ARM_CC'), (
+        "ARM_CC undefined.  Source tools/llvm/setup_arm_trusted_toolchain.sh "
+        "or define it explicitly.")
+    if base_env['BUILD_ARCHITECTURE'] == 'x86':
+      assert os.getenv('NACL_SDK_CC'), (
+          "NACL_SDK_CC undefined. "
+          "Source tools/llvm/setup_arm_untrusted_toolchain.sh.")
+
+# ----------------------------------------------------------
 base_env = pre_base_env.Clone()
 base_env.Append(
   BUILD_SUBTYPE = '',
@@ -692,16 +705,14 @@ base_env.Append(
     ],
   )
 
+# TODO(adonovan): re-enable this and test it once the build is fixed.
+# CheckPlatformPreconditions()
+
 if base_env['TARGET_ARCHITECTURE'] == 'arm':
   base_env.Append(
       BUILD_SCONSCRIPTS = [
         'src/trusted/validator_arm/v2/build.scons',
       ])
-  assert os.getenv('ARM_CC'), (
-      "ARM_CC undefined.  Source tools/llvm/setup_arm_trusted_toolchain.sh.")
-  assert os.getenv('NACL_SDK_CC'), (
-      "NACL_SDK_CC undefined. "
-      "Source tools/llvm/setup_arm_untrusted_toolchain.sh.")
 elif base_env['TARGET_ARCHITECTURE'] == 'x86':
   pass
 else:
