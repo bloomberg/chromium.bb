@@ -288,8 +288,11 @@ class GitWrapper(SCMWrapper, scm.GIT):
         # Can't find a merge-base since we don't know our upstream. That makes
         # this command VERY likely to produce a rebase failure. For now we
         # assume origin is our upstream since that's what the old behavior was.
-        self._AttemptRebase('origin', files=files, verbose=options.verbose,
-                            printed_path=printed_path)
+        upstream_branch = 'origin'
+        if options.revision:
+          upstream_branch = revision
+        self._AttemptRebase(upstream_branch, files=files,
+                            verbose=options.verbose, printed_path=printed_path)
         printed_path = True
     elif rev_type is 'hash':
       # case 2
