@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "app/l10n_util.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
@@ -166,7 +166,7 @@ std::wstring KeywordProvider::SplitKeywordFromInput(
   // Find end of first token.  The AutocompleteController has trimmed leading
   // whitespace, so we need not skip over that.
   const size_t first_white(input.find_first_of(kWhitespaceWide));
-  DCHECK(first_white != 0);
+  DCHECK_NE(0U, first_white);
   if (first_white == std::wstring::npos)
     return input;  // Only one token provided.
 

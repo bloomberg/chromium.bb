@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/profile.h"
 #include "net/base/net_errors.h"
@@ -44,7 +45,7 @@ void BrowsingDataDatabaseHelper::CancelNotification() {
 void BrowsingDataDatabaseHelper::DeleteDatabase(const std::string& origin,
                                                 const std::string& name) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,NewRunnableMethod(
+  ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE, NewRunnableMethod(
       this, &BrowsingDataDatabaseHelper::DeleteDatabaseInFileThread, origin,
       name));
 }

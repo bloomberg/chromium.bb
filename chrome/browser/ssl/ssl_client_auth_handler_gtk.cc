@@ -15,6 +15,7 @@
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
 #include "base/nss_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/gtk/certificate_viewer.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/third_party/mozilla_security_manager/nsNSSCertHelper.h"

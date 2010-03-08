@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "app/table_model_observer.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "grit/generated_resources.h"
 

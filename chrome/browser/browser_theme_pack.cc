@@ -4,7 +4,10 @@
 
 #include "chrome/browser/browser_theme_pack.h"
 
+#include <algorithm>
 #include <climits>
+#include <set>
+#include <vector>
 
 #include "app/gfx/codec/png_codec.h"
 #include "app/gfx/skbitmap_operations.h"
@@ -13,6 +16,7 @@
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/chrome_thread.h"
@@ -457,7 +461,7 @@ bool BrowserThemePack::WriteToDisk(FilePath path) const {
     source_count++;
   resources[kSourceImagesID] = base::StringPiece(
       reinterpret_cast<const char*>(source_images_),
-      source_count * sizeof(int));
+      source_count * sizeof(*source_images_));
 
   AddRawImagesTo(image_memory_, &resources);
 
@@ -637,7 +641,6 @@ void BrowserThemePack::BuildTintsFromJSON(DictionaryValue* tints_value) {
       if (ValidRealValue(tint_list, 0, &hsl.h) &&
           ValidRealValue(tint_list, 1, &hsl.s) &&
           ValidRealValue(tint_list, 2, &hsl.l)) {
-
         int id = GetIntForString(WideToUTF8(*iter), kTintTable);
         if (id != -1) {
           temp_tints[id] = hsl;

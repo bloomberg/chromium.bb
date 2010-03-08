@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
 #include "third_party/icu/public/common/unicode/normlzr.h"
 #include "third_party/icu/public/common/unicode/schriter.h"

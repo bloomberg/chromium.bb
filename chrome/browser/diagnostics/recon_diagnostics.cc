@@ -7,6 +7,7 @@
 #include "base/file_util.h"
 #include "base/file_version_info.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/sys_info.h"
 #include "base/path_service.h"
 #include "chrome/browser/diagnostics/diagnostics_test.h"

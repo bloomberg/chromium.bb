@@ -8,7 +8,7 @@
 
 #include "app/l10n_util.h"
 #include "base/stl_util-inl.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/address.h"
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/autofill/billing_address.h"

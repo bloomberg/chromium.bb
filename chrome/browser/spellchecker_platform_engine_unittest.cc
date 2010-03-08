@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/spellchecker_platform_engine.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -63,7 +63,7 @@ TEST(PlatformSpellCheckTest, MAYBE_IgnoreWords_EN_US) {
     // The word should now show be spelled wrong again
     EXPECT_EQ(kTestCases[i].input_result, result);
   }
-} // Test IgnoreWords_EN_US
+}  // Test IgnoreWords_EN_US
 
 TEST(PlatformSpellCheckTest, MAYBE_SpellCheckSuggestions_EN_US) {
   static const struct {
@@ -357,7 +357,7 @@ TEST(PlatformSpellCheckTest, MAYBE_SpellCheckSuggestions_EN_US) {
 
     // Check if the suggested words occur.
     bool suggested_word_is_present = false;
-    for (int j=0; j < static_cast<int>(suggestions.size()); j++) {
+    for (int j = 0; j < static_cast<int>(suggestions.size()); j++) {
       if (suggestions.at(j).compare(WideToUTF16(kTestCases[i].suggested_word))
           == 0) {
         suggested_word_is_present = true;

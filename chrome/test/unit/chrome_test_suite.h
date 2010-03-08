@@ -17,6 +17,7 @@
 #include "base/ref_counted.h"
 #include "base/scoped_nsautorelease_pool.h"
 #include "base/test/test_suite.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/app/scoped_ole_initializer.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_constants.h"

@@ -6,6 +6,8 @@
 
 #include "app/l10n_util.h"
 #include "base/logging.h"
+#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/gtk/gtk_chrome_cookie_view.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"

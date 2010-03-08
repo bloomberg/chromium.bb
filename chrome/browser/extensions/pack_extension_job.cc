@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/pack_extension_job.h"
 
 #include "base/message_loop.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/task.h"
 #include "chrome/browser/extensions/extension_creator.h"
 
