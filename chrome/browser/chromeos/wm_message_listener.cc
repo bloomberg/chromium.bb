@@ -39,6 +39,7 @@ WmMessageListener::~WmMessageListener() {
 
 void WmMessageListener::ProcessMessage(const WmIpc::Message& message,
                                        GdkWindow* window) {
+  FOR_EACH_OBSERVER(Observer, observers_, ProcessWmMessage(message, window));
 }
 
 }  // namespace chromeos
