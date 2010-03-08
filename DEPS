@@ -32,7 +32,7 @@ deps = {
     "/trunk/deps/third_party/icu42@37341",
 
   "src/third_party/hunspell":
-   "/trunk/deps/third_party/hunspell128@39868",
+   "/trunk/deps/third_party/hunspell128@40614",
 
   "src/third_party/protobuf2/src":
     "http://protobuf.googlecode.com/svn/trunk@305",
