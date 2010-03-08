@@ -12,6 +12,7 @@
       'target_defaults': {
         'dependencies': [
           '../chrome.gyp:chrome',
+          '../chrome.gyp:chrome_nacl_win64',
           '../chrome.gyp:chrome_dll',
           '../chrome.gyp:default_extensions',
           'installer.gyp:setup',
