@@ -6,7 +6,7 @@
 set -o nounset
 set -o errexit
 
-readonly CS_ROOT="/usr/local/crosstool-untrusted/codesourcery/arm-2007q3"
+source $(dirname $0)/tools.sh
 
 readonly NACL_ROOT=$(pwd)
 
@@ -22,12 +22,9 @@ readonly SCRATCH_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/newlib.arm.XXXXXX")"
 readonly OBJ_ROOT="${SCRATCH_ROOT}/build"
 readonly SRC_ROOT="${SCRATCH_ROOT}/newlib-1.17.0"
 
-###########################################################
-# TODO(robertm): this should be merged with similar code in
-#                tools/llvm/setup_arm_untrusted_toolchain.sh
-readonly CS_BIN_PATH="${CS_ROOT}/bin"
-readonly LLVM_BIN_PATH=/usr/local/crosstool-untrusted/arm-none-linux-gnueabi
-readonly ILLEGAL_TOOL=${LLVM_BIN_PATH}/llvm-fake-illegal
+readonly MAKE_OPTS="${MAKE_OPTS:--j6}"
+
+# Override constants from tools.sh:
 
 # we do not expect newlib to build any binaries
 readonly LD_FOR_TARGET="${ILLEGAL_TOOL}"
@@ -40,45 +37,6 @@ readonly AS_FOR_TARGET="${ILLEGAL_TOOL}"
 
 # we do not expect newlib to use strip
 readonly STRIP_FOR_TARGET="${ILLEGAL_TOOL}"
-
-# This config generates native sandboxed libraries
-ConfigSfi() {
-  readonly CC_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-sfigcc"
-  readonly CXX_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-sfig++"
-
-  readonly AR_FOR_TARGET="${CS_BIN_PATH}/arm-none-linux-gnueabi-ar"
-  readonly NM_FOR_TARGET="${CS_BIN_PATH}/arm-none-linux-gnueabi-nm"
-  readonly RANLIB_FOR_TARGET="${CS_BIN_PATH}/arm-none-linux-gnueabi-ranlib"
-}
-
-# NOTE: c.f. setup_arm_untrusted_toolchain.sh for switching to codesourcery
-#       This was used before we had a working sfi toolchain
-ConfigRegular() {
-  readonly CC_FOR_TARGET="${CS_BIN_PATH}/arm-none-linux-gnueabi-gcc"
-  readonly CXX_FOR_TARGET="${CS_BIN_PATH}/arm-none-linux-gnueabi-g++"
-
-  readonly AR_FOR_TARGET="${CS_BIN_PATH}/arm-none-linux-gnueabi-ar"
-  readonly NM_FOR_TARGET="${CS_BIN_PATH}/arm-none-linux-gnueabi-nm"
-  readonly RANLIB_FOR_TARGET="${CS_BIN_PATH}/arm-none-linux-gnueabi-ranlib"
-}
-
-# This config generates bitcode libraries
-ConfigBitcode() {
-  readonly CC_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-bcgcc"
-  readonly CXX_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-bcg++"
-
-  readonly AR_FOR_TARGET="${LLVM_BIN_PATH}/llvm/bin/llvm-ar"
-  readonly NM_FOR_TARGET="${LLVM_BIN_PATH}/llvm/bin/llvm-nm"
-  readonly RANLIB_FOR_TARGET="${LLVM_BIN_PATH}/llvm/bin/llvm-ranlib"
-}
-
-# NOTE: pick one!
-#ConfigBitcode
-#ConfigRegular
-ConfigSfi
-
-readonly MAKE_OPTS="${MAKE_OPTS:--j6}"
-
 
 ######################################################################
 # Helpers
@@ -127,6 +85,21 @@ checkCrosstoolBinaries() {
   done
 }
 
+checkForExistingNewlib() {
+  if [[ -d ${NEWLIB_INSTALL} ]]; then
+    Banner "ERROR: library seems to be already installed in \n
+  ${NEWLIB_INSTALL}"
+
+    if tty >/dev/null; then
+      echo -n "Would you like to delete it? [yN] "
+      read yn
+      case "$yn" in
+        [Yy]) rm -fr ${NEWLIB_INSTALL} ;;
+        *) exit -1;;
+      esac
+    fi
+  fi
+}
 
 untarNewlib() {
   Banner "untaring to ${SCRATCH_ROOT}"
@@ -162,7 +135,8 @@ copyHeaders() {
 
   # disable wchar and mbstate which is made available by the underlying code
   # sourcery toolchain but not appreciated by newlib
-  readonly CPP_CFG="${NEWLIB_EXTRA_HEADER}/c++/4.2.1/arm-none-linux-gnueabi/bits/c++config.h"
+  local CPP_CFG=\
+"${NEWLIB_EXTRA_HEADER}/c++/4.2.1/arm-none-linux-gnueabi/bits/c++config.h"
   cp ${CPP_CFG} ${CPP_CFG}.orig
   egrep -v 'WCHAR|MBSTATE' ${CPP_CFG}.orig > ${CPP_CFG}
 }
@@ -271,17 +245,11 @@ if [[ $(basename ${NACL_ROOT}) != "native_client" ]] ; then
   exit -1
 fi
 
-if [[ -d ${NEWLIB_INSTALL} ]]; then
-  Banner "ERROR: library seems to be already installed in \n
-          ${NEWLIB_INSTALL}"
-  exit -1
-fi
-
-# NOTE: comment out these two lines to use a patched version of newlib
+# NOTE: comment out these four lines to rebuild the unpacked newlib
+# tree after it has been hand-modified.
+checkForExistingNewlib
 untarNewlib
-
 copyHeaders
-
 patchNewlib
 
 configureNewlib
