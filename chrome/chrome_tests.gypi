@@ -844,6 +844,7 @@
         'browser/spellchecker_platform_engine_unittest.cc',
         'browser/ssl/ssl_host_state_unittest.cc',
         'browser/status_icons/status_tray_unittest.cc',
+        'browser/sync/glue/autofill_model_associator_unittest.cc',
         'browser/sync/glue/change_processor_mock.h',
         'browser/sync/glue/data_type_controller_mock.h',
         'browser/sync/glue/data_type_manager_impl_unittest.cc',

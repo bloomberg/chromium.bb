@@ -261,8 +261,7 @@ void AutofillModelAssociator::PersistAssociations() {
 // static
 std::string AutofillModelAssociator::KeyToTag(const string16& name,
                                               const string16& value) {
-  return EscapePath(UTF16ToUTF8(name) + "|" +
-                    UTF16ToUTF8(value));
+  return EscapePath(UTF16ToUTF8(name)) + "|" + EscapePath(UTF16ToUTF8(value));
 }
 // static
 bool AutofillModelAssociator::MergeTimestamps(
