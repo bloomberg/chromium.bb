@@ -50,9 +50,15 @@ WebString RendererWebStorageAreaImpl::getItem(const WebString& key) {
 
 void RendererWebStorageAreaImpl::setItem(
     const WebString& key, const WebString& value, const WebURL& url,
-    WebStorageArea::Result& result, WebString& old_value_webkit) {
-  int32 routing_id = RenderThread::RoutingIDForCurrentContext();
-  CHECK(routing_id != MSG_ROUTING_CONTROL);
+    WebStorageArea::Result& result, WebString& old_value_webkit,
+    WebFrame* web_frame) {
+  int32 routing_id = MSG_ROUTING_CONTROL;
+  if (web_frame) {
+    RenderView* render_view = RenderView::FromWebView(web_frame->view());
+    if (render_view)
+      routing_id = render_view->routing_id();
+  }
+  DCHECK(routing_id != MSG_ROUTING_CONTROL);
 
   NullableString16 old_value;
   IPC::SyncMessage* message =
@@ -62,11 +68,6 @@ void RendererWebStorageAreaImpl::setItem(
       RenderThread::current()->cookie_message_filter()->pump_messages_event());
   RenderThread::current()->Send(message);
   old_value_webkit = old_value;
-
-  if (result == WebStorageArea::ResultBlockedByPolicy) {
-    RenderThread::current()->Send(new ViewHostMsg_ContentBlocked(
-        routing_id, CONTENT_SETTINGS_TYPE_COOKIES));
-  }
 }
 
 void RendererWebStorageAreaImpl::removeItem(

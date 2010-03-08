@@ -1,6 +1,6 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "chrome/browser/in_process_webkit/dom_storage_dispatcher_host.h"
 
@@ -12,6 +12,7 @@
 #include "chrome/browser/in_process_webkit/webkit_thread.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
+#include "chrome/browser/renderer_host/render_view_host_notification_task.h"
 #include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/common/render_messages.h"
 #include "googleurl/src/gurl.h"
@@ -271,6 +272,17 @@ void DOMStorageDispatcherHost::OnSetItem(
   ScopedStorageEventContext scope(this, &url);
   WebStorageArea::Result result;
   NullableString16 old_value = storage_area->SetItem(key, value, &result, this);
+
+  // If content was blocked, tell the UI to display the blocked content icon.
+  if (reply_msg->routing_id() == MSG_ROUTING_CONTROL) {
+    DLOG(WARNING) << "setItem was not given a proper routing id";
+  } else if (result == WebKit::WebStorageArea::ResultBlockedByPolicy) {
+    CallRenderViewHostResourceDelegate(
+        process_handle_, reply_msg->routing_id(),
+        &RenderViewHostDelegate::Resource::OnContentBlocked,
+        CONTENT_SETTINGS_TYPE_COOKIES);
+  }
+
   ViewHostMsg_DOMStorageSetItem::WriteReplyParams(reply_msg, result, old_value);
   Send(reply_msg);
 }
