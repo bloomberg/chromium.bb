@@ -2845,8 +2845,9 @@
             }],
             ['OS=="linux" and chromeos==1',{
               'sources/': [
-                ['exclude', '^browser/notifications/balloon_collection_linux.cc'],
+                ['exclude', '^browser/notifications/balloon_collection.cc'],
                 ['exclude', '^browser/notifications/balloon_collection_impl.h'],
+                ['exclude', '^browser/notifications/balloon_collection_linux.cc'],
               ],
               'dependencies': [
                 '../third_party/protobuf2/protobuf.gyp:protobuf_lite',
