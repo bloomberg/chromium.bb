@@ -9,6 +9,7 @@
 
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 
 // You can read the specification of the MLSD format at
 // http://tools.ietf.org/html/rfc3659#page-23.

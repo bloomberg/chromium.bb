@@ -9,6 +9,7 @@
 #include "base/path_service.h"
 #include "base/string_tokenizer.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "net/base/net_errors.h"
 #include "net/ftp/ftp_directory_listing_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"

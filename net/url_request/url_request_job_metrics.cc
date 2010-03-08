@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 
 using base::TimeDelta;
 
