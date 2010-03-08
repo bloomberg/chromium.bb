@@ -7,6 +7,7 @@
 #import "base/scoped_nsobject.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #import "chrome/browser/cocoa/bookmark_button_cell.h"
+#import "chrome/browser/cocoa/browser_window_controller.h"
 
 // The opacity of the bookmark button drag image.
 static const CGFloat kDragImageOpacity = 0.7;
@@ -60,6 +61,15 @@ static const CGFloat kDragImageOpacity = 0.7;
     // the stack.
     [self retain];
 
+    // Lock bar visibility, forcing the overlay to stay visible if we are in
+    // fullscreen mode.
+    DCHECK(!visibilityDelegate_);
+    visibilityDelegate_ =
+        [BrowserWindowController browserWindowControllerForView:self];
+    [visibilityDelegate_ lockBarVisibilityForOwner:self
+                                     withAnimation:NO
+                                             delay:NO];
+
     CGFloat yAt = [self bounds].size.height;
     NSSize dragOffset = NSMakeSize(0.0, 0.0);
     [self dragImage:[self dragImage] at:NSMakePoint(0, yAt) offset:dragOffset
@@ -73,10 +83,20 @@ static const CGFloat kDragImageOpacity = 0.7;
   }
 }
 
+// Overridden to release bar visibility.
+- (void)endDrag {
+  DCHECK(visibilityDelegate_);
+  [visibilityDelegate_ releaseBarVisibilityForOwner:self
+                                      withAnimation:YES
+                                              delay:YES];
+  visibilityDelegate_ = nil;
+  [super endDrag];
+}
+
 - (void)draggedImage:(NSImage*)anImage
              endedAt:(NSPoint)aPoint
            operation:(NSDragOperation)operation {
-  [super endDrag];
+  [self endDrag];
 }
 
 - (NSDragOperation)draggingSourceOperationMaskForLocal:(BOOL)isLocal {

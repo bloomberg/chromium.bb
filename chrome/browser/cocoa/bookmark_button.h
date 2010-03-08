@@ -93,6 +93,14 @@ class ThemeProvider;
 @interface BookmarkButton : DraggableButton {
  @private
   NSObject<BookmarkButtonDelegate>* delegate_;  // weak like all delegates
+
+  // Saved pointer to the BWC for the browser window that contains this button.
+  // Used to lock and release bar visibility during a drag.  The pointer is
+  // saved because the bookmark button is no longer a part of a window at the
+  // end of a drag operation (or, in fact, can be dragged to a completely
+  // different window), so there is no way to retrieve the same BWC object after
+  // a drag.
+  BrowserWindowController* visibilityDelegate_;  // weak
 }
 
 @property(assign, nonatomic) NSObject<BookmarkButtonDelegate>* delegate;
