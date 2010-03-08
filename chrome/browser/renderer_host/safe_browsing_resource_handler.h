@@ -94,6 +94,9 @@ class SafeBrowsingResourceHandler : public ResourceHandler,
 
   ~SafeBrowsingResourceHandler();
 
+  // Cancels any in progress safe browsing actions.
+  void Shutdown();
+
   // Starts running |url| through the safe browsing check. Returns true if the
   // URL is safe to visit. Otherwise returns false and will call
   // OnUrlCheckResult() when the check has completed.

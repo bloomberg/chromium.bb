@@ -130,12 +130,12 @@ bool SafeBrowsingResourceHandler::OnReadCompleted(int request_id,
 bool SafeBrowsingResourceHandler::OnResponseCompleted(
     int request_id, const URLRequestStatus& status,
     const std::string& security_info) {
-  CHECK(state_ == STATE_NONE);
-  CHECK(defer_state_ == DEFERRED_NONE);
+  Shutdown();
   return next_handler_->OnResponseCompleted(request_id, status, security_info);
 }
 
 void SafeBrowsingResourceHandler::OnRequestClosed() {
+  Shutdown();
   next_handler_->OnRequestClosed();
 }
 
@@ -201,7 +201,12 @@ void SafeBrowsingResourceHandler::Observe(NotificationType type,
                                           const NotificationSource& source,
                                           const NotificationDetails& details) {
   DCHECK(type.value == NotificationType::RESOURCE_MESSAGE_FILTER_SHUTDOWN);
+  Shutdown();
+}
+
+void SafeBrowsingResourceHandler::Shutdown() {
   if (state_ == STATE_CHECKING_URL) {
+    timer_.Stop();
     safe_browsing_->CancelCheck(this);
     state_ = STATE_NONE;
     // Balance the AddRef() from CheckUrl() which would ordinarily be
