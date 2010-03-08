@@ -165,6 +165,10 @@ function endsWidth(a, b) {
   return a.lastIndexOf(b) == a.length - b.length;
 }
 
+function isValidName(str) {
+  return str.match(/[A-Za-z0-9\-\_,]/);
+}
+
 function trimString(str) {
   return str.replace(/^\s+|\s+$/g, '');
 }
