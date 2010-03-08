@@ -552,6 +552,24 @@ void DownloadManager::GetTemporaryDownloads(Observer* observer,
   observer->SetDownloads(download_copy);
 }
 
+void DownloadManager::GetCurrentDownloads(Observer* observer,
+                                          const FilePath& dir_path) {
+  DCHECK(observer);
+
+  std::vector<DownloadItem*> download_copy;
+
+  for (DownloadMap::iterator it = downloads_.begin();
+       it != downloads_.end(); ++it) {
+    if (!it->second->is_temporary() &&
+        (it->second->state() == DownloadItem::IN_PROGRESS ||
+         it->second->safety_state() == DownloadItem::DANGEROUS) &&
+        (dir_path.empty() || it->second->full_path().DirName() == dir_path))
+      download_copy.push_back(it->second);
+  }
+
+  observer->SetDownloads(download_copy);
+}
+
 // Query the history service for information about all persisted downloads.
 bool DownloadManager::Init(Profile* profile) {
   DCHECK(profile);

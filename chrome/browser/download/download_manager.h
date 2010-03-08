@@ -385,6 +385,10 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
   void GetTemporaryDownloads(Observer* observer,
                              const FilePath& dir_path);
 
+  // Return all non-temporary downloads in the specified directory that are
+  // either in-progress or finished but still waiting for user confirmation.
+  void GetCurrentDownloads(Observer* observer, const FilePath& dir_path);
+
   // Returns true if initialized properly.
   bool Init(Profile* profile);
 

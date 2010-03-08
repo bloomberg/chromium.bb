@@ -138,6 +138,8 @@ class FilebrowseHandler : public net::DirectoryLister::DirectoryListerDelegate,
 
   // Callback for the "getChildren" message.
   void HandleGetChildren(const Value* value);
+ // Callback for the "refreshDirectory" message.
+  void HandleRefreshDirectory(const Value* value);
 
   // Callback for the "getMetadata" message.
   void HandleGetMetadata(const Value* value);
@@ -159,6 +161,9 @@ class FilebrowseHandler : public net::DirectoryLister::DirectoryListerDelegate,
   void FireDeleteComplete(const FilePath& path);
 
   void HandlePauseToggleDownload(const Value* value);
+
+  void HandleCancelDownload(const Value* value);
+  void HandleAllowDownload(const Value* value);
 
   void ReadInFile();
   void FireUploadComplete();
@@ -326,6 +331,12 @@ void FilebrowseHandler::RegisterMessages() {
       NewCallback(this, &FilebrowseHandler::HandlePauseToggleDownload));
   dom_ui_->RegisterMessageCallback("deleteFile",
       NewCallback(this, &FilebrowseHandler::HandleDeleteFile));
+  dom_ui_->RegisterMessageCallback("cancelDownload",
+      NewCallback(this, &FilebrowseHandler::HandleCancelDownload));
+  dom_ui_->RegisterMessageCallback("allowDownload",
+      NewCallback(this, &FilebrowseHandler::HandleAllowDownload));
+  dom_ui_->RegisterMessageCallback("refreshDirectory",
+      NewCallback(this, &FilebrowseHandler::HandleRefreshDirectory));
 }
 
 
@@ -456,6 +467,27 @@ void FilebrowseHandler::HandleCreateNewFolder(const Value* value) {
 #endif
 }
 
+void FilebrowseHandler::HandleRefreshDirectory(const Value* value) {
+  if (value && value->GetType() == Value::TYPE_LIST) {
+    const ListValue* list_value = static_cast<const ListValue*>(value);
+    std::string path;
+
+    // Get path string.
+    if (list_value->GetString(0, &path)) {
+      FilePath currentpath;
+#if defined(OS_WIN)
+      currentpath = FilePath(ASCIIToWide(path));
+#else
+      currentpath = FilePath(path);
+#endif
+      GetChildrenForPath(currentpath, true);
+    } else {
+      LOG(ERROR) << "Unable to get string";
+      return;
+    }
+  }
+}
+
 void FilebrowseHandler::HandlePauseToggleDownload(const Value* value) {
 #if defined(OS_CHROMEOS)
   if (value && value->GetType() == Value::TYPE_LIST) {
@@ -467,6 +499,48 @@ void FilebrowseHandler::HandlePauseToggleDownload(const Value* value) {
       id = atoi(str_id.c_str());
       DownloadItem* item = download_items_[id];
       item->TogglePause();
+    } else {
+      LOG(ERROR) << "Unable to get id for download to pause";
+      return;
+    }
+  }
+#endif
+}
+
+void FilebrowseHandler::HandleAllowDownload(const Value* value) {
+#if defined(OS_CHROMEOS)
+  if (value && value->GetType() == Value::TYPE_LIST) {
+    const ListValue* list_value = static_cast<const ListValue*>(value);
+    int id;
+    std::string str_id;
+
+    if (list_value->GetString(0, &str_id)) {
+      id = atoi(str_id.c_str());
+      DownloadItem* item = download_items_[id];
+      download_manager_->DangerousDownloadValidated(item);
+    } else {
+      LOG(ERROR) << "Unable to get id for download to pause";
+      return;
+    }
+  }
+#endif
+}
+
+void FilebrowseHandler::HandleCancelDownload(const Value* value) {
+#if defined(OS_CHROMEOS)
+  if (value && value->GetType() == Value::TYPE_LIST) {
+    const ListValue* list_value = static_cast<const ListValue*>(value);
+    int id;
+    std::string str_id;
+
+    if (list_value->GetString(0, &str_id)) {
+      id = atoi(str_id.c_str());
+      DownloadItem* item = download_items_[id];
+      item->Cancel(true);
+      FilePath path = item->full_path();
+      FilePath dir_path = path.DirName();
+      item->Remove(true);
+      GetChildrenForPath(dir_path, true);
     } else {
       LOG(ERROR) << "Unable to get id for download to pause";
       return;
@@ -702,12 +776,11 @@ void FilebrowseHandler::HandleGetDownloads(const Value* value) {
 
 void FilebrowseHandler::ModelChanged() {
   ClearDownloadItems();
-  download_manager_->GetDownloads(this, std::wstring());
+  download_manager_->GetCurrentDownloads(this, FilePath());
 }
 
 void FilebrowseHandler::SetDownloads(std::vector<DownloadItem*>& downloads) {
   ClearDownloadItems();
-
   // Scan for any in progress downloads and add ourself to them as an observer.
   for (DownloadList::iterator it = downloads.begin();
        it != downloads.end(); ++it) {
@@ -744,7 +817,16 @@ void FilebrowseHandler::HandleDeleteFile(const Value* value) {
 
       FilePath currentpath;
       currentpath = FilePath(path);
-
+      for (unsigned int x = 0; x < download_items_.size(); x++) {
+        FilePath item = download_items_[x]->full_path();
+        if (item == currentpath) {
+          download_items_[x]->Cancel(true);
+          download_items_[x]->Remove(true);
+          FilePath dir_path = item.DirName();
+          GetChildrenForPath(dir_path, true);
+          return;
+        }
+      }
       TaskProxy* task = new TaskProxy(AsWeakPtr(), currentpath);
       task->AddRef();
       CurrentTask_ = task;

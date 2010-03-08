@@ -59,6 +59,23 @@ div.header {
   padding: 4px;
 }
 
+.link {
+  color: blue;
+  text-decoration: underline;
+  float: left;
+  margin-left: 5px;
+  margin-right: 5px;
+}
+
+.prompt {
+  float: left;
+  text-decoration: none;
+  color: black;
+  margin-left: 5px;
+  margin-right: 5px;
+  cursor: default;
+}
+
 a.iconlink {
   display: block;
 /*  font-family: helvetica; */
@@ -195,6 +212,7 @@ li.filebrowserow {
 .downloadstatus {
   width: 100%;
   font-size:.6em;
+  height: 10px;
 }
 
 .downloadpause {
@@ -205,7 +223,6 @@ li.filebrowserow {
   color:blue;
   text-align: center;
   position: absolute;
-  text-decoration:underline;
 }
 
 li.filebrowserow:hover {
@@ -647,6 +664,7 @@ function browseFileResult(info, results) {
        return;
      }
    }
+  chrome.send("getDownloads", []);
 };
 
 function pathIsVideoFile(path) {
@@ -888,11 +906,19 @@ function downloadsList(results) {
   downloadUpdated(results);
 };
 
+function allowDownload(id) {
+  chrome.send('allowDownload', ['' + id]);
+};
+
+function cancelDownload(id) {
+  chrome.send('cancelDownload', ['' + id]);
+};
+
 function downloadUpdated(results) {
   for (var x = 0; x < results.length; x++) {
     var element = $(results[x].file_path);
     if (element) {
-      if (results[x].percent < 100) {
+      if (results[x].percent < 100 || results[x].state == 'DANGEROUS') {
         var progressDiv = null;
         for (var y = 0; y < element.children.length; y++) {
            if (element.children[y].className == 'downloadstatus') {
@@ -909,7 +935,21 @@ function downloadUpdated(results) {
           pauseDiv.onclick = new Function('pauseToggleDownload(' + results[x].id + ')');
           pauseDiv.className = 'downloadpause';
           if (results[x].state == "DANGEROUS") {
-            pauseDiv.textContent = "danger";
+            pauseDiv.onClick = undefined;
+            var prompt = document.createElement('div');
+            prompt.textContent = 'Allow Download?';
+            prompt.className = 'prompt';
+            pauseDiv.appendChild(prompt);
+            var yes = document.createElement('div');
+            yes.className = 'link';
+            yes.textContent = 'yes';
+            yes.onclick = new Function('allowDownload(' + results[x].id +')');
+            var no = document.createElement('div');
+            no.onclick = new Function('cancelDownload(' + results[x].id +')');
+            no.textContent = 'no';
+            no.className = 'link';
+            pauseDiv.appendChild(yes);
+            pauseDiv.appendChild(no);
           } else if (results[x].state == "PAUSED") {
             pauseDiv.textContent = kResumeDownload;
           } else if (results[x].state == "IN_PROGRESS") {
@@ -918,7 +958,10 @@ function downloadUpdated(results) {
           pauseDiv.id = 'downloaditem' + results[x].id;
           element.appendChild(pauseDiv);
         }
-        progressDiv.textContent = results[x].progress_status_text;
+        if (results[x].state != "DANGEROUS" ||
+            results[x].percent < 100) {
+          progressDiv.textContent = results[x].progress_status_text;
+        }
 
       } else {
         for (var x = 0; x < element.children.length; x++) {
@@ -933,6 +976,13 @@ function downloadUpdated(results) {
         element.className = 'filebrowserow';
       }
     } else {
+      // Figure out if the item is currently visible
+      // TODO(dhg): Support multi pane
+      // This checks to make sure its not mid updating when it does this.
+      var element = $('dir/' + pathArray[currentNode]);
+      if (element && results[x].file_path.indexOf(pathArray[currentNode]) >= 0) {
+        chrome.send("refreshDirectory", [pathArray[currentNode]]);
+      }
       // TODO(dhg):Get the new file
     }
   }
@@ -1238,7 +1288,6 @@ function selectItem(elementid, path) {
   }
 };
 
-// TODO(dhg): Do not use javascript: href, use onclick instead
 function getFunctionForItem(path, id, isDirectory) {
   if (isDirectory) {
     return 'descend("' + path + '", ' + currentNode + ')';
