@@ -6,7 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "base/file_version_info.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/net/url_fetcher.h"
 #include "chrome/browser/profile.h"

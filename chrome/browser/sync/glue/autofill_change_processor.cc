@@ -4,7 +4,10 @@
 
 #include "chrome/browser/sync/glue/autofill_change_processor.h"
 
-#include "base/string_util.h"
+#include <string>
+#include <vector>
+
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/glue/autofill_model_associator.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -161,7 +164,6 @@ void AutofillChangeProcessor::ApplyChangesFromSyncModel(
 
   std::vector<AutofillEntry> new_entries;
   for (int i = 0; i < change_count; ++i) {
-
     sync_api::ReadNode sync_node(trans);
     if (!sync_node.InitByIdLookup(changes[i].id)) {
       LOG(ERROR) << "Autofill node lookup failed.";

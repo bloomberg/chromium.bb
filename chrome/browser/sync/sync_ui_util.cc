@@ -5,7 +5,7 @@
 #include "chrome/browser/sync/sync_ui_util.h"
 
 #include "app/l10n_util.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/google_service_auth_error.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"

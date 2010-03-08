@@ -15,7 +15,7 @@
 #include "app/gfx/gtk_util.h"
 #include "app/l10n_util.h"
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"

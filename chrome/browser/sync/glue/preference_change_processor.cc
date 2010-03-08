@@ -4,8 +4,11 @@
 
 #include "chrome/browser/sync/glue/preference_change_processor.h"
 
+#include <set>
+#include <string>
+
 #include "base/json/json_reader.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/glue/preference_model_associator.h"
 #include "chrome/browser/sync/profile_sync_service.h"

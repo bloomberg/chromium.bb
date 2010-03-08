@@ -6,10 +6,12 @@
 
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 
+#include <string>
+
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/histogram.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_operation_notification_details.h"

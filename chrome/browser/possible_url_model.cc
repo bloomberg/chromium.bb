@@ -9,6 +9,7 @@
 #include "app/resource_bundle.h"
 #include "app/table_model_observer.h"
 #include "base/callback.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/favicon_service.h"
 #include "chrome/browser/pref_service.h"

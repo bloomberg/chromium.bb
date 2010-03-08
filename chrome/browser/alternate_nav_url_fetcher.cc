@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"

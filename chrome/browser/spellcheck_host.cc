@@ -10,7 +10,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/browser/pref_member.h"

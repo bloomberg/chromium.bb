@@ -4,6 +4,7 @@
 
 #include "base/message_loop.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
@@ -63,7 +64,7 @@ void TestProvider::Start(const AutocompleteInput& input,
 }
 
 void TestProvider::Run() {
-  DCHECK(num_results_per_provider > 0);
+  DCHECK_GT(num_results_per_provider, 0U);
   AddResults(1, num_results_per_provider);
   done_ = true;
   DCHECK(listener_);

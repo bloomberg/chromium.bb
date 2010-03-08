@@ -7,6 +7,7 @@
 #include <gtk/gtk.h>
 
 #include <algorithm>
+#include <string>
 
 #include "app/gfx/font.h"
 #include "app/gfx/gtk_util.h"
@@ -15,7 +16,7 @@
 #include "base/basictypes.h"
 #include "base/gfx/rect.h"
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view_gtk.h"

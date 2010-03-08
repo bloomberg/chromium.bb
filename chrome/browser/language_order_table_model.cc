@@ -5,6 +5,7 @@
 #include "chrome/browser/language_order_table_model.h"
 
 #include "app/l10n_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 
 LanguageOrderTableModel::LanguageOrderTableModel()

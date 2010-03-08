@@ -4,11 +4,13 @@
 
 #include "chrome/browser/autocomplete/search_provider.h"
 
+#include <algorithm>
+
 #include "app/l10n_util.h"
 #include "base/callback.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/message_loop.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/keyword_provider.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/google_util.h"
@@ -138,7 +140,7 @@ void SearchProvider::Run() {
   }
   // We should only get here if we have a suggest url for the keyword or default
   // providers.
-  DCHECK(suggest_results_pending_ > 0);
+  DCHECK_GT(suggest_results_pending_, 0);
 }
 
 void SearchProvider::Stop() {
@@ -155,7 +157,7 @@ void SearchProvider::OnURLFetchComplete(const URLFetcher* source,
                                         const std::string& data) {
   DCHECK(!done_);
   suggest_results_pending_--;
-  DCHECK(suggest_results_pending_ >= 0);  // Should never go negative.
+  DCHECK_GE(suggest_results_pending_, 0);  // Should never go negative.
   const net::HttpResponseHeaders* const response_headers =
       source->response_headers();
   std::string json_data(data);

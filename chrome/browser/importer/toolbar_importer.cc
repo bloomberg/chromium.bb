@@ -7,8 +7,8 @@
 #include <limits>
 
 #include "app/l10n_util.h"
-#include "base/string_util.h"
 #include "base/rand_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/first_run.h"
 #include "chrome/browser/importer/importer_bridge.h"

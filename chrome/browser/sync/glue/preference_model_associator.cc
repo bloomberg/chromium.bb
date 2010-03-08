@@ -7,6 +7,7 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/values.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/engine/syncapi.h"
@@ -34,7 +35,6 @@ PreferenceModelAssociator::PreferenceModelAssociator(
 }
 
 bool PreferenceModelAssociator::AssociateModels() {
-
   // TODO(albertb): Attempt to load the model association from storage.
   PrefService* pref_service = sync_service_->profile()->GetPrefs();
 
