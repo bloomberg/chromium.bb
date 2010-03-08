@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// We use the OSX system API function WirelessScanSplit. This function is not
-// documented or included in the SDK, so we use a reverse-engineered header,
-// osx_wifi_.h. This file is taken from the iStumbler project
+// For OSX 10.5 we use the system API function WirelessScanSplit. This function
+// is not documented or included in the SDK, so we use a reverse-engineered
+// header, osx_wifi_.h. This file is taken from the iStumbler project
 // (http://www.istumbler.net).
 
 #include "chrome/browser/geolocation/wifi_data_provider_mac.h"
@@ -21,10 +21,12 @@ const int kDefaultPollingInterval = 120000;  // 2 mins
 const int kNoChangePollingInterval = 300000;  // 5 mins
 const int kTwoNoChangePollingInterval = 600000;  // 10 mins
 
-class OsxWlanApi : public WifiDataProviderCommon::WlanApiInterface {
+// Provides the wifi API binding for use when running on OSX 10.5 machines using
+// the Apple80211 framework.
+class Apple80211Api : public WifiDataProviderCommon::WlanApiInterface {
  public:
-  OsxWlanApi();
-  virtual ~OsxWlanApi();
+  Apple80211Api();
+  virtual ~Apple80211Api();
 
   bool Init();
 
@@ -42,20 +44,20 @@ class OsxWlanApi : public WifiDataProviderCommon::WlanApiInterface {
   WifiData wifi_data_;
 };
 
-OsxWlanApi::OsxWlanApi()
+Apple80211Api::Apple80211Api()
     : apple_80211_library_(NULL), wifi_context_(NULL),
       WirelessAttach_function_(NULL), WirelessScanSplit_function_(NULL),
       WirelessDetach_function_(NULL) {
 }
 
-OsxWlanApi::~OsxWlanApi() {
+Apple80211Api::~Apple80211Api() {
   if (WirelessDetach_function_)
     (*WirelessDetach_function_)(wifi_context_);
   dlclose(apple_80211_library_);
 }
 
-bool OsxWlanApi::Init() {
-  DLOG(INFO) << "OsxWlanApi::Init";
+bool Apple80211Api::Init() {
+  DLOG(INFO) << "Apple80211Api::Init";
   apple_80211_library_ = dlopen(
       "/System/Library/PrivateFrameworks/Apple80211.framework/Apple80211",
       RTLD_LAZY);
@@ -89,8 +91,8 @@ bool OsxWlanApi::Init() {
   return true;
 }
 
-bool OsxWlanApi::GetAccessPointData(WifiData::AccessPointDataSet* data) {
-  DLOG(INFO) << "OsxWlanApi::GetAccessPointData";
+bool Apple80211Api::GetAccessPointData(WifiData::AccessPointDataSet* data) {
+  DLOG(INFO) << "Apple80211Api::GetAccessPointData";
   DCHECK(data);
   DCHECK(WirelessScanSplit_function_);
   CFArrayRef managed_access_points = NULL;
@@ -110,7 +112,7 @@ bool OsxWlanApi::GetAccessPointData(WifiData::AccessPointDataSet* data) {
   }
 
   int num_access_points = CFArrayGetCount(managed_access_points);
-  DLOG(INFO) << "Found " << num_access_points << " managed access points:-";
+  DLOG(INFO) << "Found " << num_access_points << " managed access points";
   for (int i = 0; i < num_access_points; ++i) {
     const WirelessNetworkInfo* access_point_info =
         reinterpret_cast<const WirelessNetworkInfo*>(
@@ -120,7 +122,6 @@ bool OsxWlanApi::GetAccessPointData(WifiData::AccessPointDataSet* data) {
 
     // Currently we get only MAC address, signal strength, channel
     // signal-to-noise and SSID
-    // TODO(steveblock): Work out how to get age.
     AccessPointData access_point_data;
     access_point_data.mac_address =
         MacAddressAsString16(access_point_info->macAddress);
@@ -135,10 +136,6 @@ bool OsxWlanApi::GetAccessPointData(WifiData::AccessPointDataSet* data) {
                      &access_point_data.ssid)) {
       access_point_data.ssid.clear();
     }
-
-    DLOG(INFO) << "  AP " << i
-        << " mac: " << access_point_data.mac_address
-        << " ssid: " << access_point_data.ssid;
     data->insert(access_point_data);
   }
   return true;
@@ -148,25 +145,32 @@ bool OsxWlanApi::GetAccessPointData(WifiData::AccessPointDataSet* data) {
 // static
 template<>
 WifiDataProviderImplBase* WifiDataProvider::DefaultFactoryFunction() {
-  return new OsxWifiDataProvider();
+  return new MacWifiDataProvider();
 }
 
-OsxWifiDataProvider::OsxWifiDataProvider() {
+MacWifiDataProvider::MacWifiDataProvider() {
 }
 
-OsxWifiDataProvider::~OsxWifiDataProvider() {
+MacWifiDataProvider::~MacWifiDataProvider() {
 }
 
-OsxWifiDataProvider::WlanApiInterface* OsxWifiDataProvider::NewWlanApi() {
-  scoped_ptr<OsxWlanApi> wlan_api(new OsxWlanApi);
-  if (!wlan_api->Init()) {
-   DLOG(INFO) << "OsxWifiDataProvider : failed to initialize wlan api";
-   return NULL;
-  }
-  return wlan_api.release();
+MacWifiDataProvider::WlanApiInterface* MacWifiDataProvider::NewWlanApi() {
+  // Try and find a API binding that works: first try the officially supported
+  // CoreWLAN API, and if this fails (e.g. on OSX 10.5) fall back to the reverse
+  // engineered Apple80211 API.
+  MacWifiDataProvider::WlanApiInterface* core_wlan_api = NewCoreWlanApi();
+  if (core_wlan_api)
+    return core_wlan_api;
+
+  scoped_ptr<Apple80211Api> wlan_api(new Apple80211Api);
+  if (wlan_api->Init())
+    return wlan_api.release();
+
+  DLOG(INFO) << "MacWifiDataProvider : failed to initialize any wlan api";
+  return NULL;
 }
 
-PollingPolicyInterface* OsxWifiDataProvider::NewPollingPolicy() {
+PollingPolicyInterface* MacWifiDataProvider::NewPollingPolicy() {
   return new GenericPollingPolicy<kDefaultPollingInterval,
                                   kNoChangePollingInterval,
                                   kTwoNoChangePollingInterval>;

@@ -1018,6 +1018,7 @@
         'browser/geolocation/osx_wifi.h',
         'browser/geolocation/wifi_data_provider_common.cc',
         'browser/geolocation/wifi_data_provider_common.h',
+        'browser/geolocation/wifi_data_provider_corewlan_mac.mm',
         'browser/geolocation/wifi_data_provider_common_win.cc',
         'browser/geolocation/wifi_data_provider_common_win.h',
         'browser/geolocation/wifi_data_provider_linux.cc',
