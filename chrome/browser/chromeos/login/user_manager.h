@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 // This class provides a mechanism for discovering users who have logged
 // into this chromium os device before and updating that list.
@@ -19,15 +20,25 @@ class UserManager {
   // A class representing information about a previously logged in user.
   class User {
    public:
-    // The email the user used to log in.
-    const std::string email() const { return email_; }
+    User() {}
     ~User() {}
+
+    // The email the user used to log in.
+    void set_email(const std::string& email) { email_ = email; }
+    const std::string& email() const { return email_; }
+
+    // Returns the name to display for this user.
+    std::string GetDisplayName() const;
+
+    // The image for this user.
+    void set_image(const SkBitmap& image) { image_ = image; }
+    const SkBitmap& image() const { return image_; }
 
    private:
     friend class UserManager;
-    User() {}
 
     std::string email_;
+    SkBitmap image_;
   };
 
   // Gets a shared instance of a UserManager. Not thread-safe...should
@@ -40,7 +51,7 @@ class UserManager {
 
   // Indicates that a user with the given email has just logged in.
   // The persistent list will be updated accordingly.
-  void UserLoggedIn(const std::string email);
+  void UserLoggedIn(const std::string& email);
 
  private:
   UserManager() {}

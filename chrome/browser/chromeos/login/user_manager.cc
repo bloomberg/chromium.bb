@@ -16,6 +16,14 @@ static const wchar_t kLoggedInUsers[] = L"LoggedInUsers";
 // The one true UserManager.
 static UserManager* user_manager_ = NULL;
 
+std::string UserManager::User::GetDisplayName() const {
+  size_t i = email_.find('@');
+  if (i == 0 || i == std::string::npos) {
+    return email_;
+  }
+  return email_.substr(0, i);
+}
+
 // static
 UserManager* UserManager::Get() {
   if (!user_manager_) {
@@ -45,7 +53,7 @@ std::vector<UserManager::User> UserManager::GetUsers() const {
   return users;
 }
 
-void UserManager::UserLoggedIn(std::string email) {
+void UserManager::UserLoggedIn(const std::string& email) {
   // Get a copy of the current users.
   std::vector<User> users = GetUsers();
 
