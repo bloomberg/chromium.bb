@@ -56,6 +56,7 @@ const wchar_t kMakeChromeDefaultForUser[] = L"make_chrome_default_for_user";
 const wchar_t kRequireEula[] = L"require_eula";
 const wchar_t kSystemLevel[] = L"system_level";
 const wchar_t kVerboseLogging[] = L"verbose_logging";
+const wchar_t kExtensionsBlock[] = L"extensions.settings";
 }
 
 bool GetDistroBooleanPreference(const DictionaryValue* prefs,
@@ -128,6 +129,12 @@ bool SetDistroBooleanPreference(DictionaryValue* prefs,
     return false;
   prefs->SetBoolean(std::wstring(kDistroDict) + L"." + name, value);
   return true;
+}
+
+bool HasExtensionsBlock(const DictionaryValue* prefs,
+                        DictionaryValue** extensions) {
+  return (prefs->GetDictionary(master_preferences::kExtensionsBlock,
+                               extensions));
 }
 
 }  // installer_util

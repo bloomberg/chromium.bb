@@ -58,6 +58,8 @@ extern const wchar_t kRequireEula[];
 extern const wchar_t kSystemLevel[];
 // Boolean. Run installer in verbose mode. Cmd line override present.
 extern const wchar_t kVerboseLogging[];
+// Name of the block that contains the extensions on the master preferences.
+extern const wchar_t kExtensionsBlock[];
 }
 
 // This is the default name for the master preferences file used to pre-set
@@ -161,6 +163,45 @@ std::vector<std::wstring> GetDefaultBookmarks(const DictionaryValue* prefs);
 bool SetDistroBooleanPreference(DictionaryValue* prefs,
                                 const std::wstring& name,
                                 bool value);
-}
+
+// The master preferences can also contain a regular extensions
+// preference block. If so, the extensions referenced there will be
+// installed during the first run experience.
+// An extension can go in the master prefs needs just the basic
+// elements such as:
+//   1- An extension entry under settings, assigned by the gallery
+//   2- The "location" : 1 entry
+//   3- A minimal "manifest" block with key, name, permissions, update url
+//      and version. The version needs to be lower than the version of
+//      the extension that is hosted in the gallery.
+//   4- The "path" entry with the version as last component
+//   5- The "state" : 1 entry
+//
+// The following is an example of a master pref file that installs
+// Google XYZ:
+//
+//  {
+//     "extensions": {
+//        "settings": {
+//           "ppflmjolhbonpkbkooiamcnenbmbjcbb": {
+//              "location": 1,
+//              "manifest": {
+//                 "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4<rest of key ommited>",
+//                 "name": "Google XYZ (Installing...)",
+//                 "permissions": [ "tabs", "http://xyz.google.com/" ],
+//                 "update_url": "http://fixme.com/fixme/fixme/crx",
+//                 "version": "0.0"
+//              },
+//              "path": "ppflmjolhbonpkbkooiamcnenbmbjcbb\\0.0",
+//              "state": 1
+//           }
+//        }
+//     }
+//  }
+//
+bool HasExtensionsBlock(const DictionaryValue* prefs,
+                        DictionaryValue** extensions);
+
+}  // namespace installer_util
 
 #endif  // CHROME_INSTALLER_UTIL_MASTER_PREFERENCES_H_

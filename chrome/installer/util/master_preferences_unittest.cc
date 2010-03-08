@@ -4,8 +4,10 @@
 //
 // Unit tests for master preferences related methods.
 
-#include "base/scoped_ptr.h"
 #include "base/file_util.h"
+#include "base/path_service.h"
+#include "base/scoped_ptr.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -228,4 +230,39 @@ TEST_F(MasterPreferencesTest, FirstRunBookMarks) {
   ASSERT_EQ(2, bookmarks.size());
   EXPECT_EQ(L"http://google.com/b1", bookmarks[0]);
   EXPECT_EQ(L"https://google.com/b2", bookmarks[1]);
+}
+
+// In this test instead of using our synthetic json file, we use an
+// actual test case from the extensions unittest. The hope here is that if
+// they change something in the manifest this test will break, but in
+// general it is expected the extension format to be backwards compatible.
+TEST(MasterPrefsExtension, ValidateExtensionJSON) {
+  FilePath prefs_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &prefs_path));
+  prefs_path = prefs_path.AppendASCII("extensions")
+      .AppendASCII("good").AppendASCII("Preferences");
+
+  scoped_ptr<DictionaryValue> prefs(
+      installer_util::ParseDistributionPreferences(prefs_path));
+  ASSERT_TRUE(prefs.get() != NULL);
+  DictionaryValue* extensions = NULL;
+  EXPECT_TRUE(installer_util::HasExtensionsBlock(prefs.get(), &extensions));
+  int location = 0;
+  EXPECT_TRUE(extensions->GetInteger(
+      L"behllobkkfkfnphdnhnkndlbkcpglgmj.location", &location));
+  int state = 0;
+  EXPECT_TRUE(extensions->GetInteger(
+      L"behllobkkfkfnphdnhnkndlbkcpglgmj.state", &state));
+  std::wstring path;
+  EXPECT_TRUE(extensions->GetString(
+      L"behllobkkfkfnphdnhnkndlbkcpglgmj.path", &path));
+  std::wstring key;
+  EXPECT_TRUE(extensions->GetString(
+      L"behllobkkfkfnphdnhnkndlbkcpglgmj.manifest.key", &key));
+  std::wstring name;
+  EXPECT_TRUE(extensions->GetString(
+      L"behllobkkfkfnphdnhnkndlbkcpglgmj.manifest.name", &name));
+  std::wstring version;
+  EXPECT_TRUE(extensions->GetString(
+      L"behllobkkfkfnphdnhnkndlbkcpglgmj.manifest.version", &version));
 }

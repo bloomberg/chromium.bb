@@ -27,8 +27,13 @@
 #include "base/string_util.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/notification_registrar.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/hang_monitor/hung_window_detector.h"
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/pref_service.h"
@@ -151,6 +156,51 @@ bool WriteEULAtoTempFile(FilePath* eula_path) {
   return (file_util::WriteFile(*eula_path, terms.c_str(), terms.size()) > 0);
 }
 
+// Helper class that performs delayed first-run tasks that need more of the
+// chrome infrastructure to be up an running before they can be attempted.
+class FirsRunDelayedTasks : public NotificationObserver {
+ public:
+  enum Tasks {
+    NO_TASK,
+    INSTALL_EXTENSIONS
+  };
+
+  explicit FirsRunDelayedTasks(Tasks task) {
+    if (task == INSTALL_EXTENSIONS) {
+      registrar_.Add(this, NotificationType::EXTENSIONS_READY,
+                     NotificationService::AllSources());
+    }
+    registrar_.Add(this, NotificationType::BROWSER_CLOSED,
+                   NotificationService::AllSources());
+  }
+
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) {
+    // After processing the notification we always delete ourselves.
+    if (type.value == NotificationType::EXTENSIONS_READY)
+      DoExtensionWork(Source<Profile>(source).ptr()->GetExtensionsService());
+    delete this;
+    return;
+  }
+
+ private:
+  // Private ctor forces it to be created only in the heap.
+  ~FirsRunDelayedTasks() {}
+
+  // The extension work is to basically trigger an extension update check.
+  // If the extension specified in the master pref is older than the live
+  // extension it will get updated which is the same as get it installed.
+  void DoExtensionWork(ExtensionsService* service) {
+    if (!service)
+      return;
+    service->updater()->CheckNow();
+    return;
+  }
+
+  NotificationRegistrar registrar_;
+};
+
 }  // namespace
 
 bool FirstRun::CreateChromeDesktopShortcut() {
@@ -246,6 +296,12 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
   // to the default place and they just work.
   if (!file_util::CopyFile(master_prefs, user_prefs))
     return true;
+
+  DictionaryValue* extensions = 0;
+  if (installer_util::HasExtensionsBlock(prefs.get(), &extensions)) {
+    LOG(INFO) << "Extensions block found in master preferences";
+    new FirsRunDelayedTasks(FirsRunDelayedTasks::INSTALL_EXTENSIONS);
+  }
 
   // Add a special exception for import_search_engine preference.
   // Even though we skip all other import_* preferences below, if
