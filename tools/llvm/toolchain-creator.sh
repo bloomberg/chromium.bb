@@ -156,7 +156,7 @@ DownloadOrCopyCodeSourceryTarball() {
 # The mygcc32 and myg++32 trickery ensures that all binaries
 # are statically linked and 32-bit.
 ConfigureAndBuildLlvm() {
-  Banner "Untar,Confiure,Build llvm/llvm-gcc ${LLVM_BUILD_SCRIPT}"
+  Banner "Untar,Confiure,Build llvm/llvm-gcc"
   export MAKE_OPTS="-j6 VERBOSE=1"
   export CC=$(readlink -f tools/llvm/mygcc32)
   export CXX=$(readlink -f tools/llvm/myg++32)
@@ -189,6 +189,7 @@ UntarPatchConfigureAndBuildSfiLlc() {
       ./configure\
       --disable-jit\
       --enable-optimized\
+      --enable-targets=x86,x86_64,arm \
       --enable-targets=arm\
       --target=arm-none-linux-gnueabi
 
@@ -229,7 +230,6 @@ InstallMiscTools() {
    Run "sel loader" \
           ./scons MODE=nacl,opt-linux \
           platform=arm \
-          sdl_mode=none \
           sdl=none \
           naclsdk_mode=manual \
           naclsdk_validate=0 \
@@ -282,7 +282,6 @@ InstallNewlibAndNaClRuntime() {
   rm -rf scons-out/nacl_extra_sdk-arm/
   ./scons MODE=nacl_extra_sdk \
           platform=arm \
-          sdl_mode=none \
           sdl=none \
           naclsdk_mode=manual \
           naclsdk_validate=0 \

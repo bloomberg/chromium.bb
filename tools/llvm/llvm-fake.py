@@ -18,9 +18,9 @@ import sys
 # enable this for manual debugging of this script only
 VERBOSE = 0
 TOLERATE_COMPILATION_OF_ASM_CODE = 1
-# NOTE: set this to somethinh like:
-# OUT = open('/tmp/fake.log', 'a')
-# if you want a log of all the action
+# NOTE: set this to something like:
+#OUT = open('/tmp/fake.log', 'a')
+# if you want a log of all the action. otherwise:
 OUT = None
 
 
@@ -178,7 +178,7 @@ def FindObjectFilePos(argv):
 
 def HasAssemblerFiles(argv):
   for a in argv:
-    if a.endswith('.S') or a.endswith('.s'):
+    if a.endswith('.S') or a.endswith('.s') or a.endswith('.asm'):
       return True
   else:
     return False
@@ -206,6 +206,7 @@ def IsDiagnosticMode(argv):
           # used by scons harness
           '--v' in argv or
           '-v' in argv or
+          '-dumpspecs' in argv or
           '-print-search-dirs' in argv or
           '-print-libgcc-file-name' in argv)
 

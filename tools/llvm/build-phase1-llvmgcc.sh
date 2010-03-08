@@ -151,6 +151,7 @@ installLLVM() {
       ${LLVM_SRC_DIR}/configure \
       --disable-jit \
       --enable-optimized \
+      --enable-targets=x86,x86_64,arm \
       --prefix=${LLVM_INSTALL_DIR} \
       --target=${CROSS_TARGET} \
       --with-llvmgccdir=${LLVMGCC_INSTALL_DIR}
@@ -200,6 +201,7 @@ createDir ${OBJ_ROOT}
 installCodeSourcery
 installLLVM
 installLLVMGCC
+
 
 # NOTE: for now we leave the dir around when a failure occurs
 rm -rf ${SCRATCH_ROOT}

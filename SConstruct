@@ -1083,7 +1083,6 @@ if (nacl_env['BUILD_ARCHITECTURE'] == 'arm' and
                         '-lstdc++',
                         '-lc',
                         '-lgcc',
-                        '-lgcc_eh',
                         '-lunimpl',
                         '${NACL_SDK_LIB}/crtn.o',
                         '-static'],

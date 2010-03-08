@@ -18,6 +18,8 @@ readonly PATCH_ROOT="$(pwd)/tools/patches"
 readonly INSTALL_ROOT="${INSTALL_ROOT:-/usr/local/crosstool}"
 # Both $USER and root *must* have read/write access to this dir.
 readonly SCRATCH_ROOT=$(mktemp -d "${TMPDIR:-/tmp}/llvm-phase2.XXXXXX")
+# NOTE: use this instead for a more deterministic behavior
+#readonly SCRATCH_ROOT=/tmp/llvm-phase2.XXXXXX
 readonly SRC_ROOT="${SCRATCH_ROOT}/src"
 readonly OBJ_ROOT="${SCRATCH_ROOT}/obj"
 
@@ -129,6 +131,7 @@ buildLLVM() {
   RunWithLog "Configuring LLVM" ${LLVM_OBJ_DIR}/llvm-configure.log \
       ${LLVM_SRC_DIR}/configure \
       --disable-jit \
+      --enable-targets=x86,x86_64,arm \
       --enable-optimized \
       --prefix=${LLVM_INSTALL_DIR} \
       --target=${CROSS_TARGET} \
@@ -155,6 +158,11 @@ installLLVMGCC() {
   cd ${LLVMGCC_OBJ_DIR}
   RunWithLog "Configuring LLVM-GCC" ${LLVMGCC_OBJ_DIR}/llvmgcc-configure.log \
       ${LLVMGCC_SRC_DIR}/configure \
+      --disable-decimal-float \
+      --disable-libssp \
+      --disable-libgomp \
+      --disable-libstdcxx-pch \
+      --disable-shared \
       --enable-languages=c,c++ \
       --enable-llvm=${LLVM_INSTALL_DIR} \
       --prefix=${LLVMGCC_INSTALL_DIR} \
@@ -164,11 +172,36 @@ installLLVMGCC() {
       --with-as=${CROSS_TARGET_AS} \
       --with-ld=${CROSS_TARGET_LD} \
       --with-sysroot=${SYSROOT}
+
   # LOCALMOD: this envvar dance forces use of our compiler driver.
   RunWithLog "Building LLVM-GCC" ${LLVMGCC_OBJ_DIR}/llvmgcc-build.log \
-      make CC_FOR_TARGET=llvm-fake-sfigcc CXX_FOR_TARGET=llvm-fake-sfig++ \
-           GCC_FOR_TARGET=llvm-fake-sfigcc CFLAGS=-O2
+      make CC_FOR_TARGET=llvm-fake-sfigcc \
+           CXX_FOR_TARGET=llvm-fake-sfig++ \
+           GCC_FOR_TARGET=llvm-fake-sfigcc \
+           CFLAGS=-O2 \
+           all-gcc
 
+  # NOTE: there is no separate libgcc_eh.a as we build with  --disable-share
+  #       libgcc.a DOES contain all the relevant symbols, though
+  SubBanner "Installing libgcc"
+  mkdir -p  ${INSTALL_ROOT}/armsfi-lib
+  cp ${SCRATCH_ROOT}/obj/llvm-gcc-4.2/gcc/libgcc.a  ${INSTALL_ROOT}/armsfi-lib
+
+
+#    TODO(robertm): reconsider this when switching to recent version of gcc
+#   RunWithLog "Building LLVM-GCC-LIBGCC" ${LLVMGCC_OBJ_DIR}/llvmgcc_libgcc-build.log \
+#       make CC_FOR_TARGET=llvm-fake-sfigcc \
+#            CXX_FOR_TARGET=llvm-fake-sfig++ \
+#            GCC_FOR_TARGET=llvm-fake-sfigcc \
+#            CFLAGS=-O2 \
+#            all-target-libgcc
+
+  # NOTE: TODO(robertm): needs more work
+  # the following make invocation seems promising:
+  #     make all-target-libstdc++-v3
+  # Also: look at tools/Makefile for what we do on x86
+  Banner "Skipping libstdc++"
+  return
   # LOCALMOD: the full set of C/C++ compiler envvars isn't propagated into the
   # libstdc++ build, so we get to do it all over again.
   cd arm-none-linux-gnueabi/libstdc++-v3
@@ -214,6 +247,7 @@ buildLLVM
 installLLVMGCC
 
 # NOTE: for now we leave the dir around when a failure occurs
+SubBanner "Cleaning up"
 rm -rf ${SCRATCH_ROOT}
 
 echo "Done."
