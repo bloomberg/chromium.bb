@@ -208,7 +208,7 @@ class TabStripModelObserverBridge;
 - (void)executeCommand:(int)command;
 
 // Delegate method for the status bubble to query about its vertical offset.
-- (float)verticalOffsetForStatusBubble;
+- (CGFloat)verticalOffsetForStatusBubble;
 
 // Show the bookmark bubble (e.g. user just clicked on the STAR)
 - (void)showBookmarkBubbleForURL:(const GURL&)url
@@ -268,6 +268,8 @@ class TabStripModelObserverBridge;
 
 // Called to check if this controller's window is a normal window (e.g., not a
 // pop-up window). Returns YES if it is, NO otherwise.
+// Note: The |-has...| methods are usually preferred, so this method is largely
+// deprecated.
 - (BOOL)isNormalWindow;
 
 @end  // @interface BrowserWindowController(WindowType)

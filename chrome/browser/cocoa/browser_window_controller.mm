@@ -8,6 +8,7 @@
 
 #include "app/l10n_util_mac.h"
 #include "base/mac_util.h"
+#include "base/nsimage_cache_mac.h"
 #include "base/scoped_nsdisable_screen_updates.h"
 #import "base/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
@@ -740,7 +741,7 @@
 // when resizing any child of the content view, rather than resizing the views
 // directly.  If the view is already the correct height, does not force a
 // relayout.
-- (void)resizeView:(NSView*)view newHeight:(float)height {
+- (void)resizeView:(NSView*)view newHeight:(CGFloat)height {
   // We should only ever be called for one of the following four views.
   // |downloadShelfController_| may be nil. If we are asked to size the bookmark
   // bar directly, its superview must be this controller's content view.
@@ -961,7 +962,7 @@
 
 // StatusBubble delegate method: tell the status bubble how far above the bottom
 // of the window it should position itself.
-- (float)verticalOffsetForStatusBubble {
+- (CGFloat)verticalOffsetForStatusBubble {
   return verticalOffsetForStatusBubble_ +
          [[tabStripController_ activeTabContentsController] devToolsHeight];
 }
@@ -1409,29 +1410,26 @@
 // the window at the upper right. Use the same base y coordinate as the
 // tab strip.
 - (void)installIncognitoBadge {
-  if (!browser_->profile()->IsOffTheRecord())
-    return;
-  // Don't install if we're not a normal browser (ie, a popup).
-  if (![self isNormalWindow])
+  // Only install if this browser window is OTR and has a tab strip.
+  if (!browser_->profile()->IsOffTheRecord() || ![self hasTabStrip])
     return;
 
-  static const float kOffset = 4;
-  NSString* incognitoPath = [mac_util::MainAppBundle()
-                                pathForResource:@"otr_icon"
-                                         ofType:@"pdf"];
-  scoped_nsobject<NSImage> incognitoImage(
-      [[NSImage alloc] initWithContentsOfFile:incognitoPath]);
-  const NSSize imageSize = [incognitoImage size];
-  NSRect tabFrame = [[self tabStripView] frame];
-  NSRect incognitoFrame = tabFrame;
-  incognitoFrame.origin.x = NSMaxX(incognitoFrame) - imageSize.width -
-                              kOffset;
-  incognitoFrame.size = imageSize;
+  const CGFloat kOffset = 4;  // Space between the badge and the right edge.
+  NSImage* image = nsimage_cache::ImageNamed(@"otr_icon.pdf");
+
+  // Create the incognito badge view, with size that of the image, aligned with
+  // the bottom of the tab strip, and aligned at the right with a bit of space.
+  NSSize size = [image size];
+  NSRect tabStripFrame = [[self tabStripView] frame];
+  NSRect frame = NSMakeRect(NSMaxX(tabStripFrame) - size.width - kOffset,
+                            tabStripFrame.origin.y, size.width, size.height);
   scoped_nsobject<IncognitoImageView> incognitoView(
-      [[IncognitoImageView alloc] initWithFrame:incognitoFrame]);
-  [incognitoView setImage:incognitoImage.get()];
+      [[IncognitoImageView alloc] initWithFrame:frame]);
+  [incognitoView setImage:image];
   [incognitoView setWantsLayer:YES];
   [incognitoView setAutoresizingMask:NSViewMinXMargin | NSViewMinYMargin];
+
+  // Give it a shadow.
   scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
   [shadow.get() setShadowColor:[NSColor colorWithCalibratedWhite:0.0
                                                            alpha:0.5]];
@@ -1439,10 +1437,10 @@
   [shadow setShadowBlurRadius:2.0];
   [incognitoView setShadow:shadow];
 
-  // Shrink the tab strip's width so there's no overlap and install the
-  // view.
-  tabFrame.size.width -= incognitoFrame.size.width + kOffset;
-  [[self tabStripView] setFrame:tabFrame];
+  // Shrink the tab strip's width so there's no overlap and install the view.
+  tabStripFrame.size.width -= NSWidth(frame) + kOffset;
+  DCHECK(NSWidth(tabStripFrame) > 0);
+  [[self tabStripView] setFrame:tabStripFrame];
   [[[[self window] contentView] superview] addSubview:incognitoView.get()];
 }
 
@@ -1472,7 +1470,7 @@
 - (void)magnifyWithEvent:(NSEvent*)event {
   // The deltaZ difference necessary to trigger a zoom action. Derived from
   // experimentation to find a value that feels reasonable.
-  static const float kZoomStepValue = 150;
+  const float kZoomStepValue = 150;
 
   // Find the (absolute) thresholds on either side of the current zoom factor,
   // then convert those to actual numbers to trigger a zoom in or out.

@@ -138,7 +138,7 @@ class StatusBubbleMac : public StatusBubble {
 @interface NSObject(StatusBubbleDelegate)
 // Called to query the delegate about the vertical offset (if any) that should
 // be applied to the StatusBubble's position.
-- (float)verticalOffsetForStatusBubble;
+- (CGFloat)verticalOffsetForStatusBubble;
 
 // Called from SetState to notify the delegate of state changes.
 - (void)statusBubbleWillEnterState:(StatusBubbleMac::StatusBubbleState)state;

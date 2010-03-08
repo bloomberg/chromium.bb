@@ -11,11 +11,11 @@
 
 @interface ViewResizerPong : NSObject<ViewResizer> {
  @private
-  float height_;
+  CGFloat height_;
 }
-@property float height;
+@property CGFloat height;
 
-- (void)resizeView:(NSView*)view newHeight:(float)height;
+- (void)resizeView:(NSView*)view newHeight:(CGFloat)height;
 @end
 
 #endif  // CHROME_BROWSER_COCOA_VIEW_RESIZER_PONG_H_

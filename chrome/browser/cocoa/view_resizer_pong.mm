@@ -10,7 +10,7 @@
 
 @synthesize height = height_;
 
-- (void)resizeView:(NSView*)view newHeight:(float)height {
+- (void)resizeView:(NSView*)view newHeight:(CGFloat)height {
   [self setHeight:height];
 
   // Set the view's height and width, in case it uses that as important state.

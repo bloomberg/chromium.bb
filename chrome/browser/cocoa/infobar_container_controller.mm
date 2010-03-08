@@ -60,7 +60,7 @@ class InfoBarNotificationObserver : public NotificationObserver {
 @interface InfoBarContainerController (PrivateMethods)
 // Returns the desired height of the container view, computed by
 // adding together the heights of all its subviews.
-- (float)desiredHeight;
+- (CGFloat)desiredHeight;
 
 // Modifies this container to display infobars for the given
 // |contents|.  Registers for INFOBAR_ADDED and INFOBAR_REMOVED
@@ -123,7 +123,7 @@ class InfoBarNotificationObserver : public NotificationObserver {
   [self changeTabContents:NULL];
 }
 
-- (void)resizeView:(NSView*)view newHeight:(float)height {
+- (void)resizeView:(NSView*)view newHeight:(CGFloat)height {
   NSRect frame = [view frame];
   frame.size.height = height;
   [view setFrame:frame];
@@ -139,13 +139,10 @@ class InfoBarNotificationObserver : public NotificationObserver {
 
 @implementation InfoBarContainerController (PrivateMethods)
 
-- (float)desiredHeight {
-  float height = 0;
-
-  for (InfoBarController* controller in infobarControllers_.get()) {
-    height += [[controller view] frame].size.height;
-  }
-
+- (CGFloat)desiredHeight {
+  CGFloat height = 0;
+  for (InfoBarController* controller in infobarControllers_.get())
+    height += NSHeight([[controller view] frame]);
   return height;
 }
 
