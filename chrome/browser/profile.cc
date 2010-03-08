@@ -50,6 +50,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_factory_impl.h"
 #include "chrome/browser/thumbnail_store.h"
+#include "chrome/browser/user_style_sheet_watcher.h"
 #include "chrome/browser/visitedlink_master.h"
 #include "chrome/browser/visitedlink_event_listener.h"
 #include "chrome/browser/webdata/web_data_service.h"
@@ -408,6 +409,10 @@ class OffTheRecordProfileImpl : public Profile,
 
   virtual Blacklist* GetPrivacyBlacklist() {
     return profile_->GetPrivacyBlacklist();
+  }
+
+  virtual UserStyleSheetWatcher* GetUserStyleSheetWatcher() {
+    return profile_->GetUserStyleSheetWatcher();
   }
 
   virtual SessionService* GetSessionService() {
@@ -986,6 +991,14 @@ Blacklist* ProfileImpl::GetPrivacyBlacklist() {
   if (!privacy_blacklist_.get())
     privacy_blacklist_ = new Blacklist(GetPrefs());
   return privacy_blacklist_.get();
+}
+
+UserStyleSheetWatcher* ProfileImpl::GetUserStyleSheetWatcher() {
+  if (!user_style_sheet_watcher_.get()) {
+    user_style_sheet_watcher_ = new UserStyleSheetWatcher(GetPath());
+    user_style_sheet_watcher_->Init();
+  }
+  return user_style_sheet_watcher_.get();
 }
 
 HistoryService* ProfileImpl::GetHistoryService(ServiceAccessType sat) {

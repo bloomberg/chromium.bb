@@ -873,6 +873,7 @@
         'browser/task_manager_unittest.cc',
         'browser/translate/translate_manager_unittest.cc',
         'browser/theme_resources_util_unittest.cc',
+        'browser/user_style_sheet_watcher_unittest.cc',
         'browser/views/bookmark_context_menu_test.cc',
         'browser/views/bookmark_editor_view_unittest.cc',
         'browser/views/extensions/browser_action_drag_data_unittest.cc',

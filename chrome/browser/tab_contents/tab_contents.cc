@@ -319,6 +319,9 @@ TabContents::TabContents(Profile* profile,
                  NotificationService::AllSources());
 #endif
 
+  registrar_.Add(this, NotificationType::USER_STYLE_SHEET_UPDATED,
+                 NotificationService::AllSources());
+
   // Register for notifications about content setting changes.
   registrar_.Add(this, NotificationType::CONTENT_SETTINGS_CHANGED,
                  NotificationService::AllSources());
@@ -2561,9 +2564,9 @@ GURL TabContents::GetAlternateErrorPageURL() const {
 }
 
 WebPreferences TabContents::GetWebkitPrefs() {
-  PrefService* prefs = render_view_host()->process()->profile()->GetPrefs();
+  Profile* profile = render_view_host()->process()->profile();
   bool is_dom_ui = false;
-  return RenderViewHostDelegateHelper::GetWebkitPrefs(prefs, is_dom_ui);
+  return RenderViewHostDelegateHelper::GetWebkitPrefs(profile, is_dom_ui);
 }
 
 void TabContents::OnIgnoredUIEvent() {
@@ -2778,6 +2781,10 @@ void TabContents::Observe(NotificationType type,
       break;
     }
 #endif
+
+    case NotificationType::USER_STYLE_SHEET_UPDATED:
+      UpdateWebPreferences();
+      break;
 
     case NotificationType::CONTENT_SETTINGS_CHANGED: {
       Details<HostContentSettingsMap::ContentSettingsDetails>

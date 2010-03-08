@@ -60,7 +60,7 @@ class RenderViewHostDelegateViewHelper {
 // RenderViewHostDelegate methods.
 class RenderViewHostDelegateHelper {
  public:
-  static WebPreferences GetWebkitPrefs(PrefService* prefs, bool is_dom_ui);
+  static WebPreferences GetWebkitPrefs(Profile* profile, bool is_dom_ui);
 
  private:
   RenderViewHostDelegateHelper();

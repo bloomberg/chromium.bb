@@ -17,6 +17,7 @@
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
+#include "chrome/browser/user_style_sheet_watcher.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 
@@ -112,8 +113,8 @@ void RenderViewHostDelegateViewHelper::RenderWidgetHostDestroyed(
 
 // static
 WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
-    PrefService* prefs, bool is_dom_ui) {
-
+    Profile* profile, bool is_dom_ui) {
+  PrefService* prefs = profile->GetPrefs();
   WebPreferences web_prefs;
 
   web_prefs.fixed_font_family =
@@ -180,26 +181,30 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
         !command_line.HasSwitch(switches::kDisableApplicationCache);
 
     web_prefs.local_storage_enabled =
-      !command_line.HasSwitch(switches::kDisableLocalStorage);
+        !command_line.HasSwitch(switches::kDisableLocalStorage);
     web_prefs.databases_enabled =
-      !command_line.HasSwitch(switches::kDisableDatabases);
+        !command_line.HasSwitch(switches::kDisableDatabases);
     web_prefs.experimental_webgl_enabled =
-      command_line.HasSwitch(switches::kEnableExperimentalWebGL);
+        command_line.HasSwitch(switches::kEnableExperimentalWebGL);
     web_prefs.site_specific_quirks_enabled =
-      !command_line.HasSwitch(switches::kDisableSiteSpecificQuirks);
+        !command_line.HasSwitch(switches::kDisableSiteSpecificQuirks);
     web_prefs.allow_file_access_from_file_urls =
-      command_line.HasSwitch(switches::kAllowFileAccessFromFiles);
+        command_line.HasSwitch(switches::kAllowFileAccessFromFiles);
     web_prefs.show_composited_layer_borders =
-      command_line.HasSwitch(switches::kShowCompositedLayerBorders);
+        command_line.HasSwitch(switches::kShowCompositedLayerBorders);
+    web_prefs.user_style_sheet_enabled =
+        command_line.HasSwitch(switches::kEnableUserStyleSheet);
+    if (web_prefs.user_style_sheet_enabled) {
+      web_prefs.user_style_sheet_location =
+          profile->GetUserStyleSheetWatcher()->user_style_sheet();
+    }
+
   }
 
   web_prefs.uses_universal_detector =
       prefs->GetBoolean(prefs::kWebKitUsesUniversalDetector);
   web_prefs.text_areas_are_resizable =
       prefs->GetBoolean(prefs::kWebKitTextAreasAreResizable);
-
-  // User CSS is currently disabled because it crashes chrome.  See
-  // webkit/glue/webpreferences.h for more details.
 
   // Make sure we will set the default_encoding with canonical encoding name.
   web_prefs.default_encoding =

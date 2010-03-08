@@ -52,8 +52,6 @@ struct WebPreferences {
   bool application_cache_enabled;
   bool tabs_to_links;
 
-  // TODO(tc): User style sheets will not work in chrome because it tries to
-  // load the style sheet using a request without a frame.
   bool user_style_sheet_enabled;
   GURL user_style_sheet_location;
   bool allow_universal_access_from_file_urls;

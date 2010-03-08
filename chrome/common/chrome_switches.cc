@@ -301,6 +301,9 @@ const char kEnableTabbedBookmarkManager[]   = "enable-tabbed-bookmark-manager";
 // enabled or not.
 const char kEnableUserDataDirProfiles[]     = "enable-udd-profiles";
 
+// Enable user style sheet (read from User Style Sheet in the profile dir).
+const char kEnableUserStyleSheet[]          = "enable-user-stylesheet";
+
 // Enables the option to show tabs as a vertical stack down the side of the
 // browser window.
 const char kEnableVerticalTabs[]            = "enable-vertical-tabs";

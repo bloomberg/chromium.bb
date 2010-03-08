@@ -1932,6 +1932,8 @@
         'browser/translate/translate_prefs.h',
         'browser/user_data_manager.cc',
         'browser/user_data_manager.h',
+        'browser/user_style_sheet_watcher.cc',
+        'browser/user_style_sheet_watcher.h',
         'browser/utility_process_host.cc',
         'browser/utility_process_host.h',
         'browser/view_ids.h',

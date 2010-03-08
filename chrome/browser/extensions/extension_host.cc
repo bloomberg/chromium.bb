@@ -469,10 +469,10 @@ RendererPreferences ExtensionHost::GetRendererPrefs(Profile* profile) const {
 }
 
 WebPreferences ExtensionHost::GetWebkitPrefs() {
-  PrefService* prefs = render_view_host()->process()->profile()->GetPrefs();
+  Profile* profile = render_view_host()->process()->profile();
   const bool kIsDomUI = true;
   WebPreferences webkit_prefs =
-      RenderViewHostDelegateHelper::GetWebkitPrefs(prefs, kIsDomUI);
+      RenderViewHostDelegateHelper::GetWebkitPrefs(profile, kIsDomUI);
   if (extension_host_type_ == ViewType::EXTENSION_POPUP)
     webkit_prefs.allow_scripts_to_close_windows = true;
   return webkit_prefs;

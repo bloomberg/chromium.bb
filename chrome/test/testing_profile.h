@@ -184,6 +184,7 @@ class TestingProfile : public Profile {
 
   virtual net::SSLConfigService* GetSSLConfigService() { return NULL; }
   virtual Blacklist* GetPrivacyBlacklist() { return NULL; }
+  virtual UserStyleSheetWatcher* GetUserStyleSheetWatcher() { return NULL; }
   virtual HostContentSettingsMap* GetHostContentSettingsMap() {
     if (!host_content_settings_map_.get())
       host_content_settings_map_ = new HostContentSettingsMap(this);

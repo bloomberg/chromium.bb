@@ -66,6 +66,7 @@ class ThemeProvider;
 class ThumbnailStore;
 class URLRequestContextGetter;
 class UserScriptMaster;
+class UserStyleSheetWatcher;
 class VisitedLinkMaster;
 class VisitedLinkEventListener;
 class WebDataService;
@@ -299,6 +300,9 @@ class Profile {
   // Returns the Privacy Blacklist for this profile.
   virtual Blacklist* GetPrivacyBlacklist() = 0;
 
+  // Returns the user style sheet watcher.
+  virtual UserStyleSheetWatcher* GetUserStyleSheetWatcher() = 0;
+
   // Returns the session service for this profile. This may return NULL. If
   // this profile supports a session service (it isn't off the record), and
   // the session service hasn't yet been created, this forces creation of
@@ -467,6 +471,7 @@ class ProfileImpl : public Profile,
   virtual HostContentSettingsMap* GetHostContentSettingsMap();
   virtual HostZoomMap* GetHostZoomMap();
   virtual Blacklist* GetPrivacyBlacklist();
+  virtual UserStyleSheetWatcher* GetUserStyleSheetWatcher();
   virtual SessionService* GetSessionService();
   virtual void ShutdownSessionService();
   virtual bool HasSessionService() const;
@@ -553,6 +558,7 @@ class ProfileImpl : public Profile,
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
   scoped_refptr<HostZoomMap> host_zoom_map_;
   scoped_refptr<Blacklist> privacy_blacklist_;
+  scoped_refptr<UserStyleSheetWatcher> user_style_sheet_watcher_;
   scoped_refptr<DownloadManager> download_manager_;
   scoped_refptr<HistoryService> history_service_;
   scoped_refptr<FaviconService> favicon_service_;

@@ -662,6 +662,11 @@ class NotificationType {
     // pointer to SharedMemory containing the new scripts.
     USER_SCRIPTS_UPDATED,
 
+    // User Style Sheet --------------------------------------------------------
+
+    // Sent when the user style sheet has changed.
+    USER_STYLE_SHEET_UPDATED,
+
     // Extensions --------------------------------------------------------------
 
     // Sent when the known installed extensions have all been loaded.  In
