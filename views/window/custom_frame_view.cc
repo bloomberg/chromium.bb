@@ -41,32 +41,17 @@ const int kTopResizeAdjust = 1;
 // In the window corners, the resize areas don't actually expand bigger, but the
 // 16 px at the end of each edge triggers diagonal resizing.
 const int kResizeAreaCornerSize = 16;
-// The titlebar never shrinks to less than 18 px tall, plus the height of the
-// frame border and any bottom edge.
-const int kTitlebarMinimumHeight = 18;
+// The titlebar never shrinks too short to show the caption button plus some
+// padding below it.
+const int kCaptionButtonHeightWithPadding = 19;
+// The titlebar has a 2 px 3D edge along the top and bottom.
+const int kTitlebarTopAndBottomEdgeThickness = 2;
 // The icon is inset 2 px from the left frame border.
 const int kIconLeftSpacing = 2;
-// The icon takes up 16/25th of the available titlebar height.  (This is
-// expressed as two ints to avoid precision losses leading to off-by-one pixel
-// errors.)
-const int kIconHeightFractionNumerator = 16;
-const int kIconHeightFractionDenominator = 25;
-// The icon never shrinks below 16 px on a side.
-const int kIconMinimumSize = 16;
-// Because our frame border has a different "3D look" than Windows', with a less
-// cluttered top edge, we need to shift the icon up by 1 px in restored mode so
-// it looks more centered.
-const int kIconRestoredAdjust = 1;
 // There is a 4 px gap between the icon and the title text.
 const int kIconTitleSpacing = 4;
-// The title text starts 2 px below the bottom of the top frame border.
-const int kTitleTopSpacing = 2;
 // There is a 5 px gap between the title text and the caption buttons.
 const int kTitleCaptionSpacing = 5;
-// The caption buttons are always drawn 1 px down from the visible top of the
-// window (the true top in restored mode, or the top of the screen in maximized
-// mode).
-const int kCaptionTopSpacing = 1;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -78,8 +63,7 @@ CustomFrameView::CustomFrameView(Window* frame)
       ALLOW_THIS_IN_INITIALIZER_LIST(restore_button_(new ImageButton(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(maximize_button_(new ImageButton(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(minimize_button_(new ImageButton(this))),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          system_menu_button_(new ImageButton(this))),
+      window_icon_(NULL),
       should_show_minmax_buttons_(false),
       frame_(frame) {
   InitClass();
@@ -90,32 +74,36 @@ CustomFrameView::CustomFrameView(Window* frame)
   AddChildView(close_button_);
 
   restore_button_->SetImage(CustomButton::BS_NORMAL,
-      rb.GetBitmapNamed(IDR_RESTORE));
+                            rb.GetBitmapNamed(IDR_RESTORE));
   restore_button_->SetImage(CustomButton::BS_HOT,
-      rb.GetBitmapNamed(IDR_RESTORE_H));
+                            rb.GetBitmapNamed(IDR_RESTORE_H));
   restore_button_->SetImage(CustomButton::BS_PUSHED,
-      rb.GetBitmapNamed(IDR_RESTORE_P));
+                            rb.GetBitmapNamed(IDR_RESTORE_P));
   AddChildView(restore_button_);
 
   maximize_button_->SetImage(CustomButton::BS_NORMAL,
-      rb.GetBitmapNamed(IDR_MAXIMIZE));
+                             rb.GetBitmapNamed(IDR_MAXIMIZE));
   maximize_button_->SetImage(CustomButton::BS_HOT,
-      rb.GetBitmapNamed(IDR_MAXIMIZE_H));
+                             rb.GetBitmapNamed(IDR_MAXIMIZE_H));
   maximize_button_->SetImage(CustomButton::BS_PUSHED,
-      rb.GetBitmapNamed(IDR_MAXIMIZE_P));
+                             rb.GetBitmapNamed(IDR_MAXIMIZE_P));
   AddChildView(maximize_button_);
 
   minimize_button_->SetImage(CustomButton::BS_NORMAL,
-      rb.GetBitmapNamed(IDR_MINIMIZE));
+                             rb.GetBitmapNamed(IDR_MINIMIZE));
   minimize_button_->SetImage(CustomButton::BS_HOT,
-      rb.GetBitmapNamed(IDR_MINIMIZE_H));
+                             rb.GetBitmapNamed(IDR_MINIMIZE_H));
   minimize_button_->SetImage(CustomButton::BS_PUSHED,
-      rb.GetBitmapNamed(IDR_MINIMIZE_P));
+                             rb.GetBitmapNamed(IDR_MINIMIZE_P));
   AddChildView(minimize_button_);
 
-  should_show_minmax_buttons_ = frame_->GetDelegate()->CanMaximize();
+  views::WindowDelegate* d = frame_->GetDelegate();
+  should_show_minmax_buttons_ = d->CanMaximize();
 
-  AddChildView(system_menu_button_);
+  if (d->ShouldShowWindowIcon()) {
+    window_icon_ = new ImageButton(this);
+    AddChildView(window_icon_);
+  }
 }
 
 CustomFrameView::~CustomFrameView() {
@@ -143,8 +131,19 @@ int CustomFrameView::NonClientHitTest(const gfx::Point& point) {
   if (!bounds().Contains(point))
     return HTNOWHERE;
 
-  // First check the ClientView.
   int frame_component = frame_->GetClientView()->NonClientHitTest(point);
+
+  // See if we're in the sysmenu region.  (We check the ClientView first to be
+  // consistent with OpaqueBrowserFrameView; it's not really necessary here.)
+  gfx::Rect sysmenu_rect(IconBounds());
+  // In maximized mode we extend the rect to the screen corner to take advantage
+  // of Fitts' Law.
+  if (frame_->IsMaximized())
+    sysmenu_rect.SetRect(0, 0, sysmenu_rect.right(), sysmenu_rect.bottom());
+  sysmenu_rect.set_x(MirroredLeftPointForRect(sysmenu_rect));
+  if (sysmenu_rect.Contains(point))
+    return (frame_component == HTCLIENT) ? HTCLIENT : HTSYSMENU;
+
   if (frame_component != HTNOWHERE)
     return frame_component;
 
@@ -160,8 +159,8 @@ int CustomFrameView::NonClientHitTest(const gfx::Point& point) {
   if (minimize_button_->GetBounds(APPLY_MIRRORING_TRANSFORMATION).Contains(
       point))
     return HTMINBUTTON;
-  if (system_menu_button_->GetBounds(APPLY_MIRRORING_TRANSFORMATION).Contains(
-      point))
+  if (window_icon_ &&
+      window_icon_->GetBounds(APPLY_MIRRORING_TRANSFORMATION).Contains(point))
     return HTSYSMENU;
 
   int window_component = GetHTComponentForFrame(point, FrameBorderThickness(),
@@ -262,38 +261,66 @@ int CustomFrameView::NonClientBorderThickness() const {
 }
 
 int CustomFrameView::NonClientTopBorderHeight() const {
-  int title_top_spacing, title_thickness;
-  return TitleCoordinates(&title_top_spacing, &title_thickness);
+  return std::max(FrameBorderThickness() + IconSize(),
+                  CaptionButtonY() + kCaptionButtonHeightWithPadding) +
+      TitlebarBottomThickness();
 }
 
-int CustomFrameView::BottomEdgeThicknessWithinNonClientHeight() const {
-  return kFrameShadowThickness +
+int CustomFrameView::CaptionButtonY() const {
+  // Maximized buttons start at window top so that even if their images aren't
+  // drawn flush with the screen edge, they still obey Fitts' Law.
+  return frame_->IsMaximized() ? FrameBorderThickness() : kFrameShadowThickness;
+}
+
+int CustomFrameView::TitlebarBottomThickness() const {
+  return kTitlebarTopAndBottomEdgeThickness +
       (frame_->IsMaximized() ? 0 : kClientEdgeThickness);
 }
 
-int CustomFrameView::TitleCoordinates(int* title_top_spacing,
-                                      int* title_thickness) const {
-  int frame_thickness = FrameBorderThickness();
-  int min_titlebar_height = kTitlebarMinimumHeight + frame_thickness;
-  *title_top_spacing = frame_thickness + kTitleTopSpacing;
+int CustomFrameView::IconSize() const {
+#if defined(OS_WIN)
+  // This metric scales up if either the titlebar height or the titlebar font
+  // size are increased.
+  return GetSystemMetrics(SM_CYSMICON);
+#else
+  // Calculate the necessary height from the titlebar font size.
+  // The title text has 2 px of padding between it and the frame border on both
+  // top and bottom.
+  const int kTitleBorderSpacing = 2;
   // The bottom spacing should be the same apparent height as the top spacing.
-  // Because the actual top spacing height varies based on the system border
-  // thickness, we calculate this based on the restored top spacing and then
-  // adjust for maximized mode.  We also don't include the frame shadow here,
-  // since while it's part of the bottom spacing it will be added in at the end.
-  int title_bottom_spacing =
-      kFrameBorderThickness + kTitleTopSpacing - kFrameShadowThickness;
-  if (frame_->IsMaximized()) {
-    // When we maximize, the top border appears to be chopped off; shift the
-    // title down to stay centered within the remaining space.
-    int title_adjust = (kFrameBorderThickness / 2);
-    *title_top_spacing += title_adjust;
-    title_bottom_spacing -= title_adjust;
-  }
-  *title_thickness = std::max(title_font_->height(),
-      min_titlebar_height - *title_top_spacing - title_bottom_spacing);
-  return *title_top_spacing + *title_thickness + title_bottom_spacing +
-      BottomEdgeThicknessWithinNonClientHeight();
+  // The top spacing height is FrameBorderThickness() + kTitleBorderSpacing.  We
+  // omit the frame border portion because that's not part of the icon height.
+  // The bottom spacing, then, is kTitleBorderSpacing + kFrameBorderThickness to
+  // the bottom edge of the titlebar.  We omit TitlebarBottomThickness() because
+  // that's also not part of the icon height.
+  return kTitleBorderSpacing + title_font_->height() + kTitleBorderSpacing +
+      (kFrameBorderThickness - TitlebarBottomThickness());
+#endif
+}
+
+gfx::Rect CustomFrameView::IconBounds() const {
+  int size = IconSize();
+  int frame_thickness = FrameBorderThickness();
+  // This next statement handles two things:
+  //   (1) Vertically centering the icon when the icon is shorter than the
+  //       minimum space we reserve for the caption button.  We want to bias
+  //       rounding to put extra space above the icon, since below it is the 2
+  //       px 3D edge, which looks to the eye like additional space; hence the
+  //       + 1 below.
+  //   (2) Our frame border has a different "3D look" than Windows'.  Theirs has
+  //       a more complex gradient on the top that they push their icon/title
+  //       below; then the maximized window cuts this off and the icon/title are
+  //       centered in the remaining space.  Because the apparent shape of our
+  //       border is simpler, using the same positioning makes things look
+  //       slightly uncentered with restored windows, so we come up to
+  //       compensate.  The frame border has a 2 px 3D edge plus some empty
+  //       space, so we adjust by half the width of the empty space to center
+  //       things.
+  return gfx::Rect(frame_thickness + kIconLeftSpacing,
+      (NonClientTopBorderHeight() - size - TitlebarBottomThickness() + 1 +
+          (frame_->IsMaximized() ?
+              frame_thickness : kTitlebarTopAndBottomEdgeThickness)) / 2,
+      size, size);
 }
 
 void CustomFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
@@ -302,7 +329,6 @@ void CustomFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
 
   SkBitmap* frame_image;
   SkColor frame_color;
-
   if (frame_->IsActive()) {
     frame_image = rb.GetBitmapNamed(IDR_FRAME);
     frame_color = ResourceBundle::frame_color;
@@ -326,13 +352,12 @@ void CustomFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
   // Fill with the frame color first so we have a constant background for
   // areas not covered by the theme image.
   canvas->FillRectInt(frame_color, 0, 0, width(), frame_image->height());
-  // Now fill down the sides
-  canvas->FillRectInt(frame_color,
-      0, frame_image->height(),
-      left_edge->width(), height() - frame_image->height());
-  canvas->FillRectInt(frame_color,
-      width() - right_edge->width(), frame_image->height(),
-      right_edge->width(), height() - frame_image->height());
+  // Now fill down the sides.
+  canvas->FillRectInt(frame_color, 0, frame_image->height(), left_edge->width(),
+                      height() - frame_image->height());
+  canvas->FillRectInt(frame_color, width() - right_edge->width(),
+                      frame_image->height(), right_edge->width(),
+                      height() - frame_image->height());
   // Now fill the bottom area.
   canvas->FillRectInt(frame_color,
       left_edge->width(), height() - bottom_edge->height(),
@@ -351,19 +376,17 @@ void CustomFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
 
   // Right.
   canvas->TileImageInt(*right_edge, width() - right_edge->width(),
-                       top_right_corner->height(), right_edge->width(),
-                       height() - top_right_corner->height() -
-                           bottom_right_corner->height());
+      top_right_corner->height(), right_edge->width(),
+      height() - top_right_corner->height() - bottom_right_corner->height());
 
   // Bottom.
   canvas->DrawBitmapInt(*bottom_right_corner,
                         width() - bottom_right_corner->width(),
                         height() - bottom_right_corner->height());
   canvas->TileImageInt(*bottom_edge, bottom_left_corner->width(),
-                       height() - bottom_edge->height(),
-                       width() - bottom_left_corner->width() -
-                           bottom_right_corner->width(),
-                       bottom_edge->height());
+      height() - bottom_edge->height(),
+      width() - bottom_left_corner->width() - bottom_right_corner->width(),
+      bottom_edge->height());
   canvas->DrawBitmapInt(*bottom_left_corner, 0,
                         height() - bottom_left_corner->height());
 
@@ -373,14 +396,11 @@ void CustomFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
       height() - top_left_corner->height() - bottom_left_corner->height());
 }
 
-void CustomFrameView::PaintMaximizedFrameBorder(
-    gfx::Canvas* canvas) {
+void CustomFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
-  SkBitmap* frame_image = frame_->IsActive() ?
-        rb.GetBitmapNamed(IDR_FRAME) :
-        rb.GetBitmapNamed(IDR_FRAME_INACTIVE);
-
+  SkBitmap* frame_image = rb.GetBitmapNamed(frame_->IsActive() ?
+      IDR_FRAME : IDR_FRAME_INACTIVE);
   canvas->TileImageInt(*frame_image, 0, FrameBorderThickness(), width(),
                        frame_image->height());
 
@@ -458,22 +478,18 @@ void CustomFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
 void CustomFrameView::LayoutWindowControls() {
   close_button_->SetImageAlignment(ImageButton::ALIGN_LEFT,
                                    ImageButton::ALIGN_BOTTOM);
-  // Maximized buttons start at window top so that even if their images aren't
-  // drawn flush with the screen edge, they still obey Fitts' Law.
+  int caption_y = CaptionButtonY();
   bool is_maximized = frame_->IsMaximized();
-  int frame_thickness = FrameBorderThickness();
-  int caption_y = is_maximized ? frame_thickness : kCaptionTopSpacing;
-  int top_extra_height = is_maximized ? kCaptionTopSpacing : 0;
   // There should always be the same number of non-shadow pixels visible to the
   // side of the caption buttons.  In maximized mode we extend the rightmost
   // button to the screen corner to obey Fitts' Law.
   int right_extra_width = is_maximized ?
       (kFrameBorderThickness - kFrameShadowThickness) : 0;
   gfx::Size close_button_size = close_button_->GetPreferredSize();
-  close_button_->SetBounds(width() - close_button_size.width() -
-      right_extra_width - frame_thickness, caption_y,
+  close_button_->SetBounds(width() - FrameBorderThickness() -
+      right_extra_width - close_button_size.width(), caption_y,
       close_button_size.width() + right_extra_width,
-      close_button_size.height() + top_extra_height);
+      close_button_size.height());
 
   // When the window is restored, we show a maximized button; otherwise, we show
   // a restore button.
@@ -492,7 +508,7 @@ void CustomFrameView::LayoutWindowControls() {
     gfx::Size visible_button_size = visible_button->GetPreferredSize();
     visible_button->SetBounds(close_button_->x() - visible_button_size.width(),
                               caption_y, visible_button_size.width(),
-                              visible_button_size.height() + top_extra_height);
+                              visible_button_size.height());
 
     minimize_button_->SetVisible(true);
     minimize_button_->SetImageAlignment(ImageButton::ALIGN_LEFT,
@@ -501,7 +517,7 @@ void CustomFrameView::LayoutWindowControls() {
     minimize_button_->SetBounds(
         visible_button->x() - minimize_button_size.width(), caption_y,
         minimize_button_size.width(),
-        minimize_button_size.height() + top_extra_height);
+        minimize_button_size.height());
 
     normal_part = IDR_CLOSE;
     hot_part = IDR_CLOSE_H;
@@ -526,56 +542,33 @@ void CustomFrameView::LayoutWindowControls() {
 }
 
 void CustomFrameView::LayoutTitleBar() {
-  // Always lay out the icon, even when it's not present, so we can lay out the
-  // window title based on its position.
-  int frame_thickness = FrameBorderThickness();
-  int icon_x = frame_thickness + kIconLeftSpacing;
-
-  // The usable height of the titlebar area is the total height minus the top
-  // resize border and any edge area we draw at its bottom.
-  int title_top_spacing, title_thickness;
-  int top_height = TitleCoordinates(&title_top_spacing, &title_thickness);
-  int available_height = top_height - frame_thickness -
-      BottomEdgeThicknessWithinNonClientHeight();
-
-  // The icon takes up a constant fraction of the available height, down to a
-  // minimum size, and is always an even number of pixels on a side (presumably
-  // to make scaled icons look better).  It's centered within the usable height.
-  int icon_size = std::max((available_height * kIconHeightFractionNumerator /
-      kIconHeightFractionDenominator) / 2 * 2, kIconMinimumSize);
-  int icon_y = ((available_height - icon_size) / 2) + frame_thickness;
-
-  // Hack: Our frame border has a different "3D look" than Windows'.  Theirs has
-  // a more complex gradient on the top that they push their icon/title below;
-  // then the maximized window cuts this off and the icon/title are centered in
-  // the remaining space.  Because the apparent shape of our border is simpler,
-  // using the same positioning makes things look slightly uncentered with
-  // restored windows, so we come up to compensate.
-  if (!frame_->IsMaximized())
-    icon_y -= kIconRestoredAdjust;
-
+  // The window title is based on the calculated icon position, even when there
+  // is no icon.
+  gfx::Rect icon_bounds(IconBounds());
   views::WindowDelegate* d = frame_->GetDelegate();
-  if (!d->ShouldShowWindowIcon())
-    icon_size = 0;
-  system_menu_button_->SetBounds(icon_x, icon_y, icon_size, icon_size);
+  if (d->ShouldShowWindowIcon())
+    window_icon_->SetBounds(icon_bounds);
 
   // Size the title.
-  int icon_right = icon_x + icon_size;
-  int title_x =
-      icon_right + (d->ShouldShowWindowIcon() ? kIconTitleSpacing : 0);
-  int title_right = (should_show_minmax_buttons_ ?
-      minimize_button_->x() : close_button_->x()) - kTitleCaptionSpacing;
+  int title_x = d->ShouldShowWindowIcon() ?
+      icon_bounds.right() + kIconTitleSpacing : icon_bounds.x();
+  int title_height = title_font_->height();
+  // We bias the title position so that when the difference between the icon and
+  // title heights is odd, the extra pixel of the title is above the vertical
+  // midline rather than below.  This compensates for how the icon is already
+  // biased downwards (see IconBounds()) and helps prevent descenders on the
+  // title from overlapping the 3D edge at the bottom of the titlebar.
   title_bounds_.SetRect(title_x,
-      title_top_spacing + ((title_thickness - title_font_->height()) / 2),
-      std::max(0, title_right - title_x), title_font_->height());
+      icon_bounds.y() + ((icon_bounds.height() - title_height - 1) / 2),
+      std::max(0, (should_show_minmax_buttons_ ?
+          minimize_button_->x() : close_button_->x()) - kTitleCaptionSpacing -
+      title_x), title_height);
 }
 
 void CustomFrameView::LayoutClientView() {
   int top_height = NonClientTopBorderHeight();
   int border_thickness = NonClientBorderThickness();
-  client_view_bounds_.SetRect(
-      border_thickness,
-      top_height,
+  client_view_bounds_.SetRect(border_thickness, top_height,
       std::max(0, width() - (2 * border_thickness)),
       std::max(0, height() - top_height - border_thickness));
 }

@@ -183,10 +183,6 @@ class ConstrainedWindowFrameView
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
  private:
-  // Returns the thickness of the border that makes up the window frame edges.
-  // This does not include any client edge.
-  int FrameBorderThickness() const;
-
   // Returns the thickness of the entire nonclient left, right, and bottom
   // borders, including both the window frame and any client edge.
   int NonClientBorderThickness() const;
@@ -195,10 +191,15 @@ class ConstrainedWindowFrameView
   // frame, any title area, and any connected client edge.
   int NonClientTopBorderHeight() const;
 
-  // Calculates multiple values related to title layout.  Returns the height of
-  // the entire titlebar including any connected client edge.
-  int TitleCoordinates(int* title_top_spacing,
-                       int* title_thickness) const;
+  // Returns the thickness of the nonclient portion of the 3D edge along the
+  // bottom of the titlebar.
+  int TitlebarBottomThickness() const;
+
+  // Returns what the size of the titlebar icon would be if there was one.
+  int IconSize() const;
+
+  // Returns what the titlebar icon's bounds would be if there was one.
+  gfx::Rect IconBounds() const;
 
   // Paints different parts of the window to the incoming canvas.
   void PaintFrameBorder(gfx::Canvas* canvas);
@@ -251,18 +252,15 @@ const int kFrameShadowThickness = 1;
 // In the window corners, the resize areas don't actually expand bigger, but the
 // 16 px at the end of each edge triggers diagonal resizing.
 const int kResizeAreaCornerSize = 16;
-// The titlebar never shrinks to less than 20 px tall, including the height of
-// the frame border and client edge.
-const int kTitlebarMinimumHeight = 20;
+// The titlebar never shrinks too short to show the caption button plus some
+// padding below it.
+const int kCaptionButtonHeightWithPadding = 19;
+// The titlebar has a 2 px 3D edge along the top and bottom.
+const int kTitlebarTopAndBottomEdgeThickness = 2;
 // The title text starts 2 px from the right edge of the left frame border.
 const int kTitleLeftSpacing = 2;
-// The title text starts 2 px below the bottom of the top frame border.
-const int kTitleTopSpacing = 2;
 // There is a 5 px gap between the title text and the caption buttons.
 const int kTitleCaptionSpacing = 5;
-// The caption buttons are always drawn 1 px down from the visible top of the
-// window.
-const int kCaptionTopSpacing = 1;
 
 const SkColor kContentsBorderShadow = SkColorSetARGB(51, 0, 0, 0);
 }
@@ -279,11 +277,11 @@ ConstrainedWindowFrameView::ConstrainedWindowFrameView(
   InitWindowResources();
 
   close_button_->SetImage(views::CustomButton::BS_NORMAL,
-      resources_->GetPartBitmap(FRAME_CLOSE_BUTTON_ICON));
+                          resources_->GetPartBitmap(FRAME_CLOSE_BUTTON_ICON));
   close_button_->SetImage(views::CustomButton::BS_HOT,
-      resources_->GetPartBitmap(FRAME_CLOSE_BUTTON_ICON_H));
+                          resources_->GetPartBitmap(FRAME_CLOSE_BUTTON_ICON_H));
   close_button_->SetImage(views::CustomButton::BS_PUSHED,
-      resources_->GetPartBitmap(FRAME_CLOSE_BUTTON_ICON_P));
+                          resources_->GetPartBitmap(FRAME_CLOSE_BUTTON_ICON_P));
   close_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                                    views::ImageButton::ALIGN_MIDDLE);
   AddChildView(close_button_);
@@ -324,6 +322,14 @@ int ConstrainedWindowFrameView::NonClientHitTest(const gfx::Point& point) {
     return HTNOWHERE;
 
   int frame_component = container_->GetClientView()->NonClientHitTest(point);
+
+  // See if we're in the sysmenu region.  (We check the ClientView first to be
+  // consistent with OpaqueBrowserFrameView; it's not really necessary here.)
+  gfx::Rect sysmenu_rect(IconBounds());
+  sysmenu_rect.set_x(MirroredLeftPointForRect(sysmenu_rect));
+  if (sysmenu_rect.Contains(point))
+    return (frame_component == HTCLIENT) ? HTCLIENT : HTSYSMENU;
+
   if (frame_component != HTNOWHERE)
     return frame_component;
 
@@ -331,7 +337,7 @@ int ConstrainedWindowFrameView::NonClientHitTest(const gfx::Point& point) {
   if (close_button_->GetBounds(APPLY_MIRRORING_TRANSFORMATION).Contains(point))
     return HTCLOSE;
 
-  int window_component = GetHTComponentForFrame(point, FrameBorderThickness(),
+  int window_component = GetHTComponentForFrame(point, kFrameBorderThickness,
       NonClientBorderThickness(), kResizeAreaCornerSize, kResizeAreaCornerSize,
       container_->GetDelegate()->CanResize());
   // Fall back to the caption if no other component matches.
@@ -396,31 +402,65 @@ void ConstrainedWindowFrameView::ButtonPressed(
 ////////////////////////////////////////////////////////////////////////////////
 // ConstrainedWindowFrameView, private:
 
-int ConstrainedWindowFrameView::FrameBorderThickness() const {
-  return kFrameBorderThickness;
-}
-
 int ConstrainedWindowFrameView::NonClientBorderThickness() const {
-  return FrameBorderThickness() + kClientEdgeThickness;
+  return kFrameBorderThickness + kClientEdgeThickness;
 }
 
 int ConstrainedWindowFrameView::NonClientTopBorderHeight() const {
-  int title_top_spacing, title_thickness;
-  return TitleCoordinates(&title_top_spacing, &title_thickness);
+  return std::max(kFrameBorderThickness + IconSize(),
+                  kFrameShadowThickness + kCaptionButtonHeightWithPadding) +
+      TitlebarBottomThickness();
 }
 
-int ConstrainedWindowFrameView::TitleCoordinates(
-    int* title_top_spacing,
-    int* title_thickness) const {
-  int frame_thickness = FrameBorderThickness();
-  int min_titlebar_height = kTitlebarMinimumHeight + frame_thickness;
-  *title_top_spacing = frame_thickness + kTitleTopSpacing;
-  // The bottom spacing should be the same apparent height as the top spacing,
-  // plus have the client edge tacked on.
-  int title_bottom_spacing = *title_top_spacing + kClientEdgeThickness;
-  *title_thickness = std::max(title_font_->height(),
-      min_titlebar_height - *title_top_spacing - title_bottom_spacing);
-  return *title_top_spacing + *title_thickness + title_bottom_spacing;
+int ConstrainedWindowFrameView::TitlebarBottomThickness() const {
+  return kTitlebarTopAndBottomEdgeThickness + kClientEdgeThickness;
+}
+
+int ConstrainedWindowFrameView::IconSize() const {
+#if defined(OS_WIN)
+  // This metric scales up if either the titlebar height or the titlebar font
+  // size are increased.
+  return GetSystemMetrics(SM_CYSMICON);
+#else
+  // Calculate the necessary height from the titlebar font size.
+  // The title text has 2 px of padding between it and the frame border on both
+  // top and bottom.
+  const int kTitleBorderSpacing = 2;
+  // The bottom spacing should be the same apparent height as the top spacing.
+  // The top spacing height is kFrameBorderThickness + kTitleBorderSpacing.  We
+  // omit the frame border portion because that's not part of the icon height.
+  // The bottom spacing, then, is kTitleBorderSpacing + kFrameBorderThickness to
+  // the bottom edge of the titlebar.  We omit TitlebarBottomThickness() because
+  // that's also not part of the icon height.
+  return kTitleBorderSpacing + title_font_->height() + kTitleBorderSpacing +
+      (kFrameBorderThickness - TitlebarBottomThickness());
+#endif
+}
+
+gfx::Rect ConstrainedWindowFrameView::IconBounds() const {
+  int size = IconSize();
+  // This next statement handles two things:
+  //   (1) Vertically centering the icon when the icon is shorter than the
+  //       minimum space we reserve for the caption button.  We want to bias
+  //       rounding to put extra space above the icon, since below it is the 2
+  //       px 3D edge, which looks to the eye like additional space; hence the
+  //       + 1 below.
+  //   (2) Our frame border has a different "3D look" than Windows'.  Theirs has
+  //       a more complex gradient on the top that they push their icon/title
+  //       below; then the maximized window cuts this off and the icon/title are
+  //       centered in the remaining space.  Because the apparent shape of our
+  //       border is simpler, using the same positioning makes things look
+  //       slightly uncentered with restored windows, so we come up to
+  //       compensate.  The frame border has a 2 px 3D edge plus some empty
+  //       space, so we adjust by half the width of the empty space to center
+  //       things.
+  // Of course, in a constrained window there is no icon.  But we keep these
+  // calculations consistent with the other frame view implementations, since
+  // they're used to position the window title.
+  return gfx::Rect(kFrameBorderThickness + kTitleLeftSpacing,
+      (NonClientTopBorderHeight() - size - TitlebarBottomThickness() + 1 +
+          kTitlebarTopAndBottomEdgeThickness) / 2,
+      size, size);
 }
 
 void ConstrainedWindowFrameView::PaintFrameBorder(gfx::Canvas* canvas) {
@@ -511,20 +551,26 @@ void ConstrainedWindowFrameView::PaintClientEdge(gfx::Canvas* canvas) {
 void ConstrainedWindowFrameView::LayoutWindowControls() {
   gfx::Size close_button_size = close_button_->GetPreferredSize();
   close_button_->SetBounds(
-      width() - FrameBorderThickness() - close_button_size.width(),
-      kCaptionTopSpacing, close_button_size.width(),
+      width() - kFrameBorderThickness - close_button_size.width(),
+      kFrameShadowThickness, close_button_size.width(),
       close_button_size.height());
 }
 
 void ConstrainedWindowFrameView::LayoutTitleBar() {
-  // Size the title.
-  int title_x = FrameBorderThickness() + kTitleLeftSpacing;
-  int title_top_spacing, title_thickness;
-  TitleCoordinates(&title_top_spacing, &title_thickness);
+  // The window title is based on the calculated icon position, even though'
+  // there is no icon in constrained windows.
+  gfx::Rect icon_bounds(IconBounds());
+  int title_x = icon_bounds.x();
+  int title_height = title_font_->height();
+  // We bias the title position so that when the difference between the icon and
+  // title heights is odd, the extra pixel of the title is above the vertical
+  // midline rather than below.  This compensates for how the icon is already
+  // biased downwards (see IconBounds()) and helps prevent descenders on the
+  // title from overlapping the 3D edge at the bottom of the titlebar.
   title_bounds_.SetRect(title_x,
-      title_top_spacing + ((title_thickness - title_font_->height()) / 2),
+      icon_bounds.y() + ((icon_bounds.height() - title_height - 1) / 2),
       std::max(0, close_button_->x() - kTitleCaptionSpacing - title_x),
-      title_font_->height());
+      title_height);
 }
 
 gfx::Rect ConstrainedWindowFrameView::CalculateClientAreaBounds(

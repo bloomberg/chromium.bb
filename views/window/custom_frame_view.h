@@ -64,14 +64,20 @@ class CustomFrameView : public NonClientFrameView,
   // frame, any title area, and any connected client edge.
   int NonClientTopBorderHeight() const;
 
-  // A bottom border, and, in restored mode, a client edge are drawn at the
-  // bottom of the titlebar.  This returns the total height drawn.
-  int BottomEdgeThicknessWithinNonClientHeight() const;
+  // Returns the y-coordinate of the caption buttons.
+  int CaptionButtonY() const;
 
-  // Calculates multiple values related to title layout.  Returns the height of
-  // the entire titlebar including any connected client edge.
-  int TitleCoordinates(int* title_top_spacing,
-                       int* title_thickness) const;
+  // Returns the thickness of the nonclient portion of the 3D edge along the
+  // bottom of the titlebar.
+  int TitlebarBottomThickness() const;
+
+  // Returns the size of the titlebar icon.  This is used even when the icon is
+  // not shown, e.g. to set the titlebar height.
+  int IconSize() const;
+
+  // Returns the bounds of the titlebar icon (or where the icon would be if
+  // there was one).
+  gfx::Rect IconBounds() const;
 
   // Paint various sub-components of this view.
   void PaintRestoredFrameBorder(gfx::Canvas* canvas);
@@ -95,7 +101,7 @@ class CustomFrameView : public NonClientFrameView,
   ImageButton* restore_button_;
   ImageButton* maximize_button_;
   ImageButton* minimize_button_;
-  ImageButton* system_menu_button_;  // Uses the window icon if visible.
+  ImageButton* window_icon_;
   bool should_show_minmax_buttons_;
 
   // The window that owns this view.

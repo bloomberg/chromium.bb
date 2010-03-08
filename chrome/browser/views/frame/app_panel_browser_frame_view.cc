@@ -29,38 +29,22 @@ namespace {
 // The frame border is only visible in restored mode and is hardcoded to 1 px on
 // each side regardless of the system window border size.
 const int kFrameBorderThickness = 1;
-// Besides the frame border, there's another 11 px of empty space atop the
-// window in restored mode, to use to drag the window around.
-const int kNonClientRestoredExtraThickness = 28;
 // In the window corners, the resize areas don't actually expand bigger, but the
 // 16 px at the end of each edge triggers diagonal resizing.
 const int kResizeAreaCornerSize = 16;
-// The titlebar never shrinks to less than 28 px tall, plus the height of the
-// frame border and any bottom edge.
-const int kTitlebarMinimumHeight = 28;
+// The titlebar never shrinks too short to show the caption button plus some
+// padding below it.
+const int kCaptionButtonHeightWithPadding = 27;
+// The titlebar has a 2 px 3D edge along the bottom.
+const int kTitlebarBottomEdgeThickness = 2;
 // The icon is inset 6 px from the left frame border.
 const int kIconLeftSpacing = 6;
-// The icon takes up 16/25th of the available titlebar height.  (This is
-// expressed as two ints to avoid precision losses leading to off-by-one pixel
-// errors.)
-const int kIconHeightFractionNumerator = 16;
-const int kIconHeightFractionDenominator = 25;
-// The icon never shrinks below 16 px on a side.
-const int kIconMinimumSize = 16;
-// Because our frame border has a different "3D look" than Windows', with a less
-// cluttered top edge, we need to shift the icon up by 1 px in restored mode so
-// it looks more centered.
-const int kIconRestoredAdjust = 1;
 // There is a 4 px gap between the icon and the title text.
 const int kIconTitleSpacing = 4;
-// The title text starts 2 px below the bottom of the top frame border.
-const int kTitleTopSpacing = 2;
 // There is a 5 px gap between the title text and the close button.
 const int kTitleCloseButtonSpacing = 5;
-// To be centered the close button is offset by -4, -6 from the top, right
-// corner.
-const int kCloseButtonHorzSpacing = 4;
-const int kCloseButtonVertSpacing = 6;
+// There is a 4 px gap between the close button and the frame border.
+const int kCloseButtonFrameBorderSpacing = 4;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -78,15 +62,12 @@ AppPanelBrowserFrameView::AppPanelBrowserFrameView(BrowserFrame* frame,
   DCHECK(browser_view->ShouldShowWindowTitle());
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  close_button_->SetImage(
-      views::CustomButton::BS_NORMAL,
-      rb.GetBitmapNamed(IDR_CLOSE_BAR));
-  close_button_->SetImage(
-      views::CustomButton::BS_HOT,
-      rb.GetBitmapNamed(IDR_CLOSE_BAR_H));
-  close_button_->SetImage(
-      views::CustomButton::BS_PUSHED,
-      rb.GetBitmapNamed(IDR_CLOSE_BAR_P));
+  close_button_->SetImage(views::CustomButton::BS_NORMAL,
+                          rb.GetBitmapNamed(IDR_CLOSE_BAR));
+  close_button_->SetImage(views::CustomButton::BS_HOT,
+                          rb.GetBitmapNamed(IDR_CLOSE_BAR_H));
+  close_button_->SetImage(views::CustomButton::BS_PUSHED,
+                          rb.GetBitmapNamed(IDR_CLOSE_BAR_P));
   close_button_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_CLOSE));
   AddChildView(close_button_);
 
@@ -119,11 +100,9 @@ gfx::Size AppPanelBrowserFrameView::GetMinimumSize() {
   min_size.Enlarge(2 * border_thickness,
                    NonClientTopBorderHeight() + border_thickness);
 
-  int min_titlebar_width = (2 * FrameBorderThickness()) + kIconLeftSpacing +
-      IconSize(NULL, NULL, NULL) + kTitleCloseButtonSpacing;
-
-  min_size.set_width(std::max(min_size.width(), min_titlebar_width));
-
+  min_size.set_width(std::max(min_size.width(),
+      (2 * FrameBorderThickness()) + kIconLeftSpacing + IconSize() +
+      kTitleCloseButtonSpacing + kCloseButtonFrameBorderSpacing));
   return min_size;
 }
 
@@ -159,8 +138,15 @@ int AppPanelBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   int frame_component =
       frame_->GetWindow()->GetClientView()->NonClientHitTest(point);
 
-  // See if we're in the sysmenu region.
-  if (window_icon_->GetBounds(APPLY_MIRRORING_TRANSFORMATION).Contains(point))
+  // See if we're in the sysmenu region.  (We check the ClientView first to be
+  // consistent with OpaqueBrowserFrameView; it's not really necessary here.)
+  gfx::Rect sysmenu_rect(IconBounds());
+  // In maximized mode we extend the rect to the screen corner to take advantage
+  // of Fitts' Law.
+  if (frame_->GetWindow()->IsMaximized())
+    sysmenu_rect.SetRect(0, 0, sysmenu_rect.right(), sysmenu_rect.bottom());
+  sysmenu_rect.set_x(MirroredLeftPointForRect(sysmenu_rect));
+  if (sysmenu_rect.Contains(point))
     return (frame_component == HTCLIENT) ? HTCLIENT : HTSYSMENU;
 
   if (frame_component != HTNOWHERE)
@@ -171,8 +157,9 @@ int AppPanelBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
       close_button_->GetBounds(APPLY_MIRRORING_TRANSFORMATION).Contains(point))
     return HTCLOSE;
 
-  int window_component = GetHTComponentForFrame(point, FrameBorderThickness(),
-      NonClientBorderThickness(), kResizeAreaCornerSize, kResizeAreaCornerSize,
+  int window_component = GetHTComponentForFrame(point,
+      NonClientBorderThickness(), NonClientBorderThickness(),
+      kResizeAreaCornerSize, kResizeAreaCornerSize,
       frame_->GetWindow()->GetDelegate()->CanResize());
   // Fall back to the caption if no other component matches.
   return (window_component == HTNOWHERE) ? HTCAPTION : window_component;
@@ -181,8 +168,9 @@ int AppPanelBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
 void AppPanelBrowserFrameView::GetWindowMask(const gfx::Size& size,
                                              gfx::Path* window_mask) {
   DCHECK(window_mask);
-  DCHECK(!frame_->GetWindow()->IsMaximized() &&
-         !frame_->GetWindow()->IsFullscreen());
+
+  if (frame_->GetWindow()->IsMaximized())
+    return;
 
   // Redefine the window visible region for the new size.
   window_mask->moveTo(0, 3);
@@ -215,9 +203,14 @@ void AppPanelBrowserFrameView::ResetWindowControls() {
 // AppPanelBrowserFrameView, views::View overrides:
 
 void AppPanelBrowserFrameView::Paint(gfx::Canvas* canvas) {
-  PaintRestoredFrameBorder(canvas);
+  views::Window* window = frame_->GetWindow();
+  if (window->IsMaximized())
+    PaintMaximizedFrameBorder(canvas);
+  else
+    PaintRestoredFrameBorder(canvas);
   PaintTitleBar(canvas);
-  PaintRestoredClientEdge(canvas);
+  if (!window->IsMaximized())
+    PaintRestoredClientEdge(canvas);
 }
 
 void AppPanelBrowserFrameView::Layout() {
@@ -229,11 +222,10 @@ void AppPanelBrowserFrameView::Layout() {
 ///////////////////////////////////////////////////////////////////////////////
 // AppPanelBrowserFrameView, views::ButtonListener implementation:
 
-void AppPanelBrowserFrameView::ButtonPressed(
-    views::Button* sender, const views::Event& event) {
-  views::Window* window = frame_->GetWindow();
+void AppPanelBrowserFrameView::ButtonPressed(views::Button* sender,
+                                             const views::Event& event) {
   if (sender == close_button_)
-    window->Close();
+    frame_->GetWindow()->Close();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -255,73 +247,73 @@ SkBitmap AppPanelBrowserFrameView::GetFavIconForTabIconView() {
 // AppPanelBrowserFrameView, private:
 
 int AppPanelBrowserFrameView::FrameBorderThickness() const {
-  return kFrameBorderThickness;
+  return frame_->GetWindow()->IsMaximized() ? 0 : kFrameBorderThickness;
 }
 
 int AppPanelBrowserFrameView::NonClientBorderThickness() const {
-  return FrameBorderThickness() + kClientEdgeThickness;
+  return FrameBorderThickness() +
+      (frame_->GetWindow()->IsMaximized() ? 0 : kClientEdgeThickness);
 }
 
 int AppPanelBrowserFrameView::NonClientTopBorderHeight() const {
-  return TitleCoordinates(NULL, NULL);
+  return std::max(FrameBorderThickness() + IconSize(),
+                  FrameBorderThickness() + kCaptionButtonHeightWithPadding) +
+      TitlebarBottomThickness();
 }
 
-int AppPanelBrowserFrameView::UnavailablePixelsAtBottomOfNonClientHeight() const
-{
-  return kFrameShadowThickness + kClientEdgeThickness;
+int AppPanelBrowserFrameView::TitlebarBottomThickness() const {
+  return kTitlebarBottomEdgeThickness +
+      (frame_->GetWindow()->IsMaximized() ? 0 : kClientEdgeThickness);
 }
 
-int AppPanelBrowserFrameView::TitleCoordinates(int* title_top_spacing_ptr,
-                                               int* title_thickness_ptr) const {
-  int frame_thickness = FrameBorderThickness();
-  int min_titlebar_height = kTitlebarMinimumHeight + frame_thickness;
-  int title_top_spacing = frame_thickness + kTitleTopSpacing;
+int AppPanelBrowserFrameView::IconSize() const {
+#if defined(OS_WIN)
+  // This metric scales up if either the titlebar height or the titlebar font
+  // size are increased.
+  return GetSystemMetrics(SM_CYSMICON);
+#else
+  // Calculate the necessary height from the titlebar font size.
+  // The title text has 2 px of padding between it and the frame border on both
+  // top and bottom.
+  const int kTitleBorderSpacing = 2;
   // The bottom spacing should be the same apparent height as the top spacing.
-  // Because the actual top spacing height varies based on the system border
-  // thickness, we calculate this based on the restored top spacing and then
-  // adjust for maximized mode.  We also don't include the frame shadow here,
-  // since while it's part of the bottom spacing it will be added in at the end
-  // as necessary (when a toolbar is present, the "shadow" is actually drawn by
-  // the toolbar).
-  int title_bottom_spacing =
-      kFrameBorderThickness + kTitleTopSpacing - kFrameShadowThickness;
-
-  int title_thickness = std::max(BrowserFrame::GetTitleFont().height(),
-      min_titlebar_height - title_top_spacing - title_bottom_spacing);
-  if (title_top_spacing_ptr)
-    *title_top_spacing_ptr = title_top_spacing;
-  if (title_thickness_ptr)
-    *title_thickness_ptr = title_thickness;
-  return title_top_spacing + title_thickness + title_bottom_spacing +
-      UnavailablePixelsAtBottomOfNonClientHeight();
+  // The top spacing height is FrameBorderThickness() + kTitleBorderSpacing.  We
+  // omit the frame border portion because that's not part of the icon height.
+  // The bottom spacing, then, is kTitleBorderSpacing + kFrameBorderThickness to
+  // the bottom edge of the titlebar.  We omit TitlebarBottomThickness() because
+  // that's also not part of the icon height.
+  return kTitleBorderSpacing + title_font_->height() + kTitleBorderSpacing +
+      (kFrameBorderThickness - TitlebarBottomThickness());
+#endif
 }
 
-int AppPanelBrowserFrameView::IconSize(int* title_top_spacing_ptr,
-                                       int* title_thickness_ptr,
-                                       int* available_height_ptr) const {
-  // The usable height of the titlebar area is the total height minus the top
-  // resize border and any edge area we draw at its bottom.
+gfx::Rect AppPanelBrowserFrameView::IconBounds() const {
+  int size = IconSize();
   int frame_thickness = FrameBorderThickness();
-  int top_height = TitleCoordinates(title_top_spacing_ptr, title_thickness_ptr);
-  int available_height = top_height - frame_thickness -
-      UnavailablePixelsAtBottomOfNonClientHeight();
-  if (available_height_ptr)
-    *available_height_ptr = available_height;
-
-  // The icon takes up a constant fraction of the available height, down to a
-  // minimum size, and is always an even number of pixels on a side (presumably
-  // to make scaled icons look better).  It's centered within the usable height.
-  return std::max((available_height * kIconHeightFractionNumerator /
-      kIconHeightFractionDenominator) / 2 * 2, kIconMinimumSize);
+  // This next statement handles two things:
+  //   (1) Vertically centering the icon when the icon is shorter than the
+  //       minimum space we reserve for the caption button.  We want to bias
+  //       rounding to put extra space above the icon, since below it is the 2
+  //       px 3D edge, which looks to the eye like additional space; hence the
+  //       + 1 below.
+  //   (2) Our frame border has a different "3D look" than Windows'.  Theirs has
+  //       a more complex gradient on the top that they push their icon/title
+  //       below; then the maximized window cuts this off and the icon/title are
+  //       centered in the remaining space.  Because the apparent shape of our
+  //       border is simpler, using the same positioning makes things look
+  //       slightly uncentered with restored windows, so we come up to
+  //       compensate.  The frame border has a 2 px 3D edge plus some empty
+  //       space, so we adjust by half the width of the empty space to center
+  //       things.
+  return gfx::Rect(frame_thickness + kIconLeftSpacing,
+      (NonClientTopBorderHeight() - size - TitlebarBottomThickness() + 1 +
+          (frame_->GetWindow()->IsMaximized() ?
+              frame_thickness : kTitlebarBottomEdgeThickness)) / 2,
+      size, size);
 }
 
 void AppPanelBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
-  // Window frame mode.
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-
-  // TODO: Differentiate inactive.
-  SkBitmap* frame_image = rb.GetBitmapNamed(IDR_FRAME_APP_PANEL);
-  SkColor frame_color = ResourceBundle::frame_color_app_panel;
 
   SkBitmap* top_left_corner = rb.GetBitmapNamed(IDR_WINDOW_TOP_LEFT_CORNER);
   SkBitmap* top_right_corner =
@@ -335,24 +327,34 @@ void AppPanelBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
       rb.GetBitmapNamed(IDR_WINDOW_BOTTOM_RIGHT_CORNER);
   SkBitmap* bottom_edge = rb.GetBitmapNamed(IDR_WINDOW_BOTTOM_CENTER);
 
+  // Window frame mode and color.
+  SkBitmap* theme_frame;
+  SkColor frame_color;
+  if (ShouldPaintAsActive()) {
+    theme_frame = rb.GetBitmapNamed(IDR_FRAME_APP_PANEL);
+    frame_color = ResourceBundle::frame_color_app_panel;
+  } else {
+    theme_frame = rb.GetBitmapNamed(IDR_FRAME_APP_PANEL);  // TODO
+    frame_color = ResourceBundle::frame_color_app_panel_inactive;
+  }
+
   // Fill with the frame color first so we have a constant background for
   // areas not covered by the theme image.
-  canvas->FillRectInt(frame_color, 0, 0, width(), frame_image->height());
-  // Now fill down the sides
-  canvas->FillRectInt(frame_color,
-      0, frame_image->height(),
-      left_edge->width(), height() - frame_image->height());
-  canvas->FillRectInt(frame_color,
-      width() - right_edge->width(), frame_image->height(),
-      right_edge->width(), height() - frame_image->height());
+  canvas->FillRectInt(frame_color, 0, 0, width(), theme_frame->height());
+  // Now fill down the sides.
+  canvas->FillRectInt(frame_color, 0, theme_frame->height(), left_edge->width(),
+                      height() - theme_frame->height());
+  canvas->FillRectInt(frame_color, width() - right_edge->width(),
+                      theme_frame->height(), right_edge->width(),
+                      height() - theme_frame->height());
   // Now fill the bottom area.
-  canvas->FillRectInt(frame_color,
-      left_edge->width(), height() - bottom_edge->height(),
-      width() - left_edge->width() - right_edge->width(),
-      bottom_edge->height());
+  canvas->FillRectInt(frame_color, left_edge->width(),
+                      height() - bottom_edge->height(),
+                      width() - left_edge->width() - right_edge->width(),
+                      bottom_edge->height());
 
   // Draw the theme frame.
-  canvas->TileImageInt(*frame_image, 0, 0, width(), frame_image->height());
+  canvas->TileImageInt(*theme_frame, 0, 0, width(), theme_frame->height());
 
   // Top.
   canvas->DrawBitmapInt(*top_left_corner, 0, 0);
@@ -363,19 +365,17 @@ void AppPanelBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
 
   // Right.
   canvas->TileImageInt(*right_edge, width() - right_edge->width(),
-                       top_right_corner->height(), right_edge->width(),
-                       height() - top_right_corner->height() -
-                           bottom_right_corner->height());
+      top_right_corner->height(), right_edge->width(),
+      height() - top_right_corner->height() - bottom_right_corner->height());
 
   // Bottom.
   canvas->DrawBitmapInt(*bottom_right_corner,
                         width() - bottom_right_corner->width(),
                         height() - bottom_right_corner->height());
   canvas->TileImageInt(*bottom_edge, bottom_left_corner->width(),
-                       height() - bottom_edge->height(),
-                       width() - bottom_left_corner->width() -
-                           bottom_right_corner->width(),
-                       bottom_edge->height());
+      height() - bottom_edge->height(),
+      width() - bottom_left_corner->width() - bottom_right_corner->width(),
+      bottom_edge->height());
   canvas->DrawBitmapInt(*bottom_left_corner, 0,
                         height() - bottom_left_corner->height());
 
@@ -383,6 +383,22 @@ void AppPanelBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
   canvas->TileImageInt(*left_edge, 0, top_left_corner->height(),
       left_edge->width(),
       height() - top_left_corner->height() - bottom_left_corner->height());
+}
+
+void AppPanelBrowserFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+
+  SkBitmap* frame_image = rb.GetBitmapNamed(IDR_FRAME_APP_PANEL);
+  canvas->TileImageInt(*frame_image, 0, FrameBorderThickness(), width(),
+                       frame_image->height());
+
+  // The bottom of the titlebar actually comes from the top of the Client Edge
+  // graphic, with the actual client edge clipped off the bottom.
+  SkBitmap* titlebar_bottom = rb.GetBitmapNamed(IDR_APP_TOP_CENTER);
+  int edge_height = titlebar_bottom->height() - kClientEdgeThickness;
+  canvas->TileImageInt(*titlebar_bottom, 0,
+                       frame_->GetWindow()->GetClientView()->y() - edge_height,
+                       width(), edge_height);
 }
 
 void AppPanelBrowserFrameView::PaintTitleBar(gfx::Canvas* canvas) {
@@ -447,42 +463,39 @@ void AppPanelBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
 void AppPanelBrowserFrameView::LayoutWindowControls() {
   close_button_->SetImageAlignment(views::ImageButton::ALIGN_LEFT,
                                    views::ImageButton::ALIGN_BOTTOM);
+  bool is_maximized = frame_->GetWindow()->IsMaximized();
+  // There should always be the same number of non-border pixels visible to the
+  // side of the close button.  In maximized mode we extend the button to the
+  // screen corner to obey Fitts' Law.
+  int right_extra_width = is_maximized ? kCloseButtonFrameBorderSpacing : 0;
   gfx::Size close_button_size = close_button_->GetPreferredSize();
+  int close_button_y =
+      (NonClientTopBorderHeight() - close_button_size.height()) / 2;
+  int top_extra_height = is_maximized ? close_button_y : 0;
   close_button_->SetBounds(width() - FrameBorderThickness() -
-      kCloseButtonHorzSpacing - close_button_size.width(),
-      kFrameShadowThickness + kCloseButtonVertSpacing,
-      close_button_size.width(), close_button_size.height());
+      kCloseButtonFrameBorderSpacing - close_button_size.width(),
+      close_button_y - top_extra_height,
+      close_button_size.width() + right_extra_width,
+      close_button_size.height() + top_extra_height);
 }
 
 void AppPanelBrowserFrameView::LayoutTitleBar() {
-  // Always lay out the icon, even when it's not present, so we can lay out the
-  // window title based on its position.
-  int frame_thickness = FrameBorderThickness();
-  int icon_x = frame_thickness + kIconLeftSpacing;
-  int title_top_spacing, title_thickness, available_height;
-  int icon_size = 0;
+  // Size the icon first; the window title is based on the icon position.
+  gfx::Rect icon_bounds(IconBounds());
+  window_icon_->SetBounds(icon_bounds);
 
-  icon_size =
-      IconSize(&title_top_spacing, &title_thickness, &available_height);
-  int icon_y = ((available_height - icon_size) / 2) + frame_thickness;
-
-  // Hack: Our frame border has a different "3D look" than Windows'.
-  // Theirs has a more complex gradient on the top that they push
-  // their icon/title below; then the maximized window cuts this off
-  // and the icon/title are centered in the remaining space.
-  // Because the apparent shape of our border is simpler, using the
-  // same positioning makes things look slightly uncentered with
-  // restored windows, so we come up to compensate.
-  icon_y -= kIconRestoredAdjust;
-
-  window_icon_->SetBounds(icon_x, icon_y, icon_size, icon_size);
-
-  int title_font_height = BrowserFrame::GetTitleFont().height();
-  int title_x = icon_x + icon_size + kIconTitleSpacing;
+  // Size the title.
+  int title_x = icon_bounds.right() + kIconTitleSpacing;
+  int title_height = BrowserFrame::GetTitleFont().height();
+  // We bias the title position so that when the difference between the icon
+  // and title heights is odd, the extra pixel of the title is above the
+  // vertical midline rather than below.  This compensates for how the icon is
+  // already biased downwards (see IconBounds()) and helps prevent descenders
+  // on the title from overlapping the 3D edge at the bottom of the titlebar.
   title_bounds_.SetRect(title_x,
-      title_top_spacing + ((title_thickness - title_font_height) / 2),
+      icon_bounds.y() + ((icon_bounds.height() - title_height - 1) / 2),
       std::max(0, close_button_->x() - kTitleCloseButtonSpacing - title_x),
-      title_font_height);
+      title_height);
 }
 
 gfx::Rect AppPanelBrowserFrameView::CalculateClientAreaBounds(int width,

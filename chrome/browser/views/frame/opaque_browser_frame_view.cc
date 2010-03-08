@@ -61,10 +61,10 @@ const int kResizeAreaCornerSize = 16;
 // The titlebar never shrinks too short to show the caption button plus some
 // padding below it.
 const int kCaptionButtonHeightWithPadding = 19;
-// The icon is inset 2 px from the left frame border.
-const int kIconLeftSpacing = 2;
 // The titlebar has a 2 px 3D edge along the top and bottom.
 const int kTitlebarTopAndBottomEdgeThickness = 2;
+// The icon is inset 2 px from the left frame border.
+const int kIconLeftSpacing = 2;
 // There is a 4 px gap between the icon and the title text.
 const int kIconTitleSpacing = 4;
 // There is a 5 px gap between the title text and the distributor logo (if
@@ -121,76 +121,66 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(BrowserFrame* frame,
   SkColor color = tp->GetColor(BrowserThemeProvider::COLOR_BUTTON_BACKGROUND);
   SkBitmap* background =
       tp->GetBitmapNamed(IDR_THEME_WINDOW_CONTROL_BACKGROUND);
-  minimize_button_->SetImage(
-      views::CustomButton::BS_NORMAL,
-      tp->GetBitmapNamed(IDR_MINIMIZE));
-  minimize_button_->SetImage(
-      views::CustomButton::BS_HOT,
-      tp->GetBitmapNamed(IDR_MINIMIZE_H));
-  minimize_button_->SetImage(
-      views::CustomButton::BS_PUSHED,
-      tp->GetBitmapNamed(IDR_MINIMIZE_P));
-  if (browser_view_->IsBrowserTypeNormal())
+  minimize_button_->SetImage(views::CustomButton::BS_NORMAL,
+                             tp->GetBitmapNamed(IDR_MINIMIZE));
+  minimize_button_->SetImage(views::CustomButton::BS_HOT,
+                             tp->GetBitmapNamed(IDR_MINIMIZE_H));
+  minimize_button_->SetImage(views::CustomButton::BS_PUSHED,
+                             tp->GetBitmapNamed(IDR_MINIMIZE_P));
+  if (browser_view_->IsBrowserTypeNormal()) {
     minimize_button_->SetBackground(color, background,
         tp->GetBitmapNamed(IDR_MINIMIZE_BUTTON_MASK));
+  }
   minimize_button_->SetAccessibleName(
       l10n_util::GetString(IDS_ACCNAME_MINIMIZE));
   AddChildView(minimize_button_);
 
-  maximize_button_->SetImage(
-      views::CustomButton::BS_NORMAL,
-      tp->GetBitmapNamed(IDR_MAXIMIZE));
-  maximize_button_->SetImage(
-      views::CustomButton::BS_HOT,
-      tp->GetBitmapNamed(IDR_MAXIMIZE_H));
-  maximize_button_->SetImage(
-      views::CustomButton::BS_PUSHED,
-      tp->GetBitmapNamed(IDR_MAXIMIZE_P));
-  if (browser_view_->IsBrowserTypeNormal())
+  maximize_button_->SetImage(views::CustomButton::BS_NORMAL,
+                             tp->GetBitmapNamed(IDR_MAXIMIZE));
+  maximize_button_->SetImage(views::CustomButton::BS_HOT,
+                             tp->GetBitmapNamed(IDR_MAXIMIZE_H));
+  maximize_button_->SetImage(views::CustomButton::BS_PUSHED,
+                             tp->GetBitmapNamed(IDR_MAXIMIZE_P));
+  if (browser_view_->IsBrowserTypeNormal()) {
     maximize_button_->SetBackground(color, background,
         tp->GetBitmapNamed(IDR_MAXIMIZE_BUTTON_MASK));
+  }
   maximize_button_->SetAccessibleName(
       l10n_util::GetString(IDS_ACCNAME_MAXIMIZE));
   AddChildView(maximize_button_);
 
-  restore_button_->SetImage(
-      views::CustomButton::BS_NORMAL,
-      tp->GetBitmapNamed(IDR_RESTORE));
-  restore_button_->SetImage(
-      views::CustomButton::BS_HOT,
-      tp->GetBitmapNamed(IDR_RESTORE_H));
-  restore_button_->SetImage(
-      views::CustomButton::BS_PUSHED,
-      tp->GetBitmapNamed(IDR_RESTORE_P));
-  if (browser_view_->IsBrowserTypeNormal())
+  restore_button_->SetImage(views::CustomButton::BS_NORMAL,
+                            tp->GetBitmapNamed(IDR_RESTORE));
+  restore_button_->SetImage(views::CustomButton::BS_HOT,
+                            tp->GetBitmapNamed(IDR_RESTORE_H));
+  restore_button_->SetImage(views::CustomButton::BS_PUSHED,
+                            tp->GetBitmapNamed(IDR_RESTORE_P));
+  if (browser_view_->IsBrowserTypeNormal()) {
     restore_button_->SetBackground(color, background,
         tp->GetBitmapNamed(IDR_RESTORE_BUTTON_MASK));
-  restore_button_->SetAccessibleName(
-      l10n_util::GetString(IDS_ACCNAME_RESTORE));
+  }
+  restore_button_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_RESTORE));
   AddChildView(restore_button_);
 
-  close_button_->SetImage(
-      views::CustomButton::BS_NORMAL,
-      tp->GetBitmapNamed(IDR_CLOSE));
-  close_button_->SetImage(
-      views::CustomButton::BS_HOT,
-      tp->GetBitmapNamed(IDR_CLOSE_H));
-  close_button_->SetImage(
-      views::CustomButton::BS_PUSHED,
-      tp->GetBitmapNamed(IDR_CLOSE_P));
-  if (browser_view_->IsBrowserTypeNormal())
+  close_button_->SetImage(views::CustomButton::BS_NORMAL,
+                          tp->GetBitmapNamed(IDR_CLOSE));
+  close_button_->SetImage(views::CustomButton::BS_HOT,
+                          tp->GetBitmapNamed(IDR_CLOSE_H));
+  close_button_->SetImage(views::CustomButton::BS_PUSHED,
+                          tp->GetBitmapNamed(IDR_CLOSE_P));
+  if (browser_view_->IsBrowserTypeNormal()) {
     close_button_->SetBackground(color, background,
         tp->GetBitmapNamed(IDR_CLOSE_BUTTON_MASK));
+  }
   close_button_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_CLOSE));
   AddChildView(close_button_);
 
   otr_avatar_icon_->SetImage(browser_view_->GetOTRAvatarIcon());
   AddChildView(otr_avatar_icon_);
-  if (distributor_logo_) {
+  if (distributor_logo_)
     logo_icon_->SetImage(distributor_logo_);
-  } else {
+  else
     logo_icon_->SetVisible(false);
-  }
   AddChildView(logo_icon_);
   // Initializing the TabIconView is expensive, so only do it if we need to.
   if (browser_view_->ShouldShowWindowIcon()) {
@@ -236,7 +226,6 @@ gfx::Size OpaqueBrowserFrameView::GetMinimumSize() {
     (d->ShouldShowWindowIcon() ? (IconSize() + kTitleLogoSpacing) : 0) +
     ((distributor_logo_ && browser_view_->ShouldShowDistributorLogo()) ?
          (distributor_logo_->width() + kLogoCaptionSpacing) : 0);
-
 #if !defined(OS_CHROMEOS)
   min_titlebar_width +=
       minimize_button_->GetMinimumSize().width() +
@@ -244,7 +233,6 @@ gfx::Size OpaqueBrowserFrameView::GetMinimumSize() {
       close_button_->GetMinimumSize().width();
 #endif
   min_size.set_width(std::max(min_size.width(), min_titlebar_width));
-
   return min_size;
 }
 
@@ -429,8 +417,8 @@ void OpaqueBrowserFrameView::SetAccessibleName(const std::wstring& name) {
 ///////////////////////////////////////////////////////////////////////////////
 // OpaqueBrowserFrameView, views::ButtonListener implementation:
 
-void OpaqueBrowserFrameView::ButtonPressed(
-    views::Button* sender, const views::Event& event) {
+void OpaqueBrowserFrameView::ButtonPressed(views::Button* sender,
+                                           const views::Event& event) {
   views::Window* window = frame_->GetWindow();
   if (sender == minimize_button_)
     window->Minimize();
@@ -481,7 +469,7 @@ int OpaqueBrowserFrameView::NonClientBorderThickness() const {
 int OpaqueBrowserFrameView::NonClientTopBorderHeight() const {
   views::Window* window = frame_->GetWindow();
   if (window->GetDelegate()->ShouldShowWindowTitle()) {
-    return std::max(IconSize() + FrameBorderThickness(),
+    return std::max(FrameBorderThickness() + IconSize(),
                     CaptionButtonY() + kCaptionButtonHeightWithPadding) +
         TitlebarBottomThickness();
   }
@@ -535,16 +523,14 @@ gfx::Rect OpaqueBrowserFrameView::IconBounds() const {
   int size = IconSize();
   int frame_thickness = FrameBorderThickness();
   int y;
-  if (frame_->GetWindow()->GetDelegate()->ShouldShowWindowIcon()) {
+  views::WindowDelegate* d = frame_->GetWindow()->GetDelegate();
+  if (d->ShouldShowWindowIcon() || d->ShouldShowWindowTitle()) {
     // This next statement handles two things:
     //   (1) Vertically centering the icon when the icon is shorter than the
-    //       minimum space we reserve for the caption button. Practically, this
-    //       only occurs in maximized mode, since otherwise the minimum icon
-    //       size supplied by Windows (16) + the frame border height (4) >= the
-    //       minimum caption button space (19 + the frame shadow thickness (1)).
-    //       In maximized mode we want to bias rounding to put extra space above
-    //       the icon, since below it is the 2 px 3D edge, which looks to the
-    //       eye like additional space; hence the + 1 below.
+    //       minimum space we reserve for the caption button.  We want to bias
+    //       rounding to put extra space above the icon, since below it is the 2
+    //       px 3D edge, which looks to the eye like additional space; hence the
+    //       + 1 below.
     //   (2) Our frame border has a different "3D look" than Windows'.  Theirs
     //       has a more complex gradient on the top that they push their
     //       icon/title below; then the maximized window cuts this off and the
@@ -580,13 +566,11 @@ void OpaqueBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
       tp->GetBitmapNamed(IDR_WINDOW_BOTTOM_RIGHT_CORNER);
   SkBitmap* bottom_edge = tp->GetBitmapNamed(IDR_WINDOW_BOTTOM_CENTER);
 
-
   // Window frame mode and color.
   SkBitmap* theme_frame;
   SkColor frame_color;
-
-  // Never theme app and popup windows.
   if (!browser_view_->IsBrowserTypeNormal()) {
+    // Never theme app and popup windows.
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     bool is_off_the_record = browser_view_->IsOffTheRecord();
     if (ShouldPaintAsActive()) {
@@ -638,7 +622,7 @@ void OpaqueBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
   // Draw the theme frame.
   canvas->TileImageInt(*theme_frame, 0, 0, width(), theme_frame->height());
 
-  // Draw the theme frame overlay
+  // Draw the theme frame overlay.
   if (tp->HasCustomImage(IDR_THEME_FRAME_OVERLAY) &&
       browser_view_->IsBrowserTypeNormal() &&
       !browser_view_->IsOffTheRecord()) {
@@ -710,7 +694,7 @@ void OpaqueBrowserFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
 #endif
   } else {
     theme_frame = tp->GetBitmapNamed(ShouldPaintAsActive() ?
-        IDR_THEME_FRAME_INCOGNITO: IDR_THEME_FRAME_INCOGNITO_INACTIVE);
+        IDR_THEME_FRAME_INCOGNITO : IDR_THEME_FRAME_INCOGNITO_INACTIVE);
 #if defined(OS_CHROMEOS)
     y = -kCustomFrameBackgroundVerticalOffset - 1;
 #endif
@@ -986,8 +970,8 @@ void OpaqueBrowserFrameView::LayoutDistributorLogo() {
 }
 
 void OpaqueBrowserFrameView::LayoutTitleBar() {
-  // Always lay out the icon, even when it's not present, so we can lay out the
-  // window title based on its position.
+  // The window title is based on the calculated icon position, even when there
+  // is no icon.
   gfx::Rect icon_bounds(IconBounds());
   views::WindowDelegate* d = frame_->GetWindow()->GetDelegate();
   if (d->ShouldShowWindowIcon())
@@ -998,8 +982,13 @@ void OpaqueBrowserFrameView::LayoutTitleBar() {
     int title_x = d->ShouldShowWindowIcon() ?
         icon_bounds.right() + kIconTitleSpacing : icon_bounds.x();
     int title_height = BrowserFrame::GetTitleFont().height();
+    // We bias the title position so that when the difference between the icon
+    // and title heights is odd, the extra pixel of the title is above the
+    // vertical midline rather than below.  This compensates for how the icon is
+    // already biased downwards (see IconBounds()) and helps prevent descenders
+    // on the title from overlapping the 3D edge at the bottom of the titlebar.
     title_bounds_.SetRect(title_x,
-        icon_bounds.y() + ((icon_bounds.height() - title_height) / 2),
+        icon_bounds.y() + ((icon_bounds.height() - title_height - 1) / 2),
         std::max(0, logo_icon_->x() - kTitleLogoSpacing - title_x),
         title_height);
   }
