@@ -8,8 +8,7 @@
 #define GPU_COMMAND_BUFFER_CLIENT_FENCED_ALLOCATOR_H_
 
 #include <vector>
-#include "base/basictypes.h"
-#include "gpu/command_buffer/common/logging.h"
+#include "../common/logging.h"
 
 namespace gpu {
 class CommandBufferHelper;

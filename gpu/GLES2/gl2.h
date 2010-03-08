@@ -19,7 +19,7 @@
 // macros.
 
 #if defined(__cplusplus) && defined(GLES2_INLINE_OPTIMIZATION)
-#include "gpu/command_buffer/command_buffer/client/gles2_lib.h"
+#include "../command_buffer/client/gles2_lib.h"
 #define GLES2_USE_CPP_BINDINGS
 #endif
 

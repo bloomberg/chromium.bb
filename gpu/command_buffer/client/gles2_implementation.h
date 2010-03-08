@@ -8,10 +8,10 @@
 #include <map>
 #include <string>
 #include <vector>
-#include "gpu/command_buffer/common/gles2_cmd_utils.h"
-#include "gpu/command_buffer/client/gles2_cmd_helper.h"
-#include "gpu/command_buffer/client/id_allocator.h"
-#include "gpu/command_buffer/client/fenced_allocator.h"
+#include "../common/gles2_cmd_utils.h"
+#include "../client/gles2_cmd_helper.h"
+#include "../client/id_allocator.h"
+#include "../client/fenced_allocator.h"
 
 namespace gpu {
 namespace gles2 {
@@ -41,7 +41,7 @@ class GLES2Implementation {
   // Include the auto-generated part of this class. We split this because
   // it means we can easily edit the non-auto generated parts right here in
   // this file instead of having to edit some template or the code generator.
-  #include "gpu/command_buffer/client/gles2_implementation_autogen.h"
+  #include "../client/gles2_implementation_autogen.h"
 
  private:
   // Makes a set of Ids for glGen___ functions.

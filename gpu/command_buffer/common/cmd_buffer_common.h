@@ -7,10 +7,9 @@
 #ifndef GPU_COMMAND_BUFFER_COMMON_CMD_BUFFER_COMMON_H_
 #define GPU_COMMAND_BUFFER_COMMON_CMD_BUFFER_COMMON_H_
 
-#include "base/basictypes.h"
-#include "gpu/command_buffer/common/types.h"
-#include "gpu/command_buffer/common/bitfield_helpers.h"
-#include "gpu/command_buffer/common/logging.h"
+#include "../common/types.h"
+#include "../common/bitfield_helpers.h"
+#include "../common/logging.h"
 
 namespace gpu {
 

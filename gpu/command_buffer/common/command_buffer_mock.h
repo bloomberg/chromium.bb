@@ -5,7 +5,7 @@
 #ifndef GPU_COMMAND_BUFFER_COMMON_COMMAND_BUFFER_MOCK_H_
 #define GPU_COMMAND_BUFFER_COMMON_COMMAND_BUFFER_MOCK_H_
 
-#include "gpu/command_buffer/common/command_buffer.h"
+#include "../common/command_buffer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace gpu {

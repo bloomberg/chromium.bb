@@ -5,9 +5,8 @@
 #ifndef GPU_COMMAND_BUFFER_COMMON_COMMAND_BUFFER_H_
 #define GPU_COMMAND_BUFFER_COMMON_COMMAND_BUFFER_H_
 
-#include "base/basictypes.h"
-#include "gpu/command_buffer/common/buffer.h"
-#include "gpu/command_buffer/common/constants.h"
+#include "../common/buffer.h"
+#include "../common/constants.h"
 
 namespace gpu {
 

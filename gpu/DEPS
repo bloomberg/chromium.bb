@@ -1,6 +1,10 @@
 include_rules = [
   "+webkit/glue/plugins",
   "+third_party/npapi",
+  "+../command_buffer",
+  "+../client",
+  "+../common",
+  "+../service",
 
   # For gfx::PluginWindowHandle
   "+app/gfx",

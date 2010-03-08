@@ -94,12 +94,12 @@
       'target_name': 'command_buffer_common',
       'type': 'static_library',
       'include_dirs': [
-        'command_buffer/common',
+        '.',
         '..',
       ],
       'all_dependent_settings': {
         'include_dirs': [
-          'command_buffer/common',
+          '.',
           '..',
         ],
       },
@@ -123,8 +123,6 @@
         'command_buffer/common/gles2_cmd_utils.h',
         'command_buffer/common/logging.h',
         'command_buffer/common/mocks.h',
-        'command_buffer/common/resource.cc',
-        'command_buffer/common/resource.h',
         'command_buffer/common/thread_local.h',
         'command_buffer/common/types.h',
       ],
@@ -152,7 +150,7 @@
       'all_dependent_settings': {
         'include_dirs': [
           # For GLES2/gl2.h
-          'command_buffer/common',
+          '.',
         ],
       },
       'sources': [
@@ -192,7 +190,7 @@
       'target_name': 'command_buffer_common_unittests',
       'type': 'none',
       'include_dirs': [
-        'command_buffer/common',
+        '.',
       ],
       'dependencies': [
         'gles2_lib',
@@ -260,8 +258,6 @@
         'command_buffer/service/mocks.h',
         'command_buffer/service/precompile.cc',
         'command_buffer/service/precompile.h',
-        'command_buffer/service/resource.cc',
-        'command_buffer/service/resource.h',
       ],
       'conditions': [
         ['OS == "linux"',
@@ -327,7 +323,6 @@
           'command_buffer/service/cmd_parser_test.cc',
           'command_buffer/service/common_decoder_unittest.cc',
           'command_buffer/service/gpu_processor_unittest.cc',
-          'command_buffer/service/resource_test.cc',
           'command_buffer/service/gl_interface.h',
           'command_buffer/service/gl_interface.cc',
           'command_buffer/service/gl_mock.h',

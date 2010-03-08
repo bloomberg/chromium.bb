@@ -8,11 +8,14 @@
 #define GPU_COMMAND_BUFFER_CLIENT_ID_ALLOCATOR_H_
 
 #include <vector>
-#include "base/basictypes.h"
-#include "gpu/command_buffer/common/types.h"
-#include "gpu/command_buffer/common/resource.h"
+#include "../common/types.h"
 
 namespace gpu {
+
+// A resource ID, key to the resource maps.
+typedef uint32 ResourceId;
+// Invalid resource ID.
+static const ResourceId kInvalidResource = 0xffffffffU;
 
 // A class to manage the allocation of resource IDs. It uses a bitfield stored
 // into a vector of unsigned ints.

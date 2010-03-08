@@ -11,7 +11,7 @@
 // the GL headers where as client side code includes the Chrome version. Also
 // the unit test code must include a mock GL header.
 #if defined(UNIT_TEST)
-#include "gpu/command_buffer/service/gl_mock.h"
+#include "../service/gl_mock.h"
 #elif defined(GLES2_GPU_SERVICE)
 #include <GL/glew.h>  // NOLINT
 #if defined(OS_WIN)
@@ -21,11 +21,10 @@
 #include <GLES2/gl2types.h>  // NOLINT
 #endif
 
-#include "base/basictypes.h"
-#include "gpu/command_buffer/common/types.h"
-#include "gpu/command_buffer/common/bitfield_helpers.h"
-#include "gpu/command_buffer/common/cmd_buffer_common.h"
-#include "gpu/command_buffer/common/gles2_cmd_ids.h"
+#include "../common/types.h"
+#include "../common/bitfield_helpers.h"
+#include "../common/cmd_buffer_common.h"
+#include "../common/gles2_cmd_ids.h"
 
 namespace gpu {
 namespace gles2 {
@@ -83,7 +82,7 @@ COMPILE_ASSERT(offsetof(SizedResult<int8>, size) == 0,
 COMPILE_ASSERT(offsetof(SizedResult<int8>, data) == 4,
                OffsetOf_SizedResult_data_not_4);
 
-#include "gpu/command_buffer/common/gles2_cmd_format_autogen.h"
+#include "../common/gles2_cmd_format_autogen.h"
 
 // These are hand written commands.
 // TODO(gman): Attempt to make these auto-generated.

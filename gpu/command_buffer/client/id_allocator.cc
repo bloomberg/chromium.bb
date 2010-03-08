@@ -4,7 +4,8 @@
 
 // This file contains the implementation of IdAllocator.
 
-#include "gpu/command_buffer/client/id_allocator.h"
+#include "../client/id_allocator.h"
+#include "../common/logging.h"
 
 namespace gpu {
 

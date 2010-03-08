@@ -8,8 +8,7 @@
 #ifndef GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_UTILS_H_
 #define GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_UTILS_H_
 
-#include "base/basictypes.h"
-#include "gpu/command_buffer/common/types.h"
+#include "../common/types.h"
 
 namespace gpu {
 namespace gles2 {

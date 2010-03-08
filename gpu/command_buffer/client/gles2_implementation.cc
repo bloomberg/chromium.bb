@@ -4,8 +4,8 @@
 
 // A class to emluate GLES2 over command buffers.
 
-#include "gpu/command_buffer/client/gles2_implementation.h"
-#include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "../client/gles2_implementation.h"
+#include "../common/gles2_cmd_utils.h"
 
 namespace gpu {
 namespace gles2 {

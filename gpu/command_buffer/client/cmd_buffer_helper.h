@@ -7,10 +7,10 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_CMD_BUFFER_HELPER_H_
 #define GPU_COMMAND_BUFFER_CLIENT_CMD_BUFFER_HELPER_H_
 
-#include "gpu/command_buffer/common/logging.h"
-#include "gpu/command_buffer/common/constants.h"
-#include "gpu/command_buffer/common/cmd_buffer_common.h"
-#include "gpu/command_buffer/common/command_buffer.h"
+#include "../common/logging.h"
+#include "../common/constants.h"
+#include "../common/cmd_buffer_common.h"
+#include "../common/command_buffer.h"
 
 namespace gpu {
 

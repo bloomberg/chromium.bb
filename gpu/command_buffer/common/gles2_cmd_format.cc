@@ -7,12 +7,12 @@
 
 // We explicitly do NOT include gles2_cmd_format.h here because client side
 // and service side have different requirements.
-#include "gpu/command_buffer/common/cmd_buffer_common.h"
+#include "../common/cmd_buffer_common.h"
 
 namespace gpu {
 namespace gles2 {
 
-#include "gpu/command_buffer/common/gles2_cmd_ids_autogen.h"
+#include "../common/gles2_cmd_ids_autogen.h"
 
 const char* GetCommandName(CommandId id) {
   static const char* const names[] = {

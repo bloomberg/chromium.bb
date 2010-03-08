@@ -4,9 +4,9 @@
 
 // This file contains the implementation of the FencedAllocator class.
 
-#include "gpu/command_buffer/client/fenced_allocator.h"
+#include "../client/fenced_allocator.h"
 #include <algorithm>
-#include "gpu/command_buffer/client/cmd_buffer_helper.h"
+#include "../client/cmd_buffer_helper.h"
 
 namespace gpu {
 

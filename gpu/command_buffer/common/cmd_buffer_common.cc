@@ -5,7 +5,7 @@
 // This file contains the binary format definition of the command buffer and
 // command buffer commands.
 
-#include "gpu/command_buffer/common/cmd_buffer_common.h"
+#include "../common/cmd_buffer_common.h"
 
 namespace gpu {
 #if !defined(OS_WIN)

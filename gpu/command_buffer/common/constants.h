@@ -5,7 +5,7 @@
 #ifndef GPU_COMMAND_BUFFER_COMMON_CONSTANTS_H_
 #define GPU_COMMAND_BUFFER_COMMON_CONSTANTS_H_
 
-#include "base/basictypes.h"
+#include "../common/types.h"
 
 namespace gpu {
 

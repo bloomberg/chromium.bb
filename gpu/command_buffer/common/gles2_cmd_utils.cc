@@ -5,8 +5,8 @@
 // This file is here so other GLES2 related files can have a common set of
 // includes where appropriate.
 
-#include "gpu/command_buffer/common/gles2_cmd_utils.h"
-#include "gpu/command_buffer/common/gles2_cmd_format.h"
+#include "../common/gles2_cmd_utils.h"
+#include "../common/gles2_cmd_format.h"
 
 namespace gpu {
 namespace gles2 {

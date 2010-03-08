@@ -9,9 +9,12 @@
 #include "gpu/command_buffer/common/logging.h"
 
 #include <math.h>
-#include <GLES2/gl2.h>
-
 #include <string>
+
+// This is here so we have at least some idea that the inline path is working.
+#define GLES2_INLINE_OPTIMIZATION
+#include <GLES2/gl2.h>
+#include "gpu/command_buffer/common/logging.h"
 
 namespace {
 
