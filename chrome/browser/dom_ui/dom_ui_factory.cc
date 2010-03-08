@@ -142,6 +142,9 @@ RefCountedMemory* DOMUIFactory::GetFaviconResourceBytes(const GURL& page_url) {
   if (page_url.host() == chrome::kChromeUIDownloadsHost)
     return DownloadsUI::GetFaviconResourceBytes();
 
+  if (page_url.host() == chrome::kChromeUIExtensionsHost)
+    return ExtensionsUI::GetFaviconResourceBytes();
+
   if (page_url.host() == chrome::kChromeUIHistoryHost)
     return HistoryUI::GetFaviconResourceBytes();
 
