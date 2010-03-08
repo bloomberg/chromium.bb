@@ -181,12 +181,11 @@ int LanguageMenuButton::GetGroupIdAt(int index) const {
 }
 
 bool LanguageMenuButton::HasIcons() const  {
-  // TODO(yusukes): Display IME icons.
+  // We don't support IME nor keyboard icons on Chrome OS.
   return false;
 }
 
 bool LanguageMenuButton::GetIconAt(int index, SkBitmap* icon) const {
-  // TODO(yusukes): Display IME icons.
   return false;
 }
 
@@ -337,7 +336,6 @@ void LanguageMenuButton::UpdateIcon(const std::wstring& name) {
   SetEnabledColor(SK_ColorWHITE);
   SetShowHighlighted(false);
   SetText(name);
-  // TODO(yusukes): Show icon on the status area?
   set_alignment(TextButton::ALIGN_RIGHT);
   SchedulePaint();
 }
