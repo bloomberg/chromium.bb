@@ -12,6 +12,7 @@
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "net/base/dns_util.h"
 #include "net/base/static_cookie_policy.h"
 
 // static
@@ -126,7 +127,8 @@ ContentSetting HostContentSettingsMap::GetContentSetting(
     const std::string& host,
     ContentSettingsType content_type) const {
   AutoLock auto_lock(lock_);
-  HostContentSettings::const_iterator i(host_content_settings_.find(host));
+  HostContentSettings::const_iterator i(host_content_settings_.find(
+    net::TrimEndingDot(host)));
   if (i != host_content_settings_.end()) {
     ContentSetting setting = i->second.settings[content_type];
     if (setting != CONTENT_SETTING_DEFAULT)
@@ -145,7 +147,8 @@ ContentSetting HostContentSettingsMap::GetContentSetting(
 ContentSettings HostContentSettingsMap::GetContentSettings(
     const std::string& host) const {
   AutoLock auto_lock(lock_);
-  HostContentSettings::const_iterator i(host_content_settings_.find(host));
+  HostContentSettings::const_iterator i(host_content_settings_.find(
+    net::TrimEndingDot(host)));
   if (i == host_content_settings_.end())
     return default_content_settings_;
 

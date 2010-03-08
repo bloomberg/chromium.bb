@@ -205,4 +205,83 @@ TEST_F(HostContentSettingsMapTest, Observer) {
   EXPECT_EQ(4, observer.counter);
 }
 
+TEST_F(HostContentSettingsMapTest, HostTrimEndingDotCheck) {
+  TestingProfile profile;
+  HostContentSettingsMap* host_content_settings_map =
+      profile.GetHostContentSettingsMap();
+
+  std::string host("example.com");
+  std::string host_ending_with_dot("example.com.");
+
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                host_ending_with_dot, CONTENT_SETTINGS_TYPE_IMAGES));
+  host_content_settings_map->SetContentSetting(host,
+      CONTENT_SETTINGS_TYPE_IMAGES, CONTENT_SETTING_DEFAULT);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                host_ending_with_dot, CONTENT_SETTINGS_TYPE_IMAGES));
+  host_content_settings_map->SetContentSetting(host,
+      CONTENT_SETTINGS_TYPE_IMAGES, CONTENT_SETTING_BLOCK);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetContentSetting(
+                host_ending_with_dot, CONTENT_SETTINGS_TYPE_IMAGES));
+
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                host_ending_with_dot, CONTENT_SETTINGS_TYPE_COOKIES));
+  host_content_settings_map->SetContentSetting(host,
+      CONTENT_SETTINGS_TYPE_COOKIES, CONTENT_SETTING_DEFAULT);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                host_ending_with_dot, CONTENT_SETTINGS_TYPE_COOKIES));
+  host_content_settings_map->SetContentSetting(host,
+      CONTENT_SETTINGS_TYPE_COOKIES, CONTENT_SETTING_BLOCK);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetContentSetting(
+                host_ending_with_dot, CONTENT_SETTINGS_TYPE_COOKIES));
+
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                host_ending_with_dot, CONTENT_SETTINGS_TYPE_JAVASCRIPT));
+  host_content_settings_map->SetContentSetting(host,
+      CONTENT_SETTINGS_TYPE_JAVASCRIPT, CONTENT_SETTING_DEFAULT);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                host_ending_with_dot, CONTENT_SETTINGS_TYPE_JAVASCRIPT));
+  host_content_settings_map->SetContentSetting(host,
+      CONTENT_SETTINGS_TYPE_JAVASCRIPT, CONTENT_SETTING_BLOCK);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetContentSetting(
+                host_ending_with_dot, CONTENT_SETTINGS_TYPE_JAVASCRIPT));
+
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                host_ending_with_dot, CONTENT_SETTINGS_TYPE_PLUGINS));
+  host_content_settings_map->SetContentSetting(host,
+      CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_DEFAULT);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                host_ending_with_dot, CONTENT_SETTINGS_TYPE_PLUGINS));
+  host_content_settings_map->SetContentSetting(host,
+      CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_BLOCK);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetContentSetting(
+                host_ending_with_dot, CONTENT_SETTINGS_TYPE_PLUGINS));
+
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetContentSetting(
+                host_ending_with_dot, CONTENT_SETTINGS_TYPE_POPUPS));
+  host_content_settings_map->SetContentSetting(host,
+      CONTENT_SETTINGS_TYPE_POPUPS, CONTENT_SETTING_DEFAULT);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetContentSetting(
+                host_ending_with_dot, CONTENT_SETTINGS_TYPE_POPUPS));
+  host_content_settings_map->SetContentSetting(host,
+      CONTENT_SETTINGS_TYPE_POPUPS, CONTENT_SETTING_ALLOW);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                host_ending_with_dot, CONTENT_SETTINGS_TYPE_POPUPS));
+}
+
 }  // namespace
