@@ -9,6 +9,7 @@
 #include "base/path_service.h"
 #include "base/platform_file.h"
 #include "base/sys_string_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/spellcheck_common.h"
@@ -357,7 +358,7 @@ TEST_F(SpellCheckTest, SpellCheckSuggestions_EN_US) {
 
     // Check if the suggested words occur.
     bool suggested_word_is_present = false;
-    for (int j=0; j < static_cast<int>(suggestions.size()); j++) {
+    for (int j = 0; j < static_cast<int>(suggestions.size()); j++) {
       if (suggestions.at(j).compare(WideToUTF16(kTestCases[i].suggested_word))
           == 0) {
         suggested_word_is_present = true;

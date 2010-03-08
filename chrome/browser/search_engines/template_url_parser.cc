@@ -4,12 +4,14 @@
 
 #include "chrome/browser/search_engines/template_url_parser.h"
 
+#include <algorithm>
 #include <map>
 #include <vector>
 
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
@@ -205,7 +207,7 @@ class ParsingContext {
 
  private:
   static void InitMapping() {
-    kElementNameToElementTypeMap = new std::map<std::string,ElementType>;
+    kElementNameToElementTypeMap = new std::map<std::string, ElementType>;
     (*kElementNameToElementTypeMap)[kURLElement] = URL;
     (*kElementNameToElementTypeMap)[kParamElement] = PARAM;
     (*kElementNameToElementTypeMap)[kShortNameElement] = SHORT_NAME;
@@ -222,7 +224,7 @@ class ParsingContext {
   }
 
   // Key is UTF8 encoded.
-  static std::map<std::string,ElementType>* kElementNameToElementTypeMap;
+  static std::map<std::string, ElementType>* kElementNameToElementTypeMap;
   // TemplateURL supplied to Read method. It's owned by the caller, so we
   // don't need to free it.
   TemplateURL* url_;
@@ -253,7 +255,7 @@ class ParsingContext {
 };
 
 // static
-std::map<std::string,ParsingContext::ElementType>*
+std::map<std::string, ParsingContext::ElementType>*
     ParsingContext::kElementNameToElementTypeMap = NULL;
 
 std::wstring XMLCharToWide(const xmlChar* value) {
@@ -385,10 +387,10 @@ static void AppendParamToQuery(const std::string& key,
                                const std::string& value,
                                std::string* query) {
   if (!query->empty())
-   query->append("&");
+    query->append("&");
   if (!key.empty()) {
-   query->append(key);
-   query->append("=");
+    query->append(key);
+    query->append("=");
   }
   query->append(value);
 }
@@ -548,7 +550,7 @@ bool IsLegal(TemplateURL* url) {
   return true;
 }
 
-} // namespace
+}  // namespace
 
 // static
 bool TemplateURLParser::Parse(const unsigned char* data, size_t length,

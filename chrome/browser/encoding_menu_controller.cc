@@ -5,6 +5,7 @@
 #include "chrome/browser/encoding_menu_controller.h"
 
 #include "app/l10n_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/character_encoding.h"

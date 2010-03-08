@@ -7,7 +7,7 @@
 #include "app/l10n_util.h"
 #include "base/file_version_info.h"
 #include "base/process_util.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/child_process_host.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/renderer_host/backing_store_manager.h"

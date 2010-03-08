@@ -8,7 +8,7 @@
 #include "app/l10n_util.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/google_url_tracker.h"
 #include "chrome/browser/search_engines/template_url_model.h"

@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/browser/chrome_thread.h"
@@ -43,7 +44,7 @@ std::string ShellIntegration::GetCommandLineArgumentsCommon(const GURL& url,
     arguments_w += std::wstring(L"--") + ASCIIToWide(switches::kAppId) +
         L"=\"" + ASCIIToWide(UTF16ToASCII(extension_app_id)) + L"\" --" +
         ASCIIToWide(switches::kEnableExtensionApps);
-  } else {  
+  } else {
     // Use '--app=url' instead of just 'url' to launch the browser with minimal
     // chrome.
     // Note: Do not change this flag!  Old Gears shortcuts will break if you do!

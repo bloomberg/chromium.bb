@@ -45,6 +45,7 @@
 
 #include "app/l10n_util.h"
 #include "base/i18n/number_formatting.h"
+#include "base/utf_string_conversions.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
 

@@ -5,7 +5,7 @@
 #include "chrome/browser/language_combobox_model.h"
 
 #include "app/l10n_util.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/pref_service.h"
