@@ -27,6 +27,7 @@ class NaClBrokerThread : public ChildThread {
   virtual void OnControlMessageReceived(const IPC::Message& msg);
   void OnLaunchLoaderThroughBroker(const std::wstring& loader_channel_id);
   void OnShareBrowserHandle(int browser_handle);
+  void OnStopBroker();
 
   base::ProcessHandle browser_handle_;
   sandbox::BrokerServices* broker_services_;

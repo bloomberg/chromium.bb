@@ -23,6 +23,12 @@ class NaClBrokerHost : public ChildProcessHost {
   // a Native Client loader process.
   bool LaunchLoader(const std::wstring& loader_channel_id);
 
+  // Stop the broker process.
+  void StopBroker();
+
+ protected:
+  virtual void OnChildDied();
+
  private:
   // ResourceDispatcherHost::Receiver implementation:
   virtual URLRequestContext* GetRequestContext(
@@ -39,6 +45,8 @@ class NaClBrokerHost : public ChildProcessHost {
 
   // IPC::Channel::Listener
   virtual void OnMessageReceived(const IPC::Message& msg);
+
+  bool stopping_;
 
   DISALLOW_COPY_AND_ASSIGN(NaClBrokerHost);
 };

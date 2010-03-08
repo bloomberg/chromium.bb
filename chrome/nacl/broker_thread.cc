@@ -8,10 +8,11 @@
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
-#include "chrome/common/sandbox_policy.h"
+#include "chrome/common/child_process.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/nacl_cmd_line.h"
 #include "chrome/common/nacl_messages.h"
+#include "chrome/common/sandbox_policy.h"
 #include "ipc/ipc_switches.h"
 
 NaClBrokerThread::NaClBrokerThread()
@@ -31,6 +32,7 @@ void NaClBrokerThread::OnControlMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(NaClBrokerThread, msg)
     IPC_MESSAGE_HANDLER(NaClProcessMsg_LaunchLoaderThroughBroker,
                         OnLaunchLoaderThroughBroker)
+    IPC_MESSAGE_HANDLER(NaClProcessMsg_StopBroker, OnStopBroker)
   IPC_END_MESSAGE_MAP()
 }
 
@@ -64,9 +66,14 @@ void NaClBrokerThread::OnLaunchLoaderThroughBroker(
                                          loader_handle_in_browser));
 }
 
+void NaClBrokerThread::OnStopBroker() {
+  ChildProcess::current()->ReleaseProcess();
+}
+
 void NaClBrokerThread::OnChannelConnected(int32 peer_pid) {
   bool res = base::OpenProcessHandle(peer_pid, &browser_handle_);
   DCHECK(res);
+  ChildProcess::current()->AddRefProcess();
   Send(new NaClProcessMsg_BrokerReady());
 }
 

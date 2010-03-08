@@ -25,5 +25,9 @@ IPC_BEGIN_MESSAGES(NaClProcess)
 
   // Notify the browser process that the broker is ready (sent by the broker)
   IPC_MESSAGE_CONTROL0(NaClProcessMsg_BrokerReady)
+
+  // Notify the broker that all loader processes have been terminated and it
+  // should shutdown.
+  IPC_MESSAGE_CONTROL0(NaClProcessMsg_StopBroker)
 IPC_END_MESSAGES(NaClProcess)
 
