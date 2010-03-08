@@ -40,4 +40,5 @@ TEST(UserStyleSheetWatcherTest, StyleLoad) {
   std::string decoded;
   EXPECT_TRUE(base::Base64Decode(result, &decoded));
   EXPECT_EQ(css_file_contents, decoded);
+  style_sheet_watcher = NULL;
 }
