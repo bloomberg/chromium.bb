@@ -144,11 +144,6 @@ void URLRequestAutomationJob::Kill() {
     if (!is_pending()) {
       message_filter_->Send(new AutomationMsg_RequestEnd(0, tab_, id_,
           URLRequestStatus(URLRequestStatus::CANCELED, net::ERR_ABORTED)));
-    } else {
-      // If this is a pending job, then register it from the message filter to
-      // ensure that it is not serviced when the external host connects to the
-      // corresponding external tab.
-      message_filter_->UnRegisterRequest(this);
     }
   }
   DisconnectFromMessageFilter();
