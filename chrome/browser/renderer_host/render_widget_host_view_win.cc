@@ -232,7 +232,7 @@ BOOL CALLBACK DetachPluginWindowsCallback(HWND window, LPARAM param) {
 void DrawDeemphasized(const gfx::Rect& paint_rect,
                       HDC backing_store_dc,
                       HDC paint_dc) {
-  gfx::Canvas canvas(paint_rect.width(), paint_rect.height(), false);
+  gfx::Canvas canvas(paint_rect.width(), paint_rect.height(), true);
   HDC dc = canvas.beginPlatformPaint();
   BitBlt(dc,
          0,
@@ -781,7 +781,11 @@ bool RenderWidgetHostViewWin::ContainsNativeView(
 }
 
 void RenderWidgetHostViewWin::SetVisuallyDeemphasized(bool deemphasized) {
+  if (visually_deemphasized_ == deemphasized)
+    return;
+
   visually_deemphasized_ = deemphasized;
+  InvalidateRect(NULL, FALSE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
