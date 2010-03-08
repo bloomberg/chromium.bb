@@ -70,7 +70,7 @@ CommandBufferService::State CommandBufferService::GetState() {
 }
 
 CommandBufferService::State CommandBufferService::Flush(int32 put_offset) {
-  if (put_offset < 0 || put_offset >= size_) {
+  if (put_offset < 0 || put_offset > size_) {
     error_ = gpu::error::kOutOfBounds;
     return GetState();
   }

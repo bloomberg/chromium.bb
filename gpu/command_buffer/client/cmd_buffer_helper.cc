@@ -139,6 +139,10 @@ CommandBufferEntry* CommandBufferHelper::GetSpace(uint32 entries) {
   WaitForAvailableEntries(entries);
   CommandBufferEntry* space = &entries_[put_];
   put_ += entries;
+  DCHECK_LE(put_, entry_count_);
+  if (put_ == entry_count_) {
+    put_ = 0;
+  }
   return space;
 }
 
