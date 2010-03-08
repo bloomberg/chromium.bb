@@ -320,8 +320,9 @@ void RecordLastRunAppBundlePath() {
 }
 
 // See if we have a window with tabs open, and adjust the key equivalents for
-// Close Tab/Close Window accordingly
+// Close Tab/Close Window accordingly.
 - (void)fixCloseMenuItemKeyEquivalents {
+  fileMenuUpdatePending_ = NO;
   TabWindowController* tabController = [self keyWindowTabController];
   if (!tabController && ![NSApp keyWindow]) {
     // There might be a small amount of time where there is no key window,
@@ -332,7 +333,6 @@ void RecordLastRunAppBundlePath() {
       (tabController && [tabController numberOfTabs] > 1);
   [self adjustCloseWindowMenuItemKeyEquivalent:windowWithMultipleTabs];
   [self adjustCloseTabMenuItemKeyEquivalent:windowWithMultipleTabs];
-  fileMenuUpdatePending_ = NO;
 }
 
 // Fix up the "close tab/close window" command-key equivalents. We do this
@@ -346,11 +346,23 @@ void RecordLastRunAppBundlePath() {
     // can sneak in before this timer fires. In order to prevent that from
     // having any bad consequences, just clear the keys combos altogether. They
     // will be reset when the timer eventually fires.
-    [self clearCloseMenuItemKeyEquivalents];
-    [self performSelectorOnMainThread:@selector(fixCloseMenuItemKeyEquivalents)
+    if ([NSThread isMainThread]) {
+      fileMenuUpdatePending_ = YES;
+      [self clearCloseMenuItemKeyEquivalents];
+      [self performSelector:@selector(fixCloseMenuItemKeyEquivalents)
+                 withObject:nil
+                 afterDelay:0];
+    } else {
+      // This shouldn't be happening, but if it does, force it to the main
+      // thread to avoid dropping the update. Don't mess with
+      // |fileMenuUpdatePending_| as it's not expected to be threadsafe and
+      // there could be a race between the selector finishing and setting the
+      // flag.
+      [self
+          performSelectorOnMainThread:@selector(fixCloseMenuItemKeyEquivalents)
                            withObject:nil
                         waitUntilDone:NO];
-    fileMenuUpdatePending_ = YES;
+    }
   }
 }
 
