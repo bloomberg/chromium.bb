@@ -21,6 +21,42 @@ typedef void NPUserData;
 /* unique id for each device interface */
 typedef int32 NPDeviceID;
 
+typedef struct _NPPoint {
+  uint16 x;
+  uint16 y;
+} NPPoint;
+
+typedef enum {
+  NPThemeItemScrollbarDownArrow       = 0,
+  NPThemeItemScrollbarLeftArrow       = 1,
+  NPThemeItemScrollbarRightArrow      = 2,
+  NPThemeItemScrollbarUpArrow         = 3,
+  NPThemeItemScrollbarHorizontalThumb = 4,
+  NPThemeItemScrollbarVerticalThumb   = 5,
+  NPThemeItemScrollbarHoriztonalTrack = 6,
+  NPThemeItemScrollbarVerticalTrack   = 7,
+} NPThemeItem;
+
+typedef enum {
+  NPThemeStateDisabled = 0,
+  // Mouse is over this item.
+  NPThemeStateHot      = 1,
+  // Mouse is over another part of this component.  This is only used on Windows
+  // Vista and above.  The plugin should pass it in, and the host will convert
+  // it to NPThemeStateNormal if on other platforms or on Windows XP.
+  NPThemeStateHover    = 2,
+  NPThemeStateNormal   = 3,
+  NPThemeStatePressed  = 4,
+} NPThemeState;
+
+typedef struct _NPThemeParams {
+  NPThemeItem item;
+  NPThemeState state;
+  NPRect location;
+  // Used for scroll bar tracks, needed for classic theme in Windows which draws
+  // a checkered pattern.
+  NPPoint align;
+} NPThemeParams;
 
 typedef struct _NPDeviceBuffer {
   void* ptr;
@@ -92,6 +128,20 @@ typedef NPError (*NPDeviceMapBufferPtr)(
     NPDeviceContext* context,
     int32 id,
     NPDeviceBuffer* buffer);
+/* Gets the size of the given theme component.  For variable sized items like */
+/* vertical scrollbar tracks, the width will be the required width of the */
+/* track while the height will be the minimum height. */
+typedef NPError (*NPDeviceThemeGetSize)(
+    NPP instance,
+    NPThemeItem item,
+    int* width,
+    int* height);
+/* Draw a themed item (i.e. scrollbar arrow). */
+typedef NPError (*NPDeviceThemePaint)(
+    NPP instance,
+    NPDeviceContext* context,
+    NPThemeParams* params);
+
 
 /* forward decl typdef structs */
 typedef struct NPDevice NPDevice;
@@ -109,6 +159,8 @@ struct NPDevice {
   NPDeviceCreateBufferPtr createBuffer;
   NPDeviceDestroyBufferPtr destroyBuffer;
   NPDeviceMapBufferPtr mapBuffer;
+  NPDeviceThemeGetSize themeGetSize;
+  NPDeviceThemePaint themePaint;
 };
 
 /* returns NULL if deviceID unavailable / unrecognized */

@@ -42,6 +42,7 @@ class Graphics2DDeviceContext {
   void RenderViewFlushedPaint();
 
   TransportDIB* transport_dib() { return transport_dib_.get(); }
+  skia::PlatformCanvas* canvas() { return canvas_.get(); }
 
  private:
   struct FlushCallbackData {

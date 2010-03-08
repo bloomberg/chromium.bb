@@ -93,6 +93,11 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
                                        NPDeviceFlushContextCallbackPtr callback,
                                        void* user_data);
   virtual NPError Device2DDestroyContext(NPDeviceContext2D* context);
+  virtual NPError Device2DThemeGetSize(NPThemeItem item,
+                                       int* width,
+                                       int* height);
+  virtual NPError Device2DThemePaint(NPDeviceContext2D* context,
+                                     NPThemeParams* params);
 
   // WebPlugin3DDeviceDelegate implementation.
   virtual NPError Device3DQueryCapability(int32 capability, int32* value);

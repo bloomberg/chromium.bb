@@ -137,6 +137,29 @@ static NPError Device2DMapBuffer(NPP id,
   return NPERR_GENERIC_ERROR;
 }
 
+static NPError Device2DThemeGetSize(NPP id,
+                                    NPThemeItem item,
+                                    int* width,
+                                    int* height) {
+  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  if (plugin) {
+    return plugin->webplugin()->delegate()->Device2DThemeGetSize(
+        item, width, height);
+  }
+  return NPERR_GENERIC_ERROR;
+}
+
+static NPError Device2DThemePaint(NPP id,
+                                  NPDeviceContext* context,
+                                  NPThemeParams* params) {
+  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  if (plugin) {
+    return plugin->webplugin()->delegate()->Device2DThemePaint(
+        static_cast<NPDeviceContext2D*>(context), params);
+  }
+  return NPERR_GENERIC_ERROR;
+}
+
 // 3D device API ---------------------------------------------------------------
 
 static NPError Device3DQueryCapability(NPP id, int32 capability, int32* value) {
@@ -342,6 +365,8 @@ static NPDevice* AcquireDevice(NPP id, NPDeviceID device_id) {
     Device2DCreateBuffer,
     Device2DDestroyBuffer,
     Device2DMapBuffer,
+    Device2DThemeGetSize,
+    Device2DThemePaint,
   };
   static NPDevice device_3d = {
     Device3DQueryCapability,
@@ -354,6 +379,8 @@ static NPDevice* AcquireDevice(NPP id, NPDeviceID device_id) {
     Device3DCreateBuffer,
     Device3DDestroyBuffer,
     Device3DMapBuffer,
+    NULL,
+    NULL,
   };
   static NPDevice device_audio = {
       DeviceAudioQueryCapability,
@@ -363,6 +390,11 @@ static NPDevice* AcquireDevice(NPP id, NPDeviceID device_id) {
       DeviceAudioGetStateContext,
       DeviceAudioFlushContext,
       DeviceAudioDestroyContext,
+      NULL,
+      NULL,
+      NULL,
+      NULL,
+      NULL,
   };
 
   switch (device_id) {

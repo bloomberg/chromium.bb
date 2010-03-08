@@ -46,6 +46,15 @@ class WebPlugin2DDeviceDelegate {
   virtual NPError Device2DDestroyContext(NPDeviceContext2D* context) {
     return NPERR_GENERIC_ERROR;
   }
+  virtual NPError Device2DThemeGetSize(NPThemeItem item,
+                                       int* width,
+                                       int* height) {
+    return NPERR_GENERIC_ERROR;
+  }
+  virtual NPError Device2DThemePaint(NPDeviceContext2D* context,
+                                     NPThemeParams* params) {
+    return NPERR_GENERIC_ERROR;
+  }
 
  protected:
   WebPlugin2DDeviceDelegate() {}
