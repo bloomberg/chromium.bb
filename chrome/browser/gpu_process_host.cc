@@ -41,6 +41,9 @@ GpuProcessHost::GpuProcessHost() : last_routing_id_(1) {
   cmd_line->AppendSwitchWithValue(switches::kProcessChannelID,
                                   ASCIIToWide(channel_id));
 
+  const CommandLine& browser_cmd_line = *CommandLine::ForCurrentProcess();
+  PropagateBrowserCommandLineToGpu(browser_cmd_line, cmd_line);
+
   // If specified, prepend a launcher program to the command line.
   if (!gpu_launcher.empty())
     cmd_line->PrependWrapper(gpu_launcher);
@@ -158,4 +161,23 @@ void GpuProcessHost::ReplyToRenderer(
 
   CHECK(process_host->Send(new ViewMsg_GpuChannelEstablished(routing_id,
                                                              channel)));
+}
+
+void GpuProcessHost::PropagateBrowserCommandLineToGpu(
+    const CommandLine& browser_cmd,
+    CommandLine* gpu_cmd) const {
+  // Propagate the following switches to the GPU process command line (along
+  // with any associated values) if present in the browser command line.
+  static const char* const switch_names[] = {
+    switches::kDisableLogging,
+    switches::kEnableLogging,
+    switches::kLoggingLevel,
+  };
+
+  for (size_t i = 0; i < arraysize(switch_names); ++i) {
+    if (browser_cmd.HasSwitch(switch_names[i])) {
+      gpu_cmd->AppendSwitchWithValue(switch_names[i],
+          browser_cmd.GetSwitchValueASCII(switch_names[i]));
+    }
+  }
 }

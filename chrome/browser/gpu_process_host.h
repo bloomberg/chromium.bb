@@ -88,6 +88,12 @@ class GpuProcessHost : public IPC::Channel::Sender,
   // the GPU process, but haven't heard back about yet.
   std::queue<ChannelRequest> sent_requests_;
 
+  // Copies applicable command line switches from the given |browser_cmd| line
+  // flags to the output |gpu_cmd| line flags. Not all switches will be
+  // copied over.
+  void PropagateBrowserCommandLineToGpu(const CommandLine& browser_cmd,
+                                        CommandLine* gpu_cmd) const;
+
   scoped_ptr<ChildProcessLauncher> child_process_;
 
   // A proxy for our IPC::Channel that lives on the IO thread (see
