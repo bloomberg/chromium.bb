@@ -20,26 +20,27 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
 #include "grit/app_resources.h"
+#include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 
 namespace {
 
 // Menus more than this many chars long will get trimmed.
-const static NSUInteger kMaximumMenuWidthInChars = 65;
+const NSUInteger kMaximumMenuWidthInChars = 65;
 
 // When trimming, use this many chars from each side.
-const static NSUInteger kMenuTrimSizeInChars = 30;
+const NSUInteger kMenuTrimSizeInChars = 30;
 
 // Number of days to consider when getting the number of most visited items.
-const static int kMostVisitedScope = 90;
+const int kMostVisitedScope = 90;
 
 // The number of most visisted results to get.
-const static int kMostVisitedCount = 9;
+const int kMostVisitedCount = 9;
 
 // The number of recently closed items to get.
-const static unsigned int kRecentlyClosedCount = 5;
+const unsigned int kRecentlyClosedCount = 10;
 
-}
+}  // namespace
 
 HistoryMenuBridge::HistoryMenuBridge(Profile* profile)
     : controller_([[HistoryMenuCocoaController alloc] initWithBridge:this]),
@@ -68,6 +69,10 @@ HistoryMenuBridge::HistoryMenuBridge(Profile* profile)
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   default_favicon_.reset([rb.GetNSImageNamed(IDR_DEFAULT_FAVICON) retain]);
+
+  // Set the static icons in the menu.
+  NSMenuItem* item = [HistoryMenu() itemWithTag:IDC_SHOW_HISTORY];
+  [item setImage:rb.GetNSImageNamed(IDR_HISTORY_FAVICON)];
 
   // The service is not ready for use yet, so become notified when it does.
   if (!history_service_) {

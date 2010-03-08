@@ -6621,9 +6621,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Task Manager
         </message>
         <!-- History menu -->
-        <message name="IDS_SHOW_HISTORY_MAC" desc="The Mac menu item to show history in the history menu.">
-          History
-        </message>
         <message name="IDS_HISTORY_HOME_MAC" desc="The Mac menu item for home in the history menu.">
           Home
         </message>
