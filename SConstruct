@@ -697,6 +697,11 @@ if base_env['TARGET_ARCHITECTURE'] == 'arm':
       BUILD_SCONSCRIPTS = [
         'src/trusted/validator_arm/v2/build.scons',
       ])
+  assert os.getenv('ARM_CC'), (
+      "ARM_CC undefined.  Source tools/llvm/setup_arm_trusted_toolchain.sh.")
+  assert os.getenv('NACL_SDK_CC'), (
+      "NACL_SDK_CC undefined. "
+      "Source tools/llvm/setup_arm_untrusted_toolchain.sh.")
 elif base_env['TARGET_ARCHITECTURE'] == 'x86':
   pass
 else:
