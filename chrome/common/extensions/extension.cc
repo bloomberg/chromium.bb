@@ -4,6 +4,8 @@
 
 #include "chrome/common/extensions/extension.h"
 
+#include <algorithm>
+
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/base64.h"
@@ -13,10 +15,10 @@
 #include "base/file_util.h"
 #include "base/file_version_info.h"
 #include "base/logging.h"
-#include "base/string_util.h"
 #include "base/stl_util-inl.h"
 #include "base/third_party/nss/blapi.h"
 #include "base/third_party/nss/sha256.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -150,7 +152,7 @@ bool Extension::IdIsValid(const std::string& id) {
 GURL Extension::GetResourceURL(const GURL& extension_url,
                                const std::string& relative_path) {
   DCHECK(extension_url.SchemeIs(chrome::kExtensionScheme));
-  DCHECK(extension_url.path() == "/");
+  DCHECK_EQ("/", extension_url.path());
 
   GURL ret_val = GURL(extension_url.spec() + relative_path);
   DCHECK(StartsWithASCII(ret_val.spec(), extension_url.spec(), false));
@@ -865,7 +867,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
           l10n_util::GetStringUTF8(IDS_PRODUCT_NAME),
           minimum_version_string);
       return false;
-   }
+    }
   }
 
   // Initialize converted_from_user_script (if present)

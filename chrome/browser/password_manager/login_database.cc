@@ -8,7 +8,9 @@
 #include <limits>
 
 #include "base/file_path.h"
+#include "base/logging.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/sqlite_utils.h"
 
 using webkit_glue::PasswordForm;

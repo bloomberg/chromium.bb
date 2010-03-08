@@ -17,7 +17,7 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 
 // forward declarations of classes defined here
 class FilePath;

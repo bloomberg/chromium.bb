@@ -4,10 +4,12 @@
 
 #include "chrome/common/chrome_plugin_util.h"
 
+#include <algorithm>
+
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_plugin_lib.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
@@ -103,7 +105,7 @@ int PluginResponseUtils::GetResponseInfo(
   case CPRESPONSEINFO_HTTP_STATUS:
     if (buf && buf_size) {
       int status = response_headers->response_code();
-      memcpy(buf, &status, std::min(buf_size, sizeof(int)));
+      memcpy(buf, &status, std::min(buf_size, sizeof(status)));
     }
     break;
   case CPRESPONSEINFO_HTTP_RAW_HEADERS: {

@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/platform_util.h"
 
 // No AddRef required when using ExtensionErrorReporter with RunnableMethod.

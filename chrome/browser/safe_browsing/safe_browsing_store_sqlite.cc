@@ -4,8 +4,12 @@
 
 #include "chrome/browser/safe_browsing/safe_browsing_store_sqlite.h"
 
+#include <string>
+
 #include "base/callback.h"
 #include "base/file_util.h"
+#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/sqlite_compiled_statement.h"
 #include "chrome/common/sqlite_utils.h"
 

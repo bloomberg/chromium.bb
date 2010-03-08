@@ -4,11 +4,13 @@
 
 #include "chrome/common/extensions/extension_action.h"
 
+#include <algorithm>
+
 #include "app/gfx/canvas.h"
 #include "app/gfx/font.h"
 #include "app/resource_bundle.h"
 #include "base/gfx/rect.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "grit/app_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"

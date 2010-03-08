@@ -4,6 +4,9 @@
 
 #include "chrome/browser/importer/nss_decryptor.h"
 
+#include <string>
+#include <vector>
+
 #include "base/scoped_ptr.h"
 #include "build/build_config.h"
 #include "chrome/common/sqlite_utils.h"
@@ -14,6 +17,7 @@
 #endif  // defined(USE_NSS)
 
 #include "base/base64.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "webkit/glue/password_form.h"
 

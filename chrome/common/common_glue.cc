@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/string16.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"

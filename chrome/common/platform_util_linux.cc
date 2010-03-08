@@ -8,7 +8,7 @@
 
 #include "base/file_util.h"
 #include "base/process_util.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/common/process_watcher.h"
 #include "googleurl/src/gurl.h"
