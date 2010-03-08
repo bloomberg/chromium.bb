@@ -342,14 +342,14 @@ void RenderWidgetHostViewMac::DidScrollBackingStoreRect(const gfx::Rect& rect,
   if (is_hidden_)
     return;
 
-  // We've already modified the BackingStore to reflect the scroll, so
-  // simply ask the RWHVCocoa to redraw itself based on the new
-  // pixels.  We cannot use -[NSView scrollRect:by:] here because the
-  // findbar and blocked popups will leave trails behind.
-  // TODO(rohitrao): Evaluate how slow this full redraw is.  If it
-  // turns out to be a problem, consider scrolling only a portion of
-  // the view, based on where the findbar and blocked popups are.
-  DidPaintBackingStoreRects(std::vector<gfx::Rect>(1, rect));
+  // Because the findbar might be open, we cannot use scrollRect:by: here.  We
+  // also cannot force a synchronous paint because we are about to get a call to
+  // DidPaintBackingStoreRects() for the newly-exposed regions of the view, and
+  // painting twice per scroll is wasteful and could push us above the 60Hz
+  // update limit.  For now, simply mark all of |cocoa_view_| as dirty.  The
+  // coming call to DidPaintBackingStoreRects() will force a synchronous paint
+  // for us.
+  [cocoa_view_ setNeedsDisplay:YES];
 }
 
 void RenderWidgetHostViewMac::RenderViewGone() {
