@@ -513,6 +513,8 @@ def TryChange(argv,
   # Mostly chromium-specific
   try:
     def WebKitRevision(options, opt, value, parser):
+      if not hasattr(options, 'sub_rep'):
+        options.sub_rep = []
       if parser.rargs and not parser.rargs[0].startswith('-'):
         options.sub_rep.append('third_party/WebKit@%s' % parser.rargs.pop(0))
       else:
