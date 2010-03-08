@@ -329,13 +329,12 @@ bool SafeBrowsingProtocolManager::HandleServiceResponse(const GURL& url,
       int next_update_sec = -1;
       bool re_key = false;
       bool reset = false;
-      std::vector<SBChunkDelete>* chunk_deletes =
-          new std::vector<SBChunkDelete>;
+      scoped_ptr<std::vector<SBChunkDelete> > chunk_deletes(
+          new std::vector<SBChunkDelete>);
       std::vector<ChunkUrl> chunk_urls;
       if (!parser.ParseUpdate(data, length, client_key_,
                               &next_update_sec, &re_key,
-                              &reset, chunk_deletes, &chunk_urls)) {
-        delete chunk_deletes;
+                              &reset, chunk_deletes.get(), &chunk_urls)) {
         return false;
       }
 
@@ -368,15 +367,13 @@ bool SafeBrowsingProtocolManager::HandleServiceResponse(const GURL& url,
       // database.
       if (reset) {
         sb_service_->ResetDatabase();
-        delete chunk_deletes;
         return true;
       }
 
-      // Chunks to delete from our storage.
+      // Chunks to delete from our storage.  Pass ownership of
+      // |chunk_deletes|.
       if (!chunk_deletes->empty())
-        sb_service_->HandleChunkDelete(chunk_deletes);
-      else
-        delete chunk_deletes;
+        sb_service_->HandleChunkDelete(chunk_deletes.release());
 
       break;
     }
@@ -386,12 +383,12 @@ bool SafeBrowsingProtocolManager::HandleServiceResponse(const GURL& url,
 
       const ChunkUrl chunk_url = chunk_request_urls_.front();
       bool re_key = false;
-      std::deque<SBChunk>* chunks = new std::deque<SBChunk>;
+      scoped_ptr<SBChunkList> chunks(new SBChunkList);
       UMA_HISTOGRAM_COUNTS("SB2.ChunkSize", length);
       update_size_ += length;
       if (!parser.ParseChunk(data, length,
                              client_key_, chunk_url.mac,
-                             &re_key, chunks)) {
+                             &re_key, chunks.get())) {
 #ifndef NDEBUG
         std::string data_str;
         data_str.assign(data, length);
@@ -404,19 +401,16 @@ bool SafeBrowsingProtocolManager::HandleServiceResponse(const GURL& url,
                       << ", Base64Encode(data): " << encoded_chunk
                       << ", length: " << length;
 #endif
-        safe_browsing_util::FreeChunks(chunks);
-        delete chunks;
         return false;
       }
 
       if (re_key)
         HandleReKey();
 
-      if (chunks->empty()) {
-        delete chunks;
-      } else {
+      // Chunks to add to storage.  Pass ownership of |chunks|.
+      if (!chunks->empty()) {
         chunk_pending_to_write_ = true;
-        sb_service_->HandleChunk(chunk_url.list_name, chunks);
+        sb_service_->HandleChunk(chunk_url.list_name, chunks.release());
       }
 
       break;

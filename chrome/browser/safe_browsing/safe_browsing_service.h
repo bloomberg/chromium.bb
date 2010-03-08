@@ -116,7 +116,7 @@ class SafeBrowsingService
       bool can_cache);
 
   // Called on the IO thread.
-  void HandleChunk(const std::string& list, std::deque<SBChunk>* chunks);
+  void HandleChunk(const std::string& list, SBChunkList* chunks);
   void HandleChunkDelete(std::vector<SBChunkDelete>* chunk_deletes);
 
   // Update management.  Called on the IO thread.
@@ -213,9 +213,6 @@ class SafeBrowsingService
   void OnGetAllChunksFromDatabase(const std::vector<SBListChunkRanges>& lists,
                                   bool database_error);
 
-  // Called on the db thread when a chunk insertion is complete.
-  void ChunkInserted();
-
   // Called on the IO thread after the database reports that it added a chunk.
   void OnChunkInserted();
 
@@ -227,7 +224,7 @@ class SafeBrowsingService
   // Called on the database thread to add/remove chunks and host keys.
   // Callee will free the data when it's done.
   void HandleChunkForDatabase(const std::string& list,
-                              std::deque<SBChunk>* chunks);
+                              SBChunkList* chunks);
 
   void DeleteChunks(std::vector<SBChunkDelete>* chunk_deletes);
 

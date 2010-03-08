@@ -10,8 +10,8 @@
 #include <set>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/file_path.h"
+#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
@@ -30,10 +30,8 @@ class SafeBrowsingDatabase {
   static SafeBrowsingDatabase* Create();
   virtual ~SafeBrowsingDatabase();
 
-  // Initializes the database with the given filename.  The callback is
-  // executed after finishing a chunk.
-  virtual void Init(const FilePath& filename,
-                    Callback0::Type* chunk_inserted_callback) = 0;
+  // Initializes the database with the given filename.
+  virtual void Init(const FilePath& filename) = 0;
 
   // Deletes the current database and creates a new one.
   virtual bool ResetDatabase() = 0;
@@ -49,11 +47,12 @@ class SafeBrowsingDatabase {
 
   // Processes add/sub commands.  Database will free the chunks when it's done.
   virtual void InsertChunks(const std::string& list_name,
-                            std::deque<SBChunk>* chunks) = 0;
+                            const SBChunkList& chunks) = 0;
 
   // Processs adddel/subdel commands.  Database will free chunk_deletes when
   // it's done.
-  virtual void DeleteChunks(std::vector<SBChunkDelete>* chunk_deletes) = 0;
+  virtual void DeleteChunks(
+      const std::vector<SBChunkDelete>& chunk_deletes) = 0;
 
   // Returns the lists and their add/sub chunks.
   virtual void GetListsInfo(std::vector<SBListChunkRanges>* lists) = 0;

@@ -27,6 +27,22 @@ static const char kContinueUrlFormat[] =
 static const char kReportParams[] = "?tpl=%s&continue=%s&url=%s";
 
 
+// SBChunkList -----------------------------------------------------------------
+
+void SBChunkList::clear() {
+  for (std::vector<SBChunk>::iterator citer = chunks_.begin();
+       citer != chunks_.end(); ++citer) {
+    for (std::deque<SBChunkHost>::iterator hiter = citer->hosts.begin();
+         hiter != citer->hosts.end(); ++hiter) {
+      if (hiter->entry) {
+        hiter->entry->Destroy();
+        hiter->entry = NULL;
+      }
+    }
+  }
+  chunks_.clear();
+}
+
 // SBEntry ---------------------------------------------------------------------
 
 // static
@@ -143,13 +159,6 @@ std::string GetListName(int list_id) {
   if (list_id == MALWARE)
     return kMalwareList;
   return (list_id == PHISH) ? kPhishingList : std::string();
-}
-
-void FreeChunks(std::deque<SBChunk>* chunks) {
-  for (; !chunks->empty(); chunks->pop_front()) {
-    for (; !chunks->front().hosts.empty(); chunks->front().hosts.pop_front())
-      chunks->front().hosts.front().entry->Destroy();
-  }
 }
 
 void GenerateHostsToCheck(const GURL& url, std::vector<std::string>* hosts) {

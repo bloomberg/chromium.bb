@@ -249,7 +249,7 @@ bool SafeBrowsingProtocolParser::ParseChunk(const char* data,
                                             const std::string& key,
                                             const std::string& mac,
                                             bool* re_key,
-                                            std::deque<SBChunk>* chunks) {
+                                            SBChunkList* chunks) {
   int remaining = length;
   const char* chunk_data = data;
 

@@ -192,7 +192,7 @@ void SafeBrowsingService::HandleGetHashResults(
 }
 
 void SafeBrowsingService::HandleChunk(const std::string& list,
-                                      std::deque<SBChunk>* chunks) {
+                                      SBChunkList* chunks) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   DCHECK(enabled_);
   safe_browsing_thread_->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
@@ -428,9 +428,7 @@ SafeBrowsingDatabase* SafeBrowsingService::GetDatabase() {
 
   Time before = Time::Now();
   SafeBrowsingDatabase* database = SafeBrowsingDatabase::Create();
-  Callback0::Type* chunk_callback =
-      NewCallback(this, &SafeBrowsingService::ChunkInserted);
-  database->Init(path, chunk_callback);
+  database->Init(path);
   {
     // Acquiring the lock here guarantees correct ordering between the writes to
     // the new database object above, and the setting of |databse_| below.
@@ -514,13 +512,6 @@ void SafeBrowsingService::OnGetAllChunksFromDatabase(
     protocol_manager_->OnGetChunksComplete(lists, database_error);
 }
 
-void SafeBrowsingService::ChunkInserted() {
-  DCHECK(MessageLoop::current() == safe_browsing_thread_->message_loop());
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &SafeBrowsingService::OnChunkInserted));
-}
-
 void SafeBrowsingService::OnChunkInserted() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   if (enabled_)
@@ -553,15 +544,24 @@ void SafeBrowsingService::DatabaseLoadComplete() {
 
 void SafeBrowsingService::HandleChunkForDatabase(
     const std::string& list_name,
-    std::deque<SBChunk>* chunks) {
+    SBChunkList* chunks) {
   DCHECK(MessageLoop::current() == safe_browsing_thread_->message_loop());
-  GetDatabase()->InsertChunks(list_name, chunks);
+  if (chunks) {
+    GetDatabase()->InsertChunks(list_name, *chunks);
+    delete chunks;
+  }
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(this, &SafeBrowsingService::OnChunkInserted));
 }
 
 void SafeBrowsingService::DeleteChunks(
     std::vector<SBChunkDelete>* chunk_deletes) {
   DCHECK(MessageLoop::current() == safe_browsing_thread_->message_loop());
-  GetDatabase()->DeleteChunks(chunk_deletes);
+  if (chunk_deletes) {
+    GetDatabase()->DeleteChunks(*chunk_deletes);
+    delete chunk_deletes;
+  }
 }
 
 SafeBrowsingService::UrlCheckResult SafeBrowsingService::GetResultFromListname(

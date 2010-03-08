@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/safe_browsing/chunk_range.h"
 
@@ -57,6 +58,50 @@ struct SBChunk {
   int list_id;
   bool is_add;
   std::deque<SBChunkHost> hosts;
+};
+
+// Container for a set of chunks.  Interim wrapper to replace use of
+// |std::deque<SBChunk>| with something having safer memory semantics.
+// management.
+// TODO(shess): |SBEntry| is currently a very roundabout way to hold
+// things pending storage.  It could be replaced with the structures
+// used in SafeBrowsingStore, then lots of bridging code could
+// dissappear.
+class SBChunkList {
+ public:
+  SBChunkList() {}
+  ~SBChunkList() {
+    clear();
+  }
+
+  // Implement that subset of the |std::deque<>| interface which
+  // callers expect.
+  bool empty() const { return chunks_.empty(); }
+  size_t size() { return chunks_.size(); }
+
+  void push_back(const SBChunk& chunk) { chunks_.push_back(chunk); }
+  SBChunk& back() { return chunks_.back(); }
+  SBChunk& front() { return chunks_.front(); }
+  const SBChunk& front() const { return chunks_.front(); }
+
+  typedef std::vector<SBChunk>::const_iterator const_iterator;
+  const_iterator begin() const { return chunks_.begin(); }
+  const_iterator end() const { return chunks_.end(); }
+
+  typedef std::vector<SBChunk>::iterator iterator;
+  iterator begin() { return chunks_.begin(); }
+  iterator end() { return chunks_.end(); }
+
+  SBChunk& operator[](size_t n) { return chunks_[n]; }
+  const SBChunk& operator[](size_t n) const { return chunks_[n]; }
+
+  // Calls |SBEvent::Destroy()| before clearing |chunks_|.
+  void clear();
+
+ private:
+  std::vector<SBChunk> chunks_;
+
+  DISALLOW_COPY_AND_ASSIGN(SBChunkList);
 };
 
 // Used when we get a gethash response.
@@ -228,8 +273,6 @@ enum ListType {
 };
 int GetListId(const std::string& name);
 std::string GetListName(int list_id);
-
-void FreeChunks(std::deque<SBChunk>* chunks);
 
 // Given a URL, returns all the hosts we need to check.  They are returned
 // in order of size (i.e. b.c is first, then a.b.c).

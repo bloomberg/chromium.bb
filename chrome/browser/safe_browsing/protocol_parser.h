@@ -79,7 +79,7 @@ class SafeBrowsingProtocolParser {
                   const std::string& key,
                   const std::string& mac,
                   bool* re_key,
-                  std::deque<SBChunk>* chunks);
+                  SBChunkList* chunks);
 
   // Parse the result of a GetHash request, returning the list of full hashes.
   // If we are checking for valid MACs, the caller should populate 'key'.

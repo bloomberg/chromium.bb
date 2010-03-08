@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/lock.h"
 #include "base/task.h"
 #include "chrome/browser/safe_browsing/safe_browsing_database.h"
@@ -31,8 +30,7 @@ class SafeBrowsingDatabaseBloom : public SafeBrowsingDatabase {
   virtual ~SafeBrowsingDatabaseBloom();
 
   // SafeBrowsingDatabase interface:
-  virtual void Init(const FilePath& filename,
-                    Callback0::Type* chunk_inserted_callback);
+  virtual void Init(const FilePath& filename);
   virtual bool ResetDatabase();
   virtual bool ContainsUrl(const GURL& url,
                            std::string* matching_list,
@@ -40,8 +38,8 @@ class SafeBrowsingDatabaseBloom : public SafeBrowsingDatabase {
                            std::vector<SBFullHashResult>* full_hits,
                            base::Time last_update);
   virtual void InsertChunks(const std::string& list_name,
-                            std::deque<SBChunk>* chunks);
-  virtual void DeleteChunks(std::vector<SBChunkDelete>* chunk_deletes);
+                            const SBChunkList& chunks);
+  virtual void DeleteChunks(const std::vector<SBChunkDelete>& chunk_deletes);
   virtual void GetListsInfo(std::vector<SBListChunkRanges>* lists);
   virtual void CacheHashResults(
       const std::vector<SBPrefix>& prefixes,
@@ -120,7 +118,7 @@ class SafeBrowsingDatabaseBloom : public SafeBrowsingDatabase {
   void OnHandleCorruptDatabase();
 
   // Adding add entries to the database.
-  void InsertAdd(SBPrefix host, SBEntry* entry);
+  void InsertAdd(int chunk, SBPrefix host, const SBEntry* entry, int list_id);
   void InsertAddPrefix(SBPrefix prefix, int encoded_chunk);
   void InsertAddFullHash(SBPrefix prefix,
                          int encoded_chunk,
@@ -128,7 +126,7 @@ class SafeBrowsingDatabaseBloom : public SafeBrowsingDatabase {
                          SBFullHash full_prefix);
 
   // Adding sub entries to the database.
-  void InsertSub(int chunk, SBPrefix host, SBEntry* entry);
+  void InsertSub(int chunk, SBPrefix host, const SBEntry* entry, int list_id);
   void InsertSubPrefix(SBPrefix prefix,
                        int encoded_chunk,
                        int encoded_add_chunk);
@@ -172,9 +170,6 @@ class SafeBrowsingDatabaseBloom : public SafeBrowsingDatabase {
 
   // Cache of compiled statements for our database.
   scoped_ptr<SqliteStatementCache> statement_cache_;
-
-  // Called after an add/sub chunk is processed.
-  scoped_ptr<Callback0::Type> chunk_inserted_callback_;
 
   // Used to schedule resetting the database because of corruption.
   ScopedRunnableMethodFactory<SafeBrowsingDatabaseBloom> reset_factory_;

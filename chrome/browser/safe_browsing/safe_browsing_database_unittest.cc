@@ -39,12 +39,12 @@ namespace {
                 const std::string& list,
                 int chunk_id,
                 bool is_sub_del) {
-    std::vector<SBChunkDelete>* deletes = new std::vector<SBChunkDelete>;
+    std::vector<SBChunkDelete> deletes;
     SBChunkDelete chunk_delete;
     chunk_delete.list_name = list;
     chunk_delete.is_sub_del = is_sub_del;
     chunk_delete.chunk_del.push_back(ChunkRange(chunk_id));
-    deletes->push_back(chunk_delete);
+    deletes.push_back(chunk_delete);
     db->DeleteChunks(deletes);
   }
 
@@ -82,7 +82,7 @@ namespace {
     file_util::Delete(filename, false);
 
     SafeBrowsingDatabase* database = SafeBrowsingDatabase::Create();
-    database->Init(filename, NULL);
+    database->Init(filename);
 
     return database;
   }
@@ -111,6 +111,7 @@ class SafeBrowsingDatabasePlatformTest : public PlatformTest {
 TEST_F(SafeBrowsingDatabasePlatformTest, ListName) {
   FileAutoDeleter file_deleter(CreateTestDirectory());
   SafeBrowsingDatabase* database = SetupTestDatabase(file_deleter.path());
+  SBChunkList chunks;
 
   // Insert some malware add chunks.
   SBChunkHost host;
@@ -122,8 +123,8 @@ TEST_F(SafeBrowsingDatabasePlatformTest, ListName) {
   chunk.chunk_number = 1;
   chunk.is_add = true;
   chunk.hosts.push_back(host);
-  std::deque<SBChunk>* chunks = new std::deque<SBChunk>;
-  chunks->push_back(chunk);
+  chunks.clear();
+  chunks.push_back(chunk);
   database->UpdateStarted();
   database->InsertChunks(safe_browsing_util::kMalwareList, chunks);
 
@@ -135,8 +136,8 @@ TEST_F(SafeBrowsingDatabasePlatformTest, ListName) {
   chunk.is_add = true;
   chunk.hosts.clear();
   chunk.hosts.push_back(host);
-  chunks = new std::deque<SBChunk>;
-  chunks->push_back(chunk);
+  chunks.clear();
+  chunks.push_back(chunk);
   database->InsertChunks(safe_browsing_util::kMalwareList, chunks);
 
   host.host = Sha256Prefix("www.whatever.com/");
@@ -147,8 +148,8 @@ TEST_F(SafeBrowsingDatabasePlatformTest, ListName) {
   chunk.is_add = true;
   chunk.hosts.clear();
   chunk.hosts.push_back(host);
-  chunks = new std::deque<SBChunk>;
-  chunks->push_back(chunk);
+  chunks.clear();
+  chunks.push_back(chunk);
   database->InsertChunks(safe_browsing_util::kMalwareList, chunks);
   database->UpdateFinished(true);
 
@@ -169,8 +170,8 @@ TEST_F(SafeBrowsingDatabasePlatformTest, ListName) {
   chunk.is_add = false;
   chunk.hosts.clear();
   chunk.hosts.push_back(host);
-  chunks = new std::deque<SBChunk>;
-  chunks->push_back(chunk);
+  chunks.clear();
+  chunks.push_back(chunk);
 
   database->UpdateStarted();
   database->GetListsInfo(&lists);
@@ -201,8 +202,8 @@ TEST_F(SafeBrowsingDatabasePlatformTest, ListName) {
   chunk.is_add = true;
   chunk.hosts.clear();
   chunk.hosts.push_back(host);
-  chunks = new std::deque<SBChunk>;
-  chunks->push_back(chunk);
+  chunks.clear();
+  chunks.push_back(chunk);
   database->UpdateStarted();
   database->GetListsInfo(&lists);
   database->InsertChunks(safe_browsing_util::kPhishingList, chunks);
@@ -217,8 +218,8 @@ TEST_F(SafeBrowsingDatabasePlatformTest, ListName) {
   chunk.is_add = false;
   chunk.hosts.clear();
   chunk.hosts.push_back(host);
-  chunks = new std::deque<SBChunk>;
-  chunks->push_back(chunk);
+  chunks.clear();
+  chunks.push_back(chunk);
   database->InsertChunks(safe_browsing_util::kPhishingList, chunks);
 
   host.host = Sha256Prefix("www.phishy2.com/");
@@ -230,8 +231,8 @@ TEST_F(SafeBrowsingDatabasePlatformTest, ListName) {
   chunk.is_add = false;
   chunk.hosts.clear();
   chunk.hosts.push_back(host);
-  chunks = new std::deque<SBChunk>;
-  chunks->push_back(chunk);
+  chunks.clear();
+  chunks.push_back(chunk);
   database->InsertChunks(safe_browsing_util::kPhishingList, chunks);
   database->UpdateFinished(true);
   lists.clear();
@@ -252,6 +253,7 @@ TEST_F(SafeBrowsingDatabasePlatformTest, ListName) {
 TEST(SafeBrowsingDatabase, Database) {
   FileAutoDeleter file_deleter(CreateTestDirectory());
   SafeBrowsingDatabase* database = SetupTestDatabase(file_deleter.path());
+  SBChunkList chunks;
 
   // Add a simple chunk with one hostkey.
   SBChunkHost host;
@@ -266,8 +268,8 @@ TEST(SafeBrowsingDatabase, Database) {
   chunk.is_add = true;
   chunk.hosts.push_back(host);
 
-  std::deque<SBChunk>* chunks = new std::deque<SBChunk>;
-  chunks->push_back(chunk);
+  chunks.clear();
+  chunks.push_back(chunk);
   std::vector<SBListChunkRanges> lists;
   database->UpdateStarted();
   database->GetListsInfo(&lists);
@@ -292,8 +294,8 @@ TEST(SafeBrowsingDatabase, Database) {
 
   chunk.hosts.push_back(host);
 
-  chunks = new std::deque<SBChunk>;
-  chunks->push_back(chunk);
+  chunks.clear();
+  chunks.push_back(chunk);
 
   database->InsertChunks(safe_browsing_util::kMalwareList, chunks);
 
@@ -307,8 +309,8 @@ TEST(SafeBrowsingDatabase, Database) {
   chunk.hosts.clear();
   chunk.hosts.push_back(host);
 
-  chunks = new std::deque<SBChunk>;
-  chunks->push_back(chunk);
+  chunks.clear();
+  chunks.push_back(chunk);
   database->InsertChunks(safe_browsing_util::kMalwareList, chunks);
   database->UpdateFinished(true);
   lists.clear();
@@ -378,8 +380,8 @@ TEST(SafeBrowsingDatabase, Database) {
   chunk.hosts.clear();
   chunk.hosts.push_back(host);
 
-  chunks = new std::deque<SBChunk>;
-  chunks->push_back(chunk);
+  chunks.clear();
+  chunks.push_back(chunk);
   database->UpdateStarted();
   database->GetListsInfo(&lists);
   database->InsertChunks(safe_browsing_util::kMalwareList, chunks);
@@ -405,8 +407,8 @@ TEST(SafeBrowsingDatabase, Database) {
   chunk.hosts.clear();
   chunk.hosts.push_back(host);
 
-  chunks = new std::deque<SBChunk>;
-  chunks->push_back(chunk);
+  chunks.clear();
+  chunks.push_back(chunk);
 
   database->UpdateStarted();
   database->GetListsInfo(&lists);
@@ -455,8 +457,8 @@ TEST(SafeBrowsingDatabase, Database) {
   chunk.hosts.clear();
   chunk.hosts.push_back(host);
 
-  chunks = new std::deque<SBChunk>;
-  chunks->push_back(chunk);
+  chunks.clear();
+  chunks.push_back(chunk);
 
   database->UpdateStarted();
   database->GetListsInfo(&lists);
@@ -508,8 +510,8 @@ TEST(SafeBrowsingDatabase, Database) {
   chunk.hosts.clear();
   chunk.hosts.push_back(host);
 
-  chunks = new std::deque<SBChunk>;
-  chunks->push_back(chunk);
+  chunks.clear();
+  chunks.push_back(chunk);
   database->UpdateStarted();
   database->GetListsInfo(&lists);
   database->InsertChunks(safe_browsing_util::kMalwareList, chunks);
@@ -543,8 +545,8 @@ TEST(SafeBrowsingDatabase, Database) {
   chunk.hosts.clear();
   chunk.hosts.push_back(host);
 
-  chunks = new std::deque<SBChunk>;
-  chunks->push_back(chunk);
+  chunks.clear();
+  chunks.push_back(chunk);
   database->UpdateStarted();
   database->GetListsInfo(&lists);
   database->InsertChunks(safe_browsing_util::kMalwareList, chunks);
@@ -566,8 +568,8 @@ TEST(SafeBrowsingDatabase, Database) {
   chunk.hosts.clear();
   chunk.hosts.push_back(host);
 
-  chunks = new std::deque<SBChunk>;
-  chunks->push_back(chunk);
+  chunks.clear();
+  chunks.push_back(chunk);
   database->UpdateStarted();
   database->GetListsInfo(&lists);
   database->InsertChunks(safe_browsing_util::kMalwareList, chunks);
@@ -590,6 +592,7 @@ TEST(SafeBrowsingDatabase, Database) {
 TEST(SafeBrowsingDatabase, ZeroSizeChunk) {
   FileAutoDeleter file_deleter(CreateTestDirectory());
   SafeBrowsingDatabase* database = SetupTestDatabase(file_deleter.path());
+  SBChunkList chunks;
 
   // Populate with a couple of normal chunks.
   SBChunkHost host;
@@ -604,8 +607,8 @@ TEST(SafeBrowsingDatabase, ZeroSizeChunk) {
   chunk.chunk_number = 1;
   chunk.hosts.push_back(host);
 
-  std::deque<SBChunk>* chunks = new std::deque<SBChunk>;
-  chunks->push_back(chunk);
+  chunks.clear();
+  chunks.push_back(chunk);
 
   host.host = Sha256Prefix("www.random.com/");
   host.entry = SBEntry::Create(SBEntry::ADD_PREFIX, 2);
@@ -615,7 +618,7 @@ TEST(SafeBrowsingDatabase, ZeroSizeChunk) {
   chunk.chunk_number = 10;
   chunk.hosts.clear();
   chunk.hosts.push_back(host);
-  chunks->push_back(chunk);
+  chunks.push_back(chunk);
 
   std::vector<SBListChunkRanges> lists;
   database->UpdateStarted();
@@ -632,15 +635,15 @@ TEST(SafeBrowsingDatabase, ZeroSizeChunk) {
   SBChunk empty_chunk;
   empty_chunk.chunk_number = 19;
   empty_chunk.is_add = true;
-  chunks = new std::deque<SBChunk>;
-  chunks->push_back(empty_chunk);
+  chunks.clear();
+  chunks.push_back(empty_chunk);
   database->UpdateStarted();
   database->GetListsInfo(&lists);
   database->InsertChunks(safe_browsing_util::kMalwareList, chunks);
-  chunks = new std::deque<SBChunk>;
+  chunks.clear();
   empty_chunk.chunk_number = 7;
   empty_chunk.is_add = false;
-  chunks->push_back(empty_chunk);
+  chunks.push_back(empty_chunk);
   database->InsertChunks(safe_browsing_util::kMalwareList, chunks);
   database->UpdateFinished(true);
   lists.clear();
@@ -660,13 +663,13 @@ TEST(SafeBrowsingDatabase, ZeroSizeChunk) {
   empty_chunk.is_add = true;
   empty_chunk.hosts.clear();
   empty_chunk.hosts.push_back(host);
-  chunks = new std::deque<SBChunk>;
-  chunks->push_back(empty_chunk);
+  chunks.clear();
+  chunks.push_back(empty_chunk);
 
   empty_chunk.chunk_number = 21;
   empty_chunk.is_add = true;
   empty_chunk.hosts.clear();
-  chunks->push_back(empty_chunk);
+  chunks.push_back(empty_chunk);
 
   host.host = Sha256Prefix("www.notempty.com/");
   host.entry = SBEntry::Create(SBEntry::ADD_PREFIX, 1);
@@ -676,7 +679,7 @@ TEST(SafeBrowsingDatabase, ZeroSizeChunk) {
   empty_chunk.hosts.push_back(host);
   empty_chunk.chunk_number = 22;
   empty_chunk.is_add = true;
-  chunks->push_back(empty_chunk);
+  chunks.push_back(empty_chunk);
 
   database->UpdateStarted();
   database->GetListsInfo(&lists);
@@ -741,9 +744,9 @@ void PopulateDatabaseForCacheTest(SafeBrowsingDatabase* database) {
   chunk.is_add = true;
   chunk.hosts.push_back(host);
 
-  std::deque<SBChunk>* chunks = new std::deque<SBChunk>;
+  SBChunkList chunks;
   std::vector<SBListChunkRanges> lists;
-  chunks->push_back(chunk);
+  chunks.push_back(chunk);
   database->UpdateStarted();
   database->GetListsInfo(&lists);
   database->InsertChunks(safe_browsing_util::kMalwareList, chunks);
@@ -820,8 +823,8 @@ TEST(SafeBrowsingDatabase, HashCaching) {
   chunk.is_add = false;
   chunk.hosts.clear();
   chunk.hosts.push_back(host);
-  std::deque<SBChunk>* chunks = new std::deque<SBChunk>;
-  chunks->push_back(chunk);
+  SBChunkList chunks;
+  chunks.push_back(chunk);
 
   std::vector<SBListChunkRanges> lists;
   database->UpdateStarted();
@@ -949,8 +952,8 @@ TEST(SafeBrowsingDatabase, HashCaching) {
   chunk.is_add = true;
   chunk.hosts.clear();
   chunk.hosts.push_back(host);
-  chunks = new std::deque<SBChunk>;
-  chunks->push_back(chunk);
+  chunks.clear();
+  chunks.push_back(chunk);
   database->UpdateStarted();
   database->GetListsInfo(&lists);
   database->InsertChunks(safe_browsing_util::kMalwareList, chunks);
@@ -992,8 +995,8 @@ TEST(SafeBrowsingDatabase, HashCaching) {
   chunk.is_add = false;
   chunk.hosts.clear();
   chunk.hosts.push_back(host);
-  chunks = new std::deque<SBChunk>;
-  chunks->push_back(chunk);
+  chunks.clear();
+  chunks.push_back(chunk);
   database->UpdateStarted();
   database->GetListsInfo(&lists);
   database->InsertChunks(safe_browsing_util::kMalwareList, chunks);
@@ -1050,14 +1053,17 @@ FilePath GetFullSBDataPath(const FilePath& path) {
   return full_path;
 }
 
+// TODO(shess): The clients of this structure manually manage
+// |chunks|.  Improve this code to apply the RAII idiom to manage
+// |chunks|.
 struct ChunksInfo {
-  std::deque<SBChunk>* chunks;
+  SBChunkList* chunks;  // weak
   std::string listname;
 };
 
 void PerformUpdate(const FilePath& initial_db,
                    const std::vector<ChunksInfo>& chunks,
-                   std::vector<SBChunkDelete>* deletes) {
+                   const std::vector<SBChunkDelete>& deletes) {
   IoCounters before, after;
 
   FilePath path;
@@ -1073,7 +1079,7 @@ void PerformUpdate(const FilePath& initial_db,
   }
 
   SafeBrowsingDatabase* database = SafeBrowsingDatabase::Create();
-  database->Init(path, NULL);
+  database->Init(path);
 
   Time before_time = Time::Now();
   base::ProcessHandle handle = base::Process::Current().handle();
@@ -1091,7 +1097,7 @@ void PerformUpdate(const FilePath& initial_db,
   database->GetListsInfo(&lists);
   database->DeleteChunks(deletes);
   for (size_t i = 0; i < chunks.size(); ++i)
-    database->InsertChunks(chunks[i].listname, chunks[i].chunks);
+    database->InsertChunks(chunks[i].listname, *chunks[i].chunks);
 
   database->UpdateFinished(true);
   lists.clear();
@@ -1147,7 +1153,7 @@ void UpdateDatabase(const FilePath& initial_db,
       file_util::ReadFile(file, data.get(), size);
 
       ChunksInfo info;
-      info.chunks = new std::deque<SBChunk>;
+      info.chunks = new SBChunkList;
 
       bool re_key;
       result = parser.ParseChunk(data.get(), size, "", "",
@@ -1163,7 +1169,7 @@ void UpdateDatabase(const FilePath& initial_db,
     }
   }
 
-  std::vector<SBChunkDelete>* deletes = new std::vector<SBChunkDelete>;
+  std::vector<SBChunkDelete> deletes;
   if (!response_path.empty()) {
     std::string update;
     FilePath full_response_path = GetFullSBDataPath(response_path);
@@ -1177,7 +1183,7 @@ void UpdateDatabase(const FilePath& initial_db,
                                   &next_update,
                                   &rekey,
                                   &reset,
-                                  deletes,
+                                  &deletes,
                                   &urls);
       DCHECK(result);
       if (!updates_path.empty())
@@ -1186,6 +1192,13 @@ void UpdateDatabase(const FilePath& initial_db,
   }
 
   PerformUpdate(initial_db, chunks, deletes);
+
+  // TODO(shess): Make ChunksInfo handle this via scoping.
+  for (std::vector<ChunksInfo>::iterator iter = chunks.begin();
+       iter != chunks.end(); ++iter) {
+    delete iter->chunks;
+    iter->chunks = NULL;
+  }
 }
 
 namespace {
@@ -1249,11 +1262,11 @@ TEST(SafeBrowsingDatabase, DISABLED_DatabaseOldUpdatesIO) {
 // Does a a lot of addel's on very large chunks.
 TEST(SafeBrowsingDatabase, DISABLED_DatabaseOldLotsofDeletesIO) {
   std::vector<ChunksInfo> chunks;
-  std::vector<SBChunkDelete>* deletes = new std::vector<SBChunkDelete>;
+  std::vector<SBChunkDelete> deletes;
   SBChunkDelete del;
   del.is_sub_del = false;
   del.list_name = safe_browsing_util::kMalwareList;
   del.chunk_del.push_back(ChunkRange(3539, 3579));
-  deletes->push_back(del);
+  deletes.push_back(del);
   PerformUpdate(GetOldSafeBrowsingPath(), chunks, deletes);
 }

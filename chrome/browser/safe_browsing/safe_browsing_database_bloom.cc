@@ -5,7 +5,6 @@
 #include "chrome/browser/safe_browsing/safe_browsing_database_bloom.h"
 
 #include "base/auto_reset.h"
-#include "base/callback.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
@@ -44,8 +43,7 @@ SafeBrowsingDatabaseBloom::~SafeBrowsingDatabaseBloom() {
   Close();
 }
 
-void SafeBrowsingDatabaseBloom::Init(const FilePath& filename,
-                                     Callback0::Type* chunk_inserted_callback) {
+void SafeBrowsingDatabaseBloom::Init(const FilePath& filename) {
   DCHECK(filename_.empty());  // Ensure we haven't been run before.
 
   filename_ = FilePath(filename.value() + kBloomFilterFileSuffix);
@@ -56,8 +54,6 @@ void SafeBrowsingDatabaseBloom::Init(const FilePath& filename,
   hash_cache_.reset(new HashCache);
 
   LoadBloomFilter();
-
-  chunk_inserted_callback_.reset(chunk_inserted_callback);
 }
 
 bool SafeBrowsingDatabaseBloom::ResetDatabase() {
@@ -157,37 +153,33 @@ bool SafeBrowsingDatabaseBloom::ContainsUrl(
 }
 
 void SafeBrowsingDatabaseBloom::InsertChunks(const std::string& list_name,
-                                             std::deque<SBChunk>* chunks) {
-  if (chunks->empty())
+                                             const SBChunkList& chunks) {
+  if (chunks.empty())
     return;
 
   base::Time insert_start = base::Time::Now();
 
   int list_id = safe_browsing_util::GetListId(list_name);
-  ChunkType chunk_type = chunks->front().is_add ? ADD_CHUNK : SUB_CHUNK;
+  ChunkType chunk_type = chunks.front().is_add ? ADD_CHUNK : SUB_CHUNK;
 
-  while (!chunks->empty()) {
-    SBChunk& chunk = chunks->front();
-    chunk.list_id = list_id;
+  for (SBChunkList::const_iterator iter = chunks.begin();
+       iter != chunks.end(); ++iter) {
+    const SBChunk& chunk = *iter;
     int chunk_id = chunk.chunk_number;
 
     // The server can give us a chunk that we already have because it's part of
     // a range.  Don't add it again.
     if (!ChunkExists(list_id, chunk_type, chunk_id)) {
-      while (!chunk.hosts.empty()) {
+      for (std::deque<SBChunkHost>::const_iterator hiter = chunk.hosts.begin();
+           hiter != chunk.hosts.end(); ++hiter) {
         // Read the existing record for this host, if it exists.
-        SBPrefix host = chunk.hosts.front().host;
-        SBEntry* entry = chunk.hosts.front().entry;
-        entry->set_list_id(list_id);
+        const SBPrefix host = hiter->host;
+        const SBEntry* entry = hiter->entry;
         if (chunk_type == ADD_CHUNK) {
-          entry->set_chunk_id(chunk_id);
-          InsertAdd(host, entry);
+          InsertAdd(chunk_id, host, entry, list_id);
         } else {
-          InsertSub(chunk_id, host, entry);
+          InsertSub(chunk_id, host, entry, list_id);
         }
-
-        entry->Destroy();
-        chunk.hosts.pop_front();
       }
 
       int encoded = EncodeChunkId(chunk_id, list_id);
@@ -195,33 +187,21 @@ void SafeBrowsingDatabaseBloom::InsertChunks(const std::string& list_name,
         add_chunk_cache_.insert(encoded);
       else
         sub_chunk_cache_.insert(encoded);
-    } else {
-      while (!chunk.hosts.empty()) {
-        chunk.hosts.front().entry->Destroy();
-        chunk.hosts.pop_front();
-      }
     }
-
-    chunks->pop_front();
   }
 
   UMA_HISTOGRAM_TIMES("SB2.ChunkInsert", base::Time::Now() - insert_start);
-
-  delete chunks;
-
-  if (chunk_inserted_callback_.get())
-    chunk_inserted_callback_->Run();
 }
 
 void SafeBrowsingDatabaseBloom::DeleteChunks(
-    std::vector<SBChunkDelete>* chunk_deletes) {
-  if (chunk_deletes->empty())
+    const std::vector<SBChunkDelete>& chunk_deletes) {
+  if (chunk_deletes.empty())
     return;
 
-  int list_id = safe_browsing_util::GetListId(chunk_deletes->front().list_name);
+  int list_id = safe_browsing_util::GetListId(chunk_deletes.front().list_name);
 
-  for (size_t i = 0; i < chunk_deletes->size(); ++i) {
-    const SBChunkDelete& chunk = (*chunk_deletes)[i];
+  for (size_t i = 0; i < chunk_deletes.size(); ++i) {
+    const SBChunkDelete& chunk = chunk_deletes[i];
     std::vector<int> chunk_numbers;
     RangesToChunks(chunk.chunk_del, &chunk_numbers);
     for (size_t del = 0; del < chunk_numbers.size(); ++del) {
@@ -232,8 +212,6 @@ void SafeBrowsingDatabaseBloom::DeleteChunks(
         add_del_cache_.insert(encoded_chunk);
     }
   }
-
-  delete chunk_deletes;
 }
 
 void SafeBrowsingDatabaseBloom::GetListsInfo(
@@ -1100,9 +1078,10 @@ void SafeBrowsingDatabaseBloom::OnHandleCorruptDatabase() {
   DCHECK(false) << "SafeBrowsing database was corrupt and reset";
 }
 
-void SafeBrowsingDatabaseBloom::InsertAdd(SBPrefix host, SBEntry* entry) {
+void SafeBrowsingDatabaseBloom::InsertAdd(
+    int chunk_id, SBPrefix host, const SBEntry* entry, int list_id) {
   STATS_COUNTER("SB.HostInsert", 1);
-  int encoded = EncodeChunkId(entry->chunk_id(), entry->list_id());
+  int encoded = EncodeChunkId(chunk_id, list_id);
 
   DCHECK(entry->IsAdd());
   if (!entry->IsPrefix()) {
@@ -1177,9 +1156,9 @@ void SafeBrowsingDatabaseBloom::InsertAddFullHash(SBPrefix prefix,
 }
 
 void SafeBrowsingDatabaseBloom::InsertSub(
-    int chunk_id, SBPrefix host, SBEntry* entry) {
+    int chunk_id, SBPrefix host, const SBEntry* entry, int list_id) {
   STATS_COUNTER("SB.HostDelete", 1);
-  int encoded = EncodeChunkId(chunk_id, entry->list_id());
+  int encoded = EncodeChunkId(chunk_id, list_id);
   int encoded_add;
 
   DCHECK(entry->IsSub());
@@ -1187,7 +1166,7 @@ void SafeBrowsingDatabaseBloom::InsertSub(
     for (int i = 0; i < entry->prefix_count(); ++i) {
       SBFullHash full_hash = entry->FullHashAt(i);
       SBPrefix prefix = full_hash.prefix;
-      encoded_add = EncodeChunkId(entry->ChunkIdAtPrefix(i), entry->list_id());
+      encoded_add = EncodeChunkId(entry->ChunkIdAtPrefix(i), list_id);
       InsertSubPrefix(prefix, encoded, encoded_add);
       InsertSubFullHash(prefix, encoded, encoded_add, full_hash, false);
     }
@@ -1195,13 +1174,12 @@ void SafeBrowsingDatabaseBloom::InsertSub(
     // We have prefixes.
     int count = entry->prefix_count();
     if (count == 0) {
-      encoded_add = EncodeChunkId(entry->chunk_id(), entry->list_id());
+      encoded_add = EncodeChunkId(entry->chunk_id(), list_id);
       InsertSubPrefix(host, encoded, encoded_add);
     } else {
       for (int i = 0; i < count; i++) {
         SBPrefix prefix = entry->PrefixAt(i);
-        encoded_add = EncodeChunkId(entry->ChunkIdAtPrefix(i),
-                                    entry->list_id());
+        encoded_add = EncodeChunkId(entry->ChunkIdAtPrefix(i), list_id);
         InsertSubPrefix(prefix, encoded, encoded_add);
       }
     }
