@@ -4,8 +4,11 @@
 
 #include "chrome/browser/google_url_tracker.h"
 
+#include <vector>
+
 #include "base/compiler_specific.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"

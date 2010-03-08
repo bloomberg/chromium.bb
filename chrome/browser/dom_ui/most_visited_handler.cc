@@ -4,11 +4,13 @@
 
 #include "chrome/browser/dom_ui/most_visited_handler.h"
 
+#include <set>
+
 #include "app/l10n_util.h"
 #include "base/callback.h"
 #include "base/md5.h"
 #include "base/singleton.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/thread.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_thread.h"
@@ -67,7 +69,8 @@ DOMMessageHandler* MostVisitedHandler::Attach(DOMUI* dom_ui) {
                         &ChromeURLDataManager::AddDataSource,
                         make_scoped_refptr(thumbnail_src)));
 
-  DOMUIFavIconSource* favicon_src = new DOMUIFavIconSource(dom_ui->GetProfile());
+  DOMUIFavIconSource* favicon_src =
+      new DOMUIFavIconSource(dom_ui->GetProfile());
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
       NewRunnableMethod(Singleton<ChromeURLDataManager>::get(),
@@ -190,7 +193,7 @@ void MostVisitedHandler::HandleAddPinnedURL(const Value* value) {
   }
 
   const ListValue* list = static_cast<const ListValue*>(value);
-  DCHECK(list->GetSize() == 5) << "Wrong number of params to addPinnedURL";
+  DCHECK_EQ(5U, list->GetSize()) << "Wrong number of params to addPinnedURL";
   MostVisitedPage mvp;
   std::string tmp_string;
   int index;

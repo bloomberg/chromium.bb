@@ -5,7 +5,7 @@
 #include "chrome/browser/password_manager/encryptor.h"
 
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 
 bool Encryptor::EncryptString16(const string16& plaintext,
                                 std::string* ciphertext) {

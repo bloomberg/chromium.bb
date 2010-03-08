@@ -4,6 +4,9 @@
 
 #include "chrome/browser/dom_ui/ntp_resource_cache.h"
 
+#include <algorithm>
+#include <vector>
+
 #include "app/animation.h"
 #include "app/gfx/color_utils.h"
 #include "app/l10n_util.h"
@@ -12,7 +15,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/ref_counted_memory.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/chrome_thread.h"

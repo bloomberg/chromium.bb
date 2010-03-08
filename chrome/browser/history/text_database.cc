@@ -4,6 +4,7 @@
 
 #include <limits>
 #include <set>
+#include <string>
 
 #include "chrome/browser/history/text_database.h"
 
@@ -14,6 +15,7 @@
 #include "base/histogram.h"
 #include "base/logging.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
 
 // There are two tables in each database, one full-text search (FTS) table which

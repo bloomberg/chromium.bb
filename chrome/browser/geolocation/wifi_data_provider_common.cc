@@ -4,7 +4,7 @@
 
 #include "chrome/browser/geolocation/wifi_data_provider_common.h"
 
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 
 string16 MacAddressAsString16(const uint8 mac_as_int[6]) {
   // mac_as_int is big-endian. Write in byte chunks.

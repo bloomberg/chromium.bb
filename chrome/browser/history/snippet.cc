@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "unicode/brkiter.h"
 #include "unicode/utext.h"
 #include "unicode/utf8.h"
@@ -60,8 +61,8 @@ void AddMatch(size_t start,
       // coalesce matches after it.
       i->second = end;
       CoalescePositionsFrom(i - match_positions->begin(), match_positions);
-    } // else case, new pair completely contained in existing pair, nothing
-      // to do.
+    }  // else case, new pair completely contained in existing pair, nothing
+       // to do.
   } else if (i == match_positions->begin()) {
     // Match at the beginning and the first pair doesn't have the same
     // start. Insert new pair and coalesce matches after it.

@@ -4,12 +4,15 @@
 
 #include "chrome/browser/history/text_database_manager.h"
 
+#include <string>
+
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/histogram.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/history/history_publisher.h"
 #include "chrome/browser/history/visit_database.h"
 #include "chrome/common/mru_cache.h"
@@ -367,7 +370,7 @@ void TextDatabaseManager::DeleteFromUncommitted(
 }
 
 void TextDatabaseManager::DeleteAll() {
-  DCHECK(transaction_nesting_ == 0) << "Calling deleteAll in a transaction.";
+  DCHECK_EQ(0, transaction_nesting_) << "Calling deleteAll in a transaction.";
 
   InitDBList();
 

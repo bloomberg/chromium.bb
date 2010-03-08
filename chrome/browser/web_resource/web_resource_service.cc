@@ -4,8 +4,8 @@
 #include "chrome/browser/web_resource/web_resource_service.h"
 
 #include "base/command_line.h"
-#include "base/string_util.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"

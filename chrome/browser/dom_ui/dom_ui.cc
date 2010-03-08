@@ -7,7 +7,7 @@
 #include "app/l10n_util.h"
 #include "base/json/json_writer.h"
 #include "base/stl_util-inl.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/profile.h"

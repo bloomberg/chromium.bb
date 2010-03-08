@@ -4,10 +4,12 @@
 
 #include "chrome/browser/password_manager/password_manager.h"
 
+#include <vector>
+
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/stl_util-inl.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_form_manager.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -37,7 +39,7 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
       form_to_save_(form_to_save) {
   }
 
-   virtual ~SavePasswordInfoBarDelegate() { }
+  virtual ~SavePasswordInfoBarDelegate() { }
 
   // Overridden from ConfirmInfoBarDelegate:
   virtual void InfoBarClosed() {

@@ -6,11 +6,16 @@
 
 #include <math.h>
 
+#include <algorithm>
+#include <string>
+#include <vector>
+
 #include "app/sql/connection.h"
 #include "app/sql/statement.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/history/page_usage_data.h"
 
 // The following tables are used to store url segment information.
@@ -335,7 +340,7 @@ void VisitSegmentDatabase::SetSegmentPresentationIndex(SegmentID segment_id,
   if (!statement.Run())
     NOTREACHED();
   else
-    DCHECK(GetDB().GetLastChangeCount() == 1);
+    DCHECK_EQ(1, GetDB().GetLastChangeCount());
 }
 
 bool VisitSegmentDatabase::DeleteSegmentForURL(URLID url_id) {

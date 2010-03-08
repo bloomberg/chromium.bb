@@ -6,11 +6,13 @@
 
 #include <algorithm>
 #include <limits>
+#include <string>
+#include <vector>
 
 #include "app/l10n_util.h"
 #include "app/sql/connection.h"
 #include "app/sql/statement.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 
@@ -80,7 +82,7 @@ URLID URLDatabase::GetRowForURL(const GURL& url, history::URLRow* info) {
   std::string url_string = GURLToDatabaseURL(url);
   statement.BindString(0, url_string);
   if (!statement.Step())
-    return 0; // no data
+    return 0;  // no data
 
   if (info)
     FillURLRow(statement, info);
