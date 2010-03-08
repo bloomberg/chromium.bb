@@ -4,6 +4,8 @@
 
 #include "chrome/browser/gtk/menu_gtk.h"
 
+#include <map>
+
 #include "app/gfx/gtk_util.h"
 #include "app/l10n_util.h"
 #include "app/menus/accelerator_gtk.h"
@@ -11,7 +13,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/stl_util-inl.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/standard_menus.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -24,7 +26,7 @@ namespace {
 
 // Sets the ID of a menu item.
 void SetMenuItemID(GtkWidget* menu_item, int menu_id) {
-  DCHECK(menu_id >= 0);
+  DCHECK_GE(menu_id, 0);
 
   // Add 1 to the menu_id to avoid setting zero (null) to "menu-id".
   g_object_set_data(G_OBJECT(menu_item), "menu-id",

@@ -6,7 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "base/i18n/time_formatting.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "grit/generated_resources.h"
 

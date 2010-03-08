@@ -13,6 +13,7 @@
 #include "app/resource_bundle.h"
 #include "base/keyboard_codes_posix.h"
 #include "base/singleton.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/gtk/accelerators_gtk.h"
 #include "chrome/browser/gtk/menu_gtk.h"

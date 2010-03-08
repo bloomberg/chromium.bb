@@ -7,6 +7,7 @@
 #include <gtk/gtk.h>
 
 #include "app/l10n_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/gtk/constrained_window_gtk.h"
 #include "chrome/browser/gtk/gtk_util.h"

@@ -6,11 +6,13 @@
 
 #include <gtk/gtk.h>
 
+#include <algorithm>
+
 #include "app/gfx/gtk_util.h"
 #include "app/gfx/text_elider.h"
 #include "app/l10n_util.h"
 #include "base/message_loop.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/rounded_window.h"

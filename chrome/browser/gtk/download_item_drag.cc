@@ -6,7 +6,7 @@
 
 #include "app/gfx/gtk_util.h"
 #include "app/gtk_dnd_util.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/download/download_manager.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
@@ -27,7 +27,7 @@ void OnDragDataGet(GtkWidget* widget, GdkDragContext* context,
       UTF8ToUTF16(download_item->GetFileName().value()), target_type);
 }
 
-} // namespace
+}  // namespace
 
 // static
 void DownloadItemDrag::SetSource(GtkWidget* widget, DownloadItem* item) {

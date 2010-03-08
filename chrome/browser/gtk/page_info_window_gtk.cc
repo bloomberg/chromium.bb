@@ -9,7 +9,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/compiler_specific.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/gtk/certificate_viewer.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/page_info_model.h"
@@ -181,7 +181,7 @@ void PageInfoWindowGtk::ShowCertDialog() {
   ShowCertificateViewer(GTK_WINDOW(dialog_), cert_id_);
 }
 
-} // namespace
+}  // namespace
 
 namespace browser {
 

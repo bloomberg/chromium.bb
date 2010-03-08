@@ -18,6 +18,7 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"

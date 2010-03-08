@@ -7,7 +7,7 @@
 #include <gtk/gtk.h>
 
 #include "app/gfx/gtk_util.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/gtk/custom_button.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"

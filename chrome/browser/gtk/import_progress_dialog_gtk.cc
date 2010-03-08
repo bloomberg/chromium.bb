@@ -4,8 +4,11 @@
 
 #include "chrome/browser/gtk/import_progress_dialog_gtk.h"
 
+#include <string>
+
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -208,7 +211,7 @@ void StartImportingWithUI(GtkWindow* parent,
                           Profile* profile,
                           ImportObserver* observer,
                           bool first_run) {
-  DCHECK(items != 0);
+  DCHECK_NE(0, items);
   ImportProgressDialogGtk::StartImport(parent, items, importer_host,
                                        browser_profile, profile, observer,
                                        first_run);

@@ -4,9 +4,12 @@
 
 #include "chrome/browser/gtk/options/content_exceptions_window_gtk.h"
 
+#include <set>
+
 #include "app/gfx/gtk_util.h"
 #include "app/l10n_util.h"
 #include "base/message_loop.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/options/content_exception_editor.h"
 #include "grit/generated_resources.h"
@@ -172,7 +175,7 @@ void ContentExceptionsWindowGtk::AcceptExceptionEdit(const std::string& host,
   model_->AddException(host, setting);
 
   int new_index = model_->IndexOfExceptionByHost(host);
-  DCHECK(new_index != -1);
+  DCHECK_NE(-1, new_index);
 
   GtkTreePath* path = gtk_tree_path_new_from_indices(new_index, -1);
   gtk_tree_selection_select_path(treeview_selection_, path);

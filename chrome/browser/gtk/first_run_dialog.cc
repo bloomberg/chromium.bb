@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/message_loop.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/process_singleton.h"
