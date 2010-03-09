@@ -31,8 +31,8 @@ class AutocompleteEditViewGtk;
 class BubblePositioner;
 class Browser;
 class CommandUpdater;
-class ContentBlockedBubbleGtk;
 class ContentSettingImageModel;
+class ContentSettingBubbleGtk;
 class ExtensionAction;
 class ExtensionActionContextMenuModel;
 class GtkThemeProvider;
@@ -166,7 +166,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
     Profile* profile_;
 
     // The currently shown info bubble if any.
-    ContentBlockedBubbleGtk* info_bubble_;
+    ContentSettingBubbleGtk* info_bubble_;
 
     DISALLOW_COPY_AND_ASSIGN(ContentSettingImageViewGtk);
   };

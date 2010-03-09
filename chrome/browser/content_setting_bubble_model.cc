@@ -1,0 +1,188 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/content_setting_bubble_model.h"
+
+#include "app/l10n_util.h"
+#include "chrome/browser/blocked_popup_container.h"
+#include "chrome/browser/host_content_settings_map.h"
+#include "chrome/browser/pref_service.h"
+#include "chrome/browser/profile.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents/tab_contents_delegate.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/common/pref_names.h"
+#include "grit/generated_resources.h"
+#include "net/base/net_util.h"
+
+class ContentSettingTitleAndLinkModel : public ContentSettingBubbleModel {
+ public:
+   ContentSettingTitleAndLinkModel(TabContents* tab_contents, Profile* profile,
+      ContentSettingsType content_type)
+      : ContentSettingBubbleModel(tab_contents, profile, content_type) {
+     SetTitle();
+     SetManageLink();
+  }
+
+ private:
+  void SetTitle() {
+    static const int kTitleIDs[CONTENT_SETTINGS_NUM_TYPES] = {
+      IDS_BLOCKED_COOKIES_TITLE,
+      IDS_BLOCKED_IMAGES_TITLE,
+      IDS_BLOCKED_JAVASCRIPT_TITLE,
+      IDS_BLOCKED_PLUGINS_TITLE,
+      IDS_BLOCKED_POPUPS_TITLE,
+    };
+    set_title(l10n_util::GetStringUTF8(kTitleIDs[content_type()]));
+  }
+
+  void SetManageLink() {
+    static const int kLinkIDs[CONTENT_SETTINGS_NUM_TYPES] = {
+      IDS_BLOCKED_COOKIES_LINK,
+      IDS_BLOCKED_IMAGES_LINK,
+      IDS_BLOCKED_JAVASCRIPT_LINK,
+      IDS_BLOCKED_PLUGINS_LINK,
+      IDS_BLOCKED_POPUPS_LINK,
+    };
+    set_manage_link(l10n_util::GetStringUTF8(kLinkIDs[content_type()]));
+  }
+
+  virtual void OnManageLinkClicked() {
+    if (tab_contents())
+      tab_contents()->delegate()->ShowContentSettingsWindow(content_type());
+  }
+};
+
+class ContentSettingSingleRadioGroup : public ContentSettingTitleAndLinkModel {
+ public:
+  ContentSettingSingleRadioGroup(TabContents* tab_contents, Profile* profile,
+      ContentSettingsType content_type)
+      : ContentSettingTitleAndLinkModel(tab_contents, profile, content_type) {
+    SetRadioGroups();
+  }
+
+ private:
+  void SetRadioGroups() {
+    GURL url = tab_contents()->GetURL();
+    std::wstring display_host_wide;
+    net::AppendFormattedHost(url,
+        profile()->GetPrefs()->GetString(prefs::kAcceptLanguages),
+        &display_host_wide, NULL, NULL);
+    std::string display_host(WideToUTF8(display_host_wide));
+
+    RadioGroup radio_group;
+    radio_group.host = url.host();
+
+    static const int kAllowIDs[CONTENT_SETTINGS_NUM_TYPES] = {
+      0,  // We don't manage cookies here.
+      IDS_BLOCKED_IMAGES_UNBLOCK,
+      IDS_BLOCKED_JAVASCRIPT_UNBLOCK,
+      IDS_BLOCKED_PLUGINS_UNBLOCK,
+      IDS_BLOCKED_POPUPS_UNBLOCK,
+    };
+    std::string radio_allow_label;
+    radio_allow_label = l10n_util::GetStringFUTF8(
+        kAllowIDs[content_type()], UTF8ToUTF16(display_host));
+
+    static const int kBlockIDs[CONTENT_SETTINGS_NUM_TYPES] = {
+      0,  // We don't manage cookies here.
+      IDS_BLOCKED_IMAGES_NO_ACTION,
+      IDS_BLOCKED_JAVASCRIPT_NO_ACTION,
+      IDS_BLOCKED_PLUGINS_NO_ACTION,
+      IDS_BLOCKED_POPUPS_NO_ACTION,
+    };
+    std::string radio_block_label;
+    radio_block_label = l10n_util::GetStringFUTF8(
+        kBlockIDs[content_type()], UTF8ToUTF16(display_host));
+
+    radio_group.radio_items.push_back(radio_allow_label);
+    radio_group.radio_items.push_back(radio_block_label);
+    radio_group.default_item =
+        profile()->GetHostContentSettingsMap()->GetContentSetting(url,
+            content_type()) == CONTENT_SETTING_ALLOW ? 0 : 1;
+    add_radio_group(radio_group);
+  }
+
+  virtual void OnRadioClicked(int radio_group, int radio_index) {
+    profile()->GetHostContentSettingsMap()->SetContentSetting(
+        bubble_content().radio_groups[radio_group].host,
+        content_type(),
+        radio_index == 0 ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
+  }
+};
+
+class ContentSettingPopupBubbleModel : public ContentSettingSingleRadioGroup {
+ public:
+  ContentSettingPopupBubbleModel(TabContents* tab_contents, Profile* profile,
+      ContentSettingsType content_type)
+      : ContentSettingSingleRadioGroup(tab_contents, profile, content_type) {
+    SetPopups();
+  }
+
+ private:
+  void SetPopups() {
+    BlockedPopupContainer::BlockedContents blocked_contents;
+    DCHECK(tab_contents()->blocked_popup_container());
+    tab_contents()->blocked_popup_container()->GetBlockedContents(
+        &blocked_contents);
+    for (BlockedPopupContainer::BlockedContents::const_iterator
+         i(blocked_contents.begin()); i != blocked_contents.end(); ++i) {
+      std::string title(UTF16ToUTF8((*i)->GetTitle()));
+      // The popup may not have committed a load yet, in which case it won't
+      // have a URL or title.
+      if (title.empty())
+        title = l10n_util::GetStringUTF8(IDS_TAB_LOADING_TITLE);
+      PopupItem popup_item;
+      popup_item.title = title;
+      popup_item.bitmap = (*i)->GetFavIcon();
+      popup_item.tab_contents = (*i);
+      add_popup(popup_item);
+    }
+  }
+
+  virtual void OnPopupClicked(int index) {
+    if (tab_contents() && tab_contents()->blocked_popup_container()) {
+      tab_contents()->blocked_popup_container()->LaunchPopupForContents(
+          bubble_content().popup_items[index].tab_contents);
+    }
+  }
+};
+
+// static
+ContentSettingBubbleModel*
+    ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+        TabContents* tab_contents,
+        Profile* profile,
+        ContentSettingsType content_type) {
+  if (content_type == CONTENT_SETTINGS_TYPE_COOKIES) {
+    return new ContentSettingTitleAndLinkModel(tab_contents, profile,
+                                               content_type);
+  }
+  if (content_type == CONTENT_SETTINGS_TYPE_POPUPS) {
+    return new ContentSettingPopupBubbleModel(tab_contents, profile,
+                                              content_type);
+  }
+  return new ContentSettingSingleRadioGroup(tab_contents, profile,
+                                            content_type);
+}
+
+ContentSettingBubbleModel::ContentSettingBubbleModel(
+    TabContents* tab_contents, Profile* profile,
+    ContentSettingsType content_type)
+    : tab_contents_(tab_contents), profile_(profile),
+      content_type_(content_type) {
+  registrar_.Add(this, NotificationType::TAB_CONTENTS_DESTROYED,
+                 Source<TabContents>(tab_contents));
+}
+
+ContentSettingBubbleModel::~ContentSettingBubbleModel() {
+}
+
+void ContentSettingBubbleModel::Observe(NotificationType type,
+                                        const NotificationSource& source,
+                                        const NotificationDetails& details) {
+  DCHECK(type == NotificationType::TAB_CONTENTS_DESTROYED);
+  DCHECK(source == Source<TabContents>(tab_contents_));
+  tab_contents_ = NULL;
+}

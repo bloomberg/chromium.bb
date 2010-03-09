@@ -20,6 +20,7 @@
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/bubble_positioner.h"
 #include "chrome/browser/command_updater.h"
+#include "chrome/browser/content_setting_bubble_model.h"
 #include "chrome/browser/content_setting_image_model.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extensions_service.h"
@@ -1383,15 +1384,12 @@ bool LocationBarView::ContentSettingImageView::OnMousePressed(
   TabContents* tab_contents = parent_->GetTabContents();
   if (!tab_contents)
     return true;
-  GURL url = tab_contents->GetURL();
-  std::wstring display_host;
-  net::AppendFormattedHost(url,
-      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages), &display_host,
-      NULL, NULL);
-  ContentBlockedBubbleContents* bubble_contents =
-      new ContentBlockedBubbleContents(
-          content_setting_image_model_->get_content_settings_type(), url.host(),
-          display_host, profile_, tab_contents);
+  ContentSettingBubbleContents* bubble_contents =
+      new ContentSettingBubbleContents(
+          ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+              tab_contents, profile_,
+              content_setting_image_model_->get_content_settings_type()),
+          profile_, tab_contents);
   DCHECK(!info_bubble_);
   info_bubble_ = InfoBubble::Show(GetWindow(), bounds, bubble_contents, this);
   bubble_contents->set_info_bubble(info_bubble_);

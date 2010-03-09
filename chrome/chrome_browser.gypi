@@ -751,6 +751,8 @@
         'browser/command_updater.h',
         'browser/content_exceptions_table_model.cc',
         'browser/content_exceptions_table_model.h',
+        'browser/content_setting_bubble_model.cc',
+        'browser/content_setting_bubble_model.h',
         'browser/content_setting_combo_model.cc',
         'browser/content_setting_combo_model.h',
         'browser/content_setting_image_model.cc',

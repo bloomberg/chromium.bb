@@ -10,6 +10,7 @@
 
 #include "app/l10n_util.h"
 #include "chrome/browser/blocked_popup_container.h"
+#include "chrome/browser/content_setting_bubble_model.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -26,10 +27,10 @@
 #include "views/grid_layout.h"
 #include "views/standard_layout.h"
 
-class ContentBlockedBubbleContents::Favicon : public views::ImageView {
+class ContentSettingBubbleContents::Favicon : public views::ImageView {
  public:
   Favicon(const SkBitmap& image,
-          ContentBlockedBubbleContents* parent,
+          ContentSettingBubbleContents* parent,
           views::Link* link);
   virtual ~Favicon();
 
@@ -45,32 +46,32 @@ class ContentBlockedBubbleContents::Favicon : public views::ImageView {
       views::Event::EventType event_type,
       const gfx::Point& p);
 
-  ContentBlockedBubbleContents* parent_;
+  ContentSettingBubbleContents* parent_;
   views::Link* link_;
 };
 
 #if defined(OS_WIN)
-HCURSOR ContentBlockedBubbleContents::Favicon::g_hand_cursor = NULL;
+HCURSOR ContentSettingBubbleContents::Favicon::g_hand_cursor = NULL;
 #endif
 
-ContentBlockedBubbleContents::Favicon::Favicon(
+ContentSettingBubbleContents::Favicon::Favicon(
     const SkBitmap& image,
-    ContentBlockedBubbleContents* parent,
+    ContentSettingBubbleContents* parent,
     views::Link* link)
     : parent_(parent),
       link_(link) {
   SetImage(image);
 }
 
-ContentBlockedBubbleContents::Favicon::~Favicon() {
+ContentSettingBubbleContents::Favicon::~Favicon() {
 }
 
-bool ContentBlockedBubbleContents::Favicon::OnMousePressed(
+bool ContentSettingBubbleContents::Favicon::OnMousePressed(
     const views::MouseEvent& event) {
   return event.IsLeftMouseButton() || event.IsMiddleMouseButton();
 }
 
-void ContentBlockedBubbleContents::Favicon::OnMouseReleased(
+void ContentSettingBubbleContents::Favicon::OnMouseReleased(
     const views::MouseEvent& event,
     bool canceled) {
   if (!canceled &&
@@ -79,7 +80,7 @@ void ContentBlockedBubbleContents::Favicon::OnMouseReleased(
     parent_->LinkActivated(link_, event.GetFlags());
 }
 
-gfx::NativeCursor ContentBlockedBubbleContents::Favicon::GetCursorForPoint(
+gfx::NativeCursor ContentSettingBubbleContents::Favicon::GetCursorForPoint(
     views::Event::EventType event_type,
     const gfx::Point& p) {
 #if defined(OS_WIN)
@@ -91,55 +92,54 @@ gfx::NativeCursor ContentBlockedBubbleContents::Favicon::GetCursorForPoint(
 #endif
 }
 
-ContentBlockedBubbleContents::ContentBlockedBubbleContents(
-    ContentSettingsType content_type,
-    const std::string& host,
-    const std::wstring& display_host,
+ContentSettingBubbleContents::ContentSettingBubbleContents(
+    ContentSettingBubbleModel* content_setting_bubble_model,
     Profile* profile,
     TabContents* tab_contents)
-    : content_type_(content_type),
-      host_(host),
-      display_host_(display_host),
+    : content_setting_bubble_model_(content_setting_bubble_model),
       profile_(profile),
       tab_contents_(tab_contents),
       info_bubble_(NULL),
-      allow_radio_(NULL),
-      block_radio_(NULL),
       close_button_(NULL),
       manage_link_(NULL) {
   registrar_.Add(this, NotificationType::TAB_CONTENTS_DESTROYED,
                  Source<TabContents>(tab_contents));
 }
 
-ContentBlockedBubbleContents::~ContentBlockedBubbleContents() {
+ContentSettingBubbleContents::~ContentSettingBubbleContents() {
 }
 
-void ContentBlockedBubbleContents::ViewHierarchyChanged(bool is_add,
+void ContentSettingBubbleContents::ViewHierarchyChanged(bool is_add,
                                                         View* parent,
                                                         View* child) {
   if (is_add && (child == this))
     InitControlLayout();
 }
 
-void ContentBlockedBubbleContents::ButtonPressed(views::Button* sender,
+void ContentSettingBubbleContents::ButtonPressed(views::Button* sender,
                                                  const views::Event& event) {
   if (sender == close_button_) {
     info_bubble_->Close();  // CAREFUL: This deletes us.
     return;
   }
 
-  DCHECK((sender == allow_radio_) || (sender == block_radio_));
-  profile_->GetHostContentSettingsMap()->SetContentSetting(host_, content_type_,
-      allow_radio_->checked() ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
+  for (std::vector<RadioGroup>::const_iterator i = radio_groups_.begin();
+       i != radio_groups_.end(); ++i) {
+    for (RadioGroup::const_iterator j = i->begin(); j != i->end(); ++j) {
+      if (sender == *j) {
+        content_setting_bubble_model_->OnRadioClicked(
+            i - radio_groups_.begin(), j - i->begin());
+        return;
+      }
+    }
+  }
+  NOTREACHED() << "unknown radio";
 }
 
-void ContentBlockedBubbleContents::LinkActivated(views::Link* source,
+void ContentSettingBubbleContents::LinkActivated(views::Link* source,
                                                  int event_flags) {
   if (source == manage_link_) {
-    if (tab_contents_)
-      tab_contents_->delegate()->ShowContentSettingsWindow(content_type_);
-    else
-      browser::ShowContentSettingsWindow(NULL, content_type_, profile_);
+    content_setting_bubble_model_->OnManageLinkClicked();
     // CAREFUL: Showing the settings window activates it, which deactivates the
     // info bubble, which causes it to close, which deletes us.
     return;
@@ -147,11 +147,10 @@ void ContentBlockedBubbleContents::LinkActivated(views::Link* source,
 
   PopupLinks::const_iterator i(popup_links_.find(source));
   DCHECK(i != popup_links_.end());
-  if (tab_contents_ && tab_contents_->blocked_popup_container())
-    tab_contents_->blocked_popup_container()->LaunchPopupForContents(i->second);
+  content_setting_bubble_model_->OnPopupClicked(i->second);
 }
 
-void ContentBlockedBubbleContents::Observe(NotificationType type,
+void ContentSettingBubbleContents::Observe(NotificationType type,
                                            const NotificationSource& source,
                                            const NotificationDetails& details) {
   DCHECK(type == NotificationType::TAB_CONTENTS_DESTROYED);
@@ -159,7 +158,7 @@ void ContentBlockedBubbleContents::Observe(NotificationType type,
   tab_contents_ = NULL;
 }
 
-void ContentBlockedBubbleContents::InitControlLayout() {
+void ContentSettingBubbleContents::InitControlLayout() {
   using views::GridLayout;
 
   GridLayout* layout = new views::GridLayout(this);
@@ -170,23 +169,17 @@ void ContentBlockedBubbleContents::InitControlLayout() {
   column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
 
-  static const int kTitleIDs[CONTENT_SETTINGS_NUM_TYPES] = {
-    IDS_BLOCKED_COOKIES_TITLE,
-    IDS_BLOCKED_IMAGES_TITLE,
-    IDS_BLOCKED_JAVASCRIPT_TITLE,
-    IDS_BLOCKED_PLUGINS_TITLE,
-    IDS_BLOCKED_POPUPS_TITLE,
-  };
-  DCHECK_EQ(arraysize(kTitleIDs),
-            static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
-  views::Label* title_label =
-      new views::Label(l10n_util::GetString(kTitleIDs[content_type_]));
+  const ContentSettingBubbleModel::BubbleContent& bubble_content =
+      content_setting_bubble_model_->bubble_content();
+  views::Label* title_label = new views::Label(UTF8ToWide(
+      bubble_content.title));
 
   layout->StartRow(0, single_column_set_id);
   layout->AddView(title_label);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
-  if (content_type_ == CONTENT_SETTINGS_TYPE_POPUPS) {
+  if (content_setting_bubble_model_->content_type() ==
+      CONTENT_SETTINGS_TYPE_POPUPS) {
     const int popup_column_set_id = 2;
     views::ColumnSet* popup_column_set =
         layout->AddColumnSet(popup_column_set_id);
@@ -196,26 +189,17 @@ void ContentBlockedBubbleContents::InitControlLayout() {
     popup_column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 1,
                                 GridLayout::USE_PREF, 0, 0);
 
-    BlockedPopupContainer::BlockedContents blocked_contents;
-    DCHECK(tab_contents_->blocked_popup_container());
-    tab_contents_->blocked_popup_container()->GetBlockedContents(
-        &blocked_contents);
-    for (BlockedPopupContainer::BlockedContents::const_iterator
-         i(blocked_contents.begin()); i != blocked_contents.end(); ++i) {
-      string16 title((*i)->GetTitle());
-      // The popup may not have committed a load yet, in which case it won't
-      // have a URL or title.
-      if (title.empty())
-        title = l10n_util::GetStringUTF16(IDS_TAB_LOADING_TITLE);
-
-      if (i != blocked_contents.begin())
+    for (std::vector<ContentSettingBubbleModel::PopupItem>::const_iterator
+         i(bubble_content.popup_items.begin());
+         i != bubble_content.popup_items.end(); ++i) {
+      if (i != bubble_content.popup_items.begin())
         layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
       layout->StartRow(0, popup_column_set_id);
 
-      views::Link* link = new views::Link(UTF16ToWideHack(title));
+      views::Link* link = new views::Link(UTF8ToWide(i->title));
       link->SetController(this);
-      popup_links_[link] = *i;
-      layout->AddView(new Favicon((*i)->GetFavIcon(), this, link));
+      popup_links_[link] = i - bubble_content.popup_items.begin();
+      layout->AddView(new Favicon((*i).bitmap, this, link));
       layout->AddView(link);
     }
     layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
@@ -226,54 +210,30 @@ void ContentBlockedBubbleContents::InitControlLayout() {
     layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   }
 
-  if (content_type_ != CONTENT_SETTINGS_TYPE_COOKIES) {
-    static const int kAllowIDs[CONTENT_SETTINGS_NUM_TYPES] = {
-      0,  // Not displayed for cookies
-      IDS_BLOCKED_IMAGES_UNBLOCK,
-      IDS_BLOCKED_JAVASCRIPT_UNBLOCK,
-      IDS_BLOCKED_PLUGINS_UNBLOCK,
-      IDS_BLOCKED_POPUPS_UNBLOCK,
-    };
-    DCHECK_EQ(arraysize(kAllowIDs),
-              static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
-    const int radio_button_group = 0;
-    allow_radio_ = new views::RadioButton(
-        l10n_util::GetStringF(kAllowIDs[content_type_], display_host_),
-        radio_button_group);
-    allow_radio_->set_listener(this);
-
-    static const int kBlockIDs[CONTENT_SETTINGS_NUM_TYPES] = {
-      0,  // Not displayed for cookies
-      IDS_BLOCKED_IMAGES_NO_ACTION,
-      IDS_BLOCKED_JAVASCRIPT_NO_ACTION,
-      IDS_BLOCKED_PLUGINS_NO_ACTION,
-      IDS_BLOCKED_POPUPS_NO_ACTION,
-    };
-    DCHECK_EQ(arraysize(kBlockIDs),
-              static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
-    block_radio_ = new views::RadioButton(
-        l10n_util::GetString(kBlockIDs[content_type_]), radio_button_group);
-    block_radio_->set_listener(this);
-
-    layout->StartRow(0, single_column_set_id);
-    layout->AddView(allow_radio_);
-    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
-    layout->StartRow(0, single_column_set_id);
-    layout->AddView(block_radio_);
-    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
-
-    // Now that the buttons have been added to the view hierarchy, it's safe to
-    // call SetChecked() on them.
-    if (profile_->GetHostContentSettingsMap()->GetContentSetting(host_,
-            content_type_) == CONTENT_SETTING_ALLOW)
-      allow_radio_->SetChecked(true);
-    else
-      block_radio_->SetChecked(true);
-
+  const ContentSettingBubbleModel::RadioGroups& radio_groups =
+      content_setting_bubble_model_->bubble_content().radio_groups;
+  for (ContentSettingBubbleModel::RadioGroups::const_iterator i =
+       radio_groups.begin(); i != radio_groups.end(); ++i) {
+    const ContentSettingBubbleModel::RadioItems& radio_items = i->radio_items;
+    RadioGroup radio_group;
+    for (ContentSettingBubbleModel::RadioItems::const_iterator j =
+         radio_items.begin(); j != radio_items.end(); ++j) {
+      views::RadioButton* radio = new views::RadioButton(
+            UTF8ToWide(*j), i - radio_groups.begin());
+      radio->set_listener(this);
+      radio_group.push_back(radio);
+      layout->StartRow(0, single_column_set_id);
+      layout->AddView(radio);
+      layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+    }
+    radio_groups_.push_back(radio_group);
     views::Separator* separator = new views::Separator;
     layout->StartRow(0, single_column_set_id);
     layout->AddView(separator, 1, 1, GridLayout::FILL, GridLayout::FILL);
     layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+    // Now that the buttons have been added to the view hierarchy, it's safe
+    // to call SetChecked() on them.
+    radio_group[i->default_item]->SetChecked(true);
   }
 
   const int double_column_set_id = 1;
@@ -285,16 +245,7 @@ void ContentBlockedBubbleContents::InitControlLayout() {
   double_column_set->AddColumn(GridLayout::TRAILING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
 
-  static const int kLinkIDs[CONTENT_SETTINGS_NUM_TYPES] = {
-    IDS_BLOCKED_COOKIES_LINK,
-    IDS_BLOCKED_IMAGES_LINK,
-    IDS_BLOCKED_JAVASCRIPT_LINK,
-    IDS_BLOCKED_PLUGINS_LINK,
-    IDS_BLOCKED_POPUPS_LINK,
-  };
-  DCHECK_EQ(arraysize(kLinkIDs),
-            static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
-  manage_link_ = new views::Link(l10n_util::GetString(kLinkIDs[content_type_]));
+  manage_link_ = new views::Link(UTF8ToWide(bubble_content.manage_link));
   manage_link_->SetController(this);
 
   layout->StartRow(0, double_column_set_id);

@@ -20,6 +20,7 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/command_updater.h"
+#include "chrome/browser/content_setting_bubble_model.h"
 #include "chrome/browser/content_setting_image_model.h"
 #include "chrome/browser/extensions/extension_accessibility_api_constants.h"
 #include "chrome/browser/extensions/extension_action_context_menu_model.h"
@@ -1016,10 +1017,12 @@ gboolean LocationBarViewGtk::ContentSettingImageViewGtk::OnButtonPressed(
 
   GtkWindow* toplevel = GTK_WINDOW(gtk_widget_get_toplevel(sender));
 
-  info_bubble_ = new ContentBlockedBubbleGtk(
+  info_bubble_ = new ContentSettingBubbleGtk(
       toplevel, bounds, this,
-      content_setting_image_model_->get_content_settings_type(), url.host(),
-      display_host, profile_, tab_contents);
+      ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+          tab_contents, profile_,
+          content_setting_image_model_->get_content_settings_type()),
+      profile_, tab_contents);
   return TRUE;
 }
 

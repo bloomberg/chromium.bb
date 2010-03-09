@@ -13,7 +13,7 @@
 #include "views/controls/button/button.h"
 #include "views/controls/link.h"
 
-// ContentBlockedBubbleContents is used when the user turns on different kinds
+// ContentSettingBubbleContents is used when the user turns on different kinds
 // of content blocking (e.g. "block images").  When viewing a page with blocked
 // content, icons appear in the omnibox corresponding to the content types that
 // were blocked, and the user can click one to get a bubble hosting a few
@@ -23,6 +23,7 @@
 // get to a more comprehensive settings management dialog.  A few types have
 // more or fewer controls than this.
 
+class ContentSettingBubbleModel;
 class InfoBubble;
 class Profile;
 class TabContents;
@@ -32,17 +33,16 @@ class NativeButton;
 class RadioButton;
 }
 
-class ContentBlockedBubbleContents : public views::View,
+// TODO(bulach): rename this file.
+class ContentSettingBubbleContents : public views::View,
                                      public views::ButtonListener,
                                      public views::LinkController,
                                      public NotificationObserver {
  public:
-  ContentBlockedBubbleContents(ContentSettingsType content_type,
-                               const std::string& host,
-                               const std::wstring& display_host,
-                               Profile* profile,
-                               TabContents* tab_contents);
-  virtual ~ContentBlockedBubbleContents();
+  ContentSettingBubbleContents(
+      ContentSettingBubbleModel* content_setting_bubble_model,
+      Profile* profile, TabContents* tab_contents);
+  virtual ~ContentSettingBubbleContents();
 
   // Sets |info_bubble_|, so we can close the bubble if needed.  The caller owns
   // the bubble and must keep it alive.
@@ -51,7 +51,7 @@ class ContentBlockedBubbleContents : public views::View,
  private:
   class Favicon;
 
-  typedef std::map<views::Link*, TabContents*> PopupLinks;
+  typedef std::map<views::Link*, int> PopupLinks;
 
   // Overridden from views::View:
   virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
@@ -70,12 +70,8 @@ class ContentBlockedBubbleContents : public views::View,
   // Creates the child views.
   void InitControlLayout();
 
-  // The type of content handled by this view.
-  ContentSettingsType content_type_;
-
-  // The hostname affected.
-  std::string host_;
-  std::wstring display_host_;
+  // Provides data for this bubble.
+  scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model_;
 
   // The active profile.
   Profile* profile_;
@@ -92,12 +88,12 @@ class ContentBlockedBubbleContents : public views::View,
   // Some of our controls, so we can tell what's been clicked when we get a
   // message.
   PopupLinks popup_links_;
-  views::RadioButton* allow_radio_;
-  views::RadioButton* block_radio_;
+  typedef std::vector<views::RadioButton*> RadioGroup;
+  std::vector<RadioGroup> radio_groups_;
   views::NativeButton* close_button_;
   views::Link* manage_link_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(ContentBlockedBubbleContents);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(ContentSettingBubbleContents);
 };
 
 #endif  // CHROME_BROWSER_VIEWS_CONTENT_BLOCKED_BUBBLE_CONTENTS_H_
