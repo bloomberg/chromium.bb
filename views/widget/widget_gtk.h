@@ -78,6 +78,13 @@ class WidgetGtk
   bool MakeTransparent();
   bool is_transparent() const { return transparent_; }
 
+  // Makes the window pass all events through to any windows behind it.
+  // This must be invoked before Init. This does a couple of checks and returns
+  // true if the window can be made to ignore events. The actual work of making
+  // the window ignore events is done by ConfigureWidgetForIgnoreEvents.
+  bool MakeIgnoreEvents();
+  bool is_ignore_events() const { return ignore_events_; }
+
   // Sets whether or not we are deleted when the widget is destroyed. The
   // default is true.
   void set_delete_on_destroy(bool delete_on_destroy) {
@@ -372,6 +379,11 @@ class WidgetGtk
   // invoked.
   void ConfigureWidgetForTransparentBackground();
 
+  // Invoked from create widget to enable the various bits needed for a
+  // window which doesn't receive events. This is only invoked if
+  // MakeIgnoreEvents has been invoked.
+  void ConfigureWidgetForIgnoreEvents();
+
   // TODO(sky): documentation
   void HandleGrabBroke();
 
@@ -429,6 +441,9 @@ class WidgetGtk
 
   // See description above make_transparent for details.
   bool transparent_;
+
+  // See description above MakeIgnoreEvents for details.
+  bool ignore_events_;
 
   scoped_ptr<DefaultThemeProvider> default_theme_provider_;
 

@@ -4,6 +4,10 @@
 
 #include "views/widget/widget_gtk.h"
 
+#include <gdk/gdk.h>
+#include <gdk/gdkx.h>
+#include <X11/extensions/shape.h>
+
 #include "app/drag_drop_types.h"
 #include "app/gfx/path.h"
 #include "app/os_exchange_data.h"
@@ -98,6 +102,7 @@ WidgetGtk::WidgetGtk(Type type)
       ALLOW_THIS_IN_INITIALIZER_LIST(close_widget_factory_(this)),
       delete_on_destroy_(true),
       transparent_(false),
+      ignore_events_(false),
       ignore_drag_leave_(false),
       opacity_(255),
       drag_data_(NULL),
@@ -148,6 +153,15 @@ bool WidgetGtk::MakeTransparent() {
   }
 
   transparent_ = true;
+  return true;
+}
+
+bool WidgetGtk::MakeIgnoreEvents() {
+  // Transparency can only be enabled for windows/popups and only if we haven't
+  // realized the widget.
+  DCHECK(!widget_ && type_ != TYPE_CHILD);
+
+  ignore_events_ = true;
   return true;
 }
 
@@ -1311,6 +1325,9 @@ void WidgetGtk::CreateGtkWidget(GtkWidget* parent, const gfx::Rect& bounds) {
 
     if (transparent_)
       ConfigureWidgetForTransparentBackground();
+
+    if (ignore_events_)
+      ConfigureWidgetForIgnoreEvents();
   }
 
   // The widget needs to be realized before handlers like size-allocate can
@@ -1349,6 +1366,26 @@ void WidgetGtk::ConfigureWidgetForTransparentBackground() {
   gdk_window_set_back_pixmap(window_contents_->window, NULL, FALSE);
 }
 
+void WidgetGtk::ConfigureWidgetForIgnoreEvents() {
+  gtk_widget_realize(widget_);
+  GdkWindow* gdk_window = widget_->window;
+  Display* display = GDK_WINDOW_XDISPLAY(gdk_window);
+  XID win = GDK_WINDOW_XID(gdk_window);
+
+  // This sets the clickable area to be empty, allowing all events to be
+  // passed to any windows behind this one.
+  XShapeCombineRectangles(
+      display,
+      win,
+      ShapeInput,
+      0, // x offset
+      0, // y offset
+      NULL, // rectangles
+      0, // num rectangles
+      ShapeSet,
+      0);
+}
+
 void WidgetGtk::HandleGrabBroke() {
   if (has_capture_) {
     if (is_mouse_down_)
@@ -1364,12 +1401,14 @@ void WidgetGtk::HandleGrabBroke() {
 
 // static
 Widget* Widget::CreatePopupWidget(TransparencyParam transparent,
-                                  EventsParam /*accept_events*/,
+                                  EventsParam accept_events,
                                   DeleteParam delete_on_destroy) {
   WidgetGtk* popup = new WidgetGtk(WidgetGtk::TYPE_POPUP);
   popup->set_delete_on_destroy(delete_on_destroy == DeleteOnDestroy);
   if (transparent == Transparent)
     popup->MakeTransparent();
+  if (accept_events == NotAcceptEvents)
+    popup->MakeIgnoreEvents();
   return popup;
 }
 
