@@ -21,14 +21,27 @@ class NaClTest : public UITest {
   NaClTest();
   virtual ~NaClTest();
 
+  // Get the path to the native_client/tests directory, the root of testing
+  // data.
   FilePath GetTestRootDir();
-  // Waits for the test case to finish.
-  void WaitForFinish(const FilePath& filename, const int wait_time);
+
+  // Waits for a test case (identified by path) to finish.
+  void WaitForFinish(const FilePath& filename, int wait_time);
+
+  // Navigate the browser to a given test path, and wait for the test to
+  // complete.
   void RunTest(const FilePath& filename, int timeout);
-  void SetUp();
-  void TearDown();
+
+  // gtest test setup overrides.
+  virtual void SetUp();
+  virtual void TearDown();
+
+  // Construct a URL for a test file on our local webserver.
   GURL GetTestUrl(const FilePath& filename);
+
+  // Get the timeout used for NaCL tests.
   int NaClTestTimeout();
+
  private:
   void PrepareSrpcHwTest(FilePath test_root_dir);
   void PrepareServerTest(FilePath test_root_dir);
@@ -38,6 +51,7 @@ class NaClTest : public UITest {
   void PrepareSrpcPluginTest(FilePath test_root_dir);
   void PrepareSrpcNrdXferTest(FilePath test_root_dir);
 
+  // Compute the path to the test binaries (prebuilt NaCL executables).
   FilePath GetTestBinariesDir();
 };
 

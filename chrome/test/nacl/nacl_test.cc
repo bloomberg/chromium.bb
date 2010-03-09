@@ -11,44 +11,47 @@
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
 
-static const int kNaClTestTimeout = 20000;
+namespace {
+
+const int kNaClTestTimeout = 20000;
 const char kTestCompleteCookie[] = "status";
 const char kTestCompleteSuccess[] = "OK";
 
-static const FilePath::CharType kBaseUrl[] =
+const FilePath::CharType kBaseUrl[] =
     FILE_PATH_LITERAL("http://localhost:5103/");
 
-static const FilePath::CharType kSrpcHwHtmlFileName[] =
+const FilePath::CharType kSrpcHwHtmlFileName[] =
     FILE_PATH_LITERAL("srpc_hw.html");
-static const FilePath::CharType kSrpcHwNexeFileName[] =
+const FilePath::CharType kSrpcHwNexeFileName[] =
     FILE_PATH_LITERAL("srpc_hw.nexe");
 
-static const FilePath::CharType kSrpcBasicHtmlFileName[] =
+const FilePath::CharType kSrpcBasicHtmlFileName[] =
     FILE_PATH_LITERAL("srpc_basic.html");
-static const FilePath::CharType kSrpcBasicNexeFileName[] =
+const FilePath::CharType kSrpcBasicNexeFileName[] =
     FILE_PATH_LITERAL("srpc_test.nexe");
 
-static const FilePath::CharType kSrpcSockAddrHtmlFileName[] =
+const FilePath::CharType kSrpcSockAddrHtmlFileName[] =
     FILE_PATH_LITERAL("srpc_sockaddr.html");
 
-static const FilePath::CharType kSrpcShmHtmlFileName[] =
+const FilePath::CharType kSrpcShmHtmlFileName[] =
     FILE_PATH_LITERAL("srpc_shm.html");
-static const FilePath::CharType kSrpcShmNexeFileName[] =
+const FilePath::CharType kSrpcShmNexeFileName[] =
     FILE_PATH_LITERAL("srpc_shm.nexe");
 
-static const FilePath::CharType kSrpcPluginHtmlFileName[] =
+const FilePath::CharType kSrpcPluginHtmlFileName[] =
     FILE_PATH_LITERAL("srpc_plugin.html");
 
-static const FilePath::CharType kSrpcNrdXferHtmlFileName[] =
+const FilePath::CharType kSrpcNrdXferHtmlFileName[] =
     FILE_PATH_LITERAL("srpc_nrd_xfer.html");
-static const FilePath::CharType kSrpcNrdClientNexeFileName[] =
+const FilePath::CharType kSrpcNrdClientNexeFileName[] =
     FILE_PATH_LITERAL("srpc_nrd_client.nexe");
-static const FilePath::CharType kSrpcNrdServerNexeFileName[] =
+const FilePath::CharType kSrpcNrdServerNexeFileName[] =
     FILE_PATH_LITERAL("srpc_nrd_server.nexe");
 
-static const FilePath::CharType kServerHtmlFileName[] =
+const FilePath::CharType kServerHtmlFileName[] =
     FILE_PATH_LITERAL("server_test.html");
 
+}  // anonymous namespace
 
 NaClTest::NaClTest()
     : UITest() {
@@ -75,7 +78,7 @@ FilePath NaClTest::GetTestBinariesDir() {
   return path;
 }
 
-// Static
+// static
 GURL NaClTest::GetTestUrl(const FilePath& filename) {
   FilePath path(kBaseUrl);
   path = path.Append(filename);
@@ -83,9 +86,8 @@ GURL NaClTest::GetTestUrl(const FilePath& filename) {
 }
 
 
-// Waits for the test case to finish.
 void NaClTest::WaitForFinish(const FilePath& filename,
-                             const int wait_time) {
+                             int wait_time) {
   GURL url = GetTestUrl(filename);
   scoped_refptr<TabProxy> tab(GetActiveTab());
   ASSERT_TRUE(tab.get());
