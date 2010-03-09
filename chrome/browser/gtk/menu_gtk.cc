@@ -441,10 +441,11 @@ void MenuGtk::WidgetMenuPositionFunc(GtkMenu* menu,
     *x += widget->allocation.width - menu_req.width;
 
   // If the menu would run off the bottom of the screen, and there is more
-  // screen space up than down, then pop upwards.
+  // screen space up than down, then pop upwards. Also move the anchor point
+  // to the top of the widget rather than the bottom.
   if (*y + menu_req.height >= screen_rect.height &&
       *y > screen_rect.height / 2) {
-    *y -= menu_req.height;
+    *y -= menu_req.height + widget->allocation.height;
   }
 
   *push_in = FALSE;
