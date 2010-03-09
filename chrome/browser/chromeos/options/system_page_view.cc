@@ -9,15 +9,17 @@
 
 #include "app/combobox_model.h"
 #include "base/stl_util-inl.h"
-#include "chrome/browser/chromeos/cros/language_library.h"
+#include "chrome/browser/chromeos/options/language_config_view.h"
 #include "chrome/browser/pref_member.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "unicode/timezone.h"
 #include "views/controls/button/checkbox.h"
+#include "views/controls/button/native_button.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/slider/slider.h"
+#include "views/window/window.h"
 
 namespace chromeos {
 
@@ -307,32 +309,16 @@ void TouchpadSection::NotifyPrefChanged(const std::wstring* pref_name) {
 ////////////////////////////////////////////////////////////////////////////////
 // TextInputSection
 
-// This is a checkbox associated with input language information.
-class LanguageCheckbox : public views::Checkbox {
- public:
-  explicit LanguageCheckbox(const InputLanguage& language)
-      : views::Checkbox(UTF8ToWide(language.display_name)),
-        language_(language) {
-  }
-
-  const InputLanguage& language() const {
-    return language_;
-  }
-
- private:
-  InputLanguage language_;
-  DISALLOW_COPY_AND_ASSIGN(LanguageCheckbox);
-};
-
 // TextInput section for text input settings.
 class TextInputSection : public SettingsPageSection,
-                         public views::ButtonListener,
-                         public views::Combobox::Listener {
+                         public views::ButtonListener {
  public:
   explicit TextInputSection(Profile* profile);
   virtual ~TextInputSection() {}
 
  private:
+  views::NativeButton* customize_languages_button_;
+
   // Overridden from SettingsPageSection:
   virtual void InitContents(GridLayout* layout);
 
@@ -340,191 +326,36 @@ class TextInputSection : public SettingsPageSection,
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event);
 
-  // Overridden from views::Combobox::Listener:
-  virtual void ItemChanged(views::Combobox* sender,
-                           int prev_index,
-                           int new_index);
-
-  void UpdateHangulKeyboardCombobox();
-
-  // The combobox model for the list of hangul keyboards.
-  class HangulKeyboardComboboxModel : public ComboboxModel {
-   public:
-    HangulKeyboardComboboxModel() {
-      // We have to sync the IDs ("2", "3f", "39", ...) with those in
-      // ibus-hangul/setup/main.py.
-      // TODO(yusukes): Use l10n_util::GetString for these label strings.
-      layouts_.push_back(std::make_pair(L"Dubeolsik", "2"));
-      layouts_.push_back(std::make_pair(L"Sebeolsik Final", "3f"));
-      layouts_.push_back(std::make_pair(L"Sebeolsik 390", "39"));
-      layouts_.push_back(std::make_pair(L"Sebeolsik No-shift", "3s"));
-      layouts_.push_back(std::make_pair(L"Sebeolsik 2 set", "32"));
-    }
-
-    // Implements ComboboxModel interface.
-    virtual int GetItemCount() {
-      return static_cast<int>(layouts_.size());
-    }
-
-    // Implements ComboboxModel interface.
-    virtual std::wstring GetItemAt(int index) {
-      if (index < 0 || index > GetItemCount()) {
-        LOG(ERROR) << "Index is out of bounds: " << index;
-        return L"";
-      }
-      return layouts_.at(index).first;
-    }
-
-    // Gets a keyboard layout ID (e.g. "2", "3f", ..) for an item at zero-origin
-    // |index|. This function is NOT part of the ComboboxModel interface.
-    std::string GetItemIDAt(int index) {
-      if (index < 0 || index > GetItemCount()) {
-        LOG(ERROR) << "Index is out of bounds: " << index;
-        return "";
-      }
-      return layouts_.at(index).second;
-    }
-
-    // Gets an index (>= 0) of an item whose keyboard layout ID is |layout_ld|.
-    // Returns -1 if such item is not found. This function is NOT part of the
-    // ComboboxModel interface.
-    int GetIndexFromID(const std::string& layout_id) {
-      for (size_t i = 0; i < layouts_.size(); ++i) {
-        if (GetItemIDAt(i) == layout_id) {
-          return static_cast<int>(i);
-        }
-      }
-      return -1;
-    }
-
-   private:
-    std::vector<std::pair<std::wstring, std::string> > layouts_;
-
-    DISALLOW_COPY_AND_ASSIGN(HangulKeyboardComboboxModel);
-  };
-
-  // GConf config path names for the Korean IME.
-  static const char kHangulSection[];
-  static const char kHangulKeyboardConfigName[];
-
-  // A combobox for Hangul keyboard layouts and its model.
-  views::Combobox* hangul_keyboard_combobox_;
-  HangulKeyboardComboboxModel hangul_keyboard_combobox_model_;
-
   DISALLOW_COPY_AND_ASSIGN(TextInputSection);
 };
 
-const char TextInputSection::kHangulSection[] = "engine/Hangul";
-const char TextInputSection::kHangulKeyboardConfigName[] = "HangulKeyboard";
-
+// TODO(satorux): Should change the class name as well as the section
+// title.  "Text Input" doesn't seem to be a good section name.
 TextInputSection::TextInputSection(Profile* profile)
     : SettingsPageSection(profile,
-                          IDS_OPTIONS_SETTINGS_SECTION_TITLE_TEXT_INPUT),
-      hangul_keyboard_combobox_(NULL) {
+                          IDS_OPTIONS_SETTINGS_SECTION_TITLE_TEXT_INPUT) {
 }
 
 void TextInputSection::ButtonPressed(
     views::Button* sender, const views::Event& event) {
-  LanguageCheckbox* checkbox = static_cast<LanguageCheckbox*>(sender);
-  const InputLanguage& language = checkbox->language();
-  // Check if the checkbox is now being checked.
-  if (checkbox->checked()) {
-    // TODO(yusukes): limit the number of active languages so the pop-up menu
-    //   of the language_menu_button does not overflow.
-
-    // Try to activate the language.
-    if (!LanguageLibrary::Get()->ActivateLanguage(language.category,
-                                                  language.id)) {
-      // Activation should never fail (failure means something is broken),
-      // but if it fails we just revert the checkbox and ignore the error.
-      // TODO(satorux): Implement a better error handling if it becomes
-      // necessary.
-      checkbox->SetChecked(false);
-      LOG(ERROR) << "Failed to activate language: " << language.display_name;
-    }
-  } else {
-    // Try to deactivate the language.
-    if (!LanguageLibrary::Get()->DeactivateLanguage(language.category,
-                                                    language.id)) {
-      // See a comment above about the activation failure.
-      checkbox->SetChecked(true);
-      LOG(ERROR) << "Failed to deactivate language: " << language.display_name;
-    }
+  if (sender == customize_languages_button_) {
+    views::Window* window = views::Window::CreateChromeWindow(
+        NULL,
+        gfx::Rect(),
+        new LanguageConfigView());
+    window->SetIsAlwaysOnTop(true);
+    window->Show();
   }
-}
-
-void TextInputSection::ItemChanged(
-    views::Combobox* sender, int prev_index, int new_index) {
-  ImeConfigValue config;
-  config.type = ImeConfigValue::kValueTypeString;
-  config.string_value = hangul_keyboard_combobox_model_.GetItemIDAt(new_index);
-  LanguageLibrary::Get()->SetImeConfig(
-      kHangulSection, kHangulKeyboardConfigName, config);
-
-  UpdateHangulKeyboardCombobox();
 }
 
 void TextInputSection::InitContents(GridLayout* layout) {
-  // GetActiveLanguages() and GetSupportedLanguages() never return NULL.
-  scoped_ptr<InputLanguageList> active_language_list(
-      LanguageLibrary::Get()->GetActiveLanguages());
-  scoped_ptr<InputLanguageList> supported_language_list(
-      LanguageLibrary::Get()->GetSupportedLanguages());
-
-  for (size_t i = 0; i < supported_language_list->size(); ++i) {
-    const InputLanguage& language = supported_language_list->at(i);
-    // Check if |language| is active. Note that active_language_list is
-    // small (usually a couple), so scanning here is fine.
-    const bool language_is_active =
-        (std::find(active_language_list->begin(),
-                   active_language_list->end(),
-                   language) != active_language_list->end());
-    // Create a checkbox.
-    LanguageCheckbox* checkbox = new LanguageCheckbox(language);
-    checkbox->SetChecked(language_is_active);
-    checkbox->set_listener(this);
-
-    // We use two columns. Start a column if the counter is an even number.
-    if (i % 2 == 0) {
-      layout->StartRow(0, double_column_view_set_id());
-    }
-    // Add the checkbox to the layout manager.
-    layout->AddView(checkbox);
-  }
-
-  // Settings for IME engines.
-  // TODO(yusukes): This is a temporary location of the settings. Ask UX team
-  //   where is the best place for this and then move the code.
-  // TODO(yusukes): Use l10n_util::GetString for all views::Labels.
-
-  // Hangul IME
-  hangul_keyboard_combobox_
-      = new views::Combobox(&hangul_keyboard_combobox_model_);
-  hangul_keyboard_combobox_->set_listener(this);
-  UpdateHangulKeyboardCombobox();
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  // Add the customize button.
   layout->StartRow(0, single_column_view_set_id());
-  layout->AddView(
-      new views::Label(
-          l10n_util::GetString(IDS_OPTIONS_SETTINGS_HANGUL_IME_TEXT)),
-      1, 1, views::GridLayout::LEADING, views::GridLayout::LEADING);
-  layout->StartRow(0, double_column_view_set_id());
-  layout->AddView(new views::Label(
-      l10n_util::GetString(IDS_OPTIONS_SETTINGS_KEYBOARD_LAYOUT_TEXT)));
-  layout->AddView(hangul_keyboard_combobox_);
-}
-
-void TextInputSection::UpdateHangulKeyboardCombobox() {
-  DCHECK(hangul_keyboard_combobox_);
-  ImeConfigValue config;
-  if (LanguageLibrary::Get()->GetImeConfig(
-          kHangulSection, kHangulKeyboardConfigName, &config)) {
-    const int index
-        = hangul_keyboard_combobox_model_.GetIndexFromID(config.string_value);
-    if (index >= 0) {
-      hangul_keyboard_combobox_->SetSelectedItem(index);
-    }
-  }
+  customize_languages_button_ = new views::NativeButton(
+      this,
+      l10n_util::GetString(IDS_OPTIONS_SETTINGS_LANGUAGES_CUSTOMIZE));
+  layout->AddView(customize_languages_button_, 1, 1,
+                  GridLayout::LEADING, GridLayout::CENTER);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -6858,6 +6858,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_DNSSERVER" desc="In settings internet options, the label dns server.">
         DNS Server:
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CUSTOMIZE">
+        Customize languages and input...
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_DIALOG_TITLE">
+        Languages and Input
+      </message>
       <message name="IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET" desc="The ethernet network device.">
         Ethernet
       </message>
