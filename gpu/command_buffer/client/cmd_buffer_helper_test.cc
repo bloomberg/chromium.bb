@@ -180,11 +180,35 @@ TEST_F(CommandBufferHelperTest, TestCommandProcessing) {
 TEST_F(CommandBufferHelperTest, TestCommandWrapping) {
   // Add 5 commands of size 3 through the helper to make sure we do wrap.
   CommandBufferEntry args1[2];
-  args1[0].value_uint32 = 3;
+  args1[0].value_uint32 = 5;
   args1[1].value_float = 4.f;
 
   for (unsigned int i = 0; i < 5; ++i) {
     AddCommandWithExpect(error::kNoError, i + 1, 2, args1);
+  }
+
+  helper_->Finish();
+  // Check that the commands did happen.
+  Mock::VerifyAndClearExpectations(api_mock_.get());
+
+  // Check the error status.
+  EXPECT_EQ(error::kNoError, GetError());
+}
+
+// Checks the case where the command inserted exactly matches the space left in
+// the command buffer.
+TEST_F(CommandBufferHelperTest, TestCommandWrappingExactMultiple) {
+  const int32 kCommandSize = 5;
+  const int32 kNumArgs = kCommandSize - 1;
+  COMPILE_ASSERT(kNumCommandEntries % kCommandSize == 0,
+                 Not_multiple_of_num_command_entries);
+  CommandBufferEntry args1[kNumArgs];
+  for (size_t ii = 0; ii < kNumArgs; ++ii) {
+    args1[0].value_uint32 = ii + 1;
+  }
+
+  for (unsigned int i = 0; i < 5; ++i) {
+    AddCommandWithExpect(error::kNoError, i + 1, kNumArgs, args1);
   }
 
   helper_->Finish();
