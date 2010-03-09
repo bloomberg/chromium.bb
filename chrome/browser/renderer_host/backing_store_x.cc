@@ -10,6 +10,10 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 
+#if defined(OS_OPENBSD) || defined(OS_FREEBSD)
+#include <sys/endian.h>
+#endif
+
 #include <algorithm>
 #include <utility>
 
@@ -57,7 +61,11 @@ BackingStoreX::BackingStoreX(RenderWidgetHost* widget,
       visual_(visual),
       visual_depth_(depth),
       root_window_(x11_util::GetX11RootWindow()) {
+#if defined(OS_OPENBSD) || defined(OS_FREEBSD)
+  COMPILE_ASSERT(_BYTE_ORDER == _LITTLE_ENDIAN, assumes_little_endian);
+#else
   COMPILE_ASSERT(__BYTE_ORDER == __LITTLE_ENDIAN, assumes_little_endian);
+#endif
 
   pixmap_ = XCreatePixmap(display_, root_window_,
                           size.width(), size.height(), depth);

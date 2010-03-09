@@ -102,10 +102,6 @@ struct AddressWatchTaskParams {
   HANDLE exit_flag;
 
   AddressWatchTaskParams() : conn_mgr(NULL), exit_flag() {}
-#elif defined(OS_LINUX)
-  int exit_pipe[2];
-
-  AddressWatchTaskParams() : conn_mgr(NULL) {}
 #elif defined(OS_MACOSX)
   // Protects run_loop and run_loop_initialized.
   Lock run_loop_lock;
@@ -120,6 +116,10 @@ struct AddressWatchTaskParams {
         run_loop(NULL),
         run_loop_initialized(false),
         params_set(&run_loop_lock) {}
+#elif defined(OS_POSIX)
+  int exit_pipe[2];
+
+  AddressWatchTaskParams() : conn_mgr(NULL) {}
 #endif
 
  private:

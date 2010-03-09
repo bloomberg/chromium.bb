@@ -62,7 +62,7 @@ struct WebScreenInfo;
 }
 
 struct ViewHostMsg_ScriptedPrint_Params;
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
 struct ViewHostMsg_DidPrintPage_Params;
 #endif
 
@@ -238,7 +238,7 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
                           base::SharedMemoryHandle* browser_handle);
 #endif
 
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Used to ask the browser allocate a temporary file for the renderer
   // to fill in resulting PDF in renderer.
   void OnAllocateTempFileForPrinting(IPC::Message* reply_msg);
@@ -319,7 +319,7 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
 
   void OnTranslateText(ViewHostMsg_TranslateTextParam param);
 
-#if defined(OS_LINUX)
+#if defined(USE_X11)
   void SendDelayedReply(IPC::Message* reply_msg);
   void DoOnGetScreenInfo(gfx::NativeViewId view, IPC::Message* reply_msg);
   void DoOnGetWindowRect(gfx::NativeViewId view, IPC::Message* reply_msg);

@@ -34,10 +34,10 @@ class JavaScriptAppModalDialog : public AppModalDialog,
   virtual ~JavaScriptAppModalDialog();
 
   // AppModalDialog overrides.
-#if defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_POSIX)
   virtual void CreateAndShowDialog();
 #endif
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
   virtual void HandleDialogResponse(GtkDialog* dialog, gint response_id);
 #endif
   virtual int GetDialogButtons();
@@ -99,4 +99,3 @@ class JavaScriptAppModalDialog : public AppModalDialog,
 };
 
 #endif  // CHROME_BROWSER_JS_MODAL_DIALOG_H_
-

@@ -189,6 +189,12 @@
             '../sandbox/sandbox.gyp:sandbox',
           ],
         }],
+        # BSD-specific rules.
+        ['OS=="openbsd" or OS=="freebsd"', {
+          'dependencies': [
+            '../build/linux/system.gyp:gtk',
+          ],
+        }],
         # Windows-specific rules.
         ['OS=="win"', {
           'include_dirs': [

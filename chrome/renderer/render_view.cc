@@ -122,7 +122,7 @@
 // TODO(port): these files are currently Windows only because they concern:
 //   * theming
 #include "app/gfx/native_theme_win.h"
-#elif defined(OS_LINUX)
+#elif defined(USE_X11)
 #include "third_party/WebKit/WebKit/chromium/public/linux/WebRenderTheme.h"
 #endif
 
@@ -1646,7 +1646,7 @@ void RenderView::setInputMethodEnabled(bool enabled) {
 }
 
 void RenderView::didChangeSelection(bool is_empty_selection) {
-#if defined(OS_LINUX)
+#if defined(USE_X11)
   if (!handling_input_event_)
       return;
   // TODO(estade): investigate incremental updates to the selection so that we
@@ -3007,14 +3007,14 @@ webkit_glue::WebPluginDelegate* RenderView::CreatePluginDelegate(
 }
 
 void RenderView::CreatedPluginWindow(gfx::PluginWindowHandle window) {
-#if defined(OS_LINUX)
+#if defined(USE_X11)
   RenderThread::current()->Send(new ViewHostMsg_CreatePluginContainer(
       routing_id(), window));
 #endif
 }
 
 void RenderView::WillDestroyPluginWindow(gfx::PluginWindowHandle window) {
-#if defined(OS_LINUX)
+#if defined(USE_X11)
   RenderThread::current()->Send(new ViewHostMsg_DestroyPluginContainer(
       routing_id(), window));
 #endif
@@ -3631,7 +3631,7 @@ void RenderView::OnDisableScrollbarsForSmallWindows(
 void RenderView::OnSetRendererPrefs(const RendererPreferences& renderer_prefs) {
   renderer_preferences_ = renderer_prefs;
   UpdateFontRenderingFromRendererPrefs();
-#if defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
+#if defined(TOOLKIT_GTK)
   WebColorName name = WebKit::WebColorWebkitFocusRingColor;
   WebKit::setNamedColors(&name, &renderer_prefs.focus_ring_color, 1);
   WebKit::setCaretBlinkInterval(renderer_prefs.caret_blink_interval);

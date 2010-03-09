@@ -118,7 +118,7 @@ class PluginProcessHost : public ChildProcessHost,
                      gfx::NativeWindow caller_window);
 #endif
 
-#if defined(OS_LINUX)
+#if defined(USE_X11)
   void OnMapNativeViewId(gfx::NativeViewId id, gfx::PluginWindowHandle* output);
 #endif
 

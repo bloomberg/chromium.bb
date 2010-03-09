@@ -121,8 +121,8 @@ IPC_BEGIN_MESSAGES(PluginProcessHost)
                       HWND /* caller window */)
 #endif
 
-#if defined(OS_LINUX)
-  // On Linux, the mapping between NativeViewId and X window ids
+#if defined(USE_X11)
+  // On X11, the mapping between NativeViewId and X window ids
   // is known only to the browser.  This message lets the plugin process
   // ask about a NativeViewId that was provided by the renderer.
   // It will get 0 back if it's a bogus input.

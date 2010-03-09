@@ -2321,7 +2321,7 @@ int GetCurrentCountryID() {
                                            static_cast<char>(isobuf[1]));
 }
 
-#elif defined(OS_LINUX)
+#elif defined(OS_POSIX)
 
 int GetCurrentCountryID() {
   const char* locale = setlocale(LC_MESSAGES, NULL);
