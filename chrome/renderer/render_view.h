@@ -259,6 +259,8 @@ class RenderView : public RenderWidget,
   virtual void didAddHistoryItem();
   virtual void focusAccessibilityObject(
       const WebKit::WebAccessibilityObject& acc_obj);
+  virtual void didChangeAccessibilityObjectState(
+      const WebKit::WebAccessibilityObject& acc_obj);
   virtual void didUpdateInspectorSettings();
   virtual void queryAutofillSuggestions(
       const WebKit::WebNode& node, const WebKit::WebString& name,

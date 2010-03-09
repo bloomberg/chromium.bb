@@ -4411,6 +4411,31 @@ void RenderView::SendForms(WebFrame* frame) {
     Send(new ViewHostMsg_FormsSeen(routing_id_, forms));
 }
 
+void RenderView::didChangeAccessibilityObjectState(
+    const WebKit::WebAccessibilityObject& acc_obj) {
+#if defined(OS_WIN)
+  // TODO(dglazkov): Current logic implies that a state change can only be made
+  // after at least one call to RenderView::OnGetAccessibilityInfo, which is
+  // where accessibility is initialized. We should determine whether that's
+  // right.
+  if (!accessibility_.get())
+    return;
+
+  // Retrieve the accessibility object id of the AccessibilityObject.
+  int acc_obj_id = accessibility_->addOrGetId(acc_obj);
+
+  // If id is valid, alert the browser side that an accessibility object state
+  // change occurred.
+  if (acc_obj_id >= 0)
+    Send(new ViewHostMsg_AccessibilityObjectStateChange(routing_id_,
+                                                        acc_obj_id));
+
+#else  // defined(OS_WIN)
+  // TODO(port): accessibility not yet implemented
+  NOTIMPLEMENTED();
+#endif
+}
+
 void RenderView::SendPasswordForms(WebFrame* frame) {
   WebVector<WebFormElement> forms;
   frame->forms(forms);

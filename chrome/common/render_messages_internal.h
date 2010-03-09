@@ -2033,6 +2033,12 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_ROUTED1(ViewHostMsg_AccessibilityFocusChange,
                       int /* accessibility object id */)
 
+  // Send as a result of a state change in the renderer (if accessibility is
+  // enabled), to notify the browser side. Takes the id of the accessibility
+  // object that had a state change
+  IPC_MESSAGE_ROUTED1(ViewHostMsg_AccessibilityObjectStateChange,
+                      int /* accessibility object id */)
+
   // Message sent from the renderer to the browser to request that the browser
   // close all sockets.  Used for debugging/testing.
   IPC_MESSAGE_CONTROL0(ViewHostMsg_CloseCurrentConnections)

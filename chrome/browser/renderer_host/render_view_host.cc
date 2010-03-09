@@ -813,6 +813,8 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
                         OnExtensionPostMessage)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AccessibilityFocusChange,
                         OnAccessibilityFocusChange)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_AccessibilityObjectStateChange,
+                        OnAccessibilityObjectStateChange)
     IPC_MESSAGE_HANDLER(ViewHostMsg_OnCSSInserted, OnCSSInserted)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PageContents, OnPageContents)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PageTranslated, OnPageTranslated)
@@ -1809,6 +1811,15 @@ void RenderViewHost::OnExtensionPostMessage(
 void RenderViewHost::OnAccessibilityFocusChange(int acc_obj_id) {
 #if defined(OS_WIN)
   BrowserAccessibilityManager::GetInstance()->ChangeAccessibilityFocus(
+      acc_obj_id, process()->id(), routing_id());
+#else
+  // TODO(port): accessibility not yet implemented. See http://crbug.com/8288.
+#endif
+}
+
+void RenderViewHost::OnAccessibilityObjectStateChange(int acc_obj_id) {
+#if defined(OS_WIN)
+  BrowserAccessibilityManager::GetInstance()->OnAccessibilityObjectStateChange(
       acc_obj_id, process()->id(), routing_id());
 #else
   // TODO(port): accessibility not yet implemented. See http://crbug.com/8288.

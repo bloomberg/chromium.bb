@@ -110,6 +110,19 @@ bool BrowserAccessibilityManager::ChangeAccessibilityFocus(int acc_obj_id,
   return false;
 }
 
+bool BrowserAccessibilityManager::OnAccessibilityObjectStateChange(
+    int acc_obj_id, int process_id, int routing_id) {
+  BrowserAccessibility* browser_acc =
+      GetBrowserAccessibility(process_id, routing_id);
+  if (browser_acc) {
+    // Notify Access Technology that there was a change in state.
+    ::NotifyWinEvent(EVENT_OBJECT_STATECHANGE, browser_acc->parent_hwnd(),
+                     OBJID_CLIENT, static_cast<LONG>(acc_obj_id));
+    return true;
+  }
+  return false;
+}
+
 const WebAccessibility::OutParams& BrowserAccessibilityManager::response() {
   return out_params_;
 }

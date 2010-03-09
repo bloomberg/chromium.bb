@@ -56,6 +56,12 @@ class BrowserAccessibilityManager : public NotificationObserver {
   // platform-specific channels.
   bool ChangeAccessibilityFocus(int acc_obj_id, int process_id, int routing_id);
 
+  // Notifies assistive technology that an object's state changed, through the
+  // platform-specific channels.
+  bool OnAccessibilityObjectStateChange(int acc_obj_id,
+                                        int process_id,
+                                        int routing_id);
+
   // Wrapper function, for cleaner code.
   const WebAccessibility::OutParams& response();
 

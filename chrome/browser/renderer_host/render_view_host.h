@@ -607,6 +607,7 @@ class RenderViewHost : public RenderWidgetHost {
                           int request_id, bool has_callback);
   void OnExtensionPostMessage(int port_id, const std::string& message);
   void OnAccessibilityFocusChange(int acc_obj_id);
+  void OnAccessibilityObjectStateChange(int acc_obj_id);
   void OnCSSInserted();
   void OnPageContents(const GURL& url,
                       int32 page_id,
