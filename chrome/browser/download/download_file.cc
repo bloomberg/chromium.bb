@@ -126,6 +126,10 @@ bool DownloadFile::Rename(const FilePath& new_path) {
     // 600 to |new_path|. Here, we try to fix up the destination file with
     // appropriate permissions.
     struct stat st;
+    // First check the file existence and create an empty file if it doesn't
+    // exist.
+    if (!file_util::PathExists(new_path))
+      file_util::WriteFile(new_path, "", 0);
     bool stat_succeeded = (stat(new_path.value().c_str(), &st) == 0);
 
     // TODO(estade): Move() falls back to copying and deleting when a simple
