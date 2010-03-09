@@ -42,9 +42,11 @@ class WizardController : public views::WindowDelegate,
   void OnLoginCreateAccount();
   void OnNetworkConnected();
   void OnAccountCreated();
+  void OnLanguageChanged();
 
   // Overridden from chromeos::ScreenObserver:
   virtual void OnExit(ExitCodes exit_code);
+  virtual void OnSwitchLanguage(std::string lang);
 
   // Overridden from views::WindowDelegate:
   virtual views::View* GetContentsView();
@@ -74,9 +76,6 @@ class WizardController : public views::WindowDelegate,
 
   // Contents view.
   WizardContentsView* contents_;
-
-  // Status area view.
-  chromeos::StatusAreaView* status_area_;
 
   // Screens.
   scoped_ptr<NetworkScreen> network_screen_;

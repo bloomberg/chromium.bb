@@ -8,18 +8,21 @@
 #include <vector>
 
 #include "app/gfx/canvas.h"
+#include "app/resource_bundle.h"
 #include "base/logging.h"  // For NOTREACHED.
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/account_screen.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/status/clock_menu_button.h"
 #include "chrome/browser/chromeos/status/status_area_view.h"
+#include "unicode/locid.h"
 #include "views/view.h"
 #include "views/window/window.h"
 
 namespace {
 
-const int kWizardScreenWidth = 512;
+const int kWizardScreenWidth = 700;
 const int kWizardScreenHeight = 416;
 
 const char kNetworkScreenName[] = "network";
@@ -33,15 +36,23 @@ const char kUpdateScreenName[] = "update";
 // view.
 class WizardContentsView : public views::View {
  public:
-  explicit WizardContentsView(chromeos::StatusAreaView* status_area)
-      : status_area_(status_area) {
+  WizardContentsView()
+      : status_area_(NULL) {
   }
   ~WizardContentsView() {}
 
-  void Init() {
+  void Init(chromeos::StatusAreaHost* host) {
     views::Painter* painter = chromeos::CreateWizardPainter(
         &chromeos::BorderDefinition::kWizardBorder);
     set_background(views::Background::CreateBackgroundPainter(true, painter));
+    InitStatusArea(host);
+  }
+
+  // Called to re-create status area view that have been deleted by the call
+  // RemoveAllChildViews(true). Needed for locale switch.
+  void InitStatusArea(chromeos::StatusAreaHost* host) {
+    status_area_ = new chromeos::StatusAreaView(host);
+    status_area_->Init();
     AddChildView(status_area_);
   }
 
@@ -73,6 +84,8 @@ class WizardContentsView : public views::View {
     }
   }
 
+  chromeos::StatusAreaView* status_area() const { return status_area_; }
+
  private:
   chromeos::StatusAreaView* status_area_;
 
@@ -83,7 +96,6 @@ class WizardContentsView : public views::View {
 // WizardController, public:
 WizardController::WizardController()
     : contents_(NULL),
-      status_area_(NULL),
       current_screen_(NULL) {
 }
 
@@ -123,18 +135,18 @@ void WizardController::OnNetworkConnected() {
 }
 
 void WizardController::OnAccountCreated() {
-  // GetLoginScreen()->SetUsername(GetAccountScreen()->GetUsername());
   SetCurrentScreen(GetLoginScreen());
+}
+
+void WizardController::OnLanguageChanged() {
+  SetCurrentScreen(GetNetworkScreen());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // WizardController, private:
 void WizardController::InitContents() {
-  status_area_ = new chromeos::StatusAreaView(this);
-  status_area_->Init();
-
-  contents_ = new WizardContentsView(status_area_);
-  contents_->Init();
+  contents_ = new WizardContentsView();
+  contents_->Init(this);
 }
 
 NetworkScreen* WizardController::GetNetworkScreen() {
@@ -161,14 +173,39 @@ UpdateScreen* WizardController::GetUpdateScreen() {
   return update_screen_.get();
 }
 
+void WizardController::OnSwitchLanguage(std::string lang) {
+  // Delete all views that may may reference locale-specific data.
+  SetCurrentScreen(NULL);
+  network_screen_.reset();
+  login_screen_.reset();
+  account_screen_.reset();
+  contents_->RemoveAllChildViews(true);
+
+  // Switch the locale.
+  ResourceBundle::CleanupSharedInstance();
+  icu::Locale icu_locale(lang.c_str());
+  UErrorCode error_code = U_ZERO_ERROR;
+  icu::Locale::setDefault(icu_locale, error_code);
+  DCHECK(U_SUCCESS(error_code));
+  ResourceBundle::InitSharedInstance(UTF8ToWide(lang));
+
+  // The following line does not seem to affect locale anyhow. Maybe in future..
+  g_browser_process->SetApplicationLocale(lang);
+
+  // Recreate view hierarchy and return to the wizard screen.
+  contents_->InitStatusArea(this);
+  OnExit(chromeos::ScreenObserver::LANGUAGE_CHANGED);
+}
+
 void WizardController::SetCurrentScreen(WizardScreen* new_current) {
   if (current_screen_)
     current_screen_->Hide();
   current_screen_ = new_current;
-  if (current_screen_)
+  if (current_screen_) {
     current_screen_->Show();
-  contents_->Layout();
-  contents_->SchedulePaint();
+    contents_->Layout();
+    contents_->SchedulePaint();
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -186,6 +223,9 @@ void WizardController::OnExit(ExitCodes exit_code) {
       break;
     case ACCOUNT_CREATED:
       OnAccountCreated();
+      break;
+    case LANGUAGE_CHANGED:
+      OnLanguageChanged();
       break;
     default:
       NOTREACHED();
@@ -208,7 +248,7 @@ gfx::NativeWindow WizardController::GetNativeWindow() const {
 
 bool WizardController::ShouldOpenButtonOptions(
     const views::View* button_view) const {
-  if (button_view == status_area_->clock_view()) {
+  if (button_view == contents_->status_area()->clock_view()) {
     return false;
   }
   return true;

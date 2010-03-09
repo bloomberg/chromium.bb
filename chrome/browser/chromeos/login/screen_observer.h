@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREEN_OBSERVER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREEN_OBSERVER_H_
 
+#include <string>
+
 namespace chromeos {
 
 // Interface that handles notifications received from any of login wizard
@@ -23,10 +25,16 @@ class ScreenObserver {
     NETWORK_CONNECTED,
     NETWORK_OFFLINE,
     ACCOUNT_CREATED,
+    LANGUAGE_CHANGED,
   };
 
   // Method called by a screen when user's done with it.
   virtual void OnExit(ExitCodes exit_code) = 0;
+
+  // Switch to the new language. |lang| specifies new language locale code.
+  // Caution: this callback resets (deletes and re-creates) all views
+  // (including *this), so do not access it after you call this!
+  virtual void OnSwitchLanguage(std::string lang) = 0;
 
  protected:
   virtual ~ScreenObserver() {}
@@ -35,4 +43,3 @@ class ScreenObserver {
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_SCREEN_OBSERVER_H_
-

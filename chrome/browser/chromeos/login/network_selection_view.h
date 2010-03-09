@@ -8,11 +8,16 @@
 #include <string>
 
 #include "app/combobox_model.h"
+#include "app/menus/simple_menu_model.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/network_list.h"
 #include "chrome/browser/chromeos/status/password_dialog_view.h"
+#include "chrome/browser/language_combobox_model.h"
 #include "views/controls/button/button.h"
+#include "views/controls/button/menu_button.h"
+#include "views/controls/menu/menu_2.h"
+#include "views/controls/menu/view_menu_delegate.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/view.h"
 #include "views/widget/widget_gtk.h"
@@ -32,6 +37,9 @@ class NetworkSelectionView : public views::View,
                              public ComboboxModel,
                              public views::Combobox::Listener,
                              public views::ButtonListener,
+                             public views::ViewMenuDelegate,
+                             public menus::SimpleMenuModel,
+                             public menus::SimpleMenuModel::Delegate,
                              public PasswordDialogDelegate,
                              public NetworkLibrary::Observer {
  public:
@@ -67,6 +75,16 @@ class NetworkSelectionView : public views::View,
   virtual void NetworkChanged(NetworkLibrary* network_lib);
   virtual void NetworkTraffic(NetworkLibrary* cros, int traffic_type);
 
+  // views::ViewMenuDelegate implementation.
+  virtual void RunMenu(View* source, const gfx::Point& pt);
+
+  // menus::SimpleMenuModel::Delegate implementation.
+  virtual bool IsCommandIdChecked(int command_id) const;
+  virtual bool IsCommandIdEnabled(int command_id) const;
+  virtual bool GetAcceleratorForCommandId(int command_id,
+                                          menus::Accelerator* accelerator);
+  virtual void ExecuteCommand(int command_id);
+
  private:
   // Returns currently selected network in the combobox.
   NetworkList::NetworkItem* GetSelectedNetwork();
@@ -89,10 +107,17 @@ class NetworkSelectionView : public views::View,
 
   // Dialog controls.
   views::Combobox* network_combobox_;
+  views::MenuButton* languages_menubutton_;
   views::Label* welcome_label_;
   views::Label* select_network_label_;
   views::Label* connecting_network_label_;
   views::NativeButton* offline_button_;
+
+  // Dialog controls that we own ourself.
+  scoped_ptr<views::Menu2> languages_menu_;
+
+  // Language locale name storage.
+  LanguageList languages_model_;
 
   // Notifications receiver.
   ScreenObserver* observer_;

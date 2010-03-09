@@ -11,6 +11,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -36,6 +37,8 @@ const int kComboboxSpacing = 5;
 const int kHorizontalSpacing = 25;
 const int kNetworkComboboxWidth = 250;
 const int kNetworkComboboxHeight = 30;
+const int kLanguagesMenuWidth = 200;
+const int kLanguagesMenuHeight = 30;
 const SkColor kWelcomeColor = 0x0054A4;
 
 }  // namespace
@@ -43,7 +46,9 @@ const SkColor kWelcomeColor = 0x0054A4;
 namespace chromeos {
 
 NetworkSelectionView::NetworkSelectionView(ScreenObserver* observer)
-    : network_combobox_(NULL),
+    : ALLOW_THIS_IN_INITIALIZER_LIST(menus::SimpleMenuModel(this)),
+      network_combobox_(NULL),
+      languages_menubutton_(NULL),
       welcome_label_(NULL),
       select_network_label_(NULL),
       connecting_network_label_(NULL),
@@ -57,7 +62,6 @@ NetworkSelectionView::~NetworkSelectionView() {
 }
 
 void NetworkSelectionView::Init() {
-  // TODO(nkostylev): Add UI language and logo.
   // Use rounded rect background.
   views::Painter* painter = CreateWizardPainter(
       &BorderDefinition::kScreenBorder);
@@ -83,6 +87,12 @@ void NetworkSelectionView::Init() {
   network_combobox_ = new views::Combobox(this);
   network_combobox_->set_listener(this);
 
+  languages_menubutton_ = new views::MenuButton(NULL, std::wstring(),
+                                                this, true);
+  for (int i = 0; i < languages_model_.get_languages_count(); i++) {
+    AddItem(i, WideToUTF16(languages_model_.GetLanguageNameAt(i)));
+  }
+
   offline_button_ = new views::NativeButton(this, std::wstring());
   offline_button_->set_font(button_font);
 
@@ -93,10 +103,15 @@ void NetworkSelectionView::Init() {
   AddChildView(select_network_label_);
   AddChildView(connecting_network_label_);
   AddChildView(network_combobox_);
+  AddChildView(languages_menubutton_);
   AddChildView(offline_button_);
 }
 
 void NetworkSelectionView::UpdateLocalizedStrings() {
+  const std::string locale = g_browser_process->GetApplicationLocale();
+  const std::wstring locale_name = languages_model_.GetLanguageNameAt(
+      languages_model_.GetIndexFromLocale(locale));
+  languages_menubutton_->SetText(locale_name);
   welcome_label_->SetText(l10n_util::GetStringF(IDS_NETWORK_SELECTION_TITLE,
                           l10n_util::GetString(IDS_PRODUCT_OS_NAME)));
   select_network_label_->SetText(
@@ -153,6 +168,11 @@ void NetworkSelectionView::Layout() {
       y,
       offline_button_->GetPreferredSize().width(),
       offline_button_->GetPreferredSize().height());
+
+  int x = width() - kLanguagesMenuWidth - kHorizontalSpacing;
+  y = kSpacing;
+  languages_menubutton_->SetBounds(x, y,
+                                   kLanguagesMenuWidth, kLanguagesMenuHeight);
 
   // Need to refresh combobox layout explicitly.
   network_combobox_->Layout();
@@ -218,6 +238,7 @@ void NetworkSelectionView::ItemChanged(views::Combobox* sender,
 
 ///////////////////////////////////////////////////////////////////////////////
 // views::ButtonListener implementation:
+
 void NetworkSelectionView::ButtonPressed(views::Button* sender,
                                          const views::Event& event) {
   if (observer_) {
@@ -270,6 +291,38 @@ void NetworkSelectionView::NetworkChanged(
 
 void NetworkSelectionView::NetworkTraffic(NetworkLibrary* cros,
                                           int traffic_type) {
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// views::ViewMenuDelegate implementation.
+
+void NetworkSelectionView::RunMenu(View* source, const gfx::Point& pt) {
+  if (languages_menu_ == NULL) {
+    languages_menu_.reset(new views::Menu2(this));
+  }
+  languages_menu_->RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// menus::SimpleMenuModel::Delegate implementation.
+
+bool NetworkSelectionView::IsCommandIdChecked(int command_id) const {
+  return false;
+}
+
+bool NetworkSelectionView::IsCommandIdEnabled(int command_id) const {
+  return true;
+}
+
+bool NetworkSelectionView::GetAcceleratorForCommandId(
+    int command_id, menus::Accelerator* accelerator) {
+  return false;
+}
+
+void NetworkSelectionView::ExecuteCommand(int command_id) {
+  observer_->OnSwitchLanguage(languages_model_.GetLocaleFromIndex(command_id));
+  // Don't do anything here because |this| has just been deleted in order
+  // to force releasing all locale-specific data.
 }
 
 ////////////////////////////////////////////////////////////////////////////////
