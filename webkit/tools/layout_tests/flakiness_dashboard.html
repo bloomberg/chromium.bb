@@ -2,7 +2,7 @@
 <html>
 
 <head>
-  <title>Webkit Layout Test History</title>
+  <title>Chromium/WebKit Test History</title>
   <style>
     body {
       font-family: arial;
@@ -207,6 +207,9 @@
     .expectations-item .checksum {
       height: 30px;
     }
+    .non-webkit-results {
+      width: 99%;
+    }
     .used-platform {
       float: right;
       color: darkblue;
@@ -282,10 +285,10 @@
     'MAC': 'ALL'
   };
   var BUILD_TYPES = {'DEBUG': 'DBG', 'RELEASE': 'RELEASE'};
-  var BASE_TABLE_HEADERS = ['slowest run', '% fail',
+  var BASE_TABLE_HEADERS = ['missing', 'extra', 'slowest run', '% fail',
       'flakiness (numbers are runtimes in seconds)'];
-  var LAYOUT_TEST_TABLE_HEADERS = ['bugs', 'modifiers', 'expectations',
-      'missing', 'extra'].concat(BASE_TABLE_HEADERS);
+  var LAYOUT_TEST_TABLE_HEADERS = ['bugs', 'modifiers',
+      'expectations'].concat(BASE_TABLE_HEADERS);
   var MIN_SECONDS_FOR_SLOW_TEST = 4;
   var MIN_SECONDS_FOR_SLOW_TEST_DEBUG = 2 * MIN_SECONDS_FOR_SLOW_TEST;
   var FAIL_RESULTS = ['IMAGE', 'IMAGE+TEXT', 'TEXT', 'SIMPLIFIED', 'MISSING'];
@@ -357,6 +360,7 @@
 
         return true;
 
+      case 'resultsHeight':
       case 'maxResults':
       case 'updateIndex':
         validateParameter(currentState, key, Number(value),
@@ -399,7 +403,8 @@
     showSkipped: !isLayoutTestResults(),
     expectationsUpdate: false,
     updateIndex: 0,
-    builder: defaultBuilderName
+    builder: defaultBuilderName,
+    resultsHeight: 300
   };
 
   //////////////////////////////////////////////////////////////////////////////
@@ -969,18 +974,18 @@
       for (var i = 0;
            i < times.length && numTimesSeen < getMaxResults();
            i++) {
-        numTimesSeen += times[i][0];
+        numTimesSeen += times[i][RLE.LENGTH];
 
-        while (rawResults[resultsIndex] &&
-               numTimesSeen > (numResultsSeen + rawResults[resultsIndex][0])) {
-          numResultsSeen += rawResults[resultsIndex][0];
+        while (rawResults[resultsIndex] && numTimesSeen > (numResultsSeen +
+            rawResults[resultsIndex][RLE.LENGTH])) {
+          numResultsSeen += rawResults[resultsIndex][RLE.LENGTH];
           resultsIndex++;
         }
 
         if (rawResults && rawResults[resultsIndex])
-          currentResult = rawResults[resultsIndex][1];
+          currentResult = rawResults[resultsIndex][RLE.VALUE];
 
-        var time = times[i][1]
+        var time = times[i][RLE.VALUE]
 
         // Ignore times for crashing/timeout runs for the sake of seeing if
         // a test should be marked slow.
@@ -1022,7 +1027,7 @@
     // If the first result is no-data that means the test is skipped or is
     // being run on a different builder (e.g. moved from one shard to another).
     // Ignore these results since we have no real data about what's going on.
-    if (rawResults[0][1] == 'N')
+    if (rawResults[0][RLE.VALUE] == 'N')
       return;
 
     // Only consider flake if it doesn't happen twice in a row.
@@ -1037,10 +1042,10 @@
     for (var i = 0;
          i < rawResults.length && numResultsSeen < getMaxResults();
          i++) {
-      var numResults = rawResults[i][0];
+      var numResults = rawResults[i][RLE.LENGTH];
       numResultsSeen += numResults;
 
-      var result = rawResults[i][1];
+      var result = rawResults[i][RLE.VALUE];
       if (isFailingResult(result)) {
         failedCount += numResults;
       }
@@ -1068,79 +1073,90 @@
     resultsForTest.percentFailed =
         Math.round(failedCount / numResultsSeen * 100);
 
-    var expectationsArray = resultsForTest.expectations ?
-        resultsForTest.expectations.split(' ') : [];
-    var extraExpectations = expectationsArray.filter(
-        function(element) {
+    var missingExpectations = [];
+    var extraExpectations = [];
+
+    if (isLayoutTestResults()) {
+      var expectationsArray = resultsForTest.expectations ?
+          resultsForTest.expectations.split(' ') : [];
+      extraExpectations = expectationsArray.filter(
+          function(element) {
+            // TODO(ojan): Once all the FAIL lines are removed from
+            // test_expectations.txt, delete all the legacyExpectationsSemantics
+            // code.
+            if (currentState.legacyExpectationsSemantics) {
+              if (element == 'FAIL') {
+                for (var i = 0; i < FAIL_RESULTS.length; i++) {
+                  if (resultsMap[FAIL_RESULTS[i]])
+                    return false;
+                }
+                return true;
+              }
+            }
+
+            return element && !resultsMap[element] &&
+                !stringContains(element, 'BUG');
+          });
+
+      for (var result in resultsMap) {
+        var hasExpectation = false;
+        for (var i = 0; i < expectationsArray.length; i++) {
+          var expectation = expectationsArray[i];
           // TODO(ojan): Once all the FAIL lines are removed from
           // test_expectations.txt, delete all the legacyExpectationsSemantics
           // code.
           if (currentState.legacyExpectationsSemantics) {
-            if (element == 'FAIL') {
-              for (var i = 0; i < FAIL_RESULTS.length; i++) {
-                if (resultsMap[FAIL_RESULTS[i]])
-                  return false;
-              }
-              return true;
-            }
-          }
-
-          return element && !resultsMap[element] &&
-              !stringContains(element, 'BUG');
-        });
-
-    var missingExpectations = [];
-    for (var result in resultsMap) {
-      var hasExpectation = false;
-      for (var i = 0; i < expectationsArray.length; i++) {
-        var expectation = expectationsArray[i];
-        // TODO(ojan): Once all the FAIL lines are removed from
-        // test_expectations.txt, delete all the legacyExpectationsSemantics
-        // code.
-        if (currentState.legacyExpectationsSemantics) {
-          if (expectation == 'FAIL') {
-            for (var j = 0; j < FAIL_RESULTS.length; j++) {
-              if (result == FAIL_RESULTS[j]) {
-                hasExpectation = true;
-                break;
+            if (expectation == 'FAIL') {
+              for (var j = 0; j < FAIL_RESULTS.length; j++) {
+                if (result == FAIL_RESULTS[j]) {
+                  hasExpectation = true;
+                  break;
+                }
               }
             }
           }
-        }
 
-        if (result == expectation) {
-          hasExpectation = true;
-        }
+          if (result == expectation) {
+            hasExpectation = true;
+          }
 
-        if (hasExpectation)
-          break;
+          if (hasExpectation)
+            break;
+        }
+        // If we have no expectations for a test and it only passes, then don't
+        // list PASS as a missing expectation. We only want to list PASS if it
+        // flaky passes, so there would be other expectations.
+        if (!hasExpectation &&
+            !(!expectationsArray.length && result == 'PASS' &&
+              numRealResults == 1))
+          missingExpectations.push(result);
       }
-      // If we have no expectations for a test and it only passes, then don't
-      // list PASS as a missing expectation. We only want to list PASS if it
-      // flaky passes, so there would be other expectations.
-      if (!hasExpectation &&
-          !(!expectationsArray.length && result == 'PASS' &&
-            numRealResults == 1))
-        missingExpectations.push(result);
+
+      // Only highlight tests that take > 2 seconds as needing to be marked as
+      // slow. There are too many tests that take ~2 seconds every couple
+      // hundred runs. It's not worth the manual maintenance effort.
+      // Also, if a test times out, then it should not be marked as slow.
+      var minTimeForNeedsSlow = isDebug(resultsForTest.builder) ? 2 : 1;
+      if (isSlowTest(resultsForTest) && !resultsMap['TIMEOUT'] &&
+          (!resultsForTest.modifiers ||
+           !stringContains(resultsForTest.modifiers, 'SLOW'))) {
+        missingExpectations.push('SLOW');
+      } else if (isFastTest(resultsForTest) &&
+                 resultsForTest.modifiers &&
+                 stringContains(resultsForTest.modifiers, 'SLOW')) {
+        extraExpectations.push('SLOW');
+      }
+    } else {
+      var isMarkedFlaky = stringContains(resultsForTest.test, 'FLAKY_');
+      if (resultsForTest.isFlaky && !isMarkedFlaky) {
+        missingExpectations.push('FLAKY');
+      } else if (!resultsForTest.isFlaky && isMarkedFlaky) {
+        extraExpectations.push('FLAKY');
+      }
     }
 
-    // Only highlight tests that take > 2 seconds as needing to be marked as
-    // slow. There are too many tests that take ~2 seconds every couple
-    // hundred runs. It's not worth the manual maintenance effort.
-    // Also, if a test times out, then it should not be marked as slow.
-    var minTimeForNeedsSlow = isDebug(resultsForTest.builder) ? 2 : 1;
-    if (isSlowTest(resultsForTest) && !resultsMap['TIMEOUT'] &&
-        (!resultsForTest.modifiers ||
-         !stringContains(resultsForTest.modifiers, 'SLOW'))) {
-      missingExpectations.push('SLOW');
-    } else if (isFastTest(resultsForTest) &&
-               resultsForTest.modifiers &&
-               stringContains(resultsForTest.modifiers, 'SLOW')) {
-      extraExpectations.push('SLOW');
-    }
-
-    resultsForTest.meetsExpectations = !isLayoutTestResults() ||
-        (!missingExpectations.length && !extraExpectations.length);
+    resultsForTest.meetsExpectations =
+        !missingExpectations.length && !extraExpectations.length;
     resultsForTest.missing = missingExpectations.sort().join(' ');
     resultsForTest.extra = extraExpectations.sort().join(' ');
   }
@@ -1192,11 +1208,47 @@
     var currentIndex = 0;
     var rawResults = resultsByBuilder[builder].tests[testName].results;
     for (var i = 0; i < rawResults.length; i++) {
-      currentIndex += rawResults[i][0];
+      currentIndex += rawResults[i][RLE.LENGTH];
       if (currentIndex > index)
-        return isFailingResult(rawResults[i][1]);
+        return isFailingResult(rawResults[i][RLE.VALUE]);
     }
     console.error('Index exceeds number of results: ' + index);
+  }
+  
+  /**
+   * Returns an array of buildNumbers for all builds where this test failed.
+   */
+  function getBuildNumbersForFailures(builder, testName) {
+    var rawResults = resultsByBuilder[builder].tests[testName].results;
+    var buildNumbers = resultsByBuilder[builder].buildNumbers;
+    var index = 0;
+    var failures = [];
+    for (var i = 0; i < rawResults.length; i++) {
+      var numResults = rawResults[i][RLE.LENGTH];
+      if (isFailingResult(rawResults[i][RLE.VALUE])) {
+        for (var j = 0; j < numResults; j++) {
+          failures.push(buildNumbers[index + j]);
+        }
+      }
+      index += numResults;
+    }
+
+    return failures;
+  }
+  
+  /**
+   * Returns the path to the failure log for this non-webkit test.
+   */
+  function getPathToFailureLog(testName) {
+    return '/steps/' + currentState.testType + '/logs/' +
+        testName.split('.')[1]
+  }
+  
+  /**
+   * Returns the path to the logs for non-webkit tests.
+   */
+  function getBasePathForBuilderLogs(builder, buildNumber) {
+    return BUILDERS_BASE_PATH + builder + '/builds/' + buildNumber
   }
 
   function showPopupForBuild(e, builder, index, opt_testName) {
@@ -1225,12 +1277,12 @@
     }
 
     var buildNumber = resultsByBuilder[builder].buildNumbers[index];
-    var buildBasePath = BUILDERS_BASE_PATH + builder + '/builds/' + buildNumber;
+    var buildBasePath = getBasePathForBuilderLogs(builder, buildNumber);
 
     if (!isLayoutTestResults() && opt_testName &&
         isFailure(builder, opt_testName, index)) {
-      html += '<li>' + getLinkHTMLToOpenWindow(buildBasePath + '/steps/' +
-          currentState.testType + '/logs/' + opt_testName.split('.')[1],
+      html += '<li>' + getLinkHTMLToOpenWindow(
+          buildBasePath + getPathToFailureLog(opt_testName),
           'Failure log') + '</li>';
     }
 
@@ -1261,11 +1313,11 @@
       if (i > indexToReplaceCurrentResult) {
         currentResultArray = results.shift();
         if (currentResultArray) {
-          currentResult = currentResultArray[1];
+          currentResult = currentResultArray[RLE.VALUE];
           // Treat simplified diff failures as just text failures.
           if (currentResult == 'S')
             currentResult = 'F';
-          indexToReplaceCurrentResult += currentResultArray[0];
+          indexToReplaceCurrentResult += currentResultArray[RLE.LENGTH];
         } else {
           currentResult = 'N';
           indexToReplaceCurrentResult += buildNumbers.length;
@@ -1278,8 +1330,8 @@
         currentTimeArray = times.shift();
         var currentTime = 0;
         if (currentResultArray) {
-          currentTime = currentTimeArray[1];
-          indexToReplaceCurrentTime += currentTimeArray[0];
+          currentTime = currentTimeArray[RLE.VALUE];
+          indexToReplaceCurrentTime += currentTimeArray[RLE.LENGTH];
         } else {
           indexToReplaceCurrentTime += buildNumbers.length;
         }
@@ -1343,10 +1395,11 @@
    * Returns whether the test has passed continuously for at
    * least as many runs as we are showing results for.
    */
-   function hasPassedInMaxRuns(testResult) {
-     var results = testResult.rawResults;
-     return results[0][1] == 'P' && results[0][0] >= getMaxResults();
-   }
+  function hasPassedInMaxRuns(testResult) {
+    var results = testResult.rawResults;
+    return results[0][RLE.VALUE] == 'P' &&
+        results[0][RLE.LENGTH] >= getMaxResults();
+  }
 
   /**
    * Returns whether we should exclude test results from the test table.
@@ -1410,12 +1463,12 @@
       html += '</td><td class=options-container>' + 
           (test.bugsHTML ? test.bugsHTML : getCreateBugHTML(test)) +
           '</td><td class=options-container>' + test.modifiersHTML +
-          '</td><td class=options-container>' + test.expectationsHTML +
-          '</td><td>' + test.missing +
-          '</td><td>' + test.extra;
+          '</td><td class=options-container>' + test.expectationsHTML;
     }
     
     return html +
+        '</td><td>' + test.missing +
+        '</td><td>' + test.extra +
         '</td><td>' + (test.slowestTime ? test.slowestTime + 's' : '') +
         '</td><td>' + test.percentFailed +
         '</td>' + getHtmlForTestResults(test) + '</tr>';
@@ -1683,15 +1736,21 @@
       html += '<div class="not-found">Test not found. Either it does ' +
           'not exist, is skipped or passes on all platforms.</div>';
     }
+
+    html += '<div class=expectations test=' + test + '><div>' +
+        getLinkHTMLToToggleState('showExpectations', 'results')
     
     if (isLayoutTestResults()) {
-      html += '<div class=expectations test=' + test + '><div>' +
-          getLinkHTMLToToggleState('showExpectations', 'expectations') + ' | ' +
-          getLinkHTMLToToggleState('showLargeExpectations',
+      html += ' | ' + getLinkHTMLToToggleState('showLargeExpectations',
               'large thumbnails') +
           ' | <b>Only shows actual results/diffs from the most recent' +
-          ' *failure* on each bot.</b></div></div>';
+          ' *failure* on each bot.</b>';
+    } else {
+      html += ' | <span>Results height:<input ' +
+          'onchange="setState(\'resultsHeight\',this.value)" value="' +
+          currentState.resultsHeight + '" style="width:2.5em">px</span>';
     }
+    html += '</div></div>';
     return html;
   }
 
@@ -1907,6 +1966,52 @@
   }
 
   function loadExpectations(expectationsContainer) {
+    if (isLayoutTestResults()) {
+      loadExpectationsLayoutTests(expectationsContainer);
+    } else {
+      var test = expectationsContainer.getAttribute('test');
+      var results = testToResultsMap[test];
+      for (var i = 0; i < results.length; i++) {
+        loadNonWebKitResultsForBuilder(results[i].builder, test,
+            expectationsContainer);
+      }
+    }
+  }
+  
+  function loadNonWebKitResultsForBuilder(builder, test,
+      expectationsContainer) {
+    var failures = getBuildNumbersForFailures(builder, test);
+    var container = document.createElement('div');
+    container.innerHTML = '<div><b>' + builder + '</b></div>';
+    expectationsContainer.appendChild(container);
+    for (var i = 0; i < failures.length; i++) {
+      var pathToLog = getBasePathForBuilderLogs(builder, failures[i]) +
+          getPathToFailureLog(test);
+      appendNonWebKitResults(container, pathToLog);
+    }    
+  }
+  
+  function appendNonWebKitResults(container, url) {
+    // Use a script tag to detect whether the URL 404s.
+    // Need to use a script tag since the URL is cross-domain.
+    var dummyNode = document.createElement('script');
+    dummyNode.src = url;
+
+    dummyNode.onload = function() {
+      var item = document.createElement('iframe');
+      item.src = dummyNode.src;
+      item.className = 'non-webkit-results';
+      item.style.height = currentState.resultsHeight + 'px';
+      container.appendChild(item);
+    }
+    dummyNode.onerror = function() {
+      container.parentNode.removeChild(childContainer);
+    }
+
+    container.appendChild(dummyNode);
+  }
+
+  function loadExpectationsLayoutTests(expectationsContainer) {
     // Map from file extension to container div for expectations of that type.
     var expectationsContainers = {};
 
@@ -2180,7 +2285,8 @@
     maxResults: 1,
     showExpectations: 1,
     showLargeExpectations: 1,
-    legacyExpectationsSemantics: 1
+    legacyExpectationsSemantics: 1,
+    resultsHeight: 1
   };
 
   function isInvalidKeyForCrossBuilderView(key) {

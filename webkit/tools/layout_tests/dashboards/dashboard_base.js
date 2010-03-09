@@ -1,3 +1,7 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 /**
  * @fileoverview Base JS file for pages that want to parse the results JSON
  * from the testing bots. This deals with generic utility functions, visible
@@ -69,6 +73,13 @@ var TEST_TYPES = ['app_unittests', 'courgette_unittests', 'googleurl_unittests',
     'installer_util_unittests', 'ipc_tests', 'layout_test_results',
     'media_unittests', 'mini_installer_test', 'printing_unittests',
     'sync_unit_tests', 'ui_tests', 'unit_tests'];
+
+// Enum for indexing into the run-length encoded results in the JSON files.
+// 0 is where the count is length is stored. 1 is the value.
+var RLE = {
+  LENGTH: 0,
+  VALUE: 1
+}
 
 /**
  * @return {boolean} Whether the value represents a failing result.
