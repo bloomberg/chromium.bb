@@ -2864,5 +2864,5 @@ BUG37710 MAC SKIP : media/video-src-change.html = CRASH PASS
 BUG_JIANLI :  http/tests/local/send-sliced-dragged-file.html = FAIL
 
 // WebKit roll 55670 -> 55674
-BUG_37684 SKIP : = http/tests/cookies/third-party-cookie-relaxing.html = FAIL
+BUG_37684 SKIP : http/tests/cookies/third-party-cookie-relaxing.html = FAIL
 
