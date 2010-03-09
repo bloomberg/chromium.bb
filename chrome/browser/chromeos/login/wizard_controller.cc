@@ -179,6 +179,7 @@ void WizardController::OnSwitchLanguage(std::string lang) {
   network_screen_.reset();
   login_screen_.reset();
   account_screen_.reset();
+  update_screen_.reset();
   contents_->RemoveAllChildViews(true);
 
   // Switch the locale.
