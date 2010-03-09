@@ -365,9 +365,9 @@ static ContentExceptionsWindowController*
 
   // Get model object.
   bool isNewRow = newException_.get() && row >= model_->RowCount();
-  const HostContentSettingsMap::HostSettingPair* originalEntry =
-      isNewRow ? newException_.get() : &model_->entry_at(row);
-  HostContentSettingsMap::HostSettingPair entry = *originalEntry;  
+  HostContentSettingsMap::HostSettingPair originalEntry =
+      isNewRow ? *newException_ : model_->entry_at(row);
+  HostContentSettingsMap::HostSettingPair entry = originalEntry;
 
   // Modify it.
   NSString* identifier = [tableColumn identifier];
@@ -398,7 +398,7 @@ static ContentExceptionsWindowController*
       return;
     }
   }
-  if (entry != *originalEntry || isNewRow)
+  if (entry != originalEntry || isNewRow)
     [self updateRow:row withEntry:entry];
 }
 
