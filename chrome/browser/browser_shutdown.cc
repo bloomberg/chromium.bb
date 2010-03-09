@@ -25,7 +25,6 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/chrome_plugin_lib.h"
 #include "net/dns_global.h"
@@ -46,7 +45,7 @@ int shutdown_num_processes_slow_;
 
 bool delete_resources_on_shutdown = true;
 
-const char* const kShutdownMsFile = "chrome_shutdown_ms.txt";
+const char kShutdownMsFile[] = "chrome_shutdown_ms.txt";
 
 void RegisterPrefs(PrefService* local_state) {
   local_state->RegisterIntegerPref(prefs::kShutdownType, NOT_VALID);
@@ -91,11 +90,6 @@ FilePath GetShutdownMsPath() {
 #endif
 
 void Shutdown() {
-#if defined(OS_MACOSX)
-  NotificationService::current()->Notify(NotificationType::APP_TERMINATING,
-                                         NotificationService::AllSources(),
-                                         NotificationService::NoDetails());
-#endif
   // Unload plugins. This needs to happen on the IO thread.
   ChromeThread::PostTask(
         ChromeThread::IO, FROM_HERE,

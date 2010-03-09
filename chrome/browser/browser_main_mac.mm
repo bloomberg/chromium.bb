@@ -18,6 +18,7 @@
 #import "chrome/browser/cocoa/keystone_glue.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/common/main_function_params.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/common/result_codes.h"
 
 namespace Platform {
@@ -60,6 +61,9 @@ void WillInitializeMainMessageLoop(const MainFunctionParams& parameters) {
 void DidEndMainMessageLoop() {
   AppController* appController = [NSApp delegate];
   [appController didEndMainMessageLoop];
+  NotificationService::current()->Notify(NotificationType::APP_TERMINATING,
+                                         NotificationService::AllSources(),
+                                         NotificationService::NoDetails());
 }
 
 void RecordBreakpadStatusUMA(MetricsService* metrics) {
