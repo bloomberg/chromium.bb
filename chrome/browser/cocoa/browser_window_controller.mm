@@ -434,7 +434,7 @@
 
   // TODO(viettrungluu): For some reason, the above doesn't suffice.
   if ([self isFullscreen])
-    [floatingBarBackingView_ setNeedsDisplay:YES];
+    [floatingBarBackingView_ setNeedsDisplay:YES];  // Okay even if nil.
 }
 
 - (void)windowDidResignMain:(NSNotification*)notification {
@@ -444,7 +444,7 @@
 
   // TODO(viettrungluu): For some reason, the above doesn't suffice.
   if ([self isFullscreen])
-    [floatingBarBackingView_ setNeedsDisplay:YES];
+    [floatingBarBackingView_ setNeedsDisplay:YES];  // Okay even if nil.
 }
 
 // Called when we are activated (when we gain focus).

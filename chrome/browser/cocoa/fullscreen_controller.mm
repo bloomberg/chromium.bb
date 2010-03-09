@@ -21,8 +21,9 @@ const NSTimeInterval kDropdownShowDelay = 0.3;
 const NSTimeInterval kDropdownHideDelay = 0.2;
 
 // The amount by which the floating bar is offset downwards (to avoid the menu)
-// in fullscreen mode.
-const CGFloat kTabStripVerticalOffset = 14;
+// in fullscreen mode. (We can't use |-[NSMenu menuBarHeight]| since it returns
+// 0 when the menu bar is hidden.)
+const CGFloat kFloatingBarVerticalOffset = 22;
 
 }  // end namespace
 
@@ -210,8 +211,8 @@ const CGFloat kTabStripVerticalOffset = 14;
   [self hideActiveWindowUI];
 }
 
-- (CGFloat)tabStripVerticalOffset {
-  return [self isWindowOnPrimaryScreen] ? kTabStripVerticalOffset : 0;
+- (CGFloat)floatingBarVerticalOffset {
+  return [self isWindowOnPrimaryScreen] ? kFloatingBarVerticalOffset : 0;
 }
 
 - (void)overlayFrameChanged:(NSRect)frame {

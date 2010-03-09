@@ -100,7 +100,8 @@ class TabStripModelObserverBridge;
   scoped_nsobject<IncognitoImageView> incognitoBadge_;
 
   // Lazily created view which draws the background for the floating set of bars
-  // in fullscreen mode.
+  // in fullscreen mode (for window types having a floating bar; it remains nil
+  // for those which don't).
   scoped_nsobject<NSView> floatingBarBackingView_;
 
   // Tracks whether the floating bar is above or below the bookmark bar, in

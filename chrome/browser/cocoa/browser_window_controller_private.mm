@@ -140,8 +140,11 @@ willPositionSheet:(NSWindow*)sheet
 
   BOOL isFullscreen = [self isFullscreen];
   CGFloat floatingBarHeight = [self floatingBarHeight];
-  CGFloat yOffset = floor(
-      isFullscreen ? (1 - floatingBarShownFraction_) * floatingBarHeight : 0);
+  // In fullscreen mode, |yOffset| accounts for the sliding position of the
+  // floating bar and the extra offset needed to dodge the menu bar.
+  CGFloat yOffset = isFullscreen ?
+      (floor((1 - floatingBarShownFraction_) * floatingBarHeight) -
+          [fullscreenController_ floatingBarVerticalOffset]) : 0;
   CGFloat maxY = NSMaxY(contentBounds) + yOffset;
   CGFloat startMaxY = maxY;
 
@@ -170,8 +173,6 @@ willPositionSheet:(NSWindow*)sheet
                                   width:width
                                  height:floatingBarHeight
                              fullscreen:isFullscreen];
-
-  [fullscreenController_ overlayFrameChanged:[floatingBarBackingView_ frame]];
 
   // Place the find bar immediately below the toolbar/attached bookmark bar. In
   // fullscreen mode, it hangs off the top of the screen when the bar is hidden.
@@ -209,7 +210,7 @@ willPositionSheet:(NSWindow*)sheet
   if (![self isFullscreen])
     return 0;
 
-  CGFloat totalHeight = [fullscreenController_ tabStripVerticalOffset];
+  CGFloat totalHeight = [fullscreenController_ floatingBarVerticalOffset];
 
   if ([self hasTabStrip])
     totalHeight += NSHeight([[self tabStripView] frame]);
@@ -218,7 +219,7 @@ willPositionSheet:(NSWindow*)sheet
     totalHeight += NSHeight([[toolbarController_ view] frame]);
   } else if ([self hasLocationBar]) {
     totalHeight += NSHeight([[toolbarController_ view] frame]) +
-        kLocBarTopInset + kLocBarBottomInset;
+                   kLocBarTopInset + kLocBarBottomInset;
   }
 
   if (![self placeBookmarkBarBelowInfoBar])
@@ -236,10 +237,6 @@ willPositionSheet:(NSWindow*)sheet
 
   NSView* tabStripView = [self tabStripView];
   CGFloat tabStripHeight = NSHeight([tabStripView frame]);
-  // In fullscreen mode, push the tab strip down so that the main menu (which
-  // also slides down) doesn't run it over.
-  if (fullscreen)
-    maxY -= [fullscreenController_ tabStripVerticalOffset];
   maxY -= tabStripHeight;
   [tabStripView setFrame:NSMakeRect(0, maxY, width, tabStripHeight)];
 
@@ -327,25 +324,33 @@ willPositionSheet:(NSWindow*)sheet
                              fullscreen:(BOOL)fullscreen {
   // Only display when in fullscreen mode.
   if (fullscreen) {
-    DCHECK(floatingBarBackingView_.get());
-    BOOL aboveBookmarkBar = [self placeBookmarkBarBelowInfoBar];
+    // For certain window types such as app windows (e.g., the dev tools
+    // window), there's no actual overlay. (Displaying one would result in an
+    // overly sliding in only under the menu, which gives an ugly effect.)
+    NSRect frame = NSMakeRect(0, y, width, height);
+    if (floatingBarBackingView_.get()) {
+      BOOL aboveBookmarkBar = [self placeBookmarkBarBelowInfoBar];
 
-    // Insert it into the view hierarchy if necessary.
-    if (![floatingBarBackingView_ superview] ||
-        aboveBookmarkBar != floatingBarAboveBookmarkBar_) {
-      NSView* contentView = [[self window] contentView];
-      // z-order gets messed up unless we explicitly remove the floatingbar view
-      // and re-add it.
-      [floatingBarBackingView_ removeFromSuperview];
-      [contentView addSubview:floatingBarBackingView_
-                   positioned:(aboveBookmarkBar ?
-                                   NSWindowAbove : NSWindowBelow)
-                   relativeTo:[bookmarkBarController_ view]];
-      floatingBarAboveBookmarkBar_ = aboveBookmarkBar;
+      // Insert it into the view hierarchy if necessary.
+      if (![floatingBarBackingView_ superview] ||
+          aboveBookmarkBar != floatingBarAboveBookmarkBar_) {
+        NSView* contentView = [[self window] contentView];
+        // z-order gets messed up unless we explicitly remove the floatingbar
+        // view and re-add it.
+        [floatingBarBackingView_ removeFromSuperview];
+        [contentView addSubview:floatingBarBackingView_
+                     positioned:(aboveBookmarkBar ?
+                                     NSWindowAbove : NSWindowBelow)
+                     relativeTo:[bookmarkBarController_ view]];
+        floatingBarAboveBookmarkBar_ = aboveBookmarkBar;
+      }
+
+      // Set its frame.
+      [floatingBarBackingView_ setFrame:frame];
     }
 
-    // Set its frame.
-    [floatingBarBackingView_ setFrame:NSMakeRect(0, y, width, height)];
+    // But we want the logic to work as usual (for show/hide/etc. purposes).
+    [fullscreenController_ overlayFrameChanged:frame];
   } else {
     // Okay to call even if |floatingBarBackingView_| is nil.
     if ([floatingBarBackingView_ superview])
@@ -431,7 +436,8 @@ willPositionSheet:(NSWindow*)sheet
 // |-setFullscreen:| into smaller pieces.  http://crbug.com/36449
 - (void)adjustUIForFullscreen:(BOOL)fullscreen {
   // Create the floating bar backing view if necessary.
-  if (fullscreen && !floatingBarBackingView_.get()) {
+  if (fullscreen && !floatingBarBackingView_.get() &&
+      ([self hasTabStrip] || [self hasToolbar] || [self hasLocationBar])) {
     floatingBarBackingView_.reset(
         [[FloatingBarBackingView alloc] initWithFrame:NSZeroRect]);
   }

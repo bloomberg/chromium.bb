@@ -14,7 +14,7 @@
 #import "chrome/browser/cocoa/themed_window.h"
 #include "grit/theme_resources.h"
 
-static const CGFloat kBrowserFrameViewPaintHeight = 52.0;
+static const CGFloat kBrowserFrameViewPaintHeight = 60.0;
 static const NSPoint kBrowserFrameViewPatternPhaseOffset = { -5, 3 };
 
 @interface NSView (Swizzles)

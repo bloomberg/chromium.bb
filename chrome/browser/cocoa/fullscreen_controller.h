@@ -83,10 +83,11 @@
                          showDropdown:(BOOL)showDropdown;
 - (void)exitFullscreen;
 
-// Returns the amount by which the tab strip should be offset and the overlay
-// view should be enlarged, vertically.  Generally, this is > 0 when the
-// fullscreen window is on the primary screen and 0 otherwise.
-- (CGFloat)tabStripVerticalOffset;
+// Returns the amount by which the floating bar should be offset downwards (to
+// avoid the menu) and by which the overlay view should be enlarged vertically.
+// Generally, this is > 0 when the fullscreen window is on the primary screen
+// and 0 otherwise.
+- (CGFloat)floatingBarVerticalOffset;
 
 // Informs the controller that the overlay's frame has changed.  The controller
 // uses this information to update its tracking areas.
