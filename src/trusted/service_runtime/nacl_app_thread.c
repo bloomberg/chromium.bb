@@ -28,9 +28,9 @@ void WINAPI NaClThreadLauncher(void *state) {
 
   NaClLog(4, "NaClThreadLauncher: entered\n");
   natp = (struct NaClAppThread *) state;
-  NaClLog(4, "      natp = 0x%016"PRIxPTR"\n", (uintptr_t) natp);
-  NaClLog(4, " prog_ctr  = 0x%016"PRIxNACL_REG"\n", natp->user.prog_ctr);
-  NaClLog(4, "stack_ptr  = 0x%016"PRIxPTR"\n",
+  NaClLog(4, "      natp = 0x%016"NACL_PRIxPTR"\n", (uintptr_t) natp);
+  NaClLog(4, " prog_ctr  = 0x%016"NACL_PRIxNACL_REG"\n", natp->user.prog_ctr);
+  NaClLog(4, "stack_ptr  = 0x%016"NACL_PRIxPTR"\n",
           NaClGetThreadCtxSp(&natp->user));
 
   NaClTlsSetIdx(NaClGetThreadIdx(natp));
@@ -72,9 +72,9 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
   uint64_t                    thread_idx;
   struct NaClDescEffectorLdr  *effp;
 
-  NaClLog(4, "         natp = 0x%016"PRIxPTR"\n", (uintptr_t) natp);
-  NaClLog(4, "          nap = 0x%016"PRIxPTR"\n", (uintptr_t) nap);
-  NaClLog(4, "usr_stack_ptr = 0x%016"PRIxPTR"\n", usr_stack_ptr);
+  NaClLog(4, "         natp = 0x%016"NACL_PRIxPTR"\n", (uintptr_t) natp);
+  NaClLog(4, "          nap = 0x%016"NACL_PRIxPTR"\n", (uintptr_t) nap);
+  NaClLog(4, "usr_stack_ptr = 0x%016"NACL_PRIxPTR"\n", usr_stack_ptr);
 
   NaClThreadContextCtor(&natp->user, nap, usr_entry, usr_stack_ptr, tls_idx);
 
@@ -180,8 +180,8 @@ int NaClAppThreadAllocSegCtor(struct NaClAppThread  *natp,
   tls_idx = NaClTlsAllocate(natp, (void *) sys_tdb_base, tdb_size32);
 
   NaClLog(4,
-        "NaClAppThreadAllocSegCtor: stack_ptr 0x%08"PRIxPTR
-        ", tls_idx 0x%02"PRIx32"\n",
+        "NaClAppThreadAllocSegCtor: stack_ptr 0x%08"NACL_PRIxPTR", "
+        "tls_idx 0x%02"NACL_PRIx32"\n",
          usr_stack_ptr, tls_idx);
 
   if (0 == tls_idx) {

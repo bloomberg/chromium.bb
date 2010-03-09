@@ -73,8 +73,8 @@ int NaClDescImcShmAllocCtor(struct NaClDescImcShm  *self,
 
   if (size < 0 || SIZE_T_MAX < (uint64_t) size) {
     NaClLog(4,
-            "NaClDescImcShmAllocCtor: requested size 0x%08"PRIx64
-            " (0x%08"PRId64") too large\n",
+            "NaClDescImcShmAllocCtor: requested size 0x%08"NACL_PRIx64
+            " (0x%08"NACL_PRId64") too large\n",
             size, size);
     return 0;
   }
@@ -209,7 +209,7 @@ uintptr_t NaClDescImcShmMap(struct NaClDesc         *vself,
                                          NACL_MAP_PAGESIZE))) {
       NaClLog(LOG_FATAL,
               ("NaClDescImcShmMap: error %d --"
-               " could not unmap 0x%08"PRIxPTR", length 0x%x\n"),
+               " could not unmap 0x%08"NACL_PRIxPTR", length 0x%x\n"),
               rv,
               addr,
               NACL_MAP_PAGESIZE);
@@ -223,7 +223,7 @@ uintptr_t NaClDescImcShmMap(struct NaClDesc         *vself,
     if (result != (void *) addr) {
       NaClLog(LOG_FATAL,
               ("NaClDescImcShmMap: NACL_MAP_FIXED but"
-               " got 0x%08"PRIxPTR" instead of 0x%08"PRIxPTR"\n"),
+               " got 0x%08"NACL_PRIxPTR" instead of 0x%08"NACL_PRIxPTR"\n"),
               (uintptr_t) result, addr);
     }
   }

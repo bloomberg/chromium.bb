@@ -79,13 +79,14 @@ int NaClNanosleep(struct nacl_abi_timespec const  *req,
     host_remptr = &host_rem;
   }
   NaClLog(4,
-          "nanosleep(%"PRIxPTR", %"PRIxPTR")\n",
+          "nanosleep(%"NACL_PRIxPTR", %"NACL_PRIxPTR")\n",
           (uintptr_t) &host_req,
           (uintptr_t) host_remptr);
-  NaClLog(4, "nanosleep(time = %"PRId64".%09"PRId64" S)\n",
+  NaClLog(4, "nanosleep(time = %"NACL_PRId64".%09"NACL_PRId64" S)\n",
           (int64_t) host_req.tv_sec, (int64_t) host_req.tv_nsec);
   if (host_req.tv_nsec > NANOS_PER_UNIT) {
-    NaClLog(0, "tv_nsec too large %"PRId64"\n", (int64_t) host_req.tv_nsec);
+    NaClLog(0, "tv_nsec too large %"NACL_PRId64"\n",
+            (int64_t) host_req.tv_nsec);
   }
   retval = nanosleep(&host_req, host_remptr);
   NaClLog(4, " returned %d\n", retval);

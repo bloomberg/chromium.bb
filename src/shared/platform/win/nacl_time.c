@@ -143,7 +143,7 @@ void NaClTimeInternalInit(struct NaClTimeState *ntsp) {
   SystemTimeToFileTime(&st, &ft);
   ntsp->epoch_start_ms = NaClFileTimeToMs(&ft);
   ntsp->last_reported_time_ms = 0;
-  NaClLog(0, "Unix epoch start is  %"PRIu64"ms in Windows epoch time\n",
+  NaClLog(0, "Unix epoch start is  %"NACL_PRIu64"ms in Windows epoch time\n",
           ntsp->epoch_start_ms);
   NaClMutexCtor(&ntsp->mu);
   /*
@@ -189,20 +189,22 @@ int NaClGetTimeOfDayIntern(struct nacl_abi_timeval *tv,
 
   NaClMutexLock(&ntsp->mu);
 
-  NaClLog(5, "ms_counter_now       %"PRIu32"\n", (uint32_t) ms_counter_now);
-  NaClLog(5, "t_ms                 %"PRId64"\n", t_ms);
-  NaClLog(5, "system_time_start_ms %"PRIu64"\n", ntsp->system_time_start_ms);
+  NaClLog(5, "ms_counter_now       %"NACL_PRIu32"\n",
+          (uint32_t) ms_counter_now);
+  NaClLog(5, "t_ms                 %"NACL_PRId64"\n", t_ms);
+  NaClLog(5, "system_time_start_ms %"NACL_PRIu64"\n",
+          ntsp->system_time_start_ms);
 
   ms_counter_at_ft_now = (DWORD)
       (ntsp->ms_counter_start +
        (uint32_t) (t_ms - ntsp->system_time_start_ms));
 
-  NaClLog(5, "ms_counter_at_ft_now %"PRIu32"\n",
+  NaClLog(5, "ms_counter_at_ft_now %"NACL_PRIu32"\n",
           (uint32_t) ms_counter_at_ft_now);
 
   ms_counter_diff = ms_counter_now - (uint32_t) ms_counter_at_ft_now;
 
-  NaClLog(5, "ms_counter_diff      %"PRIu32"\n", ms_counter_diff);
+  NaClLog(5, "ms_counter_diff      %"NACL_PRIu32"\n", ms_counter_diff);
 
   if (ms_counter_diff <= kMaxMillsecondDriftBeforeRecalibration) {
     t_ms = t_ms + ms_counter_diff;
@@ -211,7 +213,7 @@ int NaClGetTimeOfDayIntern(struct nacl_abi_timeval *tv,
     t_ms = ntsp->system_time_start_ms;
   }
 
-  NaClLog(5, "adjusted t_ms =      %"PRIu64"\n", t_ms);
+  NaClLog(5, "adjusted t_ms =      %"NACL_PRIu64"\n", t_ms);
 
   unix_time_ms = t_ms - ntsp->epoch_start_ms;
 
@@ -226,7 +228,7 @@ int NaClGetTimeOfDayIntern(struct nacl_abi_timeval *tv,
 
   NaClMutexUnlock(&ntsp->mu);
 
-  NaClLog(5, "unix_time_ms  =      %"PRId64"\n", unix_time_ms);
+  NaClLog(5, "unix_time_ms  =      %"NACL_PRId64"\n", unix_time_ms);
   /*
    * Unix time is measured relative to a different epoch, Jan 1, 1970.
    * See the module initialization for epoch_start_ms.
@@ -235,8 +237,9 @@ int NaClGetTimeOfDayIntern(struct nacl_abi_timeval *tv,
   tv->nacl_abi_tv_sec = (nacl_abi_time_t) (unix_time_ms / 1000);
   tv->nacl_abi_tv_usec = (nacl_abi_suseconds_t) ((unix_time_ms % 1000) * 1000);
 
-  NaClLog(5, "nacl_avi_tv_sec =    %"PRIdNACL_TIME"\n", tv->nacl_abi_tv_sec);
-  NaClLog(5, "nacl_avi_tv_usec =   %"PRId32"\n", tv->nacl_abi_tv_usec);
+  NaClLog(5, "nacl_avi_tv_sec =    %"NACL_PRIdNACL_TIME"\n",
+          tv->nacl_abi_tv_sec);
+  NaClLog(5, "nacl_avi_tv_usec =   %"NACL_PRId32"\n", tv->nacl_abi_tv_usec);
 
   return 0;
 }
@@ -259,7 +262,7 @@ int NaClNanosleep(struct nacl_abi_timespec const *req,
 
   /* round up to minimum timer resolution */
   resolution = NaClTimerResolutionNanoseconds();
-  NaClLog(4, "Resolution %"PRId64"\n", resolution);
+  NaClLog(4, "Resolution %"NACL_PRId64"\n", resolution);
   if (0 != resolution) {
     resolution = NACL_UNIT_CONVERT_ROUND(resolution, NACL_NANOS_PER_MILLI);
     resolution_gap = (DWORD) (sleep_ms % resolution);

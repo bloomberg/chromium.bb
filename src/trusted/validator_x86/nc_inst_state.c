@@ -43,7 +43,7 @@ static void NcInstStateInit(NcInstIter* iter, NcInstState* state) {
     limit = MAX_BYTES_PER_X86_INSTRUCTION;
   }
   state->length_limit = (uint8_t) limit;
-  DEBUG(printf("length limit = %"PRIu8"\n", state->length_limit));
+  DEBUG(printf("length limit = %"NACL_PRIu8"\n", state->length_limit));
   state->num_prefix_bytes = 0;
   state->num_prefix_66 = 0;
   state->rexprefix = 0;
@@ -115,7 +115,7 @@ static Bool ConsumePrefixBytes(NcInstState* state) {
     next_byte = state->mpc[state->length];
     prefix_form = kPrefixTable[next_byte];
     if (prefix_form == 0) break;
-    DEBUG(printf("Consume prefix[%d]: %02"PRIx8" => %"PRIx32"\n",
+    DEBUG(printf("Consume prefix[%d]: %02"NACL_PRIx8" => %"NACL_PRIx32"\n",
                  i, next_byte, prefix_form));
     state->prefix_mask |= prefix_form;
     if (kPrefixDATA16 == prefix_form) {
@@ -123,7 +123,7 @@ static Bool ConsumePrefixBytes(NcInstState* state) {
     }
     ++state->num_prefix_bytes;
     ++state->length;
-    DEBUG(printf("  prefix mask: %08"PRIx32"\n", state->prefix_mask));
+    DEBUG(printf("  prefix mask: %08"NACL_PRIx32"\n", state->prefix_mask));
 
     /* If the prefix byte is a REX prefix, record its value, since
      * bits 5-8 of this prefix bit may be needed later.
@@ -310,7 +310,7 @@ static void ConsumeOpcodeBytes(NcInstState* state,
  */
 static Bool ConsumeAndCheckOperandSize(NcInstState* state) {
   state->operand_size = ExtractOperandSize(state);
-  DEBUG(printf("operand size = %"PRIu8"\n", state->operand_size));
+  DEBUG(printf("operand size = %"NACL_PRIu8"\n", state->operand_size));
   if (state->opcode->flags &
       (InstFlag(OperandSize_w) | InstFlag(OperandSize_v) |
        InstFlag(OperandSize_o))) {
@@ -333,7 +333,8 @@ static Bool ConsumeAndCheckOperandSize(NcInstState* state) {
       /* The flags associated with the opcode (instruction) don't
        * allow the computed sizes, abort the  match of the instruction.
        */
-      DEBUG(printf("Operand size %"PRIu8" doesn't match flag requirement!\n",
+      DEBUG(printf("Operand size %"NACL_PRIu8
+                   " doesn't match flag requirement!\n",
                    state->operand_size));
       return FALSE;
     }
@@ -343,7 +344,7 @@ static Bool ConsumeAndCheckOperandSize(NcInstState* state) {
 
 static Bool ConsumeAndCheckAddressSize(NcInstState* state) {
   state->address_size = ExtractAddressSize(state);
-  DEBUG(printf("Address size = %"PRIu8"\n", state->address_size));
+  DEBUG(printf("Address size = %"NACL_PRIu8"\n", state->address_size));
   if (state->opcode->flags &
       (InstFlag(AddressSize_w) | InstFlag(AddressSize_v) |
        InstFlag(AddressSize_o))) {
@@ -366,7 +367,8 @@ static Bool ConsumeAndCheckAddressSize(NcInstState* state) {
       /* The flags associated with the opcode (instruction) don't
        * allow the computed sizes, abort the  match of the instruction.
        */
-      DEBUG(printf("Address size %"PRIu8" doesn't match flag requirement!\n",
+      DEBUG(printf("Address size %"NACL_PRIu8
+                   " doesn't match flag requirement!\n",
                    state->address_size));
       return FALSE;
     }
@@ -404,7 +406,7 @@ static Bool ConsumeModRm(NcInstState* state) {
      */
     if ((state->opcode->flags & InstFlag(OpcodeLtC0InModRm)) &&
         byte >= 0xC0) {
-      DEBUG(printf("Can't read x87 mod/rm value, %"PRIx8" not < 0xC0\n",
+      DEBUG(printf("Can't read x87 mod/rm value, %"NACL_PRIx8" not < 0xC0\n",
                    byte));
       return FALSE;
     }
@@ -422,7 +424,7 @@ static Bool ConsumeModRm(NcInstState* state) {
     state->first_disp_byte = 0;
     state->sib = 0;
     state->has_sib = FALSE;
-    DEBUG(printf("consume modrm = %02"PRIx8"\n", state->modrm));
+    DEBUG(printf("consume modrm = %02"NACL_PRIx8"\n", state->modrm));
 
     /* Consume the remaining opcode value in the mod/rm byte
      * if applicable.
@@ -435,7 +437,8 @@ static Bool ConsumeModRm(NcInstState* state) {
           (state->opcode->operands[0].kind - Opcode0)) {
         DEBUG(
             printf(
-                "Discarding, opcode in mrm byte (%02"PRIx8") does not match\n",
+                "Discarding, opcode in mrm byte (%02"NACL_PRIx8") "
+                "does not match\n",
                 modrm_opcode(state->modrm)));
         return FALSE;
       }
@@ -472,7 +475,7 @@ static Bool ConsumeSib(NcInstState* state) {
     }
     /* Read the SIB byte and record. */
     state->sib = state->mpc[state->length++];
-    DEBUG(printf("sib = %02"PRIx8"\n", state->sib));
+    DEBUG(printf("sib = %02"NACL_PRIx8"\n", state->sib));
     if (sib_base(state->sib) == 0x05 && modrm_mod(state->modrm) > 2) {
       DEBUG(printf("Sib byte implies modrm.mod field <= 2, match fails\n"));
       return FALSE;
@@ -531,7 +534,7 @@ static Bool ConsumeDispBytes(NcInstState* state) {
    * walk past the end of the code segment.
    */
   state->num_disp_bytes = GetNumDispBytes(state);
-  DEBUG(printf("num disp bytes = %"PRIu8"\n", state->num_disp_bytes));
+  DEBUG(printf("num disp bytes = %"NACL_PRIu8"\n", state->num_disp_bytes));
   state->first_disp_byte = state->length;
   if (state->num_disp_bytes > 0) {
     int new_length = state->length + state->num_disp_bytes;
@@ -587,7 +590,7 @@ static int GetNumImmediate2Bytes(NcInstState* state) {
 static Bool ConsumeImmediateBytes(NcInstState* state) {
   /* find out how many immediate bytes are expected. */
   state->num_imm_bytes = GetNumImmediateBytes(state);
-  DEBUG(printf("num immediate bytes = %"PRIu8"\n", state->num_imm_bytes));
+  DEBUG(printf("num immediate bytes = %"NACL_PRIu8"\n", state->num_imm_bytes));
   state->first_imm_byte = 0;
   if (state->num_imm_bytes > 0) {
     int new_length;
@@ -605,7 +608,8 @@ static Bool ConsumeImmediateBytes(NcInstState* state) {
   }
   /* Before returning, see if second immediate value specified. */
   state->num_imm2_bytes = GetNumImmediate2Bytes(state);
-  DEBUG(printf("num immediate 2 bytes = %"PRIu8"\n", state->num_imm2_bytes));
+  DEBUG(printf("num immediate 2 bytes = %"NACL_PRIu8"\n",
+               state->num_imm2_bytes));
   if (state->num_imm2_bytes > 0) {
     int new_length;
     /* Before reading immediate bytes, be sure that we don't walk
@@ -732,7 +736,7 @@ static Bool ConsumeOpcodeSequence(NcInstState* state) {
   next_byte = state->mpc[state->length];
   root = g_OpcodeSeq[0].succs[next_byte];
   if (NULL == root) return FALSE;
-  DEBUG(printf("Consume opcode char: %"PRIx8"\n", next_byte));
+  DEBUG(printf("Consume opcode char: %"NACL_PRIx8"\n", next_byte));
 
   /* If this point is reached, we are committed to attempting
    * a match, and must reset state if it fails.
@@ -749,7 +753,7 @@ static Bool ConsumeOpcodeSequence(NcInstState* state) {
     next_byte = state->mpc[state->length];
     root = root->succs[next_byte];
     if (root == NULL) break;
-    DEBUG(printf("Consume opcode char: %"PRIx8"\n", next_byte));
+    DEBUG(printf("Consume opcode char: %"NACL_PRIx8"\n", next_byte));
   } while (state->length <= state->length_limit);
 
   /* If reached, we updated the state, but did not find a match. Hence, revert

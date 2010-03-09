@@ -61,7 +61,7 @@ int NaClDescIoDescCtor(struct NaClDescIoDesc  *self,
 void NaClDescIoDescDtor(struct NaClDesc *vself) {
   struct NaClDescIoDesc *self = (struct NaClDescIoDesc *) vself;
 
-  NaClLog(4, "NaClDescIoDescDtor(0x%08"PRIxPTR").\n",
+  NaClLog(4, "NaClDescIoDescDtor(0x%08"NACL_PRIxPTR").\n",
           (uintptr_t) vself);
   NaClHostDescClose(self->hd);
   free(self->hd);
@@ -76,13 +76,14 @@ struct NaClDescIoDesc *NaClDescIoDescMake(struct NaClHostDesc *nhdp) {
   ndp = malloc(sizeof *ndp);
   if (NULL == ndp) {
     NaClLog(LOG_FATAL,
-            "NaClDescIoDescMake: no memory for 0x%08"PRIxPTR"\n",
+            "NaClDescIoDescMake: no memory for 0x%08"NACL_PRIxPTR"\n",
             (uintptr_t) nhdp);
   }
   if (!NaClDescIoDescCtor(ndp, nhdp)) {
     NaClLog(LOG_FATAL,
             ("NaClDescIoDescMake:"
-             " NaClDescIoDescCtor(0x%08"PRIxPTR",0x%08"PRIxPTR") failed\n"),
+             " NaClDescIoDescCtor(0x%08"NACL_PRIxPTR",0x%08"NACL_PRIxPTR
+             ") failed\n"),
             (uintptr_t) ndp,
             (uintptr_t) nhdp);
   }
@@ -131,7 +132,7 @@ uintptr_t NaClDescIoDescMap(struct NaClDesc         *vself,
                                             len))) {
     NaClLog(LOG_FATAL,
             ("NaClDescIoDescMap: error %d --"
-             " could not unmap 0x%08"PRIxPTR", length 0x%"PRIxS"\n"),
+             " could not unmap 0x%08"NACL_PRIxPTR", length 0x%"NACL_PRIxS"\n"),
             rv,
             (uintptr_t) start_addr,
             len);

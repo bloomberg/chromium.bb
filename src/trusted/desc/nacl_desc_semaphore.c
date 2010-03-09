@@ -56,7 +56,7 @@ int NaClDescSemaphoreCtor(struct NaClDescSemaphore  *self, int value) {
 void NaClDescSemaphoreDtor(struct NaClDesc *vself) {
   struct NaClDescSemaphore *self = (struct NaClDescSemaphore *) vself;
 
-  NaClLog(4, "NaClDescSemaphoreDtor(0x%08"PRIxPTR").\n",
+  NaClLog(4, "NaClDescSemaphoreDtor(0x%08"NACL_PRIxPTR").\n",
           (uintptr_t) vself);
   NaClSemDtor(&self->sem);
   vself->vtbl = (struct NaClDescVtbl *) NULL;

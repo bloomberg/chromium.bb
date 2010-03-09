@@ -190,47 +190,47 @@ struct timezone {
  */
 #if NACL_WINDOWS
 # if defined(__x86_64__)
-#  define  __PRIS_PREFIX "I64"
+#  define  NACL___PRIS_PREFIX "I64"
 # else
-#  define  __PRIS_PREFIX
+#  define  NACL___PRIS_PREFIX
 # endif
 #else
 # if defined(__STRICT_ANSI__)
 #  if NACL_OSX
-#   define  __PRIS_PREFIX "l"
+#   define  NACL___PRIS_PREFIX "l"
 #  else
 #   if __WORDSIZE == 64
-#    define __PRIS_PREFIX "l"
+#    define NACL___PRIS_PREFIX "l"
 #   else
-#    define  __PRIS_PREFIX
+#    define  NACL___PRIS_PREFIX
 #   endif
 #  endif
 # else
 #  if NACL_OSX
-#   define  __PRIS_PREFIX "l" /* -pedantic C++ programs w/ xcode */
+#   define  NACL___PRIS_PREFIX "l" /* -pedantic C++ programs w/ xcode */
 #  else
-#   define  __PRIS_PREFIX "z"
+#   define  NACL___PRIS_PREFIX "z"
 #  endif
 # endif
 #endif
 
-#if !defined(PRIdS)
-#define PRIdS __PRIS_PREFIX "d"
+#if !defined(NACL_PRIdS)
+#define NACL_PRIdS NACL___PRIS_PREFIX "d"
 #endif
-#if !defined(PRIiS)
-#define PRIiS __PRIS_PREFIX "i"
+#if !defined(NACL_PRIiS)
+#define NACL_PRIiS NACL___PRIS_PREFIX "i"
 #endif
-#if !defined(PRIoS)
-#define PRIoS __PRIS_PREFIX "o"
+#if !defined(NACL_PRIoS)
+#define NACL_PRIoS NACL___PRIS_PREFIX "o"
 #endif
-#if !defined (PRIuS)
-#define PRIuS __PRIS_PREFIX "u"
+#if !defined (NACL_PRIuS)
+#define NACL_PRIuS NACL___PRIS_PREFIX "u"
 #endif
-#if !defined(PRIxS)
-#define PRIxS __PRIS_PREFIX "x"
+#if !defined(NACL_PRIxS)
+#define NACL_PRIxS NACL___PRIS_PREFIX "x"
 #endif
-#if !defined(PRIXS)
-#define PRIXS __PRIS_PREFIX "X"
+#if !defined(NACL_PRIXS)
+#define NACL_PRIXS NACL___PRIS_PREFIX "X"
 #endif
 
 /*
@@ -241,75 +241,99 @@ struct timezone {
 # define __STDC_FORMAT_MACROS  /* C++ */
 #endif
 # include <inttypes.h>
+
+#define NACL_PRIxPTR PRIxPTR
+#define NACL_PRIXPTR PRIXPTR
+#define NACL_PRIdPTR PRIdPTR
+
+#define NACL_PRId64 PRId64
+#define NACL_PRIu64 PRIu64
+#define NACL_PRIx64 PRIx64
+#define NACL_PRIX64 PRIX64
+
+#define NACL_PRIx32 PRIx32
+#define NACL_PRIX32 PRIX32
+#define NACL_PRId32 PRId32
+#define NACL_PRIu32 PRIu32
+
+#define NACL_PRId16 PRId16
+#define NACL_PRIu16 PRIu16
+#define NACL_PRIx16 PRIx16
+
+#define NACL_PRId8 PRId8
+#define NACL_PRIu8 PRIu8
+#define NACL_PRIx8 PRIx8
+
+
 # if NACL_OSX
 /*
  * OSX defines "hh" prefix for int8_t etc, but that's not standards
  * compliant -- --std=c++98 -Wall -Werror rejects it.
  */
-#  undef PRId8
-#  undef PRIi8
-#  undef PRIo8
-#  undef PRIu8
-#  undef PRIx8
-#  undef PRIX8
-#  define PRId8  "d"
-#  define PRIi8  "i"
-#  define PRIo8  "o"
-#  define PRIu8  "u"
-#  define PRIx8  "x"
-#  define PRIX8  "X"
+#  undef NACL_PRId8
+#  undef NACL_PRIi8
+#  undef NACL_PRIo8
+#  undef NACL_PRIu8
+#  undef NACL_PRIx8
+#  undef NACL_PRIX8
+#  define NACL_PRId8  "d"
+#  define NACL_PRIi8  "i"
+#  define NACL_PRIo8  "o"
+#  define NACL_PRIu8  "u"
+#  define NACL_PRIx8  "x"
+#  define NACL_PRIX8  "X"
 # endif
 #else
-# define __PRIPTR_PREFIX "l"
-# define PRIdPTR __PRIPTR_PREFIX "d"
-# define PRIiPTR __PRIPTR_PREFIX "i"
-# define PRIoPTR __PRIPTR_PREFIX "o"
-# define PRIuPTR __PRIPTR_PREFIX "u"
-# define PRIxPTR __PRIPTR_PREFIX "x"
-# define PRIXPTR __PRIPTR_PREFIX "X"
+# define NACL___PRIPTR_PREFIX "l"
+# define NACL_PRIdPTR NACL___PRIPTR_PREFIX "d"
+# define NACL_PRIiPTR NACL___PRIPTR_PREFIX "i"
+# define NACL_PRIoPTR NACL___PRIPTR_PREFIX "o"
+# define NACL_PRIuPTR NACL___PRIPTR_PREFIX "u"
+# define NACL_PRIxPTR NACL___PRIPTR_PREFIX "x"
+# define NACL_PRIXPTR NACL___PRIPTR_PREFIX "X"
 
-# define PRId8  "d"
-# define PRIi8  "i"
-# define PRIo8  "o"
-# define PRIu8  "u"
-# define PRIx8  "x"
-# define PRIX8  "X"
+# define NACL_PRId8  "d"
+# define NACL_PRIi8  "i"
+# define NACL_PRIo8  "o"
+# define NACL_PRIu8  "u"
+# define NACL_PRIx8  "x"
+# define NACL_PRIX8  "X"
 
-# define PRId16 "d"
-# define PRIi16 "i"
-# define PRIo16 "o"
-# define PRIu16 "u"
-# define PRIx16 "x"
-# define PRIX16 "X"
+# define NACL_PRId16 "d"
+# define NACL_PRIi16 "i"
+# define NACL_PRIo16 "o"
+# define NACL_PRIu16 "u"
+# define NACL_PRIx16 "x"
+# define NACL_PRIX16 "X"
 
-# define __PRI32_PREFIX "I32"
+# define NACL___PRI32_PREFIX "I32"
 
-# define PRId32 __PRI32_PREFIX "d"
-# define PRIi32 __PRI32_PREFIX "i"
-# define PRIo32 __PRI32_PREFIX "o"
-# define PRIu32 __PRI32_PREFIX "u"
-# define PRIx32 __PRI32_PREFIX "x"
-# define PRIX32 __PRI32_PREFIX "X"
+# define NACL_PRId32 NACL___PRI32_PREFIX "d"
+# define NACL_PRIi32 NACL___PRI32_PREFIX "i"
+# define NACL_PRIo32 NACL___PRI32_PREFIX "o"
+# define NACL_PRIu32 NACL___PRI32_PREFIX "u"
+# define NACL_PRIx32 NACL___PRI32_PREFIX "x"
+# define NACL_PRIX32 NACL___PRI32_PREFIX "X"
 
-# define __PRI64_PREFIX "I64"
+# define NACL___PRI64_PREFIX "I64"
 
-#if !defined(PRId64)
-# define PRId64 __PRI64_PREFIX "d"
+#if !defined(NACL_PRId64)
+# define NACL_PRId64 NACL___PRI64_PREFIX "d"
 #endif
-#if !defined(PRIi64)
-# define PRIi64 __PRI64_PREFIX "i"
+#if !defined(NACL_PRIi64)
+# define NACL_PRIi64 NACL___PRI64_PREFIX "i"
 #endif
-#if !defined(PRIo64)
-# define PRIo64 __PRI64_PREFIX "o"
+#if !defined(NACL_PRIo64)
+# define NACL_PRIo64 NACL___PRI64_PREFIX "o"
 #endif
-#if !defined(PRIu64)
-# define PRIu64 __PRI64_PREFIX "u"
+#if !defined(NACL_PRIu64)
+# define NACL_PRIu64 NACL___PRI64_PREFIX "u"
 #endif
-#if !defined(PRIx64)
-# define PRIx64 __PRI64_PREFIX "x"
+#if !defined(NACL_PRIx64)
+# define NACL_PRIx64 NACL___PRI64_PREFIX "x"
 #endif
-#if !defined(PRIX64)
-# define PRIX64 __PRI64_PREFIX "X"
+#if !defined(NACL_PRIX64)
+# define NACL_PRIX64 NACL___PRI64_PREFIX "X"
 #endif
 
 #endif

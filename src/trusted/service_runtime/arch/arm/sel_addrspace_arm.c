@@ -27,11 +27,12 @@ NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) {
   *mem = (void *) NACL_TRAMPOLINE_START;
   if (NaCl_page_alloc_at_addr(mem, addrsp_size) != 0) {
     NaClLog(2,
-        "NaClAllocateSpace: NaCl_page_alloc_at_addr 0x%08"PRIxPTR" failed\n",
+        "NaClAllocateSpace: NaCl_page_alloc_at_addr 0x%08"NACL_PRIxPTR
+        " failed\n",
         (uintptr_t) *mem);
     return LOAD_NO_MEMORY;
   }
-  NaClLog(4, "NaClAllocateSpace: %"PRIxPTR", %"PRIxS"\n",
+  NaClLog(4, "NaClAllocateSpace: %"NACL_PRIxPTR", %"NACL_PRIxS"\n",
           (uintptr_t) *mem,
           addrsp_size);
 
@@ -70,7 +71,7 @@ NaClErrorCode NaClMprotectGuards(struct NaClApp *nap) {
    * However, we need to create a two-page guard region at the base of
    * trusted memory, for write sandboxing.
    */
-  NaClLog(4, "NaClMprotectGuards: %"PRIxPTR", %"PRIxS"\n",
+  NaClLog(4, "NaClMprotectGuards: %"NACL_PRIxPTR", %"NACL_PRIxS"\n",
           (uintptr_t) guard_base,
           (size_t) POST_ADDR_SPACE_GUARD_SIZE);
   if ((err = NaCl_mprotect(guard_base,
@@ -101,7 +102,7 @@ void NaClTeardownMprotectGuards(struct NaClApp *nap) {
     NaClLog(4, "No guard pages to tear down.\n");
     return;
   }
-  NaClLog(4, "NaClTeardownMprotectGuards: %"PRIxPTR", %"PRIxS"\n",
+  NaClLog(4, "NaClTeardownMprotectGuards: %"NACL_PRIxPTR", %"NACL_PRIxS"\n",
           (uintptr_t) guard_base,
           (size_t) POST_ADDR_SPACE_GUARD_SIZE);
   NaCl_page_free(guard_base, POST_ADDR_SPACE_GUARD_SIZE);

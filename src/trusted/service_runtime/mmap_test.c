@@ -94,7 +94,7 @@ int main(int argc, char **argv) {
                      NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
                      NACL_ABI_MAP_ANONYMOUS | NACL_ABI_MAP_PRIVATE,
                      -1, 0);
-  printf("addr=0x%"PRIxPTR"\n", addr);
+  printf("addr=0x%"NACL_PRIxPTR"\n", addr);
   initial_addr = addr;
 
   /* Map to overwrite the start of the previously allocated range */
@@ -103,7 +103,7 @@ int main(int argc, char **argv) {
                      NACL_ABI_MAP_ANONYMOUS | NACL_ABI_MAP_PRIVATE
                      | NACL_ABI_MAP_FIXED,
                      -1, 0);
-  printf("addr=0x%"PRIxPTR"\n", addr);
+  printf("addr=0x%"NACL_PRIxPTR"\n", addr);
   ASSERT_EQ(addr, initial_addr);
 
   /* Allocate new page */
@@ -111,7 +111,7 @@ int main(int argc, char **argv) {
                      NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
                      NACL_ABI_MAP_ANONYMOUS | NACL_ABI_MAP_PRIVATE,
                      -1, 0);
-  printf("addr=0x%"PRIxPTR"\n", addr);
+  printf("addr=0x%"NACL_PRIxPTR"\n", addr);
   /*
    * Our allocation strategy is to scan down from stack.  This is an
    * implementation detail and not part of the guaranteed semantics,
@@ -155,7 +155,7 @@ int main(int argc, char **argv) {
   addr = NaClSysMmap(natp, 0, 9 * NACL_MAP_PAGESIZE,
                      NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
                      NACL_ABI_MAP_ANONYMOUS | NACL_ABI_MAP_PRIVATE, -1, 0);
-  printf("addr=0x%"PRIxPTR"\n", addr);
+  printf("addr=0x%"NACL_PRIxPTR"\n", addr);
   initial_addr = addr;
 
   /* Map into middle of previously allocated range */
@@ -165,7 +165,7 @@ int main(int argc, char **argv) {
                      NACL_ABI_MAP_ANONYMOUS | NACL_ABI_MAP_PRIVATE
                      | NACL_ABI_MAP_FIXED,
                      -1, 0);
-  printf("addr=0x%"PRIxPTR"\n", addr);
+  printf("addr=0x%"NACL_PRIxPTR"\n", addr);
   ASSERT_EQ(addr, initial_addr + NACL_MAP_PAGESIZE * 2);
 
   NaClVmmapMakeSorted(mem_map);
@@ -202,7 +202,7 @@ int main(int argc, char **argv) {
                      NACL_ABI_MAP_ANONYMOUS | NACL_ABI_MAP_PRIVATE,
                      -1, 0);
   ASSERT_LE(addr, 0xffff0000u);
-  printf("addr=0x%"PRIxPTR"\n", addr);
+  printf("addr=0x%"NACL_PRIxPTR"\n", addr);
   ASSERT_LE_MSG(initial_addr, addr, "returned address not at or above hint");
   errcode = NaClSysMunmap(natp, (void *) addr, NACL_MAP_PAGESIZE);
   ASSERT_EQ(errcode, 0);

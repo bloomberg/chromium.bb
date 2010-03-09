@@ -47,7 +47,7 @@
 static int g_print_diagnostics = 1;
 static void ValidatePrintError(const PcAddress addr, char *msg) {
   if (g_print_diagnostics != 1) return;
-  printf("VALIDATOR: %"PRIxPcAddress": %s\n", addr, msg);
+  printf("VALIDATOR: %"NACL_PRIxPcAddress": %s\n", addr, msg);
 }
 
 /* opcode histogram */
@@ -316,7 +316,7 @@ static void RememberIP(const PcAddress ip, struct NCValidatorState *vstate) {
     return;
   }
   if (GetAdrTable(ioffset, vstate->vttable)) {
-    vprint(("RememberIP: Saw inst at %"PRIxPcAddressAll" twice\n", ip));
+    vprint(("RememberIP: Saw inst at %"NACL_PRIxPcAddressAll" twice\n", ip));
     Stats_InternalError(vstate);
     return;
   }
@@ -448,7 +448,8 @@ static void ValidateJmp8(const struct NCDecoderState *mstate) {
     RememberTP(mstate->inst.vaddr, target, mstate->vstate);
   } else {
     /* If this ever happens, it's probably a decoder bug. */
-    vprint(("ERROR: JMP8 %"PRIxPcAddress": %x\n", mstate->inst.vaddr, opcode));
+    vprint(("ERROR: JMP8 %"NACL_PRIxPcAddress": %x\n",
+            mstate->inst.vaddr, opcode));
     Stats_InternalError(mstate->vstate);
   }
 }
@@ -472,7 +473,7 @@ static void ValidateJmpz(const struct NCDecoderState *mstate) {
     }
   } else {
     /* If this ever happens, it's probably a decoder bug. */
-    vprint(("ERROR: JMPZ %"PRIxPcAddress": %x %x\n",
+    vprint(("ERROR: JMPZ %"NACL_PRIxPcAddress": %x %x\n",
              mstate->inst.vaddr, opcode[0], opcode[1]));
     Stats_InternalError(mstate->vstate);
   }

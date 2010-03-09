@@ -140,18 +140,18 @@ void NaClAppDtor(struct NaClApp  *nap) {
 
   NaClLog(2,
           ("NaClAppDtor: there are %d threads alive;"
-           " thread table size %"PRIuS"\n"),
+           " thread table size %"NACL_PRIuS"\n"),
           nap->num_threads,
           nap->threads.num_entries);
   for (i = 0; i < nap->threads.num_entries; ++i) {
     int                   refcount;
     enum NaClThreadState  state;
 
-    NaClLog(2, "Checking thread %"PRIuS"\n", i);
+    NaClLog(2, "Checking thread %"NACL_PRIuS"\n", i);
     if (NULL == (natp = NaClGetThreadMu(nap, (int) i))) {
       continue;
     }
-    NaClLog(2, "Extracting state for thread %"PRIuS"\n", i);
+    NaClLog(2, "Extracting state for thread %"NACL_PRIuS"\n", i);
     NaClXMutexLock(&natp->mu);
     state = natp->state;
     NaClLog(2, "state %d\n", state);
@@ -162,19 +162,19 @@ void NaClAppDtor(struct NaClApp  *nap) {
 
     if (state != NACL_APP_THREAD_DEAD) {
       NaClLog(LOG_WARNING,
-              ("NaClAppDtor: thread %"PRIuS" still running when NaCl app"
+              ("NaClAppDtor: thread %"NACL_PRIuS" still running when NaCl app"
                " is being destroyed?!?\n"),
               i);
     }
     if (refcount != 0) {
       NaClLog(LOG_WARNING,
-              ("NaClAppDtor: thread %"PRIuS" refcount not 0 when NaCl app"
+              ("NaClAppDtor: thread %"NACL_PRIuS" refcount not 0 when NaCl app"
                " is being destroyed?!?\n"),
               i);
     }
   }
 
-  NaClLog(4, "There are %"PRIuS" descriptor entries\n",
+  NaClLog(4, "There are %"NACL_PRIuS" descriptor entries\n",
           nap->desc_tbl.num_entries);
 
   for (i = 0; i < nap->desc_tbl.num_entries; ++i) {
@@ -243,7 +243,7 @@ size_t  NaClAlignPad(size_t val, size_t align) {
   /* align is always a power of 2, but we do not depend on it */
   if (!align) {
     NaClLog(0,
-            "sel_ldr: NaClAlignPad, align == 0, at 0x%08"PRIxS"\n",
+            "sel_ldr: NaClAlignPad, align == 0, at 0x%08"NACL_PRIxS"\n",
             val);
     return 0;
   }
@@ -418,9 +418,10 @@ void  NaClMemRegionPrinter(void                   *state,
                            struct NaClVmmapEntry  *entry) {
   struct Gio *gp = (struct Gio *) state;
 
-  gprintf(gp, "\nPage   %"PRIdPTR" (0x%"PRIxPTR")\n",
+  gprintf(gp, "\nPage   %"NACL_PRIdPTR" (0x%"NACL_PRIxPTR")\n",
           entry->page_num, entry->page_num);
-  gprintf(gp,   "npages %"PRIdS" (0x%"PRIxS")\n", entry->npages, entry->npages);
+  gprintf(gp,   "npages %"NACL_PRIdS" (0x%"NACL_PRIxS")\n", entry->npages,
+          entry->npages);
   gprintf(gp,   "prot   0x%08x\n", entry->prot);
   gprintf(gp,   "%sshared/backed by a file\n",
           (NULL == entry->nmop) ? "not " : "");
@@ -430,21 +431,23 @@ void  NaClAppPrintDetails(struct NaClApp  *nap,
                           struct Gio      *gp) {
   NaClXMutexLock(&nap->mu);
   gprintf(gp,
-          "NaClAppPrintDetails((struct NaClApp *) 0x%08"PRIxPTR","
-          "(struct Gio *) 0x%08"PRIxPTR")\n", (uintptr_t) nap, (uintptr_t) gp);
-  gprintf(gp, "addr space size:  2**%"PRId32"\n", nap->addr_bits);
-  gprintf(gp, "max data alloc:   0x%08"PRIx32"\n", nap->max_data_alloc);
-  gprintf(gp, "stack size:       0x%08"PRIx32"\n", nap->stack_size);
+          "NaClAppPrintDetails((struct NaClApp *) 0x%08"NACL_PRIxPTR","
+          "(struct Gio *) 0x%08"NACL_PRIxPTR")\n", (uintptr_t) nap,
+          (uintptr_t) gp);
+  gprintf(gp, "addr space size:  2**%"NACL_PRId32"\n", nap->addr_bits);
+  gprintf(gp, "max data alloc:   0x%08"NACL_PRIx32"\n", nap->max_data_alloc);
+  gprintf(gp, "stack size:       0x%08"NACL_PRIx32"\n", nap->stack_size);
 
-  gprintf(gp, "mem start addr:   0x%08"PRIxPTR"\n", nap->mem_start);
+  gprintf(gp, "mem start addr:   0x%08"NACL_PRIxPTR"\n", nap->mem_start);
   /*           123456789012345678901234567890 */
 
-  gprintf(gp, "static_text_end:   0x%08"PRIxPTR"\n", nap->static_text_end);
-  gprintf(gp, "end-of-text:       0x%08"PRIxPTR"\n", NaClEndOfStaticText(nap));
-  gprintf(gp, "rodata:            0x%08"PRIxPTR"\n", nap->rodata_start);
-  gprintf(gp, "data:              0x%08"PRIxPTR"\n", nap->data_start);
-  gprintf(gp, "data_end:          0x%08"PRIxPTR"\n", nap->data_end);
-  gprintf(gp, "break_addr:        0x%08"PRIxPTR"\n", nap->break_addr);
+  gprintf(gp, "static_text_end:   0x%08"NACL_PRIxPTR"\n", nap->static_text_end);
+  gprintf(gp, "end-of-text:       0x%08"NACL_PRIxPTR"\n",
+          NaClEndOfStaticText(nap));
+  gprintf(gp, "rodata:            0x%08"NACL_PRIxPTR"\n", nap->rodata_start);
+  gprintf(gp, "data:              0x%08"NACL_PRIxPTR"\n", nap->data_start);
+  gprintf(gp, "data_end:          0x%08"NACL_PRIxPTR"\n", nap->data_end);
+  gprintf(gp, "break_addr:        0x%08"NACL_PRIxPTR"\n", nap->break_addr);
 
   gprintf(gp, "ELF entry point:  0x%08x\n", nap->entry_pt);
   gprintf(gp, "memory map:\n");
@@ -607,7 +610,8 @@ void NaClSetDescMu(struct NaClApp   *nap,
 
   if (!DynArraySet(&nap->desc_tbl, d, ndp)) {
     NaClLog(LOG_FATAL,
-            "NaClSetDesc: could not set descriptor %d to 0x%08"PRIxPTR"\n",
+            "NaClSetDesc: could not set descriptor %d to 0x%08"
+            NACL_PRIxPTR"\n",
             d,
             (uintptr_t) ndp);
   }
@@ -667,7 +671,7 @@ int NaClAddThreadMu(struct NaClApp        *nap,
 
   if (!DynArraySet(&nap->threads, pos, natp)) {
     NaClLog(LOG_FATAL,
-            "NaClAddThreadMu: DynArraySet at position %"PRIuS" failed\n",
+            "NaClAddThreadMu: DynArraySet at position %"NACL_PRIuS" failed\n",
             pos);
   }
   ++nap->num_threads;
@@ -804,7 +808,8 @@ void NaClCreateServiceSocket(struct NaClApp *nap) {
     NaClLog(LOG_FATAL, "Cound not create service socket\n");
   }
   NaClLog(4,
-          "got bound socket at 0x%08"PRIxPTR", addr at 0x%08"PRIxPTR"\n",
+          "got bound socket at 0x%08"NACL_PRIxPTR", "
+          "addr at 0x%08"NACL_PRIxPTR"\n",
           (uintptr_t) pair[0],
           (uintptr_t) pair[1]);
   NaClSetDesc(nap, NACL_SERVICE_PORT_DESCRIPTOR, pair[0]);
@@ -831,7 +836,7 @@ void NaClSendServiceAddressTo(struct NaClApp  *nap,
   struct NaClNrdXferEffector  nnxep;
 
   NaClLog(4,
-          "NaClSendServiceAddressTo(0x%08"PRIxPTR", %d)\n",
+          "NaClSendServiceAddressTo(0x%08"NACL_PRIxPTR", %d)\n",
           (uintptr_t) nap,
           desc);
 
@@ -867,7 +872,7 @@ void NaClSendServiceAddressTo(struct NaClApp  *nap,
   (*nnxep.base.vtbl->Dtor)(&nnxep.base);
 
   NaClLog(1,
-          "NaClSendServiceAddressTo: descriptor %d, error %"PRIdS"\n",
+          "NaClSendServiceAddressTo: descriptor %d, error %"NACL_PRIdS"\n",
           desc,
           rv);
 }
@@ -1100,7 +1105,7 @@ void NaClSecureCommandChannel(struct NaClApp  *nap) {
 void NaClDumpServiceAddressTo(struct NaClApp  *nap,
                               int             desc) {
   NaClLog(4,
-          "NaClDumpServiceAddressTo(0x%08"PRIxPTR", %d)\n",
+          "NaClDumpServiceAddressTo(0x%08"NACL_PRIxPTR", %d)\n",
           (uintptr_t) nap,
           desc);
   if (NULL == nap->service_address) {
@@ -1132,12 +1137,13 @@ static void NaClAppFreeWalker(void                  *state,
   size_t                          nbytes;
 
   NaClLog(3,
-          ("NaClAppFreeWalker: p->partial = 0x%08"PRIxPTR","
-           " p->pbytes = 0x%08"PRIxS"\n"),
+          ("NaClAppFreeWalker: p->partial = 0x%08"NACL_PRIxPTR","
+           " p->pbytes = 0x%08"NACL_PRIxS"\n"),
           p->partial, p->pbytes);
   NaClLog(3,
-          (" entry->page_num = 0x%"PRIxPTR", entry->npages = 0x%"PRIxS","
-           " entry->nmop = 0x%08"PRIxPTR"\n"),
+          (" entry->page_num = 0x%"NACL_PRIxPTR", entry->npages = 0x%"
+           NACL_PRIxS","
+           " entry->nmop = 0x%08"NACL_PRIxPTR"\n"),
           entry->page_num, entry->npages, (uintptr_t) entry->nmop);
   sysaddr = NaClUserToSysAddrNullOkay(p->nap,
                                       entry->page_num << NACL_PAGESHIFT);
@@ -1148,8 +1154,8 @@ static void NaClAppFreeWalker(void                  *state,
       if (p->partial + p->pbytes != sysaddr) {
         NaClLog(LOG_FATAL,
                 ("Partial allocation pages not contiguous?!?"
-                 " Partial start 0x%08"PRIxPTR", length 0x%"PRIxS";"
-                 " next start 0x%08"PRIxPTR"\n"),
+                 " Partial start 0x%08"NACL_PRIxPTR", length 0x%"NACL_PRIxS";"
+                 " next start 0x%08"NACL_PRIxPTR"\n"),
                 p->partial, p->pbytes, sysaddr);
       }
       p->pbytes += nbytes;
@@ -1158,7 +1164,8 @@ static void NaClAppFreeWalker(void                  *state,
         p->partial = 0;
         p->pbytes = 0;
       } else {
-        NaClLog(3, "Partial accummulated 0x%08"PRIxPTR", 0x%"PRIxS"\n",
+        NaClLog(3, "Partial accummulated 0x%08"NACL_PRIxPTR", 0x%"
+                NACL_PRIxS"\n",
                 p->partial, p->pbytes);
       }
     } else {
@@ -1175,13 +1182,13 @@ static void NaClAppFreeWalker(void                  *state,
     if (NaClRoundAllocPage(user_address) != user_address) {
       NaClLog(LOG_FATAL,
               ("descriptor backed memory does not start"
-               " at allocation boundary, addr: 0x%08"PRIxPTR"\n"),
+               " at allocation boundary, addr: 0x%08"NACL_PRIxPTR"\n"),
               user_address);
     }
     if (NaClRoundHostAllocPage(nbytes) != nbytes) {
       NaClLog(LOG_FATAL,
               ("descriptor backed memory size not allocation granularity:"
-               " 0x%"PRIxS"\n"),
+               " 0x%"NACL_PRIxS"\n"),
               nbytes);
     }
     if (0 != (*entry->nmop->ndp->vtbl->UnmapUnsafe)(entry->nmop->ndp,

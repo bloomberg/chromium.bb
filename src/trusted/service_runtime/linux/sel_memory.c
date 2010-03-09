@@ -155,7 +155,7 @@ void *NaClAllocatePow2AlignedMemory(size_t mem_sz, size_t log_alignment) {
   orig_addr = (uintptr_t) mem_ptr;
 
   NaClLog(LOG_INFO,
-          "%"MSGWIDTH"s %016"PRIxPTR"\n",
+          "%"MSGWIDTH"s %016"NACL_PRIxPTR"\n",
           "orig memory at",
           orig_addr);
 
@@ -164,7 +164,7 @@ void *NaClAllocatePow2AlignedMemory(size_t mem_sz, size_t log_alignment) {
 
   if (0 != extra) {
     NaClLog(LOG_INFO,
-            "%"MSGWIDTH"s %016"PRIxPTR", %016zx\n",
+            "%"MSGWIDTH"s %016"NACL_PRIxPTR", %016zx\n",
             "Freeing front:",
             orig_addr,
             extra);
@@ -177,7 +177,7 @@ void *NaClAllocatePow2AlignedMemory(size_t mem_sz, size_t log_alignment) {
   extra = pow2align - extra;
   if (0 != extra) {
     NaClLog(LOG_INFO,
-            "%"MSGWIDTH"s %016"PRIxPTR", %016zx\n",
+            "%"MSGWIDTH"s %016"NACL_PRIxPTR", %016zx\n",
             "Freeing tail:",
             rounded_addr + mem_sz,
             extra);
@@ -188,7 +188,7 @@ void *NaClAllocatePow2AlignedMemory(size_t mem_sz, size_t log_alignment) {
     }
   }
   NaClLog(LOG_INFO,
-          "%"MSGWIDTH"s %016"PRIxPTR"\n",
+          "%"MSGWIDTH"s %016"NACL_PRIxPTR"\n",
           "Aligned memory:",
           rounded_addr);
 

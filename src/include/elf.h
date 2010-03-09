@@ -73,70 +73,70 @@ EXTERN_C_BEGIN
  */
 
 #if NACL_TARGET_SUBARCH == 64
-# define PRI_ADDR_ALL_WIDTH "016"
+# define NACL_PRI_ADDR_ALL_WIDTH "016"
 # define NACL_ELF_CLASS ELFCLASS64
 #elif NACL_TARGET_SUBARCH == 32
-# define PRI_ADDR_ALL_WIDTH "08"
+# define NACL_PRI_ADDR_ALL_WIDTH "08"
 # define NACL_ELF_CLASS ELFCLASS32
 #else
 # error "NACL_TARGET_SUBARCH must be defined to be 32 or 64"
 #endif
 
-#define PRI_ELF_DO_GLUE2(a, b) a##b
-#define PRI_ELF_GLUE2(a, b) PRI_ELF_DO_GLUE2(a, b)
-#define PRI_ELF(fmt) PRI_ELF_GLUE2(fmt, NACL_TARGET_SUBARCH)
+#define NACL_PRI_ELF_DO_GLUE2(a, b) a##b
+#define NACL_PRI_ELF_GLUE2(a, b) NACL_PRI_ELF_DO_GLUE2(a, b)
+#define NACL_PRI_ELF(fmt) NACL_PRI_ELF_GLUE2(fmt, NACL_TARGET_SUBARCH)
 
-#define PRIdElf_Addr   PRI_ELF(PRId)
-#define PRIiElf_Addr   PRI_ELF(PRIi)
-#define PRIoElf_Addr   PRI_ELF(PRIo)
-#define PRIuElf_Addr   PRI_ELF(PRIu)
-#define PRIxElf_Addr   PRI_ELF(PRIx)
-#define PRIXElf_Addr   PRI_ELF(PRIX)
+#define NACL_PRIdElf_Addr   NACL_PRI_ELF(NACL_PRId)
+#define NACL_PRIiElf_Addr   NACL_PRI_ELF(NACL_PRIi)
+#define NACL_PRIoElf_Addr   NACL_PRI_ELF(NACL_PRIo)
+#define NACL_PRIuElf_Addr   NACL_PRI_ELF(NACL_PRIu)
+#define NACL_PRIxElf_Addr   NACL_PRI_ELF(NACL_PRIx)
+#define NACL_PRIXElf_Addr   NACL_PRI_ELF(NACL_PRIX)
 
-#define PRIxElf_AddrAll   PRI_ADDR_ALL_WIDTH PRI_ELF(PRIx)
-#define PRIXElf_AddrAll   PRI_ADDR_ALL_WIDTH PRI_ELF(PRIX)
+#define NACL_PRIxElf_AddrAll   NACL_PRI_ADDR_ALL_WIDTH NACL_PRI_ELF(NACL_PRIx)
+#define NACL_PRIXElf_AddrAll   NACL_PRI_ADDR_ALL_WIDTH NACL_PRI_ELF(NACL_PRIX)
 
-#define PRIdElf_Off    PRI_ELF(PRId)
-#define PRIiElf_Off    PRI_ELF(PRIi)
-#define PRIoElf_Off    PRI_ELF(PRIo)
-#define PRIuElf_Off    PRI_ELF(PRIu)
-#define PRIxElf_Off    PRI_ELF(PRIx)
-#define PRIXElf_Off    PRI_ELF(PRIX)
+#define NACL_PRIdElf_Off    NACL_PRI_ELF(NACL_PRId)
+#define NACL_PRIiElf_Off    NACL_PRI_ELF(NACL_PRIi)
+#define NACL_PRIoElf_Off    NACL_PRI_ELF(NACL_PRIo)
+#define NACL_PRIuElf_Off    NACL_PRI_ELF(NACL_PRIu)
+#define NACL_PRIxElf_Off    NACL_PRI_ELF(NACL_PRIx)
+#define NACL_PRIXElf_Off    NACL_PRI_ELF(NACL_PRIX)
 
-#define PRIdElf_Half   PRId16
-#define PRIiElf_Half   PRIi16
-#define PRIoElf_Half   PRIo16
-#define PRIuElf_Half   PRIu16
-#define PRIxElf_Half   PRIx16
-#define PRIXElf_Half   PRIX16
+#define NACL_PRIdElf_Half   NACL_PRId16
+#define NACL_PRIiElf_Half   NACL_PRIi16
+#define NACL_PRIoElf_Half   NACL_PRIo16
+#define NACL_PRIuElf_Half   NACL_PRIu16
+#define NACL_PRIxElf_Half   NACL_PRIx16
+#define NACL_PRIXElf_Half   NACL_PRIX16
 
-#define PRIdElf_Word   PRId32
-#define PRIiElf_Word   PRIi32
-#define PRIoElf_Word   PRIo32
-#define PRIuElf_Word   PRIu32
-#define PRIxElf_Word   PRIx32
-#define PRIXElf_Word   PRIX32
+#define NACL_PRIdElf_Word   NACL_PRId32
+#define NACL_PRIiElf_Word   NACL_PRIi32
+#define NACL_PRIoElf_Word   NACL_PRIo32
+#define NACL_PRIuElf_Word   NACL_PRIu32
+#define NACL_PRIxElf_Word   NACL_PRIx32
+#define NACL_PRIXElf_Word   NACL_PRIX32
 
-#define PRIdElf_Sword  PRId32z
-#define PRIiElf_Sword  PRIi32z
-#define PRIoElf_Sword  PRIo32z
-#define PRIuElf_Sword  PRIu32z
-#define PRIxElf_Sword  PRIx32z
-#define PRIXElf_Sword  PRIX32z
+#define NACL_PRIdElf_Sword  NACL_PRId32z
+#define NACL_PRIiElf_Sword  NACL_PRIi32z
+#define NACL_PRIoElf_Sword  NACL_PRIo32z
+#define NACL_PRIuElf_Sword  NACL_PRIu32z
+#define NACL_PRIxElf_Sword  NACL_PRIx32z
+#define NACL_PRIXElf_Sword  NACL_PRIX32z
 
-#define PRIdElf_Xword  PRI_ELF(PRId)
-#define PRIiElf_Xword  PRI_ELF(PRIi)
-#define PRIoElf_Xword  PRI_ELF(PRIo)
-#define PRIuElf_Xword  PRI_ELF(PRIu)
-#define PRIxElf_Xword  PRI_ELF(PRIx)
-#define PRIXElf_Xword  PRI_ELF(PRIX)
+#define NACL_PRIdElf_Xword  NACL_PRI_ELF(NACL_PRId)
+#define NACL_PRIiElf_Xword  NACL_PRI_ELF(NACL_PRIi)
+#define NACL_PRIoElf_Xword  NACL_PRI_ELF(NACL_PRIo)
+#define NACL_PRIuElf_Xword  NACL_PRI_ELF(NACL_PRIu)
+#define NACL_PRIxElf_Xword  NACL_PRI_ELF(NACL_PRIx)
+#define NACL_PRIXElf_Xword  NACL_PRI_ELF(NACL_PRIX)
 
-#define PRIdElf_Sxword PRI_ELF(PRId)
-#define PRIiElf_Sxword PRI_ELF(PRIi)
-#define PRIoElf_Sxword PRI_ELF(PRIo)
-#define PRIuElf_Sxword PRI_ELF(PRIu)
-#define PRIxElf_Sxword PRI_ELF(PRIx)
-#define PRIXElf_Sxword PRI_ELF(PRIX)
+#define NACL_PRIdElf_Sxword NACL_PRI_ELF(NACL_PRId)
+#define NACL_PRIiElf_Sxword NACL_PRI_ELF(NACL_PRIi)
+#define NACL_PRIoElf_Sxword NACL_PRI_ELF(NACL_PRIo)
+#define NACL_PRIuElf_Sxword NACL_PRI_ELF(NACL_PRIu)
+#define NACL_PRIxElf_Sxword NACL_PRI_ELF(NACL_PRIx)
+#define NACL_PRIXElf_Sxword NACL_PRI_ELF(NACL_PRIX)
 
 #if NACL_TARGET_SUBARCH == 64
 

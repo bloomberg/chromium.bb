@@ -164,7 +164,8 @@ int32_t NaClSysMunmap(struct NaClAppThread  *natp,
   int       holding_app_lock = 0;
   size_t    alloc_rounded_length;
 
-  NaClLog(3, "NaClSysMunmap(0x%08"PRIxPTR", 0x%08"PRIxPTR", 0x%"PRIxS")\n",
+  NaClLog(3, "NaClSysMunmap(0x%08"NACL_PRIxPTR", "
+          "0x%08"NACL_PRIxPTR", 0x%"NACL_PRIxS")\n",
           (uintptr_t) natp, (uintptr_t) start, length);
 
   NaClSysCommonThreadSyscallEnter(natp);
@@ -186,7 +187,7 @@ int32_t NaClSysMunmap(struct NaClAppThread  *natp,
   if (alloc_rounded_length != length) {
     length = alloc_rounded_length;
     NaClLog(LOG_WARNING,
-            "munmap: rounded length to 0x%"PRIxS"\n", length);
+            "munmap: rounded length to 0x%"NACL_PRIxS"\n", length);
   }
   sysaddr = NaClUserToSysAddrRange(natp->nap, (uintptr_t) start, length);
   if (kNaClBadAddress == sysaddr) {
@@ -225,7 +226,7 @@ int32_t NaClSysMunmap(struct NaClAppThread  *natp,
    * relatively cheap.  Do not open up an address space hole.
    */
   NaClLog(3,
-          ("NaClSysMunmap: mmap(0x%08"PRIxPTR", 0x%"PRIxS","
+          ("NaClSysMunmap: mmap(0x%08"NACL_PRIxPTR", 0x%"NACL_PRIxS","
            " 0x%x, 0x%x, -1, 0)\n"),
           sysaddr, length, PROT_NONE,
           MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED);
@@ -343,7 +344,7 @@ int32_t NaClSysNanosleep(struct NaClAppThread     *natp,
   struct nacl_abi_timespec  *remptr;
   int                       retval = -NACL_ABI_EINVAL;
 
-  NaClLog(4, "NaClSysNanosleep(%08"PRIxPTR"x)\n", (uintptr_t) req);
+  NaClLog(4, "NaClSysNanosleep(%08"NACL_PRIxPTR"x)\n", (uintptr_t) req);
 
   NaClSysCommonThreadSyscallEnter(natp);
 
@@ -367,7 +368,7 @@ int32_t NaClSysNanosleep(struct NaClAppThread     *natp,
    * written there.
    */
 
-  NaClLog(4, " copying timespec from %08"PRIxPTR"x\n", sys_req);
+  NaClLog(4, " copying timespec from %08"NACL_PRIxPTR"x\n", sys_req);
   /* copy once */
   t_sleep = *(struct nacl_abi_timespec *) sys_req;
 
@@ -380,7 +381,7 @@ int32_t NaClSysNanosleep(struct NaClAppThread     *natp,
    * If bogus values can cause the underlying OS to get into trouble,
    * then we need more checking here.
    */
-  NaClLog(4, "NaClSysNanosleep(time = %"PRId64".%09"PRId64" S)\n",
+  NaClLog(4, "NaClSysNanosleep(time = %"NACL_PRId64".%09"NACL_PRId64" S)\n",
           (int64_t) t_sleep.tv_sec, (int64_t) t_sleep.tv_nsec);
   retval = NaClNanosleep(&t_sleep, remptr);
   NaClLog(4, "NaClNanosleep returned %d\n", retval);

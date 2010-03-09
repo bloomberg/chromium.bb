@@ -15,12 +15,12 @@
 
 typedef uint64_t  nacl_reg_t;  /* general purpose register type */
 
-#define PRIdNACL_REG PRId64
-#define PRIiNACL_REG PRIi64
-#define PRIoNACL_REG PRIo64
-#define PRIuNACL_REG PRIu64
-#define PRIxNACL_REG PRIx64
-#define PRIXNACL_REG PRIX64
+#define NACL_PRIdNACL_REG NACL_PRId64
+#define NACL_PRIiNACL_REG NACL_PRIi64
+#define NACL_PRIoNACL_REG NACL_PRIo64
+#define NACL_PRIuNACL_REG NACL_PRIu64
+#define NACL_PRIxNACL_REG NACL_PRIx64
+#define NACL_PRIXNACL_REG NACL_PRIX64
 
 struct NaClThreadContext {
   nacl_reg_t  rax,  rbx,  rcx,  rdx,  rbp,  rsi,  rdi,  rsp;

@@ -354,7 +354,7 @@ void *NaClAllocatePow2AlignedMemory(size_t mem_sz, size_t log_alignment) {
   orig_addr = (uintptr_t) mem_ptr;
 
   NaClLog(LOG_INFO,
-          "%"MSGWIDTH"s %016"PRIxPTR"\n",
+          "%"MSGWIDTH"s %016"NACL_PRIxPTR"\n",
           "orig memory at",
           orig_addr);
 
@@ -363,7 +363,7 @@ void *NaClAllocatePow2AlignedMemory(size_t mem_sz, size_t log_alignment) {
 
   ok = VirtualFree((void *) orig_addr, 0, MEM_RELEASE);
   if (!ok) {
-    NaClLog(LOG_FATAL,"VirtualFree failed for address %"PRIxPTR"\n",
+    NaClLog(LOG_FATAL,"VirtualFree failed for address %"NACL_PRIxPTR"\n",
             orig_addr);
   }
 
@@ -375,12 +375,12 @@ void *NaClAllocatePow2AlignedMemory(size_t mem_sz, size_t log_alignment) {
                            MEM_RESERVE,
                            PAGE_READWRITE);
     if ((uintptr_t) p != mem_ptr) {
-      NaClLog(LOG_FATAL, "Failed to reserve page at %"PRIxPTR"\n", p);
+      NaClLog(LOG_FATAL, "Failed to reserve page at %"NACL_PRIxPTR"\n", p);
     }
   }
 
   NaClLog(LOG_INFO,
-          "%"MSGWIDTH"s %016"PRIxPTR"\n",
+          "%"MSGWIDTH"s %016"NACL_PRIxPTR"\n",
           "Aligned memory:",
           rounded_addr);
 

@@ -30,9 +30,9 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
   ntcp->prog_ctr = prog_ctr;
   NaClSetThreadCombinedDescriptor(ntcp, tls_idx);
 
-  NaClLog(4, "user.tls_idx: 0x%08"PRIxNACL_REG"\n", tls_idx);
-  NaClLog(4, "user.stack_ptr: 0x%08"PRIxNACL_REG"\n", ntcp->stack_ptr);
-  NaClLog(4, "user.prog_ctr: 0x%08"PRIxNACL_REG"\n", ntcp->prog_ctr);
+  NaClLog(4, "user.tls_idx: 0x%08"NACL_PRIxNACL_REG"\n", tls_idx);
+  NaClLog(4, "user.stack_ptr: 0x%08"NACL_PRIxNACL_REG"\n", ntcp->stack_ptr);
+  NaClLog(4, "user.prog_ctr: 0x%08"NACL_PRIxNACL_REG"\n", ntcp->prog_ctr);
 
   return 1;
 }

@@ -382,7 +382,7 @@ void ConsumeID(struct NCDecoderState* mstate) {
     printf("Unexpected instruction length\n");
     ErrorInternal(mstate->vstate);
   }
-  DEBUG( printf("ID: consume %"PRIxPTR" bytes\n",
+  DEBUG( printf("ID: consume %"NACL_PRIxPTR" bytes\n",
                 (intptr_t)( mstate->nextbyte - old_next_byte)) );
 }
 
@@ -440,12 +440,13 @@ void NCDecodeSegment(uint8_t *mbase, PcAddress vbase, MemorySize size,
   mstate->nextbyte = mbase;
   mstate->vpc = vbase;
 
-  DEBUG( printf("DecodeSegment(%"PRIxPcAddress"-%"PRIxPcAddress")\n",
+  DEBUG( printf("DecodeSegment(%"NACL_PRIxPcAddress"-%"NACL_PRIxPcAddress")\n",
                 vbase, vlimit) );
   g_NewSegment(mstate->vstate);
   while (mstate->vpc < vlimit) {
     PcAddress newpc;
-    DEBUG( printf("Decoding instruction at %"PRIxPcAddress":\n", mstate->vpc) );
+    DEBUG( printf("Decoding instruction at %"NACL_PRIxPcAddress":\n",
+                  mstate->vpc) );
     InitDecoder(mstate);
     ConsumePrefixBytes(mstate);
     ConsumeOpcodeBytes(mstate);
@@ -455,9 +456,10 @@ void NCDecodeSegment(uint8_t *mbase, PcAddress vbase, MemorySize size,
     MaybeGet3ByteOpInfo(mstate);
     /* now scrutinize this instruction */
     newpc = mstate->vpc + mstate->inst.length;
-    DEBUG( printf("new pc = %"PRIxPcAddress"\n", newpc) );
+    DEBUG( printf("new pc = %"NACL_PRIxPcAddress"\n", newpc) );
     if (newpc > vlimit) {
-      fprintf(stdout, "%"PRIxPcAddress" > %"PRIxPcAddress"\n", newpc, vlimit);
+      fprintf(stdout, "%"NACL_PRIxPcAddress" > %"NACL_PRIxPcAddress"\n",
+              newpc, vlimit);
       ErrorSegmentation(vstate);
       break;
     }

@@ -80,7 +80,8 @@ NcInstState* NcInstIterGetLookbackState(NcInstIter* iter, size_t distance) {
 }
 
 Bool NcInstIterHasNext(NcInstIter* iter) {
-  DEBUG(printf("iter has next index %"PRIxMemorySize" < %"PRIxMemorySize"\n",
+  DEBUG(printf("iter has next index %"NACL_PRIxMemorySize
+               " < %"NACL_PRIxMemorySize"\n",
                iter->index, iter->segment->size));
   return iter->index < iter->segment->size;
 }
@@ -97,7 +98,8 @@ void NcInstIterAdvance(NcInstIter* iter) {
   iter->buffer_index = (iter->buffer_index + 1) % iter->buffer_size;
   DEBUG(
       printf(
-          "iter advance: index %"PRIxMemorySize", buffer index %"PRIuS"\n",
+          "iter advance: index %"NACL_PRIxMemorySize", "
+          "buffer index %"NACL_PRIuS"\n",
           iter->index, iter->buffer_index));
   iter->buffer[iter->buffer_index].opcode = NULL;
 }

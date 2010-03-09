@@ -27,16 +27,17 @@ NaClErrorCode NaClMprotectGuards(struct NaClApp *nap) {
   start_addr = nap->mem_start;
 
   NaClLog(3,
-          ("NULL detection region start 0x%08"PRIxPTR
-           ", size 0x%08x, end 0x%08"PRIxPTR"\n"),
+          ("NULL detection region start 0x%08"NACL_PRIxPTR", "
+           "size 0x%08x, end 0x%08"NACL_PRIxPTR"\n"),
           start_addr, NACL_SYSCALL_START_ADDR,
           start_addr + NACL_SYSCALL_START_ADDR);
   if ((err = NaCl_mprotect((void *) start_addr,
                            NACL_SYSCALL_START_ADDR,
                            PROT_NONE)) != 0) {
-    NaClLog(LOG_ERROR, ("NaClMemoryProtection:"
-                        " NaCl_mprotect(0x%08"PRIxPTR", 0x%08x, 0x%x) failed,"
-                        " error %d (NULL pointer guard page)\n"),
+    NaClLog(LOG_ERROR, ("NaClMemoryProtection: "
+                        "NaCl_mprotect(0x%08"NACL_PRIxPTR", "
+                        "0x%08x, 0x%x) failed, "
+                        "error %d (NULL pointer guard page)\n"),
             start_addr, NACL_SYSCALL_START_ADDR, PROT_NONE,
             err);
     return LOAD_MPROTECT_FAIL;

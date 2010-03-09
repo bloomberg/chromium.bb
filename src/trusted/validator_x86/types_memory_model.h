@@ -20,24 +20,24 @@
  */
 #if NACL_TARGET_SUBARCH == 64
 typedef uint64_t PcAddress;
-#define PRIxPcAddress    PRIx64
-#define PRIxPcAddressAll "016"PRIx64
+#define NACL_PRIxPcAddress    NACL_PRIx64
+#define NACL_PRIxPcAddressAll "016"NACL_PRIx64
 
 typedef int64_t PcNumber;
-#define PRIdPcNumber PRId64
+#define NACL_PRIdPcNumber NACL_PRId64
 
 typedef uint64_t MemorySize;
-#define PRIxMemorySize PRIx64
+#define NACL_PRIxMemorySize NACL_PRIx64
 #else
 typedef uint32_t PcAddress;
-#define PRIxPcAddress     PRIx32
-#define PRIxPcAddressAll "08"PRIx32
+#define NACL_PRIxPcAddress     NACL_PRIx32
+#define NACL_PRIxPcAddressAll "08"NACL_PRIx32
 
 typedef int32_t PcNumber;
-#define PRIdPcNumber PRId32
+#define NACL_PRIdPcNumber NACL_PRId32
 
 typedef uint32_t MemorySize;
-#define PRIxMemorySize PRIx32
+#define NACL_PRIxMemorySize NACL_PRIx32
 #endif
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_x86_TYPES_MEMORY_MODEL_H_ */

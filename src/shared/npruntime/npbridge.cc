@@ -11,7 +11,11 @@
 #ifdef __native_client__
 #include <inttypes.h>
 #include <nacl/nacl_inttypes.h>
+#else
+#include "native_client/src/include/portability.h"
 #endif  // __native_client__
+
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
@@ -83,7 +87,7 @@ NPObject* NPBridge::CreateProxy(NPP npp, const NPCapability& capability) {
 }
 
 NPObjectProxy* NPBridge::LookupProxy(const NPCapability& capability) {
-  printf("LookupProxy(%p): %p %"PRId64"\n",
+  printf("LookupProxy(%p): %p %"NACL_PRId64"\n",
          reinterpret_cast<const void*>(&capability),
          reinterpret_cast<void*>(capability.object()),
          capability.pid());

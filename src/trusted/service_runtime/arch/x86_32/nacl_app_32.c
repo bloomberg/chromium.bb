@@ -25,7 +25,7 @@ static uint16_t NaClAllocateSegmentForCodeRegion(struct NaClApp *nap) {
   size_t    code_pages = code_bytes >> NACL_PAGESHIFT;
 
   VCHECK((code_bytes & ((1 << NACL_PAGESHIFT) - 1)) == 0,
-        ("code_bytes (0x%08"PRIxS") is not page aligned\n",
+        ("code_bytes (0x%08"NACL_PRIxS") is not page aligned\n",
          code_bytes));
 
   if (code_pages < 1) {
@@ -33,7 +33,8 @@ static uint16_t NaClAllocateSegmentForCodeRegion(struct NaClApp *nap) {
             "NaClAllocateSegmentForCodeRegion: fewer than one code pages?\n");
   }
   NaClLog(2,
-          "NaClLdtAllocatePageSelector(code, 1, 0x%08"PRIxPTR", 0x%"PRIxS"\n",
+          "NaClLdtAllocatePageSelector(code, 1, 0x%08"
+          NACL_PRIxPTR", 0x%"NACL_PRIxS"\n",
           code_start, code_pages);
 
   return NaClLdtAllocatePageSelector(NACL_LDT_DESCRIPTOR_CODE,
@@ -71,7 +72,8 @@ static uint16_t NaClAllocateSegmentForDataRegion(struct NaClApp *nap) {
             " is fewer than one page?\n");
   }
   NaClLog(2,
-          "NaClLdtAllocatePageSelector(data, 1, 0x%08"PRIxPTR", 0x%"PRIxS"\n",
+          "NaClLdtAllocatePageSelector(data, 1, 0x%08"NACL_PRIxPTR", "
+          "0x%"NACL_PRIxS"\n",
           data_start, data_pages - 1);
 
   return NaClLdtAllocatePageSelector(NACL_LDT_DESCRIPTOR_DATA,

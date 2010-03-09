@@ -129,8 +129,8 @@ int test_for_size(int namelen, int num_samples_init, int num_bogus_init,
   uintptr_t num_bogus = (uintptr_t)num_bogus_init;
 
   bogus_name = malloc(namelen);
-  printf("Testing for name length %d, %"PRIxPTR" legit samples, "
-         "%"PRIxPTR" bogus lookups\n",
+  printf("Testing for name length %d, %"NACL_PRIxPTR" legit samples, "
+         "%"NACL_PRIxPTR" bogus lookups\n",
          namelen, num_samples, num_bogus);
   TestDataCtor(&td, namelen);
 
@@ -142,7 +142,7 @@ int test_for_size(int namelen, int num_samples_init, int num_bogus_init,
     name = NaClObjProxyInsert(&nop, obj);
 
     if (verbose) {
-      printf("%4"PRIxPTR": ", samp);
+      printf("%4"NACL_PRIxPTR": ", samp);
       print_name(stdout, name, namelen);
       putchar('\n');
     }
@@ -157,18 +157,18 @@ int test_for_size(int namelen, int num_samples_init, int num_bogus_init,
 
     true_name = TestDataFindName(&td, obj);
     if (NULL == true_name) {
-      printf("`True name' for object %"PRIxPTR" not found\n", samp);
+      printf("`True name' for object %"NACL_PRIxPTR" not found\n", samp);
       goto cleanup;
     }
     if (verbose) {
-      printf("[ %4"PRIxPTR": ", samp);
+      printf("[ %4"NACL_PRIxPTR": ", samp);
       print_name(stdout, true_name, namelen);
       printf(" ]\n");
     }
 
     name = NaClObjProxyFindNameByObj(&nop, obj);
     if (NULL == name) {
-      printf("Object %"PRIxPTR" not found!\n", samp);
+      printf("Object %"NACL_PRIxPTR" not found!\n", samp);
       goto cleanup;
     }
 
@@ -189,18 +189,18 @@ int test_for_size(int namelen, int num_samples_init, int num_bogus_init,
 
     true_name = TestDataFindName(&td, obj);
     if (NULL == true_name) {
-      printf("`True name' for object %"PRIxPTR" not found\n", samp);
+      printf("`True name' for object %"NACL_PRIxPTR" not found\n", samp);
       goto cleanup;
     }
     if (verbose) {
-      printf("[ %4"PRIxPTR": ", samp);
+      printf("[ %4"NACL_PRIxPTR": ", samp);
       print_name(stdout, true_name, namelen);
       printf(" ]\n");
     }
 
     name = NaClObjProxyFindNameByObj(&nop, obj);
     if (NULL == name) {
-      printf("Object %"PRIxPTR" not found!\n", samp);
+      printf("Object %"NACL_PRIxPTR" not found!\n", samp);
       goto cleanup;
     }
 
@@ -221,25 +221,26 @@ int test_for_size(int namelen, int num_samples_init, int num_bogus_init,
 
     true_name = TestDataFindName(&td, obj);
     if (NULL == true_name) {
-      printf("`True name' for object %"PRIxPTR" not found\n", samp);
+      printf("`True name' for object %"NACL_PRIxPTR" not found\n", samp);
       goto cleanup;
     }
     if (verbose) {
-      printf("[ %4"PRIxPTR": ", samp);
+      printf("[ %4"NACL_PRIxPTR": ", samp);
       print_name(stdout, true_name, namelen);
       printf(" ]\n");
     }
 
     found_obj = (void *) 0xdeadbeef;
     if (!NaClObjProxyFindObjByName(&nop, true_name, &found_obj)) {
-      printf("Object %"PRIxPTR" not found, name ", samp);
+      printf("Object %"NACL_PRIxPTR" not found, name ", samp);
       print_name(stdout, true_name, namelen);
       printf("!\n");
       goto cleanup;
     }
 
     if (found_obj != obj) {
-      printf("Object mismatch!  Expected 0x%08"PRIxPTR" got 0x%08"PRIxPTR"\n",
+      printf("Object mismatch!  Expected 0x%08"
+             NACL_PRIxPTR" got 0x%08"NACL_PRIxPTR"\n",
              (uintptr_t) obj, (uintptr_t) found_obj);
       goto cleanup;
     }
@@ -252,22 +253,23 @@ int test_for_size(int namelen, int num_samples_init, int num_bogus_init,
 
     true_name = TestDataFindName(&td, obj);
     if (NULL == true_name) {
-      printf("`True name' for object %"PRIxPTR" not found\n", samp);
+      printf("`True name' for object %"NACL_PRIxPTR" not found\n", samp);
       goto cleanup;
     }
     if (verbose) {
-      printf("[ %4"PRIxPTR": ", samp);
+      printf("[ %4"NACL_PRIxPTR": ", samp);
       print_name(stdout, true_name, namelen);
       printf(" ]\n");
     }
 
     if (!NaClObjProxyFindObjByName(&nop, true_name, &found_obj)) {
-      printf("Object %"PRIxPTR" not found!\n", samp);
+      printf("Object %"NACL_PRIxPTR" not found!\n", samp);
       goto cleanup;
     }
 
     if (found_obj != obj) {
-      printf("Object mismatch!  Expected 0x%08"PRIxPTR" got 0x%08"PRIxPTR,
+      printf("Object mismatch!  Expected 0x%08"NACL_PRIxPTR
+             " got 0x%08"NACL_PRIxPTR,
              (uintptr_t) obj, (uintptr_t) found_obj);
       goto cleanup;
     }
@@ -278,7 +280,7 @@ int test_for_size(int namelen, int num_samples_init, int num_bogus_init,
     obj = (void *) samp;
     name = NaClObjProxyFindNameByObj(&nop, obj);
     if (NULL != name) {
-      printf("Bogus object %"PRIxPTR" FOUND\n", samp);
+      printf("Bogus object %"NACL_PRIxPTR" FOUND\n", samp);
       goto cleanup;
     }
   }

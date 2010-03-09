@@ -78,7 +78,7 @@ Bool NcOperandOneIsRegisterSet(NcInstState* inst,
               reg_name == GetNodeRegister(op_reg) &&
               (op_reg->flags & ExprFlag(ExprSet)));
   }
-  DEBUG(printf("<-NcOperandOneIsRegisterSet = %"PRIdBool"\n", result));
+  DEBUG(printf("<-NcOperandOneIsRegisterSet = %"NACL_PRIdBool"\n", result));
   return result;
 }
 
@@ -91,7 +91,7 @@ Bool NcOperandOneZeroExtends(NcInstState* inst) {
             (NcGetOpcodeOperand(opcode, 0)->flags &
              OpFlag(OperandZeroExtends_v)) &&
             4 == NcInstStateOperandSize(inst));
-  DEBUG(printf("<-NcOPerandOneZeroExtends = %"PRIdBool"\n", result));
+  DEBUG(printf("<-NcOPerandOneZeroExtends = %"NACL_PRIdBool"\n", result));
   return result;
 }
 

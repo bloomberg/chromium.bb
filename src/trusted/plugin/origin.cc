@@ -84,7 +84,7 @@ namespace nacl {
     dprintf(("OriginIsInWhitelist(%s)\n", origin.c_str()));
     for (size_t i = 0; i < ARRAYSIZE_UNSAFE(allowed_origin); ++i) {
       if (origin == allowed_origin[i]) {
-        dprintf((" found at position %"PRIdS"\n", i));
+        dprintf((" found at position %"NACL_PRIdS"\n", i));
         return true;
       }
     }

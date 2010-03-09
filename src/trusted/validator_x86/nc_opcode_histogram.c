@@ -58,7 +58,7 @@ void NcOpcodeHistogramPrintStats(FILE* f,
   fprintf(f, "\nOpcode Histogram:\n");
   for (i = 0; i < 256; ++i) {
     if (0 != histogram->opcode_histogram[i]) {
-      fprintf(f, "%"PRId32"\t0x%02x\t", histogram->opcode_histogram[i], i);
+      fprintf(f, "%"NACL_PRId32"\t0x%02x\t", histogram->opcode_histogram[i], i);
       ++printed_in_this_row;
       if (printed_in_this_row > 3) {
         printed_in_this_row = 0;

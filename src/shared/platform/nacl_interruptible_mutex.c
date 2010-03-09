@@ -116,7 +116,7 @@ void NaClIntrMutexReset(struct NaClIntrMutex *mp) {
   NaClXMutexLock(&mp->mu);
   if (NACL_INTR_LOCK_INTERRUPTED != mp->lock_state) {
     NaClLog(LOG_FATAL,
-            "NaClIntrMutexReset: lock at 0x%08"PRIxPTR" not interrupted\n",
+            "NaClIntrMutexReset: lock at 0x%08"NACL_PRIxPTR" not interrupted\n",
             (uintptr_t) mp);
   }
   mp->lock_state = NACL_INTR_LOCK_FREE;

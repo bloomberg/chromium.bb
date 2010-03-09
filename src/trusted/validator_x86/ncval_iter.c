@@ -30,18 +30,18 @@ static void AnalyzeSections(ncfile *ncf, struct NcValidatorState *vstate) {
     /* TODO(karl) fix types for this? */
     NcValidatorMessage(
         LOG_INFO, vstate,
-        "segment[%d] p_type %d p_offset %"PRIxElf_Off
-        " vaddr %"PRIxElf_Addr
-        " paddr %"PRIxElf_Addr
-        " align %"PRIuElf_Xword"\n",
+        "segment[%d] p_type %d p_offset %"NACL_PRIxElf_Off
+        " vaddr %"NACL_PRIxElf_Addr
+        " paddr %"NACL_PRIxElf_Addr
+        " align %"NACL_PRIuElf_Xword"\n",
         ii, phdr[ii].p_type, phdr[ii].p_offset,
         phdr[ii].p_vaddr, phdr[ii].p_paddr,
         phdr[ii].p_align);
     NcValidatorMessage(
         LOG_INFO, vstate,
-        "    filesz %"PRIxElf_Xword
-        " memsz %"PRIxElf_Xword
-        " flags %"PRIxElf_Word"\n",
+        "    filesz %"NACL_PRIxElf_Xword
+        " memsz %"NACL_PRIxElf_Xword
+        " flags %"NACL_PRIxElf_Word"\n",
         phdr[ii].p_filesz, phdr[ii].p_memsz,
         phdr[ii].p_flags);
     if ((PT_LOAD != phdr[ii].p_type) ||
@@ -60,8 +60,8 @@ static void AnalyzeSegments(ncfile* ncf, NcValidatorState* state) {
   for (ii = 0; ii < ncf->shnum; ii++) {
     NcValidatorMessage(
         LOG_INFO, state,
-        "section %d sh_addr %"PRIxElf_Addr" offset %"PRIxElf_Off
-        " flags %"PRIxElf_Xword"\n",
+        "section %d sh_addr %"NACL_PRIxElf_Addr" offset %"NACL_PRIxElf_Off
+        " flags %"NACL_PRIxElf_Xword"\n",
          ii, shdr[ii].sh_addr, shdr[ii].sh_offset, shdr[ii].sh_flags);
     if ((shdr[ii].sh_flags & SHF_EXECINSTR) != SHF_EXECINSTR)
       continue;

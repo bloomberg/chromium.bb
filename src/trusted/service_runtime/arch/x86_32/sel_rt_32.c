@@ -43,9 +43,9 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
                           nacl_reg_t                prog_ctr,
                           nacl_reg_t                stack_ptr,
                           nacl_reg_t                tls_idx) {
-  NaClLog(4, "&nap->code_seg_sel = 0x%08"PRIxPTR"\n",
+  NaClLog(4, "&nap->code_seg_sel = 0x%08"NACL_PRIxPTR"\n",
           (uintptr_t) &nap->code_seg_sel);
-  NaClLog(4, "&nap->data_seg_sel = 0x%08"PRIxPTR"\n",
+  NaClLog(4, "&nap->data_seg_sel = 0x%08"NACL_PRIxPTR"\n",
           (uintptr_t) &nap->data_seg_sel);
   NaClLog(4, "nap->code_seg_sel = 0x%02x\n", nap->code_seg_sel);
   NaClLog(4, "nap->data_seg_sel = 0x%02x\n", nap->data_seg_sel);

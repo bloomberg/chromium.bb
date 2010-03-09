@@ -81,7 +81,7 @@ static void FatallyLost(const char* message) {
 static ExprNode* FatalError(const char* message,
                            NcInstState* state) {
   fprintf(stderr,
-          "FATAL: At %"PRIxPcAddress", unable to translate: %s\n",
+          "FATAL: At %"NACL_PRIxPcAddress", unable to translate: %s\n",
           NcInstStateVpc(state), message);
   exit(1);
   /* NOT REACHED */
@@ -95,7 +95,7 @@ static ExprNode* AppendConstant(uint64_t value, ExprNodeFlags flags,
                                 ExprNodeVector* vector) {
   uint32_t val1;
   uint32_t val2;
-  DEBUG(printf("Append constant %"PRIx64" : ", value);
+  DEBUG(printf("Append constant %"NACL_PRIx64" : ", value);
         PrintExprNodeFlags(stdout, flags);
         printf("\n"));
   SplitExprConstant(value, &val1, &val2);
@@ -641,7 +641,7 @@ static RegKind GetOperandKindRegKind(OperandKind kind) {
 
 static OperandKind LookupRegister(NcInstState* state,
                                   RegKind kind, int reg_index) {
-  DEBUG(printf("Lookup register (rex=%"PRIx8") %s:%d\n",
+  DEBUG(printf("Lookup register (rex=%"NACL_PRIx8") %s:%d\n",
                state->rexprefix, RegKindName(kind), reg_index));
   if (32 == NACL_TARGET_SUBARCH && kind == RegSize64) {
     FatallyLost("Architecture doesn't define 64 bit registers");
@@ -1005,7 +1005,7 @@ static void ExtractDisplacement(NcInstState* state,
 
   /* Now compute any appropriate flags to be associated with the value. */
   displacement->flags = flags | GetExprSizeFlagForBytes(state->num_disp_bytes);
-  DEBUG(printf("<- value = %"PRIx64", flags = ", displacement->value);
+  DEBUG(printf("<- value = %"NACL_PRIx64", flags = ", displacement->value);
         PrintExprNodeFlags(stdout, displacement->flags);
         printf("\n"));
 }
@@ -1102,7 +1102,7 @@ static ExprNode* AppendMemoryOffsetImmediate(NcInstState* state) {
   AppendRegister(RegUnknown, &state->nodes);
   AppendConstant(1, ExprFlag(ExprSize8), &state->nodes);
   value = ExtractUnsignedImmediate(state);
-  DEBUG(printf("value = 0x%016"PRIx64"\n", value));
+  DEBUG(printf("value = 0x%016"NACL_PRIx64"\n", value));
   flags =
       ExprFlag(ExprUnsignedHex) | GetExprSizeFlagForBytes(state->num_imm_bytes);
   AppendConstant(value, flags, &state->nodes);
@@ -1153,12 +1153,13 @@ static ExprNode* AppendMemoryOffset(NcInstState* state,
   ExprNode* root = NULL;
   ExprNode* n;
 
-  DEBUG(printf("memory offset(%s + %s * %d +  %"PRId64" : %"PRIx32")\n",
-               OperandKindName(base),
-               OperandKindName(index),
-               scale,
-               displacement->value,
-               displacement->flags));
+  DEBUG(printf(
+      "memory offset(%s + %s * %d +  %"NACL_PRId64" : %"NACL_PRIx32")\n",
+      OperandKindName(base),
+      OperandKindName(index),
+      scale,
+      displacement->value,
+      displacement->flags));
   if (NACL_TARGET_SUBARCH == 64) {
     if (state->prefix_mask & kPrefixSEGFS) {
       root = AppendExprNode(ExprSegmentAddress, 0, 0, &state->nodes);
@@ -1709,7 +1710,7 @@ static ExprNode* AddOperandSetUse(ExprNode* node, Operand* operand) {
 }
 
 void BuildExprNodeVector(struct NcInstState* state) {
-  DEBUG(printf("building expression vector for pc = %"PRIxPcAddress":\n",
+  DEBUG(printf("building expression vector for pc = %"NACL_PRIxPcAddress":\n",
                NcInstStateVpc(state)));
   if (InstUndefined == state->opcode->insttype) {
     FatalError("instruction", state);

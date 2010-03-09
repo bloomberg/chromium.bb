@@ -93,7 +93,8 @@ static void TestRpcs(NaClSrpcChannel* channel,
     method_count = NaClSrpcServiceMethodCount(channel->client);
     if (timed_rpc_method < 1 || timed_rpc_method >= method_count) {
       fprintf(stderr,
-              "method number must be between 1 and %"PRIu32" (inclusive)\n",
+              "method number must be between 1 and %"NACL_PRIu32
+              " (inclusive)\n",
               method_count - 1);
       break;
     }

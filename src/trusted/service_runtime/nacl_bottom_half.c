@@ -71,7 +71,7 @@ void NaClClosureResultDone(struct NaClClosureResult *self,
 
 void NaClStartAsyncOp(struct NaClAppThread  *natp,
                       struct NaClClosure    *ncp) {
-  NaClLog(4, "NaClStartAsyncOp(0x%08"PRIxPTR", 0x%08"PRIxPTR")\n",
+  NaClLog(4, "NaClStartAsyncOp(0x%08"NACL_PRIxPTR", 0x%08"NACL_PRIxPTR")\n",
           (uintptr_t) natp,
           (uintptr_t) ncp);
   NaClSyncQueueInsert(&natp->nap->work_queue, ncp);
@@ -80,7 +80,7 @@ void NaClStartAsyncOp(struct NaClAppThread  *natp,
 
 
 void *NaClWaitForAsyncOp( struct NaClAppThread *natp ) {
-  NaClLog(4, "NaClWaitForAsyncOp(0x%08"PRIxPTR")\n",
+  NaClLog(4, "NaClWaitForAsyncOp(0x%08"NACL_PRIxPTR")\n",
           (uintptr_t) natp);
 
   return NaClClosureResultWait(&natp->result);
@@ -89,7 +89,7 @@ void *NaClWaitForAsyncOp( struct NaClAppThread *natp ) {
 int32_t NaClWaitForAsyncOpSysRet(struct NaClAppThread *natp) {
   uintptr_t result;
   int32_t result32;
-  NaClLog(4, "NaClWaitForAsyncOp(0x%08"PRIxPTR")\n",
+  NaClLog(4, "NaClWaitForAsyncOp(0x%08"NACL_PRIxPTR")\n",
           (uintptr_t) natp);
 
   result = (uintptr_t) NaClClosureResultWait(&natp->result);
@@ -98,7 +98,7 @@ int32_t NaClWaitForAsyncOpSysRet(struct NaClAppThread *natp) {
   if (result != (uintptr_t) result) {
     NaClLog(LOG_ERROR,
             ("Overflow in NaClWaitForAsyncOpSysRet: return value is "
-            "%"PRIxPTR"\n"),
+            "%"NACL_PRIxPTR"\n"),
             result);
     result32 = -NACL_ABI_EOVERFLOW;
   }
@@ -176,7 +176,7 @@ void NaClBotSysMultimedia_Init(struct NaClAppThread *natp, int subsys) {
   if (NACL_SYNC_OK != r)
     NaClLog(LOG_FATAL, "NaClBotSysMultimedia_Init: mutex lock failed\n");
 
-  NaClLog(3, "Entered NaClBotSysMultimedia_Init(0x%08"PRIxPTR", %d)\n",
+  NaClLog(3, "Entered NaClBotSysMultimedia_Init(0x%08"NACL_PRIxPTR", %d)\n",
           (uintptr_t) natp, subsys);
 
   retval = -NACL_ABI_EINVAL;
@@ -263,7 +263,7 @@ void NaClBotSysVideo_Init(struct NaClAppThread *natp,
   if (NACL_SYNC_OK != r)
     NaClLog(LOG_FATAL, "NaClBotSysVideo_Init: mutex lock failed\n");
 
-  NaClLog(3, "Entered NaClBotSysVideo_Init(0x%08"PRIxPTR", %d, %d)\n",
+  NaClLog(3, "Entered NaClBotSysVideo_Init(0x%08"NACL_PRIxPTR", %d, %d)\n",
           (uintptr_t) natp, width, height);
 
   retval = -NACL_ABI_EINVAL;
@@ -398,7 +398,7 @@ void NaClBotSysVideo_Update(struct NaClAppThread *natp,
   retval = SDL_SetAlpha(image, 0, 255);
   if (0 != retval) {
     NaClLog(LOG_ERROR,
-      "NaClBotSysVideo_Update SDL_SetAlpha failed (%"PRIuS")\n", retval);
+      "NaClBotSysVideo_Update SDL_SetAlpha failed (%"NACL_PRIuS")\n", retval);
     retval = -NACL_ABI_EPERM;
     goto done_free_image;
   }
@@ -550,7 +550,7 @@ void NaClBotSysAudio_Init(struct NaClAppThread *natp,
   if (NACL_SYNC_OK != r)
     NaClLog(LOG_FATAL, "NaClBotSysAudio_Init: mutex lock failed\n");
 
-  NaClLog(3, "Entered NaClBotSysAudio_Init(0x%08"PRIxPTR", %d)\n",
+  NaClLog(3, "Entered NaClBotSysAudio_Init(0x%08"NACL_PRIxPTR", %d)\n",
           (uintptr_t) natp, format);
 
   retval = -NACL_ABI_EINVAL;
@@ -720,7 +720,7 @@ int32_t NaClSliceSysAudio_Stream(struct NaClAppThread *natp,
                                     nacl_multimedia.audio.size);
     if (kNaClBadAddress == sysaddr) {
       NaClLog(LOG_ERROR,
-        "NaClSliceSysAudio_Stream: size: %"PRIdS"\n",
+        "NaClSliceSysAudio_Stream: size: %"NACL_PRIdS"\n",
               nacl_multimedia.audio.size);
       NaClLog(LOG_FATAL, "NaClSliceSysAudio_Stream: data address invalid\n");
     }

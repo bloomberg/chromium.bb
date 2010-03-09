@@ -56,8 +56,8 @@ static int NaClNrdXferEffectorReturnCreatedDesc(struct NaClDescEffector *vself,
   if (NULL != self->out_desc) {
     NaClLog(LOG_WARNING,
             ("NaClNrdXferEffectorReturnCreatedDesc: "
-             " got new return descriptor at 0x%08"PRIxPTR", but"
-             " previously returned one at 0x%08"PRIxPTR" not retrieved"
+             " got new return descriptor at 0x%08"NACL_PRIxPTR", but"
+             " previously returned one at 0x%08"NACL_PRIxPTR" not retrieved"
              " (unref'ing)\n"),
             (uintptr_t) ndp,
             (uintptr_t) self->out_desc);

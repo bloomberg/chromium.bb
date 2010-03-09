@@ -109,7 +109,7 @@ void NcValidatorPcAddressMessage(int level,
     va_list ap;
 
     NaClLogLock();
-    NaClLog_mu(level, "At address %"PRIxPcAddress":\n", addr);
+    NaClLog_mu(level, "At address %"NACL_PRIxPcAddress":\n", addr);
     NaClLogTagNext_mu();
     NaClLog_mu(level, "%s", LogLevelLabel(level));
     va_start(ap, format);
@@ -201,9 +201,9 @@ NcValidatorState* NcValidatorStateCreate(const PcAddress vbase,
   NcValidatorState* state;
   NcValidatorState* return_value = NULL;
   PcAddress vlimit = vbase + sz;
-  DEBUG(printf("Validator Create: vbase = %"PRIxPcAddress
-               ", sz = %"PRIxMemorySize", alignment = %u, vlimit = %"
-               PRIxPcAddress"\n",
+  DEBUG(printf("Validator Create: vbase = %"NACL_PRIxPcAddress", "
+               "sz = %"NACL_PRIxMemorySize", alignment = %u, vlimit = %"
+               NACL_PRIxPcAddress"\n",
                vbase, sz, alignment, vlimit));
   if (vlimit <= vbase) return NULL;
   if (alignment != 16 && alignment != 32) return NULL;

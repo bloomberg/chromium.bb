@@ -71,18 +71,18 @@ int NaClDescCtor(struct NaClDesc *ndp) {
 void NaClDescDtor(struct NaClDesc *ndp) {
   if (0 != ndp->ref_count) {
     NaClLog(LOG_FATAL, ("NaClDescDtor invoked on a generic descriptor"
-                        " at 0x%08"PRIxPTR" with non-zero"
+                        " at 0x%08"NACL_PRIxPTR" with non-zero"
                         " reference count (%d)\n"),
             (uintptr_t) ndp,
             ndp->ref_count);
   }
-  NaClLog(4, "NaClDescDtor(0x%08"PRIxPTR"), refcount 0, destroying.\n",
+  NaClLog(4, "NaClDescDtor(0x%08"NACL_PRIxPTR"), refcount 0, destroying.\n",
           (uintptr_t) ndp);
   NaClMutexDtor(&ndp->mu);
 }
 
 struct NaClDesc *NaClDescRef(struct NaClDesc *ndp) {
-  NaClLog(4, "NaClDescRef(0x%08"PRIxPTR").\n",
+  NaClLog(4, "NaClDescRef(0x%08"NACL_PRIxPTR").\n",
           (uintptr_t) ndp);
   NaClXMutexLock(&ndp->mu);
   if (0 == ++ndp->ref_count) {
@@ -95,12 +95,12 @@ struct NaClDesc *NaClDescRef(struct NaClDesc *ndp) {
 void NaClDescUnref(struct NaClDesc *ndp) {
   int destroy;
 
-  NaClLog(4, "NaClDescUnref(0x%08"PRIxPTR").\n",
+  NaClLog(4, "NaClDescUnref(0x%08"NACL_PRIxPTR").\n",
           (uintptr_t) ndp);
   NaClXMutexLock(&ndp->mu);
   if (0 == ndp->ref_count) {
     NaClLog(LOG_FATAL,
-            "NaClDescUnref on 0x%08"PRIxPTR", refcount already zero!\n",
+            "NaClDescUnref on 0x%08"NACL_PRIxPTR", refcount already zero!\n",
             (uintptr_t) ndp);
   }
   destroy = (0 == --ndp->ref_count);
@@ -112,7 +112,7 @@ void NaClDescUnref(struct NaClDesc *ndp) {
 }
 
 void NaClDescSafeUnref(struct NaClDesc *ndp) {
-  NaClLog(4, "NaClDescSafeUnref(0x%08"PRIxPTR").\n",
+  NaClLog(4, "NaClDescSafeUnref(0x%08"NACL_PRIxPTR").\n",
           (uintptr_t) ndp);
   if (NULL == ndp) {
     return;
@@ -565,7 +565,7 @@ int NaClDescMapDescriptor(struct NaClDesc         *desc,
     }
 #endif
     NaClLog(4,
-            "NaClDescMapDescriptor: mapping to address %"PRIxPTR"\n",
+            "NaClDescMapDescriptor: mapping to address %"NACL_PRIxPTR"\n",
             (uintptr_t) map_addr);
     rval_ptr = (*desc->vtbl->Map)(desc,
                                   effector,

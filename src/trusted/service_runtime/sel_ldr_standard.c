@@ -100,10 +100,10 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
   nap->break_addr = max_vaddr;
   nap->data_end = max_vaddr;
 
-  NaClLog(4, "rodata_end = %08"PRIxPTR"\n", rodata_end);
-  NaClLog(4, "data_start = %08"PRIxPTR"\n", nap->data_start);
-  NaClLog(4, "data_end   = %08"PRIxPTR"\n", data_end);
-  NaClLog(4, "max_vaddr  = %08"PRIxPTR"\n", max_vaddr);
+  NaClLog(4, "rodata_end = %08"NACL_PRIxPTR"\n", rodata_end);
+  NaClLog(4, "data_start = %08"NACL_PRIxPTR"\n", nap->data_start);
+  NaClLog(4, "data_end   = %08"NACL_PRIxPTR"\n", data_end);
+  NaClLog(4, "max_vaddr  = %08"NACL_PRIxPTR"\n", max_vaddr);
 
 #if 0 == NACL_DANGEROUS_DEBUG_MODE_DISABLE_INNER_SANDBOX
   nap->bundle_size = NaClElfImageGetBundleSize(image);
@@ -118,10 +118,10 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
   nap->entry_pt = NaClElfImageGetEntryPoint(image);
 
   NaClLog(2,
-          "static_text_end: 0x%016"PRIxPTR"  "
-          "break_add: 0x%016"PRIxPTR"  "
-          "data_end: 0x%016"PRIxPTR"  "
-          "entry_pt: 0x%016"PRIxPTR"  "
+          "static_text_end: 0x%016"NACL_PRIxPTR"  "
+          "break_add: 0x%016"NACL_PRIxPTR"  "
+          "data_end: 0x%016"NACL_PRIxPTR"  "
+          "entry_pt: 0x%016"NACL_PRIxPTR"  "
           "bundle_size: 0x%x\n",
           nap->static_text_end,
           nap->break_addr,
@@ -391,10 +391,10 @@ int NaClCreateMainThread(struct NaClApp     *nap,
   /* write strings and char * arrays to stack */
   stack_ptr = (nap->mem_start + ((uintptr_t) 1U << nap->addr_bits) - size);
 
-  NaClLog(2, "setting stack to : %016"PRIxPTR"\n", stack_ptr);
+  NaClLog(2, "setting stack to : %016"NACL_PRIxPTR"\n", stack_ptr);
 
   VCHECK(0 == (stack_ptr & NACL_STACK_ALIGN_MASK),
-         ("stack_ptr not aligned: %016"PRIxPTR"\n", stack_ptr));
+         ("stack_ptr not aligned: %016"NACL_PRIxPTR"\n", stack_ptr));
 
   p = (char *) stack_ptr;
   strp = p + ptr_tbl_size;
@@ -435,8 +435,8 @@ int NaClCreateMainThread(struct NaClApp     *nap,
 
   nap->running = 1;
 
-  NaClLog(2, "system stack ptr : %016"PRIxPTR"\n", stack_ptr);
-  NaClLog(2, "  user stack ptr : %016"PRIxPTR"\n",
+  NaClLog(2, "system stack ptr : %016"NACL_PRIxPTR"\n", stack_ptr);
+  NaClLog(2, "  user stack ptr : %016"NACL_PRIxPTR"\n",
           NaClSysToUserStackAddr(nap, stack_ptr));
 
   /* e_entry is user addr */
@@ -467,9 +467,9 @@ int NaClWaitForMainThreadToExit(struct NaClApp  *nap) {
   struct NaClClosure        *work;
 
   while (NULL != (work = NaClSyncQueueDequeue(&nap->work_queue))) {
-    NaClLog(3, "NaClWaitForMainThreadToExit: got work %08"PRIxPTR"\n",
+    NaClLog(3, "NaClWaitForMainThreadToExit: got work %08"NACL_PRIxPTR"\n",
             (uintptr_t) work);
-    NaClLog(3, " invoking Run fn %08"PRIxPTR"\n",
+    NaClLog(3, " invoking Run fn %08"NACL_PRIxPTR"\n",
             (uintptr_t) work->vtbl->Run);
 
     (*work->vtbl->Run)(work);
@@ -515,14 +515,14 @@ int32_t NaClCreateAdditionalThread(struct NaClApp *nap,
             ("NaClCreateAdditionalThread:  user thread library"
              " did not provide properly aligned user stack pointer\n"));
     NaClLog(LOG_WARNING,
-            "NaClCreateAdditionalThread:  orig stack ptr: 0x%"PRIxPTR"\n",
+            "NaClCreateAdditionalThread:  orig stack ptr: 0x%"NACL_PRIxPTR"\n",
             stack_ptr);
 
     stack_ptr &= ~NACL_STACK_ALIGN_MASK;
     stack_ptr -= sizeof(nacl_reg_t);  /* pretend return addr */
 
     NaClLog(LOG_WARNING,
-            "NaClCreateAdditionalThread: fixed stack ptr: 0x%"PRIxPTR"\n",
+            "NaClCreateAdditionalThread: fixed stack ptr: 0x%"NACL_PRIxPTR"\n",
             stack_ptr);
   }
 

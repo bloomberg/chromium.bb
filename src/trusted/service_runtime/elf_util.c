@@ -91,16 +91,16 @@ static void NaClDumpElfHeader(int loglevel, Elf_Ehdr *elf_hdr) {
   DUMP(e_type, "#x");
   DUMP(e_machine, "#x");
   DUMP(e_version, "#x");
-  DUMP(e_entry, "#"PRIxElf_Addr);
-  DUMP(e_phoff, "#"PRIxElf_Off);
-  DUMP(e_shoff, "#"PRIxElf_Off);
-  DUMP(e_flags, "#"PRIxElf_Word);
-  DUMP(e_ehsize, "#"PRIxElf_Half);
-  DUMP(e_phentsize, "#"PRIxElf_Half);
-  DUMP(e_phnum, "#"PRIxElf_Half);
-  DUMP(e_shentsize, "#"PRIxElf_Half);
-  DUMP(e_shnum, "#"PRIxElf_Half);
-  DUMP(e_shstrndx, "#"PRIxElf_Half);
+  DUMP(e_entry, "#"NACL_PRIxElf_Addr);
+  DUMP(e_phoff, "#"NACL_PRIxElf_Off);
+  DUMP(e_shoff, "#"NACL_PRIxElf_Off);
+  DUMP(e_flags, "#"NACL_PRIxElf_Word);
+  DUMP(e_ehsize, "#"NACL_PRIxElf_Half);
+  DUMP(e_phentsize, "#"NACL_PRIxElf_Half);
+  DUMP(e_phnum, "#"NACL_PRIxElf_Half);
+  DUMP(e_shentsize, "#"NACL_PRIxElf_Half);
+  DUMP(e_shnum, "#"NACL_PRIxElf_Half);
+  DUMP(e_shstrndx, "#"NACL_PRIxElf_Half);
 #undef DUMP
  NaClLog(loglevel, "sizeof(Elf32_Ehdr) = 0x%x\n", (int) sizeof *elf_hdr);
 }
@@ -112,18 +112,18 @@ static void NaClDumpElfProgramHeader(int     loglevel,
     NaClLog(loglevel, "%s: %" f "\n", #mem, phdr->mem);  \
   } while (0)
 
-  DUMP(p_type, PRIxElf_Word);
-  DUMP(p_offset, PRIxElf_Off);
-  DUMP(p_vaddr, PRIxElf_Addr);
-  DUMP(p_paddr, PRIxElf_Addr);
-  DUMP(p_filesz, PRIxElf_Xword);
-  DUMP(p_memsz, PRIxElf_Xword);
-  DUMP(p_flags, PRIxElf_Word);
+  DUMP(p_type, NACL_PRIxElf_Word);
+  DUMP(p_offset, NACL_PRIxElf_Off);
+  DUMP(p_vaddr, NACL_PRIxElf_Addr);
+  DUMP(p_paddr, NACL_PRIxElf_Addr);
+  DUMP(p_filesz, NACL_PRIxElf_Xword);
+  DUMP(p_memsz, NACL_PRIxElf_Xword);
+  DUMP(p_flags, NACL_PRIxElf_Word);
   NaClLog(2, " (%s %s %s)\n",
           (phdr->p_flags & PF_R) ? "PF_R" : "",
           (phdr->p_flags & PF_W) ? "PF_W" : "",
           (phdr->p_flags & PF_X) ? "PF_X" : "");
-  DUMP(p_align, PRIxElf_Xword);
+  DUMP(p_align, NACL_PRIxElf_Xword);
 #undef  DUMP
   NaClLog(loglevel, "\n");
 }
@@ -189,12 +189,13 @@ NaClErrorCode NaClElfImageValidateElfHeader(struct NaClElfImage *image) {
   }
 
   if (EM_EXPECTED_BY_NACL != hdr->e_machine) {
-    NaClLog(LOG_ERROR, "bad machine: %"PRIxElf_Half"\n", hdr->e_machine);
+    NaClLog(LOG_ERROR, "bad machine: %"NACL_PRIxElf_Half"\n", hdr->e_machine);
     return LOAD_BAD_MACHINE;
   }
 
   if (EV_CURRENT != hdr->e_version) {
-    NaClLog(LOG_ERROR, "bad elf version: %"PRIxElf_Word"\n", hdr->e_version);
+    NaClLog(LOG_ERROR, "bad elf version: %"NACL_PRIxElf_Word"\n",
+            hdr->e_version);
     return LOAD_BAD_ELF_VERS;
   }
 
@@ -242,7 +243,7 @@ NaClErrorCode NaClElfImageValidateProgramHeaders(
     for (j = 0; j < NACL_ARRAY_SIZE(nacl_phdr_check_data); ++j) {
       if (php->p_type == nacl_phdr_check_data[j].p_type
           && php->p_flags == nacl_phdr_check_data[j].p_flags) {
-        NaClLog(2, "Matched nacl_phdr_check_data[%"PRIdS"]\n", j);
+        NaClLog(2, "Matched nacl_phdr_check_data[%"NACL_PRIdS"]\n", j);
         if (seen_seg[j]) {
           NaClLog(2, "Segment %d is a type that has been seen\n", segnum);
           return LOAD_DUP_SEGMENT;
@@ -261,8 +262,9 @@ NaClErrorCode NaClElfImageValidateProgramHeaders(
           if (0 != nacl_phdr_check_data[j].p_vaddr
               && (nacl_phdr_check_data[j].p_vaddr != php->p_vaddr)) {
             NaClLog(2,
-                    ("Segment %d: bad virtual address: 0x%08"PRIxElf_Addr","
-                     " expected 0x%08"PRIxElf_Addr"\n"),
+                    ("Segment %d: bad virtual address: 0x%08"
+                     NACL_PRIxElf_Addr","
+                     " expected 0x%08"NACL_PRIxElf_Addr"\n"),
                     segnum,
                     php->p_vaddr,
                     nacl_phdr_check_data[j].p_vaddr);
@@ -270,7 +272,7 @@ NaClErrorCode NaClElfImageValidateProgramHeaders(
           }
           if (php->p_vaddr < NACL_TRAMPOLINE_END) {
             NaClLog(2,
-                    ("Segment %d: virtual address (0x%08"PRIxElf_Addr
+                    ("Segment %d: virtual address (0x%08"NACL_PRIxElf_Addr
                      ") too low\n"),
                     segnum,
                     php->p_vaddr);
@@ -288,15 +290,15 @@ NaClErrorCode NaClElfImageValidateProgramHeaders(
           }
           if (php->p_vaddr + php->p_memsz >= ((Elf_Addr) 1U << addr_bits)) {
             NaClLog(2,
-                    "Segment %d: too large, ends at 0x%08"PRIxElf_Addr"\n",
+                    "Segment %d: too large, ends at 0x%08"NACL_PRIxElf_Addr"\n",
                     segnum,
                     php->p_vaddr + php->p_memsz);
             return LOAD_SEGMENT_OUTSIDE_ADDRSPACE;
           }
           if (php->p_filesz > php->p_memsz) {
             NaClLog(2,
-                    ("Segment %d: file size 0x%08"PRIxElf_Xword" larger"
-                     " than memory size 0x%08"PRIxElf_Xword"\n"),
+                    ("Segment %d: file size 0x%08"NACL_PRIxElf_Xword" larger"
+                     " than memory size 0x%08"NACL_PRIxElf_Xword"\n"),
                     segnum,
                     php->p_filesz,
                     php->p_memsz);
@@ -404,9 +406,9 @@ struct NaClElfImage *NaClElfImageNew(struct Gio     *gp,
       *err_code = LOAD_PROG_HDR_SIZE_TOO_SMALL;
     }
     NaClLog(2, "bad prog headers size\n");
-    NaClLog(2, " image.ehdr.e_phentsize = 0x%"PRIxElf_Half"\n",
+    NaClLog(2, " image.ehdr.e_phentsize = 0x%"NACL_PRIxElf_Half"\n",
             image.ehdr.e_phentsize);
-    NaClLog(2, "  sizeof image.phdrs[0] = 0x%"PRIxS"\n",
+    NaClLog(2, "  sizeof image.phdrs[0] = 0x%"NACL_PRIxS"\n",
             sizeof image.phdrs[0]);
     return 0;
   }
@@ -492,7 +494,7 @@ NaClErrorCode NaClElfImageLoad(struct NaClElfImage *image,
     paddr = mem_start + php->p_vaddr;
 
     NaClLog(4,
-            "Seek to position %"PRIdElf_Off" (0x%"PRIxElf_Off").\n",
+            "Seek to position %"NACL_PRIdElf_Off" (0x%"NACL_PRIxElf_Off").\n",
             php->p_offset,
             php->p_offset);
 
@@ -505,8 +507,8 @@ NaClErrorCode NaClElfImageLoad(struct NaClElfImage *image,
       return LOAD_SEGMENT_BAD_PARAM;
     }
     NaClLog(4,
-            "Reading %"PRIdElf_Xword" (0x%"PRIxElf_Xword") bytes to"
-            " address 0x%"PRIxPTR"\n",
+            "Reading %"NACL_PRIdElf_Xword" (0x%"NACL_PRIxElf_Xword") bytes to"
+            " address 0x%"NACL_PRIxPTR"\n",
             php->p_filesz,
             php->p_filesz,
             paddr);

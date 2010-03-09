@@ -129,7 +129,7 @@ void WINAPI Alarmer(void *state) {
 #endif
   if (gVerbosity) {
     printf("Alarmer %p: alarm to go off in"
-           " %"PRId64".%06"PRId64" seconds\n",
+           " %"NACL_PRId64".%06"NACL_PRId64" seconds\n",
            (void *) sp,
            sp->sleep_usec / kMicroXinX, sp->sleep_usec % kMicroXinX);
     fflush(NULL);
@@ -147,12 +147,12 @@ void WINAPI Alarmer(void *state) {
   cond_timeout_usec = sp->cond_timeout_usec;
   NaClMutexUnlock(&sp->mu);
   if (should_abort) {
-    printf("Alarmer %p: woke up after %"PRId64".%06"PRId64" seconds"
+    printf("Alarmer %p: woke up after %"NACL_PRId64".%06"NACL_PRId64" seconds"
            " without condition\n",
            (void *) sp,
            sp->sleep_usec / kMicroXinX,
            sp->sleep_usec % kMicroXinX);
-    printf("condvar timeout was %"PRId64".%06"PRId64" sec\n",
+    printf("condvar timeout was %"NACL_PRId64".%06"NACL_PRId64" sec\n",
            cond_timeout_usec / kMicroXinX,
            cond_timeout_usec % kMicroXinX);
     printf("Alarmer %p:  variable timing out.\n", (void *) sp);
@@ -210,16 +210,16 @@ void TimerCheckElapsed(struct Timer             *self,
   failed = (min_elapsed_usec > elapsed_usec
             || elapsed_usec > max_elapsed_usec);
   if (gVerbosity || failed) {
-    printf("condvar timeout was %"PRId64".%06"PRId64" sec\n",
+    printf("condvar timeout was %"NACL_PRId64".%06"NACL_PRId64" sec\n",
            cond_timeout_usec / kMicroXinX,
            cond_timeout_usec % kMicroXinX);
-    printf("min elapsed %"PRId64".%06"PRId64" sec\n",
+    printf("min elapsed %"NACL_PRId64".%06"NACL_PRId64" sec\n",
            min_elapsed_usec / kMicroXinX,
            min_elapsed_usec % kMicroXinX);
-    printf("max elapsed %"PRId64".%06"PRId64" sec\n",
+    printf("max elapsed %"NACL_PRId64".%06"NACL_PRId64" sec\n",
            max_elapsed_usec / kMicroXinX,
            max_elapsed_usec % kMicroXinX);
-    printf("actual elapsed %"PRId64".%06"PRId64" sec\n",
+    printf("actual elapsed %"NACL_PRId64".%06"NACL_PRId64" sec\n",
            elapsed_usec / kMicroXinX,
            elapsed_usec % kMicroXinX);
     if (failed) {
@@ -412,14 +412,16 @@ int main(int argc,
   total_usec = (sleep_end_usec + sleep_start_usec)
       * (sleep_end_usec - sleep_start_usec) / sleep_incr_usec;
 
-  printf("Test should take approximately %"PRId64".%06"PRId64" seconds"
+  printf("Test should take approximately %"NACL_PRId64
+         ".%06"NACL_PRId64" seconds"
          " on an unloaded machine.\n",
          total_usec / kMicroXinX, total_usec % kMicroXinX);
   for (sleep_usec = sleep_start_usec;
        sleep_usec < sleep_end_usec;
        sleep_usec += sleep_incr_usec) {
     if (gVerbosity) {
-      printf("testing wait limit of %"PRId64" microseconds.\n", sleep_usec);
+      printf("testing wait limit of %"NACL_PRId64
+             " microseconds.\n", sleep_usec);
     }
     arg.sleep_usec = sleep_usec;
     min_sleep = (int64_t) (gSchedulerMinFuzzFactor * sleep_usec);

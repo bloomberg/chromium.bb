@@ -42,14 +42,14 @@ class ScriptableHandleBase: public NPObject {
       abort();
     }
     valid_handles->insert(this);
-    dprintf(("ScriptableHandle::ScriptableHandle(%p, count %"PRIuS")\n",
+    dprintf(("ScriptableHandle::ScriptableHandle(%p, count %"NACL_PRIuS")\n",
              static_cast<void*>(this),
              valid_handles->count(this)));
   }
   virtual PortableHandle* get_handle() = 0;
   virtual ~ScriptableHandleBase() {
     valid_handles->erase(this);
-    dprintf(("ScriptableHandle::~ScriptableHandle(%p, count %"PRIuS")\n",
+    dprintf(("ScriptableHandle::~ScriptableHandle(%p, count %"NACL_PRIuS")\n",
              static_cast<void*>(this),
              valid_handles->count(this)));
   }
@@ -61,7 +61,7 @@ class ScriptableHandleBase: public NPObject {
       dprintf(("ScriptableHandleBase::is_valid -- no set\n"));
       return false;
     }
-    dprintf(("ScriptableHandleBase::is_valid(%p, count %"PRIuS")\n",
+    dprintf(("ScriptableHandleBase::is_valid(%p, count %"NACL_PRIuS")\n",
              static_cast<void*>(const_cast<ScriptableHandleBase*>(handle)),
              valid_handles->count(handle)));
     return 0 != valid_handles->count(handle);

@@ -33,7 +33,7 @@ static void ConvertHexToByte(char mini_buf[3], size_t mini_buf_index,
   mbase[(*count)++] = (uint8_t)strtoul(mini_buf, NULL, 16);
   if (*count == mbase_size) {
     fprintf(stderr,
-            "Error: Hex text file specifies more than %"PRIuS
+            "Error: Hex text file specifies more than %"NACL_PRIuS
             " bytes of data\n", mbase_size);
   }
 }

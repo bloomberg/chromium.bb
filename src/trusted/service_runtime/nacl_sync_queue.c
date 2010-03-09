@@ -69,7 +69,7 @@ void NaClSyncQueueDtor(struct NaClSyncQueue *nsqp) {
 void NaClSyncQueueInsert(struct NaClSyncQueue *nsqp, void *item) {
   struct NaClSyncQueueItem  *nsqip;
 
-  NaClLog(3, "NaClSyncQueueInsert(0x%08"PRIxPTR",0x%08"PRIxPTR")\n",
+  NaClLog(3, "NaClSyncQueueInsert(0x%08"NACL_PRIxPTR",0x%08"NACL_PRIxPTR")\n",
           (uintptr_t) nsqp,
           (uintptr_t) item);
 
@@ -100,7 +100,7 @@ void *NaClSyncQueueDequeue(struct NaClSyncQueue *nsqp) {
   struct NaClSyncQueueItem  *qitem;
   void                      *item;
 
-  NaClLog(3, "NaClSyncQueueDequeue: waiting on queue 0x%08"PRIxPTR"\n",
+  NaClLog(3, "NaClSyncQueueDequeue: waiting on queue 0x%08"NACL_PRIxPTR"\n",
           (uintptr_t) nsqp);
   NaClXMutexLock(&nsqp->mu);
   while (NaClSyncQueueEmptyMu(nsqp) && !nsqp->quit) {
@@ -124,7 +124,7 @@ void *NaClSyncQueueDequeue(struct NaClSyncQueue *nsqp) {
 
   NaClXMutexUnlock(&nsqp->mu);
 
-  NaClLog(3, "NaClSyncQueueDequeue: returning item 0x%08"PRIxPTR"\n",
+  NaClLog(3, "NaClSyncQueueDequeue: returning item 0x%08"NACL_PRIxPTR"\n",
           (uintptr_t) item);
   return item;
 }

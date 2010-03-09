@@ -108,20 +108,20 @@ static int32_t GetSignExtendedValue(ExprNode* node) {
 static void PrintDisassembledConst(FILE* file, ExprNode* node) {
   assert(node->kind == ExprConstant);
   if (node->flags & ExprFlag(ExprUnsignedHex)) {
-    fprintf(file, "0x%"PRIx32, node->value);
+    fprintf(file, "0x%"NACL_PRIx32, node->value);
   } else if (node->flags & ExprFlag(ExprSignedHex)) {
     int32_t value = GetSignExtendedValue(node);
     if (value < 0) {
       value = -value;
-      fprintf(file, "-0x%"PRIx32, value);
+      fprintf(file, "-0x%"NACL_PRIx32, value);
     } else {
-      fprintf(file, "0x%"PRIx32, value);
+      fprintf(file, "0x%"NACL_PRIx32, value);
     }
   } else if (node->flags & ExprFlag(ExprUnsignedInt)) {
-    fprintf(file, "%"PRIu32, node->value);
+    fprintf(file, "%"NACL_PRIu32, node->value);
   } else {
     /* Assume ExprSignedInt. */
-    fprintf(file, "%"PRId32, (int32_t) GetSignExtendedValue(node));
+    fprintf(file, "%"NACL_PRId32, (int32_t) GetSignExtendedValue(node));
   }
 }
 
@@ -134,19 +134,19 @@ static void PrintDisassembledConst64(
   assert(node->kind == ExprConstant64);
   value = GetExprConstant(vector, index);
   if (node->flags & ExprFlag(ExprUnsignedHex)) {
-    fprintf(file, "0x%"PRIx64, value);
+    fprintf(file, "0x%"NACL_PRIx64, value);
   } else if (node->flags & ExprFlag(ExprSignedHex)) {
     int64_t val = (int64_t) value;
     if (val < 0) {
       val = -val;
-      fprintf(file, "-0x%"PRIx64, val);
+      fprintf(file, "-0x%"NACL_PRIx64, val);
     } else {
-      fprintf(file, "0x%"PRIx64, val);
+      fprintf(file, "0x%"NACL_PRIx64, val);
     }
   } else if (node->flags & ExprFlag(ExprUnsignedInt)) {
-    fprintf(file, "%"PRIu64, value);
+    fprintf(file, "%"NACL_PRIu64, value);
   } else {
-    fprintf(file, "%"PRId64, (int64_t) value);
+    fprintf(file, "%"NACL_PRId64, (int64_t) value);
   }
 }
 
@@ -183,7 +183,7 @@ void PrintExprNodeVector(FILE* file, ExprNodeVector* vector) {
         PrintDisassembledConst64(file, vector, i);
         break;
       default:
-        fprintf(file, "%"PRIu32, node->value);
+        fprintf(file, "%"NACL_PRIu32, node->value);
         break;
     }
     fprintf(file, ", ");
@@ -315,9 +315,9 @@ void PrintNcInstStateInstruction(FILE* file, NcInstState* state) {
   int length = NcInstStateLength(state);
   DEBUG(PrintOpcode(stdout, NcInstStateOpcode(state)));
   DEBUG(PrintExprNodeVector(stdout, NcInstStateNodeVector(state)));
-  fprintf(file, "%"PRIxPcAddressAll": ", NcInstStateVpc(state));
+  fprintf(file, "%"NACL_PRIxPcAddressAll": ", NcInstStateVpc(state));
   for (i = 0; i < length; ++i) {
-      fprintf(file, "%02"PRIx8" ", NcInstStateByte(state, i));
+      fprintf(file, "%02"NACL_PRIx8" ", NcInstStateByte(state, i));
   }
   for (i = length; i < MAX_BYTES_PER_X86_INSTRUCTION; ++i) {
     fprintf(file, "   ");

@@ -95,7 +95,8 @@ int NaClDescImcBoundDescAcceptConn(struct NaClDesc          *vself,
   nh = NACL_INVALID_HANDLE;
 
   NaClLog(3,
-          ("NaClDescImcBoundDescAcceptConn(0x%08"PRIxPTR", 0x%08"PRIxPTR"):"
+          ("NaClDescImcBoundDescAcceptConn(0x%08"NACL_PRIxPTR", "
+           "0x%08"NACL_PRIxPTR"):"
            " h = %d\n"),
           (uintptr_t) vself,
           (uintptr_t) effp,
@@ -117,7 +118,7 @@ int NaClDescImcBoundDescAcceptConn(struct NaClDesc          *vself,
   }
   if (1 != conn_msg.handle_count) {
     NaClLog(LOG_ERROR, ("NaClDescImcBoundDescAcceptConn: connection"
-                        " message contains %"PRIdS" descriptors?!?\n"),
+                        " message contains %"NACL_PRIdS" descriptors?!?\n"),
             conn_msg.handle_count);
     retval = -NACL_ABI_EMFILE;  /* TODO(bsy): better errno? */
     goto cleanup;

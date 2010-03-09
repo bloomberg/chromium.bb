@@ -53,7 +53,7 @@ int NaClDescCondVarCtor(struct NaClDescCondVar  *self) {
 void NaClDescCondVarDtor(struct NaClDesc *vself) {
   struct NaClDescCondVar *self = (struct NaClDescCondVar *) vself;
 
-  NaClLog(4, "NaClDescCondVarDtor(0x%08"PRIxPTR").\n",
+  NaClLog(4, "NaClDescCondVarDtor(0x%08"NACL_PRIxPTR").\n",
           (uintptr_t) vself);
   NaClIntrCondVarDtor(&self->cv);
 

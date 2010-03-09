@@ -100,7 +100,7 @@ int main(int ac, char **av) {
   }
 
   if (0 != (rv = NaClCommonDescMakeBoundSock(pair))) {
-    fprintf(stderr, "make bound sock returned %"PRIdS"\n", rv);
+    fprintf(stderr, "make bound sock returned %"NACL_PRIdS"\n", rv);
     return 2;
   }
 
@@ -125,7 +125,7 @@ int main(int ac, char **av) {
     fflush(stdout);
 
     if (0 != (rv = (*pair[0]->vtbl->AcceptConn)(pair[0], effp))) {
-      fprintf(stderr, "AcceptConn returned %"PRIdS"\n", rv);
+      fprintf(stderr, "AcceptConn returned %"NACL_PRIdS"\n", rv);
       return 4;
     }
 
@@ -145,7 +145,7 @@ int main(int ac, char **av) {
 
     rv = NaClImcRecvTypedMessage(channel, effp, &msg_hdr, 0);
 
-    printf("Receive returned %"PRIdS"\n", rv);
+    printf("Receive returned %"NACL_PRIdS"\n", rv);
 
     if (!NaClIsNegErrno(rv)) {
       /* Sanity check: make sure the return value is within range.
@@ -155,14 +155,15 @@ int main(int ac, char **av) {
        */
       if(((size_t)rv > sizeof data_buffer) || (rv > INT_MAX)) {
         NaClLog(LOG_FATAL, "Buffer overflow in NaClImcRecvTypedMessage. "
-                "Requested %"PRIdS" bytes, received %"PRIdS".",
+                "Requested %"NACL_PRIdS" bytes, received %"NACL_PRIdS".",
                 sizeof data_buffer, rv);
       }
       /* Casting rv to int here because otherwise the pedantic Mac compiler
        * will complain. Cast is safe due to the range check above.
        */
       printf("Data bytes: %.*s\n", (int)rv, data_buffer);
-      printf("Got %"PRIdNACL_SIZE" NaCl descriptors\n", msg_hdr.ndesc_length);
+      printf("Got %"NACL_PRIdNACL_SIZE" NaCl descriptors\n",
+             msg_hdr.ndesc_length);
 
       for (i = 0; i < msg_hdr.ndesc_length; ++i) {
         struct NaClDesc *ndp;
@@ -183,7 +184,7 @@ int main(int ac, char **av) {
                                            (void *) message,
                                            msglen);
         if (-1 == write_result || msglen != (size_t) write_result) {
-          printf("Write failed: got %"PRIdS", expected %"PRIuS"\n",
+          printf("Write failed: got %"NACL_PRIdS", expected %"NACL_PRIuS"\n",
                  write_result, msglen);
         }
 
@@ -213,7 +214,7 @@ int main(int ac, char **av) {
 
     rv = (*ndcc.base.vtbl->ConnectAddr)((struct NaClDesc *) &ndcc, effp);
 
-    printf("Connect returned %"PRIdS"\n", rv);
+    printf("Connect returned %"NACL_PRIdS"\n", rv);
 
     if (0 != rv) {
       fprintf(stderr, "Client could not connect\n");
@@ -257,7 +258,7 @@ int main(int ac, char **av) {
       desc_buffer[0] = NULL;
     }
 
-    printf("Send returned %"PRIdS"\n", rv);
+    printf("Send returned %"NACL_PRIdS"\n", rv);
   }
 
   (*effp->vtbl->Dtor)(effp);

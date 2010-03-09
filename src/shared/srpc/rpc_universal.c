@@ -580,7 +580,7 @@ static void DumpArg(const NaClSrpcArg* arg) {
     break;
    case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
     count = arg->u.daval.count;
-    printf("D(%"PRIu32"", count);
+    printf("D(%"NACL_PRIu32"", count);
     for (i = 0; i < count; ++i)
       printf(",%f", arg->u.daval.darr[i]);
     printf(")");
@@ -589,11 +589,11 @@ static void DumpArg(const NaClSrpcArg* arg) {
     printf("h(%d)", AddDescToList(arg->u.hval, "imported"));
     break;
    case NACL_SRPC_ARG_TYPE_INT:
-    printf("i(%"PRId32")", arg->u.ival);
+    printf("i(%"NACL_PRId32")", arg->u.ival);
     break;
    case NACL_SRPC_ARG_TYPE_INT_ARRAY:
     count = arg->u.iaval.count;
-    printf("I(%"PRIu32"", count);
+    printf("I(%"NACL_PRIu32"", count);
     for (i = 0; i < count; ++i)
       printf(",%d", arg->u.iaval.iarr[i]);
     printf(")");
@@ -614,7 +614,7 @@ static void DumpArg(const NaClSrpcArg* arg) {
     break;
    case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
     count = arg->u.vaval.count;
-    printf("A(%"PRIu32"", count);
+    printf("A(%"NACL_PRIu32"", count);
     for (i = 0; i < count; ++i) {
       printf(",");
       DumpArg(&arg->u.vaval.varr[i]);
@@ -824,7 +824,8 @@ void NaClSrpcCommandLoop(NaClSrpcService* service,
         continue;
       }
 
-      fprintf(stderr, "using rpc %s no %"PRIu32"\n", tokens[1].start, rpc_num);
+      fprintf(stderr, "using rpc %s no %"NACL_PRIu32"\n",
+              tokens[1].start, rpc_num);
       errcode = (*interpreter)(service, channel, rpc_num, inv, outv);
       if (NACL_SRPC_RESULT_OK != errcode) {
         fprintf(stderr, "rpc call failed %s\n", NaClSrpcErrorString(errcode));

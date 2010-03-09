@@ -134,7 +134,7 @@ int DynArraySet(struct DynArray *dap,
   dap->ptr_array[idx] = ptr;
   ix = BitsToIndex(idx);
 #if DYN_ARRAY_DEBUG
-  NaClLog(4, "Set(%"PRIuS",%p) @ix %"PRIuS": 0x%08x\n",
+  NaClLog(4, "Set(%"NACL_PRIuS",%p) @ix %"NACL_PRIuS": 0x%08x\n",
           idx, ptr, ix, dap->available[ix]);
 #endif
   if (NULL != ptr) {
@@ -146,7 +146,7 @@ int DynArraySet(struct DynArray *dap,
     }
   }
 #if DYN_ARRAY_DEBUG
-  NaClLog(4, "After @ix %"PRIuS": 0x%08x, avail_ix %"PRIuS"\n",
+  NaClLog(4, "After @ix %"NACL_PRIuS": 0x%08x, avail_ix %"NACL_PRIuS"\n",
           ix, dap->available[ix], dap->avail_ix);
 #endif
   if (dap->num_entries <= idx) {
@@ -165,13 +165,13 @@ size_t DynArrayFirstAvail(struct DynArray *dap) {
 
 #if DYN_ARRAY_DEBUG
   for (ix = 0; ix < last_ix; ++ix) {
-    NaClLog(4, "ix %"PRIuS": 0x%08x\n", ix, dap->available[ix]);
+    NaClLog(4, "ix %"NACL_PRIuS": 0x%08x\n", ix, dap->available[ix]);
   }
 #endif
   for (ix = dap->avail_ix; ix < last_ix; ++ix) {
     if (0U != ~dap->available[ix]) {
 #if DYN_ARRAY_DEBUG
-      NaClLog(4, "found first not-all-ones ix %"PRIuS"\n", ix);
+      NaClLog(4, "found first not-all-ones ix %"NACL_PRIuS"\n", ix);
 #endif
       dap->avail_ix = ix;
       break;

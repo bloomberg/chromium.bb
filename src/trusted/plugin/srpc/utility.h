@@ -74,7 +74,7 @@ extern int NaClPluginDebugPrintCheckEnv();
           ::nacl_srpc::NaClPluginDebugPrintCheckEnv();                \
     }                                                                 \
     if (0 != ::nacl_srpc::gNaClPluginDebugPrintEnabled) {             \
-      printf("%08"PRIx32":", NaClThreadId());                         \
+      printf("%08"NACL_PRIx32":", NaClThreadId());                    \
       printf args;                                                    \
       fflush(stdout);                                                 \
     }                                                                 \

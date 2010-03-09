@@ -52,7 +52,7 @@ int NaClHostDirOpen(struct NaClHostDir  *d,
                     char                *path) {
   int  fd;
 
-  NaClLog(3, "NaClHostDirOpen(0x%08"PRIxPTR", %s)\n", (uintptr_t) d, path);
+  NaClLog(3, "NaClHostDirOpen(0x%08"NACL_PRIxPTR", %s)\n", (uintptr_t) d, path);
   if (NULL == d) {
     NaClLog(LOG_FATAL, "NaClHostDirOpen: 'this' is NULL\n");
   }
@@ -81,7 +81,7 @@ ssize_t NaClHostDirGetdents(struct NaClHostDir  *d,
   if (NULL == d) {
     NaClLog(LOG_FATAL, "NaClHostDirGetdents: 'this' is NULL\n");
   }
-  NaClLog(3, "NaClHostDirGetdents(0x%08"PRIxPTR", %"PRIuS"):\n",
+  NaClLog(3, "NaClHostDirGetdents(0x%08"NACL_PRIxPTR", %"NACL_PRIuS"):\n",
           (uintptr_t) buf, len);
   retval = getdents(d->fd, host_direntp, len);
   if (-1 == retval) {

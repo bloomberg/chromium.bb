@@ -74,7 +74,7 @@ void PrintOpcodeTableDriver(FILE* f, Bool as_array_element,
   if (!simplify && index >= 0) {
     fprintf(f, "  /* %d */\n", index);
   }
-  fprintf(f, "  { %"PRIu8", {", opcode->num_opcode_bytes);
+  fprintf(f, "  { %"NACL_PRIu8", {", opcode->num_opcode_bytes);
   for (i = 0; i < MAX_OPCODE_BYTES; ++i) {
     if (i > 0) fprintf(f, ",");
     fprintf(f," 0x%02x", opcode->opcode[i]);

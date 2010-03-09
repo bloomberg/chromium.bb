@@ -43,13 +43,14 @@ struct NaClVmmapEntry *NaClVmmapEntryMake(uintptr_t             page_num,
   struct NaClVmmapEntry *entry;
 
   NaClLog(4,
-          "NaClVmmapEntryMake(0x%"PRIxPTR",0x%"PRIxS",0x%x,0x%"PRIxPTR")\n",
+          "NaClVmmapEntryMake(0x%"NACL_PRIxPTR",0x%"NACL_PRIxS","
+          "0x%x,0x%"NACL_PRIxPTR")\n",
           page_num, npages, prot, (uintptr_t) nmop);
   entry = (struct NaClVmmapEntry *) malloc(sizeof *entry);
   if (NULL == entry) {
     return 0;
   }
-  NaClLog(4, "entry: 0x%"PRIxPTR"\n", (uintptr_t) entry);
+  NaClLog(4, "entry: 0x%"NACL_PRIxPTR"\n", (uintptr_t) entry);
   entry->page_num = page_num;
   entry->npages = npages;
   entry->prot = prot;
@@ -61,8 +62,9 @@ struct NaClVmmapEntry *NaClVmmapEntryMake(uintptr_t             page_num,
 
 void  NaClVmmapEntryFree(struct NaClVmmapEntry *entry) {
   NaClLog(4,
-          ("NaClVmmapEntryFree(0x%08"PRIxPTR"): (0x%"PRIxPTR",0x%"PRIxS","
-           "0x%x,0x%"PRIxPTR")\n"),
+          ("NaClVmmapEntryFree(0x%08"NACL_PRIxPTR
+           "): (0x%"NACL_PRIxPTR",0x%"NACL_PRIxS","
+           "0x%x,0x%"NACL_PRIxPTR")\n"),
           (uintptr_t) entry,
           entry->page_num, entry->npages, entry->prot, (uintptr_t) entry->nmop);
 
@@ -253,8 +255,9 @@ int NaClVmmapAdd(struct NaClVmmap   *self,
   struct NaClVmmapEntry *entry;
 
   NaClLog(2,
-          ("NaClVmmapAdd(0x%08"PRIxPTR", 0x%"PRIxPTR", 0x%"PRIxS", 0x%x,"
-           " 0x%08"PRIxPTR")\n"),
+          ("NaClVmmapAdd(0x%08"NACL_PRIxPTR", 0x%"NACL_PRIxPTR", "
+           "0x%"NACL_PRIxS", 0x%x, "
+           "0x%08"NACL_PRIxPTR")\n"),
           (uintptr_t) self, page_num, npages, prot, (uintptr_t) nmop);
   if (self->nvalid == self->size) {
     size_t                    new_size = 2 * self->size;
@@ -294,8 +297,9 @@ void NaClVmmapUpdate(struct NaClVmmap   *self,
   uintptr_t             new_region_end_page = page_num + npages;
 
   NaClLog(2,
-          ("NaClVmmapUpdate(0x%08"PRIxPTR", 0x%"PRIxPTR", 0x%"PRIxS","
-           " 0x%x, 0x%08"PRIxPTR")\n"),
+          ("NaClVmmapUpdate(0x%08"NACL_PRIxPTR", "
+           "0x%"NACL_PRIxPTR", 0x%"NACL_PRIxS", "
+           "0x%x, 0x%08"NACL_PRIxPTR")\n"),
           (uintptr_t) self, page_num, npages, prot, (uintptr_t) nmop);
   NaClVmmapMakeSorted(self);
 
@@ -359,10 +363,10 @@ static int NaClVmmapContainCmpEntries(void const *vkey,
   struct NaClVmmapEntry const *const *ent =
       (struct NaClVmmapEntry const *const *) vent;
 
-  NaClLog(5, "key->page_num   = 0x%05"PRIxPTR"\n", (*key)->page_num);
+  NaClLog(5, "key->page_num   = 0x%05"NACL_PRIxPTR"\n", (*key)->page_num);
 
-  NaClLog(5, "entry->page_num = 0x%05"PRIxPTR"\n", (*ent)->page_num);
-  NaClLog(5, "entry->npages   = 0x%"PRIxS"\n", (*ent)->npages);
+  NaClLog(5, "entry->page_num = 0x%05"NACL_PRIxPTR"\n", (*ent)->page_num);
+  NaClLog(5, "entry->npages   = 0x%"NACL_PRIxS"\n", (*ent)->npages);
 
   if ((*key)->page_num < (*ent)->page_num) return -1;
   if ((*key)->page_num < (*ent)->page_num + (*ent)->npages) return 0;

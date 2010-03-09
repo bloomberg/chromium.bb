@@ -32,7 +32,7 @@ int main(int  argc,
    * NACL_ASSERT_IS_ARRAY(bufptr);
    */
 
-  printf("#buffer = %"PRIuS"\n", NACL_ARRAY_SIZE(buffer));
+  printf("#buffer = %"NACL_PRIuS"\n", NACL_ARRAY_SIZE(buffer));
 
   /*
    * printf("#bufptr = %lu\n", ARRAY_SIZE(bufptr));

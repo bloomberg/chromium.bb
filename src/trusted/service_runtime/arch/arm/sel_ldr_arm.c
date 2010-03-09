@@ -76,7 +76,7 @@ void NaClFillEndOfTextRegion(struct NaClApp *nap) {
   CHECK(page_pad < NACL_MAP_PAGESIZE + NACL_HALT_SLED_SIZE);
 
   NaClLog(4,
-          "Filling with halts: %08"PRIxPTR", %08"PRIxS" bytes\n",
+          "Filling with halts: %08"NACL_PRIxPTR", %08"NACL_PRIxS" bytes\n",
           nap->mem_start + nap->static_text_end,
           page_pad);
 
@@ -96,7 +96,8 @@ void  NaClLoadSpringboard(struct NaClApp  *nap) {
   struct NaClPatchInfo  patch_info;
   const uintptr_t       springboard_addr = NACL_TRAMPOLINE_END -
                                            NACL_SYSCALL_BLOCK_SIZE;
-  NaClLog(2, "Installing springboard at 0x%08"PRIxPTR"\n", springboard_addr);
+  NaClLog(2, "Installing springboard at 0x%08"NACL_PRIxPTR"\n",
+          springboard_addr);
 
   NaClPatchInfoCtor(&patch_info);
 

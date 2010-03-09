@@ -195,7 +195,7 @@ uintptr_t NaClDescSysvShmMap(struct NaClDesc         *vself,
   if (result != start_addr) {
     NaClLog(LOG_FATAL,
             ("NaClDescSysvShmMap: NACL_MAP_FIXED but"
-             " got 0x%08"PRIxPTR" instead of 0x%08"PRIxPTR"\n"),
+             " got 0x%08"NACL_PRIxPTR" instead of 0x%08"NACL_PRIxPTR"\n"),
             (uintptr_t) result, (uintptr_t) start_addr);
   }
 

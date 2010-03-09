@@ -30,12 +30,12 @@ typedef enum {
  * It doesn't really make much sense to have all the diouxX formats, but
  * we include them for completeness/orthogonality.
  */
-#define PRIdBool  "d"
-#define PRIiBool  "i"
-#define PRIoBool  "o"
-#define PRIuBool  "u"
-#define PRIxBool  "x"
-#define PRIXBool  "X"
+#define NACL_PRIdBool  "d"
+#define NACL_PRIiBool  "i"
+#define NACL_PRIoBool  "o"
+#define NACL_PRIuBool  "u"
+#define NACL_PRIxBool  "x"
+#define NACL_PRIXBool  "X"
 
 EXTERN_C_END
 

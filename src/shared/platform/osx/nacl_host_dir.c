@@ -43,14 +43,15 @@ int NaClHostDirOpen(struct NaClHostDir  *d,
                     char                *path) {
   DIR  *dirp;
 
-  NaClLog(3, "NaClHostDirOpen(0x%08"PRIxPTR", %s)\n", (uintptr_t) d, path);
+  NaClLog(3, "NaClHostDirOpen(0x%08"NACL_PRIxPTR", %s)\n", (uintptr_t) d, path);
   if (NULL == d) {
     NaClLog(LOG_FATAL, "NaClHostDirOpen: 'this' is NULL\n");
   }
 
   NaClLog(3, "NaClHostDirOpen: invoking POSIX opendir(%s)\n", path);
   dirp = opendir(path);
-  NaClLog(3, "NaClHostDirOpen: got DIR* 0x%08"PRIxPTR"\n", (uintptr_t) dirp);
+  NaClLog(3, "NaClHostDirOpen: got DIR* 0x%08"NACL_PRIxPTR"\n",
+          (uintptr_t) dirp);
   if (NULL == dirp) {
     NaClLog(LOG_ERROR,
             "NaClHostDirOpen: open returned NULL, errno %d\n", errno);
@@ -73,7 +74,7 @@ ssize_t NaClHostDirGetdents(struct NaClHostDir  *d,
   if (NULL == d) {
     NaClLog(LOG_FATAL, "NaClHostDirGetdents: 'this' is NULL\n");
   }
-  NaClLog(3, "NaClHostDirGetdents(0x%08"PRIxPTR", %"PRIuS"):\n",
+  NaClLog(3, "NaClHostDirGetdents(0x%08"NACL_PRIxPTR", %"NACL_PRIuS"):\n",
           (uintptr_t) buf, len);
 
   i = 0;
@@ -113,7 +114,7 @@ int NaClHostDirClose(struct NaClHostDir *d) {
   if (NULL == d) {
     NaClLog(LOG_FATAL, "NaClHostDirClose: 'this' is NULL\n");
   }
-  NaClLog(3, "NaClHostDirClose(0x%08"PRIxPTR")\n", (uintptr_t) d->dirp);
+  NaClLog(3, "NaClHostDirClose(0x%08"NACL_PRIxPTR")\n", (uintptr_t) d->dirp);
   retval = closedir(d->dirp);
   if (-1 != retval) {
     d->dirp = NULL;

@@ -24,7 +24,7 @@ NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) {
   void          *mem_ptr;
   NaClErrorCode err = LOAD_INTERNAL;
 
-  NaClLog(LOG_INFO, "NaClAllocateSpace(*, 0x%016"PRIxS" bytes).\n",
+  NaClLog(LOG_INFO, "NaClAllocateSpace(*, 0x%016"NACL_PRIxS" bytes).\n",
           addrsp_size);
 
   CHECK(addrsp_size == FOURGIG);
@@ -45,7 +45,7 @@ NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) {
    */
   *mem = (void *) (((char *) mem_ptr) + GUARDSIZE);
   NaClLog(LOG_INFO,
-          "NaClAllocateSpace: addr space at 0x%016"PRIxPTR"\n",
+          "NaClAllocateSpace: addr space at 0x%016"NACL_PRIxPTR"\n",
           (uintptr_t) *mem);
 
 #if NACL_WINDOWS
@@ -74,8 +74,8 @@ NaClErrorCode NaClMprotectGuards(struct NaClApp *nap) {
   guard[1] = (void *)(start_addr + FOURGIG);
 
   NaClLog(3,
-          ("NULL detection region start 0x%08"PRIxPTR
-           ", size 0x%08x, end 0x%08"PRIxPTR"\n"),
+          ("NULL detection region start 0x%08"NACL_PRIxPTR", "
+           "size 0x%08x, end 0x%08"NACL_PRIxPTR"\n"),
           start_addr, NACL_SYSCALL_START_ADDR,
           start_addr + NACL_SYSCALL_START_ADDR);
   if ((err = NaCl_mprotect((void *) start_addr,
@@ -83,7 +83,7 @@ NaClErrorCode NaClMprotectGuards(struct NaClApp *nap) {
                            PROT_NONE)) != 0) {
     NaClLog(LOG_ERROR,
             ("NaClMprotectGuards:"
-             " NaCl_mprotect(0x%016"PRIxPTR", 0x%016x, 0x%x) failed,"
+             " NaCl_mprotect(0x%016"NACL_PRIxPTR", 0x%016x, 0x%x) failed,"
              " error %d (NULL pointer guard page)\n"),
             start_addr, NACL_SYSCALL_START_ADDR, PROT_NONE,
             err);
@@ -115,8 +115,9 @@ NaClErrorCode NaClMprotectGuards(struct NaClApp *nap) {
                            GUARDSIZE,
                            PROT_NONE)) != 0) {
     NaClLog(LOG_ERROR,
-            ("NaClMprotectGuards:"
-             " NaCl_mprotect(0x%016"PRIxPTR", 0x%016"PRIxS", 0x%x) failed."
+            ("NaClMprotectGuards: "
+             "NaCl_mprotect(0x%016"NACL_PRIxPTR", "
+             "0x%016"NACL_PRIxS", 0x%x) failed."
              " error %d (pre-address-space guard)\n"),
             (start_addr - GUARDSIZE),
             GUARDSIZE,
@@ -129,7 +130,8 @@ NaClErrorCode NaClMprotectGuards(struct NaClApp *nap) {
                            PROT_NONE)) != 0) {
     NaClLog(LOG_ERROR,
             ("NaClMprotectGuards:"
-             " NaCl_mprotect(0x%016"PRIxPTR", 0x%016"PRIxS", 0x%x) failed."
+             " NaCl_mprotect(0x%016"NACL_PRIxPTR", "
+             "0x%016"NACL_PRIxS", 0x%x) failed."
              " error %d (post-address-space guard)\n"),
             (start_addr + FOURGIG),
             GUARDSIZE,

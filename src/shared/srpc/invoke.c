@@ -78,7 +78,7 @@ NaClSrpcError NaClSrpcInvokeV(NaClSrpcChannel* channel,
   double             this_start_usec = 0.0;
   double             this_method_usec;
 
-  dprintf(("InvokeV(channel %p, rpc number %"PRIu32")\n",
+  dprintf(("InvokeV(channel %p, rpc number %"NACL_PRIu32")\n",
            (void*) channel,
            rpc_number));
   /*
@@ -105,7 +105,7 @@ NaClSrpcError NaClSrpcInvokeV(NaClSrpcChannel* channel,
     dprintf((SIDE "InvokeV: bad rpc number\n"));
     return NACL_SRPC_RESULT_BAD_RPC_NUMBER;
   }
-  dprintf(("InvokeV(channel %p, rpc %"PRIu32" '%s')\n",
+  dprintf(("InvokeV(channel %p, rpc %"NACL_PRIu32" '%s')\n",
            (void*) channel, rpc_number, rpc_name));
 
   /*
@@ -124,7 +124,8 @@ NaClSrpcError NaClSrpcInvokeV(NaClSrpcChannel* channel,
     return NACL_SRPC_RESULT_INTERNAL;
   }
 
-  dprintf(("InvokeV(channel %p, rpc %"PRIu32" '%s') waiting for response...\n",
+  dprintf(("InvokeV(channel %p, rpc %"NACL_PRIu32
+           " '%s') waiting for response...\n",
            (void*) channel,
            rpc_number,
            rpc_name));

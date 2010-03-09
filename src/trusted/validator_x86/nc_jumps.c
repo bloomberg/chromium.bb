@@ -70,7 +70,7 @@ static void AddressSetAdd(AddressSet set, PcAddress address,
   PcAddress offset = address - state->vbase;
   assert(address >= state->vbase);
   assert(address < state->vlimit);
-  DEBUG(printf("Address set add: %"PRIxPcAddress"\n", address));
+  DEBUG(printf("Address set add: %"NACL_PRIxPcAddress"\n", address));
   set[PcAddressToOffset(offset)] |= PcAddressToMask(offset);
 }
 
@@ -146,7 +146,8 @@ static void NcAddJumpToJumpSets(NcValidatorState* state,
                                 JumpSets* jump_sets,
                                 NcInstState* inst) {
   Bool is_good = TRUE;
-  DEBUG(printf("Add jump to jump sets: %"PRIxPcAddress" -> %"PRIxPcAddress"\n",
+  DEBUG(printf("Add jump to jump sets: %"
+               NACL_PRIxPcAddress" -> %"NACL_PRIxPcAddress"\n",
                from_address, to_address));
   if (to_address < state->vlimit) {
     if (to_address < state->vbase) {
@@ -179,7 +180,8 @@ static void NcAddJumpToJumpSets(NcValidatorState* state,
     is_good = FALSE;
   }
   if (is_good) {
-    DEBUG(printf("Add jump to target: %"PRIxPcAddress" -> %"PRIxPcAddress"\n",
+    DEBUG(printf("Add jump to target: %"NACL_PRIxPcAddress
+                 " -> %"NACL_PRIxPcAddress"\n",
                  from_address, to_address));
     AddressSetAdd(jump_sets->actual_targets, to_address, state);
   } else {
@@ -335,7 +337,7 @@ static void AddRegisterJumpIndirect64(NcValidatorState* state,
 
     /* Check that the mask is ok. */
     mask = NcGetJumpMask(state);
-    DEBUG(fprintf(stderr, "mask = %"PRIx8"\n", mask));
+    DEBUG(fprintf(stderr, "mask = %"NACL_PRIx8"\n", mask));
     assert(0 != mask);  /* alignment must be either 16 or 32. */
     node = &nodes->node[op_2];
     if (ExprConstant != node->kind || mask != node->value) break;
@@ -545,12 +547,13 @@ static void ValidateCallAlignment(NcValidatorState* state,
    */
   PcAddress next_pc = pc + NcInstStateLength(inst);
   if (next_pc & state->alignment_mask) {
-    DEBUG(printf("Call alignment: pc = %"PRIxPcAddress", next_pc=%"PRIxPcAddress
-                 ", mask = %"PRIxPcAddress"\n",
+    DEBUG(printf("Call alignment: pc = %"NACL_PRIxPcAddress", "
+                 "next_pc=%"NACL_PRIxPcAddress", "
+                 "mask = %"NACL_PRIxPcAddress"\n",
                  pc, next_pc, state->alignment_mask));
     NcValidatorInstMessage(
         LOG_ERROR, state, inst,
-        "Bad call alignment, return pc = %"PRIxPcAddress"\n", next_pc);
+        "Bad call alignment, return pc = %"NACL_PRIxPcAddress"\n", next_pc);
   }
 }
 
@@ -621,7 +624,7 @@ void NcJumpValidatorSummarize(FILE* file,
   PcAddress addr;
   NcValidatorMessage(
       LOG_INFO, state,
-      "Checking jump targets: %"PRIxPcAddress" to %"PRIxPcAddress"\n",
+      "Checking jump targets: %"NACL_PRIxPcAddress" to %"NACL_PRIxPcAddress"\n",
       state->vbase, state->vlimit);
   for (addr = state->vbase; addr < state->vlimit; addr++) {
     if (AddressSetContains(jump_sets->actual_targets, addr, state)) {
@@ -637,8 +640,8 @@ void NcJumpValidatorSummarize(FILE* file,
       LOG_INFO, state, "Checking that basic blocks are aligned\n");
   if (state->vbase & state->alignment_mask) {
     NcValidatorMessage(LOG_ERROR, state,
-                       "Code segment starts at 0x%"PRIxPcAddress
-                       ", which isn't aligned properly.\n",
+                       "Code segment starts at 0x%"NACL_PRIxPcAddress", "
+                       "which isn't aligned properly.\n",
                        state->vbase);
   } else {
     for (addr = state->vbase; addr < state->vlimit; addr += state->alignment) {
@@ -678,7 +681,7 @@ void NcMarkInstructionJumpIllegal(struct NcValidatorState* state,
     JumpSets* jump_sets =
         (JumpSets*) NcGetValidatorLocalMemory((NcValidator) NcJumpValidator,
                                               state);
-    DEBUG(printf("Mark instruction as jump illegal: %"PRIxPcAddress"\n",
+    DEBUG(printf("Mark instruction as jump illegal: %"NACL_PRIxPcAddress"\n",
                  pc));
     AddressSetRemove(jump_sets->possible_targets, pc, state);
   }

@@ -17,12 +17,12 @@ uint32_t NaClGetSp(void);
 
 typedef uint32_t nacl_reg_t;
 
-#define PRIdNACL_REG PRId32
-#define PRIiNACL_REG PRIi32
-#define PRIoNACL_REG PRIo32
-#define PRIuNACL_REG PRIu32
-#define PRIxNACL_REG PRIx32
-#define PRIXNACL_REG PRIX32
+#define NACL_PRIdNACL_REG NACL_PRId32
+#define NACL_PRIiNACL_REG NACL_PRIi32
+#define NACL_PRIoNACL_REG NACL_PRIo32
+#define NACL_PRIuNACL_REG NACL_PRIu32
+#define NACL_PRIxNACL_REG NACL_PRIx32
+#define NACL_PRIXNACL_REG NACL_PRIX32
 
 /*
  * NOTE: This struct needs to be synchronized with

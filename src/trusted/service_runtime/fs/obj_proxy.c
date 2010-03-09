@@ -358,7 +358,8 @@ int NaClObjProxyRemove(struct NaClObjProxy *self, void *obj) {
                                    entry,
                                    (struct NaClContainerIter *) &n2oiter);
   if ((*n2oiter.base.vtbl->AtEnd)((struct NaClContainerIter *) &n2oiter)) {
-    NaClLog(LOG_FATAL, "object %08"PRIxPTR" found in o2n tbl, but not in n2o\n",
+    NaClLog(LOG_FATAL, "object %08"NACL_PRIxPTR
+            " found in o2n tbl, but not in n2o\n",
             (uintptr_t) obj);
     return 0;  /* internal error! */
   }

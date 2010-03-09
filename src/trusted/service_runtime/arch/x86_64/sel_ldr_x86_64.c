@@ -62,7 +62,7 @@ void NaClFillEndOfTextRegion(struct NaClApp *nap) {
   CHECK(page_pad < NACL_MAP_PAGESIZE + NACL_HALT_SLED_SIZE);
 
   NaClLog(4,
-          "Filling with halts: %08"PRIxPTR", %08"PRIxS" bytes\n",
+          "Filling with halts: %08"NACL_PRIxPTR", %08"NACL_PRIxS" bytes\n",
           nap->mem_start + nap->static_text_end,
           page_pad);
 
@@ -70,7 +70,7 @@ void NaClFillEndOfTextRegion(struct NaClApp *nap) {
                                          nap->static_text_end),
                                page_pad);
 
-  NaClLog(4, "Done.  Bumping static_text_end by 0x%"PRIxPTR"\n", page_pad);
+  NaClLog(4, "Done.  Bumping static_text_end by 0x%"NACL_PRIxPTR"\n", page_pad);
   nap->static_text_end += page_pad;
 }
 

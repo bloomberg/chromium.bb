@@ -57,7 +57,7 @@ int NaClDescMutexCtor(struct NaClDescMutex  *self) {
 void NaClDescMutexDtor(struct NaClDesc *vself) {
   struct NaClDescMutex *self = (struct NaClDescMutex *) vself;
 
-  NaClLog(4, "NaClDescMutexDtor(0x%08"PRIxPTR").\n",
+  NaClLog(4, "NaClDescMutexDtor(0x%08"NACL_PRIxPTR").\n",
           (uintptr_t) vself);
   NaClIntrMutexDtor(&self->mu);
   vself->vtbl = (struct NaClDescVtbl *) NULL;

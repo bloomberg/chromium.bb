@@ -41,7 +41,8 @@ static int NaClDescEffLdrReturnCreatedDesc(struct NaClDescEffector *vself,
   int                         d;
 
   NaClLog(4,
-          "NaClDescEffLdrReturnCreatedDesc(0x%08"PRIxPTR", 0x%08"PRIxPTR")\n",
+          "NaClDescEffLdrReturnCreatedDesc(0x%08"NACL_PRIxPTR", "
+          "0x%08"NACL_PRIxPTR")\n",
           (uintptr_t) vself,
           (uintptr_t) ndp);
   d = NaClSetAvail(self->natp->nap, ndp);
@@ -74,8 +75,8 @@ static int NaClDescEffLdrUnmapMemory(struct NaClDescEffector  *vself,
        */
       if (0 == VirtualFree((void *) addr, 0, MEM_RELEASE)) {
         NaClLog(LOG_FATAL,
-                ("NaClMMap: VirtualFree at user addr 0x%08"PRIxPTR
-                 " (sys 0x%08"PRIxPTR") failed: windows error %d\n"),
+                ("NaClMMap: VirtualFree at user addr 0x%08"NACL_PRIxPTR
+                 " (sys 0x%08"NACL_PRIxPTR") failed: windows error %d\n"),
                 usraddr,
                 addr,
                 GetLastError());
@@ -92,8 +93,8 @@ static int NaClDescEffLdrUnmapMemory(struct NaClDescEffector  *vself,
                                                  NACL_MAP_PAGESIZE);
       if (0 != retval) {
         NaClLog(LOG_FATAL,
-                ("NaClMMap: UnmapUnsafe failed at user addr 0x%08"PRIxPTR
-                 " (sys 0x%08"PRIxPTR") failed: syscall return %d\n"),
+                ("NaClMMap: UnmapUnsafe failed at user addr 0x%08"NACL_PRIxPTR
+                 " (sys 0x%08"NACL_PRIxPTR") failed: syscall return %d\n"),
                 addr,
                 NaClUserToSys(self->natp->nap, addr),
                 retval);

@@ -2449,7 +2449,8 @@ static void PrintDecodeOpsKindTableBody(FILE* f,
   assert(gtbl_size <= NCDTABLESIZE);
   fprintf(f, "  {\n");
   for (opc = 0; opc < gtbl_size; opc++) {
-    fprintf(f, "    /* %02"PRIxS" */ %s,\n", opc, DecodeOpsKindName(gtbl[opc]));
+    fprintf(f, "    /* %02"NACL_PRIxS" */ %s,\n", opc,
+            DecodeOpsKindName(gtbl[opc]));
   };
   fprintf(f, "  }");
 }

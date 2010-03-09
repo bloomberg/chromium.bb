@@ -58,7 +58,7 @@ void NaClMicroSleep(int microseconds) {
 
   now = get_ticks();
   end = now + (cpu_clock * microseconds) / 1000000;
-  NaClLog(5, "Now %"PRId64".  Waiting until %"PRId64".\n", now, end);
+  NaClLog(5, "Now %"NACL_PRId64".  Waiting until %"NACL_PRId64".\n", now, end);
   while (get_ticks() < end)
     ;
 }
@@ -78,7 +78,7 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
   /* sp must be okay for control to have gotten here */
 #if !BENCHMARK
   NaClLog(4, "Entered NaClSyscallCSegHook\n");
-  NaClLog(4, "user sp %"PRIxPTR"\n", sp_user);
+  NaClLog(4, "user sp %"NACL_PRIxPTR"\n", sp_user);
 #endif
 
   /*
@@ -108,7 +108,7 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
       >> NACL_SYSCALL_BLOCK_SHIFT;
 
 #if !BENCHMARK
-  NaClLog(4, "system call %"PRIuS"\n", sysnum);
+  NaClLog(4, "system call %"NACL_PRIuS"\n", sysnum);
 #endif
 
   /*
@@ -126,11 +126,12 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
   NaClSetThreadCtxSp(user, sp_user);
 
   if (sysnum >= NACL_MAX_SYSCALLS) {
-    NaClLog(2, "INVALID system call %"PRIdS"\n", sysnum);
+    NaClLog(2, "INVALID system call %"NACL_PRIdS"\n", sysnum);
     natp->sysret = -NACL_ABI_EINVAL;
   } else {
 #if !BENCHMARK
-    NaClLog(4, "making system call %"PRIdS", handler 0x%08"PRIxPTR"\n",
+    NaClLog(4, "making system call %"NACL_PRIdS", "
+            "handler 0x%08"NACL_PRIxPTR"\n",
             sysnum, (uintptr_t) nacl_syscall[sysnum].handler);
 #endif
     /*
@@ -147,12 +148,12 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
   }
 #if !BENCHMARK
   NaClLog(4,
-          ("returning from system call %"PRIdS", return value %"PRId32
-           " (0x%"PRIx32")\n"),
+          ("returning from system call %"NACL_PRIdS", return value %"NACL_PRId32
+           " (0x%"NACL_PRIx32")\n"),
           sysnum, natp->sysret, natp->sysret);
 
-  NaClLog(4, "return target 0x%08"PRIxNACL_REG"\n", user_ret);
-  NaClLog(4, "user sp %"PRIxPTR"\n", sp_user);
+  NaClLog(4, "return target 0x%08"NACL_PRIxNACL_REG"\n", user_ret);
+  NaClLog(4, "user sp %"NACL_PRIxPTR"\n", sp_user);
 #endif
   if (-1 == NaClArtificialDelay) {
     char *delay = getenv("NACLDELAY");

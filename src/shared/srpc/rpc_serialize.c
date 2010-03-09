@@ -190,7 +190,7 @@ static DispatchReturn NaClSrpcReceiveAndDispatch(NaClSrpcChannel* channel,
   /* Then we invoke the method, which computes a return code. */
   method = NaClSrpcServiceMethod(channel->server, rpc.rpc_number);
   if (NULL == method) {
-    dprintf((SIDE "ReceiveAndDispatch: bad rpc number %"PRIu32"\n",
+    dprintf((SIDE "ReceiveAndDispatch: bad rpc number %"NACL_PRIu32"\n",
              rpc.rpc_number));
     return DISPATCH_CONTINUE;
   }
@@ -332,7 +332,7 @@ static const ArgEltInterface k##name##IoInterface = {           \
  */
 BASIC_TYPE_IO_DECLARE(Bool, char, bval, "1d")
 BASIC_TYPE_IO_DECLARE(Double, double, dval, "f")
-BASIC_TYPE_IO_DECLARE(Int, int32_t, ival, PRId32)
+BASIC_TYPE_IO_DECLARE(Int, int32_t, ival, NACL_PRId32)
 
 #define ARRAY_TYPE_IO_DECLARE(name, impl_type, field, array)                   \
 static int name##ArrGet(NaClSrpcImcBuffer* buffer,                             \
@@ -385,7 +385,7 @@ static int name##ArrPut(const NaClSrpcArg* arg,                                \
 }                                                                              \
                                                                                \
 static void name##ArrPrint(const NaClSrpcArg* arg) {                           \
-  dprintf(("[%"PRIu32"], array = %p",                                          \
+  dprintf(("[%"NACL_PRIu32"], array = %p",                                     \
            arg->u.field.count,                                                 \
            (void*) arg->u.field.array));                                       \
 }                                                                              \
@@ -826,7 +826,7 @@ int NaClSrpcRpcGet(NaClSrpcImcBuffer* buffer,
     }
   }
   rpc->app_error = app_err;
-  dprintf((SIDE "RpcGet(%"PRIx32", %s, %"PRIu32", %s) done\n",
+  dprintf((SIDE "RpcGet(%"NACL_PRIx32", %s, %"NACL_PRIu32", %s) done\n",
            rpc->protocol_version,
            (rpc->is_request == 0) ? "response" : "request",
            rpc->rpc_number,
@@ -839,7 +839,7 @@ int NaClSrpcRpcGet(NaClSrpcImcBuffer* buffer,
  * send the current protocol version.
  */
 static int RpcWrite(NaClSrpcImcBuffer* buffer, NaClSrpcRpc* rpc) {
-  dprintf((SIDE "RpcWrite(%"PRIx32", %s, %"PRIu32", %s)\n",
+  dprintf((SIDE "RpcWrite(%"NACL_PRIx32", %s, %"NACL_PRIu32", %s)\n",
            rpc->protocol_version,
            rpc->is_request ? "request" : "response",
            rpc->rpc_number,
@@ -908,7 +908,7 @@ int NaClSrpcRequestGet(NaClSrpcImcBuffer* buffer,
                        NaClSrpcArg* rets[]) {
   const ArgsIoInterface* desc;
 
-  dprintf((SIDE "RequestGet(%p, %"PRIu32"\n",
+  dprintf((SIDE "RequestGet(%p, %"NACL_PRIu32"\n",
           (void*) buffer,
           rpc->rpc_number));
   /* Get the Args I/O descriptor for the protocol version read */
@@ -923,7 +923,7 @@ int NaClSrpcRequestGet(NaClSrpcImcBuffer* buffer,
     desc->free(desc, args);
     return 0;
   }
-  dprintf((SIDE "RequestGet(%p, %"PRIu32") received\n",
+  dprintf((SIDE "RequestGet(%p, %"NACL_PRIu32") received\n",
            (void*) buffer,
            rpc->rpc_number));
   return 1;
@@ -934,7 +934,7 @@ static int RequestPut(const ArgsIoInterface* desc,
                       NaClSrpcArg* args[],
                       NaClSrpcArg* rets[],
                       NaClSrpcImcBuffer* buffer) {
-  dprintf(("RequestPut(%p, %"PRIu32")\n",
+  dprintf(("RequestPut(%p, %"NACL_PRIu32")\n",
            (void*) buffer,
            rpc->rpc_number));
   /* Set up and send rpc */
@@ -953,7 +953,7 @@ static int RequestPut(const ArgsIoInterface* desc,
     dprintf(("RequestPut: rets template send failed\n"));
     return 0;
   }
-  dprintf(("RequestPut(%p, %"PRIu32") sent\n",
+  dprintf(("RequestPut(%p, %"NACL_PRIu32") sent\n",
            (void*) buffer,
            rpc->rpc_number));
   return 1;
@@ -1002,7 +1002,7 @@ int NaClSrpcRequestWrite(NaClSrpcChannel* channel,
   }
   if (!__NaClSrpcImcFlush(buffer, channel)) {
     /* Requests with bad handles could fail.  Report to the caller. */
-    dprintf(("NaClSrpcRequestWrite(%p, %"PRIu32") failed\n",
+    dprintf(("NaClSrpcRequestWrite(%p, %"NACL_PRIu32") failed\n",
              (void*) buffer,
              rpc->rpc_number));
     return 0;
@@ -1023,7 +1023,8 @@ int NaClSrpcResponseGet(NaClSrpcImcBuffer* buffer,
   /* Get the Args I/O descriptor for the protocol version read */
   desc = GetArgsInterface(rpc->protocol_version);
   /* Announce start of response processing */
-  dprintf((SIDE "ResponseGet: response, rpc %"PRIu32"\n", rpc->rpc_number));
+  dprintf((SIDE "ResponseGet: response, rpc %"NACL_PRIu32"\n",
+           rpc->rpc_number));
   if (NACL_SRPC_RESULT_OK != rpc->app_error) {
     dprintf(("ResponseGet: method returned failure: %d\n", rpc->app_error));
     return 1;
@@ -1034,7 +1035,7 @@ int NaClSrpcResponseGet(NaClSrpcImcBuffer* buffer,
     /* get cleans up argument memory before returning */
     return 0;
   }
-  dprintf((SIDE "ResponseGet(%p, %"PRIu32") received\n",
+  dprintf((SIDE "ResponseGet(%p, %"NACL_PRIu32") received\n",
            (void*) buffer, rpc->rpc_number));
   return 1;
 }
@@ -1043,7 +1044,7 @@ static int ResponsePut(const ArgsIoInterface* desc,
                        NaClSrpcRpc* rpc,
                        NaClSrpcArg* rets[],
                        NaClSrpcImcBuffer* buffer) {
-  dprintf((SIDE "ResponsePut(%p, %"PRIu32")\n",
+  dprintf((SIDE "ResponsePut(%p, %"NACL_PRIu32")\n",
            (void*) buffer, rpc->rpc_number));
   rpc->is_request = 0;
   if (!RpcWrite(buffer, rpc)) {
@@ -1053,7 +1054,7 @@ static int ResponsePut(const ArgsIoInterface* desc,
     dprintf(("SRPC: rets send failed\n"));
     return 0;
   }
-  dprintf((SIDE "ResponsePut(%p, %"PRIu32", %d, %s): sent\n",
+  dprintf((SIDE "ResponsePut(%p, %"NACL_PRIu32", %d, %s): sent\n",
            (void*) buffer, rpc->rpc_number, rpc->app_error,
            NaClSrpcErrorString(rpc->app_error)));
   return 1;

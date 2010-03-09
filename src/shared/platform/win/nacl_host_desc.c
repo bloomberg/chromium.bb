@@ -189,7 +189,7 @@ uintptr_t NaClHostDescMap(struct NaClHostDesc *d,
                 addr + chunk_offset, flProtect);
       }
     }
-    NaClLog(3, "NaClHostDescMap: returning 0x%08"PRIxPTR"\n", start_addr);
+    NaClLog(3, "NaClHostDescMap: returning 0x%08"NACL_PRIxPTR"\n", start_addr);
     return (uintptr_t) start_addr;
   }
 

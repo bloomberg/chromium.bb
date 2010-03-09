@@ -55,7 +55,7 @@ static Bool IsValidMemOffset(
   ExprNode* node = &vector->node[node_index];
 
   if (ExprMemOffset != node->kind) return FALSE;
-  DEBUG(printf("found MemOffset at node %"PRIu32"\n", node_index));
+  DEBUG(printf("found MemOffset at node %"NACL_PRIu32"\n", node_index));
   base_reg_index = node_index + 1;
   base_reg = GetNodeVectorRegister(vector, base_reg_index);
   DEBUG(printf("base reg = %s\n", OperandKindName(base_reg)));
@@ -152,7 +152,7 @@ void NcStoreValidator(NcValidatorState* state,
          */
         int seg_prefix_reg_index;
         OperandKind seg_prefix_reg;
-        DEBUG(printf("found segment assign at node %"PRIu32"\n", i));
+        DEBUG(printf("found segment assign at node %"NACL_PRIu32"\n", i));
 
         /* Only allow segment prefix registers that are treated as
          * null prefixes.

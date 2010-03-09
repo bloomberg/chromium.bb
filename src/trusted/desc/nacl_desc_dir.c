@@ -57,7 +57,7 @@ int NaClDescDirDescCtor(struct NaClDescDirDesc  *self,
 void NaClDescDirDescDtor(struct NaClDesc *vself) {
   struct NaClDescDirDesc *self = (struct NaClDescDirDesc *) vself;
 
-  NaClLog(4, "NaClDescDirDescDtor(0x%08"PRIxPTR").\n",
+  NaClLog(4, "NaClDescDirDescDtor(0x%08"NACL_PRIxPTR").\n",
           (uintptr_t) vself);
   NaClHostDirClose(self->hd);
   free(self->hd);
@@ -72,13 +72,14 @@ struct NaClDescDirDesc *NaClDescDirDescMake(struct NaClHostDir *nhdp) {
   ndp = malloc(sizeof *ndp);
   if (NULL == ndp) {
     NaClLog(LOG_FATAL,
-            "NaClDescDirDescMake: no memory for 0x%08"PRIxPTR"\n",
+            "NaClDescDirDescMake: no memory for 0x%08"NACL_PRIxPTR"\n",
             (uintptr_t) nhdp);
   }
   if (!NaClDescDirDescCtor(ndp, nhdp)) {
     NaClLog(LOG_FATAL,
             ("NaClDescDirDescMake:"
-             " NaClDescDirDescCtor(0x%08"PRIxPTR",0x%08"PRIxPTR") failed\n"),
+             " NaClDescDirDescCtor(0x%08"NACL_PRIxPTR",0x%08"NACL_PRIxPTR
+             ") failed\n"),
             (uintptr_t) ndp,
             (uintptr_t) nhdp);
   }
@@ -118,12 +119,12 @@ ssize_t NaClDescDirDescGetdents(struct NaClDesc         *vself,
 
   UNREFERENCED_PARAMETER(effp);
 
-  NaClLog(3, "NaClDescDirDescGetdents(0x%08"PRIxPTR", %"PRIuS"):\n",
+  NaClLog(3, "NaClDescDirDescGetdents(0x%08"NACL_PRIxPTR", %"NACL_PRIuS"):\n",
           (uintptr_t) dirp, count);
   retval = NaClHostDirGetdents(self->hd, dirp, count);
   NaClLog(3,
-          "NaClDescDirDescGetdents(d_ino=%"PRIuNACL_INO
-          ", d_off=%"PRIuNACL_OFF", d_reclen=%u, "
+          "NaClDescDirDescGetdents(d_ino=%"NACL_PRIuNACL_INO", "
+          "d_off=%"NACL_PRIuNACL_OFF", d_reclen=%u, "
           "d_name='%s')\n",
           direntp->nacl_abi_d_ino,
           direntp->nacl_abi_d_off,

@@ -100,7 +100,8 @@ static INLINE uintptr_t NaClUserToSys(struct NaClApp  *nap,
                                       uintptr_t       uaddr) {
   if (0 == uaddr || ((uintptr_t) 1U << nap->addr_bits) <= uaddr) {
     NaClLog(LOG_FATAL,
-            "NaClUserToSys: uaddr 0x%08"PRIxPTR", addr space %"PRId8" bits\n",
+            "NaClUserToSys: uaddr 0x%08"NACL_PRIxPTR", "
+            "addr space %"NACL_PRId8" bits\n",
             uaddr, nap->addr_bits);
   }
   return uaddr + nap->mem_start;
@@ -111,9 +112,9 @@ static INLINE uintptr_t NaClSysToUser(struct NaClApp  *nap,
   if (sysaddr < nap->mem_start ||
       nap->mem_start + ((uintptr_t) 1U << nap->addr_bits) <= sysaddr) {
     NaClLog(LOG_FATAL,
-            ("NaclSysToUser: sysaddr 0x%08"PRIxPTR","
-             " mem_start 0x%08"PRIxPTR","
-             " addr space %"PRId8" bits\n"),
+            ("NaclSysToUser: sysaddr 0x%08"NACL_PRIxPTR","
+             " mem_start 0x%08"NACL_PRIxPTR","
+             " addr space %"NACL_PRId8" bits\n"),
             sysaddr, nap->mem_start, nap->addr_bits);
   }
   return sysaddr - nap->mem_start;
@@ -125,9 +126,9 @@ static INLINE uint32_t NaClSysToUser32(struct NaClApp  *nap,
       nap->mem_start + ((uintptr_t) 1U << nap->addr_bits) <= sysaddr ||
       (sysaddr - nap->mem_start) > UINT32_MAX) {
     NaClLog(LOG_FATAL,
-            ("NaclSysToUser: sysaddr 0x%08"PRIxPTR","
-            " mem_start 0x%08"PRIxPTR","
-            " addr space %"PRId8" bits\n"),
+            ("NaclSysToUser: sysaddr 0x%08"NACL_PRIxPTR","
+            " mem_start 0x%08"NACL_PRIxPTR","
+            " addr space %"NACL_PRId8" bits\n"),
             sysaddr, nap->mem_start, nap->addr_bits);
   }
   return (uint32_t)(sysaddr - nap->mem_start);

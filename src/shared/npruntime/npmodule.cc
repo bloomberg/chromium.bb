@@ -166,7 +166,7 @@ NPError NPModule::New(char* mimetype,
 
   DebugPrintf("New\n");
   for (int i = 0; i < argc; ++i) {
-    DebugPrintf("  %"PRIu32": argn=%s argv=%s\n", i, argn[i], argv[i]);
+    DebugPrintf("  %"NACL_PRIu32": argn=%s argv=%s\n", i, argn[i], argv[i]);
   }
   uint32_t argn_size = static_cast<uint32_t>(sizeof(argn_serial));
   uint32_t argv_size = static_cast<uint32_t>(sizeof(argv_serial));

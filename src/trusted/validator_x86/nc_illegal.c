@@ -32,7 +32,7 @@ void NcValidateInstructionLegal(NcValidatorState* state,
       PrintExprNodeVector(stdout, NcInstStateNodeVector(inst));
     });
   is_legal = NcInstStateIsNaclLegal(inst);
-  DEBUG(printf("is_legal = %"PRIdBool"\n", is_legal));
+  DEBUG(printf("is_legal = %"NACL_PRIdBool"\n", is_legal));
   if (is_legal) {
     /* Check other forms to disallow. */
     Opcode* opcode = NcInstStateOpcode(inst);
@@ -53,7 +53,7 @@ void NcValidateInstructionLegal(NcValidatorState* state,
       case NACLi_CMPXCHG16B:
       case NACLi_UNDEFINED:
         is_legal = FALSE;
-        DEBUG(printf("is_legal = %"PRIdBool"\n", is_legal));
+        DEBUG(printf("is_legal = %"NACL_PRIdBool"\n", is_legal));
         break;
       default:
         break;
@@ -63,6 +63,6 @@ void NcValidateInstructionLegal(NcValidatorState* state,
     NcValidatorInstMessage(LOG_ERROR, state, inst,
                            "Illegal native client instruction\n");
   }
-  DEBUG(printf("<-NcValidateInstructionLegal: is_legal = %"PRIdBool"\n",
+  DEBUG(printf("<-NcValidateInstructionLegal: is_legal = %"NACL_PRIdBool"\n",
                is_legal));
 }

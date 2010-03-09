@@ -40,11 +40,11 @@ NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
   nacl_reg_t  secure_stack_ptr = NaClGetStackPtr();
 
   NaClLog(4,
-          "NaClStartThreadInApp: secure stack:   0x%"PRIxNACL_REG"\n",
+          "NaClStartThreadInApp: secure stack:   0x%"NACL_PRIxNACL_REG"\n",
           secure_stack_ptr);
   secure_stack_ptr = (secure_stack_ptr & ~0x1f) - 0x20;
   NaClLog(4,
-          "NaClStartThreadInApp: adjusted stack: 0x%"PRIxNACL_REG"\n",
+          "NaClStartThreadInApp: adjusted stack: 0x%"NACL_PRIxNACL_REG"\n",
           secure_stack_ptr);
 
   NaClSetThreadCtxSp(&natp->sys, secure_stack_ptr);
@@ -56,7 +56,7 @@ NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
   context->r15 = nap->mem_start;
 
   NaClLog(4,
-          "NaClStackThreadInApp: user stack: 0x%"PRIxPTR"\n",
+          "NaClStackThreadInApp: user stack: 0x%"NACL_PRIxPTR"\n",
           NaClGetThreadCtxSp(context));
   NaClLog(4,
           "NaClStartThreadInApp: switching to untrusted code\n");

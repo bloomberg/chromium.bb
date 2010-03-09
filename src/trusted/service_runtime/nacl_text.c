@@ -51,7 +51,8 @@ int NaClDescEffectorShmUnmapMemory(struct NaClDescEffector  *vself,
    * Existing memory is anonymous paging file backed.
    */
   NaClLog(4, "NaClDescEffectorShmUnmapMemory called\n");
-  NaClLog(4, " sysaddr 0x%08"PRIxPTR", 0x%08"PRIxS" (%"PRIdS")\n",
+  NaClLog(4, " sysaddr 0x%08"NACL_PRIxPTR", "
+          "0x%08"NACL_PRIxS" (%"NACL_PRIdS")\n",
           sysaddr, nbytes, nbytes);
   NaCl_page_free((void *) sysaddr, nbytes);
   return 0;
@@ -124,11 +125,11 @@ NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap) {
    */
   shm_vaddr_base = NaClEndOfStaticText(nap);
   NaClLog(4,
-          "NaClMakeDynamicTextShared: shm_vaddr_base = %08"PRIxPTR"\n",
+          "NaClMakeDynamicTextShared: shm_vaddr_base = %08"NACL_PRIxPTR"\n",
           shm_vaddr_base);
   shm_vaddr_base = NaClRoundAllocPage(shm_vaddr_base);
   NaClLog(4,
-          "NaClMakeDynamicTextShared: shm_vaddr_base = %08"PRIxPTR"\n",
+          "NaClMakeDynamicTextShared: shm_vaddr_base = %08"NACL_PRIxPTR"\n",
           shm_vaddr_base);
   shm_upper_bound = nap->rodata_start;
   if (0 == shm_upper_bound) {
@@ -140,11 +141,11 @@ NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap) {
   nap->dynamic_text_start = shm_vaddr_base;
   nap->dynamic_text_end = shm_upper_bound;
 
-  NaClLog(4, "shm_upper_bound = %08"PRIxPTR"\n", shm_upper_bound);
+  NaClLog(4, "shm_upper_bound = %08"NACL_PRIxPTR"\n", shm_upper_bound);
 
   dynamic_text_size = shm_upper_bound - shm_vaddr_base;
   NaClLog(4,
-          "NaClMakeDynamicTextShared: dynamic_text_size = %"PRIxPTR"\n",
+          "NaClMakeDynamicTextShared: dynamic_text_size = %"NACL_PRIxPTR"\n",
           dynamic_text_size);
 
   if (0 == dynamic_text_size) {
@@ -188,8 +189,8 @@ NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap) {
     uintptr_t text_sysaddr = NaClUserToSys(nap, text_vaddr);
 
     NaClLog(4,
-            "NaClMakeDynamicTextShared: Map(,,0x%"PRIxPTR",size = 0x%x,"
-            " prot=0x%x, flags=0x%x, offset=0x%"PRIxPTR"\n",
+            "NaClMakeDynamicTextShared: Map(,,0x%"NACL_PRIxPTR",size = 0x%x,"
+            " prot=0x%x, flags=0x%x, offset=0x%"NACL_PRIxPTR"\n",
             text_sysaddr,
             NACL_MAP_PAGESIZE,
             NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
@@ -216,8 +217,8 @@ NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap) {
               "Could not unmap shm for dynamic text region, post HLT fill.\n");
     }
     NaClLog(4,
-            "NaClMakeDynamicTextShared: Map(,,0x%"PRIxPTR",size = 0x%x,"
-            " prot=0x%x, flags=0x%x, offset=0x%"PRIxPTR"\n",
+            "NaClMakeDynamicTextShared: Map(,,0x%"NACL_PRIxPTR",size = 0x%x,"
+            " prot=0x%x, flags=0x%x, offset=0x%"NACL_PRIxPTR"\n",
             text_sysaddr,
             NACL_MAP_PAGESIZE,
             NACL_ABI_PROT_READ | NACL_ABI_PROT_EXEC,

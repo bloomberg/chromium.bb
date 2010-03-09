@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <inttypes.h>
 #include <nacl/nacl_inttypes.h>
+
 #include <utility>
 
 #include "native_client/src/include/portability_string.h"
@@ -139,7 +140,7 @@ NaClSrpcError NPNavigator::New(char* mimetype,
                                nacl_abi_size_t argv_bytes,
                                char* argv_in,
                                int32_t* nperr) {
-  DebugPrintf("NPP_New: npp=%p, mime=%s, argc=%"PRIu32"\n",
+  DebugPrintf("NPP_New: npp=%p, mime=%s, argc=%"NACL_PRIu32"\n",
               reinterpret_cast<void*>(npp), mimetype, argc);
 
   *nperr = NPERR_NO_ERROR;
@@ -159,7 +160,7 @@ NaClSrpcError NPNavigator::New(char* mimetype,
     argn[i] = strdup(argn[i]);
     argv[i] = strdup(argv[i]);
     // Print them out for debugging.
-    DebugPrintf("  %"PRIu32": argn=%s argv=%s\n", i, argn[i], argv[i]);
+    DebugPrintf("  %"NACL_PRIu32": argn=%s argv=%s\n", i, argn[i], argv[i]);
   }
   // Invoke the implementation
   if (NULL == plugin_funcs.newp) {

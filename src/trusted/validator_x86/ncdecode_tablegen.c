@@ -911,7 +911,7 @@ void DefineOpcode(
     flags |= InstFlag(OpcodeInModRm);
   }
 
-  DEBUG(printf("Define %s %"PRIx8": %s(%d)",
+  DEBUG(printf("Define %s %"NACL_PRIx8": %s(%d)",
                OpcodePrefixName(current_opcode_prefix),
                opcode, InstMnemonicName(name), name);
         PrintlnOpcodeFlags(flags));

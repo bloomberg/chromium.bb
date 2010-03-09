@@ -112,8 +112,9 @@ uintptr_t NaClHostDescMap(struct NaClHostDesc *d,
   int   host_flags;
 
   NaClLog(4,
-          ("NaClHostDescMap(0x%08"PRIxPTR", 0x%08"PRIxPTR", 0x%08"PRIxS","
-           " 0x%x, 0x%x, 0x%08"PRIx64")\n"),
+          ("NaClHostDescMap(0x%08"NACL_PRIxPTR", "
+           "0x%08"NACL_PRIxPTR", 0x%08"NACL_PRIxS", "
+           "0x%x, 0x%x, 0x%08"NACL_PRIx64")\n"),
           (uintptr_t) d,
           (uintptr_t) start_addr,
           len,
@@ -145,8 +146,9 @@ uintptr_t NaClHostDescMap(struct NaClHostDesc *d,
 
   if (MAP_FAILED == map_addr) {
     NaClLog(LOG_INFO,
-            ("NaClHostDescMap:"
-             " mmap(0x%08"PRIxPTR", 0x%"PRIxS", 0x%x, 0x%x, 0x%d, 0x%"PRIx64")"
+            ("NaClHostDescMap: "
+             "mmap(0x%08"NACL_PRIxPTR", 0x%"NACL_PRIxS", "
+             "0x%x, 0x%x, 0x%d, 0x%"NACL_PRIx64")"
              " failed, errno %d.\n"),
             (uintptr_t) start_addr, len, host_prot, host_flags, desc,
             (int64_t) offset,
@@ -156,11 +158,11 @@ uintptr_t NaClHostDescMap(struct NaClHostDesc *d,
   if (map_addr != start_addr) {
     NaClLog(LOG_FATAL,
             ("NaClHostDescMap: mmap with MAP_FIXED not fixed:"
-             " returned 0x%08"PRIxPTR" instead of 0x%08"PRIxPTR"\n"),
+             " returned 0x%08"NACL_PRIxPTR" instead of 0x%08"NACL_PRIxPTR"\n"),
             (uintptr_t) map_addr,
             (uintptr_t) start_addr);
   }
-  NaClLog(4, "NaClHostDescMap: returning 0x%08"PRIxPTR"\n",
+  NaClLog(4, "NaClHostDescMap: returning 0x%08"NACL_PRIxPTR"\n",
           (uintptr_t) start_addr);
 
   return (uintptr_t) start_addr;
@@ -201,7 +203,7 @@ int NaClHostDescOpen(struct NaClHostDesc  *d,
                      int                  mode) {
   int host_desc;
 
-  NaClLog(3, "NaClHostDescOpen(0x%08"PRIxPTR", %s, 0x%x, 0x%x)\n",
+  NaClLog(3, "NaClHostDescOpen(0x%08"NACL_PRIxPTR", %s, 0x%x, 0x%x)\n",
           (uintptr_t) d, path, flags, mode);
   if (NULL == d) {
     NaClLog(LOG_FATAL, "NaClHostDescOpen: 'this' is NULL\n");

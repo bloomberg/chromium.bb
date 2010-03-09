@@ -390,8 +390,8 @@ ScriptableHandle<SocketAddress>* ServiceRuntimeInterface::GetSocketAddress(
   // Check that there was exactly one descriptor passed.
   if (0 > ret || 1 != header.ndescv_length) {
     dprintf(("ServiceRuntimeInterface::GetSocketAddress: "
-             "message receive failed %" PRIdS " %" PRIdNACL_SIZE
-             " %" PRIdNACL_SIZE "\n", ret,
+             "message receive failed %" NACL_PRIdS " %" NACL_PRIdNACL_SIZE
+             " %" NACL_PRIdNACL_SIZE "\n", ret,
              header.ndescv_length,
              header.iov_length));
     goto cleanup;

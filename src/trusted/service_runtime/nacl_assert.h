@@ -13,7 +13,7 @@
 #define NATIVE_CLIENT_SERVICE_RUNTIME_NACL_ASSERT_H_
 
 #include "native_client/src/include/portability.h"
-/* get PRIxPTR */
+/* get NACL_PRIxPTR */
 
 /*
  * Instead of using <assert.h>, we define a version that works with
@@ -21,47 +21,47 @@
  * output and then exiting with a non-zero exit status.
  */
 
-#define ASSERT(bool_expr) do {                                          \
-    if (!(bool_expr)) {                                                 \
-      fprintf(stderr,                                                   \
-              "Error at line %d, %s: " #bool_expr  " is FALSE\n",       \
-              __LINE__, __FILE__);                                      \
-      printf("FAIL\n");                                                 \
-      exit(1);                                                          \
-    }                                                                   \
+#define ASSERT(bool_expr) do {                                            \
+    if (!(bool_expr)) {                                                   \
+      fprintf(stderr,                                                     \
+              "Error at line %d, %s: " #bool_expr  " is FALSE\n",         \
+              __LINE__, __FILE__);                                        \
+      printf("FAIL\n");                                                   \
+      exit(1);                                                            \
+    }                                                                     \
   } while (0)
 
-#define ASSERT_MSG(bool_expr, msg) do {                                 \
-    if (!(bool_expr)) {                                                 \
-      fprintf(stderr,                                                   \
-              "Error at line %d, %s: " #bool_expr  " is FALSE\n",       \
-              __LINE__, __FILE__);                                      \
-      fprintf(stderr, "%s\n", msg);                                     \
-      printf("FAIL\n");                                                 \
-      exit(1);                                                          \
-    }                                                                   \
+#define ASSERT_MSG(bool_expr, msg) do {                                   \
+    if (!(bool_expr)) {                                                   \
+      fprintf(stderr,                                                     \
+              "Error at line %d, %s: " #bool_expr  " is FALSE\n",         \
+              __LINE__, __FILE__);                                        \
+      fprintf(stderr, "%s\n", msg);                                       \
+      printf("FAIL\n");                                                   \
+      exit(1);                                                            \
+    }                                                                     \
   } while (0)
 
-#define ASSERT_OP_THUNK(lhs, op, rhs, slhs, srhs, thunk) do {   \
-    if (!(lhs op rhs)) {                                        \
-      fprintf(stderr,                                           \
-              "Error at line %d, %s:\n"                         \
-              "Error: %s "#op" %s"                              \
-              " is FALSE\n",                                    \
-              __LINE__, __FILE__, slhs, srhs);                  \
-      fprintf(stderr,                                           \
-              "got 0x%08"PRIxPTR" (%"PRIdPTR"); "               \
-              "comparison value 0x%08"PRIxPTR" (%"PRIdPTR")\n", \
-              (uintptr_t) lhs, (uintptr_t) lhs,                 \
-              (uintptr_t) rhs, (uintptr_t) rhs);                \
-      thunk;                                                    \
-      printf("FAIL\n");                                         \
-      exit(1);                                                  \
-    }                                                           \
+#define ASSERT_OP_THUNK(lhs, op, rhs, slhs, srhs, thunk) do {             \
+    if (!(lhs op rhs)) {                                                  \
+      fprintf(stderr,                                                     \
+              "Error at line %d, %s:\n"                                   \
+              "Error: %s "#op" %s"                                        \
+              " is FALSE\n",                                              \
+              __LINE__, __FILE__, slhs, srhs);                            \
+      fprintf(stderr,                                                     \
+              "got 0x%08"NACL_PRIxPTR" (%"NACL_PRIdPTR"); "               \
+              "comparison value 0x%08"NACL_PRIxPTR" (%"NACL_PRIdPTR")\n", \
+              (uintptr_t) lhs, (uintptr_t) lhs,                           \
+              (uintptr_t) rhs, (uintptr_t) rhs);                          \
+      thunk;                                                              \
+      printf("FAIL\n");                                                   \
+      exit(1);                                                            \
+    }                                                                     \
   } while (0)
 
-#define ASSERT_OP_MSG(lhs, op, rhs, slhs, srhs, msg)                    \
-  ASSERT_OP_THUNK(lhs, op, rhs,                                         \
+#define ASSERT_OP_MSG(lhs, op, rhs, slhs, srhs, msg)                      \
+  ASSERT_OP_THUNK(lhs, op, rhs,                                           \
                   slhs, srhs, do { fprintf(stderr, "%s\n", msg); } while (0))
 
 #define ASSERT_EQ_MSG(lhs, rhs, msg)            \

@@ -670,7 +670,7 @@ static int PrintInstructionBitPatternCount(FILE* file,
       char buffer[64];
       char format[64];
       snprintf(format, sizeof(format),
-               "%s%s%s", "0x%", (zero_fill ? "08" : ""), PRIx32);
+               "%s%s%s", "0x%", (zero_fill ? "08" : ""), NACL_PRIx32);
       snprintf(buffer, sizeof(buffer), format, pattern);
       fprintf(file, "%s", buffer);
       return strlen(buffer);
@@ -717,7 +717,7 @@ void DecoderGenerator::GenerateInstructions() {
     fprintf(file_, "  { ");
     PrintString(op->name);
     fprintf(file_,
-            ", %s, &%s,\n     %s, %"PRIdBool", ",
+            ", %s, &%s,\n     %s, %"NACL_PRIdBool", ",
             GetArmInstKindName(op->inst_kind),
             op->inst_access,
             GetArmInstTypeName(op->inst_type),

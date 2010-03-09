@@ -149,7 +149,7 @@ static int nc_load(ncfile *ncf, int fd, int nc_rules) {
   ncf->phnum = h.e_phnum;
   ncf->pheaders = (Elf_Phdr *)calloc(h.e_phnum, sizeof(Elf_Phdr));
   if (NULL == ncf->pheaders) {
-    nc_error_fn("nc_load(%s): calloc(%d, %"PRIdS") failed\n",
+    nc_error_fn("nc_load(%s): calloc(%d, %"NACL_PRIdS") failed\n",
                 ncf->fname, h.e_phnum, sizeof(Elf_Phdr));
     return -1;
   }
@@ -200,7 +200,8 @@ static int nc_load(ncfile *ncf, int fd, int nc_rules) {
                    (off_t) p->p_filesz, (off_t) p->p_offset);
     if (nread < 0 || (size_t) nread < p->p_filesz) {
       nc_error_fn(
-          "nc_load(%s): could not read segment %d (%d < %"PRIuElf_Xword")\n",
+          "nc_load(%s): could not read segment %d (%d < %"
+          NACL_PRIuElf_Xword")\n",
           ncf->fname, i, (int)nread, p->p_filesz);
       return -1;
     }
@@ -210,7 +211,7 @@ static int nc_load(ncfile *ncf, int fd, int nc_rules) {
   shsize = ncf->shnum * sizeof(*ncf->sheaders);
   ncf->sheaders = (Elf_Shdr *)calloc(1, shsize);
   if (NULL == ncf->sheaders) {
-    nc_error_fn("nc_load(%s): calloc(1, %"PRIdS") failed\n",
+    nc_error_fn("nc_load(%s): calloc(1, %"NACL_PRIdS") failed\n",
                 ncf->fname, shsize);
     return -1;
   }

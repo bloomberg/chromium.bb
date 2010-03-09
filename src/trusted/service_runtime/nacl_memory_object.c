@@ -72,8 +72,9 @@ struct NaClMemObj *NaClMemObjMake(struct NaClDesc *ndp,
     return NULL;  /* anonymous paging file backed memory */
   }
   if (NULL == (nmop = malloc(sizeof *nmop))) {
-    NaClLog(LOG_FATAL, ("NaClMemObjMake: out of memory creating object"
-                        " (NaClDesc = 0x%08"PRIxPTR", offset = 0x%"PRIx64")\n"),
+    NaClLog(LOG_FATAL, ("NaClMemObjMake: out of memory creating object "
+                        "(NaClDesc = 0x%08"NACL_PRIxPTR", "
+                        "offset = 0x%"NACL_PRIx64")\n"),
             (uintptr_t) ndp, offset);
   }
   if (!NaClMemObjCtor(nmop, ndp, nbytes, offset)) {
@@ -92,8 +93,8 @@ struct NaClMemObj *NaClMemObjSplit(struct NaClMemObj *orig,
 
   if (NULL == (nmop = malloc(sizeof *nmop))) {
     NaClLog(LOG_FATAL, ("NaClMemObjSplit: out of memory creating object"
-                        " (NaClMemObj = 0x%08"PRIxPTR","
-                        " additional = 0x%"PRIx64")\n"),
+                        " (NaClMemObj = 0x%08"NACL_PRIxPTR","
+                        " additional = 0x%"NACL_PRIx64")\n"),
             (uintptr_t) orig, additional);
   }
   if (!NaClMemObjCopyCtorOff(nmop, orig, additional)) {
