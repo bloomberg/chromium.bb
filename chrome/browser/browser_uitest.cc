@@ -4,8 +4,10 @@
 
 #include "app/gfx/native_widget_types.h"
 #include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/string_util.h"
 #include "base/sys_info.h"
+#include "base/test/test_file_util.h"
 #include "base/values.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/common/chrome_switches.h"
@@ -302,6 +304,46 @@ TEST_F(KioskModeTest, EnableKioskModeTest) {
   EXPECT_TRUE(is_visible);
   ASSERT_TRUE(browser->IsFullscreenBubbleVisible(&is_visible));
   EXPECT_FALSE(is_visible);
+}
+#endif
+
+#if defined(OS_WIN)
+// This test verifies that Chrome can be launched with a user-data-dir path
+// which contains non ASCII characters.
+class LaunchBrowserWithNonAsciiUserDatadir : public UITest {
+public:
+  void SetUp() {
+    PathService::Get(base::DIR_TEMP, &tmp_profile_);
+    tmp_profile_ = tmp_profile_.AppendASCII("tmp_profile");
+    tmp_profile_ = tmp_profile_.Append(L"Test Chrome Géraldine");
+
+    // Create a fresh, empty copy of this directory.
+    file_util::Delete(tmp_profile_, true);
+    file_util::CreateDirectory(tmp_profile_);
+
+    launch_arguments_.AppendSwitchWithValue(switches::kUserDataDir,
+                                            tmp_profile_.ToWStringHack());
+  }
+
+  bool LaunchAppWithProfile() {
+    UITest::SetUp();
+    return true;
+  }
+
+  void TearDown() {
+    UITest::TearDown();
+    EXPECT_TRUE(file_util::DieFileDie(tmp_profile_, true));
+  }
+
+public:
+  FilePath tmp_profile_;
+};
+
+TEST_F(LaunchBrowserWithNonAsciiUserDatadir, TestNonAsciiUserDataDir) {
+  ASSERT_TRUE(LaunchAppWithProfile());
+  // Verify that the window is present.
+  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser.get());
 }
 #endif
 
