@@ -83,7 +83,7 @@ class SafeBrowsingDatabase {
   typedef base::hash_map<SBPrefix, HashList> HashCache;
 
   friend class SafeBrowsingDatabaseTest;
-  FRIEND_TEST(SafeBrowsingDatabase, HashCaching);
+  FRIEND_TEST(SafeBrowsingDatabaseTest, HashCaching);
 
   static FilePath BloomFilterFilename(const FilePath& db_filename);
 
