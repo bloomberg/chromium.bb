@@ -23,8 +23,6 @@ using WebKit::WebString;
 using WebKit::WebTextDirection;
 using WebKit::WebURLError;
 
-namespace {
-
 static WebCompositionCommand ToCompositionCommand(int string_type) {
   switch (string_type) {
     default:
@@ -37,8 +35,6 @@ static WebCompositionCommand ToCompositionCommand(int string_type) {
       return WebKit::WebCompositionCommandConfirm;
   }
 }
-
-}  // namespace
 
 TEST_F(RenderViewTest, OnLoadAlternateHTMLText) {
   // Test a new navigation.
