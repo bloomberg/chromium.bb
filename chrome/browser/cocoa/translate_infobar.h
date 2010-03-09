@@ -15,11 +15,17 @@ class TranslateInfoBarMenuModel;
 class TranslateNotificationObserverBridge;
 
 // Draws and maintains Translate Infobar GUI.
-// The translate bar changes unidirectionally between 3 states:
+// The translate bar can be in one of 3 states:
 // 1. "Before Translate" - source language popup and translate/cancel buttons
 //    visible.
 // 2. "Translating" - "Translating..." status text visible in address bar.
 // 3. "After Translation" - source & target language popups visible.
+//
+// The following state transitions are supported:
+// 1->{2,3}
+// 2<->3
+// i.e. Once you've transitioned out of "Before Translate" mode you can't switch
+// back, however all other state transitions are supported.
 //
 // The GUI uses popup menus interspersed in a text label.  For localization
 // purposes this means we potentially need 3 labels to display the UI (the 3rd

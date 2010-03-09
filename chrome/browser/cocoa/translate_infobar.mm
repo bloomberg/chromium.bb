@@ -138,11 +138,7 @@ class TranslateNotificationObserverBridge :
 // the state has changed.
 // Controls are moved around as needed and visibility changed to match the
 // current state.
-// |newState| is the state we're transitioning to.
-// |initialDisplay| is true if we're being called when initially displaying
-// and not because of a state transition.
-- (void)updateState:(TranslateInfoBarDelegate::TranslateState)newState
-     initialDisplay:(bool)initialDisplay;
+- (void)updateState;
 
 // Make the infobar blue.
 - (void)setInfoBarGradientColor;
@@ -249,27 +245,16 @@ class TranslateNotificationObserverBridge :
 
   // Selecting an item from the "from language" menu in the before translate
   // phase shouldn't trigger translation - http://crbug.com/36666
-  if ([self delegate]->state() == TranslateInfoBarDelegate::kAfterTranslate)
+  if ([self delegate]->state() == TranslateInfoBarDelegate::kAfterTranslate) {
     [self delegate]->Translate();
+    [self updateState];
+  }
 }
 
-- (void)updateState:(TranslateInfoBarDelegate::TranslateState)newState
-     initialDisplay:(bool)initialDisplay {
-  // If this isn't a call from the constructor, only procede if the state
-  // has changed.
-  if (!initialDisplay && newState == [self delegate]->state())
-    return;
-
-  // Update the data model.
-  [self delegate]->UpdateState(newState);
-
+- (void)updateState {
   // Fixup our GUI.
-  TranslateInfoBarDelegate::TranslateState state = [self delegate]->state();
-
-  if (state != TranslateInfoBarDelegate::kTranslating) {
-    [self loadLabelText];
-    [self rebuildOptionsMenu];
-  }
+  [self loadLabelText];
+  [self rebuildOptionsMenu];
 
   [self resizeAndSetControlVisibility];
   [self layout];
@@ -295,104 +280,109 @@ class TranslateNotificationObserverBridge :
 }
 
 - (void)resizeAndSetControlVisibility {
-  switch ([self delegate]->state()) {
-    case TranslateInfoBarDelegate::kBeforeTranslate: {
-      // Size to fit and set resize attributes for all visible controls.
-      NSArray *controls = [NSArray arrayWithObjects:okButton_, cancelButton_,
-          label_, label2_.get(), optionsPopUp_.get(), nil];
-      for (NSControl* control in controls) {
-        [GTMUILocalizerAndLayoutTweaker sizeToFitView:control];
-        [control setAutoresizingMask:NSViewMaxXMargin | NSViewMinYMargin |
-            NSViewMaxYMargin];
-      }
-      [fromLanguagePopUp_ setAutoresizingMask:NSViewMaxXMargin |
-          NSViewMinYMargin | NSViewMaxYMargin];
-      [optionsPopUp_ setAutoresizingMask:NSViewMinXMargin | NSViewMinYMargin |
-          NSViewMaxYMargin];
+  TranslateInfoBarDelegate::TranslateState state = [self delegate]->state();
 
-      // Make "from language" popup menu the same size as the options menu.
-      // We don't autosize since some languages names are really long causing
-      // the toolbar to overflow.
-      NSRect optionsFrame = [optionsPopUp_ frame];
-      [fromLanguagePopUp_ setFrame:optionsFrame];
+  // Step 1: remove all controls from the infobar so we have a clean slate.
+  NSArray *allControls = [NSArray arrayWithObjects:label2_.get(), label3_.get(),
+      translatingLabel_.get(), fromLanguagePopUp_.get(), toLanguagePopUp_.get(),
+      nil];
 
-      [infoBarView_ addSubview:label2_];
-      [infoBarView_ addSubview:fromLanguagePopUp_];
+  for (NSControl* control in allControls) {
+    if ([control superview])
+      [control removeFromSuperview];
+  }
 
-      // Add "options" popup z-ordered below all other controls so when we
-      // resize the toolbar it doesn't hide them.
-      [infoBarView_ addSubview:optionsPopUp_
-                    positioned:NSWindowBelow
-                    relativeTo:nil];
+  // OK & Cancel buttons are only visible in "before translate" mode.
+  if (state != TranslateInfoBarDelegate::kBeforeTranslate) {
+    // Removing okButton_ & cancelButton_ from the view may cause them
+    // to be released and since we can still access them from other areas
+    // in the code later, we need them to be nil when this happens.
+    [okButton_ removeFromSuperview];
+    okButton_ = nil;
+    [cancelButton_ removeFromSuperview];
+    cancelButton_ = nil;
+
+  }
+
+  // Step 2: Resize all visible controls and add them to the infobar.
+  NSArray *visibleControls = nil;
+  NSArray *visibleMenus = nil;
+
+  switch (state) {
+    case TranslateInfoBarDelegate::kBeforeTranslate:
+      visibleControls = [NSArray arrayWithObjects:label_, okButton_,
+          cancelButton_, label2_.get(), fromLanguagePopUp_.get(), nil];
+      visibleMenus =  [NSArray arrayWithObjects:fromLanguagePopUp_.get(), nil];
       break;
-    }
-
     case TranslateInfoBarDelegate::kTranslating:
-      [okButton_ removeFromSuperview];
-      [cancelButton_ removeFromSuperview];
-      [infoBarView_ addSubview:translatingLabel_];
-      [GTMUILocalizerAndLayoutTweaker sizeToFitView:translatingLabel_];
-      [translatingLabel_ setAutoresizingMask:NSViewMaxXMargin |
-          NSViewMinYMargin | NSViewMaxYMargin];
+      visibleControls = [NSArray arrayWithObjects:label_, label2_.get(),
+          translatingLabel_.get(), nil];
+      visibleMenus =  [NSArray arrayWithObjects:fromLanguagePopUp_.get(), nil];
       break;
-
-    case TranslateInfoBarDelegate::kAfterTranslate: {
-      [translatingLabel_ removeFromSuperview];
-
-      [infoBarView_ addSubview:toLanguagePopUp_];
-      if (numLabelsDisplayed_ == 3)
-        [infoBarView_ addSubview:label3_];
-
-      // Label contents may have changed.
-      NSArray *controls = [NSArray arrayWithObjects:label_, label2_.get(),
-          label3_.get(), nil];
-      for (NSControl* control in controls) {
-        [GTMUILocalizerAndLayoutTweaker sizeToFitView:control];
-        [control setAutoresizingMask:NSViewMaxXMargin | NSViewMinYMargin |
-            NSViewMaxYMargin];
-      }
-
-      // See note on sizeing fromLanguagePopUp_ above.
-      NSRect optionsFrame = [optionsPopUp_ frame];
-      [toLanguagePopUp_ setFrame:optionsFrame];
+    case TranslateInfoBarDelegate::kAfterTranslate:
+      visibleControls = [NSArray arrayWithObjects:label_, label2_.get(),
+          fromLanguagePopUp_.get(), toLanguagePopUp_.get(), nil];
+      visibleMenus =  [NSArray arrayWithObjects:fromLanguagePopUp_.get(),
+          toLanguagePopUp_.get(), nil];
       break;
-    }
-
     default:
-      NOTREACHED() << "Invalid translate state change";
+      NOTREACHED() << "Invalid translate infobar state";
       break;
+  }
+
+  if (numLabelsDisplayed_ >= 3) {
+    visibleControls = [visibleControls arrayByAddingObject:label3_.get()];
+  }
+
+  for (NSControl* control in visibleControls) {
+    [GTMUILocalizerAndLayoutTweaker sizeToFitView:control];
+    [control setAutoresizingMask:NSViewMaxXMargin | NSViewMinYMargin |
+        NSViewMaxYMargin];
+
+    // Need to check if a view is already attached since |label_| is always
+    // parented and we don't want to add it again.
+    if (![control superview])
+      [infoBarView_ addSubview:control];
+  }
+
+  // Make "from" and "to" language popup menus the same size as the options
+  // menu.
+  // We don't autosize since some languages names are really long causing
+  // the toolbar to overflow.
+  NSRect optionsFrame = [optionsPopUp_ frame];
+  for (NSPopUpButton* menuButton in visibleMenus) {
+    [menuButton setFrame:optionsFrame];
+    [menuButton setAutoresizingMask:NSViewMaxXMargin |
+        NSViewMinYMargin | NSViewMaxYMargin];
+    [infoBarView_ addSubview:menuButton];
   }
 }
 
 - (void)layout {
-  // This method assumes that the toolbar starts out in |kBeforeTranslate|
-  // translate state and progresses unidirectionally and contiguously through
-  // the other states.
-  // Under these assumptions, the changes we make can be cumulative rather than
-  // repositioning elements multiple times.
-  switch ([self delegate]->state()) {
-    case TranslateInfoBarDelegate::kBeforeTranslate:
+  TranslateInfoBarDelegate::TranslateState state = [self delegate]->state();
+
+  if (state != TranslateInfoBarDelegate::kAfterTranslate) {
+      // 3rd label is only displayed in some locales, but should never be
+      // visible in this stage.
+      // If it ever is visible then we need to move it into position here.
+      DCHECK(numLabelsDisplayed_ < 3);
+  }
+
+  switch (state) {
+    case  TranslateInfoBarDelegate::kBeforeTranslate:
       MoveControl(label_, fromLanguagePopUp_, 0, true);
       MoveControl(fromLanguagePopUp_, label2_, 0, true);
       MoveControl(label2_, okButton_, spaceBetweenControls_, true);
       MoveControl(okButton_, cancelButton_, spaceBetweenControls_, true);
-
-      // 3rd label is only displayed in some locales, but should never be
-      // visible in the before translate stage.
-      // If it ever is visible then we need to move it into position here.
-      DCHECK(numLabelsDisplayed_ < 3);
-
-      MoveControl(closeButton_, optionsPopUp_, spaceBetweenControls_, false);
-
-      // Vertically center popup menus.
       VerticallyCenterView(fromLanguagePopUp_);
-      VerticallyCenterView(optionsPopUp_);
       break;
 
     case TranslateInfoBarDelegate::kTranslating:
+      MoveControl(label_, fromLanguagePopUp_, 0, true);
+      MoveControl(fromLanguagePopUp_, label2_, 0, true);
       MoveControl(label2_, translatingLabel_, spaceBetweenControls_ * 2, true);
+      VerticallyCenterView(fromLanguagePopUp_);
       break;
-
 
     case TranslateInfoBarDelegate::kAfterTranslate:
       MoveControl(label_, fromLanguagePopUp_, 0, true);
@@ -400,11 +390,12 @@ class TranslateNotificationObserverBridge :
       MoveControl(label2_, toLanguagePopUp_, 0, true);
       if (numLabelsDisplayed_ == 3)
         MoveControl(toLanguagePopUp_, label3_, 0, true);
+      VerticallyCenterView(fromLanguagePopUp_);
       VerticallyCenterView(toLanguagePopUp_);
       break;
 
     default:
-      NOTREACHED() << "Invalid translate state change";
+      NOTREACHED() << "Invalid translate infobar state";
       break;
   }
 }
@@ -508,18 +499,28 @@ class TranslateNotificationObserverBridge :
   [translatingLabel_
       setStringValue:GetNSString(IDS_TRANSLATE_INFOBAR_TRANSLATING)];
 
+  // Add and configure controls that are visible in all modes.
+  [optionsPopUp_ setAutoresizingMask:NSViewMinXMargin | NSViewMinYMargin |
+          NSViewMaxYMargin];
+  // Add "options" popup z-ordered below all other controls so when we
+  // resize the toolbar it doesn't hide them.
+  [infoBarView_ addSubview:optionsPopUp_
+                positioned:NSWindowBelow
+                relativeTo:nil];
+  [GTMUILocalizerAndLayoutTweaker sizeToFitView:optionsPopUp_];
+  MoveControl(closeButton_, optionsPopUp_, spaceBetweenControls_, false);
+  VerticallyCenterView(optionsPopUp_);
+
   // Show and place GUI elements.
-  [self updateState:TranslateInfoBarDelegate::kBeforeTranslate
-     initialDisplay:true];
+  [self updateState];
 }
 
 // Called when "Translate" button is clicked.
 - (IBAction)ok:(id)sender {
   DCHECK(
       [self delegate]->state() == TranslateInfoBarDelegate::kBeforeTranslate);
-  [self updateState:TranslateInfoBarDelegate::kTranslating
-     initialDisplay:false];
   [self delegate]->Translate();
+  [self updateState];
 }
 
 // Called when someone clicks on the "Nope" button.
@@ -639,7 +640,6 @@ void TranslateNotificationObserverBridge::Observe(NotificationType type,
   TabContents* tab = Source<TabContents>(source).ptr();
   if (tab != translate_delegate_->tab_contents())
     return;
-  [controller_ updateState:TranslateInfoBarDelegate::kAfterTranslate
-            initialDisplay:false];
+  [controller_ updateState];
 
 }
