@@ -33,7 +33,7 @@ class DOMStorageDispatcherHost
       WebKitContext* webkit_context, WebKitThread* webkit_thread);
 
   // Only call from ResourceMessageFilter on the IO thread.
-  void Init(base::ProcessHandle process_handle);
+  void Init(int process_id, base::ProcessHandle process_handle);
 
   // Only call from ResourceMessageFilter on the IO thread.  Calls self on the
   // WebKit thread in some cases.
@@ -110,6 +110,9 @@ class DOMStorageDispatcherHost
   // If we get a corrupt message from a renderer, we need to kill it using this
   // handle.
   base::ProcessHandle process_handle_;
+
+  // Used to dispatch messages to the correct view host.
+  int process_id_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(DOMStorageDispatcherHost);
 };

@@ -1,6 +1,6 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef CHROME_RENDERER_RENDERER_WEBSTORAGEAREA_IMPL_H_
 #define CHROME_RENDERER_RENDERER_WEBSTORAGEAREA_IMPL_H_
@@ -23,7 +23,7 @@ class RendererWebStorageAreaImpl : public WebKit::WebStorageArea {
   virtual void setItem(
       const WebKit::WebString& key, const WebKit::WebString& value,
       const WebKit::WebURL& url, WebStorageArea::Result& result,
-      WebKit::WebString& old_value);
+      WebKit::WebString& old_value, WebKit::WebFrame* web_view);
   virtual void removeItem(
       const WebKit::WebString& key, const WebKit::WebURL& url,
       WebKit::WebString& old_value);
