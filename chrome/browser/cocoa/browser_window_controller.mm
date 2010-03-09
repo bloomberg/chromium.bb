@@ -222,9 +222,7 @@
 
     windowShim_->SetBounds(windowRect, BrowserWindow::WINDOW_BOUNDS);
 
-    // Puts the incognito badge on the window frame, if necessary. Do this
-    // before creating the tab strip to avoid redundant tab layout.
-    // TODO(viettrungluu): fullscreen mode
+    // Puts the incognito badge on the window frame, if necessary.
     [self installIncognitoBadge];
 
     // Create a controller for the tab strip, giving it the model object for
@@ -1414,34 +1412,24 @@
   if (!browser_->profile()->IsOffTheRecord() || ![self hasTabStrip])
     return;
 
-  const CGFloat kOffset = 4;  // Space between the badge and the right edge.
+  // Install the image into the badge view and size the view appropriately.
+  // Hide it for now; positioning and showing will be done by the layout code.
   NSImage* image = nsimage_cache::ImageNamed(@"otr_icon.pdf");
-
-  // Create the incognito badge view, with size that of the image, aligned with
-  // the bottom of the tab strip, and aligned at the right with a bit of space.
-  NSSize size = [image size];
-  NSRect tabStripFrame = [[self tabStripView] frame];
-  NSRect frame = NSMakeRect(NSMaxX(tabStripFrame) - size.width - kOffset,
-                            tabStripFrame.origin.y, size.width, size.height);
-  scoped_nsobject<IncognitoImageView> incognitoView(
-      [[IncognitoImageView alloc] initWithFrame:frame]);
-  [incognitoView setImage:image];
-  [incognitoView setWantsLayer:YES];
-  [incognitoView setAutoresizingMask:NSViewMinXMargin | NSViewMinYMargin];
+  incognitoBadge_.reset([[IncognitoImageView alloc] init]);
+  [incognitoBadge_ setImage:image];
+  [incognitoBadge_ setFrameSize:[image size]];
+  [incognitoBadge_ setAutoresizingMask:NSViewMinXMargin | NSViewMinYMargin];
+  [incognitoBadge_ setHidden:YES];
 
   // Give it a shadow.
   scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
-  [shadow.get() setShadowColor:[NSColor colorWithCalibratedWhite:0.0
-                                                           alpha:0.5]];
-  [shadow.get() setShadowOffset:NSMakeSize(0, -1)];
+  [shadow setShadowColor:[NSColor colorWithCalibratedWhite:0.0 alpha:0.5]];
+  [shadow setShadowOffset:NSMakeSize(0, -1)];
   [shadow setShadowBlurRadius:2.0];
-  [incognitoView setShadow:shadow];
+  [incognitoBadge_ setShadow:shadow];
 
-  // Shrink the tab strip's width so there's no overlap and install the view.
-  tabStripFrame.size.width -= NSWidth(frame) + kOffset;
-  DCHECK(NSWidth(tabStripFrame) > 0);
-  [[self tabStripView] setFrame:tabStripFrame];
-  [[[[self window] contentView] superview] addSubview:incognitoView.get()];
+  // Install the view.
+  [[[[self window] contentView] superview] addSubview:incognitoBadge_];
 }
 
 // Documented in 10.6+, but present starting in 10.5. Called when we get a
@@ -1682,8 +1670,15 @@ willAnimateFromState:(bookmarks::VisualState)oldState
   [contentView setAutoresizesSubviews:YES];
   [destWindow setContentView:contentView];
 
-  // Add the tabstrip after setting the content view, so that the tab strip will
-  // be on top (in the z-order).
+  // Move the incognito badge if present.
+  if (incognitoBadge_.get()) {
+    [incognitoBadge_ removeFromSuperview];
+    [incognitoBadge_ setHidden:YES];  // Will be shown in layout.
+    [[[destWindow contentView] superview] addSubview:incognitoBadge_];
+  }
+
+  // Add the tab strip after setting the content view and moving the incognito
+  // badge (if any), so that the tab strip will be on top (in the z-order).
   if ([self hasTabStrip])
     [[[destWindow contentView] superview] addSubview:tabStripView];
 

@@ -60,6 +60,10 @@ const CGFloat kTabOverlap = 20.0;
 // The amount by which the new tab button is offset (from the tabs).
 const CGFloat kNewTabButtonOffset = 8.0;
 
+// The amount by which to shrink the tab strip (on the right) when the
+// incognito badge is present.
+const CGFloat kIncognitoBadgeTabStripShrink = 18;
+
 // Time (in seconds) in which tabs animate to their final position.
 const NSTimeInterval kAnimationDuration = 0.2;
 
@@ -668,7 +672,10 @@ private:
     availableWidth = availableResizeWidth_;
   } else {
     availableWidth = NSWidth([tabStripView_ frame]);
+    // Account for the new tab button and the incognito badge.
     availableWidth -= NSWidth([newTabButton_ frame]) + kNewTabButtonOffset;
+    if (browser_->profile()->IsOffTheRecord())
+      availableWidth -= kIncognitoBadgeTabStripShrink;
   }
   availableWidth -= [self indentForControls];
 

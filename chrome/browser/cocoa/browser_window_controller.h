@@ -32,6 +32,7 @@ class ConstrainedWindowMac;
 @class FindBarCocoaController;
 @class FullscreenController;
 @class GTMWindowSheetController;
+@class IncognitoImageView;
 @class InfoBarContainerController;
 class LocationBar;
 class StatusBubbleMac;
@@ -93,6 +94,10 @@ class TabStripModelObserverBridge;
   // an in-progress pinch gesture.
   CGFloat totalMagnifyGestureAmount_;
   NSInteger currentZoomStepDelta_;
+
+  // The view which shows the incognito badge (NULL if not an incognito window).
+  // Needed to access the view to move it to/from the fullscreen window.
+  scoped_nsobject<IncognitoImageView> incognitoBadge_;
 
   // Lazily created view which draws the background for the floating set of bars
   // in fullscreen mode.

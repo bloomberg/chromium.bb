@@ -27,6 +27,9 @@
 
 namespace {
 
+// Space between the incognito badge and the right edge of the window.
+const CGFloat kIncognitoBadgeOffset = 4;
+
 // Insets for the location bar, used when the full toolbar is hidden.
 // TODO(viettrungluu): We can argue about the "correct" insetting; I like the
 // following best, though arguably 0 inset is better/more correct.
@@ -247,6 +250,15 @@ willPositionSheet:(NSWindow*)sheet
   // TODO(viettrungluu): Seems kind of bad -- shouldn't |-layoutSubviews| do
   // this? Moreover, |-layoutTabs| will try to animate....
   [tabStripController_ layoutTabs];
+
+  // Now lay out incognito badge together with the tab strip.
+  if (incognitoBadge_.get()) {
+    // Actually place the badge *above* |maxY|.
+    NSPoint origin = NSMakePoint(width - NSWidth([incognitoBadge_ frame]) -
+                                     kIncognitoBadgeOffset, maxY);
+    [incognitoBadge_ setFrameOrigin:origin];
+    [incognitoBadge_ setHidden:NO];  // Make sure it's shown.
+  }
 
   return maxY;
 }
