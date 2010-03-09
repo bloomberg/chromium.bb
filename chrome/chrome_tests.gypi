@@ -1535,6 +1535,7 @@
         'browser/sync/engine/syncer_thread_unittest.cc',
         'browser/sync/engine/syncer_unittest.cc',
         'browser/sync/engine/syncproto_unittest.cc',
+        'browser/sync/engine/verify_updates_command_unittest.cc',
         'browser/sync/glue/bookmark_data_type_controller_unittest.cc',
         'browser/sync/glue/change_processor_mock.h',
         'browser/sync/glue/preference_data_type_controller_unittest.cc',

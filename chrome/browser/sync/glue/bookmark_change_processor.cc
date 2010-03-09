@@ -344,6 +344,7 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
     int change_count) {
   if (!running())
     return;
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   // A note about ordering.  Sync backend is responsible for ordering the change
   // records in the following order:
   //

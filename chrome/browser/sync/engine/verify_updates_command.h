@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 
 #include "chrome/browser/sync/engine/model_safe_worker.h"
-#include "chrome/browser/sync/engine/syncer_command.h"
+#include "chrome/browser/sync/engine/model_changing_syncer_command.h"
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/engine/syncer_types.h"
 
@@ -20,13 +20,13 @@ namespace browser_sync {
 
 // Verifies the response from a GetUpdates request. All invalid updates will be
 // noted in the SyncSession after this command is executed.
-class VerifyUpdatesCommand : public SyncerCommand {
+class VerifyUpdatesCommand : public ModelChangingSyncerCommand {
  public:
   VerifyUpdatesCommand();
   virtual ~VerifyUpdatesCommand();
 
   // SyncerCommand implementation.
-  virtual void ExecuteImpl(sessions::SyncSession* session);
+  virtual void ModelChangingExecuteImpl(sessions::SyncSession* session);
 
  private:
   struct VerifyUpdateResult {

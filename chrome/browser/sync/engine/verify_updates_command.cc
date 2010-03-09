@@ -26,7 +26,8 @@ using syncable::SYNCER;
 VerifyUpdatesCommand::VerifyUpdatesCommand() {}
 VerifyUpdatesCommand::~VerifyUpdatesCommand() {}
 
-void VerifyUpdatesCommand::ExecuteImpl(sessions::SyncSession* session) {
+void VerifyUpdatesCommand::ModelChangingExecuteImpl(
+    sessions::SyncSession* session) {
   LOG(INFO) << "Beginning Update Verification";
   ScopedDirLookup dir(session->context()->directory_manager(),
                       session->context()->account_name());
@@ -43,6 +44,11 @@ void VerifyUpdatesCommand::ExecuteImpl(sessions::SyncSession* session) {
   for (int i = 0; i < update_count; i++) {
     const SyncEntity entry =
         *reinterpret_cast<const SyncEntity *>(&(updates.entries(i)));
+    ModelSafeGroup g = GetGroupForModelType(entry.GetModelType(),
+                                            session->routing_info());
+    if (g != status->group_restriction())
+      continue;
+
     // Needs to be done separately in order to make sure the update processing
     // still happens like normal. We should really just use one type of
     // ID in fact, there isn't actually a need for server_knows and not IDs.
@@ -54,8 +60,7 @@ void VerifyUpdatesCommand::ExecuteImpl(sessions::SyncSession* session) {
 
     VerifyUpdateResult result = VerifyUpdate(&trans, entry,
                                              session->routing_info());
-    status->GetUnrestrictedUpdateProgress(
-        result.placement)->AddVerifyResult(result.value, entry);
+    status->mutable_update_progress()->AddVerifyResult(result.value, entry);
   }
 }
 
