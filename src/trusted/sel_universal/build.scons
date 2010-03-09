@@ -61,11 +61,6 @@ if ARGUMENTS.get('sdl', 'hermetic') == 'none':
   Return()
 
 # TODO(robertm): enable this ASAP
-# the problem is main() which appears doubly defined to the linker
-if env.Bit('mac'):
-  Return()
-
-# TODO(robertm): enable this ASAP
 # the problem is:  error C2664: 'NaClThreadCtor' : cannot convert
 #  parameter 2 from 'ThreadRoutine' to 'void (__stdcall *)(void *)'
 #  this is a __cdecl vs __stdcall issue
@@ -139,43 +134,45 @@ def MakeSdlEnv(env):
   return sdl_env
 
 
-def MakeExtraSdlObjects(env):
+def MakeExtraSdlLibs(env):
   if env.Bit('mac'):
     env_sdlmain = env.Clone()
     # TODO(robertm): explain why we need to disable this warning
     env_sdlmain.FilterOut(CCFLAGS=['-Werror'])
-    return [env_sdlmain.ComponentObject(
+
+    obj = env_sdlmain.ComponentObject(
         'SDLApplication',
-        '${MAIN_DIR}/common/SDLApplication.m'),
-            ]
+        '${MAIN_DIR}/common/SDLApplication.m')
+    env_sdlmain.ComponentLibrary('mac_extra', [obj])
+    return ['mac_extra']
   else:
     return []
 
 
+
+
 sdl_env = MakeSdlEnv(env)
+
+sdl_env.ComponentLibrary('multimedia_sdl', ['multimedia_sdl.cc'])
+
 # work around a cast warning in multimedia_handler.cc
 sdl_env.Append(CCFLAGS=['-fno-strict-aliasing'])
 # NOTE: on arm we typically try to build static but we cannot build
 #       anything containing SDL static
 sdl_env.FilterOut(LINKFLAGS=['-static'])
-# NOTE: we need Cocoa because of the GetPluginDir() implementation
-#       on mac (nonnacl_util_c)
-
-extra_sdl_objs = MakeExtraSdlObjects(sdl_env)
-
+extra_libs = MakeExtraSdlLibs(sdl_env)
 node = sdl_env.ComponentProgram('sel_universal_new',
                                 ['sel_universal_new.cc',
-                                 'multimedia_sdl.cc',
                                  'multimedia_handler.cc'
-                                 ] + extra_sdl_objs,
-                                EXTRA_LIBS=['nonnacl_util_c',
+                                 ],
+                                EXTRA_LIBS=['multimedia_sdl',
+                                            'nonnacl_util_c',
                                             'nonnacl_srpc',
                                             'nrd_xfer',
                                             'platform',
                                             'gio',
                                             'google_nacl_imc_c',
-                                            ],
-                                FRAMEWORKS=['Cocoa'],
+                                            ] + extra_libs,
                                 )
 
 
@@ -186,11 +183,10 @@ if not sdl_env.Bit('windows'):
   # manual test for multimedia
   sdl_env.ComponentProgram('multimedia_test',
                            ['multimedia_test.cc',
-                            'multimedia_sdl.cc',
-                            ] + extra_sdl_objs,
-                           EXTRA_LIBS=['platform',
+                            ],
+                           EXTRA_LIBS=['multimedia_sdl',
+                                       'platform',
                                        'gio',
-                                       ],
-                           FRAMEWORKS=['Cocoa'],
+                                       ] + extra_libs,
                            )
   AddSdlRequirements(sdl_env, node)
