@@ -9,11 +9,20 @@
 
 class ThemeProvider;
 
+// Bit flags; mix-and-match as necessary.
+enum {
+  THEMED_NORMAL    = 0,
+  THEMED_INCOGNITO = 1 << 0,
+  THEMED_POPUP     = 1 << 1,
+  THEMED_DEVTOOLS  = 1 << 2
+};
+typedef NSUInteger ThemedWindowStyle;
+
 // Implemented by windows that support theming.
 
 @interface NSWindow (ThemeProvider)
 - (ThemeProvider*)themeProvider;
-- (BOOL)themeIsIncognito;
+- (ThemedWindowStyle)themedWindowStyle;
 - (NSPoint)themePatternPhase;
 @end
 

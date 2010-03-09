@@ -347,8 +347,8 @@ namespace {
   return [[self windowController] themeProvider];
 }
 
-- (BOOL)themeIsIncognito {
-  return [[self windowController] themeIsIncognito];
+- (ThemedWindowStyle)themedWindowStyle {
+  return [[self windowController] themedWindowStyle];
 }
 
 - (NSPoint)themePatternPhase {

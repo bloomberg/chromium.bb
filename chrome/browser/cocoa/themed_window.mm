@@ -12,8 +12,8 @@
   return NULL;
 }
 
-- (BOOL)themeIsIncognito {
-  return NO;
+- (ThemedWindowStyle)themedWindowStyle {
+  return THEMED_NORMAL;
 }
 
 - (NSPoint)themePatternPhase {

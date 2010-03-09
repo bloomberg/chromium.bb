@@ -6,6 +6,7 @@
 
 #include "base/mac_util.h"
 #include "chrome/browser/browser_theme_provider.h"
+#import "chrome/browser/cocoa/themed_window.h"
 
 @implementation FullscreenWindow
 
@@ -82,8 +83,8 @@
   return [[self windowController] themeProvider];
 }
 
-- (BOOL)themeIsIncognito {
-  return [[self windowController] themeIsIncognito];
+- (ThemedWindowStyle)themedWindowStyle {
+  return [[self windowController] themedWindowStyle];
 }
 
 - (NSPoint)themePatternPhase {

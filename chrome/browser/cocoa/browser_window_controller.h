@@ -14,10 +14,11 @@
 
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
-#import "chrome/browser/cocoa/tab_window_controller.h"
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
 #import "chrome/browser/cocoa/bookmark_bubble_controller.h"
 #import "chrome/browser/cocoa/browser_command_executor.h"
+#import "chrome/browser/cocoa/tab_window_controller.h"
+#import "chrome/browser/cocoa/themed_window.h"
 #import "chrome/browser/cocoa/url_drop_target.h"
 #import "chrome/browser/cocoa/view_resizer.h"
 #include "chrome/browser/sync/sync_ui_util.h"
@@ -236,8 +237,8 @@ class TabStripModelObserverBridge;
 // Gets the current theme provider.
 - (ThemeProvider*)themeProvider;
 
-// Gets whether the current theme is incognito.
-- (BOOL)themeIsIncognito;
+// Gets the window style.
+- (ThemedWindowStyle)themedWindowStyle;
 
 // Gets the pattern phase for the window.
 - (NSPoint)themePatternPhase;

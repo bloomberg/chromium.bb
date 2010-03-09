@@ -57,4 +57,7 @@
                            forView:(NSView*)view
                             bounds:(NSRect)bounds;
 
+// Gets the color to draw title text.
++ (NSColor*)titleColorForThemeView:(NSView*)view;
+
 @end

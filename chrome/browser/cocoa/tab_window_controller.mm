@@ -7,6 +7,7 @@
 #include "app/theme_provider.h"
 #include "base/logging.h"
 #import "chrome/browser/cocoa/tab_strip_view.h"
+#import "chrome/browser/cocoa/themed_window.h"
 
 @interface TabWindowController(PRIVATE)
 - (void)setUseOverlay:(BOOL)useOverlay;
@@ -23,9 +24,9 @@
   return NULL;
 }
 
-- (BOOL)themeIsIncognito {
+- (ThemedWindowStyle)themedWindowStyle {
   if ([self parentWindow])
-    return [[[self parentWindow] windowController] themeIsIncognito];
+    return [[[self parentWindow] windowController] themedWindowStyle];
   return NO;
 }
 

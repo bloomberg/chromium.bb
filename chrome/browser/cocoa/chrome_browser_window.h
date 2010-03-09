@@ -51,7 +51,7 @@ const NSInteger kChromeWindowButtonsInterButtonSpacing = 7;
 
 @end
 
-@interface ChromeBrowserWindow (UndocumentedAPI)
+@interface NSWindow (UndocumentedAPI)
 
 // Undocumented Cocoa API to suppress drawing of the window's title.
 // -setTitle: still works, but the title set only applies to the

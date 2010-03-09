@@ -44,7 +44,6 @@
 #import "chrome/browser/cocoa/tab_strip_controller.h"
 #import "chrome/browser/cocoa/tab_strip_view.h"
 #import "chrome/browser/cocoa/tab_view.h"
-#import "chrome/browser/cocoa/themed_window.h"
 #import "chrome/browser/cocoa/toolbar_controller.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -1313,8 +1312,18 @@
   return browser_->profile()->GetThemeProvider();
 }
 
-- (BOOL)themeIsIncognito {
-  return browser_->profile()->IsOffTheRecord();
+- (ThemedWindowStyle)themedWindowStyle {
+  ThemedWindowStyle style = 0;
+  if (browser_->profile()->IsOffTheRecord())
+    style |= THEMED_INCOGNITO;
+
+  Browser::Type type = browser_->type();
+  if (type == Browser::TYPE_POPUP)
+    style |= THEMED_POPUP;
+  else if (type == Browser::TYPE_DEVTOOLS)
+    style |= THEMED_DEVTOOLS;
+
+  return style;
 }
 
 - (NSPoint)themePatternPhase {

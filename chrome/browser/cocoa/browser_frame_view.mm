@@ -17,10 +17,21 @@
 static const CGFloat kBrowserFrameViewPaintHeight = 60.0;
 static const NSPoint kBrowserFrameViewPatternPhaseOffset = { -5, 3 };
 
+static BOOL gCanDrawTitle = NO;
+
 @interface NSView (Swizzles)
 - (void)drawRectOriginal:(NSRect)rect;
 - (BOOL)_mouseInGroup:(NSButton*)widget;
 - (void)updateTrackingAreas;
+@end
+
+// Undocumented APIs. They are really on NSGrayFrame rather than
+// BrowserFrameView, but we call them from methods swizzled onto NSGrayFrame.
+@interface BrowserFrameView (UndocumentedAPI)
+
+- (CGRect)_titlebarTitleRect;
+- (void)_drawTitleStringIn:(struct CGRect)arg1 withColor:(id)color;
+
 @end
 
 @implementation BrowserFrameView
@@ -76,6 +87,12 @@ static const NSPoint kBrowserFrameViewPatternPhaseOffset = { -5, 3 };
                                   method_getTypeEncoding(m0));
     DCHECK(didAdd);
   }
+
+  gCanDrawTitle =
+      [grayFrameClass
+        instancesRespondToSelector:@selector(_titlebarTitleRect)] &&
+      [grayFrameClass
+        instancesRespondToSelector:@selector(_drawTitleStringIn:withColor:)];
 }
 
 - (id)initWithFrame:(NSRect)frame {
@@ -128,6 +145,13 @@ static const NSPoint kBrowserFrameViewPatternPhaseOffset = { -5, 3 };
                                                      forView:self
                                                       bounds:windowRect];
 
+  // If the window needs a title and we painted over the title as drawn by the
+  // default window paint, paint it ourselves.
+  if (themed && gCanDrawTitle && ![[self window] _isTitleHidden]) {
+    [self _drawTitleStringIn:[self _titlebarTitleRect]
+                   withColor:[BrowserFrameView titleColorForThemeView:self]];
+  }
+
   // Pinstripe the top.
   if (themed) {
     windowRect = [window frame];
@@ -151,17 +175,28 @@ static const NSPoint kBrowserFrameViewPatternPhaseOffset = { -5, 3 };
   if (!themeProvider)
     return NO;
 
+  ThemedWindowStyle windowStyle = [[view window] themedWindowStyle];
+
+  // Devtools windows don't get themed.
+  if (windowStyle & THEMED_DEVTOOLS)
+    return NO;
+
   BOOL active = [[view window] isMainWindow];
-  BOOL incognito = [[view window] themeIsIncognito];
+  BOOL incognito = windowStyle & THEMED_INCOGNITO;
+  BOOL popup = windowStyle & THEMED_POPUP;
 
   // Find a theme image.
   NSColor* themeImageColor = nil;
   int themeImageID;
-  if (active && incognito)
+  if (popup && active)
+    themeImageID = IDR_THEME_TOOLBAR;
+  else if (popup && !active)
+    themeImageID = IDR_THEME_TAB_BACKGROUND;
+  else if (!popup && active && incognito)
     themeImageID = IDR_THEME_FRAME_INCOGNITO;
-  else if (active && !incognito)
+  else if (!popup && active && !incognito)
     themeImageID = IDR_THEME_FRAME;
-  else if (!active && incognito)
+  else if (!popup && !active && incognito)
     themeImageID = IDR_THEME_FRAME_INCOGNITO_INACTIVE;
   else
     themeImageID = IDR_THEME_FRAME_INACTIVE;
@@ -220,6 +255,34 @@ static const NSPoint kBrowserFrameViewPatternPhaseOffset = { -5, 3 };
   }
 
   return themed;
+}
+
++ (NSColor*)titleColorForThemeView:(NSView*)view {
+  ThemeProvider* themeProvider = [[view window] themeProvider];
+  if (!themeProvider)
+    return [NSColor windowFrameTextColor];
+
+  ThemedWindowStyle windowStyle = [[view window] themedWindowStyle];
+  BOOL active = [[view window] isMainWindow];
+  BOOL incognito = windowStyle & THEMED_INCOGNITO;
+  BOOL popup = windowStyle & THEMED_POPUP;
+
+  NSColor* titleColor = nil;
+  if (popup && active) {
+    titleColor = themeProvider->GetNSColor(
+        BrowserThemeProvider::COLOR_TAB_TEXT, false);
+  } else if (popup && !active) {
+    titleColor = themeProvider->GetNSColor(
+        BrowserThemeProvider::COLOR_BACKGROUND_TAB_TEXT, false);
+  }
+
+  if (titleColor)
+    return titleColor;
+
+  if (incognito)
+    return [NSColor whiteColor];
+  else
+    return [NSColor windowFrameTextColor];
 }
 
 // Check to see if the mouse is currently in one of our window widgets.
