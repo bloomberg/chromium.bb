@@ -15,6 +15,7 @@
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/gtk/cairo_cached_surface.h"
+#include "chrome/browser/gtk/hover_controller_gtk.h"
 #include "chrome/browser/gtk/gtk_chrome_button.h"
 #include "chrome/browser/gtk/meta_frames.h"
 #include "chrome/browser/pref_service.h"
@@ -206,7 +207,7 @@ void GtkThemeProvider::Observe(NotificationType type,
 }
 
 GtkWidget* GtkThemeProvider::BuildChromeButton() {
-  GtkWidget* button = gtk_chrome_button_new();
+  GtkWidget* button = HoverControllerGtk::CreateChromeButton();
   gtk_chrome_button_set_use_gtk_rendering(GTK_CHROME_BUTTON(button), use_gtk_);
   chrome_buttons_.push_back(button);
 
@@ -622,9 +623,9 @@ void GtkThemeProvider::LoadGtkValues() {
 
 void GtkThemeProvider::LoadDefaultValues() {
   focus_ring_color_ = SkColorSetARGB(255, 229, 151, 0);
-  thumb_active_color_ = SkColorSetRGB(250, 248, 245);
-  thumb_inactive_color_ = SkColorSetRGB(240, 235, 229);
-  track_color_ = SkColorSetRGB(227, 221, 216);
+  thumb_active_color_ = SkColorSetRGB(244, 244, 244);
+  thumb_inactive_color_ = SkColorSetRGB(234, 234, 234);
+  track_color_ = SkColorSetRGB(211, 211, 211);
 
   active_selection_bg_color_ = SkColorSetRGB(30, 144, 255);
   active_selection_fg_color_ = SK_ColorBLACK;

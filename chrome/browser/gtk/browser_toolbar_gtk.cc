@@ -330,6 +330,13 @@ void BrowserToolbarGtk::EnabledStateChangedForCommand(int id, bool enabled) {
 // MenuGtk::Delegate -----------------------------------------------------------
 
 void BrowserToolbarGtk::StoppedShowing() {
+  // Without these calls, the hover state can get stuck since the leave-notify
+  // event is not sent when clicking a button brings up the menu.
+  gtk_chrome_button_set_hover_state(
+      GTK_CHROME_BUTTON(page_menu_button_.get()), 0.0);
+  gtk_chrome_button_set_hover_state(
+      GTK_CHROME_BUTTON(app_menu_button_.get()), 0.0);
+
   gtk_chrome_button_unset_paint_state(
       GTK_CHROME_BUTTON(page_menu_button_.get()));
   gtk_chrome_button_unset_paint_state(

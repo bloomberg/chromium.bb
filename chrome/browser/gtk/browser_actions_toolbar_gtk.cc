@@ -57,10 +57,12 @@ class BrowserActionButton : public NotificationObserver,
                       Extension* extension)
       : toolbar_(toolbar),
         extension_(extension),
-        button_(gtk_chrome_button_new()),
         tracker_(NULL),
         tab_specific_icon_(NULL),
         default_icon_(NULL) {
+    button_.Own(
+        GtkThemeProvider::GetFrom(toolbar->profile_)->BuildChromeButton());
+
     DCHECK(extension_->browser_action());
 
     gtk_widget_set_size_request(button_.get(), kButtonSize, kButtonSize);
@@ -88,10 +90,6 @@ class BrowserActionButton : public NotificationObserver,
 
     registrar_.Add(this, NotificationType::EXTENSION_BROWSER_ACTION_UPDATED,
                    Source<ExtensionAction>(extension->browser_action()));
-    registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
-                   NotificationService::AllSources());
-
-    OnThemeChanged();
   }
 
   ~BrowserActionButton() {
@@ -117,8 +115,6 @@ class BrowserActionButton : public NotificationObserver,
                const NotificationDetails& details) {
     if (type == NotificationType::EXTENSION_BROWSER_ACTION_UPDATED)
       UpdateState();
-    else if (type == NotificationType::BROWSER_THEME_CHANGED)
-      OnThemeChanged();
     else
       NOTREACHED();
   }
@@ -161,12 +157,6 @@ class BrowserActionButton : public NotificationObserver,
   void SetImage(GdkPixbuf* image) {
     gtk_button_set_image(GTK_BUTTON(button_.get()),
         gtk_image_new_from_pixbuf(image));
-  }
-
-  void OnThemeChanged() {
-    gtk_chrome_button_set_use_gtk_rendering(GTK_CHROME_BUTTON(button_.get()),
-        GtkThemeProvider::GetFrom(
-            toolbar_->browser()->profile())->UseGtkTheme());
   }
 
   static gboolean OnButtonPress(GtkWidget* widget,

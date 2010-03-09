@@ -210,7 +210,7 @@ gboolean CustomDrawHoverController::OnLeave(
     GtkWidget* widget,
     GdkEventCrossing* event,
     CustomDrawHoverController* controller) {
-  // When the user is holding a mouse button, we don't want to animste.
+  // When the user is holding a mouse button, we don't want to animate.
   if (event->state & (GDK_BUTTON1_MASK | GDK_BUTTON2_MASK | GDK_BUTTON3_MASK))
     controller->slide_animation_.Reset();
   else

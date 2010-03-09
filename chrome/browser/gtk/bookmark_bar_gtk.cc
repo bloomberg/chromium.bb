@@ -26,12 +26,12 @@
 #include "chrome/browser/gtk/gtk_chrome_button.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/gtk_util.h"
+#include "chrome/browser/gtk/hover_controller_gtk.h"
 #include "chrome/browser/gtk/import_dialog_gtk.h"
 #include "chrome/browser/gtk/menu_gtk.h"
 #include "chrome/browser/gtk/rounded_window.h"
 #include "chrome/browser/gtk/tabstrip_origin_provider.h"
 #include "chrome/browser/gtk/tabs/tab_strip_gtk.h"
-#include "chrome/browser/gtk/throb_controller_gtk.h"
 #include "chrome/browser/gtk/view_id_util.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/ntp_background_util.h"
@@ -750,10 +750,10 @@ void BookmarkBarGtk::StartThrobbing(const BookmarkNode* node) {
 
 void BookmarkBarGtk::SetThrobbingWidget(GtkWidget* widget) {
   if (throbbing_widget_) {
-    ThrobControllerGtk* throbber =
-        ThrobControllerGtk::GetThrobControllerGtk(throbbing_widget_);
-    if (throbber)
-      throbber->Destroy();
+    HoverControllerGtk* hover_controller =
+        HoverControllerGtk::GetHoverControllerGtk(throbbing_widget_);
+    if (hover_controller)
+      hover_controller->StartThrobbing(0);
 
     g_signal_handlers_disconnect_by_func(
         throbbing_widget_,
@@ -769,7 +769,10 @@ void BookmarkBarGtk::SetThrobbingWidget(GtkWidget* widget) {
     g_signal_connect(throbbing_widget_, "destroy",
                      G_CALLBACK(OnThrobbingWidgetDestroy), this);
 
-    ThrobControllerGtk::ThrobFor(throbbing_widget_, 4);
+    HoverControllerGtk* hover_controller =
+        HoverControllerGtk::GetHoverControllerGtk(throbbing_widget_);
+    if (hover_controller)
+      hover_controller->StartThrobbing(4);
   }
 }
 
@@ -1054,10 +1057,10 @@ void BookmarkBarGtk::OnButtonDragGet(GtkWidget* widget, GdkDragContext* context,
 void BookmarkBarGtk::OnFolderClicked(GtkWidget* sender,
                                      BookmarkBarGtk* bar) {
   // Stop its throbbing, if any.
-  ThrobControllerGtk* throbber =
-      ThrobControllerGtk::GetThrobControllerGtk(sender);
-  if (throbber)
-    throbber->Destroy();
+  HoverControllerGtk* hover_controller =
+      HoverControllerGtk::GetHoverControllerGtk(sender);
+  if (hover_controller)
+    hover_controller->StartThrobbing(0);
 
   GdkEvent* event = gtk_get_current_event();
   if (event->button.button == 1) {
