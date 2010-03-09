@@ -105,6 +105,9 @@ class NetworkSelectionView : public views::View,
   // Subscribe/unsubscribes from network change notification.
   void ChangeNetworkNotification(bool subscribe);
 
+  // Initializes language selection menues contents.
+  void InitLanguageMenu();
+
   // Dialog controls.
   views::Combobox* network_combobox_;
   views::MenuButton* languages_menubutton_;
@@ -115,6 +118,7 @@ class NetworkSelectionView : public views::View,
 
   // Dialog controls that we own ourself.
   scoped_ptr<views::Menu2> languages_menu_;
+  scoped_ptr<menus::SimpleMenuModel> languages_submenu_;
 
   // Language locale name storage.
   LanguageList languages_model_;

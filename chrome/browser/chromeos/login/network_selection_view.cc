@@ -40,6 +40,7 @@ const int kNetworkComboboxHeight = 30;
 const int kLanguagesMenuWidth = 200;
 const int kLanguagesMenuHeight = 30;
 const SkColor kWelcomeColor = 0x0054A4;
+const int kLanguageMainMenuSize = 5;
 
 }  // namespace
 
@@ -54,6 +55,9 @@ NetworkSelectionView::NetworkSelectionView(ScreenObserver* observer)
       connecting_network_label_(NULL),
       observer_(observer),
       network_notification_(false) {
+  // TODO(glotov): need to specify the following list as a part of the
+  // image customization.
+  languages_model_.CopySpecifiedLanguagesUp("es,it,de,fr,en-US");
 }
 
 NetworkSelectionView::~NetworkSelectionView() {
@@ -87,11 +91,9 @@ void NetworkSelectionView::Init() {
   network_combobox_ = new views::Combobox(this);
   network_combobox_->set_listener(this);
 
-  languages_menubutton_ = new views::MenuButton(NULL, std::wstring(),
-                                                this, true);
-  for (int i = 0; i < languages_model_.get_languages_count(); i++) {
-    AddItem(i, WideToUTF16(languages_model_.GetLanguageNameAt(i)));
-  }
+  languages_menubutton_ = new views::MenuButton(
+      NULL, std::wstring(), this, true);
+  InitLanguageMenu();
 
   offline_button_ = new views::NativeButton(this, std::wstring());
   offline_button_->set_font(button_font);
@@ -105,6 +107,23 @@ void NetworkSelectionView::Init() {
   AddChildView(network_combobox_);
   AddChildView(languages_menubutton_);
   AddChildView(offline_button_);
+}
+
+void NetworkSelectionView::InitLanguageMenu() {
+  int line = 0;
+  while (line != kLanguageMainMenuSize) {
+    AddItem(line, WideToUTF16(languages_model_.GetLanguageNameAt(line)));
+    line++;
+  }
+  AddSeparator();
+  languages_submenu_.reset(new menus::SimpleMenuModel(this));
+  AddSubMenu(WideToUTF16(l10n_util::GetString(IDS_LANGUAGES_MORE)),
+             languages_submenu_.get());
+  while (line != languages_model_.get_languages_count()) {
+    languages_submenu_->AddItem(
+        line, WideToUTF16(languages_model_.GetLanguageNameAt(line)));
+    line++;
+  }
 }
 
 void NetworkSelectionView::UpdateLocalizedStrings() {

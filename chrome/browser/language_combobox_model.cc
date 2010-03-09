@@ -54,6 +54,17 @@ void LanguageList::InitNativeNames(
                          &locale_names_);
 }
 
+void LanguageList::CopySpecifiedLanguagesUp(const std::string& locale_codes) {
+  DCHECK(!locale_names_.empty());
+  std::vector<std::string> locale_codes_vector;
+  SplitString(locale_codes, ',', &locale_codes_vector);
+  for (size_t i = 0; i != locale_codes_vector.size(); i++) {
+    const int locale_index = GetIndexFromLocale(locale_codes_vector[i]);
+    CHECK_NE(locale_index, -1);
+    locale_names_.insert(locale_names_.begin(), locale_names_[locale_index]);
+  }
+}
+
 // Overridden from ComboboxModel:
 int LanguageList::get_languages_count() const {
   return static_cast<int>(locale_names_.size());

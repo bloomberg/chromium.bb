@@ -34,9 +34,13 @@ class LanguageList {
 
   virtual ~LanguageList() {}
 
-  virtual int get_languages_count() const;
+  // Duplicates specified languages at the beginning of the list for
+  // easier access.
+  void CopySpecifiedLanguagesUp(const std::string& locale_codes);
 
-  virtual std::wstring GetLanguageNameAt(int index) const;
+  int get_languages_count() const;
+
+  std::wstring GetLanguageNameAt(int index) const;
 
   // Return the locale for the given index.  E.g., may return pt-BR.
   std::string GetLocaleFromIndex(int index) const;
