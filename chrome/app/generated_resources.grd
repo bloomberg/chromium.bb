@@ -5162,7 +5162,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         AutoFill Profiles
       </message>
       <message name="IDS_AUTOFILL_USE_MAC_ADDRESS_BOOK" desc="Checkbox label to enable Address Book on Mac.">
-        Use my Address Book card
+        Include addresses from my Address Book card
       </message>
       <message name="IDS_AUTOFILL_ADDRESSES_GROUP_NAME" desc="The name of the Addresses group of the AutoFill dialog.">
         Addresses
@@ -5181,6 +5181,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_AUTOFILL_NEW_ADDRESS" desc="The profile label of a new address.">
         New address
+      </message>
+      <message name="IDS_AUTOFILL_MAC_ADDRESS_LINE_SEPARATOR" desc="The separator character used to join multi-line addresses on the Mac.">
+        , '''
       </message>
       <message name="IDS_AUTOFILL_DIALOG_ADDRESS_SUMMARY_SEPARATOR" desc="The separator character used in the summary of an address.">
         , '''

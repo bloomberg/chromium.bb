@@ -9,11 +9,13 @@
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_observer_mock.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -59,6 +61,11 @@ class PersonalDataManagerTest : public testing::Test {
   void ResetPersonalDataManager() {
     personal_data_.reset(new PersonalDataManager(profile_.get()));
     personal_data_->SetObserver(&personal_data_observer_);
+
+    // Disable auxiliary profiles for unit testing.  These reach out to system
+    // services on the Mac.
+    profile_->GetPrefs()->SetBoolean(
+      prefs::kAutoFillAuxiliaryProfilesEnabled, false);
   }
 
   MessageLoopForUI message_loop_;

@@ -232,7 +232,7 @@ void AutoFillManager::OnPersonalDataLoaded() {
 
   ShowAutoFillDialog(
       this,
-      personal_data_->profiles(),
+      personal_data_->web_profiles(),
       personal_data_->credit_cards(),
       tab_contents_->profile()->GetOriginalProfile());
 }

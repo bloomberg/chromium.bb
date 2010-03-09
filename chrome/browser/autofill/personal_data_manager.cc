@@ -14,6 +14,8 @@
 #include "chrome/browser/autofill/phone_number.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/webdata/web_data_service.h"
+#include "chrome/browser/pref_service.h"
+#include "chrome/common/pref_names.h"
 
 // The minimum number of fields that must contain user data and have known types
 // before autofill will attempt to import the data into a profile.
@@ -222,7 +224,7 @@ void PersonalDataManager::SetProfiles(std::vector<AutoFillProfile>* profiles) {
   }
 
   // Clear the unique IDs.  The set of unique IDs is updated for each profile
-  // added to |profiles_| below.
+  // added to |web_profiles_| below.
   unique_profile_ids_.clear();
 
   // Update the web database with the existing profiles.  We need to handle
@@ -249,10 +251,10 @@ void PersonalDataManager::SetProfiles(std::vector<AutoFillProfile>* profiles) {
     }
   }
 
-  profiles_.reset();
+  web_profiles_.reset();
   for (std::vector<AutoFillProfile>::iterator iter = profiles->begin();
        iter != profiles->end(); ++iter) {
-    profiles_.push_back(new AutoFillProfile(*iter));
+    web_profiles_.push_back(new AutoFillProfile(*iter));
   }
 }
 
@@ -326,8 +328,8 @@ void PersonalDataManager::GetPossibleFieldTypes(const string16& text,
     return;
   }
 
-  for (ScopedVector<AutoFillProfile>::iterator iter = profiles_.begin();
-       iter != profiles_.end(); ++iter) {
+  for (ScopedVector<AutoFillProfile>::iterator iter = web_profiles_.begin();
+       iter != web_profiles_.end(); ++iter) {
     const FormGroup* profile = *iter;
     if (!profile) {
       DLOG(ERROR) << "NULL information in profiles list";
@@ -353,6 +355,29 @@ void PersonalDataManager::GetPossibleFieldTypes(const string16& text,
 bool PersonalDataManager::HasPassword() {
   InitializeIfNeeded();
   return !password_hash_.empty();
+}
+
+const std::vector<AutoFillProfile*>& PersonalDataManager::profiles() {
+  bool auxiliary_profiles_enabled = profile_->GetPrefs()->GetBoolean(
+      prefs::kAutoFillAuxiliaryProfilesEnabled);
+  if (auxiliary_profiles_enabled) {
+    profiles_.clear();
+
+    // Populates |auxiliary_profiles_|.
+    LoadAuxiliaryProfiles();
+
+    profiles_.insert(profiles_.end(),
+        web_profiles_.begin(), web_profiles_.end());
+    profiles_.insert(profiles_.end(),
+        auxiliary_profiles_.begin(), auxiliary_profiles_.end());
+    return profiles_;
+  } else {
+    return web_profiles_.get();
+  }
+}
+
+const std::vector<AutoFillProfile*>& PersonalDataManager::web_profiles() {
+  return web_profiles_.get();
 }
 
 PersonalDataManager::PersonalDataManager(Profile* profile)
@@ -396,6 +421,13 @@ void PersonalDataManager::LoadProfiles() {
   pending_profiles_query_ = web_data_service->GetAutoFillProfiles(this);
 }
 
+// Win and Linux implementations do nothing.  Mac implementation fills in the
+// contents of |auxiliary_profiles_|.
+#if !defined(OS_MACOSX)
+void PersonalDataManager::LoadAuxiliaryProfiles() {
+}
+#endif
+
 void PersonalDataManager::LoadCreditCards() {
   WebDataService* web_data_service =
       profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
@@ -415,7 +447,7 @@ void PersonalDataManager::ReceiveLoadedProfiles(WebDataService::Handle h,
   pending_profiles_query_ = 0;
 
   unique_profile_ids_.clear();
-  profiles_.reset();
+  web_profiles_.reset();
 
   const WDResult<std::vector<AutoFillProfile*> >* r =
       static_cast<const WDResult<std::vector<AutoFillProfile*> >*>(result);
@@ -424,7 +456,7 @@ void PersonalDataManager::ReceiveLoadedProfiles(WebDataService::Handle h,
   for (std::vector<AutoFillProfile*>::iterator iter = profiles.begin();
        iter != profiles.end(); ++iter) {
     unique_profile_ids_.insert((*iter)->unique_id());
-    profiles_.push_back(*iter);
+    web_profiles_.push_back(*iter);
   }
 }
 

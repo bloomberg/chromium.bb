@@ -63,8 +63,8 @@ class PersonalDataManager : public WebDataServiceConsumer,
   bool ImportFormData(const std::vector<FormStructure*>& form_structures,
                       AutoFillManager* autofill_manager);
 
-  // Sets |profiles_| to the contents of |profiles| and updates the web database
-  // by adding, updating and removing profiles.  Sets the unique ID of
+  // Sets |web_profiles_| to the contents of |profiles| and updates the web
+  // database by adding, updating and removing profiles.  Sets the unique ID of
   // newly-added profiles.
   void SetProfiles(std::vector<AutoFillProfile>* profiles);
 
@@ -86,8 +86,10 @@ class PersonalDataManager : public WebDataServiceConsumer,
 
   // This PersonalDataManager owns these profiles and credit cards.  Their
   // lifetime is until the web database is updated with new profile and credit
-  // card information, respectively.
-  const std::vector<AutoFillProfile*>& profiles() { return profiles_.get(); }
+  // card information, respectively.  |profiles()| returns both web and
+  // auxiliary profiles.  |web_profiles()| returns only web profiles.
+  const std::vector<AutoFillProfile*>& profiles();
+  const std::vector<AutoFillProfile*>& web_profiles();
   const std::vector<CreditCard*>& credit_cards() { return credit_cards_.get(); }
 
  private:
@@ -111,6 +113,9 @@ class PersonalDataManager : public WebDataServiceConsumer,
 
   // Loads the saved profiles from the web database.
   void LoadProfiles();
+
+  // Loads the auxiliary profiles.  Currently Mac only.
+  void LoadAuxiliaryProfiles();
 
   // Loads the saved credit cards from the web database.
   void LoadCreditCards();
@@ -146,8 +151,15 @@ class PersonalDataManager : public WebDataServiceConsumer,
   // unique credit card ID.
   std::set<int> unique_creditcard_ids_;
 
-  // The loaded profiles.
-  ScopedVector<AutoFillProfile> profiles_;
+  // The loaded web profiles.
+  ScopedVector<AutoFillProfile> web_profiles_;
+
+  // Auxiliary profiles.
+  ScopedVector<AutoFillProfile> auxiliary_profiles_;
+
+  // Storage for combined web and auxiliary profiles.  Contents are weak
+  // references.  Lifetime managed by |web_profiles_| and |auxiliary_profiles_|.
+  std::vector<AutoFillProfile*> profiles_;
 
   // The loaded credit cards.
   ScopedVector<CreditCard> credit_cards_;

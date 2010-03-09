@@ -494,7 +494,8 @@ void PersonalDataManagerObserver::ShowAutoFillDialog(
   if (!personal_data_manager)
     return;
 
-  std::vector<AutoFillProfile*> profiles = personal_data_manager->profiles();
+  std::vector<AutoFillProfile*> profiles =
+      personal_data_manager->web_profiles();
   AutoFillProfile autofill_profile(ASCIIToUTF16(""), 0);
   if (profiles.size() == 0) {
     string16 new_profile_name =

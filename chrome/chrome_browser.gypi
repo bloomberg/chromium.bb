@@ -149,6 +149,7 @@
         'browser/autofill/name_field.h',
         'browser/autofill/personal_data_manager.cc',
         'browser/autofill/personal_data_manager.h',
+        'browser/autofill/personal_data_manager_mac.mm',
         'browser/autofill/phone_field.cc',
         'browser/autofill/phone_field.h',
         'browser/autofill/phone_number.cc',
@@ -2426,6 +2427,7 @@
           ],
           'link_settings': {
             'libraries': [
+              '$(SDKROOT)/System/Library/Frameworks/AddressBook.framework',
               '$(SDKROOT)/System/Library/Frameworks/SecurityInterface.framework',
               '$(SDKROOT)/System/Library/Frameworks/QuartzCore.framework',
               '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
