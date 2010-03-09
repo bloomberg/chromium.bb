@@ -2501,7 +2501,7 @@
             '_SCL_SECURE_NO_DEPRECATE',
           ],
           'include_dirs': [
-            'third_party/wtl/include',
+            '<(DEPTH)/third_party/wtl/include',
           ],
           'dependencies': [
             '../gears/gears.gyp:gears',

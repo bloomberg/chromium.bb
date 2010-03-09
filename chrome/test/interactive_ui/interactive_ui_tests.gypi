@@ -91,7 +91,7 @@
     }],  # OS=="mac"
     ['OS=="win"', {
       'include_dirs': [
-        '<(DEPTH)/chrome/third_party/wtl/include',
+        '<(DEPTH)/third_party/wtl/include',
       ],
       'dependencies': [
         '<(DEPTH)/app/app.gyp:app_resources',

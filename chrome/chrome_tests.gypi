@@ -124,7 +124,7 @@
         }],
         ['OS=="win"', {
           'include_dirs': [
-            'third_party/wtl/include',
+            '<(DEPTH)/third_party/wtl/include',
           ],
         }],
       ],
@@ -234,7 +234,7 @@
         }],
         ['OS=="win"', {
           'include_dirs': [
-            'third_party/wtl/include',
+            '<(DEPTH)/third_party/wtl/include',
           ],
           'dependencies': [
             '<(allocator_target)',
@@ -364,7 +364,7 @@
         }],
         ['OS=="win"', {
           'include_dirs': [
-            'third_party/wtl/include',
+            '<(DEPTH)/third_party/wtl/include',
           ],
           'dependencies': [
             'crash_service',  # run time dependency
@@ -1051,7 +1051,7 @@
             '<(allocator_target)',
           ],
           'include_dirs': [
-            'third_party/wtl/include',
+            '<(DEPTH)/third_party/wtl/include',
           ],
           'sources': [
             'app/chrome_dll.rc',
@@ -1233,7 +1233,7 @@
             '<@(browser_tests_sources_views_specific)'
           ],
           'include_dirs': [
-            'third_party/wtl/include',
+            '<(DEPTH)/third_party/wtl/include',
           ],
           'dependencies': [
             'chrome_dll_version',
@@ -1509,7 +1509,7 @@
       'conditions': [
         ['OS=="win"', {
           'include_dirs': [
-            'third_party/wtl/include',
+            '<(DEPTH)/third_party/wtl/include',
           ],
           'dependencies': [
             '<(allocator_target)',
@@ -1708,7 +1708,7 @@
             '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources.rc',
           ],
           'include_dirs': [
-            'third_party/wtl/include',
+            '<(DEPTH)/third_party/wtl/include',
           ],
           'dependencies': [
             'chrome_dll_version',
@@ -1819,7 +1819,7 @@
           ],
           'include_dirs': [
             '..',
-            'third_party/wtl/include',
+            '<(DEPTH)/third_party/wtl/include',
           ],
           'sources': [
             'test/plugin/plugin_test.cpp',
@@ -1862,7 +1862,7 @@
           ],
           'include_dirs': [
             '..',
-            'third_party/wtl/include',
+            '<(DEPTH)/third_party/wtl/include',
           ],
           'sources': [
             'test/selenium/selenium_test.cc',

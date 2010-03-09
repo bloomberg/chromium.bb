@@ -17,8 +17,7 @@
       ],
       'include_dirs': [
         '../..',
-        # TODO(beng): move wtl to src/third_party
-        '../../chrome/third_party/wtl/include',
+        '<(DEPTH)/third_party/wtl/include',
       ],
       'sources': [
         'call_stack.cc',

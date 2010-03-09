@@ -152,7 +152,7 @@
             ],
           },
           'include_dirs': [
-            '../../../chrome/third_party/wtl/include',
+            '<(DEPTH)/third_party/wtl/include',
             '.',
           ],
           'dependencies': [

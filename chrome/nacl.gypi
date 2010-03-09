@@ -38,7 +38,7 @@
               '__STDC_LIMIT_MACROS=1',
             ],
             'include_dirs': [
-              'third_party/wtl/include',
+              '<(DEPTH)/third_party/wtl/include',
             ],
           },],
           ['OS=="linux"', {

@@ -298,7 +298,7 @@
         'window/window_win.h',
       ],
       'include_dirs': [
-        '../chrome/third_party/wtl/include',
+        '<(DEPTH)/third_party/wtl/include',
       ],
       'conditions': [
         ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
@@ -340,8 +340,7 @@
             'controls/slider/native_slider_wrapper.h',
           ],
           'include_dirs': [
-            # TODO(beng): move wtl to src/third_party
-            '../chrome/third_party/wtl/include',
+            '<(DEPTH)/third_party/wtl/include',
           ],
         }],
       ],
@@ -399,7 +398,7 @@
             ]
           },
           'include_dirs': [
-            '../chrome/third_party/wtl/include',
+            '<(DEPTH)/third_party/wtl/include',
           ],
         }],
       ],

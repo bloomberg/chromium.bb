@@ -602,7 +602,7 @@
             '_SCL_SECURE_NO_DEPRECATE',
           ],
           'include_dirs': [
-            'third_party/wtl/include',
+            '<(DEPTH)/third_party/wtl/include',
           ],
         }],
         ['enable_gpu==1', {
@@ -689,7 +689,7 @@
       'conditions': [
         ['OS=="win"', {
           'include_dirs': [
-            'third_party/wtl/include',
+            '<(DEPTH)/third_party/wtl/include',
           ],
         }],
         ['OS=="linux" and target_arch!="arm"', {

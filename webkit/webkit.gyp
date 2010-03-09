@@ -429,7 +429,7 @@
         }, {  # else: OS=="win"
           'sources/': [['exclude', '_posix\\.cc$']],
           'include_dirs': [
-            '../chrome/third_party/wtl/include',
+            '<(DEPTH)/third_party/wtl/include',
           ],
           'dependencies': [
             '../build/win/system.gyp:cygwin',

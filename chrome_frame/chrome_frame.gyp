@@ -241,7 +241,7 @@
       ],
       'include_dirs': [
         '<@(xul_include_directories)',
-        '../chrome/third_party/wtl/include',
+        '<(DEPTH)/third_party/wtl/include',
         # To allow including "chrome_tab.h"
         '<(INTERMEDIATE_DIR)',
       ],
@@ -302,7 +302,7 @@
       ],
       'include_dirs': [
         '<@(xul_include_directories)',
-        '../chrome/third_party/wtl/include',
+        '<(DEPTH)/third_party/wtl/include',
         # To allow including "chrome_tab.h"
         '<(INTERMEDIATE_DIR)',
       ],

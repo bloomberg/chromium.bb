@@ -11,7 +11,7 @@
         'conditions': [
           ['OS=="win"', {
             'include_dirs': [
-              'third_party/wtl/include',
+              '<(DEPTH)/third_party/wtl/include',
             ],
             'defines': [
               'CHROME_DLL',
