@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync/glue/autofill_model_associator.h"
 
+#include <vector>
+
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/engine/syncapi.h"
@@ -73,9 +75,8 @@ bool AutofillModelAssociator::AssociateModels() {
 
       std::vector<base::Time> timestamps;
       if (MergeTimestamps(autofill, ix->timestamps(), &timestamps)) {
-        new_entries.push_back(AutofillEntry(
-          AutofillKey(ix->key().name(), ix->key().value()),
-          timestamps));
+        AutofillEntry new_entry(ix->key(), timestamps);
+        new_entries.push_back(new_entry);
 
         sync_api::WriteNode write_node(&trans);
         if (!write_node.InitByClientTagLookup(syncable::AUTOFILL, tag)) {
@@ -83,10 +84,7 @@ bool AutofillModelAssociator::AssociateModels() {
           error_handler_->OnUnrecoverableError();
           return false;
         }
-        AutofillChangeProcessor::WriteAutofill(&write_node,
-                                               ix->key().name(),
-                                               ix->key().value(),
-                                               timestamps);
+        AutofillChangeProcessor::WriteAutofill(&write_node, new_entry);
       }
 
       Associate(&(ix->key()), node.GetId());
@@ -97,14 +95,8 @@ bool AutofillModelAssociator::AssociateModels() {
         error_handler_->OnUnrecoverableError();
         return false;
       }
-
       node.SetTitle(UTF16ToWide(ix->key().name() + ix->key().value()));
-
-      AutofillChangeProcessor::WriteAutofill(&node,
-                                             ix->key().name(),
-                                             ix->key().value(),
-                                             ix->timestamps());
-
+      AutofillChangeProcessor::WriteAutofill(&node, *ix);
       Associate(&(ix->key()), node.GetId());
     }
 
@@ -141,7 +133,7 @@ bool AutofillModelAssociator::AssociateModels() {
   if (new_entries.size() &&
       !web_database_->UpdateAutofillEntries(new_entries)) {
     LOG(ERROR) << "Failed to update autofill entries.";
-    sync_service_->OnUnrecoverableError();
+    error_handler_->OnUnrecoverableError();
     return false;
   }
 
@@ -222,6 +214,7 @@ std::string AutofillModelAssociator::KeyToTag(const string16& name,
                                               const string16& value) {
   return EscapePath(UTF16ToUTF8(name)) + "|" + EscapePath(UTF16ToUTF8(value));
 }
+
 // static
 bool AutofillModelAssociator::MergeTimestamps(
     const sync_pb::AutofillSpecifics& autofill,

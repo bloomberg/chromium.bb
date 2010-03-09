@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SYNC_PROFILE_SYNC_TEST_UTIL_H_
 #define CHROME_BROWSER_SYNC_PROFILE_SYNC_TEST_UTIL_H_
 
+#include <string>
+
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
 #include "chrome/browser/sync/glue/bookmark_data_type_controller.h"
@@ -21,6 +23,11 @@
 // CreateDataTypeManager method.
 ACTION(MakeDataTypeManager) {
   return new browser_sync::DataTypeManagerImpl(arg0);
+}
+
+ACTION_P(InvokeTask, task) {
+  if (task)
+    task->Run();
 }
 
 template <class ModelAssociatorImpl>

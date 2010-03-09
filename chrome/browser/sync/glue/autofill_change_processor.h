@@ -12,6 +12,7 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
+class AutofillEntry;
 class WebDatabase;
 
 namespace browser_sync {
@@ -42,10 +43,10 @@ class AutofillChangeProcessor : public ChangeProcessor,
       const sync_api::SyncManager::ChangeRecord* changes,
       int change_count);
 
+  // Copy the properties of the given Autofill entry into the sync
+  // node.
   static void WriteAutofill(sync_api::WriteNode* node,
-                            const string16& name,
-                            const string16& value,
-                            const std::vector<base::Time>& timestamps);
+                            const AutofillEntry& entry);
 
  protected:
   virtual void StartImpl(Profile* profile);

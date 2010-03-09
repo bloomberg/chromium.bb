@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/glue/autofill_model_associator.h"
@@ -86,9 +87,7 @@ void AutofillChangeProcessor::Observe(NotificationType type,
           sync_node.SetTitle(UTF16ToWide(change->key().name() +
                                          change->key().value()));
 
-          WriteAutofill(&sync_node, change->key().name(),
-                        change->key().value(), timestamps);
-
+          WriteAutofill(&sync_node, AutofillEntry(change->key(), timestamps));
           model_associator_->Associate(&(change->key()), sync_node.GetId());
         }
         break;
@@ -121,8 +120,7 @@ void AutofillChangeProcessor::Observe(NotificationType type,
             return;
           }
 
-          WriteAutofill(&sync_node, change->key().name(),
-                        change->key().value(), timestamps);
+          WriteAutofill(&sync_node, AutofillEntry(change->key(), timestamps));
         }
         break;
 
@@ -234,14 +232,13 @@ void AutofillChangeProcessor::StopObserving() {
 // static
 void AutofillChangeProcessor::WriteAutofill(
     sync_api::WriteNode* node,
-    const string16& name,
-    const string16& value,
-    const std::vector<base::Time>& timestamps) {
+    const AutofillEntry& entry) {
   sync_pb::AutofillSpecifics autofill;
-  autofill.set_name(UTF16ToUTF8(name));
-  autofill.set_value(UTF16ToUTF8(value));
-  for (std::vector<base::Time>::const_iterator timestamp = timestamps.begin();
-       timestamp != timestamps.end(); ++timestamp) {
+  autofill.set_name(UTF16ToUTF8(entry.key().name()));
+  autofill.set_value(UTF16ToUTF8(entry.key().value()));
+  const std::vector<base::Time>& ts(entry.timestamps());
+  for (std::vector<base::Time>::const_iterator timestamp = ts.begin();
+       timestamp != ts.end(); ++timestamp) {
     autofill.add_usage_timestamp(timestamp->ToInternalValue());
   }
   node->SetAutofillSpecifics(autofill);
