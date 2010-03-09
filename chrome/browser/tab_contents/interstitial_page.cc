@@ -130,7 +130,7 @@ InterstitialPage::InterstitialPage(TabContents* tab,
       new_navigation_(new_navigation),
       should_discard_pending_nav_entry_(new_navigation),
       enabled_(true),
-      action_taken_(false),
+      action_taken_(NO_ACTION),
       render_view_host_(NULL),
       original_child_id_(tab->render_view_host()->process()->id()),
       original_rvh_id_(tab->render_view_host()->routing_id()),
@@ -163,7 +163,7 @@ void InterstitialPage::Show() {
   // If an interstitial is already showing, close it before showing the new one.
   // Be careful not to take an action on the old interstitial more than once.
   if (tab_->interstitial_page()) {
-    if (tab_->interstitial_page()->action_taken()) {
+    if (tab_->interstitial_page()->action_taken_ != NO_ACTION) {
       tab_->interstitial_page()->Hide();
     } else {
       // If we are currently showing an interstitial page for which we created
@@ -269,7 +269,7 @@ void InterstitialPage::Observe(NotificationType type,
       TakeActionOnResourceDispatcher(CANCEL);
       break;
     case NotificationType::RENDER_WIDGET_HOST_DESTROYED:
-      if (!action_taken_) {
+      if (action_taken_ == NO_ACTION) {
         // The RenderViewHost is being destroyed (as part of the tab being
         // closed), make sure we clear the blocked requests.
         RenderViewHost* rvh = Source<RenderViewHost>(source).ptr();
@@ -280,7 +280,7 @@ void InterstitialPage::Observe(NotificationType type,
       break;
     case NotificationType::TAB_CONTENTS_DESTROYED:
     case NotificationType::NAV_ENTRY_COMMITTED:
-      if (!action_taken_) {
+      if (action_taken_ == NO_ACTION) {
         // We are navigating away from the interstitial or closing a tab with an
         // interstitial.  Default to DontProceed(). We don't just call Hide as
         // subclasses will almost certainly override DontProceed to do some work
@@ -408,12 +408,12 @@ TabContentsView* InterstitialPage::CreateTabContentsView() {
 }
 
 void InterstitialPage::Proceed() {
-  if (action_taken_) {
+  if (action_taken_ != NO_ACTION) {
     NOTREACHED();
     return;
   }
   Disable();
-  action_taken_ = true;
+  action_taken_ = PROCEED_ACTION;
 
   // Resumes the throbber.
   tab_->SetIsLoading(true, NULL);
@@ -436,12 +436,10 @@ void InterstitialPage::Proceed() {
 }
 
 void InterstitialPage::DontProceed() {
-  if (action_taken_) {
-    NOTREACHED();
-    return;
-  }
+  DCHECK(action_taken_ != DONT_PROCEED_ACTION);
+
   Disable();
-  action_taken_ = true;
+  action_taken_ = DONT_PROCEED_ACTION;
 
   // If this is a new navigation, we are returning to the original page, so we
   // resume blocked requests for it.  If it is not a new navigation, then it

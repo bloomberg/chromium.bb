@@ -406,3 +406,29 @@ TEST_F(SafeBrowsingBlockingPageTest, NavigatingBackAndForth) {
   ASSERT_EQ(2, controller().entry_count());
   EXPECT_EQ(kBadURL, controller().GetActiveEntry()->url().spec());
 }
+
+// Tests that calling "don't proceed" after "proceed" has been called doesn't
+// cause problems. http://crbug.com/30079
+TEST_F(SafeBrowsingBlockingPageTest, ProceedThenDontProceed) {
+  // Start a load.
+  controller().LoadURL(GURL(kBadURL), GURL(), PageTransition::TYPED);
+
+  // Simulate the load causing a safe browsing interstitial to be shown.
+  ShowInterstitial(ResourceType::MAIN_FRAME, kBadURL);
+  SafeBrowsingBlockingPage* sb_interstitial = GetSafeBrowsingBlockingPage();
+  ASSERT_TRUE(sb_interstitial);
+
+  MessageLoop::current()->RunAllPending();
+
+  // Simulate the user clicking "proceed" then "don't proceed" (before the
+  // interstitial is shown).
+  sb_interstitial->Proceed();
+  sb_interstitial->DontProceed();
+  // Proceed() and DontProceed() post a task to update the
+  // SafeBrowsingService::Client.
+  MessageLoop::current()->RunAllPending();
+
+  // The interstitial should be gone.
+  EXPECT_EQ(OK, user_response());
+  EXPECT_FALSE(GetSafeBrowsingBlockingPage());
+}

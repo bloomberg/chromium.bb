@@ -417,6 +417,16 @@ void SafeBrowsingBlockingPage::Proceed() {
 }
 
 void SafeBrowsingBlockingPage::DontProceed() {
+  DCHECK(action_taken() != DONT_PROCEED_ACTION);
+  // We could have already called Proceed(), in which case we must not notify
+  // the SafeBrowsingService again, as the client has been deleted.
+  if (action_taken() == PROCEED_ACTION) {
+    // We still want to hide the interstitial page.
+    InterstitialPage::DontProceed();
+    // We are now deleted.
+    return;
+  }
+
   RecordSafeBrowsingBlockingPageStats(DONT_PROCEED);
 
   NotifySafeBrowsingService(sb_service_, unsafe_resources_, false);
