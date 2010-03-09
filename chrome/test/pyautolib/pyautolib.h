@@ -30,6 +30,10 @@ class PyUITestSuite : public UITestSuite, public UITestBase {
   PyUITestSuite(int argc, char** argv);
   ~PyUITestSuite();
 
+  // Initialize the setup. Should be called before launching the browser.
+  // |browser_dir| is the path to dir containing chromium binaries.
+  void Initialize(const FilePath& browser_dir);
+
   // SetUp,TearDown is redeclared as public to make it accessible from swig.
   virtual void SetUp();
   virtual void TearDown();
@@ -58,6 +62,9 @@ class PyUITestSuite : public UITestSuite, public UITestBase {
   // The list can be found at chrome/app/chrome_dll_resource.h
   // Returns true if the call was successful.
   bool ApplyAccelerator(int id, int window_index = 0);
+
+  // Like ApplyAccelerator except that it waits for the command to execute.
+  bool RunCommand(int browser_command, int window_index = 0);
 
   // Shows or hides the download shelf.
   void SetDownloadShelfVisible(bool is_visible, int window_index = 0);

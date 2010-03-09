@@ -39,13 +39,13 @@ def _LocateBinDirs():
 _LocateBinDirs()
 
 try:
-  from pyautolib import *
+  import pyautolib
 except ImportError:
   print >>sys.stderr, "Could not locate built libraries. Did you build?"
   raise
 
 
-class PyUITest(PyUITestSuite, unittest.TestCase):
+class PyUITest(pyautolib.PyUITestSuite, unittest.TestCase):
   """Base class for UI Test Cases in Python.
 
   A browser is created before executing each test, and is destroyed after
@@ -64,11 +64,15 @@ class PyUITest(PyUITestSuite, unittest.TestCase):
   """
 
   def __init__(self, methodName='runTest'):
-    PyUITestSuite.__init__(self, sys.argv)
+    pyautolib.PyUITestSuite.__init__(self, sys.argv)
+    # Figure out path to chromium binaries
+    browser_dir = os.path.normpath(os.path.dirname(pyautolib.__file__))
+    os.environ['PATH'] = browser_dir + os.pathsep + os.environ['PATH']
+    self.Initialize(pyautolib.FilePath(browser_dir))
     unittest.TestCase.__init__(self, methodName)
 
   def __del__(self):
-    PyUITestSuite.__del__(self)
+    pyautolib.PyUITestSuite.__del__(self)
 
   def run(self, result=None):
     """The main run method.

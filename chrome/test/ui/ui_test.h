@@ -499,6 +499,9 @@ class UITestBase {
   // Configures the test to use the reference build.
   void UseReferenceBuild();
 
+  // Use Chromium binaries from the given directory.
+  void SetBrowserDirectory(const FilePath& dir);
+
  private:
   // Check that no processes related to Chrome exist, displaying
   // the given message if any do.

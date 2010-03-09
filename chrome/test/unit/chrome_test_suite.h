@@ -119,6 +119,9 @@ class ChromeTestSuite : public TestSuite {
     if (!user_data_dir.empty())
       PathService::Override(chrome::DIR_USER_DATA, user_data_dir);
 
+    if (!browser_dir_.empty())
+      PathService::Override(base::DIR_EXE, browser_dir_);
+
 #if defined(OS_MACOSX)
     // Look in the framework bundle for resources.
     FilePath path;
@@ -166,10 +169,17 @@ class ChromeTestSuite : public TestSuite {
     TestSuite::Shutdown();
   }
 
+  void SetBrowserDirectory(const FilePath& browser_dir) {
+    browser_dir_ = browser_dir;
+  }
+
   StatsTable* stats_table_;
   // The name used for the stats file so it can be cleaned up on posix during
   // test shutdown.
   std::string stats_filename_;
+
+  // Alternative path to browser binaries.
+  FilePath browser_dir_;
 
   ScopedOleInitializer ole_initializer_;
   scoped_refptr<WarningHostResolverProc> host_resolver_proc_;

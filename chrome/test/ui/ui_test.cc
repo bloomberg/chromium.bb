@@ -1488,6 +1488,10 @@ void UITestBase::UseReferenceBuild() {
 #elif defined(OS_MACOSX)
   dir = dir.AppendASCII("chrome_mac");
 #endif
+  SetBrowserDirectory(dir);
+}
+
+void UITestBase::SetBrowserDirectory(const FilePath& dir) {
   browser_directory_ = dir;
 }
 

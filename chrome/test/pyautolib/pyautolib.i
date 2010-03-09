@@ -81,6 +81,10 @@ class PyUITestSuite {
  public:
   PyUITestSuite(int argc, char** argv);
 
+  %feature("docstring", "Initialize the entire setup. Should be called "
+           "before launching the browser. For internal use.") Initialize;
+  void Initialize(const FilePath& browser_dir);
+
   %feature("docstring",
            "Fires up the browser and opens a window.") SetUp;
   virtual void SetUp();
@@ -106,6 +110,9 @@ class PyUITestSuite {
            "Returns True on success.")
       ApplyAccelerator;
   bool ApplyAccelerator(int id, int window_index=0);
+  %feature("docstring", "Like ApplyAccelerator, except that it waits for "
+           "the command to execute.") RunCommand;
+  bool RunCommand(int browser_command, int window_index = 0);
 
   // Get/fetch properties
   %feature("docstring",

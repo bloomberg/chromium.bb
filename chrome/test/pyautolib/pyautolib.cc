@@ -10,11 +10,16 @@
 PyUITestSuite::PyUITestSuite(int argc, char** argv)
     : UITestSuite(argc, argv),
       UITestBase() {
-  UITestSuite::Initialize();
 }
 
 PyUITestSuite::~PyUITestSuite() {
   UITestSuite::Shutdown();
+}
+
+void PyUITestSuite::Initialize(const FilePath& browser_dir) {
+  UITestSuite::SetBrowserDirectory(browser_dir);
+  UITestBase::SetBrowserDirectory(browser_dir);
+  UITestSuite::Initialize();
 }
 
 void PyUITestSuite::SetUp() {
@@ -46,6 +51,15 @@ bool PyUITestSuite::ApplyAccelerator(int id, int window_index) {
   scoped_refptr<BrowserProxy> browser_proxy =
       automation()->GetBrowserWindow(window_index);
   return browser_proxy->ApplyAccelerator(id);
+}
+
+bool PyUITestSuite::RunCommand(int browser_command, int window_index){
+  scoped_refptr<BrowserProxy> browser_proxy =
+      automation()->GetBrowserWindow(window_index);
+  EXPECT_TRUE(browser_proxy.get());
+  if (!browser_proxy.get())
+    return false;
+  return browser_proxy->RunCommand(browser_command);
 }
 
 bool PyUITestSuite::ActivateTab(int tab_index, int window_index) {
@@ -143,5 +157,4 @@ bool PyUITestSuite::WaitForBookmarkBarVisibilityChange(bool wait_for_open) {
   EXPECT_TRUE(completed);
   return completed;
 }
-
 
