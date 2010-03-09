@@ -50,13 +50,14 @@ bool UpdateApplicator::AttemptOneApplication(
     // Clear the tracked failures to avoid double-counting.
     conflicting_ids_.clear();
   }
-  syncable::MutableEntry entry(trans, syncable::GET_BY_HANDLE, *pointer_);
 
-  if (SkipUpdate(entry)) {
+  syncable::Entry read_only(trans, syncable::GET_BY_HANDLE, *pointer_);
+  if (SkipUpdate(read_only)) {
     Advance();
     return true;
   }
 
+  syncable::MutableEntry entry(trans, syncable::GET_BY_HANDLE, *pointer_);
   UpdateAttemptResponse updateResponse =
       SyncerUtil::AttemptToUpdateEntry(trans, &entry, resolver_);
   switch (updateResponse) {
@@ -84,7 +85,7 @@ void UpdateApplicator::Advance() {
   *pointer_ = *end_;
 }
 
-bool UpdateApplicator::SkipUpdate(const syncable::MutableEntry& entry) {
+bool UpdateApplicator::SkipUpdate(const syncable::Entry& entry) {
   ModelSafeGroup g =
       GetGroupForModelType(entry.GetServerModelType(), routing_info_);
   if (g != group_filter_)

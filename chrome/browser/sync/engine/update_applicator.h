@@ -54,7 +54,7 @@ class UpdateApplicator {
 
  private:
   // If true, AttemptOneApplication will skip over |entry| and return true.
-  bool SkipUpdate(const syncable::MutableEntry& entry);
+  bool SkipUpdate(const syncable::Entry& entry);
 
   // Adjusts the UpdateIterator members to move ahead by one update.
   void Advance();
