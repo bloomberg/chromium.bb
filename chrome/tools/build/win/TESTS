@@ -4,4 +4,6 @@ automated_ui_tests.exe
 icudt38.dll
 icudt42.dll
 plugins\npapi_layout_test_plugin.dll
+pyautolib.py
+_pyautolib.dll
 fonts\*
