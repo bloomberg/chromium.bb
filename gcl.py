@@ -770,6 +770,9 @@ def UploadCL(change_info, args):
         subject = subject + "..."
       upload_arg.append("--message=" + subject)
 
+    if GetCodeReviewSetting("PRIVATE") == "True":
+      upload_arg.append("--private")
+
   # Change the current working directory before calling upload.py so that it
   # shows the correct base.
   previous_cwd = os.getcwd()
