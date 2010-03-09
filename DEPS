@@ -4,7 +4,7 @@ vars = {
   "native_client_trunk": "http://nativeclient.googlecode.com/svn/trunk",
   "o3d_trunk": "http://o3d.googlecode.com/svn/trunk",
   "breakpad_rev": "452",
-  "chrome_rev": "41070",
+  "chrome_rev": "39744",
   "nacl_sdk_rev": "1520",
   "gyp_rev": "770",
   "gtest_rev": "267",
@@ -26,8 +26,7 @@ deps = {
     (Var("native_client_trunk") + "/src/third_party/binutils@" +
      Var("tools_rev")),
   "native_client/src/third_party/breakpad/src":
-    "http://google-breakpad.googlecode.com/svn/trunk/src@" +
-    Var("breakpad_rev"),
+    "http://google-breakpad.googlecode.com/svn/trunk/src@" + Var("breakpad_rev"),
   "third_party/gcc":
     Var("native_client_trunk") + "/src/third_party/gcc@" + Var("tools_rev"),
   "third_party/gdb":
@@ -62,14 +61,10 @@ deps = {
     Var("chromium_trunk") + "/src/base@" + Var("chrome_rev"),
   "chrome/common":
     Var("chromium_trunk") + "/src/chrome/common@" + Var("chrome_rev"),
-  "gpu/GLES2":
-    Var("chromium_trunk") + "/src/gpu/GLES2@" + Var("chrome_rev"),
-  "gpu/KHR":
-    Var("chromium_trunk") + "/src/gpu/KHR@" + Var("chrome_rev"),
-  "gpu/pgl":
-    Var("chromium_trunk") + "/src/gpu/pgl@" + Var("chrome_rev"),
   "gpu/command_buffer":
     Var("chromium_trunk") + "/src/gpu/command_buffer@" + Var("chrome_rev"),
+  "gpu/pgl":
+    Var("chromium_trunk") + "/src/gpu/pgl@" + Var("chrome_rev"),
 }
 
 deps_os = {

@@ -25,14 +25,16 @@
 
 #include "native_client/tests/pepper_plugin/plugin_object.h"
 
+#include <limits>
+
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>
-#include <GLES2/gl2.h>
-
-#include <limits>
+#include <nacl/gl2.h>
 #include <string>
 
+#include "gpu/command_buffer/client/gles2_lib.h"
+#include "gpu/command_buffer/client/gles2_demo_cc.h"
 #include "native_client/tests/pepper_plugin/event_handler.h"
 #include "native_client/tests/pepper_plugin/test_object.h"
 
@@ -219,8 +221,6 @@ void DrawSampleBitmap(NPDeviceContext2D* context, int width, int height) {
   unsigned char* buffer = reinterpret_cast<unsigned char*>(context->region);
   static const int kPixelStride = 4;
 
-printf("DrawSampleBitmap(%d, %d)\n", width, height);
-
   if (0 == height || 0 == width)
     return;
 
@@ -320,13 +320,13 @@ void PluginObject::New(NPMIMEType pluginType,
   if (!extensions) {
     browser->getvalue(npp_, NPNVPepperExtensions,
                       reinterpret_cast<void*>(&extensions));
-    // CHECK(extensions);
+    CHECK(extensions);
   }
   device2d_ = extensions->acquireDevice(npp_, NPPepper2DDevice);
-  // CHECK(device2d_);
+  CHECK(device2d_);
 
   device3d_ = extensions->acquireDevice(npp_, NPPepper3DDevice);
-  // CHECK(device3d_);
+  CHECK(device3d_);
 
   // deviceaudio_ = extensions->acquireDevice(npp_, NPPepperAudioDevice);
   // CHECK(deviceaudio_);
@@ -383,8 +383,7 @@ void PluginObject::Initialize3D() {
 
   // Initialize the demo GL state.
   pglMakeCurrent(pgl_context_);
-  // TODO(dspringer): write this test so it draws something.
-  // GLFromCPPInit();
+  GLFromCPPInit();
   pglMakeCurrent(NULL);
 }
 
@@ -405,8 +404,7 @@ void PluginObject::Draw3D() {
   }
 
   glViewport(0, 0, width_, height_);
-  // TODO(dspringer): write this test so it draws something.
-  // GLFromCPPDraw();
+  GLFromCPPDraw();
   pglSwapBuffers();
   pglMakeCurrent(NULL);
 

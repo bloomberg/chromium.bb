@@ -1313,8 +1313,8 @@ sdk_headers = nacl_extra_sdk_env.Alias('extra_sdk_update_header', [])
 nacl_extra_sdk_env.Alias('extra_sdk_update', [])
 
 
-def AddHeaderToSdk(env, nodes, subdir = ''):
-  n = env.Replicate('${NACL_SDK_INCLUDE}/nacl/' + subdir, nodes)
+def AddHeaderToSdk(env, nodes):
+  n = env.Replicate('${NACL_SDK_INCLUDE}/nacl/', nodes)
   env.Alias('extra_sdk_update_header', n)
   return n
 
