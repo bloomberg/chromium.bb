@@ -6751,6 +6751,56 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
     </if>
 
+    <!-- Filebrowser Strings -->
+    <message name="IDS_FILEBROWSER_TITLE" desc="Title of the filebrowser">
+      Content Browser
+    </message>
+    <message name="IDS_FILEBROWSER_PAUSE" desc="Action which allows the user to pause a current download">
+      pause
+    </message>
+    <message name="IDS_FILEBROWSER_RESUME" desc="Action which allows the user to resume a paused download">
+      resume
+    </message>
+    <message name="IDS_FILEBROWSER_SCANNING" desc="Notification to the user that we have detected a device and are now mounting it">
+      Scanning Device...
+    </message>
+    <message name="IDS_FILEBROWSER_CONFIRM_DELETE" desc="Asks the user if they are sure they want to delete a file.">
+      Are you sure?
+    </message>
+    <message name="IDS_FILEBROWSER_CONFIRM_YES" desc="Confirm yes to a previous question.">
+      Yes
+    </message>
+    <message name="IDS_FILEBROWSER_CONFIRM_CANCEL" desc="Cancel a previous question.">
+      Cancel
+    </message>
+    <message name="IDS_FILEBROWSER_CONFIRM_DOWNLOAD" desc="Used to download a dangerous file.">
+      Allow Download?
+    </message>
+    <message name="IDS_FILEBROWSER_PROMPT_FILENAME" desc="Prompts the user for a filename.">
+      File name:
+    </message>
+    <message name="IDS_FILEBROWSER_SAVE" desc="Save button text">
+      Save
+    </message>
+    <message name="IDS_FILEBROWSER_NEW_FOLDER" desc="New Folder Button">
+      New Folder
+    </message>
+    <message name="IDS_FILEBROWSER_OPEN" desc="Open Button text">
+      Open
+    </message>
+    <message name="IDS_FILEBROWSER_UPLOAD_PICASAWEB" desc="Upload to picasaweb menu item">
+      Picasa Web
+    </message>
+    <message name="IDS_FILEBROWSER_UPLOAD_FLIKR" desc="Upload to Flikr menu item">
+      Flikr
+    </message>
+    <message name="IDS_FILEBROWSER_UPLOAD_EMAIL" desc="Upload to email menu item">
+      Email
+    </message>
+    <message name="IDS_FILEBROWSER_DELETE" desc="Delete file menu item">
+      Delete
+    </message>
+
     <!-- Chrome OS Strings -->
     <if expr="pp_ifdef('chromeos')">
       <message name="IDS_INSTALLING_UPDATE" desc="Label shown on the updates installation screen">

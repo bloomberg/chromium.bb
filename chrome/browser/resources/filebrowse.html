@@ -2,7 +2,7 @@
 <html i18n-values="dir:textdirection;">
 <head>
 <meta charset="utf-8">
-<title>Content Browser</title>
+<title i18n-content="title"></title>
 <style type="text/css">
 div.header {
   border-bottom: 1px solid #7289E2;
@@ -533,7 +533,7 @@ div.fullcontainer {
 }
 
 </style>
-<script src='local_strings.js'></script>
+<script src="local_strings.js"></script>
 <script>
 
 
@@ -560,10 +560,11 @@ var selectFolder = false;
 var inSaveMode = false;
 var currentMenu = null;
 var mainColumn = null;
+var localStrings;
 
 // strings
-var kPauseDownload = 'pause';
-var kResumeDownload = 'resume';
+var kPauseDownload;
+var kResumeDownload;
 
 function goBackInList() {
   if (currentNode > 0) {
@@ -751,7 +752,7 @@ function setUpForScanning() {
   document.body.removeChild(header);
   var main = mainColumn;
   main.className = 'scanningcontainer';
-  main.textContent = 'Scanning Device...';
+  main.textContent = localStrings.getString('scanning');
 };
 
 
@@ -857,14 +858,14 @@ function removeDeleteConfirm(path) {
 function deleteFileConfirm(path) {
   var askingDiv = document.createElement('div');
   askingDiv.className = 'confirmdelete';
-  askingDiv.textContent = 'Are you sure?';
+  askingDiv.textContent = localStrings.getString('confirmdelete');
   var yes = document.createElement('div');
   yes.className = 'deleteYes';
-  yes.textContent = 'Yes';
+  yes.textContent = localStrings.getString('confirmyes');
   yes.onclick = new Function('deleteFile("' + path + '")');
   var no = document.createElement('div');
   no.onclick = new Function('removeDeleteConfirm("' + path + '")');
-  no.textContent = 'Cancel';
+  no.textContent = localStrings.getString('confirmcancel');
   no.className = 'deleteNo';
   askingDiv.appendChild(yes);
   askingDiv.appendChild(no);
@@ -901,8 +902,6 @@ function pauseToggleDownload(id) {
 };
 
 function downloadsList(results) {
-//  alert(JSON.stringify(results));
-//  We might want to do something with this... For now assume that the update will get the necessary info
   downloadUpdated(results);
 };
 
@@ -937,16 +936,16 @@ function downloadUpdated(results) {
           if (results[x].state == "DANGEROUS") {
             pauseDiv.onClick = undefined;
             var prompt = document.createElement('div');
-            prompt.textContent = 'Allow Download?';
+            prompt.textContent = localStrings.getString('allowdownload');
             prompt.className = 'prompt';
             pauseDiv.appendChild(prompt);
             var yes = document.createElement('div');
             yes.className = 'link';
-            yes.textContent = 'yes';
+            yes.textContent = localStrings.getString('confirmyes');
             yes.onclick = new Function('allowDownload(' + results[x].id +')');
             var no = document.createElement('div');
             no.onclick = new Function('cancelDownload(' + results[x].id +')');
-            no.textContent = 'no';
+            no.textContent = localStrings.getString('confirmcancel');
             no.className = 'link';
             pauseDiv.appendChild(yes);
             pauseDiv.appendChild(no);
@@ -983,7 +982,6 @@ function downloadUpdated(results) {
       if (element && results[x].file_path.indexOf(pathArray[currentNode]) >= 0) {
         chrome.send("refreshDirectory", [pathArray[currentNode]]);
       }
-      // TODO(dhg):Get the new file
     }
   }
 };
@@ -1019,6 +1017,9 @@ function dialogNewFolderClick() {
  * Window onload handler, sets up the page.
  */
 function load() {
+  localStrings = new LocalStrings();
+  kPauseDownload = localStrings.getString('pause');
+  kResumeDownload = localStrings.getString('resume');
   mainColumn = $('main');
   if(document.documentElement.clientWidth <= 600) {
     inFullMode = false;
@@ -1050,18 +1051,18 @@ function load() {
         savebutton.id = 'savebutton';
         savebutton.className = 'filebutton openbutton disabled';
         savebutton.onclick = dialogSaveClick;
-        savebutton.textContent = 'Save';
+        savebutton.textContent = localStrings.getString('save');
         savemenu.appendChild(savebutton);
 
         var cancelbutton = document.createElement('div');
         cancelbutton.className = 'filebutton cancelbutton';
         savemenu.appendChild(cancelbutton);
-        cancelbutton.textContent = 'Cancel';
+        cancelbutton.textContent = localStrings.getString('confirmcancel');
         cancelbutton.onclick = dialogCancelClick;
 
         var filenameprompt = document.createElement('div');
         filenameprompt.className = 'filenameprompt';
-        filenameprompt.textContent = 'File name:';
+        filenameprompt.textContent = localStrings.getString('filenameprompt');
         savemenu.appendChild(filenameprompt);
 
         var filename = document.createElement('input');
@@ -1073,7 +1074,7 @@ function load() {
         var newfolderbutton = document.createElement('div');
         newfolderbutton.id = 'newfolderbutton';
         newfolderbutton.className = 'filebutton newfolderbutton disabled';
-        newfolderbutton.textContent = 'New Folder';
+        newfolderbutton.textContent = localStrings.getString('newfolder');
         newfolderbutton.onclick = dialogNewFolderClick;
         savemenu.appendChild(newfolderbutton);
 
@@ -1093,8 +1094,8 @@ function load() {
         openbutton.onclick = dialogOkClick;
         openmenu.appendChild(cancelbutton);
         cancelbutton.onclick = dialogCancelClick;
-        openbutton.textContent = 'Open';
-        cancelbutton.textContent = 'Cancel';
+        openbutton.textContent = localStrings.getString('open');
+        cancelbutton.textContent = localStrings.getString('confirmcancel');
         document.body.appendChild(openmenu);
       }
     }
@@ -1342,9 +1343,9 @@ function createNewItem(title, path, isDirectory) {
       var picasaitem = document.createElement('div');
       var flikritem = document.createElement('div');
       var emailitem = document.createElement('div');
-      picasaitem.textContent = 'Picasa Web';
-      flikritem.textContent = 'Flikr';
-      emailitem.textContent = 'Email';
+      picasaitem.textContent = localStrings.getString('picasaweb');;
+      flikritem.textContent = localStrings.getString('flikr');
+      emailitem.textContent = localStrings.getString('email');
       picasaitem.className = 'menuitem';
       flikritem.className = 'menuitemdisabled';
       emailitem.className = 'menuitemdisabled';
@@ -1354,7 +1355,7 @@ function createNewItem(title, path, isDirectory) {
       menu.appendChild(emailitem);
     }
     var deleteitem = document.createElement('div');
-    deleteitem.textContent = 'Delete';
+    deleteitem.textContent = localStrings.getString('delete');
     deleteitem.className = 'menuitem';
     deleteitem.onclick = new Function('deleteFileConfirm("' + path +'")');
     menu.appendChild(deleteitem);

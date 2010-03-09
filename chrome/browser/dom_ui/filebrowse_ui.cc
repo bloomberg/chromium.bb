@@ -245,7 +245,38 @@ void FileBrowseUIHTMLSource::StartDataRequest(const std::string& path,
   DictionaryValue localized_strings;
   // TODO(dhg): Add stirings to localized strings, also add more strings
   // that are currently hardcoded.
-  localized_strings.SetString(L"devices", "devices");
+  localized_strings.SetString(L"title",
+      l10n_util::GetString(IDS_FILEBROWSER_TITLE));
+  localized_strings.SetString(L"pause",
+      l10n_util::GetString(IDS_FILEBROWSER_PAUSE));
+  localized_strings.SetString(L"resume",
+      l10n_util::GetString(IDS_FILEBROWSER_RESUME));
+  localized_strings.SetString(L"scanning",
+      l10n_util::GetString(IDS_FILEBROWSER_SCANNING));
+  localized_strings.SetString(L"confirmdelete",
+      l10n_util::GetString(IDS_FILEBROWSER_CONFIRM_DELETE));
+  localized_strings.SetString(L"confirmyes",
+      l10n_util::GetString(IDS_FILEBROWSER_CONFIRM_YES));
+  localized_strings.SetString(L"confirmcancel",
+      l10n_util::GetString(IDS_FILEBROWSER_CONFIRM_CANCEL));
+  localized_strings.SetString(L"allowdownload",
+      l10n_util::GetString(IDS_FILEBROWSER_CONFIRM_DOWNLOAD));
+  localized_strings.SetString(L"filenameprompt",
+      l10n_util::GetString(IDS_FILEBROWSER_PROMPT_FILENAME));
+  localized_strings.SetString(L"save",
+      l10n_util::GetString(IDS_FILEBROWSER_SAVE));
+  localized_strings.SetString(L"newfolder",
+      l10n_util::GetString(IDS_FILEBROWSER_NEW_FOLDER));
+  localized_strings.SetString(L"open",
+      l10n_util::GetString(IDS_FILEBROWSER_OPEN));
+  localized_strings.SetString(L"picasaweb",
+      l10n_util::GetString(IDS_FILEBROWSER_UPLOAD_PICASAWEB));
+  localized_strings.SetString(L"flikr",
+      l10n_util::GetString(IDS_FILEBROWSER_UPLOAD_FLIKR));
+  localized_strings.SetString(L"email",
+      l10n_util::GetString(IDS_FILEBROWSER_UPLOAD_EMAIL));
+  localized_strings.SetString(L"delete",
+      l10n_util::GetString(IDS_FILEBROWSER_DELETE));
 
   SetFontAndTextDirection(&localized_strings);
 
