@@ -323,6 +323,10 @@ void LanguageMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
 void LanguageMenuButton::LanguageChanged(LanguageLibrary* obj) {
   const std::string name = FormatInputLanguage(obj->current_language(), false);
   UpdateIcon(UTF8ToWide(name));
+
+  // This is necessary to remove IME properties when the current language is
+  // switched to XKB.
+  RebuildModel();
 }
 
 void LanguageMenuButton::ImePropertiesChanged(LanguageLibrary* obj) {
@@ -358,7 +362,10 @@ void LanguageMenuButton::RebuildModel() {
 
   const ImePropertyList& property_list
       = LanguageLibrary::Get()->current_ime_properties();
-  if (!property_list.empty()) {
+  const InputLanguage& current_language
+      = LanguageLibrary::Get()->current_language();
+  if ((!property_list.empty()) &&
+      (current_language.category == chromeos::LANGUAGE_CATEGORY_IME)) {
     if (need_separator)
       model_->AddSeparator();
     for (size_t i = 0; i < property_list.size(); ++i) {
