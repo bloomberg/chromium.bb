@@ -59,7 +59,7 @@
     'grit_cmd': ['python', '../tools/grit/grit.py'],
     'repack_locales_cmd': ['python', 'tools/build/repack_locales.py'],
     # TODO: remove this helper when we have loops in GYP
-    'apply_locales_cmd': ['python', 'tools/build/apply_locales.py'],
+    'apply_locales_cmd': ['python', '<(DEPTH)/build/apply_locales.py'],
     'conditions': [
       ['OS=="win"', {
         'nacl_defines': [
