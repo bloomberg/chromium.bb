@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#if defined(OS_WIN)
+#include <process.h>
+#include <windows.h>
+#endif
+
 #include "base/multiprocess_test.h"
 #include "base/platform_thread.h"
 #include "base/simple_thread.h"
 #include "base/shared_memory.h"
 #include "base/stats_table.h"
 #include "base/stats_counters.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
-
-#if defined(OS_WIN)
-#include <process.h>
-#include <windows.h>
-#endif
 
 namespace base {
 
@@ -43,7 +43,7 @@ TEST_F(StatsTableTest, VerifySlots) {
 
   // Fill up the table with counters.
   std::string counter_base_name = "counter";
-  for (int index=0; index < kMaxCounter; index++) {
+  for (int index = 0; index < kMaxCounter; index++) {
     std::string counter_name = counter_base_name;
     StringAppendF(&counter_name, "counter.ctr%d", index);
     int counter_id = table.FindCounter(counter_name);
@@ -76,11 +76,11 @@ const std::string kCounterMixed = "CounterMixed";
 const int kThreadLoops = 1000;
 
 class StatsTableThread : public base::SimpleThread {
-public:
+ public:
   StatsTableThread(std::string name, int id)
       : base::SimpleThread(name), id_(id) { }
   virtual void Run();
-private:
+ private:
   int id_;
 };
 

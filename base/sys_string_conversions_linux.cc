@@ -7,7 +7,7 @@
 #include <wchar.h>
 
 #include "base/string_piece.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 
 namespace base {
 

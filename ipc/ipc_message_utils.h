@@ -5,6 +5,7 @@
 #ifndef IPC_IPC_MESSAGE_UTILS_H_
 #define IPC_IPC_MESSAGE_UTILS_H_
 
+#include <algorithm>
 #include <string>
 #include <vector>
 #include <map>
@@ -14,6 +15,7 @@
 #include "base/nullable_string16.h"
 #include "base/string16.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/time.h"
 #include "base/tuple.h"
 #include "base/values.h"
@@ -713,7 +715,7 @@ struct ParamTraits<base::FileDescriptor> {
     }
   }
 };
-#endif // defined(OS_POSIX)
+#endif  // defined(OS_POSIX)
 
 // A ChannelHandle is basically a platform-inspecific wrapper around the
 // fact that IPC endpoints are handled specially on POSIX.  See above comments
