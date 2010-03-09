@@ -104,7 +104,7 @@ bool NaClProcessHost::LaunchSelLdr() {
 #if defined(OS_WIN)
         FilePath(),
 #elif defined(OS_POSIX)
-        false,
+        true, // use_zygote
         base::environment_vector(),
 #endif
         cmd_line);

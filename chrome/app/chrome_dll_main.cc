@@ -744,7 +744,18 @@ int ChromeMain(int argc, char** argv) {
         *CommandLine::ForCurrentProcess();
       MainFunctionParams main_params(parsed_command_line, sandbox_wrapper,
                                      &autorelease_pool);
-      rv = RendererMain(main_params);
+      std::string process_type =
+        parsed_command_line.GetSwitchValueASCII(switches::kProcessType);
+      if (process_type == switches::kRendererProcess ||
+          process_type == switches::kExtensionProcess) {
+        rv = RendererMain(main_params);
+#ifndef DISABLE_NACL
+      } else if (process_type == switches::kNaClLoaderProcess) {
+        rv = NaClMain(main_params);
+#endif
+      } else {
+        NOTREACHED() << "Unknown process type";
+      }
     } else {
       rv = 0;
     }
