@@ -10,14 +10,17 @@
 #include <sechash.h>
 
 #include <algorithm>
+#include <vector>
 
 #include "app/l10n_util.h"
 #include "base/i18n/time_formatting.h"
 #include "base/nss_util.h"
+#include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/cert_store.h"
+#include "chrome/browser/gtk/certificate_dialogs.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/third_party/mozilla_security_manager/nsNSSCertHelper.h"
 #include "chrome/third_party/mozilla_security_manager/nsNSSCertificate.h"
@@ -125,6 +128,7 @@ class CertificateViewer {
   enum {
     HIERARCHY_NAME,
     HIERARCHY_OBJECT,
+    HIERARCHY_INDEX,
     HIERARCHY_COLUMNS
   };
 
@@ -153,6 +157,9 @@ class CertificateViewer {
   static void OnFieldsSelectionChanged(GtkTreeSelection* selection,
                                        CertificateViewer* viewer);
 
+  // Callback for export button.
+  static void OnExportClicked(GtkButton *button, CertificateViewer* viewer);
+
   // The certificate hierarchy (leaf cert first).
   CERTCertList* cert_chain_list_;
   // The same contents of cert_chain_list_ in a vector for easier access.
@@ -163,8 +170,10 @@ class CertificateViewer {
   GtkWidget* notebook_;
   GtkWidget* general_page_vbox_;
   GtkWidget* details_page_vbox_;
+  GtkTreeSelection* hierarchy_selection_;
   GtkWidget* fields_tree_;
   GtkTextBuffer* field_value_buffer_;
+  GtkWidget* export_button_;
 
   DISALLOW_COPY_AND_ASSIGN(CertificateViewer);
 };
@@ -341,14 +350,16 @@ void CertificateViewer::FillHierarchyStore(GtkTreeStore* hierarchy_store,
   GtkTreeIter parent;
   GtkTreeIter* parent_ptr = NULL;
   GtkTreeIter iter;
+  gint index = cert_chain_.size() - 1;
   for (CertificateVector::const_reverse_iterator i = cert_chain_.rbegin();
-       i != cert_chain_.rend(); ++i) {
+       i != cert_chain_.rend(); ++i, --index) {
     gtk_tree_store_append(hierarchy_store, &iter, parent_ptr);
     GtkTreeStore* fields_store = CreateFieldsTreeStore(*i);
     gtk_tree_store_set(
         hierarchy_store, &iter,
         HIERARCHY_NAME, psm::GetCertTitle(*i).c_str(),
         HIERARCHY_OBJECT, fields_store,
+        HIERARCHY_INDEX, index,
         -1);
     g_object_unref(fields_store);
     parent = iter;
@@ -545,7 +556,8 @@ void CertificateViewer::InitDetailsPage() {
 
   GtkTreeStore* hierarchy_store = gtk_tree_store_new(HIERARCHY_COLUMNS,
                                                      G_TYPE_STRING,
-                                                     G_TYPE_OBJECT);
+                                                     G_TYPE_OBJECT,
+                                                     G_TYPE_INT);
   GtkTreeIter hierarchy_leaf_iter;
   FillHierarchyStore(hierarchy_store, &hierarchy_leaf_iter);
   GtkWidget* hierarchy_tree = gtk_tree_view_new_with_model(
@@ -557,10 +569,10 @@ void CertificateViewer::InitDetailsPage() {
                                                "text", HIERARCHY_NAME,
                                                NULL));
   gtk_tree_view_expand_all(GTK_TREE_VIEW(hierarchy_tree));
-  GtkTreeSelection* hierarchy_selection = gtk_tree_view_get_selection(
+  hierarchy_selection_ = gtk_tree_view_get_selection(
       GTK_TREE_VIEW(hierarchy_tree));
-  gtk_tree_selection_set_mode(hierarchy_selection, GTK_SELECTION_SINGLE);
-  g_signal_connect(hierarchy_selection, "changed",
+  gtk_tree_selection_set_mode(hierarchy_selection_, GTK_SELECTION_SINGLE);
+  g_signal_connect(hierarchy_selection_, "changed",
                    G_CALLBACK(OnHierarchySelectionChanged), this);
   GtkWidget* hierarchy_scroll_window = gtk_scrolled_window_new(NULL, NULL);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(hierarchy_scroll_window),
@@ -633,10 +645,20 @@ void CertificateViewer::InitDetailsPage() {
   gtk_widget_modify_font(field_value_view, font_desc);
   pango_font_description_free(font_desc);
 
-  // TODO(mattm): export certificate button.
+  GtkWidget* export_hbox = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(details_page_vbox_), export_hbox,
+                     FALSE, FALSE, 0);
+  export_button_ = gtk_button_new_with_mnemonic(
+      gtk_util::ConvertAcceleratorsFromWindowsStyle(
+          l10n_util::GetStringUTF8(
+              IDS_CERT_DETAILS_EXPORT_CERTIFICATE)).c_str());
+  g_signal_connect(export_button_, "clicked",
+                   G_CALLBACK(OnExportClicked), this);
+  gtk_box_pack_start(GTK_BOX(export_hbox), export_button_,
+                     FALSE, FALSE, 0);
 
   // Select the initial certificate in the hierarchy.
-  gtk_tree_selection_select_iter(hierarchy_selection, &hierarchy_leaf_iter);
+  gtk_tree_selection_select_iter(hierarchy_selection_, &hierarchy_leaf_iter);
 }
 
 // static
@@ -650,8 +672,10 @@ void CertificateViewer::OnHierarchySelectionChanged(
     gtk_tree_view_set_model(GTK_TREE_VIEW(viewer->fields_tree_),
                             GTK_TREE_MODEL(fields_store));
     gtk_tree_view_expand_all(GTK_TREE_VIEW(viewer->fields_tree_));
+    gtk_widget_set_sensitive(viewer->export_button_, TRUE);
   } else {
     gtk_tree_view_set_model(GTK_TREE_VIEW(viewer->fields_tree_), NULL);
+    gtk_widget_set_sensitive(viewer->export_button_, FALSE);
   }
 }
 
@@ -672,6 +696,26 @@ void CertificateViewer::OnFieldsSelectionChanged(GtkTreeSelection* selection,
   } else {
     gtk_text_buffer_set_text(viewer->field_value_buffer_, "", 0);
   }
+}
+
+// static
+void CertificateViewer::OnExportClicked(GtkButton *button,
+                                        CertificateViewer* viewer) {
+  GtkTreeIter iter;
+  GtkTreeModel* model;
+  if (!gtk_tree_selection_get_selected(viewer->hierarchy_selection_, &model,
+                                       &iter))
+    return;
+  gint cert_index = -1;
+  gtk_tree_model_get(model, &iter, HIERARCHY_INDEX, &cert_index, -1);
+
+  if (cert_index < 0) {
+    NOTREACHED();
+    return;
+  }
+
+  ShowCertExportDialog(GTK_WINDOW(viewer->dialog_),
+                       viewer->cert_chain_[cert_index]);
 }
 
 void CertificateViewer::Show() {

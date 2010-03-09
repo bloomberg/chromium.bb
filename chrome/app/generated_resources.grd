@@ -2684,6 +2684,24 @@ each locale. -->
       <message name="IDS_CERT_DETAILS_CERTIFICATE_SIG_VALUE" desc="The label of the Certificate Signature Value element in the details page of the certificate info dialog.">
         Certificate Signature Value
       </message>
+      <message name="IDS_CERT_DETAILS_EXPORT_CERTIFICATE" desc="The label of the button to export the selected certificate">
+        E&amp;xport...
+      </message>
+      <message name="IDS_CERT_EXPORT_TYPE_BASE64" desc="The description of saving a single certificate in base64 encoding.">
+        Base64-encoded ASCII, single certificate
+      </message>
+      <message name="IDS_CERT_EXPORT_TYPE_BASE64_CHAIN" desc="The description of saving a certificate chain in base64 encoding.">
+        Base64-encoded ASCII, certificate chain
+      </message>
+      <message name="IDS_CERT_EXPORT_TYPE_DER" desc="The description of saving a single certificate in DER encoding.">
+        DER-encoded binary, single certificate
+      </message>
+      <message name="IDS_CERT_EXPORT_TYPE_PKCS7" desc="The description of saving a single certificate in PKCS #7 encoding.">
+        PKCS #7, single certificate
+      </message>
+      <message name="IDS_CERT_EXPORT_TYPE_PKCS7_CHAIN" desc="The description of saving a single certificate in PKCS #7 encoding.">
+        PKCS #7, certificate chain
+      </message>
 
       <message translateable="false" name="IDS_CERT_OID_AVA_COMMON_NAME" desc="">
         CN
