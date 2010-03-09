@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/download/download_util.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
@@ -77,7 +78,8 @@ DownloadFile::~DownloadFile() {
 }
 
 bool DownloadFile::Initialize() {
-  if (!full_path_.empty() || file_util::CreateTemporaryFile(&full_path_))
+  if (!full_path_.empty() ||
+      download_util::CreateTemporaryFileForDownload(&full_path_))
     return Open();
   return false;
 }

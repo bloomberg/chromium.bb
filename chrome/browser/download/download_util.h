@@ -25,6 +25,7 @@ class Canvas;
 class BaseDownloadItemModel;
 class DictionaryValue;
 class DownloadItem;
+class FilePath;
 class SkBitmap;
 
 namespace download_util {
@@ -54,6 +55,18 @@ bool CanOpenDownload(DownloadItem* download);
 // Open the file associated with this download (wait for the download to
 // complete if it is in progress).
 void OpenDownload(DownloadItem* download);
+
+// Download temporary file creation --------------------------------------------
+
+// Return the default download directory.
+const FilePath& GetDefaultDownloadDirectory();
+
+// Create a temporary file for a download in the user's default download
+// directory and return true if was successful in creating the file.
+bool CreateTemporaryFileForDownload(FilePath* path);
+
+// Return true if the |download_path| is dangerous path.
+bool DownloadPathIsDangerous(const FilePath& download_path);
 
 // Download progress animations ------------------------------------------------
 

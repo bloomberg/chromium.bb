@@ -14,11 +14,15 @@
 #include "base/file_util.h"
 #include "base/gfx/rect.h"
 #include "base/i18n/time_formatting.h"
+#include "base/path_service.h"
+#include "base/singleton.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/time_format.h"
 #include "grit/generated_resources.h"
@@ -72,6 +76,44 @@ void OpenDownload(DownloadItem* download) {
     download->NotifyObserversDownloadOpened();
     download->manager()->OpenDownload(download, NULL);
   }
+}
+
+// Download temporary file creation --------------------------------------------
+
+class DefaultDownloadDirectory {
+ public:
+  const FilePath& path() const { return path_; }
+ private:
+  DefaultDownloadDirectory() {
+    if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &path_)) {
+      NOTREACHED();
+    }
+    if (DownloadPathIsDangerous(path_)) {
+      if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS_SAFE, &path_)) {
+        NOTREACHED();
+      }
+    }
+  }
+  friend struct DefaultSingletonTraits<DefaultDownloadDirectory>;
+  FilePath path_;
+};
+
+const FilePath& GetDefaultDownloadDirectory() {
+  return Singleton<DefaultDownloadDirectory>::get()->path();
+}
+
+bool CreateTemporaryFileForDownload(FilePath* temp_file) {
+  return file_util::CreateTemporaryFileInDir(
+      GetDefaultDownloadDirectory(), temp_file);
+}
+
+bool DownloadPathIsDangerous(const FilePath& download_path) {
+  FilePath desktop_dir;
+  if (!PathService::Get(chrome::DIR_USER_DESKTOP, &desktop_dir)) {
+    NOTREACHED();
+    return false;
+  }
+  return (download_path == desktop_dir);
 }
 
 // Download progress painting --------------------------------------------------

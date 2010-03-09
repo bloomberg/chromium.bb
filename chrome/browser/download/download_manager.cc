@@ -107,15 +107,6 @@ int GetUniquePathNumber(const FilePath& path) {
   return -1;
 }
 
-static bool DownloadPathIsDangerous(const FilePath& download_path) {
-  FilePath desktop_dir;
-  if (!PathService::Get(chrome::DIR_USER_DESKTOP, &desktop_dir)) {
-    NOTREACHED();
-    return false;
-  }
-  return (download_path == desktop_dir);
-}
-
 // Used to sort download items based on descending start time.
 bool CompareStartTime(DownloadItem* first, DownloadItem* second) {
   return first->start_time() > second->start_time();
@@ -348,17 +339,8 @@ void DownloadManager::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kDownloadDirUpgraded, false);
 
   // The default download path is userprofile\download.
-  FilePath default_download_path;
-  if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS,
-                        &default_download_path)) {
-    NOTREACHED();
-  }
-  if (DownloadPathIsDangerous(default_download_path)) {
-    if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS_SAFE,
-                          &default_download_path)) {
-      NOTREACHED();
-    }
-  }
+  const FilePath& default_download_path =
+      download_util::GetDefaultDownloadDirectory();
   prefs->RegisterFilePathPref(prefs::kDownloadDefaultDirectory,
                               default_download_path);
 
@@ -369,7 +351,7 @@ void DownloadManager::RegisterUserPrefs(PrefService* prefs) {
   if (!prefs->GetBoolean(prefs::kDownloadDirUpgraded)) {
     FilePath current_download_dir = FilePath::FromWStringHack(
         prefs->GetString(prefs::kDownloadDefaultDirectory));
-    if (DownloadPathIsDangerous(current_download_dir)) {
+    if (download_util::DownloadPathIsDangerous(current_download_dir)) {
       prefs->SetString(prefs::kDownloadDefaultDirectory,
                        default_download_path.ToWStringHack());
     }
