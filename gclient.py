@@ -279,6 +279,32 @@ solutions = [
 ]
 """)
 
+DEFAULT_SNAPSHOT_SOLUTION_TEXT = ("""\
+  { "name"        : "%(solution_name)s",
+    "url"         : "%(solution_url)s",
+    "custom_deps" : {
+      %(solution_deps)s,
+    },
+    "safesync_url": "%(safesync_url)s"
+  },
+""")
+
+DEFAULT_SNAPSHOT_FILE_TEXT = ("""\
+# An element of this array (a "solution") describes a repository directory
+# that will be checked out into your working copy.  Each solution may
+# optionally define additional dependencies (via its DEPS file) to be
+# checked out alongside the solution's directory.  A solution may also
+# specify custom dependencies (via the "custom_deps" property) that
+# override or augment the dependencies specified by the DEPS file.
+# If a "safesync_url" is specified, it is assumed to reference the location of
+# a text file which contains nothing but the last known good SCM revision to
+# sync against. It is fetched if specified and used unless --head is passed
+
+solutions = [
+%(solution_list)s
+]
+""")
+
 
 ## GClient implementation.
 
@@ -801,9 +827,6 @@ class GClient(object):
     if not solutions:
       raise gclient_utils.Error("No solution specified")
 
-    entries = {}
-    entries_deps_content = {}
-
     # Inner helper to generate base url and rev tuple (including honoring
     # |revision_overrides|)
     def GetURLAndRev(name, original_url):
@@ -820,13 +843,21 @@ class GClient(object):
         else:
           return (url, revision)
 
+    # text of the snapshot gclient file
+    new_gclient = ""
+    # Dictionary of { path : SCM url } to ensure no duplicate solutions
+    solution_names = {}
     # Run on the base solutions first.
     for solution in solutions:
+      # Dictionary of { path : SCM url } to describe the gclient checkout
+      entries = {}
+      entries_deps_content = {}
       name = solution["name"]
-      if name in entries:
+      if name in solution_names:
         raise gclient_utils.Error("solution %s specified more than once" % name)
       (url, rev) = GetURLAndRev(name, solution["url"])
       entries[name] = "%s@%s" % (url, rev)
+      solution_names[name] = "%s@%s" % (url, rev)
       deps_file = solution.get("deps_file", self._options.deps_file)
       if '/' in deps_file or '\\' in deps_file:
         raise gclient_utils.Error('deps_file name must not be a path, just a '
@@ -840,33 +871,55 @@ class GClient(object):
         deps_content = ""
       entries_deps_content[name] = deps_content
 
-    # Process the dependencies next (sort alphanumerically to ensure that
-    # containing directories get populated first and for readability)
-    deps = self._ParseAllDeps(entries, entries_deps_content)
-    deps_to_process = deps.keys()
-    deps_to_process.sort()
+      # Process the dependencies next (sort alphanumerically to ensure that
+      # containing directories get populated first and for readability)
+      deps = self._ParseAllDeps(entries, entries_deps_content)
+      deps_to_process = deps.keys()
+      deps_to_process.sort()
 
-    # First pass for direct dependencies.
-    for d in deps_to_process:
-      if type(deps[d]) == str:
-        (url, rev) = GetURLAndRev(d, deps[d])
-        entries[d] = "%s@%s" % (url, rev)
+      # First pass for direct dependencies.
+      for d in deps_to_process:
+        if type(deps[d]) == str:
+          (url, rev) = GetURLAndRev(d, deps[d])
+          entries[d] = "%s@%s" % (url, rev)
 
-    # Second pass for inherited deps (via the From keyword)
-    for d in deps_to_process:
-      if type(deps[d]) != str:
-        deps_parent_url = entries[deps[d].module_name]
-        if deps_parent_url.find("@") < 0:
-          raise gclient_utils.Error("From %s missing revisioned url" %
-                                        deps[d].module_name)
-        content =  gclient_utils.FileRead(os.path.join(self._root_dir,
-                                                       deps[d].module_name,
-                                                       self._options.deps_file))
-        sub_deps = self._ParseSolutionDeps(deps[d].module_name, content, {})
-        (url, rev) = GetURLAndRev(d, sub_deps[d])
-        entries[d] = "%s@%s" % (url, rev)
-    print(";\n".join(["%s: %s" % (x, entries[x])
-                        for x in sorted(entries.keys())]))
+      # Second pass for inherited deps (via the From keyword)
+      for d in deps_to_process:
+        if type(deps[d]) != str:
+          deps_parent_url = entries[deps[d].module_name]
+          if deps_parent_url.find("@") < 0:
+            raise gclient_utils.Error("From %s missing revisioned url" %
+                                          deps[d].module_name)
+          content =  gclient_utils.FileRead(os.path.join(
+                                              self._root_dir,
+                                              deps[d].module_name,
+                                              self._options.deps_file))
+          sub_deps = self._ParseSolutionDeps(deps[d].module_name, content, {})
+          (url, rev) = GetURLAndRev(d, sub_deps[d])
+          entries[d] = "%s@%s" % (url, rev)
+
+      # Build the snapshot configuration string
+      if self._options.snapshot:
+        url = entries.pop(name)
+        custom_deps = ",\n      ".join(["\"%s\": \"%s\"" % (x, entries[x])
+                                        for x in sorted(entries.keys())])
+
+        new_gclient += DEFAULT_SNAPSHOT_SOLUTION_TEXT % {
+                       'solution_name': name,
+                       'solution_url': url,
+                       'safesync_url' : "",
+                       'solution_deps': custom_deps,
+                       }
+      else:
+        print(";\n".join(["%s: %s" % (x, entries[x])
+                         for x in sorted(entries.keys())]))
+
+    # Print the snapshot configuration file
+    if self._options.snapshot:
+      config = DEFAULT_SNAPSHOT_FILE_TEXT % {'solution_list': new_gclient}
+      snapclient = GClient(self._root_dir, self._options)
+      snapclient.SetConfig(config)
+      print(snapclient._config_content)
 
 
 ## gclient commands.
@@ -1151,6 +1204,12 @@ def Main(argv):
                            action="store_true", default=False,
                            help=("on update, delete any unexpected "
                                  "unversioned trees that are in the checkout"))
+  option_parser.add_option("", "--snapshot", action="store_true", default=False,
+                           help=("(revinfo only), create a snapshot file "
+                                 "of the current version of all repositories"))
+  option_parser.add_option("", "--gclientfile", default=None,
+                           metavar="FILENAME",
+                           help=("specify an alternate .gclient file"))
 
   if len(argv) < 2:
     # Users don't need to be told to use the 'help' command.
@@ -1177,7 +1236,9 @@ def Main(argv):
 
   # Files used for configuration and state saving.
   options.config_filename = os.environ.get("GCLIENT_FILE", ".gclient")
-  options.entries_filename = ".gclient_entries"
+  if options.gclientfile:
+    options.config_filename = options.gclientfile
+  options.entries_filename = options.config_filename + "_entries"
   options.deps_file = "DEPS"
 
   options.platform = sys.platform
