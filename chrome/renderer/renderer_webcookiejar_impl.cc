@@ -5,7 +5,6 @@
 #include "chrome/renderer/renderer_webcookiejar_impl.h"
 
 #include "chrome/common/render_messages.h"
-#include "chrome/renderer/cookie_message_filter.h"
 #include "chrome/renderer/render_thread.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCookie.h"
 
@@ -13,23 +12,6 @@ using WebKit::WebCookie;
 using WebKit::WebString;
 using WebKit::WebURL;
 using WebKit::WebVector;
-
-void RendererWebCookieJarImpl::SendSynchronousMessage(
-    IPC::SyncMessage* message) {
-  CookieMessageFilter* filter =
-      RenderThread::current()->cookie_message_filter();
-
-  message->set_pump_messages_event(filter->pump_messages_event());
-  sender_->Send(message);
-
-  // We may end up nesting calls to SendCookieMessage, so we defer the reset
-  // until we return to the top-most message loop.
-  if (filter->pump_messages_event()->IsSignaled()) {
-    MessageLoop::current()->PostNonNestableTask(FROM_HERE,
-        NewRunnableMethod(filter,
-                          &CookieMessageFilter::ResetPumpMessagesEvent));
-  }
-}
 
 void RendererWebCookieJarImpl::setCookie(
     const WebURL& url, const WebURL& first_party_for_cookies,
@@ -43,7 +25,8 @@ void RendererWebCookieJarImpl::setCookie(
 WebString RendererWebCookieJarImpl::cookies(
     const WebURL& url, const WebURL& first_party_for_cookies) {
   std::string value_utf8;
-  SendSynchronousMessage(new ViewHostMsg_GetCookies(
+  // NOTE: This may pump events (see RenderThread::Send).
+  sender_->Send(new ViewHostMsg_GetCookies(
       MSG_ROUTING_NONE, url, first_party_for_cookies, &value_utf8));
   return WebString::fromUTF8(value_utf8);
 }
@@ -57,7 +40,8 @@ void RendererWebCookieJarImpl::rawCookies(
     const WebURL& url, const WebURL& first_party_for_cookies,
     WebVector<WebCookie>& raw_cookies) {
   std::vector<webkit_glue::WebCookie> cookies;
-  SendSynchronousMessage(new ViewHostMsg_GetRawCookies(
+  // NOTE: This may pump events (see RenderThread::Send).
+  sender_->Send(new ViewHostMsg_GetRawCookies(
       MSG_ROUTING_NONE, url, first_party_for_cookies, &cookies));
 
   WebVector<WebCookie> result(cookies.size());

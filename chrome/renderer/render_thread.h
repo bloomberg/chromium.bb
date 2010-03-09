@@ -140,10 +140,6 @@ class RenderThread : public RenderThreadBase,
     return spellchecker_.get();
   }
 
-  CookieMessageFilter* cookie_message_filter() const {
-    return cookie_message_filter_.get();
-  }
-
   bool plugin_refresh_allowed() const { return plugin_refresh_allowed_; }
 
   bool is_extension_process() const { return is_extension_process_; }
@@ -275,8 +271,8 @@ class RenderThread : public RenderThreadBase,
   // True if this renderer is running extensions.
   bool is_extension_process_;
 
-  bool do_not_suspend_webkit_shared_timer_;
-  bool do_not_notify_webkit_of_modal_loop_;
+  bool suspend_webkit_shared_timer_;
+  bool notify_webkit_of_modal_loop_;
   bool did_notify_webkit_of_modal_loop_;
 
   // Timer that periodically calls IdleHandler.

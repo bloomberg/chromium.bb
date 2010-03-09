@@ -21,8 +21,6 @@ class RendererWebCookieJarImpl : public WebKit::WebCookieJar {
   }
 
  private:
-  void SendSynchronousMessage(IPC::SyncMessage* message);
-
   // WebKit::WebCookieJar methods:
   virtual void setCookie(
       const WebKit::WebURL& url, const WebKit::WebURL& first_party_for_cookies,

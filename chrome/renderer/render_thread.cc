@@ -210,8 +210,8 @@ void RenderThread::Init() {
   std::string type_str = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
       switches::kProcessType);
   is_extension_process_ = type_str == switches::kExtensionProcess;
-  do_not_suspend_webkit_shared_timer_ = false;
-  do_not_notify_webkit_of_modal_loop_ = false;
+  suspend_webkit_shared_timer_ = true;
+  notify_webkit_of_modal_loop_ = true;
   did_notify_webkit_of_modal_loop_ = false;
   plugin_refresh_allowed_ = true;
   cache_stats_task_pending_ = false;
@@ -288,39 +288,61 @@ int32 RenderThread::RoutingIDForCurrentContext() {
 }
 
 bool RenderThread::Send(IPC::Message* msg) {
-  gfx::NativeViewId host_window = 0;
-  bool pumping_events = false;
+  // Certain synchronous messages can result in an app-modal cookie prompt.
+  // This could cause a complete hang of Chrome if a windowed plug-in is trying
+  // to communicate with the renderer thread since the browser's UI thread
+  // could be stuck (within a Windows API call) trying to synchronously
+  // communicate with the plug-in.  The remedy is to pump messages on this
+  // thread while the cookie prompt is showing.  This creates an opportunity
+  // for re-entrancy into WebKit, so we need to take care to disable callbacks,
+  // timers, and pending network loads that could trigger such callbacks.
 
-  // Inform related plugins when they also need to pump events.
-  if (msg->is_sync() && msg->is_caller_pumping_messages()) {
-    pumping_events = true;
-    RenderWidget* widget =
-        static_cast<RenderWidget*>(ResolveRoute(msg->routing_id()));
-    if (widget)
-      host_window = widget->host_window();
+  bool pumping_events = false, may_show_cookie_prompt = false;
+  if (msg->is_sync()) {
+    if (msg->is_caller_pumping_messages()) {
+      pumping_events = true;
+    } else {
+      switch (msg->type()) {
+        case ViewHostMsg_GetCookies::ID:
+        case ViewHostMsg_GetRawCookies::ID:
+        case ViewHostMsg_DOMStorageSetItem::ID:
+        case ViewHostMsg_SyncLoad::ID:
+          may_show_cookie_prompt = true;
+          pumping_events = true;
+          break;
+      }
+    }
   }
 
-  bool do_not_suspend_webkit_shared_timer = false;
-  std::swap(do_not_suspend_webkit_shared_timer,
-            do_not_suspend_webkit_shared_timer_);
+  bool suspend_webkit_shared_timer = true;  // default value
+  std::swap(suspend_webkit_shared_timer, suspend_webkit_shared_timer_);
 
-  bool do_not_notify_webkit_of_modal_loop = false;
-  std::swap(do_not_notify_webkit_of_modal_loop,
-            do_not_notify_webkit_of_modal_loop_);
+  bool notify_webkit_of_modal_loop = true;  // default value
+  std::swap(notify_webkit_of_modal_loop, notify_webkit_of_modal_loop_);
+
+  gfx::NativeViewId host_window = 0;
 
   if (pumping_events) {
-    if (!do_not_suspend_webkit_shared_timer)
+    // See ViewMsg_SignalCookiePromptEvent.
+    if (may_show_cookie_prompt) {
+      static_cast<IPC::SyncMessage*>(msg)->set_pump_messages_event(
+          cookie_message_filter_->pump_messages_event());
+    }
+
+    if (suspend_webkit_shared_timer)
       webkit_client_->SuspendSharedTimer();
 
     // WebKit does not like nested calls to willEnterModalLoop.
     // TODO(darin): Fix WebKit to allow nesting.
-    if (!do_not_notify_webkit_of_modal_loop &&
-        !did_notify_webkit_of_modal_loop_) {
+    if (notify_webkit_of_modal_loop && !did_notify_webkit_of_modal_loop_) {
       WebView::willEnterModalLoop();
       did_notify_webkit_of_modal_loop_ = true;
     }
 
-    if (host_window) {
+    RenderWidget* widget =
+        static_cast<RenderWidget*>(ResolveRoute(msg->routing_id()));
+    if (widget) {
+      host_window = widget->host_window();
       PluginChannelHost::Broadcast(
           new PluginMsg_SignalModalDialogEvent(host_window));
     }
@@ -334,14 +356,22 @@ bool RenderThread::Send(IPC::Message* msg) {
           new PluginMsg_ResetModalDialogEvent(host_window));
     }
 
-    if (!do_not_notify_webkit_of_modal_loop &&
-        did_notify_webkit_of_modal_loop_) {
+    if (notify_webkit_of_modal_loop && did_notify_webkit_of_modal_loop_) {
       WebView::didExitModalLoop();
       did_notify_webkit_of_modal_loop_ = false;
     }
 
-    if (!do_not_suspend_webkit_shared_timer)
+    if (suspend_webkit_shared_timer)
       webkit_client_->ResumeSharedTimer();
+
+    // We may end up nesting calls to Send, so we defer the reset until we
+    // return to the top-most message loop.
+    if (may_show_cookie_prompt &&
+        cookie_message_filter_->pump_messages_event()->IsSignaled()) {
+      MessageLoop::current()->PostNonNestableTask(FROM_HERE,
+          NewRunnableMethod(cookie_message_filter_.get(),
+                            &CookieMessageFilter::ResetPumpMessagesEvent));
+    }
   }
 
   return rv;
@@ -382,11 +412,11 @@ void RenderThread::WidgetRestored() {
 }
 
 void RenderThread::DoNotSuspendWebKitSharedTimer() {
-  do_not_suspend_webkit_shared_timer_ = true;
+  suspend_webkit_shared_timer_ = false;
 }
 
 void RenderThread::DoNotNotifyWebKitOfModalLoop() {
-  do_not_notify_webkit_of_modal_loop_ = true;
+  notify_webkit_of_modal_loop_ = false;
 }
 
 void RenderThread::Resolve(const char* name, size_t length) {

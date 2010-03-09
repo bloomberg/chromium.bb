@@ -225,7 +225,7 @@ void IPCResourceLoaderBridge::SyncLoad(SyncLoadResponse* response) {
   SyncLoadResult result;
   IPC::SyncMessage* msg = new ViewHostMsg_SyncLoad(routing_id_, request_id_,
                                                    request_, &result);
-  msg->EnableMessagePumping();
+  // NOTE: This may pump events (see RenderThread::Send).
   if (!dispatcher_->message_sender()->Send(msg)) {
     response->status.set_status(URLRequestStatus::FAILED);
     return;
