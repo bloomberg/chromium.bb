@@ -11,6 +11,7 @@
 #include "chrome/test/ui/npapi_test_helper.h"
 
 #include "base/file_util.h"
+#include "base/test/test_file_util.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 
@@ -23,8 +24,7 @@
 #define TEST_PLUGIN_NAME "libnpapi_test_plugin.so"
 #endif
 
-NPAPITester::NPAPITester()
-    : UITest() {
+NPAPITester::NPAPITester() {
 }
 
 void NPAPITester::SetUp() {
@@ -40,18 +40,20 @@ void NPAPITester::SetUp() {
 #endif
 
   FilePath plugin_src = browser_directory_.AppendASCII(TEST_PLUGIN_NAME);
-  CHECK(file_util::PathExists(plugin_src));
+  ASSERT_TRUE(file_util::PathExists(plugin_src));
   test_plugin_path_ = plugins_directory.AppendASCII(TEST_PLUGIN_NAME);
 
   file_util::CreateDirectory(plugins_directory);
-  ASSERT_TRUE(file_util::CopyDirectory(plugin_src, test_plugin_path_, true));
+  ASSERT_TRUE(file_util::CopyDirectory(plugin_src, test_plugin_path_, true))
+    << "Copy failed from " << plugin_src.value()
+    << " to " << test_plugin_path_.value();
 
 #if defined(OS_MACOSX)
   // On Windows and Linux, the layout plugin is copied into plugins/ as part of
   // its build process; we can't do the equivalent on the Mac since Chromium
   // doesn't exist during the Test Shell build.
   FilePath layout_src = browser_directory_.AppendASCII(LAYOUT_PLUGIN_NAME);
-  CHECK(file_util::PathExists(layout_src));
+  ASSERT_TRUE(file_util::PathExists(layout_src));
   layout_plugin_path_ = plugins_directory.AppendASCII(LAYOUT_PLUGIN_NAME);
   ASSERT_TRUE(file_util::CopyDirectory(layout_src, layout_plugin_path_, true));
 #endif
@@ -60,11 +62,14 @@ void NPAPITester::SetUp() {
 }
 
 void NPAPITester::TearDown() {
-  file_util::Delete(test_plugin_path_, true);
-#if defined(OS_MACOSX)
-  file_util::Delete(layout_plugin_path_, true);
-#endif
+  // Tear down the UI test first so that the browser stops using the plugin
+  // files.
   UITest::TearDown();
+
+  EXPECT_TRUE(file_util::DieFileDie(test_plugin_path_, true));
+#if defined(OS_MACOSX)
+  EXPECT_TRUE(file_util::DieFileDie(layout_plugin_path_, true));
+#endif
 }
 
 
