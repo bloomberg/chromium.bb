@@ -34,6 +34,8 @@
 #define LOG(LEVEL) if (0) std::ostringstream()
 #define DLOG(LEVEL) if (0) std::ostringstream()
 
+#define NOTREACHED() DCHECK(false)
+
 #endif
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_LOGGING_H_

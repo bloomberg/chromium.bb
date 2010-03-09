@@ -6,7 +6,9 @@
 #ifndef _NP_EXTENSIONS_H_
 #define _NP_EXTENSIONS_H_
 
-#include "third_party/npapi/bindings/npapi.h"
+// Use the shorter include path here so that this file can be used in non-
+// Chromium projects, such as the Native Client SDK.
+#include "npapi.h"
 
 /*
  * A fake "enum" value for getting Pepper extensions.
@@ -34,7 +36,7 @@ typedef enum {
   NPThemeItemScrollbarHorizontalThumb = 4,
   NPThemeItemScrollbarVerticalThumb   = 5,
   NPThemeItemScrollbarHoriztonalTrack = 6,
-  NPThemeItemScrollbarVerticalTrack   = 7,
+  NPThemeItemScrollbarVerticalTrack   = 7
 } NPThemeItem;
 
 typedef enum {
@@ -46,7 +48,7 @@ typedef enum {
   // it to NPThemeStateNormal if on other platforms or on Windows XP.
   NPThemeStateHover    = 2,
   NPThemeStateNormal   = 3,
-  NPThemeStatePressed  = 4,
+  NPThemeStatePressed  = 4
 } NPThemeState;
 
 typedef struct _NPThemeParams {

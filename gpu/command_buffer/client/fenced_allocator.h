@@ -9,6 +9,7 @@
 
 #include <vector>
 #include "../common/logging.h"
+#include "../common/types.h"
 
 namespace gpu {
 class CommandBufferHelper;
