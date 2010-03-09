@@ -470,10 +470,12 @@ void BrowserRenderProcessHost::AppendRendererCommandLine(
 
   ChildProcessHost::SetCrashReporterCommandLine(command_line);
 
-  const std::string user_data_dir =
-      browser_command_line.GetSwitchValueASCII(switches::kUserDataDir);
+  FilePath user_data_dir =
+      browser_command_line.GetSwitchValuePath(switches::kUserDataDir);
+
   if (!user_data_dir.empty())
-    command_line->AppendSwitchWithValue(switches::kUserDataDir, user_data_dir);
+    command_line->AppendSwitchWithValue(switches::kUserDataDir,
+                                        user_data_dir.value());
 #if defined(OS_CHROMEOS)
   const std::string& profile =
       browser_command_line.GetSwitchValueASCII(switches::kProfile);
