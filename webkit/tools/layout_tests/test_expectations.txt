@@ -2864,5 +2864,13 @@ BUG37710 MAC SKIP : media/video-src-change.html = CRASH PASS
 BUG_JIANLI :  http/tests/local/send-sliced-dragged-file.html = FAIL
 
 // WebKit roll 55670 -> 55674
-BUG_37684 SKIP : http/tests/cookies/third-party-cookie-relaxing.html = FAIL
+BUG37684 SKIP : http/tests/cookies/third-party-cookie-relaxing.html = FAIL
+
+// WebKit roll 55674 -> r55683
+BUG37735 : fast/events/spatial-navigation/snav-table-traversal.html = TEXT
+BUG37735 : fast/events/spatial-navigation/snav-tiny-table-traversal.html = TEXT
+BUG37740 : fast/dom/DOMImplementation/createDocument-with-used-doctype.html = TEXT
+BUG_MICHAELN : fast/css/getComputedStyle/computed-style-without-renderer.html = TEXT
+BUG_MICHAELN : fast/css/getComputedStyle/computed-style.html = TEXT
+BUG_MICHAELN : fast/dom/Window/window-appendages-cleared.html = TEXT
 
