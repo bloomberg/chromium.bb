@@ -9,6 +9,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/time.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -66,12 +67,39 @@ const int kRadioGroupNone = -1;
 const size_t kMaxLanguageNameLen = 7;
 const wchar_t kSpacer[] = L"MMMMMMM";
 
+// Returns the language name for the given |language|. Instead of input
+// method names like "Pinyin" and "Anthy", we'll show language names like
+// "Chinese (Simplified)" and "Japanese".
+std::string GetLanguageName(const chromeos::InputLanguage& language) {
+  std::string language_code = language.language_code;
+  if (language.id == "pinyin") {
+    // The pinyin input method returns "zh_CN" as language_code, but
+    // l10n_util expects "zh-CN".
+    language_code = "zh-CN";
+  } else if (language.id == "chewing") {
+    // Likewise, the chewing input method returns "zh" as language_code,
+    // which is ambiguous. We use zh-TW instead.
+    language_code = "zh-TW";
+  } else if (language_code == "t") {
+    // "t" is used by input methods that do not associate with a
+    // particular language. Returns the display name as-is.
+    return language.display_name;
+  }
+  const string16 language_name = l10n_util::GetDisplayNameForLocale(
+      language_code,
+      g_browser_process->GetApplicationLocale(),
+      true);
+  // TODO(satorux): We should add input method names if multiple input
+  // methods are available for one input language.
+  return UTF16ToUTF8(language_name);
+}
+
 // Converts chromeos::InputLanguage object into human readable string. Returns
 // a string for the drop-down menu if |for_menu| is true. Otherwise, returns a
 // string for the status area.
 std::string FormatInputLanguage(
     const chromeos::InputLanguage& language, bool for_menu) {
-  std::string formatted = language.display_name;
+  std::string formatted = GetLanguageName(language);
   if (formatted.empty()) {
     formatted = language.id;
   }
