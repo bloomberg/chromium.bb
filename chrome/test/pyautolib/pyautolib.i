@@ -69,7 +69,7 @@ class FilePath {
   typedef std::wstring StringType;
 #else
   typedef std::string StringType;
-#endif  // OS_WIN
+#endif  // SWIGWIN
   const StringType& value() const;
   %feature("docstring", "Construct an empty FilePath or from a string.")
       FilePath;
@@ -110,7 +110,7 @@ class PyUITestSuite {
   // Get/fetch properties
   %feature("docstring",
            "Get the path to download directory.") GetDownloadDirectory;
-  std::string GetDownloadDirectory();
+  FilePath GetDownloadDirectory();
 
   %feature("docstring", "Get the path to profile directory.") user_data_dir;
   FilePath user_data_dir() const;

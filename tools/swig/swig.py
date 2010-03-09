@@ -13,6 +13,7 @@ Depends on swig binaries being available at ../../third_party/swig.
 """
 
 import os
+import subprocess
 import sys
 
 
@@ -25,10 +26,19 @@ def main():
       'darwin': 'mac',
       'linux2': 'linux',
       'win32':  'win',
-      'cygwin': 'win',
+  }
+  # Swig documentation lies that platform macros are provided to swig
+  # preprocessor. Provide them ourselves.
+  platform_flags = {
+      'darwin': '-DSWIGMAC',
+      'linux2': '-DSWIGLINUX',
+      'win32':  '-DSWIGWIN',
   }
   swig_bin = os.path.join(swig_dir, dir_map[sys.platform], 'swig')
-  os.execv(swig_bin, [swig_bin] + sys.argv[1:])
+  args = [swig_bin, platform_flags[sys.platform]] + sys.argv[1:]
+  args = [x.replace('/', os.sep) for x in args]
+  print "Executing", args
+  sys.exit(subprocess.call(args))
 
 
 if __name__ == "__main__":

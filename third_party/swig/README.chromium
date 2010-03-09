@@ -11,5 +11,7 @@ C/C++ header files and using them to generate the wrapper code that scripting
 languages need to access the underlying C/C++ code.
 
 Local Modifications:
-Removed all non-python bindings from Lib/.
+- Removed all non-python bindings from Lib/.
+- Edit Lib/python/pyruntime.swg to include Python.h without the _DEBUG macro to
+avoid requiring python<ver>_d.lib since we do not intend to debug python.
 

@@ -98,14 +98,14 @@ bool PyUITestSuite::IsFindInPageVisible(int window_index) {
   return is_visible;
 }
 
-std::string PyUITestSuite::GetDownloadDirectory() {
+FilePath PyUITestSuite::GetDownloadDirectory() {
   FilePath download_dir;
   scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
   EXPECT_TRUE(tab_proxy.get());
   if (!tab_proxy.get())
-    return download_dir.value();
+    return download_dir;
   EXPECT_TRUE(tab_proxy->GetDownloadDirectory(&download_dir));
-  return download_dir.value();
+  return download_dir;
 }
 
 bool PyUITestSuite::OpenNewBrowserWindow(bool show) {

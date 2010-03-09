@@ -5,7 +5,7 @@ vars = {
   "ffmpeg_revision": "40718",
   "skia_revision": "504",
   "chromium_git": "http://src.chromium.org/git",
-  "swig_revision": "37274",
+  "swig_revision": "40423",
   "nacl_revision": "1653",
 }
 

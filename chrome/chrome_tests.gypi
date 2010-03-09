@@ -1901,9 +1901,9 @@
       ]},  # 'targets'
     ],  # OS=="win"
     # Build on linux x86_64 only if linux_fpic==1
-    ['OS=="mac" or (OS=="linux" and target_arch==python_arch and (target_arch!="x64" or linux_fpic==1))', {
+    ['OS=="mac" or OS=="win" or (OS=="linux" and target_arch==python_arch '
+     'and (target_arch!="x64" or linux_fpic==1))', {
       'targets': [
-        # TODO(nirnimesh): enable for win - crbug.com/32285
         {
           # Documentation: http://dev.chromium.org/developers/pyauto
           'target_name': 'pyautolib',
@@ -1972,6 +1972,17 @@
                 ],
               }
             }],
+            ['OS=="win"', {
+              'include_dirs': [
+                '..',
+                '../third_party/python_24/include',
+              ],
+              'link_settings': {
+                'libraries': [
+                  '../third_party/python_24/libs/python24.lib',
+                ],
+              }
+            }],
           ],
           'actions': [
             {
@@ -1992,13 +2003,14 @@
                           '<(PRODUCT_DIR)',
                           '-o',
                           '<(INTERMEDIATE_DIR)/pyautolib_wrap.cc',
-                          '<(_inputs)',
-              ]
+                          '<@(_inputs)',
+              ],
+              'message': 'Generating swig wrappers for <(_inputs).',
             },
           ],  # actions
         },  # target 'pyautolib'
       ]  # targets
-    }],  # OS=='mac' or OS=='linux'
+    }],
     ['coverage!=0',
       { 'targets': [
         {

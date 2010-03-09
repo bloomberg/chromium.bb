@@ -72,7 +72,7 @@ class PyUITestSuite : public UITestSuite, public UITestBase {
   bool IsFindInPageVisible(int window_index = 0);
 
   // Get the path to the downloads directory
-  std::string GetDownloadDirectory();
+  FilePath GetDownloadDirectory();
 
   // AutomationProxy methods
 
