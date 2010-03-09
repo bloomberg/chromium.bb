@@ -628,7 +628,11 @@ void RenderViewContextMenu::ExecuteItemCommand(int id) {
 
   switch (id) {
     case IDS_CONTENT_CONTEXT_OPENLINKNEWTAB:
-      OpenURL(params_.link_url, NEW_BACKGROUND_TAB, PageTransition::LINK);
+      OpenURL(params_.link_url,
+              source_tab_contents_->delegate() &&
+              source_tab_contents_->delegate()->IsApplication() ?
+                  NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB,
+              PageTransition::LINK);
       break;
 
     case IDS_CONTENT_CONTEXT_OPENLINKNEWWINDOW:
