@@ -390,6 +390,7 @@ CGFloat AutoSizeUnderTheHoodContent(NSView* view,
 - (void)setSafeBrowsing:(BOOL)value;
 - (void)setMetricsRecording:(BOOL)value;
 - (void)setAskForSaveLocation:(BOOL)value;
+- (void)setTranslateEnabled:(BOOL)value;
 - (void)displayPreferenceViewForPage:(OptionsPage)page
                              animate:(BOOL)animate;
 @end
@@ -818,6 +819,7 @@ void PersonalDataManagerObserver::ShowAutoFillDialog(
   useSuggest_.Init(prefs::kSearchSuggestEnabled, prefs_, observer_.get());
   dnsPrefetch_.Init(prefs::kDnsPrefetchingEnabled, prefs_, observer_.get());
   safeBrowsing_.Init(prefs::kSafeBrowsingEnabled, prefs_, observer_.get());
+  translateEnabled_.Init(prefs::kEnableTranslate, prefs_, observer_.get());
 
   // During unit tests, there is no local state object, so we fall back to
   // the prefs object (where we've explicitly registered this pref so we
@@ -1426,6 +1428,9 @@ const int kDisabledIndex = 1;
   else if (*prefName == prefs::kPromptForDownload) {
     [self setAskForSaveLocation:askForSaveLocation_.GetValue() ? YES : NO];
   }
+  else if (*prefName == prefs::kEnableTranslate) {
+    [self setTranslateEnabled:translateEnabled_.GetValue() ? YES : NO];
+  }
 }
 
 // Set the new download path and notify the UI via KVO.
@@ -1607,6 +1612,19 @@ const int kDisabledIndex = 1;
     [self recordUserAction:"Options_AskForSaveLocation_Disable"];
   }
   askForSaveLocation_.SetValue(value);
+}
+
+- (BOOL)translateEnabled {
+  return translateEnabled_.GetValue();
+}
+
+- (void)setTranslateEnabled:(BOOL)value {
+  if (value) {
+    [self recordUserAction:"Options_Translate_Enable"];
+  } else {
+    [self recordUserAction:"Options_Translate_Disable"];
+  }
+  translateEnabled_.SetValue(value);
 }
 
 - (void)fontAndLanguageEndSheet:(NSWindow*)sheet

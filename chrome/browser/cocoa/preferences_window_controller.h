@@ -105,6 +105,7 @@ class ProfileSyncService;
   IBOutlet NSButton* downloadLocationButton_;
   StringPrefMember defaultDownloadLocation_;
   BooleanPrefMember askForSaveLocation_;
+  BooleanPrefMember translateEnabled_;
   FontLanguageSettingsController* fontLanguageSettings_;
   StringPrefMember currentTheme_;
   IBOutlet NSButton* enableLoggingCheckbox_;
