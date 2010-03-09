@@ -466,7 +466,7 @@ NPError WebPluginDelegatePepper::Device2DThemePaint(NPDeviceContext2D* context,
   if (!ctx)
     return NPERR_INVALID_PARAM;
 
-  NPError rv;
+  NPError rv = NPERR_GENERIC_ERROR;
   gfx::Rect rect(params->location.left,
                  params->location.top,
                  params->location.right - params->location.left,
