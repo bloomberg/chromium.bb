@@ -1351,7 +1351,7 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               base::ProcessHandle /* NaCl process handle */,
                               base::ProcessId /* NaCl process id */)
 
-#if defined(OS_LINUX)
+#if defined(USE_X11)
   // A renderer sends this when it needs a browser-side widget for
   // hosting a windowed plugin. id is the XID of the plugin window, for which
   // the container is created.
@@ -1706,7 +1706,7 @@ IPC_BEGIN_MESSAGES(ViewHost)
                              base::SharedMemoryHandle /* browser handle */)
 #endif
 
-#if defined(OS_LINUX)
+#if defined(USE_X11)
   // Asks the browser to create a temporary file for the renderer to fill
   // in resulting NativeMetafile in printing.
   IPC_SYNC_MESSAGE_CONTROL0_2(ViewHostMsg_AllocateTempFileForPrinting,

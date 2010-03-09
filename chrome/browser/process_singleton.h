@@ -52,7 +52,7 @@ class ProcessSingleton : public NonThreadSafe {
   // first one, so this function won't find it.
   NotifyResult NotifyOtherProcess();
 
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Exposed for testing.  We use a timeout on Linux, and in tests we want
   // this timeout to be short.
   NotifyResult NotifyOtherProcessWithTimeout(const CommandLine& command_line,
@@ -87,7 +87,7 @@ class ProcessSingleton : public NonThreadSafe {
   }
 
  private:
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if !defined(OS_MACOSX)
   // Timeout for the current browser process to respond. 20 seconds should be
   // enough. It's only used in Windows and Linux implementations.
   static const int kTimeoutInSeconds = 20;
@@ -116,7 +116,7 @@ class ProcessSingleton : public NonThreadSafe {
 
   HWND remote_window_;  // The HWND_MESSAGE of another browser.
   HWND window_;  // The HWND_MESSAGE window.
-#elif defined(OS_LINUX)
+#elif !defined(OS_MACOSX)
   // Path in file system to the socket.
   FilePath socket_path_;
 

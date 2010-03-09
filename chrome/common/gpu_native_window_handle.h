@@ -18,19 +18,19 @@
 
 typedef HWND GpuNativeWindowHandle;
 
-#elif defined(OS_LINUX)
+#elif defined(OS_MACOSX)
+
+// The GPU process isn't supported on Mac yet. Defining this arbitrarily allows
+// us to not worry about the integration points not compiling.
+typedef int GpuNativeWindowHandle;
+
+#elif defined(USE_X11)
 
 // Forward declar XID ourselves to avoid pulling in all of the X headers, which
 // can cause compile problems for some parts of the project.
 typedef unsigned long XID;
 
 typedef XID GpuNativeWindowHandle;
-
-#elif defined(OS_MACOSX)
-
-// The GPU process isn't supported on Mac yet. Defining this arbitrarily allows
-// us to not worry about the integration points not compiling.
-typedef int GpuNativeWindowHandle;
 
 #else
 

@@ -28,7 +28,7 @@
 #include "chrome/browser/views/tab_contents/tab_contents_container.h"
 #endif
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/gtk/view_id_util.h"
 #endif
 
@@ -74,7 +74,7 @@ class BrowserFocusTest : public InProcessBrowserTest {
     // TODO(jcampan): retrieve the WidgetWin and show/hide on it instead of
     // using Windows API.
     ::ShowWindow(window, SW_HIDE);
-#elif defined(OS_LINUX)
+#elif defined(TOOLKIT_USES_GTK)
     gtk_widget_hide(GTK_WIDGET(window));
 #else
     NOTIMPLEMENTED();
@@ -86,7 +86,7 @@ class BrowserFocusTest : public InProcessBrowserTest {
     // TODO(jcampan): retrieve the WidgetWin and show/hide on it instead of
     // using Windows API.
     ::ShowWindow(window, SW_SHOW);
-#elif defined(OS_LINUX)
+#elif defined(TOOLKIT_USES_GTK)
     gtk_widget_hide(GTK_WIDGET(window));
 #else
     NOTIMPLEMENTED();
@@ -169,7 +169,7 @@ class TestInterstitialPage : public InterstitialPage {
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, ClickingMovesFocus) {
-#if defined(OS_LINUX)
+#if defined(USE_X11)
   // It seems we have to wait a little bit for the widgets to spin up before
   // we can start clicking on them.
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
@@ -377,8 +377,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, BackgroundBrowserDontStealFocus) {
 
   Browser* focused_browser = NULL;
   Browser* unfocused_browser = NULL;
-#if defined(OS_LINUX)
-  // On Linux, calling Activate() is not guaranteed to move focus, so we have
+#if defined(USE_X11)
+  // On X11, calling Activate() is not guaranteed to move focus, so we have
   // to figure out which browser does have focus.
   if (browser2->window()->IsActive()) {
     focused_browser = browser2;

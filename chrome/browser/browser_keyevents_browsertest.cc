@@ -526,8 +526,8 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, AccessKeys) {
   // Make sure no element is focused.
   EXPECT_NO_FATAL_FAILURE(CheckFocusedElement(tab_index, L""));
   EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestAlt1));
-#if defined(OS_LINUX)
-  // On Linux, alt-0..9 are assigned as tab selection accelerators, so they can
+#if defined(TOOLKIT_GTK)
+  // On GTK, alt-0..9 are assigned as tab selection accelerators, so they can
   // not be used as accesskeys.
   EXPECT_NO_FATAL_FAILURE(CheckFocusedElement(tab_index, L""));
 #elif defined(OS_WIN)
@@ -568,8 +568,8 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, ReservedAccelerators) {
   ASSERT_NO_FATAL_FAILURE(SendKey(base::VKEY_W, true, false, false));
   EXPECT_EQ(1, browser()->tab_count());
 
-#elif defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
-  // Ctrl-[a-z] are not treated as reserved accelerators on Linux.
+#elif defined(TOOLKIT_GTK)
+  // Ctrl-[a-z] are not treated as reserved accelerators on GTK.
   static const KeyEventTestData kTestCtrlT = {
     base::VKEY_T, true, false, false,
     false, false, false, false, 2,

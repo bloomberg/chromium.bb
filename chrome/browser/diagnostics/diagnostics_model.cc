@@ -108,10 +108,10 @@ class DiagnosticsModelMac : public DiagnosticsModelImpl {
   DISALLOW_COPY_AND_ASSIGN(DiagnosticsModelMac);
 };
 
-#elif defined(OS_LINUX)
-class DiagnosticsModelLinux : public DiagnosticsModelImpl {
+#elif defined(OS_POSIX)
+class DiagnosticsModelPosix : public DiagnosticsModelImpl {
  public:
-  DiagnosticsModelLinux() {
+  DiagnosticsModelPosix() {
     tests_.push_back(MakeInstallTypeTest());
     tests_.push_back(MakeUserDirTest());
     tests_.push_back(MakeLocalStateFileTest());
@@ -121,7 +121,7 @@ class DiagnosticsModelLinux : public DiagnosticsModelImpl {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(DiagnosticsModelLinux);
+  DISALLOW_COPY_AND_ASSIGN(DiagnosticsModelPosix);
 };
 
 #endif
@@ -133,7 +133,7 @@ DiagnosticsModel* MakeDiagnosticsModel() {
   return new DiagnosticsModelWin();
 #elif defined(OS_MACOSX)
   return new DiagnosticsModelMac();
-#elif defined(OS_LINUX)
-  return new DiagnosticsModelLinux();
+#elif defined(OS_POSIX)
+  return new DiagnosticsModelPosix();
 #endif
 }

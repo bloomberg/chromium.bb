@@ -75,7 +75,7 @@ void WebPluginProxy::WillDestroyWindow(gfx::PluginWindowHandle window) {
   PluginThread::current()->Send(
       new PluginProcessHostMsg_PluginWindowDestroyed(
           window, ::GetParent(window)));
-#elif defined(OS_LINUX)
+#elif defined(USE_X11)
   // Nothing to do.
 #else
   NOTIMPLEMENTED();
@@ -343,11 +343,11 @@ bool WebPluginProxy::SetDropEffect(struct NPObject* event, int effect) {
 }
 
 void WebPluginProxy::Paint(const gfx::Rect& rect) {
-#if defined(OS_WIN) || defined(OS_LINUX)
-  if (!windowless_canvas_.get())
-    return;
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
   if (!windowless_context_.get())
+    return;
+#else
+  if (!windowless_canvas_.get())
     return;
 #endif
 
@@ -355,7 +355,34 @@ void WebPluginProxy::Paint(const gfx::Rect& rect) {
   // end up with the old values.
   gfx::Rect offset_rect = rect;
   offset_rect.Offset(delegate_->GetRect().origin());
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_MACOSX)
+  CGContextSaveGState(windowless_context_);
+  // It is possible for windowless_context_ to change during plugin painting
+  // (since the plugin can make a synchronous call during paint event handling),
+  // in which case we don't want to try to restore it later. Not an owning ref
+  // since owning the ref without owning the shared backing memory doesn't make
+  // sense, so this should only be used for pointer comparisons.
+  CGContextRef saved_context_weak = windowless_context_.get();
+
+  if (!background_context_.get()) {
+    CGContextSetFillColorWithColor(windowless_context_,
+                                   CGColorGetConstantColor(kCGColorBlack));
+    CGContextFillRect(windowless_context_, rect.ToCGRect());
+  } else {
+    scoped_cftyperef<CGImageRef> image(
+        CGBitmapContextCreateImage(background_context_));
+    CGRect source_rect = rect.ToCGRect();
+    // Flip the rect we use to pull from the canvas, since it's upside-down.
+    source_rect.origin.y = CGImageGetHeight(image) - rect.y() - rect.height();
+    scoped_cftyperef<CGImageRef> sub_image(
+        CGImageCreateWithImageInRect(image, source_rect));
+    CGContextDrawImage(windowless_context_, rect.ToCGRect(), sub_image);
+  }
+  CGContextClipToRect(windowless_context_, rect.ToCGRect());
+  delegate_->Paint(windowless_context_, rect);
+  if (windowless_context_.get() == saved_context_weak)
+    CGContextRestoreGState(windowless_context_);
+#else
   windowless_canvas_->save();
 
   // The given clip rect is relative to the plugin coordinate system.
@@ -393,33 +420,6 @@ void WebPluginProxy::Paint(const gfx::Rect& rect) {
   delegate_->Paint(windowless_canvas_.get(), offset_rect);
 
   windowless_canvas_->restore();
-#elif defined(OS_MACOSX)
-  CGContextSaveGState(windowless_context_);
-  // It is possible for windowless_context_ to change during plugin painting
-  // (since the plugin can make a synchronous call during paint event handling),
-  // in which case we don't want to try to restore it later. Not an owning ref
-  // since owning the ref without owning the shared backing memory doesn't make
-  // sense, so this should only be used for pointer comparisons.
-  CGContextRef saved_context_weak = windowless_context_.get();
-
-  if (!background_context_.get()) {
-    CGContextSetFillColorWithColor(windowless_context_,
-                                   CGColorGetConstantColor(kCGColorBlack));
-    CGContextFillRect(windowless_context_, rect.ToCGRect());
-  } else {
-    scoped_cftyperef<CGImageRef> image(
-        CGBitmapContextCreateImage(background_context_));
-    CGRect source_rect = rect.ToCGRect();
-    // Flip the rect we use to pull from the canvas, since it's upside-down.
-    source_rect.origin.y = CGImageGetHeight(image) - rect.y() - rect.height();
-    scoped_cftyperef<CGImageRef> sub_image(
-        CGImageCreateWithImageInRect(image, source_rect));
-    CGContextDrawImage(windowless_context_, rect.ToCGRect(), sub_image);
-  }
-  CGContextClipToRect(windowless_context_, rect.ToCGRect());
-  delegate_->Paint(windowless_context_, rect);
-  if (windowless_context_.get() == saved_context_weak)
-    CGContextRestoreGState(windowless_context_);
 #endif
 }
 
@@ -535,7 +535,7 @@ void WebPluginProxy::SetWindowlessBuffer(
   }
 }
 
-#elif defined(OS_LINUX)
+#elif defined(USE_X11)
 
 void WebPluginProxy::SetWindowlessBuffer(
     const TransportDIB::Handle& windowless_buffer,

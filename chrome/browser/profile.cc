@@ -67,7 +67,7 @@
 #include "net/base/transport_security_state.h"
 #include "webkit/database/database_tracker.h"
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #endif
 
@@ -152,7 +152,7 @@ void Profile::RegisterUserPrefs(PrefService* prefs) {
       IDS_SPELLCHECK_DICTIONARY);
   prefs->RegisterBooleanPref(prefs::kEnableSpellCheck, true);
   prefs->RegisterBooleanPref(prefs::kEnableAutoSpellCorrect, true);
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
   prefs->RegisterBooleanPref(prefs::kUsesSystemTheme, false);
 #endif
   prefs->RegisterFilePathPref(prefs::kCurrentThemePackFilename, FilePath());
@@ -175,17 +175,17 @@ URLRequestContextGetter* Profile::GetDefaultRequestContext() {
   return default_request_context_;
 }
 
-#if defined(OS_LINUX)
-// Temporarily disabled while we figure some stuff out.
-// http://code.google.com/p/chromium/issues/detail?id=12351
-// #include "chrome/browser/password_manager/password_store_gnome.h"
-// #include "chrome/browser/password_manager/password_store_kwallet.h"
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
 #include "chrome/browser/password_manager/password_store_win.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/keychain_mac.h"
 #include "chrome/browser/password_manager/login_database_mac.h"
 #include "chrome/browser/password_manager/password_store_mac.h"
+#elif defined(OS_POSIX)
+// Temporarily disabled while we figure some stuff out.
+// http://code.google.com/p/chromium/issues/detail?id=12351
+// #include "chrome/browser/password_manager/password_store_gnome.h"
+// #include "chrome/browser/password_manager/password_store_kwallet.h"
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1071,14 +1071,7 @@ void ProfileImpl::CreatePasswordStore() {
   DCHECK(!created_password_store_ && password_store_.get() == NULL);
   created_password_store_ = true;
   scoped_refptr<PasswordStore> ps;
-#if defined(OS_LINUX)
-  // TODO(evanm): implement "native" password management.
-  // This bug describes the issues.
-  // http://code.google.com/p/chromium/issues/detail?id=12351
-  ps = new PasswordStoreDefault(GetWebDataService(Profile::IMPLICIT_ACCESS));
-  if (!ps->Init())
-    return;
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
   ps = new PasswordStoreWin(GetWebDataService(Profile::IMPLICIT_ACCESS));
 #elif defined(OS_MACOSX)
   FilePath login_db_file_path = GetPath();
@@ -1090,6 +1083,13 @@ void ProfileImpl::CreatePasswordStore() {
     return;
   }
   ps = new PasswordStoreMac(new MacKeychain(), login_db);
+#elif defined(OS_POSIX)
+  // TODO(evanm): implement "native" password management.
+  // This bug describes the issues.
+  // http://code.google.com/p/chromium/issues/detail?id=12351
+  ps = new PasswordStoreDefault(GetWebDataService(Profile::IMPLICIT_ACCESS));
+  if (!ps->Init())
+    return;
 #else
   NOTIMPLEMENTED();
 #endif
@@ -1127,7 +1127,7 @@ PersonalDataManager* ProfileImpl::GetPersonalDataManager() {
 
 void ProfileImpl::InitThemes() {
   if (!created_theme_provider_) {
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
     theme_provider_.reset(new GtkThemeProvider);
 #else
     theme_provider_.reset(new BrowserThemeProvider);

@@ -4,7 +4,7 @@
 
 #include "chrome/renderer/webplugin_delegate_proxy.h"
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
 #include <gtk/gtk.h>
 #endif
 
@@ -579,7 +579,7 @@ bool WebPluginDelegateProxy::CreateBitmap(
   int height = plugin_rect_.height();
   const size_t stride = skia::PlatformCanvas::StrideForWidth(width);
   const size_t size = stride * height;
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   memory->reset(TransportDIB::Create(size, 0));
   if (!memory->get())
     return false;

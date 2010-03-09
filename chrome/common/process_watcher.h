@@ -28,7 +28,7 @@ class ProcessWatcher {
   //
   static void EnsureProcessTerminated(base::ProcessHandle process_handle);
 
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   // The nicer version of EnsureProcessTerminated() that is patient and will
   // wait for |process_handle| to finish and then reap it.
   static void EnsureProcessGetsReaped(base::ProcessHandle process_handle);

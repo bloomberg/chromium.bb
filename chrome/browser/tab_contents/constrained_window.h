@@ -14,12 +14,12 @@ namespace views {
 class WindowDelegate;
 }
 typedef views::WindowDelegate ConstrainedWindowDelegate;
-#elif defined(OS_LINUX)
-class ConstrainedWindowGtkDelegate;
-typedef ConstrainedWindowGtkDelegate ConstrainedWindowDelegate;
 #elif defined(OS_MACOSX)
 class ConstrainedWindowMacDelegate;
 typedef ConstrainedWindowMacDelegate ConstrainedWindowDelegate;
+#elif defined(TOOLKIT_USES_GTK)
+class ConstrainedWindowGtkDelegate;
+typedef ConstrainedWindowGtkDelegate ConstrainedWindowDelegate;
 #endif
 
 class TabContents;

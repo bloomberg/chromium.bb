@@ -26,7 +26,7 @@ const bool kSizeTabButtonToTopOfTabStrip = true;
 const bool kBootstrapSyncAuthentication = true;
 const bool kShowOtherBrowsersInAboutMemory = false;
 
-#elif defined(OS_LINUX)
+#elif defined(TOOLKIT_USES_GTK)
 
 // 13.4px = 10pt @ 96dpi.
 const double kAutocompleteEditFontPixelSize = 13.4;

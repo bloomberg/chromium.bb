@@ -21,7 +21,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/common/chrome_switches.h"
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/gtk/gtk_util.h"
 #endif
 
@@ -175,7 +175,7 @@ class JankObserver : public base::RefCountedThreadSafe<JankObserver>,
   virtual void DidProcessMessage(const MSG& msg) {
     EndProcessingTimers();
   }
-#elif defined(OS_LINUX)
+#elif defined(TOOLKIT_USES_GTK)
   virtual void WillProcessEvent(GdkEvent* event) {
     begin_process_message_ = TimeTicks::Now();
     // TODO(evanm): we want to set queueing_time_ using

@@ -68,7 +68,7 @@ class ShellIntegration {
   static std::string GetCommandLineArgumentsCommon(const GURL& url,
       const string16& extension_app_id);
 
-#if defined(OS_LINUX)
+#if defined(USE_X11)
   static bool GetDesktopShortcutTemplate(std::string* output);
 
   // Returns filename for .desktop file based on |url|, sanitized for security.
@@ -84,7 +84,7 @@ class ShellIntegration {
 
   static void CreateDesktopShortcut(const ShortcutInfo& shortcut_info,
                                     const std::string& shortcut_template);
-#endif  // defined(OS_LINUX)
+#endif  // defined(USE_X11)
 
 #if defined(OS_WIN)
   // Generates Win7 app id for given app name and profile path. The returned app

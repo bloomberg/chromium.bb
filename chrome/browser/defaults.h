@@ -12,7 +12,7 @@
 
 namespace browser_defaults {
 
-#if defined(OS_LINUX)
+#if defined(USE_X11)
 
 // Size of the font in pixels used in the autocomplete box for normal windows.
 extern const double kAutocompleteEditFontPixelSize;

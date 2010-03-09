@@ -23,7 +23,7 @@ typedef ModalDialogDelegate* NativeDialog;
 class NSAlert;
 #endif
 typedef NSAlert* NativeDialog;
-#elif defined(OS_POSIX)
+#elif defined(TOOLKIT_USES_GTK)
 typedef struct _GtkDialog GtkDialog;
 typedef struct _GtkWidget GtkWidget;
 typedef int gint;
@@ -62,7 +62,7 @@ class AppModalDialog {
   // delete the AppModalDialog associated with it.
   virtual void CreateAndShowDialog();
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
   virtual void HandleDialogResponse(GtkDialog* dialog, gint response_id) = 0;
   // Callback for dialog response calls, passes results to specialized
   // HandleDialogResponse() implementation.

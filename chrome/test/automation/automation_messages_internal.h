@@ -1026,7 +1026,7 @@ IPC_BEGIN_MESSAGES(Automation)
                              int /* browser_handle */,
                              bool /* is_visible */)
 
-#if defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_POSIX)
   // See previous definition of this message for explanation of why it is
   // defined twice.
   IPC_MESSAGE_ROUTED3(AutomationMsg_WindowClick, int, gfx::Point, int)
@@ -1103,12 +1103,12 @@ IPC_BEGIN_MESSAGES(Automation)
                              gfx::NativeWindow  /* Tab window */,
                              int  /* Handle to the new tab */)
 
-#if defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_POSIX)
   // TODO(estade): this should be merged with the windows message of the same
   // name. See comment for WindowClick.
   IPC_SYNC_MESSAGE_ROUTED4_1(AutomationMsg_WindowDrag,
                              int, std::vector<gfx::Point>, int, bool, bool)
-#endif  // defined(OS_LINUX) || defined(OS_MACOSX)
+#endif  // defined(OS_POSIX)
 
   // This message gets the bounds of the window.
   // Request:

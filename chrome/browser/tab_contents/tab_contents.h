@@ -680,7 +680,7 @@ class TabContents : public PageNavigator,
   friend class TabContentsViewWin;
 #elif defined(OS_MACOSX)
   friend class TabContentsViewMac;
-#elif defined(OS_LINUX)
+#elif defined(TOOLKIT_USES_GTK)
   friend class TabContentsViewGtk;
 #endif
 

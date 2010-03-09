@@ -52,9 +52,6 @@
 #include "webkit/glue/webplugininfo.h"
 #include "webkit/glue/webpreferences.h"
 
-#if defined(OS_POSIX)
-#endif
-
 namespace base {
 class Time;
 }
@@ -2292,7 +2289,7 @@ struct ParamTraits<Clipboard::Buffer> {
       case Clipboard::BUFFER_STANDARD:
         type = L"BUFFER_STANDARD";
         break;
-#if defined(OS_LINUX)
+#if defined(USE_X11)
       case Clipboard::BUFFER_SELECTION:
         type = L"BUFFER_SELECTION";
         break;

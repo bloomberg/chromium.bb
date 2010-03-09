@@ -170,7 +170,7 @@ class WebPluginProxy : public webkit_glue::WebPlugin {
   scoped_ptr<skia::PlatformCanvas> windowless_canvas_;
   scoped_ptr<skia::PlatformCanvas> background_canvas_;
 
-#if defined(OS_LINUX)
+#if defined(USE_X11)
   scoped_ptr<TransportDIB> windowless_dib_;
   scoped_ptr<TransportDIB> background_dib_;
 #endif

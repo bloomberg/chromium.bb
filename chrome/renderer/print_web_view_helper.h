@@ -20,7 +20,7 @@ namespace IPC {
 class Message;
 }
 
-#if defined(OS_LINUX)
+#if defined(USE_X11)
 namespace printing {
 class PdfPsMetafile;
 typedef PdfPsMetafile NativeMetafile;
@@ -93,7 +93,7 @@ class PrintWebViewHelper : public WebKit::WebViewClient {
                     WebKit::WebFrame* web_frame);
 
   // Prints the page listed in |params|.
-#if defined(OS_LINUX)
+#if defined(USE_X11)
   void PrintPage(const ViewMsg_PrintPage_Params& params,
                  const gfx::Size& canvas_size,
                  WebKit::WebFrame* frame,
