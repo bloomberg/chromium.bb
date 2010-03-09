@@ -96,6 +96,12 @@ void ExtensionPrefs::MakePathsRelative() {
     DictionaryValue* extension_dict;
     if (!dict->GetDictionaryWithoutPathExpansion(*i, &extension_dict))
       continue;
+    int location_value;
+    if (extension_dict->GetInteger(kPrefLocation, &location_value) &&
+        location_value == Extension::LOAD) {
+      // Unpacked extensions can have absolute paths.
+      continue;
+    }
     FilePath::StringType path_string;
     if (!extension_dict->GetString(kPrefPath, &path_string))
       continue;
@@ -118,6 +124,12 @@ void ExtensionPrefs::MakePathsAbsolute(DictionaryValue* dict) {
     DictionaryValue* extension_dict;
     if (!dict->GetDictionaryWithoutPathExpansion(*i, &extension_dict)) {
       NOTREACHED();
+      continue;
+    }
+    int location_value;
+    if (extension_dict->GetInteger(kPrefLocation, &location_value) &&
+        location_value == Extension::LOAD) {
+      // Unpacked extensions will already have absolute paths.
       continue;
     }
     FilePath::StringType path_string;
@@ -539,11 +551,12 @@ ExtensionPrefs::ExtensionsInfo* ExtensionPrefs::CollectExtensionsInfo(
       continue;
     }
 
-    // Only internal and external extensions can be installed permanently in the
+    // Only the following extension types can be installed permanently in the
     // preferences.
     Extension::Location location =
         static_cast<Extension::Location>(location_value);
     if (location != Extension::INTERNAL &&
+        location != Extension::LOAD &&
         !Extension::IsExternalLocation(location)) {
       NOTREACHED();
       continue;

@@ -436,9 +436,6 @@ class ExtensionsServiceBackend
   void ReportExtensionLoadError(const FilePath& extension_path,
                                 const std::string& error);
 
-  // Notify the frontend that an extension was loaded.
-  void ReportExtensionLoaded(Extension* extension);
-
   // Lookup an external extension by |id| by going through all registered
   // external extension providers until we find a provider that contains an
   // extension that matches. If |version| is not NULL, the extension version

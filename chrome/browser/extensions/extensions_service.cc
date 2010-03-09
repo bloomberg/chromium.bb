@@ -271,9 +271,7 @@ void ExtensionsService::EnableExtension(const std::string& extension_id) {
     return;
   }
 
-  // Remember that we enabled it, unless it's temporary.
-  if (extension->location() != Extension::LOAD)
-    extension_prefs_->SetExtensionState(extension, Extension::ENABLED);
+  extension_prefs_->SetExtensionState(extension, Extension::ENABLED);
 
   // Move it over to the enabled list.
   extensions_.push_back(extension);
@@ -295,9 +293,7 @@ void ExtensionsService::DisableExtension(const std::string& extension_id) {
   if (!extension)
     return;
 
-  // Remember that we disabled it, unless it's temporary.
-  if (extension->location() != Extension::LOAD)
-    extension_prefs_->SetExtensionState(extension, Extension::DISABLED);
+  extension_prefs_->SetExtensionState(extension, Extension::DISABLED);
 
   // Move it over to the disabled list.
   disabled_extensions_.push_back(extension);
@@ -408,6 +404,11 @@ void ExtensionsService::ContinueLoadAllExtensions(
     if ((*ex)->location() == Extension::COMPONENT)
       continue;
 
+    // Don't count unpacked extensions, since they're a developer-specific
+    // feature.
+    if ((*ex)->location() == Extension::LOAD)
+      continue;
+
     if ((*ex)->IsTheme()) {
       theme_count++;
     } else if ((*ex)->converted_from_user_script()) {
@@ -440,7 +441,8 @@ void ExtensionsService::LoadInstalledExtension(const ExtensionInfo& info,
   Extension* extension = NULL;
   if (info.extension_manifest.get()) {
     scoped_ptr<Extension> tmp(new Extension(info.extension_path));
-    if (tmp->InitFromValue(*info.extension_manifest, true, &error))
+    bool require_key = info.extension_location != Extension::LOAD;
+    if (tmp->InitFromValue(*info.extension_manifest, require_key, &error))
       extension = tmp.release();
   } else {
     error = errors::kManifestUnreadable;
@@ -745,15 +747,8 @@ void ExtensionsService::OnExtensionLoaded(Extension* extension,
 
         NotifyExtensionLoaded(extension);
 
-        if (extension->IsTheme() && extension->location() == Extension::LOAD) {
-          NotificationService::current()->Notify(
-              NotificationType::THEME_INSTALLED,
-              Source<Profile>(profile_),
-              Details<Extension>(extension));
-        } else {
-          ExtensionDOMUI::RegisterChromeURLOverrides(profile_,
-              extension->GetChromeURLOverrides());
-        }
+        ExtensionDOMUI::RegisterChromeURLOverrides(profile_,
+            extension->GetChromeURLOverrides());
         break;
       case Extension::DISABLED:
         disabled_extensions_.push_back(scoped_extension.release());
@@ -1006,7 +1001,13 @@ void ExtensionsServiceBackend::LoadSingleExtension(
   }
 
   extension->set_location(Extension::LOAD);
-  ReportExtensionLoaded(extension);
+
+  // Report this as an installed extension so that it gets remembered in the
+  // prefs.
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(frontend_, &ExtensionsService::OnExtensionInstalled,
+                        extension, true));
 }
 
 void ExtensionsServiceBackend::ReportExtensionLoadError(
@@ -1017,13 +1018,6 @@ void ExtensionsServiceBackend::ReportExtensionLoadError(
           frontend_,
           &ExtensionsService::ReportExtensionLoadError, extension_path,
           error, NotificationType::EXTENSION_INSTALL_ERROR, alert_on_error_));
-}
-
-void ExtensionsServiceBackend::ReportExtensionLoaded(Extension* extension) {
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
-      NewRunnableMethod(
-          frontend_, &ExtensionsService::OnExtensionLoaded, extension, true));
 }
 
 bool ExtensionsServiceBackend::LookupExternalExtension(

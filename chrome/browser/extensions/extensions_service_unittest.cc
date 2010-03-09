@@ -1277,8 +1277,7 @@ TEST_F(ExtensionsServiceTest, LoadExtension) {
   EXPECT_EQ(Extension::LOAD, loaded_[0]->location());
   EXPECT_EQ(1u, service_->extensions()->size());
 
-  // --load-extension doesn't add entries to prefs
-  ValidatePrefKeyCount(0);
+  ValidatePrefKeyCount(1);
 
   FilePath no_manifest = extensions_path
       .AppendASCII("bad")
@@ -1318,8 +1317,7 @@ TEST_F(ExtensionsServiceTest, GenerateID) {
   ASSERT_TRUE(Extension::IdIsValid(loaded_[0]->id()));
   EXPECT_EQ(loaded_[0]->location(), Extension::LOAD);
 
-  // --load-extension doesn't add entries to prefs
-  ValidatePrefKeyCount(0);
+  ValidatePrefKeyCount(1);
 
   std::string previous_id = loaded_[0]->id();
 
