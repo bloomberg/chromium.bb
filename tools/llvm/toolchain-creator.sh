@@ -190,7 +190,6 @@ UntarPatchConfigureAndBuildSfiLlc() {
       --disable-jit\
       --enable-optimized\
       --enable-targets=x86,x86_64,arm \
-      --enable-targets=arm\
       --target=arm-none-linux-gnueabi
 
   RunWithLog "Make" /tmp/llvm.sfi/llvm.sfi.make.log\
