@@ -411,57 +411,51 @@ static bool ValidateLocaleInfo(const Extension& extension, std::string* error) {
   std::string default_locale = extension.default_locale();
 
   // If both default locale and _locales folder are empty, skip verification.
-  if (!default_locale.empty() || path_exists) {
-    if (default_locale.empty() && path_exists) {
-      *error = errors::kLocalesNoDefaultLocaleSpecified;
-      return false;
-    } else if (!default_locale.empty() && !path_exists) {
-      *error = errors::kLocalesTreeMissing;
-      return false;
-    }
+  if (default_locale.empty() && !path_exists)
+    return true;
 
-    // Treat all folders under _locales as valid locales.
-    file_util::FileEnumerator locales(path,
-                                      false,
-                                      file_util::FileEnumerator::DIRECTORIES);
+  if (default_locale.empty() && path_exists) {
+    *error = errors::kLocalesNoDefaultLocaleSpecified;
+    return false;
+  } else if (!default_locale.empty() && !path_exists) {
+    *error = errors::kLocalesTreeMissing;
+    return false;
+  }
 
-    FilePath locale_path = locales.Next();
-    if (locale_path.empty()) {
-      *error = errors::kLocalesTreeMissing;
-      return false;
-    }
+  // Treat all folders under _locales as valid locales.
+  file_util::FileEnumerator locales(path,
+                                    false,
+                                    file_util::FileEnumerator::DIRECTORIES);
 
-    const FilePath default_locale_path = path.AppendASCII(default_locale);
-    bool has_default_locale_message_file = false;
-    do {
-      // Skip any strings with '.'. This happens sometimes, for example with
-      // '.svn' directories.
-      FilePath relative_path;
-      if (!extension.path().AppendRelativePath(locale_path, &relative_path))
-        NOTREACHED();
-      std::wstring subdir(relative_path.ToWStringHack());
-      if (std::find(subdir.begin(), subdir.end(), L'.') != subdir.end())
-        continue;
+  std::set<std::string> all_locales;
+  extension_l10n_util::GetAllLocales(&all_locales);
+  const FilePath default_locale_path = path.AppendASCII(default_locale);
+  bool has_default_locale_message_file = false;
 
-      FilePath messages_path =
+  FilePath locale_path;
+  while (!(locale_path = locales.Next()).empty()) {
+    if (extension_l10n_util::ShouldSkipValidation(path, locale_path,
+                                                  all_locales))
+      continue;
+
+    FilePath messages_path =
         locale_path.Append(Extension::kMessagesFilename);
 
-      if (!file_util::PathExists(messages_path)) {
-        *error = StringPrintf(
-            "%s %s", errors::kLocalesMessagesFileMissing,
-            WideToUTF8(messages_path.ToWStringHack()).c_str());
-        return false;
-      }
-
-      if (locale_path == default_locale_path)
-        has_default_locale_message_file = true;
-    } while (!(locale_path = locales.Next()).empty());
-
-    // Only message file for default locale has to exist.
-    if (!has_default_locale_message_file) {
-      *error = errors::kLocalesNoDefaultMessages;
+    if (!file_util::PathExists(messages_path)) {
+      *error = StringPrintf(
+          "%s %s", errors::kLocalesMessagesFileMissing,
+          WideToUTF8(messages_path.ToWStringHack()).c_str());
       return false;
     }
+
+    if (locale_path == default_locale_path)
+      has_default_locale_message_file = true;
+  }
+
+  // Only message file for default locale has to exist.
+  if (!has_default_locale_message_file) {
+    *error = errors::kLocalesNoDefaultMessages;
+    return false;
   }
 
   return true;

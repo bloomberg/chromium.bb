@@ -56,6 +56,33 @@ TEST(ExtensionL10nUtil, GetValidLocalesWithValidLocaleNoMessagesFile) {
   EXPECT_TRUE(locales.empty());
 }
 
+TEST(ExtensionL10nUtil, GetValidLocalesWithUnsupportedLocale) {
+  ScopedTempDir temp;
+  ASSERT_TRUE(temp.CreateUniqueTempDir());
+
+  FilePath src_path = temp.path().Append(Extension::kLocaleFolder);
+  ASSERT_TRUE(file_util::CreateDirectory(src_path));
+  // Supported locale.
+  FilePath locale_1 = src_path.AppendASCII("sr");
+  ASSERT_TRUE(file_util::CreateDirectory(locale_1));
+  std::string data("whatever");
+  ASSERT_TRUE(file_util::WriteFile(
+      locale_1.Append(Extension::kMessagesFilename),
+      data.c_str(), data.length()));
+  // Unsupported locale.
+  ASSERT_TRUE(file_util::CreateDirectory(src_path.AppendASCII("xxx_yyy")));
+
+  std::string error;
+  std::set<std::string> locales;
+  EXPECT_TRUE(extension_l10n_util::GetValidLocales(src_path,
+                                                   &locales,
+                                                   &error));
+
+  EXPECT_FALSE(locales.empty());
+  EXPECT_TRUE(locales.find("sr") != locales.end());
+  EXPECT_FALSE(locales.find("xxx_yyy") != locales.end());
+}
+
 TEST(ExtensionL10nUtil, GetValidLocalesWithValidLocalesAndMessagesFile) {
   FilePath install_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &install_dir));

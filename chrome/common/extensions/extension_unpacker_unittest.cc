@@ -100,7 +100,7 @@ TEST_F(ExtensionUnpackerTest, MissingMessagesFile) {
 TEST_F(ExtensionUnpackerTest, NoLocaleData) {
   SetupUnpacker("no_locale_data.crx");
   EXPECT_FALSE(unpacker_->Run());
-  EXPECT_EQ(errors::kLocalesTreeMissing, unpacker_->error_message());
+  EXPECT_EQ(errors::kLocalesNoDefaultMessages, unpacker_->error_message());
 }
 
 TEST_F(ExtensionUnpackerTest, GoodL10n) {

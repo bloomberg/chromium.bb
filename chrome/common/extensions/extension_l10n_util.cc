@@ -11,6 +11,7 @@
 #include "app/l10n_util.h"
 #include "base/file_util.h"
 #include "base/linked_ptr.h"
+#include "base/logging.h"
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension.h"
@@ -147,10 +148,11 @@ bool AddLocale(const std::set<std::string>& chrome_locales,
   if (locale_name.find(".") == 0)
     return true;
   if (chrome_locales.find(locale_name) == chrome_locales.end()) {
-    // Fail if there is an extension locale that's not in the Chrome list.
-    *error = StringPrintf("Supplied locale %s is not supported.",
-                          locale_name.c_str());
-    return false;
+    // Warn if there is an extension locale that's not in the Chrome list,
+    // but don't fail.
+    LOG(WARNING) << StringPrintf("Supplied locale %s is not supported.",
+                                 locale_name.c_str());
+    return true;
   }
   // Check if messages file is actually present (but don't check content).
   if (file_util::PathExists(
@@ -196,9 +198,7 @@ void GetParentLocales(const std::string& current_locale,
   }
 }
 
-// Extends list of Chrome locales to them and their parents, so we can do
-// proper fallback.
-static void GetAllLocales(std::set<std::string>* all_locales) {
+void GetAllLocales(std::set<std::string>* all_locales) {
   const std::vector<std::string>& available_locales =
       l10n_util::GetAvailableLocales();
   // Add all parents of the current locale to the available locales set.
@@ -240,7 +240,6 @@ bool GetValidLocales(const FilePath& locale_path,
 
   return true;
 }
-
 // Loads contents of the messages file for given locale. If file is not found,
 // or there was parsing error we return NULL and set |error|.
 // Caller owns the returned object.
@@ -291,6 +290,25 @@ ExtensionMessageBundle* LoadMessageCatalogs(
   }
 
   return ExtensionMessageBundle::Create(catalogs, error);
+}
+
+bool ShouldSkipValidation(const FilePath& locales_path,
+                          const FilePath& locale_path,
+                          const std::set<std::string>& all_locales) {
+  // Since we use this string as a key in a DictionaryValue, be paranoid about
+  // skipping any strings with '.'. This happens sometimes, for example with
+  // '.svn' directories.
+  FilePath relative_path;
+  if (!locales_path.AppendRelativePath(locale_path, &relative_path))
+    NOTREACHED();
+  std::wstring subdir(relative_path.ToWStringHack());
+  if (std::find(subdir.begin(), subdir.end(), L'.') != subdir.end())
+    return true;
+
+  if (all_locales.find(WideToASCII(subdir)) == all_locales.end())
+    return true;
+
+  return false;
 }
 
 }  // namespace extension_l10n_util

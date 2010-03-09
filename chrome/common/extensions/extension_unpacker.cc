@@ -15,6 +15,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_file_util.h"
+#include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
@@ -115,22 +116,17 @@ bool ExtensionUnpacker::ReadAllMessageCatalogs(
   FilePath locales_path =
     temp_install_dir_.Append(Extension::kLocaleFolder);
 
-  // Treat all folders under _locales as valid locales.
+  // Not all folders under _locales have to be valid locales.
   file_util::FileEnumerator locales(locales_path,
                                     false,
                                     file_util::FileEnumerator::DIRECTORIES);
 
-  FilePath locale_path = locales.Next();
-  do {
-    // Since we use this string as a key in a DictionaryValue, be paranoid about
-    // skipping any strings with '.'. This happens sometimes, for example with
-    // '.svn' directories.
-    FilePath relative_path;
-    // message_path was created from temp_install_dir. This should never fail.
-    if (!temp_install_dir_.AppendRelativePath(locale_path, &relative_path))
-      NOTREACHED();
-    std::wstring subdir(relative_path.ToWStringHack());
-    if (std::find(subdir.begin(), subdir.end(), L'.') != subdir.end())
+  std::set<std::string> all_locales;
+  extension_l10n_util::GetAllLocales(&all_locales);
+  FilePath locale_path;
+  while (!(locale_path = locales.Next()).empty()) {
+    if (extension_l10n_util::ShouldSkipValidation(locales_path, locale_path,
+                                                  all_locales))
       continue;
 
     FilePath messages_path =
@@ -138,7 +134,7 @@ bool ExtensionUnpacker::ReadAllMessageCatalogs(
 
     if (!ReadMessageCatalog(messages_path))
       return false;
-  } while (!(locale_path = locales.Next()).empty());
+  }
 
   return true;
 }
