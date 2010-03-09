@@ -16,4 +16,21 @@
       ],
     },
   ],
+  'conditions': [
+    ['OS=="fakeos"', {
+      'targets': [
+        {
+          'target_name': 'fakeosprogram',
+          'type': 'executable',
+          'sources': [
+            'defines.c',
+          ],
+          'defines': [
+            'FOO',
+            'VALUE=1',
+          ],
+        },
+      ],
+    }],
+  ],
 }

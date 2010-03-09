@@ -53,7 +53,8 @@ def Load(build_files, format, default_variables={},
   # These parameters are passed in order (as opposed to by key)
   # because ActivePython cannot handle key parameters to __import__.
   generator = __import__(generator_name, globals(), locals(), generator_name)
-  default_variables.update(generator.generator_default_variables)
+  for (key, val) in generator.generator_default_variables.items():
+    default_variables.setdefault(key, val)
 
   # Give the generator the opportunity to set additional variables based on
   # the params it will receive in the output phase.
