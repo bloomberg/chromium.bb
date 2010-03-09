@@ -31,6 +31,9 @@
 
 Import('env')
 
+FAKE_STARTUP = env.ComponentObject('fake_startup', 'fake_startup.c')
+
+
 env.ComponentProgram('sysbasic.nexe',
                      'sysbasic.c',
                      EXTRA_LIBS=['pthread'],
@@ -63,7 +66,7 @@ env.AddNodeToTestSuite(node,
 env.ComponentProgram(
     'barebones_hello_world.nexe',
     # NOTE: the x86 linker wants _start() to be the very first function
-    ['fake_startup.c',
+    [FAKE_STARTUP,
      'barebones_hello_world.c',
      ],
     LIBS=[],
@@ -85,7 +88,7 @@ env.AddNodeToTestSuite(node,
 env.ComponentProgram(
     'barebones_exit.nexe',
     # NOTE: the x86 linker wants _start() to be the very first function
-    ['fake_startup.c',
+    [FAKE_STARTUP,
      'barebones_exit.c',
      ],
     LIBS=[],
