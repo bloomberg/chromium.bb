@@ -108,10 +108,6 @@ class DownloadItemGtk : public DownloadItem::Observer,
                                          GdkEvent* event,
                                          DownloadItemGtk* item);
 
-  static void OnShelfResized(GtkWidget *widget,
-                             GtkAllocation *allocation,
-                             DownloadItemGtk* item);
-
   // Dangerous download related. -----------------------------------------------
   static gboolean OnDangerousPromptExpose(GtkWidget* widget,
                                          GdkEventExpose* event,
@@ -179,10 +175,6 @@ class DownloadItemGtk : public DownloadItem::Observer,
 
   // The download item model we represent.
   scoped_ptr<BaseDownloadItemModel> download_model_;
-
-  // This is the leftmost widget on |parent_shelf_| that is not a download item.
-  // We do not want to overlap it.
-  GtkWidget* bounding_widget_;
 
   // The dangerous download dialog. This will be null for safe downloads.
   GtkWidget* dangerous_prompt_;

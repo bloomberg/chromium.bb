@@ -144,7 +144,6 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
                           parent_shelf->browser()->profile())),
       progress_angle_(download_util::kStartAngleDegrees),
       download_model_(download_model),
-      bounding_widget_(parent_shelf->GetRightBoundingWidget()),
       dangerous_prompt_(NULL),
       dangerous_label_(NULL),
       icon_(NULL),
@@ -217,9 +216,7 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
   gtk_box_pack_start(GTK_BOX(hbox_.get()), menu_button_, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(shelf_hbox), hbox_.get(), FALSE, FALSE, 0);
   // Insert as the leftmost item.
-  gtk_box_reorder_child(GTK_BOX(shelf_hbox), hbox_.get(), 1);
-  g_signal_connect(shelf_hbox, "size-allocate",
-                   G_CALLBACK(OnShelfResized), this);
+  gtk_box_reorder_child(GTK_BOX(shelf_hbox), hbox_.get(), 0);
 
   get_download()->AddObserver(this);
 
@@ -290,6 +287,14 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
                  NotificationService::AllSources());
   theme_provider_->InitThemesFor(this);
 
+  // Set the initial width of the widget to be animated.
+  if (IsDangerous()) {
+    gtk_widget_set_size_request(dangerous_hbox_,
+                                dangerous_hbox_start_width_, -1);
+  } else {
+    gtk_widget_set_size_request(body_.get(), kMinDownloadItemWidth, -1);
+  }
+
   new_item_animation_->Show();
 }
 
@@ -297,9 +302,9 @@ DownloadItemGtk::~DownloadItemGtk() {
   icon_consumer_.CancelAllRequests();
   StopDownloadProgress();
   get_download()->RemoveObserver(this);
-  g_signal_handlers_disconnect_by_func(parent_shelf_->GetHBox(),
-      reinterpret_cast<gpointer>(OnShelfResized), this);
-  gtk_widget_show_all(parent_shelf_->GetHBox());
+
+  // We may free some shelf space for showing more download items.
+  parent_shelf_->MaybeShowMoreDownloadItems();
 
   hbox_.Destroy();
   progress_area_.Destroy();
@@ -316,6 +321,9 @@ void DownloadItemGtk::OnDownloadUpdated(DownloadItem* download) {
     gtk_widget_destroy(dangerous_prompt_);
     gtk_widget_set_size_request(body_.get(), kBodyWidth, -1);
     dangerous_prompt_ = NULL;
+
+    // We may free some shelf space for showing more download items.
+    parent_shelf_->MaybeShowMoreDownloadItems();
   }
 
   if (download->full_path() != icon_filepath_) {
@@ -557,21 +565,24 @@ void DownloadItemGtk::UpdateDangerWarning() {
 
     // Until we switch to vector graphics, force the font size.
     gtk_util::ForceFontSizePixels(dangerous_label_, kTextSize);
-    gtk_label_set_line_wrap(GTK_LABEL(dangerous_label_), TRUE);
 
-    double width_chars = 0.6 * dangerous_warning.size();
-    gint dangerous_width;
-    gtk_util::GetWidgetSizeFromCharacters(dangerous_label_, width_chars, 0,
-                                          &dangerous_width, NULL);
-    gtk_widget_set_size_request(dangerous_label_, dangerous_width, -1);
+    // Get the label width when displaying in one line, and reduce it to 60% to
+    // wrap the label into two lines.
+    gtk_widget_set_size_request(dangerous_label_, -1, -1);
+    gtk_label_set_line_wrap(GTK_LABEL(dangerous_label_), FALSE);
+
+    GtkRequisition req;
+    gtk_widget_size_request(dangerous_label_, &req);
+
+    gint label_width = req.width * 6 / 10;
+    gtk_label_set_line_wrap(GTK_LABEL(dangerous_label_), TRUE);
+    gtk_widget_set_size_request(dangerous_label_, label_width, -1);
 
     // The width will depend on the text. We must do this each time we possibly
     // change the label above.
-    GtkRequisition req;
     gtk_widget_size_request(dangerous_hbox_, &req);
     dangerous_hbox_full_width_ = req.width;
-    gtk_widget_size_request(dangerous_label_, &req);
-    dangerous_hbox_start_width_ = dangerous_hbox_full_width_ - req.width;
+    dangerous_hbox_start_width_ = dangerous_hbox_full_width_ - label_width;
   }
 }
 
@@ -817,22 +828,6 @@ gboolean DownloadItemGtk::OnMenuButtonPressEvent(GtkWidget* button,
   }
 
   return FALSE;
-}
-
-// static
-void DownloadItemGtk::OnShelfResized(GtkWidget *widget,
-                                     GtkAllocation *allocation,
-                                     DownloadItemGtk* item) {
-  bool out_of_bounds =
-      item->hbox_->allocation.x + item->hbox_->allocation.width >
-      item->bounding_widget_->allocation.x;
-  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
-    out_of_bounds = !out_of_bounds;
-
-  if (out_of_bounds)
-    gtk_widget_hide(item->hbox_.get());
-  else
-    gtk_widget_show(item->hbox_.get());
 }
 
 // static

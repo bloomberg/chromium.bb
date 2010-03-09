@@ -55,11 +55,13 @@ class DownloadShelfGtk : public DownloadShelf,
   // Remove |download_item| from the download shelf and delete it.
   void RemoveDownloadItem(DownloadItemGtk* download_item);
 
-  // Get the leftmost non-download item widget on the shelf.
-  GtkWidget* GetRightBoundingWidget() const;
-
   // Get the hbox download items ought to pack themselves into.
   GtkWidget* GetHBox() const;
+
+  // Show more hidden download items if there is enough space in the shelf.
+  // It's called when a download item is removed from the shelf or an item's
+  // size is changed.
+  void MaybeShowMoreDownloadItems();
 
   static void OnButtonClick(GtkWidget* button, DownloadShelfGtk* toolbar);
 
@@ -69,8 +71,8 @@ class DownloadShelfGtk : public DownloadShelf,
   // The top level widget of the shelf.
   scoped_ptr<SlideAnimatorGtk> slide_widget_;
 
-  // |hbox_| holds the download items and buttons of the shelf.
-  OwnedWidgetGtk hbox_;
+  // |items_hbox_| holds the download items.
+  OwnedWidgetGtk items_hbox_;
 
   // |shelf_| is the second highest level widget. See the constructor
   // for an explanation of the widget layout.
@@ -81,10 +83,6 @@ class DownloadShelfGtk : public DownloadShelf,
 
   // A GtkEventBox which we color.
   GtkWidget* padding_bg_;
-
-  // This hbox holds the link text and download icon. It also holds the
-  // distinction of being the leftmost non-download item widget on the shelf.
-  GtkWidget* link_hbox_;
 
   // The "Show all downloads..." link.
   GtkWidget* link_button_;

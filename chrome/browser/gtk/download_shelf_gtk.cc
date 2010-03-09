@@ -14,6 +14,7 @@
 #include "chrome/browser/gtk/custom_button.h"
 #include "chrome/browser/gtk/download_item_gtk.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
+#include "chrome/browser/gtk/gtk_chrome_shrinkable_hbox.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -60,20 +61,28 @@ DownloadShelfGtk::DownloadShelfGtk(Browser* browser, GtkWidget* parent)
   top_border_ = gtk_event_box_new();
   gtk_widget_set_size_request(GTK_WIDGET(top_border_), 0, 1);
 
-  // Create |hbox_|.
-  hbox_.Own(gtk_hbox_new(FALSE, kDownloadItemPadding));
+  // Create |items_hbox_|. We use GtkChromeShrinkableHBox, so that download
+  // items can be hid automatically when there is no enough space to show them.
+  items_hbox_.Own(gtk_chrome_shrinkable_hbox_new(
+      TRUE, FALSE, kDownloadItemPadding));
   // We want the download shelf to be horizontally shrinkable, so that the
   // Chrome window can be resized freely even with many download items.
-  gtk_widget_set_size_request(hbox_.get(), 0, kDownloadItemHeight);
+  gtk_widget_set_size_request(items_hbox_.get(), 0, kDownloadItemHeight);
 
-  // Get the padding and background color for |hbox_| right.
+  // Create a hbox that holds |items_hbox_| and other shelf widgets.
+  GtkWidget* outer_hbox = gtk_hbox_new(FALSE, kDownloadItemPadding);
+
+  // Pack the |items_hbox_| in the outer hbox.
+  gtk_box_pack_start(GTK_BOX(outer_hbox), items_hbox_.get(), TRUE, TRUE, 0);
+
+  // Get the padding and background color for |outer_hbox| right.
   GtkWidget* padding = gtk_alignment_new(0, 0, 1, 1);
   // Subtract 1 from top spacing to account for top border.
   gtk_alignment_set_padding(GTK_ALIGNMENT(padding),
       kTopBottomPadding - 1, kTopBottomPadding, kLeftPadding, kRightPadding);
   padding_bg_ = gtk_event_box_new();
   gtk_container_add(GTK_CONTAINER(padding_bg_), padding);
-  gtk_container_add(GTK_CONTAINER(padding), hbox_.get());
+  gtk_container_add(GTK_CONTAINER(padding), outer_hbox);
 
   GtkWidget* vbox = gtk_vbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(vbox), top_border_, FALSE, FALSE, 0);
@@ -86,7 +95,7 @@ DownloadShelfGtk::DownloadShelfGtk(Browser* browser, GtkWidget* parent)
 
   // Create and pack the close button.
   close_button_.reset(CustomDrawButton::CloseButton(theme_provider_));
-  gtk_util::CenterWidgetInHBox(hbox_.get(), close_button_->widget(), true, 0);
+  gtk_util::CenterWidgetInHBox(outer_hbox, close_button_->widget(), true, 0);
   g_signal_connect(close_button_->widget(), "clicked",
                    G_CALLBACK(OnButtonClick), this);
 
@@ -107,11 +116,9 @@ DownloadShelfGtk::DownloadShelfGtk(Browser* browser, GtkWidget* parent)
   GdkPixbuf* download_pixbuf = rb.GetPixbufNamed(IDR_DOWNLOADS_FAVICON);
   GtkWidget* download_image = gtk_image_new_from_pixbuf(download_pixbuf);
 
-  // Pack the link and the icon in an hbox.
-  link_hbox_ = gtk_hbox_new(FALSE, 5);
-  gtk_util::CenterWidgetInHBox(link_hbox_, download_image, false, 0);
-  gtk_util::CenterWidgetInHBox(link_hbox_, link_button_, false, 0);
-  gtk_box_pack_end(GTK_BOX(hbox_.get()), link_hbox_, FALSE, FALSE, 0);
+  // Pack the link and the icon in outer hbox.
+  gtk_util::CenterWidgetInHBox(outer_hbox, link_button_, true, 0);
+  gtk_util::CenterWidgetInHBox(outer_hbox, download_image, true, 0);
 
   slide_widget_.reset(new SlideAnimatorGtk(shelf_.get(),
                                            SlideAnimatorGtk::UP,
@@ -139,7 +146,7 @@ DownloadShelfGtk::~DownloadShelfGtk() {
   }
 
   shelf_.Destroy();
-  hbox_.Destroy();
+  items_hbox_.Destroy();
 }
 
 void DownloadShelfGtk::AddDownload(BaseDownloadItemModel* download_model_) {
@@ -236,12 +243,14 @@ void DownloadShelfGtk::RemoveDownloadItem(DownloadItemGtk* download_item) {
   }
 }
 
-GtkWidget* DownloadShelfGtk::GetRightBoundingWidget() const {
-  return link_hbox_;
+GtkWidget* DownloadShelfGtk::GetHBox() const {
+  return items_hbox_.get();
 }
 
-GtkWidget* DownloadShelfGtk::GetHBox() const {
-  return hbox_.get();
+void DownloadShelfGtk::MaybeShowMoreDownloadItems() {
+  // Show all existing download items. It'll trigger "size-allocate" signal,
+  // which will hide download items that don't have enough space to show.
+  gtk_widget_show_all(items_hbox_.get());
 }
 
 // static
