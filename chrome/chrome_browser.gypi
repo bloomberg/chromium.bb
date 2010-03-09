@@ -2784,6 +2784,8 @@
                 ['include', '^browser/gtk/gtk_tree.h'],
                 ['include', '^browser/gtk/gtk_util.cc'],
                 ['include', '^browser/gtk/gtk_util.h'],
+                ['include', '^browser/gtk/hover_controller_gtk.cc'],
+                ['include', '^browser/gtk/hover_controller_gtk.h'],
                 ['include', '^browser/gtk/hung_renderer_dialog_gtk.cc'],
                 ['include', '^browser/gtk/import_dialog_gtk.cc'],
                 ['include', '^browser/gtk/import_dialog_gtk.h'],
