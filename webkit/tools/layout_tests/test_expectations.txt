@@ -2869,8 +2869,9 @@ BUG37684 SKIP : http/tests/cookies/third-party-cookie-relaxing.html = FAIL
 // WebKit roll 55674 -> r55683
 BUG37735 : fast/events/spatial-navigation/snav-table-traversal.html = TEXT
 BUG37735 : fast/events/spatial-navigation/snav-tiny-table-traversal.html = TEXT
-BUG37740 : fast/dom/DOMImplementation/createDocument-with-used-doctype.html = TEXT
-BUG_MICHAELN : fast/css/getComputedStyle/computed-style-without-renderer.html = TEXT
-BUG_MICHAELN : fast/css/getComputedStyle/computed-style.html = TEXT
-BUG_MICHAELN : fast/dom/Window/window-appendages-cleared.html = TEXT
 
+// WebKit roll r55683 -> r55709
+BUG37779 : fast/dom/HTMLAnchorElement/set-href-attribute-hostname.html = TEXT
+BUG37779 : fast/dom/HTMLAnchorElement/set-href-attribute-port.html = TEXT
+BUG37779 : fast/loader/url-parse-1.html = TEXT
+BUG37779 : http/tests/loading/state-object-security-exception.html = TEXT
