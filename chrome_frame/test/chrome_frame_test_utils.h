@@ -202,13 +202,6 @@ END_SINK_MAP()
   void WatchChromeWindow(const wchar_t* window_class);
   void StopWatching();
 
-  // Navigates to the next item in history by sending the Shift+Back key
-  // combination
-  void NavigateForward();
-
-  // Navigates to the next item in history by sending the Backstroke key.
-  void NavigateBackward();
-
   // Overridable methods for the mock
   STDMETHOD_(void, OnNavigateError)(IDispatch* dispatch, VARIANT* url,
                                     VARIANT* frame_name, VARIANT* status_code,

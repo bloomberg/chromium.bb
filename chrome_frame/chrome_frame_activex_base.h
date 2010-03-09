@@ -380,7 +380,8 @@ END_MSG_MAP()
 
   virtual void OnOpenURL(int tab_handle, const GURL& url_to_open,
                          const GURL& referrer, int open_disposition) {
-    DCHECK_EQ(CURRENT_TAB, open_disposition);
+    DCHECK(url_to_open.SchemeIs(chrome::kViewSourceScheme) ||
+           (CURRENT_TAB == open_disposition));
     HostNavigate(url_to_open, referrer, open_disposition);
   }
 

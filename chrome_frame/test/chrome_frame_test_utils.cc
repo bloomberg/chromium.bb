@@ -629,7 +629,7 @@ void WebBrowserEventSink::SetFocusToChrome() {
 
 void WebBrowserEventSink::SendKeys(const wchar_t* input_string) {
   SetFocusToChrome();
-  simulate_input::SendString(input_string);
+  simulate_input::SendStringW(input_string);
 }
 
 void WebBrowserEventSink::SendMouseClick(int x, int y,
@@ -757,16 +757,6 @@ void WebBrowserEventSink::WatchChromeWindow(const wchar_t* window_class) {
 
 void WebBrowserEventSink::StopWatching() {
   window_watcher_.RemoveObserver(this);
-}
-
-void WebBrowserEventSink::NavigateBackward() {
-  SetFocusToChrome();
-  simulate_input::SendMnemonic(VK_BACK, false, false, false, false, false);
-}
-
-void WebBrowserEventSink::NavigateForward() {
-  SetFocusToChrome();
-  simulate_input::SendMnemonic(VK_BACK, true, false, false, false, false);
 }
 
 }  // namespace chrome_frame_test

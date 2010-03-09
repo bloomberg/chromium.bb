@@ -33,7 +33,7 @@ END_MSG_MAP()
     MSG msg = {0};
     PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE);
 
-    SendMnemonic(VK_F22, false, false, false, false, false);
+    SendMnemonic(VK_F22, NONE, false, false);
     // There are scenarios where the WM_HOTKEY is not dispatched by the
     // the corresponding foreground thread. To prevent us from indefinitely
     // waiting for the hotkey, we set a timer and exit the loop.
@@ -111,48 +111,47 @@ bool EnsureProcessInForeground(base::ProcessId process_id) {
   return ret;
 }
 
-void SendScanCode(short scan_code, bool shift, bool control, bool alt) {
+void SendScanCode(short scan_code, Modifier modifiers) {
   DCHECK(-1 != scan_code);
 
   // High order byte in |scan_code| is SHIFT/CTRL/ALT key state.
-  shift |= !!(HIBYTE(scan_code) & 0x1);
-  control |= !!(HIBYTE(scan_code) & 0x2);
-  alt |= !!(HIBYTE(scan_code) & 0x4);
+  modifiers = static_cast<Modifier>(modifiers | HIBYTE(scan_code));
+  DCHECK(modifiers <= ALT);
 
   // Low order byte in |scan_code| is the actual scan code.
-  SendMnemonic(LOBYTE(scan_code), shift, control, alt, false, true);
+  SendMnemonic(LOBYTE(scan_code), modifiers, false, true);
 }
 
-void SendChar(char c, bool control, bool alt) {
-  SendScanCode(VkKeyScanA(c), false, control, alt);
+void SendCharA(char c, Modifier modifiers) {
+  SendScanCode(VkKeyScanA(c), modifiers);
 }
 
-void SendChar(wchar_t c, bool control, bool alt) {
-  SendScanCode(VkKeyScanW(c), false, control, alt);
+void SendCharW(wchar_t c, Modifier modifiers) {
+  SendScanCode(VkKeyScanW(c), modifiers);
 }
 
 // Sends a keystroke to the currently active application with optional
 // modifiers set.
-void SendMnemonic(WORD mnemonic_char, bool shift_pressed, bool control_pressed,
-                  bool alt_pressed, bool extended, bool unicode) {
+void SendMnemonic(WORD mnemonic_char, Modifier modifiers, bool extended,
+                  bool unicode) {
   INPUT keys[4] = {0};  // Keyboard events
   int key_count = 0;  // Number of generated events
 
-  if (shift_pressed) {
+  if (modifiers & SHIFT) {
     keys[key_count].type = INPUT_KEYBOARD;
     keys[key_count].ki.wVk = VK_SHIFT;
     keys[key_count].ki.wScan = MapVirtualKey(VK_SHIFT, 0);
     key_count++;
   }
 
-  if (control_pressed) {
+  if (modifiers & CONTROL) {
     keys[key_count].type = INPUT_KEYBOARD;
     keys[key_count].ki.wVk = VK_CONTROL;
     keys[key_count].ki.wScan = MapVirtualKey(VK_CONTROL, 0);
     key_count++;
   }
 
-  if (alt_pressed) {
+  if (modifiers & ALT) {
     keys[key_count].type = INPUT_KEYBOARD;
     keys[key_count].ki.wVk = VK_MENU;
     keys[key_count].ki.wScan = MapVirtualKey(VK_MENU, 0);
@@ -238,8 +237,26 @@ void SendMouseClick(HWND window, int x, int y, MouseButton button) {
   ::SendInput(1, &input_info, sizeof(INPUT));
 }
 
-void SendExtendedKey(WORD key, bool shift, bool control, bool alt) {
-  SendMnemonic(key, shift, control, alt, true, false);
+void SendExtendedKey(WORD key, Modifier modifiers) {
+  SendMnemonic(key, modifiers, true, false);
+}
+
+void SendStringW(const wchar_t* s) {
+  while (*s) {
+    wchar_t ch = *s;
+    SendCharW(ch, NONE);
+    Sleep(10);
+    s++;
+  }
+}
+
+void SendStringA(const char* s) {
+  while (*s) {
+    char ch = *s;
+    SendCharA(ch, NONE);
+    Sleep(10);
+    s++;
+  }
 }
 
 }  // namespace simulate_input

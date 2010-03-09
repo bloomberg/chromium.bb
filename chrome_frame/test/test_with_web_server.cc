@@ -320,7 +320,7 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeOpera_ObjectFocus) {
          i < 5 && (ok = CheckResultFile(L"ObjectFocus", "OK")) == false;
          ++i) {
       Sleep(300);
-      simulate_input::SendMnemonic(VK_TAB, false, false, false, false, false);
+      simulate_input::SendMnemonic(VK_TAB, simulate_input::NONE, false, false);
     }
     ASSERT_TRUE(ok);
   }

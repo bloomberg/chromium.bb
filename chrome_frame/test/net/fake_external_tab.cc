@@ -131,15 +131,15 @@ void SupplyProxyCredentials::OnWindowDetected(HWND hwnd,
   // keyboard input instead.
   simulate_input::ForceSetForegroundWindow(hwnd);
   CHECK(SetFocusToAccessibleWindow(props.username_));
-  simulate_input::SendString(username_.c_str());
+  simulate_input::SendStringA(username_.c_str());
   Sleep(100);
 
-  simulate_input::SendChar(static_cast<char>(VK_TAB), false, false);
+  simulate_input::SendCharA(VK_TAB, simulate_input::NONE);
   Sleep(100);
-  simulate_input::SendString(password_.c_str());
+  simulate_input::SendStringA(password_.c_str());
 
   Sleep(100);
-  simulate_input::SendChar(static_cast<char>(VK_RETURN), false, false);
+  simulate_input::SendCharA(VK_RETURN, simulate_input::NONE);
 }
 
 // static

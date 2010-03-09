@@ -12,6 +12,13 @@
 
 namespace simulate_input {
 
+enum Modifier {
+  NONE,
+  SHIFT = 1,
+  CONTROL = 2,
+  ALT = 4
+};
+
 // Bring a window into foreground to receive user input.
 // Note that this may not work on
 bool ForceSetForegroundWindow(HWND window);
@@ -27,33 +34,26 @@ void SetKeyboardFocusToWindow(HWND window);
 
 // Sends a keystroke to the currently active application with optional
 // modifiers set.
-void SendMnemonic(WORD mnemonic_char, bool shift_pressed, bool control_pressed,
-                  bool alt_pressed, bool extended, bool unicode);
+void SendMnemonic(WORD mnemonic_char, Modifier modifiers, bool extended,
+                  bool unicode);
 
 // Sends a mouse click to the window passed in.
 enum MouseButton { LEFT, RIGHT, MIDDLE, X };
 void SendMouseClick(HWND window, int x, int y, MouseButton button);
 
-// Translates a single char to a virtual key and calls SendVirtualKey.
-void SendScanCode(short scan_code, bool shift, bool control, bool alt);
-void SendChar(char c, bool control, bool alt);
-void SendChar(wchar_t c, bool control, bool alt);
+// Translates a single char to a virtual key.
+void SendScanCode(short scan_code, Modifier modifiers);
+void SendCharA(char c, Modifier modifiers);
+void SendCharW(wchar_t c, Modifier modifiers);
 
 // Sends extended keystroke to the currently active application with optional
 // modifiers set.
-void SendExtendedKey(WORD key, bool shift, bool control, bool alt);
+void SendExtendedKey(WORD key, Modifier modifiers);
 
 // Iterates through all the characters in the string and simulates
 // keyboard input.  The input goes to the currently active application.
-template <typename char_type>
-void SendString(const char_type* s) {
-  while (*s) {
-    char_type ch = *s;
-    SendChar(ch, false, false);
-    Sleep(10);
-    s++;
-  }
-}
+void SendStringW(const wchar_t* s);
+void SendStringA(const char* s);
 
 }  // end namespace simulate_input
 
