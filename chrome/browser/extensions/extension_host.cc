@@ -444,7 +444,17 @@ std::wstring ExtensionHost::GetMessageBoxTitle(const GURL& frame_url,
 }
 
 gfx::NativeWindow ExtensionHost::GetMessageBoxRootWindow() {
-  return platform_util::GetTopLevel(GetNativeViewOfHost());
+  // If we have a view, use that.
+  gfx::NativeView native_view = GetNativeViewOfHost();
+  if (native_view)
+    return platform_util::GetTopLevel(native_view);
+
+  // Otherwise, try the active tab's view.
+  TabContents* active_tab = GetBrowser()->GetSelectedTabContents();
+  if (active_tab)
+    return active_tab->view()->GetTopLevelNativeWindow();
+
+  return NULL;
 }
 
 void ExtensionHost::OnMessageBoxClosed(IPC::Message* reply_msg,

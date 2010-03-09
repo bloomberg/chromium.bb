@@ -203,7 +203,7 @@ class ExtensionHost : public ExtensionPopupHost::PopupDelegate,
   virtual Browser* GetBrowser() const { return GetBrowser(true); }
   virtual RenderViewHost* GetRenderViewHost() { return render_view_host(); }
   virtual gfx::NativeView GetNativeViewOfHost() {
-    return view()->native_view();
+    return view() ? view()->native_view() : NULL;
   }
 
   // Handles keyboard events that were not handled by HandleKeyboardEvent().
