@@ -68,7 +68,7 @@ class TestRequestCallback : public ResourceLoaderBridge::Peer {
   const std::string& data() const {
     return data_;
   }
-  const bool complete() const {
+  bool complete() const {
     return complete_;
   }
 

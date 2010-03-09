@@ -118,7 +118,7 @@ class StatusController {
     DCHECK(CurrentCommitIdProjectionHasIndex(index));
     return shared_.commit_set.GetCommitIdAt(index);
   }
-  const syncable::ModelType GetCommitIdModelTypeAt(size_t index) {
+  syncable::ModelType GetCommitIdModelTypeAt(size_t index) {
     DCHECK(CurrentCommitIdProjectionHasIndex(index));
     return shared_.commit_set.GetModelTypeAt(index);
   }

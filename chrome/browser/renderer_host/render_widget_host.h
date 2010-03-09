@@ -223,7 +223,7 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   void DonePaintingToBackingStore();
 
   // Returns the video layer if it exists, NULL otherwise.
-  VideoLayer* const video_layer() { return video_layer_.get(); }
+  VideoLayer* video_layer() const { return video_layer_.get(); }
 
   // Checks to see if we can give up focus to this widget through a JS call.
   virtual bool CanBlur() const { return true; }

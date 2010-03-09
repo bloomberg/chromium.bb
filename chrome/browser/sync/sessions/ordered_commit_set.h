@@ -57,7 +57,7 @@ class OrderedCommitSet {
   }
 
   // Same as above, but for ModelType of the item.
-  const syncable::ModelType GetModelTypeAt(const size_t position) const {
+  syncable::ModelType GetModelTypeAt(const size_t position) const {
     return types_[position];
   }
 

@@ -1746,15 +1746,13 @@ ExtensionAction* LocationBarView::GetPageAction(size_t index) {
 }
 
 ExtensionAction* LocationBarView::GetVisiblePageAction(size_t index) {
-  if (index >= 0) {
-    size_t current = 0;
-    for (size_t i = 0; i < page_action_views_.size(); ++i) {
-      if (page_action_views_[i]->IsVisible()) {
-        if (current == index)
-          return page_action_views_[i]->image_view()->page_action();
+  size_t current = 0;
+  for (size_t i = 0; i < page_action_views_.size(); ++i) {
+    if (page_action_views_[i]->IsVisible()) {
+      if (current == index)
+        return page_action_views_[i]->image_view()->page_action();
 
-        ++current;
-      }
+      ++current;
     }
   }
 
@@ -1763,17 +1761,15 @@ ExtensionAction* LocationBarView::GetVisiblePageAction(size_t index) {
 }
 
 void LocationBarView::TestPageActionPressed(size_t index) {
-  if (index >= 0) {
-    size_t current = 0;
-    for (size_t i = 0; i < page_action_views_.size(); ++i) {
-      if (page_action_views_[i]->IsVisible()) {
-        if (current == index) {
-          const int kLeftMouseButton = 1;
-          page_action_views_[i]->image_view()->ExecuteAction(kLeftMouseButton);
-          return;
-        }
-        ++current;
+  size_t current = 0;
+  for (size_t i = 0; i < page_action_views_.size(); ++i) {
+    if (page_action_views_[i]->IsVisible()) {
+      if (current == index) {
+        const int kLeftMouseButton = 1;
+        page_action_views_[i]->image_view()->ExecuteAction(kLeftMouseButton);
+        return;
       }
+      ++current;
     }
   }
 

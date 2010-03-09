@@ -66,7 +66,7 @@ class ListenSocketTestAction {
 
   const std::string data() const { return data_; }
   const DevToolsRemoteMessage message() { return message_; }
-  const ActionType type() const { return action_; }
+  ActionType type() const { return action_; }
 
  private:
   ActionType action_;

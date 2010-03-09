@@ -62,7 +62,7 @@ class AutofillWebDataServiceConsumer: public WebDataServiceConsumer {
     MessageLoop::current()->Quit();
   }
 
-  WebDataService::Handle const handle() { return handle_; }
+  WebDataService::Handle handle() { return handle_; }
   const std::vector<string16>& values() { return values_; }
 
  private:
