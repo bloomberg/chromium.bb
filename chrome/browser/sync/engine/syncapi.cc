@@ -953,9 +953,7 @@ class SyncManager::SyncInternal {
         initialized_(false) {
   }
 
-  ~SyncInternal() {
-    DCHECK(!talk_mediator_.get());
-  }
+  ~SyncInternal() { }
 
   bool Init(const FilePath& database_location,
             const std::string& sync_server_and_path,
@@ -1485,7 +1483,6 @@ void SyncManager::SyncInternal::Shutdown() {
   LOG(INFO) << "P2P: Mediator logout started.";
   if (talk_mediator()) {
     talk_mediator()->Logout();
-    talk_mediator_.reset();
   }
   LOG(INFO) << "P2P: Mediator logout completed.";
 
