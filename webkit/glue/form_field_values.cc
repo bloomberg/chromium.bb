@@ -43,9 +43,13 @@ void FormFieldValues::ExtractFormFieldValues(const WebFormElement& form) {
   for (size_t i = 0; i < input_elements.size(); i++) {
     const WebInputElement& input_element = input_elements[i];
     if (input_element.isEnabledFormControl()) {
-      // TODO(jhawkins): Remove this check when we have labels.
-      if (!input_element.nameForAutofill().isEmpty())
+      // TODO(jhawkins): Remove the check nameForAutofill().isEmpty() when we
+      //                 have labels.
+      if (input_element.autoComplete() &&
+          input_element.inputType() != WebInputElement::Password &&
+          !input_element.nameForAutofill().isEmpty()) {
         elements.push_back(FormField(input_element));
+      }
     }
   }
 }

@@ -1218,6 +1218,9 @@
         'browser/net/ftp_browsertest.cc',
         'browser/ssl/ssl_browser_tests.cc',
         'browser/task_manager_browsertest.cc',
+        'renderer/form_autocomplete_unittest.cc',
+        'test/render_view_test.cc',
+        'test/render_view_test.h',
       ],
       'conditions': [
         ['OS=="win"', {
@@ -1229,7 +1232,10 @@
             '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome_dll_version/chrome_dll_version.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome/renderer_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.rc',
             '<@(browser_tests_sources_win_specific)',
             '<@(browser_tests_sources_views_specific)'
           ],
