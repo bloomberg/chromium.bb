@@ -8,10 +8,10 @@
 #include <map>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
-#include "base/task.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/sync/glue/model_associator.h"
 #include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
@@ -29,7 +29,6 @@ extern const char kAutofillTag[];
 
 // Contains all model association related logic:
 // * Algorithm to associate autofill model and sync model.
-// * Persisting model associations and loading them back.
 // We do not check if we have local data before this run; we always
 // merge and sync.
 class AutofillModelAssociator
@@ -93,13 +92,6 @@ class AutofillModelAssociator
  private:
   typedef std::map<AutofillKey, int64> AutofillToSyncIdMap;
   typedef std::map<int64, AutofillKey> SyncIdToAutofillMap;
-  typedef std::set<int64> DirtyAssociationsSyncIds;
-
-  // Posts a task to persist dirty associations.
-  void PostPersistAssociationsTask();
-
-  // Persists all dirty associations.
-  void PersistAssociations();
 
   ProfileSyncService* sync_service_;
   WebDatabase* web_database_;
@@ -108,13 +100,6 @@ class AutofillModelAssociator
 
   AutofillToSyncIdMap id_map_;
   SyncIdToAutofillMap id_map_inverse_;
-  // Stores the IDs of dirty associations.
-  DirtyAssociationsSyncIds dirty_associations_sync_ids_;
-
-  // Used to post PersistAssociation tasks to the current message loop and
-  // guarantees no invocations can occur if |this| has been deleted. (This
-  // allows this class to be non-refcounted).
-  ScopedRunnableMethodFactory<AutofillModelAssociator> method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillModelAssociator);
 };

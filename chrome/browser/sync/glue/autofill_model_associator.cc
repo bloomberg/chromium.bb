@@ -24,8 +24,7 @@ AutofillModelAssociator::AutofillModelAssociator(
     : sync_service_(sync_service),
       web_database_(web_database),
       error_handler_(error_handler),
-      autofill_node_id_(sync_api::kInvalidId),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+      autofill_node_id_(sync_api::kInvalidId) {
   DCHECK(sync_service_);
   DCHECK(web_database_);
   DCHECK(error_handler_);
@@ -152,7 +151,6 @@ bool AutofillModelAssociator::AssociateModels() {
 bool AutofillModelAssociator::DisassociateModels() {
   id_map_.clear();
   id_map_inverse_.clear();
-  dirty_associations_sync_ids_.clear();
   return true;
 }
 
@@ -198,8 +196,6 @@ void AutofillModelAssociator::Associate(
   DCHECK(id_map_inverse_.find(sync_id) == id_map_inverse_.end());
   id_map_[*autofill] = sync_id;
   id_map_inverse_[sync_id] = *autofill;
-  dirty_associations_sync_ids_.insert(sync_id);
-  PostPersistAssociationsTask();
 }
 
 void AutofillModelAssociator::Disassociate(int64 sync_id) {
@@ -208,7 +204,6 @@ void AutofillModelAssociator::Disassociate(int64 sync_id) {
     return;
   CHECK(id_map_.erase(iter->second));
   id_map_inverse_.erase(iter);
-  CHECK(dirty_associations_sync_ids_.erase(sync_id));
 }
 
 bool AutofillModelAssociator::GetSyncIdForTaggedNode(const std::string& tag,
@@ -220,42 +215,6 @@ bool AutofillModelAssociator::GetSyncIdForTaggedNode(const std::string& tag,
     return false;
   *sync_id = sync_node.GetId();
   return true;
-}
-
-void AutofillModelAssociator::PostPersistAssociationsTask() {
-  // No need to post a task if a task is already pending.
-  if (!method_factory_.empty())
-    return;
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      method_factory_.NewRunnableMethod(
-          &AutofillModelAssociator::PersistAssociations));
-}
-
-void AutofillModelAssociator::PersistAssociations() {
-  // If there are no dirty associations we have nothing to do. We handle this
-  // explicity instead of letting the for loop do it to avoid creating a write
-  // transaction in this case.
-  if (dirty_associations_sync_ids_.empty()) {
-    DCHECK(id_map_.empty());
-    DCHECK(id_map_inverse_.empty());
-    return;
-  }
-
-  sync_api::WriteTransaction trans(
-      sync_service_->backend()->GetUserShareHandle());
-  DirtyAssociationsSyncIds::iterator iter;
-  for (iter = dirty_associations_sync_ids_.begin();
-       iter != dirty_associations_sync_ids_.end();
-       ++iter) {
-    int64 sync_id = *iter;
-    sync_api::WriteNode sync_node(&trans);
-    if (!sync_node.InitByIdLookup(sync_id)) {
-      error_handler_->OnUnrecoverableError();
-      return;
-    }
-  }
-  dirty_associations_sync_ids_.clear();
 }
 
 // static

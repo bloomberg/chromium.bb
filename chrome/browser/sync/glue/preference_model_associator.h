@@ -11,7 +11,6 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
-#include "base/task.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/sync/glue/model_associator.h"
 #include "chrome/browser/sync/unrecoverable_error_handler.h"
@@ -26,7 +25,6 @@ static const char kPreferencesTag[] = "google_chrome_preferences";
 
 // Contains all model association related logic:
 // * Algorithm to associate preferences model and sync model.
-// * Persisting model associations and loading them back.
 class PreferenceModelAssociator
     : public PerDataTypeAssociatorInterface<PrefService::Preference,
                                             std::wstring> {
@@ -89,13 +87,6 @@ class PreferenceModelAssociator
  private:
   typedef std::map<std::wstring, int64> PreferenceNameToSyncIdMap;
   typedef std::map<int64, std::wstring> SyncIdToPreferenceNameMap;
-  typedef std::set<int64> DirtyAssociationsSyncIds;
-
-  // Posts a task to persist dirty associations.
-  void PostPersistAssociationsTask();
-
-  // Persists all dirty associations.
-  void PersistAssociations();
 
   ProfileSyncService* sync_service_;
   UnrecoverableErrorHandler* error_handler_;
@@ -104,13 +95,6 @@ class PreferenceModelAssociator
 
   PreferenceNameToSyncIdMap id_map_;
   SyncIdToPreferenceNameMap id_map_inverse_;
-  // Stores the IDs of dirty associations.
-  DirtyAssociationsSyncIds dirty_associations_sync_ids_;
-
-  // Used to post PersistAssociation tasks to the current message loop and
-  // guarantees no invocations can occur if |this| has been deleted. (This
-  // allows this class to be non-refcounted).
-  ScopedRunnableMethodFactory<PreferenceModelAssociator> persist_associations_;
 
   DISALLOW_COPY_AND_ASSIGN(PreferenceModelAssociator);
 };

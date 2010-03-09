@@ -23,8 +23,7 @@ PreferenceModelAssociator::PreferenceModelAssociator(
     UnrecoverableErrorHandler* error_handler)
     : sync_service_(sync_service),
       error_handler_(error_handler),
-      preferences_node_id_(sync_api::kInvalidId),
-      ALLOW_THIS_IN_INITIALIZER_LIST(persist_associations_(this)) {
+      preferences_node_id_(sync_api::kInvalidId) {
   DCHECK(sync_service_);
   synced_preferences_.insert(prefs::kHomePageIsNewTabPage);
   synced_preferences_.insert(prefs::kHomePage);
@@ -35,7 +34,6 @@ PreferenceModelAssociator::PreferenceModelAssociator(
 }
 
 bool PreferenceModelAssociator::AssociateModels() {
-  // TODO(albertb): Attempt to load the model association from storage.
   PrefService* pref_service = sync_service_->profile()->GetPrefs();
 
   int64 root_id;
@@ -124,7 +122,6 @@ bool PreferenceModelAssociator::AssociateModels() {
 bool PreferenceModelAssociator::DisassociateModels() {
   id_map_.clear();
   id_map_inverse_.clear();
-  dirty_associations_sync_ids_.clear();
   return true;
 }
 
@@ -170,8 +167,6 @@ void PreferenceModelAssociator::Associate(
   DCHECK(id_map_inverse_.find(sync_id) == id_map_inverse_.end());
   id_map_[preference->name()] = sync_id;
   id_map_inverse_[sync_id] = preference->name();
-  dirty_associations_sync_ids_.insert(sync_id);
-  PostPersistAssociationsTask();
 }
 
 void PreferenceModelAssociator::Disassociate(int64 sync_id) {
@@ -180,7 +175,6 @@ void PreferenceModelAssociator::Disassociate(int64 sync_id) {
     return;
   id_map_.erase(iter->second);
   id_map_inverse_.erase(iter);
-  dirty_associations_sync_ids_.erase(sync_id);
 }
 
 bool PreferenceModelAssociator::GetSyncIdForTaggedNode(const std::string& tag,
@@ -192,44 +186,6 @@ bool PreferenceModelAssociator::GetSyncIdForTaggedNode(const std::string& tag,
     return false;
   *sync_id = sync_node.GetId();
   return true;
-}
-
-void PreferenceModelAssociator::PostPersistAssociationsTask() {
-  // No need to post a task if a task is already pending.
-  if (!persist_associations_.empty())
-    return;
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      persist_associations_.NewRunnableMethod(
-          &PreferenceModelAssociator::PersistAssociations));
-}
-
-void PreferenceModelAssociator::PersistAssociations() {
-  // If there are no dirty associations we have nothing to do. We handle this
-  // explicity instead of letting the for loop do it to avoid creating a write
-  // transaction in this case.
-  if (dirty_associations_sync_ids_.empty()) {
-    DCHECK(id_map_.empty());
-    DCHECK(id_map_inverse_.empty());
-    return;
-  }
-
-  sync_api::WriteTransaction trans(
-      sync_service_->backend()->GetUserShareHandle());
-  DirtyAssociationsSyncIds::iterator iter;
-  for (iter = dirty_associations_sync_ids_.begin();
-       iter != dirty_associations_sync_ids_.end();
-       ++iter) {
-    int64 sync_id = *iter;
-    sync_api::WriteNode sync_node(&trans);
-    if (!sync_node.InitByIdLookup(sync_id)) {
-      error_handler_->OnUnrecoverableError();
-      return;
-    }
-    // TODO(sync): Make ExternalId a string?
-    // sync_node.SetExternalId(id_map_inverse_[*iter]);
-  }
-  dirty_associations_sync_ids_.clear();
 }
 
 }  // namespace browser_sync
