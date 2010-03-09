@@ -371,15 +371,15 @@ WindowGtk::WindowGtk(WindowDelegate* window_delegate)
 }
 
 void WindowGtk::Init(GtkWindow* parent, const gfx::Rect& bounds) {
-  WidgetGtk::Init(NULL, bounds);
+  if (parent)
+    make_transient_to_parent();
+  WidgetGtk::Init(GTK_WIDGET(parent), bounds);
 
   // We call this after initializing our members since our implementations of
   // assorted WidgetWin functions may be called during initialization.
   is_modal_ = window_delegate_->IsModal();
   if (is_modal_)
     gtk_window_set_modal(GetNativeWindow(), true);
-  if (parent)
-    gtk_window_set_transient_for(GetNativeWindow(), parent);
 
   g_signal_connect(G_OBJECT(GetNativeWindow()), "configure-event",
                    G_CALLBACK(CallConfigureEvent), this);
