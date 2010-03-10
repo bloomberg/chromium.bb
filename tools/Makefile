@@ -577,7 +577,7 @@ ifeq ($(PLATFORM), Cygwin)
 	if [ -d "$$ARCHDIR" ] ; then \
 	  for exe in "$$ARCHDIR/"*.exe ; do \
 	    if [ ! -L "$$exe" ] ; then \
-	      mv "$$exe" \
+	      mv -f "$$exe" \
 		"$$LEDIR/$(CROSSARCH)-$(GCC_VERSION)-`basename $$exe`" ; \
 	      ln -sfn "../../../$(CROSSARCH)-$(GCC_VERSION)-`basename $$exe`" \
 		"$$exe" ; \
