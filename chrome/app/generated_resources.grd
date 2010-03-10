@@ -3324,7 +3324,7 @@ each locale. -->
         Allow this extension to run in incognito
       </message>
       <message name="IDS_EXTENSIONS_ENABLE_INCOGNITO_WARNING" desc="A warning message displayed when the user attempts to enable a non-incognito-safe extension in incognito.">
-        This extension doesn't officially support running in incognito mode. Enable anyway?
+        Because <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> does not control how extensions handle your personal data, this extension could leave traces on your machine even after you close the incognito window. Enable anyway?
       </message>
       <message name="IDS_EXTENSIONS_RELOAD" desc="The link for reloading extensions.">
         Reload
@@ -5556,8 +5556,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_NEW_TAB_OTR_EXTENSIONS_MESSAGE"
                desc="Explanation in a new OTR window that extensions have been disabled while in OTR.">
-        Because Google Chrome does not control how extensions handle your personal data, all extensions have been disabled for incognito windows. You can reenable them individually in the
-        <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>extensions manager<ph name="END_LINK">&lt;/a&gt;</ph>.
+        Because <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> does not control how extensions handle your personal data, all extensions have been disabled for incognito windows. You can reenable them individually in the
+        <ph name="BEGIN_LINK">&lt;a href="$2"&gt;</ph>extensions manager<ph name="END_LINK">&lt;/a&gt;</ph>.
       </message>
       <message name="IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW_SINGLE"
                desc="Title of recently closed windows in the recently closed section of the new tab page when the window has a single tab">

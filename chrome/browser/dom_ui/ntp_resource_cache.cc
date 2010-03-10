@@ -223,6 +223,7 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
                             GetUrlWithLang(kLearnMoreIncognitoUrl)));
   localized_strings.SetString(L"extensionsmessage",
       l10n_util::GetStringF(IDS_NEW_TAB_OTR_EXTENSIONS_MESSAGE,
+                            l10n_util::GetString(IDS_PRODUCT_NAME),
                             ASCIIToWide(chrome::kChromeUIExtensionsURL)));
   bool show_extensions_disabled =
       CommandLine::ForCurrentProcess()->HasSwitch(

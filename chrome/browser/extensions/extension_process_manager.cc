@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_process_manager.h"
 
+#include "chrome/browser/browser.h"
 #include "chrome/browser/browsing_instance.h"
 #if defined(OS_MACOSX)
 #include "chrome/browser/extensions/extension_host_mac.h"
@@ -13,6 +14,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
@@ -131,6 +133,19 @@ ExtensionHost* ExtensionProcessManager::CreateBackgroundHost(
   host->CreateRenderViewSoon(NULL);  // create a RenderViewHost with no view
   OnExtensionHostCreated(host, true);
   return host;
+}
+
+void ExtensionProcessManager::OpenOptionsPage(Extension* extension,
+                                              Browser* browser) {
+  DCHECK(!extension->options_url().is_empty());
+
+  // We can't open extensions URLs in incognito windows.
+  if (!browser || browser->profile()->IsOffTheRecord())
+    browser = Browser::GetOrCreateTabbedBrowser(browsing_instance_->profile());
+
+  browser->OpenURL(extension->options_url(), GURL(), SINGLETON_TAB,
+                   PageTransition::LINK);
+  browser->GetSelectedTabContents()->Activate();
 }
 
 ExtensionHost* ExtensionProcessManager::GetBackgroundHostForExtension(

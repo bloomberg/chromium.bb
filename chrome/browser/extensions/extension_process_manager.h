@@ -55,6 +55,9 @@ class ExtensionProcessManager : public NotificationObserver {
   // displayed anywhere.
   ExtensionHost* CreateBackgroundHost(Extension* extension, const GURL& url);
 
+  // Open the extension's options page.
+  void OpenOptionsPage(Extension* extension, Browser* browser);
+
   // Gets the ExtensionHost for the background page for an extension, or NULL if
   // the extension isn't running or doesn't have a background page.
   ExtensionHost* GetBackgroundHostForExtension(Extension* extension);

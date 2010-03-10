@@ -75,8 +75,8 @@ void ExtensionActionContextMenuModel::ExecuteCommand(int command_id) {
     }
     case CONFIGURE:
       DCHECK(!extension_->options_url().is_empty());
-      browser->OpenURL(extension_->options_url(), GURL(),
-                       SINGLETON_TAB, PageTransition::LINK);
+      profile->GetExtensionProcessManager()->OpenOptionsPage(extension_,
+                                                             browser);
       break;
     case DISABLE: {
       ExtensionsService* extension_service = profile->GetExtensionsService();

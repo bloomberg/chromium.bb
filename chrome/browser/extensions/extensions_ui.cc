@@ -44,6 +44,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "grit/browser_resources.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/net_util.h"
@@ -123,7 +124,8 @@ void ExtensionsUIHTMLSource::StartDataRequest(const std::string& path,
   localized_strings.SetString(L"enableIncognito",
       l10n_util::GetString(IDS_EXTENSIONS_ENABLE_INCOGNITO));
   localized_strings.SetString(L"enableIncognitoWarning",
-      l10n_util::GetString(IDS_EXTENSIONS_ENABLE_INCOGNITO_WARNING));
+      l10n_util::GetStringF(IDS_EXTENSIONS_ENABLE_INCOGNITO_WARNING,
+                            l10n_util::GetString(IDS_PRODUCT_NAME)));
   localized_strings.SetString(L"reload",
       l10n_util::GetString(IDS_EXTENSIONS_RELOAD));
   localized_strings.SetString(L"uninstall",
@@ -498,10 +500,8 @@ void ExtensionsDOMHandler::HandleOptionsMessage(const Value* value) {
   if (!extension || extension->options_url().is_empty()) {
     return;
   }
-  Browser* browser = Browser::GetOrCreateTabbedBrowser(dom_ui_->GetProfile());
-  CHECK(browser);
-  browser->OpenURL(extension->options_url(), GURL(), SINGLETON_TAB,
-                   PageTransition::LINK);
+  dom_ui_->GetProfile()->GetExtensionProcessManager()->OpenOptionsPage(
+      extension, NULL);
 }
 
 void ExtensionsDOMHandler::HandleLoadMessage(const Value* value) {
@@ -716,8 +716,6 @@ DictionaryValue* ExtensionsDOMHandler::CreateExtensionDetailValue(
   extension_data->SetBoolean(L"enabled", enabled);
   extension_data->SetBoolean(L"enabledIncognito",
       service ? service->IsIncognitoEnabled(extension->id()) : false);
-  extension_data->SetBoolean(L"incognitoSafe",
-      extension->HasApiPermission(Extension::kIncognitoPermission));
   extension_data->SetBoolean(L"allow_reload",
                              extension->location() == Extension::LOAD);
 

@@ -3,5 +3,5 @@
   "version": "0.1",
   "description": "test that an incognito extension behaves properly",
   "background_page": "background.html",
-  "permissions": ["tabs", "experimental", "incognito"]
+  "permissions": ["tabs"]
 }

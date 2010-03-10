@@ -163,8 +163,8 @@ enum {
     }
     case kExtensionContextOptions: {
       DCHECK(!extension_->options_url().is_empty());
-      browser->OpenURL(extension_->options_url(), GURL(),
-                       NEW_FOREGROUND_TAB, PageTransition::LINK);
+      profile_->GetExtensionProcessManager()->OpenOptionsPage(extension_,
+                                                              browser);
       break;
     }
     case kExtensionContextDisable: {

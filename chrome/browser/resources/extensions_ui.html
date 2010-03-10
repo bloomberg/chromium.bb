@@ -550,7 +550,7 @@ function handleToggleExtensionIncognito(node, toggleCheckbox) {
   if (toggleCheckbox)
     node.checked = !node.checked;
 
-  if (node.checked && !node.incognitoSafe) {
+  if (node.checked) {
     if (!confirm(templateData["enableIncognitoWarning"])) {
       node.checked = false;
       return;
@@ -856,7 +856,7 @@ function autoUpdate() {
                   jsdisplay="enabled && experimentalIncognito"
                   >|</span>
                 <input type="checkbox"
-                  jsvalues=".extensionId:id;.enabled=enabled"
+                  jsvalues=".extensionId:id;.enabled:enabled"
                   jsdisplay="enabled && experimentalIncognito"
                   jseval="this.checked = enabledIncognito"
                   onchange="handleToggleExtensionIncognito(this, false)" />
