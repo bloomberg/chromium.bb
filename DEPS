@@ -6,7 +6,7 @@ vars = {
   "skia_revision": "504",
   "chromium_git": "http://src.chromium.org/git",
   "swig_revision": "40423",
-  "nacl_revision": "1653",
+  "nacl_revision": "1694",
 }
 
 deps = {
@@ -44,7 +44,8 @@ deps = {
     "http://v8.googlecode.com/svn/trunk@4079",
 
   "src/native_client":
-    "http://nativeclient.googlecode.com/svn/trunk/src/native_client@" + Var("nacl_revision"),
+    "http://nativeclient.googlecode.com/svn/trunk/src/native_client@" +
+    Var("nacl_revision"),
 
   "src/third_party/skia/src":
     "http://skia.googlecode.com/svn/trunk/src@" + Var("skia_revision"),
