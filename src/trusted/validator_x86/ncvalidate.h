@@ -38,8 +38,8 @@ struct NCValidatorState;
  *    an initialized struct NCValidatorState * if everything is okay,
  *    else NULL
  */
-struct NCValidatorState *NCValidateInit(const PcAddress vbase,
-                                        const PcAddress vlimit,
+struct NCValidatorState *NCValidateInit(const NaClPcAddress vbase,
+                                        const NaClPcAddress vlimit,
                                         const uint8_t alignment);
 
 /* Validate a segment */
@@ -55,7 +55,7 @@ struct NCValidatorState *NCValidateInit(const PcAddress vbase,
  * NCValidateSegment is used by sel_ldr. For dev/debug purposes,
  * use NCDecodeSegment(). See ncval.c for an example.
  */
-void NCValidateSegment(uint8_t *mbase, PcAddress vbase, size_t sz,
+void NCValidateSegment(uint8_t *mbase, NaClPcAddress vbase, size_t sz,
                        struct NCValidatorState *vstate);
 
 /* Check targets and alignment. Returns non-zero if there are */

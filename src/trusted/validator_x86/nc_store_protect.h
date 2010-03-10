@@ -17,8 +17,8 @@
  * ncvalidate_iter.h.
  */
 
-struct NcValidatorState;
-struct NcInstIter;
+struct NaClValidatorState;
+struct NaClInstIter;
 
 /*
  * Verifies that we don't store out of range. That implies that when storing
@@ -38,8 +38,8 @@ struct NcInstIter;
  *
  * NOTE: in x86 code, displacements can't be larger than 32 bits.
  */
-void NcStoreValidator(struct NcValidatorState* state,
-                      struct NcInstIter* iter,
-                      void* ignore);
+void NaClStoreValidator(struct NaClValidatorState* state,
+                        struct NaClInstIter* iter,
+                        void* ignore);
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_STORE_PROTECT_H__ */

@@ -24,11 +24,11 @@
 /* Defines the maximum number of characters allowed on an input line
  * of the input text defined by the commands command line option.
  */
-#define MAX_INPUT_LINE 4096
+#define NACL_MAX_INPUT_LINE 4096
 
-static void ConvertHexToByte(char mini_buf[3], size_t mini_buf_index,
-                             uint8_t* mbase, size_t mbase_size,
-                             size_t* count) {
+static void NaClConvertHexToByte(char mini_buf[3], size_t mini_buf_index,
+                                 uint8_t* mbase, size_t mbase_size,
+                                 size_t* count) {
   mini_buf[mini_buf_index] = '\0';
   mbase[(*count)++] = (uint8_t)strtoul(mini_buf, NULL, 16);
   if (*count == mbase_size) {
@@ -47,8 +47,8 @@ static void ConvertHexToByte(char mini_buf[3], size_t mini_buf_index,
  * the byte array. If the number of non-blank hex values aren't even, the single
  * hex value is used as the corresponding byte value.
  */
-static size_t NcReadHexData(FILE* file, uint8_t* mbase, size_t mbase_size,
-                            char input_line[MAX_INPUT_LINE]) {
+static size_t NaClReadHexData(FILE* file, uint8_t* mbase, size_t mbase_size,
+                              char input_line[NACL_MAX_INPUT_LINE]) {
   size_t count = 0;
   char mini_buf[3];
   size_t mini_buf_index = 0;
@@ -85,7 +85,7 @@ static size_t NcReadHexData(FILE* file, uint8_t* mbase, size_t mbase_size,
           case 'F':
             mini_buf[mini_buf_index++] = ch;
             if (2 == mini_buf_index) {
-              ConvertHexToByte(mini_buf, mini_buf_index, mbase,
+              NaClConvertHexToByte(mini_buf, mini_buf_index, mbase,
                                mbase_size, &count);
               if (count == mbase_size) {
                 return mbase_size;
@@ -98,33 +98,33 @@ static size_t NcReadHexData(FILE* file, uint8_t* mbase, size_t mbase_size,
         }
       }
     }
-    if (fgets(input_line, MAX_INPUT_LINE, file) == NULL) break;
+    if (fgets(input_line, NACL_MAX_INPUT_LINE, file) == NULL) break;
   }
   if (mini_buf_index > 0) {
-    ConvertHexToByte(mini_buf, mini_buf_index, mbase, mbase_size, &count);
+    NaClConvertHexToByte(mini_buf, mini_buf_index, mbase, mbase_size, &count);
   }
   return count;
 }
 
-size_t NcReadHexText(FILE* file, uint8_t* mbase, size_t mbase_size) {
-  char input_line[MAX_INPUT_LINE];
-  if (fgets(input_line, MAX_INPUT_LINE, file) == NULL) return 0;
-  return NcReadHexData(file, mbase, mbase_size, input_line);
+size_t NaClReadHexText(FILE* file, uint8_t* mbase, size_t mbase_size) {
+  char input_line[NACL_MAX_INPUT_LINE];
+  if (fgets(input_line, NACL_MAX_INPUT_LINE, file) == NULL) return 0;
+  return NaClReadHexData(file, mbase, mbase_size, input_line);
 }
 
-size_t NcReadHexTextWithPc(FILE* file, PcAddress* pc,
-                           uint8_t* mbase, size_t mbase_size) {
-  char input_line[MAX_INPUT_LINE];
+size_t NaClReadHexTextWithPc(FILE* file, NaClPcAddress* pc,
+                             uint8_t* mbase, size_t mbase_size) {
+  char input_line[NACL_MAX_INPUT_LINE];
   *pc = 0;  /* Default if no input. */
   while (1) {
-    if (fgets(input_line, MAX_INPUT_LINE, file) == NULL) return 0;
+    if (fgets(input_line, NACL_MAX_INPUT_LINE, file) == NULL) return 0;
     if (input_line[0] == '#') {
       /* i.e. treat line as a comment. */
       continue;
     } else if (input_line[0] == '@') {
-      *pc = (PcAddress) strtoul(&input_line[1], NULL, 16);
+      *pc = (NaClPcAddress) strtoul(&input_line[1], NULL, 16);
     } else {
-      return NcReadHexData(file, mbase, mbase_size, input_line);
+      return NaClReadHexData(file, mbase, mbase_size, input_line);
     }
   }
   /* NOT REACHED */

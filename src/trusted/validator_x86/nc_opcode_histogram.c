@@ -17,17 +17,18 @@
 /* Holds a histogram of the (first) byte of the found opcodes for each
  * instruction.
  */
-typedef struct OpcodeHistogram {
+typedef struct NaClOpcodeHistogram {
   uint32_t opcode_histogram[256];
-} OpcodeHistogram;
+} NaClOpcodeHistogram;
 
-OpcodeHistogram* NcOpcodeHistogramMemoryCreate(NcValidatorState* state) {
+NaClOpcodeHistogram* NaClOpcodeHistogramMemoryCreate(
+    NaClValidatorState* state) {
   int i;
-  OpcodeHistogram* histogram =
-      (OpcodeHistogram*) malloc(sizeof(OpcodeHistogram));
+  NaClOpcodeHistogram* histogram =
+      (NaClOpcodeHistogram*) malloc(sizeof(NaClOpcodeHistogram));
   if (histogram == NULL) {
-    NcValidatorMessage(LOG_FATAL, state,
-                       "Out of memory, can't build histogram\n");
+    NaClValidatorMessage(LOG_FATAL, state,
+                         "Out of memory, can't build histogram\n");
   }
   for (i = 0; i < 256; ++i) {
     histogram->opcode_histogram[i] = 0;
@@ -35,24 +36,24 @@ OpcodeHistogram* NcOpcodeHistogramMemoryCreate(NcValidatorState* state) {
   return histogram;
 }
 
-void NcOpcodeHistogramMemoryDestroy(NcValidatorState* state,
-                                    OpcodeHistogram* histogram) {
+void NaClOpcodeHistogramMemoryDestroy(NaClValidatorState* state,
+                                      NaClOpcodeHistogram* histogram) {
   free(histogram);
 }
 
-void NcOpcodeHistogramRecord(NcValidatorState* state,
-                             NcInstIter* iter,
-                             OpcodeHistogram* histogram) {
-  NcInstState* inst_state = NcInstIterGetState(iter);
-  Opcode* opcode = NcInstStateOpcode(inst_state);
-  if (opcode->name != InstUndefined) {
-    histogram->opcode_histogram[opcode->opcode[opcode->num_opcode_bytes - 1]]++;
+void NaClOpcodeHistogramRecord(NaClValidatorState* state,
+                               NaClInstIter* iter,
+                               NaClOpcodeHistogram* histogram) {
+  NaClInstState* inst_state = NaClInstIterGetState(iter);
+  NaClInst* inst = NaClInstStateInst(inst_state);
+  if (inst->name != InstUndefined) {
+    histogram->opcode_histogram[inst->opcode[inst->num_opcode_bytes - 1]]++;
   }
 }
 
-void NcOpcodeHistogramPrintStats(FILE* f,
-                                 NcValidatorState* state,
-                                 OpcodeHistogram* histogram) {
+void NaClOpcodeHistogramPrintStats(FILE* f,
+                                   NaClValidatorState* state,
+                                   NaClOpcodeHistogram* histogram) {
   int i;
   int printed_in_this_row = 0;
   fprintf(f, "\nOpcode Histogram:\n");

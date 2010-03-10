@@ -1,7 +1,7 @@
 /*
  * Copyright 2009 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * be found in the <LICENSE file.
  */
 
 /* Descriptors to model instructions, opcodes, and instruction operands. */
@@ -18,98 +18,98 @@
 #include "gen/native_client/src/trusted/validator_x86/ncopcode_operand_kind_impl.h"
 #include "gen/native_client/src/trusted/validator_x86/ncopcode_operand_flag_impl.h"
 
-uint8_t NcGetOpcodeNumberOperands(Opcode* opcode) {
-  uint8_t operands = opcode->num_operands;
+uint8_t NaClGetInstNumberOperands(NaClInst* inst) {
+  uint8_t operands = inst->num_operands;
   if (operands > 0 &&
-      (opcode->operands[0].flags & OpFlag(OperandExtendsOpcode))) {
+      (inst->operands[0].flags & NACL_OPFLAG(OperandExtendsOpcode))) {
     --operands;
   }
   return operands;
 }
 
-Operand* NcGetOpcodeOperand(Opcode* opcode, uint8_t index) {
-  if (opcode->num_operands > 0 &&
-      (opcode->operands[0].flags & OpFlag(OperandExtendsOpcode))) {
+NaClOp* NaClGetInstOperand(NaClInst* inst, uint8_t index) {
+  if (inst->num_operands > 0 &&
+      (inst->operands[0].flags & NACL_OPFLAG(OperandExtendsOpcode))) {
     ++index;
   }
-  assert(index < opcode->num_operands);
-  return &opcode->operands[index];
+  assert(index < inst->num_operands);
+  return &inst->operands[index];
 }
 
-void PrintOperand(FILE* f, Operand* operand) {
-  fprintf(f, "      { %s, ", OperandKindName(operand->kind));
-  if (operand->flags) {
-    OperandFlag i;
+void NaClOpFlagsPrint(FILE* f, NaClOpFlags flags) {
+  if (flags) {
+    NaClOpFlag i;
     Bool first = TRUE;
-    for (i = 0; i < OperandFlagEnumSize; ++i) {
-      if (operand->flags & OpFlag(i)) {
+    for (i = 0; i < NaClOpFlagEnumSize; ++i) {
+      if (flags & NACL_OPFLAG(i)) {
         if (first) {
           first = FALSE;
         } else {
           fprintf(f, " | ");
         }
-        fprintf(f, "OpFlag(%s)", OperandFlagName(i));
+        fprintf(f, "NACL_OPFLAG(%s)", NaClOpFlagName(i));
       }
     }
   } else {
-    fprintf(f, "0");
+    fprintf(f, "NACL_EMPTY_OPFLAGS");
   }
+}
+
+void NaClOpPrint(FILE* f, NaClOp* operand) {
+  fprintf(f, "      { %s, ", NaClOpKindName(operand->kind));
+  NaClOpFlagsPrint(f, operand->flags);
   fprintf(f, " },\n");
 }
 
-/* Prints out the given opcode structure to the given file. If index >= 0,
- * print out a comment, with the value of index, before the printed opcode
- * structure. Lookahead is used to convert the next_rule pointer into
- * a symbolic reference using the name "g_Opcodes", plus the index defined by
- * the lookahead. Argument as_array_element is true if the element is
- * assumed to be in an array static initializer. If argument simplify is
- * true, then the element is for documentation purposes only (as a single
- * element), and simplify the output to only contain (user-readable)
- * useful information.
- */
-void PrintOpcodeTableDriver(FILE* f, Bool as_array_element,
-                            Bool simplify, int index,
-                            Opcode* opcode, int lookahead) {
+void NaClIFlagsPrint(FILE* f, NaClIFlags flags) {
+  if (flags) {
+    int i;
+    Bool first = TRUE;
+    for (i = 0; i < NaClIFlagEnumSize; ++i) {
+      if (flags & NACL_IFLAG(i)) {
+        if (first) {
+          first = FALSE;
+        } else {
+          fprintf(f, " | ");
+        }
+        fprintf(f, "NACL_IFLAG(%s)", NaClIFlagName(i));
+      }
+    }
+  } else {
+    fprintf(f, "NACL_EMPTY_IFLAGS");
+  }
+}
+
+void NaClInstPrintTableDriver(FILE* f, Bool as_array_element,
+                              Bool simplify, int index,
+                              NaClInst* inst, int lookahead) {
   int i;
   if (!simplify && index >= 0) {
     fprintf(f, "  /* %d */\n", index);
   }
-  fprintf(f, "  { %"NACL_PRIu8", {", opcode->num_opcode_bytes);
-  for (i = 0; i < MAX_OPCODE_BYTES; ++i) {
+
+  fprintf(f, "  { %"NACL_PRIu8", {", inst->num_opcode_bytes);
+  for (i = 0; i < NACL_MAX_OPCODE_BYTES; ++i) {
     if (i > 0) fprintf(f, ",");
-    fprintf(f," 0x%02x", opcode->opcode[i]);
+    fprintf(f," 0x%02x", inst->opcode[i]);
   }
   fprintf(f, " },\n");
-  fprintf(f, "    %s,\n", kNaClInstTypeString[opcode->insttype]);
+  fprintf(f, "    %s,\n", kNaClInstTypeString[inst->insttype]);
   fprintf(f, "    ");
-  if (opcode->flags) {
-    Bool first = TRUE;
-    for (i = 0; i < OpcodeFlagEnumSize; ++i) {
-      if (opcode->flags & InstFlag(i)) {
-        if (first) {
-          first = FALSE;
-        } else {
-          fprintf(f, " | ");
-        }
-        fprintf(f, "InstFlag(%s)", OpcodeFlagName(i));
-      }
-    }
-  } else {
-    fprintf(f, "0");
-  }
+  NaClIFlagsPrint(f, inst->flags);
   fprintf(f, ",\n");
-  fprintf(f, "    Inst%s,\n", InstMnemonicName(opcode->name));
-  fprintf(f, "    %u, {\n", opcode->num_operands);
-  for (i = 0; i < MAX_NUM_OPERANDS; ++i) {
-    if (!simplify || i < opcode->num_operands) {
-      PrintOperand(f, opcode->operands + i);
+  fprintf(f, "    Inst%s,\n", NaClMnemonicName(inst->name));
+  fprintf(f, "    %u, {\n", inst->num_operands);
+  for (i = 0; i < NACL_MAX_NUM_OPERANDS; ++i) {
+    if (!simplify || i < inst->num_operands) {
+      NaClOpPrint(f, inst->operands + i);
     }
   }
   if (simplify) {
     fprintf(f, "  } };\n");
   } else {
     fprintf(f, "    },\n");
-    if (index < 0 || NULL == opcode->next_rule) {
+    if (index < 0 || NULL == inst->next_rule) {
       fprintf(f, "    NULL\n");
     } else {
       fprintf(f, "    g_Opcodes + %d\n", lookahead);
@@ -122,10 +122,10 @@ void PrintOpcodeTableDriver(FILE* f, Bool as_array_element,
   }
 }
 
-void PrintOpcodeTablegen(FILE* f, int index, Opcode* opcode, int lookahead) {
-  PrintOpcodeTableDriver(f, TRUE, FALSE, index, opcode, lookahead);
+void NaClInstPrintTablegen(FILE* f, int index, NaClInst* inst, int lookahead) {
+  NaClInstPrintTableDriver(f, TRUE, FALSE, index, inst, lookahead);
 }
 
-void PrintOpcode(FILE* f, Opcode* opcode) {
-  PrintOpcodeTableDriver(f, FALSE, TRUE, -1, opcode, 0);
+void NaClInstPrint(FILE* f, NaClInst* inst) {
+  NaClInstPrintTableDriver(f, FALSE, TRUE, -1, inst, 0);
 }

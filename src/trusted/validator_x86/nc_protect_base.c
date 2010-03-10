@@ -26,8 +26,8 @@
 
 #include "native_client/src/shared/utils/debugging.h"
 
-/* Defines locals used by the NcBaseRegisterValidator. */
-typedef struct NcBaseRegisterLocals {
+/* Defines locals used by the NaClBaseRegisterValidator. */
+typedef struct NaClBaseRegisterLocals {
   /* Points to previous instruction that contains an
    * assignment to register ESP, or NULL if the previous
    * instruction doesn't set ESP. This is done so that
@@ -35,7 +35,7 @@ typedef struct NcBaseRegisterLocals {
    * uses the value of ESP to update RSP (if not, we need to
    * report that ESP is incorrectly assigned).
    */
-  NcInstState* esp_set_inst;
+  NaClInstState* esp_set_inst;
   /* Points to the previous instruction that contains an
    * assignment to register EBP, or NULL if the previous
    * instruction doesn't set EBP. This is done so that
@@ -43,13 +43,13 @@ typedef struct NcBaseRegisterLocals {
    * uses the value of EBP to update RBP (if not, we need ot
    * report that EBP is incorrectly assigned).
    */
-  NcInstState* ebp_set_inst;
-} NcBaseRegisterLocals;
+  NaClInstState* ebp_set_inst;
+} NaClBaseRegisterLocals;
 
-static void ReportIllegalChangeToRsp(NcValidatorState* state,
-                                     NcInstState* inst) {
-  NcValidatorInstMessage(LOG_ERROR, state, inst,
-                         "Illegal assignment to RSP\n");
+static void NaClReportIllegalChangeToRsp(NaClValidatorState* state,
+                                         NaClInstState* inst) {
+  NaClValidatorInstMessage(LOG_ERROR, state, inst,
+                           "Illegal assignment to RSP\n");
 }
 
 /* Checks flags in the given locals, and reports any
@@ -58,40 +58,42 @@ static void ReportIllegalChangeToRsp(NcValidatorState* state,
  * Parameters:
  *   state - The state of the validator.
  *   iter - The instruction iterator being used by the validator.
- *   locals - The locals used by validator NcBaseRegisterValidator.
+ *   locals - The locals used by validator NaClBaseRegisterValidator.
  */
-static void MaybeReportPreviousBad(NcValidatorState* state,
-                                   NcBaseRegisterLocals* locals) {
+static void NaClMaybeReportPreviousBad(NaClValidatorState* state,
+                                       NaClBaseRegisterLocals* locals) {
   if (NULL != locals->esp_set_inst) {
-    NcValidatorInstMessage(LOG_ERROR,
-                           state,
-                           locals->esp_set_inst,
-                           "Illegal assignment to ESP\n");
+    NaClValidatorInstMessage(LOG_ERROR,
+                             state,
+                             locals->esp_set_inst,
+                             "Illegal assignment to ESP\n");
     locals->esp_set_inst = NULL;
   }
   if (NULL != locals->ebp_set_inst) {
-    NcValidatorInstMessage(LOG_ERROR,
-                           state,
-                           locals->ebp_set_inst,
-                           "Illegal assignment to EBP\n");
+    NaClValidatorInstMessage(LOG_ERROR,
+                             state,
+                             locals->ebp_set_inst,
+                             "Illegal assignment to EBP\n");
     locals->ebp_set_inst = NULL;
   }
 }
 
-NcBaseRegisterLocals* NcBaseRegisterMemoryCreate(NcValidatorState* state) {
-  NcBaseRegisterLocals* locals = (NcBaseRegisterLocals*)
-      malloc(sizeof(NcBaseRegisterLocals));
+NaClBaseRegisterLocals* NaClBaseRegisterMemoryCreate(
+    NaClValidatorState* state) {
+  NaClBaseRegisterLocals* locals = (NaClBaseRegisterLocals*)
+      malloc(sizeof(NaClBaseRegisterLocals));
   if (NULL == locals) {
-    NcValidatorMessage(LOG_FATAL, state,
-                       "Out of memory, can't allocate NcBaseRegisterLocals\n");
+    NaClValidatorMessage(
+        LOG_FATAL, state,
+        "Out of memory, can't allocate NaClBaseRegisterLocals\n");
   }
   locals->esp_set_inst = NULL;
   locals->ebp_set_inst = NULL;
   return locals;
 }
 
-void NcBaseRegisterMemoryDestroy(NcValidatorState* state,
-                                 NcBaseRegisterLocals* locals) {
+void NaClBaseRegisterMemoryDestroy(NaClValidatorState* state,
+                                   NaClBaseRegisterLocals* locals) {
   free(locals);
 }
 
@@ -99,17 +101,17 @@ void NcBaseRegisterMemoryDestroy(NcValidatorState* state,
  *   OP %esp, C
  * where OP in { add , sub } and C is a 32 bit constant.
  */
-static Bool NcIsAddOrSubBoundedConstFromEsp(NcInstState* inst) {
-  Opcode* opcode = NcInstStateOpcode(inst);
-  ExprNodeVector* vector = NcInstStateNodeVector(inst);
-  return (InstAdd == opcode->name || InstSub == opcode->name) &&
-      2 == NcGetOpcodeNumberOperands(opcode) &&
+static Bool NaClIsAddOrSubBoundedConstFromEsp(NaClInstState* state) {
+  NaClInst* inst = NaClInstStateInst(state);
+  NaClExpVector* vector = NaClInstStateExpVector(state);
+  return (InstAdd == inst->name || InstSub == inst->name) &&
+      2 == NaClGetInstNumberOperands(inst) &&
       /* Note: Since the vector contains a list of operand expressions, the
        * first operand reference is always at index zero, and its first child
        * (where the register would be defined) is at index 1.
        */
       ExprRegister == vector->node[1].kind &&
-      RegESP == GetNodeRegister(&vector->node[1]) &&
+      RegESP == NaClGetExpRegister(&vector->node[1]) &&
       /* Note: Since the first subtree is a register operand, it uses
        * nodes 0 and 1 in the vector (node 0 is the operand reference, and
        * node 1 is its child defining a register value). The second operand
@@ -119,35 +121,35 @@ static Bool NcIsAddOrSubBoundedConstFromEsp(NcInstState* inst) {
       ExprConstant == vector->node[3].kind;
 }
 
-void NcBaseRegisterValidator(struct NcValidatorState* state,
-                             struct NcInstIter* iter,
-                             NcBaseRegisterLocals* locals) {
+void NaClBaseRegisterValidator(struct NaClValidatorState* state,
+                               struct NaClInstIter* iter,
+                               NaClBaseRegisterLocals* locals) {
   uint32_t i;
-  NcInstState* inst = NcInstIterGetState(iter);
-  Opcode* inst_opcode = NcInstStateOpcode(inst);
-  ExprNodeVector* vector = NcInstStateNodeVector(inst);
+  NaClInstState* inst_state = NaClInstIterGetState(iter);
+  NaClInst* inst = NaClInstStateInst(inst_state);
+  NaClExpVector* vector = NaClInstStateExpVector(inst_state);
 
-  DEBUG(NcValidatorInstMessage(
-      LOG_INFO, state, inst, "Checking base registers...\n"));
+  DEBUG(NaClValidatorInstMessage(
+      LOG_INFO, state, inst_state, "Checking base registers...\n"));
 
   /* Look for assignments to registers. */
   for (i = 0; i < vector->number_expr_nodes; ++i) {
-    ExprNode* node = &vector->node[i];
+    NaClExp* node = &vector->node[i];
     if (ExprRegister == node->kind) {
-      if (node->flags & ExprFlag(ExprSet)) {
-        OperandKind reg_name = GetNodeRegister(node);
+      if (node->flags & NACL_EFLAG(ExprSet)) {
+        NaClOpKind reg_name = NaClGetExpRegister(node);
 
         /* If reached, found an assignment to a register.
          * Check if its one that we care about (i.e.
          * the base register (RBASE), RSP, or RBP).
          */
         if (reg_name == state->base_register) {
-          NcValidatorInstMessage(
-              LOG_ERROR, state, inst,
+          NaClValidatorInstMessage(
+              LOG_ERROR, state, inst_state,
               "Illegal to change the value of register %s\n",
-              OperandKindName(state->base_register));
+              NaClOpKindName(state->base_register));
         } else {
-          InstMnemonic inst_name = inst_opcode->name;
+          NaClMnemonic inst_name = inst->name;
           switch (reg_name) {
             case RegRSP:
               /* Only allow one of:
@@ -196,18 +198,18 @@ void NcBaseRegisterValidator(struct NcValidatorState* state,
                 case InstPush:
                 case InstCall:
                   /* case 3 (simple). */
-                  MaybeReportPreviousBad(state, locals);
+                  NaClMaybeReportPreviousBad(state, locals);
                   return;
                 case InstPop: {
                     /* case (3) pop -- see above */
                     int reg_operand_index;
-                    ExprNode* reg_operand;
-                    reg_operand_index = GetExprNodeParentIndex(vector, i);
+                    NaClExp* reg_operand;
+                    reg_operand_index = NaClGetExpParentIndex(vector, i);
                     reg_operand = &vector->node[reg_operand_index];
                     if (OperandReference == reg_operand->kind &&
-                        (inst_opcode->operands[reg_operand->value].flags &
-                         OpFlag(OpImplicit))) {
-                      MaybeReportPreviousBad(state, locals);
+                        (inst->operands[reg_operand->value].flags &
+                         NACL_OPFLAG(OpImplicit))) {
+                      NaClMaybeReportPreviousBad(state, locals);
                       /* Continue to process arguments, to see if pop sets
                        * an illegal register.
                        */
@@ -218,19 +220,19 @@ void NcBaseRegisterValidator(struct NcValidatorState* state,
                 case InstOr:
                 case InstAdd: {
                     /* case 2/4/6 (depending on instruction name). */
-                    if (NcIsBinarySetUsingRegisters(
-                            inst_opcode, inst_name, vector, RegRSP,
+                    if (NaClIsBinarySetUsingRegisters(
+                            inst, inst_name, vector, RegRSP,
                             state->base_register) &&
-                        NcInstIterHasLookbackState(iter, 1)) {
-                      NcInstState* prev_inst =
-                          NcInstIterGetLookbackState(iter, 1);
-                      if (NcAssignsRegisterWithZeroExtends(prev_inst, RegESP) ||
-                          (inst_name == InstAdd &&
-                           NcIsAddOrSubBoundedConstFromEsp(prev_inst))) {
+                        NaClInstIterHasLookbackState(iter, 1)) {
+                      NaClInstState* prev_inst =
+                          NaClInstIterGetLookbackState(iter, 1);
+                      if (NaClAssignsRegisterWithZeroExtends(prev_inst, RegESP)
+                          || (inst_name == InstAdd &&
+                              NaClIsAddOrSubBoundedConstFromEsp(prev_inst))) {
                         DEBUG(printf("nc protect base for or/add/or\n"));
-                        NcMarkInstructionJumpIllegal(state, inst);
+                        NaClMarkInstructionJumpIllegal(state, inst_state);
                         locals->esp_set_inst = NULL;
-                        MaybeReportPreviousBad(state, locals);
+                        NaClMaybeReportPreviousBad(state, locals);
                         return;
                       }
                     }
@@ -238,30 +240,30 @@ void NcBaseRegisterValidator(struct NcValidatorState* state,
                   break;
                 case InstAnd:
                   /* See if case 5: and $rsp, 0xXX */
-                  if (NcInstStateLength(inst) == 4 &&
-                      NcInstStateByte(inst, 0) == 0x48 &&
-                      NcInstStateByte(inst, 1) == 0x83 &&
-                      NcInstStateByte(inst, 2) == 0xe4 &&
+                  if (NaClInstStateLength(inst_state) == 4 &&
+                      NaClInstStateByte(inst_state, 0) == 0x48 &&
+                      NaClInstStateByte(inst_state, 1) == 0x83 &&
+                      NaClInstStateByte(inst_state, 2) == 0xe4 &&
                       /* negative byte test: check if leftmost bit set. */
-                      (NcInstStateByte(inst, 3) & 0x80)) {
-                    MaybeReportPreviousBad(state, locals);
+                      (NaClInstStateByte(inst_state, 3) & 0x80)) {
+                    NaClMaybeReportPreviousBad(state, locals);
                     return;
                   }
                   /* Intentionally fall to the next case. */
                 default:
-                  if (NcIsMovUsingRegisters(inst_opcode, vector,
+                  if (NaClIsMovUsingRegisters(inst, vector,
                                                  RegRSP, RegRBP)) {
                     /* case (1) -- see above, matching
                      *    mov %rsp, %rbp
                      */
-                    MaybeReportPreviousBad(state, locals);
+                    NaClMaybeReportPreviousBad(state, locals);
                     return;
                   }
                   break;
               }
               /* If reached, assume that not a special case. */
-              ReportIllegalChangeToRsp(state, inst);
-              MaybeReportPreviousBad(state, locals);
+              NaClReportIllegalChangeToRsp(state, inst_state);
+              NaClMaybeReportPreviousBad(state, locals);
               break;
             case RegRBP:
               /* (1) mov %rbp, %rsp
@@ -282,62 +284,64 @@ void NcBaseRegisterValidator(struct NcValidatorState* state,
                *     a zero extend of rbp, and is the only property that is
                *     needed to maintain the invarinat on ebp.
                */
-              if (!NcIsMovUsingRegisters(inst_opcode, vector,
+              if (!NaClIsMovUsingRegisters(inst, vector,
                                          RegRBP, RegRSP)) {
-                if (NcInstIterHasLookbackState(iter, 1)) {
-                  NcInstState* prev_inst = NcInstIterGetLookbackState(iter, 1);
-                  if (NcIsBinarySetUsingRegisters(
-                          inst_opcode, InstAdd, vector,
+                if (NaClInstIterHasLookbackState(iter, 1)) {
+                  NaClInstState* prev_state =
+                      NaClInstIterGetLookbackState(iter, 1);
+                  if (NaClIsBinarySetUsingRegisters(
+                          inst, InstAdd, vector,
                           RegRBP, state->base_register) &&
-                      NcAssignsRegisterWithZeroExtends(prev_inst, RegEBP)) {
+                      NaClAssignsRegisterWithZeroExtends(prev_state, RegEBP)) {
                     /* case 6. */
-                    NcMarkInstructionJumpIllegal(state, inst);
+                    NaClMarkInstructionJumpIllegal(state, inst_state);
                     locals->ebp_set_inst = NULL;
-                    MaybeReportPreviousBad(state, locals);
+                    NaClMaybeReportPreviousBad(state, locals);
                     return;
                   }
                 }
                 /* If reached, not valid. */
-                NcValidatorInstMessage(
-                    LOG_ERROR, state, inst, "Illegal change to register RBP\n");
+                NaClValidatorInstMessage(
+                    LOG_ERROR, state, inst_state,
+                    "Illegal change to register RBP\n");
               }
               break;
             case RegESP:
               /* Record that we must recheck this after we have
                * moved to the next instruction.
                */
-              MaybeReportPreviousBad(state, locals);
-              locals->esp_set_inst = inst;
+              NaClMaybeReportPreviousBad(state, locals);
+              locals->esp_set_inst = inst_state;
               return;
             case RegEBP:
               /* Record that we must recheck this after we have
                * moved to the next instruction.
                */
-              MaybeReportPreviousBad(state, locals);
-              locals->ebp_set_inst = inst;
+              NaClMaybeReportPreviousBad(state, locals);
+              locals->ebp_set_inst = inst_state;
               return;
             default:
               /* Don't allow any subregister assignments of the
                * base register (R15), RSP, or RBP.
                */
-              if (NcIs64Subregister(inst, reg_name, state->base_register)) {
-                NcValidatorInstMessage(
-                    LOG_ERROR, state, inst,
+              if (NaClIs64Subreg(inst_state, reg_name, state->base_register)) {
+                NaClValidatorInstMessage(
+                    LOG_ERROR, state, inst_state,
                     "Changing %s changes the value of register %s\n",
-                    OperandKindName(reg_name),
-                    OperandKindName(state->base_register));
-              } else if (NcIs64Subregister(inst, reg_name, RegRSP)) {
-                NcValidatorInstMessage(
-                    LOG_ERROR, state, inst,
+                    NaClOpKindName(reg_name),
+                    NaClOpKindName(state->base_register));
+              } else if (NaClIs64Subreg(inst_state, reg_name, RegRSP)) {
+                NaClValidatorInstMessage(
+                    LOG_ERROR, state, inst_state,
                     "Changing %s changes the value of register %s\n",
-                    OperandKindName(reg_name),
-                    OperandKindName(RegRSP));
-              } else if (NcIs64Subregister(inst, reg_name, RegRBP)) {
-                NcValidatorInstMessage(
-                    LOG_ERROR, state, inst,
+                    NaClOpKindName(reg_name),
+                    NaClOpKindName(RegRSP));
+              } else if (NaClIs64Subreg(inst_state, reg_name, RegRBP)) {
+                NaClValidatorInstMessage(
+                    LOG_ERROR, state, inst_state,
                     "Changing %s changes the value of register %s\n",
-                    OperandKindName(reg_name),
-                    OperandKindName(RegRBP));
+                    NaClOpKindName(reg_name),
+                    NaClOpKindName(RegRBP));
               }
               break;
           }
@@ -348,12 +352,12 @@ void NcBaseRegisterValidator(struct NcValidatorState* state,
   /* Before moving to the next instruction, see if we need to report
    * problems with the previous instruction.
    */
-  MaybeReportPreviousBad(state, locals);
+  NaClMaybeReportPreviousBad(state, locals);
 }
 
-void NcBaseRegisterSummarize(struct NcValidatorState* state,
-                             struct NcInstIter* iter,
-                             struct NcBaseRegisterLocals* locals) {
+void NaClBaseRegisterSummarize(struct NaClValidatorState* state,
+                             struct NaClInstIter* iter,
+                             struct NaClBaseRegisterLocals* locals) {
   /* Check if problems in last instruction of segment. */
-  MaybeReportPreviousBad(state, locals);
+  NaClMaybeReportPreviousBad(state, locals);
 }

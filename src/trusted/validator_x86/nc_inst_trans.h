@@ -15,36 +15,36 @@
 #include "native_client/src/trusted/validator_x86/ncopcode_desc.h"
 
 /* Defines the state used to match an instruction, while walking
- * instructions using the NcInstIter.
+ * instructions using the NaClInstIter.
  */
-struct NcInstState;
+struct NaClInstState;
 
-/* Constructs the corresponding ExprNodeVector from the matched
- * Opcode of the instruction state.
+/* Constructs the corresponding NaClExpVector from the matched
+ * NaClInst of the instruction state.
  */
-void BuildExprNodeVector(struct NcInstState* state);
+void NaClBuildExpVector(struct NaClInstState* state);
 
 /* Returns true iff the given 32 bit register is the base part of the
  * corresponding given 64-bit register.
  */
-Bool Is32To64RegisterPair(OperandKind reg32, OperandKind reg64);
+Bool NaClIs32To64RegPair(NaClOpKind reg32, NaClOpKind reg64);
 
 /* Returns true iff the given (non-64 bit) subregister is a subpart
  * of the corresponding 64-bit register. Note: state is passed in
  * because different look ups are used for 8 bit registers, depending
  * on whether a REX prefix is found.
  */
-Bool NcIs64Subregister(struct NcInstState* state,
-                       OperandKind subreg, OperandKind reg64);
+Bool NaClIs64Subreg(struct NaClInstState* state,
+                    NaClOpKind subreg, NaClOpKind reg64);
 
 /* Given a 32-bit register, return the corresponding 64-bit register.
  * Returns RegUnknown if no such register exists.
  */
-OperandKind NcGet64For32BitRegister(OperandKind reg32);
+NaClOpKind NaClGet64For32BitReg(NaClOpKind reg32);
 
 /* Given a 64-bit register, return the corresponding 32-bit register.
  * Returns RegUnknown if no such register exists.
  */
-OperandKind NcGet32For64BitRegister(OperandKind reg64);
+NaClOpKind NaClGet32For64BitReg(NaClOpKind reg64);
 
 #endif   /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_INST_TRANS_H_ */

@@ -20,37 +20,37 @@
  */
 
 /* The model of a validator state. */
-struct NcValidatorState;
+struct NaClValidatorState;
 
 /* The model of an iterator through instructions in a code segment. */
-struct NcInstIter;
+struct NaClInstIter;
 
 /* Defines a data structure that holds data local to function
- * the validator function NcBaseRegisterValidator.
+ * the validator function NaClBaseRegisterValidator.
  */
-struct NcBaseRegisterLocals;
+struct NaClBaseRegisterLocals;
 
 /* Create memory to hold local information for validator
- * NcBaseRegisterValidator.
+ * NaClBaseRegisterValidator.
  */
-struct NcBaseRegisterLocals* NcBaseRegisterMemoryCreate(
-    struct NcValidatorState* state);
+struct NaClBaseRegisterLocals* NaClBaseRegisterMemoryCreate(
+    struct NaClValidatorState* state);
 
 /* Create memory to hold local information for validator
- * NcBaseRegisterValidator.
+ * NaClBaseRegisterValidator.
  */
-void NcBaseRegisterMemoryDestroy(struct NcValidatorState*state,
-                                 struct NcBaseRegisterLocals* locals);
+void NaClBaseRegisterMemoryDestroy(struct NaClValidatorState*state,
+                                   struct NaClBaseRegisterLocals* locals);
 
 /* Validator function to check that the base register is never set. */
-void NcBaseRegisterValidator(struct NcValidatorState* state,
-                             struct NcInstIter* iter,
-                             struct NcBaseRegisterLocals* locals);
+void NaClBaseRegisterValidator(struct NaClValidatorState* state,
+                               struct NaClInstIter* iter,
+                               struct NaClBaseRegisterLocals* locals);
 
 /* Post iteration validator summarization function. */
-void NcBaseRegisterSummarize(struct NcValidatorState* state,
-                             struct NcInstIter* iter,
-                             struct NcBaseRegisterLocals* locals);
+void NaClBaseRegisterSummarize(struct NaClValidatorState* state,
+                               struct NaClInstIter* iter,
+                               struct NaClBaseRegisterLocals* locals);
 
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_PROTECT_BASE_H__ */

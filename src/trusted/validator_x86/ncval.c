@@ -79,7 +79,7 @@ int AnalyzeSections(ncfile *ncf, struct NCValidatorState *vstate) {
 
 
 static int AnalyzeCodeSegments(ncfile *ncf, const char *fname) {
-  PcAddress vbase, vlimit;
+  NaClPcAddress vbase, vlimit;
   struct NCValidatorState *vstate;
   int result;
 

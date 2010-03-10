@@ -26,7 +26,7 @@ NaClErrorCode NaClValidateImage(struct NaClApp  *nap) {
 #if NACL_TARGET_SUBARCH == 32
   struct NCValidatorState *vstate;
 #else
-  struct NcValidatorState *vstate;
+  struct NaClValidatorState *vstate;
 #endif
   size_t                  regionsize;
   NaClErrorCode           rcode = LOAD_BAD_FILE;
@@ -46,17 +46,17 @@ NaClErrorCode NaClValidateImage(struct NaClApp  *nap) {
   }
   NCValidateFreeState(&vstate);
 #else
-  vstate = NcValidatorStateCreate(memp,
-                                  regionsize,
-                                  nap->bundle_size,
-                                  RegR15,
-                                  0,
-                                  stdout);
-  NcValidateSegment((uint8_t*)memp, memp, regionsize, vstate);
-  if (NcValidatesOk(vstate)) {
+  vstate = NaClValidatorStateCreate(memp,
+                                    regionsize,
+                                    nap->bundle_size,
+                                    RegR15,
+                                    0,
+                                    stdout);
+  NaClValidateSegment((uint8_t*)memp, memp, regionsize, vstate);
+  if (NaClValidatesOk(vstate)) {
     rcode = LOAD_OK;
   }
-  NcValidatorStateDestroy(vstate);
+  NaClValidatorStateDestroy(vstate);
 #endif
   if (LOAD_OK != rcode) {
     if (g_ignore_validator_result) {

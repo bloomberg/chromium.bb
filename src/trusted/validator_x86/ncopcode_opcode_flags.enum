@@ -101,7 +101,7 @@ AddressSize_v
 AddressSize_o
 
 # The instruction is not allowed by the Native Client Validator.
-NaclIllegal
+NaClIllegal
 
 # Operand size defaults to size 64 in 64-bit mode.
 OperandSizeDefaultIs64

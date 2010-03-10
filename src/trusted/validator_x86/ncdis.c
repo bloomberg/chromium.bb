@@ -56,21 +56,22 @@ void Info(const char *fmt, ...) {
   va_end(ap);
 }
 
-static void AnalyzeSegment(uint8_t* mbase, PcAddress vbase, MemorySize size) {
+static void AnalyzeSegment(uint8_t* mbase, NaClPcAddress vbase,
+                           NaClMemorySize size) {
   if (FLAGS_use_iter) {
-    NcSegment segment;
-    NcInstIter* iter;
-    NcSegmentInitialize(mbase, vbase, size, &segment);
-    for (iter = NcInstIterCreate(&segment); NcInstIterHasNext(iter);
-         NcInstIterAdvance(iter)) {
-      NcInstState* state = NcInstIterGetState(iter);
-      PrintNcInstStateInstruction(stdout, state);
+    NaClSegment segment;
+    NaClInstIter* iter;
+    NaClSegmentInitialize(mbase, vbase, size, &segment);
+    for (iter = NaClInstIterCreate(&segment); NaClInstIterHasNext(iter);
+         NaClInstIterAdvance(iter)) {
+      NaClInstState* state = NaClInstIterGetState(iter);
+      NaClInstStateInstPrint(stdout, state);
       if (FLAGS_internal) {
-        PrintOpcode(stdout, NcInstStateOpcode(state));
-        PrintExprNodeVector(stdout, NcInstStateNodeVector(state));
+        NaClInstPrint(stdout, NaClInstStateInst(state));
+        NaClExpVectorPrint(stdout, NaClInstStateExpVector(state));
       }
     }
-    NcInstIterDestroy(iter);
+    NaClInstIterDestroy(iter);
   } else {
     NCDecodeSegment(mbase, vbase, size, NULL);
   }
@@ -108,7 +109,7 @@ static Bool FLAGS_not_nc = FALSE;
  * MAX_BYTES_PER_X86_INSTRUCTION). This sequence is used to run
  * a (debug) test of the disassembler.
  */
-static uint8_t FLAGS_decode_instruction[MAX_BYTES_PER_X86_INSTRUCTION];
+static uint8_t FLAGS_decode_instruction[NACL_MAX_BYTES_PER_X86_INSTRUCTION];
 
 /* Define the number of bytes supplied for a debug instruction. */
 static int FLAGS_decode_instruction_size = 0;
@@ -171,7 +172,7 @@ static void ResetFlags() {
   FLAGS_self_document = DEFAULT_self_document;
   /* Always clear the decode instruction. */
   FLAGS_decode_instruction_size = 0;
-  for (i = 0; i < MAX_BYTES_PER_X86_INSTRUCTION; ++i) {
+  for (i = 0; i < NACL_MAX_BYTES_PER_X86_INSTRUCTION; ++i) {
     FLAGS_decode_instruction[i] = 0;
   }
 }
@@ -229,7 +230,8 @@ int GrokFlags(int argc, const char *argv[]) {
         if (i == 2) {
           uint8_t byte = HexToByte(buffer);
           FLAGS_decode_instruction[FLAGS_decode_instruction_size++] = byte;
-          if (FLAGS_decode_instruction_size >= MAX_BYTES_PER_X86_INSTRUCTION) {
+          if (FLAGS_decode_instruction_size >=
+              NACL_MAX_BYTES_PER_X86_INSTRUCTION) {
             Fatal("-i=%s specifies too long of a hex value\n", hex_instruction);
           }
           i = 0;
@@ -415,18 +417,18 @@ static void ProcessCommandLine(int argc, const char* argv[]) {
   } else if (0 != strcmp(FLAGS_hex_text, "")) {
     uint8_t bytes[MAX_INPUT_LINE];
     size_t num_bytes;
-    PcAddress pc;
+    NaClPcAddress pc;
     if (0 == strcmp(FLAGS_hex_text, "-")) {
-      num_bytes = NcReadHexTextWithPc(stdin, &pc, bytes, MAX_INPUT_LINE);
-      AnalyzeSegment(bytes, pc, (MemorySize) num_bytes);
+      num_bytes = NaClReadHexTextWithPc(stdin, &pc, bytes, MAX_INPUT_LINE);
+      AnalyzeSegment(bytes, pc, (NaClMemorySize) num_bytes);
     } else {
       FILE* input = fopen(FLAGS_hex_text, "r");
       if (NULL == input) {
         Fatal("Can't open hex text file: %s\n", FLAGS_hex_text);
       }
-      num_bytes = NcReadHexTextWithPc(input, &pc, bytes, MAX_INPUT_LINE);
+      num_bytes = NaClReadHexTextWithPc(input, &pc, bytes, MAX_INPUT_LINE);
       fclose(input);
-      AnalyzeSegment(bytes, pc, (MemorySize) num_bytes);
+      AnalyzeSegment(bytes, pc, (NaClMemorySize) num_bytes);
     }
   } else if (0 != strcmp(FLAGS_commands, "")) {
     /* Use the given input file to find command line arguments,

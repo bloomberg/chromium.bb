@@ -21,22 +21,22 @@
 
 #include "native_client/src/shared/utils/debugging.h"
 
-void NcValidateInstructionLegal(NcValidatorState* state,
-                                NcInstIter* iter,
-                                void* ignore) {
-  NcInstState* inst = NcInstIterGetState(iter);
-  Bool is_legal = NcInstStateIsNaclLegal(inst);
+void NaClValidateInstructionLegal(NaClValidatorState* state,
+                                  NaClInstIter* iter,
+                                  void* ignore) {
+  NaClInstState* inst_state = NaClInstIterGetState(iter);
+  Bool is_legal = NaClInstStateIsNaClLegal(inst_state);
   DEBUG({
-      printf("->NcValidateInstructionLegal\n");
-      PrintOpcode(stdout, NcInstStateOpcode(inst));
-      PrintExprNodeVector(stdout, NcInstStateNodeVector(inst));
+      printf("->NaClValidateInstructionLegal\n");
+      NaClInstPrint(stdout, NaClInstStateInst(inst_state));
+      NaClExpVectorPrint(stdout, NaClInstStateExpVector(inst_state));
     });
-  is_legal = NcInstStateIsNaclLegal(inst);
+  is_legal = NaClInstStateIsNaClLegal(inst_state);
   DEBUG(printf("is_legal = %"NACL_PRIdBool"\n", is_legal));
   if (is_legal) {
     /* Check other forms to disallow. */
-    Opcode* opcode = NcInstStateOpcode(inst);
-    switch (opcode->insttype) {
+    NaClInst* inst = NaClInstStateInst(inst_state);
+    switch (inst->insttype) {
       case NACLi_RETURN:
       case NACLi_EMMX:
         /* EMMX needs to be supported someday but isn't ready yet. */
@@ -60,9 +60,9 @@ void NcValidateInstructionLegal(NcValidatorState* state,
     }
   }
   if (!is_legal) {
-    NcValidatorInstMessage(LOG_ERROR, state, inst,
-                           "Illegal native client instruction\n");
+    NaClValidatorInstMessage(LOG_ERROR, state, inst_state,
+                             "Illegal native client instruction\n");
   }
-  DEBUG(printf("<-NcValidateInstructionLegal: is_legal = %"NACL_PRIdBool"\n",
+  DEBUG(printf("<-NaClValidateInstructionLegal: is_legal = %"NACL_PRIdBool"\n",
                is_legal));
 }

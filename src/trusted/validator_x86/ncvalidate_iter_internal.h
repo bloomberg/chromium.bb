@@ -14,23 +14,23 @@
 #include "native_client/src/trusted/validator_x86/nacl_cpuid.h"
 
 /* Defines the maximum number of validators that can be registered. */
-#define MAX_NCVALIDATORS 20
+#define NACL_MAX_NCVALIDATORS 20
 
-struct NcValidatorState {
-  /* Holds the vbase value passed to NcValidatorStateCreate. */
-  PcAddress vbase;
-  /* Holds the sz value passed to NcValidatorStateCreate. */
-  MemorySize sz;
-  /* Holds the alignment value passed to NcValidatorStateCreate. */
+struct NaClValidatorState {
+  /* Holds the vbase value passed to NaClValidatorStateCreate. */
+  NaClPcAddress vbase;
+  /* Holds the sz value passed to NaClValidatorStateCreate. */
+  NaClMemorySize sz;
+  /* Holds the alignment value passed to NaClValidatorStateCreate. */
   uint8_t alignment;
   /* Holds the upper limit of all possible addresses */
-  PcAddress vlimit;
+  NaClPcAddress vlimit;
   /* Holds the alignment mask, which when applied, catches any lower
    * bits in an address that violate alignment.
    */
-  PcAddress alignment_mask;
+  NaClPcAddress alignment_mask;
   /* Holds the value for the base register, or RegUnknown if undefined. */
-  OperandKind base_register;
+  NaClOpKind base_register;
   /* Holds if the validation is still valid. */
   Bool validates_ok;
   /* Holds if we should quit validation quickly if an error occurs
@@ -40,7 +40,7 @@ struct NcValidatorState {
   /* Holds the local memory associated with validators to be applied to this
    * state.
    */
-  void* local_memory[MAX_NCVALIDATORS];
+  void* local_memory[NACL_MAX_NCVALIDATORS];
   /* Defines how many validators are defined for this state. */
   int number_validators;
   /* Holds the cpu features of the machine it is running on. */

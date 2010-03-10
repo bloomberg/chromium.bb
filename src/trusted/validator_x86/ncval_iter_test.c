@@ -51,60 +51,60 @@ static int GrokFlags(int argc, const char* argv[]) {
  */
 #define MAX_INPUT_LINE 4096
 
-typedef struct ValidateData {
+typedef struct NaClValidateData {
   uint8_t bytes[MAX_INPUT_LINE];
-  PcAddress base;
-  MemorySize num_bytes;
-} ValidateData;
+  NaClPcAddress base;
+  NaClMemorySize num_bytes;
+} NaClValidateData;
 
 static void* ValidateLoad(int argc, const char* argv[]) {
-  ValidateData* data;
+  NaClValidateData* data;
   argc = GrokFlags(argc, argv);
   if (argc != 1) {
-    NcValidatorMessage(LOG_FATAL, NULL, "expected: %s <options>\n", argv[0]);
+    NaClValidatorMessage(LOG_FATAL, NULL, "expected: %s <options>\n", argv[0]);
   }
-  data = (ValidateData*) malloc(sizeof(ValidateData));
+  data = (NaClValidateData*) malloc(sizeof(NaClValidateData));
   if (NULL == data) {
-    NcValidatorMessage(LOG_FATAL, NULL, "Unsufficient memory to run");
+    NaClValidatorMessage(LOG_FATAL, NULL, "Unsufficient memory to run");
   }
   if (0 == strcmp(FLAGS_hex_text, "")) {
-    data->num_bytes = (MemorySize)
-        NcReadHexTextWithPc(stdin, &data->base, data->bytes, MAX_INPUT_LINE);
+    data->num_bytes = (NaClMemorySize)
+        NaClReadHexTextWithPc(stdin, &data->base, data->bytes, MAX_INPUT_LINE);
   } else {
     FILE* input = fopen(FLAGS_hex_text, "r");
     if (NULL == input) {
-      NcValidatorMessage(LOG_FATAL, NULL,
+      NaClValidatorMessage(LOG_FATAL, NULL,
                          "Can't open hex text file: %s\n", FLAGS_hex_text);
     }
-    data->num_bytes = (MemorySize)
-        NcReadHexTextWithPc(input, &data->base, data->bytes, MAX_INPUT_LINE);
+    data->num_bytes = (NaClMemorySize)
+        NaClReadHexTextWithPc(input, &data->base, data->bytes, MAX_INPUT_LINE);
     fclose(input);
   }
   return data;
 }
 
-static int ValidateAnalyze(ValidateData* data) {
-  NcValidatorState* state;
-  state = NcValidatorStateCreate(data->base, data->num_bytes,
-                                 (uint8_t) FLAGS_alignment, RegR15, FALSE,
-                                 stdout);
+static int ValidateAnalyze(NaClValidateData* data) {
+  NaClValidatorState* state;
+  state = NaClValidatorStateCreate(data->base, data->num_bytes,
+                                   (uint8_t) FLAGS_alignment, RegR15, FALSE,
+                                   stdout);
   if (NULL == state) {
-    NcValidatorMessage(LOG_FATAL, NULL, "Unable to create validator state");
+    NaClValidatorMessage(LOG_FATAL, NULL, "Unable to create validator state");
   }
-  NcValidateSegment(data->bytes, data->base, data->num_bytes, state);
-  NcValidatorStatePrintStats(stdout, state);
-  if (NcValidatesOk(state)) {
-    NcValidatorMessage(LOG_INFO, state, "***module is safe***\n");
+  NaClValidateSegment(data->bytes, data->base, data->num_bytes, state);
+  NaClValidatorStatePrintStats(stdout, state);
+  if (NaClValidatesOk(state)) {
+    NaClValidatorMessage(LOG_INFO, state, "***module is safe***\n");
   } else {
-    NcValidatorMessage(LOG_INFO, state, "***MODULE IS UNSAFE***\n");
+    NaClValidatorMessage(LOG_INFO, state, "***MODULE IS UNSAFE***\n");
   }
-  NcValidatorStateDestroy(state);
+  NaClValidatorStateDestroy(state);
   return 0;
 }
 
 int main(int argc, const char* argv[]) {
   NaClLogDisableTimestamp();
-  return NcRunValidator(argc, argv,
-                        (NcValidateLoad) ValidateLoad,
-                        (NcValidateAnalyze) ValidateAnalyze);
+  return NaClRunValidator(argc, argv,
+                          (NaClValidateLoad) ValidateLoad,
+                          (NaClValidateAnalyze) ValidateAnalyze);
 }

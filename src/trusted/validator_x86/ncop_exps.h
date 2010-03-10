@@ -16,97 +16,99 @@
 #include "gen/native_client/src/trusted/validator_x86/ncop_expr_node_kind.h"
 
 /* Defines the state used to match an instruction, while walking
- * instructions using the NcInstIter.
+ * instructions using the NaClInstIter.
  */
-struct NcInstState;
+struct NaClInstState;
 
 /* Returns the number of kids an ExprNodeKind has. */
-int ExprNodeKindRank(ExprNodeKind kind);
+int NaClExpKindRank(NaClExpKind kind);
 
 /* Defines a bit set of ExprNodeFlags. */
-typedef uint32_t ExprNodeFlags;
+typedef uint32_t NaClExpFlags;
 
-/* Converts an ExprNodeFlagEnum to the corresponding bit in a ExprNodesFlags
+/* Converts an NaClExpFlag enum to the corresponding bit in a NaClExpFlags
  * bit set.
  */
-#define ExprFlag(x) (((ExprNodeFlags) 1) << (x))
+#define NACL_EFLAG(x) (((NaClExpFlags) 1) << (x))
 
+/* Models the empty set of NaClExpFlags. */
+#define NACL_EMPTY_EFLAGS ((NaClExpFlags) 0)
 
 /* Print out the set of defined expr flags. */
-void PrintExprNodeFlags(FILE* file, ExprNodeFlags flags);
+void NaClPrintExpFlags(FILE* file, NaClExpFlags flags);
 
-/* Defines a node in the vector of nodes, corresponding to the flattened
+/* Defines a node in the vector of expressions, corresponding to the flattened
  * (preorder) tree.
  */
-typedef struct ExprNode {
+typedef struct NaClExp {
   /* The type of node. */
-  ExprNodeKind kind;
+  NaClExpKind kind;
   /* A value associated with the kind. */
   int32_t value;
   /* The set of flags associated with the node. */
-  ExprNodeFlags flags;
-} ExprNode;
+  NaClExpFlags flags;
+} NaClExp;
 
 /* Maximum number of nodes allowed in the flattened (preorder) tree. */
-#define MAX_EXPR_NODES 30
+#define NACL_MAX_EXPS 30
 
-/* Defines the vector of nodes, corresponding to the flattened (preorder)
- * tree that defines the instruction expression.
+/* Defines the vector of expression nodes, corresponding to the flattened
+ * (preorder) tree that defines the instruction expression.
  */
-typedef struct ExprNodeVector {
+typedef struct NaClExpVector {
   uint32_t number_expr_nodes;
-  ExprNode node[MAX_EXPR_NODES];
-} ExprNodeVector;
+  NaClExp node[NACL_MAX_EXPS];
+} NaClExpVector;
 
 /* Returns the number of elements in the given vector, that the subtree
  * rooted at the given node covers.
  */
-int ExprNodeWidth(ExprNodeVector* vector, int node);
+int NaClExpWidth(NaClExpVector* vector, int node);
 
 /* Given the given index of the node in the vector, return the index of the
  * given (zero based) kid of the node.
  */
-int GetExprNodeKidIndex(ExprNodeVector* vector, int node, int kid);
+int NaClGetExpKidIndex(NaClExpVector* vector, int node, int kid);
 
 /* Given an index in the vector, return the index to its parent.
  * Note: index must be > 0.
  */
-int GetExprNodeParentIndex(ExprNodeVector* vector, int node);
+int NaClGetExpParentIndex(NaClExpVector* vector, int node);
 
 /* Given the index of a constant, returns the corresponding constant. */
-uint64_t GetExprConstant(ExprNodeVector* vector, int index);
+uint64_t NaClGetExpConstant(NaClExpVector* vector, int index);
 
 /* Given a 64-bit constant, return the corresponding two 32-bit constants to
  * Use. Note: The lower 32 bits are put in val1, and the upper 32 bits are
  * put in val2.
  */
-void SplitExprConstant(uint64_t val, uint32_t* val1, uint32_t* val2);
+void NaClSplitExpConstant(uint64_t val, uint32_t* val1, uint32_t* val2);
 
 /* Returns true if the index points to a constant that is negative. */
-Bool IsExprNegativeConstant(ExprNodeVector* vector, int index);
+Bool NaClIsExpNegativeConstant(NaClExpVector* vector, int index);
 
 /* Returns the index of the i-th occurrence of the given kind of node,
  * or -1 if no such node exists.
  */
-int GetNthNodeKind(ExprNodeVector* vector, ExprNodeKind kind, int n);
+int NaClGetNthExpKind(NaClExpVector* vector, NaClExpKind kind, int n);
 
 /* Returns the register in the given node. */
-OperandKind GetNodeRegister(ExprNode* node);
+NaClOpKind NaClGetExpRegister(NaClExp* node);
 
 /* Returns the register in the given indexed node. */
-OperandKind GetNodeVectorRegister(ExprNodeVector* vector, int node);
+NaClOpKind NaClGetExpVectorRegister(NaClExpVector* vector, int node);
 
 /* Print out the contents of the given vector of nodes to the given file. */
-void PrintExprNodeVector(FILE* file, ExprNodeVector* vector);
+void NaClExpVectorPrint(FILE* file, NaClExpVector* vector);
 
 /* Print out the disassembled instruction in the given instruction state. */
-void PrintNcInstStateInstruction(FILE* file, struct NcInstState* state);
+void NaClInstStateInstPrint(FILE* file, struct NaClInstState* state);
 
-/* Same functionality as PrintInstStateInstruction(), but puts the
- * result in a string. This fct is to be used for comparing output on
+/* Same functionality as NaClInstStateInstPrint(), but puts the
+ * result in a string. This function is to be used for comparing output on
  * an instruction-at-a-time granularity. Do not use this fct except
  * for testing purposes.
  */
-char* PrintNcInstStateInstructionToString(struct NcInstState* state);
+char* NaClInstStateInstructionToString(struct NaClInstState* state);
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCOP_EXPS_H_ */

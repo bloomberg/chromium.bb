@@ -26,80 +26,82 @@
 
 #include "native_client/src/shared/utils/debugging.h"
 
-NcInstIter* NcInstIterCreateWithLookback(
-    NcSegment* segment,
+NaClInstIter* NaClInstIterCreateWithLookback(
+    NaClSegment* segment,
     size_t lookback_size) {
   size_t i;
-  NcInstIter* iter;
+  NaClInstIter* iter;
   /* Guarantee we don't wrap around while computing buffer index updates. */
   assert(((lookback_size + 1) * 2 + 1) > lookback_size);
-  iter = (NcInstIter*) malloc(sizeof(NcInstIter));
+  iter = (NaClInstIter*) malloc(sizeof(NaClInstIter));
   iter->segment = segment;
   iter->index = 0;
   iter->inst_count = 0;
   iter->buffer_size = lookback_size + 1;
   iter->buffer_index = 0;
-  iter->buffer = (NcInstState*) calloc(iter->buffer_size, sizeof(NcInstState));
+  iter->buffer = (NaClInstState*)
+      calloc(iter->buffer_size, sizeof(NaClInstState));
   for (i = 0; i < iter->buffer_size; ++i) {
-    iter->buffer[i].opcode = NULL;
+    iter->buffer[i].inst = NULL;
   }
   return iter;
 }
 
-NcInstIter* NcInstIterCreate(NcSegment* segment) {
-  return NcInstIterCreateWithLookback(segment, 0);
+NaClInstIter* NaClInstIterCreate(NaClSegment* segment) {
+  return NaClInstIterCreateWithLookback(segment, 0);
 }
 
-void NcInstIterDestroy(NcInstIter* iter) {
+void NaClInstIterDestroy(NaClInstIter* iter) {
   free(iter->buffer);
   free(iter);
 }
 
-NcInstState* NcInstIterGetState(NcInstIter* iter) {
-  NcInstState* state = &iter->buffer[iter->buffer_index];
-  if (NULL == state->opcode) {
-    DecodeInstruction(iter, state);
+NaClInstState* NaClInstIterGetState(NaClInstIter* iter) {
+  NaClInstState* state = &iter->buffer[iter->buffer_index];
+  if (NULL == state->inst) {
+    NaClDecodeInst(iter, state);
   }
   return state;
 }
 
-Bool NcInstIterHasLookbackState(NcInstIter* iter, size_t distance) {
+Bool NaClInstIterHasLookbackState(NaClInstIter* iter, size_t distance) {
   return distance < iter->buffer_size && distance <= iter->inst_count;
 }
 
-NcInstState* NcInstIterGetLookbackState(NcInstIter* iter, size_t distance) {
-  NcInstState* state;
+NaClInstState* NaClInstIterGetLookbackState(NaClInstIter* iter,
+                                            size_t distance) {
+  NaClInstState* state;
   assert(distance < iter->buffer_size);
   assert(distance <= iter->inst_count);
   state = &iter->buffer[((iter->buffer_index + iter->buffer_size) - distance)
                         % iter->buffer_size];
-  if (NULL == state->opcode) {
-    DecodeInstruction(iter, state);
+  if (NULL == state->inst) {
+    NaClDecodeInst(iter, state);
   }
   return state;
 }
 
-Bool NcInstIterHasNext(NcInstIter* iter) {
-  DEBUG(printf("iter has next index %"NACL_PRIxMemorySize
-               " < %"NACL_PRIxMemorySize"\n",
+Bool NaClInstIterHasNext(NaClInstIter* iter) {
+  DEBUG(printf("iter has next index %"NACL_PRIxNaClMemorySize
+               " < %"NACL_PRIxNaClMemorySize"\n",
                iter->index, iter->segment->size));
   return iter->index < iter->segment->size;
 }
 
-void NcInstIterAdvance(NcInstIter* iter) {
-  NcInstState* state;
+void NaClInstIterAdvance(NaClInstIter* iter) {
+  NaClInstState* state;
   if (iter->index >= iter->segment->size) {
-    fprintf(stderr, "*ERROR* NcInstIterAdvance with no next element.\n");
+    fprintf(stderr, "*ERROR* NaClInstIterAdvance with no next element.\n");
     exit(1);
   }
-  state = NcInstIterGetState(iter);
+  state = NaClInstIterGetState(iter);
   iter->index += state->length;
   ++iter->inst_count;
   iter->buffer_index = (iter->buffer_index + 1) % iter->buffer_size;
   DEBUG(
       printf(
-          "iter advance: index %"NACL_PRIxMemorySize", "
+          "iter advance: index %"NACL_PRIxNaClMemorySize", "
           "buffer index %"NACL_PRIuS"\n",
           iter->index, iter->buffer_index));
-  iter->buffer[iter->buffer_index].opcode = NULL;
+  iter->buffer[iter->buffer_index].inst = NULL;
 }

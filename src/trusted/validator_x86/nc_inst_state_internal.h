@@ -15,22 +15,22 @@
 #include "native_client/src/trusted/validator_x86/ncop_exps.h"
 
 /* The meta model of an x86 opcode instruction. */
-struct Opcode;
+struct NaClInst;
 
 /* Model of a code segment. */
-struct NcSegment;
+struct NaClSegment;
 
-/* Defines the type used to align OpExpressionNodes when memory allocating. */
-typedef uint64_t OpExpressionElement;
+/* Defines the type used to align OpExprNodes when memory allocating. */
+typedef uint64_t NaClOpExpElement;
 
 /* Model data needed to decode an x86 instruction. */
-struct NcInstState {
+struct NaClInstState {
   /* Define the start location for the bytes defining the instruction. */
   uint8_t* mpc;
   /* Define the (virtual pc) address associated with the instruction being
    * matched.
    */
-  PcAddress vpc;
+  NaClPcAddress vpc;
   /* Define the number of bytes in the instruction. */
   uint8_t length;
   /* Define the upper limit on how many bytes can be in the instruction. */
@@ -77,28 +77,28 @@ struct NcInstState {
    * Note: If this value is NULL, we have not yet tried to match
    * the current instruction with the corresponding instruction iterator.
    */
-  struct Opcode* opcode;
+  struct NaClInst* inst;
   /* The corresponding expression tree denoted by the matched instruction. */
-  ExprNodeVector nodes;
+  NaClExpVector nodes;
 };
 
 /* Model of an instruction iterator. */
-struct NcInstIter {
+struct NaClInstIter {
   /* Defines the segment to process */
-  struct NcSegment* segment;
+  struct NaClSegment* segment;
   /* Defines the current (relative pc) index into the segment. */
-  MemorySize index;
+  NaClMemorySize index;
   /* Defines the index of the current instruction, relative to
    * the beginning of the segment.
    */
-  MemorySize inst_count;
+  NaClMemorySize inst_count;
   /* The following fields define a ring buffer, where buffer_index
    * is the index of the current instruction in the buffer, and
    * buffer_size is the number of iterator states in the buffer.
    */
   size_t buffer_size;
   size_t buffer_index;
-  struct NcInstState* buffer;
+  struct NaClInstState* buffer;
 };
 
 /* Given the current location of the (relative) pc of the given instruction
@@ -108,6 +108,6 @@ struct NcInstIter {
  * update the state to hold all information on the matched bytes of the
  * instruction.
  */
-void DecodeInstruction(struct NcInstIter* iter, struct NcInstState* state);
+void NaClDecodeInst(struct NaClInstIter* iter, struct NaClInstState* state);
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_INST_STATE_INTERNAL_H_ */

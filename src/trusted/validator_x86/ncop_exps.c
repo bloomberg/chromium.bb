@@ -24,35 +24,35 @@
 
 #include "native_client/src/shared/utils/debugging.h"
 
-void PrintExprNodeFlags(FILE* file, ExprNodeFlags flags) {
+void NaClPrintExpFlags(FILE* file, NaClExpFlags flags) {
   if (flags == 0) {
     fprintf(file, "0");
   } else {
-    ExprNodeFlag f;
+    NaClExpFlag f;
     Bool is_first = TRUE;
-    for (f = 0; f < ExprNodeFlagEnumSize; f++) {
-      if (flags & ExprFlag(f)) {
+    for (f = 0; f < NaClExpFlagEnumSize; f++) {
+      if (flags & NACL_EFLAG(f)) {
         if (is_first) {
           is_first = FALSE;
         } else {
           fprintf(file, " | ");
         }
-        fprintf(file, "%s", ExprNodeFlagName(f));
+        fprintf(file, "%s", NaClExpFlagName(f));
       }
     }
   }
 }
 
-typedef struct {
+typedef struct NaClExpKindDescriptor {
   /* The name of the expression operator. */
-  ExprNodeKind name;
+  NaClExpKind name;
   /* The rank (i.e. number of children) the expression operator has. */
   const int rank;
-} ExprNodeKindDescriptor;
+} NaClExpKindDescriptor;
 
-/* The print names of valid ExprNodeKind values. */
-static const ExprNodeKindDescriptor
-g_ExprNodeKindDesc[ExprNodeKindEnumSize + 1]= {
+/* The print names of valid NaClExpKind values. */
+static const NaClExpKindDescriptor
+g_NaClExpKindDesc[NaClExpKindEnumSize + 1]= {
   {UndefinedExp, 0},
   {ExprRegister, 0},
   {OperandReference, 1},
@@ -62,31 +62,31 @@ g_ExprNodeKindDesc[ExprNodeKindEnumSize + 1]= {
   {ExprMemOffset, 4},
 };
 
-int ExprNodeKindRank(ExprNodeKind kind) {
-  assert(kind == g_ExprNodeKindDesc[kind].name);
-  return g_ExprNodeKindDesc[kind].rank;
+int NaClExpKindRank(NaClExpKind kind) {
+  assert(kind == g_NaClExpKindDesc[kind].name);
+  return g_NaClExpKindDesc[kind].rank;
 }
 
 /* Returns the register defined by the given node. */
-OperandKind GetNodeRegister(ExprNode* node) {
+NaClOpKind NaClGetExpRegister(NaClExp* node) {
   assert(node->kind == ExprRegister);
-  return (OperandKind) node->value;
+  return (NaClOpKind) node->value;
 }
 
 /* Returns the name of the register defined by the indexed node in the
  * vector of nodes.
  */
-OperandKind GetNodeVectorRegister(ExprNodeVector* vector,
-                                                int node) {
-  return GetNodeRegister(&vector->node[node]);
+NaClOpKind NaClGetExpVectorRegister(NaClExpVector* vector,
+                                    int node) {
+  return NaClGetExpRegister(&vector->node[node]);
 }
 
-static int PrintDisassembledExp(FILE* file,
-                                ExprNodeVector* vector,
-                                uint32_t index);
+static int NaClPrintDisassembledExp(FILE* file,
+                                    NaClExpVector* vector,
+                                    uint32_t index);
 
 /* Print the characters in the given string using lower case. */
-static void PrintLower(FILE* file, char* str) {
+static void NaClPrintLower(FILE* file, char* str) {
   while (*str) {
     putc(tolower(*str), file);
     ++str;
@@ -94,10 +94,10 @@ static void PrintLower(FILE* file, char* str) {
 }
 
 /* Return the sign (extended) integer in the given expr node. */
-static int32_t GetSignExtendedValue(ExprNode* node) {
-  if (node->flags & ExprFlag(ExprSize8)) {
+static int32_t NaClGetSignExtendedValue(NaClExp* node) {
+  if (node->flags & NACL_EFLAG(ExprSize8)) {
     return (int8_t) node->value;
-  } else if (node->flags & ExprFlag(ExprSize16)) {
+  } else if (node->flags & NACL_EFLAG(ExprSize16)) {
     return (int16_t) node->value;
   } else {
     return (int32_t) node->value;
@@ -105,37 +105,37 @@ static int32_t GetSignExtendedValue(ExprNode* node) {
 }
 
 /* Print out the given (constant) expression node to the given file. */
-static void PrintDisassembledConst(FILE* file, ExprNode* node) {
+static void NaClPrintDisassembledConst(FILE* file, NaClExp* node) {
   assert(node->kind == ExprConstant);
-  if (node->flags & ExprFlag(ExprUnsignedHex)) {
+  if (node->flags & NACL_EFLAG(ExprUnsignedHex)) {
     fprintf(file, "0x%"NACL_PRIx32, node->value);
-  } else if (node->flags & ExprFlag(ExprSignedHex)) {
-    int32_t value = GetSignExtendedValue(node);
+  } else if (node->flags & NACL_EFLAG(ExprSignedHex)) {
+    int32_t value = NaClGetSignExtendedValue(node);
     if (value < 0) {
       value = -value;
       fprintf(file, "-0x%"NACL_PRIx32, value);
     } else {
       fprintf(file, "0x%"NACL_PRIx32, value);
     }
-  } else if (node->flags & ExprFlag(ExprUnsignedInt)) {
+  } else if (node->flags & NACL_EFLAG(ExprUnsignedInt)) {
     fprintf(file, "%"NACL_PRIu32, node->value);
   } else {
     /* Assume ExprSignedInt. */
-    fprintf(file, "%"NACL_PRId32, (int32_t) GetSignExtendedValue(node));
+    fprintf(file, "%"NACL_PRId32, (int32_t) NaClGetSignExtendedValue(node));
   }
 }
 
 /* Print out the given (64-bit constant) expression node to the given file. */
-static void PrintDisassembledConst64(
-    FILE* file, ExprNodeVector* vector, int index) {
-  ExprNode* node;
+static void NaClPrintDisassembledConst64(
+    FILE* file, NaClExpVector* vector, int index) {
+  NaClExp* node;
   uint64_t value;
   node = &vector->node[index];
   assert(node->kind == ExprConstant64);
-  value = GetExprConstant(vector, index);
-  if (node->flags & ExprFlag(ExprUnsignedHex)) {
+  value = NaClGetExpConstant(vector, index);
+  if (node->flags & NACL_EFLAG(ExprUnsignedHex)) {
     fprintf(file, "0x%"NACL_PRIx64, value);
-  } else if (node->flags & ExprFlag(ExprSignedHex)) {
+  } else if (node->flags & NACL_EFLAG(ExprSignedHex)) {
     int64_t val = (int64_t) value;
     if (val < 0) {
       val = -val;
@@ -143,7 +143,7 @@ static void PrintDisassembledConst64(
     } else {
       fprintf(file, "0x%"NACL_PRIx64, val);
     }
-  } else if (node->flags & ExprFlag(ExprUnsignedInt)) {
+  } else if (node->flags & NACL_EFLAG(ExprUnsignedInt)) {
     fprintf(file, "%"NACL_PRIu64, value);
   } else {
     fprintf(file, "%"NACL_PRId64, (int64_t) value);
@@ -153,41 +153,41 @@ static void PrintDisassembledConst64(
 /* Print out the disassembled representation of the given register
  * to the given file.
  */
-static void PrintDisassembledRegKind(FILE* file, OperandKind reg) {
-  const char* name = OperandKindName(reg);
+static void NaClPrintDisassembledRegKind(FILE* file, NaClOpKind reg) {
+  const char* name = NaClOpKindName(reg);
   char* str = strstr(name, "Reg");
   putc('%', file);
-  PrintLower(file, str == NULL ? (char*) name : str + strlen("Reg"));
+  NaClPrintLower(file, str == NULL ? (char*) name : str + strlen("Reg"));
 }
 
-static INLINE void PrintDisassembledReg(FILE* file, ExprNode* node) {
-  PrintDisassembledRegKind(file, GetNodeRegister(node));
+static INLINE void NaClPrintDisassembledReg(FILE* file, NaClExp* node) {
+  NaClPrintDisassembledRegKind(file, NaClGetExpRegister(node));
 }
 
-void PrintExprNodeVector(FILE* file, ExprNodeVector* vector) {
+void NaClExpVectorPrint(FILE* file, NaClExpVector* vector) {
   uint32_t i;
-  fprintf(file, "ExprNodeVector[%d] = {\n", vector->number_expr_nodes);
+  fprintf(file, "NaClExpVector[%d] = {\n", vector->number_expr_nodes);
   for (i = 0; i < vector->number_expr_nodes; i++) {
-    ExprNode* node = &vector->node[i];
+    NaClExp* node = &vector->node[i];
     fprintf(file, "  { %s[%d] , ",
-            ExprNodeKindName(node->kind),
-            ExprNodeKindRank(node->kind));
+            NaClExpKindName(node->kind),
+            NaClExpKindRank(node->kind));
     switch (node->kind) {
       case ExprRegister:
-        PrintDisassembledReg(file, node);
+        NaClPrintDisassembledReg(file, node);
         break;
       case ExprConstant:
-        PrintDisassembledConst(file, node);
+        NaClPrintDisassembledConst(file, node);
         break;
       case ExprConstant64:
-        PrintDisassembledConst64(file, vector, i);
+        NaClPrintDisassembledConst64(file, vector, i);
         break;
       default:
         fprintf(file, "%"NACL_PRIu32, node->value);
         break;
     }
     fprintf(file, ", ");
-    PrintExprNodeFlags(file, node->flags);
+    NaClPrintExpFlags(file, node->flags);
     fprintf(file, " },\n");
   }
   fprintf(file, "};\n");
@@ -196,67 +196,67 @@ void PrintExprNodeVector(FILE* file, ExprNodeVector* vector) {
 /* Print out the given (memory offset) expression node to the given file.
  * Returns the index of the node following the given (indexed) memory offset.
  */
-static int PrintDisassembledMemOffset(FILE* file,
-                                      ExprNodeVector* vector,
+static int NaClPrintDisassembledMemOffset(FILE* file,
+                                      NaClExpVector* vector,
                                       int index) {
   int r1_index = index + 1;
-  int r2_index = r1_index + ExprNodeWidth(vector, r1_index);
-  int scale_index = r2_index + ExprNodeWidth(vector, r2_index);
-  int disp_index = scale_index + ExprNodeWidth(vector, scale_index);
-  OperandKind r1 = GetNodeVectorRegister(vector, r1_index);
-  OperandKind r2 = GetNodeVectorRegister(vector, r2_index);
-  int scale = (int) GetExprConstant(vector, scale_index);
-  uint64_t disp = GetExprConstant(vector, disp_index);
+  int r2_index = r1_index + NaClExpWidth(vector, r1_index);
+  int scale_index = r2_index + NaClExpWidth(vector, r2_index);
+  int disp_index = scale_index + NaClExpWidth(vector, scale_index);
+  NaClOpKind r1 = NaClGetExpVectorRegister(vector, r1_index);
+  NaClOpKind r2 = NaClGetExpVectorRegister(vector, r2_index);
+  int scale = (int) NaClGetExpConstant(vector, scale_index);
+  uint64_t disp = NaClGetExpConstant(vector, disp_index);
   assert(ExprMemOffset == vector->node[index].kind);
   fprintf(file,"[");
   if (r1 != RegUnknown) {
-    PrintDisassembledRegKind(file, r1);
+    NaClPrintDisassembledRegKind(file, r1);
   }
   if (r2 != RegUnknown) {
     if (r1 != RegUnknown) {
       fprintf(file, "+");
     }
-    PrintDisassembledRegKind(file, r2);
+    NaClPrintDisassembledRegKind(file, r2);
     fprintf(file, "*%d", scale);
   }
   if (disp != 0) {
     if ((r1 != RegUnknown || r2 != RegUnknown) &&
-        !IsExprNegativeConstant(vector, disp_index)) {
+        !NaClIsExpNegativeConstant(vector, disp_index)) {
       fprintf(file, "+");
     }
     /* Recurse to handle print using format flags. */
-    PrintDisassembledExp(file, vector, disp_index);
+    NaClPrintDisassembledExp(file, vector, disp_index);
   } else if (r1 == RegUnknown && r2 == RegUnknown) {
     /* be sure to generate case: [0x0]. */
-    PrintDisassembledExp(file, vector, disp_index);
+    NaClPrintDisassembledExp(file, vector, disp_index);
   }
   fprintf(file, "]");
-  return disp_index + ExprNodeWidth(vector, disp_index);
+  return disp_index + NaClExpWidth(vector, disp_index);
 }
 
 /* Print out the given (segment address) expression node to the
  * given file. Returns the index of the node following the
  * given (indexed) segment address.
  */
-static int PrintDisassembledSegmentAddr(FILE* file,
-                                        ExprNodeVector* vector,
-                                        int index) {
+static int NaClPrintDisassembledSegmentAddr(FILE* file,
+                                            NaClExpVector* vector,
+                                            int index) {
   assert(ExprSegmentAddress == vector->node[index].kind);
-  index = PrintDisassembledExp(file, vector, index + 1);
+  index = NaClPrintDisassembledExp(file, vector, index + 1);
   if (vector->node[index].kind != ExprMemOffset) {
     fprintf(file, ":");
   }
-  return PrintDisassembledExp(file, vector, index);
+  return NaClPrintDisassembledExp(file, vector, index);
 }
 
 /* Print out the given expression node to the given file.
  * Returns the index of the node following the given indexed
  * expression.
  */
-static int PrintDisassembledExp(FILE* file,
-                                ExprNodeVector* vector,
-                                uint32_t index) {
-  ExprNode* node;
+static int NaClPrintDisassembledExp(FILE* file,
+                                    NaClExpVector* vector,
+                                    uint32_t index) {
+  NaClExp* node;
   assert(index < vector->number_expr_nodes);
   node = &vector->node[index];
   switch (node->kind) {
@@ -264,77 +264,77 @@ static int PrintDisassembledExp(FILE* file,
       fprintf(file, "undefined");
       return index + 1;
     case ExprRegister:
-      PrintDisassembledReg(file, node);
+      NaClPrintDisassembledReg(file, node);
       return index + 1;
     case OperandReference:
-      return PrintDisassembledExp(file, vector, index + 1);
+      return NaClPrintDisassembledExp(file, vector, index + 1);
     case ExprConstant:
-      PrintDisassembledConst(file, node);
+      NaClPrintDisassembledConst(file, node);
       return index + 1;
     case ExprConstant64:
-      PrintDisassembledConst64(file, vector, index);
+      NaClPrintDisassembledConst64(file, vector, index);
       return index + 3;
     case ExprSegmentAddress:
-      return PrintDisassembledSegmentAddr(file, vector, index);
+      return NaClPrintDisassembledSegmentAddr(file, vector, index);
     case ExprMemOffset:
-      return PrintDisassembledMemOffset(file, vector, index);
+      return NaClPrintDisassembledMemOffset(file, vector, index);
   }
 }
 
 /* Print the given instruction opcode of the give state, to the
  * given file.
  */
-static void PrintDisassembled(FILE* file,
-                              NcInstState* state,
-                              Opcode* opcode) {
+static void NaClPrintDisassembled(FILE* file,
+                                  NaClInstState* state,
+                                  NaClInst* inst) {
   uint32_t tree_index = 0;
   Bool is_first = TRUE;
-  ExprNodeVector* vector = NcInstStateNodeVector(state);
-  PrintLower(file, (char*) InstMnemonicName(opcode->name));
+  NaClExpVector* vector = NaClInstStateExpVector(state);
+  NaClPrintLower(file, (char*) NaClMnemonicName(inst->name));
   while (tree_index < vector->number_expr_nodes) {
     if (vector->node[tree_index].kind != OperandReference ||
-        (0 == (vector->node[tree_index].flags & ExprFlag(ExprImplicit)))) {
+        (0 == (vector->node[tree_index].flags & NACL_EFLAG(ExprImplicit)))) {
       if (is_first) {
         putc(' ', file);
         is_first = FALSE;
       } else {
         fprintf(file, ", ");
       }
-      tree_index = PrintDisassembledExp(file, vector, tree_index);
+      tree_index = NaClPrintDisassembledExp(file, vector, tree_index);
     } else {
-      tree_index += ExprNodeWidth(vector, tree_index);
+      tree_index += NaClExpWidth(vector, tree_index);
     }
   }
 }
 
-void PrintNcInstStateInstruction(FILE* file, NcInstState* state) {
+void NaClInstStateInstPrint(FILE* file, NaClInstState* state) {
   int i;
-  Opcode* opcode;
+  NaClInst* inst;
 
-  /* Print out the address and the opcode bytes. */
-  int length = NcInstStateLength(state);
-  DEBUG(PrintOpcode(stdout, NcInstStateOpcode(state)));
-  DEBUG(PrintExprNodeVector(stdout, NcInstStateNodeVector(state)));
-  fprintf(file, "%"NACL_PRIxPcAddressAll": ", NcInstStateVpc(state));
+  /* Print out the address and the inst bytes. */
+  int length = NaClInstStateLength(state);
+  DEBUG(NaClInstPrint(stdout, NaClInstStateInst(state)));
+  DEBUG(NaClExpVectorPrint(stdout, NaClInstStateExpVector(state)));
+  fprintf(file, "%"NACL_PRIxNaClPcAddressAll": ", NaClInstStateVpc(state));
   for (i = 0; i < length; ++i) {
-      fprintf(file, "%02"NACL_PRIx8" ", NcInstStateByte(state, i));
+    fprintf(file, "%02"NACL_PRIx8" ", NaClInstStateByte(state, i));
   }
-  for (i = length; i < MAX_BYTES_PER_X86_INSTRUCTION; ++i) {
+  for (i = length; i < NACL_MAX_BYTES_PER_X86_INSTRUCTION; ++i) {
     fprintf(file, "   ");
   }
 
   /* Print out the assembly instruction it disassembles to. */
-  opcode = NcInstStateOpcode(state);
-  PrintDisassembled(file, state, opcode);
+  inst = NaClInstStateInst(state);
+  NaClPrintDisassembled(file, state, inst);
 
   /* Print out if not allowed in native client (as a comment). */
-  if (! NcInstStateIsNaclLegal(state)) {
+  if (! NaClInstStateIsNaClLegal(state)) {
     fprintf(file, "; *NACL Disallows!*");
   }
   putc('\n', file);
 }
 
-char* PrintNcInstStateInstructionToString(struct NcInstState* state) {
+char* NaClInstStateInstructionToString(struct NaClInstState* state) {
   FILE* file;
   char* out_string;
   struct stat st;
@@ -349,7 +349,7 @@ char* PrintNcInstStateInstructionToString(struct NcInstState* state) {
     chmod("out_file", S_IRUSR | S_IWUSR);
 #endif
 
-    PrintNcInstStateInstruction(file, state);
+    NaClInstStateInstPrint(file, state);
     fclose(file);
 
     if (stat("out_file", &st)) break;
@@ -378,30 +378,30 @@ char* PrintNcInstStateInstructionToString(struct NcInstState* state) {
   return NULL;
 }
 
-int ExprNodeWidth(ExprNodeVector* vector, int node) {
+int NaClExpWidth(NaClExpVector* vector, int node) {
   int i;
   int count = 1;
-  int num_kids = ExprNodeKindRank(vector->node[node].kind);
+  int num_kids = NaClExpKindRank(vector->node[node].kind);
   for (i = 0; i < num_kids; i++) {
-    count += ExprNodeWidth(vector, node + count);
+    count += NaClExpWidth(vector, node + count);
   }
   return count;
 }
 
-int GetExprNodeKidIndex(ExprNodeVector* vector, int node, int kid) {
+int NaClGetExpKidIndex(NaClExpVector* vector, int node, int kid) {
   node++;
   while (kid-- > 0) {
-    node += ExprNodeWidth(vector, node);
+    node += NaClExpWidth(vector, node);
   }
   return node;
 }
 
-int GetExprNodeParentIndex(ExprNodeVector* vector, int index) {
+int NaClGetExpParentIndex(NaClExpVector* vector, int index) {
   int node_rank;
   int num_kids = 1;
   while (index > 0) {
     --index;
-    node_rank = ExprNodeKindRank(vector->node[index].kind);
+    node_rank = NaClExpKindRank(vector->node[index].kind);
     if (node_rank >= num_kids) {
       return index;
     } else {
@@ -411,9 +411,9 @@ int GetExprNodeParentIndex(ExprNodeVector* vector, int index) {
   return 0;
 }
 
-int GetNthNodeKind(ExprNodeVector* vector,
-                   ExprNodeKind kind,
-                   int n) {
+int NaClGetNthExpKind(NaClExpVector* vector,
+                      NaClExpKind kind,
+                      int n) {
   if (n > 0) {
     uint32_t i;
     for (i = 0; i < vector->number_expr_nodes; ++i) {
@@ -426,8 +426,8 @@ int GetNthNodeKind(ExprNodeVector* vector,
   return -1;
 }
 
-uint64_t GetExprConstant(ExprNodeVector* vector, int index) {
-  ExprNode* node = &vector->node[index];
+uint64_t NaClGetExpConstant(NaClExpVector* vector, int index) {
+  NaClExp* node = &vector->node[index];
   switch (node->kind) {
     case ExprConstant:
       return node->value;
@@ -441,30 +441,30 @@ uint64_t GetExprConstant(ExprNodeVector* vector, int index) {
   return 0;
 }
 
-void SplitExprConstant(uint64_t val, uint32_t* val1, uint32_t* val2) {
+void NaClSplitExpConstant(uint64_t val, uint32_t* val1, uint32_t* val2) {
   *val1 = (uint32_t) (val & 0xFFFFFFFF);
   *val2 = (uint32_t) (val >> 32);
 }
 
-Bool IsExprNegativeConstant(ExprNodeVector* vector, int index) {
-  ExprNode* node = &vector->node[index];
+Bool NaClIsExpNegativeConstant(NaClExpVector* vector, int index) {
+  NaClExp* node = &vector->node[index];
   switch (node->kind) {
     case ExprConstant:
-      if (node->flags & ExprFlag(ExprUnsignedHex) ||
-          node->flags & ExprFlag(ExprUnsignedInt)) {
+      if (node->flags & NACL_EFLAG(ExprUnsignedHex) ||
+          node->flags & NACL_EFLAG(ExprUnsignedInt)) {
         return FALSE;
       } else {
         /* Assume signed value. */
-        return GetSignExtendedValue(node) < 0;
+        return NaClGetSignExtendedValue(node) < 0;
       }
       break;
     case ExprConstant64:
-      if (node->flags & ExprFlag(ExprUnsignedHex) ||
-          node->flags & ExprFlag(ExprUnsignedInt)) {
+      if (node->flags & NACL_EFLAG(ExprUnsignedHex) ||
+          node->flags & NACL_EFLAG(ExprUnsignedInt)) {
         return FALSE;
       } else {
         /* Assume signed value. */
-        int64_t value = (int64_t) GetExprConstant(vector, index);
+        int64_t value = (int64_t) NaClGetExpConstant(vector, index);
         return value < 0;
       }
       break;

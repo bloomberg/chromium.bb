@@ -22,13 +22,13 @@
 /* Analyze each section in the given elf file, using the given validator
  * state.
  */
-static void AnalyzeSections(ncfile *ncf, struct NcValidatorState *vstate) {
+static void AnalyzeSections(ncfile *ncf, struct NaClValidatorState *vstate) {
   int ii;
   const Elf_Phdr* phdr = ncf->pheaders;
 
   for (ii = 0; ii < ncf->phnum; ii++) {
     /* TODO(karl) fix types for this? */
-    NcValidatorMessage(
+    NaClValidatorMessage(
         LOG_INFO, vstate,
         "segment[%d] p_type %d p_offset %"NACL_PRIxElf_Off
         " vaddr %"NACL_PRIxElf_Addr
@@ -37,7 +37,7 @@ static void AnalyzeSections(ncfile *ncf, struct NcValidatorState *vstate) {
         ii, phdr[ii].p_type, phdr[ii].p_offset,
         phdr[ii].p_vaddr, phdr[ii].p_paddr,
         phdr[ii].p_align);
-    NcValidatorMessage(
+    NaClValidatorMessage(
         LOG_INFO, vstate,
         "    filesz %"NACL_PRIxElf_Xword
         " memsz %"NACL_PRIxElf_Xword
@@ -47,27 +47,27 @@ static void AnalyzeSections(ncfile *ncf, struct NcValidatorState *vstate) {
     if ((PT_LOAD != phdr[ii].p_type) ||
         (0 == (phdr[ii].p_flags & PF_X)))
       continue;
-    NcValidatorMessage(LOG_INFO, vstate, "parsing segment %d\n", ii);
-    NcValidateSegment(ncf->data + (phdr[ii].p_vaddr - ncf->vbase),
-                    phdr[ii].p_vaddr, phdr[ii].p_memsz, vstate);
+    NaClValidatorMessage(LOG_INFO, vstate, "parsing segment %d\n", ii);
+    NaClValidateSegment(ncf->data + (phdr[ii].p_vaddr - ncf->vbase),
+                        phdr[ii].p_vaddr, phdr[ii].p_memsz, vstate);
   }
 }
 
-static void AnalyzeSegments(ncfile* ncf, NcValidatorState* state) {
+static void AnalyzeSegments(ncfile* ncf, NaClValidatorState* state) {
   int ii;
   const Elf_Shdr* shdr = ncf->sheaders;
 
   for (ii = 0; ii < ncf->shnum; ii++) {
-    NcValidatorMessage(
+    NaClValidatorMessage(
         LOG_INFO, state,
         "section %d sh_addr %"NACL_PRIxElf_Addr" offset %"NACL_PRIxElf_Off
         " flags %"NACL_PRIxElf_Xword"\n",
          ii, shdr[ii].sh_addr, shdr[ii].sh_offset, shdr[ii].sh_flags);
     if ((shdr[ii].sh_flags & SHF_EXECINSTR) != SHF_EXECINSTR)
       continue;
-    NcValidatorMessage(LOG_INFO, state, "parsing section %d\n", ii);
-    NcValidateSegment(ncf->data + (shdr[ii].sh_addr - ncf->vbase),
-                      shdr[ii].sh_addr, shdr[ii].sh_size, state);
+    NaClValidatorMessage(LOG_INFO, state, "parsing section %d\n", ii);
+    NaClValidateSegment(ncf->data + (shdr[ii].sh_addr - ncf->vbase),
+                        shdr[ii].sh_addr, shdr[ii].sh_size, state);
   }
 }
 
@@ -80,7 +80,7 @@ static Bool FLAGS_analyze_segments = FALSE;
 static Bool FLAGS_quit_on_error = FALSE;
 
 /* Define the value for the base register. */
-static OperandKind base_register =
+static NaClOpKind base_register =
     (64 == NACL_TARGET_SUBARCH ? RegR15 : RegUnknown);
 
 /* Analyze each code segment in the given elf file, stored in the
@@ -88,34 +88,35 @@ static OperandKind base_register =
  */
 static void AnalyzeCodeSegments(ncfile *ncf, const char *fname) {
   /* TODO(karl) convert these to be PcAddress and MemorySize */
-  PcAddress vbase, vlimit;
-  NcValidatorState *vstate;
+  NaClPcAddress vbase, vlimit;
+  NaClValidatorState *vstate;
 
   GetVBaseAndLimit(ncf, &vbase, &vlimit);
-  vstate = NcValidatorStateCreate(vbase, vlimit - vbase,
-                                  ncf->ncalign, base_register,
-                                  FLAGS_quit_on_error,
-                                  stderr);
+  vstate = NaClValidatorStateCreate(vbase, vlimit - vbase,
+                                    ncf->ncalign, base_register,
+                                    FLAGS_quit_on_error,
+                                    stderr);
   if (vstate == NULL) {
-    NcValidatorMessage(LOG_FATAL, vstate, "Unable to create validator state");
+    NaClValidatorMessage(LOG_FATAL, vstate, "Unable to create validator state");
   }
   if (FLAGS_analyze_segments) {
     AnalyzeSegments(ncf, vstate);
   } else {
     AnalyzeSections(ncf, vstate);
   }
-  NcValidatorStatePrintStats(stdout, vstate);
-  if (NcValidatesOk(vstate)) {
-    NcValidatorMessage(LOG_INFO, vstate, "***module %s is safe***\n", fname);
+  NaClValidatorStatePrintStats(stdout, vstate);
+  if (NaClValidatesOk(vstate)) {
+    NaClValidatorMessage(LOG_INFO, vstate, "***module %s is safe***\n", fname);
   } else {
-    NcValidatorMessage(LOG_INFO, vstate, "***MODULE %s IS UNSAFE***\n", fname);
+    NaClValidatorMessage(LOG_INFO, vstate,
+                         "***MODULE %s IS UNSAFE***\n", fname);
   }
-  NcValidatorMessage(LOG_INFO, vstate, "Validated %s\n", fname);
-  NcValidatorStateDestroy(vstate);
+  NaClValidatorMessage(LOG_INFO, vstate, "Validated %s\n", fname);
+  NaClValidatorStateDestroy(vstate);
 }
 
-/* Generates NaclErrorMapping for error level suffix. */
-#define NaclError(s) { #s , LOG_## s}
+/* Generates NaClErrorMapping for error level suffix. */
+#define NaClError(s) { #s , LOG_## s}
 
 /* Recognizes flags in argv, processes them, and then removes them.
  * Returns the updated value for argc.
@@ -136,10 +137,10 @@ static int GrokFlags(int argc, const char* argv[]) {
         const char* name;
         int level;
       } map[] = {
-        NaclError(INFO),
-        NaclError(WARNING),
-        NaclError(ERROR),
-        NaclError(FATAL)
+        NaClError(INFO),
+        NaClError(WARNING),
+        NaClError(ERROR),
+        NaClError(FATAL)
       };
       for (i = 0; i < NACL_ARRAY_SIZE(map); ++i) {
         if (0 == strcmp(error_level, map[i].name)) {
@@ -148,11 +149,12 @@ static int GrokFlags(int argc, const char* argv[]) {
         }
       }
       if (i == NACL_ARRAY_SIZE(map)) {
-        NcValidatorMessage(LOG_FATAL, NULL,
+        NaClValidatorMessage(LOG_FATAL, NULL,
                            "-error_level=%s not defined!\n", error_level);
       }
     } else if (GrokBoolFlag("--quit-on-error", arg, &FLAGS_quit_on_error) ||
-               GrokBoolFlag("--identity_mask", arg, &FLAGS_identity_mask)) {
+               GrokBoolFlag("--identity_mask", arg,
+                            &NACL_FLAGS_identity_mask)) {
       continue;
     } else {
       argv[new_argc++] = argv[i];
@@ -176,7 +178,7 @@ static void ValidateLoadPrintError(const char* format,
 static void ValidateLoadPrintError(const char* format, ...) {
   va_list ap;
   va_start(ap, format);
-  NcValidatorVarargMessage(LOG_ERROR, NULL, format, ap);
+  NaClValidatorVarargMessage(LOG_ERROR, NULL, format, ap);
   va_end(ap);
 }
 
@@ -195,11 +197,11 @@ static ValidateData* ValidateLoad(int argc, const char* argv[]) {
   ValidateData* data;
   argc = GrokFlags(argc, argv);
   if (argc != 2) {
-    NcValidatorMessage(LOG_FATAL, NULL, "expected: %s file\n", argv[0]);
+    NaClValidatorMessage(LOG_FATAL, NULL, "expected: %s file\n", argv[0]);
   }
   data = (ValidateData*) malloc(sizeof(ValidateData));
   if (NULL == data) {
-    NcValidatorMessage(LOG_FATAL, NULL, "Unsufficient memory to run");
+    NaClValidatorMessage(LOG_FATAL, NULL, "Unsufficient memory to run");
   }
   data->fname = argv[1];
 
@@ -210,8 +212,8 @@ static ValidateData* ValidateLoad(int argc, const char* argv[]) {
   data->ncf = ValidateLoadFile(data->fname);
 
   if (NULL == data->ncf) {
-    NcValidatorMessage(LOG_FATAL, NULL, "nc_loadfile(%s): %s\n",
-                       data->fname, strerror(errno));
+    NaClValidatorMessage(LOG_FATAL, NULL, "nc_loadfile(%s): %s\n",
+                         data->fname, strerror(errno));
   }
   return data;
 }
@@ -225,7 +227,7 @@ static int ValidateAnalyze(ValidateData* data) {
 }
 
 int main(int argc, const char *argv[]) {
-  return NcRunValidator(argc, argv,
-                        (NcValidateLoad) ValidateLoad,
-                        (NcValidateAnalyze) ValidateAnalyze);
+  return NaClRunValidator(argc, argv,
+                          (NaClValidateLoad) ValidateLoad,
+                          (NaClValidateAnalyze) ValidateAnalyze);
 }

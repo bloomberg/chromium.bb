@@ -7,7 +7,7 @@
  * New table driven generator for a decoder of x86 code.
  *
  * Note: Most of the organization of this document is based on the
- * Opcode Map appendix of one of the following documents:
+ * NaClOpcode Map appendix of one of the following documents:
 
  * (1) "Intel 64 and IA-32 Architectures
  * Software Developer's Manual (volumes 1, 2a, and 2b; documents
@@ -34,25 +34,25 @@
 #include "native_client/src/include/portability.h"
 
 /* Define the number of possible bytes values. */
-#define NUM_BYTE_VALUES 256
+#define NACL_NUM_BYTE_VALUES 256
 
-/* Model an Opcode, sorted by OpcodeInModRm values. */
-typedef struct MrmOpcode {
-  Opcode opcode;
-  struct MrmOpcode* next;
-} MrmOpcode;
+/* Model an NaClInst, sorted by OpcodeInModRm values. */
+typedef struct NaClMrmInst {
+  NaClInst inst;
+  struct NaClMrmInst* next;
+} NaClMrmInst;
 
 /* Note: in general all errors in this module will be fatal.
  * To debug: use gdb or your favorite debugger.
  */
-static void fatal(const char* s) {
+static void NaClFatal(const char* s) {
   fprintf(stderr, "%s\n", s);
   fprintf(stderr, "fatal error, cannot recover\n");
   exit(-1);
 }
 
 /* Returns the print name of the given run mode. */
-static const char* RunModeName(RunMode mode) {
+static const char* NaClRunModeName(NaClRunMode mode) {
   switch (mode) {
     case X86_32: return "x86-32 bit mode";
     case X86_64: return "x86-64 bit mode";
@@ -64,119 +64,121 @@ static const char* RunModeName(RunMode mode) {
 }
 
 /* Defines the run mode files that should be generated. */
-static RunMode FLAGS_run_mode = X86_32;
+static NaClRunMode FLAGS_run_mode = X86_32;
 
 /* Holds the current instruction prefix. */
-static OpcodePrefix current_opcode_prefix = NoPrefix;
+static NaClInstPrefix current_opcode_prefix = NoPrefix;
 
 /* Holds the default instruction prefix. */
-static OpcodePrefix default_opcode_prefix = NoPrefix;
+static NaClInstPrefix default_opcode_prefix = NoPrefix;
 
-/* Holds the current opcode instruction being built. */
-Opcode* current_opcode = NULL;
+/* Holds the current instruction being built. */
+static NaClInst* current_inst = NULL;
 
-/* Holds the root of the trie of known opcode sequences. */
-static NcOpcodeNode* opcode_seq_root = NULL;
+/* Holds the root of the trie of known instruction opcode sequences. */
+static NaClInstNode* inst_node_root = NULL;
 
 /* Holds the current opcode sequence to be associated with the next
  * defined opcode.
  */
-static NcOpcodeNode* current_opcode_seq_node = NULL;
+static NaClInstNode* current_inst_node = NULL;
 
-/* Holds the candidate for the current_opcode_seq_node, when
- * DefineOpcode is called.
+/* Holds the candidate for the current_inst_node, when
+ * NaClDefInst is called.
  */
-static NcOpcodeNode* current_cand_seq_node = NULL;
+static NaClInstNode* current_cand_inst_node = NULL;
 
-/* Holds the current opcode with mrm extention being built. */
-MrmOpcode* current_opcode_mrm = NULL;
+/* Holds the current instruction with mrm extention being built. */
+static NaClMrmInst* current_inst_mrm = NULL;
 
-/* Holds the opcode to model instructions that can't be parsed. */
-static Opcode* undefined_opcode = NULL;
+/* Holds the instruction to model instructions that can't be parsed. */
+static NaClInst* undefined_inst = NULL;
 
 /* True if we are to apply sanity checks as we define operantions. */
 static Bool apply_sanity_checks = TRUE;
 
 /* Holds all defined opcodes. */
-static Opcode* OpcodeTable[NCDTABLESIZE][OpcodePrefixEnumSize];
+static NaClInst* NaClInstTable[NCDTABLESIZE][NaClInstPrefixEnumSize];
 
-#define DEFAULT_CHOICE_COUNT (-1)
+#define NACL_DEFAULT_CHOICE_COUNT (-1)
 
-#define NO_MODRM_OPCODE Unknown_Operand
+#define NACL_NO_MODRM_OPCODE Unknown_Operand
 
-#define NO_MODRM_OPCODE_INDEX 8
+#define NACL_NO_MODRM_OPCODE_INDEX 8
 
-#define MODRM_OPCODE_SIZE (NO_MODRM_OPCODE_INDEX + 1)
+#define NACL_MODRM_OPCODE_SIZE (NACL_NO_MODRM_OPCODE_INDEX + 1)
 
-/* Holds the expected number of entries in the defined opcodes.
+/* Holds the expected number of entries in the defined instructions.
  * Note: the last index corresponds to the modrm opcode, or
- * NO_MODRM_OPCODE if no modrm opcode.
+ * NACL_NO_MODRM_OPCODE if no modrm opcode.
  */
-static int OpcodeCount[NCDTABLESIZE][OpcodePrefixEnumSize][MODRM_OPCODE_SIZE];
+static int NaClInstCount[NCDTABLESIZE]
+          [NaClInstPrefixEnumSize][NACL_MODRM_OPCODE_SIZE];
 
-static MrmOpcode* OpcodeMrmTable[NCDTABLESIZE]
-          [OpcodePrefixEnumSize][MODRM_OPCODE_SIZE];
+static NaClMrmInst* NaClInstMrmTable[NCDTABLESIZE]
+          [NaClInstPrefixEnumSize][NACL_MODRM_OPCODE_SIZE];
 
 /* Holds encodings of prefix bytes. */
-const char* PrefixTable[NCDTABLESIZE];
+const char* NaClPrefixTable[NCDTABLESIZE];
 
 /* Prints out the opcode prefix being defined, the opcode pattern
  * being defined, and the given error message. Then aborts the
  * execution of the program.
  */
-static void FatalOpcode(const char* message) {
-  fprintf(stderr, "Prefix: %s\n", OpcodePrefixName(current_opcode_prefix));
-  PrintOpcode(stderr, current_opcode);
-  fatal(message);
+static void NaClFatalInst(const char* message) {
+  fprintf(stderr, "Prefix: %s\n", NaClInstPrefixName(current_opcode_prefix));
+  NaClInstPrint(stderr, current_inst);
+  NaClFatal(message);
 }
 
 /* Prints out what operand is currently being defined, followed by the given
  * error message. Then aborts the execution of the program.
  */
-static void FatalOperand(int index, const char* message) {
-  if (0 <= index && index <= current_opcode->num_operands) {
+static void NaClFatalOp(int index, const char* message) {
+  if (0 <= index && index <= current_inst->num_operands) {
     fprintf(stderr, "On operand %d: %s\n", index,
-            OperandKindName(current_opcode->operands[index].kind));
+            NaClOpKindName(current_inst->operands[index].kind));
   } else {
     fprintf(stderr, "On operand %d:\n", index);
   }
-  FatalOpcode(message);
+  NaClFatalInst(message);
 }
 
 /* Define the prefix name for the given opcode, for the given run mode. */
-static void EncodeModedPrefixName(const uint8_t byte, const char* name,
-                                  const RunMode mode) {
+static void NaClEncodeModedPrefixName(const uint8_t byte, const char* name,
+                                      const NaClRunMode mode) {
   if (FLAGS_run_mode == mode) {
-    PrefixTable[byte] = name;
+    NaClPrefixTable[byte] = name;
   }
 }
 
 /* Define the prefix name for the given opcode, for all run modes. */
-static void EncodePrefixName(const uint8_t byte, const char* name) {
-  EncodeModedPrefixName(byte, name, FLAGS_run_mode);
+static void NaClEncodePrefixName(const uint8_t byte, const char* name) {
+  NaClEncodeModedPrefixName(byte, name, FLAGS_run_mode);
 }
 
 /* Change the current opcode prefix to the given value. */
-void DefineOpcodePrefix(const OpcodePrefix prefix) {
+void NaClDefInstPrefix(const NaClInstPrefix prefix) {
   current_opcode_prefix = prefix;
 }
 
-void DefineDefaultOpcodePrefix(const OpcodePrefix prefix) {
+void NaClDefDefaultInstPrefix(const NaClInstPrefix prefix) {
   default_opcode_prefix = prefix;
-  DefineOpcodePrefix(prefix);
+  NaClDefInstPrefix(prefix);
 }
 
-void ResetToDefaultOpcodePrefix() {
-  DefineOpcodePrefix(default_opcode_prefix);
+void NaClResetToDefaultInstPrefix() {
+  NaClDefInstPrefix(default_opcode_prefix);
 }
 
 /* Check that the given operand is an extention of the opcode
  * currently being defined. If not, generate appropriate error
  * message and stop program.
  */
-static void CheckIfOperandExtendsOpcode(Operand* operand) {
-  if (0 == (operand->flags & OpFlag(OperandExtendsOpcode))) {
-    FatalOpcode(
+static void NaClCheckIfOpExtendsInst(NaClOp* operand) {
+  if (NACL_EMPTY_OPFLAGS == (operand->flags &
+                             NACL_OPFLAG(OperandExtendsOpcode))) {
+    NaClFatalInst(
         "First operand should be marked with flag OperandExtendsOpcode");
   }
 }
@@ -185,10 +187,10 @@ static void CheckIfOperandExtendsOpcode(Operand* operand) {
  * never appear for more than one argument. If repeated, generate an
  * appropriate error message and terminate.
  */
-static void CheckIfEOperandRepeated(int index) {
+static void NaClCheckIfERepeated(int index) {
   int i;
   for (i = 0; i < index; ++i) {
-    Operand* operand = &current_opcode->operands[i];
+    NaClOp* operand = &current_inst->operands[i];
     switch (operand->kind) {
       case Mmx_E_Operand:
       case Xmm_E_Operand:
@@ -199,7 +201,7 @@ static void CheckIfEOperandRepeated(int index) {
       case Ev_Operand:
       case Eo_Operand:
       case Edq_Operand:
-        FatalOperand(index, "Can't use E Operand more than once");
+        NaClFatalOp(index, "Can't use E Operand more than once");
         break;
       default:
         break;
@@ -211,11 +213,11 @@ static void CheckIfEOperandRepeated(int index) {
  * that the REG field of modrm is an opcode, since G_Operand doesn't make
  * sense in such cases.
  */
-static void CheckIfOpcodeInModRm(int index) {
-  if ((current_opcode->flags & InstFlag(OpcodeInModRm)) &&
-      ((OperandFlags) 0 == (current_opcode->operands[index].flags &
-                            InstFlag(AllowGOperandWithOpcodeInModRm)))) {
-    FatalOperand(index,
+static void NaClCheckIfOpcodeInModRm(int index) {
+  if ((current_inst->flags & NACL_IFLAG(OpcodeInModRm)) &&
+      (NACL_EMPTY_OPFLAGS == (current_inst->operands[index].flags &
+                              NACL_IFLAG(AllowGOperandWithOpcodeInModRm)))) {
+    NaClFatalOp(index,
                  "Can't use G Operand, bits being used for opcode in modrm");
   }
 }
@@ -224,10 +226,10 @@ static void CheckIfOpcodeInModRm(int index) {
  * never appear for more than one argument. If repeated, generate an
  * appropriate error message and terminate.
  */
-static void CheckIfGOperandRepeated(int index) {
+static void NaClCheckIfGRepeated(int index) {
   int i;
   for (i = 0; i < index; ++i) {
-    Operand* operand = &current_opcode->operands[i];
+    NaClOp* operand = &current_inst->operands[i];
     switch (operand->kind) {
       case Mmx_G_Operand:
       case Xmm_G_Operand:
@@ -238,7 +240,7 @@ static void CheckIfGOperandRepeated(int index) {
       case Gv_Operand:
       case Go_Operand:
       case Gdq_Operand:
-        FatalOperand(index, "Can't use G Operand more than once");
+        NaClFatalOp(index, "Can't use G Operand more than once");
         break;
       default:
         break;
@@ -251,22 +253,22 @@ static void CheckIfGOperandRepeated(int index) {
  * of the instruction). If repeated, generate an appropriate error message
  * and terminate.
  */
-static void CheckIfIOperandRepeated(int index) {
+static void NaClCheckIfIRepeated(int index) {
   int i;
   for (i = 0; i < index; ++i) {
-    Operand* operand = &current_opcode->operands[i];
+    NaClOp* operand = &current_inst->operands[i];
     switch (operand->kind) {
       case I_Operand:
       case Ib_Operand:
       case Iw_Operand:
       case Iv_Operand:
       case Io_Operand:
-        FatalOperand(index, "Can't use I_Operand more than once");
+        NaClFatalOp(index, "Can't use I_Operand more than once");
         break;
       case J_Operand:
       case Jb_Operand:
       case Jv_Operand:
-        FatalOperand(index, "Can't use both I_Operand and J_Operand");
+        NaClFatalOp(index, "Can't use both I_Operand and J_Operand");
         break;
       default:
         break;
@@ -277,39 +279,39 @@ static void CheckIfIOperandRepeated(int index) {
 /* Check that the operand being defined (via the given index), does not
  * specify any inconsistent flags.
  */
-static void ApplySanityChecksToOperand(int index) {
-  Operand* operand = &current_opcode->operands[index];
+static void NaClApplySanityChecksToOp(int index) {
+  NaClOp* operand = &current_inst->operands[index];
 
   if (!apply_sanity_checks) return;
 
   /* Check special cases for operand 0. */
   if (index == 0) {
-    if (current_opcode->flags & InstFlag(OpcodeInModRm)) {
+    if (current_inst->flags & NACL_IFLAG(OpcodeInModRm)) {
       if ((operand->kind < Opcode0) ||
           (operand->kind > Opcode7)) {
-        FatalOperand(
+        NaClFatalOp(
             index,
             "First operand of OpcodeInModRm  must be in {Opcode0..Opcode7}");
       }
-      CheckIfOperandExtendsOpcode(operand);
+      NaClCheckIfOpExtendsInst(operand);
     }
-    if (current_opcode->flags & InstFlag(OpcodePlusR)) {
+    if (current_inst->flags & NACL_IFLAG(OpcodePlusR)) {
       if ((operand->kind < OpcodeBaseMinus0) ||
           (operand->kind > OpcodeBaseMinus7)) {
-        FatalOperand(
+        NaClFatalOp(
             index,
             "First operand of OpcodePlusR must be in "
             "{OpcodeBaseMinus0..OpcodeBaseMinus7}");
       }
-      CheckIfOperandExtendsOpcode(operand);
+      NaClCheckIfOpExtendsInst(operand);
     }
   }
-  if (operand->flags & OpFlag(OperandExtendsOpcode)) {
+  if (operand->flags & NACL_OPFLAG(OperandExtendsOpcode)) {
     if (index > 0) {
-      FatalOperand(index, "OperandExtendsOpcode only allowed on first operand");
+      NaClFatalOp(index, "OperandExtendsOpcode only allowed on first operand");
     }
-    if (operand->flags != OpFlag(OperandExtendsOpcode)) {
-      FatalOperand(index,
+    if (operand->flags != NACL_OPFLAG(OperandExtendsOpcode)) {
+      NaClFatalOp(index,
                    "Only OperandExtendsOpcode allowed for flag "
                    "values on this operand");
     }
@@ -320,152 +322,152 @@ static void ApplySanityChecksToOperand(int index) {
    */
   switch (operand->kind) {
     case E_Operand:
-      CheckIfEOperandRepeated(index);
+      NaClCheckIfERepeated(index);
       break;
     case Eb_Operand:
-      if (current_opcode->flags & InstFlag(OperandSize_b)) {
-        FatalOperand(index,
+      if (current_inst->flags & NACL_IFLAG(OperandSize_b)) {
+        NaClFatalOp(index,
                      "Size implied by OperandSize_b, use E_Operand instead");
       }
-      CheckIfEOperandRepeated(index);
+      NaClCheckIfERepeated(index);
       break;
     case Ew_Operand:
-      if ((current_opcode->flags & InstFlag(OperandSize_w)) &&
-          !(current_opcode->flags & InstFlag(OperandSize_v))) {
-        FatalOperand(index,
+      if ((current_inst->flags & NACL_IFLAG(OperandSize_w)) &&
+          !(current_inst->flags & NACL_IFLAG(OperandSize_v))) {
+        NaClFatalOp(index,
                      "Size implied by OperandSize_w, use E_Operand instead");
       }
-      CheckIfEOperandRepeated(index);
+      NaClCheckIfERepeated(index);
       break;
     case Ev_Operand:
-      if (current_opcode->flags & InstFlag(OperandSize_v)) {
-        FatalOperand(index,
+      if (current_inst->flags & NACL_IFLAG(OperandSize_v)) {
+        NaClFatalOp(index,
                      "Size implied by OperandSize_v, use E_Operand instead");
       }
-      CheckIfEOperandRepeated(index);
+      NaClCheckIfERepeated(index);
       break;
     case Eo_Operand:
-      if (current_opcode->flags & InstFlag(OperandSize_o)) {
-        FatalOperand(index,
+      if (current_inst->flags & NACL_IFLAG(OperandSize_o)) {
+        NaClFatalOp(index,
                      "Size implied by OperandSize_o, use E_Operand instead");
       }
-      CheckIfEOperandRepeated(index);
+      NaClCheckIfERepeated(index);
       break;
     case Edq_Operand:
-      CheckIfEOperandRepeated(index);
+      NaClCheckIfERepeated(index);
       break;
     case Mmx_E_Operand:
     case Xmm_E_Operand:
-      CheckIfEOperandRepeated(index);
+      NaClCheckIfERepeated(index);
       break;
     case Xmm_Eo_Operand:
-      if (current_opcode->flags & InstFlag(OperandSize_o)) {
-        FatalOperand
+      if (current_inst->flags & NACL_IFLAG(OperandSize_o)) {
+        NaClFatalOp
             (index,
              "Size implied by OperandSize_o, use Xmm_E_Operand instead");
       }
-      CheckIfEOperandRepeated(index);
+      NaClCheckIfERepeated(index);
       break;
     case G_Operand:
-      CheckIfGOperandRepeated(index);
-      CheckIfOpcodeInModRm(index);
+      NaClCheckIfGRepeated(index);
+      NaClCheckIfOpcodeInModRm(index);
       break;
     case Gb_Operand:
-      if (current_opcode->flags & InstFlag(OperandSize_b)) {
-        FatalOperand(index,
+      if (current_inst->flags & NACL_IFLAG(OperandSize_b)) {
+        NaClFatalOp(index,
                      "Size implied by OperandSize_b, use G_Operand instead");
       }
-      CheckIfGOperandRepeated(index);
-      CheckIfOpcodeInModRm(index);
+      NaClCheckIfGRepeated(index);
+      NaClCheckIfOpcodeInModRm(index);
       break;
     case Gw_Operand:
-      if (current_opcode->flags & InstFlag(OperandSize_w)) {
-        FatalOperand(index,
+      if (current_inst->flags & NACL_IFLAG(OperandSize_w)) {
+        NaClFatalOp(index,
                      "Size implied by OperandSize_w, use G_Operand instead");
       }
-      CheckIfGOperandRepeated(index);
-      CheckIfOpcodeInModRm(index);
+      NaClCheckIfGRepeated(index);
+      NaClCheckIfOpcodeInModRm(index);
       break;
     case Gv_Operand:
-      if (current_opcode->flags & InstFlag(OperandSize_v)) {
-        FatalOperand(index,
+      if (current_inst->flags & NACL_IFLAG(OperandSize_v)) {
+        NaClFatalOp(index,
                      "Size implied by OperandSize_v, use G_Operand instead");
       }
-      CheckIfGOperandRepeated(index);
-      CheckIfOpcodeInModRm(index);
+      NaClCheckIfGRepeated(index);
+      NaClCheckIfOpcodeInModRm(index);
       break;
     case Go_Operand:
-      if (current_opcode->flags & InstFlag(OperandSize_o)) {
-        FatalOperand(index,
+      if (current_inst->flags & NACL_IFLAG(OperandSize_o)) {
+        NaClFatalOp(index,
                      "Size implied by OperandSize_o, use G_Operand instead");
       }
-      CheckIfGOperandRepeated(index);
-      CheckIfOpcodeInModRm(index);
+      NaClCheckIfGRepeated(index);
+      NaClCheckIfOpcodeInModRm(index);
       break;
     case Gdq_Operand:
-      CheckIfGOperandRepeated(index);
-      CheckIfOpcodeInModRm(index);
+      NaClCheckIfGRepeated(index);
+      NaClCheckIfOpcodeInModRm(index);
       break;
     case Mmx_G_Operand:
     case Xmm_G_Operand:
-      CheckIfGOperandRepeated(index);
-      CheckIfOpcodeInModRm(index);
+      NaClCheckIfGRepeated(index);
+      NaClCheckIfOpcodeInModRm(index);
       break;
     case Xmm_Go_Operand:
-      if (current_opcode->flags & InstFlag(OperandSize_o)) {
-        FatalOperand
+      if (current_inst->flags & NACL_IFLAG(OperandSize_o)) {
+        NaClFatalOp
             (index,
              "Size implied by OperandSize_o, use Xmm_G_Operand instead");
       }
-      CheckIfGOperandRepeated(index);
-      CheckIfOpcodeInModRm(index);
+      NaClCheckIfGRepeated(index);
+      NaClCheckIfOpcodeInModRm(index);
       break;
     case I_Operand:
-      CheckIfIOperandRepeated(index);
+      NaClCheckIfIRepeated(index);
       break;
     case Ib_Operand:
-      if (current_opcode->flags & InstFlag(OperandSize_b)) {
-        FatalOperand(index,
+      if (current_inst->flags & NACL_IFLAG(OperandSize_b)) {
+        NaClFatalOp(index,
                      "Size implied by OperandSize_b, use I_Operand instead");
       }
-      if (current_opcode->flags & InstFlag(OpcodeHasImmed_b)) {
-        FatalOperand(index,
+      if (current_inst->flags & NACL_IFLAG(OpcodeHasImmed_b)) {
+        NaClFatalOp(index,
                      "Size implied by OpcodeHasImmed_b, use I_Operand instead");
       }
-      CheckIfIOperandRepeated(index);
+      NaClCheckIfIRepeated(index);
       break;
     case Iw_Operand:
-      if (current_opcode->flags & InstFlag(OperandSize_w)) {
-        FatalOperand(index,
+      if (current_inst->flags & NACL_IFLAG(OperandSize_w)) {
+        NaClFatalOp(index,
                      "Size implied by OperandSize_w, use I_Operand instead");
       }
-      if (current_opcode->flags & InstFlag(OpcodeHasImmed_w)) {
-        FatalOperand(index,
+      if (current_inst->flags & NACL_IFLAG(OpcodeHasImmed_w)) {
+        NaClFatalOp(index,
                      "Size implied by OpcodeHasImmed_w, use I_Operand instead");
       }
-      CheckIfIOperandRepeated(index);
+      NaClCheckIfIRepeated(index);
       break;
     case Iv_Operand:
-      if (current_opcode->flags & InstFlag(OperandSize_v)) {
-        FatalOperand(index,
+      if (current_inst->flags & NACL_IFLAG(OperandSize_v)) {
+        NaClFatalOp(index,
                      "Size implied by OperandSize_v, use I_Operand instead");
       }
-      if (current_opcode->flags & InstFlag(OpcodeHasImmed_v)) {
-        FatalOperand(index,
+      if (current_inst->flags & NACL_IFLAG(OpcodeHasImmed_v)) {
+        NaClFatalOp(index,
                      "Size implied by OpcodeHasImmed_v, use I_Operand instead");
       }
-      CheckIfIOperandRepeated(index);
+      NaClCheckIfIRepeated(index);
       break;
     case Io_Operand:
-      if (current_opcode->flags & InstFlag(OperandSize_o)) {
-        FatalOperand(index,
+      if (current_inst->flags & NACL_IFLAG(OperandSize_o)) {
+        NaClFatalOp(index,
                      "Size implied by OperandSize_o, use I_Operand instead");
       }
-      if (current_opcode->flags & InstFlag(OpcodeHasImmed_o)) {
-        FatalOperand(index,
+      if (current_inst->flags & NACL_IFLAG(OpcodeHasImmed_o)) {
+        NaClFatalOp(index,
                      "Size implied by OpcodeHasImmed_o, use I_Operand instead");
       }
-      CheckIfIOperandRepeated(index);
+      NaClCheckIfIRepeated(index);
       break;
     case OpcodeBaseMinus0:
     case OpcodeBaseMinus1:
@@ -475,8 +477,9 @@ static void ApplySanityChecksToOperand(int index) {
     case OpcodeBaseMinus5:
     case OpcodeBaseMinus6:
     case OpcodeBaseMinus7:
-      if (0 == (current_opcode->flags & InstFlag(OpcodePlusR))) {
-        FatalOperand(index, "Expects opcode to have flag OpcodePlusR");
+      if (NACL_EMPTY_IFLAGS == (current_inst->flags &
+                                NACL_IFLAG(OpcodePlusR))) {
+        NaClFatalOp(index, "Expects opcode to have flag OpcodePlusR");
       }
       break;
     case Opcode0:
@@ -487,8 +490,9 @@ static void ApplySanityChecksToOperand(int index) {
     case Opcode5:
     case Opcode6:
     case Opcode7:
-      if (0 == (current_opcode->flags & InstFlag(OpcodeInModRm))) {
-        FatalOperand(index, "Expects opcode to have flag OpcodeInModRm");
+      if (NACL_EMPTY_IFLAGS == (current_inst->flags &
+                                NACL_IFLAG(OpcodeInModRm))) {
+        NaClFatalOp(index, "Expects opcode to have flag OpcodeInModRm");
       }
       break;
     default:
@@ -499,76 +503,76 @@ static void ApplySanityChecksToOperand(int index) {
 /* Define the next operand of the current opcode to have
  * the given kind and flags.
  */
-static void DefineOperandInternal(
-    OperandKind kind,
-    OperandFlags flags) {
+static void NaClDefOpInternal(NaClOpKind kind, NaClOpFlags flags) {
   int index;
-  assert(NULL != current_opcode);
-  index = current_opcode->num_operands++;
-  current_opcode->operands[index].kind = kind;
-  current_opcode->operands[index].flags = flags;
+  assert(NULL != current_inst);
+  index = current_inst->num_operands++;
+  current_inst->operands[index].kind = kind;
+  current_inst->operands[index].flags = flags;
 }
 
-static void InstallCurrentIntoOpcodeMrm(const OpcodePrefix prefix,
-                                        const uint8_t opcode,
-                                        int mrm_index) {
-  if (NULL == OpcodeMrmTable[opcode][prefix][mrm_index]) {
-    OpcodeMrmTable[opcode][prefix][mrm_index] = current_opcode_mrm;
+static void NaClInstallCurrentIntoOpcodeMrm(const NaClInstPrefix prefix,
+                                            const uint8_t opcode,
+                                            int mrm_index) {
+  if (NULL == NaClInstMrmTable[opcode][prefix][mrm_index]) {
+    NaClInstMrmTable[opcode][prefix][mrm_index] = current_inst_mrm;
   } else {
-    MrmOpcode* next = OpcodeMrmTable[opcode][prefix][mrm_index];
+    NaClMrmInst* next = NaClInstMrmTable[opcode][prefix][mrm_index];
     while (NULL != next->next) {
       next = next->next;
     }
-    next->next = current_opcode_mrm;
+    next->next = current_inst_mrm;
   }
 }
 
-static void MoveCurrentToMrmIndex(int mrm_index) {
+static void NaClMoveCurrentToMrmIndex(int mrm_index) {
   /* First remove from default location. */
-  uint8_t opcode = current_opcode->opcode[current_opcode->num_opcode_bytes - 1];
-  MrmOpcode* prev = NULL;
-  MrmOpcode* next =
-      OpcodeMrmTable[opcode][current_opcode_prefix][NO_MODRM_OPCODE_INDEX];
-  while (current_opcode_mrm != next) {
+  uint8_t opcode = current_inst->opcode[current_inst->num_opcode_bytes - 1];
+  NaClMrmInst* prev = NULL;
+  NaClMrmInst* next =
+      NaClInstMrmTable[opcode][current_opcode_prefix]
+                      [NACL_NO_MODRM_OPCODE_INDEX];
+  while (current_inst_mrm != next) {
     if (next == NULL) return;
     prev = next;
     next = next->next;
   }
   if (NULL == prev) {
-    OpcodeMrmTable[opcode][current_opcode_prefix][NO_MODRM_OPCODE_INDEX] =
+    NaClInstMrmTable[opcode][current_opcode_prefix]
+                    [NACL_NO_MODRM_OPCODE_INDEX] =
         next->next;
   } else {
     prev->next = next->next;
   }
-  current_opcode_mrm = next;
-  current_opcode_mrm->next = NULL;
-  InstallCurrentIntoOpcodeMrm(current_opcode_prefix, opcode, mrm_index);
+  current_inst_mrm = next;
+  current_inst_mrm->next = NULL;
+  NaClInstallCurrentIntoOpcodeMrm(current_opcode_prefix, opcode, mrm_index);
 }
 
-static void PrintlnOperandFlags(OperandFlags flags) {
+static void NaClPrintlnOpFlags(NaClOpFlags flags) {
   int i;
-  for (i = 0; i < OperandFlagEnumSize; ++i) {
-    if (flags & OpFlag(i)) {
-      printf(" %s", OperandFlagName(i));
+  for (i = 0; i < NaClOpFlagEnumSize; ++i) {
+    if (flags & NACL_OPFLAG(i)) {
+      printf(" %s", NaClOpFlagName(i));
     }
   }
   printf("\n");
 }
 
-static void ApplySanityChecksToOpcode();
+static void NaClApplySanityChecksToInst();
 
 /* Same as previous function, except that sanity checks
  * are applied to see if inconsistent information is
  * being defined.
  */
-void DefineOperand(
-    OperandKind kind,
-    OperandFlags flags) {
-  int index = current_opcode->num_operands;
-  DEBUG(printf("  %s:", OperandKindName(kind));
-        PrintlnOperandFlags(flags));
-  if (MAX_NUM_OPERANDS <= index) {
-    FatalOperand(index, "Opcode defines too many operands...\n");
+void NaClDefOp(
+    NaClOpKind kind,
+    NaClOpFlags flags) {
+  int index = current_inst->num_operands;
+  DEBUG(printf("  %s:", NaClOpKindName(kind));
+        NaClPrintlnOpFlags(flags));
+  if (NACL_MAX_NUM_OPERANDS <= index) {
+    NaClFatalOp(index, "NaClOpcode defines too many operands...\n");
   }
   /* If one of the M_Operands, make sure that the ModRm mod field isn't 0x3,
    * so that we don't return registers.
@@ -583,13 +587,13 @@ void DefineOperand(
     case Mpw_Operand:
     case Mpv_Operand:
     case Mpo_Operand:
-      current_opcode->flags |= InstFlag(OpcodeLtC0InModRm);
-      ApplySanityChecksToOpcode();
+      current_inst->flags |= NACL_IFLAG(OpcodeLtC0InModRm);
+      NaClApplySanityChecksToInst();
       break;
     case Mmx_N_Operand:
       kind = Mmx_E_Operand;
-      current_opcode->flags |= InstFlag(ModRmModIs0x3);
-      ApplySanityChecksToOpcode();
+      current_inst->flags |= NACL_IFLAG(ModRmModIs0x3);
+      NaClApplySanityChecksToInst();
       break;
     default:
       break;
@@ -598,7 +602,7 @@ void DefineOperand(
   /* Readjust counts if opcode appears in modrm, and not a specific opcode
    * sequence.
    */
-  if ((index == 0) && (NULL == current_opcode_seq_node)) {
+  if ((index == 0) && (NULL == current_inst_node)) {
     switch (kind) {
       case Opcode0:
       case Opcode1:
@@ -608,101 +612,103 @@ void DefineOperand(
       case Opcode5:
       case Opcode6:
       case Opcode7:
-        MoveCurrentToMrmIndex(kind - Opcode0);
+        NaClMoveCurrentToMrmIndex(kind - Opcode0);
         break;
       default:
         break;
     }
   }
   /* Define and apply sanity checks. */
-  DefineOperandInternal(kind, flags);
-  ApplySanityChecksToOperand(index);
+  NaClDefOpInternal(kind, flags);
+  NaClApplySanityChecksToOp(index);
 }
 
-void AddOperandFlags(uint8_t operand_index, OperandFlags more_flags) {
+void NaClAddOpFlags(uint8_t operand_index, NaClOpFlags more_flags) {
   DEBUG(printf("Adding flags:");
-        PrintlnOperandFlags(more_flags));
-  if (operand_index <= current_opcode->num_operands) {
-    current_opcode->operands[operand_index].flags |= more_flags;
-    ApplySanityChecksToOperand(operand_index);
+        NaClPrintlnOpFlags(more_flags));
+  if (operand_index <= current_inst->num_operands) {
+    current_inst->operands[operand_index].flags |= more_flags;
+    NaClApplySanityChecksToOp(operand_index);
   } else {
-    FatalOperand((int) operand_index, "AddOperandFlags: index out of range\n");
+    NaClFatalOp((int) operand_index, "NaClAddOpFlags: index out of range\n");
   }
 }
 
 /* Returns true if the given opcode flags are consistent
  * with the value of FLAGS_run_mode.
  */
-static Bool OpcodeFlagsMatchesRunMode(OpcodeFlags flags) {
-  if (flags & InstFlag(Opcode32Only)) {
-    if (flags & InstFlag(Opcode64Only)) {
-      fatal("Can't specify both Opcode32Only and Opcode64Only");
+static Bool NaClIFlagsMatchesRunMode(NaClIFlags flags) {
+  if (flags & NACL_IFLAG(Opcode32Only)) {
+    if (flags & NACL_IFLAG(Opcode64Only)) {
+      NaClFatal("Can't specify both Opcode32Only and Opcode64Only");
     }
     return FLAGS_run_mode == X86_32;
-  } else if (flags & InstFlag(Opcode64Only)) {
+  } else if (flags & NACL_IFLAG(Opcode64Only)) {
     return FLAGS_run_mode == X86_64;
+  } else if (flags & NACL_IFLAG(Opcode32Only)) {
+    return FLAGS_run_mode == X86_32;
   } else {
     return TRUE;
   }
 }
 
 /* Check that the flags defined for an opcode make sense. */
-static void ApplySanityChecksToOpcode() {
+static void NaClApplySanityChecksToInst() {
   if (!apply_sanity_checks) return;
-  if ((current_opcode->flags & InstFlag(OpcodeInModRm)) &&
-      (current_opcode->flags & InstFlag(OpcodeUsesModRm))) {
-    FatalOpcode("OpcodeInModRm automatically implies OpcodeUsesModRm");
+  if ((current_inst->flags & NACL_IFLAG(OpcodeInModRm)) &&
+      (current_inst->flags & NACL_IFLAG(OpcodeUsesModRm))) {
+    NaClFatalInst("OpcodeInModRm automatically implies OpcodeUsesModRm");
   }
-  if ((current_opcode->flags & InstFlag(Opcode32Only)) &&
-      (current_opcode->flags & InstFlag(Opcode64Only))) {
-    FatalOpcode("Can't be both Opcode32Only and Opcode64Only");
+  if ((current_inst->flags & NACL_IFLAG(Opcode32Only)) &&
+      (current_inst->flags & NACL_IFLAG(Opcode64Only))) {
+    NaClFatalInst("Can't be both Opcode32Only and Opcode64Only");
   }
-  if ((current_opcode->flags & InstFlag(OperandSize_b)) &&
-      (current_opcode->flags & (InstFlag(OperandSize_w) |
-                                InstFlag(OperandSize_v) |
-                                InstFlag(OperandSize_o) |
-                                InstFlag(OperandSizeDefaultIs64) |
-                                InstFlag(OperandSizeForce64)))) {
-    FatalOpcode(
+  if ((current_inst->flags & NACL_IFLAG(OperandSize_b)) &&
+      (current_inst->flags & (NACL_IFLAG(OperandSize_w) |
+                              NACL_IFLAG(OperandSize_v) |
+                              NACL_IFLAG(OperandSize_o) |
+                              NACL_IFLAG(OperandSizeDefaultIs64) |
+                              NACL_IFLAG(OperandSizeForce64)))) {
+    NaClFatalInst(
         "Can't specify other operand sizes when specifying OperandSize_b");
   }
-  if ((current_opcode->flags & InstFlag(OpcodeInModRm)) &&
-      (current_opcode->flags & InstFlag(OpcodePlusR))) {
-    FatalOpcode(
+  if ((current_inst->flags & NACL_IFLAG(OpcodeInModRm)) &&
+      (current_inst->flags & NACL_IFLAG(OpcodePlusR))) {
+    NaClFatalInst(
         "Can't specify both OpcodeInModRm and OpcodePlusR");
   }
-  if ((current_opcode->flags & InstFlag(OpcodeHasImmed_b)) &&
-      (current_opcode->flags & InstFlag(OperandSize_b))) {
-    FatalOpcode(
+  if ((current_inst->flags & NACL_IFLAG(OpcodeHasImmed_b)) &&
+      (current_inst->flags & NACL_IFLAG(OperandSize_b))) {
+    NaClFatalInst(
         "Size implied by OperandSize_b, use OpcodeHasImmed "
         "rather than OpcodeHasImmed_b");
   }
-  if ((current_opcode->flags & InstFlag(OpcodeHasImmed_w)) &&
-      (current_opcode->flags & InstFlag(OperandSize_w))) {
-    FatalOpcode(
+  if ((current_inst->flags & NACL_IFLAG(OpcodeHasImmed_w)) &&
+      (current_inst->flags & NACL_IFLAG(OperandSize_w))) {
+    NaClFatalInst(
         "Size implied by OperandSize_w, use OpcodeHasImmed "
         "rather than OpcodeHasImmed_w");
   }
-  if ((current_opcode->flags & InstFlag(OpcodeHasImmed_v)) &&
-      (current_opcode->flags & InstFlag(OperandSize_v))) {
-    FatalOpcode(
+  if ((current_inst->flags & NACL_IFLAG(OpcodeHasImmed_v)) &&
+      (current_inst->flags & NACL_IFLAG(OperandSize_v))) {
+    NaClFatalInst(
         "Size implied by OperandSize_v, use OpcodeHasImmed "
         "rather than OpcodeHasImmed_v");
   }
-  if ((current_opcode->flags & InstFlag(ModRmModIs0x3)) &&
-      (EmptyInstFlags == (current_opcode->flags &
-                          (InstFlag(OpcodeUsesModRm) |
-                           InstFlag(OpcodeInModRm))))) {
-    FatalOpcode(
+  if ((current_inst->flags & NACL_IFLAG(ModRmModIs0x3)) &&
+      (NACL_EMPTY_IFLAGS == (current_inst->flags &
+                             (NACL_IFLAG(OpcodeUsesModRm) |
+                              NACL_IFLAG(OpcodeInModRm))))) {
+    NaClFatalInst(
         "Can't specify ModRmModIs0x3 unless Opcode has modrm byte");
   }
 }
 
-static void DefineOpcodeBytes(uint8_t opcode) {
+static void NaClDefBytes(uint8_t opcode) {
   uint8_t index;
   /* Start by clearing all entries. */
-  for (index = 0; index < MAX_OPCODE_BYTES; ++index) {
-    current_opcode->opcode[index] = 0x00;
+  for (index = 0; index < NACL_MAX_OPCODE_BYTES; ++index) {
+    current_inst->opcode[index] = 0x00;
   }
 
   /* Now fill in non-final bytes. */
@@ -714,88 +720,88 @@ static void DefineOpcodeBytes(uint8_t opcode) {
     case Prefix660F:
     case PrefixF20F:
     case PrefixF30F:
-      current_opcode->opcode[0] = 0x0F;
+      current_inst->opcode[0] = 0x0F;
       index = 1;
       break;
     case Prefix0F0F:
-      current_opcode->opcode[0] = 0x0F;
-      current_opcode->opcode[1] = 0x0F;
+      current_inst->opcode[0] = 0x0F;
+      current_inst->opcode[1] = 0x0F;
       index = 2;
       break;
     case Prefix0F38:
     case Prefix660F38:
     case PrefixF20F38:
-      current_opcode->opcode[0] = 0x0F;
-      current_opcode->opcode[1] = 0x38;
+      current_inst->opcode[0] = 0x0F;
+      current_inst->opcode[1] = 0x38;
       index = 2;
       break;
     case Prefix0F3A:
     case Prefix660F3A:
-      current_opcode->opcode[0] = 0x0F;
-      current_opcode->opcode[1] = 0x3A;
+      current_inst->opcode[0] = 0x0F;
+      current_inst->opcode[1] = 0x3A;
       index = 2;
       break;
     case PrefixD8:
-      current_opcode->opcode[0] = 0xD8;
+      current_inst->opcode[0] = 0xD8;
       index = 1;
       break;
     case PrefixD9:
-      current_opcode->opcode[0] = 0xD9;
+      current_inst->opcode[0] = 0xD9;
       index = 1;
       break;
     case PrefixDA:
-      current_opcode->opcode[0] = 0xDA;
+      current_inst->opcode[0] = 0xDA;
       index = 1;
       break;
     case PrefixDB:
-      current_opcode->opcode[0] = 0xDB;
+      current_inst->opcode[0] = 0xDB;
       index = 1;
       break;
     case PrefixDC:
-      current_opcode->opcode[0] = 0xDC;
+      current_inst->opcode[0] = 0xDC;
       index = 1;
       break;
     case PrefixDD:
-      current_opcode->opcode[0] = 0xDD;
+      current_inst->opcode[0] = 0xDD;
       index = 1;
       break;
     case PrefixDE:
-      current_opcode->opcode[0] = 0xDE;
+      current_inst->opcode[0] = 0xDE;
       index = 1;
       break;
     case PrefixDF:
-      current_opcode->opcode[0] = 0xDF;
+      current_inst->opcode[0] = 0xDF;
       index = 1;
       break;
     default:
-      fatal("Unrecognized opcode prefix in DefineOpcodeBytes");
+      NaClFatal("Unrecognized opcode prefix in NaClDefBytes");
       break;
   }
 
   /* Now add final byte. */
-  current_opcode->opcode[index] = opcode;
-  current_opcode->num_opcode_bytes = index + 1;
+  current_inst->opcode[index] = opcode;
+  current_inst->num_opcode_bytes = index + 1;
 }
 
-static void PrintOpcodeDescriptor(FILE* out,
-                                  const OpcodePrefix prefix,
-                                  const int opcode,
-                                  const int modrm_index) {
-  if (NO_MODRM_OPCODE_INDEX == modrm_index) {
+static void NaClPrintInstDescriptor(FILE* out,
+                                    const NaClInstPrefix prefix,
+                                    const int opcode,
+                                    const int modrm_index) {
+  if (NACL_NO_MODRM_OPCODE_INDEX == modrm_index) {
     fprintf(out, "%s 0x%02x: ",
-            OpcodePrefixName(prefix), opcode);
+            NaClInstPrefixName(prefix), opcode);
   } else {
     fprintf(out, "%s 0x%02x /%x: ",
-            OpcodePrefixName(prefix), opcode, modrm_index);
+            NaClInstPrefixName(prefix), opcode, modrm_index);
   }
 }
 
-void DefinePrefixOpcodeMrmChoices_32_64(const OpcodePrefix prefix,
-                                        const uint8_t opcode,
-                                        const OperandKind modrm_opcode,
-                                        const int count_32,
-                                        const int count_64) {
-  int modrm_index = NO_MODRM_OPCODE_INDEX;
+void NaClDefPrefixInstMrmChoices_32_64(const NaClInstPrefix prefix,
+                                       const uint8_t opcode,
+                                       const NaClOpKind modrm_opcode,
+                                       const int count_32,
+                                       const int count_64) {
+  int modrm_index = NACL_NO_MODRM_OPCODE_INDEX;
   switch (modrm_opcode) {
     case Opcode0:
     case Opcode1:
@@ -810,88 +816,77 @@ void DefinePrefixOpcodeMrmChoices_32_64(const OpcodePrefix prefix,
     case Unknown_Operand:
       break;
     default:
-      fprintf(stderr, "%s: ", OperandKindName(modrm_opcode));
-      fatal(
+      fprintf(stderr, "%s:", NaClOpKindName(modrm_opcode));
+      NaClFatal(
           "Illegal specification of modrm opcode when defining opcode choices");
   }
-  if (OpcodeCount[opcode][prefix][modrm_index] != DEFAULT_CHOICE_COUNT) {
-    PrintOpcodeDescriptor(stderr, prefix, opcode, modrm_index);
-    fatal("Redefining Opcode choice count");
+  if (NaClInstCount[opcode][prefix][modrm_index] != NACL_DEFAULT_CHOICE_COUNT) {
+    NaClPrintInstDescriptor(stderr, prefix, opcode, modrm_index);
+    NaClFatal("Redefining NaClOpcode choice count");
   }
   if (FLAGS_run_mode == X86_32) {
-    OpcodeCount[opcode][prefix][modrm_index] = count_32;
+    NaClInstCount[opcode][prefix][modrm_index] = count_32;
   } else if (FLAGS_run_mode == X86_64) {
-    OpcodeCount[opcode][prefix][modrm_index] = count_64;
+    NaClInstCount[opcode][prefix][modrm_index] = count_64;
   }
 }
 
-void DefineOpcodeChoices(const uint8_t opcode, const int count) {
-  DefinePrefixOpcodeChoices(current_opcode_prefix, opcode, count);
+void NaClDefInstChoices(const uint8_t opcode, const int count) {
+  NaClDefPrefixInstChoices(current_opcode_prefix, opcode, count);
 }
 
-void DefineOpcodeMrmChoices(const uint8_t opcode,
-                            const OperandKind modrm_opcode,
-                            const int count) {
-  DefinePrefixOpcodeMrmChoices(current_opcode_prefix, opcode,
-                               modrm_opcode, count);
+void NaClDefInstMrmChoices(const uint8_t opcode,
+                           const NaClOpKind modrm_opcode,
+                           const int count) {
+  NaClDefPrefixInstMrmChoices(current_opcode_prefix, opcode,
+                              modrm_opcode, count);
 }
 
-void DefinePrefixOpcodeChoices(const OpcodePrefix prefix,
-                               const uint8_t opcode,
-                               const int count) {
-  DefinePrefixOpcodeChoices_32_64(prefix, opcode,
-                                  count, count);
+void NaClDefPrefixInstChoices(const NaClInstPrefix prefix,
+                              const uint8_t opcode,
+                              const int count) {
+  NaClDefPrefixInstChoices_32_64(prefix, opcode, count, count);
 }
 
-void DefinePrefixOpcodeMrmChoices(const OpcodePrefix prefix,
-                                  const uint8_t opcode,
-                                  const OperandKind modrm_opcode,
-                                  const int count) {
-  DefinePrefixOpcodeMrmChoices_32_64(prefix, opcode, modrm_opcode,
-                                     count, count);
+void NaClDefPrefixInstMrmChoices(const NaClInstPrefix prefix,
+                                 const uint8_t opcode,
+                                 const NaClOpKind modrm_opcode,
+                                 const int count) {
+  NaClDefPrefixInstMrmChoices_32_64(prefix, opcode, modrm_opcode,
+                                         count, count);
 }
 
-void DefineOpcodeChoices_32_64(const uint8_t opcode,
-                               const int count_32,
-                               const int count_64) {
-  DefinePrefixOpcodeChoices_32_64(current_opcode_prefix, opcode,
-                                  count_32, count_64);
+void NaClDefInstChoices_32_64(const uint8_t opcode,
+                              const int count_32,
+                              const int count_64) {
+  NaClDefPrefixInstChoices_32_64(current_opcode_prefix, opcode,
+                                 count_32, count_64);
 }
 
-void DefineOpcodeMrmChoices_32_64(const uint8_t opcode,
-                                  const OperandKind modrm_opcode,
-                                  const int count_32,
-                                  const int count_64) {
-  DefinePrefixOpcodeMrmChoices_32_64(current_opcode_prefix, opcode,
-                                     modrm_opcode, count_32, count_64);
+void NaClDefInstMrmChoices_32_64(const uint8_t opcode,
+                                 const NaClOpKind modrm_opcode,
+                                 const int count_32,
+                                 const int count_64) {
+  NaClDefPrefixInstMrmChoices_32_64(current_opcode_prefix, opcode,
+                                    modrm_opcode, count_32, count_64);
 }
 
-void DefinePrefixOpcodeChoices_32_64(const OpcodePrefix prefix,
-                                     const uint8_t opcode,
-                                     const int count_32,
-                                     const int count_64) {
-  DefinePrefixOpcodeMrmChoices_32_64(prefix, opcode, NO_MODRM_OPCODE,
-                                     count_32, count_64);
-}
-
-static void PrintlnOpcodeFlags(OpcodeFlags flags) {
-  int i;
-  for (i = 0; i < OpcodeFlagEnumSize; ++i) {
-    if (flags & InstFlag(i)) {
-      printf(" %s", OpcodeFlagName(i));
-    }
-  }
-  printf("\n");
+void NaClDefPrefixInstChoices_32_64(const NaClInstPrefix prefix,
+                                    const uint8_t opcode,
+                                    const int count_32,
+                                    const int count_64) {
+  NaClDefPrefixInstMrmChoices_32_64(prefix, opcode, NACL_NO_MODRM_OPCODE,
+                                    count_32, count_64);
 }
 
 /* Define the next opcode (instruction), initializing with
  * no operands.
  */
-void DefineOpcode(
+void NaClDefInst(
     const uint8_t opcode,
     const NaClInstType insttype,
-    OpcodeFlags flags,
-    const InstMnemonic name) {
+    NaClIFlags flags,
+    const NaClMnemonic name) {
   /* TODO(karl) If we can deduce a more specific prefix that
    * must be used, due to the flags associated with the opcode,
    * then put on the more specific prefix list. This will make
@@ -901,84 +896,84 @@ void DefineOpcode(
   int i;
 
   /* Before starting, install an opcode sequence if applicable. */
-  if (NULL != current_cand_seq_node) {
-    current_opcode_seq_node = current_cand_seq_node;
+  if (NULL != current_cand_inst_node) {
+    current_inst_node = current_cand_inst_node;
   }
-  current_cand_seq_node = NULL;
+  current_cand_inst_node = NULL;
 
   /* Before starting, expand appropriate implicit flag assumnptions. */
-  if (flags & InstFlag(OpcodeLtC0InModRm)) {
-    flags |= InstFlag(OpcodeInModRm);
+  if (flags & NACL_IFLAG(OpcodeLtC0InModRm)) {
+    flags |= NACL_IFLAG(OpcodeInModRm);
   }
 
   DEBUG(printf("Define %s %"NACL_PRIx8": %s(%d)",
-               OpcodePrefixName(current_opcode_prefix),
-               opcode, InstMnemonicName(name), name);
-        PrintlnOpcodeFlags(flags));
+               NaClInstPrefixName(current_opcode_prefix),
+               opcode, NaClMnemonicName(name), name);
+        NaClIFlagsPrint(stdout, flags));
 
-  if (InstMnemonicEnumSize <= name) {
-    fatal("Badly defined mnemonic name");
+  if (NaClMnemonicEnumSize <= name) {
+    NaClFatal("Badly defined mnemonic name");
   }
 
   if (kNaClInstTypeRange <= insttype) {
-    fatal("Badly defined inst type");
+    NaClFatal("Badly defined inst type");
   }
 
   /* Create opcode and initialize */
-  current_opcode_mrm = (MrmOpcode*) malloc(sizeof(MrmOpcode));
-  if (NULL == current_opcode_mrm) {
-    fatal("DefineOpcode: malloc failed");
+  current_inst_mrm = (NaClMrmInst*) malloc(sizeof(NaClMrmInst));
+  if (NULL == current_inst_mrm) {
+    NaClFatal("NaClDefInst: malloc failed");
   }
-  DEBUG(printf("current = %p\n", (void*) current_opcode_mrm));
-  current_opcode_mrm->next = NULL;
-  current_opcode = &(current_opcode_mrm->opcode);
-  DefineOpcodeBytes(opcode);
-  current_opcode->insttype = insttype;
-  current_opcode->flags = flags;
-  current_opcode->name = name;
-  current_opcode->next_rule = NULL;
+  DEBUG(printf("current = %p\n", (void*) current_inst_mrm));
+  current_inst_mrm->next = NULL;
+  current_inst = &(current_inst_mrm->inst);
+  NaClDefBytes(opcode);
+  current_inst->insttype = insttype;
+  current_inst->flags = flags;
+  current_inst->name = name;
+  current_inst->next_rule = NULL;
 
   /* undefine all operands. */
-  current_opcode->num_operands = 0;
-  for (i = 0; i < MAX_NUM_OPERANDS; ++i) {
-    DefineOperandInternal(Unknown_Operand, 0);
+  current_inst->num_operands = 0;
+  for (i = 0; i < NACL_MAX_NUM_OPERANDS; ++i) {
+    NaClDefOpInternal(Unknown_Operand, 0);
   }
   /* Now reset number of operands to zero. */
-  current_opcode->num_operands = 0;
+  current_inst->num_operands = 0;
 
-  ApplySanityChecksToOpcode();
+  NaClApplySanityChecksToInst();
 
-  if (name == InstUndefined || !OpcodeFlagsMatchesRunMode(flags)) {
+  if (name == InstUndefined || !NaClIFlagsMatchesRunMode(flags)) {
     return;
   }
 
-  if (NULL == current_opcode_seq_node) {
-    /* Install Opcode. */
+  if (NULL == current_inst_node) {
+    /* Install NaClOpcode. */
     DEBUG(printf("  standard install\n"));
-    if (NULL == OpcodeTable[opcode][current_opcode_prefix]) {
-      OpcodeTable[opcode][current_opcode_prefix] = current_opcode;
+    if (NULL == NaClInstTable[opcode][current_opcode_prefix]) {
+      NaClInstTable[opcode][current_opcode_prefix] = current_inst;
     } else {
-      Opcode* next = OpcodeTable[opcode][current_opcode_prefix];
+      NaClInst* next = NaClInstTable[opcode][current_opcode_prefix];
       while (NULL != next->next_rule) {
         next = next->next_rule;
       }
-      next->next_rule = current_opcode;
+      next->next_rule = current_inst;
     }
-    /* Install assuming no modrm opcode. Let DefineOperand move if needed. */
-    InstallCurrentIntoOpcodeMrm(current_opcode_prefix, opcode,
-                                NO_MODRM_OPCODE_INDEX);
-  } else if (NULL == current_opcode_seq_node->matching_opcode) {
+    /* Install assuming no modrm opcode. Let NaClDefOp move if needed. */
+    NaClInstallCurrentIntoOpcodeMrm(current_opcode_prefix, opcode,
+                                NACL_NO_MODRM_OPCODE_INDEX);
+  } else if (NULL == current_inst_node->matching_inst) {
     DEBUG(printf("  instruction sequence install\n"));
-    current_opcode_seq_node->matching_opcode = current_opcode;
+    current_inst_node->matching_inst = current_inst;
   } else {
-    FatalOpcode(
+    NaClFatalInst(
         "Can't define more than one opcode for the same opcode sequence");
   }
 }
 
 /* Simple (fast hack) routine to extract a byte value from a character string.
  */
-static int ExtractByte(const char* chars, const char* opcode_seq) {
+static int NaClExtractByte(const char* chars, const char* opcode_seq) {
   char buffer[3];
   int i;
   for (i = 0; i < 2; ++i) {
@@ -987,7 +982,7 @@ static int ExtractByte(const char* chars, const char* opcode_seq) {
       fprintf(stderr,
               "Odd number of characters in opcode sequence: '%s'\n",
               opcode_seq);
-      fatal("Fix before continuing!");
+      NaClFatal("Fix before continuing!");
     }
     buffer[i] = ch;
   }
@@ -995,11 +990,11 @@ static int ExtractByte(const char* chars, const char* opcode_seq) {
   return strtoul(buffer, NULL, 16);
 }
 
-static NcOpcodeNode* NewNcOpcodeNode() {
+static NaClInstNode* NaClNewInstNode() {
   int i;
-  NcOpcodeNode* root = (NcOpcodeNode*) malloc(sizeof(NcOpcodeNode));
-  root->matching_opcode = NULL;
-  for (i = 0; i < NUM_BYTE_VALUES; ++i) {
+  NaClInstNode* root = (NaClInstNode*) malloc(sizeof(NaClInstNode));
+  root->matching_inst = NULL;
+  for (i = 0; i < NACL_NUM_BYTE_VALUES; ++i) {
     root->succs[i] = NULL;
   }
   return root;
@@ -1008,142 +1003,142 @@ static NcOpcodeNode* NewNcOpcodeNode() {
 /* Simple (fast hack) recursive routine to automatically install
  * an opcode sequence into the rooted trie.
  */
-static NcOpcodeNode* InstallOpcodeSequence(int index,
-                                           const char* opcode_seq,
-                                           const char* chars_left,
-                                           NcOpcodeNode** root_ptr) {
-  NcOpcodeNode* root = *root_ptr;
-  if (index >= MAX_BYTES_PER_X86_INSTRUCTION) {
+static NaClInstNode* NaClInstallInstSeq(int index,
+                                        const char* opcode_seq,
+                                        const char* chars_left,
+                                        NaClInstNode** root_ptr) {
+  NaClInstNode* root = *root_ptr;
+  if (index >= NACL_MAX_BYTES_PER_X86_INSTRUCTION) {
     fprintf(stderr,
             "Too many bytes specified for opcode sequence: '%s'\n",
             opcode_seq);
-    fatal("Fix before continuing!\n");
+    NaClFatal("Fix before continuing!\n");
   }
   if (NULL == root) {
-    root = NewNcOpcodeNode();
+    root = NaClNewInstNode();
     *root_ptr = root;
   }
   if (*chars_left) {
-    int byte = ExtractByte(chars_left, opcode_seq);
-    return InstallOpcodeSequence(
+    int byte = NaClExtractByte(chars_left, opcode_seq);
+    return NaClInstallInstSeq(
         index+2, opcode_seq, chars_left + 2, &(root->succs[byte]));
   } else {
     return root;
   }
 }
 
-void DefineOpcodeSequence(const char* opcode_seq) {
+void NaClDefInstSeq(const char* opcode_seq) {
   /* First check that opcode sequence not defined twice without a corresponding
-   * call to DefineOpcode.
+   * call to NaClDefInst.
    */
-  if (NULL != current_cand_seq_node) {
+  if (NULL != current_cand_inst_node) {
     fprintf(stderr,
             "Multiple definitions for opcode sequence: '%s'\n", opcode_seq);
-    fatal("Fix before continuing!");
+    NaClFatal("Fix before continuing!");
   }
   /* Now install into lookup trie. */
-  current_cand_seq_node =
-      InstallOpcodeSequence(0, opcode_seq, opcode_seq, &opcode_seq_root);
+  current_cand_inst_node =
+      NaClInstallInstSeq(0, opcode_seq, opcode_seq, &inst_node_root);
 }
 
-void AddOpcodeFlags(OpcodeFlags more_flags) {
+void NaClAddIFlags(NaClIFlags more_flags) {
   DEBUG(printf("Adding opcode flags:");
-        PrintlnOpcodeFlags(more_flags));
-  current_opcode->flags |= more_flags;
-  ApplySanityChecksToOpcode();
+        NaClIFlagsPrint(stdout, more_flags));
+  current_inst->flags |= more_flags;
+  NaClApplySanityChecksToInst();
 }
 
-void DelaySanityChecks() {
+void NaClDelaySanityChecks() {
   apply_sanity_checks = FALSE;
 }
 
-void ApplySanityChecks() {
+void NaClApplySanityChecks() {
   apply_sanity_checks = TRUE;
-  if (NULL != current_opcode) {
+  if (NULL != current_inst) {
     int i;
-    ApplySanityChecksToOpcode();
-    for (i = 0; i < current_opcode->num_operands; i++) {
-      ApplySanityChecksToOperand(i);
+    NaClApplySanityChecksToInst();
+    for (i = 0; i < current_inst->num_operands; i++) {
+      NaClApplySanityChecksToOp(i);
     }
   }
 }
 
-static void InitializeOpcodeTables() {
+static void NaClInitInstTables() {
   int i;
-  OpcodePrefix prefix;
+  NaClInstPrefix prefix;
   int j;
-  /* Before starting, verify that we have defined OpcodeFlags and OperandFlags
-   * big enough to hold the flags associated with it.
+  /* Before starting, verify that we have defined NaClOpcodeFlags
+   * and NaClOpFlags big enough to hold the flags associated with it.
    */
-  assert(OpcodeFlagEnumSize <= sizeof(OpcodeFlags) * 8);
-  assert(OperandFlagEnumSize <= sizeof(OperandFlags) * 8);
+  assert(NaClIFlagEnumSize <= sizeof(NaClIFlags) * 8);
+  assert(NaClOpFlagEnumSize <= sizeof(NaClOpFlags) * 8);
 
   for (i = 0; i < NCDTABLESIZE; ++i) {
-    for (prefix = NoPrefix; prefix < OpcodePrefixEnumSize; ++prefix) {
-      OpcodeTable[i][prefix] = NULL;
-      for (j = 0; j <= NO_MODRM_OPCODE_INDEX; ++j) {
-        OpcodeCount[i][prefix][j] = DEFAULT_CHOICE_COUNT;
+    for (prefix = NoPrefix; prefix < NaClInstPrefixEnumSize; ++prefix) {
+      NaClInstTable[i][prefix] = NULL;
+      for (j = 0; j <= NACL_NO_MODRM_OPCODE_INDEX; ++j) {
+        NaClInstCount[i][prefix][j] = NACL_DEFAULT_CHOICE_COUNT;
       }
     }
-    PrefixTable[i] = "0";
+    NaClPrefixTable[i] = "0";
   }
-  DefineOpcodePrefix(NoPrefix);
-  DefineOpcode(0x0, NACLi_ILLEGAL, 0, InstUndefined);
-  undefined_opcode = current_opcode;
+  NaClDefInstPrefix(NoPrefix);
+  NaClDefInst(0x0, NACLi_ILLEGAL, 0, InstUndefined);
+  undefined_inst = current_inst;
 }
 
-static void DefinePrefixBytes() {
-  EncodePrefixName(0x26, "kPrefixSEGES");
-  EncodePrefixName(0x2e, "kPrefixSEGCS");
-  EncodePrefixName(0x36, "kPrefixSEGSS");
-  EncodePrefixName(0x3e, "kPrefixSEGDS");
-  EncodePrefixName(0x64, "kPrefixSEGFS");
-  EncodePrefixName(0x65, "kPrefixSEGGS");
-  EncodePrefixName(0x66, "kPrefixDATA16");
-  EncodePrefixName(0x67, "kPrefixADDR16");
-  EncodePrefixName(0xf0, "kPrefixLOCK");
-  EncodePrefixName(0xf2, "kPrefixREPNE");
-  EncodePrefixName(0xf3, "kPrefixREP");
+static void NaClDefPrefixBytes() {
+  NaClEncodePrefixName(0x26, "kPrefixSEGES");
+  NaClEncodePrefixName(0x2e, "kPrefixSEGCS");
+  NaClEncodePrefixName(0x36, "kPrefixSEGSS");
+  NaClEncodePrefixName(0x3e, "kPrefixSEGDS");
+  NaClEncodePrefixName(0x64, "kPrefixSEGFS");
+  NaClEncodePrefixName(0x65, "kPrefixSEGGS");
+  NaClEncodePrefixName(0x66, "kPrefixDATA16");
+  NaClEncodePrefixName(0x67, "kPrefixADDR16");
+  NaClEncodePrefixName(0xf0, "kPrefixLOCK");
+  NaClEncodePrefixName(0xf2, "kPrefixREPNE");
+  NaClEncodePrefixName(0xf3, "kPrefixREP");
 
   if (NACL_TARGET_SUBARCH == 64) {
     int i;
     for (i = 0; i < 16; ++i) {
-      EncodePrefixName(0x40+i, "kPrefixREX");
+      NaClEncodePrefixName(0x40+i, "kPrefixREX");
     }
   }
 }
 
-static void DefineNopSequence(const char* sequence, uint8_t opcode) {
-  DefineOpcodeSequence(sequence);
-  DefineOpcode(opcode, NACLi_386, EmptyInstFlags, InstNop);
+static void NaClDefNopSeq(const char* sequence, uint8_t opcode) {
+  NaClDefInstSeq(sequence);
+  NaClDefInst(opcode, NACLi_386, NACL_EMPTY_IFLAGS, InstNop);
 }
 
-static void DefineNops() {
-  DefineNopSequence("90", 0x90);     /* nop */
-  DefineNopSequence("6690", 0x90);   /* xchg %ax, %ax */
-  DefineNopSequence("0f1f00", 0x1f); /* nopl [%[re]ax] */
+static void NaClDefNops() {
+  NaClDefNopSeq("90", 0x90);     /* nop */
+  NaClDefNopSeq("6690", 0x90);   /* xchg %ax, %ax */
+  NaClDefNopSeq("0f1f00", 0x1f); /* nopl [%[re]ax] */
   /* TODO(karl) add more nop's, including 32 and 64 specific examples. */
 }
 
 /* Build the set of x64 opcode (instructions). */
-static void BuildOpcodeTables() {
-  InitializeOpcodeTables();
+static void NaClBuildInstTables() {
+  NaClInitInstTables();
 
-  DefinePrefixBytes();
+  NaClDefPrefixBytes();
 
-  DefineOneByteOpcodes();
+  NaClDefOneByteInsts();
 
-  Define0FOpcodes();
+  NaClDef0FInsts();
 
-  DefineSseOpcodes();
+  NaClDefSseInsts();
 
-  DefineX87Opcodes();
+  NaClDefX87Insts();
 
-  DefineNops();
+  NaClDefNops();
 }
 
-/* Return the number of opcode rules pointed to by the parameter. */
-static int OpcodeListLength(Opcode* next) {
+/* Return the number of instruction rules pointed to by the parameter. */
+static int NaClInstListLength(NaClInst* next) {
   int count = 0;
   while (NULL != next) {
     ++count;
@@ -1152,7 +1147,7 @@ static int OpcodeListLength(Opcode* next) {
   return count;
 }
 
-static int OpcodeMrmListLength(MrmOpcode* next) {
+static int NaClInstMrmListLength(NaClMrmInst* next) {
   int count = 0;
   while (NULL != next) {
     ++count;
@@ -1164,51 +1159,51 @@ static int OpcodeMrmListLength(MrmOpcode* next) {
 /* Collect the number of opcode (instructions) in the given table,
  * and return the number found.
  */
-static int CountNumberOpcodes() {
+static int NaClCountNumberInsts() {
   int i;
-  OpcodePrefix prefix;
+  NaClInstPrefix prefix;
   int count = 0;
   for (i = 0; i < NCDTABLESIZE; ++i) {
-    for (prefix = NoPrefix; prefix < OpcodePrefixEnumSize; ++prefix) {
-      count += OpcodeListLength(OpcodeTable[i][prefix]);
+    for (prefix = NoPrefix; prefix < NaClInstPrefixEnumSize; ++prefix) {
+      count += NaClInstListLength(NaClInstTable[i][prefix]);
     }
   }
   return count;
 }
 
-static void FatalChoiceCount(const int expected,
-                             const int found,
-                             const OpcodePrefix prefix,
-                             const int opcode,
-                             const int modrm_index,
-                             MrmOpcode* opcodes) {
-  PrintOpcodeDescriptor(stderr, prefix, opcode, modrm_index);
+static void NaClFatalChoiceCount(const int expected,
+                                 const int found,
+                                 const NaClInstPrefix prefix,
+                                 const int opcode,
+                                 const int modrm_index,
+                                 NaClMrmInst* insts) {
+  NaClPrintInstDescriptor(stderr, prefix, opcode, modrm_index);
   fprintf(stderr, "Expected %d rules but found %d:\n", expected, found);
-  while (NULL != opcodes) {
-    PrintOpcode(stderr, &(opcodes->opcode));
-    opcodes = opcodes->next;
+  while (NULL != insts) {
+    NaClInstPrint(stderr, &(insts->inst));
+    insts = insts->next;
   }
-  fatal("fix before continuing...\n");
+  NaClFatal("fix before continuing...\n");
 }
 
 /* Verify that the number of possible choies for each prefix:opcode matches
  * what was explicitly defined.
  */
-static void VerifyOpcodeCounts() {
+static void NaClVerifyInstCounts() {
   int i, j;
-  OpcodePrefix prefix;
+  NaClInstPrefix prefix;
   for (i = 0; i < NCDTABLESIZE; ++i) {
-    for (prefix = NoPrefix; prefix < OpcodePrefixEnumSize; ++prefix) {
-      for (j = 0; j < MODRM_OPCODE_SIZE; ++j) {
-        MrmOpcode* opcodes = OpcodeMrmTable[i][prefix][j];
-        int found = OpcodeMrmListLength(opcodes);
-        int expected = OpcodeCount[i][prefix][j];
-        if (expected == DEFAULT_CHOICE_COUNT) {
+    for (prefix = NoPrefix; prefix < NaClInstPrefixEnumSize; ++prefix) {
+      for (j = 0; j < NACL_MODRM_OPCODE_SIZE; ++j) {
+        NaClMrmInst* insts = NaClInstMrmTable[i][prefix][j];
+        int found = NaClInstMrmListLength(insts);
+        int expected = NaClInstCount[i][prefix][j];
+        if (expected == NACL_DEFAULT_CHOICE_COUNT) {
           if (found > 1) {
-            FatalChoiceCount(1, found, prefix, i, j, opcodes);
+            NaClFatalChoiceCount(1, found, prefix, i, j, insts);
           }
         } else if (expected != found) {
-          FatalChoiceCount(expected, found, prefix, i, j, opcodes);
+          NaClFatalChoiceCount(expected, found, prefix, i, j, insts);
         }
       }
     }
@@ -1218,7 +1213,7 @@ static void VerifyOpcodeCounts() {
 /* Generate header information, based on the executable name in argv0,
  * and the file to be generated (defined by fname).
  */
-static void PrintHeader(FILE* f, const char* argv0, const char* fname) {
+static void NaClPrintHeader(FILE* f, const char* argv0, const char* fname) {
   time_t timeofday;
   if (time(&timeofday) < 0) {
     fprintf(stderr, "time() failed\n");
@@ -1229,54 +1224,54 @@ static void PrintHeader(FILE* f, const char* argv0, const char* fname) {
   fprintf(f, " * This file was auto-generated by %s\n", argv0);
   fprintf(f, " * on: %s\n", ctime(&timeofday));
   fprintf(f, " *\n");
-  fprintf(f, " * Compiled for %s.\n", RunModeName(FLAGS_run_mode));
+  fprintf(f, " * Compiled for %s.\n", NaClRunModeName(FLAGS_run_mode));
   fprintf(f, " *\n");
   fprintf(f, " * You must include ncopcode_desc.h before this file.\n");
   fprintf(f, " */\n\n");
 }
 
 /* Print out which bytes correspond to prefix bytes. */
-static void PrintPrefixTable(FILE* f) {
+static void NaClPrintPrefixTable(FILE* f) {
   int opc;
-  fprintf(f, "static const uint32_t kPrefixTable[NCDTABLESIZE] = {");
+  fprintf(f, "static const uint32_t kNaClPrefixTable[NCDTABLESIZE] = {");
   for (opc = 0; opc < NCDTABLESIZE; opc++) {
     if (0 == opc % 16) {
       fprintf(f, "\n  /* 0x%02x-0x%02x */\n  ", opc, opc + 15);
     }
-    fprintf(f, "%s, ", PrefixTable[opc]);
+    fprintf(f, "%s, ", NaClPrefixTable[opc]);
   }
   fprintf(f, "\n};\n\n");
 }
 
-static int CountNumberOpcodeSequences(NcOpcodeNode* root) {
+static int NaClCountInstSeqs(NaClInstNode* root) {
   if (root == NULL) {
     return 0;
   } else {
     int count = 0;
     int index;
-    if (NULL != root->matching_opcode) count++;
-    for (index = 0; index < NUM_BYTE_VALUES; ++index) {
-      count += CountNumberOpcodeSequences(root->succs[index]);
+    if (NULL != root->matching_inst) count++;
+    for (index = 0; index < NACL_NUM_BYTE_VALUES; ++index) {
+      count += NaClCountInstSeqs(root->succs[index]);
     }
     return count;
   }
 }
 
-static int CountNcOpcodeNodes(NcOpcodeNode* root) {
+static int NaClCountInstNodes(NaClInstNode* root) {
   if (NULL == root) {
     return 0;
   } else {
     int count = 1;
     int index;
-    for (index = 0; index < NUM_BYTE_VALUES; ++index) {
-      count += CountNcOpcodeNodes(root->succs[index]);
+    for (index = 0; index < NACL_NUM_BYTE_VALUES; ++index) {
+      count += NaClCountInstNodes(root->succs[index]);
     }
     return count;
   }
 }
 
-static void PrintOpcodeTrieNode(NcOpcodeNode* root, int g_opcode_index,
-                                int root_index, FILE* f) {
+static void NaClPrintInstTrieNode(NaClInstNode* root, int g_opcode_index,
+                                  int root_index, FILE* f) {
   if (NULL == root) {
     return;
   } else {
@@ -1284,28 +1279,28 @@ static void PrintOpcodeTrieNode(NcOpcodeNode* root, int g_opcode_index,
     int next_index = root_index + 1;
     fprintf(f, "  /* %d */\n", root_index);
     fprintf(f, "  { ");
-    if (NULL == root->matching_opcode) {
+    if (NULL == root->matching_inst) {
       fprintf(f, "NULL");
     } else {
       fprintf(f, "g_Opcodes + %d", g_opcode_index);
     }
     fprintf(f, ", {\n");
-    for (i = 0; i < NUM_BYTE_VALUES; ++i) {
+    for (i = 0; i < NACL_NUM_BYTE_VALUES; ++i) {
       fprintf(f, "    /* %02x */ ", i);
       if (NULL == root->succs[i]) {
         fprintf(f, "NULL");
       } else {
         fprintf(f, "g_OpcodeSeq + %d", next_index);
-        next_index += CountNcOpcodeNodes(root->succs[i]);
+        next_index += NaClCountInstNodes(root->succs[i]);
       }
       fprintf(f, ",\n");
     }
     fprintf(f, "    } },\n");
     next_index = root_index + 1;
-    for (i = 0; i < NUM_BYTE_VALUES; ++i) {
-      PrintOpcodeTrieNode(root->succs[i], g_opcode_index, next_index, f);
-      g_opcode_index += CountNumberOpcodeSequences(root->succs[i]);
-      next_index += CountNcOpcodeNodes(root->succs[i]);
+    for (i = 0; i < NACL_NUM_BYTE_VALUES; ++i) {
+      NaClPrintInstTrieNode(root->succs[i], g_opcode_index, next_index, f);
+      g_opcode_index += NaClCountInstSeqs(root->succs[i]);
+      next_index += NaClCountInstNodes(root->succs[i]);
     }
   }
 }
@@ -1313,68 +1308,68 @@ static void PrintOpcodeTrieNode(NcOpcodeNode* root, int g_opcode_index,
 /* Prints out the contents of the opcode sequence overrides into the
  * given file.
  */
-static void PrintOpcodeSequenceTrie(int g_opcode_index,
-                                    NcOpcodeNode* root,
-                                    FILE* f) {
+static void NaClPrintInstSeqTrie(int g_opcode_index,
+                                 NaClInstNode* root,
+                                 FILE* f) {
   /* Make sure trie isn't empty, since empty arrays create warning messages. */
   int num_trie_nodes;
-  if (root == NULL) root = NewNcOpcodeNode();
-  num_trie_nodes = CountNcOpcodeNodes(root);
-  fprintf(f, "static NcOpcodeNode g_OpcodeSeq[%d] = {\n", num_trie_nodes);
-  PrintOpcodeTrieNode(root, g_opcode_index, 0, f);
+  if (root == NULL) root = NaClNewInstNode();
+  num_trie_nodes = NaClCountInstNodes(root);
+  fprintf(f, "static NaClInstNode g_OpcodeSeq[%d] = {\n", num_trie_nodes);
+  NaClPrintInstTrieNode(root, g_opcode_index, 0, f);
   fprintf(f, "};\n");
 }
 
-static void PrintOpcodesInOpcodeSeqs(int current_index,
-                                     NcOpcodeNode* root,
+static void NaClPrintInstsInInstTrie(int current_index,
+                                     NaClInstNode* root,
                                      FILE* f) {
   int index;
   if (NULL == root) return;
-  if (NULL != root->matching_opcode) {
-    PrintOpcodeTablegen(f, current_index, root->matching_opcode, 0);
+  if (NULL != root->matching_inst) {
+    NaClInstPrintTablegen(f, current_index, root->matching_inst, 0);
     current_index++;
   }
-  for (index = 0; index < NUM_BYTE_VALUES; ++index) {
-    PrintOpcodesInOpcodeSeqs(current_index, root->succs[index], f);
-    current_index += CountNumberOpcodeSequences(root->succs[index]);
+  for (index = 0; index < NACL_NUM_BYTE_VALUES; ++index) {
+    NaClPrintInstsInInstTrie(current_index, root->succs[index], f);
+    current_index += NaClCountInstSeqs(root->succs[index]);
   }
 }
 
 /* Print out the contents of the defined instructions into the given file. */
-static void PrintDecodeTables(FILE* f) {
+static void NaClPrintDecodeTables(FILE* f) {
   int i;
-  OpcodePrefix prefix;
+  NaClInstPrefix prefix;
   int count = 0;
 
   /* lookup_index holds the number of the opcode (instruction) that
    * begins the list of instructions for the corresponding opcode
-   * in OpcodeTable.
+   * in NaClOpcodeTable.
    */
-  int lookup_index[NCDTABLESIZE][OpcodePrefixEnumSize];
+  int lookup_index[NCDTABLESIZE][NaClInstPrefixEnumSize];
 
   /* Build table of all possible instructions. Note that we build
-   * build the list of instructions by using a "g_Opcodes" address.
+   * build the list of instructions by using a "g_NaClOpcodes" address.
    */
-  int num_opcodes = CountNumberOpcodes();
-  int num_seq_opcodes = CountNumberOpcodeSequences(opcode_seq_root);
+  int num_opcodes = NaClCountNumberInsts();
+  int num_seq_opcodes = NaClCountInstSeqs(inst_node_root);
 
   fprintf(f,
-          "static Opcode g_Opcodes[%d] = {\n",
+          "static NaClInst g_Opcodes[%d] = {\n",
           num_opcodes + num_seq_opcodes);
-  for (prefix = NoPrefix; prefix < OpcodePrefixEnumSize; ++prefix) {
+  for (prefix = NoPrefix; prefix < NaClInstPrefixEnumSize; ++prefix) {
     for (i = 0; i < NCDTABLESIZE; ++i) {
       /* Build the list of instructions by knowing that the next
        * element in the list will always follow the current entry,
        * when added to the array.
        */
-      Opcode* next = OpcodeTable[i][prefix];
+      NaClInst* next = NaClInstTable[i][prefix];
       if (NULL == next) {
         lookup_index[i][prefix] = -1;
       } else {
         int lookahead = count + 1;
         lookup_index[i][prefix] = count;
         while (NULL != next) {
-          PrintOpcodeTablegen(f, count, next, lookahead);
+          NaClInstPrintTablegen(f, count, next, lookahead);
           next = next->next_rule;
           ++lookahead;
           ++count;
@@ -1382,26 +1377,26 @@ static void PrintDecodeTables(FILE* f) {
       }
     }
   }
-  PrintOpcodesInOpcodeSeqs(num_opcodes, opcode_seq_root, f);
+  NaClPrintInstsInInstTrie(num_opcodes, inst_node_root, f);
   fprintf(f, "};\n\n");
 
   /* Print out the undefined opcode */
-  fprintf(f, "static Opcode g_Undefined_Opcode = \n");
-  PrintOpcodeTableDriver(f, FALSE, FALSE, 0, undefined_opcode, 0);
+  fprintf(f, "static NaClInst g_Undefined_Opcode = \n");
+  NaClInstPrintTableDriver(f, FALSE, FALSE, 0, undefined_inst, 0);
 
   /* Now print lookup table of rules. */
   fprintf(f,
-          "static Opcode* "
-          "g_OpcodeTable[OpcodePrefixEnumSize][NCDTABLESIZE] = {\n");
-  for (prefix = NoPrefix; prefix < OpcodePrefixEnumSize; ++prefix) {
-    fprintf(f,"/* %s */\n", OpcodePrefixName(prefix));
+          "static NaClInst* "
+          "g_OpcodeTable[NaClInstPrefixEnumSize][NCDTABLESIZE] = {\n");
+  for (prefix = NoPrefix; prefix < NaClInstPrefixEnumSize; ++prefix) {
+    fprintf(f,"/* %s */\n", NaClInstPrefixName(prefix));
     fprintf(f, "{\n");
     for (i = 0; i < NCDTABLESIZE; ++i) {
       /* Take advantage of the fact that the lists were added to
        * the array of opcodes such that the next element in the list
        * will always follow the current entry.
        */
-      Opcode* next = OpcodeTable[i][prefix];
+      NaClInst* next = NaClInstTable[i][prefix];
       fprintf(f, "  /* %02x */ ", i);
       if (NULL == next) {
         fprintf(f, "NULL");
@@ -1414,13 +1409,13 @@ static void PrintDecodeTables(FILE* f) {
   }
   fprintf(f, "};\n\n");
 
-  PrintPrefixTable(f);
+  NaClPrintPrefixTable(f);
 
-  PrintOpcodeSequenceTrie(num_opcodes, opcode_seq_root, f);
+  NaClPrintInstSeqTrie(num_opcodes, inst_node_root, f);
 }
 
 /* Open the given file using the given directives (how). */
-FILE* mustopen(const char* fname, const char* how) {
+static FILE* NaClMustOpen(const char* fname, const char* how) {
   FILE* f = fopen(fname, how);
   if (f == NULL) {
     fprintf(stderr, "could not fopen(%s, %s)\n", fname, how);
@@ -1433,7 +1428,7 @@ FILE* mustopen(const char* fname, const char* how) {
 /* Recognizes flags in argv, processes them, and then removes them.
  * Returns the updated value for argc.
  */
-int GrokFlags(int argc, const char* argv[]) {
+static int NaClGrokFlags(int argc, const char* argv[]) {
   int i;
   int new_argc;
   if (argc == 0) return 0;
@@ -1452,7 +1447,7 @@ int GrokFlags(int argc, const char* argv[]) {
 
 int main(const int argc, const char* argv[]) {
   FILE *f;
-  int new_argc = GrokFlags(argc, argv);
+  int new_argc = NaClGrokFlags(argc, argv);
   if (new_argc != 2) {
     fprintf(stderr,
             "ERROR: usage: ncdecode_tablegen [options] "
@@ -1460,13 +1455,13 @@ int main(const int argc, const char* argv[]) {
     return -1;
   }
 
-  BuildOpcodeTables();
+  NaClBuildInstTables();
 
-  VerifyOpcodeCounts();
+  NaClVerifyInstCounts();
 
-  f = mustopen(argv[1], "w");
-  PrintHeader(f, argv[0], argv[1]);
-  PrintDecodeTables(f);
+  f = NaClMustOpen(argv[1], "w");
+  NaClPrintHeader(f, argv[0], argv[1]);
+  NaClPrintDecodeTables(f);
   fclose(f);
 
   return 0;

@@ -56,14 +56,14 @@ ncv_gen_dir = ncv_gen_basedir +'/gen/native_client/src/trusted/validator_x86'
 
 # Define enumerate type files, and the options to process.
 ncv_enum_pairs = {
-    'ncopcode_prefix': '--name=OpcodePrefix --add_size=1',
+    'ncopcode_prefix': '--name=NaClInstPrefix --add_size=1',
     'ncopcode_insts':
-      '--name=InstMnemonic --add_size=1 --sort=1 --name_prefix=Inst',
-    'ncopcode_opcode_flags': '--name=OpcodeFlag --add_size=1',
-    'ncopcode_operand_kind': '--name=OperandKind --add_size=1',
-    'ncopcode_operand_flag': '--name=OperandFlag --add_size=1',
-    'ncop_expr_node_flag': '--name=ExprNodeFlag --add_size=1',
-    'ncop_expr_node_kind': '--name=ExprNodeKind --add_size=1',
+      '--name=NaClMnemonic --add_size=1 --sort=1 --name_prefix=Inst',
+    'ncopcode_opcode_flags': '--name=NaClIFlag --add_size=1',
+    'ncopcode_operand_kind': '--name=NaClOpKind --add_size=1',
+    'ncopcode_operand_flag': '--name=NaClOpFlag --add_size=1',
+    'ncop_expr_node_flag': '--name=NaClExpFlag --add_size=1',
+    'ncop_expr_node_kind': '--name=NaClExpKind --add_size=1',
 }
 
 # Now code generate the enumerated types.

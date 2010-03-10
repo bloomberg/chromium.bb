@@ -194,7 +194,7 @@ def _GenerateHeader(enumfile, constants):
   enumname = _GetEnumName(enumfile)
   print >>outfile, "#ifndef %s__" % _GetDefineName(simplified_filename)
   print >>outfile, "#define %s__" % _GetDefineName(simplified_filename)
-  print >>outfile, "typedef enum {"
+  print >>outfile, "typedef enum %s {" % enumname
   enum_value = 0
   for constant in constants:
     print >>outfile, "  %s = %d," % (_GetPrintName(constant), enum_value)

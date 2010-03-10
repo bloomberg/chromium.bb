@@ -27,14 +27,14 @@ static const Elf_Addr kNCFileUtilPageSize = (1 << 12);
 #endif
 
 typedef struct {
-  const char* fname; /* name of loaded file */
-  PcAddress vbase;   /* base address in virtual memory */
-  MemorySize size;   /* size of program memory         */
-  uint8_t* data;     /* the actual loaded bytes        */
-  Elf_Half phnum;  /* number of Elf program headers */
-  Elf_Phdr* pheaders;  /* copy of the Elf program headers */
-  Elf_Half shnum;  /* number of Elf section headers */
-  Elf_Shdr* sheaders;  /* copy of the Elf section headers */
+  const char* fname;     /* name of loaded file */
+  NaClPcAddress vbase;   /* base address in virtual memory */
+  NaClMemorySize size;   /* size of program memory         */
+  uint8_t* data;         /* the actual loaded bytes        */
+  Elf_Half phnum;        /* number of Elf program headers */
+  Elf_Phdr* pheaders;    /* copy of the Elf program headers */
+  Elf_Half shnum;        /* number of Elf section headers */
+  Elf_Shdr* sheaders;    /* copy of the Elf section headers */
   int ncalign;
 } ncfile;
 
@@ -48,7 +48,7 @@ ncfile *nc_loadfile(const char *filename);
 
 void nc_freefile(ncfile* ncf);
 
-void GetVBaseAndLimit(ncfile* ncf, PcAddress* vbase, PcAddress* vlimit);
+void GetVBaseAndLimit(ncfile* ncf, NaClPcAddress* vbase, NaClPcAddress* vlimit);
 
 /* Function signature for error printing. */
 typedef void (*nc_loadfile_error_fn)(const char* format,

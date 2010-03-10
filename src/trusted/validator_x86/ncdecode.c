@@ -37,7 +37,7 @@
 #include "native_client/src/shared/utils/debugging.h"
 
 /* Turn this flag on, so that we can print out human readable
- * names for type NaclInsttype.
+ * names for type NaClInsttype.
  */
 #define NEEDSNACLINSTTYPESTRING
 
@@ -421,9 +421,10 @@ struct NCDecoderState *PreviousInst(const struct NCDecoderState* mstate,
 }
 
 /* The actual decoder */
-void NCDecodeSegment(uint8_t *mbase, PcAddress vbase, MemorySize size,
+void NCDecodeSegment(uint8_t *mbase, NaClPcAddress vbase,
+                     NaClMemorySize size,
                      struct NCValidatorState* vstate) {
-  const PcAddress vlimit = vbase + size;
+  const NaClPcAddress vlimit = vbase + size;
   struct NCDecoderState decodebuffer[kDecodeBufferSize];
   struct NCDecoderState *mstate;
   int dbindex;
@@ -440,12 +441,13 @@ void NCDecodeSegment(uint8_t *mbase, PcAddress vbase, MemorySize size,
   mstate->nextbyte = mbase;
   mstate->vpc = vbase;
 
-  DEBUG( printf("DecodeSegment(%"NACL_PRIxPcAddress"-%"NACL_PRIxPcAddress")\n",
+  DEBUG( printf("DecodeSegment(%"NACL_PRIxNaClPcAddress
+                "-%"NACL_PRIxNaClPcAddress")\n",
                 vbase, vlimit) );
   g_NewSegment(mstate->vstate);
   while (mstate->vpc < vlimit) {
-    PcAddress newpc;
-    DEBUG( printf("Decoding instruction at %"NACL_PRIxPcAddress":\n",
+    NaClPcAddress newpc;
+    DEBUG( printf("Decoding instruction at %"NACL_PRIxNaClPcAddress":\n",
                   mstate->vpc) );
     InitDecoder(mstate);
     ConsumePrefixBytes(mstate);
@@ -456,9 +458,9 @@ void NCDecodeSegment(uint8_t *mbase, PcAddress vbase, MemorySize size,
     MaybeGet3ByteOpInfo(mstate);
     /* now scrutinize this instruction */
     newpc = mstate->vpc + mstate->inst.length;
-    DEBUG( printf("new pc = %"NACL_PRIxPcAddress"\n", newpc) );
+    DEBUG( printf("new pc = %"NACL_PRIxNaClPcAddress"\n", newpc) );
     if (newpc > vlimit) {
-      fprintf(stdout, "%"NACL_PRIxPcAddress" > %"NACL_PRIxPcAddress"\n",
+      fprintf(stdout, "%"NACL_PRIxNaClPcAddress" > %"NACL_PRIxNaClPcAddress"\n",
               newpc, vlimit);
       ErrorSegmentation(vstate);
       break;

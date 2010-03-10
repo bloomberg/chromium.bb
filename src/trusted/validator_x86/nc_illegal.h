@@ -16,14 +16,14 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_ILLEGAL_H__
 
 /* Defines a validator state. */
-struct NcValidatorState;
+struct NaClValidatorState;
 
 /* Defines an instruction iterator that processes a code segment. */
-struct NcInstIter;
+struct NaClInstIter;
 
 /* Validates that the instruction is nacl legal. */
-void NcValidateInstructionLegal(struct NcValidatorState* state,
-                                struct NcInstIter* iter,
-                                void* ignore);
+void NaClValidateInstructionLegal(struct NaClValidatorState* state,
+                                  struct NaClInstIter* iter,
+                                  void* ignore);
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_ILLEGAL_H__ */

@@ -1,13 +1,13 @@
 0000000000000000: 00 c0                                        add %al, %al
   { 1, { 0x00, 0x00, 0x00 },
     NACLi_386L,
-    InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeRex) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_b),
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeRex) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(OperandSize_b),
     InstAdd,
     2, {
-      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
-      { G_Operand, OpFlag(OpUse) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
+      { G_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %al, ExprSet | ExprUsed | ExprSize8 },
   { OperandReference[1] , 1, 0 },
@@ -16,13 +16,13 @@ ExprNodeVector[4] = {
 0000000000000000: 01 c0                                        add %eax, %eax
   { 1, { 0x01, 0x00, 0x00 },
     NACLi_386L,
-    InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
     InstAdd,
     2, {
-      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OperandZeroExtends_v) },
-      { G_Operand, OpFlag(OpUse) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) | NACL_OPFLAG(OperandZeroExtends_v) },
+      { G_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %eax, ExprSet | ExprUsed | ExprSize32 },
   { OperandReference[1] , 1, 0 },
@@ -31,13 +31,13 @@ ExprNodeVector[4] = {
 0000000000000000: 41 01 c3                                     add %r11d, %eax
   { 1, { 0x01, 0x00, 0x00 },
     NACLi_386L,
-    InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
     InstAdd,
     2, {
-      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OperandZeroExtends_v) },
-      { G_Operand, OpFlag(OpUse) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) | NACL_OPFLAG(OperandZeroExtends_v) },
+      { G_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %r11d, ExprSet | ExprUsed | ExprSize32 },
   { OperandReference[1] , 1, 0 },
@@ -46,13 +46,13 @@ ExprNodeVector[4] = {
 0000000000000000: 44 01 d8                                     add %eax, %r11d
   { 1, { 0x01, 0x00, 0x00 },
     NACLi_386L,
-    InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
     InstAdd,
     2, {
-      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OperandZeroExtends_v) },
-      { G_Operand, OpFlag(OpUse) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) | NACL_OPFLAG(OperandZeroExtends_v) },
+      { G_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %eax, ExprSet | ExprUsed | ExprSize32 },
   { OperandReference[1] , 1, 0 },
@@ -61,13 +61,13 @@ ExprNodeVector[4] = {
 0000000000000000: 48 01 c3                                     add %rbx, %rax
   { 1, { 0x01, 0x00, 0x00 },
     NACLi_386L,
-    InstFlag(OpcodeUsesRexW) | InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeLockable) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
+    NACL_IFLAG(OpcodeUsesRexW) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o),
     InstAdd,
     2, {
-      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
-      { G_Operand, OpFlag(OpUse) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
+      { G_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %rbx, ExprSet | ExprUsed | ExprSize64 },
   { OperandReference[1] , 1, 0 },
@@ -76,13 +76,13 @@ ExprNodeVector[4] = {
 0000000000000000: 67 03 18                                     add %ebx, [%eax]
   { 1, { 0x03, 0x00, 0x00 },
     NACLi_386L,
-    InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
     InstAdd,
     2, {
-      { G_Operand, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OperandZeroExtends_v) },
-      { E_Operand, OpFlag(OpUse) },
+      { G_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) | NACL_OPFLAG(OperandZeroExtends_v) },
+      { E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %ebx, ExprSet | ExprUsed | ExprSize32 },
   { OperandReference[1] , 1, 0 },
@@ -95,13 +95,13 @@ ExprNodeVector[8] = {
 0000000000000000: 02 04 00                                     add %al, [%rax+%rax*1]
   { 1, { 0x02, 0x00, 0x00 },
     NACLi_386L,
-    InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeRex) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_b),
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeRex) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(OperandSize_b),
     InstAdd,
     2, {
-      { G_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
-      { E_Operand, OpFlag(OpUse) },
+      { G_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
+      { E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %al, ExprSet | ExprUsed | ExprSize8 },
   { OperandReference[1] , 1, 0 },
@@ -114,13 +114,13 @@ ExprNodeVector[8] = {
 0000000000000000: 67 02 04 00                                  add %al, [%eax+%eax*1]
   { 1, { 0x02, 0x00, 0x00 },
     NACLi_386L,
-    InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeRex) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_b),
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeRex) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(OperandSize_b),
     InstAdd,
     2, {
-      { G_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
-      { E_Operand, OpFlag(OpUse) },
+      { G_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
+      { E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %al, ExprSet | ExprUsed | ExprSize8 },
   { OperandReference[1] , 1, 0 },
@@ -133,14 +133,14 @@ ExprNodeVector[8] = {
 0000000000000000: 48 83 ec 08                                  sub %rsp, 0x8
   { 1, { 0x83, 0x00, 0x00 },
     NACLi_386L,
-    InstFlag(OpcodeUsesRexW) | InstFlag(OpcodeInModRm) | InstFlag(OpcodeHasImmed_b) | InstFlag(OpcodeLockable) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
+    NACL_IFLAG(OpcodeUsesRexW) | NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o),
     InstSub,
     3, {
-      { Opcode5, OpFlag(OperandExtendsOpcode) },
-      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
-      { I_Operand, OpFlag(OpUse) },
+      { Opcode5, NACL_OPFLAG(OperandExtendsOpcode) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
+      { I_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %rsp, ExprSet | ExprUsed | ExprSize64 },
   { OperandReference[1] , 2, 0 },
@@ -149,14 +149,14 @@ ExprNodeVector[4] = {
 00000000004003d4: e8 83 00 00 00                               call 0x40045c
   { 1, { 0xe8, 0x00, 0x00 },
     NACLi_JMPZ,
-    InstFlag(OpcodeHasImmed) | InstFlag(OperandSize_v),
+    NACL_IFLAG(OpcodeHasImmed) | NACL_IFLAG(OperandSize_v),
     InstCall,
     3, {
-      { RegREIP, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { RegRESP, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { J_Operand, OpFlag(OpUse) | OpFlag(OperandNear) | OpFlag(OperandRelative) },
+      { RegREIP, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { RegRESP, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { J_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OperandNear) | NACL_OPFLAG(OperandRelative) },
   } };
-ExprNodeVector[6] = {
+NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %rip, ExprSet | ExprUsed | ExprSize64 },
   { OperandReference[1] , 1, ExprImplicit },
@@ -167,14 +167,14 @@ ExprNodeVector[6] = {
 00000000004003de: e8 7d 05 00 00                               call 0x400960
   { 1, { 0xe8, 0x00, 0x00 },
     NACLi_JMPZ,
-    InstFlag(OpcodeHasImmed) | InstFlag(OperandSize_v),
+    NACL_IFLAG(OpcodeHasImmed) | NACL_IFLAG(OperandSize_v),
     InstCall,
     3, {
-      { RegREIP, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { RegRESP, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { J_Operand, OpFlag(OpUse) | OpFlag(OperandNear) | OpFlag(OperandRelative) },
+      { RegREIP, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { RegRESP, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { J_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OperandNear) | NACL_OPFLAG(OperandRelative) },
   } };
-ExprNodeVector[6] = {
+NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %rip, ExprSet | ExprUsed | ExprSize64 },
   { OperandReference[1] , 1, ExprImplicit },
@@ -185,13 +185,13 @@ ExprNodeVector[6] = {
 0000000000000000: c3                                           ret
   { 1, { 0xc3, 0x00, 0x00 },
     NACLi_RETURN,
-    0,
+    NACL_EMPTY_IFLAGS,
     InstRet,
     2, {
-      { RegREIP, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { RegRESP, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit) },
+      { RegREIP, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { RegRESP, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %rip, ExprSet | ExprSize64 },
   { OperandReference[1] , 1, ExprImplicit },
@@ -200,14 +200,14 @@ ExprNodeVector[4] = {
 0000000000000000: ff 35 ea 0d 20 00                            push [%rip+0x200dea]
   { 1, { 0xff, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeInModRm) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o) | InstFlag(OperandSizeDefaultIs64),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o) | NACL_IFLAG(OperandSizeDefaultIs64),
     InstPush,
     3, {
-      { Opcode6, OpFlag(OperandExtendsOpcode) },
-      { RegRSP, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { E_Operand, OpFlag(OpSet) },
+      { Opcode6, NACL_OPFLAG(OperandExtendsOpcode) },
+      { RegRSP, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { E_Operand, NACL_OPFLAG(OpSet) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 1, ExprImplicit },
   { ExprRegister[0] , %rsp, ExprSet | ExprUsed | ExprSize64 },
   { OperandReference[1] , 2, 0 },
@@ -220,14 +220,14 @@ ExprNodeVector[8] = {
 0000000000000000: ff 25 ec 0d 20 00                            jmp [%rip+0x200dec]
   { 1, { 0xff, 0x00, 0x00 },
     NACLi_INDIRECT,
-    InstFlag(OpcodeInModRm) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o) | InstFlag(OperandSizeForce64),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o) | NACL_IFLAG(OperandSizeForce64),
     InstJmp,
     3, {
-      { Opcode4, OpFlag(OperandExtendsOpcode) },
-      { RegRIP, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { E_Operand, OpFlag(OpUse) | OpFlag(OperandNear) },
+      { Opcode4, NACL_OPFLAG(OperandExtendsOpcode) },
+      { RegRIP, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OperandNear) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 1, ExprImplicit },
   { ExprRegister[0] , %rip, ExprSet | ExprSize64 },
   { OperandReference[1] , 2, 0 },
@@ -240,23 +240,23 @@ ExprNodeVector[8] = {
 0000000000000000: 0f 1f 40 00                                  nop
   { 2, { 0x0f, 0x1f, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeInModRm) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v) | InstFlag(IgnorePrefixDATA16) | InstFlag(IgnorePrefixSEGCS),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(IgnorePrefixDATA16) | NACL_IFLAG(IgnorePrefixSEGCS),
     InstNop,
     1, {
-      { Opcode0, OpFlag(OperandExtendsOpcode) },
+      { Opcode0, NACL_OPFLAG(OperandExtendsOpcode) },
   } };
-ExprNodeVector[0] = {
+NaClExpVector[0] = {
 };
 0000000000000000: 68 00 00 00 00                               push 0x0
   { 1, { 0x68, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeHasImmed_v) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o) | InstFlag(OperandSizeDefaultIs64),
+    NACL_IFLAG(OpcodeHasImmed_v) | NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o) | NACL_IFLAG(OperandSizeDefaultIs64),
     InstPush,
     2, {
-      { RegRESP, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { I_Operand, OpFlag(OpUse) },
+      { RegRESP, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { I_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %rsp, ExprSet | ExprUsed | ExprSize64 },
   { OperandReference[1] , 1, 0 },
@@ -265,13 +265,13 @@ ExprNodeVector[4] = {
 0000000000400403: e9 e0 ff ff ff                               jmp 0x4003e8
   { 1, { 0xe9, 0x00, 0x00 },
     NACLi_JMPZ,
-    InstFlag(OpcodeHasImmed_v) | InstFlag(Opcode64Only),
+    NACL_IFLAG(OpcodeHasImmed_v) | NACL_IFLAG(Opcode64Only),
     InstJmp,
     2, {
-      { RegREIP, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { J_Operand, OpFlag(OpUse) | OpFlag(OperandNear) | OpFlag(OperandRelative) },
+      { RegREIP, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { J_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OperandNear) | NACL_OPFLAG(OperandRelative) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %rip, ExprSet | ExprSize64 },
   { OperandReference[1] , 1, 0 },
@@ -280,13 +280,13 @@ ExprNodeVector[4] = {
 0000000000000000: 49 89 d1                                     mov %r9, %rdx
   { 1, { 0x89, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeUsesRexW) | InstFlag(OpcodeUsesModRm) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
+    NACL_IFLAG(OpcodeUsesRexW) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o),
     InstMov,
     2, {
-      { E_Operand, OpFlag(OpSet) },
-      { G_Operand, OpFlag(OpUse) },
+      { E_Operand, NACL_OPFLAG(OpSet) },
+      { G_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %r9, ExprSet | ExprSize64 },
   { OperandReference[1] , 1, 0 },
@@ -295,14 +295,14 @@ ExprNodeVector[4] = {
 0000000000000000: 5e                                           pop %rsi
   { 1, { 0x5e, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OpcodePlusR) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o) | InstFlag(OperandSizeDefaultIs64),
+    NACL_IFLAG(OpcodePlusR) | NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o) | NACL_IFLAG(OperandSizeDefaultIs64),
     InstPop,
     3, {
-      { OpcodeBaseMinus6, OpFlag(OperandExtendsOpcode) },
-      { RegRSP, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { G_OpcodeBase, OpFlag(OpSet) },
+      { OpcodeBaseMinus6, NACL_OPFLAG(OperandExtendsOpcode) },
+      { RegRSP, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { G_OpcodeBase, NACL_OPFLAG(OpSet) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 1, ExprImplicit },
   { ExprRegister[0] , %rsp, ExprSet | ExprUsed | ExprSize64 },
   { OperandReference[1] , 2, 0 },
@@ -311,14 +311,14 @@ ExprNodeVector[4] = {
 0000000000000000: 49 c7 c0 c0 08 40 00                         mov %r8, 0x4008c0
   { 1, { 0xc7, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeUsesRexW) | InstFlag(OpcodeInModRm) | InstFlag(OpcodeHasImmed_v) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
+    NACL_IFLAG(OpcodeUsesRexW) | NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeHasImmed_v) | NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o),
     InstMov,
     3, {
-      { Opcode0, OpFlag(OperandExtendsOpcode) },
-      { E_Operand, OpFlag(OpSet) },
-      { I_Operand, OpFlag(OpUse) },
+      { Opcode0, NACL_OPFLAG(OperandExtendsOpcode) },
+      { E_Operand, NACL_OPFLAG(OpSet) },
+      { I_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %r8, ExprSet | ExprSize64 },
   { OperandReference[1] , 2, 0 },
@@ -327,22 +327,22 @@ ExprNodeVector[4] = {
 0000000000000000: f4                                           hlt
   { 1, { 0xf4, 0x00, 0x00 },
     NACLi_386,
-    0,
+    NACL_EMPTY_IFLAGS,
     InstHlt,
     0, {
   } };
-ExprNodeVector[0] = {
+NaClExpVector[0] = {
 };
 0000000000000000: 48 8b 05 61 0d 20 00                         mov %rax, [%rip+0x200d61]
   { 1, { 0x8b, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeUsesRexW) | InstFlag(OpcodeUsesModRm) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
+    NACL_IFLAG(OpcodeUsesRexW) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o),
     InstMov,
     2, {
-      { G_Operand, OpFlag(OpSet) },
-      { E_Operand, OpFlag(OpUse) },
+      { G_Operand, NACL_OPFLAG(OpSet) },
+      { E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %rax, ExprSet | ExprSize64 },
   { OperandReference[1] , 1, 0 },
@@ -355,13 +355,13 @@ ExprNodeVector[8] = {
 0000000000000000: 48 85 c0                                     test %rax, %rax
   { 1, { 0x85, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeUsesRexW) | InstFlag(OpcodeUsesModRm) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
+    NACL_IFLAG(OpcodeUsesRexW) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o),
     InstTest,
     2, {
-      { E_Operand, OpFlag(OpUse) },
-      { G_Operand, OpFlag(OpUse) },
+      { E_Operand, NACL_OPFLAG(OpUse) },
+      { G_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
   { OperandReference[1] , 1, 0 },
@@ -370,13 +370,13 @@ ExprNodeVector[4] = {
 000000000040046a: 74 02                                        jz 0x40046e
   { 1, { 0x74, 0x00, 0x00 },
     NACLi_JMP8,
-    InstFlag(OpcodeHasImmed) | InstFlag(OperandSize_b),
+    NACL_IFLAG(OpcodeHasImmed) | NACL_IFLAG(OperandSize_b),
     InstJz,
     2, {
-      { RegREIP, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { J_Operand, OpFlag(OpUse) | OpFlag(OperandNear) | OpFlag(OperandRelative) },
+      { RegREIP, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { J_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OperandNear) | NACL_OPFLAG(OperandRelative) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %rip, ExprSet | ExprSize64 },
   { OperandReference[1] , 1, 0 },
@@ -385,15 +385,15 @@ ExprNodeVector[4] = {
 0000000000000000: ff d0                                        call %rax
   { 1, { 0xff, 0x00, 0x00 },
     NACLi_INDIRECT,
-    InstFlag(OpcodeInModRm) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o) | InstFlag(OperandSizeForce64),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o) | NACL_IFLAG(OperandSizeForce64),
     InstCall,
     4, {
-      { Opcode2, OpFlag(OperandExtendsOpcode) },
-      { RegRIP, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { RegRSP, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { E_Operand, OpFlag(OpUse) | OpFlag(OperandNear) },
+      { Opcode2, NACL_OPFLAG(OperandExtendsOpcode) },
+      { RegRIP, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { RegRSP, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OperandNear) },
   } };
-ExprNodeVector[6] = {
+NaClExpVector[6] = {
   { OperandReference[1] , 1, ExprImplicit },
   { ExprRegister[0] , %rip, ExprSet | ExprUsed | ExprSize64 },
   { OperandReference[1] , 2, ExprImplicit },
@@ -404,13 +404,13 @@ ExprNodeVector[6] = {
 000000000040048d: eb 24                                        jmp 0x4004b3
   { 1, { 0xeb, 0x00, 0x00 },
     NACLi_JMP8,
-    InstFlag(OpcodeHasImmed) | InstFlag(OperandSize_b),
+    NACL_IFLAG(OpcodeHasImmed) | NACL_IFLAG(OperandSize_b),
     InstJmp,
     2, {
-      { RegREIP, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { J_Operand, OpFlag(OpUse) | OpFlag(OperandNear) | OpFlag(OperandRelative) },
+      { RegREIP, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { J_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OperandNear) | NACL_OPFLAG(OperandRelative) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %rip, ExprSet | ExprSize64 },
   { OperandReference[1] , 1, 0 },
@@ -419,13 +419,13 @@ ExprNodeVector[4] = {
 0000000000000000: c9                                           leave
   { 1, { 0xc9, 0x00, 0x00 },
     NACLi_386,
-    0,
+    NACL_EMPTY_IFLAGS,
     InstLeave,
     2, {
-      { RegREBP, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { RegRESP, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit) },
+      { RegREBP, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { RegRESP, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %rbp, ExprSet | ExprUsed | ExprSize64 },
   { OperandReference[1] , 1, ExprImplicit },
@@ -434,24 +434,24 @@ ExprNodeVector[4] = {
 0000000000000000: 66 66 2e 0f 1f 84 00 00 00 00 00             nop
   { 2, { 0x0f, 0x1f, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeInModRm) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v) | InstFlag(IgnorePrefixDATA16) | InstFlag(IgnorePrefixSEGCS),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(IgnorePrefixDATA16) | NACL_IFLAG(IgnorePrefixSEGCS),
     InstNop,
     1, {
-      { Opcode0, OpFlag(OperandExtendsOpcode) },
+      { Opcode0, NACL_OPFLAG(OperandExtendsOpcode) },
   } };
-ExprNodeVector[0] = {
+NaClExpVector[0] = {
 };
 0000000000000000: b8 00 00 00 00                               mov %eax, 0x0
   { 1, { 0xb8, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeHasImmed) | InstFlag(OpcodePlusR) | InstFlag(OperandSize_v),
+    NACL_IFLAG(OpcodeHasImmed) | NACL_IFLAG(OpcodePlusR) | NACL_IFLAG(OperandSize_v),
     InstMov,
     3, {
-      { OpcodeBaseMinus0, OpFlag(OperandExtendsOpcode) },
-      { G_OpcodeBase, OpFlag(OpSet) | OpFlag(OperandZeroExtends_v) },
-      { I_Operand, OpFlag(OpUse) },
+      { OpcodeBaseMinus0, NACL_OPFLAG(OperandExtendsOpcode) },
+      { G_OpcodeBase, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OperandZeroExtends_v) },
+      { I_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %eax, ExprSet | ExprSize32 },
   { OperandReference[1] , 2, 0 },
@@ -460,14 +460,14 @@ ExprNodeVector[4] = {
 0000000000000000: bf 20 10 60 00                               mov %edi, 0x601020
   { 1, { 0xbf, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeHasImmed) | InstFlag(OpcodePlusR) | InstFlag(OperandSize_v),
+    NACL_IFLAG(OpcodeHasImmed) | NACL_IFLAG(OpcodePlusR) | NACL_IFLAG(OperandSize_v),
     InstMov,
     3, {
-      { OpcodeBaseMinus7, OpFlag(OperandExtendsOpcode) },
-      { G_OpcodeBase, OpFlag(OpSet) | OpFlag(OperandZeroExtends_v) },
-      { I_Operand, OpFlag(OpUse) },
+      { OpcodeBaseMinus7, NACL_OPFLAG(OperandExtendsOpcode) },
+      { G_OpcodeBase, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OperandZeroExtends_v) },
+      { I_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %edi, ExprSet | ExprSize32 },
   { OperandReference[1] , 2, 0 },
@@ -476,13 +476,13 @@ ExprNodeVector[4] = {
 0000000000000000: 48 8b 04 c5 a0 13 60 00                      mov %rax, [%rax*8+0x6013a0]
   { 1, { 0x8b, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeUsesRexW) | InstFlag(OpcodeUsesModRm) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
+    NACL_IFLAG(OpcodeUsesRexW) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o),
     InstMov,
     2, {
-      { G_Operand, OpFlag(OpSet) },
-      { E_Operand, OpFlag(OpUse) },
+      { G_Operand, NACL_OPFLAG(OpSet) },
+      { E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %rax, ExprSet | ExprSize64 },
   { OperandReference[1] , 1, 0 },
@@ -495,13 +495,13 @@ ExprNodeVector[8] = {
 0000000000000000: 89 7d fc                                     mov [%rbp-0x4], %edi
   { 1, { 0x89, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
     InstMov,
     2, {
-      { E_Operand, OpFlag(OpSet) | OpFlag(OperandZeroExtends_v) },
-      { G_Operand, OpFlag(OpUse) },
+      { E_Operand, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OperandZeroExtends_v) },
+      { G_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprMemOffset[4] , 0, ExprSet },
   { ExprRegister[0] , %rbp, ExprUsed | ExprSize64 },
@@ -514,13 +514,13 @@ ExprNodeVector[8] = {
 0000000000000000: 3b 45 fc                                     cmp %eax, [%rbp-0x4]
   { 1, { 0x3b, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
     InstCmp,
     2, {
-      { G_Operand, OpFlag(OpUse) | OpFlag(OperandZeroExtends_v) },
-      { E_Operand, OpFlag(OpUse) },
+      { G_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OperandZeroExtends_v) },
+      { E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
   { OperandReference[1] , 1, 0 },
@@ -533,14 +533,14 @@ ExprNodeVector[8] = {
 0000000000000000: 83 7d f8 08                                  cmp [%rbp-0x8], 0x8
   { 1, { 0x83, 0x00, 0x00 },
     NACLi_386L,
-    InstFlag(OpcodeInModRm) | InstFlag(OpcodeHasImmed_b) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_v),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(OperandSize_v),
     InstCmp,
     3, {
-      { Opcode7, OpFlag(OperandExtendsOpcode) },
-      { E_Operand, OpFlag(OpUse) | OpFlag(OperandZeroExtends_v) },
-      { I_Operand, OpFlag(OpUse) },
+      { Opcode7, NACL_OPFLAG(OperandExtendsOpcode) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OperandZeroExtends_v) },
+      { I_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 1, 0 },
   { ExprMemOffset[4] , 0, ExprUsed },
   { ExprRegister[0] , %rbp, ExprUsed | ExprSize64 },
@@ -553,13 +553,13 @@ ExprNodeVector[8] = {
 0000000000000000: 8b 45 fc                                     mov %eax, [%rbp-0x4]
   { 1, { 0x8b, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
     InstMov,
     2, {
-      { G_Operand, OpFlag(OpSet) | OpFlag(OperandZeroExtends_v) },
-      { E_Operand, OpFlag(OpUse) },
+      { G_Operand, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OperandZeroExtends_v) },
+      { E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %eax, ExprSet | ExprSize32 },
   { OperandReference[1] , 1, 0 },
@@ -572,14 +572,14 @@ ExprNodeVector[8] = {
 0000000000000000: 41 d3 e4                                     shl %r12d, %cl
   { 1, { 0xd3, 0x00, 0x00 },
     NACLi_OPINMRM,
-    InstFlag(OpcodeInModRm) | InstFlag(OperandSize_v),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OperandSize_v),
     InstShl,
     3, {
-      { Opcode4, OpFlag(OperandExtendsOpcode) },
-      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
-      { RegCL, OpFlag(OpUse) },
+      { Opcode4, NACL_OPFLAG(OperandExtendsOpcode) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
+      { RegCL, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %r12d, ExprSet | ExprUsed | ExprSize32 },
   { OperandReference[1] , 2, 0 },
@@ -588,24 +588,24 @@ ExprNodeVector[4] = {
 0000000000000000: 66 66 66 66 66 2e 0f 1f 84 00 00 00 00 00    nop
   { 2, { 0x0f, 0x1f, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeInModRm) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v) | InstFlag(IgnorePrefixDATA16) | InstFlag(IgnorePrefixSEGCS),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(IgnorePrefixDATA16) | NACL_IFLAG(IgnorePrefixSEGCS),
     InstNop,
     1, {
-      { Opcode0, OpFlag(OperandExtendsOpcode) },
+      { Opcode0, NACL_OPFLAG(OperandExtendsOpcode) },
   } };
-ExprNodeVector[0] = {
+NaClExpVector[0] = {
 };
 0000000000000000: 48 c1 fd 03                                  sar %rbp, 0x3
   { 1, { 0xc1, 0x00, 0x00 },
     NACLi_OPINMRM,
-    InstFlag(OpcodeUsesRexW) | InstFlag(OpcodeInModRm) | InstFlag(OpcodeHasImmed_b) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
+    NACL_IFLAG(OpcodeUsesRexW) | NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o),
     InstSar,
     3, {
-      { Opcode7, OpFlag(OperandExtendsOpcode) },
-      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
-      { I_Operand, 0 },
+      { Opcode7, NACL_OPFLAG(OperandExtendsOpcode) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
+      { I_Operand, NACL_EMPTY_OPFLAGS },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %rbp, ExprSet | ExprUsed | ExprSize64 },
   { OperandReference[1] , 2, 0 },
@@ -614,13 +614,13 @@ ExprNodeVector[4] = {
 0000000000000000: 48 8d 2d 0f 07 20 00                         lea %rbp, [%rip+0x20070f]
   { 1, { 0x8d, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeUsesRexW) | InstFlag(OpcodeLtC0InModRm) | InstFlag(OpcodeUsesModRm) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
+    NACL_IFLAG(OpcodeUsesRexW) | NACL_IFLAG(OpcodeLtC0InModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o),
     InstLea,
     2, {
-      { G_Operand, OpFlag(OpSet) },
-      { M_Operand, OpFlag(OpAddress) },
+      { G_Operand, NACL_OPFLAG(OpSet) },
+      { M_Operand, NACL_OPFLAG(OpAddress) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %rbp, ExprSet | ExprSize64 },
   { OperandReference[1] , 1, 0 },
@@ -633,13 +633,13 @@ ExprNodeVector[8] = {
 0000000000000000: a0 88 77 66 55 44 33 22 11                   mov %al, [0x1122334455667788]
   { 1, { 0xa0, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeHasImmed_Addr) | InstFlag(OperandSize_b),
+    NACL_IFLAG(OpcodeHasImmed_Addr) | NACL_IFLAG(OperandSize_b),
     InstMov,
     2, {
-      { RegAL, OpFlag(OpSet) },
-      { O_Operand, OpFlag(OpUse) },
+      { RegAL, NACL_OPFLAG(OpSet) },
+      { O_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[10] = {
+NaClExpVector[10] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %al, ExprSet | ExprSize8 },
   { OperandReference[1] , 1, 0 },
@@ -654,13 +654,13 @@ ExprNodeVector[10] = {
 0000000000000000: 66 a1 88 77 66 55 44 33 22 11                mov %ax, [0x1122334455667788]
   { 1, { 0xa1, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeHasImmed_Addr) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+    NACL_IFLAG(OpcodeHasImmed_Addr) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
     InstMov,
     2, {
-      { RegREAX, OpFlag(OpSet) | OpFlag(OperandZeroExtends_v) },
-      { O_Operand, OpFlag(OpUse) },
+      { RegREAX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OperandZeroExtends_v) },
+      { O_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[10] = {
+NaClExpVector[10] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %ax, ExprSet | ExprSize16 },
   { OperandReference[1] , 1, 0 },
@@ -675,13 +675,13 @@ ExprNodeVector[10] = {
 0000000000000000: a2 88 77 66 55 44 33 22 11                   mov [0x1122334455667788], %al
   { 1, { 0xa2, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeHasImmed_Addr) | InstFlag(OperandSize_b),
+    NACL_IFLAG(OpcodeHasImmed_Addr) | NACL_IFLAG(OperandSize_b),
     InstMov,
     2, {
-      { O_Operand, OpFlag(OpSet) },
-      { RegAL, OpFlag(OpUse) },
+      { O_Operand, NACL_OPFLAG(OpSet) },
+      { RegAL, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[10] = {
+NaClExpVector[10] = {
   { OperandReference[1] , 0, 0 },
   { ExprMemOffset[4] , 0, ExprSet },
   { ExprRegister[0] , %unknown, 0 },
@@ -696,13 +696,13 @@ ExprNodeVector[10] = {
 0000000000000000: 66 a3 88 77 66 55 44 33 22 11                mov [0x1122334455667788], %ax
   { 1, { 0xa3, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeHasImmed_Addr) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+    NACL_IFLAG(OpcodeHasImmed_Addr) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
     InstMov,
     2, {
-      { O_Operand, OpFlag(OpSet) | OpFlag(OperandZeroExtends_v) },
-      { RegREAX, OpFlag(OpUse) },
+      { O_Operand, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OperandZeroExtends_v) },
+      { RegREAX, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[10] = {
+NaClExpVector[10] = {
   { OperandReference[1] , 0, 0 },
   { ExprMemOffset[4] , 0, ExprSet },
   { ExprRegister[0] , %unknown, 0 },
@@ -717,14 +717,14 @@ ExprNodeVector[10] = {
 0000000000000000: 48 b8 88 77 66 55 44 33 22 11                mov %rax, 0x1122334455667788
   { 1, { 0xb8, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeUsesRexW) | InstFlag(OpcodeHasImmed) | InstFlag(OpcodePlusR) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
+    NACL_IFLAG(OpcodeUsesRexW) | NACL_IFLAG(OpcodeHasImmed) | NACL_IFLAG(OpcodePlusR) | NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o),
     InstMov,
     3, {
-      { OpcodeBaseMinus0, OpFlag(OperandExtendsOpcode) },
-      { G_OpcodeBase, OpFlag(OpSet) },
-      { I_Operand, OpFlag(OpUse) },
+      { OpcodeBaseMinus0, NACL_OPFLAG(OperandExtendsOpcode) },
+      { G_OpcodeBase, NACL_OPFLAG(OpSet) },
+      { I_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[6] = {
+NaClExpVector[6] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %rax, ExprSet | ExprSize64 },
   { OperandReference[1] , 2, 0 },
@@ -735,13 +735,13 @@ ExprNodeVector[6] = {
 0000000000000000: 44 8a 04 00                                  mov %r8b, [%rax+%rax*1]
   { 1, { 0x8a, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeRex) | InstFlag(OperandSize_b),
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeRex) | NACL_IFLAG(OperandSize_b),
     InstMov,
     2, {
-      { G_Operand, OpFlag(OpSet) },
-      { E_Operand, OpFlag(OpUse) },
+      { G_Operand, NACL_OPFLAG(OpSet) },
+      { E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %r8b, ExprSet | ExprSize8 },
   { OperandReference[1] , 1, 0 },
@@ -754,13 +754,13 @@ ExprNodeVector[8] = {
 0000000000000000: 8a 44 05 00                                  mov %al, [%rbp+%rax*1]
   { 1, { 0x8a, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeRex) | InstFlag(OperandSize_b),
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeRex) | NACL_IFLAG(OperandSize_b),
     InstMov,
     2, {
-      { G_Operand, OpFlag(OpSet) },
-      { E_Operand, OpFlag(OpUse) },
+      { G_Operand, NACL_OPFLAG(OpSet) },
+      { E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %al, ExprSet | ExprSize8 },
   { OperandReference[1] , 1, 0 },
@@ -773,13 +773,13 @@ ExprNodeVector[8] = {
 0000000000000000: 42 8a 04 20                                  mov %al, [%rax+%r12*1]
   { 1, { 0x8a, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeRex) | InstFlag(OperandSize_b),
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeRex) | NACL_IFLAG(OperandSize_b),
     InstMov,
     2, {
-      { G_Operand, OpFlag(OpSet) },
-      { E_Operand, OpFlag(OpUse) },
+      { G_Operand, NACL_OPFLAG(OpSet) },
+      { E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %al, ExprSet | ExprSize8 },
   { OperandReference[1] , 1, 0 },
@@ -792,13 +792,13 @@ ExprNodeVector[8] = {
 0000000000000000: 41 8a 44 05 00                               mov %al, [%r13+%rax*1]
   { 1, { 0x8a, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeRex) | InstFlag(OperandSize_b),
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeRex) | NACL_IFLAG(OperandSize_b),
     InstMov,
     2, {
-      { G_Operand, OpFlag(OpSet) },
-      { E_Operand, OpFlag(OpUse) },
+      { G_Operand, NACL_OPFLAG(OpSet) },
+      { E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %al, ExprSet | ExprSize8 },
   { OperandReference[1] , 1, 0 },
@@ -811,13 +811,13 @@ ExprNodeVector[8] = {
 0000000000000000: 0f 38 08 2c 25 00 00 00 00                   psignb %mmx5, [0x0]
   { 3, { 0x0f, 0x38, 0x08 },
     NACLi_SSSE3,
-    InstFlag(OpcodeUsesModRm),
+    NACL_IFLAG(OpcodeUsesModRm),
     InstPsignb,
     2, {
-      { Mmx_G_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
-      { Mmx_E_Operand, OpFlag(OpUse) },
+      { Mmx_G_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
+      { Mmx_E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %mmx5, ExprSet | ExprUsed },
   { OperandReference[1] , 1, 0 },
@@ -830,13 +830,13 @@ ExprNodeVector[8] = {
 0000000000000000: 66 0f 38 08 2c 25 00 00 00 00                psignb %xmm5, [0x0]
   { 3, { 0x0f, 0x38, 0x08 },
     NACLi_SSSE3,
-    InstFlag(OpcodeUsesModRm),
+    NACL_IFLAG(OpcodeUsesModRm),
     InstPsignb,
     2, {
-      { Xmm_G_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
-      { Xmm_E_Operand, OpFlag(OpUse) },
+      { Xmm_G_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
+      { Xmm_E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %xmm5, ExprSet | ExprUsed },
   { OperandReference[1] , 1, 0 },
@@ -849,13 +849,13 @@ ExprNodeVector[8] = {
 0000000000000000: 66 44 0f 38 08 2c 00                         psignb %xmm13, [%rax+%rax*1]
   { 3, { 0x0f, 0x38, 0x08 },
     NACLi_SSSE3,
-    InstFlag(OpcodeUsesModRm),
+    NACL_IFLAG(OpcodeUsesModRm),
     InstPsignb,
     2, {
-      { Xmm_G_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
-      { Xmm_E_Operand, OpFlag(OpUse) },
+      { Xmm_G_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
+      { Xmm_E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %xmm13, ExprSet | ExprUsed },
   { OperandReference[1] , 1, 0 },
@@ -868,13 +868,13 @@ ExprNodeVector[8] = {
 0000000000000000: dd 24 00                                     frstor [%rax+%rax*1]
   { 1, { 0xdd, 0x00, 0x00 },
     NACLi_X87,
-    InstFlag(OpcodeInModRm) | InstFlag(OpcodeLtC0InModRm),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeLtC0InModRm),
     InstFrstor,
     2, {
-      { Opcode4, OpFlag(OperandExtendsOpcode) },
-      { M_Operand, OpFlag(OpUse) },
+      { Opcode4, NACL_OPFLAG(OperandExtendsOpcode) },
+      { M_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[6] = {
+NaClExpVector[6] = {
   { OperandReference[1] , 1, 0 },
   { ExprMemOffset[4] , 0, ExprUsed },
   { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
@@ -885,13 +885,13 @@ ExprNodeVector[6] = {
 0000000000000000: 67 dd 24 00                                  frstor [%eax+%eax*1]
   { 1, { 0xdd, 0x00, 0x00 },
     NACLi_X87,
-    InstFlag(OpcodeInModRm) | InstFlag(OpcodeLtC0InModRm),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeLtC0InModRm),
     InstFrstor,
     2, {
-      { Opcode4, OpFlag(OperandExtendsOpcode) },
-      { M_Operand, OpFlag(OpUse) },
+      { Opcode4, NACL_OPFLAG(OperandExtendsOpcode) },
+      { M_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[6] = {
+NaClExpVector[6] = {
   { OperandReference[1] , 1, 0 },
   { ExprMemOffset[4] , 0, ExprUsed },
   { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
@@ -902,14 +902,14 @@ ExprNodeVector[6] = {
 0000000000000000: dc c1                                        fadd %st1, %st0
   { 2, { 0xdc, 0xc1, 0x00 },
     NACLi_X87,
-    InstFlag(OpcodePlusR),
+    NACL_IFLAG(OpcodePlusR),
     InstFadd,
     3, {
-      { OpcodeBaseMinus1, OpFlag(OperandExtendsOpcode) },
-      { St_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
-      { RegST0, OpFlag(OpUse) },
+      { OpcodeBaseMinus1, NACL_OPFLAG(OperandExtendsOpcode) },
+      { St_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
+      { RegST0, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %st1, ExprSet | ExprUsed },
   { OperandReference[1] , 2, 0 },
@@ -918,14 +918,14 @@ ExprNodeVector[4] = {
 0000000000000000: d8 74 24 10                                  fdiv [%rsp+0x10]
   { 1, { 0xd8, 0x00, 0x00 },
     NACLi_X87,
-    InstFlag(OpcodeInModRm) | InstFlag(OpcodeLtC0InModRm),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeLtC0InModRm),
     InstFdiv,
     3, {
-      { Opcode6, OpFlag(OperandExtendsOpcode) },
-      { RegST0, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { M_Operand, OpFlag(OpUse) },
+      { Opcode6, NACL_OPFLAG(OperandExtendsOpcode) },
+      { RegST0, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { M_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 1, ExprImplicit },
   { ExprRegister[0] , %st0, ExprSet | ExprUsed },
   { OperandReference[1] , 2, 0 },
@@ -938,14 +938,14 @@ ExprNodeVector[8] = {
 0000000000000000: 67 d8 74 24 10                               fdiv [%esp+0x10]
   { 1, { 0xd8, 0x00, 0x00 },
     NACLi_X87,
-    InstFlag(OpcodeInModRm) | InstFlag(OpcodeLtC0InModRm),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeLtC0InModRm),
     InstFdiv,
     3, {
-      { Opcode6, OpFlag(OperandExtendsOpcode) },
-      { RegST0, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { M_Operand, OpFlag(OpUse) },
+      { Opcode6, NACL_OPFLAG(OperandExtendsOpcode) },
+      { RegST0, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { M_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 1, ExprImplicit },
   { ExprRegister[0] , %st0, ExprSet | ExprUsed },
   { OperandReference[1] , 2, 0 },
@@ -958,14 +958,14 @@ ExprNodeVector[8] = {
 0000000000000000: dc 44 00 04                                  fadd [%rax+%rax*1+0x4]
   { 1, { 0xdc, 0x00, 0x00 },
     NACLi_X87,
-    InstFlag(OpcodeInModRm) | InstFlag(OpcodeLtC0InModRm),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeLtC0InModRm),
     InstFadd,
     3, {
-      { Opcode0, OpFlag(OperandExtendsOpcode) },
-      { RegST0, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { M_Operand, OpFlag(OpUse) },
+      { Opcode0, NACL_OPFLAG(OperandExtendsOpcode) },
+      { RegST0, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { M_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 1, ExprImplicit },
   { ExprRegister[0] , %st0, ExprSet | ExprUsed },
   { OperandReference[1] , 2, 0 },
@@ -978,14 +978,14 @@ ExprNodeVector[8] = {
 0000000000000000: da 04 25 04 00 00 00                         fiadd [0x4]
   { 1, { 0xda, 0x00, 0x00 },
     NACLi_X87,
-    InstFlag(OpcodeInModRm) | InstFlag(OpcodeLtC0InModRm),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeLtC0InModRm),
     InstFiadd,
     3, {
-      { Opcode0, OpFlag(OperandExtendsOpcode) },
-      { RegST0, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { M_Operand, OpFlag(OpUse) },
+      { Opcode0, NACL_OPFLAG(OperandExtendsOpcode) },
+      { RegST0, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { M_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 1, ExprImplicit },
   { ExprRegister[0] , %st0, ExprSet | ExprUsed },
   { OperandReference[1] , 2, 0 },
@@ -998,14 +998,14 @@ ExprNodeVector[8] = {
 0000000000000000: da 70 04                                     fidiv [%rax+0x4]
   { 1, { 0xda, 0x00, 0x00 },
     NACLi_X87,
-    InstFlag(OpcodeInModRm) | InstFlag(OpcodeLtC0InModRm),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeLtC0InModRm),
     InstFidiv,
     3, {
-      { Opcode6, OpFlag(OperandExtendsOpcode) },
-      { RegST0, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { M_Operand, OpFlag(OpUse) },
+      { Opcode6, NACL_OPFLAG(OperandExtendsOpcode) },
+      { RegST0, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { M_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 1, ExprImplicit },
   { ExprRegister[0] , %st0, ExprSet | ExprUsed },
   { OperandReference[1] , 2, 0 },
@@ -1018,14 +1018,14 @@ ExprNodeVector[8] = {
 0000000000000000: de 50 04                                     ficom [%rax+0x4]
   { 1, { 0xde, 0x00, 0x00 },
     NACLi_X87,
-    InstFlag(OpcodeInModRm) | InstFlag(OpcodeLtC0InModRm),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeLtC0InModRm),
     InstFicom,
     3, {
-      { Opcode2, OpFlag(OperandExtendsOpcode) },
-      { RegST0, OpFlag(OpUse) | OpFlag(OpImplicit) },
-      { M_Operand, OpFlag(OpUse) },
+      { Opcode2, NACL_OPFLAG(OperandExtendsOpcode) },
+      { RegST0, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
+      { M_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 1, ExprImplicit },
   { ExprRegister[0] , %st0, ExprUsed },
   { OperandReference[1] , 2, 0 },
@@ -1038,14 +1038,14 @@ ExprNodeVector[8] = {
 0000000000000000: dc e5                                        fsubr %st5, %st0
   { 2, { 0xdc, 0xe5, 0x00 },
     NACLi_X87,
-    InstFlag(OpcodePlusR),
+    NACL_IFLAG(OpcodePlusR),
     InstFsubr,
     3, {
-      { OpcodeBaseMinus5, OpFlag(OperandExtendsOpcode) },
-      { St_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
-      { RegST0, OpFlag(OpUse) },
+      { OpcodeBaseMinus5, NACL_OPFLAG(OperandExtendsOpcode) },
+      { St_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
+      { RegST0, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %st5, ExprSet | ExprUsed },
   { OperandReference[1] , 2, 0 },
@@ -1054,14 +1054,14 @@ ExprNodeVector[4] = {
 0000000000000000: dc f3                                        fdivr %st3, %st0
   { 2, { 0xdc, 0xf3, 0x00 },
     NACLi_X87,
-    InstFlag(OpcodePlusR),
+    NACL_IFLAG(OpcodePlusR),
     InstFdivr,
     3, {
-      { OpcodeBaseMinus3, OpFlag(OperandExtendsOpcode) },
-      { St_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
-      { RegST0, OpFlag(OpUse) },
+      { OpcodeBaseMinus3, NACL_OPFLAG(OperandExtendsOpcode) },
+      { St_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
+      { RegST0, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %st3, ExprSet | ExprUsed },
   { OperandReference[1] , 2, 0 },
@@ -1070,14 +1070,14 @@ ExprNodeVector[4] = {
 0000000000000000: dc ea                                        fsub %st2, %st0
   { 2, { 0xdc, 0xea, 0x00 },
     NACLi_X87,
-    InstFlag(OpcodePlusR),
+    NACL_IFLAG(OpcodePlusR),
     InstFsub,
     3, {
-      { OpcodeBaseMinus2, OpFlag(OperandExtendsOpcode) },
-      { St_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
-      { RegST0, OpFlag(OpUse) },
+      { OpcodeBaseMinus2, NACL_OPFLAG(OperandExtendsOpcode) },
+      { St_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
+      { RegST0, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %st2, ExprSet | ExprUsed },
   { OperandReference[1] , 2, 0 },
@@ -1086,14 +1086,14 @@ ExprNodeVector[4] = {
 0000000000000000: dc ce                                        fmul %st6, %st0
   { 2, { 0xdc, 0xce, 0x00 },
     NACLi_X87,
-    InstFlag(OpcodePlusR),
+    NACL_IFLAG(OpcodePlusR),
     InstFmul,
     3, {
-      { OpcodeBaseMinus6, OpFlag(OperandExtendsOpcode) },
-      { St_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
-      { RegST0, OpFlag(OpUse) },
+      { OpcodeBaseMinus6, NACL_OPFLAG(OperandExtendsOpcode) },
+      { St_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
+      { RegST0, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %st6, ExprSet | ExprUsed },
   { OperandReference[1] , 2, 0 },
@@ -1102,13 +1102,13 @@ ExprNodeVector[4] = {
 0000000000000000: 48 63 c6                                     movsxd %rax, %esi
   { 1, { 0x63, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeUsesRexW) | InstFlag(OpcodeUsesModRm) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
+    NACL_IFLAG(OpcodeUsesRexW) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o),
     InstMovsxd,
     2, {
-      { G_Operand, OpFlag(OpSet) },
-      { Ev_Operand, OpFlag(OpUse) },
+      { G_Operand, NACL_OPFLAG(OpSet) },
+      { Ev_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %rax, ExprSet | ExprSize64 },
   { OperandReference[1] , 1, 0 },
@@ -1117,13 +1117,13 @@ ExprNodeVector[4] = {
 0000000000000000: 63 c6                                        movsxd %eax, %esi; *NACL Disallows!*
   { 1, { 0x63, 0x00, 0x00 },
     NACLi_ILLEGAL,
-    InstFlag(OpcodeUsesModRm) | InstFlag(Opcode64Only) | InstFlag(OperandSize_v),
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_v),
     InstMovsxd,
     2, {
-      { G_Operand, OpFlag(OpSet) },
-      { E_Operand, OpFlag(OpUse) },
+      { G_Operand, NACL_OPFLAG(OpSet) },
+      { E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %eax, ExprSet | ExprSize32 },
   { OperandReference[1] , 1, 0 },
@@ -1132,13 +1132,13 @@ ExprNodeVector[4] = {
 0000000000000000: 6c                                           insb; *NACL Disallows!*
   { 1, { 0x6c, 0x00, 0x00 },
     NACLi_ILLEGAL,
-    InstFlag(OperandSize_b),
+    NACL_IFLAG(OperandSize_b),
     InstInsb,
     2, {
-      { RegES_EDI, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { RegDX, OpFlag(OpUse) | OpFlag(OpImplicit) },
+      { RegES_EDI, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { RegDX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
   } };
-ExprNodeVector[6] = {
+NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprSegmentAddress[2] , 0, ExprSet },
   { ExprRegister[0] , %es, ExprSize16 },
@@ -1149,13 +1149,13 @@ ExprNodeVector[6] = {
 0000000000000000: 6d                                           insd; *NACL Disallows!*
   { 1, { 0x6d, 0x00, 0x00 },
     NACLi_ILLEGAL,
-    InstFlag(OperandSize_v),
+    NACL_IFLAG(OperandSize_v),
     InstInsd,
     2, {
-      { RegES_EDI, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { RegDX, OpFlag(OpUse) | OpFlag(OpImplicit) },
+      { RegES_EDI, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { RegDX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
   } };
-ExprNodeVector[6] = {
+NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprSegmentAddress[2] , 0, ExprSet },
   { ExprRegister[0] , %es, ExprSize16 },
@@ -1166,13 +1166,13 @@ ExprNodeVector[6] = {
 0000000000000000: 66 6d                                        insw; *NACL Disallows!*
   { 1, { 0x6d, 0x00, 0x00 },
     NACLi_ILLEGAL,
-    InstFlag(OperandSize_w),
+    NACL_IFLAG(OperandSize_w),
     InstInsw,
     2, {
-      { RegES_EDI, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { RegDX, OpFlag(OpUse) | OpFlag(OpImplicit) },
+      { RegES_EDI, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { RegDX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
   } };
-ExprNodeVector[6] = {
+NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprSegmentAddress[2] , 0, ExprSet },
   { ExprRegister[0] , %es, ExprSize16 },
@@ -1183,13 +1183,13 @@ ExprNodeVector[6] = {
 0000000000000000: 6e                                           outsb; *NACL Disallows!*
   { 1, { 0x6e, 0x00, 0x00 },
     NACLi_ILLEGAL,
-    InstFlag(OperandSize_b),
+    NACL_IFLAG(OperandSize_b),
     InstOutsb,
     2, {
-      { RegDX, OpFlag(OpUse) | OpFlag(OpImplicit) },
-      { RegES_EDI, OpFlag(OpUse) | OpFlag(OpImplicit) },
+      { RegDX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
+      { RegES_EDI, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
   } };
-ExprNodeVector[6] = {
+NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %dx, ExprUsed | ExprSize16 },
   { OperandReference[1] , 1, ExprImplicit },
@@ -1200,13 +1200,13 @@ ExprNodeVector[6] = {
 0000000000000000: 6f                                           outsd; *NACL Disallows!*
   { 1, { 0x6f, 0x00, 0x00 },
     NACLi_ILLEGAL,
-    InstFlag(OperandSize_v),
+    NACL_IFLAG(OperandSize_v),
     InstOutsd,
     2, {
-      { RegDX, OpFlag(OpUse) | OpFlag(OpImplicit) },
-      { RegES_EDI, OpFlag(OpUse) | OpFlag(OpImplicit) },
+      { RegDX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
+      { RegES_EDI, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
   } };
-ExprNodeVector[6] = {
+NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %dx, ExprUsed | ExprSize16 },
   { OperandReference[1] , 1, ExprImplicit },
@@ -1217,13 +1217,13 @@ ExprNodeVector[6] = {
 0000000000000000: 66 6f                                        outsw; *NACL Disallows!*
   { 1, { 0x6f, 0x00, 0x00 },
     NACLi_ILLEGAL,
-    InstFlag(OperandSize_w),
+    NACL_IFLAG(OperandSize_w),
     InstOutsw,
     2, {
-      { RegDX, OpFlag(OpUse) | OpFlag(OpImplicit) },
-      { RegES_EDI, OpFlag(OpUse) | OpFlag(OpImplicit) },
+      { RegDX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
+      { RegES_EDI, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
   } };
-ExprNodeVector[6] = {
+NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %dx, ExprUsed | ExprSize16 },
   { OperandReference[1] , 1, ExprImplicit },
@@ -1234,13 +1234,13 @@ ExprNodeVector[6] = {
 0000000000000000: 66 98                                        cbw
   { 1, { 0x98, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OperandSize_w),
+    NACL_IFLAG(OperandSize_w),
     InstCbw,
     2, {
-      { RegAX, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { RegAL, OpFlag(OpUse) | OpFlag(OpImplicit) },
+      { RegAX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { RegAL, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %ax, ExprSet | ExprSize16 },
   { OperandReference[1] , 1, ExprImplicit },
@@ -1249,13 +1249,13 @@ ExprNodeVector[4] = {
 0000000000000000: 98                                           cwde
   { 1, { 0x98, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OperandSize_v),
+    NACL_IFLAG(OperandSize_v),
     InstCwde,
     2, {
-      { RegEAX, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { RegAX, OpFlag(OpUse) | OpFlag(OpImplicit) },
+      { RegEAX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { RegAX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %eax, ExprSet | ExprSize32 },
   { OperandReference[1] , 1, ExprImplicit },
@@ -1264,13 +1264,13 @@ ExprNodeVector[4] = {
 0000000000000000: 48 98                                        cdqe
   { 1, { 0x98, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeUsesRexW) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
+    NACL_IFLAG(OpcodeUsesRexW) | NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o),
     InstCdqe,
     2, {
-      { RegRAX, OpFlag(OpSet) | OpFlag(OpImplicit) | OpFlag(OperandSignExtends_v) },
-      { RegEAX, OpFlag(OpUse) | OpFlag(OpImplicit) },
+      { RegRAX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) | NACL_OPFLAG(OperandSignExtends_v) },
+      { RegEAX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %rax, ExprSet | ExprSize64 },
   { OperandReference[1] , 1, ExprImplicit },
@@ -1279,13 +1279,13 @@ ExprNodeVector[4] = {
 0000000000000000: 66 99                                        cwd
   { 1, { 0x99, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OperandSize_w),
+    NACL_IFLAG(OperandSize_w),
     InstCwd,
     2, {
-      { SegmentDX_AX, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { RegAX, OpFlag(OpUse) | OpFlag(OpImplicit) },
+      { SegmentDX_AX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { RegAX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
   } };
-ExprNodeVector[6] = {
+NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprSegmentAddress[2] , 0, ExprSet },
   { ExprRegister[0] , %dx, ExprSize16 },
@@ -1296,13 +1296,13 @@ ExprNodeVector[6] = {
 0000000000000000: 99                                           cdq
   { 1, { 0x99, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OperandSize_v),
+    NACL_IFLAG(OperandSize_v),
     InstCdq,
     2, {
-      { SegmentDX_AX, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { RegEAX, OpFlag(OpUse) | OpFlag(OpImplicit) },
+      { SegmentDX_AX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { RegEAX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
   } };
-ExprNodeVector[6] = {
+NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprSegmentAddress[2] , 0, ExprSet },
   { ExprRegister[0] , %edx, ExprSize32 },
@@ -1313,13 +1313,13 @@ ExprNodeVector[6] = {
 0000000000000000: 48 99                                        cqo
   { 1, { 0x99, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeUsesRexW) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
+    NACL_IFLAG(OpcodeUsesRexW) | NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o),
     InstCqo,
     2, {
-      { SegmentDX_AX, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { RegRAX, OpFlag(OpUse) | OpFlag(OpImplicit) },
+      { SegmentDX_AX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { RegRAX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
   } };
-ExprNodeVector[6] = {
+NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprSegmentAddress[2] , 0, ExprSet },
   { ExprRegister[0] , %rdx, ExprSize64 },
@@ -1330,13 +1330,13 @@ ExprNodeVector[6] = {
 0000000000000000: 86 c2                                        xchg %dl, %al
   { 1, { 0x86, 0x00, 0x00 },
     NACLi_386L,
-    InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeRex) | InstFlag(OpcodeLockable) | InstFlag(Opcode64Only) | InstFlag(OperandSize_b),
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeRex) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_b),
     InstXchg,
     2, {
-      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
-      { G_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
+      { G_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %dl, ExprSet | ExprUsed | ExprSize8 },
   { OperandReference[1] , 1, 0 },
@@ -1345,13 +1345,13 @@ ExprNodeVector[4] = {
 0000000000000000: 86 40 20                                     xchg [%rax+0x20], %al
   { 1, { 0x86, 0x00, 0x00 },
     NACLi_386L,
-    InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeRex) | InstFlag(OpcodeLockable) | InstFlag(Opcode64Only) | InstFlag(OperandSize_b),
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeRex) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_b),
     InstXchg,
     2, {
-      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
-      { G_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
+      { G_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprMemOffset[4] , 0, ExprSet | ExprUsed },
   { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
@@ -1364,13 +1364,13 @@ ExprNodeVector[8] = {
 0000000000000000: 87 40 20                                     xchg [%rax+0x20], %eax
   { 1, { 0x87, 0x00, 0x00 },
     NACLi_386L,
-    InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
     InstXchg,
     2, {
-      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
-      { G_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
+      { G_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprMemOffset[4] , 0, ExprSet | ExprUsed },
   { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
@@ -1383,13 +1383,13 @@ ExprNodeVector[8] = {
 0000000000000000: a6                                           cmpsb
   { 1, { 0xa6, 0x00, 0x00 },
     NACLi_386RE,
-    InstFlag(OperandSize_b),
+    NACL_IFLAG(OperandSize_b),
     InstCmpsb,
     2, {
-      { RegES_EDI, OpFlag(OpUse) | OpFlag(OpImplicit) },
-      { RegDS_EDI, OpFlag(OpUse) | OpFlag(OpImplicit) },
+      { RegES_EDI, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
+      { RegDS_EDI, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprSegmentAddress[2] , 0, ExprUsed },
   { ExprRegister[0] , %es, ExprSize16 },
@@ -1402,13 +1402,13 @@ ExprNodeVector[8] = {
 0000000000000000: 66 a7                                        cmpsw
   { 1, { 0xa7, 0x00, 0x00 },
     NACLi_386RE,
-    InstFlag(OperandSize_w),
+    NACL_IFLAG(OperandSize_w),
     InstCmpsw,
     2, {
-      { RegES_EDI, OpFlag(OpUse) | OpFlag(OpImplicit) },
-      { RegDS_EDI, OpFlag(OpUse) | OpFlag(OpImplicit) },
+      { RegES_EDI, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
+      { RegDS_EDI, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprSegmentAddress[2] , 0, ExprUsed },
   { ExprRegister[0] , %es, ExprSize16 },
@@ -1421,13 +1421,13 @@ ExprNodeVector[8] = {
 0000000000000000: a7                                           cmpsd
   { 1, { 0xa7, 0x00, 0x00 },
     NACLi_386RE,
-    InstFlag(OperandSize_v),
+    NACL_IFLAG(OperandSize_v),
     InstCmpsd,
     2, {
-      { RegES_EDI, OpFlag(OpUse) | OpFlag(OpImplicit) },
-      { RegDS_EDI, OpFlag(OpUse) | OpFlag(OpImplicit) },
+      { RegES_EDI, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
+      { RegDS_EDI, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprSegmentAddress[2] , 0, ExprUsed },
   { ExprRegister[0] , %es, ExprSize16 },
@@ -1440,13 +1440,13 @@ ExprNodeVector[8] = {
 0000000000000000: 48 a7                                        cmpsq
   { 1, { 0xa7, 0x00, 0x00 },
     NACLi_386RE,
-    InstFlag(OpcodeUsesRexW) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
+    NACL_IFLAG(OpcodeUsesRexW) | NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o),
     InstCmpsq,
     2, {
-      { RegES_EDI, OpFlag(OpUse) | OpFlag(OpImplicit) },
-      { RegDS_EDI, OpFlag(OpUse) | OpFlag(OpImplicit) },
+      { RegES_EDI, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
+      { RegDS_EDI, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprSegmentAddress[2] , 0, ExprUsed },
   { ExprRegister[0] , %es, ExprSize16 },
@@ -1459,13 +1459,13 @@ ExprNodeVector[8] = {
 0000000000000000: aa                                           stosb
   { 1, { 0xaa, 0x00, 0x00 },
     NACLi_386R,
-    InstFlag(OperandSize_b),
+    NACL_IFLAG(OperandSize_b),
     InstStosb,
     2, {
-      { RegES_EDI, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { RegAL, OpFlag(OpUse) | OpFlag(OpImplicit) },
+      { RegES_EDI, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { RegAL, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
   } };
-ExprNodeVector[6] = {
+NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprSegmentAddress[2] , 0, ExprSet },
   { ExprRegister[0] , %es, ExprSize16 },
@@ -1476,13 +1476,13 @@ ExprNodeVector[6] = {
 0000000000000000: ab                                           stosd
   { 1, { 0xab, 0x00, 0x00 },
     NACLi_386R,
-    InstFlag(OperandSize_v),
+    NACL_IFLAG(OperandSize_v),
     InstStosd,
     2, {
-      { RegES_EDI, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { RegEAX, OpFlag(OpUse) | OpFlag(OpImplicit) },
+      { RegES_EDI, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { RegEAX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
   } };
-ExprNodeVector[6] = {
+NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprSegmentAddress[2] , 0, ExprSet },
   { ExprRegister[0] , %es, ExprSize16 },
@@ -1493,13 +1493,13 @@ ExprNodeVector[6] = {
 0000000000000000: 66 ab                                        stosw
   { 1, { 0xab, 0x00, 0x00 },
     NACLi_386R,
-    InstFlag(OperandSize_w),
+    NACL_IFLAG(OperandSize_w),
     InstStosw,
     2, {
-      { RegES_EDI, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { RegAX, OpFlag(OpUse) | OpFlag(OpImplicit) },
+      { RegES_EDI, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { RegAX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
   } };
-ExprNodeVector[6] = {
+NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprSegmentAddress[2] , 0, ExprSet },
   { ExprRegister[0] , %es, ExprSize16 },
@@ -1510,13 +1510,13 @@ ExprNodeVector[6] = {
 0000000000000000: 48 ab                                        stosq
   { 1, { 0xab, 0x00, 0x00 },
     NACLi_386R,
-    InstFlag(OpcodeUsesRexW) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
+    NACL_IFLAG(OpcodeUsesRexW) | NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o),
     InstStosq,
     2, {
-      { RegES_EDI, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { RegRAX, OpFlag(OpUse) | OpFlag(OpImplicit) },
+      { RegES_EDI, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { RegRAX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
   } };
-ExprNodeVector[6] = {
+NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprSegmentAddress[2] , 0, ExprSet },
   { ExprRegister[0] , %es, ExprSize16 },
@@ -1527,13 +1527,13 @@ ExprNodeVector[6] = {
 0000000000000000: a4                                           movsb
   { 1, { 0xa4, 0x00, 0x00 },
     NACLi_386R,
-    InstFlag(OperandSize_b),
+    NACL_IFLAG(OperandSize_b),
     InstMovsb,
     2, {
-      { RegES_EDI, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { RegDS_EDI, OpFlag(OpUse) | OpFlag(OpImplicit) },
+      { RegES_EDI, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { RegDS_EDI, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprSegmentAddress[2] , 0, ExprSet },
   { ExprRegister[0] , %es, ExprSize16 },
@@ -1546,13 +1546,13 @@ ExprNodeVector[8] = {
 0000000000000000: 66 a5                                        movsw
   { 1, { 0xa5, 0x00, 0x00 },
     NACLi_386R,
-    InstFlag(OperandSize_w),
+    NACL_IFLAG(OperandSize_w),
     InstMovsw,
     2, {
-      { RegES_EDI, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { RegDS_EDI, OpFlag(OpUse) | OpFlag(OpImplicit) },
+      { RegES_EDI, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { RegDS_EDI, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprSegmentAddress[2] , 0, ExprSet },
   { ExprRegister[0] , %es, ExprSize16 },
@@ -1565,13 +1565,13 @@ ExprNodeVector[8] = {
 0000000000000000: a5                                           movsd
   { 1, { 0xa5, 0x00, 0x00 },
     NACLi_386R,
-    InstFlag(OperandSize_v),
+    NACL_IFLAG(OperandSize_v),
     InstMovsd,
     2, {
-      { RegES_EDI, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { RegDS_EDI, OpFlag(OpUse) | OpFlag(OpImplicit) },
+      { RegES_EDI, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { RegDS_EDI, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprSegmentAddress[2] , 0, ExprSet },
   { ExprRegister[0] , %es, ExprSize16 },
@@ -1584,13 +1584,13 @@ ExprNodeVector[8] = {
 0000000000000000: 48 a5                                        movsq
   { 1, { 0xa5, 0x00, 0x00 },
     NACLi_386R,
-    InstFlag(OpcodeUsesRexW) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
+    NACL_IFLAG(OpcodeUsesRexW) | NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o),
     InstMovsq,
     2, {
-      { RegES_EDI, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { RegDS_EDI, OpFlag(OpUse) | OpFlag(OpImplicit) },
+      { RegES_EDI, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { RegDS_EDI, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprSegmentAddress[2] , 0, ExprSet },
   { ExprRegister[0] , %es, ExprSize16 },
@@ -1603,37 +1603,37 @@ ExprNodeVector[8] = {
 0000000000000000: 9c                                           pushfq; *NACL Disallows!*
   { 1, { 0x9c, 0x00, 0x00 },
     NACLi_ILLEGAL,
-    InstFlag(Opcode64Only) | InstFlag(OperandSize_o) | InstFlag(OperandSizeDefaultIs64),
+    NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o) | NACL_IFLAG(OperandSizeDefaultIs64),
     InstPushfq,
     1, {
-      { RegRSP, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit) },
+      { RegRSP, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
   } };
-ExprNodeVector[2] = {
+NaClExpVector[2] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %rsp, ExprSet | ExprUsed | ExprSize64 },
 };
 0000000000000000: 9d                                           popfq; *NACL Disallows!*
   { 1, { 0x9d, 0x00, 0x00 },
     NACLi_ILLEGAL,
-    InstFlag(Opcode64Only) | InstFlag(OperandSize_v),
+    NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_v),
     InstPopfq,
     1, {
-      { RegRSP, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit) },
+      { RegRSP, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
   } };
-ExprNodeVector[2] = {
+NaClExpVector[2] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %rsp, ExprSet | ExprUsed | ExprSize64 },
 };
 0000000000000000: ac                                           lodsb; *NACL Disallows!*
   { 1, { 0xac, 0x00, 0x00 },
     NACLi_ILLEGAL,
-    InstFlag(OperandSize_b),
+    NACL_IFLAG(OperandSize_b),
     InstLodsb,
     2, {
-      { RegAL, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { RegDS_EDI, OpFlag(OpUse) | OpFlag(OpImplicit) },
+      { RegAL, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { RegDS_EDI, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
   } };
-ExprNodeVector[6] = {
+NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %al, ExprSet | ExprSize8 },
   { OperandReference[1] , 1, ExprImplicit },
@@ -1644,13 +1644,13 @@ ExprNodeVector[6] = {
 0000000000000000: ad                                           lodsd; *NACL Disallows!*
   { 1, { 0xad, 0x00, 0x00 },
     NACLi_ILLEGAL,
-    InstFlag(OperandSize_v),
+    NACL_IFLAG(OperandSize_v),
     InstLodsd,
     2, {
-      { RegEAX, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { RegDS_EDI, OpFlag(OpUse) | OpFlag(OpImplicit) },
+      { RegEAX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { RegDS_EDI, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
   } };
-ExprNodeVector[6] = {
+NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %eax, ExprSet | ExprSize32 },
   { OperandReference[1] , 1, ExprImplicit },
@@ -1661,13 +1661,13 @@ ExprNodeVector[6] = {
 0000000000000000: 66 ad                                        lodsw; *NACL Disallows!*
   { 1, { 0xad, 0x00, 0x00 },
     NACLi_ILLEGAL,
-    InstFlag(OperandSize_w),
+    NACL_IFLAG(OperandSize_w),
     InstLodsw,
     2, {
-      { RegAX, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { RegDS_EDI, OpFlag(OpUse) | OpFlag(OpImplicit) },
+      { RegAX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { RegDS_EDI, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
   } };
-ExprNodeVector[6] = {
+NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %ax, ExprSet | ExprSize16 },
   { OperandReference[1] , 1, ExprImplicit },
@@ -1678,13 +1678,13 @@ ExprNodeVector[6] = {
 0000000000000000: 48 ad                                        lodsq; *NACL Disallows!*
   { 1, { 0xad, 0x00, 0x00 },
     NACLi_ILLEGAL,
-    InstFlag(OpcodeUsesRexW) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
+    NACL_IFLAG(OpcodeUsesRexW) | NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o),
     InstLodsq,
     2, {
-      { RegRAX, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { RegDS_EDI, OpFlag(OpUse) | OpFlag(OpImplicit) },
+      { RegRAX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { RegDS_EDI, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
   } };
-ExprNodeVector[6] = {
+NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %rax, ExprSet | ExprSize64 },
   { OperandReference[1] , 1, ExprImplicit },
@@ -1695,13 +1695,13 @@ ExprNodeVector[6] = {
 0000000000000000: ae                                           scasb
   { 1, { 0xae, 0x00, 0x00 },
     NACLi_386RE,
-    InstFlag(OperandSize_b),
+    NACL_IFLAG(OperandSize_b),
     InstScasb,
     2, {
-      { RegAL, OpFlag(OpUse) | OpFlag(OpImplicit) },
-      { RegDS_EDI, OpFlag(OpUse) | OpFlag(OpImplicit) },
+      { RegAL, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
+      { RegDS_EDI, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
   } };
-ExprNodeVector[6] = {
+NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %al, ExprUsed | ExprSize8 },
   { OperandReference[1] , 1, ExprImplicit },
@@ -1712,13 +1712,13 @@ ExprNodeVector[6] = {
 0000000000000000: af                                           scasd
   { 1, { 0xaf, 0x00, 0x00 },
     NACLi_386RE,
-    InstFlag(OperandSize_v),
+    NACL_IFLAG(OperandSize_v),
     InstScasd,
     2, {
-      { RegEAX, OpFlag(OpUse) | OpFlag(OpImplicit) },
-      { RegDS_EDI, OpFlag(OpUse) | OpFlag(OpImplicit) },
+      { RegEAX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
+      { RegDS_EDI, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
   } };
-ExprNodeVector[6] = {
+NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
   { OperandReference[1] , 1, ExprImplicit },
@@ -1729,13 +1729,13 @@ ExprNodeVector[6] = {
 0000000000000000: 66 af                                        scasw
   { 1, { 0xaf, 0x00, 0x00 },
     NACLi_386RE,
-    InstFlag(OperandSize_w),
+    NACL_IFLAG(OperandSize_w),
     InstScasw,
     2, {
-      { RegAX, OpFlag(OpUse) | OpFlag(OpImplicit) },
-      { RegDS_EDI, OpFlag(OpUse) | OpFlag(OpImplicit) },
+      { RegAX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
+      { RegDS_EDI, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
   } };
-ExprNodeVector[6] = {
+NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %ax, ExprUsed | ExprSize16 },
   { OperandReference[1] , 1, ExprImplicit },
@@ -1746,13 +1746,13 @@ ExprNodeVector[6] = {
 0000000000000000: 48 af                                        scasq
   { 1, { 0xaf, 0x00, 0x00 },
     NACLi_386RE,
-    InstFlag(OpcodeUsesRexW) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
+    NACL_IFLAG(OpcodeUsesRexW) | NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o),
     InstScasq,
     2, {
-      { RegRAX, OpFlag(OpUse) | OpFlag(OpImplicit) },
-      { RegDS_EDI, OpFlag(OpUse) | OpFlag(OpImplicit) },
+      { RegRAX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
+      { RegDS_EDI, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
   } };
-ExprNodeVector[6] = {
+NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
   { OperandReference[1] , 1, ExprImplicit },
@@ -1763,13 +1763,13 @@ ExprNodeVector[6] = {
 0000000000000000: c8 2c 01 00                                  enter 0x12c, 0x0; *NACL Disallows!*
   { 1, { 0xc8, 0x00, 0x00 },
     NACLi_ILLEGAL,
-    InstFlag(OpcodeHasImmed_w) | InstFlag(OpcodeHasImmed2_b),
+    NACL_IFLAG(OpcodeHasImmed_w) | NACL_IFLAG(OpcodeHasImmed2_b),
     InstEnter,
     2, {
-      { I_Operand, OpFlag(OpUse) },
-      { I2_Operand, OpFlag(OpUse) },
+      { I_Operand, NACL_OPFLAG(OpUse) },
+      { I2_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 0, 0 },
   { ExprConstant[0] , 0x12c, ExprUsed | ExprSize16 | ExprUnsignedHex },
   { OperandReference[1] , 1, 0 },
@@ -1778,14 +1778,14 @@ ExprNodeVector[4] = {
 0000000000000000: 80 e4 df                                     and %ah, 0xdf
   { 1, { 0x80, 0x00, 0x00 },
     NACLi_386L,
-    InstFlag(OpcodeInModRm) | InstFlag(OpcodeHasImmed) | InstFlag(OpcodeRex) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_b),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeHasImmed) | NACL_IFLAG(OpcodeRex) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(OperandSize_b),
     InstAnd,
     3, {
-      { Opcode4, OpFlag(OperandExtendsOpcode) },
-      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
-      { I_Operand, OpFlag(OpUse) },
+      { Opcode4, NACL_OPFLAG(OperandExtendsOpcode) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
+      { I_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %ah, ExprSet | ExprUsed | ExprSize8 },
   { OperandReference[1] , 2, 0 },
@@ -1794,13 +1794,13 @@ ExprNodeVector[4] = {
 0000000000000000: 22 24 25 df 00 00 00                         and %ah, [0xdf]
   { 1, { 0x22, 0x00, 0x00 },
     NACLi_386L,
-    InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeRex) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_b),
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeRex) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(OperandSize_b),
     InstAnd,
     2, {
-      { G_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
-      { E_Operand, OpFlag(OpUse) },
+      { G_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
+      { E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %ah, ExprSet | ExprUsed | ExprSize8 },
   { OperandReference[1] , 1, 0 },
@@ -1813,13 +1813,13 @@ ExprNodeVector[8] = {
 0000000000000000: 40 22 24 25 df 00 00 00                      and %spl, [0xdf]
   { 1, { 0x22, 0x00, 0x00 },
     NACLi_386L,
-    InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeRex) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_b),
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeRex) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(OperandSize_b),
     InstAnd,
     2, {
-      { G_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
-      { E_Operand, OpFlag(OpUse) },
+      { G_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
+      { E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %spl, ExprSet | ExprUsed | ExprSize8 },
   { OperandReference[1] , 1, 0 },
@@ -1832,13 +1832,13 @@ ExprNodeVector[8] = {
 0000000000000000: 8d 04 85 ff ff ff ff                         lea %eax, [%rax*4-0x1]
   { 1, { 0x8d, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeLtC0InModRm) | InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+    NACL_IFLAG(OpcodeLtC0InModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
     InstLea,
     2, {
-      { G_Operand, OpFlag(OpSet) | OpFlag(OperandZeroExtends_v) },
-      { M_Operand, OpFlag(OpAddress) },
+      { G_Operand, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OperandZeroExtends_v) },
+      { M_Operand, NACL_OPFLAG(OpAddress) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %eax, ExprSet | ExprSize32 },
   { OperandReference[1] , 1, 0 },
@@ -1851,13 +1851,13 @@ ExprNodeVector[8] = {
 0000000000000000: 64 48 33 14 25 28 00 00 00                   xor %rdx, %fs[0x28]
   { 1, { 0x33, 0x00, 0x00 },
     NACLi_386L,
-    InstFlag(OpcodeUsesRexW) | InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeLockable) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
+    NACL_IFLAG(OpcodeUsesRexW) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o),
     InstXor,
     2, {
-      { G_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
-      { E_Operand, OpFlag(OpUse) },
+      { G_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
+      { E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[10] = {
+NaClExpVector[10] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %rdx, ExprSet | ExprUsed | ExprSize64 },
   { OperandReference[1] , 1, 0 },
@@ -1872,14 +1872,14 @@ ExprNodeVector[10] = {
 0000000000000000: 48 b8 cd cc cc cc cc cc cc cc                mov %rax, 0xcccccccccccccccd
   { 1, { 0xb8, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeUsesRexW) | InstFlag(OpcodeHasImmed) | InstFlag(OpcodePlusR) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
+    NACL_IFLAG(OpcodeUsesRexW) | NACL_IFLAG(OpcodeHasImmed) | NACL_IFLAG(OpcodePlusR) | NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o),
     InstMov,
     3, {
-      { OpcodeBaseMinus0, OpFlag(OperandExtendsOpcode) },
-      { G_OpcodeBase, OpFlag(OpSet) },
-      { I_Operand, OpFlag(OpUse) },
+      { OpcodeBaseMinus0, NACL_OPFLAG(OperandExtendsOpcode) },
+      { G_OpcodeBase, NACL_OPFLAG(OpSet) },
+      { I_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[6] = {
+NaClExpVector[6] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %rax, ExprSet | ExprSize64 },
   { OperandReference[1] , 2, 0 },
@@ -1890,14 +1890,14 @@ ExprNodeVector[6] = {
 0000000000000000: 66 6b c0 16                                  imul %ax, %ax, 0x16
   { 1, { 0x6b, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeHasImmed_b) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
     InstImul,
     3, {
-      { G_Operand, OpFlag(OpSet) },
-      { E_Operand, OpFlag(OpUse) },
-      { I_Operand, OpFlag(OpUse) },
+      { G_Operand, NACL_OPFLAG(OpSet) },
+      { E_Operand, NACL_OPFLAG(OpUse) },
+      { I_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[6] = {
+NaClExpVector[6] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %ax, ExprSet | ExprSize16 },
   { OperandReference[1] , 1, 0 },
@@ -1908,14 +1908,14 @@ ExprNodeVector[6] = {
 0000000000000000: 66 6b d8 16                                  imul %bx, %ax, 0x16
   { 1, { 0x6b, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeHasImmed_b) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
     InstImul,
     3, {
-      { G_Operand, OpFlag(OpSet) },
-      { E_Operand, OpFlag(OpUse) },
-      { I_Operand, OpFlag(OpUse) },
+      { G_Operand, NACL_OPFLAG(OpSet) },
+      { E_Operand, NACL_OPFLAG(OpUse) },
+      { I_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[6] = {
+NaClExpVector[6] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %bx, ExprSet | ExprSize16 },
   { OperandReference[1] , 1, 0 },
@@ -1926,15 +1926,15 @@ ExprNodeVector[6] = {
 0000000000000000: 66 f7 e8                                     imul %ax
   { 1, { 0xf7, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeInModRm) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
     InstImul,
     4, {
-      { Opcode5, OpFlag(OperandExtendsOpcode) },
-      { SegmentDX_AX, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { RegREAX, OpFlag(OpUse) | OpFlag(OpImplicit) },
-      { E_Operand, OpFlag(OpUse) },
+      { Opcode5, NACL_OPFLAG(OperandExtendsOpcode) },
+      { SegmentDX_AX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { RegREAX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
+      { E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 1, ExprImplicit },
   { ExprSegmentAddress[2] , 0, ExprSet },
   { ExprRegister[0] , %dx, ExprSize16 },
@@ -1947,15 +1947,15 @@ ExprNodeVector[8] = {
 0000000000000000: f6 ec                                        imul %ah
   { 1, { 0xf6, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeInModRm) | InstFlag(OperandSize_b),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OperandSize_b),
     InstImul,
     4, {
-      { Opcode5, OpFlag(OperandExtendsOpcode) },
-      { RegAX, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { RegAL, OpFlag(OpUse) | OpFlag(OpImplicit) },
-      { E_Operand, OpFlag(OpUse) },
+      { Opcode5, NACL_OPFLAG(OperandExtendsOpcode) },
+      { RegAX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { RegAL, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
+      { E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[6] = {
+NaClExpVector[6] = {
   { OperandReference[1] , 1, ExprImplicit },
   { ExprRegister[0] , %ax, ExprSet | ExprSize16 },
   { OperandReference[1] , 2, ExprImplicit },
@@ -1966,13 +1966,13 @@ ExprNodeVector[6] = {
 0000000000000000: 0f af 91 70 01 00 00                         imul %edx, [%rcx+0x170]
   { 2, { 0x0f, 0xaf, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
     InstImul,
     2, {
-      { G_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
-      { E_Operand, OpFlag(OpUse) },
+      { G_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
+      { E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %edx, ExprSet | ExprUsed | ExprSize32 },
   { OperandReference[1] , 1, 0 },
@@ -1985,13 +1985,13 @@ ExprNodeVector[8] = {
 0000000000000000: 0f af c1                                     imul %eax, %ecx
   { 2, { 0x0f, 0xaf, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
     InstImul,
     2, {
-      { G_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
-      { E_Operand, OpFlag(OpUse) },
+      { G_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
+      { E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %eax, ExprSet | ExprUsed | ExprSize32 },
   { OperandReference[1] , 1, 0 },
@@ -2000,16 +2000,16 @@ ExprNodeVector[4] = {
 0000000000000000: f6 fc                                        idiv %ah
   { 1, { 0xf6, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeInModRm) | InstFlag(OpcodeRex) | InstFlag(OperandSize_b),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeRex) | NACL_IFLAG(OperandSize_b),
     InstIdiv,
     5, {
-      { Opcode7, OpFlag(OperandExtendsOpcode) },
-      { RegAL, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { RegAH, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { RegAX, OpFlag(OpUse) | OpFlag(OpImplicit) },
-      { E_Operand, OpFlag(OpUse) },
+      { Opcode7, NACL_OPFLAG(OperandExtendsOpcode) },
+      { RegAL, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { RegAH, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { RegAX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
+      { E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 1, ExprImplicit },
   { ExprRegister[0] , %al, ExprSet | ExprSize8 },
   { OperandReference[1] , 2, ExprImplicit },
@@ -2022,16 +2022,16 @@ ExprNodeVector[8] = {
 0000000000000000: f7 f9                                        idiv %ecx
   { 1, { 0xf7, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeInModRm) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
     InstIdiv,
     5, {
-      { Opcode7, OpFlag(OperandExtendsOpcode) },
-      { RegREAX, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { RegREDX, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { SegmentDX_AX, OpFlag(OpUse) | OpFlag(OpImplicit) },
-      { E_Operand, OpFlag(OpUse) },
+      { Opcode7, NACL_OPFLAG(OperandExtendsOpcode) },
+      { RegREAX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { RegREDX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { SegmentDX_AX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
+      { E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[10] = {
+NaClExpVector[10] = {
   { OperandReference[1] , 1, ExprImplicit },
   { ExprRegister[0] , %eax, ExprSet | ExprSize32 },
   { OperandReference[1] , 2, ExprImplicit },
@@ -2046,16 +2046,16 @@ ExprNodeVector[10] = {
 0000000000000000: f7 be 70 01 00 00                            idiv [%rsi+0x170]
   { 1, { 0xf7, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeInModRm) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
     InstIdiv,
     5, {
-      { Opcode7, OpFlag(OperandExtendsOpcode) },
-      { RegREAX, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { RegREDX, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { SegmentDX_AX, OpFlag(OpUse) | OpFlag(OpImplicit) },
-      { E_Operand, OpFlag(OpUse) },
+      { Opcode7, NACL_OPFLAG(OperandExtendsOpcode) },
+      { RegREAX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { RegREDX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { SegmentDX_AX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
+      { E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[14] = {
+NaClExpVector[14] = {
   { OperandReference[1] , 1, ExprImplicit },
   { ExprRegister[0] , %eax, ExprSet | ExprSize32 },
   { OperandReference[1] , 2, ExprImplicit },
@@ -2074,16 +2074,16 @@ ExprNodeVector[14] = {
 0000000000000000: 48 f7 f9                                     idiv %rcx
   { 1, { 0xf7, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeUsesRexW) | InstFlag(OpcodeInModRm) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
+    NACL_IFLAG(OpcodeUsesRexW) | NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o),
     InstIdiv,
     5, {
-      { Opcode7, OpFlag(OperandExtendsOpcode) },
-      { RegRAX, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { RegRDX, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { SegmentDX_AX, OpFlag(OpUse) | OpFlag(OpImplicit) },
-      { E_Operand, OpFlag(OpUse) },
+      { Opcode7, NACL_OPFLAG(OperandExtendsOpcode) },
+      { RegRAX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { RegRDX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { SegmentDX_AX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
+      { E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[10] = {
+NaClExpVector[10] = {
   { OperandReference[1] , 1, ExprImplicit },
   { ExprRegister[0] , %rax, ExprSet | ExprSize64 },
   { OperandReference[1] , 2, ExprImplicit },
@@ -2098,115 +2098,115 @@ ExprNodeVector[10] = {
 0000000000000000: fc                                           cld
   { 1, { 0xfc, 0x00, 0x00 },
     NACLi_386,
-    0,
+    NACL_EMPTY_IFLAGS,
     InstCld,
     0, {
   } };
-ExprNodeVector[0] = {
+NaClExpVector[0] = {
 };
 0000000000000000: f6 d8                                        neg %al
   { 1, { 0xf6, 0x00, 0x00 },
     NACLi_386L,
-    InstFlag(OpcodeInModRm) | InstFlag(OpcodeRex) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_b),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeRex) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(OperandSize_b),
     InstNeg,
     2, {
-      { Opcode3, OpFlag(OperandExtendsOpcode) },
-      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+      { Opcode3, NACL_OPFLAG(OperandExtendsOpcode) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
   } };
-ExprNodeVector[2] = {
+NaClExpVector[2] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %al, ExprSet | ExprUsed | ExprSize8 },
 };
 0000000000000000: f7 d9                                        neg %ecx
   { 1, { 0xf7, 0x00, 0x00 },
     NACLi_386L,
-    InstFlag(OpcodeInModRm) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
     InstNeg,
     2, {
-      { Opcode3, OpFlag(OperandExtendsOpcode) },
-      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+      { Opcode3, NACL_OPFLAG(OperandExtendsOpcode) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
   } };
-ExprNodeVector[2] = {
+NaClExpVector[2] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %ecx, ExprSet | ExprUsed | ExprSize32 },
 };
 0000000000000000: 49 f7 de                                     neg %r14
   { 1, { 0xf7, 0x00, 0x00 },
     NACLi_386L,
-    InstFlag(OpcodeUsesRexW) | InstFlag(OpcodeInModRm) | InstFlag(OpcodeLockable) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
+    NACL_IFLAG(OpcodeUsesRexW) | NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o),
     InstNeg,
     2, {
-      { Opcode3, OpFlag(OperandExtendsOpcode) },
-      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+      { Opcode3, NACL_OPFLAG(OperandExtendsOpcode) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
   } };
-ExprNodeVector[2] = {
+NaClExpVector[2] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %r14, ExprSet | ExprUsed | ExprSize64 },
 };
 0000000000000000: 48 f7 da                                     neg %rdx
   { 1, { 0xf7, 0x00, 0x00 },
     NACLi_386L,
-    InstFlag(OpcodeUsesRexW) | InstFlag(OpcodeInModRm) | InstFlag(OpcodeLockable) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
+    NACL_IFLAG(OpcodeUsesRexW) | NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o),
     InstNeg,
     2, {
-      { Opcode3, OpFlag(OperandExtendsOpcode) },
-      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+      { Opcode3, NACL_OPFLAG(OperandExtendsOpcode) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
   } };
-ExprNodeVector[2] = {
+NaClExpVector[2] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %rdx, ExprSet | ExprUsed | ExprSize64 },
 };
 0000000000000000: f6 d1                                        not %cl
   { 1, { 0xf6, 0x00, 0x00 },
     NACLi_386L,
-    InstFlag(OpcodeInModRm) | InstFlag(OpcodeRex) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_b),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeRex) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(OperandSize_b),
     InstNot,
     2, {
-      { Opcode2, OpFlag(OperandExtendsOpcode) },
-      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+      { Opcode2, NACL_OPFLAG(OperandExtendsOpcode) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
   } };
-ExprNodeVector[2] = {
+NaClExpVector[2] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %cl, ExprSet | ExprUsed | ExprSize8 },
 };
 0000000000000000: f7 d1                                        not %ecx
   { 1, { 0xf7, 0x00, 0x00 },
     NACLi_386L,
-    InstFlag(OpcodeInModRm) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
     InstNot,
     2, {
-      { Opcode2, OpFlag(OperandExtendsOpcode) },
-      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+      { Opcode2, NACL_OPFLAG(OperandExtendsOpcode) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
   } };
-ExprNodeVector[2] = {
+NaClExpVector[2] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %ecx, ExprSet | ExprUsed | ExprSize32 },
 };
 0000000000000000: 48 f7 d2                                     not %rdx
   { 1, { 0xf7, 0x00, 0x00 },
     NACLi_386L,
-    InstFlag(OpcodeUsesRexW) | InstFlag(OpcodeInModRm) | InstFlag(OpcodeLockable) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
+    NACL_IFLAG(OpcodeUsesRexW) | NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o),
     InstNot,
     2, {
-      { Opcode2, OpFlag(OperandExtendsOpcode) },
-      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+      { Opcode2, NACL_OPFLAG(OperandExtendsOpcode) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
   } };
-ExprNodeVector[2] = {
+NaClExpVector[2] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %rdx, ExprSet | ExprUsed | ExprSize64 },
 };
 0000000000000000: f6 e2                                        mul %dl
   { 1, { 0xf6, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeInModRm) | InstFlag(OpcodeRex) | InstFlag(OperandSize_b),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeRex) | NACL_IFLAG(OperandSize_b),
     InstMul,
     4, {
-      { Opcode4, OpFlag(OperandExtendsOpcode) },
-      { RegAX, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { RegAL, OpFlag(OpUse) | OpFlag(OpImplicit) },
-      { E_Operand, OpFlag(OpUse) },
+      { Opcode4, NACL_OPFLAG(OperandExtendsOpcode) },
+      { RegAX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { RegAL, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
+      { E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[6] = {
+NaClExpVector[6] = {
   { OperandReference[1] , 1, ExprImplicit },
   { ExprRegister[0] , %ax, ExprSet | ExprSize16 },
   { OperandReference[1] , 2, ExprImplicit },
@@ -2217,15 +2217,15 @@ ExprNodeVector[6] = {
 0000000000000000: f7 e2                                        mul %edx
   { 1, { 0xf7, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeInModRm) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
     InstMul,
     4, {
-      { Opcode4, OpFlag(OperandExtendsOpcode) },
-      { SegmentDX_AX, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { RegREAX, OpFlag(OpUse) | OpFlag(OpImplicit) },
-      { E_Operand, OpFlag(OpUse) },
+      { Opcode4, NACL_OPFLAG(OperandExtendsOpcode) },
+      { SegmentDX_AX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { RegREAX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
+      { E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 1, ExprImplicit },
   { ExprSegmentAddress[2] , 0, ExprSet },
   { ExprRegister[0] , %edx, ExprSize32 },
@@ -2238,15 +2238,15 @@ ExprNodeVector[8] = {
 0000000000000000: 48 f7 e7                                     mul %rdi
   { 1, { 0xf7, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeUsesRexW) | InstFlag(OpcodeInModRm) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
+    NACL_IFLAG(OpcodeUsesRexW) | NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o),
     InstMul,
     4, {
-      { Opcode4, OpFlag(OperandExtendsOpcode) },
-      { SegmentDX_AX, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { RegRAX, OpFlag(OpUse) | OpFlag(OpImplicit) },
-      { E_Operand, OpFlag(OpUse) },
+      { Opcode4, NACL_OPFLAG(OperandExtendsOpcode) },
+      { SegmentDX_AX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { RegRAX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
+      { E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 1, ExprImplicit },
   { ExprSegmentAddress[2] , 0, ExprSet },
   { ExprRegister[0] , %rdx, ExprSize64 },
@@ -2259,15 +2259,15 @@ ExprNodeVector[8] = {
 0000000000000000: 41 f7 e6                                     mul %r14d
   { 1, { 0xf7, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeInModRm) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
     InstMul,
     4, {
-      { Opcode4, OpFlag(OperandExtendsOpcode) },
-      { SegmentDX_AX, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { RegREAX, OpFlag(OpUse) | OpFlag(OpImplicit) },
-      { E_Operand, OpFlag(OpUse) },
+      { Opcode4, NACL_OPFLAG(OperandExtendsOpcode) },
+      { SegmentDX_AX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { RegREAX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
+      { E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 1, ExprImplicit },
   { ExprSegmentAddress[2] , 0, ExprSet },
   { ExprRegister[0] , %edx, ExprSize32 },
@@ -2280,16 +2280,16 @@ ExprNodeVector[8] = {
 0000000000000000: 48 f7 f1                                     div %rcx
   { 1, { 0xf7, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeUsesRexW) | InstFlag(OpcodeInModRm) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
+    NACL_IFLAG(OpcodeUsesRexW) | NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o),
     InstDiv,
     5, {
-      { Opcode6, OpFlag(OperandExtendsOpcode) },
-      { RegRAX, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { RegRDX, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { SegmentDX_AX, OpFlag(OpUse) | OpFlag(OpImplicit) },
-      { E_Operand, OpFlag(OpUse) },
+      { Opcode6, NACL_OPFLAG(OperandExtendsOpcode) },
+      { RegRAX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { RegRDX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { SegmentDX_AX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
+      { E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[10] = {
+NaClExpVector[10] = {
   { OperandReference[1] , 1, ExprImplicit },
   { ExprRegister[0] , %rax, ExprSet | ExprSize64 },
   { OperandReference[1] , 2, ExprImplicit },
@@ -2304,16 +2304,16 @@ ExprNodeVector[10] = {
 0000000000000000: 48 f7 71 38                                  div [%rcx+0x38]
   { 1, { 0xf7, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeUsesRexW) | InstFlag(OpcodeInModRm) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
+    NACL_IFLAG(OpcodeUsesRexW) | NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o),
     InstDiv,
     5, {
-      { Opcode6, OpFlag(OperandExtendsOpcode) },
-      { RegRAX, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { RegRDX, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { SegmentDX_AX, OpFlag(OpUse) | OpFlag(OpImplicit) },
-      { E_Operand, OpFlag(OpUse) },
+      { Opcode6, NACL_OPFLAG(OperandExtendsOpcode) },
+      { RegRAX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { RegRDX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { SegmentDX_AX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
+      { E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[14] = {
+NaClExpVector[14] = {
   { OperandReference[1] , 1, ExprImplicit },
   { ExprRegister[0] , %rax, ExprSet | ExprSize64 },
   { OperandReference[1] , 2, ExprImplicit },
@@ -2332,16 +2332,16 @@ ExprNodeVector[14] = {
 0000000000000000: f7 35 37 af 57 00                            div [%rip+0x57af37]
   { 1, { 0xf7, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeInModRm) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
     InstDiv,
     5, {
-      { Opcode6, OpFlag(OperandExtendsOpcode) },
-      { RegREAX, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { RegREDX, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { SegmentDX_AX, OpFlag(OpUse) | OpFlag(OpImplicit) },
-      { E_Operand, OpFlag(OpUse) },
+      { Opcode6, NACL_OPFLAG(OperandExtendsOpcode) },
+      { RegREAX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { RegREDX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { SegmentDX_AX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit) },
+      { E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[14] = {
+NaClExpVector[14] = {
   { OperandReference[1] , 1, ExprImplicit },
   { ExprRegister[0] , %eax, ExprSet | ExprSize32 },
   { OperandReference[1] , 2, ExprImplicit },
@@ -2360,13 +2360,13 @@ ExprNodeVector[14] = {
 0000000000000000: f2 0f 10 05 b5 dc 15 00                      movsd %xmm0, [%rip+0x15dcb5]
   { 2, { 0x0f, 0x10, 0x00 },
     NACLi_SSE2,
-    InstFlag(OpcodeUsesModRm),
+    NACL_IFLAG(OpcodeUsesModRm),
     InstMovsd,
     2, {
-      { Xmm_G_Operand, OpFlag(OpSet) },
-      { Xmm_E_Operand, OpFlag(OpUse) },
+      { Xmm_G_Operand, NACL_OPFLAG(OpSet) },
+      { Xmm_E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %xmm0, ExprSet },
   { OperandReference[1] , 1, 0 },
@@ -2379,13 +2379,13 @@ ExprNodeVector[8] = {
 0000000000000000: f2 0f 11 54 24 10                            movsd [%rsp+0x10], %xmm2
   { 2, { 0x0f, 0x11, 0x00 },
     NACLi_SSE2,
-    InstFlag(OpcodeUsesModRm),
+    NACL_IFLAG(OpcodeUsesModRm),
     InstMovsd,
     2, {
-      { Xmm_E_Operand, OpFlag(OpSet) },
-      { Xmm_G_Operand, OpFlag(OpUse) },
+      { Xmm_E_Operand, NACL_OPFLAG(OpSet) },
+      { Xmm_G_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprMemOffset[4] , 0, ExprSet },
   { ExprRegister[0] , %rsp, ExprUsed | ExprSize64 },
@@ -2398,13 +2398,13 @@ ExprNodeVector[8] = {
 0000000000000000: f3 0f 10 02                                  movss %xmm0, [%rdx]
   { 2, { 0x0f, 0x10, 0x00 },
     NACLi_SSE,
-    InstFlag(OpcodeUsesModRm),
+    NACL_IFLAG(OpcodeUsesModRm),
     InstMovss,
     2, {
-      { Xmm_G_Operand, OpFlag(OpSet) },
-      { Xmm_E_Operand, OpFlag(OpUse) },
+      { Xmm_G_Operand, NACL_OPFLAG(OpSet) },
+      { Xmm_E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %xmm0, ExprSet },
   { OperandReference[1] , 1, 0 },
@@ -2417,13 +2417,13 @@ ExprNodeVector[8] = {
 0000000000000000: f3 0f 11 44 24 0c                            movss [%rsp+0xc], %xmm0
   { 2, { 0x0f, 0x11, 0x00 },
     NACLi_SSE,
-    InstFlag(OpcodeUsesModRm),
+    NACL_IFLAG(OpcodeUsesModRm),
     InstMovss,
     2, {
-      { Xmm_E_Operand, OpFlag(OpSet) },
-      { Xmm_G_Operand, OpFlag(OpUse) },
+      { Xmm_E_Operand, NACL_OPFLAG(OpSet) },
+      { Xmm_G_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprMemOffset[4] , 0, ExprSet },
   { ExprRegister[0] , %rsp, ExprUsed | ExprSize64 },
@@ -2436,13 +2436,13 @@ ExprNodeVector[8] = {
 0000000000000000: f3 0f 10 4c 24 1c                            movss %xmm1, [%rsp+0x1c]
   { 2, { 0x0f, 0x10, 0x00 },
     NACLi_SSE,
-    InstFlag(OpcodeUsesModRm),
+    NACL_IFLAG(OpcodeUsesModRm),
     InstMovss,
     2, {
-      { Xmm_G_Operand, OpFlag(OpSet) },
-      { Xmm_E_Operand, OpFlag(OpUse) },
+      { Xmm_G_Operand, NACL_OPFLAG(OpSet) },
+      { Xmm_E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %xmm1, ExprSet },
   { OperandReference[1] , 1, 0 },
@@ -2455,13 +2455,13 @@ ExprNodeVector[8] = {
 0000000000000000: f3 0f 11 44 24 0c                            movss [%rsp+0xc], %xmm0
   { 2, { 0x0f, 0x11, 0x00 },
     NACLi_SSE,
-    InstFlag(OpcodeUsesModRm),
+    NACL_IFLAG(OpcodeUsesModRm),
     InstMovss,
     2, {
-      { Xmm_E_Operand, OpFlag(OpSet) },
-      { Xmm_G_Operand, OpFlag(OpUse) },
+      { Xmm_E_Operand, NACL_OPFLAG(OpSet) },
+      { Xmm_G_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprMemOffset[4] , 0, ExprSet },
   { ExprRegister[0] , %rsp, ExprUsed | ExprSize64 },
@@ -2474,13 +2474,13 @@ ExprNodeVector[8] = {
 0000000000000000: f2 0f 5f cf                                  maxsd %xmm1, %xmm7
   { 2, { 0x0f, 0x5f, 0x00 },
     NACLi_SSE2,
-    InstFlag(OpcodeUsesModRm),
+    NACL_IFLAG(OpcodeUsesModRm),
     InstMaxsd,
     2, {
-      { Xmm_G_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
-      { Xmm_E_Operand, OpFlag(OpUse) },
+      { Xmm_G_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
+      { Xmm_E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %xmm1, ExprSet | ExprUsed },
   { OperandReference[1] , 1, 0 },
@@ -2489,52 +2489,52 @@ ExprNodeVector[4] = {
 0000000000000000: 0f c8                                        bswap %eax
   { 2, { 0x0f, 0xc8, 0x00 },
     NACLi_386,
-    InstFlag(OpcodePlusR) | InstFlag(OperandSize_v),
+    NACL_IFLAG(OpcodePlusR) | NACL_IFLAG(OperandSize_v),
     InstBswap,
     2, {
-      { OpcodeBaseMinus0, OpFlag(OperandExtendsOpcode) },
-      { G_OpcodeBase, OpFlag(OpUse) | OpFlag(OpSet) },
+      { OpcodeBaseMinus0, NACL_OPFLAG(OperandExtendsOpcode) },
+      { G_OpcodeBase, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
   } };
-ExprNodeVector[2] = {
+NaClExpVector[2] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %eax, ExprSet | ExprUsed | ExprSize32 },
 };
 0000000000000000: 48 0f c8                                     bswap %rax
   { 2, { 0x0f, 0xc8, 0x00 },
     NACLi_386,
-    InstFlag(OpcodePlusR) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
+    NACL_IFLAG(OpcodePlusR) | NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o),
     InstBswap,
     2, {
-      { OpcodeBaseMinus0, OpFlag(OperandExtendsOpcode) },
-      { G_OpcodeBase, OpFlag(OpUse) | OpFlag(OpSet) },
+      { OpcodeBaseMinus0, NACL_OPFLAG(OperandExtendsOpcode) },
+      { G_OpcodeBase, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
   } };
-ExprNodeVector[2] = {
+NaClExpVector[2] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %rax, ExprSet | ExprUsed | ExprSize64 },
 };
 0000000000000000: 49 0f cd                                     bswap %r13
   { 2, { 0x0f, 0xcd, 0x00 },
     NACLi_386,
-    InstFlag(OpcodePlusR) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
+    NACL_IFLAG(OpcodePlusR) | NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o),
     InstBswap,
     2, {
-      { OpcodeBaseMinus5, OpFlag(OperandExtendsOpcode) },
-      { G_OpcodeBase, OpFlag(OpUse) | OpFlag(OpSet) },
+      { OpcodeBaseMinus5, NACL_OPFLAG(OperandExtendsOpcode) },
+      { G_OpcodeBase, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
   } };
-ExprNodeVector[2] = {
+NaClExpVector[2] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %r13, ExprSet | ExprUsed | ExprSize64 },
 };
 0000000000000000: 0f 6e 11                                     movd %mmx2, [%rcx]
   { 2, { 0x0f, 0x6e, 0x00 },
     NACLi_MMX,
-    InstFlag(OpcodeUsesModRm),
+    NACL_IFLAG(OpcodeUsesModRm),
     InstMovd,
     2, {
-      { Mmx_G_Operand, OpFlag(OpSet) },
-      { E_Operand, OpFlag(OpUse) },
+      { Mmx_G_Operand, NACL_OPFLAG(OpSet) },
+      { E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %mmx2, ExprSet },
   { OperandReference[1] , 1, 0 },
@@ -2547,13 +2547,13 @@ ExprNodeVector[8] = {
 0000000000000000: 49 0f 6e 11                                  movd %mmx2, [%r9]
   { 2, { 0x0f, 0x6e, 0x00 },
     NACLi_MMX,
-    InstFlag(OpcodeUsesModRm),
+    NACL_IFLAG(OpcodeUsesModRm),
     InstMovd,
     2, {
-      { Mmx_G_Operand, OpFlag(OpSet) },
-      { E_Operand, OpFlag(OpUse) },
+      { Mmx_G_Operand, NACL_OPFLAG(OpSet) },
+      { E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %mmx2, ExprSet },
   { OperandReference[1] , 1, 0 },
@@ -2566,13 +2566,13 @@ ExprNodeVector[8] = {
 0000000000000000: 66 0f 6e 11                                  movd %xmm2, [%rcx]
   { 2, { 0x0f, 0x6e, 0x00 },
     NACLi_SSE2,
-    InstFlag(OpcodeUsesModRm),
+    NACL_IFLAG(OpcodeUsesModRm),
     InstMovd,
     2, {
-      { Xmm_G_Operand, OpFlag(OpSet) },
-      { E_Operand, OpFlag(OpUse) },
+      { Xmm_G_Operand, NACL_OPFLAG(OpSet) },
+      { E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %xmm2, ExprSet },
   { OperandReference[1] , 1, 0 },
@@ -2585,13 +2585,13 @@ ExprNodeVector[8] = {
 0000000000000000: 0f 7e 0e                                     movd [%rsi], %mmx1
   { 2, { 0x0f, 0x7e, 0x00 },
     NACLi_MMX,
-    InstFlag(OpcodeUsesModRm),
+    NACL_IFLAG(OpcodeUsesModRm),
     InstMovd,
     2, {
-      { E_Operand, OpFlag(OpSet) },
-      { Mmx_G_Operand, OpFlag(OpUse) },
+      { E_Operand, NACL_OPFLAG(OpSet) },
+      { Mmx_G_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprMemOffset[4] , 0, ExprSet },
   { ExprRegister[0] , %rsi, ExprUsed | ExprSize64 },
@@ -2604,13 +2604,13 @@ ExprNodeVector[8] = {
 0000000000000000: 49 0f 7e 0e                                  movd [%r14], %mmx1
   { 2, { 0x0f, 0x7e, 0x00 },
     NACLi_MMX,
-    InstFlag(OpcodeUsesModRm),
+    NACL_IFLAG(OpcodeUsesModRm),
     InstMovd,
     2, {
-      { E_Operand, OpFlag(OpSet) },
-      { Mmx_G_Operand, OpFlag(OpUse) },
+      { E_Operand, NACL_OPFLAG(OpSet) },
+      { Mmx_G_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprMemOffset[4] , 0, ExprSet },
   { ExprRegister[0] , %r14, ExprUsed | ExprSize64 },
@@ -2623,23 +2623,23 @@ ExprNodeVector[8] = {
 0000000000000000: 0f 77                                        emms
   { 2, { 0x0f, 0x77, 0x00 },
     NACLi_MMX,
-    0,
+    NACL_EMPTY_IFLAGS,
     InstEmms,
     0, {
   } };
-ExprNodeVector[0] = {
+NaClExpVector[0] = {
 };
 0000000000000000: f2 0f c2 c7 01                               cmpsd_xmm %xmm0, %xmm7, 0x1
   { 2, { 0x0f, 0xc2, 0x00 },
     NACLi_SSE2,
-    InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeHasImmed_b),
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b),
     InstCmpsd_xmm,
     3, {
-      { Xmm_G_Operand, OpFlag(OpSet) },
-      { Xmm_E_Operand, OpFlag(OpUse) },
-      { I_Operand, OpFlag(OpUse) },
+      { Xmm_G_Operand, NACL_OPFLAG(OpSet) },
+      { Xmm_E_Operand, NACL_OPFLAG(OpUse) },
+      { I_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[6] = {
+NaClExpVector[6] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %xmm0, ExprSet },
   { OperandReference[1] , 1, 0 },
@@ -2650,14 +2650,14 @@ ExprNodeVector[6] = {
 0000000000000000: f2 0f c2 0d 67 87 10 00 05                   cmpsd_xmm %xmm1, [%rip+0x108767], 0x5
   { 2, { 0x0f, 0xc2, 0x00 },
     NACLi_SSE2,
-    InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeHasImmed_b),
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b),
     InstCmpsd_xmm,
     3, {
-      { Xmm_G_Operand, OpFlag(OpSet) },
-      { Xmm_E_Operand, OpFlag(OpUse) },
-      { I_Operand, OpFlag(OpUse) },
+      { Xmm_G_Operand, NACL_OPFLAG(OpSet) },
+      { Xmm_E_Operand, NACL_OPFLAG(OpUse) },
+      { I_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[10] = {
+NaClExpVector[10] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %xmm1, ExprSet },
   { OperandReference[1] , 1, 0 },
@@ -2672,13 +2672,13 @@ ExprNodeVector[10] = {
 0000000000000000: 0f 6f 05 ba 87 0f 00                         movq %mmx0, [%rip+0xf87ba]
   { 2, { 0x0f, 0x6f, 0x00 },
     NACLi_MMX,
-    InstFlag(OpcodeUsesModRm),
+    NACL_IFLAG(OpcodeUsesModRm),
     InstMovq,
     2, {
-      { Mmx_G_Operand, OpFlag(OpSet) },
-      { Mmx_E_Operand, OpFlag(OpUse) },
+      { Mmx_G_Operand, NACL_OPFLAG(OpSet) },
+      { Mmx_E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %mmx0, ExprSet },
   { OperandReference[1] , 1, 0 },
@@ -2691,13 +2691,13 @@ ExprNodeVector[8] = {
 0000000000000000: 0f 6f c8                                     movq %mmx1, %mmx0
   { 2, { 0x0f, 0x6f, 0x00 },
     NACLi_MMX,
-    InstFlag(OpcodeUsesModRm),
+    NACL_IFLAG(OpcodeUsesModRm),
     InstMovq,
     2, {
-      { Mmx_G_Operand, OpFlag(OpSet) },
-      { Mmx_E_Operand, OpFlag(OpUse) },
+      { Mmx_G_Operand, NACL_OPFLAG(OpSet) },
+      { Mmx_E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %mmx1, ExprSet },
   { OperandReference[1] , 1, 0 },
@@ -2706,13 +2706,13 @@ ExprNodeVector[4] = {
 0000000000000000: 0f 7f 0e                                     movq [%rsi], %mmx1
   { 2, { 0x0f, 0x7f, 0x00 },
     NACLi_MMX,
-    InstFlag(OpcodeUsesModRm),
+    NACL_IFLAG(OpcodeUsesModRm),
     InstMovq,
     2, {
-      { Mmx_E_Operand, OpFlag(OpSet) },
-      { Mmx_G_Operand, OpFlag(OpUse) },
+      { Mmx_E_Operand, NACL_OPFLAG(OpSet) },
+      { Mmx_G_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprMemOffset[4] , 0, ExprSet },
   { ExprRegister[0] , %rsi, ExprUsed | ExprSize64 },
@@ -2725,13 +2725,13 @@ ExprNodeVector[8] = {
 0000000000000000: 0f d1 0c 25 08 00 00 00                      psrlw %mmx1, [0x8]
   { 2, { 0x0f, 0xd1, 0x00 },
     NACLi_MMX,
-    InstFlag(OpcodeUsesModRm),
+    NACL_IFLAG(OpcodeUsesModRm),
     InstPsrlw,
     2, {
-      { Mmx_G_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
-      { Mmx_E_Operand, OpFlag(OpUse) },
+      { Mmx_G_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
+      { Mmx_E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %mmx1, ExprSet | ExprUsed },
   { OperandReference[1] , 1, 0 },
@@ -2744,14 +2744,14 @@ ExprNodeVector[8] = {
 0000000000000000: 0f 71 d1 08                                  psrlw %mmx1, 0x8
   { 2, { 0x0f, 0x71, 0x00 },
     NACLi_MMX,
-    InstFlag(OpcodeInModRm) | InstFlag(ModRmModIs0x3) | InstFlag(OpcodeHasImmed_b),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeHasImmed_b),
     InstPsrlw,
     3, {
-      { Opcode2, OpFlag(OperandExtendsOpcode) },
-      { Mmx_E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
-      { I_Operand, OpFlag(OpUse) },
+      { Opcode2, NACL_OPFLAG(OperandExtendsOpcode) },
+      { Mmx_E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
+      { I_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %mmx1, ExprSet | ExprUsed },
   { OperandReference[1] , 2, 0 },
@@ -2760,13 +2760,13 @@ ExprNodeVector[4] = {
 0000000000000000: 0f 6e e8                                     movd %mmx5, %eax
   { 2, { 0x0f, 0x6e, 0x00 },
     NACLi_MMX,
-    InstFlag(OpcodeUsesModRm),
+    NACL_IFLAG(OpcodeUsesModRm),
     InstMovd,
     2, {
-      { Mmx_G_Operand, OpFlag(OpSet) },
-      { E_Operand, OpFlag(OpUse) },
+      { Mmx_G_Operand, NACL_OPFLAG(OpSet) },
+      { E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %mmx5, ExprSet },
   { OperandReference[1] , 1, 0 },
@@ -2775,13 +2775,13 @@ ExprNodeVector[4] = {
 0000000000000000: f3 0f 6f 05 f9 77 0f 00                      movdqu %xmm0, [%rip+0xf77f9]
   { 2, { 0x0f, 0x6f, 0x00 },
     NACLi_SSE2,
-    InstFlag(OpcodeUsesModRm),
+    NACL_IFLAG(OpcodeUsesModRm),
     InstMovdqu,
     2, {
-      { Xmm_G_Operand, OpFlag(OpSet) },
-      { Xmm_E_Operand, OpFlag(OpUse) },
+      { Xmm_G_Operand, NACL_OPFLAG(OpSet) },
+      { Xmm_E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %xmm0, ExprSet },
   { OperandReference[1] , 1, 0 },
@@ -2794,13 +2794,13 @@ ExprNodeVector[8] = {
 0000000000000000: f3 0f 6f 11                                  movdqu %xmm2, [%rcx]
   { 2, { 0x0f, 0x6f, 0x00 },
     NACLi_SSE2,
-    InstFlag(OpcodeUsesModRm),
+    NACL_IFLAG(OpcodeUsesModRm),
     InstMovdqu,
     2, {
-      { Xmm_G_Operand, OpFlag(OpSet) },
-      { Xmm_E_Operand, OpFlag(OpUse) },
+      { Xmm_G_Operand, NACL_OPFLAG(OpSet) },
+      { Xmm_E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %xmm2, ExprSet },
   { OperandReference[1] , 1, 0 },
@@ -2813,13 +2813,13 @@ ExprNodeVector[8] = {
 0000000000000000: f3 0f 7f 0e                                  movdqu [%rsi], %xmm1
   { 2, { 0x0f, 0x7f, 0x00 },
     NACLi_SSE2,
-    InstFlag(OpcodeUsesModRm),
+    NACL_IFLAG(OpcodeUsesModRm),
     InstMovdqu,
     2, {
-      { Xmm_E_Operand, OpFlag(OpSet) },
-      { Xmm_G_Operand, OpFlag(OpUse) },
+      { Xmm_E_Operand, NACL_OPFLAG(OpSet) },
+      { Xmm_G_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprMemOffset[4] , 0, ExprSet },
   { ExprRegister[0] , %rsi, ExprUsed | ExprSize64 },
@@ -2832,13 +2832,13 @@ ExprNodeVector[8] = {
 0000000000000000: 0f e7 0e                                     movntq [%rsi], %mmx1
   { 2, { 0x0f, 0xe7, 0x00 },
     NACLi_MMX,
-    InstFlag(OpcodeLtC0InModRm) | InstFlag(OpcodeUsesModRm),
+    NACL_IFLAG(OpcodeLtC0InModRm) | NACL_IFLAG(OpcodeUsesModRm),
     InstMovntq,
     2, {
-      { Mo_Operand, OpFlag(OpSet) },
-      { Mmx_G_Operand, OpFlag(OpUse) },
+      { Mo_Operand, NACL_OPFLAG(OpSet) },
+      { Mmx_G_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprMemOffset[4] , 0, ExprSet },
   { ExprRegister[0] , %rsi, ExprUsed | ExprSize64 },
@@ -2851,13 +2851,13 @@ ExprNodeVector[8] = {
 0000000000000000: 66 0f 29 0c 24                               movapd [%rsp], %xmm1
   { 2, { 0x0f, 0x29, 0x00 },
     NACLi_SSE2,
-    InstFlag(OpcodeUsesModRm),
+    NACL_IFLAG(OpcodeUsesModRm),
     InstMovapd,
     2, {
-      { Xmm_E_Operand, OpFlag(OpSet) },
-      { Xmm_G_Operand, OpFlag(OpUse) },
+      { Xmm_E_Operand, NACL_OPFLAG(OpSet) },
+      { Xmm_G_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprMemOffset[4] , 0, ExprSet },
   { ExprRegister[0] , %rsp, ExprUsed | ExprSize64 },
@@ -2870,13 +2870,13 @@ ExprNodeVector[8] = {
 0000000000000000: f3 0f 51 d0                                  sqrtss %xmm2, %xmm0
   { 2, { 0x0f, 0x51, 0x00 },
     NACLi_SSE,
-    InstFlag(OpcodeUsesModRm),
+    NACL_IFLAG(OpcodeUsesModRm),
     InstSqrtss,
     2, {
-      { Xmm_G_Operand, OpFlag(OpSet) },
-      { Xmm_E_Operand, OpFlag(OpUse) },
+      { Xmm_G_Operand, NACL_OPFLAG(OpSet) },
+      { Xmm_E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %xmm2, ExprSet },
   { OperandReference[1] , 1, 0 },
@@ -2885,26 +2885,26 @@ ExprNodeVector[4] = {
 0000000000000000: 48 ff c0                                     inc %rax
   { 1, { 0xff, 0x00, 0x00 },
     NACLi_386L,
-    InstFlag(OpcodeUsesRexW) | InstFlag(OpcodeInModRm) | InstFlag(OpcodeLockable) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
+    NACL_IFLAG(OpcodeUsesRexW) | NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o),
     InstInc,
     2, {
-      { Opcode0, OpFlag(OperandExtendsOpcode) },
-      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+      { Opcode0, NACL_OPFLAG(OperandExtendsOpcode) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
   } };
-ExprNodeVector[2] = {
+NaClExpVector[2] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %rax, ExprSet | ExprUsed | ExprSize64 },
 };
 0000000000000000: ff 05 a4 76 39 00                            inc [%rip+0x3976a4]
   { 1, { 0xff, 0x00, 0x00 },
     NACLi_386L,
-    InstFlag(OpcodeInModRm) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
     InstInc,
     2, {
-      { Opcode0, OpFlag(OperandExtendsOpcode) },
-      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+      { Opcode0, NACL_OPFLAG(OperandExtendsOpcode) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
   } };
-ExprNodeVector[6] = {
+NaClExpVector[6] = {
   { OperandReference[1] , 1, 0 },
   { ExprMemOffset[4] , 0, ExprSet | ExprUsed },
   { ExprRegister[0] , %rip, ExprUsed | ExprSize64 },
@@ -2915,91 +2915,91 @@ ExprNodeVector[6] = {
 0000000000000000: ff c0                                        inc %eax
   { 1, { 0xff, 0x00, 0x00 },
     NACLi_386L,
-    InstFlag(OpcodeInModRm) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
     InstInc,
     2, {
-      { Opcode0, OpFlag(OperandExtendsOpcode) },
-      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+      { Opcode0, NACL_OPFLAG(OperandExtendsOpcode) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
   } };
-ExprNodeVector[2] = {
+NaClExpVector[2] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %eax, ExprSet | ExprUsed | ExprSize32 },
 };
 0000000000000000: 41 ff c5                                     inc %r13d
   { 1, { 0xff, 0x00, 0x00 },
     NACLi_386L,
-    InstFlag(OpcodeInModRm) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
     InstInc,
     2, {
-      { Opcode0, OpFlag(OperandExtendsOpcode) },
-      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+      { Opcode0, NACL_OPFLAG(OperandExtendsOpcode) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
   } };
-ExprNodeVector[2] = {
+NaClExpVector[2] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %r13d, ExprSet | ExprUsed | ExprSize32 },
 };
 0000000000000000: fe c0                                        inc %al
   { 1, { 0xfe, 0x00, 0x00 },
     NACLi_386L,
-    InstFlag(OpcodeInModRm) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_b),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(OperandSize_b),
     InstInc,
     2, {
-      { Opcode0, OpFlag(OperandExtendsOpcode) },
-      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+      { Opcode0, NACL_OPFLAG(OperandExtendsOpcode) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
   } };
-ExprNodeVector[2] = {
+NaClExpVector[2] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %al, ExprSet | ExprUsed | ExprSize8 },
 };
 0000000000000000: fe c4                                        inc %ah
   { 1, { 0xfe, 0x00, 0x00 },
     NACLi_386L,
-    InstFlag(OpcodeInModRm) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_b),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(OperandSize_b),
     InstInc,
     2, {
-      { Opcode0, OpFlag(OperandExtendsOpcode) },
-      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+      { Opcode0, NACL_OPFLAG(OperandExtendsOpcode) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
   } };
-ExprNodeVector[2] = {
+NaClExpVector[2] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %ah, ExprSet | ExprUsed | ExprSize8 },
 };
 0000000000000000: 41 fe c0                                     inc %r8b
   { 1, { 0xfe, 0x00, 0x00 },
     NACLi_386L,
-    InstFlag(OpcodeInModRm) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_b),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(OperandSize_b),
     InstInc,
     2, {
-      { Opcode0, OpFlag(OperandExtendsOpcode) },
-      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+      { Opcode0, NACL_OPFLAG(OperandExtendsOpcode) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
   } };
-ExprNodeVector[2] = {
+NaClExpVector[2] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %r8b, ExprSet | ExprUsed | ExprSize8 },
 };
 0000000000000000: ff ca                                        dec %edx
   { 1, { 0xff, 0x00, 0x00 },
     NACLi_386L,
-    InstFlag(OpcodeInModRm) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
     InstDec,
     2, {
-      { Opcode1, OpFlag(OperandExtendsOpcode) },
-      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+      { Opcode1, NACL_OPFLAG(OperandExtendsOpcode) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
   } };
-ExprNodeVector[2] = {
+NaClExpVector[2] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %edx, ExprSet | ExprUsed | ExprSize32 },
 };
 0000000000000000: ff 0d 8f 76 39 00                            dec [%rip+0x39768f]
   { 1, { 0xff, 0x00, 0x00 },
     NACLi_386L,
-    InstFlag(OpcodeInModRm) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
     InstDec,
     2, {
-      { Opcode1, OpFlag(OperandExtendsOpcode) },
-      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+      { Opcode1, NACL_OPFLAG(OperandExtendsOpcode) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
   } };
-ExprNodeVector[6] = {
+NaClExpVector[6] = {
   { OperandReference[1] , 1, 0 },
   { ExprMemOffset[4] , 0, ExprSet | ExprUsed },
   { ExprRegister[0] , %rip, ExprUsed | ExprSize64 },
@@ -3010,79 +3010,79 @@ ExprNodeVector[6] = {
 0000000000000000: 48 ff c8                                     dec %rax
   { 1, { 0xff, 0x00, 0x00 },
     NACLi_386L,
-    InstFlag(OpcodeUsesRexW) | InstFlag(OpcodeInModRm) | InstFlag(OpcodeLockable) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
+    NACL_IFLAG(OpcodeUsesRexW) | NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o),
     InstDec,
     2, {
-      { Opcode1, OpFlag(OperandExtendsOpcode) },
-      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+      { Opcode1, NACL_OPFLAG(OperandExtendsOpcode) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
   } };
-ExprNodeVector[2] = {
+NaClExpVector[2] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %rax, ExprSet | ExprUsed | ExprSize64 },
 };
 0000000000000000: 49 ff cc                                     dec %r12
   { 1, { 0xff, 0x00, 0x00 },
     NACLi_386L,
-    InstFlag(OpcodeUsesRexW) | InstFlag(OpcodeInModRm) | InstFlag(OpcodeLockable) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
+    NACL_IFLAG(OpcodeUsesRexW) | NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o),
     InstDec,
     2, {
-      { Opcode1, OpFlag(OperandExtendsOpcode) },
-      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+      { Opcode1, NACL_OPFLAG(OperandExtendsOpcode) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
   } };
-ExprNodeVector[2] = {
+NaClExpVector[2] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %r12, ExprSet | ExprUsed | ExprSize64 },
 };
 0000000000000000: fe c8                                        dec %al
   { 1, { 0xfe, 0x00, 0x00 },
     NACLi_386L,
-    InstFlag(OpcodeInModRm) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_b),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(OperandSize_b),
     InstDec,
     2, {
-      { Opcode1, OpFlag(OperandExtendsOpcode) },
-      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+      { Opcode1, NACL_OPFLAG(OperandExtendsOpcode) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
   } };
-ExprNodeVector[2] = {
+NaClExpVector[2] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %al, ExprSet | ExprUsed | ExprSize8 },
 };
 0000000000000000: fe cc                                        dec %ah
   { 1, { 0xfe, 0x00, 0x00 },
     NACLi_386L,
-    InstFlag(OpcodeInModRm) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_b),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(OperandSize_b),
     InstDec,
     2, {
-      { Opcode1, OpFlag(OperandExtendsOpcode) },
-      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+      { Opcode1, NACL_OPFLAG(OperandExtendsOpcode) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
   } };
-ExprNodeVector[2] = {
+NaClExpVector[2] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %ah, ExprSet | ExprUsed | ExprSize8 },
 };
 0000000000000000: 41 fe c8                                     dec %r8b
   { 1, { 0xfe, 0x00, 0x00 },
     NACLi_386L,
-    InstFlag(OpcodeInModRm) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_b),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(OperandSize_b),
     InstDec,
     2, {
-      { Opcode1, OpFlag(OperandExtendsOpcode) },
-      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+      { Opcode1, NACL_OPFLAG(OperandExtendsOpcode) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
   } };
-ExprNodeVector[2] = {
+NaClExpVector[2] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %r8b, ExprSet | ExprUsed | ExprSize8 },
 };
 0000000000000000: f0 0f b1 35 21 c6 31 00                      cmpxchg [%rip+0x31c621], %esi
   { 2, { 0x0f, 0xb1, 0x00 },
     NACLi_386L,
-    InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
     InstCmpxchg,
     3, {
-      { RegREAX, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
-      { G_Operand, OpFlag(OpUse) },
+      { RegREAX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
+      { G_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[10] = {
+NaClExpVector[10] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %eax, ExprSet | ExprUsed | ExprSize32 },
   { OperandReference[1] , 1, 0 },
@@ -3097,14 +3097,14 @@ ExprNodeVector[10] = {
 0000000000000000: 0f b1 35 12 c6 31 00                         cmpxchg [%rip+0x31c612], %esi
   { 2, { 0x0f, 0xb1, 0x00 },
     NACLi_386L,
-    InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
     InstCmpxchg,
     3, {
-      { RegREAX, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
-      { G_Operand, OpFlag(OpUse) },
+      { RegREAX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
+      { G_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[10] = {
+NaClExpVector[10] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %eax, ExprSet | ExprUsed | ExprSize32 },
   { OperandReference[1] , 1, 0 },
@@ -3119,14 +3119,14 @@ ExprNodeVector[10] = {
 0000000000000000: f0 41 0f b1 30                               cmpxchg [%r8], %esi
   { 2, { 0x0f, 0xb1, 0x00 },
     NACLi_386L,
-    InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
     InstCmpxchg,
     3, {
-      { RegREAX, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
-      { G_Operand, OpFlag(OpUse) },
+      { RegREAX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
+      { G_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[10] = {
+NaClExpVector[10] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %eax, ExprSet | ExprUsed | ExprSize32 },
   { OperandReference[1] , 1, 0 },
@@ -3141,13 +3141,13 @@ ExprNodeVector[10] = {
 0000000000000000: f0 0f c1 02                                  xadd [%rdx], %eax
   { 2, { 0x0f, 0xc1, 0x00 },
     NACLi_386L,
-    InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
     InstXadd,
     2, {
-      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
-      { G_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
+      { G_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprMemOffset[4] , 0, ExprSet | ExprUsed },
   { ExprRegister[0] , %rdx, ExprUsed | ExprSize64 },
@@ -3160,13 +3160,13 @@ ExprNodeVector[8] = {
 0000000000000000: f0 0f c1 43 18                               xadd [%rbx+0x18], %eax
   { 2, { 0x0f, 0xc1, 0x00 },
     NACLi_386L,
-    InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
     InstXadd,
     2, {
-      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
-      { G_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
+      { G_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprMemOffset[4] , 0, ExprSet | ExprUsed },
   { ExprRegister[0] , %rbx, ExprUsed | ExprSize64 },
@@ -3179,13 +3179,13 @@ ExprNodeVector[8] = {
 0000000000000000: f0 41 0f c1 00                               xadd [%r8], %eax
   { 2, { 0x0f, 0xc1, 0x00 },
     NACLi_386L,
-    InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
     InstXadd,
     2, {
-      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
-      { G_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
+      { G_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprMemOffset[4] , 0, ExprSet | ExprUsed },
   { ExprRegister[0] , %r8, ExprUsed | ExprSize64 },
@@ -3198,13 +3198,13 @@ ExprNodeVector[8] = {
 0000000000000000: 0f 05                                        syscall
   { 2, { 0x0f, 0x05, 0x00 },
     NACLi_SYSCALL,
-    InstFlag(Opcode64Only),
+    NACL_IFLAG(Opcode64Only),
     InstSyscall,
     2, {
-      { RegRCX, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { RegRIP, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit) },
+      { RegRCX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { RegRIP, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %rcx, ExprSet | ExprSize64 },
   { OperandReference[1] , 1, ExprImplicit },
@@ -3213,13 +3213,13 @@ ExprNodeVector[4] = {
 0000000000000000: e4 08                                        in %al, 0x8; *NACL Disallows!*
   { 1, { 0xe4, 0x00, 0x00 },
     NACLi_ILLEGAL,
-    InstFlag(OpcodeHasImmed_b),
+    NACL_IFLAG(OpcodeHasImmed_b),
     InstIn,
     2, {
-      { RegAL, OpFlag(OpSet) },
-      { I_Operand, OpFlag(OpUse) },
+      { RegAL, NACL_OPFLAG(OpSet) },
+      { I_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %al, ExprSet | ExprSize8 },
   { OperandReference[1] , 1, 0 },
@@ -3228,13 +3228,13 @@ ExprNodeVector[4] = {
 0000000000000000: 66 e5 08                                     in %ax, 0x8; *NACL Disallows!*
   { 1, { 0xe5, 0x00, 0x00 },
     NACLi_ILLEGAL,
-    InstFlag(OpcodeHasImmed_b) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+    NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
     InstIn,
     2, {
-      { RegREAX, OpFlag(OpSet) },
-      { I_Operand, OpFlag(OpUse) },
+      { RegREAX, NACL_OPFLAG(OpSet) },
+      { I_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %ax, ExprSet | ExprSize16 },
   { OperandReference[1] , 1, 0 },
@@ -3243,13 +3243,13 @@ ExprNodeVector[4] = {
 0000000000000000: e5 08                                        in %eax, 0x8; *NACL Disallows!*
   { 1, { 0xe5, 0x00, 0x00 },
     NACLi_ILLEGAL,
-    InstFlag(OpcodeHasImmed_b) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+    NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
     InstIn,
     2, {
-      { RegREAX, OpFlag(OpSet) },
-      { I_Operand, OpFlag(OpUse) },
+      { RegREAX, NACL_OPFLAG(OpSet) },
+      { I_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %eax, ExprSet | ExprSize32 },
   { OperandReference[1] , 1, 0 },
@@ -3258,13 +3258,13 @@ ExprNodeVector[4] = {
 0000000000000000: ec                                           in %al, %dx; *NACL Disallows!*
   { 1, { 0xec, 0x00, 0x00 },
     NACLi_ILLEGAL,
-    0,
+    NACL_EMPTY_IFLAGS,
     InstIn,
     2, {
-      { RegAL, OpFlag(OpSet) },
-      { RegDX, OpFlag(OpUse) },
+      { RegAL, NACL_OPFLAG(OpSet) },
+      { RegDX, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %al, ExprSet | ExprSize8 },
   { OperandReference[1] , 1, 0 },
@@ -3273,13 +3273,13 @@ ExprNodeVector[4] = {
 0000000000000000: 66 ed                                        in %ax, %dx; *NACL Disallows!*
   { 1, { 0xed, 0x00, 0x00 },
     NACLi_ILLEGAL,
-    InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+    NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
     InstIn,
     2, {
-      { RegREAX, OpFlag(OpSet) },
-      { RegDX, OpFlag(OpUse) },
+      { RegREAX, NACL_OPFLAG(OpSet) },
+      { RegDX, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %ax, ExprSet | ExprSize16 },
   { OperandReference[1] , 1, 0 },
@@ -3288,13 +3288,13 @@ ExprNodeVector[4] = {
 0000000000000000: ed                                           in %eax, %dx; *NACL Disallows!*
   { 1, { 0xed, 0x00, 0x00 },
     NACLi_ILLEGAL,
-    InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+    NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
     InstIn,
     2, {
-      { RegREAX, OpFlag(OpSet) },
-      { RegDX, OpFlag(OpUse) },
+      { RegREAX, NACL_OPFLAG(OpSet) },
+      { RegDX, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %eax, ExprSet | ExprSize32 },
   { OperandReference[1] , 1, 0 },
@@ -3303,14 +3303,14 @@ ExprNodeVector[4] = {
 0000000000000000: 55                                           push %rbp
   { 1, { 0x55, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OpcodePlusR) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o) | InstFlag(OperandSizeDefaultIs64),
+    NACL_IFLAG(OpcodePlusR) | NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o) | NACL_IFLAG(OperandSizeDefaultIs64),
     InstPush,
     3, {
-      { OpcodeBaseMinus5, OpFlag(OperandExtendsOpcode) },
-      { RegRSP, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { G_OpcodeBase, OpFlag(OpUse) },
+      { OpcodeBaseMinus5, NACL_OPFLAG(OperandExtendsOpcode) },
+      { RegRSP, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { G_OpcodeBase, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 1, ExprImplicit },
   { ExprRegister[0] , %rsp, ExprSet | ExprUsed | ExprSize64 },
   { OperandReference[1] , 2, 0 },
@@ -3319,13 +3319,13 @@ ExprNodeVector[4] = {
 0000000000000000: 0f 18 86 00 03 00 00                         prefetchnta [%rsi+0x300]
   { 2, { 0x0f, 0x18, 0x00 },
     NACLi_SSE,
-    InstFlag(OpcodeInModRm) | InstFlag(OpcodeLtC0InModRm),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeLtC0InModRm),
     InstPrefetchnta,
     2, {
-      { Opcode0, OpFlag(OperandExtendsOpcode) },
-      { Mb_Operand, 0 },
+      { Opcode0, NACL_OPFLAG(OperandExtendsOpcode) },
+      { Mb_Operand, NACL_EMPTY_OPFLAGS },
   } };
-ExprNodeVector[6] = {
+NaClExpVector[6] = {
   { OperandReference[1] , 1, 0 },
   { ExprMemOffset[4] , 0, 0 },
   { ExprRegister[0] , %rsi, ExprUsed | ExprSize64 },
@@ -3336,13 +3336,13 @@ ExprNodeVector[6] = {
 0000000000000000: 48 0f c3 07                                  movnti [%rdi], %rax
   { 2, { 0x0f, 0xc3, 0x00 },
     NACLi_SSE2,
-    InstFlag(OpcodeLtC0InModRm) | InstFlag(OpcodeUsesModRm) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
+    NACL_IFLAG(OpcodeLtC0InModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o),
     InstMovnti,
     2, {
-      { M_Operand, OpFlag(OpSet) },
-      { G_Operand, OpFlag(OpUse) },
+      { M_Operand, NACL_OPFLAG(OpSet) },
+      { G_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprMemOffset[4] , 0, ExprSet },
   { ExprRegister[0] , %rdi, ExprUsed | ExprSize64 },
@@ -3355,23 +3355,23 @@ ExprNodeVector[8] = {
 0000000000000000: 0f ae f8                                     sfence
   { 2, { 0x0f, 0xae, 0x00 },
     NACLi_SFENCE_CLFLUSH,
-    InstFlag(OpcodeInModRm),
+    NACL_IFLAG(OpcodeInModRm),
     InstSfence,
     1, {
-      { Opcode7, OpFlag(OperandExtendsOpcode) },
+      { Opcode7, NACL_OPFLAG(OperandExtendsOpcode) },
   } };
-ExprNodeVector[0] = {
+NaClExpVector[0] = {
 };
 0000000000000000: 41 0f a3 c0                                  bt %r8d, %eax; *NACL Disallows!*
   { 2, { 0x0f, 0xa3, 0x00 },
     NACLi_ILLEGAL,
-    InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v) | InstFlag(AddressSizeDefaultIs32),
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(AddressSizeDefaultIs32),
     InstBt,
     2, {
-      { E_Operand, OpFlag(OpUse) },
-      { G_Operand, OpFlag(OpUse) },
+      { E_Operand, NACL_OPFLAG(OpUse) },
+      { G_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %r8d, ExprUsed | ExprSize32 },
   { OperandReference[1] , 1, 0 },
@@ -3380,13 +3380,13 @@ ExprNodeVector[4] = {
 0000000000000000: 41 db 2c 07                                  fld [%r15+%rax*1]
   { 1, { 0xdb, 0x00, 0x00 },
     NACLi_X87,
-    InstFlag(OpcodeInModRm) | InstFlag(OpcodeLtC0InModRm),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeLtC0InModRm),
     InstFld,
     2, {
-      { Opcode5, OpFlag(OperandExtendsOpcode) },
-      { M_Operand, OpFlag(OpUse) },
+      { Opcode5, NACL_OPFLAG(OperandExtendsOpcode) },
+      { M_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[6] = {
+NaClExpVector[6] = {
   { OperandReference[1] , 1, 0 },
   { ExprMemOffset[4] , 0, ExprUsed },
   { ExprRegister[0] , %r15, ExprUsed | ExprSize64 },
@@ -3397,13 +3397,13 @@ ExprNodeVector[6] = {
 0000000000000000: dd 04 24                                     fld [%rsp]
   { 1, { 0xdd, 0x00, 0x00 },
     NACLi_X87,
-    InstFlag(OpcodeInModRm) | InstFlag(OpcodeLtC0InModRm),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeLtC0InModRm),
     InstFld,
     2, {
-      { Opcode0, OpFlag(OperandExtendsOpcode) },
-      { M_Operand, OpFlag(OpUse) },
+      { Opcode0, NACL_OPFLAG(OperandExtendsOpcode) },
+      { M_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[6] = {
+NaClExpVector[6] = {
   { OperandReference[1] , 1, 0 },
   { ExprMemOffset[4] , 0, ExprUsed },
   { ExprRegister[0] , %rsp, ExprUsed | ExprSize64 },
@@ -3414,13 +3414,13 @@ ExprNodeVector[6] = {
 0000000000000000: 0f b3 20                                     btr [%eax], %esp; *NACL Disallows!*
   { 2, { 0x0f, 0xb3, 0x00 },
     NACLi_ILLEGAL,
-    InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v) | InstFlag(AddressSizeDefaultIs32),
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(AddressSizeDefaultIs32),
     InstBtr,
     2, {
-      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
-      { G_Operand, OpFlag(OpUse) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
+      { G_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprMemOffset[4] , 0, ExprSet | ExprUsed },
   { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
@@ -3433,13 +3433,13 @@ ExprNodeVector[8] = {
 0000000000000000: 0f a3 20                                     bt [%eax], %esp; *NACL Disallows!*
   { 2, { 0x0f, 0xa3, 0x00 },
     NACLi_ILLEGAL,
-    InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v) | InstFlag(AddressSizeDefaultIs32),
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(AddressSizeDefaultIs32),
     InstBt,
     2, {
-      { E_Operand, OpFlag(OpUse) },
-      { G_Operand, OpFlag(OpUse) },
+      { E_Operand, NACL_OPFLAG(OpUse) },
+      { G_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprMemOffset[4] , 0, ExprUsed },
   { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
@@ -3452,13 +3452,13 @@ ExprNodeVector[8] = {
 0000000000000000: 0f bb 20                                     btc [%eax], %esp; *NACL Disallows!*
   { 2, { 0x0f, 0xbb, 0x00 },
     NACLi_ILLEGAL,
-    InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v) | InstFlag(AddressSizeDefaultIs32),
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(AddressSizeDefaultIs32),
     InstBtc,
     2, {
-      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
-      { G_Operand, OpFlag(OpUse) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
+      { G_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprMemOffset[4] , 0, ExprSet | ExprUsed },
   { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
@@ -3471,13 +3471,13 @@ ExprNodeVector[8] = {
 0000000000000000: 0f ab 20                                     bts [%eax], %esp; *NACL Disallows!*
   { 2, { 0x0f, 0xab, 0x00 },
     NACLi_ILLEGAL,
-    InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v) | InstFlag(AddressSizeDefaultIs32),
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(AddressSizeDefaultIs32),
     InstBts,
     2, {
-      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
-      { G_Operand, OpFlag(OpUse) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
+      { G_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprMemOffset[4] , 0, ExprSet | ExprUsed },
   { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
@@ -3490,15 +3490,15 @@ ExprNodeVector[8] = {
 0000000000000000: 66 0f 78 c1 02 04                            extrq %xmm0, 0x2, 0x4
   { 2, { 0x0f, 0x78, 0x00 },
     NACLi_SSE4A,
-    InstFlag(OpcodeInModRm) | InstFlag(OpcodeHasImmed_b) | InstFlag(OpcodeHasImmed2_b),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeHasImmed2_b),
     InstExtrq,
     4, {
-      { Opcode0, OpFlag(OperandExtendsOpcode) },
-      { Xmm_G_Operand, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(AllowGOperandWithOpcodeInModRm) },
-      { I_Operand, OpFlag(OpUse) },
-      { I2_Operand, OpFlag(OpUse) },
+      { Opcode0, NACL_OPFLAG(OperandExtendsOpcode) },
+      { Xmm_G_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) | NACL_OPFLAG(AllowGOperandWithOpcodeInModRm) },
+      { I_Operand, NACL_OPFLAG(OpUse) },
+      { I2_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[6] = {
+NaClExpVector[6] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %xmm0, ExprSet | ExprUsed },
   { OperandReference[1] , 2, 0 },
@@ -3509,15 +3509,15 @@ ExprNodeVector[6] = {
 0000000000000000: f2 0f 78 ca 02 04                            insertq %xmm1, %xmm2, 0x2, 0x4
   { 2, { 0x0f, 0x78, 0x00 },
     NACLi_SSE4A,
-    InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeHasImmed_b) | InstFlag(OpcodeHasImmed2_b),
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeHasImmed2_b),
     InstInsertq,
     4, {
-      { Xmm_G_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
-      { Xmm_E_Operand, OpFlag(OpUse) },
-      { I_Operand, OpFlag(OpUse) },
-      { I2_Operand, OpFlag(OpUse) },
+      { Xmm_G_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
+      { Xmm_E_Operand, NACL_OPFLAG(OpUse) },
+      { I_Operand, NACL_OPFLAG(OpUse) },
+      { I2_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %xmm1, ExprSet | ExprUsed },
   { OperandReference[1] , 1, 0 },
@@ -3530,13 +3530,13 @@ ExprNodeVector[8] = {
 0000000000000000: 66 0f 79 ca                                  extrq %xmm1, %xmm2
   { 2, { 0x0f, 0x79, 0x00 },
     NACLi_SSE4A,
-    InstFlag(OpcodeUsesModRm),
+    NACL_IFLAG(OpcodeUsesModRm),
     InstExtrq,
     2, {
-      { Xmm_G_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
-      { Xmm_E_Operand, OpFlag(OpUse) },
+      { Xmm_G_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
+      { Xmm_E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %xmm1, ExprSet | ExprUsed },
   { OperandReference[1] , 1, 0 },
@@ -3545,13 +3545,13 @@ ExprNodeVector[4] = {
 0000000000000000: f2 0f 79 ca                                  insertq %xmm1, %xmm2
   { 2, { 0x0f, 0x79, 0x00 },
     NACLi_SSE4A,
-    InstFlag(OpcodeUsesModRm),
+    NACL_IFLAG(OpcodeUsesModRm),
     InstInsertq,
     2, {
-      { Xmm_G_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
-      { Xmm_E_Operand, OpFlag(OpUse) },
+      { Xmm_G_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
+      { Xmm_E_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %xmm1, ExprSet | ExprUsed },
   { OperandReference[1] , 1, 0 },
@@ -3560,13 +3560,13 @@ ExprNodeVector[4] = {
 0000000000000000: 66 e9 00 00 01 02                            jmp 0x2010006
   { 1, { 0xe9, 0x00, 0x00 },
     NACLi_JMPZ,
-    InstFlag(OpcodeHasImmed_v) | InstFlag(Opcode64Only),
+    NACL_IFLAG(OpcodeHasImmed_v) | NACL_IFLAG(Opcode64Only),
     InstJmp,
     2, {
-      { RegREIP, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { J_Operand, OpFlag(OpUse) | OpFlag(OperandNear) | OpFlag(OperandRelative) },
+      { RegREIP, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { J_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OperandNear) | NACL_OPFLAG(OperandRelative) },
   } };
-ExprNodeVector[4] = {
+NaClExpVector[4] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %rip, ExprSet | ExprSize64 },
   { OperandReference[1] , 1, 0 },
@@ -3575,13 +3575,13 @@ ExprNodeVector[4] = {
 0000000000000000: 67 40 a0 00 01 02 03                         mov %al, [0x3020100]
   { 1, { 0xa0, 0x00, 0x00 },
     NACLi_386,
-    InstFlag(OpcodeHasImmed_Addr) | InstFlag(OperandSize_b),
+    NACL_IFLAG(OpcodeHasImmed_Addr) | NACL_IFLAG(OperandSize_b),
     InstMov,
     2, {
-      { RegAL, OpFlag(OpSet) },
-      { O_Operand, OpFlag(OpUse) },
+      { RegAL, NACL_OPFLAG(OpSet) },
+      { O_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[8] = {
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %al, ExprSet | ExprSize8 },
   { OperandReference[1] , 1, 0 },
@@ -3594,17 +3594,17 @@ ExprNodeVector[8] = {
 0000000000000000: 66 0f 3a 60 00 01                            pcmpestrm %xmm0, [%rax], 0x1
   { 3, { 0x0f, 0x3a, 0x60 },
     NACLi_SSE42,
-    InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeHasImmed_b) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
     InstPcmpestrm,
     6, {
-      { RegXMM0, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { RegEAX, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { RegEDX, OpFlag(OpSet) | OpFlag(OpImplicit) },
-      { Xmm_G_Operand, OpFlag(OpUse) },
-      { Xmm_E_Operand, OpFlag(OpUse) },
-      { I_Operand, OpFlag(OpUse) },
+      { RegXMM0, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { RegEAX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { RegEDX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { Xmm_G_Operand, NACL_OPFLAG(OpUse) },
+      { Xmm_E_Operand, NACL_OPFLAG(OpUse) },
+      { I_Operand, NACL_OPFLAG(OpUse) },
   } };
-ExprNodeVector[16] = {
+NaClExpVector[16] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %xmm0, ExprSet },
   { OperandReference[1] , 1, ExprImplicit },
@@ -3625,27 +3625,27 @@ ExprNodeVector[16] = {
 0000000000000000: 90                                           nop
   { 1, { 0x90, 0x00, 0x00 },
     NACLi_386,
-    0,
+    NACL_EMPTY_IFLAGS,
     InstNop,
     0, {
   } };
-ExprNodeVector[0] = {
+NaClExpVector[0] = {
 };
 0000000000000000: 66 90                                        nop
   { 1, { 0x90, 0x00, 0x00 },
     NACLi_386,
-    0,
+    NACL_EMPTY_IFLAGS,
     InstNop,
     0, {
   } };
-ExprNodeVector[0] = {
+NaClExpVector[0] = {
 };
 0000000000000000: 0f 1f 00                                     nop
   { 1, { 0x1f, 0x00, 0x00 },
     NACLi_386,
-    0,
+    NACL_EMPTY_IFLAGS,
     InstNop,
     0, {
   } };
-ExprNodeVector[0] = {
+NaClExpVector[0] = {
 };

@@ -231,7 +231,7 @@ struct OpInfo {
 };
 
 struct InstInfo {
-  PcAddress vaddr;
+  NaClPcAddress vaddr;
   uint8_t *maddr;
   uint8_t prefixbytes;  /* 0..4 */
   uint8_t hasopbyte2;
@@ -249,7 +249,7 @@ typedef struct NCDecoderState {
   uint8_t *mpc;
   uint8_t *nextbyte;
   uint8_t dbindex;  /* index into decodebuffer */
-  PcAddress vpc;
+  NaClPcAddress vpc;
   const struct OpInfo *opinfo;
   struct InstInfo inst;
   struct NCValidatorState *vstate;
@@ -288,8 +288,8 @@ extern void NCDecodeRegisterCallbacks(NCDecoderAction decoderaction,
                                       NCDecoderStats segmentationerror,
                                       NCDecoderStats internalerror);
 
-extern void NCDecodeSegment(uint8_t *mbase, PcAddress vbase, MemorySize sz,
-                            struct NCValidatorState *vstate);
+extern void NCDecodeSegment(uint8_t *mbase, NaClPcAddress vbase,
+                            NaClMemorySize sz, struct NCValidatorState *vstate);
 
 extern struct NCDecoderState *PreviousInst(const struct NCDecoderState *mstate,
                                            int nindex);

@@ -262,11 +262,12 @@ void nc_freefile(ncfile *ncf) {
 
 /***********************************************************************/
 
-void GetVBaseAndLimit(ncfile *ncf, PcAddress *vbase, PcAddress *vlimit) {
+void GetVBaseAndLimit(ncfile *ncf, NaClPcAddress *vbase,
+                      NaClPcAddress *vlimit) {
   int ii;
   /* TODO(karl) - Define so constant applies to 64-bit pc address. */
-  PcAddress base = 0xffffffff;
-  PcAddress limit = 0;
+  NaClPcAddress base = 0xffffffff;
+  NaClPcAddress limit = 0;
 
   for (ii = 0; ii < ncf->shnum; ii++) {
     if ((ncf->sheaders[ii].sh_flags & SHF_EXECINSTR) == SHF_EXECINSTR) {

@@ -32,7 +32,7 @@
  * of non-blank hex values aren't even, the single hex value is used as the
  * the corresponding byte value.
  */
-size_t NcReadHexText(FILE* input, uint8_t* mbase, size_t mbase_size);
+size_t NaClReadHexText(FILE* input, uint8_t* mbase, size_t mbase_size);
 
 /* Same as NcReadHexText, except if the first (non-comment) line has
  * an at sign (@) in column 1, it assumes that the first line is specify
@@ -41,7 +41,7 @@ size_t NcReadHexText(FILE* input, uint8_t* mbase, size_t mbase_size);
  * assumed to be hex values to be converted to byte values and placed
  * into the byte array.
  */
-size_t NcReadHexTextWithPc(FILE* input, PcAddress* pc,
-                           uint8_t* mbase, size_t mbase_size);
+size_t NaClReadHexTextWithPc(FILE* input, NaClPcAddress* pc,
+                             uint8_t* mbase, size_t mbase_size);
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_READ_SEGMENT_H_ */

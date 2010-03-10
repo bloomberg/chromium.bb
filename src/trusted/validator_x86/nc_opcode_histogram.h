@@ -19,34 +19,34 @@
 #include <stdio.h>
 
 /* Defines a validator state. */
-struct NcValidatorState;
+struct NaClValidatorState;
 
 /* Defines an instruction iterator that processes a code segment. */
-struct NcInstIter;
+struct NaClInstIter;
 
 /* Defines a data structure that holds data defining the opcode histogram
  * being collected.
  */
-struct OpcodeHistogram;
+struct NaClOpcodeHistogram;
 
 /* Creates memory to hold an opcode histogram. */
-struct OpcodeHistogram* NcOpcodeHistogramMemoryCreate(
-    struct NcValidatorState* state);
+struct NaClOpcodeHistogram* NaClOpcodeHistogramMemoryCreate(
+    struct NaClValidatorState* state);
 
 /* Destroys memory holding an opcode histogram. */
-void NcOpcodeHistogramMemoryDestroy(struct NcValidatorState* state,
-                                    struct OpcodeHistogram* histogram);
+void NaClOpcodeHistogramMemoryDestroy(struct NaClValidatorState* state,
+                                      struct NaClOpcodeHistogram* histogram);
 
 /* Validator function to record histgram value for current instruction
  * in instruction iterator.
  */
-void NcOpcodeHistogramRecord(struct NcValidatorState* state,
-                             struct NcInstIter* iter,
-                             struct OpcodeHistogram* histogram);
+void NaClOpcodeHistogramRecord(struct NaClValidatorState* state,
+                               struct NaClInstIter* iter,
+                               struct NaClOpcodeHistogram* histogram);
 
 /* Validator print function to print out collected histogram. */
-void NcOpcodeHistogramPrintStats(FILE* f,
-                                 struct NcValidatorState* state,
-                                 struct OpcodeHistogram* histogram);
+void NaClOpcodeHistogramPrintStats(FILE* f,
+                                   struct NaClValidatorState* state,
+                                   struct NaClOpcodeHistogram* histogram);
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_OPCODE_HISTOGRAPH_H__ */

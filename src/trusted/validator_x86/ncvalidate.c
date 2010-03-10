@@ -45,9 +45,9 @@
 /* validator error details from sel_ldr, and allow details from       */
 /* ncval, which produces messages with the expected addresses.        */
 static int g_print_diagnostics = 1;
-static void ValidatePrintError(const PcAddress addr, char *msg) {
+static void ValidatePrintError(const NaClPcAddress addr, char *msg) {
   if (g_print_diagnostics != 1) return;
-  printf("VALIDATOR: %"NACL_PRIxPcAddress": %s\n", addr, msg);
+  printf("VALIDATOR: %"NACL_PRIxNaClPcAddress": %s\n", addr, msg);
 }
 
 /* opcode histogram */
@@ -308,15 +308,17 @@ struct NCValidatorState *NCValidateInit(const uint32_t vbase,
   return NULL;
 }
 
-static void RememberIP(const PcAddress ip, struct NCValidatorState *vstate) {
-  const MemorySize ioffset =  ip - vstate->iadrbase;
+static void RememberIP(const NaClPcAddress ip,
+                       struct NCValidatorState *vstate) {
+  const NaClMemorySize ioffset =  ip - vstate->iadrbase;
   if (ip < vstate->iadrbase || ip >= vstate->iadrlimit) {
     ValidatePrintError(ip, "JUMP TARGET out of range in RememberIP");
     Stats_BadTarget(vstate);
     return;
   }
   if (GetAdrTable(ioffset, vstate->vttable)) {
-    vprint(("RememberIP: Saw inst at %"NACL_PRIxPcAddressAll" twice\n", ip));
+    vprint(("RememberIP: Saw inst at %"NACL_PRIxNaClPcAddressAll
+            " twice\n", ip));
     Stats_InternalError(vstate);
     return;
   }
@@ -324,9 +326,9 @@ static void RememberIP(const PcAddress ip, struct NCValidatorState *vstate) {
   SetAdrTable(ioffset, vstate->vttable);
 }
 
-static void RememberTP(const PcAddress src, PcAddress target,
+static void RememberTP(const NaClPcAddress src, NaClPcAddress target,
                        struct NCValidatorState *vstate) {
-  const MemorySize ioffset =  target - vstate->iadrbase;
+  const NaClMemorySize ioffset =  target - vstate->iadrbase;
 
   do {
     if (target < vstate->iadrlimit) {
@@ -354,9 +356,9 @@ static void RememberTP(const PcAddress src, PcAddress target,
   SetAdrTable(ioffset, vstate->kttable);
 }
 
-static void ForgetIP(const PcAddress ip,
+static void ForgetIP(const NaClPcAddress ip,
                      struct NCValidatorState *vstate) {
-  MemorySize ioffset =  ip - vstate->iadrbase;
+  NaClMemorySize ioffset =  ip - vstate->iadrbase;
   if (ip < vstate->iadrbase || ip >= vstate->iadrlimit) {
     ValidatePrintError(ip, "JUMP TARGET out of range in ForgetIP");
     Stats_BadTarget(vstate);
@@ -430,7 +432,7 @@ static int ValidateSFenceClFlush(const struct NCDecoderState *mstate) {
 }
 
 static void ValidateCallAlignment(const struct NCDecoderState *mstate) {
-  PcAddress fallthru = mstate->inst.vaddr + mstate->inst.length;
+  NaClPcAddress fallthru = mstate->inst.vaddr + mstate->inst.length;
   if (fallthru & mstate->vstate->alignmask) {
     ValidatePrintError(mstate->inst.vaddr, "Bad call alignment");
     /* This makes bad call alignment a fatal error. */
@@ -441,14 +443,14 @@ static void ValidateCallAlignment(const struct NCDecoderState *mstate) {
 static void ValidateJmp8(const struct NCDecoderState *mstate) {
   uint8_t opcode = (uint8_t)mstate->inst.maddr[mstate->inst.prefixbytes];
   int8_t offset = (int8_t)mstate->inst.maddr[mstate->inst.prefixbytes+1];
-  PcAddress target = mstate->inst.vaddr + mstate->inst.length + offset;
+  NaClPcAddress target = mstate->inst.vaddr + mstate->inst.length + offset;
   Stats_CheckTarget(mstate->vstate);
   if ((opcode & 0xf0) == 0x70 || opcode == 0xeb ||
       opcode == 0xe0 || opcode == 0xe1 || opcode == 0xe2 || opcode == 0xe3) {
     RememberTP(mstate->inst.vaddr, target, mstate->vstate);
   } else {
     /* If this ever happens, it's probably a decoder bug. */
-    vprint(("ERROR: JMP8 %"NACL_PRIxPcAddress": %x\n",
+    vprint(("ERROR: JMP8 %"NACL_PRIxNaClPcAddress": %x\n",
             mstate->inst.vaddr, opcode));
     Stats_InternalError(mstate->vstate);
   }
@@ -457,7 +459,7 @@ static void ValidateJmp8(const struct NCDecoderState *mstate) {
 static void ValidateJmpz(const struct NCDecoderState *mstate) {
   uint8_t *opcode = mstate->inst.maddr + mstate->inst.prefixbytes;
   int32_t offset;
-  PcAddress target;
+  NaClPcAddress target;
   Stats_CheckTarget(mstate->vstate);
   if (*opcode == 0xe8 || *opcode == 0xe9) {
     offset = *(int32_t *)&opcode[1];
@@ -473,7 +475,7 @@ static void ValidateJmpz(const struct NCDecoderState *mstate) {
     }
   } else {
     /* If this ever happens, it's probably a decoder bug. */
-    vprint(("ERROR: JMPZ %"NACL_PRIxPcAddress": %x %x\n",
+    vprint(("ERROR: JMPZ %"NACL_PRIxNaClPcAddress": %x %x\n",
              mstate->inst.vaddr, opcode[0], opcode[1]));
     Stats_InternalError(mstate->vstate);
   }
@@ -776,7 +778,7 @@ void ValidateInst(const struct NCDecoderState *mstate) {
   if (squashme) memset(mstate->inst.maddr, kNaClFullStop, mstate->inst.length);
 }
 
-void NCValidateSegment(uint8_t *mbase, PcAddress vbase, size_t sz,
+void NCValidateSegment(uint8_t *mbase, NaClPcAddress vbase, size_t sz,
                        struct NCValidatorState *vstate) {
   if (sz == 0) {
     ValidatePrintError(0, "Bad text segment (zero size)");

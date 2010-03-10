@@ -26,7 +26,7 @@
  * Reading the text associated with each instruction, one should be able to
  * categorize (most) instructions, into one of the following:
  */
-typedef enum {
+typedef enum NcInstCat {
   Move,       /* Dest := f(Source) for some f. */
   Binary,     /* Dest := f(Dest, Source) for some f. */
   Compare,    /* Sets flag using f(Dest, Source). The value of Dest is not
@@ -40,17 +40,17 @@ typedef enum {
 /* Returns the operand flags for the destination argument of the instruction,
  * given the category of instruction.
  */
-OperandFlags GetDestFlags(NcInstCat icat);
+NaClOpFlags NaClGetDestFlags(NcInstCat icat);
 
 /* Returns the operand flags for the source argument of the instruction,
  * given the category of instruction.
  */
-OperandFlags GetSourceFlags(NcInstCat icat);
+NaClOpFlags NaClGetSourceFlags(NcInstCat icat);
 
 /* Returns the operand flags for the operand with the given index (one-based)
  * of the instruction, given the category of the instruction.
  */
-OperandFlags GetIcatFlags(NcInstCat icat, int operand_index);
+NaClOpFlags NaClGetIcatFlags(NcInstCat icat, int operand_index);
 
 /*
  * Operands are encoded using up to 3 characters. Each character defines
@@ -185,16 +185,16 @@ DECLARE_OPERAND(Wss);
  * uses of macro DEF_BINST and DEF_OINST, so that all
  * opcode definitions have the same width.
  */
-#define DEF_NULL_OPRDS_INST DefineNullOprdsInst
+#define DEF_NULL_OPRDS_INST NaClDefNullOprdsInst
 
 /* Generic routine to define an opcode with no type arguments. */
 void DEF_NULL_OPRDS_INST(NaClInstType itype, uint8_t opbyte,
-                         OpcodePrefix prefix, InstMnemonic inst);
+                         NaClInstPrefix prefix, NaClMnemonic inst);
 
 /* Generic macro to define the name of an opcode with two type arguments,
  * and use the modrm byte to decode at least one of these arguments.
  */
-#define DEF_BINST(XXX, YYY) Define ## XXX ## YYY ## Inst
+#define DEF_BINST(XXX, YYY) NaClDef ## XXX ## YYY ## Inst
 
 /* Declares a binary instruction function whose arguments are described
  * by (3) character sequence type names. Assumes the
@@ -205,7 +205,7 @@ void DEF_NULL_OPRDS_INST(NaClInstType itype, uint8_t opbyte,
  */
 #define DECLARE_BINARY_INST(XXX, YYY) \
   void DEF_BINST(XXX, YYY)(NaClInstType itype, uint8_t opbyte, \
-                           OpcodePrefix prefix, InstMnemonic inst,     \
+                           NaClInstPrefix prefix, NaClMnemonic inst,     \
                            NcInstCat icat)
 
 /* The set of binary instructions, with typed arguments, that are recognized. */
@@ -348,7 +348,7 @@ DECLARE_BINARY_INST(Wss, Vss);
  * arguments, and uses the modrm field of the modrm byte to refine
  * the opcode being defined.
  */
-#define DEF_OINST(XXX, YYY) Define ## XXX ## YYY ## SubInst
+#define DEF_OINST(XXX, YYY) NaClDef ## XXX ## YYY ## SubInst
 
 /* Declares a binary instruction function whose arguments are
  * decribed by (3) character sequence type names. Assumes
@@ -360,9 +360,9 @@ DECLARE_BINARY_INST(Wss, Vss);
  */
 #define DECLARE_BINARY_OINST(XXX, YYY) \
   void DEF_OINST(XXX, YYY)(NaClInstType itype, uint8_t opbyte, \
-                           OpcodePrefix prefix, \
-                           OperandKind modrm_opcode, \
-                           InstMnemonic inst, \
+                           NaClInstPrefix prefix, \
+                           NaClOpKind modrm_opcode, \
+                           NaClMnemonic inst, \
                            NcInstCat icat)
 
 /* The set of binary functions (with opcode refinement in the modrm byte),

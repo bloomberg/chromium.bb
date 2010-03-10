@@ -10,11 +10,11 @@
 
 #include "native_client/src/trusted/validator_x86/nc_segment.h"
 
-void NcSegmentInitialize(
+void NaClSegmentInitialize(
     uint8_t* mbase,
-    PcAddress vbase,
-    MemorySize size,
-    NcSegment* segment) {
+    NaClPcAddress vbase,
+    NaClMemorySize size,
+    NaClSegment* segment) {
   segment->mbase = mbase;
   segment->vbase = vbase;
   segment->vlimit = vbase + size;

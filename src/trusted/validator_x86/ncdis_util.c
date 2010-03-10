@@ -424,11 +424,11 @@ static void InstFormat(const char* format,
                   mstate->inst.hassibbyte +
                   mstate->inst.dispbytes;
               if ('b' == token[2]) {
-                fprintf(fp, "0x%"NACL_PRIxPcAddress,
+                fprintf(fp, "0x%"NACL_PRIxNaClPcAddress,
                         mstate->inst.vaddr + mstate->inst.length +
                         ByteImmediate(imm_addr));
               } else {
-                fprintf(fp, "0x%"NACL_PRIxPcAddress,
+                fprintf(fp, "0x%"NACL_PRIxNaClPcAddress,
                         mstate->inst.vaddr + mstate->inst.length +
                         DwordImmediate(imm_addr));
               }
@@ -493,7 +493,7 @@ static void InstFormat(const char* format,
 void PrintInst(const struct NCDecoderState *mstate, FILE* fp) {
   int i;
   DEBUG( printf("use format: %s\n", DisFmt(mstate)) );
-  fprintf(fp, " %"NACL_PRIxPcAddress":\t%02x", mstate->inst.vaddr,
+  fprintf(fp, " %"NACL_PRIxNaClPcAddress":\t%02x", mstate->inst.vaddr,
           mstate->inst.maddr[0]);
   for (i = 1; i < mstate->inst.length; i++) {
     fprintf(fp, " %02x", mstate->inst.maddr[i]);

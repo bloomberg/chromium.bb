@@ -14,13 +14,13 @@
 /* The routine that loads the code segment(s) into memory, returning
  * any data to be passed to the analysis step.
  */
-typedef void* (*NcValidateLoad)(int argc, const char* argv[]);
+typedef void* (*NaClValidateLoad)(int argc, const char* argv[]);
 
 /* The actual validation analysis, applied to the data returned by
  * ValidateLoad. Assume that this function also deallocates any memory
  * in loaded_data. Returns the exit statis of the analysis.
  */
-typedef int (*NcValidateAnalyze)(void* loaded_data);
+typedef int (*NaClValidateAnalyze)(void* loaded_data);
 
 /* Run the validator using the given command line arguments. Initially
  * strips off arguments needed by this driver, and then passes the
@@ -29,8 +29,8 @@ typedef int (*NcValidateAnalyze)(void* loaded_data);
  * to the analyze function to do the analysis. Returns the exit status
  * returned by the analyze function.
  */
-int NcRunValidator(int argc, const char* argv[],
-                   NcValidateLoad load,
-                   NcValidateAnalyze analyze);
+int NaClRunValidator(int argc, const char* argv[],
+                     NaClValidateLoad load,
+                     NaClValidateAnalyze analyze);
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_DRIVER_H__ */

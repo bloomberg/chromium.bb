@@ -28,13 +28,11 @@
 
 #include "native_client/src/shared/utils/debugging.h"
 
-FILE* NcValidatorStateLogFile(NcValidatorState* state) {
+FILE* NaClValidatorStateLogFile(NaClValidatorState* state) {
   return state->log_file;
 }
 
-#define MAX_FORMAT_SIZE 1024
-
-static const char *LogLevelLabel(int level) {
+static const char *NaClLogLevelLabel(int level) {
   switch (level) {
     case LOG_WARNING:
       return "WARNING: ";
@@ -53,7 +51,8 @@ static const char *LogLevelLabel(int level) {
  *   level - The log level of the validator message.
  * Returns - Updated error level, based on state.
  */
-static INLINE int RecordIfValidatorError(NcValidatorState* state, int level) {
+static INLINE int NaClRecordIfValidatorError(NaClValidatorState* state,
+                                             int level) {
   switch (level) {
     case LOG_ERROR:
       if (state != NULL && state->quit_after_first_error) level = LOG_FATAL;
@@ -69,16 +68,16 @@ static INLINE int RecordIfValidatorError(NcValidatorState* state, int level) {
   return level;
 }
 
-void NcValidatorMessage(int level,
-                        NcValidatorState* state,
-                        const char* format,
-                        ...) {
-  level = RecordIfValidatorError(state, level);
+void NaClValidatorMessage(int level,
+                          NaClValidatorState* state,
+                          const char* format,
+                          ...) {
+  level = NaClRecordIfValidatorError(state, level);
   if (level <= NaClLogGetVerbosity()) {
     va_list ap;
 
     NaClLogLock();
-    NaClLog_mu(level, "%s", LogLevelLabel(level));
+    NaClLog_mu(level, "%s", NaClLogLevelLabel(level));
     va_start(ap, format);
     NaClLogV_mu(level, format, ap);
     va_end(ap);
@@ -86,32 +85,32 @@ void NcValidatorMessage(int level,
   }
 }
 
-void NcValidatorVarargMessage(int level,
-                              NcValidatorState* state,
-                              const char* format,
-                              va_list ap) {
-  level = RecordIfValidatorError(state, level);
+void NaClValidatorVarargMessage(int level,
+                                NaClValidatorState* state,
+                                const char* format,
+                                va_list ap) {
+  level = NaClRecordIfValidatorError(state, level);
   if (level <= NaClLogGetVerbosity()) {
     NaClLogLock();
-    NaClLog_mu(level, "%s", LogLevelLabel(level));
+    NaClLog_mu(level, "%s", NaClLogLevelLabel(level));
     NaClLogV_mu(level, format, ap);
     NaClLogUnlock();
   }
 }
 
-void NcValidatorPcAddressMessage(int level,
-                                 NcValidatorState* state,
-                                 PcAddress addr,
-                                 const char* format,
-                                 ...) {
-  level = RecordIfValidatorError(state, level);
+void NaClValidatorPcAddressMessage(int level,
+                                   NaClValidatorState* state,
+                                   NaClPcAddress addr,
+                                   const char* format,
+                                   ...) {
+  level = NaClRecordIfValidatorError(state, level);
   if (level <= NaClLogGetVerbosity()) {
     va_list ap;
 
     NaClLogLock();
-    NaClLog_mu(level, "At address %"NACL_PRIxPcAddress":\n", addr);
+    NaClLog_mu(level, "At address %"NACL_PRIxNaClPcAddress":\n", addr);
     NaClLogTagNext_mu();
-    NaClLog_mu(level, "%s", LogLevelLabel(level));
+    NaClLog_mu(level, "%s", NaClLogLevelLabel(level));
     va_start(ap, format);
     NaClLogV_mu(level, format, ap);
     va_end(ap);
@@ -119,12 +118,12 @@ void NcValidatorPcAddressMessage(int level,
   }
 }
 
-void NcValidatorInstMessage(int level,
-                            NcValidatorState* state,
-                            NcInstState* inst,
-                            const char* format,
-                            ...) {
-  level = RecordIfValidatorError(state, level);
+void NaClValidatorInstMessage(int level,
+                              NaClValidatorState* state,
+                              NaClInstState* inst,
+                              const char* format,
+                              ...) {
+  level = NaClRecordIfValidatorError(state, level);
   if (level <= NaClLogGetVerbosity()) {
     va_list ap;
 
@@ -133,10 +132,10 @@ void NcValidatorInstMessage(int level,
     /* TODO(karl): empty fmt strings not allowed */
     NaClLog_mu(level, "%s", "");
     /* TODO(karl) - Make printing of instruction state possible via format. */
-    PrintNcInstStateInstruction(NcValidatorStateLogFile(state), inst);
+    NaClInstStateInstPrint(NaClValidatorStateLogFile(state), inst);
 
     va_start(ap, format);
-    NaClLog_mu(level, "%s", LogLevelLabel(level));
+    NaClLog_mu(level, "%s", NaClLogLevelLabel(level));
     NaClLogV_mu(level, format, ap);
     va_end(ap);
     NaClLogUnlock();
@@ -144,47 +143,47 @@ void NcValidatorInstMessage(int level,
 }
 
 /* Holds the registered definition for a validator. */
-typedef struct ValidatorDefinition {
+typedef struct NaClValidatorDefinition {
   /* The validator function to apply. */
-  NcValidator validator;
+  NaClValidator validator;
   /* The post iterator validator function to apply, after iterating
    * through all instructions in a segment. If non-null, called to
    * do corresponding post processing.
    */
-  NcValidatorPostValidate post_validate;
+  NaClValidatorPostValidate post_validate;
   /* The corresponding statistic print function associated with the validator
    * function (may be NULL).
    */
-  NcValidatorPrintStats print_stats;
+  NaClValidatorPrintStats print_stats;
   /* The corresponding memory creation fuction associated with the validator
    * function (may be NULL).
    */
-  NcValidatorMemoryCreate create_memory;
+  NaClValidatorMemoryCreate create_memory;
   /* The corresponding memory clean up function associated with the validator
    * function (may be NULL).
    */
-  NcValidatorMemoryDestroy destroy_memory;
-} ValidatorDefinition;
+  NaClValidatorMemoryDestroy destroy_memory;
+} NaClValidatorDefinition;
 
 /* Defines the set of registerd validators. */
-static ValidatorDefinition validators[MAX_NCVALIDATORS];
+static NaClValidatorDefinition validators[NACL_MAX_NCVALIDATORS];
 
 /* Defines the current number of registered validators. */
-static int g_num_validators = 0;
+static int nacl_g_num_validators = 0;
 
-void NcRegisterNcValidator(NcValidator validator,
-                           NcValidatorPostValidate post_validate,
-                           NcValidatorPrintStats print_stats,
-                           NcValidatorMemoryCreate create_memory,
-                           NcValidatorMemoryDestroy destroy_memory) {
-  ValidatorDefinition* defn;
+void NaClRegisterValidator(NaClValidator validator,
+                           NaClValidatorPostValidate post_validate,
+                           NaClValidatorPrintStats print_stats,
+                           NaClValidatorMemoryCreate create_memory,
+                           NaClValidatorMemoryDestroy destroy_memory) {
+  NaClValidatorDefinition* defn;
   assert(NULL != validator);
-  if (g_num_validators >= MAX_NCVALIDATORS) {
-    NcValidatorMessage(
+  if (nacl_g_num_validators >= NACL_MAX_NCVALIDATORS) {
+    NaClValidatorMessage(
         LOG_FATAL, NULL,
         "Too many validators specified, can't register. Quitting!\n");
   }
-  defn = &validators[g_num_validators++];
+  defn = &validators[nacl_g_num_validators++];
   defn->validator = validator;
   defn->post_validate = post_validate;
   defn->print_stats = print_stats;
@@ -192,22 +191,22 @@ void NcRegisterNcValidator(NcValidator validator,
   defn->destroy_memory = destroy_memory;
 }
 
-NcValidatorState* NcValidatorStateCreate(const PcAddress vbase,
-                                         const MemorySize sz,
-                                         const uint8_t alignment,
-                                         const OperandKind base_register,
-                                         Bool quit_after_first_error,
-                                         FILE* log_file) {
-  NcValidatorState* state;
-  NcValidatorState* return_value = NULL;
-  PcAddress vlimit = vbase + sz;
-  DEBUG(printf("Validator Create: vbase = %"NACL_PRIxPcAddress", "
-               "sz = %"NACL_PRIxMemorySize", alignment = %u, vlimit = %"
-               NACL_PRIxPcAddress"\n",
+NaClValidatorState* NaClValidatorStateCreate(const NaClPcAddress vbase,
+                                             const NaClMemorySize sz,
+                                             const uint8_t alignment,
+                                             const NaClOpKind base_register,
+                                             Bool quit_after_first_error,
+                                             FILE* log_file) {
+  NaClValidatorState* state;
+  NaClValidatorState* return_value = NULL;
+  NaClPcAddress vlimit = vbase + sz;
+  DEBUG(printf("Validator Create: vbase = %"NACL_PRIxNaClPcAddress", "
+               "sz = %"NACL_PRIxNaClMemorySize", alignment = %u, vlimit = %"
+               NACL_PRIxNaClPcAddress"\n",
                vbase, sz, alignment, vlimit));
   if (vlimit <= vbase) return NULL;
   if (alignment != 16 && alignment != 32) return NULL;
-  state = (NcValidatorState*) malloc(sizeof(NcValidatorState));
+  state = (NaClValidatorState*) malloc(sizeof(NaClValidatorState));
   if (state != NULL) {
     int i;
     return_value = state;
@@ -224,9 +223,9 @@ NcValidatorState* NcValidatorStateCreate(const PcAddress vbase,
     state->base_register = base_register;
     state->validates_ok = TRUE;
     state->quit_after_first_error = quit_after_first_error;
-    state->number_validators = g_num_validators;
+    state->number_validators = nacl_g_num_validators;
     for (i = 0; i < state->number_validators; ++i) {
-      ValidatorDefinition* defn = &validators[i];
+      NaClValidatorDefinition* defn = &validators[i];
       if (defn->create_memory == NULL) {
         state->local_memory[i] = NULL;
       } else {
@@ -240,7 +239,7 @@ NcValidatorState* NcValidatorStateCreate(const PcAddress vbase,
       }
     }
     if (return_value == NULL) {
-      NcValidatorStateDestroy(state);
+      NaClValidatorStateDestroy(state);
     }
   }
   return return_value;
@@ -249,9 +248,9 @@ NcValidatorState* NcValidatorStateCreate(const PcAddress vbase,
 /* Given we are at the instruction defined by the instruction iterator, for
  * a segment, apply all applicable validator functions.
  */
-static void ApplyValidators(NcValidatorState* state, NcInstIter* iter) {
+static void NaClApplyValidators(NaClValidatorState* state, NaClInstIter* iter) {
   int i;
-  DEBUG(PrintNcInstStateInstruction(stdout, NcInstIterGetState(iter)));
+  DEBUG(NaClInstStateInstPrint(stdout, NaClInstIterGetState(iter)));
   for (i = 0; i < state->number_validators; ++i) {
     validators[i].validator(state, iter, state->local_memory[i]);
   }
@@ -260,7 +259,8 @@ static void ApplyValidators(NcValidatorState* state, NcInstIter* iter) {
 /* Given that we have just iterated through all instructions in a segment,
  * apply post validators rules (before we collect the iterator).
  */
-static void ApplyPostValidators(NcValidatorState* state, NcInstIter* iter) {
+static void NaClApplyPostValidators(NaClValidatorState* state,
+                                    NaClInstIter* iter) {
   int i;
   DEBUG(printf("applying post validators...\n"));
   for (i = 0; i < state->number_validators; ++i) {
@@ -273,38 +273,38 @@ static void ApplyPostValidators(NcValidatorState* state, NcInstIter* iter) {
 /* The maximum lookback for the instruction iterator of the segment. */
 static const size_t kLookbackSize = 4;
 
-void NcValidateSegment(uint8_t* mbase, PcAddress vbase, MemorySize size,
-                       NcValidatorState* state) {
-  NcSegment segment;
-  NcInstIter* iter;
-  NcSegmentInitialize(mbase, vbase, size, &segment);
-  for (iter = NcInstIterCreateWithLookback(&segment, kLookbackSize);
-       NcInstIterHasNext(iter);
-       NcInstIterAdvance(iter)) {
-    ApplyValidators(state, iter);
+void NaClValidateSegment(uint8_t* mbase, NaClPcAddress vbase,
+                         NaClMemorySize size, NaClValidatorState* state) {
+  NaClSegment segment;
+  NaClInstIter* iter;
+  NaClSegmentInitialize(mbase, vbase, size, &segment);
+  for (iter = NaClInstIterCreateWithLookback(&segment, kLookbackSize);
+       NaClInstIterHasNext(iter);
+       NaClInstIterAdvance(iter)) {
+    NaClApplyValidators(state, iter);
   }
-  ApplyPostValidators(state, iter);
-  NcInstIterDestroy(iter);
+  NaClApplyPostValidators(state, iter);
+  NaClInstIterDestroy(iter);
 }
 
-Bool NcValidatesOk(NcValidatorState* state) {
+Bool NaClValidatesOk(NaClValidatorState* state) {
   return state->validates_ok;
 }
 
-void NcValidatorStatePrintStats(FILE* file, NcValidatorState* state) {
+void NaClValidatorStatePrintStats(FILE* file, NaClValidatorState* state) {
   int i;
   for (i = 0; i < state->number_validators; i++) {
-    ValidatorDefinition* defn = &validators[i];
+    NaClValidatorDefinition* defn = &validators[i];
     if (defn->print_stats != NULL) {
       defn->print_stats(file, state, state->local_memory[i]);
     }
   }
 }
 
-void NcValidatorStateDestroy(NcValidatorState* state) {
+void NaClValidatorStateDestroy(NaClValidatorState* state) {
   int i;
   for (i = 0; i < state->number_validators; ++i) {
-    ValidatorDefinition* defn = &validators[i];
+    NaClValidatorDefinition* defn = &validators[i];
     void* defn_memory = state->local_memory[i];
     if (defn->destroy_memory != NULL && defn_memory != NULL) {
       defn->destroy_memory(state, defn_memory);
@@ -314,8 +314,8 @@ void NcValidatorStateDestroy(NcValidatorState* state) {
   free(state);
 }
 
-void* NcGetValidatorLocalMemory(NcValidator validator,
-                                const NcValidatorState* state) {
+void* NaClGetValidatorLocalMemory(NaClValidator validator,
+                                  const NaClValidatorState* state) {
   int i;
   for (i = 0; i < state->number_validators; ++i) {
     if (validators[i].validator == validator) {
