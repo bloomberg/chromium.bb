@@ -74,7 +74,7 @@ bool ExtensionBrowserTest::LoadExtensionImpl(const FilePath& path,
     // the defaults.
     Extension* extension = service->extensions()->at(num_after - 1);
     service->extension_prefs()->OnExtensionInstalled(extension);
-    service->SetIsIncognitoEnabled(extension->id(), true);
+    service->SetIsIncognitoEnabled(extension, true);
   }
 
   return WaitForExtensionHostsToLoad();

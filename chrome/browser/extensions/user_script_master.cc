@@ -337,7 +337,7 @@ void UserScriptMaster::Observe(NotificationType type,
       // Add any content scripts inside the extension.
       Extension* extension = Details<Extension>(details).ptr();
       bool incognito_enabled = profile_->GetExtensionsService()->
-          IsIncognitoEnabled(extension->id());
+          IsIncognitoEnabled(extension);
       const UserScriptList& scripts = extension->content_scripts();
       for (UserScriptList::const_iterator iter = scripts.begin();
            iter != scripts.end(); ++iter) {

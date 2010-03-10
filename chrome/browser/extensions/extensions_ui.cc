@@ -446,8 +446,10 @@ void ExtensionsDOMHandler::HandleEnableIncognitoMessage(const Value* value) {
   std::string extension_id, enable_str;
   CHECK(list->GetString(0, &extension_id));
   CHECK(list->GetString(1, &enable_str));
-  extensions_service_->SetIsIncognitoEnabled(extension_id,
-                                             (enable_str == "true"));
+  Extension* extension = extensions_service_->GetExtensionById(extension_id,
+                                                               true);
+  DCHECK(extension);
+  extensions_service_->SetIsIncognitoEnabled(extension, (enable_str == "true"));
 }
 
 void ExtensionsDOMHandler::HandleUninstallMessage(const Value* value) {
@@ -715,7 +717,7 @@ DictionaryValue* ExtensionsDOMHandler::CreateExtensionDetailValue(
   extension_data->SetString(L"version", extension->version()->GetString());
   extension_data->SetBoolean(L"enabled", enabled);
   extension_data->SetBoolean(L"enabledIncognito",
-      service ? service->IsIncognitoEnabled(extension->id()) : false);
+      service ? service->IsIncognitoEnabled(extension) : false);
   extension_data->SetBoolean(L"allow_reload",
                              extension->location() == Extension::LOAD);
 

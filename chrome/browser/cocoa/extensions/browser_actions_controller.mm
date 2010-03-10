@@ -413,8 +413,7 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
 
 - (bool)shouldDisplayBrowserAction:(Extension*)extension {
   return (!profile_->IsOffTheRecord() ||
-          profile_->GetExtensionsService()->
-              IsIncognitoEnabled(extension->id()));
+          profile_->GetExtensionsService()->IsIncognitoEnabled(extension));
 }
 
 - (CGFloat)savedWidth {

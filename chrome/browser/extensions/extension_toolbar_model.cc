@@ -192,7 +192,7 @@ int ExtensionToolbarModel::IncognitoIndexToOriginal(int incognito_index) {
   int original_index = 0, i = 0;
   for (ExtensionList::iterator iter = begin(); iter != end();
        ++iter, ++original_index) {
-    if (service_->IsIncognitoEnabled((*iter)->id())) {
+    if (service_->IsIncognitoEnabled(*iter)) {
       if (incognito_index == i)
         break;
       ++i;
@@ -207,7 +207,7 @@ int ExtensionToolbarModel::OriginalIndexToIncognito(int original_index) {
        ++iter, ++i) {
     if (original_index == i)
       break;
-    if (service_->IsIncognitoEnabled((*iter)->id()))
+    if (service_->IsIncognitoEnabled(*iter))
       ++incognito_index;
   }
   return incognito_index;

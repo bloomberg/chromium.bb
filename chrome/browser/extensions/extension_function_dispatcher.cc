@@ -285,7 +285,7 @@ ExtensionFunctionDispatcher::ExtensionFunctionDispatcher(
                                 render_view_host->process()->id());
 
   bool incognito_enabled =
-      profile()->GetExtensionsService()->IsIncognitoEnabled(extension->id());
+      profile()->GetExtensionsService()->IsIncognitoEnabled(extension);
 
   // Update the extension permissions. Doing this each time we create an EFD
   // ensures that new processes are informed of permissions for newly installed
@@ -357,11 +357,12 @@ void ExtensionFunctionDispatcher::HandleRequest(const std::string& name,
   function->SetArgs(args);
   function->set_request_id(request_id);
   function->set_has_callback(has_callback);
-  function->set_include_incognito(
-      profile()->GetExtensionsService()->IsIncognitoEnabled(extension_id()));
-
   ExtensionsService* service = profile()->GetExtensionsService();
   DCHECK(service);
+  Extension* extension = service->GetExtensionById(extension_id(), false);
+  DCHECK(extension);
+  function->set_include_incognito(service->IsIncognitoEnabled(extension));
+
   ExtensionsQuotaService* quota = service->quota_service();
   if (quota->Assess(extension_id(), function, args, base::TimeTicks::Now())) {
     function->Run();

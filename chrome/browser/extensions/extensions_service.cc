@@ -580,16 +580,19 @@ base::Time ExtensionsService::LastPingDay(const std::string& extension_id) {
   return extension_prefs_->LastPingDay(extension_id);
 }
 
-bool ExtensionsService::IsIncognitoEnabled(const std::string& extension_id) {
-  return extension_prefs_->IsIncognitoEnabled(extension_id);
+bool ExtensionsService::IsIncognitoEnabled(const Extension* extension) {
+  // If this is a component extension we always allow it to work in incognito
+  // mode.
+  if (extension->location() == Extension::COMPONENT)
+    return true;
+
+  // Check the prefs.
+  return extension_prefs_->IsIncognitoEnabled(extension->id());
 }
 
-void ExtensionsService::SetIsIncognitoEnabled(const std::string& extension_id,
+void ExtensionsService::SetIsIncognitoEnabled(Extension* extension,
                                               bool enabled) {
-  extension_prefs_->SetIsIncognitoEnabled(extension_id, enabled);
-
-  Extension* extension = GetExtensionByIdInternal(extension_id, true, true);
-  DCHECK(extension);
+  extension_prefs_->SetIsIncognitoEnabled(extension->id(), enabled);
 
   // Broadcast unloaded and loaded events to update browser state.
   NotifyExtensionUnloaded(extension);
