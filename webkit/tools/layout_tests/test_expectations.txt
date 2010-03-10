@@ -100,7 +100,7 @@ BUG24182 DEBUG SLOW : fast/dom/Window/window-function-frame-getter-precedence.ht
 BUG24182 SLOW DEBUG : fast/frames/frame-limit.html = PASS
 BUG24182 SLOW : http/tests/cache/subresource-failover-to-network.html = PASS
 BUG24182 WIN DEBUG : animations/play-state.html = PASS TEXT
-BUG24182 SLOW WIN : animations/play-state.html = PASS
+BUG24182 SLOW WIN RELEASE : animations/play-state.html = PASS
 
 // Usually <1s in release, ~1s in debug, but occasionally >5s in release.
 BUG27335 WIN RELEASE : plugins/embed-attributes-setting.html = PASS TIMEOUT
@@ -2256,7 +2256,7 @@ BUG23955 LINUX MAC : fast/css/last-of-type-pseudo-class.html = FAIL
 BUG_JPARENT LINUX DEBUG SLOW : fast/frames/calculate-fixed.html = PASS
 
 // Started failing for no apparent reason at r28124, and IMAGE+TEXT diffs started at r51875
-BUG23972 LINUX : fast/forms/form-element-geometry.html = TEXT
+BUG23972 LINUX : fast/forms/form-element-geometry.html = IMAGE+TEXT
 
 // Flaky timeouts first appearing at r27764 (webkit 48947)
 BUG9798 RELEASE : http/tests/cookies/multiple-cookies.html = TIMEOUT PASS
@@ -2510,13 +2510,15 @@ BUG29748 LINUX : http/tests/navigation/postredirect-frames.html = IMAGE
 BUG29748 LINUX : media/video-controls-rendering.html = IMAGE
 BUG29748 LINUX : tables/mozilla/bugs/bug137388-2.html = IMAGE
 BUG29748 LINUX : tables/mozilla/bugs/bug2479-1.html = IMAGE
-BUG29748 LINUX : tables/mozilla/bugs/bug2479-4.html = IMAGE
+// BUG_HAMAJI : remove the +TEXT below
+BUG29748 LINUX : tables/mozilla/bugs/bug2479-4.html = IMAGE+TEXT
 BUG29748 LINUX : tables/mozilla/bugs/bug29314.html = IMAGE
 BUG29748 LINUX : tables/mozilla/bugs/bug2997.html = IMAGE
 BUG29748 LINUX : tables/mozilla/bugs/bug32205-2.html = IMAGE
 BUG29748 LINUX : tables/mozilla/bugs/bug3977.html = IMAGE
 BUG29748 LINUX : tables/mozilla/bugs/bug43854-1.html = IMAGE
-BUG29748 LINUX : tables/mozilla/bugs/bug44505.html = IMAGE
+// BUG_HAMAJI : Remove the +TEXT below
+BUG29748 LINUX : tables/mozilla/bugs/bug44505.html = IMAGE+TEXT
 BUG29748 LINUX : tables/mozilla/bugs/bug650.html = IMAGE
 BUG29748 LINUX : tables/mozilla/bugs/bug73321.html = IMAGE
 BUG29748 LINUX : tables/mozilla/bugs/bug96334.html = IMAGE
@@ -2534,7 +2536,8 @@ BUG29748 LINUX : tables/mozilla_expected_failures/bugs/bug10140.html = IMAGE
 BUG29748 LINUX : tables/mozilla_expected_failures/bugs/bug1055-2.html = IMAGE
 BUG29748 LINUX : tables/mozilla_expected_failures/bugs/bug106966.html = IMAGE
 BUG29748 LINUX : tables/mozilla_expected_failures/bugs/bug22122.html = IMAGE
-BUG29748 LINUX : tables/mozilla_expected_failures/bugs/bug2479-5.html = IMAGE
+// BUG_HAMAJI : Remove the +TEXT below
+BUG29748 LINUX : tables/mozilla_expected_failures/bugs/bug2479-5.html = IMAGE+TEXT
 BUG29748 LINUX : tables/mozilla_expected_failures/bugs/bug80762-2.html = IMAGE
 BUG29748 LINUX : tables/mozilla_expected_failures/bugs/bug89315.html = IMAGE
 BUG29748 LINUX : tables/mozilla_expected_failures/bugs/bug91057.html = IMAGE
@@ -2848,7 +2851,7 @@ BUG36966 : fast/loader/about-blank-hash-kept.html = FAIL
 BUG36967 : java/array-sort.html = FAIL
 
 // httponly-cookie.pl fails because it fails to be served as cgi script on Win
-BUG37049 WIN SKIP : websocket/tests/cookies/httponly-cookie.pl = PASS
+BUG37049 WIN SKIP : websocket/tests/httponly-cookie.pl = PASS
 
 // WebKit roll 55373:55380
 BUG37136 : fast/loader/api-test-go-to-current-back-forward-item.html = TIMEOUT
@@ -2878,3 +2881,89 @@ BUG37779 : fast/dom/HTMLAnchorElement/set-href-attribute-hostname.html = TEXT
 BUG37779 : fast/dom/HTMLAnchorElement/set-href-attribute-port.html = TEXT
 BUG37779 : fast/loader/url-parse-1.html = TEXT
 BUG37779 : http/tests/loading/state-object-security-exception.html = TEXT
+
+// WebKit roll r55709 -> 55742
+BUG_HAMAJI WIN LINUX : editing/pasteboard/drop-link.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : editing/selection/3690703-2.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : editing/selection/3690703.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : editing/selection/3690719.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : editing/selection/4397952.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : editing/selection/5240265.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : fast/block/float/float-avoidance.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : fast/block/positioning/inline-block-relposition.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : fast/box-sizing/percentage-height.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : fast/css/continuationCrash.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : fast/css/margin-top-bottom-dynamic.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : fast/css/rtl-ordering.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : fast/dom/HTMLTableColElement/resize-table-using-col-width.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : fast/dom/HTMLTextAreaElement/reset-textarea.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : fast/forms/basic-buttons.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : fast/forms/blankbuttons.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : fast/forms/box-shadow-override.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : fast/forms/button-align.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : fast/forms/button-cannot-be-nested.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : fast/forms/button-default-title.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : fast/forms/button-generated-content.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : fast/forms/button-inner-block-reuse.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : fast/forms/button-positioned.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : fast/forms/button-sizes.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : fast/forms/button-style-color.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : fast/forms/button-table-styles.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : fast/forms/button-text-transform.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : fast/forms/button-white-space.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : fast/forms/control-clip-overflow.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : fast/forms/control-clip.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : fast/forms/control-restrict-line-height.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : fast/forms/file-input-direction.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : fast/forms/file-input-disabled.html = IMAGE+TEXT
+BUG_HAMAJI WIN : fast/forms/form-element-geometry.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : fast/forms/formmove3.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : fast/forms/hidden-input-file.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : fast/forms/input-appearance-height.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : fast/forms/input-file-re-render.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : fast/forms/input-value.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : fast/forms/select-baseline.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : fast/forms/targeted-frame-submission.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : fast/invalid/residual-style.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : fast/overflow/scroll-nested-positioned-layer-in-overflow.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : fast/repaint/button-spurious-layout-hint.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : fast/repaint/control-clip.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : fast/replaced/replaced-breaking.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : fast/replaced/width100percent-button.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : fast/selectors/064.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : fast/table/append-cells2.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : fast/table/remove-td-display-none.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : fast/text/international/hindi-spacing.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : fast/text/textIteratorNilRenderer.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : http/tests/navigation/anchor-frames.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : svg/custom/inline-svg-in-xhtml.xml = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : tables/mozilla/bugs/bug1188.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : tables/mozilla/bugs/bug1318.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : tables/mozilla/bugs/bug138725.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : tables/mozilla/bugs/bug18359.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : tables/mozilla/bugs/bug2479-2.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : tables/mozilla/bugs/bug2479-3.html = IMAGE+TEXT
+BUG_HAMAJI WIN : tables/mozilla/bugs/bug2479-4.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : tables/mozilla/bugs/bug26178.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : tables/mozilla/bugs/bug28928.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : tables/mozilla/bugs/bug33855.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : tables/mozilla/bugs/bug39209.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : tables/mozilla/bugs/bug4429.html = IMAGE+TEXT
+BUG_HAMAJI WIN : tables/mozilla/bugs/bug44505.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : tables/mozilla/bugs/bug46368-1.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : tables/mozilla/bugs/bug46368-2.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : tables/mozilla/bugs/bug51037.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : tables/mozilla/bugs/bug51727.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : tables/mozilla/bugs/bug52505.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : tables/mozilla/bugs/bug52506.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : tables/mozilla/bugs/bug60749.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : tables/mozilla/bugs/bug68912.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : tables/mozilla/bugs/bug7342.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : tables/mozilla/collapsing_borders/bug41262-4.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : tables/mozilla/dom/tableDom.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : tables/mozilla/other/move_row.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : tables/mozilla_expected_failures/bugs/bug1725.html = IMAGE+TEXT
+BUG_HAMAJI WIN : tables/mozilla_expected_failures/bugs/bug2479-5.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : tables/mozilla_expected_failures/bugs/bug58402-2.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : tables/mozilla_expected_failures/collapsing_borders/bug41262-5.html = IMAGE+TEXT
+BUG_HAMAJI WIN LINUX : tables/mozilla_expected_failures/collapsing_borders/bug41262-6.html = IMAGE+TEXT
