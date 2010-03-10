@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/status/clock_menu_button.h"
+#include "chrome/browser/chromeos/status/network_menu_button.h"
 #include "chrome/browser/chromeos/status/status_area_view.h"
 #include "unicode/locid.h"
 #include "views/view.h"
@@ -255,9 +256,10 @@ gfx::NativeWindow WizardController::GetNativeWindow() const {
 
 bool WizardController::ShouldOpenButtonOptions(
     const views::View* button_view) const {
-  if (button_view == contents_->status_area()->clock_view()) {
+  if (button_view == contents_->status_area()->clock_view())
     return false;
-  }
+  if (button_view == contents_->status_area()->network_view())
+    return false;
   return true;
 }
 
