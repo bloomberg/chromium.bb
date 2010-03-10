@@ -26,7 +26,6 @@ static const int kHoverDurationMs = 900;
 
 static SkBitmap* waiting_animation_frames = NULL;
 static SkBitmap* loading_animation_frames = NULL;
-static SkBitmap* crashed_fav_icon = NULL;
 static int loading_animation_frame_count = 0;
 static int waiting_animation_frame_count = 0;
 static int waiting_to_loading_frame_count_ratio = 0;
