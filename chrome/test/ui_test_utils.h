@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,6 +22,7 @@ class AppModalDialog;
 class Browser;
 class CommandLine;
 class DownloadManager;
+class ExtensionAction;
 class FilePath;
 class GURL;
 class MessageLoop;
@@ -66,6 +67,9 @@ void WaitForNewTab(Browser* browser);
 
 // Waits for a tab to be parented.
 void WaitForTabParented();
+
+// Waits for a |browser_action| to be updated.
+void WaitForBrowserActionUpdated(ExtensionAction* browser_action);
 
 // Waits for a load stop for the specified |controller|.
 void WaitForLoadStop(NavigationController* controller);

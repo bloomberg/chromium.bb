@@ -24,7 +24,12 @@ class BrowserActionTestUtil {
   // Returns the number of browser action currently visible.
   int VisibleBrowserActions();
 
-  // Returns whether the browser action at |index| has a non-null icon.
+  // Waits for a browser action at |index| to get updated.
+  void WaitForBrowserActionUpdated(int index);
+
+  // Returns whether the browser action at |index| has a non-null icon. Note
+  // that the icon is loaded asynchronously, in which case you can wait for it
+  // to load by calling WaitForBrowserActionUpdated.
   bool HasIcon(int index);
 
   // Simulates a user click on the browser action button at |index|.

@@ -34,6 +34,12 @@ int BrowserActionTestUtil::VisibleBrowserActions() {
   return GetContainer(browser_)->VisibleBrowserActions();
 }
 
+void BrowserActionTestUtil::WaitForBrowserActionUpdated(int index) {
+  ui_test_utils::WaitForBrowserActionUpdated(
+      GetContainer(browser_)->GetBrowserActionViewAt(index)->
+          button()->extension()->browser_action());
+}
+
 bool BrowserActionTestUtil::HasIcon(int index) {
   return !GetContainer(browser_)->GetBrowserActionViewAt(index)->
       button()->icon().empty();

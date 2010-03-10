@@ -22,6 +22,7 @@
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
 #if defined(TOOLKIT_VIEWS)
@@ -417,6 +418,12 @@ void WaitForNewTab(Browser* browser) {
 
 void WaitForTabParented() {
   TabParentedNotificationObserver new_tab_observer;
+}
+
+void WaitForBrowserActionUpdated(ExtensionAction* browser_action) {
+  SimpleNotificationObserver<ExtensionAction>
+      observer(NotificationType::EXTENSION_BROWSER_ACTION_UPDATED,
+               browser_action);
 }
 
 void WaitForLoadStop(NavigationController* controller) {
