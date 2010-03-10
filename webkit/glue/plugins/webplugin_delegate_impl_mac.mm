@@ -268,8 +268,7 @@ void WebPluginDelegateImpl::PlatformInitialize() {
       window_.type = NPWindowTypeDrawable;
       // Ask the plug-in for the CALayer it created for rendering content. Have
       // the renderer tell the browser to create a "windowed plugin" to host
-      // the IOSurface. The surface itself will be created when the plug-in
-      // is sized.
+      // the IOSurface.
       CALayer* layer = nil;
       NPError err = instance()->NPP_GetValue(NPPVpluginCoreAnimationLayer,
                                              reinterpret_cast<void*>(&layer));
@@ -278,10 +277,10 @@ void WebPluginDelegateImpl::PlatformInitialize() {
         plugin_->BindFakePluginWindowHandle();
         surface_ = new AcceleratedSurface;
         surface_->Initialize();
-        UpdateAcceleratedSurface();
         renderer_ = [[CARenderer rendererWithCGLContext:surface_->context()
                                                 options:NULL] retain];
         [renderer_ setLayer:layer_];
+        UpdateAcceleratedSurface();
         redraw_timer_.reset(new base::RepeatingTimer<WebPluginDelegateImpl>);
         redraw_timer_->Start(
             base::TimeDelta::FromMilliseconds(kCoreAnimationRedrawPeriodMs),
@@ -526,8 +525,6 @@ void WebPluginDelegateImpl::WindowlessSetWindow(bool force_set_window) {
     SetWindowHasFocus(initial_window_focus_);
   }
 
-  UpdateAcceleratedSurface();
-
   DCHECK(err == NPERR_NO_ERROR);
 }
 
@@ -650,10 +647,9 @@ void WebPluginDelegateImpl::SetContainerVisibility(bool is_visible) {
   }
 }
 
-// Generate an IOSurface for accelerated drawing (but only in the case where a
-// window handle has been set). Once the surface has been updated for the
-// current size of the plug-in, tell the browser host view so it can adjust its
-// bookkeeping and CALayer appropriately.
+// Update the size of the IOSurface to match the current size of the plug-in,
+// then tell the browser host view so it can adjust its bookkeeping and CALayer
+// appropriately.
 void WebPluginDelegateImpl::UpdateAcceleratedSurface() {
   // Will only have a window handle when using the CoreAnimation drawing model.
   if (!windowed_handle() ||
@@ -693,9 +689,12 @@ void WebPluginDelegateImpl::SetNSCursor(NSCursor* cursor) {
 }
 
 void WebPluginDelegateImpl::SetPluginRect(const gfx::Rect& rect) {
+  bool plugin_size_changed = rect.width() != window_rect_.width() ||
+                             rect.height() != window_rect_.height();
   window_rect_ = rect;
-  UpdateAcceleratedSurface();
   PluginScreenLocationChanged();
+  if (plugin_size_changed)
+    UpdateAcceleratedSurface();
 }
 
 void WebPluginDelegateImpl::SetContentAreaOrigin(const gfx::Point& origin) {

@@ -162,12 +162,6 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   // Informs the delegate that the plugin set a Cocoa NSCursor.
   void SetNSCursor(NSCursor* cursor);
 
-  // Informs the browser about the updated accelerated drawing surface.
-  void UpdateAcceleratedSurface();
-
-  // Uses a CARenderer to draw the plug-in's layer in our OpenGL surface.
-  void DrawLayerInSurface();
-
 #ifndef NP_NO_CARBON
   // Indicates that it's time to send the plugin a null event.
   void FireIdleEvent();
@@ -379,6 +373,12 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   void SetContentAreaOrigin(const gfx::Point& origin);
   // Updates everything that depends on the plugin's absolute screen location.
   void PluginScreenLocationChanged();
+
+  // Informs the browser about the updated accelerated drawing surface.
+  void UpdateAcceleratedSurface();
+
+  // Uses a CARenderer to draw the plug-in's layer in our OpenGL surface.
+  void DrawLayerInSurface();
 
 #ifndef NP_NO_CARBON
   // Moves our dummy window to match the current screen location of the plugin.
