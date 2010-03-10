@@ -51,7 +51,7 @@ static void PathFromExe(char* buffer, size_t len) {
 
 // This code tries to determine the plugin directory which contains
 // the sel_ldr and possibly other libraries
-void SelLdrLauncher::GetPluginDirectory(char* buffer, size_t len) {
+static void GetPluginDirectory(char* buffer, size_t len) {
   // C++ really does not like to convert function pointer to regular pointers.
   // This is apparently the only way to do it without compiler warnings
   void* sym_addr = reinterpret_cast<void*>(
@@ -74,6 +74,10 @@ void SelLdrLauncher::GetPluginDirectory(char* buffer, size_t len) {
   if (NULL != path_end) {
     *path_end = '\0';
   }
+}
+
+void PluginSelLdrLocator::GetDirectory(char* buffer, size_t len) {
+  GetPluginDirectory(buffer, len);
 }
 
 

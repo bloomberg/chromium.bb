@@ -41,6 +41,9 @@ SelLdrLauncher::~SelLdrLauncher() {
   if (kInvalidHandle != channel_) {
     Close(channel_);
   }
+  if (NULL != sel_ldr_locator_) {
+    delete sel_ldr_locator_;
+  }
 }
 
 

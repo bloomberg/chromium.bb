@@ -22,12 +22,44 @@ struct NaClDesc;
 namespace nacl {
 
 /*
+ * This class defines an interface that locates sel_ldr.
+ */
+class SelLdrLocator {
+ public:
+  // Returns a directory with sel_ldr.
+  virtual void GetDirectory(char* buffer, size_t len) = 0;
+
+  SelLdrLocator() {}
+
+  virtual ~SelLdrLocator() { }
+
+  DISALLOW_COPY_AND_ASSIGN(SelLdrLocator);
+};
+
+/*
+ * Default implementation of SelLdrLocator which tries to
+ * locate a browser plugin. Default constructor of SelLdrLauncher use it.
+ */
+class PluginSelLdrLocator : public SelLdrLocator {
+ public:
+  // We have different implementations for all platforms.
+  virtual void GetDirectory(char* buffer, size_t len);
+
+  PluginSelLdrLocator() {
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(PluginSelLdrLocator);
+};
+
+/*
  * This class encapsulates the process of launching an instance of sel_ldr
  * to communicate over an IMC channel.
  */
 struct SelLdrLauncher {
  public:
   SelLdrLauncher();
+
+  explicit SelLdrLauncher(SelLdrLocator* sel_ldr_locator);
 
   // TODO(robertm): shouldn't some of these args go in the constructor
   // application_argv can take a "$CHAN" as an argument which will be replaced
@@ -100,8 +132,7 @@ struct SelLdrLauncher {
   bool KillChild();
 
  private:
-  // We have different implementations for all platforms.
-  static void GetPluginDirectory(char* buffer, size_t len);
+  void GetPluginDirectory(char* buffer, size_t len);
 
   std::string GetSelLdrPathName();
 
@@ -141,6 +172,8 @@ struct SelLdrLauncher {
   // an instance of sel_ldr, or false if child_ is executing a native OS binary
   // instead of sel_ldr for debugging.
   bool is_sel_ldr_;
+
+  SelLdrLocator* sel_ldr_locator_;
 };
 
 }  // namespace nacl

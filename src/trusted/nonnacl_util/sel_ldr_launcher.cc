@@ -33,9 +33,21 @@ SelLdrLauncher::SelLdrLauncher()
   : child_(kInvalidHandle),
     channel_(kInvalidHandle),
     sock_addr_(NULL),
-    is_sel_ldr_(true) {
+    is_sel_ldr_(true),
+    sel_ldr_locator_(new PluginSelLdrLocator()) {
 }
 
+SelLdrLauncher::SelLdrLauncher(SelLdrLocator* sel_ldr_locator)
+  : child_(kInvalidHandle),
+    channel_(kInvalidHandle),
+    sock_addr_(NULL),
+    is_sel_ldr_(true),
+    sel_ldr_locator_(sel_ldr_locator) {
+}
+
+void SelLdrLauncher::GetPluginDirectory(char* buffer, size_t len) {
+  sel_ldr_locator_->GetDirectory(buffer, len);
+}
 
 static DescWrapper* GetSockAddr(DescWrapper* desc) {
   DescWrapper::MsgHeader   header;

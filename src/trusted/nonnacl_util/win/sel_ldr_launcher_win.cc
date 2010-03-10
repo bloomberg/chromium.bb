@@ -34,6 +34,9 @@ SelLdrLauncher::~SelLdrLauncher() {
   if (kInvalidHandle != channel_) {
     Close(channel_);
   }
+  if (NULL != sel_ldr_locator_) {
+    delete sel_ldr_locator_;
+  }
 }
 
 string SelLdrLauncher::GetSelLdrPathName() {
@@ -120,7 +123,14 @@ bool SelLdrLauncher::Launch() {
   return true;
 }
 
-void SelLdrLauncher::GetPluginDirectory(char* buffer, size_t len) {
+bool SelLdrLauncher::KillChild() {
+    return 0 != TerminateProcess(child_, 9);
+    // 9 is the exit code for the child_.  The value is actually not
+    // material, since (currently) the launcher does not collect/report
+    // it.
+}
+
+void PluginSelLdrLocator::GetDirectory(char* buffer, size_t len) {
   // __ImageBase is in the current module, which could be a .dll or .exe
   HMODULE this_module = reinterpret_cast<HMODULE>(&__ImageBase);
   // NOTE: casting down to DWORD is safe the integer will become smaller
@@ -130,13 +140,6 @@ void SelLdrLauncher::GetPluginDirectory(char* buffer, size_t len) {
   if (NULL != path_end) {
     *path_end = '\0';
   }
-}
-
-bool SelLdrLauncher::KillChild() {
-  return 0 != TerminateProcess(child_, 9);
-  // 9 is the exit code for the child_.  The value is actually not
-  // material, since (currently) the launcher does not collect/report
-  // it.
 }
 
 }  // namespace nacl

@@ -18,7 +18,7 @@ namespace nacl {
 // For OSX we get the bundle pathname to the browser plugin or the main bundle.
 // The returned pointer refers to static storage, so this function is not
 // reentrant, but that's okay.
-void SelLdrLauncher::GetPluginDirectory(char* buffer, size_t len) {
+void PluginSelLdrLocator::GetDirectory(char* buffer, size_t len) {
   // Guard our temporary objects below with our own autorelease pool.
   // (We cannot guarantee this is being called from a thread with a pool.)
   NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
