@@ -28,6 +28,9 @@ WorkerTest.LimitPerPage
 # They probably don't have ThreadSanitizer annotations TODO(timurrrr): check
 *ReferenceTest.Perf
 
+# Dromaeo's reference tests are split up into multiple *Perf sections.
+DromaeoReferenceTest.*
+
 # This test hangs under valgrind
 # See http://crbug.com/27764
 NewTabUITest.HomePageLink
