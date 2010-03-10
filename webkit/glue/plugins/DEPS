@@ -1,3 +1,6 @@
 include_rules = [
   "+third_party/mozilla/include",
+
+  # FIXME - refactor code and remove these dependencies
+  "+chrome/common",
 ]

@@ -8,7 +8,6 @@
 #include "base/process_util.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
-#include "chrome/common/extensions/url_pattern.h"
 #include "media/base/filter_host.h"
 #include "media/base/media_format.h"
 #include "net/base/load_flags.h"

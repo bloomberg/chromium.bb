@@ -14,6 +14,7 @@
 #include "base/gfx/size.h"
 #include "base/waitable_event.h"
 #include "chrome/common/transport_dib.h"
+#include "ipc/ipc_message.h"
 #include "media/filters/video_renderer_base.h"
 #include "webkit/glue/media/web_video_renderer.h"
 #include "webkit/glue/webmediaplayer_impl.h"

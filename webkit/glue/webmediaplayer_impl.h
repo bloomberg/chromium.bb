@@ -60,7 +60,6 @@
 #include "base/lock.h"
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
-#include "ipc/ipc_message.h"
 #include "media/base/filters.h"
 #include "media/base/pipeline_impl.h"
 #include "skia/ext/platform_canvas.h"
