@@ -254,10 +254,6 @@
                        hasLocationBar:[self hasLocationBar]];
     [[[self window] contentView] addSubview:[toolbarController_ view]];
 
-    // This must be done after the view is added to the window since it relies
-    // on the window bounds to determine whether to show buttons or not.
-    [toolbarController_ createBrowserActionButtons];
-
     // Create a sub-controller for the bookmark bar.
     bookmarkBarController_.reset(
         [[BookmarkBarController alloc]
@@ -300,6 +296,10 @@
             selector:@selector(applicationDidUnhide:)
                 name:NSApplicationDidUnhideNotification
               object:nil];
+
+    // This must be done after the view is added to the window since it relies
+    // on the window bounds to determine whether to show buttons or not.
+    [toolbarController_ createBrowserActionButtons];
 
     // We are done initializing now.
     initializing_ = NO;

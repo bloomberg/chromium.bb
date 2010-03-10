@@ -8,9 +8,10 @@
 
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browser.h"
-#include "chrome/browser/cocoa/extensions/browser_action_button.h"
-#include "chrome/browser/cocoa/extensions/browser_actions_container_view.h"
-#include "chrome/browser/cocoa/extensions/extension_popup_controller.h"
+#include "chrome/browser/pref_service.h"
+#import "chrome/browser/cocoa/extensions/browser_action_button.h"
+#import "chrome/browser/cocoa/extensions/browser_actions_container_view.h"
+#import "chrome/browser/cocoa/extensions/extension_popup_controller.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/extensions/extensions_service.h"
@@ -18,22 +19,31 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
+#include "chrome/common/pref_names.h"
 
-// The padding between browser action buttons.
 extern const CGFloat kBrowserActionButtonPadding = 3;
 
+extern const NSString* kBrowserActionVisibilityChangedNotification =
+    @"BrowserActionVisibilityChangedNotification";
+
 namespace {
+const CGFloat kAnimationDuration = 0.2;
 const CGFloat kContainerPadding = 2.0;
 const CGFloat kGrippyXOffset = 8.0;
+const CGFloat kButtonOpacityLeadPadding = 5.0;
 }  // namespace
 
-NSString* const kBrowserActionsChangedNotification = @"BrowserActionsChanged";
-
 @interface BrowserActionsController(Private)
+- (void)createButtons;
 - (void)createActionButtonForExtension:(Extension*)extension
-                             withIndex:(int)index;
+                             withIndex:(NSUInteger)index;
 - (void)removeActionButtonForExtension:(Extension*)extension;
+- (CGFloat)containerWidthWithButtonCount:(NSUInteger)buttonCount;
 - (void)repositionActionButtons;
+- (void)updateButtonOpacityAndDragAbilities;
+- (void)containerFrameChanged;
+- (void)containerDragging;
+- (void)containerDragFinished;
 - (int)currentTabId;
 - (bool)shouldDisplayBrowserAction:(Extension*)extension;
 @end
@@ -69,10 +79,12 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
   // ExtensionToolbarModel::Observer implementation.
   void BrowserActionAdded(Extension* extension, int index) {
     [owner_ createActionButtonForExtension:extension withIndex:index];
+    [owner_ resizeContainerWithAnimation:NO];
   }
 
   void BrowserActionRemoved(Extension* extension) {
     [owner_ removeActionButtonForExtension:extension];
+    [owner_ resizeContainerWithAnimation:NO];
   }
 
  private:
@@ -97,6 +109,10 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
     browser_ = browser;
     profile_ = browser->profile();
 
+    if (!profile_->GetPrefs()->FindPreference(
+        prefs::kBrowserActionContainerWidth))
+      [BrowserActionsController registerUserPrefs:profile_->GetPrefs()];
+
     observer_.reset(new ExtensionsServiceObserverBridge(self, profile_));
     ExtensionsService* extensionsService = profile_->GetExtensionsService();
     // |extensionsService| can be NULL in Incognito.
@@ -107,9 +123,27 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
 
     containerView_ = container;
     [containerView_ setHidden:YES];
+    [containerView_ setCanDragLeft:YES];
+    [containerView_ setCanDragRight:YES];
+    [containerView_ setPostsFrameChangedNotifications:YES];
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(containerFrameChanged)
+               name:NSViewFrameDidChangeNotification
+             object:containerView_];
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(containerDragging)
+               name:kBrowserActionGrippyDraggingNotification
+             object:containerView_];
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(containerDragFinished)
+               name:kBrowserActionGrippyDragFinishedNotification
+             object:containerView_];
 
     buttons_.reset([[NSMutableDictionary alloc] init]);
-    buttonOrder_.reset([[NSMutableArray alloc] init]);
+    [self createButtons];
   }
 
   return self;
@@ -135,24 +169,24 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
   if (!toolbarModel_)
     return;
 
-  int i = 0;
+  NSUInteger i = 0;
   for (ExtensionList::iterator iter = toolbarModel_->begin();
        iter != toolbarModel_->end(); ++iter) {
     [self createActionButtonForExtension:*iter withIndex:i++];
   }
-}
 
-- (CGFloat)idealContainerWidth {
-  NSUInteger buttonCount = [self visibleButtonCount];
-  if (buttonCount == 0)
-    return 0.0;
+  CGFloat width = [self savedWidth];
+  // The width will never be 0 (due to the container's minimum size restriction)
+  // except when no width has been saved. In this case, set the width to be as
+  // if all buttons are shown.
+  if (width == 0)
+    width = [self containerWidthWithButtonCount:[self buttonCount]];
 
-  return kGrippyXOffset + kContainerPadding + (buttonCount *
-      (kBrowserActionWidth + kBrowserActionButtonPadding));
+  [containerView_ resizeToWidth:width animate:NO];
 }
 
 - (void)createActionButtonForExtension:(Extension*)extension
-                             withIndex:(int)index {
+                             withIndex:(NSUInteger)index {
   if (!extension->browser_action())
     return;
 
@@ -171,13 +205,14 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
   [newButton setTarget:self];
   [newButton setAction:@selector(browserActionClicked:)];
   NSString* buttonKey = base::SysUTF8ToNSString(extension->id());
+  if (!buttonKey)
+    return;
   [buttons_ setObject:newButton forKey:buttonKey];
-  [buttonOrder_ insertObject:newButton atIndex:index];
   [containerView_ addSubview:newButton];
-  [self repositionActionButtons];
+  if (index >= [self visibleButtonCount])
+    [newButton setAlphaValue:0.0];
 
-  [[NSNotificationCenter defaultCenter]
-      postNotificationName:kBrowserActionsChangedNotification object:self];
+  [self repositionActionButtons];
   [containerView_ setNeedsDisplay:YES];
 }
 
@@ -186,6 +221,8 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
     return;
 
   NSString* buttonKey = base::SysUTF8ToNSString(extension->id());
+  if (!buttonKey)
+    return;
 
   BrowserActionButton* button = [buttons_ objectForKey:buttonKey];
   if (!button) {
@@ -194,27 +231,106 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
   }
   [button removeFromSuperview];
   [buttons_ removeObjectForKey:buttonKey];
-  [buttonOrder_ removeObject:button];
   if ([buttons_ count] == 0) {
     // No more buttons? Hide the container.
     [containerView_ setHidden:YES];
   } else {
     [self repositionActionButtons];
   }
-  [[NSNotificationCenter defaultCenter]
-      postNotificationName:kBrowserActionsChangedNotification object:self];
   [containerView_ setNeedsDisplay:YES];
 }
 
 - (void)repositionActionButtons {
-  for (NSUInteger i = 0; i < [buttonOrder_ count]; ++i) {
+  NSUInteger i = 0;
+  for (ExtensionList::iterator iter = toolbarModel_->begin();
+       iter != toolbarModel_->end(); ++iter) {
     CGFloat xOffset = kGrippyXOffset +
         (i * (kBrowserActionWidth + kBrowserActionButtonPadding));
-    BrowserActionButton* button = [buttonOrder_ objectAtIndex:i];
+    NSString* extensionId = base::SysUTF8ToNSString((*iter)->id());
+    DCHECK(extensionId);
+    if (!extensionId)
+      continue;
+    BrowserActionButton* button = [buttons_ objectForKey:extensionId];
     NSRect buttonFrame = [button frame];
     buttonFrame.origin.x = xOffset;
     [button setFrame:buttonFrame];
+    ++i;
   }
+}
+
+- (CGFloat)containerWidthWithButtonCount:(NSUInteger)buttonCount {
+  CGFloat width = 0.0;
+  if (buttonCount > 0) {
+    width = kGrippyXOffset + kContainerPadding +
+        (buttonCount * (kBrowserActionWidth + kBrowserActionButtonPadding));
+  }
+  return width;
+}
+
+// Resizes the container given the number of visible buttons in the container,
+// taking into account the size of the grippy. Also updates the persistent
+// width preference.
+- (void)resizeContainerWithAnimation:(BOOL)animate {
+  CGFloat width =
+      [self containerWidthWithButtonCount:[self visibleButtonCount]];
+  [containerView_ resizeToWidth:width animate:animate];
+  profile_->GetPrefs()->SetReal(prefs::kBrowserActionContainerWidth,
+      NSWidth([containerView_ frame]));
+
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:kBrowserActionVisibilityChangedNotification
+                    object:self];
+}
+
+- (void)updateButtonOpacityAndDragAbilities {
+  for (BrowserActionButton* button in [buttons_ allValues]) {
+    NSRect buttonFrame = [button frame];
+    buttonFrame.origin.x += kButtonOpacityLeadPadding;
+    if (NSContainsRect([containerView_ bounds], buttonFrame)) {
+      if ([button alphaValue] != 1.0)
+        [button setAlphaValue:1.0];
+
+      continue;
+    }
+    CGFloat intersectionWidth =
+        NSWidth(NSIntersectionRect([containerView_ bounds], buttonFrame));
+    CGFloat alpha = std::max(0.0f,
+        (intersectionWidth - kButtonOpacityLeadPadding) / NSWidth(buttonFrame));
+    [button setAlphaValue:alpha];
+    [button setNeedsDisplay:YES];
+  }
+
+  // Updates the drag direction constraint variables based on relevant metrics.
+  [containerView_ setCanDragLeft:
+      ([self visibleButtonCount] != [self buttonCount])];
+  [[containerView_ window] invalidateCursorRectsForView:containerView_];
+}
+
+- (void)containerFrameChanged {
+  [self updateButtonOpacityAndDragAbilities];
+}
+
+- (void)containerDragging {
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:kBrowserActionGrippyDraggingNotification
+                    object:self];
+}
+
+// Handles when a user initiated drag to resize the container has finished.
+- (void)containerDragFinished {
+  for (BrowserActionButton* button in [buttons_ allValues]) {
+    NSRect buttonFrame = [button frame];
+    if (NSContainsRect([containerView_ bounds], buttonFrame))
+      continue;
+
+    CGFloat intersectionWidth =
+        NSWidth(NSIntersectionRect([containerView_ bounds], buttonFrame));
+    if (([containerView_ grippyPinned] && intersectionWidth > 0) ||
+        (intersectionWidth <= (NSWidth(buttonFrame) / 2)))
+      [button setAlphaValue:0.0];
+  }
+
+  [self resizeContainerWithAnimation:NO];
 }
 
 - (NSUInteger)buttonCount {
@@ -224,7 +340,7 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
 - (NSUInteger)visibleButtonCount {
   int count = 0;
   for (BrowserActionButton* button in [buttons_ allValues]) {
-    if (![button isHidden])
+    if ([button alphaValue] > 0.0)
       ++count;
   }
   return count;
@@ -275,7 +391,7 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
 }
 
 - (NSView*)browserActionViewForExtension:(Extension*)extension {
-  for (BrowserActionButton* button in buttonOrder_.get()) {
+  for (BrowserActionButton* button in [buttons_ allValues]) {
     if ([button extension] == extension)
       return button;
   }
@@ -283,14 +399,30 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
   return nil;
 }
 
-- (NSButton*)buttonWithIndex:(int)index {
-  return [buttonOrder_ objectAtIndex:(NSUInteger)index];
+- (NSButton*)buttonWithIndex:(NSUInteger)index {
+  NSUInteger i = 0;
+  for (ExtensionList::iterator iter = toolbarModel_->begin();
+       iter != toolbarModel_->end(); ++iter) {
+    if (i == index)
+      return [buttons_ objectForKey:base::SysUTF8ToNSString((*iter)->id())];
+
+    ++i;
+  }
+  return nil;
 }
 
 - (bool)shouldDisplayBrowserAction:(Extension*)extension {
   return (!profile_->IsOffTheRecord() ||
           profile_->GetExtensionsService()->
               IsIncognitoEnabled(extension->id()));
+}
+
+- (CGFloat)savedWidth {
+  return profile_->GetPrefs()->GetReal(prefs::kBrowserActionContainerWidth);
+}
+
++ (void)registerUserPrefs:(PrefService*)prefs {
+  prefs->RegisterRealPref(prefs::kBrowserActionContainerWidth, 0);
 }
 
 @end

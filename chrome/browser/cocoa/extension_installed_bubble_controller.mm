@@ -174,9 +174,14 @@ class ExtensionLoadedNotificationObserver : public NotificationObserver {
       NSRect boundsRect = [[[button window] contentView]
           convertRect:[button frame]
              fromView:[button superview]];
-      arrowPoint =
-          NSMakePoint(NSMinX(boundsRect) + NSWidth([button frame]) / 2,
-                      NSMinY(boundsRect));
+      CGFloat xPos = NSMinX(boundsRect) + NSWidth([button frame]) / 2;
+      // If the button is hidden, display the button at the edge of the Browser
+      // Actions container.
+      // TODO(andybons): Make it point to the chevron once it's implemented.
+      if ([button alphaValue] == 0.0)
+        xPos = NSMaxX([[button superview] frame]);
+
+      arrowPoint = NSMakePoint(xPos, NSMinY(boundsRect));
       break;
     }
     case extension_installed_bubble::kPageAction: {

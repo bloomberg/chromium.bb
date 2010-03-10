@@ -17,12 +17,17 @@ class Extension;
 @class ExtensionPopupController;
 class ExtensionToolbarModel;
 class ExtensionsServiceObserverBridge;
+class PrefService;
 class Profile;
 
+// The padding between browser action buttons.
 extern const CGFloat kBrowserActionButtonPadding;
 
-extern NSString* const kBrowserActionsChangedNotification;
+// Sent when the visibility of the Browser Actions changes.
+extern const NSString* kBrowserActionVisibilityChangedNotification;
 
+// Handles state and provides an interface for controlling the Browser Actions
+// container within the Toolbar.
 @interface BrowserActionsController : NSObject {
  @private
   // Reference to the current browser. Weak.
@@ -44,9 +49,6 @@ extern NSString* const kBrowserActionsChangedNotification;
   // buttons present in the container view. The ID is a string unique to each
   // extension.
   scoped_nsobject<NSMutableDictionary> buttons_;
-
-  // The order of the BrowserActionButton objects within the dictionary.
-  scoped_nsobject<NSMutableArray> buttonOrder_;
 }
 
 @property(readonly, nonatomic) BrowserActionsContainerView* containerView;
@@ -55,14 +57,6 @@ extern NSString* const kBrowserActionsChangedNotification;
 // will hold the browser action buttons.
 - (id)initWithBrowser:(Browser*)browser
         containerView:(BrowserActionsContainerView*)container;
-
-// Creates and appends any existing browser action buttons present within the
-// extensions service to the toolbar.
-- (void)createButtons;
-
-// Returns the ideal (not current) width to fit all visible extensions and other
-// UI elements in the container nicely.
-- (CGFloat)idealContainerWidth;
 
 // Update the display of all buttons.
 - (void)update;
@@ -75,16 +69,28 @@ extern NSString* const kBrowserActionsChangedNotification;
 // container.
 - (NSUInteger)visibleButtonCount;
 
+// Resizes the container to fit all the visible buttons and other elements
+// (grippy and overflow button).
+- (void)resizeContainerWithAnimation:(BOOL)animate;
+
 // Executes the action designated by the extension.
 - (void)browserActionClicked:(BrowserActionButton*)sender;
 
 // Returns the NSView for the action button associated with an extension.
 - (NSView*)browserActionViewForExtension:(Extension*)extension;
 
+// Returns the saved width preference as specified by the user. If none is
+// specified, then zero is returned, indicating that the width has never been
+// set.
+- (CGFloat)savedWidth;
+
+// Registers the user preferences used by this class.
++ (void)registerUserPrefs:(PrefService*)prefs;
+
 @end  // @interface BrowserActionsController
 
 @interface BrowserActionsController(TestingAPI)
-- (NSButton*)buttonWithIndex:(int)index;
+- (NSButton*)buttonWithIndex:(NSUInteger)index;
 @end
 
 #endif  // CHROME_BROWSER_COCOA_EXTENSIONS_BROWSER_ACTIONS_CONTROLLER_H_

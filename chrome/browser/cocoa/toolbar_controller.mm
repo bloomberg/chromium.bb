@@ -60,21 +60,25 @@ NSString* const kWrenchButtonImageName = @"menu_chrome_Template.pdf";
 // Height of the toolbar in pixels when the bookmark bar is closed.
 const CGFloat kBaseToolbarHeight = 36.0;
 
-// The threshold width in pixels between the reload button (the home button is
-// optional) and the right side of the window for use in determining whether to
-// show or hide Browser Action buttons depending on window size.
-const CGFloat kHideBrowserActionThresholdWidth = 300.0;
+// The distance from the 'Go' button to the Browser Actions container in pixels.
+const CGFloat kBrowserActionsContainerLeftPadding = 5.0;
+
+// The minimum width of the location bar in pixels.
+const CGFloat kMinimumLocationBarWidth = 100.0;
 
 }  // namespace
 
 @interface ToolbarController(Private)
 - (void)addAccessibilityDescriptions;
-- (void)windowResized;
 - (void)initCommandStatus:(CommandUpdater*)commands;
 - (void)prefChanged:(std::wstring*)prefName;
 - (BackgroundGradientView*)backgroundGradientView;
-- (void)showOrHideBrowserActionButtons;
-- (void)browserActionsChanged;
+- (void)toolbarFrameChanged;
+- (void)pinGoButtonToLeftOfBrowserActionsContainer;
+- (void)maintainMinimumLocationBarWidth;
+- (void)adjustBrowserActionsContainerForNewWindow;
+- (void)browserActionsContainerDragged;
+- (void)browserActionsVisibilityChanged;
 - (void)adjustLocationAndGoPositionsBy:(CGFloat)dX;
 @end
 
@@ -217,11 +221,6 @@ class PrefObserverBridge : public NotificationObserver {
                                                 commands_, toolbarModel_,
                                                 profile_, browser_));
   [locationBar_ setFont:[NSFont systemFontOfSize:[NSFont systemFontSize]]];
-  [[NSNotificationCenter defaultCenter]
-      addObserver:self
-         selector:@selector(windowResized)
-             name:NSWindowDidResizeNotification
-           object:[[self view] window]];
   // Register pref observers for the optional home and page/options buttons
   // and then add them to the toolbar based on those prefs.
   prefObserver_.reset(new ToolbarControllerInternal::PrefObserverBridge(self));
@@ -241,17 +240,7 @@ class PrefObserverBridge : public NotificationObserver {
           initWithBrowser:browser_
                 modelType:BACK_FORWARD_MENU_TYPE_FORWARD
                    button:forwardButton_]);
-  browserActionsController_.reset([[BrowserActionsController alloc]
-          initWithBrowser:browser_
-            containerView:browserActionsContainerView_]);
-  // When new browser actions are added/removed, the container view for them is
-  // resized, necessitating the probable resizing of surrounding elements
-  // handled by this controller.
-  [[NSNotificationCenter defaultCenter]
-      addObserver:self
-         selector:@selector(browserActionsChanged)
-             name:kBrowserActionsChangedNotification
-           object:browserActionsController_];
+
   // For a popup window, the toolbar is really just a location bar
   // (see override for [ToolbarController view], below).  When going
   // fullscreen, we remove the toolbar controller's view from the view
@@ -269,11 +258,21 @@ class PrefObserverBridge : public NotificationObserver {
                                            NSTrackingActiveAlways
                                      owner:self
                                   userInfo:nil]);
-  [[self view] addTrackingArea:trackingArea_.get()];
+  NSView* toolbarView = [self view];
+  [toolbarView addTrackingArea:trackingArea_.get()];
 
   // We want a dynamic tooltip on the go button, so tell the go button to ask
   // us for the tooltip.
   [goButton_ addToolTipRect:[goButton_ bounds] owner:self userData:nil];
+
+  // If the user has any Browser Actions installed, the container view for them
+  // may have to be resized depending on the width of the toolbar frame.
+  [toolbarView setPostsFrameChangedNotifications:YES];
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(toolbarFrameChanged)
+             name:NSViewFrameDidChangeNotification
+           object:toolbarView];
 }
 
 - (void)addAccessibilityDescriptions {
@@ -314,12 +313,6 @@ class PrefObserverBridge : public NotificationObserver {
   [[wrenchButton_ cell]
       accessibilitySetOverrideValue:description
                        forAttribute:NSAccessibilityDescriptionAttribute];
-}
-
-- (void)windowResized {
-  // Some Browser Action buttons may have to be hidden or shown depending on the
-  // window's size.
-  [self showOrHideBrowserActionButtons];
 }
 
 - (void)mouseExited:(NSEvent*)theEvent {
@@ -599,72 +592,121 @@ class PrefObserverBridge : public NotificationObserver {
 }
 
 - (void)createBrowserActionButtons {
-  [browserActionsController_ createButtons];
-  [self showOrHideBrowserActionButtons];
+  if (browserActionsController_.get() == nil) {
+    browserActionsController_.reset([[BrowserActionsController alloc]
+            initWithBrowser:browser_
+              containerView:browserActionsContainerView_]);
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(browserActionsContainerDragged)
+               name:kBrowserActionGrippyDraggingNotification
+             object:browserActionsController_];
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(browserActionsVisibilityChanged)
+               name:kBrowserActionVisibilityChangedNotification
+             object:browserActionsController_];
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(adjustBrowserActionsContainerForNewWindow)
+               name:NSWindowDidBecomeKeyNotification
+             object:[[self view] window]];
+  }
+
+  CGFloat dX = NSWidth([browserActionsContainerView_ frame]) * -1;
+  [self adjustLocationAndGoPositionsBy:dX];
   BOOL rightBorderShown = !([pageButton_ isHidden] && [wrenchButton_ isHidden]);
   [browserActionsContainerView_ setRightBorderShown:rightBorderShown];
 }
 
-- (void)showOrHideBrowserActionButtons {
-  // TODO(andybons): This is ugly as sin and hard to follow. Fix it up.
+- (void)adjustBrowserActionsContainerForNewWindow {
+  [self toolbarFrameChanged];
+  [[NSNotificationCenter defaultCenter]
+      removeObserver:self
+                name:NSWindowDidBecomeKeyNotification
+              object:[[self view] window]];
+}
 
-  int buttonCount = [browserActionsController_ buttonCount];
-  if (buttonCount == 0 || !hasToolbar_)
-    return;
+- (void)browserActionsContainerDragged {
+  CGFloat locationBarWidth = NSWidth([locationBar_ frame]);
+  locationBarAtMinSize_ = locationBarWidth <= kMinimumLocationBarWidth;
+  [browserActionsContainerView_ setCanDragLeft:!locationBarAtMinSize_];
+  [browserActionsContainerView_ setGrippyPinned:locationBarAtMinSize_];
 
-  CGFloat curWidth = NSWidth([[[self view] window] frame]);
-  NSRect reloadFrame = [reloadButton_ frame];
-  // Calculate the width between the reload button and the end of the frame and
-  // subtract the threshold width, which represents the space that the
-  // (optional) home button, omnibar, go button and page/wrench buttons take up
-  // when no Browser Actions are displayed. This is to prevent the Browser
-  // Action buttons from pushing the elements to the left of them too far over.
-  CGFloat availableWidth = std::max(0.0f,
-      curWidth - reloadFrame.origin.x + NSWidth(reloadFrame) -
-          kHideBrowserActionThresholdWidth);
-  // How many Browser Action buttons can we safely display without overflow?
-  int numAvailableSlots = availableWidth /
-      (kBrowserActionWidth + kBrowserActionButtonPadding);
-  int visibleCount = [browserActionsController_ visibleButtonCount];
+  [self adjustLocationAndGoPositionsBy:
+      [browserActionsContainerView_ resizeDeltaX]];
+}
 
-  // |delta| is the number of buttons that should be shown or hidden based on
-  // the number of available slots and the number of visible buttons.
-  int delta = numAvailableSlots - visibleCount;
-  BOOL hide = delta < 0;
-  if (hide) {
-    delta *= -1;
-  } else if (visibleCount == buttonCount) {
-    // The number of available slots is greater than the number of displayed
-    // buttons then all buttons are already displayed.
-    return;
-  }
-  int arrayOffset = hide ? -1 : 0;
+- (void)browserActionsVisibilityChanged {
+  [self pinGoButtonToLeftOfBrowserActionsContainer];
+}
 
-  while (delta > 0) {
-    visibleCount = [browserActionsController_ visibleButtonCount];
-    if (visibleCount == buttonCount && !hide)
-      return;
-    BrowserActionButton* button = [[browserActionsContainerView_ subviews]
-        objectAtIndex:visibleCount + arrayOffset];
-    [button setHidden:hide];
-    [self browserActionsChanged];
-    --delta;
+- (void)pinGoButtonToLeftOfBrowserActionsContainer {
+  NSRect goFrame = [goButton_ frame];
+  NSRect containerFrame = [browserActionsContainerView_ frame];
+  CGFloat leftPadding = containerFrame.origin.x -
+      (goFrame.origin.x + NSWidth(goFrame));
+  if (leftPadding != kBrowserActionsContainerLeftPadding) {
+    CGFloat dX = leftPadding - kBrowserActionsContainerLeftPadding;
+    [self adjustLocationAndGoPositionsBy:dX];
   }
 }
 
-- (void)browserActionsChanged {
-  CGFloat width = [browserActionsController_ idealContainerWidth];
-  NSRect containerFrame = [browserActionsContainerView_ frame];
-  CGFloat dX = containerFrame.size.width - width;
-  containerFrame.size.width = width;
+- (void)maintainMinimumLocationBarWidth {
+  CGFloat locationBarWidth = NSWidth([locationBar_ frame]);
+  locationBarAtMinSize_ = locationBarWidth <= kMinimumLocationBarWidth;
+  if (locationBarAtMinSize_) {
+    CGFloat dX = kMinimumLocationBarWidth - locationBarWidth;
+    [self adjustLocationAndGoPositionsBy:dX];
+  }
+}
 
-  [browserActionsContainerView_ setFrame:NSOffsetRect(containerFrame, dX, 0)];
-  [self adjustLocationAndGoPositionsBy:dX];
+- (void)toolbarFrameChanged {
+  [self maintainMinimumLocationBarWidth];
+
+  if (locationBarAtMinSize_) {
+    // Once the grippy is pinned, leave it until it is explicity un-pinned.
+    [browserActionsContainerView_ setGrippyPinned:YES];
+    NSRect containerFrame = [browserActionsContainerView_ frame];
+    // Determine how much the container needs to move in case it's overlapping
+    // with the location bar.
+    CGFloat dX = ([goButton_ frame].origin.x + NSWidth([goButton_ frame])) -
+        containerFrame.origin.x + kBrowserActionsContainerLeftPadding;
+    containerFrame = NSOffsetRect(containerFrame, dX, 0);
+    containerFrame.size.width -= dX;
+    [browserActionsContainerView_ setFrame:containerFrame];
+  } else if (!locationBarAtMinSize_ &&
+      [browserActionsContainerView_ grippyPinned]) {
+    // Expand out the container until it hits the saved size, then unpin the
+    // grippy.
+    // Add 0.1 pixel so that it doesn't hit the minimum width codepath above.
+    CGFloat dX = NSWidth([locationBar_ frame]) -
+        (kMinimumLocationBarWidth + 0.1);
+    NSRect containerFrame = [browserActionsContainerView_ frame];
+    containerFrame = NSOffsetRect(containerFrame, -dX, 0);
+    containerFrame.size.width += dX;
+    CGFloat savedContainerWidth = [browserActionsController_ savedWidth];
+    if (NSWidth(containerFrame) >= savedContainerWidth) {
+      containerFrame = NSOffsetRect(containerFrame,
+          NSWidth(containerFrame) - savedContainerWidth, 0);
+      containerFrame.size.width = savedContainerWidth;
+      [browserActionsContainerView_ setGrippyPinned:NO];
+    }
+    [browserActionsContainerView_ setFrame:containerFrame];
+    [self pinGoButtonToLeftOfBrowserActionsContainer];
+  }
 }
 
 - (void)adjustLocationAndGoPositionsBy:(CGFloat)dX {
-  [goButton_ setFrame:NSOffsetRect([goButton_ frame], dX, 0)];
+  // Ensure that the 'Go' button is in its proper place.
+  NSRect goFrame = [goButton_ frame];
   NSRect locationFrame = [locationBar_ frame];
+  CGFloat rightDelta = (locationFrame.origin.x + NSWidth(locationFrame)) -
+      goFrame.origin.x;
+  if (rightDelta != 0.0)
+    [goButton_ setFrame:NSOffsetRect(goFrame, rightDelta, 0)];
+
+  [goButton_ setFrame:NSOffsetRect([goButton_ frame], dX, 0)];
   locationFrame.size.width += dX;
   [locationBar_ setFrame:locationFrame];
 }
