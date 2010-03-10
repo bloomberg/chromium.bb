@@ -569,8 +569,8 @@ ifeq ($(PLATFORM), Cygwin)
 	  echo "The next command can hang on FAT partiton; use NTFS!" ; \
 	  ln -fn redirector.exe $$exe ; \
 	done && \
-	LEDIR="$(DESTDIR)$(SDKROOT)/libexec" \
-	ARCHDIR="$$LEDIR/gcc/$(CROSSARCH)/$(GCC_VERSION)" \
+	LEDIR="$(DESTDIR)$(SDKROOT)/libexec" ; \
+	ARCHDIR="$$LEDIR/gcc/$(CROSSARCH)/$(GCC_VERSION)" ; \
 	if [ -d "$$ARCHDIR" ] ; then \
 	  for exe in "$$ARCHDIR/"*.exe ; do \
 	    if [ ! -L "$$exe" ] ; then \
