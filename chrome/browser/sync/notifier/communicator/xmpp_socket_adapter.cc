@@ -15,6 +15,7 @@
 #include "talk/base/firewallsocketserver.h"
 #include "talk/base/logging.h"
 #include "talk/base/socketadapters.h"
+#include "talk/base/thread.h"
 #include "talk/xmpp/xmppengine.h"
 
 namespace notifier {

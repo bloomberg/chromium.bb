@@ -28,8 +28,21 @@
 #ifndef _XMPPCLIENTSETTINGS_H_
 #define _XMPPCLIENTSETTINGS_H_
 
-#include "talk/p2p/base/port.h"
 #include "talk/base/cryptstring.h"
+#include "talk/base/proxyinfo.h"
+
+namespace cricket {
+
+// This enum was taken from talk/p2p/base/port.h, which is the only
+// thing we actually need from the p2p directory.
+enum ProtocolType {
+  PROTO_UDP,
+  PROTO_TCP,
+  PROTO_SSLTCP,
+  PROTO_LAST = PROTO_SSLTCP
+};
+
+}  // namespace cricket
 
 namespace buzz {
 

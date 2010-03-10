@@ -9,11 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "talk/p2p/base/port.h"
-
-namespace buzz {
-  class XmppClientSettings;
-}
+#include "talk/xmpp/xmppclientsettings.h"
 
 namespace notifier {
 

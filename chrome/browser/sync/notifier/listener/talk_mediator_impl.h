@@ -17,6 +17,7 @@
 #include "chrome/browser/sync/notification_method.h"
 #include "chrome/browser/sync/notifier/listener/mediator_thread.h"
 #include "chrome/browser/sync/notifier/listener/talk_mediator.h"
+#include "talk/base/sigslot.h"
 #include "talk/xmpp/xmppclientsettings.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"  // For FRIEND_TEST
 

@@ -1155,77 +1155,10 @@ Only in libjingle/files/talk/base: winsock_initializer.h
 Only in libjingle-0.4.0/talk: examples
 Only in libjingle-0.4.0/talk: libjingle.sln
 Only in libjingle-0.4.0/talk: libjingle.vcproj
+Only in libjingle-0.4.0/talk/p2p: Makefile.am
 Only in libjingle-0.4.0/talk/p2p: Makefile.in
-Only in libjingle-0.4.0/talk/p2p/base: Makefile.in
-diff -r libjingle-0.4.0/talk/p2p/base/candidate.h libjingle/files/talk/p2p/base/candidate.h
-52c52
-<   const float preference() const { return preference_; }
----
->   float preference() const { return preference_; }
-diff -r libjingle-0.4.0/talk/p2p/base/p2ptransport.cc libjingle/files/talk/p2p/base/p2ptransport.cc
-37c37
-< #include "talk/xmpp/constants.h"
----
-> #include "talk/xmpp/xmppconstants.h"
-diff -r libjingle-0.4.0/talk/p2p/base/port.cc libjingle/files/talk/p2p/base/port.cc
-34a35
-> #include <cstring>
-270c271
-<   talk_base::scoped_ptr<StunMessage> stun_msg(new StunMessage());
----
->   scoped_ptr<StunMessage> stun_msg(new StunMessage());
-diff -r libjingle-0.4.0/talk/p2p/base/rawtransport.cc libjingle/files/talk/p2p/base/rawtransport.cc
-35c35
-< #include "talk/xmpp/constants.h"
----
-> #include "talk/xmpp/xmppconstants.h"
-diff -r libjingle-0.4.0/talk/p2p/base/rawtransportchannel.cc libjingle/files/talk/p2p/base/rawtransportchannel.cc
-39c39
-< #include "talk/xmpp/constants.h"
----
-> #include "talk/xmpp/xmppconstants.h"
-diff -r libjingle-0.4.0/talk/p2p/base/relayport.cc libjingle/files/talk/p2p/base/relayport.cc
-36a37
-> #include <cstring>
-diff -r libjingle-0.4.0/talk/p2p/base/session.cc libjingle/files/talk/p2p/base/session.cc
-32c32
-< #include "talk/xmpp/constants.h"
----
-> #include "talk/xmpp/xmppconstants.h"
-diff -r libjingle-0.4.0/talk/p2p/base/sessionmanager.cc libjingle/files/talk/p2p/base/sessionmanager.cc
-32c32
-< #include "talk/xmpp/constants.h"
----
-> #include "talk/xmpp/xmppconstants.h"
-diff -r libjingle-0.4.0/talk/p2p/base/sessionmanager.h libjingle/files/talk/p2p/base/sessionmanager.h
-159c159
-<   buzz::XmlElement* SessionManager::CreateErrorMessage(
----
->   buzz::XmlElement* CreateErrorMessage(
-diff -r libjingle-0.4.0/talk/p2p/base/stun.cc libjingle/files/talk/p2p/base/stun.cc
-31a32
-> #include <cstring>
-diff -r libjingle-0.4.0/talk/p2p/base/stunrequest.cc libjingle/files/talk/p2p/base/stunrequest.cc
-149c149
-< const StunMessageType StunRequest::type() {
----
-> StunMessageType StunRequest::type() {
-diff -r libjingle-0.4.0/talk/p2p/base/stunrequest.h libjingle/files/talk/p2p/base/stunrequest.h
-91c91
-<   const StunMessageType type();
----
->   StunMessageType type();
-diff -r libjingle-0.4.0/talk/p2p/base/transport.cc libjingle/files/talk/p2p/base/transport.cc
-34c34
-< #include "talk/xmpp/constants.h"
----
-> #include "talk/xmpp/xmppconstants.h"
-Only in libjingle-0.4.0/talk/p2p/client: Makefile.in
-diff -r libjingle-0.4.0/talk/p2p/client/httpportallocator.cc libjingle/files/talk/p2p/client/httpportallocator.cc
-82c82
-<   relay_hosts_.push_back("relay.l.google.com");
----
->   relay_hosts_.push_back("relay.google.com");
+Only in libjingle-0.4.0/talk/p2p: base
+Only in libjingle-0.4.0/talk/p2p: client
 Only in libjingle-0.4.0/talk: session
 Only in libjingle-0.4.0/talk: third_party
 Only in libjingle-0.4.0/talk/xmllite: Makefile.in
@@ -1450,13 +1383,30 @@ diff -r libjingle-0.4.0/talk/xmpp/xmppclient.h libjingle/files/talk/xmpp/xmppcli
 ---
 >   std::string GetStateName(int state) const {
 diff -r libjingle-0.4.0/talk/xmpp/xmppclientsettings.h libjingle/files/talk/xmpp/xmppclientsettings.h
-59a60,62
+31d30
+< #include "talk/p2p/base/port.h"
+32a32,45
+> #include "talk/base/proxyinfo.h"
+> 
+> namespace cricket {
+> 
+> // This enum was taken from talk/p2p/base/port.h, which is the only
+> // thing we actually need from the p2p directory.
+> enum ProtocolType {
+>   PROTO_UDP,
+>   PROTO_TCP,
+>   PROTO_SSLTCP,
+>   PROTO_LAST = PROTO_SSLTCP
+> };
+> 
+> }  // namespace cricket
+59a73,75
 >   void set_token_service(const std::string & token_service) {
 >     token_service_ = token_service;
 >   }
-75a79
+75a92
 >   const std::string & token_service() const { return token_service_; }
-93a98
+93a111
 >   std::string token_service_;
 Only in libjingle/files/talk/xmpp: xmppconstants.cc
 Only in libjingle/files/talk/xmpp: xmppconstants.h

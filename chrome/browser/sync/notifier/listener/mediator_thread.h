@@ -10,6 +10,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/sync/notification_method.h"
+#include "talk/base/sigslot.h"
 #include "talk/xmpp/xmppclientsettings.h"
 
 namespace browser_sync {
