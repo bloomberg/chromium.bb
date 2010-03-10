@@ -458,6 +458,10 @@ function HistoryView(model) {
     self.updateEntryAnchorWidth_();
   };
   self.updateEditControls_();
+
+  this.boundUpdateRemoveButton_ = function(e) {
+    return self.updateRemoveButton_(e);
+  };
 }
 
 // HistoryView, public: -------------------------------------------------------
@@ -628,38 +632,55 @@ HistoryView.prototype.updateEditControls_ = function() {
   var oldButton = this.editButtonTd_.firstChild;
   if (this.model_.getSearchText()) {
     this.editButtonTd_.replaceChild(document.createElement('p'), oldButton);
-    while (this.editingControlsDiv_.hasChildNodes()) {
-      this.editingControlsDiv_.removeChild(this.editingControlsDiv_.firstChild);
-    }
+    this.editingControlsDiv_.textContent = '';
     return;
   }
 
   var editMode = this.model_.getEditMode();
   var button = createElementWithClassName('button', 'edit-button');
   button.onclick = toggleEditMode;
-  button.appendChild(document.createTextNode(editMode ?
-      localStrings.getString("doneediting") :
-      localStrings.getString("edithistory")));
+  button.textContent = localStrings.getString(editMode ?
+                                              'doneediting' : 'edithistory');
   this.editButtonTd_.replaceChild(button, oldButton);
+
+  this.editingControlsDiv_.textContent = '';
+
   if (editMode) {
     // Button to delete the selected items.
     button = document.createElement('button');
     button.onclick = removeItems;
-    button.appendChild(document.createTextNode(
-        localStrings.getString("removeselected")));
+    button.textContent = localStrings.getString('removeselected');
+    button.disabled = true;
     this.editingControlsDiv_.appendChild(button);
+    this.removeButton_ = button;
+
     // Button that opens up the clear browsing data dialog.
     button = document.createElement('button');
     button.onclick = openClearBrowsingData;
-    button.appendChild(document.createTextNode(
-        localStrings.getString("clearallhistory")));
+    button.textContent = localStrings.getString('clearallhistory');
     this.editingControlsDiv_.appendChild(button);
+
+    // Listen for clicks in the page to sync the disabled state.
+    document.addEventListener('click', this.boundUpdateRemoveButton_);
   } else {
-    while (this.editingControlsDiv_.hasChildNodes()) {
-      this.editingControlsDiv_.removeChild(this.editingControlsDiv_.firstChild);
-    }
+    this.removeButton_ = null;
+    document.removeEventListener('click', this.boundUpdateRemoveButton_);
   }
-}
+};
+
+/**
+ * Updates the disabled state of the remove button when in editing mode.
+ * @param {!Event} e The click event object.
+ * @private
+ */
+HistoryView.prototype.updateRemoveButton_ = function(e) {
+  if (e.target.tagName != 'INPUT')
+    return;
+
+  var anyChecked = document.querySelector('.entry input:checked') != null;
+  if (this.removeButton_)
+    this.removeButton_.disabled = !anyChecked;
+};
 
 /**
  * Update the pagination tools.
@@ -779,9 +800,9 @@ PageState.prototype.getHashData = function() {
     return result;
   }
 
-  var hashSplit = window.location.hash.substr(1).split("&");
+  var hashSplit = window.location.hash.substr(1).split('&');
   for (var i = 0; i < hashSplit.length; i++) {
-    var pair = hashSplit[i].split("=");
+    var pair = hashSplit[i].split('=');
     if (pair.length > 1) {
       result[pair[0]] = decodeURIComponent(pair[1].replace(/\+/g, ' '));
     }
@@ -801,7 +822,7 @@ PageState.prototype.setUIState = function(editMode, term, page) {
   // Make sure the form looks pretty.
   document.forms[0].term.value = term;
   var currentHash = this.getHashData();
-  if (Boolean(currentHash.e) != editMode || currentHash.q != term || 
+  if (Boolean(currentHash.e) != editMode || currentHash.q != term ||
       currentHash.p != page) {
     window.location.hash = PageState.getHashString(editMode, term, page);
   }
@@ -816,16 +837,16 @@ PageState.prototype.setUIState = function(editMode, term, page) {
 PageState.getHashString = function(editMode, term, page) {
   var newHash = [];
   if (editMode) {
-    newHash.push("e=1");
+    newHash.push('e=1');
   }
   if (term) {
-    newHash.push("q=" + encodeURIComponent(term));
+    newHash.push('q=' + encodeURIComponent(term));
   }
   if (page != undefined) {
-    newHash.push("p=" + page);
+    newHash.push('p=' + page);
   }
 
-  return newHash.join("&");
+  return newHash.join('&');
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -888,7 +909,7 @@ function toggleEditMode() {
 function deleteNextInQueue() {
   if (!deleteInFlight && deleteQueue.length) {
     deleteInFlight = true;
-    chrome.send("removeURLsOnOneDay",
+    chrome.send('removeURLsOnOneDay',
                 [String(deleteQueue[0])].concat(deleteQueue[1]));
   }
 }
@@ -897,7 +918,7 @@ function deleteNextInQueue() {
  * Open the clear browsing data dialog.
  */
 function openClearBrowsingData() {
-  chrome.send("clearBrowsingData", []);
+  chrome.send('clearBrowsingData', []);
   return false;
 }
 
@@ -910,7 +931,7 @@ function removeItems() {
   var queue = [];
   var date = new Date();
   for (var i = 0; i < checkboxes.length; i++) {
-    if (checkboxes[i].type == "checkbox" && checkboxes[i].checked &&
+    if (checkboxes[i].type == 'checkbox' && checkboxes[i].checked &&
         !checkboxes[i].disabled) {
       var cbDate = new Date(checkboxes[i].time);
       if (date.getFullYear() != cbDate.getFullYear() ||
@@ -923,9 +944,9 @@ function removeItems() {
         ids = [];
         date = cbDate;
       }
-      var link = $("id-" + checkboxes[i].name);
+      var link = $('id-' + checkboxes[i].name);
       checkboxes[i].disabled = true;
-      link.style.setProperty("text-decoration", "line-through");
+      link.style.textDecoration = 'line-through';
       ids.push(link.href);
     }
   }
@@ -934,7 +955,7 @@ function removeItems() {
     queue.push(ids);
   }
   if (queue.length > 0) {
-    if (confirm(localStrings.getString("deletewarning"))) {
+    if (confirm(localStrings.getString('deletewarning'))) {
       deleteQueue = deleteQueue.concat(queue);
       deleteNextInQueue();
     }
@@ -999,7 +1020,7 @@ function historyResult(info, results) {
  * Our history system calls this function when a deletion has finished.
  */
 function deleteComplete() {
-  window.console.log("Delete complete");
+  window.console.log('Delete complete');
   deleteInFlight = false;
   if (deleteQueue.length > 1) {
     deleteQueue = deleteQueue.slice(2);
@@ -1015,7 +1036,7 @@ function deleteComplete() {
  * another delete is in-progress).
  */
 function deleteFailed() {
-  window.console.log("Delete failed");
+  window.console.log('Delete failed');
   // The deletion failed - try again later.
   deleteInFlight = false;
   setTimeout(deleteNextInQueue, 500);
@@ -1026,7 +1047,7 @@ function deleteFailed() {
  * else).
  */
 function historyDeleted() {
-  window.console.log("History deleted");
+  window.console.log('History deleted');
   historyView.reload();
 }
 </script>
@@ -1155,12 +1176,12 @@ html[dir='rtl'] .entry .title > a {
 <div class="header">
   <a href="" onclick="setSearch(''); return false;">
     <img src="../../app/theme/history_section.png"
-         width="67" height="67" class="logo" border="0" /></a>
+         width="67" height="67" class="logo" border="0"></a>
   <form method="post" action=""
       onsubmit="setSearch(this.term.value); return false;"
       class="form">
-    <input type="text" name="term" id="term" />
-    <input type="submit" name="submit" i18n-values="value:searchbutton" />
+    <input type="text" name="term" id="term">
+    <input type="submit" name="submit" i18n-values="value:searchbutton">
   </form>
 </div>
 <div class="main">
