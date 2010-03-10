@@ -54,6 +54,10 @@ DictionaryValue* setup_util::GetInstallPreferences(
     installer_util::SetDistroBooleanPreference(
         prefs, installer_util::master_preferences::kDoNotCreateShortcuts, true);
 
+  if (cmd_line.HasSwitch(installer_util::switches::kMsi))
+    installer_util::SetDistroBooleanPreference(
+        prefs, installer_util::master_preferences::kMsi, true);
+
   if (cmd_line.HasSwitch(
         installer_util::switches::kDoNotRegisterForUpdateLaunch))
     installer_util::SetDistroBooleanPreference(

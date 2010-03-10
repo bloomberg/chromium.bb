@@ -65,6 +65,7 @@ extern const wchar_t kInstallArchive[];
 extern const wchar_t kInstallerData[];
 extern const wchar_t kLogFile[];
 extern const wchar_t kMakeChromeDefault[];
+extern const wchar_t kMsi[];
 extern const wchar_t kNewSetupExe[];
 extern const wchar_t kRegisterChromeBrowser[];
 extern const wchar_t kRegisterChromeBrowserSuffix[];

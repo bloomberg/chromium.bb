@@ -113,7 +113,8 @@ void AppendUninstallCommandLineFlags(std::wstring* uninstall_cmd_line,
 }
 
 // This method adds work items to create (or update) Chrome uninstall entry in
-// Control Panel->Add/Remove Programs list.
+// either the Control Panel->Add/Remove Programs list or in the Omaha client
+// state key if running under an MSI installer.
 void AddUninstallShortcutWorkItems(HKEY reg_root,
                                    const std::wstring& exe_path,
                                    const std::wstring& install_path,
@@ -130,47 +131,60 @@ void AddUninstallShortcutWorkItems(HKEY reg_root,
   AppendUninstallCommandLineFlags(&uninstall_cmd,
                                   reg_root == HKEY_LOCAL_MACHINE);
 
-  // Create DisplayName, UninstallString and InstallLocation keys
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  std::wstring uninstall_reg = dist->GetUninstallRegPath();
-  install_list->AddCreateRegKeyWorkItem(reg_root, uninstall_reg);
-  install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
-      installer_util::kUninstallDisplayNameField, product_name, true);
-  install_list->AddSetRegValueWorkItem(reg_root,
-                                       uninstall_reg,
-                                       installer_util::kUninstallStringField,
-                                       uninstall_cmd, true);
-  install_list->AddSetRegValueWorkItem(reg_root,
-                                       uninstall_reg,
-                                       L"InstallLocation", install_path, true);
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
-  // DisplayIcon, NoModify and NoRepair
-  std::wstring chrome_icon = AppendPath(install_path,
-                                        installer_util::kChromeExe);
-  ShellUtil::GetChromeIcon(chrome_icon);
-  install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
-                                       L"DisplayIcon", chrome_icon, true);
-  install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
-                                       L"NoModify", 1, true);
-  install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
-                                       L"NoRepair", 1, true);
-
-  install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
-                                       L"Publisher",
-                                       dist->GetPublisherName(), true);
-  install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
-                                       L"Version", new_version.c_str(), true);
-  install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
-                                       L"DisplayVersion",
-                                       new_version.c_str(), true);
-  time_t rawtime = time(NULL);
-  struct tm timeinfo = {0};
-  localtime_s(&timeinfo, &rawtime);
-  wchar_t buffer[9];
-  if (wcsftime(buffer, 9, L"%Y%m%d", &timeinfo) == 8) {
+  if (command_line.HasSwitch(installer_util::switches::kMsi)) {
+    // If we're running at the behest of an MSI, store our uninstall string
+    // in the Google Update client state key.
+    std::wstring update_state_key = dist->GetStateKey();
+    install_list->AddCreateRegKeyWorkItem(reg_root, update_state_key);
+    install_list->AddSetRegValueWorkItem(reg_root, update_state_key,
+        installer_util::kUninstallStringField, uninstall_cmd, true);
+  } else {
+    // Otherwise, create DisplayName, UninstallString and InstallLocation keys.
+    std::wstring uninstall_reg = dist->GetUninstallRegPath();
+    install_list->AddCreateRegKeyWorkItem(reg_root, uninstall_reg);
     install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
-                                         L"InstallDate",
-                                         buffer, false);
+        installer_util::kUninstallDisplayNameField, product_name, true);
+    install_list->AddSetRegValueWorkItem(reg_root,
+                                         uninstall_reg,
+                                         installer_util::kUninstallStringField,
+                                         uninstall_cmd, true);
+    install_list->AddSetRegValueWorkItem(reg_root,
+                                         uninstall_reg,
+                                         L"InstallLocation",
+                                         install_path,
+                                         true);
+
+    // DisplayIcon, NoModify and NoRepair
+    std::wstring chrome_icon = AppendPath(install_path,
+                                          installer_util::kChromeExe);
+    ShellUtil::GetChromeIcon(chrome_icon);
+    install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
+                                         L"DisplayIcon", chrome_icon, true);
+    install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
+                                         L"NoModify", 1, true);
+    install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
+                                         L"NoRepair", 1, true);
+
+    install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
+                                         L"Publisher",
+                                         dist->GetPublisherName(), true);
+    install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
+                                         L"Version", new_version.c_str(), true);
+    install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
+                                         L"DisplayVersion",
+                                         new_version.c_str(), true);
+    time_t rawtime = time(NULL);
+    struct tm timeinfo = {0};
+    localtime_s(&timeinfo, &rawtime);
+    wchar_t buffer[9];
+    if (wcsftime(buffer, 9, L"%Y%m%d", &timeinfo) == 8) {
+      install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
+                                           L"InstallDate",
+                                           buffer, false);
+    }
   }
 }
 
@@ -558,6 +572,7 @@ installer_util::InstallStatus InstallNewVersion(
                         new_version.GetString(), install_list.get(),
                         (reg_root == HKEY_LOCAL_MACHINE));
   std::wstring product_name = dist->GetAppShortCutName();
+
   AddUninstallShortcutWorkItems(reg_root, exe_path, install_path,
       product_name, new_version.GetString(), install_list.get());
 

@@ -55,6 +55,8 @@ extern const wchar_t kDoNotRegisterForUpdateLaunch[];
 extern const wchar_t kMakeChromeDefault[];
 // Boolean. Register Chrome as default browser for the current user.
 extern const wchar_t kMakeChromeDefaultForUser[];
+// Boolean. Expect to be run by an MSI installer. Cmd line override present.
+extern const wchar_t kMsi[];
 // Boolean. Show EULA dialog before install.
 extern const wchar_t kRequireEula[];
 // Boolean. Install Chrome to system wise location. Cmd line override present.

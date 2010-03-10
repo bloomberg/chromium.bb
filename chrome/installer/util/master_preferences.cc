@@ -64,6 +64,7 @@ const wchar_t kDoNotRegisterForUpdateLaunch[] =
     L"do_not_register_for_update_launch";
 const wchar_t kMakeChromeDefault[] = L"make_chrome_default";
 const wchar_t kMakeChromeDefaultForUser[] = L"make_chrome_default_for_user";
+const wchar_t kMsi[] = L"msi";
 const wchar_t kRequireEula[] = L"require_eula";
 const wchar_t kSystemLevel[] = L"system_level";
 const wchar_t kVerboseLogging[] = L"verbose_logging";
