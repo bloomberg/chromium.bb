@@ -11,22 +11,23 @@
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/chromeos/login/view_screen.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
-#include "chrome/browser/chromeos/status/status_area_host.h"
-#include "views/window/window_delegate.h"
 
 class AccountScreen;
 class WizardContentsView;
 class WizardScreen;
-namespace chromeos {
-class StatusAreaView;
-}  // namespace chromeos
 
-// Class that manages control flow between wizard screens, top level window,
-// status area and background view. Wizard controller interacts with screen
-// controllers to move the user between screens.
-class WizardController : public views::WindowDelegate,
-                         public chromeos::StatusAreaHost,
-                         public chromeos::ScreenObserver,
+namespace chromeos {
+class BackgroundView;
+}
+
+namespace views {
+class Views;
+class Widget;
+}
+
+// Class that manages control flow between wizard screens. Wizard controller
+// interacts with screen controllers to move the user between screens.
+class WizardController : public chromeos::ScreenObserver,
                          public WizardScreenDelegate {
  public:
   WizardController();
@@ -39,7 +40,20 @@ class WizardController : public views::WindowDelegate,
 
   // Shows the first screen defined by |first_screen_name| or by default
   // if the parameter is empty.
-  void ShowFirstScreen(const std::string& first_screen_name);
+  void Init(const std::string& first_screen_name);
+
+  // Returns the view that contains all the other views.
+  views::View* contents() { return contents_; }
+
+  // Shows the wizard controller in a window.
+  void Show();
+
+  // Creates and shows a background window.
+  void ShowBackground(const gfx::Size& size);
+
+  // Takes ownership of the specified background widget and view.
+  void OwnBackground(views::Widget* background_widget,
+                     chromeos::BackgroundView* background_view);
 
   // Lazy initializers and getters for screens.
   NetworkScreen* GetNetworkScreen();
@@ -59,28 +73,24 @@ class WizardController : public views::WindowDelegate,
   virtual void OnExit(ExitCodes exit_code);
   virtual void OnSwitchLanguage(std::string lang);
 
-  // Overridden from views::WindowDelegate:
-  virtual views::View* GetContentsView();
-
-  // Overridden from StatusAreaHost:
-  virtual gfx::NativeWindow GetNativeWindow() const;
-  virtual bool ShouldOpenButtonOptions(const views::View* button_view) const;
-  virtual void OpenButtonOptions(const views::View* button_view) const;
-  virtual bool IsButtonVisible(const views::View* button_view) const;
-
   // Overridden from WizardScreenDelegate:
   virtual views::View* GetWizardView();
-  virtual views::Window* GetWizardWindow();
   virtual chromeos::ScreenObserver* GetObserver(WizardScreen* screen);
-
-  // Initializes contents view and status area.
-  void InitContents();
 
   // Switches from one screen to another.
   void SetCurrentScreen(WizardScreen* screen);
 
+  void ShowFirstScreen(const std::string& first_screen_name);
+
+  // Widget we're showing in.
+  views::Widget* widget_;
+
+  // Used to render the background.
+  views::Widget* background_widget_;
+  chromeos::BackgroundView* background_view_;
+
   // Contents view.
-  WizardContentsView* contents_;
+  views::View* contents_;
 
   // Screens.
   scoped_ptr<NetworkScreen> network_screen_;

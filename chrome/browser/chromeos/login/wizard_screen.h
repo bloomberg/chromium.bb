@@ -13,7 +13,6 @@ class ScreenObserver;
 }  // namespace chromeos
 namespace views {
 class View;
-class Window;
 }  // namespace views
 
 // Interface that login wizard exposes to its screens.
@@ -21,9 +20,6 @@ class WizardScreenDelegate {
  public:
   // Returns top level view of the wizard.
   virtual views::View* GetWizardView() = 0;
-
-  // Returns top level window of the wizard.
-  virtual views::Window* GetWizardWindow() = 0;
 
   // Returns observer screen should notify.
   virtual chromeos::ScreenObserver* GetObserver(WizardScreen* screen) = 0;

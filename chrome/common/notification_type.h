@@ -869,8 +869,7 @@ class NotificationType {
     LOGIN_USER_CHANGED,
 
     // Sent when a chromium os user attempts to log in.  The source is
-    // GoogleAuthenticator and the details are in
-    // AuthenticationNotificationDetails.
+    // all and the details are AuthenticationNotificationDetails.
     LOGIN_AUTHENTICATION,
 #endif
 

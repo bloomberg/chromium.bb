@@ -12,26 +12,21 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/callback.h"
-#include "base/file_path.h"
+#include "base/command_line.h"
 #include "base/keyboard_codes.h"
 #include "base/logging.h"
-#include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
-#include "chrome/browser/browser_init.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "chrome/browser/chromeos/external_cookie_handler.h"
 #include "chrome/browser/chromeos/login/authentication_notification_details.h"
 #include "chrome/browser/chromeos/login/google_authenticator.h"
 #include "chrome/browser/chromeos/login/pam_google_authenticator.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/profile_manager.h"
-#include "chrome/common/chrome_paths.h"
+#include "chrome/browser/chromeos/login/utils.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
@@ -330,35 +325,11 @@ void LoginManagerView::OnLoginFailure() {
 }
 
 void LoginManagerView::OnLoginSuccess(const std::string& username) {
-  LOG(INFO) << "LoginManagerView: OnLoginSuccess()";
   // TODO(cmasone): something sensible if errors occur.
+
   SetupSession(username);
-  UserManager::Get()->UserLoggedIn(username);
 
-  // Send notification of success
-  AuthenticationNotificationDetails details(true);
-  NotificationService::current()->Notify(
-      NotificationType::LOGIN_AUTHENTICATION, Source<LoginManagerView>(this),
-      Details<AuthenticationNotificationDetails>(&details));
-
-  // Now launch the initial browser window.
-  BrowserInit browser_init;
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  FilePath user_data_dir;
-  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  // The default profile will have been changed because the ProfileManager
-  // will process the notification that the UserManager sends out.
-  Profile* profile = profile_manager->GetDefaultProfile(user_data_dir);
-  int return_code;
-
-  ExternalCookieHandler::GetCookies(command_line, profile);
-  LOG(INFO) << "OnLoginSuccess: Preparing to launch browser";
-  browser_init.LaunchBrowser(command_line,
-                             profile,
-                             std::wstring(),
-                             true,
-                             &return_code);
+  login_utils::CompleteLogin(username);
 }
 
 void LoginManagerView::SetupSession(const std::string& username) {

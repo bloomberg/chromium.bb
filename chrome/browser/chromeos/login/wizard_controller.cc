@@ -4,22 +4,25 @@
 
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 
-#include <string>
-#include <vector>
+#include <gdk/gdk.h>
+#include <signal.h>
+#include <sys/types.h>
 
-#include "app/gfx/canvas.h"
+#include <string>
+
 #include "app/resource_bundle.h"
 #include "base/logging.h"  // For NOTREACHED.
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/login/account_screen.h"
-#include "chrome/browser/chromeos/login/rounded_rect_painter.h"
+#include "chrome/browser/chromeos/login/background_view.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/chromeos/status/clock_menu_button.h"
-#include "chrome/browser/chromeos/status/network_menu_button.h"
-#include "chrome/browser/chromeos/status/status_area_view.h"
 #include "unicode/locid.h"
+#include "views/painter.h"
+#include "views/screen.h"
 #include "views/view.h"
-#include "views/window/window.h"
+#include "views/widget/widget_gtk.h"
 
 namespace {
 
@@ -31,100 +34,117 @@ const char kLoginScreenName[] = "login";
 const char kAccountScreenName[] = "account";
 const char kUpdateScreenName[] = "update";
 
-}  // namespace
-
-// Initialize default controller.
-WizardController* WizardController::default_controller_ = NULL;
-
-// Contents view for wizard's window. Parents screen views and status area
-// view.
-class WizardContentsView : public views::View {
+// RootView of the Widget WizardController creates. Contains the contents of the
+// WizardController.
+class ContentView : public views::View {
  public:
-  WizardContentsView()
-      : status_area_(NULL) {
-  }
-  ~WizardContentsView() {}
-
-  void Init(chromeos::StatusAreaHost* host) {
-    views::Painter* painter = chromeos::CreateWizardPainter(
-        &chromeos::BorderDefinition::kWizardBorder);
-    set_background(views::Background::CreateBackgroundPainter(true, painter));
-    InitStatusArea(host);
+  ContentView(int window_x, int window_y, int screen_w, int screen_h)
+      : window_x_(window_x),
+        window_y_(window_y),
+        screen_w_(screen_w),
+        screen_h_(screen_h) {
+    painter_.reset(chromeos::CreateWizardPainter(
+                       &chromeos::BorderDefinition::kWizardBorder));
   }
 
-  // Called to re-create status area view that have been deleted by the call
-  // RemoveAllChildViews(true). Needed for locale switch.
-  void InitStatusArea(chromeos::StatusAreaHost* host) {
-    status_area_ = new chromeos::StatusAreaView(host);
-    status_area_->Init();
-    AddChildView(status_area_);
-  }
-
-  // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() {
-    return size();
+  void PaintBackground(gfx::Canvas* canvas) {
+    // TODO(sky): nuke this once new login manager is in place. This needs to
+    // exist because with no window manager transparency isn't really supported.
+    canvas->TranslateInt(-window_x_, -window_y_);
+    painter_->Paint(screen_w_, screen_h_, canvas);
   }
 
   virtual void Layout() {
-    int right_top_padding =
-        chromeos::BorderDefinition::kWizardBorder.padding +
-        chromeos::BorderDefinition::kWizardBorder.corner_radius / 2;
-    gfx::Size status_area_size = status_area_->GetPreferredSize();
-    status_area_->SetBounds(
-        width() - status_area_size.width() - right_top_padding,
-        right_top_padding,
-        status_area_size.width(),
-        status_area_size.height());
-
-    // Layout screen view. It should be the only visible child that's not a
-    // status area view.
     for (int i = 0; i < GetChildViewCount(); ++i) {
       views::View* cur = GetChildViewAt(i);
-      if (cur != status_area_ && cur->IsVisible()) {
-        int x = (width() - kWizardScreenWidth) / 2;
-        int y = (height() - kWizardScreenHeight) / 2;
-        cur->SetBounds(x, y, kWizardScreenWidth, kWizardScreenHeight);
-      }
+      if (cur->IsVisible())
+        cur->SetBounds(0, 0, width(), height());
     }
   }
 
-  chromeos::StatusAreaView* status_area() const { return status_area_; }
-
  private:
-  chromeos::StatusAreaView* status_area_;
+  scoped_ptr<views::Painter> painter_;
 
-  DISALLOW_COPY_AND_ASSIGN(WizardContentsView);
+  const int window_x_;
+  const int window_y_;
+  const int screen_w_;
+  const int screen_h_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContentView);
 };
+
+}  // namespace
+
+// Initialize default controller.
+// static
+WizardController* WizardController::default_controller_ = NULL;
 
 ///////////////////////////////////////////////////////////////////////////////
 // WizardController, public:
 WizardController::WizardController()
-    : contents_(NULL),
+    : widget_(NULL),
+      background_widget_(NULL),
+      background_view_(NULL),
+      contents_(NULL),
       current_screen_(NULL) {
   DCHECK(default_controller_ == NULL);
   default_controller_ = this;
 }
 
 WizardController::~WizardController() {
+  // Close ends up deleting the widget.
+  if (background_widget_)
+    background_widget_->Close();
+
+  if (widget_)
+    widget_->Close();
+
   default_controller_ = NULL;
 }
 
-void WizardController::ShowFirstScreen(const std::string& first_screen_name) {
-  if (first_screen_name == kNetworkScreenName) {
-    SetCurrentScreen(GetNetworkScreen());
-  } else if (first_screen_name == kLoginScreenName) {
-    SetCurrentScreen(GetLoginScreen());
-  } else if (first_screen_name == kAccountScreenName) {
-    SetCurrentScreen(GetAccountScreen());
-  } else if (first_screen_name == kUpdateScreenName) {
-    SetCurrentScreen(GetUpdateScreen());
-  } else {
-    if (chromeos::UserManager::Get()->GetUsers().empty()) {
-      SetCurrentScreen(GetNetworkScreen());
-    } else {
-      SetCurrentScreen(GetLoginScreen());
-    }
-  }
+void WizardController::Init(const std::string& first_screen_name) {
+  DCHECK(!contents_);
+
+  gfx::Rect screen_bounds =
+      views::Screen::GetMonitorWorkAreaNearestWindow(NULL);
+  int window_x = (screen_bounds.width() - kWizardScreenWidth) / 2;
+  int window_y = (screen_bounds.height() - kWizardScreenHeight) / 2;
+
+  contents_ = new ContentView(window_x, window_y, screen_bounds.width(),
+                              screen_bounds.height());
+
+  views::WidgetGtk* window =
+      new views::WidgetGtk(views::WidgetGtk::TYPE_WINDOW);
+  widget_ = window;
+  window->Init(NULL, gfx::Rect(window_x, window_y, kWizardScreenWidth,
+                               kWizardScreenHeight));
+  window->SetContentsView(contents_);
+
+  ShowFirstScreen(first_screen_name);
+
+  // This keeps the window from flashing at startup.
+  GdkWindow* gdk_window = window->GetNativeView()->window;
+  gdk_window_set_back_pixmap(gdk_window, NULL, false);
+}
+
+void WizardController::Show() {
+  DCHECK(widget_);
+  widget_->Show();
+}
+
+void WizardController::ShowBackground(const gfx::Size& size) {
+  DCHECK(!background_widget_);
+  background_widget_ = chromeos::BackgroundView::CreateWindowContainingView(
+      gfx::Rect(0, 0, size.width(), size.height()), &background_view_);
+  background_widget_->Show();
+}
+
+void WizardController::OwnBackground(
+    views::Widget* background_widget,
+    chromeos::BackgroundView* background_view) {
+  DCHECK(!background_widget_);
+  background_widget_ = background_widget;
+  background_view_ = background_view;
 }
 
 NetworkScreen* WizardController::GetNetworkScreen() {
@@ -154,7 +174,17 @@ UpdateScreen* WizardController::GetUpdateScreen() {
 ///////////////////////////////////////////////////////////////////////////////
 // WizardController, ExitHandlers:
 void WizardController::OnLoginSignInSelected() {
-  window()->Close();
+  // Close the windows now (which will delete them).
+  if (background_widget_) {
+    background_widget_->Close();
+    background_widget_ = NULL;
+  }
+
+  widget_->Close();
+  widget_ = NULL;
+
+  // We're on the stack, so don't try and delete us now.
+  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 void WizardController::OnLoginCreateAccount() {
@@ -175,11 +205,6 @@ void WizardController::OnLanguageChanged() {
 
 ///////////////////////////////////////////////////////////////////////////////
 // WizardController, private:
-void WizardController::InitContents() {
-  contents_ = new WizardContentsView();
-  contents_->Init(this);
-}
-
 void WizardController::OnSwitchLanguage(std::string lang) {
   // Delete all views that may may reference locale-specific data.
   SetCurrentScreen(NULL);
@@ -201,7 +226,8 @@ void WizardController::OnSwitchLanguage(std::string lang) {
   g_browser_process->SetApplicationLocale(lang);
 
   // Recreate view hierarchy and return to the wizard screen.
-  contents_->InitStatusArea(this);
+  if (background_view_)
+    background_view_->RecreateStatusArea();
   OnExit(chromeos::ScreenObserver::LANGUAGE_CHANGED);
 }
 
@@ -212,7 +238,25 @@ void WizardController::SetCurrentScreen(WizardScreen* new_current) {
   if (current_screen_) {
     current_screen_->Show();
     contents_->Layout();
-    contents_->SchedulePaint();
+  }
+  contents_->SchedulePaint();
+}
+
+void WizardController::ShowFirstScreen(const std::string& first_screen_name) {
+  if (first_screen_name == kNetworkScreenName) {
+    SetCurrentScreen(GetNetworkScreen());
+  } else if (first_screen_name == kLoginScreenName) {
+    SetCurrentScreen(GetLoginScreen());
+  } else if (first_screen_name == kAccountScreenName) {
+    SetCurrentScreen(GetAccountScreen());
+  } else if (first_screen_name == kUpdateScreenName) {
+    SetCurrentScreen(GetUpdateScreen());
+  } else {
+    if (chromeos::UserManager::Get()->GetUsers().empty()) {
+      SetCurrentScreen(GetNetworkScreen());
+    } else {
+      SetCurrentScreen(GetLoginScreen());
+    }
   }
 }
 
@@ -241,46 +285,26 @@ void WizardController::OnExit(ExitCodes exit_code) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// WizardController, views::WindowDelegate overrides:
-views::View* WizardController::GetContentsView() {
-  if (!contents_)
-    InitContents();
-  return contents_;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// WizardController, StatusAreaHost overrides:
-gfx::NativeWindow WizardController::GetNativeWindow() const {
-  return window()->GetNativeWindow();
-}
-
-bool WizardController::ShouldOpenButtonOptions(
-    const views::View* button_view) const {
-  if (button_view == contents_->status_area()->clock_view())
-    return false;
-  if (button_view == contents_->status_area()->network_view())
-    return false;
-  return true;
-}
-
-void WizardController::OpenButtonOptions(const views::View* button_view) const {
-  // TODO(avayvod): Add some dialog for options or remove them completely.
-}
-
-bool WizardController::IsButtonVisible(const views::View* button_view) const {
-  return true;
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // WizardController, WizardScreen overrides:
 views::View* WizardController::GetWizardView() {
   return contents_;
 }
 
-views::Window* WizardController::GetWizardWindow() {
-  return window();
-}
-
 chromeos::ScreenObserver* WizardController::GetObserver(WizardScreen* screen) {
   return this;
 }
+
+namespace browser {
+
+// Declared in browser_dialogs.h so that others don't need to depend on our .h.
+void ShowLoginWizard(const std::string& first_screen_name,
+                     const gfx::Size& size) {
+  WizardController* controller = new WizardController();
+  controller->ShowBackground(size);
+  controller->Init(first_screen_name);
+  controller->Show();
+  if (chromeos::CrosLibrary::EnsureLoaded())
+    chromeos::LoginLibrary::Get()->EmitLoginPromptReady();
+}
+
+}  // namespace browser
