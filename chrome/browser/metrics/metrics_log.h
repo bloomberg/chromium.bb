@@ -112,6 +112,10 @@ class MetricsLog {
   // reliability stats, from other builds, can be abandoned.
   static int64 GetBuildTime();
 
+  // Get the amount of uptime in seconds since this function was last called.
+  // This updates the cumulative uptime metric for uninstall as a side effect.
+  static int64 GetIncrementalUptime(PrefService* pref);
+
   // Use |extension| in all uploaded appversions in addition to the standard
   // version string.
   static void set_version_extension(const std::string& extension) {

@@ -5,6 +5,7 @@
 #include "chrome/browser/metrics/metrics_log.h"
 
 #include "base/base64.h"
+#include "base/time.h"
 #include "base/basictypes.h"
 #include "base/file_util.h"
 #include "base/file_version_info.h"
@@ -329,6 +330,22 @@ int64 MetricsLog::GetBuildTime() {
   return integral_build_time;
 }
 
+// static
+int64 MetricsLog::GetIncrementalUptime(PrefService* pref) {
+  base::TimeTicks now = base::TimeTicks::Now();
+  static base::TimeTicks last_updated_time(now);
+  int64 incremental_time = (now - last_updated_time).InSeconds();
+  last_updated_time = now;
+
+  if (incremental_time > 0) {
+    int64 metrics_uptime = pref->GetInt64(prefs::kUninstallMetricsUptimeSec);
+    metrics_uptime += incremental_time;
+    pref->SetInt64(prefs::kUninstallMetricsUptimeSec, metrics_uptime);
+  }
+
+  return incremental_time;
+}
+
 std::string MetricsLog::GetInstallDate() const {
   PrefService* pref = g_browser_process->local_state();
   if (pref) {
@@ -393,11 +410,6 @@ void MetricsLog::WriteStabilityElement() {
   WriteIntAttribute("debuggernotpresent",
                    pref->GetInteger(prefs::kStabilityDebuggerNotPresent));
   pref->SetInteger(prefs::kStabilityDebuggerNotPresent, 0);
-
-  // Uptime is stored as a string, since there's no int64 in Value/JSON.
-  WriteAttribute("uptimesec",
-                 WideToUTF8(pref->GetString(prefs::kStabilityUptimeSec)));
-  pref->SetString(prefs::kStabilityUptimeSec, L"0");
 
   WritePluginStabilityElements(pref);
 }
@@ -486,6 +498,10 @@ void MetricsLog::WriteRealtimeStabilityAttributes(PrefService* pref) {
     WriteIntAttribute("childprocesscrashcount", count);
     pref->SetInteger(prefs::kStabilityChildProcessCrashCount, 0);
   }
+
+  int64 recent_duration = GetIncrementalUptime(pref);
+  if (recent_duration)
+    WriteInt64Attribute("uptimesec", recent_duration);
 }
 
 void MetricsLog::WritePluginList(

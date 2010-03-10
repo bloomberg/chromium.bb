@@ -435,11 +435,6 @@ const wchar_t kStabilityLaunchTimeSec[] =
 const wchar_t kStabilityLastTimestampSec[] =
     L"user_experience_metrics.stability.last_timestamp_sec";
 
-// Number of milliseconds that the main application process was up since
-// the last report.
-const wchar_t kStabilityUptimeSec[] =
-    L"user_experience_metrics.stability.uptime_sec";
-
 // This is the location of a list of dictionaries of plugin stability stats.
 const wchar_t kStabilityPluginStats[] =
     L"user_experience_metrics.stability.plugin_stats2";

@@ -318,7 +318,6 @@ void MetricsService::RegisterPrefs(PrefService* local_state) {
   local_state->RegisterInt64Pref(prefs::kMetricsClientIDTimestamp, 0);
   local_state->RegisterInt64Pref(prefs::kStabilityLaunchTimeSec, 0);
   local_state->RegisterInt64Pref(prefs::kStabilityLastTimestampSec, 0);
-  local_state->RegisterInt64Pref(prefs::kStabilityUptimeSec, 0);
   local_state->RegisterStringPref(prefs::kStabilityStatsVersion, L"");
   local_state->RegisterInt64Pref(prefs::kStabilityStatsBuildTime, 0);
   local_state->RegisterBooleanPref(prefs::kStabilityExitedCleanly, true);
@@ -377,9 +376,8 @@ void MetricsService::DiscardOldStabilityStats(PrefService* local_state) {
   local_state->SetInteger(prefs::kStabilityRendererCrashCount, 0);
   local_state->SetInteger(prefs::kStabilityRendererHangCount, 0);
 
-  local_state->SetString(prefs::kStabilityLaunchTimeSec, L"0");
-  local_state->SetString(prefs::kStabilityLastTimestampSec, L"0");
-  local_state->SetString(prefs::kStabilityUptimeSec, L"0");
+  local_state->SetInt64(prefs::kStabilityLaunchTimeSec, 0);
+  local_state->SetInt64(prefs::kStabilityLastTimestampSec, 0);
 
   local_state->ClearPref(prefs::kStabilityPluginStats);
 
@@ -697,25 +695,12 @@ void MetricsService::InitializeMetricsState() {
     pref->SetBoolean(prefs::kStabilitySessionEndCompleted, true);
   }
 
-  int64 last_start_time = pref->GetInt64(prefs::kStabilityLaunchTimeSec);
-  int64 last_end_time = pref->GetInt64(prefs::kStabilityLastTimestampSec);
-  int64 uptime = pref->GetInt64(prefs::kStabilityUptimeSec);
-
-  // Same idea as uptime, except this one never gets reset and is used at
-  // uninstallation.
-  int64 uninstall_metrics_uptime =
-      pref->GetInt64(prefs::kUninstallMetricsUptimeSec);
-
-  if (last_start_time && last_end_time) {
-    // TODO(JAR): Exclude sleep time.  ... which must be gathered in UI loop.
-    int64 uptime_increment = last_end_time - last_start_time;
-    uptime += uptime_increment;
-    pref->SetInt64(prefs::kStabilityUptimeSec, uptime);
-
-    uninstall_metrics_uptime += uptime_increment;
-    pref->SetInt64(prefs::kUninstallMetricsUptimeSec,
-                   uninstall_metrics_uptime);
-  }
+  // Initialize uptime counters.
+  int64 startup_uptime = MetricsLog::GetIncrementalUptime(pref);
+  DCHECK(0 == startup_uptime);
+  // For backwards compatibility, leave this intact in case Omaha is checking
+  // them.  prefs::kStabilityLastTimestampSec may also be useless now.
+  // TODO(jar): Delete these if they have no uses.
   pref->SetInt64(prefs::kStabilityLaunchTimeSec, Time::Now().ToTimeT());
 
   // Bookkeeping for the uninstall metrics.
