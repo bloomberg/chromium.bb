@@ -305,6 +305,7 @@
           'dependencies': [
             '../build/linux/system.gyp:gtk',
             '../build/linux/system.gyp:x11',
+            '../build/linux/system.gyp:xext',
           ],
           'sources!': [
             'accessibility/accessible_wrapper.cc',
