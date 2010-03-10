@@ -95,6 +95,9 @@ void NormalBrowserFrameView::UpdateThrobber(bool running) {
   // No window icon.
 }
 
+void NormalBrowserFrameView::PaintTabStripShadow(gfx::Canvas* canvas) {
+}
+
 gfx::Size NormalBrowserFrameView::GetMinimumSize() {
   gfx::Size min_size(browser_view_->GetMinimumSize());
   int border_thickness = FrameBorderThickness();
