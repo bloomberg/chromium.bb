@@ -40,6 +40,9 @@ _LocateBinDirs()
 
 try:
   import pyautolib
+  # Needed so that all additional classes (like: FilePath, GURL) exposed by
+  # swig interface get available in this module.
+  from pyautolib import *
 except ImportError:
   print >>sys.stderr, "Could not locate built libraries. Did you build?"
   raise
@@ -63,8 +66,21 @@ class PyUITest(pyautolib.PyUITestSuite, unittest.TestCase):
         self.assertTrue("Google" == self.GetActiveTabTitle())
   """
 
-  def __init__(self, methodName='runTest'):
-    pyautolib.PyUITestSuite.__init__(self, sys.argv)
+  def __init__(self, methodName='runTest', extra_chrome_flags=None):
+    """Initialize PyUITest.
+
+    When redefining __init__ in a derived class, make sure that:
+      o you make a call this __init__
+      o __init__ takes methodName as a arg. this is mandated by unittest module
+
+    Args:
+      methodName: the default method name. Internal use by unittest module
+      extra_chrome_flags: additional flags to pass when launching chrome
+    """
+    args = sys.argv
+    if extra_chrome_flags is not None:
+       args.append('--extra-chrome-flags=%s' % extra_chrome_flags)
+    pyautolib.PyUITestSuite.__init__(self, args)
     # Figure out path to chromium binaries
     browser_dir = os.path.normpath(os.path.dirname(pyautolib.__file__))
     os.environ['PATH'] = browser_dir + os.pathsep + os.environ['PATH']
