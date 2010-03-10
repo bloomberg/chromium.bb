@@ -6,19 +6,19 @@
 
 #include "chrome/browser/geolocation/wifi_data_provider_mac.h"
 
+#include <dlfcn.h>
 #import <Foundation/Foundation.h>
 
 #include "base/scoped_nsautorelease_pool.h"
 #include "base/scoped_nsobject.h"
 #include "base/utf_string_conversions.h"
 
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
-// If building on 10.6 we can include the framework header directly.
-#import <CoreWLAN/CoreWLAN.h>
-
-#else
-// Otherwise just define the interfaces we require. Class definitions required
-// as we treat warnings as errors so we can't pass message to an untyped id.
+// Define a subset of the CoreWLAN interfaces we require. We can't depend on
+// CoreWLAN.h existing as we need to build on 10.5 SDKs. We can't just send
+// messages to an untyped id due to the build treating warnings as errors,
+// hence the reason we need class definitions.
+// TODO(joth): When we build all 10.6 code exclusively 10.6 SDK (or later)
+// tidy this up to use the framework directly. See http://crbug.com/37703
 
 @interface CWInterface : NSObject
 + (CWInterface*)interface;
@@ -40,36 +40,6 @@
 - (BOOL)isEqualToNetwork:(CWNetwork*)network;
 @end
 
-// String literals derived empirically on an OSX 10.6 machine (XCode 3.2.1).
-// Commented out to avoid unused variables warnings; comment back in as needed.
-
-// static const NSString* kCWAssocKey8021XProfile = @"ASSOC_KEY_8021X_PROFILE";
-// static const NSString* kCWAssocKeyPassphrase = @"ASSOC_KEY_PASSPHRASE";
-// static const NSString* kCWBSSIDDidChangeNotification =
-//     @"BSSID_CHANGED_NOTIFICATION";
-// static const NSString* kCWCountryCodeDidChangeNotification =
-//     @"COUNTRY_CODE_CHANGED_NOTIFICATION";
-// static const NSString* kCWErrorDomain = @"APPLE80211_ERROR_DOMAIN";
-// static const NSString* kCWIBSSKeyChannel = @"IBSS_KEY_CHANNEL";
-// static const NSString* kCWIBSSKeyPassphrase = @"IBSS_KEY_PASSPHRASE";
-// static const NSString* kCWIBSSKeySSID = @"IBSS_KEY_SSID";
-// static const NSString* kCWLinkDidChangeNotification =
-//     @"LINK_CHANGED_NOTIFICATION";
-// static const NSString* kCWModeDidChangeNotification =
-//     @"MODE_CHANGED_NOTIFICATION";
-// static const NSString* kCWPowerDidChangeNotification =
-//     @"POWER_CHANGED_NOTIFICATION";
-// static const NSString* kCWScanKeyBSSID = @"BSSID";
-// static const NSString* kCWScanKeyDwellTime = @"SCAN_DWELL_TIME";
-static const NSString* kCWScanKeyMerge = @"SCAN_MERGE";
-// static const NSString* kCWScanKeyRestTime = @"SCAN_REST_TIME";
-// static const NSString* kCWScanKeyScanType = @"SCAN_TYPE";
-// static const NSString* kCWScanKeySSID = @"SSID_STR";
-// static const NSString* kCWSSIDDidChangeNotification =
-//     @"SSID_CHANGED_NOTIFICATION";
-
-#endif  // MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
-
 class CoreWlanApi : public WifiDataProviderCommon::WlanApiInterface {
  public:
   CoreWlanApi() {}
@@ -85,6 +55,7 @@ class CoreWlanApi : public WifiDataProviderCommon::WlanApiInterface {
  private:
   scoped_nsobject<NSBundle> bundle_;
   scoped_nsobject<CWInterface> corewlan_interface_;
+  scoped_nsobject<NSString> merge_key_;
 
   DISALLOW_COPY_AND_ASSIGN(CoreWlanApi);
 };
@@ -107,6 +78,27 @@ bool CoreWlanApi::Init() {
     return false;
   }
   [corewlan_interface_ retain];
+
+  // Dynamically look up the value of the kCWScanKeyMerge (i.e. without build
+  // time dependency on the 10.6 specific library).
+  void* dl_handle = dlopen([[bundle_ executablePath] fileSystemRepresentation],
+                           RTLD_LAZY | RTLD_LOCAL);
+  if (dl_handle) {
+    const NSString* key = *reinterpret_cast<const NSString**>(
+        dlsym(dl_handle, "kCWScanKeyMerge"));
+    if (key)
+      merge_key_.reset([key copy]);
+  }
+  // "Leak" dl_handle rather than dlclose it, to ensure |merge_key_|
+  // remains valid.
+  if (!merge_key_.get()) {
+    // Fall back to a known-working value should the lookup fail (if
+    // this value is itself wrong it's not the end of the world, we might just
+    // get very slightly lower quality location fixes due to SSID merges).
+    DLOG(WARNING) << "Could not dynamically load the CoreWLAN merge key";
+    merge_key_.reset([@"SCAN_MERGE" retain]);
+  }
+
   return true;
 }
 
@@ -118,7 +110,7 @@ bool CoreWlanApi::GetAccessPointData(WifiData::AccessPointDataSet* data) {
   // every AP listed in the scan without any SSID de-duping logic.
   NSDictionary* params =
       [NSDictionary dictionaryWithObject:[NSNumber numberWithBool:NO]
-                                  forKey:kCWScanKeyMerge];
+                                  forKey:merge_key_.get()];
 
   NSArray* scan = [corewlan_interface_ scanForNetworksWithParameters:params
                                                                error:&err];
