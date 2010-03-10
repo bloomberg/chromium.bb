@@ -5,6 +5,7 @@
 #include "views/controls/button/checkbox.h"
 
 #include "app/gfx/canvas.h"
+#include "base/logging.h"
 #include "views/controls/label.h"
 
 namespace views {
@@ -150,6 +151,19 @@ void Checkbox::WillGainFocus() {
 
 void Checkbox::WillLoseFocus() {
   label_->set_paint_as_focused(false);
+}
+
+bool Checkbox::GetAccessibleRole(AccessibilityTypes::Role* role) {
+  DCHECK(role);
+
+  *role = AccessibilityTypes::ROLE_CHECKBUTTON;
+  return true;
+}
+
+bool Checkbox::GetAccessibleName(std::wstring* name) {
+  DCHECK(name);
+  *name = label_->GetText();
+  return !name->empty();
 }
 
 std::string Checkbox::GetClassName() const {

@@ -5,6 +5,8 @@
 #ifndef VIEWS_CONTROLS_BUTTON_CHECKBOX_H_
 #define VIEWS_CONTROLS_BUTTON_CHECKBOX_H_
 
+#include <string>
+
 #include "views/controls/button/native_button.h"
 
 namespace views {
@@ -18,7 +20,7 @@ class Checkbox : public NativeButton {
   static const char kViewClassName[];
 
   Checkbox();
-  Checkbox(const std::wstring& label);
+  explicit Checkbox(const std::wstring& label);
   virtual ~Checkbox();
 
   // Sets a listener for this checkbox. Checkboxes aren't required to have them
@@ -55,6 +57,10 @@ class Checkbox : public NativeButton {
   virtual void WillGainFocus();
   virtual void WillLoseFocus();
 
+  // Accessibility accessors, overridden from View.
+  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+  virtual bool GetAccessibleName(std::wstring* name);
+
   // Overridden from NativeButton:
   virtual void SetLabel(const std::wstring& label);
 
@@ -85,4 +91,4 @@ class Checkbox : public NativeButton {
 
 }  // namespace views
 
-#endif  // #ifndef VIEWS_CONTROLS_BUTTON_CHECKBOX_H_
+#endif  // VIEWS_CONTROLS_BUTTON_CHECKBOX_H_

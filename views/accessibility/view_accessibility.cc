@@ -674,6 +674,8 @@ long ViewAccessibility::MSAARole(AccessibilityTypes::Role role) {
       return ROLE_SYSTEM_BUTTONDROPDOWN;
     case AccessibilityTypes::ROLE_BUTTONMENU:
       return ROLE_SYSTEM_BUTTONMENU;
+    case AccessibilityTypes::ROLE_CHECKBUTTON:
+      return ROLE_SYSTEM_CHECKBUTTON;
     case AccessibilityTypes::ROLE_GRAPHIC:
       return ROLE_SYSTEM_GRAPHIC;
     case AccessibilityTypes::ROLE_GROUPING:

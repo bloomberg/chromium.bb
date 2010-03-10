@@ -81,7 +81,7 @@ void ImageView::ComputeImageOrigin(int image_width, int image_height,
 
   gfx::Insets insets = GetInsets();
 
-  switch(actual_horiz_alignment) {
+  switch (actual_horiz_alignment) {
     case LEADING:
       *x = insets.left();
       break;
@@ -137,11 +137,9 @@ void ImageView::Paint(gfx::Canvas* canvas) {
 }
 
 bool ImageView::GetAccessibleName(std::wstring* name) {
-  if (!name || tooltip_text_.empty())
-    return false;
-
+  DCHECK(name);
   *name = tooltip_text_;
-  return true;
+  return !name->empty();
 }
 
 bool ImageView::GetAccessibleRole(AccessibilityTypes::Role* role) {
