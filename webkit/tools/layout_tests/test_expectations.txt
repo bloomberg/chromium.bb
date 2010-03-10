@@ -91,7 +91,7 @@ BUG24182 WIN RELEASE SLOW : http/tests/incremental/split-hex-entities.pl = PASS
 BUG24182 WIN RELEASE SLOW : http/tests/xmlhttprequest/XMLHttpRequestException.html = PASS
 BUG24182 WIN RELEASE SLOW : http/tests/xmlhttprequest/connection-error-sync.html = PASS
 BUG24182 WIN RELEASE SLOW : http/tests/loading/onload-vs-immediate-refresh.pl = PASS
-BUG24182 SLOW WIN DEBUG : editing/selection/extend-selection.html = PASS
+BUG24182 WIN LINUX SLOW : editing/selection/extend-selection.html = PASS
 BUG24182 SLOW WIN : fast/images/svg-as-background.html = PASS
 BUG24182 SLOW WIN : fast/backgrounds/svg-as-background-5.html = PASS
 BUG24182 SLOW DEBUG : svg/css/getComputedStyle-basic.xhtml = PASS
@@ -99,6 +99,7 @@ BUG24182 WIN DEBUG SLOW: inspector/console-dirxml.html = PASS
 BUG24182 DEBUG SLOW : fast/dom/Window/window-function-frame-getter-precedence.html = PASS
 BUG24182 SLOW DEBUG : fast/frames/frame-limit.html = PASS
 BUG24182 SLOW : http/tests/cache/subresource-failover-to-network.html = PASS
+BUG24182 WIN DEBUG : animations/play-state.html = PASS TEXT
 BUG24182 SLOW WIN : animations/play-state.html = PASS
 
 // Usually <1s in release, ~1s in debug, but occasionally >5s in release.
@@ -2184,6 +2185,7 @@ BUG18116 : svg/custom/global-constructors.html = TEXT
 // Flaky.  Timing?
 BUG18584 WIN DEBUG : animations/combo-transform-translate+scale.html = FAIL PASS
 BUG18584 LINUX : animations/combo-transform-translate+scale.html = FAIL PASS
+BUG18584 WIN DEBUG : animations/change-one-anim.html = PASS TEXT
 
 // Flaky crashes
 BUG18656 MAC RELEASE : fast/dom/Window/window-lookup-precedence.html = FAIL
@@ -2390,9 +2392,10 @@ BUG27849 : http/tests/security/isolatedWorld/didClearWindowObject.html = TEXT
 // Failures from merge 51062:51075
 BUG28034 MAC : http/tests/security/XFrameOptions/x-frame-options-deny.html = PASS FAIL
 
-// TODO(michaeln): BUG29748 restore expectation to PASS FAIL  after linux is rebaselined
-// BUG28040 WIN LINUX DEBUG : fast/body-propagation/overflow/004.html = PASS FAIL
-BUG28040 WIN LINUX DEBUG : fast/body-propagation/overflow/004.html = PASS FAIL IMAGE
+BUG28040 WIN : fast/body-propagation/overflow/004.html = PASS IMAGE+TEXT
+BUG28040 MAC DEBUG : fast/body-propagation/overflow/004.html = PASS IMAGE+TEXT
+
+BUG28040 WIN MAC DEBUG : fast/body-propagation/overflow/003-xhtml.xhtml = PASS IMAGE+TEXT
 
 BUG28092 WIN : http/tests/xmlhttprequest/redirect-cross-origin-post.html = PASS FAIL
 BUG28095 MAC : http/tests/cookies/simple-cookies-expired.html = PASS TIMEOUT
