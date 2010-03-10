@@ -53,6 +53,9 @@ SDKROOT=$(SDKLOC)/$(SDKNAME)
 DESTDIR?=
 BUILDNCCDIR=$(SDKROOT)/$(CROSSARCH)
 
+# Convert CROSSARCH (nacl or nacl64) to (32 or 64).
+BITSPLATFORM=$(subst 3264,64,$(subst nacl,32,$(CROSSARCH)))
+
 ifeq ($(shell uname -s), Darwin)
  PLATFORM=osx
 else
@@ -491,7 +494,7 @@ nc_threads: ALWAYS
 	cd .. && \
 	 ./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
 	  --mode=nacl_extra_sdk install_libpthread --verbose \
-	  targetplatform=x86-$(subst nacl,,$(CROSSARCH))
+	  targetplatform=x86-$(BITSPLATFORM)
 
 nacl_libraries_nocpp: ALWAYS
 	if [ "x$(GCC_VERSION)" = "x4.4.3" -a \
@@ -509,11 +512,11 @@ nacl_libraries_nocpp: ALWAYS
 	else \
 	  cd .. && \
 	   ./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
-	   targetplatform=x86-$(subst nacl,,$(CROSSARCH)) \
+	   targetplatform=x86-$(BITSPLATFORM) \
 	   --mode=nacl_extra_sdk extra_sdk_update_header nocpp=yes --verbose ; \
 	   ./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
 	   --mode=nacl_extra_sdk extra_sdk_update nocpp=yes --verbose \
-	   targetplatform=x86-$(subst nacl,,$(CROSSARCH)) ; \
+	   targetplatform=x86-$(BITSPLATFORM) ; \
 	fi
 
 nacl_libraries: ALWAYS
@@ -532,10 +535,10 @@ nacl_libraries: ALWAYS
 	else \
 	  cd .. && \
 	   (./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
-	     targetplatform=x86-$(subst nacl,,$(CROSSARCH)) \
+	     targetplatform=x86-$(BITSPLATFORM) \
 	     --mode=nacl_extra_sdk extra_sdk_update_header --verbose) && \
 	   (./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
-	     targetplatform=x86-$(subst nacl,,$(CROSSARCH)) \
+	     targetplatform=x86-$(BITSPLATFORM) \
 	     --mode=nacl_extra_sdk extra_sdk_update --verbose) ; \
 	fi
 
@@ -543,7 +546,7 @@ sdk_minimal_test: ALWAYS
 	cd .. && \
 	 ./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
 	  --mode=nacl sdk_minimal_test \
-	  targetplatform=x86-$(subst nacl,,$(CROSSARCH)) --verbose
+	  targetplatform=x86-$(BITSPLATFORM) --verbose
 
 
 ##########################################################################
