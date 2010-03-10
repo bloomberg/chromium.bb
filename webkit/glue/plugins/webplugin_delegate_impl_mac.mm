@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #import <Cocoa/Cocoa.h>
-#import <QuartzCore/QuartzCore.h>
 
 #include "webkit/glue/plugins/webplugin_delegate_impl.h"
 
@@ -17,6 +16,7 @@
 #include "base/scoped_ptr.h"
 #include "base/stats_counters.h"
 #include "base/string_util.h"
+#include "base/timer.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
 #include "webkit/default_plugin/plugin_impl.h"
 #include "webkit/glue/webplugin.h"
@@ -48,8 +48,6 @@ using WebKit::WebKeyboardEvent;
 using WebKit::WebInputEvent;
 using WebKit::WebMouseEvent;
 using WebKit::WebMouseWheelEvent;
-
-const int kCoreAnimationRedrawPeriodMs = 20;  // 50fps
 
 // Important implementation notes: The Mac definition of NPAPI, particularly
 // the distinction between windowed and windowless modes, differs from the
@@ -171,21 +169,16 @@ class CarbonIdleEventSource {
 
 }  // namespace
 
-#pragma mark -
-
 WebPluginDelegateImpl::WebPluginDelegateImpl(
     gfx::PluginWindowHandle containing_view,
     NPAPI::PluginInstance *instance)
-    : windowed_handle_(NULL),
-      windowless_needs_set_window_(true),
+    : windowless_needs_set_window_(true),
       // all Mac plugins are "windowless" in the Windows/X11 sense
       windowless_(true),
       plugin_(NULL),
       instance_(instance),
       parent_(containing_view),
       buffer_context_(NULL),
-      layer_(nil),
-      renderer_(nil),
       quirks_(0),
       have_focus_(false),
       focus_notifier_(NULL),
@@ -263,31 +256,6 @@ void WebPluginDelegateImpl::PlatformInitialize() {
 #endif
       window_.type = NPWindowTypeDrawable;
       break;
-    case NPDrawingModelCoreAnimation: {  // Assumes Cocoa event model.
-      window_.type = NPWindowTypeDrawable;
-      // Ask the plug-in for the CALayer it created for rendering content. Have
-      // the renderer tell the browser to create a "windowed plugin" to host
-      // the IOSurface. The surface itself will be created when the plug-in
-      // is sized.
-      CALayer* layer = nil;
-      NPError err = instance()->NPP_GetValue(NPPVpluginCoreAnimationLayer,
-                                             reinterpret_cast<void*>(&layer));
-      if (!err) {
-        layer_ = layer;
-        plugin_->BindFakePluginWindowHandle();
-        surface_.Initialize();
-        UpdateAcceleratedSurface();
-        renderer_ = [[CARenderer rendererWithCGLContext:surface_.context()
-                                                options:NULL] retain];
-        [renderer_ setLayer:layer_];
-        redraw_timer_.reset(new base::RepeatingTimer<WebPluginDelegateImpl>);
-        redraw_timer_->Start(
-            base::TimeDelta::FromMilliseconds(kCoreAnimationRedrawPeriodMs),
-            this,
-            &WebPluginDelegateImpl::DrawLayerInSurface);
-      }
-      break;
-    }
     default:
       NOTREACHED();
       break;
@@ -318,12 +286,6 @@ void WebPluginDelegateImpl::PlatformDestroyInstance() {
   if (instance()->event_model() == NPEventModelCarbon)
     CarbonIdleEventSource::SharedInstance()->UnregisterDelegate(this);
 #endif
-  if (redraw_timer_.get())
-    redraw_timer_->Stop();
-  [renderer_ release];
-  renderer_ = nil;
-  layer_ = nil;
-  surface_.Destroy();
 }
 
 void WebPluginDelegateImpl::UpdateGeometryAndContext(
@@ -417,32 +379,8 @@ void WebPluginDelegateImpl::WindowlessUpdateGeometry(
   WindowlessSetWindow(true);
 }
 
-void WebPluginDelegateImpl::DrawLayerInSurface() {
-  surface_.MakeCurrent();
-
-  surface_.Clear(window_rect_);
-
-  // Ensure all changes are made before rendering. Not sure where the |-begin|
-  // comes from, but not doing this causes nothing to render.
-  [CATransaction commit];
-  [renderer_ beginFrameAtTime:CACurrentMediaTime() timeStamp:NULL];
-  CGRect layerRect = [layer_ bounds];
-  [renderer_ addUpdateRect:layerRect];
-  [renderer_ render];
-  [renderer_ endFrame];
-
-  surface_.SwapBuffers();
-  plugin_->AcceleratedFrameBuffersDidSwap(windowed_handle());
-}
-
 void WebPluginDelegateImpl::WindowlessPaint(gfx::NativeDrawingContext context,
                                             const gfx::Rect& damage_rect) {
-  // There is currently nothing to do for the Core Animation drawing model,
-  // but there have been discussions on the plugin-futures mailing list that
-  // might require future work.
-  if (instance()->drawing_model() == NPDrawingModelCoreAnimation)
-    return;
-
   // If we somehow get a paint before we've set up the plugin buffer, bail.
   if (!buffer_context_)
     return;
@@ -519,8 +457,6 @@ void WebPluginDelegateImpl::WindowlessSetWindow(bool force_set_window) {
     have_called_set_window_ = true;
     SetWindowHasFocus(initial_window_focus_);
   }
-
-  UpdateAcceleratedSurface();
 
   DCHECK(err == NPERR_NO_ERROR);
 }
@@ -644,30 +580,6 @@ void WebPluginDelegateImpl::SetContainerVisibility(bool is_visible) {
   }
 }
 
-// Generate an IOSurface for accelerated drawing (but only in the case where a
-// window handle has been set). Once the surface has been updated for the
-// current size of the plug-in, tell the browser host view so it can adjust its
-// bookkeeping and CALayer appropriately.
-void WebPluginDelegateImpl::UpdateAcceleratedSurface() {
-  // Will only have a window handle when using the CoreAnimation drawing model.
-  if (!windowed_handle() ||
-      instance()->drawing_model() != NPDrawingModelCoreAnimation)
-    return;
-
-  [layer_ setFrame:CGRectMake(0, 0,
-                              window_rect_.width(), window_rect_.height())];
-  [renderer_ setBounds:[layer_ bounds]];
-
-  uint64 io_surface_id = surface_.SetSurfaceSize(window_rect_.width(),
-                                                 window_rect_.height());
-  if (io_surface_id) {
-    plugin_->SetAcceleratedSurface(windowed_handle(),
-                                   window_rect_.width(),
-                                   window_rect_.height(),
-                                   io_surface_id);
-  }
-}
-
 void WebPluginDelegateImpl::WindowFrameChanged(gfx::Rect window_frame,
                                                gfx::Rect view_frame) {
   instance()->set_window_frame(window_frame);
@@ -688,7 +600,6 @@ void WebPluginDelegateImpl::SetNSCursor(NSCursor* cursor) {
 
 void WebPluginDelegateImpl::SetPluginRect(const gfx::Rect& rect) {
   window_rect_ = rect;
-  UpdateAcceleratedSurface();
   PluginScreenLocationChanged();
 }
 

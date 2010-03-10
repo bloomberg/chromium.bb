@@ -402,8 +402,6 @@ void WebPluginDelegateProxy::OnMessageReceived(const IPC::Message& msg) {
                         OnDeferResourceLoading)
 
 #if defined(OS_MACOSX)
-    IPC_MESSAGE_HANDLER(PluginHostMsg_BindFakePluginWindowHandle,
-                        OnBindFakePluginWindowHandle);
     IPC_MESSAGE_HANDLER(PluginHostMsg_UpdateGeometry_ACK,
                         OnUpdateGeometry_ACK)
     // Used only on 10.6 and later.
@@ -1257,38 +1255,25 @@ WebPluginDelegateProxy::CreateSeekableResourceClient(
   return proxy;
 }
 
+CommandBufferProxy* WebPluginDelegateProxy::CreateCommandBuffer() {
+#if defined(ENABLE_GPU)
 #if defined(OS_MACOSX)
-void WebPluginDelegateProxy::OnBindFakePluginWindowHandle() {
-  BindFakePluginWindowHandle();
-}
-
-// Synthesize a fake window handle for the plug-in to identify the instance
-// to the browser, allowing mapping to a surface for hardware acceleration
-// of plug-in content. The browser generates the handle which is then set on
-// the plug-in. Returns true if it successfully sets the window handle on the
-// plug-in.
-bool WebPluginDelegateProxy::BindFakePluginWindowHandle() {
+  // We need to synthesize a fake window handle for this nested
+  // delegate to identify the instance of the GPU plugin back to the
+  // browser.
   gfx::PluginWindowHandle fake_window = NULL;
   if (render_view_)
     fake_window = render_view_->AllocateFakePluginWindowHandle();
   // If we aren't running on 10.6, this allocation will fail.
   if (!fake_window)
-    return false;
+    return NULL;
   OnSetWindow(fake_window);
   if (!Send(new PluginMsg_SetFakeGPUPluginWindowHandle(instance_id_,
                                                        fake_window))) {
-    return false;
+    return NULL;
   }
-  return true;
-}
 #endif
 
-CommandBufferProxy* WebPluginDelegateProxy::CreateCommandBuffer() {
-#if defined(ENABLE_GPU)
-#if defined(OS_MACOSX)
-  if (!BindFakePluginWindowHandle())
-    return NULL;
-#endif
   int command_buffer_id;
   if (!Send(new PluginMsg_CreateCommandBuffer(instance_id_,
                                               &command_buffer_id))) {

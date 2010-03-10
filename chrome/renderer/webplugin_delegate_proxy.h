@@ -149,7 +149,6 @@ class WebPluginDelegateProxy
   void OnDeferResourceLoading(unsigned long resource_id, bool defer);
 
 #if defined(OS_MACOSX)
-  void OnBindFakePluginWindowHandle();
   void OnUpdateGeometry_ACK(int ack_key);
   void OnGPUPluginSetIOSurface(gfx::PluginWindowHandle window,
                                int32 width,
@@ -189,13 +188,6 @@ class WebPluginDelegateProxy
   void WillDestroyWindow();
 
 #if defined(OS_MACOSX)
-  // Synthesize a fake window handle for the plug-in to identify the instance
-  // to the browser, allowing mapping to a surface for hardware acceleration
-  // of plug-in content. The browser generates the handle which is then set on
-  // the plug-in. Returns true if it successfully sets the window handle on the
-  // plug-in.
-  bool BindFakePluginWindowHandle();
-
   // The Mac TransportDIB implementation uses base::SharedMemory, which
   // cannot be disposed of if an in-flight UpdateGeometry message refers to
   // the shared memory file descriptor.  The old_transport_dibs_ map holds

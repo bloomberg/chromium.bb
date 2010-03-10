@@ -408,11 +408,6 @@
                        ['exclude', r'/mac_']],
         }, {  # else: OS=="mac"
           'sources/': [['exclude', 'plugin_(lib|list)_posix\\.cc$']],
-          'link_settings': { 
-            'libraries': [
-              '$(SDKROOT)/QuartzCore.framework', 
-            ], 
-          },
         }],
         ['enable_gpu==1', {
           'dependencies': [

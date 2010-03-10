@@ -416,12 +416,6 @@ IPC_BEGIN_MESSAGES(PluginHost)
                       int32 /* height */,
                       TransportDIB::Handle /* handle to the TransportDIB */)
 
-  // Synthesize a fake window handle for the plug-in to identify the instance
-  // to the browser, allowing mapping to a surface for hardware accelleration
-  // of plug-in content. The browser generates the handle which is then set on
-  // the plug-in.
-  IPC_MESSAGE_ROUTED0(PluginHostMsg_BindFakePluginWindowHandle)
-
   // This message, used only on 10.6 and later, is sent from the
   // plug-in process to the renderer process to indicate that the GPU
   // plugin allocated a new IOSurface object of the given width and

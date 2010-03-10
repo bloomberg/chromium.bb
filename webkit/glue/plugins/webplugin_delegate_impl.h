@@ -16,14 +16,9 @@
 #include "base/gfx/rect.h"
 #include "base/ref_counted.h"
 #include "base/task.h"
-#include "base/timer.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "webkit/glue/webcursor.h"
 #include "webkit/glue/webplugin_delegate.h"
-
-#if defined(OS_MACOSX)
-#include "chrome/common/accelerated_surface_mac.h"
-#endif
 
 #if defined(USE_X11)
 typedef struct _GdkDrawable GdkPixmap;
@@ -37,19 +32,8 @@ namespace WebKit {
 class WebMouseEvent;
 }
 
-#if defined(OS_MACOSX)
-class CoreAnimationRedrawTimerSource;
-#ifdef __OBJC__
-@class CALayer;
-@class CARenderer;
-#else
-class CALayer;
-class CARenderer;
-#endif
-#endif
-
-// An implementation of WebPluginDelegate that runs in the plugin process,
-// proxied from the renderer by WebPluginDelegateProxy.
+// An implementation of WebPluginDelegate that proxies all calls to
+// the plugin process.
 class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
  public:
   enum PluginQuirks {
@@ -162,12 +146,6 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   // Informs the delegate that the plugin set a Cocoa NSCursor.
   void SetNSCursor(NSCursor* cursor);
 
-  // Informs the browser about the updated accelerated drawing surface.
-  void UpdateAcceleratedSurface();
-
-  // Uses a CARenderer to draw the plug-in's layer in our OpenGL surface.
-  void DrawLayerInSurface();
-
 #ifndef NP_NO_CARBON
   // Indicates that it's time to send the plugin a null event.
   void FireIdleEvent();
@@ -179,11 +157,10 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   }
 
 #if defined(OS_MACOSX)
-  // Allow setting a "fake" window handle to associate this plug-in with
-  // an IOSurface in the browser. Used for accelerated drawing surfaces.
+  // On Mac OS X and for the GPU plugin only, this handle is a fake
+  // one and comes in from the outside world.
   void set_windowed_handle(gfx::PluginWindowHandle handle) {
     windowed_handle_ = handle;
-    UpdateAcceleratedSurface();
   }
 #endif
 
@@ -267,7 +244,7 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
 
   // used for windowed plugins
   // Note: on Mac OS X, the only time the windowed handle is non-zero
-  // is the case of accelerated rendering, which uses a fake window handle to
+  // is the case of the GPU plugin, which uses a fake window handle to
   // identify itself back to the browser. It still performs all of its
   // work offscreen.
   gfx::PluginWindowHandle windowed_handle_;
@@ -324,10 +301,6 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
 #ifndef NP_NO_QUICKDRAW
   NP_Port qd_port_;
 #endif
-  CALayer* layer_;  // Used for CA drawing mode. Weak, retained by plug-in.
-  AcceleratedSurface surface_;
-  CARenderer* renderer_;  // Renders layer_ to surface_.
-  scoped_ptr<base::RepeatingTimer<WebPluginDelegateImpl> > redraw_timer_;
 #endif
   gfx::Rect window_rect_;
   gfx::Rect clip_rect_;
@@ -383,7 +356,7 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
 #ifndef NP_NO_CARBON
   // Moves our dummy window to match the current screen location of the plugin.
   void UpdateDummyWindowBounds(const gfx::Point& plugin_origin);
-
+  
 #ifndef NP_NO_QUICKDRAW
   // Scrapes the contents of our dummy window into the given context.
   void ScrapeDummyWindowIntoContext(CGContextRef context);

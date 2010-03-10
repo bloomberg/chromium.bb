@@ -576,28 +576,6 @@ void WebPluginProxy::SetDeferResourceLoading(unsigned long resource_id,
   Send(new PluginHostMsg_DeferResourceLoading(route_id_, resource_id, defer));
 }
 
-#if defined(OS_MACOSX)
-void WebPluginProxy::BindFakePluginWindowHandle() {
-  Send(new PluginHostMsg_BindFakePluginWindowHandle(route_id_));
-}
-
-void WebPluginProxy::AcceleratedFrameBuffersDidSwap(
-    gfx::PluginWindowHandle window) {
-  // TODO(pinkerton): Rename this message.
-  Send(new PluginHostMsg_GPUPluginBuffersSwapped(route_id_, window));
-}
-
-void WebPluginProxy::SetAcceleratedSurface(gfx::PluginWindowHandle window,
-    int32 width,
-    int32 height,
-    uint64 accelerated_surface_identifier) {
-  // TODO(pinkerton): Rename this message.
-  Send(new PluginHostMsg_GPUPluginSetIOSurface(route_id_, window, width,
-                                               height,
-                                               accelerated_surface_identifier));
-}
-#endif
-
 void WebPluginProxy::OnPaint(const gfx::Rect& damaged_rect) {
   child_process_logging::SetActiveURL(page_url_);
 

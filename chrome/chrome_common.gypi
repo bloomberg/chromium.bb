@@ -23,8 +23,6 @@
           # .cc, .h, and .mm files under chrome/common that are used on all
           # platforms, including both 32-bit and 64-bit Windows.
           # Test files are not included.
-          'common/accelerated_surface_mac.cc',
-          'common/accelerated_surface_mac.h',
           'common/app_mode_constants_mac.h',
           'common/app_mode_constants_mac.mm',
           'common/bindings_policy.h',
