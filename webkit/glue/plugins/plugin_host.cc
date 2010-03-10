@@ -9,6 +9,9 @@
 #include "base/scoped_ptr.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
+#if defined(OS_MACOSX)
+#include "base/sys_info.h"
+#endif
 #include "base/sys_string_conversions.h"
 #include "net/base/net_util.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
@@ -35,6 +38,21 @@ static NPAPI::PluginInstance* FindInstance(NPP id) {
   }
   return reinterpret_cast<NPAPI::PluginInstance*>(id->ndata);
 }
+
+#if defined(OS_MACOSX)
+// Returns true if the OS supports shared accelerated surfaces via IOSurface.
+// This is true on Snow Leopard and higher.
+static bool SupportsSharingAcceleratedSurfaces() {
+  int32 major, minor, bugfix;
+  base::SysInfo::OperatingSystemVersionNumbers(&major, &minor, &bugfix);
+#if PINK_USE_COREANIMATION
+  // TODO(pinkerton): enable this, http://crbug.com/32012
+  return major > 10 || (major == 10 && minor > 5);
+#else
+  return false;
+#endif
+}
+#endif
 
 namespace NPAPI {
 
@@ -757,7 +775,10 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void* value) {
     }
 #ifndef NP_NO_QUICKDRAW
     case NPNVsupportsQuickDrawBool: {
-      // we do not admit to supporting the QuickDraw drawing model.
+      // We do not admit to supporting the QuickDraw drawing model. The logic
+      // here is that our QuickDraw plugin support is so rudimentary that we
+      // only want to use it as a fallback to keep plugins from crashing: if a
+      // plugin knows enough to ask, we want them to use CoreGraphics.
       NPBool* supports_qd = reinterpret_cast<NPBool*>(value);
       *supports_qd = FALSE;
       rv = NPERR_NO_ERROR;
@@ -775,9 +796,16 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void* value) {
       rv = NPERR_NO_ERROR;
       break;
     }
-    case NPNVsupportsOpenGLBool:
     case NPNVsupportsCoreAnimationBool: {
-      // we do not support these drawing and event models.
+      // We only support the Core Animation model on 10.6 and higher
+      NPBool* supports_model = reinterpret_cast<NPBool*>(value);
+      *supports_model = SupportsSharingAcceleratedSurfaces() ? TRUE : FALSE;
+      rv = NPERR_NO_ERROR;
+      break;
+    }
+    case NPNVsupportsOpenGLBool: {
+      // This drawing model was never widely supported, and we don't plan to
+      // support it.
       NPBool* supports_model = reinterpret_cast<NPBool*>(value);
       *supports_model = FALSE;
       rv = NPERR_NO_ERROR;
@@ -838,12 +866,12 @@ NPError NPN_SetValue(NPP id, NPPVariable variable, void* value) {
       return NPERR_GENERIC_ERROR;
   #if defined(OS_MACOSX)
     case NPPVpluginDrawingModel: {
-      // We only admit to supporting the CoreGraphics drawing model.  The logic
-      // here is that our QuickDraw plugin support is so rudimentary that we
-      // only want to use it as a fallback to keep plugins from crashing: if
-      // a plugin knows enough to ask, we want them to use CoreGraphics.
       int model = reinterpret_cast<int>(value);
       if (model == NPDrawingModelCoreGraphics) {
+        plugin->set_drawing_model(model);
+        return NPERR_NO_ERROR;
+      } else if (model == NPDrawingModelCoreAnimation &&
+                 SupportsSharingAcceleratedSurfaces()) {
         plugin->set_drawing_model(model);
         return NPERR_NO_ERROR;
       }
