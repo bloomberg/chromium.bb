@@ -198,7 +198,7 @@ if test "x$INTEL" != "xno"; then
 
     ])
     if test "x$drm_cv_atomic_primitives" = xIntel; then
-	    AC_DEFINE(HAVE_INTEL_ATOMIC_PRIMITIVES, 1,
+	    AC_DEFINE(HAVE_LIBDRM_ATOMIC_PRIMITIVES, 1,
 		      [Enable if your compiler supports the Intel __sync_* atomic primitives])
     fi
     if test "x$drm_cv_atomic_primitives" = "xlibatomic-ops"; then

@@ -35,7 +35,6 @@ libdrm_intel_la_LDFLAGS = -version-number 1:0:0 -no-undefined
 libdrm_intel_la_LIBADD = ../libdrm.la @PTHREADSTUBS_LIBS@ @CLOCK_LIB@
 
 libdrm_intel_la_SOURCES = \
-	intel_atomic.h \
 	intel_bufmgr.c \
 	intel_bufmgr_priv.h \
 	intel_bufmgr_fake.c \

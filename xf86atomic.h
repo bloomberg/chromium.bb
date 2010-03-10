@@ -26,19 +26,19 @@
  */
 
 /**
- * @file intel_atomics.h
+ * @file xf86atomics.h
  *
  * Private definitions for atomic operations
  */
 
-#ifndef INTEL_ATOMICS_H
-#define INTEL_ATOMICS_H
+#ifndef LIBDRM_ATOMICS_H
+#define LIBDRM_ATOMICS_H
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
-#if HAVE_INTEL_ATOMIC_PRIMITIVES
+#if HAVE_LIBDRM_ATOMIC_PRIMITIVES
 
 #define HAS_ATOMIC_OPS 1
 
@@ -87,7 +87,7 @@ typedef struct { uint_t atomic; } atomic_t;
 #endif
 
 #if ! HAS_ATOMIC_OPS
-#error libdrm-intel requires atomic operations, please define them for your CPU/compiler.
+#error libdrm requires atomic operations, please define them for your CPU/compiler.
 #endif
 
 #endif

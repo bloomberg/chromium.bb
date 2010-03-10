@@ -39,6 +39,7 @@
 #endif
 
 #include <xf86drm.h>
+#include <xf86atomic.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -53,7 +54,6 @@
 
 #include "errno.h"
 #include "libdrm_lists.h"
-#include "intel_atomic.h"
 #include "intel_bufmgr.h"
 #include "intel_bufmgr_priv.h"
 #include "intel_chipset.h"
