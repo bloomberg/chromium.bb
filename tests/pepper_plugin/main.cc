@@ -39,7 +39,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <nacl/nacl_npapi.h>
-#include <nacl/pgl.h>
+#include <pgl/pgl.h>
 
 #include "native_client/tests/pepper_plugin/plugin_object.h"
 #include "native_client/tests/pepper_plugin/event_handler.h"

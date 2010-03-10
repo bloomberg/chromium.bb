@@ -25,17 +25,17 @@
 
 #include "native_client/tests/pepper_plugin/plugin_object.h"
 
-#include <limits>
-
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>
-#include <nacl/gl2.h>
+#include <stdlib.h>
+#include <GLES2/gl2.h>
+
+#include <limits>
 #include <string>
 
-#include "gpu/command_buffer/client/gles2_lib.h"
-#include "gpu/command_buffer/client/gles2_demo_cc.h"
 #include "native_client/tests/pepper_plugin/event_handler.h"
+#include "native_client/tests/pepper_plugin/gles2_demo_cc.h"
 #include "native_client/tests/pepper_plugin/test_object.h"
 
 NPNetscapeFuncs* browser;
@@ -320,13 +320,13 @@ void PluginObject::New(NPMIMEType pluginType,
   if (!extensions) {
     browser->getvalue(npp_, NPNVPepperExtensions,
                       reinterpret_cast<void*>(&extensions));
-    CHECK(extensions);
+    // CHECK(extensions);
   }
   device2d_ = extensions->acquireDevice(npp_, NPPepper2DDevice);
-  CHECK(device2d_);
+  // CHECK(device2d_);
 
   device3d_ = extensions->acquireDevice(npp_, NPPepper3DDevice);
-  CHECK(device3d_);
+  // CHECK(device3d_);
 
   // deviceaudio_ = extensions->acquireDevice(npp_, NPPepperAudioDevice);
   // CHECK(deviceaudio_);

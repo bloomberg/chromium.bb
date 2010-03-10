@@ -26,12 +26,13 @@
 #ifndef NATIVE_CLIENT_TESTS_PEPPER_PLUGIN_PLUGIN_OBJECT_H_
 #define NATIVE_CLIENT_TESTS_PEPPER_PLUGIN_PLUGIN_OBJECT_H_
 
-#include "base/basictypes.h"
 #include <nacl/npapi.h>
 #include <nacl/npruntime.h>
 #include <nacl/npapi_extensions.h>
 #include <nacl/npupp.h>
-#include <nacl/pgl.h>
+#include <pgl/pgl.h>
+
+#include "base/basictypes.h"
 
 extern NPNetscapeFuncs* browser;
 
@@ -52,8 +53,6 @@ class PluginObject {
   void Draw3D();
 
  private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(PluginObject);
-
   bool InitializeCommandBuffer();
 
   NPObject header_;
@@ -73,6 +72,8 @@ class PluginObject {
 
   int width_;
   int height_;
+
+  DISALLOW_IMPLICIT_CONSTRUCTORS(PluginObject);
 };
 
 

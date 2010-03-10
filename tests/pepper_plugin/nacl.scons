@@ -37,15 +37,15 @@ if env['TARGET_ARCHITECTURE'] == 'arm':
 env.FilterOut(CCFLAGS = ['-pedantic'])
 
 env.Prepend(CPPDEFINES = ['XP_UNIX'])
-env.Prepend(CPPPATH = ['$SOURCE_ROOT/gpu/command_buffer/common',
-                       ])
+
+env.Append(CPPPATH = ['$NACL_SDK_INCLUDE/nacl'])
 
 nacl_npplugin_test_inputs = [
   'event_handler.cc',
+  'gles2_demo_cc.cc',
   'main.cc',
   'plugin_object.cc',
   'test_object.cc',
-  '$SOURCE_ROOT/gpu/command_buffer/client/gles2_demo_cc.cc'
 ]
 
 # TODO: should this link against the sdk version of google_nacl_npruntime?

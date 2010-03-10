@@ -1299,8 +1299,11 @@ sdk_headers = nacl_extra_sdk_env.Alias('extra_sdk_update_header', [])
 nacl_extra_sdk_env.Alias('extra_sdk_update', [])
 
 
-def AddHeaderToSdk(env, nodes):
-  n = env.Replicate('${NACL_SDK_INCLUDE}/nacl/', nodes)
+# Add a header file to the toolchain.  By default, Native Client-specific
+# headers go under nacl/, but there are non-specific headers, such as
+# the OpenGLES2 headers, that go under their own subdir.
+def AddHeaderToSdk(env, nodes, subdir = 'nacl/'):
+  n = env.Replicate('${NACL_SDK_INCLUDE}/' + subdir, nodes)
   env.Alias('extra_sdk_update_header', n)
   return n
 
