@@ -8,13 +8,24 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "chrome/common/json_value_serializer.h"
+#include "googleurl/src/gurl.h"
 
 namespace {
 const wchar_t* kDistroDict = L"distribution";
 
-std::vector<std::wstring> GetNamedList(const wchar_t* name,
-                                       const DictionaryValue* prefs) {
-  std::vector<std::wstring> list;
+bool GetGURLFromValue(const Value* in_value, GURL* out_value) {
+  if (!in_value || !out_value)
+    return false;
+  std::string url;
+  in_value->GetAsString(&url);
+  GURL gurl(url);
+  *out_value = gurl;
+  return true;
+}
+
+std::vector<GURL> GetNamedList(const wchar_t* name,
+                               const DictionaryValue* prefs) {
+  std::vector<GURL> list;
   if (!prefs)
     return list;
   ListValue* value_list = NULL;
@@ -22,12 +33,12 @@ std::vector<std::wstring> GetNamedList(const wchar_t* name,
     return list;
   for (size_t i = 0; i < value_list->GetSize(); ++i) {
     Value* entry;
-    std::wstring str_entry;
-    if (!value_list->Get(i, &entry) || !entry->GetAsString(&str_entry)) {
+    GURL gurl_entry;
+    if (!value_list->Get(i, &entry) || !GetGURLFromValue(entry, &gurl_entry)) {
       NOTREACHED();
       break;
     }
-    list.push_back(str_entry);
+    list.push_back(gurl_entry);
   }
   return list;
 }
@@ -113,18 +124,17 @@ DictionaryValue* ParseDistributionPreferences(
   return static_cast<DictionaryValue*>(root.release());
 }
 
-std::vector<std::wstring> GetFirstRunTabs(const DictionaryValue* prefs) {
+std::vector<GURL> GetFirstRunTabs(const DictionaryValue* prefs) {
   return GetNamedList(L"first_run_tabs", prefs);
 }
 
-std::vector<std::wstring> GetDefaultBookmarks(const DictionaryValue* prefs) {
+std::vector<GURL> GetDefaultBookmarks(const DictionaryValue* prefs) {
   return GetNamedList(L"default_bookmarks", prefs);
 }
 
 bool SetDistroBooleanPreference(DictionaryValue* prefs,
                                 const std::wstring& name,
                                 bool value) {
-
   if (!prefs || name.empty())
     return false;
   prefs->SetBoolean(std::wstring(kDistroDict) + L"." + name, value);

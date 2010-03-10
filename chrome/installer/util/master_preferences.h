@@ -8,8 +8,11 @@
 #ifndef CHROME_INSTALLER_UTIL_MASTER_PREFERENCES_H_
 #define CHROME_INSTALLER_UTIL_MASTER_PREFERENCES_H_
 
+#include <vector>
+
 #include "base/file_path.h"
 #include "base/values.h"
+#include "googleurl/src/gurl.h"
 
 namespace installer_util {
 
@@ -64,7 +67,7 @@ extern const wchar_t kExtensionsBlock[];
 
 // This is the default name for the master preferences file used to pre-set
 // values in the user profile at first run.
-const wchar_t kDefaultMasterPrefs[] = L"master_preferences";
+const char kDefaultMasterPrefs[] = "master_preferences";
 
 // Gets the value of given boolean preference |name| from |prefs| dictionary
 // which is assumed to contain a dictionary named "distribution". Returns
@@ -138,9 +141,9 @@ DictionaryValue* ParseDistributionPreferences(
 //
 // Note that the entries are usually urls but they don't have to.
 //
-// This function retuns the list as a vector of strings. If the master
+// This function retuns the list as a vector of GURLs.  If the master
 // preferences file does not contain such list the vector is empty.
-std::vector<std::wstring> GetFirstRunTabs(const DictionaryValue* prefs);
+std::vector<GURL> GetFirstRunTabs(const DictionaryValue* prefs);
 
 // As part of the master preferences an optional section indicates the
 // pre-installed bookmarks. An example is the following:
@@ -154,9 +157,9 @@ std::vector<std::wstring> GetFirstRunTabs(const DictionaryValue* prefs);
 //
 // Note that the entries need to be urls.
 //
-// This function retuns the list as a vector of strings. If the master
+// This function retuns the list as a vector of GURLs. If the master
 // preferences file does not contain such list the vector is empty.
-std::vector<std::wstring> GetDefaultBookmarks(const DictionaryValue* prefs);
+std::vector<GURL> GetDefaultBookmarks(const DictionaryValue* prefs);
 
 // Sets the value of given boolean preference |name| in "distribution"
 // dictionary inside |prefs| dictionary.

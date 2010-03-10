@@ -767,7 +767,7 @@ bool ShellUtil::UpdateChromeShortcut(const std::wstring& chrome_exe,
   std::wstring chrome_path = file_util::GetDirectoryFromPath(chrome_exe);
 
   FilePath prefs_path(chrome_path);
-  prefs_path = prefs_path.Append(installer_util::kDefaultMasterPrefs);
+  prefs_path = prefs_path.AppendASCII(installer_util::kDefaultMasterPrefs);
   scoped_ptr<DictionaryValue> prefs(
       installer_util::ParseDistributionPreferences(prefs_path));
   int icon_index = 0;

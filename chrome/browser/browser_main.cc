@@ -302,34 +302,32 @@ void SetFileDescriptorLimit(unsigned int max_descriptors) {
 }
 #endif
 
-#if defined(OS_WIN)
+#if !defined(OS_MACOSX)
 void AddFirstRunNewTabs(BrowserInit* browser_init,
-                        const std::vector<std::wstring>& new_tabs) {
-  for (std::vector<std::wstring>::const_iterator it = new_tabs.begin();
+                        const std::vector<GURL>& new_tabs) {
+  for (std::vector<GURL>::const_iterator it = new_tabs.begin();
        it != new_tabs.end(); ++it) {
-    GURL url(*it);
-    if (url.is_valid())
-      browser_init->AddFirstRunTab(url);
+    if (it->is_valid())
+      browser_init->AddFirstRunTab(*it);
   }
 }
 
 void AddDefaultBookmarks(BrowserInit* browser_init,
-                         const std::vector<std::wstring>& bookmarks) {
-  for (std::vector<std::wstring>::const_iterator it = bookmarks.begin();
+                         const std::vector<GURL>& bookmarks) {
+  for (std::vector<GURL>::const_iterator it = bookmarks.begin();
        it != bookmarks.end(); ++it) {
-    GURL url(*it);
-    if (url.is_valid())
-      browser_init->AddDefaultBookmark(url);
+    if (it->is_valid())
+      browser_init->AddDefaultBookmark(*it);
   }
 }
-#else
+#else  // OS_MACOSX
 // TODO(cpu): implement first run experience for other platforms.
 void AddFirstRunNewTabs(BrowserInit* browser_init,
-                        const std::vector<std::wstring>& new_tabs) {
+                        const std::vector<GURL>& new_tabs) {
 }
 
 void AddDefaultBookmarks(BrowserInit* browser_init,
-                         const std::vector<std::wstring>& bookmarks) {
+                         const std::vector<GURL>& bookmarks) {
 }
 #endif
 
@@ -625,7 +623,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
   FirstRun::MasterPrefs master_prefs = {0};
   bool first_run_ui_bypass = false;
   if (is_first_run) {
-#if defined(OS_WIN)
     // On first run, we need to process the master preferences before the
     // browser's profile_manager object is created, but after ResourceBundle
     // is initialized.
@@ -638,7 +635,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
     // The master prefs might specify a set of initial bookmarks.
     if (master_prefs.bookmarks.size())
       AddDefaultBookmarks(&browser_init, master_prefs.bookmarks);
-#endif  // OS_WIN
 
     // If we are running in App mode, we do not want to show the importer
     // (first run) UI.

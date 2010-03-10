@@ -2501,6 +2501,10 @@
                           '<@(xib_files_to_scan)'],
             },
           ],
+        }, { # OS != mac
+          'dependencies': [
+            'installer/installer.gyp:installer_util',
+          ],
         }],
         ['OS=="win"', {
           'defines': [
@@ -2515,7 +2519,6 @@
             '../gears/gears.gyp:gears',
             '../google_update/google_update.gyp:google_update',
             '../views/views.gyp:views',
-            'installer/installer.gyp:installer_util',
             '<(allocator_target)',
           ],
           'export_dependent_settings': [

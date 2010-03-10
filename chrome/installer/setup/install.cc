@@ -181,7 +181,8 @@ void CopyPreferenceFileForFirstRun(bool system_level,
                                    const std::wstring& prefs_source_path) {
   FilePath prefs_dest_path = FilePath::FromWStringHack(
       installer::GetChromeInstallPath(system_level));
-  prefs_dest_path = prefs_dest_path.Append(installer_util::kDefaultMasterPrefs);
+  prefs_dest_path = prefs_dest_path.AppendASCII(
+      installer_util::kDefaultMasterPrefs);
   if (!file_util::CopyFile(FilePath::FromWStringHack(prefs_source_path),
                            prefs_dest_path)) {
     LOG(INFO) << "Failed to copy master preferences.";

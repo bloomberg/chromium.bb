@@ -53,7 +53,7 @@
           'util/work_item_list.h',
         ],
         'include_dirs': [
-          '../..',
+          '<(DEPTH)',
         ],
       }],
     ],
@@ -121,6 +121,26 @@
             },
           },
         },
+      ],
+    }],
+    ['OS=="linux"', {
+      'targets': [
+        {
+          'target_name': 'installer_util',
+          'type': '<(library)',
+          'dependencies': [
+            '../chrome.gyp:common_constants',
+            '../chrome.gyp:chrome_resources',
+            '../chrome.gyp:chrome_strings',
+          ],
+          'sources': [
+            'util/master_preferences.cc',
+            'util/master_preferences.h',
+          ],
+          'include_dirs': [
+            '<(DEPTH)',
+          ],
+        }
       ],
     }],
   ],

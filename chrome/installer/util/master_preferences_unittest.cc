@@ -10,6 +10,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/installer/util/master_preferences.h"
+#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -200,12 +201,12 @@ TEST_F(MasterPreferencesTest, FirstRunTabs) {
       installer_util::ParseDistributionPreferences(prefs_file()));
   EXPECT_TRUE(prefs.get() != NULL);
 
-  typedef std::vector<std::wstring> TabsVector;
+  typedef std::vector<GURL> TabsVector;
   TabsVector tabs = installer_util::GetFirstRunTabs(prefs.get());
   ASSERT_EQ(3, tabs.size());
-  EXPECT_EQ(L"http://google.com/f1", tabs[0]);
-  EXPECT_EQ(L"https://google.com/f2", tabs[1]);
-  EXPECT_EQ(L"new_tab_page", tabs[2]);
+  EXPECT_EQ(GURL("http://google.com/f1"), tabs[0]);
+  EXPECT_EQ(GURL("https://google.com/f2"), tabs[1]);
+  EXPECT_EQ(GURL("new_tab_page"), tabs[2]);
 }
 
 TEST_F(MasterPreferencesTest, FirstRunBookMarks) {
@@ -225,11 +226,11 @@ TEST_F(MasterPreferencesTest, FirstRunBookMarks) {
       installer_util::ParseDistributionPreferences(prefs_file()));
   EXPECT_TRUE(prefs.get() != NULL);
 
-  typedef std::vector<std::wstring> BookmarksVector;
+  typedef std::vector<GURL> BookmarksVector;
   BookmarksVector bookmarks = installer_util::GetDefaultBookmarks(prefs.get());
   ASSERT_EQ(2, bookmarks.size());
-  EXPECT_EQ(L"http://google.com/b1", bookmarks[0]);
-  EXPECT_EQ(L"https://google.com/b2", bookmarks[1]);
+  EXPECT_EQ(GURL("http://google.com/b1"), bookmarks[0]);
+  EXPECT_EQ(GURL("https://google.com/b2"), bookmarks[1]);
 }
 
 // In this test instead of using our synthetic json file, we use an

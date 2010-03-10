@@ -100,3 +100,22 @@ bool FirstRun::SetShowWelcomePagePref() {
   return true;
 }
 
+bool FirstRun::SetOEMFirstRunBubblePref() {
+  PrefService* local_state = g_browser_process->local_state();
+  if (!local_state)
+    return false;
+  if (!local_state->FindPreference(prefs::kShouldUseOEMFirstRunBubble)) {
+    local_state->RegisterBooleanPref(prefs::kShouldUseOEMFirstRunBubble,
+                                     false);
+    local_state->SetBoolean(prefs::kShouldUseOEMFirstRunBubble, true);
+  }
+  return true;
+}
+
+#if defined(OS_MACOSX)
+bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
+    const FilePath& master_prefs_path, MasterPrefs* out_prefs) {
+  NOTIMPLEMENTED();
+  return false;
+}
+#endif

@@ -127,7 +127,8 @@ TEST_F(ShellUtilTest, UpdateChromeShortcutTest) {
                                    description, 0));
 
   // Now specify an icon index in master prefs and make sure it works.
-  FilePath prefs_path = test_dir_.Append(installer_util::kDefaultMasterPrefs);
+  FilePath prefs_path = test_dir_.AppendASCII(
+      installer_util::kDefaultMasterPrefs);
   std::ofstream file;
   file.open(prefs_path.value().c_str());
   ASSERT_TRUE(file.is_open());

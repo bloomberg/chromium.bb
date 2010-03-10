@@ -182,6 +182,8 @@
             # Needed for chrome_dll_main.cc #include of gtk/gtk.h
             '../build/linux/system.gyp:gtk',
             'packed_resources',
+            # Needed to use the master_preferences functions
+            'installer/installer.gyp:installer_util',
           ],
           'sources': [
             'app/chrome_dll_main.cc',

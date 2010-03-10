@@ -70,6 +70,7 @@
             'installer_util_strings',
             '../../base/base.gyp:base',
             '../../base/base.gyp:base_i18n',
+            '../../build/temp_gyp/googleurl.gyp:googleurl',
             '../../testing/gtest.gyp:gtest',
           ],
           'include_dirs': [
@@ -175,6 +176,7 @@
           'dependencies': [
             'installer_util',
             'installer_util_strings',
+            '../../build/temp_gyp/googleurl.gyp:googleurl',
             '../../build/util/build_util.gyp:lastchange',
             '../../build/util/support/support.gyp:*',
             '../../build/win/system.gyp:cygwin',
@@ -295,6 +297,7 @@
             'installer_util',
             '../../base/base.gyp:base',
             '../../base/base.gyp:base_i18n',
+            '../../build/temp_gyp/googleurl.gyp:googleurl',
             '../../testing/gtest.gyp:gtest',
           ],
           'include_dirs': [

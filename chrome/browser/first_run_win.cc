@@ -235,7 +235,8 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
     // TODO(port): port installer_util and use this.
     if (!PathService::Get(base::DIR_EXE, &master_prefs))
       return true;
-    master_prefs = master_prefs.Append(installer_util::kDefaultMasterPrefs);
+    master_prefs =
+        master_prefs.AppendASCII(installer_util::kDefaultMasterPrefs);
   }
 
   scoped_ptr<DictionaryValue> prefs(
@@ -703,18 +704,6 @@ int FirstRun::ImportNow(Profile* profile, const CommandLine& cmdline) {
       true);
   observer.RunLoop();
   return observer.import_result();
-}
-
-bool FirstRun::SetOEMFirstRunBubblePref() {
-  PrefService* local_state = g_browser_process->local_state();
-  if (!local_state)
-    return false;
-  if (!local_state->FindPreference(prefs::kShouldUseOEMFirstRunBubble)) {
-    local_state->RegisterBooleanPref(prefs::kShouldUseOEMFirstRunBubble,
-                                     false);
-    local_state->SetBoolean(prefs::kShouldUseOEMFirstRunBubble, true);
-  }
-  return true;
 }
 
 //////////////////////////////////////////////////////////////////////////

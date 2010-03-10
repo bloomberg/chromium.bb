@@ -11,6 +11,7 @@
 #include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
 #include "chrome/browser/browser_process_impl.h"
+#include "googleurl/src/gurl.h"
 
 class CommandLine;
 class FilePath;
@@ -34,8 +35,8 @@ class FirstRun {
     bool homepage_defined;
     int do_import_items;
     int dont_import_items;
-    std::vector<std::wstring> new_tabs;
-    std::vector<std::wstring> bookmarks;
+    std::vector<GURL> new_tabs;
+    std::vector<GURL> bookmarks;
   };
 #if defined(OS_WIN)
   // Creates the desktop shortcut to chrome for the current user. Returns
@@ -49,6 +50,7 @@ class FirstRun {
   // FirstRun::ImportSettings(). This function might or might not show
   // a visible UI depending on the cmdline parameters.
   static int ImportNow(Profile* profile, const CommandLine& cmdline);
+#endif  // OS_WIN
 
   // The master preferences is a JSON file with the same entries as the
   // 'Default\Preferences' file. This function locates this file from
@@ -68,7 +70,6 @@ class FirstRun {
   static bool ProcessMasterPreferences(const FilePath& user_data_dir,
                                        const FilePath& master_prefs_path,
                                        MasterPrefs* out_prefs);
-#endif  // OS_WIN
 
   // Returns true if this is the first time chrome is run for this user.
   static bool IsChromeFirstRun();
