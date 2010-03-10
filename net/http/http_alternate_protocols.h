@@ -19,9 +19,9 @@ namespace net {
 class HttpAlternateProtocols {
  public:
   enum Protocol {
-    BROKEN,  // The alternate protocol is known to be broken.
-    SPDY,
+    NPN_SPDY,
     NUM_ALTERNATE_PROTOCOLS,
+    BROKEN,  // The alternate protocol is known to be broken.
   };
 
   struct PortProtocolPair {
@@ -34,7 +34,7 @@ class HttpAlternateProtocols {
   };
 
   static const char kHeader[];
-  static const char kSpdyProtocol[];
+  static const char* const kProtocolStrings[NUM_ALTERNATE_PROTOCOLS];
 
   HttpAlternateProtocols();
   ~HttpAlternateProtocols();

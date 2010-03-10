@@ -21,12 +21,12 @@ TEST(HttpAlternateProtocols, Basic) {
       alternate_protocols.HasAlternateProtocolFor(test_host_port_pair));
   alternate_protocols.SetAlternateProtocolFor(test_host_port_pair,
                                               443,
-                                              HttpAlternateProtocols::SPDY);
+                                              HttpAlternateProtocols::NPN_SPDY);
   ASSERT_TRUE(alternate_protocols.HasAlternateProtocolFor(test_host_port_pair));
   const HttpAlternateProtocols::PortProtocolPair alternate =
       alternate_protocols.GetAlternateProtocolFor(test_host_port_pair);
   EXPECT_EQ(443, alternate.port);
-  EXPECT_EQ(HttpAlternateProtocols::SPDY, alternate.protocol);
+  EXPECT_EQ(HttpAlternateProtocols::NPN_SPDY, alternate.protocol);
 }
 
 TEST(HttpAlternateProtocols, SetBroken) {
@@ -43,7 +43,7 @@ TEST(HttpAlternateProtocols, SetBroken) {
   alternate_protocols.SetAlternateProtocolFor(
       test_host_port_pair,
       1234,
-      HttpAlternateProtocols::SPDY),
+      HttpAlternateProtocols::NPN_SPDY),
   alternate = alternate_protocols.GetAlternateProtocolFor(test_host_port_pair);
   EXPECT_EQ(HttpAlternateProtocols::BROKEN, alternate.protocol)
       << "Second attempt should be ignored.";
