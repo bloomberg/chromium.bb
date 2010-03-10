@@ -409,7 +409,7 @@ endif
 	      --disable-shared \
 				--disable-libgomp \
 	      --disable-libstdcxx-pch \
-	      --enable-languages="c,c++,fortran" \
+	      --enable-languages="c,c++" \
 	      --target=$(CROSSARCH) ; \
 	else \
 	cd BUILD/build-gcc-$(CROSSARCH) && \
@@ -442,6 +442,13 @@ endif
 		  CFLAGS_FOR_TARGET="-O2 -g" \
 		  CXXFLAGS_FOR_TARGET="-O2 -g" \
 	    DESTDIR=$(DESTDIR) install
+	if [ "x$(GCC_VERSION)" = "x4.4.3" -a \
+	     "x$(CROSSARCH)" = "xnacl64" ] ; then \
+	  pushd $(DESTDIR)/$(SDKROOT) ; \
+	  ln -sfn lib/32 lib32 ; \
+	  ln -sfn lib lib64 ; \
+	  popd ; \
+	fi
 	touch $@
 	$(MAKE) -f $(THISMAKEFILE) redirector
 
@@ -486,29 +493,61 @@ gdb: BUILD/stamp-gdb
 ##################################################################
 nc_threads: ALWAYS
 	cd .. && \
-	 ./$(SCONS) naclsdk_mode=custom$(subst nacl,,$(CROSSARCH)):$(SDKLOC_NATIVE)/$(SDKNAME) \
-	 MODE=nacl_extra_sdk install_libpthread --verbose
+	 ./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
+	  --mode=nacl_extra_sdk install_libpthread --verbose \
+	  targetplatform=x86-$(subst nacl,,$(CROSSARCH))
 
-# The copy of the header files first is a hack.
-# TODO(sehr): fix the missing dependencies in the SDK library build.
 nacl_libraries_nocpp: ALWAYS
-	cd .. && \
-	 ./$(SCONS) naclsdk_mode=custom$(subst nacl,,$(CROSSARCH)):$(SDKLOC_NATIVE)/$(SDKNAME) \
-	 MODE=nacl_extra_sdk extra_sdk_update_header nocpp=yes --verbose \
-	 ./$(SCONS) naclsdk_mode=custom$(subst nacl,,$(CROSSARCH)):$(SDKLOC_NATIVE)/$(SDKNAME) \
-	 MODE=nacl_extra_sdk extra_sdk_update nocpp=yes --verbose
+	if [ "x$(GCC_VERSION)" = "x4.4.3" -a \
+	     "x$(CROSSARCH)" = "xnacl64" ] ; then \
+	  cd .. && \
+	  (./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
+	    --mode=nacl_extra_sdk extra_sdk_update_header \
+	    nocpp=yes multilib=true --verbose ) && \
+	  (./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
+	    --mode=nacl_extra_sdk extra_sdk_update \
+	    nocpp=yes multilib=true targetplatform=x86-32 --verbose ) && \
+	  (./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
+	    --mode=nacl_extra_sdk extra_sdk_update \
+	    nocpp=yes multilib=true targetplatform=x86-64 --verbose ) ; \
+	else \
+	  cd .. && \
+	   ./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
+	   targetplatform=x86-$(subst nacl,,$(CROSSARCH)) \
+	   --mode=nacl_extra_sdk extra_sdk_update_header nocpp=yes --verbose ; \
+	   ./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
+	   --mode=nacl_extra_sdk extra_sdk_update nocpp=yes --verbose \
+	   targetplatform=x86-$(subst nacl,,$(CROSSARCH)) ; \
+	fi
 
 nacl_libraries: ALWAYS
-	cd .. && \
-	 ./$(SCONS) naclsdk_mode=custom$(subst nacl,,$(CROSSARCH)):$(SDKLOC_NATIVE)/$(SDKNAME) \
-	 MODE=nacl_extra_sdk extra_sdk_update_header --verbose \
-	 ./$(SCONS) naclsdk_mode=custom$(subst nacl,,$(CROSSARCH)):$(SDKLOC_NATIVE)/$(SDKNAME) \
-	 MODE=nacl_extra_sdk extra_sdk_update --verbose
+	if [ "x$(GCC_VERSION)" = "x4.4.3" -a \
+	     "x$(CROSSARCH)" = "xnacl64" ] ; then \
+	  cd .. && \
+	  (./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
+	    --mode=nacl_extra_sdk extra_sdk_update_header multilib=true \
+	    --verbose ) && \
+	  (./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
+	    --mode=nacl_extra_sdk extra_sdk_update multilib=true \
+	    targetplatform=x86-32 --verbose ) && \
+	  (./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
+	    --mode=nacl_extra_sdk extra_sdk_update multilib=true \
+	    targetplatform=x86-64 --verbose ) ; \
+	else \
+	  cd .. && \
+	   (./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
+	     targetplatform=x86-$(subst nacl,,$(CROSSARCH)) \
+	     --mode=nacl_extra_sdk extra_sdk_update_header --verbose) && \
+	   (./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
+	     targetplatform=x86-$(subst nacl,,$(CROSSARCH)) \
+	     --mode=nacl_extra_sdk extra_sdk_update --verbose) ; \
+	fi
 
 sdk_minimal_test: ALWAYS
 	cd .. && \
-	 ./$(SCONS) naclsdk_mode=custom$(subst nacl,,$(CROSSARCH)):$(SDKLOC_NATIVE)/$(SDKNAME) \
-	 MODE=nacl sdk_minimal_test --verbose
+	 ./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
+	  --mode=nacl sdk_minimal_test \
+	  targetplatform=x86-$(subst nacl,,$(CROSSARCH)) --verbose
 
 
 ##########################################################################

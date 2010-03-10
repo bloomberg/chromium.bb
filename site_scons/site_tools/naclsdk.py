@@ -153,9 +153,6 @@ def _GetNaclSdkRoot(env, sdk_mode):
   elif sdk_mode.startswith('custom:'):
     return os.path.abspath(sdk_mode[len('custom:'):])
 
-  elif sdk_mode.startswith('custom64:'):
-    return os.path.abspath(sdk_mode[len('custom64:'):])
-
   else:
     print 'unknown sdk mode [%s]' % sdk_mode
     assert 0
@@ -240,8 +237,51 @@ def _SetEnvForX86Sdk64(env, sdk_path):
               )
 
 
+def _SetX86SdkEnvMultilib(env, sdk_path):
+  """Initialize environment according to target architecture."""
+
+  # NOTE: attempts to eliminate this PATH setting and use
+  #       absolute path have been futile
+  env.PrependENVPath('PATH', sdk_path + '/bin')
+
+  libsuffix = '/lib64'
+  extraflag = '-m64'
+  if env['TARGET_SUBARCH'] == '32':
+    libsuffix = '/lib32'
+    extraflag = '-m32'
+  elif env['TARGET_SUBARCH'] != '64':
+    print "ERROR: unknown TARGET_SUBARCH: ", env['TARGET_SUBARCH']
+    assert 0
+
+  env.Replace(# Replace header and lib paths.
+              NACL_SDK_INCLUDE=sdk_path + '/nacl64/include',
+              NACL_SDK_LIB=sdk_path + '/nacl64' + libsuffix,
+              # Replace the normal unix tools with the NaCl ones.
+              CC='nacl64-gcc',
+              CXX='nacl64-g++',
+              AR='nacl64-ar',
+              AS='nacl64-as',
+              # NOTE: use g++ for linking so we can handle C AND C++.
+              LINK='nacl64-g++',
+              RANLIB='nacl64-ranlib',
+              CFLAGS = ['-std=gnu99'],
+              CCFLAGS=['-O3',
+                       '-Werror',
+                       '-Wall',
+                       '-Wswitch-enum',
+                       '-g',
+                       '-fno-builtin',
+                       '-fno-stack-protector',
+                       '-fdiagnostics-show-option',
+                       '-pedantic',
+                       extraflag,
+                       ],
+              ASFLAGS=[extraflag],
+              )
+
+
 def _SetEnvForSdkManually(env):
-  env.Replace(# replace header and lib paths
+  env.Replace(# Replace header and lib paths.
               NACL_SDK_INCLUDE=os.getenv('NACL_SDK_INCLUDE',
                                          'MISSING_SDK_INCLUDE'),
               NACL_SDK_LIB=os.getenv('NACL_SDK_LIB', 'MISSING_SDK_LIB'),
@@ -322,17 +362,17 @@ def generate(env):
   # Determine where to get the SDK from.
   if sdk_mode == 'manual':
     _SetEnvForSdkManually(env)
-  elif sdk_mode.startswith('custom:'):
-    _SetEnvForX86Sdk(env, _GetNaclSdkRoot(env, sdk_mode))
-  elif sdk_mode.startswith('custom64:'):
-    _SetEnvForX86Sdk64(env, _GetNaclSdkRoot(env, sdk_mode))
   else:
-    _SetEnvForX86Sdk(env, _GetNaclSdkRoot(env, sdk_mode))
+    if SCons.Script.ARGUMENTS.get('multilib') == 'true':
+      _SetX86SdkEnvMultilib(env, _GetNaclSdkRoot(env, sdk_mode))
+    else:
+      # TODO(pasko): remove this legacy code when multilib is used by default.
+      if env['TARGET_SUBARCH'] == '32':
+        _SetEnvForX86Sdk(env, _GetNaclSdkRoot(env, sdk_mode))
+      elif env['TARGET_SUBARCH'] == '64':
+        _SetEnvForX86Sdk64(env, _GetNaclSdkRoot(env, sdk_mode))
+      else:
+        print "ERROR: unknown TARGET_SUBARCH: ", env['TARGET_SUBARCH']
+        assert 0
 
   env.Prepend(LIBPATH='${NACL_SDK_LIB}')
-
-  env.Append(CCFLAGS=[
-      '-fno-stack-protector',
-      '-fno-builtin',
-      ],
-  )

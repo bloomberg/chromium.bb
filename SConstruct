@@ -59,7 +59,7 @@ ACCEPTABLE_ARGUMENTS = {
     # enable building of apps that use multi media function
     'build_av_apps': None,
     # set build platform
-    'build_platform': None,
+    'buildplatform': None,
     'build_vim': None,
     'built_elsewhere': None,
     # used for browser_tests
@@ -68,13 +68,15 @@ ACCEPTABLE_ARGUMENTS = {
     'dangerous_debug_disable_inner_sandbox': None,
     # TODO(dpolukhin): remove this code when x86-64 has full sel_ldr.
     'loader': None,
+    # Install libraries to multilib location, i.e. to lib32 or lib64.
+    'multilib': False,
     # TODO(dpolukhin): document this
     'nacl_ccflags': None,
     'naclsdk_mode': None,
     'naclsdk_validate': None,
-    # TODO(khim): document this
+    # build only C libraries, skip C++, used during SDK build
     'nocpp': None,
-    # set both target_platform and build_platform
+    # set both targetplatform and buildplatform
     'platform': None,
     # enable pretty printing
     'pp': None,
@@ -82,6 +84,7 @@ ACCEPTABLE_ARGUMENTS = {
     'sdl': None,
     # disable printing of sys info with sysinfo=
     'sysinfo': None,
+    # set target platform
     'targetplatform': None,
   }
 
@@ -1233,21 +1236,7 @@ nacl_extra_sdk_env = pre_base_env.Clone(
     BUILD_TYPE = 'nacl_extra_sdk',
     BUILD_TYPE_DESCRIPTION = 'NaCl SDK extra library build',
     NACL_BUILD_FAMILY = 'UNTRUSTED',
-    CFLAGS = ['-std=gnu99'],
-    # TODO: explain this
-    CCFLAGS = ['-O3',
-               '-Werror',
-               '-Wall',
-               '-Wswitch-enum',
-               '-g',
-               '-fno-builtin',
-               '-fno-stack-protector',
-               '-fdiagnostics-show-option',
-               '-pedantic',
-               ],
-
     CPPPATH = ['$SOURCE_ROOT'],
-    LINK = '$CXX',
     CPPDEFINES = [
       ['NACL_BUILD_ARCH', '${BUILD_ARCHITECTURE}' ],
       ['NACL_BUILD_SUBARCH', '${BUILD_SUBARCH}' ],
