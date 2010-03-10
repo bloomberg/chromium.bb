@@ -130,9 +130,12 @@ void WidgetWin::Init(gfx::NativeView parent, const gfx::Rect& bounds) {
   drop_target_ = new DropTargetWin(root_view_.get());
 
   if ((window_style() & WS_CHILD) == 0 ||
-      WidgetWin::GetRootWidget(parent) == NULL) {
+      (WidgetWin::GetRootWidget(parent) == NULL &&
+          parent != GetDesktopWindow())) {
     // Top-level widgets and child widgets who do not have a top-level widget
-    // ancestor get a FocusManager.
+    // ancestor get a FocusManager. Child widgets parented to the desktop do not
+    // get a FocusManager because parenting to the desktop is the technique used
+    // to intentionally exclude a widget from the FocusManager hierarchy.
     focus_manager_.reset(new FocusManager(this));
   }
 
