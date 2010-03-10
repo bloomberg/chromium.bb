@@ -19,9 +19,6 @@
 
 namespace {
 
-static const FilePath::CharType kStartFile[] =
-    FILE_PATH_LITERAL("index.html?dom|jslib&automated");
-
 const wchar_t kRunDromaeo[] = L"run-dromaeo-benchmark";
 
 class DromaeoTest : public UITest {
@@ -33,10 +30,12 @@ class DromaeoTest : public UITest {
     show_window_ = true;
   }
 
-  void RunTest() {
-    FilePath::StringType start_file(kStartFile);
+  void RunTest(const FilePath::CharType* suite) {
     FilePath test_path = GetDromaeoDir();
-    test_path = test_path.Append(start_file);
+    test_path = test_path.Append(
+        FilePath::StringType(FILE_PATH_LITERAL("index.html?")) +
+        FilePath::StringType(suite) +
+        FilePath::StringType(FILE_PATH_LITERAL("&automated")));
     GURL test_url(net::FilePathToFileURL(test_path));
 
     scoped_refptr<TabProxy> tab(GetActiveTab());
@@ -144,18 +143,33 @@ class DromaeoReferenceTest : public DromaeoTest {
   }
 };
 
-TEST_F(DromaeoTest, Perf) {
+TEST_F(DromaeoTest, DOMCorePerf) {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(kRunDromaeo))
     return;
 
-  RunTest();
+  RunTest(FILE_PATH_LITERAL("dom"));
 }
 
-TEST_F(DromaeoReferenceTest, Perf) {
+TEST_F(DromaeoTest, JSLibPerf) {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(kRunDromaeo))
     return;
 
-  RunTest();
+  RunTest(FILE_PATH_LITERAL("jslib"));
 }
+
+TEST_F(DromaeoReferenceTest, DOMCorePerf) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(kRunDromaeo))
+    return;
+
+  RunTest(FILE_PATH_LITERAL("dom"));
+}
+
+TEST_F(DromaeoReferenceTest, JSLibPerf) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(kRunDromaeo))
+    return;
+
+  RunTest(FILE_PATH_LITERAL("jslib"));
+}
+
 
 }  // namespace
