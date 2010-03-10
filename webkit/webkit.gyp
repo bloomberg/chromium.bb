@@ -125,7 +125,6 @@
       'dependencies': [
         '../app/app.gyp:app_base',
         '../net/net.gyp:net',
-        '../third_party/WebKit/WebKit/chromium/WebKit.gyp:webkit',
       ],
       'sources': [
         # This list contains all .h and .cc in appcache except for test code.
@@ -204,9 +203,7 @@
       'dependencies': [
         '../app/app.gyp:app_base',
         '../net/net.gyp:net',
-        'inspector_resources',
         '../third_party/WebKit/WebCore/WebCore.gyp/WebCore.gyp:webcore',
-        '../third_party/WebKit/WebKit/chromium/WebKit.gyp:webkit',
         'webkit_resources',
         'webkit_strings',
       ],
