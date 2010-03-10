@@ -123,8 +123,8 @@ layer at (0,0) size 785x3611
       RenderBlock (anonymous) at (0,535) size 769x20
         RenderText {#text} at (0,0) size 70x19
           text run at (0,0) width 70: "BUTTON: "
-        RenderButton {BUTTON} at (70,7) size 4x6 [bgcolor=#DDDDDD] [border: (2px outset #DDDDDD)]
-          RenderBlock (anonymous) at (2,2) size 6x2
+        RenderButton {BUTTON} at (70,9) size 4x4 [bgcolor=#DDDDDD] [border: (2px outset #DDDDDD)]
+          RenderBlock (anonymous) at (2,2) size 0x0
             RenderInline {FONT} at (0,0) size 0x0 [color=#008000]
         RenderInline {FONT} at (0,0) size 160x19 [color=#008000]
           RenderText {#text} at (74,0) size 160x19
