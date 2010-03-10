@@ -1617,6 +1617,17 @@ willAnimateFromState:(bookmarks::VisualState)oldState
   if (![self supportsFullscreen])
     return;
 
+  // Fade to black.
+  const CGDisplayReservationInterval kFadeDurationSeconds = 0.6;
+  Boolean didFadeOut = NO;
+  CGDisplayFadeReservationToken token;
+  if (CGAcquireDisplayFadeReservation(kFadeDurationSeconds, &token)
+      == kCGErrorSuccess) {
+    didFadeOut = YES;
+    CGDisplayFade(token, kFadeDurationSeconds / 2, kCGDisplayBlendNormal,
+        kCGDisplayBlendSolidColor, 0.0, 0.0, 0.0, /*synchronous=*/true);
+  }
+
   // Save the current first responder so we can restore after views are moved.
   NSWindow* window = [self window];
   scoped_nsobject<FocusTracker> focusTracker(
@@ -1716,6 +1727,13 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 
   // We're done moving focus, so re-enable bar visibility changes.
   [self enableBarVisibilityUpdates];
+
+  // Fade back in.
+  if (didFadeOut) {
+    CGDisplayFade(token, kFadeDurationSeconds / 2, kCGDisplayBlendSolidColor,
+        kCGDisplayBlendNormal, 0.0, 0.0, 0.0, /*synchronous=*/false);
+    CGReleaseDisplayFadeReservation(token);
+  }
 }
 
 - (BOOL)isFullscreen {
