@@ -1211,7 +1211,14 @@ nacl_env.Alias('prebuilt_binaries_update', [])
 
 
 def AddPrebuiltBinaryToRepository(env, nodes):
-  n = env.Replicate('${SCONSTRUCT_DIR}/tests/prebuilt/x86/', nodes)
+  platform = GetPlatform('targetplatform')
+  if platform == 'x86-32':
+    path = '${SCONSTRUCT_DIR}/tests/prebuilt/x86/'
+  elif platform == 'x86-64':
+    path = '${SCONSTRUCT_DIR}/tests/prebuilt/x64/'
+  elif platform == 'arm':
+    path = '${SCONSTRUCT_DIR}/tests/prebuilt/arm/'
+  n = env.Replicate(path, nodes)
   env.Alias('prebuilt_binaries_update', n)
   return n
 
