@@ -61,6 +61,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/browser_notification_observers.h"
+#include "chrome/browser/dom_ui/mediaplayer_ui.h"
 #include "chrome/browser/chromeos/cros/mount_library.h"
 #include "chrome/browser/chromeos/gview_request_interceptor.h"
 #include "chrome/browser/chromeos/usb_mount_observer.h"
@@ -386,6 +387,8 @@ bool BrowserInit::LaunchBrowser(
     // and have the constructor take care of everything else.
     chromeos::MountLibrary* lib = chromeos::MountLibrary::Get();
     chromeos::USBMountObserver* observe = chromeos::USBMountObserver::Get();
+    MediaPlayer* player = MediaPlayer::Get();
+    player->set_profile(profile);
     observe->set_profile(profile);
     lib->AddObserver(observe);
   }

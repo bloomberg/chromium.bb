@@ -1190,8 +1190,8 @@ function playMediaFile(path) {
       videoPlaybackElement.src = 'file://' + path;
     }
   } else {
-    var newPath = 'chrome://filebrowse#' + path;
-    chrome.send('openNewPopupWindow', [newPath]);
+    var newPath = 'file://' + path;
+    chrome.send('playMediaFile', [newPath]);
   }
 };
 

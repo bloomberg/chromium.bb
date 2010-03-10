@@ -1,0 +1,618 @@
+<!DOCTYPE HTML>
+<html i18n-values="dir:textdirection;">
+<head>
+<meta charset="utf-8">
+<title>Media Player</title>
+<style type="text/css">
+.audio.progress {
+  -webkit-appearance: slider-horizontal;
+  position: absolute;
+  left: 93px;
+  right:90px;
+  bottom:-2px;
+  height: 30px;
+}
+
+body {
+  overflow:hidden;
+  background:black;
+}
+
+.video.progress {
+  -webkit-appearance: slider-horizontal;
+  position: absolute;
+  left: 93px;
+  right:90px;
+  bottom:-2px;
+  height: 30px;
+}
+
+.videocontrols {
+  bottom: 0;
+  left: 0;
+  z-index:999;
+  height: 30px;
+  right: 0;
+  position:absolute;
+  background: -webkit-gradient(linear,
+                               left top,
+                               left bottom,
+                               from(#323232),
+                               to(#070707));
+}
+
+.audiocontrols {
+  bottom: 0;
+  left: 0;
+  z-index:999;
+  height: 30px;
+  right: 0;
+  position:absolute;
+  background: -webkit-gradient(linear,
+                               left top,
+                               left bottom,
+                               from(#323232),
+                               to(#070707));
+}
+
+.audio.playbutton {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  cursor: pointer;
+  z-index: 9999;
+  width: 30px;
+  background: url('../../app/theme/mediaplayer_play.png');
+  background-repeat: no-repeat;
+  background-position: 8px 8px;
+  height: 30px;
+}
+
+.audio.soundbutton {
+  position:absolute;
+  cursor: pointer;
+  right: 30px;
+  bottom:0;
+  z-index: 9999;
+  width: 30px;
+  background: url('../../app/theme/mediaplayer_vol_high.png');
+  background-repeat: no-repeat;
+  background-position: 8px 8px;
+  height: 30px;
+}
+
+.video.soundbutton {
+  position:absolute;
+  right: 30px;
+  cursor: pointer;
+  bottom:0;
+  z-index: 9999;
+  width: 30px;
+  background: url('../../app/theme/mediaplayer_vol_high.png');
+  background-repeat: no-repeat;
+  background-position: 8px 8px;
+  height: 30px;
+}
+
+.audio.volume {
+  position: absolute;
+  bottom: 30px;
+  height: 80px;
+  width: 30px;
+  right: 30px;
+  background: black;
+  background: -webkit-gradient(linear,
+                               left top,
+                               left bottom,
+                               from(#323232),
+                               to(#070707));
+}
+
+.video.volume {
+  position: absolute;
+  bottom: 30px;
+  height: 80px;
+  width: 30px;
+  right: 30px;
+  background: black;
+  background: -webkit-gradient(linear,
+                               left top,
+                               left bottom,
+                               from(#323232),
+                               to(#070707));
+}
+
+.volumeslider {
+  -webkit-appearance: slider-vertical;
+  position: absolute;
+  left: 0;
+  right:0;
+  bottom:0;
+  top: 0;
+}
+
+.video.playbutton {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  cursor: pointer;
+  z-index: 9999;
+  width: 30px;
+  background: url('../../app/theme/mediaplayer_play.png');
+  background-repeat: no-repeat;
+  background-position: 8px 8px;
+  height: 30px;
+}
+
+.audio.pausebutton {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  cursor: pointer;
+  z-index: 9999;
+  width: 30px;
+  height: 30px;
+  background: url('../../app/theme/mediaplayer_pause.png');
+  background-repeat: no-repeat;
+  background-position: 8px 8px;
+}
+
+.video.pausebutton {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  cursor: pointer;
+  z-index: 9999;
+  width: 30px;
+  height: 30px;
+  background: url('../../app/theme/mediaplayer_pause.png');
+  background-repeat: no-repeat;
+  background-position: 8px 8px;
+}
+
+.video.prevbutton {
+  position: absolute;
+  left:30px;
+  cursor:pointer;
+  bottom:0;
+  width:30px;
+  height:30px;
+  background: url('../../app/theme/mediaplayer_prev.png');
+  background-repeat: no-repeat;
+  background-position: 8px 8px;
+}
+
+.playbackvideoelement {
+  width:100%;
+  height:100%;
+  position: absolute;
+  left:0;
+  top:0;
+}
+
+.duration {
+  right: 58px;
+  color: white;
+  position: absolute;
+  top: 7px;
+  font-size: .6em;
+}
+
+.playbackaudioelement {
+  width:100%;
+  height:100%;
+  position: absolute;
+  left:0;
+  top:0;
+}
+
+.audio.prevbutton {
+  position: absolute;
+  left:30px;
+  cursor:pointer;
+  bottom:0;
+  width:30px;
+  height:30px;
+  background: url('../../app/theme/mediaplayer_prev.png');
+  background-repeat: no-repeat;
+  background-position: 8px 8px;
+}
+
+.video.nextbutton {
+  position: absolute;
+  left:60px;
+  cursor:pointer;
+  bottom:0;
+  z-index: 9999;
+  width:30px;
+  height:30px;
+  background: url('../../app/theme/mediaplayer_next.png');
+  background-repeat: no-repeat;
+  background-position: 8px 8px;
+}
+
+.playlistbutton {
+  position: absolute;
+  right: 0;
+  cursor:pointer;
+  z-index: 9999;
+  bottom: 0;
+  width: 30px;
+  height: 30px;
+  background: url('../../app/theme/mediaplayer_menu.png');
+  background-repeat: no-repeat;
+  background-position: 8px 8px;
+}
+
+.audio.nextbutton {
+  position: absolute;
+  left:60px;
+  cursor:pointer;
+  bottom:0;
+  z-index: 9999;
+  width:30px;
+  height:30px;
+  background: url('../../app/theme/mediaplayer_next.png');
+  background-repeat: no-repeat;
+  background-position: 8px 8px;
+}
+
+</style>
+<script src='local_strings.js'></script>
+<script>
+
+function $(o) {
+  return document.getElementById(o);
+}
+
+function pathIsVideoFile(path) {
+  return /\.(mp4|ogg|mpg|avi)$/i.test(path);
+};
+
+function pathIsAudioFile(path) {
+  return /\.(mp3|m4a)$/i.test(path);
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// Document Functions:
+/**
+ * Window onload handler, sets up the page.
+ */
+function load() {
+  chrome.send('getCurrentPlaylist', []);
+};
+
+var videoPlaybackElement = null;
+var audioPlaybackElement = null;
+var currentPlaylist = null;
+var currentItem = -1;
+
+function onMediaProgress() {
+  var element = getMediaElement();
+  var current = element.currentTime;
+  var duration = element.duration;
+  var progress = $('progress');
+  progress.value = (current*100)/duration;
+  if (progress.value == 100) {
+    onMediaComplete();
+  }
+};
+
+function onMediaError(e) {
+  chrome.send('playbackError', ['Error playing back']);
+  onMediaComplete();
+};
+
+function onMediaComplete() {
+  var mediaElement = getMediaElement();
+  mediaElement.removeEventListener("timeupdate", onMediaProgress, true);
+  mediaElement.removeEventListener("durationchange", onMetadataAvail, true);
+  // MediaElement.removeEventListener("ended", onMediaComplete, true);
+  mediaElement.removeEventListener("play", onMediaPlay, true);
+  mediaElement.removeEventListener("pause", onMediaPause, true);
+  currentItem ++;
+  
+  if (currentItem >= currentPlaylist.length) {
+    currentItem = -1;
+    return;
+  }
+  chrome.send('currentOffsetChanged', ['' + currentItem]);
+  playMediaFile(currentPlaylist[currentItem].path);
+};
+
+function onMediaPlay() {
+  var pausebutton = $('pausebutton');
+  var playbutton = $('playbutton');
+  pausebutton.style.display = 'block';
+  playbutton.style.display = 'none';
+};
+
+function onMediaPause() {
+  var pausebutton = $('pausebutton');
+  var playbutton = $('playbutton');
+  playbutton.style.display = 'block';
+  pausebutton.style.display = 'none';  
+};
+
+function setupMediaEvents(element) {
+  element.addEventListener("timeupdate", onMediaProgress, true);
+  element.addEventListener("durationchange", onMetadataAvail, true);
+  // element.addEventListener("ended", onMediaComplete, true);
+  element.onerror = onMediaError;
+  element.addEventListener("play", onMediaPlay, true);
+  element.addEventListener("pause", onMediaPause, true);
+};
+
+function getMediaElement() {
+  var mediaElement;
+  if (videoPlaybackElement) {
+    mediaElement = videoPlaybackElement;
+  } else {
+    mediaElement = audioPlaybackElement;
+  }
+  return mediaElement;
+};
+
+function playPauseButtonClick() {
+  var mediaElement = getMediaElement();
+  if (mediaElement.paused || mediaElement.ended) {
+    mediaElement.play();
+  } else {
+    mediaElement.pause();
+  }
+};
+
+function prevButtonClick() {
+  var element = getMediaElement();
+  if (element.currentTime > 6) {
+    element.currentTime = 0;
+    return;
+  }
+  currentItem --;
+  if (currentItem < 0) {
+    currentItem = -1;
+    return;
+  }
+  chrome.send('currentOffsetChanged', ['' + currentItem]);
+  playMediaFile(currentPlaylist[currentItem].path);
+};
+
+function nextButtonClick() {
+  currentItem ++;
+  if (currentItem >= currentPlaylist.length) {
+    currentItem = -1;
+    return;
+  }
+  chrome.send('currentOffsetChanged', ['' + currentItem]);
+  playMediaFile(currentPlaylist[currentItem].path);
+};
+
+function userChangedProgress() {
+  var val = $('progress').value;
+  var element = getMediaElement();
+  if (element.seekable && element.duration) {
+    var current = (progress.value * element.duration)/100;
+    element.currentTime = current;
+  }
+};
+
+function toggleVolumeVisible() {
+  var volume_div = $('volume');
+  if (volume_div.style.display == 'none') {
+    volume_div.style.display = 'block';
+  } else {
+    volume_div.style.display = 'none';
+  }
+};
+
+function volumeChange() {
+  var volumeslider = $('volumeslider');
+  var element = getMediaElement();
+  element.volume = (volumeslider.value/100);
+};
+
+function setupPlaybackControls() {
+  var element = $('playercontrols');
+  playercontrols.innerHTML = ''; // clear out other
+  var controlsclass = '';
+  if (videoPlaybackElement != null) {
+    controlsclass = 'video';
+    element.className = 'videocontrols';
+  } else if (audioPlaybackElement != null) {
+    controlsclass = 'audio';
+    element.className = 'audiocontrols';
+  }
+
+  var playbutton = document.createElement('div');
+  playbutton.id = 'playbutton';
+  playbutton.className = controlsclass + ' playbutton';
+  playbutton.onclick = playPauseButtonClick;
+  element.appendChild(playbutton);
+  
+
+  var pausebutton = document.createElement('div');
+  pausebutton.id = 'pausebutton';
+  pausebutton.className = controlsclass + ' pausebutton';
+  pausebutton.onclick = playPauseButtonClick;
+  element.appendChild(pausebutton);
+
+  var nextbutton = document.createElement('div');
+  nextbutton.id = 'nextbutton';
+  nextbutton.className = controlsclass + ' nextbutton';
+  nextbutton.onclick = nextButtonClick;
+  element.appendChild(nextbutton);
+
+  var prevbutton = document.createElement('div');
+  prevbutton.id = 'prevbutton';
+  prevbutton.className = controlsclass + ' prevbutton';
+  prevbutton.onclick = prevButtonClick;
+  element.appendChild(prevbutton);
+
+  var playlistbutton = document.createElement('div');
+  playlistbutton.id = 'playlistbutton';
+  playlistbutton.className = 'playlistbutton';
+  playlistbutton.onclick = togglePlaylist;
+  element.appendChild(playlistbutton);
+
+  var slider = document.createElement('input');
+  slider.type = 'range';
+  slider.id = 'progress';
+  slider.className = controlsclass + ' progress';
+  slider.onchange = userChangedProgress;
+  element.appendChild(slider);
+
+  var soundbutton = document.createElement('div');
+  soundbutton.id = 'soundbutton';
+  soundbutton.className = controlsclass + ' soundbutton';
+  soundbutton.onclick = toggleVolumeVisible;
+  element.appendChild(soundbutton);
+
+  var volume = document.createElement('div');
+  volume.id = 'volume';
+  volume.className = controlsclass + ' volume';
+  volume.style.display = 'none';
+  var volumeslider = document.createElement('input');
+  volumeslider.type = 'range';
+  volumeslider.id = 'volumeslider';
+  volumeslider.className = 'volumeslider';
+  volumeslider.onchange = volumeChange;
+  volume.appendChild(volumeslider);
+  document.body.appendChild(volume);
+
+  var duration = document.createElement('div');
+  duration.id = 'duration';
+  duration.className = 'duration';
+  element.appendChild(duration);
+};
+
+function playAudioFile(uri) {
+  if (videoPlaybackElement != null) {
+    document.body.removeChild(videoPlaybackElement);
+    videoPlaybackElement = null;
+  }
+  if (audioPlaybackElement == null) {
+    audioPlaybackElement = document.createElement('audio');
+    audioPlaybackElement.className = 'playbackaudioelement';
+    audioPlaybackElement.autoplay = true;
+    audioPlaybackElement.controls = false;
+    setupMediaEvents(audioPlaybackElement);
+    audioPlaybackElement.src = uri;
+    setupPlaybackControls();
+    document.body.appendChild(audioPlaybackElement);
+  } else {
+    setupMediaEvents(audioPlaybackElement);
+    audioPlaybackElement.src = uri;
+    audioPlaybackElement.currentTime = 0;
+    audioPlaybackElement.load();
+    audioPlaybackElement.play();
+  }
+};
+
+function toggleFullscreen() {
+
+};
+
+function onMetadataAvail() {
+  var element = getMediaElement();
+  var duration = element.duration;
+  if (duration) {
+    var durString = '' + Math.floor((duration / 60)) + ':' + (Math.floor(duration) % 60);
+    var durDiv = $('duration');
+    durDiv.textContent = durString;
+  }
+};
+
+function playVideoFile(uri) {
+  if (audioPlaybackElement != null) {
+    document.body.removeChild(audioPlaybackElement);
+    audioPlaybackElement = null;
+  }
+  if (videoPlaybackElement == null) {
+    videoPlaybackElement = document.createElement('video');
+    videoPlaybackElement.className = 'playbackvideoelement';
+    videoPlaybackElement.autoplay = true;
+    videoPlaybackElement.controls = false;
+    setupMediaEvents(videoPlaybackElement);
+    videoPlaybackElement.src = uri;
+    videoPlaybackElement.load();
+    var toggleButton = document.createElement('div');
+    toggleButton.className = 'fullscreentoggle';
+    toggleButton.id = 'fullscreentoggle';
+    toggleButton.onclick = toggleFullscreen;
+    document.body.appendChild(toggleButton);
+    setupPlaybackControls();
+    document.body.appendChild(videoPlaybackElement);
+  } else {
+    setupMediaEvents(videoPlaybackElement);
+    videoPlaybackElement.src = uri;
+    videoPlaybackElement.currentTime = 0;
+    videoPlaybackElement.load();
+    videoPlaybackElement.play();
+  }
+};
+
+function stopAllPlayback() {
+  var element = getMediaElement();
+  if (element != null) {
+    element.pause();
+  }
+};
+
+function playlistChanged(info, playlist) {
+  if (info.force) {
+    currentPlaylist = playlist;
+    stopAllPlayback();
+    if (playlist.length >= 1) {
+      if (info.currentOffset) {
+        currentItem = info.currentOffset;
+      } else {
+        currentItem = 0;
+      }
+      var item = playlist[currentItem];
+      playMediaFile(item.path);
+    }
+  } else {
+    var media = getMediaElement();
+    currentPlaylist = playlist;
+    // Only need to handle the case where we are not playing
+    // since if it is currently playing, it will just move
+    // to the next file when the current is complete.
+    if (media == null || media.ended == true) {
+      for (var x = 0; x < playlist.length; x++) {
+        if (playlist[x].path == info.path) {
+          // found the newly added item.
+          currentItem = x;
+          chrome.send('currentOffsetChanged', ['' + currentItem]);
+          playMediaFile(playlist[x].path);
+          return;
+        }
+      }
+      if (playlist.length > 0) {
+        currentItem = 0;
+        chrome.send('currentOffsetChanged', ['' + currentItem]);
+        playMediaFile(playlist[0].path);
+      }
+    }
+  }
+};
+
+function togglePlaylist() {
+  chrome.send("togglePlaylist", []);
+};
+
+function playMediaFile(url) {
+  if (pathIsVideoFile(url) ) {
+    playVideoFile(url);
+  } else if(pathIsAudioFile(url)) {
+    playAudioFile(url);
+  } else {
+    alert('file unknown');
+  }
+};
+
+</script>
+<body onload='load();' onselectstart='return false'>
+<div id='playercontrols' class='playercontrols'>
+</div>
+</body>
+</html>

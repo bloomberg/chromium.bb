@@ -1,0 +1,120 @@
+<!DOCTYPE HTML>
+<html i18n-values="dir:textdirection;">
+<head>
+<meta charset="utf-8">
+<title>Media Playlist</title>
+<style type="text/css">
+
+.playlist {
+  width: 100%;
+  height: 100%;
+  background: #080809;
+  color: #8AACE7;
+  font-size: .7em;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.playlistitem {
+  width: 100%;
+  padding: 6px;
+  cursor: pointer;
+}
+
+.playing {
+  background: #393b41;
+  color: #dddde7;
+  font-weight: bold;
+}
+
+.tracknum {
+  width: 20px;
+  position: relative;
+  float: left;
+}
+
+.title {
+ 
+}
+
+</style>
+<script src='local_strings.js'></script>
+<script>
+
+function $(o) {
+  return document.getElementById(o);
+}
+
+function pathIsVideoFile(path) {
+  return /\.(mp4|ogg|mpg|avi)$/i.test(path);
+};
+
+function pathIsAudioFile(path) {
+  return /\.(mp3|m4a)$/i.test(path);
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// Document Functions:
+/**
+ * Window onload handler, sets up the page.
+ */
+
+var currentPlaylist = null;
+var currentOffset = -1;
+function load() {
+  chrome.send("getCurrentPlaylist", []);
+};
+
+function getDisplayNameFromPath(path) {
+  slash = path.lastIndexOf("/")
+  if (slash != -1) {
+    fileName = path.substring(slash+1,path.length)
+    return fileName;
+  } else {
+    return path;
+  }
+};
+
+function setPlaylistOffset(offset) {
+  chrome.send("setCurrentPlaylistOffset", ['' + offset]);
+};
+
+function updateUI() {
+  var main = $('main');
+  if (currentPlaylist) {
+    main.innerHTML = '';
+    var main = $('main');
+    for (var x = 0; x < currentPlaylist.length; x++) {
+      var rowdiv = document.createElement('div');
+      rowdiv.className = 'playlistitem';
+
+      var numberdiv = document.createElement('div');
+      numberdiv.className = 'tracknum';
+      numberdiv.textContent = '' + (x + 1);
+      rowdiv.appendChild(numberdiv);
+
+      var titlediv = document.createElement('div');
+      titlediv.classname = 'title';
+      titlediv.textContent = getDisplayNameFromPath(currentPlaylist[x].path);
+      rowdiv.appendChild(titlediv);
+      rowdiv.onclick = new Function('setPlaylistOffset(' + x + ')');
+      if (currentOffset == x) {
+        rowdiv.className = 'playlistitem playing';
+      }
+      main.appendChild(rowdiv);
+    }
+  }
+};
+
+function playlistChanged(info, playlist) {
+  currentPlaylist = playlist;
+  currentOffset = info.currentOffset;
+  updateUI();
+};
+</script>
+<body onload='load();' onselectstart='return false'>
+<div id='main' class='playlist'>
+</div>
+</body>
+</html>

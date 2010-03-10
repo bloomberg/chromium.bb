@@ -10,6 +10,7 @@
 #include "chrome/browser/dom_ui/history_ui.h"
 #include "chrome/browser/dom_ui/filebrowse_ui.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
+#include "chrome/browser/dom_ui/mediaplayer_ui.h"
 #include "chrome/browser/dom_ui/new_tab_ui.h"
 #include "chrome/browser/dom_ui/print_ui.h"
 #include "chrome/browser/extensions/extension_dom_ui.h"
@@ -98,6 +99,9 @@ static DOMUIFactoryFunction GetDOMUIFactoryFunction(const GURL& url) {
 #if defined(OS_CHROMEOS)
   if (url.host() == chrome::kChromeUIFileBrowseHost)
     return &NewDOMUI<FileBrowseUI>;
+
+  if (url.host() == chrome::kChromeUIMediaplayerHost)
+    return &NewDOMUI<MediaplayerUI>;
 #endif
 
   return NULL;

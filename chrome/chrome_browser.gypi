@@ -818,6 +818,8 @@
         'browser/dom_ui/html_dialog_tab_contents_delegate.h',
         'browser/dom_ui/html_dialog_ui.cc',
         'browser/dom_ui/html_dialog_ui.h',
+        'browser/dom_ui/mediaplayer_ui.cc',
+        'browser/dom_ui/mediaplayer_ui.h',
         'browser/dom_ui/most_visited_handler.cc',
         'browser/dom_ui/most_visited_handler.h',
         'browser/dom_ui/new_tab_page_sync_handler.cc',

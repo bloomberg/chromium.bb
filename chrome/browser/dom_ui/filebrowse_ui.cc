@@ -34,6 +34,7 @@
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/browser/dom_ui/mediaplayer_ui.h"
 #include "net/base/escape.h"
 
 #include "grit/browser_resources.h"
@@ -155,6 +156,8 @@ class FilebrowseHandler : public net::DirectoryLister::DirectoryListerDelegate,
   void HandleGetDownloads(const Value* value);
 
   void HandleCreateNewFolder(const Value* value);
+
+  void PlayMediaFile(const Value* value);
 
   void HandleDeleteFile(const Value* value);
   void DeleteFile(const FilePath& path);
@@ -358,6 +361,8 @@ void FilebrowseHandler::RegisterMessages() {
       NewCallback(this, &FilebrowseHandler::HandleGetDownloads));
   dom_ui_->RegisterMessageCallback("createNewFolder",
       NewCallback(this, &FilebrowseHandler::HandleCreateNewFolder));
+  dom_ui_->RegisterMessageCallback("playMediaFile",
+      NewCallback(this, &FilebrowseHandler::PlayMediaFile));
   dom_ui_->RegisterMessageCallback("pauseToggleDownload",
       NewCallback(this, &FilebrowseHandler::HandlePauseToggleDownload));
   dom_ui_->RegisterMessageCallback("deleteFile",
@@ -490,6 +495,31 @@ void FilebrowseHandler::HandleCreateNewFolder(const Value* value) {
       if (!file_util::CreateDirectory(currentpath)) {
         LOG(ERROR) << "unable to create directory";
       }
+    } else {
+      LOG(ERROR) << "Unable to get string";
+      return;
+    }
+  }
+#endif
+}
+
+void FilebrowseHandler::PlayMediaFile(const Value* value) {
+#if defined(OS_CHROMEOS)
+  if (value && value->GetType() == Value::TYPE_LIST) {
+    const ListValue* list_value = static_cast<const ListValue*>(value);
+    std::string path;
+
+    // Get path string.
+    if (list_value->GetString(0, &path)) {
+      FilePath currentpath;
+      currentpath = FilePath(path);
+
+      MediaPlayer* mediaplayer = MediaPlayer::Get();
+      std::string url = currentpath.value();
+
+      GURL gurl(url);
+
+      mediaplayer->EnqueueMediaURL(gurl);
     } else {
       LOG(ERROR) << "Unable to get string";
       return;
