@@ -86,7 +86,7 @@ ifeq ($(PLATFORM), Cygwin)
           PATH=".;\\\`cygpath -w /usr/bin\\\`" /usr/bin/cygcheck $$i ; \
         done \` | \
       grep '\(/usr/\|\)bin/.*dll' | tr -d \`printf '\r'\` | sort -u` \
-      $(DESTDIR)$(SDKROOT)/libexec
+      $(DESTDIR)$(SDKROOT)/libexec || true
   else
     CYGWIN_DLL_COPY= \
       cp -f /cygdrive/c/cygwin/bin/cygwin1.dll \
