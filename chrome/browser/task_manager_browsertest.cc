@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,10 @@
 #include "app/l10n_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/extensions/crashed_extension_infobar.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/tab_contents/infobar_delegate.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/page_transition_types.h"
 #include "chrome/test/in_process_browser_test.h"
@@ -143,6 +146,39 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, KillExtension) {
   // Kill the extension process and make sure we notice it.
   TaskManager::GetInstance()->KillProcess(2);
   WaitForResourceChange(2);
+}
+
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, KillExtensionAndReload) {
+  // Show the task manager. This populates the model, and helps with debugging
+  // (you see the task manager).
+  browser()->window()->ShowTaskManager();
+
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("common").AppendASCII("background_page")));
+
+  // Wait until we see the loaded extension in the task manager (the three
+  // resources are: the browser process, New Tab Page, and the extension).
+  WaitForResourceChange(3);
+
+  EXPECT_TRUE(model()->GetResourceExtension(0) == NULL);
+  EXPECT_TRUE(model()->GetResourceExtension(1) == NULL);
+  ASSERT_TRUE(model()->GetResourceExtension(2) != NULL);
+
+  // Kill the extension process and make sure we notice it.
+  TaskManager::GetInstance()->KillProcess(2);
+  WaitForResourceChange(2);
+
+  // Reload the extension using the "crashed extension" infobar while the task
+  // manager is still visible. Make sure we don't crash and the extension
+  // gets reloaded and noticed in the task manager.
+  TabContents* current_tab = browser()->GetSelectedTabContents();
+  ASSERT_EQ(1, current_tab->infobar_delegate_count());
+  InfoBarDelegate* delegate = current_tab->GetInfoBarDelegateAt(0);
+  CrashedExtensionInfoBarDelegate* crashed_delegate =
+      delegate->AsCrashedExtensionInfoBarDelegate();
+  ASSERT_TRUE(crashed_delegate);
+  crashed_delegate->Accept();
+  WaitForResourceChange(3);
 }
 
 // Regression test for http://crbug.com/18693.
