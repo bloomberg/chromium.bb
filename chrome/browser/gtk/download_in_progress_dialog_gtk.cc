@@ -69,16 +69,14 @@ DownloadInProgressDialogGtk::DownloadInProgressDialogGtk(Browser* browser)
                                            "%s",
                                            explanation_text.c_str());
 
-  g_signal_connect(dialog, "response", G_CALLBACK(OnResponse), this);
+  g_signal_connect(dialog, "response", G_CALLBACK(OnResponseThunk), this);
 
   gtk_widget_show_all(dialog);
 }
 
-void DownloadInProgressDialogGtk::OnResponse(
-    GtkWidget* widget,
-    int response,
-    DownloadInProgressDialogGtk* dialog) {
+void DownloadInProgressDialogGtk::OnResponse(GtkWidget* widget,
+                                             int response) {
   gtk_widget_destroy(widget);
-  dialog->browser_->InProgressDownloadResponse(response == GTK_RESPONSE_ACCEPT);
-  delete dialog;
+  browser_->InProgressDownloadResponse(response == GTK_RESPONSE_ACCEPT);
+  delete this;
 }

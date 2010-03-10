@@ -54,7 +54,7 @@ BookmarkBarInstructionsGtk::BookmarkBarInstructionsGtk(Delegate* delegate,
   gtk_misc_set_alignment(
       GTK_MISC(GTK_CHROME_LINK_BUTTON(instructions_link_)->label), 0, 0.5);
   g_signal_connect(instructions_link_, "clicked",
-                   G_CALLBACK(OnButtonClick), this);
+                   G_CALLBACK(OnButtonClickThunk), this);
   gtk_util::SetButtonTriggersNavigation(instructions_link_);
   // Until we switch to vector graphics, force the font size.
   // 13.4px == 10pt @ 96dpi
@@ -77,10 +77,8 @@ void BookmarkBarInstructionsGtk::Observe(NotificationType type,
     UpdateColors();
 }
 
-// static
-void BookmarkBarInstructionsGtk::OnButtonClick(
-    GtkWidget* button, BookmarkBarInstructionsGtk* instructions) {
-  instructions->delegate_->ShowImportDialog();
+void BookmarkBarInstructionsGtk::OnButtonClick(GtkWidget* button) {
+  delegate_->ShowImportDialog();
 }
 
 void BookmarkBarInstructionsGtk::UpdateColors() {

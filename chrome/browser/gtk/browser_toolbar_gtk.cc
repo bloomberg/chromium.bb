@@ -139,7 +139,7 @@ void BrowserToolbarGtk::Init(Profile* profile,
   alignment_ = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
   UpdateForBookmarkBarVisibility(false);
   g_signal_connect(alignment_, "expose-event",
-                   G_CALLBACK(&OnAlignmentExpose), this);
+                   G_CALLBACK(&OnAlignmentExposeThunk), this);
   gtk_container_add(GTK_CONTAINER(event_box_), alignment_);
   gtk_container_add(GTK_CONTAINER(alignment_), toolbar_);
   // Force the height of the toolbar so we get the right amount of padding
@@ -155,13 +155,13 @@ void BrowserToolbarGtk::Init(Profile* profile,
   gtk_box_pack_start(GTK_BOX(back_forward_hbox_), back_->widget(), FALSE,
                      FALSE, 0);
   g_signal_connect(back_->widget(), "clicked",
-                   G_CALLBACK(OnButtonClick), this);
+                   G_CALLBACK(OnButtonClickThunk), this);
 
   forward_.reset(new BackForwardButtonGtk(browser_, true));
   gtk_box_pack_start(GTK_BOX(back_forward_hbox_), forward_->widget(), FALSE,
                      FALSE, 0);
   g_signal_connect(forward_->widget(), "clicked",
-                   G_CALLBACK(OnButtonClick), this);
+                   G_CALLBACK(OnButtonClickThunk), this);
   gtk_box_pack_start(GTK_BOX(toolbar_), back_forward_hbox_, FALSE, FALSE, 0);
 
   reload_.reset(BuildToolbarButton(IDR_RELOAD, IDR_RELOAD_P, IDR_RELOAD_H, 0,
@@ -189,7 +189,7 @@ void BrowserToolbarGtk::Init(Profile* profile,
   gtk_box_pack_start(GTK_BOX(location_hbox), go_->widget(), FALSE, FALSE, 0);
 
   g_signal_connect(location_hbox, "expose-event",
-                   G_CALLBACK(OnLocationHboxExpose), this);
+                   G_CALLBACK(OnLocationHboxExposeThunk), this);
   gtk_box_pack_start(GTK_BOX(toolbar_), location_hbox, TRUE, TRUE,
                      ShouldOnlyShowLocation() ? 1 : 0);
 
@@ -490,7 +490,7 @@ CustomDrawButton* BrowserToolbarGtk::BuildToolbarButton(
   gtk_widget_set_tooltip_text(button->widget(),
                               localized_tooltip.c_str());
   g_signal_connect(button->widget(), "clicked",
-                   G_CALLBACK(OnButtonClick), this);
+                   G_CALLBACK(OnButtonClickThunk), this);
 
   gtk_box_pack_start(GTK_BOX(toolbar_), button->widget(), FALSE, FALSE, 0);
   return button;
@@ -503,7 +503,7 @@ ToolbarStarToggleGtk* BrowserToolbarGtk::BuildStarButton(
   gtk_widget_set_tooltip_text(button->widget(),
                               localized_tooltip.c_str());
   g_signal_connect(button->widget(), "clicked",
-                   G_CALLBACK(OnButtonClick), this);
+                   G_CALLBACK(OnButtonClickThunk), this);
 
   return button;
 }
@@ -516,7 +516,7 @@ GtkWidget* BrowserToolbarGtk::BuildToolbarMenuButton(
 
   gtk_widget_set_tooltip_text(button, localized_tooltip.c_str());
   g_signal_connect(button, "button-press-event",
-                   G_CALLBACK(OnMenuButtonPressEvent), this);
+                   G_CALLBACK(OnMenuButtonPressEventThunk), this);
   GTK_WIDGET_UNSET_FLAGS(button, GTK_CAN_FOCUS);
 
   return button;
@@ -530,7 +530,7 @@ void BrowserToolbarGtk::SetUpDragForHomeButton() {
   gtk_dnd_util::SetDestTargetList(home_->widget(), targets);
 
   g_signal_connect(home_->widget(), "drag-data-received",
-                   G_CALLBACK(OnDragDataReceived), this);
+                   G_CALLBACK(OnDragDataReceivedThunk), this);
 }
 
 void BrowserToolbarGtk::ChangeActiveMenu(GtkWidget* active_menu,
@@ -554,12 +554,10 @@ void BrowserToolbarGtk::ChangeActiveMenu(GtkWidget* active_menu,
   new_menu->Popup(relevant_button, 0, timestamp);
 }
 
-// static
 gboolean BrowserToolbarGtk::OnAlignmentExpose(GtkWidget* widget,
-                                              GdkEventExpose* e,
-                                              BrowserToolbarGtk* toolbar) {
+                                              GdkEventExpose* e) {
   // We don't need to render the toolbar image in GTK mode.
-  if (toolbar->theme_provider_->UseGtkTheme())
+  if (theme_provider_->UseGtkTheme())
     return FALSE;
 
   cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
@@ -567,36 +565,34 @@ gboolean BrowserToolbarGtk::OnAlignmentExpose(GtkWidget* widget,
   cairo_clip(cr);
 
   gfx::Point tabstrip_origin =
-      toolbar->window_->tabstrip()->GetTabStripOriginForWidget(widget);
+      window_->tabstrip()->GetTabStripOriginForWidget(widget);
   gtk_util::DrawThemedToolbarBackground(widget, cr, e, tabstrip_origin,
-                                        toolbar->theme_provider_);
+                                        theme_provider_);
 
   cairo_destroy(cr);
 
   return FALSE;  // Allow subwidgets to paint.
 }
 
-// static
 gboolean BrowserToolbarGtk::OnLocationHboxExpose(GtkWidget* location_hbox,
-                                                 GdkEventExpose* e,
-                                                 BrowserToolbarGtk* toolbar) {
-  if (toolbar->theme_provider_->UseGtkTheme()) {
+                                                 GdkEventExpose* e) {
+  if (theme_provider_->UseGtkTheme()) {
     // To get the proper look surrounding the location bar, we issue raw gtk
     // painting commands to the theme engine. We figure out the region from the
     // leftmost widget to the rightmost and then tell GTK to perform the same
     // drawing commands that draw a GtkEntry on that region.
-    GtkWidget* star = toolbar->star_->widget();
+    GtkWidget* star = star_->widget();
     GtkWidget* left = NULL;
     GtkWidget* right = NULL;
-    if (toolbar->ShouldOnlyShowLocation()) {
+    if (ShouldOnlyShowLocation()) {
       left = location_hbox;
       right = location_hbox;
     } else if (gtk_widget_get_direction(star) == GTK_TEXT_DIR_LTR) {
-      left = toolbar->star_->widget();
-      right = toolbar->go_->widget();
+      left = star_->widget();
+      right = go_->widget();
     } else {
-      left = toolbar->go_->widget();
-      right = toolbar->star_->widget();
+      left = go_->widget();
+      right = star_->widget();
     }
 
     GdkRectangle rec = {
@@ -609,12 +605,12 @@ gboolean BrowserToolbarGtk::OnLocationHboxExpose(GtkWidget* location_hbox,
     // Make sure our off screen entry has the correct base color if we're in
     // secure mode.
     gtk_widget_modify_base(
-        toolbar->offscreen_entry_.get(), GTK_STATE_NORMAL,
-        (toolbar->browser_->toolbar_model()->GetSchemeSecurityLevel() ==
+        offscreen_entry_.get(), GTK_STATE_NORMAL,
+        (browser_->toolbar_model()->GetSchemeSecurityLevel() ==
          ToolbarModel::SECURE) ?
         &kSecureColor : NULL);
 
-    gtk_util::DrawTextEntryBackground(toolbar->offscreen_entry_.get(),
+    gtk_util::DrawTextEntryBackground(offscreen_entry_.get(),
                                       location_hbox, &e->area,
                                       &rec);
   }
@@ -622,17 +618,15 @@ gboolean BrowserToolbarGtk::OnLocationHboxExpose(GtkWidget* location_hbox,
   return FALSE;
 }
 
-// static
-void BrowserToolbarGtk::OnButtonClick(GtkWidget* button,
-                                      BrowserToolbarGtk* toolbar) {
-  if ((button == toolbar->back_->widget()) ||
-      (button == toolbar->forward_->widget())) {
-    toolbar->location_bar_->Revert();
+void BrowserToolbarGtk::OnButtonClick(GtkWidget* button) {
+  if ((button == back_->widget()) ||
+      (button == forward_->widget())) {
+    location_bar_->Revert();
     return;
   }
 
   int tag = -1;
-  if (button == toolbar->reload_->widget()) {
+  if (button == reload_->widget()) {
     GdkModifierType modifier_state;
     if (gtk_get_current_event_state(&modifier_state) &&
         modifier_state & GDK_SHIFT_MASK) {
@@ -640,40 +634,36 @@ void BrowserToolbarGtk::OnButtonClick(GtkWidget* button,
     } else {
       tag = IDC_RELOAD;
     }
-    toolbar->location_bar_->Revert();
-  } else if (toolbar->home_.get() && button == toolbar->home_->widget()) {
+    location_bar_->Revert();
+  } else if (home_.get() && button == home_->widget()) {
     tag = IDC_HOME;
-  } else if (button == toolbar->star_->widget()) {
+  } else if (button == star_->widget()) {
     tag = IDC_BOOKMARK_PAGE;
   }
 
   DCHECK_NE(tag, -1) << "Unexpected button click callback";
-  toolbar->browser_->ExecuteCommandWithDisposition(tag,
+  browser_->ExecuteCommandWithDisposition(tag,
       gtk_util::DispositionForCurrentButtonPressEvent());
 }
 
-// static
 gboolean BrowserToolbarGtk::OnMenuButtonPressEvent(GtkWidget* button,
-                                                   GdkEventButton* event,
-                                                   BrowserToolbarGtk* toolbar) {
+                                                   GdkEventButton* event) {
   if (event->button != 1)
     return FALSE;
 
   gtk_chrome_button_set_paint_state(GTK_CHROME_BUTTON(button),
                                     GTK_STATE_ACTIVE);
-  MenuGtk* menu = button == toolbar->page_menu_button_.get() ?
-                  toolbar->page_menu_.get() : toolbar->app_menu_.get();
+  MenuGtk* menu = button == page_menu_button_.get() ?
+                  page_menu_.get() : app_menu_.get();
   menu->Popup(button, reinterpret_cast<GdkEvent*>(event));
-  toolbar->menu_bar_helper_.MenuStartedShowing(button, menu->widget());
+  menu_bar_helper_.MenuStartedShowing(button, menu->widget());
 
   return TRUE;
 }
 
-// static
 void BrowserToolbarGtk::OnDragDataReceived(GtkWidget* widget,
     GdkDragContext* drag_context, gint x, gint y,
-    GtkSelectionData* data, guint info, guint time,
-    BrowserToolbarGtk* toolbar) {
+    GtkSelectionData* data, guint info, guint time) {
   if (info != gtk_dnd_util::TEXT_PLAIN) {
     NOTIMPLEMENTED() << "Only support plain text drops for now, sorry!";
     return;
@@ -684,11 +674,11 @@ void BrowserToolbarGtk::OnDragDataReceived(GtkWidget* widget,
     return;
 
   bool url_is_newtab = url.spec() == chrome::kChromeUINewTabURL;
-  toolbar->profile_->GetPrefs()->SetBoolean(prefs::kHomePageIsNewTabPage,
-                                            url_is_newtab);
+  profile_->GetPrefs()->SetBoolean(prefs::kHomePageIsNewTabPage,
+                                   url_is_newtab);
   if (!url_is_newtab) {
-    toolbar->profile_->GetPrefs()->SetString(prefs::kHomePage,
-                                             UTF8ToWide(url.spec()));
+    profile_->GetPrefs()->SetString(prefs::kHomePage,
+                                    UTF8ToWide(url.spec()));
   }
 }
 

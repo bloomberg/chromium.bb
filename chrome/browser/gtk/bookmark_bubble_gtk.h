@@ -20,6 +20,7 @@
 #include "base/basictypes.h"
 #include "base/task.h"
 #include "chrome/browser/gtk/info_bubble_gtk.h"
+#include "chrome/common/gtk_signal.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
@@ -59,56 +60,14 @@ class BookmarkBubbleGtk : public InfoBubbleGtkDelegate,
                     bool newly_bookmarked);
   ~BookmarkBubbleGtk();
 
-  static void HandleDestroyThunk(GtkWidget* widget,
-                                 gpointer userdata) {
-    reinterpret_cast<BookmarkBubbleGtk*>(userdata)->
-        HandleDestroy();
-  }
   // Notified when |content_| is destroyed so we can delete our instance.
-  void HandleDestroy();
-
-  static void HandleNameActivateThunk(GtkWidget* widget,
-                                      gpointer user_data) {
-    reinterpret_cast<BookmarkBubbleGtk*>(user_data)->
-        HandleNameActivate();
-  }
-  void HandleNameActivate();
-
-  static void HandleFolderChangedThunk(GtkWidget* widget,
-                                       gpointer user_data) {
-    reinterpret_cast<BookmarkBubbleGtk*>(user_data)->
-        HandleFolderChanged();
-  }
-  void HandleFolderChanged();
-
-  static void HandleFolderPopupShownThunk(GObject* object,
-                                          GParamSpec* property,
-                                          gpointer user_data) {
-    return reinterpret_cast<BookmarkBubbleGtk*>(user_data)->
-        HandleFolderPopupShown();
-  }
-  void HandleFolderPopupShown();
-
-  static void HandleEditButtonThunk(GtkWidget* widget,
-                                    gpointer user_data) {
-    reinterpret_cast<BookmarkBubbleGtk*>(user_data)->
-        HandleEditButton();
-  }
-  void HandleEditButton();
-
-  static void HandleCloseButtonThunk(GtkWidget* widget,
-                                     gpointer user_data) {
-    reinterpret_cast<BookmarkBubbleGtk*>(user_data)->
-        HandleCloseButton();
-  }
-  void HandleCloseButton();
-
-  static void HandleRemoveButtonThunk(GtkWidget* widget,
-                                      gpointer user_data) {
-    reinterpret_cast<BookmarkBubbleGtk*>(user_data)->
-        HandleRemoveButton();
-  }
-  void HandleRemoveButton();
+  CHROMEGTK_CALLBACK_0(BookmarkBubbleGtk, void, OnDestroy);
+  CHROMEGTK_CALLBACK_0(BookmarkBubbleGtk, void, OnNameActivate);
+  CHROMEGTK_CALLBACK_0(BookmarkBubbleGtk, void, OnFolderChanged);
+  CHROMEGTK_CALLBACK_0(BookmarkBubbleGtk, void, OnFolderPopupShown);
+  CHROMEGTK_CALLBACK_0(BookmarkBubbleGtk, void, OnEditClicked);
+  CHROMEGTK_CALLBACK_0(BookmarkBubbleGtk, void, OnCloseClicked);
+  CHROMEGTK_CALLBACK_0(BookmarkBubbleGtk, void, OnRemoveClicked);
 
   // Update the bookmark with any edits that have been made.
   void ApplyEdits();

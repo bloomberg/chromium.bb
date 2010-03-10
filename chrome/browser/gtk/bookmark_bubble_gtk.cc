@@ -237,19 +237,19 @@ BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWindow* toplevel_window,
   }
 
   g_signal_connect(content, "destroy",
-                   G_CALLBACK(&HandleDestroyThunk), this);
+                   G_CALLBACK(&OnDestroyThunk), this);
   g_signal_connect(name_entry_, "activate",
-                   G_CALLBACK(&HandleNameActivateThunk), this);
+                   G_CALLBACK(&OnNameActivateThunk), this);
   g_signal_connect(folder_combo_, "changed",
-                   G_CALLBACK(&HandleFolderChangedThunk), this);
+                   G_CALLBACK(&OnFolderChangedThunk), this);
   g_signal_connect(folder_combo_, "notify::popup-shown",
-                   G_CALLBACK(&HandleFolderPopupShownThunk), this);
+                   G_CALLBACK(&OnFolderPopupShownThunk), this);
   g_signal_connect(edit_button, "clicked",
-                   G_CALLBACK(&HandleEditButtonThunk), this);
+                   G_CALLBACK(&OnEditClickedThunk), this);
   g_signal_connect(close_button, "clicked",
-                   G_CALLBACK(&HandleCloseButtonThunk), this);
+                   G_CALLBACK(&OnCloseClickedThunk), this);
   g_signal_connect(remove_button_, "clicked",
-                   G_CALLBACK(&HandleRemoveButtonThunk), this);
+                   G_CALLBACK(&OnRemoveClickedThunk), this);
 
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
@@ -272,18 +272,18 @@ BookmarkBubbleGtk::~BookmarkBubbleGtk() {
   }
 }
 
-void BookmarkBubbleGtk::HandleDestroy() {
+void BookmarkBubbleGtk::OnDestroy(GtkWidget* widget) {
   // We are self deleting, we have a destroy signal setup to catch when we
   // destroyed (via the InfoBubble being destroyed), and delete ourself.
   content_ = NULL;  // We are being destroyed.
   delete this;
 }
 
-void BookmarkBubbleGtk::HandleNameActivate() {
+void BookmarkBubbleGtk::OnNameActivate(GtkWidget* widget) {
   bubble_->Close();
 }
 
-void BookmarkBubbleGtk::HandleFolderChanged() {
+void BookmarkBubbleGtk::OnFolderChanged(GtkWidget* widget) {
   size_t cur_folder = gtk_combo_box_get_active(GTK_COMBO_BOX(folder_combo_));
   if (cur_folder == folder_nodes_.size()) {
     UserMetrics::RecordAction("BookmarkBubble_EditFromCombobox", profile_);
@@ -296,7 +296,7 @@ void BookmarkBubbleGtk::HandleFolderChanged() {
   }
 }
 
-void BookmarkBubbleGtk::HandleFolderPopupShown() {
+void BookmarkBubbleGtk::OnFolderPopupShown(GtkWidget* widget) {
   // GtkComboBox grabs the keyboard and pointer when it displays its popup,
   // which steals the grabs that InfoBubbleGtk had installed.  When the popup is
   // hidden, we notify InfoBubbleGtk so it can try to reacquire the grabs
@@ -307,16 +307,16 @@ void BookmarkBubbleGtk::HandleFolderPopupShown() {
     bubble_->HandlePointerAndKeyboardUngrabbedByContent();
 }
 
-void BookmarkBubbleGtk::HandleEditButton() {
+void BookmarkBubbleGtk::OnEditClicked(GtkWidget* widget) {
   UserMetrics::RecordAction("BookmarkBubble_Edit", profile_);
   ShowEditor();
 }
 
-void BookmarkBubbleGtk::HandleCloseButton() {
+void BookmarkBubbleGtk::OnCloseClicked(GtkWidget* widget) {
   bubble_->Close();
 }
 
-void BookmarkBubbleGtk::HandleRemoveButton() {
+void BookmarkBubbleGtk::OnRemoveClicked(GtkWidget* widget) {
   UserMetrics::RecordAction("BookmarkBubble_Unstar", profile_);
 
   apply_edits_ = false;

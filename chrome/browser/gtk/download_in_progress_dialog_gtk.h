@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_GTK_DOWNLOAD_IN_PROGRESS_DIALOG_GTK_H_
 
 #include "base/basictypes.h"
+#include "chrome/common/gtk_signal.h"
 
 class Browser;
 
@@ -16,8 +17,7 @@ class DownloadInProgressDialogGtk {
   explicit DownloadInProgressDialogGtk(Browser* browser);
 
  private:
-  static void OnResponse(GtkWidget* widget, int response,
-                         DownloadInProgressDialogGtk* dialog);
+  CHROMEGTK_CALLBACK_1(DownloadInProgressDialogGtk, void, OnResponse, int);
 
   Browser* browser_;
 

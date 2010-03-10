@@ -58,12 +58,12 @@ BackForwardButtonGtk::BackForwardButtonGtk(Browser* browser, bool is_forward)
               BackForwardMenuModel::BACKWARD_MENU));
 
   g_signal_connect(widget(), "clicked",
-                   G_CALLBACK(OnClick), this);
+                   G_CALLBACK(OnClickThunk), this);
   g_signal_connect(widget(), "button-press-event",
-                   G_CALLBACK(OnButtonPress), this);
+                   G_CALLBACK(OnButtonPressThunk), this);
   gtk_widget_add_events(widget(), GDK_POINTER_MOTION_MASK);
   g_signal_connect(widget(), "motion-notify-event",
-                   G_CALLBACK(OnMouseMove), this);
+                   G_CALLBACK(OnMouseMoveThunk), this);
 
   // Popup the menu as left-aligned relative to this widget rather than the
   // default of right aligned.
@@ -96,50 +96,46 @@ void BackForwardButtonGtk::ShowBackForwardMenu() {
   menu_->Popup(widget(), 1, gtk_get_current_event_time());
 }
 
-// static
-void BackForwardButtonGtk::OnClick(GtkWidget* widget,
-                                   BackForwardButtonGtk* button) {
-  button->show_menu_factory_.RevokeAll();
+void BackForwardButtonGtk::OnClick(GtkWidget* widget) {
+  show_menu_factory_.RevokeAll();
 
-  button->browser_->ExecuteCommandWithDisposition(
-      button->is_forward_ ? IDC_FORWARD : IDC_BACK,
+  browser_->ExecuteCommandWithDisposition(
+      is_forward_ ? IDC_FORWARD : IDC_BACK,
       gtk_util::DispositionForCurrentButtonPressEvent());
 }
 
-// static
 gboolean BackForwardButtonGtk::OnButtonPress(GtkWidget* widget,
-    GdkEventButton* event, BackForwardButtonGtk* button) {
+                                             GdkEventButton* event) {
   if (event->button == 3)
-    button->ShowBackForwardMenu();
+    ShowBackForwardMenu();
 
   if (event->button != 1)
     return FALSE;
 
-  button->y_position_of_last_press_ = static_cast<int>(event->y);
+  y_position_of_last_press_ = static_cast<int>(event->y);
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      button->show_menu_factory_.NewRunnableMethod(
+      show_menu_factory_.NewRunnableMethod(
           &BackForwardButtonGtk::ShowBackForwardMenu),
       kMenuTimerDelay);
   return FALSE;
 }
 
-// static
 gboolean BackForwardButtonGtk::OnMouseMove(GtkWidget* widget,
-    GdkEventMotion* event, BackForwardButtonGtk* button) {
+                                           GdkEventMotion* event) {
   // If we aren't waiting to show the back forward menu, do nothing.
-  if (button->show_menu_factory_.empty())
+  if (show_menu_factory_.empty())
     return FALSE;
 
   // We only count moves about a certain threshold.
   GtkSettings* settings = gtk_widget_get_settings(widget);
   int drag_min_distance;
   g_object_get(settings, "gtk-dnd-drag-threshold", &drag_min_distance, NULL);
-  if (event->y - button->y_position_of_last_press_ < drag_min_distance)
+  if (event->y - y_position_of_last_press_ < drag_min_distance)
     return FALSE;
 
   // We will show the menu now. Cancel the delayed event.
-  button->show_menu_factory_.RevokeAll();
-  button->ShowBackForwardMenu();
+  show_menu_factory_.RevokeAll();
+  ShowBackForwardMenu();
   return FALSE;
 }
 

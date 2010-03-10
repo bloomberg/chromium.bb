@@ -18,6 +18,7 @@
 #include "chrome/browser/page_menu_model.h"
 #include "chrome/browser/pref_member.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/common/gtk_signal.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/owned_widget_gtk.h"
@@ -151,27 +152,22 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
 
   // Gtk callback for the "expose-event" signal.
   // The alignment contains the toolbar.
-  static gboolean OnAlignmentExpose(GtkWidget* widget, GdkEventExpose* e,
-                                    BrowserToolbarGtk* toolbar);
-  static gboolean OnLocationHboxExpose(GtkWidget* omnibox_hbox,
-                                       GdkEventExpose* e,
-                                       BrowserToolbarGtk* toolbar);
+  CHROMEGTK_CALLBACK_1(BrowserToolbarGtk, gboolean, OnAlignmentExpose,
+                       GdkEventExpose*);
+  CHROMEGTK_CALLBACK_1(BrowserToolbarGtk, gboolean, OnLocationHboxExpose,
+                       GdkEventExpose*);
 
   // Gtk callback for the "clicked" signal.
-  static void OnButtonClick(GtkWidget* button, BrowserToolbarGtk* toolbar);
+  CHROMEGTK_CALLBACK_0(BrowserToolbarGtk, void, OnButtonClick);
 
   // Gtk callback to intercept mouse clicks to the menu buttons.
-  static gboolean OnMenuButtonPressEvent(GtkWidget* button,
-                                         GdkEventButton* event,
-                                         BrowserToolbarGtk* toolbar);
+  CHROMEGTK_CALLBACK_1(BrowserToolbarGtk, gboolean, OnMenuButtonPressEvent,
+                       GdkEventButton*);
 
   // Used for drags onto home button.
-  static void OnDragDataReceived(GtkWidget* widget,
-                                 GdkDragContext* drag_context,
-                                 gint x, gint y,
-                                 GtkSelectionData* data,
-                                 guint info, guint time,
-                                 BrowserToolbarGtk* toolbar);
+  CHROMEGTK_CALLBACK_6(BrowserToolbarGtk, void, OnDragDataReceived,
+                       GdkDragContext*, gint, gint, GtkSelectionData*,
+                       guint, guint);
 
   // ProfileSyncServiceObserver method.
   virtual void OnStateChanged();

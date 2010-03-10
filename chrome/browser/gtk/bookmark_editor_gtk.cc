@@ -94,7 +94,7 @@ void BookmarkEditorGtk::Init(GtkWindow* parent_window) {
     new_folder_button_ = gtk_button_new_with_label(
         l10n_util::GetStringUTF8(IDS_BOOMARK_EDITOR_NEW_FOLDER_BUTTON).c_str());
     g_signal_connect(new_folder_button_, "clicked",
-                     G_CALLBACK(OnNewFolderClicked), this);
+                     G_CALLBACK(OnNewFolderClickedThunk), this);
     gtk_container_add(GTK_CONTAINER(action_area), new_folder_button_);
     gtk_button_box_set_child_secondary(GTK_BUTTON_BOX(action_area),
                                        new_folder_button_, TRUE);
@@ -141,7 +141,7 @@ void BookmarkEditorGtk::Init(GtkWindow* parent_window) {
   }
   gtk_entry_set_text(GTK_ENTRY(name_entry_), title.c_str());
   g_signal_connect(name_entry_, "changed",
-                   G_CALLBACK(OnEntryChanged), this);
+                   G_CALLBACK(OnEntryChangedThunk), this);
   gtk_entry_set_activates_default(GTK_ENTRY(name_entry_), TRUE);
 
   GtkWidget* table;
@@ -152,7 +152,7 @@ void BookmarkEditorGtk::Init(GtkWindow* parent_window) {
       url_spec = details_.existing_node->GetURL().spec();
     gtk_entry_set_text(GTK_ENTRY(url_entry_), url_spec.c_str());
     g_signal_connect(url_entry_, "changed",
-                     G_CALLBACK(OnEntryChanged), this);
+                     G_CALLBACK(OnEntryChangedThunk), this);
     gtk_entry_set_activates_default(GTK_ENTRY(url_entry_), TRUE);
     table = gtk_util::CreateLabeledControlsGroup(NULL,
         l10n_util::GetStringUTF8(IDS_BOOMARK_EDITOR_NAME_LABEL).c_str(),
@@ -210,22 +210,22 @@ void BookmarkEditorGtk::Init(GtkWindow* parent_window) {
     gtk_box_pack_start(GTK_BOX(vbox), scroll_window, TRUE, TRUE, 0);
 
     g_signal_connect(gtk_tree_view_get_selection(GTK_TREE_VIEW(tree_view_)),
-                     "changed", G_CALLBACK(OnSelectionChanged), this);
+                     "changed", G_CALLBACK(OnSelectionChangedThunk), this);
   }
 
   gtk_box_pack_start(GTK_BOX(content_area), vbox, TRUE, TRUE, 0);
 
   g_signal_connect(dialog_, "response",
-                   G_CALLBACK(OnResponse), this);
+                   G_CALLBACK(OnResponseThunk), this);
   g_signal_connect(dialog_, "delete-event",
-                   G_CALLBACK(OnWindowDeleteEvent), this);
+                   G_CALLBACK(OnWindowDeleteEventThunk), this);
   g_signal_connect(dialog_, "destroy",
-                   G_CALLBACK(OnWindowDestroy), this);
+                   G_CALLBACK(OnWindowDestroyThunk), this);
 }
 
 void BookmarkEditorGtk::Show() {
   // Manually call our OnEntryChanged handler to set the initial state.
-  OnEntryChanged(NULL, this);
+  OnEntryChanged(NULL);
 
   gtk_widget_show_all(dialog_);
 }
@@ -347,30 +347,23 @@ void BookmarkEditorGtk::AddNewGroup(GtkTreeIter* parent, GtkTreeIter* child) {
       -1);
 }
 
-// static
-void BookmarkEditorGtk::OnSelectionChanged(GtkTreeSelection* selection,
-                                           BookmarkEditorGtk* dialog) {
-  if (!gtk_tree_selection_get_selected(dialog->tree_selection_, NULL, NULL))
-    gtk_widget_set_sensitive(dialog->new_folder_button_, FALSE);
+void BookmarkEditorGtk::OnSelectionChanged(GtkWidget* selection) {
+  if (!gtk_tree_selection_get_selected(tree_selection_, NULL, NULL))
+    gtk_widget_set_sensitive(new_folder_button_, FALSE);
   else
-    gtk_widget_set_sensitive(dialog->new_folder_button_, TRUE);
+    gtk_widget_set_sensitive(new_folder_button_, TRUE);
 }
 
-// static
-void BookmarkEditorGtk::OnResponse(GtkDialog* dialog, int response_id,
-                                   BookmarkEditorGtk* window) {
+void BookmarkEditorGtk::OnResponse(GtkWidget* dialog, int response_id) {
   if (response_id == GTK_RESPONSE_ACCEPT)
-    window->ApplyEdits();
+    ApplyEdits();
 
-  window->Close();
+  Close();
 }
 
-// static
-gboolean BookmarkEditorGtk::OnWindowDeleteEvent(
-    GtkWidget* widget,
-    GdkEvent* event,
-    BookmarkEditorGtk* dialog) {
-  dialog->Close();
+gboolean BookmarkEditorGtk::OnWindowDeleteEvent(GtkWidget* widget,
+                                                GdkEvent* event) {
+  Close();
 
   // Return true to prevent the gtk dialog from being destroyed. Close will
   // destroy it for us and the default gtk_dialog_delete_event_handler() will
@@ -378,45 +371,39 @@ gboolean BookmarkEditorGtk::OnWindowDeleteEvent(
   return TRUE;
 }
 
-// static
-void BookmarkEditorGtk::OnWindowDestroy(GtkWidget* widget,
-                                        BookmarkEditorGtk* dialog) {
-  MessageLoop::current()->DeleteSoon(FROM_HERE, dialog);
+void BookmarkEditorGtk::OnWindowDestroy(GtkWidget* widget) {
+  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
-// static
-void BookmarkEditorGtk::OnEntryChanged(GtkEditable* entry,
-                                       BookmarkEditorGtk* dialog) {
+void BookmarkEditorGtk::OnEntryChanged(GtkWidget* entry) {
   gboolean can_close = TRUE;
-  if (dialog->details_.type == EditDetails::NEW_FOLDER) {
-    if (dialog->GetInputTitle().empty()) {
-      gtk_widget_modify_base(dialog->name_entry_, GTK_STATE_NORMAL,
+  if (details_.type == EditDetails::NEW_FOLDER) {
+    if (GetInputTitle().empty()) {
+      gtk_widget_modify_base(name_entry_, GTK_STATE_NORMAL,
                              &kErrorColor);
       can_close = FALSE;
     } else {
-      gtk_widget_modify_base(dialog->name_entry_, GTK_STATE_NORMAL, NULL);
+      gtk_widget_modify_base(name_entry_, GTK_STATE_NORMAL, NULL);
     }
   } else {
-    GURL url(dialog->GetInputURL());
+    GURL url(GetInputURL());
     if (!url.is_valid()) {
-      gtk_widget_modify_base(dialog->url_entry_, GTK_STATE_NORMAL,
+      gtk_widget_modify_base(url_entry_, GTK_STATE_NORMAL,
                              &kErrorColor);
       can_close = FALSE;
     } else {
-      gtk_widget_modify_base(dialog->url_entry_, GTK_STATE_NORMAL, NULL);
+      gtk_widget_modify_base(url_entry_, GTK_STATE_NORMAL, NULL);
     }
   }
-  gtk_dialog_set_response_sensitive(GTK_DIALOG(dialog->dialog_),
+  gtk_dialog_set_response_sensitive(GTK_DIALOG(dialog_),
                                     GTK_RESPONSE_ACCEPT, can_close);
 }
 
-// static
-void BookmarkEditorGtk::OnNewFolderClicked(GtkWidget* button,
-                                           BookmarkEditorGtk* dialog) {
+void BookmarkEditorGtk::OnNewFolderClicked(GtkWidget* button) {
   // TODO(erg): Make the inserted item here editable and edit it. If that's
   // impossible (it's probably possible), fall back on the folder editor.
   GtkTreeIter iter;
-  if (!gtk_tree_selection_get_selected(dialog->tree_selection_,
+  if (!gtk_tree_selection_get_selected(tree_selection_,
                                        NULL,
                                        &iter)) {
     NOTREACHED() << "Something should always be selected if New Folder " <<
@@ -425,15 +412,15 @@ void BookmarkEditorGtk::OnNewFolderClicked(GtkWidget* button,
   }
 
   GtkTreeIter new_item_iter;
-  dialog->AddNewGroup(&iter, &new_item_iter);
+  AddNewGroup(&iter, &new_item_iter);
 
   GtkTreePath* path = gtk_tree_model_get_path(
-      GTK_TREE_MODEL(dialog->tree_store_), &new_item_iter);
-  gtk_tree_view_expand_to_path(GTK_TREE_VIEW(dialog->tree_view_), path);
+      GTK_TREE_MODEL(tree_store_), &new_item_iter);
+  gtk_tree_view_expand_to_path(GTK_TREE_VIEW(tree_view_), path);
 
   // Make the folder name editable.
-  gtk_tree_view_set_cursor(GTK_TREE_VIEW(dialog->tree_view_), path,
-      gtk_tree_view_get_column(GTK_TREE_VIEW(dialog->tree_view_), 0),
+  gtk_tree_view_set_cursor(GTK_TREE_VIEW(tree_view_), path,
+      gtk_tree_view_get_column(GTK_TREE_VIEW(tree_view_), 0),
       TRUE);
 
   gtk_tree_path_free(path);

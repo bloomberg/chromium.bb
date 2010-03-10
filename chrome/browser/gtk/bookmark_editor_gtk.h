@@ -12,6 +12,7 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
+#include "chrome/common/gtk_signal.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
 class GURL;
@@ -90,20 +91,15 @@ class BookmarkEditorGtk : public BookmarkEditor,
   // new group.
   void AddNewGroup(GtkTreeIter* parent, GtkTreeIter* child);
 
-  static void OnSelectionChanged(GtkTreeSelection* treeselection,
-                                 BookmarkEditorGtk* dialog);
+  CHROMEGTK_CALLBACK_0(BookmarkEditorGtk, void, OnSelectionChanged);
+  CHROMEGTK_CALLBACK_1(BookmarkEditorGtk, void, OnResponse, int);
+  CHROMEGTK_CALLBACK_1(BookmarkEditorGtk, gboolean, OnWindowDeleteEvent,
+                       GdkEvent*);
 
-  static void OnResponse(GtkDialog* dialog, int response_id,
-                         BookmarkEditorGtk* window);
+  CHROMEGTK_CALLBACK_0(BookmarkEditorGtk, void, OnWindowDestroy);
+  CHROMEGTK_CALLBACK_0(BookmarkEditorGtk, void, OnEntryChanged);
 
-  static gboolean OnWindowDeleteEvent(GtkWidget* widget,
-                                      GdkEvent* event,
-                                      BookmarkEditorGtk* dialog);
-
-  static void OnWindowDestroy(GtkWidget* widget, BookmarkEditorGtk* dialog);
-  static void OnEntryChanged(GtkEditable* entry, BookmarkEditorGtk* dialog);
-
-  static void OnNewFolderClicked(GtkWidget* button, BookmarkEditorGtk* dialog);
+  CHROMEGTK_CALLBACK_0(BookmarkEditorGtk, void, OnNewFolderClicked);
 
   // Profile the entry is from.
   Profile* profile_;

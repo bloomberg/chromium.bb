@@ -9,6 +9,7 @@
 #include "base/task.h"
 #include "chrome/browser/gtk/custom_button.h"
 #include "chrome/browser/gtk/menu_gtk.h"
+#include "chrome/common/gtk_signal.h"
 
 class BackForwardMenuModel;
 class Browser;
@@ -30,19 +31,17 @@ class BackForwardButtonGtk : MenuGtk::Delegate {
 
  private:
   // Executes the browser command.
-  static void OnClick(GtkWidget* widget, BackForwardButtonGtk* button);
+  CHROMEGTK_CALLBACK_0(BackForwardButtonGtk, void, OnClick);
 
   // Starts a timer to show the dropdown menu.
-  static gboolean OnButtonPress(GtkWidget* button,
-                                GdkEventButton* event,
-                                BackForwardButtonGtk* toolbar);
+  CHROMEGTK_CALLBACK_1(BackForwardButtonGtk, gboolean, OnButtonPress,
+                       GdkEventButton*);
 
   // If there is a timer to show the dropdown menu, and the mouse has moved
   // sufficiently down the screen, cancel the timer and immediately show the
   // menu.
-  static gboolean OnMouseMove(GtkWidget* widget,
-                              GdkEventMotion* event,
-                              BackForwardButtonGtk* toolbar);
+  CHROMEGTK_CALLBACK_1(BackForwardButtonGtk, gboolean, OnMouseMove,
+                       GdkEventMotion*);
 
   // Shows the dropdown menu.
   void ShowBackForwardMenu();

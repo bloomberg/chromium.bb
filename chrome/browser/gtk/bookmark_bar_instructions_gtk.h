@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_GTK_BOOKMARK_BAR_INSTRUCTIONS_GTK_H_
 
 #include "base/basictypes.h"
+#include "chrome/common/gtk_signal.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
@@ -32,8 +33,7 @@ class BookmarkBarInstructionsGtk : public NotificationObserver {
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  static void OnButtonClick(GtkWidget* button,
-                            BookmarkBarInstructionsGtk* instructions);
+  CHROMEGTK_CALLBACK_0(BookmarkBarInstructionsGtk, void, OnButtonClick);
 
   // Sets the correct color for |instructions_label_| and |instructions_link_|.
   void UpdateColors();

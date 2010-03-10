@@ -19,6 +19,7 @@
 #include "chrome/browser/gtk/menu_bar_helper.h"
 #include "chrome/browser/gtk/view_id_util.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/common/gtk_signal.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/owned_widget_gtk.h"
@@ -217,69 +218,48 @@ class BookmarkBarGtk : public AnimationDelegate,
                         GdkEventButton* event);
 
   // GtkButton callbacks.
-  static gboolean OnButtonPressed(GtkWidget* sender,
-                                  GdkEventButton* event,
-                                  BookmarkBarGtk* bar);
-  static gboolean OnSyncErrorButtonPressed(GtkWidget* sender,
-                                           GdkEventButton* event,
-                                           BookmarkBarGtk* bar);
-  static void OnClicked(GtkWidget* sender,
-                        BookmarkBarGtk* bar);
-  static void OnButtonDragBegin(GtkWidget* widget,
-                                GdkDragContext* drag_context,
-                                BookmarkBarGtk* bar);
-  static void OnButtonDragEnd(GtkWidget* button,
-                              GdkDragContext* drag_context,
-                              BookmarkBarGtk* bar);
-  static void OnButtonDragGet(GtkWidget* widget, GdkDragContext* context,
-                              GtkSelectionData* selection_data,
-                              guint target_type, guint time,
-                              BookmarkBarGtk* bar);
+  CHROMEGTK_CALLBACK_1(BookmarkBarGtk, gboolean, OnButtonPressed,
+                       GdkEventButton*);
+  CHROMEGTK_CALLBACK_1(BookmarkBarGtk, gboolean, OnSyncErrorButtonPressed,
+                       GdkEventButton*);
+  CHROMEGTK_CALLBACK_0(BookmarkBarGtk, void, OnClicked);
+  CHROMEGTK_CALLBACK_1(BookmarkBarGtk, void, OnButtonDragBegin,
+                       GdkDragContext*);
+  CHROMEGTK_CALLBACK_1(BookmarkBarGtk, void, OnButtonDragEnd, GdkDragContext*);
+  CHROMEGTK_CALLBACK_4(BookmarkBarGtk, void, OnButtonDragGet,
+                       GdkDragContext*, GtkSelectionData*, guint, guint);
 
   // GtkButton callbacks for folder buttons.
-  static void OnFolderClicked(GtkWidget* sender,
-                              BookmarkBarGtk* bar);
+  CHROMEGTK_CALLBACK_0(BookmarkBarGtk, void, OnFolderClicked);
 
   // GtkToolbar callbacks.
-  static gboolean OnToolbarDragMotion(GtkToolbar* toolbar,
-                                      GdkDragContext* context,
-                                      gint x,
-                                      gint y,
-                                      guint time,
-                                      BookmarkBarGtk* bar);
-  static void OnToolbarDragLeave(GtkToolbar* toolbar,
-                                 GdkDragContext* context,
-                                 guint time,
-                                 BookmarkBarGtk* bar);
-  static void OnToolbarSizeAllocate(GtkWidget* widget,
-                                    GtkAllocation* allocation,
-                                    BookmarkBarGtk* bar);
+  CHROMEGTK_CALLBACK_4(BookmarkBarGtk, gboolean, OnToolbarDragMotion,
+                       GdkDragContext*, gint, gint, guint);
+  CHROMEGTK_CALLBACK_2(BookmarkBarGtk, void, OnToolbarDragLeave,
+                       GdkDragContext*, guint);
+  CHROMEGTK_CALLBACK_1(BookmarkBarGtk, void, OnToolbarSizeAllocate,
+                       GtkAllocation*);
 
   // Used for both folder buttons and the toolbar.
-  static void OnDragReceived(GtkWidget* widget,
-                             GdkDragContext* context,
-                             gint x, gint y,
-                             GtkSelectionData* selection_data,
-                             guint target_type, guint time,
-                             BookmarkBarGtk* bar);
+  CHROMEGTK_CALLBACK_6(BookmarkBarGtk, void, OnDragReceived,
+                       GdkDragContext*, gint, gint, GtkSelectionData*,
+                       guint, guint);
 
   // GtkEventBox callbacks.
-  static gboolean OnEventBoxExpose(GtkWidget* widget, GdkEventExpose* event,
-                                   BookmarkBarGtk* bar);
-  static void OnEventBoxDestroy(GtkWidget* widget, BookmarkBarGtk* bar);
+  CHROMEGTK_CALLBACK_1(BookmarkBarGtk, gboolean, OnEventBoxExpose,
+                       GdkEventExpose*);
+  CHROMEGTK_CALLBACK_0(BookmarkBarGtk, void, OnEventBoxDestroy);
 
   // GtkVSeparator callbacks.
-  static gboolean OnSeparatorExpose(GtkWidget* widget, GdkEventExpose* event,
-                                    BookmarkBarGtk* bar);
+  CHROMEGTK_CALLBACK_1(BookmarkBarGtk, gboolean, OnSeparatorExpose,
+                       GdkEventExpose*);
 
   // Callbacks on our parent widget.
-  static void OnParentSizeAllocate(GtkWidget* widget,
-                                   GtkAllocation* allocation,
-                                   BookmarkBarGtk* bar);
+  CHROMEGTK_CALLBACK_1(BookmarkBarGtk, void, OnParentSizeAllocate,
+                       GtkAllocation*);
 
   // |throbbing_widget_| callback.
-  static void OnThrobbingWidgetDestroy(GtkWidget* widget,
-                                       BookmarkBarGtk* bar);
+  CHROMEGTK_CALLBACK_0(BookmarkBarGtk, void, OnThrobbingWidgetDestroy);
 
   // ProfileSyncServiceObserver method.
   virtual void OnStateChanged();
