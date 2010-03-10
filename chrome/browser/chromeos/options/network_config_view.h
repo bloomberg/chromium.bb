@@ -41,6 +41,8 @@ class NetworkConfigView : public views::View,
   // views::DialogDelegate methods.
   virtual std::wstring GetDialogButtonLabel(
       MessageBoxFlags::DialogButton button) const;
+  virtual bool IsDialogButtonEnabled(
+      MessageBoxFlags::DialogButton button) const;
   virtual bool Cancel();
   virtual bool Accept();
 

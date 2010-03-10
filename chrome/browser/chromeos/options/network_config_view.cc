@@ -59,6 +59,14 @@ std::wstring NetworkConfigView::GetDialogButtonLabel(
   return L"";
 }
 
+bool NetworkConfigView::IsDialogButtonEnabled(
+    MessageBoxFlags::DialogButton button) const {
+  // For login dialogs, disable ok button if nothing entered in text fields.
+  if (flags_ & FLAG_LOGIN_ONLY && button == MessageBoxFlags::DIALOGBUTTON_OK)
+    return wificonfig_view_->can_login();
+  return true;
+}
+
 bool NetworkConfigView::Cancel() {
   return true;
 }
@@ -122,9 +130,9 @@ void NetworkConfigView::Init() {
 
   if (flags_ & FLAG_SHOW_WIFI) {
     if (flags_ & FLAG_OTHER_NETWORK)
-      wificonfig_view_ = new WifiConfigView();
+      wificonfig_view_ = new WifiConfigView(this);
     else
-      wificonfig_view_ = new WifiConfigView(wifi_);
+      wificonfig_view_ = new WifiConfigView(this, wifi_);
     tabs_->AddTab(
         l10n_util::GetString(IDS_OPTIONS_SETTINGS_SECTION_TITLE_WIFI_CONFIG),
         wificonfig_view_);

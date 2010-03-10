@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "base/string_util.h"
+#include "chrome/browser/chromeos/options/network_config_view.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -16,19 +17,42 @@
 
 namespace chromeos {
 
-WifiConfigView::WifiConfigView(WifiNetwork wifi)
-    : other_network_(false),
+WifiConfigView::WifiConfigView(NetworkConfigView* parent, WifiNetwork wifi)
+    : parent_(parent),
+      other_network_(false),
+      can_login_(false),
       wifi_(wifi),
       ssid_textfield_(NULL),
       passphrase_textfield_(NULL) {
   Init();
 }
 
-WifiConfigView::WifiConfigView()
-    : other_network_(true),
+WifiConfigView::WifiConfigView(NetworkConfigView* parent)
+    : parent_(parent),
+      other_network_(true),
+      can_login_(false),
       ssid_textfield_(NULL),
       passphrase_textfield_(NULL) {
   Init();
+}
+
+void WifiConfigView::ContentsChanged(views::Textfield* sender,
+                                     const string16& new_contents) {
+  bool can_login = true;
+  if (other_network_) {
+    // Since the user can try to connect to a non-encrypted hidden network,
+    // only enforce ssid is non-empty.
+    can_login = !ssid_textfield_->text().empty();
+  } else {
+    // Connecting to an encrypted network, so make sure passphrase is non-empty.
+    can_login = !passphrase_textfield_->text().empty();
+  }
+
+  // Update the login button enable/disable state if can_login_ changes.
+  if (can_login != can_login_) {
+    can_login_ = can_login;
+    parent_->GetDialogClientView()->UpdateDialogButtons();
+  }
 }
 
 const string16& WifiConfigView::GetSSID() const {
@@ -62,6 +86,7 @@ void WifiConfigView::Init() {
       IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SSID)));
   if (other_network_) {
     ssid_textfield_ = new views::Textfield(views::Textfield::STYLE_DEFAULT);
+    ssid_textfield_->SetController(this);
     layout->AddView(ssid_textfield_);
   } else {
     views::Label* label = new views::Label(ASCIIToWide(wifi_.ssid));
@@ -77,6 +102,7 @@ void WifiConfigView::Init() {
         IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PASSPHRASE)));
     passphrase_textfield_ = new views::Textfield(
         views::Textfield::STYLE_PASSWORD);
+    passphrase_textfield_->SetController(this);
     layout->AddView(passphrase_textfield_);
     layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   }
