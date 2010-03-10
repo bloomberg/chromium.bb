@@ -81,10 +81,6 @@ ifeq ($(PLATFORM), Cygwin)
         cd $(DESTDIR)$(SDKROOT)/bin ; \
         for i in '*.exe' ; do \
           PATH=".;\\\`cygpath -w /usr/bin\\\`" /usr/bin/cygcheck $$i ; \
-        done ; \
-        cd $(DESTDIR)$(SDKROOT)/libexec/gcc/$(CROSSARCH)/$(GCC_VERSION) ; \
-        for i in '*.exe' ; do \
-          PATH=".;\\\`cygpath -w /usr/bin\\\`" /usr/bin/cygcheck $$i ; \
         done \` | \
       grep '\(/usr/\|\)bin/.*dll' | tr -d \`printf '\r'\` | sort -u` \
       $(DESTDIR)$(SDKROOT)/bin
