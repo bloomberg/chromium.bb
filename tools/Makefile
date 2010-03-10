@@ -78,19 +78,19 @@ ifeq ($(PLATFORM), Cygwin)
     # exact version of CygWin)
     CYGWIN_DLL_COPY= \
       cp -f `cygpath \` \
-        cd $(DESTDIR)$(SDKROOT)/bin ; \
+        cd $(DESTDIR)$(SDKROOT)/libexec ; \
         for i in '*.exe' ; do \
           PATH=".;\\\`cygpath -w /usr/bin\\\`" /usr/bin/cygcheck $$i ; \
         done \` | \
       grep '\(/usr/\|\)bin/.*dll' | tr -d \`printf '\r'\` | sort -u` \
-      $(DESTDIR)$(SDKROOT)/bin
+      $(DESTDIR)$(SDKROOT)/libexec
   else
     CYGWIN_DLL_COPY= \
       cp -f /cygdrive/c/cygwin/bin/cygwin1.dll \
       /cygdrive/c/cygwin/bin/cygiconv*.dll \
       /cygdrive/c/cygwin/bin/cygintl*.dll \
       /cygdrive/c/cygwin/bin/cygz*.dll \
-      $(DESTDIR)$(SDKROOT)/bin
+      $(DESTDIR)$(SDKROOT)/libexec
  endif
 else
   BUILDPATH=$(DESTDIR)$(SDKROOT)/bin:$(PATH)
@@ -557,10 +557,7 @@ sdk_minimal_test: ALWAYS
 # Use redirector on other platforms to save space.
 
 redirector: ALWAYS
-	$(CYGWIN_DLL_COPY)
 ifeq ($(PLATFORM), Cygwin)
-	mv -f $(DESTDIR)$(SDKROOT)/bin/cyg*.dll \
-	  $(DESTDIR)$(SDKROOT)/libexec
 	for exe in $(DESTDIR)$(SDKROOT)/bin/$(CROSSARCH)-*.exe ; do \
 	  if ! cmp redirector.exe "$$exe" > /dev/null ; then \
 	    mv -f "$$exe" $(DESTDIR)$(SDKROOT)/libexec/"`basename $$exe`" ; \
@@ -585,6 +582,7 @@ else
 	  ln -sfn ../../bin/$(CROSSARCH)-"`basename $$exe`" "$$exe" ; \
 	done
 endif
+	$(CYGWIN_DLL_COPY)
 
 ##################################################################
 # Build the entire sdk
