@@ -1557,6 +1557,11 @@ void RenderWidgetHostViewWin::ForwardMouseEventToRenderer(UINT message,
 
   WebMouseEvent event(
       WebInputEventFactory::mouseEvent(m_hWnd, message, wparam, lparam));
+
+  // Send the event to the renderer before changing mouse capture, so that the
+  // capturelost event arrives after mouseup.
+  render_widget_host_->ForwardMouseEvent(event);
+
   switch (event.type) {
     case WebInputEvent::MouseMove:
       TrackMouseLeave(true);
@@ -1572,8 +1577,6 @@ void RenderWidgetHostViewWin::ForwardMouseEventToRenderer(UINT message,
         ReleaseCapture();
       break;
   }
-
-  render_widget_host_->ForwardMouseEvent(event);
 
   if (activatable_ && event.type == WebInputEvent::MouseDown) {
     // This is a temporary workaround for bug 765011 to get focus when the
