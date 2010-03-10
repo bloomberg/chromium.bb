@@ -135,14 +135,14 @@ def TryRevision(rev, profile, args):
   except Exception, e:
     pass
 
+
 def AskIsGoodBuild(rev):
-  """Annoyingly ask the user whether build |rev| is good or bad."""
+  """Ask the user whether build |rev| is good or bad."""
+  # Loop until we get a response that we can parse.
   while True:
-    check = raw_input("\nBuild %d is [(g)ood/(b)ad]: " % int(rev))[0]
-    if (check == "g" or check  == "b"):
-      return (check == "g")
-    else:
-      print("Just answer the question...")
+    response = raw_input("\nBuild %d is [(g)ood/(b)ad]: " % int(rev))
+    if response and response in ("g", "b"):
+      return response == "g"
 
 def main():
   usage = ('%prog [options] [-- chromium-options]\n'
