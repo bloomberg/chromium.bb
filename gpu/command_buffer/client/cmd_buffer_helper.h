@@ -7,6 +7,8 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_CMD_BUFFER_HELPER_H_
 #define GPU_COMMAND_BUFFER_CLIENT_CMD_BUFFER_HELPER_H_
 
+#include <string.h>
+
 #include "../common/logging.h"
 #include "../common/constants.h"
 #include "../common/cmd_buffer_common.h"
