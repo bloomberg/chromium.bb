@@ -165,6 +165,7 @@ BUILD/gcc-$(GCC_VERSION): | BUILD
 	cd BUILD && tar xf $(SRCDIR)/gcc/gcc-g++-$(GCC_VERSION).tar.bz2
 	if [ "x$(GCC_VERSION)" != "x4.2.2" ] ; then \
 	  cd BUILD && tar xf $(SRCDIR)/gcc/gcc-fortran-$(GCC_VERSION).tar.bz2 ; \
+	  cd BUILD && tar xf $(SRCDIR)/gcc/gcc-testsuite-$(GCC_VERSION).tar.bz2 ; \
 	fi
 	if [ "x$(GCC_VERSION)" = "x4.4.2" -o "x$(GCC_VERSION)" = "x4.4.3" ] ; then \
 	  GNU_MP_MAJOR=0 ; \
