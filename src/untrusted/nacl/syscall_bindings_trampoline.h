@@ -155,7 +155,7 @@ typedef int (*TYPE_nacl_nanosleep) (const struct timespec *req,
 typedef void (*TYPE_nacl_exit) (int status) __attribute__((noreturn));
 #else
 typedef void (*TYPE_nacl_exit) (int status);
-#endof
+#endif
 
 typedef void (*TYPE_nacl_null) (void);
 
