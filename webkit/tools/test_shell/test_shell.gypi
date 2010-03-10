@@ -48,6 +48,7 @@
       ],
       'msvs_guid': '77C32787-1B96-CB84-B905-7F170629F0AC',
       'sources': [
+        'mac/accelerated_surface_stub.cc',
         'mac/DumpRenderTreePasteboard.h',
         'mac/DumpRenderTreePasteboard.m',
         'mac/test_shell_webview.h',

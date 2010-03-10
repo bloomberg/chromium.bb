@@ -144,6 +144,26 @@ class WebPlugin {
   virtual void SetDeferResourceLoading(unsigned long resource_id,
                                        bool defer) = 0;
 
+#if defined(OS_MACOSX)
+  // Synthesize a fake window handle for the plug-in to identify the instance
+  // to the browser, allowing mapping to a surface for hardware accelleration
+  // of plug-in content. The browser generates the handle which is then set on
+  // the plug-in.
+  virtual void BindFakePluginWindowHandle() {}
+
+  // Tell the browser (via the renderer) to invalidate because the
+  // accelerated buffers have changed.
+  virtual void AcceleratedFrameBuffersDidSwap(gfx::PluginWindowHandle window) {}
+
+  // Tell the renderer and browser to associate the given plugin handle with
+  // |accelerated_surface_identifier|. The geometry is used to resize any
+  // native "window" (which on the Mac is a CALayer).
+  virtual void SetAcceleratedSurface(gfx::PluginWindowHandle window,
+                                     int32 width,
+                                     int32 height,
+                                     uint64 accelerated_surface_identifier) {}
+#endif
+
   // Gets the WebPluginDelegate that implements the interface.
   // This API is only for use with Pepper, and is only overridden
   // by in-renderer implementations.

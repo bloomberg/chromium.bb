@@ -33,7 +33,7 @@ class WebInputEvent;
 class WebPluginDelegateImpl;
 
 // Converts the IPC messages from WebPluginDelegateProxy into calls to the
-// actual WebPluginDelegate object.
+// actual WebPluginDelegateImpl object.
 class WebPluginDelegateStub : public IPC::Channel::Listener,
                               public IPC::Message::Sender,
                               public base::RefCounted<WebPluginDelegateStub> {

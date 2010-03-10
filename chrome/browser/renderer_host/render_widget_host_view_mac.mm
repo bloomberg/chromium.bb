@@ -83,6 +83,10 @@ const size_t kMaxTooltipLength = 1024;
        forLayerTime:(CFTimeInterval)timeInterval
        displayTime:(const CVTimeStamp *)timeStamp {
   renderWidgetHostView_->DrawGPUPluginInstances(glContext);
+  [super drawInCGLContext:glContext
+              pixelFormat:pixelFormat
+             forLayerTime:timeInterval
+              displayTime:timeStamp];
 }
 @end
 
@@ -579,6 +583,7 @@ void RenderWidgetHostViewMac::DrawGPUPluginInstances(CGLContextObj context) {
   glOrtho(0, rect.width(), rect.height(), 0, -1, 1);
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
+
   plugin_container_manager_.Draw(context);
 }
 
@@ -1469,7 +1474,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   // TODO(hbono): Even though many input method works without implementing
   // this method, we need to save a copy of the string in the setMarkedText
   // method and create a NSAttributedString with the given range.
-  NOTIMPLEMENTED();
+  // http://crbug.com/37715
   return nil;
 }
 
