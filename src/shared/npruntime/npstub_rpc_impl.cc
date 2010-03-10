@@ -4,27 +4,22 @@
 
 // NaCl-NPAPI Interface
 
-#include <stdarg.h>
+// #include <stdarg.h>
 
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_process.h"
 #include "gen/native_client/src/shared/npruntime/npmodule_rpc.h"
 #include "gen/native_client/src/shared/npruntime/npnavigator_rpc.h"
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
-#include "native_client/src/shared/npruntime/npbridge.h"
-#ifdef __native_client__
-#include "native_client/src/shared/npruntime/npnavigator.h"
-#endif  // __native_client__
-#include "native_client/src/shared/npruntime/npobject_proxy.h"
 #include "native_client/src/shared/npruntime/npobject_stub.h"
 #include "native_client/src/shared/npruntime/pointer_translations.h"
+#include "native_client/src/shared/npruntime/structure_translations.h"
 
-using nacl::RpcArg;
 using nacl::NPObjectStub;
-using nacl::NPBridge;
-#ifdef __native_client__
-using nacl::NPNavigator;
-#endif  // __native_client__
+using nacl::NPVariantsToWireFormat;
+using nacl::WireFormatToNPP;
+using nacl::WireFormatToNPVariants;
+using nacl::WireFormatToNPIdentifier;
 
 //
 // These methods provide dispatching to the implementation of the object stubs.
@@ -33,14 +28,17 @@ using nacl::NPNavigator;
 NaClSrpcError NPObjectStubRpcServer::NPN_Deallocate(
     NaClSrpcChannel* channel,
     int32_t wire_npp,
-    nacl_abi_size_t capability_bytes,
-    char* capability) {
+    nacl_abi_size_t capability_length,
+    char* capability_bytes) {
   UNREFERENCED_PARAMETER(channel);
-  NPP npp = nacl::WireFormatToNPP(wire_npp);
+  UNREFERENCED_PARAMETER(wire_npp);
 
-  RpcArg arg0(npp, capability, capability_bytes);
-  NPObjectStub* stub = NPObjectStub::GetByArg(&arg0);
-  stub->DeallocateImpl();
+  NPObjectStub* stub = NPObjectStub::GetStub(capability_bytes,
+                                             capability_length);
+  if (NULL == stub) {
+    return NACL_SRPC_RESULT_OK;
+  }
+  stub->Deallocate();
 
   return NACL_SRPC_RESULT_OK;
 }
@@ -48,14 +46,17 @@ NaClSrpcError NPObjectStubRpcServer::NPN_Deallocate(
 NaClSrpcError NPObjectStubRpcServer::NPN_Invalidate(
     NaClSrpcChannel* channel,
     int32_t wire_npp,
-    nacl_abi_size_t capability_bytes,
-    char* capability) {
+    nacl_abi_size_t capability_length,
+    char* capability_bytes) {
   UNREFERENCED_PARAMETER(channel);
-  NPP npp = nacl::WireFormatToNPP(wire_npp);
+  UNREFERENCED_PARAMETER(wire_npp);
 
-  RpcArg arg0(npp, capability, capability_bytes);
-  NPObjectStub* stub = NPObjectStub::GetByArg(&arg0);
-  stub->InvalidateImpl();
+  NPObjectStub* stub = NPObjectStub::GetStub(capability_bytes,
+                                             capability_length);
+  if (NULL == stub) {
+    return NACL_SRPC_RESULT_OK;
+  }
+  stub->Invalidate();
 
   return NACL_SRPC_RESULT_OK;
 }
@@ -63,55 +64,75 @@ NaClSrpcError NPObjectStubRpcServer::NPN_Invalidate(
 NaClSrpcError NPObjectStubRpcServer::NPN_HasMethod(
     NaClSrpcChannel* channel,
     int32_t wire_npp,
-    nacl_abi_size_t capability_bytes,
-    char* capability,
+    nacl_abi_size_t capability_length,
+    char* capability_bytes,
     int32_t wire_id,
     int32_t* success) {
   UNREFERENCED_PARAMETER(channel);
-  NPP npp = nacl::WireFormatToNPP(wire_npp);
+  UNREFERENCED_PARAMETER(wire_npp);
+  // Initialize to report failure.
+  *success = 0;
 
-  RpcArg arg0(npp, capability, capability_bytes);
-  NPObjectStub* stub = NPObjectStub::GetByArg(&arg0);
-  *success = stub->HasMethodImpl(nacl::WireFormatToNPIdentifier(wire_id));
+  NPObjectStub* stub = NPObjectStub::GetStub(capability_bytes,
+                                             capability_length);
+  if (NULL == stub) {
+    return NACL_SRPC_RESULT_OK;
+  }
+  *success = stub->HasMethod(WireFormatToNPIdentifier(wire_id));
 
   return NACL_SRPC_RESULT_OK;
 }
 
-// TODO(sehr): there are *way* too many parameters to this function.
+// TODO(sehr): there are still too many pairs for each of the character arrays.
 NaClSrpcError NPObjectStubRpcServer::NPN_Invoke(
     NaClSrpcChannel* channel,
     int32_t wire_npp,
-    nacl_abi_size_t capability_bytes,
-    char* capability,
+    nacl_abi_size_t capability_length,
+    char* capability_bytes,
     int32_t wire_id,
-    nacl_abi_size_t a_fixed_bytes,
-    char* a_fixed,
-    nacl_abi_size_t a_opt_bytes,
-    char* a_opt,
+    nacl_abi_size_t args_length,
+    char* args_bytes,
     int32_t arg_count,
     int32_t* success,
-    nacl_abi_size_t* r_fixed_bytes,
-    char* r_fixed,
-    nacl_abi_size_t* r_opt_bytes,
-    char* r_opt) {
+    nacl_abi_size_t* ret_length,
+    char* ret_bytes) {
   UNREFERENCED_PARAMETER(channel);
-  NPP npp = nacl::WireFormatToNPP(wire_npp);
+  NPP npp = WireFormatToNPP(wire_npp);
+  NPIdentifier id = WireFormatToNPIdentifier(wire_id);
+  // Initialize to report failure.
+  *success = 0;
 
-  RpcArg arg0(npp, capability, capability_bytes);
-  NPObjectStub* stub = NPObjectStub::GetByArg(&arg0);
-  NPIdentifier name = nacl::WireFormatToNPIdentifier(wire_id);
-  RpcArg arg23(npp, a_fixed, a_fixed_bytes, a_opt, a_opt_bytes);
-  const NPVariant* args = arg23.GetVariantArray(arg_count);
-  NPVariant variant;
+  // Get the stub for the object.
+  NPObjectStub* stub = NPObjectStub::GetStub(capability_bytes,
+                                             capability_length);
+  if (NULL == stub) {
+    *success = 0;
+    return NACL_SRPC_RESULT_OK;
+  }
+  // Deserialize the argument vector.
+  NPVariant* args = NULL;
+  if (0 != arg_count) {
+    args = WireFormatToNPVariants(npp,
+                                  args_bytes,
+                                  args_length,
+                                  arg_count,
+                                  NULL);
+    if (NULL == args) {
+      return NACL_SRPC_RESULT_OK;
+    }
+  }
   // Invoke the implementation.
-  *success = stub->InvokeImpl(name, args, arg_count, &variant);
+  NPVariant variant;
+  VOID_TO_NPVARIANT(variant);
+  *success = stub->Invoke(id, args, arg_count, &variant);
+  // Free the argument vector.
+  delete args;
   // Copy the resulting variant back to outputs.
-  RpcArg ret12(npp, r_fixed, *r_fixed_bytes, r_opt, *r_opt_bytes);
-  if (!ret12.PutVariant(&variant)) {
+  if (!NPVariantsToWireFormat(npp, &variant, 1, ret_bytes, ret_length)) {
     return NACL_SRPC_RESULT_APP_ERROR;
   }
   // Free any allocated string in the result variant.
-  if (0 != *success && NPVARIANT_IS_STRING(variant)) {
+  if (*success && NPVARIANT_IS_STRING(variant)) {
     NPN_ReleaseVariantValue(&variant);
   }
   return NACL_SRPC_RESULT_OK;
@@ -120,32 +141,49 @@ NaClSrpcError NPObjectStubRpcServer::NPN_Invoke(
 NaClSrpcError NPObjectStubRpcServer::NPN_InvokeDefault(
     NaClSrpcChannel* channel,
     int32_t wire_npp,
-    nacl_abi_size_t cap_bytes,
-    char* capability,
-    nacl_abi_size_t a_fixed_bytes,
-    char* a_fixed,
-    nacl_abi_size_t a_opt_bytes,
-    char* a_opt,
+    nacl_abi_size_t capability_length,
+    char* capability_bytes,
+    nacl_abi_size_t args_length,
+    char* args_bytes,
     int32_t arg_count,
     int32_t* success,
-    nacl_abi_size_t* r_fixed_bytes,
-    char* r_fixed,
-    nacl_abi_size_t* r_opt_bytes,
-    char* r_opt) {
+    nacl_abi_size_t* ret_length,
+    char* ret_bytes) {
   UNREFERENCED_PARAMETER(channel);
-  NPP npp = nacl::WireFormatToNPP(wire_npp);
-  RpcArg arg0(npp, capability, cap_bytes);
-  NPObjectStub* stub = NPObjectStub::GetByArg(&arg0);
-  RpcArg arg12(npp, a_fixed, a_fixed_bytes, a_opt, a_opt_bytes);
-  const NPVariant* args = arg12.GetVariantArray(arg_count);
-  NPVariant variant;
+  NPP npp = WireFormatToNPP(wire_npp);
+  // Initialize to report failure.
+  *success = 0;
+
+  // Get the stub for the object.
+  NPObjectStub* stub = NPObjectStub::GetStub(capability_bytes,
+                                             capability_length);
+  if (NULL == stub) {
+    return NACL_SRPC_RESULT_OK;
+  }
+  // Deserialize the argument vector.
+  NPVariant* args = NULL;
+  if (0 != arg_count) {
+    args = WireFormatToNPVariants(npp,
+                                  args_bytes,
+                                  args_length,
+                                  arg_count,
+                                  NULL);
+    if (NULL == args) {
+      return NACL_SRPC_RESULT_OK;
+    }
+  }
   // Invoke the implementation.
-  *success = stub->InvokeDefaultImpl(args, arg_count, &variant);
+  NPVariant variant;
+  VOID_TO_NPVARIANT(variant);
+  *success = stub->InvokeDefault(args, arg_count, &variant);
+  // Free the argument vector.
+  delete args;
   // Copy the resulting variant back to outputs.
-  RpcArg ret12(npp, r_fixed, *r_fixed_bytes, r_opt, *r_opt_bytes);
-  ret12.PutVariant(&variant);
+  if (!NPVariantsToWireFormat(npp, &variant, 1, ret_bytes, ret_length)) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
   // Free any allocated string in the result variant.
-  if (0 != *success && NPVARIANT_IS_STRING(variant)) {
+  if (*success && NPVARIANT_IS_STRING(variant)) {
     NPN_ReleaseVariantValue(&variant);
   }
 
@@ -155,15 +193,22 @@ NaClSrpcError NPObjectStubRpcServer::NPN_InvokeDefault(
 NaClSrpcError NPObjectStubRpcServer::NPN_HasProperty(
     NaClSrpcChannel* channel,
     int32_t wire_npp,
-    nacl_abi_size_t capability_bytes,
-    char* capability,
+    nacl_abi_size_t capability_length,
+    char* capability_bytes,
     int32_t wire_id,
     int32_t* success) {
   UNREFERENCED_PARAMETER(channel);
-  NPP npp = nacl::WireFormatToNPP(wire_npp);
-  RpcArg arg0(npp, capability, capability_bytes);
-  NPObjectStub* stub = NPObjectStub::GetByArg(&arg0);
-  *success = stub->HasPropertyImpl(nacl::WireFormatToNPIdentifier(wire_id));
+  UNREFERENCED_PARAMETER(wire_npp);
+  NPIdentifier id = WireFormatToNPIdentifier(wire_id);
+  // Initialize to report failure.
+  *success = 0;
+
+  NPObjectStub* stub = NPObjectStub::GetStub(capability_bytes,
+                                             capability_length);
+  if (NULL == stub) {
+    return NACL_SRPC_RESULT_OK;
+  }
+  *success = stub->HasProperty(id);
 
   return NACL_SRPC_RESULT_OK;
 }
@@ -171,25 +216,31 @@ NaClSrpcError NPObjectStubRpcServer::NPN_HasProperty(
 NaClSrpcError NPObjectStubRpcServer::NPN_GetProperty(
     NaClSrpcChannel* channel,
     int32_t wire_npp,
-    nacl_abi_size_t capability_bytes,
-    char* capability,
+    nacl_abi_size_t capability_length,
+    char* capability_bytes,
     int32_t wire_id,
     int32_t* success,
-    nacl_abi_size_t* r_fixed_bytes,
-    char* r_fixed,
-    nacl_abi_size_t* r_opt_bytes,
-    char* r_opt) {
+    nacl_abi_size_t* ret_length,
+    char* ret_bytes) {
   UNREFERENCED_PARAMETER(channel);
-  NPP npp = nacl::WireFormatToNPP(wire_npp);
-  RpcArg arg0(npp, capability, capability_bytes);
-  NPObjectStub* stub = NPObjectStub::GetByArg(&arg0);
-  NPIdentifier name = nacl::WireFormatToNPIdentifier(wire_id);
+  NPP npp = WireFormatToNPP(wire_npp);
+  NPIdentifier id = WireFormatToNPIdentifier(wire_id);
+  // Initialize to report failure.
+  *success = 0;
+
+  NPObjectStub* stub = NPObjectStub::GetStub(capability_bytes,
+                                             capability_length);
+  if (NULL == stub) {
+    return NACL_SRPC_RESULT_OK;
+  }
   NPVariant variant;
+  VOID_TO_NPVARIANT(variant);
   // Invoke the implementation.
-  *success = stub->GetPropertyImpl(name, &variant);
+  *success = stub->GetProperty(id, &variant);
   // Copy the resulting variant back to outputs.
-  RpcArg ret12(npp, r_fixed, *r_fixed_bytes, r_opt, *r_opt_bytes);
-  ret12.PutVariant(&variant);
+  if (!NPVariantsToWireFormat(npp, &variant, 1, ret_bytes, ret_length)) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
   // Free any allocated string in the result variant.
   if (*success && NPVARIANT_IS_STRING(variant)) {
     NPN_ReleaseVariantValue(&variant);
@@ -200,59 +251,83 @@ NaClSrpcError NPObjectStubRpcServer::NPN_GetProperty(
 NaClSrpcError NPObjectStubRpcServer::NPN_SetProperty(
     NaClSrpcChannel* channel,
     int32_t wire_npp,
-    nacl_abi_size_t capability_bytes,
-    char* capability,
+    nacl_abi_size_t capability_length,
+    char* capability_bytes,
     int32_t wire_id,
-    nacl_abi_size_t a_fixed_bytes,
-    char* a_fixed,
-    nacl_abi_size_t a_opt_bytes,
-    char* a_opt,
+    nacl_abi_size_t arg_length,
+    char* arg_bytes,
     int32_t* success) {
   UNREFERENCED_PARAMETER(channel);
-  NPP npp = nacl::WireFormatToNPP(wire_npp);
-  RpcArg arg0(npp, capability, capability_bytes);
-  NPObjectStub* stub = NPObjectStub::GetByArg(&arg0);
-  NPIdentifier name = nacl::WireFormatToNPIdentifier(wire_id);
-  RpcArg arg23(npp, a_fixed, a_fixed_bytes, a_opt, a_opt_bytes);
-  const NPVariant* variant = arg23.GetVariant(true);
-  *success = stub->SetPropertyImpl(name, variant);
+  NPP npp = WireFormatToNPP(wire_npp);
+  NPIdentifier id = WireFormatToNPIdentifier(wire_id);
+  // Initialize to report failure.
+  *success = 0;
+
+  NPObjectStub* stub = NPObjectStub::GetStub(capability_bytes,
+                                             capability_length);
+  if (NULL == stub) {
+    return NACL_SRPC_RESULT_OK;
+  }
+  // Deserialize the argument vector.
+  NPVariant variant;
+  VOID_TO_NPVARIANT(variant);
+  if (!WireFormatToNPVariants(npp, arg_bytes, arg_length, 1, &variant)) {
+    return NACL_SRPC_RESULT_OK;
+  }
+  // Invoke the implementation.
+  *success = stub->SetProperty(id, &variant);
   return NACL_SRPC_RESULT_OK;
 }
 
 NaClSrpcError NPObjectStubRpcServer::NPN_RemoveProperty(
     NaClSrpcChannel* channel,
     int32_t wire_npp,
-    nacl_abi_size_t cap_bytes,
-    char* capability,
+    nacl_abi_size_t capability_length,
+    char* capability_bytes,
     int32_t wire_id,
     int32_t* success) {
   UNREFERENCED_PARAMETER(channel);
-  NPP npp = nacl::WireFormatToNPP(wire_npp);
-  RpcArg arg0(npp, capability, cap_bytes);
-  NPObjectStub* stub = NPObjectStub::GetByArg(&arg0);
-  NPIdentifier name = nacl::WireFormatToNPIdentifier(wire_id);
-  *success = stub->RemovePropertyImpl(name);
+  UNREFERENCED_PARAMETER(wire_npp);
+  NPIdentifier id = WireFormatToNPIdentifier(wire_id);
+  // Initialize to report failure.
+  *success = 0;
+
+  NPObjectStub* stub = NPObjectStub::GetStub(capability_bytes,
+                                             capability_length);
+  if (NULL == stub) {
+    return NACL_SRPC_RESULT_OK;
+  }
+  // Invoke the implementation.
+  *success = stub->RemoveProperty(id);
   return NACL_SRPC_RESULT_OK;
 }
 
 NaClSrpcError NPObjectStubRpcServer::NPN_Enumerate(
     NaClSrpcChannel* channel,
     int32_t wire_npp,
-    nacl_abi_size_t capability_bytes,
-    char* capability,
+    nacl_abi_size_t capability_length,
+    char* capability_bytes,
     int32_t* success,
-    nacl_abi_size_t* id_list_bytes,
-    char* id_list,
+    nacl_abi_size_t* id_list_length,
+    char* id_list_bytes,
     int32_t* id_count) {
   UNREFERENCED_PARAMETER(channel);
-  NPP npp = nacl::WireFormatToNPP(wire_npp);
-  RpcArg arg0(npp, capability, capability_bytes);
-  NPObjectStub* stub = NPObjectStub::GetByArg(&arg0);
-  RpcArg arg1(npp, id_list, *id_list_bytes);
+  UNREFERENCED_PARAMETER(wire_npp);
+  UNREFERENCED_PARAMETER(id_list_length);
+  UNREFERENCED_PARAMETER(id_list_bytes);
+  // Initialize to report failure.
+  *success = 0;
+
+  NPObjectStub* stub = NPObjectStub::GetStub(capability_bytes,
+                                             capability_length);
+  if (NULL == stub) {
+    return NACL_SRPC_RESULT_OK;
+  }
   NPIdentifier* identifiers;
   uint32_t identifier_count;
-  *success = stub->EnumerateImpl(&identifiers, &identifier_count);
-  // TODO(sehr): get the return value copied back.
+  // Invoke the implementation.
+  *success = stub->Enumerate(&identifiers, &identifier_count);
+  // TODO(sehr): Serialize the return identifier vector.
   *id_count = identifier_count;
   return NACL_SRPC_RESULT_OK;
 }
@@ -261,33 +336,49 @@ NaClSrpcError NPObjectStubRpcServer::NPN_Enumerate(
 NaClSrpcError NPObjectStubRpcServer::NPN_Construct(
     NaClSrpcChannel* channel,
     int32_t wire_npp,
-    nacl_abi_size_t capability_bytes,
-    char* capability,
-    nacl_abi_size_t a_fixed_bytes,
-    char* a_fixed,
-    nacl_abi_size_t a_opt_bytes,
-    char* a_opt,
+    nacl_abi_size_t capability_length,
+    char* capability_bytes,
+    nacl_abi_size_t args_length,
+    char* args_bytes,
     int32_t argc,
     int32_t* success,
-    nacl_abi_size_t* r_fixed_bytes,
-    char* r_fixed,
-    nacl_abi_size_t* r_opt_bytes,
-    char* r_opt) {
+    nacl_abi_size_t* ret_length,
+    char* ret_bytes) {
   UNREFERENCED_PARAMETER(channel);
-  NPP npp = nacl::WireFormatToNPP(wire_npp);
-  RpcArg arg0(npp, capability, capability_bytes);
-  NPObjectStub* stub = NPObjectStub::GetByArg(&arg0);
-  RpcArg arg12(npp, a_fixed, a_fixed_bytes, a_opt, a_opt_bytes);
+  NPP npp = WireFormatToNPP(wire_npp);
   const uint32_t arg_count = static_cast<uint32_t>(argc);
-  const NPVariant* args = arg12.GetVariantArray(arg_count);
-  NPVariant variant;
+  // Initialize to report failure.
+  *success = 0;
+
+  NPObjectStub* stub = NPObjectStub::GetStub(capability_bytes,
+                                             capability_length);
+  if (NULL == stub) {
+    return NACL_SRPC_RESULT_OK;
+  }
+  // Deserialize the argument vector.
+  NPVariant* args = NULL;
+  if (0 != arg_count) {
+    args = WireFormatToNPVariants(npp,
+                                  args_bytes,
+                                  args_length,
+                                  arg_count,
+                                  NULL);
+    if (NULL == args) {
+      return NACL_SRPC_RESULT_OK;
+    }
+  }
   // Invoke the implementation.
-  *success = stub->ConstructImpl(args, argc, &variant);
+  NPVariant variant;
+  VOID_TO_NPVARIANT(variant);
+  *success = stub->Construct(args, argc, &variant);
+  // Free the argument vector.
+  delete args;
   // Copy the resulting variant back to outputs.
-  RpcArg ret12(npp, r_fixed, *r_fixed_bytes, r_opt, *r_opt_bytes);
-  ret12.PutVariant(&variant);
+  if (!NPVariantsToWireFormat(npp, &variant, 1, ret_bytes, ret_length)) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
   // Free any allocated string in the result variant.
-  if (NPERR_NO_ERROR != *success && NPVARIANT_IS_STRING(variant)) {
+  if (*success && NPVARIANT_IS_STRING(variant)) {
     NPN_ReleaseVariantValue(&variant);
   }
   return NACL_SRPC_RESULT_OK;
@@ -295,13 +386,17 @@ NaClSrpcError NPObjectStubRpcServer::NPN_Construct(
 
 NaClSrpcError NPObjectStubRpcServer::NPN_SetException(
     NaClSrpcChannel* channel,
-    nacl_abi_size_t cap_bytes,
-    char* capability,
+    nacl_abi_size_t capability_length,
+    char* capability_bytes,
     char* msg) {
   UNREFERENCED_PARAMETER(channel);
-  RpcArg arg0(NULL, capability, cap_bytes);
-  NPObjectStub* stub = NPObjectStub::GetByArg(&arg0);
-  const NPUTF8* message = reinterpret_cast<NPUTF8*>(msg);
-  stub->SetExceptionImpl(message);
+
+  NPObjectStub* stub = NPObjectStub::GetStub(capability_bytes,
+                                             capability_length);
+  if (NULL == stub) {
+    return NACL_SRPC_RESULT_OK;
+  }
+  // Invoke the implementation.
+  stub->SetException(reinterpret_cast<NPUTF8*>(msg));
   return NACL_SRPC_RESULT_OK;
 }

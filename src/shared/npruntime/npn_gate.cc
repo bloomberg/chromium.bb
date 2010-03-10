@@ -14,7 +14,12 @@
 #include "native_client/src/shared/npruntime/npobject_proxy.h"
 #include "native_client/src/shared/npruntime/npobject_stub.h"
 
+using nacl::NPNavigator;
+using nacl::NPObjectStub;
+using nacl::NPObjectProxy;
+
 namespace nacl {
+
 const NPNetscapeFuncs* GetBrowserFuncs() {
   static const NPNetscapeFuncs kBrowserFuncs = {
     static_cast<uint16_t>(sizeof(NPNetscapeFuncs)),
@@ -29,17 +34,17 @@ const NPNetscapeFuncs* GetBrowserFuncs() {
     NPN_UserAgent,
     NPN_MemAlloc,
     NPN_MemFree,
-    NPN_MemFlush,
+    NPN_MemFlush,  // Always returns failure in Pepper
     NPN_ReloadPlugins,
-    NPN_GetJavaEnv,
-    NPN_GetJavaPeer,
+    NULL,  // NPN_GetJavaEnv is not implemented in Pepper
+    NULL,  // NPN_GetJavaPeer is not implemented in Pepper
     NPN_GetURLNotify,
     NPN_PostURLNotify,
     NPN_GetValue,
     NPN_SetValue,
-    NPN_InvalidateRect,
-    NPN_InvalidateRegion,
-    NPN_ForceRedraw,
+    NULL,  // NPN_InvalidateRect is not implemented in Pepper
+    NULL,  // NPN_InvalidateRegion is not implemented in Pepper
+    NULL,  // NPN_ForceRedraw is not implemented in Pepper
     NPN_GetStringIdentifier,
     NPN_GetStringIdentifiers,
     NPN_GetIntIdentifier,
@@ -59,8 +64,8 @@ const NPNetscapeFuncs* GetBrowserFuncs() {
     NPN_HasMethod,
     NPN_ReleaseVariantValue,
     NPN_SetException,
-    NPN_PushPopupsEnabledState,
-    NPN_PopPopupsEnabledState,
+    NULL,  // NPN_PushPopupsEnabledState is not implemented in Pepper
+    NULL,  // NPN_PopPopupsEnabledState is not implemented in Pepper
     NPN_Enumerate,
     NPN_PluginThreadAsyncCall,
     NPN_Construct
@@ -77,7 +82,7 @@ NPError NPN_GetURL(NPP instance,
   if (NULL == instance) {
     return NPERR_INVALID_INSTANCE_ERROR;
   }
-  nacl::NPNavigator* navigator = nacl::NPNavigator::GetNavigator();
+  NPNavigator* navigator = NPNavigator::GetNavigator();
   if (NULL == navigator) {
     return NPERR_INVALID_INSTANCE_ERROR;
   }
@@ -129,7 +134,7 @@ void NPN_Status(NPP instance,
   if (NULL == instance || NULL == message) {
     return;
   }
-  nacl::NPNavigator* navigator = nacl::NPNavigator::GetNavigator();
+  NPNavigator* navigator = NPNavigator::GetNavigator();
   if (NULL == navigator) {
     return;
   }
@@ -150,22 +155,12 @@ void NPN_MemFree(void* ptr) {
 }
 
 uint32_t NPN_MemFlush(uint32_t size) {
-  // TODO(sehr): do we need to implement this?
+  // Not implemented in Pepper.  Returns failure to free any memory.
   return 0;
 }
 
 void NPN_ReloadPlugins(NPBool reloadPages) {
   // TODO(sehr): implement this.
-}
-
-void* NPN_GetJavaEnv() {
-  // Pepper does not support this call.
-  return NULL;
-}
-
-void* NPN_GetJavaPeer(NPP instance) {
-  // Pepper does not support this call.
-  return NULL;
 }
 
 NPError NPN_GetURLNotify(NPP instance,
@@ -175,7 +170,7 @@ NPError NPN_GetURLNotify(NPP instance,
   if (NULL == instance) {
     return NPERR_INVALID_INSTANCE_ERROR;
   }
-  nacl::NPNavigator* navigator = nacl::NPNavigator::GetNavigator();
+  NPNavigator* navigator = NPNavigator::GetNavigator();
   if (NULL == navigator) {
     return NPERR_INVALID_INSTANCE_ERROR;
   }
@@ -200,7 +195,7 @@ NPError NPN_GetValue(NPP instance,
   if (NULL == instance) {
     return NPERR_INVALID_INSTANCE_ERROR;
   }
-  nacl::NPNavigator* navigator;
+  NPNavigator* navigator;
   switch (variable) {
     case NPNVjavascriptEnabledBool:
     case NPNVSupportsWindowless:
@@ -213,13 +208,23 @@ NPError NPN_GetValue(NPP instance,
 
     case NPNVisOfflineBool:
     case NPNVprivateModeBool:
-    case NPNVWindowNPObject:
-    case NPNVPluginElementNPObject:
-      navigator = nacl::NPNavigator::GetNavigator();
+      navigator = NPNavigator::GetNavigator();
       if (NULL == navigator) {
         return NPERR_INVALID_INSTANCE_ERROR;
       }
-      return navigator->GetValue(instance, variable, value);
+      return navigator->GetValue(instance,
+                                 variable,
+                                 reinterpret_cast<NPBool*>(value));
+
+    case NPNVWindowNPObject:
+    case NPNVPluginElementNPObject:
+      navigator = NPNavigator::GetNavigator();
+      if (NULL == navigator) {
+        return NPERR_INVALID_INSTANCE_ERROR;
+      }
+      return navigator->GetValue(instance,
+                                 variable,
+                                 reinterpret_cast<NPObject**>(value));
 
     case NPNVPepperExtensions:
       *reinterpret_cast<struct NPExtensions**>(value) =
@@ -246,36 +251,8 @@ NPError NPN_SetValue(NPP instance,
   return NPERR_GENERIC_ERROR;
 }
 
-void NPN_InvalidateRect(NPP instance,
-                        NPRect* invalid_rect) {
-  if (NULL == instance) {
-    return;
-  }
-  nacl::NPNavigator* navigator = nacl::NPNavigator::GetNavigator();
-  if (NULL == navigator) {
-    return;
-  }
-  navigator->InvalidateRect(instance, invalid_rect);
-}
-
-void NPN_InvalidateRegion(NPP instance,
-                          NPRegion region) {
-  // TODO(sehr): implement this.
-}
-
-void NPN_ForceRedraw(NPP instance) {
-  if (NULL == instance) {
-    return;
-  }
-  nacl::NPNavigator* navigator = nacl::NPNavigator::GetNavigator();
-  if (NULL == navigator) {
-    return;
-  }
-  navigator->ForceRedraw(instance);
-}
-
 NPIdentifier NPN_GetStringIdentifier(const NPUTF8* name) {
-  nacl::NPNavigator* navigator = nacl::NPNavigator::GetNavigator();
+  NPNavigator* navigator = NPNavigator::GetNavigator();
   if (NULL == navigator) {
     return NULL;
   }
@@ -285,7 +262,7 @@ NPIdentifier NPN_GetStringIdentifier(const NPUTF8* name) {
 void NPN_GetStringIdentifiers(const NPUTF8** names,
                               int32_t nameCount,
                               NPIdentifier* identifiers) {
-  nacl::NPNavigator* navigator = nacl::NPNavigator::GetNavigator();
+  NPNavigator* navigator = NPNavigator::GetNavigator();
   if (NULL == navigator) {
     return;
   }
@@ -299,7 +276,7 @@ void NPN_GetStringIdentifiers(const NPUTF8** names,
 }
 
 NPIdentifier NPN_GetIntIdentifier(int32_t intid) {
-  nacl::NPNavigator* navigator = nacl::NPNavigator::GetNavigator();
+  NPNavigator* navigator = NPNavigator::GetNavigator();
   if (NULL == navigator) {
     return NULL;
   }
@@ -307,7 +284,7 @@ NPIdentifier NPN_GetIntIdentifier(int32_t intid) {
 }
 
 bool NPN_IdentifierIsString(NPIdentifier identifier) {
-  nacl::NPNavigator* navigator = nacl::NPNavigator::GetNavigator();
+  NPNavigator* navigator = NPNavigator::GetNavigator();
   if (NULL == navigator) {
     return NULL;
   }
@@ -315,7 +292,7 @@ bool NPN_IdentifierIsString(NPIdentifier identifier) {
 }
 
 NPUTF8* NPN_UTF8FromIdentifier(NPIdentifier identifier) {
-  nacl::NPNavigator* navigator = nacl::NPNavigator::GetNavigator();
+  NPNavigator* navigator = NPNavigator::GetNavigator();
   if (NULL == navigator) {
     return NULL;
   }
@@ -323,7 +300,7 @@ NPUTF8* NPN_UTF8FromIdentifier(NPIdentifier identifier) {
 }
 
 int32_t NPN_IntFromIdentifier(NPIdentifier identifier) {
-  nacl::NPNavigator* navigator = nacl::NPNavigator::GetNavigator();
+  NPNavigator* navigator = NPNavigator::GetNavigator();
   if (NULL == navigator) {
     return NULL;
   }
@@ -355,6 +332,17 @@ NPObject* NPN_RetainObject(NPObject* object) {
   return object;
 }
 
+bool NPN_Evaluate(NPP npp,
+                  NPObject* object,
+                  NPString* script,
+                  NPVariant* result) {
+  NPNavigator* navigator = NPNavigator::GetNavigator();
+  if (NULL == navigator) {
+    return false;
+  }
+  return navigator->Evaluate(npp, object, script, result);
+}
+
 void NPN_ReleaseObject(NPObject* object) {
   if (NULL == object) {
     return;
@@ -366,6 +354,9 @@ void NPN_ReleaseObject(NPObject* object) {
     } else {
       free(object);
     }
+    // If the object was a proxy, then this does not decrement the reference
+    // count on the corresponding stub.
+    // TODO(sehr): reference counting on proxied objects needs work.
   }
 }
 
@@ -396,14 +387,6 @@ bool NPN_InvokeDefault(NPP npp,
     return false;
   }
   return object->_class->invokeDefault(object, args, argCount, result);
-}
-
-bool NPN_Evaluate(NPP npp,
-                  NPObject* obj,
-                  NPString* script,
-                  NPVariant* result) {
-  // TODO(sehr): implement this.
-  return false;
 }
 
 bool NPN_GetProperty(NPP npp,
@@ -497,28 +480,19 @@ void NPN_SetException(NPObject* object,
   if (NULL == object) {
     return;
   }
-  if (nacl::NPObjectProxy::IsInstance(object)) {
-    nacl::NPObjectProxy* proxy = static_cast<nacl::NPObjectProxy*>(object);
+  if (NPObjectProxy::IsInstance(object)) {
+    NPObjectProxy* proxy = static_cast<NPObjectProxy*>(object);
     proxy->SetException(message);
     return;
   }
-  nacl::NPNavigator* navigator = nacl::NPNavigator::GetNavigator();
+  NPNavigator* navigator = NPNavigator::GetNavigator();
   if (NULL == navigator) {
     return;
   }
-  nacl::NPObjectStub* stub = nacl::NPObjectStub::GetByObject(object);
+  NPObjectStub* stub = NPObjectStub::GetByObject(object);
   if (stub) {
-    stub->SetExceptionImpl(message);
+    stub->SetException(message);
   }
-}
-
-void NPN_PushPopupsEnabledState(NPP npp,
-                                NPBool enabled) {
-  // TODO(sehr): implement this.
-}
-
-void NPN_PopPopupsEnabledState(NPP npp) {
-  // TODO(sehr): implement this.
 }
 
 bool NPN_Enumerate(NPP npp,
@@ -543,7 +517,7 @@ void NPN_PluginThreadAsyncCall(NPP instance,
   if (NULL == instance) {
     return;
   }
-  nacl::NPNavigator* navigator = nacl::NPNavigator::GetNavigator();
+  NPNavigator* navigator = NPNavigator::GetNavigator();
   if (NULL == navigator) {
     return;
   }

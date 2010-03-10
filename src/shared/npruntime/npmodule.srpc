@@ -4,7 +4,15 @@
 {
  'name': 'NPModuleRpc',
  'rpcs': [
-          {'name': 'NPN_GetValue',
+          {'name': 'NPN_GetValueBoolean',
+           'inputs': [['npp', 'int32_t'],
+                      ['var', 'int32_t'],
+                     ],
+           'outputs': [['nperr', 'int32_t'],
+                       ['result', 'int32_t'],
+                      ]
+          },
+          {'name': 'NPN_GetValueObject',
            'inputs': [['npp', 'int32_t'],
                       ['var', 'int32_t'],
                      ],
@@ -15,17 +23,6 @@
           {'name': 'NPN_SetStatus',
            'inputs': [['npp', 'int32_t'],
                       ['status', 'string'],
-                     ],
-           'outputs': []
-          },
-          {'name': 'NPN_InvalidateRect',
-           'inputs': [['npp', 'int32_t'],
-                      ['rect', 'char[]'],
-                     ],
-           'outputs': []
-          },
-          {'name': 'NPN_ForceRedraw',
-           'inputs': [['npp', 'int32_t'],
                      ],
            'outputs': []
           },

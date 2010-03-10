@@ -37,8 +37,7 @@ class NPNavigator : public NPBridge {
   };
 
   NPNavigator(NaClSrpcChannel* channel,
-              int32_t peer_pid,
-              int32_t peer_npvariant_size);
+              int32_t peer_pid);
   ~NPNavigator();
 
   // Get the Navigator for the current module.
@@ -85,14 +84,12 @@ class NPNavigator : public NPBridge {
 
   // Sends NPN_Status request to the plugin.
   void SetStatus(NPP npp, const char* message);
-  // Sends NPN_GetValue request to the plugin.
-  NPError GetValue(NPP npp, NPNVariable var, void* value);
+  // Sends NPN_GetValue request for a boolean to the plugin.
+  NPError GetValue(NPP npp, NPNVariable var, NPBool* value);
+  // Sends NPN_GetValue request for an NPObject to the plugin.
+  NPError GetValue(NPP npp, NPNVariable var, NPObject** value);
   // Sends NaClNPN_CreateArray request to the plugin.
   NPObject* CreateArray(NPP npp);
-  // Sends NPN_InvalidateRect request to the plugin.
-  void InvalidateRect(NPP npp, NPRect* invalid_rect);
-  // Sends NPN_ForceRedraw request to the plugin.
-  void ForceRedraw(NPP npp);
   // Sends NPN_GetURL request to the plugin.
   NPError GetUrl(NPP npp, const char* url, const char* target);
   // Sends NPN_GetURLNotify request to the plugin.
@@ -120,6 +117,9 @@ class NPNavigator : public NPBridge {
                               int32_t* getOffset,
                               int32_t* token,
                               int32_t* error);
+
+  // Perform NPN_Evaluate.
+  bool Evaluate(NPP npp, NPObject* object, NPString* script, NPVariant* result);
 
   static void AddIntIdentifierMapping(int32_t intid, NPIdentifier identifier);
   static void AddStringIdentifierMapping(const NPUTF8* name,

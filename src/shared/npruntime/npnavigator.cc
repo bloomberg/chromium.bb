@@ -20,11 +20,13 @@
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/shared/npruntime/npcapability.h"
 #include "native_client/src/shared/npruntime/npn_gate.h"
-#include "native_client/src/shared/npruntime/nprpc.h"
 #include "native_client/src/shared/npruntime/npobject_stub.h"
 #include "native_client/src/shared/npruntime/pointer_translations.h"
+#include "native_client/src/shared/npruntime/structure_translations.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
+
+using nacl::WireFormatToNPObject;
 
 namespace {
 
@@ -70,17 +72,14 @@ std::set<const NPUTF8*, NPNavigator::StringCompare>*
 NPPluginFuncs NPNavigator::plugin_funcs;
 
 NPNavigator::NPNavigator(NaClSrpcChannel* channel,
-                         int32_t peer_pid,
-                         int32_t peer_npvariant_size)
+                         int32_t peer_pid)
     : NPBridge(),
       upcall_channel_(NULL) {
-  DebugPrintf("NPNavigator(%p, %u, %u)\n",
+  DebugPrintf("NPNavigator(%p, %u)\n",
               static_cast<void*>(this),
-              static_cast<unsigned>(peer_pid),
-              static_cast<unsigned>(peer_npvariant_size));
+              static_cast<unsigned>(peer_pid));
   set_channel(channel);
   set_peer_pid(peer_pid);
-  set_peer_npvariant_size(peer_npvariant_size);
   navigator = this;
   // Set up the canonical identifier string table.
   string_set = new(std::nothrow) std::set<const NPUTF8*, StringCompare>;
@@ -182,7 +181,9 @@ NaClSrpcError NPNavigator::HandleEvent(NPP npp,
                                        char* npevent,
                                        int32_t* return_int16) {
   // NPP_HandleEvent returns an int16, and SRPC only knows about int32_t.
-  DebugPrintf("NPP_HandleEvent(npp %p, %p)\n", npp, npevent);
+  DebugPrintf("NPP_HandleEvent(npp %p, %p)\n",
+              reinterpret_cast<void*>(npp),
+              reinterpret_cast<void*>(npevent));
 
   NPPepperEvent* event = reinterpret_cast<NPPepperEvent*>(npevent);
   if (NULL == plugin_funcs.event) {
@@ -318,59 +319,82 @@ void NPNavigator::SetStatus(NPP npp, const char* message) {
                                    const_cast<char*>(message));
 }
 
-NPError NPNavigator::GetValue(NPP npp, NPNVariable variable, void* value) {
-  char buf[sizeof(NPCapability)];
-  nacl_abi_size_t bufsize = static_cast<nacl_abi_size_t>(sizeof(buf));
+NPError NPNavigator::GetValue(NPP npp, NPNVariable variable, NPBool* value) {
   int32_t error_code;
+  int32_t boolean_as_int32;
 
+  if (NPNVisOfflineBool != variable && NPNVprivateModeBool != variable) {
+    return NPERR_INVALID_PARAM;
+  }
   if (NACL_SRPC_RESULT_OK !=
-      NPModuleRpcClient::NPN_GetValue(
+      NPModuleRpcClient::NPN_GetValueBoolean(
           channel(),
           NPPToWireFormat(npp),
           static_cast<int32_t>(variable),
           &error_code,
-          &bufsize,
-          buf)) {
+          &boolean_as_int32)) {
     return NPERR_GENERIC_ERROR;
   }
-  if (error_code == NPERR_NO_ERROR) {
-    RpcArg ret(npp, buf, bufsize);
-    *static_cast<NPObject**>(value) = ret.GetObject();
-    return NULL;
+  if (NPERR_NO_ERROR != error_code) {
+    return error_code;
   }
-  return error_code;
+  *value = static_cast<NPBool>(boolean_as_int32);
+  return NPERR_NO_ERROR;
 }
 
-void NPNavigator::InvalidateRect(NPP npp, NPRect* invalid_rect) {
-  NPModuleRpcClient::NPN_InvalidateRect(
-      channel(),
-      NPPToWireFormat(npp),
-      static_cast<nacl_abi_size_t>(sizeof(*invalid_rect)),
-      reinterpret_cast<char*>(invalid_rect));
+NPError NPNavigator::GetValue(NPP npp, NPNVariable variable, NPObject** value) {
+  char result_bytes[sizeof(NPCapability)];
+  nacl_abi_size_t result_length =
+      static_cast<nacl_abi_size_t>(sizeof(result_bytes));
+  int32_t error_code;
+
+  if (NPNVWindowNPObject != variable && NPNVPluginElementNPObject != variable) {
+    return NPERR_INVALID_PARAM;
+  }
+  if (NACL_SRPC_RESULT_OK !=
+      NPModuleRpcClient::NPN_GetValueObject(
+          channel(),
+          NPPToWireFormat(npp),
+          static_cast<int32_t>(variable),
+          &error_code,
+          &result_length,
+          result_bytes)) {
+    return NPERR_GENERIC_ERROR;
+  }
+  if (NPERR_NO_ERROR != error_code) {
+    return error_code;
+  }
+  *reinterpret_cast<NPObject**>(value) =
+      WireFormatToNPObject(npp, result_bytes, result_length);
+  return NPERR_NO_ERROR;
 }
 
-void NPNavigator::ForceRedraw(NPP npp) {
-  NPModuleRpcClient::NPN_ForceRedraw(channel(), NPPToWireFormat(npp));
+bool NPNavigator::Evaluate(NPP npp,
+                           NPObject* object,
+                           NPString* script,
+                           NPVariant* result) {
+  // TODO(sehr): Implement an RPC and a test for NPN_Evaluate.
+  return false;
 }
 
 NPObject* NPNavigator::CreateArray(NPP npp) {
-  char buf[sizeof(NPCapability)];
+  char ret_bytes[sizeof(NPCapability)];
+  nacl_abi_size_t ret_length = static_cast<nacl_abi_size_t>(sizeof(ret_bytes));
   int32_t success;
-  nacl_abi_size_t bufsize = static_cast<nacl_abi_size_t>(sizeof(buf));
+
   if (NACL_SRPC_RESULT_OK !=
       NPModuleRpcClient::NPN_CreateArray(
           channel(),
           NPPToWireFormat(npp),
           &success,
-          &bufsize,
-          buf)) {
+          &ret_length,
+          ret_bytes)) {
     return NULL;
   }
-  if (0 == success) {
+  if (!success) {
     return NULL;
   }
-  RpcArg ret(npp, buf, bufsize);
-  return ret.GetObject();
+  return WireFormatToNPObject(npp, ret_bytes, ret_length);
 }
 
 // Returns a canonical version of a string that can be used to lookup
@@ -526,9 +550,11 @@ int32_t NPNavigator::IntFromIdentifier(NPIdentifier identifier) {
 void NPNavigator::PluginThreadAsyncCall(NPP instance,
                                         NPClosureTable::FunctionPointer func,
                                         void* user_data) {
-  uint32_t id;
+  DebugPrintf("PluginThreadAsyncCall(%p, %p)\n",
+              reinterpret_cast<void*>(instance),
+              user_data);
 
-  DebugPrintf("PluginThreadAsyncCall %p %p %p\n", instance, func, user_data);
+  uint32_t id;
   // Add a closure to the table.
   if (NULL == closure_table_ ||
       NULL == func ||

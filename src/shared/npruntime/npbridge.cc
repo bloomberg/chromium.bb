@@ -33,8 +33,7 @@ int NPBridge::number_bridges_alive = 0;
 
 NPBridge::NPBridge()
     : channel_(NULL),
-      peer_pid_(-1),
-      peer_npvariant_size_(0) {
+      peer_pid_(-1) {
   // Set up the translations for NPP, NPIdentifier, etc.
   if (0 == number_bridges_alive) {
     WireFormatInit();
@@ -62,7 +61,7 @@ NPObject* NPBridge::CreateProxy(NPP npp, const NPCapability& capability) {
     // Do not create proxies for NULL objects.
     return NULL;
   }
-  if (NULL != NPObjectStub::GetByCapability(capability)) {
+  if (NULL != NPObjectStub::GetByCapability(&capability)) {
     // Found the object in the stub table, so the capability was previously
     // given out.  Hence it is ok to use the object.  Bump the refcount and
     // return the object.
@@ -87,10 +86,10 @@ NPObject* NPBridge::CreateProxy(NPP npp, const NPCapability& capability) {
 }
 
 NPObjectProxy* NPBridge::LookupProxy(const NPCapability& capability) {
-  printf("LookupProxy(%p): %p %"NACL_PRId64"\n",
-         reinterpret_cast<const void*>(&capability),
-         reinterpret_cast<void*>(capability.object()),
-         capability.pid());
+  DebugPrintf("LookupProxy(%p): %p %"NACL_PRId64"\n",
+              reinterpret_cast<const void*>(&capability),
+              reinterpret_cast<void*>(capability.object()),
+              capability.pid());
   if (NULL == capability.object()) {
     return NULL;
   }

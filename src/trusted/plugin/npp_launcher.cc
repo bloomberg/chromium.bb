@@ -35,6 +35,8 @@
 #include "native_client/src/trusted/desc/nrd_all_modules.h"
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 
+using nacl::DebugPrintf;
+
 #define EXPAND(x) x
 #define ENQUOTE(x) #x
 #define EMBED(x) EXPAND(ENQUOTE(x))
@@ -50,16 +52,6 @@ const char kPluginDescription[] = "Native Client Plugin was built on "
                                   " (mm/dd/yyyy)"
 #endif
                                   "";
-
-static void DebugPrintf(const char *fmt, ...) {
-  va_list argptr;
-  fprintf(stderr, "@@@ NPAPI PLUGIN ");
-
-  va_start(argptr, fmt);
-  vfprintf(stderr, fmt, argptr);
-  va_end(argptr);
-  fflush(stderr);
-}
 
 char* NPP_GetMIMEDescription() {
   return const_cast<char*>("application/x-nacl-srpc:nexe:NativeClient"

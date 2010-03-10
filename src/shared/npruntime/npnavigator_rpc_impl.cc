@@ -16,13 +16,12 @@
 #include "native_client/src/shared/npruntime/npobject_proxy.h"
 #include "native_client/src/shared/npruntime/npobject_stub.h"
 #include "native_client/src/shared/npruntime/pointer_translations.h"
+#include "native_client/src/shared/npruntime/structure_translations.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
 
-using nacl::RpcArg;
-using nacl::NPObjectStub;
-using nacl::NPBridge;
-using nacl::NPNavigator;
 using nacl::NPCapability;
+using nacl::NPNavigator;
+using nacl::NPCapabilityToWireFormat;
 using nacl::WireFormatToNPP;
 
 namespace {
@@ -56,7 +55,7 @@ NaClSrpcError NPNavigatorRpcServer::NP_SetUpcallServices(
     NaClSrpcChannel *channel,
     char* service_string) {
   const char* sd_string = (const char*) service_string;
-  printf("SetUpcallServices: %s\n", sd_string);
+  nacl::DebugPrintf("SetUpcallServices: %s\n", sd_string);
   NaClSrpcService* service = new(std::nothrow) NaClSrpcService;
   if (NULL == service)
     return NACL_SRPC_RESULT_APP_ERROR;
@@ -71,7 +70,6 @@ NaClSrpcError NPNavigatorRpcServer::NP_SetUpcallServices(
 NaClSrpcError NPNavigatorRpcServer::NP_Initialize(
     NaClSrpcChannel* channel,
     int32_t pid,
-    int32_t npvariant,
     NaClSrpcImcDescType upcall_channel_desc,
     int32_t* nacl_pid) {
   // There is only one NPNavigator per call to Initialize, and it is
@@ -83,7 +81,7 @@ NaClSrpcError NPNavigatorRpcServer::NP_Initialize(
     return NACL_SRPC_RESULT_APP_ERROR;
   }
   NPNavigator* navigator =
-      new(std::nothrow) NPNavigator(channel, pid, npvariant);
+      new(std::nothrow) NPNavigator(channel, pid);
   if (NULL == navigator) {
     // Out of memory.
     nacl::DebugPrintf("  Error: couldn't create navigator\n");
@@ -154,13 +152,16 @@ NaClSrpcError NPNavigatorRpcServer::NPP_Destroy(NaClSrpcChannel* channel,
 NaClSrpcError NPNavigatorRpcServer::GetScriptableInstance(
     NaClSrpcChannel* channel,
     int32_t wire_npp,
-    nacl_abi_size_t* cap_bytes,
-    char* cap) {
+    nacl_abi_size_t* capability_length,
+    char* capability_bytes) {
   NPP npp = WireFormatToNPP(wire_npp);
   NPNavigator* nav = NPNavigator::GetNavigator();
   NPCapability* capability = nav->GetScriptableInstance(npp);
-  RpcArg ret(npp, cap, *cap_bytes);
-  ret.PutCapability(capability);
+  if (!NPCapabilityToWireFormat(capability,
+                                capability_bytes,
+                                capability_length)) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
   return NACL_SRPC_RESULT_OK;
 }
 

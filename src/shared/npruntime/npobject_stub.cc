@@ -14,6 +14,7 @@
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/shared/npruntime/npbridge.h"
 #include "native_client/src/shared/npruntime/npobject_proxy.h"
+#include "native_client/src/shared/npruntime/structure_translations.h"
 
 namespace nacl {
 
@@ -81,16 +82,28 @@ NPObjectStub::NPObjectStub(NPP npp, NPObject* object)
 NPObjectStub::~NPObjectStub() {
 }
 
+NPObjectStub* NPObjectStub::GetStub(char* capability_bytes,
+                                    nacl_abi_size_t capability_length) {
+  NPCapability* capability =
+      WireFormatToNPCapability(capability_bytes, capability_length, NULL);
+  if (NULL == capability) {
+    return NULL;
+  }
+  NPObjectStub* stub = GetByCapability(capability);
+  delete capability;
+  return stub;
+}
+
 //
 // These methods provide the implementation of the object stubs.
 //
 
-void NPObjectStub::DeallocateImpl() {
+void NPObjectStub::Deallocate() {
   DebugPrintf("Deallocate(%p)\n", reinterpret_cast<void*>(object_));
   // TODO(sehr): remove stub, etc.
 }
 
-void NPObjectStub::InvalidateImpl() {
+void NPObjectStub::Invalidate() {
   DebugPrintf("Invalidate(%p)\n", reinterpret_cast<void*>(object_));
 
   if (object_->_class && object_->_class->invalidate) {
@@ -99,28 +112,23 @@ void NPObjectStub::InvalidateImpl() {
   }
 }
 
-bool NPObjectStub::HasMethodImpl(NPIdentifier name) {
-  DebugPrintf("HasMethod(%p, ", reinterpret_cast<void*>(object_));
-  PrintIdent(name);
-  printf(")\n");
+bool NPObjectStub::HasMethod(NPIdentifier name) {
+  DebugPrintf("HasMethod(%p, %s)\n",
+              reinterpret_cast<void*>(object_),
+              FormatNPIdentifier(name));
 
   return NPN_HasMethod(npp_, object_, name);
 }
 
-bool NPObjectStub::InvokeImpl(NPIdentifier name,
+bool NPObjectStub::Invoke(NPIdentifier name,
                               const NPVariant* args,
                               uint32_t arg_count,
                               NPVariant* variant) {
-  DebugPrintf("Invoke(%p, ", reinterpret_cast<void*>(object_));
-  PrintIdent(name);
-  printf(", [");
-  for (uint32_t i = 0; i < arg_count; ++i) {
-    PrintVariant(args + i);
-    if (i < arg_count -1) {
-      printf(", ");
-    }
-  }
-  printf("], %u)\n", static_cast<unsigned int>(arg_count));
+  DebugPrintf("Invoke(%p, %s, %s, %u)\n",
+              reinterpret_cast<void*>(object_),
+              FormatNPIdentifier(name),
+              FormatNPVariantVector(args, arg_count),
+              static_cast<unsigned int>(arg_count));
 
   bool return_value = NPN_Invoke(npp_,
                                  object_,
@@ -136,17 +144,13 @@ bool NPObjectStub::InvokeImpl(NPIdentifier name,
   return return_value;
 }
 
-bool NPObjectStub::InvokeDefaultImpl(const NPVariant* args,
+bool NPObjectStub::InvokeDefault(const NPVariant* args,
                                      uint32_t arg_count,
                                      NPVariant* variant) {
-  DebugPrintf("InvokeDefault(%p, [", reinterpret_cast<void*>(object_));
-  for (uint32_t i = 0; i < arg_count; ++i) {
-    PrintVariant(args + i);
-    if (i < arg_count -1) {
-      printf(", ");
-    }
-  }
-  printf("], %u)\n", static_cast<unsigned int>(arg_count));
+  DebugPrintf("InvokeDefault(%p, %s, %u)\n",
+              reinterpret_cast<void*>(object_),
+              FormatNPVariantVector(args, arg_count),
+              static_cast<unsigned int>(arg_count));
 
   bool return_value = NPN_InvokeDefault(npp_,
                                         object_,
@@ -161,27 +165,28 @@ bool NPObjectStub::InvokeDefaultImpl(const NPVariant* args,
   return return_value;
 }
 
-bool NPObjectStub::HasPropertyImpl(NPIdentifier name) {
-  DebugPrintf("HasProperty(%p, ", reinterpret_cast<void*>(object_));
-  PrintIdent(name);
-  printf(")\n");
+bool NPObjectStub::HasProperty(NPIdentifier name) {
+  DebugPrintf("HasProperty(%p, %s)\n",
+              reinterpret_cast<void*>(object_),
+              FormatNPIdentifier(name));
 
   return NPN_HasProperty(npp_, object_, name);
 }
 
-bool NPObjectStub::GetPropertyImpl(NPIdentifier name, NPVariant* variant) {
-  DebugPrintf("GetProperty(%p, ", reinterpret_cast<void*>(object_));
-  PrintIdent(name);
-  printf(")\n");
+bool NPObjectStub::GetProperty(NPIdentifier name, NPVariant* variant) {
+  DebugPrintf("GetProperty(%p, %s)\n",
+              reinterpret_cast<void*>(object_),
+              FormatNPIdentifier(name));
 
   return NPN_GetProperty(npp_, object_, name, variant);
 }
 
-bool NPObjectStub::SetPropertyImpl(NPIdentifier name,
-                                   const NPVariant* variant) {
-  DebugPrintf("SetProperty(%p, ", reinterpret_cast<void*>(object_));
-  PrintIdent(name);
-  printf(")\n");
+bool NPObjectStub::SetProperty(NPIdentifier name,
+                               const NPVariant* variant) {
+  DebugPrintf("SetProperty(%p, %s, %s)\n",
+              reinterpret_cast<void*>(object_),
+              FormatNPIdentifier(name),
+              FormatNPVariant(variant));
 
   bool return_value = NPN_SetProperty(npp_, object_, name, variant);
   if (NPVARIANT_IS_OBJECT(*variant)) {
@@ -191,24 +196,29 @@ bool NPObjectStub::SetPropertyImpl(NPIdentifier name,
   return return_value;
 }
 
-bool NPObjectStub::RemovePropertyImpl(NPIdentifier name) {
-  DebugPrintf("RemoveProperty(%p, ", reinterpret_cast<void*>(object_));
-  PrintIdent(name);
-  printf(")\n");
+bool NPObjectStub::RemoveProperty(NPIdentifier name) {
+  DebugPrintf("RemoveProperty(%p, %s)\n",
+              reinterpret_cast<void*>(object_),
+              FormatNPIdentifier(name));
 
   return NPN_RemoveProperty(npp_, object_, name);
 }
 
-bool NPObjectStub::EnumerateImpl(NPIdentifier** identifiers,
-                                 uint32_t* identifier_count) {
+bool NPObjectStub::Enumerate(NPIdentifier** identifiers,
+                             uint32_t* identifier_count) {
   DebugPrintf("Enumerate(%p)\n", reinterpret_cast<void*>(object_));
+
   return NPN_Enumerate(npp_, object_, identifiers, identifier_count);
 }
 
-bool NPObjectStub::ConstructImpl(const NPVariant* args,
-                                 uint32_t arg_count,
-                                 NPVariant* variant) {
-  DebugPrintf("Construct(%p)\n", reinterpret_cast<void*>(object_));
+bool NPObjectStub::Construct(const NPVariant* args,
+                             uint32_t arg_count,
+                             NPVariant* variant) {
+  DebugPrintf("Construct(%p, %s, %u)\n",
+              reinterpret_cast<void*>(object_),
+              FormatNPVariantVector(args, arg_count),
+              static_cast<unsigned int>(arg_count));
+
   bool return_value = NPN_Construct(npp_, object_, args, arg_count, variant);
   for (uint32_t i = 0; i < arg_count; ++i) {
     if (NPVARIANT_IS_OBJECT(args[i])) {
@@ -218,7 +228,7 @@ bool NPObjectStub::ConstructImpl(const NPVariant* args,
   return return_value;
 }
 
-void NPObjectStub::SetExceptionImpl(const NPUTF8* message) {
+void NPObjectStub::SetException(const NPUTF8* message) {
   DebugPrintf("SetException(%p, %s)\n",
               reinterpret_cast<void*>(object_),
               message);
@@ -269,8 +279,9 @@ int NPObjectStub::CreateStub(NPP npp, NPObject* object, NPCapability* cap) {
 }
 
 NPObjectStub* NPObjectStub::GetByObject(NPObject* object) {
-  assert(object);
-  assert(NULL != stub_map);
+  if (NULL == object || NULL == stub_map) {
+    return NULL;
+  }
   // Find the object in the stub table.
   std::map<NPObject*, NPObjectStub*>::iterator i = stub_map->find(object);
   if (stub_map->end() == i) {
@@ -280,17 +291,12 @@ NPObjectStub* NPObjectStub::GetByObject(NPObject* object) {
   return (*i).second;
 }
 
-NPObjectStub* NPObjectStub::GetByCapability(const NPCapability& capability) {
-  if (GETPID() != capability.pid()) {
+NPObjectStub* NPObjectStub::GetByCapability(const NPCapability* capability) {
+  if (GETPID() != capability->pid()) {
     // Only capabilities to objects in this process have stubs in the table.
     return NULL;
   }
-  return GetByObject(capability.object());
-}
-
-NPObjectStub* NPObjectStub::GetByArg(RpcArg* arg) {
-  NPCapability* capability = arg->GetCapability();
-  return GetByCapability(*capability);
+  return GetByObject(capability->object());
 }
 
 }  // namespace nacl

@@ -11,7 +11,6 @@
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/shared/npruntime/npcapability.h"
-#include "native_client/src/shared/npruntime/nprpc.h"
 
 namespace nacl {
 
@@ -45,7 +44,10 @@ class NPObjectStub {
 
   // This implementation is an exception because it is also called from
   // npn_gate.cc
-  void SetExceptionImpl(const NPUTF8* message);
+  void SetException(const NPUTF8* message);
+
+  static NPObjectStub* GetStub(char* capability_bytes,
+                               nacl_abi_size_t capability_length);
 
   // Creates an NPObject stub for the specified object. On success,
   // CreateStub() returns 1, and NPCapability for the stub is filled in.
@@ -58,34 +60,29 @@ class NPObjectStub {
 
   // Returns the NPObject stub that corresponds to the specified capability.
   // GetByCapability() returns NULL if no correspoing stub is found.
-  static NPObjectStub* GetByCapability(const NPCapability& capability);
-
-  // Gets the NPObjectStub corresponding to a particular capability passed
-  // in an RpcArg.  Used by the SRPC methods to determine the object stub to
-  // dispatch to.
-  static NPObjectStub* GetByArg(RpcArg* arg);
+  static NPObjectStub* GetByCapability(const NPCapability* capability);
 
   // NPClass methods. NPObjectStub forwards these RPC requests received from
   // the remote NPObjectProxy object to object_;
-  void DeallocateImpl();
-  void InvalidateImpl();
-  bool HasMethodImpl(NPIdentifier name);
-  bool InvokeImpl(NPIdentifier name,
-                  const NPVariant* args,
-                  uint32_t arg_count,
-                  NPVariant* result);
-  bool InvokeDefaultImpl(const NPVariant* args,
-                         uint32_t arg_count,
-                         NPVariant* result);
-  bool HasPropertyImpl(NPIdentifier name);
-  bool GetPropertyImpl(NPIdentifier name, NPVariant* result);
-  bool SetPropertyImpl(NPIdentifier name, const NPVariant* variant);
-  bool RemovePropertyImpl(NPIdentifier name);
-  bool EnumerateImpl(NPIdentifier** identifiers,
-                     uint32_t* identifier_count);
-  bool ConstructImpl(const NPVariant* args,
+  void Deallocate();
+  void Invalidate();
+  bool HasMethod(NPIdentifier name);
+  bool Invoke(NPIdentifier name,
+              const NPVariant* args,
+              uint32_t arg_count,
+              NPVariant* result);
+  bool InvokeDefault(const NPVariant* args,
                      uint32_t arg_count,
                      NPVariant* result);
+  bool HasProperty(NPIdentifier name);
+  bool GetProperty(NPIdentifier name, NPVariant* result);
+  bool SetProperty(NPIdentifier name, const NPVariant* variant);
+  bool RemoveProperty(NPIdentifier name);
+  bool Enumerate(NPIdentifier** identifiers,
+                 uint32_t* identifier_count);
+  bool Construct(const NPVariant* args,
+                 uint32_t arg_count,
+                 NPVariant* result);
 
  private:
   // Creates a new instance of NPObjectStub with the specified NPP for

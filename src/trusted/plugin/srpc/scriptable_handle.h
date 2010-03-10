@@ -357,7 +357,6 @@ class ScriptableHandle: public ScriptableHandleBase {
     } else {
       PortablePluginInterface* intf = unknown_handle->plugin_interface_;
       NPObject* proxy = intf->nacl_instance();
-      printf("Invoking HASMETHOD %p\n", static_cast<void*>(proxy));
       return proxy->_class->hasMethod(proxy, name);
     }
   }

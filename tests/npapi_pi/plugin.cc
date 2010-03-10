@@ -146,9 +146,6 @@ NPError Plugin::SetWindow(NPWindow* window) {
 
 bool Plugin::Paint() {
   if (bitmap_data_ != nacl::kMapFailed) {
-    NPRect rect = { 0, 0, window_->height, window_->width };
-    NPN_InvalidateRect(npp_, &rect);
-    NPN_ForceRedraw(npp_);
     return true;
   }
   return false;

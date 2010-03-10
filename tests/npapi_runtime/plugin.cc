@@ -145,9 +145,6 @@ bool Plugin::hasMethod(NPIdentifier methodName) {
       identifiers[kInvokeRemovePropertyIdent] == methodName ||
       identifiers[kInvokeArgretIdent] == methodName ||
       identifiers[kInvokeDefaultIdent] == methodName) {
-    if (identifiers[kIntMethodIdent] == methodName) {
-      printf("FOUND INT METHOD\n");
-    }
     return true;
   }
   return false;
@@ -176,9 +173,7 @@ bool Plugin::invoke(NPIdentifier methodName,
   } else if (identifiers[kIntMethodIdent] == methodName ||
              identifiers[kStringMethodIdent] == methodName ||
              identifiers[kObjectMethodIdent] == methodName) {
-    printf("Invoking\n");
     if (1 != argCount || NULL == result) {
-      printf("parameter mismatch\n");
       return false;
     }
     // Return a copy of the parameter as the return value.
@@ -213,6 +208,7 @@ bool Plugin::invoke(NPIdentifier methodName,
         !NPVARIANT_IS_STRING(args[1])) {
       return false;
     }
+    VOID_TO_NPVARIANT(*result);
     NPObject* obj = NPVARIANT_TO_OBJECT(args[0]);
     NPIdentifier id = StringToIdentifier(NPVARIANT_TO_STRING(args[1]));
     if (identifiers[kInvokeSetPropertyIdent] == methodName) {

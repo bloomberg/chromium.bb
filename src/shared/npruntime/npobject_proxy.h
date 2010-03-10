@@ -10,7 +10,6 @@
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 
 #include "native_client/src/shared/npruntime/npcapability.h"
-#include "native_client/src/shared/npruntime/nprpc.h"
 
 namespace nacl {
 

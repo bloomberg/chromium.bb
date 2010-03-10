@@ -47,8 +47,6 @@ NPModule::NPModule(NaClSrpcChannel* channel)
   channel_ = channel;
   // Remember the bridge for this channel.
   channel->server_instance_data = static_cast<void*>(this);
-  // All NPVariants will be transferred in the format of the browser.
-  set_peer_npvariant_size(sizeof(NPVariant));
   // Set up a service for the browser-provided NPN methods.
   NaClSrpcService* service = new(std::nothrow) NaClSrpcService;
   if (NULL == service) {
@@ -82,12 +80,6 @@ NPModule* NPModule::GetModule(int32_t wire_npp) {
   return static_cast<NPModule*>(NPBridge::LookupBridge(npp));
 }
 
-void NPModule::InvalidateRect(NPP npp, const NPRect* nprect) {
-  if (window_ && window_->window && nprect) {
-    NPN_InvalidateRect(npp, const_cast<NPRect*>(nprect));
-  }
-}
-
 NPError NPModule::Initialize() {
   NPError err = NPERR_GENERIC_ERROR;
   DescWrapper* wrapper = NULL;
@@ -101,7 +93,6 @@ NPError NPModule::Initialize() {
     NaClSrpcError retval =
         NPNavigatorRpcClient::NP_Initialize(channel(),
                                             GETPID(),
-                                            static_cast<int>(sizeof(NPVariant)),
                                             wrapper->desc(),
                                             &nacl_pid);
     // Return the appropriate error code.
@@ -236,7 +227,8 @@ NPError NPModule::GetValue(NPP npp, NPPVariable variable, void *value) {
       "A plug-in for NPAPI based NativeClient modules.";
     return NPERR_NO_ERROR;
   } else if (NPPVpluginScriptableNPObject == variable) {
-    DebugPrintf("Getting scriptable instance: npp %p\n", npp);
+    DebugPrintf("Getting scriptable instance: npp %p\n",
+                reinterpret_cast<void*>(npp));
     if (NULL == proxy_) {
       NPCapability capability;
       nacl_abi_size_t cap_size = capability.size();
@@ -319,12 +311,6 @@ void NPModule::URLNotify(NPP npp,
   }
   // TODO(sehr): Need to set the descriptor appropriately and call.
   // NPNavigatorRpcClient::NPP_URLNotify(channel(), desc, reason);
-}
-
-void NPModule::ForceRedraw(NPP npp) {
-  if (window_ && window_->window) {
-    NPN_ForceRedraw(npp);
-  }
 }
 
 NaClSrpcError NPModule::Device2DInitialize(NPP npp,

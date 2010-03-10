@@ -4,6 +4,9 @@
 
 Import('env')
 
+# TODO(robertm,cbiffle): fix header conflicts to allow this to build.
+if env['TARGET_ARCHITECTURE'] == 'arm':
+  Return()
 
 # To enable getting the generated include files and sources.
 env.Append(CPPPATH=['${TARGET_ROOT}'])
@@ -93,10 +96,10 @@ env.ComponentLibrary('google_nacl_npruntime',
                       'npnavigator_rpc_impl.cc',
                       'npobject_proxy.cc',
                       'npobject_stub.cc',
-                      'nprpc.cc',
                       'npstub_rpc_impl.cc',
                       npupcall_rpc_cc,
                       'pointer_translations.cc',
+                      'structure_translations.cc',
                       ])
 
 headers = [

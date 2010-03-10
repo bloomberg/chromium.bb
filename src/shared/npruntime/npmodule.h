@@ -18,7 +18,6 @@
 #include "native_client/src/shared/imc/nacl_imc.h"
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/shared/npruntime/npbridge.h"
-#include "native_client/src/shared/npruntime/nprpc.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
 
@@ -47,8 +46,6 @@ class NPModule : public NPBridge {
   // Processing calls from the NaCl module to the browser.
   //
 
-  void InvalidateRect(NPP npp, const NPRect* nprect);
-  void ForceRedraw(NPP npp);
   NaClSrpcError Device2DInitialize(NPP npp,
                                    NaClSrpcImcDescType* shm_desc,
                                    int32_t* stride,

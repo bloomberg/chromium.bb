@@ -17,15 +17,14 @@
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/shared/npruntime/npbridge.h"
 #include "native_client/src/shared/npruntime/pointer_translations.h"
+#include "native_client/src/shared/npruntime/structure_translations.h"
 
 using nacl::NPBridge;
 using nacl::NPObjectProxy;
+using nacl::NPVariantsToWireFormat;
+using nacl::WireFormatToNPVariants;
 
 namespace {
-
-// TODO(sehr): This should be moved when it no longer conflicts with
-// the Pepper changelist.
-static const int kNPVariantOptionalMax = 16 * 1024;
 
 // These methods populate the NPClass for an object proxy:
 // Alloc, Deallocate, Invalidate, HasMethod, Invoke, InvokeDefault, HasProperty,
@@ -158,27 +157,23 @@ NPObjectProxy::NPObjectProxy(NPP npp, const NPCapability& capability)
 }
 
 NPObjectProxy::~NPObjectProxy() {
-  DebugPrintf("&NPObjectProxy(%p)\n", reinterpret_cast<void*>(this));
-
+  DebugPrintf("~NPObjectProxy(%p)\n", reinterpret_cast<void*>(this));
   NPBridge* bridge = NPBridge::LookupBridge(npp_);
   if (NULL == bridge) {
     return;
   }
-
-  NPObjectStubRpcClient::NPN_Deallocate(bridge->channel(),
-                                        NPPToWireFormat(npp_),
-                                        capability_.size(),
-                                        capability_.char_addr());
+  Deallocate();
   bridge->RemoveProxy(this);
 }
 
 void NPObjectProxy::Deallocate() {
-  DebugPrintf("Deallocate\n");
+  DebugPrintf("Deallocate(%p)\n", reinterpret_cast<void*>(this));
 
   NPBridge* bridge = NPBridge::LookupBridge(npp_);
   if (NULL == bridge) {
     return;
   }
+  // Perform the RPC.
   NPObjectStubRpcClient::NPN_Deallocate(bridge->channel(),
                                         NPPToWireFormat(npp_),
                                         capability_.size(),
@@ -186,310 +181,281 @@ void NPObjectProxy::Deallocate() {
 }
 
 void NPObjectProxy::Invalidate() {
-  DebugPrintf("Invalidate\n");
+  DebugPrintf("Invalidate(%p)\n", reinterpret_cast<void*>(this));
 
   // Note Invalidate() can be called after NPP_Destroy() is called.
   NPBridge* bridge = NPBridge::LookupBridge(npp_);
   if (NULL == bridge) {
     return;
   }
+  // Perform the RPC.
   NPObjectStubRpcClient::NPN_Invalidate(bridge->channel(),
                                         NPPToWireFormat(npp_),
                                         capability_.size(),
                                         capability_.char_addr());
 }
 
-bool NPObjectProxy::HasMethod(NPIdentifier name) {
-  DebugPrintf("HasMethod(%p, ", reinterpret_cast<void*>(this));
-  PrintIdent(name);
-  printf(")\n");
+bool NPObjectProxy::HasMethod(NPIdentifier id) {
+  DebugPrintf("HasMethod(%p, %s)\n",
+              reinterpret_cast<void*>(this),
+              FormatNPIdentifier(id));
 
   NPBridge* bridge = NPBridge::LookupBridge(npp_);
   if (NULL == bridge) {
     return false;
   }
-  int32_t error_code;
-  if (NACL_SRPC_RESULT_OK !=
+  int32_t success;
+  // Perform the RPC.
+  NaClSrpcError srpc_result =
       NPObjectStubRpcClient::NPN_HasMethod(bridge->channel(),
                                            NPPToWireFormat(npp_),
                                            capability_.size(),
                                            capability_.char_addr(),
-                                           NPIdentifierToWireFormat(name),
-                                           &error_code)) {
+                                           NPIdentifierToWireFormat(id),
+                                           &success);
+  // Check that the RPC layer worked correctly.
+  if (NACL_SRPC_RESULT_OK != srpc_result) {
     return false;
   }
-  return error_code ? true : false;
+  return success != 0;
 }
 
-bool NPObjectProxy::Invoke(NPIdentifier name,
+bool NPObjectProxy::Invoke(NPIdentifier id,
                            const NPVariant* args,
                            uint32_t arg_count,
                            NPVariant* variant) {
-  DebugPrintf("Invoke(%p, ", reinterpret_cast<void*>(this));
-  PrintIdent(name);
-  printf(", [");
-  for (uint32_t i = 0; i < arg_count; ++i) {
-    PrintVariant(args + i);
-    if (i < arg_count -1) {
-      printf(", ");
-    }
-  }
-  printf("], %u)\n", static_cast<unsigned int>(arg_count));
+  DebugPrintf("Invoke(%p, %s, %s, %u)\n",
+              reinterpret_cast<void*>(this),
+              FormatNPIdentifier(id),
+              FormatNPVariantVector(args, arg_count),
+              static_cast<unsigned int>(arg_count));
 
   NPBridge* bridge = NPBridge::LookupBridge(npp_);
   if (NULL == bridge) {
     return false;
   }
-  // TODO(sehr): this is really verbose.  New RpcArg constructor.
-  char fixed[kNPVariantSizeMax * kParamMax];
-  nacl_abi_size_t fixed_size =
-      static_cast<nacl_abi_size_t>(sizeof(fixed));
-  char optional[kNPVariantSizeMax * kParamMax];
-  nacl_abi_size_t optional_size =
-      static_cast<nacl_abi_size_t>(sizeof(optional));
-  RpcArg vars(npp_, fixed, fixed_size, optional, optional_size);
-  if (!vars.PutVariantArray(args, arg_count)) {
+  // Serialize the argument vector.
+  nacl_abi_size_t args_length = kNaClAbiSizeTMax;
+  char *args_bytes =
+      NPVariantsToWireFormat(npp_, args, arg_count, NULL, &args_length);
+  if ((NULL == args_bytes || 0 == args_length) && 0 != arg_count) {
     return false;
   }
-  int32_t ret_bool;
-  char ret_fixed[100 * kNPVariantSizeMax];
-  nacl_abi_size_t ret_fixed_size =
-      static_cast<nacl_abi_size_t>(sizeof(ret_fixed));
-  char ret_optional[100 * kNPVariantSizeMax];
-  nacl_abi_size_t ret_optional_size =
-      static_cast<nacl_abi_size_t>(sizeof(ret_optional));
-  if (NACL_SRPC_RESULT_OK !=
+  int32_t success;
+  // TODO(sehr): return space should really be allocated by the invoked method.
+  char ret_bytes[kNPVariantSizeMax];
+  nacl_abi_size_t ret_length =
+      static_cast<nacl_abi_size_t>(sizeof(ret_bytes));
+  // Perform the RPC.
+  NaClSrpcError srpc_result =
       NPObjectStubRpcClient::NPN_Invoke(bridge->channel(),
                                         NPPToWireFormat(npp_),
                                         capability_.size(),
                                         capability_.char_addr(),
-                                        NPIdentifierToWireFormat(name),
-                                        fixed_size,
-                                        fixed,
-                                        optional_size,
-                                        optional,
+                                        NPIdentifierToWireFormat(id),
+                                        args_length,
+                                        args_bytes,
                                         static_cast<int32_t>(arg_count),
-                                        &ret_bool,
-                                        &ret_fixed_size,
-                                        ret_fixed,
-                                        &ret_optional_size,
-                                        ret_optional)) {
-    DebugPrintf("    invoke error\n");
+                                        &success,
+                                        &ret_length,
+                                        ret_bytes);
+  // Free the serialized args.
+  delete args_bytes;
+  // Check that the RPC layer worked correctly.
+  if (NACL_SRPC_RESULT_OK != srpc_result) {
     return false;
   }
-  if (ret_bool) {
-    RpcArg rets(npp_,
-                ret_fixed,
-                ret_fixed_size,
-                ret_optional,
-                ret_optional_size);
-    *variant = *rets.GetVariant(true);
-    DebugPrintf("Invoke(%p, ", reinterpret_cast<void*>(this));
-    PrintIdent(name);
-    printf(") succeeded: ");
-    PrintVariant(variant);
-    printf("\n");
+  // If the RPC was successful, get the result.
+  if (success &&
+      WireFormatToNPVariants(npp_, ret_bytes, ret_length, 1, variant)) {
+    DebugPrintf("Invoke(%p, %s) succeeded: %s\n",
+                reinterpret_cast<void*>(this),
+                FormatNPIdentifier(id),
+                FormatNPVariant(variant));
     return true;
   }
-  DebugPrintf("Invoke(%p, ", reinterpret_cast<void*>(this));
-  PrintIdent(name);
-  printf(") failed.\n");
+  DebugPrintf("Invoke(%p, %s) failed.\n",
+              reinterpret_cast<void*>(this),
+              FormatNPIdentifier(id));
   return false;
 }
 
 bool NPObjectProxy::InvokeDefault(const NPVariant* args,
                                   uint32_t arg_count,
                                   NPVariant* variant) {
-  DebugPrintf("InvokeDefault(%p, [", reinterpret_cast<void*>(this));
-  for (uint32_t i = 0; i < arg_count; ++i) {
-    PrintVariant(args + i);
-    if (i < arg_count -1) {
-      printf(", ");
-    }
-  }
-  printf("], %u)\n", static_cast<unsigned int>(arg_count));
+  DebugPrintf("InvokeDefault(%p, %s, %u)\n",
+              reinterpret_cast<void*>(this),
+              FormatNPVariantVector(args, arg_count),
+              static_cast<unsigned int>(arg_count));
 
   NPBridge* bridge = NPBridge::LookupBridge(npp_);
   if (NULL == bridge) {
-    printf("bridge was NULL\n");
     return false;
   }
-  char fixed[kNPVariantSizeMax * kParamMax];
-  nacl_abi_size_t fixed_size = static_cast<nacl_abi_size_t>(sizeof(fixed));
-  char optional[kNPVariantSizeMax * kParamMax];
-  nacl_abi_size_t optional_size =
-      static_cast<nacl_abi_size_t>(sizeof(optional));
-  RpcArg vars(npp_, fixed, fixed_size, optional, optional_size);
-  if (!vars.PutVariantArray(args, arg_count)) {
-    printf("Args didn't fit\n");
+  // Serialize the argument vector.
+  nacl_abi_size_t args_length = kNaClAbiSizeTMax;
+  char *args_bytes =
+      NPVariantsToWireFormat(npp_, args, arg_count, NULL, &args_length);
+  if ((NULL == args_bytes || 0 == args_length) && 0 != arg_count) {
     return false;
   }
-  int32_t ret_bool;
-  char ret_fixed[kNPVariantSizeMax];
-  nacl_abi_size_t ret_fixed_size =
-      static_cast<nacl_abi_size_t>(sizeof(ret_fixed));
-  char ret_optional[kNPVariantOptionalMax];
-  nacl_abi_size_t ret_optional_size =
-      static_cast<nacl_abi_size_t>(sizeof(ret_optional));
-  if (NACL_SRPC_RESULT_OK !=
+  int32_t success;
+  // Allocate space for the return npvariant.
+  // TODO(sehr): this should really be allocated by the invoked method.
+  char ret_bytes[kNPVariantSizeMax];
+  nacl_abi_size_t ret_length =
+      static_cast<nacl_abi_size_t>(sizeof(ret_bytes));
+  // Perform the RPC.
+  NaClSrpcError srpc_result =
       NPObjectStubRpcClient::NPN_InvokeDefault(bridge->channel(),
                                                NPPToWireFormat(npp_),
                                                capability_.size(),
                                                capability_.char_addr(),
-                                               fixed_size,
-                                               fixed,
-                                               optional_size,
-                                               optional,
+                                               args_length,
+                                               args_bytes,
                                                static_cast<int32_t>(arg_count),
-                                               &ret_bool,
-                                               &ret_fixed_size,
-                                               ret_fixed,
-                                               &ret_optional_size,
-                                               ret_optional)) {
-    printf("RPC failed\n");
+                                               &success,
+                                               &ret_length,
+                                               ret_bytes);
+  // Free the serialized args.
+  delete args_bytes;
+  // Check that the RPC layer worked correctly.
+  if (NACL_SRPC_RESULT_OK != srpc_result) {
     return false;
   }
-  if (ret_bool) {
-    RpcArg rets(npp_,
-                ret_fixed,
-                ret_fixed_size,
-                ret_optional,
-                ret_optional_size);
-    *variant = *rets.GetVariant(true);
-    DebugPrintf("InvokeDefault(%p) succeeded: ",
-                reinterpret_cast<void*>(this));
-    PrintVariant(variant);
-    printf("\n");
+  // If the RPC was successful, get the result.
+  if (success &&
+      WireFormatToNPVariants(npp_, ret_bytes, ret_length, 1, variant)) {
+    DebugPrintf("InvokeDefault(%p) succeeded: %s\n",
+                reinterpret_cast<void*>(this),
+                FormatNPVariant(variant));
     return true;
   }
-  DebugPrintf("InvokeDefault(%p) failed: ", reinterpret_cast<void*>(this));
+  DebugPrintf("InvokeDefault(%p) failed.\n", reinterpret_cast<void*>(this));
   return false;
 }
 
-bool NPObjectProxy::HasProperty(NPIdentifier name) {
-  DebugPrintf("HasProperty(%p, ", reinterpret_cast<void*>(this));
-  PrintIdent(name);
-  printf(")\n");
+bool NPObjectProxy::HasProperty(NPIdentifier id) {
+  DebugPrintf("HasProperty(%p, %s)\n",
+              reinterpret_cast<void*>(this), FormatNPIdentifier(id));
 
   NPBridge* bridge = NPBridge::LookupBridge(npp_);
   if (NULL == bridge) {
     return false;
   }
-  int32_t error_code;
-  if (NACL_SRPC_RESULT_OK !=
+  int32_t success;
+  // Perform the RPC.
+  NaClSrpcError srpc_result =
       NPObjectStubRpcClient::NPN_HasProperty(bridge->channel(),
                                              NPPToWireFormat(npp_),
                                              capability_.size(),
                                              capability_.char_addr(),
-                                             NPIdentifierToWireFormat(name),
-                                             &error_code)) {
+                                             NPIdentifierToWireFormat(id),
+                                             &success);
+  // Check that the RPC layer worked correctly.
+  if (NACL_SRPC_RESULT_OK != srpc_result) {
     return false;
   }
-  return error_code ? true : false;
+  return success ? true : false;
 }
 
-bool NPObjectProxy::GetProperty(NPIdentifier name, NPVariant* variant) {
-  DebugPrintf("GetProperty(%p, ", reinterpret_cast<void*>(this));
-  PrintIdent(name);
-  printf(")\n");
+bool NPObjectProxy::GetProperty(NPIdentifier id, NPVariant* variant) {
+  DebugPrintf("GetProperty(%p, %s)\n",
+              reinterpret_cast<void*>(this),
+              FormatNPIdentifier(id));
 
   NPBridge* bridge = NPBridge::LookupBridge(npp_);
   if (NULL == bridge) {
     return false;
   }
-  int32_t error_code;
-  char ret_fixed[kNPVariantSizeMax];
-  uint32_t ret_fixed_size = static_cast<uint32_t>(sizeof(ret_fixed));
-  char ret_optional[kNPVariantOptionalMax];
-  uint32_t ret_optional_size = static_cast<uint32_t>(sizeof(ret_optional));
-  if (NACL_SRPC_RESULT_OK !=
+  char ret_bytes[kNPVariantSizeMax];
+  uint32_t ret_length = static_cast<uint32_t>(sizeof(ret_bytes));
+  int32_t success;
+  // Perform the RPC.
+  NaClSrpcError srpc_result =
       NPObjectStubRpcClient::NPN_GetProperty(bridge->channel(),
                                              NPPToWireFormat(npp_),
                                              capability_.size(),
                                              capability_.char_addr(),
-                                             NPIdentifierToWireFormat(name),
-                                             &error_code,
-                                             &ret_fixed_size,
-                                             ret_fixed,
-                                             &ret_optional_size,
-                                             ret_optional)) {
-    DebugPrintf("GetProperty failed\n");
+                                             NPIdentifierToWireFormat(id),
+                                             &success,
+                                             &ret_length,
+                                             ret_bytes);
+  // Check that the RPC layer worked correctly.
+  if (NACL_SRPC_RESULT_OK != srpc_result) {
     return false;
   }
-  if (1 == error_code) {
-    RpcArg rets(npp_,
-                ret_fixed,
-                ret_fixed_size,
-                ret_optional,
-                ret_optional_size);
-    *variant = *rets.GetVariant(true);
-    DebugPrintf("GetProperty(%p, ", reinterpret_cast<void*>(this));
-    PrintIdent(name);
-    printf(") succeeded: ");
-    PrintVariant(variant);
-    printf("\n");
+  // If the RPC was successful, get the result.
+  if (success &&
+      WireFormatToNPVariants(npp_, ret_bytes, ret_length, 1, variant)) {
+    DebugPrintf("GetProperty(%p) succeeded: %s\n",
+                reinterpret_cast<void*>(this),
+                FormatNPVariant(variant));
     return true;
   }
   return false;
 }
 
-bool NPObjectProxy::SetProperty(NPIdentifier name, const NPVariant* value) {
-  DebugPrintf("SetProperty(%p, ", reinterpret_cast<void*>(this));
-  PrintIdent(name);
-  printf(", ");
-  PrintVariant(value);
-  printf(")\n");
+bool NPObjectProxy::SetProperty(NPIdentifier id, const NPVariant* value) {
+  DebugPrintf("SetProperty(%p, %s, %s)\n",
+              reinterpret_cast<void*>(this),
+              FormatNPIdentifier(id),
+              FormatNPVariant(value));
 
   NPBridge* bridge = NPBridge::LookupBridge(npp_);
   if (NULL == bridge) {
     return false;
   }
-  char      fixed[kNPVariantSizeMax];
-  uint32_t  fixed_size = static_cast<uint32_t>(sizeof(fixed));
-  char      optional[kNPVariantOptionalMax];
-  uint32_t  optional_size = static_cast<uint32_t>(sizeof(optional));
-  RpcArg    vars(npp_, fixed, fixed_size, optional, optional_size);
-  if (!vars.PutVariant(value)) {
+  // Serialize the argument.
+  nacl_abi_size_t arg_length = kNaClAbiSizeTMax;
+  char *arg_bytes =
+      NPVariantsToWireFormat(npp_, value, 1, NULL, &arg_length);
+  if (NULL == arg_bytes || 0 == arg_length) {
     return false;
   }
-  int32_t error_code;
-  if (NACL_SRPC_RESULT_OK !=
+  int32_t success;
+  // Perform the RPC.
+  NaClSrpcError srpc_result =
       NPObjectStubRpcClient::NPN_SetProperty(bridge->channel(),
                                              NPPToWireFormat(npp_),
                                              capability_.size(),
                                              capability_.char_addr(),
-                                             NPIdentifierToWireFormat(name),
-                                             fixed_size,
-                                             fixed,
-                                             optional_size,
-                                             optional,
-                                             &error_code)) {
+                                             NPIdentifierToWireFormat(id),
+                                             arg_length,
+                                             arg_bytes,
+                                             &success);
+  // Free the serialized args.
+  delete arg_bytes;
+  // Check that the RPC layer worked correctly.
+  if (NACL_SRPC_RESULT_OK != srpc_result) {
     return false;
   }
-  return error_code ? true : false;
+  return success ? true : false;
 }
 
-bool NPObjectProxy::RemoveProperty(NPIdentifier name) {
-  DebugPrintf("RemoveProperty(%p, ", reinterpret_cast<void*>(this));
-  PrintIdent(name);
-  printf(")\n");
+bool NPObjectProxy::RemoveProperty(NPIdentifier id) {
+  DebugPrintf("RemoveProperty(%p, %s)\n",
+              reinterpret_cast<void*>(this),
+              FormatNPIdentifier(id));
 
   NPBridge* bridge = NPBridge::LookupBridge(npp_);
   if (NULL == bridge) {
     return false;
   }
-  int32_t error_code;
-  if (NACL_SRPC_RESULT_OK !=
-      NPObjectStubRpcClient::NPN_RemoveProperty(
-          bridge->channel(),
-          NPPToWireFormat(npp_),
-          capability_.size(),
-          capability_.char_addr(),
-          NPIdentifierToWireFormat(name),
-          &error_code)) {
+  int32_t success;
+  // Perform the RPC.
+  NaClSrpcError srpc_result =
+      NPObjectStubRpcClient::NPN_RemoveProperty(bridge->channel(),
+                                                NPPToWireFormat(npp_),
+                                                capability_.size(),
+                                                capability_.char_addr(),
+                                                NPIdentifierToWireFormat(id),
+                                                &success);
+  // Check that the RPC layer worked correctly.
+  if (NACL_SRPC_RESULT_OK != srpc_result) {
     return false;
   }
-  return error_code ? true : false;
+  return success ? true : false;
 }
 
 bool NPObjectProxy::Enumerate(NPIdentifier** identifiers,
@@ -501,20 +467,22 @@ bool NPObjectProxy::Enumerate(NPIdentifier** identifiers,
   if (NULL == bridge) {
     return false;
   }
-  // TODO(sehr): there are some identifier copying issues here, etc.
-  char idents[kNPVariantSizeMax * kParamMax];
+  char idents[kNPVariantSizeMax];
   nacl_abi_size_t idents_size = static_cast<nacl_abi_size_t>(sizeof(idents));
-  int32_t error_code;
+  int32_t success;
   int32_t ident_count;
-  if (NACL_SRPC_RESULT_OK !=
+  // Perform the RPC.
+  NaClSrpcError srpc_result =
       NPObjectStubRpcClient::NPN_Enumerate(bridge->channel(),
                                            NPPToWireFormat(npp_),
                                            capability_.size(),
                                            capability_.char_addr(),
-                                           &error_code,
+                                           &success,
                                            &idents_size,
                                            idents,
-                                           &ident_count)) {
+                                           &ident_count);
+  // Check that the RPC layer worked correctly.
+  if (NACL_SRPC_RESULT_OK != srpc_result) {
     return false;
   }
   // TODO(sehr): we're still not copying the identifier list, etc.
@@ -525,56 +493,51 @@ bool NPObjectProxy::Enumerate(NPIdentifier** identifiers,
 
 bool NPObjectProxy::Construct(const NPVariant* args,
                               uint32_t arg_count,
-                              NPVariant* result) {
-  DebugPrintf("Construct(%p, %u)\n",
+                              NPVariant* variant) {
+  DebugPrintf("Construct(%p, %s, %u)\n",
               reinterpret_cast<void*>(this),
+              FormatNPVariantVector(args, arg_count),
               static_cast<unsigned int>(arg_count));
 
   NPBridge* bridge = NPBridge::LookupBridge(npp_);
   if (NULL == bridge) {
     return false;
   }
-  char fixed[kNPVariantSizeMax * kParamMax];
-  nacl_abi_size_t fixed_size =
-      static_cast<nacl_abi_size_t>(sizeof(fixed));
-  char optional[kNPVariantSizeMax * kParamMax];
-  nacl_abi_size_t optional_size =
-      static_cast<nacl_abi_size_t>(sizeof(optional));
-  RpcArg vars(npp_, fixed, fixed_size, optional, optional_size);
-  if (!vars.PutVariantArray(args, arg_count)) {
+  // Serialize the argument vector.
+  nacl_abi_size_t args_length = kNaClAbiSizeTMax;
+  char *args_bytes =
+      NPVariantsToWireFormat(npp_, args, arg_count, NULL, &args_length);
+  if ((NULL == args_bytes || 0 == args_length) && 0 != arg_count) {
     return false;
   }
-  int32_t error_code;
-  char ret_fixed[kNPVariantSizeMax];
-  nacl_abi_size_t ret_fixed_size =
-      static_cast<nacl_abi_size_t>(sizeof(optional));
-  char ret_optional[kNPVariantSizeMax];
-  nacl_abi_size_t ret_optional_size =
-      static_cast<nacl_abi_size_t>(sizeof(optional));
-  if (NACL_SRPC_RESULT_OK !=
+  char ret_bytes[kNPVariantSizeMax];
+  nacl_abi_size_t ret_length =
+      static_cast<nacl_abi_size_t>(sizeof(ret_bytes));
+  int32_t success;
+  // Perform the RPC.
+  NaClSrpcError srpc_result =
       NPObjectStubRpcClient::NPN_Construct(bridge->channel(),
                                            NPPToWireFormat(npp_),
                                            capability_.size(),
                                            capability_.char_addr(),
-                                           fixed_size,
-                                           fixed,
-                                           optional_size,
-                                           optional,
+                                           args_length,
+                                           args_bytes,
                                            static_cast<int32_t>(arg_count),
-                                           &error_code,
-                                           &ret_fixed_size,
-                                           ret_fixed,
-                                           &ret_optional_size,
-                                           ret_optional)) {
+                                           &success,
+                                           &ret_length,
+                                           ret_bytes);
+  // Free the serialized args.
+  delete args_bytes;
+  // Check that the RPC layer worked correctly.
+  if (NACL_SRPC_RESULT_OK != srpc_result) {
     return false;
   }
-  if (NPERR_NO_ERROR != error_code) {
-    RpcArg rets(npp_,
-                ret_fixed,
-                ret_fixed_size,
-                ret_optional,
-                ret_optional_size);
-    *result = *rets.GetVariant(true);
+  // If the RPC was successful, get the result.
+  if (success &&
+      WireFormatToNPVariants(npp_, ret_bytes, ret_length, 1, variant)) {
+    DebugPrintf("Construct(%p) succeeded: %s\n",
+                reinterpret_cast<void*>(this),
+                FormatNPVariant(variant));
     return true;
   }
   return false;
@@ -589,6 +552,7 @@ void NPObjectProxy::SetException(const NPUTF8* message) {
   if (NULL == bridge) {
     return;
   }
+  // Perform the RPC.
   NPObjectStubRpcClient::NPN_SetException(bridge->channel(),
                                           capability_.size(),
                                           capability_.char_addr(),

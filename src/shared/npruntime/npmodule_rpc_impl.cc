@@ -17,6 +17,7 @@
 #include "native_client/src/shared/npruntime/npobject_proxy.h"
 #include "native_client/src/shared/npruntime/npobject_stub.h"
 #include "native_client/src/shared/npruntime/pointer_translations.h"
+#include "native_client/src/shared/npruntime/structure_translations.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/trusted/desc/nacl_desc_invalid.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
@@ -29,25 +30,61 @@
 
 using nacl::NPIdentifierToWireFormat;
 using nacl::NPModule;
-using nacl::RpcArg;
+using nacl::NPObjectToWireFormat;
 using nacl::WireFormatToNPIdentifier;
 using nacl::WireFormatToNPP;
 
-NaClSrpcError NPModuleRpcServer::NPN_GetValue(NaClSrpcChannel* channel,
-                                              int32_t wire_npp,
-                                              int32_t var,
-                                              int32_t* nperr,
-                                              nacl_abi_size_t* result_bytes,
-                                              char* result) {
+NaClSrpcError NPModuleRpcServer::NPN_GetValueBoolean(NaClSrpcChannel* channel,
+                                                     int32_t wire_npp,
+                                                     int32_t var,
+                                                     int32_t* nperr,
+                                                     int32_t* boolean_result) {
   UNREFERENCED_PARAMETER(channel);
   NPNVariable variable = static_cast<NPNVariable>(var);
-  NPObject* object;
   NPP npp = WireFormatToNPP(wire_npp);
 
-  *nperr = ::NPN_GetValue(npp, variable, &object);
-  RpcArg ret1(npp, result, *result_bytes);
-  ret1.PutObject(object);
+  // There are two variables that are booleans.
+  if (NPNVisOfflineBool != variable && NPNVprivateModeBool != variable) {
+    *nperr = NPERR_INVALID_PARAM;
+    return NACL_SRPC_RESULT_OK;
+  }
+  int32_t value;
+  *nperr = ::NPN_GetValue(npp,
+                          variable,
+                          reinterpret_cast<void*>(&value));
+  *boolean_result = static_cast<NPBool>(value);
+  *nperr = NPERR_NO_ERROR;
+  return NACL_SRPC_RESULT_OK;
+}
 
+NaClSrpcError NPModuleRpcServer::NPN_GetValueObject(
+    NaClSrpcChannel* channel,
+    int32_t wire_npp,
+    int32_t var,
+    int32_t* nperr,
+    nacl_abi_size_t* result_length,
+    char* result_bytes) {
+  UNREFERENCED_PARAMETER(channel);
+  NPNVariable variable = static_cast<NPNVariable>(var);
+  NPP npp = WireFormatToNPP(wire_npp);
+
+  if (NPNVWindowNPObject != variable && NPNVPluginElementNPObject != variable) {
+    *nperr = NPERR_INVALID_PARAM;
+    return NACL_SRPC_RESULT_OK;
+  }
+  // There are two variables that are NPObjects.
+  NPObject* object;
+  *nperr = ::NPN_GetValue(npp,
+                          variable,
+                          reinterpret_cast<void*>(&object));
+  if (NULL == object) {
+    *result_length = 0;
+  } else {
+    if (!NPObjectToWireFormat(npp, object, result_bytes, result_length)) {
+      return NACL_SRPC_RESULT_APP_ERROR;
+    }
+  }
+  *nperr = NPERR_NO_ERROR;
   return NACL_SRPC_RESULT_OK;
 }
 
@@ -62,41 +99,18 @@ NaClSrpcError NPModuleRpcServer::NPN_SetStatus(NaClSrpcChannel* channel,
   return NACL_SRPC_RESULT_OK;
 }
 
-NaClSrpcError NPModuleRpcServer::NPN_InvalidateRect(NaClSrpcChannel* channel,
-                                                    int32_t wire_npp,
-                                                    nacl_abi_size_t rect_bytes,
-                                                    char* rect) {
-  UNREFERENCED_PARAMETER(channel);
-  NPP npp = WireFormatToNPP(wire_npp);
-  NPModule* module = NPModule::GetModule(wire_npp);
-  RpcArg arg1(npp, rect, rect_bytes);
-
-  module->InvalidateRect(npp, arg1.GetRect());
-
-  return NACL_SRPC_RESULT_OK;
-}
-
-NaClSrpcError NPModuleRpcServer::NPN_ForceRedraw(NaClSrpcChannel* channel,
-                                                 int32_t wire_npp) {
-  UNREFERENCED_PARAMETER(channel);
-  NPModule* module = NPModule::GetModule(wire_npp);
-
-  module->ForceRedraw(WireFormatToNPP(wire_npp));
-
-  return NACL_SRPC_RESULT_OK;
-}
-
 NaClSrpcError NPModuleRpcServer::NPN_CreateArray(NaClSrpcChannel* channel,
                                                  int32_t wire_npp,
                                                  int32_t* success,
-                                                 nacl_abi_size_t* cap_bytes,
-                                                 char* capability) {
+                                                 nacl_abi_size_t* object_length,
+                                                 char* object_bytes) {
   UNREFERENCED_PARAMETER(channel);
   NPP npp = WireFormatToNPP(wire_npp);
-  NPObject* window;
+  *success = 0;
 
+  // Get the window object and create a new array.
+  NPObject* window;
   if (NPERR_NO_ERROR != ::NPN_GetValue(npp, NPNVWindowNPObject, &window)) {
-    *success = 0;
     return NACL_SRPC_RESULT_OK;
   }
   NPString script;
@@ -104,12 +118,23 @@ NaClSrpcError NPModuleRpcServer::NPN_CreateArray(NaClSrpcChannel* channel,
   script.UTF8Characters = scriptText;
   script.UTF8Length = nacl::assert_cast<uint32>(strlen(scriptText));
   NPVariant result;
-  *success = ::NPN_Evaluate(npp, window, &script, &result) &&
-             NPVARIANT_IS_OBJECT(result);
-  if (*success) {
-    RpcArg ret0(npp, capability, *cap_bytes);
-    ret0.PutObject(NPVARIANT_TO_OBJECT(result));
-    // TODO(sehr): We're leaking result here.
+  VOID_TO_NPVARIANT(result);
+  if (::NPN_Evaluate(npp, window, &script, &result) &&
+      NPVARIANT_IS_OBJECT(result) &&
+      NULL != NPVARIANT_TO_OBJECT(result)) {
+    char* serialized_result = NPObjectToWireFormat(npp,
+                                                   NPVARIANT_TO_OBJECT(result),
+                                                   object_bytes,
+                                                   object_length);
+    // TODO(sehr): we should decrement a local reference count here to avoid
+    // leaking result. It appears we need a NPN_ReleaseVariantValue(result).
+    if (NULL == serialized_result) {
+      return NACL_SRPC_RESULT_APP_ERROR;
+    }
+    *success = 1;
+  } else {
+    // Don't send anything back other than the success code.
+    *object_length = 0;
   }
   NPN_ReleaseObject(window);
 

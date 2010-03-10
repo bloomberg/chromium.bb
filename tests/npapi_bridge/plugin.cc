@@ -582,9 +582,6 @@ bool Plugin::Paint() {
       }
     }
     count += 1;
-    NPRect rect = { 0, 0, window_->height, window_->width };
-    NPN_InvalidateRect(npp_, &rect);
-    NPN_ForceRedraw(npp_);
     return true;
   }
   return false;

@@ -77,13 +77,6 @@ class NPBridge {
     peer_pid_ = pid;
   }
 
-  size_t peer_npvariant_size() const {
-    return peer_npvariant_size_;
-  }
-  void set_peer_npvariant_size(size_t size) {
-    peer_npvariant_size_ = size;
-  }
-
   NaClSrpcChannel* channel() const {
     return channel_;
   }
@@ -112,8 +105,6 @@ class NPBridge {
 
   // The process ID of the remote peer.
   int peer_pid_;
-  // The size of NPVariant in the remote peer.
-  size_t peer_npvariant_size_;
 
   // The map of NPCapability to NPObjectProxy
   std::map<const NPCapability, NPObjectProxy*> proxy_map_;

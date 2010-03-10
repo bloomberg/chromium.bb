@@ -111,7 +111,7 @@ NACL_NPRUNTIME_INPUTS = [
     'npmodule.cc',
     'npobject_proxy.cc',
     'npobject_stub.cc',
-    env_no_strict_aliasing.ComponentObject('nprpc.cc'),
+    env_no_strict_aliasing.ComponentObject('structure_translations.cc'),
     npmodule_rpc_cc,
     npnavigator_rpc_cc,
     'npmodule_rpc_impl.cc',
