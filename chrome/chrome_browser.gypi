@@ -162,6 +162,7 @@
         'browser/automation/automation_extension_function.cc',
         'browser/automation/automation_profile_impl.cc',
         'browser/automation/automation_profile_impl.h',
+        'browser/automation/automation_provider_chromeos.cc',
         'browser/automation/automation_provider_gtk.cc',
         'browser/automation/automation_provider_mac.mm',
         'browser/automation/automation_provider_views.cc',
@@ -2288,7 +2289,7 @@
         }],
         ['chromeos==0', {
           'sources/': [
-            ['exclude', '^browser/chromeos'],
+            ['exclude', '^browser/chromeos'],            
           ],
         }],
         ['OS=="linux"', {

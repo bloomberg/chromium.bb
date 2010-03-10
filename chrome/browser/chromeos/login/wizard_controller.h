@@ -32,9 +32,20 @@ class WizardController : public views::WindowDelegate,
   WizardController();
   virtual ~WizardController();
 
+  // Returns the default wizard controller if it has been created.
+  static WizardController* default_controller() {
+    return default_controller_;
+  }
+
   // Shows the first screen defined by |first_screen_name| or by default
   // if the parameter is empty.
   void ShowFirstScreen(const std::string& first_screen_name);
+
+  // Lazy initializers and getters for screens.
+  NetworkScreen* GetNetworkScreen();
+  LoginScreen* GetLoginScreen();
+  AccountScreen* GetAccountScreen();
+  UpdateScreen* GetUpdateScreen();
 
  private:
   // Exit handlers:
@@ -65,12 +76,6 @@ class WizardController : public views::WindowDelegate,
   // Initializes contents view and status area.
   void InitContents();
 
-  // Lazy initializers and getters for screens.
-  NetworkScreen* GetNetworkScreen();
-  LoginScreen* GetLoginScreen();
-  AccountScreen* GetAccountScreen();
-  UpdateScreen* GetUpdateScreen();
-
   // Switches from one screen to another.
   void SetCurrentScreen(WizardScreen* screen);
 
@@ -85,6 +90,9 @@ class WizardController : public views::WindowDelegate,
 
   // Screen that's currently active.
   WizardScreen* current_screen_;
+
+  // Default WizardController.
+  static WizardController* default_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(WizardController);
 };

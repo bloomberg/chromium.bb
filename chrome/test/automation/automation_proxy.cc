@@ -472,7 +472,7 @@ bool AutomationProxy::Send(IPC::Message* message) {
 
 bool AutomationProxy::SendWithTimeout(IPC::Message* message, int timeout,
                                       bool* is_timeout) {
-  //DCHECK_EQ(listener_thread_id_, PlatformThread::CurrentId());
+  // DCHECK_EQ(listener_thread_id_, PlatformThread::CurrentId());
 
   if (is_timeout)
     *is_timeout = false;
@@ -557,3 +557,14 @@ void AutomationProxy::ResetChannel() {
     tracker_->put_channel(NULL);
 }
 
+#if defined(OS_CHROMEOS)
+bool AutomationProxy::LoginWithUserAndPass(const std::string& username,
+                                           const std::string& password) {
+  bool success;
+  bool sent = Send(new AutomationMsg_LoginWithUserAndPass(0, username,
+                                                          password,
+                                                          &success));
+  // If message sending unsuccessful or test failed, return false.
+  return sent && success;
+}
+#endif

@@ -472,6 +472,10 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AutomationMsg_BrowserMove, OnBrowserMoved)
 #endif
     IPC_MESSAGE_HANDLER(AutomationMsg_SetContentSetting, SetContentSetting)
+#if defined(OS_CHROMEOS)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_LoginWithUserAndPass,
+                                    LoginWithUserAndPass)
+#endif
   IPC_END_MESSAGE_MAP()
 }
 

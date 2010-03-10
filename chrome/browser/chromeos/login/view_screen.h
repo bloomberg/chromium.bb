@@ -29,6 +29,9 @@ class ViewScreen : public WizardScreen {
   V* view() { return view_; }
 
  private:
+  // For testing automation
+  friend class AutomationProvider;
+
   V* view_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewScreen);

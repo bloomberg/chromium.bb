@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_LOGIN_MANAGER_VIEW_H_
 
 #include <string>
+
 #include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
@@ -43,6 +44,13 @@ class LoginManagerView : public views::View,
 
   // Overridden from views::WindowDelegate:
   virtual views::View* GetContentsView();
+
+  // Setters for textfields.
+  void SetUsername(const std::string& username);
+  void SetPassword(const std::string& password);
+
+  // Attempt to login with the current field values.
+  void Login();
 
   // Overridden from views::Textfield::Controller
   // Not thread-safe, by virtue of using SetupSession().
@@ -85,9 +93,6 @@ class LoginManagerView : public views::View,
   // Callback from chromeos::VersionLoader giving the version.
   void OnOSVersion(VersionLoader::Handle handle,
                    std::string version);
-
-  // Attempt to login with the current field values.
-  void Login();
 
   // Shows error message with the specified message id.
   // -1 stands for no error.

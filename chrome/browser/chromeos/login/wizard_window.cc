@@ -61,7 +61,6 @@ class WizardWindow : public views::WindowGtk {
   static WizardWindow* Create(const std::string& first_screen_name,
                               const gfx::Size& size) {
     WizardController* controller = new WizardController();
-
     WizardWindow* wizard_window = new WizardWindow(controller);
     wizard_window->GetNonClientView()->SetFrameView(
         new WizardNonClientFrameView());
@@ -91,7 +90,6 @@ class WizardWindow : public views::WindowGtk {
     XSetWindowAttributes attr;
     attr.cursor = cursor;
     XChangeWindowAttributes(display, root_window, CWCursor, &attr);
-
     return wizard_window;
   }
 

@@ -186,6 +186,12 @@ class AutomationProxy : public IPC::Channel::Listener,
   // Note: Overinstalls will fail.
   bool InstallExtension(const FilePath& crx_file);
 
+#if defined(OS_CHROMEOS)
+  // Logs in through the Chrome OS login wizard with given |username|
+  // and |password|.  Returns true on success.
+  bool LoginWithUserAndPass(const std::string& username,
+                            const std::string& password);
+#endif
   // Returns the ID of the automation IPC channel, so that it can be
   // passed to the app as a launch parameter.
   const std::string& channel_id() const { return channel_id_; }

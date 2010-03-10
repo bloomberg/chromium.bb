@@ -1222,4 +1222,12 @@ IPC_BEGIN_MESSAGES(Automation)
                              ContentSetting /* setting */,
                              bool /* success */)
 
+#if defined(OS_CHROMEOS)
+  // Logs in through the browser's login wizard if available.
+  IPC_SYNC_MESSAGE_ROUTED2_1(AutomationMsg_LoginWithUserAndPass,
+                             std::string /* username*/,
+                             std::string /* password*/,
+                             bool /* Whether successful*/)
+#endif
+
 IPC_END_MESSAGES(Automation)

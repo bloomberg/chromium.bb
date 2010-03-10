@@ -384,4 +384,25 @@ class MetricEventDurationObserver : public NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(MetricEventDurationObserver);
 };
 
+#if defined(OS_CHROMEOS)
+// Collects LOGIN_AUTHENTICATION notifications and returns
+// whether authentication succeeded to the automation provider.
+class LoginManagerObserver : public NotificationObserver {
+ public:
+  LoginManagerObserver(AutomationProvider* automation,
+                       IPC::Message* reply_message);
+
+  // NotificationObserver interface.
+  virtual void Observe(NotificationType type, const NotificationSource& source,
+                       const NotificationDetails& details);
+
+ private:
+  NotificationRegistrar registrar_;
+  AutomationProvider* automation_;
+  IPC::Message* reply_message_;
+
+  DISALLOW_COPY_AND_ASSIGN(LoginManagerObserver);
+};
+#endif
+
 #endif  // CHROME_BROWSER_AUTOMATION_AUTOMATION_PROVIDER_OBSERVERS_H_

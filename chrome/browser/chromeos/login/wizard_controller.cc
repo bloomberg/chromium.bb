@@ -32,6 +32,9 @@ const char kUpdateScreenName[] = "update";
 
 }  // namespace
 
+// Initialize default controller.
+WizardController* WizardController::default_controller_ = NULL;
+
 // Contents view for wizard's window. Parents screen views and status area
 // view.
 class WizardContentsView : public views::View {
@@ -97,9 +100,12 @@ class WizardContentsView : public views::View {
 WizardController::WizardController()
     : contents_(NULL),
       current_screen_(NULL) {
+  DCHECK(default_controller_ == NULL);
+  default_controller_ = this;
 }
 
 WizardController::~WizardController() {
+  default_controller_ = NULL;
 }
 
 void WizardController::ShowFirstScreen(const std::string& first_screen_name) {
@@ -118,6 +124,30 @@ void WizardController::ShowFirstScreen(const std::string& first_screen_name) {
       SetCurrentScreen(GetLoginScreen());
     }
   }
+}
+
+NetworkScreen* WizardController::GetNetworkScreen() {
+  if (!network_screen_.get())
+    network_screen_.reset(new NetworkScreen(this));
+  return network_screen_.get();
+}
+
+LoginScreen* WizardController::GetLoginScreen() {
+  if (!login_screen_.get())
+    login_screen_.reset(new LoginScreen(this));
+  return login_screen_.get();
+}
+
+AccountScreen* WizardController::GetAccountScreen() {
+  if (!account_screen_.get())
+    account_screen_.reset(new AccountScreen(this));
+  return account_screen_.get();
+}
+
+UpdateScreen* WizardController::GetUpdateScreen() {
+  if (!update_screen_.get())
+    update_screen_.reset(new UpdateScreen(this));
+  return update_screen_.get();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -147,30 +177,6 @@ void WizardController::OnLanguageChanged() {
 void WizardController::InitContents() {
   contents_ = new WizardContentsView();
   contents_->Init(this);
-}
-
-NetworkScreen* WizardController::GetNetworkScreen() {
-  if (!network_screen_.get())
-    network_screen_.reset(new NetworkScreen(this));
-  return network_screen_.get();
-}
-
-LoginScreen* WizardController::GetLoginScreen() {
-  if (!login_screen_.get())
-    login_screen_.reset(new LoginScreen(this));
-  return login_screen_.get();
-}
-
-AccountScreen* WizardController::GetAccountScreen() {
-  if (!account_screen_.get())
-    account_screen_.reset(new AccountScreen(this));
-  return account_screen_.get();
-}
-
-UpdateScreen* WizardController::GetUpdateScreen() {
-  if (!update_screen_.get())
-    update_screen_.reset(new UpdateScreen(this));
-  return update_screen_.get();
 }
 
 void WizardController::OnSwitchLanguage(std::string lang) {

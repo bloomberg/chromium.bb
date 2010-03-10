@@ -18,6 +18,10 @@
 #include "chrome/browser/printing/print_job.h"
 #endif  // defined(OS_WIN)
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/authentication_notification_details.h"
+#endif
+
 InitialLoadObserver::InitialLoadObserver(size_t tab_count,
                                          AutomationProvider* automation)
     : automation_(automation),
@@ -716,3 +720,26 @@ void MetricEventDurationObserver::Observe(NotificationType type,
   durations_[metric_event_duration->event_name] =
       metric_event_duration->duration_ms;
 }
+
+#if defined(OS_CHROMEOS)
+LoginManagerObserver::LoginManagerObserver(
+    AutomationProvider* automation,
+    IPC::Message* reply_message)
+    : automation_(automation),
+      reply_message_(reply_message) {
+
+  registrar_.Add(this, NotificationType::LOGIN_AUTHENTICATION,
+                 NotificationService::AllSources());
+}
+
+void LoginManagerObserver::Observe(NotificationType type,
+                                   const NotificationSource& source,
+                                   const NotificationDetails& details) {
+  DCHECK(type == NotificationType::LOGIN_AUTHENTICATION);
+  Details<AuthenticationNotificationDetails> auth_details(details);
+  AutomationMsg_LoginWithUserAndPass::WriteReplyParams(reply_message_,
+      auth_details->success());
+  automation_->Send(reply_message_);
+  delete this;
+}
+#endif

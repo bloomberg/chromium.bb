@@ -867,6 +867,11 @@ class NotificationType {
 #if defined(OS_CHROMEOS)
     // Sent when a chromium os user logs in.
     LOGIN_USER_CHANGED,
+
+    // Sent when a chromium os user attempts to log in.  The source is
+    // GoogleAuthenticator and the details are in
+    // AuthenticationNotificationDetails.
+    LOGIN_AUTHENTICATION,
 #endif
 
     // Count (must be last) ----------------------------------------------------

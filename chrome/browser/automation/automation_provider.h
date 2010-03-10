@@ -520,6 +520,14 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
 
   ExternalTabContainer* GetExternalTabForHandle(int handle);
 
+#if defined(OS_CHROMEOS)
+  // Logs in through the Chrome OS Login Wizard with given |username| and
+  // password.  Returns true via |reply_message| on success.
+  void LoginWithUserAndPass(const std::string& username,
+                            const std::string& password,
+                            IPC::Message* reply_message);
+#endif
+
   // Callback for history redirect queries.
   virtual void OnRedirectQueryComplete(
       HistoryService::Handle request_handle,

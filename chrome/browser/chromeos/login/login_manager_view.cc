@@ -24,6 +24,7 @@
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/external_cookie_handler.h"
+#include "chrome/browser/chromeos/login/authentication_notification_details.h"
 #include "chrome/browser/chromeos/login/google_authenticator.h"
 #include "chrome/browser/chromeos/login/pam_google_authenticator.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
@@ -32,6 +33,7 @@
 #include "chrome/browser/profile_manager.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "views/controls/button/native_button.h"
@@ -275,6 +277,32 @@ views::View* LoginManagerView::GetContentsView() {
   return this;
 }
 
+void LoginManagerView::SetUsername(const std::string& username) {
+  username_field_->SetText(UTF8ToUTF16(username));
+}
+
+void LoginManagerView::SetPassword(const std::string& password) {
+  password_field_->SetText(UTF8ToUTF16(password));
+}
+
+void LoginManagerView::Login() {
+  // Disallow 0 size username.
+  if (username_field_->text().empty()) {
+    // Return true so that processing ends
+    return;
+  }
+  std::string username = UTF16ToUTF8(username_field_->text());
+  // todo(cmasone) Need to sanitize memory used to store password.
+  std::string password = UTF16ToUTF8(password_field_->text());
+
+  if (username.find('@') == std::string::npos) {
+    username += kDefaultDomain;
+    username_field_->SetText(UTF8ToUTF16(username));
+  }
+
+  authenticator_->Authenticate(username, password);
+}
+
 // Sign in button causes a login attempt.
 void LoginManagerView::ButtonPressed(
     views::Button* sender, const views::Event& event) {
@@ -284,6 +312,13 @@ void LoginManagerView::ButtonPressed(
 void LoginManagerView::OnLoginFailure() {
   LOG(INFO) << "LoginManagerView: OnLoginFailure()";
   NetworkLibrary* network = NetworkLibrary::Get();
+
+  // Send notification of failure
+  AuthenticationNotificationDetails details(false);
+  NotificationService::current()->Notify(
+      NotificationType::LOGIN_AUTHENTICATION, Source<LoginManagerView>(this),
+      Details<AuthenticationNotificationDetails>(&details));
+
   // Check networking after trying to login in case user is
   // cached locally or the local admin account.
   if (!network || !CrosLibrary::EnsureLoaded())
@@ -299,6 +334,12 @@ void LoginManagerView::OnLoginSuccess(const std::string& username) {
   // TODO(cmasone): something sensible if errors occur.
   SetupSession(username);
   UserManager::Get()->UserLoggedIn(username);
+
+  // Send notification of success
+  AuthenticationNotificationDetails details(true);
+  NotificationService::current()->Notify(
+      NotificationType::LOGIN_AUTHENTICATION, Source<LoginManagerView>(this),
+      Details<AuthenticationNotificationDetails>(&details));
 
   // Now launch the initial browser window.
   BrowserInit browser_init;
@@ -326,24 +367,6 @@ void LoginManagerView::SetupSession(const std::string& username) {
   }
   if (CrosLibrary::EnsureLoaded())
     LoginLibrary::Get()->StartSession(username, "");
-}
-
-void LoginManagerView::Login() {
-  // Disallow 0 size username.
-  if (username_field_->text().empty()) {
-    // Return true so that processing ends
-    return;
-  }
-  std::string username = UTF16ToUTF8(username_field_->text());
-  // todo(cmasone) Need to sanitize memory used to store password.
-  std::string password = UTF16ToUTF8(password_field_->text());
-
-  if (username.find('@') == std::string::npos) {
-    username += kDefaultDomain;
-    username_field_->SetText(UTF8ToUTF16(username));
-  }
-
-  authenticator_->Authenticate(username, password);
 }
 
 void LoginManagerView::ShowError(int error_id) {
