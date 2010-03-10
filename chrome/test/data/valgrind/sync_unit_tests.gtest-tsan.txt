@@ -1,0 +1,2 @@
+# This test contains nasty races, see http://crbug.com/37839
+EventSys.Multithreaded
