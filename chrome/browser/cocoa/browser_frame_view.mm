@@ -18,6 +18,7 @@ static const CGFloat kBrowserFrameViewPaintHeight = 60.0;
 static const NSPoint kBrowserFrameViewPatternPhaseOffset = { -5, 3 };
 
 static BOOL gCanDrawTitle = NO;
+static BOOL gCanGetCornerRadius = NO;
 
 @interface NSView (Swizzles)
 - (void)drawRectOriginal:(NSRect)rect;
@@ -29,6 +30,7 @@ static BOOL gCanDrawTitle = NO;
 // BrowserFrameView, but we call them from methods swizzled onto NSGrayFrame.
 @interface BrowserFrameView (UndocumentedAPI)
 
+- (float)roundedCornerRadius;
 - (CGRect)_titlebarTitleRect;
 - (void)_drawTitleStringIn:(struct CGRect)arg1 withColor:(id)color;
 
@@ -93,6 +95,9 @@ static BOOL gCanDrawTitle = NO;
         instancesRespondToSelector:@selector(_titlebarTitleRect)] &&
       [grayFrameClass
         instancesRespondToSelector:@selector(_drawTitleStringIn:withColor:)];
+  gCanGetCornerRadius =
+      [grayFrameClass
+        instancesRespondToSelector:@selector(roundedCornerRadius)];
 }
 
 - (id)initWithFrame:(NSRect)frame {
@@ -135,9 +140,12 @@ static BOOL gCanDrawTitle = NO;
   [self drawRectOriginal:rect];
 
   // Set up our clip.
+  float cornerRadius = 4.0;
+  if (gCanGetCornerRadius)
+    cornerRadius = [self roundedCornerRadius];
   [[NSBezierPath bezierPathWithRoundedRect:windowRect
-                                   xRadius:4
-                                   yRadius:4] addClip];
+                                   xRadius:cornerRadius
+                                   yRadius:cornerRadius] addClip];
   [[NSBezierPath bezierPathWithRect:rect] addClip];
 
   // Do the theming.
@@ -161,8 +169,8 @@ static BOOL gCanDrawTitle = NO;
     windowRect.size.width += 1.0;
     [[NSColor colorWithCalibratedWhite:1.0 alpha:0.5] set];
     NSBezierPath* path = [NSBezierPath bezierPathWithRoundedRect:windowRect
-                                                         xRadius:4
-                                                         yRadius:4];
+                                                         xRadius:cornerRadius
+                                                         yRadius:cornerRadius];
     [path setLineWidth:1.0];
     [path stroke];
   }
