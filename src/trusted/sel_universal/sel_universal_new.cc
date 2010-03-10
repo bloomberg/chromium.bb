@@ -9,6 +9,9 @@
  * (limited) multimedia support
  */
 
+// NOTE: we need to include this so that it can "hijack" main
+#include <SDL.h>
+
 #include <string>
 #include <vector>
 
@@ -20,6 +23,7 @@
 
 using std::string;
 using std::vector;
+
 
 // TODO(robertm): move this into its own header at some point
 extern void IntializeMultimediaHandler(NaClSrpcChannel* channel,

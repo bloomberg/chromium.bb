@@ -60,15 +60,7 @@ env.ComponentProgram('sel_universal',
 if ARGUMENTS.get('sdl', 'hermetic') == 'none':
   Return()
 
-# TODO(robertm): enable this ASAP
-# the problem is:  error C2664: 'NaClThreadCtor' : cannot convert
-#  parameter 2 from 'ThreadRoutine' to 'void (__stdcall *)(void *)'
-#  this is a __cdecl vs __stdcall issue
-if env.Bit('windows'):
-  Return()
-
-
-# x86/64 has not been tested
+# TODO(robertm): x86/64 has not been tested - it may just work
 if env['TARGET_SUBARCH'] == '64':
   Return()
 

@@ -84,7 +84,8 @@ static NaClSrpcError handleUpcall(NaClSrpcChannel* channel,
 }
 
 
-static void WINAPI ServiceHandlerThread(DescWrapper* desc) {
+static void WINAPI ServiceHandlerThread(void* desc_void) {
+  DescWrapper* desc = reinterpret_cast<DescWrapper*>(desc_void);
   NaClSrpcHandlerDesc handlers[] = {
     { "upcall::", handleUpcall },
     { NULL, NULL }
@@ -175,10 +176,9 @@ void IntializeMultimediaHandler(NaClSrpcChannel* channel,
   NaClLog(1, "spawning multimedia service thread\n");
 
   NaClThread thread;
-  typedef void (*ThreadRoutine) (void *arg);
   if (!NaClThreadCtor(
         &thread,
-        reinterpret_cast<ThreadRoutine>(ServiceHandlerThread),
+        ServiceHandlerThread,
         descs[0],
         128 << 10)) {
     NaClLog(LOG_FATAL, "cannot create service handler thread\n");

@@ -85,7 +85,8 @@ class ThreadedWorkQueue {
   }
 
 
-  static void Run(ThreadedWorkQueue* wq) {
+  static void WINAPI Run(void* wq_void) {
+    ThreadedWorkQueue* wq = reinterpret_cast<ThreadedWorkQueue*>(wq_void);
     while (1) {
       Job *job = wq->JobGet();
       if (job == NULL) {
@@ -97,10 +98,8 @@ class ThreadedWorkQueue {
   }
 
   void StartInAnotherThread() {
-    typedef void (*ThreadRoutine) (void *arg);
     NaClThreadCtor(&thread_,
-                   // NOTE: Visual studio does not like any other cast
-                   reinterpret_cast<ThreadRoutine>(ThreadedWorkQueue::Run),
+                   ThreadedWorkQueue::Run,
                    this,
                    128 << 10);
   }
