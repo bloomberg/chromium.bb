@@ -63,15 +63,23 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
   void NavigateToMenuItem(GtkWidget* menu_item,
                           WindowOpenDisposition disposition);
 
-  // Button press and release events for a GtkMenuItem. We have to override
-  // these separate from OnMenuItemActivated because we need to handle right
-  // clicks and opening bookmarks with different dispositions.
+  // Button press and release events for a GtkMenu and GtkMenuItem,
+  // respectively. We have to override these separate from OnMenuItemActivated
+  // because we need to handle right clicks and opening bookmarks with
+  // different dispositions.
   static gboolean OnButtonPressed(GtkWidget* sender,
                                   GdkEventButton* event,
                                   BookmarkMenuController* controller);
   static gboolean OnButtonReleased(GtkWidget* sender,
                                    GdkEventButton* event,
                                    BookmarkMenuController* controller);
+  // We connect this handler to the button-press-event signal for folder nodes.
+  // It suppresses the normal behavior (popping up the submenu) to allow these
+  // nodes to be draggable. The submenu is instead popped up on a
+  // button-release-event.
+  static gboolean OnFolderButtonPressed(GtkWidget* sender,
+                                        GdkEventButton* event,
+                                        BookmarkMenuController* controller);
 
   // We have to stop drawing |triggering_widget_| as active when the menu
   // closes.

@@ -173,11 +173,11 @@ void BookmarkMenuController::BuildMenu(const BookmarkNode* parent,
     SetImageMenuItem(menu_item, node, profile_->GetBookmarkModel());
     gtk_util::SetAlwaysShowImage(menu_item);
 
+    g_signal_connect(menu_item, "button-release-event",
+                     G_CALLBACK(OnButtonReleased), this);
     if (node->is_url()) {
       g_signal_connect(menu_item, "activate",
                        G_CALLBACK(OnMenuItemActivated), this);
-      g_signal_connect(menu_item, "button-release-event",
-                       G_CALLBACK(OnButtonReleased), this);
     } else if (node->is_folder()) {
       GtkWidget* submenu = gtk_menu_new();
       BuildMenu(node, 0, submenu);
@@ -198,6 +198,14 @@ void BookmarkMenuController::BuildMenu(const BookmarkNode* parent,
                      G_CALLBACK(&OnMenuItemDragEnd), this);
     g_signal_connect(menu_item, "drag-data-get",
                      G_CALLBACK(&OnMenuItemDragGet), this);
+
+    // It is important to connect to this signal after setting up the drag
+    // source because we only want to stifle the menu's default handler and
+    // not the handler that the drag source uses.
+    if (node->is_folder()) {
+      g_signal_connect(menu_item, "button-press-event",
+                       G_CALLBACK(OnFolderButtonPressed), this);
+    }
 
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
     node_to_menu_widget_map_[node] = menu_item;
@@ -284,18 +292,39 @@ gboolean BookmarkMenuController::OnButtonReleased(
     return FALSE;
   }
 
-  // Releasing either button 1 or 2 should trigger the bookmark menu.
-  if (event->button == 1 || event->button == 2) {
-    WindowOpenDisposition disposition =
-        event_utils::DispositionFromEventFlags(event->state);
-    controller->NavigateToMenuItem(sender, disposition);
+  // Releasing either button 1 or 2 should trigger the bookmark.
+  if (!gtk_menu_item_get_submenu(GTK_MENU_ITEM(sender))) {
+    // The menu item is a link node.
+    if (event->button == 1 || event->button == 2) {
+      WindowOpenDisposition disposition =
+          event_utils::DispositionFromEventFlags(event->state);
+      controller->NavigateToMenuItem(sender, disposition);
 
-    // We need to manually dismiss the popup menu because we're overriding
-    // button-release-event.
-    gtk_menu_popdown(GTK_MENU(controller->menu_));
-    return TRUE;
+      // We need to manually dismiss the popup menu because we're overriding
+      // button-release-event.
+      gtk_menu_popdown(GTK_MENU(controller->menu_));
+      return TRUE;
+    }
+  } else {
+    // The menu item is a folder node.
+    if (event->button == 1) {
+      gtk_menu_popup(GTK_MENU(gtk_menu_item_get_submenu(GTK_MENU_ITEM(sender))),
+                     sender->parent, sender, NULL, NULL,
+                     event->button, event->time);
+    }
   }
 
+  return FALSE;
+}
+
+// static
+gboolean BookmarkMenuController::OnFolderButtonPressed(
+    GtkWidget* sender,
+    GdkEventButton* event,
+    BookmarkMenuController* controller) {
+  // The button press may start a drag; don't let the default handler run.
+  if (event->button == 1)
+    return TRUE;
   return FALSE;
 }
 
