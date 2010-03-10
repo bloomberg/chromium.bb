@@ -23,9 +23,17 @@
 #include "grit/theme_resources.h"
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
-static const int kTextWidth = 140;            // Pixels
-
 namespace {
+
+// NOTE: Mac currently doesn't use this like Windows does.  Mac uses this to
+// control the min size on the dangerous download text.  TVL sent a query off to
+// UX to fully spec all the the behaviors of download items and truncations
+// rules so all platforms can get inline in the future.
+const int kTextWidth = 140;            // Pixels
+
+// The maximum number of characters we show in a file name when displaying the
+// dangerous download message.
+const int kFileNameMaxLength = 20;
 
 // Helper to widen a view.
 void WidenView(NSView* view, CGFloat widthChange) {
@@ -115,10 +123,18 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
       [[[GTMUILocalizerAndLayoutTweaker alloc] init] autorelease];
   [localizerAndLayoutTweaker applyLocalizer:localizer_ tweakingUI:[self view]];
 
-  // Since the shelf keeps laying out views as more items are added, relying on
-  // the WidthBaseTweaker to resize the dangerous download part does not work.
+  // The strings are based on the download item's name, sizing tweaks have to be
+  // manually done.
   DCHECK(buttonTweaker_ != nil);
   CGFloat widthChange = [buttonTweaker_ changedWidth];
+  // If it's a dangerous download, size the two lines so the text/filename
+  // is always visible.
+  if ([self isDangerousMode]) {
+    widthChange +=
+        [GTMUILocalizerAndLayoutTweaker
+          sizeToFitFixedHeightTextField:dangerousDownloadLabel_
+                               minWidth:kTextWidth];
+  }
   // Grow the parent views
   WidenView([self view], widthChange);
   WidenView(dangerousDownloadView_, widthChange);
@@ -152,13 +168,34 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
       confirmButtonTitle = l10n_util::GetNSStringWithFixup(
           IDS_CONTINUE_EXTENSION_DOWNLOAD);
     } else {
-      NSFont* font = [dangerousDownloadLabel_ font];
-      gfx::Font chromeFont = gfx::Font::CreateFont(
-          base::SysNSStringToWide([font fontName]), [font pointSize]);
-      string16 elidedFilename = WideToUTF16(ElideFilename(
-          downloadModel->download()->original_name(), chromeFont, kTextWidth));
+      // This basic fixup copies Windows DownloadItemView::DownloadItemView().
+
+      // Extract the file extension (if any).
+      FilePath filepath(downloadModel->download()->original_name());
+      FilePath::StringType extension = filepath.Extension();
+
+      // Remove leading '.' from the extension
+      if (extension.length() > 0)
+        extension = extension.substr(1);
+
+      // Elide giant extensions.
+      if (extension.length() > kFileNameMaxLength / 2) {
+        std::wstring wide_extension;
+        ElideString(UTF8ToWide(extension), kFileNameMaxLength / 2,
+                    &wide_extension);
+        extension = WideToUTF8(wide_extension);
+      }
+
+      // Rebuild the filename.extension.
+      std::wstring rootname =
+          UTF8ToWide(filepath.BaseName().RemoveExtension().value());
+      ElideString(rootname, kFileNameMaxLength - extension.length(), &rootname);
+      std::string filename = WideToUTF8(rootname);
+      if (extension.length())
+        filename += std::string(".") + extension;
+
       dangerousWarning = l10n_util::GetNSStringFWithFixup(
-          IDS_PROMPT_DANGEROUS_DOWNLOAD, elidedFilename);
+          IDS_PROMPT_DANGEROUS_DOWNLOAD, UTF8ToUTF16(filename));
       confirmButtonTitle = l10n_util::GetNSStringWithFixup(IDS_SAVE_DOWNLOAD);
     }
     [dangerousDownloadLabel_ setStringValue:dangerousWarning];
