@@ -8,6 +8,7 @@
 #include "process_util.h"
 
 #include <fcntl.h>
+#include <inttypes.h>
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,9 +21,9 @@ bool AdjustOOMScore(pid_t process, int score) {
   if (score < 0 || score > 15)
     return false;
 
-  char oom_adj[35];  // "/proc/" + log_2(2**64) + "/oom_adj\0"
+  char oom_adj[35];  // "/proc/" + log_10(2**64) + "/oom_adj\0"
                      //    6     +       20     +     9         = 35
-  snprintf(oom_adj, sizeof(oom_adj), "/proc/%lu", process);
+  snprintf(oom_adj, sizeof(oom_adj), "/proc/%" PRIdMAX, (intmax_t)process);
 
   struct stat statbuf;
   if (stat(oom_adj, &statbuf) < 0)

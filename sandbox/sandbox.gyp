@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 {
+  'variables': {
+    'chromium_code': 1,
+  },
   'target_defaults': {
     'variables': {
       'sandbox_windows_target': 0,
