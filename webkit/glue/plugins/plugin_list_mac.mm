@@ -8,7 +8,7 @@
 
 #include "base/file_util.h"
 #include "base/mac_util.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "webkit/glue/plugins/plugin_lib.h"
 
 namespace {

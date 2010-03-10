@@ -9,6 +9,7 @@
 #include "base/gfx/size.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "testing/platform_test.h"
 

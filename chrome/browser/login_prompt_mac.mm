@@ -7,7 +7,9 @@
 
 #include "app/l10n_util.h"
 #include "base/mac_util.h"
+#include "base/string_util.h"
 #include "base/sys_string_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/cocoa/constrained_window_mac.h"
 #include "chrome/browser/login_model.h"

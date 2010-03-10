@@ -5,8 +5,8 @@
 #include "webkit/tools/test_shell/test_webview_delegate.h"
 
 #import <Cocoa/Cocoa.h>
-#include "base/string_util.h"
 #include "base/sys_string_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPopupMenu.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"

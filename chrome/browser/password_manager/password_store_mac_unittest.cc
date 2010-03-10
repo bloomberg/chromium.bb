@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/keychain_mock_mac.h"
 #include "chrome/browser/password_manager/password_store_mac.h"
 #include "chrome/browser/password_manager/password_store_mac_internal.h"

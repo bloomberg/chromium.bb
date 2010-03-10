@@ -9,8 +9,8 @@
 #include "base/mac_util.h"
 #include "base/message_loop.h"
 #import "base/scoped_nsobject.h"
-#include "base/string_util.h"
 #import "base/sys_string_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 

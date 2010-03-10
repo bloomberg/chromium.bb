@@ -11,6 +11,7 @@
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "webkit/glue/plugins/plugin_list.h"
 
 static const short kSTRTypeDefinitionResourceID = 128;

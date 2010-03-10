@@ -10,6 +10,7 @@
 
 #include "base/scoped_nsautorelease_pool.h"
 #include "base/scoped_nsobject.h"
+#include "base/utf_string_conversions.h"
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
 // If building on 10.6 we can include the framework header directly.

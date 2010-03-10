@@ -11,6 +11,7 @@
 #include "app/resource_bundle.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_view_mac.h"
