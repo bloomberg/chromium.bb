@@ -44,6 +44,18 @@
   return YES;
 }
 
+// When becoming/resigning main status, explicitly set the background color,
+// which is required by |TabView|.
+- (void)becomeMainWindow {
+  [super becomeMainWindow];
+  [self setBackgroundColor:[NSColor windowFrameColor]];
+}
+
+- (void)resignMainWindow {
+  [super resignMainWindow];
+  [self setBackgroundColor:[NSColor windowBackgroundColor]];
+}
+
 // We need our own version, since the default one wants to flash the close
 // button (and possibly other things), which results in nothing happening.
 - (void)performClose:(id)sender {

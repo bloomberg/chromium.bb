@@ -669,7 +669,10 @@ const CGFloat kRapidCloseDist = 2.5;
       [backgroundImageColor set];
       [path fill];
     } else {
-      [[NSColor windowBackgroundColor] set];
+      // Use the window's background color rather than |[NSColor
+      // windowBackgroundColor]|, which gets confused by the fullscreen window.
+      // (The result is the same for normal, non-fullscreen windows.)
+      [[[self window] backgroundColor] set];
       [path fill];
       [[NSColor colorWithCalibratedWhite:1.0 alpha:0.3] set];
       [path fill];
