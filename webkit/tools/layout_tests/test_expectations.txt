@@ -2256,7 +2256,6 @@ BUG23955 LINUX MAC : fast/css/last-of-type-pseudo-class.html = FAIL
 BUG_JPARENT LINUX DEBUG SLOW : fast/frames/calculate-fixed.html = PASS
 
 // Started failing for no apparent reason at r28124, and IMAGE+TEXT diffs started at r51875
-BUG23972 LINUX : fast/forms/form-element-geometry.html = IMAGE+TEXT
 
 // Flaky timeouts first appearing at r27764 (webkit 48947)
 BUG9798 RELEASE : http/tests/cookies/multiple-cookies.html = TIMEOUT PASS
@@ -2510,15 +2509,13 @@ BUG29748 LINUX : http/tests/navigation/postredirect-frames.html = IMAGE
 BUG29748 LINUX : media/video-controls-rendering.html = IMAGE
 BUG29748 LINUX : tables/mozilla/bugs/bug137388-2.html = IMAGE
 BUG29748 LINUX : tables/mozilla/bugs/bug2479-1.html = IMAGE
-// BUG_HAMAJI : remove the +TEXT below
-BUG29748 LINUX : tables/mozilla/bugs/bug2479-4.html = IMAGE+TEXT
+BUG29748 LINUX : tables/mozilla/bugs/bug2479-4.html = IMAGE
 BUG29748 LINUX : tables/mozilla/bugs/bug29314.html = IMAGE
 BUG29748 LINUX : tables/mozilla/bugs/bug2997.html = IMAGE
 BUG29748 LINUX : tables/mozilla/bugs/bug32205-2.html = IMAGE
 BUG29748 LINUX : tables/mozilla/bugs/bug3977.html = IMAGE
 BUG29748 LINUX : tables/mozilla/bugs/bug43854-1.html = IMAGE
-// BUG_HAMAJI : Remove the +TEXT below
-BUG29748 LINUX : tables/mozilla/bugs/bug44505.html = IMAGE+TEXT
+BUG29748 LINUX : tables/mozilla/bugs/bug44505.html = IMAGE
 BUG29748 LINUX : tables/mozilla/bugs/bug650.html = IMAGE
 BUG29748 LINUX : tables/mozilla/bugs/bug73321.html = IMAGE
 BUG29748 LINUX : tables/mozilla/bugs/bug96334.html = IMAGE
@@ -2536,8 +2533,7 @@ BUG29748 LINUX : tables/mozilla_expected_failures/bugs/bug10140.html = IMAGE
 BUG29748 LINUX : tables/mozilla_expected_failures/bugs/bug1055-2.html = IMAGE
 BUG29748 LINUX : tables/mozilla_expected_failures/bugs/bug106966.html = IMAGE
 BUG29748 LINUX : tables/mozilla_expected_failures/bugs/bug22122.html = IMAGE
-// BUG_HAMAJI : Remove the +TEXT below
-BUG29748 LINUX : tables/mozilla_expected_failures/bugs/bug2479-5.html = IMAGE+TEXT
+BUG29748 LINUX : tables/mozilla_expected_failures/bugs/bug2479-5.html = IMAGE
 BUG29748 LINUX : tables/mozilla_expected_failures/bugs/bug80762-2.html = IMAGE
 BUG29748 LINUX : tables/mozilla_expected_failures/bugs/bug89315.html = IMAGE
 BUG29748 LINUX : tables/mozilla_expected_failures/bugs/bug91057.html = IMAGE
