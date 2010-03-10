@@ -158,6 +158,10 @@ void BrowserFrameGtk::IsActiveChanged() {
   views::WidgetGtk::IsActiveChanged();
 }
 
+void BrowserFrameGtk::SetInitialFocus() {
+  browser_view_->RestoreFocus();
+}
+
 bool BrowserFrameGtk::GetAccelerator(int cmd_id,
                                      menus::Accelerator* accelerator) {
   return browser_view_->GetAccelerator(cmd_id, accelerator);

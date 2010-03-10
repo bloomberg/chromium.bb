@@ -676,9 +676,7 @@ void BrowserView::Show() {
   //
   // If we do find there are cases where we need to restore the focus on show,
   // that should be added and this should be removed.
-  TabContents* selected_tab_contents = GetSelectedTabContents();
-  if (selected_tab_contents)
-    selected_tab_contents->view()->RestoreFocus();
+  RestoreFocus();
 
   // Restore split offset.
   int split_offset = g_browser_process->local_state()->GetInteger(
@@ -840,6 +838,12 @@ bool BrowserView::IsFullscreenBubbleVisible() const {
 
 void BrowserView::FullScreenStateChanged() {
   ProcessFullscreen(IsFullscreen());
+}
+
+void BrowserView::RestoreFocus() {
+  TabContents* selected_tab_contents = GetSelectedTabContents();
+  if (selected_tab_contents)
+    selected_tab_contents->view()->RestoreFocus();
 }
 
 LocationBar* BrowserView::GetLocationBar() const {

@@ -125,6 +125,11 @@ class WidgetGtk
   // Invoked when the active status changes.
   virtual void IsActiveChanged() {}
 
+  // Sets initial focus on a new window. On X11/Gtk, window creation
+  // is asynchronous and a focus request has to be made after a window
+  // gets created. This will not be called on a TYPE_CHILD widget.
+  virtual void SetInitialFocus() {}
+
   // Gets the WidgetGtk in the userdata section of the widget.
   static WidgetGtk* GetViewForNative(GtkWidget* widget);
 

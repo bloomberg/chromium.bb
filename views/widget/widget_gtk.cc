@@ -851,10 +851,12 @@ gboolean WidgetGtk::OnFocusIn(GtkWidget* widget, GdkEventFocus* event) {
     return false;
 
   // See description of got_initial_focus_in_ for details on this.
-  if (!got_initial_focus_in_)
+  if (!got_initial_focus_in_) {
     got_initial_focus_in_ = true;
-  else
+    SetInitialFocus();
+  } else {
     focus_manager_->RestoreFocusedView();
+  }
   return false;
 }
 

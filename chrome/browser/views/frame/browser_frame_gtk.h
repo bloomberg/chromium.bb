@@ -42,6 +42,7 @@ class BrowserFrameGtk : public BrowserFrame,
   virtual ThemeProvider* GetThemeProvider() const;
   virtual ThemeProvider* GetDefaultThemeProvider() const;
   virtual void IsActiveChanged();
+  virtual void SetInitialFocus();
 
  protected:
   void set_browser_frame_view(BrowserNonClientFrameView* browser_frame_view) {

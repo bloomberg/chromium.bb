@@ -234,6 +234,10 @@ class BrowserView : public BrowserBubbleHost,
   // used on Linux.
   void FullScreenStateChanged();
 
+  // Restores the focused view. This is also used to set the initial focus
+  // when a new browser window is created.
+  void RestoreFocus();
+
   // Called when the activation of the frame changes.
   virtual void ActivationChanged(bool activated);
 
