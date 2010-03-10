@@ -14,7 +14,7 @@
 
 namespace {
 const int kVerticalTabSpacing = 2;
-const int kTabStripWidth = 127;
+const int kTabStripWidth = 140;
 const int kTabStripInset = 3;
 }
 
@@ -111,6 +111,9 @@ bool SideTabStrip::IsDragSessionActive() const {
 }
 
 void SideTabStrip::UpdateLoadingAnimations() {
+  int count = GetChildViewCount();
+  for (int i = 0; i < count; ++i)
+    GetSideTabAt(i)->SetNetworkState(model_->GetNetworkState(i));
 }
 
 bool SideTabStrip::IsAnimating() const {
@@ -147,3 +150,6 @@ int SideTabStrip::GetIndexOfSideTab(SideTab* tab) const {
   return GetChildIndex(tab);
 }
 
+SideTab* SideTabStrip::GetSideTabAt(int index) const {
+  return static_cast<SideTab*>(GetChildViewAt(index));
+}

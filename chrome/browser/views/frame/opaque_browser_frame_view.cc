@@ -236,6 +236,10 @@ gfx::Size OpaqueBrowserFrameView::GetMinimumSize() {
   return min_size;
 }
 
+void OpaqueBrowserFrameView::PaintTabStripShadow(gfx::Canvas* canvas) {
+  // TODO(beng): SIDE tabs.
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // OpaqueBrowserFrameView, views::NonClientFrameView implementation:
 

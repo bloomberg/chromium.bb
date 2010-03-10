@@ -6,7 +6,9 @@
 #define CHROME_BROWSER_VIEWS_TABS_BROWSER_TAB_STRIP_CONTROLLER_H_
 
 #include "chrome/browser/tabs/tab_strip_model.h"
-#include "chrome/browser/views/tabs/side_tab_strip.h"
+#include "chrome/browser/views/tabs/side_tab_strip_model.h"
+
+class SideTabStrip;
 
 // An implementation of SideTabStripModel that sources data from
 // the TabContentses in a TabStripModel.
@@ -20,6 +22,7 @@ class BrowserTabStripController : public SideTabStripModel,
   virtual SkBitmap GetIcon(int index) const;
   virtual string16 GetTitle(int index) const;
   virtual bool IsSelected(int index) const;
+  virtual NetworkState GetNetworkState(int index) const;
   virtual void SelectTab(int index);
   virtual void CloseTab(int index);
 

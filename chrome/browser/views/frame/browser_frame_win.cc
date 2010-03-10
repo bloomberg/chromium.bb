@@ -123,6 +123,10 @@ views::View* BrowserFrameWin::GetFrameView() const {
   return browser_frame_view_;
 }
 
+void BrowserFrameWin::PaintTabStripShadow(gfx::Canvas* canvas) {
+  browser_frame_view_->PaintTabStripShadow(canvas);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserFrame, views::WindowWin overrides:
 
@@ -293,8 +297,7 @@ void BrowserFrameWin::UpdateDWMFrame() {
       if (browser_view_->UsingSideTabs()) {
         margins.cxLeftWidth +=
             GetBoundsForTabStrip(browser_view_->tabstrip()).right();
-        margins.cyTopHeight +=
-            GetSystemMetrics(SM_CYSIZEFRAME) + GetSystemMetrics(SM_CYCAPTION);
+        margins.cyTopHeight += GetSystemMetrics(SM_CYSIZEFRAME);
       } else {
         margins.cyTopHeight =
             GetBoundsForTabStrip(browser_view_->tabstrip()).bottom();
@@ -304,4 +307,13 @@ void BrowserFrameWin::UpdateDWMFrame() {
     // For popup and app windows we want to use the default margins.
   }
   DwmExtendFrameIntoClientArea(GetNativeView(), &margins);
+
+  DWORD window_style = GetWindowLong(GWL_STYLE);
+  if (browser_view_->UsingSideTabs()) {
+    if (window_style & WS_CAPTION)
+      SetWindowLong(GWL_STYLE, window_style & ~WS_CAPTION);
+  } else {
+    if (!(window_style & WS_CAPTION))
+      SetWindowLong(GWL_STYLE, window_style | WS_CAPTION);
+  }
 }

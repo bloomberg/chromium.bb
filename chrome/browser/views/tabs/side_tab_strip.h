@@ -10,20 +10,7 @@
 #include "chrome/browser/views/tabs/side_tab.h"
 
 class Profile;
-
-class SideTabStripModel {
- public:
-  // Returns metadata about the tab at the specified index.
-  virtual SkBitmap GetIcon(int index) const = 0;
-  virtual string16 GetTitle(int index) const = 0;
-  virtual bool IsSelected(int index) const = 0;
-
-  // Select the tab at the specified index in the model.
-  virtual void SelectTab(int index) = 0;
-
-  // Closes the tab at the specified index in the model.
-  virtual void CloseTab(int index) = 0;
-};
+class SideTabStripModel;
 
 class SideTabStrip : public BaseTabStrip,
                      public SideTabModel {
@@ -80,6 +67,9 @@ class SideTabStrip : public BaseTabStrip,
  private:
   // Returns the model index of the specified |tab|.
   int GetIndexOfSideTab(SideTab* tab) const;
+
+  // Returns the SideTab at the specified |index|.
+  SideTab* GetSideTabAt(int index) const;
 
   scoped_ptr<SideTabStripModel> model_;
 

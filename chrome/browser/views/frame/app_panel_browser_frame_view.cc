@@ -106,6 +106,10 @@ gfx::Size AppPanelBrowserFrameView::GetMinimumSize() {
   return min_size;
 }
 
+void AppPanelBrowserFrameView::PaintTabStripShadow(gfx::Canvas* canvas) {
+  // NOP, no tabstrip.
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // AppPanelBrowserFrameView, views::NonClientFrameView implementation:
 

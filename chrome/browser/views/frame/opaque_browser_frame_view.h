@@ -34,6 +34,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   virtual gfx::Rect GetBoundsForTabStrip(BaseTabStrip* tabstrip) const;
   virtual void UpdateThrobber(bool running);
   virtual gfx::Size GetMinimumSize();
+  virtual void PaintTabStripShadow(gfx::Canvas* canvas);
 
  protected:
   // Overridden from views::NonClientFrameView:

@@ -1565,6 +1565,11 @@ std::string BrowserView::GetClassName() const {
   return kViewClassName;
 }
 
+void BrowserView::PaintChildren(gfx::Canvas* canvas) {
+  View::PaintChildren(canvas);
+  frame_->PaintTabStripShadow(canvas);
+}
+
 void BrowserView::Layout() {
   if (ignore_layout_)
     return;
@@ -1734,7 +1739,6 @@ void BrowserView::LayoutStatusBubble(int top) {
   ConvertPointToView(this, GetParent(), &origin);
   status_bubble_->SetBounds(origin.x(), origin.y(), width() / 3, height);
 }
-
 
 bool BrowserView::MaybeShowBookmarkBar(TabContents* contents) {
   views::View* new_bookmark_bar_view = NULL;

@@ -69,6 +69,11 @@ class BrowserFrame {
 
   // Returns the NonClientFrameView of this frame.
   virtual views::View* GetFrameView() const = 0;
+
+  // Paints the shadow edge along the side of the side tabstrip. The BrowserView
+  // calls this method _after_ the TabStrip has painted itself so the shadow is
+  // rendered above the tabs.
+  virtual void PaintTabStripShadow(gfx::Canvas* canvas) = 0;
 };
 
 #endif  // CHROME_BROWSER_VIEWS_FRAME_BROWSER_FRAME_H_

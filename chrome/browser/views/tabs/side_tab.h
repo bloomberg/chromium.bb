@@ -7,6 +7,7 @@
 
 #include "app/gfx/font.h"
 #include "app/slide_animation.h"
+#include "chrome/browser/views/tabs/side_tab_strip_model.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "views/controls/button/button.h"
 #include "views/view.h"
@@ -34,6 +35,11 @@ class SideTab : public views::View,
   explicit SideTab(SideTabModel* model);
   virtual ~SideTab();
 
+  // Sets the current network state of the tab. The tab renders different
+  // animations in place of the icon when different types of network activity
+  // are occurring.
+  void SetNetworkState(SideTabStripModel::NetworkState state);
+
   // AnimationDelegate implementation:
   virtual void AnimationProgressed(const Animation* animation);
   virtual void AnimationCanceled(const Animation* animation);
@@ -51,6 +57,12 @@ class SideTab : public views::View,
   virtual bool OnMousePressed(const views::MouseEvent& event);
 
  private:
+  void FillTabShapePath(gfx::Path* path);
+
+  // Paint various components of the tab.
+  void PaintIcon(gfx::Canvas* canvas);
+  void PaintLoadingAnimation(gfx::Canvas* canvas);
+
   // Loads class-specific resources.
   static void InitClass();
 
@@ -69,6 +81,12 @@ class SideTab : public views::View,
   static SkBitmap* close_button_m_;
   static SkBitmap* close_button_h_;
   static SkBitmap* close_button_p_;
+
+  // The current network state for this tab.
+  SideTabStripModel::NetworkState current_state_;
+
+  // The current index into the Animation image strip.
+  int loading_animation_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(SideTab);
 };

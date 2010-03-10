@@ -2217,6 +2217,7 @@
         'browser/views/tabs/side_tab.h',
         'browser/views/tabs/side_tab_strip.cc',
         'browser/views/tabs/side_tab_strip.h',
+        'browser/views/tabs/side_tab_strip_model.h',
         'browser/views/tabs/tab.cc',
         'browser/views/tabs/tab.h',
         'browser/views/tabs/tab_renderer.cc',

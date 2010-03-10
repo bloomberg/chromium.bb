@@ -45,6 +45,7 @@ class BrowserFrameWin : public BrowserFrame, public views::WindowWin {
   virtual ThemeProvider* GetThemeProviderForFrame() const;
   virtual bool AlwaysUseNativeFrame() const;
   virtual views::View* GetFrameView() const;
+  virtual void PaintTabStripShadow(gfx::Canvas* canvas);
 
  protected:
   // Overridden from views::WindowWin:

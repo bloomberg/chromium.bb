@@ -85,7 +85,7 @@ gfx::Rect GlassBrowserFrameView::GetBoundsForTabStrip(
     BaseTabStrip* tabstrip) const {
   if (browser_view_->UsingSideTabs()) {
     gfx::Size ps = tabstrip->GetPreferredSize();
-    return gfx::Rect(0, browser_view_->y(), ps.width(),
+    return gfx::Rect(0, NonClientTopBorderHeight(), ps.width(),
                      browser_view_->height());
   }
   int minimize_button_offset = frame_->GetMinimizeButtonOffset();
@@ -117,6 +117,24 @@ void GlassBrowserFrameView::UpdateThrobber(bool running) {
   } else if (running) {
     StartThrobber();
   }
+}
+
+void GlassBrowserFrameView::PaintTabStripShadow(gfx::Canvas* canvas) {
+  ThemeProvider* tp = GetThemeProvider();
+  SkBitmap* shadow_top = tp->GetBitmapNamed(IDR_SIDETABS_SHADOW_TOP);
+  SkBitmap* shadow_middle = tp->GetBitmapNamed(IDR_SIDETABS_SHADOW_MIDDLE);
+  SkBitmap* shadow_bottom = tp->GetBitmapNamed(IDR_SIDETABS_SHADOW_BOTTOM);
+
+  gfx::Rect bounds = GetBoundsForTabStrip(browser_view_->tabstrip());
+  canvas->DrawBitmapInt(*shadow_top, bounds.right() - 2 * shadow_top->width(),
+                        bounds.y());
+  canvas->TileImageInt(
+      *shadow_middle, bounds.right() - 2 * shadow_middle->width(),
+      bounds.y() + shadow_top->height(), shadow_middle->width(),
+      bounds.height() - shadow_top->height() - shadow_bottom->height());
+  canvas->DrawBitmapInt(*shadow_bottom,
+                        bounds.right() - 2 * shadow_bottom->width(),
+                        bounds.bottom() - shadow_bottom->height());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -225,7 +243,7 @@ int GlassBrowserFrameView::NonClientTopBorderHeight() const {
   // frame has a 0 frame border around most edges and a CXSIZEFRAME-thick border
   // at the top (see AeroGlassFrame::OnGetMinMaxInfo()).
   const int kRestoredHeight = browser_view_->UsingSideTabs() ?
-      GetSystemMetrics(SM_CYCAPTION) : kNonClientRestoredExtraThickness;
+      -2 : kNonClientRestoredExtraThickness;
   return GetSystemMetrics(SM_CXSIZEFRAME) + (browser_view_->IsMaximized() ?
       -kTabstripTopShadowThickness : kRestoredHeight);
 }
@@ -256,8 +274,10 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
 
   // Draw the toolbar background, setting src_y of the paint to the tab
   // strip height as the toolbar background begins at the top of the tabs.
-  canvas->TileImageInt(*theme_toolbar,
-      0, browser_view_->GetTabStripHeight() - 1,
+  int src_y = browser_view_->UsingSideTabs()
+      ? TabRenderer::GetMinimumUnselectedSize().height()
+      : browser_view_->GetTabStripHeight() - 1;
+  canvas->TileImageInt(*theme_toolbar, 0, src_y,
       toolbar_bounds.x() - 1, toolbar_bounds.y() + 2,
       toolbar_bounds.width() + 2, theme_toolbar->height());
 
@@ -306,7 +326,7 @@ void GlassBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
   gfx::Rect client_area_bounds = CalculateClientAreaBounds(width(), height());
   if (browser_view_->UsingSideTabs()) {
     client_area_bounds.Inset(
-        GetBoundsForTabStrip(browser_view_->tabstrip()).width(), 0, 0, 0);
+        GetBoundsForTabStrip(browser_view_->tabstrip()).width() - 4, 0, 0, 0);
   }
 
   int client_area_bottom =

@@ -236,6 +236,8 @@ class BrowserView : public BrowserBubbleHost,
   // Called when the activation of the frame changes.
   virtual void ActivationChanged(bool activated);
 
+  BrowserExtender* browser_extender() const { return browser_extender_.get(); }
+
   // Overridden from BrowserWindow:
   virtual void Show();
   virtual void SetBounds(const gfx::Rect& bounds, BoundsType bounds_type);
@@ -368,31 +370,22 @@ class BrowserView : public BrowserBubbleHost,
   virtual bool CanClose() const;
   virtual int NonClientHitTest(const gfx::Point& point);
   virtual gfx::Size GetMinimumSize();
-  virtual std::string GetClassName() const;
-
-  // Overridden from views::View:
-  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
-  virtual bool GetAccessibleName(std::wstring* name);
-  virtual void SetAccessibleName(const std::wstring& name);
 
   // InfoBarContainer::Delegate overrides
   virtual void InfoBarSizeChanged(bool is_animating);
 
-  // Returns BrowserExtender.
-  BrowserExtender* browser_extender() const {
-    return browser_extender_.get();
-  }
-
-  // Layout the Status Bubble.
-  void LayoutStatusBubble(int top);
-
  protected:
   // Overridden from views::View:
+  virtual std::string GetClassName() const;
+  virtual void PaintChildren(gfx::Canvas* canvas);
   virtual void Layout();
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View* parent,
                                     views::View* child);
   virtual void ChildPreferredSizeChanged(View* child);
+  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+  virtual bool GetAccessibleName(std::wstring* name);
+  virtual void SetAccessibleName(const std::wstring& name);
 
   // Factory Methods.
   // Returns a new LayoutManager for this browser view. A subclass may
@@ -407,6 +400,7 @@ class BrowserView : public BrowserBubbleHost,
   virtual void Init();
 
  private:
+  friend class BrowserViewLayout;
 
 #if defined(OS_WIN)
   // Creates the system menu.
@@ -415,6 +409,9 @@ class BrowserView : public BrowserBubbleHost,
 
   // Returns the BrowserViewLayout.
   BrowserViewLayout* GetBrowserViewLayout() const;
+
+  // Layout the Status Bubble.
+  void LayoutStatusBubble(int top);
 
   // Prepare to show the Bookmark Bar for the specified TabContents. Returns
   // true if the Bookmark Bar can be shown (i.e. it's supported for this

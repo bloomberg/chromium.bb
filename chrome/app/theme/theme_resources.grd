@@ -320,9 +320,12 @@
       <include name="IDR_BALLOON_OPTIONS_ARROW" file="balloon_options_arrow.png" type="BINDATA" />
       <include name="IDR_BALLOON_OPTIONS_ARROW_HOVER" file="balloon_options_arrow_hover.png" type="BINDATA" />
 
+      <include name="IDR_SIDETABS_SHADOW_TOP" file="sidetabs_shadow_top.png" type="BINDATA" />
+      <include name="IDR_SIDETABS_SHADOW_MIDDLE" file="sidetabs_shadow_middle.png" type="BINDATA" />
+      <include name="IDR_SIDETABS_SHADOW_BOTTOM" file="sidetabs_shadow_bottom.png" type="BINDATA" />
+
       <!-- Geolocation -->
       <include name="IDR_GEOLOCATION_INFOBAR_ICON" file="geolocation_infobar_icon.png" type="BINDATA" />
-
 
       <if expr="pp_ifdef('_google_chrome')">
         <include name="IDR_ABOUT_BACKGROUND" file="google_chrome/about_background.png" type="BINDATA" />

@@ -36,6 +36,7 @@ class BrowserFrameGtk : public BrowserFrame,
   virtual ThemeProvider* GetThemeProviderForFrame() const;
   virtual bool AlwaysUseNativeFrame() const;
   virtual views::View* GetFrameView() const;
+  virtual void PaintTabStripShadow(gfx::Canvas* canvas);
 
   // Overridden from views::Widget:
   virtual ThemeProvider* GetThemeProvider() const;

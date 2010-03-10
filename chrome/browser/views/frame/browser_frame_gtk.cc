@@ -135,6 +135,9 @@ views::View* BrowserFrameGtk::GetFrameView() const {
   return browser_frame_view_;
 }
 
+void BrowserFrameGtk::PaintTabStripShadow(gfx::Canvas* canvas) {
+}
+
 ThemeProvider* BrowserFrameGtk::GetThemeProvider() const {
   return profile_->GetThemeProvider();
 }
