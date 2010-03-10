@@ -157,8 +157,10 @@ int JavaScriptAppModalDialog::GetDialogButtons() {
   return 0;
 }
 
+// On Mac, this is only used in testing.
 void JavaScriptAppModalDialog::AcceptWindow() {
-  NOTIMPLEMENTED();
+  NSButton* first = [[dialog_ buttons] objectAtIndex:0];
+  [first performClick:nil];
 }
 
 void JavaScriptAppModalDialog::CancelWindow() {

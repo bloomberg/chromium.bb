@@ -183,14 +183,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, Title) {
   EXPECT_EQ(WideToUTF16(test_title), tab_title);
 }
 
-#if defined(OS_MACOSX)
-// http://crbug.com//29424
-#define MAYBE_JavascriptAlertActivatesTab DISABLED_JavascriptAlertActivatesTab
-#else
-#define MAYBE_JavascriptAlertActivatesTab JavascriptAlertActivatesTab
-#endif
-
-IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_JavascriptAlertActivatesTab) {
+IN_PROC_BROWSER_TEST_F(BrowserTest, JavascriptAlertActivatesTab) {
   GURL url(ui_test_utils::GetTestUrl(L".", L"title1.html"));
   ui_test_utils::NavigateToURL(browser(), url);
   browser()->AddTabWithURL(url, GURL(), PageTransition::TYPED,
@@ -230,16 +223,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ThirtyFourTabs) {
   }
 }
 
-#if defined(OS_MACOSX)
-// http://crbug.com//29424
-#define MAYBE_ReloadThenCancelBeforeUnload DISABLED_ReloadThenCancelBeforeUnload
-#else
-#define MAYBE_ReloadThenCancelBeforeUnload ReloadThenCancelBeforeUnload
-#endif
-
 // Test for crbug.com/22004.  Reloading a page with a before unload handler and
 // then canceling the dialog should not leave the throbber spinning.
-IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_ReloadThenCancelBeforeUnload) {
+IN_PROC_BROWSER_TEST_F(BrowserTest, ReloadThenCancelBeforeUnload) {
   GURL url("data:text/html," + BEFORE_UNLOAD_HTML);
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -255,16 +241,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_ReloadThenCancelBeforeUnload) {
       ExecuteJavascriptInWebFrame(L"", L"onbeforeunload=null;");
 }
 
-#if defined(OS_MACOSX)
-// http://crbug.com//29424
-#define MAYBE_SingleBeforeUnloadAfterWindowClose DISABLED_SingleBeforeUnloadAfterWindowClose
-#else
-#define MAYBE_SingleBeforeUnloadAfterWindowClose FLAKY_SingleBeforeUnloadAfterWindowClose
-#endif
-
 // Test for crbug.com/11647.  A page closed with window.close() should not have
 // two beforeunload dialogs shown.
-IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_SingleBeforeUnloadAfterWindowClose) {
+IN_PROC_BROWSER_TEST_F(BrowserTest, FLAKY_SingleBeforeUnloadAfterWindowClose) {
   browser()->GetSelectedTabContents()->render_view_host()->
       ExecuteJavascriptInWebFrame(L"", OPEN_NEW_BEFOREUNLOAD_PAGE);
 
