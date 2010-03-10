@@ -94,23 +94,28 @@ STDMETHODIMP Bho::SetSite(IUnknown* site) {
 STDMETHODIMP Bho::BeforeNavigate2(IDispatch* dispatch, VARIANT* url,
     VARIANT* flags, VARIANT* target_frame_name, VARIANT* post_data,
     VARIANT* headers, VARIANT_BOOL* cancel) {
+  if (!url || url->vt != VT_BSTR || url->bstrVal == NULL) {
+    DLOG(WARNING) << "Invalid URL passed in";
+    return S_OK;
+  }
+
   ScopedComPtr<IWebBrowser2> web_browser2;
   if (dispatch)
     web_browser2.QueryFrom(dispatch);
 
-  if (!web_browser2 || url->vt != VT_BSTR) {
+  if (!web_browser2) {
     NOTREACHED() << "Can't find WebBrowser2 with given dispatch";
-  } else {
-    DLOG(INFO) << "BeforeNavigate2: " << url->bstrVal;
-    ScopedComPtr<IBrowserService> browser_service;
-    DoQueryService(SID_SShellBrowser, web_browser2, browser_service.Receive());
-    if (!browser_service || !CheckForCFNavigation(browser_service, false)) {
-      referrer_.clear();
-    }
-    url_ = url->bstrVal;
-    ProcessOptInUrls(web_browser2, url->bstrVal);
+    return S_OK;
   }
 
+  DLOG(INFO) << "BeforeNavigate2: " << url->bstrVal;
+  ScopedComPtr<IBrowserService> browser_service;
+  DoQueryService(SID_SShellBrowser, web_browser2, browser_service.Receive());
+  if (!browser_service || !CheckForCFNavigation(browser_service, false)) {
+    referrer_.clear();
+  }
+  url_ = url->bstrVal;
+  ProcessOptInUrls(web_browser2, url->bstrVal);
   return S_OK;
 }
 
