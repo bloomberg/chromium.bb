@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "build/build_config.h"
+
 class Browser;
 
 namespace gfx {
@@ -24,8 +26,10 @@ class BrowserActionTestUtil {
   // Returns the number of browser action currently visible.
   int VisibleBrowserActions();
 
+#if defined(TOOLKIT_VIEWS)
   // Waits for a browser action at |index| to get updated.
   void WaitForBrowserActionUpdated(int index);
+#endif
 
   // Returns whether the browser action at |index| has a non-null icon. Note
   // that the icon is loaded asynchronously, in which case you can wait for it
