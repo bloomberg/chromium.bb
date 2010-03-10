@@ -12,6 +12,7 @@ using testing::Return;
 
 class MockStatusIcon : public StatusIcon {
   virtual void SetImage(const SkBitmap& image) {}
+  virtual void SetPressedImage(const SkBitmap& image) {}
   virtual void SetToolTip(const string16& tool_tip) {}
   virtual void AddObserver(StatusIcon::StatusIconObserver* observer) {}
   virtual void RemoveObserver(StatusIcon::StatusIconObserver* observer) {}

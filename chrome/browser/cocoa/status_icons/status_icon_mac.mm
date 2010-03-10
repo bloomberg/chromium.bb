@@ -51,6 +51,7 @@ NSStatusItem* StatusIconMac::item() {
     [item_ setEnabled:YES];
     [item_ setTarget:controller_];
     [item_ setAction:@selector(handleClick:)];
+    [item_ setHighlightMode:YES];
   }
   return item_.get();
 }
@@ -60,6 +61,14 @@ void StatusIconMac::SetImage(const SkBitmap& bitmap) {
     NSImage* image = gfx::SkBitmapToNSImage(bitmap);
     if (image)
       [item() setImage:image];
+  }
+}
+
+void StatusIconMac::SetPressedImage(const SkBitmap& bitmap) {
+  if (!bitmap.isNull()) {
+    NSImage* image = gfx::SkBitmapToNSImage(bitmap);
+    if (image)
+      [item() setAlternateImage:image];
   }
 }
 

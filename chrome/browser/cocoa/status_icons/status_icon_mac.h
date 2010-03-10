@@ -25,6 +25,9 @@ class StatusIconMac : public StatusIcon {
   // Sets the image associated with this status icon.
   virtual void SetImage(const SkBitmap& image);
 
+  // Sets the pressed image associated with this status icon.
+  virtual void SetPressedImage(const SkBitmap& image);
+
   // Sets the hover text for this status icon.
   virtual void SetToolTip(const string16& tool_tip);
 

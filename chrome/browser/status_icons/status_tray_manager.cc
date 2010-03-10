@@ -44,7 +44,10 @@ void StatusTrayManager::Init(Profile* profile) {
     // Create an icon and add ourselves as a click observer on it
     SkBitmap* bitmap = ResourceBundle::GetSharedInstance().GetBitmapNamed(
         IDR_STATUS_TRAY_ICON);
+    SkBitmap* pressed = ResourceBundle::GetSharedInstance().GetBitmapNamed(
+        IDR_STATUS_TRAY_ICON_PRESSED);
     icon->SetImage(*bitmap);
+    icon->SetPressedImage(*pressed);
     icon->AddObserver(this);
   }
 }

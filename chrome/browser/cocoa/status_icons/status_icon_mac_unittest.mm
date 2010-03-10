@@ -27,6 +27,9 @@ TEST_F(StatusIconMacTest, Create) {
   SkBitmap* bitmap = ResourceBundle::GetSharedInstance().GetBitmapNamed(
       IDR_STATUS_TRAY_ICON);
   icon->SetImage(*bitmap);
+  SkBitmap* pressed = ResourceBundle::GetSharedInstance().GetBitmapNamed(
+      IDR_STATUS_TRAY_ICON_PRESSED);
+  icon->SetPressedImage(*pressed);
   icon->SetToolTip(ASCIIToUTF16("tool tip"));
 }
 

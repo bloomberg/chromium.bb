@@ -19,6 +19,9 @@ class StatusIcon {
   // Sets the image associated with this status icon.
   virtual void SetImage(const SkBitmap& image) = 0;
 
+  // Sets the image associated with this status icon when pressed.
+  virtual void SetPressedImage(const SkBitmap& image) = 0;
+
   // Sets the hover text for this status icon.
   virtual void SetToolTip(const string16& tool_tip) = 0;
 
