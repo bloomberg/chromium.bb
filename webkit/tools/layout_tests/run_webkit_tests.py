@@ -23,5 +23,5 @@ def main():
     return subprocess.call(cmd)
 
 if __name__ == '__main__':
-    main()
+    exit(main())
 
