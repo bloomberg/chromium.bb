@@ -12,36 +12,28 @@
 
 namespace base {
 
-bool PerformInjectiveMultimapDestructive(
-    InjectiveMultimap* m, InjectionDelegate* delegate) {
-  static const size_t kMaxExtraFDs = 16;
-  int extra_fds[kMaxExtraFDs];
-  unsigned next_extra_fd = 0;
+bool PerformInjectiveMultimap(const InjectiveMultimap& m_in,
+                              InjectionDelegate* delegate) {
+  InjectiveMultimap m(m_in);
+  std::vector<int> extra_fds;
 
-  // DANGER: this function may not allocate.
-
-  for (InjectiveMultimap::iterator i = m->begin(); i != m->end(); ++i) {
+  for (InjectiveMultimap::iterator i = m.begin(); i != m.end(); ++i) {
     int temp_fd = -1;
 
     // We DCHECK the injectiveness of the mapping.
-    for (InjectiveMultimap::iterator j = i + 1; j != m->end(); ++j) {
+    for (InjectiveMultimap::iterator j = i + 1; j != m.end(); ++j) {
       DCHECK(i->dest != j->dest) << "Both fd " << i->source
           << " and " << j->source << " map to " << i->dest;
     }
 
     const bool is_identity = i->source == i->dest;
 
-    for (InjectiveMultimap::iterator j = i + 1; j != m->end(); ++j) {
+    for (InjectiveMultimap::iterator j = i + 1; j != m.end(); ++j) {
       if (!is_identity && i->dest == j->source) {
         if (temp_fd == -1) {
           if (!delegate->Duplicate(&temp_fd, i->dest))
             return false;
-          if (next_extra_fd < kMaxExtraFDs) {
-            extra_fds[next_extra_fd++] = temp_fd;
-          } else {
-            RAW_LOG(ERROR, "PerformInjectiveMultimapDestructive overflowed "
-                           "extra_fds. Leaking file descriptors!");
-          }
+          extra_fds.push_back(temp_fd);
         }
 
         j->source = temp_fd;
@@ -66,16 +58,12 @@ bool PerformInjectiveMultimapDestructive(
       delegate->Close(i->source);
   }
 
-  for (unsigned i = 0; i < next_extra_fd; i++)
-    delegate->Close(extra_fds[i]);
+  for (std::vector<int>::const_iterator
+       i = extra_fds.begin(); i != extra_fds.end(); ++i) {
+    delegate->Close(*i);
+  }
 
   return true;
-}
-
-bool PerformInjectiveMultimap(const InjectiveMultimap& m_in,
-                              InjectionDelegate* delegate) {
-  InjectiveMultimap m(m_in);
-  return PerformInjectiveMultimapDestructive(&m, delegate);
 }
 
 bool FileDescriptorTableInjection::Duplicate(int* result, int fd) {
