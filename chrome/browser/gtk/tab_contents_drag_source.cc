@@ -73,22 +73,22 @@ void TabContentsDragSource::StartDragging(const WebDropData& drop_data,
   int targets_mask = 0;
 
   if (!drop_data.plain_text.empty())
-    targets_mask |= GtkDndUtil::TEXT_PLAIN;
+    targets_mask |= gtk_dnd_util::TEXT_PLAIN;
   if (drop_data.url.is_valid()) {
-    targets_mask |= GtkDndUtil::TEXT_URI_LIST;
-    targets_mask |= GtkDndUtil::CHROME_NAMED_URL;
-    targets_mask |= GtkDndUtil::NETSCAPE_URL;
+    targets_mask |= gtk_dnd_util::TEXT_URI_LIST;
+    targets_mask |= gtk_dnd_util::CHROME_NAMED_URL;
+    targets_mask |= gtk_dnd_util::NETSCAPE_URL;
   }
   if (!drop_data.text_html.empty())
-    targets_mask |= GtkDndUtil::TEXT_HTML;
+    targets_mask |= gtk_dnd_util::TEXT_HTML;
   if (!drop_data.file_contents.empty())
-    targets_mask |= GtkDndUtil::CHROME_WEBDROP_FILE_CONTENTS;
+    targets_mask |= gtk_dnd_util::CHROME_WEBDROP_FILE_CONTENTS;
   if (!drop_data.download_metadata.empty() &&
       drag_download_util::ParseDownloadMetadata(drop_data.download_metadata,
                                                 &wide_download_mime_type_,
                                                 &download_file_name_,
                                                 &download_url_)) {
-    targets_mask |= GtkDndUtil::DIRECT_SAVE_FILE;
+    targets_mask |= gtk_dnd_util::DIRECT_SAVE_FILE;
   }
 
   if (targets_mask == 0) {
@@ -99,12 +99,12 @@ void TabContentsDragSource::StartDragging(const WebDropData& drop_data,
 
   drop_data_.reset(new WebDropData(drop_data));
 
-  GtkTargetList* list = GtkDndUtil::GetTargetListFromCodeMask(targets_mask);
-  if (targets_mask & GtkDndUtil::CHROME_WEBDROP_FILE_CONTENTS) {
+  GtkTargetList* list = gtk_dnd_util::GetTargetListFromCodeMask(targets_mask);
+  if (targets_mask & gtk_dnd_util::CHROME_WEBDROP_FILE_CONTENTS) {
     drag_file_mime_type_ = gdk_atom_intern(
         mime_util::GetDataMimeType(drop_data.file_contents).c_str(), FALSE);
     gtk_target_list_add(list, drag_file_mime_type_,
-                        0, GtkDndUtil::CHROME_WEBDROP_FILE_CONTENTS);
+                        0, gtk_dnd_util::CHROME_WEBDROP_FILE_CONTENTS);
   }
 
   drag_failed_ = false;
@@ -161,35 +161,35 @@ void TabContentsDragSource::OnDragDataGet(
   const int kBitsPerByte = 8;
 
   switch (target_type) {
-    case GtkDndUtil::TEXT_PLAIN: {
+    case gtk_dnd_util::TEXT_PLAIN: {
       std::string utf8_text = UTF16ToUTF8(drop_data_->plain_text);
       gtk_selection_data_set_text(selection_data, utf8_text.c_str(),
                                   utf8_text.length());
       break;
     }
 
-    case GtkDndUtil::TEXT_HTML: {
+    case gtk_dnd_util::TEXT_HTML: {
       // TODO(estade): change relative links to be absolute using
       // |html_base_url|.
       std::string utf8_text = UTF16ToUTF8(drop_data_->text_html);
       gtk_selection_data_set(selection_data,
-                             GtkDndUtil::GetAtomForTarget(
-                                 GtkDndUtil::TEXT_HTML),
+                             gtk_dnd_util::GetAtomForTarget(
+                                 gtk_dnd_util::TEXT_HTML),
                              kBitsPerByte,
                              reinterpret_cast<const guchar*>(utf8_text.c_str()),
                              utf8_text.length());
       break;
     }
 
-    case GtkDndUtil::TEXT_URI_LIST:
-    case GtkDndUtil::CHROME_NAMED_URL:
-    case GtkDndUtil::NETSCAPE_URL: {
-      GtkDndUtil::WriteURLWithName(selection_data, drop_data_->url,
+    case gtk_dnd_util::TEXT_URI_LIST:
+    case gtk_dnd_util::CHROME_NAMED_URL:
+    case gtk_dnd_util::NETSCAPE_URL: {
+      gtk_dnd_util::WriteURLWithName(selection_data, drop_data_->url,
                                    drop_data_->url_title, target_type);
       break;
     }
 
-    case GtkDndUtil::CHROME_WEBDROP_FILE_CONTENTS: {
+    case gtk_dnd_util::CHROME_WEBDROP_FILE_CONTENTS: {
       gtk_selection_data_set(
           selection_data,
           drag_file_mime_type_, kBitsPerByte,
@@ -198,7 +198,7 @@ void TabContentsDragSource::OnDragDataGet(
       break;
     }
 
-    case GtkDndUtil::DIRECT_SAVE_FILE: {
+    case gtk_dnd_util::DIRECT_SAVE_FILE: {
       char status_code = 'E';
 
       // Retrieves the full file path (in file URL format) provided by the
@@ -207,10 +207,10 @@ void TabContentsDragSource::OnDragDataGet(
       gint file_url_len = 0;
       guchar* file_url_value = NULL;
       if (gdk_property_get(context->source_window,
-                           GtkDndUtil::GetAtomForTarget(
-                              GtkDndUtil::DIRECT_SAVE_FILE),
-                           GtkDndUtil::GetAtomForTarget(
-                              GtkDndUtil::TEXT_PLAIN_NO_CHARSET),
+                           gtk_dnd_util::GetAtomForTarget(
+                              gtk_dnd_util::DIRECT_SAVE_FILE),
+                           gtk_dnd_util::GetAtomForTarget(
+                              gtk_dnd_util::TEXT_PLAIN_NO_CHARSET),
                            0,
                            1024,
                            FALSE,
@@ -293,10 +293,10 @@ void TabContentsDragSource::OnDragBegin(GdkDragContext* drag_context) {
     // Pass the file name to the drop target by setting the source window's
     // XdndDirectSave0 property.
     gdk_property_change(drag_context->source_window,
-                        GtkDndUtil::GetAtomForTarget(
-                            GtkDndUtil::DIRECT_SAVE_FILE),
-                        GtkDndUtil::GetAtomForTarget(
-                            GtkDndUtil::TEXT_PLAIN_NO_CHARSET),
+                        gtk_dnd_util::GetAtomForTarget(
+                            gtk_dnd_util::DIRECT_SAVE_FILE),
+                        gtk_dnd_util::GetAtomForTarget(
+                            gtk_dnd_util::TEXT_PLAIN_NO_CHARSET),
                         8,
                         GDK_PROP_MODE_REPLACE,
                         reinterpret_cast<const guchar*>(
@@ -311,8 +311,8 @@ void TabContentsDragSource::OnDragEnd(GdkDragContext* drag_context,
 
   if (!download_url_.is_empty()) {
     gdk_property_delete(drag_context->source_window,
-                        GtkDndUtil::GetAtomForTarget(
-                            GtkDndUtil::DIRECT_SAVE_FILE));
+                        gtk_dnd_util::GetAtomForTarget(
+                            gtk_dnd_util::DIRECT_SAVE_FILE));
   }
 
   if (!drag_failed_) {

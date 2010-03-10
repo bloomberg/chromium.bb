@@ -78,18 +78,6 @@ GtkWidget* LeftAlignMisc(GtkWidget* misc);
 // Create a left-aligned label with the given text in bold.
 GtkWidget* CreateBoldLabel(const std::string& text);
 
-// Calculates the size of given widget based on the size specified in
-// number of characters/lines (in locale specific resource file) and
-// font metrics.
-// NOTE: Make sure to realize |widget| before using this method, or a
-// default font size will be used instead of the actual font size.
-void GetWidgetSizeFromResources(GtkWidget* widget, int width_chars,
-                                int height_lines, int* width, int* height);
-
-// As above, but uses number of characters/lines directly rather than looking
-// up a resource.
-void GetWidgetSizeFromCharacters(GtkWidget* widget, double width_chars,
-                                 double height_lines, int* width, int* height);
 
 // As above, but a convenience method for configuring dialog size.
 // |width_id| and |height_id| are resource IDs for the size.  If either of these
@@ -243,11 +231,6 @@ void StackPopupWindow(GtkWidget* popup, GtkWidget* toplevel);
 // Get a rectangle corresponding to a widget's allocation relative to its
 // toplevel window's origin.
 gfx::Rect GetWidgetRectRelativeToToplevel(GtkWidget* widget);
-
-// A helper function for gtk_message_dialog_new() to work around a KDE 3 window
-// manager bugs. You should always call it after creating a dialog with
-// gtk_message_dialog_new.
-void ApplyMessageDialogQuirks(GtkWidget* dialog);
 
 // Don't allow the widget to paint anything, and instead propagate the expose
 // to its children. This is similar to calling

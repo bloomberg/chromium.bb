@@ -213,7 +213,7 @@ void WriteBookmarksToSelection(const std::vector<const BookmarkNode*>& nodes,
                                guint target_type,
                                Profile* profile) {
   switch (target_type) {
-    case GtkDndUtil::CHROME_BOOKMARK_ITEM: {
+    case gtk_dnd_util::CHROME_BOOKMARK_ITEM: {
       BookmarkDragData data(nodes);
       Pickle pickle;
       data.WriteToPickle(profile, &pickle);
@@ -224,7 +224,7 @@ void WriteBookmarksToSelection(const std::vector<const BookmarkNode*>& nodes,
                              pickle.size());
       break;
     }
-    case GtkDndUtil::NETSCAPE_URL: {
+    case gtk_dnd_util::NETSCAPE_URL: {
       // _NETSCAPE_URL format is URL + \n + title.
       std::string utf8_text = nodes[0]->GetURL().spec() + "\n" + UTF16ToUTF8(
           nodes[0]->GetTitleAsString16());
@@ -235,7 +235,7 @@ void WriteBookmarksToSelection(const std::vector<const BookmarkNode*>& nodes,
                              utf8_text.length());
       break;
     }
-    case GtkDndUtil::TEXT_URI_LIST: {
+    case gtk_dnd_util::TEXT_URI_LIST: {
       gchar** uris = reinterpret_cast<gchar**>(malloc(sizeof(gchar*) *
                                                (nodes.size() + 1)));
       for (size_t i = 0; i < nodes.size(); ++i) {
@@ -253,7 +253,7 @@ void WriteBookmarksToSelection(const std::vector<const BookmarkNode*>& nodes,
       free(uris);
       break;
     }
-    case GtkDndUtil::TEXT_PLAIN: {
+    case gtk_dnd_util::TEXT_PLAIN: {
       gtk_selection_data_set_text(selection_data,
                                   nodes[0]->GetURL().spec().c_str(), -1);
       break;
@@ -281,7 +281,7 @@ std::vector<const BookmarkNode*> GetNodesFromSelection(
     }
 
     switch (target_type) {
-      case GtkDndUtil::CHROME_BOOKMARK_ITEM: {
+      case gtk_dnd_util::CHROME_BOOKMARK_ITEM: {
         *dnd_success = TRUE;
         Pickle pickle(reinterpret_cast<char*>(selection_data->data),
                       selection_data->length);
@@ -302,7 +302,7 @@ bool CreateNewBookmarkFromNamedUrl(GtkSelectionData* selection_data,
     BookmarkModel* model, const BookmarkNode* parent, int idx) {
   GURL url;
   string16 title;
-  if (!GtkDndUtil::ExtractNamedURL(selection_data, &url, &title))
+  if (!gtk_dnd_util::ExtractNamedURL(selection_data, &url, &title))
     return false;
 
   model->AddURL(parent, idx, UTF16ToWideHack(title), url);
@@ -312,7 +312,7 @@ bool CreateNewBookmarkFromNamedUrl(GtkSelectionData* selection_data,
 bool CreateNewBookmarksFromURIList(GtkSelectionData* selection_data,
     BookmarkModel* model, const BookmarkNode* parent, int idx) {
   std::vector<GURL> urls;
-  GtkDndUtil::ExtractURIList(selection_data, &urls);
+  gtk_dnd_util::ExtractURIList(selection_data, &urls);
   for (size_t i = 0; i < urls.size(); ++i) {
     std::string title = GetNameForURL(urls[i]);
     model->AddURL(parent, idx++, UTF8ToWide(title), urls[i]);

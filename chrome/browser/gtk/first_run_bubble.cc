@@ -7,10 +7,10 @@
 #include <gtk/gtk.h>
 
 #include "app/gfx/gtk_util.h"
+#include "app/gtk_util.h"
 #include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
-#include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/options_window.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/common/notification_service.h"

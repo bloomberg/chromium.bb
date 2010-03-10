@@ -43,11 +43,11 @@ int CalculateTypes(GList* targets, std::set<GdkAtom>* type_set) {
     type_set->insert(atom);
     if (atom == GDK_TARGET_STRING) {
       types |= OSExchangeData::STRING;
-    } else if (atom == GtkDndUtil::GetAtomForTarget(
-                   GtkDndUtil::CHROME_NAMED_URL)) {
+    } else if (atom == gtk_dnd_util::GetAtomForTarget(
+                   gtk_dnd_util::CHROME_NAMED_URL)) {
       types |= OSExchangeData::URL;
-    } else if (atom == GtkDndUtil::GetAtomForTarget(
-                   GtkDndUtil::TEXT_URI_LIST)) {
+    } else if (atom == gtk_dnd_util::GetAtomForTarget(
+                   gtk_dnd_util::TEXT_URI_LIST)) {
       // TEXT_URI_LIST is used for files as well as urls.
       types |= OSExchangeData::URL | OSExchangeData::FILE_NAME;
     } else {
@@ -109,16 +109,16 @@ void DropTargetGtk::OnDragDataReceived(GdkDragContext* context,
     if (data->length > 0)
       result = Pickle(reinterpret_cast<char*>(data->data), data->length);
     data_provider().SetPickledData(data->type, result);
-  } else if (data->type == GtkDndUtil::GetAtomForTarget(
-                 GtkDndUtil::CHROME_NAMED_URL)) {
+  } else if (data->type == gtk_dnd_util::GetAtomForTarget(
+                 gtk_dnd_util::CHROME_NAMED_URL)) {
     GURL url;
     string16 title;
-    GtkDndUtil::ExtractNamedURL(data, &url, &title);
+    gtk_dnd_util::ExtractNamedURL(data, &url, &title);
     data_provider().SetURL(url, UTF16ToWideHack(title));
-  } else if (data->type == GtkDndUtil::GetAtomForTarget(
-                 GtkDndUtil::TEXT_URI_LIST)) {
+  } else if (data->type == gtk_dnd_util::GetAtomForTarget(
+                 gtk_dnd_util::TEXT_URI_LIST)) {
     std::vector<GURL> urls;
-    GtkDndUtil::ExtractURIList(data, &urls);
+    gtk_dnd_util::ExtractURIList(data, &urls);
     if (urls.size() == 1 && urls[0].is_valid()) {
       data_provider().SetURL(urls[0], std::wstring());
 
@@ -298,23 +298,24 @@ void DropTargetGtk::RequestFormats(GdkDragContext* context,
       (requested_formats_ & OSExchangeData::URL) == 0) {
     requested_formats_ |= OSExchangeData::URL;
     if (known_formats.count(
-            GtkDndUtil::GetAtomForTarget(GtkDndUtil::CHROME_NAMED_URL))) {
+            gtk_dnd_util::GetAtomForTarget(gtk_dnd_util::CHROME_NAMED_URL))) {
       gtk_drag_get_data(widget, context,
-                        GtkDndUtil::GetAtomForTarget(
-                            GtkDndUtil::CHROME_NAMED_URL), time);
+                        gtk_dnd_util::GetAtomForTarget(
+                            gtk_dnd_util::CHROME_NAMED_URL), time);
     } else if (known_formats.count(
-                   GtkDndUtil::GetAtomForTarget(GtkDndUtil::TEXT_URI_LIST))) {
+                   gtk_dnd_util::GetAtomForTarget(
+                       gtk_dnd_util::TEXT_URI_LIST))) {
       gtk_drag_get_data(widget, context,
-                        GtkDndUtil::GetAtomForTarget(
-                            GtkDndUtil::TEXT_URI_LIST), time);
+                        gtk_dnd_util::GetAtomForTarget(
+                            gtk_dnd_util::TEXT_URI_LIST), time);
     }
   }
   if (((formats & OSExchangeData::FILE_NAME) != 0) &&
       (requested_formats_ & OSExchangeData::FILE_NAME) == 0) {
     requested_formats_ |= OSExchangeData::FILE_NAME;
     gtk_drag_get_data(widget, context,
-                      GtkDndUtil::GetAtomForTarget(
-                          GtkDndUtil::TEXT_URI_LIST), time);
+                      gtk_dnd_util::GetAtomForTarget(
+                          gtk_dnd_util::TEXT_URI_LIST), time);
   }
   for (std::set<GdkAtom>::const_iterator i = custom_formats.begin();
        i != custom_formats.end(); ++i) {

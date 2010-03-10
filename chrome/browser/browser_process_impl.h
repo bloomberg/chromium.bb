@@ -21,10 +21,6 @@
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "ipc/ipc_message.h"
 
-#if defined(OS_WIN)
-#include "sandbox/src/sandbox.h"
-#endif
-
 class CommandLine;
 class FilePath;
 class NotificationService;
@@ -102,17 +98,6 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
       CreateLocalState();
     return local_state_.get();
   }
-
-#if defined(OS_WIN)
-  virtual sandbox::BrokerServices* broker_services() {
-    // TODO(abarth): DCHECK(CalledOnValidThread());
-    //               See <http://b/1287166>.
-    if (!initialized_broker_services_)
-      return NULL;
-    return broker_services_;
-  }
-  void InitBrokerServices(sandbox::BrokerServices* broker_services);
-#endif  // defined(OS_WIN)
 
   virtual DebuggerWrapper* debugger_wrapper() {
     DCHECK(CalledOnValidThread());
@@ -275,11 +260,6 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
 
   bool created_local_state_;
   scoped_ptr<PrefService> local_state_;
-
-#if defined(OS_WIN)
-  bool initialized_broker_services_;
-  sandbox::BrokerServices* broker_services_;
-#endif  // defined(OS_WIN)
 
   bool created_icon_manager_;
   scoped_ptr<IconManager> icon_manager_;

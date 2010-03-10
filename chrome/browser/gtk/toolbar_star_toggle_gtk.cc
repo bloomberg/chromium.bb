@@ -40,11 +40,11 @@ ToolbarStarToggleGtk::ToolbarStarToggleGtk(BrowserToolbarGtk* host)
 
   gtk_drag_source_set(widget(), GDK_BUTTON1_MASK, NULL, 0,
       static_cast<GdkDragAction>(GDK_ACTION_COPY | GDK_ACTION_LINK));
-  GtkDndUtil::SetSourceTargetListFromCodeMask(widget(),
-                                              GtkDndUtil::TEXT_PLAIN |
-                                              GtkDndUtil::TEXT_URI_LIST |
-                                              GtkDndUtil::CHROME_NAMED_URL |
-                                              GtkDndUtil::NETSCAPE_URL);
+  gtk_dnd_util::SetSourceTargetListFromCodeMask(widget(),
+                                              gtk_dnd_util::TEXT_PLAIN |
+                                              gtk_dnd_util::TEXT_URI_LIST |
+                                              gtk_dnd_util::CHROME_NAMED_URL |
+                                              gtk_dnd_util::NETSCAPE_URL);
   g_signal_connect(widget(), "drag-data-get", G_CALLBACK(OnDragDataGet), this);
 
   theme_provider_->InitThemesFor(this);
@@ -107,7 +107,7 @@ void ToolbarStarToggleGtk::OnDragDataGet(GtkWidget* widget,
       GetSelectedTabContents();
   if (!tab)
     return;
-  GtkDndUtil::WriteURLWithName(data, tab->GetURL(), tab->GetTitle(), info);
+  gtk_dnd_util::WriteURLWithName(data, tab->GetURL(), tab->GetTitle(), info);
 }
 
 void ToolbarStarToggleGtk::UpdateGTKButton() {

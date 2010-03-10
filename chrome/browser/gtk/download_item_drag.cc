@@ -14,8 +14,8 @@
 
 namespace {
 
-const int kCodeMask = GtkDndUtil::TEXT_URI_LIST |
-                      GtkDndUtil::CHROME_NAMED_URL;
+const int kCodeMask = gtk_dnd_util::TEXT_URI_LIST |
+                      gtk_dnd_util::CHROME_NAMED_URL;
 const GdkDragAction kDragAction = GDK_ACTION_COPY;
 
 void OnDragDataGet(GtkWidget* widget, GdkDragContext* context,
@@ -23,7 +23,7 @@ void OnDragDataGet(GtkWidget* widget, GdkDragContext* context,
                    guint target_type, guint time,
                    DownloadItem* download_item) {
   GURL url = net::FilePathToFileURL(download_item->full_path());
-  GtkDndUtil::WriteURLWithName(selection_data, url,
+  gtk_dnd_util::WriteURLWithName(selection_data, url,
       UTF8ToUTF16(download_item->GetFileName().value()), target_type);
 }
 
@@ -33,7 +33,7 @@ void OnDragDataGet(GtkWidget* widget, GdkDragContext* context,
 void DownloadItemDrag::SetSource(GtkWidget* widget, DownloadItem* item) {
   gtk_drag_source_set(widget, GDK_BUTTON1_MASK, NULL, 0,
                       kDragAction);
-  GtkDndUtil::SetSourceTargetListFromCodeMask(widget, kCodeMask);
+  gtk_dnd_util::SetSourceTargetListFromCodeMask(widget, kCodeMask);
   g_signal_connect(widget, "drag-data-get",
                    G_CALLBACK(OnDragDataGet), item);
 }
@@ -55,7 +55,7 @@ DownloadItemDrag::DownloadItemDrag(const DownloadItem* item,
   g_signal_connect(drag_widget_, "drag-end",
                    G_CALLBACK(OnDragEnd), this);
 
-  GtkTargetList* list = GtkDndUtil::GetTargetListFromCodeMask(kCodeMask);
+  GtkTargetList* list = gtk_dnd_util::GetTargetListFromCodeMask(kCodeMask);
   GdkEvent* event = gtk_get_current_event();
   gtk_drag_begin(drag_widget_, list, kDragAction, 1, event);
   if (event)

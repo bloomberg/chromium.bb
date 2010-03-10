@@ -11,8 +11,53 @@
 
 static const int kBitsPerByte = 8;
 
-// static
-GdkAtom GtkDndUtil::GetAtomForTarget(int target) {
+namespace {
+
+void AddTargetToList(GtkTargetList* targets, int target_code) {
+  switch (target_code) {
+    case gtk_dnd_util::TEXT_PLAIN:
+      gtk_target_list_add_text_targets(targets, gtk_dnd_util::TEXT_PLAIN);
+      break;
+
+    case gtk_dnd_util::TEXT_URI_LIST:
+      gtk_target_list_add_uri_targets(targets, gtk_dnd_util::TEXT_URI_LIST);
+      break;
+
+    case gtk_dnd_util::TEXT_HTML:
+      gtk_target_list_add(
+          targets, gtk_dnd_util::GetAtomForTarget(gtk_dnd_util::TEXT_PLAIN),
+          0, gtk_dnd_util::TEXT_HTML);
+      break;
+
+    case gtk_dnd_util::NETSCAPE_URL:
+      gtk_target_list_add(targets,
+          gtk_dnd_util::GetAtomForTarget(gtk_dnd_util::NETSCAPE_URL),
+          0, gtk_dnd_util::NETSCAPE_URL);
+      break;
+
+    case gtk_dnd_util::CHROME_TAB:
+    case gtk_dnd_util::CHROME_BOOKMARK_ITEM:
+    case gtk_dnd_util::CHROME_NAMED_URL:
+      gtk_target_list_add(targets, gtk_dnd_util::GetAtomForTarget(target_code),
+                          GTK_TARGET_SAME_APP, target_code);
+      break;
+
+    case gtk_dnd_util::DIRECT_SAVE_FILE:
+      gtk_target_list_add(targets,
+          gtk_dnd_util::GetAtomForTarget(gtk_dnd_util::DIRECT_SAVE_FILE),
+          0, gtk_dnd_util::DIRECT_SAVE_FILE);
+      break;
+
+    default:
+      NOTREACHED() << " Unexpected target code: " << target_code;
+  }
+}
+
+}  // namespace
+
+namespace gtk_dnd_util {
+
+GdkAtom GetAtomForTarget(int target) {
   switch (target) {
     case CHROME_TAB:
       static GdkAtom tab_atom = gdk_atom_intern(
@@ -66,8 +111,7 @@ GdkAtom GtkDndUtil::GetAtomForTarget(int target) {
   return NULL;
 }
 
-// static
-GtkTargetList* GtkDndUtil::GetTargetListFromCodeMask(int code_mask) {
+GtkTargetList* GetTargetListFromCodeMask(int code_mask) {
   GtkTargetList* targets = gtk_target_list_new(NULL, 0);
 
   for (size_t i = 1; i < INVALID_TARGET; i = i << 1) {
@@ -81,16 +125,13 @@ GtkTargetList* GtkDndUtil::GetTargetListFromCodeMask(int code_mask) {
   return targets;
 }
 
-// static
-void GtkDndUtil::SetSourceTargetListFromCodeMask(GtkWidget* source,
-                                                 int code_mask) {
+void SetSourceTargetListFromCodeMask(GtkWidget* source, int code_mask) {
   GtkTargetList* targets = GetTargetListFromCodeMask(code_mask);
   gtk_drag_source_set_target_list(source, targets);
   gtk_target_list_unref(targets);
 }
 
-// static
-void GtkDndUtil::SetDestTargetList(GtkWidget* dest, const int* target_codes) {
+void SetDestTargetList(GtkWidget* dest, const int* target_codes) {
   GtkTargetList* targets = gtk_target_list_new(NULL, 0);
 
   for (size_t i = 0; target_codes[i] != -1; ++i) {
@@ -101,48 +142,10 @@ void GtkDndUtil::SetDestTargetList(GtkWidget* dest, const int* target_codes) {
   gtk_target_list_unref(targets);
 }
 
-// static
-void GtkDndUtil::AddTargetToList(GtkTargetList* targets, int target_code) {
-  switch (target_code) {
-    case TEXT_PLAIN:
-      gtk_target_list_add_text_targets(targets, TEXT_PLAIN);
-      break;
-
-    case TEXT_URI_LIST:
-      gtk_target_list_add_uri_targets(targets, TEXT_URI_LIST);
-      break;
-
-    case TEXT_HTML:
-      gtk_target_list_add(targets, GetAtomForTarget(TEXT_PLAIN), 0, TEXT_HTML);
-      break;
-
-    case NETSCAPE_URL:
-      gtk_target_list_add(targets, GetAtomForTarget(NETSCAPE_URL), 0,
-                          NETSCAPE_URL);
-      break;
-
-    case CHROME_TAB:
-    case CHROME_BOOKMARK_ITEM:
-    case CHROME_NAMED_URL:
-      gtk_target_list_add(targets, GetAtomForTarget(target_code),
-                          GTK_TARGET_SAME_APP, target_code);
-      break;
-
-    case DIRECT_SAVE_FILE:
-      gtk_target_list_add(targets, GetAtomForTarget(DIRECT_SAVE_FILE), 0,
-                          DIRECT_SAVE_FILE);
-      break;
-
-    default:
-      NOTREACHED() << " Unexpected target code: " << target_code;
-  }
-}
-
-// static
-void GtkDndUtil::WriteURLWithName(GtkSelectionData* selection_data,
-                                  const GURL& url,
-                                  const string16& title,
-                                  int type) {
+void WriteURLWithName(GtkSelectionData* selection_data,
+                      const GURL& url,
+                      const string16& title,
+                      int type) {
   switch (type) {
     case TEXT_PLAIN: {
       gtk_selection_data_set_text(selection_data, url.spec().c_str(),
@@ -163,7 +166,7 @@ void GtkDndUtil::WriteURLWithName(GtkSelectionData* selection_data,
       pickle.WriteString(url.spec());
       gtk_selection_data_set(
           selection_data,
-          GetAtomForTarget(GtkDndUtil::CHROME_NAMED_URL),
+          GetAtomForTarget(gtk_dnd_util::CHROME_NAMED_URL),
           kBitsPerByte,
           reinterpret_cast<const guchar*>(pickle.data()),
           pickle.size());
@@ -187,10 +190,9 @@ void GtkDndUtil::WriteURLWithName(GtkSelectionData* selection_data,
   }
 }
 
-// static
-bool GtkDndUtil::ExtractNamedURL(GtkSelectionData* selection_data,
-                                 GURL* url,
-                                 string16* title) {
+bool ExtractNamedURL(GtkSelectionData* selection_data,
+                     GURL* url,
+                     string16* title) {
   Pickle data(reinterpret_cast<char*>(selection_data->data),
               selection_data->length);
   void* iter = NULL;
@@ -209,9 +211,7 @@ bool GtkDndUtil::ExtractNamedURL(GtkSelectionData* selection_data,
   return true;
 }
 
-// static
-bool GtkDndUtil::ExtractURIList(GtkSelectionData* selection_data,
-                                std::vector<GURL>* urls) {
+bool ExtractURIList(GtkSelectionData* selection_data, std::vector<GURL>* urls) {
   gchar** uris = gtk_selection_data_get_uris(selection_data);
   if (!uris)
     return false;
@@ -225,3 +225,5 @@ bool GtkDndUtil::ExtractURIList(GtkSelectionData* selection_data,
   g_strfreev(uris);
   return true;
 }
+
+}  // namespace gtk_dnd_util

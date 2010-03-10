@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
+#include "app/gtk_util.h"
 #include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "base/file_util.h"

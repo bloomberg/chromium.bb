@@ -14,7 +14,6 @@
 #include "base/registry.h"
 #include "base/string_util.h"
 #include "base/win_util.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/common/child_process_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -23,13 +22,8 @@
 #include "sandbox/src/sandbox.h"
 #include "webkit/glue/plugins/plugin_list.h"
 
-#ifdef NACL_WIN64
-  // The sandbox can be used also by the NaCl broker process. In this case we
-  // define a global variable g_broker_services instead of g_browser_process.
-  // This can be changed if we discover that the broker process needs to be more
-  // similar to the browser process.
-  extern sandbox::BrokerServices* g_broker_services;
-#endif
+static sandbox::BrokerServices* g_broker_services = NULL;
+
 namespace {
 
 // The DLLs listed here are known (or under strong suspicion) of causing crashes
@@ -364,6 +358,15 @@ void AddPolicyForRenderer(sandbox::TargetPolicy* policy,
 
 namespace sandbox {
 
+void InitBrokerServices(sandbox::BrokerServices* broker_services) {
+  // TODO(abarth): DCHECK(CalledOnValidThread());
+  //               See <http://b/1287166>.
+  CHECK(broker_services);
+  CHECK(!g_broker_services);
+  broker_services->Init();
+  g_broker_services = broker_services;
+}
+
 base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
                                            const FilePath& exposed_dir) {
   base::ProcessHandle process = 0;
@@ -418,18 +421,9 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
     return process;
   }
 
-#ifdef NACL_WIN64
-  // When running in the broker we get the BrokerServices pointer from a global
-  // variable. It is initialized in NaClBrokerMain.
-  sandbox::BrokerServices* broker_service = g_broker_services;
-#else
-  // spawn the child process in the sandbox
-  sandbox::BrokerServices* broker_service =
-      g_browser_process->broker_services();
-#endif
   sandbox::ResultCode result;
   PROCESS_INFORMATION target = {0};
-  sandbox::TargetPolicy* policy = broker_service->CreatePolicy();
+  sandbox::TargetPolicy* policy = g_broker_services->CreatePolicy();
 
   bool on_sandbox_desktop = false;
   // TODO(gregoryd): try locked-down policy for sel_ldr after we fix IMC.
@@ -468,7 +462,7 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
     return 0;
   }
 
-  result = broker_service->SpawnTarget(
+  result = g_broker_services->SpawnTarget(
       cmd_line->program().c_str(),
       cmd_line->command_line_string().c_str(),
       policy, &target);

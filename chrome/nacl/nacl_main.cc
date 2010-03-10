@@ -21,14 +21,13 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/main_function_params.h"
 #include "chrome/common/result_codes.h"
+#include "chrome/common/sandbox_policy.h"
 #if defined(OS_WIN)
 #include "chrome/nacl/broker_thread.h"
 #endif
 #include "chrome/nacl/nacl_thread.h"
 
 #ifdef _WIN64
-
-sandbox::BrokerServices* g_broker_services = NULL;
 
 // main() routine for the NaCl broker process.
 // This is necessary for supporting NaCl in Chrome on Win64.
@@ -54,7 +53,7 @@ int NaClBrokerMain(const MainFunctionParams& parameters) {
   sandbox::BrokerServices* broker_services =
       parameters.sandbox_info_.BrokerServices();
   if (broker_services) {
-    g_broker_services = broker_services;
+    sandbox::InitBrokerServices(broker_services);
     if (!parsed_command_line.HasSwitch(switches::kNoSandbox)) {
       bool use_winsta = !parsed_command_line.HasSwitch(
           switches::kDisableAltWinstation);

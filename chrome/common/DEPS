@@ -16,6 +16,5 @@ include_rules = [
 
   # FIXME - refactor code and remove these dependencies
   "+chrome/app",
-  "+chrome/browser",
   "+chrome/installer",
 ]

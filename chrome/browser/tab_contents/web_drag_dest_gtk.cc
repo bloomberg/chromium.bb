@@ -70,16 +70,16 @@ gboolean WebDragDestGtk::OnDragMotion(GdkDragContext* context, gint x, gint y,
     is_drop_target_ = false;
 
     static int supported_targets[] = {
-      GtkDndUtil::TEXT_PLAIN,
-      GtkDndUtil::TEXT_URI_LIST,
-      GtkDndUtil::TEXT_HTML,
+      gtk_dnd_util::TEXT_PLAIN,
+      gtk_dnd_util::TEXT_URI_LIST,
+      gtk_dnd_util::TEXT_HTML,
       // TODO(estade): support image drags?
     };
 
     data_requests_ = arraysize(supported_targets);
     for (size_t i = 0; i < arraysize(supported_targets); ++i) {
       gtk_drag_get_data(widget_, context,
-                        GtkDndUtil::GetAtomForTarget(supported_targets[i]),
+                        gtk_dnd_util::GetAtomForTarget(supported_targets[i]),
                         time);
     }
   } else if (data_requests_ == 0) {
@@ -112,7 +112,7 @@ void WebDragDestGtk::OnDragDataReceived(
     // If the source can't provide us with valid data for a requested target,
     // data->data will be NULL.
     if (data->target ==
-        GtkDndUtil::GetAtomForTarget(GtkDndUtil::TEXT_PLAIN)) {
+        gtk_dnd_util::GetAtomForTarget(gtk_dnd_util::TEXT_PLAIN)) {
       guchar* text = gtk_selection_data_get_text(data);
       if (text) {
         drop_data_->plain_text =
@@ -121,7 +121,7 @@ void WebDragDestGtk::OnDragDataReceived(
         g_free(text);
       }
     } else if (data->target ==
-               GtkDndUtil::GetAtomForTarget(GtkDndUtil::TEXT_URI_LIST)) {
+               gtk_dnd_util::GetAtomForTarget(gtk_dnd_util::TEXT_URI_LIST)) {
       gchar** uris = gtk_selection_data_get_uris(data);
       if (uris) {
         for (gchar** uri_iter = uris; *uri_iter; uri_iter++) {
@@ -136,7 +136,7 @@ void WebDragDestGtk::OnDragDataReceived(
         g_strfreev(uris);
       }
     } else if (data->target ==
-               GtkDndUtil::GetAtomForTarget(GtkDndUtil::TEXT_HTML)) {
+               gtk_dnd_util::GetAtomForTarget(gtk_dnd_util::TEXT_HTML)) {
       // TODO(estade): Can the html have a non-UTF8 encoding?
       drop_data_->text_html =
           UTF8ToUTF16(std::string(reinterpret_cast<char*>(data->data),

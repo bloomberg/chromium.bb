@@ -525,9 +525,9 @@ GtkWidget* BrowserToolbarGtk::BuildToolbarMenuButton(
 void BrowserToolbarGtk::SetUpDragForHomeButton() {
   gtk_drag_dest_set(home_->widget(), GTK_DEST_DEFAULT_ALL,
                     NULL, 0, GDK_ACTION_COPY);
-  static const int targets[] = { GtkDndUtil::TEXT_PLAIN,
-                                 GtkDndUtil::TEXT_URI_LIST, -1 };
-  GtkDndUtil::SetDestTargetList(home_->widget(), targets);
+  static const int targets[] = { gtk_dnd_util::TEXT_PLAIN,
+                                 gtk_dnd_util::TEXT_URI_LIST, -1 };
+  gtk_dnd_util::SetDestTargetList(home_->widget(), targets);
 
   g_signal_connect(home_->widget(), "drag-data-received",
                    G_CALLBACK(OnDragDataReceived), this);
@@ -674,7 +674,7 @@ void BrowserToolbarGtk::OnDragDataReceived(GtkWidget* widget,
     GdkDragContext* drag_context, gint x, gint y,
     GtkSelectionData* data, guint info, guint time,
     BrowserToolbarGtk* toolbar) {
-  if (info != GtkDndUtil::TEXT_PLAIN) {
+  if (info != gtk_dnd_util::TEXT_PLAIN) {
     NOTIMPLEMENTED() << "Only support plain text drops for now, sorry!";
     return;
   }

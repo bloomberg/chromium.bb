@@ -81,15 +81,6 @@ class TestingBrowserProcess : public BrowserProcess {
     return NULL;
   }
 
-#if defined(OS_WIN)
-  virtual sandbox::BrokerServices* broker_services() {
-    return NULL;
-  }
-
-  virtual void InitBrokerServices(sandbox::BrokerServices*) {
-  }
-#endif
-
   virtual DebuggerWrapper* debugger_wrapper() {
     return NULL;
   }

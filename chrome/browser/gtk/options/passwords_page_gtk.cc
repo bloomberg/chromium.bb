@@ -7,6 +7,7 @@
 #include <string>
 
 #include "app/gfx/gtk_util.h"
+#include "app/gtk_util.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"

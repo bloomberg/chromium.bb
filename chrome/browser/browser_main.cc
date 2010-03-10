@@ -109,6 +109,7 @@
 #include "chrome/browser/rlz/rlz.h"
 #include "chrome/browser/views/user_data_dir_dialog.h"
 #include "chrome/common/env_vars.h"
+#include "chrome/common/sandbox_policy.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/shell_util.h"
@@ -507,7 +508,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
   sandbox::BrokerServices* broker_services =
       parameters.sandbox_info_.BrokerServices();
   if (broker_services) {
-    browser_process->InitBrokerServices(broker_services);
+    sandbox::InitBrokerServices(broker_services);
     if (!parsed_command_line.HasSwitch(switches::kNoSandbox)) {
       bool use_winsta = !parsed_command_line.HasSwitch(
                             switches::kDisableAltWinstation);

@@ -12,6 +12,10 @@ class CommandLine;
 
 namespace sandbox {
 
+class BrokerServices;
+
+void InitBrokerServices(sandbox::BrokerServices* broker_services);
+
 // Starts a sandboxed process with the given directory unsandboxed
 // and returns a handle to it.
 base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,

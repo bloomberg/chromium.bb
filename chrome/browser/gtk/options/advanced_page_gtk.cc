@@ -4,6 +4,7 @@
 
 #include "chrome/browser/gtk/options/advanced_page_gtk.h"
 
+#include "app/gtk_util.h"
 #include "app/l10n_util.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/options_util.h"

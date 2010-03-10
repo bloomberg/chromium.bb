@@ -731,10 +731,10 @@ void TabStripGtk::Init() {
                     NULL, 0,
                     static_cast<GdkDragAction>(
                         GDK_ACTION_COPY | GDK_ACTION_MOVE | GDK_ACTION_LINK));
-  static const int targets[] = { GtkDndUtil::TEXT_URI_LIST,
-                                 GtkDndUtil::NETSCAPE_URL,
+  static const int targets[] = { gtk_dnd_util::TEXT_URI_LIST,
+                                 gtk_dnd_util::NETSCAPE_URL,
                                  -1 };
-  GtkDndUtil::SetDestTargetList(tabstrip_.get(), targets);
+  gtk_dnd_util::SetDestTargetList(tabstrip_.get(), targets);
 
   g_signal_connect(tabstrip_.get(), "expose-event",
                    G_CALLBACK(OnExpose), this);
@@ -1962,8 +1962,8 @@ gboolean TabStripGtk::OnDragDataReceived(GtkWidget* widget,
                                          TabStripGtk* tabstrip) {
   bool success = false;
 
-  if (info == GtkDndUtil::TEXT_URI_LIST ||
-      info == GtkDndUtil::NETSCAPE_URL) {
+  if (info == gtk_dnd_util::TEXT_URI_LIST ||
+      info == gtk_dnd_util::NETSCAPE_URL) {
     success = tabstrip->CompleteDrop(data->data);
   }
 

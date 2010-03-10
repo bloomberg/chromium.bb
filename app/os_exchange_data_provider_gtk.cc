@@ -54,7 +54,7 @@ GtkTargetList* OSExchangeDataProviderGtk::GetTargetList() const {
     gtk_target_list_add_uri_targets(targets, OSExchangeData::URL);
     gtk_target_list_add(
         targets,
-        GtkDndUtil::GetAtomForTarget(GtkDndUtil::CHROME_NAMED_URL),
+        gtk_dnd_util::GetAtomForTarget(gtk_dnd_util::CHROME_NAMED_URL),
         0,
         OSExchangeData::URL);
   }
@@ -88,7 +88,7 @@ void OSExchangeDataProviderGtk::WriteFormatToSelection(
     pickle.WriteString(url_.spec());
     gtk_selection_data_set(
         selection,
-        GtkDndUtil::GetAtomForTarget(GtkDndUtil::CHROME_NAMED_URL),
+        gtk_dnd_util::GetAtomForTarget(gtk_dnd_util::CHROME_NAMED_URL),
         8,
         reinterpret_cast<const guchar*>(pickle.data()),
         pickle.size());

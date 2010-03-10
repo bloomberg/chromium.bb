@@ -389,8 +389,8 @@ void TabGtk::DestroyDragWidget() {
 void TabGtk::StartDragging(gfx::Point drag_offset) {
   CreateDragWidget();
 
-  GtkTargetList* list = GtkDndUtil::GetTargetListFromCodeMask(
-      GtkDndUtil::CHROME_TAB);
+  GtkTargetList* list = gtk_dnd_util::GetTargetListFromCodeMask(
+      gtk_dnd_util::CHROME_TAB);
   gtk_drag_begin(drag_widget_, list, GDK_ACTION_MOVE,
                  1,  // Drags are always initiated by the left button.
                  last_mouse_down_);

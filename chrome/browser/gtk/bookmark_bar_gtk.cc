@@ -78,10 +78,10 @@ const double kTopBorderColor[] =
     { 222.0 / 255.0, 234.0 / 255.0, 248.0 / 255.0 };
 
 // The targets accepted by the toolbar and folder buttons for DnD.
-const int kDestTargetList[] = { GtkDndUtil::CHROME_BOOKMARK_ITEM,
-                                GtkDndUtil::CHROME_NAMED_URL,
-                                GtkDndUtil::TEXT_URI_LIST,
-                                GtkDndUtil::TEXT_PLAIN, -1 };
+const int kDestTargetList[] = { gtk_dnd_util::CHROME_BOOKMARK_ITEM,
+                                gtk_dnd_util::CHROME_NAMED_URL,
+                                gtk_dnd_util::TEXT_URI_LIST,
+                                gtk_dnd_util::TEXT_PLAIN, -1 };
 
 // Acceptable drag actions for the bookmark bar drag destinations.
 const GdkDragAction kDragAction =
@@ -218,7 +218,7 @@ void BookmarkBarGtk::Init(Profile* profile) {
   gtk_drag_dest_set(instructions_,
       GtkDestDefaults(GTK_DEST_DEFAULT_DROP | GTK_DEST_DEFAULT_MOTION),
       NULL, 0, kDragAction);
-  GtkDndUtil::SetDestTargetList(instructions_, kDestTargetList);
+  gtk_dnd_util::SetDestTargetList(instructions_, kDestTargetList);
   g_signal_connect(instructions_, "drag-data-received",
                    G_CALLBACK(&OnDragReceived), this);
 
@@ -245,7 +245,7 @@ void BookmarkBarGtk::Init(Profile* profile) {
 
   gtk_drag_dest_set(bookmark_toolbar_.get(), GTK_DEST_DEFAULT_DROP,
                     NULL, 0, kDragAction);
-  GtkDndUtil::SetDestTargetList(bookmark_toolbar_.get(), kDestTargetList);
+  gtk_dnd_util::SetDestTargetList(bookmark_toolbar_.get(), kDestTargetList);
   g_signal_connect(bookmark_toolbar_.get(), "drag-motion",
                    G_CALLBACK(&OnToolbarDragMotion), this);
   g_signal_connect(bookmark_toolbar_.get(), "drag-leave",
@@ -837,13 +837,13 @@ GtkWidget* BookmarkBarGtk::CreateBookmarkButton(const BookmarkNode* node) {
   // The tool item is also a source for dragging
   gtk_drag_source_set(button, GDK_BUTTON1_MASK, NULL, 0,
       static_cast<GdkDragAction>(GDK_ACTION_MOVE | GDK_ACTION_COPY));
-  int target_mask = GtkDndUtil::CHROME_BOOKMARK_ITEM;
+  int target_mask = gtk_dnd_util::CHROME_BOOKMARK_ITEM;
   if (node->is_url()) {
-    target_mask |= GtkDndUtil::TEXT_URI_LIST |
-                   GtkDndUtil::TEXT_PLAIN |
-                   GtkDndUtil::NETSCAPE_URL;
+    target_mask |= gtk_dnd_util::TEXT_URI_LIST |
+                   gtk_dnd_util::TEXT_PLAIN |
+                   gtk_dnd_util::NETSCAPE_URL;
   }
-  GtkDndUtil::SetSourceTargetListFromCodeMask(button, target_mask);
+  gtk_dnd_util::SetSourceTargetListFromCodeMask(button, target_mask);
   g_signal_connect(button, "drag-begin",
                    G_CALLBACK(&OnButtonDragBegin), this);
   g_signal_connect(button, "drag-end",
@@ -884,7 +884,7 @@ GtkToolItem* BookmarkBarGtk::CreateBookmarkToolItem(const BookmarkNode* node) {
 
 void BookmarkBarGtk::ConnectFolderButtonEvents(GtkWidget* widget) {
   gtk_drag_dest_set(widget, GTK_DEST_DEFAULT_ALL, NULL, 0, kDragAction);
-  GtkDndUtil::SetDestTargetList(widget, kDestTargetList);
+  gtk_dnd_util::SetDestTargetList(widget, kDestTargetList);
   g_signal_connect(widget, "drag-data-received",
                    G_CALLBACK(&OnDragReceived), this);
 
@@ -1110,7 +1110,7 @@ gboolean BookmarkBarGtk::OnToolbarDragMotion(GtkToolbar* toolbar,
   }
 
   if (target_type ==
-      GtkDndUtil::GetAtomForTarget(GtkDndUtil::CHROME_BOOKMARK_ITEM)) {
+      gtk_dnd_util::GetAtomForTarget(gtk_dnd_util::CHROME_BOOKMARK_ITEM)) {
     gdk_drag_status(context, GDK_ACTION_MOVE, time);
   } else {
     gdk_drag_status(context, GDK_ACTION_COPY, time);
@@ -1174,7 +1174,7 @@ void BookmarkBarGtk::OnDragReceived(GtkWidget* widget,
   }
 
   switch (target_type) {
-    case GtkDndUtil::CHROME_BOOKMARK_ITEM: {
+    case gtk_dnd_util::CHROME_BOOKMARK_ITEM: {
       std::vector<const BookmarkNode*> nodes =
           bookmark_utils::GetNodesFromSelection(context, selection_data,
                                                 target_type,
@@ -1190,19 +1190,19 @@ void BookmarkBarGtk::OnDragReceived(GtkWidget* widget,
       break;
     }
 
-    case GtkDndUtil::CHROME_NAMED_URL: {
+    case gtk_dnd_util::CHROME_NAMED_URL: {
       dnd_success = bookmark_utils::CreateNewBookmarkFromNamedUrl(
           selection_data, bar->model_, dest_node, index);
       break;
     }
 
-    case GtkDndUtil::TEXT_URI_LIST: {
+    case gtk_dnd_util::TEXT_URI_LIST: {
       dnd_success = bookmark_utils::CreateNewBookmarksFromURIList(
           selection_data, bar->model_, dest_node, index);
       break;
     }
 
-    case GtkDndUtil::TEXT_PLAIN: {
+    case gtk_dnd_util::TEXT_PLAIN: {
       guchar* text = gtk_selection_data_get_text(selection_data);
       if (!text)
         break;

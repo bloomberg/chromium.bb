@@ -4,6 +4,7 @@
 
 #include "chrome/browser/gtk/download_item_gtk.h"
 
+#include "app/gtk_util.h"
 #include "app/l10n_util.h"
 #include "app/gfx/canvas_paint.h"
 #include "app/gfx/color_utils.h"
