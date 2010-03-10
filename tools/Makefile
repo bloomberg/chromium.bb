@@ -133,7 +133,7 @@ BUILD/binutils-$(BINUTILS_VERSION): | BUILD
 	@echo "Unpacking binutils-$(BINUTILS_VERSION)"
 	cd BUILD && tar xf $(SRCDIR)/binutils/binutils-$(BINUTILS_VERSION).tar.bz2
 	cd BUILD && patch -p0 < ../patches/binutils-$(BINUTILS_VERSION).patch
-	if ( ! [ -x /usr/bin/bison ] ) || ( ! [ -x /usr/bin/flex ] ) ; then \
+	if ( [ ! -x /usr/bin/bison ] ) || ( [ ! -x /usr/bin/flex ] ) ; then \
 	  cd BUILD && ( patch -p0 < ../patches/binutils-$(BINUTILS_VERSION).ly.patch || true ) ; \
 	fi
 
@@ -558,28 +558,32 @@ sdk_minimal_test: ALWAYS
 
 redirector: ALWAYS
 ifeq ($(PLATFORM), Cygwin)
-	for exe in $(DESTDIR)$(SDKROOT)/bin/$(CROSSARCH)-*.exe ; do \
+	for exe in "$(DESTDIR)$(SDKROOT)/bin/$(CROSSARCH)"-*.exe ; do \
 	  if ! cmp redirector.exe "$$exe" > /dev/null ; then \
-	    mv -f "$$exe" $(DESTDIR)$(SDKROOT)/libexec/"`basename $$exe`" ; \
+	    mv -f "$$exe" "$(DESTDIR)$(SDKROOT)/libexec/`basename $$exe`" ; \
 	    echo "The next command can hang on FAT partiton; use NTFS!" ; \
 	    ln -fn redirector.exe "$$exe" ; \
 	  fi ; \
 	done && \
-	for exe in $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/bin/*.exe ; do \
+	for exe in "$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/bin/"*.exe ; do \
 	  echo "The next command can hang on FAT partiton; use NTFS!" ; \
 	  ln -fn redirector.exe $$exe ; \
 	done && \
-	if [ -d $(DESTDIR)$(SDKROOT)/libexec/gcc/$(CROSSARCH)/$(GCC_VERSION) ] ; then \
-	  for exe in $(DESTDIR)$(SDKROOT)/libexec/gcc/$(CROSSARCH)/$(GCC_VERSION)/*.exe ; do \
-	    if ! [ -L "$$exe" ] ; then \
-	      mv "$$exe" $(DESTDIR)$(SDKROOT)/libexec/$(CROSSARCH)-$(GCC_VERSION)-"`basename $$exe`" ; \
-	      ln -sfn ../../../$(CROSSARCH)-$(GCC_VERSION)-"`basename $$exe`" "$$exe" ; \
+	LEDIR="$(DESTDIR)$(SDKROOT)/libexec" \
+	ARCHDIR="$$LEDIR/gcc/$(CROSSARCH)/$(GCC_VERSION)" \
+	if [ -d "$$ARCHDIR" ] ; then \
+	  for exe in "$$ARCHDIR/"*.exe ; do \
+	    if [ ! -L "$$exe" ] ; then \
+	      mv "$$exe" \
+		"$$LEDIR/$(CROSSARCH)-$(GCC_VERSION)-`basename $$exe`" ; \
+	      ln -sfn "../../../$(CROSSARCH)-$(GCC_VERSION)-`basename $$exe`" \
+		"$$exe" ; \
 	    fi ; \
 	  done ; \
 	fi
 else
-	for exe in $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/bin/* ; do \
-	  ln -sfn ../../bin/$(CROSSARCH)-"`basename $$exe`" "$$exe" ; \
+	for exe in "$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/bin/"* ; do \
+	  ln -sfn "../../bin/$(CROSSARCH)-`basename $$exe`" "$$exe" ; \
 	done
 endif
 	$(CYGWIN_DLL_COPY)
