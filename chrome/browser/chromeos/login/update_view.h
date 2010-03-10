@@ -22,6 +22,7 @@ class UpdateView : public views::View {
   virtual ~UpdateView();
 
   void Init();
+  void Refresh() {}
   void UpdateLocalizedStrings();
 
   // views::View implementation:

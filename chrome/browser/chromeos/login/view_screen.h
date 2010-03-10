@@ -67,6 +67,8 @@ void ViewScreen<V>::Show() {
     InitView();
   }
   view_->SetVisible(true);
+  // After view is initialized and shown refresh it's state.
+  view_->Refresh();
 }
 
 template <class V>

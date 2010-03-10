@@ -53,14 +53,10 @@ class NetworkList  {
   }
 
   // Returns currently connected network if there is one.
-  NetworkList::NetworkItem* connected_network() const {
-    return connected_network_;
-  }
+  const NetworkList::NetworkItem* ConnectedNetwork() const;
 
   // Returns currently connecting network if there is one.
-  NetworkList::NetworkItem* connecting_network() const {
-    return connecting_network_;
-  }
+  const NetworkList::NetworkItem* ConnectingNetwork() const;
 
   // Returns network by it's type and ssid (Wifi) or id (Cellular).
   // If network is not available NULL is returned.
@@ -85,16 +81,20 @@ class NetworkList  {
  private:
   typedef std::vector<NetworkItem> NetworkItemVector;
 
+  // Set connected/connecting network indices.
+  // index - network index being processed
+  void SetNetworksIndices(int index, bool connected, bool connecting);
+
   // Cached list of all available networks.
   NetworkItemVector networks_;
 
-  // Currently connected network or NULL if there's none.
+  // Index of currently connected network or -1 if there's none.
   // If several networks are connected than single one is selected by priority:
   // Ethernet > WiFi > Cellular.
-  NetworkList::NetworkItem* connected_network_;
+  int connected_network_index_;
 
-  // Currently connecting network or NULL if there's none.
-  NetworkList::NetworkItem* connecting_network_;
+  // Index of currently connecting network or -1 if there's none.
+  int connecting_network_index_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkList);
 };

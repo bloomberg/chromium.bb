@@ -12,7 +12,6 @@
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/network_list.h"
-#include "chrome/browser/chromeos/status/password_dialog_view.h"
 #include "chrome/browser/language_combobox_model.h"
 #include "views/controls/button/button.h"
 #include "views/controls/button/menu_button.h"
@@ -40,14 +39,18 @@ class NetworkSelectionView : public views::View,
                              public views::ViewMenuDelegate,
                              public menus::SimpleMenuModel,
                              public menus::SimpleMenuModel::Delegate,
-                             public PasswordDialogDelegate,
                              public NetworkLibrary::Observer {
  public:
   explicit NetworkSelectionView(ScreenObserver* observer);
   virtual ~NetworkSelectionView();
 
+  // Initialize view layout.
   void Init();
+
+  // Update strings from the resources. Executed on language change.
   void UpdateLocalizedStrings();
+
+  // Subscribes to the network notification and refreshes current network state.
   void Refresh();
 
   // views::View: implementation:
@@ -65,11 +68,6 @@ class NetworkSelectionView : public views::View,
 
   // views::ButtonListener implementation:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
-
-  // PasswordDialogDelegate implementation:
-  virtual bool OnPasswordDialogCancel() { return true; }
-  virtual bool OnPasswordDialogAccept(const std::string& ssid,
-                                      const string16& password);
 
   // NetworkLibrary::Observer implementation:
   virtual void NetworkChanged(NetworkLibrary* network_lib);
@@ -107,6 +105,9 @@ class NetworkSelectionView : public views::View,
 
   // Initializes language selection menues contents.
   void InitLanguageMenu();
+
+  // Updates text on label with currently connecting network.
+  void UpdateConnectingNetworkLabel();
 
   // Dialog controls.
   views::Combobox* network_combobox_;

@@ -13,6 +13,7 @@
 #include "app/resource_bundle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
+#include "chrome/browser/chromeos/options/network_config_view.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "views/controls/button/native_button.h"
@@ -99,7 +100,6 @@ void NetworkSelectionView::Init() {
   offline_button_->set_font(button_font);
 
   UpdateLocalizedStrings();
-  Refresh();
 
   AddChildView(welcome_label_);
   AddChildView(select_network_label_);
@@ -137,11 +137,11 @@ void NetworkSelectionView::UpdateLocalizedStrings() {
       l10n_util::GetString(IDS_NETWORK_SELECTION_SELECT));
   offline_button_->SetLabel(
       l10n_util::GetString(IDS_NETWORK_SELECTION_OFFLINE_BUTTON));
-  connecting_network_label_->SetText(l10n_util::GetStringF(
-      IDS_NETWORK_SELECTION_CONNECTING, UTF16ToWide(network_id_)));
+  UpdateConnectingNetworkLabel();
 }
 
 void NetworkSelectionView::Refresh() {
+  ChangeNetworkNotification(true);
   NetworkChanged(chromeos::NetworkLibrary::Get());
 }
 
@@ -261,25 +261,9 @@ void NetworkSelectionView::ItemChanged(views::Combobox* sender,
 void NetworkSelectionView::ButtonPressed(views::Button* sender,
                                          const views::Event& event) {
   if (observer_) {
-    observer_->OnExit(ScreenObserver::NETWORK_OFFLINE);
     ChangeNetworkNotification(false);
+    observer_->OnExit(ScreenObserver::NETWORK_OFFLINE);
   }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// PasswordDialogDelegate implementation:
-
-bool NetworkSelectionView::OnPasswordDialogAccept(const std::string& ssid,
-                                                  const string16& password) {
-  NetworkList::NetworkItem* network =
-      networks_.GetNetworkById(NetworkList::NETWORK_WIFI,
-                               ASCIIToUTF16(ssid));
-  if (network &&
-      NetworkList::NETWORK_WIFI == network->network_type) {
-    NetworkLibrary::Get()->ConnectToWifiNetwork(network->wifi_network,
-                                                          password);
-  }
-  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -290,17 +274,17 @@ void NetworkSelectionView::NetworkChanged(
   // Save network selection in case it would be available after refresh.
   NetworkList::NetworkType network_type = NetworkList::NETWORK_EMPTY;
   string16 network_id;
-  NetworkList::NetworkItem* network = GetSelectedNetwork();
+  const NetworkList::NetworkItem* network = GetSelectedNetwork();
   if (network) {
     network_type = network->network_type;
     network_id = network->label;
   }
   networks_.NetworkChanged(network_lib);
   // TODO(nkostylev): Check for connection error.
-  if (networks_.connected_network()) {
+  if (networks_.ConnectedNetwork()) {
     NotifyOnConnection();
   }
-  network = networks_.connecting_network();
+  network = networks_.ConnectingNetwork();
   if (network) {
     ShowConnectingStatus(true, network->label);
   }
@@ -353,23 +337,18 @@ NetworkList::NetworkItem* NetworkSelectionView::GetSelectedNetwork() {
 
 void NetworkSelectionView::NotifyOnConnection() {
   if (observer_) {
-    observer_->OnExit(ScreenObserver::NETWORK_CONNECTED);
     ChangeNetworkNotification(false);
+    observer_->OnExit(ScreenObserver::NETWORK_CONNECTED);
   }
 }
 
 void NetworkSelectionView::OpenPasswordDialog(WifiNetwork network) {
-  // TODO(nkostylev): Reuse this code in network menu button.
-  PasswordDialogView* dialog = new PasswordDialogView(
-      this, network.ssid);
+  NetworkConfigView* view = new NetworkConfigView(network, true);
   views::Window* window = views::Window::CreateChromeWindow(
-      GetWindow()->GetNativeWindow(), gfx::Rect(), dialog);
-  gfx::Size size = dialog->GetPreferredSize();
-  gfx::Rect rect = bounds();
-  gfx::Point point = gfx::Point(rect.width() - size.width(), rect.height());
-  ConvertPointToScreen(this, &point);
-  window->SetBounds(gfx::Rect(point, size), GetWindow()->GetNativeWindow());
+      GetWindow()->GetNativeWindow(), gfx::Rect(), view);
+  window->SetIsAlwaysOnTop(true);
   window->Show();
+  view->SetLoginTextfieldFocus();
 }
 
 void NetworkSelectionView::SelectNetwork(
@@ -384,11 +363,11 @@ void NetworkSelectionView::SelectNetwork(
 
 void NetworkSelectionView::ShowConnectingStatus(bool connecting,
                                                 const string16& network_id) {
+  network_id_ = network_id;
+  UpdateConnectingNetworkLabel();
   select_network_label_->SetVisible(!connecting);
   network_combobox_->SetVisible(!connecting);
   connecting_network_label_->SetVisible(connecting);
-  network_id_ = network_id;
-  UpdateLocalizedStrings();
 }
 
 void NetworkSelectionView::ChangeNetworkNotification(bool subscribe) {
@@ -397,6 +376,11 @@ void NetworkSelectionView::ChangeNetworkNotification(bool subscribe) {
     chromeos::NetworkLibrary::Get()->AddObserver(this);
   else
     chromeos::NetworkLibrary::Get()->RemoveObserver(this);
+}
+
+void NetworkSelectionView::UpdateConnectingNetworkLabel() {
+  connecting_network_label_->SetText(l10n_util::GetStringF(
+      IDS_NETWORK_SELECTION_CONNECTING, UTF16ToWide(network_id_)));
 }
 
 }  // namespace chromeos

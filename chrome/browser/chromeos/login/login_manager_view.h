@@ -34,7 +34,13 @@ class LoginManagerView : public views::View,
   explicit LoginManagerView(ScreenObserver* observer);
   virtual ~LoginManagerView();
 
+  // Initialize view layout.
   void Init();
+
+  // Refresh view state.
+  void Refresh() {}
+
+  // Update strings from the resources. Executed on language change.
   void UpdateLocalizedStrings();
 
   // Overridden from views::View:

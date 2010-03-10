@@ -12,8 +12,8 @@
 namespace chromeos {
 
 NetworkList::NetworkList()
-    : connected_network_(NULL),
-      connecting_network_(NULL) {
+    : connected_network_index_(-1),
+      connecting_network_index_(-1) {
 }
 
 NetworkList::NetworkItem* NetworkList::GetNetworkAt(int index) {
@@ -55,10 +55,32 @@ int NetworkList::GetNetworkIndexById(NetworkType type,
   return -1;
 }
 
+// Returns currently connected network if there is one.
+const NetworkList::NetworkItem* NetworkList::ConnectedNetwork() const {
+  if (connected_network_index_ >= 0 &&
+      connected_network_index_ < static_cast<int>(networks_.size())) {
+    return &networks_[connected_network_index_];
+  } else {
+    return NULL;
+  }
+}
+
+// Returns currently connecting network if there is one.
+const NetworkList::NetworkItem* NetworkList::ConnectingNetwork() const {
+  if (connecting_network_index_ >= 0 &&
+      connecting_network_index_ < static_cast<int>(networks_.size())) {
+    return &networks_[connecting_network_index_];
+  } else {
+    return NULL;
+  }
+}
+
 void NetworkList::NetworkChanged(chromeos::NetworkLibrary* network_lib) {
-  connected_network_ = NULL;
-  connecting_network_ = NULL;
+  connected_network_index_ = -1;
+  connecting_network_index_ = -1;
   networks_.clear();
+  // Index of the last added network item.
+  int index = 0;
   if (!network_lib || !CrosLibrary::EnsureLoaded())
     return;
 
@@ -69,44 +91,53 @@ void NetworkList::NetworkChanged(chromeos::NetworkLibrary* network_lib) {
                                     label,
                                     WifiNetwork(),
                                     CellularNetwork()));
-    if (network_lib->ethernet_connected()) {
-      connected_network_ = &networks_.back();
-    } else if (network_lib->ethernet_connecting()) {
-      connecting_network_ = &networks_.back();
-    }
+    SetNetworksIndices(index++,
+                       network_lib->ethernet_connected(),
+                       network_lib->ethernet_connecting());
   }
 
   // TODO(nkostylev): Show public WiFi networks first.
   WifiNetworkVector wifi = network_lib->wifi_networks();
   for (WifiNetworkVector::const_iterator it = wifi.begin();
-       it != wifi.end(); ++it) {
+       it != wifi.end(); ++it, ++index) {
     networks_.push_back(NetworkItem(NETWORK_WIFI,
                                     ASCIIToUTF16(it->ssid),
                                     *it,
                                     CellularNetwork()));
-    if (!connected_network_ && network_lib->wifi_ssid() == it->ssid) {
-      if (network_lib->wifi_connected()) {
-        connected_network_ = &networks_.back();
-      } else if (network_lib->wifi_connecting()) {
-        connecting_network_ = &networks_.back();
-      }
+    if (network_lib->wifi_ssid() == it->ssid) {
+      SetNetworksIndices(index,
+                         network_lib->wifi_connected(),
+                         network_lib->wifi_connecting());
     }
   }
 
   CellularNetworkVector cellular = network_lib->cellular_networks();
   for (CellularNetworkVector::const_iterator it = cellular.begin();
-       it != cellular.end(); ++it) {
+       it != cellular.end(); ++it, ++index) {
     networks_.push_back(NetworkItem(NETWORK_CELLULAR,
                                     ASCIIToUTF16(it->name),
                                     WifiNetwork(),
                                     *it));
-    if (!connected_network_ && network_lib->cellular_name() == it->name) {
-      if (network_lib->cellular_connected()) {
-        connected_network_ = &networks_.back();
-      } else if (network_lib->cellular_connecting()) {
-        connecting_network_ = &networks_.back();
-      }
+    if (network_lib->cellular_name() == it->name) {
+      SetNetworksIndices(index,
+                         network_lib->cellular_connected(),
+                         network_lib->cellular_connected());
     }
+  }
+}
+
+void NetworkList::SetNetworksIndices(int index,
+                                     bool connected,
+                                     bool connecting) {
+  if (connected_network_index_  != -1 ||
+      connecting_network_index_ != -1 ||
+      index < 0 || index >= static_cast<int>(networks_.size()))
+    return;
+
+  if (connected) {
+    connected_network_index_ = index;
+  } else if (connecting) {
+    connecting_network_index_ = index;
   }
 }
 
