@@ -81,6 +81,7 @@
 
 #if defined(OS_WIN)
 #include "app/win_util.h"
+#include "chrome/browser/aeropeek_manager.h"
 #include "chrome/browser/jumplist.h"
 #elif defined(OS_LINUX)
 #include "chrome/browser/views/accelerator_table_gtk.h"
@@ -426,6 +427,10 @@ BrowserView::~BrowserView() {
   browser_->tabstrip_model()->RemoveObserver(this);
 
 #if defined(OS_WIN)
+  // Remove this observer.
+  if (aeropeek_manager_.get())
+    browser_->tabstrip_model()->RemoveObserver(aeropeek_manager_.get());
+
   // Stop hung plugin monitoring.
   ticker_.Stop();
   ticker_.UnregisterTickHandler(&hung_window_detector_);
@@ -1576,6 +1581,18 @@ void BrowserView::Layout() {
   if (GetLayoutManager()) {
     GetLayoutManager()->Layout(this);
     SchedulePaint();
+#if defined(OS_WIN)
+    // Send the margins of the "user-perceived content area" of this
+    // browser window so AeroPeekManager can render a background-tab image in
+    // the area.
+    if (aeropeek_manager_.get()) {
+      gfx::Insets insets(GetFindBarBoundingBox().y() + 1,
+                         GetTabStripBounds().x(),
+                         GetTabStripBounds().x(),
+                         GetTabStripBounds().x());
+      aeropeek_manager_->SetContentInsets(insets);
+    }
+#endif
   }
 }
 
@@ -1703,6 +1720,13 @@ void BrowserView::Init() {
   if (JumpList::Enabled()) {
     jumplist_.reset(new JumpList);
     jumplist_->AddObserver(browser_->profile());
+  }
+
+  if (AeroPeekManager::Enabled()) {
+    gfx::Rect bounds(frame_->GetBoundsForTabStrip(tabstrip()));
+    aeropeek_manager_.reset(new AeroPeekManager(
+        frame_->GetWindow()->GetNativeWindow()));
+    browser_->tabstrip_model()->AddObserver(aeropeek_manager_.get());
   }
 #endif
 

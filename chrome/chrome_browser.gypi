@@ -48,6 +48,8 @@
         # mocks.
         'browser/accessibility_events.h',
         'browser/accessibility_events.cc',
+        'browser/aeropeek_manager.cc',
+        'browser/aeropeek_manager.h',
         'browser/alternate_nav_url_fetcher.cc',
         'browser/alternate_nav_url_fetcher.h',
         'browser/app_controller_cppsafe_mac.h',
@@ -2898,6 +2900,7 @@
           ],
           # Exclude files that should be excluded for all non-Windows platforms.
           'sources!': [
+            'browser/aeropeek_manager.cc',
             'browser/autocomplete/autocomplete_accessibility.cc',
             'browser/bookmarks/bookmark_menu_controller.cc',
             'browser/bookmarks/bookmark_menu_controller.h',

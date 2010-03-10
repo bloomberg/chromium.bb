@@ -47,6 +47,7 @@ class FullscreenExitBubble;
 class HtmlDialogUIDelegate;
 class InfoBarContainer;
 #if defined(OS_WIN)
+class AeroPeekManager;
 class JumpList;
 #endif
 class LocationBarView;
@@ -554,6 +555,9 @@ class BrowserView : public BrowserBubbleHost,
 
   // The custom JumpList for Windows 7.
   scoped_ptr<JumpList> jumplist_;
+
+  // The custom AeroPeek manager for Windows 7.
+  scoped_ptr<AeroPeekManager> aeropeek_manager_;
 #endif
 
   // The timer used to update frames for the Loading Animation.
