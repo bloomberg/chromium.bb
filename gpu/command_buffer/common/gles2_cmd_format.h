@@ -21,6 +21,8 @@
 #include <GLES2/gl2types.h>  // NOLINT
 #endif
 
+#include <string.h>
+
 #include "../common/types.h"
 #include "../common/bitfield_helpers.h"
 #include "../common/cmd_buffer_common.h"

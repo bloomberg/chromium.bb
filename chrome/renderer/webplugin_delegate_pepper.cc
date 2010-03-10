@@ -871,6 +871,9 @@ WebPluginDelegatePepper::WebPluginDelegatePepper(
       plugin_(NULL),
       instance_(instance),
       nested_delegate_(NULL),
+#if defined(ENABLE_GPU)
+      command_buffer_(NULL),
+#endif
       method_factory3d_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   // For now we keep a window struct, although it isn't used.
   memset(&window_, 0, sizeof(window_));
