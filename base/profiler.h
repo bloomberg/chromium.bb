@@ -26,6 +26,9 @@ class Profiler {
   // time in application startup.
   static void ClearData();
 
+  // Flushes all recorded data to disk.  No-op until recording is started.
+  static void Flush();
+
   // Sets the name of the current thread for display in the profiler's UI.
   static void SetThreadName(const char *name);
 

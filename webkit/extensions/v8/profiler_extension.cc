@@ -21,6 +21,7 @@ class ProfilerWrapper : public v8::Extension {
         "chromium.Profiler = function() {"
         "  native function ProfilerStart();"
         "  native function ProfilerStop();"
+        "  native function ProfilerFlush();"
         "  native function ProfilerClearData();"
         "  native function ProfilerSetThreadName();"
         "  this.start = function() {"
@@ -31,6 +32,9 @@ class ProfilerWrapper : public v8::Extension {
         "  };"
         "  this.clear = function() {"
         "    ProfilerClearData();"
+        "  };"
+        "  this.flush = function() {"
+        "    ProfilerFlush();"
         "  };"
         "  this.setThreadName = function(name) {"
         "    ProfilerSetThreadName(name);"
@@ -45,6 +49,8 @@ class ProfilerWrapper : public v8::Extension {
       return v8::FunctionTemplate::New(ProfilerStop);
     } else if (name->Equals(v8::String::New("ProfilerClearData"))) {
       return v8::FunctionTemplate::New(ProfilerClearData);
+    } else if (name->Equals(v8::String::New("ProfilerFlush"))) {
+      return v8::FunctionTemplate::New(ProfilerFlush);
     } else if (name->Equals(v8::String::New("ProfilerSetThreadName"))) {
       return v8::FunctionTemplate::New(ProfilerSetThreadName);
     }
@@ -68,6 +74,13 @@ class ProfilerWrapper : public v8::Extension {
     base::Profiler::ClearData();
     return v8::Undefined();
   }
+
+  static v8::Handle<v8::Value> ProfilerFlush(
+      const v8::Arguments& args) {
+    base::Profiler::Flush();
+    return v8::Undefined();
+  }
+
 
   static v8::Handle<v8::Value> ProfilerSetThreadName(
       const v8::Arguments& args) {

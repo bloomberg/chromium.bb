@@ -5,6 +5,10 @@
 #include "base/profiler.h"
 #include "base/string_util.h"
 
+#if defined(USE_TCMALLOC)
+#include "third_party/tcmalloc/chromium/src/google/profiler.h"
+#endif
+
 // When actually using quantify, uncomment the following line.
 // #define QUANTIFY
 
@@ -20,12 +24,22 @@ namespace base {
 void Profiler::StartRecording() {
 #ifdef QUANTIFY
   QuantifyStartRecordingData();
+#elif defined(USE_TCMALLOC) && defined(OS_LINUX)
+  ProfilerStart("chrome-profile");
 #endif
 }
 
 void Profiler::StopRecording() {
 #ifdef QUANTIFY
   QuantifyStopRecordingData();
+#elif defined(USE_TCMALLOC) && defined(OS_LINUX)
+  ProfilerStop();
+#endif
+}
+
+void Profiler::Flush() {
+#if defined(USE_TCMALLOC) && defined(OS_LINUX)
+  ProfilerFlush();
 #endif
 }
 
