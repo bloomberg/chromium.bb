@@ -16,16 +16,20 @@ import subprocess
 import sys
 
 # enable this for manual debugging of this script only
+# NOTE: this HAS to be zero in order to work with the llvm-gcc
+#       bootstrapping process
 VERBOSE = 0
 TOLERATE_COMPILATION_OF_ASM_CODE = 1
 # NOTE: set this to something like:
-#OUT = open('/tmp/fake.log', 'a')
+OUT = open('/tmp/fake.log', 'a')
 # if you want a log of all the action. otherwise:
-OUT = None
+#OUT = None
 
 
 BASE = '/usr/local/crosstool-untrusted'
 
+# TODO(robertm): reduce this to one base
+BASE2 = os.getcwd()
 
 LLVM_GCC_ASSEMBLER_FLAGS = ['-march=armv6',
                             '-mfpu=vfp',
@@ -79,6 +83,15 @@ AS = ([BASE + '/codesourcery/arm-2007q3/bin/arm-none-linux-gnueabi-as', ] +
       LLVM_GCC_ASSEMBLER_FLAGS)
 
 LD = BASE + '/codesourcery/arm-2007q3/bin/arm-none-linux-gnueabi-ld'
+
+LD_SCRIPT_ARM = BASE + '/arm-none-linux-gnueabi/ld_script_arm_untrusted'
+
+
+LIBDIR = BASE + '/armsfi-lib'
+
+LIBDIR2 = BASE2 + '/src/third_party/nacl_sdk/arm-newlib/arm-none-linux-gnueabi/lib'
+# NOTE: ugly work around for some llvm-ld shortcomings
+REACHABLE_FUNCTION_SYMBOLS = LIBDIR2 + '/reachable_function_symbols.o'
 
 # Note: this works around an assembler bug that has been fixed only recently
 # We probably can drop this once we have switched to codesourcery 2009Q4
@@ -276,47 +289,43 @@ def Incarnation_nop(argv):
 def Incarnation_illegal(argv):
   LogFatal('illegal command ' + StringifyCommand(argv))
 
-def FindLib(lib, lpaths):
-  for p in lpaths:
-    fn = os.path.join(p, 'lib' + lib + '.a')
-    if os.path.exists(fn):
-      return fn
-  else:
-    LogFatal('cannot find library: %s' % lib)
 
+def MassageFinalLinkCommand(args):
+  # NOTE: late check until we unify BASE and BASE2
+  assert BASE2.endswith('/native_client')
 
-INIT_OBJS = set([
-    'crt1.o',
-    'crti.o',
-    'intrinsics.o',
+  out = ['-nostdlib',
+         '-T',
+         LD_SCRIPT_ARM,
+         '-static',
+         ]
+
+  # add init code
+  if '-nostdlib' not in args:
+    out.append(LIBDIR2 + '/crt1.o')
+    out.append(LIBDIR2 + '/crti.o')
+    out.append(LIBDIR2 + '/intrinsics.o')
+
+  out += args
+
+  # add fini code
+  if '-nostdlib' not in args:
+    # NOTE: there is a circular dependency between libgcc and libc: raise()
+    out.append(LIBDIR2 + '/crtn.o')
+    out.append('-L' + LIBDIR)
+    out.append('-lgcc')
+  return out
+
+MAGIC_OBJS = set([
     # special hack for tests/syscall_return_sandboxing
     'sandboxed_x86_32.o',
     'sandboxed_x86_64.o',
     'sandboxed_arm.o',
     ])
 
+DROP_ARGS = set([])
 
-FINI_OBJS = set([
-    'crtn.o',
-    'libgcc.a',
-    'libgcc_eh.a',
-    ])
-
-
-NATIVE_ARGS = set([
-    '-lgcc' ,
-    '-lgcc_eh',
-    '-static',
-    # NOTE: neeeded for some barebone tests
-    '-nostdlib',
-    ])
-
-
-DROP_ARGS = set([
-    # we do not currently have a working c++ library
-    '-lstdc++',
-    ])
-
+NATIVE_ARGS = set(['-nostdlib'])
 
 def Incarnation_bcld(argv):
   """The ld step for bitcode is quite elaborate:
@@ -335,8 +344,8 @@ def Incarnation_bcld(argv):
   """
   args_bit_ld = []
   args_native_ld = []
+  last_bitcode_pos = None
   output = None
-  first_obj_pos = None
   last = None
 
   for a in argv[1:]:
@@ -352,13 +361,11 @@ def Incarnation_bcld(argv):
       pass
     elif a.endswith('.o'):
       _, base = os.path.split(a)
-      if base in INIT_OBJS or base in FINI_OBJS:
+      if base in MAGIC_OBJS:
         args_native_ld.append(a)
       else:
-        if not first_obj_pos:
-          first_obj_pos = len(args_native_ld)
-          args_native_ld.append('DUMMY_FOR_NATIVE_OBJ')
         args_bit_ld.append(a)
+        last_bitcode_pos = len(args_bit_ld)
     elif a in NATIVE_ARGS:
       args_native_ld.append(a)
     elif a.startswith('-l'):
@@ -367,8 +374,6 @@ def Incarnation_bcld(argv):
       # we replicate library search paths to both arg lists
       args_bit_ld.append(a)
       args_native_ld.append(a)
-    elif a.startswith('-T$'):
-      args_native_ld += a.split('$')
     elif a.startswith('-o$'):
       tokens = a.split('$')
       output = tokens[1]
@@ -376,8 +381,6 @@ def Incarnation_bcld(argv):
     else:
       LogFatal('Unexpected ld arg: %s' % a)
 
-
-  assert first_obj_pos
   assert output
 
   bitcode_combined = output + ".bc"
@@ -388,6 +391,13 @@ def Incarnation_bcld(argv):
   # NOTE: LLVM_LD automagically appends .bc to the output
   # NOTE: without -disable-internalize only the symbol 'main'
   #       is exported, but we need some more for the startup code
+  #       which kept alive via REACHABLE_FUNCTION_SYMBOLS
+  if '-nostdlib' not in argv:
+    if last_bitcode_pos != None:
+      args_bit_ld = (args_bit_ld[:last_bitcode_pos] +
+                     [REACHABLE_FUNCTION_SYMBOLS] +
+                     args_bit_ld[last_bitcode_pos:])
+
   Run([LLVM_LD] + args_bit_ld + ['-disable-internalize', '-o', output])
 
   Run(LLC_SFI + ['-f', bitcode_combined, '-o', asm_combined])
@@ -396,7 +406,8 @@ def Incarnation_bcld(argv):
 
   Run(AS + [asm_combined, '-o', native_combined])
 
-  args_native_ld[first_obj_pos] = native_combined
+  args_native_ld = MassageFinalLinkCommand([native_combined] + args_native_ld)
+
   Run([LD] +  args_native_ld)
 
   PatchAbiVersionIntoElfHeader(output)
@@ -407,7 +418,11 @@ def Incarnation_sfild(argv):
   pos = FindLinkPos(argv)
   assert pos
   output = argv[pos]
-  Run([LD] +  argv[1:])
+  extra = []
+  # force raise() to be live (needed by libgcc's div routine)
+  if '-nostdlib' not in argv:
+    extra = [REACHABLE_FUNCTION_SYMBOLS]
+  Run([LD] +  MassageFinalLinkCommand(extra + argv[1:]))
 
   PatchAbiVersionIntoElfHeader(output)
 ######################################################################

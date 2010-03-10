@@ -71,10 +71,7 @@ env.ComponentProgram(
      ],
     LIBS=[],
     EXTRA_LIBS=[],
-    LINKFLAGS=['-nostdlib', '-static'],
-    # NOTE: this are for ARM to really exclude libs and startup code
-    LINKFLAGS_FIRST=[],
-    LINKFLAGS_LAST=[],
+    LINKFLAGS=['-nostdlib'],
     )
 node = env.CommandSelLdrTestNacl(
     'barebones_hello_world_test.out',
@@ -93,10 +90,7 @@ env.ComponentProgram(
      ],
     LIBS=[],
     EXTRA_LIBS=[],
-    LINKFLAGS=['-nostdlib', '-static'],
-    # NOTE: this are for ARM to really exclude libs and startup code
-    LINKFLAGS_FIRST=[],
-    LINKFLAGS_LAST=[],
+    LINKFLAGS=['-nostdlib'],
     )
 node = env.CommandSelLdrTestNacl(
     'barebones_exit_test.out',

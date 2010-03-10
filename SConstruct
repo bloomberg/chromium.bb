@@ -1084,22 +1084,12 @@ if (nacl_env['BUILD_ARCHITECTURE'] == 'arm' and
   nacl_env['LINKCOM'] = linkcom
 
   nacl_env.Prepend(
-      LINKFLAGS_FIRST = ['${NACL_SDK_LIB}/crt1.o',
-                         '${NACL_SDK_LIB}/crti.o',
-                         '${NACL_SDK_LIB}/intrinsics.o',
-                         '${NACL_SDK_LIB}/reachable_function_symbols.o',
-                         ],
-      LIBS = [],
-      # NOTE: order and replication is/may be important
       LINKFLAGS_LAST = ['-lsrpc',
                         '-lc',
                         '-lnacl',
-                        '-lstdc++',
                         '-lc',
-                        '-lgcc',
                         '-lunimpl',
-                        '${NACL_SDK_LIB}/crtn.o',
-                        '-static'],
+                        ],
       EMULATOR  = EMULATOR,
       )
 
