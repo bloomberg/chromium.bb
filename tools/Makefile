@@ -536,10 +536,16 @@ ifeq ($(PLATFORM), Cygwin)
 	for exe in $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/bin/*.exe ; do \
 	  echo "The next command can hang on FAT partiton; use NTFS!" ; \
 	  ln -fn redirector.exe $$exe ; \
+	done && \
+	for exe in $(DESTDIR)$(SDKROOT)/libexec/gcc/$(CROSSARCH)/$(GCC_VERSION)/*.exe ; do \
+	  if ! [ -L "$$exe" ] ; then \
+	    mv "$$exe" $(DESTDIR)$(SDKROOT)/libexec/$(CROSSARCH)-$(GCC_VERSION)-"`basename $$exe`" ; \
+	    ln -sfn ../../../$(CROSSARCH)-$(GCC_VERSION)-"`basename $$exe`" "$$exe" ; \
+	  fi ; \
 	done
 else
 	for exe in $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/bin/* ; do \
-	  ln -sfn ../../bin/$(CROSSARCH)-"`basename $$exe`" $$exe ; \
+	  ln -sfn ../../bin/$(CROSSARCH)-"`basename $$exe`" "$$exe" ; \
 	done
 endif
 

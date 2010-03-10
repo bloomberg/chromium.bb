@@ -2967,58 +2967,6 @@ diff -uNr gcc-4.4.2.orig/gcc/final.c gcc-4.4.2/gcc/final.c
  
  	/* If necessary, report the effect that the instruction has on
  	   the unwind info.   We've already done this for delay slots
-diff -uNr gcc-4.4.2.orig/gcc/gcc.c gcc-4.4.2/gcc/gcc.c
---- gcc-4.4.2.orig/gcc/gcc.c	2009-03-17 22:25:59.000000000 +0100
-+++ gcc-4.4.2/gcc/gcc.c	2009-12-25 11:10:20.000000000 +0100
-@@ -6235,6 +6235,48 @@
-     --p;
-   programname = p;
- 
-+#ifdef __CYGWIN__
-+  {/* We must add our own dir to PATH to make cygwin1.dll discoverable.
-+    * We need this PATH trick only for programs that exec other programs,
-+    * namely the GCC driver.*/
-+  const char *path;
-+
-+  GET_ENVIRONMENT (path, "PATH");
-+  if (path && (argv[0] != p))
-+    {
-+      const char *startp, *endp;
-+      size_t dirnamelen = p - argv[0];
-+
-+      startp = endp = path;
-+      while (1)
-+	{
-+	  if (*endp == PATH_SEPARATOR || *endp == 0)
-+	    {
-+	      if (!strncmp(startp, argv[0], dirnamelen))
-+		{
-+		  break;
-+		}
-+
-+	      if (*endp == 0)
-+		{
-+		  char *nstore =
-+			(char *) alloca (strlen (path) + dirnamelen + 7);
-+                  memcpy(nstore, "PATH=", 5);
-+                  memcpy(nstore + 5, argv[0], dirnamelen);
-+                  nstore[dirnamelen + 5] = PATH_SEPARATOR;
-+                  strcpy(nstore + dirnamelen + 6, path);
-+                  putenv(nstore);
-+		  break;
-+		}
-+	      endp = startp = endp + 1;
-+	    }
-+	  else
-+	    endp++;
-+	}
-+    }
-+  }
-+#endif
-+
-   xmalloc_set_program_name (programname);
- 
-   expandargv (&argc, &argv);
 diff -uNr gcc-4.4.2.orig/gcc/genattrtab.c gcc-4.4.2/gcc/genattrtab.c
 --- gcc-4.4.2.orig/gcc/genattrtab.c	2008-07-09 08:45:21.000000000 +0200
 +++ gcc-4.4.2/gcc/genattrtab.c	2009-12-25 11:10:20.000000000 +0100
