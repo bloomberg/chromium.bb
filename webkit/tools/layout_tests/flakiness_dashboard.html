@@ -262,6 +262,7 @@
   var ALL = 'ALL';
   var FORWARD = 'forward';
   var BACKWARD = 'backward';
+  var GTEST_FLAKY_MARKER = '\.FLAKY_';
   var CHROME_TEST_BASE_URL = 'http://src.chromium.org/viewvc/chrome/trunk/' +
       'src/webkit/data/layout_tests/platform/';
   var TEST_URL_BASE_PATH =
@@ -548,6 +549,18 @@
 
     var separator = stringContains(currentState.tests, ' ') ? ' ' : ',';
     var testList = currentState.tests.split(separator);
+    
+    if (!isLayoutTestResults()) {
+      testList.forEach(function(element) {
+        // Make sure to search for the flaky and non-flaky names for a test.
+        // e.g. for test Foo.Bar, also search for Foo.FLAKY_Bar.
+        if (stringContains(element, GTEST_FLAKY_MARKER)) {
+          testList.push(element.replace(GTEST_FLAKY_MARKER, '.'));
+        } else {
+          testList.push(element.replace('.', GTEST_FLAKY_MARKER));
+        }
+      });
+    }
 
     // Put the tests into an object first and then move them into an array
     // as a way of deduping.
@@ -1147,7 +1160,8 @@
         extraExpectations.push('SLOW');
       }
     } else {
-      var isMarkedFlaky = stringContains(resultsForTest.test, 'FLAKY_');
+      var isMarkedFlaky = stringContains(resultsForTest.test,
+          GTEST_FLAKY_MARKER);
       if (resultsForTest.isFlaky && !isMarkedFlaky) {
         missingExpectations.push('FLAKY');
       } else if (!resultsForTest.isFlaky && isMarkedFlaky) {
@@ -1516,6 +1530,17 @@
       var a = a[column] ? String(a[column]) : 'z';
       var b = b[column] ? String(b[column]) : 'z';
 
+
+      // For gtest tests, we make them as flaky by prefixing the test name with
+      // FLAKY_, resulting in two entries for the test.
+      // Place flaky tests next to their non-flaky counterparts.
+      // TODO(ojan): Merge the non-flaky test with the flaky one so there's
+      // only a single entry per test.
+      if (!isLayoutTestResults()) {
+        a = a.replace(GTEST_FLAKY_MARKER, '.');
+        b = b.replace(GTEST_FLAKY_MARKER, '.');
+      }
+
       if (a < b)
         return -1;
       else if (a == b)
@@ -1569,7 +1594,7 @@
     } else if (column == '%') {
       sortFunctionGetter = getNumericSort;
       resultsProperty = 'percentFailed';
-    }    else {
+    } else {
       sortFunctionGetter = getAlphanumericCompare;
       resultsProperty = column;
     }
