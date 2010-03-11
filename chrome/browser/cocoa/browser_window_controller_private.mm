@@ -155,7 +155,8 @@ willPositionSheet:(NSWindow*)sheet
   if ([self hasTabStrip]) {
     // If we need to lay out the tab strip, replace |maxY| and |startMaxY| with
     // higher values, and then lay out the tab strip.
-    startMaxY = maxY = NSHeight([window frame]) + yOffset;
+    NSRect windowFrame = [contentView convertRect:[window frame] fromView:nil];
+    startMaxY = maxY = NSHeight(windowFrame) + yOffset;
     maxY = [self layoutTabStripAtMaxY:maxY width:width fullscreen:isFullscreen];
   }
 
