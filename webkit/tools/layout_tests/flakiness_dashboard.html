@@ -1276,7 +1276,8 @@
 
     html += '<ul><li>' +
       createBlameListHTML(resultsByBuilder[builder].webkitRevision, index,
-          'http://trac.webkit.org/log/?rev=', '&stop_rev=', 'WebKit') +
+          'http://trac.webkit.org/log/?verbose=on&rev=', '&stop_rev=',
+          'WebKit') +
       '</li><li>' +
       createBlameListHTML(resultsByBuilder[builder].chromeRevision, index,
           'http://build.chromium.org/buildbot/perf/dashboard/ui/' +
