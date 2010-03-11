@@ -2714,14 +2714,14 @@ BUG32673 WIN LINUX : fast/forms/textarea-scrollbar-height.html = TEXT
 BUG32675 LINUX : fast/repaint/trailing-floats-root-line-box-overflow.html = IMAGE
 
 // WebKit roll 53452:53511
-BUG32665 WIN DEBUG : media/video-source-error-no-candidate.html = TIMEOUT
+BUG32665 WIN DEBUG : media/video-source-error-no-candidate.html = PASS TIMEOUT
 
 // Flaky tests found during the roll.
 BUG32679 LINUX DEBUG : http/tests/navigation/lockedhistory-iframe.html = TEXT PASS
 BUG32680 WIN DEBUG : svg/filters/big-sized-filter.svg = TIMEOUT PASS
 BUG32682 LINUX : svg/W3C-SVG-1.1/filters-conv-01-f.svg = TEXT PASS
 BUG32683 LINUX DEBUG : svg/css/glyph-orientation-rounding-test.xhtml = TEXT PASS
-BUG32684 WIN DEBUG : inspector/timeline-layout.html = TEXT PASS
+BUG32684 WIN : inspector/timeline-layout.html = TEXT PASS
 BUG35519 WIN SKIP : http/tests/inspector/inspect-iframe-from-different-domain.html = PASS
 BUG32688 MAC DEBUG : fast/lists/inlineBoxWrapperNullCheck.html = TEXT PASS
 BUG32689 MAC LINUX DEBUG : http/tests/security/mixedContent/about-blank-iframe-in-main-frame.html = TEXT PASS
@@ -2815,7 +2815,7 @@ BUG13907 : media/video-display-aspect-ratio.html = TIMEOUT PASS
 BUG35822 : plugins/netscape-browser-object-identity.html = TEXT
 
 // New test added in WebKit r54786
-BUG35823 : fast/harness/page-cache-crash-on-data-urls.html = TEXT TIMEOUT
+BUG35823 : fast/harness/page-cache-crash-on-data-urls.html = TEXT TIMEOUT CRASH
 
 // Not known when these started failing.
 BUG35858 MAC LINUX : media/remove-from-document.html = CRASH PASS
@@ -2878,18 +2878,18 @@ BUG37779 : fast/loader/url-parse-1.html = TEXT
 BUG37779 : http/tests/loading/state-object-security-exception.html = TEXT
 
 // Bugs that went unreported when we upstreamed run_webkit_tests
-BUG37896 : editing/deleting/delete-3857753-fix.html = TEXT
-BUG37896 : editing/inserting/insert-div-026.html = TEXT
-BUG37896 : editing/pasteboard/paste-text-at-tabspan-001.html = TEXT
-BUG37896 : editing/pasteboard/paste-text-at-tabspan-002.html = TEXT
-BUG37896 : editing/style/font-family-with-space.html = TEXT
-BUG37896 : editing/style/smoosh-styles-001.html = TEXT
-BUG37896 : editing/style/style-boundary-005.html = TEXT
-BUG37896 : editing/undo/undo-smart-delete-word.html = TEXT
-BUG37896 : fast/backgrounds/animated-svg-as-background.html = IMAGE
-BUG37896 LINUX : fast/dom/Window/window-appendages-cleared.html = TEXT
-BUG37896 LINUX : fast/css/getComputedStyle/computed-style.html = TEXT
-BUG37896 LINUX : fast/css/getComputedStyle/computed-style-without-renderer.html = TEXT
+BUG37896 WIN LINUX : editing/deleting/delete-3857753-fix.html = TEXT
+BUG37896 WIN LINUX : editing/inserting/insert-div-026.html = TEXT
+BUG37896 WIN LINUX : editing/pasteboard/paste-text-at-tabspan-001.html = TEXT
+BUG37896 WIN LINUX : editing/pasteboard/paste-text-at-tabspan-002.html = TEXT
+BUG37896 WIN LINUX : editing/style/font-family-with-space.html = TEXT
+BUG37896 WIN LINUX : editing/style/smoosh-styles-001.html = TEXT
+BUG37896 WIN LINUX : editing/style/style-boundary-005.html = TEXT
+BUG37896 WIN LINUX : editing/undo/undo-smart-delete-word.html = TEXT
+BUG37896 MAC LINUX : fast/backgrounds/animated-svg-as-background.html = IMAGE
+BUG37896 MAC LINUX : fast/dom/Window/window-appendages-cleared.html = TEXT
+BUG37896 MAC LINUX : fast/css/getComputedStyle/computed-style.html = TEXT
+BUG37896 MAC LINUX : fast/css/getComputedStyle/computed-style-without-renderer.html = TEXT
 BUG37896 MAC WIN : fast/dynamic/positioned-movement-with-positioned-children.html = TEXT
 BUG37896 : fast/events/remove-child-onscroll.html = TIMEOUT
 BUG37896 : fast/events/standalone-image-drag-to-editable.html = IMAGE+TEXT
@@ -2902,9 +2902,14 @@ BUG37896 : fast/loader/document-with-fragment-url-4.html = TIMEOUT
 BUG37896 : fast/multicol/hit-test-above-or-below.html = TEXT
 BUG37896 WIN : fast/overflow/scrollRevealButton.html = IMAGE+TEXT
 BUG37896 : fast/repaint/no-caret-repaint-in-non-content-editable-element.html = IMAGE+TEXT
-BUG37896 LINUX : fast/text/firstline/001.html = CRASH
+BUG37896 LINUX : fast/text/firstline/001.html = PASS CRASH
 BUG37896 WIN : http/tests/navigation/javascriptlink-frames.html = IMAGE+TEXT
-BUG37896 : inspector/timeline-network-resource.html = TEXT
+BUG37896 WIN : inspector/timeline-network-resource.html = TEXT
 BUG37896 : media/video-preload.html = TEXT
 BUG37896 : plugins/keyboard-events.html = TEXT
 BUG37896 : svg/css/getComputedStyle-basic.xhtml = TEXT
+BUG37896 LINUX : fast/images/svg-as-background.html = TIMEOUT PASS
+BUG37869 LINUX : fast/images/animated-svg-as-image.html = IMAGE
+BUG37869 MAC LINUX : inspector/timeline-network-resource.html = CRASH
+BUG37869 MAC : fast/canvas/webgl/uniform-location.html = TEXT
+BUG37869 MAC : editing/input/option-page-up-down.html = TIMEOUT
