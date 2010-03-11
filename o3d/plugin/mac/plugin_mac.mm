@@ -54,6 +54,8 @@ using o3d::DisplayWindowMac;
 
 namespace o3d {
 
+bool gIsChrome = false;
+
 // Returns the version number of the running Mac browser, as parsed from
 // the short version string in the plist of the app's bundle.
 bool GetBrowserVersionInfo(int *returned_major,
@@ -245,13 +247,17 @@ void RenderTimer::TimerCallback(CFRunLoopTimerRef timer, void* info) {
     }
 #endif
 
-    // We're visible if (a) we are in fullscreen mode or (b) our cliprect
-    // height and width are both a sensible size, ie > 1 pixel.
+    // We're visible if (a) we are in fullscreen mode, (b) our cliprect
+    // height and width are both a sensible size, ie > 1 pixel, or (c) if
+    // we are rendering to render surfaces (CoreGraphics drawing model,
+    // essentially offscreen rendering).
+    //
     // We don't check for 0 as we have to size to 1 x 1 on occasion rather than
     // 0 x 0 to avoid crashing the Apple software renderer, but do not want to
     // actually draw to a 1 x 1 pixel area.
     bool plugin_visible = in_fullscreen ||
-        (obj->last_buffer_rect_[2] > 1 && obj->last_buffer_rect_[3] > 1);
+        (obj->last_buffer_rect_[2] > 1 && obj->last_buffer_rect_[3] > 1) ||
+        obj->IsOffscreenRenderingEnabled();
 
     if (plugin_visible && obj->renderer()) {
       if (obj->client()->render_mode() == o3d::Client::RENDERMODE_CONTINUOUS ||
@@ -265,7 +271,14 @@ void RenderTimer::TimerCallback(CFRunLoopTimerRef timer, void* info) {
           aglSetInteger(obj->mac_agl_context_, AGL_SWAP_INTERVAL, &sync);
         }
 
-        obj->client()->RenderClient(true);
+        if (obj->IsOffscreenRenderingEnabled()) {
+          NPRect rect = { 0 };
+          rect.bottom = obj->width();
+          rect.right = obj->height();
+          NPN_InvalidateRect(instance, &rect);
+        } else {
+          obj->client()->RenderClient(true);
+        }
       }
     }
   }

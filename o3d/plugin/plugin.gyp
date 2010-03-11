@@ -58,8 +58,6 @@
     ],
     # A comma-separated list of strings, each double-quoted.
     'plugin_domain_whitelist%': '',
-    # Whether to enable the English-only, Win/Mac-only fullscreen message.
-    'plugin_enable_fullscreen_msg%': '1',
   },
   'includes': [
     '../build/common.gypi',
@@ -88,13 +86,6 @@
         {
           'defines': [
             'O3D_PLUGIN_DOMAIN_WHITELIST=<(plugin_domain_whitelist)',
-          ],
-        },
-      ],
-      ['<(plugin_enable_fullscreen_msg) != 0',
-        {
-          'defines': [
-            'O3D_PLUGIN_ENABLE_FULLSCREEN_MSG=1',
           ],
         },
       ],

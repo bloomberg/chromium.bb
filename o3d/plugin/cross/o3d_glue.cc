@@ -37,7 +37,9 @@
 
 #include <string>
 #include <algorithm>
+#include "core/cross/image_utils.h"
 #include "core/cross/renderer.h"
+#include "core/cross/texture.h"
 #include "core/cross/client_info.h"
 #include "plugin/cross/o3d_glue.h"
 #include "plugin/cross/config.h"
@@ -55,6 +57,10 @@
 
 namespace glue {
 namespace _o3d {
+
+using o3d::Bitmap;
+using o3d::Texture;
+using o3d::Texture2D;
 
 void RegisterType(NPP npp, const ObjectBase::Class *clientclass,
                   NPClass *npclass) {
@@ -134,6 +140,7 @@ PluginObject::PluginObject(NPP npp)
       mac_2d_context_(0),
       mac_agl_context_(0),
       mac_cgl_context_(0),
+      mac_cgl_pbuffer_(0),
       last_mac_event_time_(0),
 #ifdef O3D_PLUGIN_ENABLE_FULLSCREEN_MSG
       time_to_hide_overlay_(0.0),
@@ -165,7 +172,8 @@ PluginObject::PluginObject(NPP npp)
       stream_manager_(new StreamManager(npp)),
       cursor_type_(o3d::Cursor::DEFAULT),
       prev_width_(0),
-      prev_height_(0) {
+      prev_height_(0),
+      offscreen_rendering_enabled_(false) {
 #if defined(OS_WIN) || defined(OS_LINUX)
   memset(cursors_, 0, sizeof(cursors_));
 #endif
@@ -218,6 +226,7 @@ void PluginObject::Init(int argc, char* argn[], char* argv[]) {
 }
 
 void PluginObject::TearDown() {
+  DisableOffscreenRendering();
 #ifdef OS_WIN
   ClearPluginProperty(hWnd_);
 #elif defined(OS_MACOSX)
@@ -717,6 +726,12 @@ void PluginObject::Resize(int width, int height) {
     prev_height_ = height;
 
     if (renderer_ && !fullscreen_) {
+      // If we are rendering offscreen, we may need to reallocate the
+      // render surfaces.
+      if (offscreen_rendering_enabled_) {
+        AllocateOffscreenRenderSurfaces(width, height);
+      }
+
       // Tell the renderer and client that our window has been resized.
       // If we're in fullscreen mode when this happens, we don't want to pass
       // the information through; the renderer will pick it up when we switch
@@ -1051,6 +1066,93 @@ void PluginObject::Tick() {
   if (renderer_ && renderer_->need_to_render()) {
     client_->RenderClient(true);
   }
+}
+
+void PluginObject::EnableOffscreenRendering() {
+  if (!offscreen_rendering_enabled_) {
+    AllocateOffscreenRenderSurfaces(width(), height());
+    offscreen_rendering_enabled_ = true;
+  }
+}
+
+void PluginObject::DisableOffscreenRendering() {
+  if (offscreen_rendering_enabled_) {
+    DeallocateOffscreenRenderSurfaces();
+    offscreen_rendering_enabled_ = false;
+  }
+}
+
+bool PluginObject::IsOffscreenRenderingEnabled() const {
+  return offscreen_rendering_enabled_;
+}
+
+RenderSurface::Ref PluginObject::GetOffscreenRenderSurface() const {
+  return offscreen_render_surface_;
+}
+
+Bitmap::Ref PluginObject::GetOffscreenBitmap() const {
+  return offscreen_readback_bitmap_;
+}
+
+bool PluginObject::AllocateOffscreenRenderSurfaces(int width, int height) {
+  int pot_width =
+      static_cast<int>(o3d::image::ComputePOTSize(width));
+  int pot_height =
+      static_cast<int>(o3d::image::ComputePOTSize(height));
+  if (!renderer_ || pot_width == 0 || pot_height == 0) {
+    return false;
+  }
+  bool must_reallocate_render_surfaces =
+      (offscreen_render_surface_.IsNull() ||
+       offscreen_depth_render_surface_.IsNull() ||
+       offscreen_render_surface_->width() != pot_width ||
+       offscreen_render_surface_->height() != pot_height);
+  if (must_reallocate_render_surfaces) {
+    Texture2D::Ref texture = renderer_->CreateTexture2D(
+        pot_width,
+        pot_height,
+        Texture::ARGB8,
+        1,
+        true);
+    if (texture.IsNull()) {
+      return false;
+    }
+    RenderSurface::Ref surface(texture->GetRenderSurface(0));
+    if (surface.IsNull()) {
+      return false;
+    }
+    RenderDepthStencilSurface::Ref depth(renderer_->CreateDepthStencilSurface(
+        pot_width,
+        pot_height));
+    if (depth.IsNull()) {
+      return false;
+    }
+    offscreen_texture_ = texture;
+    offscreen_render_surface_ = surface;
+    offscreen_depth_render_surface_ = depth;
+  }
+  offscreen_render_surface_->SetClipSize(width, height);
+  offscreen_depth_render_surface_->SetClipSize(width, height);
+  if (offscreen_readback_bitmap_.IsNull() ||
+      offscreen_readback_bitmap_->width() != width ||
+      offscreen_readback_bitmap_->height() != height) {
+    o3d::Bitmap::Ref bitmap = Bitmap::Ref(
+        new Bitmap(service_locator()));
+    bitmap->Allocate(Texture::ARGB8,
+                     width, height, 1, Bitmap::IMAGE);
+    offscreen_readback_bitmap_ = bitmap;
+  }
+  // Tell the Client about the newly allocated surfaces so that normal
+  // calls to RenderClient can automatically do the right thing.
+  client_->SetOffscreenRenderingSurfaces(offscreen_render_surface_,
+                                         offscreen_depth_render_surface_);
+  return true;
+}
+
+void PluginObject::DeallocateOffscreenRenderSurfaces() {
+  offscreen_render_surface_.Reset();
+  offscreen_depth_render_surface_.Reset();
+  offscreen_readback_bitmap_.Reset();
 }
 
 }  // namespace _o3d

@@ -79,8 +79,8 @@ class RenderSurfaceD3D9 : public RenderSurface {
   void Clear();
 
  protected:
-  // The platform specific part of GetBitmap.
-  virtual Bitmap::Ref PlatformSpecificGetBitmap() const;
+  // The platform specific part of GetIntoBitmap.
+  virtual bool PlatformSpecificGetIntoBitmap(Bitmap::Ref bitmap) const;
 
  private:
   CComPtr<IDirect3DSurface9> direct3d_surface_;

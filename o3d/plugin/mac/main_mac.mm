@@ -50,6 +50,7 @@
 #include "statsreport/metrics.h"
 #include "plugin/cross/plugin_logging.h"
 #include "plugin/cross/plugin_metrics.h"
+#include "plugin/cross/o3d_glue.h"
 #include "plugin/cross/out_of_memory.h"
 #include "plugin/cross/whitelist.h"
 #include "plugin/mac/plugin_mac.h"
@@ -62,8 +63,10 @@ bool g_logging_initialized = false;
 
 using glue::_o3d::PluginObject;
 using glue::StreamManager;
+using o3d::Bitmap;
 using o3d::DisplayWindowMac;
 using o3d::Event;
+using o3d::Renderer;
 
 namespace {
 // We would normally make this a stack variable in main(), but in a
@@ -77,8 +80,53 @@ base::AtExitManager g_at_exit_manager;
 #define CFTIMER
 // #define DEFERRED_DRAW_ON_NULLEVENTS
 
-void DrawPlugin(PluginObject* obj, bool send_callback) {
+void DrawPlugin(PluginObject* obj, bool send_callback, CGContextRef context) {
   obj->client()->RenderClient(send_callback);
+  Renderer* renderer = obj->renderer();
+  if (obj->IsOffscreenRenderingEnabled() && renderer && context) {
+    DCHECK_EQ(obj->drawing_model_, NPDrawingModelCoreGraphics);
+    DCHECK(obj->mac_cgl_pbuffer_);
+    // We need to read back the framebuffer and draw it to the screen using
+    // CoreGraphics.
+    renderer->StartRendering();
+    Bitmap::Ref bitmap = obj->GetOffscreenBitmap();
+    obj->GetOffscreenRenderSurface()->GetIntoBitmap(bitmap);
+    bitmap->FlipVertically();
+    renderer->FinishRendering();
+    uint8* data = bitmap->GetMipData(0);
+    unsigned width = bitmap->width();
+    unsigned height = bitmap->height();
+    int rowBytes = width * 4;
+    CGContextSaveGState(context);
+
+    CGDataProviderRef dataProvider =
+        CGDataProviderCreateWithData(0, data, rowBytes * height, 0);
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    // We need to use kCGImageAlphaNoneSkipFirst to discard the alpha channel.
+    // O3D's output is currently semantically opaque.
+    CGImageRef cgImage = CGImageCreate(width,
+                                       height,
+                                       8,
+                                       32,
+                                       rowBytes,
+                                       colorSpace,
+                                       kCGImageAlphaNoneSkipFirst |
+                                       kCGBitmapByteOrder32Host,
+                                       dataProvider,
+                                       0,
+                                       false,
+                                       kCGRenderingIntentDefault);
+    CGRect rect = CGRectMake(0, 0, width, height);
+    // We want to completely overwrite the previous frame's
+    // rendering results.
+    CGContextSetBlendMode(context, kCGBlendModeCopy);
+    CGContextSetInterpolationQuality(context, kCGInterpolationNone);
+    CGContextDrawImage(context, rect, cgImage);
+    CGImageRelease(cgImage);
+    CGColorSpaceRelease(colorSpace);
+    CGDataProviderRelease(dataProvider);
+    CGContextRestoreGState(context);
+  }
 }
 
 unsigned char GetMacEventKeyChar(const EventRecord *the_event) {
@@ -418,7 +466,11 @@ bool HandleCocoaEvent(NPP instance, NPCocoaEvent* the_event) {
   obj->MacEventReceived();
   switch (the_event->type) {
     case NPCocoaEventDrawRect:
-      DrawPlugin(obj, false);
+      // We need to call the render callback from here if we are rendering
+      // off-screen because it doesn't get called anywhere else.
+      DrawPlugin(obj,
+                 obj->IsOffscreenRenderingEnabled(),
+                 the_event->data.draw.context);
       handled = true;
       break;
     case NPCocoaEventMouseDown:
@@ -436,6 +488,10 @@ bool HandleCocoaEvent(NPP instance, NPCocoaEvent* the_event) {
         NSString *chars =
             (NSString*) the_event->data.key.charactersIgnoringModifiers;
 
+        if (chars == NULL || [chars length] == 0) {
+          break;
+        }
+
         if ([chars characterAtIndex:0] == '\e') {
           obj->CancelFullscreenDisplay();
           break;
@@ -450,6 +506,10 @@ bool HandleCocoaEvent(NPP instance, NPCocoaEvent* the_event) {
 
       NSString *chars =
           (NSString*) the_event->data.key.charactersIgnoringModifiers;
+
+      if (chars == NULL || [chars length] == 0) {
+        break;
+      }
 
       DispatchKeyboardEvent(obj,
                             eventKind,
@@ -574,6 +634,11 @@ void Mac_SetBestEventModel(NPP instance, PluginObject* obj) {
   // AGL context to the browser window.
   model_to_use =
       (supportsCarbonEventModel) ? NPEventModelCarbon : NPEventModelCocoa;
+  if (o3d::gIsChrome) {
+    if (supportsCocoaEventModel) {
+      model_to_use = NPEventModelCocoa;
+    }
+  }
   NPN_SetValue(instance, NPPVpluginEventModel,
                reinterpret_cast<void*>(model_to_use));
   obj->event_model_ = model_to_use;
@@ -611,21 +676,30 @@ NPError Mac_SetBestDrawingModel(NPP instance, PluginObject* obj) {
   if (err != NPERR_NO_ERROR)
     supportsCoreGraphics = FALSE;
 
-
-  // In order of preference. Preference is now determined by compatibility,
-  // not by modernity, and so is the opposite of the order I first used.
-  if (supportsQuickDraw && !(obj->event_model_ == NPEventModelCocoa)) {
-    drawing_model = NPDrawingModelQuickDraw;
-  } else if (supportsCoreGraphics) {
+  // In the Chrome browser we currently want to prefer the CoreGraphics
+  // drawing model, read back the frame buffer into system memory and draw
+  // the results to the screen using CG.
+  //
+  // TODO(maf): Once support for the CoreAnimation drawing model is
+  // integrated into O3D, we will want to revisit this logic.
+  if (o3d::gIsChrome && supportsCoreGraphics) {
     drawing_model = NPDrawingModelCoreGraphics;
-  } else if (supportsOpenGL) {
-    drawing_model = NPDrawingModelOpenGL;
   } else {
-    // This case is for browsers that didn't even understand the question
-    // eg FF2, so drawing models are not supported, just assume QuickDraw.
-    obj->drawing_model_ = NPDrawingModelQuickDraw;
-    return NPERR_NO_ERROR;
-  }
+    // In order of preference. Preference is now determined by compatibility,
+    // not by modernity, and so is the opposite of the order I first used.
+    if (supportsQuickDraw && !(obj->event_model_ == NPEventModelCocoa)) {
+      drawing_model = NPDrawingModelQuickDraw;
+    } else if (supportsCoreGraphics) {
+      drawing_model = NPDrawingModelCoreGraphics;
+    } else if (supportsOpenGL) {
+      drawing_model = NPDrawingModelOpenGL;
+    } else {
+      // This case is for browsers that didn't even understand the question
+      // eg FF2, so drawing models are not supported, just assume QuickDraw.
+      obj->drawing_model_ = NPDrawingModelQuickDraw;
+      return NPERR_NO_ERROR;
+    }
+  }      
 
   err = NPN_SetValue(instance, NPPVpluginDrawingModel,
                      reinterpret_cast<void*>(drawing_model));
@@ -731,7 +805,9 @@ bool HandleMacEvent(EventRecord* the_event, NPP instance) {
       GLUE_PROFILE_STOP(instance, "forceredraw");
 #elif defined(CFTIMER)
 #else
-      DrawPlugin(obj, true);
+      DrawPlugin(obj, true,
+                 (obj->drawing_model_ == NPDrawingModelCoreGraphics) ?
+                 reinterpret_cast<CGContextRef>(obj->mac_2d_context_) : NULL);
 #endif
       // Safari tab switching recovery code.
       if (obj->mac_surface_hidden_) {
@@ -756,7 +832,9 @@ bool HandleMacEvent(EventRecord* the_event, NPP instance) {
       handled = true;
       break;
     case updateEvt:
-      DrawPlugin(obj, false);
+      DrawPlugin(obj, false,
+                 (obj->drawing_model_ == NPDrawingModelCoreGraphics) ?
+                 reinterpret_cast<CGContextRef>(obj->mac_2d_context_) : NULL);
       handled = true;
       break;
     case osEvt:
@@ -853,7 +931,6 @@ bool CheckForAGLError() {
   return aglGetError() != AGL_NO_ERROR;
 }
 
-
 NPError NPP_SetWindow(NPP instance, NPWindow* window) {
   HANDLE_CRASHES;
   PluginObject* obj = static_cast<PluginObject*>(instance->pdata);
@@ -861,7 +938,8 @@ NPError NPP_SetWindow(NPP instance, NPWindow* window) {
 
   assert(window != NULL);
 
-  if (window->window == NULL)
+  if (window->window == NULL &&
+      obj->drawing_model_ != NPDrawingModelCoreGraphics)
     return NPERR_NO_ERROR;
 
   obj->last_plugin_loc_.h = window->x;
@@ -918,11 +996,63 @@ NPError NPP_SetWindow(NPP instance, NPWindow* window) {
   // Whether we already had a window before this call.
   bool had_a_window = obj->mac_window_ != NULL;
 
+  // Whether we already had a pbuffer before this call.
+  bool had_a_pbuffer = obj->mac_cgl_pbuffer_ != NULL;
+
   obj->mac_window_ = new_window;
 
   if (obj->drawing_model_ == NPDrawingModelOpenGL) {
     CGLSetCurrentContext(obj->mac_cgl_context_);
-  } else if (!had_a_window && obj->mac_agl_context_ == NULL) {  // setup AGL context
+  } else if (obj->drawing_model_ == NPDrawingModelCoreGraphics &&
+             o3d::gIsChrome &&
+             obj->mac_cgl_pbuffer_ == NULL) {
+    // This code path is only taken for Chrome. We initialize things with a
+    // CGL context rendering to a 1x1 pbuffer. Later we use the O3D
+    // RenderSurface APIs to set up the framebuffer object which is used
+    // for rendering.
+    static const CGLPixelFormatAttribute attribs[] = {
+      (CGLPixelFormatAttribute) kCGLPFAPBuffer,
+      (CGLPixelFormatAttribute) 0
+    };
+    CGLPixelFormatObj pixelFormat;
+    GLint numPixelFormats;
+    if (CGLChoosePixelFormat(attribs,
+                             &pixelFormat,
+                             &numPixelFormats) != kCGLNoError) {
+      DLOG(ERROR) << "Error choosing pixel format.";
+      return NPERR_GENERIC_ERROR;
+    }
+    if (!pixelFormat) {
+      DLOG(ERROR) << "Unable to find pbuffer compatible pixel format.";
+      return NPERR_GENERIC_ERROR;
+    }
+    CGLContextObj context;
+    CGLError res = CGLCreateContext(pixelFormat, 0, &context);
+    CGLDestroyPixelFormat(pixelFormat);
+    if (res != kCGLNoError) {
+      DLOG(ERROR) << "Error creating context.";
+      return NPERR_GENERIC_ERROR;
+    }
+    CGLPBufferObj pbuffer;
+    if (CGLCreatePBuffer(1, 1,
+                         GL_TEXTURE_2D, GL_RGBA,
+                         0, &pbuffer) != kCGLNoError) {
+      CGLDestroyContext(context);
+      DLOG(ERROR) << "Error creating pbuffer.";
+      return NPERR_GENERIC_ERROR;
+    }
+    if (CGLSetPBuffer(context, pbuffer, 0, 0, 0) != kCGLNoError) {
+      CGLDestroyContext(context);
+      CGLDestroyPBuffer(pbuffer);
+      DLOG(ERROR) << "Error attaching pbuffer to context.";
+      return NPERR_GENERIC_ERROR;
+    }
+    // Must make the context current for renderer creation to succeed
+    CGLSetCurrentContext(context);
+    obj->mac_cgl_context_ = context;
+    obj->mac_cgl_pbuffer_ = pbuffer;
+  } else if (!had_a_window && obj->mac_agl_context_ == NULL) {
+    // setup AGL context
     AGLPixelFormat myAGLPixelFormat = NULL;
 
   // We need to spec out a few similar but different sets of renderer
@@ -1091,6 +1221,14 @@ NPError NPP_SetWindow(NPP instance, NPWindow* window) {
     aglEnable(obj->mac_agl_context_, AGL_BUFFER_RECT);
   }
 
+  if (had_a_pbuffer) {
+    // CoreGraphics drawing model when we have no on-screen window (Chrome,
+    // specifically).
+    obj->EnableOffscreenRendering();
+    obj->Resize(window->width, window->height);
+    return NPERR_NO_ERROR;
+  }
+
   // Renderer is already initialized from a previous call to this function,
   // just update size and position and return.
   if (had_a_window) {
@@ -1120,9 +1258,13 @@ NPError NPP_SetWindow(NPP instance, NPWindow* window) {
   obj->client()->Init();
 
   if (obj->renderer()) {
-    obj->renderer()->SetClientOriginOffset(gl_x_origin, gl_y_origin);
-    obj->Resize(window->width, window->height);
+    if (obj->mac_cgl_pbuffer_) {
+      obj->EnableOffscreenRendering();
+    } else {
+      obj->renderer()->SetClientOriginOffset(gl_x_origin, gl_y_origin);
+    }
 
+    obj->Resize(window->width, window->height);
 #ifdef CFTIMER
     // now that the grahics context is setup, add this instance to the timer
     // list so it gets drawn repeatedly

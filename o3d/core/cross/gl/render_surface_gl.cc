@@ -54,13 +54,13 @@ RenderSurfaceGL::RenderSurfaceGL(ServiceLocator *service_locator,
 RenderSurfaceGL::~RenderSurfaceGL() {
 }
 
-Bitmap::Ref RenderSurfaceGL::PlatformSpecificGetBitmap() const {
+bool RenderSurfaceGL::PlatformSpecificGetIntoBitmap(Bitmap::Ref bitmap) const {
   Renderer* renderer = service_locator()->GetService<Renderer>();
   DCHECK(renderer);
-
-  Bitmap::Ref bitmap = Bitmap::Ref(new Bitmap(service_locator()));
-  bitmap->Allocate(
-      Texture::ARGB8, clip_width(), clip_height(), 1, Bitmap::IMAGE);
+  DCHECK(bitmap->width() == static_cast<unsigned int>(clip_width()) &&
+         bitmap->height() == static_cast<unsigned int>(clip_height()) &&
+         bitmap->num_mipmaps() == 1 &&
+         bitmap->format() == Texture::ARGB8);
 
   const RenderSurface* old_render_surface;
   const RenderDepthStencilSurface* old_depth_surface;
@@ -76,7 +76,7 @@ Bitmap::Ref RenderSurfaceGL::PlatformSpecificGetBitmap() const {
   renderer->SetRenderSurfaces(old_render_surface, old_depth_surface,
                               old_is_back_buffer);
 
-  return bitmap;
+  return true;
 }
 
 RenderDepthStencilSurfaceGL::RenderDepthStencilSurfaceGL(

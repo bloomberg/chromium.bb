@@ -1317,7 +1317,8 @@ void RendererGL::SetRenderSurfacesPlatformSpecific(
   if (!InstallFramebufferObjects(surface, surface_depth)) {
     O3D_ERROR(service_locator())
         << "Failed to bind OpenGL render target objects:"
-        << surface->name() <<", "<< surface_depth->name();
+        << (surface ? surface->name() : "(no surface)") << ", "
+        << (surface_depth ? surface_depth->name() : "(no depth surface)");
   }
   // RenderSurface rendering is performed with an inverted Y, so the front
   // face winding must be changed to clock-wise.  See comments for

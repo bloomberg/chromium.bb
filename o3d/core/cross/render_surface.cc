@@ -72,7 +72,29 @@ RenderSurface::RenderSurface(ServiceLocator* service_locator,
 }
 
 Bitmap::Ref RenderSurface::GetBitmap() const {
-  return PlatformSpecificGetBitmap();
+  Bitmap::Ref bitmap = Bitmap::Ref(new Bitmap(service_locator()));
+  bitmap->Allocate(Texture::ARGB8,
+                   clip_width(),
+                   clip_height(),
+                   1,
+                   Bitmap::IMAGE);
+  if (!GetIntoBitmap(bitmap)) {
+    Bitmap::Ref empty;
+    return empty;
+  }
+  return bitmap;
+}
+
+bool RenderSurface::GetIntoBitmap(Bitmap::Ref bitmap) const {
+  if (bitmap.IsNull() ||
+      bitmap->width() != static_cast<unsigned int>(clip_width()) ||
+      bitmap->height() != static_cast<unsigned int>(clip_height()) ||
+      bitmap->num_mipmaps() != 1 ||
+      bitmap->format() != Texture::ARGB8) {
+    return false;
+  }
+
+  return PlatformSpecificGetIntoBitmap(bitmap);
 }
 
 RenderDepthStencilSurface::RenderDepthStencilSurface(

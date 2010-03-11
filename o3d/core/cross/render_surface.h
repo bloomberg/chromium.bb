@@ -138,9 +138,16 @@ class RenderSurface : public RenderSurfaceBase {
   // Only gets the clip_width/clip_height area.
   Bitmap::Ref GetBitmap() const;
 
+  // Gets a copy of the contents of the render surface into the given
+  // Bitmap. Only gets the clip_width/clip_height area. Returns true
+  // if the bitmap was appropriately sized, false if not or if an
+  // error occurred.
+  bool GetIntoBitmap(Bitmap::Ref bitmap) const;
+
  protected:
-  // The platform specific part of GetBitmap.
-  virtual Bitmap::Ref PlatformSpecificGetBitmap() const = 0;
+  // The platform specific part of GetIntoBitmap.
+  virtual bool PlatformSpecificGetIntoBitmap(
+      Bitmap::Ref bitmap) const = 0;
 
  private:
   // Texture parameter of the texture in which this render surface is contained.

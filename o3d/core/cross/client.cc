@@ -304,7 +304,25 @@ void Client::RenderClient(bool send_callback) {
   if (!renderer_.IsAvailable())
     return;
 
-  RenderClientInner(true, send_callback);
+  bool have_offscreen_surfaces =
+      !(offscreen_render_surface_.IsNull() ||
+        offscreen_depth_render_surface_.IsNull());
+
+  if (have_offscreen_surfaces) {
+    if (!renderer_->StartRendering()) {
+      return;
+    }
+    renderer_->SetRenderSurfaces(offscreen_render_surface_,
+                                 offscreen_depth_render_surface_,
+                                 true);
+  }
+
+  RenderClientInner(!have_offscreen_surfaces, send_callback);
+
+  if (have_offscreen_surfaces) {
+    renderer_->SetRenderSurfaces(NULL, NULL, false);
+    renderer_->FinishRendering();
+  }
 }
 
 // Executes draw calls for all visible shapes in a subtree
@@ -501,6 +519,13 @@ String Client::GetMessageQueueAddress() const {
     O3D_ERROR(service_locator_) << "Message queue not initialized";
     return String("");
   }
+}
+
+void Client::SetOffscreenRenderingSurfaces(
+    RenderSurface::Ref surface,
+    RenderDepthStencilSurface::Ref depth_surface) {
+  offscreen_render_surface_ = surface;
+  offscreen_depth_render_surface_ = depth_surface;
 }
 
 // Error Related methods -------------------------------------------------------

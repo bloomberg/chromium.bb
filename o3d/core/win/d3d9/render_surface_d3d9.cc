@@ -75,11 +75,15 @@ void RenderSurfaceD3D9::Clear() {
   }
 }
 
-Bitmap::Ref RenderSurfaceD3D9::PlatformSpecificGetBitmap() const {
-  Bitmap::Ref empty;
+bool RenderSurfaceD3D9::PlatformSpecificGetIntoBitmap(
+    Bitmap::Ref bitmap) const {
+  DCHECK(bitmap->width() == static_cast<unsigned int>(clip_width()) &&
+         bitmap->height() == static_cast<unsigned int>(clip_height()) &&
+         bitmap->num_mipmaps() == 1 &&
+         bitmap->format() == Texture::ARGB8);
 
   if (!direct3d_surface_) {
-    return empty;
+    return false;
   }
 
   RendererD3D9* renderer =
@@ -89,7 +93,7 @@ Bitmap::Ref RenderSurfaceD3D9::PlatformSpecificGetBitmap() const {
 
   D3DSURFACE_DESC surface_description;
   if (!HR(direct3d_surface_->GetDesc(&surface_description))) {
-    return empty;
+    return false;
   }
 
   if (!HR(device->CreateOffscreenPlainSurface(surface_description.Width,
@@ -98,25 +102,19 @@ Bitmap::Ref RenderSurfaceD3D9::PlatformSpecificGetBitmap() const {
                                               D3DPOOL_SYSTEMMEM,
                                               &system_surface,
                                               NULL))) {
-    return empty;
+    return false;
   }
 
   if (!HR(device->GetRenderTargetData(direct3d_surface_, system_surface)))
-    return empty;
+    return false;
 
   RECT rect = { 0, 0, clip_width(), clip_height() };
   D3DLOCKED_RECT out_rect = {0};
   if (!HR(system_surface->LockRect(&out_rect, &rect, D3DLOCK_READONLY))) {
     O3D_ERROR(service_locator()) << "Failed to Lock Surface (D3D9)";
-    return empty;
+    return false;
   }
 
-  Bitmap::Ref bitmap = Bitmap::Ref(new Bitmap(service_locator()));
-  bitmap->Allocate(Texture::ARGB8,
-                   clip_width(),
-                   clip_height(),
-                   1,
-                   Bitmap::IMAGE);
   bitmap->SetRect(0, 0, 0,
                   clip_width(),
                   clip_height(),
@@ -125,7 +123,7 @@ Bitmap::Ref RenderSurfaceD3D9::PlatformSpecificGetBitmap() const {
 
   system_surface->UnlockRect();
 
-  return bitmap;
+  return true;
 }
 
 RenderDepthStencilSurfaceD3D9::RenderDepthStencilSurfaceD3D9(

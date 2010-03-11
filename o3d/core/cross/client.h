@@ -59,6 +59,7 @@
 #include "core/cross/event_manager.h"
 #include "core/cross/lost_resource_callback.h"
 #include "core/cross/render_event.h"
+#include "core/cross/render_surface.h"
 #include "core/cross/tick_event.h"
 #include "core/cross/timer.h"
 #include "core/cross/timingtable.h"
@@ -429,6 +430,14 @@ class Client {
     DISALLOW_COPY_AND_ASSIGN(ScopedIncrement);
   };
 
+  // Offscreen rendering methods -------------------
+
+  // Sets up this Client so that RenderClient will cause the rendering
+  // results to go into the given surfaces.
+  void SetOffscreenRenderingSurfaces(
+      RenderSurface::Ref surface,
+      RenderDepthStencilSurface::Ref depth_surface);
+
  private:
   // Renders the client.
   void RenderClientInner(bool present, bool send_callback);
@@ -498,6 +507,9 @@ class Client {
   Id id_;
 
   int calls_;  // Used to check reentrancy along with ScopedIncrement.
+
+  RenderSurface::Ref offscreen_render_surface_;
+  RenderDepthStencilSurface::Ref offscreen_depth_render_surface_;
 
   DISALLOW_COPY_AND_ASSIGN(Client);
 };  // Client

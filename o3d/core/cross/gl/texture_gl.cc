@@ -278,6 +278,7 @@ Texture2DGL* Texture2DGL::Create(ServiceLocator* service_locator,
                                  bool enable_render_surfaces) {
   DLOG(INFO) << "Texture2DGL Create";
   DCHECK_NE(format, Texture::UNKNOWN_FORMAT);
+  DCHECK_GE(levels, 0);
   RendererGL *renderer = static_cast<RendererGL *>(
       service_locator->GetService<Renderer>());
   renderer->MakeCurrentLazy();

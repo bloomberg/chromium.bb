@@ -330,6 +330,7 @@ bool GetUserAgentMetrics(NPP npp) {
   // The Chrome user_agent string also contains Safari. Search for Chrome first.
   if (std::string::npos != user_agent.find("Chrome")) {
     o3d::metric_browser_type = o3d::BROWSER_NAME_CHROME;
+    gIsChrome = true;
   // The OmniWeb user_agent also contains Safari. Search for OminWeb first.
   } else if (std::string::npos != user_agent.find("OmniWeb")) {
     o3d::metric_browser_type = o3d::BROWSER_NAME_OMNIWEB;

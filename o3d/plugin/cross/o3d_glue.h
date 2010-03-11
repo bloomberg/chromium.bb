@@ -53,6 +53,7 @@
 #include <vector>
 #include "base/scoped_ptr.h"
 #include "base/hash_tables.h"
+#include "core/cross/bitmap.h"
 #include "core/cross/display_mode.h"
 #include "core/cross/display_window.h"
 #include "core/cross/object_base.h"
@@ -65,6 +66,8 @@
 #include "core/cross/object_manager.h"
 #include "core/cross/error.h"
 #include "core/cross/profiler.h"
+#include "core/cross/render_surface.h"
+#include "core/cross/texture.h"
 #include "plugin/cross/main_thread_task_poster.h"
 #include "plugin/cross/np_v8_bridge.h"
 #include "client_glue.h"
@@ -116,6 +119,7 @@ class StreamManager;
 namespace _o3d {
 using o3d::Id;
 using o3d::ObjectBase;
+using o3d::Bitmap;
 using o3d::Client;
 using o3d::ClassManager;
 using o3d::ClientInfoManager;
@@ -126,7 +130,10 @@ using o3d::MainThreadTaskPoster;
 using o3d::ObjectManager;
 using o3d::Profiler;
 using o3d::Renderer;
+using o3d::RenderSurface;
+using o3d::RenderDepthStencilSurface;
 using o3d::ServiceLocator;
+using o3d::Texture2D;
 
 class NPAPIObject: public NPObject {
   NPP npp_;
@@ -268,6 +275,9 @@ class PluginObject: public NPObject {
   // either can be NULL depending on drawing_model
   AGLContext mac_agl_context_;
   CGLContextObj mac_cgl_context_;
+  // If in Chrome, we actually do all of our rendering offscreen, and
+  // bootstrap off a 1x1 pbuffer
+  CGLPBufferObj mac_cgl_pbuffer_;
 
   // Fullscreen related stuff.
 
@@ -475,6 +485,19 @@ class PluginObject: public NPObject {
   }
 #endif
 
+  // Support for rendering the plugin's content into render surfaces.
+  // This is currently different than offscreen rendering support in
+  // the renderer. It is a bit of a mess because only the PluginObject
+  // and Renderer have the necessary information about the viewport
+  // size, and only the Client has enough information to properly
+  // initiate a render.
+  void EnableOffscreenRendering();
+  void DisableOffscreenRendering();
+  bool IsOffscreenRenderingEnabled() const;
+  RenderSurface::Ref GetOffscreenRenderSurface() const;
+  RenderDepthStencilSurface::Ref GetOffscreenDepthRenderSurface() const;
+  Bitmap::Ref GetOffscreenBitmap() const;
+
  private:
   bool fullscreen_region_valid_;
   int fullscreen_region_x_;
@@ -497,6 +520,20 @@ class PluginObject: public NPObject {
 #if defined(CB_SERVICE_REMOTE)
   NPObject* gpu_plugin_object_;
 #endif
+
+  // Support for offscreen rendering and thereby windowless plugins.
+  // Currently used only for the CoreGraphics drawing model on Mac OS
+  // X when there is no WindowRef. It would be nicer to put this in
+  // the Renderer and/or make its off_screen mode work everywhere, but
+  // this is only a legacy solution for older browsers.
+  bool offscreen_rendering_enabled_;
+  Texture2D::Ref offscreen_texture_;
+  RenderSurface::Ref offscreen_render_surface_;
+  RenderDepthStencilSurface::Ref offscreen_depth_render_surface_;
+  Bitmap::Ref offscreen_readback_bitmap_;
+
+  bool AllocateOffscreenRenderSurfaces(int width, int height);
+  void DeallocateOffscreenRenderSurfaces();
 };
 
 }  // namespace o3d

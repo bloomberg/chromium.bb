@@ -71,6 +71,9 @@
     # Add a way to disable FBO support for GL implementations that don't have
     # it.
     'disable_fbo%': 0,
+
+    # Whether to enable the English-only, Win/Mac-only fullscreen message.
+    'plugin_enable_fullscreen_msg%': '1',
   },
   'target_defaults': {
     'defines': [
@@ -132,6 +135,13 @@
                 ],
               },
             ],
+          ],
+        },
+      ],
+      ['<(plugin_enable_fullscreen_msg) != 0',
+        {
+          'defines': [
+            'O3D_PLUGIN_ENABLE_FULLSCREEN_MSG=1',
           ],
         },
       ],
