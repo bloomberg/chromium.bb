@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,9 +12,15 @@ namespace {
 const CGFloat kOrderInSlideOffset = 10;
 const NSTimeInterval kOrderInAnimationDuration = 0.2;
 const NSTimeInterval kOrderOutAnimationDuration = 0.15;
+// The minimum representable time interval.  This can be used as the value
+// passed to +[NSAnimationContext setDuration:] to stop an in-progress
+// animation as quickly as possible.
+const NSTimeInterval kMinimumTimeInterval =
+    std::numeric_limits<NSTimeInterval>::min();
 }
 
-@interface InfoBubbleWindow (Private)
+@interface InfoBubbleWindow(Private)
+- (void)appIsTerminating;
 - (void)finishCloseAfterAnimation;
 @end
 
@@ -83,8 +89,19 @@ const NSTimeInterval kOrderOutAnimationDuration = 0.15;
         [NSMutableDictionary dictionaryWithDictionary:[self animations]];
     [animations setObject:alphaAnimation forKey:@"alphaValue"];
     [self setAnimations:animations];
+
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(appIsTerminating)
+               name:NSApplicationWillTerminateNotification
+             object:[NSApplication sharedApplication]];
   }
   return self;
+}
+
+- (void)dealloc {
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [super dealloc];
 }
 
 // According to
@@ -110,6 +127,21 @@ const NSTimeInterval kOrderOutAnimationDuration = 0.15;
     [[self animator] setAlphaValue:0.0];
     [NSAnimationContext endGrouping];
   }
+}
+
+// If the app is terminating but the window is still fading out, cancel the
+// animation and close the window to prevent it from leaking.
+// See http://crbug.com/37717
+- (void)appIsTerminating {
+  if (!delayOnClose_)
+    return;  // The close has already happened with no Core Animation.
+
+  // Cancel the current animation so that it closes immediately, triggering
+  // |finishCloseAfterAnimation|.
+  [NSAnimationContext beginGrouping];
+  [[NSAnimationContext currentContext] setDuration:kMinimumTimeInterval];
+  [[self animator] setAlphaValue:0.0];
+  [NSAnimationContext endGrouping];
 }
 
 // Called by InfoBubbleWindowCloser when the window is to be really closed
