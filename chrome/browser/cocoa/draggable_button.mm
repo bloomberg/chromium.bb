@@ -38,14 +38,6 @@ const CGFloat kWebDragStartHysteresisY = 5.0;
   // Make sure that we can't start a drag until we see a mouse down again.
   mayDragStart_ = NO;
 
-  // This conditional is never true (DnD loops in Cocoa eat the mouse
-  // up) but I added it in case future versions of Cocoa do unexpected
-  // things.
-  if (beingDragged_) {
-    NOTREACHED();
-    return [super mouseUp:theEvent];
-  }
-
   // There are non-drag cases where a mouseUp: may happen
   // (e.g. mouse-down, cmd-tab to another application, move mouse,
   // mouse-up).  So we check.
@@ -54,7 +46,12 @@ const CGFloat kWebDragStartHysteresisY = 5.0;
   if (NSPointInRect(viewLocal, [self bounds])) {
     [self performClick:self];
   } else {
-    [self endDrag];
+    // Make sure an ESC to end a drag doesn't trigger 2 endDrags.
+    if (beingDragged_) {
+      [self endDrag];
+    } else {
+      [super mouseUp:theEvent];
+    }
   }
 }
 
@@ -88,6 +85,7 @@ const CGFloat kWebDragStartHysteresisY = 5.0;
              [self hasCrossedDragThreshold:theEvent]) {
     // Starting drag. Never start another drag until another mouse down.
     mayDragStart_ = NO;
+    beingDragged_ = YES;
     [self beginDrag:theEvent];
   }
 }
