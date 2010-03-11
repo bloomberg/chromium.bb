@@ -21,7 +21,7 @@ class TabContents;
 // Per-tab Autocomplete history manager. Handles receiving form data from the
 // renderer and the storing and retrieving of form data through WebDataService.
 class AutocompleteHistoryManager
-    : public RenderViewHostDelegate::FormFieldHistory,
+    : public RenderViewHostDelegate::Autocomplete,
       public WebDataServiceConsumer {
  public:
   explicit AutocompleteHistoryManager(TabContents* tab_contents);
@@ -29,14 +29,14 @@ class AutocompleteHistoryManager
 
   Profile* profile();
 
-  // RenderViewHostDelegate::FormFieldHistory implementation.
+  // RenderViewHostDelegate::Autocomplete implementation.
   virtual void FormFieldValuesSubmitted(
       const webkit_glue::FormFieldValues& form);
-  virtual bool GetFormFieldHistorySuggestions(int query_id,
-                                              const string16& name,
-                                              const string16& prefix);
-  virtual void RemoveFormFieldHistoryEntry(const string16& name,
-                                           const string16& value);
+  virtual bool GetAutocompleteSuggestions(int query_id,
+                                          const string16& name,
+                                          const string16& prefix);
+  virtual void RemoveAutocompleteEntry(const string16& name,
+                                       const string16& value);
 
   // WebDataServiceConsumer implementation.
   virtual void OnWebDataServiceRequestDone(WebDataService::Handle h,

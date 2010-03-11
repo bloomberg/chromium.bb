@@ -1375,10 +1375,10 @@ void RenderViewHost::OnMsgPasswordFormsSeen(
 
 void RenderViewHost::OnMsgFormFieldValuesSubmitted(
     const webkit_glue::FormFieldValues& form) {
-  RenderViewHostDelegate::FormFieldHistory* formfield_history_delegate =
-      delegate_->GetFormFieldHistoryDelegate();
-  if (formfield_history_delegate)
-    formfield_history_delegate->FormFieldValuesSubmitted(form);
+  RenderViewHostDelegate::Autocomplete* autocomplete_delegate =
+      delegate_->GetAutocompleteDelegate();
+  if (autocomplete_delegate)
+    autocomplete_delegate->FormFieldValuesSubmitted(form);
 
   RenderViewHostDelegate::AutoFill* autofill_delegate =
       delegate_->GetAutoFillDelegate();
@@ -1580,16 +1580,16 @@ void RenderViewHost::OnQueryFormFieldAutofill(
   RenderViewHostDelegate::AutoFill* autofill_delegate =
       delegate_->GetAutoFillDelegate();
   // If the AutoFill delegate has results to return, we don't need any results
-  // from the FormFieldHistory delegate.
+  // from the Autocomplete delegate.
   if (autofill_delegate &&
       autofill_delegate->GetAutoFillSuggestions(query_id, field)) {
       return;
   }
 
-  RenderViewHostDelegate::FormFieldHistory* formfield_history_delegate =
-      delegate_->GetFormFieldHistoryDelegate();
-  if (formfield_history_delegate &&
-      formfield_history_delegate->GetFormFieldHistorySuggestions(
+  RenderViewHostDelegate::Autocomplete* autocomplete_delegate =
+      delegate_->GetAutocompleteDelegate();
+  if (autocomplete_delegate &&
+      autocomplete_delegate->GetAutocompleteSuggestions(
           query_id, field.name(), field.value())) {
       return;
   }
@@ -1600,10 +1600,10 @@ void RenderViewHost::OnQueryFormFieldAutofill(
 
 void RenderViewHost::OnRemoveAutofillEntry(const string16& field_name,
                                            const string16& value) {
-  RenderViewHostDelegate::FormFieldHistory* formfield_history_delegate =
-      delegate_->GetFormFieldHistoryDelegate();
-  if (formfield_history_delegate)
-    formfield_history_delegate->RemoveFormFieldHistoryEntry(field_name, value);
+  RenderViewHostDelegate::Autocomplete* autocomplete_delegate =
+      delegate_->GetAutocompleteDelegate();
+  if (autocomplete_delegate)
+    autocomplete_delegate->RemoveAutocompleteEntry(field_name, value);
 }
 
 void RenderViewHost::OnFillAutoFillFormData(int query_id,

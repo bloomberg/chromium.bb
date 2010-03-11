@@ -53,9 +53,8 @@ void AutocompleteHistoryManager::FormFieldValuesSubmitted(
   StoreFormEntriesInWebDatabase(form);
 }
 
-bool AutocompleteHistoryManager::GetFormFieldHistorySuggestions(int query_id,
-                                                     const string16& name,
-                                                     const string16& prefix) {
+bool AutocompleteHistoryManager::GetAutocompleteSuggestions(
+    int query_id, const string16& name, const string16& prefix) {
   if (!*form_autofill_enabled_)
     return false;
 
@@ -75,7 +74,7 @@ bool AutocompleteHistoryManager::GetFormFieldHistorySuggestions(int query_id,
   return true;
 }
 
-void AutocompleteHistoryManager::RemoveFormFieldHistoryEntry(
+void AutocompleteHistoryManager::RemoveAutocompleteEntry(
     const string16& name, const string16& value) {
   WebDataService* web_data_service =
       profile()->GetWebDataService(Profile::EXPLICIT_ACCESS);

@@ -847,8 +847,7 @@ class TabContents : public PageNavigator,
   virtual RenderViewHostDelegate::Save* GetSaveDelegate();
   virtual RenderViewHostDelegate::Printing* GetPrintingDelegate();
   virtual RenderViewHostDelegate::FavIcon* GetFavIconDelegate();
-  virtual RenderViewHostDelegate::FormFieldHistory*
-      GetFormFieldHistoryDelegate();
+  virtual RenderViewHostDelegate::Autocomplete* GetAutocompleteDelegate();
   virtual RenderViewHostDelegate::AutoFill* GetAutoFillDelegate();
   virtual TabContents* GetAsTabContents();
   virtual ViewType::Type GetRenderViewType() const;

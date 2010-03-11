@@ -2037,8 +2037,7 @@ RenderViewHostDelegate::FavIcon* TabContents::GetFavIconDelegate() {
   return &fav_icon_helper_;
 }
 
-RenderViewHostDelegate::FormFieldHistory*
-TabContents::GetFormFieldHistoryDelegate() {
+RenderViewHostDelegate::Autocomplete* TabContents::GetAutocompleteDelegate() {
   if (autocomplete_history_manager_.get() == NULL)
     autocomplete_history_manager_.reset(new AutocompleteHistoryManager(this));
   return autocomplete_history_manager_.get();
