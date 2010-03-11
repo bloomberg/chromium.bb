@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
+#include "app/gtk_signal.h"
 #include "app/gtk_util.h"
 #include "app/l10n_util.h"
 #include "base/basictypes.h"
@@ -33,7 +34,6 @@
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/gtk_signal.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/process_watcher.h"
 #include "grit/chromium_strings.h"

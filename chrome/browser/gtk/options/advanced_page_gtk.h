@@ -7,10 +7,10 @@
 
 #include <gtk/gtk.h>
 
+#include "app/gtk_signal.h"
 #include "chrome/browser/gtk/options/advanced_contents_gtk.h"
 #include "chrome/browser/options_page_base.h"
 #include "chrome/browser/pref_member.h"
-#include "chrome/common/gtk_signal.h"
 
 class Profile;
 

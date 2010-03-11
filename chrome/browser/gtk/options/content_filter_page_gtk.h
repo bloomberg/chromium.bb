@@ -9,9 +9,9 @@
 
 #include <string>
 
+#include "app/gtk_signal.h"
 #include "chrome/browser/options_page_base.h"
 #include "chrome/common/content_settings_types.h"
-#include "chrome/common/gtk_signal.h"
 
 // A page in the content settings window. Used for everything but the Cookies
 // page (which has a much more complex dialog). A |content_type| is passed into

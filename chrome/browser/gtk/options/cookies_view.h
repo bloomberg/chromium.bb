@@ -9,6 +9,7 @@
 
 #include <gtk/gtk.h>
 
+#include "app/gtk_signal.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
@@ -17,7 +18,6 @@
 #include "chrome/browser/browsing_data_local_storage_helper.h"
 #include "chrome/browser/gtk/gtk_chrome_cookie_view.h"
 #include "chrome/browser/gtk/gtk_tree.h"
-#include "chrome/common/gtk_signal.h"
 #include "net/base/cookie_monster.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_GTK_SIGNAL_H_
-#define CHROME_COMMON_GTK_SIGNAL_H_
+#ifndef APP_GTK_SIGNAL_H_
+#define APP_GTK_SIGNAL_H_
 
 typedef void* gpointer;
 typedef struct _GtkWidget GtkWidget;
@@ -88,4 +88,4 @@ typedef struct _GtkWidget GtkWidget;
   RETURN METHOD(GtkWidget* widget, ARG1 one, ARG2 two, ARG3 three,      \
                 ARG4 four, ARG5 five, ARG6 six);
 
-#endif  // CHROME_COMMON_GTK_SIGNAL_H_
+#endif  // APP_GTK_SIGNAL_H_

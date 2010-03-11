@@ -10,6 +10,7 @@
 #include <map>
 #include <string>
 
+#include "app/gtk_signal.h"
 #include "base/linked_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
@@ -17,7 +18,6 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/owned_widget_gtk.h"
-#include "chrome/common/gtk_signal.h"
 
 class Browser;
 class BrowserActionButton;

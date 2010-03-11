@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_GTK_BACK_FORWARD_BUTTON_GTK_H_
 #define CHROME_BROWSER_GTK_BACK_FORWARD_BUTTON_GTK_H_
 
+#include "app/gtk_signal.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/gtk/custom_button.h"
 #include "chrome/browser/gtk/menu_gtk.h"
-#include "chrome/common/gtk_signal.h"
 
 class BackForwardMenuModel;
 class Browser;

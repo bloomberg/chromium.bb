@@ -7,11 +7,11 @@
 
 #include <gtk/gtk.h>
 
+#include "app/gtk_signal.h"
 #include "app/menus/simple_menu_model.h"
 #include "chrome/browser/gtk/infobar_gtk.h"
 #include "chrome/browser/gtk/menu_gtk.h"
 #include "chrome/browser/translate/translate_infobars_delegates.h"
-#include "chrome/common/gtk_signal.h"
 #include "chrome/common/notification_registrar.h"
 
 class OptionsMenuModel;

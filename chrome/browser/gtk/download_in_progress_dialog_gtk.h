@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_GTK_DOWNLOAD_IN_PROGRESS_DIALOG_GTK_H_
 #define CHROME_BROWSER_GTK_DOWNLOAD_IN_PROGRESS_DIALOG_GTK_H_
 
+#include "app/gtk_signal.h"
 #include "base/basictypes.h"
-#include "chrome/common/gtk_signal.h"
 
 class Browser;
 

@@ -9,9 +9,9 @@
 
 #include <string>
 
+#include "app/gtk_signal.h"
 #include "chrome/browser/options_page_base.h"
 #include "chrome/browser/pref_member.h"
-#include "chrome/common/gtk_signal.h"
 
 class Profile;
 

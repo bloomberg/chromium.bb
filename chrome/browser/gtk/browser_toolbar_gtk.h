@@ -8,6 +8,7 @@
 #include <gtk/gtk.h>
 #include <string>
 
+#include "app/gtk_signal.h"
 #include "app/menus/simple_menu_model.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/app_menu_model.h"
@@ -18,7 +19,6 @@
 #include "chrome/browser/page_menu_model.h"
 #include "chrome/browser/pref_member.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/common/gtk_signal.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/owned_widget_gtk.h"

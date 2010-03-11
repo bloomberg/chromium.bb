@@ -9,10 +9,10 @@
 
 #include <string>
 
+#include "app/gtk_signal.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
-#include "chrome/common/gtk_signal.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
 class GURL;

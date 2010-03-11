@@ -7,12 +7,12 @@
 
 #include <gtk/gtk.h>
 
+#include "app/gtk_signal.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/options_page_base.h"
 #include "chrome/browser/pref_member.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/common/gtk_signal.h"
 
 class ContentPageGtk : public OptionsPageBase,
                        public ProfileSyncServiceObserver,
