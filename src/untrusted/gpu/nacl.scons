@@ -4,10 +4,6 @@
 
 Import('env')
 
-# TODO(robertm,cbiffle): fix header conflicts to allow this to build.
-if env['TARGET_ARCHITECTURE'] == 'arm':
-  Return()
-
 # Remove the pedantic flag to accept long long.
 env.FilterOut(CCFLAGS=['-pedantic'])
 
@@ -56,4 +52,3 @@ env.AddHeaderToSdk([
 env.AddHeaderToSdk(['$SOURCE_ROOT/gpu/KHR/khrplatform.h'], 'KHR')
 
 env.AddHeaderToSdk(['$SOURCE_ROOT/gpu/pgl/pgl.h'], 'pgl')
-

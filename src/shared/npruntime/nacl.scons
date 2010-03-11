@@ -4,10 +4,6 @@
 
 Import('env')
 
-# TODO(robertm,cbiffle): fix header conflicts to allow this to build.
-if env['TARGET_ARCHITECTURE'] == 'arm':
-  Return()
-
 # To enable getting the generated include files and sources.
 env.Append(CPPPATH=['${TARGET_ROOT}'])
 
