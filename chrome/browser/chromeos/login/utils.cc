@@ -15,6 +15,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "views/widget/widget_gtk.h"
 
@@ -45,7 +46,8 @@ void CompleteLogin(const std::string& username) {
   Profile* profile = profile_manager->GetDefaultProfile(user_data_dir);
   int return_code;
 
-  ExternalCookieHandler::GetCookies(command_line, profile);
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kInChromeAuth))
+    ExternalCookieHandler::GetCookies(command_line, profile);
   browser_init.LaunchBrowser(command_line, profile, std::wstring(), true,
                              &return_code);
 }
