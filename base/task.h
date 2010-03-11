@@ -83,25 +83,26 @@ class ScopedRunnableMethodFactory {
   }
 
   template <class Method>
-  inline Task* NewRunnableMethod(Method method) {
+  inline CancelableTask* NewRunnableMethod(Method method) {
     return new RunnableMethod<Method, Tuple0>(
         weak_factory_.GetWeakPtr(), method, MakeTuple());
   }
 
   template <class Method, class A>
-  inline Task* NewRunnableMethod(Method method, const A& a) {
+  inline CancelableTask* NewRunnableMethod(Method method, const A& a) {
     return new RunnableMethod<Method, Tuple1<A> >(
         weak_factory_.GetWeakPtr(), method, MakeTuple(a));
   }
 
   template <class Method, class A, class B>
-  inline Task* NewRunnableMethod(Method method, const A& a, const B& b) {
+  inline CancelableTask* NewRunnableMethod(Method method, const A& a,
+                                           const B& b) {
     return new RunnableMethod<Method, Tuple2<A, B> >(
         weak_factory_.GetWeakPtr(), method, MakeTuple(a, b));
   }
 
   template <class Method, class A, class B, class C>
-  inline Task* NewRunnableMethod(Method method,
+  inline CancelableTask* NewRunnableMethod(Method method,
                                  const A& a,
                                  const B& b,
                                  const C& c) {
@@ -110,7 +111,7 @@ class ScopedRunnableMethodFactory {
   }
 
   template <class Method, class A, class B, class C, class D>
-  inline Task* NewRunnableMethod(Method method,
+  inline CancelableTask* NewRunnableMethod(Method method,
                                  const A& a,
                                  const B& b,
                                  const C& c,
@@ -120,7 +121,7 @@ class ScopedRunnableMethodFactory {
   }
 
   template <class Method, class A, class B, class C, class D, class E>
-  inline Task* NewRunnableMethod(Method method,
+  inline CancelableTask* NewRunnableMethod(Method method,
                                  const A& a,
                                  const B& b,
                                  const C& c,
@@ -136,9 +137,10 @@ class ScopedRunnableMethodFactory {
 
  protected:
   template <class Method, class Params>
-  class RunnableMethod : public Task {
+  class RunnableMethod : public CancelableTask {
    public:
-    RunnableMethod(const base::WeakPtr<T>& obj, Method meth, const Params& params)
+    RunnableMethod(const base::WeakPtr<T>& obj, Method meth,
+                   const Params& params)
         : obj_(obj),
           meth_(meth),
           params_(params) {
@@ -149,6 +151,10 @@ class ScopedRunnableMethodFactory {
     virtual void Run() {
       if (obj_)
         DispatchToMethod(obj_.get(), meth_, params_);
+    }
+
+    virtual void Cancel() {
+      obj_.reset();
     }
 
    private:
