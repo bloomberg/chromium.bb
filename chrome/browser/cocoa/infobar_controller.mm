@@ -55,6 +55,7 @@ const float kAnimateCloseDuration = 0.12;
 // All infobars have an icon, so we set up the icon in the base class
 // awakeFromNib.
 - (void)awakeFromNib {
+  DCHECK(delegate_);
   if (delegate_->GetIcon()) {
     [image_ setImage:gfx::SkBitmapToNSImage(*(delegate_->GetIcon()))];
   } else {
@@ -109,6 +110,8 @@ const float kAnimateCloseDuration = 0.12;
 }
 
 - (void)close {
+  // Stop any running animations.
+  [[self animatableView] stopAnimation];
   infoBarClosing_ = YES;
   [self cleanUpAfterAnimation:YES];
 }
@@ -155,8 +158,10 @@ const float kAnimateCloseDuration = 0.12;
 
   // Notify the delegate that the infobar was closed.  The delegate may delete
   // itself as a result of InfoBarClosed(), so we null out its pointer.
-  delegate_->InfoBarClosed();
-  delegate_ = NULL;
+  if (delegate_) {
+    delegate_->InfoBarClosed();
+    delegate_ = NULL;
+  }
 
   // If the animation ran to completion, then we need to remove ourselves from
   // the container.  If the animation was interrupted, then the container will
@@ -189,6 +194,7 @@ const float kAnimateCloseDuration = 0.12;
 
   // Insert the text.
   AlertInfoBarDelegate* delegate = delegate_->AsAlertInfoBarDelegate();
+  DCHECK(delegate);
   [label_ setStringValue:base::SysWideToNSString(delegate->GetMessageText())];
 }
 
@@ -215,6 +221,7 @@ const float kAnimateCloseDuration = 0.12;
   [self removeButtons];
 
   LinkInfoBarDelegate* delegate = delegate_->AsLinkInfoBarDelegate();
+  DCHECK(delegate);
   size_t offset = std::wstring::npos;
   std::wstring message = delegate->GetMessageTextWithOffset(&offset);
 
@@ -269,7 +276,7 @@ const float kAnimateCloseDuration = 0.12;
 - (void)linkClicked {
   WindowOpenDisposition disposition =
       event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
-  if (delegate_->AsLinkInfoBarDelegate()->LinkClicked(disposition))
+  if (delegate_ && delegate_->AsLinkInfoBarDelegate()->LinkClicked(disposition))
     [self removeInfoBar];
 }
 
@@ -283,13 +290,13 @@ const float kAnimateCloseDuration = 0.12;
 
 // Called when someone clicks on the "OK" button.
 - (IBAction)ok:(id)sender {
-  if (delegate_->AsConfirmInfoBarDelegate()->Accept())
+  if (delegate_ && delegate_->AsConfirmInfoBarDelegate()->Accept())
     [self removeInfoBar];
 }
 
 // Called when someone clicks on the "Cancel" button.
 - (IBAction)cancel:(id)sender {
-  if (delegate_->AsConfirmInfoBarDelegate()->Cancel())
+  if (delegate_ && delegate_->AsConfirmInfoBarDelegate()->Cancel())
     [self removeInfoBar];
 }
 
@@ -298,6 +305,7 @@ const float kAnimateCloseDuration = 0.12;
 // required and position them to the left of the close button.
 - (void)addAdditionalControls {
   ConfirmInfoBarDelegate* delegate = delegate_->AsConfirmInfoBarDelegate();
+  DCHECK(delegate);
   int visibleButtons = delegate->GetButtons();
 
   NSRect okButtonFrame = [okButton_ frame];

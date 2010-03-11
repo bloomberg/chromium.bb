@@ -101,6 +101,9 @@ class InfoBarNotificationObserver : public NotificationObserver {
 }
 
 - (void)removeController:(InfoBarController*)controller {
+  if (![infobarControllers_ containsObject:controller])
+    return;
+
   // This code can be executed while InfoBarController is still on the stack, so
   // we retain and autorelease the controller to prevent it from being
   // dealloc'ed too early.

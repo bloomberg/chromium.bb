@@ -20,13 +20,17 @@ class InfoBarDelegate;
   BOOL infoBarClosing_;
 
  @protected
-  InfoBarDelegate* delegate_;  // weak
   IBOutlet InfoBarGradientView* infoBarView_;
   IBOutlet NSImageView* image_;
   IBOutlet NSTextField* label_;
   IBOutlet NSButton* okButton_;
   IBOutlet NSButton* cancelButton_;
   IBOutlet HoverCloseButton* closeButton_;
+
+  // In rare instances, it can be possible for |delegate_| to delete itself
+  // while this controller is still alive.  Always check |delegate_| against
+  // NULL before using it.
+  InfoBarDelegate* delegate_;  // weak, can be NULL
 };
 
 // Initializes a new InfoBarController.
