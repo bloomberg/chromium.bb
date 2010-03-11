@@ -2900,4 +2900,4 @@ BUG37962 LINUX DEBUG : fast/forms/multiple-form-submission-protection-mouse.html
 BUG37962 MAC : plugins/iframe-shims.html = TEXT PASS
 
 // WebKit merge 55822:55853, should be a simple rebaseline
-BUG_JAPHET : http/tests/security/cross-frame-access-call.html
+BUG_JAPHET : http/tests/security/cross-frame-access-call.html = TEXT
