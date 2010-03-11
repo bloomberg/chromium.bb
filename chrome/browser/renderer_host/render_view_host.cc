@@ -407,6 +407,7 @@ void RenderViewHost::StopFinding(
       break;
     default:
       NOTREACHED();
+      params.action = ViewMsg_StopFinding_Params::kKeepSelection;
   }
   Send(new ViewMsg_StopFinding(routing_id(), params));
 }
