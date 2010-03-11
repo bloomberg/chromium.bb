@@ -12,6 +12,7 @@
 #include "chrome/browser/gtk/options/content_filter_page_gtk.h"
 #include "chrome/browser/pref_member.h"
 #include "chrome/common/content_settings_types.h"
+#include "chrome/common/gtk_signal.h"
 
 class AccessibleWidgetHelper;
 
@@ -32,11 +33,9 @@ class ContentSettingsWindowGtk {
   // Shows the Tab corresponding to the specified Content Settings page.
   void ShowContentSettingsTab(ContentSettingsType page);
 
-  // GTK callbacks
-  static void OnSwitchPage(GtkNotebook* notebook, GtkNotebookPage* page,
-                           guint page_num, ContentSettingsWindowGtk* window);
-  static void OnWindowDestroy(GtkWidget* widget,
-                              ContentSettingsWindowGtk* window);
+  CHROMEGTK_CALLBACK_2(ContentSettingsWindowGtk, void, OnSwitchPage,
+                       GtkNotebookPage*, guint);
+  CHROMEGTK_CALLBACK_0(ContentSettingsWindowGtk, void, OnWindowDestroy);
 
   // The options dialog.
   GtkWidget* dialog_;

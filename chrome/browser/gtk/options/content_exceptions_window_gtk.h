@@ -15,6 +15,7 @@
 #include "chrome/browser/gtk/options/content_exception_editor.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
+#include "chrome/common/gtk_signal.h"
 
 class HostContentSettingsMap;
 
@@ -54,22 +55,10 @@ class ContentExceptionsWindowGtk : public gtk_tree::TableAdapter::Delegate,
   void UpdateButtonState();
 
   // Callbacks for the buttons.
-  static void AddThunk(GtkButton* unused, gpointer self) {
-    reinterpret_cast<ContentExceptionsWindowGtk*>(self)->Add();
-  }
-  void Add();
-  static void EditThunk(GtkButton* unused, gpointer self) {
-    reinterpret_cast<ContentExceptionsWindowGtk*>(self)->Edit();
-  }
-  void Edit();
-  static void RemoveThunk(GtkButton* unused, gpointer self) {
-    reinterpret_cast<ContentExceptionsWindowGtk*>(self)->Remove();
-  }
-  void Remove();
-  static void RemoveAllThunk(GtkButton* unused, gpointer self) {
-    reinterpret_cast<ContentExceptionsWindowGtk*>(self)->RemoveAll();
-  }
-  void RemoveAll();
+  CHROMEGTK_CALLBACK_0(ContentExceptionsWindowGtk, void, Add);
+  CHROMEGTK_CALLBACK_0(ContentExceptionsWindowGtk, void, Edit);
+  CHROMEGTK_CALLBACK_0(ContentExceptionsWindowGtk, void, Remove);
+  CHROMEGTK_CALLBACK_0(ContentExceptionsWindowGtk, void, RemoveAll);
 
   // Returns the title of the window (changes based on what ContentSettingsType
   // was set to in the constructor).

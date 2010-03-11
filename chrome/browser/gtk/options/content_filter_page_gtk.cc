@@ -83,14 +83,14 @@ GtkWidget* ContentFilterPageGtk::InitGroup() {
   // Now that we've set the default value, we can connect to the radio button's
   // toggled signal.
   g_signal_connect(G_OBJECT(allow_radio_), "toggled",
-                   G_CALLBACK(OnAllowToggled), this);
+                   G_CALLBACK(OnAllowToggledThunk), this);
   g_signal_connect(G_OBJECT(block_radio_), "toggled",
-                   G_CALLBACK(OnAllowToggled), this);
+                   G_CALLBACK(OnAllowToggledThunk), this);
 
   GtkWidget* exceptions_button = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_COOKIES_EXCEPTIONS_BUTTON).c_str());
   g_signal_connect(G_OBJECT(exceptions_button), "clicked",
-                   G_CALLBACK(OnExceptionsClicked), this);
+                   G_CALLBACK(OnExceptionsClickedThunk), this);
 
   GtkWidget* hbox = gtk_hbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), exceptions_button, FALSE, FALSE, 0);
@@ -99,26 +99,22 @@ GtkWidget* ContentFilterPageGtk::InitGroup() {
   return vbox;
 }
 
-void ContentFilterPageGtk::OnAllowToggled(
-    GtkWidget* toggle_button,
-    ContentFilterPageGtk* content_page) {
-  DCHECK((toggle_button == content_page->allow_radio_) ||
-         (toggle_button == content_page->block_radio_));
+void ContentFilterPageGtk::OnAllowToggled(GtkWidget* toggle_button) {
+  DCHECK((toggle_button == allow_radio_) ||
+         (toggle_button == block_radio_));
 
   bool allow = gtk_toggle_button_get_active(
-      GTK_TOGGLE_BUTTON(content_page->allow_radio_));
-  content_page->profile()->GetHostContentSettingsMap()->
+      GTK_TOGGLE_BUTTON(allow_radio_));
+  profile()->GetHostContentSettingsMap()->
       SetDefaultContentSetting(
-          content_page->content_type_,
+          content_type_,
           allow ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
 }
 
-void ContentFilterPageGtk::OnExceptionsClicked(
-    GtkWidget* button,
-    ContentFilterPageGtk* content_page) {
+void ContentFilterPageGtk::OnExceptionsClicked(GtkWidget* button) {
   HostContentSettingsMap* settings_map =
-      content_page->profile()->GetHostContentSettingsMap();
+      profile()->GetHostContentSettingsMap();
   ContentExceptionsWindowGtk::ShowExceptionsWindow(
       GTK_WINDOW(gtk_widget_get_toplevel(button)),
-      settings_map, content_page->content_type_);
+      settings_map, content_type_);
 }

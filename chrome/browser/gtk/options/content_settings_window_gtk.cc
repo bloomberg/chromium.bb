@@ -122,13 +122,14 @@ ContentSettingsWindowGtk::ContentSettingsWindowGtk(GtkWindow* parent,
   // last_selected_page_ value.
   gtk_widget_show_all(dialog_);
 
-  g_signal_connect(notebook_, "switch-page", G_CALLBACK(OnSwitchPage), this);
+  g_signal_connect(notebook_, "switch-page",
+                   G_CALLBACK(OnSwitchPageThunk), this);
 
   // We only have one button and don't do any special handling, so just hook it
   // directly to gtk_widget_destroy.
   g_signal_connect(dialog_, "response", G_CALLBACK(gtk_widget_destroy), NULL);
 
-  g_signal_connect(dialog_, "destroy", G_CALLBACK(OnWindowDestroy), this);
+  g_signal_connect(dialog_, "destroy", G_CALLBACK(OnWindowDestroyThunk), this);
 }
 
 ContentSettingsWindowGtk::~ContentSettingsWindowGtk() {
@@ -159,22 +160,17 @@ void ContentSettingsWindowGtk::ShowContentSettingsTab(
   gtk_notebook_set_current_page(GTK_NOTEBOOK(notebook_), page);
 }
 
-// static
 void ContentSettingsWindowGtk::OnSwitchPage(
-    GtkNotebook* notebook,
+    GtkWidget* notebook,
     GtkNotebookPage* page,
-    guint page_num,
-    ContentSettingsWindowGtk* window) {
+    guint page_num) {
   int index = page_num;
   DCHECK(index > CONTENT_SETTINGS_TYPE_DEFAULT &&
          index < CONTENT_SETTINGS_NUM_TYPES);
-  window->last_selected_page_.SetValue(index);
+  last_selected_page_.SetValue(index);
 }
 
-// static
-void ContentSettingsWindowGtk::OnWindowDestroy(
-    GtkWidget* widget,
-    ContentSettingsWindowGtk* window) {
+void ContentSettingsWindowGtk::OnWindowDestroy(GtkWidget* widget) {
   settings_window = NULL;
-  MessageLoop::current()->DeleteSoon(FROM_HERE, window);
+  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }

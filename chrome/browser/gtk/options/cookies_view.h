@@ -17,6 +17,7 @@
 #include "chrome/browser/browsing_data_local_storage_helper.h"
 #include "chrome/browser/gtk/gtk_chrome_cookie_view.h"
 #include "chrome/browser/gtk/gtk_tree.h"
+#include "chrome/common/gtk_signal.h"
 #include "net/base/cookie_monster.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
@@ -71,33 +72,22 @@ class CookiesView : public gtk_tree::TreeAdapter::Delegate {
   // Remove any cookies that are currently selected.
   void RemoveSelectedItems();
 
-  // Callback for dialog buttons.
-  static void OnResponse(GtkDialog* dialog, int response_id,
-                         CookiesView* window);
-
-  // Callback for window destruction.
-  static void OnWindowDestroy(GtkWidget* widget, CookiesView* window);
-
-  // Callback for when user selects something in the table.
-  static void OnSelectionChanged(GtkTreeSelection *selection,
-                                 CookiesView* window);
-
-  // Callback for when user presses a key with the table focused.
-  static gboolean OnTreeViewKeyPress(GtkWidget* tree_view, GdkEventKey* key,
-                                     CookiesView* window);
-
-  // Callback when user expands a row in the table.
-  static void OnTreeViewRowExpanded(GtkTreeView* tree_view, GtkTreeIter* iter,
-                                    GtkTreePath* path, gpointer user_data);
+  CHROMEGTK_CALLBACK_1(CookiesView, void, OnResponse, int);
+  CHROMEGTK_CALLBACK_0(CookiesView, void, OnWindowDestroy);
+  // Callback for the table.
+  CHROMEGTK_CALLBACK_0(CookiesView, void, OnTreeViewSelectionChange);
+  CHROMEGTK_CALLBACK_1(CookiesView, gboolean, OnTreeViewKeyPress,
+                       GdkEventKey*);
+  CHROMEGTK_CALLBACK_2(CookiesView, void, OnTreeViewRowExpanded,
+                       GtkTreeIter*, GtkTreePath*);
+  // Callbacks for user actions filtering the list.
+  CHROMEGTK_CALLBACK_0(CookiesView, void, OnFilterEntryActivated);
+  CHROMEGTK_CALLBACK_0(CookiesView, void, OnFilterEntryChanged);
+  CHROMEGTK_CALLBACK_0(CookiesView, void, OnFilterClearButtonClicked);
 
   // Filter the list against the text in |filter_entry_|.
   void UpdateFilterResults();
 
-  // Callbacks for user actions filtering the list.
-  static void OnFilterEntryActivated(GtkEntry* entry, CookiesView* window);
-  static void OnFilterEntryChanged(GtkEditable* editable, CookiesView* window);
-  static void OnFilterClearButtonClicked(GtkButton* button,
-                                         CookiesView* window);
 
   // The parent widget.
   GtkWidget* dialog_;

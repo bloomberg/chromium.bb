@@ -12,6 +12,7 @@
 #include "chrome/browser/pref_member.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/common/gtk_signal.h"
 
 class ContentPageGtk : public OptionsPageBase,
                        public ProfileSyncServiceObserver,
@@ -52,52 +53,18 @@ class ContentPageGtk : public OptionsPageBase,
   GtkWidget* InitThemesGroup();
   GtkWidget* InitSyncGroup();
 
-  // Callback for autofill button.
-  static void OnAutoFillButtonClicked(GtkButton* widget, ContentPageGtk* page);
-
-  // Callback for import button.
-  static void OnImportButtonClicked(GtkButton* widget, ContentPageGtk* page);
-
-  // Callback for the GTK theme button.
-  static void OnGtkThemeButtonClicked(GtkButton* widget,
-                                      ContentPageGtk* page);
-
-  // Callback for reset default theme button.
-  static void OnResetDefaultThemeButtonClicked(GtkButton* widget,
-                                               ContentPageGtk* page);
-
-  // Callback for get themes button.
-  static void OnGetThemesButtonClicked(GtkButton* widget,
-                                       ContentPageGtk* page);
-
-  // Callback for system title bar radio buttons.
-  static void OnSystemTitleBarRadioToggled(GtkToggleButton* widget,
-                                           ContentPageGtk* page);
-
-  // Callback for show passwords button.
-  static void OnShowPasswordsButtonClicked(GtkButton* widget,
-                                           ContentPageGtk* page);
-
-  // Callback for password radio buttons.
-  static void OnPasswordRadioToggled(GtkToggleButton* widget,
-                                     ContentPageGtk* page);
-
-  // Callback for form autofill radio buttons.
-  static void OnAutofillRadioToggled(GtkToggleButton* widget,
-                                     ContentPageGtk* page);
-
-  // Callback for sync start/stop button.
-  static void OnSyncStartStopButtonClicked(GtkButton* widget,
-                                           ContentPageGtk* page);
-
-  // Callback for sync action link.
-  static void OnSyncActionLinkClicked(GtkButton* widget,
-                                      ContentPageGtk* page);
-
-  // Callback for stop sync dialog.
-  static void OnStopSyncDialogResponse(GtkWidget* widget,
-                                       int response,
-                                       ContentPageGtk* page);
+  CHROMEGTK_CALLBACK_0(ContentPageGtk, void, OnImportButtonClicked);
+  CHROMEGTK_CALLBACK_0(ContentPageGtk, void, OnGtkThemeButtonClicked);
+  CHROMEGTK_CALLBACK_0(ContentPageGtk, void, OnResetDefaultThemeButtonClicked);
+  CHROMEGTK_CALLBACK_0(ContentPageGtk, void, OnGetThemesButtonClicked);
+  CHROMEGTK_CALLBACK_0(ContentPageGtk, void, OnSystemTitleBarRadioToggled);
+  CHROMEGTK_CALLBACK_0(ContentPageGtk, void, OnShowPasswordsButtonClicked);
+  CHROMEGTK_CALLBACK_0(ContentPageGtk, void, OnPasswordRadioToggled);
+  CHROMEGTK_CALLBACK_0(ContentPageGtk, void, OnAutofillButtonClicked);
+  CHROMEGTK_CALLBACK_0(ContentPageGtk, void, OnAutofillRadioToggled);
+  CHROMEGTK_CALLBACK_0(ContentPageGtk, void, OnSyncStartStopButtonClicked);
+  CHROMEGTK_CALLBACK_0(ContentPageGtk, void, OnSyncActionLinkClicked);
+  CHROMEGTK_CALLBACK_1(ContentPageGtk, void, OnStopSyncDialogResponse, int);
 
   // Widgets for the Password saving group.
   GtkWidget* passwords_asktosave_radio_;

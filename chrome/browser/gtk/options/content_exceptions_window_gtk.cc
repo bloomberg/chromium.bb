@@ -197,13 +197,13 @@ void ContentExceptionsWindowGtk::UpdateButtonState() {
   gtk_widget_set_sensitive(remove_all_button_, row_count > 0);
 }
 
-void ContentExceptionsWindowGtk::Add() {
+void ContentExceptionsWindowGtk::Add(GtkWidget* widget) {
   new ContentExceptionEditor(GTK_WINDOW(dialog_),
                              this, model_.get(), -1, std::string(),
                              CONTENT_SETTING_BLOCK);
 }
 
-void ContentExceptionsWindowGtk::Edit() {
+void ContentExceptionsWindowGtk::Edit(GtkWidget* widget) {
   std::set<int> indices;
   gtk_tree::GetSelectedIndicies(treeview_selection_, &indices);
   DCHECK_GT(indices.size(), 0u);
@@ -214,7 +214,7 @@ void ContentExceptionsWindowGtk::Edit() {
                              entry.first, entry.second);
 }
 
-void ContentExceptionsWindowGtk::Remove() {
+void ContentExceptionsWindowGtk::Remove(GtkWidget* widget) {
   std::set<int> indices;
   gtk_tree::GetSelectedIndicies(treeview_selection_, &indices);
 
@@ -226,7 +226,7 @@ void ContentExceptionsWindowGtk::Remove() {
   UpdateButtonState();
 }
 
-void ContentExceptionsWindowGtk::RemoveAll() {
+void ContentExceptionsWindowGtk::RemoveAll(GtkWidget* widget) {
   model_->RemoveAll();
   UpdateButtonState();
 }

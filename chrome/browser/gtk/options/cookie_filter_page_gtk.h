@@ -11,6 +11,7 @@
 
 #include "chrome/browser/options_page_base.h"
 #include "chrome/browser/pref_member.h"
+#include "chrome/common/gtk_signal.h"
 
 class Profile;
 
@@ -31,19 +32,12 @@ class CookieFilterPageGtk : public OptionsPageBase {
   virtual void NotifyPrefChanged(const std::wstring* pref_name);
   virtual void HighlightGroup(OptionsGroup highlight_group);
 
-  // GTK callbacks
-  static void OnCookiesAllowToggled(GtkWidget* toggle_button,
-                                    CookieFilterPageGtk* cookie_page);
-  static void OnExceptionsClicked(GtkWidget* toggle_button,
-                                  CookieFilterPageGtk* cookie_page);
-  static void OnBlock3rdpartyToggled(GtkToggleButton* toggle_button,
-                                     CookieFilterPageGtk* cookie_page);
-  static void OnClearOnCloseToggled(GtkToggleButton* toggle_button,
-                                    CookieFilterPageGtk* cookie_page);
-  static void OnShowCookiesClicked(GtkWidget* button,
-                                   CookieFilterPageGtk* cookie_page);
-  static void OnFlashLinkClicked(GtkWidget* button,
-                                 CookieFilterPageGtk* cookie_page);
+  CHROMEGTK_CALLBACK_0(CookieFilterPageGtk, void, OnCookiesAllowToggled);
+  CHROMEGTK_CALLBACK_0(CookieFilterPageGtk, void, OnExceptionsClicked);
+  CHROMEGTK_CALLBACK_0(CookieFilterPageGtk, void, OnBlockThirdPartyToggled);
+  CHROMEGTK_CALLBACK_0(CookieFilterPageGtk, void, OnClearOnCloseToggled);
+  CHROMEGTK_CALLBACK_0(CookieFilterPageGtk, void, OnShowCookiesClicked);
+  CHROMEGTK_CALLBACK_0(CookieFilterPageGtk, void, OnFlashLinkClicked);
 
   GtkWidget* InitCookieStoringGroup();
 

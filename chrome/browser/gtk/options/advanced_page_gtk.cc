@@ -41,17 +41,15 @@ void AdvancedPageGtk::Init() {
   GtkWidget* reset_button = gtk_button_new_with_label(
         l10n_util::GetStringUTF8(IDS_OPTIONS_RESET).c_str());
   g_signal_connect(reset_button, "clicked",
-                   G_CALLBACK(OnResetToDefaultsClicked), this);
+                   G_CALLBACK(OnResetToDefaultsClickedThunk), this);
   gtk_container_add(GTK_CONTAINER(button_box), reset_button);
   gtk_box_pack_start(GTK_BOX(page_), button_box, FALSE, FALSE, 0);
 }
 
-// static
-void AdvancedPageGtk::OnResetToDefaultsClicked(
-    GtkButton* button, AdvancedPageGtk* advanced_page) {
-  advanced_page->UserMetricsRecordAction("Options_ResetToDefaults", NULL);
+void AdvancedPageGtk::OnResetToDefaultsClicked(GtkWidget* button) {
+  UserMetricsRecordAction("Options_ResetToDefaults", NULL);
   GtkWidget* dialog_ = gtk_message_dialog_new(
-      GTK_WINDOW(gtk_widget_get_toplevel(advanced_page->page_)),
+      GTK_WINDOW(gtk_widget_get_toplevel(page_)),
       static_cast<GtkDialogFlags>(GTK_DIALOG_MODAL),
       GTK_MESSAGE_QUESTION,
       GTK_BUTTONS_NONE,
@@ -68,16 +66,15 @@ void AdvancedPageGtk::OnResetToDefaultsClicked(
   gtk_window_set_title(GTK_WINDOW(dialog_),
       l10n_util::GetStringUTF8(IDS_PRODUCT_NAME).c_str());
   g_signal_connect(dialog_, "response",
-                   G_CALLBACK(OnResetToDefaultsResponse), advanced_page);
+                   G_CALLBACK(OnResetToDefaultsResponseThunk), this);
 
   gtk_widget_show_all(dialog_);
 }
 
-// static
-void AdvancedPageGtk::OnResetToDefaultsResponse(
-    GtkDialog* dialog, int response_id, AdvancedPageGtk* advanced_page) {
+void AdvancedPageGtk::OnResetToDefaultsResponse(GtkWidget* dialog,
+                                                int response_id) {
   if (response_id == GTK_RESPONSE_OK) {
-    OptionsUtil::ResetToDefaults(advanced_page->profile());
+    OptionsUtil::ResetToDefaults(profile());
   }
-  gtk_widget_destroy(GTK_WIDGET(dialog));
+  gtk_widget_destroy(dialog);
 }

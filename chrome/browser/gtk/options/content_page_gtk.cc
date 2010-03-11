@@ -191,7 +191,7 @@ GtkWidget* ContentPageGtk::InitPasswordSavingGroup() {
   passwords_asktosave_radio_ = gtk_radio_button_new_with_label(NULL,
       l10n_util::GetStringUTF8(IDS_OPTIONS_PASSWORDS_ASKTOSAVE).c_str());
   g_signal_connect(passwords_asktosave_radio_, "toggled",
-                   G_CALLBACK(OnPasswordRadioToggled), this);
+                   G_CALLBACK(OnPasswordRadioToggledThunk), this);
   gtk_box_pack_start(GTK_BOX(vbox), passwords_asktosave_radio_, FALSE,
                      FALSE, 0);
 
@@ -200,7 +200,7 @@ GtkWidget* ContentPageGtk::InitPasswordSavingGroup() {
       GTK_RADIO_BUTTON(passwords_asktosave_radio_),
       l10n_util::GetStringUTF8(IDS_OPTIONS_PASSWORDS_NEVERSAVE).c_str());
   g_signal_connect(passwords_neversave_radio_, "toggled",
-                   G_CALLBACK(OnPasswordRadioToggled), this);
+                   G_CALLBACK(OnPasswordRadioToggledThunk), this);
   gtk_box_pack_start(GTK_BOX(vbox), passwords_neversave_radio_, FALSE,
                      FALSE, 0);
 
@@ -211,7 +211,7 @@ GtkWidget* ContentPageGtk::InitPasswordSavingGroup() {
   GtkWidget* show_passwords_button = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_OPTIONS_PASSWORDS_SHOWPASSWORDS).c_str());
   g_signal_connect(show_passwords_button, "clicked",
-                   G_CALLBACK(OnShowPasswordsButtonClicked), this);
+                   G_CALLBACK(OnShowPasswordsButtonClickedThunk), this);
   gtk_box_pack_start(GTK_BOX(button_hbox), show_passwords_button, FALSE,
                      FALSE, 0);
 
@@ -225,7 +225,7 @@ GtkWidget* ContentPageGtk::InitFormAutofillGroup() {
   form_autofill_enable_radio_ = gtk_radio_button_new_with_label(NULL,
       l10n_util::GetStringUTF8(IDS_OPTIONS_AUTOFILL_ENABLE).c_str());
   g_signal_connect(G_OBJECT(form_autofill_enable_radio_), "toggled",
-                   G_CALLBACK(OnAutofillRadioToggled), this);
+                   G_CALLBACK(OnAutofillRadioToggledThunk), this);
   gtk_box_pack_start(GTK_BOX(vbox), form_autofill_enable_radio_, FALSE,
                      FALSE, 0);
 
@@ -234,7 +234,7 @@ GtkWidget* ContentPageGtk::InitFormAutofillGroup() {
       GTK_RADIO_BUTTON(form_autofill_enable_radio_),
       l10n_util::GetStringUTF8(IDS_OPTIONS_AUTOFILL_DISABLE).c_str());
   g_signal_connect(G_OBJECT(form_autofill_disable_radio_), "toggled",
-                   G_CALLBACK(OnAutofillRadioToggled), this);
+                   G_CALLBACK(OnAutofillRadioToggledThunk), this);
   gtk_box_pack_start(GTK_BOX(vbox), form_autofill_disable_radio_, FALSE,
                      FALSE, 0);
 
@@ -248,7 +248,7 @@ GtkWidget* ContentPageGtk::InitFormAutofillGroup() {
     gtk_widget_set_sensitive(autofill_button, FALSE);
 
   g_signal_connect(G_OBJECT(autofill_button), "clicked",
-                   G_CALLBACK(OnAutoFillButtonClicked), this);
+                   G_CALLBACK(OnAutofillButtonClickedThunk), this);
   gtk_box_pack_start(GTK_BOX(button_hbox), autofill_button, FALSE, FALSE, 0);
 
   return vbox;
@@ -261,7 +261,7 @@ GtkWidget* ContentPageGtk::InitBrowsingDataGroup() {
   GtkWidget* import_button = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_OPTIONS_IMPORT_DATA_BUTTON).c_str());
   g_signal_connect(import_button, "clicked",
-                   G_CALLBACK(OnImportButtonClicked), this);
+                   G_CALLBACK(OnImportButtonClickedThunk), this);
   gtk_box_pack_start(GTK_BOX(button_box), import_button, FALSE, FALSE, 0);
 
   return button_box;
@@ -276,7 +276,7 @@ GtkWidget* ContentPageGtk::InitThemesGroup() {
   gtk_theme_button_ = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_THEMES_GTK_BUTTON).c_str());
   g_signal_connect(gtk_theme_button_, "clicked",
-                   G_CALLBACK(OnGtkThemeButtonClicked), this);
+                   G_CALLBACK(OnGtkThemeButtonClickedThunk), this);
   gtk_box_pack_start(GTK_BOX(hbox), gtk_theme_button_, FALSE, FALSE, 0);
 #endif
 
@@ -284,14 +284,14 @@ GtkWidget* ContentPageGtk::InitThemesGroup() {
   themes_reset_button_ = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_THEMES_SET_CLASSIC).c_str());
   g_signal_connect(themes_reset_button_, "clicked",
-                   G_CALLBACK(OnResetDefaultThemeButtonClicked), this);
+                   G_CALLBACK(OnResetDefaultThemeButtonClickedThunk), this);
   gtk_box_pack_start(GTK_BOX(hbox), themes_reset_button_, FALSE, FALSE, 0);
 
   // Get themes button.
   GtkWidget* themes_gallery_button = gtk_chrome_link_button_new(
       l10n_util::GetStringUTF8(IDS_THEMES_GALLERY_BUTTON).c_str());
   g_signal_connect(themes_gallery_button, "clicked",
-                   G_CALLBACK(OnGetThemesButtonClicked), this);
+                   G_CALLBACK(OnGetThemesButtonClickedThunk), this);
   gtk_box_pack_start(GTK_BOX(hbox), themes_gallery_button, FALSE, FALSE, 0);
 
   gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
@@ -302,7 +302,7 @@ GtkWidget* ContentPageGtk::InitThemesGroup() {
     system_title_bar_show_radio_ = gtk_radio_button_new_with_label(NULL,
         l10n_util::GetStringUTF8(IDS_SHOW_WINDOW_DECORATIONS_RADIO).c_str());
     g_signal_connect(system_title_bar_show_radio_, "toggled",
-                     G_CALLBACK(OnSystemTitleBarRadioToggled), this);
+                     G_CALLBACK(OnSystemTitleBarRadioToggledThunk), this);
     gtk_box_pack_start(GTK_BOX(vbox), system_title_bar_show_radio_, FALSE,
                        FALSE, 0);
 
@@ -311,7 +311,7 @@ GtkWidget* ContentPageGtk::InitThemesGroup() {
         GTK_RADIO_BUTTON(system_title_bar_show_radio_),
         l10n_util::GetStringUTF8(IDS_HIDE_WINDOW_DECORATIONS_RADIO).c_str());
     g_signal_connect(system_title_bar_hide_radio_, "toggled",
-                     G_CALLBACK(OnSystemTitleBarRadioToggled), this);
+                     G_CALLBACK(OnSystemTitleBarRadioToggledThunk), this);
     gtk_box_pack_start(GTK_BOX(vbox), system_title_bar_hide_radio_, FALSE,
                        FALSE, 0);
   }
@@ -339,7 +339,7 @@ GtkWidget* ContentPageGtk::InitSyncGroup() {
   sync_action_link_background_ = gtk_event_box_new();
   sync_action_link_ = gtk_chrome_link_button_new("");
   g_signal_connect(sync_action_link_, "clicked",
-                   G_CALLBACK(OnSyncActionLinkClicked), this);
+                   G_CALLBACK(OnSyncActionLinkClickedThunk), this);
   gtk_box_pack_start(GTK_BOX(vbox), link_hbox, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(link_hbox), sync_action_link_background_, FALSE,
                      FALSE, 0);
@@ -353,7 +353,7 @@ GtkWidget* ContentPageGtk::InitSyncGroup() {
   gtk_container_add(GTK_CONTAINER(vbox), button_hbox);
   sync_start_stop_button_ = gtk_button_new_with_label("");
   g_signal_connect(sync_start_stop_button_, "clicked",
-                   G_CALLBACK(OnSyncStartStopButtonClicked), this);
+                   G_CALLBACK(OnSyncStartStopButtonClickedThunk), this);
   gtk_box_pack_start(GTK_BOX(button_hbox), sync_start_stop_button_, FALSE,
                      FALSE, 0);
 
@@ -402,138 +402,118 @@ void ContentPageGtk::UpdateSyncControls() {
   }
 }
 
-// static
-void ContentPageGtk::OnAutoFillButtonClicked(GtkButton* widget,
-                                             ContentPageGtk* page) {
-  DCHECK(page->personal_data_);
+void ContentPageGtk::OnAutofillButtonClicked(GtkWidget* widget) {
+  DCHECK(personal_data_);
   // If the personal data manager has not loaded the data yet, set ourselves as
   // its observer so that we can listen for the OnPersonalDataLoaded signal.
-  if (!page->personal_data_->IsDataLoaded())
-    page->personal_data_->SetObserver(page);
+  if (!personal_data_->IsDataLoaded())
+    personal_data_->SetObserver(this);
   else
-    page->OnPersonalDataLoaded();
+    OnPersonalDataLoaded();
 }
 
-// static
-void ContentPageGtk::OnImportButtonClicked(GtkButton* widget,
-                                           ContentPageGtk* page) {
+void ContentPageGtk::OnImportButtonClicked(GtkWidget* widget) {
   ImportDialogGtk::Show(
-      GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(widget))),
-      page->profile(), ALL);
+      GTK_WINDOW(gtk_widget_get_toplevel(widget)),
+      profile(), ALL);
 }
 
-// static
-void ContentPageGtk::OnGtkThemeButtonClicked(GtkButton* widget,
-                                             ContentPageGtk* page) {
-  page->UserMetricsRecordAction("Options_GtkThemeSet",
-                                page->profile()->GetPrefs());
-  page->profile()->SetNativeTheme();
+void ContentPageGtk::OnGtkThemeButtonClicked(GtkWidget* widget) {
+  UserMetricsRecordAction("Options_GtkThemeSet",
+                                profile()->GetPrefs());
+  profile()->SetNativeTheme();
 }
 
-// static
-void ContentPageGtk::OnResetDefaultThemeButtonClicked(GtkButton* widget,
-                                                      ContentPageGtk* page) {
-  page->UserMetricsRecordAction("Options_ThemesReset",
-                                page->profile()->GetPrefs());
-  page->profile()->ClearTheme();
+void ContentPageGtk::OnResetDefaultThemeButtonClicked(GtkWidget* widget) {
+  UserMetricsRecordAction("Options_ThemesReset",
+                                profile()->GetPrefs());
+  profile()->ClearTheme();
 }
 
-// static
-void ContentPageGtk::OnGetThemesButtonClicked(GtkButton* widget,
-                                              ContentPageGtk* page) {
-  page->UserMetricsRecordAction("Options_ThemesGallery",
-                                page->profile()->GetPrefs());
+void ContentPageGtk::OnGetThemesButtonClicked(GtkWidget* widget) {
+  UserMetricsRecordAction("Options_ThemesGallery",
+                          profile()->GetPrefs());
   BrowserList::GetLastActive()->OpenThemeGalleryTabAndActivate();
 }
 
-// static
-void ContentPageGtk::OnSystemTitleBarRadioToggled(GtkToggleButton* widget,
-                                                  ContentPageGtk* page) {
+void ContentPageGtk::OnSystemTitleBarRadioToggled(GtkWidget* widget) {
   DCHECK(browser_defaults::kCanToggleSystemTitleBar);
-  if (page->initializing_)
+  if (initializing_)
     return;
 
   // We get two signals when selecting a radio button, one for the old radio
   // being toggled off and one for the new one being toggled on. Ignore the
   // signal for the toggling off the old button.
-  if (!gtk_toggle_button_get_active(widget))
+  if (!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
     return;
 
   bool use_custom = gtk_toggle_button_get_active(
-      GTK_TOGGLE_BUTTON(page->system_title_bar_hide_radio_));
+      GTK_TOGGLE_BUTTON(system_title_bar_hide_radio_));
   if (use_custom) {
-    page->UserMetricsRecordAction("Options_CustomFrame_Enable",
-                                  page->profile()->GetPrefs());
+    UserMetricsRecordAction("Options_CustomFrame_Enable",
+                            profile()->GetPrefs());
   } else {
-    page->UserMetricsRecordAction("Options_CustomFrame_Disable",
-                                  page->profile()->GetPrefs());
+    UserMetricsRecordAction("Options_CustomFrame_Disable",
+                            profile()->GetPrefs());
   }
 
-  page->use_custom_chrome_frame_.SetValue(use_custom);
+  use_custom_chrome_frame_.SetValue(use_custom);
 }
 
-// static
-void ContentPageGtk::OnShowPasswordsButtonClicked(GtkButton* widget,
-                                                  ContentPageGtk* page) {
-  ShowPasswordsExceptionsWindow(page->profile());
+void ContentPageGtk::OnShowPasswordsButtonClicked(GtkWidget* widget) {
+  ShowPasswordsExceptionsWindow(profile());
 }
 
-// static
-void ContentPageGtk::OnPasswordRadioToggled(GtkToggleButton* widget,
-                                            ContentPageGtk* page) {
-  if (page->initializing_)
+void ContentPageGtk::OnPasswordRadioToggled(GtkWidget* widget) {
+  if (initializing_)
     return;
 
   // We get two signals when selecting a radio button, one for the old radio
   // being toggled off and one for the new one being toggled on. Ignore the
   // signal for the toggling off the old button.
-  if (!gtk_toggle_button_get_active(widget))
+  if (!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
     return;
 
   bool enabled = gtk_toggle_button_get_active(
-      GTK_TOGGLE_BUTTON(page->passwords_asktosave_radio_));
+      GTK_TOGGLE_BUTTON(passwords_asktosave_radio_));
   if (enabled) {
-    page->UserMetricsRecordAction("Options_PasswordManager_Enable",
-                                  page->profile()->GetPrefs());
+    UserMetricsRecordAction("Options_PasswordManager_Enable",
+                             profile()->GetPrefs());
   } else {
-    page->UserMetricsRecordAction("Options_PasswordManager_Disable",
-                                  page->profile()->GetPrefs());
+    UserMetricsRecordAction("Options_PasswordManager_Disable",
+                            profile()->GetPrefs());
   }
-  page->ask_to_save_passwords_.SetValue(enabled);
+  ask_to_save_passwords_.SetValue(enabled);
 }
 
-// static
-void ContentPageGtk::OnAutofillRadioToggled(GtkToggleButton* widget,
-                                            ContentPageGtk* page) {
-  if (page->initializing_)
+void ContentPageGtk::OnAutofillRadioToggled(GtkWidget* widget) {
+  if (initializing_)
     return;
 
   // We get two signals when selecting a radio button, one for the old radio
   // being toggled off and one for the new one being toggled on. Ignore the
   // signal for the toggling off the old button.
-  if (!gtk_toggle_button_get_active(widget))
+  if (!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
     return;
 
   bool enabled = gtk_toggle_button_get_active(
-      GTK_TOGGLE_BUTTON(page->form_autofill_enable_radio_));
+      GTK_TOGGLE_BUTTON(form_autofill_enable_radio_));
   if (enabled) {
-    page->UserMetricsRecordAction("Options_FormAutofill_Enable",
-                                  page->profile()->GetPrefs());
+    UserMetricsRecordAction("Options_FormAutofill_Enable",
+                             profile()->GetPrefs());
   } else {
-    page->UserMetricsRecordAction("Options_FormAutofill_Disable",
-                                  page->profile()->GetPrefs());
+    UserMetricsRecordAction("Options_FormAutofill_Disable",
+                            profile()->GetPrefs());
   }
-  page->enable_form_autofill_.SetValue(enabled);
+  enable_form_autofill_.SetValue(enabled);
 }
 
-// static
-void ContentPageGtk::OnSyncStartStopButtonClicked(GtkButton* widget,
-                                                  ContentPageGtk* page) {
-  DCHECK(page->sync_service_);
+void ContentPageGtk::OnSyncStartStopButtonClicked(GtkWidget* widget) {
+  DCHECK(sync_service_);
 
-  if (page->sync_service_->HasSyncSetupCompleted()) {
+  if (sync_service_->HasSyncSetupCompleted()) {
     GtkWidget* dialog = gtk_message_dialog_new(
-        GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(widget))),
+        GTK_WINDOW(gtk_widget_get_toplevel(widget)),
         static_cast<GtkDialogFlags>(GTK_DIALOG_MODAL),
         GTK_MESSAGE_WARNING,
         GTK_BUTTONS_NONE,
@@ -554,28 +534,24 @@ void ContentPageGtk::OnSyncStartStopButtonClicked(GtkButton* widget,
         NULL);
 
     g_signal_connect(dialog, "response",
-                     G_CALLBACK(OnStopSyncDialogResponse), page);
+                     G_CALLBACK(OnStopSyncDialogResponseThunk), this);
 
     gtk_widget_show_all(dialog);
     return;
   } else {
-    page->sync_service_->EnableForUser();
+    sync_service_->EnableForUser();
     ProfileSyncService::SyncEvent(ProfileSyncService::START_FROM_OPTIONS);
   }
 }
 
-// static
-void ContentPageGtk::OnSyncActionLinkClicked(GtkButton* widget,
-                                             ContentPageGtk* page) {
-  DCHECK(page->sync_service_);
-  page->sync_service_->ShowLoginDialog();
+void ContentPageGtk::OnSyncActionLinkClicked(GtkWidget* widget) {
+  DCHECK(sync_service_);
+  sync_service_->ShowLoginDialog();
 }
 
-// static
-void ContentPageGtk::OnStopSyncDialogResponse(GtkWidget* widget, int response,
-                                              ContentPageGtk* page) {
+void ContentPageGtk::OnStopSyncDialogResponse(GtkWidget* widget, int response) {
   if (response == GTK_RESPONSE_ACCEPT) {
-    page->sync_service_->DisableForUser();
+    sync_service_->DisableForUser();
     ProfileSyncService::SyncEvent(ProfileSyncService::STOP_FROM_OPTIONS);
   }
   gtk_widget_destroy(widget);

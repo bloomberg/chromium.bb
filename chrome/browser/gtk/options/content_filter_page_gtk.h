@@ -11,6 +11,7 @@
 
 #include "chrome/browser/options_page_base.h"
 #include "chrome/common/content_settings_types.h"
+#include "chrome/common/gtk_signal.h"
 
 // A page in the content settings window. Used for everything but the Cookies
 // page (which has a much more complex dialog). A |content_type| is passed into
@@ -28,11 +29,8 @@ class ContentFilterPageGtk : public OptionsPageBase {
   // Builds the content of the dialog.
   GtkWidget* InitGroup();
 
-  // GTK callbacks
-  static void OnAllowToggled(GtkWidget* toggle_button,
-                             ContentFilterPageGtk* content_page);
-  static void OnExceptionsClicked(GtkWidget* button,
-                                  ContentFilterPageGtk* content_page);
+  CHROMEGTK_CALLBACK_0(ContentFilterPageGtk, void, OnAllowToggled);
+  CHROMEGTK_CALLBACK_0(ContentFilterPageGtk, void, OnExceptionsClicked);
 
   ContentSettingsType content_type_;
 

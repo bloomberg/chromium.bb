@@ -13,6 +13,7 @@
 #include "chrome/browser/content_setting_combo_model.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
+#include "chrome/common/gtk_signal.h"
 
 // An editor which lets the user create or edit an individual exception to the
 // current content setting policy. (i.e. let www.google.com always show
@@ -47,13 +48,9 @@ class ContentExceptionEditor {
   void UpdateImage(GtkWidget* image, bool is_valid);
 
   // GTK callbacks
-  static void OnEntryChanged(GtkEditable* entry,
-                             ContentExceptionEditor* window);
-  static void OnResponse(GtkWidget* sender,
-                         int response_id,
-                         ContentExceptionEditor* window);
-  static void OnWindowDestroy(GtkWidget* widget,
-                              ContentExceptionEditor* editor);
+  CHROMEGTK_CALLBACK_0(ContentExceptionEditor, void, OnEntryChanged);
+  CHROMEGTK_CALLBACK_1(ContentExceptionEditor, void, OnResponse, int);
+  CHROMEGTK_CALLBACK_0(ContentExceptionEditor, void, OnWindowDestroy);
 
   Delegate* delegate_;
   ContentExceptionsTableModel* model_;

@@ -70,21 +70,21 @@ GtkWidget* CookieFilterPageGtk::InitCookieStoringGroup() {
   allow_radio_ = gtk_radio_button_new_with_label(NULL,
       l10n_util::GetStringUTF8(IDS_COOKIES_ALLOW_RADIO).c_str());
   g_signal_connect(G_OBJECT(allow_radio_), "toggled",
-                   G_CALLBACK(OnCookiesAllowToggled), this);
+                   G_CALLBACK(OnCookiesAllowToggledThunk), this);
   gtk_box_pack_start(GTK_BOX(vbox), allow_radio_, FALSE, FALSE, 0);
 
   ask_every_time_radio_ = gtk_radio_button_new_with_label_from_widget(
       GTK_RADIO_BUTTON(allow_radio_),
       l10n_util::GetStringUTF8(IDS_COOKIES_ASK_EVERY_TIME_RADIO).c_str());
   g_signal_connect(G_OBJECT(ask_every_time_radio_), "toggled",
-                   G_CALLBACK(OnCookiesAllowToggled), this);
+                   G_CALLBACK(OnCookiesAllowToggledThunk), this);
   gtk_box_pack_start(GTK_BOX(vbox), ask_every_time_radio_, FALSE, FALSE, 0);
 
   block_radio_ = gtk_radio_button_new_with_label_from_widget(
       GTK_RADIO_BUTTON(allow_radio_),
       l10n_util::GetStringUTF8(IDS_COOKIES_BLOCK_RADIO).c_str());
   g_signal_connect(G_OBJECT(block_radio_), "toggled",
-                   G_CALLBACK(OnCookiesAllowToggled), this);
+                   G_CALLBACK(OnCookiesAllowToggledThunk), this);
   gtk_box_pack_start(GTK_BOX(vbox), block_radio_, FALSE, FALSE, 0);
 
   // Set up the current value for the button.
@@ -109,7 +109,7 @@ GtkWidget* CookieFilterPageGtk::InitCookieStoringGroup() {
   GtkWidget* exceptions_button = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_COOKIES_EXCEPTIONS_BUTTON).c_str());
   g_signal_connect(G_OBJECT(exceptions_button), "clicked",
-                   G_CALLBACK(OnExceptionsClicked), this);
+                   G_CALLBACK(OnExceptionsClickedThunk), this);
   gtk_box_pack_start(GTK_BOX(vbox), WrapInHBox(exceptions_button),
                      FALSE, FALSE, 0);
 
@@ -118,36 +118,34 @@ GtkWidget* CookieFilterPageGtk::InitCookieStoringGroup() {
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(block_3rdparty_check_),
                                settings_map->BlockThirdPartyCookies());
   g_signal_connect(G_OBJECT(block_3rdparty_check_), "toggled",
-                   G_CALLBACK(OnBlock3rdpartyToggled), this);
+                   G_CALLBACK(OnBlockThirdPartyToggledThunk), this);
   gtk_box_pack_start(GTK_BOX(vbox), block_3rdparty_check_, FALSE, FALSE, 0);
 
   clear_on_close_check_ = gtk_check_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_COOKIES_CLEAR_WHEN_CLOSE_CHKBOX).c_str());
   g_signal_connect(G_OBJECT(clear_on_close_check_), "toggled",
-                   G_CALLBACK(OnClearOnCloseToggled), this);
+                   G_CALLBACK(OnClearOnCloseToggledThunk), this);
   gtk_box_pack_start(GTK_BOX(vbox), clear_on_close_check_, FALSE, FALSE, 0);
 
   show_cookies_button_ = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_COOKIES_SHOW_COOKIES_BUTTON).c_str());
   g_signal_connect(G_OBJECT(show_cookies_button_), "clicked",
-                   G_CALLBACK(OnShowCookiesClicked), this);
+                   G_CALLBACK(OnShowCookiesClickedThunk), this);
   gtk_box_pack_start(GTK_BOX(vbox), WrapInHBox(show_cookies_button_),
                      FALSE, FALSE, 0);
 
   GtkWidget* flash_settings_link = gtk_chrome_link_button_new(
       l10n_util::GetStringUTF8(IDS_FLASH_STORAGE_SETTINGS).c_str());
   g_signal_connect(G_OBJECT(flash_settings_link), "clicked",
-                   G_CALLBACK(OnFlashLinkClicked), this);
+                   G_CALLBACK(OnFlashLinkClickedThunk), this);
   gtk_box_pack_start(GTK_BOX(vbox), WrapInHBox(flash_settings_link),
                      FALSE, FALSE, 0);
 
   return vbox;
 };
 
-void CookieFilterPageGtk::OnCookiesAllowToggled(
-    GtkWidget* toggle_button,
-    CookieFilterPageGtk* cookie_page) {
-  if (cookie_page->initializing_)
+void CookieFilterPageGtk::OnCookiesAllowToggled(GtkWidget* toggle_button) {
+  if (initializing_)
     return;
 
   if (!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(toggle_button))) {
@@ -158,69 +156,57 @@ void CookieFilterPageGtk::OnCookiesAllowToggled(
   }
 
   ContentSetting setting = CONTENT_SETTING_ALLOW;
-  if (toggle_button == cookie_page->allow_radio_)
+  if (toggle_button == allow_radio_)
     setting = CONTENT_SETTING_ALLOW;
-  else if (toggle_button == cookie_page->ask_every_time_radio_)
+  else if (toggle_button == ask_every_time_radio_)
     setting = CONTENT_SETTING_ASK;
-  else if (toggle_button == cookie_page->block_radio_)
+  else if (toggle_button == block_radio_)
     setting = CONTENT_SETTING_BLOCK;
 
-  cookie_page->profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
+  profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_COOKIES, setting);
 }
 
-void CookieFilterPageGtk::OnExceptionsClicked(
-    GtkWidget* button,
-    CookieFilterPageGtk* cookie_page) {
-  HostContentSettingsMap* settings_map =
-      cookie_page->profile()->GetHostContentSettingsMap();
+void CookieFilterPageGtk::OnExceptionsClicked(GtkWidget* button) {
+  HostContentSettingsMap* settings_map = profile()->GetHostContentSettingsMap();
   ContentExceptionsWindowGtk::ShowExceptionsWindow(
       GTK_WINDOW(gtk_widget_get_toplevel(button)),
       settings_map, CONTENT_SETTINGS_TYPE_COOKIES);
 }
 
-void CookieFilterPageGtk::OnBlock3rdpartyToggled(
-    GtkToggleButton* toggle_button,
-    CookieFilterPageGtk* cookie_page) {
-  if (cookie_page->initializing_)
+void CookieFilterPageGtk::OnBlockThirdPartyToggled(GtkWidget* toggle_button) {
+  if (initializing_)
     return;
 
-  HostContentSettingsMap* settings_map =
-      cookie_page->profile()->GetHostContentSettingsMap();
+  HostContentSettingsMap* settings_map = profile()->GetHostContentSettingsMap();
   settings_map->SetBlockThirdPartyCookies(
       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(toggle_button)));
 }
 
-void CookieFilterPageGtk::OnClearOnCloseToggled(
-    GtkToggleButton* toggle_button,
-    CookieFilterPageGtk* cookie_page) {
-  if (cookie_page->initializing_)
+void CookieFilterPageGtk::OnClearOnCloseToggled(GtkWidget* toggle_button) {
+  if (initializing_)
     return;
 
-  cookie_page->clear_site_data_on_exit_.SetValue(
+  clear_site_data_on_exit_.SetValue(
       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(toggle_button)));
 }
 
-void CookieFilterPageGtk::OnShowCookiesClicked(
-    GtkWidget* button,
-    CookieFilterPageGtk* cookie_page) {
-  cookie_page->UserMetricsRecordAction("Options_ShowCookies", NULL);
+void CookieFilterPageGtk::OnShowCookiesClicked(GtkWidget* button) {
+  UserMetricsRecordAction("Options_ShowCookies", NULL);
   CookiesView::Show(GTK_WINDOW(gtk_widget_get_toplevel(button)),
-                    cookie_page->profile(),
+                    profile(),
                     new BrowsingDataDatabaseHelper(
-                        cookie_page->profile()),
+                        profile()),
                     new BrowsingDataLocalStorageHelper(
-                        cookie_page->profile()),
+                        profile()),
                     new BrowsingDataAppCacheHelper(
-                        cookie_page->profile()));
+                        profile()));
 }
 
-void CookieFilterPageGtk::OnFlashLinkClicked(
-    GtkWidget* button,
-    CookieFilterPageGtk* cookie_page) {
+void CookieFilterPageGtk::OnFlashLinkClicked(GtkWidget* button) {
   // We open a new browser window so the Options dialog doesn't get lost
   // behind other windows.
-  Browser* browser = Browser::Create(cookie_page->profile());
+  Browser* browser = Browser::Create(profile());
   browser->OpenURL(GURL(l10n_util::GetStringUTF8(IDS_FLASH_STORAGE_URL)),
                    GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
   browser->window()->Show();

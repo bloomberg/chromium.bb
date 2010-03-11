@@ -66,7 +66,7 @@ ContentExceptionEditor::ContentExceptionEditor(
 
   entry_ = gtk_entry_new();
   gtk_entry_set_text(GTK_ENTRY(entry_), host_.c_str());
-  g_signal_connect(entry_, "changed", G_CALLBACK(OnEntryChanged), this);
+  g_signal_connect(entry_, "changed", G_CALLBACK(OnEntryChangedThunk), this);
   gtk_entry_set_activates_default(GTK_ENTRY(entry_), TRUE);
 
   host_image_ = gtk_image_new_from_pixbuf(NULL);
@@ -93,12 +93,12 @@ ContentExceptionEditor::ContentExceptionEditor(
                       gtk_util::kContentAreaSpacing);
 
   // Prime the state of the buttons.
-  OnEntryChanged(GTK_EDITABLE(entry_), this);
+  OnEntryChanged(entry_);
 
   gtk_widget_show_all(dialog_);
 
-  g_signal_connect(dialog_, "response", G_CALLBACK(OnResponse), this);
-  g_signal_connect(dialog_, "destroy", G_CALLBACK(OnWindowDestroy), this);
+  g_signal_connect(dialog_, "response", G_CALLBACK(OnResponseThunk), this);
+  g_signal_connect(dialog_, "destroy", G_CALLBACK(OnWindowDestroyThunk), this);
 }
 
 bool ContentExceptionEditor::IsHostValid(const std::string& host) const {
@@ -115,36 +115,26 @@ void ContentExceptionEditor::UpdateImage(GtkWidget* image, bool is_valid) {
           is_valid ? IDR_INPUT_GOOD : IDR_INPUT_ALERT));
 }
 
-// static
-void ContentExceptionEditor::OnEntryChanged(GtkEditable* entry,
-                                            ContentExceptionEditor* window) {
-  std::string new_host = gtk_entry_get_text(GTK_ENTRY(window->entry_));
-  bool is_valid = window->IsHostValid(new_host);
-  gtk_dialog_set_response_sensitive(GTK_DIALOG(window->dialog_),
+void ContentExceptionEditor::OnEntryChanged(GtkWidget* entry) {
+  std::string new_host = gtk_entry_get_text(GTK_ENTRY(entry));
+  bool is_valid = IsHostValid(new_host);
+  gtk_dialog_set_response_sensitive(GTK_DIALOG(dialog_),
                                     GTK_RESPONSE_OK, is_valid);
-  window->UpdateImage(window->host_image_, is_valid);
+  UpdateImage(host_image_, is_valid);
 }
 
-// static
-void ContentExceptionEditor::OnResponse(
-    GtkWidget* sender,
-    int response_id,
-    ContentExceptionEditor* window) {
+void ContentExceptionEditor::OnResponse(GtkWidget* sender, int response_id) {
   if (response_id == GTK_RESPONSE_OK) {
     // Notify our delegate to update everything.
-    std::string new_host = gtk_entry_get_text(GTK_ENTRY(window->entry_));
-    ContentSetting setting = window->cb_model_.SettingForIndex(
-        gtk_combo_box_get_active(GTK_COMBO_BOX(window->action_combo_)));
-    window->delegate_->AcceptExceptionEdit(new_host, setting, window->index_,
-                                           window->is_new());
+    std::string new_host = gtk_entry_get_text(GTK_ENTRY(entry_));
+    ContentSetting setting = cb_model_.SettingForIndex(
+        gtk_combo_box_get_active(GTK_COMBO_BOX(action_combo_)));
+    delegate_->AcceptExceptionEdit(new_host, setting, index_, is_new());
   }
 
-  gtk_widget_destroy(window->dialog_);
+  gtk_widget_destroy(dialog_);
 }
 
-// static
-void ContentExceptionEditor::OnWindowDestroy(
-    GtkWidget* widget,
-    ContentExceptionEditor* editor) {
-  MessageLoop::current()->DeleteSoon(FROM_HERE, editor);
+void ContentExceptionEditor::OnWindowDestroy(GtkWidget* widget) {
+  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }

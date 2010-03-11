@@ -129,24 +129,24 @@ void CookiesView::Init(GtkWindow* parent) {
                               kDialogDefaultHeight);
   gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
                       gtk_util::kContentAreaSpacing);
-  g_signal_connect(dialog_, "response", G_CALLBACK(OnResponse), this);
-  destroy_handler_ =
-      g_signal_connect(dialog_, "destroy", G_CALLBACK(OnWindowDestroy), this);
+  g_signal_connect(dialog_, "response", G_CALLBACK(OnResponseThunk), this);
+  destroy_handler_ = g_signal_connect(dialog_, "destroy",
+                                      G_CALLBACK(OnWindowDestroyThunk), this);
 
   // Filtering controls.
   GtkWidget* filter_hbox = gtk_hbox_new(FALSE, gtk_util::kControlSpacing);
   filter_entry_ = gtk_entry_new();
   g_signal_connect(filter_entry_, "activate",
-                   G_CALLBACK(OnFilterEntryActivated), this);
+                   G_CALLBACK(OnFilterEntryActivatedThunk), this);
   g_signal_connect(filter_entry_, "changed",
-                   G_CALLBACK(OnFilterEntryChanged), this);
+                   G_CALLBACK(OnFilterEntryChangedThunk), this);
   gtk_box_pack_start(GTK_BOX(filter_hbox), filter_entry_,
                      TRUE, TRUE, 0);
   filter_clear_button_ = gtk_button_new_with_mnemonic(
       gtk_util::ConvertAcceleratorsFromWindowsStyle(
           l10n_util::GetStringUTF8(IDS_COOKIES_CLEAR_SEARCH_LABEL)).c_str());
   g_signal_connect(filter_clear_button_, "clicked",
-                   G_CALLBACK(OnFilterClearButtonClicked), this);
+                   G_CALLBACK(OnFilterClearButtonClickedThunk), this);
   gtk_box_pack_start(GTK_BOX(filter_hbox), filter_clear_button_,
                      FALSE, FALSE, 0);
 
@@ -201,14 +201,14 @@ void CookiesView::Init(GtkWindow* parent) {
           IDS_COOKIES_DOMAIN_COLUMN_HEADER).c_str());
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree_), title_column);
   g_signal_connect(tree_, "key-press-event",
-                   G_CALLBACK(OnTreeViewKeyPress), this);
+                   G_CALLBACK(OnTreeViewKeyPressThunk), this);
   g_signal_connect(tree_, "row-expanded",
-                   G_CALLBACK(OnTreeViewRowExpanded), this);
+                   G_CALLBACK(OnTreeViewRowExpandedThunk), this);
 
   selection_ = gtk_tree_view_get_selection(GTK_TREE_VIEW(tree_));
   gtk_tree_selection_set_mode(selection_, GTK_SELECTION_SINGLE);
   g_signal_connect(selection_, "changed",
-                   G_CALLBACK(OnSelectionChanged), this);
+                   G_CALLBACK(OnTreeViewSelectionChangeThunk), this);
 
   cookie_display_ = gtk_chrome_cookie_view_new();
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
@@ -295,64 +295,54 @@ void CookiesView::RemoveSelectedItems() {
 
 void CookiesView::OnAnyModelUpdateStart() {
   g_signal_handlers_block_by_func(
-      G_OBJECT(selection_), reinterpret_cast<gpointer>(OnSelectionChanged),
+      selection_, reinterpret_cast<gpointer>(OnTreeViewSelectionChangeThunk),
       this);
 }
 
 void CookiesView::OnAnyModelUpdate() {
   g_signal_handlers_unblock_by_func(
-      G_OBJECT(selection_), reinterpret_cast<gpointer>(OnSelectionChanged),
+      selection_, reinterpret_cast<gpointer>(OnTreeViewSelectionChangeThunk),
       this);
   EnableControls();
 }
 
-// static
-void CookiesView::OnResponse(GtkDialog* dialog, int response_id,
-                             CookiesView* window) {
+void CookiesView::OnResponse(GtkWidget* dialog, int response_id) {
   if (response_id == RESPONSE_REMOVE) {
-    window->RemoveSelectedItems();
+    RemoveSelectedItems();
   } else if (response_id == RESPONSE_REMOVE_ALL) {
-    window->cookies_tree_model_->DeleteAllStoredObjects();
+    cookies_tree_model_->DeleteAllStoredObjects();
   } else {
-    gtk_widget_destroy(window->dialog_);
+    gtk_widget_destroy(dialog);
   }
 }
 
-// static
-void CookiesView::OnWindowDestroy(GtkWidget* widget, CookiesView* window) {
+void CookiesView::OnWindowDestroy(GtkWidget* widget) {
   instance_ = NULL;
-  MessageLoop::current()->DeleteSoon(FROM_HERE, window);
+  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
-// static
-void CookiesView::OnSelectionChanged(GtkTreeSelection *selection,
-                                     CookiesView* window) {
-  window->EnableControls();
+void CookiesView::OnTreeViewSelectionChange(GtkWidget* selection) {
+  EnableControls();
 }
 
-// static
-gboolean CookiesView::OnTreeViewKeyPress(
-    GtkWidget* tree_view, GdkEventKey* key, CookiesView* window) {
+gboolean CookiesView::OnTreeViewKeyPress(GtkWidget* tree_view,
+                                         GdkEventKey* key) {
   if (key->keyval == GDK_Delete) {
-    window->RemoveSelectedItems();
+    RemoveSelectedItems();
     return TRUE;
   }
   return FALSE;
 }
 
-// static
-void CookiesView::OnTreeViewRowExpanded(GtkTreeView* tree_view,
+void CookiesView::OnTreeViewRowExpanded(GtkWidget* tree_view,
                                         GtkTreeIter* iter,
-                                        GtkTreePath* path,
-                                        gpointer user_data) {
+                                        GtkTreePath* path) {
   // When a row in the tree is expanded, expand all the children too.
   g_signal_handlers_block_by_func(
-      G_OBJECT(tree_view), reinterpret_cast<gpointer>(OnTreeViewRowExpanded),
-      user_data);
-  gtk_tree_view_expand_row(tree_view, path, TRUE);
+      tree_view, reinterpret_cast<gpointer>(OnTreeViewRowExpandedThunk), this);
+  gtk_tree_view_expand_row(GTK_TREE_VIEW(tree_view), path, TRUE);
   g_signal_handlers_unblock_by_func(
-      G_OBJECT(tree_view), reinterpret_cast<gpointer>(OnTreeViewRowExpanded),
-      user_data);
+      tree_view, reinterpret_cast<gpointer>(OnTreeViewRowExpandedThunk), this);
 }
 
 void CookiesView::UpdateFilterResults() {
@@ -363,26 +353,21 @@ void CookiesView::UpdateFilterResults() {
   }
 }
 
-// static
-void CookiesView::OnFilterEntryActivated(GtkEntry* entry, CookiesView* window) {
-  window->filter_update_factory_.RevokeAll();
-  window->UpdateFilterResults();
+void CookiesView::OnFilterEntryActivated(GtkWidget* entry) {
+  filter_update_factory_.RevokeAll();
+  UpdateFilterResults();
 }
 
-// static
-void CookiesView::OnFilterEntryChanged(GtkEditable* editable,
-                                       CookiesView* window) {
-  window->filter_update_factory_.RevokeAll();
+void CookiesView::OnFilterEntryChanged(GtkWidget* editable) {
+  filter_update_factory_.RevokeAll();
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      window->filter_update_factory_.NewRunnableMethod(
+      filter_update_factory_.NewRunnableMethod(
           &CookiesView::UpdateFilterResults), kSearchFilterDelayMs);
-  window->EnableControls();
+  EnableControls();
 }
 
-// static
-void CookiesView::OnFilterClearButtonClicked(GtkButton* button,
-                                             CookiesView* window) {
-  gtk_entry_set_text(GTK_ENTRY(window->filter_entry_), "");
-  window->filter_update_factory_.RevokeAll();
-  window->UpdateFilterResults();
+void CookiesView::OnFilterClearButtonClicked(GtkWidget* button) {
+  gtk_entry_set_text(GTK_ENTRY(filter_entry_), "");
+  filter_update_factory_.RevokeAll();
+  UpdateFilterResults();
 }
