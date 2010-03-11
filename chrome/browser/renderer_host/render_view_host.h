@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/scoped_ptr.h"
+#include "chrome/browser/find_bar_controller.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/page_zoom.h"
@@ -204,9 +205,8 @@ class RenderViewHost : public RenderWidgetHost {
                     bool match_case,
                     bool find_next);
 
-  // Cancel a pending find operation. If |clear_selection| is true, it will also
-  // clear the selection on the focused frame.
-  void StopFinding(bool clear_selection);
+  // Cancel a pending find operation.
+  void StopFinding(FindBarController::SelectionAction selection_action);
 
   // Change the zoom level of a page.
   void Zoom(PageZoom::Function function);

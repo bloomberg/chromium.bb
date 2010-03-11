@@ -34,7 +34,7 @@ void FindBarController::Show() {
   find_bar_->SetFocusAndSelection();
 }
 
-void FindBarController::EndFindSession() {
+void FindBarController::EndFindSession(SelectionAction action) {
   find_bar_->Hide(true);
 
   // |tab_contents_| can be NULL for a number of reasons, for example when the
@@ -43,8 +43,7 @@ void FindBarController::EndFindSession() {
     // When we hide the window, we need to notify the renderer that we are done
     // for now, so that we can abort the scoping effort and clear all the
     // tickmarks and highlighting.
-    tab_contents_->StopFinding(false);  // false = don't clear selection on
-                                        // page.
+    tab_contents_->StopFinding(action);
     find_bar_->ClearResults(tab_contents_->find_result());
 
     // When we get dismissed we restore the focus to where it belongs.
@@ -139,7 +138,7 @@ void FindBarController::Observe(NotificationType type,
       if (find_bar_->IsFindBarVisible()) {
         if (PageTransition::StripQualifier(transition_type) !=
             PageTransition::RELOAD) {
-          EndFindSession();
+          EndFindSession(kKeepSelection);
         } else {
           // On Reload we want to make sure FindNext is converted to a full Find
           // to make sure highlights for inactive matches are repainted.

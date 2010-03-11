@@ -22,6 +22,7 @@
 #include "chrome/browser/dom_ui/dom_ui_factory.h"
 #include "chrome/browser/download/save_package.h"
 #include "chrome/browser/fav_icon_helper.h"
+#include "chrome/browser/find_bar_controller.h"
 #include "chrome/browser/find_notification_details.h"
 #include "chrome/browser/jsmessage_box_client.h"
 #include "chrome/browser/net/url_request_context_getter.h"
@@ -499,9 +500,8 @@ class TabContents : public PageNavigator,
                     bool forward_direction,
                     bool case_sensitive);
 
-  // Stops the current Find operation. If |clear_selection| is true, it will
-  // also clear the selection on the focused frame.
-  void StopFinding(bool clear_selection);
+  // Stops the current Find operation.
+  void StopFinding(FindBarController::SelectionAction selection_action);
 
   // Accessors/Setters for find_ui_active_.
   bool find_ui_active() const { return find_ui_active_; }

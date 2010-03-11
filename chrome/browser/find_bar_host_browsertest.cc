@@ -15,7 +15,18 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
+
+#if defined(TOOLKIT_VIEWS)
 #include "views/focus/focus_manager.h"
+#endif
+
+// http://crbug.com/37809
+#if defined(OS_LINUX) && defined(TOOLKIT_GTK)
+#define FindDisappearOnNavigate DISABLED_FindDisappearOnNavigate
+#define FindDisappearOnNewTabAndHistory \
+    DISABLED_FindDisappearOnNewTabAndHistory
+#define FindMovesWhenObscuring DISABLED_FindMovesWhenObscuring
+#endif
 
 const std::wstring kSimplePage = L"404_is_enough_for_us.html";
 const std::wstring kFramePage = L"files/find_in_page/frames.html";
@@ -30,6 +41,7 @@ const std::wstring kBitstackCrash = L"files/find_in_page/crash_14491.html";
 const std::wstring kSelectChangesOrdinal =
     L"files/find_in_page/select_changes_ordinal.html";
 const std::wstring kSimple = L"files/find_in_page/simple.html";
+const std::wstring kLinkPage = L"files/find_in_page/link.html";
 
 const bool kBack = false;
 const bool kFwd = true;
@@ -53,7 +65,7 @@ class FindInPageControllerTest : public InProcessBrowserTest {
   }
 };
 
-// Platform independent FindInPage that takes |const wchat_t*|
+// Platform independent FindInPage that takes |const wchar_t*|
 // as an input.
 int FindInPageWchar(TabContents* tab,
                     const wchar_t* search_str,
@@ -178,7 +190,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageEndState) {
   EXPECT_EQ(1, ordinal);
 
   // End the find session, which should set focus to the link.
-  tab_contents->StopFinding(false);
+  tab_contents->StopFinding(FindBarController::kKeepSelection);
 
   // Verify that the link is focused.
   EXPECT_STREQ("link1", FocusedOnPage(tab_contents).c_str());
@@ -197,7 +209,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageEndState) {
       &result);
 
   // End the find session.
-  tab_contents->StopFinding(false);
+  tab_contents->StopFinding(FindBarController::kKeepSelection);
 
   // Verify that link2 is not focused.
   EXPECT_STREQ("", FocusedOnPage(tab_contents).c_str());
@@ -278,7 +290,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   EXPECT_EQ(3, ordinal);
 
   // End the find session.
-  tab_contents->StopFinding(false);
+  tab_contents->StopFinding(FindBarController::kKeepSelection);
 }
 
 // This test loads a page with frames and makes sure the ordinal returned makes
@@ -486,8 +498,10 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindDisappearOnNavigate) {
   GURL url2 = server->TestServerPageW(kFramePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
+#if defined(TOOLKIT_VIEWS)
   // Open the Find window with animations disabled.
   DropdownBarHost::disable_animations_during_testing_ = true;
+#endif
   browser()->ShowFindBar();
 
   gfx::Point position;
@@ -520,8 +534,10 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   GURL url = server->TestServerPageW(kSimplePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
+#if defined(TOOLKIT_VIEWS)
   // Open the Find window with animations disabled.
   DropdownBarHost::disable_animations_during_testing_ = true;
+#endif
   browser()->ShowFindBar();
 
   gfx::Point position;
@@ -560,8 +576,10 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindMovesWhenObscuring) {
   GURL url = server->TestServerPageW(kMoveIfOver);
   ui_test_utils::NavigateToURL(browser(), url);
 
+#if defined(TOOLKIT_VIEWS)
   // Open the Find window with animations disabled.
   DropdownBarHost::disable_animations_during_testing_ = true;
+#endif
   browser()->ShowFindBar();
 
   gfx::Point start_position;
@@ -640,6 +658,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   EXPECT_EQ(0, ordinal);
 }
 
+#if defined(TOOLKIT_VIEWS)
 // Make sure Find box grabs the Esc accelerator and restores it again.
 #if defined(OS_LINUX)
 // TODO(oshima): On Gtk/Linux, a focus out event is asynchronous and
@@ -681,8 +700,10 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
       focus_manager->GetCurrentTargetForAccelerator(escape);
   EXPECT_TRUE(old_target != NULL);
 
+#if defined(TOOLKIT_VIEWS)
   // Open the Find window with animations disabled.
   DropdownBarHost::disable_animations_during_testing_ = true;
+#endif
   browser()->ShowFindBar();
 
   // Our Find bar should be the new target.
@@ -693,12 +714,14 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   EXPECT_NE(new_target, old_target);
 
   // Close the Find box.
-  browser()->GetFindBarController()->EndFindSession();
+  browser()->GetFindBarController()->EndFindSession(
+      FindBarController::kKeepSelection);
 
   // The accelerator for Escape should be back to what it was before.
   EXPECT_EQ(old_target,
             focus_manager->GetCurrentTargetForAccelerator(escape));
 }
+#endif  // TOOLKIT_VIEWS
 
 // Make sure Find box does not become UI-inactive when no text is in the box as
 // we switch to a tab contents with an empty find string. See issue 13570.
@@ -709,8 +732,10 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, StayActive) {
   GURL url = server->TestServerPageW(kSimplePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
+#if defined(TOOLKIT_VIEWS)
   // Open the Find window with animations disabled.
   DropdownBarHost::disable_animations_during_testing_ = true;
+#endif
   browser()->ShowFindBar();
 
   // Simulate a user clearing the search string. Ideally, we should be
@@ -720,7 +745,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, StayActive) {
   TabContents* tab_contents = browser()->GetSelectedTabContents();
   // Stop the (non-existing) find operation, and clear the selection (which
   // signals the UI is still active).
-  tab_contents->StopFinding(true);
+  tab_contents->StopFinding(FindBarController::kClearSelection);
   // Make sure the Find UI flag hasn't been cleared, it must be so that the UI
   // still responds to browser window resizing.
   ASSERT_TRUE(tab_contents->find_ui_active());
@@ -748,7 +773,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, RestartSearchFromF3) {
   EXPECT_EQ(1, ordinal);
 
   // End the Find session, thereby making the next F3 start afresh.
-  browser()->GetFindBarController()->EndFindSession();
+  browser()->GetFindBarController()->EndFindSession(
+      FindBarController::kKeepSelection);
 
   // Simulate F3 while Find box is closed. Should have 1 match.
   EXPECT_EQ(1, FindInPageWchar(tab, L"", kFwd, kIgnoreCase, &ordinal));
@@ -764,7 +790,9 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, RestartSearchFromF3) {
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PreferPreviousSearch) {
   HTTPTestServer* server = StartHTTPServer();
 
+#if defined(TOOLKIT_VIEWS)
   DropdownBarHost::disable_animations_during_testing_ = true;
+#endif
 
   // First we navigate to any page.
   GURL url = server->TestServerPageW(kSimplePage);
@@ -787,8 +815,31 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PreferPreviousSearch) {
 
   // Switch back to first tab.
   browser()->SelectTabContentsAt(0, false);
-  browser()->GetFindBarController()->EndFindSession();
+  browser()->GetFindBarController()->EndFindSession(
+      FindBarController::kKeepSelection);
   // Simulate F3.
   ui_test_utils::FindInPage(tab1, string16(), kFwd, kIgnoreCase, &ordinal);
   EXPECT_EQ(tab1->find_text(), WideToUTF16(L"Default"));
+}
+
+// This makes sure that dismissing the find bar with kActivateSelection works.
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, ActivateLinkNavigatesPage) {
+  HTTPTestServer* server = StartHTTPServer();
+
+#if defined(TOOLKIT_VIEWS)
+  DropdownBarHost::disable_animations_during_testing_ = true;
+#endif
+
+  // First we navigate to our test content.
+  GURL url = server->TestServerPageW(kLinkPage);
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  TabContents* tab = browser()->GetSelectedTabContents();
+  int ordinal = 0;
+  FindInPageWchar(tab, L"link", kFwd, kIgnoreCase, &ordinal);
+  EXPECT_EQ(ordinal, 1);
+
+  // End the find session, click on the link.
+  tab->StopFinding(FindBarController::kActivateSelection);
+  EXPECT_TRUE(ui_test_utils::WaitForNavigationInCurrentTab(browser()));
 }

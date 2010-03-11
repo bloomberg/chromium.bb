@@ -201,10 +201,9 @@ IPC_BEGIN_MESSAGES(View)
                       std::string /* security info */)
 
   // This message notifies the renderer that the user has closed the FindInPage
-  // window (and that the selection should be cleared and the tick-marks
-  // erased). If |clear_selection| is true, it will also clear the current
-  // selection.
-  IPC_MESSAGE_ROUTED1(ViewMsg_StopFinding, bool /* clear_selection */)
+  // window (and what action to take regarding the selection).
+  IPC_MESSAGE_ROUTED1(ViewMsg_StopFinding,
+                      ViewMsg_StopFinding_Params /* action */)
 
   // These messages are typically generated from context menus and request the
   // renderer to apply the specified operation to the current selection.

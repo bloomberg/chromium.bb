@@ -76,7 +76,8 @@ const float kFindBarCloseDuration = 0.15;
 
 - (IBAction)close:(id)sender {
   if (findBarBridge_)
-    findBarBridge_->GetFindBarController()->EndFindSession();
+    findBarBridge_->GetFindBarController()->EndFindSession(
+        FindBarController::kKeepSelection);
 }
 
 - (IBAction)previousResult:(id)sender {
@@ -135,7 +136,7 @@ const float kFindBarCloseDuration = 0.15;
     tab_contents->StartFinding(base::SysNSStringToUTF16(findText), true, false);
   } else {
     // The textbox is empty so we reset.
-    tab_contents->StopFinding(true);  // true = clear selection on page.
+    tab_contents->StopFinding(FindBarController::kClearSelection);
     [self updateUIForFindResult:tab_contents->find_result()
                        withText:string16()];
   }
@@ -356,7 +357,7 @@ const float kFindBarCloseDuration = 0.15;
     TabContents* contents =
         findBarBridge_->GetFindBarController()->tab_contents();
     if (contents) {
-      contents->StopFinding(true);
+      contents->StopFinding(FindBarController::kClearSelection);
       findBarBridge_->ClearResults(contents->find_result());
     }
   }

@@ -613,7 +613,7 @@ class RenderView : public RenderWidget,
                                bool new_navigation,
                                const GURL& display_url,
                                const std::string& security_info);
-  void OnStopFinding(bool clear_selection);
+  void OnStopFinding(const ViewMsg_StopFinding_Params& params);
   void OnFindReplyAck();
   void OnUpdateTargetURLAck();
   void OnUndo();

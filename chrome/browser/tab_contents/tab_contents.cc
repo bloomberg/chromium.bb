@@ -1135,16 +1135,17 @@ void TabContents::StartFinding(string16 search_string,
                                    find_next);
 }
 
-void TabContents::StopFinding(bool clear_selection) {
-  // When |clear_selection| is true, it means the find string has been cleared
+void TabContents::StopFinding(
+    FindBarController::SelectionAction selection_action) {
+  // When the action is kClearAction, it means the find string has been cleared
   // by the user, but the UI has not been dismissed.
-  if (!clear_selection)
+  if (selection_action != FindBarController::kClearSelection)
     find_ui_active_ = false;
   previous_find_text_ = find_text_;
   find_text_.clear();
   find_op_aborted_ = true;
   last_search_result_ = FindNotificationDetails();
-  render_view_host()->StopFinding(clear_selection);
+  render_view_host()->StopFinding(selection_action);
 }
 
 void TabContents::OnSavePage() {

@@ -539,7 +539,7 @@ void FindBarGtk::FindEntryTextInContents(bool forward_search) {
                                false);  // Not case sensitive.
   } else {
     // The textbox is empty so we reset.
-    tab_contents->StopFinding(true);  // true = clear selection on page.
+    tab_contents->StopFinding(FindBarController::kClearSelection);
     UpdateUIForFindResult(find_bar_controller_->tab_contents()->find_result(),
                           string16());
   }
@@ -695,10 +695,18 @@ gboolean FindBarGtk::OnKeyPressEvent(GtkWidget* widget, GdkEventKey* event,
   if (find_bar->MaybeForwardKeyEventToRenderer(event)) {
     return TRUE;
   } else if (GDK_Escape == event->keyval) {
-    find_bar->find_bar_controller_->EndFindSession();
+    find_bar->find_bar_controller_->EndFindSession(
+        FindBarController::kKeepSelection);
     return TRUE;
   } else if (GDK_Return == event->keyval ||
              GDK_KP_Enter == event->keyval) {
+    if ((event->state & gtk_accelerator_get_default_mod_mask()) ==
+        GDK_CONTROL_MASK) {
+      find_bar->find_bar_controller_->EndFindSession(
+          FindBarController::kActivateSelection);
+      return TRUE;
+    }
+
     bool forward = (event->state & gtk_accelerator_get_default_mod_mask()) !=
                    GDK_SHIFT_MASK;
     find_bar->FindEntryTextInContents(forward);
@@ -716,7 +724,8 @@ gboolean FindBarGtk::OnKeyReleaseEvent(GtkWidget* widget, GdkEventKey* event,
 // static
 void FindBarGtk::OnClicked(GtkWidget* button, FindBarGtk* find_bar) {
   if (button == find_bar->close_button_->widget()) {
-    find_bar->find_bar_controller_->EndFindSession();
+    find_bar->find_bar_controller_->EndFindSession(
+        FindBarController::kKeepSelection);
   } else if (button == find_bar->find_previous_button_->widget() ||
              button == find_bar->find_next_button_->widget()) {
     find_bar->FindEntryTextInContents(

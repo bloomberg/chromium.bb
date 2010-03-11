@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,13 @@ class TabContents;
 
 class FindBarController : public NotificationObserver {
  public:
+  // An enum listing the possible actions to take on a find-in-page selection.
+  enum SelectionAction {
+    kKeepSelection,  // Translate the find selection into a normal selection.
+    kClearSelection,  // Clear the find selection.
+    kActivateSelection  // Focus and click the selected node (for links).
+  };
+
   // FindBar takes ownership of |find_bar_view|.
   explicit FindBarController(FindBar* find_bar);
 
@@ -24,7 +31,7 @@ class FindBarController : public NotificationObserver {
   void Show();
 
   // Ends the current session.
-  void EndFindSession();
+  void EndFindSession(SelectionAction action);
 
   // Accessor for the attached TabContents.
   TabContents* tab_contents() const { return tab_contents_; }

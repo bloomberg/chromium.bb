@@ -406,7 +406,8 @@ void FindBarView::ButtonPressed(
       }
       break;
     case CLOSE_TAG:
-      find_bar_host()->GetFindBarController()->EndFindSession();
+      find_bar_host()->GetFindBarController()->EndFindSession(
+          FindBarController::kKeepSelection);
       break;
     default:
       NOTREACHED() << L"Unknown button";
@@ -434,8 +435,7 @@ void FindBarView::ContentsChanged(views::Textfield* sender,
     // The last two params here are forward (true) and case sensitive (false).
     controller->tab_contents()->StartFinding(new_contents, true, false);
   } else {
-    // The textbox is empty so we reset.  true = clear selection on page.
-    controller->tab_contents()->StopFinding(true);
+    controller->tab_contents()->StopFinding(FindBarController::kClearSelection);
     UpdateForResult(controller->tab_contents()->find_result(), string16());
   }
 }

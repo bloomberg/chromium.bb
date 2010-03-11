@@ -96,7 +96,7 @@ bool FindBarHost::AcceleratorPressed(const views::Accelerator& accelerator) {
   // This will end the Find session and hide the window, causing it to loose
   // focus and in the process unregister us as the handler for the Escape
   // accelerator through the FocusWillChange event.
-  find_bar_controller_->EndFindSession();
+  find_bar_controller_->EndFindSession(FindBarController::kKeepSelection);
 
   return true;
 }

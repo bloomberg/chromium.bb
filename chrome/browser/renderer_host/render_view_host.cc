@@ -391,8 +391,24 @@ void RenderViewHost::StartFinding(int request_id,
   // The result of the search is sent as a notification message by the renderer.
 }
 
-void RenderViewHost::StopFinding(bool clear_selection) {
-  Send(new ViewMsg_StopFinding(routing_id(), clear_selection));
+void RenderViewHost::StopFinding(
+    FindBarController::SelectionAction selection_action) {
+  ViewMsg_StopFinding_Params params;
+
+  switch (selection_action) {
+    case FindBarController::kClearSelection:
+      params.action = ViewMsg_StopFinding_Params::kClearSelection;
+      break;
+    case FindBarController::kKeepSelection:
+      params.action = ViewMsg_StopFinding_Params::kKeepSelection;
+      break;
+    case FindBarController::kActivateSelection:
+      params.action = ViewMsg_StopFinding_Params::kActivateSelection;
+      break;
+    default:
+      NOTREACHED();
+  }
+  Send(new ViewMsg_StopFinding(routing_id(), params));
 }
 
 void RenderViewHost::Zoom(PageZoom::Function function) {

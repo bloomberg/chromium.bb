@@ -119,6 +119,19 @@ struct ViewMsg_AudioStreamState_Params {
   State state;
 };
 
+// The user has completed a find-in-page; this type defines what actions the
+// renderer should take next.
+struct ViewMsg_StopFinding_Params {
+  enum Action {
+    kClearSelection,
+    kKeepSelection,
+    kActivateSelection
+  };
+
+  // The action that should be taken when the find is completed.
+  Action action;
+};
+
 // Parameters structure for ViewHostMsg_FrameNavigate, which has too many data
 // parameters to be reasonably put in a predefined IPC message.
 struct ViewHostMsg_FrameNavigate_Params {
@@ -1994,6 +2007,39 @@ struct ParamTraits<ViewMsg_AudioStreamState_Params> {
        break;
     }
     LogParam(state, l);
+  }
+};
+
+template <>
+struct ParamTraits<ViewMsg_StopFinding_Params> {
+  typedef ViewMsg_StopFinding_Params param_type;
+  static void Write(Message* m, const param_type& p) {
+    m->WriteInt(p.action);
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    int type;
+    if (!m->ReadInt(iter, &type))
+      return false;
+    p->action = static_cast<ViewMsg_StopFinding_Params::Action>(type);
+    return true;
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    std::wstring action;
+    switch (p.action) {
+     case ViewMsg_StopFinding_Params::kClearSelection:
+       action = L"ViewMsg_StopFinding_Params::kClearSelection";
+       break;
+     case ViewMsg_StopFinding_Params::kKeepSelection:
+       action = L"ViewMsg_StopFinding_Params::kKeepSelection";
+       break;
+     case ViewMsg_StopFinding_Params::kActivateSelection:
+       action = L"ViewMsg_StopFinding_Params::kActivateSelection";
+       break;
+     default:
+       action = L"UNKNOWN";
+       break;
+    }
+    LogParam(action, l);
   }
 };
 

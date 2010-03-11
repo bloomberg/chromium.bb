@@ -7,7 +7,6 @@
     'browser_tests_sources_views_specific': [
       'browser/extensions/browser_action_test_util_views.cc',
       'browser/views/browser_actions_container_unittest.cc',
-      'browser/views/find_bar_host_browsertest.cc',
     ],
     'browser_tests_sources_win_specific': [
       'browser/extensions/extension_shelf_model_unittest.cc',
@@ -1216,6 +1215,7 @@
         'browser/extensions/page_action_apitest.cc',
         'browser/extensions/permissions_apitest.cc',
         'browser/extensions/stubs_apitest.cc',
+        'browser/find_bar_host_browsertest.cc',
         'browser/geolocation/access_token_store_browsertest.cc',
         'browser/geolocation/geolocation_browsertest.cc',
         'browser/gtk/bookmark_manager_browsertest.cc',
@@ -1286,6 +1286,10 @@
         ['OS=="mac"', {
           'sources': [
             'browser/extensions/browser_action_test_util_mac.mm',
+          ],
+          'sources!': [
+            # TODO(estade): need to port. http://crbug.com/37808
+            'browser/find_bar_host_browsertest.cc',
           ],
           'include_dirs': [
             '../third_party/GTM',
