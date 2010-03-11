@@ -239,7 +239,7 @@ TranslateInfoBar::TranslateInfoBar(TranslateInfoBarDelegate* delegate)
   AddChildView(icon_);
 
   // Create original language menu button.
-  string16 language_name = delegate->GetDisplayNameForLocale(
+  string16 language_name = TranslateInfoBarDelegate::GetDisplayNameForLocale(
       GetDelegate()->original_lang_code());
   original_language_menu_button_ = CreateMenuButton(kMenuIDOriginalLanguage,
       UTF16ToWideHack(language_name));
@@ -269,7 +269,7 @@ void TranslateInfoBar::UpdateState(
       CreateLabels();
       if (!target_language_menu_button_) {
         string16 language_name =
-            GetDelegate()->GetDisplayNameForLocale(
+            TranslateInfoBarDelegate::GetDisplayNameForLocale(
                 GetDelegate()->target_lang_code());
         target_language_menu_button_ = CreateMenuButton(kMenuIDTargetLanguage,
             UTF16ToWideHack(language_name));
@@ -708,7 +708,7 @@ void TranslateInfoBar::OnLanguageModified(views::MenuButton* menu_button,
     GetDelegate()->ModifyTargetLanguage(new_language_index);
   }
 
-  string16 new_language = GetDelegate()->GetDisplayNameForLocale(
+  string16 new_language = TranslateInfoBarDelegate::GetDisplayNameForLocale(
       GetDelegate()->GetLocaleFromIndex(new_language_index));
   menu_button->SetText(UTF16ToWideHack(new_language));
   menu_button->ClearMaxTextSize();

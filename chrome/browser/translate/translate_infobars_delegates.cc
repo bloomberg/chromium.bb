@@ -41,12 +41,6 @@ void TranslateInfoBarDelegate::InfoBarClosed() {
 
 // TranslateInfoBarDelegate: public: -------------------------------------------
 
-string16 TranslateInfoBarDelegate::GetDisplayNameForLocale(
-    const std::string& language_code) {
-  return l10n_util::GetDisplayNameForLocale(
-      language_code, g_browser_process->GetApplicationLocale(), true);
-}
-
 void TranslateInfoBarDelegate::UpdateState(TranslateState new_state) {
   if (state_ != new_state)
     state_ = new_state;
@@ -90,7 +84,7 @@ void TranslateInfoBarDelegate::TranslationDeclined() {
 bool TranslateInfoBarDelegate::IsLanguageBlacklisted() {
   if (state_ == kBeforeTranslate) {
     never_translate_language_ =
-        prefs_->IsLanguageBlacklisted(original_lang_code());
+        prefs_.IsLanguageBlacklisted(original_lang_code());
     return never_translate_language_;
   }
   NOTREACHED() << "Invalid mehod called for translate state";
@@ -99,7 +93,7 @@ bool TranslateInfoBarDelegate::IsLanguageBlacklisted() {
 
 bool TranslateInfoBarDelegate::IsSiteBlacklisted() {
   if (state_ == kBeforeTranslate) {
-    never_translate_site_ = prefs_->IsSiteBlacklisted(site_);
+    never_translate_site_ = prefs_.IsSiteBlacklisted(site_);
     return never_translate_site_;
   }
   NOTREACHED() << "Invalid mehod called for translate state";
@@ -108,7 +102,7 @@ bool TranslateInfoBarDelegate::IsSiteBlacklisted() {
 
 bool TranslateInfoBarDelegate::ShouldAlwaysTranslate() {
   if (state_ == kAfterTranslate) {
-    always_translate_ = prefs_->IsLanguagePairWhitelisted(original_lang_code(),
+    always_translate_ = prefs_.IsLanguagePairWhitelisted(original_lang_code(),
         target_lang_code());
     return always_translate_;
   }
@@ -120,9 +114,9 @@ void TranslateInfoBarDelegate::ToggleLanguageBlacklist() {
   if (state_ == kBeforeTranslate) {
     never_translate_language_ = !never_translate_language_;
     if (never_translate_language_)
-      prefs_->BlacklistLanguage(original_lang_code());
+      prefs_.BlacklistLanguage(original_lang_code());
     else
-      prefs_->RemoveLanguageFromBlacklist(original_lang_code());
+      prefs_.RemoveLanguageFromBlacklist(original_lang_code());
   } else {
     NOTREACHED() << "Invalid method called for translate state";
   }
@@ -132,9 +126,9 @@ void TranslateInfoBarDelegate::ToggleSiteBlacklist() {
   if (state_ == kBeforeTranslate) {
     never_translate_site_ = !never_translate_site_;
     if (never_translate_site_)
-      prefs_->BlacklistSite(site_);
+      prefs_.BlacklistSite(site_);
     else
-      prefs_->RemoveSiteFromBlacklist(site_);
+      prefs_.RemoveSiteFromBlacklist(site_);
   } else {
     NOTREACHED() << "Invalid mehod called for translate state";
   }
@@ -144,9 +138,9 @@ void TranslateInfoBarDelegate::ToggleAlwaysTranslate() {
   if (state_ == kAfterTranslate) {
     always_translate_ = !always_translate_;
     if (always_translate_)
-      prefs_->WhitelistLanguagePair(original_lang_code(), target_lang_code());
+      prefs_.WhitelistLanguagePair(original_lang_code(), target_lang_code());
     else
-      prefs_->RemoveLanguagePairFromWhitelist(original_lang_code(),
+      prefs_.RemoveLanguagePairFromWhitelist(original_lang_code(),
           target_lang_code());
   } else {
     NOTREACHED() << "Invalid mehod called for translate state";
@@ -215,6 +209,12 @@ TranslateInfoBarDelegate* TranslateInfoBarDelegate::Create(
                                       original_lang_index, target_lang_index);
 }
 
+string16 TranslateInfoBarDelegate::GetDisplayNameForLocale(
+    const std::string& language_code) {
+  return l10n_util::GetDisplayNameForLocale(
+      language_code, g_browser_process->GetApplicationLocale(), true);
+}
+
 #if !defined(TOOLKIT_VIEWS) && !defined(OS_MACOSX)
 // TranslateInfoBarDelegate: InfoBarDelegate overrides: ------------------------
 
@@ -231,7 +231,7 @@ TranslateInfoBarDelegate::TranslateInfoBarDelegate(TabContents* tab_contents,
     int original_lang_index, int target_lang_index)
     : InfoBarDelegate(tab_contents),
       tab_contents_(tab_contents),
-      prefs_(new TranslatePrefs(user_prefs)),
+      prefs_(user_prefs),
       state_(state),
       site_(url.HostNoBrackets()),
       original_lang_index_(original_lang_index),

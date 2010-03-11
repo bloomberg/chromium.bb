@@ -15,6 +15,7 @@
 #import "chrome/browser/cocoa/infobar_controller.h"
 #import "chrome/browser/cocoa/infobar_gradient_view.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/translate/translate_infobars_delegates.h"
 #include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -55,21 +56,6 @@ void VerticallyCenterView(NSView *toMove) {
   viewFrame.origin.y =
       floor((NSHeight(superViewFrame) - NSHeight(viewFrame))/2.0);
   [toMove setFrame:viewFrame];
-}
-
-// Check that the control |before| is ordered visually before the |after|
-// control.
-// Also, check that there is space between them.
-bool VerifyControlOrderAndSpacing(id before, id after) {
-  NSRect beforeFrame = [before frame];
-  NSRect afterFrame = [after frame];
-  NSUInteger spaceBetweenControls = -1;
-
-    spaceBetweenControls = NSMaxX(beforeFrame) - NSMinX(afterFrame);
-    // RTL case to be used when we have an RTL version of this UI.
-    // spaceBetweenControls = NSMaxX(afterFrame) - NSMinX(beforeFrame);
-
-  return (spaceBetweenControls >= 0);
 }
 
 // Creates a label control in the style we need for the translate infobar's
@@ -147,6 +133,12 @@ class TranslateNotificationObserverBridge :
 
 // Returns the main translate delegate.
 - (TranslateInfoBarDelegate*)delegate;
+
+// Main function to update the toolbar graphic state and data model after
+// the state has changed.
+// Controls are moved around as needed and visibility changed to match the
+// current state.
+- (void)updateState;
 
 // Make the infobar blue.
 - (void)setInfoBarGradientColor;
@@ -546,68 +538,6 @@ class TranslateNotificationObserverBridge :
   } else {
     NOTREACHED();
   }
-}
-
-#pragma mark TestingAPI
-- (NSMenu*)optionsMenu {
-  return [optionsPopUp_ menu];
-}
-
-- (bool)verifyLayout:(TranslateInfoBarDelegate::TranslateState)state {
-  NSArray* allControls = [NSArray arrayWithObjects:label_, label2_.get(),
-      label3_.get(), translatingLabel_.get(), fromLanguagePopUp_.get(),
-      toLanguagePopUp_.get(), optionsPopUp_.get(), closeButton_, nil];
-
-  // Array of all visible controls ordered from start -> end.
-  NSArray* visibleControls = nil;
-
-  switch (state) {
-    case TranslateInfoBarDelegate::kBeforeTranslate:
-      visibleControls = [NSArray arrayWithObjects:label_,
-          fromLanguagePopUp_.get(), label2_.get(), optionsPopUp_.get(),
-          closeButton_, nil];
-      break;
-    case TranslateInfoBarDelegate::kTranslating:
-      visibleControls = [NSArray arrayWithObjects:label_,
-          fromLanguagePopUp_.get(), label2_.get(), translatingLabel_.get(),
-          optionsPopUp_.get(), closeButton_, nil];
-      break;
-    case TranslateInfoBarDelegate::kAfterTranslate:
-      visibleControls = [NSArray arrayWithObjects:label_,
-          fromLanguagePopUp_.get(), label2_.get(), toLanguagePopUp_.get(),
-          optionsPopUp_.get(), closeButton_, nil];
-      break;
-    default:
-      NOTREACHED() << "Unknown state";
-      return false;
-  }
-
-  // Step 1: Make sure control visibility is what we expect.
-  for (NSUInteger i = 0; i < [allControls count]; ++i) {
-    id control = [allControls objectAtIndex:i];
-    bool hasSuperView = [control superview];
-    bool expectedVisibility = [visibleControls containsObject:control];
-    if (expectedVisibility != hasSuperView) {
-      LOG(ERROR) <<
-          "Control @" << i << (hasSuperView ? " has" : " doesn't have") <<
-          "a superview" << base::SysNSStringToUTF8([control description]);
-      return false;
-    }
-  }
-
-  // Step 2: Check that controls are ordered correctly with no overlap.
-  id previousControl = nil;
-  for (NSUInteger i = 0; i < [allControls count]; ++i) {
-    id control = [allControls objectAtIndex:i];
-    if (!VerifyControlOrderAndSpacing(previousControl, control)) {
-      LOG(ERROR) <<
-          "Control @" << i << " not ordered correctly: " <<
-          base::SysNSStringToUTF8([control description]);
-      return false;
-    }
-    previousControl = control;
-  }
-  return true;
 }
 
 @end
