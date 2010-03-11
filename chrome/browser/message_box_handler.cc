@@ -17,20 +17,6 @@
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 
-namespace {
-
-const size_t kMaxReasonableTextLength = 2048;
-
-// In some platforms, the underlying processing of humongous strings takes too
-// long and thus make the UI thread unresponsive.
-std::wstring MakeTextSafe(const std::wstring& text) {
-  if (text.size() > kMaxReasonableTextLength)
-    return text.substr(0, kMaxReasonableTextLength) + L"\x2026";
-  return text;
-}
-
-}  // namespace
-
 void RunJavascriptMessageBox(JavaScriptMessageBoxClient* client,
                              const GURL& frame_url,
                              int dialog_flags,
@@ -40,10 +26,9 @@ void RunJavascriptMessageBox(JavaScriptMessageBoxClient* client,
                              IPC::Message* reply_msg) {
   std::wstring title = client->GetMessageBoxTitle(frame_url,
       (dialog_flags == MessageBoxFlags::kIsJavascriptAlert));
-  Singleton<AppModalDialogQueue>()->AddDialog(
-      new JavaScriptAppModalDialog(client, title, dialog_flags,
-          MakeTextSafe(message_text), default_prompt_text,
-          display_suppress_checkbox, false, reply_msg));
+  Singleton<AppModalDialogQueue>()->AddDialog(new JavaScriptAppModalDialog(
+      client, title, dialog_flags, message_text, default_prompt_text,
+      display_suppress_checkbox, false, reply_msg));
 }
 
 void RunBeforeUnloadDialog(TabContents* tab_contents,
@@ -54,8 +39,8 @@ void RunBeforeUnloadDialog(TabContents* tab_contents,
       l10n_util::GetString(IDS_BEFOREUNLOAD_MESSAGEBOX_FOOTER);
   Singleton<AppModalDialogQueue>()->AddDialog(new JavaScriptAppModalDialog(
       tab_contents, l10n_util::GetString(IDS_BEFOREUNLOAD_MESSAGEBOX_TITLE),
-      MessageBoxFlags::kIsJavascriptConfirm, MakeTextSafe(message_text),
-      std::wstring(), false, true, reply_msg));
+      MessageBoxFlags::kIsJavascriptConfirm, message_text, std::wstring(),
+      false, true, reply_msg));
 }
 
 void RunCookiePrompt(TabContents* tab_contents,

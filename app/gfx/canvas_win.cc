@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,8 +36,6 @@ void DoDrawText(HDC hdc, const std::wstring& text,
 // Compute the windows flags necessary to implement the provided text Canvas
 // flags.
 int ComputeFormatFlags(int flags, const std::wstring& text) {
-  int f = 0;
-
   // Setting the text alignment explicitly in case it hasn't already been set.
   // This will make sure that we don't align text to the left on RTL locales
   // just because no alignment flag was passed to DrawStringInt().
@@ -47,20 +45,14 @@ int ComputeFormatFlags(int flags, const std::wstring& text) {
     flags |= l10n_util::DefaultCanvasTextAlignment();
   }
 
-  if (flags & gfx::Canvas::HIDE_PREFIX)
-    f |= DT_HIDEPREFIX;
-  else if ((flags & gfx::Canvas::SHOW_PREFIX) == 0)
-    f |= DT_NOPREFIX;
-
-  if (flags & gfx::Canvas::MULTI_LINE) {
-    f |= DT_WORDBREAK;
-    if (flags & gfx::Canvas::CHARACTER_BREAK)
-      f |= DT_EDITCONTROL;
-  } else {
-    f |= DT_SINGLELINE | DT_VCENTER;
-    if (!(flags & gfx::Canvas::NO_ELLIPSIS))
-      f |= DT_END_ELLIPSIS;
-  }
+  // horizontal alignment
+  int f = 0;
+  if (flags & gfx::Canvas::TEXT_ALIGN_CENTER)
+    f |= DT_CENTER;
+  else if (flags & gfx::Canvas::TEXT_ALIGN_RIGHT)
+    f |= DT_RIGHT;
+  else
+    f |= DT_LEFT;
 
   // vertical alignment
   if (flags & gfx::Canvas::TEXT_VALIGN_TOP)
@@ -70,13 +62,23 @@ int ComputeFormatFlags(int flags, const std::wstring& text) {
   else
     f |= DT_VCENTER;
 
-  // horizontal alignment
-  if (flags & gfx::Canvas::TEXT_ALIGN_CENTER)
-    f |= DT_CENTER;
-  else if (flags & gfx::Canvas::TEXT_ALIGN_RIGHT)
-    f |= DT_RIGHT;
-  else
-    f |= DT_LEFT;
+  if (flags & gfx::Canvas::MULTI_LINE) {
+    f |= DT_WORDBREAK;
+    if (flags & gfx::Canvas::CHARACTER_BREAK)
+      f |= DT_EDITCONTROL;  // Turns on character breaking (not documented)
+    else if (!(flags & gfx::Canvas::NO_ELLIPSIS))
+      f |= DT_WORD_ELLIPSIS;
+  } else {
+    f |= DT_SINGLELINE;
+  }
+
+  if (flags & gfx::Canvas::HIDE_PREFIX)
+    f |= DT_HIDEPREFIX;
+  else if ((flags & gfx::Canvas::SHOW_PREFIX) == 0)
+    f |= DT_NOPREFIX;
+
+  if (!(flags & gfx::Canvas::NO_ELLIPSIS))
+    f |= DT_END_ELLIPSIS;
 
   // In order to make sure RTL/BiDi strings are rendered correctly, we must
   // pass the flag DT_RTLREADING to DrawText (when the locale's language is
@@ -137,26 +139,38 @@ Canvas::~Canvas() {
 void Canvas::SizeStringInt(const std::wstring& text,
                            const gfx::Font& font,
                            int *width, int *height, int flags) {
+  // Clamp the max amount of text we'll measure to 2K.  When the string is
+  // actually drawn, it will be clipped to whatever size box is provided, and
+  // the time to do that doesn't depend on the length being clipped off.
+  const int kMaxStringLength = 2048;
+  std::wstring clamped_string(text.substr(0, kMaxStringLength));
+
+  if (*width == 0) {
+    // If multi-line + character break are on, the computed width will be one
+    // character wide (useless).  Furthermore, if in this case the provided text
+    // contains very long "words" (substrings without a word-breaking point),
+    // DrawText() can run extremely slowly (e.g. several seconds).  So in this
+    // case, we turn character breaking off to get a more accurate "desired"
+    // width and avoid the slowdown.
+    if (flags & (gfx::Canvas::MULTI_LINE | gfx::Canvas::CHARACTER_BREAK))
+      flags &= ~gfx::Canvas::CHARACTER_BREAK;
+
+    // Weird undocumented behavior: if the width is 0, DoDrawText() won't
+    // calculate a size at all.  So set it to 1, which it will then change.
+    if (!text.empty())
+      *width = 1;
+  }
+  RECT r = { 0, 0, *width, *height };
+
   HDC dc = GetDC(NULL);
   HFONT old_font = static_cast<HFONT>(SelectObject(dc, font.hfont()));
-  RECT b;
-  b.left = 0;
-  b.top = 0;
-  b.right = *width;
-  if (b.right == 0 && !text.empty()) {
-    // Width needs to be at least 1 or else DoDrawText will not resize it.
-    b.right = 1;
-  }
-  b.bottom = *height;
-  DoDrawText(dc, text, &b, ComputeFormatFlags(flags, text) | DT_CALCRECT);
-
-  // Restore the old font. This way we don't have to worry if the caller
-  // deletes the font and the DC lives longer.
+  DoDrawText(dc, clamped_string, &r,
+             ComputeFormatFlags(flags, clamped_string) | DT_CALCRECT);
   SelectObject(dc, old_font);
-  *width = b.right;
-  *height = b.bottom;
-
   ReleaseDC(NULL, dc);
+
+  *width = r.right;
+  *height = r.bottom;
 }
 
 void Canvas::DrawStringInt(const std::wstring& text, HFONT font,
