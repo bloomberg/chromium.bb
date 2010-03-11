@@ -1096,6 +1096,10 @@ BUG8402 MAC : fast/forms/drag-out-of-textarea.html = FAIL
 // GURL doesn't handle switching from standard URL to path URL correctly
 BUG27914 : fast/dom/HTMLAnchorElement/set-href-attribute-protocol.html = TEXT
 
+// GURL and KURL don't detect URL schemes identically
+// (this is a temporary fix for bug 37383)
+BUG37383 WONTFIX SKIP : http/tests/security/xss-DENIED-window-open-javascript-url-leading-format-char.html = FAIL
+
 // ----------------------------------------------------------------------------
 // NEW FOR THE MERGE
 //
