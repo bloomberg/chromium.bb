@@ -143,6 +143,13 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
       NPDeviceFlushContextCallbackPtr callback, void* user_data);
   virtual NPError DeviceAudioDestroyContext(NPDeviceContextAudio* context);
 
+  // WebPluginPrintDelegate implementation.
+  virtual bool PrintSupportsPrintExtension();
+  virtual int PrintBegin(const gfx::Rect& printable_area, int printer_dpi);
+  virtual bool PrintPage(int page_number, const gfx::Rect& printable_area,
+                         int printer_dpi, WebKit::WebCanvas* canvas);
+  virtual void PrintEnd();
+
   // End of WebPluginDelegate implementation.
 
   gfx::Rect GetRect() const { return window_rect_; }
@@ -174,6 +181,23 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
   void DestroyInstance();
 
   void ForwardSetWindow();
+
+  // A helper method that invokes the plugin's Print extensions to calculate
+  // the size needed in pixels to render the given page in a raster format.
+  bool CalculatePrintedPageDimensions(int page_number,
+                                      NPRect* printable_area,
+                                      int printer_dpi,
+                                      NPPPrintExtensions* print_extensions,
+                                      gfx::Size* page_dimensions);
+  NPPPrintExtensions* GetPrintExtensions();
+
+#if defined(OS_WIN)
+  // Compresses the given bitmap as JPEG and draws it into the backing platform
+  // DC (Windows-only).
+  bool DrawJPEGToPlatformDC(const SkBitmap& bitmap,
+                            const gfx::Rect& printable_area,
+                            WebKit::WebCanvas* canvas);
+#endif  // OS_WIN
 
 #if defined(ENABLE_GPU)
 

@@ -16,6 +16,8 @@
 
 #include "app/gfx/blit.h"
 #if defined(OS_WIN)
+#include "app/gfx/codec/jpeg_codec.h"
+#include "app/gfx/gdi_util.h"
 #include "app/gfx/native_theme_win.h"
 #endif
 #include "base/file_util.h"
@@ -25,12 +27,16 @@
 #include "base/scoped_ptr.h"
 #include "base/stats_counters.h"
 #include "base/string_util.h"
+#include "base/time.h"
 #if defined(OS_WIN)
 #include "base/win_util.h"
 #endif
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/webplugin_delegate_proxy.h"
+#if defined(OS_WIN)
+#include "skia/ext/vector_platform_device.h"
+#endif
 #include "third_party/npapi/bindings/npapi_extensions.h"
 #include "third_party/npapi/bindings/npapi_extensions_private.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
@@ -864,6 +870,116 @@ NPError WebPluginDelegatePepper::DeviceAudioDestroyContext(
   return NPERR_NO_ERROR;
 }
 
+bool WebPluginDelegatePepper::PrintSupportsPrintExtension() {
+  return GetPrintExtensions() != NULL;
+}
+
+int WebPluginDelegatePepper::PrintBegin(const gfx::Rect& printable_area,
+                                        int printer_dpi) {
+  int32 num_pages = 0;
+  NPPPrintExtensions* print_extensions = GetPrintExtensions();
+  if (print_extensions) {
+    NPRect np_printable_area = {0};
+    np_printable_area.left = printable_area.x();
+    np_printable_area.top = printable_area.y();
+    np_printable_area.right = np_printable_area.left + printable_area.width();
+    np_printable_area.bottom = np_printable_area.top + printable_area.height();
+    print_extensions->printBegin(instance()->npp(),
+                                 &np_printable_area,
+                                 printer_dpi,
+                                 &num_pages);
+  }
+  return num_pages;
+}
+
+bool WebPluginDelegatePepper::PrintPage(int page_number,
+                                        const gfx::Rect& printable_area,
+                                        int printer_dpi,
+                                        WebKit::WebCanvas* canvas) {
+#if defined(OS_WIN) || defined(OS_LINUX)
+  NPPPrintExtensions* print_extensions = GetPrintExtensions();
+  if (!print_extensions)
+    return false;
+
+  // Calculate the width and height needed for the raster image.
+  NPRect np_printable_area = {0};
+  np_printable_area.left = printable_area.x();
+  np_printable_area.top = printable_area.y();
+  np_printable_area.right = np_printable_area.left + printable_area.width();
+  np_printable_area.bottom = np_printable_area.top + printable_area.height();
+  gfx::Size size_in_pixels;
+  if (!CalculatePrintedPageDimensions(page_number, &np_printable_area,
+                                      printer_dpi, print_extensions,
+                                      &size_in_pixels)) {
+    return false;
+  }
+
+  // Now print the page onto a 2d device context.
+  scoped_ptr<Graphics2DDeviceContext> g2d(new Graphics2DDeviceContext(this));
+  NPDeviceContext2DConfig config;
+  NPDeviceContext2D context;
+  gfx::Rect surface_rect(gfx::Point(0, 0), size_in_pixels);
+  NPError err = g2d->Initialize(surface_rect, &config, &context);
+  if (err != NPERR_NO_ERROR) {
+    NOTREACHED();
+    return false;
+  }
+  err = print_extensions->printPageRaster(
+      instance()->npp(), page_number, &np_printable_area, printer_dpi,
+      &context);
+  if (err !=  NPERR_NO_ERROR)
+    return false;
+
+  SkBitmap committed;
+  committed.setConfig(SkBitmap::kARGB_8888_Config, size_in_pixels.width(),
+                      size_in_pixels.height());
+  committed.allocPixels();
+  err = g2d->Flush(&committed, &context, NULL, instance()->npp(), NULL);
+  if (err !=  NPERR_NO_ERROR) {
+    NOTREACHED();
+    return false;
+  }
+  // Draw the printed image into the supplied canvas.
+  SkIRect src_rect;
+  src_rect.set(0, 0, size_in_pixels.width(), size_in_pixels.height());
+  SkRect dest_rect;
+  dest_rect.set(SkIntToScalar(printable_area.x()),
+                SkIntToScalar(printable_area.y()),
+                SkIntToScalar(printable_area.x() + printable_area.width()),
+                SkIntToScalar(printable_area.y() + printable_area.height()));
+  bool draw_to_canvas = true;
+#if defined(OS_WIN)
+  // Since this is a raster output, the size of the bitmap can be
+  // huge (especially at high printer DPIs). On Windows, this can
+  // result in a HUGE EMF (on Mac and Linux the output goes to PDF
+  // which appears to Flate compress the bitmap). So, if this bitmap
+  // is larger than 20 MB, we save the bitmap as a JPEG into the EMF
+  // DC. Note: We chose JPEG over PNG because JPEG compression seems
+  // way faster (about 4 times faster).
+  static const int kCompressionThreshold = 20 * 1024 * 1024;
+  if (committed.getSize() > kCompressionThreshold) {
+    DrawJPEGToPlatformDC(committed, printable_area, canvas);
+    draw_to_canvas = false;
+  }
+#endif  // OS_WIN
+
+  if (draw_to_canvas)
+    canvas->drawBitmapRect(committed, &src_rect, dest_rect);
+
+  return true;
+#else  // defined(OS_WIN) || defined(OS_LINUX)
+  NOTIMPLEMENTED();
+  return false;
+#endif  // defined(OS_WIN) || defined(OS_LINUX)
+}
+
+void WebPluginDelegatePepper::PrintEnd() {
+  NPPPrintExtensions* print_extensions = GetPrintExtensions();
+  if (print_extensions)
+    print_extensions->printEnd(instance()->npp());
+}
+
+
 WebPluginDelegatePepper::WebPluginDelegatePepper(
     const base::WeakPtr<RenderView>& render_view,
     NPAPI::PluginInstance *instance)
@@ -1118,4 +1234,83 @@ void WebPluginDelegatePepper::SendNestedDelegateGeometryToBrowser(
   geom.visible = true;
   render_view_->DidMovePlugin(geom);
 }
+
+bool WebPluginDelegatePepper::CalculatePrintedPageDimensions(
+    int page_number,
+    NPRect* printable_area,
+    int printer_dpi,
+    NPPPrintExtensions* print_extensions,
+    gfx::Size* page_dimensions) {
+  int32 width_in_pixels = 0;
+  int32 height_in_pixels = 0;
+  NPError err = print_extensions->getRasterDimensions(
+      instance()->npp(), printable_area, printer_dpi, &width_in_pixels,
+      &height_in_pixels);
+  if (err != NPERR_NO_ERROR)
+    return false;
+
+  DCHECK(width_in_pixels && height_in_pixels);
+  page_dimensions->SetSize(width_in_pixels, height_in_pixels);
+  return true;
+}
+
+NPPPrintExtensions* WebPluginDelegatePepper::GetPrintExtensions() {
+  NPPPrintExtensions* ret = NULL;
+  NPPExtensions* extensions = NULL;
+  instance()->NPP_GetValue(NPPVPepperExtensions, &extensions);
+  if (extensions && extensions->getPrintExtensions)
+    ret = extensions->getPrintExtensions(instance()->npp());
+  return ret;
+}
+
+#if defined(OS_WIN)
+bool WebPluginDelegatePepper::DrawJPEGToPlatformDC(
+    const SkBitmap& bitmap,
+    const gfx::Rect& printable_area,
+    WebKit::WebCanvas* canvas) {
+  skia::VectorPlatformDevice& device =
+      static_cast<skia::VectorPlatformDevice&>(
+          canvas->getTopPlatformDevice());
+  HDC dc = device.getBitmapDC();
+  // TODO(sanjeevr): This is a temporary hack. If we output a JPEG
+  // to the EMF, the EnumEnhMetaFile call fails in the browser
+  // process. The failure also happens if we output nothing here.
+  // We need to investigate the reason for this failure and fix it.
+  // In the meantime this temporary hack of drawing an empty
+  // rectangle in the DC gets us by.
+  Rectangle(dc, 0, 0, 0, 0);
+
+  // Ideally we should add JPEG compression to the VectorPlatformDevice class
+  // However, Skia currently has no JPEG compression code and we cannot
+  // depend on app/gfx/jpeg_codec.h in Skia. So we do the compression here.
+  SkAutoLockPixels lock(bitmap);
+  DCHECK(bitmap.getConfig() == SkBitmap::kARGB_8888_Config);
+  const uint32_t* pixels =
+      static_cast<const uint32_t*>(bitmap.getPixels());
+  std::vector<unsigned char> compressed_image;
+  base::TimeTicks start_time = base::TimeTicks::Now();
+  bool encoded = gfx::JPEGCodec::Encode(
+      reinterpret_cast<const unsigned char*>(pixels),
+      gfx::JPEGCodec::FORMAT_BGRA, bitmap.width(), bitmap.height(),
+      static_cast<int>(bitmap.rowBytes()), 100, &compressed_image);
+  UMA_HISTOGRAM_TIMES("PepperPluginPrint.RasterBitmapCompressTime",
+                      base::TimeTicks::Now() - start_time);
+  if (!encoded) {
+    NOTREACHED();
+    return false;
+  }
+  BITMAPINFOHEADER bmi = {0};
+  gfx::CreateBitmapHeader(bitmap.width(), bitmap.height(), &bmi);
+  bmi.biCompression = BI_JPEG;
+  bmi.biSizeImage = compressed_image.size();
+  bmi.biHeight = -bmi.biHeight;
+  StretchDIBits(dc, printable_area.x(), printable_area.y(),
+                printable_area.width(), printable_area.height(),
+                0, 0, bitmap.width(), bitmap.height(),
+                &compressed_image.front(),
+                reinterpret_cast<const BITMAPINFO*>(&bmi),
+                DIB_RGB_COLORS, SRCCOPY);
+  return true;
+}
+#endif  // OS_WIN
 

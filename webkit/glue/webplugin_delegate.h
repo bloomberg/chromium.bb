@@ -17,6 +17,8 @@
 #include "webkit/glue/plugins/webplugin_2d_device_delegate.h"
 #include "webkit/glue/plugins/webplugin_3d_device_delegate.h"
 #include "webkit/glue/plugins/webplugin_audio_device_delegate.h"
+#include "webkit/glue/plugins/webplugin_print_delegate.h"
+
 
 class FilePath;
 class GURL;
@@ -39,7 +41,8 @@ class WebPluginResourceClient;
 // This is the interface that a plugin implementation needs to provide.
 class WebPluginDelegate : public WebPlugin2DDeviceDelegate,
                           public WebPlugin3DDeviceDelegate,
-                          public WebPluginAudioDeviceDelegate {
+                          public WebPluginAudioDeviceDelegate,
+                          public WebPluginPrintDelegate {
  public:
   virtual ~WebPluginDelegate() {}
 

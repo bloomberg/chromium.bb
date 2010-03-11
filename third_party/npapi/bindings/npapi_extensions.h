@@ -11,10 +11,16 @@
 #include "npapi.h"
 
 /*
- * A fake "enum" value for getting Pepper extensions.
+ * A fake "enum" value for getting browser-implemented Pepper extensions.
  * The variable returns a pointer to an NPPepperExtensions structure
  */
 #define NPNVPepperExtensions ((NPNVariable) 4000)
+
+/*
+ * A fake "enum" value for getting plugin-implemented Pepper extensions.
+ * The variable returns a pointer to an NPPPepperExtensions structure
+ */
+#define NPPVPepperExtensions ((NPPVariable) 4001)
 
 typedef void NPDeviceConfig;
 typedef void NPDeviceContext;
@@ -481,5 +487,55 @@ struct _NPDeviceContextAudio {
   void *inBuffer;
   void *reserved;
 };
+
+/* Printing related APIs ---------------------------------------------------*/
+
+/* Being a print operation. Returns the total number of pages to print at the
+ * given printableArea size and DPI. printableArea is in points (a point is 1/72
+ * of an inch). */
+typedef NPError (*NPPPrintBeginPtr) (
+    NPP instance,
+    NPRect* printableArea,
+    int32 printerDPI,
+    int32* numPages);
+/* Returns the required raster dimensions for the given printableArea
+ * size and DPI. printableArea is in points (a point is 1/72 of an inch). */
+typedef NPError (*NPPGetRasterDimensionsPtr) (
+    NPP instance,
+    NPRect* printableArea,
+    int32 printerDPI,
+    int32* widthInPixels,
+    int32* heightInPixels);
+/* Prints the specified page on the given printableArea size and DPI.
+ * printableArea is in points (a point is 1/72 of an inch). This allows the
+ * plugin to print a raster output*/
+typedef NPError (*NPPPrintPageRasterPtr) (
+    NPP instance,
+    int32 pageNumber,
+    NPRect* printableArea,
+    int32 printerDPI,
+    NPDeviceContext2D* printSurface);
+
+/* Ends the print operation */
+typedef NPError (*NPPPrintEndPtr) (NPP instance);
+
+/* TODO(sanjeevr) : Provide a vector interface for printing. We need to decide
+ * on a vector format that can support embedded fonts. A vector format will
+ * greatly reduce the size of the required output buffer
+*/
+
+typedef struct _NPPPrintExtensions {
+  NPPPrintBeginPtr printBegin;
+  NPPGetRasterDimensionsPtr getRasterDimensions;
+  NPPPrintPageRasterPtr printPageRaster;
+  NPPPrintEndPtr printEnd;
+} NPPPrintExtensions;
+
+/* Returns NULL if the plugin does not support print extensions */
+typedef NPPPrintExtensions* (*NPPGetPrintExtensionsPtr)(NPP instance);
+
+typedef struct _NPPExtensions {
+  NPPGetPrintExtensionsPtr getPrintExtensions;
+} NPPExtensions;
 
 #endif  /* _NP_EXTENSIONS_H_ */
