@@ -126,9 +126,10 @@ void InitRCStyles();
 
 // Stick the widget in the given hbox without expanding vertically. The widget
 // is packed at the start of the hbox. This is useful for widgets that would
-// otherwise expand to fill the vertical space of the hbox (e.g. buttons).
-void CenterWidgetInHBox(GtkWidget* hbox, GtkWidget* widget, bool pack_at_end,
-                        int padding);
+// otherwise expand to fill the vertical space of the hbox
+// (e.g. buttons). Returns the vbox that widget was packed in.
+GtkWidget* CenterWidgetInHBox(GtkWidget* hbox, GtkWidget* widget,
+                              bool pack_at_end, int padding);
 
 // Change windows accelerator style to GTK style. (GTK uses _ for
 // accelerators.  Windows uses & with && as an escape for &.)

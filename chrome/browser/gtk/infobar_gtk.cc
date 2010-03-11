@@ -162,8 +162,8 @@ void InfoBar::SetThemeProvider(GtkThemeProvider* theme_provider) {
 }
 
 void InfoBar::Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
+                      const NotificationSource& source,
+                      const NotificationDetails& details) {
   UpdateBorderColor();
 }
 

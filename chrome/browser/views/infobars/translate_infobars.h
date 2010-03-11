@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_VIEWS_INFOBARS_TRANSLATE_INFOBARS_H_
 
 #include "app/menus/simple_menu_model.h"
-#include "chrome/common/notification_registrar.h"
 #include "chrome/browser/translate/translate_infobars_delegates.h"
 #include "chrome/browser/views/infobars/infobars.h"
-#include "views/controls/menu/view_menu_delegate.h"
+#include "chrome/common/notification_registrar.h"
 #include "views/controls/menu/menu_2.h"
+#include "views/controls/menu/view_menu_delegate.h"
 
 namespace views {
 class ImageButton;

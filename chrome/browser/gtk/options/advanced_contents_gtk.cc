@@ -33,6 +33,7 @@
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/gtk_signal.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/process_watcher.h"
 #include "grit/chromium_strings.h"
@@ -470,6 +471,85 @@ void NetworkSection::StartProxyConfigUtil(const ProxyConfigCommand& command) {
     return;
   }
   ProcessWatcher::EnsureProcessGetsReaped(handle);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// TranslateSection
+
+class TranslateSection : public OptionsPageBase {
+ public:
+  explicit TranslateSection(Profile* profile);
+  virtual ~TranslateSection() {}
+
+  GtkWidget* get_page_widget() const {
+    return page_;
+  }
+
+ private:
+  // Overridden from OptionsPageBase.
+  virtual void NotifyPrefChanged(const std::wstring* pref_name);
+
+  CHROMEGTK_CALLBACK_0(TranslateSection, void, OnTranslateClicked);
+
+  // Preferences for this section:
+  BooleanPrefMember enable_translate_;
+
+  // The widget containing the options for this section.
+  GtkWidget* page_;
+
+  // The checkbox.
+  GtkWidget* translate_checkbox_;
+
+  // Flag to ignore gtk callbacks while we are loading prefs, to avoid
+  // then turning around and saving them again.
+  bool pref_changing_;
+
+  scoped_ptr<AccessibleWidgetHelper> accessible_widget_helper_;
+
+  DISALLOW_COPY_AND_ASSIGN(TranslateSection);
+};
+
+TranslateSection::TranslateSection(Profile* profile)
+    : OptionsPageBase(profile),
+      pref_changing_(true) {
+  page_ = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
+
+  accessible_widget_helper_.reset(new AccessibleWidgetHelper(
+      page_, profile));
+
+  translate_checkbox_ = CreateCheckButtonWithWrappedLabel(
+      IDS_OPTIONS_TRANSLATE_ENABLE_TRANSLATE);
+  gtk_box_pack_start(GTK_BOX(page_), translate_checkbox_,
+                     FALSE, FALSE, 0);
+  g_signal_connect(translate_checkbox_, "clicked",
+                   G_CALLBACK(OnTranslateClickedThunk), this);
+  accessible_widget_helper_->SetWidgetName(
+      translate_checkbox_,
+      IDS_OPTIONS_TRANSLATE_ENABLE_TRANSLATE);
+
+  // Init member prefs so we can update the controls if prefs change.
+  enable_translate_.Init(prefs::kEnableTranslate, profile->GetPrefs(), this);
+
+  NotifyPrefChanged(NULL);
+}
+
+void TranslateSection::NotifyPrefChanged(const std::wstring* pref_name) {
+  pref_changing_ = true;
+  if (!pref_name || *pref_name == prefs::kAlternateErrorPagesEnabled) {
+    gtk_toggle_button_set_active(
+        GTK_TOGGLE_BUTTON(translate_checkbox_), enable_translate_.GetValue());
+  }
+  pref_changing_ = false;
+}
+
+void TranslateSection::OnTranslateClicked(GtkWidget* widget) {
+  if (pref_changing_)
+    return;
+  bool enabled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  UserMetricsRecordAction(
+      enabled ? "Options_Translate_Enable" : "Options_Translate_Disable",
+      profile()->GetPrefs());
+  enable_translate_.SetValue(enabled);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1101,6 +1181,11 @@ void AdvancedContentsGtk::Init() {
   options_builder.AddOptionGroup(
       l10n_util::GetStringUTF8(IDS_OPTIONS_ADVANCED_SECTION_TITLE_NETWORK),
       network_section_->get_page_widget(), false);
+
+  translate_section_.reset(new TranslateSection(profile_));
+  options_builder.AddOptionGroup(
+      l10n_util::GetStringUTF8(IDS_OPTIONS_ADVANCED_SECTION_TITLE_TRANSLATE),
+      translate_section_->get_page_widget(), false);
 
   download_section_.reset(new DownloadSection(profile_));
   options_builder.AddOptionGroup(

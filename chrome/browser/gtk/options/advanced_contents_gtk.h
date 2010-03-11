@@ -15,6 +15,7 @@ class DownloadSection;
 class NetworkSection;
 class PrivacySection;
 class SecuritySection;
+class TranslateSection;
 class WebContentSection;
 
 class AdvancedContentsGtk {
@@ -35,6 +36,7 @@ class AdvancedContentsGtk {
   // The sections of the page.
   scoped_ptr<DownloadSection> download_section_;
   scoped_ptr<NetworkSection> network_section_;
+  scoped_ptr<TranslateSection> translate_section_;
   scoped_ptr<PrivacySection> privacy_section_;
   scoped_ptr<SecuritySection> security_section_;
   scoped_ptr<WebContentSection> web_content_section_;
