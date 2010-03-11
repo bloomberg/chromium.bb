@@ -373,10 +373,10 @@ class GClient(object):
       from_dir = os.curdir
     path = os.path.realpath(from_dir)
     while not os.path.exists(os.path.join(path, options.config_filename)):
-      next = os.path.split(path)
-      if not next[1]:
+      split_path = os.path.split(path)
+      if not split_path[1]:
         return None
-      path = next[0]
+      path = split_path[0]
     client = GClient(path, options)
     client._LoadConfig()
     return client
@@ -479,7 +479,7 @@ class GClient(object):
       if self._options.deps_os is not None:
         deps_to_include = self._options.deps_os.split(",")
         if "all" in deps_to_include:
-          deps_to_include = deps_os_choices.values()
+          deps_to_include = list(set(deps_os_choices.itervalues()))
       else:
         deps_to_include = [deps_os_choices.get(self._options.platform, "unix")]
 

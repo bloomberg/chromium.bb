@@ -110,7 +110,7 @@ class SCMWrapper(object):
     return getattr(self, command)(options, args, file_list)
 
 
-class GitWrapper(SCMWrapper, scm.GIT):
+class GitWrapper(SCMWrapper):
   """Wrapper for Git"""
 
   def cleanup(self, options, args, file_list):
@@ -146,12 +146,12 @@ class GitWrapper(SCMWrapper, scm.GIT):
     The patch file is generated from a diff of the merge base of HEAD and
     its upstream branch.
     """
-    __pychecker__ = 'unusednames=options,file_list'
+    __pychecker__ = 'unusednames=options,args,file_list'
     path = os.path.join(self._root_dir, self.relpath)
     merge_base = self._Run(['merge-base', 'HEAD', 'origin'])
     command = ['diff', merge_base]
     filterer = DiffFilterer(self.relpath)
-    self.RunAndFilterOutput(command, path, False, False, filterer.Filter)
+    scm.GIT.RunAndFilterOutput(command, path, False, False, filterer.Filter)
 
   def update(self, options, args, file_list):
     """Runs git to update or transparently checkout the working copy.
@@ -195,7 +195,6 @@ class GitWrapper(SCMWrapper, scm.GIT):
     else:
       # hash is also a tag, only make a distinction at checkout
       rev_type = "hash"
-
 
     if not os.path.exists(self.checkout_path):
       self._Clone(rev_type, revision, url, options.verbose)
@@ -241,7 +240,7 @@ class GitWrapper(SCMWrapper, scm.GIT):
     # tracking branch
     # or 'master' if not a tracking branch (it's based on a specific rev/hash)
     # or it returns None if it couldn't find an upstream
-    upstream_branch = self.GetUpstream(self.checkout_path)
+    upstream_branch = scm.GIT.GetUpstream(self.checkout_path)
     if not upstream_branch or not upstream_branch.startswith('refs/remotes'):
       current_type = "hash"
       logging.debug("Current branch is based off a specific rev and is not "
@@ -252,9 +251,9 @@ class GitWrapper(SCMWrapper, scm.GIT):
       raise gclient_utils.Error('Invalid Upstream')
 
     # Update the remotes first so we have all the refs.
-    for i in range(3):
+    for _ in range(3):
       try:
-        remote_output, remote_err = self.Capture(
+        remote_output, remote_err = scm.GIT.Capture(
             ['remote'] + verbose + ['update'],
             self.checkout_path,
             print_error=False)
@@ -277,9 +276,9 @@ class GitWrapper(SCMWrapper, scm.GIT):
     if options.force or options.reset:
       self._Run(['reset', '--hard', 'HEAD'], redirect_stdout=False)
 
-    if current_type is 'hash':
+    if current_type == 'hash':
       # case 1
-      if self.IsGitSvn(self.checkout_path) and upstream_branch is not None:
+      if scm.GIT.IsGitSvn(self.checkout_path) and upstream_branch is not None:
         # Our git-svn branch (upstream_branch) is our upstream
         self._AttemptRebase(upstream_branch, files, verbose=options.verbose,
                             newbase=revision, printed_path=printed_path)
@@ -294,7 +293,7 @@ class GitWrapper(SCMWrapper, scm.GIT):
         self._AttemptRebase(upstream_branch, files=files,
                             verbose=options.verbose, printed_path=printed_path)
         printed_path = True
-    elif rev_type is 'hash':
+    elif rev_type == 'hash':
       # case 2
       self._AttemptRebase(upstream_branch, files, verbose=options.verbose,
                           newbase=revision, printed_path=printed_path)
@@ -316,10 +315,10 @@ class GitWrapper(SCMWrapper, scm.GIT):
       if verbose:
         print "Trying fast-forward merge to branch : %s" % upstream_branch
       try:
-        merge_output, merge_err = self.Capture(['merge', '--ff-only',
-                                                upstream_branch],
-                                               self.checkout_path,
-                                               print_error=False)
+        merge_output, merge_err = scm.GIT.Capture(['merge', '--ff-only',
+                                                   upstream_branch],
+                                                  self.checkout_path,
+                                                  print_error=False)
       except gclient_utils.CheckCallError, e:
         if re.match('fatal: Not possible to fast-forward, aborting.', e.stderr):
           if not printed_path:
@@ -447,7 +446,7 @@ class GitWrapper(SCMWrapper, scm.GIT):
       clone_cmd.append('--verbose')
     clone_cmd.extend([url, self.checkout_path])
 
-    for i in range(3):
+    for _ in range(3):
       try:
         self._Run(clone_cmd, cwd=self._root_dir, redirect_stdout=False)
         break
@@ -464,7 +463,7 @@ class GitWrapper(SCMWrapper, scm.GIT):
           continue
         raise e
 
-    if rev_type is "branch":
+    if rev_type == "branch":
       short_rev = revision.replace('refs/heads/', '')
       new_branch = revision.replace('heads', 'remotes/origin')
     elif revision.startswith('refs/tags/'):
@@ -506,8 +505,9 @@ class GitWrapper(SCMWrapper, scm.GIT):
       rebase_cmd.append(branch)
 
     try:
-      rebase_output, rebase_err = self.Capture(rebase_cmd, self.checkout_path,
-                                               print_error=False)
+      rebase_output, rebase_err = scm.GIT.Capture(rebase_cmd,
+                                                  self.checkout_path,
+                                                  print_error=False)
     except gclient_utils.CheckCallError, e:
       if re.match(r'cannot rebase: you have unstaged changes', e.stderr) or \
          re.match(r'cannot rebase: your index contains uncommitted changes',
@@ -521,8 +521,8 @@ class GitWrapper(SCMWrapper, scm.GIT):
           if re.match(r'yes|y', rebase_action, re.I):
             self._Run(['reset', '--hard', 'HEAD'], redirect_stdout=False)
             # Should this be recursive?
-            rebase_output, rebase_err = self.Capture(rebase_cmd,
-                                                     self.checkout_path)
+            rebase_output, rebase_err = scm.GIT.Capture(rebase_cmd,
+                                                        self.checkout_path)
             break
           elif re.match(r'quit|q', rebase_action, re.I):
             raise gclient_utils.Error("Please merge or rebase manually\n"
@@ -578,7 +578,7 @@ class GitWrapper(SCMWrapper, scm.GIT):
       stdout = subprocess.PIPE
     if cwd == None:
       cwd = self.checkout_path
-    cmd = [self.COMMAND]
+    cmd = [scm.GIT.COMMAND]
     cmd.extend(args)
     logging.debug(cmd)
     try:
@@ -594,7 +594,7 @@ class GitWrapper(SCMWrapper, scm.GIT):
       return output.strip()
 
 
-class SVNWrapper(SCMWrapper, scm.SVN):
+class SVNWrapper(SCMWrapper):
   """ Wrapper for SVN """
 
   def cleanup(self, options, args, file_list):
@@ -602,14 +602,14 @@ class SVNWrapper(SCMWrapper, scm.SVN):
     __pychecker__ = 'unusednames=file_list,options'
     command = ['cleanup']
     command.extend(args)
-    self.Run(command, os.path.join(self._root_dir, self.relpath))
+    scm.SVN.Run(command, os.path.join(self._root_dir, self.relpath))
 
   def diff(self, options, args, file_list):
     # NOTE: This function does not currently modify file_list.
     __pychecker__ = 'unusednames=file_list,options'
     command = ['diff']
     command.extend(args)
-    self.Run(command, os.path.join(self._root_dir, self.relpath))
+    scm.SVN.Run(command, os.path.join(self._root_dir, self.relpath))
 
   def export(self, options, args, file_list):
     """Export a clean directory tree into the given path."""
@@ -623,7 +623,7 @@ class SVNWrapper(SCMWrapper, scm.SVN):
     assert os.path.exists(export_path)
     command = ['export', '--force', '.']
     command.append(export_path)
-    self.Run(command, os.path.join(self._root_dir, self.relpath))
+    scm.SVN.Run(command, os.path.join(self._root_dir, self.relpath))
 
   def pack(self, options, args, file_list):
     """Generates a patch file which can be applied to the root of the
@@ -634,7 +634,7 @@ class SVNWrapper(SCMWrapper, scm.SVN):
     command.extend(args)
 
     filterer = DiffFilterer(self.relpath)
-    self.RunAndFilterOutput(command, path, False, False, filterer.Filter)
+    scm.SVN.RunAndFilterOutput(command, path, False, False, filterer.Filter)
 
   def update(self, options, args, file_list):
     """Runs svn to update or transparently checkout the working copy.
@@ -671,11 +671,11 @@ class SVNWrapper(SCMWrapper, scm.SVN):
       command = ['checkout', url, checkout_path]
       if revision:
         command.extend(['--revision', str(revision)])
-      self.RunAndGetFileList(options, command, self._root_dir, file_list)
+      scm.SVN.RunAndGetFileList(options, command, self._root_dir, file_list)
       return
 
     # Get the existing scm url and the revision number of the current checkout.
-    from_info = self.CaptureInfo(os.path.join(checkout_path, '.'), '.')
+    from_info = scm.SVN.CaptureInfo(os.path.join(checkout_path, '.'), '.')
     if not from_info:
       raise gclient_utils.Error("Can't update/checkout %r if an unversioned "
                                 "directory is present. Delete the directory "
@@ -685,12 +685,12 @@ class SVNWrapper(SCMWrapper, scm.SVN):
     if options.manually_grab_svn_rev:
       # Retrieve the current HEAD version because svn is slow at null updates.
       if not revision:
-        from_info_live = self.CaptureInfo(from_info['URL'], '.')
+        from_info_live = scm.SVN.CaptureInfo(from_info['URL'], '.')
         revision = str(from_info_live['Revision'])
         rev_str = ' at %s' % revision
 
     if from_info['URL'] != base_url:
-      to_info = self.CaptureInfo(url, '.')
+      to_info = scm.SVN.CaptureInfo(url, '.')
       if not to_info.get('Repository Root') or not to_info.get('UUID'):
         # The url is invalid or the server is not accessible, it's safer to bail
         # out right now.
@@ -712,12 +712,12 @@ class SVNWrapper(SCMWrapper, scm.SVN):
                    from_info['Repository Root'],
                    to_info['Repository Root'],
                    self.relpath]
-        self.Run(command, self._root_dir)
+        scm.SVN.Run(command, self._root_dir)
         from_info['URL'] = from_info['URL'].replace(
             from_info['Repository Root'],
             to_info['Repository Root'])
       else:
-        if self.CaptureStatus(checkout_path):
+        if scm.SVN.CaptureStatus(checkout_path):
           raise gclient_utils.Error("Can't switch the checkout to %s; UUID "
                                     "don't match and there is local changes "
                                     "in %s. Delete the directory and "
@@ -729,7 +729,7 @@ class SVNWrapper(SCMWrapper, scm.SVN):
         command = ['checkout', url, checkout_path]
         if revision:
           command.extend(['--revision', str(revision)])
-        self.RunAndGetFileList(options, command, self._root_dir, file_list)
+        scm.SVN.RunAndGetFileList(options, command, self._root_dir, file_list)
         return
 
 
@@ -743,7 +743,7 @@ class SVNWrapper(SCMWrapper, scm.SVN):
     command = ["update", checkout_path]
     if revision:
       command.extend(['--revision', str(revision)])
-    self.RunAndGetFileList(options, command, self._root_dir, file_list)
+    scm.SVN.RunAndGetFileList(options, command, self._root_dir, file_list)
 
   def revert(self, options, args, file_list):
     """Reverts local modifications. Subversion specific.
@@ -760,7 +760,7 @@ class SVNWrapper(SCMWrapper, scm.SVN):
       # Don't reuse the args.
       return self.update(options, [], file_list)
 
-    for file_status in self.CaptureStatus(path):
+    for file_status in scm.SVN.CaptureStatus(path):
       file_path = os.path.join(path, file_status[1])
       if file_status[0][0] == 'X':
         # Ignore externals.
@@ -795,8 +795,8 @@ class SVNWrapper(SCMWrapper, scm.SVN):
     try:
       # svn revert is so broken we don't even use it. Using
       # "svn up --revision BASE" achieve the same effect.
-      self.RunAndGetFileList(options, ['update', '--revision', 'BASE'], path,
-                           file_list)
+      scm.SVN.RunAndGetFileList(options, ['update', '--revision', 'BASE'], path,
+                                file_list)
     except OSError, e:
       # Maybe the directory disapeared meanwhile. We don't want it to throw an
       # exception.
@@ -805,7 +805,7 @@ class SVNWrapper(SCMWrapper, scm.SVN):
   def revinfo(self, options, args, file_list):
     """Display revision"""
     __pychecker__ = 'unusednames=args,file_list,options'
-    return self.CaptureHeadRevision(self.url)
+    return scm.SVN.CaptureHeadRevision(self.url)
 
   def runhooks(self, options, args, file_list):
     self.status(options, args, file_list)
@@ -822,7 +822,7 @@ class SVNWrapper(SCMWrapper, scm.SVN):
             % (' '.join(command), path))
       # There's no file list to retrieve.
     else:
-      self.RunAndGetFileList(options, command, path, file_list)
+      scm.SVN.RunAndGetFileList(options, command, path, file_list)
 
   def FullUrlForRelativeUrl(self, url):
     # Find the forth '/' and strip from there. A bit hackish.

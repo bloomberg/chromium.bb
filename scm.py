@@ -221,7 +221,7 @@ class GIT(object):
   def GetUpstream(cwd):
     """Gets the current branch's upstream branch."""
     remote, upstream_branch = GIT.FetchUpstreamTuple(cwd)
-    if remote is not '.':
+    if remote != '.':
       upstream_branch = upstream_branch.replace('heads', 'remotes/' + remote)
     return upstream_branch
 
@@ -378,7 +378,7 @@ class SVN(object):
         }[args[0]]
     compiled_pattern = re.compile(pattern)
     # Place an upper limit.
-    for i in range(1, 10):
+    for _ in range(1, 10):
       previous_list_len = len(file_list)
       failure = []
 
@@ -397,7 +397,7 @@ class SVN(object):
                                CaptureMatchingLines)
       except gclient_utils.Error:
         # We enforce that some progress has been made or HTTP 502.
-        if ([True for f in failure if '502 Bad Gateway' in f] or
+        if (filter(lambda x: '502 Bad Gateway' in x, failure) or
             (len(failure) and len(file_list) > previous_list_len)):
           if args[0] == 'checkout':
             # An aborted checkout is now an update.
