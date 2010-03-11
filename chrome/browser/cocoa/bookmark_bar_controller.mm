@@ -914,8 +914,8 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   BrowserWindowController* browserController =
       [BrowserWindowController browserWindowControllerForView:[self view]];
   [browserController releaseBarVisibilityForOwner:child
-                                    withAnimation:NO
-                                            delay:NO];
+                                    withAnimation:YES
+                                            delay:YES];
 }
 
 
