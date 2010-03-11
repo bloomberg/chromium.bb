@@ -580,6 +580,7 @@
         'browser/chromeos/external_cookie_handler_unittest.cc',
         'browser/chromeos/external_metrics_unittest.cc',
         'browser/chromeos/gview_request_interceptor_unittest.cc',
+        'browser/chromeos/login/google_authenticator_unittest.cc',
         'browser/chromeos/pipe_reader_unittest.cc',
         'browser/chromeos/version_loader_unittest.cc',
         # It is safe to list */cocoa/* files in the "common" file list

@@ -69,8 +69,8 @@ class LoginManagerView : public views::View,
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
   // Overriden from LoginStatusConsumer.
-  virtual void OnLoginFailure();
-  virtual void OnLoginSuccess(const std::string& username);
+  virtual void OnLoginFailure(const std::string error);
+  virtual void OnLoginSuccess(const std::string username);
 
  protected:
   // views::View overrides:

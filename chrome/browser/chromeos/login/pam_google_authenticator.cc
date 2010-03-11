@@ -29,6 +29,6 @@ bool PamGoogleAuthenticator::Authenticate(const std::string& username,
   if (ret)
     consumer_->OnLoginSuccess(username);
   else
-    consumer_->OnLoginFailure();
+    consumer_->OnLoginFailure("");
   return ret;
 }

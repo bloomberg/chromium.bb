@@ -304,8 +304,8 @@ void LoginManagerView::ButtonPressed(
   Login();
 }
 
-void LoginManagerView::OnLoginFailure() {
-  LOG(INFO) << "LoginManagerView: OnLoginFailure()";
+void LoginManagerView::OnLoginFailure(const std::string error) {
+  LOG(INFO) << "LoginManagerView: OnLoginFailure() " << error;
   NetworkLibrary* network = NetworkLibrary::Get();
 
   // Send notification of failure
@@ -322,13 +322,12 @@ void LoginManagerView::OnLoginFailure() {
     ShowError(IDS_LOGIN_ERROR_NETWORK_NOT_CONNECTED);
   else
     ShowError(IDS_LOGIN_ERROR_AUTHENTICATING);
+  // TODO(someone): get |error| onto the UI somehow?
 }
 
-void LoginManagerView::OnLoginSuccess(const std::string& username) {
+void LoginManagerView::OnLoginSuccess(const std::string username) {
   // TODO(cmasone): something sensible if errors occur.
-
   SetupSession(username);
-
   login_utils::CompleteLogin(username);
 }
 

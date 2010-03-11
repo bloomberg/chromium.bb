@@ -315,6 +315,8 @@
         'browser/chromeos/compact_navigation_bar.h',
         'browser/chromeos/cros/cros_library.cc',
         'browser/chromeos/cros/cros_library.h',
+        'browser/chromeos/cros/cryptohome_library.cc',
+        'browser/chromeos/cros/cryptohome_library.h',
         'browser/chromeos/cros/language_library.cc',
         'browser/chromeos/cros/language_library.h',
         'browser/chromeos/cros/login_library.cc',
