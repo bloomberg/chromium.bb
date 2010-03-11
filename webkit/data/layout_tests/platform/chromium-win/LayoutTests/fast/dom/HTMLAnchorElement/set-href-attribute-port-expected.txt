@@ -18,7 +18,7 @@ FAIL a.href should be https://www.mydomain.com:0/path/testurl.html?key=value. Wa
 Set port to undefined
 FAIL a.href should be https://www.mydomain.com:0/path/testurl.html?key=value. Was https://www.mydomain.com/path/testurl.html?key=value.
 Set port to URL with foo: protocol
-PASS a.href is 'foo://bar:50/'
+FAIL a.href should be foo://bar:50/. Was foo://bar/.
 PASS successfullyParsed is true
 
 TEST COMPLETE

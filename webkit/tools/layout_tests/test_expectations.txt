@@ -2858,10 +2858,7 @@ BUG_JIANLI :  http/tests/local/send-sliced-dragged-file.html = FAIL
 BUG37684 SKIP : http/tests/cookies/third-party-cookie-relaxing.html = FAIL
 
 // WebKit roll r55683 -> r55709
-BUG37779 : fast/dom/HTMLAnchorElement/set-href-attribute-hostname.html = TEXT
-BUG37779 : fast/dom/HTMLAnchorElement/set-href-attribute-port.html = TEXT
-BUG37779 : fast/loader/url-parse-1.html = TEXT
-BUG37779 : http/tests/loading/state-object-security-exception.html = TEXT
+BUG29393 : http/tests/loading/state-object-security-exception.html = TEXT
 
 // Bugs that went unreported when we upstreamed run_webkit_tests
 BUG37896 WIN LINUX : editing/deleting/delete-3857753-fix.html = TEXT
