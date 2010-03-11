@@ -334,6 +334,14 @@ pregcc: BUILD/stamp-pregcc
 BUILD/stamp-newlib: BUILD/stamp-newlib-$(NEWLIB_VERSION) Makefile
 	rm -rf BUILD/build-newlib-$(CROSSARCH)
 	mkdir BUILD/build-newlib-$(CROSSARCH)
+	if [ "x$(GCC_VERSION)" = "x4.4.3" -a \
+	     "x$(CROSSARCH)" = "xnacl64" ] ; then \
+	  pushd $(DESTDIR)$(SDKROOT)/$(CROSSARCH) ; \
+	  ln -sfn lib/32 lib32 ; \
+	  ln -sfn lib lib64 ; \
+	  cd $(DESTDIR)$(SDKROOT) ; ln -sfn nacl64 nacl ; \
+	  popd ; \
+	fi
 	../src/trusted/service_runtime/export_header.py ../src/trusted/service_runtime/include \
 		BUILD/newlib-$(NEWLIB_VERSION)/newlib/libc/sys/nacl
 	if [ "x$(CROSSARCH)" = "xnacl64" ] ; then \
@@ -442,13 +450,6 @@ endif
 		  CFLAGS_FOR_TARGET="-O2 -g" \
 		  CXXFLAGS_FOR_TARGET="-O2 -g" \
 	    DESTDIR=$(DESTDIR) install
-	if [ "x$(GCC_VERSION)" = "x4.4.3" -a \
-	     "x$(CROSSARCH)" = "xnacl64" ] ; then \
-	  pushd $(DESTDIR)/$(SDKROOT) ; \
-	  ln -sfn lib/32 lib32 ; \
-	  ln -sfn lib lib64 ; \
-	  popd ; \
-	fi
 	touch $@
 	$(MAKE) -f $(THISMAKEFILE) redirector
 

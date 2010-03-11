@@ -1071,6 +1071,12 @@ nacl_env = pre_base_env.Clone(
     LIBS = ['${EXTRA_LIBS}'],
 )
 
+if ARGUMENTS.get('multilib') == 'true':
+  if nacl_env['BUILD_SUBARCH'] == '32':
+    nacl_env.Append(CCFLAGS = ['-m32'], LINKFLAGS = '-m32')
+  elif nacl_env['BUILD_SUBARCH'] == '64':
+    nacl_env.Append(CCFLAGS = ['-m64'], LINKFLAGS = '-m64')
+
 if (nacl_env['BUILD_ARCHITECTURE'] == 'arm' and
     nacl_env['TARGET_ARCHITECTURE'] == 'arm'):
   # TODO(robertm): remove this ASAP, we currently have llvm issue with c++
