@@ -57,7 +57,111 @@
       }],
     ],
   },
+  'targets': [
+    {
+      'target_name': 'component_extensions',
+      'type': 'none',
+      'msvs_guid': '50B52703-525F-404C-BFE2-C46D3375D73E',
+      # TODO(aa): Once the linux port supports it, change this to recursively
+      # copy the entire directory instead of listing the files.
+      # http://crbug.com/37340.
+      'copies': [
+        {
+          'destination': '<(PRODUCT_DIR)/resources/bookmark_manager',
+          'files': [
+            'browser/resources/bookmark_manager/main.html',
+            'browser/resources/bookmark_manager/manifest.json',
+          ]
+        },
+        {
+          'destination': '<(PRODUCT_DIR)/resources/bookmark_manager/css',
+          'files': [
+            'browser/resources/bookmark_manager/css/bmm.css',
+            'browser/resources/bookmark_manager/css/bmm.css.js',
+            'browser/resources/bookmark_manager/css/list.css',
+            'browser/resources/bookmark_manager/css/menu.css',
+            'browser/resources/bookmark_manager/css/tree.css',
+            'browser/resources/bookmark_manager/css/tree.css.js',
+          ]
+        },
+        {
+          'destination': '<(PRODUCT_DIR)/resources/bookmark_manager/js',
+          'files': [
+            'browser/resources/bookmark_manager/js/bmm.js',
+            'browser/resources/bookmark_manager/js/cr.js',
+            'browser/resources/bookmark_manager/js/i18ntemplate.js',
+            'browser/resources/bookmark_manager/js/localstrings.js',
+            'browser/resources/bookmark_manager/js/util.js',
+          ]
+        },
+        {
+          'destination': '<(PRODUCT_DIR)/resources/bookmark_manager/js/cr',
+          'files': [
+            'browser/resources/bookmark_manager/js/cr/event.js',
+            'browser/resources/bookmark_manager/js/cr/eventtarget.js',
+            'browser/resources/bookmark_manager/js/cr/promise.js',
+            'browser/resources/bookmark_manager/js/cr/ui.js',
+          ]
+        },
+        {
+          'destination': '<(PRODUCT_DIR)/resources/bookmark_manager/js/cr/ui',
+          'files': [
+            'browser/resources/bookmark_manager/js/cr/ui/menuitem.js',
+            'browser/resources/bookmark_manager/js/cr/ui/command.js',
+            'browser/resources/bookmark_manager/js/cr/ui/menubutton.js',
+            'browser/resources/bookmark_manager/js/cr/ui/list.js',
+            'browser/resources/bookmark_manager/js/cr/ui/tree.js',
+            'browser/resources/bookmark_manager/js/cr/ui/listselectionmodel.js',
+            'browser/resources/bookmark_manager/js/cr/ui/menu.js',
+            'browser/resources/bookmark_manager/js/cr/ui/listitem.js',
+            'browser/resources/bookmark_manager/js/cr/ui/contextmenuhandler.js',
+          ]
+        },
+        {
+          'destination': '<(PRODUCT_DIR)/resources/bookmark_manager/js/bmm',
+          'files': [
+            'browser/resources/bookmark_manager/js/bmm/bookmarklist.js',
+            'browser/resources/bookmark_manager/js/bmm/bookmarktree.js',
+            'browser/resources/bookmark_manager/js/bmm/treeiterator.js',
+          ]
+        },
+        {
+          'destination': '<(PRODUCT_DIR)/resources/bookmark_manager/images',
+          'files': [
+            'browser/resources/bookmark_manager/images/folder_open_rtl.png',
+            'browser/resources/bookmark_manager/images/folder_open.png',
+            'browser/resources/bookmark_manager/images/bookmark_manager_recent.png',
+            'browser/resources/bookmark_manager/images/bookmark_bar_folder_mac.png',
+            'browser/resources/bookmark_manager/images/bookmarks_favicon.png',
+            'browser/resources/bookmark_manager/images/bookmarks_section.png',
+            'browser/resources/bookmark_manager/images/folder_closed.png',
+            'browser/resources/bookmark_manager/images/bookmark_manager_search.png',
+            'browser/resources/bookmark_manager/images/folder_closed_rtl.png',
+          ]
+        },
+      ]
+    },
+  ],
   'conditions': [
+    ['OS=="linux"', {
+      'targets': [
+        {
+          'target_name': 'copy_component_extensions',
+          'type': 'none',
+          'dependencies': [
+            'component_extensions'
+          ],
+          'copies': [
+            {
+              'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Resources',
+              'files': [
+                '<(PRODUCT_DIR)/resources/bookmark_manager/'
+              ],
+            },
+          ]
+        }
+      ]
+    }],
     ['OS=="mac" or OS=="win"', {
       'targets': [
         {
@@ -67,6 +171,7 @@
             'chrome_dll_target': 1,
           },
           'dependencies': [
+            'component_extensions',
             '<@(chromium_dependencies)',
           ],
           'conditions': [
@@ -381,7 +486,8 @@
                 {
                   'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Resources',
                   'files': [
-                    '<(PRODUCT_DIR)/resources/inspector/'
+                    '<(PRODUCT_DIR)/resources/inspector/',
+                    '<(PRODUCT_DIR)/resources/bookmark_manager/'
                   ],
                   'conditions': [
                     ['mac_breakpad==1', {
