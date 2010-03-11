@@ -382,7 +382,7 @@ TEST_F(BookmarkModelTest, Copy) {
   model.Copy(nodeToCopy, root, 1);
   actualModelString = ModelStringFromNode(root);
   EXPECT_EQ(L"a 2:[ e 1:[ b d c ] f 1:[ b d c ] g ] d 1:[ b d c ] "
-             "d 2:[ e 1:[ b d c ] f 1:[ b d c ] g ] h d ",
+            L"d 2:[ e 1:[ b d c ] f 1:[ b d c ] g ] h d ",
             actualModelString);
 }
 
