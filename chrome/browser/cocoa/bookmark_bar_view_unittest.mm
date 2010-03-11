@@ -89,6 +89,10 @@ const CGFloat kFakeIndicatorPos = 7.0;
   return NSDragOperationNone;
 }
 
+- (NSDragOperation)draggingSourceOperationMask {
+  return NSDragOperationCopy | NSDragOperationMove;
+}
+
 @end
 
 namespace {
