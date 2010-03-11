@@ -35,10 +35,10 @@ void InitSignalIds() {
 
 // Blocks a |signal_id| on the given |widget| if any.
 void BlockSignal(GtkWidget* widget, guint signal_id) {
-  int handler_id = g_signal_handler_find(G_OBJECT(widget),
-                                         G_SIGNAL_MATCH_ID,
-                                         signal_id,
-                                         0, NULL, NULL, NULL);
+  gulong handler_id = g_signal_handler_find(G_OBJECT(widget),
+                                            G_SIGNAL_MATCH_ID,
+                                            signal_id,
+                                            0, NULL, NULL, NULL);
   if (handler_id) {
     g_signal_handler_block(G_OBJECT(widget), handler_id);
   }
@@ -46,10 +46,10 @@ void BlockSignal(GtkWidget* widget, guint signal_id) {
 
 // Unblocks a |signal_id| on the given |widget| if any.
 void UnblockSignal(GtkWidget* widget, guint signal_id) {
-  int handler_id = g_signal_handler_find(G_OBJECT(widget),
-                                         G_SIGNAL_MATCH_ID,
-                                         signal_id,
-                                         0, NULL, NULL, NULL);
+  gulong handler_id = g_signal_handler_find(G_OBJECT(widget),
+                                            G_SIGNAL_MATCH_ID,
+                                            signal_id,
+                                            0, NULL, NULL, NULL);
   if (handler_id) {
     g_signal_handler_unblock(G_OBJECT(widget), handler_id);
   }
@@ -182,7 +182,6 @@ void NativeViewHostGtk::AddedToWidget() {
 void NativeViewHostGtk::RemovedFromWidget() {
   if (!host_->native_view())
     return;
-
   DestroyFixed();
 }
 
@@ -253,9 +252,13 @@ void NativeViewHostGtk::SetFocus() {
 void NativeViewHostGtk::CreateFixed(bool needs_window) {
   GtkWidget* focused_widget = GetFocusedDescendant();
 
+  bool focus_event_blocked = false;
   // We move focus around and do not want focus events to be emitted
   // during this process.
-  BlockFocusSignals(GetHostWidget()->GetNativeView(), NULL);
+  if (fixed_) {
+    BlockFocusSignals(GetHostWidget()->GetNativeView(), NULL);
+    focus_event_blocked = true;
+  }
 
   if (focused_widget) {
     // A descendant of our fixed has focus. When we destroy the fixed focus is
@@ -282,7 +285,11 @@ void NativeViewHostGtk::CreateFixed(bool needs_window) {
   if (widget_gtk && host_->native_view() && focused_widget) {
     gtk_widget_grab_focus(focused_widget);
   }
-  UnblockFocusSignals(GetHostWidget()->GetNativeView(), NULL);
+  if (focus_event_blocked) {
+    // Unblocking a signal handler that is not blocked fails.
+    // Unblock only when it's unblocked.
+    UnblockFocusSignals(GetHostWidget()->GetNativeView(), NULL);
+  }
 }
 
 void NativeViewHostGtk::DestroyFixed() {
