@@ -13,6 +13,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/test/testing_browser_process.h"
+#include "third_party/cld/languages/public/languages.h"
 
 class TestTranslateManager : public TranslateManager {
  public:
@@ -232,6 +233,76 @@ TEST_F(TranslateManagerTest, NormalTranslate) {
   EXPECT_EQ(0, page_id);
   EXPECT_EQ(new_original_lang, original_lang);
   EXPECT_EQ(new_target_lang, target_lang);
+}
+
+// Tests that we show/don't show an info-bar for all languages the CLD can
+// report.
+TEST_F(TranslateManagerTest, TestAllLanguages) {
+  // The index in kExpectation are the Language enum (see languages.pb.h).
+  // true if we expect a translate infobar for that language.
+  // Note the supported languages are in translation_service.cc, see
+  // kSupportedLanguages.
+  bool kExpectations[] = {
+    // 0-9
+    false, true, true, true, true, true, true, true, true, true,
+    // 10-19
+    true, true, true, true, true, true, true, true, true, true,
+    // 20-29
+    true, true, true, true, true, false, false, true, true, true,
+    // 30-39
+    true, true, true, true, true, true, true, false, true, false,
+    // 40-49
+    true, false, true, false, false, true, false, true, false, false,
+    // 50-59
+    false, false, false, true, true, true, false, false, false, false,
+    // 60-69
+    false, false, true, true, false, true, true, false, true, true,
+    // 70-79
+    false, false, false, false, false, false, false, true, false, false,
+    // 80-89
+    false, false, false, false, false, false, false, false, false, false,
+    // 90-99
+    false, true, false, false, false, false, false, false, false, false,
+    // 100-109
+    false, true, false, false, false, false, false, false, false, false,
+    // 110-119
+    false, false, false, false, false, false, false, false, false, false,
+    // 120-129
+    false, false, false, false, false, false, false, false, false, false,
+    // 130-139
+    false, false, false, false, false, false, false, false, false, false,
+    // 140-149
+    false, false, false, false, false, false, false, false, false, false,
+    // 150-159
+    false, false, false, false, false, false, false, false, false, false,
+    // 160
+    false
+  };
+
+  GURL url("http://www.google.com");
+  for (size_t i = 0; i < arraysize(kExpectations); ++i) {
+    ASSERT_LT(i, static_cast<size_t>(NUM_LANGUAGES));
+
+    std::string lang = LanguageCodeWithDialects(static_cast<Language>(i));
+    SCOPED_TRACE(::testing::Message::Message() << "Iteration " << i <<
+        " language=" << lang);
+
+    // We should not have a translate infobar.
+    TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
+    ASSERT_TRUE(infobar == NULL);
+
+    // Simulate navigating to a page.
+    NavigateAndCommit(url);
+    SimulateOnPageContents(url, i, L"", lang);
+
+    // Verify we have/don't have an info-bar as expected.
+    infobar = GetTranslateInfoBar();
+    EXPECT_EQ(kExpectations[i], infobar != NULL);
+
+    // Close the info-bar if applicable.
+    if (infobar != NULL)
+      EXPECT_TRUE(CloseTranslateInfoBar());
+  }
 }
 
 // Tests auto-translate on page.
