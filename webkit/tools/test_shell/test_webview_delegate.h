@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,7 @@
 #endif
 
 #include <map>
+#include <set>
 #include <string>
 
 #if defined(TOOLKIT_USES_GTK)
@@ -264,6 +265,13 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
   void SetCustomPolicyDelegate(bool is_custom, bool is_permissive);
   void WaitForPolicyDelegate();
 
+  void set_clear_header(const std::string& header) {
+    clear_headers_.insert(header);
+  }
+  const std::set<std::string>& clear_headers() {
+    return clear_headers_;
+  }
+
   void set_block_redirects(bool block_redirects) {
     block_redirects_ = block_redirects;
   }
@@ -391,6 +399,9 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
 
   // true if we want to enable selection of trailing whitespaces
   bool select_trailing_whitespace_enabled_;
+
+  // Set of headers to clear in willSendRequest.
+  std::set<std::string> clear_headers_;
 
   // true if we should block any redirects
   bool block_redirects_;

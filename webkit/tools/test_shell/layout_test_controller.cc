@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -121,6 +121,7 @@ LayoutTestController::LayoutTestController(TestShell* shell) :
   BindMethod("setIconDatabaseEnabled", &LayoutTestController::setIconDatabaseEnabled);
   BindMethod("setCustomPolicyDelegate", &LayoutTestController::setCustomPolicyDelegate);
   BindMethod("waitForPolicyDelegate", &LayoutTestController::waitForPolicyDelegate);
+  BindMethod("setWillSendRequestClearHeader", &LayoutTestController::setWillSendRequestClearHeader);
   BindMethod("setWillSendRequestReturnsNullOnRedirect", &LayoutTestController::setWillSendRequestReturnsNullOnRedirect);
   BindMethod("setWillSendRequestReturnsNull", &LayoutTestController::setWillSendRequestReturnsNull);
   BindMethod("whiteListAccessFromOrigin", &LayoutTestController::whiteListAccessFromOrigin);
@@ -652,6 +653,16 @@ void LayoutTestController::waitForPolicyDelegate(
     const CppArgumentList& args, CppVariant* result) {
   shell_->delegate()->WaitForPolicyDelegate();
   wait_until_done_ = true;
+  result->SetNull();
+}
+
+void LayoutTestController::setWillSendRequestClearHeader(
+    const CppArgumentList& args, CppVariant* result) {
+  if (args.size() > 0 && args[0].isString()) {
+    std::string header = args[0].ToString();
+    if (!header.empty())
+      shell_->delegate()->set_clear_header(header);
+  }
   result->SetNull();
 }
 

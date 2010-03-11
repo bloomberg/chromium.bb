@@ -941,6 +941,10 @@ void TestWebViewDelegate::willSendRequest(
     return;
   }
 
+  for (std::set<std::string>::const_iterator header = clear_headers_.begin();
+       header != clear_headers_.end(); ++header)
+    request.clearHTTPHeaderField(WebString::fromUTF8(*header));
+
   TRACE_EVENT_BEGIN("url.load", identifier, request_url);
   // Set the new substituted URL.
   request.setURL(GURL(TestShell::RewriteLocalUrl(request_url)));
