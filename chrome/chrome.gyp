@@ -1561,6 +1561,7 @@
                 '<(grit_out_dir)/theme_resources.pak',
                 '<(SHARED_INTERMEDIATE_DIR)/app/app_resources/app_resources.pak',
                 '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.pak',
+                '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.pak',
                 '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.pak',
               ],
             },

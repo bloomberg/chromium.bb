@@ -201,6 +201,7 @@
                 'pak_inputs': [
                   '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.pak',
                   '<(SHARED_INTERMEDIATE_DIR)/test_shell/test_shell_resources.pak',
+                  '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.pak',
                   '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.pak',
                   '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_en-US.pak',
                 ],
@@ -277,6 +278,7 @@
             # but that causes errors in other targets when
             # resulting .res files get referenced multiple times.
             '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_en-US.rc',
           ],
@@ -310,6 +312,7 @@
               'action_name': 'repack_locale',
               'variables': {
                 'pak_inputs': [
+                  '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.pak',
                   '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_en-US.pak',
                   '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.pak',
                 ],

@@ -24,6 +24,7 @@
 #include "base/win_util.h"
 #include "breakpad/src/client/windows/handler/exception_handler.h"
 #include "grit/webkit_resources.h"
+#include "grit/webkit_chromium_resources.h"
 #include "net/base/net_module.h"
 #include "net/url_request/url_request_file_job.h"
 #include "skia/ext/bitmap_platform_device.h"

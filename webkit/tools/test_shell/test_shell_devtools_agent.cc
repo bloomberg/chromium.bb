@@ -6,7 +6,7 @@
 #include "third_party/WebKit/WebKit/chromium/src/WebViewImpl.h"
 
 #undef LOG
-#include "grit/webkit_resources.h"
+#include "grit/webkit_chromium_resources.h"
 #include "webkit/tools/test_shell/test_shell_devtools_agent.h"
 #include "webkit/tools/test_shell/test_shell_devtools_callargs.h"
 #include "webkit/tools/test_shell/test_shell_devtools_client.h"

@@ -219,6 +219,7 @@
                 '<(SHARED_INTERMEDIATE_DIR)/chrome/renderer_resources.rc',
                 '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources.rc',
                 '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
                 '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.rc',
 
                 # TODO(sgk):  left-over from pre-gyp build, figure out
@@ -394,6 +395,7 @@
                       '<(grit_out_dir)/theme_resources.pak',
                       '<(SHARED_INTERMEDIATE_DIR)/app/app_resources/app_resources.pak',
                       '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.pak',
+                      '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.pak',
                       '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.pak',
                     ],
                   },

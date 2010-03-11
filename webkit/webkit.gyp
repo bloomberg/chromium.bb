@@ -70,6 +70,22 @@
                      '-o', '<(grit_out_dir)'],
           'message': 'Generating resources from <(input_path)',
         },
+        {
+          'action_name': 'webkit_chromium_resources',
+          'variables': {
+            'input_path': '../third_party/WebKit/WebKit/chromium/WebKit.grd',
+          },
+          'inputs': [
+            '<!@(<(grit_info_cmd) --inputs <(input_path))',
+          ],
+          'outputs': [
+            '<!@(<(grit_info_cmd) --outputs \'<(grit_out_dir)\' <(input_path))',
+          ],
+          'action': ['<@(grit_cmd)',
+                     '-i', '<(input_path)', 'build',
+                     '-o', '<(grit_out_dir)'],
+          'message': 'Generating resources from <(input_path)',
+        },
       ],
       'direct_dependent_settings': {
         'include_dirs': [
