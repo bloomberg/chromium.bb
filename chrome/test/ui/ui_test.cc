@@ -419,8 +419,13 @@ void UITestBase::QuitBrowser() {
     while (window_count > 1) {
       scoped_refptr<BrowserProxy> browser_proxy =
           automation()->GetBrowserWindow(0);
-      EXPECT_TRUE(browser_proxy->RunCommand(IDC_CLOSE_WINDOW));
-      EXPECT_TRUE(automation()->GetBrowserWindowCount(&window_count));
+      EXPECT_TRUE(browser_proxy.get());
+      if (browser_proxy.get()) {
+        EXPECT_TRUE(browser_proxy->RunCommand(IDC_CLOSE_WINDOW));
+        EXPECT_TRUE(automation()->GetBrowserWindowCount(&window_count));
+      } else {
+        break;
+      }
     }
 
     // Close the last window asynchronously, because the browser may shutdown
@@ -428,6 +433,7 @@ void UITestBase::QuitBrowser() {
     // message.
     scoped_refptr<BrowserProxy> browser_proxy =
         automation()->GetBrowserWindow(0);
+    EXPECT_TRUE(browser_proxy.get());
     if (browser_proxy.get()) {
       browser_proxy->ApplyAccelerator(IDC_CLOSE_WINDOW);
       browser_proxy = NULL;
@@ -486,6 +492,7 @@ scoped_refptr<TabProxy> UITestBase::GetActiveTab(int window_index) {
   EXPECT_GT(window_count, window_index);
   scoped_refptr<BrowserProxy> window_proxy(automation()->
       GetBrowserWindow(window_index));
+  EXPECT_TRUE(window_proxy.get());
   if (!window_proxy.get())
     return NULL;
 
@@ -512,9 +519,6 @@ scoped_refptr<TabProxy> UITestBase::GetActiveTab() {
 void UITestBase::NavigateToURLAsync(const GURL& url) {
   scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
   ASSERT_TRUE(tab_proxy.get());
-  if (!tab_proxy.get())
-    return;
-
   tab_proxy->NavigateToURLAsync(url);
 }
 
@@ -531,9 +535,6 @@ void UITestBase::NavigateToURLBlockUntilNavigationsComplete(
     const GURL& url, int number_of_navigations) {
   scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
   ASSERT_TRUE(tab_proxy.get());
-  if (!tab_proxy.get())
-    return;
-
   bool is_timeout = true;
   ASSERT_TRUE(tab_proxy->NavigateToURLWithTimeout(
       url, number_of_navigations, command_execution_timeout_ms(),
@@ -547,14 +548,8 @@ void UITestBase::NavigateToURLBlockUntilNavigationsComplete(
   scoped_refptr<BrowserProxy> window =
     automation()->GetBrowserWindow(window_index);
   ASSERT_TRUE(window.get());
-  if (!window.get())
-    return;
-
   scoped_refptr<TabProxy> tab_proxy(window->GetTab(tab_index));
   ASSERT_TRUE(tab_proxy.get());
-  if (!tab_proxy.get())
-    return;
-
   bool is_timeout = true;
   ASSERT_TRUE(tab_proxy->NavigateToURLWithTimeout(
       url, number_of_navigations, command_execution_timeout_ms(),
@@ -571,7 +566,7 @@ bool UITestBase::WaitForDownloadShelfInvisible(BrowserProxy* browser) {
 }
 
 bool UITestBase::WaitForDownloadShelfVisibilityChange(BrowserProxy* browser,
-                                                  bool wait_for_open) {
+                                                      bool wait_for_open) {
   const int kCycles = 10;
   for (int i = 0; i < kCycles; i++) {
     // Give it a chance to catch up.
@@ -587,7 +582,7 @@ bool UITestBase::WaitForDownloadShelfVisibilityChange(BrowserProxy* browser,
 }
 
 bool UITestBase::WaitForFindWindowVisibilityChange(BrowserProxy* browser,
-                                               bool wait_for_open) {
+                                                   bool wait_for_open) {
   const int kCycles = 10;
   for (int i = 0; i < kCycles; i++) {
     bool visible = false;
@@ -603,7 +598,7 @@ bool UITestBase::WaitForFindWindowVisibilityChange(BrowserProxy* browser,
 }
 
 bool UITestBase::WaitForBookmarkBarVisibilityChange(BrowserProxy* browser,
-                                                bool wait_for_open) {
+                                                    bool wait_for_open) {
   const int kCycles = 10;
   for (int i = 0; i < kCycles; i++) {
     bool visible = false;
@@ -711,11 +706,11 @@ int UITestBase::GetTabCount(int window_index) {
 }
 
 bool UITestBase::WaitUntilCookieValue(TabProxy* tab,
-                                  const GURL& url,
-                                  const char* cookie_name,
-                                  int interval_ms,
-                                  int time_out_ms,
-                                  const char* expected_value) {
+                                      const GURL& url,
+                                      const char* cookie_name,
+                                      int interval_ms,
+                                      int time_out_ms,
+                                      const char* expected_value) {
   const int kMaxIntervals = time_out_ms / interval_ms;
 
   std::string cookie_value;
@@ -739,10 +734,10 @@ bool UITestBase::WaitUntilCookieValue(TabProxy* tab,
 }
 
 std::string UITestBase::WaitUntilCookieNonEmpty(TabProxy* tab,
-                                            const GURL& url,
-                                            const char* cookie_name,
-                                            int interval_ms,
-                                            int time_out_ms) {
+                                                const GURL& url,
+                                                const char* cookie_name,
+                                                int interval_ms,
+                                                int time_out_ms) {
   const int kMaxIntervals = time_out_ms / interval_ms;
 
   std::string cookie_value;
@@ -765,10 +760,10 @@ std::string UITestBase::WaitUntilCookieNonEmpty(TabProxy* tab,
 }
 
 bool UITestBase::WaitUntilJavaScriptCondition(TabProxy* tab,
-                                          const std::wstring& frame_xpath,
-                                          const std::wstring& jscript,
-                                          int interval_ms,
-                                          int time_out_ms) {
+                                              const std::wstring& frame_xpath,
+                                              const std::wstring& jscript,
+                                              int interval_ms,
+                                              int time_out_ms) {
   DCHECK_GE(time_out_ms, interval_ms);
   DCHECK_GT(interval_ms, 0);
   const int kMaxIntervals = time_out_ms / interval_ms;
@@ -820,7 +815,7 @@ void UITestBase::CloseBrowserAsync(BrowserProxy* browser) const {
 }
 
 bool UITestBase::CloseBrowser(BrowserProxy* browser,
-                          bool* application_closed) const {
+                              bool* application_closed) const {
   DCHECK(application_closed);
   if (!browser->is_valid() || !browser->handle())
     return false;
