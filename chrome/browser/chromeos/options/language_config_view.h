@@ -10,15 +10,19 @@
 #include "chrome/browser/chromeos/cros/language_library.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/label.h"
+#include "views/controls/table/table_view_observer.h"
+#include "views/controls/table/table_view2.h"
 #include "views/window/dialog_delegate.h"
 
 namespace chromeos {
 
 class HangulKeyboardComboboxModel;
+class PreferredLanguageTableModel;
 // A dialog box for showing a password textfield.
 class LanguageConfigView : public views::ButtonListener,
                            public views::Combobox::Listener,
                            public views::DialogDelegate,
+                           public views::TableViewObserver,
                            public views::View {
  public:
   LanguageConfigView();
@@ -47,6 +51,9 @@ class LanguageConfigView : public views::ButtonListener,
                                     views::View* parent,
                                     views::View* child);
 
+  // views::TableViewObserver overrides:
+  virtual void OnSelectionChanged();
+
  private:
   // Initializes UI.
   void Init();
@@ -62,6 +69,9 @@ class LanguageConfigView : public views::ButtonListener,
   // A combobox for Hangul keyboard layouts and its model.
   views::Combobox* hangul_keyboard_combobox_;
   scoped_ptr<HangulKeyboardComboboxModel> hangul_keyboard_combobox_model_;
+  // A table for preferred languages and its model.
+  views::TableView2* preferred_language_table_;
+  scoped_ptr<PreferredLanguageTableModel> preferred_language_table_model_;
 
   DISALLOW_COPY_AND_ASSIGN(LanguageConfigView);
 };

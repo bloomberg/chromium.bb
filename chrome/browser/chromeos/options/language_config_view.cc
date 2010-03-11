@@ -6,6 +6,7 @@
 
 #include "app/combobox_model.h"
 #include "app/l10n_util.h"
+#include "app/table_model.h"
 #include "chrome/browser/chromeos/cros/language_library.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -92,14 +93,45 @@ class HangulKeyboardComboboxModel : public ComboboxModel {
   DISALLOW_COPY_AND_ASSIGN(HangulKeyboardComboboxModel);
 };
 
+// The table model for the list of preferred languages.
+class PreferredLanguageTableModel : public TableModel {
+ public:
+  PreferredLanguageTableModel()
+      : observer_(NULL) {
+  }
+
+  // TableModel overrides:
+  virtual std::wstring GetText(int row, int column_id) {
+    return L"Not yet implemented";
+  }
+
+  virtual void SetObserver(TableModelObserver* observer) {
+    observer_ = observer;
+  }
+
+  virtual int RowCount() {
+    return 1;
+  }
+
+ private:
+  TableModelObserver* observer_;
+  DISALLOW_COPY_AND_ASSIGN(PreferredLanguageTableModel);
+};
 
 LanguageConfigView::LanguageConfigView() :
     contents_(NULL),
     hangul_keyboard_combobox_(NULL),
-    hangul_keyboard_combobox_model_(new HangulKeyboardComboboxModel) {
+    hangul_keyboard_combobox_model_(new HangulKeyboardComboboxModel),
+    preferred_language_table_(NULL),
+    preferred_language_table_model_(new PreferredLanguageTableModel) {
 }
 
 LanguageConfigView::~LanguageConfigView() {
+  if (preferred_language_table_) {
+    // Reset the model to avoid a destruction issue in TableView2.
+    // See the comment at SetModel() in table_view2.h for details.
+    preferred_language_table_->SetModel(NULL);
+  }
 }
 
 void LanguageConfigView::ButtonPressed(
@@ -169,6 +201,11 @@ void LanguageConfigView::ViewHierarchyChanged(
   }
 }
 
+void LanguageConfigView::OnSelectionChanged() {
+  // TODO(satorux): Implement this.
+}
+
+// TODO(satorux): Refactor the function.
 void LanguageConfigView::Init() {
   using views::ColumnSet;
   using views::GridLayout;
@@ -177,14 +214,49 @@ void LanguageConfigView::Init() {
   contents_ = new views::View;
   AddChildView(contents_);
 
-  GridLayout* layout = new GridLayout(contents_);
-  contents_->SetLayoutManager(layout);
-  layout->SetInsets(kPanelVertMargin, kPanelHorizMargin,
-                    kPanelVertMargin, kPanelHorizMargin);
+  // Set up the layout manager for the outer contents.  We'll place the
+  // preferred language table on the left, and anything else on the right.
+  GridLayout* outer_layout = new GridLayout(contents_);
+  contents_->SetLayoutManager(outer_layout);
+  outer_layout->SetInsets(kPanelVertMargin, kPanelHorizMargin,
+                          kPanelVertMargin, kPanelHorizMargin);
+
+  // Set up the column set for the outer contents.
+  const int kOuterColumnSetId = 0;
+  ColumnSet* column_set = outer_layout->AddColumnSet(kOuterColumnSetId);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
+                        GridLayout::USE_PREF, 0, 0);
+  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
+                        GridLayout::USE_PREF, 0, 0);
+
+  // Set up the preferred language table.
+  std::vector<TableColumn> columns;
+  TableColumn column(0,
+                     l10n_util::GetString(
+                         IDS_OPTIONS_SETTINGS_LANGUAGES_LANGUAGES),
+                     TableColumn::LEFT, -1 /* width */, 0 /* percent */);
+  columns.push_back(column);
+  preferred_language_table_ =
+      new views::TableView2(preferred_language_table_model_.get(),
+                            columns,
+                            views::TEXT_ONLY,
+                            true, true, true);
+  preferred_language_table_->SetObserver(this);
+
+  // Add the preferred language table.
+  outer_layout->StartRow(1 /* expand */, kOuterColumnSetId);
+  outer_layout->AddView(preferred_language_table_);
+
+  // Set up the container for the contents on the right.
+  views::View* right_contents = new views::View;
+  GridLayout* layout = new GridLayout(right_contents);
+  right_contents->SetLayoutManager(layout);
+  outer_layout->AddView(right_contents);
 
   // Set up the single column set.
-  const int kSingleColumnViewSetId = 1;
-  ColumnSet* column_set = layout->AddColumnSet(kSingleColumnViewSetId);
+  const int kSingleColumnSetId = 1;
+  column_set = layout->AddColumnSet(kSingleColumnSetId);
   column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
                         GridLayout::USE_PREF, 0, 0);
 
@@ -229,6 +301,7 @@ void LanguageConfigView::Init() {
   // TODO(yusukes): This is a temporary location of the settings. Ask UX team
   //   where is the best place for this and then move the code.
   // TODO(yusukes): Use l10n_util::GetString for all views::Labels.
+  // TODO(satorux): Move this to a separate dialog.
 
   // Hangul IME
   hangul_keyboard_combobox_
@@ -236,7 +309,7 @@ void LanguageConfigView::Init() {
   hangul_keyboard_combobox_->set_listener(this);
   UpdateHangulKeyboardCombobox();
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
-  layout->StartRow(0, kSingleColumnViewSetId);
+  layout->StartRow(0, kSingleColumnSetId);
   layout->AddView(
       new views::Label(
           l10n_util::GetString(IDS_OPTIONS_SETTINGS_HANGUL_IME_TEXT)),
