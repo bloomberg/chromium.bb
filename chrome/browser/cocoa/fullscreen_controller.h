@@ -61,11 +61,12 @@
   // Tracks the currently requested fullscreen mode.  This should be
   // |kFullScreenModeNormal| when the window is not main or not fullscreen,
   // |kFullScreenModeHideAll| while the overlay is hidden, and
-  // |kFullScreenModeHideDock| while the overlay is shown.  This value can get
-  // out of sync with the correct state if we miss a notification (which can
-  // happen when a fullscreen window is closed).  Used to track the current
-  // state and make sure we properly restore the menubar when this controller is
-  // destroyed.
+  // |kFullScreenModeHideDock| while the overlay is shown.  If the window is not
+  // on the primary screen, this should always be |kFullScreenModeNormal|.  This
+  // value can get out of sync with the correct state if we miss a notification
+  // (which can happen when a fullscreen window is closed).  Used to track the
+  // current state and make sure we properly restore the menu bar when this
+  // controller is destroyed.
   mac_util::FullScreenMode currentFullscreenMode_;
 }
 
@@ -105,7 +106,7 @@
 - (CGFloat)floatingBarShownFraction;
 
 // Sets a new current floating bar shown fraction.  NOTE: This function has side
-// effects, such as modifying the fullscreen mode (menubar shown state).
+// effects, such as modifying the fullscreen mode (menu bar shown state).
 - (void)changeFloatingBarShownFraction:(CGFloat)fraction;
 
 @end

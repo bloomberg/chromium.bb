@@ -91,6 +91,11 @@ const CGFloat kFloatingBarVerticalOffset = 22;
 // Returns YES if the fullscreen window is on the primary screen.
 - (BOOL)isWindowOnPrimaryScreen;
 
+// Returns YES if it is ok to show and hide the menu bar in response to the
+// overlay opening and closing.  Will return NO if the window is not main or not
+// on the primary monitor.
+- (BOOL)shouldToggleMenuBar;
+
 // Returns |kFullScreenModeHideAll| when the overlay is hidden and
 // |kFullScreenModeHideDock| when the overlay is shown.
 - (mac_util::FullScreenMode)desiredFullscreenMode;
@@ -142,7 +147,7 @@ const CGFloat kFloatingBarVerticalOffset = 22;
 - (void)cleanup;
 
 // Shows and hides the UI associated with this window being active (having main
-// status).  This includes hiding the menubar and displaying the "Exit
+// status).  This includes hiding the menu bar and displaying the "Exit
 // Fullscreen" button.  These functions are called when the window gains or
 // loses main status as well as in |-cleanup|.
 - (void)showActiveWindowUI;
@@ -289,8 +294,7 @@ const CGFloat kFloatingBarVerticalOffset = 22;
   [browserController_ setFloatingBarShownFraction:fraction];
 
   mac_util::FullScreenMode desiredMode = [self desiredFullscreenMode];
-  if (desiredMode != currentFullscreenMode_ &&
-      [[browserController_ window] isMainWindow]) {
+  if (desiredMode != currentFullscreenMode_ && [self shouldToggleMenuBar]) {
     if (currentFullscreenMode_ == mac_util::kFullScreenModeNormal)
       mac_util::RequestFullScreen(desiredMode);
     else
@@ -372,6 +376,11 @@ const CGFloat kFloatingBarVerticalOffset = 22;
   NSScreen* screen = [[browserController_ window] screen];
   NSScreen* primaryScreen = [[NSScreen screens] objectAtIndex:0];
   return (screen == primaryScreen);
+}
+
+- (BOOL)shouldToggleMenuBar {
+  return [self isWindowOnPrimaryScreen] &&
+         [[browserController_ window] isMainWindow];
 }
 
 - (mac_util::FullScreenMode)desiredFullscreenMode {
@@ -578,8 +587,7 @@ const CGFloat kFloatingBarVerticalOffset = 22;
   if (currentFullscreenMode_ != mac_util::kFullScreenModeNormal)
     return;
 
-  // Only hide the menubar if the window is on the primary screen.
-  if ([self isWindowOnPrimaryScreen]) {
+  if ([self shouldToggleMenuBar]) {
     mac_util::FullScreenMode desiredMode = [self desiredFullscreenMode];
     mac_util::RequestFullScreen(desiredMode);
     currentFullscreenMode_ = desiredMode;
