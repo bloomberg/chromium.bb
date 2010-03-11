@@ -1279,6 +1279,18 @@ bool WebPluginDelegateProxy::BindFakePluginWindowHandle() {
                                                        fake_window))) {
     return false;
   }
+
+  // Since this isn't a real window, it doesn't get initial size and location
+  // information the way a real windowed plugin would, so we need to feed it its
+  // starting geometry.
+  webkit_glue::WebPluginGeometry geom;
+  geom.window = fake_window;
+  geom.window_rect = plugin_rect_;
+  geom.clip_rect = gfx::Rect(0, 0, plugin_rect_.width(), plugin_rect_.height());
+  geom.rects_valid = true;
+  geom.visible = true;
+  render_view_->DidMovePlugin(geom);
+
   return true;
 }
 #endif
