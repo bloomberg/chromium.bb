@@ -2915,10 +2915,6 @@ BUG37869 MAC : fast/canvas/webgl/uniform-location.html = TEXT
 BUG37869 MAC : editing/input/option-page-up-down.html = TIMEOUT
 
 // WebKit merge 55791:55819
-BUG_JAPHET MAC : fast/canvas/webgl/uniform-location.html = TEXT
-BUG_JAPHET MAC : fast/css/getComputedStyle/computed-style-without-renderer.html = TEXT
-BUG_JAPHET MAC : fast/css/getComputedStyle/computed-style.html = TEXT
-BUG_JAPHET MAC : fast/dom/Window/window-appendages-cleared.html = TEXT
 BUG_JAPHET : fast/events/spatial-navigation/snav-fully-aligned-horizontally.html = TEXT
 BUG_JAPHET : fast/events/spatial-navigation/snav-fully-aligned-vertically.html = TEXT
 BUG_JAPHET : fast/events/spatial-navigation/snav-iframe-no-focusable-content.html = TEXT
