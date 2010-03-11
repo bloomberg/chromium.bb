@@ -2925,3 +2925,7 @@ BUG_JAPHET : fast/events/spatial-navigation/snav-iframe-no-focusable-content.htm
 BUG_JAPHET : fast/events/spatial-navigation/snav-iframe-no-scrollable-content.html = TEXT
 BUG_JAPHET : fast/events/spatial-navigation/snav-iframe-with-offscreen-focusable-element.html = TEXT
 BUG_JAPHET : fast/events/spatial-navigation/snav-unit-overflow-and-scroll-in-direction.html = TEXT
+
+// Two flaky tests noticed during a sheriff rotation.
+BUG37962 LINUX : fast/dom/HTMLElement/bdo.html = CRASH
+BUG37962 LINUX : fast/forms/multiple-form-submission-protection-mouse.html = CRASH
