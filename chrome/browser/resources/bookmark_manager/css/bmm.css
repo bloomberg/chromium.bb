@@ -166,7 +166,7 @@ html[os=mac] .tree-row[selected] > .tree-label {
 
 .main {
   position: absolute;
-  top: 75px;
+  top: 85px;
   left: 0;
   right: 0;
   bottom: 0;
@@ -174,7 +174,7 @@ html[os=mac] .tree-row[selected] > .tree-label {
 
 #tree-container {
   position: absolute;
-  left: 0;
+  left: 5px;
   width: 200px;
   top: 0;
   bottom: 0;
@@ -191,7 +191,7 @@ html[os=mac] .tree-row[selected] > .tree-label {
 
 #list {
   position: absolute;
-  left: 200px;
+  left: 205px;
   right: 0;
   top: 0;
   bottom: 0;
@@ -202,13 +202,12 @@ html[os=mac] .tree-row[selected] > .tree-label {
 .logo {
   -webkit-appearance: none;
   border: 0;
-  background: transparent;
   background: 50% 50% no-repeat url("../images/bookmarks_section.png");
   width: 67px;
   height: 67px;
   cursor: pointer;
-  vertical-align: bottom;
-  margin: 5px;
+  margin: 10px;
+  float: left;
 }
 
 html[dir=rtl] #tree-container {
@@ -222,8 +221,19 @@ html[dir=rtl] #list {
 }
 
 .header > div {
-  display: inline-block;
-  margin: 5px;
+  float: left;
+  margin: 32px 2px;
+  margin-bottom: 0;
+}
+
+.header form {
+  margin: 0;
+}
+
+html[dir=rtl] .logo,
+html[dir=rtl] .header > div,
+html[dir=rtl] .header form {
+  float: right;
 }
 
 #drop-overlay {
@@ -256,11 +266,11 @@ html[dir=rtl] #list {
   font: inherit;
   padding: 0;
   background: -webkit-canvas(drop-down-arrow) 100% 50% no-repeat;
-  padding-right: 9px;
+  padding-right: 11px;
 }
 
 html[dir=rtl] .toolbar button {
   background-position: 0% 50%;
   padding-right: 0;
-  padding-left: 9px;
+  padding-left: 11px;
 }
