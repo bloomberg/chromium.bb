@@ -367,9 +367,7 @@ def __FilterOutTestFileBaseGen(files):
   for f in files:
     yield os.path.basename(f.path).replace('.val', "")
 
-# TODO(ilewis): re-enable after kschimpf fixes a problem with iterators
-# getting freed too early.
-if env['TARGET_SUBARCH'] == '64 (disabled by ilewis)':
+if env['TARGET_SUBARCH'] == '64':
   golden_files = Glob(TESTDATA_DIR + '*.val')
   for vtest in __FilterOutTestFileBaseGen(golden_files):
     TEST_PREFIX = 'ncval_test_' + vtest

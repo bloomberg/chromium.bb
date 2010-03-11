@@ -144,6 +144,11 @@ typedef void (*NaClValidatorPrintStats)(FILE* file,
 typedef void (*NaClValidatorMemoryDestroy)(NaClValidatorState* state,
                                            void* local_memory);
 
+/* Clear the set of registered validator functions. Allows multiple runs
+ * of the validator, with different validator functions for each run.
+ */
+void NaClRegisterValidatorClear();
+
 /* Registers a validator function to be called during validation.
  * Parameters are:
  *   validator - The validator function to register.

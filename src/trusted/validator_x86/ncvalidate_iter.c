@@ -171,6 +171,10 @@ static NaClValidatorDefinition validators[NACL_MAX_NCVALIDATORS];
 /* Defines the current number of registered validators. */
 static int nacl_g_num_validators = 0;
 
+void NaClRegisterValidatorClear() {
+  nacl_g_num_validators = 0;
+}
+
 void NaClRegisterValidator(NaClValidator validator,
                            NaClValidatorPostValidate post_validate,
                            NaClValidatorPrintStats print_stats,

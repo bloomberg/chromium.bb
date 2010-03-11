@@ -74,27 +74,19 @@ static void AnalyzeSegments(ncfile* ncf, NaClValidatorState* state) {
 /* Define if we should process segments (rather than sections). */
 static Bool FLAGS_analyze_segments = FALSE;
 
-/* Define if we should print all validator error messages (rather
- * than quit after the first error).
- */
-static Bool FLAGS_quit_on_error = FALSE;
-
-/* Define the value for the base register. */
-static NaClOpKind base_register =
-    (64 == NACL_TARGET_SUBARCH ? RegR15 : RegUnknown);
-
 /* Analyze each code segment in the given elf file, stored in the
  * file with the given path fname.
  */
-static void AnalyzeCodeSegments(ncfile *ncf, const char *fname) {
+static Bool AnalyzeCodeSegments(ncfile *ncf, const char *fname) {
   /* TODO(karl) convert these to be PcAddress and MemorySize */
   NaClPcAddress vbase, vlimit;
   NaClValidatorState *vstate;
+  Bool return_value = TRUE;
 
   GetVBaseAndLimit(ncf, &vbase, &vlimit);
   vstate = NaClValidatorStateCreate(vbase, vlimit - vbase,
-                                    ncf->ncalign, base_register,
-                                    FLAGS_quit_on_error,
+                                    ncf->ncalign, nacl_base_register,
+                                    NACL_FLAGS_quit_on_error,
                                     stderr);
   if (vstate == NULL) {
     NaClValidatorMessage(LOG_FATAL, vstate, "Unable to create validator state");
@@ -108,15 +100,14 @@ static void AnalyzeCodeSegments(ncfile *ncf, const char *fname) {
   if (NaClValidatesOk(vstate)) {
     NaClValidatorMessage(LOG_INFO, vstate, "***module %s is safe***\n", fname);
   } else {
+    return_value = FALSE;
     NaClValidatorMessage(LOG_INFO, vstate,
                          "***MODULE %s IS UNSAFE***\n", fname);
   }
   NaClValidatorMessage(LOG_INFO, vstate, "Validated %s\n", fname);
   NaClValidatorStateDestroy(vstate);
+  return return_value;
 }
-
-/* Generates NaClErrorMapping for error level suffix. */
-#define NaClError(s) { #s , LOG_## s}
 
 /* Recognizes flags in argv, processes them, and then removes them.
  * Returns the updated value for argc.
@@ -124,37 +115,12 @@ static void AnalyzeCodeSegments(ncfile *ncf, const char *fname) {
 static int GrokFlags(int argc, const char* argv[]) {
   int i;
   int new_argc;
-  char* error_level = NULL;
+  /* char* error_level = NULL; */
   if (argc == 0) return 0;
   new_argc = 1;
   for (i = 1; i < argc; ++i) {
     const char* arg = argv[i];
     if (GrokBoolFlag("-segments", arg, &FLAGS_analyze_segments)) {
-      continue;
-    } else if (GrokCstringFlag("-error_level", arg, &error_level)) {
-      int i;
-      static struct {
-        const char* name;
-        int level;
-      } map[] = {
-        NaClError(INFO),
-        NaClError(WARNING),
-        NaClError(ERROR),
-        NaClError(FATAL)
-      };
-      for (i = 0; i < NACL_ARRAY_SIZE(map); ++i) {
-        if (0 == strcmp(error_level, map[i].name)) {
-          NaClLogSetVerbosity(map[i].level);
-          break;
-        }
-      }
-      if (i == NACL_ARRAY_SIZE(map)) {
-        NaClValidatorMessage(LOG_FATAL, NULL,
-                           "-error_level=%s not defined!\n", error_level);
-      }
-    } else if (GrokBoolFlag("--quit-on-error", arg, &FLAGS_quit_on_error) ||
-               GrokBoolFlag("--identity_mask", arg,
-                            &NACL_FLAGS_identity_mask)) {
       continue;
     } else {
       argv[new_argc++] = argv[i];
@@ -193,15 +159,10 @@ static ncfile* ValidateLoadFile(const char* fname) {
 }
 
 /* Load the elf file and return the loaded elf file. */
-static ValidateData* ValidateLoad(int argc, const char* argv[]) {
-  ValidateData* data;
+static Bool ValidateLoad(int argc, const char* argv[], ValidateData* data) {
   argc = GrokFlags(argc, argv);
   if (argc != 2) {
     NaClValidatorMessage(LOG_FATAL, NULL, "expected: %s file\n", argv[0]);
-  }
-  data = (ValidateData*) malloc(sizeof(ValidateData));
-  if (NULL == data) {
-    NaClValidatorMessage(LOG_FATAL, NULL, "Unsufficient memory to run");
   }
   data->fname = argv[1];
 
@@ -215,19 +176,21 @@ static ValidateData* ValidateLoad(int argc, const char* argv[]) {
     NaClValidatorMessage(LOG_FATAL, NULL, "nc_loadfile(%s): %s\n",
                          data->fname, strerror(errno));
   }
-  return data;
+  return NULL == data->ncf;
 }
 
 /* Analyze the code segments of the elf file. */
-static int ValidateAnalyze(ValidateData* data) {
-  AnalyzeCodeSegments(data->ncf, data->fname);
+static Bool ValidateAnalyze(ValidateData* data) {
+  Bool return_value = AnalyzeCodeSegments(data->ncf, data->fname);
   nc_freefile(data->ncf);
   free(data);
-  return 0;
+  return return_value;
 }
 
 int main(int argc, const char *argv[]) {
-  return NaClRunValidator(argc, argv,
+  ValidateData data;
+  return NaClRunValidator(argc, argv, &data,
                           (NaClValidateLoad) ValidateLoad,
-                          (NaClValidateAnalyze) ValidateAnalyze);
+                          (NaClValidateAnalyze) ValidateAnalyze)
+      ? 0 : 1;
 }
