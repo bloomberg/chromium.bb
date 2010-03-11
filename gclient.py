@@ -847,11 +847,11 @@ class GClient(object):
     new_gclient = ""
     # Dictionary of { path : SCM url } to ensure no duplicate solutions
     solution_names = {}
+    entries = {}
+    entries_deps_content = {}
     # Run on the base solutions first.
     for solution in solutions:
       # Dictionary of { path : SCM url } to describe the gclient checkout
-      entries = {}
-      entries_deps_content = {}
       name = solution["name"]
       if name in solution_names:
         raise gclient_utils.Error("solution %s specified more than once" % name)
@@ -871,48 +871,48 @@ class GClient(object):
         deps_content = ""
       entries_deps_content[name] = deps_content
 
-      # Process the dependencies next (sort alphanumerically to ensure that
-      # containing directories get populated first and for readability)
-      deps = self._ParseAllDeps(entries, entries_deps_content)
-      deps_to_process = deps.keys()
-      deps_to_process.sort()
+    # Process the dependencies next (sort alphanumerically to ensure that
+    # containing directories get populated first and for readability)
+    deps = self._ParseAllDeps(entries, entries_deps_content)
+    deps_to_process = deps.keys()
+    deps_to_process.sort()
 
-      # First pass for direct dependencies.
-      for d in deps_to_process:
-        if type(deps[d]) == str:
-          (url, rev) = GetURLAndRev(d, deps[d])
-          entries[d] = "%s@%s" % (url, rev)
+    # First pass for direct dependencies.
+    for d in deps_to_process:
+      if type(deps[d]) == str:
+        (url, rev) = GetURLAndRev(d, deps[d])
+        entries[d] = "%s@%s" % (url, rev)
 
-      # Second pass for inherited deps (via the From keyword)
-      for d in deps_to_process:
-        if type(deps[d]) != str:
-          deps_parent_url = entries[deps[d].module_name]
-          if deps_parent_url.find("@") < 0:
-            raise gclient_utils.Error("From %s missing revisioned url" %
-                                          deps[d].module_name)
-          content =  gclient_utils.FileRead(os.path.join(
-                                              self._root_dir,
-                                              deps[d].module_name,
-                                              self._options.deps_file))
-          sub_deps = self._ParseSolutionDeps(deps[d].module_name, content, {})
-          (url, rev) = GetURLAndRev(d, sub_deps[d])
-          entries[d] = "%s@%s" % (url, rev)
+    # Second pass for inherited deps (via the From keyword)
+    for d in deps_to_process:
+      if type(deps[d]) != str:
+        deps_parent_url = entries[deps[d].module_name]
+        if deps_parent_url.find("@") < 0:
+          raise gclient_utils.Error("From %s missing revisioned url" %
+                                        deps[d].module_name)
+        content =  gclient_utils.FileRead(os.path.join(
+                                            self._root_dir,
+                                            deps[d].module_name,
+                                            self._options.deps_file))
+        sub_deps = self._ParseSolutionDeps(deps[d].module_name, content, {})
+        (url, rev) = GetURLAndRev(d, sub_deps[d])
+        entries[d] = "%s@%s" % (url, rev)
 
-      # Build the snapshot configuration string
-      if self._options.snapshot:
-        url = entries.pop(name)
-        custom_deps = ",\n      ".join(["\"%s\": \"%s\"" % (x, entries[x])
-                                        for x in sorted(entries.keys())])
+    # Build the snapshot configuration string
+    if self._options.snapshot:
+      url = entries.pop(name)
+      custom_deps = ",\n      ".join(["\"%s\": \"%s\"" % (x, entries[x])
+                                      for x in sorted(entries.keys())])
 
-        new_gclient += DEFAULT_SNAPSHOT_SOLUTION_TEXT % {
-                       'solution_name': name,
-                       'solution_url': url,
-                       'safesync_url' : "",
-                       'solution_deps': custom_deps,
-                       }
-      else:
-        print(";\n".join(["%s: %s" % (x, entries[x])
-                         for x in sorted(entries.keys())]))
+      new_gclient += DEFAULT_SNAPSHOT_SOLUTION_TEXT % {
+                     'solution_name': name,
+                     'solution_url': url,
+                     'safesync_url' : "",
+                     'solution_deps': custom_deps,
+                     }
+    else:
+      print(";\n".join(["%s: %s" % (x, entries[x])
+                       for x in sorted(entries.keys())]))
 
     # Print the snapshot configuration file
     if self._options.snapshot:
