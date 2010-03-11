@@ -16,6 +16,8 @@ import update_expectations_from_dashboard
 class UpdateExpectationsUnittest(unittest.TestCase):
     ###########################################################################
     # Tests
+    def setUp(self):
+       self._port = update_expectations_from_dashboard.get_port()
 
     def test_keeps_unmodified_lines(self):
         expectations = """// Ensure comments and newlines don't get stripped.
@@ -346,7 +348,7 @@ class UpdateExpectationsUnittest(unittest.TestCase):
 
     def update_expectations(self, expectations, updates, expected_results):
         results = update_expectations_from_dashboard.update_expectations(
-            expectations, updates)
+            self._port, expectations, updates)
         self.assertEqual(expected_results, results)
 
 if '__main__' == __name__:

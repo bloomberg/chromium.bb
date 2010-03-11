@@ -17,16 +17,39 @@ import logging
 import os
 import sys
 
-from layout_package import path_utils
-from layout_package import test_expectations
+#
+# Find the WebKit python directories and add them to the PYTHONPATH
+#
+try:
+    f = __file__
+except NameError:
+    f = sys.argv[0]
 
-sys.path.append(path_utils.path_from_base('third_party'))
+this_file = os.path.abspath(f)
+base_dir = this_file[0:this_file.find('webkit'+ os.sep + 'tools')]
+webkitpy_dir = os.path.join(base_dir, 'third_party', 'WebKit', 'WebKitTools',
+                            'Scripts', 'webkitpy')
+sys.path.append(os.path.join(webkitpy_dir, 'thirdparty'))
+sys.path.append(os.path.join(webkitpy_dir, 'layout_tests'))
+
+#
+# Now import the python packages we need from WebKit
+#
 import simplejson
 
+from layout_package import test_expectations
+import port
 
-def update_expectations(expectations, updates):
-    expectations = ExpectationsUpdater(None, None,
-        'WIN', False, False, expectations, True)
+def get_port():
+    class Options:
+        def __init__(self):
+            self.chromium = True
+
+    return port.get(None, Options())
+
+def update_expectations(port, expectations, updates):
+    expectations = ExpectationsUpdater(port, expectations, None, 'WIN',
+        False, False, True)
     return expectations.update_based_on_json(updates)
 
 
@@ -67,7 +90,7 @@ class ExpectationsUpdater(test_expectations.TestExpectationsFile):
         build_types = []
         other_options = []
         for option in options:
-            if option in self.PLATFORMS:
+            if option in self._port.test_platform_names():
                 platforms.append(option)
             elif option in self.BUILD_TYPES:
                 build_types.append(option)
@@ -80,7 +103,7 @@ class ExpectationsUpdater(test_expectations.TestExpectationsFile):
         if not len(platforms):
             # If there are no platforms specified, use the most generic version
             # of each platform name so we don't have to dedup them later.
-            platforms = self.BASE_PLATFORMS
+            platforms = self._port.test_base_platform_names()
 
         return (platforms, build_types, other_options)
 
@@ -430,7 +453,7 @@ class ExpectationsUpdater(test_expectations.TestExpectationsFile):
           platforms: List of lower-case platform names.
         """
         platforms.sort()
-        if platforms == list(self.BASE_PLATFORMS):
+        if platforms == list(self._port.test_base_platform_names()):
             return ""
         else:
             return " ".join(platforms)
@@ -465,13 +488,11 @@ def main():
 
     updates = simplejson.load(open(sys.argv[1]))
 
-    path_to_expectations = path_utils.get_absolute_path(
-        os.path.dirname(sys.argv[0]))
-    path_to_expectations = os.path.join(path_to_expectations,
-        "test_expectations.txt")
+    port_obj = get_port()
+    path_to_expectations = port_obj.path_to_expectations_file()
 
     old_expectations = open(path_to_expectations).read()
-    new_expectations = update_expectations(old_expectations, updates)
+    new_expectations = update_expectations(port_obj, old_expectations, updates)
     open(path_to_expectations, 'w').write(new_expectations)
 
 if '__main__' == __name__:
