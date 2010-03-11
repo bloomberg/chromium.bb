@@ -48,12 +48,13 @@ class AutofillModelAssociator
   // Clears all associations.
   virtual bool DisassociateModels();
 
-  // Returns whether the sync model has nodes other than the permanent tagged
-  // nodes.
-  virtual bool SyncModelHasUserCreatedNodes();
+  // The has_nodes out param is true if the sync model has nodes other
+  // than the permanent tagged nodes.
+  virtual bool SyncModelHasUserCreatedNodes(bool* has_nodes);
 
-  // Returns whether the autofill model has any user-defined autofills.
-  virtual bool ChromeModelHasUserCreatedNodes();
+  // The has_nodes out param is true if the autofill model has any
+  // user-defined autofill entries.
+  virtual bool ChromeModelHasUserCreatedNodes(bool* has_nodes);
 
   // Not implemented.
   virtual const AutofillKey* GetChromeNodeFromSyncId(int64 sync_id) {

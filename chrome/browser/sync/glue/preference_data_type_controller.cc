@@ -32,6 +32,7 @@ PreferenceDataTypeController::~PreferenceDataTypeController() {
 void PreferenceDataTypeController::Start(bool merge_allowed,
                                          StartCallback* start_callback) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(start_callback);
   unrecoverable_error_detected_ = false;
   if (state_ != NOT_RUNNING) {
     start_callback->Run(BUSY);
@@ -40,6 +41,7 @@ void PreferenceDataTypeController::Start(bool merge_allowed,
   }
 
   start_callback_.reset(start_callback);
+
   // No additional services need to be started before we can proceed
   // with model association.
   ProfileSyncFactory::SyncComponents sync_components =
@@ -48,36 +50,34 @@ void PreferenceDataTypeController::Start(bool merge_allowed,
   model_associator_.reset(sync_components.model_associator);
   change_processor_.reset(sync_components.change_processor);
 
-  bool needs_merge =  model_associator_->ChromeModelHasUserCreatedNodes();
-  if (unrecoverable_error_detected_) return;
-  needs_merge &= model_associator_->SyncModelHasUserCreatedNodes();
-  if (unrecoverable_error_detected_) return;
+  bool chrome_has_nodes = false;
+  if (!model_associator_->ChromeModelHasUserCreatedNodes(&chrome_has_nodes)) {
+    StartFailed(UNRECOVERABLE_ERROR);
+    return;
+  }
+  bool sync_has_nodes = false;
+  if (!model_associator_->SyncModelHasUserCreatedNodes(&sync_has_nodes)) {
+    StartFailed(UNRECOVERABLE_ERROR);
+    return;
+  }
 
-  if (needs_merge && !merge_allowed) {
-    model_associator_.reset();
-    change_processor_.reset();
-    FinishStart(NEEDS_MERGE);
+  if (chrome_has_nodes && sync_has_nodes && !merge_allowed) {
+    StartFailed(NEEDS_MERGE);
     return;
   }
 
   base::TimeTicks start_time = base::TimeTicks::Now();
-  bool first_run = !model_associator_->SyncModelHasUserCreatedNodes();
-  if (unrecoverable_error_detected_) return;
   bool merge_success = model_associator_->AssociateModels();
-  if (unrecoverable_error_detected_) return;
-
   UMA_HISTOGRAM_TIMES("Sync.PreferenceAssociationTime",
                       base::TimeTicks::Now() - start_time);
   if (!merge_success) {
-    model_associator_.reset();
-    change_processor_.reset();
-    FinishStart(ASSOCIATION_FAILED);
+    StartFailed(ASSOCIATION_FAILED);
     return;
   }
 
   sync_service_->ActivateDataType(this, change_processor_.get());
   state_ = RUNNING;
-  FinishStart(first_run ? OK_FIRST_RUN : OK);
+  FinishStart(!sync_has_nodes ? OK_FIRST_RUN : OK);
 }
 
 void PreferenceDataTypeController::Stop() {
@@ -99,11 +99,19 @@ void PreferenceDataTypeController::Stop() {
 }
 
 void PreferenceDataTypeController::OnUnrecoverableError() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   unrecoverable_error_detected_ = true;
   sync_service_->OnUnrecoverableError();
 }
 
 void PreferenceDataTypeController::FinishStart(StartResult result) {
+  start_callback_->Run(result);
+  start_callback_.reset();
+}
+
+void PreferenceDataTypeController::StartFailed(StartResult result) {
+  model_associator_.reset();
+  change_processor_.reset();
   start_callback_->Run(result);
   start_callback_.reset();
 }

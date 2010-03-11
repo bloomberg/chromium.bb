@@ -112,6 +112,9 @@ void DataTypeManagerImpl::TypeStartCallback(
     case DataTypeController::ASSOCIATION_FAILED:
       start_result = DataTypeManager::ASSOCIATION_FAILED;
       break;
+    case DataTypeController::UNRECOVERABLE_ERROR:
+      start_result = DataTypeManager::UNRECOVERABLE_ERROR;
+      break;
     default:
       NOTREACHED();
       break;

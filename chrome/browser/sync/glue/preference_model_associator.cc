@@ -125,10 +125,11 @@ bool PreferenceModelAssociator::DisassociateModels() {
   return true;
 }
 
-bool PreferenceModelAssociator::SyncModelHasUserCreatedNodes() {
+bool PreferenceModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
+  DCHECK(has_nodes);
+  *has_nodes = false;
   int64 preferences_sync_id;
   if (!GetSyncIdForTaggedNode(kPreferencesTag, &preferences_sync_id)) {
-    sync_service()->OnUnrecoverableError();
     LOG(ERROR) << "Server did not create the top-level preferences node. We "
                << "might be running against an out-of-date server.";
     return false;
@@ -138,18 +139,22 @@ bool PreferenceModelAssociator::SyncModelHasUserCreatedNodes() {
 
   sync_api::ReadNode preferences_node(&trans);
   if (!preferences_node.InitByIdLookup(preferences_sync_id)) {
-    sync_service()->OnUnrecoverableError();
     LOG(ERROR) << "Server did not create the top-level preferences node. We "
                << "might be running against an out-of-date server.";
+    return false;
   }
 
   // The sync model has user created nodes if the preferences folder has any
   // children.
-  return sync_api::kInvalidId != preferences_node.GetFirstChildId();
+  *has_nodes = sync_api::kInvalidId != preferences_node.GetFirstChildId();
+  return true;
 }
 
-bool PreferenceModelAssociator::ChromeModelHasUserCreatedNodes() {
+bool PreferenceModelAssociator::ChromeModelHasUserCreatedNodes(
+    bool* has_nodes) {
+  DCHECK(has_nodes);
   // Assume the preferences model always have user-created nodes.
+  *has_nodes = true;
   return true;
 }
 

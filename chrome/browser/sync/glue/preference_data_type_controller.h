@@ -56,6 +56,9 @@ class PreferenceDataTypeController : public DataTypeController {
   // Helper method to run the stashed start callback with a given result.
   void FinishStart(StartResult result);
 
+  // Cleans up state and calls callback when start fails.
+  void StartFailed(StartResult result);
+
   ProfileSyncFactory* profile_sync_factory_;
   ProfileSyncService* sync_service_;
 

@@ -29,7 +29,7 @@
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/test/sync/engine/test_id_factory.h"
-#include "chrome/test/testing_profile.h"
+#include "chrome/test/profile_mock.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using base::Time;
@@ -97,23 +97,18 @@ class TestingProfileSyncService : public ProfileSyncService {
 class WebDatabaseMock : public WebDatabase {
  public:
   MOCK_METHOD2(RemoveFormElement,
-               bool(const string16& name, const string16& value)); // NOLINT
+               bool(const string16& name, const string16& value));  // NOLINT
   MOCK_METHOD1(GetAllAutofillEntries,
-               bool(std::vector<AutofillEntry>* entries)); // NOLINT
+               bool(std::vector<AutofillEntry>* entries));  // NOLINT
   MOCK_METHOD3(GetAutofillTimestamps,
-               bool(const string16& name, // NOLINT
+               bool(const string16& name,  // NOLINT
                     const string16& value,
                     std::vector<base::Time>* timestamps));
   MOCK_METHOD1(UpdateAutofillEntries,
-               bool(const std::vector<AutofillEntry>& entries)); // NOLINT
+               bool(const std::vector<AutofillEntry>& entries));  // NOLINT
 };
 
-class ProfileMock : public TestingProfile {
- public:
-  MOCK_METHOD1(GetWebDataService, WebDataService*(ServiceAccessType access));
-};
-
-class DBThreadNotificationService :
+class DBThreadNotificationService :  // NOLINT
     public base::RefCountedThreadSafe<DBThreadNotificationService> {
  public:
   DBThreadNotificationService() : done_event_(false, false) {}
@@ -226,10 +221,7 @@ class ProfileSyncServiceAutofillTest : public testing::Test {
 
       // State changes once for the backend init and once for startup done.
       EXPECT_CALL(observer_, OnStateChanged()).
-          WillOnce(DoAll(
-              Invoke(this,
-                     &ProfileSyncServiceAutofillTest::CreateAutofillRoot),
-              InvokeTask(task))).
+          WillOnce(InvokeTask(task)).
           WillOnce(QuitUIMessageLoop());
       service_->RegisterDataTypeController(data_type_controller);
       service_->Initialize();
@@ -329,6 +321,7 @@ class ProfileSyncServiceAutofillTest : public testing::Test {
     return MakeAutofillEntry(name, value, timestamp, -1);
   }
 
+  friend class CreateAutofillRootTask;
   friend class AddAutofillEntriesTask;
 
   MessageLoopForUI message_loop_;
@@ -347,12 +340,53 @@ class ProfileSyncServiceAutofillTest : public testing::Test {
   TestIdFactory ids_;
 };
 
-// TODO(sync): Test unrecoverable error during MA.
+class CreateAutofillRootTask : public Task {
+ public:
+  explicit CreateAutofillRootTask(ProfileSyncServiceAutofillTest* test)
+      : test_(test) {
+  }
+
+  virtual void Run() {
+    test_->CreateAutofillRoot();
+  }
+
+ private:
+  ProfileSyncServiceAutofillTest* test_;
+};
+
+class AddAutofillEntriesTask : public Task {
+ public:
+  AddAutofillEntriesTask(ProfileSyncServiceAutofillTest* test,
+                         const std::vector<AutofillEntry>& entries)
+      : test_(test), entries_(entries) {
+  }
+
+  virtual void Run() {
+    test_->CreateAutofillRoot();
+    for (size_t i = 0; i < entries_.size(); ++i) {
+      test_->AddAutofillSyncNode(entries_[i]);
+    }
+  }
+
+ private:
+  ProfileSyncServiceAutofillTest* test_;
+  const std::vector<AutofillEntry>& entries_;
+};
+
+// TODO(skrul): Test abort startup.
+// TODO(skrul): Test error while processing changes.
+
+TEST_F(ProfileSyncServiceAutofillTest, FailModelAssociation) {
+  // Don't create the root autofill node so startup fails.
+  StartSyncService(NULL);
+  EXPECT_TRUE(service_->unrecoverable_error_detected());
+}
 
 TEST_F(ProfileSyncServiceAutofillTest, EmptyNativeEmptySync) {
   EXPECT_CALL(web_database_, GetAllAutofillEntries(_)).WillOnce(Return(true));
   SetIdleChangeProcessorExpectations();
-  StartSyncService(NULL);
+  CreateAutofillRootTask task(this);
+  StartSyncService(&task);
   std::vector<AutofillEntry> sync_entries;
   GetAutofillEntriesFromSyncDB(&sync_entries);
   EXPECT_EQ(0U, sync_entries.size());
@@ -364,7 +398,8 @@ TEST_F(ProfileSyncServiceAutofillTest, HasNativeEmptySync) {
   EXPECT_CALL(web_database_, GetAllAutofillEntries(_)).
       WillOnce(DoAll(SetArgumentPointee<0>(entries), Return(true)));
   SetIdleChangeProcessorExpectations();
-  StartSyncService(NULL);
+  CreateAutofillRootTask task(this);
+  StartSyncService(&task);
   std::vector<AutofillEntry> sync_entries;
   GetAutofillEntriesFromSyncDB(&sync_entries);
   ASSERT_EQ(1U, entries.size());
@@ -381,29 +416,12 @@ TEST_F(ProfileSyncServiceAutofillTest, HasNativeWithDuplicatesEmptySync) {
   EXPECT_CALL(web_database_, GetAllAutofillEntries(_)).
       WillOnce(DoAll(SetArgumentPointee<0>(entries), Return(true)));
   SetIdleChangeProcessorExpectations();
-  StartSyncService(NULL);
+  CreateAutofillRootTask task(this);
+  StartSyncService(&task);
   std::vector<AutofillEntry> sync_entries;
   GetAutofillEntriesFromSyncDB(&sync_entries);
   EXPECT_EQ(2U, sync_entries.size());
 }
-
-class AddAutofillEntriesTask : public Task {
- public:
-  AddAutofillEntriesTask(ProfileSyncServiceAutofillTest* test,
-                         const std::vector<AutofillEntry>& entries)
-      : test_(test), entries_(entries) {
-  }
-
-  virtual void Run() {
-    for (size_t i = 0; i < entries_.size(); ++i) {
-      test_->AddAutofillSyncNode(entries_[i]);
-    }
-  }
-
- private:
-  ProfileSyncServiceAutofillTest* test_;
-  const std::vector<AutofillEntry>& entries_;
-};
 
 TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSyncNoMerge) {
   AutofillEntry native_entry(MakeAutofillEntry("native", "entry", 1));

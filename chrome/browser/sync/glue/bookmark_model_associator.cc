@@ -213,22 +213,25 @@ void BookmarkModelAssociator::Disassociate(int64 sync_id) {
   dirty_associations_sync_ids_.erase(sync_id);
 }
 
-bool BookmarkModelAssociator::ChromeModelHasUserCreatedNodes() {
+bool BookmarkModelAssociator::ChromeModelHasUserCreatedNodes(bool* has_nodes) {
+  DCHECK(has_nodes);
   BookmarkModel* model = sync_service_->profile()->GetBookmarkModel();
   DCHECK(model->IsLoaded());
-  return model->GetBookmarkBarNode()->GetChildCount() > 0 ||
-         model->other_node()->GetChildCount() > 0;
+
+  *has_nodes =  model->GetBookmarkBarNode()->GetChildCount() > 0 ||
+      model->other_node()->GetChildCount() > 0;
+  return true;
 }
 
-bool BookmarkModelAssociator::SyncModelHasUserCreatedNodes() {
+bool BookmarkModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
+  DCHECK(has_nodes);
+  *has_nodes = false;
   int64 bookmark_bar_sync_id;
   if (!GetSyncIdForTaggedNode(kBookmarkBarTag, &bookmark_bar_sync_id)) {
-    error_handler_->OnUnrecoverableError();
     return false;
   }
   int64 other_bookmarks_sync_id;
   if (!GetSyncIdForTaggedNode(kOtherBookmarksTag, &other_bookmarks_sync_id)) {
-    error_handler_->OnUnrecoverableError();
     return false;
   }
 
@@ -237,20 +240,19 @@ bool BookmarkModelAssociator::SyncModelHasUserCreatedNodes() {
 
   sync_api::ReadNode bookmark_bar_node(&trans);
   if (!bookmark_bar_node.InitByIdLookup(bookmark_bar_sync_id)) {
-    error_handler_->OnUnrecoverableError();
     return false;
   }
 
   sync_api::ReadNode other_bookmarks_node(&trans);
   if (!other_bookmarks_node.InitByIdLookup(other_bookmarks_sync_id)) {
-    error_handler_->OnUnrecoverableError();
     return false;
   }
 
   // Sync model has user created nodes if either one of the permanent nodes
   // has children.
-  return bookmark_bar_node.GetFirstChildId() != sync_api::kInvalidId ||
-         other_bookmarks_node.GetFirstChildId() != sync_api::kInvalidId;
+  *has_nodes = bookmark_bar_node.GetFirstChildId() != sync_api::kInvalidId ||
+      other_bookmarks_node.GetFirstChildId() != sync_api::kInvalidId;
+  return true;
 }
 
 bool BookmarkModelAssociator::NodesMatch(const BookmarkNode* bookmark,

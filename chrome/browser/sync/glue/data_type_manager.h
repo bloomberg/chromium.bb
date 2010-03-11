@@ -27,8 +27,10 @@ class DataTypeManager {
     BUSY,               // Start() was called while start is already
                         // in progress.
     ASSOCIATION_FAILED, // An error occurred during model association.
-    ABORTED             // Start was aborted by calling Stop() before
+    ABORTED,            // Start was aborted by calling Stop() before
                         // all types were started.
+    UNRECOVERABLE_ERROR // A data type experienced an unrecoverable error
+                        // during startup.
   };
 
   typedef Callback1<StartResult>::Type StartCallback;

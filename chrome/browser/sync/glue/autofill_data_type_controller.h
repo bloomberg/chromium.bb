@@ -52,6 +52,7 @@ class AutofillDataTypeController : public DataTypeController,
   }
 
   virtual State state() {
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
     return state_;
   }
 
@@ -65,10 +66,16 @@ class AutofillDataTypeController : public DataTypeController,
 
  private:
   void StartImpl(bool merge_allowed);
-  void StartDone(DataTypeController::StartResult result);
-  void StartDoneImpl(DataTypeController::StartResult result);
+  void StartDone(StartResult result, State state);
+  void StartDoneImpl(StartResult result, State state);
   void StopImpl();
+  void StartFailed(StartResult result);
   void OnUnrecoverableErrorImpl();
+
+  void set_state(State state) {
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    state_ = state;
+  }
 
   ProfileSyncFactory* profile_sync_factory_;
   Profile* profile_;

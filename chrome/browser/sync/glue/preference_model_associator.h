@@ -49,10 +49,10 @@ class PreferenceModelAssociator
 
   // Returns whether the sync model has nodes other than the permanent tagged
   // nodes.
-  virtual bool SyncModelHasUserCreatedNodes();
+  virtual bool SyncModelHasUserCreatedNodes(bool* has_nodes);
 
   // Returns whether the preference model has any user-defined preferences.
-  virtual bool ChromeModelHasUserCreatedNodes();
+  virtual bool ChromeModelHasUserCreatedNodes(bool* has_nodes);
 
   // Not implemented.
   virtual const PrefService::Preference* GetChromeNodeFromSyncId(

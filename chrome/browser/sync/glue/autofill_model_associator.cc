@@ -146,10 +146,11 @@ bool AutofillModelAssociator::DisassociateModels() {
   return true;
 }
 
-bool AutofillModelAssociator::SyncModelHasUserCreatedNodes() {
+bool AutofillModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
+  DCHECK(has_nodes);
+  *has_nodes = false;
   int64 autofill_sync_id;
   if (!GetSyncIdForTaggedNode(kAutofillTag, &autofill_sync_id)) {
-    error_handler_->OnUnrecoverableError();
     LOG(ERROR) << "Server did not create the top-level autofill node. We "
                << "might be running against an out-of-date server.";
     return false;
@@ -159,7 +160,6 @@ bool AutofillModelAssociator::SyncModelHasUserCreatedNodes() {
 
   sync_api::ReadNode autofill_node(&trans);
   if (!autofill_node.InitByIdLookup(autofill_sync_id)) {
-    error_handler_->OnUnrecoverableError();
     LOG(ERROR) << "Server did not create the top-level autofill node. We "
                << "might be running against an out-of-date server.";
     return false;
@@ -167,11 +167,14 @@ bool AutofillModelAssociator::SyncModelHasUserCreatedNodes() {
 
   // The sync model has user created nodes if the autofill folder has any
   // children.
-  return sync_api::kInvalidId != autofill_node.GetFirstChildId();
+  *has_nodes = sync_api::kInvalidId != autofill_node.GetFirstChildId();
+  return true;
 }
 
-bool AutofillModelAssociator::ChromeModelHasUserCreatedNodes() {
+bool AutofillModelAssociator::ChromeModelHasUserCreatedNodes(bool* has_nodes) {
+  DCHECK(has_nodes);
   // Assume the autofill model always have user-created nodes.
+  *has_nodes = true;
   return true;
 }
 

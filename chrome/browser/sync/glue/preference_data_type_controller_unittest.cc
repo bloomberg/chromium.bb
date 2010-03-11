@@ -23,6 +23,7 @@ using testing::_;
 using testing::DoAll;
 using testing::Invoke;
 using testing::Return;
+using testing::SetArgumentPointee;
 
 class StartCallback {
  public:
@@ -51,10 +52,10 @@ class PreferenceDataTypeControllerTest : public testing::Test {
   }
 
   void SetAssociateExpectations() {
-    EXPECT_CALL(*model_associator_, ChromeModelHasUserCreatedNodes()).
-        WillRepeatedly(Return(false));
-    EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes()).
-        WillRepeatedly(Return(true));
+    EXPECT_CALL(*model_associator_, ChromeModelHasUserCreatedNodes(_)).
+        WillRepeatedly(DoAll(SetArgumentPointee<0>(false), Return(true)));
+    EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
+        WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
     EXPECT_CALL(*model_associator_, AssociateModels()).
         WillRepeatedly(Return(true));
   }
@@ -93,8 +94,8 @@ TEST_F(PreferenceDataTypeControllerTest, StartFirstRun) {
   SetStartExpectations();
   SetAssociateExpectations();
   SetActivateExpectations();
-  EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes()).
-      WillRepeatedly(Return(false));
+  EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
+      WillRepeatedly(DoAll(SetArgumentPointee<0>(false), Return(true)));
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK_FIRST_RUN));
   preference_dtc_->Start(false,
                          NewCallback(&start_callback_, &StartCallback::Run));
@@ -103,11 +104,10 @@ TEST_F(PreferenceDataTypeControllerTest, StartFirstRun) {
 TEST_F(PreferenceDataTypeControllerTest, StartNeedsMerge) {
   SetStartExpectations();
   SetAssociateExpectations();
-  EXPECT_CALL(*model_associator_, ChromeModelHasUserCreatedNodes()).
-      WillRepeatedly(Return(true));
-  EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes()).
-      WillRepeatedly(Return(true));
-
+  EXPECT_CALL(*model_associator_, ChromeModelHasUserCreatedNodes(_)).
+      WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
+  EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
+      WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
   EXPECT_CALL(start_callback_, Run(DataTypeController::NEEDS_MERGE));
   preference_dtc_->Start(false,
                          NewCallback(&start_callback_, &StartCallback::Run));
@@ -117,10 +117,10 @@ TEST_F(PreferenceDataTypeControllerTest, StartMergeAllowed) {
   SetStartExpectations();
   SetAssociateExpectations();
   SetActivateExpectations();
-  EXPECT_CALL(*model_associator_, ChromeModelHasUserCreatedNodes()).
-      WillRepeatedly(Return(true));
-  EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes()).
-      WillRepeatedly(Return(true));
+  EXPECT_CALL(*model_associator_, ChromeModelHasUserCreatedNodes(_)).
+      WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
+  EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
+      WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
 
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK));
   preference_dtc_->Start(true,
@@ -143,20 +143,10 @@ TEST_F(PreferenceDataTypeControllerTest,
        StartAssociationTriggersUnrecoverableError) {
   SetStartExpectations();
   // Set up association to fail with an unrecoverable error.
-  EXPECT_CALL(*model_associator_, ChromeModelHasUserCreatedNodes()).
-      WillOnce(Return(false));
-  EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes()).
-      WillOnce(DoAll(Invoke(
-          preference_dtc_.get(),
-          &PreferenceDataTypeController::OnUnrecoverableError),
-                     Return(false)));
-  EXPECT_CALL(service_, OnUnrecoverableError()).
-      WillOnce(Invoke(preference_dtc_.get(),
-                      &PreferenceDataTypeController::Stop));
-  EXPECT_CALL(service_, DeactivateDataType(preference_dtc_.get(),
-                                           change_processor_));
-  EXPECT_CALL(*model_associator_, DisassociateModels());
-
+  EXPECT_CALL(*model_associator_, ChromeModelHasUserCreatedNodes(_)).
+      WillRepeatedly(DoAll(SetArgumentPointee<0>(false), Return(true)));
+  EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
+      WillRepeatedly(DoAll(SetArgumentPointee<0>(false), Return(false)));
   EXPECT_CALL(start_callback_, Run(DataTypeController::UNRECOVERABLE_ERROR));
   preference_dtc_->Start(true,
                          NewCallback(&start_callback_, &StartCallback::Run));
