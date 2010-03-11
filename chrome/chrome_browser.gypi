@@ -411,8 +411,6 @@
         'browser/chromeos/status/language_menu_button.h',
         'browser/chromeos/status/network_menu_button.cc',
         'browser/chromeos/status/network_menu_button.h',
-        'browser/chromeos/status/password_dialog_view.cc',
-        'browser/chromeos/status/password_dialog_view.h',
         'browser/chromeos/status/power_menu_button.cc',
         'browser/chromeos/status/power_menu_button.h',
         'browser/chromeos/status/status_area_button.cc',
