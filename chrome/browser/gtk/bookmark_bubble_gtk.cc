@@ -296,7 +296,8 @@ void BookmarkBubbleGtk::OnFolderChanged(GtkWidget* widget) {
   }
 }
 
-void BookmarkBubbleGtk::OnFolderPopupShown(GtkWidget* widget) {
+void BookmarkBubbleGtk::OnFolderPopupShown(GtkWidget* widget,
+                                           GParamSpec* property) {
   // GtkComboBox grabs the keyboard and pointer when it displays its popup,
   // which steals the grabs that InfoBubbleGtk had installed.  When the popup is
   // hidden, we notify InfoBubbleGtk so it can try to reacquire the grabs
