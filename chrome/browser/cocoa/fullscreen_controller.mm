@@ -66,6 +66,7 @@ const CGFloat kFloatingBarVerticalOffset = 22;
   CGFloat effectiveDuration = fabs(fullDuration * (fromFraction - toFraction));
 
   if ((self = [super gtm_initWithDuration:effectiveDuration
+                                eventMask:NSLeftMouseDownMask
                            animationCurve:animationCurve])) {
     startFraction_ = fromFraction;
     endFraction_ = toFraction;

@@ -166,7 +166,8 @@ private:
     NSPoint stop = NSMakePoint(0, imageHeight);
     [positionAnimation setFromValue:[NSValue valueWithPoint:start]];
     [positionAnimation setToValue:[NSValue valueWithPoint:stop]];
-    [positionAnimation gtm_setDuration:0.6];
+    [positionAnimation gtm_setDuration:0.6
+                             eventMask:NSLeftMouseDownMask];
     [positionAnimation setTimingFunction:mediaFunction];
 
     // Opacity animation.
@@ -174,7 +175,8 @@ private:
         [CABasicAnimation animationWithKeyPath:@"opacity"];
     [opacityAnimation setFromValue:[NSNumber numberWithFloat:1.0]];
     [opacityAnimation setToValue:[NSNumber numberWithFloat:0.4]];
-    [opacityAnimation gtm_setDuration:0.6];
+    [opacityAnimation gtm_setDuration:0.6
+                            eventMask:NSLeftMouseDownMask];
     [opacityAnimation setTimingFunction:mediaFunction];
 
     // Group the animations together.
@@ -186,7 +188,8 @@ private:
     // Set self as delegate so self receives -animationDidStop:finished:;
     [animationGroup setDelegate:self];
     [animationGroup setTimingFunction:mediaFunction];
-    [animationGroup gtm_setDuration:0.6];
+    [animationGroup gtm_setDuration:0.6
+                          eventMask:NSLeftMouseDownMask];
     [layer addAnimation:animationGroup forKey:@"downloadOpacityAndPosition"];
 
     observer_.reset(new DownloadAnimationTabObserver(self, tabContents));

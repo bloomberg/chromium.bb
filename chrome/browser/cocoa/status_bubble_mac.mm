@@ -431,7 +431,8 @@ void StatusBubbleMac::Fade(bool show) {
 
   // This will cancel an in-progress transition and replace it with this fade.
   [NSAnimationContext beginGrouping];
-  [[NSAnimationContext currentContext] gtm_setDuration:duration];
+  [[NSAnimationContext currentContext] gtm_setDuration:duration
+                                             eventMask:NSLeftMouseDownMask];
   [[window_ animator] setAlphaValue:opacity];
   [NSAnimationContext endGrouping];
 }

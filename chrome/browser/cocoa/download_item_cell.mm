@@ -683,6 +683,7 @@ NSGradient* BackgroundTheme::GetNSGradient(int id) const {
                       duration:(NSTimeInterval)duration
                 animationCurve:(NSAnimationCurve)animationCurve {
   if ((self = [super gtm_initWithDuration:duration
+                                eventMask:NSLeftMouseDownMask
                            animationCurve:animationCurve])) {
     cell_ = cell;
     [self setAnimationBlockingMode:NSAnimationNonblocking];

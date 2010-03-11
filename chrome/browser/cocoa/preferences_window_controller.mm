@@ -574,7 +574,8 @@ void PersonalDataManagerObserver::ShowAutoFillDialog(
     [animation_ setDelegate:self];
     // The default duration is 0.5s, which actually feels slow in here, so speed
     // it up a bit.
-    [animation_ gtm_setDuration:0.2];
+    [animation_ gtm_setDuration:0.2
+                      eventMask:NSLeftMouseDownMask];
     [animation_ setAnimationBlockingMode:NSAnimationNonblocking];
 
     // TODO(akalin): handle incognito profiles?  The windows version of this

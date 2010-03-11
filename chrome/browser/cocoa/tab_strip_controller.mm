@@ -86,7 +86,8 @@ class ScopedNSAnimationContextGroup {
 
   void SetCurrentContextDuration(NSTimeInterval duration) {
     if (animate_) {
-      [[NSAnimationContext currentContext] gtm_setDuration:duration];
+      [[NSAnimationContext currentContext] gtm_setDuration:duration
+                                                 eventMask:NSLeftMouseDownMask];
     }
   }
 

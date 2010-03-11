@@ -29,6 +29,7 @@
        finalHeight:(CGFloat)height
           duration:(NSTimeInterval)duration {
   if ((self = [super gtm_initWithDuration:duration
+                                eventMask:NSLeftMouseDownMask
                            animationCurve:NSAnimationEaseIn])) {
     view_ = view;
     startHeight_ = [view_ height];

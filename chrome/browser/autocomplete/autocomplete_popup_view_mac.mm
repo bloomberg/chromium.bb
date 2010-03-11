@@ -416,7 +416,8 @@ void AutocompletePopupViewMac::UpdatePopupAppearance() {
       r.size.width == oldFrame.size.width) {
     [NSAnimationContext beginGrouping];
     [[NSAnimationContext currentContext]
-        gtm_setDuration:kShrinkAnimationDuration];
+        gtm_setDuration:kShrinkAnimationDuration
+              eventMask:NSLeftMouseDownMask];
     [[popup_ animator] setFrame:r display:YES];
     [NSAnimationContext endGrouping];
   } else {
