@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -183,7 +183,14 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, Title) {
   EXPECT_EQ(WideToUTF16(test_title), tab_title);
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserTest, JavascriptAlertActivatesTab) {
+#if defined(OS_MACOSX)
+// Test is crashing on Mac, see http://crbug.com/29424.
+#define MAYBE_JavascriptAlertActivatesTab DISABLED_JavascriptAlertActivatesTab
+#else
+#define MAYBE_JavascriptAlertActivatesTab JavascriptAlertActivatesTab
+#endif
+
+IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_JavascriptAlertActivatesTab) {
   GURL url(ui_test_utils::GetTestUrl(L".", L"title1.html"));
   ui_test_utils::NavigateToURL(browser(), url);
   browser()->AddTabWithURL(url, GURL(), PageTransition::TYPED,
