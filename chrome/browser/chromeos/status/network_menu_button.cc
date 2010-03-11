@@ -474,25 +474,25 @@ void NetworkMenuButton::InitMenuItems() {
 //      l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_OFFLINE_MODE),
 //      SkBitmap(), WifiNetwork(), CellularNetwork(), FLAG_TOGGLE_OFFLINE));
 
-  // Turn Wifi Off.
-  label = cros->wifi_enabled() ?
-      l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_DEVICE_DISABLE,
-          l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_WIFI)) :
-      l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ENABLE,
-          l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_WIFI));
-  menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
-      SkBitmap(), WifiNetwork(), CellularNetwork(), FLAG_TOGGLE_WIFI));
-
-  // Turn Cellular Off.
-  label = cros->cellular_enabled() ?
-      l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_DEVICE_DISABLE,
-          l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_CELLULAR)) :
-      l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ENABLE,
-          l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_CELLULAR));
-  menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
-      SkBitmap(), WifiNetwork(), CellularNetwork(), FLAG_TOGGLE_CELLULAR));
-
   if (host_->ShouldOpenButtonOptions(this)) {
+    // Turn Wifi Off.
+    label = cros->wifi_enabled() ?
+        l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_DEVICE_DISABLE,
+            l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_WIFI)) :
+        l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ENABLE,
+            l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_WIFI));
+    menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
+        SkBitmap(), WifiNetwork(), CellularNetwork(), FLAG_TOGGLE_WIFI));
+
+    // Turn Cellular Off.
+    label = cros->cellular_enabled() ?
+        l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_DEVICE_DISABLE,
+            l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_CELLULAR)) :
+        l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ENABLE,
+            l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_CELLULAR));
+    menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
+        SkBitmap(), WifiNetwork(), CellularNetwork(), FLAG_TOGGLE_CELLULAR));
+
     // Separator.
     menu_items_.push_back(MenuItem());
 
