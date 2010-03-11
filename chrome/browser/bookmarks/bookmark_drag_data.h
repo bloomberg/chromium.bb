@@ -22,6 +22,9 @@ class OSExchangeData;
 class Pickle;
 class Profile;
 
+// TODO(mrossetti): Rename BookmarkDragData to BookmarkNodeData, update comment.
+// See: http://crbug.com/37891
+
 // BookmarkDragData is used to represent the following:
 //
 // . A single URL.

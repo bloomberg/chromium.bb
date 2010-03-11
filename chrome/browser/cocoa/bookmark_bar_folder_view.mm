@@ -158,7 +158,11 @@
   if (data && [info draggingSource]) {
     BookmarkButton* button = nil;
     [data getBytes:&button length:sizeof(button)];
-    doDrag = [[self controller] dragButton:button to:[info draggingLocation]];
+    BOOL copy =
+      [info draggingSourceOperationMask] & NSDragOperationMove ? NO : YES;
+    doDrag = [[self controller] dragButton:button
+                                        to:[info draggingLocation]
+                                      copy:copy];
   }
   return doDrag;
 }

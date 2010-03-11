@@ -207,6 +207,33 @@ void BookmarkModel::Move(const BookmarkNode* node,
                                       new_parent, index));
 }
 
+void BookmarkModel::Copy(const BookmarkNode* node,
+                         const BookmarkNode* new_parent,
+                         int index) {
+  if (!loaded_ || !node || !IsValidIndex(new_parent, index, true) ||
+      is_root(new_parent) || is_permanent_node(node)) {
+    NOTREACHED();
+    return;
+  }
+
+  if (new_parent->HasAncestor(node)) {
+    // Can't make an ancestor of the node be a child of the node.
+    NOTREACHED();
+    return;
+  }
+
+  SetDateGroupModified(new_parent, Time::Now());
+  BookmarkDragData drag_data_(node);
+  std::vector<BookmarkDragData::Element> elements(drag_data_.elements);
+  bookmark_utils::CloneDragData(this, elements, new_parent, index);
+
+  if (store_.get())
+    store_->ScheduleSave();
+
+  FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
+                    BookmarkNodeAdded(this, new_parent, index));
+}
+
 const SkBitmap& BookmarkModel::GetFavIcon(const BookmarkNode* node) {
   DCHECK(node);
   if (!node->is_favicon_loaded()) {

@@ -65,7 +65,7 @@ const CGFloat kFakeIndicatorPos = 7.0;
 }
 
 // Fake a controller for callback ponging
-- (BOOL)dragButton:(BookmarkButton*)button to:(NSPoint)point {
+- (BOOL)dragButton:(BookmarkButton*)button to:(NSPoint)point copy:(BOOL)copy {
   pong_ = YES;
   return YES;
 }

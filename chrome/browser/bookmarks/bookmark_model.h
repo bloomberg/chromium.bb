@@ -222,6 +222,11 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
             const BookmarkNode* new_parent,
             int index);
 
+  // Duplicates a bookmark node and inserts it at a new location.
+  void Copy(const BookmarkNode* node,
+            const BookmarkNode* new_parent,
+            int index);
+
   // Returns the favicon for |node|. If the favicon has not yet been
   // loaded it is loaded and the observer of the model notified when done.
   const SkBitmap& GetFavIcon(const BookmarkNode* node);

@@ -901,21 +901,57 @@ TEST_F(BookmarkBarControllerTest, TestDragButton) {
   EXPECT_EQ([[bar_ buttons] count], arraysize(titles));
   EXPECT_TRUE([[[[bar_ buttons] objectAtIndex:0] title] isEqual:@"a"]);
 
-  [bar_ dragButton:[[bar_ buttons] objectAtIndex:2] to:NSMakePoint(0, 0)];
+  [bar_ dragButton:[[bar_ buttons] objectAtIndex:2]
+                to:NSMakePoint(0, 0)
+              copy:NO];
   EXPECT_TRUE([[[[bar_ buttons] objectAtIndex:0] title] isEqual:@"c"]);
+  // Make sure a 'copy' did not happen.
+  EXPECT_EQ([[bar_ buttons] count], arraysize(titles));
 
-  [bar_ dragButton:[[bar_ buttons] objectAtIndex:1] to:NSMakePoint(1000, 0)];
+  [bar_ dragButton:[[bar_ buttons] objectAtIndex:1]
+                to:NSMakePoint(1000, 0)
+              copy:NO];
   EXPECT_TRUE([[[[bar_ buttons] objectAtIndex:0] title] isEqual:@"c"]);
   EXPECT_TRUE([[[[bar_ buttons] objectAtIndex:1] title] isEqual:@"b"]);
   EXPECT_TRUE([[[[bar_ buttons] objectAtIndex:2] title] isEqual:@"a"]);
+  EXPECT_EQ([[bar_ buttons] count], arraysize(titles));
 
   // Finally, a drop of the 1st between the next 2
   CGFloat x = NSMinX([[[bar_ buttons] objectAtIndex:2] frame]);
   x += [[bar_ view] frame].origin.x;
-  [bar_ dragButton:[[bar_ buttons] objectAtIndex:0] to:NSMakePoint(x, 0)];
+  [bar_ dragButton:[[bar_ buttons] objectAtIndex:0]
+                to:NSMakePoint(x, 0)
+              copy:NO];
   EXPECT_TRUE([[[[bar_ buttons] objectAtIndex:0] title] isEqual:@"b"]);
   EXPECT_TRUE([[[[bar_ buttons] objectAtIndex:1] title] isEqual:@"c"]);
   EXPECT_TRUE([[[[bar_ buttons] objectAtIndex:2] title] isEqual:@"a"]);
+  EXPECT_EQ([[bar_ buttons] count], arraysize(titles));
+}
+
+TEST_F(BookmarkBarControllerTest, TestCopyButton) {
+  BookmarkModel* model = helper_.profile()->GetBookmarkModel();
+
+  GURL gurls[] = { GURL("http://www.google.com/a"),
+                   GURL("http://www.google.com/b"),
+                   GURL("http://www.google.com/c") };
+  std::wstring titles[] = { L"a", L"b", L"c" };
+  for (unsigned i = 0; i < arraysize(titles); i++) {
+    model->SetURLStarred(gurls[i], titles[i], true);
+  }
+  EXPECT_EQ([[bar_ buttons] count], arraysize(titles));
+  EXPECT_TRUE([[[[bar_ buttons] objectAtIndex:0] title] isEqual:@"a"]);
+
+  // Drag 'a' between 'b' and 'c'.
+  CGFloat x = NSMinX([[[bar_ buttons] objectAtIndex:2] frame]);
+  x += [[bar_ view] frame].origin.x;
+  [bar_ dragButton:[[bar_ buttons] objectAtIndex:0]
+                to:NSMakePoint(x, 0)
+              copy:YES];
+  EXPECT_TRUE([[[[bar_ buttons] objectAtIndex:0] title] isEqual:@"a"]);
+  EXPECT_TRUE([[[[bar_ buttons] objectAtIndex:1] title] isEqual:@"b"]);
+  EXPECT_TRUE([[[[bar_ buttons] objectAtIndex:2] title] isEqual:@"a"]);
+  EXPECT_TRUE([[[[bar_ buttons] objectAtIndex:3] title] isEqual:@"c"]);
+  EXPECT_EQ([[bar_ buttons] count], 4U);
 }
 
 // Fake a theme with colored text.  Apply it and make sure bookmark

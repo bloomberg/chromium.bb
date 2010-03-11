@@ -55,8 +55,13 @@ class ThemeProvider;
 // Perform the actual DnD of a bookmark button.
 
 // |point| is in the base coordinate system of the destination window;
-// |it comes from an id<NSDraggingInfo>.
-- (BOOL)dragButton:(BookmarkButton*)sourceButton to:(NSPoint)point;
+// |it comes from an id<NSDraggingInfo>. |copy| is YES if a copy is to be
+// made and inserted into the new location while leaving the bookmark in
+// the old location, otherwise move the bookmark by removing from its old
+// location and inserting into the new location.
+- (BOOL)dragButton:(BookmarkButton *)sourceButton
+                to:(NSPoint)point
+              copy:(BOOL)copy;
 
 // Return YES if we should show the drop indicator, else NO.  In some
 // cases (e.g. hover open) we don't want to show the drop indicator.

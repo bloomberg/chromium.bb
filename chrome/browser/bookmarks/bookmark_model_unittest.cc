@@ -36,6 +36,24 @@ void SwapDateAdded(BookmarkNode* n1, BookmarkNode* n2) {
   n2->set_date_added(tmp);
 }
 
+// Helper function used to verify node arrangements.
+std::wstring ModelStringFromNode(const BookmarkNode* node) {
+  // Since the children of the node are not available as a vector,
+  // we'll just have to do it the hard way.
+  int childCount = node->GetChildCount();
+  std::wstring childString;
+  for (int i = 0; i < childCount; ++i) {
+    const BookmarkNode* child = node->GetChild(i);
+    if (child->is_folder()) {
+      childString += child->GetTitle() + L":[ " + ModelStringFromNode(child)
+                     + L"] ";
+    } else {
+      childString += child->GetTitle() + L" ";
+    }
+  }
+  return childString;
+}
+
 }  // anonymous namespace
 
 class BookmarkModelTest : public testing::Test, public BookmarkModelObserver {
@@ -304,6 +322,68 @@ TEST_F(BookmarkModelTest, Move) {
   observer_details.AssertEquals(root, NULL, 0, -1);
   EXPECT_TRUE(model.GetMostRecentlyAddedNodeForURL(url) == NULL);
   EXPECT_EQ(0, root->GetChildCount());
+}
+
+TEST_F(BookmarkModelTest, Copy) {
+  const BookmarkNode* root = model.GetBookmarkBarNode();
+  model.AddURL(root, 0, L"a", GURL("http://a.com"));
+  const BookmarkNode* node1 = model.AddGroup(root, 1, L"1");
+  model.AddURL(node1, 0, L"b", GURL("http://b.com"));
+  model.AddURL(node1, 1, L"c", GURL("http://c.com"));
+  model.AddURL(root, 2, L"d", GURL("http://d.com"));
+  const BookmarkNode* node2 = model.AddGroup(root, 3, L"2");
+  model.AddURL(node2, 0, L"e", GURL("http://e.com"));
+  model.AddURL(node2, 1, L"f", GURL("http://f.com"));
+  model.AddURL(node2, 2, L"g", GURL("http://g.com"));
+  model.AddURL(root, 4, L"h", GURL("http://d.com"));
+
+  // Validate initial model.
+  std::wstring actualModelString = ModelStringFromNode(root);
+  EXPECT_EQ(L"a 1:[ b c ] d 2:[ e f g ] h ", ModelStringFromNode(root));
+
+  // Copy 'd' to be after '1:b': URL item from bar to folder.
+  const BookmarkNode* nodeToCopy = root->GetChild(2);
+  const BookmarkNode* destination = root->GetChild(1);
+  model.Copy(nodeToCopy, destination, 1);
+  actualModelString = ModelStringFromNode(root);
+  EXPECT_EQ(L"a 1:[ b d c ] d 2:[ e f g ] h ", actualModelString);
+
+  // Copy '1:d' to be after 'a': URL item from folder to bar.
+  const BookmarkNode* group = root->GetChild(1);
+  nodeToCopy = group->GetChild(1);
+  model.Copy(nodeToCopy, root, 1);
+  actualModelString = ModelStringFromNode(root);
+  EXPECT_EQ(L"a d 1:[ b d c ] d 2:[ e f g ] h ", actualModelString);
+
+  // Copy '1' to be after '2:e': Folder from bar to folder.
+  nodeToCopy = root->GetChild(2);
+  destination = root->GetChild(4);
+  model.Copy(nodeToCopy, destination, 1);
+  actualModelString = ModelStringFromNode(root);
+  EXPECT_EQ(L"a d 1:[ b d c ] d 2:[ e 1:[ b d c ] f g ] h ", actualModelString);
+
+  // Copy '2:1' to be after '2:f': Folder within same folder.
+  group = root->GetChild(4);
+  nodeToCopy = group->GetChild(1);
+  model.Copy(nodeToCopy, group, 3);
+  actualModelString = ModelStringFromNode(root);
+  EXPECT_EQ(L"a d 1:[ b d c ] d 2:[ e 1:[ b d c ] f 1:[ b d c ] g ] h ",
+            actualModelString);
+
+  // Copy first 'd' to be after 'h': URL item within the bar.
+  nodeToCopy = root->GetChild(1);
+  model.Copy(nodeToCopy, root, 6);
+  actualModelString = ModelStringFromNode(root);
+  EXPECT_EQ(L"a d 1:[ b d c ] d 2:[ e 1:[ b d c ] f 1:[ b d c ] g ] h d ",
+            actualModelString);
+
+  // Copy '2' to be after 'a': Folder within the bar.
+  nodeToCopy = root->GetChild(4);
+  model.Copy(nodeToCopy, root, 1);
+  actualModelString = ModelStringFromNode(root);
+  EXPECT_EQ(L"a 2:[ e 1:[ b d c ] f 1:[ b d c ] g ] d 1:[ b d c ] "
+             "d 2:[ e 1:[ b d c ] f 1:[ b d c ] g ] h d ",
+            actualModelString);
 }
 
 // Tests that adding a URL to a folder updates the last modified time.

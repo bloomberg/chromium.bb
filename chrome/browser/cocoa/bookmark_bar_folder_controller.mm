@@ -458,7 +458,9 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 
 // TODO(jrg): ARGH more code dup.
 // http://crbug.com/35966
-- (BOOL)dragButton:(BookmarkButton*)sourceButton to:(NSPoint)point {
+- (BOOL)dragButton:(BookmarkButton*)sourceButton
+                to:(NSPoint)point
+              copy:(BOOL)copy {
   DCHECK([sourceButton isKindOfClass:[BookmarkButton class]]);
 
   const BookmarkNode* sourceNode = [sourceButton bookmarkNode];
@@ -466,9 +468,15 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 
   int destIndex = [self indexForDragOfButton:sourceButton toPoint:point];
   if (destIndex >= 0 && sourceNode) {
-    [parentController_ bookmarkModel]->Move(sourceNode,
-                                            [parentButton_ bookmarkNode],
-                                            destIndex);
+    if (copy) {
+      [parentController_ bookmarkModel]->Copy(sourceNode,
+                                              [parentButton_ bookmarkNode],
+                                              destIndex);
+    } else {
+      [parentController_ bookmarkModel]->Move(sourceNode,
+                                              [parentButton_ bookmarkNode],
+                                              destIndex);
+    }
   } else {
     NOTREACHED();
   }

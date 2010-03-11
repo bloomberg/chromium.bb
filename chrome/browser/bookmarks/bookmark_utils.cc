@@ -83,6 +83,9 @@ class NewBrowserPageNavigator : public PageNavigator {
   DISALLOW_COPY_AND_ASSIGN(NewBrowserPageNavigator);
 };
 
+// TODO(mrossetti): Rename CloneDragDataImpl to CloneBookmarkNodeImpl.
+// See: http://crbug.com/37891
+
 void CloneDragDataImpl(BookmarkModel* model,
                        const BookmarkDragData::Element& element,
                        const BookmarkNode* parent,

@@ -708,7 +708,9 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   return [buttons_ count];
 }
 
-- (BOOL)dragButton:(BookmarkButton*)sourceButton to:(NSPoint)point {
+- (BOOL)dragButton:(BookmarkButton*)sourceButton
+                to:(NSPoint)point
+              copy:(BOOL)copy {
   DCHECK([sourceButton isKindOfClass:[BookmarkButton class]]);
 
   const BookmarkNode* sourceNode = [sourceButton bookmarkNode];
@@ -717,9 +719,15 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   int destIndex = [self indexForDragOfButton:sourceButton toPoint:point];
   if (destIndex >= 0 && sourceNode) {
     // Our destination parent is not sourceNode->GetParent()!
-    bookmarkModel_->Move(sourceNode,
-                         bookmarkModel_->GetBookmarkBarNode(),
-                         destIndex);
+    if (copy) {
+      bookmarkModel_->Copy(sourceNode,
+                           bookmarkModel_->GetBookmarkBarNode(),
+                           destIndex);
+    } else {
+      bookmarkModel_->Move(sourceNode,
+                           bookmarkModel_->GetBookmarkBarNode(),
+                           destIndex);
+    }
   } else {
     NOTREACHED();
   }

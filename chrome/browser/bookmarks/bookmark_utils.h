@@ -64,6 +64,9 @@ bool IsValidDropLocation(Profile* profile,
                          const BookmarkNode* drop_parent,
                          int index);
 
+// TODO(mrossetti): Rename CloneDragData to CloneBookmarkNode.
+// See: http://crbug.com/37891
+
 // Clones drag data, adding newly created nodes to |parent| starting at
 // |index_to_add_at|.
 void CloneDragData(BookmarkModel* model,

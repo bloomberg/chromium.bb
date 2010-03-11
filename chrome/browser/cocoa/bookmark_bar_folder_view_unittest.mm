@@ -71,7 +71,9 @@
   closedAll_ = YES;
 }
 
-- (BOOL)dragButton:(BookmarkButton*)sourceButton to:(NSPoint)point {
+- (BOOL)dragButton:(BookmarkButton*)sourceButton
+                to:(NSPoint)point
+              copy:(BOOL)copy {
   return NO;
 }
 
