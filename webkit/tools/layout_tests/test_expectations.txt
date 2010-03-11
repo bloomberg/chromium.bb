@@ -94,7 +94,6 @@ BUG24182 WIN RELEASE SLOW : http/tests/loading/onload-vs-immediate-refresh.pl = 
 BUG24182 WIN LINUX SLOW : editing/selection/extend-selection.html = PASS
 BUG24182 SLOW WIN : fast/images/svg-as-background.html = PASS
 BUG24182 SLOW WIN : fast/backgrounds/svg-as-background-5.html = PASS
-BUG24182 SLOW DEBUG : svg/css/getComputedStyle-basic.xhtml = PASS
 BUG24182 WIN DEBUG SLOW: inspector/console-dirxml.html = PASS
 BUG24182 DEBUG SLOW : fast/dom/Window/window-function-frame-getter-precedence.html = PASS
 BUG24182 SLOW DEBUG : fast/frames/frame-limit.html = PASS
@@ -2580,7 +2579,7 @@ BUG29737 MAC : svg/filters/sourceAlpha.svg = IMAGE+TEXT
 BUG32432 LINUX DEBUG : svg/filters/feComposite.svg = TIMEOUT PASS
 
 // WebKit Roll to r51915
-BUG29930 : fast/loader/input-element-page-cache-crash.html = TIMEOUT PASS
+BUG29930 : fast/loader/input-element-page-cache-crash.html = TIMEOUT PASS CRASH
 
 // Was first marked as (WIN: TEXT, LINUX: TEXT,  MAC: IMAGE+TEXT) by
 // roll r51875, and then after http://trac.webkit.org/changeset/51936 the
@@ -2816,7 +2815,7 @@ BUG13907 : media/video-display-aspect-ratio.html = TIMEOUT PASS
 BUG35822 : plugins/netscape-browser-object-identity.html = TEXT
 
 // New test added in WebKit r54786
-BUG35823 : fast/harness/page-cache-crash-on-data-urls.html = TEXT
+BUG35823 : fast/harness/page-cache-crash-on-data-urls.html = TEXT TIMEOUT
 
 // Not known when these started failing.
 BUG35858 MAC LINUX : media/remove-from-document.html = CRASH PASS
@@ -2877,3 +2876,35 @@ BUG37779 : fast/dom/HTMLAnchorElement/set-href-attribute-hostname.html = TEXT
 BUG37779 : fast/dom/HTMLAnchorElement/set-href-attribute-port.html = TEXT
 BUG37779 : fast/loader/url-parse-1.html = TEXT
 BUG37779 : http/tests/loading/state-object-security-exception.html = TEXT
+
+// Bugs that went unreported when we upstreamed run_webkit_tests
+BUG37896 : editing/deleting/delete-3857753-fix.html = TEXT
+BUG37896 : editing/inserting/insert-div-026.html = TEXT
+BUG37896 : editing/pasteboard/paste-text-at-tabspan-001.html = TEXT
+BUG37896 : editing/pasteboard/paste-text-at-tabspan-002.html = TEXT
+BUG37896 : editing/style/font-family-with-space.html = TEXT
+BUG37896 : editing/style/smoosh-styles-001.html = TEXT
+BUG37896 : editing/style/style-boundary-005.html = TEXT
+BUG37896 : editing/undo/undo-smart-delete-word.html = TEXT
+BUG37896 : fast/backgrounds/animated-svg-as-background.html = IMAGE
+BUG37896 LINUX : fast/dom/Window/window-appendages-cleared.html = TEXT
+BUG37896 LINUX : fast/css/getComputedStyle/computed-style.html = TEXT
+BUG37896 LINUX : fast/css/getComputedStyle/computed-style-without-renderer.html = TEXT
+BUG37896 MAC WIN : fast/dynamic/positioned-movement-with-positioned-children.html = TEXT
+BUG37896 : fast/events/remove-child-onscroll.html = TIMEOUT
+BUG37896 : fast/events/standalone-image-drag-to-editable.html = IMAGE+TEXT
+BUG37896 WIN : fast/forms/001.html = IMAGE+TEXT
+BUG37896 MAC WIN : fast/forms/input-first-letter.html = IMAGE+TEXT
+BUG37896 WIN LINUX : fast/forms/search-vertical-alignment.html = IMAGE
+BUG37896 : fast/forms/search-zoomed.html = IMAGE
+BUG37896 MAC WIN : fast/forms/searchfield-heights.html = IMAGE
+BUG37896 : fast/loader/document-with-fragment-url-4.html = TIMEOUT
+BUG37896 : fast/multicol/hit-test-above-or-below.html = TEXT
+BUG37896 WIN : fast/overflow/scrollRevealButton.html = IMAGE+TEXT
+BUG37896 : fast/repaint/no-caret-repaint-in-non-content-editable-element.html = IMAGE+TEXT
+BUG37896 LINUX : fast/text/firstline/001.html = CRASH
+BUG37896 WIN : http/tests/navigation/javascriptlink-frames.html = IMAGE+TEXT
+BUG37896 : inspector/timeline-network-resource.html = TEXT
+BUG37896 : media/video-preload.html = TEXT
+BUG37896 : plugins/keyboard-events.html = TEXT
+BUG37896 : svg/css/getComputedStyle-basic.xhtml = TEXT
