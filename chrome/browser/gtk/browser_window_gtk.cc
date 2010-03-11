@@ -1210,12 +1210,6 @@ void BrowserWindowGtk::DestroyBrowser() {
 void BrowserWindowGtk::OnBoundsChanged(const gfx::Rect& bounds) {
   GetLocationBar()->location_entry()->ClosePopup();
 
-  // Notify the TabContents that the browser window has been resized or moved.
-  // This is used to close AutoFill popups in the renderer.
-  TabContents* tab_contents = browser_->GetSelectedTabContents();
-  if (tab_contents)
-    tab_contents->WindowMoveOrResizeStarted();
-
   if (bounds_.size() != bounds.size())
     OnSizeChanged(bounds.width(), bounds.height());
 
