@@ -45,6 +45,11 @@ static const AtomInfo kAtomInfos[] = {
 bool SetIntProperty(XID xid, Atom xatom, const std::vector<int>& values) {
   DCHECK(!values.empty());
 
+  // XChangeProperty expects values of type 32 to be longs.
+  scoped_array<long> data(new long[values.size()]);
+  for (size_t i = 0; i < values.size(); ++i)
+    data[i] = values[i];
+
   // TODO: Trap errors and return false on failure.
   XChangeProperty(x11_util::GetXDisplay(),
                   xid,
@@ -52,7 +57,7 @@ bool SetIntProperty(XID xid, Atom xatom, const std::vector<int>& values) {
                   xatom,
                   32,  // size in bits of items in 'value'
                   PropModeReplace,
-                  reinterpret_cast<const unsigned char*>(&values.front()),
+                  reinterpret_cast<const unsigned char*>(data.get()),
                   values.size());  // num items
   XFlush(x11_util::GetXDisplay());
   return true;
