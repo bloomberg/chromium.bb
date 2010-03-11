@@ -27,7 +27,7 @@ _LICENSE = """// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 # Edits:
 #
 # *) Any argument that is a resourceID has been changed to GLid<Type>.
-#    (not pointer arguments)
+#    (not pointer arguments) and if it's allowed to be zero it's GLidZero<Type>
 #
 # *) All GLenums have been changed to GLenumTypeOfEnum
 #
@@ -35,10 +35,10 @@ _GL_FUNCTIONS = """
 GL_APICALL void         GL_APIENTRY glActiveTexture (GLenum texture);
 GL_APICALL void         GL_APIENTRY glAttachShader (GLidProgram program, GLidShader shader);
 GL_APICALL void         GL_APIENTRY glBindAttribLocation (GLidProgram program, GLuint index, const char* name);
-GL_APICALL void         GL_APIENTRY glBindBuffer (GLenumBufferTarget target, GLidBuffer buffer);
-GL_APICALL void         GL_APIENTRY glBindFramebuffer (GLenumFrameBufferTarget target, GLidFramebuffer framebuffer);
-GL_APICALL void         GL_APIENTRY glBindRenderbuffer (GLenumRenderBufferTarget target, GLidRenderbuffer renderbuffer);
-GL_APICALL void         GL_APIENTRY glBindTexture (GLenumTextureBindTarget target, GLidTexture texture);
+GL_APICALL void         GL_APIENTRY glBindBuffer (GLenumBufferTarget target, GLidZeroBuffer buffer);
+GL_APICALL void         GL_APIENTRY glBindFramebuffer (GLenumFrameBufferTarget target, GLidZeroFramebuffer framebuffer);
+GL_APICALL void         GL_APIENTRY glBindRenderbuffer (GLenumRenderBufferTarget target, GLidZeroRenderbuffer renderbuffer);
+GL_APICALL void         GL_APIENTRY glBindTexture (GLenumTextureBindTarget target, GLidZeroTexture texture);
 GL_APICALL void         GL_APIENTRY glBlendColor (GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha);
 GL_APICALL void         GL_APIENTRY glBlendEquation ( GLenumEquation mode );
 GL_APICALL void         GL_APIENTRY glBlendEquationSeparate (GLenumEquation modeRGB, GLenumEquation modeAlpha);
@@ -845,8 +845,14 @@ _FUNCTION_INFO = {
   'ActiveTexture': {'decoder_func': 'DoActiveTexture', 'expectation': False},
   'BindAttribLocation': {'type': 'GLchar'},
   'BindBuffer': {'decoder_func': 'DoBindBuffer'},
-  'BindFramebuffer': {'decoder_func': 'glBindFramebufferEXT'},
-  'BindRenderbuffer': {'decoder_func': 'glBindRenderbufferEXT'},
+  'BindFramebuffer': {
+    'decoder_func': 'DoBindFramebuffer',
+    'gl_test_func': 'glBindFramebufferEXT',
+  },
+  'BindRenderbuffer': {
+    'decoder_func': 'DoBindRenderbuffer',
+    'gl_test_func': 'glBindRenderbufferEXT',
+  },
   'BindTexture': {'decoder_func': 'DoBindTexture'},
   'BufferData': {'type': 'Manual', 'immediate': True},
   'BufferSubData': {'type': 'Data', 'decoder_func': 'DoBufferSubData'},
@@ -3579,6 +3585,34 @@ class ResourceIdArgument(Argument):
   def GetValidGLArg(self, offset, index):
     return "kService%sId" % self.resource_type
 
+
+class ResourceIdZeroArgument(Argument):
+  """Represents a resource id argument to a function that can be zero."""
+
+  def __init__(self, name, type):
+    match = re.match("(GLidZero\w+)", type)
+    self.resource_type = match.group(1)[8:]
+    type = type.replace(match.group(1), "GLuint")
+    Argument.__init__(self, name, type)
+
+  def WriteGetCode(self, file):
+    """Overridden from Argument."""
+    code = """  %(type)s %(name)s = c.%(name)s;
+  if (%(name)s != 0u &&
+      !id_manager()->GetServiceId(%(name)s, &%(name)s)) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
+"""
+    file.Write(code % {'type': self.type, 'name': self.name})
+
+  def GetValidArg(self, offset, index):
+    return "client_%s_id_" % self.resource_type.lower()
+
+  def GetValidGLArg(self, offset, index):
+    return "kService%sId" % self.resource_type
+
+
 class Function(object):
   """A class that represents a function."""
 
@@ -3874,6 +3908,8 @@ def CreateArg(arg_string):
           arg_parts[-1],
           " ".join(arg_parts[0:-1]))
   # Is this a resource argument? Must come after pointer check.
+  elif arg_parts[0].startswith('GLidZero'):
+    return ResourceIdZeroArgument(arg_parts[-1], " ".join(arg_parts[0:-1]))
   elif arg_parts[0].startswith('GLid'):
     return ResourceIdArgument(arg_parts[-1], " ".join(arg_parts[0:-1]))
   elif arg_parts[0].startswith('GLenum') and len(arg_parts[0]) > 6:

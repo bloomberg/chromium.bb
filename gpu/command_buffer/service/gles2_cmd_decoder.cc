@@ -431,6 +431,12 @@ class GLES2DecoderImpl : public GLES2Decoder {
   // Wrapper for glBindBuffer since we need to track the current targets.
   void DoBindBuffer(GLenum target, GLuint buffer);
 
+  // Wrapper for glBindFramebuffer since we need to track the current targets.
+  void DoBindFramebuffer(GLenum target, GLuint framebuffer);
+
+  // Wrapper for glBindRenderbuffer since we need to track the current targets.
+  void DoBindRenderbuffer(GLenum target, GLuint renderbuffer);
+
   // Wrapper for glBindTexture since we need to track the current targets.
   void DoBindTexture(GLenum target, GLuint texture);
 
@@ -547,6 +553,8 @@ class GLES2DecoderImpl : public GLES2Decoder {
       uint32 shm_id, uint32 shm_offset,
       error::Error* error, GLuint* service_id, void** result);
 
+  bool ValidateGLenumCompressedTextureInternalFormat(GLenum format);
+
   // Generate a member function prototype for each command in an automated and
   // typesafe way.
   #define GLES2_CMD_OP(name) \
@@ -599,6 +607,12 @@ class GLES2DecoderImpl : public GLES2Decoder {
   // The program in use by glUseProgram
   ProgramManager::ProgramInfo::Ref current_program_;
 
+  // The currently bound framebuffer
+  GLuint bound_framebuffer_;
+
+  // The currently bound renderbuffer
+  GLuint bound_renderbuffer_;
+
 #if defined(UNIT_TEST)
 #elif defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
 #elif defined(OS_WIN)
@@ -636,6 +650,8 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       active_texture_unit_(0),
       black_2d_texture_id_(0),
       black_cube_texture_id_(0),
+      bound_framebuffer_(0),
+      bound_renderbuffer_(0),
 #if defined(UNIT_TEST)
 #elif defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
 #elif defined(OS_WIN)
@@ -1287,6 +1303,11 @@ void GLES2DecoderImpl::CreateShaderHelper(GLenum type, GLuint client_id) {
   }
 }
 
+bool GLES2DecoderImpl::ValidateGLenumCompressedTextureInternalFormat(GLenum) {
+  // TODO(gman): Add support for compressed texture formats.
+  return false;
+}
+
 void GLES2DecoderImpl::DoActiveTexture(GLenum texture_unit) {
   if (texture_unit > group_->max_texture_units()) {
     SetGLError(GL_INVALID_ENUM);
@@ -1321,6 +1342,16 @@ void GLES2DecoderImpl::DoBindBuffer(GLenum target, GLuint buffer) {
       break;
   }
   glBindBuffer(target, buffer);
+}
+
+void GLES2DecoderImpl::DoBindFramebuffer(GLenum target, GLuint framebuffer) {
+  bound_framebuffer_ = framebuffer;
+  glBindFramebufferEXT(target, framebuffer);
+}
+
+void GLES2DecoderImpl::DoBindRenderbuffer(GLenum target, GLuint renderbuffer) {
+  bound_renderbuffer_ = renderbuffer;
+  glBindRenderbufferEXT(target, renderbuffer);
 }
 
 void GLES2DecoderImpl::DoBindTexture(GLenum target, GLuint texture) {
@@ -2125,9 +2156,9 @@ error::Error GLES2DecoderImpl::DoCompressedTexImage2D(
   GLint border,
   GLsizei image_size,
   const void* data) {
-  // TODO(gman): Validate internal_format
   // TODO(gman): Validate image_size is correct for width, height and format.
-  if (!ValidateGLenumTextureTarget(target)) {
+  if (!ValidateGLenumTextureTarget(target) ||
+      !ValidateGLenumCompressedTextureInternalFormat(internal_format)) {
     SetGLError(GL_INVALID_ENUM);
     return error::kNoError;
   }

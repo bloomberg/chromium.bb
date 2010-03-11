@@ -72,8 +72,9 @@ error::Error GLES2DecoderImpl::HandleBindAttribLocationImmediate(
 error::Error GLES2DecoderImpl::HandleBindBuffer(
     uint32 immediate_data_size, const gles2::BindBuffer& c) {
   GLenum target = static_cast<GLenum>(c.target);
-  GLuint buffer;
-  if (!id_manager()->GetServiceId(c.buffer, &buffer)) {
+  GLuint buffer = c.buffer;
+  if (buffer != 0u &&
+      !id_manager()->GetServiceId(buffer, &buffer)) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
@@ -88,8 +89,9 @@ error::Error GLES2DecoderImpl::HandleBindBuffer(
 error::Error GLES2DecoderImpl::HandleBindFramebuffer(
     uint32 immediate_data_size, const gles2::BindFramebuffer& c) {
   GLenum target = static_cast<GLenum>(c.target);
-  GLuint framebuffer;
-  if (!id_manager()->GetServiceId(c.framebuffer, &framebuffer)) {
+  GLuint framebuffer = c.framebuffer;
+  if (framebuffer != 0u &&
+      !id_manager()->GetServiceId(framebuffer, &framebuffer)) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
@@ -97,15 +99,16 @@ error::Error GLES2DecoderImpl::HandleBindFramebuffer(
     SetGLError(GL_INVALID_ENUM);
     return error::kNoError;
   }
-  glBindFramebufferEXT(target, framebuffer);
+  DoBindFramebuffer(target, framebuffer);
   return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleBindRenderbuffer(
     uint32 immediate_data_size, const gles2::BindRenderbuffer& c) {
   GLenum target = static_cast<GLenum>(c.target);
-  GLuint renderbuffer;
-  if (!id_manager()->GetServiceId(c.renderbuffer, &renderbuffer)) {
+  GLuint renderbuffer = c.renderbuffer;
+  if (renderbuffer != 0u &&
+      !id_manager()->GetServiceId(renderbuffer, &renderbuffer)) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
@@ -113,15 +116,16 @@ error::Error GLES2DecoderImpl::HandleBindRenderbuffer(
     SetGLError(GL_INVALID_ENUM);
     return error::kNoError;
   }
-  glBindRenderbufferEXT(target, renderbuffer);
+  DoBindRenderbuffer(target, renderbuffer);
   return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleBindTexture(
     uint32 immediate_data_size, const gles2::BindTexture& c) {
   GLenum target = static_cast<GLenum>(c.target);
-  GLuint texture;
-  if (!id_manager()->GetServiceId(c.texture, &texture)) {
+  GLuint texture = c.texture;
+  if (texture != 0u &&
+      !id_manager()->GetServiceId(texture, &texture)) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
