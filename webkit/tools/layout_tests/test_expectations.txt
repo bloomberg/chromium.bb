@@ -203,6 +203,8 @@ WONTFIX SKIP : webarchive/adopt-attribute-styled-body-webarchive.html = FAIL
 WONTFIX SKIP : webarchive/adopt-attribute-styled-node-webarchive.html = FAIL
 WONTFIX SKIP : webarchive/adopt-inline-styled-node-webarchive.html = FAIL
 
+// Implement java testing harness.
+BUG36681 DEFER SKIP : java = TEXT
 // Chrome does not support Java LiveConnect.
 WONTFIX SKIP : java/lc3 = TEXT
 
@@ -2820,16 +2822,8 @@ BUG36019 : fast/borders/svg-as-border-image-2.html = IMAGE
 BUG36019 : fast/borders/svg-as-border-image.html = IMAGE
 BUG36019 : fast/images/svg-as-tiled-background.html = IMAGE
 
-// WebKit roll 55161 to 55193
-BUG36681 : java/argument-to-object-type.html = TEXT
-BUG36681 : java/array-return.html = TEXT
-
-// WebKit roll 55241 to 55250
-BUG36846 : java/java-and-plugins.html = TEXT
-
 // WebKit roll 55250 to 55339
 BUG36966 : fast/loader/about-blank-hash-kept.html = FAIL
-BUG36967 : java/array-sort.html = FAIL
 
 // httponly-cookie.pl fails because it fails to be served as cgi script on Win
 BUG37049 WIN SKIP : websocket/tests/httponly-cookie.pl = PASS
