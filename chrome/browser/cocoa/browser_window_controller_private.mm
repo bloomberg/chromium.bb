@@ -79,6 +79,10 @@ const CGFloat kLocBarBottomInset = 1;
   gfx::Rect workArea(NSRectToCGRect([windowScreen visibleFrame]));
   workArea.set_y(monitorFrame.size.height - workArea.y() - workArea.height());
 
+  // Browser::SaveWindowPlacement is used for session restore.
+  if (browser_->ShouldSaveWindowPlacement())
+    browser_->SaveWindowPlacement(bounds, /*maximized=*/ false);
+
   DictionaryValue* windowPreferences = prefs->GetMutableDictionary(
       browser_->GetWindowPlacementKey().c_str());
   windowPreferences->SetInteger(L"left", bounds.x());
