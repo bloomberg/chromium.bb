@@ -290,11 +290,24 @@ NPError NPNavigator::GetUrlNotify(NPP npp,
 
 void NPNavigator::StreamAsFile(NPP npp,
                                NaClSrpcImcDescType file,
-                               char* fname) {
+                               char* url,
+                               uint32_t size) {
   if (NULL != plugin_funcs.asfile) {
-    // Here we abuse the type system for now.  We are not actually returning an
-    // NPStream*, but rather a pointer to the file descriptor.
-    plugin_funcs.asfile(npp, reinterpret_cast<NPStream*>(&file), fname);
+    NPStream stream;
+    stream.pdata = NULL;
+    stream.ndata = NULL;
+    stream.url = url;
+    stream.end = size;
+    stream.lastmodified = 0;
+    stream.notifyData = NULL;
+    stream.headers = NULL;
+    // We are abusing the API here.  There is no local file whose name we
+    // refer to.  We instead return the file descriptor of the shared memory.
+    // TODO(sehr): Find a better permanent method for passing this information.
+    const int file_descriptor = file;
+    plugin_funcs.asfile(npp,
+                        &stream,
+                        reinterpret_cast<const char*>(&file_descriptor));
   }
 }
 

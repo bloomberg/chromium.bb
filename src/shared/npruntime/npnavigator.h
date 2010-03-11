@@ -75,7 +75,10 @@ class NPNavigator : public NPBridge {
   // Processes NPP_Destroy request from the plugin.
   NPError Destroy(NPP npp);
   // Processes NPP_StreamAsFile request from the plugin.
-  void StreamAsFile(NPP npp, NaClSrpcImcDescType file, char* fname);
+  void StreamAsFile(NPP npp,
+                    NaClSrpcImcDescType file,
+                    char* url,
+                    uint32_t size);
   // Processes NPP_URLNotify request from the plugin.
   void URLNotify(NPP npp, NaClSrpcImcDescType received_handle, uint32_t reason);
 

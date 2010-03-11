@@ -182,11 +182,15 @@ NaClSrpcError NPNavigatorRpcServer::NPP_HandleEvent(
 NaClSrpcError NPNavigatorRpcServer::NPP_StreamAsFile(NaClSrpcChannel* channel,
                                                      int32_t wire_npp,
                                                      NaClSrpcImcDescType file,
-                                                     char* fname) {
+                                                     char* url,
+                                                     int32_t size) {
   nacl::DebugPrintf("NPP_URLNotify\n");
 
   NPNavigator* nav = NPNavigator::GetNavigator();
-  nav->StreamAsFile(WireFormatToNPP(wire_npp), file, fname);
+  nav->StreamAsFile(WireFormatToNPP(wire_npp),
+                    file,
+                    url,
+                    static_cast<uint32_t>(size));
 
   return NACL_SRPC_RESULT_OK;
 }

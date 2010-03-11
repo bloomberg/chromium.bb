@@ -100,7 +100,8 @@ static void ReportResult(NPP npp,
 void NPP_StreamAsFile(NPP instance,
                       NPStream* stream,
                       const char* fname) {
-  int fd = *reinterpret_cast<const int*>(stream);
+  // fname is actually a pointer to a file descriptor.
+  const int fd = *reinterpret_cast<const int*>(fname);
   struct stat stb;
   FILE* iob = NULL;
   char* buf = NULL;
@@ -108,17 +109,24 @@ void NPP_StreamAsFile(NPP instance,
   size_t nchar = 0;
   int ch;
 
+  if (NULL == stream) {
+    char* str = strdup("bad stream pointer\n");
+    char* url = strdup("NONE");
+    ReportResult(instance, url, str, false);
+    return;
+  }
   if (-1 == fd) {
     char* str = strdup("Bad file descriptor received\n");
-    ReportResult(instance, fname, str, false);
+    ReportResult(instance, stream->url, str, false);
     return;
   }
   if (-1 == fstat(fd, &stb)) {
     char* str = strdup("fstat failed\n");
-    ReportResult(instance, fname, str, false);
+    ReportResult(instance, stream->url, str, false);
     return;
   }
-  size = stb.st_size;
+  // size = stb.st_size;
+  size = stream->end;
   iob = fdopen(fd, "r");
   if (NULL == iob) {
     printf("fdopen failed");
@@ -129,7 +137,7 @@ void NPP_StreamAsFile(NPP instance,
     buf[nchar] = ch;
   }
   buf[nchar] = '\0';
-  ReportResult(instance, fname, buf, true);
+  ReportResult(instance, stream->url, buf, true);
   fclose(iob);
 }
 

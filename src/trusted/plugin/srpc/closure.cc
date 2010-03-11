@@ -279,13 +279,16 @@ void NpGetUrlClosure::Run(NPStream* stream, const char* fname) {
     dprintf(("created ndiod %p\n", static_cast<void *>(ndiod)));
   } while (0);
 
-  if (NULL == ndiod) {
+  if (NULL == ndiod || NULL == stream) {
     NaClDesc* invalid =
         const_cast<NaClDesc*>(
             reinterpret_cast<const NaClDesc*>(NaClDescInvalidMake()));
-    module_->StreamAsFile(npp_, invalid, const_cast<char*>(stream->url));
+    module_->StreamAsFile(npp_, invalid, const_cast<char*>(stream->url), 0);
   } else {
-    module_->StreamAsFile(npp_, ndiod->desc(), const_cast<char*>(stream->url));
+    module_->StreamAsFile(npp_,
+                          ndiod->desc(),
+                          const_cast<char*>(stream->url),
+                          stream->end);
     ndiod->Delete();
   }
 }
@@ -298,8 +301,8 @@ void NpGetUrlClosure::Run(const char* url, const void* buffer, int32_t size) {
 
   // execute body once; construct to use break statement to exit body early
   do {
-    if (NULL == buffer) {
-      dprintf(("bad buffer - stream handling failed\n"));
+    if (NULL == buffer || NULL == url) {
+      dprintf(("bad buffer or URL - stream handling failed\n"));
       break;
     }
 
@@ -345,9 +348,9 @@ void NpGetUrlClosure::Run(const char* url, const void* buffer, int32_t size) {
     NaClDesc* invalid =
         const_cast<NaClDesc*>(
             reinterpret_cast<const NaClDesc*>(NaClDescInvalidMake()));
-    module_->StreamAsFile(npp_, invalid, const_cast<char*>(url));
+    module_->StreamAsFile(npp_, invalid, const_cast<char*>(url), 0);
   } else {
-    module_->StreamAsFile(npp_, ndshm->desc(), const_cast<char*>(url));
+    module_->StreamAsFile(npp_, ndshm->desc(), const_cast<char*>(url), size);
     ndshm->Delete();
   }
 }

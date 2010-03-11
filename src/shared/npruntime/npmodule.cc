@@ -284,11 +284,15 @@ NPError NPModule::NewStream(NPP npp,
   return NPERR_NO_ERROR;
 }
 
-void NPModule::StreamAsFile(NPP npp, NaClDesc* file, char* fname) {
+void NPModule::StreamAsFile(NPP npp,
+                            NaClDesc* file,
+                            char* url,
+                            uint32_t size) {
   NPNavigatorRpcClient::NPP_StreamAsFile(channel(),
                                          NPPToWireFormat(npp),
                                          file,
-                                         fname);
+                                         url,
+                                         static_cast<int32_t>(size));
 }
 
 NPError NPModule::DestroyStream(NPP npp, NPStream *stream, NPError reason) {

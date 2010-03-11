@@ -63,7 +63,8 @@
           {'name': 'NPP_StreamAsFile',
            'inputs': [['npp', 'int32_t'],
                       ['handle', 'handle'],
-                      ['fname', 'string'],
+                      ['url', 'string'],
+                      ['size', 'int32_t'],
                      ],
            'outputs': []
           },

@@ -125,7 +125,7 @@ class NPModule : public NPBridge {
                     NPBool seekable,
                     uint16_t* stype);
   // Send NPP_StreamAsFile to the child process.
-  void StreamAsFile(NPP npp, NaClDesc* file, char* fname);
+  void StreamAsFile(NPP npp, NaClDesc* file, char* url, uint32_t size);
   // Processes NPP_DestroyStream() invocation from the browser.
   NPError DestroyStream(NPP npp, NPStream *stream, NPError reason);
   // Processes NPP_URLNotify() invocation from the browser.
