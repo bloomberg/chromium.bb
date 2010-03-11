@@ -51,10 +51,10 @@ static int32_t stringToInt32(char* src) {
 StreamBuffer::StreamBuffer(NPStream* stream): buffer_(NULL),
                                               current_size_(0),
                                               stream_id_(stream) {
-  int32_t rounded_size = assert_cast<int32_t>(NaClRoundAllocPage(stream->end));
-  buffer_ = malloc(rounded_size);
+  int32_t size = assert_cast<int32_t>(stream->end);
+  buffer_ = malloc(size);
   if (NULL != buffer_) {
-    current_size_ = rounded_size;
+    current_size_ = size;
   }
 }
 

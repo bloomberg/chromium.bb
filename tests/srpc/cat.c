@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <nacl/nacl_srpc.h>
+#include <sys/mman.h>
 #include <sys/stat.h>
 
 NaClSrpcError Cat(NaClSrpcChannel *channel,
@@ -15,7 +16,6 @@ NaClSrpcError Cat(NaClSrpcChannel *channel,
                   NaClSrpcArg **out_args) {
   int         fd;
   struct stat stb;
-  FILE        *iob;
   int         ch;
   int         nchar;
   int         bufsize;
@@ -32,21 +32,39 @@ NaClSrpcError Cat(NaClSrpcChannel *channel,
     P("%d", st_size);
 #undef P
   }
-  printf("fdopening\n");
-  iob = fdopen(fd, "r");
-  if (NULL == iob) {
-    printf("fdopen failed");
-    return NACL_SRPC_RESULT_APP_ERROR;
-  }
   bufsize = out_args[0]->u.caval.count;
   printf("read loop, up to %d chars\n", bufsize);
-  for (nchar = 0; EOF != (ch = getc(iob)) && nchar < bufsize-1; ++nchar) {
-    out_args[0]->u.caval.carr[nchar] = ch;
-    putchar(ch);
+  if ((stb.st_mode & S_IFMT) == S_IFSHM) {
+    /* Chrome integration returns a shared memory descriptor for this now. */
+    char *file_map;
+    printf("mmapping\n");
+    file_map = (char *) mmap(NULL, stb.st_size, PROT_READ, MAP_SHARED, fd, 0);
+    if (MAP_FAILED == file_map) {
+      printf("map failed");
+      return NACL_SRPC_RESULT_APP_ERROR;
+    }
+    for (nchar = 0; nchar < bufsize - 1; ++nchar) {
+      ch = file_map[nchar];
+      out_args[0]->u.caval.carr[nchar] = ch;
+      putchar(ch);
+    }
+    out_args[0]->u.caval.carr[nchar] = '\0';
+    printf("EOF\n");
+  } else {
+    FILE *iob = fdopen(fd, "r");
+    printf("fdopening\n");
+    if (NULL == iob) {
+      printf("fdopen failed");
+      return NACL_SRPC_RESULT_APP_ERROR;
+    }
+    for (nchar = 0; EOF != (ch = getc(iob)) && nchar < bufsize-1; ++nchar) {
+      out_args[0]->u.caval.carr[nchar] = ch;
+      putchar(ch);
+    }
+    out_args[0]->u.caval.carr[nchar] = '\0';
+    printf("EOF\n");
+    fclose(iob);
   }
-  out_args[0]->u.caval.carr[nchar] = '\0';
-  printf("EOF\n");
-  fclose(iob);
   printf("got %d bytes\n", nchar);
   printf("out param: %.*s\n", nchar, out_args[0]->u.caval.carr);
   return NACL_SRPC_RESULT_OK;

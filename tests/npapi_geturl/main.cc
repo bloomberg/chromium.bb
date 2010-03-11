@@ -9,6 +9,7 @@
 #include <nacl/npapi.h>
 #include <nacl/npruntime.h>
 #include <nacl/npupp.h>
+#include <sys/mman.h>
 #include <sys/stat.h>
 #include "native_client/tests/npapi_runtime/plugin.h"
 
@@ -125,18 +126,36 @@ void NPP_StreamAsFile(NPP instance,
     ReportResult(instance, stream->url, str, false);
     return;
   }
-  // size = stb.st_size;
   size = stream->end;
-  iob = fdopen(fd, "r");
-  if (NULL == iob) {
-    printf("fdopen failed");
-    return;
-  }
   buf = reinterpret_cast<char*>(NPN_MemAlloc(size));
-  for (nchar = 0; EOF != (ch = getc(iob)) && nchar < size - 1; ++nchar) {
-    buf[nchar] = ch;
+  if ((stb.st_mode & S_IFMT) == S_IFSHM) {
+    // Chrome integration returns a shared memory descriptor for this now.
+    char* file_map = reinterpret_cast<char *>(mmap(NULL,
+                                                   stb.st_size,
+                                                   PROT_READ,
+                                                   MAP_SHARED,
+                                                   fd,
+                                                   0));
+    if (MAP_FAILED == file_map) {
+      char* str = strdup("mmap failed\n");
+      ReportResult(instance, stream->url, str, false);
+      return;
+    }
+    for (nchar = 0; nchar < size - 1; ++nchar) {
+      ch = file_map[nchar];
+      buf[nchar] = ch;
+    }
+    buf[nchar] = '\0';
+  } else {
+    iob = fdopen(fd, "r");
+    if (NULL == iob) {
+      return;
+    }
+    for (nchar = 0; EOF != (ch = getc(iob)) && nchar < size - 1; ++nchar) {
+      buf[nchar] = ch;
+    }
+    buf[nchar] = '\0';
   }
-  buf[nchar] = '\0';
   ReportResult(instance, stream->url, buf, true);
   fclose(iob);
 }
