@@ -39,6 +39,7 @@
         'nacl_app_32.c',
         'nacl_switch_32.S',
         'nacl_switch_to_app_32.c',
+        'nacl_syscall_32.S',
         'nacl_tls_32.c',
         'sel_addrspace_x86_32.c',
         'sel_ldr_x86_32.c',
@@ -49,34 +50,6 @@
       'dependencies': [
         '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncvalidate_gen',
       ],
-      'conditions': [
-        # TODO(dspringer): for now, official Chrome builds use the stubbed-out
-        # NaClSyscallSeg code.  Remove this when the real code is in place.
-        ['branding=="Chrome" and buildtype=="Official" and OS=="mac" and '
-         'nacl_standalone==0', {
-          'sources': [
-            'nacl_syscall_weak.S',
-          ],
-        }, {  # All other builds use the NaClSyscallSeg code.
-          'sources': [
-            'nacl_syscall_32.S'
-          ],
-        },
-        ],
-      ],
     },
-  ],
-  'conditions': [
-    ['OS=="mac" and nacl_standalone==0', {
-      'targets': [
-        {
-          'target_name': 'service_runtime_x86_32_chrome',
-          'type': 'static_library',
-          'sources': [
-            'nacl_syscall_32.S'
-          ],
-        },
-      ],
-    },],
   ],
 }
