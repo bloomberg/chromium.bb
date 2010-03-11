@@ -51,7 +51,6 @@
 <translation id="4780321648949301421">Сохранить страницу как...</translation>
 <translation id="9154072353677278078">Для доступа на сервер <ph name="DOMAIN"/> по адресу <ph name="REALM"/> требуется указать имя пользователя и пароль.</translation>
 <translation id="8178665534778830238">Содержание:</translation>
-<translation id="4771019161370731727">Последние действия</translation>
 <translation id="8974161578568356045">Определять автоматически</translation>
 <translation id="1818606096021558659">Страница</translation>
 <translation id="1657406563541664238">Автоматическая отправка в Google статистики использования и отчетов о сбоях с целью улучшения <ph name="PRODUCT_NAME"/></translation>
@@ -61,7 +60,6 @@
 <translation id="7481475534986701730">Недавно посещенные сайты</translation>
 <translation id="4260722247480053581">Открыть в режиме инкогнито</translation>
 <translation id="4565377596337484307">Скрыть пароль</translation>
-<translation id="5008715825902408241">Скрыть уменьшенные изображения</translation>
 <translation id="762917759028004464">В настоящий момент браузером по умолчанию является <ph name="BROWSER_NAME"/>.</translation>
 <translation id="9213479837033539041">Осталось <ph name="NUMBER_MANY"/> сек.</translation>
 <translation id="8487678622945914333">Увеличить</translation>
@@ -104,7 +102,6 @@
 <translation id="1486408090387743835">В <ph name="PRODUCT_NAME"/> установлены <ph name="BEGIN_LINK"/>расширения<ph name="END_LINK"/>. Также выполнена <ph name="BEGIN_BUTTON"/>синхронизация закладок<ph name="END_BUTTON"/>.</translation>
 <translation id="3147949335879360642">Ваши закладки будут объединены.</translation>
 <translation id="4422347585044846479">Изменить закладку для этой страницы</translation>
-<translation id="51285338152176012">Скрыть последние закрытые вкладки</translation>
 <translation id="8546306075665861288">Кэш изображений</translation>
 <translation id="801357260673640054">Закладки синхронизированы...</translation>
 <translation id="1399076603473531278">Регистрационные данные устарели.</translation>
@@ -225,7 +222,6 @@
 <translation id="7421925624202799674">Просмотр кода страницы</translation>
 <translation id="6686490380836145850">Закрыть вкладки справа</translation>
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> час.</translation>
-<translation id="2790948358747073186">Дополнительно</translation>
 <translation id="5774515636230743468">Манифест:</translation>
 <translation id="2423578206845792524">Со&amp;хранить картинку как...</translation>
 <translation id="1095038624419434542">При загрузке программы произошла ошибка. Попробуйте выполнить переустановку.</translation>
@@ -249,7 +245,6 @@
 <translation id="3165657440747518774">Найти на странице</translation>
 <translation id="939736085109172342">Новая папка</translation>
 <translation id="862750493060684461">Кэш CSS</translation>
-<translation id="2009541932026160416">Нажмите <ph name="CROSS_IMAGE"/>, чтобы удалить уменьшенное изображение</translation>
 <translation id="5641560969478423183">Сертификат сервера не соответствует URL</translation>
 <translation id="6474422710030751464">При загрузке некоторых элементов с этой страницы через SSL-соединение были обнаружены ошибки.</translation>
 <translation id="121827551500866099">Показать все загрузки...</translation>
@@ -353,7 +348,6 @@
 <translation id="5039804452771397117">Разрешить</translation>
 <translation id="7564146504836211400">Файлы cookie и другие данные</translation>
 <translation id="2266011376676382776">Страница не отвечает на запросы</translation>
-<translation id="1805966933547717780">http://www.google.com/chrome/help/</translation>
 <translation id="1319824869167805246">Открыть все закладки в новом окне</translation>
 <translation id="3493653833301553455">Автозаполнение форм:</translation>
 <translation id="3371861036502301517">Ошибка установки расширения</translation>
@@ -369,7 +363,6 @@
 <translation id="1516602185768225813">Восстановить последние открытые страницы</translation>
 <translation id="1538486363863290963">Блокировать все сторонние cookie без исключения</translation>
 <translation id="4874539263382920044">Заголовок должен содержать не менее одного символа</translation>
-<translation id="3549657413697417275">Поиск в истории</translation>
 <translation id="7344633671344536647">Данные о работе в браузере:</translation>
 <translation id="4250680216510889253">Нет</translation>
 <translation id="6291953229176937411">Показать в Finder</translation>
@@ -410,7 +403,6 @@
 <translation id="4164507027399414915">Восстановить все уменьшенные изображения, которые были удалены</translation>
 <translation id="6620110761915583480">Сохранить файл</translation>
 <translation id="7543025879977230179">Параметры <ph name="PRODUCT_NAME"/></translation>
-<translation id="4271692636717022386">Показать ещё</translation>
 <translation id="2648845569394238430">Поиск:</translation>
 <translation id="2175607476662778685">Панель быстрого запуска</translation>
 <translation id="6434309073475700221">Отменить передачу</translation>
@@ -418,7 +410,6 @@
 <translation id="4551297183924943154">Профиль используется процессом <ph name="PROCESS_ID"/> на хосте <ph name="HOST_NAME"/>. Если вы уверены, что другие процессы не используют этот профиль, удалите файл <ph name="LOCK_FILE"/> и перезапустите <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="4378551569595875038">Соединение...</translation>
 <translation id="7029809446516969842">Пароли</translation>
-<translation id="3513979718339724672">Показать уменьшенные изображения</translation>
 <translation id="8211437954284917092">Чтобы выполнить поиск по закладкам, введите запрос в текстовом поле выше.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> файла(ов)</translation>
 <translation id="1291121346508216435">Исправлять орфографические ошибки автоматически:</translation>
@@ -457,7 +448,6 @@
 <translation id="3675321783533846350">Настроить прокси-сервер для подключения к сети</translation>
 <translation id="1572103024875503863"><ph name="NUMBER_MANY"/> дн.</translation>
 <translation id="8453184121293348016">Не обнаружен механизм отзыва</translation>
-<translation id="1199429765931693651">Скрыть список</translation>
 <translation id="3481915276125965083">Заблокированы следующие всплывающие окна:</translation>
 <translation id="7163503212501929773">Осталось <ph name="NUMBER_MANY"/> час.</translation>
 <translation id="5586329397967040209">Сделать эту страницу главной</translation>
@@ -477,21 +467,18 @@
 <translation id="9010612682952491200">Новая вкладка [<ph name="PROFILE_NAME"/>]</translation>
 <translation id="7965010376480416255">Общая память</translation>
 <translation id="6248988683584659830">Поиск настроек</translation>
-<translation id="2242457451044347345">Синхронизация закладок</translation>
 <translation id="7053983685419859001">Блокировать</translation>
 <translation id="2727712005121231835">Фактический размер</translation>
 <translation id="8887733174653581061">Всегда наверху</translation>
 <translation id="610886263749567451">Оповещение JavaScript</translation>
 <translation id="6556866813142980365">Повторить</translation>
 <translation id="6584811624537923135">Подтвердите удаление</translation>
-<translation id="8413126021676339697">Показать всю историю</translation>
 <translation id="8860923508273563464">Дождаться завершения загрузок</translation>
 <translation id="5288678174502918605">Открыть закрытую вкладку</translation>
 <translation id="9157595877708044936">Настройка...</translation>
 <translation id="1823768272150895732">Шрифт</translation>
 <translation id="4475552974751346499">Поиск в загрузках</translation>
 <translation id="5339267765524260207">Если вы отключите синхронизацию, закладки больше не будут синхронизироваться с закладками в вашем аккаунте Google и на других компьютерах. Закладки не будут удалены. Все имеющиеся закладки останутся на этом компьютере и в аккаунте Google.</translation>
-<translation id="1111153019813902504">Недавно в закладках</translation>
 <translation id="7497564420220535101">Сохранить &amp;снимок экрана...</translation>
 <translation id="3786934874263773074">&amp;Найти на странице</translation>
 <translation id="7605919926370951297">Кодировка текста</translation>
@@ -574,11 +561,9 @@
 <translation id="5956247558487200429">Сообщить о неполадке на сайте...</translation>
 <translation id="6459488832681039634">Найти выделенное</translation>
 <translation id="8235325155053717782">Ошибка <ph name="ERROR_NUMBER"/> (<ph name="ERROR_NAME"/>): <ph name="ERROR_TEXT"/></translation>
-<translation id="5933965621105104639">Рекомендации</translation>
 <translation id="7734729626860583526">Файл cookie с сайта <ph name="HOST"/></translation>
 <translation id="1084824384139382525">Копировать ад&amp;рес ссылки</translation>
 <translation id="5042992464904238023">Веб-содержание</translation>
-<translation id="1261967938516962772">Скрыть дополнительное</translation>
 <translation id="1181037720776840403">Удалить</translation>
 <translation id="4006726980536015530">Если вы сейчас закроете <ph name="PRODUCT_NAME"/>, эти загрузки будут отменены.</translation>
 <translation id="59174027418879706">Включено</translation>
@@ -597,7 +582,6 @@
 <translation id="7186367841673660872">Эта страница была переведена автоматически (<ph name="ORIGINAL_LANGUAGE"/> &gt; <ph name="LANGUAGE_LANGUAGE"/>)</translation>
 <translation id="1175364870820465910">&amp;Печать...</translation>
 <translation id="3866249974567520381">Описание</translation>
-<translation id="6549689063733911810">Последние действия</translation>
 <translation id="5552632479093547648">Обнаружено вредоносное ПО или фишинг!</translation>
 <translation id="4988273303304146523"><ph name="NUMBER_DEFAULT"/> дн. назад</translation>
 <translation id="2819994928625218237">Не предлагать правильное написание</translation>
@@ -605,7 +589,6 @@
 <translation id="9142623379911037913">Разрешить <ph name="SITE"/> показывать уведомления?</translation>
 <translation id="4196320913210960460">Управлять установленными расширениями можно на вкладке &quot;Расширения&quot; в меню &quot;Инструменты&quot;.</translation>
 <translation id="9118804773997839291">Представляющие опасность элементы с этой страницы приведены ниже. Чтобы получить более подробную информацию о каждом элементе, нажмите на ссылку &quot;Диагностика&quot;.</translation>
-<translation id="3664021239099029884">Просмотреть все загрузки</translation>
 <translation id="7754704193130578113">Запрашивать место для сохранения каждого файла перед загрузкой</translation>
 <translation id="2497284189126895209">Все файлы</translation>
 <translation id="5360606537916580043">Последний день</translation>
@@ -620,8 +603,6 @@
 <translation id="6281636957902664775">Перейти к <ph name="URL"/></translation>
 <translation id="630065524203833229">В&amp;ыход</translation>
 <translation id="2649204054376361687"><ph name="CITY"/>, <ph name="COUNTRY"/></translation>
-<translation id="5738216285593517904">Показать рекомендации</translation>
-<translation id="5264618369089706215">Поиск</translation>
 <translation id="1168020859489941584">Открытие через <ph name="TIME_REMAINING"/>...</translation>
 <translation id="7814458197256864873">&amp;Копировать</translation>
 <translation id="4692623383562244444">Поисковые системы</translation>
@@ -667,7 +648,6 @@
 <translation id="111844081046043029">Вы действительно хотите покинуть эту страницу?</translation>
 <translation id="3202578601642193415">Последние</translation>
 <translation id="8112886015144590373"><ph name="NUMBER_FEW"/> час.</translation>
-<translation id="8739589585766515812">Удалить историю за этот день</translation>
 <translation id="1398853756734560583">Развернуть</translation>
 <translation id="3340262871848042885">Срок действия сертификата сервера истек</translation>
 <translation id="8978540966440585844">Об&amp;зор...</translation>
@@ -708,7 +688,6 @@
 <translation id="4711094779914110278">Турецкая</translation>
 <translation id="7136984461011502314">Добро пожаловать в <ph name="PRODUCT_NAME"/></translation>
 <translation id="4002066346123236978">Заголовок</translation>
-<translation id="1974178770588939828">Показать список</translation>
 <translation id="4087089424473531098">Создано расширение:
 
 <ph name="EXTENSION_FILE"/></translation>
@@ -878,7 +857,6 @@
 <translation id="6004539838376062211">&amp;Параметры проверки правописания</translation>
 <translation id="5350198318881239970">Не удалось корректно загрузить ваш профиль.\n\nНекоторые функции могут быть недоступными. Убедитесь, что ваш профиль существует и что вы имеете разрешение на его чтение и запись.</translation>
 <translation id="4058793769387728514">Проверить документ</translation>
-<translation id="2915134691870672002">Скрыть рекомендации</translation>
 <translation id="756445078718366910">Открыть окно браузера</translation>
 <translation id="7887334752153342268">Дублировать</translation>
 <translation id="4980691186726139495">Не сохранять на этой странице</translation>
@@ -929,7 +907,6 @@
 <translation id="641480858134062906">Невозможно отобразить страницу <ph name="URL"/></translation>
 <translation id="3693415264595406141">Пароль:</translation>
 <translation id="74568296546932365">Оставить <ph name="PAGE_TITLE"/> поиском по умолчанию</translation>
-<translation id="9092040507273639934">Удалить уменьшенное изображение</translation>
 <translation id="6181769708911894002">Внимание! Посещение этого сайта может нанести вред вашему компьютеру.</translation>
 <translation id="3412265149091626468">Перейти к выделенному</translation>
 <translation id="3785852283863272759">Отправить адрес страницы по почте</translation>
@@ -965,7 +942,6 @@
 <translation id="3413808618118019351">Импорт закладок и настроек...</translation>
 <translation id="4835836146030131423">Ошибка при входе.</translation>
 <translation id="3169621169201401257">Более подробную информацию о неполадках с этими элементами можно найти на странице Google <ph name="DIAGNOSTIC_PAGE"/> для домена <ph name="DOMAIN"/>.</translation>
-<translation id="2559292239863842334">Здесь будут показаны окна поиска, которые вы использовали на других сайтах чаще всего.</translation>
 <translation id="7385854874724088939">При печати произошла ошибка. Проверьте состояние принтера и повторите попытку.</translation>
 <translation id="770015031906360009">Греческая</translation>
 <translation id="4474796446011988286">На вашем компьютере сохранены следующие файлы cookie:</translation>
@@ -1042,6 +1018,7 @@
 <translation id="8788572795284305350"><ph name="NUMBER_ZERO"/> hours ago</translation>
 <translation id="8236028464988198644">Поисковый запрос можно вводить прямо в адресной строке.</translation>
 <translation id="4867297348137739678">Последняя неделя</translation>
+<translation id="4881695831933465202">Открыть</translation>
 <translation id="5457793226917888578">На этой странице есть небезопасное содержание.</translation>
 <translation id="5988520580879236902">Проверить активные режимы просмотра:</translation>
 <translation id="5981759340456370804">Статистика для сисадминов</translation>
@@ -1089,7 +1066,6 @@
 <translation id="7000311294523403548">Веб-страница без имени</translation>
 <translation id="4593021220803146968">&amp;Перейти по адресу <ph name="URL"/></translation>
 <translation id="7649070708921625228">Справка</translation>
-<translation id="6119719873954126908">Здесь вы найдете советы и рекомендации, которые помогут оптимизировать процесс поиска.</translation>
 <translation id="7442246004212327644">О&amp;чистить</translation>
 <translation id="281133045296806353">В текущем сеансе браузера создано новое окно.</translation>
 <translation id="6314007596429871800">Кэш приложений</translation>
@@ -1213,7 +1189,6 @@
 <translation id="2433507940547922241">Внешний вид</translation>
 <translation id="839072384475670817">Создать ярлыки приложений...</translation>
 <translation id="6756161853376828318">Назначить <ph name="PRODUCT_NAME"/> браузером по умолчанию</translation>
-<translation id="2640524951934795733">Что мы планируем сюда добавить?</translation>
 <translation id="2061855250933714566"><ph name="ENCODING_CATEGORY"/> (<ph name="ENCODING_NAME"/>)</translation>
 <translation id="9147392381910171771">&amp;Параметры</translation>
 <translation id="6264485186158353794">Назад к безопасности</translation>
@@ -1228,7 +1203,6 @@
 <translation id="1177437665183591855">Неизвестная ошибка сертификата сервера</translation>
 <translation id="3819800052061700452">Полно&amp;экранный режим</translation>
 <translation id="3533943170037501541">Добро пожаловать на главную страницу!</translation>
-<translation id="3218306954729745977">Показать последние закрытые вкладки</translation>
 <translation id="3737554291183722650">Заголовок страницы:</translation>
 <translation id="1581962803218266616">Показать в Finder</translation>
 <translation id="4726901538158498735">Поиск по умолчанию:</translation>

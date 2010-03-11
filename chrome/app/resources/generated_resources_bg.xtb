@@ -51,7 +51,6 @@
 <translation id="4780321648949301421">Запазване на страницата като...</translation>
 <translation id="9154072353677278078">Изискват се потребителско име и парола за сървъра <ph name="DOMAIN"/> на адрес <ph name="REALM"/>.</translation>
 <translation id="8178665534778830238">Съдържание:</translation>
-<translation id="4771019161370731727">Скорошна дейност</translation>
 <translation id="8974161578568356045">Автоматично откриване</translation>
 <translation id="1818606096021558659">Страница</translation>
 <translation id="1657406563541664238">Помогнете ни да подобрим <ph name="PRODUCT_NAME"/> като автоматично изпращате на Google статистически данни за използването му и сигнали за сривове</translation>
@@ -61,7 +60,6 @@
 <translation id="7481475534986701730">Наскоро посетени сайтове</translation>
 <translation id="4260722247480053581">Отваряне на прозорец при използване на функцията „инкогнито“</translation>
 <translation id="4565377596337484307">Скриване на паролата</translation>
-<translation id="5008715825902408241">Скриване на миниизображенията</translation>
 <translation id="762917759028004464">Понастоящем браузърът по подразбиране е <ph name="BROWSER_NAME"/>.</translation>
 <translation id="9213479837033539041">Остават <ph name="NUMBER_MANY"/> сек</translation>
 <translation id="8487678622945914333">Увеличаване</translation>
@@ -104,7 +102,6 @@
 <translation id="1486408090387743835"><ph name="PRODUCT_NAME"/> вече има <ph name="BEGIN_LINK"/>разширения<ph name="END_LINK"/> и функция за <ph name="BEGIN_BUTTON"/>синхронизиране на отметки<ph name="END_BUTTON"/>.</translation>
 <translation id="3147949335879360642">Отметките ви ще бъдат обединени.</translation>
 <translation id="4422347585044846479">Редактиране на отметката за тази страница</translation>
-<translation id="51285338152176012">Скриване на наскоро затворените раздели</translation>
 <translation id="8546306075665861288">Кеш за изображения</translation>
 <translation id="801357260673640054">Синхронизирани отметки...</translation>
 <translation id="1399076603473531278">Данните за вход не са актуални.</translation>
@@ -225,7 +222,6 @@
 <translation id="7421925624202799674">&amp;Преглед на изходния код на страницата</translation>
 <translation id="6686490380836145850">Затваряне на разделите отдясно</translation>
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> часа</translation>
-<translation id="2790948358747073186">Още повече</translation>
 <translation id="5774515636230743468">Манифест:</translation>
 <translation id="2423578206845792524">&amp;Запазване на изображението като...</translation>
 <translation id="1095038624419434542">Възникна грешка при зареждането на програмен ресурс. Опитайте да инсталирате отново.</translation>
@@ -249,7 +245,6 @@
 <translation id="3165657440747518774">&amp;Търсене в страницата</translation>
 <translation id="939736085109172342">Нова папка</translation>
 <translation id="862750493060684461">Кеш за CSS</translation>
-<translation id="2009541932026160416">Кликнете върху <ph name="CROSS_IMAGE"/>, за да премахнете съответното миниизображение</translation>
 <translation id="5641560969478423183">Сертификатът на сървъра не съответства на URL адреса</translation>
 <translation id="6474422710030751464">Част от съдържанието на тази страница бе извлечено чрез връзка с SSL грешки.</translation>
 <translation id="121827551500866099">Показване на всички файлове за изтегляне...</translation>
@@ -353,7 +348,6 @@
 <translation id="5039804452771397117">Разрешаване</translation>
 <translation id="7564146504836211400">„Бисквитки“ и други данни</translation>
 <translation id="2266011376676382776">Блокирали страници</translation>
-<translation id="1805966933547717780">http://www.google.com/support/chrome/?hl=bg</translation>
 <translation id="1319824869167805246">Отваряне на всички отметки в нов прозорец</translation>
 <translation id="3493653833301553455">Автоматично попълване на формуляри:</translation>
 <translation id="3371861036502301517">Неуспешно инсталиране на разширението</translation>
@@ -369,7 +363,6 @@
 <translation id="1516602185768225813">Повторно отваряне на последно отворените страници</translation>
 <translation id="1538486363863290963">„Бисквитките“ от трети страни да се блокират без изключение</translation>
 <translation id="4874539263382920044">Заглавието трябва да съдържа поне един знак</translation>
-<translation id="3549657413697417275">Търсене в историята ви</translation>
 <translation id="7344633671344536647">Данни за сърфирането:</translation>
 <translation id="4250680216510889253">Не</translation>
 <translation id="6291953229176937411">&amp;Показване във Finder</translation>
@@ -410,7 +403,6 @@
 <translation id="4164507027399414915">Възстановяване на всички премахнати миниизображения</translation>
 <translation id="6620110761915583480">Запазване на файл</translation>
 <translation id="7543025879977230179">Опции за <ph name="PRODUCT_NAME"/></translation>
-<translation id="4271692636717022386">Показване на още повече</translation>
 <translation id="2648845569394238430">Търсене:</translation>
 <translation id="2175607476662778685">Лента за бързо стартиране</translation>
 <translation id="6434309073475700221">Отхвърляне</translation>
@@ -418,7 +410,6 @@
 <translation id="4551297183924943154">Изглежда, че потребителският профил се използва от процеса <ph name="PROCESS_ID"/> на хоста <ph name="HOST_NAME"/>.  Ако сте сигурни, че не се използва от други процеси, изтрийте файла <ph name="LOCK_FILE"/> и рестартирайте <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="4378551569595875038">Установява се връзка...</translation>
 <translation id="7029809446516969842">Пароли</translation>
-<translation id="3513979718339724672">Показване на миниизображенията</translation>
 <translation id="8211437954284917092">Въведете заявка в текстовото поле по-горе, за да търсите в отметките си.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> файла</translation>
 <translation id="1291121346508216435">Правописът да се поправя автоматично:</translation>
@@ -457,7 +448,6 @@
 <translation id="3675321783533846350">Настройка на прокси сървър за връзка с мрежата.</translation>
 <translation id="1572103024875503863"><ph name="NUMBER_MANY"/> дни</translation>
 <translation id="8453184121293348016">Не е намерен механизъм за анулиране</translation>
-<translation id="1199429765931693651">Скриване на списъка</translation>
 <translation id="3481915276125965083">Следните изскачащи прозорци са блокирани на тази страница:</translation>
 <translation id="7163503212501929773">Остават <ph name="NUMBER_MANY"/> часа</translation>
 <translation id="5586329397967040209">Нека това да е началната ми страница</translation>
@@ -477,21 +467,18 @@
 <translation id="9010612682952491200">Нов раздел [<ph name="PROFILE_NAME"/>]</translation>
 <translation id="7965010376480416255">Споделена памет</translation>
 <translation id="6248988683584659830">Настройки за търсене</translation>
-<translation id="2242457451044347345">Синхронизиране на отметки</translation>
 <translation id="7053983685419859001">Блокиране</translation>
 <translation id="2727712005121231835">Действителен размер</translation>
 <translation id="8887733174653581061">Винаги отгоре</translation>
 <translation id="610886263749567451">Уведомление за JavaScript</translation>
 <translation id="6556866813142980365">Възстановяване</translation>
 <translation id="6584811624537923135">Потвърждаване на деинсталирането</translation>
-<translation id="8413126021676339697">Показване на пълната история</translation>
 <translation id="8860923508273563464">Завършване на изтеглянето</translation>
 <translation id="5288678174502918605">По&amp;вторно отваряне на затворения раздел</translation>
 <translation id="9157595877708044936">Настройва се...</translation>
 <translation id="1823768272150895732">Шрифт</translation>
 <translation id="4475552974751346499">&amp;Търсене във файловете за изтегляне</translation>
 <translation id="5339267765524260207">Ако деактивирате синхронизирането, отметките ви няма повече да се синхронизират със съхранените в профила ви в Google или на другите ви машини. Няма да бъдат изтрити отметки. Всички съществуващи ще останат на този компютър и в профила ви в Google.</translation>
-<translation id="1111153019813902504">Скорошни отметки</translation>
 <translation id="7497564420220535101">Запазване на екранна &amp;снимка...</translation>
 <translation id="3786934874263773074">&amp;Търсене в страницата</translation>
 <translation id="7605919926370951297">Кодировка на текста</translation>
@@ -575,11 +562,9 @@
 <translation id="5956247558487200429">&amp;Подаване на сигнал за грешка или невалиден уебсайт...</translation>
 <translation id="6459488832681039634">Използване на избраното за търсене</translation>
 <translation id="8235325155053717782">Грешка <ph name="ERROR_NUMBER"/> (<ph name="ERROR_NAME"/>): <ph name="ERROR_TEXT"/></translation>
-<translation id="5933965621105104639">Препоръки</translation>
 <translation id="7734729626860583526">„Бисквитка“ от <ph name="HOST"/></translation>
 <translation id="1084824384139382525">Копиране на адреса на вр&amp;ъзката</translation>
 <translation id="5042992464904238023">Уеб съдържание</translation>
-<translation id="1261967938516962772">Скриване на още повече</translation>
 <translation id="1181037720776840403">Премахване</translation>
 <translation id="4006726980536015530">Ако затворите <ph name="PRODUCT_NAME"/> сега, изтеглянията ще бъдат анулирани.</translation>
 <translation id="59174027418879706">Активирани</translation>
@@ -598,7 +583,6 @@
 <translation id="7186367841673660872">Тази страница е преведена от<ph name="ORIGINAL_LANGUAGE"/>на<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="1175364870820465910">&amp;Печат...</translation>
 <translation id="3866249974567520381">Описание</translation>
-<translation id="6549689063733911810">Скорошни</translation>
 <translation id="5552632479093547648">Открити са злонамерен софтуер и фишинг!</translation>
 <translation id="4988273303304146523">преди <ph name="NUMBER_DEFAULT"/> дни</translation>
 <translation id="2819994928625218237">&amp;Няма предложения за правопис</translation>
@@ -606,7 +590,6 @@
 <translation id="9142623379911037913">Да се разреши ли на <ph name="SITE"/> да показва известия на работния плот?</translation>
 <translation id="4196320913210960460">Можете да управлявате инсталираните разширения, като кликнете върху „Разширения“ в менюто „Инструменти“.</translation>
 <translation id="9118804773997839291">Следва списък на всички опасни елементи за страницата. Кликнете върху връзката „Диагностика“ за още информация относно нишката за конкретен елемент.</translation>
-<translation id="3664021239099029884">Преглед на всички изтегляния</translation>
 <translation id="7754704193130578113">Преди изтегляне на файлове да се показва въпрос къде да бъде запазен всеки един от тях</translation>
 <translation id="2497284189126895209">Всички файлове</translation>
 <translation id="5360606537916580043">Последният ден</translation>
@@ -621,8 +604,6 @@
 <translation id="6281636957902664775">Към <ph name="URL"/></translation>
 <translation id="630065524203833229">Из&amp;ход</translation>
 <translation id="2649204054376361687"><ph name="CITY"/>, <ph name="COUNTRY"/></translation>
-<translation id="5738216285593517904">Показване на препоръките</translation>
-<translation id="5264618369089706215">Търсения</translation>
 <translation id="1168020859489941584">Ще се отвори след <ph name="TIME_REMAINING"/>...</translation>
 <translation id="7814458197256864873">&amp;Копиране</translation>
 <translation id="4692623383562244444">търсещи машини</translation>
@@ -668,7 +649,6 @@
 <translation id="111844081046043029">Наистина ли искате да излезете от тази страница?</translation>
 <translation id="3202578601642193415">Най-нова</translation>
 <translation id="8112886015144590373"><ph name="NUMBER_FEW"/> часа</translation>
-<translation id="8739589585766515812">Изтриване на историята за деня</translation>
 <translation id="1398853756734560583">Увеличаване</translation>
 <translation id="3340262871848042885">Сертификатът на сървъра е с изтекла валидност</translation>
 <translation id="8978540966440585844">Прегле&amp;д...</translation>
@@ -709,7 +689,6 @@
 <translation id="4711094779914110278">Турски</translation>
 <translation id="7136984461011502314">Добре дошли в <ph name="PRODUCT_NAME"/></translation>
 <translation id="4002066346123236978">Заглавие</translation>
-<translation id="1974178770588939828">Показване на списъка</translation>
 <translation id="4087089424473531098">Създадено бе разширението:
 
 <ph name="EXTENSION_FILE"/></translation>
@@ -879,7 +858,6 @@
 <translation id="6004539838376062211">&amp;Опции на програмата за проверка на правописа</translation>
 <translation id="5350198318881239970">Потребителският ви профил не можа да бъде отворен правилно.\n\nВъзможно е да няма достъп до някои функции.  Моля, уверете се, че потребителският профил съществува и имате разрешение за четене и запис на съдържанието му.</translation>
 <translation id="4058793769387728514">Проверка на документа сега</translation>
-<translation id="2915134691870672002">Скриване на препоръките</translation>
 <translation id="756445078718366910">Отваряне на прозореца на браузъра</translation>
 <translation id="7887334752153342268">Дублиране</translation>
 <translation id="4980691186726139495">Да не се държи на тази страница</translation>
@@ -932,7 +910,6 @@
 <translation id="641480858134062906">Неуспешно зареждане на <ph name="URL"/></translation>
 <translation id="3693415264595406141">Парола:</translation>
 <translation id="74568296546932365">Запазване на <ph name="PAGE_TITLE"/> като търсеща машина по подразбиране</translation>
-<translation id="9092040507273639934">Премахване на миниизображение</translation>
 <translation id="6181769708911894002">Внимание! Посещаването на този сайт може да навреди на компютъра ви!</translation>
 <translation id="3412265149091626468">Преминаване към избраното</translation>
 <translation id="3785852283863272759">Изпращане по имейл на местоположението на страницата</translation>
@@ -968,7 +945,6 @@
 <translation id="3413808618118019351">&amp;Импортиране на отметки и настройки...</translation>
 <translation id="4835836146030131423">Грешка при влизането.</translation>
 <translation id="3169621169201401257">За подробна информация относно проблемите с тези елементи посетете <ph name="DIAGNOSTIC_PAGE"/> на Google за <ph name="DOMAIN"/>.</translation>
-<translation id="2559292239863842334">Тук ще се покажат полетата за търсене, които използвате най-често в други сайтове.</translation>
 <translation id="7385854874724088939">При опита за печат нещо се обърка.  Моля, проверете принтера си и опитайте отново.</translation>
 <translation id="770015031906360009">Гръцки</translation>
 <translation id="4474796446011988286">На компютъра ви се съхраняват следните „бисквитки“:</translation>
@@ -1045,6 +1021,7 @@
 <translation id="8788572795284305350"><ph name="NUMBER_ZERO"/> hours ago</translation>
 <translation id="8236028464988198644">Търсете от адресната лента.</translation>
 <translation id="4867297348137739678">Миналата седмица</translation>
+<translation id="4881695831933465202">Отваряне</translation>
 <translation id="5457793226917888578">Тази страница е с незащитено съдържание.</translation>
 <translation id="5988520580879236902">Инспектиране на активните изгледи:</translation>
 <translation id="5981759340456370804">Статистика за умници</translation>
@@ -1092,7 +1069,6 @@
 <translation id="7000311294523403548">Неозаглавена уеб страница</translation>
 <translation id="4593021220803146968">&amp;Към <ph name="URL"/></translation>
 <translation id="7649070708921625228">Помощ</translation>
-<translation id="6119719873954126908">Проверявайте тук за съвети и предложения за по-добро сърфиране!</translation>
 <translation id="7442246004212327644">Изчиства&amp;не</translation>
 <translation id="281133045296806353">Създаден е нов прозорец в съществуващата сесия на браузъра.</translation>
 <translation id="6314007596429871800">Кеш на приложение</translation>
@@ -1216,7 +1192,6 @@
 <translation id="2433507940547922241">Облик</translation>
 <translation id="839072384475670817">Създаване на преки пъти&amp;ща към приложението...</translation>
 <translation id="6756161853376828318">Нека <ph name="PRODUCT_NAME"/> бъде моят браузър по подразбиране</translation>
-<translation id="2640524951934795733">Какво ли да сложим тук?</translation>
 <translation id="2061855250933714566"><ph name="ENCODING_CATEGORY"/> (<ph name="ENCODING_NAME"/>)</translation>
 <translation id="9147392381910171771">&amp;Опции</translation>
 <translation id="6264485186158353794">Назад към безопасната страница</translation>
@@ -1231,7 +1206,6 @@
 <translation id="1177437665183591855">Грешка поради неизвестен сертификат на сървъра</translation>
 <translation id="3819800052061700452">На &amp;цял екран</translation>
 <translation id="3533943170037501541">Добре дошли в началната си страница!</translation>
-<translation id="3218306954729745977">Показване на наскоро затворените раздели</translation>
 <translation id="3737554291183722650">Заглавие на страницата:</translation>
 <translation id="1581962803218266616">Показване във Finder</translation>
 <translation id="4726901538158498735">Търсене по подразбиране:</translation>

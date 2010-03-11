@@ -51,7 +51,6 @@
 <translation id="4780321648949301421">Spara sida som...</translation>
 <translation id="9154072353677278078">Servern <ph name="DOMAIN"/> på <ph name="REALM"/> kräver användarnamn och lösenord.</translation>
 <translation id="8178665534778830238">Innehåll:</translation>
-<translation id="4771019161370731727">Senaste aktiviteterna</translation>
 <translation id="8974161578568356045">Upptäck automatiskt</translation>
 <translation id="1818606096021558659">Sida</translation>
 <translation id="1657406563541664238">Hjälp till att göra <ph name="PRODUCT_NAME"/> bättre genom att automatiskt skicka användningsstatistik och felrapporter till Google</translation>
@@ -61,7 +60,6 @@
 <translation id="7481475534986701730">Nyligen besökta webbplatser</translation>
 <translation id="4260722247480053581">Öppna i inkognitofönster</translation>
 <translation id="4565377596337484307">Dölj lösenord</translation>
-<translation id="5008715825902408241">Dölj miniatyrer</translation>
 <translation id="762917759028004464">Standardwebbläsaren är för närvarande <ph name="BROWSER_NAME"/>.</translation>
 <translation id="9213479837033539041"><ph name="NUMBER_MANY"/> sekunder kvar</translation>
 <translation id="8487678622945914333">Zooma in</translation>
@@ -104,7 +102,6 @@
 <translation id="1486408090387743835"><ph name="PRODUCT_NAME"/> har nu <ph name="BEGIN_LINK"/>tillägg<ph name="END_LINK"/> och <ph name="BEGIN_BUTTON"/>bokmärkessynkronisering<ph name="END_BUTTON"/>.</translation>
 <translation id="3147949335879360642">Dina bokmärken kombineras.</translation>
 <translation id="4422347585044846479">Redigera bokmärke för den här sidan</translation>
-<translation id="51285338152176012">Dölj ‎nyligen stängda flikar</translation>
 <translation id="8546306075665861288">Cacheminne för bilder</translation>
 <translation id="801357260673640054">Bokmärken synkroniserade...</translation>
 <translation id="1399076603473531278">Inloggningsuppgifterna är inte aktuella.</translation>
@@ -225,7 +222,6 @@
 <translation id="7421925624202799674">Visa &amp;sidkälla</translation>
 <translation id="6686490380836145850">Stäng flikar till höger</translation>
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> timmar</translation>
-<translation id="2790948358747073186">Ännu mer</translation>
 <translation id="5774515636230743468">Manifest:</translation>
 <translation id="2423578206845792524">S&amp;para bild som...</translation>
 <translation id="1095038624419434542">Vi upptäckte ett fel när vi läste in programresursen. Försök att installera om.</translation>
@@ -249,7 +245,6 @@
 <translation id="3165657440747518774">&amp;Sök på sida</translation>
 <translation id="939736085109172342">Ny mapp</translation>
 <translation id="862750493060684461">CSS-cacheminne</translation>
-<translation id="2009541932026160416">Klicka på <ph name="CROSS_IMAGE"/> om du vill ta bort miniatyren</translation>
 <translation id="5641560969478423183">Servercertifikatet överensstämmer inte med webbadressen</translation>
 <translation id="6474422710030751464">En del av innehållet på den här sidan har hämtats via en anslutning med SSL-fel.</translation>
 <translation id="121827551500866099">Visa alla nedladdningar...</translation>
@@ -353,7 +348,6 @@
 <translation id="5039804452771397117">Tillåt</translation>
 <translation id="7564146504836211400">Cookies och andra data</translation>
 <translation id="2266011376676382776">Sidor svarar inte</translation>
-<translation id="1805966933547717780">http://www.google.com/chrome/help/</translation>
 <translation id="1319824869167805246">Öppna alla bokmärken i nytt fönster</translation>
 <translation id="3493653833301553455">Autofyll formulär:</translation>
 <translation id="3371861036502301517">Det gick inte att installera tillägget</translation>
@@ -369,7 +363,6 @@
 <translation id="1516602185768225813">Öppna de senast öppnade sidorna igen</translation>
 <translation id="1538486363863290963">Blockera alla cookies från tredje part utan undantag</translation>
 <translation id="4874539263382920044">Namnet måste bestå av minst ett tecken</translation>
-<translation id="3549657413697417275">Sök i historik</translation>
 <translation id="7344633671344536647">Webbinformation:</translation>
 <translation id="4250680216510889253">Nej</translation>
 <translation id="6291953229176937411">&amp;Visa i Finder</translation>
@@ -410,7 +403,6 @@
 <translation id="4164507027399414915">Återställ alla borttagna miniatyrer</translation>
 <translation id="6620110761915583480">Spara fil</translation>
 <translation id="7543025879977230179"><ph name="PRODUCT_NAME"/> Alternativ</translation>
-<translation id="4271692636717022386">Visa ännu mer</translation>
 <translation id="2648845569394238430">Sök:</translation>
 <translation id="2175607476662778685">Fältet Snabbstart</translation>
 <translation id="6434309073475700221">Kasta</translation>
@@ -418,7 +410,6 @@
 <translation id="4551297183924943154">Profilen verkar användas av processen <ph name="PROCESS_ID"/> på värdenheten <ph name="HOST_NAME"/>. Om du är säker på att inga andra processer använder profilen kan du ta bort filen <ph name="LOCK_FILE"/> och starta om <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="4378551569595875038">Ansluter...</translation>
 <translation id="7029809446516969842">Lösenord</translation>
-<translation id="3513979718339724672">Visa miniatyrer</translation>
 <translation id="8211437954284917092">Sök i dina bokmärken genom att ange en sökfråga i textfältet ovan.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> filer</translation>
 <translation id="1291121346508216435">Rätta stavning automatiskt:</translation>
@@ -457,7 +448,6 @@
 <translation id="3675321783533846350">Ange en proxy vid anslutning till nätverket.</translation>
 <translation id="1572103024875503863"><ph name="NUMBER_MANY"/> dagar</translation>
 <translation id="8453184121293348016">Ingen återkallningsmekanism har hittats</translation>
-<translation id="1199429765931693651">Dölj lista</translation>
 <translation id="3481915276125965083">Följande popup-fönster blockerades på den här sidan:</translation>
 <translation id="7163503212501929773"><ph name="NUMBER_MANY"/> timmar kvar</translation>
 <translation id="5586329397967040209">Gör det här till min startsida</translation>
@@ -477,21 +467,18 @@
 <translation id="9010612682952491200">Ny flik [<ph name="PROFILE_NAME"/>]</translation>
 <translation id="7965010376480416255">Delat minne</translation>
 <translation id="6248988683584659830">Sökinställningar</translation>
-<translation id="2242457451044347345">Bokmärkessynkronisering</translation>
 <translation id="7053983685419859001">Blockera</translation>
 <translation id="2727712005121231835">Faktisk storlek</translation>
 <translation id="8887733174653581061">Alltid överst</translation>
 <translation id="610886263749567451">Javascript-varning</translation>
 <translation id="6556866813142980365">Upprepa</translation>
 <translation id="6584811624537923135">Bekräfta avinstallation</translation>
-<translation id="8413126021676339697">Visa fullständig historik</translation>
 <translation id="8860923508273563464">Vänta tills filerna är hämtade</translation>
 <translation id="5288678174502918605">Ö&amp;ppna en stängd flik igen</translation>
 <translation id="9157595877708044936">Konfigurerar...</translation>
 <translation id="1823768272150895732">Teckensnitt</translation>
 <translation id="4475552974751346499">Sök i nedladdningar</translation>
 <translation id="5339267765524260207">Om du inaktiverar synkronisering synkroniseras inte dina bokmärken med dem som lagras i ditt Google-konto eller på andra enheter. Inga bokmärken tas bort. Alla befintliga bokmärken finns kvar på den här datorn och i ditt Google-konto.</translation>
-<translation id="1111153019813902504">Nya bokmärken</translation>
 <translation id="7497564420220535101">Spara &amp;skärmdump...</translation>
 <translation id="3786934874263773074">&amp;Hitta på sida</translation>
 <translation id="7605919926370951297">Textkodning</translation>
@@ -574,11 +561,9 @@
 <translation id="5956247558487200429">&amp;Rapportera fel eller trasig webbplats...</translation>
 <translation id="6459488832681039634">Använd markering för sökning</translation>
 <translation id="8235325155053717782">Fel <ph name="ERROR_NUMBER"/> (<ph name="ERROR_NAME"/>): <ph name="ERROR_TEXT"/></translation>
-<translation id="5933965621105104639">Rekommendationer</translation>
 <translation id="7734729626860583526">Cookie från <ph name="HOST"/></translation>
 <translation id="1084824384139382525">Kopiera länk&amp;adress</translation>
 <translation id="5042992464904238023">Webbinnehåll</translation>
-<translation id="1261967938516962772">Dölj ännu mer</translation>
 <translation id="1181037720776840403">Ta bort</translation>
 <translation id="4006726980536015530">Om du stänger <ph name="PRODUCT_NAME"/> nu avbryts dessa hämtningar.</translation>
 <translation id="59174027418879706">Aktiverad</translation>
@@ -597,7 +582,6 @@
 <translation id="7186367841673660872">Sidan har översatts från <ph name="ORIGINAL_LANGUAGE"/> till <ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="1175364870820465910">Skriv &amp;ut...</translation>
 <translation id="3866249974567520381">Beskrivning</translation>
-<translation id="6549689063733911810">Senaste</translation>
 <translation id="5552632479093547648">Skadlig programvara och lösenordsfiske har upptäckts!</translation>
 <translation id="4988273303304146523">För <ph name="NUMBER_DEFAULT"/> dagar sedan</translation>
 <translation id="2819994928625218237">&amp;Inga stavningsförslag</translation>
@@ -605,7 +589,6 @@
 <translation id="9142623379911037913">Tillåt att <ph name="SITE"/> visar meddelanden på skrivbordet?</translation>
 <translation id="4196320913210960460">Om du vill hantera dina installerade tillägg klickar du på Tillägg i menyn Verktyg.</translation>
 <translation id="9118804773997839291">Här nedan finns en lista med alla osäkra komponenter på sidan. Klicka på länken Diagnostik om du vill ha mer information om tråden för en given komponent.</translation>
-<translation id="3664021239099029884">Visa alla hämtade filer</translation>
 <translation id="7754704193130578113">Fråga var filerna ska sparas före nedladdning</translation>
 <translation id="2497284189126895209">Alla filer</translation>
 <translation id="5360606537916580043">Senaste dagen</translation>
@@ -620,8 +603,6 @@
 <translation id="6281636957902664775">Gå till <ph name="URL"/></translation>
 <translation id="630065524203833229">&amp;Avsluta</translation>
 <translation id="2649204054376361687"><ph name="CITY"/>, <ph name="COUNTRY"/></translation>
-<translation id="5738216285593517904">Visa rekommendationer</translation>
-<translation id="5264618369089706215">Sökningar</translation>
 <translation id="1168020859489941584">Öppnar om <ph name="TIME_REMAINING"/>...</translation>
 <translation id="7814458197256864873">&amp;Kopiera</translation>
 <translation id="4692623383562244444">Sökmotorer</translation>
@@ -667,7 +648,6 @@
 <translation id="111844081046043029">Vill du lämna den här sidan?</translation>
 <translation id="3202578601642193415">Senaste</translation>
 <translation id="8112886015144590373"><ph name="NUMBER_FEW"/> timmar</translation>
-<translation id="8739589585766515812">Ta bort historik för denna dag</translation>
 <translation id="1398853756734560583">Maximera</translation>
 <translation id="3340262871848042885">Servercertifikatet har gått ut</translation>
 <translation id="8978540966440585844">S&amp;ök...</translation>
@@ -708,7 +688,6 @@
 <translation id="4711094779914110278">Turkiska</translation>
 <translation id="7136984461011502314">Välkommen till <ph name="PRODUCT_NAME"/></translation>
 <translation id="4002066346123236978">Namn</translation>
-<translation id="1974178770588939828">Visa lista</translation>
 <translation id="4087089424473531098">Skapade tillägget:
 
 <ph name="EXTENSION_FILE"/></translation>
@@ -878,7 +857,6 @@
 <translation id="6004539838376062211">&amp;Alternativ för stavningskontroll</translation>
 <translation id="5350198318881239970">Det gick inte att öppna din profil ordentligt.\n\nVissa funktioner är eventuellt inte tillgängliga.  Kontrollera att profilen finns och att du har behörighet att läsa och skriva till profilens innehåll.</translation>
 <translation id="4058793769387728514">Kontrollera dokumentet nu</translation>
-<translation id="2915134691870672002">Dölj rekommendationer</translation>
 <translation id="756445078718366910">Öppna webbläsarfönster</translation>
 <translation id="7887334752153342268">Dubblett</translation>
 <translation id="4980691186726139495">Behåll inte på den här sidan</translation>
@@ -931,7 +909,6 @@
 <translation id="641480858134062906"><ph name="URL"/> kunde inte laddas</translation>
 <translation id="3693415264595406141">Lösenord:</translation>
 <translation id="74568296546932365">Behåll <ph name="PAGE_TITLE"/> som standardsökmotor</translation>
-<translation id="9092040507273639934">Ta bort en miniatyr</translation>
 <translation id="6181769708911894002">Varning: Din dator kan skadas om du besöker den här webbplatsen!</translation>
 <translation id="3412265149091626468">Hoppa till markering</translation>
 <translation id="3785852283863272759">Skicka sidadress i e-post</translation>
@@ -967,7 +944,6 @@
 <translation id="3413808618118019351">&amp;Importera bokmärken och inställningar...</translation>
 <translation id="4835836146030131423">Inloggningsfel.</translation>
 <translation id="3169621169201401257">Detaljerad information om problemen med dessa komponenter finns på Google <ph name="DIAGNOSTIC_PAGE"/> för <ph name="DOMAIN"/>.</translation>
-<translation id="2559292239863842334">Sökrutorna som du använder oftast på andra webbplatser visas här.</translation>
 <translation id="7385854874724088939">Det uppstod ett problem vid utskriften.  Se över skrivaren och försök igen.</translation>
 <translation id="770015031906360009">Grekiska</translation>
 <translation id="4474796446011988286">Följande cookies har lagrats på din dator:</translation>
@@ -1044,6 +1020,7 @@
 <translation id="8788572795284305350"><ph name="NUMBER_ZERO"/> hours ago</translation>
 <translation id="8236028464988198644">Sök i adressfältet.</translation>
 <translation id="4867297348137739678">Förra veckan</translation>
+<translation id="4881695831933465202">Öppna</translation>
 <translation id="5457793226917888578">På den här sidan finns innehåll som inte är säkert.</translation>
 <translation id="5988520580879236902">Kontrollera aktiva vyer:</translation>
 <translation id="5981759340456370804">Statistik för nördar</translation>
@@ -1091,7 +1068,6 @@
 <translation id="7000311294523403548">Namnlös webbsida</translation>
 <translation id="4593021220803146968">&amp;Öppna <ph name="URL"/></translation>
 <translation id="7649070708921625228">Hjälp</translation>
-<translation id="6119719873954126908">Håll koll på det här fältet för att få tips om och förslag på hur du kan göra bättre webbsökningar!</translation>
 <translation id="7442246004212327644">&amp;Rensa</translation>
 <translation id="281133045296806353">Ett nytt fönster skapades under den aktuella webbläsarsessionen.</translation>
 <translation id="6314007596429871800">Programmets cacheminne</translation>
@@ -1215,7 +1191,6 @@
 <translation id="2433507940547922241">Utseende</translation>
 <translation id="839072384475670817">Skapa &amp;programgenvägar...</translation>
 <translation id="6756161853376828318">Gör <ph name="PRODUCT_NAME"/> till mitt standardval</translation>
-<translation id="2640524951934795733">Och vad ska vi ha här då?</translation>
 <translation id="2061855250933714566"><ph name="ENCODING_CATEGORY"/> (<ph name="ENCODING_NAME"/>)</translation>
 <translation id="9147392381910171771">&amp;Alternativ</translation>
 <translation id="6264485186158353794">Tillbaka till säker webbplats</translation>
@@ -1230,7 +1205,6 @@
 <translation id="1177437665183591855">Fel - okänt servercertifikat</translation>
 <translation id="3819800052061700452">&amp;Helskärm</translation>
 <translation id="3533943170037501541">Välkommen till din startsida!</translation>
-<translation id="3218306954729745977">Visa ‎nyligen stängda flikar</translation>
 <translation id="3737554291183722650">Sidrubrik:</translation>
 <translation id="1581962803218266616">Visa i Finder</translation>
 <translation id="4726901538158498735">Standardsökning:</translation>

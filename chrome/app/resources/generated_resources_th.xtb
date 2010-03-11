@@ -49,7 +49,6 @@
 <translation id="4780321648949301421">บันทึกหน้าเป็น...</translation>
 <translation id="9154072353677278078">เซิร์ฟเวอร์ <ph name="DOMAIN"/> ที่ <ph name="REALM"/> จำเป็นต้องมีชื่อผู้ใช้และรหัสผ่าน</translation>
 <translation id="8178665534778830238">เนื้อหา:</translation>
-<translation id="4771019161370731727">กิจกรรมล่าสุด</translation>
 <translation id="8974161578568356045">ตรวจพบอัตโนมัติ</translation>
 <translation id="1818606096021558659">หน้าเว็บ</translation>
 <translation id="1657406563541664238">ช่วยปรับปรุง <ph name="PRODUCT_NAME"/> ให้ดีขึ้นโดยการส่งสถิติการใช้งานและรายงานปัญหาไปยัง Google โดยอัตโนมัติ</translation>
@@ -59,7 +58,6 @@
 <translation id="7481475534986701730">เว็บไซต์ที่เพิ่งเข้าไปเยี่ยมชม</translation>
 <translation id="4260722247480053581">เปิดในหน้าต่างที่ไม่ระบุตัวตน</translation>
 <translation id="4565377596337484307">ซ่อนรหัสผ่าน</translation>
-<translation id="5008715825902408241">ซ่อนรูปภาพขนาดย่อ</translation>
 <translation id="762917759028004464">เบราว์เซอร์เริ่มต้น <ph name="BROWSER_NAME"/> ในขณะนี้</translation>
 <translation id="9213479837033539041">เหลือ <ph name="NUMBER_MANY"/> วินาที</translation>
 <translation id="8487678622945914333">ขยาย</translation>
@@ -102,7 +100,6 @@
 <translation id="1486408090387743835">ขณะนี้ <ph name="PRODUCT_NAME"/> มี<ph name="BEGIN_LINK"/>ส่วนขยาย<ph name="END_LINK"/>และ<ph name="BEGIN_BUTTON"/>การทำให้ข้อมูลบุ๊กมาร์กตรงกัน <ph name="END_BUTTON"/></translation>
 <translation id="3147949335879360642">บุ๊กมาร์กของคุณจะถูกรวมเข้าด้วยกัน</translation>
 <translation id="4422347585044846479">แก้ไขบุ๊คมาร์คสำหรับหน้านี้</translation>
-<translation id="51285338152176012">ซ่อนแท็บที่เพิ่งปิดไป</translation>
 <translation id="8546306075665861288">แคชของภาพ</translation>
 <translation id="801357260673640054">ทำให้ข้อมูลบุ๊กมาร์กตรงกันแล้ว...</translation>
 <translation id="1399076603473531278">รายละเอียดการลงชื่อเข้าใช้เก่าเกินไป</translation>
@@ -223,7 +220,6 @@
 <translation id="7421925624202799674">&amp;ดูแหล่งที่มาของหน้า</translation>
 <translation id="6686490380836145850">ปิดแท็บทางด้านขวา</translation>
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> ชั่วโมง</translation>
-<translation id="2790948358747073186">เพิ่มเติม</translation>
 <translation id="5774515636230743468">จัดการ:</translation>
 <translation id="2423578206845792524">&amp;บันทึกรูปภาพเป็น...</translation>
 <translation id="1095038624419434542">เกิดข้อผิดพลาดขณะกำลังโหลดทรัพยากรโปรแกรม โปรดลองติดตั้งอีกครั้ง</translation>
@@ -247,7 +243,6 @@
 <translation id="3165657440747518774">&amp;ค้นหาในหน้าเว็บ</translation>
 <translation id="939736085109172342">โฟลเดอร์ใหม่</translation>
 <translation id="862750493060684461">แคช CSS</translation>
-<translation id="2009541932026160416">คลิก <ph name="CROSS_IMAGE"/> เพื่อลบภาพขนาดย่อ</translation>
 <translation id="5641560969478423183">ใบรับรองของเซิร์ฟเวอร์ไม่ตรงกับ URL</translation>
 <translation id="6474422710030751464">เนื้อหาบางส่วนในหน้าเว็บนี้ถูกดึงข้อมูลผ่านการเชื่อมต่อที่มีข้อผิดพลาด SSL</translation>
 <translation id="121827551500866099">แสดงการดาวน์โหลดทั้งหมด...</translation>
@@ -351,7 +346,6 @@
 <translation id="5039804452771397117">อนุญาต</translation>
 <translation id="7564146504836211400">คุกกี้และข้อมูลอื่น</translation>
 <translation id="2266011376676382776">หน้าที่ไม่ตอบสนอง</translation>
-<translation id="1805966933547717780">http://www.google.com/chrome/help/</translation>
 <translation id="1319824869167805246">เปิดบุ๊กมาร์กทั้งหมดในหน้าต่างใหม่</translation>
 <translation id="3493653833301553455">กรอกข้อมูลฟอร์มอัตโนมัติ:</translation>
 <translation id="3371861036502301517">การติดตั้งส่วนขยายล้มเหลว</translation>
@@ -367,7 +361,6 @@
 <translation id="1516602185768225813">เปิดหน้าที่ถูกเปิดล่าสุดอีกครั้ง</translation>
 <translation id="1538486363863290963">บล็อกคุกกี้ของบุคคลที่สามทั้งหมดโดยไม่มีข้อยกเว้น</translation>
 <translation id="4874539263382920044">ชื่อจะต้องประกอบด้วยอักขระอย่างน้อยหนึ่งตัว</translation>
-<translation id="3549657413697417275">ค้นหาประวัติการเข้าชม</translation>
 <translation id="7344633671344536647">ข้อมูลการท่องเว็บ:</translation>
 <translation id="4250680216510889253">ไม่</translation>
 <translation id="6291953229176937411">&amp;แสดงในตัวค้นหา</translation>
@@ -408,7 +401,6 @@
 <translation id="4164507027399414915">เรียกคืนภาพขนาดย่อที่ถูกลบทั้งหมด</translation>
 <translation id="6620110761915583480">บันทึกไฟล์</translation>
 <translation id="7543025879977230179">ตัวเลือกของ <ph name="PRODUCT_NAME"/></translation>
-<translation id="4271692636717022386">แสดงเพิ่มเติม</translation>
 <translation id="2648845569394238430">ค้นหา:</translation>
 <translation id="2175607476662778685">แถบเปิดใช้งานด่วน</translation>
 <translation id="6434309073475700221">ทิ้ง</translation>
@@ -416,7 +408,6 @@
 <translation id="4551297183924943154">โปรไฟล์ถูกใช้โดยกระบวนการ <ph name="PROCESS_ID"/> บนโฮสต์ <ph name="HOST_NAME"/> หากคุณแน่ใจว่าไม่มีกระบวนการอื่นที่กำลังใช้โปรไฟล์นี้ ให้ลบไฟล์ <ph name="LOCK_FILE"/> จากนั้นจึงปิดแล้วเปิด <ph name="PRODUCT_NAME"/> ใหม่</translation>
 <translation id="4378551569595875038">กำลังเชื่อมต่อ...</translation>
 <translation id="7029809446516969842">รหัสผ่าน</translation>
-<translation id="3513979718339724672">แสดงรูปภาพขนาดย่อ</translation>
 <translation id="8211437954284917092">ป้อนข้อความค้นหาลงในฟิลด์ข้อความด้านบนเพื่อค้นหาบุ๊คมาร์คของคุณ</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> ไฟล์</translation>
 <translation id="1291121346508216435">แก้ไขการสะกดคำโดยอัตโนมัติ:</translation>
@@ -455,7 +446,6 @@
 <translation id="3675321783533846350">ตั้งค่าพร็อกซีเพื่อเชื่อมต่อกับเครือข่าย</translation>
 <translation id="1572103024875503863"><ph name="NUMBER_MANY"/> วัน</translation>
 <translation id="8453184121293348016">ไม่พบกระบวนการเพิกถอน</translation>
-<translation id="1199429765931693651">ซ่อนรายการ</translation>
 <translation id="3481915276125965083">หน้าเว็บนี้บล็อกป๊อปอัปต่อไปนี้:</translation>
 <translation id="7163503212501929773">เหลือ <ph name="NUMBER_MANY"/> ชั่วโมง</translation>
 <translation id="5586329397967040209">ทำให้หน้านี้เป็นหน้าแรกของฉัน</translation>
@@ -475,21 +465,18 @@
 <translation id="9010612682952491200">แท็บใหม่ [<ph name="PROFILE_NAME"/>]</translation>
 <translation id="7965010376480416255">หน่วยความจำที่ใช้ร่วมกัน</translation>
 <translation id="6248988683584659830">ค้นหาการตั้งค่า</translation>
-<translation id="2242457451044347345">ทำให้ข้อมูลบุ๊กมาร์กตรงกัน</translation>
 <translation id="7053983685419859001">บล็อก</translation>
 <translation id="2727712005121231835">ขนาดจริง</translation>
 <translation id="8887733174653581061">อยู่ด้านบนเสมอ</translation>
 <translation id="610886263749567451">แจ้งเตือน JavaScript</translation>
 <translation id="6556866813142980365">ทำซ้ำ</translation>
 <translation id="6584811624537923135">ยืนยันการถอนการติดตั้ง</translation>
-<translation id="8413126021676339697">แสดงประวัติการเข้าชมทั้งหมด</translation>
 <translation id="8860923508273563464">รอให้การดาวน์โหลดเสร็จสิ้น</translation>
 <translation id="5288678174502918605">เ&amp;ปิดแท็บที่ถูกปิดขึ้นใหม่</translation>
 <translation id="9157595877708044936">กำลังตั้งค่า...</translation>
 <translation id="1823768272150895732">แบบอักษร</translation>
 <translation id="4475552974751346499">ดาวน์โหลดการค้นหา</translation>
 <translation id="5339267765524260207">หากคุณปิดการใช้งานการทำให้ข้อมูลตรงกัน บุ๊กมาร์กของคุณจะไม่ตรงกับที่เก็บไว้ในบัญชี Google ของคุณหรือบนคอมพิวเตอร์อื่นที่คุณใช้อีก แต่จะไม่มีการลบบุ๊กมาร์กใดๆ ทิ้ง บุ๊กมาร์กทั้งหมดที่มีจะอยู่บนคอมพิวเตอร์เครื่องนี้และในบัญชี Google ของคุณ</translation>
-<translation id="1111153019813902504">บุ๊คมาร์คล่าสุด</translation>
 <translation id="7497564420220535101">บันทึก&amp;ภาพหน้าจอ...</translation>
 <translation id="3786934874263773074">&amp;ค้นหาในหน้าเว็บ</translation>
 <translation id="7605919926370951297">การเข้ารหัสข้อความ</translation>
@@ -572,11 +559,9 @@
 <translation id="5956247558487200429">&amp;รายงานข้อบกพร่องหรือเว็บไซต์ที่ใช้งานไม่ได้...</translation>
 <translation id="6459488832681039634">ใช้สิ่งที่เลือกเพื่อค้นหา</translation>
 <translation id="8235325155053717782">ข้อผิดพลาด <ph name="ERROR_NUMBER"/> (<ph name="ERROR_NAME"/>): <ph name="ERROR_TEXT"/></translation>
-<translation id="5933965621105104639">ข้อแนะนำ</translation>
 <translation id="7734729626860583526">คุกกี้จาก <ph name="HOST"/></translation>
 <translation id="1084824384139382525">คัดลอก&amp;ที่อยู่ลิงก์</translation>
 <translation id="5042992464904238023">เนื้อหาเว็บ</translation>
-<translation id="1261967938516962772">ซ่อนเพิ่มเติม</translation>
 <translation id="1181037720776840403">ลบออก</translation>
 <translation id="4006726980536015530">หากคุณปิด <ph name="PRODUCT_NAME"/> ตอนนี้ การดาวน์โหลดเหล่านี้จะถูกยกเลิก</translation>
 <translation id="59174027418879706">เปิดใช้งาน</translation>
@@ -595,7 +580,6 @@
 <translation id="7186367841673660872">แปลหน้าเว็บนี้จาก<ph name="ORIGINAL_LANGUAGE"/>เป็น<ph name="LANGUAGE_LANGUAGE"/>แล้ว</translation>
 <translation id="1175364870820465910">&amp;พิมพ์...</translation>
 <translation id="3866249974567520381">คำอธิบาย</translation>
-<translation id="6549689063733911810">ล่าสุด</translation>
 <translation id="5552632479093547648">ตรวจพบมัลแวร์และฟิชชิ่ง!</translation>
 <translation id="4988273303304146523"><ph name="NUMBER_DEFAULT"/> วันที่ผ่านมา</translation>
 <translation id="2819994928625218237">ไม่&amp;มีข้อเสนอแนะการสะกดคำ</translation>
@@ -603,7 +587,6 @@
 <translation id="9142623379911037913">อนุญาตให้ <ph name="SITE"/> แสดงการแจ้งเตือนเกี่ยวกับเดสก์ท็อป</translation>
 <translation id="4196320913210960460">คุณสามารถจัดการส่วนขยายที่ติดตั้งไว้โดยการคลิกที่ส่วนขยายในเมนูเครื่องมือ</translation>
 <translation id="9118804773997839291">ด้านล่างคือรายการองค์ประกอบที่ไม่ปลอดภัยทั้งหมดสำหรับหน้าเว็บ ให้คลิกลิงก์วินิจฉัยสำหรับข้อมูลเพิ่มเติมในเธรดขององค์ประกอบเฉพาะ</translation>
-<translation id="3664021239099029884">ดูการดาวน์โหลดทั้งหมด</translation>
 <translation id="7754704193130578113">สอบถามที่เก็บไฟล์ก่อนดาวน์โหลด</translation>
 <translation id="2497284189126895209">ไฟล์ทั้งหมด</translation>
 <translation id="5360606537916580043">วันล่าสุด</translation>
@@ -618,8 +601,6 @@
 <translation id="6281636957902664775">ไปที่ <ph name="URL"/></translation>
 <translation id="630065524203833229">&amp;ออก</translation>
 <translation id="2649204054376361687"><ph name="CITY"/>, <ph name="COUNTRY"/></translation>
-<translation id="5738216285593517904">แสดงข้อแนะนำ</translation>
-<translation id="5264618369089706215">การค้นหา</translation>
 <translation id="1168020859489941584">กำลังจะเปิดภายใน <ph name="TIME_REMAINING"/>...</translation>
 <translation id="7814458197256864873">&amp;คัดลอก</translation>
 <translation id="4692623383562244444">เครื่องมือค้นหา</translation>
@@ -665,7 +646,6 @@
 <translation id="111844081046043029">คุณแน่ใจหรือไม่ว่าต้องการออกจากหน้านี้</translation>
 <translation id="3202578601642193415">ใหม่ที่สุด</translation>
 <translation id="8112886015144590373"><ph name="NUMBER_FEW"/> ชั่วโมง</translation>
-<translation id="8739589585766515812">ลบประวัติการเข้าชมในวันนี้</translation>
 <translation id="1398853756734560583">ย่อ</translation>
 <translation id="3340262871848042885">ใบรับรองของเซิร์ฟเวอร์หมดอายุแล้ว</translation>
 <translation id="8978540966440585844">เ&amp;รียกดู...</translation>
@@ -706,7 +686,6 @@
 <translation id="4711094779914110278">ตุรกี</translation>
 <translation id="7136984461011502314">ยินดีต้อนรับสู่ <ph name="PRODUCT_NAME"/></translation>
 <translation id="4002066346123236978">ชื่อ</translation>
-<translation id="1974178770588939828">แสดงรายการ</translation>
 <translation id="4087089424473531098">สร้างส่วนขยายแล้ว:
 
 <ph name="EXTENSION_FILE"/></translation>
@@ -876,7 +855,6 @@
 <translation id="6004539838376062211">ตัวเ&amp;ลือกระบบตรวจการสะกดคำ</translation>
 <translation id="5350198318881239970">ไม่สามารถเปิดโปรไฟล์ของคุณอย่างถูกต้องได้ \n\nคุณลักษณะบางอย่างอาจใช้งานไม่ได้ กรุณาตรวจสอบว่าโปรไฟล์นี้มีอยู่และคุณได้รับอนุญาตให้อ่านและเขียนเนื้อหาลงในนั้น</translation>
 <translation id="4058793769387728514">ตรวจสอบเอกสารทันที</translation>
-<translation id="2915134691870672002">ซ่อนข้อแนะนำ</translation>
 <translation id="756445078718366910">เปิดหน้าต่างเบราว์เซอร์</translation>
 <translation id="7887334752153342268">ทำซ้ำ</translation>
 <translation id="4980691186726139495">ไม่ต้องเก็บไว้บนหน้านี้</translation>
@@ -929,7 +907,6 @@
 <translation id="641480858134062906"><ph name="URL"/> ไม่สามารถโหลดได้</translation>
 <translation id="3693415264595406141">รหัสผ่าน:</translation>
 <translation id="74568296546932365">เก็บ <ph name="PAGE_TITLE"/> ไว้เป็นเครื่องมือค้นหาเริ่มต้น</translation>
-<translation id="9092040507273639934">นำรูปภาพขนาดย่อออก</translation>
 <translation id="6181769708911894002">คำเตือน: การเข้าชมเว็บไซต์นี้อาจก่อให้เกิดอันตรายต่อคอมพิวเตอร์ของคุณ!</translation>
 <translation id="3412265149091626468">ข้ามไปที่สิ่งที่เลือก</translation>
 <translation id="3785852283863272759">ตำแหน่งหน้าเว็บอีเมล</translation>
@@ -965,7 +942,6 @@
 <translation id="3413808618118019351">&amp;นำเข้าบุ๊กมาร์ก &amp;&amp; การตั้งค่า...</translation>
 <translation id="4835836146030131423">เกิดข้อผิดพลาดในการลงชื่อเข้าใช้</translation>
 <translation id="3169621169201401257">สำหรับข้อมูลโดยละเอียดเกี่ยวกับปัญหาขององค์ประกอบเหล่านี้ โปรดไปที่ Google <ph name="DIAGNOSTIC_PAGE"/> สำหรับ <ph name="DOMAIN"/></translation>
-<translation id="2559292239863842334">ช่องค้นหาที่คุณใช้บ่อยที่สุดในเว็บไซต์อื่นๆ จะปรากฏที่นี่</translation>
 <translation id="7385854874724088939">พบปัญหาขณะสั่งพิมพ์ กรุณาตรวจสอบเครื่องพิมพ์และลองใหม่อีกครั้ง</translation>
 <translation id="770015031906360009">กรีก</translation>
 <translation id="4474796446011988286">คุกกี้ต่อไปนี้ถูกจัดเก็บไว้ในคอมพิวเตอร์ของคุณ:</translation>
@@ -1042,6 +1018,7 @@
 <translation id="8788572795284305350"><ph name="NUMBER_ZERO"/> hours ago</translation>
 <translation id="8236028464988198644">ค้นหาจากแถบที่อยู่</translation>
 <translation id="4867297348137739678">สัปดาห์ที่แล้ว</translation>
+<translation id="4881695831933465202">เปิด</translation>
 <translation id="5457793226917888578">หน้าเว็บนี้มีเนื้อหาที่ไม่ปลอดภัย</translation>
 <translation id="5988520580879236902">ตรวจสอบมุมมองที่ใช้งานอยู่:</translation>
 <translation id="5981759340456370804">สถิติสำหรับผู้สนใจ</translation>
@@ -1089,7 +1066,6 @@
 <translation id="7000311294523403548">หน้าเว็บที่ไม่ระบุชื่อ</translation>
 <translation id="4593021220803146968">&amp;ไปที่ <ph name="URL"/></translation>
 <translation id="7649070708921625228">ช่วยเหลือ</translation>
-<translation id="6119719873954126908">จับตาดูพื้นที่ตรงนี้ดีๆ เรามีเคล็ดลับและข้อเสนอแนะเพื่อให้คุณเรียกดูเว็บได้ดียิ่งขึ้น!</translation>
 <translation id="7442246004212327644">&amp;ลบ</translation>
 <translation id="281133045296806353">สร้างหน้าต่างใหม่ในเซสชันของเบราว์เซอร์ปัจจุบัน</translation>
 <translation id="6314007596429871800">แคชของแอปพลิเคชัน</translation>
@@ -1213,7 +1189,6 @@
 <translation id="2433507940547922241">ลักษณะ</translation>
 <translation id="839072384475670817">สร้าง&amp;ทางลัดไปยังแอปพลิเคชัน...</translation>
 <translation id="6756161853376828318">ทำให้ <ph name="PRODUCT_NAME"/> เป็นเบราว์เซอร์เริ่มต้นของฉัน</translation>
-<translation id="2640524951934795733">หยิบอะไรมาใส่ตรงนี้ดีนะ</translation>
 <translation id="2061855250933714566"><ph name="ENCODING_CATEGORY"/> (<ph name="ENCODING_NAME"/>)</translation>
 <translation id="9147392381910171771">&amp;ตัวเลือก</translation>
 <translation id="6264485186158353794">กลับสู่ความปลอดภัย</translation>
@@ -1228,7 +1203,6 @@
 <translation id="1177437665183591855">ข้อผิดพลาดใบรับรองของเซิร์ฟเวอร์ที่ไม่รู้จัก</translation>
 <translation id="3819800052061700452">เ&amp;ต็มหน้าจอ</translation>
 <translation id="3533943170037501541">ยินดีต้อนรับสู่หน้าแรกของคุณ!</translation>
-<translation id="3218306954729745977">แสดงแท็บที่เพิ่งปิดไป</translation>
 <translation id="3737554291183722650">ชื่อของหน้าเว็บ:</translation>
 <translation id="1581962803218266616">แสดงในตัวค้นหา</translation>
 <translation id="4726901538158498735">เครื่องมือค้นหาเริ่มต้น:</translation>

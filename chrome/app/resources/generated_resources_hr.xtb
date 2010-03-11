@@ -51,7 +51,6 @@
 <translation id="4780321648949301421">Spremi stranicu kao...</translation>
 <translation id="9154072353677278078">Poslužitelj <ph name="DOMAIN"/> na području <ph name="REALM"/> zahtijeva korisničko ime i zaporku.</translation>
 <translation id="8178665534778830238">Sadržaj:</translation>
-<translation id="4771019161370731727">Nedavne aktivnosti</translation>
 <translation id="8974161578568356045">Automatsko otkrivanje</translation>
 <translation id="1818606096021558659">Stranica</translation>
 <translation id="1657406563541664238">Olakšajte nam poboljšanje preglednika <ph name="PRODUCT_NAME"/> automatskim slanjem statistike o upotrebi i izvješća o padu programa Googleu</translation>
@@ -61,7 +60,6 @@
 <translation id="7481475534986701730">Posljednje posjećene web lokacije</translation>
 <translation id="4260722247480053581">Otvori u anonimnom prozoru</translation>
 <translation id="4565377596337484307">Sakrij zaporku</translation>
-<translation id="5008715825902408241">Sakrij minijature</translation>
 <translation id="762917759028004464">Zadani preglednik trenutno je <ph name="BROWSER_NAME"/>.</translation>
 <translation id="9213479837033539041">Preostalo sekundi: <ph name="NUMBER_MANY"/></translation>
 <translation id="8487678622945914333">Povećaj</translation>
@@ -104,7 +102,6 @@
 <translation id="1486408090387743835"><ph name="PRODUCT_NAME"/> sada ima <ph name="BEGIN_LINK"/>proširenja<ph name="END_LINK"/> i <ph name="BEGIN_BUTTON"/>sinkronizaciju oznaka<ph name="END_BUTTON"/>.</translation>
 <translation id="3147949335879360642">Oznake će biti spojene.</translation>
 <translation id="4422347585044846479">Uredi oznaku za ovu stranicu</translation>
-<translation id="51285338152176012">Sakrij nedavno zatvorene kartice</translation>
 <translation id="8546306075665861288">Predmemorija slike</translation>
 <translation id="801357260673640054">Sinkronizirane oznake...</translation>
 <translation id="1399076603473531278">Pojedinosti za prijavu više nisu važeće.</translation>
@@ -225,7 +222,6 @@
 <translation id="7421925624202799674">&amp;Prikaži izvor stranice</translation>
 <translation id="6686490380836145850">Zatvori kartice s desne strane</translation>
 <translation id="5608669887400696928">Broj sati: <ph name="NUMBER_DEFAULT"/></translation>
-<translation id="2790948358747073186">Još više</translation>
 <translation id="5774515636230743468">Manifest:</translation>
 <translation id="2423578206845792524">Sp&amp;remi sliku kao...</translation>
 <translation id="1095038624419434542">Tijekom učitavanja programskog resursa došlo je do pogreške. Pokušajte instalirati ponovo.</translation>
@@ -249,7 +245,6 @@
 <translation id="3165657440747518774">&amp;Traži na stranici</translation>
 <translation id="939736085109172342">Nova mapa</translation>
 <translation id="862750493060684461">CSS predmemorija</translation>
-<translation id="2009541932026160416">Kliknite <ph name="CROSS_IMAGE"/> za uklanjanje minijature</translation>
 <translation id="5641560969478423183">Potvrda poslužitelja ne podudara se s URL-om</translation>
 <translation id="6474422710030751464">Dio sadržaja na ovoj stranici dohvaćen je putem veze sa SSL pogreškama.</translation>
 <translation id="121827551500866099">Prikaži sva preuzimanja...</translation>
@@ -353,7 +348,6 @@
 <translation id="5039804452771397117">Dopusti</translation>
 <translation id="7564146504836211400">Kolačići i ostali podaci</translation>
 <translation id="2266011376676382776">Stranica ne reagira</translation>
-<translation id="1805966933547717780">http://www.google.com/chrome/help/</translation>
 <translation id="1319824869167805246">Otvori sve oznake u novom prozoru</translation>
 <translation id="3493653833301553455">Automatsko ispunjavanje obrasca:</translation>
 <translation id="3371861036502301517">Instalacija proširenja nije uspjela</translation>
@@ -369,7 +363,6 @@
 <translation id="1516602185768225813">Ponovo otvori stranice koje su posljednje otvorene</translation>
 <translation id="1538486363863290963">Blokiraj sve kolačiće treće strane bez iznimaka</translation>
 <translation id="4874539263382920044">Naslov mora biti jedinstven i sadržavati barem jedan znak</translation>
-<translation id="3549657413697417275">Pretraži povijest</translation>
 <translation id="7344633671344536647">Podaci o pregledavanju:</translation>
 <translation id="4250680216510889253">Ne</translation>
 <translation id="6291953229176937411">&amp;Prikaži u programu Finder</translation>
@@ -410,7 +403,6 @@
 <translation id="4164507027399414915">Vrati sve uklonjene minijature</translation>
 <translation id="6620110761915583480">Spremi datoteku</translation>
 <translation id="7543025879977230179"><ph name="PRODUCT_NAME"/> Opcije</translation>
-<translation id="4271692636717022386">Prikaži još više</translation>
 <translation id="2648845569394238430">Pretraži:</translation>
 <translation id="2175607476662778685">Traka za brzo pokretanje</translation>
 <translation id="6434309073475700221">Odbaci</translation>
@@ -418,7 +410,6 @@
 <translation id="4551297183924943154">Profil se izgleda koristi u postupku <ph name="PROCESS_ID"/> na hostu <ph name="HOST_NAME"/>. Ako ste sigurni da nijedan drugi postupak ne koristi taj profil, izbrišite datoteku <ph name="LOCK_FILE"/> i ponovo pokrenite preglednik <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="4378551569595875038">Povezivanje...</translation>
 <translation id="7029809446516969842">Zaporke</translation>
-<translation id="3513979718339724672">Prikaži minijature</translation>
 <translation id="8211437954284917092">Unesite upit u gornje polje teksta da biste pretražili oznake.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> datoteka</translation>
 <translation id="1291121346508216435">Automatski ispravi pravopis:</translation>
@@ -457,7 +448,6 @@
 <translation id="3675321783533846350">Postavite proxy za povezivanje s mrežom.</translation>
 <translation id="1572103024875503863">Broj dana: <ph name="NUMBER_MANY"/></translation>
 <translation id="8453184121293348016">Nije pronađen mehanizam za opoziv</translation>
-<translation id="1199429765931693651">Sakrij popis</translation>
 <translation id="3481915276125965083">Na ovoj su stranici blokirani sljedeći skočni prozori:</translation>
 <translation id="7163503212501929773">Preostalo sati: <ph name="NUMBER_MANY"/></translation>
 <translation id="5586329397967040209">Neka ovo bude moja početna stranica</translation>
@@ -477,21 +467,18 @@
 <translation id="9010612682952491200">Nova kartica [<ph name="PROFILE_NAME"/>]</translation>
 <translation id="7965010376480416255">Dijeljena memorija</translation>
 <translation id="6248988683584659830">Postavke pretraživanja</translation>
-<translation id="2242457451044347345">Sinkronizacija oznaka</translation>
 <translation id="7053983685419859001">Blokiraj</translation>
 <translation id="2727712005121231835">Stvarna veličina</translation>
 <translation id="8887733174653581061">Uvijek na vrhu</translation>
 <translation id="610886263749567451">JavaScript upozorenje</translation>
 <translation id="6556866813142980365">Ponovi</translation>
 <translation id="6584811624537923135">Potvrdi deinstalaciju</translation>
-<translation id="8413126021676339697">Pokaži cijelu povijest</translation>
 <translation id="8860923508273563464">Pričekaj da se preuzimanja završe</translation>
 <translation id="5288678174502918605">P&amp;onovo otvori zatvorenu karticu</translation>
 <translation id="9157595877708044936">Postavljanje...</translation>
 <translation id="1823768272150895732">Font</translation>
 <translation id="4475552974751346499">Pretraži preuzimanja</translation>
 <translation id="5339267765524260207">Ako onemogućite sinkronizaciju, vaše oznake više neće biti sinkronizirane s onima koje su pohranjene na vašem Google Računu ili na drugim računalima. Nijedna oznaka neće biti izbrisana. Sve postojeće oznake ostat će na ovom računalu i vašem Google Računu.</translation>
-<translation id="1111153019813902504">Najnovije oznake</translation>
 <translation id="7497564420220535101">Spremi &amp;snimak zaslona...</translation>
 <translation id="3786934874263773074">&amp;Traži na stranici</translation>
 <translation id="7605919926370951297">Kodiranje teksta</translation>
@@ -574,11 +561,9 @@
 <translation id="5956247558487200429">&amp;Prijavi bug ili neispravnu web-lokaciju...</translation>
 <translation id="6459488832681039634">Koristi odabir za traženje</translation>
 <translation id="8235325155053717782">Pogreška <ph name="ERROR_NUMBER"/> (<ph name="ERROR_NAME"/>): <ph name="ERROR_TEXT"/></translation>
-<translation id="5933965621105104639">Preporuke</translation>
 <translation id="7734729626860583526">Kolačić s web-lokacije <ph name="HOST"/></translation>
 <translation id="1084824384139382525">Kopiraj adresu &amp;veze</translation>
 <translation id="5042992464904238023">Web sadržaj</translation>
-<translation id="1261967938516962772">Sakrij još više</translation>
 <translation id="1181037720776840403">Ukloni</translation>
 <translation id="4006726980536015530">Ako sad zatvorite <ph name="PRODUCT_NAME"/>, preuzimanja će se prekinuti.</translation>
 <translation id="59174027418879706">Omogućeno</translation>
@@ -597,7 +582,6 @@
 <translation id="7186367841673660872">Ova je stranica prevedena s jezika <ph name="ORIGINAL_LANGUAGE"/> na <ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="1175364870820465910">&amp;Ispis...</translation>
 <translation id="3866249974567520381">Opis</translation>
-<translation id="6549689063733911810">Nedavno</translation>
 <translation id="5552632479093547648">Otkriven je zlonamjerni softver i krađa identiteta</translation>
 <translation id="4988273303304146523">Prije <ph name="NUMBER_DEFAULT"/> dana</translation>
 <translation id="2819994928625218237">&amp;Nema pravopisnih prijedloga</translation>
@@ -605,7 +589,6 @@
 <translation id="9142623379911037913">Dozvoljavate li da <ph name="SITE"/> prikazuje obavijesti na radnoj površini?</translation>
 <translation id="4196320913210960460">Instaliranim proširenjima možete upravljati tako što ćete kliknuti na Proširenja u izborniku Alati.</translation>
 <translation id="9118804773997839291">U nastavku se nalazi popis nesigurnih elemenata za stranicu. Kliknite na vezu Dijagnostika da biste saznali više u nizu uzastopnih poruka o određenom elementu.</translation>
-<translation id="3664021239099029884">Pogledaj sva preuzimanja</translation>
 <translation id="7754704193130578113">Pitaj gdje spremiti svaku datoteku prije preuzimanja</translation>
 <translation id="2497284189126895209">Sve datoteke</translation>
 <translation id="5360606537916580043">Posljednji dan</translation>
@@ -620,8 +603,6 @@
 <translation id="6281636957902664775">Idi na <ph name="URL"/></translation>
 <translation id="630065524203833229">I&amp;zađi</translation>
 <translation id="2649204054376361687"><ph name="CITY"/>, <ph name="COUNTRY"/></translation>
-<translation id="5738216285593517904">Prikaži preporuke</translation>
-<translation id="5264618369089706215">Pretraživanja</translation>
 <translation id="1168020859489941584">Otvaranje u <ph name="TIME_REMAINING"/>...</translation>
 <translation id="7814458197256864873">&amp;Kopiraj</translation>
 <translation id="4692623383562244444">Tražilice</translation>
@@ -667,7 +648,6 @@
 <translation id="111844081046043029">Jeste li sigurni da želite zatvoriti ovu stranicu?</translation>
 <translation id="3202578601642193415">Najnovije</translation>
 <translation id="8112886015144590373">Broj sati: <ph name="NUMBER_FEW"/></translation>
-<translation id="8739589585766515812">Obriši povijest za ovaj dan</translation>
 <translation id="1398853756734560583">Maksimiziraj</translation>
 <translation id="3340262871848042885">Potvrda poslužitelja je istekla</translation>
 <translation id="8978540966440585844">P&amp;regledaj...</translation>
@@ -708,7 +688,6 @@
 <translation id="4711094779914110278">turski</translation>
 <translation id="7136984461011502314">Dobro došli u <ph name="PRODUCT_NAME"/></translation>
 <translation id="4002066346123236978">Naslov</translation>
-<translation id="1974178770588939828">Prikaži popis</translation>
 <translation id="4087089424473531098">Stvoreno je proširenje:
 
 <ph name="EXTENSION_FILE"/></translation>
@@ -878,7 +857,6 @@
 <translation id="6004539838376062211">&amp;Opcije provjere pravopisa</translation>
 <translation id="5350198318881239970">Nije bilo moguće ispravno otvoriti vaš profil.\n\nNeke značajke možda neće biti dostupne. Provjerite postoji li profil te imate li dozvolu čitati i pisati sadržaje u njemu.</translation>
 <translation id="4058793769387728514">Odmah provjeri dokument</translation>
-<translation id="2915134691870672002">Sakrij preporuke</translation>
 <translation id="756445078718366910">Otvori prozor preglednika</translation>
 <translation id="7887334752153342268">Udvostruči</translation>
 <translation id="4980691186726139495">Ne zadržavaj se na ovoj stranici</translation>
@@ -932,7 +910,6 @@ s
 <translation id="641480858134062906">Adresa <ph name="URL"/> nije učitana</translation>
 <translation id="3693415264595406141">Zaporka:</translation>
 <translation id="74568296546932365">Neka <ph name="PAGE_TITLE"/> ostane kao zadana tražilica</translation>
-<translation id="9092040507273639934">Ukloni minijaturu</translation>
 <translation id="6181769708911894002">Upozorenje: Odlazak na tu web lokaciju može oštetiti moje računalo!</translation>
 <translation id="3412265149091626468">Skoči na odabir</translation>
 <translation id="3785852283863272759">Lokacija stranice e-pošte</translation>
@@ -968,7 +945,6 @@ s
 <translation id="3413808618118019351">&amp;Uvezi oznake i postavke...</translation>
 <translation id="4835836146030131423">Pogreška u prijavi.</translation>
 <translation id="3169621169201401257">Više pojedinosti o problemima s ovim elementima potražite na dijagnostičkoj stranici <ph name="DIAGNOSTIC_PAGE"/>za domenu <ph name="DOMAIN"/>.</translation>
-<translation id="2559292239863842334">Ovdje će se pojaviti okviri za pretraživanje koje najčešće koristite na drugim web lokacijama.</translation>
 <translation id="7385854874724088939">Tijekom ispisa nešto se pokvarilo.  Provjerite pisač i pokušajte ponovno.</translation>
 <translation id="770015031906360009">grčki</translation>
 <translation id="4474796446011988286">Ovi su kolačići spremljeni na Vašem računalu:</translation>
@@ -1045,6 +1021,7 @@ s
 <translation id="8788572795284305350"><ph name="NUMBER_ZERO"/> hours ago</translation>
 <translation id="8236028464988198644">Pretražite putem adresne trake.</translation>
 <translation id="4867297348137739678">Prošli tjedan</translation>
+<translation id="4881695831933465202">Otvori</translation>
 <translation id="5457793226917888578">Ova stranica sadrži nesigurni sadržaj.</translation>
 <translation id="5988520580879236902">Provjeri aktivne prikaze:</translation>
 <translation id="5981759340456370804">Statistika za štrebere</translation>
@@ -1092,7 +1069,6 @@ s
 <translation id="7000311294523403548">Neimenovana web stranica</translation>
 <translation id="4593021220803146968">&amp;Idi na <ph name="URL"/></translation>
 <translation id="7649070708921625228">Pomoć</translation>
-<translation id="6119719873954126908">Pratite ovo mjesto jer donosi savjete i prijedloge za bolje pregledavanje!</translation>
 <translation id="7442246004212327644">O&amp;briši</translation>
 <translation id="281133045296806353">Stvoren je novi prozor u postojećoj sesiji pregledavanja.</translation>
 <translation id="6314007596429871800">Predmemorija aplikacije</translation>
@@ -1216,7 +1192,6 @@ s
 <translation id="2433507940547922241">Izgled</translation>
 <translation id="839072384475670817">Stvori prečace &amp;aplikacije...</translation>
 <translation id="6756161853376828318">Neka <ph name="PRODUCT_NAME"/> bude moj zadani preglednik</translation>
-<translation id="2640524951934795733">Što ćemo ovdje staviti?</translation>
 <translation id="2061855250933714566"><ph name="ENCODING_CATEGORY"/> (<ph name="ENCODING_NAME"/>)</translation>
 <translation id="9147392381910171771">&amp;Opcije</translation>
 <translation id="6264485186158353794">Natrag u sigurnost</translation>
@@ -1231,7 +1206,6 @@ s
 <translation id="1177437665183591855">Pogreška potvrde nepoznatog poslužitelja</translation>
 <translation id="3819800052061700452">&amp;Puni ekran</translation>
 <translation id="3533943170037501541">Dobro došli na svoju početnu stranicu!</translation>
-<translation id="3218306954729745977">Prikaži nedavno zatvorene kartice</translation>
 <translation id="3737554291183722650">Naslov stranice:</translation>
 <translation id="1581962803218266616">Prikaži u programu Finder</translation>
 <translation id="4726901538158498735">Zadano pretraživanje:</translation>

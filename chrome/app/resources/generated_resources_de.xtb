@@ -51,7 +51,6 @@
 <translation id="4780321648949301421">Seite speichern unter...</translation>
 <translation id="9154072353677278078">Für den Server <ph name="DOMAIN"/> unter <ph name="REALM"/> sind ein Nutzername und ein Passwort erforderlich.</translation>
 <translation id="8178665534778830238">Content:</translation>
-<translation id="4771019161370731727">Letzte Aktivitäten</translation>
 <translation id="8974161578568356045">Automatisch erkennen</translation>
 <translation id="1818606096021558659">Seite</translation>
 <translation id="1657406563541664238">Unterstützen Sie Google bei der Verbesserung von <ph name="PRODUCT_NAME"/> durch automatisches Senden von Nutzungsstatistiken und Ausfallberichten an Google.</translation>
@@ -61,7 +60,6 @@
 <translation id="7481475534986701730">Vor kurzem besuchte Websites</translation>
 <translation id="4260722247480053581">In Inkognito-Fenster öffnen</translation>
 <translation id="4565377596337484307">Passwort ausblenden</translation>
-<translation id="5008715825902408241">Miniaturbilder ausblenden</translation>
 <translation id="762917759028004464">Der Standardbrowser ist zurzeit <ph name="BROWSER_NAME"/>.</translation>
 <translation id="9213479837033539041"><ph name="NUMBER_MANY"/> Sekunden übrig</translation>
 <translation id="8487678622945914333">Vergrößern</translation>
@@ -104,7 +102,6 @@
 <translation id="1486408090387743835"><ph name="PRODUCT_NAME"/> jetzt mit <ph name="BEGIN_LINK"/>Erweiterungen<ph name="END_LINK"/> und <ph name="BEGIN_BUTTON"/>Lesezeichen-Synchronisierung<ph name="END_BUTTON"/></translation>
 <translation id="3147949335879360642">Ihre Lesezeichen werden zusammengeführt.</translation>
 <translation id="4422347585044846479">Lesezeichen für diese Seite bearbeiten</translation>
-<translation id="51285338152176012">Zuletzt geschlossene Tabs ausblenden</translation>
 <translation id="8546306075665861288">Bildercache</translation>
 <translation id="801357260673640054">Lesezeichen synchronisiert...</translation>
 <translation id="1399076603473531278">Anmeldedaten sind nicht mehr aktuell.</translation>
@@ -225,7 +222,6 @@
 <translation id="7421925624202799674">Seitenquelle &amp;anzeigen</translation>
 <translation id="6686490380836145850">Tabs rechts schließen</translation>
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> Stunden</translation>
-<translation id="2790948358747073186">Und noch mehr</translation>
 <translation id="5774515636230743468">Manifest:</translation>
 <translation id="2423578206845792524">Bi&amp;ld speichern unter...</translation>
 <translation id="1095038624419434542">Beim Laden der Programmressource ist ein Fehler aufgetreten. Versuchen Sie eine Neuinstallation.</translation>
@@ -249,7 +245,6 @@
 <translation id="3165657440747518774">&amp;Auf Seite suchen</translation>
 <translation id="939736085109172342">Neuer Ordner</translation>
 <translation id="862750493060684461">CSS-Cache</translation>
-<translation id="2009541932026160416">Klicken Sie auf <ph name="CROSS_IMAGE"/>, um die Miniaturansicht zu entfernen.</translation>
 <translation id="5641560969478423183">Das Serverzertifikat stimmt nicht mit der URL überein.</translation>
 <translation id="6474422710030751464">Einige Elemente auf dieser Seite wurden über eine Verbindung mit SSL-Fehlern abgerufen.</translation>
 <translation id="121827551500866099">Alle Downloads anzeigen...</translation>
@@ -354,7 +349,6 @@
 <translation id="5039804452771397117">Zulassen</translation>
 <translation id="7564146504836211400">Cookies und andere Daten</translation>
 <translation id="2266011376676382776">Seite(n) reagiert/en nicht</translation>
-<translation id="1805966933547717780">http://www.google.com/chrome/help/</translation>
 <translation id="1319824869167805246">Alle Lesezeichen in neuem Fenster öffnen</translation>
 <translation id="3493653833301553455">AutoFill für Formulare:</translation>
 <translation id="3371861036502301517">Fehler beim Installieren der Erweiterung</translation>
@@ -371,7 +365,6 @@
 <translation id="1516602185768225813">Zuletzt geöffnete Seiten erneut öffnen</translation>
 <translation id="1538486363863290963">Alle Drittanbieter-Cookies ohne Ausnahme blockieren</translation>
 <translation id="4874539263382920044">Titel muss mindestens ein Zeichen enthalten</translation>
-<translation id="3549657413697417275">Verlauf durchsuchen</translation>
 <translation id="7344633671344536647">Internetdaten:</translation>
 <translation id="4250680216510889253">Nein</translation>
 <translation id="6291953229176937411">Im Finder &amp;zeigen</translation>
@@ -412,7 +405,6 @@
 <translation id="4164507027399414915">Alle entfernten Miniaturansichten wiederherstellen</translation>
 <translation id="6620110761915583480">Datei speichern</translation>
 <translation id="7543025879977230179"><ph name="PRODUCT_NAME"/> Optionen</translation>
-<translation id="4271692636717022386">&quot;Und noch mehr&quot; anzeigen</translation>
 <translation id="2648845569394238430">Suchen:</translation>
 <translation id="2175607476662778685">Schnellstartleiste</translation>
 <translation id="6434309073475700221">Verwerfen</translation>
@@ -420,7 +412,6 @@
 <translation id="4551297183924943154">Das Profil wird wahrscheinlich vom Vorgang <ph name="PROCESS_ID"/> auf dem Host <ph name="HOST_NAME"/> genutzt. Wenn Sie sicher sind, dass kein anderer Vorgang dieses Profil verwendet, löschen Sie die Datei <ph name="LOCK_FILE"/> und starten Sie <ph name="PRODUCT_NAME"/> neu.</translation>
 <translation id="4378551569595875038">Verbindung wird aufgebaut...</translation>
 <translation id="7029809446516969842">Passwörter</translation>
-<translation id="3513979718339724672">Miniaturbilder anzeigen</translation>
 <translation id="8211437954284917092">Geben Sie in das obige Textfeld eine Suchanfrage ein, um Lesezeichen zu suchen.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> Dateien</translation>
 <translation id="1291121346508216435">Rechtschreibung automatisch korrigieren:</translation>
@@ -459,7 +450,6 @@
 <translation id="3675321783533846350">Richten Sie einen Proxy ein, um eine Verbindung zum Netzwerk herzustellen.</translation>
 <translation id="1572103024875503863"><ph name="NUMBER_MANY"/> Tage</translation>
 <translation id="8453184121293348016">Kein Sperrmechanismus gefunden</translation>
-<translation id="1199429765931693651">Liste ausblenden</translation>
 <translation id="3481915276125965083">Die folgenden Pop-ups wurden auf dieser Seite blockiert:</translation>
 <translation id="7163503212501929773"><ph name="NUMBER_MANY"/> Stunden übrig</translation>
 <translation id="5586329397967040209">Seite als meine Startseite festlegen</translation>
@@ -479,21 +469,18 @@
 <translation id="9010612682952491200">Neuer Tab [<ph name="PROFILE_NAME"/>]</translation>
 <translation id="7965010376480416255">Freigegebener Arbeitsspeicher</translation>
 <translation id="6248988683584659830">Sucheinstellungen</translation>
-<translation id="2242457451044347345">Lesezeichen-Synchronisierung</translation>
 <translation id="7053983685419859001">Blockieren</translation>
 <translation id="2727712005121231835">Originalgröße</translation>
 <translation id="8887733174653581061">Immer im Vordergrund</translation>
 <translation id="610886263749567451">Javascript-Warnmeldung</translation>
 <translation id="6556866813142980365">Wiederholen</translation>
 <translation id="6584811624537923135">Deinstallation bestätigen</translation>
-<translation id="8413126021676339697">Gesamtverlauf anzeigen</translation>
 <translation id="8860923508273563464">Warten, bis der Download abgeschlossen ist.</translation>
 <translation id="5288678174502918605">Geschlossenen Tab wieder öffn&amp;en</translation>
 <translation id="9157595877708044936">Einrichtung läuft...</translation>
 <translation id="1823768272150895732">Schriftart</translation>
 <translation id="4475552974751346499">Downloads durchsuchen</translation>
 <translation id="5339267765524260207">Wenn Sie die Synchronisierung deaktivieren, werden Ihre Lesezeichen nicht mehr mit den in Ihrem Google-Konto oder in anderen Suchmaschinen gespeicherten Lesezeichen synchronisiert. Es werden jedoch keine Lesezeichen gelöscht. Alle vorhandenen Lesezeichen bleiben auf diesem Computer und in Ihrem Google-Konto erhalten.</translation>
-<translation id="1111153019813902504">Vor kurzem gespeicherte Lesezeichen</translation>
 <translation id="7497564420220535101">&amp;Screenshot speichern...</translation>
 <translation id="3786934874263773074">Au&amp;f Seite suchen</translation>
 <translation id="7605919926370951297">Text-Codierung</translation>
@@ -577,11 +564,9 @@
 <translation id="5956247558487200429">&amp;Fehler oder defekte Website melden...</translation>
 <translation id="6459488832681039634">Auswahl suchen</translation>
 <translation id="8235325155053717782">Fehler <ph name="ERROR_NUMBER"/> (<ph name="ERROR_NAME"/>): <ph name="ERROR_TEXT"/></translation>
-<translation id="5933965621105104639">Empfehlungen</translation>
 <translation id="7734729626860583526">Cookie von <ph name="HOST"/></translation>
 <translation id="1084824384139382525">Adr&amp;esse des Links kopieren</translation>
 <translation id="5042992464904238023">Web-Content</translation>
-<translation id="1261967938516962772">&quot;Und noch mehr&quot; ausblenden</translation>
 <translation id="1181037720776840403">Löschen</translation>
 <translation id="4006726980536015530">Wenn Sie <ph name="PRODUCT_NAME"/> jetzt beenden, werden diese Downloads abgebrochen.</translation>
 <translation id="59174027418879706">Aktiviert</translation>
@@ -600,7 +585,6 @@
 <translation id="7186367841673660872">Diese Seite wurde von <ph name="ORIGINAL_LANGUAGE"/> in <ph name="LANGUAGE_LANGUAGE"/> übersetzt.</translation>
 <translation id="1175364870820465910">&amp;Drucken...</translation>
 <translation id="3866249974567520381">Beschreibung</translation>
-<translation id="6549689063733911810">Letzte Aktivitäten</translation>
 <translation id="5552632479093547648">Malware und Phishing erkannt!</translation>
 <translation id="4988273303304146523">Vor <ph name="NUMBER_DEFAULT"/> Tagen</translation>
 <translation id="2819994928625218237">&amp;Keine Rechtschreibvorschläge</translation>
@@ -608,7 +592,6 @@
 <translation id="9142623379911037913">Anzeige von Desktop-Benachrichtigungen auf <ph name="SITE"/> zulassen?</translation>
 <translation id="4196320913210960460">Klicken Sie zur Verwaltung Ihrer installierten Erweiterungen im Menü &quot;Tools&quot; auf &quot;Erweiterungen&quot;.</translation>
 <translation id="9118804773997839291">Die folgende Liste führt alle gefährlichen Elemente der Seite auf. Klicken Sie auf den Diagnoselink, um weitere Informationen zum Thread eines bestimmten Elements zu erhalten.</translation>
-<translation id="3664021239099029884">Alle Downloads anzeigen</translation>
 <translation id="7754704193130578113">Vor dem Download von Dateien nach dem Speicherort fragen</translation>
 <translation id="2497284189126895209">Alle Dateien</translation>
 <translation id="5360606537916580043">Letzter Tag</translation>
@@ -623,8 +606,6 @@
 <translation id="6281636957902664775">Zu <ph name="URL"/> wechseln</translation>
 <translation id="630065524203833229">Be&amp;enden</translation>
 <translation id="2649204054376361687"><ph name="CITY"/>, <ph name="COUNTRY"/></translation>
-<translation id="5738216285593517904">Empfehlungen anzeigen</translation>
-<translation id="5264618369089706215">Suchanfragen</translation>
 <translation id="1168020859489941584">Wird in <ph name="TIME_REMAINING"/> geöffnet...</translation>
 <translation id="7814458197256864873">&amp;Kopieren</translation>
 <translation id="4692623383562244444">Suchmaschinen</translation>
@@ -672,7 +653,6 @@
 <translation id="111844081046043029">Möchten Sie diese Seite wirklich verlassen?</translation>
 <translation id="3202578601642193415">Neueste</translation>
 <translation id="8112886015144590373"><ph name="NUMBER_FEW"/> Stunden</translation>
-<translation id="8739589585766515812">Tagesverlauf löschen</translation>
 <translation id="1398853756734560583">Vergrößern</translation>
 <translation id="3340262871848042885">Serverzertifikat abgelaufen</translation>
 <translation id="8978540966440585844">Du&amp;rchsuchen...</translation>
@@ -713,7 +693,6 @@
 <translation id="4711094779914110278">Türkisch</translation>
 <translation id="7136984461011502314">Herzlich willkommen bei <ph name="PRODUCT_NAME"/></translation>
 <translation id="4002066346123236978">Titel</translation>
-<translation id="1974178770588939828">Liste anzeigen</translation>
 <translation id="4087089424473531098">Die folgende Erweiterung wurde erstellt:
 
 <ph name="EXTENSION_FILE"/></translation>
@@ -885,7 +864,6 @@
 <translation id="6004539838376062211">&amp;Optionen der Rechtschreibprüfung</translation>
 <translation id="5350198318881239970">Ihr Profil konnte nicht ordnungsgemäß geöffnet werden.\n\nMöglicherweise stehen nicht alle Funktionen zur Verfügung. Überprüfen Sie, ob das Profil vorhanden ist und Sie Lese- und Schreibzugriff für die Profilinhalte besitzen.</translation>
 <translation id="4058793769387728514">Dokument jetzt prüfen</translation>
-<translation id="2915134691870672002">Empfehlungen ausblenden</translation>
 <translation id="756445078718366910">Browserfenster öffnen</translation>
 <translation id="7887334752153342268">Duplizieren</translation>
 <translation id="4980691186726139495">Nicht auf dieser Seite belassen</translation>
@@ -941,7 +919,6 @@
 <translation id="641480858134062906"><ph name="URL"/> konnte nicht geladen werden</translation>
 <translation id="3693415264595406141">Passwort:</translation>
 <translation id="74568296546932365"><ph name="PAGE_TITLE"/> als Standardsuchmaschine beibehalten</translation>
-<translation id="9092040507273639934">Miniaturbild entfernen</translation>
 <translation id="6181769708911894002">Warnung: Durch das Aufrufen dieser Website wird Ihr Computer möglicherweise beschädigt!</translation>
 <translation id="3412265149091626468">Auswahl anzeigen</translation>
 <translation id="3785852283863272759">Seitenadresse als E-Mail senden</translation>
@@ -977,7 +954,6 @@
 <translation id="3413808618118019351">Lesezeichen und Einstellungen &amp;importieren...</translation>
 <translation id="4835836146030131423">Fehler bei Anmeldung</translation>
 <translation id="3169621169201401257">Detaillierte Informationen zu den Problemen mit diesen Elementen erhalten Sie auf der folgenden Google-Seite: <ph name="DIAGNOSTIC_PAGE"/> für <ph name="DOMAIN"/>.</translation>
-<translation id="2559292239863842334">Die auf anderen Websites am häufigsten verwendeten Suchfelder erscheinen hier.</translation>
 <translation id="7385854874724088939">Beim Drucken ist ein Fehler aufgetreten. Bitte überprüfen Sie Ihren Drucker und versuchen Sie es erneut.</translation>
 <translation id="770015031906360009">Griechisch</translation>
 <translation id="4474796446011988286">Folgende Cookies sind auf dem Computer gespeichert:</translation>
@@ -1055,6 +1031,7 @@
 <translation id="8788572795284305350"><ph name="NUMBER_ZERO"/> hours ago</translation>
 <translation id="8236028464988198644">In der Adressleiste suchen</translation>
 <translation id="4867297348137739678">Letzte Woche</translation>
+<translation id="4881695831933465202">Öffnen</translation>
 <translation id="5457793226917888578">Diese Seite enthält unsicheren Content.</translation>
 <translation id="5988520580879236902">Aktive Ansichten prüfen:</translation>
 <translation id="5981759340456370804">Statistiken für Computerfreaks</translation>
@@ -1102,7 +1079,6 @@
 <translation id="7000311294523403548">Unbenannte Webseite</translation>
 <translation id="4593021220803146968">Zu <ph name="URL"/> &amp;wechseln</translation>
 <translation id="7649070708921625228">Hilfe</translation>
-<translation id="6119719873954126908">Hier finden Sie bald Tipps und Vorschläge für besseres Browsen. Schauen Sie wieder rein!</translation>
 <translation id="7442246004212327644">&amp;Löschen</translation>
 <translation id="281133045296806353">Neues Fenster in aktueller Browsersitzung erstellt.</translation>
 <translation id="6314007596429871800">Cashe</translation>
@@ -1226,7 +1202,6 @@
 <translation id="2433507940547922241">Erscheinungsbild</translation>
 <translation id="839072384475670817">Erstellen von Anwendungs&amp;verknüpfungen...</translation>
 <translation id="6756161853376828318"><ph name="PRODUCT_NAME"/> als Standardbrowser festlegen</translation>
-<translation id="2640524951934795733">Was hier wohl stehen wird?</translation>
 <translation id="2061855250933714566"><ph name="ENCODING_CATEGORY"/> (<ph name="ENCODING_NAME"/>)</translation>
 <translation id="9147392381910171771">&amp;Optionen</translation>
 <translation id="6264485186158353794">Zurück zu sicherer Website</translation>
@@ -1241,7 +1216,6 @@
 <translation id="1177437665183591855">Fehler wegen unbekanntem Serverzertifikat</translation>
 <translation id="3819800052061700452">&amp;Vollbildmodus</translation>
 <translation id="3533943170037501541">Willkommen auf Ihrer Homepage!</translation>
-<translation id="3218306954729745977">Zuletzt geschlossene Tabs anzeigen</translation>
 <translation id="3737554291183722650">Seitentitel:</translation>
 <translation id="1581962803218266616">Im Finder anzeigen</translation>
 <translation id="4726901538158498735">Standardsuche:</translation>

@@ -51,7 +51,6 @@
 <translation id="4780321648949301421">Αποθήκευση Σελίδας &amp;Ως...</translation>
 <translation id="9154072353677278078">Απαιτείται όνομα χρήστη και κωδικός πρόσβασης για το διακομιστή <ph name="DOMAIN"/> στο <ph name="REALM"/>.</translation>
 <translation id="8178665534778830238">Περιεχόμενο:</translation>
-<translation id="4771019161370731727">Πρόσφατες δραστηριότητες</translation>
 <translation id="8974161578568356045">Αυτόματος Εντοπισμός</translation>
 <translation id="1818606096021558659">Σελίδα</translation>
 <translation id="1657406563541664238">Συμβάλετε στη βελτίωση του <ph name="PRODUCT_NAME"/> στέλνοντας αυτόματα στην Google στατιστικά στοιχεία χρήσης και αναφορές σφαλμάτων</translation>
@@ -61,7 +60,6 @@
 <translation id="7481475534986701730">Ιστότοποι που επισκεφτήκατε πρόσφατα</translation>
 <translation id="4260722247480053581">Άνοιγμα σε Παράθυρο για Ανώνυμη Περιήγηση</translation>
 <translation id="4565377596337484307">Απόκρυψη κωδικού πρόσβασης</translation>
-<translation id="5008715825902408241">Απόκρυψη μικρογραφιών</translation>
 <translation id="762917759028004464">Το προεπιλεγμένο πρόγραμμα περιήγησης είναι το <ph name="BROWSER_NAME"/>.</translation>
 <translation id="9213479837033539041">Υπολείπονται <ph name="NUMBER_MANY"/> δευτερόλεπτα</translation>
 <translation id="8487678622945914333">Μεγέθυνση</translation>
@@ -104,7 +102,6 @@
 <translation id="1486408090387743835">Το <ph name="PRODUCT_NAME"/> έχει πλέον <ph name="BEGIN_LINK"/>επεκτάσεις<ph name="END_LINK"/> και <ph name="BEGIN_BUTTON"/>συγχρονισμό σελιδοδεικτών<ph name="END_BUTTON"/>.</translation>
 <translation id="3147949335879360642">Οι σελιδοδείκτες σας θα συγχωνευθούν.</translation>
 <translation id="4422347585044846479">Επεξεργασία σελιδοδείκτη για αυτή τη σελίδα</translation>
-<translation id="51285338152176012">Απόκρυψη καρτελών που έκλεισαν πρόσφατα</translation>
 <translation id="8546306075665861288">Προσωρινή μνήμη εικόνας</translation>
 <translation id="801357260673640054">Οι σελιδοδείκτες είναι συγχρονισμένοι...</translation>
 <translation id="1399076603473531278">Τα στοιχεία σύνδεσης έχουν λήξει.</translation>
@@ -225,7 +222,6 @@
 <translation id="7421925624202799674">&amp;Προβολή Πηγαίου Κώδικα Σελίδας</translation>
 <translation id="6686490380836145850">Κλείσιμο καρτελών δεξιά</translation>
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> ώρες</translation>
-<translation id="2790948358747073186">Ακόμα περισσότερα</translation>
 <translation id="5774515636230743468">Εκδήλωση:</translation>
 <translation id="2423578206845792524">Αποθήκευση εικόνας &amp;ως...</translation>
 <translation id="1095038624419434542">Παρουσιάστηκε σφάλμα κατά τη φόρτωση κάποιου πόρου προγράμματος. Δοκιμάστε να το εγκαταστήσετε ξανά.</translation>
@@ -249,7 +245,6 @@
 <translation id="3165657440747518774">&amp;Εύρεση στη Σελίδα</translation>
 <translation id="939736085109172342">Νέος φάκελος</translation>
 <translation id="862750493060684461">Προσωρινή μνήμη CSS</translation>
-<translation id="2009541932026160416">Κάντε κλικ στο <ph name="CROSS_IMAGE"/> για να καταργήσετε τη μικρογραφία</translation>
 <translation id="5641560969478423183">Το πιστοποιητικό του διακομιστή δεν ταιριάζει με τη διεύθυνση URL</translation>
 <translation id="6474422710030751464">Κάποιο από το περιεχόμενο σε αυτήν τη σελίδα ανακτήθηκε μέσω μιας σύνδεσης που περιέχει σφάλματα SSL.</translation>
 <translation id="121827551500866099">Εμφάνιση όλων των λήψεων...</translation>
@@ -354,7 +349,6 @@
 <translation id="5039804452771397117">Επιτρέπεται</translation>
 <translation id="7564146504836211400">Cookie και άλλα δεδομένα</translation>
 <translation id="2266011376676382776">Μη ανταποκρίσιμες σελίδες</translation>
-<translation id="1805966933547717780">http://www.google.com/chrome/help/</translation>
 <translation id="1319824869167805246">Άνοιγμα Όλων των Σελιδοδεικτών σε Νέο Παράθυρο</translation>
 <translation id="3493653833301553455">Αυτόματη συμπλήρωση φόρμας:</translation>
 <translation id="3371861036502301517">Αποτυχία εγκατάστασης επέκτασης</translation>
@@ -370,7 +364,6 @@
 <translation id="1516602185768225813">Άνοιγμα ξανά των σελίδων που ανοίχτηκαν τελευταίες</translation>
 <translation id="1538486363863290963">Αποκλεισμός όλων των cookie τρίτου μέρους χωρίς εξαίρεση</translation>
 <translation id="4874539263382920044">Ο τίτλος πρέπει να περιέχει τουλάχιστον έναν χαρακτήρα</translation>
-<translation id="3549657413697417275">Αναζήτηση στο ιστορικό σας</translation>
 <translation id="7344633671344536647">Δεδομένα περιήγησης:</translation>
 <translation id="4250680216510889253">Όχι</translation>
 <translation id="6291953229176937411">&amp;Εμφάνιση στο Finder</translation>
@@ -411,7 +404,6 @@
 <translation id="4164507027399414915">Επαναφορά όλων των μικρογραφιών που έχουν καταργηθεί</translation>
 <translation id="6620110761915583480">Αποθήκευση Αρχείου</translation>
 <translation id="7543025879977230179"><ph name="PRODUCT_NAME"/> Επιλογές</translation>
-<translation id="4271692636717022386">Εμφάνιση ακόμα περισσότερων</translation>
 <translation id="2648845569394238430">Αναζήτηση:</translation>
 <translation id="2175607476662778685">Γραμμή γρήγορης εκκίνησης</translation>
 <translation id="6434309073475700221">Απόρριψη</translation>
@@ -419,7 +411,6 @@
 <translation id="4551297183924943154">Το προφίλ φαίνεται ότι χρησιμοποιείται από τη διεργασία <ph name="PROCESS_ID"/> στον κεντρικό υπολογιστή <ph name="HOST_NAME"/>.  Εάν είστε βέβαιοι ότι δεν χρησιμοποιεί κάποια άλλη διεργασία αυτό το προφίλ, διαγράψτε το αρχείο <ph name="LOCK_FILE"/> και επανεκκινήστε το <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="4378551569595875038">Σύνδεση...</translation>
 <translation id="7029809446516969842">Κωδικοί πρόσβασης</translation>
-<translation id="3513979718339724672">Εμφάνιση μικρογραφιών</translation>
 <translation id="8211437954284917092">Εισαγάγετε ένα ερώτημα στο παραπάνω πεδίο κειμένου για να κάνετε αναζήτηση στους σελιδοδείκτες σας.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> αρχεία</translation>
 <translation id="1291121346508216435">Αυτόματη διόρθωση ορθογραφίας:</translation>
@@ -458,7 +449,6 @@
 <translation id="3675321783533846350">Ρύθμιση διακομιστή μεσολάβησης για σύνδεση με το δίκτυο.</translation>
 <translation id="1572103024875503863"><ph name="NUMBER_MANY"/> ημέρες</translation>
 <translation id="8453184121293348016">Δεν εντοπίστηκε μηχανισμός ακύρωσης</translation>
-<translation id="1199429765931693651">Απόκρυψη λίστας</translation>
 <translation id="3481915276125965083">Έγινε αποκλεισμός των ακόλουθων αναδυόμενων παραθύρων σε αυτήν τη σελίδα:</translation>
 <translation id="7163503212501929773">Υπολείπονται <ph name="NUMBER_MANY"/> ώρες</translation>
 <translation id="5586329397967040209">Ορισμός αυτής ως αρχικής σελίδας μου</translation>
@@ -478,21 +468,18 @@
 <translation id="9010612682952491200">Νέα καρτέλα [<ph name="PROFILE_NAME"/>]</translation>
 <translation id="7965010376480416255">Κοινόχρηστη μνήμη</translation>
 <translation id="6248988683584659830">Ρυθμίσεις αναζήτησης</translation>
-<translation id="2242457451044347345">Συγχρονισμός σελιδοδεικτών</translation>
 <translation id="7053983685419859001">Αποκλεισμός</translation>
 <translation id="2727712005121231835">Πραγματικό Μέγεθος</translation>
 <translation id="8887733174653581061">Πάντα σε πρώτο πλάνο</translation>
 <translation id="610886263749567451">Ειδοποίηση JavaScript</translation>
 <translation id="6556866813142980365">Επανάληψη ενέργειας</translation>
 <translation id="6584811624537923135">Επιβεβαίωση κατάργησης εγκατάστασης</translation>
-<translation id="8413126021676339697">Εμφάνιση πλήρους ιστορικού</translation>
 <translation id="8860923508273563464">Περιμένετε να ολοκληρωθούν οι λήψεις</translation>
 <translation id="5288678174502918605">Εκ Νέου Ά&amp;νοιγμα Κλειστής Καρτέλας</translation>
 <translation id="9157595877708044936">Ρύθμιση...</translation>
 <translation id="1823768272150895732">Γραμματοσειρά</translation>
 <translation id="4475552974751346499">Αναζήτηση λήψεων</translation>
 <translation id="5339267765524260207">Εάν απενεργοποιήσετε τον συγχρονισμό, οι σελιδοδείκτες σας δεν θα διατηρούνται πλέον σε συγχρονισμό με εκείνους που είναι αποθηκευμένοι στον Λογαριασμό Google σας ή στις άλλες μηχανές σας. Δεν θα διαγραφεί κανένας σελιδοδείκτης. Όλοι οι υπάρχοντες σελιδοδείκτες θα παραμείνουν σε αυτόν τον υπολογιστή και στον Λογαριασμό Google σας.</translation>
-<translation id="1111153019813902504">Πρόσφατοι σελιδοδείκτες</translation>
 <translation id="7497564420220535101">Αποθήκευση &amp;στιγμιότυπου οθόνης...</translation>
 <translation id="3786934874263773074">Εύ&amp;ρεση στη σελίδα</translation>
 <translation id="7605919926370951297">Κωδικοποίηση Κειμένου</translation>
@@ -576,11 +563,9 @@
 <translation id="5956247558487200429">&amp;Αναφορά Σφάλματος ή Προβληματικού Ιστοτόπου...</translation>
 <translation id="6459488832681039634">Χρήση Επιλογής για Εύρεση</translation>
 <translation id="8235325155053717782">Σφάλμα <ph name="ERROR_NUMBER"/> (<ph name="ERROR_NAME"/>): <ph name="ERROR_TEXT"/></translation>
-<translation id="5933965621105104639">Προτάσεις</translation>
 <translation id="7734729626860583526">Cookie από <ph name="HOST"/></translation>
 <translation id="1084824384139382525">Αντιγραφή διεύθυνσης &amp;συνδέσμου</translation>
 <translation id="5042992464904238023">Περιεχόμενο ιστού</translation>
-<translation id="1261967938516962772">Απόκρυψη περισσότερων</translation>
 <translation id="1181037720776840403">Κατάργηση</translation>
 <translation id="4006726980536015530">Εάν κλείσετε τώρα το <ph name="PRODUCT_NAME"/>, αυτές οι λήψεις θα ακυρωθούν.</translation>
 <translation id="59174027418879706">Ενεργοποιημένες</translation>
@@ -599,7 +584,6 @@
 <translation id="7186367841673660872">Αυτή η σελίδα έχει μεταφραστεί από τα<ph name="ORIGINAL_LANGUAGE"/>στα<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="1175364870820465910">&amp;Εκτύπωση...</translation>
 <translation id="3866249974567520381">Περιγραφή</translation>
-<translation id="6549689063733911810">Πρόσφατα</translation>
 <translation id="5552632479093547648">Εντοπίστηκε κακόβουλο πρόγραμμα και ηλεκτρονικό &quot;ψάρεμα&quot; (phishing)!</translation>
 <translation id="4988273303304146523">Πριν από <ph name="NUMBER_DEFAULT"/> ημέρες</translation>
 <translation id="2819994928625218237">&amp;Καμία Πρόταση για το Ορθογραφικό Σφάλμα</translation>
@@ -607,7 +591,6 @@
 <translation id="9142623379911037913">Να επιτρέπεται στον ιστότοπο <ph name="SITE"/> να εμφανίζει ειδοποιήσεις στην επιφάνεια εργασίας;</translation>
 <translation id="4196320913210960460">Μπορείτε να διαχειρίζεστε τις εγκατεστημένες επεκτάσεις σας κάνοντας κλικ στην επιλογή Επεκτάσεις στο μενού Εργαλεία.</translation>
 <translation id="9118804773997839291">Ακολουθεί μια λίστα όλων των μη ασφαλών στοιχείων για τη σελίδα. Κάντε κλικ στο Διαγνωστικό σύνδεσμο για περισσότερες πληροφορίες για τη μηνυματοσειρά ενός συγκεκριμένου στοιχείου.</translation>
-<translation id="3664021239099029884">Προβολή όλων των λήψεων</translation>
 <translation id="7754704193130578113">Εμφάνιση ερώτησης για τη θέση αποθήκευσης κάθε αρχείου πριν από τη λήψη</translation>
 <translation id="2497284189126895209">Όλα τα αρχεία</translation>
 <translation id="5360606537916580043">Τελευταία ημέρα</translation>
@@ -622,8 +605,6 @@
 <translation id="6281636957902664775">Μετάβαση σε <ph name="URL"/></translation>
 <translation id="630065524203833229">Έ&amp;ξοδος</translation>
 <translation id="2649204054376361687"><ph name="CITY"/>, <ph name="COUNTRY"/></translation>
-<translation id="5738216285593517904">Εμφάνιση προτάσεων</translation>
-<translation id="5264618369089706215">Αναζητήσεις</translation>
 <translation id="1168020859489941584">Άνοιγμα σε <ph name="TIME_REMAINING"/>...</translation>
 <translation id="7814458197256864873">&amp;Αντιγραφή</translation>
 <translation id="4692623383562244444">Μηχανές αναζήτησης</translation>
@@ -669,7 +650,6 @@
 <translation id="111844081046043029">Είστε βέβαιοι ότι επιθυμείτε έξοδο από αυτή τη σελίδα;</translation>
 <translation id="3202578601642193415">Νεότερο</translation>
 <translation id="8112886015144590373"><ph name="NUMBER_FEW"/> ώρες</translation>
-<translation id="8739589585766515812">Διαγραφή ιστορικού για αυτήν την ημέρα</translation>
 <translation id="1398853756734560583">Μεγιστοποίηση</translation>
 <translation id="3340262871848042885">Το πιστοποιητικό του διακομιστή έχει λήξει</translation>
 <translation id="8978540966440585844">Περιή&amp;γηση...</translation>
@@ -710,7 +690,6 @@
 <translation id="4711094779914110278">Τουρκικά</translation>
 <translation id="7136984461011502314">Καλώς ορίσατε στο <ph name="PRODUCT_NAME"/></translation>
 <translation id="4002066346123236978">Τίτλος</translation>
-<translation id="1974178770588939828">Εμφάνιση λίστας</translation>
 <translation id="4087089424473531098">Δημιουργήθηκε η επέκταση:
 
 <ph name="EXTENSION_FILE"/></translation>
@@ -881,7 +860,6 @@
 <translation id="6004539838376062211">&amp;Επιλογές ορθογραφικού ελέγχου</translation>
 <translation id="5350198318881239970">Το προφίλ σας δεν ήταν δυνατό να ανοίξει σωστά.\n\nΟρισμένες λειτουργίες ενδεχομένως να είναι μη διαθέσιμες.  Ελέγξτε ότι το προφίλ υπάρχει και ότι έχετε άδεια ανάγνωσης και εγγραφής των περιεχομένων του.</translation>
 <translation id="4058793769387728514">Άμεσος Έλεγχος του Εγγράφου</translation>
-<translation id="2915134691870672002">Απόκρυψη προτάσεων</translation>
 <translation id="756445078718366910">Άνοιγμα παραθύρου προγράμματος περιήγησης</translation>
 <translation id="7887334752153342268">Αναπαραγωγή</translation>
 <translation id="4980691186726139495">Να μην διατηρηθεί σε αυτήν τη σελίδα</translation>
@@ -936,7 +914,6 @@
 <translation id="641480858134062906">Απέτυχε η φόρτωση για <ph name="URL"/></translation>
 <translation id="3693415264595406141">Κωδικός πρόσβασης:</translation>
 <translation id="74568296546932365">Διατήρηση του <ph name="PAGE_TITLE"/> ως προεπιλεγμένης μηχανής αναζήτησης</translation>
-<translation id="9092040507273639934">Κατάργηση μικρογραφίας</translation>
 <translation id="6181769708911894002">Προειδοποίηση: Η επίσκεψη σε αυτόν τον ιστότοπο ίσως είναι επιβλαβής για τον υπολογιστή σας!</translation>
 <translation id="3412265149091626468">Μετάβαση στην Επιλογή</translation>
 <translation id="3785852283863272759">Τοποθεσία Σελίδας Ήλεκτρονικού Ταχυδρομείου</translation>
@@ -972,7 +949,6 @@
 <translation id="3413808618118019351">&amp;Εισαγωγή Σελιδοδεικτών &amp;&amp; Ρυθμίσεων...</translation>
 <translation id="4835836146030131423">Σφάλμα κατά τη σύνδεση.</translation>
 <translation id="3169621169201401257">Για αναλυτικές πληροφορίες σχετικά με τα προβλήματα με αυτά τα στοιχεία, επισκεφθείτε τη Google <ph name="DIAGNOSTIC_PAGE"/> για τον <ph name="DOMAIN"/>.</translation>
-<translation id="2559292239863842334">Τα πλαίσια αναζήτησης που χρησιμοποιείτε πιο συχνά σε άλλους ιστότοπους θα εμφανιστούν εδώ.</translation>
 <translation id="7385854874724088939">Παρουσιάστηκε σφάλμα κατά την προσπάθεια εκτύπωσης.  Ελέγξτε τον εκτυπωτή σας και προσπαθήστε ξανά.</translation>
 <translation id="770015031906360009">Ελληνικά</translation>
 <translation id="4474796446011988286">Στον υπολογιστή σας έχουν αποθηκευτεί τα ακόλουθα cookies:</translation>
@@ -1049,6 +1025,7 @@
 <translation id="8788572795284305350"><ph name="NUMBER_ZERO"/> hours ago</translation>
 <translation id="8236028464988198644">Αναζήτηση από τη γραμμή διευθύνσεων.</translation>
 <translation id="4867297348137739678">Τελευταία εβδομάδα</translation>
+<translation id="4881695831933465202">Άνοιγμα</translation>
 <translation id="5457793226917888578">Αυτή η σελίδα περιέχει μη ασφαλές περιεχόμενο</translation>
 <translation id="5988520580879236902">Εξέταση ενεργών προβολών:</translation>
 <translation id="5981759340456370804">Στατιστικά για τα &quot;φυτά&quot;</translation>
@@ -1096,7 +1073,6 @@
 <translation id="7000311294523403548">Ιστοσελίδα χωρίς τίτλο</translation>
 <translation id="4593021220803146968">&amp;Μετάβαση σε <ph name="URL"/></translation>
 <translation id="7649070708921625228">Βοήθεια</translation>
-<translation id="6119719873954126908">Ανατρέξτε σε αυτό το σημείο για συμβουλές και προτάσεις για καλύτερη περιήγηση!</translation>
 <translation id="7442246004212327644">Εκκα&amp;θάριση</translation>
 <translation id="281133045296806353">Δημιουργήθηκε νέο παράθυρο σε υπάρχουσα περίοδο σύνδεσης του προγράμματος περιήγησης.</translation>
 <translation id="6314007596429871800">Προσωρινή μνήμη εφαρμογής</translation>
@@ -1220,7 +1196,6 @@
 <translation id="2433507940547922241">Εμφάνιση</translation>
 <translation id="839072384475670817">Δημιουργία &amp;Συντομεύσεων Εφαρμογής...</translation>
 <translation id="6756161853376828318">Ορισμός του <ph name="PRODUCT_NAME"/> ως προεπιλεγμένο πρόγραμμα περιήγησης</translation>
-<translation id="2640524951934795733">Εδώ τι θα βάλουμε;</translation>
 <translation id="2061855250933714566"><ph name="ENCODING_CATEGORY"/> (<ph name="ENCODING_NAME"/>)</translation>
 <translation id="9147392381910171771">&amp;Επιλογές</translation>
 <translation id="6264485186158353794">Πίσω στην ασφάλεια</translation>
@@ -1235,7 +1210,6 @@
 <translation id="1177437665183591855">Άγνωστο σφάλμα πιστοποιητικού διακομιστή</translation>
 <translation id="3819800052061700452">&amp;Πλήρης οθόνη</translation>
 <translation id="3533943170037501541">Καλώς ήρθατε στην αρχική σελίδα σας!</translation>
-<translation id="3218306954729745977">Εμφάνιση καρτελών που έκλεισαν πρόσφατα</translation>
 <translation id="3737554291183722650">Τίτλος σελίδας:</translation>
 <translation id="1581962803218266616">Εμφάνιση στο Finder</translation>
 <translation id="4726901538158498735">Προεπιλεγμένη αναζήτηση:</translation>

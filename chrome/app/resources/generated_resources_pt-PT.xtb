@@ -51,7 +51,6 @@
 <translation id="4780321648949301421">Guardar página como...</translation>
 <translation id="9154072353677278078">O servidor <ph name="DOMAIN"/> em <ph name="REALM"/> necessita de um nome de utilizador e de uma palavra-passe.</translation>
 <translation id="8178665534778830238">Conteúdo:</translation>
-<translation id="4771019161370731727">Actividades recentes</translation>
 <translation id="8974161578568356045">Detectar Automaticamente</translation>
 <translation id="1818606096021558659">Página</translation>
 <translation id="1657406563541664238">Ajude a melhorar o <ph name="PRODUCT_NAME"/> enviando automaticamente estatísticas de utilização e relatórios de falhas para a Google</translation>
@@ -61,7 +60,6 @@
 <translation id="7481475534986701730">Sites visitados recentemente</translation>
 <translation id="4260722247480053581">Abrir na Janela de Navegação Anónima</translation>
 <translation id="4565377596337484307">Ocultar palavra-passe</translation>
-<translation id="5008715825902408241">Ocultar miniaturas</translation>
 <translation id="762917759028004464">Actualmente, o browser predefinido é o <ph name="BROWSER_NAME"/>.</translation>
 <translation id="9213479837033539041"><ph name="NUMBER_MANY"/> seg. restantes</translation>
 <translation id="8487678622945914333">Ampliar</translation>
@@ -104,7 +102,6 @@
 <translation id="1486408090387743835">O <ph name="PRODUCT_NAME"/> tem agora <ph name="BEGIN_LINK"/>extensões<ph name="END_LINK"/> e <ph name="BEGIN_BUTTON"/>sincronização de marcadores<ph name="END_BUTTON"/>.</translation>
 <translation id="3147949335879360642">Os seus marcadores serão intercalados.</translation>
 <translation id="4422347585044846479">Editar marcador para esta página</translation>
-<translation id="51285338152176012">Ocultar separadores fechados recentemente</translation>
 <translation id="8546306075665861288">Cache de imagem</translation>
 <translation id="801357260673640054">Marcadores sincronizados...</translation>
 <translation id="1399076603473531278">Os detalhes de início de sessão estão desactualizados.</translation>
@@ -225,7 +222,6 @@
 <translation id="7421925624202799674">&amp;Ver Origem da Página</translation>
 <translation id="6686490380836145850">Fechar separadores à direita</translation>
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> horas</translation>
-<translation id="2790948358747073186">Ainda mais</translation>
 <translation id="5774515636230743468">Manifesto:</translation>
 <translation id="2423578206845792524">Guard&amp;ar imagem como...</translation>
 <translation id="1095038624419434542">Ocorreu um erro ao carregar um recurso do programa. Tente reinstalar.</translation>
@@ -249,7 +245,6 @@
 <translation id="3165657440747518774">&amp;Localizar na Página</translation>
 <translation id="939736085109172342">Nova pasta</translation>
 <translation id="862750493060684461">Cache CSS</translation>
-<translation id="2009541932026160416">Clique em <ph name="CROSS_IMAGE"/> para remover a miniatura</translation>
 <translation id="5641560969478423183">O certificado do servidor não corresponde ao URL</translation>
 <translation id="6474422710030751464">Algum conteúdo desta página foi obtido através de uma ligação com erros de SSL.</translation>
 <translation id="121827551500866099">Mostrar todas as  transferências...</translation>
@@ -353,7 +348,6 @@
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="7564146504836211400">Cookies e outros dados</translation>
 <translation id="2266011376676382776">Página(s) sem resposta</translation>
-<translation id="1805966933547717780">http://www.google.com/chrome/help/</translation>
 <translation id="1319824869167805246">Abrir Todos os Marcadores numa Nova Janela</translation>
 <translation id="3493653833301553455">Preenchimento automático de formulário:</translation>
 <translation id="3371861036502301517">Falha na instalação da extensão</translation>
@@ -369,7 +363,6 @@
 <translation id="1516602185768225813">Reabrir as últimas páginas abertas</translation>
 <translation id="1538486363863290963">Bloquear todos os cookies de terceiros sem excepção</translation>
 <translation id="4874539263382920044">O titulo deverá conter pelo menos um carácter</translation>
-<translation id="3549657413697417275">Pesquisar no histórico</translation>
 <translation id="7344633671344536647">Dados de navegação:</translation>
 <translation id="4250680216510889253">Não</translation>
 <translation id="6291953229176937411">Mo&amp;strar no Localizador</translation>
@@ -410,7 +403,6 @@
 <translation id="4164507027399414915">Restaurar todas as miniaturas removidas</translation>
 <translation id="6620110761915583480">Guardar ficheiro</translation>
 <translation id="7543025879977230179">Opções do <ph name="PRODUCT_NAME"/></translation>
-<translation id="4271692636717022386">Mostrar ainda mais</translation>
 <translation id="2648845569394238430">Pesquisar:</translation>
 <translation id="2175607476662778685">Barra de início rápido</translation>
 <translation id="6434309073475700221">Rejeitar</translation>
@@ -418,7 +410,6 @@
 <translation id="4551297183924943154">O perfil parece estar a ser utilizado pelo processo <ph name="PROCESS_ID"/> no anfitrião <ph name="HOST_NAME"/>. Se tem a certeza de que este perfil não está a ser utilizado por outros processos, elimine o ficheiro <ph name="LOCK_FILE"/> e reinicie o <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="4378551569595875038">A ligar...</translation>
 <translation id="7029809446516969842">Palavras-passe</translation>
-<translation id="3513979718339724672">Mostrar miniaturas</translation>
 <translation id="8211437954284917092">Introduza uma consulta no campo de texto acima para pesquisar os marcadores.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> ficheiros</translation>
 <translation id="1291121346508216435">Corrigir ortografia automaticamente:</translation>
@@ -457,7 +448,6 @@
 <translation id="3675321783533846350">Configure um proxy para ligar à rede.</translation>
 <translation id="1572103024875503863"><ph name="NUMBER_MANY"/> dias</translation>
 <translation id="8453184121293348016">Não foi encontrado qualquer mecanismo de revogação</translation>
-<translation id="1199429765931693651">Ocultar lista</translation>
 <translation id="3481915276125965083">Os seguintes pop-ups foram bloqueados nesta página:</translation>
 <translation id="7163503212501929773"><ph name="NUMBER_MANY"/> horas restantes</translation>
 <translation id="5586329397967040209">Definir esta página como a minha página inicial</translation>
@@ -477,21 +467,18 @@
 <translation id="9010612682952491200">Novo separador [<ph name="PROFILE_NAME"/>]</translation>
 <translation id="7965010376480416255">Memória partilhada</translation>
 <translation id="6248988683584659830">Pesquisar definições</translation>
-<translation id="2242457451044347345">Sincronização de marcadores</translation>
 <translation id="7053983685419859001">Bloquear</translation>
 <translation id="2727712005121231835">Tamanho real</translation>
 <translation id="8887733174653581061">Sempre visível</translation>
 <translation id="610886263749567451">Alerta JavaScript</translation>
 <translation id="6556866813142980365">Refazer</translation>
 <translation id="6584811624537923135">Confirmar desinstalação</translation>
-<translation id="8413126021676339697">Mostrar histórico completo</translation>
 <translation id="8860923508273563464">Aguarde até que a transferência esteja concluída</translation>
 <translation id="5288678174502918605">Voltar a Abrir o S&amp;eparador Fechado</translation>
 <translation id="9157595877708044936">A configurar...</translation>
 <translation id="1823768272150895732">Tipo de letra</translation>
 <translation id="4475552974751346499">Pesquisar transferências</translation>
 <translation id="5339267765524260207">Se desactivar a sincronização, os seus marcadores deixarão de ser sincronizados com os que estão armazenados na sua Conta Google ou noutros computadores. Não serão eliminados quaisquer marcadores. Todos os marcadores existentes serão mantidos neste computador e na sua Conta Google.</translation>
-<translation id="1111153019813902504">Marcadores recentes</translation>
 <translation id="7497564420220535101">Guardar &amp;captura de ecrã...</translation>
 <translation id="3786934874263773074">&amp;Localizar na página</translation>
 <translation id="7605919926370951297">Codificação de texto</translation>
@@ -574,11 +561,9 @@
 <translation id="5956247558487200429">&amp;Reportar Erro ou Web Site Inoperacional...</translation>
 <translation id="6459488832681039634">Utilizar selecção para localizar</translation>
 <translation id="8235325155053717782">Erro <ph name="ERROR_NUMBER"/> (<ph name="ERROR_NAME"/>): <ph name="ERROR_TEXT"/></translation>
-<translation id="5933965621105104639">Recomendações</translation>
 <translation id="7734729626860583526">Cookie de <ph name="HOST"/></translation>
 <translation id="1084824384139382525">Copiar &amp;endereço do link</translation>
 <translation id="5042992464904238023">Conteúdo da Web</translation>
-<translation id="1261967938516962772">Ocultar ainda mais</translation>
 <translation id="1181037720776840403">Remover</translation>
 <translation id="4006726980536015530">Se fechar o <ph name="PRODUCT_NAME"/> neste momento, estas transferências serão canceladas.</translation>
 <translation id="59174027418879706">Activados</translation>
@@ -597,7 +582,6 @@
 <translation id="7186367841673660872">Esta página foi traduzida de <ph name="ORIGINAL_LANGUAGE"/> para <ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="1175364870820465910">Im&amp;primir...</translation>
 <translation id="3866249974567520381">Descrição</translation>
-<translation id="6549689063733911810">Recente</translation>
 <translation id="5552632479093547648">Software maligno e phishing detectados!</translation>
 <translation id="4988273303304146523">Há <ph name="NUMBER_DEFAULT"/> dias</translation>
 <translation id="2819994928625218237">&amp;Não Existem Sugestões de Ortografia</translation>
@@ -605,7 +589,6 @@
 <translation id="9142623379911037913">Permitir que <ph name="SITE"/> mostre as notificações do ambiente de trabalho? </translation>
 <translation id="4196320913210960460">Pode gerir as extensões instaladas, clicando em Extensões no menu Ferramentas.</translation>
 <translation id="9118804773997839291">Listamos, a seguir, todos os elementos não seguros para a página. Clique no link Diagnóstico para mais informações sobre a linha de execução de um elemento específico.</translation>
-<translation id="3664021239099029884">Ver todas as transferências</translation>
 <translation id="7754704193130578113">Perguntar onde guardar cada ficheiro antes da transferência</translation>
 <translation id="2497284189126895209">Todos os ficheiros</translation>
 <translation id="5360606537916580043">Último dia</translation>
@@ -620,8 +603,6 @@
 <translation id="6281636957902664775">Ir para <ph name="URL"/></translation>
 <translation id="630065524203833229">&amp;Sair</translation>
 <translation id="2649204054376361687"><ph name="CITY"/>, <ph name="COUNTRY"/></translation>
-<translation id="5738216285593517904">Mostrar recomendações</translation>
-<translation id="5264618369089706215">Pesquisas</translation>
 <translation id="1168020859489941584">A abrir dentro de <ph name="TIME_REMAINING"/>...</translation>
 <translation id="7814458197256864873">&amp;Copiar</translation>
 <translation id="4692623383562244444">Motores de pesquisa</translation>
@@ -667,7 +648,6 @@
 <translation id="111844081046043029">Tem a certeza de que pretende sair desta página?</translation>
 <translation id="3202578601642193415">Mais recente</translation>
 <translation id="8112886015144590373"><ph name="NUMBER_FEW"/> horas</translation>
-<translation id="8739589585766515812">Eliminar histórico deste dia</translation>
 <translation id="1398853756734560583">Maximizar</translation>
 <translation id="3340262871848042885">O certificado do servidor expirou</translation>
 <translation id="8978540966440585844">Pr&amp;ocurar...</translation>
@@ -708,7 +688,6 @@
 <translation id="4711094779914110278">Turco</translation>
 <translation id="7136984461011502314">Bem-vindo ao <ph name="PRODUCT_NAME"/></translation>
 <translation id="4002066346123236978">Título</translation>
-<translation id="1974178770588939828">Mostrar lista</translation>
 <translation id="4087089424473531098">Criou a extensão:
 
 <ph name="EXTENSION_FILE"/></translation>
@@ -878,7 +857,6 @@
 <translation id="6004539838376062211">Opçõe&amp;s do verificador ortográfico</translation>
 <translation id="5350198318881239970">Não foi possível abrir o seu perfil correctamente.\n\nAlgumas funcionalidades podem não estar disponíveis. Confirme se o perfil existe e se tem permissão para ler e gravar o respectivo conteúdo.</translation>
 <translation id="4058793769387728514">Verificar documento agora</translation>
-<translation id="2915134691870672002">Ocultar recomendações</translation>
 <translation id="756445078718366910">Abrir janela do navegador</translation>
 <translation id="7887334752153342268">Duplicado</translation>
 <translation id="4980691186726139495">Não fixar nesta página</translation>
@@ -931,7 +909,6 @@
 <translation id="641480858134062906">Falha ao carregar <ph name="URL"/></translation>
 <translation id="3693415264595406141">Palavra-passe:</translation>
 <translation id="74568296546932365">Manter o <ph name="PAGE_TITLE"/> como motor de pesquisa predefinido</translation>
-<translation id="9092040507273639934">Remover uma miniatura</translation>
 <translation id="6181769708911894002">Aviso: Visitar este site poderá danificar o seu computador!</translation>
 <translation id="3412265149091626468">Passar para a selecção</translation>
 <translation id="3785852283863272759">Localização da página de e-mail</translation>
@@ -967,7 +944,6 @@
 <translation id="3413808618118019351">&amp;Importar Marcadores e Definições...</translation>
 <translation id="4835836146030131423">Erro ao iniciar sessão.</translation>
 <translation id="3169621169201401257">Para obter informações mais detalhadas sobre os problemas com estes elementos, visite a <ph name="DIAGNOSTIC_PAGE"/> no Google para <ph name="DOMAIN"/>.</translation>
-<translation id="2559292239863842334">As caixas de pesquisa utilizadas mais frequentemente noutros sites serão apresentadas aqui.</translation>
 <translation id="7385854874724088939">Ocorreu um erro ao tentar imprimir. Verifique a impressora e tente novamente.</translation>
 <translation id="770015031906360009">Grego</translation>
 <translation id="4474796446011988286">Estão armazenados os seguintes cookies no seu computador:</translation>
@@ -1044,6 +1020,7 @@
 <translation id="8788572795284305350"><ph name="NUMBER_ZERO"/> hours ago</translation>
 <translation id="8236028464988198644">Pesquise a partir da barra de endereço.</translation>
 <translation id="4867297348137739678">Semana passada</translation>
+<translation id="4881695831933465202">Abrir</translation>
 <translation id="5457793226917888578">Esta página inclui conteúdo não seguro.</translation>
 <translation id="5988520580879236902">Inspeccionar vistas activas:</translation>
 <translation id="5981759340456370804">Estatísticas simples</translation>
@@ -1091,7 +1068,6 @@
 <translation id="7000311294523403548">Página Web sem nome</translation>
 <translation id="4593021220803146968">&amp;Ir para <ph name="URL"/></translation>
 <translation id="7649070708921625228">Ajuda</translation>
-<translation id="6119719873954126908">Visite este espaço para obter sugestões para uma melhor navegação!</translation>
 <translation id="7442246004212327644">Li&amp;mpar</translation>
 <translation id="281133045296806353">Nova janela criada na sessão de browser existente</translation>
 <translation id="6314007596429871800">Cache da aplicação</translation>
@@ -1215,7 +1191,6 @@
 <translation id="2433507940547922241">Aspecto</translation>
 <translation id="839072384475670817">Criar Atalho&amp;s da Aplicação...</translation>
 <translation id="6756161853376828318">Tornar o <ph name="PRODUCT_NAME"/> na predefinição</translation>
-<translation id="2640524951934795733">O que vamos colocar aqui?</translation>
 <translation id="2061855250933714566"><ph name="ENCODING_CATEGORY"/> (<ph name="ENCODING_NAME"/>)</translation>
 <translation id="9147392381910171771">&amp;Opções</translation>
 <translation id="6264485186158353794">Retroceder para segurança</translation>
@@ -1230,7 +1205,6 @@
 <translation id="1177437665183591855">Erro de certificado de servidor desconhecido</translation>
 <translation id="3819800052061700452">&amp;Ecrã inteiro</translation>
 <translation id="3533943170037501541">Bem-vindo à sua página inicial!</translation>
-<translation id="3218306954729745977">Mostrar separadores fechados recentemente</translation>
 <translation id="3737554291183722650">Título da página:</translation>
 <translation id="1581962803218266616">Mostrar no Localizador</translation>
 <translation id="4726901538158498735">Pesquisa padrão:</translation>

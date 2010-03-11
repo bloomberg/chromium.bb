@@ -51,7 +51,6 @@
 <translation id="4780321648949301421">Lưu Trang Dưới dạng...</translation>
 <translation id="9154072353677278078">Máy chủ <ph name="DOMAIN"/> tại <ph name="REALM"/> yêu cầu tên người dùng và mật khẩu.</translation>
 <translation id="8178665534778830238">Nội dung:</translation>
-<translation id="4771019161370731727">Hoạt động gần đây</translation>
 <translation id="8974161578568356045">Tự động Phát hiện</translation>
 <translation id="1818606096021558659">Trang</translation>
 <translation id="1657406563541664238">Trợ giúp cải thiện <ph name="PRODUCT_NAME"/> bằng cách tự động gửi cho Google thống kê sử dụng và báo cáo sự cố</translation>
@@ -61,7 +60,6 @@
 <translation id="7481475534986701730">Các trang web đã truy cập gần đây</translation>
 <translation id="4260722247480053581">Mở trong Cửa sổ Ẩn danh</translation>
 <translation id="4565377596337484307">Ẩn mật khẩu</translation>
-<translation id="5008715825902408241">Ẩn hình thu nhỏ</translation>
 <translation id="762917759028004464">Trình duyệt mặc định hiện tại là <ph name="BROWSER_NAME"/>.</translation>
 <translation id="9213479837033539041"><ph name="NUMBER_MANY"/> giây còn lại</translation>
 <translation id="8487678622945914333">Phóng To</translation>
@@ -105,7 +103,6 @@
 <translation id="1486408090387743835"><ph name="PRODUCT_NAME"/> giờ đã có <ph name="BEGIN_LINK"/>tiện ích mở rộng<ph name="END_LINK"/> và <ph name="BEGIN_BUTTON"/>tính năng đồng bộ hoá dấu trang<ph name="END_BUTTON"/>.</translation>
 <translation id="3147949335879360642">Dấu trang của bạn sẽ được hợp nhất.</translation>
 <translation id="4422347585044846479">Chỉnh sửa dấu trang của trang này</translation>
-<translation id="51285338152176012">Ẩn các tab bị đóng gần đây</translation>
 <translation id="8546306075665861288">Bộ nhớ cache hình ảnh</translation>
 <translation id="801357260673640054">Đã đồng bộ hoá Dấu trang...</translation>
 <translation id="1399076603473531278">Các chi tiết đăng nhập đã hết hạn.</translation>
@@ -227,7 +224,6 @@
 <translation id="7421925624202799674">&amp;Xem Nguồn Trang</translation>
 <translation id="6686490380836145850">Đóng tab phía bên phải</translation>
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> giờ</translation>
-<translation id="2790948358747073186">Các mục khác</translation>
 <translation id="5774515636230743468">Manifest:</translation>
 <translation id="2423578206845792524">Lưu &amp;hình ảnh thành...</translation>
 <translation id="1095038624419434542">Đã xảy ra lỗi khi tải tài nguyên chương trình. Hãy thử cài đặt lại.</translation>
@@ -251,7 +247,6 @@
 <translation id="3165657440747518774">Tìm t&amp;rong Trang</translation>
 <translation id="939736085109172342">Thư mục mới</translation>
 <translation id="862750493060684461">Bộ nhớ cache CSS</translation>
-<translation id="2009541932026160416">Nhấp <ph name="CROSS_IMAGE"/> để xoá hình thu nhỏ</translation>
 <translation id="5641560969478423183">Chứng chỉ của máy chủ không phù hợp với URL</translation>
 <translation id="6474422710030751464">Một số nội dung trong trang này được truy xuất qua kết nối có lỗi SSL.</translation>
 <translation id="121827551500866099">Hiển thị tất cả tải xuống...</translation>
@@ -355,7 +350,6 @@
 <translation id="5039804452771397117">Cho phép</translation>
 <translation id="7564146504836211400">Cookie và Dữ liệu Khác</translation>
 <translation id="2266011376676382776">(Các) Trang không Hồi đáp</translation>
-<translation id="1805966933547717780">http://www.google.com/chrome/help/</translation>
 <translation id="1319824869167805246">Mở Tất cả Dấu trang trong Cửa sổ Mới</translation>
 <translation id="3493653833301553455">Tự động điền mẫu:</translation>
 <translation id="3371861036502301517">Lỗi Cài đặt Phần mở rộng</translation>
@@ -371,7 +365,6 @@
 <translation id="1516602185768225813">Mở lại các trang được mở sau cùng</translation>
 <translation id="1538486363863290963">Chặn tất cả cookie của bên thứ ba mà không có ngoại lệ</translation>
 <translation id="4874539263382920044">Tiêu đề phải chứa ít nhất một ký tự</translation>
-<translation id="3549657413697417275">Tìm kiếm lịch sử của bạn</translation>
 <translation id="7344633671344536647">Dữ liệu duyệt web:</translation>
 <translation id="4250680216510889253">Không</translation>
 <translation id="6291953229176937411">&amp;Hiển thị trong Trình tìm kiếm</translation>
@@ -412,7 +405,6 @@
 <translation id="4164507027399414915">Khôi phục tất cả các hình thu nhỏ đã xoá</translation>
 <translation id="6620110761915583480">Lưu Tệp</translation>
 <translation id="7543025879977230179">Tuỳ chọn <ph name="PRODUCT_NAME"/></translation>
-<translation id="4271692636717022386">Hiển thị các mục khác</translation>
 <translation id="2648845569394238430">Tìm kiếm:</translation>
 <translation id="2175607476662778685">Thanh khởi động nhanh</translation>
 <translation id="6434309073475700221">Huỷ</translation>
@@ -420,7 +412,6 @@
 <translation id="4551297183924943154">Dường như tiểu sử đang được sử dụng trong quá trình <ph name="PROCESS_ID"/> trên máy chủ lưu trữ <ph name="HOST_NAME"/>.  Nếu bạn chắc chắn rằng không có quá trình nào khác đang sử dụng tiểu sử này, hãy xoá tệp <ph name="LOCK_FILE"/> và khởi động lại <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="4378551569595875038">Đang kết nối…</translation>
 <translation id="7029809446516969842">Mật khẩu</translation>
-<translation id="3513979718339724672">Hiển thị hình thu nhỏ</translation>
 <translation id="8211437954284917092">Nhập truy vấn vào trường văn bản ở trên để tìm dấu trang của bạn.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/>/<ph name="TOTAL_FILES"/> tệp</translation>
 <translation id="1291121346508216435">Tự động sửa lỗi chính tả:</translation>
@@ -459,7 +450,6 @@
 <translation id="3675321783533846350">Thiết lập proxy để kết nối đến mạng.</translation>
 <translation id="1572103024875503863"><ph name="NUMBER_MANY"/> ngày</translation>
 <translation id="8453184121293348016">Không tìm thấy cơ chế thu hồi nào</translation>
-<translation id="1199429765931693651">Ẩn danh sách</translation>
 <translation id="3481915276125965083">Các cửa sổ bật lên sau đã bị chặn trên trang này:</translation>
 <translation id="7163503212501929773"><ph name="NUMBER_MANY"/> giờ còn lại</translation>
 <translation id="5586329397967040209">Đặt làm trang chủ của tôi</translation>
@@ -479,21 +469,18 @@
 <translation id="9010612682952491200">Tab Mới [<ph name="PROFILE_NAME"/>]</translation>
 <translation id="7965010376480416255">Bộ nhớ Dùng chung</translation>
 <translation id="6248988683584659830">Cài đặt tìm kiếm</translation>
-<translation id="2242457451044347345">Đồng bộ hoá Dấu trang</translation>
 <translation id="7053983685419859001">Chặn</translation>
 <translation id="2727712005121231835">Kích thước Thực</translation>
 <translation id="8887733174653581061">Luôn ở trên cùng</translation>
 <translation id="610886263749567451">Cảnh báo JavaScript</translation>
 <translation id="6556866813142980365">Làm lại</translation>
 <translation id="6584811624537923135">Xác nhận Gỡ cài đặt</translation>
-<translation id="8413126021676339697">Hiển thị toàn bộ lịch sử</translation>
 <translation id="8860923508273563464">Chờ bản tải xuống hoàn tất</translation>
 <translation id="5288678174502918605">&amp;Mở lại Tab đã Đóng</translation>
 <translation id="9157595877708044936">Đang thiết lập...</translation>
 <translation id="1823768272150895732">Phông chữ</translation>
 <translation id="4475552974751346499">Tìm kiếm tải xuống</translation>
 <translation id="5339267765524260207">Nếu bạn tắt tính năng đồng bộ hoá, các dấu trang của bạn sẽ không còn được giữ đồng bộ hoá với các dấu trang được lưu trữ trong Tài khoản Google hoặc trên máy khác của bạn. Không có dấu trang nào sẽ bị xoá. Tất cả dấu trang hiện có sẽ vẫn còn trên máy tính này và trong Tài khoản Google của bạn.</translation>
-<translation id="1111153019813902504">Dấu trang gần đây</translation>
 <translation id="7497564420220535101">Lưu &amp;Ảnh chụp màn hình...</translation>
 <translation id="3786934874263773074">Tìm t&amp;rong trang</translation>
 <translation id="7605919926370951297">Mã hoá Văn bản</translation>
@@ -576,11 +563,9 @@
 <translation id="5956247558487200429">&amp;Báo cáo Lỗi hoặc Trang web Không truy cập được...</translation>
 <translation id="6459488832681039634">Sử dụng Phần lựa chọn cho Tìm kiếm</translation>
 <translation id="8235325155053717782">Lỗi <ph name="ERROR_NUMBER"/> (<ph name="ERROR_NAME"/>): <ph name="ERROR_TEXT"/></translation>
-<translation id="5933965621105104639">Gợi ý</translation>
 <translation id="7734729626860583526">Cookie từ <ph name="HOST"/></translation>
 <translation id="1084824384139382525">S&amp;ao chép địa chỉ liên kết</translation>
 <translation id="5042992464904238023">Nội dung Web</translation>
-<translation id="1261967938516962772">Ẩn các mục khác</translation>
 <translation id="1181037720776840403">Xoá</translation>
 <translation id="4006726980536015530">Nếu bạn đóng <ph name="PRODUCT_NAME"/> ngay bây giờ, các tài nguyên tải xuống này sẽ bị huỷ.</translation>
 <translation id="59174027418879706">Đã bật</translation>
@@ -599,7 +584,6 @@
 <translation id="7186367841673660872">Trang này đã được dịch từ <ph name="ORIGINAL_LANGUAGE"/> sang <ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="1175364870820465910">&amp;In...</translation>
 <translation id="3866249974567520381">Mô tả</translation>
-<translation id="6549689063733911810">Gần đây</translation>
 <translation id="5552632479093547648">Đã Phát hiện Phần mềm độc hại và lừa đảo trực tuyến!</translation>
 <translation id="4988273303304146523"><ph name="NUMBER_DEFAULT"/> ngày trước</translation>
 <translation id="2819994928625218237">&amp;Không có Đề xuất về Chính tả nào</translation>
@@ -607,7 +591,6 @@
 <translation id="9142623379911037913">Cho phép <ph name="SITE"/> hiển thị thông báo trên màn hình?</translation>
 <translation id="4196320913210960460">Bạn có thể quản lý tiện ích mở rộng đã cài đặt của mình bằng cách nhấp vào Tiện ích mở rộng trong trình đơn Công cụ.</translation>
 <translation id="9118804773997839291">Bên dưới là danh sách tất cả các yếu tố không an toàn cho trang. Nhấp vào liên kết Chẩn đoán để biết thêm thông tin về tuyến đoạn cho yếu tố cụ thể.</translation>
-<translation id="3664021239099029884">Xem tất cả tài nguyên đã tải xuống</translation>
 <translation id="7754704193130578113">Hỏi vị trí lưu từng tệp trước khi tải xuống</translation>
 <translation id="2497284189126895209">Tất cả Tệp tin</translation>
 <translation id="5360606537916580043">Ngày cuối cùng</translation>
@@ -622,8 +605,6 @@
 <translation id="6281636957902664775">Chuyển đến <ph name="URL"/></translation>
 <translation id="630065524203833229">T&amp;hoát</translation>
 <translation id="2649204054376361687"><ph name="CITY"/>, <ph name="COUNTRY"/></translation>
-<translation id="5738216285593517904">Hiển thị gợi ý</translation>
-<translation id="5264618369089706215">Tìm kiếm</translation>
 <translation id="1168020859489941584">Đang mở trong <ph name="TIME_REMAINING"/>...</translation>
 <translation id="7814458197256864873">Sao &amp;chép</translation>
 <translation id="4692623383562244444">Công cụ tìm kiếm</translation>
@@ -669,7 +650,6 @@
 <translation id="111844081046043029">Bạn có chắc chắn muốn thoát khỏi trang này không?</translation>
 <translation id="3202578601642193415">Mới nhất</translation>
 <translation id="8112886015144590373"><ph name="NUMBER_FEW"/> giờ</translation>
-<translation id="8739589585766515812">Xoá lịch sử của ngày này</translation>
 <translation id="1398853756734560583">Phóng to</translation>
 <translation id="3340262871848042885">Chứng chỉ của máy chủ đã hết hạn</translation>
 <translation id="8978540966440585844">&amp;Duyệt...</translation>
@@ -711,7 +691,6 @@
 <translation id="4711094779914110278">Turkish</translation>
 <translation id="7136984461011502314">Chào mừng bạn đến với <ph name="PRODUCT_NAME"/></translation>
 <translation id="4002066346123236978">Tiêu đề</translation>
-<translation id="1974178770588939828">Hiển thị danh sách</translation>
 <translation id="4087089424473531098">Đã tạo tiện ích mở rộng:
 
 <ph name="EXTENSION_FILE"/></translation>
@@ -881,7 +860,6 @@
 <translation id="6004539838376062211">&amp;Tuỳ chọn trình kiểm tra chính tả</translation>
 <translation id="5350198318881239970">Không thể mở tiểu sử của bạn đúng cách.\n\nMột số tính năng có thể không có sẵn.  Hãy kiểm tra xem tiểu sử có tồn tại và bạn có quyền đọc và ghi nội dung trong tiểu sử không.</translation>
 <translation id="4058793769387728514">Kiểm tra Tài liệu Ngay bây giờ</translation>
-<translation id="2915134691870672002">Ẩn gợi ý</translation>
 <translation id="756445078718366910">Mở Cửa sổ Trình duyệt</translation>
 <translation id="7887334752153342268">Nhân đôi</translation>
 <translation id="4980691186726139495">Không giữ trên trang này</translation>
@@ -935,7 +913,6 @@
 <translation id="641480858134062906">Không tải được <ph name="URL"/></translation>
 <translation id="3693415264595406141">Mật khẩu:</translation>
 <translation id="74568296546932365">Giữ <ph name="PAGE_TITLE"/> làm công cụ tìm kiếm mặc định</translation>
-<translation id="9092040507273639934">Xoá hình thu nhỏ</translation>
 <translation id="6181769708911894002">Cảnh báo: Truy cập vào trang này có thể gây hại cho máy vi tính của bạn!</translation>
 <translation id="3412265149091626468">Chuyển tới Phần lựa chọn</translation>
 <translation id="3785852283863272759">Vị trí Trang Email</translation>
@@ -971,7 +948,6 @@
 <translation id="3413808618118019351">&amp;Nhập Dấu trang &amp;&amp; Cài đặt...</translation>
 <translation id="4835836146030131423">Lỗi khi đăng nhập.</translation>
 <translation id="3169621169201401257">Để biết thông tin chi tiết về các sự cố đối với những phần tử này, hãy truy cập <ph name="DIAGNOSTIC_PAGE"/> của Google cho <ph name="DOMAIN"/>.</translation>
-<translation id="2559292239863842334">Hộp tìm kiếm mà bạn sử dụng thường xuyên nhất trên những trang khác sẽ xuất hiện tại đây.</translation>
 <translation id="7385854874724088939">Có trục trặc xảy ra khi in. Hãy kiểm tra máy in của bạn và thử lại.</translation>
 <translation id="770015031906360009">Greek</translation>
 <translation id="4474796446011988286">Những cookie sau được lưu trên máy vi tính của bạn:</translation>
@@ -1048,6 +1024,7 @@
 <translation id="8788572795284305350"><ph name="NUMBER_ZERO"/> hours ago</translation>
 <translation id="8236028464988198644">Tìm kiếm từ thanh địa chỉ.</translation>
 <translation id="4867297348137739678">Tuần trước</translation>
+<translation id="4881695831933465202">Mở</translation>
 <translation id="5457793226917888578">Trang này chứa nội dung không an toàn.</translation>
 <translation id="5988520580879236902">Kiểm tra các chế độ xem đang hoạt động:</translation>
 <translation id="5981759340456370804">Thống kê dữ liệu</translation>
@@ -1095,7 +1072,6 @@
 <translation id="7000311294523403548">Trang Web Không tên</translation>
 <translation id="4593021220803146968">Đ&amp;i đến <ph name="URL"/></translation>
 <translation id="7649070708921625228">Trợ giúp</translation>
-<translation id="6119719873954126908">Theo dõi nơi này để biết các mẹo và gợi ý để duyệt tốt hơn!</translation>
 <translation id="7442246004212327644">&amp;Xoá</translation>
 <translation id="281133045296806353">Đã tạo cửa sổ mới trong phiên trình duyệt hiện có.</translation>
 <translation id="6314007596429871800">Bộ nhớ Cache Ứng dụng</translation>
@@ -1219,7 +1195,6 @@
 <translation id="2433507940547922241">Giao diện</translation>
 <translation id="839072384475670817">Tạo các &amp;Phím tắt cho Ứng dụng...</translation>
 <translation id="6756161853376828318">Đặt <ph name="PRODUCT_NAME"/> làm trình duyệt mặc định của tôi</translation>
-<translation id="2640524951934795733">Chúng ta sẽ đặt gì ở đây?</translation>
 <translation id="2061855250933714566"><ph name="ENCODING_CATEGORY"/> (<ph name="ENCODING_NAME"/>)</translation>
 <translation id="9147392381910171771">&amp;Tuỳ chọn</translation>
 <translation id="6264485186158353794">Quay lại an toàn</translation>
@@ -1234,7 +1209,6 @@
 <translation id="1177437665183591855">Lỗi chứng chỉ máy chủ chưa biết</translation>
 <translation id="3819800052061700452">&amp;Toàn màn hình</translation>
 <translation id="3533943170037501541">Chào mừng đến với trang chủ của bạn!</translation>
-<translation id="3218306954729745977">Hiển thị các tab bị đóng gần đây</translation>
 <translation id="3737554291183722650">Tiêu đề trang:</translation>
 <translation id="1581962803218266616">Hiển thị trong Trình tìm kiếm</translation>
 <translation id="4726901538158498735">Tìm kiếm mặc định:</translation>

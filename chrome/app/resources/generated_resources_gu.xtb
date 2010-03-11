@@ -50,7 +50,6 @@
 <translation id="4780321648949301421">પૃષ્ઠ આ રીતે સાચવો...</translation>
 <translation id="9154072353677278078"><ph name="REALM"/> પરનાં સર્વર <ph name="DOMAIN"/> ને વપરાશકર્તાનામ અને પાસવર્ડની જરૂર છે.</translation>
 <translation id="8178665534778830238">સામગ્રી:</translation>
-<translation id="4771019161370731727">તાજેતરની પ્રવૃત્તિઓ</translation>
 <translation id="8974161578568356045">સ્વતઃ શોધો</translation>
 <translation id="1818606096021558659">પૃષ્ઠ</translation>
 <translation id="1657406563541664238">ઉપયોગનાં આંકડાઓ અને ક્રેશ રિપોર્ટ્સ આપમેળે Google ને મોકલીને <ph name="PRODUCT_NAME"/> ને વધુ સારુ બનાવવામાં સહાય કરો</translation>
@@ -60,7 +59,6 @@
 <translation id="7481475534986701730">હાલમાં મુલાકાત લીધેલી સાઇટ્સ</translation>
 <translation id="4260722247480053581">છુપી વિંડોમાં ખોલો</translation>
 <translation id="4565377596337484307">પાસવર્ડ છુપાવો</translation>
-<translation id="5008715825902408241">થંબનેલ્સને છુપાવો</translation>
 <translation id="762917759028004464"><ph name="BROWSER_NAME"/> હાલમાં ડિફૉલ્ટ બ્રાઉઝર છે.</translation>
 <translation id="9213479837033539041"><ph name="NUMBER_MANY"/> સેકન્ડ બાકી</translation>
 <translation id="8487678622945914333">ઝૂમ વધારો</translation>
@@ -103,7 +101,6 @@
 <translation id="1486408090387743835"><ph name="PRODUCT_NAME"/> પાસે <ph name="BEGIN_LINK"/>એક્સટેન્શન્સ<ph name="END_LINK"/> અને <ph name="BEGIN_BUTTON"/>બુકમાર્ક સમન્વય<ph name="END_BUTTON"/></translation>
 <translation id="3147949335879360642">તમારા બુકમાર્ક્સ મર્જ થશે.</translation>
 <translation id="4422347585044846479">આ પૃષ્ઠ માટે બુકમાર્ક સંપાદિત કરો</translation>
-<translation id="51285338152176012">તાજેતરમાં બંધ કરેલા ટૅબ્સ છુપાવો</translation>
 <translation id="8546306075665861288">છબી કેશ</translation>
 <translation id="801357260673640054">બુકમાર્ક્સ સમન્વિત થયા...</translation>
 <translation id="1399076603473531278">લૉગિન વિગતો જૂની થઈ ગઈ છે.</translation>
@@ -224,7 +221,6 @@
 <translation id="7421925624202799674">પૃષ્ઠ સ્રોત &amp;જુઓ</translation>
 <translation id="6686490380836145850">જમણી બાજુનાં ટૅબ્સ બંધ કરો</translation>
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> કલાક</translation>
-<translation id="2790948358747073186">આનાથી વધુ</translation>
 <translation id="5774515636230743468">સ્પષ્ટ:</translation>
 <translation id="2423578206845792524">છબીને આ રૂપે સા&amp;ચવો...</translation>
 <translation id="1095038624419434542">એક પ્રોગ્રામ સાધન લોડ કરતી વખતે એક ભૂલ આવી. ફરીથી ઇન્સ્ટોલ કરવાનો પ્રયાસ કરો.</translation>
@@ -248,7 +244,6 @@
 <translation id="3165657440747518774">પૃષ્ઠમાં &amp;શોધો</translation>
 <translation id="939736085109172342">નવું ફોલ્ડર</translation>
 <translation id="862750493060684461">CSS કેશ</translation>
-<translation id="2009541932026160416">થંબનેલને દૂર કરવા <ph name="CROSS_IMAGE"/> ને ક્લિક કરો</translation>
 <translation id="5641560969478423183">સર્વરનું પ્રમાણપત્ર URL સાથે મેળ ખાતું નથી</translation>
 <translation id="6474422710030751464">આ પૃષ્ઠમાંના કેટલાક ઘટકો SSL ભૂલોવાળા કનેક્શન પર પુનઃપ્રાપ્ત કરવામાં આવ્યા છે.</translation>
 <translation id="121827551500866099">બધા ડાઉનલોડ્સ બતાવો...</translation>
@@ -352,7 +347,6 @@
 <translation id="5039804452771397117">પરવાનગી આપો</translation>
 <translation id="7564146504836211400">કૂકીઝ અને અન્ય ડેટા</translation>
 <translation id="2266011376676382776">પૃષ્ઠ(પૃષ્ઠો) પ્રતિભાવવિહીન</translation>
-<translation id="1805966933547717780">http://www.google.com/chrome/help/</translation>
 <translation id="1319824869167805246">બધાં બુકમાર્ક્સને નવી વિંડોમાં ખોલો</translation>
 <translation id="3493653833301553455">ફોર્મ ઑટોફિલ:</translation>
 <translation id="3371861036502301517">એક્સટેન્શન ઇન્સ્ટોલ કરવું નિષ્ફળ રહ્યું</translation>
@@ -368,7 +362,6 @@
 <translation id="1516602185768225813">છેલ્લે ખોલેલા પૃષ્ઠોને ફરીથી ખોલો</translation>
 <translation id="1538486363863290963">અપવાદ વિના બધી તૃતીય-પક્ષની કૂકીઝને અવરોધિત કરો </translation>
 <translation id="4874539263382920044">શીર્ષકમાં ઓછામાં ઓછો એક અક્ષર હોવો જરૂરી છે</translation>
-<translation id="3549657413697417275">તમારો ઇતિહાસ શોધો</translation>
 <translation id="7344633671344536647">બ્રાઉઝિંગ ડેટા:</translation>
 <translation id="4250680216510889253">નહીં</translation>
 <translation id="6291953229176937411">ફાઇન્ડર માં &amp;બતાવો</translation>
@@ -409,7 +402,6 @@
 <translation id="4164507027399414915">દૂર કરેલા બધા થંબનેલ્સને ફરિથી સ્ટોર કરો</translation>
 <translation id="6620110761915583480">ફાઇલ સાચવો</translation>
 <translation id="7543025879977230179"><ph name="PRODUCT_NAME"/> વિકલ્પો</translation>
-<translation id="4271692636717022386">હજી વધુ બતાવો</translation>
 <translation id="2648845569394238430">શોધ:</translation>
 <translation id="2175607476662778685">ઝડપી લૉંચ બાર</translation>
 <translation id="6434309073475700221">કાઢી નાખો</translation>
@@ -417,7 +409,6 @@
 <translation id="4551297183924943154">પ્રોફાઇલ <ph name="HOST_NAME"/>. હોસ્ટ પર <ph name="PROCESS_ID"/>  પ્રક્રિયા દ્વારા ઉપયોગમાં લેવાઈ રહી હોય તેમ લાગે છે.   જો તમને ખાતરી હોય કે આ પ્રોફાઇલ કોઈ અન્ય પ્રક્રિયા દ્વારા ઉપયોગમાં લેવાતી નથી, તો <ph name="LOCK_FILE"/>  ફાઇલ કાઢી નાખો અને <ph name="PRODUCT_NAME"/>. ને ફરી શરૂ કરો.</translation>
 <translation id="4378551569595875038">કનેક્ટિંગ...</translation>
 <translation id="7029809446516969842">પાસવર્ડ્સ</translation>
-<translation id="3513979718339724672">થંબનેલ્સ બતાવો</translation>
 <translation id="8211437954284917092">તમારા બુકમાર્ક્સને શોધવા માટે ઉપરનાં ટેક્સ્ટ ફીલ્ડમાં એક ક્વેરી દાખલ કરો.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> ફાઇલ્સ</translation>
 <translation id="1291121346508216435">જોડણી આપમેળે સુધારો:</translation>
@@ -466,7 +457,6 @@
 <translation id="3675321783533846350">નેટવર્ક સાથે કનેક્ટ કરવા માટે પ્રોક્સી સેટ કરો.</translation>
 <translation id="1572103024875503863"><ph name="NUMBER_MANY"/> દિવસ</translation>
 <translation id="8453184121293348016">રદ કરવાની કોઈ મેકેનિઝમ મળી નથી</translation>
-<translation id="1199429765931693651">સૂચિ છુપાવો</translation>
 <translation id="3481915276125965083">આ પૃષ્ઠ પર નીચેના પૉપ-અપ્સ અવરોધિત હતા:</translation>
 <translation id="7163503212501929773"><ph name="NUMBER_MANY"/> કલાક બાકી</translation>
 <translation id="5586329397967040209">આને મારું હોમ પેજ બનાવો</translation>
@@ -486,21 +476,18 @@
 <translation id="9010612682952491200">નવું ટૅબ [<ph name="PROFILE_NAME"/>]</translation>
 <translation id="7965010376480416255">વહેંચેલી મેમરી</translation>
 <translation id="6248988683584659830">શોધ સેટિંગ્સ</translation>
-<translation id="2242457451044347345">બુકમાર્ક સમન્વયન</translation>
 <translation id="7053983685419859001">અવરોધિત કરો</translation>
 <translation id="2727712005121231835">વાસ્તવિક કદ</translation>
 <translation id="8887733174653581061">હંમેશા શીર્ષ પર</translation>
 <translation id="610886263749567451">Javascript ચેતવણી</translation>
 <translation id="6556866813142980365">ફરી કરો</translation>
 <translation id="6584811624537923135">અનઇન્સ્ટોલેશનની પુષ્ટિ કરો </translation>
-<translation id="8413126021676339697">પૂર્ણ ઇતિહાસ બતાવો</translation>
 <translation id="8860923508273563464">ડાઉનલોડ્સ સમાપ્ત થાય ત્યા સુધી રાહ જુઓ</translation>
 <translation id="5288678174502918605">બંધ કરેલા ટૅબ ફ&amp;રીથી ખોલો</translation>
 <translation id="9157595877708044936">સેટિંગ અપ...</translation>
 <translation id="1823768272150895732">ફોન્ટ</translation>
 <translation id="4475552974751346499">ડાઉનલોડ્સ શોધો</translation>
 <translation id="5339267765524260207">જો તમે સમન્વયન અક્ષમ કર્યું છે, તો તમારા Google એકાઉન્ટ અથવા તમારા અન્ય મશીનો પર સ્ટોર કરેલા બુકમાર્ક્સ સાથે તમારા બુકમાર્ક્સ રાખવામાં આવશે નહીં. કોઈ બુકમાર્ક્સ કાઢવામાં આવશે નહીં. બધા અસ્તિત્વમાં રહેલા બુકમાર્ક્સ આ કમ્પ્યુટર પર અને તમારા Google એકાઉન્ટ પર રહેશે.</translation>
-<translation id="1111153019813902504">હાલનાં બુકમાર્ક્સ</translation>
 <translation id="7497564420220535101">&amp;સ્ક્રીનશોટ સાચવો...</translation>
 <translation id="3786934874263773074">&amp;આ પૃષ્ઠમાં શોધો</translation>
 <translation id="7605919926370951297">ટેક્સ્ટ એન્કોડિંગ</translation>
@@ -583,11 +570,9 @@
 <translation id="5956247558487200429">&amp;બગ અથવા તૂટેલી વેબસાઇટની જાણ કરો...</translation>
 <translation id="6459488832681039634">શોધવા માટે પસંદગીનો ઉપયોગ કરો</translation>
 <translation id="8235325155053717782">ભૂલ <ph name="ERROR_NUMBER"/> (<ph name="ERROR_NAME"/>): <ph name="ERROR_TEXT"/></translation>
-<translation id="5933965621105104639">ભલામણો</translation>
 <translation id="7734729626860583526"><ph name="HOST"/> ની કૂકી</translation>
 <translation id="1084824384139382525">લિંક સર&amp;નામાંની કૉપિ કરો</translation>
 <translation id="5042992464904238023">વેબ સામગ્રી</translation>
-<translation id="1261967938516962772">હજી વધુ છુપાવો</translation>
 <translation id="1181037720776840403">દૂર કરો</translation>
 <translation id="4006726980536015530">જો તમે હવે<ph name="PRODUCT_NAME"/>  બંધ કરશો, તો આ ડાઉનલોડ્સ રદ થઈ જશે.</translation>
 <translation id="59174027418879706">સક્ષમ કરેલું</translation>
@@ -606,7 +591,6 @@
 <translation id="7186367841673660872">આ પૃષ્ઠનું <ph name="ORIGINAL_LANGUAGE"/> માંથી <ph name="LANGUAGE_LANGUAGE"/> માં ભાષાંતર કરવામાં આવ્યું છે.</translation>
 <translation id="1175364870820465910">&amp;છાપો...</translation>
 <translation id="3866249974567520381">વર્ણન</translation>
-<translation id="6549689063733911810">તાજેતરનું</translation>
 <translation id="5552632479093547648">મૉલવેર અને ફિશીંગ શોધાયું!</translation>
 <translation id="4988273303304146523"><ph name="NUMBER_DEFAULT"/> days ago</translation>
 <translation id="2819994928625218237">જોડણી સૂચનો &amp;નહીં</translation>
@@ -614,7 +598,6 @@
 <translation id="9142623379911037913"><ph name="SITE"/> ને ડેસ્કટૉપ સૂચનાઓ બતાવવાની અનુમતિ આપીએ?</translation>
 <translation id="4196320913210960460">તમે ટુલ્સ મેનુમાં એક્સટેન્શનને ક્લિક કરીને ઇન્સ્ટોલ કરેલા એક્સટેન્શન્સને મેનેજ કરી શકો છો.</translation>
 <translation id="9118804773997839291">નીચે પૃષ્ઠ માટેનાં બધા અસુરક્ષિત ઘટકોની સૂચિ છે. વિશિષ્ટ ઘટક માટેનાં થ્રેડ પર વધુ માહિતી માટે ડાયગ્નોસ્ટિક લિંક પર ક્લિક કરો.</translation>
-<translation id="3664021239099029884">બધા ડાઉનલોડ્સ જુઓ</translation>
 <translation id="7754704193130578113">ડાઉનલોડ કરતાં પહેલાં પ્રત્યેક ફાઇલને ક્યાં સાચવવી છે તે જણાવો</translation>
 <translation id="2497284189126895209">બધી ફાઇલો</translation>
 <translation id="5360606537916580043">છેલ્લો દિવસ</translation>
@@ -629,8 +612,6 @@
 <translation id="6281636957902664775"><ph name="URL"/> પર જાઓ</translation>
 <translation id="630065524203833229">&amp;બહાર નીકળો</translation>
 <translation id="2649204054376361687"><ph name="CITY"/>, <ph name="COUNTRY"/></translation>
-<translation id="5738216285593517904">ભલામણો બતાવો</translation>
-<translation id="5264618369089706215">શોધો</translation>
 <translation id="1168020859489941584"><ph name="TIME_REMAINING"/> માં ખુલી રહ્યું છે...</translation>
 <translation id="7814458197256864873">&amp;કૉપિ કરો</translation>
 <translation id="4692623383562244444">શોધ એંજીન્સ</translation>
@@ -676,7 +657,6 @@
 <translation id="111844081046043029">શું તમે ખરેખર આ પૃષ્ઠ છોડવા માંગો છો?</translation>
 <translation id="3202578601642193415">સૌથી નવું</translation>
 <translation id="8112886015144590373"><ph name="NUMBER_FEW"/> કલાક</translation>
-<translation id="8739589585766515812">આ દિવસનો ઇતિહાસ કાઢી નાખો</translation>
 <translation id="1398853756734560583">મોટું કરો</translation>
 <translation id="3340262871848042885">સર્વરના પ્રમાણપત્રની સમયસીમા સમાપ્ત થઈ છે</translation>
 <translation id="8978540966440585844">&amp;બ્રાઉઝ કરો...</translation>
@@ -717,7 +697,6 @@
 <translation id="4711094779914110278">ટર્કિશ</translation>
 <translation id="7136984461011502314"><ph name="PRODUCT_NAME"/> માં આપનું સ્વાગત છે</translation>
 <translation id="4002066346123236978">શીર્ષક</translation>
-<translation id="1974178770588939828">સૂચિ બતાવો</translation>
 <translation id="4087089424473531098">એક્સ્ટેંશન બનાવ્યું:
 
 <ph name="EXTENSION_FILE"/></translation>
@@ -887,7 +866,6 @@
 <translation id="6004539838376062211">&amp;જોડણી-પરીક્ષક વિકલ્પો</translation>
 <translation id="5350198318881239970">તમારી પ્રોફાઇલ બરાબર ખોલી શકાઈ નથી.\n\nકેટલીક વિશેષતાઓ અનુપલબ્ધ હોઈ શકે છે. કૃપા કરીને તપાસો કે પ્રોફાઇલ અસ્તિત્વમાં છે અને તમારી પાસે તેની સામગ્રી વાંચવા અને લખવાની પરવાનગી છે.</translation>
 <translation id="4058793769387728514">હવે દસ્તાવેજ તપાસો</translation>
-<translation id="2915134691870672002">ભલામાણો છુપાવો</translation>
 <translation id="756445078718366910">બ્રાઉઝર વિંડો ખોલો</translation>
 <translation id="7887334752153342268">ડુપ્લિકેટ</translation>
 <translation id="4980691186726139495">આ પૃષ્ઠ પર રાખશો નહીં</translation>
@@ -938,7 +916,6 @@
 <translation id="641480858134062906"><ph name="URL"/> લોડ થવામાં નિષ્ફળ</translation>
 <translation id="3693415264595406141">પાસવર્ડ:</translation>
 <translation id="74568296546932365"><ph name="PAGE_TITLE"/> ને ડિફૉલ્ટ શોધ એંજીન તરીકે રાખો</translation>
-<translation id="9092040507273639934">થંબનેલ દૂર કરો</translation>
 <translation id="6181769708911894002">ચેતવણી: આ સાઇટની મુલાકાત તમારા કમ્પ્યુટરને નુકસાન પહોંચાડી શકે છે!</translation>
 <translation id="3412265149091626468">પસંદગી પર જાઓ</translation>
 <translation id="3785852283863272759">પૃષ્ઠ સ્થાન ઇમેઇલ કરો</translation>
@@ -974,7 +951,6 @@
 <translation id="3413808618118019351">બુકમાર્ક્સ &amp;&amp; સેટિંગ્સ &amp;આયાત કરો ...</translation>
 <translation id="4835836146030131423">સાઇનિંગ ઇન કરવામાં ભૂલ.</translation>
 <translation id="3169621169201401257">આ ઘટકોની સમસ્યાઓ વિશે વિગતવાર માહિતી માટે, <ph name="DOMAIN"/> માટેનાં Google <ph name="DIAGNOSTIC_PAGE"/> ની મુલાકાત લો.</translation>
-<translation id="2559292239863842334">તને અન્ય સાઇટ્સ પર સૌથી વધુ ઉપયોગમાં લો છો તે શોધ બૉક્સીસ અહીં દેખાશે.</translation>
 <translation id="7385854874724088939">છાપવાનો પ્રયાસ કરતી વખતે કાંઈક ખોટું થઈ ગયું.  કૃપા કરી તમારું પ્રિંટર તપાસો અને ફરી પ્રયાસ કરો.</translation>
 <translation id="770015031906360009">ગ્રીક</translation>
 <translation id="4474796446011988286">નીચે આપેલી કૂકીઝ તમારા કમ્પ્યુટર પર સંગ્રહિત છે:</translation>
@@ -1051,6 +1027,7 @@
 <translation id="8788572795284305350"><ph name="NUMBER_ZERO"/> કલાક પહેલા</translation>
 <translation id="8236028464988198644">સરનામાં બારથી શોધો.</translation>
 <translation id="4867297348137739678">છેલ્લું અઠવાડિયું</translation>
+<translation id="4881695831933465202">ખોલો</translation>
 <translation id="5457793226917888578">આ પૃષ્ઠમાં અસુરક્ષિત સામગ્રી છે.</translation>
 <translation id="5988520580879236902">સક્રિય દૃશ્યોની તપાસ કરો:</translation>
 <translation id="5981759340456370804">અભ્યાસુ માટેનાં આંકડા</translation>
@@ -1098,7 +1075,6 @@
 <translation id="7000311294523403548">અનામાંકિત વેબ પેજ</translation>
 <translation id="4593021220803146968"><ph name="URL"/> &amp;ના પર જાઓ</translation>
 <translation id="7649070708921625228">સહાય</translation>
-<translation id="6119719873954126908">વધુ સારા બ્રાઉઝિંગ માટેની ટિપ્સ અને સૂચનાઓ માટે આ સ્થાન જુઓ!</translation>
 <translation id="7442246004212327644">સા&amp;ફ કરો</translation>
 <translation id="281133045296806353">અસ્તિત્વમાં રહેલા બ્રાઉઝર સત્રમાં નવી વિંડો બનાવી.</translation>
 <translation id="6314007596429871800">એપ્લિકેશન  કેશ </translation>
@@ -1221,7 +1197,6 @@
 <translation id="2433507940547922241">દેખાવ</translation>
 <translation id="839072384475670817">એપ્લિકેશન અને &amp;શૉર્ટકટ્સ બનાવો...</translation>
 <translation id="6756161853376828318"><ph name="PRODUCT_NAME"/> ને મારું ડિફૉલ્ટ બ્રાઉઝર બનાવો</translation>
-<translation id="2640524951934795733">અમે અહીં શું મુકીશું?</translation>
 <translation id="2061855250933714566"><ph name="ENCODING_CATEGORY"/> (<ph name="ENCODING_NAME"/>)</translation>
 <translation id="9147392381910171771">&amp;વિકલ્પો</translation>
 <translation id="6264485186158353794">સુરક્ષા પર પાછા</translation>
@@ -1236,7 +1211,6 @@
 <translation id="1177437665183591855">અજ્ઞાત સર્વર પ્રમાણપત્ર ભૂલ</translation>
 <translation id="3819800052061700452">&amp;પૂર્ણ સ્ક્રીન</translation>
 <translation id="3533943170037501541">તમારા હોમ પેજ પર સ્વાગત છે  !</translation>
-<translation id="3218306954729745977">તાજેતરમાં બંધ કરેલા ટૅબ્સ બતાવો</translation>
 <translation id="3737554291183722650">પૃષ્ઠ શીર્ષક:</translation>
 <translation id="1581962803218266616">ફાઇન્ડર માં બતાવો</translation>
 <translation id="4726901538158498735">ડિફૉલ્ટ શોધ:</translation>
