@@ -8,6 +8,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/automation/tab_proxy.h"
+#include "native_client/src/trusted/platform_qualify/nacl_os_qualify.h"
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
 
@@ -59,6 +60,11 @@ NaClTest::NaClTest()
 #if defined(OS_MACOSX)
   launch_arguments_.AppendSwitch(switches::kNoSandbox);
 #endif
+
+#if defined(OS_WIN)
+  if (NaClOsIs64BitWindows())
+    launch_arguments_.AppendSwitch(switches::kNoSandbox);
+#endif
 }
 
 NaClTest::~NaClTest() {}
@@ -74,7 +80,16 @@ FilePath NaClTest::GetTestRootDir() {
 FilePath NaClTest::GetTestBinariesDir() {
   FilePath path = GetTestRootDir();
   path = path.AppendASCII("prebuilt");
-  path = path.AppendASCII("x86");
+  bool use_x64_nexes = false;
+#if defined(OS_WIN)
+  if (NaClOsIs64BitWindows())
+    use_x64_nexes = true;
+#endif
+
+  if (use_x64_nexes)
+    path = path.AppendASCII("x64");
+  else
+    path = path.AppendASCII("x86");
   return path;
 }
 
@@ -241,6 +256,7 @@ int NaClTest::NaClTestTimeout() {
 }
 
 #if defined(OS_MACOSX)
+// http://code.google.com/p/nativeclient/issues/detail?id=342
 TEST_F(NaClTest, FLAKY_ServerTest) {
 #else
 TEST_F(NaClTest, ServerTest) {
@@ -250,6 +266,7 @@ TEST_F(NaClTest, ServerTest) {
 }
 
 #if defined(OS_MACOSX)
+// http://code.google.com/p/nativeclient/issues/detail?id=342
 TEST_F(NaClTest, FLAKY_SrpcHelloWorld) {
 #else
 TEST_F(NaClTest, SrpcHelloWorld) {
@@ -259,6 +276,7 @@ TEST_F(NaClTest, SrpcHelloWorld) {
 }
 
 #if defined(OS_MACOSX)
+// http://code.google.com/p/nativeclient/issues/detail?id=342
 TEST_F(NaClTest, FLAKY_SrpcBasicTest) {
 #else
 TEST_F(NaClTest, SrpcBasicTest) {
@@ -268,6 +286,7 @@ TEST_F(NaClTest, SrpcBasicTest) {
 }
 
 #if defined(OS_MACOSX)
+// http://code.google.com/p/nativeclient/issues/detail?id=342
 TEST_F(NaClTest, FLAKY_SrpcSockAddrTest) {
 #else
 TEST_F(NaClTest, SrpcSockAddrTest) {
@@ -277,6 +296,7 @@ TEST_F(NaClTest, SrpcSockAddrTest) {
 }
 
 #if defined(OS_MACOSX)
+// http://code.google.com/p/nativeclient/issues/detail?id=342
 TEST_F(NaClTest, FLAKY_SrpcShmTest) {
 #else
 TEST_F(NaClTest, SrpcShmTest) {
@@ -286,6 +306,7 @@ TEST_F(NaClTest, SrpcShmTest) {
 }
 
 #if defined(OS_MACOSX)
+// http://code.google.com/p/nativeclient/issues/detail?id=342
 TEST_F(NaClTest, FLAKY_SrpcPluginTest) {
 #else
 TEST_F(NaClTest, SrpcPluginTest) {
@@ -295,6 +316,7 @@ TEST_F(NaClTest, SrpcPluginTest) {
 }
 
 #if defined(OS_MACOSX)
+// http://code.google.com/p/nativeclient/issues/detail?id=342
 TEST_F(NaClTest, FLAKY_SrpcNrdXferTest) {
 #else
 TEST_F(NaClTest, SrpcNrdXferTest) {
