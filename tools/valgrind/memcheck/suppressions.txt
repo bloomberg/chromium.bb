@@ -381,8 +381,18 @@
 {
   # zlib is smarter than we are:
   #   http://www.zlib.net/zlib_faq.html#faq36
-  zlib_conditional_jump_performance
+  zlib_conditional_jump_performance_a
   Memcheck:Value4
+  ...
+  fun:inflate
+  fun:_ZN4spdy10SpdyFramer15DecompressFrameEPKNS_9SpdyFrameE
+  ...
+}
+{
+  # zlib is smarter than we are:
+  #   http://www.zlib.net/zlib_faq.html#faq36
+  zlib_conditional_jump_performance_b
+  Memcheck:Value8
   ...
   fun:inflate
   fun:_ZN4spdy10SpdyFramer15DecompressFrameEPKNS_9SpdyFrameE
@@ -1824,10 +1834,18 @@
    fun:main
 }
 {
-   bug_30703
+   bug_30703a
    Memcheck:Param
    write(buf)
    ...
+   fun:zipCloseFileInZipRaw
+   fun:zipCloseFileInZip
+   fun:_Z13AddEntryToZipPvRK8FilePathS2_
+}
+{
+   bug_30703b
+   Memcheck:Cond
+   fun:deflate
    fun:zipCloseFileInZipRaw
    fun:zipCloseFileInZip
    fun:_Z13AddEntryToZipPvRK8FilePathS2_
@@ -1843,6 +1861,15 @@
 }
 {
    bug_30704b
+   Memcheck:Value8
+   fun:crc32
+   ...
+   fun:png_write_row
+   fun:_ZN3gfx8PNGCodec6EncodeEPKhNS0_11ColorFormatEiiibPSt6vectorIhSaIhEE
+   fun:_ZN3gfx8PNGCodec18EncodeBGRASkBitmapERK8SkBitmapbPSt6vectorIhSaIhEE
+}
+{
+   bug_30704c
    Memcheck:Param
    write(buf)
    ...
