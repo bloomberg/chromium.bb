@@ -53,6 +53,8 @@ ContentSettingsDialogController* g_instance = nil;
 @property(assign, nonatomic) NSInteger pluginsEnabledIndex;
 @end
 
+namespace ContentSettingsDialogControllerInternal {
+
 // A C++ class registered for changes in preferences.
 class PrefObserverBridge : public NotificationObserver {
  public:
@@ -64,11 +66,12 @@ class PrefObserverBridge : public NotificationObserver {
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
-    std::wstring* pref_name =  Details<std::wstring>(details).ptr();
-    if (type == NotificationType::PREF_CHANGED &&
-        *pref_name == prefs::kClearSiteDataOnExit) {
-      // Update UI.
-      [controller_ setClearSiteDataOnExit:[controller_ clearSiteDataOnExit]];
+    if (type == NotificationType::PREF_CHANGED) {
+      std::wstring* pref_name = Details<std::wstring>(details).ptr();
+      if (*pref_name == prefs::kClearSiteDataOnExit) {
+        // Update UI.
+        [controller_ setClearSiteDataOnExit:[controller_ clearSiteDataOnExit]];
+      }
     }
   }
 
@@ -76,6 +79,7 @@ class PrefObserverBridge : public NotificationObserver {
   ContentSettingsDialogController* controller_;  // weak, owns us
 };
 
+}  // ContentSettingsDialogControllerInternal
 
 @implementation ContentSettingsDialogController
 
@@ -113,9 +117,10 @@ class PrefObserverBridge : public NotificationObserver {
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
     profile_ = profile;
 
-    observer_.reset(new PrefObserverBridge(self));
+    observer_.reset(
+        new ContentSettingsDialogControllerInternal::PrefObserverBridge(self));
     clearSiteDataOnExit_.Init(prefs::kClearSiteDataOnExit,
-                              profile->GetPrefs(), NULL);
+                              profile->GetPrefs(), observer_.get());
 
     // We don't need to observe changes in this value.
     lastSelectedTab_.Init(prefs::kContentSettingsWindowLastTabIndex,

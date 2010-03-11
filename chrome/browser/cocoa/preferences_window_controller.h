@@ -9,10 +9,13 @@
 #include "chrome/browser/options_window.h"
 #include "chrome/browser/pref_member.h"
 
+namespace PreferencesWindowControllerInternal {
 class PersonalDataManagerObserver;
+class PrefObserverBridge;
+}
+
 @class CustomHomePagesModel;
 @class FontLanguageSettingsController;
-class PrefObserverBridge;
 class PrefService;
 class Profile;
 class ProfileSyncService;
@@ -37,7 +40,8 @@ class ProfileSyncService;
   PrefService* prefs_;  // weak ref - Obtained from profile_ for convenience.
   // weak ref - Also obtained from profile_ for convenience.  May be NULL.
   ProfileSyncService* syncService_;
-  scoped_ptr<PrefObserverBridge> observer_;  // Watches for pref changes.
+  scoped_ptr<PreferencesWindowControllerInternal::PrefObserverBridge>
+      observer_;  // Watches for pref changes.
 
   IBOutlet NSToolbar* toolbar_;
 
@@ -82,7 +86,8 @@ class ProfileSyncService;
   BooleanPrefMember askSavePasswords_;
   BooleanPrefMember formAutofill_;
   // Manages PersonalDataManager loading.
-  scoped_ptr<PersonalDataManagerObserver> personalDataManagerObserver_;
+  scoped_ptr<PreferencesWindowControllerInternal::PersonalDataManagerObserver>
+      personalDataManagerObserver_;
   IBOutlet NSButton* autoFillSettingsButton_;
   IBOutlet NSButton* syncButton_;
   IBOutlet NSTextField* syncStatus_;

@@ -395,6 +395,8 @@ CGFloat AutoSizeUnderTheHoodContent(NSView* view,
                              animate:(BOOL)animate;
 @end
 
+namespace PreferencesWindowControllerInternal {
+
 // A C++ class registered for changes in preferences. Bridges the
 // notification back to the PWC.
 class PrefObserverBridge : public NotificationObserver,
@@ -516,6 +518,7 @@ void PersonalDataManagerObserver::ShowAutoFillDialog(
   ::ShowAutoFillDialog(personal_data_manager, profiles, credit_cards, profile);
 }
 
+}  // namespace PreferencesWindowControllerInternal
 
 @implementation PreferencesWindowController
 
@@ -531,7 +534,8 @@ void PersonalDataManagerObserver::ShowAutoFillDialog(
     initialPage_ = initialPage;
     prefs_ = profile->GetPrefs();
     DCHECK(prefs_);
-    observer_.reset(new PrefObserverBridge(self));
+    observer_.reset(
+        new PreferencesWindowControllerInternal::PrefObserverBridge(self));
 
     // Set up the model for the custom home page table. The KVO observation
     // tells us when the number of items in the array changes. The normal
@@ -1279,13 +1283,15 @@ const int kDisabledIndex = 1;
 
   if (personalDataManager->IsDataLoaded()) {
     // |personalDataManager| data is loaded, we can proceed with the dialog.
-    PersonalDataManagerObserver::ShowAutoFillDialog(personalDataManager,
-                                                    profile_);
+    PreferencesWindowControllerInternal::
+        PersonalDataManagerObserver::ShowAutoFillDialog(personalDataManager,
+                                                        profile_);
   } else {
     // |personalDataManager| data is NOT loaded, so we load it here, installing
     // our observer.
     personalDataManagerObserver_.reset(
-        new PersonalDataManagerObserver(personalDataManager, profile_));
+        new PreferencesWindowControllerInternal::PersonalDataManagerObserver(
+          personalDataManager, profile_));
     personalDataManager->SetObserver(personalDataManagerObserver_.get());
   }
 }

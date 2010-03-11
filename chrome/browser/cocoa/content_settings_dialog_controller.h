@@ -9,7 +9,10 @@
 #include "chrome/common/content_settings_types.h"
 #include "chrome/browser/pref_member.h"
 
+namespace ContentSettingsDialogControllerInternal {
 class PrefObserverBridge;
+}
+
 class Profile;
 
 // This controller manages a dialog that lets the user manage the content
@@ -21,7 +24,8 @@ class Profile;
   Profile* profile_;  // weak
   IntegerPrefMember lastSelectedTab_;
   BooleanPrefMember clearSiteDataOnExit_;
-  scoped_ptr<PrefObserverBridge> observer_;  // Watches for pref changes.
+  scoped_ptr<ContentSettingsDialogControllerInternal::PrefObserverBridge>
+      observer_;  // Watches for pref changes.
 }
 
 // Show the content settings dialog associated with the given profile (or the
