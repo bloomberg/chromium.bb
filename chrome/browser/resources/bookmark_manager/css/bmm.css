@@ -38,7 +38,7 @@ list > * > * > span {
   text-decoration: none;
   color: #000;
   cursor: pointer;
-  opacity: .7;
+  opacity: .4;
 }
 
 list > * > :first-child {

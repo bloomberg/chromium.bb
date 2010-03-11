@@ -170,4 +170,4 @@ cr.define('cr', function() {
   return {
     Promise: Promise
   };
-})();
+});
