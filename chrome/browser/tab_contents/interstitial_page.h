@@ -81,6 +81,11 @@ class InterstitialPage : public NotificationObserver,
   // Warning: 'this' has been deleted when this method returns.
   virtual void Proceed();
 
+  // Allows the user to navigate away by disabling the interstitial, canceling
+  // the pending request, and unblocking the hidden renderer.  The interstitial
+  // will stay visible until the navigation completes.
+  void CancelForNavigation();
+
   // Sizes the RenderViewHost showing the actual interstitial page contents.
   void SetSize(const gfx::Size& size);
 

@@ -1546,6 +1546,24 @@ TEST_F(NavigationControllerTest, CloneAndGoBack) {
   EXPECT_FALSE(clone->controller().needs_reload());
 }
 
+// Make sure that cloning a tabcontents doesn't copy interstitials.
+TEST_F(NavigationControllerTest, CloneOmitsInterstitials) {
+  const GURL url1("http://foo1");
+  const GURL url2("http://foo2");
+
+  NavigateAndCommit(url1);
+  NavigateAndCommit(url2);
+
+  // Add an interstitial entry.  Should be deleted with controller.
+  NavigationEntry* interstitial_entry = new NavigationEntry();
+  interstitial_entry->set_page_type(NavigationEntry::INTERSTITIAL_PAGE);
+  controller().AddTransientEntry(interstitial_entry);
+
+  scoped_ptr<TabContents> clone(controller().tab_contents()->Clone());
+
+  ASSERT_EQ(2, clone->controller().entry_count());
+}
+
 /* TODO(brettw) These test pass on my local machine but fail on the XP buildbot
    (but not Vista) cleaning up the directory after they run.
    This should be fixed.

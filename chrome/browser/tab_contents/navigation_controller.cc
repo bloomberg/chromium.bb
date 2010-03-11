@@ -18,6 +18,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/sessions/session_types.h"
+#include "chrome/browser/tab_contents/interstitial_page.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
@@ -297,6 +298,13 @@ void NavigationController::GoBack() {
     return;
   }
 
+  // If an interstitial page is showing, going back is equivalent to hiding the
+  // interstitial.
+  if (tab_contents_->interstitial_page()) {
+    tab_contents_->interstitial_page()->DontProceed();
+    return;
+  }
+
   // Base the navigation on where we are now...
   int current_index = GetCurrentEntryIndex();
 
@@ -310,6 +318,14 @@ void NavigationController::GoForward() {
   if (!CanGoForward()) {
     NOTREACHED();
     return;
+  }
+
+  // If an interstitial page is showing, the previous renderer is blocked and
+  // cannot make new requests.  Unblock (and disable) it to allow this
+  // navigation to succeed.  The interstitial will stay visible until the
+  // resulting DidNavigate.
+  if (tab_contents_->interstitial_page()) {
+    tab_contents_->interstitial_page()->CancelForNavigation();
   }
 
   bool transient = (transient_entry_index_ != -1);
@@ -342,6 +358,21 @@ void NavigationController::GoToIndex(int index) {
     if (index > transient_entry_index_) {
       // Removing the transient is goint to shift all entries by 1.
       index--;
+    }
+  }
+
+  // If an interstitial page is showing, the previous renderer is blocked and
+  // cannot make new requests.
+  if (tab_contents_->interstitial_page()) {
+    if (index == GetCurrentEntryIndex() - 1) {
+      // Going back one entry is equivalent to hiding the interstitial.
+      tab_contents_->interstitial_page()->DontProceed();
+      return;
+    } else {
+      // Unblock the renderer (and disable the interstitial) to allow this
+      // navigation to succeed.  The interstitial will stay visible until the
+      // resulting DidNavigate.
+      tab_contents_->interstitial_page()->CancelForNavigation();
     }
   }
 
@@ -886,8 +917,12 @@ void NavigationController::CopyStateFrom(const NavigationController& source) {
 
   needs_reload_ = true;
   for (int i = 0; i < source.entry_count(); i++) {
-    entries_.push_back(linked_ptr<NavigationEntry>(
-        new NavigationEntry(*source.entries_[i])));
+    // When cloning a tab, copy all entries except interstitial pages
+    if (source.entries_[i].get()->page_type() !=
+        NavigationEntry::INTERSTITIAL_PAGE) {
+      entries_.push_back(linked_ptr<NavigationEntry>(
+          new NavigationEntry(*source.entries_[i])));
+    }
   }
 
   session_storage_namespace_id_ =

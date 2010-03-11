@@ -220,6 +220,77 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndDontProceed) {
   CheckUnauthenticatedState(tab);
 }
 
+// Visits a page with https error and then goes back using GoToOffset.
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndGoBack) {
+  scoped_refptr<HTTPTestServer> http_server = PlainServer();
+  ASSERT_TRUE(http_server.get() != NULL);
+  scoped_refptr<HTTPSTestServer> bad_https_server = BadCertServer();
+  ASSERT_TRUE(bad_https_server.get() != NULL);
+
+  // First navigate to an HTTP page.
+  ui_test_utils::NavigateToURL(browser(), http_server->TestServerPageW(
+      L"files/ssl/google.html"));
+  TabContents* tab = browser()->GetSelectedTabContents();
+  NavigationEntry* entry = tab->controller().GetActiveEntry();
+  ASSERT_TRUE(entry);
+
+  // Now go to a bad HTTPS page that shows an interstitial.
+  ui_test_utils::NavigateToURL(browser(),
+      bad_https_server->TestServerPageW(L"files/ssl/google.html"));
+  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
+                                 true);  // Interstitial showing
+
+  // Simulate user clicking and holding on back button (crbug.com/37215).
+  tab->controller().GoToOffset(-1);
+
+  // We should be back at the original good page.
+  EXPECT_FALSE(browser()->GetSelectedTabContents()->interstitial_page());
+  CheckUnauthenticatedState(tab);
+}
+
+// Visits a page with https error and then goes forward using GoToOffset.
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndGoForward) {
+  scoped_refptr<HTTPTestServer> http_server = PlainServer();
+  ASSERT_TRUE(http_server.get() != NULL);
+  scoped_refptr<HTTPSTestServer> bad_https_server = BadCertServer();
+  ASSERT_TRUE(bad_https_server.get() != NULL);
+
+  // First navigate to two HTTP pages.
+  ui_test_utils::NavigateToURL(browser(), http_server->TestServerPageW(
+      L"files/ssl/google.html"));
+  TabContents* tab = browser()->GetSelectedTabContents();
+  NavigationEntry* entry1 = tab->controller().GetActiveEntry();
+  ASSERT_TRUE(entry1);
+  ui_test_utils::NavigateToURL(browser(), http_server->TestServerPageW(
+      L"files/ssl/blank_page.html"));
+  NavigationEntry* entry2 = tab->controller().GetActiveEntry();
+  ASSERT_TRUE(entry2);
+
+  // Now go back so that a page is in the forward history.
+  tab->controller().GoBack();
+  ui_test_utils::WaitForNavigation(&(tab->controller()));
+  ASSERT_TRUE(tab->controller().CanGoForward());
+  NavigationEntry* entry3 = tab->controller().GetActiveEntry();
+  ASSERT_TRUE(entry1 == entry3);
+
+  // Now go to a bad HTTPS page that shows an interstitial.
+  ui_test_utils::NavigateToURL(browser(),
+      bad_https_server->TestServerPageW(L"files/ssl/google.html"));
+  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
+                                 true);  // Interstitial showing
+
+  // Simulate user clicking and holding on forward button.
+  tab->controller().GoToOffset(1);
+  ui_test_utils::WaitForNavigation(&(tab->controller()));
+
+  // We should be showing the second good page.
+  EXPECT_FALSE(browser()->GetSelectedTabContents()->interstitial_page());
+  CheckUnauthenticatedState(tab);
+  EXPECT_FALSE(tab->controller().CanGoForward());
+  NavigationEntry* entry4 = tab->controller().GetActiveEntry();
+  EXPECT_TRUE(entry2 == entry4);
+}
+
 // Open a page with a HTTPS error in a tab with no prior navigation (through a
 // link with a blank target).  This is to test that the lack of navigation entry
 // does not cause any problems (it was causing a crasher, see

@@ -463,6 +463,20 @@ void InterstitialPage::DontProceed() {
   // WARNING: we are now deleted!
 }
 
+void InterstitialPage::CancelForNavigation() {
+  // The user is trying to navigate away.  We should unblock the renderer and
+  // disable the interstitial, but keep it visible until the navigation
+  // completes.
+  Disable();
+  // If this interstitial was shown for a new navigation, allow any navigations
+  // on the original page to resume (e.g., subresource requests, XHRs, etc).
+  // Otherwise, cancel the pending, possibly dangerous navigations.
+  if (new_navigation_)
+    TakeActionOnResourceDispatcher(RESUME);
+  else
+    TakeActionOnResourceDispatcher(CANCEL);
+}
+
 void InterstitialPage::SetSize(const gfx::Size& size) {
 #if defined(OS_WIN) || defined(OS_LINUX)
   // When a tab is closed, we might be resized after our view was NULLed

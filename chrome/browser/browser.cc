@@ -777,17 +777,7 @@ void Browser::UpdateCommandsForFullscreenMode(bool is_fullscreen) {
 void Browser::GoBack(WindowOpenDisposition disposition) {
   UserMetrics::RecordAction("Back", profile_);
 
-  // If we are showing an interstitial, just hide it.
   TabContents* current_tab = GetSelectedTabContents();
-  if (current_tab->interstitial_page()) {
-    // The GoBack() case is a special case when an interstitial is shown because
-    // the "previous" page is still available, just hidden by the interstitial.
-    // We treat the back as a "Don't proceed", this hides the interstitial and
-    // reveals the previous page.
-    current_tab->interstitial_page()->DontProceed();
-    return;
-  }
-
   if (current_tab->controller().CanGoBack()) {
     NavigationController* controller = NULL;
     if (disposition == NEW_FOREGROUND_TAB ||
@@ -796,6 +786,11 @@ void Browser::GoBack(WindowOpenDisposition disposition) {
       tabstrip_model_.AddTabContents(cloned, -1, false,
                                      PageTransition::LINK,
                                      disposition == NEW_FOREGROUND_TAB);
+      if (current_tab->interstitial_page()) {
+        // The interstitial won't be copied to the new tab, so we don't need to
+        // go back.
+        return;
+      }
       controller = &cloned->controller();
     } else {
       // Default disposition is CURRENT_TAB.
