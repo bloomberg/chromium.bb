@@ -59,6 +59,7 @@ class TabRestoreUITest : public UITest {
       ASSERT_GT(window_count, expected_window_index);
       browser_proxy = automation()->GetBrowserWindow(expected_window_index);
     }
+    ASSERT_TRUE(browser_proxy.get());
     ASSERT_TRUE(browser_proxy->GetTabCount(&tab_count));
     ASSERT_GT(tab_count, 0);
 
@@ -70,6 +71,7 @@ class TabRestoreUITest : public UITest {
       ASSERT_TRUE(automation()->GetBrowserWindowCount(&new_window_count));
       EXPECT_EQ(++window_count, new_window_count);
       browser_proxy = automation()->GetBrowserWindow(expected_window_index);
+      ASSERT_TRUE(browser_proxy.get());
     } else {
       int new_tab_count = 0;
       ASSERT_TRUE(browser_proxy->GetTabCount(&new_tab_count));
@@ -122,6 +124,7 @@ class TabRestoreUITest : public UITest {
 
     bool is_active = false;
     scoped_refptr<WindowProxy> window_proxy(browser->GetWindow());
+    ASSERT_TRUE(window_proxy.get());
     ASSERT_TRUE(window_proxy->IsActive(&is_active));
     // The check for is_active may fail if other apps are active while running
     // the tests, because Chromium won't be the foremost application at all.
@@ -143,6 +146,7 @@ class TabRestoreUITest : public UITest {
 // in its original position, and active.
 TEST_F(TabRestoreUITest, Basic) {
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser_proxy.get());
 
   int starting_tab_count;
   ASSERT_TRUE(browser_proxy->GetTabCount(&starting_tab_count));
@@ -172,6 +176,7 @@ TEST_F(TabRestoreUITest, Basic) {
 // should be in its original position, and active.
 TEST_F(TabRestoreUITest, MiddleTab) {
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser_proxy.get());
 
   int starting_tab_count;
   ASSERT_TRUE(browser_proxy->GetTabCount(&starting_tab_count));
@@ -203,6 +208,7 @@ TEST_F(TabRestoreUITest, MiddleTab) {
 // This test is flaky. See http://crbug.com/14132 and 11213.
 TEST_F(TabRestoreUITest, FLAKY_RestoreToDifferentWindow) {
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser_proxy.get());
 
   // This call is virtually guaranteed to pass, assuming that Chromium is the
   // active application, which will establish a baseline for later calls to
@@ -248,6 +254,7 @@ TEST_F(TabRestoreUITest, FLAKY_RestoreToDifferentWindow) {
 // tab. It should be in a new window.
 TEST_F(TabRestoreUITest, MAYBE_BasicRestoreFromClosedWindow) {
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser_proxy.get());
   CheckActiveWindow(browser_proxy.get());
 
   int tab_count;
@@ -287,6 +294,7 @@ TEST_F(TabRestoreUITest, MAYBE_BasicRestoreFromClosedWindow) {
 
   // Tab should be in a new window.
   browser_proxy = automation()->GetBrowserWindow(1);
+  ASSERT_TRUE(browser_proxy.get());
   CheckActiveWindow(browser_proxy.get());
   tab_proxy = browser_proxy->GetActiveTab();
   ASSERT_TRUE(tab_proxy.get());
@@ -301,6 +309,7 @@ TEST_F(TabRestoreUITest, MAYBE_BasicRestoreFromClosedWindow) {
 // the tab restore command. http://crbug.com/14428.
 TEST_F(TabRestoreUITest, DISABLED_DontLoadRestoredTab) {
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser_proxy.get());
   CheckActiveWindow(browser_proxy.get());
 
   // Add two tabs
@@ -337,6 +346,7 @@ TEST_F(TabRestoreUITest, DISABLED_DontLoadRestoredTab) {
 // This test is flaky. See http://crbug.com/14132
 TEST_F(TabRestoreUITest, FLAKY_RestoreWindowAndTab) {
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser_proxy.get());
   CheckActiveWindow(browser_proxy.get());
 
   int starting_tab_count;
@@ -376,6 +386,7 @@ TEST_F(TabRestoreUITest, FLAKY_RestoreWindowAndTab) {
   // indicates the expected active tab.
   RestoreTab(1, starting_tab_count + 1);
   browser_proxy = automation()->GetBrowserWindow(1);
+  ASSERT_TRUE(browser_proxy.get());
   CheckActiveWindow(browser_proxy.get());
   ASSERT_TRUE(browser_proxy->GetTabCount(&tab_count));
   EXPECT_EQ(starting_tab_count + 2, tab_count);
@@ -392,6 +403,7 @@ TEST_F(TabRestoreUITest, FLAKY_RestoreWindowAndTab) {
 // both. Make sure both restored tabs are in the same window.
 TEST_F(TabRestoreUITest, RestoreIntoSameWindow) {
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser_proxy.get());
   CheckActiveWindow(browser_proxy.get());
 
   int starting_tab_count;
@@ -430,6 +442,7 @@ TEST_F(TabRestoreUITest, RestoreIntoSameWindow) {
   // Restore the last-closed tab into a new window.
   RestoreTab(1, 0);
   browser_proxy = automation()->GetBrowserWindow(1);
+  ASSERT_TRUE(browser_proxy.get());
   CheckActiveWindow(browser_proxy.get());
   ASSERT_TRUE(browser_proxy->GetTabCount(&tab_count));
   EXPECT_EQ(1, tab_count);
@@ -454,6 +467,7 @@ TEST_F(TabRestoreUITest, RestoreWithExistingSiteInstance) {
   GURL http_url2(server->TestServerPageW(L"files/title2.html"));
 
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser_proxy.get());
   int tab_count;
   ASSERT_TRUE(browser_proxy->GetTabCount(&tab_count));
 
@@ -500,6 +514,7 @@ TEST_F(TabRestoreUITest, RestoreCrossSiteWithExistingSiteInstance) {
   GURL http_url2(server->TestServerPageW(L"files/title2.html"));
 
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser_proxy.get());
   int tab_count;
   ASSERT_TRUE(browser_proxy->GetTabCount(&tab_count));
 
@@ -553,6 +568,7 @@ TEST_F(TabRestoreUITest, RestoreWindow) {
 
   // Create two more tabs, one with url1, the other url2.
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser_proxy.get());
   int initial_tab_count;
   ASSERT_TRUE(browser_proxy->GetTabCount(&initial_tab_count));
   browser_proxy->AppendTab(url1_);
@@ -577,6 +593,7 @@ TEST_F(TabRestoreUITest, RestoreWindow) {
 
   // Restore the window.
   browser_proxy = automation()->GetBrowserWindow(0);
+  ASSERT_TRUE(browser_proxy.get());
   ASSERT_TRUE(browser_proxy->RunCommand(IDC_RESTORE_TAB));
   ASSERT_TRUE(automation()->GetBrowserWindowCount(&new_window_count));
   EXPECT_EQ(window_count, new_window_count);

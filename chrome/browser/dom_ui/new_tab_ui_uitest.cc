@@ -47,6 +47,8 @@ TEST_F(NewTabUITest, NTPHasThumbnails) {
   // Blank thumbnails on the NTP have the class 'filler' applied to the div.
   // If all the thumbnails load, there should be no div's with 'filler'.
   scoped_refptr<TabProxy> tab = window->GetActiveTab();
+  ASSERT_TRUE(tab.get());
+
   int filler_thumbnails_count = -1;
   const int kWaitDuration = 100;
   int wait_time = action_max_timeout_ms();
@@ -73,6 +75,7 @@ TEST_F(NewTabUITest, ChromeInternalLoadsNTP) {
 
   // Go to the "new tab page" using its old url, rather than chrome://newtab.
   scoped_refptr<TabProxy> tab = window->GetTab(0);
+  ASSERT_TRUE(tab.get());
   tab->NavigateToURLAsync(GURL("chrome-internal:"));
   int load_time;
   ASSERT_TRUE(automation()->WaitForInitialNewTabUILoad(&load_time));
@@ -127,6 +130,7 @@ TEST_F(NewTabUITest, HomePageLink) {
   ASSERT_TRUE(automation()->WaitForInitialNewTabUILoad(&load_time));
 
   scoped_refptr<TabProxy> tab = browser->GetActiveTab();
+  ASSERT_TRUE(tab.get());
 
   // TODO(arv): Extract common patterns for doing js testing.
 

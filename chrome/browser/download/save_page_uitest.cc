@@ -76,6 +76,7 @@ TEST_F(SavePageTest, CleanFilenameFromPageTitle) {
   WaitUntilTabCount(1);
 
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser.get());
   automation()->SavePackageShouldPromptUser(false);
   EXPECT_TRUE(browser->RunCommandAsync(IDC_SAVE_PAGE));
   EXPECT_TRUE(WaitForDownloadShelfVisible(browser.get()));

@@ -15,6 +15,7 @@
 #include "base/path_service.h"
 #include "base/platform_thread.h"
 #include "base/string_util.h"
+#include "base/test/test_file_util.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/net/url_request_mock_http_job.h"
 #include "chrome/browser/net/url_request_slow_download_job.h"
@@ -106,6 +107,7 @@ class DownloadTest : public UITest {
       // Complete sending the request.  We do this by loading a second URL in a
       // separate tab.
       scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
+      ASSERT_TRUE(window.get());
       EXPECT_TRUE(window->AppendTab(GURL(
           URLRequestSlowDownloadJob::kFinishDownloadUrl)));
       EXPECT_EQ(2, GetTabCount());
@@ -122,11 +124,7 @@ class DownloadTest : public UITest {
     EXPECT_TRUE(file_util::PathExists(download_path));
 
     // Delete the file we just downloaded.
-    for (int i = 0; i < 10; ++i) {
-      if (file_util::Delete(download_path, false))
-        break;
-      PlatformThread::Sleep(action_max_timeout_ms() / 10);
-    }
+    EXPECT_TRUE(file_util::DieFileDie(download_path, true));
     EXPECT_FALSE(file_util::PathExists(download_path));
   }
 
@@ -329,6 +327,7 @@ TEST_F(DownloadTest, FLAKY_IncognitoDownload) {
   // Open a regular window and sanity check default values for window / tab
   // count and shelf visibility.
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser.get());
   int window_count = 0;
   ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
   ASSERT_EQ(1, window_count);
@@ -339,14 +338,15 @@ TEST_F(DownloadTest, FLAKY_IncognitoDownload) {
 
   // Open an Incognito window.
   ASSERT_TRUE(browser->RunCommand(IDC_NEW_INCOGNITO_WINDOW));
-  scoped_refptr<BrowserProxy> incognito(automation()->GetBrowserWindow(1));
-  scoped_refptr<TabProxy> tab(incognito->GetTab(0));
   ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
   ASSERT_EQ(2, window_count);
+  scoped_refptr<BrowserProxy> incognito(automation()->GetBrowserWindow(1));
+  ASSERT_TRUE(incognito.get());
 
   // Download something.
   FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
-  //PlatformThread::Sleep(1000);
+  scoped_refptr<TabProxy> tab(incognito->GetTab(0));
+  ASSERT_TRUE(tab.get());
   ASSERT_TRUE(tab->NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(file)));
   PlatformThread::Sleep(action_timeout_ms());
 

@@ -34,6 +34,7 @@ class BrowserTest : public UITest {
   void TerminateBrowser() {
 #if defined(OS_WIN)
     scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+    ASSERT_TRUE(browser.get());
     ASSERT_TRUE(browser->TerminateSession());
 #elif defined(OS_POSIX)
     // There's nothing to do here if the browser is not running.
@@ -136,6 +137,7 @@ TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
   ASSERT_TRUE(NULL != server.get());
   FilePath test_file(test_data_directory_);
   scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(window.get());
   scoped_refptr<TabProxy> tab(window->GetActiveTab());
   ASSERT_TRUE(tab.get());
 
@@ -185,6 +187,7 @@ TEST_F(BrowserTest, MAYBE_OtherRedirectsDontForkProcess) {
   ASSERT_TRUE(NULL != server.get());
   FilePath test_file(test_data_directory_);
   scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(window.get());
   scoped_refptr<TabProxy> tab(window->GetActiveTab());
   ASSERT_TRUE(tab.get());
 

@@ -160,6 +160,7 @@ class UnloadTest : public UITest {
   void LoadUrlAndQuitBrowser(const std::string& html_content,
                              const std::wstring& expected_title = L"") {
     scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+    ASSERT_TRUE(browser.get());
     NavigateToDataURL(html_content, expected_title);
     bool application_closed = false;
     EXPECT_TRUE(CloseBrowser(browser.get(), &application_closed));
@@ -254,6 +255,7 @@ TEST_F(UnloadTest, BrowserCloseUnload) {
 #if !defined(OS_LINUX)
 TEST_F(UnloadTest, BrowserCloseBeforeUnloadOK) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser.get());
   NavigateToDataURL(BEFORE_UNLOAD_HTML, L"beforeunload");
 
   CloseBrowserAsync(browser.get());
@@ -266,6 +268,7 @@ TEST_F(UnloadTest, BrowserCloseBeforeUnloadOK) {
 // CANCEL in the beforeunload confirm dialog.
 TEST_F(UnloadTest, BrowserCloseBeforeUnloadCancel) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser.get());
   NavigateToDataURL(BEFORE_UNLOAD_HTML, L"beforeunload");
 
   CloseBrowserAsync(browser.get());
@@ -283,6 +286,8 @@ TEST_F(UnloadTest, BrowserCloseBeforeUnloadCancel) {
 // if an inner frame has the focus.  See crbug.com/32615.
 TEST_F(UnloadTest, BrowserCloseWithInnerFocusedFrame) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser.get());
+
   NavigateToDataURL(INNER_FRAME_WITH_FOCUS_HTML, L"innerframewithfocus");
 
   CloseBrowserAsync(browser.get());

@@ -61,6 +61,7 @@ TEST_F(ResourceDispatcherTest, SniffNoContentTypeNoData) {
 
   // Make sure the download shelf is not showing.
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser.get());
   bool visible = false;
   ASSERT_TRUE(browser->IsShelfVisible(&visible));
   EXPECT_FALSE(visible);
@@ -82,7 +83,7 @@ TEST_F(ResourceDispatcherTest, SyncXMLHttpRequest) {
   ASSERT_TRUE(NULL != server.get());
 
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
-  EXPECT_TRUE(browser_proxy.get());
+  ASSERT_TRUE(browser_proxy.get());
   scoped_refptr<TabProxy> tab(browser_proxy->GetActiveTab());
   ASSERT_TRUE(tab.get());
   tab->NavigateToURL(server->TestServerPageW(
@@ -103,7 +104,7 @@ TEST_F(ResourceDispatcherTest, SyncXMLHttpRequest_Disallowed) {
   ASSERT_TRUE(NULL != server.get());
 
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
-  EXPECT_TRUE(browser_proxy.get());
+  ASSERT_TRUE(browser_proxy.get());
   scoped_refptr<TabProxy> tab(browser_proxy->GetActiveTab());
   ASSERT_TRUE(tab.get());
   tab->NavigateToURL(server->TestServerPageW(
@@ -127,7 +128,7 @@ TEST_F(ResourceDispatcherTest, SyncXMLHttpRequest_DuringUnload) {
   ASSERT_TRUE(NULL != server.get());
 
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
-  EXPECT_TRUE(browser_proxy.get());
+  ASSERT_TRUE(browser_proxy.get());
   scoped_refptr<TabProxy> tab(browser_proxy->GetActiveTab());
   ASSERT_TRUE(tab.get());
 
@@ -149,6 +150,7 @@ TEST_F(ResourceDispatcherTest, SyncXMLHttpRequest_DuringUnload) {
 
   bool shelf_is_visible = false;
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser.get());
   EXPECT_TRUE(browser->IsShelfVisible(&shelf_is_visible));
   EXPECT_FALSE(shelf_is_visible);
 }
@@ -161,7 +163,7 @@ TEST_F(ResourceDispatcherTest, CrossSiteOnunloadCookie) {
   ASSERT_TRUE(NULL != server.get());
 
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
-  EXPECT_TRUE(browser_proxy.get());
+  ASSERT_TRUE(browser_proxy.get());
   scoped_refptr<TabProxy> tab(browser_proxy->GetActiveTab());
   ASSERT_TRUE(tab.get());
 
@@ -204,7 +206,7 @@ TEST_F(ResourceDispatcherTest, CrossSiteAfterCrash) {
     return;
 
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
-  EXPECT_TRUE(browser_proxy.get());
+  ASSERT_TRUE(browser_proxy.get());
   scoped_refptr<TabProxy> tab(browser_proxy->GetActiveTab());
   ASSERT_TRUE(tab.get());
 
@@ -229,7 +231,7 @@ TEST_F(ResourceDispatcherTest, CrossSiteAfterCrash) {
 // the BufferedEventHandler (e.g., non-http{s} URLs).  (Bug 1225872)
 TEST_F(ResourceDispatcherTest, CrossSiteNavigationNonBuffered) {
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
-  EXPECT_TRUE(browser_proxy.get());
+  ASSERT_TRUE(browser_proxy.get());
   scoped_refptr<TabProxy> tab(browser_proxy->GetActiveTab());
   ASSERT_TRUE(tab.get());
 
@@ -255,7 +257,7 @@ TEST_F(ResourceDispatcherTest, CrossSiteNavigationErrorPage) {
   ASSERT_TRUE(NULL != server.get());
 
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
-  EXPECT_TRUE(browser_proxy.get());
+  ASSERT_TRUE(browser_proxy.get());
   scoped_refptr<TabProxy> tab(browser_proxy->GetActiveTab());
   ASSERT_TRUE(tab.get());
 

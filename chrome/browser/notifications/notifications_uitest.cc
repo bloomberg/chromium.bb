@@ -26,7 +26,9 @@ TEST_F(NotificationsPermissionTest, FLAKY_TestUserGestureInfobar) {
   ASSERT_TRUE(server.get() != NULL);
 
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser.get());
   scoped_refptr<TabProxy> tab(browser->GetActiveTab());
+  ASSERT_TRUE(tab.get());
   tab->NavigateToURL(server->TestServerPageW(
       L"files/notifications/notifications_request_function.html"));
   WaitUntilTabCount(1);
@@ -49,7 +51,9 @@ TEST_F(NotificationsPermissionTest, TestNoUserGestureInfobar) {
   ASSERT_TRUE(server.get() != NULL);
 
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser.get());
   scoped_refptr<TabProxy> tab(browser->GetActiveTab());
+  ASSERT_TRUE(tab.get());
 
   // Load a page which just does a request; no user gesture should result
   // in no infobar.

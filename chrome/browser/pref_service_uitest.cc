@@ -96,6 +96,7 @@ TEST_F(PreferenceServiceTest, PreservedWindowPlacementIsLoaded) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
   scoped_refptr<WindowProxy> window(browser->GetWindow());
+  ASSERT_TRUE(window.get());
 
   gfx::Rect bounds;
   ASSERT_TRUE(window->GetBounds(&bounds));
