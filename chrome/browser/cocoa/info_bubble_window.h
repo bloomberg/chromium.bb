@@ -4,7 +4,10 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/scoped_ptr.h"
 #import "chrome/browser/cocoa/chrome_event_processing_window.h"
+
+class AppNotificationBridge;
 
 // A rounded window with an arrow used for example when you click on the STAR
 // button or that pops up within our first-run UI.
@@ -15,6 +18,8 @@
   // If NO the window will close immediately instead of fading out.
   // Default YES.
   BOOL delayOnClose_;
+  // Bridge to proxy Chrome notifications to the window.
+  scoped_ptr<AppNotificationBridge> notificationBridge_;
 }
 
 // Returns YES if the window is in the process of closing.

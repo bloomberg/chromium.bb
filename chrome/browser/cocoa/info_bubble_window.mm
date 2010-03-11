@@ -4,8 +4,13 @@
 
 #import "chrome/browser/cocoa/info_bubble_window.h"
 
+#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/scoped_nsobject.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_type.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 
 namespace {
@@ -23,6 +28,37 @@ const NSTimeInterval kMinimumTimeInterval =
 - (void)appIsTerminating;
 - (void)finishCloseAfterAnimation;
 @end
+
+// A helper class to proxy app notifications to the window.
+class AppNotificationBridge : public NotificationObserver {
+ public:
+  explicit AppNotificationBridge(InfoBubbleWindow* owner) : owner_(owner) {
+    registrar_.Add(this, NotificationType::APP_TERMINATING,
+                   NotificationService::AllSources());
+  }
+
+  // Overridden from NotificationObserver.
+  void Observe(NotificationType type,
+               const NotificationSource& source,
+               const NotificationDetails& details) {
+    switch (type.value) {
+      case NotificationType::APP_TERMINATING:
+        [owner_ appIsTerminating];
+        break;
+      default:
+        NOTREACHED() << L"Unexpected notification";
+    }
+  }
+
+ private:
+  // The object we need to inform when we get a notification. Weak. Owns us.
+  InfoBubbleWindow* owner_;
+
+  // Used for registering to receive notifications and automatic clean up.
+  NotificationRegistrar registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(AppNotificationBridge);
+};
 
 // A delegate object for watching the alphaValue animation on InfoBubbleWindows.
 // An InfoBubbleWindow instance cannot be the delegate for its own animation
@@ -72,6 +108,7 @@ const NSTimeInterval kMinimumTimeInterval =
     [self setOpaque:NO];
     [self setHasShadow:YES];
     delayOnClose_ = YES;
+    notificationBridge_.reset(new AppNotificationBridge(self));
 
     // Start invisible. Will be made visible when ordered front.
     [self setAlphaValue:0.0];
@@ -89,19 +126,8 @@ const NSTimeInterval kMinimumTimeInterval =
         [NSMutableDictionary dictionaryWithDictionary:[self animations]];
     [animations setObject:alphaAnimation forKey:@"alphaValue"];
     [self setAnimations:animations];
-
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(appIsTerminating)
-               name:NSApplicationWillTerminateNotification
-             object:[NSApplication sharedApplication]];
   }
   return self;
-}
-
-- (void)dealloc {
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [super dealloc];
 }
 
 // According to
