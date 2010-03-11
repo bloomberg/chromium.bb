@@ -75,6 +75,9 @@ void gtk_chrome_shrinkable_hbox_pack_end(GtkChromeShrinkableHBox* box,
                                          GtkWidget* child,
                                          guint padding);
 
+gint gtk_chrome_shrinkable_hbox_get_visible_child_count(
+    GtkChromeShrinkableHBox* box);
+
 G_END_DECLS
 
 #endif  // CHROME_BROWSER_GTK_GTK_CHROME_SHRINKABLE_HBOX_H_

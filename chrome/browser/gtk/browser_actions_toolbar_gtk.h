@@ -13,13 +13,16 @@
 #include "base/linked_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
+#include "chrome/browser/gtk/overflow_button.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/owned_widget_gtk.h"
+#include "chrome/common/gtk_signal.h"
 
 class Browser;
 class BrowserActionButton;
 class Extension;
+class GtkThemeProvider;
 class Profile;
 
 typedef struct _GtkWidget GtkWidget;
@@ -27,7 +30,7 @@ typedef struct _GtkWidget GtkWidget;
 class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer {
  public:
   explicit BrowserActionsToolbarGtk(Browser* browser);
-  ~BrowserActionsToolbarGtk();
+  virtual ~BrowserActionsToolbarGtk();
 
   GtkWidget* widget() { return hbox_.get(); }
 
@@ -83,54 +86,38 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer {
   // Called by the BrowserActionButton in response to drag-begin.
   void DragStarted(BrowserActionButton* button, GdkDragContext* drag_context);
 
-  static gboolean OnDragMotionThunk(GtkWidget* widget,
-                                    GdkDragContext* drag_context,
-                                    gint x, gint y, guint time,
-                                    BrowserActionsToolbarGtk* toolbar) {
-    return toolbar->OnDragMotion(widget, drag_context, x, y, time);
-  }
-  gboolean OnDragMotion(GtkWidget* widget,
-                        GdkDragContext* drag_context,
-                        gint x, gint y, guint time);
+  // Sets the width of the button area of the toolbar to |new_width|, clamping
+  // it to appropriate values and updating the model.
+  void SetButtonHBoxWidth(int new_width);
 
-  static void OnDragEndThunk(GtkWidget* button,
-                             GdkDragContext* drag_context,
-                             BrowserActionsToolbarGtk* toolbar) {
-    toolbar->OnDragEnd(button, drag_context);
-  }
-  void OnDragEnd(GtkWidget* button, GdkDragContext* drag_context);
-
-  static gboolean OnDragFailedThunk(GtkWidget* widget,
-                                    GdkDragContext* drag_context,
-                                    GtkDragResult result,
-                                    BrowserActionsToolbarGtk* toolbar) {
-    return toolbar->OnDragFailed(widget, drag_context, result);
-  }
-  gboolean OnDragFailed(GtkWidget* widget,
-                        GdkDragContext* drag_context,
-                        GtkDragResult result);
-
-  static void OnHierarchyChangedThunk(GtkWidget* widget,
-                                      GtkWidget* previous_toplevel,
-                                      BrowserActionsToolbarGtk* toolbar) {
-    toolbar->OnHierarchyChanged();
-  }
-  void OnHierarchyChanged();
-
-  static void OnSetFocusThunk(GtkWindow* window,
-                              GtkWidget* widget,
-                              BrowserActionsToolbarGtk* toolbar) {
-    toolbar->OnSetFocus();
-  }
-  void OnSetFocus();
+  CHROMEGTK_CALLBACK_4(BrowserActionsToolbarGtk, gboolean, OnDragMotion,
+                       GdkDragContext*, gint, gint, guint);
+  CHROMEGTK_CALLBACK_1(BrowserActionsToolbarGtk, void, OnDragEnd,
+                       GdkDragContext*);
+  CHROMEGTK_CALLBACK_2(BrowserActionsToolbarGtk, gboolean, OnDragFailed,
+                       GdkDragContext*, GtkDragResult);
+  CHROMEGTK_CALLBACK_1(BrowserActionsToolbarGtk, void, OnHierarchyChanged,
+                       GtkWidget*);
+  CHROMEGTK_CALLBACK_1(BrowserActionsToolbarGtk, void, OnSetFocus, GtkWidget*);
+  CHROMEGTK_CALLBACK_1(BrowserActionsToolbarGtk, gboolean,
+                       OnGripperMotionNotify, GdkEventMotion*);
+  CHROMEGTK_CALLBACK_1(BrowserActionsToolbarGtk, gboolean, OnGripperExpose,
+                       GdkEventExpose*);
 
   Browser* browser_;
 
   Profile* profile_;
+  GtkThemeProvider* theme_provider_;
 
   ExtensionToolbarModel* model_;
 
+  // Contains the drag gripper, browser action buttons, and overflow chevron.
   OwnedWidgetGtk hbox_;
+
+  // Contains the browser action buttons.
+  GtkWidget* button_hbox_;
+
+  OverflowButton overflow_button_;
 
   // The button that is currently being dragged, or NULL.
   BrowserActionButton* drag_button_;

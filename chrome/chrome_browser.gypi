@@ -1194,6 +1194,8 @@
         'browser/gtk/notifications/balloon_view_host_gtk.h',
         'browser/gtk/notifications/notification_options_menu_model.cc',
         'browser/gtk/notifications/notification_options_menu_model.h',
+        'browser/gtk/overflow_button.cc',
+        'browser/gtk/overflow_button.h',
         'browser/gtk/options/advanced_contents_gtk.cc',
         'browser/gtk/options/advanced_contents_gtk.h',
         'browser/gtk/options/advanced_page_gtk.cc',

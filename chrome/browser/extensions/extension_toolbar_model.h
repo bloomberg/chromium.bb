@@ -37,6 +37,9 @@ class ExtensionToolbarModel : public NotificationObserver {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
   void MoveBrowserAction(Extension* extension, int index);
+  // TODO(estade): implement these.
+  void SetVisibleIconCount(int count) {}
+  int GetVisibleIconCount() { return -1; }
 
   size_t size() const {
     return toolitems_.size();

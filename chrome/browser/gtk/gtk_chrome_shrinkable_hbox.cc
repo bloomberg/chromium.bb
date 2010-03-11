@@ -170,9 +170,9 @@ static void gtk_chrome_shrinkable_hbox_size_allocate(
   (GTK_WIDGET_CLASS(gtk_chrome_shrinkable_hbox_parent_class)->size_allocate)
       (widget, allocation);
 
-  int visible_children_count = 0;
-  gtk_container_foreach(GTK_CONTAINER(widget), CountVisibleChildren,
-                        &visible_children_count);
+  gint visible_children_count =
+      gtk_chrome_shrinkable_hbox_get_visible_child_count(
+          GTK_CHROME_SHRINKABLE_HBOX(widget));
 
   if (visible_children_count == 0)
     return;
@@ -236,6 +236,14 @@ void gtk_chrome_shrinkable_hbox_pack_end(GtkChromeShrinkableHBox* box,
   g_return_if_fail(GTK_IS_WIDGET(child));
 
   gtk_box_pack_end(GTK_BOX(box), child, FALSE, FALSE, 0);
+}
+
+gint gtk_chrome_shrinkable_hbox_get_visible_child_count(
+    GtkChromeShrinkableHBox* box) {
+  gint visible_children_count = 0;
+  gtk_container_foreach(GTK_CONTAINER(box), CountVisibleChildren,
+                        &visible_children_count);
+  return visible_children_count;
 }
 
 G_END_DECLS

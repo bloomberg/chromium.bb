@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,11 +13,14 @@
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
+#include "chrome/browser/gtk/cairo_cached_surface.h"
 #include "chrome/browser/gtk/extension_popup_gtk.h"
 #include "chrome/browser/gtk/gtk_chrome_button.h"
+#include "chrome/browser/gtk/gtk_chrome_shrinkable_hbox.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/menu_gtk.h"
+#include "chrome/browser/gtk/view_id_util.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
@@ -26,6 +29,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
+#include "grit/app_resources.h"
 
 namespace {
 
@@ -46,6 +50,43 @@ GtkTargetEntry GetDragTargetEntry() {
   drag_target.flags = GTK_TARGET_SAME_APP;
   drag_target.info = 0;
   return drag_target;
+}
+
+// The minimum width in pixels of the button hbox if |icon_count| icons are
+// showing.
+gint WidthForIconCount(gint icon_count) {
+  return (kButtonSize + kButtonPadding) * icon_count - kButtonPadding;
+}
+
+// These three signal handlers are used to give the gripper the resize
+// cursor. Since it doesn't have its own window, we have to set the cursor
+// whenever the pointer moves into the button or leaves the button, and be
+// sure to leave it on when the user is dragging.
+gboolean OnGripperEnterNotify(GtkWidget* gripper,
+                              GdkEventCrossing* event,
+                              gpointer unused) {
+  gdk_window_set_cursor(gripper->window,
+                        gtk_util::GetCursor(GDK_SB_H_DOUBLE_ARROW));
+  return FALSE;
+}
+
+gboolean OnGripperLeaveNotify(GtkWidget* gripper,
+                              GdkEventCrossing* event,
+                              gpointer unused) {
+  if (!(event->state & GDK_BUTTON1_MASK))
+    gdk_window_set_cursor(gripper->window, NULL);
+  return FALSE;
+}
+
+gboolean OnGripperButtonRelease(GtkWidget* gripper,
+                                GdkEventButton* event,
+                                gpointer unused) {
+  gfx::Rect gripper_rect(0, 0,
+                         gripper->allocation.width, gripper->allocation.height);
+  gfx::Point release_point(event->x, event->y);
+  if (!gripper_rect.Contains(release_point))
+    gdk_window_set_cursor(gripper->window, NULL);
+  return FALSE;
 }
 
 }  // namespace
@@ -254,8 +295,11 @@ class BrowserActionButton : public NotificationObserver,
 BrowserActionsToolbarGtk::BrowserActionsToolbarGtk(Browser* browser)
     : browser_(browser),
       profile_(browser->profile()),
+      theme_provider_(GtkThemeProvider::GetFrom(browser->profile())),
       model_(NULL),
-      hbox_(gtk_hbox_new(FALSE, kButtonPadding)),
+      hbox_(gtk_hbox_new(FALSE, 0)),
+      button_hbox_(gtk_chrome_shrinkable_hbox_new(TRUE, FALSE, kButtonPadding)),
+      overflow_button_(browser->profile()),
       drag_button_(NULL),
       drop_index_(-1),
       method_factory_(this) {
@@ -263,6 +307,25 @@ BrowserActionsToolbarGtk::BrowserActionsToolbarGtk(Browser* browser)
   // The |extension_service| can be NULL in Incognito.
   if (!extension_service)
     return;
+
+  GtkWidget* gripper = gtk_button_new();
+  GTK_WIDGET_UNSET_FLAGS(gripper, GTK_CAN_FOCUS);
+  gtk_widget_add_events(gripper, GDK_POINTER_MOTION_MASK);
+  g_signal_connect(gripper, "motion-notify-event",
+                   G_CALLBACK(OnGripperMotionNotifyThunk), this);
+  g_signal_connect(gripper, "expose-event",
+                   G_CALLBACK(OnGripperExposeThunk), this);
+  g_signal_connect(gripper, "enter-notify-event",
+                   G_CALLBACK(OnGripperEnterNotify), NULL);
+  g_signal_connect(gripper, "leave-notify-event",
+                   G_CALLBACK(OnGripperLeaveNotify), NULL);
+  g_signal_connect(gripper, "button-release-event",
+                   G_CALLBACK(OnGripperButtonRelease), NULL);
+
+  gtk_box_pack_start(GTK_BOX(hbox_.get()), gripper, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox_.get()), button_hbox_, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox_.get()), overflow_button_.widget(),
+                     FALSE, FALSE, 0);
 
   model_ = extension_service->toolbar_model();
   model_->AddObserver(this);
@@ -273,6 +336,12 @@ BrowserActionsToolbarGtk::BrowserActionsToolbarGtk(Browser* browser)
   // until we are added to a toplevel window to do so.
   g_signal_connect(widget(), "hierarchy-changed",
                    G_CALLBACK(OnHierarchyChangedThunk), this);
+
+  int showing_actions = model_->GetVisibleIconCount();
+  if (showing_actions >= 0)
+    SetButtonHBoxWidth(WidthForIconCount(showing_actions));
+
+  ViewIDUtil::SetID(button_hbox_, VIEW_ID_BROWSER_ACTION_TOOLBAR);
 }
 
 BrowserActionsToolbarGtk::~BrowserActionsToolbarGtk() {
@@ -304,10 +373,10 @@ void BrowserActionsToolbarGtk::Update() {
 
 void BrowserActionsToolbarGtk::SetupDrags() {
   GtkTargetEntry drag_target = GetDragTargetEntry();
-  gtk_drag_dest_set(widget(), GTK_DEST_DEFAULT_DROP, &drag_target, 1,
+  gtk_drag_dest_set(button_hbox_, GTK_DEST_DEFAULT_DROP, &drag_target, 1,
                     GDK_ACTION_MOVE);
 
-  g_signal_connect(widget(), "drag-motion",
+  g_signal_connect(button_hbox_, "drag-motion",
                    G_CALLBACK(OnDragMotionThunk), this);
 }
 
@@ -332,8 +401,9 @@ void BrowserActionsToolbarGtk::CreateButtonForExtension(Extension* extension,
   RemoveButtonForExtension(extension);
   linked_ptr<BrowserActionButton> button(
       new BrowserActionButton(this, extension));
-  gtk_box_pack_start(GTK_BOX(hbox_.get()), button->widget(), FALSE, FALSE, 0);
-  gtk_box_reorder_child(GTK_BOX(hbox_.get()), button->widget(), index);
+  gtk_chrome_shrinkable_hbox_pack_start(
+      GTK_CHROME_SHRINKABLE_HBOX(button_hbox_), button->widget(), 0);
+  gtk_box_reorder_child(GTK_BOX(button_hbox_), button->widget(), index);
   gtk_widget_show(button->widget());
   extension_button_map_[extension->id()] = button;
 
@@ -392,7 +462,7 @@ void BrowserActionsToolbarGtk::BrowserActionAdded(Extension* extension,
 void BrowserActionsToolbarGtk::BrowserActionRemoved(Extension* extension) {
   if (drag_button_ != NULL) {
     // Break the current drag.
-    gtk_grab_remove(widget());
+    gtk_grab_remove(button_hbox_);
   }
 
   RemoveButtonForExtension(extension);
@@ -414,7 +484,7 @@ void BrowserActionsToolbarGtk::BrowserActionMoved(Extension* extension,
   if (profile_->IsOffTheRecord())
     index = model_->OriginalIndexToIncognito(index);
 
-  gtk_box_reorder_child(GTK_BOX(hbox_.get()), button->widget(), index);
+  gtk_box_reorder_child(GTK_BOX(button_hbox_), button->widget(), index);
 }
 
 void BrowserActionsToolbarGtk::DragStarted(BrowserActionButton* button,
@@ -426,6 +496,34 @@ void BrowserActionsToolbarGtk::DragStarted(BrowserActionButton* button,
 
   DCHECK(!drag_button_);
   drag_button_ = button;
+}
+
+void BrowserActionsToolbarGtk::SetButtonHBoxWidth(int new_width) {
+  gint max_width = WidthForIconCount(model_->size());
+  new_width = std::min(max_width, new_width);
+  new_width = std::max(new_width, 0);
+  gtk_widget_set_size_request(button_hbox_, new_width, -1);
+
+  int showing_icon_count =
+      gtk_chrome_shrinkable_hbox_get_visible_child_count(
+          GTK_CHROME_SHRINKABLE_HBOX(button_hbox_));
+
+  model_->SetVisibleIconCount(showing_icon_count);
+  if (model_->size() > static_cast<size_t>(showing_icon_count)) {
+    if (!GTK_WIDGET_VISIBLE(overflow_button_.widget())) {
+      // When the overflow chevron shows for the first time, take that
+      // much space away from |button_hbox_| to make the drag look smoother.
+      GtkRequisition req;
+      gtk_widget_size_request(overflow_button_.widget(), &req);
+      new_width -= req.width;
+      new_width = std::max(new_width, 0);
+      gtk_widget_set_size_request(button_hbox_, new_width, -1);
+
+      gtk_widget_show(overflow_button_.widget());
+    }
+  } else {
+    gtk_widget_hide(overflow_button_.widget());
+  }
 }
 
 gboolean BrowserActionsToolbarGtk::OnDragMotion(GtkWidget* widget,
@@ -442,7 +540,7 @@ gboolean BrowserActionsToolbarGtk::OnDragMotion(GtkWidget* widget,
   // We will go ahead and reorder the child in order to provide visual feedback
   // to the user. We don't inform the model that it has moved until the drag
   // ends.
-  gtk_box_reorder_child(GTK_BOX(hbox_.get()), drag_button_->widget(),
+  gtk_box_reorder_child(GTK_BOX(button_hbox_), drag_button_->widget(),
                         drop_index_);
 
   gdk_drag_status(drag_context, GDK_ACTION_MOVE, time);
@@ -468,18 +566,51 @@ gboolean BrowserActionsToolbarGtk::OnDragFailed(GtkWidget* widget,
   return TRUE;
 }
 
-void BrowserActionsToolbarGtk::OnHierarchyChanged() {
-  GtkWidget* toplevel = gtk_widget_get_toplevel(widget());
+void BrowserActionsToolbarGtk::OnHierarchyChanged(GtkWidget* widget,
+                                                  GtkWidget* previous_toplevel) {
+  GtkWidget* toplevel = gtk_widget_get_toplevel(widget);
   if (!GTK_WIDGET_TOPLEVEL(toplevel))
     return;
 
   g_signal_connect(toplevel, "set-focus", G_CALLBACK(OnSetFocusThunk), this);
 }
 
-void BrowserActionsToolbarGtk::OnSetFocus() {
+void BrowserActionsToolbarGtk::OnSetFocus(GtkWidget* widget,
+                                          GtkWidget* focus_widget) {
   // The focus of the parent window has changed. Close the popup. Delay the hide
   // because it will destroy the RenderViewHost, which may still be on the
   // call stack.
+  if (!ExtensionPopupGtk::get_current_extension_popup())
+    return;
   MessageLoop::current()->PostTask(FROM_HERE,
       method_factory_.NewRunnableMethod(&BrowserActionsToolbarGtk::HidePopup));
+}
+
+gboolean BrowserActionsToolbarGtk::OnGripperMotionNotify(
+    GtkWidget* widget, GdkEventMotion* event) {
+  if (!(event->state & GDK_BUTTON1_MASK))
+    return FALSE;
+
+  gint new_width = button_hbox_->allocation.width -
+                   (event->x - widget->allocation.width);
+  SetButtonHBoxWidth(new_width);
+
+  return FALSE;
+}
+
+gboolean BrowserActionsToolbarGtk::OnGripperExpose(GtkWidget* gripper,
+                                                   GdkEventExpose* expose) {
+  cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(expose->window));
+
+  CairoCachedSurface* surface = theme_provider_->GetSurfaceNamed(
+      IDR_RESIZE_GRIPPER, gripper);
+  gfx::Point center = gfx::Rect(gripper->allocation).CenterPoint();
+  center.Offset(-surface->Width() / 2, -surface->Height() / 2);
+  surface->SetSource(cr, center.x(), center.y());
+  gdk_cairo_rectangle(cr, &expose->area);
+  cairo_fill(cr);
+
+  cairo_destroy(cr);
+
+  return TRUE;
 }
