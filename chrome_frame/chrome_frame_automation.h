@@ -200,10 +200,6 @@ class ChromeFrameAutomationClient
         TaskMarshallerThroughWindowsMessages<ChromeFrameAutomationClient>)
   END_MSG_MAP()
 
-  void set_delegate(ChromeFrameDelegate* d) {
-    chrome_frame_delegate_ = d;
-  }
-
   // Resizes the hosted chrome window. This is brokered to the chrome
   // automation instance as the host browser could be running under low IL,
   // which would cause the SetWindowPos call to fail.
@@ -276,17 +272,12 @@ class ChromeFrameAutomationClient
   // the result of Initialize() method call.
   void InitializeComplete(AutomationLaunchResult result);
 
+  virtual void OnFinalMessage(HWND wnd) {
+    Release();
+  }
+
  private:
-  // Usage: From bkgnd thread invoke:
-  // CallDelegate(FROM_HERE, NewRunnableMethod(chrome_frame_delegate_,
-  //                                           ChromeFrameDelegate::Something,
-  //                                           param1,
-  //                                           param2));
-  void CallDelegate(const tracked_objects::Location& from_here,
-                    Task* delegate_task);
-  // The workhorse method called in main/GUI thread which is going to
-  // execute ChromeFrameDelegate method encapsulated in delegate_task.
-  void CallDelegateImpl(Task* delegate_task);
+  void OnMessageReceivedUIThread(const IPC::Message& msg);
 
   HWND chrome_window() const { return chrome_window_; }
   void BeginNavigate(const GURL& url, const GURL& referrer);
@@ -295,7 +286,6 @@ class ChromeFrameAutomationClient
   // Helpers
   void ReportNavigationError(AutomationMsg_NavigationResponseValues error_code,
                              const std::string& url);
-
   bool is_initialized() const {
     return init_state_ == INITIALIZED;
   }

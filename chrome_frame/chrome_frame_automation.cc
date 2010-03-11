@@ -479,6 +479,10 @@ bool ChromeFrameAutomationClient::Initialize(
     return false;
   }
 
+  // Keep object in memory, while the window is alive.
+  // Corresponsing Release is in OnFinalMessage();
+  AddRef();
+
   // Mark our state as initializing.  We'll reach initialized once
   // InitializeComplete is called successfully.
   init_state_ = INITIALIZING;
@@ -892,13 +896,6 @@ void ChromeFrameAutomationClient::InitializeComplete(
   }
 }
 
-// This is invoked in channel's background thread.
-// Cannot call any method of the activex/npapi here since they are STA
-// kind of beings.
-// By default we marshal the IPC message to the main/GUI thread and from there
-// we safely invoke chrome_frame_delegate_->OnMessageReceived(msg).
-
-
 bool ChromeFrameAutomationClient::ProcessUrlRequestMessage(TabProxy* tab,
     const IPC::Message& msg, bool ui_thread) {
   // Either directly call appropriate url_fetcher function
@@ -937,10 +934,14 @@ bool ChromeFrameAutomationClient::ProcessUrlRequestMessage(TabProxy* tab,
   return true;
 }
 
+// This is invoked in channel's background thread.
+// Cannot call any method of the activex/npapi here since they are STA
+// kind of beings.
+// By default we marshal the IPC message to the main/GUI thread and from there
+// we safely invoke chrome_frame_delegate_->OnMessageReceived(msg).
 void ChromeFrameAutomationClient::OnMessageReceived(TabProxy* tab,
                                                     const IPC::Message& msg) {
   DCHECK(tab == tab_.get());
-
   // Quickly process network related messages.
   if (url_fetcher_ && ProcessUrlRequestMessage(tab, msg, false))
     return;
@@ -949,17 +950,30 @@ void ChromeFrameAutomationClient::OnMessageReceived(TabProxy* tab,
   if (chrome_frame_delegate_ == NULL)
     return;
 
-  CallDelegate(FROM_HERE, NewRunnableMethod(chrome_frame_delegate_,
-      &ChromeFrameDelegate::OnMessageReceived, msg));
+  PostTask(FROM_HERE, NewRunnableMethod(this,
+      &ChromeFrameAutomationClient::OnMessageReceivedUIThread, msg));
+}
+
+void ChromeFrameAutomationClient::OnMessageReceivedUIThread(
+    const IPC::Message& msg) {
+  // Forward to the delegate.
+  if (chrome_frame_delegate_)
+    chrome_frame_delegate_->OnMessageReceived(msg);
 }
 
 void ChromeFrameAutomationClient::ReportNavigationError(
     AutomationMsg_NavigationResponseValues error_code,
     const std::string& url) {
-  CallDelegate(FROM_HERE, NewRunnableMethod(chrome_frame_delegate_,
-      &ChromeFrameDelegate::OnLoadFailed,
-      error_code,
-      url));
+  if (!chrome_frame_delegate_)
+    return;
+
+  if (ui_thread_id_ == PlatformThread::CurrentId()) {
+    chrome_frame_delegate_->OnLoadFailed(error_code, url);
+  } else {
+    PostTask(FROM_HERE, NewRunnableMethod(this,
+        &ChromeFrameAutomationClient::ReportNavigationError,
+        error_code, url));
+  }
 }
 
 void ChromeFrameAutomationClient::Resize(int width, int height,
@@ -1050,23 +1064,6 @@ std::wstring ChromeFrameAutomationClient::GetVersion() const {
   return version;
 }
 
-void ChromeFrameAutomationClient::CallDelegate(
-    const tracked_objects::Location& from_here, Task* delegate_task ) {
-  delegate_task->SetBirthPlace(from_here);
-  PostTask(FROM_HERE, NewRunnableMethod(this,
-      &ChromeFrameAutomationClient::CallDelegateImpl,
-      delegate_task));
-}
-
-void ChromeFrameAutomationClient::CallDelegateImpl(Task* delegate_task) {
-  if (chrome_frame_delegate_) {
-    // task's object should be == chrome_frame_delegate_
-    delegate_task->Run();
-  }
-
-  delete delegate_task;
-}
-
 void ChromeFrameAutomationClient::Print(HDC print_dc,
                                         const RECT& print_bounds) {
   if (!tab_window_) {
@@ -1106,6 +1103,7 @@ bool ChromeFrameAutomationClient::Reinitialize(
 
   url_fetcher_->StopAllRequests();
   chrome_frame_delegate_ = delegate;
+  DeleteAllPendingTasks();
   SetUrlFetcher(url_fetcher);
   SetParentWindow(NULL);
   return true;

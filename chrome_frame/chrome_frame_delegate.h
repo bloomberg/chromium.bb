@@ -145,7 +145,6 @@ template <class T> class TaskMarshallerThroughWindowsMessages
     }
   }
 
-
  protected:
   ~TaskMarshallerThroughWindowsMessages() {
     DeleteAllPendingTasks();
@@ -171,9 +170,11 @@ template <class T> class TaskMarshallerThroughWindowsMessages
   inline LRESULT ExecuteTask(UINT, WPARAM wparam, LPARAM,
                              BOOL& handled) {  // NOLINT
     Task* task = reinterpret_cast<Task*>(wparam);
-    PopTask(task);
-    task->Run();
-    delete task;
+    if (task && PopTask(task)) {
+      task->Run();
+      delete task;
+    }
+
     T* this_ptr = static_cast<T*>(this);
     this_ptr->Release();
     return 0;
@@ -184,10 +185,17 @@ template <class T> class TaskMarshallerThroughWindowsMessages
     pending_tasks_.push(task);
   }
 
-  inline void PopTask(Task* task) {
+  // If the given task is front of the queue, removes the task and returns true,
+  // otherwise we assume this is an already destroyed task (but Window message
+  // had remained in the thread queue).
+  inline bool PopTask(Task* task) {
     AutoLock lock(lock_);
-    DCHECK_EQ(task, pending_tasks_.front());
-    pending_tasks_.pop();
+    if (task == pending_tasks_.front()) {
+      pending_tasks_.pop();
+      return true;
+    }
+
+    return false;
   }
 
   Lock lock_;
