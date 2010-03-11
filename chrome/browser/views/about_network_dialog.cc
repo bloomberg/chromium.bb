@@ -4,8 +4,8 @@
 
 #include "chrome/browser/views/about_network_dialog.h"
 
-#include "base/string_util.h"
 #include "base/thread.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chrome_thread.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"

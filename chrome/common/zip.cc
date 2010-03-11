@@ -5,7 +5,9 @@
 #include "chrome/common/zip.h"
 
 #include "base/file_util.h"
+#include "base/logging.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "net/base/file_stream.h"
 #include "third_party/zlib/contrib/minizip/unzip.h"
 #include "third_party/zlib/contrib/minizip/zip.h"

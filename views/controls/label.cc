@@ -15,7 +15,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "views/background.h"
 
 namespace views {

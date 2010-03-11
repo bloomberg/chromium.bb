@@ -9,6 +9,7 @@
 
 #include "base/file_util.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 
 FileMetadataParser::FileMetadataParser(const FilePath& path)
     : MetadataParser(path) {

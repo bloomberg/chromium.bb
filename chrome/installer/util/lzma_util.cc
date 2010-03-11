@@ -5,7 +5,8 @@
 #include "chrome/installer/util/lzma_util.h"
 
 #include "base/file_util.h"
-#include "base/string_util.h"
+#include "base/logging.h"
+#include "base/utf_string_conversions.h"
 
 extern "C" {
 #include "third_party/lzma_sdk/Archive/7z/7zExtract.h"

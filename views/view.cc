@@ -16,7 +16,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/scoped_handle.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "views/background.h"
 #include "views/layout_manager.h"

@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/content_exceptions_table_model.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "googleurl/src/url_canon.h"

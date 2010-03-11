@@ -8,8 +8,9 @@
 
 #include "webkit/glue/plugins/plugin_stream.h"
 
-#include "base/string_util.h"
 #include "base/message_loop.h"
+#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "net/base/mime_util.h"
 #include "webkit/glue/plugins/plugin_instance.h"
 #include "googleurl/src/gurl.h"

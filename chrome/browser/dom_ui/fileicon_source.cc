@@ -6,7 +6,7 @@
 
 #include "app/gfx/codec/png_codec.h"
 #include "base/callback.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/time_format.h"
 #include "grit/generated_resources.h"

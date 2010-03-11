@@ -11,7 +11,7 @@
 #include "app/resource_bundle.h"
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "grit/app_resources.h"
 #include "views/controls/button/text_button.h"

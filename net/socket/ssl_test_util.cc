@@ -30,7 +30,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "net/base/host_resolver.h"
 #include "net/base/net_test_constants.h"
 #include "net/base/test_completion_callback.h"

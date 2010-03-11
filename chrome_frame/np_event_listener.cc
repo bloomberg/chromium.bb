@@ -5,14 +5,13 @@
 #include "chrome_frame/np_event_listener.h"
 
 #include "base/string_util.h"
-
+#include "base/utf_string_conversions.h"
+#include "chrome_frame/scoped_ns_ptr_win.h"
+#include "chrome_frame/ns_associate_iid_win.h"
 #include "third_party/xulrunner-sdk/win/include/string/nsEmbedString.h"
 #include "third_party/xulrunner-sdk/win/include/dom/nsIDOMElement.h"
 #include "third_party/xulrunner-sdk/win/include/dom/nsIDOMEventTarget.h"
 #include "third_party/xulrunner-sdk/win/include/dom/nsIDOMEvent.h"
-
-#include "chrome_frame/scoped_ns_ptr_win.h"
-#include "chrome_frame/ns_associate_iid_win.h"
 
 ASSOCIATE_IID(NS_IDOMELEMENT_IID_STR, nsIDOMElement);
 ASSOCIATE_IID(NS_IDOMNODE_IID_STR, nsIDOMNode);

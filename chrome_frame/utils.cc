@@ -17,6 +17,7 @@
 #include "base/scoped_variant_win.h"
 #include "base/string_util.h"
 #include "base/thread_local.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/installer/util/chrome_frame_distribution.h"
 #include "chrome_frame/extra_system_apis.h"

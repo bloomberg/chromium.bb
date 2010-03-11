@@ -10,7 +10,7 @@
 #include "app/table_model_observer.h"
 #include "base/keyboard_codes.h"
 #include "base/stl_util-inl.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/possible_url_model.h"
 #include "chrome/browser/pref_service.h"

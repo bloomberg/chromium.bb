@@ -7,7 +7,7 @@
 #include "app/combobox_model.h"
 #include "app/l10n_util.h"
 #include "base/file_version_info.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/bug_report_util.h"
 #include "chrome/browser/net/url_fetcher.h"
 #include "chrome/browser/pref_service.h"

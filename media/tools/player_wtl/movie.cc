@@ -4,7 +4,7 @@
 
 #include "media/tools/player_wtl/movie.h"
 
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "media/base/pipeline_impl.h"
 #include "media/filters/audio_renderer_impl.h"
 #include "media/filters/ffmpeg_audio_decoder.h"

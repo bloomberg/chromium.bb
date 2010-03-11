@@ -12,7 +12,7 @@
 #include "base/pickle.h"
 #include "base/scoped_handle.h"
 #include "base/stl_util-inl.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "grit/app_strings.h"
 #include "net/base/net_util.h"

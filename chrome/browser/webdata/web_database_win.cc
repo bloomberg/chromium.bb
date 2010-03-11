@@ -6,8 +6,8 @@
 
 #include "app/sql/statement.h"
 #include "base/logging.h"
-#include "base/string_util.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/password_manager/ie7_password.h"
 
 bool WebDatabase::AddIE7Login(const IE7PasswordInfo& info) {

@@ -18,6 +18,7 @@
 #include "base/message_loop.h"
 #include "base/shared_memory.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 
 namespace {
 

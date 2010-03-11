@@ -5,7 +5,7 @@
 #ifndef VIEWS_EXAMPLES_TEXTFIELD_EXAMPLE_H_
 #define VIEWS_EXAMPLES_TEXTFIELD_EXAMPLE_H_
 
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/label.h"
 #include "views/controls/tabbed_pane/tabbed_pane.h"

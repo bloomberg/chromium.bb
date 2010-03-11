@@ -15,7 +15,7 @@
 #include "base/registry.h"   // to find IE and firefox
 #include "base/scoped_handle.h"
 #include "base/scoped_comptr_win.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/win_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome_frame/utils.h"
@@ -427,7 +427,7 @@ _ATL_FUNC_INFO WebBrowserEventSink::kFileDownloadInfo = {
 // WebBrowserEventSink member defines
 void WebBrowserEventSink::Attach(IDispatch* browser_disp) {
   EXPECT_TRUE(NULL != browser_disp);
-  if(browser_disp) {
+  if (browser_disp) {
     EXPECT_HRESULT_SUCCEEDED(web_browser2_.QueryFrom(browser_disp));
     EXPECT_TRUE(S_OK == DispEventAdvise(web_browser2_,
                                         &DIID_DWebBrowserEvents2));

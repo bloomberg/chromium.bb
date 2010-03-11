@@ -16,6 +16,7 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "webkit/default_plugin/plugin_impl.h"
 #include "webkit/default_plugin/plugin_main.h"
 

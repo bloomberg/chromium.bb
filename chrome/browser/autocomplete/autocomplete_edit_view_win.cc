@@ -24,7 +24,7 @@
 #include "base/keyboard_codes.h"
 #include "base/lazy_instance.h"
 #include "base/ref_counted.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/autocomplete/autocomplete_accessibility.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"

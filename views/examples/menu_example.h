@@ -8,6 +8,7 @@
 #include <set>
 
 #include "app/menus/simple_menu_model.h"
+#include "base/utf_string_conversions.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/menu/view_menu_delegate.h"

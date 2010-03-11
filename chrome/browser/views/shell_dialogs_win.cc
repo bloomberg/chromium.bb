@@ -17,8 +17,8 @@
 #include "base/file_util.h"
 #include "base/registry.h"
 #include "base/scoped_comptr_win.h"
-#include "base/string_util.h"
 #include "base/thread.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chrome_thread.h"
 #include "grit/generated_resources.h"
 

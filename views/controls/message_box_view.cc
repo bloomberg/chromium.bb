@@ -9,7 +9,7 @@
 #include "app/l10n_util.h"
 #include "app/message_box_flags.h"
 #include "base/message_loop.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "views/controls/button/checkbox.h"
 #include "views/standard_layout.h"
 #include "views/views_delegate.h"

@@ -4,7 +4,7 @@
 
 #include "app/gfx/canvas.h"
 #include "app/l10n_util.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "views/border.h"
 #include "views/controls/label.h"

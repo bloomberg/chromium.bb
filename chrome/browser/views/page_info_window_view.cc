@@ -13,7 +13,7 @@
 #include "app/resource_bundle.h"
 #include "app/l10n_util.h"
 #include "base/compiler_specific.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/cert_store.h"
 #include "chrome/browser/page_info_model.h"
 #include "chrome/browser/page_info_window.h"
