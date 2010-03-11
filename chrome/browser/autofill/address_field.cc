@@ -66,6 +66,10 @@ bool AddressField::GetFieldInfo(FieldTypeMap* field_type_map) const {
 AddressField* AddressField::Parse(
     std::vector<AutoFillField*>::const_iterator* iter,
     bool is_ecml) {
+  DCHECK(iter);
+  if (!iter)
+    return NULL;
+
   AddressField address_field;
   std::vector<AutoFillField*>::const_iterator q = *iter;
   string16 pattern;
@@ -92,7 +96,7 @@ AddressField* AddressField::Parse(
       continue;
 
     if ((!address_field.state_ || address_field.state_->IsEmpty()) &&
-        address_field.ParseState(&q)) {
+        address_field.ParseState(&q, is_ecml, &address_field)) {
       continue;
     }
 
@@ -192,13 +196,17 @@ bool AddressField::ParseAddressLines(
   if (is_ecml) {
     pattern = GetEcmlPattern(kEcmlShipToAddress1,
                              kEcmlBillToAddress1, '|');
+    if (!ParseText(iter, pattern, &address_field->address1_))
+      return false;
   } else {
     pattern =
-        ASCIIToUTF16("@address|street|address line|address1|street_line1");
-  }
+        ASCIIToUTF16("street|address line|address1|street_line1");
+    string16 label_pattern = ASCIIToUTF16("address");
 
-  if (!ParseText(iter, pattern, &address_field->address1_))
-    return false;
+    if (!ParseText(iter, pattern, &address_field->address1_))
+      if (!ParseLabelText(iter, label_pattern, &address_field->address1_))
+        return false;
+  }
 
   // Some pages (e.g. expedia_checkout.html) have an apartment or
   // suite number at this point.  The occasional page (e.g.
@@ -213,7 +221,7 @@ bool AddressField::ParseAddressLines(
     pattern = GetEcmlPattern(kEcmlShipToAddress2,
                              kEcmlBillToAddress2, '|');
   } else {
-    pattern = ASCIIToUTF16("|address|address2|street|street_line2");
+    pattern = ASCIIToUTF16("^$|address|address2|street|street_line2");
   }
 
   ParseText(iter, pattern, &address_field->address2_);
@@ -230,8 +238,16 @@ bool AddressField::ParseCountry(
   if (address_field->country_ && !address_field->country_->IsEmpty())
     return false;
 
-  // TODO(jhawkins): Parse the country.
-  return false;
+  string16 pattern;
+  if (is_ecml)
+    pattern = GetEcmlPattern(kEcmlShipToCountry, kEcmlBillToCountry, '|');
+  else
+    pattern = ASCIIToUTF16("country|location");
+
+  if (!ParseText(iter, pattern, &address_field->country_))
+    return false;
+
+  return true;
 }
 
 // static
@@ -257,7 +273,7 @@ bool AddressField::ParseZipCode(
     pattern = GetEcmlPattern(kEcmlShipToPostalCode,
                              kEcmlBillToPostalCode, '|');
   } else {
-    pattern = ASCIIToUTF16("zip|postal|post code|^1z");
+    pattern = ASCIIToUTF16("zip|postal|post code|^1z$");
   }
 
   AddressType tempType;
@@ -281,7 +297,7 @@ bool AddressField::ParseZipCode(
   if (!is_ecml) {
     // Look for a zip+4, whose field name will also often contain
     // the substring "zip".
-    ParseText(iter, ASCIIToUTF16("zip|^-"), &address_field->zip4_);
+    ParseText(iter, ASCIIToUTF16("zip|^-$"), &address_field->zip4_);
   }
 
   return true;
@@ -309,9 +325,18 @@ bool AddressField::ParseCity(
 }
 
 bool AddressField::ParseState(
-    std::vector<AutoFillField*>::const_iterator* iter) {
-  // TODO(jhawkins): Parse the state.
-  return false;
+    std::vector<AutoFillField*>::const_iterator* iter,
+    bool is_ecml, AddressField* address_field) {
+  string16 pattern;
+  if (is_ecml)
+    pattern = GetEcmlPattern(kEcmlShipToStateProv, kEcmlBillToStateProv, '|');
+  else
+    pattern = ASCIIToUTF16("state|county");
+
+  if (!ParseText(iter, pattern, &address_field->state_))
+    return false;
+
+  return true;
 }
 
 AddressType AddressField::AddressTypeFromText(const string16 &text) {

@@ -535,6 +535,7 @@
         'browser/autocomplete/history_url_provider_unittest.cc',
         'browser/autocomplete/keyword_provider_unittest.cc',
         'browser/autocomplete/search_provider_unittest.cc',
+        'browser/autofill/address_field_unittest.cc',
         'browser/autofill/autofill_common_unittest.cc',
         'browser/autofill/autofill_common_unittest.h',
         'browser/autofill/autofill_address_model_mac_unittest.mm',

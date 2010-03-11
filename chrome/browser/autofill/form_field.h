@@ -82,7 +82,10 @@ class FormField {
   virtual FormFieldType GetFormFieldType() const { return kOtherFieldType; }
 
   // Returns true if |field| contains the regexp |pattern| in the name or label.
-  static bool Match(AutoFillField* field, const string16& pattern);
+  // If |match_label_only| is true, then only the field's label is considered.
+  static bool Match(AutoFillField* field,
+                    const string16& pattern,
+                    bool match_label_only);
 
   // Parses a field using the different field views we know about.  |is_ecml|
   // should be true when the field conforms to the ECML specification.
@@ -100,6 +103,12 @@ class FormField {
   static bool ParseText(std::vector<AutoFillField*>::const_iterator* iter,
                         const string16& pattern,
                         AutoFillField** dest);
+
+  // Attempts to parse a text field label with the given pattern.  Returns true
+  // on success and fills |dest| with a pointer to the field.
+  static bool ParseLabelText(std::vector<AutoFillField*>::const_iterator* iter,
+                             const string16& pattern,
+                             AutoFillField** dest);
 
   // Attempts to parse a control with an empty label.
   static bool ParseEmpty(std::vector<AutoFillField*>::const_iterator* iter);
@@ -120,6 +129,12 @@ class FormField {
   static string16 GetEcmlPattern(const string16& ecml_name1,
                                  const string16& ecml_name2,
                                  string16::value_type pattern_operator);
+
+ private:
+  static bool ParseText(std::vector<AutoFillField*>::const_iterator* iter,
+                        const string16& pattern,
+                        AutoFillField** dest,
+                        bool match_label_only);
 };
 
 class FormFieldSet : public std::vector<FormField*> {

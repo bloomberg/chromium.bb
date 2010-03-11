@@ -42,11 +42,11 @@ PhoneField* PhoneField::Parse(std::vector<AutoFillField*>::const_iterator* iter,
   // uk/Furniture123-1.html) have several phone numbers in succession and we
   // don't want those to be parsed as components of a single phone number.
   if (phone2 == NULL)
-    ParseText(&q, ASCIIToUTF16("^-|\\)|"), &phone2);
+    ParseText(&q, ASCIIToUTF16("^-$|\\)$"), &phone2);
 
   // Look for a third text box.
   if (phone2)
-    ParseText(&q, ASCIIToUTF16("^-|"), &phone3);
+    ParseText(&q, ASCIIToUTF16("^-$"), &phone3);
 
   // Now we have one, two, or three phone number text fields.  Package them
   // up into a PhoneField object.

@@ -43,16 +43,24 @@ class EmailField : public FormField {
 };
 
 // static
-bool FormField::Match(AutoFillField* field, const string16& pattern) {
+bool FormField::Match(AutoFillField* field,
+                      const string16& pattern,
+                      bool match_label_only) {
   WebKit::WebRegularExpression re(WebKit::WebString(pattern),
                                   WebKit::WebTextCaseInsensitive);
 
-  // For now, we apply the same pattern to the field's label and the field's
-  // name.  Matching the name is a bit of a long shot for many patterns, but
-  // it generally doesn't hurt to try.
-  if (re.match(WebKit::WebString(field->label())) != -1 ||
-      re.match(WebKit::WebString(field->name())) != -1) {
-    return true;
+  if (match_label_only) {
+    if (re.match(WebKit::WebString(field->label())) != -1) {
+      return true;
+    }
+  } else {
+    // For now, we apply the same pattern to the field's label and the field's
+    // name.  Matching the name is a bit of a long shot for many patterns, but
+    // it generally doesn't hurt to try.
+    if (re.match(WebKit::WebString(field->label())) != -1 ||
+        re.match(WebKit::WebString(field->name())) != -1) {
+      return true;
+    }
   }
 
   return false;
@@ -92,11 +100,27 @@ bool FormField::ParseText(std::vector<AutoFillField*>::const_iterator* iter,
 bool FormField::ParseText(std::vector<AutoFillField*>::const_iterator* iter,
                           const string16& pattern,
                           AutoFillField** dest) {
+  return ParseText(iter, pattern, dest, false);
+}
+
+// static
+bool FormField::ParseLabelText(
+    std::vector<AutoFillField*>::const_iterator* iter,
+    const string16& pattern,
+    AutoFillField** dest) {
+  return ParseText(iter, pattern, dest, true);
+}
+
+// static
+bool FormField::ParseText(std::vector<AutoFillField*>::const_iterator* iter,
+                          const string16& pattern,
+                          AutoFillField** dest,
+                          bool match_label_only) {
   AutoFillField* field = **iter;
   if (!field)
     return false;
 
-  if (Match(field, pattern)) {
+  if (Match(field, pattern, match_label_only)) {
     *dest = field;
     (*iter)++;
     return true;
@@ -108,7 +132,7 @@ bool FormField::ParseText(std::vector<AutoFillField*>::const_iterator* iter,
 // static
 bool FormField::ParseEmpty(std::vector<AutoFillField*>::const_iterator* iter) {
   // TODO(jhawkins): Handle select fields.
-  return ParseText(iter, ASCIIToUTF16(""));
+  return ParseText(iter, ASCIIToUTF16("^$"));
 }
 
 // static
@@ -122,14 +146,14 @@ bool FormField::Add(FieldTypeMap* field_type_map, AutoFillField* field,
 }
 
 string16 FormField::GetEcmlPattern(const string16& ecml_name) {
-  return ASCIIToUTF16("&") + ecml_name;
+  return ASCIIToUTF16("^") + ecml_name;
 }
 
 string16 FormField::GetEcmlPattern(const string16& ecml_name1,
                                    const string16& ecml_name2,
                                    string16::value_type pattern_operator) {
-  string16 ampersand = ASCIIToUTF16("&");
-  return ampersand + ecml_name1 + pattern_operator + ampersand + ecml_name2;
+  string16 begins_with = ASCIIToUTF16("^");
+  return begins_with + ecml_name1 + pattern_operator + begins_with + ecml_name2;
 }
 
 FormFieldSet::FormFieldSet(FormStructure* fields) {

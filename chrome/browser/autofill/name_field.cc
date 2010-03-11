@@ -21,7 +21,7 @@ FullNameField* FullNameField::Parse(
   // Exclude labels containing the string "username", which typically
   // denotes a login ID rather than the user's actual name.
   AutoFillField* field = **iter;
-  if (Match(field, ASCIIToUTF16("username")))
+  if (Match(field, ASCIIToUTF16("username"), false))
     return NULL;
 
   // Searching for any label containing the word "name" is too general;

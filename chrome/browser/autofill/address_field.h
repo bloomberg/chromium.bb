@@ -43,7 +43,8 @@ class AddressField : public FormField {
                            bool is_ecml, AddressField* address_field);
   static bool ParseCity(std::vector<AutoFillField*>::const_iterator* iter,
                         bool is_ecml, AddressField* address_field);
-  bool ParseState(std::vector<AutoFillField*>::const_iterator* iter);
+  bool ParseState(std::vector<AutoFillField*>::const_iterator* iter,
+                  bool is_ecml, AddressField* address_field);
 
   // Looks for an address type in the given text, which the caller must
   // convert to lowercase.
