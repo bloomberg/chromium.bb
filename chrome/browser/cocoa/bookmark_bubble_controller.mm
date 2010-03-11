@@ -123,15 +123,6 @@
 
 - (void)close {
   [parentWindow_ removeChildWindow:[self window]];
-
-  // If you quit while the bubble is open, sometimes we get a
-  // DidResignKey before we get our parent's WindowWillClose and
-  // sometimes not.  We protect against a multiple close (or reference
-  // to parentWindow_ at a bad time) by clearing it out once we're
-  // done, and by removing ourself from future notifications.
-  parentWindow_ = nil;
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
-
   [super close];
 }
 
