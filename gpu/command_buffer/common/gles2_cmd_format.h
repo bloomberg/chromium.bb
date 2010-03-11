@@ -11,15 +11,21 @@
 // the GL headers where as client side code includes the Chrome version. Also
 // the unit test code must include a mock GL header.
 #if defined(UNIT_TEST)
-#include "../service/gl_mock.h"
+  #include "../service/gl_mock.h"
 #elif defined(GLES2_GPU_SERVICE)
-#include <GL/glew.h>  // NOLINT
-#if defined(OS_WIN)
-#include <GL/wglew.h>   // NOLINT
-#endif
-#else
-#include <GLES2/gl2types.h>  // NOLINT
-#endif
+  // TODO(gman): Set this from gyp
+  //   #define GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2 1
+  #if defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
+    #include <GLES2/gl2.h>  // NOLINT
+  #else  // !GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2
+    #include <GL/glew.h>  // NOLINT
+    #if defined(OS_WIN)
+      #include <GL/wglew.h>   // NOLINT
+    #endif
+  #endif  // !GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2
+#else  // !GLES2_CPU_SERVICE
+  #include <GLES2/gl2types.h>  // NOLINT
+#endif  // UNIT_TEST
 
 #include <string.h>
 

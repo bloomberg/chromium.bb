@@ -11,23 +11,59 @@
 #include <build/build_config.h>
 
 #if defined(UNIT_TEST)
-#include "gpu/command_buffer/service/gl_mock.h"
+  #include "gpu/command_buffer/service/gl_mock.h"
 #else
-#include <GL/glew.h>  // NOLINT
-#if defined(OS_WIN)
-#include <GL/wglew.h>  // NOLINT
-#elif defined(OS_LINUX)
-#include <GL/glxew.h>  // NOLINT
-#endif  // OS_WIN
+  #if defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
+    #include <GLES2/gl2.h>  // NOLINT
 
-// GLES2 defines not part of Desktop GL
-// Shader Precision-Specified Types
-#define GL_LOW_FLOAT                      0x8DF0
-#define GL_MEDIUM_FLOAT                   0x8DF1
-#define GL_HIGH_FLOAT                     0x8DF2
-#define GL_LOW_INT                        0x8DF3
-#define GL_MEDIUM_INT                     0x8DF4
-#define GL_HIGH_INT                       0x8DF5
+    #define glClearDepth glClearDepthf
+    #define glDepthRange glDepthRangef
+
+    // Buffer Objects
+    #define glBindBufferARB glBindBuffer
+    #define glBufferDataARB glBufferData
+    #define glBufferSubDataARB glBufferSubData
+    #define glDeleteBuffersARB glDeleteBuffers
+    #define glGenBuffersARB glGenBuffers
+
+    // Framebuffer Objects
+    #define glBindFramebufferEXT glBindFramebuffer
+    #define glBindRenderbufferEXT glBindRenderbuffer
+    #define glCheckFramebufferStatusEXT glCheckFramebufferStatus
+    #define glDeleteFramebuffersEXT glDeleteFramebuffers
+    #define glDeleteRenderbuffersEXT glDeleteRenderbuffers
+    #define glFramebufferRenderbufferEXT glFramebufferRenderbuffer
+    #define glFramebufferTexture2DEXT glFramebufferTexture2D
+    #define glGenFramebuffersEXT glGenFramebuffers
+    #define glGenRenderbuffersEXT glGenRenderbuffers
+    #define glGetFramebufferAttachmentParameterivEXT \
+        glGetFramebufferAttachmentParameteriv
+    #define glGetRenderbufferParameterivEXT glGetRenderbufferParameteriv
+    #define glIsFramebufferEXT glIsFramebuffer
+    #define glIsRenderbufferEXT glIsFramebuffer
+    #define glRenderbufferStorageEXT glRenderbufferStorage
+
+    // Texture Objects
+    #define glGenerateMipmapEXT glGenerateMipmap
+
+  #else  // !GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2
+    #include <GL/glew.h>  // NOLINT
+    #if defined(OS_WIN)
+      #include <GL/wglew.h>  // NOLINT
+    #elif defined(OS_LINUX)
+      #include <GL/glxew.h>  // NOLINT
+    #endif  // OS_WIN
+
+    // GLES2 defines not part of Desktop GL
+    // Shader Precision-Specified Types
+    #define GL_LOW_FLOAT                      0x8DF0
+    #define GL_MEDIUM_FLOAT                   0x8DF1
+    #define GL_HIGH_FLOAT                     0x8DF2
+    #define GL_LOW_INT                        0x8DF3
+    #define GL_MEDIUM_INT                     0x8DF4
+    #define GL_HIGH_INT                       0x8DF5
+
+  #endif  // GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2
 
 #endif  // UNIT_TEST
 

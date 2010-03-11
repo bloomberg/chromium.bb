@@ -600,6 +600,7 @@ class GLES2DecoderImpl : public GLES2Decoder {
   ProgramManager::ProgramInfo::Ref current_program_;
 
 #if defined(UNIT_TEST)
+#elif defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
 #elif defined(OS_WIN)
   static int pixel_format_;
   HDC gl_device_context_;
@@ -621,6 +622,7 @@ GLES2Decoder* GLES2Decoder::Create(ContextGroup* group) {
 }
 
 #if defined(UNIT_TEST)
+#elif defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
 #elif defined(OS_WIN)
 int GLES2DecoderImpl::pixel_format_;
 #endif
@@ -635,6 +637,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       black_2d_texture_id_(0),
       black_cube_texture_id_(0),
 #if defined(UNIT_TEST)
+#elif defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
 #elif defined(OS_WIN)
       gl_device_context_(NULL),
       gl_context_(NULL),
@@ -707,6 +710,7 @@ bool GLES2DecoderImpl::Initialize() {
 // namespace {
 
 #if defined(UNIT_TEST)
+#elif defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
 #elif defined(OS_WIN)
 
 const PIXELFORMATDESCRIPTOR kPixelFormatDescriptor = {
@@ -933,6 +937,8 @@ void GLDeleteTexturesHelper(
 bool GLES2DecoderImpl::MakeCurrent() {
 #if defined(UNIT_TEST)
   return true;
+#elif defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
+  return true;
 #elif defined(OS_WIN)
   if (::wglGetCurrentDC() == gl_device_context_ &&
       ::wglGetCurrentContext() == gl_context_) {
@@ -999,6 +1005,7 @@ void GLES2DecoderImpl::UnregisterObjects(
 
 bool GLES2DecoderImpl::InitPlatformSpecific() {
 #if defined(UNIT_TEST)
+#elif defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
 #elif defined(OS_WIN)
   // Do one-off initialization.
   static bool success = InitializeOneOff(anti_aliased_);
@@ -1059,7 +1066,7 @@ bool GLES2DecoderImpl::InitPlatformSpecific() {
 }
 
 bool GLES2DecoderImpl::InitGlew() {
-#if !defined(UNIT_TEST)
+#if !defined(UNIT_TEST) && !defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
   DLOG(INFO) << "Initializing GL and GLEW for GLES2Decoder.";
 
   GLenum glew_error = glewInit();
@@ -1116,6 +1123,7 @@ bool GLES2DecoderImpl::InitGlew() {
 
 void GLES2DecoderImpl::DestroyPlatformSpecific() {
 #if defined(UNIT_TEST)
+#elif defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
 #elif defined(OS_WIN)
   if (gl_context_) {
     ::wglDeleteContext(gl_context_);
@@ -1142,6 +1150,8 @@ void GLES2DecoderImpl::DestroyPlatformSpecific() {
 uint64 GLES2DecoderImpl::SetWindowSizeForIOSurface(int32 width, int32 height) {
 #if defined(UNIT_TEST)
   return 0;
+#elif defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
+  return 0;
 #else
   return surface_.SetSurfaceSize(width, height);
 #endif  // !defined(UNIT_TEST)
@@ -1150,6 +1160,8 @@ uint64 GLES2DecoderImpl::SetWindowSizeForIOSurface(int32 width, int32 height) {
 TransportDIB::Handle GLES2DecoderImpl::SetWindowSizeForTransportDIB(
     int32 width, int32 height) {
 #if defined(UNIT_TEST)
+  return TransportDIB::DefaultHandleValue();
+#elif defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
   return TransportDIB::DefaultHandleValue();
 #else
   return surface_.SetTransportDIBSize(width, height);
@@ -1169,6 +1181,7 @@ void GLES2DecoderImpl::SetSwapBuffersCallback(Callback0::Type* callback) {
 
 void GLES2DecoderImpl::Destroy() {
 #if defined(UNIT_TEST)
+#elif defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
 #elif defined(OS_LINUX)
   DCHECK(window());
   window()->Destroy();
@@ -1426,6 +1439,7 @@ void GLES2DecoderImpl::DoLinkProgram(GLuint program) {
 
 void GLES2DecoderImpl::DoSwapBuffers() {
 #if defined(UNIT_TEST)
+#elif defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
 #elif defined(OS_WIN)
   ::SwapBuffers(gl_device_context_);
 #elif defined(OS_LINUX)
