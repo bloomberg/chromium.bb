@@ -485,6 +485,8 @@ WONTFIX SKIP : fast/frames/flattening = TIMEOUT
 // No need to waste cycles implementing harness support for this variant of the test.
 WONTFIX : fast/loader/api-test-new-window-data-load-base-url.html = TEXT
 
+WONTFIX SKIP : fast/events/spatial-navigation = FAIL
+
 // -----------------------------------------------------------------
 // CHROME REWRITTEN TESTS
 // -----------------------------------------------------------------
@@ -2855,10 +2857,6 @@ BUG_JIANLI :  http/tests/local/send-sliced-dragged-file.html = FAIL
 // WebKit roll 55670 -> 55674
 BUG37684 SKIP : http/tests/cookies/third-party-cookie-relaxing.html = FAIL
 
-// WebKit roll 55674 -> r55683
-BUG37735 : fast/events/spatial-navigation/snav-table-traversal.html = TEXT
-BUG37735 : fast/events/spatial-navigation/snav-tiny-table-traversal.html = TEXT
-
 // WebKit roll r55683 -> r55709
 BUG37779 : fast/dom/HTMLAnchorElement/set-href-attribute-hostname.html = TEXT
 BUG37779 : fast/dom/HTMLAnchorElement/set-href-attribute-port.html = TEXT
@@ -2902,14 +2900,6 @@ BUG37869 LINUX : fast/images/animated-svg-as-image.html = IMAGE
 BUG37869 MAC LINUX SKIP : inspector/timeline-network-resource.html = CRASH
 BUG37869 MAC : fast/canvas/webgl/uniform-location.html = TEXT
 BUG37869 MAC : editing/input/option-page-up-down.html = TIMEOUT
-
-// WebKit merge 55791:55819
-BUG_JAPHET : fast/events/spatial-navigation/snav-fully-aligned-horizontally.html = TEXT
-BUG_JAPHET : fast/events/spatial-navigation/snav-fully-aligned-vertically.html = TEXT
-BUG_JAPHET : fast/events/spatial-navigation/snav-iframe-no-focusable-content.html = TEXT
-BUG_JAPHET : fast/events/spatial-navigation/snav-iframe-no-scrollable-content.html = TEXT
-BUG_JAPHET : fast/events/spatial-navigation/snav-iframe-with-offscreen-focusable-element.html = TEXT
-BUG_JAPHET : fast/events/spatial-navigation/snav-unit-overflow-and-scroll-in-direction.html = TEXT
 
 // Three flaky tests noticed during a sheriff rotation.
 BUG37962 LINUX DEBUG : fast/dom/HTMLElement/bdo.html = CRASH PASS
