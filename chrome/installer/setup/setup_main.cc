@@ -708,8 +708,17 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
     }
   }
 
-  // Note that we allow the status installer_util::UNINSTALL_REQUIRES_REBOOT
-  // to pass through, since this is only returned on uninstall which is never
-  // invoked directly by Google Update.
-  return dist->GetInstallReturnCode(install_status);
+  int return_code = 0;
+  // MSI demands that custom actions always return 0 (ERROR_SUCCESS) or it will
+  // rollback the action. If we're uninstalling we want to avoid this, so always
+  // report success, squashing any more informative return codes.
+  if (!(parsed_command_line.HasSwitch(installer_util::switches::kMsi) &&
+        parsed_command_line.HasSwitch(installer_util::switches::kUninstall))) {
+    // Note that we allow the status installer_util::UNINSTALL_REQUIRES_REBOOT
+    // to pass through, since this is only returned on uninstall which is never
+    // invoked directly by Google Update.
+    dist->GetInstallReturnCode(install_status);
+  }
+
+  return return_code;
 }
