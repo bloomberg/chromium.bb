@@ -118,7 +118,8 @@ from :3
   def testMembersChanged(self):
     self.mox.ReplayAll()
     members = [
-        'COMMAND', 'Capture', 'CaptureStatus', 'FetchUpstreamTuple',
+        'COMMAND', 'AssertVersion', 'Capture', 'CaptureStatus',
+        'FetchUpstreamTuple',
         'GenerateDiff', 'GetBranch', 'GetBranchRef', 'GetCheckoutRoot',
         'GetDifferentFiles', 'GetEmail', 'GetPatchName', 'GetSVNBranch',
         'GetUpstream', 'IsGitSvn', 'RunAndFilterOutput', 'ShortBranchName',

@@ -270,6 +270,24 @@ class GIT(object):
     root = GIT.Capture(['rev-parse', '--show-cdup'], path)[0].strip()
     return os.path.abspath(os.path.join(path, root))
 
+  @staticmethod
+  def AssertVersion(min_version):
+    """Asserts git's version is at least min_version."""
+    def only_int(val):
+      if val.isdigit():
+        return int(val)
+      else:
+        return 0
+    current_version =  GIT.Capture(['--version'])[0].split()[-1]
+    current_version_list = map(only_int, current_version.split('.'))
+    for min_ver in map(int, min_version.split('.')):
+      ver = current_version_list.pop(0)
+      if ver < min_ver:
+        return (False, current_version)
+      elif ver > min_ver:
+        return (True, current_version)
+    return (True, current_version)
+
 
 class SVN(object):
   COMMAND = "svn"

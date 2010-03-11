@@ -555,21 +555,10 @@ class GitWrapper(SCMWrapper, scm.GIT):
       print ""
 
   def _CheckMinVersion(self, min_version):
-    def only_int(val):
-      if val.isdigit():
-        return int(val)
-      else:
-        return 0
-    version = self._Run(['--version'], cwd='.').split()[-1]
-    version_list = map(only_int, version.split('.'))
-    min_version_list = map(int, min_version.split('.'))
-    for min_ver in min_version_list:
-      ver = version_list.pop(0)
-      if min_ver > ver:
-        raise gclient_utils.Error('git version %s < minimum required %s' %
-                                  (version, min_version))
-      elif min_ver < ver:
-        return
+    (ok, current_version) = scm.GIT.AssertVersion(min_version)
+    if not ok:
+      raise gclient_utils.Error('git version %s < minimum required %s' %
+                                (current_version, min_version))
 
   def _GetCurrentBranch(self):
     # Returns name of current branch

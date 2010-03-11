@@ -379,7 +379,8 @@ from :3
 
   def testDir(self):
     members = [
-        'COMMAND', 'Capture', 'CaptureStatus', 'FetchUpstreamTuple',
+        'COMMAND', 'AssertVersion', 'Capture', 'CaptureStatus',
+        'FetchUpstreamTuple',
         'FullUrlForRelativeUrl', 'GenerateDiff', 'GetBranch', 'GetBranchRef',
         'GetCheckoutRoot', 'GetDifferentFiles', 'GetEmail', 'GetPatchName',
         'GetSVNBranch', 'GetUpstream', 'IsGitSvn', 'RunAndFilterOutput',
