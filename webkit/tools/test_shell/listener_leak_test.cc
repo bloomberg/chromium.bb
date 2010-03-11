@@ -21,7 +21,7 @@ class ListenerLeakTest : public TestShellTest {
 
 static std::string GetV8Log(int skip) {
   std::string v8_log;
-  char buf[1024];
+  char buf[2048];
   int read_size;
   do {
     read_size = v8::V8::GetLogLines(skip + static_cast<int>(v8_log.size()),
