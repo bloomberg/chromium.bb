@@ -13,6 +13,7 @@
 #include "grit/generated_resources.h"
 #include "views/background.h"
 #include "views/controls/scroll_view.h"
+#include "views/widget/root_view.h"
 #include "views/widget/widget_gtk.h"
 
 namespace {
@@ -25,6 +26,11 @@ const int kBalloonMaxHeight = 120;
 // Maximum height of the notification panel.
 // TODO(oshima): Get this from system's metrics.
 const int kMaxPanelHeight = 400;
+
+// The duration for a new notification to become stale.
+const int kStaleTimeoutInSeconds = 10;
+
+using chromeos::BalloonViewImpl;
 
 class BalloonSubContainer : public views::View {
  public:
@@ -67,6 +73,44 @@ class BalloonSubContainer : public views::View {
     SizeToPreferredSize();
   }
 
+  // Returns the bounds that covers new notifications.
+  gfx::Rect GetNewBounds() {
+    gfx::Rect rect;
+    for (int i = GetChildViewCount() - 1; i >= 0; --i) {
+      BalloonViewImpl* view =
+          static_cast<BalloonViewImpl*>(GetChildViewAt(i));
+      if (!view->stale()) {
+        if (rect.IsEmpty()) {
+          rect = view->bounds();
+        } else {
+          rect = rect.Union(bounds());
+        }
+      }
+    }
+    return gfx::Rect(x(), y(), rect.width(), rect.height());
+  }
+
+  // Returns # of new notifications.
+  int GetNewCount() {
+    int count = 0;
+    for (int i = GetChildViewCount() - 1; i >= 0; --i) {
+      BalloonViewImpl* view =
+          static_cast<BalloonViewImpl*>(GetChildViewAt(i));
+      if (!view->stale())
+        count++;
+    }
+    return count;
+  }
+
+  // Make all notifications stale.
+  void MakeAllStale() {
+    for (int i = GetChildViewCount() - 1; i >= 0; --i) {
+      BalloonViewImpl* view =
+          static_cast<BalloonViewImpl*>(GetChildViewAt(i));
+      view->make_stale();
+    }
+  }
+
  private:
   gfx::Size preferred_size_;
   int margin_;
@@ -105,6 +149,17 @@ class BalloonContainer : public views::View {
     return preferred_size_;
   }
 
+  // Returns the size that covers sticky and new notifications.
+  gfx::Size GetStickyNewSize() {
+    gfx::Rect new_sticky = sticky_container_->bounds();
+    gfx::Rect new_non_sticky = non_sticky_container_->GetNewBounds();
+    if (new_sticky.IsEmpty())
+      return new_non_sticky.size();
+    if (new_non_sticky.IsEmpty())
+      return new_sticky.size();
+    return new_sticky.Union(new_non_sticky).size();
+  }
+
   // Add a ballon to the panel.
   void Add(Balloon* balloon) {
     BalloonViewImpl* view =
@@ -125,6 +180,17 @@ class BalloonContainer : public views::View {
         non_sticky_container_->GetChildViewCount();
   }
 
+  // Returns true if the container has sticky notification.
+  bool HasStickyNotifications() {
+    return sticky_container_->GetChildViewCount() > 0;
+  }
+
+  // Returns true if the |view| is contained in the panel.
+  bool HasBalloonView(View* view) {
+    return sticky_container_->HasChildView(view) ||
+        non_sticky_container_->HasChildView(view);
+  }
+
   // Update the bounds so that all notifications are visible.
   void UpdateBounds() {
     sticky_container_->UpdateBounds();
@@ -139,6 +205,11 @@ class BalloonContainer : public views::View {
     preferred_size_.set_width(std::max(
         preferred_size_.width(), non_sticky_size.width()));
     SizeToPreferredSize();
+  }
+
+  void MakeAllStale() {
+    sticky_container_->MakeAllStale();
+    non_sticky_container_->MakeAllStale();
   }
 
  private:
@@ -158,11 +229,14 @@ class BalloonContainer : public views::View {
 };
 
 NotificationPanel::NotificationPanel()
-    : balloon_container_(NULL) {
+    : balloon_container_(NULL),
+      state_(CLOSED),
+      task_factory_(this) {
   Init();
 }
 
 NotificationPanel::~NotificationPanel() {
+  Hide();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -173,18 +247,33 @@ void NotificationPanel::Show() {
     // TODO(oshima): Using window because Popup widget behaves weird
     // when resizing. This needs to be investigated.
     panel_widget_.reset(new views::WidgetGtk(views::WidgetGtk::TYPE_WINDOW));
-    panel_widget_->Init(NULL, GetPreferredBounds());
+    gfx::Rect bounds = GetPreferredBounds();
+    if (bounds.width() < kBalloonMinWidth ||
+        bounds.height() < kBalloonMinHeight) {
+      // Gtk uses its own default size when the size is empty.
+      // Use the minimum size as a default.
+      bounds.SetRect(0, 0, kBalloonMinWidth, kBalloonMinHeight);
+    }
+    panel_widget_->Init(NULL, bounds);
+    // TODO(oshima): I needed the following code in order to get sizing
+    // reliably. Investigate and fix it in WidgetGtk.
+    gtk_widget_set_size_request(GTK_WIDGET(panel_widget_->GetNativeView()),
+                                bounds.width(), bounds.height());
     panel_widget_->SetContentsView(scroll_view_.get());
     panel_controller_.reset(
         new PanelController(this,
                             GTK_WINDOW(panel_widget_->GetNativeView()),
-                            gfx::Rect(0, 0, 1000, 1000)));
+                            gfx::Rect(0, 0, kBalloonMinWidth, 1)));
   }
   panel_widget_->Show();
 }
 
 void NotificationPanel::Hide() {
   if (panel_widget_.get()) {
+    // We need to remove & detach the scroll view from hierarchy to
+    // avoid GTK deleting child.
+    // TODO(oshima): handle this details in WidgetGtk.
+    panel_widget_->GetRootView()->RemoveChildView(scroll_view_.get());
     panel_widget_.release()->Close();
     panel_controller_.release()->Close();
   }
@@ -195,13 +284,19 @@ void NotificationPanel::Hide() {
 
 void NotificationPanel::Add(Balloon* balloon) {
   balloon_container_->Add(balloon);
-  UpdateSize();
+  if (state_ == CLOSED || state_ == MINIMIZED)
+    state_ = STICKY_AND_NEW;
   Show();
+  UpdatePanel(true);
+  StartStaleTimer(balloon);
 }
 
 void NotificationPanel::Remove(Balloon* balloon) {
   balloon_container_->Remove(balloon);
-  UpdateSize();
+  // no change to the state
+  if (balloon_container_->GetNotificationCount() == 0)
+    state_ = CLOSED;
+  UpdatePanel(true);
 }
 
 void NotificationPanel::ResizeNotification(
@@ -214,7 +309,7 @@ void NotificationPanel::ResizeNotification(
                std::min(kBalloonMaxHeight, size.height())));
   balloon->set_content_size(real_size);
   static_cast<BalloonViewImpl*>(balloon->view())->Layout();
-  UpdateSize();
+  UpdatePanel(true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -229,7 +324,28 @@ SkBitmap NotificationPanel::GetPanelIcon() {
 }
 
 void NotificationPanel::ClosePanel() {
-  panel_widget_.release()->Close();
+  state_ = CLOSED;
+  UpdatePanel(false);
+}
+
+void NotificationPanel::OnPanelStateChanged(PanelController::State state) {
+  switch (state) {
+    case PanelController::EXPANDED:
+      // Geting expanded in STICKY_AND_NEW state means that a new
+      // notification is added, so just leave the state. Otherwise,
+      // expand to full.
+      if (state_ != STICKY_AND_NEW)
+        state_ = FULL;
+      // When the panel is to be expanded, we either show all, or
+      // show only sticky/new, depending on the state.
+      UpdatePanel(false);
+      break;
+    case PanelController::MINIMIZED:
+      state_ = MINIMIZED;
+      // Make all notifications stale when a user minimize the panel.
+      balloon_container_->MakeAllStale();
+      break;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -246,14 +362,33 @@ void NotificationPanel::Init() {
   scroll_view_->SetContents(balloon_container_);
 }
 
-void NotificationPanel::UpdateSize() {
-  balloon_container_->UpdateBounds();
-  scroll_view_->Layout();
-  if (panel_widget_.get()) {
-    if (balloon_container_->GetNotificationCount() == 0)
+void NotificationPanel::UpdatePanel(bool contents_changed) {
+  if (contents_changed) {
+    balloon_container_->UpdateBounds();
+    scroll_view_->Layout();
+  }
+  switch(state_) {
+    case CLOSED:
+      balloon_container_->MakeAllStale();
       Hide();
-    else
-      panel_widget_->SetBounds(GetPreferredBounds());
+      break;
+    case MINIMIZED:
+      balloon_container_->MakeAllStale();
+      if (panel_controller_.get())
+        panel_controller_->SetState(PanelController::MINIMIZED);
+      break;
+    case FULL:
+      if (panel_widget_.get()) {
+        panel_widget_->SetBounds(GetPreferredBounds());
+        panel_controller_->SetState(PanelController::EXPANDED);
+      }
+      break;
+    case STICKY_AND_NEW:
+      if (panel_widget_.get()) {
+        panel_widget_->SetBounds(GetStickyNewBounds());
+        panel_controller_->SetState(PanelController::EXPANDED);
+      }
+      break;
   }
 }
 
@@ -265,6 +400,38 @@ gfx::Rect NotificationPanel::GetPreferredBounds() {
   if (new_height != pref_size.height())
     new_width += scroll_view_->GetScrollBarWidth();
   return gfx::Rect(0, 0, new_width, new_height);
+}
+
+gfx::Rect NotificationPanel::GetStickyNewBounds() {
+  gfx::Size pref_size = balloon_container_->GetPreferredSize();
+  gfx::Size sticky_size = balloon_container_->GetStickyNewSize();
+  int new_height = std::min(sticky_size.height(), kMaxPanelHeight);
+  int new_width = pref_size.width();
+  // Adjust the width to avoid showing a horizontal scroll bar.
+  if (new_height != pref_size.height())
+    new_width += scroll_view_->GetScrollBarWidth();
+  return gfx::Rect(0, 0, new_width, new_height);
+}
+
+void NotificationPanel::StartStaleTimer(Balloon* balloon) {
+  BalloonViewImpl* view = static_cast<BalloonViewImpl*>(balloon->view());
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      task_factory_.NewRunnableMethod(
+          &NotificationPanel::StaleNotification, view),
+      1000 * kStaleTimeoutInSeconds);
+}
+
+void NotificationPanel::StaleNotification(BalloonViewImpl* view) {
+  if (balloon_container_->HasBalloonView(view) && !view->stale()) {
+    view->make_stale();
+    if (balloon_container_->HasStickyNotifications()) {
+      state_ = STICKY_AND_NEW;
+    } else {
+      state_ = MINIMIZED;
+    }
+    UpdatePanel(false);
+  }
 }
 
 }  // namespace chromeos

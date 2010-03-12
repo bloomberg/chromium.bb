@@ -556,6 +556,12 @@ int View::GetChildViewCount() const {
   return static_cast<int>(child_views_.size());
 }
 
+bool View::HasChildView(View* a_view) {
+  return find(child_views_.begin(),
+              child_views_.end(),
+              a_view) != child_views_.end();
+}
+
 void View::RemoveChildView(View* a_view) {
   DoRemoveChildView(a_view, true, true, false);
 }

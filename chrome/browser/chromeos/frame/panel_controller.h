@@ -26,6 +26,11 @@ namespace chromeos {
 // Controls interactions with the WM for popups / panels.
 class PanelController : public views::ButtonListener {
  public:
+  enum State {
+    EXPANDED,
+    MINIMIZED,
+  };
+
   // Delegate to control panel's appearance and behavior.
   class Delegate {
    public:
@@ -37,6 +42,8 @@ class PanelController : public views::ButtonListener {
 
     // Close the panel. Called when a close button is pressed.
     virtual void ClosePanel() = 0;
+
+    virtual void OnPanelStateChanged(State state) = 0;
   };
 
   PanelController(Delegate* delegate_window,
@@ -53,6 +60,9 @@ class PanelController : public views::ButtonListener {
 
   void UpdateTitleBar();
   void Close();
+
+  void SetState(State state);
+
   // ButtonListener methods.
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 

@@ -36,6 +36,10 @@ BalloonCollectionImpl::BalloonCollectionImpl()
 }
 
 BalloonCollectionImpl::~BalloonCollectionImpl() {
+  // We need to remove the panel first because deleting
+  // views that are not owned by parent will not remove
+  // themselves from the parent.
+  panel_.reset();
   STLDeleteElements(&balloons_);
 }
 

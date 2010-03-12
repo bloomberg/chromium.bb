@@ -435,6 +435,9 @@ class View : public AcceleratorTarget {
   // Get the number of child Views.
   int GetChildViewCount() const;
 
+  // Tests if this view has a given view as direct child.
+  bool HasChildView(View* a_view);
+
   // Returns the deepest descendant that contains the specified point.
   virtual View* GetViewForPoint(const gfx::Point& point);
 

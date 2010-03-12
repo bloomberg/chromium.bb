@@ -32,6 +32,7 @@ class PanelBrowserView : public BrowserView,
   virtual string16 GetPanelTitle();
   virtual SkBitmap GetPanelIcon();
   virtual void ClosePanel();
+  virtual void OnPanelStateChanged(PanelController::State state) {}
 
  private:
   // Controls interactions with the window manager for popup panels.

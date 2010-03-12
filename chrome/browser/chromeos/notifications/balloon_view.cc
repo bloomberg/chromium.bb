@@ -42,13 +42,17 @@ BalloonViewImpl::BalloonViewImpl()
       close_button_(NULL),
       options_menu_contents_(NULL),
       options_menu_menu_(NULL),
-      options_menu_button_(NULL) {
+      options_menu_button_(NULL),
+      stale_(false) {
   // This object is not to be deleted by the views hierarchy,
   // as it is owned by the balloon.
   set_parent_owned(false);
 }
 
 BalloonViewImpl::~BalloonViewImpl() {
+  if (html_contents_) {
+    html_contents_->Shutdown();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -229,6 +233,7 @@ void BalloonViewImpl::CreateOptionsMenu() {
 
 void BalloonViewImpl::DelayedClose(bool by_user) {
   html_contents_->Shutdown();
+  html_contents_ = NULL;
   balloon_->OnClose(by_user);
 }
 

@@ -166,16 +166,21 @@ void PanelController::TitleMouseReleased(
 
   mouse_down_ = false;
   if (!dragging_) {
-    WmIpc::Message msg(WmIpc::Message::WM_SET_PANEL_STATE);
-    msg.set_param(0, panel_xid_);
-    msg.set_param(1, expanded_ ? 0 : 1);
-    WmIpc::instance()->SendMessage(msg);
+    SetState(expanded_ ?
+             PanelController::MINIMIZED : PanelController::EXPANDED);
   } else {
     WmIpc::Message msg(WmIpc::Message::WM_NOTIFY_PANEL_DRAG_COMPLETE);
     msg.set_param(0, panel_xid_);
     WmIpc::instance()->SendMessage(msg);
     dragging_ = false;
   }
+}
+
+void PanelController::SetState(State state) {
+  WmIpc::Message msg(WmIpc::Message::WM_SET_PANEL_STATE);
+  msg.set_param(0, panel_xid_);
+  msg.set_param(1, state == EXPANDED);
+  WmIpc::instance()->SendMessage(msg);
 }
 
 bool PanelController::TitleMouseDragged(const views::MouseEvent& event) {
@@ -230,7 +235,11 @@ bool PanelController::PanelClientEvent(GdkEventClient* event) {
   WmIpc::Message msg;
   WmIpc::instance()->DecodeMessage(*event, &msg);
   if (msg.type() == WmIpc::Message::CHROME_NOTIFY_PANEL_STATE) {
-    expanded_ = msg.param(0);
+    bool new_state = msg.param(0);
+    if (expanded_ != new_state) {
+      expanded_ = new_state;
+      delegate_->OnPanelStateChanged(new_state ? EXPANDED : MINIMIZED);
+    }
   }
   return true;
 }

@@ -55,6 +55,16 @@ class BalloonViewImpl : public BalloonView,
   void RepositionToBalloon();
   gfx::Size GetSize() const;
 
+  // True if the notification is stale. False if the notification is new.
+  bool stale() {
+    return stale_;
+  }
+
+  // Makes the notification stable.
+  void make_stale() {
+    stale_ = true;
+  }
+
  private:
   // views::View interface.
   virtual gfx::Size GetPreferredSize() {
@@ -104,7 +114,7 @@ class BalloonViewImpl : public BalloonView,
   scoped_ptr<menus::SimpleMenuModel> options_menu_contents_;
   scoped_ptr<views::Menu2> options_menu_menu_;
   views::MenuButton* options_menu_button_;
-
+  bool stale_;
   NotificationRegistrar notification_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(BalloonViewImpl);
