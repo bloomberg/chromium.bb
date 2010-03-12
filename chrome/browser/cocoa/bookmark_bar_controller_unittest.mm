@@ -555,6 +555,44 @@ TEST_F(BookmarkBarControllerTest, TestAddRemoveAndClear) {
   EXPECT_EQ(2+initial_subview_count, [[buttonView subviews] count]);
 }
 
+// Make sure we don't create too many buttons; we only really need
+// ones that will be visible.
+TEST_F(BookmarkBarControllerTest, TestButtonLimits) {
+  BookmarkModel* model = helper_.profile()->GetBookmarkModel();
+  EXPECT_EQ(0U, [[bar_ buttons] count]);
+
+  // Add one; make sure we see it.
+  const BookmarkNode* parent = model->GetBookmarkBarNode();
+  model->AddURL(parent, parent->GetChildCount(),
+                L"title", GURL("http://www.google.com"));
+  EXPECT_EQ(1U, [[bar_ buttons] count]);
+
+  // Add 30 which we expect to be 'too many'.  Make sure we don't see
+  // 30 buttons.
+  [bar_ clearBookmarkBar];
+  EXPECT_EQ(0U, [[bar_ buttons] count]);
+  for (int i=0; i<30; i++) {
+    model->AddURL(parent, parent->GetChildCount(),
+                  L"title", GURL("http://www.google.com"));
+  }
+  int count = [[bar_ buttons] count];
+  EXPECT_LT(count, 30L);
+
+  // Add 10 more (to the front of the list so the on-screen buttons
+  // would change) and make sure the count stays the same.
+  for (int i=0; i<10; i++) {
+    model->AddURL(parent, 0,  /* index is 0, so front, not end */
+                  L"title", GURL("http://www.google.com"));
+  }
+
+  // Finally, grow the view and make sure the button count goes up.
+  NSRect frame = [[bar_ view] frame];
+  frame.size.width += 600;
+  [[bar_ view] setFrame:frame];
+  int finalcount = [[bar_ buttons] count];
+  EXPECT_GT(finalcount, count);
+}
+
 // Make sure that each button we add marches to the right and does not
 // overlap with the previous one.
 TEST_F(BookmarkBarControllerTest, TestButtonMarch) {
@@ -730,7 +768,7 @@ TEST_F(BookmarkBarControllerTest, TestBuildOffTheSideMenu) {
 
   // Make sure things work when there's nothing. Note that there should always
   // be a blank first menu item.
-  [bar_ buildOffTheSideMenu];
+  [bar_ buildOffTheSideMenuIfNeeded];
   EXPECT_EQ(1, [menu numberOfItems]);
 
   // We add lots of bookmarks. At first, we expect nothing to be added to the
@@ -743,7 +781,7 @@ TEST_F(BookmarkBarControllerTest, TestBuildOffTheSideMenu) {
     model->AddURL(parent, parent->GetChildCount(),
                   L"very wide title",
                   GURL("http://www.foobar.com/"));
-    [bar_ buildOffTheSideMenu];
+    [bar_ buildOffTheSideMenuIfNeeded];
 
     if (num_off_the_side) {
       num_off_the_side++;
@@ -757,9 +795,11 @@ TEST_F(BookmarkBarControllerTest, TestBuildOffTheSideMenu) {
   EXPECT_GE(num_off_the_side, 20);
 
   // Reset, and check that the built menu is "empty" again.
-  [bar_ clearBookmarkBar];
+  const BookmarkNode* parent = model->GetBookmarkBarNode();
+  while (parent->GetChildCount())
+    model->Remove(parent, 0);
   EXPECT_EQ(0U, [[bar_ buttons] count]);
-  [bar_ buildOffTheSideMenu];
+  [bar_ buildOffTheSideMenuIfNeeded];
   EXPECT_EQ(1, [menu numberOfItems]);
 }
 

@@ -187,6 +187,24 @@ willAnimateFromState:(bookmarks::VisualState)oldState
   // but that doesn't use this variable or need a delay so "hover" is
   // the wrong term.
   scoped_nsobject<BookmarkButton> hoverButton_;
+
+  // We save the view width when we add bookmark buttons.  This lets
+  // us avoid a rebuild until we've grown the window bigger than our
+  // initial build.
+  CGFloat savedFrameWidth_;
+
+  // The number of buttons we display in the bookmark bar.  This does
+  // not include the "off the side" chevron or the "Other Bookmarks"
+  // button.  We use this number to determine if we need to display
+  // the chevron, and to know what to place in the chevron's menu.
+  // Since we create everything before doing layout we can't be sure
+  // that all bookmark buttons we create will be visible.  Thus,
+  // [buttons_ count] isn't a definitive check.
+  int bookmarkBarDisplayedButtons_;
+
+  // We only build the off-the-side menu on demand.
+  // We flag a need to rebuild with this variable.
+  BOOL needToRebuildOffTheSideMenu_;
 }
 
 @property(readonly, nonatomic) bookmarks::VisualState visualState;
@@ -287,7 +305,7 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 - (NSMenu *)menuForFolderNode:(const BookmarkNode*)node;
 - (int64)nodeIdFromMenuTag:(int32)tag;
 - (int32)menuTagFromNodeId:(int64)menuid;
-- (void)buildOffTheSideMenu;
+- (void)buildOffTheSideMenuIfNeeded;
 - (NSMenu*)offTheSideMenu;
 - (NSButton*)offTheSideButton;
 - (NSButton*)otherBookmarksButton;

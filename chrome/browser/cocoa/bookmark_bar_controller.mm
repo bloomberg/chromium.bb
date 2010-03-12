@@ -134,6 +134,10 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 - (BackgroundGradientView*)backgroundGradientView;
 - (AnimatableView*)animatableView;
 
+// Create buttons for all items in the given bookmark node tree.
+// Modifies self->buttons_.  Do not add more buttons than will fit on the view.
+- (void)addNodesToButtonList:(const BookmarkNode*)node;
+
 // Puts stuff into the final visual state without animating, stopping a running
 // animation if necessary.
 - (void)finalizeVisualState;
@@ -169,7 +173,6 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 - (int)preferredHeight;
 - (void)addNonBookmarkButtonsToView;
 - (void)addButtonsToView;
-- (void)resizeButtons;
 - (void)centerNoItemsLabel;
 - (NSImage*)getFavIconForNode:(const BookmarkNode*)node;
 - (void)setNodeForBarMenu;
@@ -364,14 +367,9 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 // Check if we should enable or disable the off-the-side chevron.
 // Assumes that buttons which don't fit in the parent view are removed
 // from it.
-//
-// TODO(jrg): when we are smarter about creating buttons (e.g. don't
-// bother creating buttons which aren't visible), we'll have to be
-// smarter here too.
 - (void)showOrHideOffTheSideButton {
-  // Then determine if we'll hide or show it.
-  NSButton* button = [buttons_ lastObject];
-  if (button && ![button superview]) {
+  int bookmarkChildren = bookmarkModel_->GetBookmarkBarNode()->GetChildCount();
+  if (bookmarkChildren > bookmarkBarDisplayedButtons_) {
     [offTheSideButton_ setHidden:NO];
   } else {
     [offTheSideButton_ setHidden:YES];
@@ -384,7 +382,16 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 
 // Called when our controlled frame has changed size.
 - (void)frameDidChange {
-  [self resizeButtons];
+  if (!bookmarkModel_->IsLoaded())
+    return;
+  CGFloat width = NSWidth([[self view] frame]);
+  if (width > savedFrameWidth_) {
+    savedFrameWidth_ = width;
+    [self clearBookmarkBar];
+    [self addNodesToButtonList:bookmarkModel_->GetBookmarkBarNode()];
+    [self updateTheme:[[[self view] window] themeProvider]];
+    [self addButtonsToView];
+  }
   [self positionOffTheSideButton];
   [self addButtonsToView];
   [self showOrHideOffTheSideButton];
@@ -1122,25 +1129,30 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   [self watchForClickOutside:YES];
 }
 
-// Rebuild the off-the-side menu, taking into account which buttons are
-// displayed.
-// TODO(jrg,viettrungluu): only (re)build the menu when necessary.
-// TODO(jrg): if we get smarter such that we don't even bother
-//   creating buttons which aren't visible, we'll need to be smarter
-//   here.
-- (void)buildOffTheSideMenu {
+// Rebuild the off-the-side menu.
+- (void)buildOffTheSideMenuIfNeeded {
   NSMenu* menu = [self offTheSideMenu];
   DCHECK(menu);
+
+  // Only rebuild if needed.  We determine we need a rebuild when the
+  // bookmark bar is cleared of buttons.
+  if (!needToRebuildOffTheSideMenu_)
+    return;
+  needToRebuildOffTheSideMenu_ = YES;
 
   // Remove old menu items (backwards order is as good as any); leave the
   // blank one at position 0 (see menu_button.h).
   for (NSInteger i = [menu numberOfItems] - 1; i >= 1 ; i--)
     [menu removeItemAtIndex:i];
 
-  // Add items corresponding to buttons which aren't displayed.
-  for (BookmarkButton* button in buttons_.get()) {
-    if (![button superview])
-      [self addNode:[button bookmarkNode] toMenu:menu];
+  // Add items corresponding to buttons which aren't displayed.  Since
+  // we build the buttons in the same order as the bookmark bar child
+  // count, we have a clear hint as to where to begin.
+  const BookmarkNode* barNode = bookmarkModel_->GetBookmarkBarNode();
+  for (int i = bookmarkBarDisplayedButtons_;
+       i < barNode->GetChildCount(); i++) {
+    const BookmarkNode* child = barNode->GetChild(i);
+    [self addNode:child toMenu:menu];
   }
 }
 
@@ -1150,10 +1162,10 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 }
 
 // Called by any menus which have set us as their delegate (right now just the
-// off-the-side menu?).
+// off-the-side menu).  This is the trigger for a delayed rebuild.
 - (void)menuNeedsUpdate:(NSMenu*)menu {
   if (menu == [self offTheSideMenu])
-    [self buildOffTheSideMenu];
+    [self buildOffTheSideMenuIfNeeded];
 }
 
 // As a convention we set the menu's delegate to be the button's cell
@@ -1295,6 +1307,8 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   [buttons_ makeObjectsPerformSelector:@selector(removeFromSuperview)];
   [buttons_ removeAllObjects];
   [self clearMenuTagMap];
+  needToRebuildOffTheSideMenu_ = YES;
+  bookmarkBarDisplayedButtons_ = 0;
 }
 
 // Return an autoreleased NSCell suitable for a bookmark button.
@@ -1395,8 +1409,6 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   [self openURL:node->GetURL() disposition:disposition];
 }
 
-// Create buttons for all items in the bookmark node tree.
-//
 // TODO(jrg): write a "build bar" so there is a nice spot for things
 // like the contextual menu which is invoked when not over a
 // bookmark.  On Safari that menu has a "new folder" option.
@@ -1404,12 +1416,18 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   BOOL hideNoItemWarning = node->GetChildCount() > 0;
   [[buttonView_ noItemTextfield] setHidden:hideNoItemWarning];
 
+  CGFloat maxViewX = NSMaxX([[self view] bounds]);
   int xOffset = 0;
   for (int i = 0; i < node->GetChildCount(); i++) {
     const BookmarkNode* child = node->GetChild(i);
 
     NSCell* cell = [self cellForBookmarkNode:child];
     NSRect frame = [self frameForBookmarkButtonFromCell:cell xOffset:&xOffset];
+
+    // Break early if the button is off the end of the parent view.
+    if (NSMinX(frame) >= maxViewX)
+      break;
+
     scoped_nsobject<BookmarkButton>
         button([[BookmarkButton alloc] initWithFrame:frame]);
     DCHECK(button.get());
@@ -1458,41 +1476,18 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 // the window resizes.
 - (void)addButtonsToView {
   NSView* superview = nil;
+  bookmarkBarDisplayedButtons_ = 0;
   for (NSButton* button in buttons_.get()) {
     superview = [button superview];
     if (NSMaxX([button frame]) <= NSMinX([offTheSideButton_ frame])) {
       if (!superview)
         [buttonView_ addSubview:button];
+      bookmarkBarDisplayedButtons_++;
     } else {
       if (superview)
         [button removeFromSuperview];
     }
   }
-}
-
-// Helper for resizeButtons to resize buttons based on a new parent
-// view height.
-- (void)resizeButtonsInArray:(NSArray*)array {
-  NSRect parentBounds = [buttonView_ bounds];
-  CGFloat height = (bookmarks::kBookmarkButtonHeight -
-                    (bookmarks::kBookmarkVerticalPadding*2));
-  for (NSButton* button in array) {
-    NSRect frame = [button frame];
-    frame.size.height = height;
-    [button setFrame:frame];
-  }
-}
-
-// Resize our buttons; the parent view height may have changed.  This
-// applies to all bookmarks, the chevron, and the "Other Bookmarks"
-- (void)resizeButtons {
-  [self resizeButtonsInArray:buttons_.get()];
-  NSMutableArray* array = [NSMutableArray arrayWithObject:offTheSideButton_];
-  // We must handle resize before the bookmarks are loaded.  If not loaded,
-  // we have no otherBookmarksButton_ yet.
-  if (otherBookmarksButton_.get())
-    [array addObject:otherBookmarksButton_.get()];
-  [self resizeButtonsInArray:array];
 }
 
 // Create the button for "Other Bookmarks" on the right of the bar.
@@ -1522,9 +1517,6 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 
   // Now that it's here, move the chevron over.
   [self positionOffTheSideButton];
-
-  // Force it to be the right size, right now.
-  [self resizeButtons];
 }
 
 // TODO(jrg): for now this is brute force.
@@ -1533,12 +1525,12 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   if (!model->IsLoaded())
     return;
   // Else brute force nuke and build.
+  savedFrameWidth_ = NSWidth([[self view] frame]);
   const BookmarkNode* node = model->GetBookmarkBarNode();
   [self clearBookmarkBar];
   [self addNodesToButtonList:node];
   [self createOtherBookmarksButton];
   [self updateTheme:[[[self view] window] themeProvider]];
-  [self resizeButtons];
   [self positionOffTheSideButton];
   [self addNonBookmarkButtonsToView];
   [self addButtonsToView];
