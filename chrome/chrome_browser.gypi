@@ -2313,9 +2313,9 @@
         }],
         ['OS=="linux"', {
           'dependencies': [
+            '../build/linux/system.gyp:dbus-glib',
             # Temporarily disabled while we figure some stuff out.
             # http://code.google.com/p/chromium/issues/detail?id=12351
-            # '../build/linux/system.gyp:dbus-glib',
             # '../build/linux/system.gyp:gnome-keyring',
             '../build/linux/system.gyp:gtk',
             '../build/linux/system.gyp:gtkprint',

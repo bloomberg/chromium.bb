@@ -5,39 +5,20 @@
 #ifndef CHROME_BROWSER_GEOLOCATION_WIFI_DATA_PROVIDER_LINUX_H_
 #define CHROME_BROWSER_GEOLOCATION_WIFI_DATA_PROVIDER_LINUX_H_
 
-// TODO(joth): port to chromium
-#if 0
+#include "chrome/browser/geolocation/wifi_data_provider_common.h"
 
-#include "gears/base/common/common.h"
-#include "gears/base/common/event.h"
-#include "gears/base/common/mutex.h"
-#include "gears/base/common/thread.h"
-#include "gears/geolocation/device_data_provider.h"
-
-class LinuxWifiDataProvider
-    : public WifiDataProviderImplBase,
-      public Thread {
+class WifiDataProviderLinux : public WifiDataProviderCommon {
  public:
-  LinuxWifiDataProvider();
-  virtual ~LinuxWifiDataProvider();
-
-  // WifiDataProviderImplBase implementation
-  virtual bool GetData(WifiData *data);
+  WifiDataProviderLinux();
 
  private:
-  // Thread implementation.
-  virtual void Run();
+  virtual ~WifiDataProviderLinux();
 
-  WifiData wifi_data_;
-  Mutex data_mutex_;
-  // Event signalled to shut down the thread that polls for wifi data.
-  Event stop_event_;
-  // Whether we've successfully completed a scan for WiFi data.
-  bool is_first_scan_complete_;
+  // WifiDataProviderCommon
+  virtual WlanApiInterface* NewWlanApi();
+  virtual PollingPolicyInterface* NewPollingPolicy();
 
-  DISALLOW_COPY_AND_ASSIGN(LinuxWifiDataProvider);
+  DISALLOW_COPY_AND_ASSIGN(WifiDataProviderLinux);
 };
-
-#endif  // 0
 
 #endif  // CHROME_BROWSER_GEOLOCATION_WIFI_DATA_PROVIDER_LINUX_H_

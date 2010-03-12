@@ -28,6 +28,9 @@ class Apple80211Api : public WifiDataProviderCommon::WlanApiInterface {
   Apple80211Api();
   virtual ~Apple80211Api();
 
+  // Must be called before any other interface method. Will return false if the
+  // Apple80211 framework cannot be initialized (e.g. running on post-10.5 OSX),
+  // in which case no other method may be called.
   bool Init();
 
   // WlanApiInterface
@@ -42,6 +45,8 @@ class Apple80211Api : public WifiDataProviderCommon::WlanApiInterface {
   WirelessDetachFunction WirelessDetach_function_;
 
   WifiData wifi_data_;
+
+  DISALLOW_COPY_AND_ASSIGN(Apple80211Api);
 };
 
 Apple80211Api::Apple80211Api()

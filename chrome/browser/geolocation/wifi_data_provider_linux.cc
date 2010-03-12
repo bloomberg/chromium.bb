@@ -2,256 +2,365 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// WiFi card drivers for Linux implement the Wireless Extensions interface.
-// This interface is part of the Linux kernel.
-//
-// Various sets of tools are available to manipulate the Wireless Extensions,
-// of which Wireless Tools is the default implementation. Wireless Tools
-// provides a C++ library (libiw) as well as a set of command line tools
-// (iwconfig, iwlist etc). See
-// http://www.hpl.hp.com/personal/Jean_Tourrilhes/Linux/Tools.html for details.
-//
-// Ideally, we would use libiw to obtain WiFi data. However, Wireless Tools is
-// released under GPL, which is not compatible with Gears. Furthermore, little
-// documentation is available for Wireless Extensions, so replicating libiw
-// without copying it directly would be difficult.
-//
-// We therefore simply invoke iwlist (one of the Wireless Tools command line
-// tools) and parse the output. Sample output is shown below.
-//
-// lo        Interface doesn't support scanning.
-//
-// ath0      Scan completed :
-//           Cell 01 - Address: 00:24:86:11:4C:42
-//                     ESSID:"Test SSID"
-//                     Mode:Master
-//                     Frequency:2.427 GHz (Channel 4)
-//                     Quality=5/94  Signal level=-90 dBm  Noise level=-95 dBm
-//                     Encryption key:off
-//                     Bit Rates:1 Mb/s; 2 Mb/s; 5 Mb/s; 6 Mb/s; 9 Mb/s
-//                               11 Mb/s; 12 Mb/s; 18 Mb/s
-//                     Extra:bcn_int=100
-//           Cell 02 - Address: 00:24:86:11:6F:E2
-//                     ESSID:"Test SSID"
-//                     Mode:Master
-//                     Frequency:2.447 GHz (Channel 8)
-//                     Quality=4/94  Signal level=-91 dBm  Noise level=-95 dBm
-//                     Encryption key:off
-//                     Bit Rates:1 Mb/s; 2 Mb/s; 5 Mb/s; 6 Mb/s; 9 Mb/s
-//                               11 Mb/s; 12 Mb/s; 18 Mb/s
-//                     Extra:bcn_int=100
-//
-// TODO(steveblock): Investigate the possibility of the author of Wireless Tools
-// releasing libiw under a Gears-compatible license.
+// Provides wifi scan API binding for suitable for typical linux distributions.
+// Currently, only the NetworkManager API is used, accessed via D-Bus (in turn
+// accessed via the GLib wrapper).
 
-// TODO(joth): port to chromium
-#if 0
+#include "chrome/browser/geolocation/wifi_data_provider_linux.h"
 
-#include "gears/geolocation/wifi_data_provider_linux.h"
+#include <dbus/dbus-glib.h>
+#include <glib.h>
 
-#include <ctype.h>  // For isxdigit()
-#include <stdio.h>
-#include "gears/base/common/string_utils.h"
-#include "gears/geolocation/wifi_data_provider_common.h"
+#include "base/scoped_ptr.h"
+#include "base/utf_string_conversions.h"
 
-// The time periods, in milliseconds, between successive polls of the wifi data.
-extern const int kDefaultPollingInterval = 10000;  // 10s
-extern const int kNoChangePollingInterval = 120000;  // 2 mins
-extern const int kTwoNoChangePollingInterval = 600000;  // 10 mins
+namespace {
+// The time periods between successive polls of the wifi data.
+const int kDefaultPollingIntervalMilliseconds = 10 * 1000;  // 10s
+const int kNoChangePollingIntervalMilliseconds = 2 * 60 * 1000;  // 2 mins
+const int kTwoNoChangePollingIntervalMilliseconds = 10 * 60 * 1000;  // 10 mins
 
-// Local function
-static bool GetAccessPointData(WifiData::AccessPointDataSet *access_points);
+const char kNetworkManagerServiceName[] = "org.freedesktop.NetworkManager";
+const char kNetworkManagerPath[] = "/org/freedesktop/NetworkManager";
+const char kNetworkManagerInterface[] = "org.freedesktop.NetworkManager";
+
+// From http://projects.gnome.org/NetworkManager/developers/spec.html
+enum { NM_DEVICE_TYPE_WIFI = 2 };
+
+// Utility wrappers to make various GLib & DBus structs into scoped objects.
+class ScopedGPtrArrayFree {
+ public:
+  void operator()(GPtrArray* x) const {
+    if (x)
+      g_ptr_array_free(x, TRUE);
+  }
+};
+// Use ScopedGPtrArrayPtr as if it were scoped_ptr<GPtrArray>
+typedef scoped_ptr_malloc<GPtrArray, ScopedGPtrArrayFree> ScopedGPtrArrayPtr;
+
+class ScopedGObjectFree {
+ public:
+  void operator()(void* x) const {
+    if (x)
+      g_object_unref(x);
+  }
+};
+// Use ScopedDBusGProxyPtr as if it were scoped_ptr<DBusGProxy>
+typedef scoped_ptr_malloc<DBusGProxy, ScopedGObjectFree> ScopedDBusGProxyPtr;
+
+// Use ScopedGValue::v as an instance of GValue with automatic cleanup.
+class ScopedGValue {
+ public:
+  ScopedGValue()
+      : v(empty_gvalue()) {
+  }
+  ~ScopedGValue() {
+    g_value_unset(&v);
+  }
+  static GValue empty_gvalue() {
+    GValue value = {0};
+    return value;
+  }
+
+  GValue v;
+};
+
+// Wifi API binding to NetworkManager, to allow reuse of the polling behavior
+// defined in WifiDataProviderCommon.
+// TODO(joth): NetworkManager also allows for notification based handling,
+// however this will require reworking of the threading code to run a GLib
+// event loop (GMainLoop).
+class NetworkManagerWlanApi : public WifiDataProviderCommon::WlanApiInterface {
+ public:
+  NetworkManagerWlanApi();
+  ~NetworkManagerWlanApi();
+
+  // Must be called before any other interface method. Will return false if the
+  // NetworkManager session cannot be created (e.g. not present on this distro),
+  // in which case no other method may be called.
+  bool Init();
+
+  // WifiDataProviderCommon::WlanApiInterface
+  bool GetAccessPointData(WifiData::AccessPointDataSet* data);
+
+ private:
+  // Checks if the last dbus call returned an error.  If it did, logs the error
+  // message, frees it and returns true.
+  // This must be called after every dbus call that accepts |&error_|
+  bool CheckError();
+
+  // Enumerates the list of available network adapter devices known to
+  // NetworkManager. Ownership of the array (and contained objects) is returned
+  // to the caller.
+  GPtrArray* GetAdapterDeviceList();
+
+  // Given the NetworkManager path to a wireless adapater, dumps the wifi scan
+  // results and appends them to |data|. Returns false if a fatal error is
+  // encountered such that the data set could not be populated.
+  bool GetAccessPointsForAdapter(const gchar* adapter_path,
+                                 WifiData::AccessPointDataSet* data);
+
+  // Internal method used by |GetAccessPointsForAdapter|, given a wifi access
+  // point proxy retrieves the named property into |value_out|. Returns false if
+  // the property could not be read, or is not of type |expected_gvalue_type|.
+  bool GetAccessPointProperty(DBusGProxy* proxy, const char* property_name,
+                              int expected_gvalue_type, GValue* value_out);
+
+  // Error from the last dbus call.  NULL when there's no error.  Freed and
+  // cleared by CheckError().
+  GError* error_;
+  // Connection to the dbus system bus.
+  DBusGConnection* connection_;
+  // Proxy to the network maanger dbus service.
+  ScopedDBusGProxyPtr proxy_;
+
+  DISALLOW_COPY_AND_ASSIGN(NetworkManagerWlanApi);
+};
+
+// Convert a wifi frequency to the corresponding channel. Adapted from
+// geolocaiton/wifilib.cc in googleclient (internal to google).
+int frquency_in_khz_to_channel(int frequency_khz) {
+  if (frequency_khz >= 2412000 && frequency_khz <= 2472000)  // Channels 1-13.
+    return (frequency_khz - 2407000) / 5000;
+  if (frequency_khz == 2484000)
+    return 14;
+  if (frequency_khz > 5000000 && frequency_khz < 6000000)  // .11a bands.
+    return (frequency_khz - 5000000) / 5000;
+  // Ignore everything else.
+  return AccessPointData().channel;  // invalid channel
+}
+
+NetworkManagerWlanApi::NetworkManagerWlanApi()
+    : error_(NULL), connection_(NULL) {
+}
+
+NetworkManagerWlanApi::~NetworkManagerWlanApi() {
+  proxy_.reset();
+  if (connection_) {
+    dbus_g_connection_unref(connection_);
+  }
+  DCHECK(!error_) << "Missing a call to CheckError() to clear |error_|";
+}
+
+bool NetworkManagerWlanApi::Init() {
+  // Chrome DLL init code handles initializing the thread system, so rather than
+  // get caught up with that nonsense here, lets just assert our requirement.
+  CHECK(g_thread_supported());
+
+  // We should likely do this higher up too, the docs say it must only be done
+  // once but there's no way to know if it already was or not.
+  dbus_g_thread_init();
+
+  // Get a connection to the session bus.
+  connection_ = dbus_g_bus_get(DBUS_BUS_SYSTEM, &error_);
+  if (CheckError())
+    return false;
+  DCHECK(connection_);
+
+  proxy_.reset(dbus_g_proxy_new_for_name(connection_,
+                                         kNetworkManagerServiceName,
+                                         kNetworkManagerPath,
+                                         kNetworkManagerInterface));
+  DCHECK(proxy_.get());
+
+  // Validate the proxy object by checking we can enumerate devices.
+  ScopedGPtrArrayPtr device_list(GetAdapterDeviceList());
+  return !!device_list.get();
+}
+
+bool NetworkManagerWlanApi::GetAccessPointData(
+    WifiData::AccessPointDataSet* data) {
+  ScopedGPtrArrayPtr device_list(GetAdapterDeviceList());
+  if (device_list == NULL) {
+    DLOG(WARNING) << "Could not enumerate access points";
+    return false;
+  }
+  int success_count = 0;
+  int fail_count = 0;
+
+  // Iterate the devices, getting APs for each wireless adapter found
+  for (guint i = 0; i < device_list->len; i++) {
+    const gchar* device_path =
+        reinterpret_cast<const gchar*>(g_ptr_array_index(device_list, i));
+
+    ScopedDBusGProxyPtr device_properties_proxy(dbus_g_proxy_new_from_proxy(
+        proxy_.get(), DBUS_INTERFACE_PROPERTIES, device_path));
+    ScopedGValue device_type_g_value;
+    dbus_g_proxy_call(device_properties_proxy.get(), "Get",  &error_,
+                      G_TYPE_STRING, "org.freedesktop.NetworkManager.Device",
+                      G_TYPE_STRING, "DeviceType",
+                      G_TYPE_INVALID,
+                      G_TYPE_VALUE,   &device_type_g_value.v,
+                      G_TYPE_INVALID);
+    if (CheckError())
+      continue;
+
+    const guint device_type = g_value_get_uint(&device_type_g_value.v);
+
+    if (device_type == NM_DEVICE_TYPE_WIFI) {  // Found a wlan adapter
+      if (GetAccessPointsForAdapter(device_path, data))
+        ++success_count;
+      else
+        ++fail_count;
+    }
+  }
+  // At least one successfull scan overrides any other adapter reporting error.
+  return success_count || fail_count == 0;
+}
+
+bool NetworkManagerWlanApi::CheckError() {
+  if (error_) {
+    LOG(ERROR) << "Failed to complete NetworkManager call: " << error_->message;
+    g_error_free(error_);
+    error_ = NULL;
+    return true;
+  }
+  return false;
+}
+
+GPtrArray* NetworkManagerWlanApi::GetAdapterDeviceList() {
+  GPtrArray* device_list = NULL;
+  dbus_g_proxy_call(proxy_.get(), "GetDevices", &error_,
+                    G_TYPE_INVALID,
+                    dbus_g_type_get_collection("GPtrArray",
+                                               DBUS_TYPE_G_OBJECT_PATH),
+                    &device_list,
+                    G_TYPE_INVALID);
+  if (CheckError())
+    return NULL;
+  return device_list;
+}
+
+bool NetworkManagerWlanApi::GetAccessPointsForAdapter(
+    const gchar* adapter_path, WifiData::AccessPointDataSet* data) {
+  DCHECK(proxy_.get());
+
+  // Create a proxy object for this wifi adapter, and ask it to do a scan
+  // (or at least, dump its scan results).
+  ScopedDBusGProxyPtr wifi_adapter_proxy(dbus_g_proxy_new_from_proxy(
+      proxy_.get(), "org.freedesktop.NetworkManager.Device.Wireless",
+      adapter_path));
+
+  GPtrArray* ap_list_raw = NULL;
+  // Enumerate the access points for this adapter.
+  dbus_g_proxy_call(wifi_adapter_proxy.get(), "GetAccessPoints",  &error_,
+                    G_TYPE_INVALID,
+                    dbus_g_type_get_collection("GPtrArray",
+                                               DBUS_TYPE_G_OBJECT_PATH),
+                    &ap_list_raw,
+                    G_TYPE_INVALID);
+  ScopedGPtrArrayPtr ap_list(ap_list_raw);  // Takes ownership.
+  ap_list_raw = NULL;
+
+  if (CheckError())
+    return false;
+
+  DLOG(INFO) << "Wireless adapter " << adapter_path << " found "
+             << ap_list->len << " access points.";
+
+  for (guint i = 0; i < ap_list->len; i++) {
+    const gchar* ap_path =
+        reinterpret_cast<const gchar*>(g_ptr_array_index(ap_list, i));
+    ScopedDBusGProxyPtr access_point_proxy(dbus_g_proxy_new_from_proxy(
+        proxy_.get(), DBUS_INTERFACE_PROPERTIES, ap_path));
+
+    AccessPointData access_point_data;
+    {  // Read SSID.
+      ScopedGValue ssid_g_value;
+      if (!GetAccessPointProperty(access_point_proxy.get(), "Ssid",
+                                  G_TYPE_BOXED, &ssid_g_value.v))
+        continue;
+      const GArray* ssid =
+          reinterpret_cast<const GArray*>(g_value_get_boxed(&ssid_g_value.v));
+      UTF8ToUTF16(ssid->data, ssid->len, &access_point_data.ssid);
+    }
+
+    { // Read the mac address
+      ScopedGValue mac_g_value;
+      if (!GetAccessPointProperty(access_point_proxy.get(), "HwAddress",
+                                  G_TYPE_STRING, &mac_g_value.v))
+        continue;
+      std::string mac = g_value_get_string(&mac_g_value.v);
+      ReplaceSubstringsAfterOffset(&mac, 0U, ":", "");
+      std::vector<uint8> mac_bytes;
+      if (!HexStringToBytes(mac, &mac_bytes) || mac_bytes.size() != 6) {
+        DLOG(WARNING) << "Can't parse mac address (found " << mac_bytes.size()
+                      << " bytes) so using raw string: " << mac;
+        access_point_data.mac_address = UTF8ToUTF16(mac);
+      } else {
+        access_point_data.mac_address = MacAddressAsString16(&mac_bytes[0]);
+      }
+    }
+
+    {  // Read signal strength.
+      ScopedGValue signal_g_value;
+      if (!GetAccessPointProperty(access_point_proxy.get(), "Strength",
+                                  G_TYPE_UCHAR, &signal_g_value.v))
+        continue;
+      // Convert strength as a percentage into dBs.
+      access_point_data.radio_signal_strength =
+          -100 + g_value_get_uchar(&signal_g_value.v) / 2;
+    }
+
+    { // Read the channel
+      ScopedGValue freq_g_value;
+      if (!GetAccessPointProperty(access_point_proxy.get(), "Frequency",
+                                  G_TYPE_UINT, &freq_g_value.v))
+        continue;
+      // NetworkManager returns frequency in MHz.
+      access_point_data.channel =
+          frquency_in_khz_to_channel(g_value_get_uint(&freq_g_value.v) * 1000);
+    }
+    data->insert(access_point_data);
+  }
+  return true;
+}
+
+bool NetworkManagerWlanApi::GetAccessPointProperty(DBusGProxy* proxy,
+                                                   const char* property_name,
+                                                   int expected_gvalue_type,
+                                                   GValue* value_out) {
+  dbus_g_proxy_call(proxy, "Get", &error_,
+                    G_TYPE_STRING, "org.freedesktop.NetworkManager.AccessPoint",
+                    G_TYPE_STRING, property_name,
+                    G_TYPE_INVALID,
+                    G_TYPE_VALUE, value_out,
+                    G_TYPE_INVALID);
+  if (CheckError())
+    return false;
+  if (!G_VALUE_HOLDS(value_out, expected_gvalue_type)) {
+    DLOG(WARNING) << "Property " << property_name << " unexptected type "
+                  << G_VALUE_TYPE(value_out);
+    return false;
+  }
+  return true;
+}
+
+}  // namespace
 
 // static
 template<>
-WifiDataProviderImplBase *WifiDataProvider::DefaultFactoryFunction() {
-  return new LinuxWifiDataProvider();
+WifiDataProviderImplBase* WifiDataProvider::DefaultFactoryFunction() {
+  return new WifiDataProviderLinux();
 }
 
-
-LinuxWifiDataProvider::LinuxWifiDataProvider()
-    : is_first_scan_complete_(false) {
-  Start();
+WifiDataProviderLinux::WifiDataProviderLinux() {
 }
 
-LinuxWifiDataProvider::~LinuxWifiDataProvider() {
-  stop_event_.Signal();
-  Join();
+WifiDataProviderLinux::~WifiDataProviderLinux() {
 }
 
-bool LinuxWifiDataProvider::GetData(WifiData *data) {
-  DCHECK(data);
-  MutexLock lock(&data_mutex_);
-  *data = wifi_data_;
-  // If we've successfully completed a scan, indicate that we have all of the
-  // data we can get.
-  return is_first_scan_complete_;
+WifiDataProviderCommon::WlanApiInterface*
+WifiDataProviderLinux::NewWlanApi() {
+  scoped_ptr<NetworkManagerWlanApi> wlan_api(new NetworkManagerWlanApi);
+  if (wlan_api->Init())
+    return wlan_api.release();
+  return NULL;
 }
 
-// Thread implementation
-void LinuxWifiDataProvider::Run() {
-  // Regularly get the access point data.
-  int polling_interval = kDefaultPollingInterval;
-  do {
-    WifiData new_data;
-    if (GetAccessPointData(&new_data.access_point_data)) {
-      bool update_available;
-      data_mutex_.Lock();
-      update_available = wifi_data_.DiffersSignificantly(new_data);
-      wifi_data_ = new_data;
-      data_mutex_.Unlock();
-      polling_interval =
-          UpdatePollingInterval(polling_interval, update_available);
-      if (update_available) {
-        is_first_scan_complete_ = true;
-        NotifyListeners();
-      }
-    }
-  } while (!stop_event_.WaitWithTimeout(polling_interval));
+PollingPolicyInterface* WifiDataProviderLinux::NewPollingPolicy() {
+  return new GenericPollingPolicy<kDefaultPollingIntervalMilliseconds,
+                                  kNoChangePollingIntervalMilliseconds,
+                                  kTwoNoChangePollingIntervalMilliseconds>;
 }
 
-// Local functions
-
-static bool IsValidMacAddress(const char *mac_address) {
-  return isxdigit(mac_address[0]) &&
-         isxdigit(mac_address[1]) &&
-         mac_address[2] == ':' &&
-         isxdigit(mac_address[3]) &&
-         isxdigit(mac_address[4]) &&
-         mac_address[5] == ':' &&
-         isxdigit(mac_address[6]) &&
-         isxdigit(mac_address[7]) &&
-         mac_address[8] == ':' &&
-         isxdigit(mac_address[9]) &&
-         isxdigit(mac_address[10]) &&
-         mac_address[11] == ':' &&
-         isxdigit(mac_address[12]) &&
-         isxdigit(mac_address[13]) &&
-         mac_address[14] == ':' &&
-         isxdigit(mac_address[15]) &&
-         isxdigit(mac_address[16]);
-}
-
-static void ParseLine(const std::string &line,
-                      const std::string &mac_address_string,
-                      const std::string &ssid_string,
-                      const std::string &signal_strength_string,
-                      AccessPointData *access_point_data) {
-  // Currently we get only MAC address, SSID and signal strength.
-  // TODO(steveblock): Work out how to get age, channel and signal-to-noise.
-  std::string::size_type index;
-  if ((index = line.find(mac_address_string)) != std::string::npos) {
-    // MAC address
-    if (IsValidMacAddress(&line.at(index + mac_address_string.size()))) {
-      UTF8ToString16(&line.at(index + mac_address_string.size()),
-                     17,  // XX:XX:XX:XX:XX:XX
-                     &access_point_data->mac_address);
-    }
-  } else if ((index = line.find(ssid_string)) != std::string::npos) {
-    // SSID
-    // The string should be quoted.
-    std::string::size_type start = index + ssid_string.size() + 1;
-    std::string::size_type end = line.find('\"', start);
-    // If we can't find a trailing quote, something has gone wrong.
-    if (end != std::string::npos) {
-      UTF8ToString16(&line.at(start), end - start, &access_point_data->ssid);
-    }
-  } else if ((index = line.find(signal_strength_string)) != std::string::npos) {
-    // Signal strength
-    // iwlist will convert to dBm if it can. If it has failed to do so, we can't
-    // make use of the data.
-    if (line.find("dBm") != std::string::npos) {
-      // atoi will ignore trailing non-numeric characters
-      access_point_data->radio_signal_strength =
-          atoi(&line.at(index + signal_strength_string.size()));
-    }
-  }
-}
-
-static void ParseAccessPoint(const std::string &text,
-                             const std::string &mac_address_string,
-                             const std::string &ssid_string,
-                             const std::string &signal_strength_string,
-                             AccessPointData *access_point_data) {
-  // Split response into lines to aid parsing.
-  std::string::size_type start = 0;
-  std::string::size_type end;
-  do {
-    end = text.find('\n', start);
-    std::string::size_type length = (end == std::string::npos) ?
-                                    std::string::npos : end - start;
-    ParseLine(text.substr(start, length),
-              mac_address_string,
-              ssid_string,
-              signal_strength_string,
-              access_point_data);
-    start = end + 1;
-  } while (end != std::string::npos);
-}
-
-// Issues the specified command, and parses the response. Data for each access
-// point is separated by the given delimiter. Within each block of data, the
-// repsonse is split into lines and data is extracted by searching for the MAC
-// address, SSID and signal strength strings.
-bool IssueCommandAndParseResult(const char *command,
-                                const char *delimiter,
-                                const std::string &mac_address_string,
-                                const std::string &ssid_string,
-                                const std::string &signal_strength_string,
-                                WifiData::AccessPointDataSet *access_points) {
-  // Open pipe in read mode.
-  FILE *result_pipe = popen(command, "r");
-  if (result_pipe == NULL) {
-    LOG(("IssueCommand(): Failed to open pipe.\n"));
-    return false;
-  }
-
-  // Read results of command.
-  static const int kBufferSize = 1024;
-  char buffer[kBufferSize];
-  size_t bytes_read;
-  std::string result;
-  do {
-    bytes_read = fread(buffer, 1, kBufferSize, result_pipe);
-    result.append(buffer, bytes_read);
-  } while (static_cast<int>(bytes_read) == kBufferSize);
-  pclose(result_pipe);
-
-
-  // Parse results.
-  DCHECK(access_points);
-  access_points->clear();
-  std::string::size_type start = result.find(delimiter);
-  while (start != std::string::npos) {
-    std::string::size_type end = result.find(delimiter, start + 1);
-    std::string::size_type length = (end == std::string::npos) ?
-                                    std::string::npos : end - start;
-    AccessPointData access_point_data;
-    ParseAccessPoint(result.substr(start, length),
-                     mac_address_string,
-                     ssid_string,
-                     signal_strength_string,
-                     &access_point_data);
-    access_points->insert(access_point_data);
-    start = end;
-  }
-
-  return !access_points->empty();
-}
-
-static bool GetAccessPointData(WifiData::AccessPointDataSet *access_points) {
-  return IssueCommandAndParseResult("iwlist scan 2> /dev/null",
-                                    "Cell ",
-                                    "Address: ",
-                                    "ESSID:",
-                                    "Signal level=",
-                                    access_points) ||
-         IssueCommandAndParseResult("iwconfig 2> /dev/null",
-                                    "ESSID:\"",
-                                    "Access Point: ",
-                                    "ESSID:",
-                                    "Signal level=",
-                                    access_points);
-}
-
-#endif  // 0
