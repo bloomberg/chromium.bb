@@ -114,7 +114,15 @@ bool FormManager::FillForm(const FormData& form) {
     // Form loop.
     for (std::vector<FormElement*>::iterator form_iter = iter->second.begin();
          form_iter != iter->second.end(); ++form_iter) {
-      if ((*form_iter)->form_element.name() == form.name) {
+      // TODO(dhollowa): matching on form name here which is not guaranteed to
+      // be unique for the page, nor is it guaranteed to be non-empty.  Need to
+      // find a way to uniquely identify the form cross-process.
+      // http://crbug.com/37990 test file sample8.html.
+      // Also note that WebString() == WebString(string16()) does not seem to
+      // evaluate to |true| for some reason TBD, so forcing to string16.
+      string16 element_name((*form_iter)->form_element.name());
+      if (element_name == form.name &&
+          (*form_iter)->input_elements.size() == form.elements.size()) {
         form_element = *form_iter;
         break;
       }
