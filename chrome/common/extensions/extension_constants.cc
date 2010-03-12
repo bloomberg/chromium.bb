@@ -11,6 +11,7 @@ const wchar_t* kApp = L"app";
 const wchar_t* kAppExtent = L"extent";
 const wchar_t* kAppLaunchUrl = L"launch.url";
 const wchar_t* kAppLaunchWindowType = L"launch.window_type";
+const wchar_t* kAppOrigin = L"origin";
 const wchar_t* kBackground = L"background_page";
 const wchar_t* kBrowserAction = L"browser_action";
 const wchar_t* kChromeURLOverrides = L"chrome_url_overrides";
@@ -74,6 +75,7 @@ const char* kWindowTypePanel = "panel";
 // printf because we want to unit test them and scanf is hard to make
 // cross-platform.
 namespace extension_manifest_errors {
+const char* kAppsDisabled = "Apps are disabled.";
 const char* kChromeVersionTooLow =
     "This extension requires * version * or greater.";
 const char* kInvalidAllFrames =
@@ -85,6 +87,9 @@ const char* kInvalidAppLaunchUrl =
     "Required value 'app.launch.url' is missing or invalid.";
 const char* kInvalidAppLaunchWindowType =
     "Invalid value for 'app.launch.window_type'.";
+const char* kInvalidAppOrigin =
+    "Invalid value for 'app.origin'. Value must be a URL of the form "
+    "scheme://host[:port]/ where scheme is http or https.";
 const char* kInvalidBrowserAction =
     "Invalid value for 'browser_action'.";
 const char* kInvalidChromeURLOverrides =

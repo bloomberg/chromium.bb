@@ -274,6 +274,58 @@ TEST(ExtensionTest, InitFromValueInvalid) {
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
   EXPECT_TRUE(MatchPatternASCII(error, errors::kChromeVersionTooLow));
 #endif
+
+  // Test invalid app.
+  input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
+  input_value->Set(keys::kApp, Value::CreateIntegerValue(42));
+  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
+  EXPECT_EQ(errors::kInvalidApp, error);
+
+  // Test invalid launch URLs.
+  DictionaryValue* app = new DictionaryValue();
+  input_value->Set(keys::kApp, app);
+
+  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
+  EXPECT_EQ(errors::kInvalidAppLaunchUrl, error);
+
+  Value* invalid_launch_urls[] = {
+    Value::CreateStringValue(""),
+    Value::CreateIntegerValue(42),
+    Value::CreateStringValue("foobar")
+  };
+
+  for (size_t i = 0; i < arraysize(invalid_launch_urls); ++i) {
+    app->Set(keys::kAppLaunchUrl, invalid_launch_urls[i]);
+    error.clear();
+    EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
+    EXPECT_EQ(errors::kInvalidAppLaunchUrl, error);
+  }
+
+  // Test valid launch URL.
+  app->Set(keys::kAppLaunchUrl,
+           Value::CreateStringValue("http://www.google.com/index.html"));
+  EXPECT_TRUE(extension.InitFromValue(*input_value, true, &error));
+
+  // Test invalid app origins.
+  Value* invalid_origins[] = {
+    Value::CreateStringValue(""),
+    Value::CreateIntegerValue(42),
+    Value::CreateStringValue("foobar"),
+    Value::CreateStringValue("file:///c:/foo.txt"),
+    Value::CreateStringValue("ftp://www.google.com/")
+  };
+
+  for (size_t i = 0; i < arraysize(invalid_origins); ++i) {
+    app->Set(keys::kAppOrigin, invalid_origins[i]);
+    error.clear();
+    EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
+    EXPECT_EQ(errors::kInvalidAppOrigin, error);
+  }
+
+  // Test valid origin.
+  app->Set(keys::kAppOrigin,
+           Value::CreateStringValue("http://www.google.com/"));
+  EXPECT_TRUE(extension.InitFromValue(*input_value, true, &error));
 }
 
 TEST(ExtensionTest, InitFromValueValid) {

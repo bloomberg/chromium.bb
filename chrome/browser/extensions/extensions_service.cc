@@ -692,6 +692,17 @@ void ExtensionsService::OnExtensionLoaded(Extension* extension,
   // The extension is now loaded, remove its data from unloaded extension map.
   unloaded_extension_paths_.erase(extension->id());
 
+  if (extension->IsApp() &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExtensionApps)) {
+    ReportExtensionLoadError(extension->path(), errors::kAppsDisabled,
+                             NotificationType::EXTENSION_INSTALL_ERROR,
+                             true);  // be noisy
+    return;
+  }
+
+  // TODO(aa): Need to re-evaluate this branch. Does this still make sense now
+  // that extensions are enabled by default?
   if (extensions_enabled() ||
       extension->IsTheme() ||
       extension->location() == Extension::LOAD ||

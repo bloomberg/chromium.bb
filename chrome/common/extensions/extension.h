@@ -280,6 +280,15 @@ class Extension {
     return chrome_url_overrides_;
   }
 
+  // App stuff.
+  const URLPatternList& app_extent() const { return app_extent_; }
+  const GURL& app_launch_url() const { return app_launch_url_; }
+  bool IsApp() const { return !app_launch_url_.is_empty(); }
+  AppLaunchWindowType app_launch_window_type() {
+    return app_launch_window_type_;
+  }
+  const GURL& app_origin() const { return app_origin_; }
+
   // Runtime data:
   // Put dynamic data about the state of a running extension below.
 
@@ -293,14 +302,6 @@ class Extension {
   // being upgraded.
   bool being_upgraded() const { return being_upgraded_; }
   void set_being_upgraded(bool value) { being_upgraded_ = value; }
-
-  // App stuff.
-  const URLPatternList& app_extent() const { return app_extent_; }
-  const GURL& app_launch_url() const { return app_launch_url_; }
-  bool IsApp() const { return !app_launch_url_.is_empty(); }
-  AppLaunchWindowType app_launch_window_type() {
-    return app_launch_window_type_;
-  }
 
  private:
   // Helper method that loads a UserScript object from a
@@ -440,6 +441,10 @@ class Extension {
 
   // The type of window to start when the application is launched.
   AppLaunchWindowType app_launch_window_type_;
+
+  // The web security origin associated with the app. This origin will be
+  // granted the permissions the app requests.
+  GURL app_origin_;
 
   // Runtime data:
 

@@ -12,6 +12,7 @@ namespace extension_manifest_keys {
   extern const wchar_t* kAppExtent;
   extern const wchar_t* kAppLaunchUrl;
   extern const wchar_t* kAppLaunchWindowType;
+  extern const wchar_t* kAppOrigin;
   extern const wchar_t* kBackground;
   extern const wchar_t* kBrowserAction;
   extern const wchar_t* kMinimumChromeVersion;
@@ -73,6 +74,7 @@ namespace extension_manifest_values {
 
 // Error messages returned from Extension::InitFromValue().
 namespace extension_manifest_errors {
+  extern const char* kAppsDisabled;
   extern const char* kChromeVersionTooLow;
   extern const char* kInvalidAllFrames;
   extern const char* kInvalidApp;
@@ -80,6 +82,7 @@ namespace extension_manifest_errors {
   extern const char* kInvalidAppExtentPattern;
   extern const char* kInvalidAppLaunchUrl;
   extern const char* kInvalidAppLaunchWindowType;
+  extern const char* kInvalidAppOrigin;
   extern const char* kInvalidBackground;
   extern const char* kInvalidBrowserAction;
   extern const char* kInvalidChromeURLOverrides;

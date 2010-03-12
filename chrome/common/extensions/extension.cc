@@ -495,12 +495,6 @@ bool Extension::ContainsNonAppKeys(const DictionaryValue& source) {
 }
 
 bool Extension::LoadAppHelper(const DictionaryValue* app, std::string* error) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableExtensionApps)) {
-    *error = errors::kInvalidApp;
-    return false;
-  }
-
   // launch URL
   std::string launch_url_spec;
   if (!app->GetString(keys::kAppLaunchUrl, &launch_url_spec)) {
@@ -554,6 +548,36 @@ bool Extension::LoadAppHelper(const DictionaryValue* app, std::string* error) {
       }
       app_extent_.push_back(pattern);
     }
+  }
+
+  if (app->HasKey(keys::kAppOrigin)) {
+    std::string origin_string;
+    if (!app->GetString(keys::kAppOrigin, &origin_string)) {
+      *error = errors::kInvalidAppOrigin;
+      return false;
+    }
+
+    // Origin must be a valid URL.
+    GURL origin_gurl(origin_string);
+    if (!origin_gurl.is_valid() || origin_gurl.is_empty()) {
+      *error = errors::kInvalidAppOrigin;
+      return false;
+    }
+
+    // Origins can only be http or https.
+    if (!origin_gurl.SchemeIs(chrome::kHttpScheme) &&
+        !origin_gurl.SchemeIs(chrome::kHttpsScheme)) {
+      *error = errors::kInvalidAppOrigin;
+      return false;
+    }
+
+    // Check that the origin doesn't include any extraneous information.
+    if (origin_gurl.GetOrigin() != origin_gurl) {
+      *error = errors::kInvalidAppOrigin;
+      return false;
+    }
+
+    app_origin_ = origin_gurl;
   }
 
   return true;
