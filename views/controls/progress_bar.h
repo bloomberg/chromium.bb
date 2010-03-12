@@ -1,0 +1,82 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef VIEWS_CONTROLS_PROGRESS_BAR_H_
+#define VIEWS_CONTROLS_PROGRESS_BAR_H_
+
+#include "views/view.h"
+
+namespace gfx {
+class Canvas;
+class Point;
+class Size;
+}
+
+namespace views {
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// ProgressBar class
+//
+// A progress bar is a control that indicates progress visually.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+class ProgressBar : public View {
+ public:
+  // Creates a new progress bar with progress zero.
+  ProgressBar();
+
+  // Creates a new progress bar with specified progress.
+  explicit ProgressBar(double progress);
+
+  virtual ~ProgressBar();
+
+  // Overridden to return preferred size of the progress bar.
+  virtual gfx::Size GetPreferredSize();
+
+  // Returns views/ProgressBar.
+  virtual std::string GetClassName() const;
+
+  // Overridden to paint
+  virtual void Paint(gfx::Canvas* canvas);
+
+  // Set and get the progress bar progress in range [0, 1].
+  virtual void SetProgress(double progress);
+  virtual double GetProgress() const;
+
+  // Sets the tooltip text.  Default behavior for a progress bar is to show
+  // no tooltip on mouse hover. Calling this lets you set a custom tooltip.
+  // To revert to default behavior, call this with an empty string.
+  virtual void SetTooltipText(const std::wstring& tooltip_text);
+
+  // Gets the tooltip text if has been specified with SetTooltipText().
+  virtual bool GetTooltipText(const gfx::Point& p, std::wstring* tooltip);
+
+  // Sets the enabled state.
+  virtual void SetEnabled(bool enabled);
+
+  // Accessibility accessors, overridden from View.
+  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+  virtual bool GetAccessibleName(std::wstring* name);
+  virtual bool GetAccessibleState(AccessibilityTypes::State* state);
+
+ private:
+  void Init(double progress);
+
+  // Progress in range [0, 1].
+  double progress_;
+
+  // Tooltip text.
+  std::wstring tooltip_text_;
+
+  // The view class name.
+  static const char kViewClassName[];
+
+  DISALLOW_COPY_AND_ASSIGN(ProgressBar);
+};
+
+}  // namespace views
+
+#endif  // VIEWS_CONTROLS_PROGRESS_BAR_H_

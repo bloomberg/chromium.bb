@@ -153,6 +153,8 @@
         'controls/native/native_view_host_win.cc',
         'controls/native/native_view_host_win.h',
         'controls/native/native_view_host_wrapper.h',
+	'controls/progress_bar.h',
+	'controls/progress_bar.cc',
         'controls/resize_gripper.cc',
         'controls/resize_gripper.h',
         'controls/scroll_view.cc',
