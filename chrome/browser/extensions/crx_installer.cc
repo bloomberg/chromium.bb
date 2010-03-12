@@ -32,61 +32,12 @@ namespace {
   }
 }
 
-void CrxInstaller::Start(const FilePath& crx_path,
-                         const FilePath& install_directory,
-                         Extension::Location install_source,
-                         const std::string& expected_id,
-                         bool delete_source,
-                         bool allow_privilege_increase,
-                         ExtensionsService* frontend,
-                         ExtensionInstallUI* client) {
-  // Note: This object manages its own lifetime.
-  scoped_refptr<CrxInstaller> installer(
-      new CrxInstaller(crx_path, install_directory, delete_source, frontend,
-                       client));
-
-  installer->install_source_ = install_source;
-  installer->expected_id_ = expected_id;
-  installer->allow_privilege_increase_ = allow_privilege_increase;
-
-  scoped_refptr<SandboxedExtensionUnpacker> unpacker(
-      new SandboxedExtensionUnpacker(
-          installer->source_file_,
-          g_browser_process->resource_dispatcher_host(),
-          installer.get()));
-
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
-      NewRunnableMethod(
-          unpacker.get(), &SandboxedExtensionUnpacker::Start));
-}
-
-void CrxInstaller::InstallUserScript(const FilePath& source_file,
-                                     const GURL& original_url,
-                                     const FilePath& install_directory,
-                                     bool delete_source,
-                                     ExtensionsService* frontend,
-                                     ExtensionInstallUI* client) {
-  scoped_refptr<CrxInstaller> installer(
-      new CrxInstaller(source_file, install_directory, delete_source, frontend,
-                       client));
-  installer->original_url_ = original_url;
-
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
-      NewRunnableMethod(installer.get(),
-                        &CrxInstaller::ConvertUserScriptOnFileThread));
-}
-
-CrxInstaller::CrxInstaller(const FilePath& source_file,
-                           const FilePath& install_directory,
-                           bool delete_source,
+CrxInstaller::CrxInstaller(const FilePath& install_directory,
                            ExtensionsService* frontend,
                            ExtensionInstallUI* client)
-    : source_file_(source_file),
-      install_directory_(install_directory),
+    : install_directory_(install_directory),
       install_source_(Extension::INTERNAL),
-      delete_source_(delete_source),
+      delete_source_(false),
       allow_privilege_increase_(false),
       create_app_shortcut_(false),
       frontend_(frontend),
@@ -109,6 +60,33 @@ CrxInstaller::~CrxInstaller() {
         ChromeThread::FILE, FROM_HERE,
         NewRunnableFunction(&DeleteFileHelper, source_file_, false));
   }
+}
+
+void CrxInstaller::InstallCrx(const FilePath& source_file) {
+  source_file_ = source_file;
+
+  scoped_refptr<SandboxedExtensionUnpacker> unpacker(
+      new SandboxedExtensionUnpacker(
+          source_file,
+          g_browser_process->resource_dispatcher_host(),
+          this));
+
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableMethod(
+          unpacker.get(), &SandboxedExtensionUnpacker::Start));
+}
+
+void CrxInstaller::InstallUserScript(const FilePath& source_file,
+                                     const GURL& original_url) {
+  DCHECK(!original_url.is_empty());
+
+  source_file_ = source_file;
+  original_url_ = original_url;
+
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableMethod(this, &CrxInstaller::ConvertUserScriptOnFileThread));
 }
 
 void CrxInstaller::ConvertUserScriptOnFileThread() {

@@ -128,15 +128,14 @@ bool ExtensionBrowserTest::InstallOrUpdateExtension(const std::string& id,
                   NotificationService::AllSources());
     registrar.Add(this, NotificationType::EXTENSION_INSTALL_ERROR,
                   NotificationService::AllSources());
-    CrxInstaller::Start(
-        path,
-        service->install_directory(),
-        Extension::INTERNAL,
-        id,
-        false,  // do not delete after install
-        id == "" ? true : false,  // only allow privilege increase for installs
-        service,
-        should_cancel ? new MockAbortExtensionInstallUI() : NULL);
+
+    scoped_refptr<CrxInstaller> installer(
+        new CrxInstaller(
+            service->install_directory(),
+            service,
+            should_cancel ? new MockAbortExtensionInstallUI() : NULL));
+    installer->set_expected_id(id);
+    installer->InstallCrx(path);
 
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE, new MessageLoop::QuitTask, kTimeoutMs);

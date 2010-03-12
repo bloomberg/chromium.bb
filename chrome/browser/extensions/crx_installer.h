@@ -33,54 +33,57 @@ class SkBitmap;
 // Additionally, we hold a reference to our own client so that it lives at least
 // long enough to receive the result of unpacking.
 //
-// TODO(aa): Pull out a frontend interface for testing?
+// IMPORTANT: Callers should keep a reference to a CrxInstaller while they are
+// working with it, eg:
+//
+// scoped_refptr<CrxInstaller> installer(new CrxInstaller(...));
+// installer->set_foo();
+// installer->set_bar();
+// installer->InstallCrx(...);
 class CrxInstaller
     : public SandboxedExtensionUnpackerClient,
       public ExtensionInstallUI::Delegate {
  public:
-  // Starts the installation of the crx file in |source_file| into
-  // |install_directory|.
-  //
-  // Other params:
-  //  install_source: The source of the install (external, --load-extension, etc
-  //  expected_id: Optional. If the caller knows what the ID of this extension
-  //               should be after unpacking, it can be specified here as a
-  //               sanity check.
-  //  delete_crx: Whether the crx should be deleted on completion.
-  //  frontend: The ExtensionsService to report the successfully installed
-  //            extension to.
-  //  client: Optional. If specified, will be used to confirm installation and
-  //          also notified of success/fail. Note that we hold a reference to
-  //          this, so it can outlive its creator (eg the UI).
-  static void Start(const FilePath& source_file,
-                    const FilePath& install_directory,
-                    Extension::Location install_source,
-                    const std::string& expected_id,
-                    bool delete_source,
-                    bool allow_privilege_increase,
-                    ExtensionsService* frontend,
-                    ExtensionInstallUI* client);
+  // Constructor.  Extensions will be unpacked to |install_directory|.
+  // Extension objects will be sent to |frontend|, and any UI will be shown
+  // via |client|. For silent install, pass NULL for |client|.
+  CrxInstaller(const FilePath& install_directory,
+               ExtensionsService* frontend,
+               ExtensionInstallUI* client);
 
-  // Starts the installation of the user script file in |source_file| into
-  // |install_directory|. The script will be converted to an extension.
-  // See Start() for argument descriptions.
-  static void InstallUserScript(const FilePath& source_file,
-                                const GURL& original_url,
-                                const FilePath& install_directory,
-                                bool delete_source,
-                                ExtensionsService* frontend,
-                                ExtensionInstallUI* client);
+  // Install the crx in |source_file|. Note that this will most likely
+  // complete asynchronously.
+  void InstallCrx(const FilePath& source_file);
+
+  // Install the user script in |source_file|. Note that this will most likely
+  // complete asynchronously.
+  void InstallUserScript(const FilePath& source_file,
+                         const GURL& original_url);
 
   // ExtensionInstallUI::Delegate
   virtual void InstallUIProceed(bool create_app_shortcut);
   virtual void InstallUIAbort();
 
+  const GURL& original_url() { return original_url_; }
+  void set_original_url(const GURL& val) { original_url_ = val; }
+
+  Extension::Location install_source() { return install_source_; }
+  void set_install_source(Extension::Location source) {
+    install_source_ = source;
+  }
+
+  const std::string& expected_id() { return expected_id_; }
+  void set_expected_id(const std::string& val) { expected_id_ = val; }
+
+  bool delete_source() { return delete_source_; }
+  void set_delete_source(bool val) { delete_source_ = val; }
+
+  bool allow_privilege_increase() { return allow_privilege_increase_; }
+  void set_allow_privilege_increase(bool val) {
+    allow_privilege_increase_ = val;
+  }
+
  private:
-  CrxInstaller(const FilePath& source_file,
-               const FilePath& install_directory,
-               bool delete_source,
-               ExtensionsService* frontend,
-               ExtensionInstallUI* client);
   ~CrxInstaller();
 
   // Converts the source user script to an extension.
@@ -111,7 +114,7 @@ class CrxInstaller
   // The file we're installing.
   FilePath source_file_;
 
-  // The URL the file was downloaded from. Only used for user scripts.
+  // The URL the file was downloaded from.
   GURL original_url_;
 
   // The directory extensions are installed to.
@@ -119,7 +122,7 @@ class CrxInstaller
 
   // The location the installation came from (bundled with Chromium, registry,
   // manual install, etc). This metadata is saved with the installation if
-  // successful.
+  // successful. Defaults to INTERNAL.
   Extension::Location install_source_;
 
   // For updates and external installs we have an ID we're expecting the
@@ -131,11 +134,16 @@ class CrxInstaller
   // allowed.
   bool extensions_enabled_;
 
-  // Whether we're supposed to delete the source file on destruction.
+  // Whether we're supposed to delete the source file on destruction. Defaults
+  // to false.
   bool delete_source_;
 
   // Whether privileges should be allowed to silently increaes from any
-  // previously installed version of the extension.
+  // previously installed version of the extension. This is used for things
+  // like external extensions, where extensions come with third-party software
+  // or are distributed by the network administrator. There is no UI shown
+  // for these extensions, so there shouldn't be UI for privilege increase,
+  // either. Defaults to false.
   bool allow_privilege_increase_;
 
   // Whether to create an app shortcut after successful installation. This is

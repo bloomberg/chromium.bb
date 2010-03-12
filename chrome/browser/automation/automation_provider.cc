@@ -2452,14 +2452,12 @@ void AutomationProvider::InstallExtension(const FilePath& crx_path,
                                       reply_message);
 
     const FilePath& install_dir = service->install_directory();
-    CrxInstaller::Start(crx_path,
-                        install_dir,
-                        Extension::INTERNAL,
-                        "",  // no expected id
-                        false,  // please do not delete crx file
-                        true,  // privilege increase allowed
-                        service,
-                        NULL);  // silent isntall, no UI
+    scoped_refptr<CrxInstaller> installer(
+        new CrxInstaller(install_dir,
+                         service,
+                         NULL));  // silent install, no UI
+    installer->set_allow_privilege_increase(true);
+    installer->InstallCrx(crx_path);
   } else {
     AutomationMsg_InstallExtension::WriteReplyParams(
         reply_message, AUTOMATION_MSG_EXTENSION_INSTALL_FAILED);

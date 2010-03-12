@@ -798,13 +798,13 @@ TEST_F(ExtensionsServiceTest, InstallUserScript) {
              .AppendASCII("user_script_basic.user.js");
 
   ASSERT_TRUE(file_util::PathExists(path));
-  CrxInstaller::InstallUserScript(
+  scoped_refptr<CrxInstaller> installer(
+      new CrxInstaller(service_->install_directory(),
+                       service_,
+                       NULL));  // silent install
+  installer->InstallUserScript(
       path,
-      GURL("http://www.aaronboodman.com/scripts/user_script_basic.user.js"),
-      service_->install_directory(),
-      false,  // do not delete source
-      service_,
-      NULL);  // install UI
+      GURL("http://www.aaronboodman.com/scripts/user_script_basic.user.js"));
 
   loop_.RunAllPending();
   std::vector<std::string> errors = GetErrors();

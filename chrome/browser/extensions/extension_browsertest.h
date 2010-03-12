@@ -36,8 +36,8 @@ class ExtensionBrowserTest
     return InstallOrUpdateExtension("", path, false, expected_change);
   }
 
-  // Same as above but passes an id to CrxInstaller::Start and does not allow
-  // a privilege increase.
+  // Same as above but passes an id to CrxInstaller and does not allow a
+  // privilege increase.
   bool UpdateExtension(const std::string& id, const FilePath& path,
                        int expected_change) {
     return InstallOrUpdateExtension(id, path, false, expected_change);

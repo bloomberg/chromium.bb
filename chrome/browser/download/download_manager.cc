@@ -1438,28 +1438,23 @@ void DownloadManager::OpenChromeExtension(const FilePath& full_path,
   ExtensionsService* service = profile_->GetExtensionsService();
   if (service) {
     NotificationService* nservice = NotificationService::current();
-      GURL nonconst_download_url = download_url;
-      nservice->Notify(NotificationType::EXTENSION_READY_FOR_INSTALL,
-                       Source<DownloadManager>(this),
-                       Details<GURL>(&nonconst_download_url));
+    GURL nonconst_download_url = download_url;
+    nservice->Notify(NotificationType::EXTENSION_READY_FOR_INSTALL,
+                     Source<DownloadManager>(this),
+                     Details<GURL>(&nonconst_download_url));
+
+    scoped_refptr<CrxInstaller> installer(
+        new CrxInstaller(service->install_directory(),
+                         service,
+                         new ExtensionInstallUI(profile_)));
+    installer->set_delete_source(true);
+
     if (UserScript::HasUserScriptFileExtension(download_url)) {
-      CrxInstaller::InstallUserScript(
-          full_path,
-          download_url,
-          service->install_directory(),
-          true,  // please delete crx on completion
-          service,
-          new ExtensionInstallUI(profile_));
+      installer->InstallUserScript(full_path, download_url);
     } else {
-      CrxInstaller::Start(
-          full_path,
-          service->install_directory(),
-          Extension::INTERNAL,
-          "",  // no expected id
-          true,  // please delete crx on completion
-          true,  // privilege increase allowed
-          service,
-          new ExtensionInstallUI(profile_));
+      installer->set_allow_privilege_increase(true);
+      installer->set_original_url(download_url);
+      installer->InstallCrx(full_path);
     }
   } else {
     TabContents* contents = NULL;

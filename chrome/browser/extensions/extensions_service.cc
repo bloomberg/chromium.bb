@@ -193,12 +193,12 @@ void ExtensionsService::Init() {
 }
 
 void ExtensionsService::InstallExtension(const FilePath& extension_path) {
-  CrxInstaller::Start(extension_path, install_directory_, Extension::INTERNAL,
-                      "",   // no expected id
-                      false,  // don't delete crx when complete
-                      true,  // allow privilege increase
-                      this,
-                      NULL);  // no client (silent install)
+  scoped_refptr<CrxInstaller> installer(
+      new CrxInstaller(install_directory_,
+                       this,  // frontend
+                       NULL));  // no client (silent install)
+  installer->set_allow_privilege_increase(true);
+  installer->InstallCrx(extension_path);
 }
 
 void ExtensionsService::UpdateExtension(const std::string& id,
@@ -209,12 +209,13 @@ void ExtensionsService::UpdateExtension(const std::string& id,
     return;
   }
 
-  CrxInstaller::Start(extension_path, install_directory_, Extension::INTERNAL,
-                      id,
-                      true,  // delete crx when complete
-                      false,  // do not allow upgrade of privileges
-                      this,
-                      NULL);  // no client (silent install)
+  scoped_refptr<CrxInstaller> installer(
+      new CrxInstaller(install_directory_,
+                       this,  // frontend
+                       NULL));  // no client (silent install)
+  installer->set_expected_id(id);
+  installer->set_delete_source(true);
+  installer->InstallCrx(extension_path);
 }
 
 void ExtensionsService::ReloadExtension(const std::string& extension_id) {
@@ -905,11 +906,14 @@ void ExtensionsService::OnExternalExtensionFound(const std::string& id,
     }
   }
 
-  CrxInstaller::Start(path, install_directory_, location, id,
-                      false,  // don't delete crx when complete
-                      true,  // allow privilege increase
-                      this,
-                      NULL);  // no client (silent install)
+  scoped_refptr<CrxInstaller> installer(
+      new CrxInstaller(install_directory_,
+                       this,  // frontend
+                       NULL));  // no client (silent install)
+  installer->set_install_source(location);
+  installer->set_expected_id(id);
+  installer->set_allow_privilege_increase(true);
+  installer->InstallCrx(path);
 }
 
 void ExtensionsService::ReportExtensionLoadError(
