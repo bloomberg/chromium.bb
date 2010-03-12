@@ -9,6 +9,9 @@
 #include <vector>
 
 #include "Vector.h"
+#if OS(WINDOWS)
+#pragma warning(disable: 4355) // 'this' used in initializer list
+#endif
 #include "ImageDecoder.h"
 
 #undef LOG
