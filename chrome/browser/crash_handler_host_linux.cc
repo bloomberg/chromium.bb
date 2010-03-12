@@ -195,7 +195,7 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
 
   bool upload = true;
   FilePath dumps_path("/tmp");
-  if (getenv(WideToASCII(env_vars::kHeadless))) {
+  if (getenv(WideToASCII(env_vars::kHeadless).c_str())) {
     upload = false;
     PathService::Get(chrome::DIR_CRASH_DUMPS, &dumps_path);
   }

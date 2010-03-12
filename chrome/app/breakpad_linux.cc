@@ -722,7 +722,8 @@ void InitCrashReporter() {
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
   const std::string process_type =
       parsed_command_line.GetSwitchValueASCII(switches::kProcessType);
-  const bool unattended = (getenv(WideToASCII(env_vars::kHeadless)) != NULL);
+  const bool unattended =
+      (getenv(WideToASCII(env_vars::kHeadless).c_str()) != NULL);
   if (process_type.empty()) {
     if (!(unattended || GoogleUpdateSettings::GetCollectStatsConsent()))
       return;

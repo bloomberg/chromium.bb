@@ -115,7 +115,8 @@ FilePath ChildProcessHost::GetChildPath(bool allow_self) {
 // static
 void ChildProcessHost::SetCrashReporterCommandLine(CommandLine* command_line) {
 #if defined(USE_LINUX_BREAKPAD)
-  const bool unattended = (getenv(WideToASCII(env_vars::kHeadless)) != NULL);
+  const bool unattended =
+      (getenv(WideToASCII(env_vars::kHeadless).c_str()) != NULL);
   if (unattended || GoogleUpdateSettings::GetCollectStatsConsent()) {
     command_line->AppendSwitchWithValue(switches::kEnableCrashReporter,
                                         ASCIIToWide(google_update::posix_guid +
