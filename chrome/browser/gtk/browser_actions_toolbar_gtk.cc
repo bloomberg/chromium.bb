@@ -55,38 +55,8 @@ GtkTargetEntry GetDragTargetEntry() {
 // The minimum width in pixels of the button hbox if |icon_count| icons are
 // showing.
 gint WidthForIconCount(gint icon_count) {
-  return (kButtonSize + kButtonPadding) * icon_count - kButtonPadding;
-}
-
-// These three signal handlers are used to give the gripper the resize
-// cursor. Since it doesn't have its own window, we have to set the cursor
-// whenever the pointer moves into the button or leaves the button, and be
-// sure to leave it on when the user is dragging.
-gboolean OnGripperEnterNotify(GtkWidget* gripper,
-                              GdkEventCrossing* event,
-                              gpointer unused) {
-  gdk_window_set_cursor(gripper->window,
-                        gtk_util::GetCursor(GDK_SB_H_DOUBLE_ARROW));
-  return FALSE;
-}
-
-gboolean OnGripperLeaveNotify(GtkWidget* gripper,
-                              GdkEventCrossing* event,
-                              gpointer unused) {
-  if (!(event->state & GDK_BUTTON1_MASK))
-    gdk_window_set_cursor(gripper->window, NULL);
-  return FALSE;
-}
-
-gboolean OnGripperButtonRelease(GtkWidget* gripper,
-                                GdkEventButton* event,
-                                gpointer unused) {
-  gfx::Rect gripper_rect(0, 0,
-                         gripper->allocation.width, gripper->allocation.height);
-  gfx::Point release_point(event->x, event->y);
-  if (!gripper_rect.Contains(release_point))
-    gdk_window_set_cursor(gripper->window, NULL);
-  return FALSE;
+  return std::max((kButtonSize + kButtonPadding) * icon_count - kButtonPadding,
+                  0);
 }
 
 }  // namespace
@@ -162,8 +132,10 @@ class BrowserActionButton : public NotificationObserver,
 
   // ImageLoadingTracker::Observer implementation.
   void OnImageLoaded(SkBitmap* image, size_t index) {
-    if (image)
+    if (image) {
+      default_skbitmap_ = *image;
       default_icon_ = gfx::GdkPixbufFromSkBitmap(image);
+    }
     tracker_ = NULL;  // The tracker object will delete itself when we return.
     UpdateState();
   }
@@ -192,6 +164,16 @@ class BrowserActionButton : public NotificationObserver,
       SetImage(default_icon_);
     }
     gtk_widget_queue_draw(button_.get());
+  }
+
+  SkBitmap GetIcon() {
+    const SkBitmap& image = extension_->browser_action()->GetIcon(
+        toolbar_->GetCurrentTabId());
+    if (!image.isNull()) {
+      return image;
+    } else {
+      return default_skbitmap_;
+    }
   }
 
  private:
@@ -229,7 +211,7 @@ class BrowserActionButton : public NotificationObserver,
 
     if (browser_action->HasPopup(tab_id)) {
       ExtensionPopupGtk::Show(
-          action->extension_->browser_action()->GetPopupUrl(tab_id),
+          browser_action->GetPopupUrl(tab_id),
           action->toolbar_->browser(),
           gtk_util::GetWidgetRectRelativeToToplevel(widget));
     } else {
@@ -283,6 +265,9 @@ class BrowserActionButton : public NotificationObserver,
   // If the browser action has a default icon, it will be here.
   GdkPixbuf* default_icon_;
 
+  // Same as |default_icon_|, but stored as SkBitmap.
+  SkBitmap default_skbitmap_;
+
   NotificationRegistrar registrar_;
 
   // The context menu view and model for this extension action.
@@ -302,6 +287,9 @@ BrowserActionsToolbarGtk::BrowserActionsToolbarGtk(Browser* browser)
       overflow_button_(browser->profile()),
       drag_button_(NULL),
       drop_index_(-1),
+      resize_animation_(this),
+      desired_width_(0),
+      start_width_(0),
       method_factory_(this) {
   ExtensionsService* extension_service = profile_->GetExtensionsService();
   // The |extension_service| can be NULL in Incognito.
@@ -316,11 +304,15 @@ BrowserActionsToolbarGtk::BrowserActionsToolbarGtk(Browser* browser)
   g_signal_connect(gripper, "expose-event",
                    G_CALLBACK(OnGripperExposeThunk), this);
   g_signal_connect(gripper, "enter-notify-event",
-                   G_CALLBACK(OnGripperEnterNotify), NULL);
+                   G_CALLBACK(OnGripperEnterNotifyThunk), this);
   g_signal_connect(gripper, "leave-notify-event",
-                   G_CALLBACK(OnGripperLeaveNotify), NULL);
+                   G_CALLBACK(OnGripperLeaveNotifyThunk), this);
   g_signal_connect(gripper, "button-release-event",
-                   G_CALLBACK(OnGripperButtonRelease), NULL);
+                   G_CALLBACK(OnGripperButtonReleaseThunk), this);
+  g_signal_connect(gripper, "button-press-event",
+                   G_CALLBACK(OnGripperButtonPressThunk), this);
+  g_signal_connect(overflow_button_.widget(), "button-press-event",
+                   G_CALLBACK(OnOverflowButtonPressThunk), this);
 
   gtk_box_pack_start(GTK_BOX(hbox_.get()), gripper, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox_.get()), button_hbox_, TRUE, TRUE, 0);
@@ -454,9 +446,26 @@ void BrowserActionsToolbarGtk::HidePopup() {
     popup->DestroyPopup();
 }
 
+void BrowserActionsToolbarGtk::AnimateToShowNIcons(int count) {
+  desired_width_ = WidthForIconCount(count);
+  start_width_ = button_hbox_->allocation.width;
+  resize_animation_.Reset();
+  resize_animation_.Show();
+}
+
+void BrowserActionsToolbarGtk::ButtonAddedOrRemoved() {
+  // TODO(estade): this is a little bit janky looking when the removed button
+  // is not the farthest right button.
+  if (!GTK_WIDGET_VISIBLE(overflow_button_.widget())) {
+    AnimateToShowNIcons(button_count());
+    model_->SetVisibleIconCount(button_count());
+  }
+}
+
 void BrowserActionsToolbarGtk::BrowserActionAdded(Extension* extension,
                                                   int index) {
   CreateButtonForExtension(extension, index);
+  ButtonAddedOrRemoved();
 }
 
 void BrowserActionsToolbarGtk::BrowserActionRemoved(Extension* extension) {
@@ -466,6 +475,7 @@ void BrowserActionsToolbarGtk::BrowserActionRemoved(Extension* extension) {
   }
 
   RemoveButtonForExtension(extension);
+  ButtonAddedOrRemoved();
 }
 
 void BrowserActionsToolbarGtk::BrowserActionMoved(Extension* extension,
@@ -485,6 +495,44 @@ void BrowserActionsToolbarGtk::BrowserActionMoved(Extension* extension,
     index = model_->OriginalIndexToIncognito(index);
 
   gtk_box_reorder_child(GTK_BOX(button_hbox_), button->widget(), index);
+}
+
+void BrowserActionsToolbarGtk::AnimationProgressed(const Animation* animation) {
+  int width = start_width_ + (desired_width_ - start_width_) *
+      animation->GetCurrentValue();
+  gtk_widget_set_size_request(button_hbox_, width, -1);
+
+  if (width == desired_width_)
+    resize_animation_.Reset();
+}
+
+void BrowserActionsToolbarGtk::AnimationEnded(const Animation* animation) {
+  gtk_widget_set_size_request(button_hbox_, desired_width_, -1);
+}
+
+void BrowserActionsToolbarGtk::ExecuteCommandById(int command_id) {
+  Extension* extension = model_->GetExtensionByIndex(command_id);
+  ExtensionAction* browser_action = extension->browser_action();
+
+  int tab_id = GetCurrentTabId();
+  if (tab_id < 0) {
+    NOTREACHED() << "No current tab.";
+    return;
+  }
+
+  if (browser_action->HasPopup(tab_id)) {
+    ExtensionPopupGtk::Show(
+        browser_action->GetPopupUrl(tab_id), browser(),
+        gtk_util::GetWidgetRectRelativeToToplevel(overflow_button_.widget()));
+  } else {
+    ExtensionBrowserEventRouter::GetInstance()->BrowserActionExecuted(
+        browser()->profile(), extension->id(), browser());
+  }
+}
+
+void BrowserActionsToolbarGtk::StoppedShowing() {
+  gtk_chrome_button_unset_paint_state(
+      GTK_CHROME_BUTTON(overflow_button_.widget()));
 }
 
 void BrowserActionsToolbarGtk::DragStarted(BrowserActionButton* button,
@@ -613,4 +661,74 @@ gboolean BrowserActionsToolbarGtk::OnGripperExpose(GtkWidget* gripper,
   cairo_destroy(cr);
 
   return TRUE;
+}
+
+// These three signal handlers (EnterNotify, LeaveNotify, and ButtonRelease)
+// are used to give the gripper the resize cursor. Since it doesn't have its
+// own window, we have to set the cursor whenever the pointer moves into the
+// button or leaves the button, and be sure to leave it on when the user is
+// dragging.
+gboolean BrowserActionsToolbarGtk::OnGripperEnterNotify(
+    GtkWidget* gripper, GdkEventCrossing* event) {
+  gdk_window_set_cursor(gripper->window,
+                        gtk_util::GetCursor(GDK_SB_H_DOUBLE_ARROW));
+  return FALSE;
+}
+
+gboolean BrowserActionsToolbarGtk::OnGripperLeaveNotify(
+    GtkWidget* gripper, GdkEventCrossing* event) {
+  if (!(event->state & GDK_BUTTON1_MASK))
+    gdk_window_set_cursor(gripper->window, NULL);
+  return FALSE;
+}
+
+gboolean BrowserActionsToolbarGtk::OnGripperButtonRelease(
+    GtkWidget* gripper, GdkEventButton* event) {
+  gfx::Rect gripper_rect(0, 0,
+                         gripper->allocation.width, gripper->allocation.height);
+  gfx::Point release_point(event->x, event->y);
+  if (!gripper_rect.Contains(release_point))
+    gdk_window_set_cursor(gripper->window, NULL);
+
+  // After the user resizes the toolbar, we want to smartly resize it to be
+  // the perfect size to fit the buttons.
+  int visible_icon_count =
+      gtk_chrome_shrinkable_hbox_get_visible_child_count(
+          GTK_CHROME_SHRINKABLE_HBOX(button_hbox_));
+  AnimateToShowNIcons(visible_icon_count);
+
+  return FALSE;
+}
+
+gboolean BrowserActionsToolbarGtk::OnGripperButtonPress(
+    GtkWidget* gripper, GdkEventButton* event) {
+  resize_animation_.Reset();
+
+  return FALSE;
+}
+
+gboolean BrowserActionsToolbarGtk::OnOverflowButtonPress(
+    GtkWidget* overflow, GdkEventButton* event) {
+  overflow_menu_.reset(new MenuGtk(this));
+
+  int visible_icon_count =
+      gtk_chrome_shrinkable_hbox_get_visible_child_count(
+          GTK_CHROME_SHRINKABLE_HBOX(button_hbox_));
+  for (int i = visible_icon_count; i < static_cast<int>(model_->size()); ++i) {
+    Extension* extension = model_->GetExtensionByIndex(i);
+    BrowserActionButton* button = extension_button_map_[extension->id()].get();
+
+    overflow_menu_->AppendMenuItemWithIcon(
+        i,
+        extension->name(),
+        button->GetIcon());
+
+    // TODO(estade): set the menu item's tooltip.
+  }
+
+  gtk_chrome_button_set_paint_state(GTK_CHROME_BUTTON(overflow),
+                                    GTK_STATE_ACTIVE);
+  overflow_menu_->PopupAsFromKeyEvent(overflow);
+
+  return FALSE;
 }

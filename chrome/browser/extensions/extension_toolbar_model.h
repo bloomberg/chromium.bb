@@ -53,6 +53,8 @@ class ExtensionToolbarModel : public NotificationObserver {
     return toolitems_.end();
   }
 
+  Extension* GetExtensionByIndex(int index) const;
+
   // Utility functions for converting between an index into the list of
   // incognito-enabled browser actions, and the list of all browser actions.
   int IncognitoIndexToOriginal(int incognito_index);

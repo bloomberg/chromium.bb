@@ -11,9 +11,11 @@
 #include <string>
 
 #include "app/gtk_signal.h"
+#include "app/slide_animation.h"
 #include "base/linked_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
+#include "chrome/browser/gtk/menu_gtk.h"
 #include "chrome/browser/gtk/overflow_button.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
@@ -27,7 +29,9 @@ class Profile;
 
 typedef struct _GtkWidget GtkWidget;
 
-class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer {
+class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
+                                 public AnimationDelegate,
+                                 public MenuGtk::Delegate {
  public:
   explicit BrowserActionsToolbarGtk(Browser* browser);
   virtual ~BrowserActionsToolbarGtk();
@@ -73,6 +77,14 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer {
   // Hide the extension popup, if any.
   void HidePopup();
 
+  // Animate the toolbar to show the given number of icons. This assumes the
+  // visibility of the overflow button will not change.
+  void AnimateToShowNIcons(int count);
+
+  // If the toolbar is at max width and a button is added or removed, then make
+  // sure it stays at the max width.
+  void ButtonAddedOrRemoved();
+
   // Returns true if this extension should be shown in this toolbar. This can
   // return false if we are in an incognito window and the extension is disabled
   // for incognito.
@@ -82,6 +94,17 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer {
   virtual void BrowserActionAdded(Extension* extension, int index);
   virtual void BrowserActionRemoved(Extension* extension);
   virtual void BrowserActionMoved(Extension* extension, int index);
+
+  // AnimationDelegate implementation.
+  virtual void AnimationProgressed(const Animation* animation);
+  virtual void AnimationEnded(const Animation* animation);
+
+  // MenuGtk::Delegate implementation.
+  // In our case, |command_id| is be the index into the model's extension list.
+  virtual bool IsCommandEnabled(int command_id) const { return true; }
+  virtual void ExecuteCommandById(int command_id);
+  virtual void StoppedShowing();
+  virtual bool AlwaysShowImages() const { return true; }
 
   // Called by the BrowserActionButton in response to drag-begin.
   void DragStarted(BrowserActionButton* button, GdkDragContext* drag_context);
@@ -103,6 +126,16 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer {
                        OnGripperMotionNotify, GdkEventMotion*);
   CHROMEGTK_CALLBACK_1(BrowserActionsToolbarGtk, gboolean, OnGripperExpose,
                        GdkEventExpose*);
+  CHROMEGTK_CALLBACK_1(BrowserActionsToolbarGtk, gboolean,
+                       OnGripperEnterNotify, GdkEventCrossing*);
+  CHROMEGTK_CALLBACK_1(BrowserActionsToolbarGtk, gboolean,
+                       OnGripperLeaveNotify, GdkEventCrossing*);
+  CHROMEGTK_CALLBACK_1(BrowserActionsToolbarGtk, gboolean,
+                       OnGripperButtonRelease, GdkEventButton*);
+  CHROMEGTK_CALLBACK_1(BrowserActionsToolbarGtk, gboolean,
+                       OnGripperButtonPress, GdkEventButton*);
+  CHROMEGTK_CALLBACK_1(BrowserActionsToolbarGtk, gboolean,
+                       OnOverflowButtonPress, GdkEventButton*);
 
   Browser* browser_;
 
@@ -118,6 +151,7 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer {
   GtkWidget* button_hbox_;
 
   OverflowButton overflow_button_;
+  scoped_ptr<MenuGtk> overflow_menu_;
 
   // The button that is currently being dragged, or NULL.
   BrowserActionButton* drag_button_;
@@ -131,6 +165,13 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer {
   typedef std::map<std::string, linked_ptr<BrowserActionButton> >
       ExtensionButtonMap;
   ExtensionButtonMap extension_button_map_;
+
+  // We use this animation for the smart resizing of the toolbar.
+  SlideAnimation resize_animation_;
+  // This is the final width we are animating towards.
+  int desired_width_;
+  // This is the width we were at when we started animating.
+  int start_width_;
 
   ScopedRunnableMethodFactory<BrowserActionsToolbarGtk> method_factory_;
 

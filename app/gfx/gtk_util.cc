@@ -29,7 +29,11 @@ const GdkColor kGdkBlack = GDK_COLOR_RGB(0x00, 0x00, 0x00);
 const GdkColor kGdkGreen = GDK_COLOR_RGB(0x00, 0xff, 0x00);
 
 GdkPixbuf* GdkPixbufFromSkBitmap(const SkBitmap* bitmap) {
+  if (bitmap->isNull())
+    return NULL;
+
   bitmap->lockPixels();
+
   int width = bitmap->width();
   int height = bitmap->height();
   int stride = bitmap->rowBytes();

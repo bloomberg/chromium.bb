@@ -188,6 +188,10 @@ void ExtensionToolbarModel::UpdatePrefs() {
   service_->extension_prefs()->SetToolbarOrder(ids);
 }
 
+Extension* ExtensionToolbarModel::GetExtensionByIndex(int index) const {
+  return toolitems_.at(index);
+}
+
 int ExtensionToolbarModel::IncognitoIndexToOriginal(int incognito_index) {
   int original_index = 0, i = 0;
   for (ExtensionList::iterator iter = begin(); iter != end();
