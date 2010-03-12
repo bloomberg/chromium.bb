@@ -894,7 +894,7 @@
         addTestToAllExpectations(path, expectations);
       } else {
         for (var test in allTests) {
-          if (stringContains(test, path)) {
+          if (startsWith(test, path)) {
             pathMatchesAnyTest = true;
             addTestToAllExpectations(test, expectations);
           }
