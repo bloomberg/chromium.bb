@@ -6,8 +6,8 @@
 
 
 #include <string.h>
-#include <string>
 
+#include "native_client/src/include/nacl_string.h"
 #include "native_client/src/shared/npruntime/npmodule.h"
 #include "native_client/src/shared/platform/nacl_host_desc.h"
 
@@ -36,7 +36,7 @@ bool Closure::StartDownload() {
   return (NPERR_NO_ERROR == err);
 }
 
-LoadNaClAppNotify::LoadNaClAppNotify(Plugin* plugin, std::string url)
+LoadNaClAppNotify::LoadNaClAppNotify(Plugin* plugin, nacl::string url)
     : Closure(plugin, url) {
   dprintf(("LoadNaClAppNotify ctor\n"));
 }
@@ -65,7 +65,7 @@ void LoadNaClAppNotify::Run(const char *url,
 
 
 UrlAsNaClDescNotify::UrlAsNaClDescNotify(Plugin* plugin,
-                                         std::string url,
+                                         nacl::string url,
                                          void* callback_obj) :
     Closure(plugin, url),
     np_callback_(reinterpret_cast<NPObject*>(callback_obj)) {
@@ -103,7 +103,7 @@ void UrlAsNaClDescNotify::Run(NPStream *stream, const char *fname) {
     }
 
     dprintf(("fetched FQ URL %s\n", stream->url));
-    std::string url_origin = nacl::UrlToOrigin(stream->url);
+    nacl::string url_origin = nacl::UrlToOrigin(stream->url);
     if (url_origin != plugin()->origin()) {
       dprintf(("same origin policy forbids access: "
         " page from origin %s attempted to"
@@ -178,7 +178,7 @@ void UrlAsNaClDescNotify::Run(const char *url,
     }
 
     dprintf(("fetched FQ URL %s\n", url));
-    std::string url_origin = nacl::UrlToOrigin(url);
+    nacl::string url_origin = nacl::UrlToOrigin(url);
     if (url_origin != plugin()->origin()) {
       dprintf(("same origin policy forbids access: "
               " page from origin %s attempted to"
@@ -228,7 +228,7 @@ void UrlAsNaClDescNotify::Run(const char *url,
 
 NpGetUrlClosure::NpGetUrlClosure(NPP npp,
                                  nacl::NPModule* module,
-                                 std::string url) :
+                                 nacl::string url) :
   Closure(NULL, url), module_(module), npp_(npp) {
   nacl::SRPC_Plugin* srpc = reinterpret_cast<nacl::SRPC_Plugin*>(npp->pdata);
   Plugin* plugin = static_cast<Plugin*>(srpc->plugin()->get_handle());
@@ -259,7 +259,7 @@ void NpGetUrlClosure::Run(NPStream* stream, const char* fname) {
     }
 
     dprintf(("fetched FQ URL %s\n", stream->url));
-    std::string url_origin = nacl::UrlToOrigin(stream->url);
+    nacl::string url_origin = nacl::UrlToOrigin(stream->url);
     if (url_origin != module_->origin()) {
       dprintf(("same origin policy forbids access: "
         " page from origin %s attempted to"
@@ -307,7 +307,7 @@ void NpGetUrlClosure::Run(const char* url, const void* buffer, int32_t size) {
     }
 
     dprintf(("fetched FQ URL %s\n", url));
-    std::string url_origin = nacl::UrlToOrigin(url);
+    nacl::string url_origin = nacl::UrlToOrigin(url);
     if (url_origin != module_->origin()) {
       dprintf(("same origin policy forbids access: "
               " page from origin %s attempted to"

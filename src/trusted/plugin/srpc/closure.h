@@ -8,8 +8,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_CLOSURE_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_CLOSURE_H_
 
-#include <string>
-
+#include "native_client/src/include/nacl_string.h"
 #include "native_client/src/shared/npruntime/npmodule.h"
 #include "native_client/src/trusted/plugin/npinstance.h"
 #include "native_client/src/trusted/plugin/srpc/plugin.h"
@@ -29,7 +28,7 @@ namespace nacl_srpc {
  */
 class Closure {
  public:
-  Closure(Plugin* plugin, std::string url) :
+  Closure(Plugin* plugin, nacl::string url) :
     plugin_(plugin), url_(url), buffer_(NULL) {
     if (NULL != plugin_) {
       plugin_identifier_ =
@@ -51,14 +50,14 @@ class Closure {
   Plugin* plugin() { return plugin_; }
  private:
   Plugin* plugin_;
-  std::string url_;
+  nacl::string url_;
   nacl::StreamBuffer *buffer_;
   nacl_srpc::PluginIdentifier plugin_identifier_;
 };
 
 class LoadNaClAppNotify : public Closure {
  public:
-  LoadNaClAppNotify(Plugin *plugin, std::string url);
+  LoadNaClAppNotify(Plugin *plugin, nacl::string url);
   virtual ~LoadNaClAppNotify();
   virtual void Run(NPStream* stream, const char* fname);
   virtual void Run(const char *url, const void* buffer, int32_t size);
@@ -66,7 +65,7 @@ class LoadNaClAppNotify : public Closure {
 
 class UrlAsNaClDescNotify : public Closure {
  public:
-  UrlAsNaClDescNotify(Plugin *plugin, std::string url, void *callback_obj);
+  UrlAsNaClDescNotify(Plugin *plugin, nacl::string url, void *callback_obj);
   virtual ~UrlAsNaClDescNotify();
   virtual void Run(NPStream *stream, const char *fname);
   virtual void Run(const char *url, const void* buffer, int32_t size);
@@ -76,7 +75,7 @@ class UrlAsNaClDescNotify : public Closure {
 
 class NpGetUrlClosure : public Closure {
  public:
-  NpGetUrlClosure(NPP npp, nacl::NPModule* module, std::string url);
+  NpGetUrlClosure(NPP npp, nacl::NPModule* module, nacl::string url);
   virtual ~NpGetUrlClosure();
   virtual void Run(NPStream* stream, const char* fname);
   virtual void Run(const char* url, const void* buffer, int32_t size);

@@ -12,6 +12,7 @@
 #include <vector>
 #include <algorithm>
 
+#include "native_client/src/include/nacl_string.h"
 #include "native_client/src/trusted/validator_arm/v2/model.h"
 #include "native_client/src/trusted/validator_arm/v2/validator.h"
 #include "native_client/src/trusted/validator_x86/ncfileutil.h"
@@ -36,7 +37,7 @@ class CommandLineProblemSink : public nacl_arm_val::ProblemSink {
  public:
   virtual void report_problem(uint32_t vaddr,
                               nacl_arm_dec::SafetyLevel safety,
-                              const std::string &problem_code,
+                              const nacl::string &problem_code,
                               uint32_t ref_vaddr) {
     fprintf(stderr, "ncval: %08X %d %s %08X\n", vaddr, safety,
         problem_code.c_str(), ref_vaddr);

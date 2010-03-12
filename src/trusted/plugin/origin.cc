@@ -10,11 +10,11 @@
 #include <stdio.h>
 
 #include <cctype>
-#include <string>
 #include <stdlib.h>
 #include <algorithm>
 
 #include "base/basictypes.h"
+#include "native_client/src/include/nacl_string.h"
 #include "native_client/src/trusted/plugin/origin.h"
 
 #define NACL_SELENIUM_TEST "NACL_DISABLE_SECURITY_FOR_SELENIUM_TEST"
@@ -27,8 +27,8 @@
 
 namespace nacl {
 
-  std::string UrlToOrigin(std::string url) {
-    std::string::iterator it = find(url.begin(), url.end(), ':');
+  nacl::string UrlToOrigin(nacl::string url) {
+    nacl::string::iterator it = find(url.begin(), url.end(), ':');
     if (url.end() == it) {
       dprintf(("no protospec separator found\n"));
       return "";
@@ -41,7 +41,7 @@ namespace nacl {
       }
     }
 
-    std::string origin(url.begin(), it);
+    nacl::string origin(url.begin(), it);
 
     //
     // Domain names are in ascii and case insensitive, so we can
@@ -66,7 +66,7 @@ namespace nacl {
   //
   // Eventually, after sufficient security testing, we will always
   // return true.
-  bool OriginIsInWhitelist(std::string origin) {
+  bool OriginIsInWhitelist(nacl::string origin) {
     static char const *allowed_origin[] = {
       /*
       * do *NOT* add in file://localhost as a way to get old tests to

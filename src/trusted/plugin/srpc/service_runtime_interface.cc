@@ -7,8 +7,8 @@
 
 #include <map>
 #include <vector>
-#include <string>
 
+#include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/nacl_macros.h"
 
 #include "native_client/src/shared/imc/nacl_imc_c.h"
@@ -36,7 +36,6 @@
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
 
-using std::string;
 using std::vector;
 
 namespace nacl_srpc {
@@ -262,8 +261,8 @@ bool ServiceRuntimeInterface::Start(const char* nacl_file) {
   const char* kSelLdrArgs[] = { "-P", "5", "-X", "5" };
   // TODO(sehr): remove -P support and default channels.
   const int kSelLdrArgLength = NACL_ARRAY_SIZE(kSelLdrArgs);
-  vector<string> kArgv(kSelLdrArgs, kSelLdrArgs + kSelLdrArgLength);
-  vector<string> kEmpty;
+  vector<nacl::string> kArgv(kSelLdrArgs, kSelLdrArgs + kSelLdrArgLength);
+  vector<nacl::string> kEmpty;
 
   // NB: number_alive is intentionally modified only when
   // SRPC_PLUGIN_DEBUG is enabled.
@@ -320,7 +319,7 @@ bool ServiceRuntimeInterface::Kill() {
 }
 
 bool ServiceRuntimeInterface::LogAtServiceRuntime(int severity,
-                                                  string msg) {
+                                                  nacl::string msg) {
   return runtime_channel_->Log(severity, msg);
 }
 

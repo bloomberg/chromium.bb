@@ -7,21 +7,19 @@
 #include <assert.h>
 
 #include <algorithm>
-#include <sstream>
-#include <string>
 #include <vector>
 
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/include/nacl_string.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 
-using std::string;
 using std::vector;
 
 // TODO(robertm): Move this to  new header if it becomes more popular
-template <class T> std::string ToString(const T& t) {
-  std::stringstream ss;
+template <class T> nacl::string ToString(const T& t) {
+  nacl::stringstream ss;
   ss << t;
   return ss.str();
 }
@@ -157,7 +155,7 @@ bool SelLdrLauncher::OpenSrpcChannels(NaClSrpcChannel* command,
 }
 
 
-string SelLdrLauncher::ExpandVar(string arg) {
+nacl::string SelLdrLauncher::ExpandVar(nacl::string arg) {
   if (arg[0] != '$') return arg;
 
   if (arg == "$SEL_LDR_EXE") {
@@ -175,7 +173,7 @@ string SelLdrLauncher::ExpandVar(string arg) {
 }
 
 
-void SelLdrLauncher::BuildArgv(vector<string>* command) {
+void SelLdrLauncher::BuildArgv(vector<nacl::string>* command) {
   // assert that both Init() and SetChannelBuf() were called
   assert(channel_buf_ != "");
   assert(sel_ldr_ != "");
@@ -206,10 +204,10 @@ void SelLdrLauncher::BuildArgv(vector<string>* command) {
 }
 
 
-void SelLdrLauncher::Init(const string& application_name,
+void SelLdrLauncher::Init(const nacl::string& application_name,
                           int imc_fd,
-                          const vector<string>& sel_ldr_argv,
-                          const vector<string>& app_argv) {
+                          const vector<nacl::string>& sel_ldr_argv,
+                          const vector<nacl::string>& app_argv) {
   // make sure we don't call this twice
   assert(sel_ldr_ == "");
   sel_ldr_ = GetSelLdrPathName();

@@ -13,7 +13,8 @@
 #define NATIVE_CLIENT_PRIVATE_TOOLS_NCV_ARM_VALIDATOR_PATTERNS_H__
 
 #include <vector>
-#include <string>
+
+#include "native_client/src/include/nacl_string.h"
 #include "native_client/src/trusted/validator_arm/ncdecode.h"
 
 /*
@@ -31,7 +32,7 @@ class ValidatorPattern {
    * may return true for MayBeUnsafe.  This is used to calculate the pattern's
    * critical region for CFG analysis.
    */
-  ValidatorPattern(const std::string &name, int length, int reporting_index)
+  ValidatorPattern(const nacl::string &name, int length, int reporting_index)
       : _name(name), _length(length), _reporting_index(reporting_index) {}
 
   virtual ~ValidatorPattern();
@@ -85,13 +86,13 @@ class ValidatorPattern {
   virtual uint32_t EndPc(const NcDecodeState &) const;
 
   // Returns the name of the pattern.
-  const std::string& GetName() {
+  const nacl::string& GetName() {
     return _name;
   }
 
  protected:
   // Holds the name for the pattern.
-  const std::string _name;
+  const nacl::string _name;
   // The overall length of this pattern, in instructions.
   const int _length;
   // The index within the sequence of _length instructions where MayBeUnsafe

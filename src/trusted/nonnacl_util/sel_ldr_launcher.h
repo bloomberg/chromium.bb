@@ -10,9 +10,9 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_NONNACL_UTIL_SEL_LDR_LAUNCHER_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_NONNACL_UTIL_SEL_LDR_LAUNCHER_H_
 
-#include <string>
 #include <vector>
 
+#include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/imc/nacl_imc.h"
 
@@ -67,24 +67,24 @@ struct SelLdrLauncher {
   // and with `channel_` number if the target application is a native OS
   // binary.
 
-  bool Start(const std::string& application_name,
+  bool Start(const nacl::string& application_name,
              int imc_fd,
-             const std::vector<std::string>& sel_ldr_argv,
-             const std::vector<std::string>& app_argv) {
+             const std::vector<nacl::string>& sel_ldr_argv,
+             const std::vector<nacl::string>& app_argv) {
     Init(application_name, imc_fd, sel_ldr_argv, app_argv);
     return Launch();
   }
 
   // Obsolete: compatibility interface
-  bool Start(const std::string& application_name,
+  bool Start(const nacl::string& application_name,
              int imc_fd,
              int sel_ldr_argc,
              const char* sel_ldr_argv[],
              int app_argc,
              const char* app_argv[]) {
-    const std::vector<std::string> sel_ldr_vec(sel_ldr_argv,
+    const std::vector<nacl::string> sel_ldr_vec(sel_ldr_argv,
                                                sel_ldr_argv + sel_ldr_argc);
-    const std::vector<std::string> app_vec(app_argv,
+    const std::vector<nacl::string> app_vec(app_argv,
                                            app_argv + app_argc);
     return Start(application_name, imc_fd, sel_ldr_vec, app_vec);
   }
@@ -117,7 +117,7 @@ struct SelLdrLauncher {
   // ownership of the handle prior to the Dtor firing.
   Handle channel() const { return channel_; }
 
-  std::string GetApplicationName() const { return application_name_; }
+  nacl::string GetApplicationName() const { return application_name_; }
 
   // Returns the socket address used to connect to the sel_ldr.
   struct NaClDesc* GetSelLdrSocketAddress() const { return sock_addr_; }
@@ -134,21 +134,21 @@ struct SelLdrLauncher {
  private:
   void GetPluginDirectory(char* buffer, size_t len);
 
-  std::string GetSelLdrPathName();
+  nacl::string GetSelLdrPathName();
 
-  std::string ExpandVar(std::string arg);
+  nacl::string ExpandVar(nacl::string arg);
 
-  void BuildArgv(std::vector<std::string>* argv);
+  void BuildArgv(std::vector<nacl::string>* argv);
 
   // If subprocess creation fails, both child_ and channel_ are set to
   // kInvalidHandle. We have different implementations for unix and win.
   // NOTE: you must call Init() and InitChannelBuf() before Launch()
   bool Launch();
 
-  void Init(const std::string& application_name,
+  void Init(const nacl::string& application_name,
             int imc_fd,
-            const std::vector<std::string>& sel_ldr_argv,
-            const std::vector<std::string>& application_argv);
+            const std::vector<nacl::string>& sel_ldr_argv,
+            const std::vector<nacl::string>& application_argv);
 
   void InitChannelBuf(Handle handle);
 
@@ -157,13 +157,13 @@ struct SelLdrLauncher {
   Handle channel_;
   // The following strings and vectors are used by BuildArgv to
   // create a command line, they are initialized by InitBasic().
-  std::string channel_number_;
-  std::string sel_ldr_;
-  std::string application_name_;
-  std::vector<std::string> sel_ldr_argv_;
-  std::vector<std::string> application_argv_;
+  nacl::string channel_number_;
+  nacl::string sel_ldr_;
+  nacl::string application_name_;
+  std::vector<nacl::string> sel_ldr_argv_;
+  std::vector<nacl::string> application_argv_;
   // unlike the others above this is set from within Launch();
-  std::string channel_buf_;
+  nacl::string channel_buf_;
 
   // The socket address returned from sel_ldr for connects.
   struct NaClDesc* sock_addr_;

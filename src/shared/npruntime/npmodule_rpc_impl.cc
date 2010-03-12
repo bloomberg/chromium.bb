@@ -4,6 +4,7 @@
 
 #include <limits>
 
+#include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/checked_cast.h"
 #include "native_client/src/shared/npruntime/npmodule.h"
@@ -155,7 +156,7 @@ NaClSrpcError NPModuleRpcServer::NPN_GetURL(NaClSrpcChannel* channel,
     *nperr = NPERR_GENERIC_ERROR;
   } else {
     NPModule* module = NPModule::GetModule(wire_npp);
-    std::string url_origin = nacl::UrlToOrigin(url);
+    nacl::string url_origin = nacl::UrlToOrigin(url);
 
     nacl_srpc::NpGetUrlClosure* closure = new(std::nothrow)
         nacl_srpc::NpGetUrlClosure(WireFormatToNPP(wire_npp),

@@ -10,8 +10,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_SERVICE_RUNTIME_INTERFACE_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_SERVICE_RUNTIME_INTERFACE_H_
 
-#include <string>
-
+#include "native_client/src/include/nacl_string.h"
 #include "native_client/src/trusted/plugin/srpc/utility.h"
 
 namespace nacl {
@@ -45,7 +44,7 @@ class ServiceRuntimeInterface {
   bool Start(const char* nacl_file);
   bool Start(const char* url, const void* buffer, int32_t size);
   bool Kill();
-  bool LogAtServiceRuntime(int severity, std::string msg);
+  bool LogAtServiceRuntime(int severity, nacl::string msg);
   ScriptableHandle<SocketAddress>* default_socket_address() const;
   ScriptableHandle<ConnectedSocket>* default_socket() const;
   ScriptableHandle<SocketAddress>* GetSocketAddress(Plugin* plugin,

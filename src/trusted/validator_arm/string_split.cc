@@ -4,6 +4,7 @@
  * be found in the LICENSE file.
  */
 
+#include "native_client/src/include/nacl_string.h"
 #include "native_client/src/trusted/validator_arm/string_split.h"
 
 // ----------------------------------------------------------------------
@@ -36,11 +37,11 @@ void SplitStringToIteratorUsing(const StringType& full,
     return;
   }
 
-  std::string::size_type begin_index, end_index;
+  nacl::string::size_type begin_index, end_index;
   begin_index = full.find_first_not_of(delim);
-  while (begin_index != std::string::npos) {
+  while (begin_index != nacl::string::npos) {
     end_index = full.find_first_of(delim, begin_index);
-    if (end_index == std::string::npos) {
+    if (end_index == nacl::string::npos) {
       *result++ = full.substr(begin_index);
       return;
     }
@@ -49,9 +50,9 @@ void SplitStringToIteratorUsing(const StringType& full,
   }
 }
 
-void SplitStringUsing(const std::string& full,
+void SplitStringUsing(const nacl::string& full,
                       const char* delim,
-                      std::vector<std::string>* result) {
-  std::back_insert_iterator< std::vector<std::string> > it(*result);
+                      std::vector<nacl::string>* result) {
+  std::back_insert_iterator< std::vector<nacl::string> > it(*result);
   SplitStringToIteratorUsing(full, delim, it);
 }

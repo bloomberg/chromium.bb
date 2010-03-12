@@ -8,9 +8,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string>
-#include <sstream>
 
+#include "native_client/src/include/nacl_string.h"
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 #ifdef __native_client__
 #include "native_client/src/shared/npruntime/npnavigator.h"
@@ -47,8 +46,8 @@ bool DebugOutputEnabled() {
   return DEBUG_STATE_ENABLED == debug_output_enabled;
 }
 
-std::string FormatNPVariantInternal(const NPVariant* variant) {
-  std::stringstream ss;
+nacl::string FormatNPVariantInternal(const NPVariant* variant) {
+  nacl::stringstream ss;
   if (NULL == variant) {
     ss << "NULL";
   } else if (NPVARIANT_IS_VOID(*variant)) {
@@ -69,7 +68,7 @@ std::string FormatNPVariantInternal(const NPVariant* variant) {
     ss << "NPVariant(string, \"";
     NPString str = NPVARIANT_TO_STRING(*variant);
     if (0 != str.UTF8Length && NULL != str.UTF8Characters) {
-      std::string s(str.UTF8Characters);
+      nacl::string s(str.UTF8Characters);
       ss << s.substr(0, str.UTF8Length);
     }
     ss << "\")";
@@ -95,7 +94,7 @@ const char* FormatNPIdentifier(NPIdentifier ident) {
   if (!DebugOutputEnabled()) {
     return buf;
   }
-  std::string s("NPIdentifier(");
+  nacl::string s("NPIdentifier(");
   if (NPN_IdentifierIsString(ident)) {
     const NPUTF8* name = NPN_UTF8FromIdentifier(ident);
     s += name;
@@ -126,7 +125,7 @@ const char* FormatNPVariantVector(const NPVariant* vect, uint32_t count) {
   if (!DebugOutputEnabled()) {
     return buf;
   }
-  std::stringstream ss;
+  nacl::stringstream ss;
   ss << "[";
   for (uint32_t i = 0; i < count; ++i) {
     ss << FormatNPVariantInternal(vect + i);

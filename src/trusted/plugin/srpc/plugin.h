@@ -9,8 +9,8 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_PLUGIN_H_
 
 #include <stdio.h>
-#include <string>
 
+#include "native_client/src/include/nacl_string.h"
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
@@ -42,26 +42,26 @@ class Plugin : public PortableHandle {
 
   // Load from the local URL saved in local_url.
   // Saves local_url in local_url_ and origin in nacl_module_origin_.
-  bool Load(std::string remote_url, const char* local_url);
+  bool Load(nacl::string remote_url, const char* local_url);
   // Load nexe binary from the provided buffer.
   // Saves local_url in local_url_ and origin in nacl_module_origin_.
-  bool Load(std::string remote_url,
+  bool Load(nacl::string remote_url,
             const char* local_url,
             const void* buffer,
             int32_t size);
 
   // Log a message by sending it to the service runtime.
-  bool LogAtServiceRuntime(int severity, std::string msg);
+  bool LogAtServiceRuntime(int severity, nacl::string msg);
 
   // Origin of page with the embed tag that created this plugin instance.
-  std::string origin() { return origin_; }
+  nacl::string origin() { return origin_; }
 
   // Initialize some plugin data.
   bool Start();
 
   // Origin of NaCl module
-  std::string nacl_module_origin() { return nacl_module_origin_; }
-  void set_nacl_module_origin(std::string origin) {
+  nacl::string nacl_module_origin() { return nacl_module_origin_; }
+  void set_nacl_module_origin(nacl::string origin) {
     nacl_module_origin_ = origin;
   }
 
@@ -126,8 +126,8 @@ class Plugin : public PortableHandle {
   int32_t video_update_mode_;
   int32_t width_;
 
-  std::string origin_;
-  std::string nacl_module_origin_;
+  nacl::string origin_;
+  nacl::string nacl_module_origin_;
 
   bool origin_valid_;
 

@@ -22,8 +22,9 @@
 // only for logging" and logging is the use case here. (In addition, since
 // we're logging data whose type is templatized, printf isn't a particularly
 // attractive option.)
-#include <string>
 #include <strstream>
+
+#include "native_client/src/include/nacl_string.h"
 
 namespace nacl {
 
@@ -75,9 +76,9 @@ INLINE target_t nacl
     << target_limits::min() << ", "
     << target_limits::max() << ")";
 
-  // Transfer the strstream to a std::string. This makes sure
+  // Transfer the strstream to a nacl::string. This makes sure
   // it's null-terminated.
-  std::string strLog(stm.str(), stm.pcount());
+  nacl::string strLog(stm.str(), stm.pcount());
   NaClLog(LOG_FATAL, "%s", strLog.c_str());
 
   // Unreachable, assuming that LOG_FATAL really is fatal
@@ -85,4 +86,3 @@ INLINE target_t nacl
 }
 
 #endif  // NATIVE_CLIENT_SRC_INCLUDE_CHECKED_CAST_DEBUG_H_
-

@@ -7,8 +7,9 @@
 #ifndef NATIVE_CLIENT_PRIVATE_TOOLS_NCV_ARM_STRING_SPLIT_H__
 #define NATIVE_CLIENT_PRIVATE_TOOLS_NCV_ARM_STRING_SPLIT_H__
 
-#include <string>
 #include <vector>
+
+#include "native_client/src/include/nacl_string.h"
 
 // ----------------------------------------------------------------------
 // SplitStringUsing()
@@ -16,7 +17,7 @@
 //    to 'result'.  If there are consecutive delimiters, this function skips
 //    over all of them.
 // ----------------------------------------------------------------------
-void SplitStringUsing(const std::string& full, const char* delim,
-                      std::vector<std::string>* res);
+void SplitStringUsing(const nacl::string& full, const char* delim,
+                      std::vector<nacl::string>* res);
 
 #endif  // NATIVE_CLIENT_PRIVATE_TOOLS_NCV_ARM_STRING_SPLIT_H__

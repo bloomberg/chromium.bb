@@ -14,6 +14,7 @@
 #include <map>
 #include <vector>
 
+#include "native_client/src/include/nacl_string.h"
 #include "native_client/src/trusted/validator_arm/arm_validate.h"
 #include "native_client/src/trusted/validator_arm/arm_insts_rt.h"
 #include "native_client/src/trusted/validator_arm/ncdecode.h"
@@ -148,7 +149,7 @@ void ValidateWarn(const char *fmt, ...) {
 }
 
 // Generate a string describing the disassembled text of the given instruction.
-std::string InstructionLine(const NcDecodedInstruction* inst) {
+nacl::string InstructionLine(const NcDecodedInstruction* inst) {
   char buffer_1[1024];
   char buffer_2[2014];
   DescribeInst(buffer_1, sizeof(buffer_1), inst);
@@ -157,7 +158,7 @@ std::string InstructionLine(const NcDecodedInstruction* inst) {
            inst->vpc,
            inst->inst,
            buffer_1);
-  return std::string(buffer_2);
+  return nacl::string(buffer_2);
 }
 
 // Collect Constant Pool ranges from a text segment, and look

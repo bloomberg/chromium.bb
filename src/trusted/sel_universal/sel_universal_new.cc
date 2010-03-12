@@ -12,16 +12,15 @@
 // NOTE: we need to include this so that it can "hijack" main
 #include <SDL.h>
 
-#include <string>
 #include <vector>
 
+#include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 
-using std::string;
 using std::vector;
 
 
@@ -63,7 +62,7 @@ struct NaClSrpcChannel untrusted_command_channel;
 struct NaClSrpcChannel channel;
 
 int main(int  argc, char *argv[]) {
-  string app_name;
+  nacl::string app_name;
   int pass_debug = 0;
   int width = 640;
   int height = 480;
@@ -96,13 +95,13 @@ int main(int  argc, char *argv[]) {
     return 1;
   }
 
-  vector<string> sel_ldr_argv;
-  vector<string> app_argv;
+  vector<nacl::string> sel_ldr_argv;
+  vector<nacl::string> app_argv;
 
   int i;
   /* remaining sel_universal arguments come first. */
   for (i = 0; i < argc; ++i) {
-    if (string("--") == argv[i]) break;
+    if (nacl::string("--") == argv[i]) break;
   }
 
   sel_ldr_argv.push_back("-P");
@@ -114,7 +113,7 @@ int main(int  argc, char *argv[]) {
   }
   /* sel_ldr arguments come next. */
   for (++i; i < argc; ++i) {
-    if (string("--") == argv[i]) break;
+    if (nacl::string("--") == argv[i]) break;
 
     sel_ldr_argv.push_back(argv[i]);
   }

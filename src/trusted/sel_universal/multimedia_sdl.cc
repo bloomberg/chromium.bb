@@ -13,7 +13,6 @@
 
 #include <functional>
 #include <queue>
-#include <string>
 
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync.h"

@@ -8,7 +8,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_ORIGIN_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_ORIGIN_H_
 
-#include <string>
+#include "native_client/src/include/nacl_string.h"
 
 namespace nacl {
 
@@ -25,7 +25,7 @@ namespace nacl {
  *      -> "http://news.google.com"
  * "file:///path/to/file" -> "file://localhost"
  */
-std::string UrlToOrigin(std::string url);
+nacl::string UrlToOrigin(nacl::string url);
 
 /*
  * Given an origin string as returned above, return if it is in our
@@ -34,7 +34,7 @@ std::string UrlToOrigin(std::string url);
  * implementations may use a file or browser config: data and provide
  * a GUI to manage it.
  */
-bool OriginIsInWhitelist(std::string origin);
+bool OriginIsInWhitelist(nacl::string origin);
 
 }
 

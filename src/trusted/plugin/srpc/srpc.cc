@@ -10,7 +10,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <string>
 #include <set>
 
 #include "native_client/src/include/checked_cast.h"

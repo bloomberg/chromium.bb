@@ -8,7 +8,6 @@
 #include <string.h>
 
 #include <map>
-#include <string>
 
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/shared/platform/nacl_log.h"

@@ -9,10 +9,10 @@
 
 #include <stdio.h>
 
-#include <string>
 #include <set>
 #include <vector>
 
+#include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/validator_arm/decoder_generator.h"
 #include "native_client/src/trusted/validator_arm/arm_inst_modeling.h"
@@ -47,7 +47,7 @@ static int kMaskStepBit = 0x1 << (kMaskStepBits - 1);
 
 // Generate a C expression that can be used in a test to match
 // the sequence of (consecutive) bits defined by the given mask.
-static std::string GenerateValueTest(uint32_t mask) {
+static nacl::string GenerateValueTest(uint32_t mask) {
   // First find index of rightmost digit in mask.
   char value_string[128];
   int shift = PosOfLowestBitSet(mask);
@@ -67,7 +67,7 @@ static std::string GenerateValueTest(uint32_t mask) {
              "value & 0x%08x",
              mask);
   }
-  std::string test_value(value_string);
+  nacl::string test_value(value_string);
   return test_value;
 }
 

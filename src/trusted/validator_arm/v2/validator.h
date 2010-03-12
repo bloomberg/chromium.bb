@@ -14,9 +14,9 @@
 
 #include <stdint.h>
 #include <stdlib.h>
-#include <string>
 #include <vector>
 
+#include "native_client/src/include/nacl_string.h"
 #include "native_client/src/trusted/validator_arm/v2/address_set.h"
 #include "native_client/src/trusted/validator_arm/v2/decode.h"
 #include "native_client/src/trusted/validator_arm/v2/inst_classes.h"
@@ -326,7 +326,7 @@ class ProblemSink {
    *      decision -- typically a branch target.
    */
   virtual void report_problem(uint32_t vaddr, nacl_arm_dec::SafetyLevel safety,
-      const std::string &problem_code, uint32_t ref_vaddr = 0) {
+      const nacl::string &problem_code, uint32_t ref_vaddr = 0) {
     UNREFERENCED_PARAMETER(vaddr);
     UNREFERENCED_PARAMETER(safety);
     UNREFERENCED_PARAMETER(problem_code);

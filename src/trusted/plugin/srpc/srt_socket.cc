@@ -9,6 +9,7 @@
 
 #include "native_client/src/trusted/plugin/srpc/srt_socket.h"
 
+#include "native_client/src/include/nacl_string.h"
 #include "native_client/src/trusted/plugin/srpc/plugin.h"
 #include "native_client/src/trusted/plugin/srpc/service_runtime_interface.h"
 #include "native_client/src/trusted/plugin/srpc/srpc_client.h"
@@ -89,7 +90,7 @@ bool SrtSocket::HardShutdown() {
   return rpc_result;
 }
 
-bool SrtSocket::SetOrigin(std::string origin) {
+bool SrtSocket::SetOrigin(nacl::string origin) {
   if (!(connected_socket()->HasMethod(kSetOriginIdent, METHOD_CALL))) {
     dprintf(("No set_origin method was found\n"));
     return false;
@@ -204,7 +205,7 @@ bool SrtSocket::StartModule(int *load_status) {
   return rpc_result;
 }
 
-bool SrtSocket::Log(int severity, std::string msg) {
+bool SrtSocket::Log(int severity, nacl::string msg) {
   if (!connected_socket()->HasMethod(kLogIdent, METHOD_CALL)) {
     dprintf(("No log method was found\n"));
     return false;

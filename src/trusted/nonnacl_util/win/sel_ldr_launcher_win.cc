@@ -7,9 +7,9 @@
 #include <string.h>
 #include <windows.h>
 
-#include <string>
 #include <vector>
 
+#include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
@@ -19,7 +19,6 @@
 // @IGNORE_LINES_FOR_CODE_HYGIENE[1]
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
-using std::string;
 using std::vector;
 
 namespace nacl {
@@ -39,7 +38,7 @@ SelLdrLauncher::~SelLdrLauncher() {
   }
 }
 
-string SelLdrLauncher::GetSelLdrPathName() {
+nacl::string SelLdrLauncher::GetSelLdrPathName() {
   char buffer[FILENAME_MAX];
 #ifdef _WIN64
   const char* const kSelLdrBasename = "\\sel_ldr64.exe";
@@ -47,13 +46,13 @@ string SelLdrLauncher::GetSelLdrPathName() {
   const char* const kSelLdrBasename = "\\sel_ldr.exe";
 #endif
   GetPluginDirectory(buffer, sizeof(buffer));
-  return string(buffer) + kSelLdrBasename;
+  return nacl::string(buffer) + kSelLdrBasename;
 }
 
 // TODO(sehr): document what this is supposed to do exactly
 // NOTE: this may be buggy, e.g. how is \\ handled?
-static string Escape(string s) {
-  string result;
+static nacl::string Escape(nacl::string s) {
+  nacl::string result;
   for (size_t i = 0; i < s.size(); ++i) {
     if (s[i] == '"') {
       result += "\\\"";
@@ -88,11 +87,11 @@ bool SelLdrLauncher::Launch() {
   }
 
   InitChannelBuf(channel);
-  vector<string> command;
+  vector<nacl::string> command;
   BuildArgv(&command);
 
   // Convert to single string for process creation.
-  std::string str = "";
+  nacl::string str = "";
   for (size_t i = 0; i < command.size(); ++i) {
     if (i > 0) {
       str += " ";

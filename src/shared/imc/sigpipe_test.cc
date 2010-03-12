@@ -14,12 +14,11 @@
 #include <string.h>
 #include <errno.h>
 
-
-#include <string>
 #include <vector>
 
 #include "native_client/src/include/checked_cast.h"
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_process.h"
 #include "native_client/src/shared/imc/nacl_imc.h"
@@ -64,7 +63,7 @@ void PickRandomSocketAddress(nacl::SocketAddress *addr) {
 }
 
 
-void MyPerror(std::string s) {
+void MyPerror(nacl::string s) {
   char error_msg[512];
   int err = errno;
   if (0 == nacl::GetLastErrorString(error_msg, sizeof error_msg)) {
@@ -76,12 +75,12 @@ void MyPerror(std::string s) {
 }
 
 
-void SplitString(std::vector<std::string> *result, std::string s, char sep) {
-  std::string::size_type start;
-  std::string::size_type sep_pos;
+void SplitString(std::vector<nacl::string> *result, nacl::string s, char sep) {
+  nacl::string::size_type start;
+  nacl::string::size_type sep_pos;
 
   for (start = 0;
-       std::string::npos != (sep_pos = s.find(sep, start));
+       nacl::string::npos != (sep_pos = s.find(sep, start));
        start = sep_pos + 1) {
     result->push_back(s.substr(start, sep_pos - start));
   }
@@ -90,8 +89,8 @@ void SplitString(std::vector<std::string> *result, std::string s, char sep) {
   }
 }
 
-void ApplyInt(std::vector<int> *result, std::vector<std::string> const &vs) {
-  for (std::vector<std::string>::const_iterator it = vs.begin();
+void ApplyInt(std::vector<int> *result, std::vector<nacl::string> const &vs) {
+  for (std::vector<nacl::string>::const_iterator it = vs.begin();
        vs.end() != it;
        ++it) {
     result->push_back(strtol((*it).c_str(), static_cast<char **>(0), 0));
@@ -218,7 +217,7 @@ int SendDescriptor(TestState *tsp, int mode) {
   hdr.flags = 0;
   printf("Sending a descriptor, mode %d\n", mode);
   int result(-1);
-  std::string op;
+  nacl::string op;
   switch (mode) {
     case 0: {
       op = "SendDatagramTo";
@@ -352,7 +351,7 @@ int SendData(TestState *tsp, int mode) {
   hdr.iov_length = 1;
   hdr.handle_count = 0;
   hdr.flags = 0;
-  std::string op;
+  nacl::string op;
 
   printf("Sending data, mode %d\n", mode);
   switch (mode) {
@@ -493,7 +492,7 @@ int SendDataNoPeer(TestState *tsp, int mode) {
   hdr.iov_length = 1;
   hdr.handle_count = 0;
   hdr.flags = 0;
-  std::string op;
+  nacl::string op;
   switch (mode) {
     case 0: {
       op = "SendDatagramTo";
@@ -836,7 +835,7 @@ int main(int ac,
         break;
       }
       case 't': {
-        std::vector<std::string> vs;
+        std::vector<nacl::string> vs;
         SplitString(&vs, optarg, ',');
         ApplyInt(&gTestSequence, vs);
         break;

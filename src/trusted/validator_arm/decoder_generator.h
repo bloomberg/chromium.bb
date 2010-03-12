@@ -10,7 +10,6 @@
 #ifndef NATIVE_CLIENT_PRIVATE_TOOLS_NCV_ARM_DECODER_GENERATOR_H__
 #define NATIVE_CLIENT_PRIVATE_TOOLS_NCV_ARM_DECODER_GENERATOR_H__
 
-#include <string>
 #include <list>
 #include <map>
 #include <set>

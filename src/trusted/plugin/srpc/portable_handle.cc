@@ -5,13 +5,10 @@
  */
 
 
-
-
 #include <stdio.h>
 #include <string.h>
 
 #include <map>
-#include <string>
 
 #include "base/basictypes.h"
 #include "native_client/src/trusted/plugin/srpc/portable_handle.h"

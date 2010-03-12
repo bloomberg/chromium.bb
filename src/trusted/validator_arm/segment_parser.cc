@@ -9,37 +9,37 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <string>
 #include <vector>
 
+#include "native_client/src/include/nacl_string.h"
 #include "native_client/src/trusted/validator_arm/segment_parser.h"
 #include "native_client/src/trusted/validator_arm/string_split.h"
 
 SegmentParser::SegmentParser(std::istream* stream)
     : code_segment_() {
-  static std::string whitespace(" \t");
+  static nacl::string whitespace(" \t");
   // Start by processing the input file and collecting data.
-  std::string input_line;
+  nacl::string input_line;
   bool is_first = true;
   uint32_t vbase = 0;  // Default assumption.
   std::vector<uint32_t> values;
   while (std::getline(*stream, input_line)) {
     // Tokenize the command line and process
-    std::string line(input_line);
+    nacl::string line(input_line);
     // Start by removing trailing comments.
-    std::string::size_type idx = line.find("#");
-    if (idx != std::string::npos) {
+    nacl::string::size_type idx = line.find("#");
+    if (idx != nacl::string::npos) {
       line = line.substr(0, idx);
     }
 
     // Pull out data
-    std::vector<std::string> datum;
+    std::vector<nacl::string> datum;
     SplitStringUsing(line, whitespace.c_str(), &datum);
 
-    for (std::vector<std::string>::const_iterator iter = datum.begin();
+    for (std::vector<nacl::string>::const_iterator iter = datum.begin();
          iter != datum.end();
          ++iter) {
-      std::string data = *iter;
+      nacl::string data = *iter;
       char* end_ptr;
       uint32_t value = strtoul(data.c_str(), &end_ptr, 16);
       if (is_first) {

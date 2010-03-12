@@ -8,8 +8,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_SRT_SOCKET_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_SRT_SOCKET_H_
 
-#include <string>
-
+#include "native_client/src/include/nacl_string.h"
 #include "native_client/src/shared/imc/nacl_imc.h"
 #include "native_client/src/trusted/plugin/srpc/connected_socket.h"
 #include "native_client/src/trusted/plugin/srpc/scriptable_handle.h"
@@ -23,13 +22,13 @@ class SrtSocket {
   ~SrtSocket();
 
   bool HardShutdown();
-  bool SetOrigin(std::string origin);
+  bool SetOrigin(nacl::string origin);
   bool StartModule(int *load_status);
   bool LoadModule(NaClSrpcImcDescType desc);
 #if NACL_WINDOWS && !defined(NACL_STANDALONE)
   bool InitHandlePassing(NaClSrpcImcDescType desc, nacl::Handle sel_ldr_handle);
 #endif
-  bool Log(int severity, std::string msg);
+  bool Log(int severity, nacl::string msg);
 
   ConnectedSocket *connected_socket() const {
     return static_cast<ConnectedSocket*>(connected_socket_->get_handle());

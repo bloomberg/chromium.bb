@@ -12,8 +12,8 @@
 
 #include <stdio.h>
 #include <map>
-#include <string>
 
+#include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 
@@ -54,10 +54,10 @@ class PortablePluginInterface {
   // browser-specific class, such as SRPC_Plugin
   static uintptr_t GetStrIdentifierCallback(const char *method_name);
   static bool Alert(nacl_srpc::PluginIdentifier plugin_identifier,
-                    const std::string& text);
+                    const nacl::string& text);
 
   static bool GetOrigin(nacl_srpc::PluginIdentifier plugin_identifier,
-                        std::string **origin);
+                        nacl::string **origin);
   // To indicate successful loading of a module, invoke the onload handler.
   bool RunOnloadHandler(nacl_srpc::PluginIdentifier plugin_identifier);
   // To indicate unsuccessful loading of a module, invoke the onfail handler.

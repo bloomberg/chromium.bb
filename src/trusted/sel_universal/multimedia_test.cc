@@ -10,12 +10,8 @@
 #include <SDL.h>
 #include <string.h>
 
-#include <string>
-
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/sel_universal/multimedia.h"
-
-using std::string;
 
 // TODO(robertm): add proper usage string
 static const char* kUsage =

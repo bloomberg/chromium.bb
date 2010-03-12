@@ -12,8 +12,8 @@
 #include <string.h>
 
 #include <map>
-#include <string>
 
+#include "native_client/src/include/nacl_string.h"
 #include "native_client/src/trusted/plugin/srpc/browser_interface.h"
 #include "native_client/src/include/checked_cast.h"
 #include "native_client/src/include/nacl_elf.h"
@@ -90,7 +90,7 @@ uintptr_t PortablePluginInterface::GetStrIdentifierCallback(
 }
 
 // TODO(robertm): this is a quick hack to address immediate shortcomings
-static void CleanString(std::string* text) {
+static void CleanString(nacl::string* text) {
   for (size_t i = 0; i < text->size(); ++i) {
     if ((*text)[i] == '\'') {
       (*text)[i] = '\"';
@@ -101,7 +101,7 @@ static void CleanString(std::string* text) {
 
 bool PortablePluginInterface::Alert(
     nacl_srpc::PluginIdentifier plugin_identifier,
-    const std::string& text) {
+    const nacl::string& text) {
   NPObject* window;
   NPP npp = plugin_identifier;
   NPN_GetValue(npp, NPNVWindowNPObject, &window);
@@ -109,7 +109,7 @@ bool PortablePluginInterface::Alert(
   // usually these messages are important enough to call attention to them
   puts(text.c_str());
 
-  std::string command = text;
+  nacl::string command = text;
   CleanString(&command);
   command = "alert('" + command + "');";
   uint32_t size = assert_cast<uint32_t>(command.size());
@@ -117,7 +117,7 @@ bool PortablePluginInterface::Alert(
   memcpy(buffer, command.c_str(), command.size());
 
   // TODO(sehr): write a stand-alone function that converts
-  //             between std::string and NPString, and put it in utility.cc.
+  //             between nacl::string and NPString, and put it in utility.cc.
   NPString script;
   script.UTF8Length = size;
   script.UTF8Characters = buffer;
@@ -132,7 +132,7 @@ bool PortablePluginInterface::Alert(
 
 bool PortablePluginInterface::GetOrigin(
     nacl_srpc::PluginIdentifier plugin_identifier,
-    std::string **origin) {
+    nacl::string **origin) {
   NPP instance = plugin_identifier;
   NPVariant loc_value;
   NPVariant href_value;
@@ -168,7 +168,7 @@ bool PortablePluginInterface::GetOrigin(
         dprintf(("GetOrigin: no href property value\n"));
         break;
     }
-    std::string *href = new(std::nothrow) std::string(
+    nacl::string *href = new(std::nothrow) nacl::string(
       NPVARIANT_TO_STRING(href_value).UTF8Characters,
       NPVARIANT_TO_STRING(href_value).UTF8Length);
     dprintf(("GetOrigin: href %s\n", href->c_str()));

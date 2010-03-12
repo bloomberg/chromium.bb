@@ -5,14 +5,11 @@
  */
 
 
-
-
 #include <setjmp.h>
 #include <stdio.h>
 #include <string.h>
 
 #include <map>
-#include <string>
 
 #include "native_client/src/trusted/plugin/srpc/desc_based_handle.h"
 #include "native_client/src/trusted/plugin/srpc/portable_handle.h"

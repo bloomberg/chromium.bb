@@ -12,7 +12,7 @@
 #include <sys/ptrace.h>
 #include <sys/user.h>
 #include <string.h>
-#include <string>
+
 #include "native_client/src/trusted/sandbox/linux/nacl_registers.h"
 #include "native_client/src/trusted/sandbox/linux/nacl_syscall_checker.h"
 #include "native_client/src/trusted/sandbox/linux/nacl_syscall_def.h"

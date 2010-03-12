@@ -13,7 +13,6 @@
 // TODO(gregoryd): probably too many includes here.
 #include <stdio.h>
 #include <map>
-#include <string>
 #include "base/basictypes.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 

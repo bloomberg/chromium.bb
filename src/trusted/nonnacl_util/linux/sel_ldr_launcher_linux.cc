@@ -17,12 +17,12 @@
 #include <sys/param.h>
 #include <unistd.h>
 
+#include "native_client/src/include/nacl_string.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 
 
-using std::string;
 using std::vector;
 
 namespace nacl {
@@ -47,10 +47,10 @@ SelLdrLauncher::~SelLdrLauncher() {
 }
 
 
-string SelLdrLauncher::GetSelLdrPathName() {
+nacl::string SelLdrLauncher::GetSelLdrPathName() {
   char buffer[FILENAME_MAX];
   GetPluginDirectory(buffer, sizeof(buffer));
-  return string(buffer) + "/sel_ldr";
+  return nacl::string(buffer) + "/sel_ldr";
 }
 
 const size_t kMaxExecArgs = 64;
@@ -67,7 +67,7 @@ bool SelLdrLauncher::Launch() {
 
   // complete command line setup
   InitChannelBuf(pair[1]);
-  vector<string> command;
+  vector<nacl::string> command;
   BuildArgv(&command);
   if (kMaxExecArgs <= command.size()) {
     // TODO(robertm): emit error message

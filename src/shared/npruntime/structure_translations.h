@@ -7,7 +7,6 @@
 #ifndef NATIVE_CLIENT_SRC_SHARED_NPRUNTIME_NPRPC_H_
 #define NATIVE_CLIENT_SRC_SHARED_NPRUNTIME_NPRPC_H_
 
-#include <string>
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/shared/npruntime/npcapability.h"
 

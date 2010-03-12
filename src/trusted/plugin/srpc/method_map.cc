@@ -6,7 +6,6 @@
 
 
 #include <map>
-#include <string>
 
 #include "native_client/src/include/checked_cast.h"
 #include "native_client/src/shared/platform/nacl_log.h"

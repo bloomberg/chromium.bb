@@ -16,8 +16,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include <string>
-
+#include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/portability_string.h"
 
 #include "native_client/src/trusted/desc/nacl_desc_conn_cap.h"
@@ -302,7 +301,7 @@ bool Plugin::Init(struct PortableHandleInitializer* init_info) {
     return false;
   }
 
-  std::string *href = NULL;
+  nacl::string *href = NULL;
   if (PortablePluginInterface::GetOrigin(
           init_info->plugin_interface_->GetPluginIdentifier(), &href)) {
     origin_ = nacl::UrlToOrigin(*href);
@@ -384,11 +383,11 @@ void Plugin::set_local_url(const char* name) {
 }
 
 // Create a new service node from a downloaded service.
-bool Plugin::Load(std::string remote_url, const char* local_url) {
+bool Plugin::Load(nacl::string remote_url, const char* local_url) {
   return Load(remote_url, local_url, NULL, 0);
 }
 
-bool Plugin::Load(std::string remote_url,
+bool Plugin::Load(nacl::string remote_url,
                   const char* local_url,
                   const void* buffer,
                   int32_t size) {
@@ -470,7 +469,7 @@ bool Plugin::Load(std::string remote_url,
   return true;
 }
 
-bool Plugin::LogAtServiceRuntime(int severity, std::string msg) {
+bool Plugin::LogAtServiceRuntime(int severity, nacl::string msg) {
   return service_runtime_interface_->LogAtServiceRuntime(severity, msg);
 }
 

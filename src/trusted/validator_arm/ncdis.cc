@@ -17,6 +17,7 @@
 #include <iostream>
 #include <fstream>
 
+#include "native_client/src/include/nacl_string.h"
 #include "native_client/src/trusted/validator_x86/ncfileutil.h"
 #include "native_client/src/shared/utils/flags.h"
 #include "native_client/src/trusted/validator_arm/arm_insts_rt.h"
@@ -232,21 +233,21 @@ static void ProcessCommandLine(int argc, const char* argv[]);
 // a gold standard for comparing against the output of the application run.
 static void ProcessInputFile(std::istream& input_file) {
   // Process each input line like a list of command line arguments.
-  static std::string whitespace(" \t");
+  static nacl::string whitespace(" \t");
   const Bool self_document = FLAGS_self_document;
-  std::string input_line;
+  nacl::string input_line;
   while (std::getline(input_file, input_line)) {
     // Tokenize the command line and process.
-    std::string commands(input_line);  // extracted commands
+    nacl::string commands(input_line);  // extracted commands
 
     // Start by removing trailing comments.
-    std::string::size_type idx = commands.find("#");
-    if (idx != std::string::npos) {
+    nacl::string::size_type idx = commands.find("#");
+    if (idx != nacl::string::npos) {
       commands = commands.substr(0, idx);
     }
 
     // Pull out arguments
-    std::vector<std::string> args;
+    std::vector<nacl::string> args;
     SplitStringUsing(commands, whitespace.c_str(), &args);
 
     // If command line arguments found, build new argc/argv and

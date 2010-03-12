@@ -13,8 +13,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include <string>
-
+#include "native_client/src/include/nacl_string.h"
 #include "native_client/src/shared/imc/nacl_imc.h"
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/shared/npruntime/npbridge.h"
@@ -35,10 +34,10 @@ class NPModule : public NPBridge {
 
   static bool IsWebkit() { return is_webkit; }
 
-  std::string origin() { return origin_; }
-  void set_origin(std::string origin) { origin_ = origin; }
-  std::string nacl_module_origin() { return nacl_module_origin_; }
-  void set_nacl_module_origin(std::string nacl_module_origin) {
+  nacl::string origin() { return origin_; }
+  void set_origin(nacl::string origin) { origin_ = origin; }
+  nacl::string nacl_module_origin() { return nacl_module_origin_; }
+  void set_nacl_module_origin(nacl::string nacl_module_origin) {
     nacl_module_origin_ = nacl_module_origin;
   }
 
@@ -136,9 +135,9 @@ class NPModule : public NPBridge {
   NPObject* proxy_;
 
   // The URL origin of the HTML page that started this module.
-  std::string origin_;
+  nacl::string origin_;
   // The URL origin of the NaCl module implementing the plugin.
-  std::string nacl_module_origin_;
+  nacl::string nacl_module_origin_;
 
   // The NPWindow of this plugin instance.
   NPWindow* window_;

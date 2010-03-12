@@ -10,8 +10,8 @@
  */
 
 #include <set>
-#include <string>
 
+#include "native_client/src/include/nacl_string.h"
 #include "native_client/src/trusted/validator_arm/nop_patterns.h"
 #include "native_client/src/trusted/validator_arm/arm_insts_rt.h"
 #include "native_client/src/trusted/validator_arm/arm_validate.h"
@@ -24,7 +24,7 @@ Bool FLAGS_show_counted_instructions = FALSE;
 // A ValidatorPattern that is only unsafe if the flag above is true.
 class CountedValidatorPattern : public ValidatorPattern {
  public:
-  CountedValidatorPattern(const std::string &name, int length, int index)
+  CountedValidatorPattern(const nacl::string &name, int length, int index)
       : ValidatorPattern(name, length, index) {}
 
   virtual bool IsSafe(const NcDecodeState &state) {
