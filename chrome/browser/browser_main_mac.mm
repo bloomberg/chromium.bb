@@ -61,9 +61,11 @@ void WillInitializeMainMessageLoop(const MainFunctionParams& parameters) {
 void DidEndMainMessageLoop() {
   AppController* appController = [NSApp delegate];
   [appController didEndMainMessageLoop];
+  LOG(ERROR) << "Notifying APP_TERMINATING.";
   NotificationService::current()->Notify(NotificationType::APP_TERMINATING,
                                          NotificationService::AllSources(),
                                          NotificationService::NoDetails());
+  LOG(ERROR) << "Notified APP_TERMINATING.";
 }
 
 void RecordBreakpadStatusUMA(MetricsService* metrics) {
