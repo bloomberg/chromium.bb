@@ -18,6 +18,7 @@
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/thread.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/app_modal_dialog.h"
@@ -28,6 +29,8 @@
 #include "chrome/browser/automation/extension_automation_constants.h"
 #include "chrome/browser/automation/extension_port_container.h"
 #include "chrome/browser/blocked_popup_container.h"
+#include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_storage.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/chrome_thread.h"
@@ -409,6 +412,22 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
                         HandleFindWindowLocationRequest)
     IPC_MESSAGE_HANDLER(AutomationMsg_BookmarkBarVisibility,
                         GetBookmarkBarVisibility)
+    IPC_MESSAGE_HANDLER(AutomationMsg_GetBookmarksAsJSON,
+                        GetBookmarksAsJSON)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WaitForBookmarkModelToLoad,
+                                    WaitForBookmarkModelToLoad)
+    IPC_MESSAGE_HANDLER(AutomationMsg_AddBookmarkGroup,
+                        AddBookmarkGroup)
+    IPC_MESSAGE_HANDLER(AutomationMsg_AddBookmarkURL,
+                        AddBookmarkURL)
+    IPC_MESSAGE_HANDLER(AutomationMsg_ReparentBookmark,
+                        ReparentBookmark)
+    IPC_MESSAGE_HANDLER(AutomationMsg_SetBookmarkTitle,
+                        SetBookmarkTitle)
+    IPC_MESSAGE_HANDLER(AutomationMsg_SetBookmarkURL,
+                        SetBookmarkURL)
+    IPC_MESSAGE_HANDLER(AutomationMsg_RemoveBookmark,
+                        RemoveBookmark)
     IPC_MESSAGE_HANDLER(AutomationMsg_GetInfoBarCount, GetInfoBarCount)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_ClickInfoBarAccept,
                                     ClickInfoBarAccept)
@@ -1283,6 +1302,187 @@ void AutomationProvider::GetBookmarkBarVisibility(int handle,
       *animating = browser->window()->IsBookmarkBarAnimating();
     }
   }
+}
+
+void AutomationProvider::GetBookmarksAsJSON(int handle,
+                                            std::string* bookmarks_as_json,
+                                            bool *success) {
+  *success = false;
+  if (browser_tracker_->ContainsHandle(handle)) {
+    Browser* browser = browser_tracker_->GetResource(handle);
+    if (browser) {
+      if (!browser->profile()->GetBookmarkModel()->IsLoaded()) {
+        return;
+      }
+      scoped_refptr<BookmarkStorage> storage = new BookmarkStorage(
+          browser->profile(),
+          browser->profile()->GetBookmarkModel());
+      *success = storage->SerializeData(bookmarks_as_json);
+    }
+  }
+}
+
+void AutomationProvider::WaitForBookmarkModelToLoad(
+    int handle,
+    IPC::Message* reply_message) {
+  if (browser_tracker_->ContainsHandle(handle)) {
+    Browser* browser = browser_tracker_->GetResource(handle);
+    BookmarkModel* model = browser->profile()->GetBookmarkModel();
+    if (model->IsLoaded()) {
+      AutomationMsg_WaitForBookmarkModelToLoad::WriteReplyParams(
+          reply_message, true);
+      Send(reply_message);
+    } else {
+      // The observer will delete itself when done.
+      new AutomationProviderBookmarkModelObserver(this, reply_message,
+                                                  model);
+    }
+  }
+}
+
+void AutomationProvider::AddBookmarkGroup(int handle,
+                                          int64 parent_id, int index,
+                                          std::wstring title,
+                                          bool* success) {
+  if (browser_tracker_->ContainsHandle(handle)) {
+    Browser* browser = browser_tracker_->GetResource(handle);
+    if (browser) {
+      BookmarkModel* model = browser->profile()->GetBookmarkModel();
+      if (!model->IsLoaded()) {
+        *success = false;
+        return;
+      }
+      const BookmarkNode* parent = model->GetNodeByID(parent_id);
+      DCHECK(parent);
+      if (parent) {
+        const BookmarkNode* child = model->AddGroup(parent, index,
+                                                    WideToUTF16(title));
+        DCHECK(child);
+        if (child)
+          *success = true;
+      }
+    }
+  }
+  *success = false;
+}
+
+void AutomationProvider::AddBookmarkURL(int handle,
+                                        int64 parent_id, int index,
+                                        std::wstring title, const GURL& url,
+                                        bool* success) {
+  if (browser_tracker_->ContainsHandle(handle)) {
+    Browser* browser = browser_tracker_->GetResource(handle);
+    if (browser) {
+      BookmarkModel* model = browser->profile()->GetBookmarkModel();
+      if (!model->IsLoaded()) {
+        *success = false;
+        return;
+      }
+      const BookmarkNode* parent = model->GetNodeByID(parent_id);
+      DCHECK(parent);
+      if (parent) {
+        const BookmarkNode* child = model->AddURL(parent, index,
+                                                  WideToUTF16(title), url);
+        DCHECK(child);
+        if (child)
+          *success = true;
+      }
+    }
+  }
+  *success = false;
+}
+
+void AutomationProvider::ReparentBookmark(int handle,
+                                          int64 id, int64 new_parent_id,
+                                          int index,
+                                          bool* success) {
+  if (browser_tracker_->ContainsHandle(handle)) {
+    Browser* browser = browser_tracker_->GetResource(handle);
+    if (browser) {
+      BookmarkModel* model = browser->profile()->GetBookmarkModel();
+      if (!model->IsLoaded()) {
+        *success = false;
+        return;
+      }
+      const BookmarkNode* node = model->GetNodeByID(id);
+      DCHECK(node);
+      const BookmarkNode* new_parent = model->GetNodeByID(new_parent_id);
+      DCHECK(new_parent);
+      if (node && new_parent) {
+        model->Move(node, new_parent, index);
+        *success = true;
+      }
+    }
+  }
+  *success = false;
+}
+
+void AutomationProvider::SetBookmarkTitle(int handle,
+                                          int64 id, std::wstring title,
+                                          bool* success) {
+  if (browser_tracker_->ContainsHandle(handle)) {
+    Browser* browser = browser_tracker_->GetResource(handle);
+    if (browser) {
+      BookmarkModel* model = browser->profile()->GetBookmarkModel();
+      if (!model->IsLoaded()) {
+        *success = false;
+        return;
+      }
+      const BookmarkNode* node = model->GetNodeByID(id);
+      DCHECK(node);
+      if (node) {
+        model->SetTitle(node, WideToUTF16(title));
+        *success = true;
+      }
+    }
+  }
+  *success = false;
+}
+
+void AutomationProvider::SetBookmarkURL(int handle,
+                                        int64 id, const GURL& url,
+                                        bool* success) {
+  if (browser_tracker_->ContainsHandle(handle)) {
+    Browser* browser = browser_tracker_->GetResource(handle);
+    if (browser) {
+      BookmarkModel* model = browser->profile()->GetBookmarkModel();
+      if (!model->IsLoaded()) {
+        *success = false;
+        return;
+      }
+      const BookmarkNode* node = model->GetNodeByID(id);
+      DCHECK(node);
+      if (node) {
+        model->SetURL(node, url);
+        *success = true;
+      }
+    }
+  }
+  *success = false;
+}
+
+void AutomationProvider::RemoveBookmark(int handle,
+                                        int64 id,
+                                        bool* success) {
+  if (browser_tracker_->ContainsHandle(handle)) {
+    Browser* browser = browser_tracker_->GetResource(handle);
+    if (browser) {
+      BookmarkModel* model = browser->profile()->GetBookmarkModel();
+      if (!model->IsLoaded()) {
+        *success = false;
+        return;
+      }
+      const BookmarkNode* node = model->GetNodeByID(id);
+      DCHECK(node);
+      if (node) {
+        const BookmarkNode* parent = node->GetParent();
+        DCHECK(parent);
+        model->Remove(parent, parent->IndexOfChild(node));
+        *success = true;
+      }
+    }
+  }
+  *success = false;
 }
 
 void AutomationProvider::HandleInspectElementRequest(

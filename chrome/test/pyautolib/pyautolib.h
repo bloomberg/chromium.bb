@@ -102,6 +102,28 @@ class PyUITestSuite : public UITestSuite, public UITestBase {
   // If |wait_for_open| is false, wait for it to close.
   bool WaitForBookmarkBarVisibilityChange(bool wait_for_open);
 
+  // Get the bookmarks as a JSON string.  Internal method.
+  std::string _GetBookmarksAsJSON();
+
+  // Editing of the bookmark model.  Bookmarks are referenced by id.
+  // The id is a std::wstring, not an int64, for convenience, since
+  // the python side gets IDs converted from a JSON representation
+  // (which "extracts" into a string, not an int).  Since IDs are
+  // grabbed from the current model (and not generated), a conversion
+  // is unnecessary.  URLs are strings and not GURLs for a similar reason.
+  // Bookmark or group (folder) creation:
+  bool AddBookmarkGroup(std::wstring& parent_id, int index,
+                        std::wstring& title);
+  bool AddBookmarkURL(std::wstring& parent_id, int index,
+                      std::wstring& title, std::wstring& url);
+  // Bookmark editing:
+  bool ReparentBookmark(std::wstring& id, std::wstring& new_parent_id,
+                        int index);
+  bool SetBookmarkTitle(std::wstring& id, std::wstring& title);
+  bool SetBookmarkURL(std::wstring& id, std::wstring& url);
+  // Finally, bookmark deletion:
+  bool RemoveBookmark(std::wstring& id);
+
  private:
   base::ScopedNSAutoreleasePool pool_;
 };

@@ -140,6 +140,30 @@ class PyUITestSuite {
       WaitForBookmarkBarVisibilityChange;
   bool WaitForBookmarkBarVisibilityChange(bool wait_for_open);
 
+  %feature("docstring", "Get the bookmarks as a JSON string.  Internal method.")
+      _GetBookmarksAsJSON;
+  std::string _GetBookmarksAsJSON();
+
+  %feature("docstring", "Add a bookmark folder with the given index in the parent."
+                        "  |title| is the title/name of the folder.") AddBookmarkGroup;
+  bool AddBookmarkGroup(std::wstring parent_id, int index, std::wstring title);
+
+  %feature("docstring", "Add a bookmark with the given title and URL.") AddBookmarkURL;
+  bool AddBookmarkURL(std::wstring parent_id, int index,
+                      std::wstring title, const std::wstring url);
+
+  %feature("docstring", "Move a bookmark to a new parent.") ReparentBookmark;
+  bool ReparentBookmark(std::wstring id, std::wstring new_parent_id, int index);
+
+  %feature("docstring", "Set the title of a bookmark.") SetBookmarkTitle;
+  bool SetBookmarkTitle(std::wstring id, std::wstring title);
+
+  %feature("docstring", "Set the URL of a bookmark.") SetBookmarkURL;
+  bool SetBookmarkURL(std::wstring id, const std::wstring url);
+
+  %feature("docstring", "Remove (delete) a bookmark.") RemoveBookmark;
+  bool RemoveBookmark(std::wstring id);
+
   %feature("docstring", "Open the Find box in the given or first browser "
            "window.") OpenFindInPage;
   void OpenFindInPage(int window_index=0);

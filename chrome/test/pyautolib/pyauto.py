@@ -17,6 +17,8 @@ import os
 import sys
 import unittest
 
+import bookmark_model
+
 
 def _LocateBinDirs():
   script_dir = os.path.dirname(__file__)
@@ -98,3 +100,11 @@ class PyUITest(pyautolib.PyUITestSuite, unittest.TestCase):
     self.SetUp()     # Open a browser window
     unittest.TestCase.run(self, result)
     self.TearDown()  # Destroy the browser window
+
+  def GetBookmarkModel(self):
+    """Return the bookmark model as a BookmarkModel object.
+
+    This is a snapshot of the bookmark model; it is not a proxy and
+    does not get updated as the bookmark model changes.
+    """
+    return bookmark_model.BookmarkModel(self._GetBookmarksAsJSON())

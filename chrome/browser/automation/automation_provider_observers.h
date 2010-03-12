@@ -8,6 +8,7 @@
 #include <map>
 #include <set>
 
+#include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_type.h"
@@ -404,5 +405,51 @@ class LoginManagerObserver : public NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(LoginManagerObserver);
 };
 #endif
+
+// Waits for the bookmark model to load.
+class AutomationProviderBookmarkModelObserver : BookmarkModelObserver {
+ public:
+  AutomationProviderBookmarkModelObserver(AutomationProvider* provider,
+                                          IPC::Message* reply_message,
+                                          BookmarkModel* model);
+  virtual ~AutomationProviderBookmarkModelObserver();
+
+  virtual void Loaded(BookmarkModel* model) {
+    ReplyAndDelete(true);
+  }
+  virtual void BookmarkModelBeingDeleted(BookmarkModel* model) {
+    ReplyAndDelete(false);
+  }
+  virtual void BookmarkNodeMoved(BookmarkModel* model,
+                                 const BookmarkNode* old_parent,
+                                 int old_index,
+                                 const BookmarkNode* new_parent,
+                                 int new_index) {}
+  virtual void BookmarkNodeAdded(BookmarkModel* model,
+                                 const BookmarkNode* parent,
+                                 int index) {}
+  virtual void BookmarkNodeRemoved(BookmarkModel* model,
+                                   const BookmarkNode* parent,
+                                   int old_index,
+                                   const BookmarkNode* node) {}
+  virtual void BookmarkNodeChanged(BookmarkModel* model,
+                                   const BookmarkNode* node) {}
+  virtual void BookmarkNodeFavIconLoaded(BookmarkModel* model,
+                                         const BookmarkNode* node) {}
+  virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
+                                             const BookmarkNode* node) {}
+
+ private:
+  // Reply to the automation message with the given success value,
+  // then delete myself (which removes myself from the bookmark model
+  // observer list).
+  void ReplyAndDelete(bool success);
+
+  scoped_refptr<AutomationProvider> automation_provider_;
+  IPC::Message* reply_message_;
+  BookmarkModel* model_;
+
+  DISALLOW_COPY_AND_ASSIGN(AutomationProviderBookmarkModelObserver);
+};
 
 #endif  // CHROME_BROWSER_AUTOMATION_AUTOMATION_PROVIDER_OBSERVERS_H_

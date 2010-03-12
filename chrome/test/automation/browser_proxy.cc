@@ -327,6 +327,95 @@ bool BrowserProxy::GetBookmarkBarVisibility(bool* is_visible,
       0, handle_, is_visible, is_animating));
 }
 
+bool BrowserProxy::GetBookmarksAsJSON(std::string *json_string) {
+  if (!is_valid())
+    return false;
+
+  if (!WaitForBookmarkModelToLoad())
+    return false;
+
+  bool result = false;
+  sender_->Send(new AutomationMsg_GetBookmarksAsJSON(0, handle_,
+                                                     json_string,
+                                                     &result));
+  return result;
+}
+
+bool BrowserProxy::WaitForBookmarkModelToLoad() {
+  if (!is_valid())
+    return false;
+
+  bool result = false;
+  sender_->Send(new AutomationMsg_WaitForBookmarkModelToLoad(0, handle_,
+                                                             &result));
+  return result;
+}
+
+bool BrowserProxy::AddBookmarkGroup(int64 parent_id, int index,
+                                    std::wstring& title) {
+  if (!is_valid())
+    return false;
+  bool result = false;
+  sender_->Send(new AutomationMsg_AddBookmarkGroup(0, handle_,
+                                                   parent_id, index,
+                                                   title,
+                                                   &result));
+  return result;
+}
+
+bool BrowserProxy::AddBookmarkURL(int64 parent_id, int index,
+                                  std::wstring& title, const GURL& url) {
+  if (!is_valid())
+    return false;
+  bool result = false;
+  sender_->Send(new AutomationMsg_AddBookmarkURL(0, handle_,
+                                                 parent_id, index,
+                                                 title, url,
+                                                 &result));
+  return result;
+}
+
+bool BrowserProxy::ReparentBookmark(int64 id, int64 new_parent_id, int index) {
+  if (!is_valid())
+    return false;
+  bool result = false;
+  sender_->Send(new AutomationMsg_ReparentBookmark(0, handle_,
+                                                   id, new_parent_id,
+                                                   index,
+                                                   &result));
+  return result;
+}
+
+bool BrowserProxy::SetBookmarkTitle(int64 id, std::wstring& title) {
+  if (!is_valid())
+    return false;
+  bool result = false;
+  sender_->Send(new AutomationMsg_SetBookmarkTitle(0, handle_,
+                                                   id, title,
+                                                   &result));
+  return result;
+}
+
+bool BrowserProxy::SetBookmarkURL(int64 id, const GURL& url) {
+  if (!is_valid())
+    return false;
+  bool result = false;
+  sender_->Send(new AutomationMsg_SetBookmarkURL(0, handle_,
+                                                 id, url,
+                                                 &result));
+  return result;
+}
+
+bool BrowserProxy::RemoveBookmark(int64 id) {
+  if (!is_valid())
+    return false;
+  bool result = false;
+  sender_->Send(new AutomationMsg_RemoveBookmark(0, handle_,
+                                                 id,
+                                                 &result));
+  return result;
+}
+
 bool BrowserProxy::IsShelfVisible(bool* is_visible) {
   if (!is_valid())
     return false;

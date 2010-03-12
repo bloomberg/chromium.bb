@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/automation/automation_provider.h"
+#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/login_prompt.h"
 #include "chrome/browser/metrics/metric_event_duration_details.h"
@@ -743,3 +744,24 @@ void LoginManagerObserver::Observe(NotificationType type,
   delete this;
 }
 #endif
+
+AutomationProviderBookmarkModelObserver::AutomationProviderBookmarkModelObserver(
+    AutomationProvider* provider,
+    IPC::Message* reply_message,
+    BookmarkModel* model) {
+  automation_provider_ = provider;
+  reply_message_ = reply_message;
+  model_ = model;
+  model_->AddObserver(this);
+}
+
+AutomationProviderBookmarkModelObserver::~AutomationProviderBookmarkModelObserver() {
+  model_->RemoveObserver(this);
+}
+
+void AutomationProviderBookmarkModelObserver::ReplyAndDelete(bool success) {
+  AutomationMsg_WaitForBookmarkModelToLoad::WriteReplyParams(
+      reply_message_, success);
+  automation_provider_->Send(reply_message_);
+  delete this;
+}

@@ -285,6 +285,38 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   // Get the visibility state of the Bookmark bar.
   void GetBookmarkBarVisibility(int handle, bool* visible, bool* animating);
 
+  // Get the bookmarks as a JSON string.
+  void GetBookmarksAsJSON(int handle, std::string* bookmarks_as_json,
+                          bool *success);
+
+  // Wait for the bookmark model to load.
+  void WaitForBookmarkModelToLoad(int handle, IPC::Message* reply_message);
+
+  // Set |loaded| to true if the bookmark model has loaded, else false.
+  void BookmarkModelHasLoaded(int handle, bool* loaded);
+
+  // Editing, modification, and removal of bookmarks.
+  // Bookmarks are referenced by id.
+  void AddBookmarkGroup(int handle,
+                        int64 parent_id, int index, std::wstring title,
+                        bool* success);
+  void AddBookmarkURL(int handle,
+                      int64 parent_id, int index,
+                      std::wstring title, const GURL& url,
+                      bool* success);
+  void ReparentBookmark(int handle,
+                        int64 id, int64 new_parent_id, int index,
+                        bool* success);
+  void SetBookmarkTitle(int handle,
+                        int64 id, std::wstring title,
+                        bool* success);
+  void SetBookmarkURL(int handle,
+                      int64 id, const GURL& url,
+                      bool* success);
+  void RemoveBookmark(int handle,
+                      int64 id,
+                      bool* success);
+
   // Responds to InspectElement request
   void HandleInspectElementRequest(int handle,
                                    int x,

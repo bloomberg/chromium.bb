@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/scoped_ptr.h"
+#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/pyautolib/pyautolib.h"
 #include "googleurl/src/gurl.h"
@@ -157,4 +159,88 @@ bool PyUITestSuite::WaitForBookmarkBarVisibilityChange(bool wait_for_open) {
   EXPECT_TRUE(completed);
   return completed;
 }
+
+std::string PyUITestSuite::_GetBookmarksAsJSON() {
+  scoped_refptr<BrowserProxy> browser_proxy =
+      automation()->GetBrowserWindow(0);  // Window doesn't matter.
+  EXPECT_TRUE(browser_proxy.get());
+  if (!browser_proxy.get())
+    return false;
+
+  std::string s;
+  EXPECT_TRUE(browser_proxy->GetBookmarksAsJSON(&s));
+  return s;
+}
+
+bool PyUITestSuite::AddBookmarkGroup(std::wstring& parent_id, int index,
+                                     std::wstring& title) {
+  scoped_refptr<BrowserProxy> browser_proxy =
+      automation()->GetBrowserWindow(0);  // Window doesn't matter.
+  EXPECT_TRUE(browser_proxy.get());
+  if (!browser_proxy.get())
+    return false;
+
+  return browser_proxy->AddBookmarkGroup(StringToInt64(WideToUTF16(parent_id)),
+                                         index, title);
+}
+
+bool PyUITestSuite::AddBookmarkURL(std::wstring& parent_id, int index,
+                                   std::wstring& title, std::wstring& url) {
+  scoped_refptr<BrowserProxy> browser_proxy =
+      automation()->GetBrowserWindow(0);  // Window doesn't matter.
+  EXPECT_TRUE(browser_proxy.get());
+  if (!browser_proxy.get())
+    return false;
+
+  return browser_proxy->AddBookmarkURL(StringToInt64(WideToUTF16(parent_id)),
+                                       index, title,
+                                       GURL(WideToUTF16(url)));
+}
+
+bool PyUITestSuite::ReparentBookmark(std::wstring& id, std::wstring& new_parent_id,
+                                     int index) {
+  scoped_refptr<BrowserProxy> browser_proxy =
+      automation()->GetBrowserWindow(0);  // Window doesn't matter.
+  EXPECT_TRUE(browser_proxy.get());
+  if (!browser_proxy.get())
+    return false;
+
+  return browser_proxy->ReparentBookmark(
+      StringToInt64(WideToUTF16(id)),
+      StringToInt64(WideToUTF16(new_parent_id)),
+      index);
+}
+
+bool PyUITestSuite::SetBookmarkTitle(std::wstring& id, std::wstring& title) {
+  scoped_refptr<BrowserProxy> browser_proxy =
+      automation()->GetBrowserWindow(0);  // Window doesn't matter.
+  EXPECT_TRUE(browser_proxy.get());
+  if (!browser_proxy.get())
+    return false;
+
+  return browser_proxy->SetBookmarkTitle(StringToInt64(WideToUTF16(id)),
+                                         title);
+}
+
+bool PyUITestSuite::SetBookmarkURL(std::wstring& id, std::wstring& url) {
+  scoped_refptr<BrowserProxy> browser_proxy =
+      automation()->GetBrowserWindow(0);  // Window doesn't matter.
+  EXPECT_TRUE(browser_proxy.get());
+  if (!browser_proxy.get())
+    return false;
+
+  return browser_proxy->SetBookmarkURL(StringToInt64(WideToUTF16(id)),
+                                       GURL(WideToUTF16(url)));
+}
+
+bool PyUITestSuite::RemoveBookmark(std::wstring& id) {
+  scoped_refptr<BrowserProxy> browser_proxy =
+      automation()->GetBrowserWindow(0);  // Window doesn't matter.
+  EXPECT_TRUE(browser_proxy.get());
+  if (!browser_proxy.get())
+    return false;
+
+  return browser_proxy->RemoveBookmark(StringToInt64(WideToUTF16(id)));
+}
+
 

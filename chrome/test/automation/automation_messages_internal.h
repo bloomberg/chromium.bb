@@ -1230,4 +1230,51 @@ IPC_BEGIN_MESSAGES(Automation)
                              bool /* Whether successful*/)
 #endif
 
+  // Return the bookmarks encoded as a JSON string.
+  IPC_SYNC_MESSAGE_ROUTED1_2(AutomationMsg_GetBookmarksAsJSON,
+                             int /* browser_handle */,
+                             std::string /* bookmarks as a JSON string */,
+                             bool /* success */)
+
+  // Wait for the bookmark model to load.
+  IPC_SYNC_MESSAGE_ROUTED1_1(AutomationMsg_WaitForBookmarkModelToLoad,
+                             int /* browser_handle */,
+                             bool /* success */)
+
+  // Bookmark addition, modification, and removal.
+  // Bookmarks are indexed by their id.
+  IPC_SYNC_MESSAGE_ROUTED4_1(AutomationMsg_AddBookmarkGroup,
+                             int /* browser_handle */,
+                             int64 /* parent_id */,
+                             int /* index */,
+                             std::wstring /* title */,
+                             bool /* success */)
+  IPC_SYNC_MESSAGE_ROUTED5_1(AutomationMsg_AddBookmarkURL,
+                             int /* browser_handle */,
+                             int64 /* parent_id */,
+                             int /* index */,
+                             std::wstring /* title */,
+                             GURL /* url */,
+                             bool /* success */)
+  IPC_SYNC_MESSAGE_ROUTED4_1(AutomationMsg_ReparentBookmark,
+                             int /* browser_handle */,
+                             int64 /* id */,
+                             int64 /* new_parent_id */,
+                             int /* index */,
+                             bool /* success */)
+  IPC_SYNC_MESSAGE_ROUTED3_1(AutomationMsg_SetBookmarkTitle,
+                             int /* browser_handle */,
+                             int64 /* id */,
+                             std::wstring /* title */,
+                             bool /* success */)
+  IPC_SYNC_MESSAGE_ROUTED3_1(AutomationMsg_SetBookmarkURL,
+                             int /* browser_handle */,
+                             int64 /* id */,
+                             GURL /* url */,
+                             bool /* success */)
+  IPC_SYNC_MESSAGE_ROUTED2_1(AutomationMsg_RemoveBookmark,
+                             int /* browser_handle */,
+                             int64 /* id */,
+                             bool /* success */)
+
 IPC_END_MESSAGES(Automation)

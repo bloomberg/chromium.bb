@@ -181,6 +181,25 @@ class BrowserProxy : public AutomationResourceProxy {
   // it into position. Returns false on failure.
   bool GetBookmarkBarVisibility(bool* is_visible, bool* is_animating);
 
+  // Get the bookmarks as a JSON string and put it in |json_string|.
+  // Return true on success.
+  bool GetBookmarksAsJSON(std::string* json_string);
+
+  // Wait for the bookmarks to load.  Called implicitly by GetBookmarksAsJSON().
+  bool WaitForBookmarkModelToLoad();
+
+  // Editing of the bookmark model.  Bookmarks are referenced by id.
+  // Bookmark or group (folder) creation:
+  bool AddBookmarkGroup(int64 parent_id, int index, std::wstring& title);
+  bool AddBookmarkURL(int64 parent_id, int index,
+                      std::wstring& title, const GURL& url);
+  // Bookmark editing:
+  bool ReparentBookmark(int64 id, int64 new_parent_id, int index);
+  bool SetBookmarkTitle(int64 id, std::wstring& title);
+  bool SetBookmarkURL(int64 id, const GURL& url);
+  // Finally, bookmark deletion:
+  bool RemoveBookmark(int64 id);
+
   // Fills |*is_visible| with whether the browser's download shelf is currently
   // visible. The return value indicates success. On failure, |*is_visible| is
   // unchanged.
