@@ -26,6 +26,8 @@ class ScreenObserver {
     NETWORK_OFFLINE,
     ACCOUNT_CREATED,
     LANGUAGE_CHANGED,
+    UPDATE_INSTALLED,
+    UPDATE_NOUPDATE,
   };
 
   // Method called by a screen when user's done with it.

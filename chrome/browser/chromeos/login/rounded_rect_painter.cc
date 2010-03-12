@@ -230,4 +230,3 @@ views::Border* CreateWizardBorder(const BorderDefinition* const border) {
 }
 
 }  // namespace chromeos
-

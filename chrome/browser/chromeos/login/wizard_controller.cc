@@ -210,7 +210,7 @@ void WizardController::OnLoginCreateAccount() {
 }
 
 void WizardController::OnNetworkConnected() {
-  SetCurrentScreen(GetLoginScreen());
+  SetCurrentScreen(GetUpdateScreen());
 }
 
 void WizardController::OnAccountCreated() {
@@ -219,6 +219,10 @@ void WizardController::OnAccountCreated() {
 
 void WizardController::OnLanguageChanged() {
   SetCurrentScreen(GetNetworkScreen());
+}
+
+void WizardController::OnUpdateCompleted() {
+  SetCurrentScreen(GetLoginScreen());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -296,6 +300,10 @@ void WizardController::OnExit(ExitCodes exit_code) {
       break;
     case LANGUAGE_CHANGED:
       OnLanguageChanged();
+      break;
+    case UPDATE_INSTALLED:
+    case UPDATE_NOUPDATE:
+      OnUpdateCompleted();
       break;
     default:
       NOTREACHED();

@@ -71,6 +71,7 @@ class WizardController : public chromeos::ScreenObserver,
   void OnNetworkConnected();
   void OnAccountCreated();
   void OnLanguageChanged();
+  void OnUpdateCompleted();
 
   // Overridden from chromeos::ScreenObserver:
   virtual void OnExit(ExitCodes exit_code);
