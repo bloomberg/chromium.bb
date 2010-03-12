@@ -311,28 +311,6 @@ class WebPluginImpl : public WebPlugin,
   std::vector<std::string> arg_names_;
   std::vector<std::string> arg_values_;
 
-  struct PrintSettings {
-    // This is set to true when printBegin is called and false when printEnd is
-    // called.
-    bool is_printing;
-    // The remembered printable_area from the last printBegin call. It is
-    // cleared in printEnd.
-    WebKit::WebRect printable_area;
-    // The remembered printer_dpi from the last printBegin call. It is cleared
-    // in printEnd.
-    int printer_dpi;
-    PrintSettings() {
-      Clear();
-    }
-    void Clear() {
-      is_printing = false;
-      printable_area = WebKit::WebRect(0, 0, 0, 0);
-      printer_dpi = 0;
-    }
-  };
-
-  PrintSettings print_settings_;
-
   ScopedRunnableMethodFactory<WebPluginImpl> method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebPluginImpl);

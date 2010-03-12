@@ -146,8 +146,7 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
   // WebPluginPrintDelegate implementation.
   virtual bool PrintSupportsPrintExtension();
   virtual int PrintBegin(const gfx::Rect& printable_area, int printer_dpi);
-  virtual bool PrintPage(int page_number, const gfx::Rect& printable_area,
-                         int printer_dpi, WebKit::WebCanvas* canvas);
+  virtual bool PrintPage(int page_number, WebKit::WebCanvas* canvas);
   virtual void PrintEnd();
 
   // End of WebPluginDelegate implementation.
@@ -185,8 +184,6 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
   // A helper method that invokes the plugin's Print extensions to calculate
   // the size needed in pixels to render the given page in a raster format.
   bool CalculatePrintedPageDimensions(int page_number,
-                                      NPRect* printable_area,
-                                      int printer_dpi,
                                       NPPPrintExtensions* print_extensions,
                                       gfx::Size* page_dimensions);
   NPPPrintExtensions* GetPrintExtensions();
@@ -238,6 +235,11 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
 
   // The nested GPU plugin.
   WebPluginDelegateProxy* nested_delegate_;
+
+  // The last printable_area passed in to PrintBegin. We remember this because
+  // we need to stretch the printed raster bitmap to these dimensions. It is
+  // cleared in PrintEnd.
+  gfx::Rect current_printable_area_;
 
 #if defined(ENABLE_GPU)
   // The command buffer used to issue commands to the nested GPU plugin.

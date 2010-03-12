@@ -389,26 +389,17 @@ int WebPluginImpl::printBegin(const WebRect& printable_area, int printer_dpi) {
   if (!supportsPaginatedPrint())
     return 0;
 
-  print_settings_.is_printing = true;
-  print_settings_.printable_area = printable_area;
-  print_settings_.printer_dpi = printer_dpi;
   return delegate_->PrintBegin(printable_area, printer_dpi);
 }
 
 bool WebPluginImpl::printPage(int page_number, WebCanvas* canvas) {
   if (!delegate_)
     return false;
-  if (!print_settings_.is_printing) {
-    NOTREACHED();
-    return false;
-  }
-  return delegate_->PrintPage(page_number, print_settings_.printable_area,
-                              print_settings_.printer_dpi, canvas);
+
+  return delegate_->PrintPage(page_number, canvas);
 }
 
 void WebPluginImpl::printEnd() {
-  DCHECK(print_settings_.is_printing);
-  print_settings_.Clear();
   if (delegate_)
     delegate_->PrintEnd();
 }

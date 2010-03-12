@@ -492,30 +492,25 @@ struct _NPDeviceContextAudio {
 
 /* Being a print operation. Returns the total number of pages to print at the
  * given printableArea size and DPI. printableArea is in points (a point is 1/72
- * of an inch). */
+ * of an inch). The plugin is expected to remember the values of printableArea
+ * and printerDPI for use in subsequent print interface calls. These values
+ * should be cleared in printEnd*/
 typedef NPError (*NPPPrintBeginPtr) (
     NPP instance,
     NPRect* printableArea,
     int32 printerDPI,
     int32* numPages);
-/* Returns the required raster dimensions for the given printableArea
- * size and DPI. printableArea is in points (a point is 1/72 of an inch). */
+/* Returns the required raster dimensions for the given page. */
 typedef NPError (*NPPGetRasterDimensionsPtr) (
     NPP instance,
-    NPRect* printableArea,
-    int32 printerDPI,
+    int32 pageNumber,
     int32* widthInPixels,
     int32* heightInPixels);
-/* Prints the specified page on the given printableArea size and DPI.
- * printableArea is in points (a point is 1/72 of an inch). This allows the
- * plugin to print a raster output*/
+/* Prints the specified page This allows the plugin to print a raster output. */
 typedef NPError (*NPPPrintPageRasterPtr) (
     NPP instance,
     int32 pageNumber,
-    NPRect* printableArea,
-    int32 printerDPI,
     NPDeviceContext2D* printSurface);
-
 /* Ends the print operation */
 typedef NPError (*NPPPrintEndPtr) (NPP instance);
 

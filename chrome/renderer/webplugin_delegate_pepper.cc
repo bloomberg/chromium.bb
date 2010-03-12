@@ -884,32 +884,35 @@ int WebPluginDelegatePepper::PrintBegin(const gfx::Rect& printable_area,
     np_printable_area.top = printable_area.y();
     np_printable_area.right = np_printable_area.left + printable_area.width();
     np_printable_area.bottom = np_printable_area.top + printable_area.height();
-    print_extensions->printBegin(instance()->npp(),
-                                 &np_printable_area,
-                                 printer_dpi,
-                                 &num_pages);
+    if (NPERR_NO_ERROR == print_extensions->printBegin(instance()->npp(),
+                                                       &np_printable_area,
+                                                       printer_dpi,
+                                                       &num_pages)) {
+      current_printable_area_ = printable_area;
+    }
   }
   return num_pages;
 }
 
 bool WebPluginDelegatePepper::PrintPage(int page_number,
-                                        const gfx::Rect& printable_area,
-                                        int printer_dpi,
                                         WebKit::WebCanvas* canvas) {
 #if defined(OS_WIN) || defined(OS_LINUX)
   NPPPrintExtensions* print_extensions = GetPrintExtensions();
   if (!print_extensions)
     return false;
 
+  DCHECK(!current_printable_area_.IsEmpty());
+
   // Calculate the width and height needed for the raster image.
   NPRect np_printable_area = {0};
-  np_printable_area.left = printable_area.x();
-  np_printable_area.top = printable_area.y();
-  np_printable_area.right = np_printable_area.left + printable_area.width();
-  np_printable_area.bottom = np_printable_area.top + printable_area.height();
+  np_printable_area.left = current_printable_area_.x();
+  np_printable_area.top = current_printable_area_.y();
+  np_printable_area.right =
+      current_printable_area_.x() + current_printable_area_.width();
+  np_printable_area.bottom =
+      current_printable_area_.y() + current_printable_area_.height();
   gfx::Size size_in_pixels;
-  if (!CalculatePrintedPageDimensions(page_number, &np_printable_area,
-                                      printer_dpi, print_extensions,
+  if (!CalculatePrintedPageDimensions(page_number, print_extensions,
                                       &size_in_pixels)) {
     return false;
   }
@@ -924,9 +927,8 @@ bool WebPluginDelegatePepper::PrintPage(int page_number,
     NOTREACHED();
     return false;
   }
-  err = print_extensions->printPageRaster(
-      instance()->npp(), page_number, &np_printable_area, printer_dpi,
-      &context);
+  err = print_extensions->printPageRaster(instance()->npp(), page_number,
+                                          &context);
   if (err !=  NPERR_NO_ERROR)
     return false;
 
@@ -943,10 +945,12 @@ bool WebPluginDelegatePepper::PrintPage(int page_number,
   SkIRect src_rect;
   src_rect.set(0, 0, size_in_pixels.width(), size_in_pixels.height());
   SkRect dest_rect;
-  dest_rect.set(SkIntToScalar(printable_area.x()),
-                SkIntToScalar(printable_area.y()),
-                SkIntToScalar(printable_area.x() + printable_area.width()),
-                SkIntToScalar(printable_area.y() + printable_area.height()));
+  dest_rect.set(SkIntToScalar(current_printable_area_.x()),
+                SkIntToScalar(current_printable_area_.y()),
+                SkIntToScalar(current_printable_area_.x() +
+                              current_printable_area_.width()),
+                SkIntToScalar(current_printable_area_.y() +
+                              current_printable_area_.height()));
   bool draw_to_canvas = true;
 #if defined(OS_WIN)
   // Since this is a raster output, the size of the bitmap can be
@@ -958,7 +962,7 @@ bool WebPluginDelegatePepper::PrintPage(int page_number,
   // way faster (about 4 times faster).
   static const int kCompressionThreshold = 20 * 1024 * 1024;
   if (committed.getSize() > kCompressionThreshold) {
-    DrawJPEGToPlatformDC(committed, printable_area, canvas);
+    DrawJPEGToPlatformDC(committed, current_printable_area_, canvas);
     draw_to_canvas = false;
   }
 #endif  // OS_WIN
@@ -977,6 +981,7 @@ void WebPluginDelegatePepper::PrintEnd() {
   NPPPrintExtensions* print_extensions = GetPrintExtensions();
   if (print_extensions)
     print_extensions->printEnd(instance()->npp());
+  current_printable_area_ = gfx::Rect();
 }
 
 
@@ -1237,15 +1242,12 @@ void WebPluginDelegatePepper::SendNestedDelegateGeometryToBrowser(
 
 bool WebPluginDelegatePepper::CalculatePrintedPageDimensions(
     int page_number,
-    NPRect* printable_area,
-    int printer_dpi,
     NPPPrintExtensions* print_extensions,
     gfx::Size* page_dimensions) {
   int32 width_in_pixels = 0;
   int32 height_in_pixels = 0;
   NPError err = print_extensions->getRasterDimensions(
-      instance()->npp(), printable_area, printer_dpi, &width_in_pixels,
-      &height_in_pixels);
+      instance()->npp(), page_number, &width_in_pixels, &height_in_pixels);
   if (err != NPERR_NO_ERROR)
     return false;
 

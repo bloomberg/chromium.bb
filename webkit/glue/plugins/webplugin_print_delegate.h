@@ -31,9 +31,7 @@ class WebPluginPrintDelegate {
     return 0;
   }
 
-  // Note: printable_area is in points (a point is 1/72 of an inch).
-  virtual bool PrintPage(int page_number, const gfx::Rect& printable_area,
-                         int printer_dpi, WebKit::WebCanvas* canvas) {
+  virtual bool PrintPage(int page_number, WebKit::WebCanvas* canvas) {
     return false;
   }
 
