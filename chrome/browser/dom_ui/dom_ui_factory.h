@@ -9,6 +9,7 @@
 
 class DOMUI;
 class GURL;
+class Profile;
 class RefCountedMemory;
 class TabContents;
 
@@ -43,7 +44,8 @@ class DOMUIFactory {
 
   // Gets the data for the favicon for a DOMUI page. Returns false if the DOMUI
   // does not have a favicon.
-  static RefCountedMemory* GetFaviconResourceBytes(const GURL& page_url);
+  static RefCountedMemory* GetFaviconResourceBytes(Profile* profile,
+                                                   const GURL& page_url);
 
  private:
   // Class is for scoping only.

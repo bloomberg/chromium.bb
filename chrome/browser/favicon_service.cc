@@ -4,6 +4,7 @@
 
 #include "chrome/browser/favicon_service.h"
 
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/dom_ui_factory.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_backend.h"
@@ -48,29 +49,12 @@ FaviconService::Handle FaviconService::GetFaviconForURL(
     FaviconDataCallback* callback) {
   GetFaviconRequest* request = new GetFaviconRequest(callback);
   AddRequest(request, consumer);
-  FaviconService::Handle handle = request->handle();
-  if (page_url.SchemeIs(chrome::kChromeUIScheme)) {
-    // TODO(erg): For now, we're cheating here. DOMUIFactory returns the new
-    // RefCountedMemory superclass, but consumers of favicon information are
-    // still all hardcoded to use RefCountedBytes. For now, just copy the
-    // favicon data in this case because the returned RefCountedMemory class is
-    // the statically allocated memory one; not the vector backed
-    // RefCountedBytes.
-    scoped_refptr<RefCountedBytes> icon_data = NULL;
-    scoped_refptr<RefCountedMemory> static_memory(
-        DOMUIFactory::GetFaviconResourceBytes(page_url));
-    bool know_icon = static_memory.get() != NULL;
 
-    if (know_icon) {
-      std::vector<unsigned char> bytes;
-      bytes.insert(bytes.begin(),
-                   static_memory->front(),
-                   static_memory->front() + static_memory->size());
-      icon_data = RefCountedBytes::TakeVector(&bytes);
-    }
-
-    request->ForwardResultAsync(FaviconDataCallback::TupleType(handle,
-        know_icon, icon_data, false, GURL()));
+  if (page_url.SchemeIs(chrome::kChromeUIScheme) ||
+    page_url.SchemeIs(chrome::kExtensionScheme)) {
+    ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
+        NewRunnableMethod(this, &FaviconService::GetFaviconForDOMUIOnFileThread,
+                          request, page_url));
   } else {
     HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
     if (hs)
@@ -78,8 +62,39 @@ FaviconService::Handle FaviconService::GetFaviconForURL(
     else
       ForwardEmptyResultAsync(request);
   }
-  return handle;
+  return request->handle();
 }
+
+void FaviconService::GetFaviconForDOMUIOnFileThread(GetFaviconRequest* request,
+                                                    const GURL& page_url) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(page_url.SchemeIs(chrome::kChromeUIScheme) ||
+         page_url.SchemeIs(chrome::kExtensionScheme));
+
+  // TODO(erg): For now, we're cheating here. DOMUIFactory returns the new
+  // RefCountedMemory superclass, but consumers of favicon information are
+  // still all hardcoded to use RefCountedBytes. For now, just copy the
+  // favicon data in this case because the returned RefCountedMemory class is
+  // the statically allocated memory one; not the vector backed
+  // RefCountedBytes.
+
+  scoped_refptr<RefCountedBytes> icon_data = NULL;
+  scoped_refptr<RefCountedMemory> static_memory(
+      DOMUIFactory::GetFaviconResourceBytes(profile_, page_url));
+  bool know_icon = static_memory.get() != NULL;
+
+  if (know_icon) {
+    std::vector<unsigned char> bytes;
+    bytes.insert(bytes.begin(),
+                 static_memory->front(),
+                 static_memory->front() + static_memory->size());
+    icon_data = RefCountedBytes::TakeVector(&bytes);
+  }
+
+  request->ForwardResult(FaviconDataCallback::TupleType(request->handle(),
+      know_icon, icon_data, false, GURL()));
+}
+
 
 void FaviconService::SetFaviconOutOfDateForPage(const GURL& page_url) {
   HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);

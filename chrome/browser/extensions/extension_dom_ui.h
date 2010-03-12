@@ -16,6 +16,7 @@
 
 class ListValue;
 class PrefService;
+class Profile;
 class RefCountedMemory;
 class RenderViewHost;
 class TabContents;
@@ -73,6 +74,9 @@ class ExtensionDOMUI
 
   // Called from BrowserPrefs
   static void RegisterUserPrefs(PrefService* prefs);
+
+  static RefCountedMemory* GetFaviconResourceBytes(Profile* profile,
+                                                   GURL page_url);
 
  private:
   // Unregister the specified override, and if it's the currently active one,

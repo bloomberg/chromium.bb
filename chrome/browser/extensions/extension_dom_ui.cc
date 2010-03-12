@@ -4,9 +4,13 @@
 
 #include "chrome/browser/extensions/extension_dom_ui.h"
 
+#include "base/file_path.h"
+#include "base/file_util.h"
+#include "net/base/file_stream.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/extension_bookmark_manager_api.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/pref_service.h"
@@ -15,16 +19,35 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/bindings_policy.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
 
 namespace {
 const wchar_t kExtensionURLOverrides[] = L"extensions.chrome_url_overrides";
+
+// Returns a piece of memory with the contents of the file |path|.
+RefCountedMemory* ReadFileData(const FilePath& path) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+
+  if (path.empty())
+    return NULL;
+
+  RefCountedBytes* result = new RefCountedBytes;
+  std::string content;
+  if (!file_util::ReadFileToString(path, &content))
+    return NULL;
+
+  result->data.resize(content.size());
+  std::copy(content.begin(), content.end(),
+            result->data.begin());
+
+  return result;
 }
+
+}  // namespace
 
 ExtensionDOMUI::ExtensionDOMUI(TabContents* tab_contents)
     : DOMUI(tab_contents) {
-  // TODO(aa): It would be cool to show the extension's icon in here.
-  hide_favicon_ = true;
   should_hide_url_ = true;
   bindings_ = BindingsPolicy::EXTENSION;
 
@@ -289,4 +312,21 @@ void ExtensionDOMUI::UnregisterChromeURLOverrides(
                                    page_overrides, &override);
     }
   }
+}
+
+// static
+RefCountedMemory* ExtensionDOMUI::GetFaviconResourceBytes(Profile* profile,
+                                                          GURL page_url) {
+  // Even when the extensions service is enabled by default, it's still
+  // disabled in incognito mode.
+  ExtensionsService* service = profile->GetExtensionsService();
+  if (!service)
+    return NULL;
+
+  Extension* extension = service->GetExtensionByURL(page_url);
+  if (!extension)
+    return NULL;
+
+  return ReadFileData(
+      extension->GetIconPath(Extension::EXTENSION_ICON_BITTY).GetFilePath());
 }

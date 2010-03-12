@@ -4,6 +4,7 @@
 
 #include "chrome/browser/dom_ui/dom_ui_factory.h"
 
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/bookmarks_ui.h"
 #include "chrome/browser/dom_ui/downloads_ui.h"
 #include "chrome/browser/dom_ui/devtools_ui.h"
@@ -136,7 +137,14 @@ DOMUI* DOMUIFactory::CreateDOMUIForURL(TabContents* tab_contents,
 }
 
 // static
-RefCountedMemory* DOMUIFactory::GetFaviconResourceBytes(const GURL& page_url) {
+RefCountedMemory* DOMUIFactory::GetFaviconResourceBytes(Profile* profile,
+                                                        const GURL& page_url) {
+  // The extensions DOM UI might need to load the favicon file so we alwyas run
+  // this on the FILE thread.
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  if (page_url.SchemeIs(chrome::kExtensionScheme))
+    return ExtensionDOMUI::GetFaviconResourceBytes(profile, page_url);
+
   if (!HasDOMUIScheme(page_url))
     return NULL;
 

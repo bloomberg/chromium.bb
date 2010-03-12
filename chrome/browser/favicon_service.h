@@ -91,6 +91,11 @@ class FaviconService : public CancelableRequestProvider,
 
   ~FaviconService() {}
 
+  // This is used to get the favicon for DOMUI on the file thread since these
+  // might be loaded from disk.
+  void GetFaviconForDOMUIOnFileThread(GetFaviconRequest* request,
+                                      const GURL& page_url);
+
   Profile* profile_;
 
   // Helper to forward an empty result if we cannot get the history service.
