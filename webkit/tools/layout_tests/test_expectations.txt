@@ -2019,7 +2019,6 @@ BUG10479 MAC : svg/hixie/perf/001.xml = FAIL
 BUG10479 MAC : svg/hixie/perf/002.xml = FAIL
 
 BUG9798 SLOW WIN DEBUG : fast/dom/Window/slow-unload-handler.html = PASS
-BUG9798 LINUX DEBUG SLOW : fast/frames/calculate-round.html = CRASH PASS
 
 // Was flaky. Became a consistent failure.
 BUG9798 MAC WIN : http/tests/loading/preload-img-test.html = TIMEOUT PASS
@@ -2051,7 +2050,6 @@ BUG9798 SLOW LINUX RELEASE : transitions/transition-timing-function.html = PASS
 BUG9798 MAC WIN RELEASE : http/tests/xmlhttprequest/small-chunks-response-text.html = PASS TIMEOUT
 BUG9798 SLOW LINUX RELEASE : http/tests/xmlhttprequest/small-chunks-response-text.html = PASS
 BUG9798 MAC RELEASE : http/tests/xmlhttprequest/web-apps/003.html = PASS TIMEOUT
-BUG9798 LINUX DEBUG : fast/forms/listbox-scroll-after-options-removed.html = CRASH PASS
 BUG9798 LINUX DEBUG : fast/multicol/float-multicol.html = IMAGE PASS
 BUG9798 MAC RELEASE : editing/selection/drag-in-iframe.html = FAIL PASS
 BUG9798 LINUX : svg/custom/use-property-changes-through-svg-dom.svg = FAIL
@@ -2287,11 +2285,6 @@ BUG_JEREMY MAC : fast/frames/onlyCommentInIFrame.html = FAIL
 BUG26042 DEBUG : http/tests/security/mixedContent/insecure-plugin-in-iframe.html = PASS TEXT
 BUG26042 LINUX RELEASE : http/tests/security/mixedContent/insecure-plugin-in-iframe.html = PASS TEXT
 
-// WebKit Roll 49809:49830
-// New test flakiness is being observed.
-BUG26045 MAC RELEASE : fast/frames/frame-set-same-src.html = CRASH PASS
-BUG26045 LINUX DEBUG : fast/frames/frame-set-same-src.html = CRASH PASS
-
 // Incorrect baseline removed.
 BUG25433 WIN LINUX : css2.1/t040103-ident-03-c.html = IMAGE
 
@@ -2307,7 +2300,6 @@ BUG26344 LINUX DEBUG : platform/mac/editing/deleting/backward-delete.html = CRAS
 BUG25889 MAC DEBUG : fast/forms/select-empty-option-height.html = PASS TIMEOUT
 
 // More fallout from the above roll.
-BUG25955 LINUX DEBUG : fast/forms/textarea-placeholder-set-value.html = PASS CRASH
 BUG_JORLOW LINUX : fast/multicol/column-rules-stacking.html = FAIL
 
 // randomly started to be flaky on r30451 (revision had only a check-in of text_expectations.txt)
@@ -2322,7 +2314,7 @@ BUG26291 MAC : transforms/2d/hindi-rotated.html = IMAGE
 
 // Flaky since at least WebKit 50258.
 BUG9798 WIN DEBUG : media/video-empty-source.html = IMAGE PASS
-BUG32098 : fast/dom/defaultView.html = TEXT PASS
+BUG32098 : fast/dom/defaultView.html = MISSING PASS
 BUG9798 WIN RELEASE : http/tests/navigation/no-referrer-reset.html = TIMEOUT PASS
 
 // more test flakiness
@@ -2707,7 +2699,6 @@ BUG32675 LINUX : fast/repaint/trailing-floats-root-line-box-overflow.html = IMAG
 BUG32679 LINUX DEBUG : http/tests/navigation/lockedhistory-iframe.html = TEXT PASS
 BUG32680 WIN DEBUG : svg/filters/big-sized-filter.svg = TIMEOUT PASS
 BUG32682 LINUX : svg/W3C-SVG-1.1/filters-conv-01-f.svg = TEXT PASS
-BUG32683 LINUX DEBUG : svg/css/glyph-orientation-rounding-test.xhtml = TEXT PASS
 BUG32684 WIN : inspector/timeline-layout.html = TEXT PASS
 BUG35519 WIN SKIP : http/tests/inspector/inspect-iframe-from-different-domain.html = PASS
 BUG32688 MAC DEBUG : fast/lists/inlineBoxWrapperNullCheck.html = TEXT PASS
