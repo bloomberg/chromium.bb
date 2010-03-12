@@ -37,7 +37,8 @@
 
 // Eat this too, except that ...
 - (void)mouseUp:(NSEvent*)event {
-  // a double-click in the blank area should minimize.
+  // a double-click in the blank area should try to minimize, to be consistent
+  // with double-clicks on the contiguous tab strip area. (It'll fail and beep.)
   if ([event clickCount] == 2 &&
       mac_util::ShouldWindowsMiniaturizeOnDoubleClick())
     [[self window] performMiniaturize:self];
