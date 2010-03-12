@@ -66,6 +66,7 @@ class ClearBrowsingDataView : public views::View,
   views::ClientView* CreateClientView(views::Window* window);
   virtual views::View* GetExtraView() { return throbber_view_; }
   virtual bool GetSizeExtraViewHeightToButtons() { return true; }
+  virtual views::View* GetInitiallyFocusedView();
 
   // Overridden from ComboboxModel:
   virtual int GetItemCount();

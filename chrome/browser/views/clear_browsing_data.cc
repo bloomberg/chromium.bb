@@ -301,6 +301,10 @@ views::View* ClearBrowsingDataView::GetContentsView() {
   return this;
 }
 
+views::View* ClearBrowsingDataView::GetInitiallyFocusedView() {
+  return GetDialogClientView()->cancel_button();
+}
+
 views::ClientView* ClearBrowsingDataView::CreateClientView(
     views::Window* window) {
   views::Link* flash_link =
