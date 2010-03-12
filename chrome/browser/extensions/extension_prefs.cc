@@ -373,8 +373,12 @@ void ExtensionPrefs::OnExtensionInstalled(Extension* extension) {
   FilePath::StringType path = MakePathRelative(install_directory_,
       extension->path(), NULL);
   UpdateExtensionPref(id, kPrefPath, Value::CreateStringValue(path));
-  UpdateExtensionPref(id, kPrefManifest,
-                      extension->manifest_value()->DeepCopy());
+  // We store prefs about LOAD extensions, but don't cache their manifest
+  // since it may change on disk.
+  if (extension->location() != Extension::LOAD) {
+    UpdateExtensionPref(id, kPrefManifest,
+                        extension->manifest_value()->DeepCopy());
+  }
   prefs_->SavePersistentPrefs();
 }
 
@@ -441,9 +445,11 @@ std::string ExtensionPrefs::GetVersionString(const std::string& extension_id) {
 }
 
 void ExtensionPrefs::UpdateManifest(Extension* extension) {
-  UpdateExtensionPref(extension->id(), kPrefManifest,
-                      extension->manifest_value()->DeepCopy());
-  prefs_->ScheduleSavePersistentPrefs();
+  if (extension->location() != Extension::LOAD) {
+    UpdateExtensionPref(extension->id(), kPrefManifest,
+                        extension->manifest_value()->DeepCopy());
+    prefs_->ScheduleSavePersistentPrefs();
+  }
 }
 
 FilePath ExtensionPrefs::GetExtensionPath(const std::string& extension_id) {

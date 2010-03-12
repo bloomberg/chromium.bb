@@ -83,6 +83,16 @@ class InstalledExtensionSet {
   std::map<std::string, std::string> versions_;
 };
 
+static bool ShouldReloadExtensionManifest(const ExtensionInfo& info) {
+  // Always reload LOAD extension manifests, because they can change on disk
+  // independent of the manifest in our prefs.
+  if (info.extension_location == Extension::LOAD)
+    return true;
+
+  // Otherwise, reload the manifest it needs to be relocalized.
+  return extension_l10n_util::ShouldRelocalizeManifest(info);
+}
+
 }  // namespace
 
 // ExtensionsService.
@@ -356,11 +366,11 @@ void ExtensionsService::LoadAllExtensions() {
   // If any extensions need localization, we bounce them all to the file thread
   // for re-reading and localization.
   for (size_t i = 0; i < info->size(); ++i) {
-    if (extension_l10n_util::ShouldRelocalizeManifest(*info->at(i))) {
+    if (ShouldReloadExtensionManifest(*info->at(i))) {
       ChromeThread::PostTask(
         ChromeThread::FILE, FROM_HERE, NewRunnableMethod(
             backend_.get(),
-            &ExtensionsServiceBackend::ReloadExtensionManifestsForLocaleChanged,
+            &ExtensionsServiceBackend::ReloadExtensionManifests,
             info.release(),  // Callee takes ownership of the memory.
             start_time,
             scoped_refptr<ExtensionsService>(this)));
@@ -1121,7 +1131,7 @@ void ExtensionsServiceBackend::OnExternalExtensionFound(
           version->GetString(), path, location));
 }
 
-void ExtensionsServiceBackend::ReloadExtensionManifestsForLocaleChanged(
+void ExtensionsServiceBackend::ReloadExtensionManifests(
     ExtensionPrefs::ExtensionsInfo* extensions_to_reload,
     base::TimeTicks start_time,
     scoped_refptr<ExtensionsService> frontend) {
@@ -1129,10 +1139,7 @@ void ExtensionsServiceBackend::ReloadExtensionManifestsForLocaleChanged(
 
   for (size_t i = 0; i < extensions_to_reload->size(); ++i) {
     ExtensionInfo* info = extensions_to_reload->at(i).get();
-    if (!info->extension_manifest.get())
-      continue;
-
-    if (!extension_l10n_util::ShouldRelocalizeManifest(*info))
+    if (!ShouldReloadExtensionManifest(*info))
       continue;
 
     // We need to reload original manifest in order to localize properly.

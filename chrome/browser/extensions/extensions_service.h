@@ -407,9 +407,9 @@ class ExtensionsServiceBackend
                                         const FilePath& path,
                                         Extension::Location location);
 
-  // When Chrome locale changes we need to re-localize manifest files for
-  // extensions that are actually localized.
-  void ReloadExtensionManifestsForLocaleChanged(
+  // Reloads the given extensions from their manifests on disk (instead of what
+  // we have cached in the prefs).
+  void ReloadExtensionManifests(
       ExtensionPrefs::ExtensionsInfo* extensions_to_reload,
       base::TimeTicks start_time,
       scoped_refptr<ExtensionsService> frontend);
