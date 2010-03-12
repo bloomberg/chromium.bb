@@ -62,7 +62,9 @@ void WebDragDestGtk::DragLeave() {
   tab_contents_->render_view_host()->DragTargetDragLeave();
 }
 
-gboolean WebDragDestGtk::OnDragMotion(GdkDragContext* context, gint x, gint y,
+gboolean WebDragDestGtk::OnDragMotion(GtkWidget* sender,
+                                      GdkDragContext* context,
+                                      gint x, gint y,
                                       guint time) {
   if (context_ != context) {
     context_ = context;
@@ -98,8 +100,8 @@ gboolean WebDragDestGtk::OnDragMotion(GdkDragContext* context, gint x, gint y,
 }
 
 void WebDragDestGtk::OnDragDataReceived(
-    GdkDragContext* context, gint x, gint y, GtkSelectionData* data,
-    guint info, guint time) {
+    GtkWidget* sender, GdkDragContext* context, gint x, gint y,
+    GtkSelectionData* data, guint info, guint time) {
   // We might get the data from an old get_data() request that we no longer
   // care about.
   if (context != context_)
@@ -160,7 +162,8 @@ void WebDragDestGtk::OnDragDataReceived(
 }
 
 // The drag has left our widget; forward this information to the renderer.
-void WebDragDestGtk::OnDragLeave(GdkDragContext* context, guint time) {
+void WebDragDestGtk::OnDragLeave(GtkWidget* sender, GdkDragContext* context,
+                                 guint time) {
   // Set |context_| to NULL to make sure we will recognize the next DragMotion
   // as an enter.
   context_ = NULL;
@@ -174,8 +177,8 @@ void WebDragDestGtk::OnDragLeave(GdkDragContext* context, guint time) {
 }
 
 // Called by GTK when the user releases the mouse, executing a drop.
-gboolean WebDragDestGtk::OnDragDrop(GdkDragContext* context, gint x, gint y,
-                                    guint time) {
+gboolean WebDragDestGtk::OnDragDrop(GtkWidget* sender, GdkDragContext* context,
+                                    gint x, gint y, guint time) {
   // Cancel that drag leave!
   method_factory_.RevokeAll();
 

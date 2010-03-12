@@ -7,6 +7,7 @@
 
 #include <gtk/gtk.h>
 
+#include "app/gtk_signal.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDragOperation.h"
@@ -30,46 +31,28 @@ class WebDragDestGtk {
   void DragLeave();
 
  private:
-  static gboolean OnDragMotionThunk(
-      GtkWidget* widget, GdkDragContext* drag_context, gint x, gint y,
-      guint time, WebDragDestGtk* dest) {
-    return dest->OnDragMotion(drag_context, x, y, time);
-  }
-  static void OnDragLeaveThunk(
-      GtkWidget* widget, GdkDragContext* drag_context, guint time,
-      WebDragDestGtk* dest) {
-    dest->OnDragLeave(drag_context, time);
-  }
-  static gboolean OnDragDropThunk(
-      GtkWidget* widget, GdkDragContext* drag_context, gint x, gint y,
-      guint time, WebDragDestGtk* dest) {
-    return dest->OnDragDrop(drag_context, x, y, time);
-  }
-  static void OnDragDataReceivedThunk(
-      GtkWidget* widget, GdkDragContext* drag_context, gint x, gint y,
-      GtkSelectionData* data, guint info, guint time, WebDragDestGtk* dest) {
-    dest->OnDragDataReceived(drag_context, x, y, data, info, time);
-  }
-
   // Called when a system drag crosses over the render view. As there is no drag
   // enter event, we treat it as an enter event (and not a regular motion event)
   // when |context_| is NULL.
-  gboolean OnDragMotion(GdkDragContext* context, gint x, gint y, guint time);
+  CHROMEGTK_CALLBACK_4(WebDragDestGtk, gboolean, OnDragMotion, GdkDragContext*,
+                       gint, gint, guint);
 
   // We make a series of requests for the drag data when the drag first enters
   // the render view. This is the callback that is used to give us the data
   // for each individual target. When |data_requests_| reaches 0, we know we
   // have attained all the data, and we can finally tell the renderer about the
   // drag.
-  void OnDragDataReceived(GdkDragContext* context, gint x, gint y,
-                          GtkSelectionData* data, guint info, guint time);
+  CHROMEGTK_CALLBACK_6(WebDragDestGtk, void, OnDragDataReceived,
+                       GdkDragContext*, gint, gint, GtkSelectionData*,
+                       guint, guint);
 
   // The drag has left our widget; forward this information to the renderer.
-  void OnDragLeave(GdkDragContext* context, guint time);
+  CHROMEGTK_CALLBACK_2(WebDragDestGtk, void, OnDragLeave, GdkDragContext*,
+                       guint);
 
   // Called by GTK when the user releases the mouse, executing a drop.
-  gboolean OnDragDrop(GdkDragContext* context, gint x, gint y, guint time);
-
+  CHROMEGTK_CALLBACK_4(WebDragDestGtk, gboolean, OnDragDrop, GdkDragContext*,
+                       gint, gint, guint);
 
   TabContents* tab_contents_;
   // The render view.
