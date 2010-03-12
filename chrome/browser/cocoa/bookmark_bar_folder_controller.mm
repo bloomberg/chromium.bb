@@ -90,6 +90,7 @@
 // If |node| is NULL this is an "(empty)" button.
 // Does NOT add this button to our button list.
 // Returns an autoreleased button.
+// Adjusts the input frame width as appropriate.
 //
 // TODO(jrg): combine with addNodesToButtonList: code from
 // bookmark_bar_controller.mm, and generalize that to use both x and y
@@ -97,10 +98,20 @@
 // http://crbug.com/35966
 - (BookmarkButton*)makeButtonForNode:(const BookmarkNode*)node
                                frame:(NSRect)frame {
+  NSCell* cell = [self cellForBookmarkNode:node];
+  DCHECK(cell);
+
+  // The "+2" is needed because, sometimes, Cocoa is off by a tad when
+  // returning the value it thinks it needs.
+  CGFloat desired = [cell cellSize].width + 2;
+  frame.size.width = std::min(
+    std::max(bookmarks::kBookmarkMenuButtonMinimumWidth, desired),
+    bookmarks::kBookmarkMenuButtonMaximumWidth);
+
   BookmarkButton* button = [[[BookmarkButton alloc] initWithFrame:frame]
                                autorelease];
   DCHECK(button);
-  NSCell* cell = [self cellForBookmarkNode:node];
+
   [button setCell:cell];
   [button setDelegate:self];
   if (node) {
@@ -182,25 +193,30 @@
   int buttons = node->GetChildCount();
   if (buttons == 0)
     buttons = 1;  // the "empty" button
+
   int height = buttons * bookmarks::kBookmarkButtonHeight;
-  // TODO(jrg): use full width for buttons, like menus?
-  // http://crbug.com/36487
-  int width = (bookmarks::kDefaultBookmarkWidth +
-               2 * bookmarks::kBookmarkVerticalPadding);
-  [[self window] setFrame:NSMakeRect(newWindowTopLeft.x,
-                                     newWindowTopLeft.y - height,
-                                     width,
-                                     height)
-                  display:YES];
+
+  // Note: this will be replaced once we make buttons; for now, use a
+  // reasonable value.  Button creation needs a valid (x,y,h) in a
+  // frame to position them properly.
+  int windowWidth = (bookmarks::kBookmarkMenuButtonMinimumWidth +
+                     2 * bookmarks::kBookmarkVerticalPadding);
+
+  NSRect windowFrame = NSMakeRect(newWindowTopLeft.x,
+                                  newWindowTopLeft.y - height,
+                                  windowWidth,
+                                  height);
+  [[self window] setFrame:windowFrame display:YES];
 
   // TODO(jrg): combine with frame code in bookmark_bar_controller.mm
   // http://crbug.com/35966
-  NSRect frame = NSMakeRect(bookmarks::kBookmarkHorizontalPadding,
-                            height - (bookmarks::kBookmarkBarHeight -
-                                      bookmarks::kBookmarkHorizontalPadding),
-                            bookmarks::kDefaultBookmarkWidth,
-                            (bookmarks::kBookmarkBarHeight -
-                             2 * bookmarks::kBookmarkVerticalPadding));
+  NSRect buttonsOuterFrame = NSMakeRect(
+    bookmarks::kBookmarkHorizontalPadding,
+    height - (bookmarks::kBookmarkBarHeight -
+              bookmarks::kBookmarkHorizontalPadding),
+    bookmarks::kDefaultBookmarkWidth,
+    (bookmarks::kBookmarkBarHeight -
+     2 * bookmarks::kBookmarkVerticalPadding));
 
   // TODO(jrg): combine with addNodesToButtonList: code from
   // bookmark_bar_controller.mm (but use y offset)
@@ -208,21 +224,42 @@
   if (!node->GetChildCount()) {
     // If no children we are the empty button.
     BookmarkButton* button = [self makeButtonForNode:nil
-                                               frame:frame];
+                                               frame:buttonsOuterFrame];
     [buttons_ addObject:button];
     [mainView_ addSubview:button];
   } else {
     for (int i = 0; i < node->GetChildCount(); i++) {
       const BookmarkNode* child = node->GetChild(i);
       BookmarkButton* button = [self makeButtonForNode:child
-                                                 frame:frame];
+                                                 frame:buttonsOuterFrame];
       [buttons_ addObject:button];
       [mainView_ addSubview:button];
-      frame.origin.y -= bookmarks::kBookmarkBarHeight;
+      buttonsOuterFrame.origin.y -= bookmarks::kBookmarkBarHeight;
     }
   }
-
   [self updateTheme:[self themeProvider]];
+
+  // Now that we have all our buttons we can determine the real size
+  // of our window.
+  CGFloat width = 0.0;
+  for (BookmarkButton* button in buttons_.get()) {
+    width = std::max(width, NSWidth([button bounds]));
+  }
+  width = std::min(width, bookmarks::kBookmarkMenuButtonMaximumWidth);
+
+  // Things look and feel more menu-like if all the buttons are the
+  // full width of the window, especially if there are submenus.
+  for (BookmarkButton* button in buttons_.get()) {
+    NSRect buttonFrame = [button frame];
+    buttonFrame.size.width = width;
+    [button setFrame:buttonFrame];
+  }
+
+  // Finally, set our window size.
+  width += (2 * bookmarks::kBookmarkVerticalPadding);
+  windowFrame.size.width = width;
+  [[self window] setFrame:windowFrame display:YES];
+
   [[parentController_ parentWindow] addChildWindow:[self window]
                                            ordered:NSWindowAbove];
 }

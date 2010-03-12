@@ -98,7 +98,7 @@
   DCHECK([self controlView]);
 
   scoped_nsobject<NSMutableParagraphStyle> style([NSMutableParagraphStyle new]);
-  [style setAlignment:NSCenterTextAlignment];
+  [style setAlignment:NSLeftTextAlignment];
   NSDictionary* dict = [NSDictionary
                          dictionaryWithObjectsAndKeys:color,
                          NSForegroundColorAttributeName,

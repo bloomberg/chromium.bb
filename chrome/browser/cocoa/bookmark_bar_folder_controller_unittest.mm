@@ -38,6 +38,7 @@ class BookmarkBarFolderControllerTest : public CocoaTest {
  public:
   BrowserTestHelper helper_;
   scoped_nsobject<BookmarkBarController> parentBarController_;
+  const BookmarkNode* longTitleNode_;  // owned by model
 
   BookmarkBarFolderControllerTest() {
     BookmarkModel* model = helper_.profile()->GetBookmarkModel();
@@ -52,9 +53,10 @@ class BookmarkBarFolderControllerTest : public CocoaTest {
                                                   L"subgroup");
     model->AddURL(folderA, folderA->GetChildCount(), L"title a",
                   GURL("http://www.google.com/a"));
-    model->AddURL(folderA, folderA->GetChildCount(),
-                  L"title super duper long long whoa momma title you betcha",
-                  GURL("http://www.google.com/b"));
+    longTitleNode_ = model->AddURL(
+      folderA, folderA->GetChildCount(),
+      L"title super duper long long whoa momma title you betcha",
+      GURL("http://www.google.com/b"));
     model->AddURL(folderB, folderB->GetChildCount(), L"t",
                   GURL("http://www.google.com/c"));
 
@@ -65,6 +67,13 @@ class BookmarkBarFolderControllerTest : public CocoaTest {
                  delegate:nil
            resizeDelegate:nil]);
     [parentBarController_ loaded:model];
+  }
+
+  // Remove the bookmark with the long title.
+  void RemoveLongTitleNode() {
+    BookmarkModel* model = helper_.profile()->GetBookmarkModel();
+    model->Remove(longTitleNode_->GetParent(),
+                  longTitleNode_->GetParent()->IndexOfChild(longTitleNode_));
   }
 
   // Return a simple BookmarkBarFolderController.
@@ -230,6 +239,25 @@ TEST_F(BookmarkBarFolderControllerTest, ChildFolderCallbacks) {
   [bbfc closeBookmarkFolder:nil];
   EXPECT_TRUE([bbfc childFolderWillClose]);
 }
+
+// Make sure bookmark folders have variable widths.
+TEST_F(BookmarkBarFolderControllerTest, ChildFolderWidth) {
+  scoped_nsobject<BookmarkBarFolderController> bbfc;
+
+  bbfc.reset(SimpleBookmarkBarFolderController());
+  EXPECT_TRUE(bbfc.get());
+  CGFloat wideWidth = NSWidth([[bbfc window] frame]);
+
+  RemoveLongTitleNode();
+  bbfc.reset(SimpleBookmarkBarFolderController());
+  EXPECT_TRUE(bbfc.get());
+  CGFloat thinWidth = NSWidth([[bbfc window] frame]);
+
+  // Make sure window size changed as expected.
+  EXPECT_GT(wideWidth, thinWidth);
+}
+
+
 
 // TODO(jrg): draggingEntered: and draggingExited: trigger timers so
 // they are hard to test.  Factor out "fire timers" into routines
