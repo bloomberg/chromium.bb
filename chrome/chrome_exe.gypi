@@ -333,8 +333,6 @@
           'dependencies': [
             'helper_app',
             'infoplist_strings_tool',
-            # This library provides the real implementation for NaClSyscallSeg
-            '../native_client/src/trusted/service_runtime/arch/x86_32/service_runtime_x86_32.gyp:service_runtime_x86_32_chrome'
           ],
           'actions': [
             {
