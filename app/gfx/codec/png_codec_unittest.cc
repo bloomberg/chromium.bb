@@ -7,6 +7,7 @@
 #include "app/gfx/codec/png_codec.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkUnPreMultiply.h"
 
 namespace gfx {
 
@@ -50,6 +51,13 @@ bool ColorsClose(uint32_t a, uint32_t b) {
          abs(static_cast<int>(SkColorGetG(a) - SkColorGetG(b))) < 2 &&
          abs(static_cast<int>(SkColorGetR(a) - SkColorGetR(b))) < 2 &&
          abs(static_cast<int>(SkColorGetA(a) - SkColorGetA(b))) < 2;
+}
+
+// Returns true if the RGB components are "close."
+bool NonAlphaColorsClose(uint32_t a, uint32_t b) {
+  return abs(static_cast<int>(SkColorGetB(a) - SkColorGetB(b))) < 2 &&
+         abs(static_cast<int>(SkColorGetG(a) - SkColorGetG(b))) < 2 &&
+         abs(static_cast<int>(SkColorGetR(a) - SkColorGetR(b))) < 2;
 }
 
 void MakeTestSkBitmap(int w, int h, SkBitmap* bmp) {
@@ -245,6 +253,43 @@ TEST(PNGCodec, EncodeBGRASkBitmap) {
       uint32_t original_pixel = original_bitmap.getAddr32(0, y)[x];
       uint32_t decoded_pixel = decoded_bitmap.getAddr32(0, y)[x];
       EXPECT_TRUE(ColorsClose(original_pixel, decoded_pixel));
+    }
+  }
+}
+
+TEST(PNGCodec, EncodeBGRASkBitmapDiscardTransparency) {
+  const int w = 20, h = 20;
+
+  SkBitmap original_bitmap;
+  MakeTestSkBitmap(w, h, &original_bitmap);
+
+  // Encode the bitmap.
+  std::vector<unsigned char> encoded;
+  PNGCodec::EncodeBGRASkBitmap(original_bitmap, true, &encoded);
+
+  // Decode the encoded string.
+  SkBitmap decoded_bitmap;
+  EXPECT_TRUE(PNGCodec::Decode(&encoded.front(), encoded.size(),
+                               &decoded_bitmap));
+
+  // Compare the original bitmap and the output bitmap. We need to
+  // unpremultiply original_pixel, as the decoded bitmap doesn't have an alpha
+  // channel.
+  for (int x = 0; x < w; x++) {
+    for (int y = 0; y < h; y++) {
+      uint32_t original_pixel = original_bitmap.getAddr32(0, y)[x];
+      uint32_t unpremultiplied =
+          SkUnPreMultiply::PMColorToColor(original_pixel);
+      uint32_t decoded_pixel = decoded_bitmap.getAddr32(0, y)[x];
+      EXPECT_TRUE(NonAlphaColorsClose(unpremultiplied, decoded_pixel))
+          << "Original_pixel: ("
+          << SkColorGetR(unpremultiplied) << ", "
+          << SkColorGetG(unpremultiplied) << ", "
+          << SkColorGetB(unpremultiplied) << "), "
+          << "Decoded pixel: ("
+          << SkColorGetR(decoded_pixel) << ", "
+          << SkColorGetG(decoded_pixel) << ", "
+          << SkColorGetB(decoded_pixel) << ")";
     }
   }
 }

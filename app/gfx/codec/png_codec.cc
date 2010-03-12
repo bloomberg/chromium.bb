@@ -74,6 +74,49 @@ void ConvertRGBAtoSkia(const unsigned char* rgb, int pixel_width,
   }
 }
 
+void ConvertSkiatoRGB(const unsigned char* skia, int pixel_width,
+                      unsigned char* rgb, bool* is_opaque) {
+  for (int x = 0; x < pixel_width; x++) {
+    const uint32_t pixel_in = *reinterpret_cast<const uint32_t*>(&skia[x * 4]);
+    unsigned char* pixel_out = &rgb[x * 3];
+
+    int alpha = SkColorGetA(pixel_in);
+    if (alpha != 0 && alpha != 255) {
+      SkColor unmultiplied = SkUnPreMultiply::PMColorToColor(pixel_in);
+      pixel_out[0] = SkColorGetR(unmultiplied);
+      pixel_out[1] = SkColorGetG(unmultiplied);
+      pixel_out[2] = SkColorGetB(unmultiplied);
+    } else {
+      pixel_out[0] = SkColorGetR(pixel_in);
+      pixel_out[1] = SkColorGetG(pixel_in);
+      pixel_out[2] = SkColorGetB(pixel_in);
+    }
+  }
+}
+
+void ConvertSkiatoRGBA(const unsigned char* skia, int pixel_width,
+                       unsigned char* rgba, bool* is_opaque) {
+  int total_length = pixel_width * 4;
+  for (int i = 0; i < total_length; i += 4) {
+    const uint32_t pixel_in = *reinterpret_cast<const uint32_t*>(&skia[i]);
+
+    // Pack the components here.
+    int alpha = SkColorGetA(pixel_in);
+    if (alpha != 0 && alpha != 255) {
+      SkColor unmultiplied = SkUnPreMultiply::PMColorToColor(pixel_in);
+      rgba[i + 0] = SkColorGetR(unmultiplied);
+      rgba[i + 1] = SkColorGetG(unmultiplied);
+      rgba[i + 2] = SkColorGetB(unmultiplied);
+      rgba[i + 3] = alpha;
+    } else {
+      rgba[i + 0] = SkColorGetR(pixel_in);
+      rgba[i + 1] = SkColorGetG(pixel_in);
+      rgba[i + 2] = SkColorGetB(pixel_in);
+      rgba[i + 3] = alpha;
+    }
+  }
+}
+
 }  // namespace
 
 // Decoder --------------------------------------------------------------------
@@ -562,6 +605,19 @@ bool PNGCodec::Encode(const unsigned char* input, ColorFormat format,
       }
       break;
 
+    case FORMAT_SkBitmap:
+      input_color_components = 4;
+      if (discard_transparency) {
+        output_color_components = 3;
+        png_output_color_type = PNG_COLOR_TYPE_RGB;
+        converter = ConvertSkiatoRGB;
+      } else {
+        output_color_components = 4;
+        png_output_color_type = PNG_COLOR_TYPE_RGB_ALPHA;
+        converter = ConvertSkiatoRGBA;
+      }
+      break;
+
     default:
       NOTREACHED() << "Unknown pixel format";
       return false;
@@ -599,9 +655,10 @@ bool PNGCodec::Encode(const unsigned char* input, ColorFormat format,
 
   if (!converter) {
     // No conversion needed, give the data directly to libpng.
-    for (int y = 0; y < h; y ++)
+    for (int y = 0; y < h; y ++) {
       png_write_row(png_ptr,
                     const_cast<unsigned char*>(&input[y * row_byte_width]));
+    }
   } else {
     // Needs conversion using a separate buffer.
     unsigned char* row = new unsigned char[w * output_color_components];
@@ -625,34 +682,8 @@ bool PNGCodec::EncodeBGRASkBitmap(const SkBitmap& input,
   SkAutoLockPixels lock_input(input);
   DCHECK(input.empty() || input.bytesPerPixel() == bbp);
 
-  // SkBitmaps are premultiplied, we need to unpremultiply them.
-  scoped_array<unsigned char> divided(
-      new unsigned char[input.width() * input.height() * bbp]);
-
-  int i = 0;
-  for (int y = 0; y < input.height(); y++) {
-    for (int x = 0; x < input.width(); x++) {
-      uint32 pixel = input.getAddr32(0, y)[x];
-
-      int alpha = SkColorGetA(pixel);
-      if (alpha != 0 && alpha != 255) {
-        SkColor unmultiplied = SkUnPreMultiply::PMColorToColor(pixel);
-        divided[i + 0] = SkColorGetR(unmultiplied);
-        divided[i + 1] = SkColorGetG(unmultiplied);
-        divided[i + 2] = SkColorGetB(unmultiplied);
-        divided[i + 3] = alpha;
-      } else {
-        divided[i + 0] = SkColorGetR(pixel);
-        divided[i + 1] = SkColorGetG(pixel);
-        divided[i + 2] = SkColorGetB(pixel);
-        divided[i + 3] = alpha;
-      }
-      i += bbp;
-    }
-  }
-
-  return Encode(divided.get(),
-                PNGCodec::FORMAT_RGBA, input.width(), input.height(),
+  return Encode(reinterpret_cast<unsigned char*>(input.getAddr32(0, 0)),
+                FORMAT_SkBitmap, input.width(), input.height(),
                 input.width() * bbp, discard_transparency, output);
 }
 
