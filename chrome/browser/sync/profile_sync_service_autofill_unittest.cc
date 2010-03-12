@@ -25,9 +25,12 @@
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
+#include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/browser/webdata/autofill_entry.h"
 #include "chrome/browser/webdata/web_database.h"
+#include "chrome/common/notification_details.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/notification_type.h"
 #include "chrome/test/sync/engine/test_id_factory.h"
 #include "chrome/test/profile_mock.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -148,6 +151,33 @@ class DBThreadNotificationService :  // NOLINT
   scoped_ptr<NotificationService> service_;
 };
 
+class DBThreadNotifier :  // NOLINT
+    public base::RefCountedThreadSafe<DBThreadNotifier> {
+ public:
+  DBThreadNotifier() : done_event_(false, false) {}
+
+  void Notify(NotificationType type, const NotificationDetails& details) {
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    ChromeThread::PostTask(
+        ChromeThread::DB,
+        FROM_HERE,
+        NewRunnableMethod(this, &DBThreadNotifier::NotifyTask, type, details));
+    done_event_.Wait();
+  }
+
+ private:
+  friend class base::RefCountedThreadSafe<DBThreadNotifier>;
+
+  void NotifyTask(NotificationType type, const NotificationDetails& details) {
+    NotificationService::current()->Notify(type,
+                                           NotificationService::AllSources(),
+                                           details);
+    done_event_.Signal();
+  }
+
+  WaitableEvent done_event_;
+};
+
 class WebDataServiceFake : public WebDataService {
  public:
   virtual bool IsDatabaseLoaded() {
@@ -171,7 +201,7 @@ ACTION_P3(MakeAutofillSyncComponents, service, wd, dtc) {
   AutofillModelAssociator* model_associator =
       new AutofillModelAssociator(service, wd, dtc);
   AutofillChangeProcessor* change_processor =
-      new AutofillChangeProcessor(model_associator, wd, service);
+      new AutofillChangeProcessor(model_associator, wd, dtc);
   return ProfileSyncFactory::SyncComponents(model_associator,
                                             change_processor);
 }
@@ -234,8 +264,7 @@ class ProfileSyncServiceAutofillTest : public testing::Test {
     DirectoryManager* dir_manager = user_share->dir_manager.get();
 
     ScopedDirLookup dir(dir_manager, user_share->authenticated_name);
-    if (!dir.good())
-      return;
+    ASSERT_TRUE(dir.good());
 
     WriteTransaction wtrans(dir, UNITTEST, __FILE__, __LINE__);
     MutableEntry node(&wtrans,
@@ -374,7 +403,7 @@ class AddAutofillEntriesTask : public Task {
 };
 
 // TODO(skrul): Test abort startup.
-// TODO(skrul): Test error while processing changes.
+// TODO(skrul): Test processing of cloud changes.
 
 TEST_F(ProfileSyncServiceAutofillTest, FailModelAssociation) {
   // Don't create the root autofill node so startup fails.
@@ -473,4 +502,106 @@ TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSyncMerge) {
   GetAutofillEntriesFromSyncDB(&new_sync_entries);
   ASSERT_EQ(1U, new_sync_entries.size());
   EXPECT_TRUE(merged_entry == new_sync_entries[0]);
+}
+
+TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeAdd) {
+  EXPECT_CALL(web_database_, GetAllAutofillEntries(_)).WillOnce(Return(true));
+  SetIdleChangeProcessorExpectations();
+  CreateAutofillRootTask task(this);
+  StartSyncService(&task);
+
+  AutofillEntry added_entry(MakeAutofillEntry("added", "entry", 1));
+  std::vector<base::Time> timestamps(added_entry.timestamps());
+
+  EXPECT_CALL(web_database_, GetAutofillTimestamps(_, _, _)).
+      WillOnce(DoAll(SetArgumentPointee<2>(timestamps), Return(true)));
+
+  AutofillChangeList changes;
+  changes.push_back(AutofillChange(AutofillChange::ADD, added_entry.key()));
+  scoped_refptr<DBThreadNotifier> notifier = new DBThreadNotifier();
+  notifier->Notify(NotificationType::AUTOFILL_ENTRIES_CHANGED,
+                   Details<AutofillChangeList>(&changes));
+
+  std::vector<AutofillEntry> new_sync_entries;
+  GetAutofillEntriesFromSyncDB(&new_sync_entries);
+  ASSERT_EQ(1U, new_sync_entries.size());
+  EXPECT_TRUE(added_entry == new_sync_entries[0]);
+}
+
+TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeUpdate) {
+  AutofillEntry original_entry(MakeAutofillEntry("my", "entry", 1));
+  std::vector<AutofillEntry> original_entries;
+  original_entries.push_back(original_entry);
+
+  EXPECT_CALL(web_database_, GetAllAutofillEntries(_)).
+      WillOnce(DoAll(SetArgumentPointee<0>(original_entries), Return(true)));
+  CreateAutofillRootTask task(this);
+  StartSyncService(&task);
+
+  AutofillEntry updated_entry(MakeAutofillEntry("my", "entry", 1, 2));
+  std::vector<base::Time> timestamps(updated_entry.timestamps());
+
+  EXPECT_CALL(web_database_, GetAutofillTimestamps(_, _, _)).
+      WillOnce(DoAll(SetArgumentPointee<2>(timestamps), Return(true)));
+
+  AutofillChangeList changes;
+  changes.push_back(AutofillChange(AutofillChange::UPDATE,
+                                   updated_entry.key()));
+  scoped_refptr<DBThreadNotifier> notifier = new DBThreadNotifier();
+  notifier->Notify(NotificationType::AUTOFILL_ENTRIES_CHANGED,
+                   Details<AutofillChangeList>(&changes));
+
+  std::vector<AutofillEntry> new_sync_entries;
+  GetAutofillEntriesFromSyncDB(&new_sync_entries);
+  ASSERT_EQ(1U, new_sync_entries.size());
+  EXPECT_TRUE(updated_entry == new_sync_entries[0]);
+}
+
+TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeRemove) {
+  AutofillEntry original_entry(MakeAutofillEntry("my", "entry", 1));
+  std::vector<AutofillEntry> original_entries;
+  original_entries.push_back(original_entry);
+
+  EXPECT_CALL(web_database_, GetAllAutofillEntries(_)).
+      WillOnce(DoAll(SetArgumentPointee<0>(original_entries), Return(true)));
+  CreateAutofillRootTask task(this);
+  StartSyncService(&task);
+
+  AutofillChangeList changes;
+  changes.push_back(AutofillChange(AutofillChange::REMOVE,
+                                   original_entry.key()));
+  scoped_refptr<DBThreadNotifier> notifier = new DBThreadNotifier();
+  notifier->Notify(NotificationType::AUTOFILL_ENTRIES_CHANGED,
+                   Details<AutofillChangeList>(&changes));
+
+  std::vector<AutofillEntry> new_sync_entries;
+  GetAutofillEntriesFromSyncDB(&new_sync_entries);
+  ASSERT_EQ(0U, new_sync_entries.size());
+}
+
+TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeError) {
+  EXPECT_CALL(web_database_, GetAllAutofillEntries(_)).WillOnce(Return(true));
+  CreateAutofillRootTask task(this);
+  StartSyncService(&task);
+
+  // Inject an evil entry into the sync db to conflict with the same
+  // entry added by the user.
+  AutofillEntry evil_entry(MakeAutofillEntry("evil", "entry", 1));
+  AddAutofillSyncNode(evil_entry);
+
+  AutofillChangeList changes;
+  changes.push_back(AutofillChange(AutofillChange::ADD,
+                                   evil_entry.key()));
+  scoped_refptr<DBThreadNotifier> notifier = new DBThreadNotifier();
+  notifier->Notify(NotificationType::AUTOFILL_ENTRIES_CHANGED,
+                   Details<AutofillChangeList>(&changes));
+
+  // Wait for the PPS to shut everything down and signal us.
+  EXPECT_CALL(observer_, OnStateChanged()).WillOnce(QuitUIMessageLoop());
+  MessageLoop::current()->Run();
+  EXPECT_TRUE(service_->unrecoverable_error_detected());
+
+  // Ensure future autofill notifications don't crash.
+  notifier->Notify(NotificationType::AUTOFILL_ENTRIES_CHANGED,
+                   Details<AutofillChangeList>(&changes));
 }

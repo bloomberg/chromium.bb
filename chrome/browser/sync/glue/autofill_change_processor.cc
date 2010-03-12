@@ -135,6 +135,11 @@ void AutofillChangeProcessor::Observe(NotificationType type,
             error_handler()->OnUnrecoverableError();
             return;
           } else {
+            if (!sync_node.InitByIdLookup(sync_id)) {
+              LOG(ERROR) << "Autofill node lookup failed.";
+              error_handler()->OnUnrecoverableError();
+              return;
+            }
             model_associator_->Disassociate(sync_node.GetId());
             sync_node.Remove();
           }
