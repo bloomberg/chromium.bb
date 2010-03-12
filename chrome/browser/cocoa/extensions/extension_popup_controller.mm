@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "base/logging.h"
 #include "chrome/browser/browser.h"
 #import "chrome/browser/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/cocoa/extension_view_mac.h"
@@ -92,7 +91,6 @@ CGFloat Clamp(CGFloat value, CGFloat min, CGFloat max) {
 }
 
 - (void)dealloc {
-  LOG(ERROR) << "Yep, I'm getting deleted.";
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [super dealloc];
 }

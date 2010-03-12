@@ -43,7 +43,6 @@ class AppNotificationBridge : public NotificationObserver {
                const NotificationDetails& details) {
     switch (type.value) {
       case NotificationType::APP_TERMINATING:
-	LOG(ERROR) << "Received notification.";
         [owner_ appIsTerminating];
         break;
       default:
