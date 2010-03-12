@@ -13,7 +13,7 @@
 namespace switches {
 
 // -----------------------------------------------------------------------------
-// Can't find the switch yo are looking for? Try looking in
+// Can't find the switch you are looking for? Try looking in
 // base/base_switches.cc instead.
 // -----------------------------------------------------------------------------
 
@@ -218,6 +218,7 @@ extern const char kZygoteProcess[];
 #if defined(OS_CHROMEOS)
 extern const char kCookiePipe[];
 extern const char kEnableGView[];
+extern const char kEnableLoginImages[];
 extern const char kLoginManager[];
 extern const char kInChromeAuth[];
 // TODO(avayvod): Remove this flag when it's unnecessary for testing

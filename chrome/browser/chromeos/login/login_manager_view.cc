@@ -18,16 +18,12 @@
 #include "base/process_util.h"
 #include "base/string_util.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/authentication_notification_details.h"
-#include "chrome/browser/chromeos/login/google_authenticator.h"
-#include "chrome/browser/chromeos/login/pam_google_authenticator.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/utils.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -76,13 +72,11 @@ LoginManagerView::LoginManagerView(ScreenObserver* observer)
       observer_(observer),
       error_id_(-1),
       ALLOW_THIS_IN_INITIALIZER_LIST(focus_grabber_factory_(this)),
-      focus_delayed_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          authenticator_(new PamGoogleAuthenticator(this))) {
+      focus_delayed_(false) {
   if (kStubOutLogin)
     authenticator_.reset(new StubAuthenticator(this));
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kInChromeAuth))
-    authenticator_.reset(new GoogleAuthenticator(this));
+  else
+    authenticator_.reset(login_utils::CreateAuthenticator(this));
 }
 
 LoginManagerView::~LoginManagerView() {
@@ -327,16 +321,10 @@ void LoginManagerView::OnLoginFailure(const std::string error) {
 
 void LoginManagerView::OnLoginSuccess(const std::string username) {
   // TODO(cmasone): something sensible if errors occur.
-  SetupSession(username);
-  login_utils::CompleteLogin(username);
-}
-
-void LoginManagerView::SetupSession(const std::string& username) {
   if (observer_) {
     observer_->OnExit(ScreenObserver::LOGIN_SIGN_IN_SELECTED);
   }
-  if (CrosLibrary::EnsureLoaded())
-    LoginLibrary::Get()->StartSession(username, "");
+  login_utils::CompleteLogin(username);
 }
 
 void LoginManagerView::ShowError(int error_id) {

@@ -20,7 +20,7 @@ class UserManager {
   // A class representing information about a previously logged in user.
   class User {
    public:
-    User() {}
+    User();
     ~User() {}
 
     // The email the user used to log in.

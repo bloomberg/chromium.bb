@@ -8,6 +8,7 @@
 #include "chrome/browser/chromeos/status/clock_menu_button.h"
 #include "chrome/browser/chromeos/status/network_menu_button.h"
 #include "chrome/browser/chromeos/status/status_area_view.h"
+#include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/common/x11_util.h"
 #include "views/screen.h"
 #include "views/widget/widget_gtk.h"
@@ -53,6 +54,10 @@ views::Widget* BackgroundView::CreateWindowContainingView(
   views::WidgetGtk* window =
       new views::WidgetGtk(views::WidgetGtk::TYPE_WINDOW);
   window->Init(NULL, CalculateWindowBounds(bounds));
+  chromeos::WmIpc::instance()->SetWindowType(
+      window->GetNativeView(),
+      chromeos::WmIpc::WINDOW_TYPE_LOGIN_BACKGROUND,
+      NULL);
   *view = new BackgroundView();
   window->SetContentsView(*view);
 

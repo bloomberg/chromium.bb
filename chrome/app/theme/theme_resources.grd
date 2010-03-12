@@ -461,6 +461,8 @@
         <include name="IDR_MEDIAPLAYER_PREV" file="mediaplayer_prev.png" type="BINDATA" />
         <include name="IDR_MEDIAPLAYER_MENU" file="mediaplayer_menu.png" type="BINDATA" />
         <include name="IDR_MEDIAPLAYER_VOL_HIGH" file="mediaplayer_vol_high.png" type="BINDATA" />
+        <include name="IDR_LOGIN_DEFAULT_USER" file="login_default.png" type="BINDATA" />
+        <include name="IDR_LOGIN_OTHER_USER" file="login_other.png" type="BINDATA" />
        </if>
 
       <if expr="(pp_ifdef('chromeos') or pp_ifdef('toolkit_views')) and pp_ifdef('_google_chrome')">

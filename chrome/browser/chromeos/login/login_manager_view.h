@@ -88,14 +88,6 @@ class LoginManagerView : public views::View,
   bool Authenticate(const std::string& username,
                     const std::string& password);
 
-  // This is not threadsafe; as authentication is supposed to happen on the main
-  // thread before any other threads are started, so this should be ok.
-  // That said, the only reason we're not threadsafe right now is that we're
-  // munging the CommandLine::ForCurrentProcess() to enable auto-client-side-ssl
-  // for Googlers.  So, if we can do that differently to make this thread-safe,
-  // that'd be A Good Thing (tm).
-  void SetupSession(const std::string& username);
-
   // Callback from chromeos::VersionLoader giving the version.
   void OnOSVersion(VersionLoader::Handle handle,
                    std::string version);

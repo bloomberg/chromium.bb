@@ -31,7 +31,7 @@ class WizardController : public chromeos::ScreenObserver,
                          public WizardScreenDelegate {
  public:
   WizardController();
-  virtual ~WizardController();
+  ~WizardController();
 
   // Returns the default wizard controller if it has been created.
   static WizardController* default_controller() {
@@ -39,8 +39,11 @@ class WizardController : public chromeos::ScreenObserver,
   }
 
   // Shows the first screen defined by |first_screen_name| or by default
-  // if the parameter is empty.
-  void Init(const std::string& first_screen_name);
+  // if the parameter is empty. |paint_background| indicates whether a
+  // background should be painted. If |paint_background| is false, the window is
+  // made transparent.
+  void Init(const std::string& first_screen_name,
+            bool paint_background);
 
   // Returns the view that contains all the other views.
   views::View* contents() { return contents_; }

@@ -9,8 +9,11 @@
 #include "base/path_service.h"
 #include "chrome/browser/browser_init.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/external_cookie_handler.h"
 #include "chrome/browser/chromeos/login/authentication_notification_details.h"
+#include "chrome/browser/chromeos/login/google_authenticator.h"
+#include "chrome/browser/chromeos/login/pam_google_authenticator.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
@@ -25,6 +28,9 @@ namespace login_utils {
 
 void CompleteLogin(const std::string& username) {
   LOG(INFO) << "LoginManagerView: OnLoginSuccess()";
+
+  if (CrosLibrary::EnsureLoaded())
+    LoginLibrary::Get()->StartSession(username, "");
 
   UserManager::Get()->UserLoggedIn(username);
 
@@ -50,6 +56,12 @@ void CompleteLogin(const std::string& username) {
     ExternalCookieHandler::GetCookies(command_line, profile);
   browser_init.LaunchBrowser(command_line, profile, std::wstring(), true,
                              &return_code);
+}
+
+Authenticator* CreateAuthenticator(LoginStatusConsumer* consumer) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kInChromeAuth))
+    return new GoogleAuthenticator(consumer);
+  return new PamGoogleAuthenticator(consumer);
 }
 
 }  // namespace login_utils

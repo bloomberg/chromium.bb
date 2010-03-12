@@ -7,6 +7,9 @@
 
 #include <string>
 
+class Authenticator;
+class LoginStatusConsumer;
+
 namespace views {
 class Widget;
 }
@@ -18,6 +21,10 @@ namespace login_utils {
 // Invoked after the user has successfully logged in. This launches a browser
 // and does other bookkeeping after logging in.
 void CompleteLogin(const std::string& username);
+
+// Creates and returns the authenticator to use. The caller owns the returned
+// Authenticator and must delete it when done.
+Authenticator* CreateAuthenticator(LoginStatusConsumer* consumer);
 
 }  // namespace login_utils
 

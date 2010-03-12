@@ -4,9 +4,11 @@
 
 #include "chrome/browser/chromeos/login/user_manager.h"
 
+#include "app/resource_bundle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/common/notification_service.h"
+#include "grit/theme_resources.h"
 
 namespace chromeos {
 
@@ -15,6 +17,11 @@ static const wchar_t kLoggedInUsers[] = L"LoggedInUsers";
 
 // The one true UserManager.
 static UserManager* user_manager_ = NULL;
+
+UserManager::User::User() {
+  image_ = *ResourceBundle::GetSharedInstance().GetBitmapNamed(
+      IDR_LOGIN_DEFAULT_USER);
+}
 
 std::string UserManager::User::GetDisplayName() const {
   size_t i = email_.find('@');

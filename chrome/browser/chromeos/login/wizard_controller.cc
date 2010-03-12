@@ -11,13 +11,17 @@
 #include <string>
 
 #include "app/resource_bundle.h"
+#include "base/command_line.h"
 #include "base/logging.h"  // For NOTREACHED.
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/login/account_screen.h"
 #include "chrome/browser/chromeos/login/background_view.h"
+#include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/wm_ipc.h"
+#include "chrome/common/chrome_switches.h"
 #include "unicode/locid.h"
 #include "views/painter.h"
 #include "views/screen.h"
@@ -38,20 +42,26 @@ const char kUpdateScreenName[] = "update";
 // WizardController.
 class ContentView : public views::View {
  public:
-  ContentView(int window_x, int window_y, int screen_w, int screen_h)
+  ContentView(bool paint_background, int window_x, int window_y, int screen_w,
+              int screen_h)
       : window_x_(window_x),
         window_y_(window_y),
         screen_w_(screen_w),
         screen_h_(screen_h) {
-    painter_.reset(chromeos::CreateWizardPainter(
-                       &chromeos::BorderDefinition::kWizardBorder));
+    if (paint_background) {
+      painter_.reset(chromeos::CreateWizardPainter(
+                         &chromeos::BorderDefinition::kWizardBorder));
+    }
   }
 
   void PaintBackground(gfx::Canvas* canvas) {
-    // TODO(sky): nuke this once new login manager is in place. This needs to
-    // exist because with no window manager transparency isn't really supported.
-    canvas->TranslateInt(-window_x_, -window_y_);
-    painter_->Paint(screen_w_, screen_h_, canvas);
+    if (painter_.get()) {
+      // TODO(sky): nuke this once new login manager is in place. This needs to
+      // exist because with no window manager transparency isn't really
+      // supported.
+      canvas->TranslateInt(-window_x_, -window_y_);
+      painter_->Paint(screen_w_, screen_h_, canvas);
+    }
   }
 
   virtual void Layout() {
@@ -102,7 +112,8 @@ WizardController::~WizardController() {
   default_controller_ = NULL;
 }
 
-void WizardController::Init(const std::string& first_screen_name) {
+void WizardController::Init(const std::string& first_screen_name,
+                            bool paint_background) {
   DCHECK(!contents_);
 
   gfx::Rect screen_bounds =
@@ -110,14 +121,21 @@ void WizardController::Init(const std::string& first_screen_name) {
   int window_x = (screen_bounds.width() - kWizardScreenWidth) / 2;
   int window_y = (screen_bounds.height() - kWizardScreenHeight) / 2;
 
-  contents_ = new ContentView(window_x, window_y, screen_bounds.width(),
+  contents_ = new ContentView(paint_background, window_x, window_y,
+                              screen_bounds.width(),
                               screen_bounds.height());
 
   views::WidgetGtk* window =
       new views::WidgetGtk(views::WidgetGtk::TYPE_WINDOW);
   widget_ = window;
+  if (!paint_background)
+    window->MakeTransparent();
   window->Init(NULL, gfx::Rect(window_x, window_y, kWizardScreenWidth,
                                kWizardScreenHeight));
+  chromeos::WmIpc::instance()->SetWindowType(
+      window->GetNativeView(),
+      chromeos::WmIpc::WINDOW_TYPE_LOGIN_GUEST,
+      NULL);
   window->SetContentsView(contents_);
 
   ShowFirstScreen(first_screen_name);
@@ -299,9 +317,20 @@ namespace browser {
 // Declared in browser_dialogs.h so that others don't need to depend on our .h.
 void ShowLoginWizard(const std::string& first_screen_name,
                      const gfx::Size& size) {
+  if (first_screen_name.empty() && chromeos::CrosLibrary::EnsureLoaded() &&
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableLoginImages)) {
+    std::vector<chromeos::UserManager::User> users =
+        chromeos::UserManager::Get()->GetUsers();
+    if (!users.empty()) {
+      // ExistingUserController deletes itself.
+      (new chromeos::ExistingUserController(users, size))->Init();
+      return;
+    }
+  }
   WizardController* controller = new WizardController();
   controller->ShowBackground(size);
-  controller->Init(first_screen_name);
+  controller->Init(first_screen_name, true);
   controller->Show();
   if (chromeos::CrosLibrary::EnsureLoaded())
     chromeos::LoginLibrary::Get()->EmitLoginPromptReady();
