@@ -59,7 +59,7 @@ class ThemeProvider;
 // made and inserted into the new location while leaving the bookmark in
 // the old location, otherwise move the bookmark by removing from its old
 // location and inserting into the new location.
-- (BOOL)dragButton:(BookmarkButton *)sourceButton
+- (BOOL)dragButton:(BookmarkButton*)sourceButton
                 to:(NSPoint)point
               copy:(BOOL)copy;
 

@@ -220,8 +220,7 @@
   if (data && [info draggingSource]) {
     BookmarkButton* button = nil;
     [data getBytes:&button length:sizeof(button)];
-    BOOL copy =
-      [info draggingSourceOperationMask] & NSDragOperationMove ? NO : YES;
+    BOOL copy = !([info draggingSourceOperationMask] & NSDragOperationMove);
     rtn = [controller_ dragButton:button
                                to:[info draggingLocation]
                              copy:copy];
