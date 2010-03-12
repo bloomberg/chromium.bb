@@ -11,7 +11,8 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebNotificationPresenter.h"
 
 NotificationsPrefsCache::NotificationsPrefsCache(
-    const ListValue* allowed, const ListValue* denied) {
+    const ListValue* allowed, const ListValue* denied)
+        : is_initialized_(false) {
   ListValue::const_iterator i;
   std::wstring origin;
   if (allowed) {
@@ -30,7 +31,7 @@ NotificationsPrefsCache::NotificationsPrefsCache(
 
 void NotificationsPrefsCache::CacheAllowedOrigin(
     const GURL& origin) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  CheckThreadAccess();
   std::set<GURL>::iterator iter;
   allowed_origins_.insert(origin);
   if ((iter = denied_origins_.find(origin)) != denied_origins_.end())
@@ -39,7 +40,7 @@ void NotificationsPrefsCache::CacheAllowedOrigin(
 
 void NotificationsPrefsCache::CacheDeniedOrigin(
     const GURL& origin) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  CheckThreadAccess();
   std::set<GURL>::iterator iter;
   denied_origins_.insert(origin);
   if ((iter = allowed_origins_.find(origin)) != allowed_origins_.end())
@@ -56,12 +57,20 @@ int NotificationsPrefsCache::HasPermission(const GURL& origin) {
 
 bool NotificationsPrefsCache::IsOriginAllowed(
     const GURL& origin) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  CheckThreadAccess();
   return (allowed_origins_.find(origin) != allowed_origins_.end());
 }
 
 bool NotificationsPrefsCache::IsOriginDenied(
     const GURL& origin) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  CheckThreadAccess();
   return (denied_origins_.find(origin) != denied_origins_.end());
+}
+
+void NotificationsPrefsCache::CheckThreadAccess() {
+  if (is_initialized_) {
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  } else {
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  }
 }

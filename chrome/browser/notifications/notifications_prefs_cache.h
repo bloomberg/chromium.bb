@@ -14,12 +14,15 @@ class ListValue;
 
 // Class which caches notification preferences.
 // Construction occurs on the UI thread when the contents
-// of the profile preferences are initially cached.  Once constructed
-// this class should only be accessed on the IO thread.
+// of the profile preferences are initialized.  Once is_initialized() is set,
+// access can only be done from the IO thread.
 class NotificationsPrefsCache
     : public base::RefCountedThreadSafe<NotificationsPrefsCache> {
  public:
   NotificationsPrefsCache(const ListValue* allowed, const ListValue* denied);
+
+  void set_is_initialized(bool val) { is_initialized_ = val; }
+  bool is_initialized() { return is_initialized_; }
 
   // Checks to see if a given origin has permission to create desktop
   // notifications.  Returns a constant from WebNotificationPresenter
@@ -39,9 +42,16 @@ class NotificationsPrefsCache
   bool IsOriginAllowed(const GURL& origin);
   bool IsOriginDenied(const GURL& origin);
 
+  // Helper that ensures we are running on the expected thread.
+  void CheckThreadAccess();
+
   // Storage of the actual preferences.
   std::set<GURL> allowed_origins_;
   std::set<GURL> denied_origins_;
+
+  // Set to true once the initial cached settings have been completely read.
+  // Once this is done, the class can no longer be accessed on the UI thread.
+  bool is_initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationsPrefsCache);
 };

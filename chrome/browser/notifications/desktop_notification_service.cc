@@ -240,6 +240,8 @@ void DesktopNotificationService::InitPrefs() {
       }
     }
   }
+
+  prefs_cache_->set_is_initialized(true);
 }
 
 void DesktopNotificationService::Observe(NotificationType type,
