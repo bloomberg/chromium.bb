@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/glue/plugins/mac_gpu_plugin_container.h"
+#include "chrome/browser/renderer_host/gpu_plugin_container_mac.h"
 
 #include "base/logging.h"
-#include "webkit/glue/webplugin.h"
-#include "webkit/glue/plugins/mac_gpu_plugin_container_manager.h"
+#include "chrome/browser/renderer_host/gpu_plugin_container_manager_mac.h"
 #include "chrome/common/io_surface_support_mac.h"
+#include "webkit/glue/webplugin.h"
 
 MacGPUPluginContainer::MacGPUPluginContainer()
     : x_(0),

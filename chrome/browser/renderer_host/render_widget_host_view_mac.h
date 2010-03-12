@@ -13,10 +13,10 @@
 #include "base/task.h"
 #include "base/time.h"
 #include "chrome/browser/cocoa/base_view.h"
+#include "chrome/browser/renderer_host/gpu_plugin_container_manager_mac.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "webkit/glue/webcursor.h"
 #include "webkit/glue/webmenuitem.h"
-#include "webkit/glue/plugins/mac_gpu_plugin_container_manager.h"
 
 class RenderWidgetHostViewMac;
 class RWHVMEditCommandHelper;

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_PLUGINS_MAC_GPU_PLUGIN_CONTAINER_H_
-#define WEBKIT_GLUE_PLUGINS_MAC_GPU_PLUGIN_CONTAINER_H_
+#ifndef CHROME_BROWSER_RENDERER_HOST_GPU_PLUGIN_CONTAINER_MAC_H_
+#define CHROME_BROWSER_RENDERER_HOST_GPU_PLUGIN_CONTAINER_MAC_H_
 
 // The "GPU plugin" is currently implemented as a special kind of
 // NPAPI plugin to provide high-performance on-screen 3D rendering for
@@ -110,5 +110,5 @@ class MacGPUPluginContainer {
   DISALLOW_COPY_AND_ASSIGN(MacGPUPluginContainer);
 };
 
-#endif  // WEBKIT_GLUE_PLUGINS_MAC_GPU_PLUGIN_CONTAINER_H_
+#endif  // CHROME_BROWSER_RENDERER_HOST_GPU_PLUGIN_CONTAINER_MAC_H_
 
