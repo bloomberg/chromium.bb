@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "Vector.h"
-#if OS(WINDOWS)
+#if COMPILER(MSVC)
 #pragma warning(disable: 4355) // 'this' used in initializer list
 #endif
 #include "ImageDecoder.h"
