@@ -274,6 +274,15 @@ void BackingStoreX::PaintToBackingStore(
 bool BackingStoreX::CopyFromBackingStore(const gfx::Rect& rect,
                                          skia::PlatformCanvas* output) {
   base::TimeTicks begin_time = base::TimeTicks::Now();
+
+  if (visual_depth_ < 24) {
+    // CopyFromBackingStore() copies pixels out of the XImage
+    // in a way that assumes that each component (red, green,
+    // blue) is a byte.  This doesn't work on visuals which
+    // encode a pixel color with less than a byte per color.
+    return false;
+  }
+
   const int width = std::min(size().width(), rect.width());
   const int height = std::min(size().height(), rect.height());
 
@@ -328,6 +337,8 @@ bool BackingStoreX::CopyFromBackingStore(const gfx::Rect& rect,
 
   // The X image might have a different row stride, so iterate through it and
   // copy each row out, only up to the pixels we're actually using.
+  // This code assumes a visual mode where a pixel is represented using
+  // a byte for each component.
   SkBitmap bitmap = output->getTopPlatformDevice().accessBitmap(true);
   for (int y = 0; y < height; y++) {
     uint32* dest_row = bitmap.getAddr32(0, y);
