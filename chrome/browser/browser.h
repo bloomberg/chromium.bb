@@ -190,6 +190,7 @@ class Browser : public TabStripModelDelegate,
 #if defined(OS_MACOSX)
   // Open a new window with history/downloads/help (needed on Mac when there are
   // no windows).
+  static void OpenBookmarkManagerWindow(Profile* profile);
   static void OpenHistoryWindow(Profile* profile);
   static void OpenDownloadsWindow(Profile* profile);
   static void OpenHelpWindow(Profile* profile);

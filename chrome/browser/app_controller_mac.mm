@@ -670,7 +670,20 @@ void RecordLastRunAppBundlePath() {
     }
     case IDC_SHOW_BOOKMARK_MANAGER:
       UserMetrics::RecordAction("ShowBookmarkManager", defaultProfile);
-      [BookmarkManagerController showBookmarkManager:defaultProfile];
+      if (Browser* browser = ActivateBrowser(defaultProfile)) {
+        // Call through browser which takes care of opening a tab or the old
+        // bookmark manager window.
+        browser->OpenBookmarkManager();
+      } else {
+        // We have no browser window. Only create a window if we are using the
+        // new tabbed bookmark manager.
+        if (CommandLine::ForCurrentProcess()->HasSwitch(
+                switches::kEnableTabbedBookmarkManager)) {
+          Browser::OpenBookmarkManagerWindow(defaultProfile);
+        } else {
+          [BookmarkManagerController showBookmarkManager:defaultProfile];
+        }
+      }
       break;
     case IDC_SHOW_HISTORY:
       if (Browser* browser = ActivateBrowser(defaultProfile))
