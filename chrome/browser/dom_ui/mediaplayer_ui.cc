@@ -33,6 +33,8 @@
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
 #include "net/base/escape.h"
+#include "net/base/load_flags.h"
+#include "net/url_request/url_request_job.h"
 
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
@@ -342,6 +344,14 @@ void MediaplayerHandler::HandleTogglePlaylist(const Value* value) {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+// Allows InvokeLater without adding refcounting. This class is a Singleton and
+// won't be deleted until it's last InvokeLater is run.
+template <>
+struct RunnableMethodTraits<MediaPlayer> {
+  void RetainCallee(MediaPlayer* obj) {}
+  void ReleaseCallee(MediaPlayer* obj) {}
+};
+
 void MediaPlayer::EnqueueMediaURL(const GURL& url) {
   if (handler_ == NULL) {
     GURL newurl(url);
@@ -474,9 +484,15 @@ void MediaPlayer::PopupPlaylist() {
                                                    kPopupHeight),
                                          BrowserWindow::WINDOW_BOUNDS);
   playlist_browser_->window()->Show();
-};
+}
 
 void MediaPlayer::PopupMediaPlayer() {
+  if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableMethod(this, &MediaPlayer::PopupMediaPlayer));
+    return;
+  }
   mediaplayer_browser_ = Browser::CreateForPopup(profile_);
   mediaplayer_browser_->AddTabWithURL(
       GURL(kMediaplayerURL), GURL(), PageTransition::LINK,
@@ -487,7 +503,43 @@ void MediaPlayer::PopupMediaPlayer() {
                                                       kPopupHeight),
                                             BrowserWindow::WINDOW_BOUNDS);
   mediaplayer_browser_->window()->Show();
+}
+
+URLRequestJob* MediaPlayer::MaybeIntercept(URLRequest* request) {
+  // Don't attempt to intercept here as we want to wait until the mime
+  // type is fully determined.
+  return NULL;
+}
+
+// This is the list of mime types currently supported by the Google
+// Document Viewer.
+static const char* const supported_mime_type_list[] = {
+  "audio/mpeg",
+  "video/mp4",
+  "audio/mp3"
 };
+
+URLRequestJob* MediaPlayer::MaybeInterceptResponse(
+    URLRequest* request) {
+  // Do not intercept this request if it is a download.
+  if (request->load_flags() & net::LOAD_IS_DOWNLOAD) {
+    return NULL;
+  }
+
+  std::string mime_type;
+  request->GetMimeType(&mime_type);
+  // If it is in our list of known URLs, enqueue the url then
+  // Cancel the request so the mediaplayer can handle it when
+  // it hits it in the playlist.
+  if (supported_mime_types_.count(mime_type) > 0) {
+    if (request->referrer() != "chrome://mediaplayer" &&
+        !request->referrer().empty()) {
+      EnqueueMediaURL(request->url());
+      request->Cancel();
+    }
+  }
+  return NULL;
+}
 
 MediaPlayer::MediaPlayer()
     : handler_(NULL),
@@ -496,6 +548,10 @@ MediaPlayer::MediaPlayer()
       mediaplayer_browser_(NULL),
       mediaplayer_tab_(NULL),
       playlist_tab_(NULL) {
+  URLRequest::RegisterRequestInterceptor(this);
+  for (size_t i = 0; i < arraysize(supported_mime_type_list); ++i) {
+    supported_mime_types_.insert(supported_mime_type_list[i]);
+  }
 };
 
 ////////////////////////////////////////////////////////////////////////////////

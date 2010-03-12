@@ -18,12 +18,14 @@
 #include "chrome/common/notification_type.h"
 #include "chrome/common/notification_registrar.h"
 #include "net/base/directory_lister.h"
+#include "net/url_request/url_request.h"
 
 class GURL;
 class MediaplayerHandler;
 class Browser;
 
-class MediaPlayer : public NotificationObserver {
+class MediaPlayer : public NotificationObserver,
+                    public URLRequest::Interceptor {
  public:
   ~MediaPlayer() {}
   void EnqueueMediaURL(const GURL& url);
@@ -39,6 +41,15 @@ class MediaPlayer : public NotificationObserver {
                                   TabContents* contents);
   void RemovePlaylistHandler(MediaplayerHandler* handler);
   void NotifyPlaylistChanged();
+
+  // Always returns NULL because we don't want to attempt a redirect
+  // before seeing the detected mime type of the request.
+  virtual URLRequestJob* MaybeIntercept(URLRequest* request);
+
+  // Determines if the requested document can be viewed by the
+  // MediaPlayer.  If it can, returns a URLRequestJob that
+  // redirects the browser to the view URL.
+  virtual URLRequestJob* MaybeInterceptResponse(URLRequest* request);
 
   // Used to detect when the mediaplayer is closed
   void Observe(NotificationType type,
@@ -65,6 +76,7 @@ class MediaPlayer : public NotificationObserver {
   NotificationRegistrar registrar_;
   TabContents* mediaplayer_tab_;
   TabContents* playlist_tab_;
+  base::hash_set<std::string> supported_mime_types_;
   friend struct DefaultSingletonTraits<MediaPlayer>;
   DISALLOW_COPY_AND_ASSIGN(MediaPlayer);
 };
