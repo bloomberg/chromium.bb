@@ -8,6 +8,18 @@
 #@ NOTE: you should source: set_arm_(un)trusted_toolchain.sh
 #@       before running it
 ######################################################################
+# Directory Layout Description
+######################################################################
+
+# All directories are relative to BASE which is
+# currently /usr/local/crosstool-untrusted
+#
+# TODO(robertm): arm layout needs to be described
+
+# /x86-32sfi-lib   [experimental] x86 sandboxed libraries and object files
+# /x86-32sfi-tools [experimental] x86-32 crosstool binaries for building
+#                  and linking  x86-32 nexes
+######################################################################
 # Config
 ######################################################################
 
@@ -299,6 +311,31 @@ InstallExamples() {
 }
 
 
+# NOTE: Experiment x86-32 support
+AddX86Basics32() {
+  Banner "installing experimental x86-32 support"
+  local libdir="${INSTALL_ROOT}/x86-32sfi-lib"
+  mkdir -p ${libdir}
+
+  SubBanner "installing x86 libgcc libs into ${libdir}"
+  cp -r src/third_party/nacl_sdk/linux/sdk/nacl-sdk/lib/gcc/nacl/4.2.2/libgcc.a ${libdir}
+
+  SubBanner "rebuilding stubs for x86"
+  rm -f scons-out/nacl_extra_sdk-x86-32/obj/src/untrusted/stubs/*.o
+  # NOTE: this does way too much - we only want the stubs
+  ./scons MODE=nacl_extra_sdk platform=x86-32 \
+      extra_sdk_clean extra_sdk_update_header extra_sdk_update
+  cp scons-out/nacl_extra_sdk-x86-32/obj/src/untrusted/stubs/*.o ${libdir}
+
+  local toolsdir="${INSTALL_ROOT}/x86-32sfi-tools"
+  mkdir -p ${toolsdir}
+  SubBanner "installing x86 linker script and tools into ${toolsdir}"
+  cp tools/llvm/ld_script_x86_untrusted ${toolsdir}
+  cp src/third_party/nacl_sdk/linux/sdk/nacl-sdk/bin/nacl-as ${toolsdir}
+  cp src/third_party/nacl_sdk/linux/sdk/nacl-sdk/bin/nacl-ld ${toolsdir}
+}
+
+
 ######################################################################
 # Main
 ######################################################################
@@ -431,6 +468,15 @@ fi
 #@   add examples
 if [ ${MODE} = 'examples' ] ; then
   InstallExamples
+  exit 0
+fi
+
+#@
+#@ add-x86-basics-32
+#@
+#@   add x86 basic libs from
+if [ ${MODE} = 'add-x86-basics-32' ] ; then
+  AddX86Basics32
   exit 0
 fi
 
