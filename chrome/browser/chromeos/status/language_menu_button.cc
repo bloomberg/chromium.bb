@@ -103,18 +103,7 @@ std::string FormatInputLanguage(
   if (formatted.empty()) {
     formatted = language.id;
   }
-  if (for_menu) {
-    switch (language.category) {
-      case chromeos::LANGUAGE_CATEGORY_XKB:
-        // TODO(yusukes): Use message catalog.
-        formatted += " (Layout)";
-        break;
-      case chromeos::LANGUAGE_CATEGORY_IME:
-        // TODO(yusukes): Use message catalog.
-        formatted += " (IME)";
-        break;
-    }
-  } else {
+  if (!for_menu) {
     // For status area. Trim the string.
     formatted = formatted.substr(0, kMaxLanguageNameLen);
     // TODO(yusukes): Simple substr() does not work for non-ASCII string.
