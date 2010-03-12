@@ -130,7 +130,7 @@ static BOOL gCanGetCornerRadius = NO;
 
   // Only paint the top of the window.
   NSWindow* window = [self window];
-  NSRect windowRect = [window frame];
+  NSRect windowRect = [self convertRect:[window frame] fromView:nil];
   windowRect.origin = NSMakePoint(0, 0);
 
   NSRect paintRect = windowRect;
@@ -162,16 +162,18 @@ static BOOL gCanGetCornerRadius = NO;
 
   // Pinstripe the top.
   if (themed) {
-    windowRect = [window frame];
+    NSSize windowPixel = [self convertSizeFromBase:NSMakeSize(1, 1)];
+
+    windowRect = [self convertRect:[window frame] fromView:nil];
     windowRect.origin = NSMakePoint(0, 0);
-    windowRect.origin.y -= 0.5;
-    windowRect.origin.x -= 0.5;
-    windowRect.size.width += 1.0;
+    windowRect.origin.y -= 0.5 * windowPixel.height;
+    windowRect.origin.x -= 0.5 * windowPixel.width;
+    windowRect.size.width += windowPixel.width;
     [[NSColor colorWithCalibratedWhite:1.0 alpha:0.5] set];
     NSBezierPath* path = [NSBezierPath bezierPathWithRoundedRect:windowRect
                                                          xRadius:cornerRadius
                                                          yRadius:cornerRadius];
-    [path setLineWidth:1.0];
+    [path setLineWidth:windowPixel.width];
     [path stroke];
   }
 }
@@ -232,7 +234,12 @@ static BOOL gCanGetCornerRadius = NO;
     NSPoint phase = kBrowserFrameViewPatternPhaseOffset;
     phase.y += NSHeight(bounds);
 
-    phase = [view convertPoint:phase toView:nil];
+    // Align the phase to physical pixels so resizing the window under HiDPI
+    // doesn't cause wiggling of the theme.
+    phase = [view convertPointToBase:phase];
+    phase.x = floor(phase.x);
+    phase.y = floor(phase.y);
+    phase = [view convertPointFromBase:phase];
 
     [[NSGraphicsContext currentContext] setPatternPhase:phase];
     [themeImageColor set];
