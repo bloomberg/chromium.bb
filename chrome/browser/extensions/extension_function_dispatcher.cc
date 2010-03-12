@@ -35,7 +35,6 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/result_codes.h"
 #include "chrome/common/url_constants.h"
@@ -172,18 +171,15 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<GetProcessForTabFunction>();
 
   // Metrics.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableMetricsExtensionApi)) {
-    RegisterFunction<MetricsRecordUserActionFunction>();
-    RegisterFunction<MetricsRecordValueFunction>();
-    RegisterFunction<MetricsRecordPercentageFunction>();
-    RegisterFunction<MetricsRecordCountFunction>();
-    RegisterFunction<MetricsRecordSmallCountFunction>();
-    RegisterFunction<MetricsRecordMediumCountFunction>();
-    RegisterFunction<MetricsRecordTimeFunction>();
-    RegisterFunction<MetricsRecordMediumTimeFunction>();
-    RegisterFunction<MetricsRecordLongTimeFunction>();
-  }
+  RegisterFunction<MetricsRecordUserActionFunction>();
+  RegisterFunction<MetricsRecordValueFunction>();
+  RegisterFunction<MetricsRecordPercentageFunction>();
+  RegisterFunction<MetricsRecordCountFunction>();
+  RegisterFunction<MetricsRecordSmallCountFunction>();
+  RegisterFunction<MetricsRecordMediumCountFunction>();
+  RegisterFunction<MetricsRecordTimeFunction>();
+  RegisterFunction<MetricsRecordMediumTimeFunction>();
+  RegisterFunction<MetricsRecordLongTimeFunction>();
 
   // Test.
   RegisterFunction<ExtensionTestPassFunction>();

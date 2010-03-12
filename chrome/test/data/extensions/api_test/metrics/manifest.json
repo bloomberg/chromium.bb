@@ -2,5 +2,6 @@
   "name": "chrome.metrics",
   "version": "0.1",
   "description": "end-to-end browser test for chrome.metrics API",
-  "background_page": "test.html"
+  "background_page": "test.html",
+  "permissions": ["experimental"]
 }

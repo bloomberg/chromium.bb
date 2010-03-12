@@ -2278,7 +2278,7 @@
     "events": []
   },
   {
-    "namespace": "metrics",
+    "namespace": "experimental.metrics",
     "nodoc": true,
     "types": [
       {

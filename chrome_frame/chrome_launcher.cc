@@ -25,7 +25,6 @@ const char* kAllowedSwitches[] = {
   switches::kDisableMetrics,
   switches::kEnableRendererAccessibility,
   switches::kEnableExperimentalExtensionApis,
-  switches::kEnableMetricsExtensionApi,
   switches::kNoErrorDialogs,
   switches::kNoFirstRun,
   switches::kUserDataDir,

@@ -7,7 +7,6 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profile.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/test/ui_test_utils.h"
 
@@ -116,7 +115,4 @@ Extension* ExtensionApiTest::GetSingleLoadedExtension() {
 void ExtensionApiTest::SetUpCommandLine(CommandLine* command_line) {
   ExtensionBrowserTest::SetUpCommandLine(command_line);
   test_data_dir_ = test_data_dir_.AppendASCII("api_test");
-
-  // Needed for metrics extension API tests.
-  command_line->AppendSwitch(switches::kEnableMetricsExtensionApi);
 }

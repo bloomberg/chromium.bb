@@ -7,6 +7,7 @@
 #include "base/histogram.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_registrar.h"
 
@@ -139,6 +140,9 @@ void ValidateHistograms(const Extension* extension,
 }  // anonymous namespace
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Metrics) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExperimentalExtensionApis);
+
   UserActionObserver observer;
 
   ASSERT_TRUE(RunExtensionTest("metrics")) << message_;

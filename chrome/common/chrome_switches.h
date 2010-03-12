@@ -77,7 +77,6 @@ extern const char kDomAutomationController[];
 extern const char kDumpHistogramsOnExit[];
 extern const char kEnableBenchmarking[];
 extern const char kEnableExperimentalExtensionApis[];
-extern const char kEnableMetricsExtensionApi[];
 extern const char kEnableExperimentalWebGL[];
 extern const char kEnableExtensionApps[];
 extern const char kEnableExtensionTimelineApi[];

@@ -11,17 +11,17 @@
 chrome.test.runTests([
   function recordUserAction() {
     // Log a metric once.
-    chrome.metrics.recordUserAction('test.ua.1');
+    chrome.experimental.metrics.recordUserAction('test.ua.1');
 
     // Log a metric more than once.
-    chrome.metrics.recordUserAction('test.ua.2');
-    chrome.metrics.recordUserAction('test.ua.2');
+    chrome.experimental.metrics.recordUserAction('test.ua.2');
+    chrome.experimental.metrics.recordUserAction('test.ua.2');
 
     chrome.test.succeed();
   },
 
   function recordValue() {
-    chrome.metrics.recordValue({
+    chrome.experimental.metrics.recordValue({
       'metricName': 'test.h.1',
       'type': 'histogram-log',
       'min': 1,
@@ -29,7 +29,7 @@ chrome.test.runTests([
       'buckets': 50
     }, 42);
 
-    chrome.metrics.recordValue({
+    chrome.experimental.metrics.recordValue({
       'metricName': 'test.h.2',
       'type': 'histogram-linear',
       'min': 1,
@@ -37,24 +37,25 @@ chrome.test.runTests([
       'buckets': 50
     }, 42);
 
-    chrome.metrics.recordPercentage('test.h.3', 42);
-    chrome.metrics.recordPercentage('test.h.3', 42);
+    chrome.experimental.metrics.recordPercentage('test.h.3', 42);
+    chrome.experimental.metrics.recordPercentage('test.h.3', 42);
 
     chrome.test.succeed();
   },
 
   function recordTimes() {
-    chrome.metrics.recordTime('test.time', 42);
-    chrome.metrics.recordMediumTime('test.medium.time', 42 * 1000);
-    chrome.metrics.recordLongTime('test.long.time', 42 * 1000 * 60);
+    chrome.experimental.metrics.recordTime('test.time', 42);
+    chrome.experimental.metrics.recordMediumTime('test.medium.time', 42 * 1000);
+    chrome.experimental.metrics.recordLongTime('test.long.time',
+                                               42 * 1000 * 60);
 
     chrome.test.succeed();
   },
 
   function recordCounts() {
-    chrome.metrics.recordCount('test.count', 420000);
-    chrome.metrics.recordMediumCount('test.medium.count', 4200);
-    chrome.metrics.recordSmallCount('test.small.count', 42);
+    chrome.experimental.metrics.recordCount('test.count', 420000);
+    chrome.experimental.metrics.recordMediumCount('test.medium.count', 4200);
+    chrome.experimental.metrics.recordSmallCount('test.small.count', 42);
 
     chrome.test.succeed();
   }

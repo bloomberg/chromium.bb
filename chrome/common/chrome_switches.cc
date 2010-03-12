@@ -217,9 +217,6 @@ const char kEnableBenchmarking[]            = "enable-benchmarking";
 const char kEnableExperimentalExtensionApis[] =
     "enable-experimental-extension-apis";
 
-// Enable metrics extension API.
-const char kEnableMetricsExtensionApi[]    = "enable-metrics-extension-api";
-
 // Enable experimental WebGL support.
 const char kEnableExperimentalWebGL[]       = "enable-webgl";
 
