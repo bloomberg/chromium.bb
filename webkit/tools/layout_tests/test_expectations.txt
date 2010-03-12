@@ -2883,3 +2883,8 @@ BUG37869 MAC : editing/input/option-page-up-down.html = TIMEOUT
 BUG37962 LINUX DEBUG : fast/dom/HTMLElement/bdo.html = CRASH PASS
 BUG37962 LINUX DEBUG : fast/forms/multiple-form-submission-protection-mouse.html = CRASH PASS
 BUG37962 MAC : plugins/iframe-shims.html = TEXT PASS
+
+BUG_DGLAZKOV MAC LINUX : fast/dom/HTMLAnchorElement/set-href-attribute-hostname.html = TEXT
+BUG_DGLAZKOV MAC LINUX : fast/dom/HTMLAnchorElement/set-href-attribute-port.html = TEXT
+BUG_DGLAZKOV MAC LINUX : fast/loader/url-parse-1.html = TEXT
+
