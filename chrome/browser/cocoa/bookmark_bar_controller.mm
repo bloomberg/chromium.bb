@@ -940,7 +940,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   if (![item isKindOfClass:[NSMenuItem class]])
     return YES;
 
-  const BookmarkNode* node = [self nodeFromMenuItem:item];
+  BookmarkNode* node = [self nodeFromMenuItem:item];
 
   // If this is the bar menu, we only have things to do if there are
   // buttons.  If this is a folder button menu, we only have things to
@@ -1173,22 +1173,22 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 // -[BookmarkButtonCell menu].
 
 - (IBAction)openBookmarkInNewForegroundTab:(id)sender {
-  const BookmarkNode* node = [self nodeFromMenuItem:sender];
+  BookmarkNode* node = [self nodeFromMenuItem:sender];
   [self openURL:node->GetURL() disposition:NEW_FOREGROUND_TAB];
 }
 
 - (IBAction)openBookmarkInNewWindow:(id)sender {
-  const BookmarkNode* node = [self nodeFromMenuItem:sender];
+  BookmarkNode* node = [self nodeFromMenuItem:sender];
   [self openURL:node->GetURL() disposition:NEW_WINDOW];
 }
 
 - (IBAction)openBookmarkInIncognitoWindow:(id)sender {
-  const BookmarkNode* node = [self nodeFromMenuItem:sender];
+  BookmarkNode* node = [self nodeFromMenuItem:sender];
   [self openURL:node->GetURL() disposition:OFF_THE_RECORD];
 }
 
 - (IBAction)editBookmark:(id)sender {
-  const BookmarkNode* node = [self nodeFromMenuItem:sender];
+  BookmarkNode* node = [self nodeFromMenuItem:sender];
 
   if (node->is_folder()) {
     BookmarkNameFolderController* controller =
@@ -1216,14 +1216,14 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 }
 
 - (IBAction)copyBookmark:(id)sender {
-  const BookmarkNode* node = [self nodeFromMenuItem:sender];
+  BookmarkNode* node = [self nodeFromMenuItem:sender];
   NSPasteboard* pboard = [NSPasteboard generalPasteboard];
   [self copyBookmarkNode:node
             toPasteboard:pboard];
 }
 
 - (IBAction)deleteBookmark:(id)sender {
-  const BookmarkNode* node = [self nodeFromMenuItem:sender];
+  BookmarkNode* node = [self nodeFromMenuItem:sender];
   bookmarkModel_->Remove(node->GetParent(),
                          node->GetParent()->IndexOfChild(node));
   // TODO(jrg): don't close; rebuild.
@@ -1232,10 +1232,10 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 }
 
 // An ObjC version of bookmark_utils::OpenAllImpl().
-- (void)openBookmarkNodesRecursive:(const BookmarkNode*)node
+- (void)openBookmarkNodesRecursive:(BookmarkNode*)node
                        disposition:(WindowOpenDisposition)disposition {
   for (int i = 0; i < node->GetChildCount(); i++) {
-    const BookmarkNode* child = node->GetChild(i);
+    BookmarkNode* child = node->GetChild(i);
     if (child->is_url()) {
       [self openURL:child->GetURL() disposition:disposition];
       // We revert to a basic disposition in case the initial
@@ -1248,30 +1248,27 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 }
 
 // Return the BookmarkNode associated with the given NSMenuItem.
-- (const BookmarkNode*)nodeFromMenuItem:(id)sender {
-  const BookmarkNode* node = NULL;
+- (BookmarkNode*)nodeFromMenuItem:(id)sender {
   BookmarkMenu* menu = (BookmarkMenu*)[sender menu];
-  if ([menu isKindOfClass:[BookmarkMenu class]]) {
-    int64 id = [menu id];
-    node = bookmarkModel_->GetNodeByID(id);
-  }
-  return node;
+  if ([menu isKindOfClass:[BookmarkMenu class]])
+    return const_cast<BookmarkNode*>([menu node]);
+  return NULL;
 }
 
 - (IBAction)openAllBookmarks:(id)sender {
-  const BookmarkNode* node = [self nodeFromMenuItem:sender];
+  BookmarkNode* node = [self nodeFromMenuItem:sender];
   [self openBookmarkNodesRecursive:node disposition:NEW_FOREGROUND_TAB];
   UserMetrics::RecordAction("OpenAllBookmarks", browser_->profile());
 }
 
 - (IBAction)openAllBookmarksNewWindow:(id)sender {
-  const BookmarkNode* node = [self nodeFromMenuItem:sender];
+  BookmarkNode* node = [self nodeFromMenuItem:sender];
   [self openBookmarkNodesRecursive:node disposition:NEW_WINDOW];
   UserMetrics::RecordAction("OpenAllBookmarksNewWindow", browser_->profile());
 }
 
 - (IBAction)openAllBookmarksIncognitoWindow:(id)sender {
-  const BookmarkNode* node = [self nodeFromMenuItem:sender];
+  BookmarkNode* node = [self nodeFromMenuItem:sender];
   [self openBookmarkNodesRecursive:node disposition:OFF_THE_RECORD];
   UserMetrics::RecordAction("OpenAllBookmarksIncognitoWindow", browser_->profile());
 }
@@ -1312,19 +1309,6 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   [self clearMenuTagMap];
   needToRebuildOffTheSideMenu_ = YES;
   bookmarkBarDisplayedButtons_ = 0;
-
-  // Make sure there are no stale pointers in the pasteboard.  This
-  // can be important if a bookmark is deleted (via bookmark sync)
-  // while in the middle of a drag.  The "drag completed" code
-  // (e.g. [BookmarkBarView performDragOperationForBookmark:]) is
-  // careful enough to bail if there is no data found at "drop" time.
-  //
-  // Unfortunately the clearContents selector is 10.6 only.  The best
-  // we can do is make sure something else is present in place of the
-  // stale bookmark.
-  NSPasteboard* pboard = [NSPasteboard pasteboardWithName:NSDragPboard];
-  [pboard declareTypes:[NSArray arrayWithObject:NSStringPboardType] owner:self];
-  [pboard setString:@"" forType:NSStringPboardType];
 }
 
 // Return an autoreleased NSCell suitable for a bookmark button.
@@ -1540,7 +1524,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   DCHECK(model == bookmarkModel_);
   if (!model->IsLoaded())
     return;
-  // Brute force nuke and build.
+  // Else brute force nuke and build.
   savedFrameWidth_ = NSWidth([[self view] frame]);
   const BookmarkNode* node = model->GetBookmarkBarNode();
   [self clearBookmarkBar];
@@ -1559,10 +1543,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 - (void)setNodeForBarMenu {
   const BookmarkNode* node = bookmarkModel_->GetBookmarkBarNode();
   BookmarkMenu* menu = static_cast<BookmarkMenu*>([[self view] menu]);
-
-  // Make sure types are compatible
-  DCHECK(sizeof(long long) == sizeof(int64));
-  [menu setRepresentedObject:[NSNumber numberWithLongLong:node->id()]];
+  [menu setRepresentedObject:[NSValue valueWithPointer:node]];
 }
 
 - (void)beingDeleted:(BookmarkModel*)model {
