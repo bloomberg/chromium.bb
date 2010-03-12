@@ -36,6 +36,7 @@
  * @constructor
  */
 o3d.ParamObject = function() {
+  o3d.NamedObject.call(this);
   this.params_ = {};
 };
 o3d.inherit('ParamObject', 'NamedObject');
@@ -95,7 +96,7 @@ o3d.inherit('ParamObject', 'NamedObject');
  *     'WorldViewProjectionInverseParamMatrix4'
  *     'WorldViewProjectionTransposeParamMatrix4'
  *     'WorldViewProjectionInverseTransposeParamMatrix4'
- * @returns {!o3d.Param}  The newly created Param or null on failure.
+ * @return {!o3d.Param}  The newly created Param or null on failure.
  */
 o3d.ParamObject.prototype.createParam =
     function(param_name, param_type_name) {
@@ -113,7 +114,7 @@ o3d.ParamObject.prototype.createParam =
  * Searches by name for a Param defined in the object.
  * 
  * @param {string} param_name Name to search for.
- * @returns {!o3d.Param}  The Param with the given name, or null otherwise.
+ * @return {!o3d.Param}  The Param with the given name, or null otherwise.
  */
 o3d.ParamObject.prototype.getParam =
     function(param_name) {
@@ -128,7 +129,7 @@ o3d.ParamObject.prototype.getParam =
  * or if the param is unremovable.
  * 
  * @param {!o3d.Param} param param to remove.
- * @returns {boolean}  True if the param was removed.
+ * @return {boolean}  True if the param was removed.
  */
 o3d.ParamObject.prototype.removeParam =
     function(param) {

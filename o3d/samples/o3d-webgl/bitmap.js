@@ -73,13 +73,20 @@ o3d.Bitmap.IMAGE = 6;
 o3d.Bitmap.SLICE = 7;
 
 
+/**
+ * In webgl the bitmap object is represented by an offscreen canvas.
+ * @type {Canvas}
+ * @private
+ */
+o3d.Bitmap.prototype.canvas_ = null;
+
 
 /**
  * Flips a bitmap vertically in place.
- * @type {boolean}
  */
-o3d.Bitmap.prototype.flipVertically = false;
-
+o3d.Bitmap.prototype.flipVertically = function() {
+  this.defer_flip_vertically_to_texture_ = true;
+};
 
 
 /**
@@ -94,7 +101,7 @@ o3d.Bitmap.prototype.flipVertically = false;
  */
 o3d.Bitmap.prototype.generateMips =
     function(source_level, num_levels) {
-  o3d.notImplemented();
+  this.defer_mipmaps_to_texture_ = true;
 };
 
 
@@ -113,12 +120,29 @@ o3d.Bitmap.prototype.width = 0;
 o3d.Bitmap.prototype.height = 0;
 
 
+/**
+ * Instead of generating mipmaps in the bitmap object, just set this boolean
+ * to true, then the texture will generate mipmaps when it loads the bitmap.
+ * @type {boolean}
+ * @private
+ */
+o3d.Bitmap.prototype.defer_mipmaps_to_texture_ = false;
+
+
+/**
+ * Instead of flipping vertically in the bitmap object, just set this boolean
+ * to true, then the texture will generate mipmaps when it loads the bitmap.
+ * @type {boolean}
+ * @private
+ */
+o3d.Bitmap.prototype.defer_flip_vertically_to_texture_ = false;
+
 
 /**
  * The format of the bitmap (read only).
- * @type {number}
+ * @type {!o3d.Texture.Format}
  */
-o3d.Bitmap.prototype.format = 0;
+o3d.Bitmap.prototype.format = o3d.Texture.UNKNOWN_FORMAT;
 
 
 
@@ -132,9 +156,9 @@ o3d.Bitmap.prototype.numMipmaps = 1;
 
 /**
  * The Semantic of the bitmap.
- * @type {!o3d.Stream.Semantic}
+ * @type {!o3d.Bitmap.Semantic}
  */
-o3d.Bitmap.prototype.semantic = o3d.Stream.UNKNOWN_SEMANTIC;
+o3d.Bitmap.prototype.semantic = o3d.Bitmap.UNKNOWN_SEMANTIC;
 
 
 

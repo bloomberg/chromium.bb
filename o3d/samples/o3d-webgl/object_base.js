@@ -54,14 +54,16 @@ o3d.ObjectBase.prototype.superClass = null;
 /**
  * Traverses the current object's class and all its superclasses and
  * determines if any of them are of the given name.
- * returns {bool}
+ * @param {string} className The name of a class.
+ * @return {boolean} Whether this is counts as a className.
  */
-o3d.ObjectBase.isAClassName = function(o, className) {
-  while (o != undefined) {
-    if (o.className == 'className') {
+o3d.ObjectBase.prototype.isAClassName = function(className) {
+  var object = this;
+  while (object != undefined) {
+    if (object.className == className) {
       return true;
     }
-    o = o.superClass.prototype;
+    object = object.superClass && object.superClass.prototype;
   }
   return false;
 };

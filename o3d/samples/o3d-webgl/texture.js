@@ -105,7 +105,7 @@ o3d.Texture.prototype.format = o3d.Texture.UNKNOWN_FORMAT;
 
 /**
  * The number of mipmap levels used by the texture.
- * type {number}
+ * @type {number}
  */
 o3d.Texture.prototype.levels = 1;
 
@@ -113,10 +113,17 @@ o3d.Texture.prototype.levels = 1;
 
 /**
  * True if all the alpha values in the texture are 1.0
- * type {boolean}
+ * @type {boolean}
  */
 o3d.Texture.prototype.alphaIsOne = true;
 
+
+/**
+ * The the associated gl texture.
+ * @type {WebGLTexture}
+ * @private
+ */
+o3d.Texture.prototype.texture_ = null;
 
 
 /**
@@ -126,7 +133,8 @@ o3d.Texture.prototype.alphaIsOne = true;
  */
 o3d.Texture.prototype.generateMips =
     function(source_level, num_levels) {
-  o3d.notImplemented();
+  this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture_);
+  this.gl.generateMipmap(this.gl.TEXTURE_2D);
 };
 
 
@@ -138,9 +146,16 @@ o3d.Texture.prototype.generateMips =
  * @param {number} opt_height The height of this texture in pixels.
  * @constructor
  */
-o3d.Texture2D = function() {
+o3d.Texture2D = function(opt_width, opt_height) {
+  o3d.Texture.call(this);
   this.width = opt_width || 0;
   this.height = opt_height || 0;
+
+  /**
+   * The cache of rendersurface objects.
+   * @private
+   */
+  this.renderSurfaces_ = [];
 };
 o3d.inherit('Texture2D', 'Texture');
 
@@ -160,18 +175,22 @@ o3d.Texture2D.prototype.width = 0;
 o3d.Texture2D.prototype.height = 0;
 
 
-
 /**
  * Returns a RenderSurface object associated with a mip_level of a texture.
  * 
  * @param {number} mip_level The mip-level of the surface to be returned.
- * @param {number} opt_pack pack This parameter is no longer used.
- *     The surface exists as long as the texture it came from exists.
- * @returns {o3d.RenderSurface}  The RenderSurface object.
+ * @return {o3d.RenderSurface}  The RenderSurface object.
  */
 o3d.Texture2D.prototype.getRenderSurface =
-    function(mip_level, opt_pack) {
-  o3d.notImplemented();
+    function(mip_level) {
+  if (!this.renderSurfaces_[mip_level]) {
+    var renderSurface = new o3d.RenderSurface();
+    renderSurface.gl = this.gl;
+    renderSurface.initWithTexture(this, mip_level);
+    this.renderSurfaces_[mip_level] = renderSurface;
+  }
+
+  return this.renderSurfaces_[mip_level];
 };
 
 
@@ -244,7 +263,7 @@ o3d.Texture2D.prototype.setRect =
  * @param {number} y The y coordinate of the area in the texture to retrieve.
  * @param {number} width The width of the area to retrieve.
  * @param {number} height The height of the area to retrieve.
- * @returns {number}  Array of pixel values.
+ * @return {number}  Array of pixel values.
  */
 o3d.Texture2D.prototype.getRect =
     function(level, x, y, width, height) {
@@ -260,7 +279,24 @@ o3d.Texture2D.prototype.getRect =
  */
 o3d.Texture2D.prototype.setFromBitmap =
     function(bitmap) {
-  o3d.notImplemented();
+  this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture_);
+  this.gl.texImage2D(this.gl.TEXTURE_2D,
+                     0,  // Level.
+                     bitmap.canvas_,
+                     bitmap.defer_flip_verically_to_texture_);
+
+  this.gl.texParameteri(this.gl.TEXTURE_2D, 
+      this.gl.TEXTURE_MAG_FILTER, this.gl.LINEAR);
+  this.gl.texParameteri(this.gl.TEXTURE_2D,
+      this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
+  this.gl.texParameteri(this.gl.TEXTURE_2D,
+      this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
+  this.gl.texParameteri(this.gl.TEXTURE_2D,
+      this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
+
+  if (bitmap.defer_mipmaps_to_texture_) {
+    this.generateMips();
+  }
 };
 
 
@@ -301,7 +337,9 @@ o3d.Texture2D.prototype.drawImage =
  * @param {number} edgeLength The length of any edge of this texture
  * @constructor
  */
-o3d.TextureCUBE = function() { };
+o3d.TextureCUBE = function() {
+  o3d.Texture.call(this);
+};
 o3d.inherit('TextureCUBE', 'Texture');
 
 
@@ -346,7 +384,7 @@ o3d.TextureCUBE.prototype.edge_length = 0;
  * @param {o3d.Pack} pack This parameter is no longer used. The surface exists
  *     as long as the texture it came from exists.
  * @param {number} mip_level The mip-level of the surface to be returned.
- * @returns {o3d.RenderSurface}  The RenderSurface object.
+ * @return {o3d.RenderSurface}  The RenderSurface object.
  */
 o3d.TextureCUBE.prototype.getRenderSurface =
     function(face, mip_level, opt_pack) {
@@ -410,7 +448,7 @@ o3d.TextureCUBE.prototype.setRect =
  * @param {number} y The y coordinate of the area in the texture to retrieve.
  * @param {number} width The width of the area to retrieve.
  * @param {number} height The height of the area to retrieve.
- * @returns {number}  Array of pixel values.
+ * @return {number}  Array of pixel values.
  */
 o3d.TextureCUBE.prototype.getRect =
     function(face, level, x, y, width, height) {

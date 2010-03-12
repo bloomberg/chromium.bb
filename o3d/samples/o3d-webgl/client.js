@@ -125,7 +125,10 @@ o3d.Renderer.installRenderInterval = function() {
  * The ClientInfo is used to get information about the client.
  * @constructor
  */
-o3d.ClientInfo = function() { };
+o3d.ClientInfo = function() {
+  o3d.NamedObject.call(this);
+};
+o3d.inherit('ClientInfo', 'NamedObject');
 
 
 /**
@@ -208,6 +211,7 @@ o3d.ClientInfo.prototype.non_power_of_two_textures = true;
  * @constructor
  */
 o3d.Client = function() {
+  o3d.NamedObject.call(this);
   this.root = new o3d.Transform;
   this.renderGraphRoot = new o3d.RenderNode;
   this.root = new o3d.Transform;
@@ -231,7 +235,7 @@ o3d.Client.RenderCallback = goog.typedef;
 o3d.Client.TickCallback = goog.typedef;
 
 /**
- * @type {function(!o3d.Event): void}
+ * @type {function(string): void}
  */
 o3d.Client.ErrorCallback = goog.typedef;
 
@@ -262,10 +266,13 @@ o3d.Client.prototype.then_ = 0;
  */
 o3d.Client.prototype.root = null;
 
+
 /**
  * Function that gets called when the client encounters an error.
  */
-o3d.Client.prototype.error_callback = function(error_message) {};
+o3d.Client.prototype.error_callback = function(error_message) {
+  alert(error_message);
+};
 
 
 /**
@@ -300,7 +307,7 @@ o3d.Client.prototype.cleanup = function () {
 /**
  * Creates a pack object.
  *   A pack object.
- * @returns {!o3d.Pack} A new pack object.
+ * @return {!o3d.Pack} A new pack object.
  */
 o3d.Client.prototype.createPack =
     function() {
@@ -314,7 +321,7 @@ o3d.Client.prototype.createPack =
  * Searches the Client for an object matching the given id.
  * 
  * @param {number} id The id of the object to look for.
- * @returns {o3d.ObjectBase}  The object or null if a object
+ * @return {o3d.ObjectBase}  The object or null if a object
  *     with the given id is not found.
  */
 o3d.Client.prototype.getObjectById =
@@ -327,7 +334,7 @@ o3d.Client.prototype.getObjectById =
  * Searches the Client for objects of a particular name and type.
  * @param {string} name name of object to look for.
  * @param {string} class_name name of class to look for.
- * @returns {!Array.<!o3d.ObjectBase>}  Array of objects found.
+ * @return {!Array.<!o3d.ObjectBase>}  Array of objects found.
  */
 o3d.Client.prototype.getObjects =
     function(name, class_name) {
@@ -339,7 +346,7 @@ o3d.Client.prototype.getObjects =
 /**
  * Searches the Client for objects of a particular type.
  * @param {string} class_name name of class to look for.
- * @returns {!Array.<!Object>}  Array of objects found.
+ * @return {!Array.<!Object>}  Array of objects found.
  */
 o3d.Client.prototype.getObjectsByClassName =
     function(class_name) {
@@ -503,6 +510,27 @@ o3d.Client.prototype.__defineSetter__('height',
       this.gl.canvas.height = x;
     }
 );
+
+
+/**
+ * Initializes this client using the canvas.
+ * @param {Canvas}
+ */
+o3d.Client.prototype.initWithCanvas = function(canvas) {
+  var gl;
+  try {gl = canvas.getContext("experimental-webgl") } catch(e) { }
+  if (!gl)
+      try {gl = canvas.getContext("moz-webgl") } catch(e) { }
+  if (!gl) {
+      alert("No WebGL context found");
+      return null;
+  }
+
+  canvas.client.gl = gl;
+  gl.client = this;
+  gl.displayInfo = {width: canvas.width,
+                    height: canvas.height};
+};
 
 
 /**
@@ -736,7 +764,7 @@ o3d.Client.prototype.invalidateAllParameters = function() {
  * @param {string} mime_type The type of data url you want.
  *    Currently O3D only supports image/png. See HTML5 canvas tag
  *    for info about toDataURL.
- * @returns {string}  A Data URL for the backbuffer.
+ * @return {string}  A Data URL for the backbuffer.
  */
 o3d.Client.prototype.toDataURL =
     function(opt_mime_type) {

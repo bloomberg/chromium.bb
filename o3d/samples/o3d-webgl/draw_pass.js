@@ -39,6 +39,7 @@
  * @constructor
  */
 o3d.DrawPass = function(opt_drawList, opt_sortMethod) {
+  o3d.RenderNode.call(this);
   this.drawList = opt_drawList;
   this.sortMethod = opt_sortMethod || o3d.DrawList.BY_PERFORMANCE;
 };

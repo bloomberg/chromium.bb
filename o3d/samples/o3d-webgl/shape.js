@@ -37,6 +37,7 @@
  * @constructor
  */
 o3d.Shape = function() {
+  o3d.ParamObject.call(this);
   this.elements = [];
 };
 o3d.inherit('Shape', 'ParamObject');
@@ -72,7 +73,10 @@ o3d.Shape.prototype.elements = [];
  */
 o3d.Shape.prototype.createDrawElements =
     function(pack, material) {
-  o3d.notImplemented();
+  var elements = this.elements;
+  for (var i = 0; i < elements.length; ++i) {
+    elements[i].createDrawElement(pack, material);
+  }
 };
 
 

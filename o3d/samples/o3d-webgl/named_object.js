@@ -31,29 +31,12 @@
 
 
 /**
- * Takes the name of a class as an argument, and returns true if this object is
- * either an instance of that class or derives from that class.
- * 
- * var t = pack.createObject('o3d.Transform');
- * t.isAClassName('o3d.Transform');
- * t.isAClassName('o3d.ParamObject');
- * t.isAClassName('o3d.Shape');
- * 
- * @param {o3d.String} class_name Name of class to check for.
- * @returns {o3d.bool}  true if this object is a or is derived from the given
- *     class name.
- */
-o3d.ObjectBase.prototype.isAClassName =
-    function(class_name) {
-  o3d.notImplemented();
-};
-
-
-/**
  * Base class for all objects that can have their name set.
  * @constructor
  */
-o3d.NamedObject = function() { };
+o3d.NamedObject = function() {
+  o3d.NamedObjectBase.call(this);
+};
 o3d.inherit('NamedObject', 'NamedObjectBase');
 
 

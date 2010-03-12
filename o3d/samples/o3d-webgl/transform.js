@@ -51,6 +51,7 @@
 o3d.Transform =
     function(opt_localMatrix, opt_worldMatrix, opt_visible, opt_boundingBox,
              opt_cull) {
+  o3d.ParamObject.call(this);
   this.localMatrix = opt_localMatrix ||
       [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]];
   this.worldMatrix = opt_worldMatrix ||
@@ -149,7 +150,7 @@ o3d.Transform.prototype.getTransformsInTree =
  * will affect them.
  * 
  * @param {string} name Transform name to look for.
- * @returns {Array.<o3d.Transform>}  An array containing the transforms of the
+ * @return {Array.<o3d.Transform>}  An array containing the transforms of the
  *     under and including this transform matching the given name.
  */
 o3d.Transform.prototype.getTransformsByNameInTree =
@@ -182,12 +183,12 @@ o3d.Transform.prototype.addShape =
 /**
  * Removes a shape from this transform.
  * @param {o3d.Shape} shape Shape to remove.
- * @returns {boolean}  true if successful, false if shape was not in
+ * @return {boolean}  true if successful, false if shape was not in
  *     this transform.
  */
 o3d.Transform.prototype.removeShape =
     function(shape) {
-  
+  o3d.notImplemented();
 };
 
 
@@ -208,6 +209,7 @@ o3d.Transform.prototype.removeShape =
  * will affect them.
  */
 o3d.Transform.prototype.shapes = [];
+
 
 
 
@@ -353,7 +355,7 @@ o3d.Transform.compose = function(a, b, opt_target) {
  * 
  * @param {!Array.<!Array.<number>>} a A matrix.
  * @param {!Array.<!Array.<number>>} b Another matrix.
- * @returns {boolean} Whether they are equal.
+ * @return {boolean} Whether they are equal.
  */
 o3d.Transform.matricesEqual = function(a, b) {
   if (a==b) {
@@ -416,7 +418,7 @@ o3d.Transform.transpose = function(m, opt_target) {
  *     inverse of a.
  */
 o3d.Transform.inverse = function(m, opt_target) {
-  var t = opt_target || a;
+  var t = opt_target || m;
   var m0 = m[0];
   var m1 = m[1];
   var m2 = m[2];
@@ -897,7 +899,7 @@ o3d.Transform.prototype.scale =
  * Utility function to flatten an o3djs-style matrix
  * (which is an array of arrays) into one array of entries.
  * @param {Array.<Array.<number> >} m The o3djs-style matrix.
- * @returns {Array.<number>} The flattened matrix.
+ * @return {Array.<number>} The flattened matrix.
  */
 o3d.Transform.flattenMatrix4 = function(m) {
   var m0 = m[0];

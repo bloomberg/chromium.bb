@@ -41,6 +41,9 @@
  */
 o3d.RenderSurfaceBase = function(width, height, texture) {
   o3d.ParamObject.call(this);
+  this.width = width;
+  this.height = height;
+  this.texture = texture;
 };
 o3d.inherit('RenderSurfaceBase', 'ParamObject');
 
@@ -60,7 +63,6 @@ o3d.RenderSurfaceBase.prototype.width = 0;
 o3d.RenderSurfaceBase.prototype.height = 0;
 
 
-
 /**
  * A RenderSurface encapsulates the notion of a renderable surface.
  * When used in conjunction with a RenderSurfaceSet node in the render graph,
@@ -69,7 +71,9 @@ o3d.RenderSurfaceBase.prototype.height = 0;
  * only be accessed through the texture getRenderSurface(...) interfaces.
  * @constructor
  */
-o3d.RenderSurface = function() { };
+o3d.RenderSurface = function() {
+  o3d.RenderSurfaceBase.call(this);
+};
 o3d.inherit('RenderSurface', 'RenderSurfaceBase');
 
 
@@ -80,10 +84,61 @@ o3d.RenderSurface.prototype.texture = null;
 
 
 /**
+ * The mip level targeted by this render surface.
+ * @type {number}
+ */
+o3d.RenderSurface.level = 0;
+
+
+/**
+ * The underlying GL framebuffer object.
+ * @type {WebGLFramebuffer}
+ * @private
+ */
+o3d.RenderSurfaceBase.prototype.framebuffer_ = null;
+
+/**
+ * Initializes a render surface to render to the given texture.
+ * @param {o3d.Texture2D} texture The texture.
+ */
+o3d.RenderSurface.prototype.initWithTexture = function(texture, level) {
+  this.framebuffer_ = this.gl.createFramebuffer();
+  this.texture = texture;
+  this.level = level;
+  this.width = texture.width;
+  this.height = texture.height;
+};
+
+/**
  * A RenderDepthStencilSurface represents a depth stencil render surface.
  * @constructor
  */
-o3d.RenderDepthStencilSurface = function() { };
+o3d.RenderDepthStencilSurface = function() {
+  o3d.RenderSurfaceBase.call(this);
+};
 o3d.inherit('RenderDepthStencilSurface', 'RenderSurfaceBase');
 
 
+/**
+ * The GL renderbuffer object for the depth buffer.
+ * @type {WebGLRenderbuffer}
+ * @private
+ */
+o3d.RenderDepthStencilSurface.prototype.depth_stencil_buffer_ = null;
+
+
+/**
+ * Allocates depth and stnecil buffers of the given size.
+ * @param {number} width
+ * @param {number} height
+ * @private
+ */
+o3d.RenderDepthStencilSurface.prototype.initWithSize_ =
+    function(width, height) {
+  this.depth_stencil_buffer_ = this.gl.createRenderbuffer();
+  this.gl.bindRenderbuffer(this.gl.RENDERBUFFER, this.depth_stencil_buffer_);
+  this.gl.renderbufferStorage(
+     this.gl.RENDERBUFFER, this.gl.DEPTH_COMPONENT16, width, height);
+  this.width = width;
+  this.height = height;
+};

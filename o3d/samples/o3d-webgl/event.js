@@ -35,7 +35,9 @@
  * as an argument to event handlers triggered by the plugin.
  * @constructor
  */
-o3d.Event = function() { };
+o3d.Event = function() {
+  o3d.ObjectBase.call(this);
+};
 o3d.inherit('Event', 'ObjectBase');
 
 
@@ -233,7 +235,9 @@ o3d.Event.prototype.fullscreen = false;
  * An Event that gets sent to the render callback.
  * @constructor
  */
-o3d.RenderEvent = function() {};
+o3d.RenderEvent = function() {
+  o3d.Event.call(this);
+};
 o3d.inherit('RenderEvent', 'Event');
 
 
@@ -248,7 +252,9 @@ o3d.RenderEvent.prototype.elapsedTime = 0;
  * An Event that gets sent to the render callback.
  * @constructor
  */
-o3d.TickEvent = function() {};
+o3d.TickEvent = function() {
+  o3d.Event.call(this);
+};
 o3d.inherit('RenderEvent', 'Event');
 
 

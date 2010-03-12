@@ -36,8 +36,8 @@
  * from the given RenderSurfaceSet node will operate on the contents of
  * the bound depth and color buffers.
  * Note the following usage constraints of this node:
- * 1)  If both a color and depth surface is bound, then they must be of matching
- *     dimensions.
+ * 1)  If both a color and depth surface is bound, then they must be of
+ *     matching dimensions.
  * 2)  At least one of render_surface and render_depth_surface must non-null.
  * 
  * @param {o3d.RenderSurface} opt_renderSurface The render surface to set.
@@ -45,7 +45,9 @@
  *     depth stencil render surface to set.
  * @constructor
  */
-o3d.RenderSurfaceSet = function() {
+o3d.RenderSurfaceSet =
+    function(opt_renderSurface, opt_renderDepthStencilSurface) {
+  o3d.RenderNode.call(this);
   o3d.RenderSurfaceSet.prototype.renderSurface =
       opt_renderSurface;
   o3d.RenderSurfaceSet.prototype.renderDepthStencilSurface =
@@ -62,7 +64,6 @@ o3d.inherit('RenderSurfaceSet', 'RenderNode');
 o3d.RenderSurfaceSet.prototype.renderSurface = null;
 
 
-
 /**
  * The render depth stencil surface to which the depth contents of all
  * RenderNode children should be drawn.
@@ -70,5 +71,95 @@ o3d.RenderSurfaceSet.prototype.renderSurface = null;
  */
 o3d.RenderSurfaceSet.prototype.renderDepthStencilSurface = null;
 
+/**
+ * Helper function to set the framebuffer back to the default one.
+ * @private
+ */
+o3d.RenderSurfaceSet.prototype.clearFramebufferObjects_ =
+    function() {
+  this.gl.bindFramebuffer(
+      this.gl.FRAMEBUFFER, this.renderSurface.framebuffer_);
+
+  this.gl.framebufferRenderbuffer(
+      this.gl.FRAMEBUFFER,
+      this.gl.COLOR_ATTACHMENT0,
+      this.gl.RENDERBUFFER,
+      0);
+
+  this.gl.framebufferRenderbuffer(
+      this.gl.FRAMEBUFFER,
+      this.gl.DEPTH_STENCIL_ATTACHMENT,
+      this.gl.RENDERBUFFER,
+      0);
+
+  this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, 0);
+};
+
+
+/**
+ * Helper function to set up both the color and depth-stencil targets.
+ * @private
+ */
+o3d.RenderSurfaceSet.prototype.installFramebufferObjects_ =
+    function() {
+  // Reset the bound attachments to the current framebuffer object.
+  this.clearFramebufferObjects_();
+
+  this.gl.bindFramebuffer(
+      this.gl.FRAMEBUFFER, this.renderSurface.framebuffer_);
+
+  if (this.renderSurface) {
+    var texture = this.renderSurface.texture.texture_;
+    var level = this.renderSurface.level;
+
+    // TODO(petersont): If it's a cube, this call should be different.
+    this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
+    this.gl.framebufferTexture2D(
+        this.gl.FRAMEBUFFER,
+        this.gl.COLOR_ATTACHMENT0,
+        this.gl.TEXTURE_2D,
+        texture,
+        level);
+  }
+
+  if (this.renderDepthStencilSurface) {
+    var depth_stencil_buffer =
+        this.renderDepthStencilSurface.depth_stencil_buffer_;
+
+    // TODO(petersont): In the WebGL spec, there is a depth-stencil
+    // attachment, but it hasn't been implemented yet, once it is,
+    // this should use one of those.
+    this.gl.bindRenderbuffer(this.gl.RENDERBUFFER, depth_stencil_buffer);
+    this.gl.framebufferRenderbuffer(
+        this.gl.FRAMEBUFFER,
+        this.gl.DEPTH_ATTACHMENT,
+        this.gl.RENDERBUFFER,
+        depth_stencil_buffer);
+  }
+};
+
+
+/**
+ * Called during the rendergraph traversal before the children are rendered.
+ * @private
+ */
+o3d.RenderSurfaceSet.prototype.before = function() {
+  this.installFramebufferObjects_();
+  this.previousHeight = this.gl.displayInfo.height;
+  this.previousWidth = this.gl.displayInfo.width;
+  this.gl.displayInfo.height = this.renderSurface.height;
+  this.gl.displayInfo.width = this.renderSurface.width;
+};
+
+
+/**
+ * Called during the rendergraph traversal after the children are rendered.
+ * @private
+ */
+o3d.RenderSurfaceSet.prototype.after = function() {
+  this.clearFramebufferObjects_();
+  this.gl.displayInfo.height = this.previousHeight;
+  this.gl.displayInfo.width = this.previousWidth;
+};
 
 

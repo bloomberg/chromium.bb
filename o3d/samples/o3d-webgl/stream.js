@@ -35,6 +35,7 @@
  * @constructor
  */
 o3d.Stream = function(semantic, semantic_index, field, start_index) {
+  o3d.NamedObject.call(this);
   this.semantic = semantic;
   this.semanticIndex = semantic_index;
   this.field = field;

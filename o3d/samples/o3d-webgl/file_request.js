@@ -133,6 +133,13 @@ o3d.FileRequest.prototype.done = false;
 o3d.FileRequest.prototype.success = false;
 
 
+/**
+ * The image object if we are opening an image.
+ * @type {Image}
+ * @private
+ */
+o3d.FileRequest.prototype.image_ = null;
+
 
 /**
  * An error message.
@@ -143,17 +150,53 @@ o3d.FileRequest.prototype.success = false;
 o3d.FileRequest.prototype.error = '';
 
 
+/**
+ * Guesses from a url whether the url is an image file.
+ * @param {string} url The URL.
+ * @private
+ */
+o3d.FileRequest.prototype.isImageUrl_ = function(url) {
+  var extension = url.substring(url.length - 4);
+  return (extension == '.png' || extension == '.jpg');
+};
+
+
+/**
+ * Called by the image class when the image file is loaded... if we're
+ * loading an image.
+ * @private
+ */
+o3d.FileRequest.prototype.imageLoaded_ = function() {
+  if (this.image_.complete) {
+    this.success = true;
+    this.done = true;
+    this.readyState = 4;
+    this.data = new o3d.RawData();
+    this.data.image_ = this.image_;
+  }
+  this.onreadystatechange.apply(this, arguments);
+};
+
 
 /**
  * Set up several of the request fields.
  * @param {string} method "GET" is the only supported method at this time
  * @param {string} uri the location of the file to fetch
- * @param {boolean} async true is the only legal value at this time
+ * @param {boolean} async true is the only legal value at this time.
  */
 o3d.FileRequest.prototype.open =
     function(method, uri, async) {
   this.uri = uri;
-  this.request_.open(method, uri, async);
+  if (this.isImageUrl_(uri)) {
+    this.image_ = new Image();
+    var that = this;
+    this.image_.onload = function() {
+      that.imageLoaded_.call(that);
+    }
+    this.image_.src = uri;
+  } else {
+    this.request_.open(method, uri, async);
+  }
 };
 
 
@@ -163,7 +206,7 @@ o3d.FileRequest.prototype.open =
  * matter what, with success or failure.
  */
 o3d.FileRequest.prototype.send = function() {
-  this.request_.send();
+  // This function left blank for compatability with o3djs.io.
 };
 
 

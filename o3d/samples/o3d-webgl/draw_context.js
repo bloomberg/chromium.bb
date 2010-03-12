@@ -42,6 +42,7 @@
  * @constructor
  */
 o3d.DrawContext = function(opt_view, opt_projection) {
+  o3d.NamedObject.call(this);
   this.view = opt_view ||
       [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]];
   this.projection = opt_projection ||

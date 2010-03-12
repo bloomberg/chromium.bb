@@ -44,6 +44,7 @@
  * @constructor
  */
 o3d.Viewport = function(opt_viewport, opt_depthRange) {
+  o3d.RenderNode.call(this);
   this.viewport = opt_viewport || [0.0, 0.0, 1.0, 1.0];
   this.depthRange = opt_depthRange || [0.0, 1.0];
 };
@@ -66,7 +67,6 @@ o3d.inherit('Viewport', 'RenderNode');
 o3d.Viewport.prototype.viewport = [0.0, 0.0, 1.0, 1.0];
 
 
-
 /**
  * The min Z and max Z depth range in [min Z, max Z] format.
  * Default = [0.0, 1.0].
@@ -81,16 +81,17 @@ o3d.Viewport.prototype.depthRange = [0.0, 1.0];
  * scissor region in gl.
  */
 o3d.Viewport.prototype.before = function() {
-  var x = this.viewport[0] * this.gl.canvas.width;
-  var y = this.viewport[1] * this.gl.canvas.height;
-  var width = this.viewport[2] * this.gl.canvas.width;
-  var height = this.viewport[3] * this.gl.canvas.height;
+  var x = this.viewport[0] * this.gl.displayInfo.width;
+  var y = this.viewport[1] * this.gl.displayInfo.height;
+  var width = this.viewport[2] * this.gl.displayInfo.width;
+  var height = this.viewport[3] * this.gl.displayInfo.height;
+
   this.gl.viewport(x, y, width, height);
   if (x != 0 || y != 0 || this.viewport[2] != 1 || this.viewport[3] != 1) {
     this.gl.enable(this.gl.SCISSOR_TEST);
     this.gl.scissor(x, y, width, height);
   } else {
-    
+     this.gl.disable(this.gl.SCISSOR_TEST);
   }
 };
 

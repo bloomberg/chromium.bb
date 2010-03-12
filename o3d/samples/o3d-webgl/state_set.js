@@ -39,7 +39,7 @@
  * @constructor
  */
 o3d.StateSet = function(opt_state) {
-  o3d.ParamObject.call(this);
+  o3d.RenderNode.call(this);
   this.state = opt_state || null;
 };
 o3d.inherit('StateSet', 'RenderNode');

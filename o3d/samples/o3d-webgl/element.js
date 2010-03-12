@@ -164,7 +164,7 @@ o3d.Element.prototype.drawElements = [];
  *     pass null it will use the material on this Element. This allows you
  *     to easily setup the default (just draw as is) by passing null or
  *     setup a shadow pass by passing in a shadow material.
- * @returns {!o3d.DrawElement} The created draw element.  
+ * @return {!o3d.DrawElement} The created draw element.
  */
 o3d.Element.prototype.createDrawElement =
     function(pack, material) {
@@ -183,7 +183,7 @@ o3d.Element.prototype.createDrawElement =
  * @param {o3d.Cull} cull which side of the triangles to ignore.
  * @param {!o3d.math.Point3} start position of start of ray in local space.
  * @param {!o3d.math.Point3} end position of end of ray. in local space.
- * @returns {!o3d.RayIntersectionInfo}  RayIntersectionInfo class. If valid()
+ * @return {!o3d.RayIntersectionInfo}  RayIntersectionInfo class. If valid()
  *     is false then something was wrong, Check GetLastError(). If
  *     intersected() is true then the ray intersected a something. position()
  *     is the exact point of intersection.
@@ -198,7 +198,7 @@ o3d.Element.prototype.intersectRay =
  * Computes the bounding box in same coordinate system as the specified
  * POSITION stream.
  * @param {number} position_stream_index Index of POSITION stream.
- * @returns {!o3d.BoundingBox}  The boundingbox for this element in local space.
+ * @return {!o3d.BoundingBox}  The boundingbox for this element in local space.
  */
 o3d.Element.prototype.getBoundingBox =
     function(position_stream_index) {

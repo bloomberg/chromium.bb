@@ -37,7 +37,9 @@
  * Buffer the Field's buffer property will be set to null.
  * @constructor
  */
-o3d.Field = function() { };
+o3d.Field = function() {
+  o3d.NamedObject.call(this);
+};
 o3d.inherit('Field', 'NamedObject');
 
 /**
@@ -101,7 +103,7 @@ o3d.Field.prototype.setAt =
  * 
  * @param {number} start_index index of the first value to get.
  * @param {number} num_elements number of elements to read from field.
- * @returns {number}  The values of the field.
+ * @return {number}  The values of the field.
  */
 o3d.Field.prototype.getAt =
     function(start_index, num_elements) {
@@ -114,21 +116,27 @@ o3d.Field.prototype.getAt =
  * A field that contains floating point numbers.
  * @constructor
  */
-o3d.FloatField = function() { };
+o3d.FloatField = function() {
+  o3d.Field.call(this);
+};
 o3d.inherit('FloatField', 'Field');
 
 /**
  * A field that contains unsigned integers.
  * @constructor
  */
-o3d.UInt32Field = function() { };
+o3d.UInt32Field = function() {
+  o3d.Field.call(this);
+};
 o3d.inherit('UInt32Field', 'Field');
 
 /**
  * A field that contains unsigned bytes.
  * @constructor
  */
-o3d.UByteNField = function() { };
+o3d.UByteNField = function() {
+  o3d.Field.call(this);
+};
 o3d.inherit('UByteNField', 'Field');
 
 

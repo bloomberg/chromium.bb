@@ -37,6 +37,7 @@
  * @constructor
  */
 o3d.DrawList = function() {
+  o3d.NamedObject.call(this);
   this.list_ = [];
 };
 o3d.inherit('DrawList', 'NamedObject');
@@ -72,7 +73,6 @@ o3d.DrawList.BY_PRIORITY = 2;
  */
 o3d.DrawList.prototype.render = function() {
   // TODO(petersont): Add sort.
-
   for (var i = 0; i < this.list_.length; ++i) {
     var drawElementInfo = this.list_[i];
     var world = drawElementInfo.world;

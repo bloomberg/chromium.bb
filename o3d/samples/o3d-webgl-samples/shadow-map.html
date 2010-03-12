@@ -1,0 +1,636 @@
+<!--
+Copyright 2009, Google Inc.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+    * Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above
+copyright notice, this list of conditions and the following disclaimer
+in the documentation and/or other materials provided with the
+distribution.
+    * Neither the name of Google Inc. nor the names of its
+contributors may be used to endorse or promote products derived from
+this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+
+<!--
+This sample uses a custom render graph to implement a basic shadow map
+algorithm.
+
+The technique works by rendering the scene in two passes.  The first pass
+renders the geometry in the scene with a shader that colors each pixel a shade
+of gray representing how far the rendered point is from the light source.  That
+image, the shadow map, is rendered to a texture, and then the second (visible)
+render pass samples it to determine which points in the scene are in shaodow.
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+  "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>
+Shadow Mapping
+</title>
+<script type="text/javascript" src="../o3d-webgl/base.js"></script>
+<script type="text/javascript" src="../o3djs/base.js"></script>
+<script type="text/javascript" id="o3dscript">
+o3djs.base.o3d = o3d;
+o3djs.require('o3djs.webgl');
+o3djs.require('o3djs.util');
+o3djs.require('o3djs.math');
+o3djs.require('o3djs.rendergraph');
+o3djs.require('o3djs.primitives');
+o3djs.require('o3djs.effect');
+o3djs.require('o3djs.debug');
+o3djs.require('o3djs.material');
+
+// The initClient() function runs when the page has finished loading.
+window.onload = initClient;
+
+// global variables
+var g_o3dElement;
+var g_client;
+var g_o3d;
+var g_math;
+var g_pack;
+var g_colorViewInfo;
+var g_shadowViewInfo;
+var g_shadowTexture;
+var g_shadowMaterial;
+var g_colorEffect;
+var g_shadowSampler;
+var g_lightViewProjection;
+var g_lightFrustumTransform;
+var g_globalParams = { };
+var g_viewFromLight = false;
+
+var g_renderSurfaceSet;
+var g_colorPassRenderRoot;
+
+var g_lightWorldPos = [5, 10, 0];
+var g_lightColor = [1, 1, 1, 1];
+var g_eyePosition = [1, 6, 20];
+var g_targetPosition = [0, 2, 0];
+
+// constants.
+var SHADOW_MAP_WIDTH = 512;
+var SHADOW_MAP_HEIGHT = 512;
+
+var g_finished = false;  // for selenium testing.
+
+
+/**
+ * Creates the client area.
+ */
+function initClient() {
+  o3djs.webgl.makeClients(main, 'FloatingPointTextures', true);
+}
+
+
+/**
+ * Initializes global variables, positions camera, draws shapes.
+ * @param {Array} clientElements Array of o3d object elements.
+ */
+function main(clientElements) {
+  // Init global variables.
+  initGlobals(clientElements);
+
+  // Set up the rendergraph.
+  initRenderGraph();
+
+  // Load effects, bind material parameters.
+  initMaterials();
+
+  // Add the shapes to the transform graph.
+  createShapes();
+
+  // Set up the view and projection transformations for the camera.
+  updateCamera();
+
+  // Init global parameters.  initGlobalParams() searches all materials in order
+  // to bind parameters, so it must be called after initMaterials()
+  initGlobalParams();
+
+  // Set the view and projection transformations for the light.
+  updateLightMatrix();
+
+  // Create the light that gets drawn.
+  createLightShape();
+
+  // Execute keyPressed() when we detect a keypress on the window or
+  // on the o3d object.
+  window.document.onkeypress = keyPressed;
+  g_o3dElement.onkeypress = keyPressed;
+
+  //toggleView();
+
+  g_finished = true;  // for selenium testing.
+}
+
+
+/**
+ * Initializes global variables and libraries.
+ */
+function initGlobals(clientElements) {
+  g_o3dElement = clientElements[0];
+  g_client = g_o3dElement.client;
+  g_o3d = g_o3dElement.o3d;
+  g_math = o3djs.math;
+
+  // Create a pack to manage the objects created.
+  g_pack = g_client.createPack();
+}
+
+
+/**
+ * Sets up the render graph.  Builds a basic view for the camera and the light
+ * point of view, arranges for the view from the light to be rendered to a
+ * texture for the shadow map.  Unlike the basic render graph created by the
+ * the utility function o3djs.rendergraph.createBasicView, to render the shadow
+ * map and then render the scene, we need two subtrees of the render graph, one
+ * for shadow map render pass and one to draw the scene.
+ */
+function initRenderGraph() {
+  // The children of any one node in the render graph get traversed in order by
+  // priority.  Here, we're forcing the shadow map to get rendered first by
+  // by giving its render root lower priority.
+  var shadowPassRenderRoot = g_pack.createObject('RenderNode');
+  shadowPassRenderRoot.priority = 0;
+
+  g_colorPassRenderRoot = g_pack.createObject('RenderNode');
+  g_colorPassRenderRoot.priority = 1;
+
+  g_colorPassRenderRoot.parent = g_client.renderGraphRoot;
+
+  // Create the texture that will store the depth information.
+  g_shadowTexture = g_pack.createTexture2D(SHADOW_MAP_WIDTH,
+                                           SHADOW_MAP_HEIGHT,
+                                           g_o3d.Texture.ABGR32F,
+                                           1,
+                                           true);
+  var renderSurface = g_shadowTexture.getRenderSurface(0);
+
+  // Create the depth-stencil buffer required when rendering the teapot.
+  var depthSurface = g_pack.createDepthStencilSurface(SHADOW_MAP_WIDTH,
+                                                      SHADOW_MAP_HEIGHT);
+
+  shadowPassRenderRoot.parent = g_client.renderGraphRoot;
+
+  g_renderSurfaceSet = g_pack.createObject('RenderSurfaceSet');
+  g_renderSurfaceSet.renderSurface = renderSurface;
+  g_renderSurfaceSet.renderDepthStencilSurface = depthSurface;
+
+  g_renderSurfaceSet.parent = shadowPassRenderRoot;
+  
+  // Create a render sub-graph for the shadow map generation.
+  g_shadowViewInfo = o3djs.rendergraph.createBasicView(
+      g_pack,
+      g_client.root,
+      g_renderSurfaceSet,
+      [1, 1, 1, 1]);
+
+  // Create a render sub-graph for the regular pass.
+  g_colorViewInfo = o3djs.rendergraph.createBasicView(
+      g_pack,
+      g_client.root,
+      g_colorPassRenderRoot,
+      [0, 0, 0, 1]);
+}
+
+
+/**
+ * Switches between the camera and light point of view.
+ */
+function toggleView() {
+  if (g_viewFromLight) {
+    g_shadowViewInfo.root.parent = g_renderSurfaceSet;
+    g_colorPassRenderRoot.parent = g_client.renderGraphRoot;
+    g_viewFromLight = false;
+  } else {
+    g_shadowViewInfo.root.parent = g_client.renderGraphRoot;
+    g_colorPassRenderRoot.parent = null;
+    g_viewFromLight = true;
+  }
+}
+
+/**
+ * Creates a material to be put on all shapes in the scene for the shadow pass,
+ * and loads effects for materials in the scene.  Other materials are created
+ * on the fly as the shapes are created.
+ */
+function initMaterials() {
+  var colorVertexShader = document.getElementById('colorVertexShader').text;
+  var colorPixelShader = document.getElementById('colorPixelShader').text;
+
+  g_colorEffect = g_pack.createObject('Effect');
+  g_colorEffect.loadVertexShaderFromString(colorVertexShader);
+  g_colorEffect.loadPixelShaderFromString(colorPixelShader);
+
+  var shadowVertexShader = document.getElementById('shadowVertexShader').text;
+  var shadowPixelShader = document.getElementById('shadowPixelShader').text;
+  
+  g_shadowMaterial = g_pack.createObject('Material');
+  g_shadowMaterial.drawList = g_shadowViewInfo.performanceDrawList;
+  
+  var shadowEffect = g_pack.createObject('Effect');
+  shadowEffect.loadVertexShaderFromString(shadowVertexShader);
+  shadowEffect.loadPixelShaderFromString(shadowPixelShader);
+
+  g_shadowMaterial.effect = shadowEffect;
+  shadowEffect.createUniformParameters(g_shadowMaterial);
+
+  g_shadowSampler = g_pack.createObject('Sampler');
+  g_shadowSampler.texture = g_shadowTexture;
+  g_shadowSampler.minFilter = g_o3d.Sampler.POINT;
+  g_shadowSampler.magFilter = g_o3d.Sampler.POINT;
+  g_shadowSampler.mipFilter = g_o3d.Sampler.POINT;
+  g_shadowSampler.addressModeU = g_o3d.Sampler.BORDER;
+  g_shadowSampler.addressModeV = g_o3d.Sampler.BORDER;
+  g_shadowSampler.borderColor = [1, 1, 1, 1];
+
+}
+
+
+/**
+ * Sets up reasonable view and projection matrices.
+ */
+function updateCamera() {
+  // Set up a perspective transformation for the projection.
+  g_colorViewInfo.drawContext.projection = g_math.matrix4.perspective(
+      g_math.degToRad(30), // 30 degree frustum.
+      g_o3dElement.clientWidth / g_o3dElement.clientHeight, // Aspect ratio.
+      1,                   // Near plane.
+      5000);               // Far plane.
+
+  // Set up our view transformation to look towards the world origin where the
+  // cube is located.
+  g_colorViewInfo.drawContext.view = g_math.matrix4.lookAt(
+      g_eyePosition,    // eye
+      g_targetPosition, // target
+      [0, 1, 0]);       // up
+}
+
+
+/**
+ * Computes the view and projection matrices from the point of view of the
+ * light. Sets the lightViewProjection parameter so the color shader can access
+ * it.
+ */
+function updateLightMatrix() {
+  // The perspective projection matrix for the light.
+  var lightProjection = g_math.matrix4.perspective(
+      g_math.degToRad(45), // 45 degree fov.
+      SHADOW_MAP_WIDTH / SHADOW_MAP_HEIGHT,   // Aspect ratio.
+      4,                   // Near plane.
+      20);                 // Far plane.
+
+  var adjustedProjection =
+          [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 2, 0], [0, 0, -1, 1]];
+      o3d.Transform.compose(
+          adjustedProjection, lightProjection, adjustedProjection);
+
+  // Make the light point toward the origin
+  var lightView = g_math.matrix4.lookAt(
+      g_lightWorldPos,   // light
+      [0, 0, 0],         // target
+      [1, 0, 0]);        // up
+
+  g_lightViewProjection = g_math.matrix4.composition(
+      lightProjection, lightView);
+
+  g_shadowViewInfo.drawContext.projection = lightProjection;
+  g_shadowViewInfo.drawContext.view = lightView;
+  g_globalParams.lightViewProjection.value = g_lightViewProjection;
+}
+
+
+/**
+ * Creates shapes using the primitives utility library, and adds them to the
+ * transform graph at the root node.
+ */
+function createShapes() {
+  // A green phong-shaded material for the cube.
+  var cubeMaterial = createColorMaterial([0.2, 0.5, 0, 1]);
+
+  // The cube shape.
+  var cube = o3djs.primitives.createCube(
+      g_pack,
+      cubeMaterial,
+      2);     // The length of each side of the cube.
+
+  // A red phong-shaded material for the sphere.
+  var sphereMaterial = createColorMaterial([0.7, 0.2, 0.1, 1]);
+
+  // The sphere shape.
+  var sphere = o3djs.primitives.createSphere(
+      g_pack, sphereMaterial, 0.5, 50, 50);
+
+  // A blue phong-shaded material for the plane.
+  var planeMaterial = createColorMaterial([0, 0.3, 0.5, 1]);
+
+  // The plane shape.
+  var plane = o3djs.primitives.createPlane(
+      g_pack,
+      planeMaterial,
+      20,      // Width.
+      20,      // Depth.
+      1,       // Horizontal subdivisions.
+      1);      // Vertical subdivisions.
+
+  // Associate to each shape, a translation vector.
+  var transformTable = [
+    {shape: cube, translation: [0, 1, 0]},
+    {shape: sphere, translation: [0.5, 2.5, 0]},
+    {shape: plane, translation: [0, 0, 0]}
+  ];
+
+  // Add the shapes to the transform graph with the translation.
+  var modelRoot = g_pack.createObject('Transform');
+  modelRoot.parent = g_client.root;
+  for (var tt = 0; tt < transformTable.length; ++tt) {
+    var transform = g_pack.createObject('Transform');
+    transform.addShape(transformTable[tt].shape);
+    // The shadow material is bound to a DrawList in the subtree of the
+    // rendergraph that handles the shadow map generation, so it gets drawn in
+    // that render pass only.
+    transformTable[tt].shape.createDrawElements(g_pack, g_shadowMaterial);
+
+    transform.translate(transformTable[tt].translation);
+    transform.parent = modelRoot;
+  }
+}
+
+
+/**
+ * Creates the wireframe frustum showing the shadow map's render volume.
+ */
+function createLightShape() {
+  var inverseMatrix = g_math.matrix4.inverse(g_lightViewProjection);
+
+/*
+  // Scale and translate a cube of side length 2 to get a box
+  // that extends from [-1, -1, 0] to [1, 1, 1].
+  var shape = o3djs.debug.createLineCube(
+                  g_pack,
+                  o3djs.material.createConstantMaterial(g_pack,
+                                                        g_colorViewInfo,
+                                                        [1, 0, 0, 1]),
+                  2,
+                  g_math.matrix4.compose(
+                      g_math.matrix4.translation([0, 0, 0.5]),
+                      g_math.matrix4.scaling([1, 1, 0.5])));*/
+
+  g_lightFrustumTransform = g_pack.createObject('Transform');
+  g_lightFrustumTransform.localMatrix = inverseMatrix;
+  g_lightFrustumTransform.parent = g_client.root;
+  //g_lightFrustumTransform.addShape(shape);
+}
+
+
+/**
+ * Creates a Phong-shaded, shadowed material based on the given color.
+ */
+function createColorMaterial(baseColor) {
+  var material = g_pack.createObject('Material');
+  material.drawList = g_colorViewInfo.performanceDrawList;
+
+  material.effect = g_colorEffect;
+  g_colorEffect.createUniformParameters(material);
+
+  material.getParam('shadowMapSampler').value = g_shadowSampler;
+
+  material.getParam('ambient').value = g_math.mulScalarVector(0.1, baseColor);
+  material.getParam('diffuse').value = g_math.mulScalarVector(0.8, baseColor);
+  material.getParam('specular').value = [1, 1, 1, 1];
+  material.getParam('shininess').value = 20;
+
+  return material;
+}
+
+/**
+ * Binds params for light position, light color and the light view-projection
+ * matrix to all materials in the scene where they apply.
+ */
+function initGlobalParams() {
+  var paramSpec = {
+      'lightColor': 'ParamFloat4',
+      'lightWorldPos': 'ParamFloat3',
+      'lightViewProjection': 'ParamMatrix4'};
+
+  g_globalParams = o3djs.material.createParams(g_pack, paramSpec);
+  o3djs.material.bindParams(g_pack, g_globalParams);
+
+  g_globalParams.lightWorldPos.value = g_lightWorldPos;
+  g_globalParams.lightColor.value = g_lightColor;
+}
+
+
+/**
+ * The keyboard event handler.
+ */
+function keyPressed(event) {
+  var keyChar = String.fromCharCode(o3djs.event.getEventKeyChar(event));
+  keyChar = keyChar.toLowerCase();
+
+  var delta = 0.2;
+  switch(keyChar) {
+    case 'a':
+      moveLight([-delta, 0, 0]);
+      break;
+    case 'd':
+      moveLight([delta, 0, 0]);
+      break;
+    case 's':
+      moveLight([0, -delta, 0]);
+      break;
+    case 'w':
+      moveLight([0, delta, 0]);
+      break;
+    case 'i':
+      moveLight([0, 0, delta]);
+      break;
+    case 'o':
+      moveLight([0, 0, -delta]);
+      break;
+
+    case ' ':
+      toggleView();
+      break;
+  }
+}
+
+/**
+ * Moves the light by the given vector delta, and updates params so the light
+ * draws in the right spot and the shadows move.
+ */
+function moveLight(delta) {
+  g_lightWorldPos = g_math.addVector(g_lightWorldPos, delta);
+  g_globalParams.lightWorldPos.value = g_lightWorldPos;
+  updateLightMatrix();
+  g_lightFrustumTransform.localMatrix =
+      g_math.matrix4.inverse(g_lightViewProjection);
+}
+
+
+</script>
+
+
+
+<script id="shadowVertexShader" type="text/glsl">
+  /**
+   * This shader is for the effect applied in the first render pass, when the
+   * shadow map is created.  The scene is rendered from the perspective of the
+   * light, the grayscale value of each pixel in the rendered image represents
+   * how far away the rendered point is from the light (the lighter, the
+   * farther)  This image gets rendered to a texture, and that texture gets
+   * sampled in the second render pass, when the geometry is drawn to the
+   * screen.
+   */
+  attribute vec4 position;
+  uniform mat4 worldViewProjection;
+
+  varying vec4 vposition;
+
+  void main() {
+    vposition = worldViewProjection * position;
+    gl_Position = vposition;
+  }
+</script>
+<script id="shadowPixelShader" type="text/glsl">
+  varying vec4 vposition;
+
+  void main() {
+    vec4 color;
+    vec3 q = vposition.xyz / vposition.w;
+
+    float depth = 0.5*(q.z + 1.0);
+    color.r = fract(16777216.0 * depth);
+    color.g = fract(65536.0 * depth);
+    color.b = fract(256.0 * depth);
+    color.a = depth;
+
+    gl_FragColor = color;
+  }
+</script>
+
+
+<script id="colorVertexShader" type="text/glsl">
+  attribute vec4 position;
+  attribute vec3 normal;
+
+  uniform mat4 worldViewProjection;
+  uniform mat4 world;
+  uniform mat4 worldInverseTranspose;
+  uniform mat4 lightViewProjection;
+
+  varying vec4 vposition;
+  varying vec3 vnormal;
+  varying vec4 vprojTextureCoords;
+  varying vec4 vworldPosition;
+
+  /**
+   * The vertex shader simply transforms the input vertices to screen space.
+   */
+  void main() {
+    vworldPosition = world * position;
+    vnormal = vec3(worldInverseTranspose * vec4(normal, 0));
+    vposition = worldViewProjection * position;
+    vprojTextureCoords = lightViewProjection * world * position;
+    gl_Position = vposition;
+  }
+</script>
+<script id="colorPixelShader" type="text/glsl">
+  uniform vec4 ambient;
+  uniform vec4 diffuse;
+  uniform vec4 specular;
+  uniform float shininess;
+
+  varying vec4 vposition;
+  varying vec4 vworldPosition;
+  varying vec3 vnormal;
+  varying vec4 vprojTextureCoords;
+
+  uniform sampler2D shadowMapSampler;
+
+  uniform vec3 lightWorldPos;
+  uniform mat4 viewInverse;
+
+  vec3 lighting(vec3 position, vec3 normal, vec4 pigment, vec4 specular, float shininess) {
+    vec3 l = normalize(vec3(lightWorldPos) - position);  // Toward light.
+    vec3 n = normalize(normal);                          // Normal.
+    vec3 v = normalize(vec3(viewInverse * vec4(0,0,0,1)) - position); // Toward eye.
+    vec3 r = normalize(-reflect(v, n));
+
+    return clamp(dot(n,l), 0.0, 1.0) * diffuse.rgb +
+        0.2 * specular.rgb * pow(max(dot(l, r), 0.0), shininess);
+  }
+
+  void main() {
+    vec3 outColor = ambient.rgb;
+    vec4 projCoords = vprojTextureCoords;
+
+    // Convert texture coords to [0, 1] range.
+    projCoords /= projCoords.w;
+    projCoords.x =  0.5 * projCoords.x + 0.5;
+    projCoords.y =  0.5 * projCoords.y + 0.5;
+    projCoords.z =  0.5 * projCoords.z + 0.5;
+
+    float depth = projCoords.z;
+
+    float light;
+
+    // If the rednered point is farther from the light than the distance encoded
+    // in the shadow map, we give it a light coefficient of 0.
+    vec4 color = texture2D(shadowMapSampler, projCoords.xy);
+
+    light = (color.a +
+             color.b / 256.0 +
+             color.g / 65536.0 +
+             color.r / 16777216.0) + 0.008 > depth ? 1.0 : 0.0;
+
+    // Make the illuninated area a round spotlight shape just for fun.
+    // Comment this line out to see just the shadows.
+    light *= 1.0 - smoothstep(0.45, 0.5,
+        length(projCoords.xy - vec2(0.5, 0.5)));
+
+    outColor += light * lighting(
+        vec3(vworldPosition),
+        vnormal,
+        diffuse,
+        specular,
+        shininess);
+
+    gl_FragColor = vec4(outColor, 1.0);
+  }
+</script>
+
+
+
+</head>
+<body>
+<h1>Shadow Maps</h1>
+This sample implements a basic shadow map.
+<br/>
+<!-- Start of O3D plugin -->
+<div id="o3d" width="800px" height="600px"></div>
+<!-- End of O3D plugin -->
+Use A, S, D, W, I and O to move the light.
+Press spacebar to see the shadow map.
+</body>
+</html>

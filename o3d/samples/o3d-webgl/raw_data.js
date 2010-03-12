@@ -44,7 +44,9 @@
  * request.send();
  * @constructor
  */
-o3d.RawData = function() { };
+o3d.RawData = function() {
+  o3d.NamedObject.call(this);
+};
 o3d.inherit('RawData', 'NamedObject');
 
 
@@ -55,6 +57,13 @@ o3d.inherit('RawData', 'NamedObject');
  */
 o3d.RawData.prototype.string_value = '';
 
+
+/**
+ * The data as an image if it is an image.
+ * @type {Image}
+ * @private
+ */
+o3d.RawData.prototype.image_ = null;
 
 
 /**

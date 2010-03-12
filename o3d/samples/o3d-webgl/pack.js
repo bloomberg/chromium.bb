@@ -39,6 +39,7 @@
  * @constructor
  */
 o3d.Pack = function() {
+  o3d.NamedObject.call(this);
   this.objects_ = [];
 };
 o3d.inherit('Pack', 'NamedObject');
@@ -105,22 +106,12 @@ o3d.Pack.prototype.destroy = function() {
  * Now the last reference has been removed and myTransform will be freed.
  * 
  * @param {o3d.ObjectBase} object Object to remove.
- * @returns {boolean}  True if the object was successfully removed.
+ * @return {boolean}  True if the object was successfully removed.
  *     False if the object is not part of this pack.
  */
 o3d.Pack.prototype.removeObject =
     function(object) {
-  var i = 0;
-  for (var j = 0; j < this.objects_.length; ++j) {
-    if (this.objects_[i] == object) {
-      j++;
-    }
-    this.objects_[j] = this.objects_[i];
-    i++;
-  }
-  if (this.objects_.length > i) {
-    this.objects_.pop();
-  }
+  o3d.removeFromArray(this.objects_, object);
 };
 
 
@@ -176,7 +167,7 @@ o3d.Pack.prototype.removeObject =
  *      ParamOp4FloatsToFloat4
  *      ParamOp16FloatsToMatrix4
  *      TRSToMatrix4
- * @returns {o3d.ObjectBase}  The created object.
+ * @return {o3d.ObjectBase}  The created object.
  */
 o3d.Pack.prototype.createObject =
     function(type_name) {
@@ -186,6 +177,7 @@ o3d.Pack.prototype.createObject =
   }
   var object = new foo();
   object.gl = this.gl;
+  this.objects_.push(object);
   return object;
 };
 
@@ -204,11 +196,32 @@ o3d.Pack.prototype.createObject =
  *     compelete mipmap chain.
  * @param {boolean} enable_render_surfaces If true, the texture object will
  *     expose RenderSurface objects through GetRenderSurface(...).
- * @returns {!o3d.Texture2D}  The Texture2D object.
+ * @return {!o3d.Texture2D}  The Texture2D object.
  */
 o3d.Pack.prototype.createTexture2D =
     function(width, height, format, levels, enable_render_surfaces) {
-  o3d.notImplemented();
+  var texture = this.createObject('Texture2D');
+  texture.width = width;
+  texture.height = height;
+  texture.levels = levels;
+  texture.texture_ = this.gl.createTexture();
+
+  if (enable_render_surfaces) {
+    this.gl.bindTexture(this.gl.TEXTURE_2D, texture.texture_);
+    this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, width, height,
+        0, this.gl.RGBA, this.gl.UNSIGNED_BYTE, null);
+
+    this.gl.texParameteri(this.gl.TEXTURE_2D, 
+      this.gl.TEXTURE_MAG_FILTER, this.gl.LINEAR);
+    this.gl.texParameteri(this.gl.TEXTURE_2D,
+      this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
+    this.gl.texParameteri(this.gl.TEXTURE_2D,
+      this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
+    this.gl.texParameteri(this.gl.TEXTURE_2D,
+      this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
+  }
+
+  return texture;
 };
 
 
@@ -225,7 +238,7 @@ o3d.Pack.prototype.createTexture2D =
  *     the compelete mipmap chain.
  * @param {boolean} enable_render_surfaces If true, the texture object
  *     will expose RenderSurface objects through GetRenderSurface(...).
- * @returns {!o3d.TextureCUBE}  The TextureCUBE object.
+ * @return {!o3d.TextureCUBE}  The TextureCUBE object.
  */
 o3d.Pack.prototype.createTextureCUBE =
     function(edge_length, format, levels, enable_render_surfaces) {
@@ -241,11 +254,13 @@ o3d.Pack.prototype.createTextureCUBE =
  * 
  * @param {number} width The width of the RenderSurface in pixels
  * @param {number} height The height of the RenderSurface in pixels
- * @returns {!o3d.RenderDepthStencilSurface}  The RenderSurface object.
+ * @return {!o3d.RenderDepthStencilSurface}  The RenderSurface object.
  */
 o3d.Pack.prototype.createDepthStencilSurface =
     function(width, height) {
-  o3d.notImplemented();
+  var surface = this.createObject("RenderDepthStencilSurface");
+  surface.initWithSize_(width, height);
+  return surface;
 };
 
 
@@ -260,7 +275,7 @@ o3d.Pack.prototype.createDepthStencilSurface =
  * @param {string} class_type_name the Class of the object. It is okay
  *     to pass base types for example "o3d.RenderNode" will return
  *     ClearBuffers, DrawPasses, etc...
- * @returns {!Array.<!o3d.ObjectBase>}  Array of Objects.
+ * @return {!Array.<!o3d.ObjectBase>}  Array of Objects.
  */
 o3d.Pack.prototype.getObjects =
     function(name, class_type_name) {
@@ -278,11 +293,24 @@ o3d.Pack.prototype.getObjects =
  * @param {string} class_type_name the Class of the object. It is
  *     okay to pass base types for example "o3d.RenderNode" will return
  *     ClearBuffers, DrawPasses, etc...
- * @returns {!Array.<!o3d.ObjectBase>}  Array of Objects.
+ * @return {!Array.<!o3d.ObjectBase>}  Array of Objects.
  */
 o3d.Pack.prototype.getObjectsByClassName =
     function(class_type_name) {
-  o3d.notImplemented();
+  if (class_type_name.substr(0, 4) == 'o3d.') {
+    class_type_name = class_type_name.substr(4);
+  }
+    
+  var found = [];
+
+  for (var i = 0; i < this.objects_.length; ++i) {
+    var object = this.objects_[i];
+    if (object.isAClassName(class_type_name)) {
+      found.push(object);
+    }
+  }
+
+  return found;
 };
 
 
@@ -311,7 +339,7 @@ o3d.Pack.prototype.objects_ = [];
  * load a texture is to load a RawData, use that to create Bitmap, Massage
  * the Bitmap to your liking the use that to create a Texture.
  * @param {string} type Must be "TEXTURE" or "RAWDATA"
- * @returns {!o3d.FileRequest}  a FileRequest
+ * @return {!o3d.FileRequest}  a FileRequest
  */
 o3d.Pack.prototype.createFileRequest =
     function(type) {
@@ -328,18 +356,43 @@ o3d.Pack.prototype.createFileRequest =
  * 
  * @param {!o3d.RawData} raw_data contains the bitmap data in a supported
  *     format.
- * @returns {!o3d.Bitmap}  An Array of Bitmaps object.
+ * @return {!Array.<!o3d.Bitmap>}  An Array of Bitmaps object.
  */
 o3d.Pack.prototype.createBitmapsFromRawData =
     function(raw_data) {
-  o3d.notImplemented();
+  var bitmap = this.createObject('Bitmap')
+  if (!raw_data.image_) {
+    throw ('Cannot create bitmap from non-image data.');
+    return [];
+  }
+  bitmap.height = raw_data.image_.height;
+  bitmap.width = raw_data.image_.width;
+
+  var canvas = document.createElement('CANVAS');
+
+  canvas.width = bitmap.width;
+  canvas.height = bitmap.height;
+
+  bitmap.canvas_ = canvas;
+  var context = canvas.getContext('2d');
+  // Flip it.
+  context.translate(0, bitmap.height);
+  context.scale(1, -1);
+  context.drawImage(raw_data.image_,
+      0, 0, bitmap.width, bitmap.height);
+
+  // TODO(petersont): I'm not sure how to get the format.
+  bitmap.format = o3d.Texture.ARGB8;
+  bitmap.numMipmaps = 1;
+
+  return [bitmap];
 };
 
 
 /**
  * Create RawData given a data URL.
  * @param {string} data_url The data URL from which to create the RawData.
- * @returns {!o3d.RawData}  The RawData.
+ * @return {!o3d.RawData}  The RawData.
  */
 o3d.Pack.prototype.createRawDataFromDataURL =
     function(data_url) {

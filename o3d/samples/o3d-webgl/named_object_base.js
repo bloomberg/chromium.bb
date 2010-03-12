@@ -34,7 +34,9 @@
  * Base class for all objects that are identifiable by a name.
  * @constructor
  */
-o3d.NamedObjectBase = function() { };
+o3d.NamedObjectBase = function() {
+  o3d.ObjectBase.call(this);
+};
 o3d.inherit('NamedObjectBase', 'ObjectBase');
 
 

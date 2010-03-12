@@ -41,6 +41,7 @@
  * @constructor
  */
 o3d.RenderNode = function(opt_priority, opt_active) {
+  o3d.ParamObject.call(this);
   this.priority = opt_priority;
   this.children = [];
 };
@@ -77,8 +78,16 @@ o3d.RenderNode.prototype.parent = null;
 
 o3d.RenderNode.prototype.__defineSetter__('parent',
     function(p) {
+      if (this.parent_) {
+        this.parent_.removeChild(this);
+      }
       this.parent_ = p;
-      p.addChild(this);
+      if (this.parent_) {
+        if (!this.parent_.addChild) {
+          throw ('Parent of render node must be render node or null.');
+        }
+        this.parent_.addChild(this);
+      }
     }
 );
 
@@ -96,6 +105,14 @@ o3d.RenderNode.prototype.addChild = function(child) {
   this.children.push(child);
 };
 
+
+/**
+ * Removes a child node.
+ * @param {o3d.RenderNode} child The child to add.
+ */
+o3d.RenderNode.prototype.removeChild = function(child) {
+  o3d.removeFromArray(this.children, child);
+};
 
 
 /**
@@ -146,7 +163,7 @@ o3d.RenderNode.prototype.getRenderNodesInTree =
  * will affect them.
  * 
  * @param {string} name Rendernode name to look for.
- * @returns {Array.<!o3d.RenderNode>}  An array containing all nodes among
+ * @return {Array.<!o3d.RenderNode>}  An array containing all nodes among
  *     this node and its decendants that have the given name.
  */
 o3d.RenderNode.prototype.getRenderNodesByNameInTree =
@@ -164,7 +181,7 @@ o3d.RenderNode.prototype.getRenderNodesByNameInTree =
  * will affect them.
  * 
  * @param {string} class_name class name to look for.
- * @returns {Array.<!o3d.RenderNode>}  An array containing all nodes among
+ * @return {Array.<!o3d.RenderNode>}  An array containing all nodes among
  *     this node and its decendants whose type is class_name.
  */
 o3d.RenderNode.prototype.getRenderNodesByClassNameInTree =

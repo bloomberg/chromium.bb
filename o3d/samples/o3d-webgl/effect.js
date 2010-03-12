@@ -89,6 +89,7 @@ o3d.EffectParameterInfo.prototype.sas_class_name = '';
  * @constructor
  */
 o3d.EffectStreamInfo = function(opt_semantic, opt_semantic_index) {
+  o3d.NamedObject.call(this);
   if (!opt_semantic) {
     opt_semantic = o3d.Stream.UNKNOWN_SEMANTIC;
   }
@@ -176,6 +177,13 @@ o3d.Effect.prototype.loadShaderFromString = function(shaderString, type) {
   var shader = this.gl.createShader(type);
   this.gl.shaderSource(shader, shaderString);
   this.gl.compileShader(shader);
+
+  var log = this.gl.getShaderInfoLog(shader);
+  if (log != '') {
+    this.gl.client.error_callback(
+        'Shader compile failed with error log:\n' + log);
+  }
+
   this.gl.attachShader(this.program_, shader);
 };
 
@@ -245,24 +253,24 @@ o3d.Effect.prototype.createUniformParameters =
                   'worldView': true,
                   'worldProjection': true,
                   'worldViewProjection': true,
-                  'worldI': true,
-                  'viewI': true,
-                  'projectionI': true,
-                  'worldViewI': true,
-                  'worldProjectionI': true,
-                  'worldViewProjectionI': true,
-                  'worldT': true,
-                  'viewT': true,
-                  'projectionT': true,
-                  'worldViewT': true,
-                  'worldProjectionT': true,
-                  'worldViewProjectionT': true,
-                  'worldIT': true,
-                  'viewIT': true,
-                  'projectionIT': true,
-                  'worldViewIT': true,
-                  'worldProjectionIT': true,
-                  'worldViewProjectionIT': true};
+                  'worldInverse': true,
+                  'viewInverse': true,
+                  'projectionInverse': true,
+                  'worldViewInverse': true,
+                  'worldProjectionInverse': true,
+                  'worldViewProjectionInverse': true,
+                  'worldTranspose': true,
+                  'viewTranspose': true,
+                  'projectionTranspose': true,
+                  'worldViewTranspose': true,
+                  'worldProjectionTranspose': true,
+                  'worldViewProjectionTranspose': true,
+                  'worldInverseTranspose': true,
+                  'viewInverseTranspose': true,
+                  'projectionInverseTranspose': true,
+                  'worldViewInverseTranspose': true,
+                  'worldProjectionInverseTranspose': true,
+                  'worldViewProjectionInverseTranspose': true};
 
   for (name in this.uniforms) {
     var info = this.uniforms[name].info;
@@ -330,7 +338,7 @@ o3d.Effect.prototype.createSASParameters =
 
 /**
  * Gets info about the parameters this effect needs.
- * @returns {!Array.<!o3d.EffectParameterInfo>} an array of
+ * @return {!Array.<!o3d.EffectParameterInfo>} an array of
  *     EffectParameterInfo objects.
  */
 o3d.Effect.prototype.getParameterInfo = function() {
@@ -341,7 +349,7 @@ o3d.Effect.prototype.getParameterInfo = function() {
 
 /**
  * Gets info about the streams this effect needs.
- * @returns {!Array.<!o3d.EffectStreamInfo>} an array of
+ * @return {!Array.<!o3d.EffectStreamInfo>} an array of
  *     EffectStreamInfo objects.
  */
 o3d.Effect.prototype.getStreamInfo = function() {
@@ -388,6 +396,12 @@ o3d.Effect.prototype.searchForParams = function(object_list) {
         param.applyToLocation(this.gl, uniformInfo.location);
         filled_map[name] = true;
       }
+    }
+  }
+
+  for (name in this.uniforms) {
+    if (!filled_map[name]) {
+      throw ('Uniform param not filled: '+name);
     }
   }
 };

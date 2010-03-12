@@ -82,30 +82,69 @@ o3djs.webgl.makeClients = function(callback,
 
 
 /**
+ * Adds a wrapper object to single gl function context that checks for errors
+ * before the call.
+ * @param {WebGLContext} context
+ * @param {string} fname The name of the function.
+ * @return {}
+ */
+o3djs.webgl.createGLErrorWrapper = function(context, fname) {
+    return function() {
+        var rv = context[fname].apply(context, arguments);
+        var err = context.getError();
+        if (err != 0)
+            throw "GL error " + err + " in " + fname;
+        return rv;
+    };
+};
+
+/**
+ * Adds a wrapper object to a webgl context that checks for errors
+ * before each function call.
+ */
+o3djs.webgl.addDebuggingWrapper = function(context) {
+    // Thanks to Ilmari Heikkinen for the idea on how to implement this
+    // so elegantly.
+    var wrap = {};
+    for (var i in context) {
+      if (typeof context[i] == 'function') {
+          wrap[i] = createGLErrorWrapper(context, i);
+      } else {
+          wrap[i] = context[i];
+      }
+    }
+    wrap.getError = function() {
+        return context.getError();
+    };
+    return wrap;
+};
+
+
+/**
  * Creates a canvas under the given parent element and an o3d.Client
  * under that.
+ * 
+ * @ param {!Element} element The element under which to insert the client.
+ * @ param {string} opt_features Features to turn on.
+ * @ param {boolean} opt_debug Whether gl debugging features should be
+ *     enabled.
  */
-o3djs.webgl.createClient = function(element, opt_features) {
+o3djs.webgl.createClient = function(element, opt_features, opt_debug) {
   opt_features = opt_features || '';
+  opt_debug = opt_debug || false;
 
-  // TODO(petersont): Not sure what to do with the features object.
   var canvas;
   canvas = document.createElement('canvas');
   canvas.setAttribute('width', element.getAttribute('width'));
   canvas.setAttribute('height', element.getAttribute('height'));
+
   canvas.client = new o3d.Client;
+  canvas.client.initWithCanvas(canvas);
   canvas.o3d = o3d;
 
-  var gl;
-  try {gl = canvas.getContext("experimental-webgl") } catch(e) { }
-  if (!gl)
-      try {gl = canvas.getContext("moz-webgl") } catch(e) { }
-  if (!gl) {
-      alert("No WebGL context found");
-      return null;
+  if (opt_debug) {
+    client.gl = o3djs.webgl.addDebuggingWrapper(client.gl);
   }
-
-  canvas.client.gl = gl;
 
   element.appendChild(canvas);
   return canvas;

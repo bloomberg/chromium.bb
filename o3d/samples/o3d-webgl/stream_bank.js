@@ -35,6 +35,7 @@
  * @constructor
  */
 o3d.StreamBank = function() {
+  o3d.NamedObject.call(this);
   this.vertexStreams = [];
 };
 o3d.inherit('StreamBank', 'NamedObject');
@@ -53,7 +54,7 @@ o3d.StreamBank.prototype.vertexStreams = [];
  * @param {number} semantic_index Which index of a particular semantic to use.
  * @param {o3d.Field} field The field containing information for this stream.
  * @param {number} start_index The first element to use.
- * @returns {boolean}  True if successful.
+ * @return {boolean}  True if successful.
  */
 o3d.StreamBank.prototype.setVertexStream =
     function(semantic, semantic_index, field, start_index) {
@@ -71,7 +72,7 @@ o3d.StreamBank.prototype.setVertexStream =
  * @param {o3d.Stream.Semantic} semantic The particular use of this stream.
  * @param {o3d.Stream.Semantic} semantic_index Which index of a particular
  *     semantic to use.
- * @returns {o3d.Stream}  The found stream or null if it does not exist.
+ * @return {o3d.Stream}  The found stream or null if it does not exist.
  */
 o3d.StreamBank.prototype.getVertexStream =
     function(semantic, semantic_index) {
@@ -87,7 +88,7 @@ o3d.StreamBank.prototype.getVertexStream =
  * @param {o3d.Stream.Semantic} semantic The particular use of this stream.
  * @param {o3d.Stream.Semantic} semantic_index Which index of a particular
  *     semantic to use.
- * @returns {boolean}  true if the specified stream existed.
+ * @return {boolean}  true if the specified stream existed.
  */
 o3d.StreamBank.prototype.removeVertexStream =
     function(semantic, semantic_index) {

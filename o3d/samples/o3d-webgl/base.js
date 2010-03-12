@@ -149,7 +149,21 @@ o3d.inherit = function(subClassName, superClassName) {
   subClass.prototype = new superClass;
   subClass.prototype.superClassName = superClassName;
   subClass.prototype.superClass = superClass;
+  subClass.prototype.className = subClassName;
 };
+
+
+/**
+ * Utility function to remove an object from an array.
+ * @param {!Array} array The array.
+ * @param {Object} object The thing to be removed.
+ */
+o3d.removeFromArray = function(array, object) {
+  var i = array.indexOf(object);
+  if (i >= 0) {
+    array.splice(i, 1);
+  }
+}
 
 
 /**
@@ -158,10 +172,8 @@ o3d.inherit = function(subClassName, superClassName) {
  * nothing.
  */
 o3d.notImplemented = function() {
-  var callerName = arguments.caller.toString();
-  callerName = callerName.substr('function '.length);
-  callerName = ownName.substr(0, ownName.indexOf('('));
-  throw 'Not implemented: ' + callerName;
+  debugger;
+  throw 'Not implemented.';
 };
 
 
@@ -179,6 +191,8 @@ o3d.include('param_object');
 o3d.include('param');
 o3d.include('event');
 o3d.include('raw_data');
+o3d.include('texture');
+o3d.include('bitmap');
 o3d.include('file_request');
 o3d.include('client');
 o3d.include('render_node');
@@ -192,7 +206,6 @@ o3d.include('render_surface_set');
 o3d.include('render_surface');
 o3d.include('state');
 o3d.include('draw_context');
-o3d.include('texture');
 o3d.include('sampler');
 o3d.include('transform');
 o3d.include('pack');

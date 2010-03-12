@@ -79,13 +79,39 @@ o3d.Param.prototype.outputConnections = [];
 o3d.Param.prototype.owner_ = null;
 
 /**
+ * @type {Object} The value of the parameter.
+ */
+o3d.Param.prototype.value_ = null;
+
+o3d.Param.prototype.__defineSetter__('value',
+    function(v) {
+      if (this.inputConnection) {
+        throw ('Tried to set bound parameter.');
+      } else {
+        this.value_ = v;
+      }
+    }
+);
+
+o3d.Param.prototype.__defineGetter__('value',
+    function() {
+      if (this.inputConnection) {
+        return this.inputConnection.value;
+      } else {
+        return this.value_;
+      }
+    }
+);
+
+
+/**
  * Directly binds two Param elements such that this parameter gets its value
  * from the source parameter.  The source must be compatible with this
  * parameter.
  * 
  * @param {o3d.Param} source_param The parameter that the value originates
  *     from. Passing in null will unbind any parameter currently bound.
- * @returns {boolean}  True if the bind succeeded.
+ * @return {boolean}  True if the bind succeeded.
  */
 o3d.Param.prototype.bind =
     function(source_param) {
@@ -128,20 +154,6 @@ o3d.Param.prototype.unbindOutputs = function() {
  * as the destination in a ParamBind.
  */
 o3d.Param.prototype.read_only_ = false;
-
-
-
-/**
- * The input connection for this param.
- */
-o3d.Param.prototype.input_connection = null;
-
-
-
-/**
- * The output connections for this param.
- */
-o3d.Param.prototype.output_connections = [];
 
 
 /**
@@ -703,7 +715,7 @@ o3d.inherit('WorldViewProjectionInverseTransposeParamMatrix4',
  * Called to specify the value of a uniform variable.
  */
 o3d.ParamFloat.prototype.applyToLocation = function(gl, location) {
-  gl.uniform4fv(location, this.value);
+  gl.uniform1f(location, this.value);
 };
 
 /**
@@ -736,6 +748,18 @@ o3d.ParamMatrix4.prototype.applyToLocation = function(gl, location) {
                       o3d.Transform.flattenMatrix4(this.value));
 };
 
+/**
+ * Called to specify the value of a uniform variable.
+ */
+o3d.ParamSampler.prototype.applyToLocation = function(gl, location) {
+  var i = 0;
+  gl.activeTexture(gl.TEXTURE0 + i);
+  if (!this.value || !this.value.texture || !this.value.texture.texture_) {
+    throw ('Attempt to use texture parameter before texture value set.');
+  }
+  gl.bindTexture(gl.TEXTURE_2D, this.value.texture.texture_);
+  gl.uniform1i(location, i);
+};
 
 
 /**
@@ -759,43 +783,43 @@ o3d.Param.SAS.createParam('viewProjection',
 o3d.Param.SAS.createParam('worldViewProjection',
     'WorldViewProjectionParamMatrix4');
 
-o3d.Param.SAS.createParam('worldI',
+o3d.Param.SAS.createParam('worldInverse',
     'WorldInverseParamMatrix4');
-o3d.Param.SAS.createParam('viewI',
+o3d.Param.SAS.createParam('viewInverse',
     'ViewInverseParamMatrix4');
-o3d.Param.SAS.createParam('projectionI',
+o3d.Param.SAS.createParam('projectionInverse',
     'ProjectionInverseParamMatrix4');
-o3d.Param.SAS.createParam('worldViewI',
+o3d.Param.SAS.createParam('worldViewInverse',
     'WorldViewInverseParamMatrix4');
-o3d.Param.SAS.createParam('viewProjectionI',
+o3d.Param.SAS.createParam('viewProjectionInverse',
     'ViewProjectionInverseParamMatrix4');
-o3d.Param.SAS.createParam('worldViewProjectionI',
+o3d.Param.SAS.createParam('worldViewProjectionInverse',
     'WorldViewProjectionInverseParamMatrix4');
 
-o3d.Param.SAS.createParam('worldT',
+o3d.Param.SAS.createParam('worldTranspose',
     'WorldInverseParamMatrix4');
-o3d.Param.SAS.createParam('viewT',
+o3d.Param.SAS.createParam('viewTranspose',
     'ViewTransposeParamMatrix4');
-o3d.Param.SAS.createParam('projectionT',
+o3d.Param.SAS.createParam('projectionTranspose',
     'ProjectionTransposeParamMatrix4');
-o3d.Param.SAS.createParam('worldViewT',
+o3d.Param.SAS.createParam('worldViewTranspose',
     'WorldViewTransposeParamMatrix4');
-o3d.Param.SAS.createParam('viewProjectionT',
+o3d.Param.SAS.createParam('viewProjectionTranspose',
     'ViewProjectionTransposeParamMatrix4');
-o3d.Param.SAS.createParam('worldViewProjectionT',
+o3d.Param.SAS.createParam('worldViewProjectionTranspose',
     'WorldViewProjectionTransposeParamMatrix4');
 
-o3d.Param.SAS.createParam('worldIT',
+o3d.Param.SAS.createParam('worldInverseTranspose',
     'WorldInverseTransposeParamMatrix4');
-o3d.Param.SAS.createParam('viewIT',
+o3d.Param.SAS.createParam('viewInverseTranspose',
     'ViewInverseTransposeParamMatrix4');
-o3d.Param.SAS.createParam('projectionIT',
+o3d.Param.SAS.createParam('projectionInverseTranspose',
     'ProjectionInverseTransposeParamMatrix4');
-o3d.Param.SAS.createParam('worldViewIT',
+o3d.Param.SAS.createParam('worldViewInverseTranspose',
     'WorldViewInverseTransposeParamMatrix4');
-o3d.Param.SAS.createParam('viewProjectionIT',
+o3d.Param.SAS.createParam('viewProjectionInverseTranspose',
     'ViewProjectionInverseTransposeParamMatrix4');
-o3d.Param.SAS.createParam('worldViewProjectionIT',
+o3d.Param.SAS.createParam('worldViewProjectionInverseTranspose',
     'WorldViewProjectionInverseTransposeParamMatrix4');
 
 /**

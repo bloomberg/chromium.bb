@@ -36,6 +36,7 @@
  * @constructor
  */
 o3d.RayIntersectionInfo = function() {
+  o3d.NamedObject.call(this);
   o3d.RayIntersectionInfo.prototype.position = [0, 0, 0];
 };
 o3d.inherit('RayIntersectionInfo', 'NamedObject');

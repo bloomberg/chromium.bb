@@ -42,8 +42,9 @@
  * @constructor
  */
 o3d.TreeTraversal = function(opt_transform) {
+  o3d.RenderNode.call(this);
   this.transform = opt_transform;
-  this.drawLists = [];
+  this.drawLists_ = [];
   this.drawListsToReset_ = [];
 };
 o3d.inherit('TreeTraversal', 'RenderNode');
@@ -90,7 +91,7 @@ o3d.TreeTraversal.prototype.registerDrawList =
 /**
  * Unregisters a DrawList with this TreeTraversal.
  * @param {o3d.DrawList} draw_list DrawList to unregister.
- * @returns {boolean}  true if unregistered. false if this draw_list was
+ * @return {boolean}  true if unregistered. false if this draw_list was
  *     not registered.
  */
 o3d.TreeTraversal.prototype.unregisterDrawList =
