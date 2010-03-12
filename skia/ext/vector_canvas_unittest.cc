@@ -2,16 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "config.h"
 #include "build/build_config.h"
-
-#include "webkit/tools/test_shell/image_decoder_unittest.h"
 
 #if !defined(OS_WIN)
 #include <unistd.h>
 #endif
-
-#include "PNGImageDecoder.h"
 
 #include "app/gfx/codec/png_codec.h"
 #include "base/command_line.h"
@@ -86,14 +81,15 @@ class Image {
  public:
   // Creates the image from the given filename on disk.
   explicit Image(const FilePath& filename) : ignore_alpha_(true) {
-    Vector<char> compressed;
-    ReadFileToVector(filename, &compressed);
+    std::string compressed;
+    file_util::ReadFileToString(filename, &compressed);
     EXPECT_TRUE(compressed.size());
-    WebCore::PNGImageDecoder decoder;
-    decoder.setData(WebCore::SharedBuffer::adoptVector(compressed).get(), true);
-    scoped_ptr<NativeImageSkia> image_data(
-        decoder.frameBufferAtIndex(0)->asNewNativeImage());
-    SetSkBitmap(*image_data);
+
+    SkBitmap bitmap;
+    EXPECT_TRUE(gfx::PNGCodec::Decode(
+        reinterpret_cast<const unsigned char*>(compressed.data()),
+        compressed.size(), &bitmap));
+    SetSkBitmap(bitmap);
   }
 
   // Loads the image from a canvas.
@@ -333,14 +329,14 @@ void Premultiply(SkBitmap bitmap) {
 void LoadPngFileToSkBitmap(const FilePath& filename,
                            SkBitmap* bitmap,
                            bool is_opaque) {
-  Vector<char> compressed;
-  ReadFileToVector(filename, &compressed);
-  EXPECT_TRUE(compressed.size());
-  WebCore::PNGImageDecoder decoder;
-  decoder.setData(WebCore::SharedBuffer::adoptVector(compressed).get(), true);
-  scoped_ptr<NativeImageSkia> image_data(
-      decoder.frameBufferAtIndex(0)->asNewNativeImage());
-  *bitmap = *image_data;
+  std::string compressed;
+  file_util::ReadFileToString(filename, &compressed);
+  ASSERT_TRUE(compressed.size());
+
+  ASSERT_TRUE(gfx::PNGCodec::Decode(
+      reinterpret_cast<const unsigned char*>(compressed.data()),
+      compressed.size(), bitmap));
+
   EXPECT_EQ(is_opaque, bitmap->isOpaque());
   Premultiply(*bitmap);
 }
