@@ -220,6 +220,19 @@ ACTION(DoCloseWindow) {
   ::PostMessage(arg0, WM_SYSCOMMAND, SC_CLOSE, 0);
 }
 
+ACTION_P2(TypeUrlInAddressBar, loop, url) {
+  loop->PostDelayedTask(FROM_HERE, NewRunnableFunction(
+      simulate_input::SendCharA, 'd', simulate_input::ALT),
+      1500);
+
+  loop->PostDelayedTask(FROM_HERE, NewRunnableFunction(
+      simulate_input::SendStringW, url), 2000);
+
+  loop->PostDelayedTask(FROM_HERE, NewRunnableFunction(
+      simulate_input::SendCharA, VK_RETURN, simulate_input::NONE),
+      2000);
+}
+
 TEST(ChromeFrameTest, FullTabModeIE_DisallowedUrls) {
   CloseIeAtEndOfScope last_resort_close_ie;
   chrome_frame_test::TimedMsgLoop loop;
@@ -735,7 +748,7 @@ const wchar_t kBeforeUnloadMain[] =
     L"http://localhost:1337/files/fulltab_before_unload_event_main.html";
 
 // http://code.google.com/p/chromium/issues/detail?id=37231
-TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_UnloadEventTest) {
+TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_UnloadEventTest) {
   CloseIeAtEndOfScope last_resort_close_ie;
   chrome_frame_test::TimedMsgLoop loop;
   ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
@@ -1126,5 +1139,52 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_MenuSaveAs) {
 
   ASSERT_NE(INVALID_FILE_ATTRIBUTES, GetFileAttributes(kSaveFileName));
   ASSERT_TRUE(DeleteFile(kSaveFileName));
+}
+
+const wchar_t kHostBrowserUrl[] =
+    L"http://localhost:1337/files/host_browser.html";
+
+TEST_F(ChromeFrameTestWithWebServer,
+       FullTabMode_SwitchFromIEToChromeFrame) {
+  CloseIeAtEndOfScope last_resort_close_ie;
+  chrome_frame_test::TimedMsgLoop loop;
+  ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
+
+  EXPECT_CALL(mock, OnFileDownload(VARIANT_TRUE, _))
+              .Times(testing::AnyNumber());
+
+  ::testing::InSequence sequence;   // Everything in sequence
+
+  // This test performs the following steps.
+  // 1. Launches IE and navigates to
+  //    http://localhost:1337/files/back_to_ie.html, which should render in IE.
+  // 2. It then navigates to
+  //    http://localhost:1337/files/sub_frame1.html which should render in
+  //    ChromeFrame
+  EXPECT_CALL(mock, OnBeforeNavigate2(_,
+              testing::Field(&VARIANT::bstrVal,
+              testing::StrCaseEq(kHostBrowserUrl)), _, _, _, _, _));
+
+  // When we receive a navigate complete notification for the initial URL
+  // initiate a navigation to a url which should be rendered in ChromeFrame.
+  EXPECT_CALL(mock, OnNavigateComplete2(_,
+              testing::Field(&VARIANT::bstrVal,
+              testing::StrCaseEq(kHostBrowserUrl))))
+      .Times(1)
+      .WillOnce(TypeUrlInAddressBar(&loop, kSubFrameUrl1));
+
+  mock.ExpectNavigationAndSwitch(kSubFrameUrl1);
+  EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kSubFrameUrl1)))
+      .WillOnce(CloseBrowserMock(&mock));
+
+  EXPECT_CALL(mock, OnQuit()).WillOnce(QUIT_LOOP(loop));
+
+  HRESULT hr = mock.LaunchIEAndNavigate(kHostBrowserUrl);
+  ASSERT_HRESULT_SUCCEEDED(hr);
+  if (hr == S_FALSE)
+    return;
+
+  ASSERT_TRUE(mock.web_browser2() != NULL);
+  loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds * 2);
 }
 

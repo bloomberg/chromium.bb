@@ -47,7 +47,24 @@ _ATL_FUNC_INFO Bho::kBeforeNavigate2Info = {
   }
 };
 
-Bho::Bho() {
+_ATL_FUNC_INFO Bho::kNavigateComplete2Info = {
+  CC_STDCALL, VT_EMPTY, 2, {
+    VT_DISPATCH,
+    VT_VARIANT | VT_BYREF
+  }
+};
+
+_ATL_FUNC_INFO Bho::kNavigateErrorInfo = {
+  CC_STDCALL, VT_EMPTY, 5, {
+    VT_DISPATCH,
+    VT_VARIANT | VT_BYREF,
+    VT_VARIANT | VT_BYREF,
+    VT_VARIANT | VT_BYREF,
+    VT_BOOL | VT_BYREF,
+  }
+};
+
+Bho::Bho() : pending_navigation_count_(0) {
 }
 
 HRESULT Bho::FinalConstruct() {
@@ -115,8 +132,25 @@ STDMETHODIMP Bho::BeforeNavigate2(IDispatch* dispatch, VARIANT* url,
     referrer_.clear();
   }
   url_ = url->bstrVal;
+  pending_navigation_count_++;
   ProcessOptInUrls(web_browser2, url->bstrVal);
   return S_OK;
+}
+
+STDMETHODIMP_(void) Bho::NavigateComplete2(IDispatch* dispatch,
+                                            VARIANT* url) {
+  DLOG(INFO) << "In NavigateComplete2 for url:" << url->bstrVal;
+  pending_navigation_count_--;
+  DCHECK(pending_navigation_count_ >= 0);
+}
+
+STDMETHODIMP_(void) Bho::OnNavigateError(IDispatch* dispatch, VARIANT* url,
+                                         VARIANT* frame_name,
+                                         VARIANT* status_code,
+                                         VARIANT* cancel) {
+  DLOG(INFO) << "In NavigateError for url:" << url->bstrVal;
+  pending_navigation_count_--;
+  DCHECK(pending_navigation_count_ >= 0);
 }
 
 HRESULT Bho::NavigateToCurrentUrlInCF(IBrowserService* browser) {
@@ -192,7 +226,13 @@ void ClearDocumentContents(IUnknown* browser) {
 
 // Returns true if the currently loaded document in the browser has
 // any embedded items such as a frame or an iframe.
-bool DocumentHasEmbeddedItems(IUnknown* browser) {
+bool DocumentHasEmbeddedItems(IUnknown* browser,
+                              int pending_navigation_count) {
+  // For a document with embedded frames the pending navigation count will be
+  // greater than 1.
+  if (pending_navigation_count <= 1)
+    return false;
+
   bool has_embedded_items = false;
 
   ScopedComPtr<IWebBrowser2> web_browser2;
@@ -238,12 +278,12 @@ HRESULT Bho::OnHttpEquiv(IBrowserService_OnHttpEquiv_Fn original_httpequiv,
       // notification is coming from those and not the top level document.
       // The embedded items should only be created once the top level
       // doc has been created.
-      if (!DocumentHasEmbeddedItems(browser)) {
-        Bho* bho = Bho::GetCurrentThreadBhoInstance();
-        DCHECK(bho);
-        DLOG(INFO) << "Found tag in page. Marking browser." << bho->url() <<
-            StringPrintf(" tid=0x%08X", ::GetCurrentThreadId());
-        if (bho) {
+      Bho* bho = Bho::GetCurrentThreadBhoInstance();
+      DCHECK(bho);
+      if (bho) {
+        if (!DocumentHasEmbeddedItems(browser, bho->pending_navigation_count())) {
+          DLOG(INFO) << "Found tag in page. Marking browser." << bho->url() <<
+              StringPrintf(" tid=0x%08X", ::GetCurrentThreadId());
           // TODO(tommi): See if we can't figure out a cleaner way to avoid
           // this.  For some documents we can hit a problem here.  When we
           // attempt to navigate the document again in CF, mshtml can "complete"
@@ -258,7 +298,6 @@ HRESULT Bho::OnHttpEquiv(IBrowserService_OnHttpEquiv_Fn original_httpequiv,
       }
     }
   }
-
   return original_httpequiv(browser, shell_view, done, in_arg, out_arg);
 }
 
