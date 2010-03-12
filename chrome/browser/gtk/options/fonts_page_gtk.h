@@ -11,7 +11,6 @@
 #include <gtk/gtk.h>
 #include <vector>
 
-#include "app/gtk_signal.h"
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/pref_member.h"
 #include "chrome/browser/options_page_base.h"
@@ -37,12 +36,17 @@ class FontsPageGtk : public OptionsPageBase {
   // GtkFontSelector returns the value in points not pixels.
   void SetFontsFromButton(StringPrefMember* name_pref,
                           IntegerPrefMember* size_pref,
-                          GtkWidget* font_button);
+                          GtkFontButton* font_button);
 
-  CHROMEGTK_CALLBACK_0(FontsPageGtk, void, OnSerifFontSet);
-  CHROMEGTK_CALLBACK_0(FontsPageGtk, void, OnSansFontSet);
-  CHROMEGTK_CALLBACK_0(FontsPageGtk, void, OnFixedFontSet);
-  CHROMEGTK_CALLBACK_0(FontsPageGtk, void, OnDefaultEncodingChanged);
+  // Callbacks
+  static void OnSerifFontSet(GtkFontButton* font_button,
+                             FontsPageGtk* fonts_page);
+  static void OnSansFontSet(GtkFontButton* font_button,
+                            FontsPageGtk* fonts_page);
+  static void OnFixedFontSet(GtkFontButton* font_button,
+                             FontsPageGtk* fonts_page);
+  static void OnDefaultEncodingChanged(GtkComboBox* combo_box,
+                                       FontsPageGtk* fonts_page);
 
   // The font chooser widgets
   GtkWidget* serif_font_button_;

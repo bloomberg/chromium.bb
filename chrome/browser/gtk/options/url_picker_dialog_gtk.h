@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "app/gtk_signal.h"
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "chrome/browser/gtk/gtk_tree.h"
@@ -47,15 +46,26 @@ class UrlPickerDialogGtk : public gtk_tree::TableAdapter::Delegate {
   static gint CompareURL(GtkTreeModel* model, GtkTreeIter* a, GtkTreeIter* b,
                          gpointer window);
 
-  CHROMEGTK_CALLBACK_0(UrlPickerDialogGtk, void, OnUrlEntryChanged);
-  CHROMEGTK_CALLBACK_2(UrlPickerDialogGtk, void, OnHistoryRowActivated,
-                       GtkTreePath*, GtkTreeViewColumn*);
-  CHROMEGTK_CALLBACK_1(UrlPickerDialogGtk, void, OnResponse, int);
-  CHROMEGTK_CALLBACK_0(UrlPickerDialogGtk, void, OnWindowDestroy);
+  // Callback for URL entry changes.
+  static void OnUrlEntryChanged(GtkEditable* editable,
+                                UrlPickerDialogGtk* window);
 
   // Callback for user selecting rows in recent history list.
   static void OnHistorySelectionChanged(GtkTreeSelection* selection,
                                         UrlPickerDialogGtk* window);
+
+  // Callback for user activating a row in recent history list.
+  static void OnHistoryRowActivated(GtkTreeView* tree_view,
+                                    GtkTreePath* path,
+                                    GtkTreeViewColumn* column,
+                                    UrlPickerDialogGtk* window);
+
+  // Callback for dialog buttons.
+  static void OnResponse(GtkDialog* dialog, int response_id,
+                         UrlPickerDialogGtk* window);
+
+  // Callback for window destruction.
+  static void OnWindowDestroy(GtkWidget* widget, UrlPickerDialogGtk* window);
 
   // The dialog window.
   GtkWidget* dialog_;

@@ -40,12 +40,12 @@ PasswordsExceptionsPageGtk::PasswordsExceptionsPageGtk(Profile* profile)
       l10n_util::GetStringUTF8(IDS_EXCEPTIONS_PAGE_VIEW_REMOVE_BUTTON).c_str());
   gtk_widget_set_sensitive(remove_button_, FALSE);
   g_signal_connect(remove_button_, "clicked",
-                   G_CALLBACK(OnRemoveButtonClickedThunk), this);
+                   G_CALLBACK(OnRemoveButtonClicked), this);
   remove_all_button_ = gtk_button_new_with_label(l10n_util::GetStringUTF8(
           IDS_EXCEPTIONS_PAGE_VIEW_REMOVE_ALL_BUTTON).c_str());
   gtk_widget_set_sensitive(remove_all_button_, FALSE);
   g_signal_connect(remove_all_button_, "clicked",
-                   G_CALLBACK(OnRemoveAllButtonClickedThunk), this);
+                   G_CALLBACK(OnRemoveAllButtonClicked), this);
 
   GtkWidget* buttons = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
   gtk_box_pack_start(GTK_BOX(buttons), remove_button_, FALSE, FALSE, 0);
@@ -125,41 +125,48 @@ void PasswordsExceptionsPageGtk::SetExceptionList(
   gtk_widget_set_sensitive(remove_all_button_, result.size() > 0);
 }
 
-void PasswordsExceptionsPageGtk::OnRemoveButtonClicked(GtkWidget* widget) {
+// static
+void PasswordsExceptionsPageGtk::OnRemoveButtonClicked(
+    GtkButton* widget,
+    PasswordsExceptionsPageGtk* page) {
   GtkTreeIter iter;
-  if (!gtk_tree_selection_get_selected(exception_selection_,
+  if (!gtk_tree_selection_get_selected(page->exception_selection_,
                                        NULL, &iter)) {
     NOTREACHED();
     return;
   }
 
   GtkTreePath* path = gtk_tree_model_get_path(
-      GTK_TREE_MODEL(exception_list_sort_), &iter);
+      GTK_TREE_MODEL(page->exception_list_sort_), &iter);
   gint index = gtk_tree::GetTreeSortChildRowNumForPath(
-      exception_list_sort_, path);
+      page->exception_list_sort_, path);
   gtk_tree_path_free(path);
 
   GtkTreeIter child_iter;
   gtk_tree_model_sort_convert_iter_to_child_iter(
-      GTK_TREE_MODEL_SORT(exception_list_sort_), &child_iter, &iter);
+      GTK_TREE_MODEL_SORT(page->exception_list_sort_), &child_iter, &iter);
 
   // Remove from GTK list, DB, and vector.
-  gtk_list_store_remove(exception_list_store_, &child_iter);
-  GetPasswordStore()->RemoveLogin(exception_list_[index]);
-  exception_list_.erase(exception_list_.begin() + index);
+  gtk_list_store_remove(page->exception_list_store_, &child_iter);
+  page->GetPasswordStore()->RemoveLogin(page->exception_list_[index]);
+  page->exception_list_.erase(page->exception_list_.begin() + index);
 
-  gtk_widget_set_sensitive(remove_all_button_, exception_list_.size() > 0);
+  gtk_widget_set_sensitive(page->remove_all_button_,
+                           page->exception_list_.size() > 0);
 }
 
-void PasswordsExceptionsPageGtk::OnRemoveAllButtonClicked(GtkWidget* widget) {
+// static
+void PasswordsExceptionsPageGtk::OnRemoveAllButtonClicked(
+    GtkButton* widget,
+    PasswordsExceptionsPageGtk* page) {
   // Remove from GTK list, DB, and vector.
-  PasswordStore* store = GetPasswordStore();
-  gtk_list_store_clear(exception_list_store_);
-  for (size_t i = 0; i < exception_list_.size(); ++i) {
-    store->RemoveLogin(exception_list_[i]);
+  PasswordStore* store = page->GetPasswordStore();
+  gtk_list_store_clear(page->exception_list_store_);
+  for (size_t i = 0; i < page->exception_list_.size(); ++i) {
+    store->RemoveLogin(page->exception_list_[i]);
   }
-  exception_list_.clear();
-  gtk_widget_set_sensitive(remove_all_button_, FALSE);
+  page->exception_list_.clear();
+  gtk_widget_set_sensitive(page->remove_all_button_, FALSE);
 }
 
 // static

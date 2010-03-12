@@ -196,7 +196,7 @@ void LanguagesPageGtk::Init() {
   add_button_ = gtk_button_new_with_label(l10n_util::GetStringUTF8(
       IDS_FONT_LANGUAGE_SETTING_LANGUAGES_SELECTOR_ADD_BUTTON_LABEL).c_str());
   g_signal_connect(add_button_, "clicked",
-                   G_CALLBACK(OnAddButtonClickedThunk), this);
+                   G_CALLBACK(OnAddButtonClicked), this);
   gtk_box_pack_start(GTK_BOX(languages_buttons_vbox), add_button_,
                      FALSE, FALSE, 0);
 
@@ -204,7 +204,7 @@ void LanguagesPageGtk::Init() {
       IDS_FONT_LANGUAGE_SETTING_LANGUAGES_SELECTOR_REMOVE_BUTTON_LABEL);
   remove_button_ = gtk_button_new_with_label(remove_button_text.c_str());
   g_signal_connect(remove_button_, "clicked",
-                   G_CALLBACK(OnRemoveButtonClickedThunk), this);
+                   G_CALLBACK(OnRemoveButtonClicked), this);
   gtk_box_pack_start(GTK_BOX(languages_buttons_vbox), remove_button_,
                      FALSE, FALSE, 0);
 
@@ -212,7 +212,7 @@ void LanguagesPageGtk::Init() {
       IDS_FONT_LANGUAGE_SETTING_LANGUAGES_SELECTOR_MOVEUP_BUTTON_LABEL);
   move_up_button_ = gtk_button_new_with_label(move_up_button_text.c_str());
   g_signal_connect(move_up_button_, "clicked",
-                   G_CALLBACK(OnMoveUpButtonClickedThunk), this);
+                   G_CALLBACK(OnMoveUpButtonClicked), this);
   gtk_box_pack_start(GTK_BOX(languages_buttons_vbox), move_up_button_,
                      FALSE, FALSE, 0);
 
@@ -220,7 +220,7 @@ void LanguagesPageGtk::Init() {
       IDS_FONT_LANGUAGE_SETTING_LANGUAGES_SELECTOR_MOVEDOWN_BUTTON_LABEL);
   move_down_button_ = gtk_button_new_with_label(move_down_button_text.c_str());
   g_signal_connect(move_down_button_, "clicked",
-                   G_CALLBACK(OnMoveDownButtonClickedThunk), this);
+                   G_CALLBACK(OnMoveDownButtonClicked), this);
   gtk_box_pack_start(GTK_BOX(languages_buttons_vbox), move_down_button_,
                      FALSE, FALSE, 0);
 
@@ -232,7 +232,7 @@ void LanguagesPageGtk::Init() {
   enable_spellchecking_checkbox_ = gtk_check_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_OPTIONS_ENABLE_SPELLCHECK).c_str());
   g_signal_connect(enable_spellchecking_checkbox_, "toggled",
-                   G_CALLBACK(OnEnableSpellCheckingToggledThunk), this);
+                   G_CALLBACK(OnEnableSpellCheckingToggled), this);
   gtk_box_pack_start(GTK_BOX(spellchecker_vbox), enable_spellchecking_checkbox_,
                      FALSE, FALSE, 0);
 
@@ -242,7 +242,7 @@ void LanguagesPageGtk::Init() {
         l10n_util::GetStringUTF8(
             IDS_OPTIONS_ENABLE_AUTO_SPELL_CORRECTION).c_str());
     g_signal_connect(enable_autospellcorrect_checkbox_, "toggled",
-                     G_CALLBACK(OnEnableAutoSpellCheckingToggledThunk), this);
+                     G_CALLBACK(OnEnableAutoSpellCheckingToggled), this);
     gtk_box_pack_start(GTK_BOX(spellchecker_vbox),
                        enable_autospellcorrect_checkbox_, FALSE, FALSE, 0);
   }
@@ -367,60 +367,82 @@ void LanguagesPageGtk::OnSelectionChanged(GtkTreeSelection *selection,
   languages_page->EnableControls();
 }
 
-void LanguagesPageGtk::OnAddButtonClicked(GtkWidget* button) {
-  new AddLanguageDialog(profile(), this);
+// static
+void LanguagesPageGtk::OnAddButtonClicked(GtkButton* button,
+                                          LanguagesPageGtk* languages_page) {
+  new AddLanguageDialog(languages_page->profile(), languages_page);
 }
 
-void LanguagesPageGtk::OnRemoveButtonClicked(GtkWidget* button) {
+// static
+void LanguagesPageGtk::OnRemoveButtonClicked(GtkButton* button,
+                                             LanguagesPageGtk* languages_page) {
   std::set<int> selected_rows;
-  gtk_tree::GetSelectedIndicies(language_order_selection_,
+  gtk_tree::GetSelectedIndicies(languages_page->language_order_selection_,
                                 &selected_rows);
 
   int selected_row = 0;
   for (std::set<int>::reverse_iterator selected = selected_rows.rbegin();
        selected != selected_rows.rend(); ++selected) {
-    language_order_table_model_->Remove(*selected);
+    languages_page->language_order_table_model_->Remove(*selected);
     selected_row = *selected;
   }
-  int row_count = language_order_table_model_->RowCount();
+  int row_count = languages_page->language_order_table_model_->RowCount();
   if (row_count <= 0)
     return;
   if (selected_row >= row_count)
     selected_row = row_count - 1;
   gtk_tree::SelectAndFocusRowNum(selected_row,
-      GTK_TREE_VIEW(language_order_tree_));
+      GTK_TREE_VIEW(languages_page->language_order_tree_));
 }
 
-void LanguagesPageGtk::OnMoveUpButtonClicked(GtkWidget* button) {
-  int item_selected = FirstSelectedRowNum();
-  language_order_table_model_->MoveUp(item_selected);
+// static
+void LanguagesPageGtk::OnMoveUpButtonClicked(GtkButton* button,
+                                             LanguagesPageGtk* languages_page) {
+  int item_selected = languages_page->FirstSelectedRowNum();
+  languages_page->language_order_table_model_->MoveUp(item_selected);
   gtk_tree::SelectAndFocusRowNum(
-      item_selected - 1, GTK_TREE_VIEW(language_order_tree_));
+      item_selected - 1, GTK_TREE_VIEW(languages_page->language_order_tree_));
 }
 
-void LanguagesPageGtk::OnMoveDownButtonClicked(GtkWidget* button) {
-  int item_selected = FirstSelectedRowNum();
-  language_order_table_model_->MoveDown(item_selected);
+// static
+void LanguagesPageGtk::OnMoveDownButtonClicked(
+    GtkButton* button, LanguagesPageGtk* languages_page) {
+  int item_selected = languages_page->FirstSelectedRowNum();
+  languages_page->language_order_table_model_->MoveDown(item_selected);
   gtk_tree::SelectAndFocusRowNum(
-      item_selected + 1, GTK_TREE_VIEW(language_order_tree_));
+      item_selected + 1, GTK_TREE_VIEW(languages_page->language_order_tree_));
 }
 
-void LanguagesPageGtk::OnEnableSpellCheckingToggled(GtkWidget* toggle_button) {
-  if (initializing_)
+// static
+void LanguagesPageGtk::OnEnableSpellCheckingToggled(
+    GtkToggleButton* toggle_button,
+    LanguagesPageGtk* languages_page) {
+  if (languages_page->initializing_)
     return;
-  enable_spellcheck_.SetValue(
-      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(toggle_button)));
+  languages_page->enable_spellcheck_.SetValue(
+      gtk_toggle_button_get_active(toggle_button));
 }
 
+// static
 void LanguagesPageGtk::OnEnableAutoSpellCheckingToggled(
-    GtkWidget* toggle_button) {
-  if (initializing_)
+    GtkToggleButton* toggle_button,
+    LanguagesPageGtk* languages_page) {
+  if (languages_page->initializing_)
     return;
-  enable_autospellcorrect_.SetValue(
-      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(toggle_button)));
+  languages_page->enable_autospellcorrect_.SetValue(
+      gtk_toggle_button_get_active(toggle_button));
 }
 
-void LanguagesPageGtk::OnDictionaryLanguageChanged(GtkWidget* widget) {
+// static
+void LanguagesPageGtk::OnDictionaryLanguageChangedThunk(
+    GtkComboBox* combo_box,
+    LanguagesPageGtk* languages_page) {
+  if (languages_page->initializing_)
+    return;
+  languages_page->OnDictionaryLanguageChanged();
+}
+
+void LanguagesPageGtk::OnDictionaryLanguageChanged() {
   int new_index = gtk_combo_box_get_active(
       GTK_COMBO_BOX(dictionary_language_combobox_));
 
