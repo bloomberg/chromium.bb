@@ -13,6 +13,8 @@
 #include "app/resource_bundle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
+#include "chrome/browser/pref_service.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -323,7 +325,11 @@ bool NetworkSelectionView::GetAcceleratorForCommandId(
 }
 
 void NetworkSelectionView::ExecuteCommand(int command_id) {
-  observer_->OnSwitchLanguage(languages_model_.GetLocaleFromIndex(command_id));
+  const std::string locale = languages_model_.GetLocaleFromIndex(command_id);
+  PrefService* prefs = g_browser_process->local_state();
+  prefs->SetString(prefs::kApplicationLocale, UTF8ToWide(locale));
+  prefs->ScheduleSavePersistentPrefs();
+  observer_->OnSwitchLanguage(locale);
   // Don't do anything here because |this| has just been deleted in order
   // to force releasing all locale-specific data.
 }
