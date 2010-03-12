@@ -2892,6 +2892,3 @@ BUG37869 MAC : editing/input/option-page-up-down.html = TIMEOUT
 BUG37962 LINUX DEBUG : fast/dom/HTMLElement/bdo.html = CRASH PASS
 BUG37962 LINUX DEBUG : fast/forms/multiple-form-submission-protection-mouse.html = CRASH PASS
 BUG37962 MAC : plugins/iframe-shims.html = TEXT PASS
-
-// WebKit merge 55822:55853, should be a simple rebaseline
-BUG_JAPHET : http/tests/security/cross-frame-access-call.html = TEXT
