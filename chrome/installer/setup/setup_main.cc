@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/process_util.h"
 #include "base/registry.h"
 #include "base/scoped_handle_win.h"
 #include "base/string_util.h"
@@ -176,8 +177,9 @@ bool CheckPreInstallConditions(const installer::Version* installed_version,
         chrome_exe = L"\"" + chrome_exe + L"\" --"
                      + ASCIIToWide(switches::kFirstRun);
         InstallUtil::WriteInstallerResult(system_install, status,
-                                          0, &chrome_exe);
+                                          0, NULL);
         LOG(INFO) << "Launching existing system-level chrome instead.";
+        base::LaunchApp(chrome_exe, false, false, NULL);
         return false;
       }
     }
