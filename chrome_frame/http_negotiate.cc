@@ -15,13 +15,13 @@
 #include "chrome_frame/bho.h"
 #include "chrome_frame/html_utils.h"
 #include "chrome_frame/urlmon_url_request.h"
+#include "chrome_frame/urlmon_moniker.h"
 #include "chrome_frame/utils.h"
 #include "chrome_frame/vtable_patch_manager.h"
 
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 
-const wchar_t kChromeMimeType[] = L"application/chromepage";
 const char kUACompatibleHttpHeader[] = "x-ua-compatible";
 
 // From the latest urlmon.h. Symbol name prepended with LOCAL_ to
@@ -207,10 +207,18 @@ HRESULT HttpNegotiatePatch::BeginningTransaction(
   ScopedComPtr<IWebBrowser2> browser2;
   DoQueryService(IID_ITargetFrame2, me, browser2.Receive());
   if (browser2) {
-    Bho* bho = Bho::GetCurrentThreadBhoInstance();
-    if (bho) {
-      bho->OnBeginningTransaction(browser2, url, headers, *additional_headers);
+    NavigationManager* mgr = NavigationManager::GetThreadInstance();
+    if (mgr) {
+      VARIANT_BOOL is_top_level = VARIANT_FALSE;
+      browser2->get_TopLevelContainer(&is_top_level);
+      mgr->OnBeginningTransaction(is_top_level != VARIANT_FALSE, url, headers,
+                                  *additional_headers);
+      DLOG(INFO) << "called OnBeginningTransaction " << is_top_level;
+    } else {
+      DLOG(INFO) << "No NavigationManager";
     }
+  } else {
+    DLOG(INFO) << "No IWebBrowser2";
   }
 
   static const char kLowerCaseUserAgent[] = "user-agent";
@@ -314,12 +322,13 @@ HRESULT HttpNegotiatePatch::StartBinding(
 HRESULT HttpNegotiatePatch::ReportProgress(
     IInternetProtocolSink_ReportProgress_Fn original, IInternetProtocolSink* me,
     ULONG status_code, LPCWSTR status_text) {
+  DLOG(INFO) << __FUNCTION__
+      << StringPrintf(" %i %ls", status_code, status_text);
   if (status_code == BINDSTATUS_MIMETYPEAVAILABLE ||
       status_code == BINDSTATUS_VERIFIEDMIMETYPEAVAILABLE ||
       status_code == LOCAL_BINDSTATUS_SERVER_MIMETYPEAVAILABLE) {
     bool render_in_chrome_frame = false;
     bool is_top_level_request = !IsSubFrameRequest(me);
-
     // NOTE: After switching over to using the onhttpequiv notification from
     // mshtml we can expect to see sub frames being created even before the
     // owning document has completed loading.  In particular frames whose
@@ -332,6 +341,8 @@ HRESULT HttpNegotiatePatch::ReportProgress(
         render_in_chrome_frame = CheckForCFNavigation(browser, true);
       }
 
+      DLOG_IF(INFO, !render_in_chrome_frame) << " - browser not tagged";
+
       if (!render_in_chrome_frame) {
         // Check to see if we need to alter the mime type that gets reported
         // by inspecting the raw header information:
@@ -342,6 +353,7 @@ HRESULT HttpNegotiatePatch::ReportProgress(
         if (!win_inet_http_info || FAILED(hr)) {
           hr = DoQueryService(IID_IWinInetHttpInfo, me,
                               win_inet_http_info.Receive());
+          DLOG_IF(WARNING, FAILED(hr)) << "Failed to get IWinInetHttpInfo";
         }
 
         // Note that it has been observed that getting an IWinInetHttpInfo will
@@ -350,6 +362,8 @@ HRESULT HttpNegotiatePatch::ReportProgress(
         if (win_inet_http_info) {
           // We have headers: check to see if the server is requesting CF via
           // the X-UA-Compatible: chrome=1 HTTP header.
+          // TODO(tommi): use HTTP_QUERY_CUSTOM instead of fetching and parsing
+          // all the headers.
           std::string headers(GetRawHttpHeaders(win_inet_http_info));
           net::HttpUtil::HeadersIterator it(headers.begin(), headers.end(),
                                             "\r\n");
@@ -368,6 +382,7 @@ HRESULT HttpNegotiatePatch::ReportProgress(
     }
 
     if (render_in_chrome_frame) {
+      DLOG(INFO) << "- changing mime type to " << kChromeMimeType;
       status_text = kChromeMimeType;
     }
   }

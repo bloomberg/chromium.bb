@@ -8,6 +8,7 @@
 #include <urlmon.h>
 #include <atlbase.h>
 #include <atlcom.h>
+#include <map>
 #include <string>
 
 #include "base/lock.h"
@@ -15,9 +16,31 @@
 #include "base/thread.h"
 #include "base/waitable_event.h"
 #include "chrome_frame/plugin_url_request.h"
+#include "chrome_frame/urlmon_moniker.h"
 #include "chrome_frame/utils.h"
 
 class UrlmonUrlRequest;
+
+class RequestDataForUrl {
+ public:
+  RequestDataForUrl(RequestData* data, const std::wstring& url)
+      : request_data_(data), url_(url) {
+  }
+  ~RequestDataForUrl() {
+  }
+
+  const std::wstring& url() const {
+    return url_;
+  }
+
+  RequestData* request_data() const {
+    return request_data_;
+  }
+
+ protected:
+  scoped_refptr<RequestData> request_data_;
+  std::wstring url_;
+};
 
 class UrlmonUrlRequestManager
     : public PluginUrlRequestManager,
@@ -26,22 +49,12 @@ class UrlmonUrlRequestManager
   UrlmonUrlRequestManager();
   ~UrlmonUrlRequestManager();
 
-  // Use specific moniker and bind context when Chrome request this url.
+  // Use cached data when Chrome request this url.
   // Used from ChromeActiveDocument's implementation of IPersistMoniker::Load().
-  void UseMonikerForUrl(IMoniker* moniker, IBindCtx* bind_ctx,
-                        const std::wstring& url);
+  void UseRequestDataForUrl(RequestData* data, const std::wstring& url);
   void StealMonikerFromRequest(int request_id, IMoniker** moniker);
   void SetErrorDialogsParentWindow(HWND window);
  private:
-   struct MonikerForUrl {
-     MonikerForUrl() {
-       memset(&bind_opts, 0, sizeof(bind_opts));
-     }
-     ScopedComPtr<IMoniker> moniker;
-     BIND_OPTS bind_opts;
-     std::wstring url;
-   };
-
   friend class MessageLoop;
   friend struct RunnableMethodTraits<UrlmonUrlRequestManager>;
   static bool ImplementsThreadSafeReferenceCounting() { return true; }
@@ -68,7 +81,7 @@ class UrlmonUrlRequestManager
   // Methods executed in worker thread.
   void StartRequestWorker(int request_id,
                           const IPC::AutomationURLRequest& request_info,
-                          MonikerForUrl* moniker_for_url);
+                          RequestDataForUrl* use_request);
   void ReadRequestWorker(int request_id, int bytes_to_read);
   void EndRequestWorker(int request_id);
   void StopAllWorker();
@@ -80,7 +93,7 @@ class UrlmonUrlRequestManager
   RequestMap request_map_;
   scoped_refptr<UrlmonUrlRequest> LookupRequest(int request_id);
 
-  scoped_ptr<MonikerForUrl> moniker_for_url_;
+  scoped_ptr<RequestDataForUrl> request_data_for_url_;
   STAThread worker_thread_;
   base::WaitableEvent map_empty_;
   bool stopping_;

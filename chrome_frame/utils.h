@@ -22,6 +22,21 @@ extern const wchar_t kChromeContentPrefix[];
 extern const wchar_t kChromeProtocolPrefix[];
 extern const wchar_t kChromeFrameHeadlessMode[];
 extern const wchar_t kEnableGCFProtocol[];
+extern const wchar_t kChromeMimeType[];
+
+typedef enum ProtocolPatchMethod {
+  PATCH_METHOD_IBROWSER = 0,
+  PATCH_METHOD_INET_PROTOCOL,  // 1
+  PATCH_METHOD_IBROWSER_AND_MONIKER,  // 2
+};
+
+// A REG_DWORD config value that maps to the ProtocolPatchMethod enum.
+// To get the config value, call:
+// ProtocolPatchMethod patch_method =
+//     static_cast<ProtocolPatchMethod>(
+//          GetConfigInt(PATCH_METHOD_IBROWSER, kPatchProtocols));
+extern const wchar_t kPatchProtocols[];
+
 
 // This function is very similar to the AtlRegisterTypeLib function except
 // that it takes a parameter that specifies whether to register the typelib
@@ -350,6 +365,9 @@ std::wstring GetActualUrlFromMoniker(IMoniker* moniker,
 
 // Checks if a window is a top level window
 bool IsTopLevelWindow(HWND window);
+
+// Seeks a stream back to position 0.
+HRESULT RewindStream(IStream* stream);
 
 extern Lock g_ChromeFrameHistogramLock;
 

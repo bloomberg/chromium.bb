@@ -386,7 +386,7 @@ END_MSG_MAP()
   }
 
   virtual void OnDownloadRequestInHost(int tab_handle, int request_id) {
-    DLOG(INFO) << "TODO: Let the host browser handle this download";
+    DLOG(INFO) << "Let the host browser handle this download";
     ScopedComPtr<IBindCtx> bind_context;
     ScopedComPtr<IMoniker> moniker;
     url_fetcher_.StealMonikerFromRequest(request_id, moniker.Receive());

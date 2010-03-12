@@ -14,10 +14,11 @@
 
 #include <string>
 
-#include "base/lazy_instance.h"
-#include "base/thread_local.h"
+#include "base/scoped_comptr_win.h"
 #include "chrome_tab.h"  // NOLINT
 #include "chrome_frame/resource.h"
+#include "chrome_frame/urlmon_moniker.h"
+#include "chrome_frame/urlmon_url_request.h"
 #include "grit/chrome_frame_resources.h"
 
 class PatchHelper {
@@ -47,7 +48,8 @@ class ATL_NO_VTABLE Bho
   : public CComObjectRootEx<CComSingleThreadModel>,
     public CComCoClass<Bho, &CLSID_ChromeFrameBHO>,
     public IObjectWithSiteImpl<Bho>,
-    public IDispEventSimpleImpl<0, Bho, &DIID_DWebBrowserEvents2> {
+    public IDispEventSimpleImpl<0, Bho, &DIID_DWebBrowserEvents2>,
+    public NavigationManager {
  public:
   typedef HRESULT (STDMETHODCALLTYPE* IBrowserService_OnHttpEquiv_Fn)(
       IBrowserService* browser, IShellView* shell_view, BOOL done,
@@ -64,9 +66,10 @@ END_COM_MAP()
 BEGIN_SINK_MAP(Bho)
   SINK_ENTRY_INFO(0, DIID_DWebBrowserEvents2, DISPID_BEFORENAVIGATE2,
                   BeforeNavigate2, &kBeforeNavigate2Info)
+  SINK_ENTRY_INFO(0, DIID_DWebBrowserEvents2, DISPID_NAVIGATECOMPLETE2,
+                  NavigateComplete2, &kNavigateComplete2Info)
 END_SINK_MAP()
 
-  // Lifetime management methods
   Bho();
 
   HRESULT FinalConstruct();
@@ -77,51 +80,27 @@ END_SINK_MAP()
   STDMETHOD(BeforeNavigate2)(IDispatch* dispatch, VARIANT* url, VARIANT* flags,
       VARIANT* target_frame_name, VARIANT* post_data, VARIANT* headers,
       VARIANT_BOOL* cancel);
-
-  HRESULT NavigateToCurrentUrlInCF(IBrowserService* browser);
+  STDMETHOD_(void, NavigateComplete2)(IDispatch* dispatch, VARIANT* url);
 
   // mshtml sends an IOleCommandTarget::Exec of OLECMDID_HTTPEQUIV
   // (and OLECMDID_HTTPEQUIV_DONE) as soon as it parses a meta tag.
   // It also sends contents of the meta tag as an argument. IEFrame
   // handles this in IBrowserService::OnHttpEquiv.  So this allows
   // us to sniff the META tag by simply patching it. The renderer
-  // switching can be achieved by cancelling original navigation
+  // switching can be achieved by canceling original navigation
   // and issuing a new one using IWebBrowser2->Navigate2.
   static HRESULT STDMETHODCALLTYPE OnHttpEquiv(
       IBrowserService_OnHttpEquiv_Fn original_httpequiv,
       IBrowserService* browser, IShellView* shell_view, BOOL done,
       VARIANT* in_arg, VARIANT* out_arg);
 
-  const std::string& referrer() const {
-    return referrer_;
-  }
-
-  const std::wstring& url() const {
-    return url_;
-  }
-
-  // Called from HttpNegotiatePatch::BeginningTransaction when a request is
-  // being issued.  We check the url and headers and see if there is a referrer
-  // header that we need to cache.
-  void OnBeginningTransaction(IWebBrowser2* browser, const wchar_t* url,
-                              const wchar_t* headers,
-                              const wchar_t* additional_headers);
-
-  // Returns the Bho instance for the current thread. This is returned from
-  // TLS.
-  static Bho* GetCurrentThreadBhoInstance();
-
   static void ProcessOptInUrls(IWebBrowser2* browser, BSTR url);
 
  protected:
   bool PatchProtocolHandler(const CLSID& handler_clsid);
 
-  std::string referrer_;
-  std::wstring url_;
-
-  static base::LazyInstance<base::ThreadLocalPointer<Bho> >
-      bho_current_thread_instance_;
   static _ATL_FUNC_INFO kBeforeNavigate2Info;
+  static _ATL_FUNC_INFO kNavigateComplete2Info;
 };
 
 #endif  // CHROME_FRAME_BHO_H_

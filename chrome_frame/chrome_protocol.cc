@@ -6,8 +6,7 @@
 #include "chrome_frame/chrome_protocol.h"
 
 #include "base/logging.h"
-
-static const wchar_t* kChromeMimeType = L"application/chromepage";
+#include "chrome_frame/utils.h"
 
 // ChromeProtocol
 

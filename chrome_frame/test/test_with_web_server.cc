@@ -693,9 +693,17 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_NavigateOut) {
 
 const wchar_t kReferrerMainTest[] = L"files/referrer_main.html";
 
-// Marking as FLAKY as this intermittently fails on the builder.
-// http://code.google.com/p/chromium/issues/detail?id=34812
-TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_ReferrerTest) {
+TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_ReferrerTest) {
+  // At the moment the moniker patch is only enabled if the below
+  // registry config value is set to PATCH_METHOD_IBROWSER_AND_MONIKER.
+  ProtocolPatchMethod patch_method =
+      static_cast<ProtocolPatchMethod>(
+          GetConfigInt(PATCH_METHOD_IBROWSER, kPatchProtocols));
+  if (patch_method != PATCH_METHOD_IBROWSER_AND_MONIKER) {
+    DLOG(ERROR) << "Not running test. Moniker patch not enabled.";
+    return;
+  }
+
   SimpleBrowserTest(IE, kReferrerMainTest, L"FullTab_ReferrerTest");
 }
 
@@ -779,12 +787,18 @@ TEST_F(ChromeFrameTestWithWebServer,
   ASSERT_TRUE(CheckResultFile(L"FullTab_AnchorURLNavigateTest", "OK"));
 }
 
-// DISABLED as it currently fails for both approaches for switching
-// renderers (httpequiv and IInternetProtocol).
-// TODO(tommi): Enable this test once the issue has been fixed.
-TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_TestPostReissue) {
-  // Test whether POST-ing a form from an mshtml page to a CF page will cause
-  // the request to get reissued.  It should not.
+// Test whether POST-ing a form from an mshtml page to a CF page will cause
+// the request to get reissued.  It should not.
+TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestPostReissue) {
+  // At the moment the moniker patch is only enabled if the below
+  // registry config value is set to PATCH_METHOD_IBROWSER_AND_MONIKER.
+  ProtocolPatchMethod patch_method =
+      static_cast<ProtocolPatchMethod>(
+          GetConfigInt(PATCH_METHOD_IBROWSER, kPatchProtocols));
+  if (patch_method != PATCH_METHOD_IBROWSER_AND_MONIKER) {
+    DLOG(ERROR) << "Not running test. Moniker patch not enabled.";
+    return;
+  }
 
   MessageLoopForUI loop;  // must come before the server.
 
@@ -814,12 +828,18 @@ TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_TestPostReissue) {
   }
 }
 
-// DISABLED as it currently fails for both approaches for switching
-// renderers (httpequiv and IInternetProtocol).
-// TODO(tommi): Enable this test once the issue has been fixed.
-TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_TestMultipleGet) {
-  // Test whether following a link from an mshtml page to a CF page will cause
-  // multiple network requests.  It should not.
+// Test whether following a link from an mshtml page to a CF page will cause
+// multiple network requests.  It should not.
+TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestMultipleGet) {
+  // At the moment the moniker patch is only enabled if the below
+  // registry config value is set to PATCH_METHOD_IBROWSER_AND_MONIKER.
+  ProtocolPatchMethod patch_method =
+      static_cast<ProtocolPatchMethod>(
+          GetConfigInt(PATCH_METHOD_IBROWSER, kPatchProtocols));
+  if (patch_method != PATCH_METHOD_IBROWSER_AND_MONIKER) {
+    DLOG(ERROR) << "Not running test. Moniker patch not enabled.";
+    return;
+  }
 
   MessageLoopForUI loop;  // must come before the server.
 

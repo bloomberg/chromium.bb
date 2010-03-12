@@ -209,16 +209,30 @@ STDMETHODIMP ChromeActiveDocument::Load(BOOL fully_avalable,
     SetClientSite(client_site);
     DoQueryService(IID_INewWindowManager, client_site,
                    popup_manager_.Receive());
+
+    // See if mshtml parsed the html header for us.  If so, we need to
+    // clear the browser service flag that we use to indicate that this
+    // browser instance is navigating to a CF document.
+    ScopedComPtr<IBrowserService> browser_service;
+    DoQueryService(SID_SShellBrowser, client_site, browser_service.Receive());
+    if (browser_service) {
+      bool flagged = CheckForCFNavigation(browser_service, true);
+      DLOG_IF(INFO, flagged) << "Cleared flagged browser service";
+    }
   }
 
-  Bho* chrome_frame_bho = Bho::GetCurrentThreadBhoInstance();
+  NavigationManager* mgr = NavigationManager::GetThreadInstance();
+  DCHECK(mgr);
 
   // If the original URL contains an anchor, then the URL queried
   // from the moniker does not contain the anchor. To workaround
   // this we retrieve the URL from our BHO.
-  std::wstring url = GetActualUrlFromMoniker(
-      moniker_name, bind_context,
-      chrome_frame_bho ? chrome_frame_bho->url() : std::wstring());
+  std::wstring url(GetActualUrlFromMoniker(moniker_name, bind_context,
+                                           mgr ? mgr->url() : std::wstring()));
+
+  scoped_refptr<RequestData> data(mgr->GetActiveRequestData(url.c_str()));
+  DLOG_IF(INFO, data) << "Got active request data";
+  DLOG_IF(WARNING, data.get() == NULL) << "NO active request data";
 
   // The is_new_navigation variable indicates if this a navigation initiated
   // by typing in a URL for e.g. in the IE address bar, or from Chrome by
@@ -237,8 +251,8 @@ STDMETHODIMP ChromeActiveDocument::Load(BOOL fully_avalable,
     return E_INVALIDARG;
   }
 
-  if (!is_chrome_protocol) {
-    url_fetcher_.UseMonikerForUrl(moniker_name, bind_context, url);
+  if (!is_chrome_protocol && data) {
+    url_fetcher_.UseRequestDataForUrl(data, url);
   }
 
   THREAD_SAFE_UMA_HISTOGRAM_CUSTOM_COUNTS("ChromeFrame.FullTabLaunchType",
@@ -595,6 +609,12 @@ void ChromeActiveDocument::UpdateNavigationState(
 
   if (new_navigation_info.url.is_valid()) {
     url_.Allocate(UTF8ToWide(new_navigation_info.url.spec()).c_str());
+    NavigationManager* mgr = NavigationManager::GetThreadInstance();
+    DCHECK(mgr);
+    if (mgr) {
+      mgr->set_url(url_);
+      mgr->ReleaseRequestData();
+    }
   }
 
   if (is_internal_navigation) {
@@ -910,9 +930,9 @@ bool ChromeActiveDocument::LaunchUrl(const std::wstring& url,
       WideToUTF8(url_, url_.Length(), &utf8_url);
 
       std::string referrer;
-      Bho* chrome_frame_bho = Bho::GetCurrentThreadBhoInstance();
-      if (chrome_frame_bho)
-        referrer = chrome_frame_bho->referrer();
+      NavigationManager* mgr = NavigationManager::GetThreadInstance();
+      if (mgr)
+        referrer = mgr->referrer();
 
       if (!automation_client_->InitiateNavigation(utf8_url,
                                                   referrer,

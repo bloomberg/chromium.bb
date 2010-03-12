@@ -22,7 +22,6 @@
 #define BINDSTATUS_SERVER_MIMETYPEAVAILABLE 54
 #endif
 
-static const wchar_t* kChromeMimeType = L"application/chromepage";
 static const char kTextHtmlMimeType[] = "text/html";
 const wchar_t kUrlMonDllName[] = L"urlmon.dll";
 

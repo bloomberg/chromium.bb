@@ -5,29 +5,23 @@
 #include "chrome_frame/bho.h"
 
 #include <shlguid.h>
-#include <shobjidl.h>
 
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/registry.h"
 #include "base/scoped_bstr_win.h"
-#include "base/scoped_comptr_win.h"
 #include "base/scoped_variant_win.h"
 #include "base/string_util.h"
 #include "chrome_tab.h" // NOLINT
 #include "chrome_frame/extra_system_apis.h"
 #include "chrome_frame/http_negotiate.h"
 #include "chrome_frame/protocol_sink_wrap.h"
+#include "chrome_frame/urlmon_moniker.h"
 #include "chrome_frame/utils.h"
 #include "chrome_frame/vtable_patch_manager.h"
-#include "net/http/http_util.h"
 
-const wchar_t kPatchProtocols[] = L"PatchProtocols";
 static const int kIBrowserServiceOnHttpEquivIndex = 30;
-
-base::LazyInstance<base::ThreadLocalPointer<Bho> >
-    Bho::bho_current_thread_instance_(base::LINKER_INITIALIZED);
 
 PatchHelper g_patch_helper;
 
@@ -44,6 +38,13 @@ _ATL_FUNC_INFO Bho::kBeforeNavigate2Info = {
     VT_VARIANT | VT_BYREF,
     VT_VARIANT | VT_BYREF,
     VT_BOOL | VT_BYREF
+  }
+};
+
+_ATL_FUNC_INFO Bho::kNavigateComplete2Info = {
+  CC_STDCALL, VT_EMPTY, 2, {
+    VT_DISPATCH,
+    VT_VARIANT | VT_BYREF
   }
 };
 
@@ -82,9 +83,9 @@ STDMETHODIMP Bho::SetSite(IUnknown* site) {
     // our active document/activex instances to query referrer and other
     // information for a URL.
     AddRef();
-    bho_current_thread_instance_.Pointer()->Set(this);
+    RegisterThreadInstance();
   } else {
-    bho_current_thread_instance_.Pointer()->Set(NULL);
+    UnregisterThreadInstance();
     Release();
   }
 
@@ -114,62 +115,19 @@ STDMETHODIMP Bho::BeforeNavigate2(IDispatch* dispatch, VARIANT* url,
   if (!browser_service || !CheckForCFNavigation(browser_service, false)) {
     referrer_.clear();
   }
-  url_ = url->bstrVal;
-  ProcessOptInUrls(web_browser2, url->bstrVal);
+
+  VARIANT_BOOL is_top_level = VARIANT_FALSE;
+  web_browser2->get_TopLevelContainer(&is_top_level);
+  if (is_top_level) {
+    set_url(url->bstrVal);
+    ProcessOptInUrls(web_browser2, url->bstrVal);
+  }
+
   return S_OK;
 }
 
-HRESULT Bho::NavigateToCurrentUrlInCF(IBrowserService* browser) {
-  DCHECK(browser);
-  MarkBrowserOnThreadForCFNavigation(browser);
-  ScopedComPtr<IBindCtx> bind_context;
-  ScopedComPtr<IMoniker> moniker;
-  HRESULT hr = ::CreateBindCtx(0, bind_context.Receive());
-  DCHECK(bind_context);
-  if (SUCCEEDED(hr) &&
-      SUCCEEDED(hr = ::CreateURLMonikerEx(NULL, url_.c_str(), moniker.Receive(),
-                                          URL_MK_UNIFORM))) {
-    DCHECK(SUCCEEDED(hr));
-    if (SUCCEEDED(hr)) {
-#ifndef NDEBUG
-      // We've just created a new moniker for a URL that has just been fetched.
-      // However, the moniker used for the current navigation should still
-      // be running.
-      // The documentation for IMoniker::IsRunning() states that if the
-      // moniker is already running (i.e. an equal moniker already exists),
-      // then the return value from IsRunning will be S_OK (or 0) and
-      // S_FALSE (1) when the moniker is not running.
-      // http://msdn.microsoft.com/en-us/library/ms678475(VS.85).aspx
-      // However, knowing that the IsRunning implementation relies on
-      // the bind context and that the bind context uses ole32's
-      // IRunningObjectTable::IsRunning to do its bidding, the return value
-      // is actually TRUE (or 1) when the moniker is running and FALSE (0)
-      // when it is not running.  Yup, the opposite of what you'd expect :-)
-      // http://msdn.microsoft.com/en-us/library/ms682169(VS.85).aspx
-      HRESULT running = moniker->IsRunning(bind_context, NULL, NULL);
-      DCHECK(running == TRUE) << "Moniker not already running?";
-#endif
-
-      // If there's a referrer, preserve it.
-      std::wstring headers;
-      if (!referrer_.empty()) {
-        headers = StringPrintf(L"Referer: %ls\r\n\r\n",
-            ASCIIToWide(referrer_).c_str());
-      }
-
-      // Pass in URL fragments if applicable.
-      std::wstring fragment;
-      GURL parsed_moniker_url(url_);
-      if (parsed_moniker_url.has_ref()) {
-        fragment = UTF8ToWide(parsed_moniker_url.ref());
-      }
-
-      hr = NavigateBrowserToMoniker(browser, moniker, headers.c_str(),
-          bind_context, fragment.c_str());
-    }
-  }
-
-  return hr;
+STDMETHODIMP_(void) Bho::NavigateComplete2(IDispatch* dispatch, VARIANT* url) {
+  DLOG(INFO) << __FUNCTION__;
 }
 
 namespace {
@@ -239,11 +197,11 @@ HRESULT Bho::OnHttpEquiv(IBrowserService_OnHttpEquiv_Fn original_httpequiv,
       // The embedded items should only be created once the top level
       // doc has been created.
       if (!DocumentHasEmbeddedItems(browser)) {
-        Bho* bho = Bho::GetCurrentThreadBhoInstance();
-        DCHECK(bho);
-        DLOG(INFO) << "Found tag in page. Marking browser." << bho->url() <<
+        NavigationManager* mgr = NavigationManager::GetThreadInstance();
+        DCHECK(mgr);
+        DLOG(INFO) << "Found tag in page. Marking browser." <<
             StringPrintf(" tid=0x%08X", ::GetCurrentThreadId());
-        if (bho) {
+        if (mgr) {
           // TODO(tommi): See if we can't figure out a cleaner way to avoid
           // this.  For some documents we can hit a problem here.  When we
           // attempt to navigate the document again in CF, mshtml can "complete"
@@ -253,60 +211,17 @@ HRESULT Bho::OnHttpEquiv(IBrowserService_OnHttpEquiv_Fn original_httpequiv,
           // To work around this, we clear the contents of the document before
           // opening it up in CF.
           ClearDocumentContents(browser);
-          bho->NavigateToCurrentUrlInCF(browser);
+          mgr->NavigateToCurrentUrlInCF(browser);
         }
       }
     }
+  } else if (done) {
+    DLOG(INFO) << "Releasing cached data.";
+    NavigationManager* mgr = NavigationManager::GetThreadInstance();
+    mgr->ReleaseRequestData();
   }
 
   return original_httpequiv(browser, shell_view, done, in_arg, out_arg);
-}
-
-void Bho::OnBeginningTransaction(IWebBrowser2* browser, const wchar_t* url,
-                                 const wchar_t* headers,
-                                 const wchar_t* additional_headers) {
-  if (!browser)
-    return;
-
-  if (url_.compare(url) != 0) {
-    DLOG(INFO) << __FUNCTION__ << " not processing headers for url: " << url
-        << " current url is: " << url_;
-    return;
-  }
-
-  VARIANT_BOOL is_top_level = VARIANT_FALSE;
-  browser->get_TopLevelContainer(&is_top_level);
-  if (is_top_level) {
-    ScopedComPtr<IBrowserService> browser_service;
-    DoQueryService(SID_SShellBrowser, browser, browser_service.Receive());
-    if (!browser_service || !CheckForCFNavigation(browser_service, false)) {
-      // Save away the referrer in case our active document needs it to initiate
-      // navigation in chrome.
-      referrer_.clear();
-      const wchar_t* both_headers[] = { headers, additional_headers };
-      for (int i = 0; referrer_.empty() && i < arraysize(both_headers); ++i) {
-        if (!both_headers[i])
-          continue;
-        std::string raw_headers_utf8 = WideToUTF8(both_headers[i]);
-        std::string http_headers =
-            net::HttpUtil::AssembleRawHeaders(raw_headers_utf8.c_str(),
-                                              raw_headers_utf8.length());
-        net::HttpUtil::HeadersIterator it(http_headers.begin(),
-                                          http_headers.end(), "\r\n");
-        while (it.GetNext()) {
-          if (LowerCaseEqualsASCII(it.name(), "referer")) {
-            referrer_ = it.values();
-            break;
-          }
-        }
-      }
-    }
-  }
-}
-
-Bho* Bho::GetCurrentThreadBhoInstance() {
-  DCHECK(bho_current_thread_instance_.Pointer()->Get() != NULL);
-  return bho_current_thread_instance_.Pointer()->Get();
 }
 
 // static
@@ -316,19 +231,22 @@ void Bho::ProcessOptInUrls(IWebBrowser2* browser, BSTR url) {
     return;
   }
 
+#ifndef NDEBUG
+  // This check must already have been made.
   VARIANT_BOOL is_top_level = VARIANT_FALSE;
   browser->get_TopLevelContainer(&is_top_level);
-  if (is_top_level) {
-    std::wstring current_url(url, SysStringLen(url));
-    if (IsValidUrlScheme(current_url, false)) {
-      bool cf_protocol = StartsWith(current_url, kChromeProtocolPrefix, false);
-      if (!cf_protocol && IsOptInUrl(current_url.c_str())) {
-        DLOG(INFO) << "Opt-in URL. Switching to cf.";
-        ScopedComPtr<IBrowserService> browser_service;
-        DoQueryService(SID_SShellBrowser, browser, browser_service.Receive());
-        DCHECK(browser_service) << "DoQueryService - SID_SShellBrowser failed.";
-        MarkBrowserOnThreadForCFNavigation(browser_service);
-      }
+  DCHECK(is_top_level);
+#endif
+
+  std::wstring current_url(url, SysStringLen(url));
+  if (IsValidUrlScheme(current_url, false)) {
+    bool cf_protocol = StartsWith(current_url, kChromeProtocolPrefix, false);
+    if (!cf_protocol && IsOptInUrl(current_url.c_str())) {
+      DLOG(INFO) << "Opt-in URL. Switching to cf.";
+      ScopedComPtr<IBrowserService> browser_service;
+      DoQueryService(SID_SShellBrowser, browser, browser_service.Receive());
+      DCHECK(browser_service) << "DoQueryService - SID_SShellBrowser failed.";
+      MarkBrowserOnThreadForCFNavigation(browser_service);
     }
   }
 }
@@ -362,12 +280,20 @@ bool PatchHelper::InitializeAndPatchProtocolsIfNeeded() {
 
     HttpNegotiatePatch::Initialize();
 
-    bool patch_protocol = GetConfigBool(false, kPatchProtocols);
-    if (patch_protocol) {
+    ProtocolPatchMethod patch_method =
+        static_cast<ProtocolPatchMethod>(
+            GetConfigInt(PATCH_METHOD_IBROWSER, kPatchProtocols));
+
+    if (patch_method == PATCH_METHOD_INET_PROTOCOL) {
       ProtocolSinkWrap::PatchProtocolHandlers();
       state_ = PATCH_PROTOCOL;
     } else {
+      DCHECK(patch_method == PATCH_METHOD_IBROWSER ||
+             patch_method == PATCH_METHOD_IBROWSER_AND_MONIKER);
       state_ = PATCH_IBROWSER;
+      if (patch_method == PATCH_METHOD_IBROWSER_AND_MONIKER) {
+        MonikerPatch::Initialize();
+      }
     }
     ret = true;
   }
@@ -390,6 +316,7 @@ void PatchHelper::UnpatchIfNeeded() {
     ProtocolSinkWrap::UnpatchProtocolHandlers();
   } else if (state_ == PATCH_IBROWSER) {
     vtable_patch::UnpatchInterfaceMethods(IBrowserService_PatchInfo);
+    MonikerPatch::Uninitialize();
   }
 
   HttpNegotiatePatch::Uninitialize();

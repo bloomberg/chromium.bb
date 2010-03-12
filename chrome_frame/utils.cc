@@ -35,6 +35,8 @@ const wchar_t kXUACompatValue[] = L"x-ua-compatible";
 const wchar_t kBodyTag[] = L"body";
 const wchar_t kChromeContentPrefix[] = L"chrome=";
 const wchar_t kChromeProtocolPrefix[] = L"gcf:";
+const wchar_t kChromeMimeType[] = L"application/chromepage";
+const wchar_t kPatchProtocols[] = L"PatchProtocols";
 
 static const wchar_t kChromeFrameConfigKey[] =
     L"Software\\Google\\ChromeFrame";
@@ -866,6 +868,17 @@ bool IsTopLevelWindow(HWND window) {
 
   HWND parent = GetParent(window);
   return !parent || (parent == GetDesktopWindow());
+}
+
+HRESULT RewindStream(IStream* stream) {
+  HRESULT hr = E_POINTER;
+  if (stream) {
+    LARGE_INTEGER zero = {0};
+    ULARGE_INTEGER new_pos = {0};
+    hr = stream->Seek(zero, STREAM_SEEK_SET, &new_pos);
+  }
+
+  return hr;
 }
 
 std::wstring GuidToString(const GUID& guid) {

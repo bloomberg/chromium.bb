@@ -14,6 +14,8 @@
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_status.h"
 
+class RequestData;
+
 class UrlmonUrlRequest
   : public CComObjectRootEx<CComMultiThreadModel>,
     public PluginUrlRequest,
@@ -28,9 +30,7 @@ class UrlmonUrlRequest
   virtual bool Read(int bytes_to_read);
 
   // Special function needed by ActiveDocument::Load()
-  HRESULT ConnectToExistingMoniker(IMoniker* moniker,
-                                   BIND_OPTS* bind_opts,
-                                   const std::wstring& url);
+  HRESULT SetRequestData(RequestData* data);
 
   // Used from "OnDownloadRequestInHost".
   void StealMoniker(IMoniker** moniker);
@@ -163,7 +163,7 @@ class UrlmonUrlRequest
       return E_NOTIMPL;
     }
 
-  protected:
+   protected:
     scoped_refptr<UrlmonUrlRequest> request_;
     DISALLOW_COPY_AND_ASSIGN(SendStream);
   };
@@ -296,6 +296,7 @@ class UrlmonUrlRequest
   ScopedComPtr<IBinding> binding_;
   ScopedComPtr<IMoniker> moniker_;
   ScopedComPtr<IBindCtx> bind_context_;
+  scoped_refptr<RequestData> request_data_;
   Cache cached_data_;
   size_t pending_read_size_;
   PlatformThreadId thread_;
