@@ -255,9 +255,19 @@
     [button setFrame:buttonFrame];
   }
 
-  // Finally, set our window size.
+  // Finally, set our window size (make sure it fits on screen).
   width += (2 * bookmarks::kBookmarkVerticalPadding);
   windowFrame.size.width = width;
+
+  // Make the window fit on screen, with a distance of at least |padding| to
+  // the sides.
+  const CGFloat padding = 8;
+  NSRect screenFrame = [[[self window] screen] frame];
+  if (NSMaxX(windowFrame) + padding > NSMaxX(screenFrame))
+    windowFrame.origin.x -= NSMaxX(windowFrame) + padding - NSMaxX(screenFrame);
+  else if (NSMinX(windowFrame) - padding < NSMinX(screenFrame))
+    windowFrame.origin.x += NSMinX(screenFrame) - NSMinX(windowFrame) + padding;
+  
   [[self window] setFrame:windowFrame display:YES];
 
   [[parentController_ parentWindow] addChildWindow:[self window]

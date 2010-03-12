@@ -45,7 +45,7 @@ const CGFloat kDefaultBookmarkWidth = 150.0;
 // TODO(jrg): http://crbug.com/36276 to get final sizes.
 // Used as a min/max width for buttons on menus (not on the bar).
 const CGFloat kBookmarkMenuButtonMinimumWidth = kDefaultBookmarkWidth;
-const CGFloat kBookmarkMenuButtonMaximumWidth = 1000.0;
+const CGFloat kBookmarkMenuButtonMaximumWidth = 485.0;
 
 const CGFloat kBookmarkVerticalPadding = 2.0;
 const CGFloat kBookmarkHorizontalPadding = 1.0;
