@@ -76,12 +76,14 @@ View::View()
 }
 
 View::~View() {
+  if (parent_)
+    parent_->RemoveChildView(this);
+
   int c = static_cast<int>(child_views_.size());
   while (--c >= 0) {
+    child_views_[c]->SetParent(NULL);
     if (child_views_[c]->IsParentOwned())
       delete child_views_[c];
-    else
-      child_views_[c]->SetParent(NULL);
   }
 
 #if defined(OS_WIN)
