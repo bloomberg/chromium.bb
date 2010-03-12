@@ -209,7 +209,7 @@ const QName QN_GOOGLE_AUTH_CLIENT_USES_FULL_BIND_RESULT(true, NS_GOOGLE_AUTH_PRO
 
 const std::string NS_GOOGLE_AUTH("google:auth");
 const QName QN_MISSING_USERNAME(true, NS_GOOGLE_AUTH, "missing-username");
-const QName QN_GOOGLE_ALLOW_NON_GOOGLE_ID_XMPP_LOGIN(true, NS_GOOGLE_AUTH_PROTOCOL, "allow-non-google-login");
+const QName QN_GOOGLE_ALLOW_GENERATED_JID_XMPP_LOGIN(true, NS_GOOGLE_AUTH_PROTOCOL, "allow-generated-jid");
 
 const QName QN_DIALBACK_RESULT(true, NS_DIALBACK, "result");
 const QName QN_DIALBACK_VERIFY(true, NS_DIALBACK, "verify");

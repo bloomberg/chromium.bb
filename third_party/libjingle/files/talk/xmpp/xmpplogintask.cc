@@ -216,7 +216,7 @@ XmppLoginTask::Advance() {
           return Failure(XmppEngine::ERROR_AUTH);
         }
 
-        auth->SetAttr(QN_GOOGLE_ALLOW_NON_GOOGLE_ID_XMPP_LOGIN, "true");
+        auth->SetAttr(QN_GOOGLE_ALLOW_GENERATED_JID_XMPP_LOGIN, "true");
         auth->SetAttr(QN_GOOGLE_AUTH_CLIENT_USES_FULL_BIND_RESULT, "true");
 
         pctx_->InternalSendStanza(auth);

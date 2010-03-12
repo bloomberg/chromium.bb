@@ -174,7 +174,7 @@ extern const std::string NS_GOOGLE_AUTH;
 extern const QName QN_MISSING_USERNAME;
 extern const std::string NS_GOOGLE_AUTH_PROTOCOL;
 extern const QName QN_GOOGLE_AUTH_CLIENT_USES_FULL_BIND_RESULT;
-extern const QName QN_GOOGLE_ALLOW_NON_GOOGLE_ID_XMPP_LOGIN;
+extern const QName QN_GOOGLE_ALLOW_GENERATED_JID_XMPP_LOGIN;
 
 extern const QName QN_DIALBACK_RESULT;
 extern const QName QN_DIALBACK_VERIFY;

@@ -1155,10 +1155,7 @@ Only in libjingle/files/talk/base: winsock_initializer.h
 Only in libjingle-0.4.0/talk: examples
 Only in libjingle-0.4.0/talk: libjingle.sln
 Only in libjingle-0.4.0/talk: libjingle.vcproj
-Only in libjingle-0.4.0/talk/p2p: Makefile.am
-Only in libjingle-0.4.0/talk/p2p: Makefile.in
-Only in libjingle-0.4.0/talk/p2p: base
-Only in libjingle-0.4.0/talk/p2p: client
+Only in libjingle-0.4.0/talk: p2p
 Only in libjingle-0.4.0/talk: session
 Only in libjingle-0.4.0/talk: third_party
 Only in libjingle-0.4.0/talk/xmllite: Makefile.in
@@ -1442,7 +1439,7 @@ diff -r libjingle-0.4.0/talk/xmpp/xmpplogintask.cc libjingle/files/talk/xmpp/xmp
 ---
 > #endif  // !defined(NDEBUG)
 218a219,221
->         auth->SetAttr(QN_GOOGLE_ALLOW_NON_GOOGLE_ID_XMPP_LOGIN, "true");
+>         auth->SetAttr(QN_GOOGLE_ALLOW_GENERATED_JID_XMPP_LOGIN, "true");
 >         auth->SetAttr(QN_GOOGLE_AUTH_CLIENT_USES_FULL_BIND_RESULT, "true");
 > 
 diff -r libjingle-0.4.0/talk/xmpp/xmpplogintask.h libjingle/files/talk/xmpp/xmpplogintask.h
