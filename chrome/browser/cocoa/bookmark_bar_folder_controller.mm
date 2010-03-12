@@ -259,7 +259,7 @@
   width += (2 * bookmarks::kBookmarkVerticalPadding);
   windowFrame.size.width = width;
 
-  // Make the window fit on screen, with a distance of at least |padding| to
+  // Make the window fit on screen, with a distance of at least |padding| from
   // the sides.
   if ([[self window] screen]) {  // nil in unit tests
     const CGFloat padding = 8;
