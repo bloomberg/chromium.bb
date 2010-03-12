@@ -141,8 +141,11 @@ bool FormManager::FillForm(const FormData& form) {
       iter != form_element->input_elements.end(); ++iter, ++i) {
     DCHECK_EQ(form.elements[i], iter->second.nameForAutofill());
 
-    iter->second.setValue(form.values[i]);
-    iter->second.setAutofilled(true);
+    if (!form.values[i].empty() &&
+        iter->second.inputType() != WebInputElement::Submit) {
+      iter->second.setValue(form.values[i]);
+      iter->second.setAutofilled(true);
+    }
   }
 
   return true;
