@@ -172,3 +172,10 @@ NativeDialog JavaScriptAppModalDialog::CreateNativeDialog() {
   NOTIMPLEMENTED();
   return nil;
 }
+
+void JavaScriptAppModalDialog::CloseModalDialog() {
+  NSAlert* alert = dialog_;
+  DCHECK([alert isKindOfClass:[NSAlert class]]);
+  [NSApp endSheet:[alert window]];
+  dialog_ = nil;
+}

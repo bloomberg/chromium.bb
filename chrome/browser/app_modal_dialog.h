@@ -17,12 +17,7 @@
 class ModalDialogDelegate;
 typedef ModalDialogDelegate* NativeDialog;
 #elif defined(OS_MACOSX)
-#if __OBJC__
-@class NSAlert;
-#else
-class NSAlert;
-#endif
-typedef NSAlert* NativeDialog;
+typedef void* NativeDialog;
 #elif defined(TOOLKIT_USES_GTK)
 typedef struct _GtkDialog GtkDialog;
 typedef struct _GtkWidget GtkWidget;
@@ -71,7 +66,7 @@ class AppModalDialog {
 #endif
 
   // Close the dialog if it is showing.
-  void CloseModalDialog();
+  virtual void CloseModalDialog();
 
   // Called by the app modal window queue to activate the window.
   void ActivateModalDialog();
@@ -97,7 +92,9 @@ class AppModalDialog {
   virtual NativeDialog CreateNativeDialog() = 0;
 
   // A reference to the platform native dialog box.
+#if defined(OS_LINUX) || defined(OS_WIN)
   NativeDialog dialog_;
+#endif
 
   // Parent tab contents.
   TabContents* tab_contents_;

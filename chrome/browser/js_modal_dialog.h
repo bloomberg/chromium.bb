@@ -13,6 +13,14 @@
 #include "chrome/common/notification_registrar.h"
 #include "net/base/cookie_monster.h"
 
+#if defined(OS_MACOSX)
+#if __OBJC__
+@class NSAlert;
+#else
+class NSAlert;
+#endif
+#endif
+
 class ExtensionHost;
 class JavaScriptMessageBoxClient;
 
@@ -56,6 +64,10 @@ class JavaScriptAppModalDialog : public AppModalDialog,
     return is_before_unload_dialog_;
   }
 
+#if defined(OS_MACOSX)
+  virtual void CloseModalDialog();
+#endif
+
   // Callbacks from NativeDialog when the user accepts or cancels the dialog.
   void OnCancel();
   void OnAccept(const std::wstring& prompt_text, bool suppress_js_messages);
@@ -74,6 +86,10 @@ class JavaScriptAppModalDialog : public AppModalDialog,
 
   // Initializes for notifications to listen.
   void InitNotifications();
+
+#if defined(OS_MACOSX)
+  NSAlert* dialog_;
+#endif
 
   NotificationRegistrar registrar_;
 

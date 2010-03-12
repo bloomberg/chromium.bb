@@ -14,6 +14,7 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/cocoa/clear_browsing_data_controller.h"
+#include "chrome/browser/cocoa/cookie_details_view_controller.h"
 #include "chrome/browser/profile.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -226,6 +227,17 @@ bool CookiesTreeModelObserverBridge::HasCocoaModel() {
 - (void)awakeFromNib {
   DCHECK([self window]);
   DCHECK_EQ(self, [[self window] delegate]);
+
+  detailsViewController_.reset([[CookieDetailsViewController alloc] init]);
+
+  NSView* detailView = [detailsViewController_.get() view];
+  NSRect viewFrameRect = [cookieDetailsViewPlaceholder_ frame];
+  [[detailsViewController_.get() view] setFrame:viewFrameRect];
+  [[cookieDetailsViewPlaceholder_ superview]
+      replaceSubview:cookieDetailsViewPlaceholder_
+                with:detailView];
+
+  [detailsViewController_ configureBindingsForTreeController:treeController_];
 }
 
 - (void)windowWillClose:(NSNotification*)notif {
@@ -356,12 +368,6 @@ bool CookiesTreeModelObserverBridge::HasCocoaModel() {
   if (count != 1U) {
     DCHECK_LT(count, 1U) << "User was able to select more than 1 cookie node!";
     [self setRemoveButtonEnabled:NO];
-
-    // Make sure that the cookie info pane is shown when there is no selection.
-    // That's what windows does.
-    [cookieInfo_ setHidden:NO];
-    [localStorageInfo_ setHidden:YES];
-    [databaseInfo_ setHidden:YES];
     return;
   }
 
@@ -378,18 +384,6 @@ bool CookiesTreeModelObserverBridge::HasCocoaModel() {
     }
     node = [[node children] objectAtIndex:childIndex];
   }
-
-  [self setRemoveButtonEnabled:YES];
-  CocoaCookieTreeNodeType nodeType = [[selectedObjects lastObject] nodeType];
-  bool hideCookieInfoView = nodeType != kCocoaCookieTreeNodeTypeCookie &&
-      nodeType != kCocoaCookieTreeNodeTypeFolder;
-  bool hideLocaStorageInfoView =
-      nodeType != kCocoaCookieTreeNodeTypeLocalStorage;
-  bool hideDatabaseInfoView =
-      nodeType != kCocoaCookieTreeNodeTypeDatabaseStorage;
-  [cookieInfo_ setHidden:hideCookieInfoView];
-  [localStorageInfo_ setHidden:hideLocaStorageInfoView];
-  [databaseInfo_ setHidden:hideDatabaseInfoView];
 }
 
 #pragma mark Unit Testing
@@ -400,18 +394,6 @@ bool CookiesTreeModelObserverBridge::HasCocoaModel() {
 
 - (NSArray*)icons {
   return icons_.get();
-}
-
-- (NSView*)cookieInfoView {
-  return cookieInfo_;
-}
-
-- (NSView*)localStorageInfoView {
-  return localStorageInfo_;
-}
-
-- (NSView*)databaseInfoView {
-  return databaseInfo_;
 }
 
 // Re-initializes the |treeModel_|, creates a new observer for it, and re-

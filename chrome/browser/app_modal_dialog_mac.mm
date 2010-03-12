@@ -20,8 +20,5 @@ void AppModalDialog::ActivateModalDialog() {
 }
 
 void AppModalDialog::CloseModalDialog() {
-  NSAlert* alert = dialog_;
-  DCHECK([alert isKindOfClass:[NSAlert class]]);
-  [NSApp endSheet:[alert window]];
-  dialog_ = nil;
+  NOTIMPLEMENTED();
 }

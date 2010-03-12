@@ -11,7 +11,11 @@
 
 AppModalDialog::AppModalDialog(TabContents* tab_contents,
                                const std::wstring& title)
+#if defined(OS_WIN) || defined(OS_LINUX)
     : dialog_(NULL),
+#elif defined(OS_MACOSX)
+    :
+#endif
       tab_contents_(tab_contents),
       title_(title),
       skip_this_dialog_(false) {

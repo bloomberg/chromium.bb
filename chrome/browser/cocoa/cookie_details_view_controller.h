@@ -1,0 +1,40 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#import <Cocoa/Cocoa.h>
+
+#include "base/cocoa_protocols_mac.h"
+#include "base/scoped_nsobject.h"
+#include "base/scoped_ptr.h"
+#include "net/base/cookie_monster.h"
+
+@class CocoaCookieTreeNode;
+
+// Controller for the view that displays the details of a cookie,
+// used both in the cookie prompt dialog as well as the
+// show cookies preference sheet of content settings preferences.
+@interface CookieDetailsViewController : NSViewController {
+ @private
+  // Allows direct access to the object controller for
+  // the displayed cookie information.
+  IBOutlet NSObjectController* objectController_;
+}
+
+- (id)init;
+
+// Configures the cookie detail view that is managed by the controller
+// to display the information about a single cookie, the information
+// for which is explicitly passed in the parameter |content|.
+- (void)setContentObject:(id)content;
+
+// Adjust the size of the view to exactly fix the information text fields
+// that are visible inside it.
+- (void)shrinkViewToFit;
+
+// Called by the cookie tree dialog to establish a binding between
+// the the detail view's object controller and the tree controller.
+// This binding allows the cookie tree to use the detail view unmodified.
+- (void)configureBindingsForTreeController:(NSTreeController*)controller;
+@end
+

@@ -480,8 +480,6 @@ TEST_F(CookiesWindowControllerTest, FLAKY_RemoveButtonEnabled) {
     [[controller treeController] setSelectionIndexPath:indexPath];
     [controller outlineViewSelectionDidChange:nil];
     EXPECT_TRUE([controller removeButtonEnabled]);
-    EXPECT_FALSE([[controller cookieInfoView] isHidden]);
-    EXPECT_TRUE([[controller localStorageInfoView] isHidden]);
   }
 
   {
@@ -491,8 +489,6 @@ TEST_F(CookiesWindowControllerTest, FLAKY_RemoveButtonEnabled) {
     [[controller treeController] setSelectionIndexPath:indexPath];
     [controller outlineViewSelectionDidChange:nil];
     EXPECT_TRUE([controller removeButtonEnabled]);
-    EXPECT_FALSE([[controller cookieInfoView] isHidden]);
-    EXPECT_TRUE([[controller localStorageInfoView] isHidden]);
   }
 
   {
@@ -502,8 +498,6 @@ TEST_F(CookiesWindowControllerTest, FLAKY_RemoveButtonEnabled) {
     [[controller treeController] setSelectionIndexPath:indexPath];
     [controller outlineViewSelectionDidChange:nil];
     EXPECT_TRUE([controller removeButtonEnabled]);
-    EXPECT_TRUE([[controller cookieInfoView] isHidden]);
-    EXPECT_FALSE([[controller localStorageInfoView] isHidden]);
   }
 
   {
@@ -527,8 +521,7 @@ TEST_F(CookiesWindowControllerTest, FLAKY_RemoveButtonEnabled) {
   [controller closeSheet:nil];
 }
 
-TEST_F(CookiesWindowControllerTest, UpdateFilter)
-{
+TEST_F(CookiesWindowControllerTest, UpdateFilter) {
   const GURL url = GURL("http://foo.com");
   TestingProfile* profile = browser_helper_.profile();
   net::CookieMonster* cm = profile->GetCookieMonster();

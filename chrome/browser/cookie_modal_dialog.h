@@ -13,6 +13,14 @@
 #include "chrome/browser/cookie_prompt_modal_dialog_delegate.h"
 #include "googleurl/src/gurl.h"
 
+#if defined(OS_MACOSX)
+#if __OBJC__
+@class NSWindow;
+#else
+class NSWindow;
+#endif
+#endif
+
 class HostContentSettingsMap;
 class PrefService;
 
@@ -58,6 +66,10 @@ class CookiePromptModalDialog : public AppModalDialog {
   virtual void CancelWindow();
   virtual bool IsValid();
 
+#if defined(OS_MACOSX)
+  virtual void CloseModalDialog();
+#endif
+
   DialogType dialog_type() const { return dialog_type_; }
   const GURL& origin() const { return origin_; }
   const std::string& cookie_line() const { return cookie_line_; }
@@ -78,6 +90,11 @@ class CookiePromptModalDialog : public AppModalDialog {
 #endif
 
  private:
+
+#if defined(OS_MACOSX)
+  NSWindow* dialog_;
+#endif
+
   // Used to verify our request is still necessary and when the response should
   // persist.
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;

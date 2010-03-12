@@ -75,6 +75,12 @@ enum CocoaCookieTreeNodeType {
 - (NSArray*)children;
 - (BOOL)isLeaf;
 
+- (BOOL)isFolderOrCookieTreeDetails;
+- (BOOL)isLocalStorageTreeDetails;
+- (BOOL)isDatabaseTreeDetails;
+- (BOOL)isLocalStoragePromptDetails;
+- (BOOL)isDatabasePromptDetails;
+
 // Used only by kCocoaCookieTreeNodeTypeCookie. Nil for other types.
 - (NSString*)name;
 - (NSString*)content;

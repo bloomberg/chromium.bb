@@ -13,6 +13,7 @@
 #include "net/base/cookie_monster.h"
 
 @class CookiesWindowController;
+@class CookieDetailsViewController;
 class Profile;
 
 namespace {
@@ -101,13 +102,9 @@ class CookiesTreeModelObserverBridge : public CookiesTreeModel::Observer {
   IBOutlet NSTreeController* treeController_;
   IBOutlet NSOutlineView* outlineView_;
   IBOutlet NSSearchField* searchField_;
+  IBOutlet NSView* cookieDetailsViewPlaceholder_;
 
-  // These views are laid out inside a NSBox and are shown/hidden to detail
-  // information about the selected node.
-  IBOutlet NSView* cookieInfo_;
-  IBOutlet NSView* databaseInfo_;
-  IBOutlet NSView* localStorageInfo_;
-
+  scoped_nsobject<CookieDetailsViewController> detailsViewController_;
   Profile* profile_;  // weak
   BrowsingDataDatabaseHelper* databaseHelper_;  // weak
   BrowsingDataLocalStorageHelper* storageHelper_;  // weak
@@ -146,8 +143,5 @@ class CookiesTreeModelObserverBridge : public CookiesTreeModel::Observer {
 - (void)clearBrowsingDataNotification:(NSNotification*)notif;
 - (CookiesTreeModelObserverBridge*)modelObserver;
 - (NSArray*)icons;
-- (NSView*)cookieInfoView;
-- (NSView*)localStorageInfoView;
-- (NSView*)databaseInfoInfoView;
 - (void)loadTreeModelFromProfile;
 @end

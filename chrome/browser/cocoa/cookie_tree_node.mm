@@ -121,6 +121,27 @@
       [self nodeType], [[self children] count]];
 }
 
+- (BOOL)isFolderOrCookieTreeDetails {
+  return [self nodeType] == kCocoaCookieTreeNodeTypeFolder ||
+      [self nodeType] == kCocoaCookieTreeNodeTypeCookie;
+}
+
+- (BOOL)isDatabaseTreeDetails {
+  return [self nodeType] == kCocoaCookieTreeNodeTypeDatabaseStorage;
+}
+
+- (BOOL)isLocalStorageTreeDetails {
+  return [self nodeType] == kCocoaCookieTreeNodeTypeLocalStorage;
+}
+
+- (BOOL)isDatabasePromptDetails {
+  return false;
+}
+
+- (BOOL)isLocalStoragePromptDetails {
+  return false;
+}
+
 #pragma mark Cookie Accessors
 
 - (NSString*)name {
@@ -165,6 +186,26 @@
 
 - (NSString*)databaseDescription {
   return databaseDescription_.get();
+}
+
+#pragma mark Unused Accessors
+
+// This method is never called for the cookie tree, it is only
+// only included because the Cocoa bindings for the shared view
+// used to display browser data details always expects the method
+// even though it is only used in the cookie prompt window.
+- (id)localStorageKey {
+  NOTIMPLEMENTED();
+  return nil;
+}
+
+// This method is never called for the cookie tree, it is only
+// only included because the Cocoa bindings for the shared view
+// used to display browser data details always expects the method
+// even though it is only used in the cookie prompt window.
+- (id)localStorageValue {
+  NOTIMPLEMENTED();
+  return nil;
 }
 
 @end

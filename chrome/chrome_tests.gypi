@@ -636,6 +636,8 @@
         'browser/cocoa/content_exceptions_window_controller_unittest.mm',
         'browser/cocoa/content_settings_dialog_controller_unittest.mm',
         'browser/cocoa/cookies_window_controller_unittest.mm',
+        'browser/cocoa/cookie_prompt_window_controller_unittest.mm',
+        'browser/cocoa/cookie_details_view_controller_unittest.mm',
         'browser/cocoa/custom_home_pages_model_unittest.mm',
         'browser/cocoa/delayedmenu_button_unittest.mm',
         'browser/cocoa/disclosure_view_controller_unittest.mm',
