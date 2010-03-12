@@ -27,8 +27,9 @@ FullNameField* FullNameField::Parse(
   // Searching for any label containing the word "name" is too general;
   // for example, Travelocity_Edit travel profile.html contains a field
   // "Travel Profile Name".
-  if (ParseText(iter, ASCIIToUTF16("^name|full name|your name|customer name"),
-                &field))
+  const string16 name_match =
+      ASCIIToUTF16("^name|full name|fullname|your name|customer name");
+  if (ParseText(iter, name_match, &field))
     return new FullNameField(field);
 
   return NULL;
