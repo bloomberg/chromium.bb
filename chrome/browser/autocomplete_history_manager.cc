@@ -125,7 +125,7 @@ void AutocompleteHistoryManager::StoreFormEntriesInWebDatabase(
   }
 
   profile()->GetWebDataService(Profile::EXPLICIT_ACCESS)->
-      AddFormFieldValues(form.elements);
+      AddFormFieldValues(values);
 }
 
 void AutocompleteHistoryManager::SendSuggestions(const WDTypedResult* result) {
