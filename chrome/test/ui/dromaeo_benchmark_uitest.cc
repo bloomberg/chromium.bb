@@ -104,15 +104,16 @@ class DromaeoTest : public UITest {
     std::string trace_name = reference_ ? "score_ref" : "score";
     std::string unit_name = "runs/s";
 
-    PrintResult("score", "", trace_name, score, unit_name, true);
-
     ResultsMap::const_iterator it = results.begin();
+    // First result is overall score and thus "important".
+    bool important = true;
     for (; it != results.end(); ++it) {
       std::string test_name = it->first;
       for (size_t i = 0; i < test_name.length(); i++)
         if (!isalnum(test_name[i]))
           test_name[i] = '_';
-      PrintResult(test_name, "", trace_name, it->second, unit_name, false);
+      PrintResult(test_name, "", trace_name, it->second, unit_name, important);
+      important = false;  // All others are not overall scores.
     }
   }
 
