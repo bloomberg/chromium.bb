@@ -377,9 +377,10 @@ function appendJSONScriptElements() {
     appendScript(getPathToBuilderResultsFile(builderName) + 'results.json');
   }
 
-  // Grab expectations file from any builder.
+  // Grab expectations file from the fastest builder, which is Linux release
+  // right now.  Could be changed to any other builder if needed.
   if (waitingOnExpectations) {
-    appendScript(getPathToBuilderResultsFile(builderName) +
+    appendScript(getPathToBuilderResultsFile('Webkit Linux') +
         'expectations.json');
   }
 }
