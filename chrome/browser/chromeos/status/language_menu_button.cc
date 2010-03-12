@@ -273,8 +273,7 @@ string16 LanguageMenuButton::GetLabelAt(int index) const {
   DCHECK(language_list_.get());
 
   if (IndexPointsToConfigureImeMenuItem(index)) {
-    // TODO(yusukes): Use message catalog.
-    return WideToUTF16(L"Configure IME...");
+    return l10n_util::GetStringUTF16(IDS_STATUSBAR_IME_CONFIGURE);
   }
 
   std::string name;
