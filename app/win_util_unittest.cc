@@ -82,13 +82,3 @@ static const struct filename_case {
   {L"f.jpg",     L"",      L"jpg", L"f.jpg"},
   {L"f.jpeg",    L"",      L"jpg", L"f.jpeg"},
 };
-
-TEST(WinUtilTest, AppendingExtensions) {
-  for (unsigned int i = 0; i < arraysize(filename_cases); ++i) {
-    const filename_case& value = filename_cases[i];
-    std::wstring result =
-        win_util::AppendExtensionIfNeeded(value.filename, value.filter_selected,
-                                          value.suggested_ext);
-    EXPECT_EQ(value.result, result);
-  }
-}
