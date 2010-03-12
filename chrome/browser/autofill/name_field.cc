@@ -85,7 +85,7 @@ FirstLastNameField* FirstLastNameField::Parse2(
   // "txtmiddlename"); such a field probably actually represents a
   // middle initial.
   if (ParseText(&q,
-                ASCIIToUTF16("^mi|middle initial|middleinitial|m.i."),
+                ASCIIToUTF16("mi|middle initial|middleinitial|m.i."),
                 &v.middle_name_)) {
     v.middle_initial_ = true;
   } else {
