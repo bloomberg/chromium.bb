@@ -161,13 +161,18 @@ std::string ProfileSyncService::GetLsidForAuthBootstraping() {
 
 void ProfileSyncService::InitializeBackend(bool delete_sync_data_folder) {
   bool invalidate_sync_login = false;
+  bool invalidate_sync_xmpp_login = false;
 #if !defined(NDEBUG)
   invalidate_sync_login = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kInvalidateSyncLogin);
+  invalidate_sync_xmpp_login = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kInvalidateSyncXmppLogin);
 #endif
   backend_->Initialize(sync_service_url_, profile_->GetRequestContext(),
                        GetLsidForAuthBootstraping(), delete_sync_data_folder,
-                       invalidate_sync_login, notification_method_);
+                       invalidate_sync_login,
+                       invalidate_sync_xmpp_login,
+                       notification_method_);
 }
 
 void ProfileSyncService::StartUp() {

@@ -33,7 +33,8 @@ class TalkMediatorImpl
     : public TalkMediator,
       public sigslot::has_slots<> {
  public:
-  explicit TalkMediatorImpl(NotificationMethod notification_method);
+  TalkMediatorImpl(NotificationMethod notification_method,
+                   bool invalidate_xmpp_auth_token);
   explicit TalkMediatorImpl(MediatorThread* thread);
   virtual ~TalkMediatorImpl();
 
@@ -108,6 +109,8 @@ class TalkMediatorImpl
 
   // Channel through which to broadcast events.
   scoped_ptr<TalkMediatorChannel> channel_;
+
+  bool invalidate_xmpp_auth_token_;
 
   FRIEND_TEST(TalkMediatorImplTest, SetAuthTokenWithBadInput);
   FRIEND_TEST(TalkMediatorImplTest, SetAuthTokenWithGoodInput);

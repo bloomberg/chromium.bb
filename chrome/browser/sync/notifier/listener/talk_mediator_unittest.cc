@@ -37,7 +37,7 @@ class TalkMediatorImplTest : public testing::Test {
 TEST_F(TalkMediatorImplTest, ConstructionOfTheClass) {
   // Constructing a single talk mediator enables SSL through the singleton.
   scoped_ptr<TalkMediatorImpl> talk1(new TalkMediatorImpl(
-      browser_sync::kDefaultNotificationMethod));
+      browser_sync::kDefaultNotificationMethod, false));
   talk1.reset(NULL);
 }
 

@@ -249,6 +249,7 @@ extern const char kKioskMode[];
 #ifndef NDEBUG
 extern const char kGearsPluginPathOverride[];
 extern const char kInvalidateSyncLogin[];
+extern const char kInvalidateSyncXmppLogin[];
 #endif
 
 // DON'T ADD RANDOM STUFF HERE. Put it in the main section above in

@@ -50,6 +50,7 @@ void SyncBackendHost::Initialize(
     const std::string& lsid,
     bool delete_sync_data_folder,
     bool invalidate_sync_login,
+    bool invalidate_sync_xmpp_login,
     NotificationMethod notification_method) {
   if (!core_thread_.Start())
     return;
@@ -82,6 +83,7 @@ void SyncBackendHost::Initialize(
                             lsid,
                             delete_sync_data_folder,
                             invalidate_sync_login,
+                            invalidate_sync_xmpp_login,
                             notification_method)));
 }
 
@@ -279,6 +281,7 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
       host_,  // ModelSafeWorkerRegistrar.
       options.attempt_last_user_authentication,
       options.invalidate_sync_login,
+      options.invalidate_sync_xmpp_login,
       MakeUserAgentForSyncapi().c_str(),
       options.lsid.c_str(),
       options.notification_method);

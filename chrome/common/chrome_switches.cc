@@ -831,6 +831,10 @@ const char kGearsPluginPathOverride[]       = "gears-plugin-path";
 // Makes sure any sync login attempt will fail with an error.  (Only
 // used for testing.)
 const char kInvalidateSyncLogin[]           = "invalidate-sync-login";
+
+// Makes sure any sync xmpp login attempt will fail with an error.  (Only
+// used for testing.)
+const char kInvalidateSyncXmppLogin[]       = "invalidate-sync-xmpp-login";
 #endif
 
 // -----------------------------------------------------------------------------

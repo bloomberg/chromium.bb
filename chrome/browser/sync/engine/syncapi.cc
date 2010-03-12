@@ -966,6 +966,7 @@ class SyncManager::SyncInternal {
             ModelSafeWorkerRegistrar* model_safe_worker_registrar,
             bool attempt_last_user_authentication,
             bool invalidate_last_user_auth_token,
+            bool invalidate_xmpp_auth_token,
             const char* user_agent,
             const std::string& lsid,
             browser_sync::NotificationMethod notification_method);
@@ -1218,6 +1219,7 @@ bool SyncManager::Init(const FilePath& database_location,
                        ModelSafeWorkerRegistrar* registrar,
                        bool attempt_last_user_authentication,
                        bool invalidate_last_user_auth_token,
+                       bool invalidate_xmpp_auth_token,
                        const char* user_agent,
                        const char* lsid,
                        browser_sync::NotificationMethod notification_method) {
@@ -1235,6 +1237,7 @@ bool SyncManager::Init(const FilePath& database_location,
                      registrar,
                      attempt_last_user_authentication,
                      invalidate_last_user_auth_token,
+                     invalidate_xmpp_auth_token,
                      user_agent,
                      lsid,
                      notification_method);
@@ -1262,6 +1265,7 @@ bool SyncManager::SyncInternal::Init(
     ModelSafeWorkerRegistrar* model_safe_worker_registrar,
     bool attempt_last_user_authentication,
     bool invalidate_last_user_auth_token,
+    bool invalidate_xmpp_auth_token,
     const char* user_agent,
     const std::string& lsid,
     browser_sync::NotificationMethod notification_method) {
@@ -1316,7 +1320,8 @@ bool SyncManager::SyncInternal::Init(
   const char* service_id = gaia_service_id ?
       gaia_service_id : SYNC_SERVICE_NAME;
 
-  talk_mediator_.reset(new TalkMediatorImpl(notification_method));
+  talk_mediator_.reset(new TalkMediatorImpl(notification_method,
+                                            invalidate_xmpp_auth_token));
   allstatus()->WatchTalkMediator(talk_mediator());
 
   BridgedGaiaAuthenticator* gaia_auth = new BridgedGaiaAuthenticator(

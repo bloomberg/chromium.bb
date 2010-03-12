@@ -609,6 +609,10 @@ class SyncManager {
   // |invalidate_last_user_auth_token| makes it so that any auth token
   // read from user settings is invalidated.  This is used for testing
   // code paths related to authentication failures.
+  //
+  // |invalidate_xmpp_auth_token| makes it so that any auth token
+  // used to log into XMPP is invalidated.  This is used for testing
+  // code paths related to authentication failures for XMPP only.
   bool Init(const FilePath& database_location,
             const char* sync_server_and_path,
             int sync_server_port,
@@ -620,6 +624,7 @@ class SyncManager {
             browser_sync::ModelSafeWorkerRegistrar* registrar,
             bool attempt_last_user_authentication,
             bool invalidate_last_user_auth_token,
+            bool invalidate_xmpp_auth_token,
             const char* user_agent,
             const char* lsid,
             browser_sync::NotificationMethod notification_method);

@@ -41,8 +41,10 @@ class SslInitializationSingleton {
   DISALLOW_COPY_AND_ASSIGN(SslInitializationSingleton);
 };
 
-TalkMediatorImpl::TalkMediatorImpl(NotificationMethod notification_method)
-    : mediator_thread_(new MediatorThreadImpl(notification_method)) {
+TalkMediatorImpl::TalkMediatorImpl(NotificationMethod notification_method,
+                                   bool invalidate_xmpp_auth_token)
+    : mediator_thread_(new MediatorThreadImpl(notification_method)),
+      invalidate_xmpp_auth_token_(invalidate_xmpp_auth_token) {
   // Ensure the SSL library is initialized.
   SslInitializationSingleton::GetInstance()->RegisterClient();
 
@@ -51,7 +53,8 @@ TalkMediatorImpl::TalkMediatorImpl(NotificationMethod notification_method)
 }
 
 TalkMediatorImpl::TalkMediatorImpl(MediatorThread *thread)
-    : mediator_thread_(thread) {
+    : mediator_thread_(thread),
+      invalidate_xmpp_auth_token_(false) {
   // When testing we do not initialize the SSL library.
   TalkMediatorInitialization(true);
 }
@@ -176,7 +179,8 @@ bool TalkMediatorImpl::SetAuthToken(const std::string& email,
   xmpp_settings_.set_resource("chrome-sync");
   xmpp_settings_.set_host(jid.domain());
   xmpp_settings_.set_use_tls(true);
-  xmpp_settings_.set_auth_cookie(token);
+  xmpp_settings_.set_auth_cookie(invalidate_xmpp_auth_token_ ?
+                                 token + "bogus" : token);
 
   state_.initialized = 1;
   return true;
