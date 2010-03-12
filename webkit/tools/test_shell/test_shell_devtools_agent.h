@@ -11,7 +11,8 @@
 
 namespace WebKit {
 
-class WebViewImpl;
+class WebDevToolsAgent;
+class WebView;
 struct WebDevToolsMessageData;
 
 } // namespace WebKit
@@ -52,7 +53,7 @@ class TestShellDevToolsAgent : public WebKit::WebDevToolsAgentClient {
   TestShellDevToolsClient* dev_tools_client_;
   int routing_id_;
   WebKit::WebDevToolsAgent* web_dev_tools_agent_;
-  WebKit::WebViewImpl* web_view_;
+  WebKit::WebView* web_view_;
 
   DISALLOW_COPY_AND_ASSIGN(TestShellDevToolsAgent);
 };

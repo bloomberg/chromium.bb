@@ -2,24 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/WebKit/WebKit/chromium/public/WebDevToolsAgent.h"
-#include "third_party/WebKit/WebKit/chromium/src/WebViewImpl.h"
-
-#undef LOG
-#include "grit/webkit_chromium_resources.h"
 #include "webkit/tools/test_shell/test_shell_devtools_agent.h"
+
+#include "base/message_loop.h"
+#include "grit/webkit_chromium_resources.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDevToolsAgent.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "webkit/tools/test_shell/test_shell_devtools_callargs.h"
 #include "webkit/tools/test_shell/test_shell_devtools_client.h"
 #include "webkit/glue/webkit_glue.h"
-
-#include "base/message_loop.h"
 
 using WebKit::WebCString;
 using WebKit::WebDevToolsAgent;
 using WebKit::WebDevToolsMessageData;
 using WebKit::WebString;
 using WebKit::WebView;
-using WebKit::WebViewImpl;
 
 // static
 void TestShellDevToolsAgent::DispatchMessageLoop() {
@@ -39,7 +36,7 @@ void TestShellDevToolsAgent::DispatchMessageLoop() {
 TestShellDevToolsAgent::TestShellDevToolsAgent(WebView* web_view)
     : call_method_factory_(this),
       dev_tools_client_(NULL),
-      web_view_(static_cast<WebViewImpl*>(web_view)) {
+      web_view_(web_view) {
   static int dev_tools_agent_counter;
   routing_id_ = ++dev_tools_agent_counter;
   if (routing_id_ == 1)
