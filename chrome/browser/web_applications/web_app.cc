@@ -14,7 +14,6 @@
 
 #include "base/callback.h"
 #include "base/file_util.h"
-#include "base/linux_util.h"
 #include "base/md5.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
@@ -31,6 +30,10 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
 #include "webkit/glue/dom_operations.h"
+
+#if defined(OS_LINUX)
+#include "base/linux_util.h"
+#endif  // defined(OS_LINUX)
 
 #if defined(OS_WIN)
 #include "app/gfx/icon_util.h"
