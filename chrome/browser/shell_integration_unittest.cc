@@ -8,7 +8,6 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/linux_util.h"
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
 #include "base/stl_util-inl.h"
@@ -18,6 +17,10 @@
 #include "chrome/common/chrome_paths_internal.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_LINUX)
+#include "base/linux_util.h"
+#endif  // defined(OS_LINUX)
 
 #define FPL FILE_PATH_LITERAL
 
