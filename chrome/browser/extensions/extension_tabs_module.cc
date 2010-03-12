@@ -808,22 +808,12 @@ bool CaptureVisibleTabFunction::RunImpl() {
   RenderViewHost* render_view_host = tab_contents->render_view_host();
 
   // If a backing store is cached for the tab we want to capture,
-  // then use it to generate the image.
+  // and it can be copied into a bitmap, then use it to generate the image.
   BackingStore* backing_store = render_view_host->GetBackingStore(false);
-  if (backing_store) {
-    CaptureSnapshotFromBackingStore(backing_store);
+  if (backing_store && CaptureSnapshotFromBackingStore(backing_store))
     return true;
-  }
 
-  // TODO: If a paint request is pending, wait for it to finish rather than
-  // asking the renderer to capture a snapshot.  It is possible for a paint
-  // request to be queued for a long time by the renderer.  For example, if
-  // a tab is hidden, the repaint is not done until the tab is un-hidden.
-  // To avoid waiting for a long time, there could be a timeout after which
-  // we ask for a snapshot, or the renderer could send a NACK to paint
-  // requests it defers.
-
-  // Explicitly ask for a snapshot of the tab.
+  // Ask the renderer for a snapshot of the tab.
   render_view_host->CaptureSnapshot();
   registrar_.Add(this,
                  NotificationType::TAB_SNAPSHOT_TAKEN,
@@ -834,20 +824,21 @@ bool CaptureVisibleTabFunction::RunImpl() {
 }
 
 // Build the image of a tab's contents out of a backing store.
-void CaptureVisibleTabFunction::CaptureSnapshotFromBackingStore(
+// This may fail if we can not copy a backing store into a bitmap.
+// For example, some uncommon X11 visual modes are not supported by
+// CopyFromBackingStore().
+bool CaptureVisibleTabFunction::CaptureSnapshotFromBackingStore(
     BackingStore* backing_store) {
 
   skia::PlatformCanvas temp_canvas;
   if (!backing_store->CopyFromBackingStore(gfx::Rect(gfx::Point(0, 0),
                                                      backing_store->size()),
                                            &temp_canvas)) {
-    error_ = ExtensionErrorUtils::FormatErrorMessage(
-        keys::kInternalVisibleTabCaptureError, "");
-    SendResponse(false);
-    return;
+    return false;
   }
   SendResultFromBitmap(
       temp_canvas.getTopPlatformDevice().accessBitmap(false));
+  return true;
 }
 
 // If a backing store was not available in CaptureVisibleTabFunction::RunImpl,

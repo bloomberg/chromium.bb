@@ -143,7 +143,7 @@ class CaptureVisibleTabFunction : public AsyncExtensionFunction,
  private:
   ~CaptureVisibleTabFunction() {}
   virtual bool RunImpl();
-  virtual void CaptureSnapshotFromBackingStore(BackingStore* backing_store);
+  virtual bool CaptureSnapshotFromBackingStore(BackingStore* backing_store);
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
