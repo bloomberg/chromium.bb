@@ -64,10 +64,6 @@ END_COM_MAP()
 BEGIN_SINK_MAP(Bho)
   SINK_ENTRY_INFO(0, DIID_DWebBrowserEvents2, DISPID_BEFORENAVIGATE2,
                   BeforeNavigate2, &kBeforeNavigate2Info)
-  SINK_ENTRY_INFO(0, DIID_DWebBrowserEvents2, DISPID_NAVIGATECOMPLETE2,
-                  NavigateComplete2, &kNavigateComplete2Info)
-  SINK_ENTRY_INFO(0, DIID_DWebBrowserEvents2, DISPID_NAVIGATEERROR,
-                  OnNavigateError, &kNavigateErrorInfo)
 END_SINK_MAP()
 
   // Lifetime management methods
@@ -78,16 +74,9 @@ END_SINK_MAP()
 
   // IObjectWithSite
   STDMETHODIMP SetSite(IUnknown* site);
-
   STDMETHOD(BeforeNavigate2)(IDispatch* dispatch, VARIANT* url, VARIANT* flags,
       VARIANT* target_frame_name, VARIANT* post_data, VARIANT* headers,
       VARIANT_BOOL* cancel);
-
-  STDMETHOD_(void, NavigateComplete2)(IDispatch* dispatch, VARIANT* url);
-
-  STDMETHOD_(void, OnNavigateError)(IDispatch* dispatch, VARIANT* url,
-                                    VARIANT* frame_name, VARIANT* status_code,
-                                    VARIANT* cancel);
 
   HRESULT NavigateToCurrentUrlInCF(IBrowserService* browser);
 
@@ -124,10 +113,6 @@ END_SINK_MAP()
 
   static void ProcessOptInUrls(IWebBrowser2* browser, BSTR url);
 
-  int pending_navigation_count() const {
-    return pending_navigation_count_;
-  }
-
  protected:
   bool PatchProtocolHandler(const CLSID& handler_clsid);
 
@@ -137,14 +122,6 @@ END_SINK_MAP()
   static base::LazyInstance<base::ThreadLocalPointer<Bho> >
       bho_current_thread_instance_;
   static _ATL_FUNC_INFO kBeforeNavigate2Info;
-  static _ATL_FUNC_INFO kNavigateComplete2Info;
-  static _ATL_FUNC_INFO kNavigateErrorInfo;
-
-  // This variable holds the pending navigation count seen by the BHO. It is
-  // incremented in BeforeNavigate2 and decremented in NavigateComplete2.
-  // Used to determine whether there are embedded frames loading for the
-  // current document.
-  int pending_navigation_count_;
 };
 
 #endif  // CHROME_FRAME_BHO_H_
