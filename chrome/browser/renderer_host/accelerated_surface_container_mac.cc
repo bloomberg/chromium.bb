@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/renderer_host/gpu_plugin_container_mac.h"
+#include "chrome/browser/renderer_host/accelerated_surface_container_mac.h"
 
 #include "base/logging.h"
-#include "chrome/browser/renderer_host/gpu_plugin_container_manager_mac.h"
-#include "chrome/common/io_surface_support_mac.h"
 #include "webkit/glue/webplugin.h"
+#include "chrome/browser/renderer_host/accelerated_surface_container_manager_mac.h"
+#include "chrome/common/io_surface_support_mac.h"
 
-MacGPUPluginContainer::MacGPUPluginContainer()
+AcceleratedSurfaceContainerMac::AcceleratedSurfaceContainerMac()
     : x_(0),
       y_(0),
       surface_(NULL),
@@ -18,22 +18,22 @@ MacGPUPluginContainer::MacGPUPluginContainer()
       texture_(0) {
 }
 
-MacGPUPluginContainer::~MacGPUPluginContainer() {
+AcceleratedSurfaceContainerMac::~AcceleratedSurfaceContainerMac() {
   ReleaseIOSurface();
 }
 
-void MacGPUPluginContainer::ReleaseIOSurface() {
+void AcceleratedSurfaceContainerMac::ReleaseIOSurface() {
   if (surface_) {
     CFRelease(surface_);
     surface_ = NULL;
   }
 }
 
-void MacGPUPluginContainer::SetSizeAndIOSurface(
+void AcceleratedSurfaceContainerMac::SetSizeAndIOSurface(
     int32 width,
     int32 height,
     uint64 io_surface_identifier,
-    MacGPUPluginContainerManager* manager) {
+    AcceleratedSurfaceContainerManagerMac* manager) {
   ReleaseIOSurface();
   IOSurfaceSupport* io_surface_support = IOSurfaceSupport::Initialize();
   if (io_surface_support) {
@@ -45,11 +45,11 @@ void MacGPUPluginContainer::SetSizeAndIOSurface(
   }
 }
 
-void MacGPUPluginContainer::SetSizeAndTransportDIB(
+void AcceleratedSurfaceContainerMac::SetSizeAndTransportDIB(
     int32 width,
     int32 height,
     TransportDIB::Handle transport_dib,
-    MacGPUPluginContainerManager* manager) {
+    AcceleratedSurfaceContainerManagerMac* manager) {
   if (TransportDIB::is_valid(transport_dib)) {
     transport_dib_.reset(TransportDIB::Map(transport_dib));
     EnqueueTextureForDeletion(manager);
@@ -58,7 +58,7 @@ void MacGPUPluginContainer::SetSizeAndTransportDIB(
   }
 }
 
-void MacGPUPluginContainer::MoveTo(
+void AcceleratedSurfaceContainerMac::MoveTo(
     const webkit_glue::WebPluginGeometry& geom) {
   x_ = geom.window_rect.x();
   y_ = geom.window_rect.y();
@@ -66,7 +66,7 @@ void MacGPUPluginContainer::MoveTo(
   clipRect_ = geom.clip_rect;
 }
 
-void MacGPUPluginContainer::Draw(CGLContextObj context) {
+void AcceleratedSurfaceContainerMac::Draw(CGLContextObj context) {
   IOSurfaceSupport* io_surface_support = IOSurfaceSupport::Initialize();
   GLenum target = GL_TEXTURE_RECTANGLE_ARB;
   if (!texture_) {
@@ -150,8 +150,8 @@ void MacGPUPluginContainer::Draw(CGLContextObj context) {
   }
 }
 
-void MacGPUPluginContainer::EnqueueTextureForDeletion(
-    MacGPUPluginContainerManager* manager) {
+void AcceleratedSurfaceContainerMac::EnqueueTextureForDeletion(
+    AcceleratedSurfaceContainerManagerMac* manager) {
   manager->EnqueueTextureForDeletion(texture_);
   texture_ = 0;
 }

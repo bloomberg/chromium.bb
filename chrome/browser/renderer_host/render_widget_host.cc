@@ -151,17 +151,16 @@ void RenderWidgetHost::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetScreenInfo, OnMsgGetScreenInfo)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetWindowRect, OnMsgGetWindowRect)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetRootWindowRect, OnMsgGetRootWindowRect)
-    // The following messages are only used on 10.6 and later
     IPC_MESSAGE_HANDLER(ViewHostMsg_AllocateFakePluginWindowHandle,
                         OnAllocateFakePluginWindowHandle)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DestroyFakePluginWindowHandle,
                         OnDestroyFakePluginWindowHandle)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_GPUPluginSetIOSurface,
-                        OnGPUPluginSetIOSurface)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_GPUPluginSetTransportDIB,
-                        OnGPUPluginSetTransportDIB)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_GPUPluginBuffersSwapped,
-                        OnGPUPluginBuffersSwapped)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_AcceleratedSurfaceSetIOSurface,
+                        OnAcceleratedSurfaceSetIOSurface)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_AcceleratedSurfaceSetTransportDIB,
+                        OnAcceleratedSurfaceSetTransportDIB)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_AcceleratedSurfaceBuffersSwapped,
+                        OnAcceleratedSurfaceBuffersSwapped)
 #endif
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP_EX()
@@ -940,29 +939,31 @@ void RenderWidgetHost::OnDestroyFakePluginWindowHandle(
   }
 }
 
-void RenderWidgetHost::OnGPUPluginSetIOSurface(gfx::PluginWindowHandle window,
-                                               int32 width,
-                                               int32 height,
-                                               uint64 mach_port) {
+void RenderWidgetHost::OnAcceleratedSurfaceSetIOSurface(
+    gfx::PluginWindowHandle window,
+    int32 width,
+    int32 height,
+    uint64 mach_port) {
   if (view_) {
-    view_->GPUPluginSetIOSurface(window, width, height, mach_port);
+    view_->AcceleratedSurfaceSetIOSurface(window, width, height, mach_port);
   }
 }
 
-void RenderWidgetHost::OnGPUPluginSetTransportDIB(
+void RenderWidgetHost::OnAcceleratedSurfaceSetTransportDIB(
     gfx::PluginWindowHandle window,
     int32 width,
     int32 height,
     TransportDIB::Handle transport_dib) {
   if (view_) {
-    view_->GPUPluginSetTransportDIB(window, width, height, transport_dib);
+    view_->AcceleratedSurfaceSetTransportDIB(window, width, height,
+                                             transport_dib);
   }
 }
 
-void RenderWidgetHost::OnGPUPluginBuffersSwapped(
+void RenderWidgetHost::OnAcceleratedSurfaceBuffersSwapped(
     gfx::PluginWindowHandle window) {
   if (view_) {
-    view_->GPUPluginBuffersSwapped(window);
+    view_->AcceleratedSurfaceBuffersSwapped(window);
   }
 }
 #endif

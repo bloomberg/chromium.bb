@@ -122,10 +122,10 @@ class WebPluginDelegateStub : public IPC::Channel::Listener,
   scoped_ptr<CommandBufferStub> command_buffer_stub_;
 
 #if defined(OS_MACOSX)
-  // If this is the GPU plugin, we need to be receive a fake window
-  // handle which is used for subsequent communication back to the
+  // If this is a GPU-accelerated plug-in, we need to be able to receive a fake
+  // window handle which is used for subsequent communication back to the
   // browser.
-  void OnSetFakeGPUPluginWindowHandle(gfx::PluginWindowHandle window);
+  void OnSetFakeAcceleratedSurfaceWindowHandle(gfx::PluginWindowHandle window);
 #endif
 
 #endif

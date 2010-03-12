@@ -143,8 +143,8 @@ void WebPluginDelegateStub::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(PluginMsg_DestroyCommandBuffer,
                         OnDestroyCommandBuffer)
 #if defined(OS_MACOSX)
-    IPC_MESSAGE_HANDLER(PluginMsg_SetFakeGPUPluginWindowHandle,
-                        OnSetFakeGPUPluginWindowHandle)
+    IPC_MESSAGE_HANDLER(PluginMsg_SetFakeAcceleratedSurfaceWindowHandle,
+                        OnSetFakeAcceleratedSurfaceWindowHandle)
 #endif
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()
@@ -460,7 +460,7 @@ void WebPluginDelegateStub::OnHTTPRangeRequestReply(
 }
 
 #if defined(OS_MACOSX)
-void WebPluginDelegateStub::OnSetFakeGPUPluginWindowHandle(
+void WebPluginDelegateStub::OnSetFakeAcceleratedSurfaceWindowHandle(
     gfx::PluginWindowHandle window) {
   delegate_->set_windowed_handle(window);
 }

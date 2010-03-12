@@ -151,18 +151,18 @@ class WebPluginDelegateProxy
 #if defined(OS_MACOSX)
   void OnBindFakePluginWindowHandle();
   void OnUpdateGeometry_ACK(int ack_key);
-  void OnGPUPluginSetIOSurface(gfx::PluginWindowHandle window,
-                               int32 width,
-                               int32 height,
-                               uint64 io_surface_identifier);
-  void OnGPUPluginSetTransportDIB(gfx::PluginWindowHandle window,
-                                  int32 width,
-                                  int32 height,
-                                  TransportDIB::Handle transport_dib);
-  void OnGPUPluginAllocTransportDIB(size_t size,
-                                    TransportDIB::Handle* dib_handle);
-  void OnGPUPluginFreeTransportDIB(TransportDIB::Id dib_id);
-  void OnGPUPluginBuffersSwapped(gfx::PluginWindowHandle window);
+  void OnAcceleratedSurfaceSetIOSurface(gfx::PluginWindowHandle window,
+                                        int32 width,
+                                        int32 height,
+                                        uint64 io_surface_identifier);
+  void OnAcceleratedSurfaceSetTransportDIB(gfx::PluginWindowHandle window,
+                                           int32 width,
+                                           int32 height,
+                                           TransportDIB::Handle transport_dib);
+  void OnAcceleratedSurfaceAllocTransportDIB(size_t size,
+                                             TransportDIB::Handle* dib_handle);
+  void OnAcceleratedSurfaceFreeTransportDIB(TransportDIB::Id dib_id);
+  void OnAcceleratedSurfaceBuffersSwapped(gfx::PluginWindowHandle window);
 #endif
 
   // Draw a graphic indicating a crashed plugin.

@@ -483,17 +483,17 @@ class RenderView : public RenderWidget,
   // WebPluginDelegateProxy, which has a pointer to the RenderView.
   gfx::PluginWindowHandle AllocateFakePluginWindowHandle();
   void DestroyFakePluginWindowHandle(gfx::PluginWindowHandle window);
-  void GPUPluginSetIOSurface(gfx::PluginWindowHandle window,
-                             int32 width,
-                             int32 height,
-                             uint64 io_surface_identifier);
-  TransportDIB::Handle GPUPluginAllocTransportDIB(size_t size);
-  void GPUPluginFreeTransportDIB(TransportDIB::Id dib_id);
-  void GPUPluginSetTransportDIB(gfx::PluginWindowHandle window,
-                                int32 width,
-                                int32 height,
-                                TransportDIB::Handle transport_dib);
-  void GPUPluginBuffersSwapped(gfx::PluginWindowHandle window);
+  void AcceleratedSurfaceSetIOSurface(gfx::PluginWindowHandle window,
+                                      int32 width,
+                                      int32 height,
+                                      uint64 io_surface_identifier);
+  TransportDIB::Handle AcceleratedSurfaceAllocTransportDIB(size_t size);
+  void AcceleratedSurfaceFreeTransportDIB(TransportDIB::Id dib_id);
+  void AcceleratedSurfaceSetTransportDIB(gfx::PluginWindowHandle window,
+                                         int32 width,
+                                         int32 height,
+                                         TransportDIB::Handle transport_dib);
+  void AcceleratedSurfaceBuffersSwapped(gfx::PluginWindowHandle window);
 #endif
 
  protected:

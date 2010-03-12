@@ -184,21 +184,24 @@ class RenderWidgetHostView {
   // Informs the view that its containing window's frame changed.
   virtual void WindowFrameChanged() = 0;
 
-  // Methods associated with GPU plugin instances
+  // Methods associated with GPU-accelerated plug-in instances.
   virtual gfx::PluginWindowHandle AllocateFakePluginWindowHandle() = 0;
   virtual void DestroyFakePluginWindowHandle(
       gfx::PluginWindowHandle window) = 0;
-  virtual void GPUPluginSetIOSurface(gfx::PluginWindowHandle window,
-                                     int32 width,
-                                     int32 height,
-                                     uint64 io_surface_identifier) = 0;
-  virtual void GPUPluginSetTransportDIB(gfx::PluginWindowHandle window,
-                                        int32 width,
-                                        int32 height,
-                                        TransportDIB::Handle transport_dib) = 0;
-  virtual void GPUPluginBuffersSwapped(gfx::PluginWindowHandle window) = 0;
-  // Draws the current GPU plugin instances into the given context.
-  virtual void DrawGPUPluginInstances(CGLContextObj context) = 0;
+  virtual void AcceleratedSurfaceSetIOSurface(
+      gfx::PluginWindowHandle window,
+      int32 width,
+      int32 height,
+      uint64 io_surface_identifier) = 0;
+  virtual void AcceleratedSurfaceSetTransportDIB(
+      gfx::PluginWindowHandle window,
+      int32 width,
+      int32 height,
+      TransportDIB::Handle transport_dib) = 0;
+  virtual void AcceleratedSurfaceBuffersSwapped(
+      gfx::PluginWindowHandle window) = 0;
+  // Draws the current GPU-accelerated plug-in instances into the given context.
+  virtual void DrawAcceleratedSurfaceInstances(CGLContextObj context) = 0;
 #endif
 
 #if defined(OS_LINUX)

@@ -13,7 +13,7 @@
 #include "base/task.h"
 #include "base/time.h"
 #include "chrome/browser/cocoa/base_view.h"
-#include "chrome/browser/renderer_host/gpu_plugin_container_manager_mac.h"
+#include "chrome/browser/renderer_host/accelerated_surface_container_manager_mac.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "webkit/glue/webcursor.h"
 #include "webkit/glue/webmenuitem.h"
@@ -123,20 +123,21 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   virtual void SetBackground(const SkBitmap& background);
   virtual bool ContainsNativeView(gfx::NativeView native_view) const;
 
-  // Methods associated with GPU plugin instances
+  // Methods associated with GPU-accelerated plug-in instances.
   virtual gfx::PluginWindowHandle AllocateFakePluginWindowHandle();
   virtual void DestroyFakePluginWindowHandle(gfx::PluginWindowHandle window);
-  virtual void GPUPluginSetIOSurface(gfx::PluginWindowHandle window,
-                                     int32 width,
-                                     int32 height,
-                                     uint64 io_surface_identifier);
-  virtual void GPUPluginSetTransportDIB(gfx::PluginWindowHandle window,
-                                        int32 width,
-                                        int32 height,
-                                        TransportDIB::Handle transport_dib);
-  virtual void GPUPluginBuffersSwapped(gfx::PluginWindowHandle window);
-  // Draws the current GPU plugin instances into the given context.
-  virtual void DrawGPUPluginInstances(CGLContextObj context);
+  virtual void AcceleratedSurfaceSetIOSurface(gfx::PluginWindowHandle window,
+                                              int32 width,
+                                              int32 height,
+                                              uint64 io_surface_identifier);
+  virtual void AcceleratedSurfaceSetTransportDIB(
+      gfx::PluginWindowHandle window,
+      int32 width,
+      int32 height,
+      TransportDIB::Handle transport_dib);
+  virtual void AcceleratedSurfaceBuffersSwapped(gfx::PluginWindowHandle window);
+  // Draws the current GPU-accelerated plug-in instances into the given context.
+  virtual void DrawAcceleratedSurfaceInstances(CGLContextObj context);
   virtual void SetVisuallyDeemphasized(bool deemphasized);
 
   void KillSelf();
@@ -250,8 +251,8 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   // Used for positioning a popup menu.
   BaseView* parent_view_;
 
-  // Helper class for managing instances of the GPU plugin.
-  MacGPUPluginContainerManager plugin_container_manager_;
+  // Helper class for managing instances of accelerated plug-ins.
+  AcceleratedSurfaceContainerManagerMac plugin_container_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewMac);
 };

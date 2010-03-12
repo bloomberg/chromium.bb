@@ -1900,34 +1900,34 @@ IPC_BEGIN_MESSAGES(ViewHost)
                       gfx::PluginWindowHandle /* id */)
 
   // This message, used on Mac OS X 10.5 and earlier (no IOSurface support),
-  // is sent from the renderer to the browser on behalf of the GPU plugin
-  // to indicate that a new backing store was allocated for that GPU plugin
+  // is sent from the renderer to the browser on behalf of the plug-in
+  // to indicate that a new backing store was allocated for that plug-in
   // instance.
-  IPC_MESSAGE_ROUTED4(ViewHostMsg_GPUPluginSetTransportDIB,
+  IPC_MESSAGE_ROUTED4(ViewHostMsg_AcceleratedSurfaceSetTransportDIB,
                       gfx::PluginWindowHandle /* window */,
                       int32 /* width */,
                       int32 /* height */,
                       TransportDIB::Handle /* handle for the DIB */)
 
   // This message, used on Mac OS X 10.6 and later (where IOSurface is
-  // supported), is sent from the renderer to the browser on behalf
-  // of the GPU plugin to indicate that a new backing store was
-  // allocated for that GPU plugin instance.
+  // supported), is sent from the renderer to the browser on behalf of the
+  // plug-in to indicate that a new backing store was allocated for that
+  // plug-in instance.
   //
-  // NOTE: the original intent was to pass a mach port as the
-  // IOSurface identifier but it looks like that will be a lot of
-  // work. For now we pass an ID from IOSurfaceGetID.
-  IPC_MESSAGE_ROUTED4(ViewHostMsg_GPUPluginSetIOSurface,
+  // NOTE: the original intent was to pass a mach port as the IOSurface
+  // identifier but it looks like that will be a lot of work. For now we pass an
+  // ID from IOSurfaceGetID.
+  IPC_MESSAGE_ROUTED4(ViewHostMsg_AcceleratedSurfaceSetIOSurface,
                       gfx::PluginWindowHandle /* window */,
                       int32 /* width */,
                       int32 /* height */,
                       uint64 /* identifier for IOSurface */)
 
-  // This message notifies the browser process that the GPU plugin
+  // This message notifies the browser process that the plug-in
   // swapped the buffers associated with the given "window", which
-  // should cause the browser to redraw the various GPU plugins'
+  // should cause the browser to redraw the various plug-ins'
   // contents.
-  IPC_MESSAGE_ROUTED1(ViewHostMsg_GPUPluginBuffersSwapped,
+  IPC_MESSAGE_ROUTED1(ViewHostMsg_AcceleratedSurfaceBuffersSwapped,
                       gfx::PluginWindowHandle /* window */)
 #endif
 

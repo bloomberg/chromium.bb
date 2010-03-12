@@ -584,7 +584,7 @@ void WebPluginProxy::BindFakePluginWindowHandle() {
 void WebPluginProxy::AcceleratedFrameBuffersDidSwap(
     gfx::PluginWindowHandle window) {
   // TODO(pinkerton): Rename this message.
-  Send(new PluginHostMsg_GPUPluginBuffersSwapped(route_id_, window));
+  Send(new PluginHostMsg_AcceleratedSurfaceBuffersSwapped(route_id_, window));
 }
 
 void WebPluginProxy::SetAcceleratedSurface(gfx::PluginWindowHandle window,
@@ -592,9 +592,8 @@ void WebPluginProxy::SetAcceleratedSurface(gfx::PluginWindowHandle window,
     int32 height,
     uint64 accelerated_surface_identifier) {
   // TODO(pinkerton): Rename this message.
-  Send(new PluginHostMsg_GPUPluginSetIOSurface(route_id_, window, width,
-                                               height,
-                                               accelerated_surface_identifier));
+  Send(new PluginHostMsg_AcceleratedSurfaceSetIOSurface(
+      route_id_, window, width, height, accelerated_surface_identifier));
 }
 #endif
 

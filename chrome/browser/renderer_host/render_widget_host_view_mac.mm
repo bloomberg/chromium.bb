@@ -59,8 +59,8 @@ const size_t kMaxTooltipLength = 1024;
 
 // GPUPluginLayer --------------------------------------------------------------
 
-// This subclass of CAOpenGLLayer hosts the output of the GPU plugins
-// on the page.
+// This subclass of CAOpenGLLayer hosts the output of the GPU-accelerated
+// plugins on the page.
 
 @interface GPUPluginLayer : CAOpenGLLayer {
   RenderWidgetHostViewMac* renderWidgetHostView_;  // weak
@@ -82,7 +82,7 @@ const size_t kMaxTooltipLength = 1024;
        pixelFormat:(CGLPixelFormatObj)pixelFormat
        forLayerTime:(CFTimeInterval)timeInterval
        displayTime:(const CVTimeStamp *)timeStamp {
-  renderWidgetHostView_->DrawGPUPluginInstances(glContext);
+  renderWidgetHostView_->DrawAcceleratedSurfaceInstances(glContext);
   [super drawInCGLContext:glContext
               pixelFormat:pixelFormat
              forLayerTime:timeInterval
@@ -546,7 +546,7 @@ void RenderWidgetHostViewMac::DestroyFakePluginWindowHandle(
   plugin_container_manager_.DestroyFakePluginWindowHandle(window);
 }
 
-void RenderWidgetHostViewMac::GPUPluginSetIOSurface(
+void RenderWidgetHostViewMac::AcceleratedSurfaceSetIOSurface(
     gfx::PluginWindowHandle window,
     int32 width,
     int32 height,
@@ -557,7 +557,7 @@ void RenderWidgetHostViewMac::GPUPluginSetIOSurface(
                                                 io_surface_identifier);
 }
 
-void RenderWidgetHostViewMac::GPUPluginSetTransportDIB(
+void RenderWidgetHostViewMac::AcceleratedSurfaceSetTransportDIB(
     gfx::PluginWindowHandle window,
     int32 width,
     int32 height,
@@ -568,12 +568,13 @@ void RenderWidgetHostViewMac::GPUPluginSetTransportDIB(
                                                    transport_dib);
 }
 
-void RenderWidgetHostViewMac::GPUPluginBuffersSwapped(
+void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
     gfx::PluginWindowHandle window) {
   [gpu_plugin_layer_.get() setNeedsDisplay];
 }
 
-void RenderWidgetHostViewMac::DrawGPUPluginInstances(CGLContextObj context) {
+void RenderWidgetHostViewMac::DrawAcceleratedSurfaceInstances(
+    CGLContextObj context) {
   CGLSetCurrentContext(context);
   gfx::Rect rect = GetWindowRect();
   glMatrixMode(GL_PROJECTION);

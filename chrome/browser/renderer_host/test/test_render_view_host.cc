@@ -107,25 +107,26 @@ void TestRenderWidgetHostView::DestroyFakePluginWindowHandle(
     gfx::PluginWindowHandle window) {
 }
 
-void TestRenderWidgetHostView::GPUPluginSetIOSurface(
+void TestRenderWidgetHostView::AcceleratedSurfaceSetIOSurface(
     gfx::PluginWindowHandle window,
     int32 width,
     int32 height,
     uint64 io_surface_identifier) {
 }
 
-void TestRenderWidgetHostView::GPUPluginSetTransportDIB(
+void TestRenderWidgetHostView::AcceleratedSurfaceSetTransportDIB(
     gfx::PluginWindowHandle window,
     int32 width,
     int32 height,
     TransportDIB::Handle transport_dib) {
 }
 
-void TestRenderWidgetHostView::GPUPluginBuffersSwapped(
+void TestRenderWidgetHostView::AcceleratedSurfaceBuffersSwapped(
     gfx::PluginWindowHandle window) {
 }
 
-void TestRenderWidgetHostView::DrawGPUPluginInstances(CGLContextObj context) {
+void TestRenderWidgetHostView::DrawAcceleratedSurfaceInstances(
+    CGLContextObj context) {
 }
 #endif
 

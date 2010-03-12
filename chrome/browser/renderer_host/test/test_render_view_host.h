@@ -82,16 +82,17 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
   virtual void WindowFrameChanged() {}
   virtual gfx::PluginWindowHandle AllocateFakePluginWindowHandle();
   virtual void DestroyFakePluginWindowHandle(gfx::PluginWindowHandle window);
-  virtual void GPUPluginSetIOSurface(gfx::PluginWindowHandle window,
-                                     int32 width,
-                                     int32 height,
-                                     uint64 io_surface_identifier);
-  virtual void GPUPluginSetTransportDIB(gfx::PluginWindowHandle window,
-                                        int32 width,
-                                        int32 height,
-                                        TransportDIB::Handle transport_dib);
-  virtual void GPUPluginBuffersSwapped(gfx::PluginWindowHandle window);
-  virtual void DrawGPUPluginInstances(CGLContextObj context);
+  virtual void AcceleratedSurfaceSetIOSurface(gfx::PluginWindowHandle window,
+                                              int32 width,
+                                              int32 height,
+                                              uint64 io_surface_identifier);
+  virtual void AcceleratedSurfaceSetTransportDIB(
+      gfx::PluginWindowHandle window,
+      int32 width,
+      int32 height,
+      TransportDIB::Handle transport_dib);
+  virtual void AcceleratedSurfaceBuffersSwapped(gfx::PluginWindowHandle window);
+  virtual void DrawAcceleratedSurfaceInstances(CGLContextObj context);
 #endif
   virtual void SetVisuallyDeemphasized(bool deemphasized) { }
 

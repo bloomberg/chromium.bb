@@ -4615,23 +4615,25 @@ void RenderView::DestroyFakePluginWindowHandle(gfx::PluginWindowHandle window) {
     Send(new ViewHostMsg_DestroyFakePluginWindowHandle(routing_id(), window));
 }
 
-void RenderView::GPUPluginSetIOSurface(gfx::PluginWindowHandle window,
-                                       int32 width,
-                                       int32 height,
-                                       uint64 io_surface_identifier) {
-  Send(new ViewHostMsg_GPUPluginSetIOSurface(
+void RenderView::AcceleratedSurfaceSetIOSurface(gfx::PluginWindowHandle window,
+                                                int32 width,
+                                                int32 height,
+                                                uint64 io_surface_identifier) {
+  Send(new ViewHostMsg_AcceleratedSurfaceSetIOSurface(
       routing_id(), window, width, height, io_surface_identifier));
 }
 
-void RenderView::GPUPluginSetTransportDIB(gfx::PluginWindowHandle window,
-                                          int32 width,
-                                          int32 height,
-                                          TransportDIB::Handle transport_dib) {
-  Send(new ViewHostMsg_GPUPluginSetTransportDIB(
+void RenderView::AcceleratedSurfaceSetTransportDIB(
+    gfx::PluginWindowHandle window,
+    int32 width,
+    int32 height,
+    TransportDIB::Handle transport_dib) {
+  Send(new ViewHostMsg_AcceleratedSurfaceSetTransportDIB(
       routing_id(), window, width, height, transport_dib));
 }
 
-TransportDIB::Handle RenderView::GPUPluginAllocTransportDIB(size_t size) {
+TransportDIB::Handle RenderView::AcceleratedSurfaceAllocTransportDIB(
+    size_t size) {
   TransportDIB::Handle dib_handle;
   // Assume this is a synchronous RPC.
   if (Send(new ViewHostMsg_AllocTransportDIB(size, &dib_handle)))
@@ -4640,12 +4642,13 @@ TransportDIB::Handle RenderView::GPUPluginAllocTransportDIB(size_t size) {
   return TransportDIB::DefaultHandleValue();
 }
 
-void RenderView::GPUPluginFreeTransportDIB(TransportDIB::Id dib_id) {
+void RenderView::AcceleratedSurfaceFreeTransportDIB(TransportDIB::Id dib_id) {
   Send(new ViewHostMsg_FreeTransportDIB(dib_id));
 }
 
-void RenderView::GPUPluginBuffersSwapped(gfx::PluginWindowHandle window) {
-  Send(new ViewHostMsg_GPUPluginBuffersSwapped(routing_id(), window));
+void RenderView::AcceleratedSurfaceBuffersSwapped(
+    gfx::PluginWindowHandle window) {
+  Send(new ViewHostMsg_AcceleratedSurfaceBuffersSwapped(routing_id(), window));
 }
 #endif
 

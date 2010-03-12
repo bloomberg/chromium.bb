@@ -23,7 +23,7 @@
 // does not have an on-screen window.
 //
 // This class encapsulates some of the management of these data
-// structures, in conjunction with the MacGPUPluginContainerManager.
+// structures, in conjunction with the AcceleratedSurfaceContainerManagerMac.
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <OpenGL/OpenGL.h>
@@ -38,44 +38,41 @@ namespace webkit_glue {
 struct WebPluginGeometry;
 }
 
-class MacGPUPluginContainerManager;
+class AcceleratedSurfaceContainerManagerMac;
 
-class MacGPUPluginContainer {
+class AcceleratedSurfaceContainerMac {
  public:
-  MacGPUPluginContainer();
-  virtual ~MacGPUPluginContainer();
+  AcceleratedSurfaceContainerMac();
+  virtual ~AcceleratedSurfaceContainerMac();
 
-  // Sets the backing store and size of this plugin container.  There are two
-  // versions: the IOSurface version is used on systems where the IOSurface
-  // API is supported (Mac OS X 10.6 and later); the TransportDIB is used on
-  // Mac OS X 10.5 and earlier.
+  // Sets the backing store and size of this accelerated surface container.
+  // There are two versions: the IOSurface version is used on systems where the
+  // IOSurface API is supported (Mac OS X 10.6 and later); the TransportDIB is
+  // used on Mac OS X 10.5 and earlier.
   void SetSizeAndIOSurface(int32 width,
                            int32 height,
                            uint64 io_surface_identifier,
-                           MacGPUPluginContainerManager* manager);
+                           AcceleratedSurfaceContainerManagerMac* manager);
   void SetSizeAndTransportDIB(int32 width,
                               int32 height,
                               TransportDIB::Handle transport_dib,
-                              MacGPUPluginContainerManager* manager);
+                              AcceleratedSurfaceContainerManagerMac* manager);
 
-  // Tells the plugin container that it has moved relative to the
+  // Tells the accelerated surface container that it has moved relative to the
   // origin of the window, for example because of a scroll event.
   void MoveTo(const webkit_glue::WebPluginGeometry& geom);
 
-  // Draws this plugin's contents, texture mapped onto a quad in the
-  // given OpenGL context. TODO(kbr): figure out and define exactly
-  // how the coordinate system will work out.
+  // Draws this accelerated surface's contents, texture mapped onto a quad in
+  // the given OpenGL context. TODO(kbr): figure out and define exactly how the
+  // coordinate system will work out.
   void Draw(CGLContextObj context);
 
   // Enqueue our texture for later deletion. Call this before deleting
   // this object.
-  void EnqueueTextureForDeletion(MacGPUPluginContainerManager* manager);
+  void EnqueueTextureForDeletion(
+      AcceleratedSurfaceContainerManagerMac* manager);
 
  private:
-  // We currently only have a viable implementation of this class on
-  // Snow Leopard. We need to think about fallback strategies that
-  // will work on Leopard.
-
   // The x and y coordinates of the plugin window on the web page.
   int x_;
   int y_;
@@ -107,7 +104,7 @@ class MacGPUPluginContainer {
   // with it.
   GLuint texture_;
 
-  DISALLOW_COPY_AND_ASSIGN(MacGPUPluginContainer);
+  DISALLOW_COPY_AND_ASSIGN(AcceleratedSurfaceContainerMac);
 };
 
 #endif  // CHROME_BROWSER_RENDERER_HOST_GPU_PLUGIN_CONTAINER_MAC_H_

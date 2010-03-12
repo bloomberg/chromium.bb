@@ -306,7 +306,7 @@ IPC_BEGIN_MESSAGES(Plugin)
   // This message, used only on 10.6 and later, transmits the "fake"
   // window handle allocated by the browser on behalf of the renderer
   // to the GPU plugin.
-  IPC_MESSAGE_ROUTED1(PluginMsg_SetFakeGPUPluginWindowHandle,
+  IPC_MESSAGE_ROUTED1(PluginMsg_SetFakeAcceleratedSurfaceWindowHandle,
                       gfx::PluginWindowHandle /* window */)
 #endif
 
@@ -405,12 +405,11 @@ IPC_BEGIN_MESSAGES(PluginHost)
   IPC_MESSAGE_ROUTED1(PluginHostMsg_UpdateGeometry_ACK,
                       int /* ack_key */)
 
-  // This message, used in Mac OS X 10.5 and earlier, is sent from the
-  // plug-in process to the renderer process to indicate that the GPU
-  // plug-in allocated a new TransportDIB that holds the GPU's rendered
-  // image.  This information is then forwarded to the browser process via
-  // a similar message.
-  IPC_MESSAGE_ROUTED4(PluginHostMsg_GPUPluginSetTransportDIB,
+  // This message, used in Mac OS X 10.5 and earlier, is sent from the plug-in
+  // process to the renderer process to indicate that the plug-in allocated a
+  // new TransportDIB that holds the GPU's rendered image.  This information is
+  // then forwarded to the browser process via a similar message.
+  IPC_MESSAGE_ROUTED4(PluginHostMsg_AcceleratedSurfaceSetTransportDIB,
                       gfx::PluginWindowHandle /* window */,
                       int32 /* width */,
                       int32 /* height */,
@@ -422,16 +421,15 @@ IPC_BEGIN_MESSAGES(PluginHost)
   // the plug-in.
   IPC_MESSAGE_ROUTED0(PluginHostMsg_BindFakePluginWindowHandle)
 
-  // This message, used only on 10.6 and later, is sent from the
-  // plug-in process to the renderer process to indicate that the GPU
-  // plugin allocated a new IOSurface object of the given width and
-  // height. This information is then forwarded on to the browser
-  // process.
+  // This message, used only on 10.6 and later, is sent from the plug-in process
+  // to the renderer process to indicate that the plugin allocated a new
+  // IOSurface object of the given width and height. This information is then
+  // forwarded on to the browser process.
   //
-  // NOTE: the original intent was to pass a mach port as the
-  // IOSurface identifier but it looks like that will be a lot of
-  // work. For now we pass an ID from IOSurfaceGetID.
-  IPC_MESSAGE_ROUTED4(PluginHostMsg_GPUPluginSetIOSurface,
+  // NOTE: the original intent was to pass a mach port as the IOSurface
+  // identifier but it looks like that will be a lot of work. For now we pass an
+  // ID from IOSurfaceGetID.
+  IPC_MESSAGE_ROUTED4(PluginHostMsg_AcceleratedSurfaceSetIOSurface,
                       gfx::PluginWindowHandle /* window */,
                       int32 /* width */,
                       int32 /* height */,
@@ -439,7 +437,7 @@ IPC_BEGIN_MESSAGES(PluginHost)
 
 
   // On the Mac, shared memory can't be allocated in the sandbox, so
-  // the TransportDIB used by the GPU process for rendering has to be allocated
+  // the TransportDIB used by the plug-in for rendering has to be allocated
   // and managed by the browser.  This is a synchronous message, use with care.
   IPC_SYNC_MESSAGE_ROUTED1_1(PluginHostMsg_AllocTransportDIB,
                              size_t /* requested memory size */,
@@ -452,10 +450,10 @@ IPC_BEGIN_MESSAGES(PluginHost)
                       TransportDIB::Id /* DIB id */)
 
   // This message notifies the renderer process (and from there the
-  // browser process) that the  GPU plugin swapped the buffers associated
+  // browser process) that the plug-in swapped the buffers associated
   // with the given "window", which should cause the browser to redraw
-  // the various GPU plugins' contents.
-  IPC_MESSAGE_ROUTED1(PluginHostMsg_GPUPluginBuffersSwapped,
+  // the various plug-ins' contents.
+  IPC_MESSAGE_ROUTED1(PluginHostMsg_AcceleratedSurfaceBuffersSwapped,
                       gfx::PluginWindowHandle /* window */)
 #endif
 

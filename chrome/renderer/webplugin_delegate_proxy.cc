@@ -407,17 +407,17 @@ void WebPluginDelegateProxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(PluginHostMsg_UpdateGeometry_ACK,
                         OnUpdateGeometry_ACK)
     // Used only on 10.6 and later.
-    IPC_MESSAGE_HANDLER(PluginHostMsg_GPUPluginSetIOSurface,
-                        OnGPUPluginSetIOSurface)
+    IPC_MESSAGE_HANDLER(PluginHostMsg_AcceleratedSurfaceSetIOSurface,
+                        OnAcceleratedSurfaceSetIOSurface)
     // Used on 10.5 and earlier.
-    IPC_MESSAGE_HANDLER(PluginHostMsg_GPUPluginSetTransportDIB,
-                        OnGPUPluginSetTransportDIB)
+    IPC_MESSAGE_HANDLER(PluginHostMsg_AcceleratedSurfaceSetTransportDIB,
+                        OnAcceleratedSurfaceSetTransportDIB)
     IPC_MESSAGE_HANDLER(PluginHostMsg_AllocTransportDIB,
-                        OnGPUPluginAllocTransportDIB)
+                        OnAcceleratedSurfaceAllocTransportDIB)
     IPC_MESSAGE_HANDLER(PluginHostMsg_FreeTransportDIB,
-                        OnGPUPluginFreeTransportDIB)
-    IPC_MESSAGE_HANDLER(PluginHostMsg_GPUPluginBuffersSwapped,
-                        OnGPUPluginBuffersSwapped)
+                        OnAcceleratedSurfaceFreeTransportDIB)
+    IPC_MESSAGE_HANDLER(PluginHostMsg_AcceleratedSurfaceBuffersSwapped,
+                        OnAcceleratedSurfaceBuffersSwapped)
 #endif
 
     IPC_MESSAGE_UNHANDLED_ERROR()
@@ -1275,8 +1275,8 @@ bool WebPluginDelegateProxy::BindFakePluginWindowHandle() {
   if (!fake_window)
     return false;
   OnSetWindow(fake_window);
-  if (!Send(new PluginMsg_SetFakeGPUPluginWindowHandle(instance_id_,
-                                                       fake_window))) {
+  if (!Send(new PluginMsg_SetFakeAcceleratedSurfaceWindowHandle(instance_id_,
+                                                                fake_window))) {
     return false;
   }
 
@@ -1367,44 +1367,44 @@ void WebPluginDelegateProxy::OnUpdateGeometry_ACK(int ack_key) {
   old_transport_dibs_.erase(iterator);
 }
 
-void WebPluginDelegateProxy::OnGPUPluginSetIOSurface(
+void WebPluginDelegateProxy::OnAcceleratedSurfaceSetIOSurface(
     gfx::PluginWindowHandle window,
     int32 width,
     int32 height,
     uint64 io_surface_identifier) {
   if (render_view_)
-    render_view_->GPUPluginSetIOSurface(window, width, height,
-                                        io_surface_identifier);
+    render_view_->AcceleratedSurfaceSetIOSurface(window, width, height,
+                                                 io_surface_identifier);
 }
 
-void WebPluginDelegateProxy::OnGPUPluginSetTransportDIB(
+void WebPluginDelegateProxy::OnAcceleratedSurfaceSetTransportDIB(
     gfx::PluginWindowHandle window,
     int32 width,
     int32 height,
     TransportDIB::Handle transport_dib) {
   if (render_view_)
-    render_view_->GPUPluginSetTransportDIB(window, width, height,
-                                           transport_dib);
+    render_view_->AcceleratedSurfaceSetTransportDIB(window, width, height,
+                                                    transport_dib);
 }
 
-void WebPluginDelegateProxy::OnGPUPluginAllocTransportDIB(
+void WebPluginDelegateProxy::OnAcceleratedSurfaceAllocTransportDIB(
     size_t size,
     TransportDIB::Handle* dib_handle) {
   if (render_view_)
-    *dib_handle = render_view_->GPUPluginAllocTransportDIB(size);
+    *dib_handle = render_view_->AcceleratedSurfaceAllocTransportDIB(size);
   else
     *dib_handle = TransportDIB::DefaultHandleValue();
 }
 
-void WebPluginDelegateProxy::OnGPUPluginFreeTransportDIB(
+void WebPluginDelegateProxy::OnAcceleratedSurfaceFreeTransportDIB(
     TransportDIB::Id dib_id) {
   if (render_view_)
-    render_view_->GPUPluginFreeTransportDIB(dib_id);
+    render_view_->AcceleratedSurfaceFreeTransportDIB(dib_id);
 }
 
-void WebPluginDelegateProxy::OnGPUPluginBuffersSwapped(
+void WebPluginDelegateProxy::OnAcceleratedSurfaceBuffersSwapped(
     gfx::PluginWindowHandle window) {
   if (render_view_)
-    render_view_->GPUPluginBuffersSwapped(window);
+    render_view_->AcceleratedSurfaceBuffersSwapped(window);
 }
 #endif

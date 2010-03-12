@@ -17,13 +17,13 @@ namespace webkit_glue {
 struct WebPluginGeometry;
 }
 
-class MacGPUPluginContainer;
+class AcceleratedSurfaceContainerMac;
 
 // Helper class that manages the backing store and on-screen rendering
 // of instances of the GPU plugin on the Mac.
-class MacGPUPluginContainerManager {
+class AcceleratedSurfaceContainerManagerMac {
  public:
-  MacGPUPluginContainerManager();
+  AcceleratedSurfaceContainerManagerMac();
 
   // Allocates a new "fake" PluginWindowHandle, which is used as the
   // key for the other operations.
@@ -37,9 +37,9 @@ class MacGPUPluginContainerManager {
   // API is supported (Mac OS X 10.6 and later); the TransportDIB is used on
   // Mac OS X 10.5 and earlier.
   void SetSizeAndIOSurface(gfx::PluginWindowHandle id,
-                          int32 width,
-                          int32 height,
-                          uint64 io_surface_identifier);
+                           int32 width,
+                           int32 height,
+                           uint64 io_surface_identifier);
   void SetSizeAndTransportDIB(gfx::PluginWindowHandle id,
                               int32 width,
                               int32 height,
@@ -61,17 +61,17 @@ class MacGPUPluginContainerManager {
   uint32 current_id_;
 
   // Maps a "fake" plugin window handle to the corresponding container.
-  MacGPUPluginContainer* MapIDToContainer(gfx::PluginWindowHandle id);
+  AcceleratedSurfaceContainerMac* MapIDToContainer(gfx::PluginWindowHandle id);
 
   // A map that associates plugin window handles with their containers.
-  typedef std::map<gfx::PluginWindowHandle, MacGPUPluginContainer*>
+  typedef std::map<gfx::PluginWindowHandle, AcceleratedSurfaceContainerMac*>
       PluginWindowToContainerMap;
   PluginWindowToContainerMap plugin_window_to_container_map_;
 
   // A list of OpenGL textures waiting to be deleted
   std::vector<GLuint> textures_pending_deletion_;
 
-  DISALLOW_COPY_AND_ASSIGN(MacGPUPluginContainerManager);
+  DISALLOW_COPY_AND_ASSIGN(AcceleratedSurfaceContainerManagerMac);
 };
 
 #endif  // CHROME_BROWSER_RENDERER_HOST_GPU_PLUGIN_CONTAINER_MANAGER_MAC_H_
