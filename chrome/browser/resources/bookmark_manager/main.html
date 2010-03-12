@@ -259,20 +259,6 @@ list.addEventListener('urlClicked', function(e) {
 });
 
 /**
- * Timer id used for delaying find-as-you-type
- */
-var inputDelayTimer;
-
-// Capture input changes to the search term input element and delay searching
-// for 250ms to reduce flicker.
-$('term').oninput = function(e) {
-  clearTimeout(inputDelayTimer);
-  inputDelayTimer = setTimeout(function() {
-    setSearch($('term').value);
-  }, 250);
-};
-
-/**
  * Navigates to the search results for the search text.
  * @para {string} searchText The text to search for.
  */
