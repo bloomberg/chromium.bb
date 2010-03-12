@@ -250,9 +250,8 @@ IPC_BEGIN_MESSAGES(View)
   // Notification that the user scripts have been updated. It has one
   // SharedMemoryHandle argument consisting of the pickled script data. This
   // handle is valid in the context of the renderer.
-  IPC_MESSAGE_CONTROL2(ViewMsg_UserScripts_UpdatedScripts,
-                       base::SharedMemoryHandle,
-                       bool /* only_inject_incognito */)
+  IPC_MESSAGE_CONTROL1(ViewMsg_UserScripts_UpdatedScripts,
+                       base::SharedMemoryHandle)
 
   // Sent when the user wants to search for a word on the page (find in page).
   IPC_MESSAGE_ROUTED3(ViewMsg_Find,
@@ -948,6 +947,11 @@ IPC_BEGIN_MESSAGES(View)
                       int /* code */,
                       std::string /* message */)
 
+  // Sent on process startup to indicate whether this process is running in
+  // incognito mode.
+  IPC_MESSAGE_CONTROL1(ViewMsg_SetIsIncognitoProcess,
+                       bool /* is_incognito_processs */)
+                      
 IPC_END_MESSAGES(View)
 
 

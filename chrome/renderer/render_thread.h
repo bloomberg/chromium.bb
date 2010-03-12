@@ -144,6 +144,8 @@ class RenderThread : public RenderThreadBase,
 
   bool is_extension_process() const { return is_extension_process_; }
 
+  bool is_incognito_process() const { return is_incognito_process_; }
+
   // Do DNS prefetch resolution of a hostname.
   void Resolve(const char* name, size_t length);
 
@@ -174,8 +176,7 @@ class RenderThread : public RenderThreadBase,
   void OnSetZoomLevelForCurrentHost(const std::string& host, int zoom_level);
   void OnSetContentSettingsForCurrentHost(
       const std::string& host, const ContentSettings& content_settings);
-  void OnUpdateUserScripts(base::SharedMemoryHandle table,
-                           bool only_inject_incognito);
+  void OnUpdateUserScripts(base::SharedMemoryHandle table);
   void OnSetExtensionFunctionNames(const std::vector<std::string>& names);
   void OnPageActionsUpdated(const std::string& extension_id,
       const std::vector<std::string>& page_actions);
@@ -190,6 +191,7 @@ class RenderThread : public RenderThreadBase,
       const std::string& extension_id,
       bool enabled);
   void OnSetNextPageID(int32 next_page_id);
+  void OnSetIsIncognitoProcess(bool is_incognito_process);
   void OnSetCSSColors(const std::vector<CSSColors::CSSColorMapping>& colors);
   void OnCreateNewView(const ViewMsg_New_Params& params);
   void OnTransferBitmap(const SkBitmap& bitmap, int resource_id);
@@ -270,6 +272,9 @@ class RenderThread : public RenderThreadBase,
 
   // True if this renderer is running extensions.
   bool is_extension_process_;
+
+  // True if this renderer is incognito.
+  bool is_incognito_process_;
 
   bool suspend_webkit_shared_timer_;
   bool notify_webkit_of_modal_loop_;

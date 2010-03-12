@@ -142,15 +142,15 @@ var chrome = chrome || {};
 
   // This function is called on context initialization for both content scripts
   // and extension contexts.
-  chrome.initExtension = function(extensionId, warnOnPrivilegedApiAccess) {
+  chrome.initExtension = function(extensionId, warnOnPrivilegedApiAccess,
+                                  inIncognitoTab) {
     delete chrome.initExtension;
     chromeHidden.extensionId = extensionId;
 
     chrome.extension = chrome.extension || {};
-
-    // TODO(EXTENSIONS_DEPRECATED): chrome.self is obsolete.
-    // http://code.google.com/p/chromium/issues/detail?id=16356
     chrome.self = chrome.extension;
+
+    chrome.extension.inIncognitoTab = inIncognitoTab;
 
     // Events for when a message channel is opened to our extension.
     chrome.extension.onConnect = new chrome.Event();

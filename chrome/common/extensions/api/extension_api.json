@@ -50,6 +50,15 @@
         "properties": {
           "message": { "type": "string", "description": "Description of the error that has taken place." }
         }
+      },
+      "inIncognitoTab": {
+        "type": "object",
+        "optional": true,
+        "unprivileged": true,
+        "description": "True for content scripts running inside incognito tabs. Will be undefined for non-content scripts.",
+        "properties": {
+          "message": { "type": "boolean", "description": "True if the script is in an incongito tab." }
+        }
       }
     },
     "functions": [

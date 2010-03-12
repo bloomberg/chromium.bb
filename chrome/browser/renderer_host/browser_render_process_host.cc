@@ -627,8 +627,7 @@ void BrowserRenderProcessHost::SendUserScriptsUpdate(
   }
 
   if (base::SharedMemory::IsHandleValid(handle_for_process)) {
-    Send(new ViewMsg_UserScripts_UpdatedScripts(handle_for_process,
-                                                profile()->IsOffTheRecord()));
+    Send(new ViewMsg_UserScripts_UpdatedScripts(handle_for_process));
   }
 }
 
@@ -923,6 +922,8 @@ void BrowserRenderProcessHost::Observe(NotificationType type,
 void BrowserRenderProcessHost::OnProcessLaunched() {
   // Now that the process is created, set its backgrounding accordingly.
   SetBackgrounded(backgrounded_);
+
+  Send(new ViewMsg_SetIsIncognitoProcess(profile()->IsOffTheRecord()));
 
   InitVisitedLinks();
   InitUserScripts();

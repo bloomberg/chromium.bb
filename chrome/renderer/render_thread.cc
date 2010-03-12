@@ -210,6 +210,7 @@ void RenderThread::Init() {
   std::string type_str = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
       switches::kProcessType);
   is_extension_process_ = type_str == switches::kExtensionProcess;
+  is_incognito_process_ = false;
   suspend_webkit_shared_timer_ = true;
   notify_webkit_of_modal_loop_ = true;
   did_notify_webkit_of_modal_loop_ = false;
@@ -455,10 +456,9 @@ void RenderThread::OnSetZoomLevelForCurrentHost(const std::string& host,
   RenderView::ForEach(&zoomer);
 }
 
-void RenderThread::OnUpdateUserScripts(
-    base::SharedMemoryHandle scripts, bool only_inject_incognito) {
+void RenderThread::OnUpdateUserScripts(base::SharedMemoryHandle scripts) {
   DCHECK(base::SharedMemory::IsHandleValid(scripts)) << "Bad scripts handle";
-  user_script_slave_->UpdateScripts(scripts, only_inject_incognito);
+  user_script_slave_->UpdateScripts(scripts);
   UpdateActiveExtensions();
 }
 
@@ -517,6 +517,7 @@ void RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
                         OnSetContentSettingsForCurrentHost)
     IPC_MESSAGE_HANDLER(ViewMsg_SetZoomLevelForCurrentHost,
                         OnSetZoomLevelForCurrentHost)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetIsIncognitoProcess, OnSetIsIncognitoProcess)
     IPC_MESSAGE_HANDLER(ViewMsg_SetNextPageID, OnSetNextPageID)
     IPC_MESSAGE_HANDLER(ViewMsg_SetCSSColors, OnSetCSSColors)
     // TODO(port): removed from render_messages_internal.h;
@@ -922,4 +923,8 @@ void RenderThread::OnSpellCheckWordAdded(const std::string& word) {
 
 void RenderThread::OnSpellCheckEnableAutoSpellCorrect(bool enable) {
   spellchecker_->EnableAutoSpellCorrect(enable);
+}
+
+void RenderThread::OnSetIsIncognitoProcess(bool is_incognito_process) {
+  is_incognito_process_ = is_incognito_process;
 }

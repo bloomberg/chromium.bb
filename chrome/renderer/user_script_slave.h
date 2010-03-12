@@ -31,11 +31,8 @@ class UserScriptSlave {
   // Returns the unique set of extension IDs this UserScriptSlave knows about.
   void GetActiveExtensions(std::set<std::string>* extension_ids);
 
-  // Update the parsed scripts from shared memory. If |only_inject_incognito|
-  // is true, we will only use the scripts that have been marked as enabled for
-  // incognito mode.
-  bool UpdateScripts(base::SharedMemoryHandle shared_memory,
-                     bool only_inject_incognito);
+  // Update the parsed scripts from shared memory.
+  bool UpdateScripts(base::SharedMemoryHandle shared_memory);
 
   // Inject the appropriate scripts into a frame based on its URL.
   // TODO(aa): Extract a UserScriptFrame interface out of this to improve
