@@ -197,11 +197,7 @@ void Label::Paint(gfx::Canvas* canvas) {
   if (HasFocus() || paint_as_focused_) {
     int w = text_bounds.width();
     int h = 0;
-    // We explicitly OR in MULTI_LINE here since SizeStringInt seems to return
-    // an incorrect height for single line text when the MULTI_LINE flag isn't
-    // specified. o_O...
-    gfx::Canvas::SizeStringInt(paint_text, font_, &w, &h,
-                               flags | gfx::Canvas::MULTI_LINE);
+    gfx::Canvas::SizeStringInt(paint_text, font_, &w, &h, flags);
     gfx::Rect focus_rect = text_bounds;
     focus_rect.set_width(w);
     focus_rect.set_height(h);
