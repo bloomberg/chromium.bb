@@ -69,7 +69,7 @@ UrlPickerDialogGtk::UrlPickerDialogGtk(UrlPickerCallback* callback,
   accessible_widget_helper_->SetWidgetName(url_entry_, IDS_ASI_URL);
   gtk_entry_set_activates_default(GTK_ENTRY(url_entry_), TRUE);
   g_signal_connect(url_entry_, "changed",
-                   G_CALLBACK(OnUrlEntryChanged), this);
+                   G_CALLBACK(OnUrlEntryChangedThunk), this);
   gtk_box_pack_start(GTK_BOX(url_hbox), url_entry_,
                      TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog_)->vbox), url_hbox,
@@ -110,7 +110,7 @@ UrlPickerDialogGtk::UrlPickerDialogGtk(UrlPickerCallback* callback,
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(history_tree_),
                                     TRUE);
   g_signal_connect(history_tree_, "row-activated",
-                   G_CALLBACK(OnHistoryRowActivated), this);
+                   G_CALLBACK(OnHistoryRowActivatedThunk), this);
 
   history_selection_ = gtk_tree_view_get_selection(
       GTK_TREE_VIEW(history_tree_));
@@ -168,8 +168,8 @@ UrlPickerDialogGtk::UrlPickerDialogGtk(UrlPickerCallback* callback,
 
   gtk_widget_show_all(dialog_);
 
-  g_signal_connect(dialog_, "response", G_CALLBACK(OnResponse), this);
-  g_signal_connect(dialog_, "destroy", G_CALLBACK(OnWindowDestroy), this);
+  g_signal_connect(dialog_, "response", G_CALLBACK(OnResponseThunk), this);
+  g_signal_connect(dialog_, "destroy", G_CALLBACK(OnWindowDestroyThunk), this);
 }
 
 UrlPickerDialogGtk::~UrlPickerDialogGtk() {
@@ -237,10 +237,8 @@ gint UrlPickerDialogGtk::CompareURL(GtkTreeModel* model,
       CompareValues(row1, row2, IDS_ASI_URL_COLUMN);
 }
 
-// static
-void UrlPickerDialogGtk::OnUrlEntryChanged(GtkEditable* editable,
-                                           UrlPickerDialogGtk* window) {
-  window->EnableControls();
+void UrlPickerDialogGtk::OnUrlEntryChanged(GtkWidget* editable) {
+  EnableControls();
 }
 
 // static
@@ -258,26 +256,20 @@ void UrlPickerDialogGtk::OnHistorySelectionChanged(
   gtk_tree_path_free(path);
 }
 
-void UrlPickerDialogGtk::OnHistoryRowActivated(GtkTreeView* tree_view,
+void UrlPickerDialogGtk::OnHistoryRowActivated(GtkWidget* tree_view,
                                                GtkTreePath* path,
-                                               GtkTreeViewColumn* column,
-                                               UrlPickerDialogGtk* window) {
-  GURL url(URLFixerUpper::FixupURL(window->GetURLForPath(path), ""));
-  window->callback_->Run(url);
-  gtk_widget_destroy(window->dialog_);
+                                               GtkTreeViewColumn* column) {
+  GURL url(URLFixerUpper::FixupURL(GetURLForPath(path), ""));
+  callback_->Run(url);
+  gtk_widget_destroy(dialog_);
 }
 
-// static
-void UrlPickerDialogGtk::OnResponse(GtkDialog* dialog, int response_id,
-                                    UrlPickerDialogGtk* window) {
-  if (response_id == GTK_RESPONSE_OK) {
-    window->AddURL();
-  }
-  gtk_widget_destroy(window->dialog_);
+void UrlPickerDialogGtk::OnResponse(GtkWidget* dialog, int response_id) {
+  if (response_id == GTK_RESPONSE_OK)
+    AddURL();
+  gtk_widget_destroy(dialog_);
 }
 
-// static
-void UrlPickerDialogGtk::OnWindowDestroy(GtkWidget* widget,
-                                         UrlPickerDialogGtk* window) {
-  MessageLoop::current()->DeleteSoon(FROM_HERE, window);
+void UrlPickerDialogGtk::OnWindowDestroy(GtkWidget* widget) {
+  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }

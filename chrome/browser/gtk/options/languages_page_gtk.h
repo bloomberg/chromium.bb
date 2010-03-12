@@ -16,6 +16,7 @@
 
 #include <string>
 
+#include "app/gtk_signal.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/gtk/gtk_tree.h"
 #include "chrome/browser/pref_member.h"
@@ -62,25 +63,18 @@ class LanguagesPageGtk
   virtual void NotifyPrefChanged(const std::wstring* pref_name);
 
   // Callbacks for accept languages widgets.
-  static void OnSelectionChanged(GtkTreeSelection *selection,
+  static void OnSelectionChanged(GtkTreeSelection* selection,
                                  LanguagesPageGtk* languages_page);
-  static void OnAddButtonClicked(GtkButton* button,
-                                 LanguagesPageGtk* languages_page);
-  static void OnRemoveButtonClicked(GtkButton* button,
-                                    LanguagesPageGtk* languages_page);
-  static void OnMoveUpButtonClicked(GtkButton* button,
-                                    LanguagesPageGtk* languages_page);
-  static void OnMoveDownButtonClicked(GtkButton* button,
-                                      LanguagesPageGtk* languages_page);
+  CHROMEGTK_CALLBACK_0(LanguagesPageGtk, void, OnAddButtonClicked);
+  CHROMEGTK_CALLBACK_0(LanguagesPageGtk, void, OnRemoveButtonClicked);
+  CHROMEGTK_CALLBACK_0(LanguagesPageGtk, void, OnMoveUpButtonClicked);
+  CHROMEGTK_CALLBACK_0(LanguagesPageGtk, void, OnMoveDownButtonClicked);
 
   // Callbacks for spellchecker option widgets.
-  static void OnEnableSpellCheckingToggled(GtkToggleButton* toggle_button,
-                                           LanguagesPageGtk* languages_page);
-  static void OnEnableAutoSpellCheckingToggled(
-      GtkToggleButton* toggle_button, LanguagesPageGtk* languages_page);
-  static void OnDictionaryLanguageChangedThunk(
-      GtkComboBox* combo_box, LanguagesPageGtk* languages_page);
-  void OnDictionaryLanguageChanged();
+  CHROMEGTK_CALLBACK_0(LanguagesPageGtk, void, OnEnableSpellCheckingToggled);
+  CHROMEGTK_CALLBACK_0(LanguagesPageGtk, void,
+                       OnEnableAutoSpellCheckingToggled);
+  CHROMEGTK_CALLBACK_0(LanguagesPageGtk, void, OnDictionaryLanguageChanged);
 
   // The accept languages widgets.
   GtkListStore* language_order_store_;

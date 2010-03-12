@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "app/gtk_signal.h"
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/options_page_base.h"
 #include "chrome/browser/pref_member.h"
@@ -85,45 +86,20 @@ class GeneralPageGtk : public OptionsPageBase,
   // Sets the home page pref using the value in the entry box
   void SetHomepageFromEntry();
 
-  // Callback for startup radio buttons
-  static void OnStartupRadioToggled(GtkToggleButton* toggle_button,
-                                    GeneralPageGtk* general_page);
+  CHROMEGTK_CALLBACK_0(GeneralPageGtk, void, OnStartupRadioToggled);
+  CHROMEGTK_CALLBACK_0(GeneralPageGtk, void, OnStartupAddCustomPageClicked);
+  CHROMEGTK_CALLBACK_0(GeneralPageGtk, void, OnStartupRemoveCustomPageClicked);
+  CHROMEGTK_CALLBACK_0(GeneralPageGtk, void, OnStartupUseCurrentPageClicked);
+  CHROMEGTK_CALLBACK_0(GeneralPageGtk, void, OnNewTabIsHomePageToggled);
+  CHROMEGTK_CALLBACK_0(GeneralPageGtk, void, OnHomepageUseUrlEntryChanged);
+  CHROMEGTK_CALLBACK_0(GeneralPageGtk, void, OnShowHomeButtonToggled);
+  CHROMEGTK_CALLBACK_0(GeneralPageGtk, void, OnDefaultSearchEngineChanged);
+  CHROMEGTK_CALLBACK_0(GeneralPageGtk, void,
+                       OnDefaultSearchManageEnginesClicked);
+  CHROMEGTK_CALLBACK_0(GeneralPageGtk, void, OnBrowserUseAsDefaultClicked);
 
-  // Callbacks for custom url list buttons
-  static void OnStartupAddCustomPageClicked(GtkButton* button,
-                                            GeneralPageGtk* general_page);
-  static void OnStartupRemoveCustomPageClicked(GtkButton* button,
-                                               GeneralPageGtk* general_page);
-  static void OnStartupUseCurrentPageClicked(GtkButton* button,
+  static void OnStartupPagesSelectionChanged(GtkTreeSelection* selection,
                                              GeneralPageGtk* general_page);
-
-  // Callback for user selecting rows in custom pages list
-  static void OnStartupPagesSelectionChanged(GtkTreeSelection *selection,
-                                             GeneralPageGtk* general_page);
-
-  // Callback for new tab behavior radio buttons
-  static void OnNewTabIsHomePageToggled(GtkToggleButton* toggle_button,
-                                        GeneralPageGtk* general_page);
-
-  // Callback for homepage URL entry
-  static void OnHomepageUseUrlEntryChanged(GtkEditable* editable,
-                                           GeneralPageGtk* general_page);
-
-  // Callback for Show Home Button option
-  static void OnShowHomeButtonToggled(GtkToggleButton* toggle_button,
-                                      GeneralPageGtk* general_page);
-
-  // Callback for default search engine selection
-  static void OnDefaultSearchEngineChanged(GtkComboBox* combo_box,
-                                           GeneralPageGtk* general_page);
-
-  // Callback for manage search engines button
-  static void OnDefaultSearchManageEnginesClicked(GtkButton* button,
-                                                  GeneralPageGtk* general_page);
-
-  // Callback for use as default browser button
-  static void OnBrowserUseAsDefaultClicked(GtkButton* button,
-                                           GeneralPageGtk* general_page);
 
   // Enables/Disables the controls associated with the custom start pages
   // option if that preference is not selected.
