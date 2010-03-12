@@ -141,6 +141,9 @@ SANDBOX_INTERCEPT HANDLE WINAPI TargetCreateNamedPipeW64(
 
 // -----------------------------------------------------------------------
 
+#if 0
+// Bug 27218: We don't have IPC yet.
+
 SANDBOX_INTERCEPT NTSTATUS WINAPI TargetNtOpenThread64(
     PHANDLE thread, ACCESS_MASK desired_access,
     POBJECT_ATTRIBUTES object_attributes, PCLIENT_ID client_id) {
@@ -206,8 +209,7 @@ SANDBOX_INTERCEPT BOOL WINAPI TargetCreateProcessA64(
 }
 
 // -----------------------------------------------------------------------
-#if 0
-// Bug 27218: We don't have IPC yet.
+
 SANDBOX_INTERCEPT NTSTATUS WINAPI TargetNtCreateKey64(
     PHANDLE key, ACCESS_MASK desired_access,
     POBJECT_ATTRIBUTES object_attributes, ULONG title_index,

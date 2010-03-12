@@ -1,9 +1,9 @@
-// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SANDBOX_SRC_PROCESS_THREAD_POLICY_H_
-#define SANDBOX_SRC_PROCESS_THREAD_POLICY_H_
+#ifndef SANDBOX_SRC_PROCESS_THREAD_POLICY_H__
+#define SANDBOX_SRC_PROCESS_THREAD_POLICY_H__
 
 #include <string>
 
@@ -37,7 +37,7 @@ class ProcessPolicy {
   static NTSTATUS OpenThreadAction(const ClientInfo& client_info,
                                    uint32 desired_access,
                                    uint32 thread_id,
-                                   HANDLE* handle);
+                                   HANDLE *handle);
 
   // Opens the process id passed in and returns the duplicated handle to
   // the child. We only allow the child processes to open themselves. Any other
@@ -45,24 +45,24 @@ class ProcessPolicy {
   static NTSTATUS OpenProcessAction(const ClientInfo& client_info,
                                     uint32 desired_access,
                                     uint32 process_id,
-                                    HANDLE* handle);
+                                    HANDLE *handle);
 
   // Opens the token associated with the process and returns the duplicated
   // handle to the child. We only allow the child processes to open his own
   // token (using ::GetCurrentProcess()).
   static NTSTATUS OpenProcessTokenAction(const ClientInfo& client_info,
-                                         HANDLE process,
+                                         uint32 process,
                                          uint32 desired_access,
-                                         HANDLE* handle);
+                                         HANDLE *handle);
 
   // Opens the token associated with the process and returns the duplicated
   // handle to the child. We only allow the child processes to open his own
   // token (using ::GetCurrentProcess()).
   static NTSTATUS OpenProcessTokenExAction(const ClientInfo& client_info,
-                                           HANDLE process,
+                                           uint32 process,
                                            uint32 desired_access,
                                            uint32 attributes,
-                                           HANDLE* handle);
+                                           HANDLE *handle);
 
   // Processes a 'CreateProcessW()' request from the target.
   // 'client_info' : the target process that is making the request.
@@ -79,4 +79,4 @@ class ProcessPolicy {
 }  // namespace sandbox
 
 
-#endif  // SANDBOX_SRC_PROCESS_THREAD_POLICY_H_
+#endif  // SANDBOX_SRC_PROCESS_THREAD_POLICY_H__

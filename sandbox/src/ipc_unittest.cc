@@ -6,8 +6,8 @@
 #include "sandbox/src/crosscall_client.h"
 #include "sandbox/src/crosscall_server.h"
 #include "sandbox/src/sharedmem_ipc_client.h"
-#include "sandbox/src/sharedmem_ipc_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
 
 namespace sandbox {
 
@@ -18,54 +18,30 @@ IPCControl* MakeChannels(size_t channel_size, size_t total_shared_size,
   // Allocate memory
   char* mem = new char[total_shared_size];
   memset(mem, 0, total_shared_size);
+
   // Calculate how many channels we can fit in the shared memory.
   total_shared_size -= offsetof(IPCControl, channels);
   size_t channel_count =
     total_shared_size / (sizeof(ChannelControl) + channel_size);
+
   // Calculate the start of the first channel.
   *base_start = (sizeof(ChannelControl)* channel_count) +
     offsetof(IPCControl, channels);
+
   // Setup client structure.
   IPCControl* client_control = reinterpret_cast<IPCControl*>(mem);
   client_control->channels_count = channel_count;
+
   return client_control;
 }
 
-enum TestFixMode {
-  FIX_NO_EVENTS,
-  FIX_PONG_READY,
-  FIX_PONG_NOT_READY
-};
-
-void FixChannels(IPCControl* client_control, size_t base_start,
-                 size_t channel_size, TestFixMode mode) {
-  for (size_t ix = 0; ix != client_control->channels_count; ++ix) {
-    ChannelControl& channel = client_control->channels[ix];
-    channel.channel_base = base_start;
-    channel.state = kFreeChannel;
-    if (mode != FIX_NO_EVENTS) {
-      BOOL signaled = (FIX_PONG_READY == mode)? TRUE : FALSE;
-      channel.ping_event = ::CreateEventW(NULL, FALSE, FALSE, NULL);
-      channel.pong_event = ::CreateEventW(NULL, FALSE, signaled, NULL);
-    }
-    base_start += channel_size;
-  }
-}
-
-void CloseChannelEvents(IPCControl* client_control) {
-  for (size_t ix = 0; ix != client_control->channels_count; ++ix) {
-    ChannelControl& channel = client_control->channels[ix];
-    ::CloseHandle(channel.ping_event);
-    ::CloseHandle(channel.pong_event);
-  }
-}
-
 TEST(IPCTest, ChannelMaker) {
+  size_t channel_start = 0;
+  IPCControl* client_control = MakeChannels(12*64, 4096, &channel_start);
+
   // Test that our testing rig is computing offsets properly. We should have
   // 5 channnels and the offset to the first channel is 108 bytes in 32 bits
   // and 216 in 64 bits.
-  size_t channel_start = 0;
-  IPCControl* client_control = MakeChannels(12 * 64, 4096, &channel_start);
   ASSERT_TRUE(NULL != client_control);
   EXPECT_EQ(5, client_control->channels_count);
 #if defined(_WIN64)
@@ -73,16 +49,23 @@ TEST(IPCTest, ChannelMaker) {
 #else
   EXPECT_EQ(108, channel_start);
 #endif
-  delete[] reinterpret_cast<char*>(client_control);
+
+  delete [] reinterpret_cast<char*>(client_control);
 }
 
 TEST(IPCTest, ClientLockUnlock) {
   // Make 7 channels of kIPCChannelSize (1kb) each. Test that we lock and
   // unlock channels properly.
+  const size_t channel_size = kIPCChannelSize;
   size_t base_start = 0;
-  IPCControl* client_control =
-      MakeChannels(kIPCChannelSize, 4096 * 2, &base_start);
-  FixChannels(client_control, base_start, kIPCChannelSize, FIX_NO_EVENTS);
+  IPCControl* client_control = MakeChannels(channel_size, 4096*2, &base_start);
+
+  for (size_t ix = 0; ix != client_control->channels_count; ++ix) {
+    ChannelControl& channel = client_control->channels[ix];
+    channel.channel_base = base_start;
+    channel.state = kFreeChannel;
+    base_start += channel_size;
+  }
 
   char* mem = reinterpret_cast<char*>(client_control);
   SharedMemIPCClient client(mem);
@@ -141,18 +124,26 @@ TEST(IPCTest, ClientLockUnlock) {
   EXPECT_EQ(kFreeChannel, client_control->channels[4].state);
   EXPECT_EQ(kFreeChannel, client_control->channels[5].state);
 
-  delete[] reinterpret_cast<char*>(client_control);
+  delete [] reinterpret_cast<char*>(client_control);
 }
 
 TEST(IPCTest, CrossCallStrPacking) {
   // This test tries the CrossCall object with null and non-null string
-  // combination of parameters, integer types and verifies that the unpacker
-  // can read them properly.
+  // combination of parameters and verifies that the unpacker can read them
+  // properly.
+  const size_t channel_size = kIPCChannelSize;
   size_t base_start = 0;
-  IPCControl* client_control =
-      MakeChannels(kIPCChannelSize, 4096 * 4, &base_start);
+  IPCControl* client_control = MakeChannels(channel_size, 4096*2, &base_start);
   client_control->server_alive = HANDLE(1);
-  FixChannels(client_control, base_start, kIPCChannelSize, FIX_PONG_READY);
+
+  for (size_t ix = 0; ix != client_control->channels_count; ++ix) {
+    ChannelControl& channel = client_control->channels[ix];
+    channel.channel_base = base_start;
+    channel.state = kFreeChannel;
+    channel.ping_event = ::CreateEventW(NULL, FALSE, FALSE, NULL);
+    channel.pong_event = ::CreateEventW(NULL, FALSE, TRUE, NULL);
+    base_start += channel_size;
+  }
 
   char* mem = reinterpret_cast<char*>(client_control);
   SharedMemIPCClient client(mem);
@@ -221,79 +212,12 @@ TEST(IPCTest, CrossCallStrPacking) {
   EXPECT_EQ(0, param_size);
   EXPECT_EQ(WCHAR_TYPE, type);
 
-  CloseChannelEvents(client_control);
-  delete[] reinterpret_cast<char*>(client_control);
-}
-
-TEST(IPCTest, CrossCallIntPacking) {
-  // Check handling for regular 32 bit integers used in Windows.
-  size_t base_start = 0;
-  IPCControl* client_control =
-      MakeChannels(kIPCChannelSize, 4096 * 4, &base_start);
-  client_control->server_alive = HANDLE(1);
-  FixChannels(client_control, base_start, kIPCChannelSize, FIX_PONG_READY);
-
-  uint32 tag1 = 999;
-  uint32 tag2 = 111;
-  const wchar_t text[] = L"godzilla";
-  CrossCallParamsEx* actual_params;
-
-  char* mem = reinterpret_cast<char*>(client_control);
-  SharedMemIPCClient client(mem);
-
-  CrossCallReturn answer;
-  DWORD dw = 0xE6578;
-  CrossCall(client, tag2, dw, &answer);
-  actual_params = reinterpret_cast<CrossCallParamsEx*>(client.GetBuffer());
-  EXPECT_EQ(1, actual_params->GetParamsCount());
-  EXPECT_EQ(tag2, actual_params->GetTag());
-  ArgType type = INVALID_TYPE;
-  size_t param_size = 1;
-  void* param_addr = actual_params->GetRawParameter(0, &param_size, &type);
-  ASSERT_EQ(sizeof(dw), param_size);
-  EXPECT_EQ(ULONG_TYPE, type);
-  ASSERT_TRUE(NULL != param_addr);
-  EXPECT_EQ(0, memcmp(&dw, param_addr, param_size));
-
-  // Check handling for windows HANDLES.
-  HANDLE h = HANDLE(0x70000500);
-  CrossCall(client, tag1, text, h, &answer);
-  actual_params = reinterpret_cast<CrossCallParamsEx*>(client.GetBuffer());
-  EXPECT_EQ(2, actual_params->GetParamsCount());
-  EXPECT_EQ(tag1, actual_params->GetTag());
-  type = INVALID_TYPE;
-  param_addr = actual_params->GetRawParameter(1, &param_size, &type);
-  ASSERT_EQ(sizeof(h), param_size);
-  EXPECT_EQ(VOIDPTR_TYPE, type);
-  ASSERT_TRUE(NULL != param_addr);
-  EXPECT_EQ(0, memcmp(&h, param_addr, param_size));
-
-  // Check combination of 32 and 64 bits.
-  CrossCall(client, tag2, h, dw, h, &answer);
-  actual_params = reinterpret_cast<CrossCallParamsEx*>(client.GetBuffer());
-  EXPECT_EQ(3, actual_params->GetParamsCount());
-  EXPECT_EQ(tag2, actual_params->GetTag());
-  type = INVALID_TYPE;
-  param_addr = actual_params->GetRawParameter(0, &param_size, &type);
-  ASSERT_EQ(sizeof(h), param_size);
-  EXPECT_EQ(VOIDPTR_TYPE, type);
-  ASSERT_TRUE(NULL != param_addr);
-  EXPECT_EQ(0, memcmp(&h, param_addr, param_size));
-  type = INVALID_TYPE;
-  param_addr = actual_params->GetRawParameter(1, &param_size, &type);
-  ASSERT_EQ(sizeof(dw), param_size);
-  EXPECT_EQ(ULONG_TYPE, type);
-  ASSERT_TRUE(NULL != param_addr);
-  EXPECT_EQ(0, memcmp(&dw, param_addr, param_size));
-  type = INVALID_TYPE;
-  param_addr = actual_params->GetRawParameter(2, &param_size, &type);
-  ASSERT_EQ(sizeof(h), param_size);
-  EXPECT_EQ(VOIDPTR_TYPE, type);
-  ASSERT_TRUE(NULL != param_addr);
-  EXPECT_EQ(0, memcmp(&h, param_addr, param_size));
-
-  CloseChannelEvents(client_control);
-  delete[] reinterpret_cast<char*>(client_control);
+  for (size_t ix = 0; ix != client_control->channels_count; ++ix) {
+    ChannelControl& channel = client_control->channels[ix];
+    ::CloseHandle(channel.ping_event);
+    ::CloseHandle(channel.pong_event);
+  }
+  delete [] reinterpret_cast<char*>(client_control);
 }
 
 TEST(IPCTest, CrossCallValidation) {
@@ -373,9 +297,17 @@ void FakeOkAnswerInChannel(void* channel) {
 TEST(IPCTest, ClientFastServer) {
   const size_t channel_size = kIPCChannelSize;
   size_t base_start = 0;
-  IPCControl* client_control =
-      MakeChannels(channel_size, 4096 * 2, &base_start);
-  FixChannels(client_control, base_start, kIPCChannelSize, FIX_PONG_NOT_READY);
+  IPCControl* client_control = MakeChannels(channel_size, 4096*2, &base_start);
+
+  for (size_t ix = 0; ix != client_control->channels_count; ++ix) {
+    ChannelControl& channel = client_control->channels[ix];
+    channel.channel_base = base_start;
+    channel.state = kFreeChannel;
+    channel.ping_event = ::CreateEventW(NULL, FALSE, FALSE, NULL);
+    channel.pong_event = ::CreateEventW(NULL, FALSE, FALSE, NULL);
+    base_start += channel_size;
+  }
+
   client_control->server_alive = ::CreateMutex(NULL, FALSE, NULL);
 
   char* mem = reinterpret_cast<char*>(client_control);
@@ -442,10 +374,14 @@ TEST(IPCTest, ClientFastServer) {
   EXPECT_EQ(kFreeChannel, client_control->channels[1].state);
   EXPECT_EQ(kFreeChannel, client_control->channels[2].state);
 
-  CloseChannelEvents(client_control);
-  ::CloseHandle(client_control->server_alive);
+  for (size_t ix = 0; ix != client_control->channels_count; ++ix) {
+    ChannelControl& channel = client_control->channels[ix];
+    ::CloseHandle(channel.ping_event);
+    ::CloseHandle(channel.pong_event);
+  }
 
-  delete[] reinterpret_cast<char*>(client_control);
+  ::CloseHandle(client_control->server_alive);
+  delete [] reinterpret_cast<char*>(client_control);
 }
 
 // This is the server thread that very slowly answers an IPC and exits. Note
@@ -474,10 +410,19 @@ DWORD WINAPI MainServerThread(PVOID param) {
 // to hold locked the server_alive mutex: this signals the client that the
 // server is not dead and it retries the wait.
 TEST(IPCTest, ClientSlowServer) {
+  const size_t channel_size = kIPCChannelSize;
   size_t base_start = 0;
-  IPCControl* client_control =
-      MakeChannels(kIPCChannelSize, 4096*2, &base_start);
-  FixChannels(client_control, base_start, kIPCChannelSize, FIX_PONG_NOT_READY);
+  IPCControl* client_control = MakeChannels(channel_size, 4096*2, &base_start);
+
+  for (size_t ix = 0; ix != client_control->channels_count; ++ix) {
+    ChannelControl& channel = client_control->channels[ix];
+    channel.channel_base = base_start;
+    channel.state = kFreeChannel;
+    channel.ping_event = ::CreateEventW(NULL, FALSE, FALSE, NULL);
+    channel.pong_event = ::CreateEventW(NULL, FALSE, FALSE, NULL);
+    base_start += channel_size;
+  }
+
   client_control->server_alive = ::CreateMutex(NULL, FALSE, NULL);
 
   char* mem = reinterpret_cast<char*>(client_control);
@@ -516,90 +461,13 @@ TEST(IPCTest, ClientSlowServer) {
   EXPECT_EQ(tag, client_control->channels[0].ipc_tag);
   EXPECT_EQ(kFreeChannel, client_control->channels[0].state);
 
-  CloseChannelEvents(client_control);
+  for (size_t ix = 0; ix != client_control->channels_count; ++ix) {
+    ChannelControl& channel = client_control->channels[ix];
+    ::CloseHandle(channel.ping_event);
+    ::CloseHandle(channel.pong_event);
+  }
   ::CloseHandle(client_control->server_alive);
-  delete[] reinterpret_cast<char*>(client_control);
-}
-
-// This test-only IPC dispatcher has two handlers with the same signature
-// but only CallOneHandler should be used.
-class UnitTestIPCDispatcher : public Dispatcher {
- public:
-  enum {
-    CALL_ONE_TAG = 78,
-    CALL_TWO_TAG = 87
-  };
-
-  UnitTestIPCDispatcher();
-  ~UnitTestIPCDispatcher() {};
-
-  virtual bool SetupService(InterceptionManager* manager, int service) {
-    return true;
-  }
-
- private:
-  bool CallOneHandler(IPCInfo* ipc, HANDLE p1, DWORD p2) {
-    ipc->return_info.extended[0].handle = p1;
-    ipc->return_info.extended[1].unsigned_int = p2;
-    return true;
-  }
-
-  bool CallTwoHandler(IPCInfo* ipc, HANDLE p1, DWORD p2) {
-    return true;
-  }
-};
-
-UnitTestIPCDispatcher::UnitTestIPCDispatcher() {
-  static const IPCCall call_one = {
-    {CALL_ONE_TAG, VOIDPTR_TYPE, ULONG_TYPE},
-    reinterpret_cast<CallbackGeneric>(
-        &UnitTestIPCDispatcher::CallOneHandler)
-  };
-  static const IPCCall call_two = {
-    {CALL_TWO_TAG, VOIDPTR_TYPE, ULONG_TYPE},
-    reinterpret_cast<CallbackGeneric>(
-        &UnitTestIPCDispatcher::CallTwoHandler)
-  };
-  ipc_calls_.push_back(call_one);
-  ipc_calls_.push_back(call_two);
-}
-
-// This test does most of the shared memory IPC client-server roundtrip
-// and tests the packing, unpacking and call dispatching.
-TEST(IPCTest, SharedMemServerTests) {
-  size_t base_start = 0;
-  IPCControl* client_control =
-      MakeChannels(kIPCChannelSize, 4096, &base_start);
-  client_control->server_alive = HANDLE(1);
-  FixChannels(client_control, base_start, kIPCChannelSize, FIX_PONG_READY);
-
-  char* mem = reinterpret_cast<char*>(client_control);
-  SharedMemIPCClient client(mem);
-
-  CrossCallReturn answer;
-  HANDLE bar = HANDLE(191919);
-  DWORD foo = 6767676;
-  CrossCall(client, UnitTestIPCDispatcher::CALL_ONE_TAG, bar, foo, &answer);
-  void* buff = client.GetBuffer();
-  ASSERT_TRUE(NULL != buff);
-
-  UnitTestIPCDispatcher dispatcher;
-  // Since we are directly calling InvokeCallback, most of this structure
-  // can be set to NULL.
-  sandbox::SharedMemIPCServer::ServerControl srv_control = {
-      NULL, NULL, kIPCChannelSize, NULL,
-      reinterpret_cast<char*>(client_control),
-      NULL, &dispatcher, {0} };
-
-  sandbox::CrossCallReturn call_return = {0};
-  EXPECT_TRUE(SharedMemIPCServer::InvokeCallback(&srv_control, buff,
-                                                 &call_return));
-  EXPECT_EQ(SBOX_ALL_OK, call_return.call_outcome);
-  EXPECT_TRUE(bar == call_return.extended[0].handle);
-  EXPECT_EQ(foo, call_return.extended[1].unsigned_int);
-
-  CloseChannelEvents(client_control);
-  delete[] reinterpret_cast<char*>(client_control);
+  delete [] reinterpret_cast<char*>(client_control);
 }
 
 }  // namespace sandbox

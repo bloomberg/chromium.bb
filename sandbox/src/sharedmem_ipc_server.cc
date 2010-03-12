@@ -171,22 +171,13 @@ bool GetArgs(CrossCallParamsEx* params, IPCParams* ipc_params,
           break;
         }
         case ULONG_TYPE: {
-          uint32 data;
+          ULONG data;
           if (!params->GetParameter32(i, &data)) {
             ReleaseArgs(ipc_params, args);
             return false;
           }
           IPCInt ipc_int(data);
           args[i] = ipc_int.AsVoidPtr();
-          break;
-        }
-        case VOIDPTR_TYPE : {
-          void* data;
-          if (!params->GetParameterVoidPtr(i, &data)) {
-            ReleaseArgs(ipc_params, args);
-            return false;
-          }
-          args[i] = data;
           break;
         }
         case INOUTPTR_TYPE: {

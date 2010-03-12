@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,6 @@
 
 #include <string>
 #include <vector>
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "sandbox/src/crosscall_params.h"
 
@@ -104,11 +103,7 @@ class CrossCallParamsEx : public CrossCallParams {
 
   // Gets a parameter that is four bytes in size.
   // Returns false if the parameter does not exist or is not 32 bits wide.
-  bool GetParameter32(size_t index, uint32* param);
-
-  // Gets a parameter that is void pointer in size.
-  // Returns false if the parameter does not exist or is not void pointer sized.
-  bool GetParameterVoidPtr(size_t index, void** param);
+  bool GetParameter32(size_t index, void* param);
 
   // Gets a parameter that is a string. Returns false if the parameter does not
   // exist.

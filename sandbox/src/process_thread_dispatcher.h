@@ -1,9 +1,9 @@
-// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SANDBOX_SRC_PROCESS_THREAD_DISPATCHER_H_
-#define SANDBOX_SRC_PROCESS_THREAD_DISPATCHER_H_
+#ifndef SANDBOX_SRC_PROCESS_THREAD_DISPATCHER_H__
+#define SANDBOX_SRC_PROCESS_THREAD_DISPATCHER_H__
 
 #include "base/basictypes.h"
 #include "sandbox/src/crosscall_server.h"
@@ -28,10 +28,10 @@ class ThreadProcessDispatcher : public Dispatcher {
   bool NtOpenProcess(IPCInfo* ipc, DWORD desired_access, DWORD process_id);
 
   // Processes IPC requests from calls to NtOpenProcessToken() in the target.
-  bool NtOpenProcessToken(IPCInfo* ipc, HANDLE process, DWORD desired_access);
+  bool NtOpenProcessToken(IPCInfo* ipc, DWORD process, DWORD desired_access);
 
   // Processes IPC requests from calls to NtOpenProcessTokenEx() in the target.
-  bool NtOpenProcessTokenEx(IPCInfo* ipc, HANDLE process, DWORD desired_access,
+  bool NtOpenProcessTokenEx(IPCInfo* ipc, DWORD process, DWORD desired_access,
                             DWORD attributes);
 
   // Processes IPC requests coming from calls to CreateProcessW() in the target.
@@ -44,4 +44,4 @@ class ThreadProcessDispatcher : public Dispatcher {
 
 }  // namespace sandbox
 
-#endif  // SANDBOX_SRC_PROCESS_THREAD_DISPATCHER_H_
+#endif  // SANDBOX_SRC_PROCESS_THREAD_DISPATCHER_H__

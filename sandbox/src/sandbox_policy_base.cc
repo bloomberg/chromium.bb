@@ -71,12 +71,6 @@ PolicyBase::PolicyBase()
   // Initialize the IPC dispatcher array.
   memset(&ipc_targets_, NULL, sizeof(ipc_targets_));
   Dispatcher* dispatcher = NULL;
-  dispatcher = new ThreadProcessDispatcher(this);
-  ipc_targets_[IPC_NTOPENTHREAD_TAG] = dispatcher;
-  ipc_targets_[IPC_NTOPENPROCESS_TAG] = dispatcher;
-  ipc_targets_[IPC_CREATEPROCESSW_TAG] = dispatcher;
-  ipc_targets_[IPC_NTOPENPROCESSTOKEN_TAG] = dispatcher;
-  ipc_targets_[IPC_NTOPENPROCESSTOKENEX_TAG] = dispatcher;
 #if !defined(_WIN64)
   // Bug 27218: We don't have dispatch for some x64 syscalls.
   dispatcher = new FilesystemDispatcher(this);
@@ -85,14 +79,17 @@ PolicyBase::PolicyBase()
   ipc_targets_[IPC_NTSETINFO_RENAME_TAG] = dispatcher;
   ipc_targets_[IPC_NTQUERYATTRIBUTESFILE_TAG] = dispatcher;
   ipc_targets_[IPC_NTQUERYFULLATTRIBUTESFILE_TAG] = dispatcher;
-
+  dispatcher = new ThreadProcessDispatcher(this);
+  ipc_targets_[IPC_NTOPENTHREAD_TAG] = dispatcher;
+  ipc_targets_[IPC_NTOPENPROCESS_TAG] = dispatcher;
+  ipc_targets_[IPC_CREATEPROCESSW_TAG] = dispatcher;
+  ipc_targets_[IPC_NTOPENPROCESSTOKEN_TAG] = dispatcher;
+  ipc_targets_[IPC_NTOPENPROCESSTOKENEX_TAG] = dispatcher;
   dispatcher = new NamedPipeDispatcher(this);
   ipc_targets_[IPC_CREATENAMEDPIPEW_TAG] = dispatcher;
-
   dispatcher = new SyncDispatcher(this);
   ipc_targets_[IPC_CREATEEVENT_TAG] = dispatcher;
   ipc_targets_[IPC_OPENEVENT_TAG] = dispatcher;
-
   dispatcher = new RegistryDispatcher(this);
   ipc_targets_[IPC_NTCREATEKEY_TAG] = dispatcher;
   ipc_targets_[IPC_NTOPENKEY_TAG] = dispatcher;
@@ -105,10 +102,10 @@ PolicyBase::~PolicyBase() {
     TargetProcess* target = (*it);
     delete target;
   }
-  delete ipc_targets_[IPC_NTOPENTHREAD_TAG];
 #if !defined(_WIN64)
   // Bug 27218: We don't have dispatch for some x64 syscalls.
   delete ipc_targets_[IPC_NTCREATEFILE_TAG];
+  delete ipc_targets_[IPC_NTOPENTHREAD_TAG];
   delete ipc_targets_[IPC_CREATENAMEDPIPEW_TAG];
   delete ipc_targets_[IPC_CREATEEVENT_TAG];
   delete ipc_targets_[IPC_NTCREATEKEY_TAG];
