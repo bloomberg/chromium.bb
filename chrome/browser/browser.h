@@ -187,10 +187,12 @@ class Browser : public TabStripModelDelegate,
   static void OpenApplicationWindow(Profile* profile, const GURL& url,
                                     bool as_panel);
 
+  // Opens a new window and opens the bookmark manager.
+  static void OpenBookmarkManagerWindow(Profile* profile);
+
 #if defined(OS_MACOSX)
   // Open a new window with history/downloads/help (needed on Mac when there are
   // no windows).
-  static void OpenBookmarkManagerWindow(Profile* profile);
   static void OpenHistoryWindow(Profile* profile);
   static void OpenDownloadsWindow(Profile* profile);
   static void OpenHelpWindow(Profile* profile);

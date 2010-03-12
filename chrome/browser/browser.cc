@@ -392,7 +392,6 @@ void Browser::OpenApplicationWindow(Profile* profile, const GURL& url,
   }
 }
 
-#if defined(OS_MACOSX)
 // static
 void Browser::OpenBookmarkManagerWindow(Profile* profile) {
   Browser* browser = Browser::Create(profile);
@@ -400,6 +399,7 @@ void Browser::OpenBookmarkManagerWindow(Profile* profile) {
   browser->window()->Show();
 }
 
+#if defined(OS_MACOSX)
 // static
 void Browser::OpenHistoryWindow(Profile* profile) {
   Browser* browser = Browser::Create(profile);
@@ -1295,7 +1295,7 @@ void Browser::ToggleExtensionShelf() {
 void Browser::OpenBookmarkManager() {
   UserMetrics::RecordAction("ShowBookmarkManager", profile_);
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableTabbedBookmarkManager)) {
+          switches::kEnableTabbedBookmarkManager)) {
     ShowBookmarkManagerTab();
   } else {
     window_->ShowBookmarkManager();
@@ -1313,8 +1313,23 @@ void Browser::ShowPageMenu() {
 }
 
 void Browser::ShowBookmarkManagerTab() {
-  UserMetrics::RecordAction("ShowBookmarks", profile_);
-  ShowSingletonTab(GURL(chrome::kChromeUIBookmarksURL));
+  // The bookmark manager tab does not work in incognito mode. If we are OTR
+  // we try to reuse the last active window and if that fails we open a new
+  // window.
+  Profile* default_profile = profile_->GetOriginalProfile();
+  UserMetrics::RecordAction("ShowBookmarks", default_profile);
+
+  if (!profile_->IsOffTheRecord()) {
+    ShowSingletonTab(GURL(chrome::kChromeUIBookmarksURL));
+  } else {
+    Browser* browser = BrowserList::GetLastActiveWithProfile(default_profile);
+    if (browser) {
+      browser->ShowBookmarkManagerTab();
+      browser->window()->Activate();
+    } else {
+      OpenBookmarkManagerWindow(default_profile);
+    }
+  }
 }
 
 void Browser::ShowHistoryTab() {
