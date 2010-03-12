@@ -412,15 +412,7 @@ void NavigateToFeedAndValidate(HTTPTestServer* server,
                                const std::string& expected_item_desc,
                                const std::string& expected_error) {
   if (sniff_xml_type) {
-    // Navigate to the feed will cause the extension to sniff the type and
-    // create an extra tab showing the feed preview.
-    ui_test_utils::NavigateToURL(browser, GetFeedUrl(server, url, false, ""));
-
-    // Validate that we have a new tab.
-    TabStripModel* tab_strip = browser->tabstrip_model();
-    if (tab_strip->count() == 1)
-      ui_test_utils::WaitForTabParented();
-    ASSERT_EQ(2, tab_strip->count());
+    // TODO(finnur): Implement this is a non-flaky way.
   }
 
   // There should be only one extension in the list (ours). Get its id.

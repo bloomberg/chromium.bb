@@ -260,26 +260,6 @@ class SimpleNotificationObserver : public NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(SimpleNotificationObserver);
 };
 
-class TabParentedNotificationObserver : public NotificationObserver {
- public:
-  TabParentedNotificationObserver() {
-    registrar_.Add(this, NotificationType::TAB_PARENTED,
-        NotificationService::AllSources());
-    ui_test_utils::RunMessageLoop();
-  }
-
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
-    MessageLoopForUI::current()->Quit();
-  }
-
- private:
-  NotificationRegistrar registrar_;
-
-  DISALLOW_COPY_AND_ASSIGN(TabParentedNotificationObserver);
-};
-
 class LanguageDetectionNotificationObserver : public NotificationObserver {
  public:
   explicit LanguageDetectionNotificationObserver(TabContents* tab) {
@@ -414,10 +394,6 @@ void WaitForNavigations(NavigationController* controller,
 void WaitForNewTab(Browser* browser) {
   SimpleNotificationObserver<Browser>
       new_tab_observer(NotificationType::TAB_ADDED, browser);
-}
-
-void WaitForTabParented() {
-  TabParentedNotificationObserver new_tab_observer;
 }
 
 void WaitForBrowserActionUpdated(ExtensionAction* browser_action) {
