@@ -1309,6 +1309,19 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   [self clearMenuTagMap];
   needToRebuildOffTheSideMenu_ = YES;
   bookmarkBarDisplayedButtons_ = 0;
+
+  // Make sure there are no stale pointers in the pasteboard.  This
+  // can be important if a bookmark is deleted (via bookmark sync)
+  // while in the middle of a drag.  The "drag completed" code
+  // (e.g. [BookmarkBarView performDragOperationForBookmark:]) is
+  // careful enough to bail if there is no data found at "drop" time.
+  //
+  // Unfortunately the clearContents selector is 10.6 only.  The best
+  // we can do is make sure something else is present in place of the
+  // stale bookmark.
+  NSPasteboard* pboard = [NSPasteboard pasteboardWithName:NSDragPboard];
+  [pboard declareTypes:[NSArray arrayWithObject:NSStringPboardType] owner:self];
+  [pboard setString:@"" forType:NSStringPboardType];
 }
 
 // Return an autoreleased NSCell suitable for a bookmark button.
