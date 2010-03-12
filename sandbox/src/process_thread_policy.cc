@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -103,7 +103,7 @@ bool ProcessPolicy::GenerateRules(const wchar_t* name,
 NTSTATUS ProcessPolicy::OpenThreadAction(const ClientInfo& client_info,
                                          uint32 desired_access,
                                          uint32 thread_id,
-                                         HANDLE *handle) {
+                                         HANDLE* handle) {
   *handle = NULL;
 
   NtOpenThreadFunction NtOpenThread = NULL;
@@ -135,7 +135,7 @@ NTSTATUS ProcessPolicy::OpenThreadAction(const ClientInfo& client_info,
 NTSTATUS ProcessPolicy::OpenProcessAction(const ClientInfo& client_info,
                                           uint32 desired_access,
                                           uint32 process_id,
-                                          HANDLE *handle) {
+                                          HANDLE* handle) {
   *handle = NULL;
 
   NtOpenProcessFunction NtOpenProcess = NULL;
@@ -165,16 +165,13 @@ NTSTATUS ProcessPolicy::OpenProcessAction(const ClientInfo& client_info,
 }
 
 NTSTATUS ProcessPolicy::OpenProcessTokenAction(const ClientInfo& client_info,
-                                               uint32 process_requested,
+                                               HANDLE process,
                                                uint32 desired_access,
-                                               HANDLE *handle) {
+                                               HANDLE* handle) {
   *handle = NULL;
-
   NtOpenProcessTokenFunction NtOpenProcessToken = NULL;
   ResolveNTFunctionPtr("NtOpenProcessToken", &NtOpenProcessToken);
 
-  HANDLE process = reinterpret_cast<HANDLE>(
-                      static_cast<ULONG_PTR>(process_requested));
   if (CURRENT_PROCESS != process)
     return STATUS_ACCESS_DENIED;
 
@@ -189,21 +186,18 @@ NTSTATUS ProcessPolicy::OpenProcessTokenAction(const ClientInfo& client_info,
       return STATUS_ACCESS_DENIED;
     }
   }
-
   return status;
 }
 
 NTSTATUS ProcessPolicy::OpenProcessTokenExAction(const ClientInfo& client_info,
-                                                 uint32 process_requested,
+                                                 HANDLE process,
                                                  uint32 desired_access,
                                                  uint32 attributes,
-                                                 HANDLE *handle) {
+                                                 HANDLE* handle) {
   *handle = NULL;
   NtOpenProcessTokenExFunction NtOpenProcessTokenEx = NULL;
   ResolveNTFunctionPtr("NtOpenProcessTokenEx", &NtOpenProcessTokenEx);
 
-  HANDLE process = reinterpret_cast<HANDLE>(
-                      static_cast<ULONG_PTR>(process_requested));
   if (CURRENT_PROCESS != process)
     return STATUS_ACCESS_DENIED;
 
@@ -218,7 +212,6 @@ NTSTATUS ProcessPolicy::OpenProcessTokenExAction(const ClientInfo& client_info,
       return STATUS_ACCESS_DENIED;
     }
   }
-
   return status;
 }
 

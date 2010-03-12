@@ -1,9 +1,9 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SANDBOX_SRC_CROSSCALL_CLIENT_H__
-#define SANDBOX_SRC_CROSSCALL_CLIENT_H__
+#ifndef SANDBOX_SRC_CROSSCALL_CLIENT_H_
+#define SANDBOX_SRC_CROSSCALL_CLIENT_H_
 
 #include "sandbox/src/crosscall_params.h"
 #include "sandbox/src/sandbox.h"
@@ -84,6 +84,44 @@ class CopyHelper {
 
  private:
   const T& t_;
+};
+
+// This copy helper template specialization if for the void pointer
+// case both 32 and 64 bit.
+template<>
+class CopyHelper<void*> {
+ public:
+  CopyHelper(void* t) : t_(t) {}
+
+  // Returns the pointer to the start of the input.
+  const void* GetStart() const {
+    return &t_;
+  }
+
+  // Update the stored value with the value in the buffer. This is not
+  // supported for this type.
+  bool Update(void* buffer) {
+    // Not supported;
+    return true;
+  }
+
+  // Returns the size of the input in bytes.
+  size_t GetSize() const {
+    return sizeof(t_);
+  }
+
+  // Returns true if the current type is used as an In or InOut parameter.
+  bool IsInOut() {
+    return false;
+  }
+
+  // Returns this object's type.
+  ArgType GetType() {
+    return VOIDPTR_TYPE;
+  }
+
+ private:
+  const void* t_;
 };
 
 // This copy helper template specialization catches the cases where the

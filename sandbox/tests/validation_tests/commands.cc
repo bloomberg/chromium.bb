@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -87,12 +87,11 @@ int TestValidWindow(HWND window) {
   return SBOX_TEST_DENIED;
 }
 
-SBOX_TESTS_COMMAND int OpenProcess(int argc, wchar_t **argv) {
+SBOX_TESTS_COMMAND int OpenProcessCmd(int argc, wchar_t **argv) {
   if (1 != argc)
     return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
 
   DWORD process_id = _wtoi(argv[0]);
-
   return TestOpenProcess(process_id);
 }
 
@@ -112,12 +111,11 @@ int TestOpenProcess(DWORD process_id) {
   }
 }
 
-SBOX_TESTS_COMMAND int OpenThread(int argc, wchar_t **argv) {
+SBOX_TESTS_COMMAND int OpenThreadCmd(int argc, wchar_t **argv) {
   if (1 != argc)
     return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
 
   DWORD thread_id = _wtoi(argv[0]);
-
   return TestOpenThread(thread_id);
 }
 
