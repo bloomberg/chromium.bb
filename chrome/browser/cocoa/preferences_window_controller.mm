@@ -739,12 +739,15 @@ void PersonalDataManagerObserver::ShowAutoFillDialog(
 
   // Make the window as wide as the views.
   NSWindow* prefsWindow = [self window];
-  NSRect frame = [prefsWindow frame];
+  NSView* prefsContentView = [prefsWindow contentView];
+  NSRect frame = [prefsContentView convertRect:[prefsWindow frame]
+                                      fromView:nil];
   frame.size.width = newWidth;
+  frame = [prefsContentView convertRect:frame toView:nil];
   [prefsWindow setFrame:frame display:NO];
 
   // The Under the Hood prefs is a scroller, it shouldn't get any border, so it
-  // gets resized to the as wide as the window ended up.
+  // gets resized to be as wide as the window ended up.
   NSSize underTheHoodSize = [underTheHoodView_ frame].size;
   underTheHoodSize.width = newWidth;
   [underTheHoodView_ setFrameSize:underTheHoodSize];
@@ -1795,13 +1798,15 @@ const int kDisabledIndex = 1;
   [prefsWindow setTitle:[toolbarItem label]];
 
   // Figure out the size of the window.
-  NSRect windowFrame = [prefsWindow frame];
+  NSRect windowFrame = [contentView convertRect:[prefsWindow frame]
+                                       fromView:nil];
   CGFloat titleToolbarHeight =
       NSHeight(windowFrame) - NSHeight(contentViewFrame);
   windowFrame.size.height =
       NSHeight(prefsViewFrame) + titleToolbarHeight;
   DCHECK_GE(NSWidth(windowFrame), NSWidth(prefsViewFrame))
       << "Initial width set wasn't wide enough.";
+  windowFrame = [contentView convertRect:windowFrame toView:nil];
   windowFrame.origin.y = NSMaxY([prefsWindow frame]) - NSHeight(windowFrame);
 
   // Now change the size.
