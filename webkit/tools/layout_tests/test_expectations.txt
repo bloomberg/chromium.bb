@@ -107,7 +107,7 @@ BUG27335 WIN DEBUG SLOW : plugins/embed-attributes-setting.html = PASS
 
 // --- collecting results for supported-xml-content-types.html ---
 // was slow, started to timeout
-BUG18702 MAC WIN : http/tests/xmlhttprequest/supported-xml-content-types.html = PASS TIMEOUT
+BUG18702 WIN : http/tests/xmlhttprequest/supported-xml-content-types.html = PASS TIMEOUT
 
 BUG34759 WIN DEBUG SLOW : inspector/console-log-before-inspector-open.html = PASS
 
@@ -1080,7 +1080,7 @@ BUG10318 WIN LINUX : fast/canvas/toDataURL-supportedTypes.html = FAIL
 // intentional, but it makes pixel results unreliable.
 // http://bugs.webkit.org/show_bug.cgi?id=21491
 // CSS animations should not block our next release.
-BUG10320 : transitions/opacity-transition-zindex.html = PASS FAIL
+BUG10320 WIN LINUX : transitions/opacity-transition-zindex.html = PASS FAIL
 
 // Issue 3273: TextInputController::firstRectForCharacterRange not implemented.
 BUG3273 : editing/selection/move-left-right.html = FAIL
@@ -1202,9 +1202,6 @@ BUG10350 LINUX : fast/replaced/width100percent-radio.html = FAIL
 // See the bug for more discussion.
 BUG15797 LINUX : fast/dom/object-embed-plugin-scripting.html = FAIL
 BUG15797 LINUX : plugins/embed-attributes-setting.html = FAIL CRASH
-
-// Depends on plugin support.
-BUG10351 MAC : fast/dom/object-embed-plugin-scripting.html = PASS FAIL
 
 // Skip because we throw an exception before we get to dumpAsText.
 BUG10351 SKIP MAC : http/tests/plugins/geturlnotify-from-npp-destroystream.html = FAIL
@@ -1972,7 +1969,7 @@ BUG27486 WIN LINUX : fast/forms/slider-zoomed.html = FAIL
 BUG10468 MAC : fast/replaced/border-radius-clip.html = IMAGE
 
 // Mac flaky failures.
-BUG10472 MAC : svg/css/glyph-orientation-rounding-test.xhtml = FAIL PASS
+BUG10472 MAC DEBUG : svg/css/glyph-orientation-rounding-test.xhtml = FAIL PASS
 
 // <input type="search">; various failures, some tests may simply need new
 // baselines, others have more problems.
@@ -2024,20 +2021,14 @@ BUG9798 SLOW WIN DEBUG : fast/dom/Window/slow-unload-handler.html = PASS
 BUG9798 MAC WIN : http/tests/loading/preload-img-test.html = TIMEOUT PASS
 BUG9798 WIN DEBUG : http/tests/local/style-access-before-stylesheet-loaded.html = FAIL PASS
 BUG9798 WIN DEBUG : http/tests/misc/redirect-with-quotes.php = TIMEOUT PASS
-BUG9798 WIN RELEASE : http/tests/misc/refresh-headers.php = TIMEOUT PASS
-BUG9798 MAC RELEASE : http/tests/misc/refresh-headers.php = TIMEOUT PASS
+BUG9798 WIN SLOW : http/tests/misc/refresh-headers.php = PASS
 BUG9798 WIN : http/tests/security/cross-frame-access-protocol-explicit-domain.html = FAIL PASS
 BUG9798 WIN DEBUG : http/tests/security/cross-frame-access-protocol.html = FAIL PASS
 BUG9798 RELEASE : http/tests/security/dataURL/xss-DENIED-from-data-url-in-foreign-domain-subframe.html = TIMEOUT PASS
-BUG9798 MAC RELEASE : http/tests/security/xssAuditor/javascript-link-HTML-entities.html = TIMEOUT PASS
-BUG9798 MAC WIN RELEASE : http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-timeout.html = PASS TIMEOUT
-BUG9798 MAC DEBUG : http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-timeout.html = PASS TIMEOUT
+BUG9798 WIN : http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-timeout.html = PASS TIMEOUT
 BUG9798 WIN : http/tests/xmlhttprequest/basic-auth.html = TIMEOUT PASS
-BUG9798 MAC RELEASE : http/tests/xmlhttprequest/encode-request-url-2.html = TIMEOUT PASS
-BUG9798 MAC RELEASE : http/tests/xmlhttprequest/null-auth.php = TIMEOUT PASS
+BUG9798 WIN DEBUG : http/tests/xmlhttprequest/encode-request-url-2.html = TIMEOUT PASS
 BUG9797 BUG9798 WIN RELEASE SLOW : http/tests/xmlhttprequest/state-after-network-error.html = PASS
-// Occasionally times out. Not just slow.
-BUG9798 MAC RELEASE : http/tests/xmlhttprequest/state-after-network-error.html = TIMEOUT PASS
 BUG9797 LINUX DEBUG : svg/carto.net/colourpicker.svg = FAIL
 BUG9798 LINUX RELEASE : svg/carto.net/colourpicker.svg = FAIL
 BUG9798 SLOW LINUX : svg/custom/invisible-text-after-scrolling.xhtml = FAIL
@@ -2047,9 +2038,7 @@ BUG9798 LINUX DEBUG SLOW : tables/mozilla/bugs/45621.html = FAIL
 BUG9798 LINUX DEBUG : transitions/mask-transitions.html = FAIL PASS
 BUG9798 SLOW LINUX RELEASE : transitions/transition-timing-function.html = PASS
 // This test definitely times out (i.e. is not just slow).
-BUG9798 MAC WIN RELEASE : http/tests/xmlhttprequest/small-chunks-response-text.html = PASS TIMEOUT
-BUG9798 SLOW LINUX RELEASE : http/tests/xmlhttprequest/small-chunks-response-text.html = PASS
-BUG9798 MAC RELEASE : http/tests/xmlhttprequest/web-apps/003.html = PASS TIMEOUT
+BUG9798 WIN RELEASE : http/tests/xmlhttprequest/small-chunks-response-text.html = PASS TIMEOUT
 BUG9798 LINUX DEBUG : fast/multicol/float-multicol.html = IMAGE PASS
 BUG9798 MAC RELEASE : editing/selection/drag-in-iframe.html = FAIL PASS
 BUG9798 LINUX : svg/custom/use-property-changes-through-svg-dom.svg = FAIL
@@ -2318,17 +2307,13 @@ BUG32098 : fast/dom/defaultView.html = MISSING PASS
 BUG9798 WIN RELEASE : http/tests/navigation/no-referrer-reset.html = TIMEOUT PASS
 
 // more test flakiness
-BUG27334 MAC RELEASE : http/tests/misc/xhtml.php = PASS TIMEOUT
 BUG27334 MAC : http/tests/security/xssAuditor/object-embed-tag.html = PASS
-BUG27334 MAC RELEASE : http/tests/xmlhttprequest/re-login-async.html = PASS TIMEOUT
 BUG27334 MAC DEBUG : plugins/netscape-destroy-plugin-script-objects.html = PASS TEXT
 BUG27334 MAC DEBUG : plugins/netscape-invoke-failure.html = PASS TEXT
 
 // more test flakiness
 BUG27418 SLOW WIN RELEASE : http/tests/cookies/simple-cookies-max-age.html = PASS
 BUG27418 SLOW WIN RELEASE : http/tests/misc/url-in-utf16le.html = PASS
-BUG27418 MAC RELEASE : http/tests/security/xssAuditor/script-tag-with-source-double-quote.html = PASS TIMEOUT
-BUG27418 MAC RELEASE : http/tests/security/xssAuditor/javascript-link-ampersand.html = PASS TIMEOUT
 BUG27418 MAC DEBUG : http/tests/security/xssAuditor/post-from-iframe.html = PASS TIMEOUT
 BUG27418 SLOW MAC RELEASE : http/tests/security/xssAuditor/post-from-iframe.html = PASS
 BUG27418 MAC DEBUG : http/tests/plugins/interrupted-get-url.html = PASS TEXT
@@ -2377,16 +2362,12 @@ BUG27850 : fast/history/back-forward-reset-after-error-handling.html = TEXT
 // in isolated worlds are cleared.
 BUG27849 : http/tests/security/isolatedWorld/didClearWindowObject.html = TEXT
 
-// Failures from merge 51062:51075
-BUG28034 MAC : http/tests/security/XFrameOptions/x-frame-options-deny.html = PASS FAIL
-
 BUG28040 WIN : fast/body-propagation/overflow/004.html = PASS IMAGE+TEXT
 BUG28040 MAC DEBUG : fast/body-propagation/overflow/004.html = PASS IMAGE+TEXT
 
 BUG28040 WIN MAC DEBUG : fast/body-propagation/overflow/003-xhtml.xhtml = PASS IMAGE+TEXT
 
 BUG28092 WIN : http/tests/xmlhttprequest/redirect-cross-origin-post.html = PASS FAIL
-BUG28095 MAC : http/tests/cookies/simple-cookies-expired.html = PASS TIMEOUT
 
 // Need to add Chromium localized strings for the feature. Upstream r51172
 BUG28264 : fast/forms/validationMessage.html = FAIL
@@ -2405,7 +2386,7 @@ BUG_OJAN LINUX : http/tests/xmlhttprequest/cache-override.html = TEXT
 // then should be marked as SLOW/PASS.
 BUG2844 WIN : http/tests/appcache/cyrillic-uri.html = TIMEOUT PASS CRASH
 BUG2844 WIN : http/tests/appcache/fail-on-update.html = TIMEOUT PASS TEXT
-BUG2844 : http/tests/appcache/offline-access.html = TIMEOUT PASS CRASH
+BUG2844 WIN : http/tests/appcache/offline-access.html = TIMEOUT PASS
 BUG2844 WIN LINUX DEBUG : http/tests/appcache/update-cache.html = TIMEOUT PASS
 BUG2844 WIN RELEASE : http/tests/appcache/update-cache.html = TIMEOUT PASS
 
@@ -2449,7 +2430,7 @@ BUG29164 WIN LINUX MAC : fast/frames/sandboxed-iframe-plugins.html = TEXT
 
 // New failures from WebKit merge 51581:51584
 BUG29167 MAC : plugins/window-open.html = TEXT PASS
-BUG29167 MAC : fast/dom/replaceChild.html = IMAGE PASS
+BUG29167 MAC DEBUG : fast/dom/replaceChild.html = IMAGE PASS
 
 // Failure from WebKit merge 51607:51613 (51608 is the cause)
 BUG29239 : fast/css/variables/misplaced-import-test.html = FAIL
@@ -2618,7 +2599,6 @@ BUG25977 WIN DEBUG : http/tests/appcache/top-frame-3.html = TIMEOUT TEXT PASS
 BUG9798 WIN LINUX : fast/loader/javascript-url-encoding-2.html = TIMEOUT PASS
 BUG9798 WIN RELEASE : fast/loading/subframe-removes-itself.html = TEXT PASS
 BUG9798 LINUX MAC : fast/loader/invalid-charset-on-script-crashes-loader.html = TIMEOUT PASS
-BUG9798 MAC RELEASE : fast/borders/block-mask-overlay-image.html = TEXT PASS
 
 // Flaky since SVG filters turned on
 BUG29737 LINUX DEBUG : svg/filters/feDisplacementMap.svg = TEXT PASS
@@ -2854,16 +2834,16 @@ BUG37896 MAC LINUX : fast/backgrounds/animated-svg-as-background.html = IMAGE
 BUG37896 MAC LINUX : fast/dom/Window/window-appendages-cleared.html = TEXT
 BUG37896 MAC LINUX : fast/css/getComputedStyle/computed-style.html = TEXT
 BUG37896 MAC LINUX : fast/css/getComputedStyle/computed-style-without-renderer.html = TEXT
-BUG37896 MAC WIN : fast/dynamic/positioned-movement-with-positioned-children.html = TEXT
+BUG37896 WIN : fast/dynamic/positioned-movement-with-positioned-children.html = TEXT
 BUG37896 : fast/events/remove-child-onscroll.html = TIMEOUT
 BUG37896 : fast/events/standalone-image-drag-to-editable.html = IMAGE+TEXT
 BUG37896 WIN : fast/forms/001.html = IMAGE+TEXT
-BUG37896 MAC WIN : fast/forms/input-first-letter.html = IMAGE+TEXT
+BUG37896 WIN : fast/forms/input-first-letter.html = IMAGE+TEXT
 BUG37896 WIN LINUX : fast/forms/search-vertical-alignment.html = IMAGE
-BUG37896 : fast/forms/search-zoomed.html = IMAGE
-BUG37896 MAC WIN : fast/forms/searchfield-heights.html = IMAGE
+BUG37896 WIN LINUX : fast/forms/search-zoomed.html = IMAGE
+BUG37896 WIN : fast/forms/searchfield-heights.html = IMAGE
 BUG37896 : fast/loader/document-with-fragment-url-4.html = TIMEOUT
-BUG37896 : fast/multicol/hit-test-above-or-below.html = TEXT
+BUG37896 WIN LINUX : fast/multicol/hit-test-above-or-below.html = TEXT
 BUG37896 WIN : fast/overflow/scrollRevealButton.html = IMAGE+TEXT
 BUG37896 : fast/repaint/no-caret-repaint-in-non-content-editable-element.html = IMAGE+TEXT
 BUG37896 WIN DEBUG : fast/text/firstline/001.html = PASS CRASH
