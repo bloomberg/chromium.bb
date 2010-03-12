@@ -617,7 +617,7 @@ static int ArgsGet(const ArgsIoInterface* argsdesc,
     }
     /*
      * post condition: no integer overflow, so
-     * length * sizeof(*args) <= SIZE_T_MAX
+     * length * sizeof(*args) < SIZE_T_MAX
      */
     args = (NaClSrpcArg*) malloc(length * sizeof(*args));
     if (args == NULL) {
@@ -734,11 +734,17 @@ static void ArgsFree(const ArgsIoInterface* argsdesc,
                      NaClSrpcArg* argvec[]) {
   NaClSrpcArg** argvecp;
 
+  /* Free any element allocated data on the arguments list. */
   for (argvecp = argvec; *argvecp != NULL; ++argvecp) {
     const ArgEltInterface* desc = argsdesc->element_interface(*argvecp);
     desc->free(*argvecp);
   }
+  /* Free the whole argument vector. */
   free(argvec[0]);
+  /* And NULL out the argument vector pointers to avoid double frees. */
+  for (argvecp = argvec; *argvecp != NULL; ++argvecp) {
+    *argvecp = NULL;
+  }
 }
 
 static const ArgEltInterface* ArgsGetEltInterface(const NaClSrpcArg* arg) {

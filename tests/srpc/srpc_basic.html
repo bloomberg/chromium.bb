@@ -51,6 +51,18 @@ var ScalarTypes = function() {
                  return true;
                }
              });
+  expectFail('int_as_bool',
+             function() {
+               return server.bool(1);
+             });
+  expectFail('array_as_bool',
+             function() {
+               return server.bool(new Array(10));
+             });
+  expectFail('handle_as_bool',
+             function() {
+               return server.bool(server.__defaultSocketAddress());
+             });
   expectPass('double_passret',
              true,
              function() {
@@ -59,6 +71,18 @@ var ScalarTypes = function() {
                  return true;
                }
              });
+  expectFail('bool_as_double',
+             function() {
+               return server.double(true);
+             });
+  expectFail('array_as_double',
+             function() {
+               return server.double(new Array(10));
+             });
+  expectFail('handle_as_double',
+             function() {
+               return server.double(server.__defaultSocketAddress());
+             });
   expectPass('int_passret',
              true,
              function() {
@@ -66,6 +90,18 @@ var ScalarTypes = function() {
                if (server.int(ival) == -ival) {
                  return true;
                }
+             });
+  expectFail('bool_as_int',
+             function() {
+               return server.int(true);
+             });
+  expectFail('array_as_int',
+             function() {
+               return server.int(new Array(10));
+             });
+  expectFail('handle_as_int',
+             function() {
+               return server.int(server.__defaultSocketAddress());
              });
 }
 
@@ -84,6 +120,22 @@ var ArrayTypes = function() {
                  return true;
                }
              });
+  expectFail('bool_as_char_array',
+             function() {
+               return server.char_array(true);
+             });
+  expectFail('int_as_char_array',
+             function() {
+               return server.char_array(1);
+             });
+  expectFail('double_as_char_array',
+             function() {
+               return server.char_array(1.0);
+             });
+  expectFail('handle_as_char_array',
+             function() {
+               return server.char_array(server.__defaultSocketAddress());
+             });
   expectPass('doublearr_passret',
              true,
              function() {
@@ -97,6 +149,22 @@ var ArrayTypes = function() {
                  return true;
                }
              });
+  expectFail('bool_as_double_array',
+             function() {
+               return server.double_array(true);
+             });
+  expectFail('int_as_double_array',
+             function() {
+               return server.double_array(1);
+             });
+  expectFail('double_as_double_array',
+             function() {
+               return server.double_array(1.0);
+             });
+  expectFail('handle_as_double_array',
+             function() {
+               return server.double_array(server.__defaultSocketAddress());
+             });
   expectPass('intarr_passret',
              true,
              function() {
@@ -109,6 +177,22 @@ var ArrayTypes = function() {
                    ret_arr[4] == iarr[0]) {
                  return true;
                }
+             });
+  expectFail('bool_as_int_array',
+             function() {
+               return server.int_array(true);
+             });
+  expectFail('int_as_int_array',
+             function() {
+               return server.int_array(1);
+             });
+  expectFail('double_as_int_array',
+             function() {
+               return server.int_array(1.0);
+             });
+  expectFail('handle_as_int_array',
+             function() {
+               return server.int_array(server.__defaultSocketAddress());
              });
 }
 
@@ -130,6 +214,23 @@ var SpecialTypes = function() {
                if ('string' == typeof(ret)) {
                  return true;
                }
+             });
+  expectFail('bool_as_string',
+             function() {
+               return server.string(true);
+             });
+  expectFail('int_as_string',
+             function() {
+               return server.string(1);
+             });
+  expectFail('double_as_string',
+             function() {
+               return server.string(1);
+             });
+  expectFail('array_as_string',
+             function() {
+               var iarr = [ 1, 2, 3, 4, 5 ];
+               return server.string(iarr);
              });
   expectPass('handle_send',
              false,
@@ -160,6 +261,23 @@ var SpecialTypes = function() {
                if ('object' == typeof(ret)) {
                  server.invalid_handle(ret);
                }
+             });
+  expectFail('bool_as_handle',
+             function() {
+               return server.handle(true);
+             });
+  expectFail('int_as_handle',
+             function() {
+               return server.handle(1);
+             });
+  expectFail('double_as_handle',
+             function() {
+               return server.handle(1);
+             });
+  expectFail('array_as_handle',
+             function() {
+               var iarr = [ 1, 2, 3, 4, 5 ];
+               return server.handle(iarr);
              });
 }
 
@@ -256,31 +374,66 @@ var EnqueueAndRunTests = function() {
         <td>
           <b> Boolean </b>
         </td>
-        <td>
+        <td valign=top>
           <table summary="Boolean test status">
             <tr>
               <td id="bool_passret" class="notrun">
                 pass/return
               </td>
             </tr>
+            <tr>
+              <td id="int_as_bool" class="notrun">
+                int as bool
+              </td>
+            </tr>
+            <tr>
+              <td id="array_as_bool" class="notrun">
+                array as bool
+              </td>
+            </tr>
+            <tr>
+              <td id="handle_as_bool" class="notrun">
+                handle as bool
+              </td>
+            </tr>
           </table>
         </td>
-        <td>
+        <td valign=top>
         </td>
-        <td>
+        <td valign=top>
         </td>
       </tr>
       <tr>
         <td>
           <b> Character (1-byte) </b>
         </td>
-        <td>
+        <td valign=top>
         </td>
-        <td>
+        <td valign=top>
           <table summary="Character test status">
             <tr>
               <td id="chararr_passret" class="notrun">
                 pass/return
+              </td>
+            </tr>
+            <tr>
+              <td id="bool_as_char_array" class="notrun">
+                bool as char array
+              </td>
+            </tr>
+            <tr>
+              <td id="int_as_char_array" class="notrun">
+                int as char array
+              </td>
+            </tr>
+            <tr>
+              <td id="double_as_char_array" class="notrun">
+                double as char array
+              </td>
+            </tr>
+            <tr>
+              <td id="handle_as_char_array" class="notrun">
+                handle as char array
               </td>
             </tr>
           </table>
@@ -292,20 +445,55 @@ var EnqueueAndRunTests = function() {
         <td>
           <b> Double (8-byte fp) </b>
         </td>
-        <td>
+        <td valign=top>
           <table summary="Double test status">
             <tr>
               <td id="double_passret" class="notrun">
                 pass/return
               </td>
             </tr>
+            <tr>
+              <td id="bool_as_double" class="notrun">
+                bool as double
+              </td>
+            </tr>
+            <tr>
+              <td id="array_as_double" class="notrun">
+                array as double
+              </td>
+            </tr>
+            <tr>
+              <td id="handle_as_double" class="notrun">
+                handle as double
+              </td>
+            </tr>
           </table>
         </td>
-        <td>
+        <td valign=top>
           <table summary="Double array test status">
             <tr>
               <td id="doublearr_passret" class="notrun">
                 pass/return
+              </td>
+            </tr>
+            <tr>
+              <td id="bool_as_double_array" class="notrun">
+                bool as double array
+              </td>
+            </tr>
+            <tr>
+              <td id="int_as_double_array" class="notrun">
+                int as double array
+              </td>
+            </tr>
+            <tr>
+              <td id="double_as_double_array" class="notrun">
+                double as double array
+              </td>
+            </tr>
+            <tr>
+              <td id="handle_as_double_array" class="notrun">
+                handle as double array
               </td>
             </tr>
           </table>
@@ -317,40 +505,95 @@ var EnqueueAndRunTests = function() {
         <td>
           <b> Integer (4-byte) </b>
         </td>
-        <td>
+        <td valign=top>
           <table summary="Integer test status">
             <tr>
               <td id="int_passret" class="notrun">
                 pass/return
               </td>
             </tr>
+            <tr>
+              <td id="bool_as_int" class="notrun">
+                bool as int
+              </td>
+            </tr>
+            <tr>
+              <td id="array_as_int" class="notrun">
+                array as int
+              </td>
+            </tr>
+            <tr>
+              <td id="handle_as_int" class="notrun">
+                handle as int
+              </td>
+            </tr>
           </table>
         </td>
-        <td>
+        <td valign=top>
           <table summary="Integer array test status">
             <tr>
               <td id="intarr_passret" class="notrun">
                 pass/return
               </td>
             </tr>
+            <tr>
+              <td id="bool_as_int_array" class="notrun">
+                bool as int array
+              </td>
+            </tr>
+            <tr>
+              <td id="int_as_int_array" class="notrun">
+                int as int array
+              </td>
+            </tr>
+            <tr>
+              <td id="double_as_int_array" class="notrun">
+                double as int array
+              </td>
+            </tr>
+            <tr>
+              <td id="handle_as_int_array" class="notrun">
+                handle as int array
+              </td>
+            </tr>
           </table>
         </td>
-        <td>
+        <td valign=top>
         </td>
       </tr>
       <tr>
         <td>
           <b> Strings (NUL-terminated)  </b>
         </td>
-        <td>
+        <td valign=top>
         </td>
-        <td>
+        <td valign=top>
         </td>
         <td valign=top>
           <table summary="String tests status">
             <tr>
               <td id="string_send" class="notrun">
                 send to NaCl
+              </td>
+            </tr>
+            <tr>
+              <td id="bool_as_string" class="notrun">
+                bool as string
+              </td>
+            </tr>
+            <tr>
+              <td id="int_as_string" class="notrun">
+                int as string
+              </td>
+            </tr>
+            <tr>
+              <td id="double_as_string" class="notrun">
+                double as string
+              </td>
+            </tr>
+            <tr>
+              <td id="array_as_string" class="notrun">
+                array as string
               </td>
             </tr>
             <tr>
@@ -365,9 +608,13 @@ var EnqueueAndRunTests = function() {
         <td>
           <b> Handle (descriptor) </b>
         </td>
-        <td>
+        <td valign=top>
+          <table summary="Handle tests">
+          </table>
         </td>
-        <td>
+        <td valign=top>
+          <table summary="Handle tests">
+          </table>
         </td>
         <td valign=top>
           <table summary="Handle tests status">
@@ -377,8 +624,28 @@ var EnqueueAndRunTests = function() {
               </td>
             </tr>
             <tr>
+              <td id="bool_as_handle" class="notrun">
+                bool as handle
+              </td>
+            </tr>
+            <tr>
+              <td id="int_as_handle" class="notrun">
+                int as handle
+              </td>
+            </tr>
+            <tr>
+              <td id="double_as_handle" class="notrun">
+                double as handle
+              </td>
+            </tr>
+            <tr>
+              <td id="array_as_handle" class="notrun">
+                array as handle
+              </td>
+            </tr>
+            <tr>
               <td id="handle_return" class="notrun">
-                receive from NaCl
+                return from NaCl
               </td>
             </tr>
             <tr>
@@ -388,7 +655,7 @@ var EnqueueAndRunTests = function() {
             </tr>
             <tr>
               <td id="invalid_handle_return" class="notrun">
-                receive invalid from NaCl
+                return invalid from NaCl
               </td>
             </tr>
           </table>

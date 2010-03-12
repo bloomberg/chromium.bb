@@ -470,6 +470,10 @@ class ScriptableHandle: public ScriptableHandleBase {
             // All our handles derive from ScriptableHandleBase
             ScriptableHandleBase* scriptable_base =
                 static_cast<ScriptableHandleBase*>(obj);
+            // Ensure that the object is a scriptable handle we have created.
+            if (!is_valid(scriptable_base)) {
+              return false;
+            }
             // This function is called only when we are dealing with a
             // DescBasedHandle
             DescBasedHandle* desc_handle =

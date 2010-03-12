@@ -150,7 +150,8 @@ bool SharedMemory::RpcWrite(void *obj, SrpcParams *params) {
   unsigned char* shm_addr =
     reinterpret_cast<unsigned char*>(shared_memory->map_addr_) + offset;
 
-  for (unsigned int i = 0; i < len; ++i) {
+  // TODO(sehr): pull this code out for better testability.
+  for (unsigned int i = 0; i < len;) {
     unsigned char c1 = str[0];
     unsigned char c2 = 0;
 
@@ -161,6 +162,12 @@ bool SharedMemory::RpcWrite(void *obj, SrpcParams *params) {
     }
     // Process the byte in the string as UTF-8 characters.
     if (c1 & 0x80) {
+      // str[1] will not access out of bounds because sval is a NUL-terminated
+      // sequence of bytes.  However, NUL would fail the content test just
+      // below, so failing here seems a good thing anyway.
+      if (i == len - 1) {
+        return false;
+      }
       c2 = str[1];
       // Assert two byte encoding.
       // The first character must contain 110xxxxxb and the
@@ -171,10 +178,12 @@ bool SharedMemory::RpcWrite(void *obj, SrpcParams *params) {
       }
       *shm_addr = (c1 << 6) | (c2 & 0x3f);
       str += 2;
+      i += 2;
     } else {
       // One-byte encoding.
       *shm_addr = c1;
       ++str;
+      ++i;
     }
     ++shm_addr;
   }

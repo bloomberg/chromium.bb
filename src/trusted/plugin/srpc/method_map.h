@@ -86,14 +86,17 @@ class SrpcParams {
 
   bool FillVec(NaClSrpcArg* vec[], const char* types) {
     const size_t kLength = strlen(types);
-    if (kLength > NACL_SRPC_MAX_ARGS + 1)
+    if (kLength > NACL_SRPC_MAX_ARGS)
       return false;
-    NaClSrpcArg* args = new(std::nothrow) NaClSrpcArg[kLength];
+    // We use malloc/new here rather than new/delete, because the SRPC layer
+    // is written in C, and hence will use malloc/free.
+    NaClSrpcArg* args =
+        reinterpret_cast<NaClSrpcArg*>(malloc(kLength * sizeof(*args)));
     if (NULL == args) {
       return false;
     }
 
-    memset(static_cast<void*>(args), 0, kLength * sizeof(NaClSrpcArg));
+    memset(static_cast<void*>(args), 0, kLength * sizeof(*args));
     for (size_t i = 0; i < kLength; ++i) {
       vec[i] = &args[i];
       args[i].tag = static_cast<NaClSrpcArgType>(types[i]);
@@ -110,7 +113,7 @@ class SrpcParams {
       FreeSrpcArg(*argp);
     }
     // Free the vector containing the arguments themselves.
-    delete[] vec[0];
+    free(vec[0]);
   }
 
  public:
