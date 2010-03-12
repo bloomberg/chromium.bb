@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/live_sync/live_bookmarks_sync_test.h"
+#include "chrome/test/live_sync/live_sync_test.h"
 
 #include <vector>
 
@@ -53,14 +53,14 @@ class BookmarkLoadObserver : public BookmarkModelObserver {
   DISALLOW_COPY_AND_ASSIGN(BookmarkLoadObserver);
 };
 
-LiveBookmarksSyncTest::LiveBookmarksSyncTest() {
+LiveSyncTest::LiveSyncTest() {
 }
 
-LiveBookmarksSyncTest::~LiveBookmarksSyncTest() {
+LiveSyncTest::~LiveSyncTest() {
 }
 
 // static
-void LiveBookmarksSyncTest::BlockUntilLoaded(BookmarkModel* m) {
+void LiveSyncTest::BlockUntilLoaded(BookmarkModel* m) {
   if (m->IsLoaded())
     return;
   BookmarkLoadObserver observer;
@@ -71,8 +71,8 @@ void LiveBookmarksSyncTest::BlockUntilLoaded(BookmarkModel* m) {
 }
 
 // static
-const BookmarkNode* LiveBookmarksSyncTest::GetByUniqueURL(BookmarkModel* m,
-                                                          const GURL& url) {
+const BookmarkNode* LiveSyncTest::GetByUniqueURL(BookmarkModel* m,
+                                                 const GURL& url) {
   std::vector<const BookmarkNode*> nodes;
   m->GetNodesByURL(url, &nodes);
   EXPECT_EQ(1U, nodes.size());
@@ -80,14 +80,14 @@ const BookmarkNode* LiveBookmarksSyncTest::GetByUniqueURL(BookmarkModel* m,
 }
 
 // static
-Profile* LiveBookmarksSyncTest::MakeProfile(const std::wstring& name) {
+Profile* LiveSyncTest::MakeProfile(const std::wstring& name) {
   FilePath path;
   PathService::Get(chrome::DIR_USER_DATA, &path);
   path.Append(FilePath::FromWStringHack(name));
   return ProfileManager::CreateProfile(path);
 }
 
-void LiveBookmarksSyncTest::SetUpInProcessBrowserTestFixture() {
+void LiveSyncTest::SetUpInProcessBrowserTestFixture() {
   // We don't take a reference to |resolver|, but mock_host_resolver_override_
   // does, so effectively assumes ownership.
   net::RuleBasedHostResolverProc* resolver =
@@ -102,6 +102,6 @@ void LiveBookmarksSyncTest::SetUpInProcessBrowserTestFixture() {
       new net::ScopedDefaultHostResolverProc(resolver));
 }
 
-void LiveBookmarksSyncTest::TearDownInProcessBrowserTestFixture() {
+void LiveSyncTest::TearDownInProcessBrowserTestFixture() {
   mock_host_resolver_override_.reset();
 }

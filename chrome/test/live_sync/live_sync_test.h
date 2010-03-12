@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_LIVE_SYNC_LIVE_BOOKMARKS_SYNC_TEST_H_
-#define CHROME_TEST_LIVE_SYNC_LIVE_BOOKMARKS_SYNC_TEST_H_
+#ifndef CHROME_TEST_LIVE_SYNC_LIVE_SYNC_TEST_H_
+#define CHROME_TEST_LIVE_SYNC_LIVE_SYNC_TEST_H_
 
 #include <string>
 
@@ -28,10 +28,10 @@ extern const wchar_t kSyncPasswordForTest[];
 // TODO(timsteele): This should be moved out of personalization_unit_tests into
 // its own project that doesn't get run by default on the standard buildbot
 // without a valid sync server set up.
-class LiveBookmarksSyncTest : public InProcessBrowserTest {
+class LiveSyncTest : public InProcessBrowserTest {
  public:
-  LiveBookmarksSyncTest();
-  ~LiveBookmarksSyncTest();
+  LiveSyncTest();
+  ~LiveSyncTest();
 
   virtual void SetUp() {
     // At this point, the browser hasn't been launched, and no services are
@@ -78,7 +78,7 @@ class LiveBookmarksSyncTest : public InProcessBrowserTest {
   // to override the default resolver while the test is active.
   scoped_ptr<net::ScopedDefaultHostResolverProc> mock_host_resolver_override_;
 
-  DISALLOW_COPY_AND_ASSIGN(LiveBookmarksSyncTest);
+  DISALLOW_COPY_AND_ASSIGN(LiveSyncTest);
 };
 
-#endif  // CHROME_TEST_LIVE_SYNC_LIVE_BOOKMARKS_SYNC_TEST_H_
+#endif  // CHROME_TEST_LIVE_SYNC_LIVE_SYNC_TEST_H_

@@ -9,9 +9,9 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/test/live_sync/bookmark_model_verifier.h"
 #include "chrome/test/live_sync/profile_sync_service_test_harness.h"
-#include "chrome/test/live_sync/live_bookmarks_sync_test.h"
+#include "chrome/test/live_sync/live_sync_test.h"
 
-class SingleClientLiveBookmarksSyncTest : public LiveBookmarksSyncTest {
+class SingleClientLiveBookmarksSyncTest : public LiveSyncTest {
  public:
   SingleClientLiveBookmarksSyncTest() { }
   ~SingleClientLiveBookmarksSyncTest() { }

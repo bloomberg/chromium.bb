@@ -14,7 +14,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/test/live_sync/bookmark_model_verifier.h"
 #include "chrome/test/live_sync/profile_sync_service_test_harness.h"
-#include "chrome/test/live_sync/live_bookmarks_sync_test.h"
+#include "chrome/test/live_sync/live_sync_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using std::string;
@@ -26,7 +26,7 @@ using std::wstring;
 // F -- BookmarkFolder
 // BM -- Bookmark
 // L -- Level (Depth of bookmark folder)
-class TwoClientLiveBookmarksSyncTest : public LiveBookmarksSyncTest {
+class TwoClientLiveBookmarksSyncTest : public LiveSyncTest {
  public:
   TwoClientLiveBookmarksSyncTest() {
     // This makes sure browser is visible and active while running test.
@@ -184,7 +184,7 @@ class LiveSyncTestPrePopulatedHistory1K
 
   virtual void SetUp() {
     PrePopulateHistory1K();
-    LiveBookmarksSyncTest::SetUp();
+    LiveSyncTest::SetUp();
   }
 
  private:
@@ -200,7 +200,7 @@ class LiveSyncTestBasicHierarchy50BM
   virtual void SetUp() {
     FilePath file_name(FILE_PATH_LITERAL("bookmarks_50BM5F3L"));
     PrePopulateBookmarksHierarchy(file_name);
-    LiveBookmarksSyncTest::SetUp();
+    LiveSyncTest::SetUp();
   }
 
  private:
@@ -236,7 +236,7 @@ class LiveSyncTestComplexHierarchy800BM
   virtual void SetUp() {
     FilePath file_name(FILE_PATH_LITERAL("bookmarks_800BM32F8L"));
     TwoClientLiveBookmarksSyncTest::PrePopulateBookmarksHierarchy(file_name);
-    LiveBookmarksSyncTest::SetUp();
+    LiveSyncTest::SetUp();
   }
 
  private:
@@ -251,7 +251,7 @@ class LiveSyncTestHugeHierarchy5500BM
   virtual void SetUp() {
     FilePath file_name(FILE_PATH_LITERAL("bookmarks_5500BM125F25L"));
     TwoClientLiveBookmarksSyncTest::PrePopulateBookmarksHierarchy(file_name);
-    LiveBookmarksSyncTest::SetUp();
+    LiveSyncTest::SetUp();
   }
   virtual bool ShouldSetupSyncWithRace() {
     return false;
@@ -271,7 +271,7 @@ class LiveSyncTestDefaultIEFavorites
     const FilePath file_name(
         FILE_PATH_LITERAL("bookmarks_default_IE_favorites"));
     TwoClientLiveBookmarksSyncTest::PrePopulateBookmarksHierarchy(file_name);
-    LiveBookmarksSyncTest::SetUp();
+    LiveSyncTest::SetUp();
   }
 
  private:
@@ -2355,7 +2355,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   set_profile2(MakeProfile(L"client2"));
   BookmarkModel* model_one = browser()->profile()->GetBookmarkModel();
   BookmarkModel* model_two = profile2()->GetBookmarkModel();
-  LiveBookmarksSyncTest::BlockUntilLoaded(model_two);
+  LiveSyncTest::BlockUntilLoaded(model_two);
 
   const BookmarkNode* bbn_one = model_one->GetBookmarkBarNode();
   const BookmarkNode* bbn_two = model_two->GetBookmarkBarNode();
@@ -2424,7 +2424,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   set_profile2(MakeProfile(L"client2"));
   BookmarkModel* model_one = browser()->profile()->GetBookmarkModel();
   BookmarkModel* model_two = profile2()->GetBookmarkModel();
-  LiveBookmarksSyncTest::BlockUntilLoaded(model_two);
+  LiveSyncTest::BlockUntilLoaded(model_two);
 
   const BookmarkNode* bbn_one = model_one->GetBookmarkBarNode();
   const BookmarkNode* bbn_two = model_two->GetBookmarkBarNode();
@@ -2481,7 +2481,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   set_profile2(MakeProfile(L"client2"));
   BookmarkModel* model_one = browser()->profile()->GetBookmarkModel();
   BookmarkModel* model_two = profile2()->GetBookmarkModel();
-  LiveBookmarksSyncTest::BlockUntilLoaded(model_two);
+  LiveSyncTest::BlockUntilLoaded(model_two);
 
   const BookmarkNode* bbn_one = model_one->GetBookmarkBarNode();
   const BookmarkNode* bbn_two = model_two->GetBookmarkBarNode();
