@@ -9,6 +9,7 @@
 
 #include <vector>
 
+#include "app/gtk_signal.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/profile.h"
 
@@ -31,24 +32,16 @@ class PasswordsPageGtk {
   // Sets the password list contents to the given data.
   void SetPasswordList(const std::vector<webkit_glue::PasswordForm*>& result);
 
-  // Callback for the remove button.
-  static void OnRemoveButtonClicked(GtkButton* widget, PasswordsPageGtk* page);
+  CHROMEGTK_CALLBACK_0(PasswordsPageGtk, void, OnRemoveButtonClicked);
+  CHROMEGTK_CALLBACK_0(PasswordsPageGtk, void, OnRemoveAllButtonClicked);
+  CHROMEGTK_CALLBACK_1(PasswordsPageGtk, void, OnRemoveAllConfirmResponse, int);
+  CHROMEGTK_CALLBACK_0(PasswordsPageGtk, void, OnShowPasswordButtonClicked);
 
-  // Callback for the remove all button.
-  static void OnRemoveAllButtonClicked(GtkButton* widget,
-                                       PasswordsPageGtk* page);
-
-  // Callback for the remove all confirmation response.
-  static void OnRemoveAllConfirmResponse(GtkDialog* confirm, gint response,
-                                         PasswordsPageGtk* page);
-
-  // Callback for the show password button.
-  static void OnShowPasswordButtonClicked(GtkButton* widget,
-                                          PasswordsPageGtk* page);
-
-  // Callback for selection changed events.
-  static void OnPasswordSelectionChanged(GtkTreeSelection* selection,
-                                         PasswordsPageGtk* page);
+  static void OnPasswordSelectionChangedThunk(GtkTreeSelection* selection,
+                                              PasswordsPageGtk* page) {
+    page->OnPasswordSelectionChanged(selection);
+  }
+  void OnPasswordSelectionChanged(GtkTreeSelection* selection);
 
   // Sorting functions.
   static gint CompareSite(GtkTreeModel* model,

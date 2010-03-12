@@ -9,6 +9,7 @@
 
 #include <vector>
 
+#include "app/gtk_signal.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/profile.h"
 
@@ -34,17 +35,13 @@ class PasswordsExceptionsPageGtk {
   // Sets the exception list contents to the given data.
   void SetExceptionList(const std::vector<webkit_glue::PasswordForm*>& result);
 
-  // Callback for the remove button.
-  static void OnRemoveButtonClicked(GtkButton* widget,
-                                    PasswordsExceptionsPageGtk* page);
+  CHROMEGTK_CALLBACK_0(PasswordsExceptionsPageGtk, void, OnRemoveButtonClicked);
+  CHROMEGTK_CALLBACK_0(PasswordsExceptionsPageGtk, void,
+                       OnRemoveAllButtonClicked);
 
-  // Callback for the remove all button.
-  static void OnRemoveAllButtonClicked(GtkButton* widget,
-                                       PasswordsExceptionsPageGtk* page);
-
-  // Callback for selection changed events.
-  static void OnExceptionSelectionChanged(GtkTreeSelection* selection,
-                                          PasswordsExceptionsPageGtk* page);
+  static void OnExceptionSelectionChanged(
+      GtkTreeSelection* selection,
+      PasswordsExceptionsPageGtk* page);
 
   // Sorting function.
   static gint CompareSite(GtkTreeModel* model,
@@ -63,6 +60,7 @@ class PasswordsExceptionsPageGtk {
     // PasswordsExceptionsPageGtk.
     void populate();
 
+    // PasswordStoreConsumer implementation.
     // Send the password store's reply back to the PasswordsExceptionsPageGtk.
     virtual void OnPasswordStoreRequestDone(
         int handle, const std::vector<webkit_glue::PasswordForm*>& result);
