@@ -38,7 +38,8 @@ class BrowserActionsContainerTest : public ExtensionBrowserTest {
 };
 
 // Test the basic functionality.
-IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, Basic) {
+// Flaky, http://crbug.com/38065
+IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, FLAKY_Basic) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 
