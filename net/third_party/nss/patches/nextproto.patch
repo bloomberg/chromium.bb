@@ -1,5 +1,5 @@
 diff --git a/mozilla/security/nss/cmd/tstclnt/tstclnt.c b/mozilla/security/nss/cmd/tstclnt/tstclnt.c
-index f0b5701..e795b33 100644
+index c15a0ad..b6210bf 100644
 --- a/mozilla/security/nss/cmd/tstclnt/tstclnt.c
 +++ b/mozilla/security/nss/cmd/tstclnt/tstclnt.c
 @@ -863,7 +863,13 @@ int main(int argc, char **argv)
@@ -18,10 +18,10 @@ index f0b5701..e795b33 100644
  
      SSL_AuthCertificateHook(s, SSL_AuthCertificate, (void *)handle);
 diff --git a/mozilla/security/nss/lib/ssl/ssl.def b/mozilla/security/nss/lib/ssl/ssl.def
-index a5b2767..287505f 100644
+index d3f455c..a1f4b51 100644
 --- a/mozilla/security/nss/lib/ssl/ssl.def
 +++ b/mozilla/security/nss/lib/ssl/ssl.def
-@@ -150,3 +150,10 @@ SSL_SNISocketConfigHook;
+@@ -152,3 +152,10 @@ SSL_SNISocketConfigHook;
  ;+    local:
  ;+*;
  ;+};
@@ -33,10 +33,10 @@ index a5b2767..287505f 100644
 +;+*;
 +;+};
 diff --git a/mozilla/security/nss/lib/ssl/ssl.h b/mozilla/security/nss/lib/ssl/ssl.h
-index d0b5aa7..5b572b2 100644
+index d60a73c..00c250b 100644
 --- a/mozilla/security/nss/lib/ssl/ssl.h
 +++ b/mozilla/security/nss/lib/ssl/ssl.h
-@@ -136,6 +136,18 @@ SSL_IMPORT SECStatus SSL_OptionSetDefault(PRInt32 option, PRBool on);
+@@ -142,6 +142,18 @@ SSL_IMPORT SECStatus SSL_OptionSetDefault(PRInt32 option, PRBool on);
  SSL_IMPORT SECStatus SSL_OptionGetDefault(PRInt32 option, PRBool *on);
  SSL_IMPORT SECStatus SSL_CertDBHandleSet(PRFileDesc *fd, CERTCertDBHandle *dbHandle);
  
@@ -56,7 +56,7 @@ index d0b5aa7..5b572b2 100644
  ** Control ciphers that SSL uses. If on is non-zero then the named cipher
  ** is enabled, otherwise it is disabled. 
 diff --git a/mozilla/security/nss/lib/ssl/ssl3con.c b/mozilla/security/nss/lib/ssl/ssl3con.c
-index 6b37c4f..545e51e 100644
+index 083248d..5c14672 100644
 --- a/mozilla/security/nss/lib/ssl/ssl3con.c
 +++ b/mozilla/security/nss/lib/ssl/ssl3con.c
 @@ -81,6 +81,7 @@ static SECStatus ssl3_InitState(             sslSocket *ss);
@@ -121,7 +121,22 @@ index 6b37c4f..545e51e 100644
   *             ssl3_HandleClientHello
   *             ssl3_HandleFinished
   */
-@@ -9457,6 +9498,11 @@ ssl3_DestroySSL3Info(sslSocket *ss)
+@@ -8390,6 +8431,14 @@ ssl3_HandleFinished(sslSocket *ss, SSL3Opaque *b, PRUint32 length,
+ 	if (doStepUp || ss->writerThread == PR_GetCurrentThread()) {
+ 	    flags = ssl_SEND_FLAG_FORCE_INTO_BUFFER;
+ 	}
++
++	if (!isServer) {
++	    rv = ssl3_SendNextProto(ss);
++	    if (rv != SECSuccess) {
++		goto xmit_loser;	/* err code was set. */
++	    }
++	}
++
+ 	rv = ssl3_SendFinished(ss, flags);
+ 	if (rv != SECSuccess) {
+ 	    goto xmit_loser;	/* err is set. */
+@@ -9455,6 +9504,11 @@ ssl3_DestroySSL3Info(sslSocket *ss)
      ssl3_DestroyCipherSpec(&ss->ssl3.specs[1], PR_TRUE/*freeSrvName*/);
  
      ss->ssl3.initialized = PR_FALSE;
@@ -134,7 +149,7 @@ index 6b37c4f..545e51e 100644
  
  /* End of ssl3con.c */
 diff --git a/mozilla/security/nss/lib/ssl/ssl3ext.c b/mozilla/security/nss/lib/ssl/ssl3ext.c
-index fd0d9b9..4269028 100644
+index ac2b067..04f45a4 100644
 --- a/mozilla/security/nss/lib/ssl/ssl3ext.c
 +++ b/mozilla/security/nss/lib/ssl/ssl3ext.c
 @@ -235,6 +235,7 @@ static const ssl3HelloExtensionHandler clientHelloHandlers[] = {
@@ -272,8 +287,8 @@ index fd0d9b9..4269028 100644
 +	rv = ssl3_AppendHandshakeNumber(ss, 0, 2);
 +	if (rv != SECSuccess)
 +	    goto loser;
-+	TLSExtensionData *xtnData = &ss->xtnData;
-+	xtnData->advertised[xtnData->numAdvertised++] = ssl_next_proto_neg_xtn;
++	ss->xtnData.advertised[ss->xtnData.numAdvertised++] =
++		ssl_next_proto_neg_xtn;
 +    } else if (maxBytes < extension_length) {
 +	return 0;
 +    }
@@ -302,10 +317,10 @@ index 0fc1675..c82c891 100644
  
  typedef struct {
 diff --git a/mozilla/security/nss/lib/ssl/sslimpl.h b/mozilla/security/nss/lib/ssl/sslimpl.h
-index ea36cfb..0ec579d 100644
+index 7581b98..0658d2c 100644
 --- a/mozilla/security/nss/lib/ssl/sslimpl.h
 +++ b/mozilla/security/nss/lib/ssl/sslimpl.h
-@@ -317,6 +317,11 @@ typedef struct {
+@@ -313,6 +313,11 @@ typedef struct {
  #endif /* NSS_ENABLE_ECC */
  
  typedef struct sslOptionsStr {
@@ -317,7 +332,7 @@ index ea36cfb..0ec579d 100644
      unsigned int useSecurity		: 1;  /*  1 */
      unsigned int useSocks		: 1;  /*  2 */
      unsigned int requestCertificate	: 1;  /*  3 */
-@@ -789,6 +794,7 @@ const ssl3CipherSuiteDef *suite_def;
+@@ -785,6 +790,7 @@ const ssl3CipherSuiteDef *suite_def;
  #ifdef NSS_ENABLE_ECC
      PRUint32              negotiatedECCurves; /* bit mask */
  #endif /* NSS_ENABLE_ECC */
@@ -325,7 +340,7 @@ index ea36cfb..0ec579d 100644
  } SSL3HandshakeState;
  
  
-@@ -830,6 +836,16 @@ struct ssl3StateStr {
+@@ -826,6 +832,16 @@ struct ssl3StateStr {
      PRBool               initialized;
      SSL3HandshakeState   hs;
      ssl3CipherSpec       specs[2];	/* one is current, one is pending. */
@@ -342,7 +357,7 @@ index ea36cfb..0ec579d 100644
  };
  
  typedef struct {
-@@ -1495,8 +1511,12 @@ extern SECStatus ssl3_HandleSupportedPointFormatsXtn(sslSocket * ss,
+@@ -1491,8 +1507,12 @@ extern SECStatus ssl3_HandleSupportedPointFormatsXtn(sslSocket * ss,
  			PRUint16 ex_type, SECItem *data);
  extern SECStatus ssl3_ClientHandleSessionTicketXtn(sslSocket *ss,
  			PRUint16 ex_type, SECItem *data);
@@ -355,7 +370,7 @@ index ea36cfb..0ec579d 100644
  
  /* ClientHello and ServerHello extension senders.
   * Note that not all extension senders are exposed here; only those that
-@@ -1527,6 +1547,10 @@ extern PRInt32 ssl3_SendSupportedCurvesXtn(sslSocket *ss,
+@@ -1523,6 +1543,10 @@ extern PRInt32 ssl3_SendSupportedCurvesXtn(sslSocket *ss,
  extern PRInt32 ssl3_SendSupportedPointFormatsXtn(sslSocket *ss,
  			PRBool append, PRUint32 maxBytes);
  #endif
@@ -367,7 +382,7 @@ index ea36cfb..0ec579d 100644
  /* call the registered extension handlers. */
  extern SECStatus ssl3_HandleHelloExtensions(sslSocket *ss, 
 diff --git a/mozilla/security/nss/lib/ssl/sslsock.c b/mozilla/security/nss/lib/ssl/sslsock.c
-index aab48d6..2ff2992 100644
+index f1d1921..6536354 100644
 --- a/mozilla/security/nss/lib/ssl/sslsock.c
 +++ b/mozilla/security/nss/lib/ssl/sslsock.c
 @@ -163,6 +163,7 @@ static const sslSocketOps ssl_secure_ops = {	/* SSL. */
