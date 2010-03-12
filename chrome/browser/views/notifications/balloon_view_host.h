@@ -119,6 +119,9 @@ class BalloonViewHost : public views::NativeViewHost,
   // The title of the balloon page.
   std::wstring title_;
 
+  // Whether the page we are rendering is from an extension.
+  bool is_extension_page_;
+
   // Common implementations of some RenderViewHostDelegate::View methods.
   RenderViewHostDelegateViewHelper delegate_view_helper_;
 
