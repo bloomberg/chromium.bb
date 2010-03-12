@@ -16,6 +16,7 @@
 #include "base/weak_ptr.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPlugin.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLLoaderClient.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLRequest.h"
@@ -84,6 +85,11 @@ class WebPluginImpl : public WebPlugin,
   virtual void didFailLoadingFrameRequest(
       const WebKit::WebURL& url, void* notify_data,
       const WebKit::WebURLError& error);
+  virtual bool supportsPaginatedPrint();
+  virtual int printBegin(const WebKit::WebRect& printable_area,
+                         int printer_dpi);
+  virtual bool printPage(int page_number, WebKit::WebCanvas* canvas);
+  virtual void printEnd();
 
   // WebPlugin implementation:
   void SetWindow(gfx::PluginWindowHandle window);
@@ -304,6 +310,28 @@ class WebPluginImpl : public WebPlugin,
   // these so that we can re-initialize the plugin if we need to.
   std::vector<std::string> arg_names_;
   std::vector<std::string> arg_values_;
+
+  struct PrintSettings {
+    // This is set to true when printBegin is called and false when printEnd is
+    // called.
+    bool is_printing;
+    // The remembered printable_area from the last printBegin call. It is
+    // cleared in printEnd.
+    WebKit::WebRect printable_area;
+    // The remembered printer_dpi from the last printBegin call. It is cleared
+    // in printEnd.
+    int printer_dpi;
+    PrintSettings() {
+      Clear();
+    }
+    void Clear() {
+      is_printing = false;
+      printable_area = WebKit::WebRect(0, 0, 0, 0);
+      printer_dpi = 0;
+    }
+  };
+
+  PrintSettings print_settings_;
 
   ScopedRunnableMethodFactory<WebPluginImpl> method_factory_;
 

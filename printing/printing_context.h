@@ -54,6 +54,10 @@ class PrintingContext {
   // default device settings.
   Result UseDefaultSettings();
 
+  void SetUseOverlays(bool use_overlays) {
+    settings_.use_overlays = use_overlays;
+  }
+
   // Initializes with predefined settings.
   Result InitWithSettings(const PrintSettings& settings);
 

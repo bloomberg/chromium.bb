@@ -67,13 +67,15 @@ void PrintJobWorker::SetNewOwner(PrintJobWorkerOwner* new_owner) {
 void PrintJobWorker::GetSettings(bool ask_user_for_settings,
                                  gfx::NativeWindow parent_window,
                                  int document_page_count,
-                                 bool has_selection) {
+                                 bool has_selection,
+                                 bool use_overlays) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
   DCHECK_EQ(page_number_, PageNumber::npos());
 
   // Recursive task processing is needed for the dialog in case it needs to be
   // destroyed by a task.
   MessageLoop::current()->SetNestableTasksAllowed(true);
+  printing_context_.SetUseOverlays(use_overlays);
 
   if (ask_user_for_settings) {
 #if defined(OS_MACOSX)

@@ -24,7 +24,6 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebKitClient.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPluginContainer.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPluginParams.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLError.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLLoader.h"
@@ -376,6 +375,44 @@ void WebPluginImpl::didFailLoadingFrameRequest(
   delegate_->DidFinishLoadWithReason(
       url, reason, reinterpret_cast<intptr_t>(notify_data));
 }
+
+bool WebPluginImpl::supportsPaginatedPrint() {
+  if (!delegate_)
+    return false;
+  return delegate_->PrintSupportsPrintExtension();
+}
+
+int WebPluginImpl::printBegin(const WebRect& printable_area, int printer_dpi) {
+  if (!delegate_)
+    return 0;
+
+  if (!supportsPaginatedPrint())
+    return 0;
+
+  print_settings_.is_printing = true;
+  print_settings_.printable_area = printable_area;
+  print_settings_.printer_dpi = printer_dpi;
+  return delegate_->PrintBegin(printable_area, printer_dpi);
+}
+
+bool WebPluginImpl::printPage(int page_number, WebCanvas* canvas) {
+  if (!delegate_)
+    return false;
+  if (!print_settings_.is_printing) {
+    NOTREACHED();
+    return false;
+  }
+  return delegate_->PrintPage(page_number, print_settings_.printable_area,
+                              print_settings_.printer_dpi, canvas);
+}
+
+void WebPluginImpl::printEnd() {
+  DCHECK(print_settings_.is_printing);
+  print_settings_.Clear();
+  if (delegate_)
+    delegate_->PrintEnd();
+}
+
 
 // -----------------------------------------------------------------------------
 

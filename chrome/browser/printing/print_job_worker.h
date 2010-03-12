@@ -36,7 +36,8 @@ class PrintJobWorker : public base::Thread {
   void GetSettings(bool ask_user_for_settings,
                    gfx::NativeWindow parent_window,
                    int document_page_count,
-                   bool has_selection);
+                   bool has_selection,
+                   bool use_overlays);
 
   // Starts the printing loop. Every pages are printed as soon as the data is
   // available. Makes sure the new_document is the right one.

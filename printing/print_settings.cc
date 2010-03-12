@@ -19,6 +19,7 @@ PrintSettings::PrintSettings()
       max_shrink(2.0),
       desired_dpi(72),
       selection_only(false),
+      use_overlays(true),
       dpi_(0),
       landscape_(false) {
 }
@@ -120,16 +121,19 @@ void PrintSettings::SetPrinterPrintableArea(
     gfx::Size const& physical_size_pixels,
     gfx::Rect const& printable_area_pixels) {
 
-  // Hard-code text_height = 0.5cm = ~1/5 of inch.
-  int header_footer_text_height = ConvertUnit(500, kHundrethsMMPerInch, dpi_);
-
+  int header_footer_text_height = 0;
+  int margin_printer_units = 0;
+  if (use_overlays) {
+    // Hard-code text_height = 0.5cm = ~1/5 of inch.
+    header_footer_text_height = ConvertUnit(500, kHundrethsMMPerInch, dpi_);
+    // Default margins 1.0cm = ~2/5 of an inch.
+    margin_printer_units = ConvertUnit(1000, kHundrethsMMPerInch, dpi_);
+  }
   // Start by setting the user configuration
   page_setup_pixels_.Init(physical_size_pixels,
                           printable_area_pixels,
                           header_footer_text_height);
 
-  // Default margins 1.0cm = ~2/5 of an inch.
-  int margin_printer_units = ConvertUnit(1000, kHundrethsMMPerInch, dpi_);
 
   // Apply default margins (not user configurable just yet).
   // Since the font height is half the margin we put the header and footers at

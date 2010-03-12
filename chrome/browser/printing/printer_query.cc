@@ -65,6 +65,7 @@ void PrinterQuery::GetSettings(GetSettingsAskParam ask_user_for_settings,
                                gfx::NativeWindow parent_window,
                                int expected_page_count,
                                bool has_selection,
+                               bool use_overlays,
                                CancelableTask* callback) {
   DCHECK_EQ(ui_message_loop_, MessageLoop::current());
   DCHECK(!is_print_dialog_box_shown_);
@@ -93,7 +94,8 @@ void PrinterQuery::GetSettings(GetSettingsAskParam ask_user_for_settings,
       is_print_dialog_box_shown_,
       parent_window,
       expected_page_count,
-      has_selection));
+      has_selection,
+      use_overlays));
 }
 
 void PrinterQuery::StopWorker() {

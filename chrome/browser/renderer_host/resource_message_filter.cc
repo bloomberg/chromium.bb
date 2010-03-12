@@ -1070,6 +1070,7 @@ void ResourceMessageFilter::OnGetDefaultPrintSettings(IPC::Message* reply_msg) {
                              NULL,
                              0,
                              false,
+                             true,
                              task);
 }
 
@@ -1133,6 +1134,7 @@ void ResourceMessageFilter::OnScriptedPrint(
                              host_window,
                              params.expected_pages_count,
                              params.has_selection,
+                             params.use_overlays,
                              task);
 }
 

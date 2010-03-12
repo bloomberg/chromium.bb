@@ -47,6 +47,10 @@ class PrepareFrameAndViewForPrint {
     return expected_pages_count_;
   }
 
+  bool ShouldUseBrowserOverlays() const {
+    return use_browser_overlays_;
+  }
+
   const gfx::Size& GetPrintCanvasSize() const {
     return print_canvas_size_;
   }
@@ -57,6 +61,7 @@ class PrepareFrameAndViewForPrint {
   gfx::Size print_canvas_size_;
   gfx::Size prev_view_size_;
   int expected_pages_count_;
+  bool use_browser_overlays_;
 
   DISALLOW_COPY_AND_ASSIGN(PrepareFrameAndViewForPrint);
 };

@@ -4,10 +4,28 @@
 
 #include "printing/emf_win.h"
 
+#include "app/gfx/codec/jpeg_codec.h"
+#include "app/gfx/codec/png_codec.h"
+#include "app/gfx/gdi_util.h"
 #include "base/gfx/rect.h"
+#include "base/histogram.h"
 #include "base/logging.h"
+#include "base/scoped_ptr.h"
+#include "base/time.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace printing {
+
+bool DIBFormatNativelySupported(HDC dc, uint32 escape, const BYTE* bits,
+                                int size) {
+  BOOL supported = FALSE;
+  if (ExtEscape(dc, QUERYESCSUPPORT, sizeof(escape),
+                reinterpret_cast<LPCSTR>(&escape), 0, 0) > 0) {
+    ExtEscape(dc, escape, size, reinterpret_cast<LPCSTR>(bits),
+              sizeof(supported), reinterpret_cast<LPSTR>(&supported));
+  }
+  return !!supported;
+}
 
 Emf::Emf() : emf_(NULL), hdc_(NULL) {
 }
@@ -65,7 +83,6 @@ bool Emf::SafePlayback(HDC context) const {
     NOTREACHED();
     return false;
   }
-
   return EnumEnhMetaFile(context,
                          emf_,
                          &Emf::SafePlaybackProc,
@@ -209,9 +226,75 @@ bool Emf::Record::SafePlayback(const XFORM* base_matrix) const {
   // I also use this opportunity to skip over eventual EMR_SETLAYOUT record that
   // could remain.
   //
+  // Another tweak we make is for JPEGs/PNGs in calls to StretchDIBits.
+  // (Our Pepper plugin code uses a JPEG). If the printer does not support
+  // JPEGs/PNGs natively we decompress the JPEG/PNG and then set it to the
+  // device.
+  // TODO(sanjeevr): We should also add JPEG/PNG support for SetSIBitsToDevice
+  //
   // Note: I should probably care about view ports and clipping, eventually.
   bool res;
   switch (record()->iType) {
+    case EMR_STRETCHDIBITS: {
+      const EMRSTRETCHDIBITS * sdib_record =
+          reinterpret_cast<const EMRSTRETCHDIBITS*>(record());
+      const BYTE* record_start = reinterpret_cast<const BYTE *>(record());
+      const BITMAPINFOHEADER *bmih =
+          reinterpret_cast<const BITMAPINFOHEADER *>(record_start +
+                                                     sdib_record->offBmiSrc);
+      const BYTE* bits = record_start + sdib_record->offBitsSrc;
+      bool play_normally = true;
+      res = false;
+      HDC hdc = context_->hdc;
+      scoped_ptr<SkBitmap> bitmap;
+      if (bmih->biCompression == BI_JPEG) {
+        if (!DIBFormatNativelySupported(hdc, CHECKJPEGFORMAT, bits,
+                                        bmih->biSizeImage)) {
+          play_normally = false;
+          base::TimeTicks start_time = base::TimeTicks::Now();
+          bitmap.reset(gfx::JPEGCodec::Decode(bits, bmih->biSizeImage));
+          UMA_HISTOGRAM_TIMES("Printing.JPEGDecompressTime",
+                              base::TimeTicks::Now() - start_time);
+        }
+      } else if (bmih->biCompression == BI_PNG) {
+        if (!DIBFormatNativelySupported(hdc, CHECKPNGFORMAT, bits,
+                                        bmih->biSizeImage)) {
+          play_normally = false;
+          bitmap.reset(new SkBitmap());
+          base::TimeTicks start_time = base::TimeTicks::Now();
+          gfx::PNGCodec::Decode(bits, bmih->biSizeImage, bitmap.get());
+          UMA_HISTOGRAM_TIMES("Printing.PNGDecompressTime",
+                              base::TimeTicks::Now() - start_time);
+        }
+      }
+      if (!play_normally) {
+        DCHECK(bitmap.get());
+        if (bitmap.get()) {
+          SkAutoLockPixels lock(*bitmap.get());
+          DCHECK_EQ(bitmap->getConfig(), SkBitmap::kARGB_8888_Config);
+          const uint32_t* pixels =
+              static_cast<const uint32_t*>(bitmap->getPixels());
+          if (pixels == NULL) {
+            NOTREACHED();
+            return false;
+          }
+          BITMAPINFOHEADER bmi = {0};
+          gfx::CreateBitmapHeader(bitmap->width(), bitmap->height(), &bmi);
+          res = (0 != StretchDIBits(hdc, sdib_record->xDest, sdib_record->yDest,
+                                    sdib_record->cxDest,
+                                    sdib_record->cyDest, sdib_record->xSrc,
+                                    sdib_record->ySrc,
+                                    sdib_record->cxSrc, sdib_record->cySrc,
+                                    pixels,
+                                    reinterpret_cast<const BITMAPINFO *>(&bmi),
+                                    sdib_record->iUsageSrc,
+                                    sdib_record->dwRop));
+        }
+      } else {
+        res = Play();
+      }
+      break;
+    }
     case EMR_SETWORLDTRANSFORM: {
       DCHECK_EQ(record()->nSize, sizeof(DWORD) * 2 + sizeof(XFORM));
       const XFORM* xform = reinterpret_cast<const XFORM*>(record()->dParm);

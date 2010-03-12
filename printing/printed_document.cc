@@ -180,6 +180,9 @@ void PrintedDocument::PrintHeaderFooter(gfx::NativeDrawingContext context,
                                         PageOverlays::VerticalPosition y,
                                         const gfx::Font& font) const {
   const PrintSettings& settings = immutable_.settings_;
+  if (!settings.use_overlays) {
+    return;
+  }
   const std::wstring& line = settings.overlays.GetOverlay(x, y);
   if (line.empty()) {
     return;

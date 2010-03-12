@@ -492,6 +492,7 @@ struct ViewHostMsg_ScriptedPrint_Params {
   int cookie;
   int expected_pages_count;
   bool has_selection;
+  bool use_overlays;
 };
 
 // Signals a storage event.
@@ -2268,6 +2269,7 @@ struct ParamTraits<ViewHostMsg_ScriptedPrint_Params> {
     WriteParam(m, p.cookie);
     WriteParam(m, p.expected_pages_count);
     WriteParam(m, p.has_selection);
+    WriteParam(m, p.use_overlays);
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
     return
@@ -2275,7 +2277,8 @@ struct ParamTraits<ViewHostMsg_ScriptedPrint_Params> {
         ReadParam(m, iter, &p->host_window_id) &&
         ReadParam(m, iter, &p->cookie) &&
         ReadParam(m, iter, &p->expected_pages_count) &&
-        ReadParam(m, iter, &p->has_selection);
+        ReadParam(m, iter, &p->has_selection) &&
+        ReadParam(m, iter, &p->use_overlays);
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(L"(");
@@ -2288,6 +2291,8 @@ struct ParamTraits<ViewHostMsg_ScriptedPrint_Params> {
     LogParam(p.expected_pages_count, l);
     l->append(L", ");
     LogParam(p.has_selection, l);
+    l->append(L",");
+    LogParam(p.use_overlays, l);
     l->append(L")");
   }
 };
