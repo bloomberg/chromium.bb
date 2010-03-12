@@ -110,6 +110,9 @@ void SwitchFullScreenModes(FullScreenMode from_mode, FullScreenMode to_mode);
 // Set the visibility of the cursor.
 void SetCursorVisibility(bool visible);
 
+// Should windows miniaturize on a double-click (on the title bar)?
+bool ShouldWindowsMiniaturizeOnDoubleClick();
+
 // Activates the process with the given PID.
 void ActivateProcess(pid_t);
 

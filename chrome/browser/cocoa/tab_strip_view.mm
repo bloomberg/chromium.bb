@@ -4,6 +4,7 @@
 
 #import "chrome/browser/cocoa/tab_strip_view.h"
 
+#include "base/mac_util.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #import "chrome/browser/cocoa/tab_strip_controller.h"
 #include "base/logging.h"
@@ -117,18 +118,7 @@
   // "short" as 0.8 seconds. (Measuring up-to-up isn't enough to properly
   // detect double-clicks, but we're actually using Cocoa for that.)
   if (clickCount == 2 && (timestamp - lastMouseUp_) < 0.8) {
-    // We use an undocumented method in Cocoa; if it doesn't exist, default to
-    // YES. If it ever goes away, we can do (using an undocumented pref. key):
-    //   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-    //   if (![defaults objectForKey:@"AppleMiniaturizeOnDoubleClick"]
-    //       || [defaults boolForKey:@"AppleMiniaturizeOnDoubleClick"])
-    //     [[self window] performMiniaturize:self];
-    DCHECK([NSWindow
-        respondsToSelector:@selector(_shouldMiniaturizeOnDoubleClick)]);
-    if (![NSWindow
-            respondsToSelector:@selector(_shouldMiniaturizeOnDoubleClick)]
-        || [NSWindow
-            performSelector:@selector(_shouldMiniaturizeOnDoubleClick)])
+    if (mac_util::ShouldWindowsMiniaturizeOnDoubleClick())
       [[self window] performMiniaturize:self];
   } else {
     [super mouseUp:event];

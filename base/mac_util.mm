@@ -230,6 +230,19 @@ void SetCursorVisibility(bool visible) {
     [NSCursor hide];
 }
 
+bool ShouldWindowsMiniaturizeOnDoubleClick() {
+  // We use an undocumented method in Cocoa; if it doesn't exist, default to
+  // |true|. If it ever goes away, we can do (using an undocumented pref key):
+  //   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+  //   return ![defaults objectForKey:@"AppleMiniaturizeOnDoubleClick"] ||
+  //          [defaults boolForKey:@"AppleMiniaturizeOnDoubleClick"];
+  BOOL methodImplemented =
+      [NSWindow respondsToSelector:@selector(_shouldMiniaturizeOnDoubleClick)];
+  DCHECK(methodImplemented);
+  return !methodImplemented ||
+      [NSWindow performSelector:@selector(_shouldMiniaturizeOnDoubleClick)];
+}
+
 void GrabWindowSnapshot(NSWindow* window,
     std::vector<unsigned char>* png_representation) {
   // Make sure to grab the "window frame" view so we get current tab +

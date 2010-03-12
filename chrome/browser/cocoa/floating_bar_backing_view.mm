@@ -4,6 +4,7 @@
 
 #include "chrome/browser/cocoa/floating_bar_backing_view.h"
 
+#include "base/mac_util.h"
 #import "chrome/browser/cocoa/browser_frame_view.h"
 
 @implementation FloatingBarBackingView
@@ -37,7 +38,8 @@
 // Eat this too, except that ...
 - (void)mouseUp:(NSEvent*)event {
   // a double-click in the blank area should minimize.
-  if ([event clickCount] == 2)
+  if ([event clickCount] == 2 &&
+      mac_util::ShouldWindowsMiniaturizeOnDoubleClick())
     [[self window] performMiniaturize:self];
 }
 
