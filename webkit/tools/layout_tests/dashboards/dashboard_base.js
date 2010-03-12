@@ -254,7 +254,7 @@ function isLayoutTestResults() {
   return currentState.testType == 'layout_test_results';
 }
 
-var defaultBuilderName, builders, builderBase;
+var defaultBuilderName, builders, builderBase, expectationsBuilder;
 if (currentState.buildDir) {
   // If buildDir is set, point to the results.json and expectations.json in the
   // local tree. Useful for debugging changes to the python JSON generator.
@@ -268,23 +268,31 @@ if (currentState.buildDir) {
 
   switch (currentState.testType) {
     case 'layout_test_results':
-      defaultBuilderName = 'Webkit';
       // Map of builderName (the name shown in the waterfall)
       // to builderPath (the path used in the builder's URL)
       // TODO(ojan): Make this switch based off of the testType.
+
+      // For expectationsBuilder, list the fastest builder so that we
+      // always have the most up to date expectations.
       if (currentState.useWebKitCanary) {
+        defaultBuilderName = 'Webkit (webkit.org)';
+        expectationsBuilder = 'Webkit Linux (webkit.org)';
         builders = {
           'Webkit (webkit.org)': 'webkit-rel-webkit-org',
           'Webkit Linux (webkit.org)': 'webkit-rel-linux-webkit-org',
           'Webkit Mac (webkit.org)': 'webkit-rel-mac-webkit-org'
         };
       } else if (currentState.useV8Canary) {
+        defaultBuilderName = 'Webkit (V8-Latest)';
+        expectationsBuilder = 'Webkit Linux (V8-Latest)';
         builders = {
           'Webkit (V8-Latest)': 'webkit-rel-v8',
           'Webkit Mac (V8-Latest)': 'webkit-rel-mac-v8',
           'Webkit Linux (V8-Latest)': 'webkit-rel-linux-v8'
         }
       } else {
+        defaultBuilderName = 'Webkit';
+        expectationsBuilder = 'Webkit Linux';
         builders = {
           'Webkit': 'webkit-rel',
           'Webkit (dbg)(1)': 'webkit-dbg-1',
@@ -380,7 +388,7 @@ function appendJSONScriptElements() {
   // Grab expectations file from the fastest builder, which is Linux release
   // right now.  Could be changed to any other builder if needed.
   if (waitingOnExpectations) {
-    appendScript(getPathToBuilderResultsFile('Webkit Linux') +
+    appendScript(getPathToBuilderResultsFile(expectationsBuilder) +
         'expectations.json');
   }
 }
