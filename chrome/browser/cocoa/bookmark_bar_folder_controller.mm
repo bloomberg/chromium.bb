@@ -261,12 +261,14 @@
 
   // Make the window fit on screen, with a distance of at least |padding| to
   // the sides.
-  const CGFloat padding = 8;
-  NSRect screenFrame = [[[self window] screen] frame];
-  if (NSMaxX(windowFrame) + padding > NSMaxX(screenFrame))
-    windowFrame.origin.x -= NSMaxX(windowFrame) + padding - NSMaxX(screenFrame);
-  else if (NSMinX(windowFrame) - padding < NSMinX(screenFrame))
-    windowFrame.origin.x += NSMinX(screenFrame) - NSMinX(windowFrame) + padding;
+  if ([[self window] screen]) {  // nil in unit tests
+    const CGFloat padding = 8;
+    NSRect screen = [[[self window] screen] frame];
+    if (NSMaxX(windowFrame) + padding > NSMaxX(screen))
+      windowFrame.origin.x -= NSMaxX(windowFrame) + padding - NSMaxX(screen);
+    else if (NSMinX(windowFrame) - padding < NSMinX(screen))
+      windowFrame.origin.x += NSMinX(screen) - NSMinX(windowFrame) + padding;
+  }
   
   [[self window] setFrame:windowFrame display:YES];
 
