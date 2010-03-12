@@ -10,6 +10,8 @@
 #include "chrome/browser/bookmarks/bookmark_manager.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
+#include "chrome/browser/browser.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/input_window_dialog.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/pref_service.h"
@@ -381,7 +383,13 @@ void BookmarkContextMenuControllerViews::ExecuteCommand(int id) {
 
     case IDS_BOOKMARK_MANAGER:
       UserMetrics::RecordAction("ShowBookmarkManager", profile_);
-      BookmarkManager::Show(profile_);
+      {
+        Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
+        if (browser)
+          browser->OpenBookmarkManager();
+        else
+          NOTREACHED();
+      }
       break;
 
     case IDS_BOOKMARK_MANAGER_SORT:
