@@ -74,7 +74,6 @@ void AutoFillManager::FormsSeen(
   if (!IsAutoFillEnabled())
     return;
 
-  form_structures_.reset();
   for (std::vector<webkit_glue::FormFieldValues>::const_iterator iter =
            forms.begin();
        iter != forms.end(); ++iter) {
@@ -253,6 +252,7 @@ void AutoFillManager::OnInfoBarAccepted() {
 
 void AutoFillManager::Reset() {
   upload_form_structure_.reset();
+  form_structures_.reset();
 }
 
 void AutoFillManager::DeterminePossibleFieldTypes(

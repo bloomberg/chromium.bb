@@ -1484,6 +1484,10 @@ void TabContents::DidNavigateMainFramePostCommit(
 
   // Update the starred state.
   UpdateStarredStateForCurrentURL();
+
+  // Clear the cache of forms in AutoFill.
+  if (autofill_manager_.get())
+    autofill_manager_->Reset();
 }
 
 void TabContents::DidNavigateAnyFramePostCommit(

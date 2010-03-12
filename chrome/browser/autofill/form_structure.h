@@ -60,6 +60,7 @@ class FormStructure {
     return fields_.end();
   }
 
+  bool operator==(const FormData& form) const;
   bool operator!=(const FormData& form) const;
 
  private:

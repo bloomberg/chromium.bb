@@ -207,11 +207,11 @@ size_t FormStructure::field_count() const {
   return (field_size == 0) ? 0 : field_size - 1;
 }
 
-bool FormStructure::operator!=(const FormData& form) const {
+bool FormStructure::operator==(const FormData& form) const {
   // TODO(jhawkins): Is this enough to differentiate a form?
-  if (UTF8ToUTF16(form_name_) != form.name ||
-      source_url_ != form.origin ||
-      target_url_ != form.action) {
+  if (UTF8ToUTF16(form_name_) == form.name &&
+      source_url_ == form.origin &&
+      target_url_ == form.action) {
     return true;
   }
 
@@ -219,6 +219,10 @@ bool FormStructure::operator!=(const FormData& form) const {
   // set up.
 
   return false;
+}
+
+bool FormStructure::operator!=(const FormData& form) const {
+  return !operator==(form);
 }
 
 void FormStructure::GetHeuristicFieldInfo(FieldTypeMap* field_type_map) {
