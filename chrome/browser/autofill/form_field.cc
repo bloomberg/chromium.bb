@@ -4,6 +4,7 @@
 
 #include "chrome/browser/autofill/form_field.h"
 
+#include "base/string_util.h"
 #include "chrome/browser/autofill/address_field.h"
 #include "chrome/browser/autofill/autofill_field.h"
 #include "chrome/browser/autofill/credit_card_field.h"
@@ -50,15 +51,20 @@ bool FormField::Match(AutoFillField* field,
                                   WebKit::WebTextCaseInsensitive);
 
   if (match_label_only) {
-    if (re.match(WebKit::WebString(field->label())) != -1) {
+    // TODO(jhawkins): Remove StringToLowerASCII.  WebRegularExpression needs to
+    // be fixed to take WebTextCaseInsensitive into account.
+    if (re.match(WebKit::WebString(StringToLowerASCII(field->label()))) != -1) {
       return true;
     }
   } else {
     // For now, we apply the same pattern to the field's label and the field's
     // name.  Matching the name is a bit of a long shot for many patterns, but
     // it generally doesn't hurt to try.
-    if (re.match(WebKit::WebString(field->label())) != -1 ||
-        re.match(WebKit::WebString(field->name())) != -1) {
+    //
+    // TODO(jhawkins): Remove StringToLowerASCII.  WebRegularExpression needs to
+    // be fixed to take WebTextCaseInsensitive into account.
+    if (re.match(WebKit::WebString(StringToLowerASCII(field->label()))) != -1 ||
+        re.match(WebKit::WebString(StringToLowerASCII(field->name()))) != -1) {
       return true;
     }
   }

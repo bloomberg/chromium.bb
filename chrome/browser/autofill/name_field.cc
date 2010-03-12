@@ -81,7 +81,9 @@ FirstLastNameField* FirstLastNameField::Parse2(
   // as both (the label text is "MI" and the element name is
   // "txtmiddlename"); such a field probably actually represents a
   // middle initial.
-  if (ParseText(&q, ASCIIToUTF16("^mi|middle initial|m.i."), &v.middle_name_)) {
+  if (ParseText(&q,
+                ASCIIToUTF16("^mi|middle initial|middleinitial|m.i."),
+                &v.middle_name_)) {
     v.middle_initial_ = true;
   } else {
     ParseText(&q, ASCIIToUTF16("middle name|mname"), &v.middle_name_);
