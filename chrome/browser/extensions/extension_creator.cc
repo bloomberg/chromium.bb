@@ -7,6 +7,7 @@
 #include <vector>
 #include <string>
 
+#include "app/l10n_util.h"
 #include "base/crypto/rsa_private_key.h"
 #include "base/crypto/signature_creator.h"
 #include "base/file_util.h"
@@ -17,6 +18,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/zip.h"
+#include "grit/generated_resources.h"
 
 namespace {
   const int kRSAKeySize = 1024;
@@ -29,14 +31,16 @@ bool ExtensionCreator::InitializeInput(
   // Validate input |extension_dir|.
   if (extension_dir.value().empty() ||
       !file_util::DirectoryExists(extension_dir)) {
-    error_message_ = "Input directory must exist.";
+    error_message_ =
+        l10n_util::GetStringUTF8(IDS_EXTENSION_DIRECTORY_NO_EXISTS);
     return false;
   }
 
   // Validate input |private_key| (if provided).
   if (!private_key_path.value().empty() &&
       !file_util::PathExists(private_key_path)) {
-    error_message_ = "Input value for private key must be a valid path.";
+    error_message_ =
+        l10n_util::GetStringUTF8(IDS_EXTENSION_PRIVATE_KEY_INVALID_PATH);
     return false;
   }
 
@@ -45,8 +49,8 @@ bool ExtensionCreator::InitializeInput(
   if (private_key_path.value().empty() &&
       !private_key_output_path.value().empty() &&
       file_util::PathExists(private_key_output_path)) {
-      error_message_ = "A private key for specified extension already exists. "
-                       "Reuse that key or delete it first.";
+      error_message_ =
+          l10n_util::GetStringUTF8(IDS_EXTENSION_PRIVATE_KEY_EXISTS);
       return false;
   }
 
@@ -65,21 +69,24 @@ bool ExtensionCreator::InitializeInput(
 base::RSAPrivateKey* ExtensionCreator::ReadInputKey(const FilePath&
     private_key_path) {
   if (!file_util::PathExists(private_key_path)) {
-    error_message_ = "Input value for private key must exist.";
+    error_message_ =
+        l10n_util::GetStringUTF8(IDS_EXTENSION_PRIVATE_KEY_NO_EXISTS);
     return false;
   }
 
   std::string private_key_contents;
   if (!file_util::ReadFileToString(private_key_path,
       &private_key_contents)) {
-    error_message_ = "Failed to read private key.";
+    error_message_ =
+        l10n_util::GetStringUTF8(IDS_EXTENSION_PRIVATE_KEY_FAILED_TO_READ);
     return false;
   }
 
   std::string private_key_bytes;
   if (!Extension::ParsePEMKeyBytes(private_key_contents,
        &private_key_bytes)) {
-    error_message_ = "Invalid private key.";
+    error_message_ =
+        l10n_util::GetStringUTF8(IDS_EXTENSION_PRIVATE_KEY_INVALID);
     return false;
   }
 
@@ -92,13 +99,15 @@ base::RSAPrivateKey* ExtensionCreator::GenerateKey(const FilePath&
   scoped_ptr<base::RSAPrivateKey> key_pair(
       base::RSAPrivateKey::Create(kRSAKeySize));
   if (!key_pair.get()) {
-    error_message_ = "Yikes! Failed to generate random RSA private key.";
+    error_message_ =
+        l10n_util::GetStringUTF8(IDS_EXTENSION_PRIVATE_KEY_FAILED_TO_GENERATE);
     return NULL;
   }
 
   std::vector<uint8> private_key_vector;
   if (!key_pair->ExportPrivateKey(&private_key_vector)) {
-    error_message_ = "Failed to export private key.";
+    error_message_ =
+        l10n_util::GetStringUTF8(IDS_EXTENSION_PRIVATE_KEY_FAILED_TO_EXPORT);
     return NULL;
   }
   std::string private_key_bytes(
@@ -107,20 +116,23 @@ base::RSAPrivateKey* ExtensionCreator::GenerateKey(const FilePath&
 
   std::string private_key;
   if (!Extension::ProducePEM(private_key_bytes, &private_key)) {
-    error_message_ = "Failed to output private key.";
+    error_message_ =
+        l10n_util::GetStringUTF8(IDS_EXTENSION_PRIVATE_KEY_FAILED_TO_OUTPUT);
     return NULL;
   }
   std::string pem_output;
   if (!Extension::FormatPEMForFileOutput(private_key, &pem_output,
        false)) {
-    error_message_ = "Failed to output private key.";
+    error_message_ =
+        l10n_util::GetStringUTF8(IDS_EXTENSION_PRIVATE_KEY_FAILED_TO_OUTPUT);
     return NULL;
   }
 
   if (!output_private_key_path.empty()) {
     if (-1 == file_util::WriteFile(output_private_key_path,
         pem_output.c_str(), pem_output.size())) {
-      error_message_ = "Failed to write private key.";
+      error_message_ =
+          l10n_util::GetStringUTF8(IDS_EXTENSION_PRIVATE_KEY_FAILED_TO_OUTPUT);
       return NULL;
     }
   }
@@ -134,7 +146,8 @@ bool ExtensionCreator::CreateZip(const FilePath& extension_dir,
   *zip_path = temp_path.Append(FILE_PATH_LITERAL("extension.zip"));
 
   if (!Zip(extension_dir, *zip_path, false)) {  // no hidden files
-    error_message_ = "Failed to create temporary zip file during packaging.";
+    error_message_ =
+        l10n_util::GetStringUTF8(IDS_EXTENSION_FAILED_DURING_PACKAGING);
     return false;
   }
 
@@ -153,7 +166,8 @@ bool ExtensionCreator::SignZip(const FilePath& zip_path,
   while ((bytes_read = fread(buffer.get(), 1, buffer_size,
        zip_handle.get())) > 0) {
     if (!signature_creator->Update(buffer.get(), bytes_read)) {
-      error_message_ = "Error while signing extension.";
+      error_message_ =
+          l10n_util::GetStringUTF8(IDS_EXTENSION_ERROR_WHILE_SIGNING);
       return false;
     }
   }
@@ -173,7 +187,8 @@ bool ExtensionCreator::WriteCRX(const FilePath& zip_path,
 
   std::vector<uint8> public_key;
   if (!private_key->ExportPublicKey(&public_key)) {
-    error_message_ = "Failed to export public key.";
+    error_message_ =
+        l10n_util::GetStringUTF8(IDS_EXTENSION_PUBLIC_KEY_FAILED_TO_EXPORT);
     return false;
   }
 
