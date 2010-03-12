@@ -398,7 +398,8 @@ if ((not env.Bit('windows') or not env.get('COVERAGE_ENABLED')) and
         "mmap_test.out",
         # NOTE: the "[0]" subscript make this work on windows
         # TODO: maybe move this magic into CommandTestAgainstGoldenOutput()
-        command=[mmap_test_exe[0], env.File('testdata/hello_world.nexe')])
+        command=[mmap_test_exe[0],
+                 env.File('testdata/x86_32/hello_world.nexe')])
     sdl_env.AddNodeToTestSuite(node, ['medium_tests'])
 
   # also seems to have issues with windows coverage
@@ -544,128 +545,101 @@ if ((not env.Bit('windows') or not env.get('COVERAGE_ENABLED')) and
 # Integration Tests With Canned x86 Binaries
 # ----------------------------------------------------------
 
-if env['TARGET_ARCHITECTURE'] == 'x86' and env['BUILD_SUBARCH'] == '32':
+# TODO: Create integration test nexes for arm.
+INTEGRATION_TESTS_X86 = [ 'mandel',
+                          'fib_scalar',
+                          'fib_array' ]
+INTEGRATION_TESTS_X86_STDIN_OUT = ['$SCONSTRUCT_DIR/tests/mandel/test',
+                                   '$SCONSTRUCT_DIR/tests/fib/fib_scalar_test',
+                                   '$SCONSTRUCT_DIR/tests/fib/fib_array_test' ]
+
+def AddIntegrationTest(test, location):
+  if not test or not location:
+    return;
+
+  subarch = env['BUILD_SUBARCH']
   node = env.CommandSelLdrTestNacl(
-      "mandel_canned.out",
-      command=[env.File('testdata/mandel.nexe')],
-      stdin='$SCONSTRUCT_DIR/tests/mandel/test.stdin',
-      stdout_golden='$SCONSTRUCT_DIR/tests/mandel/test.stdout')
+      test + '_canned.out',
+      command = [env.File('testdata/x86_' + subarch + '/' + test + '.nexe')],
+      stdin = location + '.stdin',
+      stdout_golden = location + '.stdout')
   env.AddNodeToTestSuite(node, ['medium_tests'])
 
-
-  node = env.CommandSelLdrTestNacl(
-      "fib_scalar_canned.out",
-      command=[env.File('testdata/fib_scalar.nexe')],
-      stdin='$SCONSTRUCT_DIR/tests/fib/fib_scalar_test.stdin',
-      stdout_golden='$SCONSTRUCT_DIR/tests/fib/fib_scalar_test.stdout')
-  env.AddNodeToTestSuite(node, ['medium_tests'])
-
-
-  node = env.CommandSelLdrTestNacl(
-      "fib_array_canned.out",
-      command=[env.File('testdata/fib_array.nexe')],
-      stdin='$SCONSTRUCT_DIR/tests/fib/fib_array_test.stdin',
-      stdout_golden='$SCONSTRUCT_DIR/tests/fib/fib_array_test.stdout')
-  env.AddNodeToTestSuite(node, ['medium_tests'])
-
+if env['TARGET_ARCHITECTURE'] == 'x86':
+  SUBARCH = env['BUILD_SUBARCH']
 
   node = env.CommandSelLdrTestNacl(
       'nacl_log.out',
-      command=[env.File('testdata/hello_world.nexe')],
-      log_golden=env.File('testdata/hello_world.log'),
-      log_filter='"^(Hello, World!)$|^\[[0-9,:.]*\] (e_ident\+1 = ELF)$"')
+      command = [env.File('testdata/x86_' + SUBARCH + '/hello_world.nexe')],
+      log_golden = env.File('testdata/hello_world.log'),
+      log_filter = '"^(Hello, World!)$|^\[[0-9,:.]*\] (e_ident\+1 = ELF)$"')
   env.AddNodeToTestSuite(node, ['medium_tests'])
+
+  assert len(INTEGRATION_TESTS_X86) == len(INTEGRATION_TESTS_X86_STDIN_OUT)
+  map(AddIntegrationTest,
+      INTEGRATION_TESTS_X86,
+      INTEGRATION_TESTS_X86_STDIN_OUT)
 
 # ----------------------------------------------------------
 # Death Tests With Canned x86 Binaries
 # ----------------------------------------------------------
 ERROR_WHILE_LOADING = '"^(Error while loading).*' + '(:[^:]*)"'
 
+# TODO: Create death test nexes for arm.
+DEATH_TESTS_X86 = [ 'old_abi',  # hello_world.nexe with an old ABI version
+                    'integer_overflow_while_madvising',
+                    'negative_hole',
+                    'rodata_data_overlap',
+                    'data_not_last',
+                    'text_overlaps_rodata',
+                    'text_overlaps_data',
+                    'text_too_big' ]
 
-if env['TARGET_ARCHITECTURE'] == 'x86' and env['BUILD_SUBARCH'] == '32':
+NOT_AVAIL_X86_32 = [ ]
+
+NOT_AVAIL_X86_64 = [ 'integer_overflow_while_madvising',
+                     'negative_hole',
+                     'rodata_data_overlap',
+                     'data_not_last',
+                     'text_overlaps_rodata',
+                     'text_overlaps_data',
+                     'text_too_big' ]
+
+def AddDeathTest(test, skip):
+  if not test:
+    return;
+
+  if test in skip:
+    print 'SKIPPING test ', test
+    return;
+
+  subarch = env['BUILD_SUBARCH']
   node = env.CommandSelLdrTestNacl(
-      'integer_overflow_while_madvising.out',
-      command=[env.File('testdata/integer_overflow_while_madvising.nexe')],
-      stderr_golden=
-          env.File('testdata/integer_overflow_while_madvising.stderr'),
-      stderr_filter=ERROR_WHILE_LOADING,
-      exit_status='1')
+      test  + '.out',
+      command = [env.File('testdata/x86_' + subarch + '/' + test + '.nexe')],
+      stderr_golden = env.File('testdata/' + test + '.stderr'),
+      stderr_filter = ERROR_WHILE_LOADING,
+      exit_status = '1')
   env.AddNodeToTestSuite(node, ['medium_tests'])
 
 
-  node = env.CommandSelLdrTestNacl(
-      'negative_memory_hole.out',
-      command=[env.File('testdata/negative_hole.nexe')],
-      stderr_golden=env.File('testdata/negative_hole.stderr'),
-      stderr_filter=ERROR_WHILE_LOADING,
-      exit_status='1')
-  # env.AddNodeToTestSuite(node, ['medium_tests'])
+if env['TARGET_ARCHITECTURE'] == 'x86':
+  SUBARCH = env['BUILD_SUBARCH']
 
-  # temporary -- trybots don't patch binary files, so this will
-  # run using the old binary and will fail.
-
-
-  node = env.CommandSelLdrTestNacl(
-      'rodata_and_data_overlap.out',
-      command=[env.File('testdata/rodata_data_overlap.nexe')],
-      stderr_golden=env.File('testdata/rodata_data_overlap.stderr'),
-      stderr_filter=ERROR_WHILE_LOADING,
-      exit_status='1')
-  env.AddNodeToTestSuite(node, ['medium_tests'])
-
-
-  node = env.CommandSelLdrTestNacl(
-      'data_not_last.out',
-      command=[env.File('testdata/data_not_last.nexe')],
-      stderr_golden=env.File('testdata/data_not_last.stderr'),
-      stderr_filter=ERROR_WHILE_LOADING,
-      exit_status='1')
-  env.AddNodeToTestSuite(node, ['medium_tests'])
-
-
-  node = env.CommandSelLdrTestNacl(
-      'text_overlaps_rodata.out',
-      command=[env.File('testdata/text_overlaps_rodata.nexe')],
-      stderr_golden=env.File('testdata/text_overlaps_rodata.stderr'),
-      stderr_filter=ERROR_WHILE_LOADING,
-      exit_status='1')
-  env.AddNodeToTestSuite(node, ['medium_tests'])
-
-
-  node = env.CommandSelLdrTestNacl(
-      'text_overlaps_data.out',
-      command=[env.File('testdata/text_overlaps_data.nexe')],
-      stderr_golden=env.File('testdata/text_overlaps_data.stderr'),
-      stderr_filter=ERROR_WHILE_LOADING,
-      exit_status='1')
-  env.AddNodeToTestSuite(node, ['medium_tests'])
-
-
-  node = env.CommandSelLdrTestNacl(
-      'old_abi.out',
-      command=[env.File('testdata/old_abi.nexe')],
-      stderr_golden=env.File('testdata/old_abi.stderr'),
-      stderr_filter=ERROR_WHILE_LOADING,
-      exit_status='1')
-  env.AddNodeToTestSuite(node, ['medium_tests'])
-
-
-  node = env.CommandSelLdrTestNacl(
-      'text_too_big.out',
-      command=[env.File('testdata/text_too_big.nexe')],
-      stderr_golden=env.File('testdata/text_too_big.stderr'),
-      stderr_filter=ERROR_WHILE_LOADING,
-      exit_status='1')
-  env.AddNodeToTestSuite(node, ['medium_tests'])
-
-
+  # built in tests/nullptr/
   node = env.CommandSelLdrTestNacl(
       'nullptr.out',
-      # built in tests/nullptr/
-      command=[env.File('testdata/nullptr.nexe')],
+      command=[env.File('testdata/x86_' + SUBARCH + '/nullptr.nexe')],
       exit_status='segfault')
   env.AddNodeToTestSuite(node, ['medium_tests'])
 
+  if SUBARCH == '32':
+    skip = NOT_AVAIL_X86_32
+  else:
+    skip = NOT_AVAIL_X86_64
+
+  for death_test in DEATH_TESTS_X86:
+    AddDeathTest(death_test, skip)
 
 # ----------------------------------------------------------
 # More Death Tests
@@ -692,4 +666,4 @@ if env['TARGET_ARCHITECTURE'] == env['BUILD_ARCHITECTURE']:
 
   # TODO(tuduce): Make it work on windows.
   if not sdl_env.Bit('windows'):
-    sdl_env.AddNodeToTestSuite(node, ['medium_tests'], 'run_ichi')
+    sdl_env.AddNodeToTestSuite(node, ['medium_tests'])
