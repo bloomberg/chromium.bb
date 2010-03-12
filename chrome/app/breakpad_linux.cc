@@ -32,6 +32,7 @@
 #include "chrome/common/chrome_descriptors.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/env_vars.h"
 #include "chrome/installer/util/google_update_settings.h"
 
 static const char kUploadURL[] =
@@ -721,7 +722,7 @@ void InitCrashReporter() {
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
   const std::string process_type =
       parsed_command_line.GetSwitchValueASCII(switches::kProcessType);
-  const bool unattended = (getenv("CHROME_HEADLESS") != NULL);
+  const bool unattended = (getenv(WideToASCII(env_vars::kHeadless)) != NULL);
   if (process_type.empty()) {
     if (!(unattended || GoogleUpdateSettings::GetCollectStatsConsent()))
       return;

@@ -18,6 +18,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/env_vars.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/plugin_messages.h"
@@ -114,7 +115,7 @@ FilePath ChildProcessHost::GetChildPath(bool allow_self) {
 // static
 void ChildProcessHost::SetCrashReporterCommandLine(CommandLine* command_line) {
 #if defined(USE_LINUX_BREAKPAD)
-  const bool unattended = (getenv("CHROME_HEADLESS") != NULL);
+  const bool unattended = (getenv(WideToASCII(env_vars::kHeadless)) != NULL);
   if (unattended || GoogleUpdateSettings::GetCollectStatsConsent()) {
     command_line->AppendSwitchWithValue(switches::kEnableCrashReporter,
                                         ASCIIToWide(google_update::posix_guid +

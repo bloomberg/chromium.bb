@@ -25,6 +25,7 @@
 #include "chrome/app/breakpad_linux.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/env_vars.h"
 
 // Since classes derived from CrashHandlerHostLinux are singletons, it's only
 // destroyed at the end of the processes lifetime, which is greater in span than
@@ -194,7 +195,7 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
 
   bool upload = true;
   FilePath dumps_path("/tmp");
-  if (getenv("CHROME_HEADLESS")) {
+  if (getenv(WideToASCII(env_vars::kHeadless))) {
     upload = false;
     PathService::Get(chrome::DIR_CRASH_DUMPS, &dumps_path);
   }

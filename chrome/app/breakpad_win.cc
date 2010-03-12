@@ -7,6 +7,8 @@
 #include <windows.h>
 #include <shellapi.h>
 #include <tchar.h>
+
+#include <algorithm>
 #include <vector>
 
 #include "base/base_switches.h"
@@ -16,12 +18,12 @@
 #include "base/registry.h"
 #include "base/string_util.h"
 #include "base/win_util.h"
+#include "breakpad/src/client/windows/handler/exception_handler.h"
 #include "chrome/app/hard_error_handler_win.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/result_codes.h"
-#include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/google_update_settings.h"
-#include "breakpad/src/client/windows/handler/exception_handler.h"
+#include "chrome/installer/util/install_util.h"
 
 namespace {
 
@@ -343,7 +345,7 @@ static DWORD __stdcall InitCrashReporterThread(void* param) {
 
   const CommandLine& command = *CommandLine::ForCurrentProcess();
   bool use_crash_service = command.HasSwitch(switches::kNoErrorDialogs) ||
-                           GetEnvironmentVariable(L"CHROME_HEADLESS", NULL, 0);
+                           GetEnvironmentVariable(env_vars::kHeadless, NULL, 0);
   bool is_per_user_install =
       InstallUtil::IsPerUserInstall(info->dll_path.c_str());
 
