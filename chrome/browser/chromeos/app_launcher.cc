@@ -53,7 +53,6 @@ const int kNavigationEntryXMargin = 3;
 const int kNavigationEntryYMargin = 1;
 
 // NavigationBar size.
-const int kNavigationBarWidth = 300;
 const int kNavigationBarHeight = 25;
 
 // Padding for the bubble info window.
@@ -128,12 +127,17 @@ class NavigationBar : public views::View,
   }
 
   virtual void Layout() {
-    const int horizontal_margin =
+    gfx::Rect bounds = GetLocalBounds(false);
+
+    const int vertical_margin =
         kNavigationEntryPadding + kNavigationEntryYMargin;
 
     location_entry_view_->SetBounds(
-        kNavigationEntryXMargin + kNavigationEntryPadding, horizontal_margin,
-        kNavigationBarWidth, height() - horizontal_margin * 2);
+        bounds.x() + kNavigationEntryXMargin + kNavigationEntryPadding,
+        bounds.y() + vertical_margin,
+        bounds.width() - 2 * (kNavigationEntryPadding +
+                              kNavigationEntryXMargin),
+        bounds.height() - vertical_margin * 2);
   }
 
   virtual void Paint(gfx::Canvas* canvas) {
@@ -267,13 +271,9 @@ void AppLauncher::BubbleContainer::Layout() {
   //                to paint over the bubble border.
   bounds.Inset(2, 2);
 
-  if (app_launcher_->navigation_bar_->IsVisible()) {
-    app_launcher_->navigation_bar_->SetBounds(bounds.x(), bounds.y(),
-                                              bounds.width(),
-                                              kNavigationBarHeight);
-  } else {
-    app_launcher_->navigation_bar_->SetBounds(bounds.x(), bounds.y(), 0, 0);
-  }
+  app_launcher_->navigation_bar_->SetBounds(bounds.x(), bounds.y(),
+                                            bounds.width(),
+                                            kNavigationBarHeight);
   int render_y = app_launcher_->navigation_bar_->bounds().bottom();
   gfx::Size rwhv_size =
       gfx::Size(bounds.width(),
@@ -362,8 +362,6 @@ void AppLauncher::Update(Browser* browser) {
         GTK_WINDOW(browser_->window()->GetNativeHandle()));
   }
 
-  BrowserView* bview = static_cast<BrowserView*>(browser_->window());
-  navigation_bar_->SetVisible(bview->is_compact_style());
   popup_->SetBounds(browser_->window()->GetRestoredBounds());
   top_container_->Layout();
 }
