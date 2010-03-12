@@ -493,10 +493,13 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
     case NSLeftMouseDown:
     case NSRightMouseDown:
       // If a click in my window and NOT in the bookmark bar,
-      // then is a click outside.
-      if (eventWindow == myWindow &&
-          ![[[eventWindow contentView] hitTest:[event locationInWindow]]
-              isDescendantOf:[self view]]) {
+      // then is a click outside. Clicks directly on the bookmarks bar are
+      // counted as "outside" as well, because they should close bookmark folder
+      // menus as well.
+      if (eventWindow == myWindow) {
+        NSView* hitView =
+            [[eventWindow contentView] hitTest:[event locationInWindow]];
+        if (![hitView isDescendantOf:[self view]] || hitView == buttonView_)
           return YES;
       }
       // If a click in a bookmark bar folder window and that isn't
