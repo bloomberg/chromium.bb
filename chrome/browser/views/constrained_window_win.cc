@@ -257,6 +257,8 @@ const int kResizeAreaCornerSize = 16;
 const int kCaptionButtonHeightWithPadding = 19;
 // The titlebar has a 2 px 3D edge along the top and bottom.
 const int kTitlebarTopAndBottomEdgeThickness = 2;
+// The icon would never shrink below 16 px on a side, if there was one.
+const int kIconMinimumSize = 16;
 // The title text starts 2 px from the right edge of the left frame border.
 const int kTitleLeftSpacing = 2;
 // There is a 5 px gap between the title text and the caption buttons.
@@ -422,45 +424,27 @@ int ConstrainedWindowFrameView::IconSize() const {
   // size are increased.
   return GetSystemMetrics(SM_CYSMICON);
 #else
-  // Calculate the necessary height from the titlebar font size.
-  // The title text has 2 px of padding between it and the frame border on both
-  // top and bottom.
-  const int kTitleBorderSpacing = 2;
-  // The bottom spacing should be the same apparent height as the top spacing.
-  // The top spacing height is kFrameBorderThickness + kTitleBorderSpacing.  We
-  // omit the frame border portion because that's not part of the icon height.
-  // The bottom spacing, then, is kTitleBorderSpacing + kFrameBorderThickness to
-  // the bottom edge of the titlebar.  We omit TitlebarBottomThickness() because
-  // that's also not part of the icon height.
-  return kTitleBorderSpacing + title_font_->height() + kTitleBorderSpacing +
-      (kFrameBorderThickness - TitlebarBottomThickness());
+  return std::max(title_font_->height(), kIconMinimumSize);
 #endif
 }
 
 gfx::Rect ConstrainedWindowFrameView::IconBounds() const {
   int size = IconSize();
-  // This next statement handles two things:
-  //   (1) Vertically centering the icon when the icon is shorter than the
-  //       minimum space we reserve for the caption button.  We want to bias
-  //       rounding to put extra space above the icon, since below it is the 2
-  //       px 3D edge, which looks to the eye like additional space; hence the
-  //       + 1 below.
-  //   (2) Our frame border has a different "3D look" than Windows'.  Theirs has
-  //       a more complex gradient on the top that they push their icon/title
-  //       below; then the maximized window cuts this off and the icon/title are
-  //       centered in the remaining space.  Because the apparent shape of our
-  //       border is simpler, using the same positioning makes things look
-  //       slightly uncentered with restored windows, so we come up to
-  //       compensate.  The frame border has a 2 px 3D edge plus some empty
-  //       space, so we adjust by half the width of the empty space to center
-  //       things.
-  // Of course, in a constrained window there is no icon.  But we keep these
-  // calculations consistent with the other frame view implementations, since
-  // they're used to position the window title.
-  return gfx::Rect(kFrameBorderThickness + kTitleLeftSpacing,
-      (NonClientTopBorderHeight() - size - TitlebarBottomThickness() + 1 +
-          kTitlebarTopAndBottomEdgeThickness) / 2,
-      size, size);
+  // Our frame border has a different "3D look" than Windows'.  Theirs has a
+  // more complex gradient on the top that they push their icon/title below;
+  // then the maximized window cuts this off and the icon/title are centered
+  // in the remaining space.  Because the apparent shape of our border is
+  // simpler, using the same positioning makes things look slightly uncentered
+  // with restored windows, so instead of calculating the remaining space from
+  // below the frame border, we calculate from below the 3D edge.
+  int unavailable_px_at_top = kTitlebarTopAndBottomEdgeThickness;
+  // When the icon is shorter than the minimum space we reserve for the caption
+  // button, we vertically center it.  We want to bias rounding to put extra
+  // space above the icon, since the 3D edge + client edge below looks (to the
+  // eye) more like additional space than does the 3D edge above; hence the +1.
+  int y = unavailable_px_at_top + (NonClientTopBorderHeight() -
+      unavailable_px_at_top - size - TitlebarBottomThickness() + 1) / 2;
+  return gfx::Rect(kFrameBorderThickness + kTitleLeftSpacing, y, size, size);
 }
 
 void ConstrainedWindowFrameView::PaintFrameBorder(gfx::Canvas* canvas) {

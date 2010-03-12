@@ -35,10 +35,13 @@ const int kResizeAreaCornerSize = 16;
 // The titlebar never shrinks too short to show the caption button plus some
 // padding below it.
 const int kCaptionButtonHeightWithPadding = 27;
-// The titlebar has a 2 px 3D edge along the bottom.
-const int kTitlebarBottomEdgeThickness = 2;
+// The titlebar has a 2 px 3D edge along the bottom, and we reserve 2 px (1 for
+// border, 1 for padding) along the top.
+const int kTitlebarTopAndBottomEdgeThickness = 2;
 // The icon is inset 6 px from the left frame border.
 const int kIconLeftSpacing = 6;
+// The icon never shrinks below 16 px on a side.
+const int kIconMinimumSize = 16;
 // There is a 4 px gap between the icon and the title text.
 const int kIconTitleSpacing = 4;
 // There is a 5 px gap between the title text and the close button.
@@ -266,7 +269,7 @@ int AppPanelBrowserFrameView::NonClientTopBorderHeight() const {
 }
 
 int AppPanelBrowserFrameView::TitlebarBottomThickness() const {
-  return kTitlebarBottomEdgeThickness +
+  return kTitlebarTopAndBottomEdgeThickness +
       (frame_->GetWindow()->IsMaximized() ? 0 : kClientEdgeThickness);
 }
 
@@ -276,44 +279,32 @@ int AppPanelBrowserFrameView::IconSize() const {
   // size are increased.
   return GetSystemMetrics(SM_CYSMICON);
 #else
-  // Calculate the necessary height from the titlebar font size.
-  // The title text has 2 px of padding between it and the frame border on both
-  // top and bottom.
-  const int kTitleBorderSpacing = 2;
-  // The bottom spacing should be the same apparent height as the top spacing.
-  // The top spacing height is FrameBorderThickness() + kTitleBorderSpacing.  We
-  // omit the frame border portion because that's not part of the icon height.
-  // The bottom spacing, then, is kTitleBorderSpacing + kFrameBorderThickness to
-  // the bottom edge of the titlebar.  We omit TitlebarBottomThickness() because
-  // that's also not part of the icon height.
-  return kTitleBorderSpacing + title_font_->height() + kTitleBorderSpacing +
-      (kFrameBorderThickness - TitlebarBottomThickness());
+  return std::max(BrowserFrame::GetTitleFont().height(), kIconMinimumSize);
 #endif
 }
 
 gfx::Rect AppPanelBrowserFrameView::IconBounds() const {
   int size = IconSize();
   int frame_thickness = FrameBorderThickness();
-  // This next statement handles two things:
-  //   (1) Vertically centering the icon when the icon is shorter than the
-  //       minimum space we reserve for the caption button.  We want to bias
-  //       rounding to put extra space above the icon, since below it is the 2
-  //       px 3D edge, which looks to the eye like additional space; hence the
-  //       + 1 below.
-  //   (2) Our frame border has a different "3D look" than Windows'.  Theirs has
-  //       a more complex gradient on the top that they push their icon/title
-  //       below; then the maximized window cuts this off and the icon/title are
-  //       centered in the remaining space.  Because the apparent shape of our
-  //       border is simpler, using the same positioning makes things look
-  //       slightly uncentered with restored windows, so we come up to
-  //       compensate.  The frame border has a 2 px 3D edge plus some empty
-  //       space, so we adjust by half the width of the empty space to center
-  //       things.
-  return gfx::Rect(frame_thickness + kIconLeftSpacing,
-      (NonClientTopBorderHeight() - size - TitlebarBottomThickness() + 1 +
-          (frame_->GetWindow()->IsMaximized() ?
-              frame_thickness : kTitlebarBottomEdgeThickness)) / 2,
-      size, size);
+  // Our frame border has a different "3D look" than Windows'.  Theirs has a
+  // more complex gradient on the top that they push their icon/title below;
+  // then the maximized window cuts this off and the icon/title are centered
+  // in the remaining space.  Because the apparent shape of our border is
+  // simpler, using the same positioning makes things look slightly uncentered
+  // with restored windows, so when the window is restored, instead of
+  // calculating the remaining space from below the frame border, we calculate
+  // from below the top border-plus-padding.
+  int unavailable_px_at_top = frame_->GetWindow()->IsMaximized() ?
+      frame_thickness : kTitlebarTopAndBottomEdgeThickness;
+  // When the icon is shorter than the minimum space we reserve for the caption
+  // button, we vertically center it.  We want to bias rounding to put extra
+  // space above the icon, since the 3D edge (+ client edge, for restored
+  // windows) below looks (to the eye) more like additional space than does the
+  // border + padding (or nothing at all, for maximized windows) above; hence
+  // the +1.
+  int y = unavailable_px_at_top + (NonClientTopBorderHeight() -
+      unavailable_px_at_top - size - TitlebarBottomThickness() + 1) / 2;
+  return gfx::Rect(frame_thickness + kIconLeftSpacing, y, size, size);
 }
 
 void AppPanelBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
