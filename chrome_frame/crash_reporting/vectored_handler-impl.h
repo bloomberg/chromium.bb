@@ -5,6 +5,7 @@
 #ifndef CHROME_FRAME_CRASH_REPORTING_VECTORED_HANDLER_IMPL_H_
 #define CHROME_FRAME_CRASH_REPORTING_VECTORED_HANDLER_IMPL_H_
 #include "chrome_frame/crash_reporting/vectored_handler.h"
+#include "chrome_frame/crash_reporting/nt_loader.h"
 
 #if defined(_M_IX86)
 #ifndef EXCEPTION_CHAIN_END
@@ -98,7 +99,7 @@ LONG VectoredHandlerT<E>::Handler(EXCEPTION_POINTERS* exceptionInfo) {
     }
 
     // See whether our module is somewhere in the call stack.
-    void* back_trace[api_->max_back_trace] = {0};
+    void* back_trace[E::max_back_trace] = {0};
     DWORD captured = api_->RtlCaptureStackBackTrace(0, api_->max_back_trace,
                                                     &back_trace[0], NULL);
     for (DWORD i = 0; i < captured; ++i) {
@@ -139,6 +140,7 @@ namespace {
         ret
       }
   }
+
   __declspec(naked)
   static char* GetStackTopLimit() {
     __asm {
@@ -174,6 +176,35 @@ class Win32VEHTraits {
           (address < CodeOffset(code_block.code, code_block.end_offset))) {
         return true;
       }
+    }
+
+    // We don't want to report exceptions that occur during DLL loading,
+    // as those are captured and ignored by the NT loader. If this thread
+    // is holding the loader's lock, there's a possiblity that the crash
+    // is occurring in a loading DLL, in which case we resolve the
+    // crash address to a module and check on the module's status.
+    const DWORD flags = GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT |
+        GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS;
+    HMODULE crashing_module = NULL;
+    if (nt_loader::OwnsLoaderLock() && ::GetModuleHandleEx(
+            flags, reinterpret_cast<LPCWSTR>(address), &crashing_module)) {
+      nt_loader::LDR_DATA_TABLE_ENTRY* entry =
+          nt_loader::GetLoaderEntry(crashing_module);
+
+      // If:
+      //  1. we found the entry in question, and
+      //  2. the entry is a DLL (has the IMAGE_DLL flag set), and
+      //  3. the DLL has a non-null entrypoint, and
+      //  4. the loader has not tagged it with the process attached called flag
+      // we conclude that the crash is most likely during the loading of the
+      // module and bail on reporting the crash to avoid false positives
+      // during crashes that occur during module loads, such as e.g. when
+      // the hook manager attempts to load buggy window hook DLLs.
+      if (entry &&
+          (entry->Flags & LDRP_IMAGE_DLL) != 0 &&
+          (entry->EntryPoint != NULL) &&
+          (entry->Flags & LDRP_PROCESS_ATTACH_CALLED) == 0)
+        return true;
     }
 
     return false;

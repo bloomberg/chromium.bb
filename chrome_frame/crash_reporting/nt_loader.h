@@ -128,13 +128,13 @@ typedef struct _LDR_DATA_TABLE_ENTRY {
   union {
     LIST_ENTRY HashLinks;  // 0x03c
     struct {
-     void* SectionPointer;  // 0x03c
-     ULONG CheckSum;  // 0x040
+      void* SectionPointer;  // 0x03c
+      ULONG CheckSum;  // 0x040
     };
   };
   union {
-   ULONG TimeDateStamp;  // 0x044
-   void* LoadedImports;  // 0x044
+    ULONG TimeDateStamp;  // 0x044
+    void* LoadedImports;  // 0x044
   };
   void *EntryPointActivationContext;  // 0x048
   void* PatchInformation;  // 0x04c

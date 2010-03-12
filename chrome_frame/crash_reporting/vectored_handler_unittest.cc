@@ -5,6 +5,8 @@
 #include <atlbase.h>
 
 #include "base/logging.h"
+#include "chrome_frame/crash_reporting/crash_dll.h"
+#include "chrome_frame/crash_reporting/nt_loader.h"
 #include "chrome_frame/crash_reporting/vectored_handler-impl.h"
 #include "chrome_frame/crash_reporting/veh_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -45,8 +47,12 @@ class MockApi : public Win32VEHTraits, public ModuleOfInterest {
 };
 };  // namespace
 
-
 typedef VectoredHandlerT<MockApi> VectoredHandlerMock;
+static VectoredHandlerMock* g_mock_veh = NULL;
+static LONG WINAPI VEH(EXCEPTION_POINTERS* exptrs) {
+  return g_mock_veh->Handler(exptrs);
+}
+
 TEST(ChromeFrame, ExceptionReport) {
   MockApi api;
   VectoredHandlerMock veh(&api);
@@ -122,6 +128,45 @@ TEST(ChromeFrame, ExceptionReport) {
   EXPECT_EQ(ExceptionContinueSearch,
       veh.Handler(&ExceptionInfo(STATUS_ACCESS_VIOLATION, ignore_address)));
   testing::Mock::VerifyAndClearExpectations(&api);
+
+  // Exception in a loading module, we are on the stack.
+  // Make sure we don't report it.
+  api.SetSEH(no_seh);
+  api.SetStack(on_stack);
+  EXPECT_CALL(api, WriteDump(_)).Times(0);
+
+  g_mock_veh = &veh;
+  void* id = ::AddVectoredExceptionHandler(FALSE, VEH);
+
+  EXPECT_TRUE(::SetEnvironmentVariable(kCrashOnLoadMode, L"1"));
+  long exceptions_seen = veh.get_exceptions_seen();
+  HMODULE module = ::LoadLibrary(kCrashDllName);
+  EXPECT_EQ(NULL, module);
+
+  testing::Mock::VerifyAndClearExpectations(&api);
+  EXPECT_EQ(exceptions_seen + 1, veh.get_exceptions_seen());
+  EXPECT_TRUE(::SetEnvironmentVariable(kCrashOnLoadMode, NULL));
+
+  // Exception in an unloading module, we are on the stack/
+  // Make sure we report it.
+  EXPECT_TRUE(::SetEnvironmentVariable(kCrashOnUnloadMode, L"1"));
+
+  module = ::LoadLibrary(kCrashDllName);
+
+  api.SetSEH(no_seh);
+  api.SetStack(on_stack);
+  EXPECT_CALL(api, WriteDump(_)).Times(1);
+  EXPECT_TRUE(module != NULL);
+  exceptions_seen = veh.get_exceptions_seen();
+
+  // Crash on unloading.
+  ::FreeLibrary(module);
+
+  EXPECT_EQ(exceptions_seen + 1, veh.get_exceptions_seen());
+  testing::Mock::VerifyAndClearExpectations(&api);
+
+  ::RemoveVectoredExceptionHandler(id);
+  g_mock_veh = NULL;
 }
 
 MATCHER_P(ExceptionCodeIs, code, "") {
@@ -148,11 +193,6 @@ DWORD WINAPI CrashingThread(PVOID tmp) {
   }
 
   return 0;
-}
-
-static VectoredHandlerMock* g_mock_veh = NULL;
-static LONG WINAPI VEH(EXCEPTION_POINTERS* exptrs) {
-  return g_mock_veh->Handler(exptrs);
 }
 
 TEST(ChromeFrame, TrickyStackOverflow) {

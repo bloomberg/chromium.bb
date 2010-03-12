@@ -7,6 +7,7 @@
 #include <winnt.h>
 #include <base/at_exit.h>
 #include <base/scoped_handle.h>
+#include <base/string_util.h>
 #include <base/sys_info.h>
 #include <base/thread.h>
 #include "chrome_frame/crash_reporting/crash_dll.h"
@@ -116,8 +117,6 @@ TEST(NtLoader, OwnsLoaderLock) {
 }
 
 TEST(NtLoader, GetLoaderEntry) {
-  ScopedEnterCriticalSection lock(GetLoaderLock());
-
   // Get all modules in the current process.
   ScopedHandle snap(::CreateToolhelp32Snapshot(TH32CS_SNAPMODULE,
                                                ::GetCurrentProcessId()));
@@ -128,14 +127,44 @@ TEST(NtLoader, GetLoaderEntry) {
   MODULEENTRY32 module = { sizeof(module) };
   ASSERT_TRUE(::Module32First(snap.Get(), &module));
   do {
+    ScopedEnterCriticalSection lock(GetLoaderLock());
+
     nt_loader::LDR_DATA_TABLE_ENTRY* entry =
         nt_loader::GetLoaderEntry(module.hModule);
     ASSERT_TRUE(entry != NULL);
-    ASSERT_EQ(module.hModule, reinterpret_cast<HMODULE>(entry->DllBase));
-    ASSERT_STREQ(module.szModule,
+    EXPECT_EQ(module.hModule, reinterpret_cast<HMODULE>(entry->DllBase));
+    EXPECT_STREQ(module.szModule,
                  FromUnicodeString(entry->BaseDllName).c_str());
-    ASSERT_STREQ(module.szExePath,
+    EXPECT_STREQ(module.szExePath,
                  FromUnicodeString(entry->FullDllName).c_str());
+
+    ULONG flags = entry->Flags;
+
+    // All entries should have this flag set.
+    EXPECT_TRUE(flags & LDRP_ENTRY_PROCESSED);
+
+    if (0 == (flags & LDRP_IMAGE_DLL)) {
+      // TODO(siggi): write a test to assert this holds true for loading
+      //    non-DLL, e.g. exe image files.
+      // Dlls have the LDRP_IMAGE_DLL flag set, any module that doesn't
+      // have that flag has to be the main executable.
+      EXPECT_TRUE(module.hModule == ::GetModuleHandle(NULL));
+    } else {
+      // Since we're not currently loading any modules, all loaded
+      // modules should either have the LDRP_PROCESS_ATTACH_CALLED,
+      // or a NULL entrypoint.
+      if (entry->EntryPoint == NULL) {
+        EXPECT_FALSE(flags & LDRP_PROCESS_ATTACH_CALLED);
+      } else {
+        // Shimeng.dll is an exception to the above, it's loaded
+        // in a special way, see e.g. http://www.alex-ionescu.com/?p=41
+        // for details.
+        bool is_shimeng = LowerCaseEqualsASCII(
+            FromUnicodeString(entry->BaseDllName), "shimeng.dll");
+
+        EXPECT_TRUE(is_shimeng || (flags & LDRP_PROCESS_ATTACH_CALLED));
+      }
+    }
   } while(::Module32Next(snap.Get(), &module));
 }
 
@@ -198,8 +227,6 @@ class NtLoaderTest: public testing::Test {
 
 NtLoaderTest* NtLoaderTest::current_ = NULL;
 DWORD NtLoaderTest::main_thread_ = ::GetCurrentThreadId();
-
-const wchar_t kCrashDllName[] = L"crash_dll.dll";
 
 }  // namespace
 
