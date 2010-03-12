@@ -67,9 +67,10 @@ class Extension {
     EXTENSION_ICON_BITTY = 16,
   };
 
-  enum AppLaunchWindowType {
-    APP,
-    PANEL
+  enum AppLaunchType {
+    LAUNCH_WINDOW,
+    LAUNCH_PANEL,
+    LAUNCH_TAB
   };
 
   // Icon sizes used by the extension system.
@@ -284,9 +285,7 @@ class Extension {
   const URLPatternList& app_extent() const { return app_extent_; }
   const GURL& app_launch_url() const { return app_launch_url_; }
   bool IsApp() const { return !app_launch_url_.is_empty(); }
-  AppLaunchWindowType app_launch_window_type() {
-    return app_launch_window_type_;
-  }
+  AppLaunchType app_launch_type() { return app_launch_type_; }
   const GURL& app_origin() const { return app_origin_; }
 
   // Runtime data:
@@ -439,8 +438,8 @@ class Extension {
   // The URL an app should launch to.
   GURL app_launch_url_;
 
-  // The type of window to start when the application is launched.
-  AppLaunchWindowType app_launch_window_type_;
+  // How to start when the application is launched.
+  AppLaunchType app_launch_type_;
 
   // The web security origin associated with the app. This origin will be
   // granted the permissions the app requests.

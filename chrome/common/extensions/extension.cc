@@ -507,14 +507,16 @@ bool Extension::LoadAppHelper(const DictionaryValue* app, std::string* error) {
     return false;
   }
 
-  // launch window type
-  app_launch_window_type_ = APP;
-  std::string window_type_string;
-  if (app->GetString(keys::kAppLaunchWindowType, &window_type_string)) {
-    if (window_type_string == std::string(values::kWindowTypePanel)) {
-      app_launch_window_type_ = PANEL;
-    } else if (window_type_string != std::string(values::kWindowTypeApp)) {
-      *error = errors::kInvalidAppLaunchWindowType;
+  // launch type
+  app_launch_type_ = LAUNCH_WINDOW;  // TODO(erikkay) LAUNCH_TAB?
+  std::string launch_type_string;
+  if (app->GetString(keys::kAppLaunchType, &launch_type_string)) {
+    if (launch_type_string == std::string(values::kLaunchTypePanel)) {
+      app_launch_type_ = LAUNCH_PANEL;
+    } else if (launch_type_string == std::string(values::kLaunchTypeTab)) {
+      app_launch_type_ = LAUNCH_TAB;
+    } else if (launch_type_string != std::string(values::kLaunchTypeWindow)) {
+      *error = errors::kInvalidAppLaunchType;
       return false;
     }
   }

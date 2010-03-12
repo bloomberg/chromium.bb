@@ -365,6 +365,41 @@ void Browser::OpenURLOffTheRecord(Profile* profile, const GURL& url) {
 }
 
 // static
+// TODO(erikkay): There are multiple reasons why this could fail.  Should
+// this function return an error reason as well so that callers can show
+// reasonable errors?
+bool Browser::OpenApplication(Profile* profile, const std::string& app_id) {
+  ExtensionsService* extensions_service = profile->GetExtensionsService();
+  if (!extensions_service->is_ready())
+    return false;
+
+  // If the extension with |app_id| could't be found, most likely because it
+  // was uninstalled.
+  Extension* extension_app =
+      extensions_service->GetExtensionById(app_id, false);
+  if (!extension_app)
+    return false;
+
+  // TODO(erikkay): Support refocus.
+  Extension::AppLaunchType launch_type =
+      extension_app->app_launch_type();
+  switch (launch_type) {
+    case Extension::LAUNCH_WINDOW:
+    case Extension::LAUNCH_PANEL:
+      Browser::OpenApplicationWindow(profile, extension_app);
+      break;
+    case Extension::LAUNCH_TAB: {
+      return Browser::OpenApplicationTab(profile, extension_app);
+      break;
+    }
+    default:
+      NOTREACHED();
+      return false;
+  }
+  return true;
+}
+
+// static
 void Browser::OpenApplicationWindow(Profile* profile, const GURL& url,
                                     bool as_panel) {
   std::wstring app_name = web_app::GenerateApplicationNameFromURL(url);
@@ -390,6 +425,32 @@ void Browser::OpenApplicationWindow(Profile* profile, const GURL& url,
     // when it sees UPDATE_SHORTCUT as pending web app action.
     browser->pending_web_app_action_ = UPDATE_SHORTCUT;
   }
+}
+
+// static
+void Browser::OpenApplicationWindow(Profile* profile, Extension* extension) {
+  OpenApplicationWindow(profile,
+      extension->app_launch_url(),
+      (extension->app_launch_type() == Extension::LAUNCH_PANEL));
+}
+
+// static
+bool Browser::OpenApplicationTab(Profile* profile, Extension* extension) {
+  DCHECK_EQ(extension->app_launch_type(), Extension::LAUNCH_TAB);
+
+  Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
+  if (!browser || browser->type() != Browser::TYPE_NORMAL)
+    return false;
+
+  // TODO(erikkay): This doesn't seem like the right transition in all cases.
+  PageTransition::Type transition = PageTransition::START_PAGE;
+  GURL url = extension->app_launch_url();
+  TabContents* tab_contents =
+      browser->CreateTabContentsForURL(url, GURL(), profile,
+                                       transition, false, NULL);
+  tab_contents->SetAppExtension(extension);
+  browser->AddTab(tab_contents, transition);
+  return true;
 }
 
 // static

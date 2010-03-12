@@ -11,7 +11,7 @@ namespace extension_manifest_keys {
   extern const wchar_t* kApp;
   extern const wchar_t* kAppExtent;
   extern const wchar_t* kAppLaunchUrl;
-  extern const wchar_t* kAppLaunchWindowType;
+  extern const wchar_t* kAppLaunchType;
   extern const wchar_t* kAppOrigin;
   extern const wchar_t* kBackground;
   extern const wchar_t* kBrowserAction;
@@ -68,8 +68,9 @@ namespace extension_manifest_values {
   extern const char* kRunAtDocumentIdle;
   extern const char* kPageActionTypeTab;
   extern const char* kPageActionTypePermanent;
-  extern const char* kWindowTypeApp;
-  extern const char* kWindowTypePanel;
+  extern const char* kLaunchTypePanel;
+  extern const char* kLaunchTypeTab;
+  extern const char* kLaunchTypeWindow;
 }  // namespace extension_manifest_values
 
 // Error messages returned from Extension::InitFromValue().
@@ -80,8 +81,8 @@ namespace extension_manifest_errors {
   extern const char* kInvalidApp;
   extern const char* kInvalidAppExtent;
   extern const char* kInvalidAppExtentPattern;
+  extern const char* kInvalidAppLaunchType;
   extern const char* kInvalidAppLaunchUrl;
-  extern const char* kInvalidAppLaunchWindowType;
   extern const char* kInvalidAppOrigin;
   extern const char* kInvalidBackground;
   extern const char* kInvalidBrowserAction;

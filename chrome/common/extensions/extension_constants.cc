@@ -10,7 +10,7 @@ const wchar_t* kAllFrames = L"all_frames";
 const wchar_t* kApp = L"app";
 const wchar_t* kAppExtent = L"extent";
 const wchar_t* kAppLaunchUrl = L"launch.url";
-const wchar_t* kAppLaunchWindowType = L"launch.window_type";
+const wchar_t* kAppLaunchType = L"launch.window_type";  // TODO(erikkay) rename
 const wchar_t* kAppOrigin = L"origin";
 const wchar_t* kBackground = L"background_page";
 const wchar_t* kBrowserAction = L"browser_action";
@@ -66,8 +66,9 @@ const char* kRunAtDocumentEnd = "document_end";
 const char* kRunAtDocumentIdle = "document_idle";
 const char* kPageActionTypeTab = "tab";
 const char* kPageActionTypePermanent = "permanent";
-const char* kWindowTypeApp = "app";
-const char* kWindowTypePanel = "panel";
+const char* kLaunchTypePanel = "panel";
+const char* kLaunchTypeTab = "tab";
+const char* kLaunchTypeWindow = "window";
 }  // namespace extension_manifest_values
 
 // Extension-related error messages. Some of these are simple patterns, where a
@@ -83,10 +84,10 @@ const char* kInvalidAllFrames =
 const char* kInvalidApp = "Invalid app.";
 const char* kInvalidAppExtent = "Invalid value for app.extent.";
 const char* kInvalidAppExtentPattern = "Invalid value for app.extent[*].";
+const char* kInvalidAppLaunchType =
+    "Invalid value for 'app.launch.window_type'.";
 const char* kInvalidAppLaunchUrl =
     "Required value 'app.launch.url' is missing or invalid.";
-const char* kInvalidAppLaunchWindowType =
-    "Invalid value for 'app.launch.window_type'.";
 const char* kInvalidAppOrigin =
     "Invalid value for 'app.origin'. Value must be a URL of the form "
     "scheme://host[:port]/ where scheme is http or https.";

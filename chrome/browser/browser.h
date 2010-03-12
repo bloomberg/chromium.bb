@@ -27,6 +27,7 @@
 
 class BrowserWindow;
 class DebuggerWindow;
+class Extension;
 class ExtensionShelfModel;
 class FindBarController;
 class GoButton;
@@ -180,12 +181,24 @@ class Browser : public TabStripModelDelegate,
   // |profile|, that session is re-used.
   static void OpenURLOffTheRecord(Profile* profile, const GURL& url);
 
+  // Open an application specified by |app_id| in the appropriate launch
+  // container.  Returns false if the app_id is invalid or if ExtensionsService
+  // isn't ready/available.
+  static bool OpenApplication(Profile* profile, const std::string& app_id);
+
   // Opens a new application window for the specified url. If |as_panel|
   // is true, the application will be opened as a Browser::Type::APP_PANEL in
   // app panel window, otherwise it will be opened as a Browser::Type::APP,
   // a.k.a. "thin frame".
   static void OpenApplicationWindow(Profile* profile, const GURL& url,
                                     bool as_panel);
+
+  // Open an application for |extension| in a new application window or panel.
+  static void OpenApplicationWindow(Profile* profile, Extension* extension);
+
+  // Open an application for |extension| in a new application tab.  Returns
+  // false if there are no appropriate existing browser windows for |profile|.
+  static bool OpenApplicationTab(Profile* profile, Extension* extension);
 
   // Opens a new window and opens the bookmark manager.
   static void OpenBookmarkManagerWindow(Profile* profile);
