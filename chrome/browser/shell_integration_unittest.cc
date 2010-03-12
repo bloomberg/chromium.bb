@@ -4,8 +4,16 @@
 
 #include "chrome/browser/shell_integration.h"
 
+#include <map>
+
 #include "base/file_path.h"
+#include "base/file_util.h"
+#include "base/linux_util.h"
+#include "base/message_loop.h"
+#include "base/scoped_temp_dir.h"
+#include "base/stl_util-inl.h"
 #include "base/string_util.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "googleurl/src/gurl.h"
@@ -14,6 +22,104 @@
 #define FPL FILE_PATH_LITERAL
 
 #if defined(OS_LINUX)
+namespace {
+
+// Provides mock environment variables values based on a stored map.
+class MockEnvironmentVariableGetter : public base::EnvironmentVariableGetter {
+ public:
+  MockEnvironmentVariableGetter() {
+  }
+
+  void Set(const std::string& name, const std::string& value) {
+    variables_[name] = value;
+  }
+
+  virtual bool Getenv(const char* variable_name, std::string* result) {
+    if (ContainsKey(variables_, variable_name)) {
+      *result = variables_[variable_name];
+      return true;
+    }
+
+    return false;
+  }
+
+ private:
+  std::map<std::string, std::string> variables_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockEnvironmentVariableGetter);
+};
+
+}  // namespace
+
+TEST(ShellIntegrationTest, GetDesktopShortcutTemplate) {
+#if defined(GOOGLE_CHROME_BUILD)
+  const char kTemplateFilename[] = "google-chrome.desktop";
+#else  // CHROMIUM_BUILD
+  const char kTemplateFilename[] = "chromium-browser.desktop";
+#endif
+
+  const char kTestData1[] = "a magical testing string";
+  const char kTestData2[] = "a different testing string";
+
+  MessageLoop message_loop;
+  ChromeThread file_thread(ChromeThread::FILE, &message_loop);
+
+  {
+    ScopedTempDir temp_dir;
+    ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+    MockEnvironmentVariableGetter env_getter;
+    env_getter.Set("XDG_DATA_HOME", temp_dir.path().value());
+    ASSERT_TRUE(file_util::WriteFile(
+        temp_dir.path().AppendASCII(kTemplateFilename),
+        kTestData1, strlen(kTestData1)));
+    std::string contents;
+    ASSERT_TRUE(ShellIntegration::GetDesktopShortcutTemplate(&env_getter,
+                                                             &contents));
+    EXPECT_EQ(kTestData1, contents);
+  }
+
+  {
+    ScopedTempDir temp_dir;
+    ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+    MockEnvironmentVariableGetter env_getter;
+    env_getter.Set("XDG_DATA_DIRS", temp_dir.path().value());
+    ASSERT_TRUE(file_util::CreateDirectory(
+        temp_dir.path().AppendASCII("applications")));
+    ASSERT_TRUE(file_util::WriteFile(
+        temp_dir.path().AppendASCII("applications")
+            .AppendASCII(kTemplateFilename),
+        kTestData2, strlen(kTestData2)));
+    std::string contents;
+    ASSERT_TRUE(ShellIntegration::GetDesktopShortcutTemplate(&env_getter,
+                                                             &contents));
+    EXPECT_EQ(kTestData2, contents);
+  }
+
+  {
+    ScopedTempDir temp_dir;
+    ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+    MockEnvironmentVariableGetter env_getter;
+    env_getter.Set("XDG_DATA_DIRS", temp_dir.path().value() + ":" +
+                   temp_dir.path().AppendASCII("applications").value());
+    ASSERT_TRUE(file_util::CreateDirectory(
+        temp_dir.path().AppendASCII("applications")));
+    ASSERT_TRUE(file_util::WriteFile(
+        temp_dir.path().AppendASCII(kTemplateFilename),
+        kTestData1, strlen(kTestData1)));
+    ASSERT_TRUE(file_util::WriteFile(
+        temp_dir.path().AppendASCII("applications")
+            .AppendASCII(kTemplateFilename),
+        kTestData2, strlen(kTestData2)));
+    std::string contents;
+    ASSERT_TRUE(ShellIntegration::GetDesktopShortcutTemplate(&env_getter,
+                                                             &contents));
+    EXPECT_EQ(kTestData1, contents);
+  }
+}
+
 TEST(ShellIntegrationTest, GetDesktopShortcutFilename) {
   const struct {
     const FilePath::CharType* path;

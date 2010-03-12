@@ -15,6 +15,10 @@
 
 class FilePath;
 
+namespace base {
+class EnvironmentVariableGetter;
+}
+
 class ShellIntegration {
  public:
   // Sets Chrome as default browser (only for current user). Returns false if
@@ -69,7 +73,8 @@ class ShellIntegration {
       const string16& extension_app_id);
 
 #if defined(USE_X11)
-  static bool GetDesktopShortcutTemplate(std::string* output);
+  static bool GetDesktopShortcutTemplate(
+      base::EnvironmentVariableGetter* env_getter, std::string* output);
 
   // Returns filename for .desktop file based on |url|, sanitized for security.
   static FilePath GetDesktopShortcutFilename(const GURL& url);

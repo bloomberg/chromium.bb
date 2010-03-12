@@ -14,6 +14,7 @@
 
 #include "base/callback.h"
 #include "base/file_util.h"
+#include "base/linux_util.h"
 #include "base/md5.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
@@ -256,9 +257,14 @@ bool CreateShortcutTask::CreateShortcut() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
 
 #if defined(OS_LINUX)
+  scoped_ptr<base::EnvironmentVariableGetter> env_getter(
+      base::EnvironmentVariableGetter::Create());
+
   std::string shortcut_template;
-  if (!ShellIntegration::GetDesktopShortcutTemplate(&shortcut_template))
+  if (!ShellIntegration::GetDesktopShortcutTemplate(env_getter.get(),
+                                                    &shortcut_template)) {
     return false;
+  }
   ShellIntegration::CreateDesktopShortcut(shortcut_info_, shortcut_template);
   return true;  // assuming always success.
 #elif defined(OS_WIN)
