@@ -16,6 +16,8 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
  public:
   enum TranslateState {
     kBeforeTranslate = 1,
+    // TODO(playmobil or erg): remove kTranslating state when mac and linux code
+    // have been updated to use transaction_pending() instead.
     kTranslating,
     kAfterTranslate,
     kTranslationFailed,
@@ -36,6 +38,7 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   void ModifyOriginalLanguage(int lang_index);
   void ModifyTargetLanguage(int lang_index);
   void Translate();
+  void RevertTranslation();
   void TranslationDeclined();
   bool IsLanguageBlacklisted();
   void ToggleLanguageBlacklist();
@@ -64,6 +67,9 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   }
   TranslateState state() const {
     return state_;
+  }
+  bool translation_pending() const {
+    return translation_pending_;
   }
 
   // Retrieve the text for the toolbar label.  The toolbar label is a bit
@@ -110,6 +116,7 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   TabContents* tab_contents_;  // Weak.
   TranslatePrefs prefs_;
   TranslateState state_;
+  bool translation_pending_;
   std::string site_;
   int original_lang_index_;
   int target_lang_index_;

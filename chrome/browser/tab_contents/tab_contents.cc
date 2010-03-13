@@ -806,6 +806,11 @@ void TabContents::TranslatePage(const std::string& source_lang,
   render_view_host()->TranslatePage(entry->page_id(), source_lang, target_lang);
 }
 
+void TabContents::RevertTranslatedPage() {
+  // TODO(jcampan): revert translated page to original and remove translate
+  // infobar.
+}
+
 ConstrainedWindow* TabContents::CreateConstrainedDialog(
       ConstrainedWindowDelegate* delegate) {
   ConstrainedWindow* window =

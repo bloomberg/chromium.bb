@@ -42,6 +42,7 @@ void TranslateInfoBarDelegate::InfoBarClosed() {
 // TranslateInfoBarDelegate: public: -------------------------------------------
 
 void TranslateInfoBarDelegate::UpdateState(TranslateState new_state) {
+  translation_pending_ = false;
   if (state_ != new_state)
     state_ = new_state;
 }
@@ -67,9 +68,15 @@ void TranslateInfoBarDelegate::GetAvailableTargetLanguages(
 }
 
 void TranslateInfoBarDelegate::Translate() {
-  if (state_ == kBeforeTranslate)
-    UpdateState(kTranslating);
+  // We only really send page for translation if original and target languages
+  // are different, so only in this case is translation really pending.
+  if (original_lang_index_ != target_lang_index_)
+    translation_pending_ = true;
   tab_contents_->TranslatePage(original_lang_code(), target_lang_code());
+}
+
+void TranslateInfoBarDelegate::RevertTranslation() {
+  tab_contents_->RevertTranslatedPage();
 }
 
 void TranslateInfoBarDelegate::TranslationDeclined() {
@@ -224,6 +231,7 @@ TranslateInfoBarDelegate::TranslateInfoBarDelegate(TabContents* tab_contents,
       tab_contents_(tab_contents),
       prefs_(user_prefs),
       state_(state),
+      translation_pending_(false),
       site_(url.HostNoBrackets()),
       original_lang_index_(original_lang_index),
       target_lang_index_(target_lang_index),
