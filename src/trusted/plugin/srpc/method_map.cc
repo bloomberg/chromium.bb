@@ -84,7 +84,8 @@ char* MethodInfo::TypeName(NaClSrpcArgType type) {
 
 bool InitSrpcArgArray(NaClSrpcArg* arr, int size) {
   arr->tag = NACL_SRPC_ARG_TYPE_VARIANT_ARRAY;
-  arr->u.vaval.varr = new(std::nothrow) NaClSrpcArg[size];
+  arr->u.vaval.varr = reinterpret_cast<NaClSrpcArg*>(
+      calloc(size, sizeof(*(arr->u.vaval.varr))));
   if (NULL == arr->u.vaval.varr) {
     arr->u.vaval.count = 0;
     return false;
@@ -114,7 +115,7 @@ void FreeSrpcArg(NaClSrpcArg* arg) {
       break;
     case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
       if (arg->u.vaval.varr) {
-        for (uint32_t i=0; i < arg->u.vaval.count; i++) {
+        for (uint32_t i = 0; i < arg->u.vaval.count; i++) {
           FreeSrpcArg(&arg->u.vaval.varr[i]);
         }
       }

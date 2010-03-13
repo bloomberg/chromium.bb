@@ -118,7 +118,8 @@ NaClSrpcArg* SrpcClient::GetSignatureObject() {
     return NULL;
   }
   uint32_t method_count = NaClSrpcServiceMethodCount(srpc_channel_.client);
-  NaClSrpcArg* ret_array = new(std::nothrow) NaClSrpcArg;
+  NaClSrpcArg* ret_array = reinterpret_cast<NaClSrpcArg*>(
+      calloc(1, sizeof(*ret_array)));
   if ((NULL == ret_array) || !InitSrpcArgArray(ret_array, method_count)) {
     if (0 != method_count) {
       return NULL;

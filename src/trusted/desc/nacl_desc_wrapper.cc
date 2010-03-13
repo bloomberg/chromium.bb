@@ -189,12 +189,13 @@ DescWrapper* DescWrapperFactory::MakeImcSock(NaClHandle handle) {
   struct NaClDescImcDesc* imc_desc = NULL;
   DescWrapper* wrapper = NULL;
 
-  imc_desc = new(std::nothrow) NaClDescImcDesc;
+  imc_desc = reinterpret_cast<NaClDescImcDesc*>(
+      calloc(1, sizeof(*imc_desc)));
   if (NULL == imc_desc) {
     goto cleanup;
   }
   if (!NaClDescImcDescCtor(imc_desc, handle)) {
-    delete imc_desc;
+    free(imc_desc);
     imc_desc = NULL;
     goto cleanup;
   }
@@ -232,7 +233,8 @@ DescWrapper* DescWrapperFactory::ImportShmHandle(NaClHandle handle,
   struct NaClDescImcShm* imc_desc = NULL;
   DescWrapper* wrapper = NULL;
 
-  imc_desc = new(std::nothrow) NaClDescImcShm;
+  imc_desc = reinterpret_cast<NaClDescImcShm*>(
+      calloc(1, sizeof(*imc_desc)));
   if (NULL == imc_desc) {
     goto cleanup;
   }
@@ -263,7 +265,8 @@ DescWrapper* DescWrapperFactory::ImportSysvShm(int key, size_t size) {
     // Avoid overflow when casting to nacl_off64_t by preventing negative size.
     goto cleanup;
   }
-  sysv_desc = new(std::nothrow) NaClDescSysvShm;
+  sysv_desc = reinterpret_cast<NaClDescSysvShm*>(
+      calloc(1, sizeof(*sysv_desc)));
   if (NULL == sysv_desc) {
     goto cleanup;
   }
@@ -338,7 +341,8 @@ DescWrapper* DescWrapperFactory::ImportSyncSocket(base::SyncSocket* sock) {
   struct NaClDescSyncSocket* ss_desc = NULL;
   DescWrapper* wrapper = NULL;
 
-  ss_desc = new(std::nothrow) NaClDescSyncSocket;
+  ss_desc = reinterpret_cast<NaClDescSyncSocket*>(
+      calloc(1, sizeof(*ss_desc)));
   if (NULL == ss_desc) {
     goto cleanup;
   }
@@ -389,7 +393,8 @@ DescWrapper* DescWrapperFactory::MakeSocketAddress(const char* str) {
   // since NACL_PATH_MAX >= len + 1 from above.
   strncpy(sock_addr.path, str, len + 1);
   // Create a NaClDescConnCap from the socket address.
-  conn_cap = new(std::nothrow) NaClDescConnCap;
+  conn_cap = reinterpret_cast<NaClDescConnCap*>(
+      calloc(1, sizeof(*conn_cap)));
   if (NULL == conn_cap) {
     goto cleanup;
   }
@@ -452,7 +457,8 @@ DescWrapper* DescWrapperFactory::OpenHostFile(const char* fname,
   struct NaClDescIoDesc *ndiodp = NULL;
   DescWrapper* wrapper = NULL;
 
-  nhdp = new(std::nothrow) struct NaClHostDesc;
+  nhdp = reinterpret_cast<struct NaClHostDesc*>(
+      calloc(1, sizeof(*nhdp)));
   if (NULL == nhdp) {
     goto cleanup;
   }
@@ -604,7 +610,8 @@ ssize_t DescWrapper::SendMsg(const MsgHeader* dgram, int flags) {
   if (kSizeTMax / sizeof(NaClImcMsgIoVec) <= diov_length) {
     goto cleanup;
   }
-  header.iov = new(std::nothrow) NaClImcMsgIoVec[dgram->iov_length];
+  header.iov = reinterpret_cast<NaClImcMsgIoVec*>(
+      calloc(dgram->iov_length, sizeof(*(header.iov))));
   if (NULL == header.iov) {
     goto cleanup;
   }
@@ -620,7 +627,8 @@ ssize_t DescWrapper::SendMsg(const MsgHeader* dgram, int flags) {
   if (kSizeTMax / sizeof(header.ndescv[0]) <= ddescv_length) {
     goto cleanup;
   }
-  header.ndescv = new(std::nothrow) NaClDesc*[dgram->ndescv_length];
+  header.ndescv = reinterpret_cast<NaClDesc**>(
+      calloc(dgram->ndescv_length, sizeof(*(header.ndescv))));
   if (NULL == header.iov) {
     goto cleanup;
   }
@@ -654,7 +662,8 @@ ssize_t DescWrapper::RecvMsg(MsgHeader* dgram, int flags) {
   if (kSizeTMax / sizeof(NaClImcMsgIoVec) <= diov_length) {
     goto cleanup;
   }
-  header.iov = new(std::nothrow) NaClImcMsgIoVec[dgram->iov_length];
+  header.iov = reinterpret_cast<NaClImcMsgIoVec*>(
+      calloc(dgram->iov_length, sizeof(*(header.iov))));
   if (NULL == header.iov) {
     goto cleanup;
   }
@@ -670,7 +679,8 @@ ssize_t DescWrapper::RecvMsg(MsgHeader* dgram, int flags) {
   if (kSizeTMax / sizeof(header.ndescv[0]) <= ddescv_length) {
     goto cleanup;
   }
-  header.ndescv = new(std::nothrow) NaClDesc*[dgram->ndescv_length];
+  header.ndescv = reinterpret_cast<NaClDesc**>(
+      calloc(dgram->ndescv_length, sizeof(*(header.ndescv))));
   if (NULL == header.ndescv) {
     goto cleanup;
   }

@@ -37,7 +37,8 @@ int main(int argc, char* argv[]) {
   // via sel_ldr not using sel_universal or a plugin
   if (stand_alone) {
     // Build the service.
-    NaClSrpcService* service = new(std::nothrow) NaClSrpcService;
+    NaClSrpcService* service = reinterpret_cast<NaClSrpcService*>(
+        calloc(1, sizeof(*service)));
     if (NULL == service) {
       return 1;
     }

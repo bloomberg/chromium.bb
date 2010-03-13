@@ -105,7 +105,8 @@ NPNavigator::~NPNavigator() {
 NaClSrpcError NPNavigator::Initialize(NaClSrpcChannel* channel,
                                       NaClSrpcImcDescType upcall_desc) {
   // Remember the upcall service port on the navigator.
-  NaClSrpcChannel* upcall_channel = new(std::nothrow) NaClSrpcChannel;
+  NaClSrpcChannel* upcall_channel = reinterpret_cast<NaClSrpcChannel*>(
+      calloc(1, sizeof(*upcall_channel)));
   if (NULL == upcall_channel) {
     DebugPrintf("  Error: couldn't create upcall_channel \n");
     delete navigator;
@@ -113,7 +114,7 @@ NaClSrpcError NPNavigator::Initialize(NaClSrpcChannel* channel,
   }
   if (!NaClSrpcClientCtor(upcall_channel, upcall_desc)) {
     DebugPrintf("  Error: couldn't create SRPC upcall client\n");
-    delete upcall_channel;
+    free(upcall_channel);
     delete navigator;
     return NACL_SRPC_RESULT_APP_ERROR;
   }

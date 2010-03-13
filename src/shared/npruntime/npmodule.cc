@@ -48,7 +48,8 @@ NPModule::NPModule(NaClSrpcChannel* channel)
   // Remember the bridge for this channel.
   channel->server_instance_data = static_cast<void*>(this);
   // Set up a service for the browser-provided NPN methods.
-  NaClSrpcService* service = new(std::nothrow) NaClSrpcService;
+  NaClSrpcService* service = reinterpret_cast<NaClSrpcService*>(
+      calloc(1, sizeof(*service)));
   if (NULL == service) {
     DebugPrintf("Couldn't create upcall services.\n");
     return;

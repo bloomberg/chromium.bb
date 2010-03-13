@@ -56,11 +56,12 @@ NaClSrpcError NPNavigatorRpcServer::NP_SetUpcallServices(
     char* service_string) {
   const char* sd_string = (const char*) service_string;
   nacl::DebugPrintf("SetUpcallServices: %s\n", sd_string);
-  NaClSrpcService* service = new(std::nothrow) NaClSrpcService;
+  NaClSrpcService* service = reinterpret_cast<NaClSrpcService*>(
+      calloc(1, sizeof(*service)));
   if (NULL == service)
     return NACL_SRPC_RESULT_APP_ERROR;
   if (!NaClSrpcServiceStringCtor(service, sd_string)) {
-    delete service;
+    free(service);
     return NACL_SRPC_RESULT_APP_ERROR;
   }
   channel->client = service;
