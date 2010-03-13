@@ -119,8 +119,16 @@
   // let the icon handle the click.
   const BOOL ctrlKey = ([theEvent modifierFlags] & NSControlKeyMask) != 0;
   for (AutocompleteTextFieldIcon* icon in [cell layedOutIcons:bounds]) {
-    if (NSMouseInRect(location, [icon rect], flipped) && !ctrlKey) {
-      [icon view]->OnMousePressed([icon rect]);
+    if (NSMouseInRect(location, [icon rect], flipped)) {
+      if (ctrlKey) {
+        // If the click was a Ctrl+Click, then imitate a right click and open
+        // the contextual menu.
+        NSText* editor = [self currentEditor];
+        NSMenu* menu = [editor menuForEvent:theEvent];
+        [NSMenu popUpContextMenu:menu withEvent:theEvent forView:editor];
+      } else {
+        [icon view]->OnMousePressed([icon rect]);
+      }
       return;
     }
   }
