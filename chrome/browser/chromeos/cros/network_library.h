@@ -44,6 +44,7 @@ struct WifiNetwork {
         ssid(service.name),
         encrypted(service.passphrase_required),
         encryption(service.security),
+        passphrase(service.passphrase),
         strength(service.strength),
         connecting(connecting),
         connected(connected),
@@ -59,6 +60,7 @@ struct WifiNetwork {
   std::string ssid;
   bool encrypted;
   chromeos::ConnectionSecurity encryption;
+  std::string passphrase;
   int strength;
   bool connecting;
   bool connected;

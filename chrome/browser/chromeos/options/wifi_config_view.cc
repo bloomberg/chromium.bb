@@ -103,6 +103,8 @@ void WifiConfigView::Init() {
     passphrase_textfield_ = new views::Textfield(
         views::Textfield::STYLE_PASSWORD);
     passphrase_textfield_->SetController(this);
+    if (!wifi_.passphrase.empty())
+      passphrase_textfield_->SetText(UTF8ToUTF16(wifi_.passphrase));
     layout->AddView(passphrase_textfield_);
     layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   }

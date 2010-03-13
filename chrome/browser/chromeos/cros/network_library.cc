@@ -93,11 +93,20 @@ void NetworkLibrary::ConnectToWifiNetwork(WifiNetwork network,
 void NetworkLibrary::ConnectToWifiNetwork(const string16& ssid,
                                           const string16& password) {
   if (CrosLibrary::EnsureLoaded()) {
-    // TODO(chocobo): Implement connect to hidden network.
     // First create a service from hidden network.
-    // Now connect to that service..
-//    chromeos::ConnectToNetwork(service_path,
-//        password.empty() ? NULL : UTF16ToUTF8(password).c_str());
+    chromeos::ServiceInfo* service =
+        chromeos::GetWifiService(UTF16ToUTF8(ssid).c_str(),
+                                 chromeos::SECURITY_UNKNOWN);
+    // Now connect to that service.
+    if (service) {
+      chromeos::ConnectToNetwork(service->service_path,
+          password.empty() ? NULL : UTF16ToUTF8(password).c_str());
+      // Clean up ServiceInfo object.
+      chromeos::FreeServiceInfo(service);
+    } else {
+      LOG(WARNING) << "Cannot find hidden network: " << ssid;
+      // TODO(chocobo): Show error message.
+    }
   }
 }
 
