@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -176,7 +176,7 @@ void* CrossCallParamsEx::GetRawParameter(size_t index, size_t* size,
 }
 
 // Covers common case for 32 bit integers.
-bool CrossCallParamsEx::GetParameter32(size_t index, void* param) {
+bool CrossCallParamsEx::GetParameter32(size_t index, uint32* param) {
   size_t size = 0;
   ArgType type;
   void* start = GetRawParameter(index, &size, &type);
@@ -185,6 +185,17 @@ bool CrossCallParamsEx::GetParameter32(size_t index, void* param) {
   }
   // Copy the 4 bytes.
   *(reinterpret_cast<uint32*>(param)) = *(reinterpret_cast<uint32*>(start));
+  return true;
+}
+
+bool CrossCallParamsEx::GetParameterVoidPtr(size_t index, void** param) {
+  size_t size = 0;
+  ArgType type;
+  void* start = GetRawParameter(index, &size, &type);
+  if ((NULL == start) || (sizeof(void*) != size) || (VOIDPTR_TYPE != type)) {
+    return false;
+  }
+  *param = *(reinterpret_cast<void**>(start));
   return true;
 }
 

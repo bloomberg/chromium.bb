@@ -150,10 +150,10 @@ SBOX_TESTS_COMMAND int PolicyTargetTest_process(int argc, wchar_t **argv) {
   STARTUPINFO startup_info = {0};
   startup_info.cb = sizeof(startup_info);
   PROCESS_INFORMATION process_info;
-  ::CreateProcess(L"foo.exe", L"foo.exe", NULL, NULL, FALSE, 0, NULL, NULL,
-                  &startup_info, &process_info);
-
-  return SBOX_TEST_SUCCEEDED;
+  if (!::CreateProcessW(L"foo.exe", L"foo.exe", NULL, NULL, FALSE, 0,
+                        NULL, NULL, &startup_info, &process_info))
+    return SBOX_TEST_SUCCEEDED;
+  return SBOX_TEST_FAILED;
 }
 
 TEST(PolicyTargetTest, SetInformationThread) {
@@ -194,8 +194,6 @@ TEST(PolicyTargetTest, OpenThreadTokenEx) {
   EXPECT_EQ(ERROR_NO_TOKEN, runner.RunTest(L"PolicyTargetTest_token3"));
 }
 
-#if !defined(_WIN64)
-// Bug 27218: We don't have dispatch for some x64 syscalls.
 TEST(PolicyTargetTest, OpenThread) {
   TestRunner runner;
   EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(L"PolicyTargetTest_thread")) <<
@@ -210,6 +208,8 @@ TEST(PolicyTargetTest, OpenProcess) {
   EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(L"PolicyTargetTest_process")) <<
       "Opens a process";
 }
+
+#if !defined(_WIN64)
 
 // Launches the app in the sandbox and ask it to wait in an
 // infinite loop. Waits for 2 seconds and then check if the

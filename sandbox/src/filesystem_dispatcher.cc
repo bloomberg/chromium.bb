@@ -44,7 +44,7 @@ FilesystemDispatcher::FilesystemDispatcher(PolicyBase* policy_base)
   };
 
   static const IPCCall set_info = {
-    {IPC_NTSETINFO_RENAME_TAG, ULONG_TYPE, INOUTPTR_TYPE, INOUTPTR_TYPE,
+    {IPC_NTSETINFO_RENAME_TAG, VOIDPTR_TYPE, INOUTPTR_TYPE, INOUTPTR_TYPE,
      ULONG_TYPE, ULONG_TYPE},
     reinterpret_cast<CallbackGeneric>(
         &FilesystemDispatcher::NtSetInformationFile)

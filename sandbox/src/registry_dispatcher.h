@@ -1,9 +1,9 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SANDBOX_SRC_REGISTRY_DISPATCHER_H__
-#define SANDBOX_SRC_REGISTRY_DISPATCHER_H__
+#ifndef SANDBOX_SRC_REGISTRY_DISPATCHER_H_
+#define SANDBOX_SRC_REGISTRY_DISPATCHER_H_
 
 #include "base/basictypes.h"
 #include "sandbox/src/crosscall_server.h"
@@ -23,12 +23,12 @@ class RegistryDispatcher : public Dispatcher {
  private:
   // Processes IPC requests coming from calls to NtCreateKey in the target.
   bool NtCreateKey(IPCInfo* ipc, std::wstring* name, DWORD attributes,
-                   DWORD root_directory, DWORD desired_access,
+                   HANDLE root, DWORD desired_access,
                    DWORD title_index, DWORD create_options);
 
   // Processes IPC requests coming from calls to NtOpenKey in the target.
   bool NtOpenKey(IPCInfo* ipc, std::wstring* name, DWORD attributes,
-                 DWORD root_directory, DWORD desired_access);
+                 HANDLE root, DWORD desired_access);
 
   PolicyBase* policy_base_;
   DISALLOW_EVIL_CONSTRUCTORS(RegistryDispatcher);
@@ -36,4 +36,4 @@ class RegistryDispatcher : public Dispatcher {
 
 }  // namespace sandbox
 
-#endif  // SANDBOX_SRC_REGISTRY_DISPATCHER_H__
+#endif  // SANDBOX_SRC_REGISTRY_DISPATCHER_H_

@@ -42,13 +42,13 @@ namespace sandbox {
 RegistryDispatcher::RegistryDispatcher(PolicyBase* policy_base)
     : policy_base_(policy_base) {
   static const IPCCall create_params = {
-    {IPC_NTCREATEKEY_TAG, WCHAR_TYPE, ULONG_TYPE, ULONG_TYPE, ULONG_TYPE,
+    {IPC_NTCREATEKEY_TAG, WCHAR_TYPE, ULONG_TYPE, VOIDPTR_TYPE, ULONG_TYPE,
      ULONG_TYPE, ULONG_TYPE},
     reinterpret_cast<CallbackGeneric>(&RegistryDispatcher::NtCreateKey)
   };
 
   static const IPCCall open_params = {
-    {IPC_NTOPENKEY_TAG, WCHAR_TYPE, ULONG_TYPE, ULONG_TYPE, ULONG_TYPE},
+    {IPC_NTOPENKEY_TAG, WCHAR_TYPE, ULONG_TYPE, VOIDPTR_TYPE, ULONG_TYPE},
     reinterpret_cast<CallbackGeneric>(&RegistryDispatcher::NtOpenKey)
   };
 
@@ -72,13 +72,10 @@ bool RegistryDispatcher::SetupService(InterceptionManager* manager,
 }
 
 bool RegistryDispatcher::NtCreateKey(
-    IPCInfo* ipc, std::wstring* name, DWORD attributes, DWORD root_directory,
+    IPCInfo* ipc, std::wstring* name, DWORD attributes, HANDLE root,
     DWORD desired_access, DWORD title_index, DWORD create_options) {
   ScopedHandle root_handle;
   std::wstring real_path = *name;
-
-  HANDLE root = reinterpret_cast<HANDLE>(
-                    static_cast<ULONG_PTR>(root_directory));
 
   // If there is a root directory, we need to duplicate the handle to make
   // it valid in this process.
@@ -121,13 +118,10 @@ bool RegistryDispatcher::NtCreateKey(
 }
 
 bool RegistryDispatcher::NtOpenKey(IPCInfo* ipc, std::wstring* name,
-                                   DWORD attributes, DWORD root_directory,
+                                   DWORD attributes, HANDLE root,
                                    DWORD desired_access) {
   ScopedHandle root_handle;
   std::wstring real_path = *name;
-
-  HANDLE root = reinterpret_cast<HANDLE>(
-                    static_cast<ULONG_PTR>(root_directory));
 
   // If there is a root directory, we need to duplicate the handle to make
   // it valid in this process.
