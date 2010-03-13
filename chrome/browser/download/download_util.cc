@@ -103,8 +103,10 @@ const FilePath& GetDefaultDownloadDirectory() {
 }
 
 bool CreateTemporaryFileForDownload(FilePath* temp_file) {
-  return file_util::CreateTemporaryFileInDir(
-      GetDefaultDownloadDirectory(), temp_file);
+  if (file_util::CreateTemporaryFileInDir(GetDefaultDownloadDirectory(),
+                                          temp_file))
+    return true;
+  return file_util::CreateTemporaryFile(temp_file);
 }
 
 bool DownloadPathIsDangerous(const FilePath& download_path) {
