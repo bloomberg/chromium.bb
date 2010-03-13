@@ -600,12 +600,15 @@ void RenderWidgetHostViewMac::ShutdownHost() {
 
 namespace {
 
-// Adjusts an NSRect in screen coordinates to have an origin in the upper left,
-// and stuffs it into a gfx::Rect. This is likely incorrect for a multiple-
-// monitor setup.
-gfx::Rect NSRectToRect(const NSRect rect, NSScreen* screen) {
+// Adjusts an NSRect in Cocoa screen coordinates to have an origin in the upper
+// left of the primary screen (Carbon coordinates), and stuffs it into a
+// gfx::Rect.
+gfx::Rect NSRectToRect(const NSRect rect) {
   gfx::Rect new_rect(NSRectToCGRect(rect));
-  new_rect.set_y([screen frame].size.height - new_rect.y() - new_rect.height());
+  if ([[NSScreen screens] count] > 0) {
+    new_rect.set_y([[[NSScreen screens] objectAtIndex:0] frame].size.height -
+                   new_rect.y() - new_rect.height());
+  }
   return new_rect;
 }
 
@@ -629,7 +632,7 @@ gfx::Rect RenderWidgetHostViewMac::GetWindowRect() {
   NSRect bounds = [cocoa_view_ bounds];
   bounds = [cocoa_view_ convertRect:bounds toView:nil];
   bounds.origin = [enclosing_window convertBaseToScreen:bounds.origin];
-  return NSRectToRect(bounds, [[cocoa_view_ window] screen]);
+  return NSRectToRect(bounds);
 }
 
 gfx::Rect RenderWidgetHostViewMac::GetRootWindowRect() {
@@ -648,7 +651,7 @@ gfx::Rect RenderWidgetHostViewMac::GetRootWindowRect() {
     enclosing_window = [enclosing_window parentWindow];
 
   NSRect bounds = [enclosing_window frame];
-  return NSRectToRect(bounds, [enclosing_window screen]);
+  return NSRectToRect(bounds);
 }
 
 void RenderWidgetHostViewMac::SetActive(bool active) {

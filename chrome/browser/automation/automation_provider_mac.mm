@@ -22,10 +22,11 @@ void AutomationProvider::SetWindowBounds(int handle, const gfx::Rect& bounds,
   if (window) {
     NSRect new_bounds = NSRectFromCGRect(bounds.ToCGRect());
 
-    // This is likely incorrect for a multiple-monitor setup; OK because this
-    // is used only for testing purposes.
-    new_bounds.origin.y = [[window screen] frame].size.height -
-        new_bounds.origin.y - new_bounds.size.height;
+    if ([[NSScreen screens] count] > 0) {
+      new_bounds.origin.y =
+          [[[NSScreen screens] objectAtIndex:0] frame].size.height -
+          new_bounds.origin.y - new_bounds.size.height;
+    }
 
     [window setFrame:new_bounds display:NO];
     *success = true;
