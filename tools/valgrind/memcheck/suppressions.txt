@@ -57,6 +57,31 @@
    fun:pango_font_get_metrics
 }
 {
+   pango_font_leak_todo_3
+   Memcheck:Leak
+   ...
+   fun:FcFontRenderPrepare
+   obj:*
+   obj:*
+   fun:pango_itemize_with_base_dir
+}
+{
+   pango_font_leak_todo_4
+   Memcheck:Leak
+   ...
+   fun:FcFontRenderPrepare
+   ...
+   fun:pango_ot_buffer_output
+}
+{
+   pango_font_leak_todo_5
+   Memcheck:Leak
+   ...
+   fun:FcFontRenderPrepare
+   obj:*
+   fun:pango_context_get_metrics
+}
+{
    # Fontconfig leak, seen in shard 16 of 20 of ui_tests
    # See https://bugs.freedesktop.org/show_bug.cgi?id=8428
    # and http://www.gnome.org/~johan/gtk.suppression
@@ -650,7 +675,7 @@
    # ditto, but tweaked for cat hit by URLFetcherTest.SameThreadsTest on bot
    bug_16089c
    Memcheck:Leak
-   fun:_Znw*
+   ...
    fun:_ZN4base22LinuxDynamicThreadPool8PostTaskEP4Task
    ...
    fun:_ZN3net13TCPConnectJob13DoResolveHostEv
@@ -660,6 +685,7 @@
    bug_16089d
    Memcheck:Leak
    fun:*
+   ...
    fun:_ZN4base22LinuxDynamicThreadPool8PostTaskEP4Task
    ...
    fun:_ZN3net16HostResolverImpl3Job5StartEv
@@ -1617,7 +1643,7 @@
    Memcheck:Cond
    fun:child_location_foreach
    fun:gtk_fixed_forall
-   fun:gtk_container_forall
+   ...
    fun:find_widget_under_pointer
    fun:gtk_tooltip_show_tooltip
    fun:tooltip_popup_timeout
@@ -2413,4 +2439,15 @@
    fun:_ZNK6WebKit15WebImageDecoder15getFrameAtIndexEi
    fun:_Z11VerifyImageRKN6WebKit15WebImageDecoderERK8FilePathS5_j
    fun:_ZNK16ImageDecoderTest22TestWebKitImageDecoderERK8FilePathS2_i
+}
+{
+   bug_38138
+   Memcheck:Param
+   write(buf)
+   obj:*
+   fun:_ZN3IPC7Channel11ChannelImpl23ProcessOutgoingMessagesEv
+   ...
+   fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
+   fun:_ZN11MessageLoop11RunInternalEv
+   fun:_ZN11MessageLoop10RunHandlerEv
 }
