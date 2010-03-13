@@ -22,7 +22,7 @@
 #include "grit/theme_resources.h"
 
 #if defined(OS_WIN)
-#include "app/gfx/icon_util.h"
+#include "gfx/icon_util.h"
 #endif
 
 static bool g_initialized = false;

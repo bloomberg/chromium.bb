@@ -1,4 +1,4 @@
-// Copyright (c)2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,13 +12,13 @@
 #include "app/gfx/canvas.h"
 #include "app/gfx/favicon_size.h"
 #include "app/gfx/font.h"
-#include "app/gfx/icon_util.h"
 #include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
 #include "app/resource_bundle.h"
 #include "app/table_model.h"
 #include "base/string_util.h"
 #include "base/win_util.h"
+#include "gfx/icon_util.h"
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColorFilter.h"

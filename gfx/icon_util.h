@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_GFX_ICON_UTIL_H_
-#define APP_GFX_ICON_UTIL_H_
+#ifndef GFX_ICON_UTIL_H_
+#define GFX_ICON_UTIL_H_
 
 #include <windows.h>
 #include <string>
@@ -193,4 +193,4 @@ class IconUtil {
   DISALLOW_IMPLICIT_CONSTRUCTORS(IconUtil);
 };
 
-#endif  // APP_GFX_ICON_UTIL_H_
+#endif  // GFX_ICON_UTIL_H_

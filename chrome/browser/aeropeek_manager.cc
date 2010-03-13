@@ -8,7 +8,6 @@
 #include <shobjidl.h>
 
 #include "app/gfx/gdi_util.h"
-#include "app/gfx/icon_util.h"
 #include "app/gfx/insets.h"
 #include "app/win_util.h"
 #include "app/win/window_impl.h"
@@ -29,6 +28,7 @@
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
+#include "gfx/icon_util.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"

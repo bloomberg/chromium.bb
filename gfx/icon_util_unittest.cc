@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include "app/app_paths.h"
-#include "app/gfx/icon_util.h"
 #include "base/gfx/size.h"
 #include "base/scoped_ptr.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "gfx/icon_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

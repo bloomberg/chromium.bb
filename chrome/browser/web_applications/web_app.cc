@@ -36,8 +36,8 @@
 #endif  // defined(OS_LINUX)
 
 #if defined(OS_WIN)
-#include "app/gfx/icon_util.h"
 #include "base/win_util.h"
+#include "gfx/icon_util.h"
 #endif  // defined(OS_WIN)
 
 namespace {

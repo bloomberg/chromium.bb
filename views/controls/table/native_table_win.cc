@@ -1,6 +1,6 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved. Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "views/controls/table/native_table_win.h"
 
@@ -9,12 +9,12 @@
 
 #include "app/gfx/canvas.h"
 #include "app/gfx/favicon_size.h"
-#include "app/gfx/icon_util.h"
 #include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
 #include "app/table_model.h"
 #include "base/logging.h"
 #include "base/win_util.h"
+#include "gfx/icon_util.h"
 #include "skia/ext/skia_utils_win.h"
 #include "views/controls/table/table_view2.h"
 #include "views/controls/table/table_view_observer.h"

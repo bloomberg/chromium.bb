@@ -43,7 +43,6 @@
         'gfx/codec/png_codec_unittest.cc',
         'gfx/color_utils_unittest.cc',
         'gfx/font_unittest.cc',
-        'gfx/icon_util_unittest.cc',
         'gfx/insets_unittest.cc',
         'gfx/native_theme_win_unittest.cc',
         'gfx/skbitmap_operations_unittest.cc',
@@ -72,7 +71,6 @@
         }],
         ['OS!="win"', {
           'sources!': [
-            'gfx/icon_util_unittest.cc',
             'gfx/native_theme_win_unittest.cc',
             'os_exchange_data_win_unittest.cc',
             'win_util_unittest.cc',

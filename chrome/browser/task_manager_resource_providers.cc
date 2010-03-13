@@ -6,13 +6,6 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_WIN)
-#include <atlbase.h>
-#endif  // defined(OS_WIN)
-
-#if defined(OS_WIN)
-#include "app/gfx/icon_util.h"
-#endif  // defined(OS_WIN)
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/basictypes.h"
@@ -44,6 +37,10 @@
 #if defined(OS_MACOSX)
 #include "skia/ext/skia_utils_mac.h"
 #endif
+#if defined(OS_WIN)
+#include <atlbase.h>
+#include "gfx/icon_util.h"
+#endif  // defined(OS_WIN)
 
 ////////////////////////////////////////////////////////////////////////////////
 // TaskManagerTabContentsResource class
