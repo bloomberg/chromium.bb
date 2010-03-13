@@ -2828,7 +2828,6 @@ BUG37896 WIN LINUX : editing/pasteboard/paste-text-at-tabspan-001.html = TEXT
 BUG37896 WIN LINUX : editing/pasteboard/paste-text-at-tabspan-002.html = TEXT
 BUG37896 WIN LINUX : editing/style/font-family-with-space.html = TEXT
 BUG37896 WIN LINUX : editing/style/smoosh-styles-001.html = TEXT
-BUG37896 WIN LINUX : editing/style/style-boundary-005.html = TEXT
 BUG37896 WIN : editing/undo/undo-smart-delete-word.html = TEXT
 BUG37896 MAC LINUX : fast/backgrounds/animated-svg-as-background.html = IMAGE
 BUG37896 MAC LINUX : fast/dom/Window/window-appendages-cleared.html = TEXT
@@ -2868,3 +2867,29 @@ BUG_DGLAZKOV MAC LINUX : fast/dom/HTMLAnchorElement/set-href-attribute-hostname.
 BUG_DGLAZKOV MAC LINUX : fast/dom/HTMLAnchorElement/set-href-attribute-port.html = TEXT
 BUG_DGLAZKOV MAC LINUX : fast/loader/url-parse-1.html = TEXT
 
+// WebKit roll r55853 -> 55940
+// Need rebaseline
+BUG_JIANLI WIN LINUX : editing/deleting/non-smart-delete.html = IMAGE+TEXT
+BUG_JIANLI WIN LINUX : editing/deleting/smart-delete-001.html = TEXT
+BUG_JIANLI WIN LINUX : editing/deleting/smart-delete-002.html = FAIL
+BUG_JIANLI WIN LINUX : editing/deleting/smart-delete-003.html = IMAGE+TEXT
+BUG_JIANLI WIN LINUX : editing/deleting/smart-delete-004.html = IMAGE+TEXT
+BUG_JIANLI WIN LINUX : editing/pasteboard/drag-drop-modifies-page.html = IMAGE+TEXT
+BUG_JIANLI WIN LINUX : editing/pasteboard/smart-drag-drop.html = IMAGE+TEXT
+BUG_JIANLI WIN LINUX : editing/pasteboard/smart-paste-001.html = TEXT
+BUG_JIANLI WIN LINUX : editing/pasteboard/smart-paste-002.html = TEXT
+BUG_JIANLI WIN LINUX : editing/pasteboard/smart-paste-003.html = FAIL
+BUG_JIANLI WIN LINUX : editing/pasteboard/smart-paste-004.html = FAIL
+BUG_JIANLI WIN LINUX : editing/pasteboard/smart-paste-005.html = TEXT
+BUG_JIANLI WIN LINUX : editing/pasteboard/smart-paste-007.html = TEXT
+BUG_JIANLI WIN LINUX : editing/pasteboard/smart-paste-008.html = TEXT
+BUG_JIANLI WIN LINUX : editing/style/style-boundary-005.html = FAIL
+
+// Flaky test
+BUG_JIANLI MAC : fast/forms/select-style.html = IMAGE PASS
+
+// Need investigation
+BUG_JIANLI : plugins/round-trip-npobject.html = TEXT
+BUG_JIANLI WIN LINUX : fast/text/international/plane2.html = IMAGE+TEXT
+BUG_JIANLI WIN LINUX : svg/W3C-SVG-1.1/pservers-grad-17-b.svg = TEXT
+BUG_JIANLI WIN LINUX : svg/custom/dominant-baseline-hanging.svg = TEXT
