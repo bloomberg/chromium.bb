@@ -77,7 +77,6 @@ class TranslateInfoBar : public InfoBar,
   TranslateTextButton* deny_button_;
   views::MenuButton* original_language_menu_button_;
   views::MenuButton* target_language_menu_button_;
-  TranslateTextButton* revert_button_;
   views::MenuButton* options_menu_button_;
 
   scoped_ptr<LanguagesMenuModel> original_language_menu_model_;

@@ -352,9 +352,6 @@ class TabContents : public PageNavigator,
   void TranslatePage(const std::string& source_lang,
                      const std::string& target_lang);
 
-  // Reverts a translated page to original page.
-  void RevertTranslatedPage();
-
   // Window management ---------------------------------------------------------
 
   // Create a new window constrained to this TabContents' clip and visibility.

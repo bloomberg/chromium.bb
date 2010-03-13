@@ -230,7 +230,6 @@ TranslateInfoBar::TranslateInfoBar(TranslateInfoBarDelegate* delegate)
       accept_button_(NULL),
       deny_button_(NULL),
       target_language_menu_button_(NULL),
-      revert_button_(NULL),
       swapped_language_placeholders_(false) {
   // Initialize icon.
   icon_ = new views::ImageView;
@@ -265,22 +264,16 @@ TranslateInfoBar::~TranslateInfoBar() {
 void TranslateInfoBar::UpdateState(
     TranslateInfoBarDelegate::TranslateState new_state) {
   // Create and initialize state-dependent controls if necessary.
-  bool translation_pending = GetDelegate()->translation_pending();
   switch (new_state) {
     case TranslateInfoBarDelegate::kAfterTranslate:
+      CreateLabels();
       if (!target_language_menu_button_) {
-        CreateLabels();
         string16 language_name =
             TranslateInfoBarDelegate::GetDisplayNameForLocale(
                 GetDelegate()->target_lang_code());
         target_language_menu_button_ = CreateMenuButton(kMenuIDTargetLanguage,
             UTF16ToWideHack(language_name));
         AddChildView(target_language_menu_button_);
-      }
-      if (!revert_button_) {
-        revert_button_ = new TranslateTextButton(this,
-            IDS_TRANSLATE_INFOBAR_REVERT);
-        AddChildView(revert_button_);
       }
       break;
 
@@ -299,35 +292,36 @@ void TranslateInfoBar::UpdateState(
       }
       break;
 
+    case TranslateInfoBarDelegate::kTranslating:
+      if (!label_1_)
+        CreateLabels();
+      if (!translating_label_) {
+        translating_label_ = new views::Label(
+            l10n_util::GetString(IDS_TRANSLATE_INFOBAR_TRANSLATING));
+        translating_label_->SetColor(SK_ColorBLACK);
+        translating_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+        AddChildView(translating_label_);
+      }
+      break;
+
     default:
       NOTREACHED() << "Invalid translate state change";
       break;
   }
 
-  // If translation is pending, create "Translating..." label.
-  if (translation_pending && !translating_label_) {
-    translating_label_ = new views::Label(
-        l10n_util::GetString(IDS_TRANSLATE_INFOBAR_TRANSLATING));
-    translating_label_->SetColor(SK_ColorBLACK);
-    translating_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-    AddChildView(translating_label_);
-  }
-
   // Determine visibility of state-dependent controls.
   if (accept_button_)
-    accept_button_->SetVisible(!translation_pending &&
+    accept_button_->SetVisible(
         new_state == TranslateInfoBarDelegate::kBeforeTranslate);
   if (deny_button_)
-    deny_button_->SetVisible(!translation_pending &&
+    deny_button_->SetVisible(
         new_state == TranslateInfoBarDelegate::kBeforeTranslate);
   if (target_language_menu_button_)
     target_language_menu_button_->SetVisible(
         new_state == TranslateInfoBarDelegate::kAfterTranslate);
-  if (revert_button_)
-    revert_button_->SetVisible(!translation_pending &&
-        new_state == TranslateInfoBarDelegate::kAfterTranslate);
   if (translating_label_)
-    translating_label_->SetVisible(translation_pending);
+    translating_label_->SetVisible(
+        new_state == TranslateInfoBarDelegate::kTranslating);
 
   // Trigger layout and repaint.
   Layout();
@@ -374,8 +368,7 @@ void TranslateInfoBar::Layout() {
   gfx::Size translating_ps;
   if (label_3_)
     label3_ps = label_3_->GetPreferredSize();
-  bool translation_pending = GetDelegate()->translation_pending();
-  if (translation_pending)
+  if (state == TranslateInfoBarDelegate::kTranslating)
     translating_ps = translating_label_->GetPreferredSize();
   int text1_width = label1_ps.width();
   int text2_width = label2_ps.width();
@@ -404,48 +397,37 @@ void TranslateInfoBar::Layout() {
       GetSpacingAfterFirstLanguageButton(), InfoBar::OffsetY(this, label2_ps),
       text2_width, label2_ps.height());
 
-  int prev_right = label_2_->bounds().right();
-
   // If second language menu button is available, place it after label_2.
   if (button2) {
     gfx::Size button2_ps = button2->GetPreferredSize();
-    button2->SetBounds(prev_right + InfoBar::kButtonInLabelSpacing,
-        OffsetY(this, button2_ps), button2_ps.width(), button2_ps.height());
-    prev_right = button2->bounds().right();
+    button2->SetBounds(label_2_->bounds().right() +
+        InfoBar::kButtonInLabelSpacing, OffsetY(this, button2_ps),
+        button2_ps.width(), button2_ps.height());
 
     // If label_3 is available, place it after second language menu button.
     if (label_3_) {
       gfx::Size label3_ps = label_3_->GetPreferredSize();
-      label_3_->SetBounds(prev_right + InfoBar::kButtonInLabelSpacing,
-          InfoBar::OffsetY(this, label3_ps), text3_width, label3_ps.height());
-      prev_right = label_3_->bounds().right();
-    }
-
-    // If no translation is pending, layout revert button.
-    if (!translation_pending && revert_button_) {
-      gfx::Size revert_ps = revert_button_->GetPreferredSize();
-      revert_button_->SetBounds(prev_right + InfoBar::kEndOfLabelSpacing,
-          OffsetY(this, revert_ps), revert_ps.width(), revert_ps.height());
+      label_3_->SetBounds(button2->bounds().right() +
+          InfoBar::kButtonInLabelSpacing, InfoBar::OffsetY(this, label3_ps),
+          text3_width, label3_ps.height());
     }
   }
 
-  // If translate state is kBeforeTranslate with no pending translation,
-  // layout accept and deny butons.
-  if (state == TranslateInfoBarDelegate::kBeforeTranslate &&
-      !translation_pending) {
+  // If translate state is kBeforeTranslate, layout accept and deny butons.
+  if (state == TranslateInfoBarDelegate::kBeforeTranslate) {
     gfx::Size accept_ps = accept_button_->GetPreferredSize();
-    accept_button_->SetBounds(prev_right + InfoBar::kEndOfLabelSpacing,
+    accept_button_->SetBounds(
+        (label_3_ ? label_3_->bounds().right() : label_2_->bounds().right()) +
+        InfoBar::kEndOfLabelSpacing,
         OffsetY(this, accept_ps), accept_ps.width(), accept_ps.height());
     gfx::Size deny_ps = deny_button_->GetPreferredSize();
     deny_button_->SetBounds(
         accept_button_->bounds().right() + InfoBar::kButtonButtonSpacing,
         OffsetY(this, deny_ps), deny_ps.width(), deny_ps.height());
-  }
-
-  // If translation is pending, layout "Translating..." label.
-  if (translation_pending) {
+  } else if (state == TranslateInfoBarDelegate::kTranslating) {
+    // If translate state is kTranslating, layout "Translating..." label.
     translating_label_->SetBounds(
-        prev_right + InfoBar::kEndOfLabelSpacing,
+        label_2_->bounds().right() + InfoBar::kEndOfLabelSpacing,
         InfoBar::OffsetY(this, translating_ps),
         translating_width, translating_ps.height());
   }
@@ -502,7 +484,7 @@ void TranslateInfoBar::RunMenu(views::View* source, const gfx::Point& pt) {
     }
 
     case kMenuIDOriginalLanguage: {
-      if (!translating_label_ || !translating_label_->IsVisible()) {
+      if (GetDelegate()->state() != TranslateInfoBarDelegate::kTranslating) {
         if (!original_language_menu_model_.get()) {
           original_language_menu_model_.reset(
               new LanguagesMenuModel(this, GetDelegate(), true));
@@ -518,18 +500,16 @@ void TranslateInfoBar::RunMenu(views::View* source, const gfx::Point& pt) {
     }
 
     case kMenuIDTargetLanguage: {
-      if (!translating_label_ || !translating_label_->IsVisible()) {
-        if (!target_language_menu_model_.get()) {
-          target_language_menu_model_.reset(
-              new LanguagesMenuModel(this, GetDelegate(), false));
-          target_language_menu_menu_.reset(
-              new views::Menu2(target_language_menu_model_.get()));
-        }
-        views::Menu2::Alignment alignment;
-        gfx::Point menu_position = DetermineMenuPositionAndAlignment(
-            target_language_menu_button_, &alignment);
-        target_language_menu_menu_->RunMenuAt(menu_position, alignment);
+      if (!target_language_menu_model_.get()) {
+        target_language_menu_model_.reset(
+            new LanguagesMenuModel(this, GetDelegate(), false));
+        target_language_menu_menu_.reset(
+            new views::Menu2(target_language_menu_model_.get()));
       }
+      views::Menu2::Alignment alignment;
+      gfx::Point menu_position = DetermineMenuPositionAndAlignment(
+          target_language_menu_button_, &alignment);
+      target_language_menu_menu_->RunMenuAt(menu_position, alignment);
       break;
     }
 
@@ -618,8 +598,6 @@ void TranslateInfoBar::ButtonPressed(
   } else if (sender == deny_button_) {
     GetDelegate()->TranslationDeclined();
     RemoveInfoBar();
-  } else if (sender == revert_button_) {
-    GetDelegate()->RevertTranslation();
   } else {  // Let base InfoBar handle close button.
     InfoBar::ButtonPressed(sender, event);
   }
@@ -634,7 +612,9 @@ void TranslateInfoBar::Observe(NotificationType type,
   TabContents* tab = Source<TabContents>(source).ptr();
   if (tab != GetDelegate()->tab_contents())
     return;
-  UpdateState(TranslateInfoBarDelegate::kAfterTranslate);
+  if (!target_language_menu_button_ ||
+      !target_language_menu_button_->IsVisible())
+    UpdateState(TranslateInfoBarDelegate::kAfterTranslate);
 }
 
 // TranslateInfoBar, private: --------------------------------------------------
@@ -733,19 +713,14 @@ void TranslateInfoBar::OnLanguageModified(views::MenuButton* menu_button,
   menu_button->SetText(UTF16ToWideHack(new_language));
   menu_button->ClearMaxTextSize();
   menu_button->SizeToPreferredSize();
-
-  // Clear options menu model so that it'll be created with new language.
-  options_menu_model_.reset();
-
-  // Selecting an item from the "from language" menu in the before translate
-  // phase shouldn't trigger translation - http://crbug.com/36666
-  if (GetDelegate()->state() == TranslateInfoBarDelegate::kAfterTranslate) {
-    GetDelegate()->Translate();
-    UpdateState(GetDelegate()->state());
-  }
-
   Layout();
   SchedulePaint();
+  // Clear options menu model so that it'll be created with new language.
+  options_menu_model_.reset();
+  // Selecting an item from the "from language" menu in the before translate
+  // phase shouldn't trigger translation - http://crbug.com/36666
+  if (GetDelegate()->state() == TranslateInfoBarDelegate::kAfterTranslate)
+    GetDelegate()->Translate();
 }
 
 inline TranslateInfoBarDelegate* TranslateInfoBar::GetDelegate() const {
@@ -753,8 +728,8 @@ inline TranslateInfoBarDelegate* TranslateInfoBar::GetDelegate() const {
 }
 
 inline int TranslateInfoBar::GetSpacingAfterFirstLanguageButton() const {
-  return (GetDelegate()->state() == TranslateInfoBarDelegate::kAfterTranslate ?
-      kButtonInLabelSpacing : 10);
+  return (GetDelegate()->state() == TranslateInfoBarDelegate::kBeforeTranslate ?
+      10 : kButtonInLabelSpacing);
 }
 
 // TranslateInfoBarDelegate, InfoBarDelegate overrides: ------------------
