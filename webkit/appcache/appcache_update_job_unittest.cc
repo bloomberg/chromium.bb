@@ -340,20 +340,32 @@ class AppCacheUpdateJobTest : public testing::Test,
     request_context_->AddRef();
   }
 
-  static void TearDownTestCase() {
+  static base::WaitableEvent* io_thread_shutdown_event_;
+
+  // Cleanup function; must be called on the IO Thread.
+  static void CleanupIOThread() {
     http_server_->Release();
     http_server_ = NULL;
-    delete io_thread_;
-    io_thread_ = NULL;
     request_context_->Release();
     request_context_ = NULL;
+    io_thread_shutdown_event_->Signal();
+  }
+
+  static void TearDownTestCase() {
+    io_thread_shutdown_event_ = new base::WaitableEvent(false, false);
+    io_thread_->message_loop()->PostTask(FROM_HERE,
+      NewRunnableFunction(CleanupIOThread));
+    io_thread_shutdown_event_->Wait();
+    delete io_thread_shutdown_event_;
+    delete io_thread_;
+    io_thread_ = NULL;
   }
 
   // Use a separate IO thread to run a test. Thread will be destroyed
   // when it goes out of scope.
   template <class Method>
   void RunTestOnIOThread(Method method) {
-    event_ .reset(new base::WaitableEvent(false, false));
+    event_.reset(new base::WaitableEvent(false, false));
     io_thread_->message_loop()->PostTask(
         FROM_HERE, new WrapperTask<Method>(this, method));
 
@@ -2899,6 +2911,8 @@ class AppCacheUpdateJobTest : public testing::Test,
 base::Thread* AppCacheUpdateJobTest::io_thread_ = NULL;
 HTTPTestServer* AppCacheUpdateJobTest::http_server_ = NULL;
 TestURLRequestContext* AppCacheUpdateJobTest::request_context_ = NULL;
+base::WaitableEvent* AppCacheUpdateJobTest::io_thread_shutdown_event_ = NULL;
+
 
 TEST_F(AppCacheUpdateJobTest, AlreadyChecking) {
   MockAppCacheService service;
