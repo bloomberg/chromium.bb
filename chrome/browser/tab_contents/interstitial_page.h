@@ -8,11 +8,11 @@
 #include <map>
 #include <string>
 
-#include "base/gfx/size.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/renderer_preferences.h"
+#include "gfx/size.h"
 #include "googleurl/src/gurl.h"
 
 class NavigationEntry;

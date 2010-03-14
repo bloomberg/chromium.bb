@@ -13,8 +13,8 @@
 #include <OpenGL/OpenGL.h>
 
 #include "base/basictypes.h"
-#include "base/gfx/rect.h"
 #include "base/scoped_ptr.h"
+#include "gfx/rect.h"
 
 class TransportDIB {
  public:

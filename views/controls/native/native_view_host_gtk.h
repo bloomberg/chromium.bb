@@ -8,8 +8,8 @@
 #include <gtk/gtk.h>
 #include <string>
 
-#include "base/gfx/rect.h"
 #include "base/logging.h"
+#include "gfx/rect.h"
 #include "views/controls/native/native_view_host_wrapper.h"
 
 namespace views {

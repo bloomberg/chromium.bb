@@ -4,7 +4,7 @@
 
 #include "chrome/browser/automation/automation_provider.h"
 
-#include "base/gfx/point.h"
+#include "gfx/point.h"
 #include "views/view.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"

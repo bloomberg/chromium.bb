@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/gfx/rect.h"
 #include "base/ref_counted.h"
 #include "base/task.h"
 #include "chrome/browser/bookmarks/bookmark_context_menu_controller.h"
@@ -17,6 +16,7 @@
 #include "chrome/browser/gtk/gtk_tree.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/shell_dialogs.h"
+#include "gfx/rect.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
 class BookmarkModel;

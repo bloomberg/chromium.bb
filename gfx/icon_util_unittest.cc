@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/gfx/size.h"
 #include "base/scoped_ptr.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "gfx/gfx_paths.h"
 #include "gfx/icon_util.h"
+#include "gfx/size.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

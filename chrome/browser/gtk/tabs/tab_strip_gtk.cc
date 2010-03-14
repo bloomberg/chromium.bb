@@ -12,7 +12,6 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/slide_animation.h"
-#include "base/gfx/point.h"
 #include "base/string_util.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/browser_theme_provider.h"
@@ -25,6 +24,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
+#include "gfx/point.h"
 #include "grit/app_resources.h"
 #include "grit/theme_resources.h"
 

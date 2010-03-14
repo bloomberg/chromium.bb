@@ -7,9 +7,9 @@
 
 #include "app/animation.h"
 #include "app/gfx/native_widget_types.h"
-#include "base/gfx/rect.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/native_web_keyboard_event.h"
+#include "gfx/rect.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/focus/focus_manager.h"
 

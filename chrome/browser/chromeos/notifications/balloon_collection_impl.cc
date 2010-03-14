@@ -4,8 +4,6 @@
 
 #include "chrome/browser/chromeos/notifications/balloon_collection_impl.h"
 
-#include "base/gfx/rect.h"
-#include "base/gfx/size.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "chrome/browser/chromeos/notifications/balloon_view.h"
@@ -13,6 +11,8 @@
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/window_sizer.h"
+#include "gfx/rect.h"
+#include "gfx/size.h"
 
 namespace {
 

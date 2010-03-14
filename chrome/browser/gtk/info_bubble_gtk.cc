@@ -11,11 +11,11 @@
 #include "app/gfx/path.h"
 #include "app/l10n_util.h"
 #include "base/basictypes.h"
-#include "base/gfx/rect.h"
 #include "base/logging.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/common/notification_service.h"
+#include "gfx/rect.h"
 
 namespace {
 

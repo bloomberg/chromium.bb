@@ -31,8 +31,8 @@
 #include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
-#include "base/gfx/rect.h"
 #include "chrome/common/transport_dib.h"
+#include "gfx/rect.h"
 
 namespace webkit_glue {
 struct WebPluginGeometry;

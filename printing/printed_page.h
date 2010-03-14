@@ -5,10 +5,10 @@
 #ifndef PRINTING_PRINTED_PAGE_H_
 #define PRINTING_PRINTED_PAGE_H_
 
-#include "base/gfx/rect.h"
-#include "base/gfx/size.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "gfx/rect.h"
+#include "gfx/size.h"
 #include "printing/native_metafile.h"
 
 namespace printing {

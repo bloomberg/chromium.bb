@@ -6,7 +6,7 @@
 
 #include "app/gfx/canvas_paint.h"
 #include "app/theme_provider.h"
-#include "base/gfx/rect.h"
+#include "gfx/rect.h"
 #include "chrome/browser/browser_theme_provider.h"
 #import "chrome/browser/cocoa/bookmark_bar_constants.h"
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"

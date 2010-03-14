@@ -10,10 +10,10 @@
 #ifndef CHROME_RENDERER_MEDIA_IPC_VIDEO_RENDERER_H_
 #define CHROME_RENDERER_MEDIA_IPC_VIDEO_RENDERER_H_
 
-#include "base/gfx/rect.h"
-#include "base/gfx/size.h"
 #include "base/waitable_event.h"
 #include "chrome/common/transport_dib.h"
+#include "gfx/rect.h"
+#include "gfx/size.h"
 #include "ipc/ipc_message.h"
 #include "media/filters/video_renderer_base.h"
 #include "webkit/glue/media/web_video_renderer.h"

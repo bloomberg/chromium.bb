@@ -9,8 +9,8 @@
 #include <stdlib.h>
 
 #include "base/basictypes.h"
-#include "base/gfx/rect.h"
 #include "base/linux_util.h"
+#include "gfx/rect.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkUnPreMultiply.h"
 

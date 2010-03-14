@@ -10,9 +10,9 @@
 #include <deque>
 
 #include "base/basictypes.h"
-#include "base/gfx/point.h"
-#include "base/gfx/rect.h"
 #include "chrome/browser/notifications/balloon_collection.h"
+#include "gfx/point.h"
+#include "gfx/rect.h"
 
 // A balloon collection represents a set of notification balloons being
 // shown on the screen.  It positions new notifications according to

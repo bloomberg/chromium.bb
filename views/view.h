@@ -15,8 +15,8 @@
 
 #include "app/gfx/native_widget_types.h"
 #include "app/os_exchange_data.h"
-#include "base/gfx/rect.h"
 #include "base/scoped_ptr.h"
+#include "gfx/rect.h"
 #include "views/accelerator.h"
 #include "views/accessibility/accessibility_types.h"
 #include "views/background.h"

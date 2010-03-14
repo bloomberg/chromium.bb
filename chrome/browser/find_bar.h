@@ -9,8 +9,8 @@
 #ifndef CHROME_BROWSER_FIND_BAR_H_
 #define CHROME_BROWSER_FIND_BAR_H_
 
-#include "base/gfx/rect.h"
 #include "base/string16.h"
+#include "gfx/rect.h"
 
 class FindBarController;
 class FindBarTesting;

@@ -14,7 +14,7 @@
 #include <windows.h>
 #include <uxtheme.h>
 #include "base/basictypes.h"
-#include "base/gfx/size.h"
+#include "gfx/size.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace skia {

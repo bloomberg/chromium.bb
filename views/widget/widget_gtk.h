@@ -8,8 +8,8 @@
 #include <gtk/gtk.h>
 
 #include "app/active_window_watcher_x.h"
-#include "base/gfx/size.h"
 #include "base/message_loop.h"
+#include "gfx/size.h"
 #include "views/focus/focus_manager.h"
 #include "views/widget/widget.h"
 

@@ -4,8 +4,8 @@
 
 #include "chrome/common/common_param_traits.h"
 
-#include "base/gfx/rect.h"
 #include "chrome/common/chrome_constants.h"
+#include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
 #ifndef EXCLUDE_SKIA_DEPENDENCIES
 #include "third_party/skia/include/core/SkBitmap.h"

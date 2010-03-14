@@ -10,10 +10,10 @@
 
 #include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
-#include "base/gfx/rect.h"
-#include "base/gfx/size.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
+#include "gfx/rect.h"
+#include "gfx/size.h"
 
 class Browser;
 class RenderViewHost;

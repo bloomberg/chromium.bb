@@ -7,7 +7,7 @@
 
 #include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
-#include "base/gfx/size.h"
+#include "gfx/size.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class Browser;

@@ -16,9 +16,9 @@
 #include <gtk/gtk.h>
 
 #include "base/basictypes.h"
-#include "base/gfx/point.h"
-#include "base/gfx/rect.h"
 #include "chrome/common/notification_registrar.h"
+#include "gfx/point.h"
+#include "gfx/rect.h"
 
 class GtkThemeProvider;
 class InfoBubbleGtk;

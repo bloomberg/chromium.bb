@@ -10,10 +10,10 @@
 #include "app/gfx/native_theme_win.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "base/gfx/size.h"
 #include "base/message_loop.h"
 // TODO(georgey) remove this when resources available.
 #include "chrome/browser/theme_resources_util.h"
+#include "gfx/size.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "views/border.h"

@@ -6,8 +6,8 @@
 #define WEBKIT_GLUE_WEBCURSOR_H_
 
 #include "base/basictypes.h"
-#include "base/gfx/point.h"
-#include "base/gfx/size.h"
+#include "gfx/point.h"
+#include "gfx/size.h"
 
 #include <vector>
 

@@ -9,13 +9,13 @@
 
 #include <string>
 
-#include "base/gfx/point.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/status_bubble.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/owned_widget_gtk.h"
+#include "gfx/point.h"
 
 class GtkThemeProvider;
 class GURL;

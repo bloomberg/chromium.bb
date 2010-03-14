@@ -7,7 +7,7 @@
 #include "app/drag_drop_types.h"
 #include "app/os_exchange_data.h"
 #include "app/os_exchange_data_provider_win.h"
-#include "base/gfx/point.h"
+#include "gfx/point.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 

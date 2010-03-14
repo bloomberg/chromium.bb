@@ -8,8 +8,6 @@
 #include <gtk/gtk.h>
 #endif
 
-#include "base/gfx/rect.h"
-#include "base/gfx/size.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
@@ -23,6 +21,8 @@
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/ui_test_utils.h"
+#include "gfx/rect.h"
+#include "gfx/size.h"
 
 static const int kTimeoutMs = 60 * 1000;  // 1 minute
 

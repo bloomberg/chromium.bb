@@ -1,15 +1,15 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved. Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_VIEWS_TAB_CONTENTS_TAB_CONTENTS_VIEW_GTK_H_
 #define CHROME_BROWSER_VIEWS_TAB_CONTENTS_TAB_CONTENTS_VIEW_GTK_H_
 
 #include <vector>
 
-#include "base/gfx/size.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
+#include "gfx/size.h"
 #include "views/widget/widget_gtk.h"
 
 class ConstrainedWindowGtk;

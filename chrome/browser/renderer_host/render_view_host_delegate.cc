@@ -4,9 +4,9 @@
 
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 
-#include "base/gfx/rect.h"
 #include "base/singleton.h"
 #include "chrome/common/renderer_preferences.h"
+#include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/glue/webpreferences.h"
 

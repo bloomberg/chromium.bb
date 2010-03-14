@@ -6,9 +6,9 @@
 
 #include "app/gfx/codec/png_codec.h"
 #include "base/file_util.h"
-#include "base/gfx/rect.h"
 #include "base/md5.h"
 #include "base/string_util.h"
+#include "gfx/rect.h"
 #include "skia/ext/platform_device.h"
 
 #if defined(OS_WIN)

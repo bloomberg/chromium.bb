@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/gfx/rect.h"
+#include "gfx/rect.h"
 
 // A view that provides common functionality that many views will need:
 // - Automatic registration for mouse-moved events.

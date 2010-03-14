@@ -6,9 +6,9 @@
 
 #include "webkit/tools/test_shell/webwidget_host.h"
 
-#include "base/gfx/rect.h"
-#include "base/gfx/size.h"
 #include "base/logging.h"
+#include "gfx/rect.h"
+#include "gfx/size.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/WebKit/chromium/public/mac/WebInputEventFactory.h"
 #include "third_party/WebKit/WebKit/chromium/public/mac/WebScreenInfoFactory.h"

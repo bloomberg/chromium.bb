@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_VIEWS_STATUS_BUBBLE_VIEWS_H_
 #define CHROME_BROWSER_VIEWS_STATUS_BUBBLE_VIEWS_H_
 
-#include "base/gfx/rect.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/status_bubble.h"
+#include "gfx/rect.h"
 
 class GURL;
 namespace gfx {

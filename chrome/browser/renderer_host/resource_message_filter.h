@@ -16,7 +16,6 @@
 #include "app/gfx/native_widget_types.h"
 #include "base/callback.h"
 #include "base/file_path.h"
-#include "base/gfx/rect.h"
 #include "base/process.h"
 #include "base/ref_counted.h"
 #include "base/shared_memory.h"
@@ -30,6 +29,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/transport_dib.h"
+#include "gfx/rect.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCache.h"
 

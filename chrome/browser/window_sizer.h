@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/gfx/rect.h"
+#include "gfx/rect.h"
 
 class Browser;
 

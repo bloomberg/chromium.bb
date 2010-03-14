@@ -10,8 +10,8 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
-#include "base/gfx/size.h"
 #include "base/logging.h"
+#include "gfx/size.h"
 #include "printing/native_metafile.h"
 
 namespace printing {

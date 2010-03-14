@@ -5,10 +5,10 @@
 #include "printing/pdf_metafile_mac.h"
 
 #include "base/file_path.h"
-#include "base/gfx/rect.h"
 #include "base/logging.h"
 #include "base/scoped_cftyperef.h"
 #include "base/sys_string_conversions.h"
+#include "gfx/rect.h"
 
 namespace printing {
 

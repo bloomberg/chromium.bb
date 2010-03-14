@@ -9,7 +9,7 @@
 #include <map>
 #include <vector>
 
-#include "base/gfx/size.h"
+#include "gfx/size.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/glue/password_form_dom_manager.h"
 

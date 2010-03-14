@@ -9,10 +9,10 @@
 #include <vector>
 
 #include "app/gfx/native_widget_types.h"
-#include "base/gfx/size.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
 #include "chrome/browser/dom_ui/html_dialog_tab_contents_delegate.h"
+#include "gfx/size.h"
 
 typedef struct _GtkWidget GtkWidget;
 

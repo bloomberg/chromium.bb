@@ -5,13 +5,13 @@
 #include "chrome/browser/views/chrome_views_delegate.h"
 
 #include "app/clipboard/clipboard.h"
-#include "base/gfx/rect.h"
 #include "base/scoped_ptr.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/window_sizer.h"
 #include "chrome/common/chrome_constants.h"
+#include "gfx/rect.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // ChromeViewsDelegate, views::ViewsDelegate implementation:

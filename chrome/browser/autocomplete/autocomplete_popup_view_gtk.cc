@@ -14,7 +14,6 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/basictypes.h"
-#include "base/gfx/rect.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
@@ -28,6 +27,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/common/notification_service.h"
+#include "gfx/rect.h"
 #include "grit/theme_resources.h"
 
 namespace {

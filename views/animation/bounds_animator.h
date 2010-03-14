@@ -8,8 +8,8 @@
 #include <map>
 
 #include "app/animation.h"
-#include "base/gfx/rect.h"
 #include "base/scoped_ptr.h"
+#include "gfx/rect.h"
 
 namespace views {
 

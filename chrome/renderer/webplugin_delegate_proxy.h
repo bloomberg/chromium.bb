@@ -10,11 +10,11 @@
 
 #include "app/gfx/native_widget_types.h"
 #include "base/file_path.h"
-#include "base/gfx/rect.h"
 #include "base/ref_counted.h"
 #include "base/weak_ptr.h"
 #include "chrome/common/transport_dib.h"
 #include "chrome/renderer/plugin_channel_host.h"
+#include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "ipc/ipc_message.h"

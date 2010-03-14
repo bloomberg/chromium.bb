@@ -5,7 +5,7 @@
 #ifndef PRINTING_PAGE_SETUP_H_
 #define PRINTING_PAGE_SETUP_H_
 
-#include "base/gfx/rect.h"
+#include "gfx/rect.h"
 
 namespace printing {
 

@@ -4,8 +4,6 @@
 
 #include "browser_action_test_util.h"
 
-#include "base/gfx/rect.h"
-#include "base/gfx/size.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browser.h"
 #import "chrome/browser/cocoa/browser_window_cocoa.h"
@@ -14,6 +12,8 @@
 #import "chrome/browser/cocoa/extensions/extension_popup_controller.h"
 #import "chrome/browser/cocoa/info_bubble_window.h"
 #import "chrome/browser/cocoa/toolbar_controller.h"
+#include "gfx/rect.h"
+#include "gfx/size.h"
 
 namespace {
 

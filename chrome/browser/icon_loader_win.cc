@@ -7,10 +7,10 @@
 #include <windows.h>
 #include <shellapi.h>
 
-#include "base/gfx/size.h"
 #include "base/message_loop.h"
 #include "base/thread.h"
 #include "gfx/icon_util.h"
+#include "gfx/size.h"
 
 void IconLoader::ReadIcon() {
   int size = 0;

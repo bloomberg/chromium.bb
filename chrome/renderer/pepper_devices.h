@@ -6,14 +6,13 @@
 #define CHROME_RENDERER_PEPPER_DEVICES_H_
 
 #include "base/basictypes.h"
-#include "base/gfx/rect.h"
 #include "base/scoped_ptr.h"
 #include "base/shared_memory.h"
 #include "base/simple_thread.h"
-#include "base/gfx/rect.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/transport_dib.h"
 #include "chrome/renderer/audio_message_filter.h"
+#include "gfx/rect.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
 #include "third_party/skia/include/core/SkBitmap.h"

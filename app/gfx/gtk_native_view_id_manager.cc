@@ -4,9 +4,9 @@
 
 #include "app/gfx/gtk_native_view_id_manager.h"
 
-#include "base/gfx/rect.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
+#include "gfx/rect.h"
 
 #include <gtk/gtk.h>
 #include <gdk/gdkx.h>

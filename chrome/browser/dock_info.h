@@ -8,8 +8,8 @@
 #include <set>
 
 #include "app/gfx/native_widget_types.h"
-#include "base/gfx/point.h"
-#include "base/gfx/rect.h"
+#include "gfx/point.h"
+#include "gfx/rect.h"
 
 // DockInfo is used to do determine possible dock locations for a dragged
 // tab. To use DockInfo invoke GetDockInfoAtPoint. This returns a new

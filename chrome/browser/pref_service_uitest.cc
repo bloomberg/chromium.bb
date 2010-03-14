@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
-#include "base/gfx/rect.h"
 #include "base/test/test_file_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -17,6 +16,7 @@
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/ui/ui_test.h"
+#include "gfx/rect.h"
 
 class PreferenceServiceTest : public UITest {
 public:

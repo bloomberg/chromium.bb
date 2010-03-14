@@ -8,11 +8,11 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/gfx/rect.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/security_style.h"
 #include "chrome/common/common_param_traits.h"
 #include "chrome/test/automation/automation_constants.h"
+#include "gfx/rect.h"
 #include "net/base/upload_data.h"
 
 

@@ -9,7 +9,6 @@
 #include <gtk/gtk.h>
 
 #include "app/l10n_util.h"
-#include "base/gfx/rect.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "chrome/app/chrome_dll_resource.h"
@@ -19,6 +18,7 @@
 #include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/render_messages.h"
+#include "gfx/rect.h"
 #include "grit/generated_resources.h"
 
 GtkIMContextWrapper::GtkIMContextWrapper(RenderWidgetHostViewGtk* host_view)

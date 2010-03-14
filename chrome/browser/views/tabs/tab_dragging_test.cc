@@ -4,7 +4,6 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
-#include "base/gfx/rect.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/common/chrome_paths.h"
@@ -14,6 +13,7 @@
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/ui/ui_test.h"
+#include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "views/event.h"

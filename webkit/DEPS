@@ -6,6 +6,7 @@ skip_child_includes = [
 include_rules = [
   # For bridge/c/c_utility.h in npruntime_util.cc
   "+bridge",
+  "+gfx",
   "+grit",  # For generated headers
   "+third_party/sqlite",
   "+third_party/tcmalloc",

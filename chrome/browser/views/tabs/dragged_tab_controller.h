@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_VIEWS_TABS_DRAGGED_TAB_CONTROLLER_H_
 #define CHROME_BROWSER_VIEWS_TABS_DRAGGED_TAB_CONTROLLER_H_
 
-#include "base/gfx/rect.h"
 #include "base/message_loop.h"
 #include "base/timer.h"
 #include "chrome/browser/dock_info.h"
@@ -13,6 +12,7 @@
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/views/tabs/tab_renderer.h"
 #include "chrome/common/notification_registrar.h"
+#include "gfx/rect.h"
 
 namespace views {
 class MouseEvent;

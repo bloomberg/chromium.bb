@@ -9,14 +9,14 @@
 
 #include "app/animation.h"
 #include "base/basictypes.h"
-#include "base/gfx/point.h"
-#include "base/gfx/rect.h"
-#include "base/gfx/size.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/gtk/menu_gtk.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
+#include "gfx/point.h"
+#include "gfx/rect.h"
+#include "gfx/size.h"
 
 class BalloonCollection;
 class BalloonViewHost;

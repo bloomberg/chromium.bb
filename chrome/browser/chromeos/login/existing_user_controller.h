@@ -8,13 +8,13 @@
 #include <string>
 #include <vector>
 
-#include "base/gfx/size.h"
 #include "base/task.h"
 #include "base/timer.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/user_controller.h"
 #include "chrome/browser/chromeos/wm_message_listener.h"
+#include "gfx/size.h"
 
 class Authenticator;
 

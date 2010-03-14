@@ -5,6 +5,10 @@
 #ifndef CHROME_BROWSER_GTK_TABSTRIP_ORIGIN_PROVIDER_H_
 #define CHROME_BROWSER_GTK_TABSTRIP_ORIGIN_PROVIDER_H_
 
+namespace gfx{
+class Point;
+}
+
 // Abstract interface that provides an offset of a widget. Many pieces of the
 // UI don't need the full BrowserWindowGtk, but just need information about
 // it's position relative to the tabstrip to draw correctly. This interface

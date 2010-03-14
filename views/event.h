@@ -6,8 +6,8 @@
 #define VIEWS_EVENT_H_
 
 #include "base/basictypes.h"
-#include "base/gfx/point.h"
 #include "base/keyboard_codes.h"
+#include "gfx/point.h"
 
 #if defined(OS_LINUX)
 typedef struct _GdkEventKey GdkEventKey;

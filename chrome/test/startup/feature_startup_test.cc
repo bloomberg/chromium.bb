@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/file_util.h"
-#include "base/gfx/rect.h"
 #include "base/path_service.h"
 #include "base/perftimer.h"
 #include "base/string_util.h"
@@ -14,6 +13,7 @@
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/ui/ui_test.h"
+#include "gfx/rect.h"
 #include "net/base/net_util.h"
 
 using base::TimeDelta;

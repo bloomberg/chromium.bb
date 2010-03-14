@@ -8,9 +8,9 @@
 
 #include "app/gfx/font.h"
 #include "app/l10n_util.h"
-#include "base/gfx/rect.h"
 #include "base/scoped_cftyperef.h"
 #include "base/sys_string_conversions.h"
+#include "gfx/rect.h"
 #include "third_party/skia/include/core/SkShader.h"
 
 namespace gfx {

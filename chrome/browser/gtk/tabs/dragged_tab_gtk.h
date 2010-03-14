@@ -10,11 +10,11 @@
 #include "app/gfx/canvas.h"
 #include "app/slide_animation.h"
 #include "base/callback.h"
-#include "base/gfx/point.h"
-#include "base/gfx/rect.h"
-#include "base/gfx/size.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
+#include "gfx/point.h"
+#include "gfx/rect.h"
+#include "gfx/size.h"
 
 class TabContents;
 class TabRendererGtk;

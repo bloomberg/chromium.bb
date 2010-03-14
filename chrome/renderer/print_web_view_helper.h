@@ -7,9 +7,9 @@
 
 #include <vector>
 
-#include "base/gfx/size.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
+#include "gfx/size.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebViewClient.h"
 
 namespace gfx {

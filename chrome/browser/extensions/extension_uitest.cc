@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
-#include "base/gfx/rect.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/values.h"
@@ -16,6 +15,7 @@
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_test.h"
 #include "chrome/test/ui_test_utils.h"
+#include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
 #define GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 #include "testing/gmock_mutant.h"

@@ -8,9 +8,9 @@
 
 #include "app/clipboard/scoped_clipboard_writer.h"
 
-#include "base/gfx/size.h"
 #include "base/pickle.h"
 #include "base/utf_string_conversions.h"
+#include "gfx/size.h"
 
 ScopedClipboardWriter::ScopedClipboardWriter(Clipboard* clipboard)
     : clipboard_(clipboard) {

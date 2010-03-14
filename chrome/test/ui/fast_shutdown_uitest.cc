@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "app/message_box_flags.h"
-#include "base/gfx/rect.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/test/ui/ui_test.h"
@@ -11,6 +10,7 @@
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
+#include "gfx/rect.h"
 #include "views/event.h"
 
 class FastShutdown : public UITest {

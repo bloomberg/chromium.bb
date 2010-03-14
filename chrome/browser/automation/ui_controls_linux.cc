@@ -7,7 +7,7 @@
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 
-#include "base/gfx/rect.h"
+#include "gfx/rect.h"
 #include "base/keyboard_code_conversion_gtk.h"
 #include "base/logging.h"
 #include "base/message_loop.h"

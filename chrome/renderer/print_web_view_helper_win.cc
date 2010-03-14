@@ -5,10 +5,10 @@
 #include "chrome/renderer/print_web_view_helper.h"
 
 #include "app/l10n_util.h"
-#include "base/gfx/size.h"
 #include "base/logging.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/render_view.h"
+#include "gfx/size.h"
 #include "grit/generated_resources.h"
 #include "printing/native_metafile.h"
 #include "skia/ext/vector_canvas.h"

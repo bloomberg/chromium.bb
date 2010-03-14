@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/gfx/rect.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/command_updater.h"
@@ -23,6 +22,7 @@
 #include "chrome/browser/toolbar_model.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/page_zoom.h"
+#include "gfx/rect.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
 class BrowserWindow;

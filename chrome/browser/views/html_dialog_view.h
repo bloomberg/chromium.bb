@@ -7,10 +7,10 @@
 
 #include <string>
 
-#include "base/gfx/size.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
 #include "chrome/browser/dom_ui/html_dialog_tab_contents_delegate.h"
 #include "chrome/browser/views/dom_view.h"
+#include "gfx/size.h"
 #include "views/window/window_delegate.h"
 
 class Browser;

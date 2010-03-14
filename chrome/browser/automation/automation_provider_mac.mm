@@ -8,11 +8,11 @@
 
 #include "app/l10n_util.h"
 #include "app/l10n_util_mac.h"
-#include "base/gfx/point.h"
-#include "base/gfx/rect.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/cocoa/tab_window_controller.h"
 #include "chrome/test/automation/automation_messages.h"
+#include "gfx/point.h"
+#include "gfx/rect.h"
 #include "grit/generated_resources.h"
 
 void AutomationProvider::SetWindowBounds(int handle, const gfx::Rect& bounds,

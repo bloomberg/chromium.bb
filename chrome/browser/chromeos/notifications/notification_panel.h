@@ -7,11 +7,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_NOTIFICATIONS_NOTIFICATION_PANEL_H_
 #define CHROME_BROWSER_CHROMEOS_NOTIFICATIONS_NOTIFICATION_PANEL_H_
 
-#include "base/gfx/rect.h"
 #include "base/task.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/frame/panel_controller.h"
 #include "chrome/browser/chromeos/notifications/balloon_collection_impl.h"
+#include "gfx/rect.h"
 
 class Balloon;
 

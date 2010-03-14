@@ -8,11 +8,11 @@
 
 #include "app/gfx/canvas.h"
 #include "app/gfx/gtk_util.h"
-#include "base/gfx/point.h"
-#include "base/gfx/size.h"
-#include "base/logging.h"
 #include "app/os_exchange_data.h"
 #include "app/os_exchange_data_provider_gtk.h"
+#include "base/logging.h"
+#include "gfx/point.h"
+#include "gfx/size.h"
 
 namespace drag_utils {
 

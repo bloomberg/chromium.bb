@@ -5,10 +5,10 @@
 #include "gfx/icon_util.h"
 
 #include "base/file_util.h"
-#include "base/gfx/size.h"
 #include "base/logging.h"
 #include "base/scoped_handle.h"
 #include "base/scoped_ptr.h"
+#include "gfx/size.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 

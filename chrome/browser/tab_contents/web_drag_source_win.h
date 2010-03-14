@@ -8,9 +8,9 @@
 #include "app/gfx/native_widget_types.h"
 #include "base/base_drag_source.h"
 #include "base/basictypes.h"
-#include "base/gfx/point.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
+#include "gfx/point.h"
 
 class RenderViewHost;
 class TabContents;

@@ -8,11 +8,11 @@
 #include <cairo/cairo.h>
 #endif
 
-#include "base/gfx/point.h"
-#include "base/gfx/rect.h"
 #if defined(OS_MACOSX)
 #include "base/scoped_cftyperef.h"
 #endif
+#include "gfx/point.h"
+#include "gfx/rect.h"
 #include "skia/ext/platform_canvas.h"
 #include "skia/ext/platform_device.h"
 

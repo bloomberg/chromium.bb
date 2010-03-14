@@ -7,13 +7,13 @@
 #include <vector>
 #include <algorithm>
 
-#include "base/gfx/rect.h"
 #include "base/logging.h"
 #include "chrome/test/automation/automation_constants.h"
 #include "chrome/test/automation/automation_messages.h"
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
+#include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
 
 bool WindowProxy::SimulateOSClick(const gfx::Point& click, int flags) {

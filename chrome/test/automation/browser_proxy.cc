@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "base/gfx/point.h"
 #include "base/logging.h"
 #include "base/platform_thread.h"
 #include "base/time.h"
@@ -16,6 +15,7 @@
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
+#include "gfx/point.h"
 
 using base::TimeDelta;
 using base::TimeTicks;

@@ -4,9 +4,9 @@
 
 #include "chrome/common/accelerated_surface_mac.h"
 
-#include "base/gfx/rect.h"
 #include "base/logging.h"
 #include "chrome/common/io_surface_support_mac.h"
+#include "gfx/rect.h"
 
 AcceleratedSurface::AcceleratedSurface()
     : gl_context_(NULL),

@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_VIEWS_FIND_BAR_VIEW_H_
 #define CHROME_BROWSER_VIEWS_FIND_BAR_VIEW_H_
 
-#include "base/gfx/size.h"
 #include "base/string16.h"
 #include "chrome/browser/find_notification_details.h"
 #include "chrome/browser/views/dropdown_bar_view.h"
+#include "gfx/size.h"
 #include "views/controls/button/button.h"
 #include "views/controls/textfield/textfield.h"
 

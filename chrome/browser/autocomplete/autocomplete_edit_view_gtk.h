@@ -10,7 +10,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/gfx/rect.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
@@ -19,6 +18,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/owned_widget_gtk.h"
 #include "chrome/common/page_transition_types.h"
+#include "gfx/rect.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class AutocompleteEditController;

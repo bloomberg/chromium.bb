@@ -8,9 +8,9 @@
 #include <map>
 
 #include "base/basictypes.h"
-#include "base/gfx/rect.h"
 #include "base/waitable_event.h"
 #include "chrome/browser/dom_ui/dom_ui_factory.h"
+#include "gfx/rect.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/window_open_disposition.h"
 

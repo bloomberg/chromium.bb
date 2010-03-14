@@ -10,10 +10,10 @@
 
 #include "app/combobox_model.h"
 #include "app/resource_bundle.h"
-#include "base/gfx/rect.h"
 #include "base/keyboard_codes.h"
 #include "base/logging.h"
 #include "base/string_util.h"
+#include "gfx/rect.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "views/background.h"
 #include "views/border.h"

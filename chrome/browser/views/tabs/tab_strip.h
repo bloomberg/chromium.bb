@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_VIEWS_TABS_TAB_STRIP_H_
 #define CHROME_BROWSER_VIEWS_TABS_TAB_STRIP_H_
 
-#include "base/gfx/point.h"
 #include "base/message_loop.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/views/tabs/base_tab_strip.h"
 #include "chrome/browser/views/tabs/tab.h"
+#include "gfx/point.h"
 #include "views/controls/button/image_button.h"
 
 class DraggedTabController;

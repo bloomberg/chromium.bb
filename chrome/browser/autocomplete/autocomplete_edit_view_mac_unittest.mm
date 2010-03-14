@@ -6,11 +6,11 @@
 
 #include "app/clipboard/clipboard.h"
 #include "app/clipboard/scoped_clipboard_writer.h"
-#include "base/gfx/size.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
+#include "gfx/size.h"
 #include "testing/platform_test.h"
 
 namespace {

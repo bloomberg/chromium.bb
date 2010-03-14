@@ -4,8 +4,8 @@
 
 #include "chrome/renderer/mock_render_process.h"
 
-#include "base/gfx/rect.h"
 #include "chrome/common/transport_dib.h"
+#include "gfx/rect.h"
 
 MockRenderProcess::MockRenderProcess()
     : transport_dib_next_sequence_number_(0) {

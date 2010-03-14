@@ -5,7 +5,7 @@
 #ifndef APP_GFX_FONT_UTIL_H_
 #define APP_GFX_FONT_UTIL_H_
 
-#include "base/gfx/size.h"
+#include "gfx/size.h"
 
 namespace gfx {
 

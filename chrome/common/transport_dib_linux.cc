@@ -7,10 +7,10 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 
-#include "base/gfx/size.h"
 #include "base/logging.h"
 #include "chrome/common/transport_dib.h"
 #include "chrome/common/x11_util.h"
+#include "gfx/size.h"
 #include "skia/ext/platform_canvas.h"
 
 // The shmat system call uses this as it's invalid return address

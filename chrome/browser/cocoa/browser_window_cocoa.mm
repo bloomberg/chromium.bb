@@ -5,7 +5,6 @@
 #include "chrome/browser/cocoa/browser_window_cocoa.h"
 
 #include "app/l10n_util_mac.h"
-#include "base/gfx/rect.h"
 #include "base/keyboard_codes.h"
 #include "base/logging.h"
 #include "base/sys_string_conversions.h"
@@ -36,6 +35,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
+#include "gfx/rect.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 

@@ -10,11 +10,11 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/gfx/point.h"
-#include "base/gfx/rect.h"
-#include "base/gfx/size.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/notifications/notification.h"
+#include "gfx/point.h"
+#include "gfx/rect.h"
+#include "gfx/size.h"
 
 class Balloon;
 class BalloonCollection;

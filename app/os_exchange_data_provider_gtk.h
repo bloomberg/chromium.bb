@@ -12,9 +12,9 @@
 #include <vector>
 
 #include "app/os_exchange_data.h"
-#include "base/gfx/point.h"
 #include "base/pickle.h"
 #include "base/string16.h"
+#include "gfx/point.h"
 #include "googleurl/src/gurl.h"
 
 // OSExchangeData::Provider implementation for Gtk. OSExchangeDataProviderGtk

@@ -9,12 +9,12 @@
 
 #include <string>
 
-#include "base/gfx/size.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_nsobject.h"
 #include "chrome/browser/cocoa/base_view.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/common/notification_registrar.h"
+#include "gfx/size.h"
 
 class FilePath;
 class FindBarMac;

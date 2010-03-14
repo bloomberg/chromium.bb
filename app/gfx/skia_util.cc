@@ -4,7 +4,7 @@
 
 #include "app/gfx/skia_util.h"
 
-#include "base/gfx/rect.h"
+#include "gfx/rect.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"

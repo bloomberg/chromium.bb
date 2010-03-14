@@ -9,11 +9,11 @@
 #include <string>
 #include <vector>
 
-#include "base/gfx/point.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/gtk/menu_gtk.h"
 #include "chrome/browser/gtk/standard_menus.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
+#include "gfx/point.h"
 
 class ContextMenuParams;
 class RenderWidgetHostView;

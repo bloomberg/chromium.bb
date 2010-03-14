@@ -5,7 +5,7 @@
 #ifndef PRINTING_PRINT_SETTINGS_H_
 #define PRINTING_PRINT_SETTINGS_H_
 
-#include "base/gfx/rect.h"
+#include "gfx/rect.h"
 #include "printing/page_overlays.h"
 #include "printing/page_range.h"
 #include "printing/page_setup.h"

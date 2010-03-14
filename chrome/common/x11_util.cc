@@ -20,9 +20,9 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/gfx/size.h"
 #include "base/thread.h"
 #include "chrome/common/x11_util_internal.h"
+#include "gfx/size.h"
 
 namespace x11_util {
 

@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/gfx/rect.h"
+#include "gfx/rect.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(PdfMetafileTest, Pdf) {

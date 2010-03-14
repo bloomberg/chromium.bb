@@ -7,10 +7,10 @@
 
 #include "app/slide_animation.h"
 #include "base/callback.h"
-#include "base/gfx/point.h"
-#include "base/gfx/size.h"
 #include "base/task.h"
 #include "build/build_config.h"
+#include "gfx/point.h"
+#include "gfx/size.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "views/view.h"
 

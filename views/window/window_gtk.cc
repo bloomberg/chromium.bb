@@ -6,7 +6,7 @@
 
 #include "app/gfx/path.h"
 #include "app/l10n_util.h"
-#include "base/gfx/rect.h"
+#include "gfx/rect.h"
 #include "base/utf_string_conversions.h"
 #include "views/event.h"
 #include "views/screen.h"

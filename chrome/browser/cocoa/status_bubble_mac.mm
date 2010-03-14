@@ -8,11 +8,11 @@
 
 #include "app/gfx/text_elider.h"
 #include "base/compiler_specific.h"
-#include "base/gfx/point.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/cocoa/bubble_view.h"
+#include "gfx/point.h"
 #include "googleurl/src/gurl.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 #import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"

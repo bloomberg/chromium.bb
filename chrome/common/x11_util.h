@@ -14,8 +14,8 @@
 #include <string>
 #include <vector>
 
-#include "base/gfx/rect.h"
 #include "base/task.h"
+#include "gfx/rect.h"
 
 typedef struct _GdkDrawable GdkWindow;
 typedef struct _GtkWidget GtkWidget;

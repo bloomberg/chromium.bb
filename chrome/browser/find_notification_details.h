@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_FIND_NOTIFICATION_DETAILS_H_
 
 #include "base/basictypes.h"
-#include "base/gfx/rect.h"
+#include "gfx/rect.h"
 
 class FindNotificationDetails {
  public:

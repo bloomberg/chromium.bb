@@ -4,10 +4,10 @@
 
 #include "chrome/browser/renderer_host/video_layer_proxy.h"
 
-#include "base/gfx/rect.h"
 #include "chrome/browser/gpu_process_host.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/common/gpu_messages.h"
+#include "gfx/rect.h"
 
 VideoLayerProxy::VideoLayerProxy(RenderWidgetHost* widget,
                                  const gfx::Size& size,

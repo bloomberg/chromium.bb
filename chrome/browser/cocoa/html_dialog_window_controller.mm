@@ -4,7 +4,6 @@
 
 #import "chrome/browser/cocoa/html_dialog_window_controller.h"
 
-#include "base/gfx/size.h"
 #include "base/keyboard_codes.h"
 #include "base/logging.h"
 #include "base/scoped_nsobject.h"
@@ -15,6 +14,7 @@
 #include "chrome/browser/dom_ui/html_dialog_tab_contents_delegate.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "gfx/size.h"
 #include "ipc/ipc_message.h"
 
 // Thin bridge that routes notifications to

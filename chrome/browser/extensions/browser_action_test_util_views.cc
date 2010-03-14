@@ -4,8 +4,6 @@
 
 #include "chrome/browser/extensions/browser_action_test_util.h"
 
-#include "base/gfx/rect.h"
-#include "base/gfx/size.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
@@ -14,6 +12,8 @@
 #include "chrome/browser/views/toolbar_view.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
+#include "gfx/rect.h"
+#include "gfx/size.h"
 
 namespace {
 

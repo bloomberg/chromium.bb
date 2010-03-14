@@ -10,9 +10,9 @@
 #include <vssym32.h>
 
 #include "app/gfx/gdi_util.h"
-#include "base/gfx/rect.h"
 #include "base/logging.h"
 #include "base/scoped_handle.h"
+#include "gfx/rect.h"
 #include "skia/ext/platform_canvas.h"
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/skia/include/core/SkShader.h"

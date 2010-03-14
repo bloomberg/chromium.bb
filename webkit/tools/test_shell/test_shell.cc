@@ -12,7 +12,6 @@
 #include "base/debug_on_start.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/gfx/size.h"
 #if defined(OS_MACOSX)
 #include "base/mac_util.h"
 #endif
@@ -22,6 +21,7 @@
 #include "base/stats_table.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "gfx/size.h"
 #include "googleurl/src/url_util.h"
 #include "grit/webkit_strings.h"
 #include "net/base/mime_util.h"

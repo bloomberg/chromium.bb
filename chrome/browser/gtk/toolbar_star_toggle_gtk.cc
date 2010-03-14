@@ -6,7 +6,6 @@
 
 #include "app/gtk_dnd_util.h"
 #include "app/resource_bundle.h"
-#include "base/gfx/rect.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/gtk/bookmark_bubble_gtk.h"
 #include "chrome/browser/gtk/browser_toolbar_gtk.h"
@@ -16,6 +15,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_service.h"
+#include "gfx/rect.h"
 #include "grit/theme_resources.h"
 
 ToolbarStarToggleGtk::ToolbarStarToggleGtk(BrowserToolbarGtk* host)

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/extension_popup_api.h"
 
-#include "base/gfx/point.h"
 #include "base/json/json_writer.h"
 #include "base/string_util.h"
 #include "chrome/common/extensions/extension.h"
@@ -19,6 +18,8 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "gfx/point.h"
+
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/views/extensions/extension_popup.h"
 #include "views/view.h"

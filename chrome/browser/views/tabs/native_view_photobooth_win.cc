@@ -5,8 +5,8 @@
 #include "chrome/browser/views/tabs/native_view_photobooth_win.h"
 
 #include "app/gfx/canvas.h"
-#include "base/gfx/point.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "gfx/point.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "views/widget/widget_win.h"
 

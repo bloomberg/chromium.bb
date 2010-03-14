@@ -6,10 +6,10 @@
 
 #include "app/animation.h"
 #include "app/resource_bundle.h"
-#include "base/gfx/rect.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
+#include "gfx/rect.h"
 #include "grit/theme_resources.h"
 #include "views/controls/image_view.h"
 #include "views/widget/widget_win.h"

@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_FIND_BAR_CONTROLLER_H_
 
 #include "base/basictypes.h"
-#include "base/gfx/rect.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/notification_registrar.h"
+#include "gfx/rect.h"
 
 class FindBar;
 class TabContents;

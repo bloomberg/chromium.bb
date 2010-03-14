@@ -13,8 +13,6 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
-#include "base/gfx/point.h"
-#include "base/gfx/rect.h"
 #include "base/id_map.h"
 #include "base/linked_ptr.h"
 #include "base/shared_memory.h"
@@ -42,6 +40,8 @@
 #include "chrome/renderer/renderer_webcookiejar_impl.h"
 #include "chrome/renderer/translate/page_translator.h"
 #include "chrome/renderer/translate/text_translator_impl.h"
+#include "gfx/point.h"
+#include "gfx/rect.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebConsoleMessage.h"

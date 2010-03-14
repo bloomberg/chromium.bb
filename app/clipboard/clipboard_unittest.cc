@@ -10,11 +10,11 @@
 #endif
 #include "app/clipboard/scoped_clipboard_writer.h"
 #include "base/basictypes.h"
-#include "base/gfx/size.h"
 #include "base/message_loop.h"
 #include "base/pickle.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "gfx/size.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 

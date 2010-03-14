@@ -5,8 +5,6 @@
 #include "chrome/renderer/render_widget.h"
 
 #include "base/command_line.h"
-#include "base/gfx/point.h"
-#include "base/gfx/size.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
@@ -16,6 +14,8 @@
 #include "chrome/common/transport_dib.h"
 #include "chrome/renderer/render_process.h"
 #include "chrome/renderer/render_thread.h"
+#include "gfx/point.h"
+#include "gfx/size.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCursorInfo.h"

@@ -7,13 +7,13 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/file_path.h"
-#include "base/gfx/size.h"
 #include "base/logging.h"
 #include "base/mac_util.h"
 #include "base/scoped_cftyperef.h"
 #include "base/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "gfx/size.h"
 
 namespace {
 

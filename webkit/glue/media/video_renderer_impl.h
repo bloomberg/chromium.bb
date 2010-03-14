@@ -1,6 +1,6 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 //
 // The video renderer implementation to be use by the media pipeline. It lives
 // inside video renderer thread and also WebKit's main thread. We need to be
@@ -10,8 +10,8 @@
 #ifndef WEBKIT_GLUE_MEDIA_VIDEO_RENDERER_IMPL_H_
 #define WEBKIT_GLUE_MEDIA_VIDEO_RENDERER_IMPL_H_
 
-#include "base/gfx/rect.h"
-#include "base/gfx/size.h"
+#include "gfx/rect.h"
+#include "gfx/size.h"
 #include "media/base/buffers.h"
 #include "media/base/filters.h"
 #include "media/filters/video_renderer_base.h"

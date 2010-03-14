@@ -7,8 +7,8 @@
 #include "webkit/tools/test_shell/webview_host.h"
 
 #include "base/logging.h"
-#include "base/gfx/rect.h"
-#include "base/gfx/size.h"
+#include "gfx/rect.h"
+#include "gfx/size.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/plugins/gtk_plugin_container.h"

@@ -6,8 +6,8 @@
 #define CHROME_GPU_GPU_BACKING_STORE_GLX_CONTEXT_H_
 
 #include "base/basictypes.h"
-#include "base/gfx/size.h"
 #include "chrome/gpu/x_util.h"
+#include "gfx/size.h"
 
 class GpuThread;
 

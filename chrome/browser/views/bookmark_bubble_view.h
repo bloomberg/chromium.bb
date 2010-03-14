@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_VIEWS_BOOKMARK_BUBBLE_VIEW_H_
 
 #include "app/combobox_model.h"
-#include "base/gfx/rect.h"
 #include "chrome/browser/views/info_bubble.h"
+#include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
 #include "views/controls/button/button.h"
 #include "views/controls/combobox/combobox.h"

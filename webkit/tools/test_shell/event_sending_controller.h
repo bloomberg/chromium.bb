@@ -17,7 +17,7 @@
 #define WEBKIT_TOOLS_TEST_SHELL_EVENT_SENDING_CONTROLLER_H_
 
 #include "build/build_config.h"
-#include "base/gfx/point.h"
+#include "gfx/point.h"
 #include "base/task.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDragOperation.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"

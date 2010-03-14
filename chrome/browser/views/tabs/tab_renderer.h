@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_VIEWS_TABS_TAB_RENDERER_H__
 
 #include "app/animation.h"
-#include "base/gfx/point.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
+#include "gfx/point.h"
 #include "views/controls/button/image_button.h"
 #include "views/view.h"
 

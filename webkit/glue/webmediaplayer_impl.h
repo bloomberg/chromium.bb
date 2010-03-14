@@ -55,11 +55,11 @@
 
 #include <vector>
 
-#include "base/gfx/rect.h"
-#include "base/gfx/size.h"
 #include "base/lock.h"
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
+#include "gfx/rect.h"
+#include "gfx/size.h"
 #include "media/base/filters.h"
 #include "media/base/pipeline_impl.h"
 #include "skia/ext/platform_canvas.h"

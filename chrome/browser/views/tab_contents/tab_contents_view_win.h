@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_VIEWS_TAB_CONTENTS_TAB_CONTENTS_VIEW_WIN_H_
 #define CHROME_BROWSER_VIEWS_TAB_CONTENTS_TAB_CONTENTS_VIEW_WIN_H_
 
-#include "base/gfx/size.h"
 #include "base/scoped_ptr.h"
 #include "base/timer.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
+#include "gfx/size.h"
 #include "views/widget/widget_win.h"
 
 class RenderViewContextMenuWin;

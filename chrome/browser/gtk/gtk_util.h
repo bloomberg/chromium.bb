@@ -9,9 +9,9 @@
 #include <string>
 #include <vector>
 
-#include "base/gfx/point.h"
-#include "base/gfx/rect.h"
 #include "chrome/common/x11_util.h"
+#include "gfx/point.h"
+#include "gfx/rect.h"
 #include "webkit/glue/window_open_disposition.h"
 
 typedef struct _GtkWidget GtkWidget;

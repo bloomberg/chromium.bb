@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_VIEWS_FRAME_BROWSER_EXTENDER_H_
 
 #include "base/basictypes.h"
-#include "base/gfx/rect.h"
+#include "gfx/rect.h"
 
 class BrowserView;
 

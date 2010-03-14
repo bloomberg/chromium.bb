@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "app/l10n_util.h"
-#include "base/gfx/point.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "chrome/browser/pref_service.h"
@@ -17,6 +16,7 @@
 #include "chrome/browser/search_engines/template_url_table_model.h"
 #include "chrome/browser/views/browser_dialogs.h"
 #include "chrome/common/pref_names.h"
+#include "gfx/point.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"

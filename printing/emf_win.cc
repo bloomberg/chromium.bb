@@ -7,11 +7,11 @@
 #include "app/gfx/codec/jpeg_codec.h"
 #include "app/gfx/codec/png_codec.h"
 #include "app/gfx/gdi_util.h"
-#include "base/gfx/rect.h"
 #include "base/histogram.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
+#include "gfx/rect.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace printing {

@@ -4,8 +4,8 @@
 
 #include "app/animation.h"
 
-#include "base/gfx/rect.h"
 #include "base/message_loop.h"
+#include "gfx/rect.h"
 
 #if defined(OS_WIN)
 #include "base/win_util.h"

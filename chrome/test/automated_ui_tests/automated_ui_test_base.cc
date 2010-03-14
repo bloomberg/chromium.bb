@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/gfx/point.h"
-#include "base/gfx/rect.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/test/automated_ui_tests/automated_ui_test_base.h"
@@ -11,6 +9,8 @@
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/ui/ui_test.h"
+#include "gfx/point.h"
+#include "gfx/rect.h"
 #include "views/event.h"
 
 AutomatedUITestBase::AutomatedUITestBase() {}

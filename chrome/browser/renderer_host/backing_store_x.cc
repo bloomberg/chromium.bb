@@ -18,7 +18,6 @@
 #include <utility>
 
 #include "base/compiler_specific.h"
-#include "base/gfx/rect.h"
 #include "base/histogram.h"
 #include "base/logging.h"
 #include "base/time.h"
@@ -26,6 +25,7 @@
 #include "chrome/common/transport_dib.h"
 #include "chrome/common/x11_util.h"
 #include "chrome/common/x11_util_internal.h"
+#include "gfx/rect.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 

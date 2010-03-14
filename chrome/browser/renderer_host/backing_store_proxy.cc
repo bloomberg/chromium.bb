@@ -4,13 +4,13 @@
 
 #include "chrome/browser/renderer_host/backing_store_proxy.h"
 
-#include "base/gfx/rect.h"
 #include "build/build_config.h"
 #include "chrome/browser/gpu_process_host.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/common/gpu_messages.h"
 #include "chrome/common/render_messages.h"
+#include "gfx/rect.h"
 
 #if defined(OS_WIN)
 #include <windows.h>

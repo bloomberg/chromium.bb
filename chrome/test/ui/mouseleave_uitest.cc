@@ -4,8 +4,6 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
-#include "base/gfx/point.h"
-#include "base/gfx/rect.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/values.h"
@@ -17,6 +15,8 @@
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/ui/javascript_test_util.h"
 #include "chrome/test/ui/ui_test.h"
+#include "gfx/point.h"
+#include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "views/event.h"

@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "base/gfx/rect.h"
+#include "gfx/rect.h"
 
 // This class is responsible for aggregating multiple invalidation and scroll
 // commands to produce a scroll and repaint sequence.

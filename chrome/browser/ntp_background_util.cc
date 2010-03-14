@@ -6,9 +6,9 @@
 
 #include "app/gfx/canvas.h"
 #include "app/gfx/skia_util.h"
-#include "base/gfx/rect.h"
 #include "base/logging.h"
 #include "chrome/browser/browser_theme_provider.h"
+#include "gfx/rect.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 

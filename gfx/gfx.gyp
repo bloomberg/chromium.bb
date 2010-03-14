@@ -17,6 +17,7 @@
         '../testing/gtest.gyp:gtest',
       ],
       'sources': [
+        'rect_unittest.cc',
         'run_all_unittests.cc',
         'test_suite.h',
       ],
@@ -54,6 +55,12 @@
       'sources': [
         'gfx_paths.cc',
         'gfx_paths.h',
+        'point.cc',
+        'point.h',
+        'rect.cc',
+        'rect.h',
+        'size.cc',
+        'size.h',
       ],
       'conditions': [
         ['OS=="win"', {

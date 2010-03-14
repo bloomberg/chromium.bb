@@ -7,10 +7,10 @@
 
 #include "app/animation.h"
 #include "app/gfx/native_widget_types.h"
-#include "base/gfx/rect.h"
 #include "base/timer.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/views/dropdown_bar_host.h"
+#include "gfx/rect.h"
 #include "views/controls/textfield/textfield.h"
 
 class BrowserView;

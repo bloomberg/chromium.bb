@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
-#include "base/gfx/size.h"
+#include "gfx/size.h"
 
 class SkBitmap;
 

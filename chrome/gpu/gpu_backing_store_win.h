@@ -11,8 +11,8 @@
 
 #include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
-#include "base/gfx/size.h"
 #include "chrome/common/transport_dib.h"
+#include "gfx/size.h"
 #include "ipc/ipc_channel.h"
 
 class GpuThread;

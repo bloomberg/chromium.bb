@@ -12,12 +12,12 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/gfx/point.h"
-#include "base/gfx/rect.h"
 #include "base/string16.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/navigation_types.h"
 #include "chrome/test/automation/autocomplete_edit_proxy.h"
+#include "gfx/point.h"
+#include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
 

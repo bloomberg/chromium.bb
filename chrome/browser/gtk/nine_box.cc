@@ -9,8 +9,8 @@
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
 #include "base/basictypes.h"
-#include "base/gfx/point.h"
 #include "base/logging.h"
+#include "gfx/point.h"
 
 namespace {
 

@@ -4,11 +4,11 @@
 
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
 
-#include "base/gfx/rect.h"
 #include "chrome/browser/renderer_host/test/test_backing_store.h"
 #include "chrome/browser/tab_contents/test_tab_contents.h"
 #include "chrome/common/dom_storage_common.h"
 #include "chrome/common/render_messages.h"
+#include "gfx/rect.h"
 
 using webkit_glue::PasswordForm;
 

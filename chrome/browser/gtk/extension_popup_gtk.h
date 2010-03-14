@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_GTK_EXTENSION_POPUP_GTK_H_
 #define CHROME_BROWSER_GTK_EXTENSION_POPUP_GTK_H_
 
-#include "base/gfx/rect.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/gtk/info_bubble_gtk.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
+#include "gfx/rect.h"
 
 class Browser;
 class ExtensionHost;

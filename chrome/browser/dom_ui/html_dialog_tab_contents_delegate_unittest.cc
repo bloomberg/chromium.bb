@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "base/gfx/rect.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/browser.h"
@@ -14,6 +13,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/browser_with_test_window_test.h"
 #include "chrome/test/test_browser_window.h"
+#include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

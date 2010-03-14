@@ -10,11 +10,11 @@
 #include <string>
 
 #include "app/slide_animation.h"
-#include "base/gfx/rect.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/owned_widget_gtk.h"
+#include "gfx/rect.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class CairoCachedSurface;

@@ -10,8 +10,8 @@
 #include <string>
 #include <vector>
 
-#include "base/gfx/point.h"
 #include "base/task.h"
+#include "gfx/point.h"
 
 class SkBitmap;
 

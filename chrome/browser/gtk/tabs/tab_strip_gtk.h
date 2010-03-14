@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/gfx/rect.h"
 #include "base/task.h"
 #include "base/message_loop.h"
 #include "chrome/browser/gtk/tabstrip_origin_provider.h"
@@ -18,6 +17,7 @@
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/owned_widget_gtk.h"
+#include "gfx/rect.h"
 
 class BrowserWindowGtk;
 class CustomDrawButton;

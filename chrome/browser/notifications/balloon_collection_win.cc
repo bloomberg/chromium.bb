@@ -4,9 +4,9 @@
 
 #include "chrome/browser/notifications/balloon_collection_impl.h"
 
-#include "base/gfx/rect.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/views/notifications/balloon_view.h"
+#include "gfx/rect.h"
 
 Balloon* BalloonCollectionImpl::MakeBalloon(const Notification& notification,
                                             Profile* profile) {

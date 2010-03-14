@@ -13,11 +13,11 @@
 #include "app/gfx/font.h"
 #include "app/slide_animation.h"
 #include "base/basictypes.h"
-#include "base/gfx/rect.h"
 #include "base/string16.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/owned_widget_gtk.h"
+#include "gfx/rect.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace gfx {

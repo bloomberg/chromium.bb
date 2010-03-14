@@ -14,10 +14,10 @@
 #include <vector>
 
 #include "app/gfx/native_widget_types.h"
-#include "base/gfx/rect.h"
 #include "base/basictypes.h"
 #include "chrome/common/common_param_traits.h"
 #include "chrome/common/webkit_param_traits.h"
+#include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_utils.h"
 #include "third_party/npapi/bindings/npapi.h"

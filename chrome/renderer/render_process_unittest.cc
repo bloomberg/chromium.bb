@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/gfx/rect.h"
 #include "base/sys_info.h"
 #include "base/string_util.h"
 #include "chrome/renderer/render_process_impl.h"
+#include "gfx/rect.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

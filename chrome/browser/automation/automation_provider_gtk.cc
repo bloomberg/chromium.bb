@@ -6,13 +6,13 @@
 
 #include <gtk/gtk.h>
 
-#include "base/gfx/point.h"
-#include "base/gfx/rect.h"
 #include "chrome/browser/automation/ui_controls.h"
 #include "chrome/browser/gtk/browser_window_gtk.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/view_id_util.h"
 #include "chrome/test/automation/automation_messages.h"
+#include "gfx/point.h"
+#include "gfx/rect.h"
 
 void AutomationProvider::SetWindowBounds(int handle, const gfx::Rect& bounds,
                                          bool* success) {

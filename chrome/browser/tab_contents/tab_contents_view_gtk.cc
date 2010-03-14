@@ -9,9 +9,6 @@
 #include <gtk/gtk.h>
 
 #include "app/gtk_dnd_util.h"
-#include "base/gfx/point.h"
-#include "base/gfx/rect.h"
-#include "base/gfx/size.h"
 #include "base/pickle.h"
 #include "base/string_util.h"
 #include "build/build_config.h"
@@ -35,6 +32,9 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
+#include "gfx/point.h"
+#include "gfx/rect.h"
+#include "gfx/size.h"
 #include "webkit/glue/webdropdata.h"
 
 using WebKit::WebDragOperation;

@@ -8,9 +8,9 @@
 #include <vector>
 
 #include "app/l10n_util.h"
-#include "base/gfx/rect.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "gfx/rect.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/table/table_view.h"
 #include "views/grid_layout.h"

@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/image_loading_tracker.h"
 
 #include "base/file_util.h"
-#include "base/gfx/size.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
@@ -13,6 +12,7 @@
 #include "base/thread.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/common/extensions/extension_resource.h"
+#include "gfx/size.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/image_decoder.h"

@@ -9,12 +9,12 @@
 #include <string>
 #include <vector>
 
-#include "base/gfx/rect.h"
 #include "base/ref_counted.h"
 #include "base/shared_memory.h"
 #include "base/task.h"
 #include "chrome/common/transport_dib.h"
 #include "chrome/plugin/command_buffer_stub.h"
+#include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel.h"
 #include "third_party/npapi/bindings/npapi.h"

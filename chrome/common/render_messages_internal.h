@@ -14,7 +14,6 @@
 
 #include "base/file_path.h"
 #include "base/nullable_string16.h"
-#include "base/gfx/rect.h"
 #include "base/sync_socket.h"
 #include "base/values.h"
 #include "chrome/common/content_settings.h"
@@ -23,6 +22,7 @@
 #include "chrome/common/nacl_types.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/page_zoom.h"
+#include "gfx/rect.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
@@ -951,7 +951,7 @@ IPC_BEGIN_MESSAGES(View)
   // incognito mode.
   IPC_MESSAGE_CONTROL1(ViewMsg_SetIsIncognitoProcess,
                        bool /* is_incognito_processs */)
-                      
+
 IPC_END_MESSAGES(View)
 
 

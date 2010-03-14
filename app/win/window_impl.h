@@ -13,8 +13,8 @@
 #include <string>
 
 #include "app/gfx/native_widget_types.h"
-#include "base/gfx/rect.h"
 #include "base/logging.h"
+#include "gfx/rect.h"
 
 namespace app {
 

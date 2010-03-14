@@ -10,9 +10,9 @@
 #include <pango/pangocairo.h>
 
 #include "app/gfx/font.h"
-#include "base/gfx/rect.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
+#include "gfx/rect.h"
 
 namespace {
 

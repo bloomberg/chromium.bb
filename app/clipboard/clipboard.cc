@@ -4,9 +4,9 @@
 
 #include "app/clipboard/clipboard.h"
 
-#include "base/gfx/size.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
+#include "gfx/size.h"
 
 namespace {
 

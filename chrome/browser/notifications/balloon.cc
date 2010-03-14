@@ -4,10 +4,10 @@
 
 #include "chrome/browser/notifications/balloon.h"
 
-#include "base/gfx/rect.h"
 #include "base/logging.h"
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/renderer_host/site_instance.h"
+#include "gfx/rect.h"
 
 Balloon::Balloon(const Notification& notification, Profile* profile,
                  BalloonCollection* collection)

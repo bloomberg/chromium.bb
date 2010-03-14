@@ -7,12 +7,12 @@
 #include "app/gfx/text_elider.h"
 #include "app/resource_bundle.h"
 #include "base/sys_string_conversions.h"
-#include "base/gfx/rect.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view_mac.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/bubble_positioner.h"
 #include "chrome/browser/cocoa/event_utils.h"
+#include "gfx/rect.h"
 #include "grit/theme_resources.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 

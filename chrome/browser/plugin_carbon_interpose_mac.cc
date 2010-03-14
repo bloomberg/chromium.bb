@@ -4,8 +4,8 @@
 
 #include <Carbon/Carbon.h>
 
-#include "base/gfx/rect.h"
 #include "chrome/plugin/plugin_interpose_util_mac.h"
+#include "gfx/rect.h"
 #include "webkit/glue/plugins/carbon_plugin_window_tracker_mac.h"
 
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"

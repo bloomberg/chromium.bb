@@ -10,7 +10,6 @@
 #include "base/mac_util.h"
 #include "base/nsimage_cache_mac.h"
 #include "base/sys_string_conversions.h"
-#include "base/gfx/rect.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/app_menu_model.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
@@ -40,6 +39,7 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
+#include "gfx/rect.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 

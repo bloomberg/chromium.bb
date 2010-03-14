@@ -10,7 +10,6 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
-#include "base/gfx/rect.h"
 #include "base/keyboard_codes.h"
 #include "base/string_util.h"
 #include "base/sys_info.h"
@@ -29,6 +28,7 @@
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/ui_test_utils.h"
 #include "chrome/test/ui/ui_test.h"
+#include "gfx/rect.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request_unittest.h"
 #define GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
