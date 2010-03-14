@@ -118,6 +118,12 @@ EVENT_TYPE(SOCKET_POOL_STALLED_MAX_SOCKETS)
 // The request stalled because there are too many sockets in the group.
 EVENT_TYPE(SOCKET_POOL_STALLED_MAX_SOCKETS_PER_GROUP)
 
+// A backup socket is created due to slow connect
+EVENT_TYPE(SOCKET_BACKUP_CREATED)
+
+// A backup socket is created due to slow connect
+EVENT_TYPE(SOCKET_BACKUP_TIMER_EXTENDED)
+
 // ------------------------------------------------------------------------
 // URLRequest
 // ------------------------------------------------------------------------
