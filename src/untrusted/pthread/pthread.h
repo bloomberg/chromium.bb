@@ -375,7 +375,10 @@ typedef struct {
 #define PTHREAD_CREATE_DETACHED 0
 
 /** Minimum stack size; for use with pthread_attr_setstacksize(). */
-#define PTHREAD_STACK_MIN (512 * 1024)
+#define PTHREAD_STACK_MIN     (1024)
+
+/* default stack size */
+#define PTHREAD_STACK_DEFAULT (512 * 1024)
 
 /* Thread functions  */
 

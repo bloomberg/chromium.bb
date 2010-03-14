@@ -136,7 +136,7 @@ static int nc_allocate_thread_id_mu(nc_basic_thread_data_t *basic_data) {
     }
     if (!found) {
       /* all the IDs are in use?! */
-      return -1;
+      return -EAGAIN;
     }
   }
 
@@ -232,9 +232,11 @@ static nc_thread_memory_block_t* nc_allocate_memory_block_mu(
   }
   /* no available blocks of the required type - allocate one */
   node = malloc(MEMORY_BLOCK_ALLOCATION_SIZE(required_size));
-  memset(node, 0, sizeof(*node));
-  node->size = required_size;
-  node->is_used = 1;
+  if (NULL != node) {
+    memset(node, 0, sizeof(*node));
+    node->size = required_size;
+    node->is_used = 1;
+  }
   return node;
 }
 
@@ -393,7 +395,7 @@ int pthread_create(pthread_t *thread_id,
                    pthread_attr_t *attr,
                    void *(*start_routine) (void *),
                    void *arg) {
-  int retval = -1;
+  int retval = -EAGAIN;
   void *esp;
   /* declare the variables outside of the while scope */
   nc_thread_memory_block_t *stack_node = NULL;
@@ -401,7 +403,7 @@ int pthread_create(pthread_t *thread_id,
   nc_thread_descriptor_t *new_tdb = NULL;
   nc_basic_thread_data_t *new_basic_data = NULL;
   nc_thread_memory_block_t *tls_node = NULL;
-  size_t stacksize = PTHREAD_STACK_MIN;
+  size_t stacksize = PTHREAD_STACK_DEFAULT;
 
   /* TODO(gregoryd) - right now a single lock is used, try to optimize? */
   pthread_mutex_lock(&__nc_thread_management_lock);
@@ -431,8 +433,9 @@ int pthread_create(pthread_t *thread_id,
     new_tdb->tls_node = tls_node;
 
     retval = nc_allocate_thread_id_mu(new_basic_data);
-    if (0 != retval)
+    if (0 != retval) {
       break;
+    }
 
     /* all the required members of the tdb must be initialized before
      * the thread is started and actually before the global lock is released,
@@ -448,7 +451,7 @@ int pthread_create(pthread_t *thread_id,
     /* Allocate the stack for the thread */
     stack_node = nc_allocate_memory_block_mu(THREAD_STACK_MEMORY, stacksize);
     if (NULL == stack_node) {
-      retval = -1;
+      retval = -EAGAIN;
       break;
     }
     thread_stack = NODE_TO_PAYLOAD(stack_node);
@@ -493,7 +496,7 @@ int pthread_create(pthread_t *thread_id,
   assert(0 == retval);
 
 ret:
-  if (retval) {
+  if (0 != retval) {
     /* failed to create a thread */
     pthread_mutex_lock(&__nc_thread_management_lock);
 
@@ -510,7 +513,8 @@ ret:
     *thread_id = -1;
   }
 
-  return retval;
+  /* pthread_create returns errno, not syscall ABI convention */
+  return -retval;
 }
 
 int __pthread_shutdown() {
@@ -796,7 +800,7 @@ int pthread_attr_init (pthread_attr_t *attr) {
     return EINVAL;
   }
   attr->joinable = PTHREAD_CREATE_JOINABLE;
-  attr->stacksize = PTHREAD_STACK_MIN;
+  attr->stacksize = PTHREAD_STACK_DEFAULT;
   return 0;
 }
 

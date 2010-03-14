@@ -1107,6 +1107,7 @@ nacl_env.Append(
     'tests/autoloader/nacl.scons',
     'tests/bundle_size/nacl.scons',
     'tests/contest_issues/nacl.scons',
+    'tests/egyptian_cotton/nacl.scons',
     'tests/fib/nacl.scons',
     'tests/file/nacl.scons',
     'tests/hello_world/nacl.scons',

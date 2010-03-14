@@ -23,8 +23,9 @@
 #include "native_client/src/trusted/service_runtime/nacl_tls.h"
 
 static struct NaClMutex gNaClTlsMu;
-static int gNaClThreadIdxInUse[NACL_THREAD_MAX];  /* bool */
 
+static int gNaClThreadIdxInUse[NACL_THREAD_MAX];  /* bool */
+static size_t const kNumThreads = NACL_ARRAY_SIZE_UNSAFE(gNaClThreadIdxInUse);
 
 static void NaClThreadStartupCheck() {
   /* Verify that the thread context size is what we expect */
@@ -41,7 +42,7 @@ static void NaClThreadStartupCheck() {
 static int NaClThreadIdxInit () {
   size_t i;
 
-  for (i = 0; i < NACL_ARRAY_SIZE(gNaClThreadIdxInUse); i++) {
+  for (i = 0; i < kNumThreads; i++) {
     gNaClThreadIdxInUse[i] = 0;
   }
   if (!NaClMutexCtor(&gNaClTlsMu)) {
@@ -57,13 +58,13 @@ static void NaClThreadIdxFini() {
 }
 
 /*
- * Returns -1 for error, [0, NACL_THREAD_MAX) on success.
+ * Returns -1 for error, [0, NACL_ARRAY_SIZE(gNaClThreadIdxInUse)) on success.
  */
 static int NaClThreadIdxAllocate() {
-  int i;
+  size_t i;
 
   NaClXMutexLock(&gNaClTlsMu);
-  for (i = 0; i < NACL_THREAD_MAX; i++) {
+  for (i = 0; i < kNumThreads; i++) {
     if (!gNaClThreadIdxInUse[i]) {
       gNaClThreadIdxInUse[i] = 1;
       break;
@@ -71,15 +72,15 @@ static int NaClThreadIdxAllocate() {
   }
   NaClXMutexUnlock(&gNaClTlsMu);
 
-  if (NACL_THREAD_MAX != i) {
-    return i;
+  if (NACL_ARRAY_SIZE(gNaClThreadIdxInUse) != i) {
+    return (int) i;
   }
   NaClLog(LOG_ERROR, "NaClAllocateThreadIdx: no more slots for a thread\n");
   return -1;
 }
 
 static void NaClThreadIdxFree(uint32_t i) {
-  CHECK(i < NACL_THREAD_MAX);
+  CHECK(i < kNumThreads);
 
   NaClXMutexLock(&gNaClTlsMu);
   gNaClThreadIdxInUse[i] = 0;

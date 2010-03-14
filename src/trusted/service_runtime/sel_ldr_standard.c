@@ -505,7 +505,10 @@ int32_t NaClCreateAdditionalThread(struct NaClApp *nap,
 
   natp = malloc(sizeof *natp);
   if (NULL == natp) {
-    return -NACL_ABI_ENOMEM;
+    NaClLog(LOG_WARNING,
+            ("NaClCreateAdditionalThread: no memory for new thread context."
+             "  Returning EAGAIN per POSIX specs.\n"));
+    return -NACL_ABI_EAGAIN;
   }
 
   stack_ptr = NaClSysToUserStackAddr(nap, sys_stack_ptr);
@@ -533,7 +536,11 @@ int32_t NaClCreateAdditionalThread(struct NaClApp *nap,
                                  stack_ptr,
                                  sys_tdb,
                                  tdb_size)) {
-    return -NACL_ABI_ENOMEM;
+    NaClLog(LOG_WARNING,
+            ("NaClCreateAdditionalThread: could not allocate thread index."
+             "  Returning EAGAIN per POSIX specs.\n"));
+    free(natp);
+    return -NACL_ABI_EAGAIN;
   }
   return 0;
 }

@@ -18,12 +18,13 @@
 
 #include "native_client/src/trusted/service_runtime/arch/x86/nacl_ldt_x86.h"
 
-#define NACL_THREAD_MAX     LDT_ENTRIES
 
 #if NACL_BUILD_SUBARCH == 32
 # define NACL_MAX_ADDR_BITS  (30)
+# define NACL_THREAD_MAX     LDT_ENTRIES  /* cannot be larger */
 #elif NACL_BUILD_SUBARCH == 64
 # define NACL_MAX_ADDR_BITS  (32)
+# define NACL_THREAD_MAX     LDT_ENTRIES  /* can be larger */
 #else
 # error "Did Intel or AMD introduce the 128-bit x86?"
 #endif

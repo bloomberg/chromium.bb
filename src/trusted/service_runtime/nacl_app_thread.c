@@ -35,7 +35,6 @@ void WINAPI NaClThreadLauncher(void *state) {
 
   NaClTlsSetIdx(NaClGetThreadIdx(natp));
 
-  NaClLog(4, "Obtaining thread_num\n");
   /*
    * We have to hold the threads_mu lock until after thread_num field
    * in this thread has been initialized.  All other threads can only
@@ -45,7 +44,6 @@ void WINAPI NaClThreadLauncher(void *state) {
   NaClXMutexLock(&natp->nap->threads_mu);
   natp->thread_num = NaClAddThreadMu(natp->nap, natp);
   NaClXMutexUnlock(&natp->nap->threads_mu);
-  NaClLog(4, "thread num %d\n", natp->thread_num);
 
   /*
    * We need to set an exception handler in every thread we start,

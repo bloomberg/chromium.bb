@@ -1,0 +1,66 @@
+# -*- python -*-
+# Copyright 2010 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+Import('env')
+
+# NOTE: make sure we can compile these benchmarks without libsrpc
+#       sadly this does not do anything on x86 since libsrpc
+#       is added by the driver
+env.Replace(LIBS=['pthread', 'c', 'nacl'])
+
+env.ComponentProgram('egyptian_cotton.nexe', 'egyptian_cotton.c')
+
+# this test accepts the number of threads to attempt to create as an
+# argument. NACL_THREAD_MAX is 8192 for x86-32 and x86-64, and 4096
+# for the Arm.  See the header files
+# src/trusted/service_runtime/arch/{x86,arm}/sel_ldr_{x86,arm}.h for
+# the current values (and update this comment to reflect reality!).
+# On the x86_32, the actual number of threads possible is slightly
+# fewer than 8192, since the service runtime's trusted internal
+# threads use the same resource pool.  In practice, 8189 works as of
+# this writing (2010-03-10), but applications should not rely on this
+# going forward, and we only test for 8180 below.  Furthermore, there
+# may be other limitations, e.g, for x86_32, OSX may limit us to far
+# fewer than 8192 (got to 2558 in one test run, when egyptian_cotton
+# was compiled as a standalone non-NaCl program.)
+#
+# The following runs the test with different numbers of threads to be
+# spawned depending on the architecture.  For the Arm, it is 4095
+# threads.  Note that the main thread also counts as one more thread.
+#
+# BUG(bsy): With the Arm architecture under qemu, spawning more than 3
+# threads under will cause qemu to deadlock on exit, even though the
+# test passes, so this is marked as a hardware-only test.  If we were
+# to compile this using the trusted toolchain and run the resultant
+# Arm binary under qemu, qemu will segfault at 375 threads.  It is
+# unclear as of this writing (2010-03-11) whether this is a qemu bug
+# or a limitation/bug of the codesourcery pthread library.
+
+test_suites = ['small_tests', 'sel_ldr_tests']
+
+large_stack_args = ['--', '-s', '0x400000', '-n', '4095', '-f' ]
+
+if env['TARGET_ARCHITECTURE'] == 'arm':
+  test_suites = ['small_tests_arm_hw_only']
+  thread_count_args = ['--', '-n', '4095']
+else:
+  thread_count_args = ['--', '-n', '8180']
+
+tests = [ ('egyptian_cotton_test', thread_count_args),
+          ('thread_stack_alloc_test', large_stack_args) ]
+
+for name, args in tests:
+  env.CommandSelLdrTestNacl(name + '.out',
+                            command = [env.File('egyptian_cotton_test.nexe')]
+                            + args)
+
+# TODO(bsy): enable in a separate CL after new SDKs for all
+# architectures are available
+
+if False:
+  for p, n in zip(tests, nodes):
+    env.AddNodeToTestSuite(n,
+                           test_suites,
+                           'run_' + p[0])
