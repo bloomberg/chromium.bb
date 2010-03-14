@@ -11,7 +11,6 @@
 
 #include "gen/native_client/src/shared/npruntime/npmodule_rpc.h"
 #include "gen/native_client/src/shared/npruntime/npnavigator_rpc.h"
-#include "gpu/command_buffer/common/command_buffer.h"
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/include/portability_process.h"
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
@@ -32,8 +31,11 @@
 using nacl::NPIdentifierToWireFormat;
 using nacl::NPModule;
 using nacl::NPObjectToWireFormat;
+using nacl::NPVariantsToWireFormat;
 using nacl::WireFormatToNPIdentifier;
 using nacl::WireFormatToNPP;
+using nacl::WireFormatToNPObject;
+using nacl::WireFormatToNPString;
 
 NaClSrpcError NPModuleRpcServer::NPN_GetValueBoolean(NaClSrpcChannel* channel,
                                                      int32_t wire_npp,
@@ -89,6 +91,36 @@ NaClSrpcError NPModuleRpcServer::NPN_GetValueObject(
   return NACL_SRPC_RESULT_OK;
 }
 
+NaClSrpcError NPModuleRpcServer::NPN_Evaluate(
+    NaClSrpcChannel* channel,
+    int32_t wire_npp,
+    nacl_abi_size_t obj_length,
+    char* obj_bytes,
+    nacl_abi_size_t str_length,
+    char* str_bytes,
+    int32_t* success,
+    nacl_abi_size_t* result_length,
+    char* result_bytes) {
+  UNREFERENCED_PARAMETER(channel);
+  NPP npp = WireFormatToNPP(wire_npp);
+
+  // Initialize to report error
+  *success = 0;
+  // Get the object.
+  NPObject* object = WireFormatToNPObject(npp, obj_bytes, obj_length);
+  // Get the string.
+  NPString str;
+  if (!WireFormatToNPString(str_bytes, str_length, &str)) {
+    return NACL_SRPC_RESULT_OK;
+  }
+  NPVariant result;
+  *success = ::NPN_Evaluate(npp, object, &str, &result);
+  if (!NPVariantsToWireFormat(npp, &result, 1, result_bytes, result_length)) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+  return NACL_SRPC_RESULT_OK;
+}
+
 NaClSrpcError NPModuleRpcServer::NPN_SetStatus(NaClSrpcChannel* channel,
                                                int32_t wire_npp,
                                                char* status) {
@@ -97,48 +129,6 @@ NaClSrpcError NPModuleRpcServer::NPN_SetStatus(NaClSrpcChannel* channel,
   if (NULL != status) {
     ::NPN_Status(WireFormatToNPP(wire_npp), status);
   }
-  return NACL_SRPC_RESULT_OK;
-}
-
-NaClSrpcError NPModuleRpcServer::NPN_CreateArray(NaClSrpcChannel* channel,
-                                                 int32_t wire_npp,
-                                                 int32_t* success,
-                                                 nacl_abi_size_t* object_length,
-                                                 char* object_bytes) {
-  UNREFERENCED_PARAMETER(channel);
-  NPP npp = WireFormatToNPP(wire_npp);
-  *success = 0;
-
-  // Get the window object and create a new array.
-  NPObject* window;
-  if (NPERR_NO_ERROR != ::NPN_GetValue(npp, NPNVWindowNPObject, &window)) {
-    return NACL_SRPC_RESULT_OK;
-  }
-  NPString script;
-  const char scriptText[] = "new Array();";
-  script.UTF8Characters = scriptText;
-  script.UTF8Length = nacl::assert_cast<uint32>(strlen(scriptText));
-  NPVariant result;
-  VOID_TO_NPVARIANT(result);
-  if (::NPN_Evaluate(npp, window, &script, &result) &&
-      NPVARIANT_IS_OBJECT(result) &&
-      NULL != NPVARIANT_TO_OBJECT(result)) {
-    char* serialized_result = NPObjectToWireFormat(npp,
-                                                   NPVARIANT_TO_OBJECT(result),
-                                                   object_bytes,
-                                                   object_length);
-    // TODO(sehr): we should decrement a local reference count here to avoid
-    // leaking result. It appears we need a NPN_ReleaseVariantValue(result).
-    if (NULL == serialized_result) {
-      return NACL_SRPC_RESULT_APP_ERROR;
-    }
-    *success = 1;
-  } else {
-    // Don't send anything back other than the success code.
-    *object_length = 0;
-  }
-  NPN_ReleaseObject(window);
-
   return NACL_SRPC_RESULT_OK;
 }
 

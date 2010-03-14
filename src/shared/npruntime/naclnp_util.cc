@@ -15,16 +15,6 @@
 #include "native_client/src/shared/npruntime/npnavigator.h"
 #endif  // __native_client__
 
-#ifdef __native_client__
-NPObject* NaClNPN_CreateArray(NPP npp) {
-  nacl::NPNavigator* navigator = static_cast<nacl::NPNavigator*>(npp->ndata);
-  if (NULL == navigator) {
-    return NULL;
-  }
-  return navigator->CreateArray(npp);
-}
-#endif  // __native_client__
-
 namespace {
 
 enum DebugState {

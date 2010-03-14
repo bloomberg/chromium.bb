@@ -20,18 +20,20 @@
                        ['result', 'char[]'],
                       ]
           },
+          {'name': 'NPN_Evaluate',
+           'inputs': [['npp', 'int32_t'],
+                      ['obj', 'char[]'],
+                      ['str', 'char[]'],
+                     ],
+           'outputs': [['nperr', 'int32_t'],
+                       ['result', 'char[]'],
+                      ]
+          },
           {'name': 'NPN_SetStatus',
            'inputs': [['npp', 'int32_t'],
                       ['status', 'string'],
                      ],
            'outputs': []
-          },
-          {'name': 'NPN_CreateArray',
-           'inputs': [['npp', 'int32_t'],
-                     ],
-           'outputs': [['success', 'int32_t'],
-                       ['capability', 'char[]'],
-                      ]
           },
           {'name': 'NPN_GetURL',
            'inputs': [['npp', 'int32_t'],

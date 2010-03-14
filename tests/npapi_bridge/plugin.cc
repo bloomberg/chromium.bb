@@ -8,9 +8,11 @@
 #include "native_client/tests/npapi_bridge/plugin.h"
 
 #include <stdio.h>
-#include <string.h>
 #include <pthread.h>
-#include <cstring>
+#include <string.h>
+#include <nacl/nacl_srpc.h>
+
+// TODO(sehr): Break this test into multiple NPAPI feature tests.
 
 NPIdentifier ScriptablePluginObject::id_append_child;
 NPIdentifier ScriptablePluginObject::id_bar;
@@ -182,7 +184,7 @@ bool ScriptablePluginObject::Invoke(NPIdentifier name,
 
 void ScriptablePluginObject::Notify(const char* url,
                                     void* notify_data,
-                                    NaClSrpcImcDescType handle) {
+                                    int handle) {
   // TODO(sehr): reimplement a test for file download.
   NPP npp = static_cast<NPP>(notify_data);
   if (handle == kNaClSrpcInvalidImcDesc) {
@@ -203,22 +205,26 @@ void ScriptablePluginObject::Notify(const char* url,
   if (0 < count) {
     printf("%.*s", count, buffer);
 
-    NPVariant string;
-    STRINGZ_TO_NPVARIANT("div", string);
+    NPVariant div_name_variant;
+    STRINGZ_TO_NPVARIANT("div", div_name_variant);
 
     NPVariant div;
     VOID_TO_NPVARIANT(div);
-    if (NPN_Invoke(npp, NPVARIANT_TO_OBJECT(document), id_create_element,
-                   &string, 1, &div) &&
+    if (NPN_Invoke(npp,
+                   NPVARIANT_TO_OBJECT(document),
+                   id_create_element,
+                   &div_name_variant,
+                   1,
+                   &div) &&
         NPVARIANT_IS_OBJECT(div)) {
-      STRINGN_TO_NPVARIANT(buffer, count - 1, string);
+      STRINGN_TO_NPVARIANT(buffer, count - 1, div_name_variant);
 
       NPVariant text;
       VOID_TO_NPVARIANT(text);
       if (NPN_Invoke(npp,
                      NPVARIANT_TO_OBJECT(document),
                      id_create_text_node,
-                     &string,
+                     &div_name_variant,
                      1,
                      &text) &&
           NPVARIANT_IS_OBJECT(text)) {
@@ -271,7 +277,19 @@ bool ScriptablePluginObject::Cycling(const NPVariant* args,
 }
 
 bool ScriptablePluginObject::GetBar(NPVariant* result) {
-  NPObject* object = NaClNPN_CreateArray(npp_);
+  // Initialize the return value.
+  NULL_TO_NPVARIANT(*result);
+  // Create a new JavaScript array object.
+  NPVariant variant;
+  NPString npstr;
+  npstr.UTF8Characters = "new Array();";
+  npstr.UTF8Length = static_cast<uint32>(strlen(npstr.UTF8Characters));
+  if (!NPN_Evaluate(npp_, window_object, &npstr, &variant) ||
+      !NPVARIANT_IS_OBJECT(variant)) {
+    return true;
+  }
+  // Set the properties.
+  NPObject* object = NPVARIANT_TO_OBJECT(variant);
   if (object) {
     NPVariant value;
     INT32_TO_NPVARIANT(12, value);
@@ -279,13 +297,7 @@ bool ScriptablePluginObject::GetBar(NPVariant* result) {
     INT32_TO_NPVARIANT(34, value);
     NPN_SetProperty(npp_, object, NPN_GetIntIdentifier(1), &value);
     OBJECT_TO_NPVARIANT(object, *result);
-  } else {
-    NULL_TO_NPVARIANT(*result);
   }
-
-  // TODO(sehr): This still needs to be implemented.
-  // NaClNPN_OpenURL(npp_, "hello_npapi.txt", npp_, Notify);
-
   return true;
 }
 
@@ -314,15 +326,15 @@ bool ScriptablePluginObject::FillRect(const NPVariant* args,
     return false;
   }
 
-  NPVariant string;
-  STRINGZ_TO_NPVARIANT("2d", string);
+  NPVariant str_variant;
+  STRINGZ_TO_NPVARIANT("2d", str_variant);
 
   NPVariant context;
   VOID_TO_NPVARIANT(context);
   if (!NPN_Invoke(npp_,
                   NPVARIANT_TO_OBJECT(canvas),
                   id_get_context,
-                  &string,
+                  &str_variant,
                   1,
                   &context) ||
       !NPVARIANT_IS_OBJECT(context)) {
@@ -336,19 +348,22 @@ bool ScriptablePluginObject::FillRect(const NPVariant* args,
   count = (count + 1) % 3;
   switch (count) {
   case 0:
-    STRINGZ_TO_NPVARIANT("rgb(255, 0, 0)", string);
+    STRINGZ_TO_NPVARIANT("rgb(255, 0, 0)", str_variant);
     NPN_Status(npp_, "rgb(255, 0, 0)");
     break;
   case 1:
-    STRINGZ_TO_NPVARIANT("rgb(0, 255, 0)", string);
+    STRINGZ_TO_NPVARIANT("rgb(0, 255, 0)", str_variant);
     NPN_Status(npp_, "rgb(0, 255, 0)");
     break;
   case 2:
-    STRINGZ_TO_NPVARIANT("rgb(0, 0, 255)", string);
+    STRINGZ_TO_NPVARIANT("rgb(0, 0, 255)", str_variant);
     NPN_Status(npp_, "rgb(0, 0, 255)");
     break;
   }
-  NPN_SetProperty(npp_, NPVARIANT_TO_OBJECT(context), id_fill_style, &string);
+  NPN_SetProperty(npp_,
+                  NPVARIANT_TO_OBJECT(context),
+                  id_fill_style,
+                  &str_variant);
 
   NPVariant rect[4];
   DOUBLE_TO_NPVARIANT(0.0, rect[0]);
@@ -443,7 +458,6 @@ bool ScriptablePluginObject::UseProxy(const NPVariant* args,
 bool ScriptablePluginObject::Paint(const NPVariant* args,
                                    uint32_t arg_count,
                                    NPVariant* result) {
-  printf("paint called!\n");
   Plugin* plugin = static_cast<Plugin*>(npp_->pdata);
   if (NULL != plugin) {
     VOID_TO_NPVARIANT(*result);

@@ -32,7 +32,7 @@ class NPNavigator : public NPBridge {
   // Compares two strings in string_set.
   struct StringCompare {
     bool operator()(const NPUTF8* left, const NPUTF8* right) const {
-      return (strcmp(left, right) < 0) ? true : false;
+      return (strcmp(left, right) < 0);
     }
   };
 
@@ -91,8 +91,6 @@ class NPNavigator : public NPBridge {
   NPError GetValue(NPP npp, NPNVariable var, NPBool* value);
   // Sends NPN_GetValue request for an NPObject to the plugin.
   NPError GetValue(NPP npp, NPNVariable var, NPObject** value);
-  // Sends NaClNPN_CreateArray request to the plugin.
-  NPObject* CreateArray(NPP npp);
   // Sends NPN_GetURL request to the plugin.
   NPError GetUrl(NPP npp, const char* url, const char* target);
   // Sends NPN_GetURLNotify request to the plugin.

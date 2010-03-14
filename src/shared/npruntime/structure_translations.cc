@@ -14,6 +14,9 @@ using nacl::NPBridge;
 using nacl::NPCapability;
 using nacl::NPObjectStub;
 
+// TODO(sehr): Numerous interfaces in this file use char* and length, where
+// it would be nicer to use strings.  Do so.
+
 struct SerializedFixed {
   uint32_t type;
   union {
@@ -351,7 +354,7 @@ char* NPCapabilityToWireFormat(NPCapability* capability,
   // Serialization is just a memcpy.
   memcpy(reinterpret_cast<void*>(bytes),
          reinterpret_cast<const void*>(capability),
-         static_cast<size_t>(*length));
+         static_cast<size_t>(sizeof(*capability)));
   // Return success.
   *length = static_cast<nacl_abi_size_t>(sizeof(*capability));
   return bytes;
@@ -383,8 +386,7 @@ char* NPObjectToWireFormat(NPP npp,
                            char* bytes,
                            nacl_abi_size_t* length) {
   // Check the parameters.
-  if (NULL == object ||
-      NULL == length ||
+  if (NULL == length ||
       sizeof(NPCapability) > *length) {
     return false;
   }
@@ -440,6 +442,7 @@ char* NPStringToWireFormat(NPString* string,
   memcpy(bytes + sizeof(uint32_t),
          string->UTF8Characters,
          string->UTF8Length);
+  *length = static_cast<nacl_abi_size_t>(tmp_length);
   return bytes;
 }
 

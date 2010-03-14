@@ -387,28 +387,48 @@ bool NPNavigator::Evaluate(NPP npp,
                            NPObject* object,
                            NPString* script,
                            NPVariant* result) {
-  // TODO(sehr): Implement an RPC and a test for NPN_Evaluate.
-  return false;
-}
-
-NPObject* NPNavigator::CreateArray(NPP npp) {
-  char ret_bytes[sizeof(NPCapability)];
-  nacl_abi_size_t ret_length = static_cast<nacl_abi_size_t>(sizeof(ret_bytes));
+  // Initialize the result.
+  VOID_TO_NPVARIANT(*result);
+  // Serialize the argument vector.
+  nacl_abi_size_t obj_length = kNaClAbiSizeTMax;
+  char* obj_bytes = NPObjectToWireFormat(npp, object, NULL, &obj_length);
+  if (NULL == obj_bytes || 0 == obj_length) {
+    return false;
+  }
   int32_t success;
-
-  if (NACL_SRPC_RESULT_OK !=
-      NPModuleRpcClient::NPN_CreateArray(
-          channel(),
-          NPPToWireFormat(npp),
-          &success,
-          &ret_length,
-          ret_bytes)) {
-    return NULL;
+  nacl_abi_size_t str_length = kNaClAbiSizeTMax;
+  char* str_bytes = NPStringToWireFormat(script, NULL, &str_length);
+  if (NULL == str_bytes || 0 == str_length) {
+    return false;
   }
-  if (!success) {
-    return NULL;
+  // TODO(sehr): return space should really be allocated by the invoked method.
+  char ret_bytes[kNPVariantSizeMax];
+  nacl_abi_size_t ret_length =
+      static_cast<nacl_abi_size_t>(sizeof(ret_bytes));
+  // Perform the RPC.
+  NaClSrpcError srpc_result =
+      NPModuleRpcClient::NPN_Evaluate(channel(),
+                                      NPPToWireFormat(npp),
+                                      obj_length,
+                                      obj_bytes,
+                                      str_length,
+                                      str_bytes,
+                                      &success,
+                                      &ret_length,
+                                      ret_bytes);
+  // Free the serialized args.
+  delete obj_bytes;
+  delete str_bytes;
+  // Check that the RPC layer worked correctly.
+  if (NACL_SRPC_RESULT_OK != srpc_result) {
+    return false;
   }
-  return WireFormatToNPObject(npp, ret_bytes, ret_length);
+  // If the RPC was successful, get the result.
+  if (success &&
+      WireFormatToNPVariants(npp, ret_bytes, ret_length, 1, result)) {
+    return true;
+  }
+  return false;
 }
 
 // Returns a canonical version of a string that can be used to lookup

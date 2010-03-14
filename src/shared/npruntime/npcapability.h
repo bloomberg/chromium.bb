@@ -7,8 +7,13 @@
 #ifndef NATIVE_CLIENT_SRC_SHARED_NPRUNTIME_NPCAPABILITY_H_
 #define NATIVE_CLIENT_SRC_SHARED_NPRUNTIME_NPCAPABILITY_H_
 
-#include <assert.h>
-#include "native_client/src/shared/npruntime/nacl_npapi.h"
+#ifdef __native_client__
+#include <stdint.h>
+#include <sys/types.h>
+#include <sys/nacl_imc_api.h>
+#else
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
+#endif  // __native_client__
 
 namespace nacl {
 
@@ -62,7 +67,7 @@ inline bool operator<(const NPCapability& c1, const NPCapability& c2) {
 }
 
 inline bool operator==(const NPCapability& c1, const NPCapability& c2) {
-  return (c1.pid() == c2.pid() && c1.object() == c2.object()) ? true : false;
+  return (c1.pid() == c2.pid() && c1.object() == c2.object());
 }
 
 }  // namespace nacl
