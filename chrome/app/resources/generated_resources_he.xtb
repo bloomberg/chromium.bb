@@ -53,7 +53,6 @@
 <translation id="8178665534778830238">תוכן:</translation>
 <translation id="8974161578568356045">אתר באופן אוטומטי</translation>
 <translation id="1818606096021558659">דף</translation>
-<translation id="5388588172257446328">שם משתמש:</translation>
 <translation id="1657406563541664238">עזור להפוך את <ph name="PRODUCT_NAME"/> לטוב יותר, על ידי שליחה אוטומטית של סטטיסטיקות שימוש ודוחות קריסה אל Google</translation>
 <translation id="7982789257301363584">רשת</translation>
 <translation id="2336228925368920074">צור סימניה לכל הכרטיסיות...</translation>
@@ -333,7 +332,6 @@
 <translation id="6178664161104547336">בחר אישור</translation>
 <translation id="5702898740348134351">&amp;ערוך מנועי חיפוש...</translation>
 <translation id="2365740070488517695">עצות</translation>
-<translation id="4668929960204016307">,</translation>
 <translation id="2869459179306435079">ייבא הגדרות מ:</translation>
 <translation id="732677191631732447">ה&amp;עתק כתובת אתר של שמע</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME"/></translation>
@@ -804,7 +802,6 @@
 <translation id="2979639724566107830">פתח בחלון חדש</translation>
 <translation id="3381479211481266345">תלות במהירות</translation>
 <translation id="2822854841007275488">ערבית</translation>
-<translation id="5857090052475505287">תיקיות חדשות</translation>
 <translation id="5178667623289523808">מצא את הקודם</translation>
 <translation id="2815448242176260024">אל תשמור סיסמאות לעולם</translation>
 <translation id="2989805286512600854">פתח בכרטיסייה חדשה</translation>
@@ -1118,7 +1115,6 @@
 <translation id="8629974950076222828">פתח את כל הסימניות בחלון נסתר</translation>
 <translation id="4745438305783437565"><ph name="NUMBER_FEW"/> דקות</translation>
 <translation id="2649911884196340328">אישור האבטחה של השרת הכיל שגיאות!</translation>
-<translation id="3828029223314399057">חפש סימניות</translation>
 <translation id="8906421963862390172">&amp;אפשרויות בודק האיות</translation>
 <translation id="1963692530539281474">נותרו <ph name="NUMBER_DEFAULT"/> ימים</translation>
 <translation id="668171684555832681">אחר...</translation>
@@ -1289,7 +1285,6 @@ Del</translation>
 שמור על קובץ המפתח שלך במקום בטוח. תצטרך אותו כדי ליצור גרסאות חדשות של ההרחבה שלך.</translation>
 <translation id="3036649622769666520">פתח קבצים</translation>
 <translation id="7685049629764448582">זיכרון JavaScript</translation>
-<translation id="3989635538409502728">צא</translation>
 <translation id="4508765956121923607">הצג מ&amp;קור</translation>
 <translation id="8080048886850452639">הע&amp;תק כתובת אתר של שמע</translation>
 <translation id="5849869942539715694">ארוז הרחבה...</translation>

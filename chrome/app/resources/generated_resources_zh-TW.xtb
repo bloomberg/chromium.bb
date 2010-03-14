@@ -53,7 +53,6 @@
 <translation id="8178665534778830238">內容:</translation>
 <translation id="8974161578568356045">自動偵測</translation>
 <translation id="1818606096021558659">網頁</translation>
-<translation id="5388588172257446328">使用者名稱：</translation>
 <translation id="1657406563541664238">只要自動傳送使用統計資料及當機報告給 Google，就能助我們一臂之力，讓「<ph name="PRODUCT_NAME"/>」更臻完美</translation>
 <translation id="7982789257301363584">網路</translation>
 <translation id="2336228925368920074">將所有分頁加入書籤...</translation>
@@ -333,7 +332,6 @@
 <translation id="6178664161104547336">選取憑證</translation>
 <translation id="5702898740348134351">編輯搜尋引擎(&amp;E)...</translation>
 <translation id="2365740070488517695">提示</translation>
-<translation id="4668929960204016307">,</translation>
 <translation id="2869459179306435079">匯入設定自:</translation>
 <translation id="732677191631732447">複製音訊網址(&amp;O)</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME"/></translation>
@@ -803,7 +801,6 @@
 <translation id="2979639724566107830">於新視窗中開啟</translation>
 <translation id="3381479211481266345">速度敏感度：</translation>
 <translation id="2822854841007275488">阿拉伯文</translation>
-<translation id="5857090052475505287">新資料夾</translation>
 <translation id="5178667623289523808">尋找上一個項目</translation>
 <translation id="2815448242176260024">永不儲存密碼</translation>
 <translation id="2989805286512600854">在新分頁中開啟</translation>
@@ -1112,7 +1109,6 @@
 <translation id="8629974950076222828">所有書籤均在無痕式視窗中開啟</translation>
 <translation id="4745438305783437565"><ph name="NUMBER_FEW"/> 分鐘</translation>
 <translation id="2649911884196340328">伺服器的安全性憑證有錯誤!</translation>
-<translation id="3828029223314399057">搜尋書籤</translation>
 <translation id="8906421963862390172">拼字檢查工具選項(&amp;S)</translation>
 <translation id="1963692530539281474">剩下 <ph name="NUMBER_DEFAULT"/> 天</translation>
 <translation id="668171684555832681">其他...</translation>

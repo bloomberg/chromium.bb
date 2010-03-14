@@ -299,7 +299,7 @@
 <translation id="3511307672085573050">Копиране на адреса на вр&amp;ъзката</translation>
 <translation id="1134009406053225289">Отваряне на прозорец при използване на функцията „инкогнито“</translation>
 <translation id="6655190889273724601">Режим за програмисти</translation>
-<translation id="3473105180351527598">Да се активира защитата от „фишинг“ и злонамерен софтуер</translation>
+<translation id="3473105180351527598">Да се активира защитата срещу фишинг и злонамерен софтуер</translation>
 <translation id="6151323131516309312">Натиснете <ph name="SEARCH_KEY"/>, за да търсите с <ph name="SITE_NAME"/></translation>
 <translation id="8774154763730062725">Ново изключение</translation>
 <translation id="2342959293776168129">Изчистване на историята на изтеглянията</translation>
@@ -1112,7 +1112,6 @@
 <translation id="8629974950076222828">Отваряне на всички отметки в прозорец при използване на функцията „инкогнито“</translation>
 <translation id="4745438305783437565"><ph name="NUMBER_FEW"/> мин</translation>
 <translation id="2649911884196340328">Сертификатът за сигурност на сървъра съдържа грешки!</translation>
-<translation id="3828029223314399057">Търсене в отметките</translation>
 <translation id="8906421963862390172">&amp;Опции на програмата за проверка на правописа</translation>
 <translation id="1963692530539281474">Остават <ph name="NUMBER_DEFAULT"/> дни</translation>
 <translation id="668171684555832681">Друг...</translation>

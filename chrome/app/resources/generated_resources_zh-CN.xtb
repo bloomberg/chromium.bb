@@ -149,7 +149,7 @@
 <translation id="8806796506533854282">输入新的配置文件名称</translation>
 <translation id="2551763528995812091">密码和例外</translation>
 <translation id="3314070176311241517">允许所有网站运行 JavaScript（推荐）</translation>
-<translation id="5710740561465385694">在网站尝试设置数据前向我询问</translation>
+<translation id="5710740561465385694">在网站尝试设置数据时向我询问</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="2263497240924215535">（已停用）</translation>
 <translation id="6360709384096878403">报告错误或内容显示不全的网站...</translation>
@@ -1119,7 +1119,6 @@
 <translation id="8629974950076222828">在隐身窗口中打开所有书签</translation>
 <translation id="4745438305783437565"><ph name="NUMBER_FEW"/> mins</translation>
 <translation id="2649911884196340328">该服务器的安全证书有误！</translation>
-<translation id="3828029223314399057">搜索书签</translation>
 <translation id="8906421963862390172">拼写检查选项(&amp;S)</translation>
 <translation id="1963692530539281474">还有 <ph name="NUMBER_DEFAULT"/> 天</translation>
 <translation id="668171684555832681">其他...</translation>
@@ -1133,7 +1132,7 @@
 <translation id="4861833787540810454">播放(&amp;P)</translation>
 <translation id="2552545117464357659">往后</translation>
 <translation id="5869522115854928033">已保存的密码</translation>
-<translation id="1709220265083931213">高级设置</translation>
+<translation id="1709220265083931213">高级选项</translation>
 <translation id="4771973620359291008">发生未知错误。</translation>
 <translation id="762904068808419792">在此处键入您的搜索查询</translation>
 <translation id="8155798677707647270">正在安装新版本...</translation>
@@ -1231,7 +1230,7 @@
 <translation id="385051799172605136">后退</translation>
 <translation id="1208126399996836490">不要重置</translation>
 <translation id="4085298594534903246">已拦截此网页上的 JavaScript。</translation>
-<translation id="4341977339441987045">拦截网站设置任何数据</translation>
+<translation id="4341977339441987045">阻止网站设置任何数据</translation>
 <translation id="806812017500012252">按标题重新排序</translation>
 <translation id="2960316970329790041">停止导入</translation>
 <translation id="5361734574074701223">正在计算剩余时间</translation>

@@ -306,7 +306,7 @@
 <translation id="2503522102815150840">A böngésző összeomlott</translation>
 <translation id="425878420164891689">Idő számítása, amíg meg nem telik</translation>
 <translation id="1272079795634619415">Leállítás</translation>
-<translation id="6786747875388722282">Kiterjesztések</translation>
+<translation id="6786747875388722282">Bővítmények</translation>
 <translation id="9053965862400494292">Hiba történt a szinkronizáláshoz való felkészülés során.</translation>
 <translation id="2815500128677761940">Könyvjelzősáv</translation>
 <translation id="2734328706317076756">Könyvjelzők szinkronizálása...</translation>
@@ -1112,7 +1112,6 @@
 <translation id="8629974950076222828">Az összes könyvjelző megnyitása inkognitóablakban</translation>
 <translation id="4745438305783437565"><ph name="NUMBER_FEW"/> perc</translation>
 <translation id="2649911884196340328">A szerver biztonsági tanúsítványa hibás.</translation>
-<translation id="3828029223314399057">Könyvjelzők keresése</translation>
 <translation id="8906421963862390172">&amp;Helyesírás-ellenőrző beállításai</translation>
 <translation id="1963692530539281474"><ph name="NUMBER_DEFAULT"/> nap van hátra</translation>
 <translation id="668171684555832681">Egyéb...</translation>

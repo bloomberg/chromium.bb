@@ -53,7 +53,6 @@
 <translation id="8178665534778830238">Indhold:</translation>
 <translation id="8974161578568356045">Find automatisk</translation>
 <translation id="1818606096021558659">Side</translation>
-<translation id="5388588172257446328">Brugernavn:</translation>
 <translation id="1657406563541664238">Vær med til at gøre <ph name="PRODUCT_NAME"/> bedre ved automatisk at sende forbrugsstatistikker og rapportere om nedbrud til Google</translation>
 <translation id="7982789257301363584">Netværk</translation>
 <translation id="2336228925368920074">Føj alle faner til Bogmærker ...</translation>
@@ -333,7 +332,6 @@
 <translation id="6178664161104547336">Vælg et certifikat</translation>
 <translation id="5702898740348134351">&amp;Rediger søgemaskiner ...</translation>
 <translation id="2365740070488517695">Tips</translation>
-<translation id="4668929960204016307">,</translation>
 <translation id="2869459179306435079">Importer indstillinger fra:</translation>
 <translation id="732677191631732447">K&amp;opier lydens webadresse</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME"/></translation>
@@ -804,7 +802,6 @@
 <translation id="2979639724566107830">Åbn i nyt vindue</translation>
 <translation id="3381479211481266345">Hastighedsfølsomhed</translation>
 <translation id="2822854841007275488">Arabisk</translation>
-<translation id="5857090052475505287">Ny mappe</translation>
 <translation id="5178667623289523808">Find forrige</translation>
 <translation id="2815448242176260024">Gem aldrig adgangskoder</translation>
 <translation id="2989805286512600854">Åbn på ny fane</translation>
@@ -1109,11 +1106,10 @@
 <translation id="6996505290426962909">&amp;Importer bogmærker og indstillinger ...</translation>
 <translation id="6165508094623778733">Flere oplysninger</translation>
 <translation id="822618367988303761"><ph name="NUMBER_TWO"/> dage siden</translation>
-<translation id="7568593326407688803">Denne side er på<ph name="ORIGINAL_LANGUAGE"/>. Vil du oversætte den?</translation>
+<translation id="7568593326407688803">Denne side er på<ph name="ORIGINAL_LANGUAGE"/>Vil du oversætte den?</translation>
 <translation id="8629974950076222828">Åbn alle bogmærker i inkognitovindue</translation>
 <translation id="4745438305783437565"><ph name="NUMBER_FEW"/> minutter</translation>
 <translation id="2649911884196340328">Serverens sikkerhedscertifikatet har fejl!</translation>
-<translation id="3828029223314399057">Søg i bogmærker</translation>
 <translation id="8906421963862390172">&amp;Indstillinger for stavekontrol</translation>
 <translation id="1963692530539281474"><ph name="NUMBER_DEFAULT"/> dage tilbage</translation>
 <translation id="668171684555832681">Andre ...</translation>
@@ -1280,7 +1276,6 @@ Nøglefil: <ph name="KEY_FILE"/>
 Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye versioner af din udvidelse.</translation>
 <translation id="3036649622769666520">Åbn filer</translation>
 <translation id="7685049629764448582">JavaScript-hukommelse</translation>
-<translation id="3989635538409502728">Log ud</translation>
 <translation id="4508765956121923607">Vis k&amp;ilde</translation>
 <translation id="8080048886850452639">K&amp;opier lydens webadresse</translation>
 <translation id="5849869942539715694">Pak udvidelse ...</translation>
