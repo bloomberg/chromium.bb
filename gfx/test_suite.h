@@ -1,16 +1,15 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_TEST_SUITE_H_
-#define APP_TEST_SUITE_H_
+#ifndef GFX_TEST_SUITE_H_
+#define GFX_TEST_SUITE_H_
 
 #include "build/build_config.h"
 
 #include <string>
 
-#include "app/app_paths.h"
-#include "app/resource_bundle.h"
+#include "gfx/gfx_paths.h"
 #include "base/path_service.h"
 #if defined(OS_MACOSX)
 #include "base/mac_util.h"
@@ -18,9 +17,9 @@
 #include "base/scoped_nsautorelease_pool.h"
 #include "base/test/test_suite.h"
 
-class AppTestSuite : public TestSuite {
+class GfxTestSuite : public TestSuite {
  public:
-  AppTestSuite(int argc, char** argv) : TestSuite(argc, argv) {
+  GfxTestSuite(int argc, char** argv) : TestSuite(argc, argv) {
   }
 
  protected:
@@ -30,7 +29,8 @@ class AppTestSuite : public TestSuite {
 
     TestSuite::Initialize();
 
-    app::RegisterPathProvider();
+    gfx::RegisterPathProvider();
+
 #if defined(OS_MACOSX)
     // Look in the framework bundle for resources.
     // TODO(port): make a resource bundle for non-app exes.  What's done here
@@ -47,15 +47,9 @@ class AppTestSuite : public TestSuite {
 #endif
     mac_util::SetOverrideAppBundlePath(path);
 #endif  // OS_MACOSX
-
-    // Force unittests to run using en-US so if we test against string
-    // output, it'll pass regardless of the system language.
-    ResourceBundle::InitSharedInstance(L"en-US");
   }
 
   virtual void Shutdown() {
-    ResourceBundle::CleanupSharedInstance();
-
 #if defined(OS_MACOSX)
     mac_util::SetOverrideAppBundle(NULL);
 #endif
@@ -63,4 +57,4 @@ class AppTestSuite : public TestSuite {
   }
 };
 
-#endif  // APP_TEST_SUITE_H_
+#endif  // GFX_TEST_SUITE_H_

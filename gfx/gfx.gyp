@@ -18,6 +18,7 @@
       ],
       'sources': [
         'run_all_unittests.cc',
+        'test_suite.h',
       ],
       'include_dirs': [
         '..',
@@ -51,7 +52,8 @@
         '../third_party/zlib/zlib.gyp:zlib',
       ],
       'sources': [
-        'empty.cc',
+        'gfx_paths.cc',
+        'gfx_paths.h',
       ],
       'conditions': [
         ['OS=="win"', {

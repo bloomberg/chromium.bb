@@ -1,12 +1,12 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/app_paths.h"
 #include "base/gfx/size.h"
 #include "base/scoped_ptr.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "gfx/gfx_paths.h"
 #include "gfx/icon_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,7 +20,7 @@ namespace {
   class IconUtilTest : public testing::Test {
    public:
     IconUtilTest() {
-      PathService::Get(app::DIR_TEST_DATA, &test_data_directory_);
+      PathService::Get(gfx::DIR_TEST_DATA, &test_data_directory_);
     }
     ~IconUtilTest() {}
 

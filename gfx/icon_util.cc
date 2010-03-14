@@ -4,10 +4,10 @@
 
 #include "gfx/icon_util.h"
 
-#include "app/win_util.h"
 #include "base/file_util.h"
 #include "base/gfx/size.h"
 #include "base/logging.h"
+#include "base/scoped_handle.h"
 #include "base/scoped_ptr.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -204,13 +204,13 @@ bool IconUtil::CreateIconFileFromSkBitmap(const SkBitmap& bitmap,
   }
 
   // We start by creating the file.
-  win_util::ScopedHandle icon_file(::CreateFile(icon_file_name.c_str(),
-                                                GENERIC_WRITE,
-                                                0,
-                                                NULL,
-                                                CREATE_ALWAYS,
-                                                FILE_ATTRIBUTE_NORMAL,
-                                                NULL));
+  ScopedHandle icon_file(::CreateFile(icon_file_name.c_str(),
+                                      GENERIC_WRITE,
+                                      0,
+                                      NULL,
+                                      CREATE_ALWAYS,
+                                      FILE_ATTRIBUTE_NORMAL,
+                                      NULL));
 
   if (icon_file.Get() == INVALID_HANDLE_VALUE) {
     return false;
