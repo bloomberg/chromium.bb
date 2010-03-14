@@ -383,7 +383,7 @@ class ChromeURLRequestContextFactory {
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
   scoped_refptr<HostZoomMap> host_zoom_map_;
   scoped_refptr<Blacklist> privacy_blacklist_;
-  net::TransportSecurityState* transport_security_state_;
+  scoped_refptr<net::TransportSecurityState> transport_security_state_;
   scoped_refptr<net::SSLConfigService> ssl_config_service_;
 
   FilePath profile_dir_path_;

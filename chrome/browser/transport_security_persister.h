@@ -30,12 +30,13 @@
 //   copies the current state of the TransportSecurityState, serialises
 //   and writes to disk.
 
-#ifndef CHROME_BROWSER_STRICT_TRANSPORT_SECURITY_PERSISTER_H_
-#define CHROME_BROWSER_STRICT_TRANSPORT_SECURITY_PERSISTER_H_
+#ifndef CHROME_BROWSER_TRANSPORT_SECURITY_PERSISTER_H_
+#define CHROME_BROWSER_TRANSPORT_SECURITY_PERSISTER_H_
 
 #include "base/file_path.h"
 #include "base/lock.h"
 #include "base/ref_counted.h"
+#include "base/task.h"
 #include "net/base/transport_security_state.h"
 
 class TransportSecurityPersister
@@ -54,22 +55,20 @@ class TransportSecurityPersister
 
   ~TransportSecurityPersister();
 
-  // a Task callback for when the state needs to be written out.
-  void SerialiseState();
+  void Load();
+  void CompleteLoad(const std::string& state);
 
-  // a Task callback for when the state needs to be loaded from disk at startup.
-  void LoadState();
+  void Save();
+  void CompleteSave(const std::string& state);
 
-  Lock lock_;  // protects all the members
-
-  // true when the state object has signaled that we're dirty and we haven't
-  // serialised the state yet.
-  bool state_is_dirty_;
+  // Used on the IO thread to coalesce writes to disk.
+  ScopedRunnableMethodFactory<TransportSecurityPersister> save_coalescer_;
 
   scoped_refptr<net::TransportSecurityState>
-      transport_security_state_;
+      transport_security_state_;  // IO thread only.
+
   // The path to the file in which we store the serialised state.
   FilePath state_file_;
 };
 
-#endif  // CHROME_BROWSER_STRICT_TRANSPORT_SECURITY_PERSISTER_H_
+#endif  // CHROME_BROWSER_TRANSPORT_SECURITY_PERSISTER_H_

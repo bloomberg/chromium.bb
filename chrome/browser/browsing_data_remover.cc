@@ -157,9 +157,12 @@ void BrowsingDataRemover::Remove(int remove_mask) {
               delete_begin_));
     }
 
-    net::TransportSecurityState* ts_state =
-        profile_->GetTransportSecurityState();
-    ts_state->DeleteSince(delete_begin_);
+    ChromeThread::PostTask(
+        ChromeThread::IO, FROM_HERE,
+        NewRunnableMethod(
+            profile_->GetTransportSecurityState(),
+            &net::TransportSecurityState::DeleteSince,
+            delete_begin_));
 
     waiting_for_clear_appcache_ = true;
     ChromeThread::PostTask(

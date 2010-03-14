@@ -13,7 +13,7 @@
 #include "net/base/transport_security_state.h"
 
 TransportSecurityPersister::TransportSecurityPersister()
-    : state_is_dirty_(false) {
+  : ALLOW_THIS_IN_INITIALIZER_LIST(save_coalescer_(this)) {
 }
 
 TransportSecurityPersister::~TransportSecurityPersister() {
@@ -22,30 +22,37 @@ TransportSecurityPersister::~TransportSecurityPersister() {
 
 void TransportSecurityPersister::Initialize(
     net::TransportSecurityState* state, const FilePath& profile_path) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   transport_security_state_ = state;
   state_file_ =
       profile_path.Append(FILE_PATH_LITERAL("TransportSecurity"));
   state->SetDelegate(this);
 
   Task* task = NewRunnableMethod(this,
-      &TransportSecurityPersister::LoadState);
+      &TransportSecurityPersister::Load);
   ChromeThread::PostDelayedTask(ChromeThread::FILE, FROM_HERE, task, 1000);
 }
 
-void TransportSecurityPersister::LoadState() {
+void TransportSecurityPersister::Load() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+
+  std::string state;
+  if (!file_util::ReadFileToString(state_file_, &state))
+    return;
+
+  ChromeThread::PostTask(ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(this,
+                        &TransportSecurityPersister::CompleteLoad,
+                        state));
+}
+
+void TransportSecurityPersister::CompleteLoad(const std::string& state) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+
   bool dirty = false;
-  {
-    AutoLock locked_(lock_);
-
-    std::string state;
-    if (!file_util::ReadFileToString(state_file_, &state))
-      return;
-
-    if (!transport_security_state_->Deserialise(state, &dirty)) {
-      LOG(ERROR) << "Failed to deserialize state: " << state;
-      return;
-    }
+  if (!transport_security_state_->Deserialise(state, &dirty)) {
+    LOG(ERROR) << "Failed to deserialize state: " << state;
+    return;
   }
   if (dirty)
     StateIsDirty(transport_security_state_);
@@ -53,30 +60,32 @@ void TransportSecurityPersister::LoadState() {
 
 void TransportSecurityPersister::StateIsDirty(
     net::TransportSecurityState* state) {
-  // Runs on arbitary thread, may not block nor reenter
-  // |transport_security_state_|.
-  AutoLock locked_(lock_);
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   DCHECK(state == transport_security_state_);
 
-  if (state_is_dirty_)
-    return;  // we already have a serialisation scheduled
+  if (!save_coalescer_.empty())
+    return;
 
-  Task* task = NewRunnableMethod(this,
-      &TransportSecurityPersister::SerialiseState);
-  ChromeThread::PostDelayedTask(ChromeThread::FILE, FROM_HERE, task, 1000);
-  state_is_dirty_ = true;
+  Task* task = save_coalescer_.NewRunnableMethod(
+      &TransportSecurityPersister::Save);
+  MessageLoop::current()->PostDelayedTask(FROM_HERE, task, 1000);
 }
 
-void TransportSecurityPersister::SerialiseState() {
-  AutoLock locked_(lock_);
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
-
-  DCHECK(state_is_dirty_);
-  state_is_dirty_ = false;
+void TransportSecurityPersister::Save() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
   std::string state;
   if (!transport_security_state_->Serialise(&state))
     return;
+
+  ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
+      NewRunnableMethod(this,
+                        &TransportSecurityPersister::CompleteSave,
+                        state));
+}
+
+void TransportSecurityPersister::CompleteSave(const std::string& state) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
 
   file_util::WriteFile(state_file_, state.data(), state.size());
 }

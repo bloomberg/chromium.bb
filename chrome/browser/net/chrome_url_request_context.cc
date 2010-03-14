@@ -842,12 +842,8 @@ ChromeURLRequestContextFactory::ChromeURLRequestContextFactory(Profile* profile)
   referrer_charset_ = default_charset;
 
   host_content_settings_map_ = profile->GetHostContentSettingsMap();
-
   host_zoom_map_ = profile->GetHostZoomMap();
-
   privacy_blacklist_ = profile->GetPrivacyBlacklist();
-
-  // TODO(eroman): this doesn't look safe; sharing between IO and UI threads!
   transport_security_state_ = profile->GetTransportSecurityState();
 
   if (profile->GetExtensionsService()) {
