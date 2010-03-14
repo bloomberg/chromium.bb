@@ -116,6 +116,6 @@ bool FirstRun::SetOEMFirstRunBubblePref() {
 bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
     const FilePath& master_prefs_path, MasterPrefs* out_prefs) {
   NOTIMPLEMENTED();
-  return false;
+  return true;
 }
 #endif
