@@ -334,6 +334,17 @@ pregcc: BUILD/stamp-pregcc
 BUILD/stamp-newlib: BUILD/stamp-newlib-$(NEWLIB_VERSION) Makefile
 	rm -rf BUILD/build-newlib-$(CROSSARCH)
 	mkdir BUILD/build-newlib-$(CROSSARCH)
+ifeq ($(PLATFORM), Cygwin)
+	if [ "x$(GCC_VERSION)" = "x4.4.3" -a \
+	     "x$(CROSSARCH)" = "xnacl64" ] ; then \
+	  pushd $(DESTDIR)$(SDKROOT)/$(CROSSARCH) ; \
+	  "`cygpath \"$$COMSPEC\"`" /c mklink /J lib32 lib\\32 ; \
+	  "`cygpath \"$$COMSPEC\"`" /c mklink /J lib64 lib ; \
+	  cd $(DESTDIR)$(SDKROOT) ; \
+	  "`cygpath \"$$COMSPEC\"`" /c mklink /J nacl nacl64 ; \
+	  popd ; \
+	fi
+else
 	if [ "x$(GCC_VERSION)" = "x4.4.3" -a \
 	     "x$(CROSSARCH)" = "xnacl64" ] ; then \
 	  pushd $(DESTDIR)$(SDKROOT)/$(CROSSARCH) ; \
@@ -342,6 +353,7 @@ BUILD/stamp-newlib: BUILD/stamp-newlib-$(NEWLIB_VERSION) Makefile
 	  cd $(DESTDIR)$(SDKROOT) ; ln -sfn nacl64 nacl ; \
 	  popd ; \
 	fi
+endif
 	../src/trusted/service_runtime/export_header.py ../src/trusted/service_runtime/include \
 		BUILD/newlib-$(NEWLIB_VERSION)/newlib/libc/sys/nacl
 	if [ "x$(CROSSARCH)" = "xnacl64" ] ; then \
