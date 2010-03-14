@@ -9,7 +9,8 @@
 #include "app/gfx/insets.h"
 #include "app/gfx/gtk_util.h"
 #include "app/gfx/skia_utils_gtk.h"
-#include "base/string_util.h"
+#include "base/logging.h"
+#include "base/utf_string_conversions.h"
 #include "views/controls/textfield/textfield.h"
 
 namespace views {

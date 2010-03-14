@@ -9,6 +9,7 @@
 #include "app/l10n_util_mac.h"
 #include "app/resource_bundle.h"
 #include "base/sys_string_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/common/extensions/extension.h"
 #include "grit/browser_resources.h"

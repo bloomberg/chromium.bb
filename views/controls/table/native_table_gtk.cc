@@ -1,11 +1,13 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved. Use of this
+// Copyright (c) 2010 The Chromium Authors. All rights reserved. Use of this
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
 #include "views/controls/table/native_table_gtk.h"
 
+#include <string>
+
 #include "app/gfx/gtk_util.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "views/controls/table/table_view2.h"
 #include "views/controls/table/table_view_observer.h"
@@ -270,8 +272,8 @@ void NativeTableGtk::InsertIconAndTextColumn(const TableColumn& column,
                                              int index) {
   // If necessary we could support more than 1 icon and text column and we could
   // make it so it does not have to be the 1st column.
-  DCHECK(index == 0) << "The icon and text column can only be the first column "
-      "at this point.";
+  DCHECK_EQ(0, index) << "The icon and text column can only be the first column"
+      " at this point.";
 
   GtkTreeViewColumn* gtk_column = gtk_tree_view_column_new();
   gtk_tree_view_column_set_title(gtk_column, WideToUTF8(column.title).c_str());

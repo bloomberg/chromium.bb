@@ -9,6 +9,7 @@
 #include "app/resource_bundle.h"
 #include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
+#include "base/utf_string_conversions.h"
 #import "chrome/browser/browser_theme_provider.h"
 #import "chrome/browser/cocoa/download_item_button.h"
 #import "chrome/browser/cocoa/download_item_cell.h"

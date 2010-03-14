@@ -8,6 +8,7 @@
 #include "app/table_model_observer.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "views/controls/table/table_view.h"
 #include "views/controls/table/table_view2.h"

@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/options/wifi_config_view.h"
 
 #include "app/l10n_util.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"

@@ -8,7 +8,7 @@
 
 #include "app/gtk_dnd_util.h"
 #include "base/file_path.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "net/base/net_util.h"
 
 OSExchangeDataProviderGtk::OSExchangeDataProviderGtk(

@@ -4,9 +4,13 @@
 
 #include "chrome/browser/chromeos/options/language_config_view.h"
 
+#include <utility>
+#include <vector>
+
 #include "app/combobox_model.h"
 #include "app/l10n_util.h"
 #include "app/table_model.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/language_library.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -118,12 +122,12 @@ class PreferredLanguageTableModel : public TableModel {
   DISALLOW_COPY_AND_ASSIGN(PreferredLanguageTableModel);
 };
 
-LanguageConfigView::LanguageConfigView() :
-    contents_(NULL),
-    hangul_keyboard_combobox_(NULL),
-    hangul_keyboard_combobox_model_(new HangulKeyboardComboboxModel),
-    preferred_language_table_(NULL),
-    preferred_language_table_model_(new PreferredLanguageTableModel) {
+LanguageConfigView::LanguageConfigView()
+    : contents_(NULL),
+      hangul_keyboard_combobox_(NULL),
+      hangul_keyboard_combobox_model_(new HangulKeyboardComboboxModel),
+      preferred_language_table_(NULL),
+      preferred_language_table_model_(new PreferredLanguageTableModel) {
 }
 
 LanguageConfigView::~LanguageConfigView() {
@@ -210,7 +214,7 @@ void LanguageConfigView::Init() {
   using views::ColumnSet;
   using views::GridLayout;
 
-  if (contents_) return; // Already initialized.
+  if (contents_) return;  // Already initialized.
   contents_ = new views::View;
   AddChildView(contents_);
 

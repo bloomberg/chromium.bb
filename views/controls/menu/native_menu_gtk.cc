@@ -4,6 +4,7 @@
 
 #include "views/controls/menu/native_menu_gtk.h"
 
+#include <algorithm>
 #include <map>
 #include <string>
 
@@ -14,8 +15,8 @@
 #include "base/keyboard_code_conversion_gtk.h"
 #include "base/keyboard_codes.h"
 #include "base/message_loop.h"
-#include "base/string_util.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "views/accelerator.h"
 #include "views/controls/menu/menu_2.h"

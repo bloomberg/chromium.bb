@@ -9,6 +9,7 @@
 
 #include "app/combobox_model.h"
 #include "base/stl_util-inl.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/options/language_config_view.h"
 #include "chrome/browser/pref_member.h"
 #include "chrome/browser/profile.h"

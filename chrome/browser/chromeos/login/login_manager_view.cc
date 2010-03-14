@@ -16,7 +16,7 @@
 #include "base/keyboard_codes.h"
 #include "base/logging.h"
 #include "base/process_util.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/authentication_notification_details.h"

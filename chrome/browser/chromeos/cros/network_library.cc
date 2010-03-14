@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "net/url_request/url_request_job.h"

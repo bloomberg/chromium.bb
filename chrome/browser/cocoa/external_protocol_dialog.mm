@@ -7,6 +7,7 @@
 #include "app/l10n_util_mac.h"
 #include "base/message_loop.h"
 #include "base/sys_string_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/external_protocol_handler.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"

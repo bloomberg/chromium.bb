@@ -1,13 +1,15 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved. Use of this
+// Copyright (c) 2010 The Chromium Authors. All rights reserved. Use of this
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
-#include <gtk/gtk.h>
-
 #include "views/controls/button/native_button_gtk.h"
 
+#include <gtk/gtk.h>
+
+#include <vector>
+
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "views/controls/button/checkbox.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/button/radio_button.h"

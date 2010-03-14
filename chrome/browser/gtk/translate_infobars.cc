@@ -4,7 +4,11 @@
 
 #include "chrome/browser/gtk/translate_infobars.h"
 
+#include <string>
+#include <vector>
+
 #include "app/l10n_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/menu_gtk.h"

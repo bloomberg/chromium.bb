@@ -9,6 +9,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
 #include "grit/generated_resources.h"

@@ -8,6 +8,9 @@
 #include <gdk/gdkx.h>
 #include <X11/extensions/shape.h>
 
+#include <set>
+#include <vector>
+
 #include "app/drag_drop_types.h"
 #include "app/gfx/path.h"
 #include "app/os_exchange_data.h"
@@ -15,7 +18,7 @@
 #include "base/auto_reset.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "views/widget/default_theme_provider.h"
 #include "views/widget/drop_target_gtk.h"
 #include "views/widget/gtk_views_fixed.h"
@@ -943,9 +946,9 @@ void WidgetGtk::OnWindowPaint(GtkWidget* widget, GdkEventExpose* event) {
   // view here as that is done by OnPaint.
   DCHECK(transparent_);
   int width, height;
-  gtk_window_get_size(GTK_WINDOW (widget), &width, &height);
+  gtk_window_get_size(GTK_WINDOW(widget), &width, &height);
   cairo_t* cr = gdk_cairo_create(widget->window);
-  cairo_set_operator (cr, CAIRO_OPERATOR_SOURCE);
+  cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
   cairo_set_source_rgba(cr, 0, 0, 0, 0);
   cairo_rectangle(cr, 0, 0, width, height);
   cairo_fill(cr);
@@ -1043,7 +1046,8 @@ gboolean WidgetGtk::CallButtonPress(GtkWidget* widget, GdkEventButton* event) {
 }
 
 // static
-gboolean WidgetGtk::CallButtonRelease(GtkWidget* widget, GdkEventButton* event) {
+gboolean WidgetGtk::CallButtonRelease(GtkWidget* widget,
+                                      GdkEventButton* event) {
   WidgetGtk* widget_gtk = GetViewForNative(widget);
   if (!widget_gtk)
     return false;
@@ -1080,7 +1084,8 @@ gboolean WidgetGtk::CallDragMotion(GtkWidget* widget,
 }
 
 // static
-gboolean WidgetGtk::CallEnterNotify(GtkWidget* widget, GdkEventCrossing* event) {
+gboolean WidgetGtk::CallEnterNotify(GtkWidget* widget,
+                                    GdkEventCrossing* event) {
   WidgetGtk* widget_gtk = GetViewForNative(widget);
   if (!widget_gtk)
     return false;
@@ -1134,8 +1139,8 @@ gboolean WidgetGtk::CallKeyRelease(GtkWidget* widget, GdkEventKey* event) {
 }
 
 // static
-gboolean WidgetGtk::CallLeaveNotify(GtkWidget* widget, GdkEventCrossing* event)
-{
+gboolean WidgetGtk::CallLeaveNotify(GtkWidget* widget,
+                                    GdkEventCrossing* event) {
   WidgetGtk* widget_gtk = GetViewForNative(widget);
   if (!widget_gtk)
     return false;
@@ -1380,10 +1385,10 @@ void WidgetGtk::ConfigureWidgetForIgnoreEvents() {
       display,
       win,
       ShapeInput,
-      0, // x offset
-      0, // y offset
-      NULL, // rectangles
-      0, // num rectangles
+      0,  // x offset
+      0,  // y offset
+      NULL,  // rectangles
+      0,  // num rectangles
       ShapeSet,
       0);
 }

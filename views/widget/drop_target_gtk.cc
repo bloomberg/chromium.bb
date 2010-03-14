@@ -6,13 +6,15 @@
 
 #include <algorithm>
 #include <iterator>
+#include <string>
+#include <vector>
 
 #include "app/drag_drop_types.h"
 #include "app/gtk_dnd_util.h"
 #include "app/os_exchange_data_provider_gtk.h"
 #include "base/file_path.h"
 #include "base/gfx/point.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "net/base/net_util.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget_gtk.h"
