@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_GFX_POINT_H__
-#define BASE_GFX_POINT_H__
+#ifndef GFX_POINT_H_
+#define GFX_POINT_H_
 
 #include "build/build_config.h"
 
@@ -77,4 +77,4 @@ class Point {
 
 std::ostream& operator<<(std::ostream& out, const gfx::Point& p);
 
-#endif  // BASE_GFX_POINT_H__
+#endif  // GFX_POINT_H_

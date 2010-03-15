@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_GFX_SIZE_H_
-#define BASE_GFX_SIZE_H_
+#ifndef GFX_SIZE_H_
+#define GFX_SIZE_H_
 
 #include "build/build_config.h"
 
@@ -80,4 +80,4 @@ class Size {
 
 std::ostream& operator<<(std::ostream& out, const gfx::Size& s);
 
-#endif  // BASE_GFX_SIZE_H_
+#endif  // GFX_SIZE_H_
