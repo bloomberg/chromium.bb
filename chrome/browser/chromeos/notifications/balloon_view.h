@@ -56,12 +56,12 @@ class BalloonViewImpl : public BalloonView,
   gfx::Size GetSize() const;
 
   // True if the notification is stale. False if the notification is new.
-  bool stale() {
+  bool stale() const {
     return stale_;
   }
 
   // Makes the notification stable.
-  void make_stale() {
+  void set_stale() {
     stale_ = true;
   }
 

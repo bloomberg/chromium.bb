@@ -106,7 +106,7 @@ class NotificationPanel : public PanelController::Delegate,
 
   // A callback function that is called when the notification
   // (that the view is associated with) becomes stale after a timeout.
-  void StaleNotification(BalloonViewImpl* view);
+  void OnStale(BalloonViewImpl* view);
 
   BalloonContainer* balloon_container_;
   scoped_ptr<views::Widget> panel_widget_;

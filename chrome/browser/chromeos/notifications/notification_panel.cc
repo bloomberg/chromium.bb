@@ -107,7 +107,7 @@ class BalloonSubContainer : public views::View {
     for (int i = GetChildViewCount() - 1; i >= 0; --i) {
       BalloonViewImpl* view =
           static_cast<BalloonViewImpl*>(GetChildViewAt(i));
-      view->make_stale();
+      view->set_stale();
     }
   }
 
@@ -418,13 +418,13 @@ void NotificationPanel::StartStaleTimer(Balloon* balloon) {
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       task_factory_.NewRunnableMethod(
-          &NotificationPanel::StaleNotification, view),
+          &NotificationPanel::OnStale, view),
       1000 * kStaleTimeoutInSeconds);
 }
 
-void NotificationPanel::StaleNotification(BalloonViewImpl* view) {
+void NotificationPanel::OnStale(BalloonViewImpl* view) {
   if (balloon_container_->HasBalloonView(view) && !view->stale()) {
-    view->make_stale();
+    view->set_stale();
     if (balloon_container_->HasStickyNotifications()) {
       state_ = STICKY_AND_NEW;
     } else {
