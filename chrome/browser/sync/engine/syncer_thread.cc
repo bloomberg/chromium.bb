@@ -162,6 +162,26 @@ bool SyncerThread::Stop(int max_wait) {
   return true;
 }
 
+bool SyncerThread::RequestPause() {
+  AutoLock lock(lock_);
+  if (!thread_.IsRunning())
+    return false;
+
+  vault_.pause_ = true;
+  vault_field_changed_.Broadcast();
+  return true;
+}
+
+bool SyncerThread::RequestResume() {
+  AutoLock lock(lock_);
+  if (!thread_.IsRunning() || !vault_.pause_)
+    return false;
+
+  vault_.pause_ = false;
+  vault_field_changed_.Broadcast();
+  return true;
+}
+
 void SyncerThread::OnReceivedLongPollIntervalUpdate(
     const base::TimeDelta& new_interval) {
   syncer_long_poll_interval_seconds_ = static_cast<int>(
@@ -220,6 +240,12 @@ void SyncerThread::ThreadMainLoop() {
       continue;
     }
 
+    // Check if a pause was requested.
+    if (vault_.pause_) {
+      PauseUntilResumedOrQuit();
+      continue;
+    }
+
     const TimeTicks next_poll = last_sync_time +
         vault_.current_wait_interval_.poll_delta;
     bool throttled = vault_.current_wait_interval_.mode ==
@@ -271,6 +297,24 @@ void SyncerThread::ThreadMainLoop() {
 #if defined(OS_LINUX)
   idle_query_.reset();
 #endif
+}
+
+void SyncerThread::PauseUntilResumedOrQuit() {
+  LOG(INFO) << "Syncer thread entering pause.";
+  SyncerEvent event(SyncerEvent::PAUSED);
+  relay_channel()->NotifyListeners(event);
+
+  // Thread will get stuck here until either a resume is requested
+  // or shutdown is started.
+  while (vault_.pause_ && !vault_.stop_syncer_thread_)
+    vault_field_changed_.Wait();
+
+  // Notify that we have resumed if we are not shutting down.
+  if (!vault_.stop_syncer_thread_) {
+    SyncerEvent event(SyncerEvent::RESUMED);
+    relay_channel()->NotifyListeners(event);
+  }
+  LOG(INFO) << "Syncer thread exiting pause.";
 }
 
 // We check how long the user's been idle and sync less often if the machine is
@@ -668,6 +712,5 @@ int SyncerThread::UserIdleTime() {
 
   return 0;
 }
-
 
 }  // namespace browser_sync

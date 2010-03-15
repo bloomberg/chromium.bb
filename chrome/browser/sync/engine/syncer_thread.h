@@ -55,6 +55,7 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
   FRIEND_TEST(SyncerThreadWithSyncerTest, Nudge);
   FRIEND_TEST(SyncerThreadWithSyncerTest, Throttling);
   FRIEND_TEST(SyncerThreadWithSyncerTest, AuthInvalid);
+  FRIEND_TEST(SyncerThreadWithSyncerTest, PauseWhileWaiting);
   friend class SyncerThreadWithSyncerTest;
   friend class SyncerThreadFactory;
  public:
@@ -113,6 +114,19 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
   // Stop processing. |max_wait| doesn't do anything in this version.
   virtual bool Stop(int max_wait);
 
+  // Request that the thread pauses.  Returns false if the request can
+  // not be completed (e.g. the thread is not running).  When the
+  // thread actually pauses, a SyncerEvent::PAUSED event notification
+  // will be sent to the relay channel.
+  virtual bool RequestPause();
+
+  // Request that the thread resumes from pause.  Returns false if the
+  // request can not be completed (e.g. the thread is not running or
+  // is not currently paused).  When the thread actually resumes, a
+  // SyncerEvent::RESUMED event notification will be sent to the relay
+  // channel.
+  virtual bool RequestResume();
+
   // Nudges the syncer to sync with a delay specified. This API is for access
   // from the SyncerThread's controller and will cause a mutex lock.
   virtual void NudgeSyncer(int milliseconds_from_now, NudgeSource source);
@@ -168,6 +182,9 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
     // False when we want to stop the thread.
     bool stop_syncer_thread_;
 
+    // True when the thread should pause itself.
+    bool pause_;
+
     Syncer* syncer_;
 
     // State of the server connection.
@@ -185,7 +202,10 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
     WaitInterval current_wait_interval_;
 
     ProtectedFields()
-        : stop_syncer_thread_(false), syncer_(NULL), connected_(false) {}
+        : stop_syncer_thread_(false),
+          pause_(false),
+          syncer_(NULL),
+          connected_(false) {}
   } vault_;
 
   // Gets signaled whenever a thread outside of the syncer thread changes a
@@ -252,6 +272,10 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
                         bool* initial_sync);
 
   int UserIdleTime();
+
+  // The thread will remain in this method until a resume is requested
+  // or shutdown is started.
+  void PauseUntilResumedOrQuit();
 
   // For unit tests only.
   virtual void DisableIdleDetection() { disable_idle_detection_ = true; }

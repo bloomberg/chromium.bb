@@ -91,6 +91,14 @@ struct SyncerEvent {
     // Check the SyncerSession for information like whether we need to continue
     // syncing (SyncerSession::HasMoreToSync).
     SYNC_CYCLE_ENDED,
+
+    // This event is sent when the thread is paused in response to a
+    // pause request.
+    PAUSED,
+
+    // This event is sent when the thread is resumed in response to a
+    // resume request.
+    RESUMED,
   };
 
   explicit SyncerEvent(EventCause cause) : what_happened(cause),

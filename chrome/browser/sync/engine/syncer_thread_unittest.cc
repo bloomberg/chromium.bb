@@ -11,13 +11,18 @@
 #include "base/waitable_event.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/engine/syncer_thread.h"
+#include "chrome/browser/sync/engine/syncer_types.h"
 #include "chrome/browser/sync/sessions/sync_session_context.h"
 #include "chrome/test/sync/engine/mock_server_connection.h"
 #include "chrome/test/sync/engine/test_directory_setter_upper.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::TimeTicks;
 using base::TimeDelta;
+using base::WaitableEvent;
+using testing::_;
+using testing::Field;
 
 namespace browser_sync {
 using sessions::SyncSessionContext;
@@ -701,6 +706,69 @@ TEST_F(SyncerThreadWithSyncerTest, AuthInvalid) {
 
   interceptor.WaitForSyncShare(1, TimeDelta::FromSeconds(10));
   EXPECT_FALSE(interceptor.times_sync_occured().empty());
+
+  EXPECT_TRUE(syncer_thread()->Stop(2000));
+}
+
+ACTION_P(SignalEvent, event) {
+  event->Signal();
+}
+
+class ListenerMock {
+ public:
+  MOCK_METHOD1(HandleEvent, void(const SyncerEvent&));
+};
+
+TEST_F(SyncerThreadWithSyncerTest, PauseWhileWaiting) {
+  WaitableEvent event(false, false);
+  SyncShareIntercept interceptor;
+  connection()->SetMidCommitObserver(&interceptor);
+  // We don't want a poll to happen during this test (except the first one).
+  const TimeDelta poll_interval = TimeDelta::FromMinutes(5);
+  syncer_thread()->SetSyncerShortPollInterval(poll_interval);
+
+  ListenerMock listener;
+  scoped_ptr<EventListenerHookup> hookup;
+  hookup.reset(
+      NewEventListenerHookup(syncer_thread()->relay_channel(),
+                             &listener,
+                             &ListenerMock::HandleEvent));
+
+  EXPECT_CALL(listener, HandleEvent(
+      Field(&SyncerEvent::what_happened, SyncerEvent::STATUS_CHANGED))).
+      Times(2);
+  EXPECT_CALL(listener, HandleEvent(
+      Field(&SyncerEvent::what_happened, SyncerEvent::SYNC_CYCLE_ENDED)));
+
+  EXPECT_TRUE(syncer_thread()->Start());
+  metadb()->Open();
+
+  // Wait for thread to be waiting.
+  interceptor.WaitForSyncShare(1, poll_interval + poll_interval);
+  EXPECT_EQ(1U, interceptor.times_sync_occured().size());
+
+  // Request a pause.
+  EXPECT_CALL(listener, HandleEvent(
+      Field(&SyncerEvent::what_happened, SyncerEvent::PAUSED))).
+      WillOnce(SignalEvent(&event));
+  ASSERT_TRUE(syncer_thread()->RequestPause());
+  event.Wait();
+
+  // Nudge the syncer, this should do nothing while we are paused.  If
+  // it does, the next test of "times sync occured" will fail.
+  syncer_thread()->NudgeSyncer(0, SyncerThread::kUnknown);
+
+  // Resuming will cause the thread to wait again without running the
+  // syncer.
+  EXPECT_CALL(listener, HandleEvent(
+      Field(&SyncerEvent::what_happened, SyncerEvent::RESUMED))).
+      WillOnce(SignalEvent(&event));
+  ASSERT_TRUE(syncer_thread()->RequestResume());
+  event.Wait();
+
+  // Confirm the syncer ran immediately after resume.
+  interceptor.WaitForSyncShare(1, TimeDelta::FromSeconds(1));
+  EXPECT_EQ(2U, interceptor.times_sync_occured().size());
 
   EXPECT_TRUE(syncer_thread()->Stop(2000));
 }
