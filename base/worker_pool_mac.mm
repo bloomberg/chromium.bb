@@ -4,11 +4,22 @@
 
 #include "base/worker_pool_mac.h"
 
+#include "base/histogram.h"
 #include "base/logging.h"
 #import "base/scoped_nsautorelease_pool.h"
 #include "base/scoped_ptr.h"
 #import "base/singleton_objc.h"
 #include "base/task.h"
+
+namespace {
+
+Lock lock_;
+base::Time last_check_;            // Last hung-test check.
+std::vector<id> outstanding_ops_;  // Outstanding operations at last check.
+size_t running_ = 0;               // Operations in |Run()|.
+size_t outstanding_ = 0;           // Operations posted but not completed.
+
+}  // namespace
 
 @implementation WorkerPoolObjC
 
@@ -57,10 +68,21 @@
     return;
   }
 
+  {
+    AutoLock locked(lock_);
+    ++running_;
+  }
+
   base::ScopedNSAutoreleasePool autoreleasePool;
 
   task_->Run();
   task_.reset(NULL);
+
+  {
+    AutoLock locked(lock_);
+    --running_;
+    --outstanding_;
+  }
 }
 
 - (void)dealloc {
@@ -86,6 +108,49 @@ bool WorkerPool::PostTask(const tracked_objects::Location& from_here,
 
   NSOperationQueue* operation_queue = [WorkerPoolObjC sharedOperationQueue];
   [operation_queue addOperation:[TaskOperation taskOperationWithTask:task]];
+
+  // Periodically calculate the set of operations which have not made
+  // progress and report how many there are.  This should provide a
+  // sense of how many clients are seeing hung operations of any sort,
+  // and a sense of how many clients are seeing "too many" hung
+  // operations.
+  std::vector<id> hung_ops;
+  size_t outstanding_delta = 0;
+  size_t running_ops = 0;
+  {
+    const base::TimeDelta kCheckPeriod(base::TimeDelta::FromMinutes(10));
+    base::Time now = base::Time::Now();
+
+    AutoLock locked(lock_);
+    ++outstanding_;
+    running_ops = running_;
+    if (last_check_.is_null() || now - last_check_ > kCheckPeriod) {
+      base::ScopedNSAutoreleasePool autoreleasePool;
+      std::vector<id> ops;
+      for (id op in [operation_queue operations]) {
+        // DO NOT RETAIN.
+        ops.push_back(op);
+      }
+      std::sort(ops.begin(), ops.end());
+
+      outstanding_delta = outstanding_ - ops.size();
+
+      std::set_intersection(outstanding_ops_.begin(), outstanding_ops_.end(),
+                            ops.begin(), ops.end(),
+                            std::back_inserter(hung_ops));
+
+      outstanding_ops_.swap(ops);
+      last_check_ = now;
+    }
+  }
+
+  // Don't report "nothing to report".
+  const size_t kUnaccountedOpsDelta = 10;
+  if (hung_ops.size() > 0 || outstanding_delta > kUnaccountedOpsDelta) {
+    UMA_HISTOGRAM_COUNTS_100("OSX.HungWorkers", hung_ops.size());
+    UMA_HISTOGRAM_COUNTS_100("OSX.OutstandingDelta", outstanding_delta);
+    UMA_HISTOGRAM_COUNTS_100("OSX.RunningOps", running_ops);
+  }
 
   return true;
 }
