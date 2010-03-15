@@ -17,6 +17,7 @@
 #include "webkit/tools/test_shell/event_sending_controller.h"
 
 #include <queue>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
@@ -31,6 +32,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebDragOperation.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPoint.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebTouchPoint.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/tools/test_shell/test_shell.h"
@@ -54,6 +56,8 @@ using WebKit::WebMouseEvent;
 using WebKit::WebMouseWheelEvent;
 using WebKit::WebPoint;
 using WebKit::WebString;
+using WebKit::WebTouchEvent;
+using WebKit::WebTouchPoint;
 using WebKit::WebView;
 
 TestShell* EventSendingController::shell_ = NULL;
@@ -91,6 +95,8 @@ static WebDragOperation current_drag_effect;
 static WebDragOperationsMask current_drag_effects_allowed;
 static bool replaying_saved_events = false;
 static std::queue<SavedEvent> mouse_event_queue;
+static int touch_modifiers;
+static std::vector<WebTouchPoint> touch_points;
 
 // Time and place of the last mouse up event.
 static double last_click_time_sec = 0;
@@ -278,6 +284,16 @@ EventSendingController::EventSendingController(TestShell* shell)
              &EventSendingController::scheduleAsynchronousClick);
   BindMethod("beginDragWithFiles",
              &EventSendingController::beginDragWithFiles);
+  BindMethod("addTouchPoint", &EventSendingController::addTouchPoint);
+  BindMethod("cancelTouchPoint", &EventSendingController::cancelTouchPoint);
+  BindMethod("clearTouchPoints", &EventSendingController::clearTouchPoints);
+  BindMethod("releaseTouchPoint", &EventSendingController::releaseTouchPoint);
+  BindMethod("updateTouchPoint", &EventSendingController::updateTouchPoint);
+  BindMethod("setTouchModifier", &EventSendingController::setTouchModifier);
+  BindMethod("touchCancel", &EventSendingController::touchCancel);
+  BindMethod("touchEnd", &EventSendingController::touchEnd);
+  BindMethod("touchMove", &EventSendingController::touchMove);
+  BindMethod("touchStart", &EventSendingController::touchStart);
 
   // When set to true (the default value), we batch mouse move and mouse up
   // events so we can simulate drag & drop.
@@ -318,6 +334,8 @@ void EventSendingController::Reset() {
   click_count = 0;
   last_button_type_ = WebMouseEvent::ButtonNone;
   time_offset_ms = 0;
+  touch_modifiers = 0;
+  touch_points.clear();
 }
 
 // static
@@ -826,6 +844,141 @@ void EventSendingController::beginDragWithFiles(
   pressed_button_ = WebMouseEvent::ButtonLeft;
 
   result->SetNull();
+}
+
+void EventSendingController::addTouchPoint(
+    const CppArgumentList& args, CppVariant* result) {
+  result->SetNull();
+
+  WebTouchPoint touch_point;
+  touch_point.state = WebTouchPoint::StatePressed;
+  touch_point.position = WebPoint(args[0].ToInt32(), args[1].ToInt32());
+  touch_point.id = touch_points.size();
+  touch_points.push_back(touch_point);
+}
+
+void EventSendingController::clearTouchPoints(
+    const CppArgumentList& args, CppVariant* result) {
+  result->SetNull();
+
+  touch_points.clear();
+}
+
+void EventSendingController::releaseTouchPoint(
+    const CppArgumentList& args, CppVariant* result) {
+  result->SetNull();
+
+  const unsigned int index = args[0].ToInt32();
+  if (index >= touch_points.size()) {
+    NOTREACHED() << "Invalid touch point index";
+  }
+
+  WebTouchPoint* touch_point = &touch_points[index];
+  touch_point->state = WebTouchPoint::StateReleased;
+}
+
+void EventSendingController::setTouchModifier(
+    const CppArgumentList& args, CppVariant* result) {
+  result->SetNull();
+
+  int mask = 0;
+  const std::string key_name = args[0].ToString();
+  if (key_name == "shift") {
+    mask = WebInputEvent::ShiftKey;
+  } else if (key_name == "alt") {
+    mask = WebInputEvent::AltKey;
+  } else if (key_name == "ctrl") {
+    mask = WebInputEvent::ControlKey;
+  } else if (key_name == "meta") {
+    mask = WebInputEvent::MetaKey;
+  }
+
+  if (args[1].ToBoolean() == true) {
+    touch_modifiers |= mask;
+  } else {
+    touch_modifiers &= ~mask;
+  }
+}
+
+void EventSendingController::updateTouchPoint(
+    const CppArgumentList& args, CppVariant* result) {
+  result->SetNull();
+
+  const unsigned int index = args[0].ToInt32();
+  if (index >= touch_points.size()) {
+    NOTREACHED() << "Invalid touch point index";
+  }
+
+  WebPoint position(args[1].ToInt32(), args[2].ToInt32());
+
+  WebTouchPoint* touch_point = &touch_points[index];
+  touch_point->state = WebTouchPoint::StateMoved;
+  touch_point->position = position;
+}
+
+void EventSendingController::cancelTouchPoint(
+    const CppArgumentList& args, CppVariant* result) {
+  result->SetNull();
+
+  const unsigned int index = args[0].ToInt32();
+  if (index >= touch_points.size()) {
+    NOTREACHED() << "Invalid touch point index";
+  }
+
+  WebTouchPoint* touch_point = &touch_points[index];
+  touch_point->state = WebTouchPoint::StateCancelled;
+}
+
+void EventSendingController::SendCurrentTouchEvent(
+    const WebInputEvent::Type type) {
+  if (static_cast<unsigned int>(WebTouchEvent::touchPointsLengthCap) <=
+      touch_points.size()) {
+    NOTREACHED() << "Too many touch points for event";
+  }
+
+  WebTouchEvent touch_event;
+  touch_event.type = type;
+  touch_event.modifiers = touch_modifiers;
+  touch_event.touchPointsLength = touch_points.size();
+  for (unsigned int i = 0; i < touch_points.size(); ++i) {
+    touch_event.touchPoints[i] = touch_points[i];
+  }
+  webview()->handleInputEvent(touch_event);
+
+  std::vector<WebTouchPoint>::iterator i = touch_points.begin();
+  while (i != touch_points.end()) {
+    WebTouchPoint* touch_point = &(*i);
+    if (touch_point->state == WebTouchPoint::StateReleased) {
+      i = touch_points.erase(i);
+    } else {
+      touch_point->state = WebTouchPoint::StateStationary;
+      ++i;
+    }
+  }
+}
+
+void EventSendingController::touchEnd(
+    const CppArgumentList& args, CppVariant* result) {
+  result->SetNull();
+  SendCurrentTouchEvent(WebInputEvent::TouchEnd);
+}
+
+void EventSendingController::touchMove(
+    const CppArgumentList& args, CppVariant* result) {
+  result->SetNull();
+  SendCurrentTouchEvent(WebInputEvent::TouchMove);
+}
+
+void EventSendingController::touchStart(
+    const CppArgumentList& args, CppVariant* result) {
+  result->SetNull();
+  SendCurrentTouchEvent(WebInputEvent::TouchStart);
+}
+
+void EventSendingController::touchCancel(
+    const CppArgumentList& args, CppVariant* result) {
+  result->SetNull();
+  SendCurrentTouchEvent(WebInputEvent::TouchCancel);
 }
 
 //

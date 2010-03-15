@@ -62,6 +62,17 @@ class EventSendingController : public CppBoundClass {
   void beginDragWithFiles(const CppArgumentList& args, CppVariant* result);
   CppVariant dragMode;
 
+  void addTouchPoint(const CppArgumentList& args, CppVariant* result);
+  void cancelTouchPoint(const CppArgumentList& args, CppVariant* result);
+  void clearTouchPoints(const CppArgumentList& args, CppVariant* result);
+  void releaseTouchPoint(const CppArgumentList& args, CppVariant* result);
+  void setTouchModifier(const CppArgumentList& args, CppVariant* result);
+  void touchCancel(const CppArgumentList& args, CppVariant* result);
+  void touchEnd(const CppArgumentList& args, CppVariant* result);
+  void touchMove(const CppArgumentList& args, CppVariant* result);
+  void touchStart(const CppArgumentList& args, CppVariant* result);
+  void updateTouchPoint(const CppArgumentList& args, CppVariant* result);
+
   // Unimplemented stubs
   void contextClick(const CppArgumentList& args, CppVariant* result);
   void enableDOMUIEventLogging(const CppArgumentList& args, CppVariant* result);
@@ -107,6 +118,9 @@ class EventSendingController : public CppBoundClass {
   bool NeedsShiftModifier(int key_code);
 
   void UpdateClickCountForButton(WebKit::WebMouseEvent::Button button_type);
+
+  // Compose a touch event from the current touch points and send it.
+  void SendCurrentTouchEvent(const WebKit::WebInputEvent::Type type);
 
   ScopedRunnableMethodFactory<EventSendingController> method_factory_;
 
