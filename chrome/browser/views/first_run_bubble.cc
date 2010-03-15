@@ -15,6 +15,7 @@
 #include "chrome/browser/options_window.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/metrics/user_metrics.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -99,6 +100,7 @@ class FirstRunBubbleView : public FirstRunBubbleViewBase {
   views::Label* label3_;
   views::NativeButton* change_button_;
   views::NativeButton* keep_button_;
+  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(FirstRunBubbleView);
 };
@@ -110,7 +112,8 @@ FirstRunBubbleView::FirstRunBubbleView(FirstRunBubble* bubble_window,
       label2_(NULL),
       label3_(NULL),
       keep_button_(NULL),
-      change_button_(NULL) {
+      change_button_(NULL),
+      profile_(profile) {
   const gfx::Font& font =
       ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::MediumFont);
 
@@ -154,8 +157,10 @@ void FirstRunBubbleView::BubbleShown() {
 
 void FirstRunBubbleView::ButtonPressed(views::Button* sender,
                                        const views::Event& event) {
+  UserMetrics::RecordAction("FirstRunBubbleView_Clicked", profile_);
   bubble_window_->Close();
   if (change_button_ == sender) {
+    UserMetrics::RecordAction("FirstRunBubbleView_ChangeButton", profile_);
     Browser* browser = BrowserList::GetLastActive();
     if (browser) {
       ShowOptionsWindow(OPTIONS_PAGE_GENERAL, OPTIONS_GROUP_DEFAULT_SEARCH,
@@ -251,6 +256,7 @@ class FirstRunOEMBubbleView : public FirstRunBubbleViewBase {
   views::Label* label2_;
   views::Label* label3_;
   views::ImageButton* close_button_;
+  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(FirstRunOEMBubbleView);
 };
@@ -261,7 +267,8 @@ FirstRunOEMBubbleView::FirstRunOEMBubbleView(FirstRunBubble* bubble_window,
       label1_(NULL),
       label2_(NULL),
       label3_(NULL),
-      close_button_(NULL) {
+      close_button_(NULL),
+      profile_(profile) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   const gfx::Font& font = rb.GetFont(ResourceBundle::MediumFont);
 
@@ -303,6 +310,7 @@ void FirstRunOEMBubbleView::BubbleShown() {
 
 void FirstRunOEMBubbleView::ButtonPressed(views::Button* sender,
                                           const views::Event& event) {
+  UserMetrics::RecordAction("FirstRunOEMBubbleView_Clicked", profile_);
   bubble_window_->Close();
 }
 
