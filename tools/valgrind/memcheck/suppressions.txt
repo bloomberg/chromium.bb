@@ -2441,6 +2441,17 @@
    fun:_ZNK16ImageDecoderTest22TestWebKitImageDecoderERK8FilePathS2_i
 }
 {
+   bug_38231
+   Memcheck:Leak
+   fun:_Znaj
+   fun:_ZN2v88internal8NewArrayIPPNS0_6ObjectEEEPT_i
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:_ZN2v88internal6InvokeEbNS0_6HandleINS0_10JSFunctionEEENS1_INS0_6ObjectEEEiPPPS4_Pb
+}
+{
    bug_38138
    Memcheck:Param
    write(buf)
