@@ -108,7 +108,6 @@
 @end
 
 
-
 class FakeTheme : public ThemeProvider {
  public:
   FakeTheme(NSColor* color) : color_(color) { }
@@ -1190,6 +1189,39 @@ TEST_F(BookmarkBarControllerTest, DropDestination) {
     EXPECT_NE(button,
               [bar_ buttonForDroppingOnAtPoint:NSMakePoint(x, 11)]);
   }
+}
+
+TEST_F(BookmarkBarControllerTest, CloseFolderOnAnimate) {
+  BookmarkModel* model = helper_.profile()->GetBookmarkModel();
+  const BookmarkNode* parent = model->GetBookmarkBarNode();
+  const BookmarkNode* folder = model->AddGroup(parent,
+                                               parent->GetChildCount(),
+                                               L"group");
+  model->AddGroup(parent, parent->GetChildCount(),
+                  L"sibbling group");
+  model->AddURL(folder, folder->GetChildCount(), L"title a",
+                GURL("http://www.google.com/a"));
+  model->AddURL(folder, folder->GetChildCount(),
+                L"title super duper long long whoa momma title you betcha",
+                GURL("http://www.google.com/b"));
+  BookmarkButton* button = [[bar_ buttons] objectAtIndex:0];
+  EXPECT_FALSE([bar_ folderController]);
+  [bar_ openBookmarkFolderFromButton:button];
+  BookmarkBarFolderController* bbfc = [bar_ folderController];
+  // The following tells us that the folder menu is showing. We want to make
+  // sure the folder menu goes away if the bookmark bar is hidden.
+  EXPECT_TRUE(bbfc);
+  EXPECT_TRUE([bar_ isVisible]);
+
+  // Hide the bookmark bar.
+  [bar_ updateAndShowNormalBar:NO
+               showDetachedBar:YES
+                 withAnimation:YES];
+  EXPECT_TRUE([bar_ isAnimationRunning]);
+
+  // Now that we've closed the bookmark bar (with animation) the folder menu
+  // should have been closed thus releasing the folderController.
+  EXPECT_FALSE([bar_ folderController]);
 }
 
 class BookmarkBarControllerNotificationTest : public CocoaTest {

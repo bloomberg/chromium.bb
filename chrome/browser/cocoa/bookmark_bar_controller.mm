@@ -1693,6 +1693,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 
   // Animate only if told to and if bar is enabled.
   if (animate && barIsEnabled_) {
+    [self closeAllBookmarkFolders];
     // Take care of any animation cases we know how to handle.
 
     // We know how to handle hidden <-> normal, normal <-> detached....
