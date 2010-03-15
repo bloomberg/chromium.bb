@@ -4,4 +4,4 @@
 # http://code.google.com/p/data-race-test/issues/detail?id=11)
 DnsMasterTest.*
 URLFetcher*Test.*
-
+HttpBridgeTest.*
