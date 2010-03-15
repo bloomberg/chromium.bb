@@ -299,7 +299,8 @@
 
     // This must be done after the view is added to the window since it relies
     // on the window bounds to determine whether to show buttons or not.
-    [toolbarController_ createBrowserActionButtons];
+    if ([self hasToolbar])  // Do not create the buttons in popups.
+      [toolbarController_ createBrowserActionButtons];
 
     // We are done initializing now.
     initializing_ = NO;

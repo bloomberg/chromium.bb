@@ -172,6 +172,9 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
   NSUInteger i = 0;
   for (ExtensionList::iterator iter = toolbarModel_->begin();
        iter != toolbarModel_->end(); ++iter) {
+    if (![self shouldDisplayBrowserAction:*iter])
+      continue;
+
     [self createActionButtonForExtension:*iter withIndex:i++];
   }
 
@@ -192,6 +195,9 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
 
   if (![self shouldDisplayBrowserAction:extension])
     return;
+
+  if (profile_->IsOffTheRecord())
+    index = toolbarModel_->OriginalIndexToIncognito(index);
 
   // Show the container if it's the first button. Otherwise it will be shown
   // already.
@@ -225,10 +231,11 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
     return;
 
   BrowserActionButton* button = [buttons_ objectForKey:buttonKey];
-  if (!button) {
-    NOTREACHED();
+  // This could be the case in incognito, where only a subset of extensions are
+  // shown.
+  if (!button)
     return;
-  }
+
   [button removeFromSuperview];
   [buttons_ removeObjectForKey:buttonKey];
   if ([buttons_ count] == 0) {
@@ -244,6 +251,9 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
   NSUInteger i = 0;
   for (ExtensionList::iterator iter = toolbarModel_->begin();
        iter != toolbarModel_->end(); ++iter) {
+    if (![self shouldDisplayBrowserAction:*iter])
+      continue;
+
     CGFloat xOffset = kGrippyXOffset +
         (i * (kBrowserActionWidth + kBrowserActionButtonPadding));
     NSString* extensionId = base::SysUTF8ToNSString((*iter)->id());
@@ -274,8 +284,10 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
   CGFloat width =
       [self containerWidthWithButtonCount:[self visibleButtonCount]];
   [containerView_ resizeToWidth:width animate:animate];
-  profile_->GetPrefs()->SetReal(prefs::kBrowserActionContainerWidth,
-      NSWidth([containerView_ frame]));
+
+  if (!profile_->IsOffTheRecord())
+    profile_->GetPrefs()->SetReal(prefs::kBrowserActionContainerWidth,
+        NSWidth([containerView_ frame]));
 
   [[NSNotificationCenter defaultCenter]
       postNotificationName:kBrowserActionVisibilityChangedNotification
@@ -412,11 +424,17 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
 }
 
 - (bool)shouldDisplayBrowserAction:(Extension*)extension {
+  // Only display incognito-enabled extensions while in incognito mode.
   return (!profile_->IsOffTheRecord() ||
           profile_->GetExtensionsService()->IsIncognitoEnabled(extension));
 }
 
 - (CGFloat)savedWidth {
+  // Don't use the standard saved width for incognito until a separate pref is
+  // added.
+  if (profile_->IsOffTheRecord())
+    return 0.0;
+
   return profile_->GetPrefs()->GetReal(prefs::kBrowserActionContainerWidth);
 }
 

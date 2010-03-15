@@ -592,7 +592,7 @@ class PrefObserverBridge : public NotificationObserver {
 }
 
 - (void)createBrowserActionButtons {
-  if (browserActionsController_.get() == nil) {
+  if (!browserActionsController_.get()) {
     browserActionsController_.reset([[BrowserActionsController alloc]
             initWithBrowser:browser_
               containerView:browserActionsContainerView_]);
@@ -662,6 +662,11 @@ class PrefObserverBridge : public NotificationObserver {
 }
 
 - (void)toolbarFrameChanged {
+  // Do nothing if the frame changes but no Browser Action Controller is
+  // present.
+  if (!browserActionsController_.get())
+    return;
+
   [self maintainMinimumLocationBarWidth];
 
   if (locationBarAtMinSize_) {
