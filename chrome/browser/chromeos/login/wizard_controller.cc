@@ -38,6 +38,9 @@ const char kLoginScreenName[] = "login";
 const char kAccountScreenName[] = "account";
 const char kUpdateScreenName[] = "update";
 
+// Passing this parameter as a "first screen" initiates full OOBE flow.
+const char kOutOfBoxScreenName[] = "oobe";
+
 // RootView of the Widget WizardController creates. Contains the contents of the
 // WizardController.
 class ContentView : public views::View {
@@ -96,7 +99,8 @@ WizardController::WizardController()
       background_widget_(NULL),
       background_view_(NULL),
       contents_(NULL),
-      current_screen_(NULL) {
+      current_screen_(NULL),
+      is_out_of_box_(false) {
   DCHECK(default_controller_ == NULL);
   default_controller_ = this;
 }
@@ -137,6 +141,11 @@ void WizardController::Init(const std::string& first_screen_name,
       chromeos::WmIpc::WINDOW_TYPE_LOGIN_GUEST,
       NULL);
   window->SetContentsView(contents_);
+
+  if (chromeos::UserManager::Get()->GetUsers().empty() ||
+      first_screen_name == kOutOfBoxScreenName) {
+    is_out_of_box_ = true;
+  }
 
   ShowFirstScreen(first_screen_name);
 
@@ -210,7 +219,10 @@ void WizardController::OnLoginCreateAccount() {
 }
 
 void WizardController::OnNetworkConnected() {
-  SetCurrentScreen(GetUpdateScreen());
+  if (is_out_of_box_)
+    SetCurrentScreen(GetUpdateScreen());
+  else
+    SetCurrentScreen(GetLoginScreen());
 }
 
 void WizardController::OnAccountCreated() {
@@ -274,7 +286,7 @@ void WizardController::ShowFirstScreen(const std::string& first_screen_name) {
   } else if (first_screen_name == kUpdateScreenName) {
     SetCurrentScreen(GetUpdateScreen());
   } else {
-    if (chromeos::UserManager::Get()->GetUsers().empty()) {
+    if (is_out_of_box_) {
       SetCurrentScreen(GetNetworkScreen());
     } else {
       SetCurrentScreen(GetLoginScreen());

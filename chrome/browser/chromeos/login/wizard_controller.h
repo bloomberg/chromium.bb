@@ -105,6 +105,9 @@ class WizardController : public chromeos::ScreenObserver,
   // Screen that's currently active.
   WizardScreen* current_screen_;
 
+  // True if full OOBE flow should be shown.
+  bool is_out_of_box_;
+
   // Default WizardController.
   static WizardController* default_controller_;
 
