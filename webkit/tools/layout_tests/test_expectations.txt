@@ -2818,23 +2818,6 @@ BUG37962 LINUX DEBUG : fast/forms/multiple-form-submission-protection-mouse.html
 BUG37962 MAC : plugins/iframe-shims.html = TEXT PASS
 
 // WebKit roll r55853 -> 55940
-// Need rebaseline
-BUG_JIANLI WIN LINUX : editing/deleting/non-smart-delete.html = IMAGE+TEXT
-BUG_JIANLI WIN LINUX : editing/deleting/smart-delete-001.html = TEXT
-BUG_JIANLI WIN LINUX : editing/deleting/smart-delete-002.html = FAIL
-BUG_JIANLI WIN LINUX : editing/deleting/smart-delete-003.html = IMAGE+TEXT
-BUG_JIANLI WIN LINUX : editing/deleting/smart-delete-004.html = IMAGE+TEXT
-BUG_JIANLI WIN LINUX : editing/pasteboard/drag-drop-modifies-page.html = IMAGE+TEXT
-BUG_JIANLI WIN LINUX : editing/pasteboard/smart-drag-drop.html = IMAGE+TEXT
-BUG_JIANLI WIN LINUX : editing/pasteboard/smart-paste-001.html = TEXT
-BUG_JIANLI WIN LINUX : editing/pasteboard/smart-paste-002.html = TEXT
-BUG_JIANLI WIN LINUX : editing/pasteboard/smart-paste-003.html = FAIL
-BUG_JIANLI WIN LINUX : editing/pasteboard/smart-paste-004.html = FAIL
-BUG_JIANLI WIN LINUX : editing/pasteboard/smart-paste-005.html = TEXT
-BUG_JIANLI WIN LINUX : editing/pasteboard/smart-paste-007.html = TEXT
-BUG_JIANLI WIN LINUX : editing/pasteboard/smart-paste-008.html = TEXT
-BUG_JIANLI WIN LINUX : editing/style/style-boundary-005.html = FAIL
-
 // Flaky test
 BUG_JIANLI MAC : fast/forms/select-style.html = IMAGE PASS
 
