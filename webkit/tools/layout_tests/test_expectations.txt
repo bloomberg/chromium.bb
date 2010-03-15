@@ -2796,9 +2796,6 @@ BUG36019 : fast/images/svg-as-tiled-background.html = IMAGE
 // WebKit roll 55250 to 55339
 BUG36966 : fast/loader/about-blank-hash-kept.html = FAIL
 
-// httponly-cookie.pl fails because it fails to be served as cgi script on Win
-BUG37049 WIN SKIP : websocket/tests/httponly-cookie.pl = PASS
-
 // WebKit roll 55373:55380
 BUG37136 : fast/loader/api-test-go-to-current-back-forward-item.html = TIMEOUT
 
