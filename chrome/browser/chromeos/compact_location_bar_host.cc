@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "app/l10n_util.h"
 #include "app/slide_animation.h"
 #include "base/keyboard_codes.h"
 #include "chrome/browser/browser.h"
@@ -211,28 +212,34 @@ gfx::Rect CompactLocationBarHost::GetBoundsUnderTab(int index) const {
   // BrowserView which is the parent of the host.
   TabStrip* tabstrip = browser_view()->tabstrip()->AsTabStrip();
   gfx::Rect bounds = tabstrip->GetIdealBounds(index);
-  gfx::Point tab_left_bottom(bounds.x(), bounds.height());
-  views::View::ConvertPointToWidget(tabstrip, &tab_left_bottom);
+  gfx::Rect navbar_bounds(gfx::Point(bounds.x(), bounds.height()),
+                          view()->GetPreferredSize());
+
+  // For RTL case x() defines tab right corner.
+  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) {
+    navbar_bounds.set_x(navbar_bounds.x() + bounds.width());
+  }
+  navbar_bounds.set_x(navbar_bounds.x() + tabstrip->x());
+  navbar_bounds.set_y(navbar_bounds.y() + tabstrip->y());
 
   // The compact location bar must be smaller than browser_width.
-  gfx::Size pref_size = view()->GetPreferredSize();
-  int width = std::min(browser_view()->width(), pref_size.width());
+  int width = std::min(browser_view()->width(),
+                       view()->GetPreferredSize().width());
 
-  // Try to center around the tab, or align to the left of the window.
-  // TODO(oshima): handle RTL
-  int x = std::max(tab_left_bottom.x() - ((width - bounds.width()) / 2), 0);
-  int y;
+  // Try to center around the tab.
+  navbar_bounds.set_x(browser_view()->MirroredXCoordinateInsideView(
+      navbar_bounds.x()) - ((width - bounds.width()) / 2));
+
   if (browser_view()->IsBookmarkBarVisible() &&
       !browser_view()->GetBookmarkBarView()->IsDetached()) {
     // Adjust the location to create the illusion that the compact location bar
     // is a part of boolmark bar.
     // TODO(oshima): compact location bar does not have right background
     // image yet, so -2 is tentative. Fix this once UI is settled.
-    y = browser_view()->GetBookmarkBarView()->bounds().bottom() - 2;
-  } else {
-    y  = tab_left_bottom.y();
+    navbar_bounds.set_y(
+        browser_view()->GetBookmarkBarView()->bounds().bottom() - 2);
   }
-  return gfx::Rect(x, y, width, pref_size.height());
+  return navbar_bounds.AdjustToFit(browser_view()->bounds());
 }
 
 void CompactLocationBarHost::Update(int index, bool animate_x) {
