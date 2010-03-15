@@ -384,6 +384,10 @@ bool CookiesTreeModelObserverBridge::HasCocoaModel() {
     }
     node = [[node children] objectAtIndex:childIndex];
   }
+
+  // If there is a valid selection, make sure that the remove
+  // button is enabled.
+  [self setRemoveButtonEnabled:YES];
 }
 
 #pragma mark Unit Testing
