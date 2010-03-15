@@ -12,6 +12,8 @@ env.Replace(LIBS=['pthread', 'c', 'nacl'])
 
 env.ComponentProgram('egyptian_cotton.nexe', 'egyptian_cotton.c')
 
+platform_limits_known = False
+
 # this test accepts the number of threads to attempt to create as an
 # argument. NACL_THREAD_MAX is 8192 for x86-32 and x86-64, and 4096
 # for the Arm.  See the header files
@@ -75,9 +77,11 @@ if env['TARGET_ARCHITECTURE'] == 'arm':
   # imposed by our threading implementation, not by the OS.
   test_suites = ['small_tests_arm_hw_only']
   high_thread_count_args = ['--', '-n', '4095']
+  platform_limits_known = True
 elif env['TARGET_ARCHITECTURE'] == 'x86':
   trusted = env.get('TRUSTED_ENV', None)
   if trusted:
+    platform_limits_known = True
     if trusted.Bit('linux'):
       high_thread_count_args = ['--', '-n', '8180']
     elif trusted.Bit('mac'):
@@ -91,6 +95,9 @@ else:
   print 'Unknown target architecture -- architecture/host OS thread'
   print 'limits are unknown'
   assert 0
+
+if not platform_limits_known:
+  Return()
 
 tests = [ ('egyptian_cotton_test', high_thread_count_args),
           ('thread_stack_alloc_test', large_stack_args) ]
