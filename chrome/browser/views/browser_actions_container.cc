@@ -843,27 +843,11 @@ void BrowserActionsContainer::BubbleGotFocus(BrowserBubble* bubble) {
 }
 
 void BrowserActionsContainer::BubbleLostFocus(BrowserBubble* bubble,
-                                              gfx::NativeView focused_view) {
-  if (!popup_)
+                                              bool lost_focus_to_child) {
+  // Don't close when we are losing focus to a child window, this is the case
+  // for select popups and alert for example.
+  if (!popup_ || lost_focus_to_child)
     return;
-
-#if defined(OS_WIN)
-  // Don't hide when we are losing focus to a child window.  This is the case
-  // with select popups.
-  // TODO(jcampan): http://crbugs.com/29131 make that work on toolkit views
-  //                so this #if defined can be removed.
-  gfx::NativeView popup_native_view = popup_->native_view();
-  gfx::NativeView parent = focused_view;
-  while (parent = ::GetParent(parent)) {
-    if (parent == popup_native_view)
-      return;
-  }
-
-  // Don't close when we are losing focus to a window we own.
-  // This is the case with JavaScript message boxes (such as alerts).
-  if (::GetWindow(focused_view, GW_OWNER) == popup_native_view)
-    return;
-#endif
 
   // This is a bit annoying.  If you click on the button that generated the
   // current popup, then we first get this lost focus message, and then

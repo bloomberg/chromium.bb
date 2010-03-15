@@ -34,7 +34,7 @@ class BubbleWidget : public views::WidgetGtk {
     if (IsActive()) {
       BrowserBubble::Delegate* delegate = bubble_->delegate();
       if (delegate)
-        delegate->BubbleLostFocus(bubble_, NULL);
+        delegate->BubbleLostFocus(bubble_, false);
     }
     views::WidgetGtk::Close();
   }
@@ -43,7 +43,7 @@ class BubbleWidget : public views::WidgetGtk {
     if (IsActive()) {
       BrowserBubble::Delegate* delegate = bubble_->delegate();
       if (delegate)
-        delegate->BubbleLostFocus(bubble_, NULL);
+        delegate->BubbleLostFocus(bubble_, false);
     }
     views::WidgetGtk::Hide();
   }
@@ -58,7 +58,10 @@ class BubbleWidget : public views::WidgetGtk {
       return;
     }
 
-    delegate->BubbleLostFocus(bubble_, GetNativeView());
+    // TODO(jcampan): http://crbugs.com/29131 Check if the window we are losing
+    //                focus to is a child window and pass that to the call
+    //                below.
+    delegate->BubbleLostFocus(bubble_, false);
   }
 
   virtual gboolean OnFocusIn(GtkWidget* widget, GdkEventFocus* event) {

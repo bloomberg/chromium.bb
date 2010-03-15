@@ -311,8 +311,7 @@ class BrowserActionsContainer
   virtual void BubbleBrowserWindowMoved(BrowserBubble* bubble);
   virtual void BubbleBrowserWindowClosing(BrowserBubble* bubble);
   virtual void BubbleGotFocus(BrowserBubble* bubble);
-  virtual void BubbleLostFocus(BrowserBubble* bubble,
-                               gfx::NativeView focused_view);
+  virtual void BubbleLostFocus(BrowserBubble* bubble, bool lost_focus_to_child);
 
   // Overridden from views::ViewMenuDelegate:
   virtual void RunMenu(View* source, const gfx::Point& pt);

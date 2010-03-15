@@ -59,7 +59,24 @@ class BubbleWidget : public views::WidgetWin {
     }
 
     if (action == WA_INACTIVE && !closed_) {
-      delegate->BubbleLostFocus(bubble_, window);
+      bool lost_focus_to_child = false;
+
+      // Are we a parent of this window?
+      gfx::NativeView parent = window;
+      while (parent = ::GetParent(parent)) {
+        if (window == GetNativeView()) {
+          lost_focus_to_child = true;
+          break;
+        }
+      }
+
+      // Do we own this window?
+      if (!lost_focus_to_child &&
+          ::GetWindow(window, GW_OWNER) == GetNativeView()) {
+        lost_focus_to_child = true;
+      }
+
+      delegate->BubbleLostFocus(bubble_, lost_focus_to_child);
     }
   }
 

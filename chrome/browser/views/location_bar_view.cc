@@ -1635,9 +1635,10 @@ void LocationBarView::PageActionImageView::BubbleBrowserWindowClosing(
 }
 
 void LocationBarView::PageActionImageView::BubbleLostFocus(
-    BrowserBubble* bubble,
-    gfx::NativeView focused_view) {
-  if (!popup_)
+    BrowserBubble* bubble, bool lost_focus_to_child) {
+  // Don't close when we are losing focus to a child window, this is the case
+  // for select popups and alert for example.
+  if (!popup_ || lost_focus_to_child)
     return;
 
   MessageLoop::current()->PostTask(FROM_HERE,
