@@ -2856,7 +2856,7 @@ BUG37869 MAC : fast/canvas/webgl/uniform-location.html = TEXT
 BUG37869 MAC : editing/input/option-page-up-down.html = TIMEOUT
 
 // Three flaky tests noticed during a sheriff rotation.
-BUG37962 LINUX DEBUG : fast/dom/HTMLElement/bdo.html = CRASH PASS
+BUG37962 MAC LINUX DEBUG : fast/dom/HTMLElement/bdo.html = CRASH PASS
 BUG37962 LINUX DEBUG : fast/forms/multiple-form-submission-protection-mouse.html = CRASH PASS
 BUG37962 MAC : plugins/iframe-shims.html = TEXT PASS
 
