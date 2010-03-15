@@ -6,7 +6,7 @@
 #include "base/logging.h"
 #include "gpu/demos/framework/plugin.h"
 #include "gpu/pgl/pgl.h"
-#include "webkit/glue/plugins/nphostapi.h"
+#include "third_party/npapi/bindings/nphostapi.h"
 
 #if __GNUC__ >= 4
 #define EXPORT __attribute__ ((visibility("default")))

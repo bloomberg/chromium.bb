@@ -12,7 +12,7 @@
 #ifdef __native_client__
 #include "native_client/src/third_party/npapi/files/include/npupp.h"
 #else
-#include "webkit/glue/plugins/nphostapi.h"
+#include "third_party/npapi/bindings/nphostapi.h"
 #endif  // __native_client__
 
 // A CommandBuffer proxy implementation that uses the Pepper API to access

@@ -28,7 +28,7 @@
 
 #include <string>
 #include "base/basictypes.h"
-#include "webkit/glue/plugins/nphostapi.h"
+#include "third_party/npapi/bindings/nphostapi.h"
 
 class EventHandler {
  public:

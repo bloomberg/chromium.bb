@@ -9,7 +9,7 @@
 #include "base/scoped_ptr.h"
 #include "gpu/demos/framework/demo.h"
 #include "gpu/pgl/pgl.h"
-#include "webkit/glue/plugins/nphostapi.h"
+#include "third_party/npapi/bindings/nphostapi.h"
 
 namespace gpu {
 namespace demos {

@@ -28,7 +28,7 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
-#include "webkit/glue/plugins/nphostapi.h"
+#include "third_party/npapi/bindings/nphostapi.h"
 #if !defined(INDEPENDENT_PLUGIN)
 #include "gpu/pgl/pgl.h"
 #endif

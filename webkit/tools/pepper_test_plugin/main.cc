@@ -43,7 +43,7 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #endif
-#include "webkit/glue/plugins/nphostapi.h"
+#include "third_party/npapi/bindings/nphostapi.h"
 #include "webkit/tools/pepper_test_plugin/plugin_object.h"
 #include "webkit/tools/pepper_test_plugin/event_handler.h"
 
