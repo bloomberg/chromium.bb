@@ -37,6 +37,7 @@
       'ENABLE_SVG_USE=<(enable_svg)',
       'ENABLE_SVG_FOREIGN_OBJECT=<(enable_svg)',
       'ENABLE_SVG_FONTS=<(enable_svg)',
+      'ENABLE_TOUCH_EVENTS=<(enable_touch_events)',
       'ENABLE_VIDEO=1',
       'ENABLE_WEB_SOCKETS=1',
       'ENABLE_WORKERS=1',
@@ -46,9 +47,11 @@
     'variables': {
       'use_accelerated_compositing%': 0,
       'enable_svg%': 1,
+      'enable_touch_events%': 1,
     },
     'use_accelerated_compositing%': '<(use_accelerated_compositing)',
     'enable_svg%': '<(enable_svg)',
+    'enable_touch_events%': '<(enable_touch_events)',
     'conditions': [
       ['use_accelerated_compositing==1', {
         'feature_defines': ['WTF_USE_ACCELERATED_COMPOSITING=1'],
