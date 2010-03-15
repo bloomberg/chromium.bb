@@ -31,6 +31,7 @@ static const struct {
   {"he", "he-IL"},
   {"hi", "hi-IN"},
   {"hr", "hr-HR"},
+  {"hu", "hu-HU"},
   {"id", "id-ID"},
   {"it", "it-IT"},
   {"lt", "lt-LT"},
@@ -83,7 +84,6 @@ FilePath GetVersionedFileName(const std::string& input_language,
     {"en-GB", "-1-1"},
     {"es-ES", "-1-1"},
     {"nl-NL", "-1-1"},
-    {"ru-RU", "-1-1"},
     {"sv-SE", "-1-1"},
     {"he-IL", "-1-1"},
     {"el-GR", "-1-1"},
@@ -92,7 +92,10 @@ FilePath GetVersionedFileName(const std::string& input_language,
     {"et-EE", "-1-1"},
     {"fr-FR", "-1-4"},  // To fix a crash, fr dictionary was updated to 1.4.
     {"lt-LT", "-1-3"},
-    {"pl-PL", "-1-3"}
+    {"pl-PL", "-1-3"},
+    {"hu-HU", "-2-0"},
+    {"ro-RO", "-2-0"},
+    {"ru-RU", "-2-0"},
   };
 
   // Generate the bdict file name using default version string or special

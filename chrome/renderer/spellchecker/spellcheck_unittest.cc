@@ -474,6 +474,13 @@ TEST_F(SpellCheckTest, SpellCheckText) {
       L"\x092E\x0947\x0902 \x0914\x0930 \x0909\x092A\x092F\x094B\x0917\x0940 "
       L"\x092C\x0928\x093E\x0928\x093E \x0939\x0948."
     }, {
+      // Hungarian
+      "hu-HU",
+      L"A Google azt a k\x00FCldet\x00E9st v\x00E1llalta mag\x00E1ra, "
+      L"hogy a vil\x00E1gon fellelhet\x0151 inform\x00E1\x0063i\x00F3kat "
+      L"rendszerezze \x00E9s \x00E1ltal\x00E1nosan el\x00E9rhet\x0151v\x00E9, "
+      L"illetve haszn\x00E1lhat\x00F3v\x00E1 tegye."
+    }, {
       // Croatian
       "hr-HR",
       // L"Googleova " - to be added.
@@ -549,11 +556,8 @@ TEST_F(SpellCheckTest, SpellCheckText) {
     }, {
       // Romanian
       "ro-RO",
-      L"Misiunea Google este de "
-      // L"a " - to be added.
-      L"organiza informa\x0163iile lumii \x015Fi de "
-      // L"a " - to be added.
-      L"le face accesibile \x015Fi utile la nivel universal."
+      L"Misiunea Google este de a organiza informa\x021B3iile lumii \x0219i de "
+      L"a le face accesibile \x0219i utile la nivel universal."
     }, {
       // Russian
       "ru-RU",
@@ -567,6 +571,8 @@ TEST_F(SpellCheckTest, SpellCheckText) {
       L"\x0434\x043E\x0441\x0442\x0443\x043F\x043D\x043E\x0441\x0442\x0438 "
       L"\x0438 \x043F\x043E\x043B\x044C\x0437\x044B \x0434\x043B\x044F "
       L"\x0432\x0441\x0435\x0445."
+      // A Russian word including U+0451. (Bug 15558 <http://crbug.com/15558>)
+      L"\u0451\u043B\u043A\u0430"
     }, {
       // Slovak
       "sk-SK",
