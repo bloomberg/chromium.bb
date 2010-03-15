@@ -9,16 +9,6 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "views/border.h"
 
-namespace {
-
-const int kCornerRadius = 12;
-const int kShadow = 10;
-const int kPadding = 30;
-const SkColor kBackground = SK_ColorWHITE;
-const SkColor kShadowColor = 0x40223673;
-
-}  // namespace
-
 ///////////////////////////////////////////////////////////////////////////////
 // AccountCreationView, public:
 AccountCreationView::AccountCreationView() {
