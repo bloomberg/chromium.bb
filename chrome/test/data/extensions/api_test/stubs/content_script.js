@@ -1,4 +1,12 @@
 
+// Helper function to log message to both the local console and to the
+// background page, so that the latter can output the message via the
+// chrome.test.log() function.
+function logToConsoleAndStdout(msg) {
+  console.log(msg);
+  chrome.extension.sendRequest("log: " + msg);
+}
+
 // We ask the background page to get the extension API to test against. When it
 // responds we start the test.
 console.log("asking for api ...");
@@ -58,7 +66,7 @@ function testPath(path, expectError) {
       try {
         module = module[parts[i]];
       } catch (err) {
-        console.log("testPath failed on subcomponent of " + path);
+        logToConsoleAndStdout("testPath failed on subcomponent of " + path);
         return false;
       }
     } else {
@@ -66,8 +74,8 @@ function testPath(path, expectError) {
       // to throw an error on access.
       try {
         if (typeof(module[parts[i]]) == "undefined") {
-          console.log(" fail (undefined and not throwing error): " +
-                      path);
+          logToConsoleAndStdout(" fail (undefined and not throwing error): " +
+                                path);
           return false;
         } else if (!expectError) {
           console.log(" ok (defined): " + path);
@@ -75,7 +83,7 @@ function testPath(path, expectError) {
         }
       } catch (err) {
         if (!expectError) {
-          console.log(" fail (did not expect error): " + path);
+          logToConsoleAndStdout(" fail (did not expect error): " + path);
           return false;
         }
         var str = err.toString();
@@ -83,13 +91,13 @@ function testPath(path, expectError) {
           console.log(" ok (correct error thrown): " + path);
           return true;
         } else {
-          console.log(" fail (wrong error: '" + str + "')");
+          logToConsoleAndStdout(" fail (wrong error: '" + str + "')");
           return false;
         }
       }
     }
   }
-  console.log(" fail (no error when we were expecting one): " + path);
+  logToConsoleAndStdout(" fail (no error when we were expecting one): " + path);
   return false;
 }
 
@@ -143,7 +151,9 @@ function doTest(privilegedPaths, unprivilegedPaths) {
   if (success) {
     reportSuccess();
   } else {
-    console.log("failures on:\n" + failures.join("\n"));
+    logToConsoleAndStdout("failures on:\n" + failures.join("\n") +
+        "\n\n\n>>> See comment in stubs_apitest.cc for a " +
+        "hint about fixing this failure.\n\n");
     reportFailure();
   }
 }

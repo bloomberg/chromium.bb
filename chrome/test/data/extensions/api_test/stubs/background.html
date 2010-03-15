@@ -5,6 +5,8 @@ chrome.extension.onRequest.addListener(function(msg, sender, responseFunc) {
     responseFunc(JSON.parse(chrome.test.getApiDefinitions()));
   } else if (msg == "pass") {
     chrome.test.notifyPass();
+  } else if (msg.substr(0, 3) == "log") {
+    chrome.test.log(msg);
   } else {
     chrome.test.notifyFail("failed");
   }
