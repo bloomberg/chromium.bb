@@ -876,7 +876,7 @@ BUG31342 WIN RELEASE : security/block-test.html = TEXT PASS
 
 // Fails in debug. Windows used to be only flaky, but now fails consistently
 // starting with the 52554->52633 merge.
-BUG31363 DEBUG WIN LINUX MAC : platform/chromium/fast/dom/interval.html = TEXT PASS
+BUG31363 DEBUG WIN LINUX : platform/chromium/fast/dom/interval.html = TEXT PASS
 
 // -----------------------------------------------------------------
 // SVG TESTS
@@ -1206,9 +1206,7 @@ BUG15797 LINUX : plugins/embed-attributes-setting.html = FAIL CRASH
 // Skip because we throw an exception before we get to dumpAsText.
 BUG10351 SKIP MAC : http/tests/plugins/geturlnotify-from-npp-destroystream.html = FAIL
 BUG10351 MAC : plugins/inner-html-display-none.html = FAIL
-BUG10351 MAC DEBUG : plugins/invoke.html = PASS FAIL
 BUG10351 MAC : plugins/mouse-events.html = FAIL
-BUG10351 MAC DEBUG : http/tests/plugins/npapi-response-headers.html = PASS FAIL
 // BUG10667 SLOW MAC RELEASE : plugins/iframe-shims.html = FAIL
 
 // NEW FOR MERGE 36102:37604
@@ -2018,7 +2016,7 @@ BUG10479 MAC : svg/hixie/perf/002.xml = FAIL
 BUG9798 SLOW WIN DEBUG : fast/dom/Window/slow-unload-handler.html = PASS
 
 // Was flaky. Became a consistent failure.
-BUG9798 MAC WIN : http/tests/loading/preload-img-test.html = TIMEOUT PASS
+BUG9798 WIN : http/tests/loading/preload-img-test.html = TIMEOUT PASS
 BUG9798 WIN DEBUG : http/tests/local/style-access-before-stylesheet-loaded.html = FAIL PASS
 BUG9798 WIN DEBUG : http/tests/misc/redirect-with-quotes.php = TIMEOUT PASS
 BUG9798 WIN SLOW : http/tests/misc/refresh-headers.php = PASS
@@ -2045,7 +2043,6 @@ BUG9798 LINUX : svg/custom/use-property-changes-through-svg-dom.svg = FAIL
 BUG9798 LINUX : svg/custom/js-update-transform-changes.svg = FAIL
 // Occasionally times out. Not just slow.
 BUG9798 WIN DEBUG : http/tests/loading/redirect-methods.html = TIMEOUT PASS
-BUG9798 MAC DEBUG : plugins/geturl-replace-query.html = TEXT PASS
 
 // New tests or failures from WebKit merge 42324:42364. Re-baselined on
 // Windows. Probably just need the same on other platforms.
@@ -2060,9 +2057,6 @@ BUG10760 LINUX : fast/inline/25277-2.html = FAIL
 BUG10760 LINUX : fast/inline/25277.html = FAIL
 BUG10760 LINUX : svg/custom/marker-child-changes.svg = PASS FAIL
 BUG10760 LINUX : svg/custom/marker-viewBox-changes.svg = FAIL
-
-// New failures from WebKit Merge 42671:42725
-BUG10861 MAC DEBUG : http/tests/plugins/post-url-file.html = PASS FAIL
 
 // New failures from WebKit merge 42725:42805
 // WebKit change http://trac.webkit.org/changeset/42785
@@ -2147,9 +2141,6 @@ BUG11613 LINUX DEBUG : fast/overflow/scrollRevealButton.html = FAIL
 // WebKit tests regressions 20529:20532
 BUG16675 MAC : fast/dynamic/flash-replacement-test.html = FAIL
 
-// This started crashing regularly as a result of r28798 (see bug 24720).
-BUG16675 MAC DEBUG : plugins/return-error-from-new-stream-callback-in-full-frame-plugin.html = PASS FAIL
-
 // WebKit merge 42738:45840
 // New test, needs baseline.
 BUG16690 SKIP MAC : fast/text/international/khmer-selection.html = FAIL
@@ -2158,7 +2149,6 @@ BUG16690 SKIP MAC : fast/text/international/khmer-selection.html = FAIL
 // New tests, need baseline.
 BUG16240 WIN DEBUG : http/tests/cache/subresource-expiration.html = TIMEOUT
 BUG16240 MAC WIN RELEASE : http/tests/cache/subresource-expiration.html = TIMEOUT
-BUG16240 MAC DEBUG : http/tests/cache/subresource-expiration.html = PASS TIMEOUT
 BUG14752 LINUX SLOW : http/tests/cache/subresource-expiration.html = PASS
 
 // New tests with WebKit merge 46288:46363
@@ -2257,10 +2247,6 @@ BUG24119 LINUX DEBUG : tables/mozilla/bugs/bug1220.html = PASS FAIL
 // WebKit roll 49405:49413
 BUG28409 : http/tests/xmlhttprequest/logout.html = FAIL
 
-
-// WebKit roll 49583:49597
-BUG24930 MAC DEBUG : editing/selection/editable-html-element.html = FAIL PASS
-
 // WebKit Roll 49597:49640
 BUG24966 SLOW MAC DEBUG : fast/frames/calculate-fixed.html = PASS
 
@@ -2284,17 +2270,8 @@ BUG25884 WIN LINUX : fast/dom/Document/CaretRangeFromPoint/caretRangeFromPoint-i
 BUG26344 LINUX DEBUG : fast/text/atsui-partial-selection.html = CRASH
 BUG26344 LINUX DEBUG : platform/mac/editing/deleting/backward-delete.html = CRASH
 
-// WebKit roll 50073:50101
-// Test added by Ryosuke: http://trac.webkit.org/changeset/50090
-BUG25889 MAC DEBUG : fast/forms/select-empty-option-height.html = PASS TIMEOUT
-
 // More fallout from the above roll.
 BUG_JORLOW LINUX : fast/multicol/column-rules-stacking.html = FAIL
-
-// randomly started to be flaky on r30451 (revision had only a check-in of text_expectations.txt)
-BUG26195 MAC DEBUG : plugins/netscape-plugin-map-data-to-src.html = PASS TEXT
-BUG26195 MAC DEBUG : plugins/netscape-plugin-setwindow-size.html = PASS TEXT
-BUG26195 MAC DEBUG : plugins/netscape-plugin-setwindow-size-2.html = PASS TEXT
 
 // ==== WebKit roll 50258:50313 ====
 BUG26291 MAC : fast/text/atsui-multiple-renderers.html = IMAGE
@@ -2308,23 +2285,12 @@ BUG9798 WIN RELEASE : http/tests/navigation/no-referrer-reset.html = TIMEOUT PAS
 
 // more test flakiness
 BUG27334 MAC : http/tests/security/xssAuditor/object-embed-tag.html = PASS
-BUG27334 MAC DEBUG : plugins/netscape-destroy-plugin-script-objects.html = PASS TEXT
-BUG27334 MAC DEBUG : plugins/netscape-invoke-failure.html = PASS TEXT
 
 // more test flakiness
 BUG27418 SLOW WIN RELEASE : http/tests/cookies/simple-cookies-max-age.html = PASS
 BUG27418 SLOW WIN RELEASE : http/tests/misc/url-in-utf16le.html = PASS
-BUG27418 MAC DEBUG : http/tests/security/xssAuditor/post-from-iframe.html = PASS TIMEOUT
-BUG27418 SLOW MAC RELEASE : http/tests/security/xssAuditor/post-from-iframe.html = PASS
 BUG27418 MAC DEBUG : http/tests/plugins/interrupted-get-url.html = PASS TEXT
 BUG27418 MAC RELEASE SLOW : http/tests/plugins/interrupted-get-url.html = PASS
-BUG27418 MAC DEBUG : plugins/getintidentifier-special-values.html = PASS TEXT
-BUG27418 MAC DEBUG : plugins/netscape-construct.html = PASS TEXT
-BUG27418 MAC DEBUG : plugins/netscape-get-property-return-value.html = PASS TEXT
-BUG27418 MAC DEBUG : plugins/netscape-throw-exception.html = PASS TEXT
-BUG27418 MAC DEBUG : plugins/get-url-that-the-resource-load-delegate-will-disallow.html = PASS TEXT
-BUG27418 MAC DEBUG : plugins/netscape-identifier-conversion.html = PASS TEXT
-BUG27418 MAC DEBUG : plugins/open-and-close-window-with-plugin.html = PASS TEXT
 
 // The following upstream patches add -Webkit-color-correction support:
 // http://trac.webkit.org/changeset/50760
@@ -2429,7 +2395,6 @@ BUG29157 WIN LINUX MAC :  svg/animations/animVal-basics.html = TIMEOUT
 BUG29164 WIN LINUX MAC : fast/frames/sandboxed-iframe-plugins.html = TEXT
 
 // New failures from WebKit merge 51581:51584
-BUG29167 MAC : plugins/window-open.html = TEXT PASS
 BUG29167 MAC DEBUG : fast/dom/replaceChild.html = IMAGE PASS
 
 // Failure from WebKit merge 51607:51613 (51608 is the cause)
@@ -2570,7 +2535,7 @@ BUG30343 LINUX : fast/css/large-number-round-trip.html = TEXT
 // Likely, moving Windows to using Apache2 will fix this as the Linux/Mac builds
 // did not get flaky here and moving to Apache made the appcache tests less
 // flaky on those platforms.
-BUG25977 WIN MAC DEBUG : http/tests/appcache/access-via-redirect.php = TIMEOUT PASS FAIL
+BUG25977 WIN DEBUG : http/tests/appcache/access-via-redirect.php = TIMEOUT PASS
 BUG25977 WIN DEBUG : http/tests/appcache/auth.html = TIMEOUT PASS
 BUG25977 WIN DEBUG : http/tests/appcache/crash-when-navigating-away-then-back.html = TIMEOUT PASS
 BUG25977 WIN DEBUG : http/tests/appcache/empty-manifest.html = TIMEOUT PASS
@@ -2612,8 +2577,6 @@ BUG30826 WIN DEBUG : platform/win/fast/events/panScroll-event-fired.html = PASS 
 
 // Flaky
 BUG30930 LINUX DEBUG : tables/mozilla/bugs/bug15933.html = IMAGE PASS
-
-BUG31026 MAC DEBUG : http/tests/appcache/crash-when-navigating-away-then-back.html = PASS CRASH
 
 // WebKit update 52372->52454
 BUG30938 MAC : fast/backgrounds/svg-as-background-6.html = IMAGE
@@ -2667,9 +2630,6 @@ BUG32398 RELEASE MAC : svg/custom/resource-invalidate-on-target-update.svg = IMA
 
 BUG32308 DEBUG : fast/frames/cached-frame-counter.html = TIMEOUT
 
-// New flakyness ?
-BUG32306 MAC DEBUG: svg/hixie/error/004.xml = CRASH PASS
-
 // WebKit roll 53341:53451
 BUG32670 LINUX : fast/css/zoom-body-scroll.html = TEXT
 BUG32673 WIN LINUX : fast/forms/textarea-scrollbar-height.html = TEXT
@@ -2683,11 +2643,8 @@ BUG32684 WIN : inspector/timeline-layout.html = TEXT PASS
 BUG35519 WIN SKIP : http/tests/inspector/inspect-iframe-from-different-domain.html = PASS
 BUG32688 MAC DEBUG : fast/lists/inlineBoxWrapperNullCheck.html = TEXT PASS
 BUG32689 MAC LINUX DEBUG : http/tests/security/mixedContent/about-blank-iframe-in-main-frame.html = TEXT PASS
-BUG32690 MAC DEBUG : plugins/plugin-remove-subframe.html = TEXT PASS
-BUG32691 MAC DEBUG : svg/batik/text/textEffect.svg = TEXT PASS
 BUG32692 MAC DEBUG : svg/custom/visibility-override-filter.svg = TEXT PASS
 BUG32693 MAC DEBUG : svg/dom/SVGRectElement/rect-modify-rx.svg = TEXT PASS
-BUG32666 MAC DEBUG : svg/custom/use-detach.svg = IMAGE PASS
 BUG35773 WIN LINUX : inspector/console-dir.html = CRASH TEXT PASS
 
 BUG33293 SKIP : fast/media/lifetime.html = TIMEOUT
