@@ -4,13 +4,16 @@
     var last_position = 0;
     var last_error = 0;
     var watch_id = 0;
+    var display_alert = true;
     function geoSuccessCallback(position) {
       last_position = position;
-      alert('geoSuccessCallback');
+      if (display_alert)
+        alert('geoSuccessCallback');
     }
     function geoErrorCallback(error) {
       last_error = error;
-      alert('geoErrorCallback');
+      if (display_alert)
+        alert('geoErrorCallback');
     }
     function geoStart() {
       watch_id = navigator.geolocation.watchPosition(
@@ -27,9 +30,14 @@
     function geoGetLastError() {
       return "" + (last_error ? last_error.code : 0);
     }
+    function geoDisableAlerts() {
+      display_alert = false;
+      return "" + display_alert;
+    }
   </script>
  </head>
  <body>
  <input type="button" value="manual" onclick="geoStart()"/>
  </body>
 </html>
+
