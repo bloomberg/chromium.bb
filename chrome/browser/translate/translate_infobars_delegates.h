@@ -35,14 +35,14 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   void GetAvailableTargetLanguages(std::vector<std::string>* languages);
   void ModifyOriginalLanguage(int lang_index);
   void ModifyTargetLanguage(int lang_index);
-  virtual void Translate();
-  virtual void TranslationDeclined();
-  virtual bool IsLanguageBlacklisted();
-  virtual void ToggleLanguageBlacklist();
-  virtual bool IsSiteBlacklisted();
-  virtual void ToggleSiteBlacklist();
-  virtual bool ShouldAlwaysTranslate();
-  virtual void ToggleAlwaysTranslate();
+  void Translate();
+  void TranslationDeclined();
+  bool IsLanguageBlacklisted();
+  void ToggleLanguageBlacklist();
+  bool IsSiteBlacklisted();
+  void ToggleSiteBlacklist();
+  bool ShouldAlwaysTranslate();
+  void ToggleAlwaysTranslate();
 
   int original_lang_index() const {
     return original_lang_index_;
@@ -94,14 +94,10 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   virtual void InfoBarClosed();
 
   // Returns the printable version of the language code |language_code|.
-  virtual string16 GetDisplayNameForLocale(const std::string& language_code);
+  static string16 GetDisplayNameForLocale(const std::string& language_code);
 
   // Overridden from InfoBarDelegate:
   virtual InfoBar* CreateInfoBar();
-
- protected:
-  // For testing.
-  TranslateInfoBarDelegate() : InfoBarDelegate(NULL) {}
 
  private:
   TranslateInfoBarDelegate(TabContents* contents,
@@ -112,7 +108,7 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
                            int target_language_index);
 
   TabContents* tab_contents_;  // Weak.
-  scoped_ptr<TranslatePrefs> prefs_;
+  TranslatePrefs prefs_;
   TranslateState state_;
   std::string site_;
   int original_lang_index_;

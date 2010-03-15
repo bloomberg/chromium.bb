@@ -9,7 +9,6 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/translate/languages_menu_model.h"
 #include "chrome/browser/translate/options_menu_model.h"
-#include "chrome/browser/translate/translate_infobars_delegates.h"
 #include "chrome/common/notification_registrar.h"
 
 class TranslateInfoBarMenuModel;
@@ -55,30 +54,5 @@ class TranslateNotificationObserverBridge;
   scoped_ptr<TranslateInfoBarMenuModel> menu_model_;
   scoped_ptr<TranslateNotificationObserverBridge> observer_bridge_;
 }
-
-@end
-
-@interface TranslateInfoBarController (TestingAPI)
-
-// Main function to update the toolbar graphic state and data model after
-// the state has changed.
-// Controls are moved around as needed and visibility changed to match the
-// current state.
-- (void)updateState;
-
-// Called when the source or target language selection changes in a menu.
-// |newLanguageIdx| is the index of the newly selected item in the appropriate
-// menu.
-- (void)sourceLanguageModified:(NSInteger)newLanguageIdx;
-- (void)targetLanguageModified:(NSInteger)newLanguageIdx;
-
-// Called when an item in one of the toolbar's menus is selected.
-- (void)menuItemSelected:(id)item;
-
-// Returns the underlying options menu.
-- (NSMenu*)optionsMenu;
-
-// Verifies that the layout of the infobar is correct for |state|.
-- (bool)verifyLayout:(TranslateInfoBarDelegate::TranslateState)state;
 
 @end
