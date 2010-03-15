@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/file_watcher.h"
+#include "chrome/browser/file_watcher.h"
 
 #include <errno.h>
 #include <string.h>
@@ -34,6 +34,8 @@ namespace {
 class FileWatcherImpl;
 
 // Singleton to manage all inotify watches.
+// TODO(tony): It would be nice if this wasn't a singleton.
+// http://crbug.com/38174
 class InotifyReader {
  public:
   typedef int Watch;  // Watch descriptor used by AddWatch and RemoveWatch.
@@ -88,8 +90,7 @@ class FileWatcherImpl : public FileWatcher::PlatformDelegate {
 
   // Start watching |path| for changes and notify |delegate| on each change.
   // Returns true if watch for |path| has been added successfully.
-  virtual bool Watch(const FilePath& path, FileWatcher::Delegate* delegate,
-                     MessageLoop* backend_loop);
+  virtual bool Watch(const FilePath& path, FileWatcher::Delegate* delegate);
 
  private:
   // Delegate to notify upon changes.
@@ -100,9 +101,6 @@ class FileWatcherImpl : public FileWatcher::PlatformDelegate {
 
   // The file we're watching.
   FilePath path_;
-
-  // Loop where we post file change notifications to.
-  MessageLoop* loop_;
 
   DISALLOW_COPY_AND_ASSIGN(FileWatcherImpl);
 };
@@ -294,13 +292,12 @@ void FileWatcherImpl::OnInotifyEvent(const inotify_event* event) {
   if (path_ != path_.DirName().Append(event->name))
     return;
 
-  loop_->PostTask(FROM_HERE,
+  ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
       new FileWatcherImplNotifyTask(delegate_, path_));
 }
 
 bool FileWatcherImpl::Watch(const FilePath& path,
-                            FileWatcher::Delegate* delegate,
-                            MessageLoop* backend_loop) {
+                            FileWatcher::Delegate* delegate) {
   // Each FileWatcherImpl can only watch one file.
   DCHECK(watch_ == InotifyReader::kInvalidWatch);
 
@@ -311,7 +308,6 @@ bool FileWatcherImpl::Watch(const FilePath& path,
 
   delegate_ = delegate;
   path_ = path;
-  loop_ = MessageLoop::current();
   watch_ = Singleton<InotifyReader>::get()->AddWatch(path.DirName(), this);
   return watch_ != InotifyReader::kInvalidWatch;
 }

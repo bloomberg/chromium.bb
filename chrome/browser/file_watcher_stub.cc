@@ -5,12 +5,11 @@
 // This file exists for Linux systems which don't have the inotify headers, and
 // thus cannot build file_watcher_inotify.cc
 
-#include "base/file_watcher.h"
+#include "chrome/browser/file_watcher.h"
 
 class FileWatcherImpl : public FileWatcher::PlatformDelegate {
  public:
-  virtual bool Watch(const FilePath& path, FileWatcher::Delegate* delegate,
-                     MessageLoop* backend_loop) {
+  virtual bool Watch(const FilePath& path, FileWatcher::Delegate* delegate) {
     return false;
   }
 };

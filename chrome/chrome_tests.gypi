@@ -738,6 +738,7 @@
         'browser/extensions/sandboxed_extension_unpacker_unittest.cc',
         'browser/extensions/user_script_listener_unittest.cc',
         'browser/extensions/user_script_master_unittest.cc',
+        'browser/file_watcher_unittest.cc',
         'browser/find_backend_unittest.cc',
         'browser/geolocation/fake_access_token_store.h',
         'browser/geolocation/location_arbitrator_unittest.cc',

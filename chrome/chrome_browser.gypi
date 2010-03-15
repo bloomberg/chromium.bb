@@ -1003,6 +1003,10 @@
         'browser/fav_icon_helper.h',
         'browser/favicon_service.cc',
         'browser/favicon_service.h',
+        'browser/file_watcher.h',
+        'browser/file_watcher_inotify.cc',
+        'browser/file_watcher_mac.cc',
+        'browser/file_watcher_win.cc',
         'browser/find_bar.h',
         'browser/find_bar_controller.cc',
         'browser/find_bar_controller.h',
@@ -2373,12 +2377,19 @@
               ],
             }],
           ],
+        }, {  # OS != "linux"
+          'sources!': [
+            'browser/file_watcher_inotify.cc',
+          ],
         }],
         ['OS=="freebsd" or OS=="openbsd"', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
             '../build/linux/system.gyp:gtkprint',
             '../build/linux/system.gyp:nss',
+          ],
+          'sources': [
+            'browser/file_watcher_stub.cc',
           ],
         }],
         ['OS=="mac"', {

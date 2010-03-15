@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/file_watcher.h"
+#include "chrome/browser/file_watcher.h"
 
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -18,8 +18,7 @@ class FileWatcherImpl : public FileWatcher::PlatformDelegate,
  public:
   FileWatcherImpl() : delegate_(NULL), handle_(INVALID_HANDLE_VALUE) {}
 
-  virtual bool Watch(const FilePath& path, FileWatcher::Delegate* delegate,
-                     MessageLoop* backend_loop);
+  virtual bool Watch(const FilePath& path, FileWatcher::Delegate* delegate);
 
   // Callback from MessageLoopForIO.
   virtual void OnObjectSignaled(HANDLE object);
@@ -54,8 +53,7 @@ FileWatcherImpl::~FileWatcherImpl() {
 }
 
 bool FileWatcherImpl::Watch(const FilePath& path,
-                            FileWatcher::Delegate* delegate,
-                            MessageLoop* backend_loop) {
+                            FileWatcher::Delegate* delegate) {
   DCHECK(path_.value().empty());  // Can only watch one path.
   file_util::FileInfo file_info;
   if (file_util::GetFileInfo(path, &file_info))

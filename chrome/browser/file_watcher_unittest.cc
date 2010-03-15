@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/file_watcher.h"
+#include "chrome/browser/file_watcher.h"
 
 #include <limits>
 
@@ -15,9 +15,6 @@
 #include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "base/thread.h"
-#if defined(OS_WIN)
-#include "base/win_util.h"
-#endif  // defined(OS_WIN)
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -30,6 +27,8 @@ class FileWatcherTest : public testing::Test {
   // Implementation of FileWatcher on Mac requires UI loop.
   FileWatcherTest()
       : loop_(MessageLoop::TYPE_UI),
+        ui_thread_(ChromeThread::UI, &loop_),
+        file_thread_(ChromeThread::FILE, &loop_),
         notified_delegates_(0),
         expected_notified_delegates_(0) {
   }
@@ -48,11 +47,6 @@ class FileWatcherTest : public testing::Test {
 
   FilePath test_file() {
     return temp_dir_->path().AppendASCII("FileWatcherTest");
-  }
-
-  virtual void TearDown() {
-    // Make sure there are no tasks in the loop.
-    loop_.RunAllPending();
   }
 
   // Write |content| to the test file. Returns true on success.
@@ -93,6 +87,8 @@ class FileWatcherTest : public testing::Test {
   }
 
   MessageLoop loop_;
+  ChromeThread ui_thread_;
+  ChromeThread file_thread_;
   scoped_ptr<ScopedTempDir> temp_dir_;
 
   // The number of test delegates which received their notification.
@@ -106,8 +102,7 @@ class TestDelegate : public FileWatcher::Delegate {
  public:
   explicit TestDelegate(FileWatcherTest* test)
       : test_(test),
-        got_notification_(false),
-        original_thread_id_(PlatformThread::CurrentId()) {
+        got_notification_(false) {
   }
 
   bool got_notification() const {
@@ -119,7 +114,7 @@ class TestDelegate : public FileWatcher::Delegate {
   }
 
   virtual void OnFileChanged(const FilePath& path) {
-    EXPECT_EQ(original_thread_id_, PlatformThread::CurrentId());
+    EXPECT_TRUE(ChromeThread::CurrentlyOn(ChromeThread::UI));
     if (!got_notification_)
       test_->OnTestDelegateFirstNotification();
     got_notification_ = true;
@@ -131,17 +126,13 @@ class TestDelegate : public FileWatcher::Delegate {
 
   // Set to true after first notification.
   bool got_notification_;
-
-  // Keep track of original thread id to verify that callbacks are called
-  // on the same thread.
-  PlatformThreadId original_thread_id_;
 };
 
 // Basic test: Create the file and verify that we notice.
 TEST_F(FileWatcherTest, NewFile) {
   FileWatcher watcher;
   TestDelegate delegate(this);
-  ASSERT_TRUE(watcher.Watch(test_file(), &delegate, NULL));
+  ASSERT_TRUE(watcher.Watch(test_file(), &delegate));
 
   SetExpectedNumberOfNotifiedDelegates(1);
   ASSERT_TRUE(WriteTestFile("content"));
@@ -155,7 +146,7 @@ TEST_F(FileWatcherTest, ModifiedFile) {
 
   FileWatcher watcher;
   TestDelegate delegate(this);
-  ASSERT_TRUE(watcher.Watch(test_file(), &delegate, NULL));
+  ASSERT_TRUE(watcher.Watch(test_file(), &delegate));
 
   // Now make sure we get notified if the file is modified.
   SetExpectedNumberOfNotifiedDelegates(1);
@@ -169,7 +160,7 @@ TEST_F(FileWatcherTest, DeletedFile) {
 
   FileWatcher watcher;
   TestDelegate delegate(this);
-  ASSERT_TRUE(watcher.Watch(test_file(), &delegate, NULL));
+  ASSERT_TRUE(watcher.Watch(test_file(), &delegate));
 
   // Now make sure we get notified if the file is deleted.
   SetExpectedNumberOfNotifiedDelegates(1);
@@ -183,7 +174,7 @@ TEST_F(FileWatcherTest, Unregister) {
 
   {
     FileWatcher watcher;
-    ASSERT_TRUE(watcher.Watch(test_file(), &delegate, NULL));
+    ASSERT_TRUE(watcher.Watch(test_file(), &delegate));
 
     // And then let it fall out of scope, clearing its watch.
   }
@@ -220,7 +211,7 @@ class Deleter : public FileWatcher::Delegate {
 TEST_F(FileWatcherTest, DeleteDuringNotify) {
   FileWatcher* watcher = new FileWatcher;
   Deleter deleter(watcher, &loop_);  // Takes ownership of watcher.
-  ASSERT_TRUE(watcher->Watch(test_file(), &deleter, NULL));
+  ASSERT_TRUE(watcher->Watch(test_file(), &deleter));
 
   ASSERT_TRUE(WriteTestFile("content"));
   loop_.Run();
@@ -230,20 +221,11 @@ TEST_F(FileWatcherTest, DeleteDuringNotify) {
   ASSERT_TRUE(deleter.watcher_.get() == NULL);
 }
 
-TEST_F(FileWatcherTest, BackendLoop) {
-  base::Thread thread("test");
-  ASSERT_TRUE(thread.Start());
-
-  FileWatcher watcher;
-  TestDelegate delegate(this);
-  ASSERT_TRUE(watcher.Watch(test_file(), &delegate, thread.message_loop()));
-}
-
 TEST_F(FileWatcherTest, MultipleWatchersSingleFile) {
   FileWatcher watcher1, watcher2;
   TestDelegate delegate1(this), delegate2(this);
-  ASSERT_TRUE(watcher1.Watch(test_file(), &delegate1, NULL));
-  ASSERT_TRUE(watcher2.Watch(test_file(), &delegate2, NULL));
+  ASSERT_TRUE(watcher1.Watch(test_file(), &delegate1));
+  ASSERT_TRUE(watcher2.Watch(test_file(), &delegate2));
 
   SetExpectedNumberOfNotifiedDelegates(2);
   ASSERT_TRUE(WriteTestFile("content"));
@@ -254,8 +236,7 @@ TEST_F(FileWatcherTest, MultipleWatchersSingleFile) {
 // fails, but doesn't asssert.
 TEST_F(FileWatcherTest, NonExistentDirectory) {
   FileWatcher watcher;
-  ASSERT_FALSE(watcher.Watch(test_file().AppendASCII("FileToWatch"),
-                             NULL, NULL));
+  ASSERT_FALSE(watcher.Watch(test_file().AppendASCII("FileToWatch"), NULL));
 }
 
 }  // namespace

@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/file_watcher.h"
+#include "chrome/browser/file_watcher.h"
 
 #include <CoreServices/CoreServices.h>
 
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
 #include "base/scoped_cftyperef.h"
 #include "base/time.h"
 
@@ -28,10 +27,28 @@ class FileWatcherImpl : public FileWatcher::PlatformDelegate {
     }
   }
 
-  virtual bool Watch(const FilePath& path, FileWatcher::Delegate* delegate,
-                     MessageLoop* backend_loop);
+  virtual bool Watch(const FilePath& path, FileWatcher::Delegate* delegate) {
+    FilePath parent_dir = path.DirName();
+    if (!file_util::AbsolutePath(&parent_dir))
+      return false;
+
+    // Jump back to the UI thread because FSEventStreamScheduleWithRunLoop
+    // requires a UI thread.
+    if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
+      ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
+          NewRunnableMethod(this, &FileWatcherImpl::WatchImpl, path, delegate));
+    } else {
+      // During unittests, there is only one thread and it is both the UI
+      // thread and the file thread.
+      WatchImpl(path, delegate);
+    }
+    return true;
+  }
+
+  bool WatchImpl(const FilePath& path, FileWatcher::Delegate* delegate);
 
   void OnFSEventsCallback(const FilePath& event_path) {
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
     DCHECK(!path_.value().empty());
     FilePath absolute_event_path = event_path;
     if (!file_util::AbsolutePath(&absolute_event_path))
@@ -80,19 +97,23 @@ void FSEventsCallback(ConstFSEventStreamRef stream,
   char** paths = reinterpret_cast<char**>(event_paths);
   FileWatcherImpl* watcher =
       reinterpret_cast<FileWatcherImpl*>(event_watcher);
-  for (size_t i = 0; i < num_events; i++)
-    watcher->OnFSEventsCallback(FilePath(paths[i]));
+  for (size_t i = 0; i < num_events; i++) {
+    if (!ChromeThread::CurrentlyOn(ChromeThread::FILE)) {
+      ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
+          NewRunnableMethod(watcher, &FileWatcherImpl::OnFSEventsCallback,
+                            FilePath(paths[i])));
+    } else {
+      // During unittests, there is only one thread and it is both the UI
+      // thread and the file thread.
+      watcher->OnFSEventsCallback(FilePath(paths[i]));
+    }
+  }
 }
 
-bool FileWatcherImpl::Watch(const FilePath& path,
-                            FileWatcher::Delegate* delegate,
-                            MessageLoop* backend_loop) {
+bool FileWatcherImpl::WatchImpl(const FilePath& path,
+                                FileWatcher::Delegate* delegate) {
   DCHECK(path_.value().empty());  // Can only watch one path.
-  DCHECK(MessageLoop::current()->type() == MessageLoop::TYPE_UI);
-
-  FilePath parent_dir = path.DirName();
-  if (!file_util::AbsolutePath(&parent_dir))
-    return false;
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
   file_util::FileInfo file_info;
   if (file_util::GetFileInfo(path, &file_info))
