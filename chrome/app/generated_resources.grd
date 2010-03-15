@@ -6440,14 +6440,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_TRANSLATE_INFOBAR_TRANSLATING" desc="Text shown when page is currently being translated by servers">
         Translating...
       </message>
-      <message name="IDS_TRANSLATE_INFOBAR_PRIVACY_TITLE" desc="Title for translation warning.">
-        Translation Warning
-      </message>
-      <message name="IDS_TRANSLATE_INFOBAR_PRIVACY_MESSAGE" desc="Text to show for the translate infobar before sending data for translation.">
-        To translate webpages for you, Google Chrome will send the contents of those pages to Google.
-      </message>
       <message name="IDS_TRANSLATE_INFOBAR_AFTER_MESSAGE" desc="Message that page has been translated from one language to another">
         This page has been translated from<ph name="original_language">$1<ex>French</ex></ph>to<ph name="language_language">$2<ex>German</ex></ph>
+      </message>
+      <message name="IDS_TRANSLATE_INFOBAR_REVERT" desc="Text to show for translate infobar to revert translation of translated page">
+        Show original
       </message>
 
       <!-- Desktop notifications -->
