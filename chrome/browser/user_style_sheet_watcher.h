@@ -9,17 +9,18 @@
 #include "base/logging.h"
 #include "base/ref_counted.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/file_watcher.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 
 // This loads the user style sheet on the file thread and sends a notification
 // when the style sheet is loaded.
-// TODO(tony): Watch for file changes and send a notification of the update.
 class UserStyleSheetWatcher
     : public base::RefCountedThreadSafe<UserStyleSheetWatcher,
                                         ChromeThread::DeleteOnUIThread>,
-      public NotificationObserver {
+      public NotificationObserver,
+      public FileWatcher::Delegate {
  public:
   explicit UserStyleSheetWatcher(const FilePath& profile_path);
   virtual ~UserStyleSheetWatcher() {}
@@ -35,6 +36,9 @@ class UserStyleSheetWatcher
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
+  // FileWatcher::Delegate interface
+  virtual void OnFileChanged(const FilePath& path);
+
  private:
   // Load the user style sheet on the file thread and convert it to a
   // base64 URL.  Posts the base64 URL back to the UI thread.
@@ -42,11 +46,14 @@ class UserStyleSheetWatcher
 
   void SetStyleSheet(const GURL& url);
 
-  // The directory containing the User StyleSheet.
+  // The directory containing User StyleSheets/Custom.css.
   FilePath profile_path_;
 
   // The user style sheet as a base64 data:// URL.
   GURL user_style_sheet_;
+
+  // Watches for changes to the css file so we can reload the style sheet.
+  scoped_ptr<FileWatcher> file_watcher_;
 
   NotificationRegistrar registrar_;
   bool has_loaded_;
