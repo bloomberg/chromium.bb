@@ -12,6 +12,10 @@
 // static
 PhoneField* PhoneField::Parse(std::vector<AutoFillField*>::const_iterator* iter,
                               bool is_ecml) {
+  DCHECK(iter);
+  if (!iter)
+    return NULL;
+
   if (is_ecml)
     return ParseECML(iter);
 

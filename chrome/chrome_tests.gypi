@@ -552,6 +552,7 @@
         'browser/autofill/credit_card_unittest.cc',
         'browser/autofill/form_structure_unittest.cc',
         'browser/autofill/personal_data_manager_unittest.cc',
+        'browser/autofill/phone_field_unittest.cc',
         'browser/autofill/phone_number_unittest.cc',
         'browser/automation/automation_provider_unittest.cc',
         'browser/back_forward_menu_model_unittest.cc',
