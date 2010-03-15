@@ -9,8 +9,8 @@
 // rectangles with negative width and/or height), but there will be assertions
 // in the operations (such as contain()) to complain in this case.
 
-#ifndef GFX_RECT_H_
-#define GFX_RECT_H_
+#ifndef BASE_GFX_RECT_H__
+#define BASE_GFX_RECT_H__
 
 #include <iosfwd>
 
@@ -162,4 +162,4 @@ class Rect {
 
 std::ostream& operator<<(std::ostream& out, const gfx::Rect& r);
 
-#endif  // GFX_RECT_H_
+#endif  // BASE_GFX_RECT_H__
