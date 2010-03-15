@@ -4,6 +4,8 @@
 
 #include "views/controls/progress_bar.h"
 
+#include <string>
+
 #include "app/gfx/canvas.h"
 #include "app/gfx/color_utils.h"
 #include "app/gfx/font.h"
@@ -99,13 +101,11 @@ namespace views {
 
 // static
 const char ProgressBar::kViewClassName[] = "views/ProgressBar";
+// static: progress bar's maximum value.
+const int ProgressBar::kMaxProgress = 100;
 
-ProgressBar::ProgressBar() {
-  Init(0);
-}
 
-ProgressBar::ProgressBar(double progress) {
-  Init(progress);
+ProgressBar::ProgressBar(): progress_(0) {
 }
 
 ProgressBar::~ProgressBar() {
@@ -131,7 +131,7 @@ void ProgressBar::Paint(gfx::Canvas* canvas) {
   if (progress_ * width() > 1) {
     FillRoundRect(canvas,
                   0, 0,
-                  int(progress_ * width()), height(),
+                  progress_ * width() / kMaxProgress, height(),
                   kCornerRadius,
                   bar_color_start,
                   bar_color_end,
@@ -149,16 +149,16 @@ std::string ProgressBar::GetClassName() const {
   return kViewClassName;
 }
 
-void ProgressBar::SetProgress(double progress) {
+void ProgressBar::SetProgress(int progress) {
   progress_ = progress;
   if (progress_ < 0)
     progress_ = 0;
-  else if (progress_ > 1)
-    progress_ = 1;
+  else if (progress_ > kMaxProgress)
+    progress_ = kMaxProgress;
   SchedulePaint();
 }
 
-double ProgressBar::GetProgress() const {
+int ProgressBar::GetProgress() const {
   return progress_;
 }
 
@@ -203,10 +203,6 @@ bool ProgressBar::GetAccessibleState(AccessibilityTypes::State* state) {
     return false;
   *state = AccessibilityTypes::STATE_READONLY;
   return true;
-}
-
-void ProgressBar::Init(double progress) {
-  progress_ = progress;
 }
 
 }  // namespace views

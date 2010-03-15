@@ -11,16 +11,15 @@ namespace views {
 
 TEST(ProgressBarTest, ProgressProperty) {
   ProgressBar bar;
-  double progress = 0;
   bar.SetProgress(-1);
-  progress = bar.GetProgress();
+  int progress = bar.GetProgress();
   EXPECT_EQ(0, progress);
-  bar.SetProgress(3);
+  bar.SetProgress(300);
   progress = bar.GetProgress();
-  EXPECT_EQ(1, progress);
-  bar.SetProgress(0.618);
+  EXPECT_EQ(100, progress);
+  bar.SetProgress(62);
   progress = bar.GetProgress();
-  EXPECT_EQ(0.618, progress);
+  EXPECT_EQ(62, progress);
 }
 
 TEST(ProgressBarTest, TooltipTextProperty) {
@@ -36,7 +35,7 @@ TEST(ProgressBarTest, TooltipTextProperty) {
 
 TEST(ProgressBarTest, Accessibility) {
   ProgressBar bar;
-  bar.SetProgress(0.618);
+  bar.SetProgress(62);
 
   AccessibilityTypes::Role role;
   EXPECT_TRUE(bar.GetAccessibleRole(&role));

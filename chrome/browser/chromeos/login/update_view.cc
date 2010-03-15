@@ -36,7 +36,7 @@ const SkColor kLabelColor = 0xFF000000;
 
 // Timer constants.
 const int kProgressTimerInterval = 200;
-const int kProgressIncrement = 0.09;
+const int kProgressIncrement = 9;
 }  // namespace
 
 namespace chromeos {
@@ -64,6 +64,7 @@ void UpdateView::Init() {
   installing_updates_label_->SetFont(base_font);
 
   progress_bar_ = new views::ProgressBar();
+  progress_bar_->SetProgress(0);
 
   UpdateLocalizedStrings();
   AddChildView(installing_updates_label_);
@@ -100,8 +101,8 @@ void UpdateView::Layout() {
 }
 
 void UpdateView::OnTimerElapsed() {
-  double progress = progress_bar_->GetProgress();
-  if (progress == 1.) {
+  int progress = progress_bar_->GetProgress();
+  if (progress >= 100) {
     timer_.Stop();
     if (observer_) {
       observer_->OnExit(ScreenObserver::UPDATE_NOUPDATE);

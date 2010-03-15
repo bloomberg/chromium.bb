@@ -5,6 +5,8 @@
 #ifndef VIEWS_CONTROLS_PROGRESS_BAR_H_
 #define VIEWS_CONTROLS_PROGRESS_BAR_H_
 
+#include <string>
+
 #include "views/view.h"
 
 namespace gfx {
@@ -25,12 +27,7 @@ namespace views {
 
 class ProgressBar : public View {
  public:
-  // Creates a new progress bar with progress zero.
   ProgressBar();
-
-  // Creates a new progress bar with specified progress.
-  explicit ProgressBar(double progress);
-
   virtual ~ProgressBar();
 
   // Overridden to return preferred size of the progress bar.
@@ -42,9 +39,9 @@ class ProgressBar : public View {
   // Overridden to paint
   virtual void Paint(gfx::Canvas* canvas);
 
-  // Set and get the progress bar progress in range [0, 1].
-  virtual void SetProgress(double progress);
-  virtual double GetProgress() const;
+  // Set and get the progress bar progress in range [0, kMaxProgress].
+  virtual void SetProgress(int progress);
+  virtual int GetProgress() const;
 
   // Sets the tooltip text.  Default behavior for a progress bar is to show
   // no tooltip on mouse hover. Calling this lets you set a custom tooltip.
@@ -62,11 +59,12 @@ class ProgressBar : public View {
   virtual bool GetAccessibleName(std::wstring* name);
   virtual bool GetAccessibleState(AccessibilityTypes::State* state);
 
- private:
-  void Init(double progress);
+  // Maximum value of progress.
+  static const int kMaxProgress;
 
-  // Progress in range [0, 1].
-  double progress_;
+ private:
+  // Progress in range [0, kMaxProgress].
+  int progress_;
 
   // Tooltip text.
   std::wstring tooltip_text_;
