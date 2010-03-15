@@ -1,3 +1,35 @@
+diff -uNr newlib-1.18.0.orig/config-ml.in newlib-1.18.0/config-ml.in
+--- newlib-1.18.0.orig/config-ml.in	2008-11-27 20:14:58.000000000 +0300
++++ newlib-1.18.0/config-ml.in	2010-03-15 17:32:34.530453313 +0300
+@@ -652,6 +652,8 @@
+ # We must freshly configure each subdirectory.  This bit of code is
+ # actually partially stolen from the main configure script.  FIXME.
+ 
++multilib_host=${host}
++
+ if [ -n "${multidirs}" ] && [ -z "${ml_norecursion}" ]; then
+ 
+   if [ "${ml_verbose}" = --verbose ]; then
+@@ -759,6 +761,9 @@
+ 	GCJ_=$GCJ' '
+ 	GFORTRAN_=$GFORTRAN' '
+     else
++	if [ "${ml_dir}" = "32" -a "${host}" = "x86_64-pc-nacl" ]; then
++	  multilib_host="i386-pc-nacl"
++	fi
+ 	# Create a regular expression that matches any string as long
+ 	# as ML_POPDIR.
+ 	popdir_rx=`echo "${ML_POPDIR}" | sed 's,.,.,g'`
+@@ -859,7 +864,8 @@
+ 
+     if eval ${ml_config_env} ${ml_config_shell} ${ml_recprog} \
+ 	--with-multisubdir=${ml_dir} --with-multisrctop=${multisrctop} \
+-	${ac_configure_args} ${ml_config_env} ${ml_srcdiroption} ; then
++	${ac_configure_args} ${ml_config_env} ${ml_srcdiroption} \
++	--host=${multilib_host} ; then
+       true
+     else
+       exit 1
 diff -uNr newlib-1.18.0.orig/config.sub newlib-1.18.0/config.sub
 --- newlib-1.18.0.orig/config.sub	2009-11-20 11:10:09.000000000 +0100
 +++ newlib-1.18.0/config.sub	2010-02-13 00:39:42.000000000 +0100
