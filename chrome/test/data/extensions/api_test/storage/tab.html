@@ -5,6 +5,9 @@ chrome.test.runTests([function tab() {
 
   // Check that the database stuff we stored is still there.
   var db = window.openDatabase("mydb2", "1.0", "database test", 2048);
+  if (!db)
+    chrome.test.fail("failed to open database");
+
   db.transaction(function(tx) {
     tx.executeSql("select body from note", [], function(tx, results) {
       chrome.test.assertTrue(results.rows.length == 1);

@@ -3,7 +3,10 @@
   localStorage.foo = "bar";
   
   // store some stuff in a database
-  var db = window.openDatabase("mydb2", "1.0", "database test");
+  var db = window.openDatabase("mydb2", "1.0", "database test", 2048);
+  if (!db)
+    chrome.test.fail("failed to open database");
+
   db.transaction(function(tx) {
     tx.executeSql("drop table if exists note");
     tx.executeSql("create table note (body text)", []);

@@ -4,11 +4,6 @@
 
 #include "chrome/browser/extensions/extension_apitest.h"
 
-#if defined(OS_WIN)
-// http://crbug.com/22006
-#define Storage FLAKY_Storage
-#endif
-
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Storage) {
   ASSERT_TRUE(RunExtensionTest("storage")) << message_;
 }
