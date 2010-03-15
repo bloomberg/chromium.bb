@@ -3184,11 +3184,15 @@ GURL RenderView::GetAlternateErrorPageURL(const GURL& failed_url,
   remove_params.ClearQuery();
   remove_params.ClearRef();
   const GURL url_to_send = failed_url.ReplaceComponents(remove_params);
+  std::string spec_to_send = url_to_send.spec();
+  // Notify link doctor of the url truncation by sending of "?" at the end.
+  if (failed_url.has_query())
+      spec_to_send.append("?");
 
   // Construct the query params to send to link doctor.
   std::string params(alternate_error_page_url_.query());
   params.append("&url=");
-  params.append(EscapeQueryParamValue(url_to_send.spec(), true));
+  params.append(EscapeQueryParamValue(spec_to_send, true));
   params.append("&sourceid=chrome");
   params.append("&error=");
   switch (error_type) {
