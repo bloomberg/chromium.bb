@@ -171,7 +171,11 @@ void TabContentsViewWin::OnTabCrashed() {
 
 void TabContentsViewWin::SizeContents(const gfx::Size& size) {
   // TODO(brettw) this is a hack and should be removed. See tab_contents_view.h.
-  WasSized(size);
+
+  // Set new window size. It will fire OnWindowPosChanged and we will do
+  // the rest in WasSized.
+  UINT swp_flags = SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE;
+  SetWindowPos(NULL, 0, 0, size.width(), size.height(), swp_flags);
 }
 
 void TabContentsViewWin::Focus() {
@@ -451,7 +455,12 @@ void TabContentsViewWin::OnWindowPosChanged(WINDOWPOS* window_pos) {
 }
 
 void TabContentsViewWin::OnSize(UINT param, const CSize& size) {
-  WidgetWin::OnSize(param, size);
+  // NOTE: Because TabContentsViewWin handles OnWindowPosChanged without calling
+  // DefWindowProc, OnSize is NOT called on window resize. This handler
+  // is called only once when the window is created.
+
+  // Don't call base class OnSize to avoid useless layout for 0x0 size.
+  // We will get OnWindowPosChanged later and layout root view in WasSized.
 
   // Hack for thinkpad touchpad driver.
   // Set fake scrollbars so that we can get scroll messages,
@@ -502,13 +511,17 @@ void TabContentsViewWin::WasShown() {
 }
 
 void TabContentsViewWin::WasSized(const gfx::Size& size) {
-  UINT swp_flags = SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE;
-  SetWindowPos(NULL, 0, 0, size.width(), size.height(), swp_flags);
   if (tab_contents()->interstitial_page())
     tab_contents()->interstitial_page()->SetSize(size);
   RenderWidgetHostView* rwhv = tab_contents()->GetRenderWidgetHostView();
   if (rwhv)
     rwhv->SetSize(size);
+
+  // We have to layout root view here because we handle OnWindowPosChanged
+  // without calling DefWindowProc (it sends OnSize and OnMove) so we don't
+  // receive OnSize. For performance reasons call SetBounds instead of
+  // LayoutRootView, we actually don't need paint event and we know new size.
+  GetRootView()->SetBounds(0, 0, size.width(), size.height());
 }
 
 bool TabContentsViewWin::ScrollZoom(int scroll_type) {
