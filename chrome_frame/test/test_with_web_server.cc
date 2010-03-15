@@ -693,14 +693,15 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_NavigateOut) {
 
 const wchar_t kReferrerMainTest[] = L"files/referrer_main.html";
 
-TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_ReferrerTest) {
+// TODO(tommi): Still failing intermittently on the build bot.
+TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_ReferrerTest) {
   // At the moment the moniker patch is only enabled if the below
   // registry config value is set to PATCH_METHOD_IBROWSER_AND_MONIKER.
   ProtocolPatchMethod patch_method =
       static_cast<ProtocolPatchMethod>(
           GetConfigInt(PATCH_METHOD_IBROWSER, kPatchProtocols));
   if (patch_method != PATCH_METHOD_IBROWSER_AND_MONIKER) {
-    DLOG(ERROR) << "Not running test. Moniker patch not enabled.";
+    LOG(ERROR) << "Not running test. Moniker patch not enabled.";
     return;
   }
 
@@ -796,7 +797,7 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestPostReissue) {
       static_cast<ProtocolPatchMethod>(
           GetConfigInt(PATCH_METHOD_IBROWSER, kPatchProtocols));
   if (patch_method != PATCH_METHOD_IBROWSER_AND_MONIKER) {
-    DLOG(ERROR) << "Not running test. Moniker patch not enabled.";
+    LOG(ERROR) << "Not running test. Moniker patch not enabled.";
     return;
   }
 
@@ -837,7 +838,7 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestMultipleGet) {
       static_cast<ProtocolPatchMethod>(
           GetConfigInt(PATCH_METHOD_IBROWSER, kPatchProtocols));
   if (patch_method != PATCH_METHOD_IBROWSER_AND_MONIKER) {
-    DLOG(ERROR) << "Not running test. Moniker patch not enabled.";
+    LOG(ERROR) << "Not running test. Moniker patch not enabled.";
     return;
   }
 
