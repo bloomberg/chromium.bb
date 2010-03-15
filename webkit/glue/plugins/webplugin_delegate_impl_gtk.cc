@@ -121,7 +121,8 @@ bool WebPluginDelegateImpl::WindowedCreatePlugin() {
   int xembed = 0;
   NPError err = instance_->NPP_GetValue(NPPVpluginNeedsXEmbed, &xembed);
   if (err != NPERR_NO_ERROR || !xembed) {
-    NOTIMPLEMENTED() << " windowed plugin but without xembed.";
+    NOTIMPLEMENTED() << " windowed plugin but without xembed. "
+      "See http://code.google.com/p/chromium/issues/detail?id=38229";
     return false;
   }
 

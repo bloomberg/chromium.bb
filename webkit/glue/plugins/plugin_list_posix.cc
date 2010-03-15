@@ -43,6 +43,15 @@ bool IsUndesirablePlugin(const WebPluginInfo& info) {
           filename.find("npwrapper") != std::string::npos);   // nspluginwrapper
 }
 
+// Return true if we shouldn't load a plugin at all.
+// This is an ugly hack to blacklist Adobe Acrobat due to not supporting
+// its Xt-based mainloop.
+// http://code.google.com/p/chromium/issues/detail?id=38229
+bool IsBlacklistedPlugin(const WebPluginInfo& info) {
+  std::string filename = info.path.BaseName().value();
+  return filename.find("nppdf.so") != std::string::npos;
+}
+
 }  // anonymous namespace
 
 namespace NPAPI {
@@ -183,6 +192,13 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
     LOG(ERROR) << "Considering " << info.path.value()
               << " (" << info.name << ")";
   }
+
+  if (IsBlacklistedPlugin(info)) {
+    if (DebugPluginLoading())
+      LOG(ERROR) << "Skipping blacklisted plugin " << info.path.value();
+    return false;
+  }
+
   if (IsUndesirablePlugin(info)) {
     if (DebugPluginLoading())
       LOG(ERROR) << info.path.value() << " is undesirable.";
