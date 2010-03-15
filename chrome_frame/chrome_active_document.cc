@@ -53,6 +53,7 @@ bool g_first_launch_by_process_ = true;
 ChromeActiveDocument::ChromeActiveDocument()
     : first_navigation_(true),
       is_automation_client_reused_(false),
+      popup_allowed_(false),
       accelerator_table_(NULL) {
   url_fetcher_.set_frame_busting(false);
   memset(&navigation_info_, 0, sizeof(navigation_info_));
@@ -737,12 +738,14 @@ void ChromeActiveDocument::OnAttachExternalTab(int tab_handle,
   DWORD flags = 0;
   if (params.user_gesture)
     flags = NWMF_USERREQUESTED;
+  else if (popup_allowed_)
+    flags = NWMF_USERALLOWED;
 
   HRESULT hr = S_OK;
   if (popup_manager_) {
-    hr = popup_manager_->EvaluateNewWindow(
-        UTF8ToWide(params.url.spec()).c_str(), NULL, url_, NULL, FALSE, flags,
-        0);
+    LPCWSTR popup_wnd_url = UTF8ToWide(params.url.spec()).c_str();
+    hr = popup_manager_->EvaluateNewWindow(popup_wnd_url, NULL, url_,
+        NULL, FALSE, flags, 0);
   }
   // Allow popup
   if (hr == S_OK) {
@@ -957,6 +960,28 @@ bool ChromeActiveDocument::LaunchUrl(const std::wstring& url,
 
   return false;
 }
+
+
+HRESULT ChromeActiveDocument::OnRefreshPage(const GUID* cmd_group_guid,
+    DWORD command_id, DWORD cmd_exec_opt, VARIANT* in_args, VARIANT* out_args) {
+  popup_allowed_ = false;
+  if (in_args->vt == VT_I4 &&
+      in_args->lVal & OLECMDIDF_REFRESH_PAGEACTION_POPUPWINDOW) {
+    popup_allowed_ = true;
+
+    // Ask the yellow security band to change the text and icon and to remain
+    // visible.
+    IEExec(&CGID_DocHostCommandHandler, OLECMDID_PAGEACTIONBLOCKED,
+      0x80000000 | OLECMDIDF_WINDOWSTATE_USERVISIBLE_VALID, NULL, NULL);
+  }
+
+  TabProxy* tab_proxy = GetTabProxy();
+  if (tab_proxy)
+    tab_proxy->ReloadAsync();
+
+  return S_OK;
+}
+
 
 HRESULT ChromeActiveDocument::SetPageFontSize(const GUID* cmd_group_guid,
                                               DWORD command_id,

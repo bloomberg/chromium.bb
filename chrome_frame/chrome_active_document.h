@@ -167,9 +167,9 @@ BEGIN_EXEC_COMMAND_MAP(ChromeActiveDocument)
   FORWARD_TAB_COMMAND(NULL, OLECMDID_CUT, Cut)
   FORWARD_TAB_COMMAND(NULL, OLECMDID_COPY, Copy)
   FORWARD_TAB_COMMAND(NULL, OLECMDID_PASTE, Paste)
-  FORWARD_TAB_COMMAND(NULL, OLECMDID_REFRESH, ReloadAsync)
   FORWARD_TAB_COMMAND(NULL, OLECMDID_STOP, StopAsync)
   FORWARD_TAB_COMMAND(NULL, OLECMDID_SAVEAS, SaveAsAsync)
+  EXEC_COMMAND_HANDLER(NULL, OLECMDID_REFRESH, OnRefreshPage)
   EXEC_COMMAND_HANDLER(&CGID_Explorer, SBCMDID_MIXEDZONE,
                        OnDetermineSecurityZone)
   EXEC_COMMAND_HANDLER(&CGID_MSHTML, IDM_BASELINEFONT1, SetPageFontSize)
@@ -299,6 +299,11 @@ END_EXEC_COMMAND_MAP()
                           VARIANT* in_args,
                           VARIANT* out_args);
 
+  // IOleCommandTarget handler for page refresh command
+  HRESULT OnRefreshPage(const GUID* cmd_group_guid, DWORD command_id,
+      DWORD cmd_exec_opt, VARIANT* in_args, VARIANT* out_args);
+
+
   // Get the travel log from the client site
   HRESULT GetBrowserServiceAndTravelLog(IBrowserService** browser_service,
                                         ITravelLog** travel_log);
@@ -331,6 +336,7 @@ END_EXEC_COMMAND_MAP()
 
   ScopedComPtr<IInternetSecurityManager> security_manager_;
   ScopedComPtr<INewWindowManager> popup_manager_;
+  bool popup_allowed_;
   HACCEL accelerator_table_;
 
  public:
