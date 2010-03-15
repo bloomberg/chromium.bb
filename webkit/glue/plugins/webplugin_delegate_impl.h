@@ -400,6 +400,10 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
 
   // True if the plugin thinks it has keyboard focus
   bool have_focus_;
+  // If non-zero, we are in the middle of a drag that started outside the
+  // plugin, and this corresponds to the WebInputEvent modifier flags for any
+  // buttons that were down when the mouse entered and are still down now.
+  int external_drag_buttons_;
   // A function to call when we want to accept keyboard focus
   void (*focus_notifier_)(WebPluginDelegateImpl* notifier);
 

@@ -189,6 +189,7 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
       renderer_(nil),
       quirks_(0),
       have_focus_(false),
+      external_drag_buttons_(0),
       focus_notifier_(NULL),
       containing_window_has_focus_(false),
       initial_window_focus_(false),
@@ -1035,6 +1036,59 @@ static bool NPCocoaEventFromWebInputEvent(const WebInputEvent& event,
   return false;
 }
 
+// Returns the mask for just the button state in a WebInputEvent's modifiers.
+static int WebEventButtonModifierMask() {
+  return WebInputEvent::LeftButtonDown |
+         WebInputEvent::RightButtonDown |
+         WebInputEvent::MiddleButtonDown;
+}
+
+// Returns a new drag button state from applying |event| to the previous state.
+static int UpdatedDragStateFromEvent(int drag_buttons,
+                                     const WebInputEvent& event) {
+  switch (event.type) {
+    case WebInputEvent::MouseEnter:
+      return event.modifiers & WebEventButtonModifierMask();
+    case WebInputEvent::MouseUp: {
+      const WebMouseEvent* mouse_event =
+          static_cast<const WebMouseEvent*>(&event);
+      int new_buttons = drag_buttons;
+      if (mouse_event->button == WebMouseEvent::ButtonLeft)
+        new_buttons &= ~WebInputEvent::LeftButtonDown;
+      if (mouse_event->button == WebMouseEvent::ButtonMiddle)
+        new_buttons &= ~WebInputEvent::MiddleButtonDown;
+      if (mouse_event->button == WebMouseEvent::ButtonRight)
+        new_buttons &= ~WebInputEvent::RightButtonDown;
+      return new_buttons;
+    }
+    default:
+      return drag_buttons;
+  }
+}
+
+// Returns true if this is an event that looks like part of a drag with the
+// given button state.
+static bool EventIsRelatedToDrag(const WebInputEvent& event, int drag_buttons) {
+  const WebMouseEvent* mouse_event = static_cast<const WebMouseEvent*>(&event);
+  switch (event.type) {
+    case WebInputEvent::MouseUp:
+      // We only care about release of buttons that were part of the drag.
+      return ((mouse_event->button == WebMouseEvent::ButtonLeft &&
+               (drag_buttons & WebInputEvent::LeftButtonDown)) ||
+              (mouse_event->button == WebMouseEvent::ButtonMiddle &&
+               (drag_buttons & WebInputEvent::MiddleButtonDown)) ||
+              (mouse_event->button == WebMouseEvent::ButtonRight &&
+               (drag_buttons & WebInputEvent::RightButtonDown)));
+    case WebInputEvent::MouseMove:
+    case WebInputEvent::MouseEnter:
+    case WebInputEvent::MouseLeave:
+      return (event.modifiers & WebEventButtonModifierMask()) != 0;
+    default:
+      return false;
+  }
+  return false;
+}
+
 bool WebPluginDelegateImpl::PlatformHandleInputEvent(
     const WebInputEvent& event, WebCursorInfo* cursor_info) {
   DCHECK(cursor_info != NULL);
@@ -1114,6 +1168,24 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
         LOG(WARNING) << "NPCocoaEventFromWebInputEvent failed";
         return false;
       }
+
+      // Keep track of whether or not we are in a drag that started outside the
+      // plugin; if we are, filter out drag-related events (and convert the end
+      // of the external drag into an enter event) per the NPAPI Cocoa event
+      // model spec.
+      // If we eventually add a page-capture mode at the WebKit layer, mirroring
+      // the plugin-capture mode that handles drags starting inside the plugin
+      // and going outside, this can all be removed.
+      bool drag_related = EventIsRelatedToDrag(event, external_drag_buttons_);
+      external_drag_buttons_ = UpdatedDragStateFromEvent(external_drag_buttons_,
+                                                         event);
+      if (drag_related) {
+        if (event.type == WebInputEvent::MouseUp && !external_drag_buttons_)
+          np_cocoa_event.type = NPCocoaEventMouseEntered;
+        else
+          return false;
+      }
+
       NPAPI::ScopedCurrentPluginEvent event_scope(instance(), &np_cocoa_event);
       ret = instance()->NPP_HandleEvent(&np_cocoa_event) != 0;
       break;
