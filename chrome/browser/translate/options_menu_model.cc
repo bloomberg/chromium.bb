@@ -13,7 +13,7 @@ OptionsMenuModel::OptionsMenuModel(menus::SimpleMenuModel::Delegate* delegate,
     TranslateInfoBarDelegate* translate_delegate)
     : menus::SimpleMenuModel(delegate) {
   string16 original_language =
-      TranslateInfoBarDelegate::GetDisplayNameForLocale(
+      translate_delegate->GetDisplayNameForLocale(
           translate_delegate->original_lang_code());
   TranslateInfoBarDelegate::TranslateState state = translate_delegate->state();
   if (state == TranslateInfoBarDelegate::kBeforeTranslate) {
@@ -26,7 +26,7 @@ OptionsMenuModel::OptionsMenuModel(menus::SimpleMenuModel::Delegate* delegate,
             IDS_TRANSLATE_INFOBAR_OPTIONS_NEVER_TRANSLATE_SITE));
   } else if (state == TranslateInfoBarDelegate::kAfterTranslate) {
     string16 target_language =
-        TranslateInfoBarDelegate::GetDisplayNameForLocale(
+        translate_delegate->GetDisplayNameForLocale(
             translate_delegate->target_lang_code());
     AddCheckItem(IDC_TRANSLATE_OPTIONS_ALWAYS,
         l10n_util::GetStringFUTF16(IDS_TRANSLATE_INFOBAR_OPTIONS_ALWAYS,
