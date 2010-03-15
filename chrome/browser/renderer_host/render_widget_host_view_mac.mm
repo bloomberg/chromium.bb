@@ -48,6 +48,7 @@ static inline int ToWebKitModifiers(NSUInteger flags) {
 - (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)r;
 - (void)keyEvent:(NSEvent *)theEvent wasKeyEquivalent:(BOOL)equiv;
 - (void)cancelChildPopups;
+- (void)callSetNeedsDisplayInRect:(NSValue*)rect;
 @end
 
 namespace {
@@ -329,9 +330,12 @@ void RenderWidgetHostViewMac::DidPaintBackingStoreRects(
     if (about_to_validate_and_paint_) {
       // As much as we'd like to use -setNeedsDisplayInRect: here, we can't.
       // We're in the middle of executing a -drawRect:, and as soon as it
-      // returns Cocoa will clear its record of what needs display. If we want
-      // to handle the recursive drawing, we need to do it ourselves.
-      invalid_rect_ = NSUnionRect(invalid_rect_, ns_rect);
+      // returns Cocoa will clear its record of what needs display. We instead
+      // use |performSelector:| to call |setNeedsDisplayInRect:| after returning
+      // to the main loop, at which point |drawRect:| is no longer on the stack.
+      [cocoa_view_ performSelector:@selector(callSetNeedsDisplayInRect:)
+                   withObject:[NSValue valueWithRect:ns_rect]
+                   afterDelay:0];
     } else {
       [cocoa_view_ setNeedsDisplayInRect:ns_rect];
     }
@@ -934,6 +938,10 @@ bool RenderWidgetHostViewMac::ContainsNativeView(
     renderWidgetHostView_->render_widget_host_->WasResized();
 }
 
+- (void)callSetNeedsDisplayInRect:(NSValue*)rect {
+  [self setNeedsDisplayInRect:[rect rectValue]];
+}
+
 - (void)drawRect:(NSRect)dirtyRect {
   if (!renderWidgetHostView_->render_widget_host_) {
     // TODO(shess): Consider using something more noticable?
@@ -945,12 +953,10 @@ bool RenderWidgetHostViewMac::ContainsNativeView(
   DCHECK(renderWidgetHostView_->render_widget_host_->process()->HasConnection());
   DCHECK(!renderWidgetHostView_->about_to_validate_and_paint_);
 
-  renderWidgetHostView_->invalid_rect_ = dirtyRect;
   renderWidgetHostView_->about_to_validate_and_paint_ = true;
   BackingStoreMac* backing_store = static_cast<BackingStoreMac*>(
       renderWidgetHostView_->render_widget_host_->GetBackingStore(true));
   renderWidgetHostView_->about_to_validate_and_paint_ = false;
-  dirtyRect = renderWidgetHostView_->invalid_rect_;
 
   if (backing_store) {
     NSRect view_bounds = [self bounds];

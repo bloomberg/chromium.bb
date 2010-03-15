@@ -155,9 +155,6 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   // paint requests by expanding the invalid rect rather than actually painting.
   bool about_to_validate_and_paint_;
 
-  // This is the rectangle which we'll paint.
-  NSRect invalid_rect_;
-
   // The time at which this view started displaying white pixels as a result of
   // not having anything to paint (empty backing store from renderer). This
   // value returns true for is_null() if we are not recording whiteout times.
