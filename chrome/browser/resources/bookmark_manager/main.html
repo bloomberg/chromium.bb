@@ -220,10 +220,7 @@ window.onhashchange = function(e) {
   // In case we got a search hash update the text input and the bmm.treeLookup
   // to use the new id.
   if (/^q=/.test(id)) {
-    delete bmm.treeLookup[searchTreeItem.bookmarkId];
-    $('term').value = id.slice(2);
-    searchTreeItem.bookmarkId = id;
-    bmm.treeLookup[id] = searchTreeItem;
+    setSearch(id.slice(2));
     valid = true;
   } else if (id == 'recent') {
     valid = true;
@@ -263,7 +260,10 @@ list.addEventListener('urlClicked', function(e) {
  * @para {string} searchText The text to search for.
  */
 function setSearch(searchText) {
-  navigateTo('q=' + searchText);
+  delete bmm.treeLookup[searchTreeItem.bookmarkId];
+  searchTreeItem.bookmarkId = 'q=' + searchText;
+  bmm.treeLookup[searchTreeItem.bookmarkId] = searchTreeItem;
+  tree.selectedItem = searchTreeItem;
 }
 
 /**
@@ -390,9 +390,13 @@ tree.addEventListener('load', function(e) {
     hash = tree.items[0].bookmarkId;
   }
 
-  if (/^q=/.test(hash))
-    $('term').value = hash.slice(2);
-  navigateTo(hash);
+  if (/^q=/.test(hash)) {
+    var searchTerm = hash.slice(2);
+    $('term').value = searchTerm;
+    setSearch(searchTerm);
+  } else {
+    navigateTo(hash);
+  }
 });
 
 tree.buildTree();
