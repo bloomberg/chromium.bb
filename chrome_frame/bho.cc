@@ -165,8 +165,44 @@ bool DocumentHasEmbeddedItems(IUnknown* browser) {
       if (enumerator) {
         ScopedComPtr<IUnknown> unk;
         DWORD fetched = 0;
-        enumerator->Next(1, unk.Receive(), &fetched);
-        has_embedded_items = (fetched != 0);
+        while (!has_embedded_items &&
+               SUCCEEDED(enumerator->Next(1, unk.Receive(), &fetched))
+               && fetched) {
+          // If a top level document has embedded iframes then the theory is
+          // that first the top level document finishes loading and then the
+          // iframes load. We should only treat an embedded element as an
+          // iframe if it supports the IWebBrowser interface.
+          ScopedComPtr<IWebBrowser2> embedded_web_browser2;
+          if (SUCCEEDED(embedded_web_browser2.QueryFrom(unk))) {
+            // If we initiate a top level navigation then at times MSHTML
+            // creates a temporary IWebBrowser2 interface which basically shows
+            // up as a temporary iframe in the parent document. It is not clear
+            // as to how we can detect this. I tried the usual stuff like
+            // getting to the parent IHTMLWindow2 interface. They all end up
+            // pointing to dummy tear off interfaces owned by MSHTML.
+            // As a temporary workaround, we found that the location url in
+            // this case is about:blank. We now check for the same and don't
+            // treat it as an iframe. This should be fine in most cases as we
+            // hit this code only when the actual page has a meta tag. However
+            // this would break for cases like the initial src url for an
+            // iframe pointing to about:blank and the page then writing to it
+            // via document.write.
+            // TODO(ananta)
+            // Revisit this and come up with a better approach.
+            ScopedBstr location_url;
+            embedded_web_browser2->get_LocationURL(location_url.Receive());
+
+            std::wstring location_url_string;
+            location_url_string.assign(location_url, location_url.Length());
+
+            if (!LowerCaseEqualsASCII(location_url_string, "about:blank")) {
+              has_embedded_items = true;
+            }
+          }
+
+          fetched = 0;
+          unk.Release();
+        }
       }
     }
   }
