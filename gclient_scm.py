@@ -168,8 +168,9 @@ class GitWrapper(SCMWrapper):
     self._CheckMinVersion("1.6.6")
 
     default_rev = "refs/heads/master"
-    url, revision = gclient_utils.SplitUrlRevision(self.url)
+    url, deps_revision = gclient_utils.SplitUrlRevision(self.url)
     rev_str = ""
+    revision = deps_revision
     if options.revision:
       # Override the revision number.
       revision = str(options.revision)
@@ -288,7 +289,7 @@ class GitWrapper(SCMWrapper):
         # this command VERY likely to produce a rebase failure. For now we
         # assume origin is our upstream since that's what the old behavior was.
         upstream_branch = 'origin'
-        if options.revision:
+        if options.revision or deps_revision:
           upstream_branch = revision
         self._AttemptRebase(upstream_branch, files=files,
                             verbose=options.verbose, printed_path=printed_path)
