@@ -29,7 +29,11 @@ class GeolocationDispatcher : public WebKit::WebGeolocationServiceInterface {
 
   // WebKit::GeolocationServiceInterfaceChromium.
   void requestPermissionForFrame(int bridge_id, const WebKit::WebURL& url);
-  void startUpdating(int bridge_id, bool hasHighAccuracy);
+  // TODO(bulach): remove this method once we roll:
+  // https://bugs.webkit.org/show_bug.cgi?id=36012.
+  void startUpdating(int bridge_id, bool enableHighAccuracy);
+  void startUpdating(
+      int bridge_id, const WebKit::WebURL& url, bool enableHighAccuracy);
   void stopUpdating(int bridge_id);
   void suspend(int bridge_id);
   void resume(int bridge_id);

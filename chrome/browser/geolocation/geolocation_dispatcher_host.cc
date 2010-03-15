@@ -96,12 +96,17 @@ void GeolocationDispatcherHost::OnRequestPermission(
 }
 
 void GeolocationDispatcherHost::OnStartUpdating(
-    int render_view_id, int bridge_id, bool high_accuracy) {
+    int render_view_id, int bridge_id, const std::string& host,
+    bool enable_high_accuracy) {
+  // WebKit sends the startupdating request before checking permissions, to
+  // optimize the no-location-available case.
+  // TODO(bulach): Use host parameter to short-circuit the latched
+  // permission-denied case, and so avoid starting up location arbitrator.
   LOG(INFO) << "start updating" << render_view_id;
   if (!location_arbitrator_)
     location_arbitrator_ = GeolocationArbitrator::GetInstance();
   location_arbitrator_->AddObserver(
-      this, GeolocationArbitrator::UpdateOptions(high_accuracy));
+      this, GeolocationArbitrator::UpdateOptions(enable_high_accuracy));
 }
 
 void GeolocationDispatcherHost::OnStopUpdating(

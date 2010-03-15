@@ -43,9 +43,10 @@ class GeolocationDispatcherHost
   void OnRegisterDispatcher(int render_view_id);
   void OnUnregisterDispatcher(int render_view_id);
   void OnRequestPermission(
-      int render_view_id, int bridge_id,
-      const std::string& host);
-  void OnStartUpdating(int render_view_id, int bridge_id, bool high_accuracy);
+      int render_view_id, int bridge_id, const std::string& host);
+  void OnStartUpdating(
+      int render_view_id, int bridge_id, const std::string& host,
+      bool enable_high_accuracy);
   void OnStopUpdating(int render_view_id, int bridge_id);
   void OnSuspend(int render_view_id, int bridge_id);
   void OnResume(int render_view_id, int bridge_id);

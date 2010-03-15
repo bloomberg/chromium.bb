@@ -42,9 +42,16 @@ void GeolocationDispatcher::requestPermissionForFrame(
       render_view_->routing_id(), bridge_id, GURL(url).host()));
 }
 
-void GeolocationDispatcher::startUpdating(int bridge_id, bool hasHighAccuracy) {
+void GeolocationDispatcher::startUpdating(
+    int bridge_id, bool enableHighAccuracy) {
+  startUpdating(bridge_id, WebKit::WebURL(), enableHighAccuracy);
+}
+
+void GeolocationDispatcher::startUpdating(
+    int bridge_id, const WebKit::WebURL& url, bool enableHighAccuracy) {
   render_view_->Send(new ViewHostMsg_Geolocation_StartUpdating(
-      render_view_->routing_id(), bridge_id, hasHighAccuracy));
+      render_view_->routing_id(), bridge_id, GURL(url).host(),
+      enableHighAccuracy));
 }
 
 void GeolocationDispatcher::stopUpdating(int bridge_id) {

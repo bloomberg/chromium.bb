@@ -2249,10 +2249,11 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // This is an asynchronous call, and the browser process may eventually reply
   // with the updated geoposition, or an error (access denied, location
   // unavailable, etc.)
-  IPC_MESSAGE_CONTROL3(ViewHostMsg_Geolocation_StartUpdating,
+  IPC_MESSAGE_CONTROL4(ViewHostMsg_Geolocation_StartUpdating,
                        int /* render_view_id */,
                        int /* bridge_id */,
-                       bool /* high_accuracy */)
+                       std::string /* host */,
+                       bool /* enable_high_accuracy */)
 
   // The |render_view_id| and |bridge_id| requests Geolocation service to stop
   // updating.
