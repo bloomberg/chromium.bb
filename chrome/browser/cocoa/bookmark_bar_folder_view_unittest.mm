@@ -67,6 +67,10 @@
   controllerExited_ = YES;
 }
 
+- (BOOL)dragShouldLockBarVisibility {
+  return NO;
+}
+
 - (void)closeAllBookmarkFolders {
   closedAll_ = YES;
 }

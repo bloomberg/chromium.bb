@@ -917,13 +917,16 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 }
 
 - (void)childFolderWillShow:(id<BookmarkButtonControllerProtocol>)child {
-  // Lock bar visibility, forcing the overlay to stay open when in fullscreen
-  // mode.
-  BrowserWindowController* browserController =
-      [BrowserWindowController browserWindowControllerForView:[self view]];
-  [browserController lockBarVisibilityForOwner:child
-                                 withAnimation:NO
-                                         delay:NO];
+  // If the bookmarkbar is not in detached mode, lock bar visibility, forcing
+  // the overlay to stay open when in fullscreen mode.
+  if (![self isInState:bookmarks::kDetachedState] &&
+      ![self isAnimatingToState:bookmarks::kDetachedState]) {
+    BrowserWindowController* browserController =
+        [BrowserWindowController browserWindowControllerForView:[self view]];
+    [browserController lockBarVisibilityForOwner:child
+                                   withAnimation:NO
+                                           delay:NO];
+  }
 }
 
 - (void)childFolderWillClose:(id<BookmarkButtonControllerProtocol>)child {
@@ -936,6 +939,10 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
                                             delay:NO];
 }
 
+- (BOOL)dragShouldLockBarVisibility {
+  return ![self isInState:bookmarks::kDetachedState] &&
+         ![self isAnimatingToState:bookmarks::kDetachedState];
+}
 
 // Enable or disable items.  We are the menu delegate for both the bar
 // and for bookmark folder buttons.

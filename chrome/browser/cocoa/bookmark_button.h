@@ -27,6 +27,12 @@ class ThemeProvider;
 - (void)mouseEnteredButton:(id)button event:(NSEvent*)event;
 - (void)mouseExitedButton:(id)button event:(NSEvent*)event;
 
+// Returns YES if a drag operation should lock the fullscreen overlay bar
+// visibility before starting.  For example, dragging a bookmark button should
+// not lock the overlay if the bookmark bar is currently showing in detached
+// mode on the NTP.
+- (BOOL)dragShouldLockBarVisibility;
+
 @end
 
 
@@ -51,6 +57,12 @@ class ThemeProvider;
 // Perform drag enter/exit operations, such as hover-open and hover-close.
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)info;
 - (void)draggingExited:(id<NSDraggingInfo>)info;
+
+// Returns YES if a drag operation should lock the fullscreen overlay bar
+// visibility before starting.  For example, dragging a bookmark button should
+// not lock the overlay if the bookmark bar is currently showing in detached
+// mode on the NTP.
+- (BOOL)dragShouldLockBarVisibility;
 
 // Perform the actual DnD of a bookmark button.
 

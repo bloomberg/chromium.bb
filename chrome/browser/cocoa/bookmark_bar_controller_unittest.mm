@@ -399,6 +399,30 @@ TEST_F(BookmarkBarControllerTest, OffTheSideButtonHidden) {
   EXPECT_FALSE([bar_ offTheSideButtonIsHidden]);
 }
 
+// Test whether |-dragShouldLockBarVisibility| returns NO iff the bar is
+// detached.
+TEST_F(BookmarkBarControllerTest, TestDragShouldLockBarVisibility) {
+  [bar_ updateAndShowNormalBar:NO
+               showDetachedBar:NO
+                 withAnimation:NO];
+  EXPECT_TRUE([bar_ dragShouldLockBarVisibility]);
+
+  [bar_ updateAndShowNormalBar:YES
+               showDetachedBar:NO
+                 withAnimation:NO];
+  EXPECT_TRUE([bar_ dragShouldLockBarVisibility]);
+
+  [bar_ updateAndShowNormalBar:YES
+               showDetachedBar:YES
+                 withAnimation:NO];
+  EXPECT_TRUE([bar_ dragShouldLockBarVisibility]);
+
+  [bar_ updateAndShowNormalBar:NO
+               showDetachedBar:YES
+                 withAnimation:NO];
+  EXPECT_FALSE([bar_ dragShouldLockBarVisibility]);
+}
+
 TEST_F(BookmarkBarControllerTest, TagMap) {
   int64 ids[] = { 1, 3, 4, 40, 400, 4000, 800000000, 2, 123456789 };
   std::vector<int32> tags;

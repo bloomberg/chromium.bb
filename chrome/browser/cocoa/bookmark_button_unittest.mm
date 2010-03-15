@@ -32,6 +32,10 @@
 - (void)mouseExitedButton:(id)buton event:(NSEvent*)event {
   exited_++;
 }
+
+- (BOOL)dragShouldLockBarVisibility {
+  return NO;
+}
 @end
 
 namespace {

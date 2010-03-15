@@ -269,7 +269,7 @@
     else if (NSMinX(windowFrame) - padding < NSMinX(screen))
       windowFrame.origin.x += NSMinX(screen) - NSMinX(windowFrame) + padding;
   }
-  
+
   [[self window] setFrame:windowFrame display:YES];
 
   [[parentController_ parentWindow] addChildWindow:[self window]
@@ -452,6 +452,10 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     [NSObject cancelPreviousPerformRequestsWithTarget:hoverButton_];
     hoverButton_.reset();
   }
+}
+
+- (BOOL)dragShouldLockBarVisibility {
+  return [parentController_ dragShouldLockBarVisibility];
 }
 
 // TODO(jrg): again we have code dup, sort of, with

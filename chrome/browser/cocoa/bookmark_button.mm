@@ -63,12 +63,14 @@ static const CGFloat kDragImageOpacity = 0.7;
 
     // Lock bar visibility, forcing the overlay to stay visible if we are in
     // fullscreen mode.
-    DCHECK(!visibilityDelegate_);
-    visibilityDelegate_ =
-        [BrowserWindowController browserWindowControllerForView:self];
-    [visibilityDelegate_ lockBarVisibilityForOwner:self
-                                     withAnimation:NO
-                                             delay:NO];
+    if ([[self delegate] dragShouldLockBarVisibility]) {
+      DCHECK(!visibilityDelegate_);
+      visibilityDelegate_ =
+          [BrowserWindowController browserWindowControllerForView:self];
+      [visibilityDelegate_ lockBarVisibilityForOwner:self
+                                       withAnimation:NO
+                                               delay:NO];
+    }
 
     CGFloat yAt = [self bounds].size.height;
     NSSize dragOffset = NSMakeSize(0.0, 0.0);
