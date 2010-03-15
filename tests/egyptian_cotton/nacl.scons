@@ -42,25 +42,64 @@ test_suites = ['small_tests', 'sel_ldr_tests']
 
 large_stack_args = ['--', '-s', '0x400000', '-n', '4095', '-f' ]
 
-if env['TARGET_ARCHITECTURE'] == 'arm':
-  test_suites = ['small_tests_arm_hw_only']
-  thread_count_args = ['--', '-n', '4095']
-else:
-  thread_count_args = ['--', '-n', '8180']
 
-tests = [ ('egyptian_cotton_test', thread_count_args),
+#
+# WARNING: Magic numbers ahead!
+#
+# The high_thread_count_args is used to stress test the thread library
+# and the service runtime by having the test binary
+# (egyptian_cotton.nexe) allocate a large number of concurrent
+# threads.  This is done to ensure that there are no sudden decrease
+# in the number of threads that can be created.  While limits imposed
+# by our threading design -- 4096 for arm, 8192 for x86-32, and
+# essentially unlimited for x86-64 (though there's a statically sized
+# table involved, so we chose to limit to 8192 as well) -- are of our
+# design and thus easy to determine, the underlying host operating
+# system also imposes limits on the number of real underlying host OS
+# threads that can be created.  Thus, the magic numbers below are
+# *empirically* determined.  This is somewhat unfortunate, since it'd
+# be nice to have a better understanding of the source of these
+# limits, and it'd be especially nice if, for example, they could be
+# lifted by some simple configuration parameter (that do not require
+# administrative rights).  Nonetheless, we use the empirically
+# determined values to detect changes that might further reduce the
+# thread limit in practice.  The limits were obtained by simply
+# running egyptian_cotton.nexe manually and seeing where it fails, and
+# subtracting a few, so that minor, inconsequential and negligible
+# changes to the runtime libraries etc won't require updating this
+# test.
+#
+
+if env['TARGET_ARCHITECTURE'] == 'arm':
+  # so far, only linux.  and the limit that we hit is one that is
+  # imposed by our threading implementation, not by the OS.
+  test_suites = ['small_tests_arm_hw_only']
+  high_thread_count_args = ['--', '-n', '4095']
+elif env['TARGET_ARCHITECTURE'] == 'x86':
+  trusted = env.get('TRUSTED_ENV', None)
+  if trusted:
+    if trusted.Bit('linux'):
+      high_thread_count_args = ['--', '-n', '8180']
+    elif trusted.Bit('mac'):
+      high_thread_count_args = ['--', '-n', '2558']
+    elif trusted.Bit('windows'):
+      high_thread_count_args = ['--', '-n', '900']
+    else:
+      print 'Unknown host OS: threading limit unknown'
+      assert 0
+else:
+  print 'Unknown target architecture -- architecture/host OS thread'
+  print 'limits are unknown'
+  assert 0
+
+tests = [ ('egyptian_cotton_test', high_thread_count_args),
           ('thread_stack_alloc_test', large_stack_args) ]
 
-for name, args in tests:
-  env.CommandSelLdrTestNacl(name + '.out',
-                            command = [env.File('egyptian_cotton_test.nexe')]
-                            + args)
+def ThreadTestNode(name, args):
+  cmd = [env.File('egyptian_cotton.nexe')] + args
+  return env.CommandSelLdrTestNacl(name + '.out', command = cmd)
 
-# TODO(bsy): enable in a separate CL after new SDKs for all
-# architectures are available
+nodes = [ ThreadTestNode(name, args) for name, args in tests ]
 
-if False:
-  for p, n in zip(tests, nodes):
-    env.AddNodeToTestSuite(n,
-                           test_suites,
-                           'run_' + p[0])
+for p, n in zip(tests, nodes):
+  env.AddNodeToTestSuite(n, test_suites, 'run_' + p[0])
