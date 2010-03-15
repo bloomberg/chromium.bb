@@ -46,6 +46,16 @@
   fun:-[NSObject retain]
 }
 
+{
+  A race retaining NSBundle
+  ThreadSanitizer:Race
+  ...
+  fun:CFBagAddValue
+  fun:__CFDoExternRefOperation
+  fun:NSIncrementExtraRefCount
+  fun:-[NSBundle retain]
+}
+
 # A related OpenRadar bug is at http://openradar.appspot.com/7396501.
 {
    A benign race on a debug counter in __NSAutoreleaseObject
