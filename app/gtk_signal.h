@@ -26,7 +26,7 @@ typedef struct _GtkWidget GtkWidget;
     return reinterpret_cast<TYPE*>(userdata)->METHOD(widget);           \
   }                                                                     \
                                                                         \
-  RETURN METHOD(GtkWidget* widget);
+  virtual RETURN METHOD(GtkWidget* widget);
 
 #define CHROMEGTK_CALLBACK_1(TYPE, RETURN, METHOD, ARG1)            \
   static RETURN METHOD ## Thunk(GtkWidget* widget, ARG1 one,        \
@@ -34,7 +34,7 @@ typedef struct _GtkWidget GtkWidget;
     return reinterpret_cast<TYPE*>(userdata)->METHOD(widget, one);  \
   }                                                                 \
                                                                     \
-  RETURN METHOD(GtkWidget* widget, ARG1 one);
+  virtual RETURN METHOD(GtkWidget* widget, ARG1 one);
 
 #define CHROMEGTK_CALLBACK_2(TYPE, RETURN, METHOD, ARG1, ARG2)          \
   static RETURN METHOD ## Thunk(GtkWidget* widget, ARG1 one, ARG2 two,  \
@@ -42,7 +42,7 @@ typedef struct _GtkWidget GtkWidget;
     return reinterpret_cast<TYPE*>(userdata)->METHOD(widget, one, two); \
   }                                                                     \
                                                                         \
-  RETURN METHOD(GtkWidget* widget, ARG1 one, ARG2 two);
+  virtual RETURN METHOD(GtkWidget* widget, ARG1 one, ARG2 two);
 
 #define CHROMEGTK_CALLBACK_3(TYPE, RETURN, METHOD, ARG1, ARG2, ARG3)    \
   static RETURN METHOD ## Thunk(GtkWidget* widget, ARG1 one, ARG2 two,  \
@@ -51,7 +51,7 @@ typedef struct _GtkWidget GtkWidget;
         METHOD(widget, one, two, three);                                \
   }                                                                     \
                                                                         \
-  RETURN METHOD(GtkWidget* widget, ARG1 one, ARG2 two, ARG3 three);
+  virtual RETURN METHOD(GtkWidget* widget, ARG1 one, ARG2 two, ARG3 three);
 
 #define CHROMEGTK_CALLBACK_4(TYPE, RETURN, METHOD, ARG1, ARG2, ARG3, ARG4) \
   static RETURN METHOD ## Thunk(GtkWidget* widget, ARG1 one, ARG2 two,  \
@@ -61,8 +61,8 @@ typedef struct _GtkWidget GtkWidget;
         METHOD(widget, one, two, three, four);                          \
   }                                                                     \
                                                                         \
-  RETURN METHOD(GtkWidget* widget, ARG1 one, ARG2 two, ARG3 three,      \
-                ARG4 four);
+  virtual RETURN METHOD(GtkWidget* widget, ARG1 one, ARG2 two,          \
+                        ARG3 three, ARG4 four);
 
 #define CHROMEGTK_CALLBACK_5(TYPE, RETURN, METHOD, ARG1, ARG2, ARG3, ARG4, \
                              ARG5)                                      \
@@ -73,8 +73,8 @@ typedef struct _GtkWidget GtkWidget;
         METHOD(widget, one, two, three, four, five);                    \
   }                                                                     \
                                                                         \
-  RETURN METHOD(GtkWidget* widget, ARG1 one, ARG2 two, ARG3 three,      \
-                ARG4 four, ARG5 five);
+  virtual RETURN METHOD(GtkWidget* widget, ARG1 one, ARG2 two,          \
+                        ARG3 three, ARG4 four, ARG5 five);
 
 #define CHROMEGTK_CALLBACK_6(TYPE, RETURN, METHOD, ARG1, ARG2, ARG3, ARG4, \
                              ARG5, ARG6)                                \
@@ -85,7 +85,7 @@ typedef struct _GtkWidget GtkWidget;
         METHOD(widget, one, two, three, four, five, six);               \
   }                                                                     \
                                                                         \
-  RETURN METHOD(GtkWidget* widget, ARG1 one, ARG2 two, ARG3 three,      \
-                ARG4 four, ARG5 five, ARG6 six);
+  virtual RETURN METHOD(GtkWidget* widget, ARG1 one, ARG2 two,          \
+                        ARG3 three, ARG4 four, ARG5 five, ARG6 six);
 
 #endif  // APP_GTK_SIGNAL_H_
