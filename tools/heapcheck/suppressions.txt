@@ -159,3 +159,11 @@
    fun:v8::internal::Execution::Call
    fun:v8::Function::Call
 }
+
+{
+  bug_20703
+  Heapcheck:Leak
+  ...
+  fun:::RenderThreadTest::SetUp
+  fun:testing::Test::Run
+}
