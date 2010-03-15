@@ -395,7 +395,7 @@ IPC_BEGIN_MESSAGES(View)
 
   // Fill a form with data and optionally submit it
   IPC_MESSAGE_ROUTED1(ViewMsg_FormFill,
-                      FormData /* form */)
+                      webkit_glue::FormData /* form */)
 
   // Fill a password form and prepare field autocomplete for multiple
   // matching logins.
@@ -646,7 +646,7 @@ IPC_BEGIN_MESSAGES(View)
   // AutoFill form data.
   IPC_MESSAGE_ROUTED2(ViewMsg_AutoFillFormDataFilled,
                       int /* id of the request message */,
-                      FormData /* form data */)
+                      webkit_glue::FormData /* form data */)
 
   // Sent by the Browser process to alert a window about whether a blocked
   // popup notification is visible. The renderer assumes every new window is a
@@ -1807,7 +1807,7 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // profile data.
   IPC_MESSAGE_ROUTED4(ViewHostMsg_FillAutoFillFormData,
                       int /* id of this message */,
-                      FormData /* the form  */,
+                      webkit_glue::FormData /* the form  */,
                       string16 /* profile name */,
                       string16 /* profile label */)
 

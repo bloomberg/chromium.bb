@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,7 +37,8 @@ class FormField {
     input_type_ = input_type;
   }
 
-  bool operator!=(const FormField& field);
+  bool operator==(const FormField& field) const;
+  bool operator!=(const FormField& field) const;
 
  private:
   string16 label_;
@@ -46,6 +47,9 @@ class FormField {
   string16 form_control_type_;
   WebKit::WebInputElement::InputType input_type_;
 };
+
+// So we can compare FormFields with EXPECT_EQ().
+std::ostream& operator<<(std::ostream& os, const FormField& profile);
 
 }  // namespace webkit_glue
 

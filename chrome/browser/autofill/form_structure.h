@@ -14,9 +14,8 @@
 #include "chrome/browser/autofill/field_types.h"
 #include "googleurl/src/gurl.h"
 
-struct FormData;
-
 namespace webkit_glue {
+struct FormData;
 class FormFieldValues;
 }
 
@@ -60,8 +59,8 @@ class FormStructure {
     return fields_.end();
   }
 
-  bool operator==(const FormData& form) const;
-  bool operator!=(const FormData& form) const;
+  bool operator==(const webkit_glue::FormData& form) const;
+  bool operator!=(const webkit_glue::FormData& form) const;
 
  private:
   // Associates the field with the heuristic type for each of the field views.

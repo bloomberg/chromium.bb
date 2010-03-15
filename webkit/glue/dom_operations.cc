@@ -175,8 +175,8 @@ static bool FillFormImpl(FormElements* fe, const FormData& data) {
     return false;
 
   std::map<string16, string16> data_map;
-  for (unsigned int i = 0; i < data.elements.size(); i++) {
-    data_map[data.elements[i]] = data.values[i];
+  for (size_t i = 0; i < data.fields.size(); i++) {
+    data_map[data.fields[i].name()] = data.fields[i].value();
   }
 
   for (FormInputElementMap::iterator it = fe->input_elements.begin();
@@ -199,9 +199,9 @@ static bool FindFormInputElements(WebFormElement* fe,
   // Loop through the list of elements we need to find on the form in
   // order to autofill it. If we don't find any one of them, abort
   // processing this form; it can't be the right one.
-  for (size_t j = 0; j < data.elements.size(); j++) {
+  for (size_t j = 0; j < data.fields.size(); j++) {
     WebVector<WebNode> temp_elements;
-    fe->getNamedElements(data.elements[j], temp_elements);
+    fe->getNamedElements(data.fields[j].name(), temp_elements);
     if (temp_elements.isEmpty()) {
       // We didn't find a required element. This is not the right form.
       // Make sure no input elements from a partially matched form
@@ -215,7 +215,7 @@ static bool FindFormInputElements(WebFormElement* fe,
     // one suffices and if some function needs to deal with multiple
     // matching elements it can get at them through the FormElement*.
     // Note: This assignment adds a reference to the InputElement.
-    result->input_elements[data.elements[j]] =
+    result->input_elements[data.fields[j].name()] =
         temp_elements[0].toElement<WebInputElement>();
   }
   return true;
@@ -286,12 +286,12 @@ void FillPasswordForm(WebView* view,
     // Attach autocomplete listener to enable selecting alternate logins.
     // First, get pointers to username element.
     WebInputElement username_element =
-        form_elements->input_elements[data.basic_data.elements[0]];
+        form_elements->input_elements[data.basic_data.fields[0].name()];
 
     // Get pointer to password element. (We currently only support single
     // password forms).
     WebInputElement password_element =
-        form_elements->input_elements[data.basic_data.elements[1]];
+        form_elements->input_elements[data.basic_data.fields[1].name()];
 
     username_element.frame()->registerPasswordListener(
         username_element,

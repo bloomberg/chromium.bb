@@ -1460,7 +1460,8 @@ void RenderView::OnAutocompleteSuggestionsReturned(
   autofill_query_node_.reset();
 }
 
-void RenderView::OnAutoFillFormDataFilled(int query_id, const FormData& form) {
+void RenderView::OnAutoFillFormDataFilled(int query_id,
+                                          const webkit_glue::FormData& form) {
   if (query_id != autofill_query_id_)
     return;
 
@@ -1984,7 +1985,7 @@ void RenderView::didAcceptAutoFillSuggestion(
   static int query_counter = 0;
   autofill_query_id_ = query_counter++;
 
-  FormData form;
+  webkit_glue::FormData form;
   const WebInputElement element = node.toConstElement<WebInputElement>();
   if (!form_manager_.FindForm(element, &form))
     return;
@@ -3949,8 +3950,7 @@ void RenderView::OnResize(const gfx::Size& new_size,
       // either width or height, allow scroll bars.
       bool allow_scrollbars = (
           disable_scrollbars_size_limit_.width() <= new_size.width() ||
-          disable_scrollbars_size_limit_.height() <= new_size.height()
-          );
+          disable_scrollbars_size_limit_.height() <= new_size.height());
       webview()->mainFrame()->setCanHaveScrollbars(allow_scrollbars);
     }
   }

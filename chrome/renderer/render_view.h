@@ -737,7 +737,8 @@ class RenderView : public RenderWidget,
       int default_suggestions_index);
 
   // Notification that we have received AutoFill form data.
-  void OnAutoFillFormDataFilled(int query_id, const FormData& form);
+  void OnAutoFillFormDataFilled(int query_id,
+                                const webkit_glue::FormData& form);
 
   // Message that the popup notification has been shown or hidden.
   void OnPopupNotificationVisibilityChanged(bool visible);

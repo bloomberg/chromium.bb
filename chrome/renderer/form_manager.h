@@ -34,18 +34,20 @@ class FormManager {
   void ExtractForms(WebKit::WebFrame* frame);
 
   // Returns a vector of forms that match |requirements|.
-  void GetForms(std::vector<FormData>* forms, RequirementsMask requirements);
+  void GetForms(std::vector<webkit_glue::FormData>* forms,
+                RequirementsMask requirements);
 
   // Finds the form that contains |input_element| and returns it in |form|.
   // Returns false if the form is not found.
-  bool FindForm(const WebKit::WebInputElement& input_element, FormData* form);
+  bool FindForm(const WebKit::WebInputElement& input_element,
+                webkit_glue::FormData* form);
 
   // Fills the form represented by |form|.  |form| should have the name set to
   // the name of the form to fill out, and the number of elements and values
   // must match the number of stored elements in the form.
   // TODO(jhawkins): Is matching on name alone good enough?  It's possible to
   // store multiple forms with the same names from different frames.
-  bool FillForm(const FormData& form);
+  bool FillForm(const webkit_glue::FormData& form);
 
   // Resets the stored set of forms.
   void Reset();
@@ -73,7 +75,7 @@ class FormManager {
   void FormElementToFormData(WebKit::WebFrame* frame,
                              const FormElement* form_element,
                              RequirementsMask requirements,
-                             FormData* form);
+                             webkit_glue::FormData* form);
 
   // Returns the corresponding label for |element|.
   static string16 LabelForElement(const WebKit::WebInputElement& element);

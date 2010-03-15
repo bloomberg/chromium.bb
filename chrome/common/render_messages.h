@@ -1555,24 +1555,20 @@ struct ParamTraits<SyncLoadResult> {
 
 // Traits for FormData structure to pack/unpack.
 template <>
-struct ParamTraits<FormData> {
-  typedef FormData param_type;
+struct ParamTraits<webkit_glue::FormData> {
+  typedef webkit_glue::FormData param_type;
   static void Write(Message* m, const param_type& p) {
     WriteParam(m, p.name);
     WriteParam(m, p.origin);
     WriteParam(m, p.action);
-    WriteParam(m, p.labels);
-    WriteParam(m, p.elements);
-    WriteParam(m, p.values);
+    WriteParam(m, p.fields);
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
     return
       ReadParam(m, iter, &p->name) &&
       ReadParam(m, iter, &p->origin) &&
       ReadParam(m, iter, &p->action) &&
-      ReadParam(m, iter, &p->labels) &&
-      ReadParam(m, iter, &p->elements) &&
-      ReadParam(m, iter, &p->values);
+      ReadParam(m, iter, &p->fields);
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(L"<FormData>");

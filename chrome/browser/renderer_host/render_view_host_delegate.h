@@ -19,7 +19,6 @@
 struct BookmarkDragData;
 struct ContextMenuParams;
 class FilePath;
-struct FormData;
 class GURL;
 struct NativeWebKeyboardEvent;
 class NavigationEntry;
@@ -54,6 +53,7 @@ class Message;
 }
 
 namespace webkit_glue {
+struct FormData;
 class FormField;
 class FormFieldValues;
 struct PasswordForm;
@@ -411,7 +411,7 @@ class RenderViewHostDelegate {
     // matches the |name|, |label| key.  Returns true to indicate that
     // RenderViewHost::AutoFillFormDataFilled has been called.
     virtual bool FillAutoFillFormData(int query_id,
-                                      const FormData& form,
+                                      const webkit_glue::FormData& form,
                                       const string16& name,
                                       const string16& label) = 0;
   };

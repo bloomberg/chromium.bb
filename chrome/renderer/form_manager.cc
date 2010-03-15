@@ -26,6 +26,8 @@ using WebKit::WebNode;
 using WebKit::WebNodeList;
 using WebKit::WebString;
 using WebKit::WebVector;
+using webkit_glue::FormData;
+using webkit_glue::FormField;
 
 FormManager::FormManager() {
 }
@@ -83,7 +85,8 @@ void FormManager::GetForms(std::vector<FormData>* forms,
   }
 }
 
-bool FormManager::FindForm(const WebInputElement& element, FormData* form) {
+bool FormManager::FindForm(const WebInputElement& element,
+                           FormData* form) {
   // Frame loop.
   for (WebFrameFormElementMap::iterator iter = form_elements_map_.begin();
        iter != form_elements_map_.end(); ++iter) {
@@ -122,7 +125,7 @@ bool FormManager::FillForm(const FormData& form) {
       // evaluate to |true| for some reason TBD, so forcing to string16.
       string16 element_name((*form_iter)->form_element.name());
       if (element_name == form.name &&
-          (*form_iter)->input_elements.size() == form.elements.size()) {
+          (*form_iter)->input_elements.size() == form.fields.size()) {
         form_element = *form_iter;
         break;
       }
@@ -132,18 +135,17 @@ bool FormManager::FillForm(const FormData& form) {
   if (!form_element)
     return false;
 
-  DCHECK(form_element->input_elements.size() == form.elements.size());
-  DCHECK(form.elements.size() == form.values.size());
+  DCHECK(form_element->input_elements.size() == form.fields.size());
 
   size_t i = 0;
   for (FormInputElementMap::iterator iter =
            form_element->input_elements.begin();
       iter != form_element->input_elements.end(); ++iter, ++i) {
-    DCHECK_EQ(form.elements[i], iter->second.nameForAutofill());
+    DCHECK_EQ(form.fields[i].name(), iter->second.nameForAutofill());
 
-    if (!form.values[i].empty() &&
+    if (!form.fields[i].value().empty() &&
         iter->second.inputType() != WebInputElement::Submit) {
-      iter->second.setValue(form.values[i]);
+      iter->second.setValue(form.fields[i].value());
       iter->second.setAutofilled(true);
     }
   }
@@ -194,9 +196,17 @@ void FormManager::FormElementToFormData(WebFrame* frame,
         !input_element.isEnabledFormControl())
       continue;
 
-    form->labels.push_back(LabelForElement(input_element));
-    form->elements.push_back(input_element.nameForAutofill());
-    form->values.push_back(input_element.value());
+    string16 label = LabelForElement(input_element);
+    string16 name = input_element.nameForAutofill();
+    string16 value = input_element.value();
+    string16 form_control_type = input_element.formControlType();
+    WebInputElement::InputType input_type = input_element.inputType();
+    FormField field = FormField(label,
+                                                          name,
+                                                          value,
+                                                          form_control_type,
+                                                          input_type);
+    form->fields.push_back(field);
   }
 }
 

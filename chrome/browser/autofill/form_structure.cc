@@ -16,6 +16,9 @@
 #include "webkit/glue/form_field.h"
 #include "webkit/glue/form_field_values.h"
 
+using webkit_glue::FormData;
+using webkit_glue::FormFieldValues;
+
 namespace {
 
 const char* kFormMethodPost = "post";
@@ -55,7 +58,7 @@ static std::string Hash64Bit(const std::string& str) {
 
 }  // namespace
 
-FormStructure::FormStructure(const webkit_glue::FormFieldValues& values)
+FormStructure::FormStructure(const FormFieldValues& values)
     : form_name_(UTF16ToUTF8(values.form_name)),
       source_url_(values.source_url),
       target_url_(values.target_url) {

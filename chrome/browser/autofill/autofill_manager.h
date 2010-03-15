@@ -14,6 +14,7 @@
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 
 namespace webkit_glue {
+struct FormData;
 class FormField;
 class FormFieldValues;
 }
@@ -48,7 +49,7 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
   virtual bool GetAutoFillSuggestions(int query_id,
                                       const webkit_glue::FormField& field);
   virtual bool FillAutoFillFormData(int query_id,
-                                    const FormData& form,
+                                    const webkit_glue::FormData& form,
                                     const string16& name,
                                     const string16& label);
 

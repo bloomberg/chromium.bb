@@ -154,7 +154,7 @@ bool AutoFillManager::GetAutoFillSuggestions(
 }
 
 bool AutoFillManager::FillAutoFillFormData(int query_id,
-                                           const FormData& form,
+                                           const webkit_glue::FormData& form,
                                            const string16& name,
                                            const string16& label) {
   if (!IsAutoFillEnabled())
@@ -185,7 +185,7 @@ bool AutoFillManager::FillAutoFillFormData(int query_id,
   if (!profile)
     return false;
 
-  FormData result = form;
+  webkit_glue::FormData result = form;
   for (std::vector<FormStructure*>::const_iterator iter =
            form_structures_.begin();
        iter != form_structures_.end(); ++iter) {
@@ -196,10 +196,10 @@ bool AutoFillManager::FillAutoFillFormData(int query_id,
     for (size_t i = 0; i < form_structure->field_count(); ++i) {
       const AutoFillField* field = form_structure->field(i);
 
-      for (size_t j = 0; j < result.values.size(); ++j) {
-        if (field->name() == result.elements[j]) {
-          result.values[j] =
-              profile->GetFieldText(AutoFillType(field->heuristic_type()));
+      for (size_t j = 0; j < result.fields.size(); ++j) {
+        if (field->name() == result.fields[j].name()) {
+          result.fields[j].set_value(
+              profile->GetFieldText(AutoFillType(field->heuristic_type())));
           break;
         }
       }

@@ -9,13 +9,15 @@
 #include <string>
 
 #include "base/string_util.h"
-#include "webkit/glue/webpasswordautocompletelistener_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/glue/form_field.h"
+#include "webkit/glue/webpasswordautocompletelistener_impl.h"
 
 using WebKit::WebString;
-using webkit_glue::WebPasswordAutocompleteListenerImpl;
+using webkit_glue::FormField;
 using webkit_glue::PasswordFormDomManager;
 using webkit_glue::WebInputElementDelegate;
+using webkit_glue::WebPasswordAutocompleteListenerImpl;
 
 class TestWebInputElementDelegate : public WebInputElementDelegate {
  public:
@@ -92,8 +94,16 @@ class PasswordManagerAutocompleteTests : public testing::Test {
     password1_ = ASCIIToUTF16("password");
     username2_ = ASCIIToUTF16("bob");
     password2_ = ASCIIToUTF16("bobsyouruncle");
-    data_.basic_data.values.push_back(username1_);
-    data_.basic_data.values.push_back(password1_);
+    data_.basic_data.fields.push_back(FormField(string16(),
+                                                string16(),
+                                                username1_,
+                                                string16(),
+                                                WebInputElement::Text));
+    data_.basic_data.fields.push_back(FormField(string16(),
+                                                string16(),
+                                                password1_,
+                                                string16(),
+                                                WebInputElement::Text));
     data_.additional_logins[username2_] = password2_;
     testing::Test::SetUp();
   }

@@ -73,9 +73,9 @@ void WebPasswordAutocompleteListenerImpl::didBlurInputElement(
   string16 user_input16 = user_input;
 
   // Set the password field to match the current username.
-  if (data_.basic_data.values[0] == user_input16) {
+  if (data_.basic_data.fields[0].value() == user_input16) {
     // Preferred username/login is selected.
-    password_delegate_->SetValue(data_.basic_data.values[1]);
+    password_delegate_->SetValue(data_.basic_data.fields[1].value());
   } else if (data_.additional_logins.find(user_input16) !=
              data_.additional_logins.end()) {
     // One of the extra username/logins is selected.
@@ -113,8 +113,8 @@ void WebPasswordAutocompleteListenerImpl::performInlineAutocomplete(
   // conversions (see SetValue) on each successful call to
   // OnInlineAutocompleteNeeded.
   if (TryToMatch(user_input16,
-                 data_.basic_data.values[0],
-                 data_.basic_data.values[1])) {
+                 data_.basic_data.fields[0].value(),
+                 data_.basic_data.fields[1].value())) {
     return;
   }
 
@@ -145,8 +145,8 @@ bool WebPasswordAutocompleteListenerImpl::TryToMatch(const string16& input,
 
 void WebPasswordAutocompleteListenerImpl::GetSuggestions(
     const string16& input, std::vector<string16>* suggestions) {
-  if (StartsWith(data_.basic_data.values[0], input, false))
-    suggestions->push_back(data_.basic_data.values[0]);
+  if (StartsWith(data_.basic_data.fields[0].value(), input, false))
+    suggestions->push_back(data_.basic_data.fields[0].value());
 
   for (PasswordFormDomManager::LoginCollection::iterator it =
        data_.additional_logins.begin();
@@ -157,4 +157,4 @@ void WebPasswordAutocompleteListenerImpl::GetSuggestions(
   }
 }
 
-}  // webkit_glue
+}  // namespace webkit_glue

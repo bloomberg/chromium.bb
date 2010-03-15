@@ -1608,7 +1608,7 @@ void RenderViewHost::OnRemoveAutofillEntry(const string16& field_name,
 }
 
 void RenderViewHost::OnFillAutoFillFormData(int query_id,
-                                            const FormData& form,
+                                            const webkit_glue::FormData& form,
                                             const string16& name,
                                             const string16& label) {
   RenderViewHostDelegate::AutoFill* autofill_delegate =
@@ -1637,7 +1637,7 @@ void RenderViewHost::AutocompleteSuggestionsReturned(
 }
 
 void RenderViewHost::AutoFillFormDataFilled(int query_id,
-                                            const FormData& form) {
+                                            const webkit_glue::FormData& form) {
   Send(new ViewMsg_AutoFillFormDataFilled(routing_id(), query_id, form));
 }
 

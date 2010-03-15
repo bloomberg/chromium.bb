@@ -5,9 +5,12 @@
 #include "webkit/glue/password_form_dom_manager.h"
 
 #include "base/logging.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebInputElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPasswordFormData.h"
+#include "webkit/glue/form_field.h"
 
 using WebKit::WebFormElement;
+using WebKit::WebInputElement;
 using WebKit::WebPasswordFormData;
 
 namespace webkit_glue {
@@ -31,10 +34,18 @@ void PasswordFormDomManager::InitFillData(
   // Fill basic form data.
   result->basic_data.origin = form_on_page.origin;
   result->basic_data.action = form_on_page.action;
-  result->basic_data.elements.push_back(form_on_page.username_element);
-  result->basic_data.values.push_back(preferred_match->username_value);
-  result->basic_data.elements.push_back(form_on_page.password_element);
-  result->basic_data.values.push_back(preferred_match->password_value);
+  result->basic_data.fields.push_back(
+      FormField(string16(),
+                form_on_page.username_element,
+                preferred_match->username_value,
+                string16(),
+                WebInputElement::Text));
+  result->basic_data.fields.push_back(
+      FormField(string16(),
+                form_on_page.password_element,
+                preferred_match->password_value,
+                string16(),
+                WebInputElement::Password));
   result->wait_for_username = wait_for_username_before_autofill;
 
   // Copy additional username/value pairs.
