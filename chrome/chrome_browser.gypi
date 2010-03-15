@@ -389,6 +389,8 @@
         'browser/chromeos/options/ip_config_view.h',
         'browser/chromeos/options/language_config_view.cc',
         'browser/chromeos/options/language_config_view.h',
+        'browser/chromeos/options/language_hangul_config_view.cc',
+        'browser/chromeos/options/language_hangul_config_view.h',
         'browser/chromeos/options/network_config_view.cc',
         'browser/chromeos/options/network_config_view.h',
         'browser/chromeos/options/settings_page_view.cc',

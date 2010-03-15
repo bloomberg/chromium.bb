@@ -6961,6 +6961,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_LANGUAGES" desc="The label for the list of languages">
         Languages
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_HANGUL_SETTINGS_TITLE"
+               desc="The title for the Hangul input settings dialog">
+        Hangul Input Settings
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CONFIGURE"
+               desc="The label for the configure button for input methods">
+        Configure...
+      </message>
       <message name="IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET" desc="The ethernet network device.">
         Ethernet
       </message>
