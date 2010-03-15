@@ -505,6 +505,13 @@ def CommandSelLdrTestNacl(env, name, command,
   sel_ldr = trusted_env.File('${STAGING_DIR}/${PROGPREFIX}%s${PROGSUFFIX}' %
                              loader)
 
+  # TODO(bsy,kschimpf): when the validator stops producing spurious
+  # errors, remove the following code
+
+  if env['BUILD_SUBARCH'] == '64':
+    sel_ldr_flags = sel_ldr_flags + ['-d']
+    extra['filter_validator'] = '1'
+
   command = [sel_ldr] + sel_ldr_flags  + ['-f'] + command
 
   # NOTE(robertm): log handling is a little magical

@@ -54,33 +54,50 @@ static INLINE uint8_t NaClPcAddressToMask(NaClPcAddress address) {
   return nacl_pc_address_masks[(int) (address & (NaClPcAddress)0x7)];
 }
 
+static Bool NaClCheckAddressRange(NaClPcAddress address,
+                                  NaClValidatorState* state) {
+  if (address < state->vbase) {
+    NaClValidatorPcAddressMessage(LOG_ERROR, state, address,
+                                  "Jump to address before code block.\n");
+    return FALSE;
+  }
+  if (address >= state->vlimit) {
+    NaClValidatorPcAddressMessage(LOG_ERROR, state, address,
+                                  "Jump to address beyond code block limit.\n");
+    return FALSE;
+  }
+  return TRUE;
+}
+
 /* Return true if the corresponding address is in the given address set. */
 static INLINE uint8_t NaClAddressSetContains(NaClAddressSet set,
                                              NaClPcAddress address,
                                              NaClValidatorState* state) {
-  NaClPcAddress offset = address - state->vbase;
-  assert(address >= state->vbase);
-  assert(address < state->vlimit);
-  return set[NaClPcAddressToOffset(offset)] & NaClPcAddressToMask(offset);
+  if (NaClCheckAddressRange(address, state)) {
+    NaClPcAddress offset = address - state->vbase;
+    return set[NaClPcAddressToOffset(offset)] & NaClPcAddressToMask(offset);
+  } else {
+    return FALSE;
+  }
 }
 
 /* Adds the given address to the given address set. */
 static void NaClAddressSetAdd(NaClAddressSet set, NaClPcAddress address,
                               NaClValidatorState* state) {
-  NaClPcAddress offset = address - state->vbase;
-  assert(address >= state->vbase);
-  assert(address < state->vlimit);
-  DEBUG(printf("Address set add: %"NACL_PRIxNaClPcAddress"\n", address));
-  set[NaClPcAddressToOffset(offset)] |= NaClPcAddressToMask(offset);
+  if (NaClCheckAddressRange(address, state)) {
+    NaClPcAddress offset = address - state->vbase;
+    DEBUG(printf("Address set add: %"NACL_PRIxNaClPcAddress"\n", address));
+    set[NaClPcAddressToOffset(offset)] |= NaClPcAddressToMask(offset);
+  }
 }
 
 /* Removes the given address from the given address set. */
 static void NaClAddressSetRemove(NaClAddressSet set, NaClPcAddress address,
                                  NaClValidatorState* state) {
-  NaClPcAddress offset = address - state->vbase;
-  assert(address >= state->vbase);
-  assert(address < state->vlimit);
-  set[NaClPcAddressToOffset(offset)] &= ~(NaClPcAddressToMask(offset));
+  if (NaClCheckAddressRange(address, state)) {
+    NaClPcAddress offset = address - state->vbase;
+    set[NaClPcAddressToOffset(offset)] &= ~(NaClPcAddressToMask(offset));
+  }
 }
 
 /* Create an address set for the range 0..Size. */

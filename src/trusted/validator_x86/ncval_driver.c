@@ -17,17 +17,11 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/utils/flags.h"
 #include "native_client/src/shared/platform/nacl_log.h"
-#include "native_client/src/trusted/validator_x86/nc_cpu_checks.h"
-#include "native_client/src/trusted/validator_x86/nc_illegal.h"
 #include "native_client/src/trusted/validator_x86/nc_jumps.h"
-#include "native_client/src/trusted/validator_x86/nc_opcode_histogram.h"
-#include "native_client/src/trusted/validator_x86/nc_protect_base.h"
-#include "native_client/src/trusted/validator_x86/nc_store_protect.h"
 #include "native_client/src/trusted/validator_x86/ncvalidate_iter.h"
+#include "native_client/src/trusted/validator_x86/ncvalidator_registry.h"
 
 Bool NACL_FLAGS_print_timing = FALSE;
-
-Bool NACL_FLAGS_opcode_histogram = FALSE;
 
 int NACL_FLAGS_block_alignment = 32;
 
@@ -113,52 +107,6 @@ Bool NaClRunValidator(int argc, const char* argv[],
   }
   if (NACL_FLAGS_fatal) {
     NaClLogSetVerbosity(LOG_FATAL);
-  }
-
-  NaClRegisterValidatorClear();
-
-  NaClRegisterValidator(
-      (NaClValidator) NaClJumpValidator,
-      (NaClValidatorPostValidate) NULL,
-      (NaClValidatorPrintStats) NaClJumpValidatorSummarize,
-      (NaClValidatorMemoryCreate) NaClJumpValidatorCreate,
-      (NaClValidatorMemoryDestroy) NaClJumpValidatorDestroy);
-
-  NaClRegisterValidator(
-      (NaClValidator) NaClCpuCheck,
-      (NaClValidatorPostValidate) NULL,
-      (NaClValidatorPrintStats) NaClCpuCheckSummary,
-      (NaClValidatorMemoryCreate) NaClCpuCheckMemoryCreate,
-      (NaClValidatorMemoryDestroy) NaClCpuCheckMemoryDestroy);
-
-  NaClRegisterValidator(
-      (NaClValidator) NaClValidateInstructionLegal,
-      (NaClValidatorPostValidate) NULL,
-      (NaClValidatorPrintStats) NULL,
-      (NaClValidatorMemoryCreate) NULL,
-      (NaClValidatorMemoryDestroy) NULL);
-
-  NaClRegisterValidator(
-      (NaClValidator) NaClBaseRegisterValidator,
-      (NaClValidatorPostValidate) NaClBaseRegisterSummarize,
-      (NaClValidatorPrintStats) NULL,
-      (NaClValidatorMemoryCreate) NaClBaseRegisterMemoryCreate,
-      (NaClValidatorMemoryDestroy) NaClBaseRegisterMemoryDestroy);
-
-  NaClRegisterValidator(
-      (NaClValidator) NaClStoreValidator,
-      (NaClValidatorPostValidate) NULL,
-      (NaClValidatorPrintStats) NULL,
-      (NaClValidatorMemoryCreate) NULL,
-      (NaClValidatorMemoryDestroy) NULL);
-
-  if (NACL_FLAGS_opcode_histogram) {
-    NaClRegisterValidator(
-        (NaClValidator) NaClOpcodeHistogramRecord,
-        (NaClValidatorPostValidate) NULL,
-        (NaClValidatorPrintStats) NaClOpcodeHistogramPrintStats,
-        (NaClValidatorMemoryCreate) NaClOpcodeHistogramMemoryCreate,
-        (NaClValidatorMemoryDestroy) NaClOpcodeHistogramMemoryDestroy);
   }
 
   clock_0 = clock();

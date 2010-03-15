@@ -94,6 +94,7 @@
         ],
         # we depend on ncvalidate build to generate the headers
         'sources': [ 'ncvalidate_iter.c',
+                     'ncvalidator_registry.c',
                      'nc_opcode_histogram.c',
                      'nc_cpu_checks.c',
                      'nc_illegal.c',

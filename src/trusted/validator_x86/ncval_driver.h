@@ -31,11 +31,6 @@ extern Bool NACL_FLAGS_warnings;
 extern Bool NACL_FLAGS_errors;
 extern Bool NACL_FLAGS_fatal;
 
-/* Command line flag controlling whether an opcode histogram is
- * collected while validating.
- */
-extern Bool NACL_FLAGS_opcode_histogram;
-
 /* Command line flag to turn on reporting of time used by validator. */
 extern Bool NACL_FLAGS_print_timing;
 

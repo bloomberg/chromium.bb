@@ -7,8 +7,6 @@
  * changes the value of the base register.
  */
 
-#include <assert.h>
-
 #include "native_client/src/trusted/validator_x86/nc_protect_base.h"
 
 #include "native_client/src/shared/platform/nacl_log.h"

@@ -138,6 +138,7 @@ env.ComponentLibrary('ncvalidate', NCVALIDATE_SOURCES)
 # SFI validator library
 env.ComponentLibrary('ncvalidate_sfi',
                      ['ncvalidate_iter.c',
+                      'ncvalidator_registry.c',
                       'nc_opcode_histogram.c',
                       'nc_cpu_checks.c',
                       'nc_illegal.c',

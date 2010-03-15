@@ -50,8 +50,8 @@ NaClErrorCode NaClValidateImage(struct NaClApp  *nap) {
                                     regionsize,
                                     nap->bundle_size,
                                     RegR15,
-                                    0,
-                                    stdout);
+                                    1,
+                                    stderr);
   NaClValidateSegment((uint8_t*)memp, memp, regionsize, vstate);
   if (NaClValidatesOk(vstate)) {
     rcode = LOAD_OK;

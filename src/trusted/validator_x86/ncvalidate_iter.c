@@ -19,7 +19,9 @@
 #include "native_client/src/trusted/validator_x86/nc_inst_iter.h"
 #include "native_client/src/trusted/validator_x86/nc_segment.h"
 #include "native_client/src/trusted/validator_x86/ncop_exps.h"
+#include "native_client/src/trusted/validator_x86/ncval_driver.h"
 #include "native_client/src/trusted/validator_x86/ncvalidate_iter_internal.h"
+#include "native_client/src/trusted/validator_x86/ncvalidator_registry.h"
 
 /* To turn on debugging of instruction decoding, change value of
  * DEBUGGING to 1.
@@ -55,7 +57,6 @@ static INLINE int NaClRecordIfValidatorError(NaClValidatorState* state,
                                              int level) {
   switch (level) {
     case LOG_ERROR:
-      if (state != NULL && state->quit_after_first_error) level = LOG_FATAL;
       /* Intentionally fall to next case, since if an error occurs, it doesn't
        * validate as ok.
        */
@@ -142,6 +143,10 @@ void NaClValidatorInstMessage(int level,
   }
 }
 
+static INLINE Bool NaClValidatorQuit(NaClValidatorState* state) {
+  return state->quit_after_first_error && !state->validates_ok;
+}
+
 /* Holds the registered definition for a validator. */
 typedef struct NaClValidatorDefinition {
   /* The validator function to apply. */
@@ -204,6 +209,7 @@ NaClValidatorState* NaClValidatorStateCreate(const NaClPcAddress vbase,
   NaClValidatorState* state;
   NaClValidatorState* return_value = NULL;
   NaClPcAddress vlimit = vbase + sz;
+  NaClValidatorInit();
   DEBUG(printf("Validator Create: vbase = %"NACL_PRIxNaClPcAddress", "
                "sz = %"NACL_PRIxNaClMemorySize", alignment = %u, vlimit = %"
                NACL_PRIxNaClPcAddress"\n",
@@ -255,8 +261,10 @@ NaClValidatorState* NaClValidatorStateCreate(const NaClPcAddress vbase,
 static void NaClApplyValidators(NaClValidatorState* state, NaClInstIter* iter) {
   int i;
   DEBUG(NaClInstStateInstPrint(stdout, NaClInstIterGetState(iter)));
+  if (NaClValidatorQuit(state)) return;
   for (i = 0; i < state->number_validators; ++i) {
     validators[i].validator(state, iter, state->local_memory[i]);
+    if (NaClValidatorQuit(state)) return;
   }
 }
 
@@ -267,9 +275,11 @@ static void NaClApplyPostValidators(NaClValidatorState* state,
                                     NaClInstIter* iter) {
   int i;
   DEBUG(printf("applying post validators...\n"));
+  if (NaClValidatorQuit(state)) return;
   for (i = 0; i < state->number_validators; ++i) {
     if (NULL != validators[i].post_validate) {
       validators[i].post_validate(state, iter, state->local_memory[i]);
+      if (NaClValidatorQuit(state)) return;
     }
   }
 }
@@ -286,6 +296,7 @@ void NaClValidateSegment(uint8_t* mbase, NaClPcAddress vbase,
        NaClInstIterHasNext(iter);
        NaClInstIterAdvance(iter)) {
     NaClApplyValidators(state, iter);
+    if (NaClValidatorQuit(state)) break;
   }
   NaClApplyPostValidators(state, iter);
   NaClInstIterDestroy(iter);
