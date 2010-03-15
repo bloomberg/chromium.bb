@@ -6,6 +6,9 @@
   # Suppose this file is put at WebKit/WebKit/chromium/webkit/support/.
   'includes': [
     '../../features.gypi',
+    '../appcache/webkit_appcache.gypi',
+    '../database/webkit_database.gypi',
+    '../glue/webkit_glue.gypi',
     'webkit_support.gypi',
   ],
 }

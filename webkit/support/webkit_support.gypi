@@ -10,9 +10,9 @@
       'dependencies': [
         '<(DEPTH)/media/media.gyp:media',
         '<(DEPTH)/skia/skia.gyp:skia',
-        '<(DEPTH)/webkit/webkit.gyp:appcache',
-        '<(DEPTH)/webkit/webkit.gyp:database',
-        '<(DEPTH)/webkit/webkit.gyp:glue',
+        'appcache',
+        'database',
+        'glue',
       ],
       'sources': [
         'test_webkit_client.cc',
