@@ -2860,10 +2860,6 @@ BUG37962 MAC LINUX DEBUG : fast/dom/HTMLElement/bdo.html = CRASH PASS
 BUG37962 LINUX DEBUG : fast/forms/multiple-form-submission-protection-mouse.html = CRASH PASS
 BUG37962 MAC : plugins/iframe-shims.html = TEXT PASS
 
-BUG_DGLAZKOV MAC LINUX : fast/dom/HTMLAnchorElement/set-href-attribute-hostname.html = TEXT
-BUG_DGLAZKOV MAC LINUX : fast/dom/HTMLAnchorElement/set-href-attribute-port.html = TEXT
-BUG_DGLAZKOV MAC LINUX : fast/loader/url-parse-1.html = TEXT
-
 // WebKit roll r55853 -> 55940
 // Need rebaseline
 BUG_JIANLI WIN LINUX : editing/deleting/non-smart-delete.html = IMAGE+TEXT
