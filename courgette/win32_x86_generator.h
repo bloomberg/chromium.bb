@@ -7,6 +7,7 @@
 #ifndef COURGETTE_WIN32_X86_GENERATOR_H_
 #define COURGETTE_WIN32_X86_GENERATOR_H_
 
+#include "base/logging.h"
 #include "base/scoped_ptr.h"
 
 #include "courgette/ensemble.h"
@@ -60,8 +61,10 @@ class CourgetteWin32X86PatchGenerator : public TransformationPatchGenerator {
         ParseWin32X86PE(old_element_->region().start(),
                         old_element_->region().length(),
                         &old_program);
-    if (old_parse_status != C_OK)
+    if (old_parse_status != C_OK) {
+      LOG(ERROR) << "Cannot parse as Win32X86PE " << old_element_->Name();
       return old_parse_status;
+    }
 
     AssemblyProgram* new_program = NULL;
     Status new_parse_status =
@@ -70,6 +73,7 @@ class CourgetteWin32X86PatchGenerator : public TransformationPatchGenerator {
                         &new_program);
     if (new_parse_status != C_OK) {
       DeleteAssemblyProgram(old_program);
+      LOG(ERROR) << "Cannot parse as Win32X86PE " << new_element_->Name();
       return new_parse_status;
     }
 

@@ -63,12 +63,15 @@ Status Ensemble::FindEmbeddedElements() {
         Region region(start + position, info->length());
 
         if (info->has_text_section()) {
-          Element* element = new ElementWinPE(Element::WIN32_X86_WITH_CODE,
-                                              this, region, info);
-          owned_elements_.push_back(element);
-          elements_.push_back(element);
-          position += region.length();
-          continue;
+          if (info->is_32bit()) {
+            Element* element = new ElementWinPE(Element::WIN32_X86_WITH_CODE,
+                                                this, region, info);
+            owned_elements_.push_back(element);
+            elements_.push_back(element);
+            position += region.length();
+            continue;
+          }
+          // TODO(sra): Extend to 64-bit executables.
         }
 
         // If we had a clever transformation for resource-only executables we

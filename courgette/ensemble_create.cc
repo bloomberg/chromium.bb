@@ -186,6 +186,9 @@ void FreeGenerators(std::vector<TransformationPatchGenerator*>* generators) {
 Status GenerateEnsemblePatch(SourceStream* base,
                              SourceStream* update,
                              SinkStream* final_patch) {
+  LOG(INFO) << "start GenerateEnsemblePatch";
+  base::Time start_time = base::Time::Now();
+
   Region old_region(base->Buffer(), base->Remaining());
   Region new_region(update->Buffer(), update->Remaining());
   Ensemble old_ensemble(old_region, "old");
@@ -375,6 +378,9 @@ Status GenerateEnsemblePatch(SourceStream* base,
 
   if (!patch_streams.CopyTo(final_patch))
     return C_STREAM_ERROR;
+
+  LOG(INFO) << "done GenerateEnsemblePatch "
+            << (base::Time::Now() - start_time).InSecondsF() << "s";
 
   return C_OK;
 }
