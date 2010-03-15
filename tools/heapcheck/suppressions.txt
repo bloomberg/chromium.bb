@@ -167,3 +167,10 @@
   fun:::RenderThreadTest::SetUp
   fun:testing::Test::Run
 }
+
+{
+  bug_38206
+  Heapcheck:Leak
+  ...
+  fun:GeolocationWifiDataProviderCommonTest::SetUp
+}
