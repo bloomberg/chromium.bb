@@ -35,13 +35,13 @@ void ReorderWidgetsTo(GtkWidget* box, GtkWidget** widgets) {
 // Creates a combobox set up to display text from a list of language codes
 // (translating the codes into the display string).
 GtkWidget* BuildLanguageComboboxFrom(
+    TranslateInfoBarDelegate* delegate,
     const std::vector<std::string>& languages) {
   GtkListStore* model = gtk_list_store_new(1, G_TYPE_STRING);
   for (std::vector<std::string>::const_iterator iter = languages.begin();
        iter != languages.end(); ++iter) {
     GtkTreeIter tree_iter;
-    std::string name = UTF16ToUTF8(
-        TranslateInfoBarDelegate::GetDisplayNameForLocale(*iter));
+    std::string name = UTF16ToUTF8(delegate->GetDisplayNameForLocale(*iter));
     gtk_list_store_append(model, &tree_iter);
     gtk_list_store_set(model, &tree_iter, 0, name.c_str(), -1);
   }
@@ -202,7 +202,8 @@ void TranslateInfoBar::BuildWidgets() {
 
   std::vector<std::string> orig_languages;
   GetDelegate()->GetAvailableOriginalLanguages(&orig_languages);
-  original_language_combobox_ = BuildLanguageComboboxFrom(orig_languages);
+  original_language_combobox_ = BuildLanguageComboboxFrom(GetDelegate(),
+                                                          orig_languages);
   g_signal_connect(original_language_combobox_, "changed",
                    G_CALLBACK(&OnOriginalModifiedThunk), this);
   original_language_combobox_vbox_ = gtk_util::CenterWidgetInHBox(
@@ -210,7 +211,8 @@ void TranslateInfoBar::BuildWidgets() {
 
   std::vector<std::string> target_languages;
   GetDelegate()->GetAvailableTargetLanguages(&target_languages);
-  target_language_combobox_ = BuildLanguageComboboxFrom(target_languages);
+  target_language_combobox_ = BuildLanguageComboboxFrom(GetDelegate(),
+                                                        target_languages);
   g_signal_connect(target_language_combobox_, "changed",
                    G_CALLBACK(&OnTargetModifiedThunk), this);
   target_language_combobox_vbox_ = gtk_util::CenterWidgetInHBox(

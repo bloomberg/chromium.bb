@@ -24,7 +24,7 @@ LanguagesMenuModel::LanguagesMenuModel(
   }
   std::vector<std::string>::const_iterator iter = languages.begin();
   for (int i = base_command_id; iter != languages.end(); ++i, ++iter) {
-    AddItem(i, TranslateInfoBarDelegate::GetDisplayNameForLocale(*iter));
+    AddItem(i, translate_delegate->GetDisplayNameForLocale(*iter));
   }
 }
 
