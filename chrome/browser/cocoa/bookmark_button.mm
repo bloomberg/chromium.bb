@@ -112,13 +112,11 @@ static const CGFloat kDragImageOpacity = 0.7;
 // to open menu").
 - (void)mouseEntered:(NSEvent*)event {
   [delegate_ mouseEnteredButton:self event:event];
-  [super mouseEntered:event];
 }
 
 // See comments above mouseEntered:.
 - (void)mouseExited:(NSEvent*)event {
   [delegate_ mouseExitedButton:self event:event];
-  [super mouseExited:event];
 }
 
 @end
