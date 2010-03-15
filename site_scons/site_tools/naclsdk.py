@@ -244,10 +244,13 @@ def _SetX86SdkEnvMultilib(env, sdk_path):
   #       absolute path have been futile
   env.PrependENVPath('PATH', sdk_path + '/bin')
 
-  libsuffix = '/lib64'
+  # /lib64 is symlinked to /lib, we are using the actual directory because Scons
+  # does not work correctly with Cygwin symlinks.
+  libsuffix = '/lib'
   extraflag = '-m64'
   if env['TARGET_SUBARCH'] == '32':
-    libsuffix = '/lib32'
+    # /lib32 is symlinked to /lib/32.
+    libsuffix = '/lib/32'
     extraflag = '-m32'
   elif env['TARGET_SUBARCH'] != '64':
     print "ERROR: unknown TARGET_SUBARCH: ", env['TARGET_SUBARCH']
