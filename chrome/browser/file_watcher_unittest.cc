@@ -128,6 +128,9 @@ class TestDelegate : public FileWatcher::Delegate {
   bool got_notification_;
 };
 
+
+#if !defined(OS_MACOSX)
+// TODO(tony): Test is flakey on mac.  http://crbug.com/38188
 // Basic test: Create the file and verify that we notice.
 TEST_F(FileWatcherTest, NewFile) {
   FileWatcher watcher;
@@ -239,4 +242,5 @@ TEST_F(FileWatcherTest, NonExistentDirectory) {
   ASSERT_FALSE(watcher.Watch(test_file().AppendASCII("FileToWatch"), NULL));
 }
 
+#endif
 }  // namespace
