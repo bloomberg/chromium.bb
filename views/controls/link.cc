@@ -51,7 +51,6 @@ void GetColors(const SkColor* background_color,  // NULL means "use default"
     *normal_color = kNormalColor;
   }
 }
-
 }
 
 namespace views {
@@ -143,6 +142,20 @@ bool Link::SkipDefaultKeyEventProcessing(const KeyEvent& e) {
   // Make sure we don't process space or enter as accelerators.
   return (e.GetKeyCode() == base::VKEY_SPACE) ||
       (e.GetKeyCode() == base::VKEY_RETURN);
+}
+
+bool Link::GetAccessibleRole(AccessibilityTypes::Role* role) {
+  DCHECK(role);
+
+  *role = AccessibilityTypes::ROLE_LINK;
+  return true;
+}
+
+bool Link::GetAccessibleName(std::wstring* name) {
+  DCHECK(name);
+
+  *name = GetText();
+  return !name->empty();
 }
 
 void Link::SetFont(const gfx::Font& font) {

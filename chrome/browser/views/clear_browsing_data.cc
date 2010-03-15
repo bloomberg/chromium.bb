@@ -123,6 +123,7 @@ void ClearBrowsingDataView::Init() {
   time_period_combobox_->SetSelectedItem(profile_->GetPrefs()->GetInteger(
                                          prefs::kDeleteTimePeriod));
   time_period_combobox_->set_listener(this);
+  time_period_combobox_->SetAccessibleName(time_period_label_->GetText());
   AddChildView(time_period_combobox_);
 
   // Create the throbber and related views. The throbber and status link are
