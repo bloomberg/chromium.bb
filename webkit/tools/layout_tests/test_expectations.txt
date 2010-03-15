@@ -2838,4 +2838,4 @@ BUG38228 : fast/events/drag-and-drop.html = TEXT
 BUG38227 DEFER : fast/dom/HTMLProgressElement/progress-element.html = MISSING
 BUG38227 DEFER : fast/dom/HTMLProgressElement/set-progress-properties.html = MISSING
 
-BUG_JIANLI MAC RELEASE : printing/return-from-printing-mode.html = IMAGE
+BUG_JIANLI MAC : printing/return-from-printing-mode.html = IMAGE
