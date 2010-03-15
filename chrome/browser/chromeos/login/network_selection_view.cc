@@ -329,7 +329,7 @@ void NetworkSelectionView::ExecuteCommand(int command_id) {
   const std::string locale = languages_model_.GetLocaleFromIndex(command_id);
   PrefService* prefs = g_browser_process->local_state();
   prefs->SetString(prefs::kApplicationLocale, UTF8ToWide(locale));
-  prefs->ScheduleSavePersistentPrefs();
+  prefs->SavePersistentPrefs();
   observer_->OnSwitchLanguage(locale);
   // Don't do anything here because |this| has just been deleted in order
   // to force releasing all locale-specific data.

@@ -75,7 +75,7 @@ class WizardController : public chromeos::ScreenObserver,
 
   // Overridden from chromeos::ScreenObserver:
   virtual void OnExit(ExitCodes exit_code);
-  virtual void OnSwitchLanguage(std::string lang);
+  virtual void OnSwitchLanguage(const std::string& lang);
 
   // Overridden from WizardScreenDelegate:
   virtual views::View* GetWizardView();

@@ -36,7 +36,7 @@ class ScreenObserver {
   // Switch to the new language. |lang| specifies new language locale code.
   // Caution: this callback resets (deletes and re-creates) all views
   // (including *this), so do not access it after you call this!
-  virtual void OnSwitchLanguage(std::string lang) = 0;
+  virtual void OnSwitchLanguage(const std::string& lang) = 0;
 
  protected:
   virtual ~ScreenObserver() {}

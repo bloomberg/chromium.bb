@@ -11,6 +11,7 @@
 #include <string>
 
 #include "app/resource_bundle.h"
+#include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/logging.h"  // For NOTREACHED.
 #include "chrome/browser/browser_process.h"
@@ -22,7 +23,6 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/common/chrome_switches.h"
-#include "unicode/locid.h"
 #include "views/painter.h"
 #include "views/screen.h"
 #include "views/view.h"
@@ -239,7 +239,7 @@ void WizardController::OnUpdateCompleted() {
 
 ///////////////////////////////////////////////////////////////////////////////
 // WizardController, private:
-void WizardController::OnSwitchLanguage(std::string lang) {
+void WizardController::OnSwitchLanguage(const std::string& lang) {
   // Delete all views that may may reference locale-specific data.
   SetCurrentScreen(NULL);
   network_screen_.reset();
@@ -250,10 +250,6 @@ void WizardController::OnSwitchLanguage(std::string lang) {
 
   // Switch the locale.
   ResourceBundle::CleanupSharedInstance();
-  icu::Locale icu_locale(lang.c_str());
-  UErrorCode error_code = U_ZERO_ERROR;
-  icu::Locale::setDefault(icu_locale, error_code);
-  DCHECK(U_SUCCESS(error_code));
   ResourceBundle::InitSharedInstance(UTF8ToWide(lang));
 
   // The following line does not seem to affect locale anyhow. Maybe in future..
