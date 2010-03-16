@@ -363,6 +363,8 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   void LoadExpandedExtension(const FilePath& extension_dir,
                              IPC::Message* reply_message);
 
+  void GetEnabledExtensions(std::vector<FilePath>* result);
+
   void NavigateInExternalTab(
       int handle, const GURL& url, const GURL& referrer,
       AutomationMsg_NavigationResponseValues* status);

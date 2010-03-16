@@ -255,6 +255,25 @@ void ChromeFrameActivex::OnExtensionInstalled(
   Fire_onextensionready(path_str, response);
 }
 
+void ChromeFrameActivex::OnGetEnabledExtensionsComplete(
+    void* user_data,
+    const std::vector<FilePath>& extension_directories) {
+  SAFEARRAY* sa = ::SafeArrayCreateVector(VT_BSTR, 0,
+                                          extension_directories.size());
+  sa->fFeatures = sa->fFeatures | FADF_BSTR;
+  ::SafeArrayLock(sa);
+
+  for (size_t i = 0; i < extension_directories.size(); ++i) {
+    LONG index = static_cast<LONG>(i);
+    ::SafeArrayPutElement(sa, &index, reinterpret_cast<void*>(
+        CComBSTR(extension_directories[i].ToWStringHack().c_str()).Detach()));
+  }
+
+  Fire_ongetenabledextensionscomplete(sa);
+  ::SafeArrayUnlock(sa);
+  ::SafeArrayDestroy(sa);
+}
+
 HRESULT ChromeFrameActivex::OnDraw(ATL_DRAWINFO& draw_info) {  // NO_LINT
   HRESULT hr = S_OK;
   int dc_type = ::GetObjectType(draw_info.hicTargetDev);

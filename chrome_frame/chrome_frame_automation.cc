@@ -96,6 +96,9 @@ class ChromeFrameAutomationProxyImpl::CFMsgDispatcher
         InvokeCallback<Tuple1<AutomationMsg_ExtensionResponseValues> >(msg,
               origin);
         break;
+      case AutomationMsg_GetEnabledExtensions::ID:
+        InvokeCallback<Tuple1<std::vector<FilePath> > >(msg, origin);
+        break;
       default:
         NOTREACHED();
     }
@@ -722,6 +725,72 @@ void ChromeFrameAutomationClient::InstallExtensionComplete(
   if (chrome_frame_delegate_) {
     chrome_frame_delegate_->OnExtensionInstalled(crx_path, user_data, res);
   }
+}
+
+// Class that maintains context during the async retrieval of fetching the
+// list of enabled extensions.  When done, GetEnabledExtensionsComplete is
+// posted back to the UI thread so that the users of
+// ChromeFrameAutomationClient can be notified.
+class GetEnabledExtensionsContext {
+ public:
+  GetEnabledExtensionsContext(
+      ChromeFrameAutomationClient* client, void* user_data) : client_(client),
+          user_data_(user_data) {
+    extension_directories_ = new std::vector<FilePath>();
+  }
+
+  ~GetEnabledExtensionsContext() {
+    // ChromeFrameAutomationClient::GetEnabledExtensionsComplete takes
+    // ownership of extension_directories_.
+  }
+
+  std::vector<FilePath>* extension_directories() {
+    return extension_directories_;
+  }
+
+  void GetEnabledExtensionsComplete(
+      std::vector<FilePath> result) {
+    (*extension_directories_) = result;
+    client_->PostTask(FROM_HERE, NewRunnableMethod(client_.get(),
+      &ChromeFrameAutomationClient::GetEnabledExtensionsComplete,
+      user_data_, extension_directories_));
+    delete this;
+  }
+
+ private:
+  scoped_refptr<ChromeFrameAutomationClient> client_;
+  std::vector<FilePath>* extension_directories_;
+  void* user_data_;
+};
+
+void ChromeFrameAutomationClient::GetEnabledExtensions(void* user_data) {
+    if (automation_server_ == NULL) {
+      GetEnabledExtensionsComplete(user_data, &std::vector<FilePath>());
+      return;
+    }
+
+    GetEnabledExtensionsContext* ctx = new GetEnabledExtensionsContext(
+        this, user_data);
+
+    IPC::SyncMessage* msg = new AutomationMsg_GetEnabledExtensions(
+        0, ctx->extension_directories());
+
+    // The context will delete itself after it is called.
+    automation_server_->SendAsAsync(msg, NewCallback(ctx,
+        &GetEnabledExtensionsContext::GetEnabledExtensionsComplete), this);
+}
+
+void ChromeFrameAutomationClient::GetEnabledExtensionsComplete(
+    void* user_data,
+    std::vector<FilePath>* extension_directories) {
+  DCHECK_EQ(PlatformThread::CurrentId(), ui_thread_id_);
+
+  if (chrome_frame_delegate_) {
+    chrome_frame_delegate_->OnGetEnabledExtensionsComplete(
+        user_data, *extension_directories);
+  }
+
+  delete extension_directories;
 }
 
 void ChromeFrameAutomationClient::OnChromeFrameHostMoved() {

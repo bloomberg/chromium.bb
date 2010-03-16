@@ -9,6 +9,7 @@
 #include <atlwin.h>
 #include <queue>
 
+#include "base/file_path.h"
 #include "base/lock.h"
 #include "chrome/test/automation/automation_messages.h"
 #include "ipc/ipc_message.h"
@@ -29,6 +30,9 @@ class ChromeFrameDelegate {
       const FilePath& path,
       void* user_data,
       AutomationMsg_ExtensionResponseValues response) = 0;
+  virtual void OnGetEnabledExtensionsComplete(
+      void* user_data,
+      const std::vector<FilePath>& extension_directories) = 0;
   virtual void OnMessageReceived(const IPC::Message& msg) = 0;
 
   // This remains in interface since we call it if Navigate()
@@ -68,6 +72,9 @@ class ChromeFrameDelegateImpl : public ChromeFrameDelegate {
       const FilePath& path,
       void* user_data,
       AutomationMsg_ExtensionResponseValues response) {}
+  virtual void OnGetEnabledExtensionsComplete(
+      void* user_data,
+      const std::vector<FilePath>& extension_directories) {}
   virtual void OnLoadFailed(int error_code, const std::string& url) {}
   virtual void OnMessageReceived(const IPC::Message& msg);
 

@@ -1161,6 +1161,10 @@ IPC_BEGIN_MESSAGES(Automation)
                              FilePath /* root directory of extension */,
                              AutomationMsg_ExtensionResponseValues)
 
+  // Retrieves a list of the root directories of all enabled extensions.
+  IPC_SYNC_MESSAGE_ROUTED0_1(AutomationMsg_GetEnabledExtensions,
+                             std::vector<FilePath>)
+
   // This message requests the type of the window with the given handle. The
   // return value contains the type (Browser::Type), or -1 if the request
   // failed.

@@ -484,6 +484,8 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
                                     InstallExtension)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_LoadExpandedExtension,
                                     LoadExpandedExtension)
+    IPC_MESSAGE_HANDLER(AutomationMsg_GetEnabledExtensions,
+                        GetEnabledExtensions)
     IPC_MESSAGE_HANDLER(AutomationMsg_ShutdownSessionService,
                         ShutdownSessionService)
     IPC_MESSAGE_HANDLER(AutomationMsg_SaveAsAsync, SaveAsAsync)
@@ -2479,6 +2481,21 @@ void AutomationProvider::LoadExpandedExtension(
     AutomationMsg_LoadExpandedExtension::WriteReplyParams(
         reply_message, AUTOMATION_MSG_EXTENSION_INSTALL_FAILED);
     Send(reply_message);
+  }
+}
+
+void AutomationProvider::GetEnabledExtensions(
+    std::vector<FilePath>* result) {
+  ExtensionsService* service = profile_->GetExtensionsService();
+  DCHECK(service);
+  if (service->extensions_enabled()) {
+    const ExtensionList* extensions = service->extensions();
+    DCHECK(extensions);
+    for (size_t i = 0; i < extensions->size(); ++i) {
+      Extension* extension = (*extensions)[i];
+      DCHECK(extension);
+      result->push_back(extension->path());
+    }
   }
 }
 

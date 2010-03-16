@@ -186,6 +186,10 @@ class AutomationProxy : public IPC::Channel::Listener,
   // Note: Overinstalls will fail.
   bool InstallExtension(const FilePath& crx_file);
 
+  // Gets a list of all enabled extensions' base directories.
+  // Returns true on success.
+  bool GetEnabledExtensions(std::vector<FilePath>* extension_directories);
+
 #if defined(OS_CHROMEOS)
   // Logs in through the Chrome OS login wizard with given |username|
   // and |password|.  Returns true on success.

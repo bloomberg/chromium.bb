@@ -45,6 +45,7 @@ bool ChromeFrameAutomationProvider::IsValidMessage(uint32 type) {
     case AutomationMsg_Find::ID:
     case AutomationMsg_InstallExtension::ID:
     case AutomationMsg_LoadExpandedExtension::ID:
+    case AutomationMsg_GetEnabledExtensions::ID:
     case AutomationMsg_SetEnableExtensionAutomation::ID:
     case AutomationMsg_SetInitialFocus::ID:
     case AutomationMsg_SetPageFontSize::ID:

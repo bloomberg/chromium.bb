@@ -237,6 +237,12 @@ bool AutomationProxy::InstallExtension(const FilePath& crx_file) {
   return response == AUTOMATION_MSG_EXTENSION_INSTALL_SUCCEEDED;
 }
 
+bool AutomationProxy::GetEnabledExtensions(
+    std::vector<FilePath>* extension_directories) {
+  return Send(new AutomationMsg_GetEnabledExtensions(
+      0, extension_directories));
+}
+
 bool AutomationProxy::GetBrowserWindowCount(int* num_windows) {
   if (!num_windows) {
     NOTREACHED();

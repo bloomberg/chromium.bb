@@ -151,6 +151,9 @@ END_MSG_MAP()
       AutomationLaunchResult reason, const std::string& server_version);
   virtual void OnExtensionInstalled(const FilePath& path,
       void* user_data, AutomationMsg_ExtensionResponseValues response);
+  virtual void OnGetEnabledExtensionsComplete(
+      void* user_data,
+      const std::vector<FilePath>& extension_directories);
 
  private:
   void SubscribeToFocusEvents();
@@ -207,6 +210,10 @@ END_MSG_MAP()
   // This method is only available when the control is in privileged mode.
   bool enableExtensionAutomation(NPObject* npobject, const NPVariant* args,
                                  uint32_t arg_count, NPVariant* result);
+
+  // This method is only available when the control is in privileged mode.
+  bool getEnabledExtensions(NPObject* npobject, const NPVariant* args,
+                            uint32_t arg_count, NPVariant* result);
 
   // Pointers to method implementations.
   static PluginMethod plugin_methods_[];

@@ -186,10 +186,18 @@ class ChromeFrameAutomationClient
 
   virtual void LoadExpandedExtension(const FilePath& path, void* user_data);
 
+  // Starts a request to get the list of enabled extensions' base directories.
+  // Response comes back as ChromeFrameDelegate::OnEnabledExtensions().
+  virtual void GetEnabledExtensions(void* user_data);
+
   virtual void InstallExtensionComplete(
       const FilePath& path,
       void* user_data,
       AutomationMsg_ExtensionResponseValues res);
+
+  virtual void GetEnabledExtensionsComplete(
+      void* user_data,
+      std::vector<FilePath>* extension_directories);
 
   virtual void OnChromeFrameHostMoved();
 

@@ -94,6 +94,9 @@ END_MSG_MAP()
       AutomationLaunchResult reason, const std::string& server_version);
   virtual void OnExtensionInstalled(const FilePath& path,
       void* user_data, AutomationMsg_ExtensionResponseValues response);
+  virtual void OnGetEnabledExtensionsComplete(
+      void* user_data,
+      const std::vector<FilePath>& extension_directories);
 
  private:
   LRESULT OnCreate(UINT message, WPARAM wparam, LPARAM lparam,

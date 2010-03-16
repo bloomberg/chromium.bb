@@ -64,7 +64,8 @@ const NPUTF8* ChromeFrameNPAPI::plugin_method_identifier_names_[] = {
   "postPrivateMessage",
   "installExtension",
   "loadExtension",
-  "enableExtensionAutomation"
+  "enableExtensionAutomation",
+  "getEnabledExtensions"
 };
 
 ChromeFrameNPAPI::PluginMethod ChromeFrameNPAPI::plugin_methods_[] = {
@@ -73,6 +74,7 @@ ChromeFrameNPAPI::PluginMethod ChromeFrameNPAPI::plugin_methods_[] = {
   &ChromeFrameNPAPI::installExtension,
   &ChromeFrameNPAPI::loadExtension,
   &ChromeFrameNPAPI::enableExtensionAutomation,
+  &ChromeFrameNPAPI::getEnabledExtensions,
 };
 
 NPIdentifier
@@ -1412,6 +1414,55 @@ bool ChromeFrameNPAPI::enableExtensionAutomation(NPObject* npobject,
   // This function returns no result.
 
   return true;
+}
+
+bool ChromeFrameNPAPI::getEnabledExtensions(NPObject* npobject,
+                                            const NPVariant* args,
+                                            uint32_t arg_count,
+                                            NPVariant* result) {
+  if (arg_count > 1 || !NPVARIANT_IS_OBJECT(args[0])) {
+    NOTREACHED();
+    return false;
+  }
+
+  if (!is_privileged_) {
+    DLOG(WARNING) << "getEnabledExtensions invoked in non-privileged mode";
+    return false;
+  }
+
+  if (!automation_client_.get()) {
+    DLOG(WARNING) << "getEnabledExtensions invoked with no automaton client";
+    NOTREACHED();
+    return false;
+  }
+
+  NPObject* retained_function = npapi::RetainObject(args[0].value.objectValue);
+
+  automation_client_->GetEnabledExtensions(retained_function);
+  // The response to this command will be returned in the
+  // OnGetEnabledExtensionsCompleted delegate callback function.
+
+  return true;
+}
+
+void ChromeFrameNPAPI::OnGetEnabledExtensionsComplete(
+    void* user_data,
+    const std::vector<FilePath>& extension_directories) {
+  std::vector<std::wstring> extension_paths;
+  for (size_t i = 0; i < extension_directories.size(); ++i) {
+    extension_paths.push_back(extension_directories[i].ToWStringHack());
+  }
+  std::wstring tab_delimited = JoinString(extension_paths, L'\t');
+
+  std::string res = WideToUTF8(tab_delimited);
+
+  ScopedNpVariant result;
+  NPVariant param;
+  STRINGN_TO_NPVARIANT(res.c_str(), res.length(), param);
+
+  NPObject* func = reinterpret_cast<NPObject*>(user_data);
+  InvokeDefault(func, param, &result);
+  npapi::ReleaseObject(func);
 }
 
 void ChromeFrameNPAPI::FireEvent(const std::string& event_type,

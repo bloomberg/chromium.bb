@@ -73,6 +73,10 @@ interface IChromeFrame : IDispatch {
   [id(13), hidden]
   // This method is available only when the control is in privileged mode.
   HRESULT loadExtension([in] BSTR extension_path);
+
+  [id(14), hidden]
+  // This method is available only when the control is in privileged mode.
+  HRESULT getEnabledExtensions();
 };
 
 [
@@ -108,6 +112,7 @@ typedef enum {
   CF_EVENT_DISPID_ONMESSAGE,
   CF_EVENT_DISPID_ONPRIVATEMESSAGE,
   CF_EVENT_DISPID_ONEXTENSIONREADY,
+  CF_EVENT_DISPID_ONGETENABLEDEXTENSIONSCOMPLETE,
   CF_EVENT_DISPID_ONREADYSTATECHANGED = DISPID_READYSTATECHANGE,
 } ChromeFrameEventDispId;
 
@@ -127,19 +132,30 @@ library ChromeTabLib {
    methods:
     [id(CF_EVENT_DISPID_ONLOAD)]
     void onload();
+    
     [id(CF_EVENT_DISPID_ONLOADERROR)]
     void onloaderror();
+    
     [id(CF_EVENT_DISPID_ONMESSAGE)]
     void onmessage([in] IDispatch* event);
+    
     [id(CF_EVENT_DISPID_ONREADYSTATECHANGED)]
     void onreadystatechanged();
+    
     [id(CF_EVENT_DISPID_ONPRIVATEMESSAGE)]
     // This event is only fired when the control is in privileged mode.
     void onprivatemessage([in] IDispatch* event, [in] BSTR target);
+
     [id(CF_EVENT_DISPID_ONEXTENSIONREADY)]
     // This event is only fired when the control is in privileged mode.
     // response is one of AutomationMsg_ExtensionResponseValues.
     void onextensionready([in] BSTR path, [in] long response);
+    
+    [id(CF_EVENT_DISPID_ONGETENABLEDEXTENSIONSCOMPLETE)]
+    // This event is only fired when the control is in privileged mode.
+    // extension_paths is an array of BSTRs of the base directories of
+    // enabled extensions.
+    void ongetenabledextensionscomplete([in] SAFEARRAY(BSTR) extension_paths);
   };
 
   [uuid(BB1176EE-20DD-41DC-9D1E-AC1335C7BBB0)]

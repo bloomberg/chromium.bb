@@ -132,6 +132,14 @@ class ATL_NO_VTABLE ProxyDIChromeFrameEvents
                          args,
                          arraysize(args));
   }
+
+  void Fire_ongetenabledextensionscomplete(SAFEARRAY* extension_dirs) {  // NOLINT
+    VARIANT args[1] = { { VT_ARRAY | VT_BSTR } };
+    args[0].parray = extension_dirs;
+
+    FireMethodWithParams(CF_EVENT_DISPID_ONGETENABLEDEXTENSIONSCOMPLETE,
+                         args, arraysize(args));
+  }
 };
 
 extern bool g_first_launch_by_process_;
@@ -808,6 +816,18 @@ END_MSG_MAP()
     FilePath file_path(path_str);
 
     automation_client_->LoadExpandedExtension(file_path, NULL);
+    return S_OK;
+  }
+
+  STDMETHOD(getEnabledExtensions)() {
+    DCHECK(automation_client_.get());
+
+    if (!is_privileged_) {
+      DLOG(ERROR) << "Attempt to getEnabledExtensions in non-privileged mode";
+      return E_ACCESSDENIED;
+    }
+
+    automation_client_->GetEnabledExtensions(NULL);
     return S_OK;
   }
 
