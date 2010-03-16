@@ -8,33 +8,27 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/lock.h"
+#include "chrome/browser/password_manager/password_manager.h"
 
 namespace net {
 class AuthChallengeInfo;
 }
 
-namespace webkit_glue {
-struct PasswordForm;
-}
-
 class ConstrainedWindow;
 class GURL;
-class PasswordManager;
 class TabContents;
 class URLRequest;
 
-// This is the interface for the class that routes authentication info to
-// the URLRequest that needs it.  Used by the automation proxy for testing.
-// These functions should be (and are, in LoginHandlerImpl) implemented in
-// a thread safe manner.
-//
-// TODO(erg): Refactor the common code from all LoginHandler subclasses into a
-// common controller class. All the methods below have the same copy/pasted
-// implementation. This is more difficult then it should be because all these
-// subclasses are also base::RefCountedThreadSafe<> and I'm not sure how to get
-// ownership correct.  http://crbug.com/14909
-class LoginHandler {
+// This is the base implementation for the OS-specific classes that route
+// authentication info to the URLRequest that needs it. These functions must
+// be implemented in a thread safe manner.
+class LoginHandler : public base::RefCountedThreadSafe<LoginHandler>,
+                     public LoginModelObserver {
  public:
+  explicit LoginHandler(URLRequest* request);
+  virtual ~LoginHandler();
+
   // Builds the platform specific LoginHandler. Used from within
   // CreateLoginPrompt() which creates tasks.
   static LoginHandler* Create(URLRequest* request);
@@ -45,27 +39,82 @@ class LoginHandler {
 
   // Sets information about the authentication type (|form|) and the
   // |password_manager| for this profile.
-  virtual void SetPasswordForm(const webkit_glue::PasswordForm& form) = 0;
-  virtual void SetPasswordManager(PasswordManager* password_manager) = 0;
+  void SetPasswordForm(const webkit_glue::PasswordForm& form);
+  void SetPasswordManager(PasswordManager* password_manager);
 
   // Returns the TabContents that needs authentication.
-  virtual TabContents* GetTabContentsForLogin() = 0;
+  TabContents* GetTabContentsForLogin() const;
 
   // Resend the request with authentication credentials.
   // This function can be called from either thread.
-  virtual void SetAuth(const std::wstring& username,
-                       const std::wstring& password) = 0;
+  void SetAuth(const std::wstring& username, const std::wstring& password);
 
   // Display the error page without asking for credentials again.
   // This function can be called from either thread.
-  virtual void CancelAuth() = 0;
+  void CancelAuth();
 
   // Notify the handler that the request was cancelled.
   // This function can only be called from the IO thread.
-  virtual void OnRequestCancelled() = 0;
+  void OnRequestCancelled();
 
  protected:
-  virtual ~LoginHandler() {}
+
+  void SetModel(LoginModel* model);
+
+  void SetDialog(ConstrainedWindow* dialog);
+
+  // Notify observers that authentication is needed or received.  The automation
+  // proxy uses this for testing.
+  void SendNotifications();
+
+  void ReleaseSoon();
+
+ private:
+
+  // Returns whether authentication had been handled (SetAuth or CancelAuth).
+  // If |set_handled| is true, it will mark authentication as handled.
+  bool WasAuthHandled(bool set_handled);
+
+  // Calls SetAuth from the IO loop.
+  void SetAuthDeferred(const std::wstring& username,
+                       const std::wstring& password);
+
+  // Calls CancelAuth from the IO loop.
+  void CancelAuthDeferred();
+
+  // Closes the view_contents from the UI loop.
+  void CloseContentsDeferred();
+
+  // The request that wants login data.
+  // This should only be accessed on the IO loop.
+  URLRequest* request_;
+
+  // The PasswordForm sent to the PasswordManager. This is so we can refer to it
+  // when later notifying the password manager if the credentials were accepted
+  // or rejected.
+  // This should only be accessed on the UI loop.
+  webkit_glue::PasswordForm password_form_;
+
+  // Points to the password manager owned by the TabContents requesting auth.
+  // Can be null if the TabContents is not a TabContents.
+  // This should only be accessed on the UI loop.
+  PasswordManager* password_manager_;
+
+  // If not null, points to a model we need to notify of our own destruction
+  // so it doesn't try and access this when its too late.
+  LoginModel* login_model_;
+
+  // Cached from the URLRequest, in case it goes NULL on us.
+  int render_process_host_id_;
+  int tab_contents_id_;
+
+  // True if we've handled auth (SetAuth or CancelAuth has been called).
+  bool handled_auth_;
+  Lock handled_auth_lock_;
+
+  // The ConstrainedWindow that is hosting our LoginView.
+  // This should only be accessed on the UI loop.
+  ConstrainedWindow* dialog_;
 };
 
 // Details to provide the NotificationObserver.  Used by the automation proxy
