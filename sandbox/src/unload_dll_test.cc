@@ -1,4 +1,4 @@
-// Copyright (c) 2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,7 @@ SBOX_TESTS_COMMAND int UseOneDLL(int argc, wchar_t **argv) {
 
   if ((option == L'U') || (option == L'B')) {
     HMODULE module2 = ::GetModuleHandleW(argv[1]);
-    rv = FreeLibrary(module2) ? SBOX_TEST_SUCCEEDED : SBOX_TEST_FAILED;
+    rv = ::FreeLibrary(module2) ? SBOX_TEST_SUCCEEDED : SBOX_TEST_FAILED;
   }
   return rv;
 }
@@ -48,6 +48,9 @@ TEST(UnloadDllTest, BaselineAvicapDll) {
   // more than one item in its internal table.
   EXPECT_TRUE(runner.AddRule(TargetPolicy::SUBSYS_SYNC,
                              TargetPolicy::EVENTS_ALLOW_ANY, L"t0001"));
+
+  // Note for the puzzled: avicap32.dll is a 64-bit dll in 64-bit versions of
+  // windows so this test and the others just work.
   EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(L"UseOneDLL L avicap32.dll"));
   EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(L"UseOneDLL B avicap32.dll"));
 }

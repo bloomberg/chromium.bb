@@ -70,9 +70,6 @@ NTSTATUS WINAPI TargetNtOpenThreadTokenEx64(
 
 // -----------------------------------------------------------------------
 
-#if 0
-// Bug 27218: We don't have IPC yet.
-
 SANDBOX_INTERCEPT NTSTATUS WINAPI TargetNtCreateFile64(
     PHANDLE file, ACCESS_MASK desired_access,
     POBJECT_ATTRIBUTES object_attributes, PIO_STATUS_BLOCK io_status,
@@ -123,8 +120,6 @@ SANDBOX_INTERCEPT NTSTATUS WINAPI TargetNtSetInformationFile64(
   return TargetNtSetInformationFile(orig_fn, file, io_status, file_information,
                                     length, file_information_class);
 }
-
-#endif
 
 // -----------------------------------------------------------------------
 
@@ -206,8 +201,7 @@ SANDBOX_INTERCEPT BOOL WINAPI TargetCreateProcessA64(
 }
 
 // -----------------------------------------------------------------------
-#if 0
-// Bug 27218: We don't have IPC yet.
+
 SANDBOX_INTERCEPT NTSTATUS WINAPI TargetNtCreateKey64(
     PHANDLE key, ACCESS_MASK desired_access,
     POBJECT_ATTRIBUTES object_attributes, ULONG title_index,
@@ -235,8 +229,6 @@ SANDBOX_INTERCEPT NTSTATUS WINAPI TargetNtOpenKeyEx64(
   return TargetNtOpenKeyEx(orig_fn, key, desired_access, object_attributes,
                            open_options);
 }
-
-#endif
 
 // -----------------------------------------------------------------------
 

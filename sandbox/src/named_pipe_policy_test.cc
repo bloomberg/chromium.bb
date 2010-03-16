@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,8 +29,6 @@ SBOX_TESTS_COMMAND int NamedPipe_Create(int argc, wchar_t **argv) {
   OVERLAPPED overlapped = {0};
   overlapped.hEvent = ::CreateEvent(NULL, TRUE, TRUE, NULL);
   BOOL result = ::ConnectNamedPipe(pipe, &overlapped);
-  ::CloseHandle(pipe);
-  ::CloseHandle(overlapped.hEvent);
 
   if (!result) {
     DWORD error = ::GetLastError();
@@ -40,6 +38,10 @@ SBOX_TESTS_COMMAND int NamedPipe_Create(int argc, wchar_t **argv) {
     }
   }
 
+  if (!::CloseHandle(pipe))
+    return SBOX_TEST_FAILED;
+
+  ::CloseHandle(overlapped.hEvent);
   return SBOX_TEST_SUCCEEDED;
 }
 
