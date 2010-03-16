@@ -136,6 +136,7 @@ check_PROGRAMS = \
 	src/processor/pathname_stripper_unittest \
 	src/processor/postfix_evaluator_unittest \
 	src/processor/range_map_unittest \
+	src/processor/stackwalker_x86_unittest \
 	src/processor/synth_minidump_unittest \
 	src/processor/test_assembler_unittest
 
@@ -280,6 +281,20 @@ src_processor_stackwalker_selftest_LDADD = \
 	src/processor/stackwalker_ppc.lo \
 	src/processor/stackwalker_sparc.lo \
 	src/processor/stackwalker_x86.lo
+
+src_processor_stackwalker_x86_unittest_SOURCES = \
+	src/processor/stackwalker_x86_unittest.cc \
+	src/processor/test_assembler.cc \
+	src/testing/gtest/src/gtest-all.cc \
+	src/testing/gtest/src/gtest_main.cc \
+	src/testing/src/gmock-all.cc
+src_processor_stackwalker_x86_unittest_LDADD = \
+	src/libbreakpad.la
+src_processor_stackwalker_x86_unittest_CPPFLAGS = \
+	-I$(top_srcdir)/src/testing/include \
+        -I$(top_srcdir)/src/testing/gtest/include \
+	-I$(top_srcdir)/src/testing/gtest \
+	-I$(top_srcdir)/src/testing
 
 src_processor_synth_minidump_unittest_SOURCES = \
 	src/processor/synth_minidump_unittest.cc \
