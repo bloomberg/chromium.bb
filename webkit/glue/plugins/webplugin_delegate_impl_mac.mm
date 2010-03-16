@@ -799,6 +799,26 @@ static bool WebInputEventIsWebKeyboardEvent(const WebInputEvent& event) {
   }
 }
 
+// Returns true if the caps lock flag should be set for the given event.
+// TODO: Ideally the event itself would know about the caps lock key; see
+// <http://crbug.com/38226>. This function is only a temporary workaround that
+// guesses based on live state.
+static bool CapsLockIsActive(const WebInputEvent& event) {
+  NSUInteger current_flags = [[NSApp currentEvent] modifierFlags];
+  bool caps_lock_on = (current_flags & NSAlphaShiftKeyMask) ? true : false;
+  // If this a caps lock keypress, then the event stream state can be wrong.
+  // Luckily, the weird event stream for caps lock makes it easy to tell whether
+  // caps lock is being turned on or off.
+  if (event.type == WebInputEvent::KeyDown ||
+      event.type == WebInputEvent::KeyUp) {
+    const WebKeyboardEvent* key_event =
+        static_cast<const WebKeyboardEvent*>(&event);
+    if (key_event->nativeKeyCode == 57)
+      caps_lock_on = (event.type == WebInputEvent::KeyDown);
+  }
+  return caps_lock_on;
+}
+
 #ifndef NP_NO_CARBON
 static NSInteger CarbonModifiersFromWebEvent(const WebInputEvent& event) {
   NSInteger modifiers = 0;
@@ -810,6 +830,8 @@ static NSInteger CarbonModifiersFromWebEvent(const WebInputEvent& event) {
     modifiers |= optionKey;
   if (event.modifiers & WebInputEvent::MetaKey)
     modifiers |= cmdKey;
+  if (CapsLockIsActive(event))
+    modifiers |= alphaLock;
   return modifiers;
 }
 
@@ -906,6 +928,8 @@ static NSInteger CocoaModifiersFromWebEvent(const WebInputEvent& event) {
     modifiers |= NSAlternateKeyMask;
   if (event.modifiers & WebInputEvent::MetaKey)
     modifiers |= NSCommandKeyMask;
+  if (CapsLockIsActive(event))
+    modifiers |= NSAlphaShiftKeyMask;
   return modifiers;
 }
 
