@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,8 +25,6 @@
 #include "webkit/glue/plugins/plugin_list.h"
 
 namespace {
-
-const int kMaxBytesToSniff = 512;
 
 void RecordSnifferMetrics(bool sniffing_blocked,
                           bool we_would_like_to_sniff,
@@ -111,9 +109,9 @@ bool BufferedResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
                                          int* buf_size, int min_size) {
   if (buffering_) {
     DCHECK(!my_buffer_.get());
-    my_buffer_ = new net::IOBuffer(kMaxBytesToSniff);
+    my_buffer_ = new net::IOBuffer(net::kMaxBytesToSniff);
     *buf = my_buffer_.get();
-    *buf_size = kMaxBytesToSniff;
+    *buf_size = net::kMaxBytesToSniff;
     // TODO(willchan): Remove after debugging bug 16371.
     CHECK((*buf)->data());
     return true;
@@ -129,7 +127,7 @@ bool BufferedResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
   // TODO(willchan): Remove after debugging bug 16371.
   CHECK(read_buffer_->data());
   read_buffer_size_ = *buf_size;
-  DCHECK(read_buffer_size_ >= kMaxBytesToSniff * 2);
+  DCHECK_GE(read_buffer_size_, net::kMaxBytesToSniff * 2);
   bytes_read_ = 0;
   return true;
 }
@@ -244,7 +242,7 @@ bool BufferedResourceHandler::KeepBuffering(int bytes_read) {
   DCHECK(read_buffer_);
   if (my_buffer_) {
     // We are using our own buffer to read, update the main buffer.
-    CHECK(bytes_read + bytes_read_ < read_buffer_size_);
+    CHECK_LT(bytes_read + bytes_read_, read_buffer_size_);
     memcpy(read_buffer_->data() + bytes_read_, my_buffer_->data(), bytes_read);
     my_buffer_ = NULL;
   }
@@ -260,7 +258,7 @@ bool BufferedResourceHandler::KeepBuffering(int bytes_read) {
       // SniffMimeType() returns false if there is not enough data to determine
       // the mime type. However, even if it returns false, it returns a new type
       // that is probably better than the current one.
-      DCHECK(bytes_read_ < kMaxBytesToSniff);
+      DCHECK_LT(bytes_read_, net::kMaxBytesToSniff);
       if (!finished_) {
         buffering_ = true;
         return true;
