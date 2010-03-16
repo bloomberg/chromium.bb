@@ -1142,8 +1142,7 @@
         ]
       }
     ],
-    "events": [
-    ]
+    "events": []
   },
   {
     "namespace": "pageAction",
@@ -2215,17 +2214,13 @@
         "name": "onImportBegan",
         "type": "function",
         "description": "Fired when a bookmark import session is begun.  Expensive observers should ignore handleCreated updates until onImportEnded is fired.  Observers should still handle other notifications immediately.",
-        "parameters": [
-          {}
-        ]
+        "parameters": []
       },
       {
         "name": "onImportEnded",
         "type": "function",
         "description": "Fired when a bookmark import session is ended.",
-        "parameters": [
-          {}
-        ]
+        "parameters": []
       },
       {
         "name": "onDragEnter",
