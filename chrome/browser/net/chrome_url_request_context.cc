@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/io_thread.h"
+#include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/sqlite_persistent_cookie_store.h"
 #include "chrome/browser/net/dns_global.h"
 #include "chrome/browser/privacy_blacklist/blacklist.h"
@@ -201,6 +202,7 @@ ChromeURLRequestContext* FactoryForOriginal::Create() {
   net::SetURLRequestContextForOCSP(context);
 #endif
 
+  context->set_net_log(io_thread()->globals()->net_log.get());
   return context;
 }
 
@@ -293,6 +295,7 @@ ChromeURLRequestContext* FactoryForOffTheRecord::Create() {
   context->set_appcache_service(
       new ChromeAppCacheService(profile_dir_path_, context));
 
+  context->set_net_log(io_thread()->globals()->net_log.get());
   return context;
 }
 
@@ -595,9 +598,6 @@ void ChromeURLRequestContextGetter::GetCookieStoreAsyncHelper(
 
 ChromeURLRequestContext::ChromeURLRequestContext() {
   CheckCurrentlyOnIOThread();
-
-  url_request_tracker()->SetGraveyardFilter(
-      &ChromeURLRequestContext::ShouldTrackRequest);
 }
 
 ChromeURLRequestContext::~ChromeURLRequestContext() {
@@ -752,6 +752,7 @@ ChromeURLRequestContext::ChromeURLRequestContext(
   CheckCurrentlyOnIOThread();
 
   // Set URLRequestContext members
+  net_log_ = other->net_log_;
   host_resolver_ = other->host_resolver_;
   proxy_service_ = other->proxy_service_;
   ssl_config_service_ = other->ssl_config_service_;
@@ -796,12 +797,6 @@ void ChromeURLRequestContext::OnDefaultCharsetChange(
   referrer_charset_ = default_charset;
   accept_charset_ =
       net::HttpUtil::GenerateAcceptCharsetHeader(default_charset);
-}
-
-// static
-bool ChromeURLRequestContext::ShouldTrackRequest(const GURL& url) {
-  // Exclude "chrome://" URLs from our recent requests circular buffer.
-  return !url.SchemeIs("chrome");
 }
 
 // ----------------------------------------------------------------------------

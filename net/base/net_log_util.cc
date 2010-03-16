@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/load_log_util.h"
+#include "net/base/net_log_util.h"
 
 #include "base/format_macros.h"
 #include "base/string_util.h"
@@ -13,12 +13,13 @@ namespace {
 
 class FormatHelper {
  public:
-  std::string ToString(const LoadLog* log) {
+  std::string ToString(const std::vector<NetLog::Entry>& entries,
+                       size_t num_entries_truncated) {
     entries_.clear();
 
     // Pass 1: Match the start/end of indentation blocks. Fills |entries_|
     // with the results.
-    PopulateEntries(log);
+    PopulateEntries(entries);
 
     // Pass 2: Figure out the maximum width of each column. This allows us
     // to right-justify text within each column.
@@ -32,9 +33,9 @@ class FormatHelper {
     const int kSpacesPerIndentation = 2;
 
     for (size_t i = 0; i < entries_.size(); ++i) {
-      if (log->num_entries_truncated() > 0 && i + 1 == entries_.size()) {
+      if (num_entries_truncated > 0 && i + 1 == entries_.size()) {
         StringAppendF(&result, " ... Truncated %" PRIuS " entries ...\n",
-                      log->num_entries_truncated());
+                      num_entries_truncated);
       }
 
       if (entries_[i].block_index != -1 &&
@@ -71,29 +72,29 @@ class FormatHelper {
 
  private:
   struct Entry {
-    explicit Entry(const LoadLog::Entry* log_entry)
+    explicit Entry(const NetLog::Entry* log_entry)
         : log_entry(log_entry), indentation(0), block_index(-1) {}
 
     bool IsBeginEvent() const {
-      return log_entry->type == LoadLog::Entry::TYPE_EVENT &&
-             log_entry->event.phase == LoadLog::PHASE_BEGIN;
+      return log_entry->type == NetLog::Entry::TYPE_EVENT &&
+             log_entry->event.phase == NetLog::PHASE_BEGIN;
     }
 
     bool IsEndEvent() const {
-      return log_entry->type == LoadLog::Entry::TYPE_EVENT &&
-             log_entry->event.phase == LoadLog::PHASE_END;
+      return log_entry->type == NetLog::Entry::TYPE_EVENT &&
+             log_entry->event.phase == NetLog::PHASE_END;
     }
 
-    const LoadLog::Entry* log_entry;
+    const NetLog::Entry* log_entry;
     size_t indentation;
     int block_index;  // The index of the matching start / end of block.
   };
 
-  void PopulateEntries(const LoadLog* log) {
+  void PopulateEntries(const std::vector<NetLog::Entry>& entries) {
     int current_indentation = 0;
 
-    for (size_t i = 0; i < log->entries().size(); ++i) {
-      Entry entry(&log->entries()[i]);
+    for (size_t i = 0; i < entries.size(); ++i) {
+      Entry entry(&entries[i]);
 
       entry.indentation = current_indentation;
 
@@ -140,7 +141,7 @@ class FormatHelper {
     *max_time_width = *max_indentation = *max_type_width = *max_dt_width = 0;
     for (size_t i = 0; i < entries_.size(); ++i) {
       *max_time_width = std::max(*max_time_width, GetTimeString(i).size());
-      if (entries_[i].log_entry->type == LoadLog::Entry::TYPE_EVENT)
+      if (entries_[i].log_entry->type == NetLog::Entry::TYPE_EVENT)
         *max_type_width = std::max(*max_type_width, GetEntryString(i).size());
       *max_indentation = std::max(*max_indentation, entries_[i].indentation);
 
@@ -168,32 +169,32 @@ class FormatHelper {
   }
 
   std::string GetEntryString(size_t index) {
-    const LoadLog::Entry* entry = entries_[index].log_entry;
+    const NetLog::Entry* entry = entries_[index].log_entry;
 
     std::string entry_str;
-    LoadLog::EventPhase phase = LoadLog::PHASE_NONE;
+    NetLog::EventPhase phase = NetLog::PHASE_NONE;
     switch (entry->type) {
-      case LoadLog::Entry::TYPE_EVENT:
-        entry_str = LoadLog::EventTypeToString(entry->event.type);
+      case NetLog::Entry::TYPE_EVENT:
+        entry_str = NetLog::EventTypeToString(entry->event.type);
         phase = entry->event.phase;
 
-        if (phase == LoadLog::PHASE_BEGIN &&
+        if (phase == NetLog::PHASE_BEGIN &&
             index + 1 < entries_.size() &&
             static_cast<size_t>(entries_[index + 1].block_index) == index) {
           // If this starts an empty block, we will pretend it is a PHASE_NONE
           // so we don't print the "+" prefix.
-          phase = LoadLog::PHASE_NONE;
+          phase = NetLog::PHASE_NONE;
         }
         break;
-      case LoadLog::Entry::TYPE_ERROR_CODE:
+      case NetLog::Entry::TYPE_ERROR_CODE:
         entry_str = StringPrintf("error code: %d (%s)",
                                  entry->error_code,
                                  ErrorToString(entry->error_code));
         break;
-      case LoadLog::Entry::TYPE_STRING:
+      case NetLog::Entry::TYPE_STRING:
         entry_str = StringPrintf("\"%s\"", entry->string.c_str());
         break;
-      case LoadLog::Entry::TYPE_STRING_LITERAL:
+      case NetLog::Entry::TYPE_STRING_LITERAL:
         entry_str = StringPrintf("\"%s\"", entry->literal);
         break;
       default:
@@ -201,11 +202,11 @@ class FormatHelper {
     }
 
     switch (phase) {
-      case LoadLog::PHASE_BEGIN:
+      case NetLog::PHASE_BEGIN:
         return std::string("+") + entry_str;
-      case LoadLog::PHASE_END:
+      case NetLog::PHASE_END:
         return std::string("-") + entry_str;
-      case LoadLog::PHASE_NONE:
+      case NetLog::PHASE_NONE:
         return std::string(" ") + entry_str;
       default:
         NOTREACHED();
@@ -226,9 +227,11 @@ class FormatHelper {
 }  // namespace
 
 // static
-std::string LoadLogUtil::PrettyPrintAsEventTree(const LoadLog* log) {
+std::string NetLogUtil::PrettyPrintAsEventTree(
+    const std::vector<NetLog::Entry>& entries,
+    size_t num_entries_truncated) {
   FormatHelper helper;
-  return helper.ToString(log);
+  return helper.ToString(entries, num_entries_truncated);
 }
 
 }  // namespace net

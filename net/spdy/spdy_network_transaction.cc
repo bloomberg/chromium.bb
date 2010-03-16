@@ -45,13 +45,13 @@ SpdyNetworkTransaction::~SpdyNetworkTransaction() {
 
 int SpdyNetworkTransaction::Start(const HttpRequestInfo* request_info,
                                   CompletionCallback* callback,
-                                  LoadLog* load_log) {
+                                  const BoundNetLog& net_log) {
   CHECK(request_info);
   CHECK(callback);
 
   SIMPLE_STATS_COUNTER("SpdyNetworkTransaction.Count");
 
-  load_log_ = load_log;
+  net_log_ = net_log;
   request_ = request_info;
   start_time_ = base::TimeTicks::Now();
 
@@ -159,46 +159,38 @@ int SpdyNetworkTransaction::DoLoop(int result) {
     switch (state) {
       case STATE_INIT_CONNECTION:
         DCHECK_EQ(OK, rv);
-        LoadLog::BeginEvent(load_log_,
-                            LoadLog::TYPE_SPDY_TRANSACTION_INIT_CONNECTION);
+        net_log_.BeginEvent(NetLog::TYPE_SPDY_TRANSACTION_INIT_CONNECTION);
         rv = DoInitConnection();
         break;
       case STATE_INIT_CONNECTION_COMPLETE:
-        LoadLog::EndEvent(load_log_,
-                          LoadLog::TYPE_SPDY_TRANSACTION_INIT_CONNECTION);
+        net_log_.EndEvent(NetLog::TYPE_SPDY_TRANSACTION_INIT_CONNECTION);
         rv = DoInitConnectionComplete(rv);
         break;
       case STATE_SEND_REQUEST:
         DCHECK_EQ(OK, rv);
-        LoadLog::BeginEvent(load_log_,
-                            LoadLog::TYPE_SPDY_TRANSACTION_SEND_REQUEST);
+        net_log_.BeginEvent(NetLog::TYPE_SPDY_TRANSACTION_SEND_REQUEST);
         rv = DoSendRequest();
         break;
       case STATE_SEND_REQUEST_COMPLETE:
-        LoadLog::EndEvent(load_log_,
-                          LoadLog::TYPE_SPDY_TRANSACTION_SEND_REQUEST);
+        net_log_.EndEvent(NetLog::TYPE_SPDY_TRANSACTION_SEND_REQUEST);
         rv = DoSendRequestComplete(rv);
         break;
       case STATE_READ_HEADERS:
         DCHECK_EQ(OK, rv);
-        LoadLog::BeginEvent(load_log_,
-                            LoadLog::TYPE_SPDY_TRANSACTION_READ_HEADERS);
+        net_log_.BeginEvent(NetLog::TYPE_SPDY_TRANSACTION_READ_HEADERS);
         rv = DoReadHeaders();
         break;
       case STATE_READ_HEADERS_COMPLETE:
-        LoadLog::EndEvent(load_log_,
-                          LoadLog::TYPE_SPDY_TRANSACTION_READ_HEADERS);
+        net_log_.EndEvent(NetLog::TYPE_SPDY_TRANSACTION_READ_HEADERS);
         rv = DoReadHeadersComplete(rv);
         break;
       case STATE_READ_BODY:
         DCHECK_EQ(OK, rv);
-        LoadLog::BeginEvent(load_log_,
-                            LoadLog::TYPE_SPDY_TRANSACTION_READ_BODY);
+        net_log_.BeginEvent(NetLog::TYPE_SPDY_TRANSACTION_READ_BODY);
         rv = DoReadBody();
         break;
       case STATE_READ_BODY_COMPLETE:
-        LoadLog::EndEvent(load_log_,
-                          LoadLog::TYPE_SPDY_TRANSACTION_READ_BODY);
+        net_log_.EndEvent(NetLog::TYPE_SPDY_TRANSACTION_READ_BODY);
         rv = DoReadBodyComplete(rv);
         break;
       case STATE_NONE:
@@ -240,7 +232,7 @@ int SpdyNetworkTransaction::DoInitConnection() {
   DCHECK(spdy_);
 
   return spdy_->Connect(
-      connection_group, tcp_params, request_->priority, load_log_);
+      connection_group, tcp_params, request_->priority, net_log_);
 }
 
 int SpdyNetworkTransaction::DoInitConnectionComplete(int result) {
@@ -256,7 +248,7 @@ int SpdyNetworkTransaction::DoSendRequest() {
   CHECK(!stream_.get());
   UploadDataStream* upload_data = request_->upload_data ?
       new UploadDataStream(request_->upload_data) : NULL;
-  stream_ = spdy_->GetOrCreateStream(*request_, upload_data, load_log_.get());
+  stream_ = spdy_->GetOrCreateStream(*request_, upload_data, net_log_);
   // Release the reference to |spdy_| since we don't need it anymore.
   spdy_ = NULL;
   return stream_->SendRequest(upload_data, &response_, &io_callback_);

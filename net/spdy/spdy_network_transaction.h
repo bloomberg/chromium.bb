@@ -14,6 +14,7 @@
 #include "base/time.h"
 #include "net/base/completion_callback.h"
 #include "net/base/load_states.h"
+#include "net/base/net_log.h"
 #include "net/http/http_response_info.h"
 #include "net/http/http_transaction.h"
 #include "net/spdy/spdy_session.h"
@@ -37,7 +38,7 @@ class SpdyNetworkTransaction : public HttpTransaction {
   // HttpTransaction methods:
   virtual int Start(const HttpRequestInfo* request_info,
                     CompletionCallback* callback,
-                    LoadLog* load_log);
+                    const BoundNetLog& net_log);
   virtual int RestartIgnoringLastError(CompletionCallback* callback);
   virtual int RestartWithCertificate(X509Certificate* client_cert,
                                      CompletionCallback* callback);
@@ -89,7 +90,7 @@ class SpdyNetworkTransaction : public HttpTransaction {
   int DoReadBody();
   int DoReadBodyComplete(int result);
 
-  scoped_refptr<LoadLog> load_log_;
+  BoundNetLog net_log_;
 
   scoped_refptr<SpdySession> spdy_;
 

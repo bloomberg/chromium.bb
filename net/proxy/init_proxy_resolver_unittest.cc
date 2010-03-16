@@ -5,9 +5,8 @@
 #include <vector>
 
 #include "net/base/net_errors.h"
-#include "net/base/load_log.h"
-#include "net/base/load_log_util.h"
-#include "net/base/load_log_unittest.h"
+#include "net/base/net_log.h"
+#include "net/base/net_log_unittest.h"
 #include "net/base/test_completion_callback.h"
 #include "net/proxy/init_proxy_resolver.h"
 #include "net/proxy/proxy_config.h"
@@ -120,7 +119,7 @@ class RuleBasedProxyResolver : public ProxyResolver {
                              ProxyInfo* /*results*/,
                              CompletionCallback* /*callback*/,
                              RequestHandle* /*request_handle*/,
-                             LoadLog* /*load_log*/) {
+                             const BoundNetLog& /*net_log*/) {
     NOTREACHED();
     return ERR_UNEXPECTED;
   }
@@ -172,24 +171,25 @@ TEST(InitProxyResolverTest, CustomPacSucceeds) {
   Rules::Rule rule = rules.AddSuccessRule("http://custom/proxy.pac");
 
   TestCompletionCallback callback;
-  scoped_refptr<LoadLog> log(new LoadLog(LoadLog::kUnbounded));
+  CapturingBoundNetLog log(CapturingNetLog::kUnbounded);
   InitProxyResolver init(&resolver, &fetcher);
-  EXPECT_EQ(OK, init.Init(config, &callback, log));
+  EXPECT_EQ(OK, init.Init(config, &callback, log.bound()));
   EXPECT_EQ(rule.bytes(), resolver.pac_bytes());
 
-  // Check the LoadLog was filled correctly.
-  EXPECT_EQ(9u, log->entries().size());
+  // Check the NetLog was filled correctly.
+  EXPECT_EQ(9u, log.entries().size());
   EXPECT_TRUE(LogContainsBeginEvent(
-      *log, 0, LoadLog::TYPE_INIT_PROXY_RESOLVER));
+      log.entries(), 0, NetLog::TYPE_INIT_PROXY_RESOLVER));
   EXPECT_TRUE(LogContainsBeginEvent(
-      *log, 1, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT));
+      log.entries(), 1, NetLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT));
   EXPECT_TRUE(LogContainsEndEvent(
-      *log, 4, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT));
+      log.entries(), 4, NetLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT));
   EXPECT_TRUE(LogContainsBeginEvent(
-      *log, 5, LoadLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT));
+      log.entries(), 5, NetLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT));
   EXPECT_TRUE(LogContainsEndEvent(
-      *log, 7, LoadLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT));
-  EXPECT_TRUE(LogContainsEndEvent(*log, 8, LoadLog::TYPE_INIT_PROXY_RESOLVER));
+      log.entries(), 7, NetLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT));
+  EXPECT_TRUE(LogContainsEndEvent(
+      log.entries(), 8, NetLog::TYPE_INIT_PROXY_RESOLVER));
 }
 
 // Fail downloading the custom PAC script.
@@ -204,20 +204,21 @@ TEST(InitProxyResolverTest, CustomPacFails1) {
   rules.AddFailDownloadRule("http://custom/proxy.pac");
 
   TestCompletionCallback callback;
-  scoped_refptr<LoadLog> log(new LoadLog(LoadLog::kUnbounded));
+  CapturingBoundNetLog log(CapturingNetLog::kUnbounded);
   InitProxyResolver init(&resolver, &fetcher);
-  EXPECT_EQ(kFailedDownloading, init.Init(config, &callback, log));
+  EXPECT_EQ(kFailedDownloading, init.Init(config, &callback, log.bound()));
   EXPECT_EQ("", resolver.pac_bytes());
 
-  // Check the LoadLog was filled correctly.
-  EXPECT_EQ(6u, log->entries().size());
+  // Check the NetLog was filled correctly.
+  EXPECT_EQ(6u, log.entries().size());
   EXPECT_TRUE(LogContainsBeginEvent(
-      *log, 0, LoadLog::TYPE_INIT_PROXY_RESOLVER));
+      log.entries(), 0, NetLog::TYPE_INIT_PROXY_RESOLVER));
   EXPECT_TRUE(LogContainsBeginEvent(
-      *log, 1, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT));
+      log.entries(), 1, NetLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT));
   EXPECT_TRUE(LogContainsEndEvent(
-      *log, 4, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT));
-  EXPECT_TRUE(LogContainsEndEvent(*log, 5, LoadLog::TYPE_INIT_PROXY_RESOLVER));
+      log.entries(), 4, NetLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT));
+  EXPECT_TRUE(LogContainsEndEvent(
+      log.entries(), 5, NetLog::TYPE_INIT_PROXY_RESOLVER));
 }
 
 // Fail parsing the custom PAC script.
@@ -301,34 +302,35 @@ TEST(InitProxyResolverTest, AutodetectFailCustomSuccess2) {
   Rules::Rule rule = rules.AddSuccessRule("http://custom/proxy.pac");
 
   TestCompletionCallback callback;
-  scoped_refptr<LoadLog> log(new LoadLog(LoadLog::kUnbounded));
+  CapturingBoundNetLog log(CapturingNetLog::kUnbounded);
   InitProxyResolver init(&resolver, &fetcher);
-  EXPECT_EQ(OK, init.Init(config, &callback, log));
+  EXPECT_EQ(OK, init.Init(config, &callback, log.bound()));
   EXPECT_EQ(rule.bytes(), resolver.pac_bytes());
 
-  // Check the LoadLog was filled correctly.
+  // Check the NetLog was filled correctly.
   // (Note that the Fetch and Set states are repeated since both WPAD and custom
   // PAC scripts are tried).
-  EXPECT_EQ(17u, log->entries().size());
+  EXPECT_EQ(17u, log.entries().size());
   EXPECT_TRUE(LogContainsBeginEvent(
-      *log, 0, LoadLog::TYPE_INIT_PROXY_RESOLVER));
+      log.entries(), 0, NetLog::TYPE_INIT_PROXY_RESOLVER));
   EXPECT_TRUE(LogContainsBeginEvent(
-      *log, 1, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT));
+      log.entries(), 1, NetLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT));
   EXPECT_TRUE(LogContainsEndEvent(
-      *log, 4, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT));
+      log.entries(), 4, NetLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT));
   EXPECT_TRUE(LogContainsBeginEvent(
-      *log, 5, LoadLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT));
+      log.entries(), 5, NetLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT));
   EXPECT_TRUE(LogContainsEndEvent(
-      *log, 7, LoadLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT));
+      log.entries(), 7, NetLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT));
   EXPECT_TRUE(LogContainsBeginEvent(
-      *log, 9, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT));
+      log.entries(), 9, NetLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT));
   EXPECT_TRUE(LogContainsEndEvent(
-      *log, 12, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT));
+      log.entries(), 12, NetLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT));
   EXPECT_TRUE(LogContainsBeginEvent(
-      *log, 13, LoadLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT));
+      log.entries(), 13, NetLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT));
   EXPECT_TRUE(LogContainsEndEvent(
-      *log, 15, LoadLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT));
-  EXPECT_TRUE(LogContainsEndEvent(*log, 16, LoadLog::TYPE_INIT_PROXY_RESOLVER));
+      log.entries(), 15, NetLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT));
+  EXPECT_TRUE(LogContainsEndEvent(
+      log.entries(), 16, NetLog::TYPE_INIT_PROXY_RESOLVER));
 }
 
 // Fails at WPAD (downloading), and fails at custom PAC (downloading).

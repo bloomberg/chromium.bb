@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // NOTE: No header guards are used, since this file is intended to be expanded
-// directly into load_log.h. DO NOT include this file anywhere else.
+// directly into net_log.h. DO NOT include this file anywhere else.
 
 // --------------------------------------------------------------------------
 // General pseudo-events
@@ -12,6 +12,11 @@
 // Something got cancelled (we determine what is cancelled based on the
 // log context around it.)
 EVENT_TYPE(CANCELLED)
+
+// Marks the creation/destruction of a request (URLRequest or SocketStream).
+// In the begin phase of this event, the message will contain a string which
+// is the URL.
+EVENT_TYPE(REQUEST_ALIVE)
 
 // ------------------------------------------------------------------------
 // HostResolverImpl
@@ -123,6 +128,10 @@ EVENT_TYPE(SOCKET_BACKUP_CREATED)
 
 // A backup socket is created due to slow connect
 EVENT_TYPE(SOCKET_BACKUP_TIMER_EXTENDED)
+
+// Identifies the NetLog::Source() for the ConnectJob that this socket ended
+// up binding to.
+EVENT_TYPE(SOCKET_POOL_CONNECT_JOB_ID)
 
 // ------------------------------------------------------------------------
 // URLRequest

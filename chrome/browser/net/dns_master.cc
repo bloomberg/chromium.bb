@@ -18,6 +18,7 @@
 #include "net/base/completion_callback.h"
 #include "net/base/host_resolver.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_log.h"
 
 using base::TimeDelta;
 
@@ -48,7 +49,7 @@ class DnsMaster::LookupRequest {
     // lets the HostResolver know it can de-prioritize it.
     resolve_info.set_is_speculative(true);
     return resolver_.Resolve(
-        resolve_info, &addresses_, &net_callback_, NULL);
+        resolve_info, &addresses_, &net_callback_, net::BoundNetLog());
   }
 
  private:

@@ -9,11 +9,14 @@
 #include "base/format_macros.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
+#include "chrome/browser/net/chrome_net_log.h"
+#include "chrome/browser/net/chrome_url_request_context.h"
+#include "chrome/browser/net/passive_log_collector.h"
 #include "chrome/common/url_constants.h"
 #include "net/base/escape.h"
 #include "net/base/host_resolver_impl.h"
-#include "net/base/load_log_util.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_log_util.h"
 #include "net/base/net_util.h"
 #include "net/base/sys_addrinfo.h"
 #include "net/proxy/proxy_service.h"
@@ -26,6 +29,26 @@
 namespace {
 
 const char kViewHttpCacheSubPath[] = "view-cache";
+
+PassiveLogCollector* GetPassiveLogCollector(URLRequestContext* context) {
+  // Really this is the same as:
+  // g_browser_process->io_thread()->globals()->
+  //     net_log.get()
+  // (But we can't access g_browser_process from the IO thread).
+  ChromeNetLog* chrome_net_log = static_cast<ChromeNetLog*>(
+      static_cast<ChromeURLRequestContext*>(context)->net_log());
+  return chrome_net_log->passive_collector();
+}
+
+PassiveLogCollector::RequestTracker* GetURLRequestTracker(
+    URLRequestContext* context) {
+  return GetPassiveLogCollector(context)->url_request_tracker();
+}
+
+PassiveLogCollector::RequestTracker* GetSocketStreamTracker(
+    URLRequestContext* context) {
+  return GetPassiveLogCollector(context)->socket_stream_tracker();
+}
 
 std::string GetDetails(const GURL& url) {
   DCHECK(ViewNetInternalsJobFactory::IsSupportedURL(url));
@@ -232,12 +255,8 @@ class ProxyServiceLastInitLogSubSection : public SubSection {
 
   virtual void OutputBody(URLRequestContext* context, std::string* out) {
     net::ProxyService* proxy_service = context->proxy_service();
-    net::LoadLog* log = proxy_service->init_proxy_resolver_log();
-    if (log) {
-      OutputTextInPre(net::LoadLogUtil::PrettyPrintAsEventTree(log), out);
-    } else {
-      out->append("<i>None.</i>");
-    }
+    OutputTextInPre(net::NetLogUtil::PrettyPrintAsEventTree(
+        proxy_service->init_proxy_resolver_log().entries(), 0), out);
   }
 };
 
@@ -418,15 +437,15 @@ class HostResolverTraceSubSection : public SubSection {
       DrawCommandButton("Enable tracing", "hostresolver-trace-enable", out);
     }
 
-    scoped_refptr<net::LoadLog> log = resolver->GetRequestsTrace();
-
-    if (log) {
+    std::vector<net::NetLog::Entry> entries;
+    if (resolver->GetRequestsTrace(&entries)) {
       out->append(
           "<p>To make sense of this trace, process it with the Python script "
           "formatter.py at "
           "<a href='http://src.chromium.org/viewvc/chrome/trunk/src/net/tools/"
           "dns_trace_formatter/'>net/tools/dns_trace_formatter</a></p>");
-      OutputTextInPre(net::LoadLogUtil::PrettyPrintAsEventTree(log), out);
+      OutputTextInPre(net::NetLogUtil::PrettyPrintAsEventTree(entries, 0),
+                      out);
     } else {
       out->append("<p><i>No trace information, must enable tracing.</i></p>");
     }
@@ -443,15 +462,17 @@ class HostResolverSubSection : public SubSection {
 };
 
 // Helper for the URLRequest "outstanding" and "live" sections.
-void OutputURLAndLoadLog(const GURL& url,
-                         const net::LoadLog* log,
+void OutputURLAndLoadLog(const PassiveLogCollector::RequestInfo& request,
                          std::string* out) {
   out->append("<li>");
   out->append("<nobr>");
-  out->append(EscapeForHTML(url.possibly_invalid_spec()));
+  out->append(EscapeForHTML(request.url));
   out->append("</nobr>");
-  if (log)
-    OutputTextInPre(net::LoadLogUtil::PrettyPrintAsEventTree(log), out);
+  OutputTextInPre(
+      net::NetLogUtil::PrettyPrintAsEventTree(
+          request.entries,
+          request.num_entries_truncated),
+      out);
   out->append("</li>");
 }
 
@@ -462,16 +483,14 @@ class URLRequestLiveSubSection : public SubSection {
   }
 
   virtual void OutputBody(URLRequestContext* context, std::string* out) {
-    std::vector<URLRequest*> requests =
-        context->url_request_tracker()->GetLiveRequests();
+    PassiveLogCollector::RequestInfoList requests =
+        GetURLRequestTracker(context)->GetLiveRequests();
 
     out->append("<ol>");
     for (size_t i = 0; i < requests.size(); ++i) {
       // Reverse the list order, so we dispay from most recent to oldest.
       size_t index = requests.size() - i - 1;
-      OutputURLAndLoadLog(requests[index]->original_url(),
-                          requests[index]->load_log(),
-                          out);
+      OutputURLAndLoadLog(requests[index], out);
     }
     out->append("</ol>");
   }
@@ -484,8 +503,8 @@ class URLRequestRecentSubSection : public SubSection {
   }
 
   virtual void OutputBody(URLRequestContext* context, std::string* out) {
-    RequestTracker<URLRequest>::RecentRequestInfoList recent =
-        context->url_request_tracker()->GetRecentlyDeceased();
+    PassiveLogCollector::RequestInfoList recent =
+        GetURLRequestTracker(context)->GetRecentlyDeceased();
 
     DrawCommandButton("Clear", "clear-urlrequest-graveyard", out);
 
@@ -493,8 +512,7 @@ class URLRequestRecentSubSection : public SubSection {
     for (size_t i = 0; i < recent.size(); ++i) {
       // Reverse the list order, so we dispay from most recent to oldest.
       size_t index = recent.size() - i - 1;
-      OutputURLAndLoadLog(recent[index].original_url,
-                          recent[index].load_log, out);
+      OutputURLAndLoadLog(recent[index], out);
     }
     out->append("</ol>");
   }
@@ -542,16 +560,14 @@ class SocketStreamLiveSubSection : public SubSection {
   }
 
   virtual void OutputBody(URLRequestContext* context, std::string* out) {
-    std::vector<net::SocketStream*> sockets =
-        context->socket_stream_tracker()->GetLiveRequests();
+    PassiveLogCollector::RequestInfoList sockets =
+        GetSocketStreamTracker(context)->GetLiveRequests();
 
     out->append("<ol>");
     for (size_t i = 0; i < sockets.size(); ++i) {
       // Reverse the list order, so we dispay from most recent to oldest.
       size_t index = sockets.size() - i - 1;
-      OutputURLAndLoadLog(sockets[index]->url(),
-                          sockets[index]->load_log(),
-                          out);
+      OutputURLAndLoadLog(sockets[index], out);
     }
     out->append("</ol>");
   }
@@ -564,8 +580,8 @@ class SocketStreamRecentSubSection : public SubSection {
   }
 
   virtual void OutputBody(URLRequestContext* context, std::string* out) {
-    RequestTracker<net::SocketStream>::RecentRequestInfoList recent =
-        context->socket_stream_tracker()->GetRecentlyDeceased();
+    PassiveLogCollector::RequestInfoList recent =
+    GetSocketStreamTracker(context)->GetRecentlyDeceased();
 
     DrawCommandButton("Clear", "clear-socketstream-graveyard", out);
 
@@ -573,8 +589,7 @@ class SocketStreamRecentSubSection : public SubSection {
     for (size_t i = 0; i < recent.size(); ++i) {
       // Reverse the list order, so we dispay from most recent to oldest.
       size_t index = recent.size() - i - 1;
-      OutputURLAndLoadLog(recent[index].original_url,
-                          recent[index].load_log, out);
+      OutputURLAndLoadLog(recent[index], out);
     }
     out->append("</ol>");
   }
@@ -600,11 +615,12 @@ class AllSubSections : public SubSection {
   }
 };
 
-bool HandleCommand(const std::string& command, URLRequestContext* context) {
+bool HandleCommand(const std::string& command,
+                   URLRequestContext* context) {
   if (StartsWithASCII(command, "full-logging-", true)) {
     bool enable_full_logging = (command == "full-logging-enable");
-    context->url_request_tracker()->SetUnbounded(enable_full_logging);
-    context->socket_stream_tracker()->SetUnbounded(enable_full_logging);
+    GetURLRequestTracker(context)->SetUnbounded(enable_full_logging);
+    GetSocketStreamTracker(context)->SetUnbounded(enable_full_logging);
     return true;
   }
 
@@ -616,12 +632,12 @@ bool HandleCommand(const std::string& command, URLRequestContext* context) {
   }
 
   if (command == "clear-urlrequest-graveyard") {
-    context->url_request_tracker()->ClearRecentlyDeceased();
+    GetURLRequestTracker(context)->ClearRecentlyDeceased();
     return true;
   }
 
   if (command == "clear-socketstream-graveyard") {
-    context->socket_stream_tracker()->ClearRecentlyDeceased();
+    GetSocketStreamTracker(context)->ClearRecentlyDeceased();
     return true;
   }
 
@@ -674,8 +690,8 @@ void ProcessQueryStringCommands(URLRequestContext* context,
 // logging, and clear some of the already logged data.
 void DrawControlsHeader(URLRequestContext* context, std::string* data) {
   bool is_full_logging_enabled =
-      context->url_request_tracker()->IsUnbounded() &&
-      context->socket_stream_tracker()->IsUnbounded();
+      GetURLRequestTracker(context)->IsUnbounded() &&
+      GetSocketStreamTracker(context)->IsUnbounded();
 
   data->append("<div style='margin-bottom: 10px'>");
 
@@ -703,7 +719,8 @@ bool ViewNetInternalsJob::GetData(std::string* mime_type,
   mime_type->assign("text/html");
   charset->assign("UTF-8");
 
-  URLRequestContext* context = request_->context();
+  URLRequestContext* context =
+      static_cast<URLRequestContext*>(request_->context());
 
   data->clear();
 

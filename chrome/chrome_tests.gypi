@@ -800,6 +800,7 @@
         'browser/net/chrome_url_request_context_unittest.cc',
         'browser/net/dns_host_info_unittest.cc',
         'browser/net/dns_master_unittest.cc',
+        'browser/net/passive_log_collector_unittest.cc',
         'browser/net/resolve_proxy_msg_helper_unittest.cc',
         'browser/net/test_url_fetcher_factory.cc',
         'browser/net/test_url_fetcher_factory.h',

@@ -237,7 +237,7 @@ TransportSocket::TransportSocket(talk_base::AsyncSocket* socket,
 }
 
 int TransportSocket::Connect(net::CompletionCallback* callback,
-                             net::LoadLog* /* load_log */) {
+                             const net::BoundNetLog& /* net_log */) {
   connect_callback_ = callback;
   return socket_->Connect(addr_);
 }

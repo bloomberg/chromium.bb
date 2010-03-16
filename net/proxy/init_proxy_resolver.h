@@ -10,10 +10,11 @@
 
 #include "googleurl/src/gurl.h"
 #include "net/base/completion_callback.h"
+#include "net/base/net_log.h"
 
 namespace net {
 
-class LoadLog;
+class BoundNetLog;
 class ProxyConfig;
 class ProxyResolver;
 class ProxyScriptFetcher;
@@ -47,7 +48,7 @@ class InitProxyResolver {
   // Apply the PAC settings of |config| to |resolver_|.
   int Init(const ProxyConfig& config,
            CompletionCallback* callback,
-           LoadLog* load_log);
+           const BoundNetLog& net_log);
 
  private:
   enum State {
@@ -102,7 +103,7 @@ class InitProxyResolver {
   UrlList pac_urls_;
   State next_state_;
 
-  scoped_refptr<LoadLog> load_log_;
+  BoundNetLog net_log_;
 
   DISALLOW_COPY_AND_ASSIGN(InitProxyResolver);
 };

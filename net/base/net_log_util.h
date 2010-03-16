@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_BASE_LOAD_LOG_UTIL_H_
-#define NET_BASE_LOAD_LOG_UTIL_H_
+#ifndef NET_BASE_NET_LOG_UTIL_H_
+#define NET_BASE_NET_LOG_UTIL_H_
 
 #include <string>
 #include <vector>
 
 #include "base/basictypes.h"
-#include "net/base/load_log.h"
+#include "net/base/net_log.h"
 
 namespace net {
 
-// The LoadLogUtil utility class contains methods to analyze and visualize
-// LoadLogs.
+// The NetLogUtil utility class contains methods to analyze and visualize
+// NetLog entries.
 
-class LoadLogUtil {
+class NetLogUtil {
  public:
   struct EventDuration {
-    LoadLog::EventType event;
+    NetLog::EventType event;
     base::TimeDelta duration;
   };
   typedef std::vector<EventDuration> EventDurationList;
@@ -63,12 +63,13 @@ class LoadLogUtil {
   //   - Log entries added by AddEvent() have no prefix.
   //   - Time units are given as milliseconds.
   //
-  static std::string PrettyPrintAsEventTree(const LoadLog* log);
+  static std::string PrettyPrintAsEventTree(
+      const std::vector<NetLog::Entry>& entries, size_t num_entries_truncated);
 
  private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(LoadLogUtil);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(NetLogUtil);
 };
 
 }  // namespace net
 
-#endif  // NET_BASE_LOAD_LOG_UTIL_H_
+#endif  // NET_BASE_NET_LOG_UTIL_H_

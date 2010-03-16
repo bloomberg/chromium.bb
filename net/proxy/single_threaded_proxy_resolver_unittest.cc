@@ -4,8 +4,8 @@
 
 #include "base/waitable_event.h"
 #include "googleurl/src/gurl.h"
-#include "net/base/load_log.h"
-#include "net/base/load_log_unittest.h"
+#include "net/base/net_log.h"
+#include "net/base/net_log_unittest.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/proxy/proxy_info.h"
@@ -32,7 +32,7 @@ class MockProxyResolver : public ProxyResolver {
                              ProxyInfo* results,
                              CompletionCallback* callback,
                              RequestHandle* request,
-                             LoadLog* load_log) {
+                             const BoundNetLog& net_log) {
     if (resolve_latency_ms_)
       PlatformThread::Sleep(resolve_latency_ms_);
 
@@ -41,8 +41,8 @@ class MockProxyResolver : public ProxyResolver {
     EXPECT_TRUE(callback == NULL);
     EXPECT_TRUE(request == NULL);
 
-    // Write something into |load_log| (doesn't really have any meaning.)
-    LoadLog::BeginEvent(load_log, LoadLog::TYPE_PROXY_RESOLVER_V8_DNS_RESOLVE);
+    // Write something into |net_log| (doesn't really have any meaning.)
+    net_log.BeginEvent(NetLog::TYPE_PROXY_RESOLVER_V8_DNS_RESOLVE);
 
     results->UseNamedProxy(query_url.host());
 
@@ -124,14 +124,14 @@ class BlockableProxyResolver : public MockProxyResolver {
                              ProxyInfo* results,
                              CompletionCallback* callback,
                              RequestHandle* request,
-                             LoadLog* load_log) {
+                             const BoundNetLog& net_log) {
     if (should_block_) {
       blocked_.Signal();
       unblocked_.Wait();
     }
 
     return MockProxyResolver::GetProxyForURL(
-        query_url, results, callback, request, load_log);
+        query_url, results, callback, request, net_log);
   }
 
  private:
@@ -158,10 +158,10 @@ TEST(SingleThreadedProxyResolverTest, Basic) {
 
   // Start request 0.
   TestCompletionCallback callback0;
-  scoped_refptr<LoadLog> log0(new LoadLog(LoadLog::kUnbounded));
+  CapturingBoundNetLog log0(CapturingNetLog::kUnbounded);
   ProxyInfo results0;
   rv = resolver.GetProxyForURL(
-      GURL("http://request0"), &results0, &callback0, NULL, log0);
+      GURL("http://request0"), &results0, &callback0, NULL, log0.bound());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // Wait for request 0 to finish.
@@ -171,7 +171,7 @@ TEST(SingleThreadedProxyResolverTest, Basic) {
 
   // The mock proxy resolver should have written 1 log entry. And
   // on completion, this should have been copied into |log0|.
-  EXPECT_EQ(1u, log0->entries().size());
+  EXPECT_EQ(1u, log0.entries().size());
 
   // Start 3 more requests (request1 to request3).
 
@@ -221,9 +221,9 @@ TEST(SingleThreadedProxyResolverTest, Basic) {
   EXPECT_EQ(1, mock->purge_count());
 }
 
-// Tests that the LoadLog is updated to include the time the request was waiting
+// Tests that the NetLog is updated to include the time the request was waiting
 // to be scheduled to a thread.
-TEST(SingleThreadedProxyResolverTest, UpdatesLoadLogWithThreadWait) {
+TEST(SingleThreadedProxyResolverTest, UpdatesNetLogWithThreadWait) {
   BlockableProxyResolver* mock = new BlockableProxyResolver;
   SingleThreadedProxyResolver resolver(mock);
 
@@ -236,26 +236,26 @@ TEST(SingleThreadedProxyResolverTest, UpdatesLoadLogWithThreadWait) {
   ProxyResolver::RequestHandle request0;
   TestCompletionCallback callback0;
   ProxyInfo results0;
-  scoped_refptr<LoadLog> log0(new LoadLog(LoadLog::kUnbounded));
+  CapturingBoundNetLog log0(CapturingNetLog::kUnbounded);
   rv = resolver.GetProxyForURL(
-      GURL("http://request0"), &results0, &callback0, &request0, log0);
+      GURL("http://request0"), &results0, &callback0, &request0, log0.bound());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // Start 2 more requests (request1 and request2).
 
   TestCompletionCallback callback1;
   ProxyInfo results1;
-  scoped_refptr<LoadLog> log1(new LoadLog(LoadLog::kUnbounded));
+  CapturingBoundNetLog log1(CapturingNetLog::kUnbounded);
   rv = resolver.GetProxyForURL(
-      GURL("http://request1"), &results1, &callback1, NULL, log1);
+      GURL("http://request1"), &results1, &callback1, NULL, log1.bound());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   ProxyResolver::RequestHandle request2;
   TestCompletionCallback callback2;
   ProxyInfo results2;
-  scoped_refptr<LoadLog> log2(new LoadLog(LoadLog::kUnbounded));
+  CapturingBoundNetLog log2(CapturingNetLog::kUnbounded);
   rv = resolver.GetProxyForURL(
-      GURL("http://request2"), &results2, &callback2, &request2, log2);
+      GURL("http://request2"), &results2, &callback2, &request2, log2.bound());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // Unblock the worker thread so the requests can continue running.
@@ -263,28 +263,32 @@ TEST(SingleThreadedProxyResolverTest, UpdatesLoadLogWithThreadWait) {
   mock->Unblock();
 
   // Check that request 0 completed as expected.
-  // The LoadLog only has 1 entry (that came from the mock proxy resolver.)
+  // The NetLog only has 1 entry (that came from the mock proxy resolver.)
   EXPECT_EQ(0, callback0.WaitForResult());
   EXPECT_EQ("PROXY request0:80", results0.ToPacString());
-  ASSERT_EQ(1u, log0->entries().size());
+  ASSERT_EQ(1u, log0.entries().size());
 
   // Check that request 1 completed as expected.
   EXPECT_EQ(1, callback1.WaitForResult());
   EXPECT_EQ("PROXY request1:80", results1.ToPacString());
-  ASSERT_EQ(3u, log1->entries().size());
+  ASSERT_EQ(3u, log1.entries().size());
   EXPECT_TRUE(LogContainsBeginEvent(
-      *log1, 0, LoadLog::TYPE_WAITING_FOR_SINGLE_PROXY_RESOLVER_THREAD));
+      log1.entries(), 0,
+      NetLog::TYPE_WAITING_FOR_SINGLE_PROXY_RESOLVER_THREAD));
   EXPECT_TRUE(LogContainsEndEvent(
-      *log1, 1, LoadLog::TYPE_WAITING_FOR_SINGLE_PROXY_RESOLVER_THREAD));
+      log1.entries(), 1,
+      NetLog::TYPE_WAITING_FOR_SINGLE_PROXY_RESOLVER_THREAD));
 
   // Check that request 2 completed as expected.
   EXPECT_EQ(2, callback2.WaitForResult());
   EXPECT_EQ("PROXY request2:80", results2.ToPacString());
-  ASSERT_EQ(3u, log2->entries().size());
+  ASSERT_EQ(3u, log2.entries().size());
   EXPECT_TRUE(LogContainsBeginEvent(
-      *log2, 0, LoadLog::TYPE_WAITING_FOR_SINGLE_PROXY_RESOLVER_THREAD));
+      log2.entries(), 0,
+      NetLog::TYPE_WAITING_FOR_SINGLE_PROXY_RESOLVER_THREAD));
   EXPECT_TRUE(LogContainsEndEvent(
-      *log2, 1, LoadLog::TYPE_WAITING_FOR_SINGLE_PROXY_RESOLVER_THREAD));
+      log2.entries(), 1,
+      NetLog::TYPE_WAITING_FOR_SINGLE_PROXY_RESOLVER_THREAD));
 }
 
 // Cancel a request which is in progress, and then cancel a request which

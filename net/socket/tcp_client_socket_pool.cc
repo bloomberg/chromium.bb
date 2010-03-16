@@ -9,7 +9,7 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/time.h"
-#include "net/base/load_log.h"
+#include "net/base/net_log.h"
 #include "net/base/net_errors.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/client_socket_handle.h"
@@ -38,8 +38,8 @@ TCPConnectJob::TCPConnectJob(
     ClientSocketFactory* client_socket_factory,
     HostResolver* host_resolver,
     Delegate* delegate,
-    LoadLog* load_log)
-    : ConnectJob(group_name, timeout_duration, delegate, load_log),
+    const BoundNetLog& net_log)
+    : ConnectJob(group_name, timeout_duration, delegate, net_log),
       params_(params),
       client_socket_factory_(client_socket_factory),
       ALLOW_THIS_IN_INITIALIZER_LIST(
@@ -113,7 +113,7 @@ int TCPConnectJob::DoLoop(int result) {
 int TCPConnectJob::DoResolveHost() {
   next_state_ = kStateResolveHostComplete;
   return resolver_.Resolve(params_.destination(), &addresses_, &callback_,
-                           load_log());
+                           net_log());
 }
 
 int TCPConnectJob::DoResolveHostComplete(int result) {
@@ -126,7 +126,7 @@ int TCPConnectJob::DoTCPConnect() {
   next_state_ = kStateTCPConnectComplete;
   set_socket(client_socket_factory_->CreateTCPClientSocket(addresses_));
   connect_start_time_ = base::TimeTicks::Now();
-  return socket()->Connect(&callback_, load_log());
+  return socket()->Connect(&callback_, net_log());
 }
 
 int TCPConnectJob::DoTCPConnectComplete(int result) {
@@ -160,11 +160,11 @@ ConnectJob* TCPClientSocketPool::TCPConnectJobFactory::NewConnectJob(
     const std::string& group_name,
     const PoolBase::Request& request,
     ConnectJob::Delegate* delegate,
-    LoadLog* load_log) const {
+    const BoundNetLog& net_log) const {
   return new TCPConnectJob(
       group_name, request.params(),
       base::TimeDelta::FromSeconds(kTCPConnectJobTimeoutInSeconds),
-      client_socket_factory_, host_resolver_, delegate, load_log);
+      client_socket_factory_, host_resolver_, delegate, net_log);
 }
 
 TCPClientSocketPool::TCPClientSocketPool(
@@ -187,20 +187,18 @@ int TCPClientSocketPool::RequestSocket(
     RequestPriority priority,
     ClientSocketHandle* handle,
     CompletionCallback* callback,
-    LoadLog* load_log) {
+    const BoundNetLog& net_log) {
   const TCPSocketParams* casted_params =
       static_cast<const TCPSocketParams*>(params);
 
-  if (LoadLog::IsUnbounded(load_log)) {
-    LoadLog::AddString(
-        load_log,
-        StringPrintf("Requested TCP socket to: %s [port %d]",
-                     casted_params->destination().hostname().c_str(),
-                     casted_params->destination().port()));
+  if (net_log.HasListener()) {
+    net_log.AddString(StringPrintf("Requested TCP socket to: %s [port %d]",
+                      casted_params->destination().hostname().c_str(),
+                      casted_params->destination().port()));
   }
 
   return base_.RequestSocket(group_name, *casted_params, priority, handle,
-                             callback, load_log);
+                             callback, net_log);
 }
 
 void TCPClientSocketPool::CancelRequest(

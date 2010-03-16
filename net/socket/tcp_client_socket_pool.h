@@ -50,7 +50,7 @@ class TCPConnectJob : public ConnectJob {
                 ClientSocketFactory* client_socket_factory,
                 HostResolver* host_resolver,
                 Delegate* delegate,
-                LoadLog* load_log);
+                const BoundNetLog& net_log);
   virtual ~TCPConnectJob();
 
   // ConnectJob methods.
@@ -112,7 +112,7 @@ class TCPClientSocketPool : public ClientSocketPool {
                             RequestPriority priority,
                             ClientSocketHandle* handle,
                             CompletionCallback* callback,
-                            LoadLog* load_log);
+                            const BoundNetLog& net_log);
 
   virtual void CancelRequest(const std::string& group_name,
                              const ClientSocketHandle* handle);
@@ -153,7 +153,7 @@ class TCPClientSocketPool : public ClientSocketPool {
         const std::string& group_name,
         const PoolBase::Request& request,
         ConnectJob::Delegate* delegate,
-        LoadLog* load_log) const;
+        const BoundNetLog& net_log) const;
 
    private:
     ClientSocketFactory* const client_socket_factory_;

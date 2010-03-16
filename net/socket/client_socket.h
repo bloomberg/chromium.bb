@@ -10,7 +10,7 @@
 namespace net {
 
 class AddressList;
-class LoadLog;
+class BoundNetLog;
 
 class ClientSocket : public Socket {
  public:
@@ -28,7 +28,8 @@ class ClientSocket : public Socket {
   //
   // Connect may also be called again after a call to the Disconnect method.
   //
-  virtual int Connect(CompletionCallback* callback, LoadLog* load_log) = 0;
+  virtual int Connect(CompletionCallback* callback,
+                      const BoundNetLog& net_log) = 0;
 
   // Called to disconnect a socket.  Does nothing if the socket is already
   // disconnected.  After calling Disconnect it is possible to call Connect

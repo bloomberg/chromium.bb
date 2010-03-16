@@ -8,7 +8,9 @@
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/dns_global.h"
+#include "chrome/browser/net/passive_log_collector.h"
 #include "chrome/browser/net/url_fetcher.h"
 #include "chrome/common/chrome_switches.h"
 #include "net/base/mapped_host_resolver.h"
@@ -124,6 +126,7 @@ void IOThread::Init() {
   DCHECK(!globals_);
   globals_ = new Globals;
 
+  globals_->net_log.reset(new ChromeNetLog());
   globals_->network_change_notifier.reset(
       net::NetworkChangeNotifier::CreateDefaultNetworkChangeNotifier());
   globals_->host_resolver =
@@ -241,4 +244,8 @@ void IOThread::ChangedToOnTheRecordOnIOThread() {
     if (host_cache)
       host_cache->clear();
   }
+  // Clear all of the passively logged data.
+  // TODO(eroman): this is a bit heavy handed, really all we need to do is
+  //               clear the data pertaining to off the record context.
+  globals_->net_log->passive_collector()->Clear();
 }

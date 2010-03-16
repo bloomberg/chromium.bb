@@ -30,7 +30,7 @@ class MockClientSocket : public ClientSocket {
   MockClientSocket() : connected_(false) {}
 
   // ClientSocket methods:
-  virtual int Connect(CompletionCallback* callback, LoadLog* /* load_log */) {
+  virtual int Connect(CompletionCallback* callback, const BoundNetLog& /* net_log */) {
     connected_ = true;
     return OK;
   }
@@ -68,7 +68,7 @@ class MockFailingClientSocket : public ClientSocket {
   MockFailingClientSocket() {}
 
   // ClientSocket methods:
-  virtual int Connect(CompletionCallback* callback, LoadLog* /* load_log */) {
+  virtual int Connect(CompletionCallback* callback, const BoundNetLog& /* net_log */) {
     return ERR_CONNECTION_FAILED;
   }
 
@@ -112,7 +112,7 @@ class MockPendingClientSocket : public ClientSocket {
         is_connected_(false) {}
 
   // ClientSocket methods:
-  virtual int Connect(CompletionCallback* callback, LoadLog* /* load_log */) {
+  virtual int Connect(CompletionCallback* callback, const BoundNetLog& /* net_log */) {
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         method_factory_.NewRunnableMethod(

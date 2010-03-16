@@ -225,7 +225,7 @@ void URLRequestNewFtpJob::StartTransaction() {
   int rv;
   if (transaction_.get()) {
     rv = transaction_->Start(
-        &request_info_, &start_callback_, request_->load_log());
+        &request_info_, &start_callback_, request_->net_log());
     if (rv == net::ERR_IO_PENDING)
       return;
   } else {

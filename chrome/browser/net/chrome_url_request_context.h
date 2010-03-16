@@ -201,6 +201,9 @@ class ChromeURLRequestContext : public URLRequestContext {
   void set_appcache_service(ChromeAppCacheService* service) {
     appcache_service_ = service;
   }
+  void set_net_log(net::NetLog* net_log) {
+    net_log_ = net_log;
+  }
 
   // Callback for when the accept language changes.
   void OnAcceptLanguageChange(const std::string& accept_language);
@@ -229,10 +232,6 @@ class ChromeURLRequestContext : public URLRequestContext {
   // if the request matches a Blacklist rule and cookies should be blocked.
   bool InterceptCookie(const URLRequest* request,
                        const std::string& cookie) const;
-
-  // Filter for url_request_tracker(), that prevents "chrome://" requests from
-  // being tracked by "about:net-internals".
-  static bool ShouldTrackRequest(const GURL& url);
 
   DISALLOW_COPY_AND_ASSIGN(ChromeURLRequestContext);
 };

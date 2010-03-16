@@ -13,6 +13,7 @@
 #include "chrome/common/net/dns.h"
 #include "net/base/host_resolver.h"
 
+class ChromeNetLog;
 class ListValue;
 
 namespace chrome_browser_net {
@@ -27,6 +28,7 @@ class NetworkChangeNotifier;
 class IOThread : public BrowserProcessSubThread {
  public:
   struct Globals {
+    scoped_ptr<ChromeNetLog> net_log;
     scoped_ptr<net::NetworkChangeNotifier> network_change_notifier;
     // TODO(willchan): Stop reference counting HostResolver.  It's owned by
     // IOThread now.

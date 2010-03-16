@@ -15,7 +15,7 @@
 #include "talk/base/ssladapter.h"
 
 namespace net {
-class LoadLog;
+class BoundNetLog;
 }  // namespace net
 
 namespace notifier {
@@ -38,7 +38,7 @@ class TransportSocket : public net::ClientSocket, public sigslot::has_slots<> {
   // net::ClientSocket implementation
 
   virtual int Connect(net::CompletionCallback* callback,
-                      net::LoadLog* /* load_log */);
+                      const net::BoundNetLog& /* net_log */);
   virtual void Disconnect();
   virtual bool IsConnected() const;
   virtual bool IsConnectedAndIdle() const;
