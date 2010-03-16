@@ -2,8 +2,8 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.03">
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
-		<string key="IBDocument.SystemVersion">9L31a</string>
-		<string key="IBDocument.InterfaceBuilderVersion">677</string>
+		<string key="IBDocument.SystemVersion">9L30</string>
+		<string key="IBDocument.InterfaceBuilderVersion">680</string>
 		<string key="IBDocument.AppKitVersion">949.54</string>
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
@@ -222,7 +222,7 @@
 										<reference key="NSSupport" ref="605141190"/>
 										<reference key="NSControlView" ref="954452115"/>
 										<int key="NSButtonFlags">1211912703</int>
-										<int key="NSButtonFlags2">130</int>
+										<int key="NSButtonFlags2">2</int>
 										<object class="NSCustomResource" key="NSNormalImage" id="437518122">
 											<string key="NSClassName">NSImage</string>
 											<string key="NSResourceName">NSSwitch</string>
@@ -249,7 +249,7 @@
 										<reference key="NSSupport" ref="605141190"/>
 										<reference key="NSControlView" ref="556808145"/>
 										<int key="NSButtonFlags">1211912703</int>
-										<int key="NSButtonFlags2">130</int>
+										<int key="NSButtonFlags2">2</int>
 										<reference key="NSNormalImage" ref="437518122"/>
 										<reference key="NSAlternateImage" ref="387174411"/>
 										<string key="NSAlternateContents"/>
@@ -271,7 +271,7 @@
 										<reference key="NSSupport" ref="605141190"/>
 										<reference key="NSControlView" ref="763356826"/>
 										<int key="NSButtonFlags">1211912703</int>
-										<int key="NSButtonFlags2">130</int>
+										<int key="NSButtonFlags2">2</int>
 										<reference key="NSNormalImage" ref="437518122"/>
 										<reference key="NSAlternateImage" ref="387174411"/>
 										<string key="NSAlternateContents"/>
@@ -293,7 +293,7 @@
 										<reference key="NSSupport" ref="605141190"/>
 										<reference key="NSControlView" ref="642124660"/>
 										<int key="NSButtonFlags">1211912703</int>
-										<int key="NSButtonFlags2">130</int>
+										<int key="NSButtonFlags2">2</int>
 										<reference key="NSNormalImage" ref="437518122"/>
 										<reference key="NSAlternateImage" ref="387174411"/>
 										<string key="NSAlternateContents"/>
@@ -1091,7 +1091,14 @@
 					<string key="className">NSWindow</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/cocoa/nswindow_local_state.h</string>
+						<string key="minorKey">browser/cocoa/chrome_browser_window.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSWindow</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">browser/cocoa/themed_window.h</string>
 					</object>
 				</object>
 			</object>
