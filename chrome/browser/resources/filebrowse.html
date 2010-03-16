@@ -963,14 +963,22 @@ function downloadUpdated(results) {
         }
 
       } else {
+        var status = undefined;
+        var pause = undefined;
         for (var x = 0; x < element.children.length; x++) {
            if (element.children[x].className == 'downloadstatus') {
               var child = element.children[x];
-              element.removeChild(child);
+              status = child;
            } else if (element.children[x].className == 'downloadpause') {
               var child = element.children[x];
-              element.removeChild(child);
+              pause = child;
            }
+        }
+        if (status) {
+          element.removeChild(status);
+        }
+        if (pause) {
+          element.removeChild(pause);
         }
         element.className = 'filebrowserow';
       }
