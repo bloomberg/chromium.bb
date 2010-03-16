@@ -1523,7 +1523,6 @@ bool BrowserView::CanClose() const {
 }
 
 int BrowserView::NonClientHitTest(const gfx::Point& point) {
-
 #if defined(OS_WIN)
   // The following code is not in the LayoutManager because it's
   // independent of layout and also depends on the ResizeCorner which
@@ -1684,6 +1683,8 @@ void BrowserView::Init() {
       devtools_container_,
       views::SingleSplitView::VERTICAL_SPLIT);
   contents_split_->SetID(VIEW_ID_CONTENTS_SPLIT);
+  contents_split_->
+      SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_WEB_CONTENTS));
   SkColor bg_color = GetWidget()->GetThemeProvider()->
       GetColor(BrowserThemeProvider::COLOR_TOOLBAR);
   contents_split_->set_background(

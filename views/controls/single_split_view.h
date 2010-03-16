@@ -25,6 +25,10 @@ class SingleSplitView : public views::View {
 
   virtual void Layout();
 
+  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+  virtual bool GetAccessibleName(std::wstring* name);
+  virtual void SetAccessibleName(const std::wstring& name);
+
   // SingleSplitView's preferred size is the sum of the preferred widths
   // and the max of the heights.
   virtual gfx::Size GetPreferredSize();
@@ -52,7 +56,7 @@ class SingleSplitView : public views::View {
 
  private:
   // Returns true if |x| or |y| is over the divider.
-   bool IsPointInDivider(const gfx::Point& p);
+  bool IsPointInDivider(const gfx::Point& p);
 
   // Returns width in case of horizontal split and height otherwise.
   int GetPrimaryAxisSize() {
@@ -80,6 +84,9 @@ class SingleSplitView : public views::View {
   int divider_offset_;
 
   bool resize_leading_on_bounds_change_;
+
+  // The accessible name of this view.
+  std::wstring accessible_name_;
 
   DISALLOW_COPY_AND_ASSIGN(SingleSplitView);
 };
