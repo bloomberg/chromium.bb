@@ -111,7 +111,7 @@ bool NotificationProvider::ShowText(const WebNotification& notification,
   DCHECK(!notification.isHTML());
   return Send(new ViewHostMsg_ShowDesktopNotificationText(view_->routing_id(),
               GURL(view_->webview()->mainFrame()->url()).GetOrigin(),
-              GURL(notification.icon()),
+              notification.iconURL(),
               notification.title(), notification.body(), id));
 }
 
