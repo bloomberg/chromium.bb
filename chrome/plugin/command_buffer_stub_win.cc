@@ -4,7 +4,6 @@
 
 #include <windows.h>
 
-#include "chrome/common/gpu_messages.h"
 #include "chrome/plugin/command_buffer_stub.h"
 
 namespace {
@@ -43,10 +42,6 @@ LRESULT WINAPI WndProc(HWND handle,
   }
 }
 }  // namespace anonymous
-
-void CommandBufferStub::NotifyRepaint() {
-  Send(new GpuCommandBufferMsg_NotifyRepaint(route_id_));
-}
 
 bool CommandBufferStub::InitializePlatformSpecific() {
   // Subclass window.

@@ -60,6 +60,10 @@ bool CommandBufferStub::Send(IPC::Message* message) {
   return channel_->Send(message);
 }
 
+void CommandBufferStub::NotifyRepaint() {
+  Send(new GpuCommandBufferMsg_NotifyRepaint(route_id_));
+}
+
 void CommandBufferStub::OnInitialize(int32 size,
                                      base::SharedMemoryHandle* ring_buffer) {
   DCHECK(!command_buffer_.get());
@@ -115,9 +119,9 @@ void CommandBufferStub::OnInitialize(int32 size,
   processor_->SetSwapBuffersCallback(
       NewCallback(this,
                   &CommandBufferStub::SwapBuffersCallback));
-        processor_->SetTransportDIBAllocAndFree(
-            NewCallback(this, &CommandBufferStub::AllocTransportDIB),
-            NewCallback(this, &CommandBufferStub::FreeTransportDIB));
+  processor_->SetTransportDIBAllocAndFree(
+      NewCallback(this, &CommandBufferStub::AllocTransportDIB),
+      NewCallback(this, &CommandBufferStub::FreeTransportDIB));
 #endif
 }
 
@@ -189,6 +193,7 @@ void CommandBufferStub::DestroyPlatformSpecific() {
 #if defined(OS_MACOSX)
 void CommandBufferStub::OnSetWindowSize(int32 width, int32 height) {
   // Try using the IOSurface version first.
+  bool notify_repaint = false;
   uint64 new_backing_store = processor_->SetWindowSizeForIOSurface(width,
                                                                    height);
   if (new_backing_store) {
@@ -198,6 +203,7 @@ void CommandBufferStub::OnSetWindowSize(int32 width, int32 height) {
         width,
         height,
         new_backing_store));
+    notify_repaint = true;
   } else {
     // If |new_backing_store| is 0, it might mean that the IOSurface APIs are
     // not available.  In this case, see if TransportDIBs are supported.
@@ -210,7 +216,12 @@ void CommandBufferStub::OnSetWindowSize(int32 width, int32 height) {
           width,
           height,
           transport_dib));
+      notify_repaint = true;
     }
+  }
+  if (notify_repaint) {
+    // Indicate to the client that at least one repaint is needed.
+    NotifyRepaint();
   }
 }
 
