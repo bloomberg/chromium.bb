@@ -85,27 +85,6 @@ void Combobox::PaintFocusBorder(gfx::Canvas* canvas) {
     View::PaintFocusBorder(canvas);
 }
 
-bool Combobox::GetAccessibleName(std::wstring* name) {
-  DCHECK(name);
-
-  if (!accessible_name_.empty()) {
-    *name = accessible_name_;
-    return true;
-  }
-  return false;
-}
-
-bool Combobox::GetAccessibleRole(AccessibilityTypes::Role* role) {
-  DCHECK(role);
-
-  *role = AccessibilityTypes::ROLE_COMBOBOX;
-  return true;
-}
-
-void Combobox::SetAccessibleName(const std::wstring& name) {
-  accessible_name_.assign(name);
-}
-
 void Combobox::Focus() {
   // Forward the focus to the wrapper.
   if (native_wrapper_)

@@ -676,14 +676,10 @@ long ViewAccessibility::MSAARole(AccessibilityTypes::Role role) {
       return ROLE_SYSTEM_BUTTONMENU;
     case AccessibilityTypes::ROLE_CHECKBUTTON:
       return ROLE_SYSTEM_CHECKBUTTON;
-    case AccessibilityTypes::ROLE_COMBOBOX:
-      return ROLE_SYSTEM_COMBOBOX;
     case AccessibilityTypes::ROLE_GRAPHIC:
       return ROLE_SYSTEM_GRAPHIC;
     case AccessibilityTypes::ROLE_GROUPING:
       return ROLE_SYSTEM_GROUPING;
-    case AccessibilityTypes::ROLE_LINK:
-      return ROLE_SYSTEM_LINK;
     case AccessibilityTypes::ROLE_PAGETAB:
       return ROLE_SYSTEM_PAGETAB;
     case AccessibilityTypes::ROLE_PAGETABLIST:
