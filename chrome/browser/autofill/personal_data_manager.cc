@@ -17,9 +17,15 @@
 #include "chrome/browser/pref_service.h"
 #include "chrome/common/pref_names.h"
 
+namespace {
+
 // The minimum number of fields that must contain user data and have known types
 // before autofill will attempt to import the data into a profile.
-static const int kMinImportSize = 5;
+const int kMinImportSize = 5;
+
+const char kUnlabeled[] = "Unlabeled";
+
+}  // namespace
 
 PersonalDataManager::~PersonalDataManager() {
   CancelPendingQuery(&pending_profiles_query_);
@@ -199,6 +205,27 @@ bool PersonalDataManager::ImportFormData(
     imported_credit_card_.reset();
 
   return true;
+}
+
+void PersonalDataManager::SaveImportedFormData() {
+  if (profile_->IsOffTheRecord())
+    return;
+
+  if (imported_profile_.get()) {
+    imported_profile_->set_label(ASCIIToUTF16(kUnlabeled));
+
+    std::vector<AutoFillProfile> profiles;
+    profiles.push_back(*imported_profile_);
+    SetProfiles(&profiles);
+  }
+
+  if (imported_credit_card_.get()) {
+    imported_credit_card_->set_label(ASCIIToUTF16(kUnlabeled));
+
+    std::vector<CreditCard> credit_cards;
+    credit_cards.push_back(*imported_credit_card_);
+    SetCreditCards(&credit_cards);
+  }
 }
 
 void PersonalDataManager::SetProfiles(std::vector<AutoFillProfile>* profiles) {

@@ -39,7 +39,11 @@ bool AutoFillInfoBarDelegate::ShouldExpire(
 }
 
 void AutoFillInfoBarDelegate::InfoBarClosed() {
-  Cancel();
+  if (host_) {
+    host_->OnInfoBarClosed();
+    host_ = NULL;
+  }
+
   // This will delete us.
   ConfirmInfoBarDelegate::InfoBarClosed();
 }
@@ -79,7 +83,7 @@ bool AutoFillInfoBarDelegate::Accept() {
 
 bool AutoFillInfoBarDelegate::Cancel() {
   if (host_) {
-    host_->Reset();
+    host_->OnInfoBarCancelled();
     host_ = NULL;
   }
   return true;

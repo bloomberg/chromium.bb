@@ -25,13 +25,19 @@ class MockAutoFillManager : public AutoFillManager {
         responded_(false),
         accepted_(false) {}
 
+  virtual void OnInfoBarClosed() {
+    EXPECT_FALSE(responded_);
+    responded_ = true;
+    accepted_ = true;
+  }
+
   virtual void OnInfoBarAccepted() {
     EXPECT_FALSE(responded_);
     responded_ = true;
     accepted_ = true;
   }
 
-  virtual void Reset() {
+  virtual void OnInfoBarCancelled() {
     EXPECT_FALSE(responded_);
     responded_ = true;
     accepted_ = false;
@@ -82,7 +88,7 @@ TEST_F(AutoFillInfoBarDelegateTest, ShouldExpire) {
 TEST_F(AutoFillInfoBarDelegateTest, InfoBarClosed) {
   infobar_->InfoBarClosed();
   EXPECT_TRUE(autofill_manager_->responded());
-  EXPECT_FALSE(autofill_manager_->accepted());
+  EXPECT_TRUE(autofill_manager_->accepted());
 }
 
 TEST_F(AutoFillInfoBarDelegateTest, GetMessageText) {

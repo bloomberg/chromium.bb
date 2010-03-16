@@ -63,6 +63,10 @@ class PersonalDataManager : public WebDataServiceConsumer,
   bool ImportFormData(const std::vector<FormStructure*>& form_structures,
                       AutoFillManager* autofill_manager);
 
+  // Saves |imported_profile_| and |imported_credit_card_| to the WebDB if they
+  // exist.
+  void SaveImportedFormData();
+
   // Sets |web_profiles_| to the contents of |profiles| and updates the web
   // database by adding, updating and removing profiles.  Sets the unique ID of
   // newly-added profiles.

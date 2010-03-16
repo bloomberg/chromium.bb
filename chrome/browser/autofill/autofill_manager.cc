@@ -47,7 +47,7 @@ void AutoFillManager::RegisterUserPrefs(PrefService* prefs) {
 
 void AutoFillManager::FormFieldValuesSubmitted(
     const webkit_glue::FormFieldValues& form) {
-  if (!personal_data_)
+  if (!IsAutoFillEnabled())
     return;
 
   // Grab a copy of the form data.
@@ -56,16 +56,16 @@ void AutoFillManager::FormFieldValuesSubmitted(
   if (!upload_form_structure_->IsAutoFillable())
     return;
 
-  // Determine the possible field types.
+  // Determine the possible field types and upload the form structure to the
+  // PersonalDataManager.
   DeterminePossibleFieldTypes(upload_form_structure_.get());
+  HandleSubmit();
 
   PrefService* prefs = tab_contents_->profile()->GetPrefs();
   bool infobar_shown = prefs->GetBoolean(prefs::kAutoFillInfoBarShown);
   if (!infobar_shown) {
     // Ask the user for permission to save form information.
     infobar_.reset(new AutoFillInfoBarDelegate(tab_contents_, this));
-  } else if (IsAutoFillEnabled()) {
-    HandleSubmit();
   }
 }
 
@@ -218,8 +218,6 @@ void AutoFillManager::OnAutoFillDialogApply(
   // Save the personal data.
   personal_data_->SetProfiles(profiles);
   personal_data_->SetCreditCards(credit_cards);
-
-  HandleSubmit();
 }
 
 void AutoFillManager::OnPersonalDataLoaded() {
@@ -236,11 +234,25 @@ void AutoFillManager::OnPersonalDataLoaded() {
       tab_contents_->profile()->GetOriginalProfile());
 }
 
+void AutoFillManager::OnInfoBarClosed() {
+  DCHECK(personal_data_);
+
+  PrefService* prefs = tab_contents_->profile()->GetPrefs();
+  prefs->SetBoolean(prefs::kAutoFillEnabled, true);
+
+  // Save the imported form data as a profile.
+  personal_data_->SaveImportedFormData();
+}
+
 void AutoFillManager::OnInfoBarAccepted() {
   DCHECK(personal_data_);
 
   PrefService* prefs = tab_contents_->profile()->GetPrefs();
   prefs->SetBoolean(prefs::kAutoFillEnabled, true);
+
+  // This is the first time the user is interacting with AutoFill, so set the
+  // uploaded form structure as the initial profile in the AutoFillDialog.
+  personal_data_->SaveImportedFormData();
 
   // If the personal data manager has not loaded the data yet, set ourselves as
   // its observer so that we can listen for the OnPersonalDataLoaded signal.
@@ -248,6 +260,11 @@ void AutoFillManager::OnInfoBarAccepted() {
     personal_data_->SetObserver(this);
   else
     OnPersonalDataLoaded();
+}
+
+void AutoFillManager::OnInfoBarCancelled() {
+  PrefService* prefs = tab_contents_->profile()->GetPrefs();
+  prefs->SetBoolean(prefs::kAutoFillEnabled, false);
 }
 
 void AutoFillManager::Reset() {
