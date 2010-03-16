@@ -2834,5 +2834,5 @@ BUG38227 DEFER : fast/dom/HTMLProgressElement/set-progress-properties.html = MIS
 BUG_JIANLI MAC : printing/return-from-printing-mode.html = IMAGE
 
 // WebKit roll 56004 -> 56026
-BUG_JIANLI : fast/events/continuous-platform-wheelevent-in-scrolling-div.html = TIMEOUT
-BUG_JIANLI : fast/events/platform-wheelevent-in-scrolling-div.html = TIMEOUT
+BUG38278 : fast/events/continuous-platform-wheelevent-in-scrolling-div.html = TIMEOUT
+BUG38278 : fast/events/platform-wheelevent-in-scrolling-div.html = TIMEOUT
