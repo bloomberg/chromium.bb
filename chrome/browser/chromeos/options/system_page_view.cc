@@ -308,18 +308,16 @@ void TouchpadSection::NotifyPrefChanged(const std::wstring* pref_name) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TextInputSection
+// LanguageSection
 
 // TextInput section for text input settings.
-class TextInputSection : public SettingsPageSection,
-                         public views::ButtonListener {
+class LanguageSection : public SettingsPageSection,
+                        public views::ButtonListener {
  public:
-  explicit TextInputSection(Profile* profile);
-  virtual ~TextInputSection() {}
+  explicit LanguageSection(Profile* profile);
+  virtual ~LanguageSection() {}
 
  private:
-  views::NativeButton* customize_languages_button_;
-
   // Overridden from SettingsPageSection:
   virtual void InitContents(GridLayout* layout);
 
@@ -327,17 +325,27 @@ class TextInputSection : public SettingsPageSection,
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event);
 
-  DISALLOW_COPY_AND_ASSIGN(TextInputSection);
+  views::NativeButton* customize_languages_button_;
+
+  DISALLOW_COPY_AND_ASSIGN(LanguageSection);
 };
 
-// TODO(satorux): Should change the class name as well as the section
-// title.  "Text Input" doesn't seem to be a good section name.
-TextInputSection::TextInputSection(Profile* profile)
+LanguageSection::LanguageSection(Profile* profile)
     : SettingsPageSection(profile,
-                          IDS_OPTIONS_SETTINGS_SECTION_TITLE_TEXT_INPUT) {
+                          IDS_OPTIONS_SETTINGS_SECTION_TITLE_LANGUAGE) {
 }
 
-void TextInputSection::ButtonPressed(
+void LanguageSection::InitContents(GridLayout* layout) {
+  // Add the customize button.
+  layout->StartRow(0, single_column_view_set_id());
+  customize_languages_button_ = new views::NativeButton(
+      this,
+      l10n_util::GetString(IDS_OPTIONS_SETTINGS_LANGUAGES_CUSTOMIZE));
+  layout->AddView(customize_languages_button_, 1, 1,
+                  GridLayout::LEADING, GridLayout::CENTER);
+}
+
+void LanguageSection::ButtonPressed(
     views::Button* sender, const views::Event& event) {
   if (sender == customize_languages_button_) {
     views::Window* window = views::Window::CreateChromeWindow(
@@ -347,16 +355,6 @@ void TextInputSection::ButtonPressed(
     window->SetIsAlwaysOnTop(true);
     window->Show();
   }
-}
-
-void TextInputSection::InitContents(GridLayout* layout) {
-  // Add the customize button.
-  layout->StartRow(0, single_column_view_set_id());
-  customize_languages_button_ = new views::NativeButton(
-      this,
-      l10n_util::GetString(IDS_OPTIONS_SETTINGS_LANGUAGES_CUSTOMIZE));
-  layout->AddView(customize_languages_button_, 1, 1,
-                  GridLayout::LEADING, GridLayout::CENTER);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -381,7 +379,7 @@ void SystemPageView::InitControlLayout() {
   layout->AddView(new TouchpadSection(profile()));
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   layout->StartRow(0, single_column_view_set_id);
-  layout->AddView(new TextInputSection(profile()));
+  layout->AddView(new LanguageSection(profile()));
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 }
 
