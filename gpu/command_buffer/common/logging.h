@@ -9,6 +9,17 @@
 #define GPU_COMMAND_BUFFER_COMMON_LOGGING_H_
 
 #ifndef __native_client__
+#if defined(TRUSTED_GPU_LIBRARY_BUILD)
+// Turn off base/logging macros for the trusted library build.
+// TODO(dspringer): remove this once building trusted plugins in the Native
+// Client SDK is no longer needed.
+#define OMIT_DLOG_AND_DCHECK 1
+#define GPU_LOG DLOG
+#define GPU_CHECK DCHECK
+#else
+#define GPU_LOG LOG
+#define GPU_CHECK CHECK
+#endif  // defined(TRUSTED_GPU_LIBRARY_BUILD)
 #include "base/logging.h"
 #else
 #include <sstream>

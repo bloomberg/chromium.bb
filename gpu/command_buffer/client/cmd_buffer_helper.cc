@@ -83,7 +83,7 @@ void CommandBufferHelper::WaitForToken(int32 token) {
   Flush();
   while (last_token_read_ < token) {
     if (get_ == put_) {
-      LOG(FATAL) << "Empty command buffer while waiting on a token.";
+      GPU_LOG(FATAL) << "Empty command buffer while waiting on a token.";
       return;
     }
     // Do not loop forever if the flush fails, meaning the command buffer reader
@@ -99,7 +99,7 @@ void CommandBufferHelper::WaitForToken(int32 token) {
 // The function will return early if an error occurs, in which case the
 // available space may not be available.
 void CommandBufferHelper::WaitForAvailableEntries(int32 count) {
-  CHECK(count < entry_count_);
+  GPU_CHECK(count < entry_count_);
   if (put_ + count > entry_count_) {
     // There's not enough room between the current put and the end of the
     // buffer, so we need to wrap. We will add noops all the way to the end,
