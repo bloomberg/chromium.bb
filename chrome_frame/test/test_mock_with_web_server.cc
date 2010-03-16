@@ -574,7 +574,7 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_BackForward) {
 
   // We have reached url 2 and have 1 back & 1 forward entries for url 1 & 3
   // Go back to url 1 now
-  mock.ExpectNavigationAndSwitchSequence(kSubFrameUrl2);
+  mock.ExpectNavigation(kSubFrameUrl2);
   EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kSubFrameUrl2)))
       .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(
           CreateFunctor(ReceivePointer(mock.web_browser2_),
@@ -582,7 +582,7 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_BackForward) {
 
   // We have reached url 1 and have 0 back & 2 forward entries for url 2 & 3
   // Go back to url 1 now
-  mock.ExpectNavigationAndSwitchSequence(kSubFrameUrl1);
+  mock.ExpectNavigation(kSubFrameUrl1);
   EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kSubFrameUrl1)))
       .WillOnce(CloseBrowserMock(&mock));
   EXPECT_CALL(mock, OnQuit()).WillOnce(QUIT_LOOP(loop));
@@ -849,14 +849,14 @@ TEST_F(ChromeFrameTestWithWebServer,
       .WillOnce(testing::DoAll(
           DelaySendMouseClick(&mock, &loop, 0, 10, 10, simulate_input::RIGHT),
           SendExtendedKeysEnter(&loop, 500, VK_DOWN, 1, simulate_input::NONE)));
-  mock.ExpectNavigationAndSwitchSequence(kSubFrameUrl1);
+  mock.ExpectNavigation(kSubFrameUrl1);
 
   // Go forward using Rt-Click + DOWN + DOWN + ENTER
   EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kSubFrameUrl1)))
       .WillOnce(testing::DoAll(
           DelaySendMouseClick(&mock, &loop, 0, 10, 10, simulate_input::RIGHT),
           SendExtendedKeysEnter(&loop, 500, VK_DOWN, 2, simulate_input::NONE)));
-  mock.ExpectNavigationAndSwitchSequence(kSubFrameUrl2);
+  mock.ExpectNavigation(kSubFrameUrl2);
 
   EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kSubFrameUrl2)))
       .WillOnce(CloseBrowserMock(&mock));
@@ -1087,13 +1087,13 @@ TEST_F(ChromeFrameTestWithWebServer,
           SetFocusToChrome(&mock),
           DelaySendScanCode(&loop, 500, bkspace, simulate_input::NONE)));
 
-  mock.ExpectNavigationAndSwitchSequence(kSubFrameUrl1);
+  mock.ExpectNavigation(kSubFrameUrl1);
   EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kSubFrameUrl1)))
       .WillOnce(testing::DoAll(
           SetFocusToChrome(&mock),
           DelaySendScanCode(&loop, 1500, bkspace, simulate_input::SHIFT)));
 
-  mock.ExpectNavigationAndSwitchSequence(kSubFrameUrl2);
+  mock.ExpectNavigation(kSubFrameUrl2);
   EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kSubFrameUrl2)))
       .WillOnce(CloseBrowserMock(&mock));
 
