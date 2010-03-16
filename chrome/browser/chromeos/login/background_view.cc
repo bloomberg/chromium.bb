@@ -27,15 +27,17 @@ BackgroundView::BackgroundView() : status_area_(NULL) {
   InitStatusArea();
 }
 
-static gfx::Rect CalculateWindowBounds(const gfx::Rect& bounds) {
-  if (!bounds.IsEmpty())
-    return bounds;
+void BackgroundView::Init() {
+  InitStatusArea();
+}
 
-  return views::Screen::GetMonitorWorkAreaNearestWindow(NULL);
+void BackgroundView::Teardown() {
+  RemoveAllChildViews(true);
+  status_area_ = NULL;
 }
 
 static void ResetXCursor() {
-  // TOOD(sky): nuke this once new window manager is in place.
+  // TODO(sky): nuke this once new window manager is in place.
   // This gets rid of the ugly X default cursor.
   Display* display = x11_util::GetXDisplay();
   Cursor cursor = XCreateFontCursor(display, XC_left_ptr);
@@ -53,7 +55,7 @@ views::Widget* BackgroundView::CreateWindowContainingView(
 
   views::WidgetGtk* window =
       new views::WidgetGtk(views::WidgetGtk::TYPE_WINDOW);
-  window->Init(NULL, CalculateWindowBounds(bounds));
+  window->Init(NULL, bounds);
   chromeos::WmIpc::instance()->SetWindowType(
       window->GetNativeView(),
       chromeos::WmIpc::WINDOW_TYPE_LOGIN_BACKGROUND,
@@ -66,12 +68,6 @@ views::Widget* BackgroundView::CreateWindowContainingView(
   gdk_window_set_back_pixmap(gdk_window, NULL, false);
 
   return window;
-}
-
-void BackgroundView::RecreateStatusArea() {
-  RemoveAllChildViews(true);
-  status_area_ = NULL;
-  InitStatusArea();
 }
 
 void BackgroundView::Layout() {
@@ -109,6 +105,7 @@ bool BackgroundView::IsButtonVisible(const views::View* button_view) const {
 }
 
 void BackgroundView::InitStatusArea() {
+  DCHECK(status_area_ == NULL);
   status_area_ = new StatusAreaView(this);
   status_area_->Init();
   AddChildView(status_area_);

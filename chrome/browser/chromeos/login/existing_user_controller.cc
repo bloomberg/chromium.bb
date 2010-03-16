@@ -35,8 +35,8 @@ const size_t kNoLogin = -1;
 
 ExistingUserController::ExistingUserController(
     const std::vector<UserManager::User>& users,
-    const gfx::Size& background_size)
-    : background_size_(background_size),
+    const gfx::Rect& background_bounds)
+    : background_bounds_(background_bounds),
       background_window_(NULL),
       background_view_(NULL),
       index_of_view_logging_in_(kNoLogin) {
@@ -45,8 +45,7 @@ ExistingUserController::ExistingUserController(
 
   // Caclulate the max number of users from available screen size.
   size_t max_users = kMaxUsers;
-  int screen_width =
-      views::Screen::GetMonitorAreaNearestPoint(gfx::Point(0, 0)).width();
+  int screen_width = background_bounds.width();
   if (screen_width > 0) {
     max_users = std::max(static_cast<size_t>(2), std::min(kMaxUsers,
         static_cast<size_t>((screen_width - UserController::kSize)
@@ -65,7 +64,7 @@ ExistingUserController::ExistingUserController(
 
 void ExistingUserController::Init() {
   background_window_ = BackgroundView::CreateWindowContainingView(
-      gfx::Rect(0, 0, background_size_.width(), background_size_.height()),
+      background_bounds_,
       &background_view_);
   background_window_->Show();
   for (size_t i = 0; i < controllers_.size(); ++i) {
@@ -99,7 +98,7 @@ void ExistingUserController::ProcessWmMessage(const WmIpc::Message& message,
 
   // WizardController takes care of deleting itself when done.
   WizardController* controller = new WizardController();
-  controller->Init(std::string(), false);
+  controller->Init(std::string(), background_bounds_, false);
   controller->Show();
 
   // Give the background window to the controller.
@@ -134,7 +133,7 @@ void ExistingUserController::Login(UserController* source,
 void ExistingUserController::OnLoginFailure(const std::string error) {
   LOG(INFO) << "OnLoginFailure";
 
-  // TODO: alert the user in some way to the failure.
+  // TODO(sky): alert the user in some way to the failure.
 
   controllers_[index_of_view_logging_in_]->SetPasswordEnabled(true);
 

@@ -40,11 +40,10 @@ class ExistingUserController : public WmMessageListener::Observer,
                                public UserController::Delegate,
                                public LoginStatusConsumer {
  public:
-  // |login_size| is the size of the login window that is passed to the
-  // WizardWindow. |background_size| is not used if the user logs into using an
-  // existing user.
+  // Initializes views for known users. |background_bounds| determines the
+  // bounds of background view.
   ExistingUserController(const std::vector<UserManager::User>& users,
-                         const gfx::Size& background_size);
+                         const gfx::Rect& background_bounds);
 
   // Creates and shows the appropriate set of windows.
   void Init();
@@ -68,8 +67,8 @@ class ExistingUserController : public WmMessageListener::Observer,
   virtual void OnLoginFailure(const std::string error);
   virtual void OnLoginSuccess(const std::string username);
 
-  // Size of the background window.
-  const gfx::Size background_size_;
+  // Bounds of the background window.
+  const gfx::Rect background_bounds_;
 
   // Background window/view.
   views::Widget* background_window_;

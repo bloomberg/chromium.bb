@@ -20,6 +20,10 @@ namespace chromeos {
 class BackgroundView;
 }
 
+namespace gfx {
+class Rect;
+}
+
 namespace views {
 class Views;
 class Widget;
@@ -41,8 +45,10 @@ class WizardController : public chromeos::ScreenObserver,
   // Shows the first screen defined by |first_screen_name| or by default
   // if the parameter is empty. |paint_background| indicates whether a
   // background should be painted. If |paint_background| is false, the window is
-  // made transparent.
+  // made transparent. |screen_bounds| are used to calculate position of the
+  // wizard screen.
   void Init(const std::string& first_screen_name,
+            const gfx::Rect& screen_bounds,
             bool paint_background);
 
   // Returns the view that contains all the other views.
@@ -52,7 +58,7 @@ class WizardController : public chromeos::ScreenObserver,
   void Show();
 
   // Creates and shows a background window.
-  void ShowBackground(const gfx::Size& size);
+  void ShowBackground(const gfx::Rect& bounds);
 
   // Takes ownership of the specified background widget and view.
   void OwnBackground(views::Widget* background_widget,

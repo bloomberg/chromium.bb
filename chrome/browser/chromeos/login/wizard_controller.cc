@@ -9,6 +9,7 @@
 #include <sys/types.h>
 
 #include <string>
+#include <vector>
 
 #include "app/resource_bundle.h"
 #include "app/l10n_util.h"
@@ -86,6 +87,21 @@ class ContentView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(ContentView);
 };
 
+
+// Returns bounds of the screen to use for login wizard.
+// The rect is centered within the default monitor and sized accordingly if
+// |size| is not empty. Otherwise the whole monitor is occupied.
+gfx::Rect CalculateScreenBounds(const gfx::Size& size) {
+  gfx::Rect bounds(views::Screen::GetMonitorWorkAreaNearestWindow(NULL));
+  if (!size.IsEmpty()) {
+    int horizontal_diff = bounds.width() - size.width();
+    int vertical_diff = bounds.height() - size.height();
+    bounds.Inset(horizontal_diff / 2, vertical_diff / 2);
+  }
+
+  return bounds;
+}
+
 }  // namespace
 
 // Initialize default controller.
@@ -117,17 +133,18 @@ WizardController::~WizardController() {
 }
 
 void WizardController::Init(const std::string& first_screen_name,
+                            const gfx::Rect& screen_bounds,
                             bool paint_background) {
   DCHECK(!contents_);
 
-  gfx::Rect screen_bounds =
-      views::Screen::GetMonitorWorkAreaNearestWindow(NULL);
-  int window_x = (screen_bounds.width() - kWizardScreenWidth) / 2;
-  int window_y = (screen_bounds.height() - kWizardScreenHeight) / 2;
+  int offset_x = (screen_bounds.width() - kWizardScreenWidth) / 2;
+  int offset_y = (screen_bounds.height() - kWizardScreenHeight) / 2;
+  int window_x = screen_bounds.x() + offset_x;
+  int window_y = screen_bounds.y() + offset_y;
 
-  contents_ = new ContentView(paint_background, window_x, window_y,
-                              screen_bounds.width(),
-                              screen_bounds.height());
+  contents_ = new ContentView(paint_background,
+                              offset_x, offset_y,
+                              screen_bounds.width(), screen_bounds.height());
 
   views::WidgetGtk* window =
       new views::WidgetGtk(views::WidgetGtk::TYPE_WINDOW);
@@ -159,10 +176,11 @@ void WizardController::Show() {
   widget_->Show();
 }
 
-void WizardController::ShowBackground(const gfx::Size& size) {
+void WizardController::ShowBackground(const gfx::Rect& bounds) {
   DCHECK(!background_widget_);
-  background_widget_ = chromeos::BackgroundView::CreateWindowContainingView(
-      gfx::Rect(0, 0, size.width(), size.height()), &background_view_);
+  background_widget_ =
+      chromeos::BackgroundView::CreateWindowContainingView(bounds,
+                                                           &background_view_);
   background_widget_->Show();
 }
 
@@ -240,13 +258,16 @@ void WizardController::OnUpdateCompleted() {
 ///////////////////////////////////////////////////////////////////////////////
 // WizardController, private:
 void WizardController::OnSwitchLanguage(const std::string& lang) {
-  // Delete all views that may may reference locale-specific data.
+  // Delete all views that may reference locale-specific data.
   SetCurrentScreen(NULL);
   network_screen_.reset();
   login_screen_.reset();
   account_screen_.reset();
   update_screen_.reset();
   contents_->RemoveAllChildViews(true);
+  // Can't delete background view since we don't know how to recreate it.
+  if (background_view_)
+    background_view_->Teardown();
 
   // Switch the locale.
   ResourceBundle::CleanupSharedInstance();
@@ -257,7 +278,7 @@ void WizardController::OnSwitchLanguage(const std::string& lang) {
 
   // Recreate view hierarchy and return to the wizard screen.
   if (background_view_)
-    background_view_->RecreateStatusArea();
+    background_view_->Init();
   OnExit(chromeos::ScreenObserver::LANGUAGE_CHANGED);
 }
 
@@ -333,6 +354,8 @@ namespace browser {
 // Declared in browser_dialogs.h so that others don't need to depend on our .h.
 void ShowLoginWizard(const std::string& first_screen_name,
                      const gfx::Size& size) {
+  gfx::Rect screen_bounds(CalculateScreenBounds(size));
+
   if (first_screen_name.empty() && chromeos::CrosLibrary::EnsureLoaded() &&
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableLoginImages)) {
@@ -340,13 +363,14 @@ void ShowLoginWizard(const std::string& first_screen_name,
         chromeos::UserManager::Get()->GetUsers();
     if (!users.empty()) {
       // ExistingUserController deletes itself.
-      (new chromeos::ExistingUserController(users, size))->Init();
+      (new chromeos::ExistingUserController(users, screen_bounds))->Init();
       return;
     }
   }
+
   WizardController* controller = new WizardController();
-  controller->ShowBackground(size);
-  controller->Init(first_screen_name, true);
+  controller->ShowBackground(screen_bounds);
+  controller->Init(first_screen_name, screen_bounds, true);
   controller->Show();
   if (chromeos::CrosLibrary::EnsureLoaded())
     chromeos::LoginLibrary::Get()->EmitLoginPromptReady();
