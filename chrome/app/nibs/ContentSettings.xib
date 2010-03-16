@@ -2,13 +2,13 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.03">
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
-		<string key="IBDocument.SystemVersion">9L31a</string>
-		<string key="IBDocument.InterfaceBuilderVersion">677</string>
+		<string key="IBDocument.SystemVersion">9L30</string>
+		<string key="IBDocument.InterfaceBuilderVersion">680</string>
 		<string key="IBDocument.AppKitVersion">949.54</string>
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="2"/>
+			<integer value="14"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -89,7 +89,7 @@
 																<int key="NSTag">1</int>
 																<reference key="NSControlView" ref="924450148"/>
 																<int key="NSButtonFlags">1211912703</int>
-																<int key="NSButtonFlags2">128</int>
+																<int key="NSButtonFlags2">0</int>
 																<object class="NSButtonImageSource" key="NSAlternateImage" id="212721146">
 																	<string key="NSImageName">NSRadioButton</string>
 																</object>
@@ -105,7 +105,7 @@
 																<reference key="NSSupport" ref="793851927"/>
 																<reference key="NSControlView" ref="924450148"/>
 																<int key="NSButtonFlags">1211912703</int>
-																<int key="NSButtonFlags2">128</int>
+																<int key="NSButtonFlags2">0</int>
 																<object class="NSImage" key="NSNormalImage">
 																	<int key="NSImageFlags">549453824</int>
 																	<string key="NSSize">{18, 18}</string>
@@ -213,7 +213,7 @@ QXBwbGUgQ29tcHV0ZXIsIEluYy4sIDIwMDUAAAAAA</bytes>
 																<reference key="NSSupport" ref="793851927"/>
 																<reference key="NSControlView" ref="924450148"/>
 																<int key="NSButtonFlags">1211912703</int>
-																<int key="NSButtonFlags2">128</int>
+																<int key="NSButtonFlags2">0</int>
 																<object class="NSImage" key="NSNormalImage">
 																	<int key="NSImageFlags">549453824</int>
 																	<string key="NSSize">{18, 18}</string>
@@ -343,7 +343,7 @@ AHUAcgBlAG4ALQBMAEMARABMAEMARAAgAGMAbwBsAG8AcgBpAABtbW9kAAAAAAAABhAAAJyBAAAAAMG9
 															<string key="NSContents">Radio</string>
 															<reference key="NSSupport" ref="793851927"/>
 															<int key="NSButtonFlags">1211912703</int>
-															<int key="NSButtonFlags2">128</int>
+															<int key="NSButtonFlags2">0</int>
 															<object class="NSImage" key="NSNormalImage">
 																<int key="NSImageFlags">549453824</int>
 																<string key="NSSize">{18, 18}</string>
@@ -482,7 +482,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 															<reference key="NSSupport" ref="793851927"/>
 															<reference key="NSControlView" ref="255262147"/>
 															<int key="NSButtonFlags">1211912703</int>
-															<int key="NSButtonFlags2">130</int>
+															<int key="NSButtonFlags2">2</int>
 															<object class="NSCustomResource" key="NSNormalImage" id="1054520235">
 																<string key="NSClassName">NSImage</string>
 																<string key="NSResourceName">NSSwitch</string>
@@ -509,7 +509,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 															<reference key="NSSupport" ref="793851927"/>
 															<reference key="NSControlView" ref="927218761"/>
 															<int key="NSButtonFlags">1211912703</int>
-															<int key="NSButtonFlags2">130</int>
+															<int key="NSButtonFlags2">2</int>
 															<reference key="NSNormalImage" ref="1054520235"/>
 															<reference key="NSAlternateImage" ref="269053493"/>
 															<string key="NSAlternateContents"/>
@@ -596,7 +596,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 																<int key="NSTag">1</int>
 																<reference key="NSControlView" ref="157704852"/>
 																<int key="NSButtonFlags">1211912703</int>
-																<int key="NSButtonFlags2">128</int>
+																<int key="NSButtonFlags2">0</int>
 																<reference key="NSAlternateImage" ref="212721146"/>
 																<string key="NSAlternateContents"/>
 																<string key="NSKeyEquivalent"/>
@@ -610,7 +610,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 																<reference key="NSSupport" ref="793851927"/>
 																<reference key="NSControlView" ref="157704852"/>
 																<int key="NSButtonFlags">1211912703</int>
-																<int key="NSButtonFlags2">128</int>
+																<int key="NSButtonFlags2">0</int>
 																<object class="NSImage" key="NSNormalImage">
 																	<int key="NSImageFlags">549453824</int>
 																	<string key="NSSize">{18, 18}</string>
@@ -719,7 +719,7 @@ QXBwbGUgQ29tcHV0ZXIsIEluYy4sIDIwMDUAAAAAA</bytes>
 															<string key="NSContents">Radio</string>
 															<reference key="NSSupport" ref="793851927"/>
 															<int key="NSButtonFlags">1211912703</int>
-															<int key="NSButtonFlags2">128</int>
+															<int key="NSButtonFlags2">0</int>
 															<object class="NSImage" key="NSNormalImage">
 																<int key="NSImageFlags">549453824</int>
 																<string key="NSSize">{18, 18}</string>
@@ -848,7 +848,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 																<int key="NSTag">1</int>
 																<reference key="NSControlView" ref="35110844"/>
 																<int key="NSButtonFlags">1211912703</int>
-																<int key="NSButtonFlags2">128</int>
+																<int key="NSButtonFlags2">0</int>
 																<reference key="NSAlternateImage" ref="212721146"/>
 																<string key="NSAlternateContents"/>
 																<string key="NSKeyEquivalent"/>
@@ -862,7 +862,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 																<reference key="NSSupport" ref="793851927"/>
 																<reference key="NSControlView" ref="35110844"/>
 																<int key="NSButtonFlags">1211912703</int>
-																<int key="NSButtonFlags2">128</int>
+																<int key="NSButtonFlags2">0</int>
 																<object class="NSImage" key="NSNormalImage">
 																	<int key="NSImageFlags">549453824</int>
 																	<string key="NSSize">{18, 18}</string>
@@ -971,7 +971,7 @@ QXBwbGUgQ29tcHV0ZXIsIEluYy4sIDIwMDUAAAAAA</bytes>
 															<string key="NSContents">Radio</string>
 															<reference key="NSSupport" ref="793851927"/>
 															<int key="NSButtonFlags">1211912703</int>
-															<int key="NSButtonFlags2">128</int>
+															<int key="NSButtonFlags2">0</int>
 															<object class="NSImage" key="NSNormalImage">
 																<int key="NSImageFlags">549453824</int>
 																<string key="NSSize">{18, 18}</string>
@@ -1100,7 +1100,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 																<int key="NSTag">1</int>
 																<reference key="NSControlView" ref="564209934"/>
 																<int key="NSButtonFlags">1211912703</int>
-																<int key="NSButtonFlags2">128</int>
+																<int key="NSButtonFlags2">0</int>
 																<reference key="NSAlternateImage" ref="212721146"/>
 																<string key="NSAlternateContents"/>
 																<string key="NSKeyEquivalent"/>
@@ -1114,7 +1114,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 																<reference key="NSSupport" ref="793851927"/>
 																<reference key="NSControlView" ref="564209934"/>
 																<int key="NSButtonFlags">1211912703</int>
-																<int key="NSButtonFlags2">128</int>
+																<int key="NSButtonFlags2">0</int>
 																<object class="NSImage" key="NSNormalImage">
 																	<int key="NSImageFlags">549453824</int>
 																	<string key="NSSize">{18, 18}</string>
@@ -1223,7 +1223,7 @@ QXBwbGUgQ29tcHV0ZXIsIEluYy4sIDIwMDUAAAAAA</bytes>
 															<string key="NSContents">Radio</string>
 															<reference key="NSSupport" ref="793851927"/>
 															<int key="NSButtonFlags">1211912703</int>
-															<int key="NSButtonFlags2">128</int>
+															<int key="NSButtonFlags2">0</int>
 															<object class="NSImage" key="NSNormalImage">
 																<int key="NSImageFlags">549453824</int>
 																<string key="NSSize">{18, 18}</string>
@@ -1366,7 +1366,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 																<reference key="NSSupport" ref="793851927"/>
 																<reference key="NSControlView" ref="867780698"/>
 																<int key="NSButtonFlags">1211912703</int>
-																<int key="NSButtonFlags2">128</int>
+																<int key="NSButtonFlags2">0</int>
 																<object class="NSImage" key="NSNormalImage">
 																	<int key="NSImageFlags">549453824</int>
 																	<string key="NSSize">{18, 18}</string>
@@ -1475,7 +1475,7 @@ QXBwbGUgQ29tcHV0ZXIsIEluYy4sIDIwMDUAAAAAA</bytes>
 															<string key="NSContents">Radio</string>
 															<reference key="NSSupport" ref="793851927"/>
 															<int key="NSButtonFlags">1211912703</int>
-															<int key="NSButtonFlags2">128</int>
+															<int key="NSButtonFlags2">0</int>
 															<object class="NSImage" key="NSNormalImage">
 																<int key="NSImageFlags">549453824</int>
 																<string key="NSSize">{18, 18}</string>
@@ -1582,9 +1582,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 			</object>
 			<object class="NSCustomObject" id="644719285">
 				<string key="NSClassName">GTMUILocalizerAndLayoutTweaker</string>
-			</object>
-			<object class="NSUserDefaultsController" id="206286740">
-				<bool key="NSSharedInstance">YES</bool>
 			</object>
 		</object>
 		<object class="IBObjectContainer" key="IBDocument.Objects">
@@ -2386,11 +2383,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<reference key="object" ref="87777598"/>
 						<reference key="parent" ref="676037782"/>
 					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">77</int>
-						<reference key="object" ref="206286740"/>
-						<reference key="parent" ref="1002"/>
-					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -2705,6 +2697,13 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">browser/cocoa/tab_strip_model_observer_bridge.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSWindow</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">browser/cocoa/chrome_browser_window.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
