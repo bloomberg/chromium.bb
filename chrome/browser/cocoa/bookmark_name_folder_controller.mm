@@ -40,10 +40,11 @@
 
 - (void)runAsModalSheet {
   // Ping me when things change out from under us.
-  observer_.reset(new BookmarkModelObserverForCocoa(
-                    node_, profile_->GetBookmarkModel(),
-                    self,
-                    @selector(cancel:)));
+  if (node_)
+    observer_.reset(new BookmarkModelObserverForCocoa(
+                      node_, profile_->GetBookmarkModel(),
+                      self,
+                      @selector(cancel:)));
 
   [NSApp beginSheet:[self window]
      modalForWindow:parentWindow_
