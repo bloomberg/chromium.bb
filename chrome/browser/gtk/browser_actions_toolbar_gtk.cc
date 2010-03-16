@@ -582,8 +582,6 @@ gboolean BrowserActionsToolbarGtk::OnDragMotion(GtkWidget* widget,
     return FALSE;
 
   drop_index_ = x < kButtonSize ? 0 : x / (kButtonSize + kButtonPadding);
-  if (profile_->IsOffTheRecord())
-    drop_index_ = model_->IncognitoIndexToOriginal(drop_index_);
 
   // We will go ahead and reorder the child in order to provide visual feedback
   // to the user. We don't inform the model that it has moved until the drag
@@ -597,8 +595,12 @@ gboolean BrowserActionsToolbarGtk::OnDragMotion(GtkWidget* widget,
 
 void BrowserActionsToolbarGtk::OnDragEnd(GtkWidget* button,
                                          GdkDragContext* drag_context) {
-  if (drop_index_ != -1)
+  if (drop_index_ != -1) {
+    if (profile_->IsOffTheRecord())
+      drop_index_ = model_->IncognitoIndexToOriginal(drop_index_);
+
     model_->MoveBrowserAction(drag_button_->extension(), drop_index_);
+  }
 
   drag_button_ = NULL;
   drop_index_ = -1;

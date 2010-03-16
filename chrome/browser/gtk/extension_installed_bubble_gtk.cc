@@ -94,7 +94,10 @@ void ExtensionInstalledBubbleGtk::ShowInternal() {
     // its coordinates, so we force a check_resize here.
     gtk_container_check_resize(GTK_CONTAINER(
         browser_window->GetToolbar()->widget()));
-    DCHECK(reference_widget);
+    // If the widget is not visible then browser_window could be incognito
+    // with this extension disabled. Fall back to default position.
+    if (reference_widget && !GTK_WIDGET_VISIBLE(reference_widget))
+      reference_widget = NULL;
   } else if (type_ == PAGE_ACTION) {
     LocationBarViewGtk* location_bar_view =
         browser_window->GetToolbar()->GetLocationBarView();
