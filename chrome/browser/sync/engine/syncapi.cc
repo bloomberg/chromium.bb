@@ -1485,11 +1485,13 @@ void SyncManager::SyncInternal::Shutdown() {
   }
 
   // Shutdown the xmpp buzz connection.
-  LOG(INFO) << "P2P: Mediator logout started.";
   if (talk_mediator()) {
+    LOG(INFO) << "P2P: Mediator logout started.";
     talk_mediator()->Logout();
+    LOG(INFO) << "P2P: Mediator logout completed.";
+    talk_mediator_.reset();
+    LOG(INFO) << "P2P: Mediator destroyed.";
   }
-  LOG(INFO) << "P2P: Mediator logout completed.";
 
   if (dir_manager()) {
     dir_manager()->FinalSaveChangesForAll();

@@ -59,20 +59,8 @@ void MediatorThreadImpl::Run() {
   socket_server->WakeUp();
 #endif
 
-  do {
-#if defined(OS_WIN)
-    ::MSG message;
-    if (::PeekMessage(&message, NULL, 0, 0, PM_REMOVE)) {
-      ::TranslateMessage(&message);
-      ::DispatchMessage(&message);
-    }
-#endif
-    ProcessMessages(100);
-    if (pump_.get() && pump_->HasPendingTimeoutTask()) {
-      pump_->WakeTasks();
-    }
-    MessageLoop::current()->RunAllPending();
-  } while (!IsQuitting());
+  Post(this, CMD_PUMP_AUXILIARY_LOOPS);
+  ProcessMessages(talk_base::kForever);
 
 #if defined(OS_WIN)
   set_socketserver(old_socket_server);
@@ -80,11 +68,36 @@ void MediatorThreadImpl::Run() {
 #endif
 }
 
+void MediatorThreadImpl::PumpAuxiliaryLoops() {
+#if defined(OS_WIN)
+  ::MSG message;
+  if (::PeekMessage(&message, NULL, 0, 0, PM_REMOVE)) {
+    ::TranslateMessage(&message);
+    ::DispatchMessage(&message);
+  }
+#endif
+  if (pump_.get() && pump_->HasPendingTimeoutTask()) {
+    pump_->WakeTasks();
+  }
+  MessageLoop::current()->RunAllPending();
+  // We want to pump auxiliary loops every 100ms until this thread is stopped,
+  // at which point this call will do nothing.
+  PostDelayed(100, this, CMD_PUMP_AUXILIARY_LOOPS);
+}
+
 void MediatorThreadImpl::Login(const buzz::XmppClientSettings& settings) {
   Post(this, CMD_LOGIN, new LoginData(settings));
 }
 
+void MediatorThreadImpl::Stop() {
+  Thread::Stop();
+  CHECK(!login_.get() && !pump_.get()) << "Logout should be called prior to"
+      << "message queue exit.";
+}
+
 void MediatorThreadImpl::Logout() {
+  CHECK(!IsQuitting())
+      << "Logout should be called prior to message queue exit.";
   Post(this, CMD_DISCONNECT);
   Stop();
 }
@@ -124,6 +137,9 @@ void MediatorThreadImpl::OnMessage(talk_base::Message* msg) {
       break;
     case CMD_SUBSCRIBE_FOR_UPDATES:
       DoSubscribeForUpdates();
+      break;
+    case CMD_PUMP_AUXILIARY_LOOPS:
+      PumpAuxiliaryLoops();
       break;
     default:
       LOG(ERROR) << "P2P: Someone passed a bad message to the thread.";

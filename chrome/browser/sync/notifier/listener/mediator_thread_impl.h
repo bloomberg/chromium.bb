@@ -48,7 +48,8 @@ enum MEDIATOR_CMD {
   CMD_DISCONNECT,
   CMD_LISTEN_FOR_UPDATES,
   CMD_SEND_NOTIFICATION,
-  CMD_SUBSCRIBE_FOR_UPDATES
+  CMD_SUBSCRIBE_FOR_UPDATES,
+  CMD_PUMP_AUXILIARY_LOOPS,
 };
 
 // Used to pass authentication information from the mediator to the thread.
@@ -73,6 +74,7 @@ class MediatorThreadImpl
 
   // Start the thread.
   virtual void Start();
+  virtual void Stop();
   virtual void Run();
 
   // These are called from outside threads, by the talk mediator object.
@@ -94,6 +96,7 @@ class MediatorThreadImpl
   void DoListenForUpdates();
   void DoSendNotification();
   void DoStanzaLogging();
+  void PumpAuxiliaryLoops();
 
   // These handle messages indicating an event happened in the outside world.
   void OnUpdateListenerMessage();
