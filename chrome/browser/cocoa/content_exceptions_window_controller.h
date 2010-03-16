@@ -29,11 +29,11 @@ class UpdatingContentSettingsObserver;
   HostContentSettingsMap* settingsMap_;  // weak
   scoped_ptr<ContentExceptionsTableModel> model_;
 
-  // Set if "Ask" should be a valid option in the "action" popup.
+  // Is set if "Ask" should be a valid option in the "action" popup.
   BOOL showAsk_;
 
   // Listens for changes to the content settings and reloads the data when they
-  // change. See comment in |modelDidChange| in the mm file for details.
+  // change. See comment in -modelDidChange in the mm file for details.
   scoped_ptr<UpdatingContentSettingsObserver> tableObserver_;
 
   // If this is set to NO, notifications by |tableObserver_| are ignored. This
@@ -45,6 +45,8 @@ class UpdatingContentSettingsObserver;
   scoped_ptr<HostContentSettingsMap::HostSettingPair> newException_;
 }
 
+// Shows or makes frontmost the content exceptions window for |settingsType|.
+// Changes made by the user in the window are persisted in |settingsMap|.
 + (id)showForType:(ContentSettingsType)settingsType
       settingsMap:(HostContentSettingsMap*)settingsMap;
 

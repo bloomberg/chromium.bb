@@ -24,7 +24,8 @@ void ProcessEvents() {
                                              untilDate:nil
                                                 inMode:NSDefaultRunLoopMode
                                                dequeue:YES];
-    if (!next_event) break;
+    if (!next_event)
+      break;
     [NSApp sendEvent:next_event];
   }
 }

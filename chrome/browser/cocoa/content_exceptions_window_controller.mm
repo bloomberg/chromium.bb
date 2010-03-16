@@ -16,7 +16,7 @@
 #include "net/base/net_util.h"
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
-@interface ContentExceptionsWindowController(Private)
+@interface ContentExceptionsWindowController (Private)
 - (id)initWithType:(ContentSettingsType)settingsType
        settingsMap:(HostContentSettingsMap*)settingsMap;
 - (void)updateRow:(NSInteger)row
@@ -30,13 +30,13 @@
 @end
 
 ////////////////////////////////////////////////////////////////////////////////
-// UrlFormatter
+// HostnameFormatter
 
-// A simple formatter that only accepts text that vaguely looks like a hostname.
-@interface UrlFormatter : NSFormatter
+// A simple formatter that accepts text that vaguely looks like a hostname.
+@interface HostnameFormatter : NSFormatter
 @end
 
-@implementation UrlFormatter
+@implementation HostnameFormatter
 - (NSString*)stringForObjectValue:(id)object {
   if (![object isKindOfClass:[NSString class]])
     return nil;
@@ -68,8 +68,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 // UpdatingContentSettingsObserver
 
-// A UpdatingContentSettingsObserver that tells a window controller to update
-// its data on every notification.
+// UpdatingContentSettingsObserver is a notification observer that tells a
+// window controller to update its data on every notification.
 class UpdatingContentSettingsObserver : public NotificationObserver {
  public:
   UpdatingContentSettingsObserver(ContentExceptionsWindowController* controller)
@@ -202,7 +202,7 @@ static ContentExceptionsWindowController*
 
   NSCell* hostCell = 
       [[tableView_ tableColumnWithIdentifier:@"hostname"] dataCell];
-  [hostCell setFormatter:[[[UrlFormatter alloc] init] autorelease]];
+  [hostCell setFormatter:[[[HostnameFormatter alloc] init] autorelease]];
 }
 
 - (void)windowWillClose:(NSNotification*)notification {
@@ -217,7 +217,8 @@ static ContentExceptionsWindowController*
   return newException_.get() != NULL;
 }
 
-// Let esc close the window.
+// Let esc cancel editing if the user is currently editing a hostname. Else, let
+// esc close the window.
 - (void)cancel:(id)sender {
   if ([tableView_ currentEditor] != nil) {
     [tableView_ abortEditing];
@@ -279,7 +280,7 @@ static ContentExceptionsWindowController*
 - (IBAction)removeException:(id)sender {
   updatesEnabled_ = NO;
   NSIndexSet* selection = [tableView_ selectedRowIndexes];
-  [tableView_ deselectAll:self];  // Else we'll get a |setObjectValue:| later.
+  [tableView_ deselectAll:self];  // Else we'll get a -setObjectValue: later.
   DCHECK_GT([selection count], 0U);
   NSUInteger index = [selection lastIndex];
   while (index != NSNotFound) {
@@ -295,7 +296,7 @@ static ContentExceptionsWindowController*
 
 - (IBAction)removeAllExceptions:(id)sender {
   updatesEnabled_ = NO;
-  [tableView_ deselectAll:self];  // Else we'll get a |setObjectValue:| later.
+  [tableView_ deselectAll:self];  // Else we'll get a -setObjectValue: later.
   newException_.reset();
   model_->RemoveAll();
   updatesEnabled_ = YES;
@@ -353,7 +354,7 @@ static ContentExceptionsWindowController*
     setObjectValue:(id)object
     forTableColumn:(NSTableColumn*)tableColumn
                row:(NSInteger)row {
-  // |-remove:| and |-removeAll:| both call |tableView_ deselectAll:|, which
+  // -remove: and -removeAll: both call |tableView_|'s -deselectAll:, which
   // calls this method if a cell is currently being edited. Do not commit edits
   // of rows that are about to be deleted.
   if (!updatesEnabled_) {
@@ -421,11 +422,11 @@ static ContentExceptionsWindowController*
 }
 
 - (void)modelDidChange {
-  // Some calls on model_, e.g. RemoveException(), change something on the
+  // Some calls on |model_|, e.g. RemoveException(), change something on the
   // backing content settings map object (which sends a notification) and then
-  // change more stuff in model_. If model_ is deleted when the notification is
-  // sent, this second access causes a segmentation violation. Hence, disable
-  // resetting model_ while updates can be in progress.
+  // change more stuff in |model_|. If |model_| is deleted when the notification
+  // is sent, this second access causes a segmentation violation. Hence, disable
+  // resetting |model_| while updates can be in progress.
   if (!updatesEnabled_)
     return;
 
