@@ -11,6 +11,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/status/language_menu_l10n_util.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -65,13 +66,13 @@ enum {
 // XKB/IME language list to avoid conflict.
 const int kRadioGroupLanguage = 1 << 16;
 const int kRadioGroupNone = -1;
-const size_t kMaxLanguageNameLen = 7;
+const size_t kMaxLanguageNameLen = 3;
 const wchar_t kSpacer[] = L"MMMMMMM";
 
 // Returns the language name for the given |language|. Instead of input
 // method names like "Pinyin" and "Anthy", we'll show language names like
 // "Chinese (Simplified)" and "Japanese".
-std::string GetLanguageName(const chromeos::InputLanguage& language) {
+std::wstring GetLanguageName(const chromeos::InputLanguage& language) {
   std::string language_code = language.language_code;
   if (language.id == "pinyin") {
     // The pinyin input method returns "zh_CN" as language_code, but
@@ -84,7 +85,7 @@ std::string GetLanguageName(const chromeos::InputLanguage& language) {
   } else if (language_code == "t") {
     // "t" is used by input methods that do not associate with a
     // particular language. Returns the display name as-is.
-    return language.display_name;
+    return UTF8ToWide(language.display_name);
   }
   const string16 language_name = l10n_util::GetDisplayNameForLocale(
       language_code,
@@ -92,22 +93,21 @@ std::string GetLanguageName(const chromeos::InputLanguage& language) {
       true);
   // TODO(satorux): We should add input method names if multiple input
   // methods are available for one input language.
-  return UTF16ToUTF8(language_name);
+  return UTF16ToWide(language_name);
 }
 
 // Converts chromeos::InputLanguage object into human readable string. Returns
 // a string for the drop-down menu if |for_menu| is true. Otherwise, returns a
 // string for the status area.
-std::string FormatInputLanguage(
+std::wstring FormatInputLanguage(
     const chromeos::InputLanguage& language, bool for_menu) {
-  std::string formatted = GetLanguageName(language);
+  std::wstring formatted = GetLanguageName(language);
   if (formatted.empty()) {
-    formatted = language.id;
+    formatted = UTF8ToWide(language.id);
   }
   if (!for_menu) {
     // For status area. Trim the string.
     formatted = formatted.substr(0, kMaxLanguageNameLen);
-    // TODO(yusukes): Simple substr() does not work for non-ASCII string.
     // TODO(yusukes): How can we ensure that the trimmed string does not
     // overflow the area?
   }
@@ -136,8 +136,8 @@ LanguageMenuButton::LanguageMenuButton(StatusAreaHost* host)
   // Grab the real estate.
   UpdateIcon(kSpacer);
   // Display the default XKB name (usually "US").
-  const std::string name = FormatInputLanguage(language_list_->at(0), false);
-  UpdateIcon(UTF8ToWide(name));
+  const std::wstring name = FormatInputLanguage(language_list_->at(0), false);
+  UpdateIcon(name);
   LanguageLibrary::Get()->AddObserver(this);
 }
 
@@ -266,16 +266,17 @@ string16 LanguageMenuButton::GetLabelAt(int index) const {
     return l10n_util::GetStringUTF16(IDS_STATUSBAR_IME_CONFIGURE);
   }
 
-  std::string name;
+  std::wstring name;
   if (IndexIsInLanguageList(index)) {
     name = FormatInputLanguage(language_list_->at(index), true);
   } else if (GetPropertyIndex(index, &index)) {
     const ImePropertyList& property_list
         = LanguageLibrary::Get()->current_ime_properties();
-    name = property_list.at(index).label;
+    return LanguageMenuL10nUtil::GetStringUTF16(
+        property_list.at(index).label);
   }
 
-  return UTF8ToUTF16(name);
+  return WideToUTF16(name);
 }
 
 void LanguageMenuButton::ActivatedAt(int index) {
@@ -338,8 +339,8 @@ void LanguageMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
 // LanguageLibrary::Observer implementation:
 
 void LanguageMenuButton::LanguageChanged(LanguageLibrary* obj) {
-  const std::string name = FormatInputLanguage(obj->current_language(), false);
-  UpdateIcon(UTF8ToWide(name));
+  const std::wstring name = FormatInputLanguage(obj->current_language(), false);
+  UpdateIcon(name);
 
   // This is necessary to remove IME properties when the current language is
   // switched to XKB.
