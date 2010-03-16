@@ -85,11 +85,6 @@ class GaiaAuth : public PreXmppAuth {
     token_service_ = token_service;
   }
 
-  virtual std::string ChooseBestSaslMechanism(
-      const std::vector<std::string>& mechanisms, bool encrypted);
-  virtual buzz::SaslMechanism* CreateSaslMechanism(
-      const std::string& mechanism);
-
   std::string CreateAuthenticatedUrl(const std::string& continue_url,
       const std::string& service);
 

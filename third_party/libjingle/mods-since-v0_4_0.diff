@@ -1317,6 +1317,13 @@ diff -r libjingle-0.4.0/talk/xmpp/jid.cc libjingle/files/talk/xmpp/jid.cc
 < #include "talk/xmpp/constants.h"
 ---
 > #include "talk/xmpp/xmppconstants.h"
+diff -r libjingle-0.4.0/talk/xmpp/prexmppauth.h libjingle/files/talk/xmpp/prexmppauth.h
+33d32
+< #include "talk/xmpp/saslhandler.h"
+64c63
+< class PreXmppAuth : public SaslHandler {
+---
+> class PreXmppAuth {
 diff -r libjingle-0.4.0/talk/xmpp/saslcookiemechanism.h libjingle/files/talk/xmpp/saslcookiemechanism.h
 33c33
 < #include "talk/xmpp/constants.h"
@@ -1363,19 +1370,55 @@ diff -r libjingle-0.4.0/talk/xmpp/xmppclient.cc libjingle/files/talk/xmpp/xmppcl
 < #include "talk/xmpp/constants.h"
 ---
 > #include "talk/xmpp/xmppconstants.h"
-261a262,263
+32a33
+> #include "talk/xmpp/saslhandler.h"
+68a70
+>   scoped_ptr<SaslHandler> sasl_handler_;
+93c95,99
+< XmppClient::Connect(const XmppClientSettings & settings, const std::string & lang, AsyncSocket * socket, PreXmppAuth * pre_auth) {
+---
+> XmppClient::Connect(const XmppClientSettings & settings,
+>                     const std::string & lang,
+>                     AsyncSocket * socket,
+>                     PreXmppAuth * pre_auth,
+>                     SaslHandler * sasl_handler) {
+139a146
+>   d_->sasl_handler_.reset(sasl_handler);
+200a208,215
+>   if (d_->sasl_handler_.get()) {
+>     d_->engine_->SetSaslHandler(d_->sasl_handler_.release());
+>   }
+>   else {
+>     d_->engine_->SetSaslHandler(new PlainSaslHandler(
+>         d_->engine_->GetUser(), d_->pass_, d_->allow_plain_));
+>   }
+> 
+209,210d223
+<     d_->engine_->SetSaslHandler(new PlainSaslHandler(
+<               d_->engine_->GetUser(), d_->pass_, d_->allow_plain_));
+253,254d265
+<   // transfer ownership of pre_auth_ to engine
+<   d_->engine_->SetSaslHandler(d_->pre_auth_.release());
+261a273,274
 >     d_->pre_engine_error_ = XmppEngine::ERROR_SOCKET;
 >     d_->pre_engine_subcode_ = d_->socket_->GetError();
-347c349
+347c360
 < //#ifdef _DEBUG
 ---
 > //#if !defined(NDEBUG)
-375c377
+375c388
 < //#ifdef _DEBUG
 ---
 > //#if !defined(NDEBUG)
 diff -r libjingle-0.4.0/talk/xmpp/xmppclient.h libjingle/files/talk/xmpp/xmppclient.h
-141c141
+42a43
+> class SaslHandler;
+80c81,82
+<                            PreXmppAuth * preauth);
+---
+>                            PreXmppAuth * preauth,
+>                            SaslHandler * sasl_handler);
+141c143
 <   std::string XmppClient::GetStateName(int state) const {
 ---
 >   std::string GetStateName(int state) const {

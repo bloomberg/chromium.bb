@@ -21,7 +21,7 @@
 #include "chrome/browser/sync/notifier/communicator/connection_settings.h"
 #include "chrome/browser/sync/notifier/communicator/product_info.h"
 #include "talk/base/autodetectproxy.h"
-#include "talk/base/httpcommon.h"
+#include "talk/base/httpcommon-inl.h"
 #include "talk/base/task.h"
 #include "talk/base/thread.h"
 #include "talk/xmpp/prexmppauth.h"

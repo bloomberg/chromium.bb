@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
 #include <string>
+#include <vector>
 
 #include "chrome/browser/sync/notifier/communicator/single_login_attempt.h"
 
@@ -23,6 +25,8 @@
 #include "talk/base/winsock_initializer.h"
 #include "talk/xmllite/xmlelement.h"
 #include "talk/xmpp/prexmppauth.h"
+#include "talk/xmpp/saslcookiemechanism.h"
+#include "talk/xmpp/saslhandler.h"
 #include "talk/xmpp/xmppclient.h"
 #include "talk/xmpp/xmppclientsettings.h"
 #include "talk/xmpp/xmppconstants.h"
@@ -61,6 +65,44 @@ static void GetClientErrorInformation(
     }
   }
 }
+
+namespace {
+
+const char kGaiaAuthMechanism[] = "X-GOOGLE-TOKEN";
+
+// This class looks for the X-GOOGLE-TOKEN auth mechanism and uses
+// that instead of the default auth mechanism (PLAIN).
+class GaiaOnlySaslHandler : public buzz::SaslHandler {
+ public:
+  GaiaOnlySaslHandler(
+      const std::string& username,
+      const std::string& token,
+      const std::string& token_service)
+      : username_(username),
+        token_(token),
+        token_service_(token_service) {}
+
+  virtual std::string ChooseBestSaslMechanism(
+      const std::vector<std::string> & mechanisms, bool encrypted) {
+    return (std::find(mechanisms.begin(),
+                      mechanisms.end(), kGaiaAuthMechanism) !=
+            mechanisms.end()) ? kGaiaAuthMechanism : "";
+  }
+
+  virtual buzz::SaslMechanism* CreateSaslMechanism(
+      const std::string& mechanism) {
+    return
+        (mechanism == kGaiaAuthMechanism) ?
+        new buzz::SaslCookieMechanism(
+            kGaiaAuthMechanism, username_, token_, token_service_)
+        : NULL;
+  }
+
+ private:
+  std::string username_, token_, token_service_;
+};
+
+}  // namespace
 
 SingleLoginAttempt::SingleLoginAttempt(talk_base::Task* parent,
                                        LoginSettings* login_settings,
@@ -204,7 +246,8 @@ void SingleLoginAttempt::DoLogin(
   // Start connecting.
   client_->Connect(client_settings, login_settings_->lang(),
                    CreateSocket(client_settings),
-                   CreatePreXmppAuth(client_settings));
+                   CreatePreXmppAuth(client_settings),
+                   CreateSaslHandler(client_settings));
   client_->Start();
 }
 
@@ -257,6 +300,13 @@ buzz::PreXmppAuth* SingleLoginAttempt::CreatePreXmppAuth(
   auth->set_proxy(proxy);
   auth->set_firewall(login_settings_->firewall());
   return auth;
+}
+
+buzz::SaslHandler* SingleLoginAttempt::CreateSaslHandler(
+    const buzz::XmppClientSettings& xcs) {
+  buzz::Jid jid(xcs.user(), xcs.host(), buzz::STR_EMPTY);
+  return new GaiaOnlySaslHandler(
+      jid.Str(), xcs.auth_cookie(), xcs.token_service());
 }
 
 void SingleLoginAttempt::OnFreshAuthCookie(const std::string& auth_cookie) {
