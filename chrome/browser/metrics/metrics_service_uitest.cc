@@ -93,8 +93,9 @@ TEST_F(MetricsServiceTest, CrashRenderers) {
     scoped_refptr<TabProxy> tab(window->GetTab(1));
     ASSERT_TRUE(tab.get());
 
-// Only windows implements the crash service for now.
-#if defined(OS_WIN)
+// We should get a crash dump on Windows.
+// Also on Linux with Breakpad enabled.
+#if defined(OS_WIN) || defined(USE_LINUX_BREAKPAD)
     expected_crashes_ = 1;
 #endif
     ASSERT_TRUE(tab->NavigateToURLAsync(GURL("about:crash")));
