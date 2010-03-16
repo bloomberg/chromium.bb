@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/url_request/url_request_new_ftp_job.h"
+#include "net/url_request/url_request_ftp_job.h"
 
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
@@ -15,22 +15,22 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_error_job.h"
 
-URLRequestNewFtpJob::URLRequestNewFtpJob(URLRequest* request)
+URLRequestFtpJob::URLRequestFtpJob(URLRequest* request)
     : URLRequestJob(request),
       ALLOW_THIS_IN_INITIALIZER_LIST(
-          start_callback_(this, &URLRequestNewFtpJob::OnStartCompleted)),
+          start_callback_(this, &URLRequestFtpJob::OnStartCompleted)),
       ALLOW_THIS_IN_INITIALIZER_LIST(
-          read_callback_(this, &URLRequestNewFtpJob::OnReadCompleted)),
+          read_callback_(this, &URLRequestFtpJob::OnReadCompleted)),
       read_in_progress_(false),
       context_(request->context()) {
 }
 
-URLRequestNewFtpJob::~URLRequestNewFtpJob() {
+URLRequestFtpJob::~URLRequestFtpJob() {
 }
 
 // static
-URLRequestJob* URLRequestNewFtpJob::Factory(URLRequest* request,
-                                            const std::string& scheme) {
+URLRequestJob* URLRequestFtpJob::Factory(URLRequest* request,
+                                         const std::string& scheme) {
   DCHECK_EQ(scheme, "ftp");
 
   int port = request->url().IntPort();
@@ -40,10 +40,10 @@ URLRequestJob* URLRequestNewFtpJob::Factory(URLRequest* request,
 
   DCHECK(request->context());
   DCHECK(request->context()->ftp_transaction_factory());
-  return new URLRequestNewFtpJob(request);
+  return new URLRequestFtpJob(request);
 }
 
-bool URLRequestNewFtpJob::GetMimeType(std::string* mime_type) const {
+bool URLRequestFtpJob::GetMimeType(std::string* mime_type) const {
   if (transaction_->GetResponseInfo()->is_directory_listing) {
     *mime_type = "text/vnd.chromium.ftp-dir";
     return true;
@@ -51,25 +51,25 @@ bool URLRequestNewFtpJob::GetMimeType(std::string* mime_type) const {
   return false;
 }
 
-void URLRequestNewFtpJob::Start() {
+void URLRequestFtpJob::Start() {
   DCHECK(!transaction_.get());
   request_info_.url = request_->url();
   StartTransaction();
 }
 
-void URLRequestNewFtpJob::Kill() {
+void URLRequestFtpJob::Kill() {
   if (!transaction_.get())
     return;
   DestroyTransaction();
   URLRequestJob::Kill();
 }
 
-net::LoadState URLRequestNewFtpJob::GetLoadState() const {
+net::LoadState URLRequestFtpJob::GetLoadState() const {
   return transaction_.get() ?
       transaction_->GetLoadState() : net::LOAD_STATE_IDLE;
 }
 
-bool URLRequestNewFtpJob::NeedsAuth() {
+bool URLRequestFtpJob::NeedsAuth() {
   // Note that we only have to worry about cases where an actual FTP server
   // requires auth (and not a proxy), because connecting to FTP via proxy
   // effectively means the browser communicates via HTTP, and uses HTTP's
@@ -77,7 +77,7 @@ bool URLRequestNewFtpJob::NeedsAuth() {
   return server_auth_ && server_auth_->state == net::AUTH_STATE_NEED_AUTH;
 }
 
-void URLRequestNewFtpJob::GetAuthChallengeInfo(
+void URLRequestFtpJob::GetAuthChallengeInfo(
     scoped_refptr<net::AuthChallengeInfo>* result) {
   DCHECK((server_auth_ != NULL) &&
          (server_auth_->state == net::AUTH_STATE_NEED_AUTH));
@@ -90,8 +90,8 @@ void URLRequestNewFtpJob::GetAuthChallengeInfo(
   result->swap(auth_info);
 }
 
-void URLRequestNewFtpJob::SetAuth(const std::wstring& username,
-                                  const std::wstring& password) {
+void URLRequestFtpJob::SetAuth(const std::wstring& username,
+                               const std::wstring& password) {
   DCHECK(NeedsAuth());
   server_auth_->state = net::AUTH_STATE_HAVE_AUTH;
   server_auth_->username = username;
@@ -103,7 +103,7 @@ void URLRequestNewFtpJob::SetAuth(const std::wstring& username,
   RestartTransactionWithAuth();
 }
 
-void URLRequestNewFtpJob::CancelAuth() {
+void URLRequestFtpJob::CancelAuth() {
   DCHECK(NeedsAuth());
   server_auth_->state = net::AUTH_STATE_CANCELED;
 
@@ -111,12 +111,12 @@ void URLRequestNewFtpJob::CancelAuth() {
   // there were no auth.  Schedule this for later so that we don't cause
   // any recursing into the caller as a result of this call.
   MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &URLRequestNewFtpJob::OnStartCompleted, net::OK));
+      this, &URLRequestFtpJob::OnStartCompleted, net::OK));
 }
 
-bool URLRequestNewFtpJob::ReadRawData(net::IOBuffer* buf,
-                                      int buf_size,
-                                      int *bytes_read) {
+bool URLRequestFtpJob::ReadRawData(net::IOBuffer* buf,
+                                   int buf_size,
+                                   int *bytes_read) {
   DCHECK_NE(buf_size, 0);
   DCHECK(bytes_read);
   DCHECK(!read_in_progress_);
@@ -136,7 +136,7 @@ bool URLRequestNewFtpJob::ReadRawData(net::IOBuffer* buf,
   return false;
 }
 
-void URLRequestNewFtpJob::OnStartCompleted(int result) {
+void URLRequestFtpJob::OnStartCompleted(int result) {
   // If the request was destroyed, then there is no more work to do.
   if (!request_ || !request_->delegate())
     return;
@@ -180,7 +180,7 @@ void URLRequestNewFtpJob::OnStartCompleted(int result) {
   }
 }
 
-void URLRequestNewFtpJob::OnReadCompleted(int result) {
+void URLRequestFtpJob::OnReadCompleted(int result) {
   read_in_progress_ = false;
   if (result == 0) {
     NotifyDone(URLRequestStatus());
@@ -193,7 +193,7 @@ void URLRequestNewFtpJob::OnReadCompleted(int result) {
   NotifyReadComplete(result);
 }
 
-void URLRequestNewFtpJob::RestartTransactionWithAuth() {
+void URLRequestFtpJob::RestartTransactionWithAuth() {
   DCHECK(server_auth_ && server_auth_->state == net::AUTH_STATE_HAVE_AUTH);
 
   // No matter what, we want to report our status as IO pending since we will
@@ -207,10 +207,10 @@ void URLRequestNewFtpJob::RestartTransactionWithAuth() {
     return;
 
   MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &URLRequestNewFtpJob::OnStartCompleted, rv));
+      this, &URLRequestFtpJob::OnStartCompleted, rv));
 }
 
-void URLRequestNewFtpJob::StartTransaction() {
+void URLRequestFtpJob::StartTransaction() {
   // Create a transaction.
   DCHECK(!transaction_.get());
   DCHECK(request_->context());
@@ -234,10 +234,10 @@ void URLRequestNewFtpJob::StartTransaction() {
   // The transaction started synchronously, but we need to notify the
   // URLRequest delegate via the message loop.
   MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &URLRequestNewFtpJob::OnStartCompleted, rv));
+      this, &URLRequestFtpJob::OnStartCompleted, rv));
 }
 
-void URLRequestNewFtpJob::DestroyTransaction() {
+void URLRequestFtpJob::DestroyTransaction() {
   DCHECK(transaction_.get());
 
   transaction_.reset();

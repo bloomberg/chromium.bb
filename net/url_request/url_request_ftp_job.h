@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_URL_REQUEST_URL_REQUEST_NEW_FTP_JOB_H_
-#define NET_URL_REQUEST_URL_REQUEST_NEW_FTP_JOB_H_
+#ifndef NET_URL_REQUEST_URL_REQUEST_FTP_JOB_H_
+#define NET_URL_REQUEST_URL_REQUEST_FTP_JOB_H_
 
 #include <string>
 
@@ -21,10 +21,10 @@ struct list_state;
 
 // A URLRequestJob subclass that is built on top of FtpTransaction. It
 // provides an implementation for FTP.
-class URLRequestNewFtpJob : public URLRequestJob {
+class URLRequestFtpJob : public URLRequestJob {
  public:
 
-  explicit URLRequestNewFtpJob(URLRequest* request);
+  explicit URLRequestFtpJob(URLRequest* request);
 
   static URLRequestJob* Factory(URLRequest* request, const std::string& scheme);
 
@@ -32,7 +32,7 @@ class URLRequestNewFtpJob : public URLRequestJob {
   virtual bool GetMimeType(std::string* mime_type) const;
 
  private:
-  virtual ~URLRequestNewFtpJob();
+  virtual ~URLRequestFtpJob();
 
   // URLRequestJob methods:
   virtual void Start();
@@ -62,8 +62,8 @@ class URLRequestNewFtpJob : public URLRequestJob {
   net::FtpRequestInfo request_info_;
   scoped_ptr<net::FtpTransaction> transaction_;
 
-  net::CompletionCallbackImpl<URLRequestNewFtpJob> start_callback_;
-  net::CompletionCallbackImpl<URLRequestNewFtpJob> read_callback_;
+  net::CompletionCallbackImpl<URLRequestFtpJob> start_callback_;
+  net::CompletionCallbackImpl<URLRequestFtpJob> read_callback_;
 
   bool read_in_progress_;
 
@@ -73,7 +73,7 @@ class URLRequestNewFtpJob : public URLRequestJob {
   // before us.
   scoped_refptr<URLRequestContext> context_;
 
-  DISALLOW_COPY_AND_ASSIGN(URLRequestNewFtpJob);
+  DISALLOW_COPY_AND_ASSIGN(URLRequestFtpJob);
 };
 
-#endif  // NET_URL_REQUEST_URL_REQUEST_NEW_FTP_JOB_H_
+#endif  // NET_URL_REQUEST_URL_REQUEST_FTP_JOB_H_
