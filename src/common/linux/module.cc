@@ -52,6 +52,9 @@ Module::~Module() {
   for (vector<Function *>::iterator it = functions_.begin();
        it != functions_.end(); it++)
     delete *it;
+  for (vector<StackFrameEntry *>::iterator it = stack_frame_entries_.begin();
+       it != stack_frame_entries_.end(); it++)
+    delete *it;
 }
 
 void Module::SetLoadAddress(Address address) {
@@ -65,6 +68,10 @@ void Module::AddFunction(Function *function) {
 void Module::AddFunctions(vector<Function *>::iterator begin,
                           vector<Function *>::iterator end) {
   functions_.insert(functions_.end(), begin, end);
+}
+
+void Module::AddStackFrameEntry(StackFrameEntry *stack_frame_entry) {
+  stack_frame_entries_.push_back(stack_frame_entry);
 }
 
 void Module::GetFunctions(vector<Function *> *vec,
@@ -111,6 +118,10 @@ void Module::GetFiles(vector<File *> *vec) {
     vec->push_back(it->second);
 }
 
+void Module::GetStackFrameEntries(vector<StackFrameEntry *> *vec) {
+  *vec = stack_frame_entries_;
+}
+
 void Module::AssignSourceIds() {
   // First, give every source file an id of -1.
   for (FileByNameMap::iterator file_it = files_.begin();
@@ -142,6 +153,18 @@ bool Module::ReportError() {
   fprintf(stderr, "error writing symbol file: %s\n",
           strerror (errno));
   return false;
+}
+
+bool Module::WriteRuleMap(const RuleMap &rule_map, FILE *stream) {
+  for (RuleMap::const_iterator it = rule_map.begin();
+       it != rule_map.end(); it++) {
+    if (it != rule_map.begin() &&
+        0 > putc(' ', stream))
+      return false;
+    if (0 > fprintf(stream, "%s: %s", it->first.c_str(), it->second.c_str()))
+      return false;
+  }
+  return true;
 }
 
 bool Module::Write(FILE *stream) {
@@ -181,6 +204,29 @@ bool Module::Write(FILE *stream) {
                       line_it->number,
                       line_it->file->source_id))
         return ReportError();
+  }
+
+  // Write out 'STACK CFI INIT' and 'STACK CFI' records.
+  vector<StackFrameEntry *>::const_iterator frame_it;
+  for (frame_it = stack_frame_entries_.begin();
+       frame_it != stack_frame_entries_.end(); frame_it++) {
+    StackFrameEntry *entry = *frame_it;
+    if (0 > fprintf(stream, "STACK CFI INIT %llx %llx ",
+                    (unsigned long long) entry->address - load_address_,
+                    (unsigned long long) entry->size)
+        || !WriteRuleMap(entry->initial_rules, stream)
+        || 0 > putc('\n', stream))
+      return ReportError();
+    
+    // Write out this entry's delta rules as 'STACK CFI' records.
+    for (RuleChangeMap::const_iterator delta_it = entry->rule_changes.begin();
+         delta_it != entry->rule_changes.end(); delta_it++) {
+      if (0 > fprintf(stream, "STACK CFI %llx ",
+                      (unsigned long long) delta_it->first - load_address_)
+          || !WriteRuleMap(delta_it->second, stream)
+          || 0 > putc('\n', stream))
+        return ReportError();
+    }
   }
 
   return true;

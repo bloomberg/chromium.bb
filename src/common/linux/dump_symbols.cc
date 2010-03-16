@@ -49,6 +49,7 @@
 #include "common/dwarf/dwarf2diehandler.h"
 #include "common/linux/dump_stabs.h"
 #include "common/linux/dump_symbols.h"
+#include "common/linux/dwarf_cfi_to_module.h"
 #include "common/linux/dwarf_cu_to_module.h"
 #include "common/linux/dwarf_line_to_module.h"
 #include "common/linux/file_id.h"
@@ -59,6 +60,7 @@
 namespace {
 
 using google_breakpad::DumpStabsHandler;
+using google_breakpad::DwarfCFIToModule;
 using google_breakpad::DwarfCUToModule;
 using google_breakpad::DwarfLineToModule;
 using google_breakpad::Module;
@@ -215,6 +217,119 @@ static bool LoadDwarf(const string &dwarf_filename,
   return true;
 }
 
+// Fill REGISTER_NAMES with the register names appropriate to the
+// machine architecture given in HEADER, indexed by the register
+// numbers used in DWARF call frame information. Return true on
+// success, or false if we don't recognize HEADER's machine
+// architecture.
+static bool DwarfCFIRegisterNames(const ElfW(Ehdr) *elf_header,
+                                  vector<string> *register_names)
+{
+  static const char *const i386_names[] = {
+    "$eax", "$ecx", "$edx", "$ebx", "$esp", "$ebp", "$esi", "$edi",
+    "$eip", "$eflags", "$unused1",
+    "$st0", "$st1", "$st2", "$st3", "$st4", "$st5", "$st6", "$st7",
+    "$unused2", "$unused3",
+    "$xmm0", "$xmm1", "$xmm2", "$xmm3", "$xmm4", "$xmm5", "$xmm6", "$xmm7",
+    "$mm0", "$mm1", "$mm2", "$mm3", "$mm4", "$mm5", "$mm6", "$mm7",
+    "$fcw", "$fsw", "$mxcsr",
+    "$es", "$cs", "$ss", "$ds", "$fs", "$gs", "$unused4", "$unused5",
+    "$tr", "$ldtr",
+    NULL
+  };
+
+  static const char *const x86_64_names[] = {
+    "$rax", "$rdx", "$rcx", "$rbx", "$rsi", "$rdi", "$rbp", "$rsp",
+    "$r8",  "$r9",  "$r10", "$r11", "$r12", "$r13", "$r14", "$r15",
+    "$rip",
+    "$xmm0","$xmm1","$xmm2", "$xmm3", "$xmm4", "$xmm5", "$xmm6", "$xmm7",
+    "$xmm8","$xmm9","$xmm10","$xmm11","$xmm12","$xmm13","$xmm14","$xmm15",
+    "$st0", "$st1", "$st2", "$st3", "$st4", "$st5", "$st6", "$st7",
+    "$mm0", "$mm1", "$mm2", "$mm3", "$mm4", "$mm5", "$mm6", "$mm7",
+    "$rflags",
+    "$es", "$cs", "$ss", "$ds", "$fs", "$gs", "$unused1", "$unused2",
+    "$fs.base", "$gs.base", "$unused3", "$unused4",
+    "$tr", "$ldtr",
+    "$mxcsr", "$fcw", "$fsw",
+    NULL
+  };
+
+  const char * const *name_table;
+  switch (elf_header->e_machine) {
+    case EM_386:
+      name_table = i386_names;
+      break;
+
+    case EM_X86_64:
+      name_table = x86_64_names;
+      break;
+
+    default:
+      return false;
+  }
+
+  register_names->clear();
+  for (int i = 0; name_table[i]; i++)
+    register_names->push_back(name_table[i]);
+  return true;
+}
+
+static bool LoadDwarfCFI(const string &dwarf_filename,
+                         const ElfW(Ehdr) *elf_header,
+                         const char *section_name,
+                         const ElfW(Shdr) *section,
+                         Module *module) {
+  // Find the appropriate set of register names for this file's
+  // architecture.
+  vector<string> register_names;
+  if (!DwarfCFIRegisterNames(elf_header, &register_names)) {
+    fprintf(stderr, "%s: unrecognized ELF machine architecture '%d';"
+            " cannot convert DWARF call frame information\n",
+            dwarf_filename.c_str(), elf_header->e_machine);
+    return false;
+  }
+
+  // Figure out what endianness this file is.
+  dwarf2reader::Endianness endianness;
+  if (elf_header->e_ident[EI_DATA] == ELFDATA2LSB)
+    endianness = dwarf2reader::ENDIANNESS_LITTLE;
+  else if (elf_header->e_ident[EI_DATA] == ELFDATA2MSB)
+    endianness = dwarf2reader::ENDIANNESS_BIG;
+  else {
+    fprintf(stderr, "%s: bad data encoding in ELF header: %d\n",
+            dwarf_filename.c_str(), elf_header->e_ident[EI_DATA]);
+    return false;
+  }
+
+  // Find the call frame information and its size.
+  const char *cfi = reinterpret_cast<const char *>(section->sh_offset);
+  size_t cfi_size = section->sh_size;
+
+  // Plug together the parser, handler, and their entourages.
+  DwarfCFIToModule::Reporter module_reporter(dwarf_filename, section_name);
+  DwarfCFIToModule handler(module, register_names, &module_reporter);
+  dwarf2reader::ByteReader byte_reader(endianness);
+  // Since we're using the ElfW macro, we're not actually capable of
+  // processing both ELF32 and ELF64 files with the same program; that
+  // would take a bit more work. But this will work out well enough.
+  if (elf_header->e_ident[EI_CLASS] == ELFCLASS32)
+    byte_reader.SetAddressSize(4);
+  else if (elf_header->e_ident[EI_CLASS] == ELFCLASS64)
+    byte_reader.SetAddressSize(8);
+  else {
+    fprintf(stderr, "%s: bad file class in ELF header: %d\n",
+            dwarf_filename.c_str(), elf_header->e_ident[EI_CLASS]);
+    return false;
+  }
+    
+  dwarf2reader::CallFrameInfo::Reporter dwarf_reporter(dwarf_filename,
+                                                       section_name);
+  dwarf2reader::CallFrameInfo parser(cfi, cfi_size, &byte_reader,
+                                     &handler, &dwarf_reporter);
+  parser.Start();
+  return true;
+}
+
 static bool LoadSymbols(const std::string &obj_file, ElfW(Ehdr) *elf_header,
                         Module *module) {
   // Translate all offsets in section headers into address.
@@ -228,6 +343,8 @@ static bool LoadSymbols(const std::string &obj_file, ElfW(Ehdr) *elf_header,
       reinterpret_cast<ElfW(Shdr) *>(elf_header->e_shoff);
   const ElfW(Shdr) *section_names = sections + elf_header->e_shstrndx;
   bool found_debug_info_section = false;
+
+  // Look for STABS debugging information, and load it if present.
   const ElfW(Shdr) *stab_section
       = FindSectionByName(".stab", sections, section_names,
                           elf_header->e_shnum);
@@ -240,6 +357,8 @@ static bool LoadSymbols(const std::string &obj_file, ElfW(Ehdr) *elf_header,
                 " debugging information\n");
     }
   }
+
+  // Look for DWARF debugging information, and load it if present.
   const ElfW(Shdr) *dwarf_section
       = FindSectionByName(".debug_info", sections, section_names,
                           elf_header->e_shnum);
@@ -249,6 +368,20 @@ static bool LoadSymbols(const std::string &obj_file, ElfW(Ehdr) *elf_header,
       fprintf(stderr, "\".debug_info\" section found, but failed to load "
               "DWARF debugging information\n");
   }
+
+  // Dwarf Call Frame Information (CFI) is actually independent from
+  // the other DWARF debugging information, and can be used alone.
+  const ElfW(Shdr) *dwarf_cfi_section =
+      FindSectionByName(".debug_frame", sections, section_names,
+                          elf_header->e_shnum);
+  if (dwarf_cfi_section) {
+    // Ignore the return value of this function; even without call frame
+    // information, the other debugging information could be perfectly
+    // useful.
+    LoadDwarfCFI(obj_file, elf_header, ".debug_frame",
+                 dwarf_cfi_section, module);
+  }
+
   if (!found_debug_info_section) {
     fprintf(stderr, "file contains no debugging information"
             " (no \".stab\" or \".debug_info\" sections)\n");

@@ -42,9 +42,10 @@
 #include "breakpad_googletest_includes.h"
 #include "common/linux/module.h"
 
+using google_breakpad::Module;
 using std::string;
 using std::vector;
-using google_breakpad::Module;
+using testing::ContainerEq;
 
 // Return a FILE * referring to a temporary file that will be deleted
 // automatically when the stream is closed or the program exits.
@@ -162,6 +163,17 @@ TEST(Write, RelativeLoadAddress) {
 
   m.AddFunction(function);
 
+  // Some stack information.
+  Module::StackFrameEntry *entry = new Module::StackFrameEntry();
+  entry->address = 0x30f9e5c83323973dULL;
+  entry->size = 0x49fc9ca7c7c13dc2ULL;
+  entry->initial_rules[".cfa"] = "he was a handsome man";
+  entry->initial_rules["and"] = "what i want to know is";
+  entry->rule_changes[0x30f9e5c83323973eULL]["how"] =
+    "do you like your blueeyed boy";
+  entry->rule_changes[0x30f9e5c83323973eULL]["Mister"] = "Death";
+  m.AddStackFrameEntry(entry);
+
   m.Write(f);
   checked_fflush(f);
   rewind(f);
@@ -173,7 +185,13 @@ TEST(Write, RelativeLoadAddress) {
                "FUNC 9410dc39a798c580 2922088f98d3f6fc e5e9aa008bd5f0d0"
                " A_FLIBBERTIJIBBET::a_will_o_the_wisp(a clown)\n"
                "b03cc3106d47eb91 cf621b8d324d0eb 67519080 0\n"
-               "9410dc39a798c580 1c2be6d6c5af2611 41676901 1\n",
+               "9410dc39a798c580 1c2be6d6c5af2611 41676901 1\n"
+               "STACK CFI INIT 6434d177ce326ca 49fc9ca7c7c13dc2"
+               " .cfa: he was a handsome man"
+               " and: what i want to know is\n"
+               "STACK CFI 6434d177ce326cb"
+               " Mister: Death"
+               " how: do you like your blueeyed boy\n",
                contents.c_str());
 }
 
@@ -272,6 +290,96 @@ TEST(Construct, AddFunctions) {
   EXPECT_TRUE(vec.end() != find(vec.begin(), vec.end(), function1));
   EXPECT_TRUE(vec.end() != find(vec.begin(), vec.end(), function2));
   EXPECT_EQ((size_t) 2, vec.size());
+}
+
+TEST(Construct, AddFrames) {
+  FILE *f = checked_tmpfile();
+  Module m(MODULE_NAME, MODULE_OS, MODULE_ARCH, MODULE_ID);
+
+  // First STACK CFI entry, with no initial rules or deltas.
+  Module::StackFrameEntry *entry1 = new Module::StackFrameEntry();
+  entry1->address = 0xddb5f41285aa7757ULL;
+  entry1->size = 0x1486493370dc5073ULL;
+  m.AddStackFrameEntry(entry1);
+  
+  // Second STACK CFI entry, with initial rules but no deltas.
+  Module::StackFrameEntry *entry2 = new Module::StackFrameEntry();
+  entry2->address = 0x8064f3af5e067e38ULL;
+  entry2->size = 0x0de2a5ee55509407ULL;
+  entry2->initial_rules[".cfa"] = "I think that I shall never see";
+  entry2->initial_rules["stromboli"] = "a poem lovely as a tree";
+  entry2->initial_rules["cannoli"] = "a tree whose hungry mouth is prest";
+  m.AddStackFrameEntry(entry2);
+
+  // Third STACK CFI entry, with initial rules and deltas.
+  Module::StackFrameEntry *entry3 = new Module::StackFrameEntry();
+  entry3->address = 0x5e8d0db0a7075c6cULL;
+  entry3->size = 0x1c7edb12a7aea229ULL;
+  entry3->initial_rules[".cfa"] = "Whose woods are these";
+  entry3->rule_changes[0x47ceb0f63c269d7fULL]["calzone"] =
+    "the village though";
+  entry3->rule_changes[0x47ceb0f63c269d7fULL]["cannoli"] =
+    "he will not see me stopping here";
+  entry3->rule_changes[0x36682fad3763ffffULL]["stromboli"] =
+    "his house is in";
+  entry3->rule_changes[0x36682fad3763ffffULL][".cfa"] =
+    "I think I know";
+  m.AddStackFrameEntry(entry3);
+
+  // Check that Write writes STACK CFI records properly.
+  m.Write(f);
+  checked_fflush(f);
+  rewind(f);
+  string contents = checked_read(f);
+  checked_fclose(f);
+  EXPECT_STREQ("MODULE os-name architecture id-string name with spaces\n"
+               "STACK CFI INIT ddb5f41285aa7757 1486493370dc5073 \n"
+               "STACK CFI INIT 8064f3af5e067e38 de2a5ee55509407"
+               " .cfa: I think that I shall never see"
+               " cannoli: a tree whose hungry mouth is prest"
+               " stromboli: a poem lovely as a tree\n"
+               "STACK CFI INIT 5e8d0db0a7075c6c 1c7edb12a7aea229"
+               " .cfa: Whose woods are these\n"
+               "STACK CFI 36682fad3763ffff"
+               " .cfa: I think I know"
+               " stromboli: his house is in\n"
+               "STACK CFI 47ceb0f63c269d7f"
+               " calzone: the village though"
+               " cannoli: he will not see me stopping here\n",
+               contents.c_str());
+
+  // Check that GetStackFrameEntries works.
+  vector<Module::StackFrameEntry *> entries;
+  m.GetStackFrameEntries(&entries);
+  ASSERT_EQ(3U, entries.size());
+  // Check first entry.
+  EXPECT_EQ(0xddb5f41285aa7757ULL, entries[0]->address);
+  EXPECT_EQ(0x1486493370dc5073ULL, entries[0]->size);
+  ASSERT_EQ(0U, entries[0]->initial_rules.size());
+  ASSERT_EQ(0U, entries[0]->rule_changes.size());
+  // Check second entry.
+  EXPECT_EQ(0x8064f3af5e067e38ULL, entries[1]->address);
+  EXPECT_EQ(0x0de2a5ee55509407ULL, entries[1]->size);
+  ASSERT_EQ(3U, entries[1]->initial_rules.size());
+  Module::RuleMap entry2_initial;
+  entry2_initial[".cfa"] = "I think that I shall never see";
+  entry2_initial["stromboli"] = "a poem lovely as a tree";
+  entry2_initial["cannoli"] = "a tree whose hungry mouth is prest";
+  EXPECT_THAT(entries[1]->initial_rules, ContainerEq(entry2_initial));
+  ASSERT_EQ(0U, entries[1]->rule_changes.size());
+  // Check third entry.
+  EXPECT_EQ(0x5e8d0db0a7075c6cULL, entries[2]->address);
+  EXPECT_EQ(0x1c7edb12a7aea229ULL, entries[2]->size);
+  Module::RuleMap entry3_initial;
+  entry3_initial[".cfa"] = "Whose woods are these";
+  EXPECT_THAT(entries[2]->initial_rules, ContainerEq(entry3_initial));
+  Module::RuleChangeMap entry3_changes;
+  entry3_changes[0x36682fad3763ffffULL][".cfa"] = "I think I know";
+  entry3_changes[0x36682fad3763ffffULL]["stromboli"] = "his house is in";
+  entry3_changes[0x47ceb0f63c269d7fULL]["calzone"] = "the village though";
+  entry3_changes[0x47ceb0f63c269d7fULL]["cannoli"] =
+    "he will not see me stopping here";
+  EXPECT_THAT(entries[2]->rule_changes, ContainerEq(entry3_changes));
 }
 
 TEST(Construct, UniqueFiles) {

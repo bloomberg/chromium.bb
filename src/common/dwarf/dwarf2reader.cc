@@ -26,12 +26,15 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Implementation of dwarf2reader::LineInfo and dwarf2reader::CompilationUnit.
-// See dwarf2reader.h for details.
+// CFI reader author: Jim Blandy <jimb@mozilla.com> <jimb@red-bean.com>
+
+// Implementation of dwarf2reader::LineInfo, dwarf2reader::CompilationUnit,
+// and dwarf2reader::CallFrameInfo. See dwarf2reader.h for details.
 
 #include <cassert>
 #include <cstdio>
 #include <cstring>
+#include <map>
 #include <memory>
 #include <stack>
 #include <utility>
@@ -862,6 +865,1228 @@ void LineInfo::ReadLines() {
   }
 
   after_header_ = lengthstart + header_.total_length;
+}
+
+// A DWARF rule for recovering the address or value of a register, or
+// computing the canonical frame address. There is one subclass of this for
+// each '*Rule' member function in CallFrameInfo::Handler.
+//
+// It's annoying that we have to handle Rules using pointers (because
+// the concrete instances can have an arbitrary size). They're small,
+// so it would be much nicer if we could just handle them by value
+// instead of fretting about ownership and destruction.
+//
+// It seems like all these could simply be instances of std::tr1::bind,
+// except that we need instances to be EqualityComparable, too.
+//
+// This could logically be nested within State, but then the qualified names
+// get horrendous.
+class CallFrameInfo::Rule {
+ public:
+  virtual ~Rule() { }
+
+  // Tell HANDLER that, at ADDRESS in the program, REGISTER can be
+  // recovered using this rule. If REGISTER is kCFARegister, then this rule
+  // describes how to compute the canonical frame address. Return what the
+  // HANDLER member function returned.
+  virtual bool Handle(Handler *handler,
+                      uint64 address, int register) const = 0;
+
+  // Equality on rules. We use these to decide which rules we need
+  // to report after a DW_CFA_restore_state instruction.
+  virtual bool operator==(const Rule &rhs) const = 0;
+
+  bool operator!=(const Rule &rhs) const { return ! (*this == rhs); }
+
+  // Return a pointer to a copy of this rule.
+  virtual Rule *Copy() const = 0;
+
+  // If this is a base+offset rule, change its base register to REG.
+  // Otherwise, do nothing. (Ugly, but required for DW_CFA_def_cfa_register.)
+  virtual void SetBaseRegister(unsigned reg) { }
+
+  // If this is a base+offset rule, change its offset to OFFSET. Otherwise,
+  // do nothing. (Ugly, but required for DW_CFA_def_cfa_offset.)
+  virtual void SetOffset(long long offset) { }
+};
+
+// Rule: the value the register had in the caller cannot be recovered.
+class CallFrameInfo::UndefinedRule: public CallFrameInfo::Rule {
+ public:
+  UndefinedRule() { }
+  ~UndefinedRule() { }
+  bool Handle(Handler *handler, uint64 address, int reg) const {
+    return handler->UndefinedRule(address, reg);
+  }
+  bool operator==(const Rule &rhs) const {
+    // dynamic_cast is prohibited by Google C++ Style Guide, but justified.
+    const UndefinedRule *our_rhs = dynamic_cast<const UndefinedRule *>(&rhs);
+    return (our_rhs != NULL);
+  }
+  Rule *Copy() const { return new UndefinedRule(*this); }
+};
+
+// Rule: the register's value is the same as that it had in the caller.
+class CallFrameInfo::SameValueRule: public CallFrameInfo::Rule {
+ public:
+  SameValueRule() { }
+  ~SameValueRule() { }
+  bool Handle(Handler *handler, uint64 address, int reg) const {
+    return handler->SameValueRule(address, reg);
+  }
+  bool operator==(const Rule &rhs) const {
+    // dynamic_cast is prohibited by Google C++ Style Guide, but justified.
+    const SameValueRule *our_rhs = dynamic_cast<const SameValueRule *>(&rhs);
+    return (our_rhs != NULL);
+  }
+  Rule *Copy() const { return new SameValueRule(*this); }
+};
+
+// Rule: the register is saved at OFFSET from BASE_REGISTER.  BASE_REGISTER
+// may be CallFrameInfo::Handler::kCFARegister.
+class CallFrameInfo::OffsetRule: public CallFrameInfo::Rule {
+ public:
+  OffsetRule(int base_register, long offset)
+      : base_register_(base_register), offset_(offset) { }
+  ~OffsetRule() { }
+  bool Handle(Handler *handler, uint64 address, int reg) const {
+    return handler->OffsetRule(address, reg, base_register_, offset_);
+  }
+  bool operator==(const Rule &rhs) const {
+    // dynamic_cast is prohibited by Google C++ Style Guide, but justified.
+    const OffsetRule *our_rhs = dynamic_cast<const OffsetRule *>(&rhs);
+    return (our_rhs &&
+            base_register_ == our_rhs->base_register_ &&
+            offset_ == our_rhs->offset_);
+  }
+  Rule *Copy() const { return new OffsetRule(*this); }
+  // We don't actually need SetBaseRegister or SetOffset here, since they
+  // are only ever applied to CFA rules, for DW_CFA_def_cfa_offset, and it
+  // doesn't make sense to use OffsetRule for computing the CFA: it
+  // computes the address at which a register is saved, not a value.
+ private:
+  int base_register_;
+  int offset_;
+};
+
+// Rule: the value the register had in the caller is the value of
+// BASE_REGISTER plus offset. BASE_REGISTER may be
+// CallFrameInfo::Handler::kCFARegister.
+class CallFrameInfo::ValOffsetRule: public CallFrameInfo::Rule {
+ public:
+  ValOffsetRule(int base_register, long offset)
+      : base_register_(base_register), offset_(offset) { }
+  ~ValOffsetRule() { }
+  bool Handle(Handler *handler, uint64 address, int reg) const {
+    return handler->ValOffsetRule(address, reg, base_register_, offset_);
+  }
+  bool operator==(const Rule &rhs) const {
+    // dynamic_cast is prohibited by Google C++ Style Guide, but justified.
+    const ValOffsetRule *our_rhs = dynamic_cast<const ValOffsetRule *>(&rhs);
+    return (our_rhs &&
+            base_register_ == our_rhs->base_register_ &&
+            offset_ == our_rhs->offset_);
+  }
+  Rule *Copy() const { return new ValOffsetRule(*this); }
+  void SetBaseRegister(unsigned reg) { base_register_ = reg; }
+  void SetOffset(long long offset) { offset_ = offset; }
+ private:
+  int base_register_;
+  int offset_;
+};
+
+// Rule: the register has been saved in another register REGISTER_NUMBER_.
+class CallFrameInfo::RegisterRule: public CallFrameInfo::Rule {
+ public:
+  explicit RegisterRule(int register_number)
+      : register_number_(register_number) { }
+  ~RegisterRule() { }
+  bool Handle(Handler *handler, uint64 address, int reg) const {
+    return handler->RegisterRule(address, reg, register_number_);
+  }
+  bool operator==(const Rule &rhs) const {
+    // dynamic_cast is prohibited by Google C++ Style Guide, but justified.
+    const RegisterRule *our_rhs = dynamic_cast<const RegisterRule *>(&rhs);
+    return (our_rhs && register_number_ == our_rhs->register_number_);
+  }
+  Rule *Copy() const { return new RegisterRule(*this); }
+ private:
+  int register_number_;
+};
+
+// Rule: EXPRESSION evaluates to the address at which the register is saved.
+class CallFrameInfo::ExpressionRule: public CallFrameInfo::Rule {
+ public:
+  explicit ExpressionRule(const string &expression)
+      : expression_(expression) { }
+  ~ExpressionRule() { }
+  bool Handle(Handler *handler, uint64 address, int reg) const {
+    return handler->ExpressionRule(address, reg, expression_);
+  }
+  bool operator==(const Rule &rhs) const {
+    // dynamic_cast is prohibited by Google C++ Style Guide, but justified.
+    const ExpressionRule *our_rhs = dynamic_cast<const ExpressionRule *>(&rhs);
+    return (our_rhs && expression_ == our_rhs->expression_);
+  }
+  Rule *Copy() const { return new ExpressionRule(*this); }
+ private:
+  string expression_;
+};
+
+// Rule: EXPRESSION evaluates to the address at which the register is saved.
+class CallFrameInfo::ValExpressionRule: public CallFrameInfo::Rule {
+ public:
+  explicit ValExpressionRule(const string &expression)
+      : expression_(expression) { }
+  ~ValExpressionRule() { }
+  bool Handle(Handler *handler, uint64 address, int reg) const {
+    return handler->ValExpressionRule(address, reg, expression_);
+  }
+  bool operator==(const Rule &rhs) const {
+    // dynamic_cast is prohibited by Google C++ Style Guide, but justified.
+    const ValExpressionRule *our_rhs =
+        dynamic_cast<const ValExpressionRule *>(&rhs);
+    return (our_rhs && expression_ == our_rhs->expression_);
+  }
+  Rule *Copy() const { return new ValExpressionRule(*this); }
+ private:
+  string expression_;
+};
+
+// A map from register numbers to rules.
+class CallFrameInfo::RuleMap {
+ public:
+  RuleMap() : cfa_rule_(NULL) { }
+  RuleMap(const RuleMap &rhs) : cfa_rule_(NULL) { *this = rhs; }
+  ~RuleMap() { Clear(); }
+
+  RuleMap &operator=(const RuleMap &rhs);
+
+  // Set the rule for computing the CFA to RULE. Take ownership of RULE.
+  void SetCFARule(Rule *rule) { delete cfa_rule_; cfa_rule_ = rule; }
+
+  // Return the current CFA rule. Unlike RegisterRule, this RuleMap retains
+  // ownership of the rule. We use this for DW_CFA_def_cfa_offset and
+  // DW_CFA_def_cfa_register, and for detecting references to the CFA before
+  // a rule for it has been established.
+  Rule *CFARule() const { return cfa_rule_; }
+
+  // Return the rule for REG, or NULL if there is none. The caller takes
+  // ownership of the result.
+  Rule *RegisterRule(int reg) const;
+
+  // Set the rule for computing REG to RULE. Take ownership of RULE.
+  void SetRegisterRule(int reg, Rule *rule);
+
+  // Make all the appropriate calls to HANDLER as if we were changing from
+  // this RuleMap to NEW_RULES at ADDRESS. We use this to implement
+  // DW_CFA_restore_state, where lots of rules can change simultaneously.
+  // Return true if all handlers returned true; otherwise, return false.
+  bool HandleTransitionTo(Handler *handler, uint64 address,
+                          const RuleMap &new_rules) const;
+
+ private:
+  // A map from register numbers to Rules.
+  typedef map<int, Rule *> RuleByNumber;
+
+  // Remove all register rules and clear cfa_rule_.
+  void Clear();
+
+  // The rule for computing the canonical frame address. This RuleMap owns
+  // this rule.
+  Rule *cfa_rule_;
+
+  // A map from register numbers to postfix expressions to recover
+  // their values. This RuleMap owns the Rules the map refers to.
+  RuleByNumber registers_;
+};
+
+CallFrameInfo::RuleMap &CallFrameInfo::RuleMap::operator=(const RuleMap &rhs) {
+  Clear();
+  // Since each map owns the rules it refers to, assignment must copy them.
+  if (rhs.cfa_rule_) cfa_rule_ = rhs.cfa_rule_->Copy();
+  for (RuleByNumber::const_iterator it = rhs.registers_.begin();
+       it != rhs.registers_.end(); it++)
+    registers_[it->first] = it->second->Copy();
+  return *this;
+}
+
+CallFrameInfo::Rule *CallFrameInfo::RuleMap::RegisterRule(int reg) const {
+  assert(reg != Handler::kCFARegister);
+  RuleByNumber::const_iterator it = registers_.find(reg);
+  if (it != registers_.end())
+    return it->second->Copy();
+  else
+    return NULL;
+}
+
+void CallFrameInfo::RuleMap::SetRegisterRule(int reg, Rule *rule) {
+  assert(reg != Handler::kCFARegister);
+  assert(rule);
+  Rule **slot = &registers_[reg];
+  delete *slot;
+  *slot = rule;
+}
+
+bool CallFrameInfo::RuleMap::HandleTransitionTo(
+    Handler *handler,
+    uint64 address,
+    const RuleMap &new_rules) const {
+  // Transition from cfa_rule_ to new_rules.cfa_rule_.
+  if (cfa_rule_ && new_rules.cfa_rule_) {
+    if (*cfa_rule_ != *new_rules.cfa_rule_ &&
+        !new_rules.cfa_rule_->Handle(handler, address,
+                                     Handler::kCFARegister))
+      return false;
+  } else if (cfa_rule_) {
+    // this RuleMap has a CFA rule but new_rules doesn't.
+    // CallFrameInfo::Handler has no way to handle this --- and shouldn't;
+    // it's garbage input. The instruction interpreter should have
+    // detected this and warned, so take no action here.
+  } else if (new_rules.cfa_rule_) {
+    // This shouldn't be possible: NEW_RULES is some prior state, and
+    // there's no way to remove entries.
+    assert(0);
+  } else {
+    // Both CFA rules are empty.  No action needed.
+  }
+
+  // Traverse the two maps in order by register number, and report
+  // whatever differences we find.
+  RuleByNumber::const_iterator old_it = registers_.begin();
+  RuleByNumber::const_iterator new_it = new_rules.registers_.begin();
+  while (old_it != registers_.end() && new_it != new_rules.registers_.end()) {
+    if (old_it->first < new_it->first) {
+      // This RuleMap has an entry for old_it->first, but NEW_RULES
+      // doesn't.
+      //
+      // This isn't really the right thing to do, but since CFI generally
+      // only mentions callee-saves registers, and GCC's convention for
+      // callee-saves registers is that they are unchanged, it's a good
+      // approximation.
+      if (!handler->SameValueRule(address, old_it->first))
+        return false;
+      old_it++;
+    } else if (old_it->first > new_it->first) {
+      // NEW_RULES has entry for new_it->first, but this RuleMap
+      // doesn't. This shouldn't be possible: NEW_RULES is some prior
+      // state, and there's no way to remove entries.
+      assert(0);
+    } else {
+      // Both maps have an entry for this register. Report the new
+      // rule if it is different.
+      if (*old_it->second != *new_it->second &&
+          !new_it->second->Handle(handler, address, new_it->first))
+        return false;
+      new_it++, old_it++;
+    }
+  }
+  // Finish off entries from this RuleMap with no counterparts in new_rules.
+  while (old_it != registers_.end()) {
+    if (!handler->SameValueRule(address, old_it->first))
+      return false;
+    old_it++;
+  }
+  // Since we only make transitions from a rule set to some previously
+  // saved rule set, and we can only add rules to the map, NEW_RULES
+  // must have fewer rules than *this.
+  assert(new_it == new_rules.registers_.end());
+
+  return true;
+}
+
+// Remove all register rules and clear cfa_rule_.
+void CallFrameInfo::RuleMap::Clear() {
+  delete cfa_rule_;
+  cfa_rule_ = NULL;
+  for (RuleByNumber::iterator it = registers_.begin();
+       it != registers_.end(); it++)
+    delete it->second;
+  registers_.clear();
+}
+
+// The state of the call frame information interpreter as it processes
+// instructions from a CIE and FDE.
+class CallFrameInfo::State {
+ public:
+  // Create a call frame information interpreter state with the given
+  // reporter, reader, handler, and initial call frame info address.
+  State(ByteReader *reader, Handler *handler, Reporter *reporter,
+        uint64 address)
+      : reader_(reader), handler_(handler), reporter_(reporter),
+        address_(address), entry_(NULL), cursor_(NULL) { }
+
+  // Interpret instructions from CIE, save the resulting rule set for
+  // DW_CFA_restore instructions, and return true. On error, report
+  // the problem to reporter_ and return false.
+  bool InterpretCIE(const CIE &cie);
+
+  // Interpret instructions from FDE, and return true. On error,
+  // report the problem to reporter_ and return false.
+  bool InterpretFDE(const FDE &fde);
+
+ private:  
+  // The operands of a CFI instruction, for ParseOperands.
+  struct Operands {
+    unsigned register_number;  // A register number.
+    uint64 offset;             // An offset or address.
+    long signed_offset;        // A signed offset.
+    string expression;         // A DWARF expression.
+  };
+
+  // Parse CFI instruction operands from STATE's instruction stream as
+  // described by FORMAT. On success, populate OPERANDS with the
+  // results, and return true. On failure, report the problem and
+  // return false.
+  //
+  // Each character of FORMAT should be one of the following:
+  //
+  //   'r'  unsigned LEB128 register number (OPERANDS->register_number)
+  //   'o'  unsigned LEB128 offset          (OPERANDS->offset)
+  //   's'  signed LEB128 offset            (OPERANDS->signed_offset)
+  //   'a'  machine-size address            (OPERANDS->offset)
+  //   '1'  a one-byte offset               (OPERANDS->offset)
+  //   '2'  a two-byte offset               (OPERANDS->offset)
+  //   '4'  a four-byte offset              (OPERANDS->offset)
+  //   '8'  an eight-byte offset            (OPERANDS->offset)
+  //   'e'  a DW_FORM_block holding a       (OPERANDS->expression)
+  //        DWARF expression
+  bool ParseOperands(const char *format, Operands *operands);
+
+  // Interpret one CFI instruction from STATE's instruction stream, update
+  // STATE, report any rule changes to handler_, and return true. On
+  // failure, report the problem and return false.
+  bool DoInstruction();
+
+  // The following Do* member functions are subroutines of DoInstruction,
+  // factoring out the actual work of operations that have several
+  // different encodings.
+
+  // Set the CFA rule to be the value of BASE_REGISTER plus OFFSET, and
+  // return true. On failure, report and return false. (Used for
+  // DW_CFA_def_cfa and DW_CFA_def_cfa_sf.)
+  bool DoDefCFA(unsigned base_register, long offset);
+
+  // Change the offset of the CFA rule to OFFSET, and return true. On
+  // failure, report and return false. (Subroutine for
+  // DW_CFA_def_cfa_offset and DW_CFA_def_cfa_offset_sf.)
+  bool DoDefCFAOffset(long offset);
+
+  // Specify that REG can be recovered using RULE, and return true. On
+  // failure, report and return false.
+  bool DoRule(unsigned reg, Rule *rule);
+
+  // Specify that REG can be found at OFFSET from the CFA, and return true.
+  // On failure, report and return false. (Subroutine for DW_CFA_offset,
+  // DW_CFA_offset_extended, and DW_CFA_offset_extended_sf.)
+  bool DoOffset(unsigned reg, long offset);
+
+  // Specify that the caller's value for REG is the CFA plus OFFSET,
+  // and return true. On failure, report and return false. (Subroutine
+  // for DW_CFA_val_offset and DW_CFA_val_offset_sf.)
+  bool DoValOffset(unsigned reg, long offset);
+
+  // Restore REG to the rule established in the CIE, and return true. On
+  // failure, report and return false. (Subroutine for DW_CFA_restore and
+  // DW_CFA_restore_extended.)
+  bool DoRestore(unsigned reg);
+
+  // Return the section offset of the instruction at cursor. For use
+  // in error messages.
+  uint64 CursorOffset() { return entry_->offset + (cursor_ - entry_->start); }
+
+  // Report that entry_ is incomplete, and return false. For brevity.
+  bool ReportIncomplete() {
+    reporter_->Incomplete(entry_->offset, entry_->kind);
+    return false;
+  }
+
+  // For reading multi-byte values with the appropriate endianness.
+  ByteReader *reader_;
+
+  // The handler to which we should report the data we find.
+  Handler *handler_;
+
+  // For reporting problems in the info we're parsing.
+  Reporter *reporter_;
+
+  // The code address to which the next instruction in the stream applies.
+  uint64 address_;
+
+  // The entry whose instructions we are currently processing. This is
+  // first a CIE, and then an FDE.
+  const Entry *entry_;
+
+  // The next instruction to process.
+  const char *cursor_;
+
+  // The current set of rules.
+  RuleMap rules_;
+
+  // The set of rules established by the CIE, used by DW_CFA_restore
+  // and DW_CFA_restore_extended. We set this after interpreting the
+  // CIE's instructions.
+  RuleMap cie_rules_;
+
+  // A stack of saved states, for DW_CFA_remember_state and
+  // DW_CFA_restore_state.
+  stack<RuleMap> saved_rules_;
+};
+
+bool CallFrameInfo::State::InterpretCIE(const CIE &cie) {
+  entry_ = &cie;
+  cursor_ = entry_->instructions;
+  while (cursor_ < entry_->end)
+    if (!DoInstruction())
+      return false;
+  // Note the rules established by the CIE, for use by DW_CFA_restore
+  // and DW_CFA_restore_extended.
+  cie_rules_ = rules_;
+  return true;
+}
+
+bool CallFrameInfo::State::InterpretFDE(const FDE &fde) {
+  entry_ = &fde;
+  cursor_ = entry_->instructions;
+  while (cursor_ < entry_->end)
+    if (!DoInstruction())
+      return false;
+  return true;
+}
+
+bool CallFrameInfo::State::ParseOperands(const char *format,
+                                         Operands *operands) {
+  size_t len;
+  const char *operand;
+
+  for (operand = format; *operand; operand++) {
+    size_t bytes_left = entry_->end - cursor_;
+    switch (*operand) {
+      case 'r':
+        operands->register_number = reader_->ReadUnsignedLEB128(cursor_, &len);
+        if (len > bytes_left) return ReportIncomplete();
+        cursor_ += len;
+        break;
+
+      case 'o':
+        operands->offset = reader_->ReadUnsignedLEB128(cursor_, &len);
+        if (len > bytes_left) return ReportIncomplete();
+        cursor_ += len;
+        break;
+
+      case 's':
+        operands->signed_offset = reader_->ReadSignedLEB128(cursor_, &len);
+        if (len > bytes_left) return ReportIncomplete();
+        cursor_ += len;
+        break;
+
+      case 'a':
+        if (reader_->AddressSize() > bytes_left) return ReportIncomplete();
+        operands->offset = reader_->ReadAddress(cursor_);
+        cursor_ += reader_->AddressSize();
+        break;
+
+      case '1':
+        if (1 > bytes_left) return ReportIncomplete();
+        operands->offset = static_cast<unsigned char>(*cursor_++);
+        break;
+
+      case '2':
+        if (2 > bytes_left) return ReportIncomplete();
+        operands->offset = reader_->ReadTwoBytes(cursor_);
+        cursor_ += 2;
+        break;
+
+      case '4':
+        if (4 > bytes_left) return ReportIncomplete();
+        operands->offset = reader_->ReadFourBytes(cursor_);
+        cursor_ += 4;
+        break;
+
+      case '8':
+        if (8 > bytes_left) return ReportIncomplete();
+        operands->offset = reader_->ReadEightBytes(cursor_);
+        cursor_ += 8;
+        break;
+
+      case 'e': {
+        size_t expression_length = reader_->ReadUnsignedLEB128(cursor_, &len);
+        if (len > bytes_left || expression_length > bytes_left - len)
+          return ReportIncomplete();
+        cursor_ += len;
+        operands->expression = string(cursor_, expression_length);
+        cursor_ += expression_length;
+        break;
+      }
+
+      default:
+          assert(0);
+    }
+  }
+
+  return true;
+}
+
+bool CallFrameInfo::State::DoInstruction() {
+  CIE *cie = entry_->cie;
+  Operands ops;
+
+  // Our entry's kind should have been set by now.
+  assert(entry_->kind != kUnknown);
+
+  // We shouldn't have been invoked unless there were more
+  // instructions to parse.
+  assert(cursor_ < entry_->end);
+
+  unsigned opcode = *cursor_++;
+  if ((opcode & 0xc0) != 0) {
+    switch (opcode & 0xc0) {
+      // Advance the address.
+      case DW_CFA_advance_loc: {
+        size_t code_offset = opcode & 0x3f;
+        address_ += code_offset * cie->code_alignment_factor;
+        break;
+      }
+
+      // Find a register at an offset from the CFA.
+      case DW_CFA_offset:
+        if (!ParseOperands("o", &ops) ||
+            !DoOffset(opcode & 0x3f, ops.offset * cie->data_alignment_factor))
+          return false;
+        break;
+
+      // Restore the rule established for a register by the CIE.
+      case DW_CFA_restore:
+        if (!DoRestore(opcode & 0x3f)) return false;
+        break;
+
+      // The 'if' above should have excluded this possibility.
+      default:
+        assert(0);
+    }
+
+    // Return here, so the big switch below won't be indented.
+    return true;
+  }
+
+  switch (opcode) {
+    // Set the address.
+    case DW_CFA_set_loc:
+      if (!ParseOperands("a", &ops)) return false;
+      address_ = ops.offset;
+      break;
+
+    // Advance the address.
+    case DW_CFA_advance_loc1:
+      if (!ParseOperands("1", &ops)) return false;
+      address_ += ops.offset * cie->code_alignment_factor;
+      break;
+      
+    // Advance the address.
+    case DW_CFA_advance_loc2:
+      if (!ParseOperands("2", &ops)) return false;
+      address_ += ops.offset * cie->code_alignment_factor;
+      break;
+      
+    // Advance the address.
+    case DW_CFA_advance_loc4:
+      if (!ParseOperands("4", &ops)) return false;
+      address_ += ops.offset * cie->code_alignment_factor;
+      break;
+      
+    // Advance the address.
+    case DW_CFA_MIPS_advance_loc8:
+      if (!ParseOperands("8", &ops)) return false;
+      address_ += ops.offset * cie->code_alignment_factor;
+      break;
+
+    // Compute the CFA by adding an offset to a register.
+    case DW_CFA_def_cfa:
+      if (!ParseOperands("ro", &ops) ||
+          !DoDefCFA(ops.register_number, ops.offset))
+        return false;
+      break;
+
+    // Compute the CFA by adding an offset to a register.
+    case DW_CFA_def_cfa_sf:
+      if (!ParseOperands("rs", &ops) ||
+          !DoDefCFA(ops.register_number,
+                    ops.signed_offset * cie->data_alignment_factor))
+        return false;
+      break;
+
+    // Change the base register used to compute the CFA.
+    case DW_CFA_def_cfa_register: {
+      Rule *cfa_rule = rules_.CFARule();
+      if (!cfa_rule) {
+        reporter_->NoCFARule(entry_->offset, entry_->kind, CursorOffset());
+        return false;
+      }
+      if (!ParseOperands("r", &ops)) return false;
+      cfa_rule->SetBaseRegister(ops.register_number);
+      if (!cfa_rule->Handle(handler_, address_,
+                            Handler::kCFARegister))
+        return false;
+      break;
+    }
+
+    // Change the offset used to compute the CFA.
+    case DW_CFA_def_cfa_offset:
+      if (!ParseOperands("o", &ops) ||
+          !DoDefCFAOffset(ops.offset))
+        return false;
+      break;
+
+    // Change the offset used to compute the CFA.
+    case DW_CFA_def_cfa_offset_sf:
+      if (!ParseOperands("s", &ops) ||
+          !DoDefCFAOffset(ops.signed_offset * cie->data_alignment_factor))
+        return false;
+      break;
+
+    // Specify an expression whose value is the CFA.
+    case DW_CFA_def_cfa_expression: {
+      if (!ParseOperands("e", &ops))
+        return false;
+      Rule *rule = new ValExpressionRule(ops.expression);
+      rules_.SetCFARule(rule);
+      if (!rule->Handle(handler_, address_,
+                        Handler::kCFARegister))
+        return false;
+      break;
+    }
+
+    // The register's value cannot be recovered.
+    case DW_CFA_undefined: {
+      if (!ParseOperands("r", &ops) ||
+          !DoRule(ops.register_number, new UndefinedRule()))
+        return false;
+      break;
+    }
+
+    // The register's value is unchanged from its value in the caller.
+    case DW_CFA_same_value: {
+      if (!ParseOperands("r", &ops) ||
+          !DoRule(ops.register_number, new SameValueRule()))
+        return false;
+      break;
+    }
+
+    // Find a register at an offset from the CFA.
+    case DW_CFA_offset_extended:
+      if (!ParseOperands("ro", &ops) ||
+          !DoOffset(ops.register_number,
+                    ops.offset * cie->data_alignment_factor))
+        return false;
+      break;
+
+    // The register is saved at an offset from the CFA.
+    case DW_CFA_offset_extended_sf:
+      if (!ParseOperands("rs", &ops) ||
+          !DoOffset(ops.register_number,
+                    ops.signed_offset * cie->data_alignment_factor))
+        return false;
+      break;
+
+    // The register is saved at an offset from the CFA.
+    case DW_CFA_GNU_negative_offset_extended:
+      if (!ParseOperands("ro", &ops) ||
+          !DoOffset(ops.register_number,
+                    -ops.offset * cie->data_alignment_factor))
+        return false;
+      break;
+
+    // The register's value is the sum of the CFA plus an offset.
+    case DW_CFA_val_offset:
+      if (!ParseOperands("ro", &ops) ||
+          !DoValOffset(ops.register_number,
+                       ops.offset * cie->data_alignment_factor))
+        return false;
+      break;
+
+    // The register's value is the sum of the CFA plus an offset.
+    case DW_CFA_val_offset_sf:
+      if (!ParseOperands("rs", &ops) ||
+          !DoValOffset(ops.register_number,
+                       ops.signed_offset * cie->data_alignment_factor))
+        return false;
+      break;
+
+    // The register has been saved in another register.
+    case DW_CFA_register: {
+      if (!ParseOperands("ro", &ops) ||
+          !DoRule(ops.register_number, new RegisterRule(ops.offset)))
+        return false;
+      break;
+    }
+
+    // An expression yields the address at which the register is saved.
+    case DW_CFA_expression: {
+      if (!ParseOperands("re", &ops) ||
+          !DoRule(ops.register_number, new ExpressionRule(ops.expression)))
+        return false;
+      break;
+    }
+
+    // An expression yields the caller's value for the register.
+    case DW_CFA_val_expression: {
+      if (!ParseOperands("re", &ops) ||
+          !DoRule(ops.register_number, new ValExpressionRule(ops.expression)))
+        return false;
+      break;
+    }
+
+    // Restore the rule established for a register by the CIE.
+    case DW_CFA_restore_extended:
+      if (!ParseOperands("r", &ops) ||
+          !DoRestore( ops.register_number))
+        return false;
+      break;
+
+    // Save the current set of rules on a stack.
+    case DW_CFA_remember_state:
+      saved_rules_.push(rules_);
+      break;
+
+    // Pop the current set of rules off the stack.
+    case DW_CFA_restore_state: {
+      if (saved_rules_.empty()) {
+        reporter_->EmptyStateStack(entry_->offset, entry_->kind,
+                                   CursorOffset());
+        return false;
+      }
+      const RuleMap &new_rules = saved_rules_.top();
+      if (rules_.CFARule() && !new_rules.CFARule()) {
+        reporter_->ClearingCFARule(entry_->offset, entry_->kind,
+                                   CursorOffset());
+        return false;
+      }
+      rules_.HandleTransitionTo(handler_, address_, new_rules);
+      rules_ = new_rules;
+      saved_rules_.pop();
+      break;
+    }
+
+    // No operation.  (Padding instruction.)
+    case DW_CFA_nop:
+      break;
+
+    // A SPARC register window save: Registers 8 through 15 (%o0-%o7)
+    // are saved in registers 24 through 31 (%i0-%i7), and registers
+    // 16 through 31 (%l0-%l7 and %i0-%i7) are saved at CFA offsets
+    // (0-15 * the register size). The register numbers must be
+    // hard-coded. A GNU extension, and not a pretty one.
+    case DW_CFA_GNU_window_save: {
+      // Save %o0-%o7 in %i0-%i7.
+      for (int i = 8; i < 16; i++)
+        if (!DoRule(i, new RegisterRule(i + 16)))
+          return false;
+      // Save %l0-%l7 and %i0-%i7 at the CFA.
+      for (int i = 16; i < 32; i++)
+        // Assume that the byte reader's address size is the same as
+        // the architecture's register size. !@#%*^ hilarious.
+        if (!DoRule(i, new OffsetRule(Handler::kCFARegister,
+                                      (i - 16) * reader_->AddressSize())))
+          return false;
+      break;
+    }
+
+    // I'm not sure what this is. GDB doesn't use it for unwinding.
+    case DW_CFA_GNU_args_size:
+      if (!ParseOperands("o", &ops)) return false;
+      break;
+
+    // An opcode we don't recognize.
+    default: {
+      reporter_->BadInstruction(entry_->offset, entry_->kind, CursorOffset());
+      return false;
+    }
+  }
+
+  return true;
+}
+
+bool CallFrameInfo::State::DoDefCFA(unsigned base_register, long offset) {
+  Rule *rule = new ValOffsetRule(base_register, offset);
+  rules_.SetCFARule(rule);
+  return rule->Handle(handler_, address_,
+                      Handler::kCFARegister);
+}
+
+bool CallFrameInfo::State::DoDefCFAOffset(long offset) {
+  Rule *cfa_rule = rules_.CFARule();
+  if (!cfa_rule) {
+    reporter_->NoCFARule(entry_->offset, entry_->kind, CursorOffset());
+    return false;
+  }
+  cfa_rule->SetOffset(offset);
+  return cfa_rule->Handle(handler_, address_,
+                          Handler::kCFARegister);
+}
+
+bool CallFrameInfo::State::DoRule(unsigned reg, Rule *rule) {
+  rules_.SetRegisterRule(reg, rule);
+  return rule->Handle(handler_, address_, reg);
+}
+
+bool CallFrameInfo::State::DoOffset(unsigned reg, long offset) {
+  if (!rules_.CFARule()) {
+    reporter_->NoCFARule(entry_->offset, entry_->kind, CursorOffset());
+    return false;
+  }
+  return DoRule(reg,
+                new OffsetRule(Handler::kCFARegister, offset));
+}
+
+bool CallFrameInfo::State::DoValOffset(unsigned reg, long offset) {
+  if (!rules_.CFARule()) {
+    reporter_->NoCFARule(entry_->offset, entry_->kind, CursorOffset());
+    return false;
+  }
+  return DoRule(reg,
+                new ValOffsetRule(Handler::kCFARegister, offset));
+}
+
+bool CallFrameInfo::State::DoRestore(unsigned reg) {
+  // DW_CFA_restore and DW_CFA_restore_extended don't make sense in a CIE.
+  if (entry_->kind == kCIE) {
+    reporter_->RestoreInCIE(entry_->offset, CursorOffset());
+    return false;
+  }
+  Rule *rule = cie_rules_.RegisterRule(reg);
+  if (!rule) {
+    // This isn't really the right thing to do, but since CFI generally
+    // only mentions callee-saves registers, and GCC's convention for
+    // callee-saves registers is that they are unchanged, it's a good
+    // approximation.
+    rule = new SameValueRule();
+  }
+  return DoRule(reg, rule);
+}
+
+bool CallFrameInfo::ReadEntryPrologue(const char *cursor, Entry *entry) {
+  const char *buffer_end = buffer_ + buffer_length_;
+
+  // Initialize enough of ENTRY for use in error reporting.
+  entry->offset = cursor - buffer_;
+  entry->start = cursor;
+  entry->kind = kUnknown;
+  entry->end = NULL;
+
+  // Read the initial length. This sets reader_'s offset size. The length
+  // could be something like (uint64)-1, so we have to do two comparisons
+  // here.
+  size_t length_size;
+  uint64 length = reader_->ReadInitialLength(cursor, &length_size);
+  if (length_size > size_t(buffer_end - cursor) ||
+      length > size_t(buffer_end - (cursor + length_size)))
+    return ReportIncomplete(entry);
+  cursor += length_size;
+ 
+  // The length is the number of bytes after the initial length field;
+  // we have that position handy at this point, so compute the end
+  // now. (If we're parsing 64-bit-offset DWARF on a 32-bit machine,
+  // and the length didn't fit in a size_t, we would have rejected it
+  // above.)
+  entry->end = cursor + length;
+
+  // Parse the next field: either the offset of a CIE or a CIE id.
+  size_t offset_size = reader_->OffsetSize();
+  if (offset_size > size_t(entry->end - cursor)) return ReportIncomplete(entry);
+  entry->id = reader_->ReadOffset(cursor);
+  cursor += offset_size;
+
+  // Now we can decide what kind of entry this is.
+  if (offset_size == 4)
+    entry->kind = (entry->id == 0xffffffff) ? kCIE : kFDE;
+  else {
+    assert(offset_size == 8);
+    entry->kind = (entry->id == 0xffffffffffffffffULL) ? kCIE : kFDE;
+  }
+
+  // The fields specific to this kind of entry start here.
+  entry->fields = cursor;
+
+  entry->cie = NULL;
+
+  return true;
+}
+
+bool CallFrameInfo::ReadCIEFields(CIE *cie) {
+  const char *cursor = cie->fields;
+  size_t len;
+
+  assert(cie->kind == kCIE);
+
+  // Prepare for early exit.
+  cie->version = 0;
+  cie->augmentation.clear();
+  cie->code_alignment_factor = 0;
+  cie->data_alignment_factor = 0;
+  cie->return_address_register = 0;
+  cie->instructions = 0;
+
+  // Parse the version number.
+  if (cie->end - cursor < 1)
+    return ReportIncomplete(cie);
+  cie->version = reader_->ReadOneByte(cursor);
+  cursor++;
+
+  // If we don't recognize the version, we can't parse any more fields
+  // of the CIE.
+  if (cie->version < 1 || 3 < cie->version) {
+    reporter_->UnrecognizedVersion(cie->offset, cie->version);
+    return false;
+  }
+
+  const char *augmentation_start = cursor;
+  const void *augmentation_end =
+      memchr(augmentation_start, '\0', cie->end - augmentation_start);
+  if (! augmentation_end) return ReportIncomplete(cie);
+  cursor = static_cast<const char *>(augmentation_end);
+  cie->augmentation = string(augmentation_start, cursor - augmentation_start);
+  // Skip the terminating '\0'.
+  cursor++;
+
+  // If we don't recognize this augmentation, we can't parse any more
+  // fields of the CIE.
+  if (!cie->augmentation.empty()) {
+    // Augmentations can have arbitrary effects on the form of rest of
+    // the content, so we have to give up.
+    reporter_->UnrecognizedAugmentation(cie->offset, cie->augmentation);
+    return false;
+  }
+
+  // Parse the code alignment factor.
+  cie->code_alignment_factor = reader_->ReadUnsignedLEB128(cursor, &len);
+  if (size_t(cie->end - cursor) < len) return ReportIncomplete(cie);
+  cursor += len;
+  
+  // Parse the data alignment factor.
+  cie->data_alignment_factor = reader_->ReadSignedLEB128(cursor, &len);
+  if (size_t(cie->end - cursor) < len) return ReportIncomplete(cie);
+  cursor += len;
+  
+  // Parse the return address register. This is a ubyte in version 1, and
+  // a ULEB128 in version 3.
+  if (cie->version == 1) {
+    if (cursor >= cie->end) return ReportIncomplete(cie);
+    cie->return_address_register = uint8(*cursor++);
+  } else {
+    cie->return_address_register = reader_->ReadUnsignedLEB128(cursor, &len);
+    if (size_t(cie->end - cursor) < len) return ReportIncomplete(cie);
+    cursor += len;
+  }
+
+  // The CIE's instructions start here.
+  cie->instructions = cursor;
+
+  return true;
+}
+  
+bool CallFrameInfo::ReadFDEFields(FDE *fde) {
+  const char *cursor = fde->fields;
+  size_t address_size = reader_->AddressSize();
+
+  // Since both fields are of known size, we can do all bounds
+  // checking here.
+  if (size_t(fde->end - cursor) < 2 * address_size)
+    return ReportIncomplete(fde);
+
+  // Parse the start address and size.
+  fde->address = reader_->ReadAddress(cursor);
+  fde->size = reader_->ReadAddress(cursor + address_size);
+
+  // The FDE's instructions start after those.
+  fde->instructions = cursor + 2 * address_size;
+
+  return true;
+}
+  
+bool CallFrameInfo::Start() {
+  const char *buffer_end = buffer_ + buffer_length_;
+  const char *cursor;
+  bool all_ok = true;
+  const char *entry_end;
+  bool ok;
+
+  // Traverse all the entries in buffer_, skipping CIEs and offering
+  // FDEs to the handler.
+  for (cursor = buffer_; cursor < buffer_end;
+       cursor = entry_end, all_ok = all_ok && ok) {
+    FDE fde;
+
+    // Read the entry's prologue.
+    if (!ReadEntryPrologue(cursor, &fde))
+      // We can't continue processing the section, because we may not
+      // have gotten the length.
+      return false;
+
+    // Make it easy to skip this entry with 'continue': assume that
+    // things are not okay until we've checked all the data, and
+    // prepare the address of the next entry.
+    ok = false;
+    entry_end = fde.end;
+
+    // In this loop, we skip CIEs. We only parse them fully when we
+    // parse an FDE that refers to them. This limits our memory
+    // consumption (beyond the buffer itself) to that needed to
+    // process the largest single entry.
+    if (fde.kind != kFDE) {
+      ok = true;
+      continue;
+    }
+
+    // Validate the CIE pointer.
+    if (fde.id > buffer_length_) {
+      reporter_->CIEPointerOutOfRange(fde.offset, fde.id);
+      continue;
+    }
+      
+    CIE cie;
+
+    // Parse this FDE's CIE header.
+    if (!ReadEntryPrologue(buffer_ + fde.id, &cie))
+      continue;
+    // This had better be an actual CIE.
+    if (cie.kind != kCIE) {
+      reporter_->BadCIEId(fde.offset, fde.id);
+      continue;
+    }
+    if (!ReadCIEFields(&cie))
+      continue;
+
+    // We now have the values that govern both the CIE and the FDE.
+    cie.cie = &cie;
+    fde.cie = &cie;
+
+    // Parse the FDE's header.
+    if (!ReadFDEFields(&fde))
+      continue;
+
+    // Call Entry to ask the consumer if they're interested.
+    if (!handler_->Entry(fde.offset, fde.address, fde.size,
+                         cie.version, cie.augmentation,
+                         cie.return_address_register)) {
+      // The handler isn't interested in this entry. That's not an error.
+      ok = true;
+      continue;
+    }
+                         
+    // Interpret the CIE's instructions, and then the FDE's instructions.
+    State state(reader_, handler_, reporter_, fde.address);
+    ok = state.InterpretCIE(cie) && state.InterpretFDE(fde);
+
+    // Report the end of the entry.
+    handler_->End();
+  }
+
+  return all_ok;
+}
+
+const char *CallFrameInfo::KindName(EntryKind kind) {
+  if (kind == CallFrameInfo::kUnknown)
+    return "entry";
+  else if (kind == CallFrameInfo::kCIE)
+    return "common information entry";
+  else {
+    assert(kind == CallFrameInfo::kFDE);
+    return "frame description entry";
+  }
+}
+
+bool CallFrameInfo::ReportIncomplete(Entry *entry) {
+  reporter_->Incomplete(entry->offset, entry->kind);
+  return false;
+}
+
+void CallFrameInfo::Reporter::Incomplete(uint64 offset,
+                                        CallFrameInfo::EntryKind kind) {
+  fprintf(stderr,
+          "%s: CFI %s at offset 0x%llx in '%s': entry ends early\n",
+          filename_.c_str(), CallFrameInfo::KindName(kind), offset,
+          section_.c_str());
+}
+
+void CallFrameInfo::Reporter::CIEPointerOutOfRange(uint64 offset,
+                                                  uint64 cie_offset) {
+  fprintf(stderr,
+          "%s: CFI frame description entry at offset 0x%llx in '%s':"
+          " CIE pointer is out of range: 0x%llx\n",
+          filename_.c_str(), offset, section_.c_str(), cie_offset);
+}
+
+void CallFrameInfo::Reporter::BadCIEId(uint64 offset, uint64 cie_offset) {
+  fprintf(stderr,
+          "%s: CFI frame description entry at offset 0x%llx in '%s':"
+          " CIE pointer does not point to a CIE: 0x%llx\n",
+          filename_.c_str(), offset, section_.c_str(), cie_offset);
+}
+
+void CallFrameInfo::Reporter::UnrecognizedVersion(uint64 offset, int version) {
+  fprintf(stderr,
+          "%s: CFI frame description entry at offset 0x%llx in '%s':"
+          " CIE specifies unrecognized version: %d\n",
+          filename_.c_str(), offset, section_.c_str(), version);
+}
+
+void CallFrameInfo::Reporter::UnrecognizedAugmentation(uint64 offset,
+                                                       const string &aug) {
+  fprintf(stderr,
+          "%s: CFI frame description entry at offset 0x%llx in '%s':"
+          " CIE specifies unrecognized augmentation: '%s'\n",
+          filename_.c_str(), offset, section_.c_str(), aug.c_str());
+}
+
+void CallFrameInfo::Reporter::RestoreInCIE(uint64 offset, uint64 insn_offset) {
+  fprintf(stderr,
+          "%s: CFI common information entry at offset 0x%llx in '%s':"
+          " the DW_CFA_restore instruction at offset 0x%llx"
+          " cannot be used in a common information entry\n",
+          filename_.c_str(), offset, section_.c_str(), insn_offset);
+}
+
+void CallFrameInfo::Reporter::BadInstruction(uint64 offset,
+                                            CallFrameInfo::EntryKind kind,
+                                            uint64 insn_offset) {
+  fprintf(stderr,
+          "%s: CFI %s at offset 0x%llx in section '%s':"
+          " the instruction at offset 0x%llx is unrecognized\n",
+          filename_.c_str(), CallFrameInfo::KindName(kind),
+          offset, section_.c_str(), insn_offset);
+}
+
+void CallFrameInfo::Reporter::NoCFARule(uint64 offset,
+                                       CallFrameInfo::EntryKind kind,
+                                       uint64 insn_offset) {
+  fprintf(stderr,
+          "%s: CFI %s at offset 0x%llx in section '%s':"
+          " the instruction at offset 0x%llx assumes that a CFA rule has"
+          " been set, but none has been set\n",
+          filename_.c_str(), CallFrameInfo::KindName(kind), offset,
+          section_.c_str(), insn_offset);
+}
+
+void CallFrameInfo::Reporter::EmptyStateStack(uint64 offset,
+                                             CallFrameInfo::EntryKind kind,
+                                             uint64 insn_offset) {
+  fprintf(stderr,
+          "%s: CFI %s at offset 0x%llx in section '%s':"
+          " the DW_CFA_restore_state instruction at offset 0x%llx"
+          " should pop a saved state from the stack, but the stack is empty\n",
+          filename_.c_str(), CallFrameInfo::KindName(kind), offset,
+          section_.c_str(), insn_offset);
+}
+
+void CallFrameInfo::Reporter::ClearingCFARule(uint64 offset,
+                                             CallFrameInfo::EntryKind kind,
+                                             uint64 insn_offset) {
+  fprintf(stderr,
+          "%s: CFI %s at offset 0x%llx in section '%s':"
+          " the DW_CFA_restore_state instruction at offset 0x%llx"
+          " would clear the CFA rule in effect\n",
+          filename_.c_str(), CallFrameInfo::KindName(kind), offset,
+          section_.c_str(), insn_offset);
 }
 
 }  // namespace dwarf2reader

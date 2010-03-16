@@ -77,6 +77,7 @@ COVERAGE_SOURCES =
 all:: dump_syms
 dump_syms:					\
 	bytereader.o				\
+	dwarf_cfi_to_module.o			\
 	dwarf_cu_to_module.o			\
 	dwarf_line_to_module.o			\
 	dump_stabs.o				\
@@ -96,6 +97,8 @@ clean::
 dump_syms.o: dump_syms.cc
 
 VPATH += $(SRC)/common/linux
+dwarf_cfi_to_module.o: dwarf_cfi_to_module.cc
+COVERAGE_SOURCES += dwarf_cfi_to_module.cc
 dwarf_cu_to_module.o: dwarf_cu_to_module.cc
 COVERAGE_SOURCES += dwarf_cu_to_module.cc
 dwarf_line_to_module.o: dwarf_line_to_module.cc
@@ -112,10 +115,11 @@ COVERAGE_SOURCES += stabs_reader.cc
 
 VPATH += $(SRC)/common/dwarf
 bytereader.o: bytereader.cc
+cfi_assembler.o: cfi_assembler.cc
 dwarf2diehandler.o: dwarf2diehandler.cc
 COVERAGE_SOURCES += dwarf2diehandler.cc
 dwarf2reader.o: dwarf2reader.cc
-
+COVERAGE_SOURCES += dwarf2reader.cc
 
 
 ### Google C++ Testing Framework.
@@ -131,6 +135,13 @@ VPATH += $(SRC)/testing/src
 GMOCK_CPPFLAGS = -I$(SRC)/testing -I$(SRC)/testing/include
 gmock-all.o: gmock-all.cc
 gmock-all.o: override CPPFLAGS += $(GTEST_CPPFLAGS) $(GMOCK_CPPFLAGS)
+
+
+### google_breakpad::TestAssembler, for constructing binary test data
+VPATH += $(SRC)/processor
+TEST_ASSEMBLER_CPPFLAGS = -I$(SRC)/processor
+test_assembler.o: test_assembler.cc
+test_assembler.o: override CPPFLAGS += $(TEST_ASSEMBLER_CPPFLAGS)
 
 
 ### Unit tests for google_breakpad::StabsReader.
@@ -170,6 +181,7 @@ clean::
 check: check-module_unittest
 check-module_unittest: module_unittest
 module_unittest:				\
+	gmock-all.o				\
 	gtest-all.o				\
 	gtest_main.o				\
 	module.o				\
@@ -255,6 +267,47 @@ dwarf_cu_to_module_unittest.o: override CPPFLAGS += $(GTEST_CPPFLAGS) \
 						    $(GMOCK_CPPFLAGS)
 clean::
 	rm -f dwarf_cu_to_module_unittest
+
+
+
+### Unit tests for dwarf2reader::CallFrameInfo.
+check: check-dwarf2reader_cfi_unittest
+check-dwarf2reader_cfi_unittest: dwarf2reader_cfi_unittest
+dwarf2reader_cfi_unittest:      		\
+	bytereader.o				\
+	cfi_assembler.o				\
+	dwarf2reader.o				\
+	gmock-all.o				\
+	gtest-all.o				\
+	gtest_main.o				\
+	test_assembler.o			\
+	$(empty)
+CPP_EXECUTABLES += dwarf2reader_cfi_unittest
+dwarf2reader_cfi_unittest.o: dwarf2reader_cfi_unittest.cc
+dwarf2reader_cfi_unittest.o: override CPPFLAGS += $(GTEST_CPPFLAGS) \
+						  $(GMOCK_CPPFLAGS) \
+						  $(TEST_ASSEMBLER_CPPFLAGS)
+clean::
+	rm -f dwarf2reader_cfi_unittest
+
+
+
+### Unit tests for google_breakpad::DwarfCFIToModule.
+check: check-dwarf_cfi_to_module_unittest
+check-dwarf_cfi_to_module_unittest: dwarf_cfi_to_module_unittest
+dwarf_cfi_to_module_unittest:      		\
+	dwarf_cfi_to_module.o			\
+	gmock-all.o				\
+	gtest-all.o				\
+	gtest_main.o				\
+	module.o				\
+	$(empty)
+CPP_EXECUTABLES += dwarf_cfi_to_module_unittest
+dwarf_cfi_to_module_unittest.o: dwarf_cfi_to_module_unittest.cc
+dwarf_cfi_to_module_unittest.o: override CPPFLAGS += $(GTEST_CPPFLAGS) \
+						     $(GMOCK_CPPFLAGS)
+clean::
+	rm -f dwarf_cfi_to_module_unittest
 
 
 

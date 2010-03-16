@@ -113,6 +113,35 @@ class Module {
     File *file;                // The source file.
     int number;                // The source line number.
   };
+
+  // A map from register names to postfix expressions that recover
+  // their their values. This can represent a complete set of rules to
+  // follow at some address, or a set of changes to be applied to an
+  // extant set of rules.
+  typedef map<string, string> RuleMap;
+
+  // A map from addresses to RuleMaps, representing changes that take
+  // effect at given addresses.
+  typedef map<Address, RuleMap> RuleChangeMap;
+  
+  // A range of 'STACK CFI' stack walking information. An instance of
+  // this structure corresponds to a 'STACK CFI INIT' record and the
+  // subsequent 'STACK CFI' records that fall within its range.
+  struct StackFrameEntry {
+    // The starting address and number of bytes of machine code this
+    // entry covers.
+    Address address, size;
+
+    // The initial register recovery rules, in force at the starting
+    // address.
+    RuleMap initial_rules;
+
+    // A map from addresses to rule changes. To find the rules in
+    // force at a given address, start with initial_rules, and then
+    // apply the changes given in this map for all addresses up to and
+    // including the address you're interested in.
+    RuleChangeMap rule_changes;
+  };
     
   // Create a new module with the given name, operating system,
   // architecture, and ID string.
@@ -139,6 +168,12 @@ class Module {
   void AddFunctions(vector<Function *>::iterator begin,
                     vector<Function *>::iterator end);
 
+  // Add STACK_FRAME_ENTRY to the module.
+  // 
+  // This module owns all StackFrameEntry objects added with this
+  // function: destroying the module destroys them as well.
+  void AddStackFrameEntry(StackFrameEntry *stack_frame_entry);
+
   // If this module has a file named NAME, return a pointer to it. If
   // it has none, then create one and return a pointer to the new
   // file. This module owns all File objects created using these
@@ -151,16 +186,25 @@ class Module {
   File *FindExistingFile(const string &name);
 
   // Insert pointers to the functions added to this module at I in
-  // VEC. (Since this is effectively a copy of the function list, this
-  // is mostly useful for testing; other uses should probably get a
-  // more appropriate interface.)
+  // VEC. The pointed-to Functions are still owned by this module.
+  // (Since this is effectively a copy of the function list, this is
+  // mostly useful for testing; other uses should probably get a more
+  // appropriate interface.)
   void GetFunctions(vector<Function *> *vec, vector<Function *>::iterator i);
 
   // Clear VEC and fill it with pointers to the Files added to this
-  // module, sorted by name. (Since this is effectively a copy of the
-  // function list, this is mostly useful for testing; other uses
-  // should probably get a more appropriate interface.)
+  // module, sorted by name. The pointed-to Files are still owned by
+  // this module. (Since this is effectively a copy of the file list,
+  // this is mostly useful for testing; other uses should probably get
+  // a more appropriate interface.)
   void GetFiles(vector<File *> *vec);
+
+  // Clear VEC and fill it with pointers to the StackFrameEntry
+  // objects that have been added to this module. (Since this is
+  // effectively a copy of the stack frame entry list, this is mostly
+  // useful for testing; other uses should probably get
+  // a more appropriate interface.)
+  void GetStackFrameEntries(vector<StackFrameEntry *> *vec);
 
   // Find those files in this module that are actually referred to by
   // functions' line number data, and assign them source id numbers.
@@ -185,6 +229,11 @@ private:
   // errno to find the appropriate cause.  Return false.
   static bool ReportError();
 
+  // Write RULE_MAP to STREAM, in the form appropriate for 'STACK CFI'
+  // records, without a final newline. Return true if all goes well;
+  // if an error occurs, return false, and leave errno set.
+  static bool WriteRuleMap(const RuleMap &rule_map, FILE *stream);
+
   // Module header entries.
   string name_, os_, architecture_, id_;
 
@@ -208,6 +257,10 @@ private:
   // point to.
   FileByNameMap files_;                 // This module's source files.  
   vector<Function *> functions_;        // This module's functions.
+
+  // The module owns all the call frame info entries that have been
+  // added to it.
+  vector<StackFrameEntry *> stack_frame_entries_;
 };
 
 } // namespace google_breakpad
