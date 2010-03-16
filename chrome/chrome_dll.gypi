@@ -134,6 +134,7 @@
             'browser/resources/bookmark_manager/images/bookmark_bar_folder_mac.png',
             'browser/resources/bookmark_manager/images/bookmarks_favicon.png',
             'browser/resources/bookmark_manager/images/bookmarks_section.png',
+            'browser/resources/bookmark_manager/images/default_favicon.png',
             'browser/resources/bookmark_manager/images/folder_closed.png',
             'browser/resources/bookmark_manager/images/bookmark_manager_search.png',
             'browser/resources/bookmark_manager/images/folder_closed_rtl.png',

@@ -384,8 +384,12 @@ cr.define('bmm', function() {
     var labelEl = el.firstChild;
     labelEl.textContent = bookmarkNode.title;
     if (!bmm.isFolder(bookmarkNode)) {
-      labelEl.style.backgroundImage = url('chrome://favicon/' +
-                                          bookmarkNode.url);
+      // TODO(arv): Switch to favicon when the bug is fixed:
+      // http://code.google.com/p/chromium/issues/detail?id=37802
+      labelEl.style.backgroundImage = url('images/default_favicon.png');
+      //labelEl.style.backgroundImage = url('chrome://favicon/' +
+      //                                    bookmarkNode.url);
+
       var urlEl = el.childNodes[1].firstChild;
       urlEl.textContent = urlEl.href = bookmarkNode.url;
     } else {
