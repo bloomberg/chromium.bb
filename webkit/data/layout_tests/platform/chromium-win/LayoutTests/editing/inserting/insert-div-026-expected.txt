@@ -52,10 +52,9 @@ layer at (0,0) size 800x600
             text run at (455,27) width 12: "x"
       RenderBlock {DIV} at (0,234) size 784x32
         RenderBlock {DIV} at (0,0) size 784x32 [border: (2px solid #FF0000)]
-          RenderInline {B} at (0,0) size 31x26
+          RenderInline {B} at (0,0) size 19x26
             RenderText {#text} at (2,2) size 19x26
               text run at (2,2) width 19: "fo"
-            RenderInline {SPAN} at (0,0) size 12x27
-              RenderText {#text} at (21,2) size 12x27
-                text run at (21,2) width 12: "x"
+          RenderText {#text} at (21,2) size 12x27
+            text run at (21,2) width 12: "x"
 caret: position 3 of child 0 {#text} of child 0 {B} of child 1 {DIV} of child 3 {DIV} of child 1 {BODY} of child 0 {HTML} of document

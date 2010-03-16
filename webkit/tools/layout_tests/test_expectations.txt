@@ -2776,12 +2776,6 @@ BUG37684 SKIP : http/tests/cookies/third-party-cookie-relaxing.html = FAIL
 BUG29393 : http/tests/loading/state-object-security-exception.html = TEXT
 
 // Bugs that went unreported when we upstreamed run_webkit_tests
-BUG37896 WIN LINUX : editing/deleting/delete-3857753-fix.html = TEXT
-BUG37896 WIN LINUX : editing/inserting/insert-div-026.html = TEXT
-BUG37896 WIN LINUX : editing/pasteboard/paste-text-at-tabspan-001.html = TEXT
-BUG37896 WIN LINUX : editing/pasteboard/paste-text-at-tabspan-002.html = TEXT
-BUG37896 WIN LINUX : editing/style/font-family-with-space.html = TEXT
-BUG37896 WIN LINUX : editing/style/smoosh-styles-001.html = TEXT
 BUG37896 WIN : editing/undo/undo-smart-delete-word.html = TEXT
 BUG37896 MAC LINUX : fast/backgrounds/animated-svg-as-background.html = IMAGE
 BUG37896 MAC LINUX : fast/dom/Window/window-appendages-cleared.html = TEXT
