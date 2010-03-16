@@ -82,13 +82,15 @@ uint64 ByteReader::ReadInitialLength(const char* start, size_t* len) {
 bool ByteReader::ValidEncoding(DwarfPointerEncoding encoding) const {
   if (encoding == DW_EH_PE_omit) return true;
   if (encoding == DW_EH_PE_aligned) return true;
-  if (DwarfPointerEncoding(encoding & 0x7) > DW_EH_PE_udata8) return false;
-  if (DwarfPointerEncoding(encoding & 0x70) > DW_EH_PE_funcrel) return false;
+  if ((encoding & 0x7) > DW_EH_PE_udata8)
+    return false;
+  if ((encoding & 0x70) > DW_EH_PE_funcrel)
+    return false;
   return true;
 }
 
 bool ByteReader::UsableEncoding(DwarfPointerEncoding encoding) const {
-  switch (DwarfPointerEncoding(encoding & 0x70)) {
+  switch (encoding & 0x70) {
     case DW_EH_PE_absptr:  return true;
     case DW_EH_PE_pcrel:   return have_section_base_;
     case DW_EH_PE_textrel: return have_text_base_;
@@ -101,13 +103,14 @@ bool ByteReader::UsableEncoding(DwarfPointerEncoding encoding) const {
 uint64 ByteReader::ReadEncodedPointer(const char *buffer,
                                       DwarfPointerEncoding encoding,
                                       size_t *len) const {
-  // This is what the GCC unwinder does.
-  if (encoding == DW_EH_PE_omit) {
-    *len = 0;
-    return 0;
-  }
+  // UsableEncoding doesn't approve of DW_EH_PE_omit, so we shouldn't
+  // see it here.
+  assert(encoding != DW_EH_PE_omit);
 
-  // Aligned pointers are always absolute machine-sized and -signed pointers.
+  // The Linux Standards Base 4.0 does not make this clear, but the
+  // GNU tools (gcc/unwind-pe.h; readelf/dwarf.c; gdb/dwarf2-frame.c)
+  // agree that aligned pointers are always absolute, machine-sized,
+  // machine-signed pointers.
   if (encoding == DW_EH_PE_aligned) {
     assert(have_section_base_);
 
@@ -135,11 +138,17 @@ uint64 ByteReader::ReadEncodedPointer(const char *buffer,
   // Extract the value first, ignoring whether it's a pointer or an
   // offset relative to some base.
   uint64 offset;
-  switch (DwarfPointerEncoding(encoding & 0x0f)) {
+  switch (encoding & 0x0f) {
     case DW_EH_PE_absptr:
-      // As the low nybble value, DW_EH_PE_absptr simply means a
-      // machine-sized and -signed address; it doesn't mean it's absolute.
-      // So it is correct for us to relocate after this.
+      // DW_EH_PE_absptr is weird, as it is used as a meaningful value for
+      // both the high and low nybble of encoding bytes. When it appears in
+      // the high nybble, it means that the pointer is absolute, not an
+      // offset from some base address. When it appears in the low nybble,
+      // as here, it means that the pointer is stored as a normal
+      // machine-sized and machine-signed address. A low nybble of
+      // DW_EH_PE_absptr does not imply that the pointer is absolute; it is
+      // correct for us to treat the value as an offset from a base address
+      // if the upper nybble is not DW_EH_PE_absptr.
       offset = ReadAddress(buffer);
       *len = AddressSize();
       break;
@@ -193,7 +202,7 @@ uint64 ByteReader::ReadEncodedPointer(const char *buffer,
 
   // Find the appropriate base address.
   uint64 base;
-  switch (DwarfPointerEncoding(encoding & 0x70)) {
+  switch (encoding & 0x70) {
     case DW_EH_PE_absptr:
       base = 0;
       break;

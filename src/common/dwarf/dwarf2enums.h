@@ -1,3 +1,5 @@
+// -*- mode: c++ -*-
+
 // Copyright (c) 2010 Google Inc. All Rights Reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -588,12 +590,22 @@ enum DwarfPointerEncoding
     DW_EH_PE_sdata2	= 0x0A,
     DW_EH_PE_sdata4	= 0x0B,
     DW_EH_PE_sdata8	= 0x0C,
-    DW_EH_PE_signed	= 0x08,
     DW_EH_PE_pcrel	= 0x10,
     DW_EH_PE_textrel	= 0x20,
     DW_EH_PE_datarel	= 0x30,
     DW_EH_PE_funcrel	= 0x40,
     DW_EH_PE_aligned	= 0x50,
+
+    // The GNU toolchain sources define this enum value as well,
+    // simply to help classify the lower nybble values into signed and
+    // unsigned groups.
+    DW_EH_PE_signed	= 0x08,
+
+    // This is not documented in LSB 4.0, but it is used in both the
+    // Linux and OS X toolchains. It can be added to any other
+    // encoding (except DW_EH_PE_aligned), and indicates that the
+    // encoded value represents the address at which the true address
+    // is stored, not the true address itself.
     DW_EH_PE_indirect	= 0x80  
   };
 

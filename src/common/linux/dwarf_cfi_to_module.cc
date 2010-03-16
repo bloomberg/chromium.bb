@@ -46,12 +46,10 @@ bool DwarfCFIToModule::Entry(size_t offset, uint64 address, uint64 length,
                              uint8 version, const string &augmentation,
                              unsigned return_address) {
   assert(!entry_);
-  // The latest CFI format version we understand is version 3.
-  if (version > 3)
-    return false;
-  // We only handle non-augmented DWARF unwinding data at the moment.
-  if (!augmentation.empty())
-    return false;
+
+  // If dwarf2reader::CallFrameInfo can handle this version and
+  // augmentation, then we should be okay with that, so there's no
+  // need to check them here.
 
   // Get ready to collect entries.
   entry_ = new Module::StackFrameEntry;

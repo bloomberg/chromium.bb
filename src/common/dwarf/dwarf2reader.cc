@@ -1245,6 +1245,8 @@ class CallFrameInfo::State {
   //   'o'  unsigned LEB128 offset          (OPERANDS->offset)
   //   's'  signed LEB128 offset            (OPERANDS->signed_offset)
   //   'a'  machine-size address            (OPERANDS->offset)
+  //        (If the CIE has a 'z' augmentation string, 'a' uses the
+  //        encoding specified by the 'R' argument.)
   //   '1'  a one-byte offset               (OPERANDS->offset)
   //   '2'  a two-byte offset               (OPERANDS->offset)
   //   '4'  a four-byte offset              (OPERANDS->offset)
@@ -1381,9 +1383,11 @@ bool CallFrameInfo::State::ParseOperands(const char *format,
         break;
 
       case 'a':
-        if (reader_->AddressSize() > bytes_left) return ReportIncomplete();
-        operands->offset = reader_->ReadAddress(cursor_);
-        cursor_ += reader_->AddressSize();
+        operands->offset =
+          reader_->ReadEncodedPointer(cursor_, entry_->cie->pointer_encoding,
+                                      &len);
+        if (len > bytes_left) return ReportIncomplete();
+        cursor_ += len;
         break;
 
       case '1':
@@ -1773,15 +1777,24 @@ bool CallFrameInfo::ReadEntryPrologue(const char *cursor, Entry *entry) {
   entry->kind = kUnknown;
   entry->end = NULL;
 
-  // Read the initial length. This sets reader_'s offset size. The length
-  // could be something like (uint64)-1, so we have to do two comparisons
-  // here.
+  // Read the initial length. This sets reader_'s offset size.
   size_t length_size;
   uint64 length = reader_->ReadInitialLength(cursor, &length_size);
-  if (length_size > size_t(buffer_end - cursor) ||
-      length > size_t(buffer_end - (cursor + length_size)))
+  if (length_size > size_t(buffer_end - cursor))
     return ReportIncomplete(entry);
   cursor += length_size;
+
+  // In a .eh_frame section, a length of zero marks the end of the series
+  // of entries.
+  if (length == 0 && eh_frame_) {
+    entry->kind = kTerminator;
+    entry->end = cursor;
+    return true;
+  }
+
+  // Validate the length.
+  if (length > size_t(buffer_end - cursor))
+    return ReportIncomplete(entry);
  
   // The length is the number of bytes after the initial length field;
   // we have that position handy at this point, so compute the end
@@ -1794,16 +1807,37 @@ bool CallFrameInfo::ReadEntryPrologue(const char *cursor, Entry *entry) {
   size_t offset_size = reader_->OffsetSize();
   if (offset_size > size_t(entry->end - cursor)) return ReportIncomplete(entry);
   entry->id = reader_->ReadOffset(cursor);
-  cursor += offset_size;
+
+  // Don't advance cursor past id field yet; in .eh_frame data we need
+  // the id's position to compute the section offset of an FDE's CIE.
 
   // Now we can decide what kind of entry this is.
-  if (offset_size == 4)
-    entry->kind = (entry->id == 0xffffffff) ? kCIE : kFDE;
-  else {
-    assert(offset_size == 8);
-    entry->kind = (entry->id == 0xffffffffffffffffULL) ? kCIE : kFDE;
+  if (eh_frame_) {
+    // In .eh_frame data, an ID of zero marks the entry as a CIE, and
+    // anything else is an offset from the id field of the FDE to the start
+    // of the CIE.
+    if (entry->id == 0) {
+      entry->kind = kCIE;
+    } else {
+      entry->kind = kFDE;
+      // Turn the offset from the id into an offset from the buffer's start.
+      entry->id = (cursor - buffer_) - entry->id;
+    }
+  } else {
+    // In DWARF CFI data, an ID of ~0 (of the appropriate width, given the
+    // offset size for the entry) marks the entry as a CIE, and anything
+    // else is the offset of the CIE from the beginning of the section.
+    if (offset_size == 4)
+      entry->kind = (entry->id == 0xffffffff) ? kCIE : kFDE;
+    else {
+      assert(offset_size == 8);
+      entry->kind = (entry->id == 0xffffffffffffffffULL) ? kCIE : kFDE;
+    }
   }
 
+  // Now advance cursor past the id.
+   cursor += offset_size;
+ 
   // The fields specific to this kind of entry start here.
   entry->fields = cursor;
 
@@ -1824,6 +1858,8 @@ bool CallFrameInfo::ReadCIEFields(CIE *cie) {
   cie->code_alignment_factor = 0;
   cie->data_alignment_factor = 0;
   cie->return_address_register = 0;
+  cie->has_z_augmentation = false;
+  cie->pointer_encoding = DW_EH_PE_absptr;
   cie->instructions = 0;
 
   // Parse the version number.
@@ -1833,10 +1869,19 @@ bool CallFrameInfo::ReadCIEFields(CIE *cie) {
   cursor++;
 
   // If we don't recognize the version, we can't parse any more fields
-  // of the CIE.
-  if (cie->version < 1 || 3 < cie->version) {
-    reporter_->UnrecognizedVersion(cie->offset, cie->version);
-    return false;
+  // of the CIE. For DWARF CFI, we handle versions 1 through 3 (there
+  // was never a version 2 fo CFI data). For .eh_frame, we handle only
+  // version 1.
+  if (eh_frame_) {
+    if (cie->version != 1) {
+      reporter_->UnrecognizedVersion(cie->offset, cie->version);
+      return false;
+    }
+  } else {
+    if (cie->version < 1 || 3 < cie->version) {
+      reporter_->UnrecognizedVersion(cie->offset, cie->version);
+      return false;
+    }
   }
 
   const char *augmentation_start = cursor;
@@ -1848,11 +1893,16 @@ bool CallFrameInfo::ReadCIEFields(CIE *cie) {
   // Skip the terminating '\0'.
   cursor++;
 
-  // If we don't recognize this augmentation, we can't parse any more
-  // fields of the CIE.
-  if (!cie->augmentation.empty()) {
-    // Augmentations can have arbitrary effects on the form of rest of
-    // the content, so we have to give up.
+  // Is this an augmentation we recognize?
+  if (cie->augmentation.empty()) {
+    ; // Stock DWARF CFI.
+  } else if (cie->augmentation[0] == 'z') {
+    // Linux C++ ABI 'z' augmentation, used for exception handling data.
+    cie->has_z_augmentation = true;
+  } else {
+    // Not an augmentation we recognize. Augmentations can have
+    // arbitrary effects on the form of rest of the content, so we
+    // have to give up.
     reporter_->UnrecognizedAugmentation(cie->offset, cie->augmentation);
     return false;
   }
@@ -1878,6 +1928,100 @@ bool CallFrameInfo::ReadCIEFields(CIE *cie) {
     cursor += len;
   }
 
+  // If we have a 'z' augmentation string, find the augmentation data and
+  // use the augmentation string to parse it.
+  if (cie->has_z_augmentation) {
+    size_t data_size = reader_->ReadUnsignedLEB128(cursor, &len);
+    if (size_t(cie->end - cursor) < len + data_size)
+      return ReportIncomplete(cie);
+    cursor += len;
+    const char *data = cursor;
+    cursor += data_size;
+    const char *data_end = cursor;
+
+    cie->has_z_lsda = false;
+    cie->has_z_personality = false;
+    cie->has_z_signal_frame = false;
+
+    // Walk the augmentation string, and extract values from the
+    // augmentation data as the string directs.
+    for (size_t i = 1; i < cie->augmentation.size(); i++) {
+      switch (cie->augmentation[i]) {
+        case 'L':
+          // The CIE's augmentation data holds the language-specific data
+          // area pointer's encoding, and the FDE's augmentation data holds
+          // the pointer itself.
+          cie->has_z_lsda = true;
+          // Fetch the LSDA encoding from the augmentation data.
+          if (data >= data_end) return ReportIncomplete(cie);
+          cie->lsda_encoding = DwarfPointerEncoding(*data++);
+          if (!reader_->ValidEncoding(cie->lsda_encoding)) {
+            reporter_->InvalidPointerEncoding(cie->offset, cie->lsda_encoding);
+            return false;
+          }
+          // Don't check if the encoding is usable here --- we haven't
+          // read the FDE's fields yet, so we're not prepared for
+          // DW_EH_PE_funcrel, although that's a fine encoding for the
+          // LSDA to use, since it appears in the FDE.
+          break;
+
+        case 'P':
+          // The CIE's augmentation data holds the personality routine
+          // pointer's encoding, followed by the pointer itself.
+          cie->has_z_personality = true;
+          // Fetch the personality routine pointer's encoding from the
+          // augmentation data.
+          if (data >= data_end) return ReportIncomplete(cie);
+          cie->personality_encoding = DwarfPointerEncoding(*data++);
+          if (!reader_->ValidEncoding(cie->personality_encoding)) {
+            reporter_->InvalidPointerEncoding(cie->offset,
+                                              cie->personality_encoding);
+            return false;
+          }
+          if (!reader_->UsableEncoding(cie->personality_encoding)) {
+            reporter_->UnusablePointerEncoding(cie->offset,
+                                               cie->personality_encoding);
+            return false;
+          }
+          // Fetch the personality routine's pointer itself from the data.
+          cie->personality_address =
+            reader_->ReadEncodedPointer(data, cie->personality_encoding,
+                                        &len);
+          if (len > size_t(data_end - data))
+            return ReportIncomplete(cie);
+          data += len;
+          break;
+
+        case 'R':
+          // The CIE's augmentation data holds the pointer encoding to use
+          // for addresses in the FDE.
+          if (data >= data_end) return ReportIncomplete(cie);
+          cie->pointer_encoding = DwarfPointerEncoding(*data++);
+          if (!reader_->ValidEncoding(cie->pointer_encoding)) {
+            reporter_->InvalidPointerEncoding(cie->offset,
+                                              cie->pointer_encoding);
+            return false;
+          }
+          if (!reader_->UsableEncoding(cie->pointer_encoding)) {
+            reporter_->UnusablePointerEncoding(cie->offset,
+                                               cie->pointer_encoding);
+            return false;
+          }
+          break;
+
+        case 'S':
+          // Frames using this CIE are signal delivery frames.
+          cie->has_z_signal_frame = true;
+          break;
+
+        default:
+          // An augmentation we don't recognize.
+          reporter_->UnrecognizedAugmentation(cie->offset, cie->augmentation);
+          return false;
+      }
+    }
+  }
+
   // The CIE's instructions start here.
   cie->instructions = cursor;
 
@@ -1886,19 +2030,66 @@ bool CallFrameInfo::ReadCIEFields(CIE *cie) {
   
 bool CallFrameInfo::ReadFDEFields(FDE *fde) {
   const char *cursor = fde->fields;
-  size_t address_size = reader_->AddressSize();
+  size_t size;
 
-  // Since both fields are of known size, we can do all bounds
-  // checking here.
-  if (size_t(fde->end - cursor) < 2 * address_size)
+  fde->address = reader_->ReadEncodedPointer(cursor, fde->cie->pointer_encoding,
+                                             &size);
+  if (size > size_t(fde->end - cursor))
     return ReportIncomplete(fde);
+  cursor += size;
+  reader_->SetFunctionBase(fde->address);
 
-  // Parse the start address and size.
-  fde->address = reader_->ReadAddress(cursor);
-  fde->size = reader_->ReadAddress(cursor + address_size);
+  // For the length, we strip off the upper nybble of the encoding used for
+  // the starting address.
+  DwarfPointerEncoding length_encoding =
+    DwarfPointerEncoding(fde->cie->pointer_encoding & 0x0f);
+  fde->size = reader_->ReadEncodedPointer(cursor, length_encoding, &size);
+  if (size > size_t(fde->end - cursor))
+    return ReportIncomplete(fde);
+  cursor += size;
+
+  // If the CIE has a 'z' augmentation string, then augmentation data
+  // appears here.
+  if (fde->cie->has_z_augmentation) {
+    size_t data_size = reader_->ReadUnsignedLEB128(cursor, &size);
+    if (size_t(fde->end - cursor) < size + data_size)
+      return ReportIncomplete(fde);
+    cursor += size;
+    
+    // In the abstract, we should walk the augmentation string, and extract
+    // items from the FDE's augmentation data as we encounter augmentation
+    // string characters that specify their presence: the ordering of items
+    // in the augmentation string determines the arrangement of values in
+    // the augmentation data.
+    //
+    // In practice, there's only ever one value in FDE augmentation data
+    // that we support --- the LSDA pointer --- and we have to bail if we
+    // see any unrecognized augmentation string characters. So if there is
+    // anything here at all, we know what it is, and where it starts.
+    if (fde->cie->has_z_lsda) {
+      // Check whether the LSDA's pointer encoding is usable now: only once
+      // we've parsed the FDE's starting address do we call reader_->
+      // SetFunctionBase, so that the DW_EH_PE_funcrel encoding becomes
+      // usable.
+      if (!reader_->UsableEncoding(fde->cie->lsda_encoding)) {
+        reporter_->UnusablePointerEncoding(fde->cie->offset,
+                                           fde->cie->lsda_encoding);
+        return false;
+      }
+
+      fde->lsda_address =
+        reader_->ReadEncodedPointer(cursor, fde->cie->lsda_encoding, &size);
+      if (size > data_size)
+        return ReportIncomplete(fde);
+      // Ideally, we would also complain here if there were unconsumed
+      // augmentation data.
+    }
+
+    cursor += data_size;
+  }
 
   // The FDE's instructions start after those.
-  fde->instructions = cursor + 2 * address_size;
+  fde->instructions = cursor;
 
   return true;
 }
@@ -1916,17 +2107,34 @@ bool CallFrameInfo::Start() {
        cursor = entry_end, all_ok = all_ok && ok) {
     FDE fde;
 
-    // Read the entry's prologue.
-    if (!ReadEntryPrologue(cursor, &fde))
-      // We can't continue processing the section, because we may not
-      // have gotten the length.
-      return false;
-
     // Make it easy to skip this entry with 'continue': assume that
     // things are not okay until we've checked all the data, and
     // prepare the address of the next entry.
     ok = false;
+
+    // Read the entry's prologue.
+    if (!ReadEntryPrologue(cursor, &fde)) {
+      if (!fde.end) {
+        // If we couldn't even figure out this entry's extent, then we
+        // must stop processing entries altogether.
+        all_ok = false;
+        break;
+      }
+      entry_end = fde.end;
+      continue;
+    }
+
+    // The next iteration picks up after this entry.
     entry_end = fde.end;
+
+    // Did we see an .eh_frame terminating mark?
+    if (fde.kind == kTerminator) {
+      // If there appears to be more data left in the section after the
+      // terminating mark, warn the user. But this is just a warning;
+      // we leave all_ok true.
+      if (fde.end < buffer_end) reporter_->EarlyEHTerminator(fde.offset);
+      break;
+    }
 
     // In this loop, we skip CIEs. We only parse them fully when we
     // parse an FDE that refers to them. This limits our memory
@@ -1973,9 +2181,37 @@ bool CallFrameInfo::Start() {
       continue;
     }
                          
+    if (cie.has_z_augmentation) {
+      // Report the personality routine address, if we have one.
+      if (cie.has_z_personality) {
+        if (!handler_
+            ->PersonalityRoutine(cie.personality_address,
+                                 IsIndirectEncoding(cie.personality_encoding)))
+          continue;
+      }
+
+      // Report the language-specific data area address, if we have one.
+      if (cie.has_z_lsda) {
+        if (!handler_
+            ->LanguageSpecificDataArea(fde.lsda_address,
+                                       IsIndirectEncoding(cie.lsda_encoding)))
+          continue;
+      }
+
+      // If this is a signal-handling frame, report that.
+      if (cie.has_z_signal_frame) {
+        if (!handler_->SignalHandler())
+          continue;
+      }
+    }
+
     // Interpret the CIE's instructions, and then the FDE's instructions.
     State state(reader_, handler_, reporter_, fde.address);
     ok = state.InterpretCIE(cie) && state.InterpretFDE(fde);
+
+    // Tell the ByteReader that the function start address from the
+    // FDE header is no longer valid.
+    reader_->ClearFunctionBase();
 
     // Report the end of the entry.
     handler_->End();
@@ -1989,9 +2225,11 @@ const char *CallFrameInfo::KindName(EntryKind kind) {
     return "entry";
   else if (kind == CallFrameInfo::kCIE)
     return "common information entry";
-  else {
-    assert(kind == CallFrameInfo::kFDE);
+  else if (kind == CallFrameInfo::kFDE)
     return "frame description entry";
+  else {
+    assert (kind == CallFrameInfo::kTerminator);
+    return ".eh_frame sequence terminator";
   }
 }
 
@@ -2001,15 +2239,22 @@ bool CallFrameInfo::ReportIncomplete(Entry *entry) {
 }
 
 void CallFrameInfo::Reporter::Incomplete(uint64 offset,
-                                        CallFrameInfo::EntryKind kind) {
+                                         CallFrameInfo::EntryKind kind) {
   fprintf(stderr,
           "%s: CFI %s at offset 0x%llx in '%s': entry ends early\n",
           filename_.c_str(), CallFrameInfo::KindName(kind), offset,
           section_.c_str());
 }
 
+void CallFrameInfo::Reporter::EarlyEHTerminator(uint64 offset) {
+  fprintf(stderr,
+          "%s: CFI at offset 0x%llx in '%s': saw end-of-data marker"
+          " before end of section contents\n",
+          filename_.c_str(), offset, section_.c_str());
+}
+
 void CallFrameInfo::Reporter::CIEPointerOutOfRange(uint64 offset,
-                                                  uint64 cie_offset) {
+                                                   uint64 cie_offset) {
   fprintf(stderr,
           "%s: CFI frame description entry at offset 0x%llx in '%s':"
           " CIE pointer is out of range: 0x%llx\n",
@@ -2038,6 +2283,22 @@ void CallFrameInfo::Reporter::UnrecognizedAugmentation(uint64 offset,
           filename_.c_str(), offset, section_.c_str(), aug.c_str());
 }
 
+void CallFrameInfo::Reporter::InvalidPointerEncoding(uint64 offset,
+                                                     uint8 encoding) {
+  fprintf(stderr,
+          "%s: CFI common information entry at offset 0x%llx in '%s':"
+          " 'z' augmentation specifies invalid pointer encoding: 0x%02x\n",
+          filename_.c_str(), offset, section_.c_str(), encoding);
+}
+
+void CallFrameInfo::Reporter::UnusablePointerEncoding(uint64 offset,
+                                                      uint8 encoding) {
+  fprintf(stderr,
+          "%s: CFI common information entry at offset 0x%llx in '%s':"
+          " 'z' augmentation specifies a pointer encoding for which we have no base address: 0x%02x\n",
+          filename_.c_str(), offset, section_.c_str(), encoding);
+}
+
 void CallFrameInfo::Reporter::RestoreInCIE(uint64 offset, uint64 insn_offset) {
   fprintf(stderr,
           "%s: CFI common information entry at offset 0x%llx in '%s':"
@@ -2047,8 +2308,8 @@ void CallFrameInfo::Reporter::RestoreInCIE(uint64 offset, uint64 insn_offset) {
 }
 
 void CallFrameInfo::Reporter::BadInstruction(uint64 offset,
-                                            CallFrameInfo::EntryKind kind,
-                                            uint64 insn_offset) {
+                                             CallFrameInfo::EntryKind kind,
+                                             uint64 insn_offset) {
   fprintf(stderr,
           "%s: CFI %s at offset 0x%llx in section '%s':"
           " the instruction at offset 0x%llx is unrecognized\n",
@@ -2057,8 +2318,8 @@ void CallFrameInfo::Reporter::BadInstruction(uint64 offset,
 }
 
 void CallFrameInfo::Reporter::NoCFARule(uint64 offset,
-                                       CallFrameInfo::EntryKind kind,
-                                       uint64 insn_offset) {
+                                        CallFrameInfo::EntryKind kind,
+                                        uint64 insn_offset) {
   fprintf(stderr,
           "%s: CFI %s at offset 0x%llx in section '%s':"
           " the instruction at offset 0x%llx assumes that a CFA rule has"
@@ -2068,8 +2329,8 @@ void CallFrameInfo::Reporter::NoCFARule(uint64 offset,
 }
 
 void CallFrameInfo::Reporter::EmptyStateStack(uint64 offset,
-                                             CallFrameInfo::EntryKind kind,
-                                             uint64 insn_offset) {
+                                              CallFrameInfo::EntryKind kind,
+                                              uint64 insn_offset) {
   fprintf(stderr,
           "%s: CFI %s at offset 0x%llx in section '%s':"
           " the DW_CFA_restore_state instruction at offset 0x%llx"
@@ -2079,8 +2340,8 @@ void CallFrameInfo::Reporter::EmptyStateStack(uint64 offset,
 }
 
 void CallFrameInfo::Reporter::ClearingCFARule(uint64 offset,
-                                             CallFrameInfo::EntryKind kind,
-                                             uint64 insn_offset) {
+                                              CallFrameInfo::EntryKind kind,
+                                              uint64 insn_offset) {
   fprintf(stderr,
           "%s: CFI %s at offset 0x%llx in section '%s':"
           " the DW_CFA_restore_state instruction at offset 0x%llx"

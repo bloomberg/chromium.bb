@@ -39,11 +39,13 @@
 
 #include <string>
 
+#include "common/dwarf/dwarf2enums.h"
 #include "google_breakpad/common/breakpad_types.h"
 #include "processor/test_assembler.h"
 
 namespace google_breakpad {
 
+using dwarf2reader::DwarfPointerEncoding;
 using google_breakpad::TestAssembler::Endianness;
 using google_breakpad::TestAssembler::Label;
 using google_breakpad::TestAssembler::Section;
@@ -51,11 +53,53 @@ using std::string;
 
 class CFISection: public Section {
  public:
+
+  // CFI augmentation strings beginning with 'z', defined by the
+  // Linux/IA-64 C++ ABI, can specify interesting encodings for
+  // addresses appearing in FDE headers and call frame instructions (and
+  // for additional fields whose presence the augmentation string
+  // specifies). In particular, pointers can be specified to be relative
+  // to various base address: the start of the .text section, the
+  // location holding the address itself, and so on. These allow the
+  // frame data to be position-independent even when they live in
+  // write-protected pages. These variants are specified at the
+  // following two URLs:
+  //
+  // http://refspecs.linux-foundation.org/LSB_4.0.0/LSB-Core-generic/LSB-Core-generic/dwarfext.html
+  // http://refspecs.linux-foundation.org/LSB_4.0.0/LSB-Core-generic/LSB-Core-generic/ehframechpt.html
+  //
+  // CFISection leaves the production of well-formed 'z'-augmented CIEs and
+  // FDEs to the user, but does provide EncodedPointer, to emit
+  // properly-encoded addresses for a given pointer encoding.
+  // EncodedPointer uses an instance of this structure to find the base
+  // addresses it should use; you can establish a default for all encoded
+  // pointers appended to this section with SetEncodedPointerBases.
+  struct EncodedPointerBases {
+    EncodedPointerBases() : cfi(), text(), data() { }
+
+    // The starting address of this CFI section in memory, for
+    // DW_EH_PE_pcrel. DW_EH_PE_pcrel pointers may only be used in data
+    // that has is loaded into the program's address space.
+    u_int64_t cfi;
+
+    // The starting address of this file's .text section, for DW_EH_PE_textrel.
+    u_int64_t text;
+
+    // The starting address of this file's .got or .eh_frame_hdr section,
+    // for DW_EH_PE_datarel.
+    u_int64_t data;
+  };
+
   // Create a CFISection whose endianness is ENDIANNESS, and where
-  // machine addresses are ADDRESS_SIZE bytes long.
-  CFISection(Endianness endianness, size_t address_size)
-      : Section(endianness), address_size_(address_size),
-        entry_length_(NULL) {
+  // machine addresses are ADDRESS_SIZE bytes long. If EH_FRAME is
+  // true, use the .eh_frame format, as described by the Linux
+  // Standards Base Core Specification, instead of the DWARF CFI
+  // format.
+  CFISection(Endianness endianness, size_t address_size,
+             bool eh_frame = false)
+      : Section(endianness), address_size_(address_size), eh_frame_(eh_frame),
+        pointer_encoding_(dwarf2reader::DW_EH_PE_absptr),
+        encoded_pointer_bases_(), entry_length_(NULL), in_fde_(false) {
     // The 'start', 'Here', and 'Mark' members of a CFISection all refer
     // to section offsets.
     start() = 0;
@@ -63,6 +107,22 @@ class CFISection: public Section {
 
   // Return this CFISection's address size.
   size_t AddressSize() const { return address_size_; }
+
+  // Return true if this CFISection uses the .eh_frame format, or
+  // false if it contains ordinary DWARF CFI data.
+  bool ContainsEHFrame() const { return eh_frame_; }
+
+  // Use ENCODING for pointers in calls to FDEHeader and EncodedPointer.
+  void SetPointerEncoding(DwarfPointerEncoding encoding) {
+    pointer_encoding_ = encoding;
+  }
+
+  // Use the addresses in BASES as the base addresses for encoded
+  // pointers in subsequent calls to FDEHeader or EncodedPointer.
+  // This function makes a copy of BASES.
+  void SetEncodedPointerBases(const EncodedPointerBases &bases) {
+    encoded_pointer_bases_ = bases;
+  }
 
   // Append a Common Information Entry header to this section with the
   // given values. If dwarf64 is true, use the 64-bit DWARF initial
@@ -109,6 +169,35 @@ class CFISection: public Section {
     return *this;
   }
 
+  // Append ADDRESS to this section, in the appropriate size and
+  // endianness. Return a reference to this section.
+  CFISection &Address(u_int64_t address) {
+    Section::Append(endianness(), address_size_, address);
+    return *this;
+  }
+  CFISection &Address(Label address) {
+    Section::Append(endianness(), address_size_, address);
+    return *this;
+  }
+
+  // Append ADDRESS to this section, using ENCODING and BASES. ENCODING
+  // defaults to this section's default encoding, established by
+  // SetPointerEncoding. BASES defaults to this section's bases, set by
+  // SetEncodedPointerBases. If the DW_EH_PE_indirect bit is set in the
+  // encoding, assume that ADDRESS is where the true address is stored.
+  // Return a reference to this section.
+  // 
+  // (C++ doesn't let me use default arguments here, because I want to
+  // refer to members of *this in the default argument expression.)
+  CFISection &EncodedPointer(u_int64_t address) {
+    return EncodedPointer(address, pointer_encoding_, encoded_pointer_bases_);
+  }
+  CFISection &EncodedPointer(u_int64_t address, DwarfPointerEncoding encoding) {
+    return EncodedPointer(address, encoding, encoded_pointer_bases_);
+  }
+  CFISection &EncodedPointer(u_int64_t address, DwarfPointerEncoding encoding,
+                             const EncodedPointerBases &bases);
+
   // Restate some member functions, to keep chaining working nicely.
   CFISection &Mark(Label *label)   { Section::Mark(label); return *this; }
   CFISection &D8(u_int8_t v)       { Section::D8(v);       return *this; }
@@ -133,6 +222,16 @@ class CFISection: public Section {
   // The size of a machine address for the data in this section.
   size_t address_size_;
 
+  // If true, we are generating a Linux .eh_frame section, instead of
+  // a standard DWARF .debug_frame section.
+  bool eh_frame_;
+
+  // The encoding to use for FDE pointers.
+  DwarfPointerEncoding pointer_encoding_;
+
+  // The base addresses to use when emitting encoded pointers.
+  EncodedPointerBases encoded_pointer_bases_;
+
   // The length value for the current entry.
   //
   // Oddly, this must be dynamically allocated. Labels never get new
@@ -142,6 +241,14 @@ class CFISection: public Section {
   // headers and track their positions. The alternative is explicit
   // destructor invocation and a placement new. Ick.
   PendingLength *entry_length_;
+
+  // True if we are currently emitting an FDE --- that is, we have
+  // called FDEHeader but have not yet called FinishEntry.
+  bool in_fde_;
+
+  // If in_fde_ is true, this is its starting address. We use this for
+  // emitting DW_EH_PE_funcrel pointers.
+  u_int64_t fde_start_address_;
 };
 
 }  // namespace google_breakpad

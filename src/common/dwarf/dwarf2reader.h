@@ -46,6 +46,7 @@
 #include <utility>
 #include <vector>
 
+#include "common/dwarf/bytereader.h"
 #include "common/dwarf/dwarf2enums.h"
 #include "common/dwarf/types.h"
 
@@ -53,7 +54,6 @@ using namespace std;
 
 namespace dwarf2reader {
 struct LineStateMachine;
-class ByteReader;
 class Dwarf2Handler;
 class LineInfoHandler;
 
@@ -556,7 +556,7 @@ class CallFrameInfo {
  public:
   // The different kinds of entries one finds in CFI. Used internally,
   // and for error reporting.
-  enum EntryKind { kUnknown, kCIE, kFDE };
+  enum EntryKind { kUnknown, kCIE, kFDE, kTerminator };
 
   // The handler class to which the parser hands the parsed call frame
   // information.  Defined below.
@@ -567,19 +567,75 @@ class CallFrameInfo {
   class Reporter;
 
   // Create a DWARF CFI parser. BUFFER points to the contents of the
-  // .debug_frame section to parse; BUFFER_LENGTH is its length in
-  // bytes. REPORTER is an error reporter the parser should use to
-  // report problems. READER is a ByteReader instance that has the
-  // endianness and address size set properly. Report the data we find
-  // to HANDLER.
+  // .debug_frame section to parse; BUFFER_LENGTH is its length in bytes.
+  // REPORTER is an error reporter the parser should use to report
+  // problems. READER is a ByteReader instance that has the endianness and
+  // address size set properly. Report the data we find to HANDLER.
+  //
+  // This class can also parse Linux C++ exception handling data, as found
+  // in '.eh_frame' sections. This data is a variant of DWARF CFI that is
+  // placed in loadable segments so that it is present in the program's
+  // address space, and is interpreted by the C++ runtime to search the
+  // call stack for a handler interested in the exception being thrown,
+  // actually pop the frames, and find cleanup code to run.
+  //
+  // There are two differences between the call frame information described
+  // in the DWARF standard and the exception handling data Linux places in
+  // the .eh_frame section:
+  //
+  // - Exception handling data uses uses a different format for call frame
+  //   information entry headers. The distinguished CIE id, the way FDEs
+  //   refer to their CIEs, and the way the end of the series of entries is
+  //   determined are all slightly different.
+  //
+  //   If the constructor's EH_FRAME argument is true, then the
+  //   CallFrameInfo parses the entry headers as Linux C++ exception
+  //   handling data. If EH_FRAME is false or omitted, the CallFrameInfo
+  //   parses standard DWARF call frame information.
+  //
+  // - Linux C++ exception handling data uses CIE augmentation strings
+  //   beginning with 'z' to specify the presence of additional data after
+  //   the CIE and FDE headers and special encodings used for addresses in
+  //   frame description entries.
+  //
+  //   CallFrameInfo can handle 'z' augmentations in either DWARF CFI or
+  //   exception handling data if you have supplied READER with the base
+  //   addresses needed to interpret the pointer encodings that 'z'
+  //   augmentations can specify. See the ByteReader interface for details
+  //   about the base addresses. See the CallFrameInfo::Handler interface
+  //   for details about the additional information one might find in
+  //   'z'-augmented data.
+  //
+  // Thus:
+  //
+  // - If you are parsing standard DWARF CFI, as found in a .debug_frame
+  //   section, you should pass false for the EH_FRAME argument, or omit
+  //   it, and you need not worry about providing READER with the
+  //   additional base addresses.
+  //
+  // - If you want to parse Linux C++ exception handling data from a
+  //   .eh_frame section, you should pass EH_FRAME as true, and call
+  //   READER's Set*Base member functions before calling our Start method.
+  //
+  // - If you want to parse DWARF CFI that uses the 'z' augmentations
+  //   (although I don't think any toolchain ever emits such data), you
+  //   could pass false for EH_FRAME, but call READER's Set*Base members.
+  //
+  // The extensions the Linux C++ ABI makes to DWARF for exception
+  // handling are described here, rather poorly:
+  // http://refspecs.linux-foundation.org/LSB_4.0.0/LSB-Core-generic/LSB-Core-generic/dwarfext.html
+  // http://refspecs.linux-foundation.org/LSB_4.0.0/LSB-Core-generic/LSB-Core-generic/ehframechpt.html
+  // 
+  // The mechanics of C++ exception handling, personality routines,
+  // and language-specific data areas are described here, rather nicely:
+  // http://www.codesourcery.com/public/cxx-abi/abi-eh.html
   CallFrameInfo(const char *buffer, size_t buffer_length,
-                ByteReader *reader, Handler *handler,
-                Reporter *reporter)
-      : buffer_(buffer),
-        buffer_length_(buffer_length),
-        reader_(reader),
-        handler_(handler),
-        reporter_(reporter) { }
+                ByteReader *reader, Handler *handler, Reporter *reporter,
+                bool eh_frame = false)
+      : buffer_(buffer), buffer_length_(buffer_length),
+        reader_(reader), handler_(handler), reporter_(reporter),
+        eh_frame_(eh_frame) { }
+
   ~CallFrameInfo() { }
 
   // Parse the entries in BUFFER, reporting what we find to HANDLER.
@@ -603,6 +659,13 @@ class CallFrameInfo {
     // The start of this entry in the buffer.
     const char *start;
     
+    // Which kind of entry this is.
+    //
+    // We want to be able to use this for error reporting even while we're
+    // in the midst of parsing. Error reporting code may assume that kind,
+    // offset, and start fields are valid, although kind may be kUnknown.
+    EntryKind kind;
+
     // The end of this entry's common prologue (initial length and id), and
     // the start of this entry's kind-specific fields.
     const char *fields;
@@ -616,15 +679,9 @@ class CallFrameInfo {
     // simply buffer_ + offset + length.)
     const char *end;
 
-    // The CIE pointer or CIE id field.
+    // For both DWARF CFI and .eh_frame sections, this is the CIE id in a
+    // CIE, and the offset of the associated CIE in an FDE.
     uint64 id;
-
-    // The kind of entry we're parsing.
-    //
-    // This may be kUnknown at times, since we want to be able to
-    // count on it for error reporting even before we've finished
-    // parsing enough to tell what kind of entry we're looking at.
-    EntryKind kind;
 
     // The CIE that applies to this entry, if we've parsed it. If this is a
     // CIE, then this field points to this structure.
@@ -638,12 +695,45 @@ class CallFrameInfo {
     uint64 code_alignment_factor;       // scale for code address adjustments 
     int data_alignment_factor;          // scale for stack pointer adjustments
     unsigned return_address_register;   // which register holds the return addr
+
+    // True if this CIE includes Linux C++ ABI 'z' augmentation data.
+    bool has_z_augmentation;
+ 
+    // Parsed 'z' augmentation data. These are meaningful only if
+    // has_z_augmentation is true.
+    bool has_z_lsda;                    // The 'z' augmentation included 'L'.
+    bool has_z_personality;             // The 'z' augmentation included 'P'.
+    bool has_z_signal_frame;            // The 'z' augmentation included 'S'.
+
+    // If has_z_lsda is true, this is the encoding to be used for language-
+    // specific data area pointers in FDEs.
+    DwarfPointerEncoding lsda_encoding;
+
+    // If has_z_personality is true, this is the encoding used for the
+    // personality routine pointer in the augmentation data.
+    DwarfPointerEncoding personality_encoding;
+
+    // If has_z_personality is true, this is the address of the personality
+    // routine --- or, if personality_encoding & DW_EH_PE_indirect, the
+    // address where the personality routine's address is stored.
+    uint64 personality_address;
+
+    // This is the encoding used for addresses in the FDE header and
+    // in DW_CFA_set_loc instructions. This is always valid, whether
+    // or not we saw a 'z' augmentation string; its default value is
+    // DW_EH_PE_absptr, which is what normal DWARF CFI uses.
+    DwarfPointerEncoding pointer_encoding;
   };
 
   // A frame description entry (FDE).
   struct FDE: public Entry {
     uint64 address;                     // start address of described code
     uint64 size;                        // size of described code, in bytes
+
+    // If cie->has_z_lsda is true, then this is the language-specific data
+    // area's address --- or its address's address, if cie->lsda_encoding
+    // has the DW_EH_PE_indirect bit set.
+    uint64 lsda_address;
   };
 
   // Internal use.
@@ -658,30 +748,38 @@ class CallFrameInfo {
   class RuleMap;
   class State;
   
-  // Parse the initial length and id of a CFI entry, either a CIE or an
-  // FDE. CURSOR points to the beginning of the data to parse.
-  // On success, populate ENTRY as appropriate, and return true.
-  // On failure, report the problem, and return false.
+  // Parse the initial length and id of a CFI entry, either a CIE, an FDE,
+  // or a .eh_frame end-of-data mark. CURSOR points to the beginning of the
+  // data to parse. On success, populate ENTRY as appropriate, and return
+  // true. On failure, report the problem, and return false. Even if we
+  // return false, set ENTRY->end to the first byte after the entry if we
+  // were able to figure that out, or NULL if we weren't.
   bool ReadEntryPrologue(const char *cursor, Entry *entry);
 
-  // Parse the fields of a CIE after the entry prologue. Assume that the
-  // 'Entry' fields of CIE are populated; use CIE->fields and CIE->end as
-  // the start and limit for parsing. On success, populate the rest of
-  // *CIE, and return true; on failure, report the problem and return
-  // false.
+  // Parse the fields of a CIE after the entry prologue, including any 'z'
+  // augmentation data. Assume that the 'Entry' fields of CIE are
+  // populated; use CIE->fields and CIE->end as the start and limit for
+  // parsing. On success, populate the rest of *CIE, and return true; on
+  // failure, report the problem and return false.
   bool ReadCIEFields(CIE *cie);
 
-  // Parse the fields of an FDE after the entry prologue. Assume that the
-  // 'Entry' fields of *FDE are initialized; use FDE->fields and FDE->end
-  // as the start and limit for parsing. Assume that FDE->cie is fully
-  // initialized. On success, populate the rest of *FDE, and return true;
-  // on failure, report the problem and return false.
+  // Parse the fields of an FDE after the entry prologue, including any 'z'
+  // augmentation data. Assume that the 'Entry' fields of *FDE are
+  // initialized; use FDE->fields and FDE->end as the start and limit for
+  // parsing. Assume that FDE->cie is fully initialized. On success,
+  // populate the rest of *FDE, and return true; on failure, report the
+  // problem and return false.
   bool ReadFDEFields(FDE *fde);
 
   // Report that ENTRY is incomplete, and return false. This is just a
   // trivial wrapper for invoking reporter_->Incomplete; it provides a
   // little brevity.
   bool ReportIncomplete(Entry *entry);
+
+  // Return true if ENCODING has the DW_EH_PE_indirect bit set.
+  static bool IsIndirectEncoding(DwarfPointerEncoding encoding) {
+    return encoding & DW_EH_PE_indirect;
+  }
 
   // The contents of the DWARF .debug_info section we're parsing.
   const char *buffer_;
@@ -695,6 +793,9 @@ class CallFrameInfo {
 
   // For reporting problems in the info we're parsing.
   Reporter *reporter_;
+
+  // True if we are processing .eh_frame-format data.
+  bool eh_frame_;
 };
 
 // The handler class for CallFrameInfo.  The a CFI parser calls the
@@ -786,6 +887,61 @@ class CallFrameInfo::Handler {
   // everything is okay, or false if an error has occurred and parsing
   // should stop.
   virtual bool End() = 0;
+
+  // Handler functions for Linux C++ exception handling data. These are
+  // only called if the data includes 'z' augmentation strings.
+
+  // The Linux C++ ABI uses an extension of the DWARF CFI format to
+  // walk the stack to propagate exceptions from the throw to the
+  // appropriate catch, and do the appropriate cleanups along the way.
+  // CFI entries used for exception handling have two additional data
+  // associated with them:
+  //
+  // - The "language-specific data area" describes which exception
+  //   types the function has 'catch' clauses for, and indicates how
+  //   to go about re-entering the function at the appropriate catch
+  //   clause. If the exception is not caught, it describes the
+  //   destructors that must run before the frame is popped.
+  //
+  // - The "personality routine" is responsible for interpreting the
+  //   language-specific data area's contents, and deciding whether
+  //   the exception should continue to propagate down the stack,
+  //   perhaps after doing some cleanup for this frame, or whether the
+  //   exception will be caught here.
+  //
+  // In principle, the language-specific data area is opaque to
+  // everybody but the personality routine. In practice, these values
+  // may be useful or interesting to readers with extra context, and
+  // we have to at least skip them anyway, so we might as well report
+  // them to the handler.
+
+  // This entry's exception handling personality routine's address is
+  // ADDRESS. If INDIRECT is true, then ADDRESS is the address at
+  // which the routine's address is stored. The default definition for
+  // this handler function simply returns true, allowing parsing of
+  // the entry to continue.
+  virtual bool PersonalityRoutine(uint64 address, bool indirect) {
+    return true;
+  }
+
+  // This entry's language-specific data area (LSDA) is located at
+  // ADDRESS. If INDIRECT is true, then ADDRESS is the address at
+  // which the area's address is stored. The default definition for
+  // this handler function simply returns true, allowing parsing of
+  // the entry to continue.
+  virtual bool LanguageSpecificDataArea(uint64 address, bool indirect) {
+    return true;
+  }
+
+  // This entry describes a signal trampoline --- this frame is the
+  // caller of a signal handler. The default definition for this
+  // handler function simply returns true, allowing parsing of the
+  // entry to continue.
+  //
+  // The best description of the rationale for and meaning of signal
+  // trampoline CFI entries seems to be in the GCC bug database:
+  // http://gcc.gnu.org/bugzilla/show_bug.cgi?id=26208
+  virtual bool SignalHandler() { return true; }
 };
 
 // The CallFrameInfo class makes calls on an instance of this class to
@@ -811,6 +967,12 @@ class CallFrameInfo::Reporter {
   // haven't parsed enough of the entry to tell yet.
   virtual void Incomplete(uint64 offset, CallFrameInfo::EntryKind kind);
 
+  // The .eh_frame data has a four-byte zero at OFFSET where the next
+  // entry's length would be; this is a terminator. However, the buffer
+  // length as given to the CallFrameInfo constructor says there should be
+  // more data.
+  virtual void EarlyEHTerminator(uint64 offset);
+
   // The FDE at OFFSET refers to the CIE at CIE_OFFSET, but the
   // section is not that large.
   virtual void CIEPointerOutOfRange(uint64 offset, uint64 cie_offset);
@@ -829,6 +991,14 @@ class CallFrameInfo::Reporter {
   // augmentations we don't recognize.
   virtual void UnrecognizedAugmentation(uint64 offset,
                                         const string &augmentation);
+
+  // The pointer encoding ENCODING, specified by the CIE at OFFSET, is not
+  // a valid encoding.
+  virtual void InvalidPointerEncoding(uint64 offset, uint8 encoding);
+
+  // The pointer encoding ENCODING, specified by the CIE at OFFSET, depends
+  // on a base address which has not been supplied.
+  virtual void UnusablePointerEncoding(uint64 offset, uint8 encoding);
 
   // The CIE at OFFSET contains a DW_CFA_restore instruction at
   // INSN_OFFSET, which may not appear in a CIE.

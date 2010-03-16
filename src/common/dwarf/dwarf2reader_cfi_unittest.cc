@@ -31,10 +31,33 @@
 
 // dwarf2reader_cfi_unittest.cc: Unit tests for dwarf2reader::CallFrameInfo
 
+#include <cstdlib>
 #include <vector>
 
+// The '.eh_frame' format, used by the Linux C++ ABI for exception
+// handling, is poorly specified. To help test our support for .eh_frame,
+// if you #define WRITE_ELF while compiling this file, and add the
+// 'include' directory from the binutils, gcc, or gdb source tree to the
+// #include path, then each test that calls the
+// PERHAPS_WRITE_DEBUG_FRAME_FILE or PERHAPS_WRITE_EH_FRAME_FILE will an
+// ELF file containing a .debug_frame or .eh_frame section; you can then
+// use tools like readelf to examine the test data, and check the tools'
+// interpretation against the test's intentions. Each ELF file is named
+// "cfitest-TEST", where TEST identifies the particular test.
+#ifdef WRITE_ELF
+#include <cstdio>
+#include <cerrno>
+#include <cstring>
+extern "C" {
+// To compile with WRITE_ELF, you should add the 'include' directory
+// of the binutils, gcc, or gdb source tree to your #include path;
+// that directory contains this header.
+#include "elf/common.h"
+}
+#endif
+
 #include "breakpad_googletest_includes.h"
-#include "common/dwarf/bytereader.h"
+#include "common/dwarf/bytereader-inl.h"
 #include "common/dwarf/cfi_assembler.h"
 #include "common/dwarf/dwarf2reader.h"
 #include "google_breakpad/common/breakpad_types.h"
@@ -45,6 +68,7 @@ using google_breakpad::TestAssembler::kBigEndian;
 using google_breakpad::TestAssembler::kLittleEndian;
 using google_breakpad::TestAssembler::Section;
 
+using dwarf2reader::DwarfPointerEncoding;
 using dwarf2reader::ENDIANNESS_BIG;
 using dwarf2reader::ENDIANNESS_LITTLE;
 using dwarf2reader::ByteReader;
@@ -56,6 +80,18 @@ using testing::Return;
 using testing::Sequence;
 using testing::Test;
 using testing::_;
+
+#ifdef WRITE_ELF
+void WriteELFFrameSection(const char *filename, const char *section_name,
+                          const CFISection &section);
+#define PERHAPS_WRITE_DEBUG_FRAME_FILE(name, section)                   \
+    WriteELFFrameSection("cfitest-" name, ".debug_frame", section);
+#define PERHAPS_WRITE_EH_FRAME_FILE(name, section)                      \
+    WriteELFFrameSection("cfitest-" name, ".eh_frame", section);
+#else
+#define PERHAPS_WRITE_DEBUG_FRAME_FILE(name, section)
+#define PERHAPS_WRITE_EH_FRAME_FILE(name, section)
+#endif
 
 class MockCallFrameInfoHandler: public CallFrameInfo::Handler {
  public:
@@ -74,16 +110,22 @@ class MockCallFrameInfoHandler: public CallFrameInfo::Handler {
   MOCK_METHOD3(ValExpressionRule, bool(uint64 address, int reg,
                                        const string &expression));
   MOCK_METHOD0(End, bool());
+  MOCK_METHOD2(PersonalityRoutine, bool(uint64 address, bool indirect));
+  MOCK_METHOD2(LanguageSpecificDataArea, bool(uint64 address, bool indirect));
+  MOCK_METHOD0(SignalHandler, bool());
 };
 
 class MockCallFrameErrorReporter: public CallFrameInfo::Reporter {
  public:
   MockCallFrameErrorReporter() : Reporter("mock filename", "mock section") { }
   MOCK_METHOD2(Incomplete, void(uint64, CallFrameInfo::EntryKind));
+  MOCK_METHOD1(EarlyEHTerminator, void(uint64));
   MOCK_METHOD2(CIEPointerOutOfRange, void(uint64, uint64));
   MOCK_METHOD2(BadCIEId, void(uint64, uint64));
   MOCK_METHOD2(UnrecognizedVersion, void(uint64, int version));
   MOCK_METHOD2(UnrecognizedAugmentation, void(uint64, const string &));
+  MOCK_METHOD2(InvalidPointerEncoding, void(uint64, uint8));
+  MOCK_METHOD2(UnusablePointerEncoding, void(uint64, uint8));
   MOCK_METHOD2(RestoreInCIE, void(uint64, uint64));
   MOCK_METHOD3(BadInstruction, void(uint64, CallFrameInfo::EntryKind, uint64));
   MOCK_METHOD3(NoCFARule, void(uint64, CallFrameInfo::EntryKind, uint64));
@@ -113,13 +155,19 @@ struct CFIFixture {
     EXPECT_CALL(handler, RegisterRule(_, _, _)).Times(0);
     EXPECT_CALL(handler, ExpressionRule(_, _, _)).Times(0);
     EXPECT_CALL(handler, ValExpressionRule(_, _, _)).Times(0);
+    EXPECT_CALL(handler, PersonalityRoutine(_, _)).Times(0);
+    EXPECT_CALL(handler, LanguageSpecificDataArea(_, _)).Times(0);
+    EXPECT_CALL(handler, SignalHandler()).Times(0);
 
     // Default expectations for the error/warning reporer.
     EXPECT_CALL(reporter, Incomplete(_, _)).Times(0);
+    EXPECT_CALL(reporter, EarlyEHTerminator(_)).Times(0);
     EXPECT_CALL(reporter, CIEPointerOutOfRange(_, _)).Times(0);
     EXPECT_CALL(reporter, BadCIEId(_, _)).Times(0);
     EXPECT_CALL(reporter, UnrecognizedVersion(_, _)).Times(0);
     EXPECT_CALL(reporter, UnrecognizedAugmentation(_, _)).Times(0);
+    EXPECT_CALL(reporter, InvalidPointerEncoding(_, _)).Times(0);
+    EXPECT_CALL(reporter, UnusablePointerEncoding(_, _)).Times(0);
     EXPECT_CALL(reporter, RestoreInCIE(_, _)).Times(0);
     EXPECT_CALL(reporter, BadInstruction(_, _, _)).Times(0);
     EXPECT_CALL(reporter, NoCFARule(_, _, _)).Times(0);
@@ -249,6 +297,8 @@ TEST_F(CFI, SingleCIE) {
   section.Append(10, dwarf2reader::DW_CFA_nop);
   section.FinishEntry();
 
+  PERHAPS_WRITE_DEBUG_FRAME_FILE("SingleCIE", section);
+
   EXPECT_CALL(handler, Entry(_, _, _, _, _, _)).Times(0);
   EXPECT_CALL(handler, End()).Times(0);
 
@@ -272,6 +322,8 @@ TEST_F(CFI, OneFDE) {
       .FDEHeader(cie, 0x7714740d, 0x3d5a10cd)
       .FinishEntry();
 
+  PERHAPS_WRITE_DEBUG_FRAME_FILE("OneFDE", section);
+
   {
     InSequence s;
     EXPECT_CALL(handler,
@@ -294,7 +346,8 @@ TEST_F(CFI, TwoFDEsOneCIE) {
   CFISection section(kBigEndian, 4);
   Label cie;
   section
-      // First FDE.
+      // First FDE. readelf complains about this one because it makes
+      // a forward reference to its CIE.
       .FDEHeader(cie, 0xa42744df, 0xa3b42121)
       .FinishEntry()
       // CIE.
@@ -304,6 +357,8 @@ TEST_F(CFI, TwoFDEsOneCIE) {
       // Second FDE.
       .FDEHeader(cie, 0x6057d391, 0x700f608d)
       .FinishEntry();
+
+  PERHAPS_WRITE_DEBUG_FRAME_FILE("TwoFDEsOneCIE", section);
 
   {
     InSequence s;
@@ -338,7 +393,8 @@ TEST_F(CFI, TwoFDEsTwoCIEs) {
       .Mark(&cie1)
       .CIEHeader(0x694d5d45, 0x4233221b, 0xbf45e65a, 3, "")
       .FinishEntry()
-      // First FDE which cites second CIE.
+      // First FDE which cites second CIE. readelf complains about
+      // this one because it makes a forward reference to its CIE.
       .FDEHeader(cie2, 0x778b27dfe5871f05ULL, 0x324ace3448070926ULL)
       .FinishEntry()
       // Second FDE, which cites first CIE.
@@ -348,6 +404,8 @@ TEST_F(CFI, TwoFDEsTwoCIEs) {
       .Mark(&cie2)
       .CIEHeader(0xfba3fad7, 0x6287e1fd, 0x61d2c581, 2, "")
       .FinishEntry();
+
+  PERHAPS_WRITE_DEBUG_FRAME_FILE("TwoFDEsTwoCIEs", section);
 
   {
     InSequence s;
@@ -394,6 +452,8 @@ TEST_F(CFI, BadVersion) {
       .FDEHeader(cie2, 0x2094735a, 0x6e875501)
       .FinishEntry();
 
+  PERHAPS_WRITE_DEBUG_FRAME_FILE("BadVersion", section);
+
   EXPECT_CALL(reporter, UnrecognizedVersion(_, 0x52))
     .WillOnce(Return());
 
@@ -436,6 +496,8 @@ TEST_F(CFI, BadAugmentation) {
       .FDEHeader(cie2, 0x7bf0fda0, 0xcbcd28d8)
       .FinishEntry();
 
+  PERHAPS_WRITE_DEBUG_FRAME_FILE("BadAugmentation", section);
+
   EXPECT_CALL(reporter, UnrecognizedAugmentation(_, "spaniels!"))
     .WillOnce(Return());
 
@@ -475,6 +537,8 @@ TEST_F(CFI, CIEVersion1ReturnColumn) {
       .FDEHeader(cie, 0xb8d347b5, 0x825e55dc)
       .FinishEntry();
 
+  PERHAPS_WRITE_DEBUG_FRAME_FILE("CIEVersion1ReturnColumn", section);
+
   {
     InSequence s;
     EXPECT_CALL(handler, Entry(_, 0xb8d347b5, 0x825e55dc, 1, "", 0x9f))
@@ -506,6 +570,8 @@ TEST_F(CFI, CIEVersion3ReturnColumn) {
       // FDE, citing that CIE.
       .FDEHeader(cie, 0x86763f2b, 0x2a66dc23)
       .FinishEntry();
+
+  PERHAPS_WRITE_DEBUG_FRAME_FILE("CIEVersion3ReturnColumn", section);
 
   {
     InSequence s;
@@ -630,6 +696,8 @@ TEST_F(CFIInsn, DW_CFA_set_loc) {
       .D8(dwarf2reader::DW_CFA_def_cfa).ULEB128(0x4defb431).ULEB128(0x6d17b0ee)
       .FinishEntry();
 
+  PERHAPS_WRITE_DEBUG_FRAME_FILE("DW_CFA_set_loc", section);
+
   EXPECT_CALL(handler,
               ValOffsetRule(0xb1ee3e7a, kCFARegister, 0x4defb431, 0x6d17b0ee))
       .InSequence(s)
@@ -649,6 +717,8 @@ TEST_F(CFIInsn, DW_CFA_advance_loc) {
       .D8(dwarf2reader::DW_CFA_def_cfa).ULEB128(0x5bbb3715).ULEB128(0x0186c7bf)
       .FinishEntry();
 
+  PERHAPS_WRITE_DEBUG_FRAME_FILE("DW_CFA_advance_loc", section);
+
   EXPECT_CALL(handler,
               ValOffsetRule(fde_start + 0x2a * code_factor,
                             kCFARegister, 0x5bbb3715, 0x0186c7bf))
@@ -666,6 +736,8 @@ TEST_F(CFIInsn, DW_CFA_advance_loc1) {
       .D8(dwarf2reader::DW_CFA_advance_loc1).D8(0xd8)
       .D8(dwarf2reader::DW_CFA_def_cfa).ULEB128(0x69d5696a).ULEB128(0x1eb7fc93)
       .FinishEntry();
+
+  PERHAPS_WRITE_DEBUG_FRAME_FILE("DW_CFA_advance_loc1", section);
 
   EXPECT_CALL(handler,
               ValOffsetRule((fde_start + 0xd8 * code_factor),
@@ -685,6 +757,8 @@ TEST_F(CFIInsn, DW_CFA_advance_loc2) {
       .D8(dwarf2reader::DW_CFA_def_cfa).ULEB128(0x3a368bed).ULEB128(0x3194ee37)
       .FinishEntry();
 
+  PERHAPS_WRITE_DEBUG_FRAME_FILE("DW_CFA_advance_loc2", section);
+
   EXPECT_CALL(handler,
               ValOffsetRule((fde_start + 0x3adb * code_factor),
                             kCFARegister, 0x3a368bed, 0x3194ee37))
@@ -702,6 +776,8 @@ TEST_F(CFIInsn, DW_CFA_advance_loc4) {
       .D8(dwarf2reader::DW_CFA_advance_loc4).D32(0x15813c88)
       .D8(dwarf2reader::DW_CFA_def_cfa).ULEB128(0x135270c5).ULEB128(0x24bad7cb)
       .FinishEntry();
+
+  PERHAPS_WRITE_DEBUG_FRAME_FILE("DW_CFA_advance_loc4", section);
 
   EXPECT_CALL(handler,
               ValOffsetRule((fde_start + 0x15813c88ULL * code_factor),
@@ -722,6 +798,8 @@ TEST_F(CFIInsn, DW_CFA_MIPS_advance_loc8) {
       .D8(dwarf2reader::DW_CFA_def_cfa).ULEB128(0xe17ed602).ULEB128(0x3d162e7f)
       .FinishEntry();
 
+  PERHAPS_WRITE_DEBUG_FRAME_FILE("DW_CFA_advance_loc8", section);
+
   EXPECT_CALL(handler,
               ValOffsetRule((fde_start + 0x3c4f3945b92c14ULL * code_factor),
                             kCFARegister, 0xe17ed602, 0x3d162e7f))
@@ -738,6 +816,8 @@ TEST_F(CFIInsn, DW_CFA_def_cfa) {
   section
       .D8(dwarf2reader::DW_CFA_def_cfa).ULEB128(0x4e363a85).ULEB128(0x815f9aa7)
       .FinishEntry();
+
+  PERHAPS_WRITE_DEBUG_FRAME_FILE("DW_CFA_def_cfa", section);
 
   EXPECT_CALL(handler,
               ValOffsetRule(fde_start, kCFARegister, 0x4e363a85, 0x815f9aa7))
@@ -1835,6 +1915,8 @@ TEST_F(CFIRestore, RestoreValExpressionRuleChanged) {
       .D8(dwarf2reader::DW_CFA_restore_state)
       .FinishEntry();
 
+  PERHAPS_WRITE_DEBUG_FRAME_FILE("RestoreValExpressionRuleChanged", section);
+
   EXPECT_CALL(handler, ValExpressionRule(fde_start, 0xb5ca5c46, "revolting"))
       .InSequence(s).WillOnce(Return(true));
   EXPECT_CALL(handler, UndefinedRule(fde_start + code_factor, 0xb5ca5c46))
@@ -1861,6 +1943,9 @@ TEST_F(CFIRestore, RestoreValExpressionRuleChangedValExpression) {
       .D8(dwarf2reader::DW_CFA_restore_state)
       .FinishEntry();
 
+  PERHAPS_WRITE_DEBUG_FRAME_FILE("RestoreValExpressionRuleChangedValExpression",
+                                 section);
+
   EXPECT_CALL(handler, ValExpressionRule(fde_start, 0x500f5739, "repulsive"))
       .InSequence(s).WillOnce(Return(true));
   EXPECT_CALL(handler, ValExpressionRule(fde_start + code_factor, 0x500f5739,
@@ -1875,6 +1960,294 @@ TEST_F(CFIRestore, RestoreValExpressionRuleChangedValExpression) {
   ParseSection(&section);
 }
 
+struct EHFrameFixture: public CFIInsnFixture {
+  EHFrameFixture() 
+      : CFIInsnFixture(), section(kBigEndian, 4, true) {
+    encoded_pointer_bases.cfi  = 0x7f496cb2;
+    encoded_pointer_bases.text = 0x540f67b6;
+    encoded_pointer_bases.data = 0xe3eab768;
+    section.SetEncodedPointerBases(encoded_pointer_bases);
+  }
+  CFISection section;
+  CFISection::EncodedPointerBases encoded_pointer_bases;
+
+  // Parse CFIInsnFixture::ParseSection, but parse the section as
+  // .eh_frame data, supplying stock base addresses.
+  void ParseEHFrameSection(CFISection *section, bool succeeds = true) {
+    EXPECT_TRUE(section->ContainsEHFrame());
+    string contents;
+    EXPECT_TRUE(section->GetContents(&contents));
+    dwarf2reader::Endianness endianness;
+    if (section->endianness() == kBigEndian)
+      endianness = ENDIANNESS_BIG;
+    else {
+      assert(section->endianness() == kLittleEndian);
+      endianness = ENDIANNESS_LITTLE;
+    }
+    ByteReader byte_reader(endianness);
+    byte_reader.SetAddressSize(section->AddressSize());
+    byte_reader.SetCFIDataBase(encoded_pointer_bases.cfi, contents.data());
+    byte_reader.SetTextBase(encoded_pointer_bases.text);
+    byte_reader.SetDataBase(encoded_pointer_bases.data);
+    CallFrameInfo parser(contents.data(), contents.size(),
+                         &byte_reader, &handler, &reporter, true);
+    if (succeeds)
+      EXPECT_TRUE(parser.Start());
+    else
+      EXPECT_FALSE(parser.Start());
+  }
+
+};
+
+class EHFrame: public EHFrameFixture, public Test { };
+
+// A simple CIE, an FDE, and a terminator.
+TEST_F(EHFrame, Terminator) {
+  Label cie;
+  section
+      .Mark(&cie)
+      .CIEHeader(9968, 2466, 67, 1, "")
+      .D8(dwarf2reader::DW_CFA_def_cfa).ULEB128(3772).ULEB128(1372)
+      .FinishEntry()
+      .FDEHeader(cie, 0x848037a1, 0x7b30475e)
+      .D8(dwarf2reader::DW_CFA_set_loc).D32(0x17713850)
+      .D8(dwarf2reader::DW_CFA_undefined).ULEB128(5721)
+      .FinishEntry()
+      .D32(0)                           // Terminate the sequence.
+      // This FDE should be ignored.
+      .FDEHeader(cie, 0xf19629fe, 0x439fb09b)
+      .FinishEntry();
+
+  PERHAPS_WRITE_EH_FRAME_FILE("EHFrame.Terminator", section);
+
+  EXPECT_CALL(handler, Entry(_, 0x848037a1, 0x7b30475e, 1, "", 67))
+      .InSequence(s).WillOnce(Return(true));
+  EXPECT_CALL(handler, ValOffsetRule(0x848037a1, kCFARegister, 3772, 1372))
+      .InSequence(s).WillOnce(Return(true));
+  EXPECT_CALL(handler, UndefinedRule(0x17713850, 5721))
+      .InSequence(s).WillOnce(Return(true));
+  EXPECT_CALL(handler, End())
+      .InSequence(s).WillOnce(Return(true));
+  EXPECT_CALL(reporter, EarlyEHTerminator(_))
+      .InSequence(s).WillOnce(Return());
+
+  ParseEHFrameSection(&section);
+}
+
+// The parser should recognize the Linux Standards Base 'z' augmentations.
+TEST_F(EHFrame, SimpleFDE) {
+  DwarfPointerEncoding lsda_encoding =
+      DwarfPointerEncoding(dwarf2reader::DW_EH_PE_indirect
+                           | dwarf2reader::DW_EH_PE_datarel
+                           | dwarf2reader::DW_EH_PE_sdata2);
+  DwarfPointerEncoding fde_encoding =
+      DwarfPointerEncoding(dwarf2reader::DW_EH_PE_textrel
+                           | dwarf2reader::DW_EH_PE_udata2);
+  
+  section.SetPointerEncoding(fde_encoding);
+  section.SetEncodedPointerBases(encoded_pointer_bases);
+  Label cie;
+  section
+      .Mark(&cie)
+      .CIEHeader(4873, 7012, 100, 1, "zSLPR")
+      .ULEB128(7)                                // Augmentation data length
+      .D8(lsda_encoding)                         // LSDA pointer format
+      .D8(dwarf2reader::DW_EH_PE_pcrel)          // personality pointer format
+      .EncodedPointer(0x97baa00, dwarf2reader::DW_EH_PE_pcrel) // and value 
+      .D8(fde_encoding)                          // FDE pointer format
+      .D8(dwarf2reader::DW_CFA_def_cfa).ULEB128(6706).ULEB128(31)
+      .FinishEntry()
+      .FDEHeader(cie, 0x540f6b56, 0xf686)
+      .ULEB128(2)                                // Augmentation data length
+      .EncodedPointer(0xe3eab475, lsda_encoding) // LSDA pointer, signed
+      .D8(dwarf2reader::DW_CFA_set_loc)
+      .EncodedPointer(0x540fa4ce, fde_encoding)
+      .D8(dwarf2reader::DW_CFA_undefined).ULEB128(0x675e)
+      .FinishEntry()
+      .D32(0);                                   // terminator
+
+  PERHAPS_WRITE_EH_FRAME_FILE("EHFrame.SimpleFDE", section);
+
+  EXPECT_CALL(handler, Entry(_, 0x540f6b56, 0xf686, 1, "zSLPR", 100))
+      .InSequence(s).WillOnce(Return(true));
+  EXPECT_CALL(handler, PersonalityRoutine(0x97baa00, false))
+      .InSequence(s).WillOnce(Return(true));
+  EXPECT_CALL(handler, LanguageSpecificDataArea(0xe3eab475, true))
+      .InSequence(s).WillOnce(Return(true));
+  EXPECT_CALL(handler, SignalHandler())
+      .InSequence(s).WillOnce(Return(true));
+  EXPECT_CALL(handler, ValOffsetRule(0x540f6b56, kCFARegister, 6706, 31))
+      .InSequence(s).WillOnce(Return(true));
+  EXPECT_CALL(handler, UndefinedRule(0x540fa4ce, 0x675e))
+      .InSequence(s).WillOnce(Return(true));
+  EXPECT_CALL(handler, End())
+      .InSequence(s).WillOnce(Return(true));
+
+  ParseEHFrameSection(&section);
+}
+
+// Check that we can handle an empty 'z' augmentation.
+TEST_F(EHFrame, EmptyZ) {
+  Label cie;
+  section
+      .Mark(&cie)
+      .CIEHeader(5955, 5805, 228, 1, "z")
+      .ULEB128(0)                                // Augmentation data length
+      .D8(dwarf2reader::DW_CFA_def_cfa).ULEB128(3629).ULEB128(247)
+      .FinishEntry()
+      .FDEHeader(cie, 0xda007738, 0xfb55c641)
+      .ULEB128(0)                                // Augmentation data length
+      .D8(dwarf2reader::DW_CFA_advance_loc1).D8(11)
+      .D8(dwarf2reader::DW_CFA_undefined).ULEB128(3769)
+      .FinishEntry();
+
+  PERHAPS_WRITE_EH_FRAME_FILE("EHFrame.EmptyZ", section);
+
+  EXPECT_CALL(handler, Entry(_, 0xda007738, 0xfb55c641, 1, "z", 228))
+      .InSequence(s).WillOnce(Return(true));
+  EXPECT_CALL(handler, ValOffsetRule(0xda007738, kCFARegister, 3629, 247))
+      .InSequence(s).WillOnce(Return(true));
+  EXPECT_CALL(handler, UndefinedRule(0xda007738 + 11 * 5955, 3769))
+      .InSequence(s).WillOnce(Return(true));
+  EXPECT_CALL(handler, End())
+      .InSequence(s).WillOnce(Return(true));
+
+  ParseEHFrameSection(&section);
+}
+
+// Check that we recognize bad 'z' augmentation characters.
+TEST_F(EHFrame, BadZ) {
+  Label cie;
+  section
+      .Mark(&cie)
+      .CIEHeader(6937, 1045, 142, 1, "zQ")
+      .ULEB128(0)                                // Augmentation data length
+      .D8(dwarf2reader::DW_CFA_def_cfa).ULEB128(9006).ULEB128(7725)
+      .FinishEntry()
+      .FDEHeader(cie, 0x1293efa8, 0x236f53f2)
+      .ULEB128(0)                                // Augmentation data length
+      .D8(dwarf2reader::DW_CFA_advance_loc | 12)
+      .D8(dwarf2reader::DW_CFA_register).ULEB128(5667).ULEB128(3462)
+      .FinishEntry();
+
+  PERHAPS_WRITE_EH_FRAME_FILE("EHFrame.BadZ", section);
+
+  EXPECT_CALL(reporter, UnrecognizedAugmentation(_, "zQ"))
+      .WillOnce(Return());
+
+  ParseEHFrameSection(&section, false);
+}
+
+TEST_F(EHFrame, zL) {
+  Label cie;
+  DwarfPointerEncoding lsda_encoding =
+      DwarfPointerEncoding(dwarf2reader::DW_EH_PE_funcrel
+                           | dwarf2reader::DW_EH_PE_udata2);
+  section
+      .Mark(&cie)
+      .CIEHeader(9285, 9959, 54, 1, "zL")
+      .ULEB128(1)                       // Augmentation data length
+      .D8(lsda_encoding)                // encoding for LSDA pointer in FDE
+
+      .FinishEntry()
+      .FDEHeader(cie, 0xd40091aa, 0x9aa6e746)
+      .ULEB128(2)                       // Augmentation data length
+      .EncodedPointer(0xd40099cd, lsda_encoding) // LSDA pointer
+      .FinishEntry()
+      .D32(0);                                   // terminator
+
+  PERHAPS_WRITE_EH_FRAME_FILE("EHFrame.zL", section);
+
+  EXPECT_CALL(handler, Entry(_, 0xd40091aa, 0x9aa6e746, 1, "zL", 54))
+      .InSequence(s).WillOnce(Return(true));
+  EXPECT_CALL(handler, LanguageSpecificDataArea(0xd40099cd, false))
+      .InSequence(s).WillOnce(Return(true));
+  EXPECT_CALL(handler, End())
+      .InSequence(s).WillOnce(Return(true));
+
+  ParseEHFrameSection(&section);
+}
+
+TEST_F(EHFrame, zP) {
+  Label cie;
+  DwarfPointerEncoding personality_encoding =
+      DwarfPointerEncoding(dwarf2reader::DW_EH_PE_datarel
+                           | dwarf2reader::DW_EH_PE_udata2);
+  section
+      .Mark(&cie)
+      .CIEHeader(1097, 6313, 17, 1, "zP")
+      .ULEB128(3)                  // Augmentation data length
+      .D8(personality_encoding)    // encoding for personality routine
+      .EncodedPointer(0xe3eaccac, personality_encoding) // value
+      .FinishEntry()
+      .FDEHeader(cie, 0x0c8350c9, 0xbef11087)
+      .ULEB128(0)                       // Augmentation data length
+      .FinishEntry()
+      .D32(0);                                   // terminator
+
+  PERHAPS_WRITE_EH_FRAME_FILE("EHFrame.zP", section);
+
+  EXPECT_CALL(handler, Entry(_, 0x0c8350c9, 0xbef11087, 1, "zP", 17))
+      .InSequence(s).WillOnce(Return(true));
+  EXPECT_CALL(handler, PersonalityRoutine(0xe3eaccac, false))
+      .InSequence(s).WillOnce(Return(true));
+  EXPECT_CALL(handler, End())
+      .InSequence(s).WillOnce(Return(true));
+
+  ParseEHFrameSection(&section);
+}
+
+TEST_F(EHFrame, zR) {
+  Label cie;
+  DwarfPointerEncoding pointer_encoding =
+      DwarfPointerEncoding(dwarf2reader::DW_EH_PE_textrel
+                           | dwarf2reader::DW_EH_PE_sdata2);
+  section.SetPointerEncoding(pointer_encoding);
+  section
+      .Mark(&cie)
+      .CIEHeader(8011, 5496, 75, 1, "zR")
+      .ULEB128(1)                       // Augmentation data length
+      .D8(pointer_encoding)             // encoding for FDE addresses
+      .FinishEntry()
+      .FDEHeader(cie, 0x540f9431, 0xbd0)
+      .ULEB128(0)                       // Augmentation data length
+      .FinishEntry()
+      .D32(0);                          // terminator
+
+  PERHAPS_WRITE_EH_FRAME_FILE("EHFrame.zR", section);
+
+  EXPECT_CALL(handler, Entry(_, 0x540f9431, 0xbd0, 1, "zR", 75))
+      .InSequence(s).WillOnce(Return(true));
+  EXPECT_CALL(handler, End())
+      .InSequence(s).WillOnce(Return(true));
+
+  ParseEHFrameSection(&section);
+}
+
+TEST_F(EHFrame, zS) {
+  Label cie;
+  section
+      .Mark(&cie)
+      .CIEHeader(9217, 7694, 57, 1, "zS")
+      .ULEB128(0)                                // Augmentation data length
+      .FinishEntry()
+      .FDEHeader(cie, 0xd40091aa, 0x9aa6e746)
+      .ULEB128(0)                                // Augmentation data length
+      .FinishEntry()
+      .D32(0);                                   // terminator
+
+  PERHAPS_WRITE_EH_FRAME_FILE("EHFrame.zS", section);
+
+  EXPECT_CALL(handler, Entry(_, 0xd40091aa, 0x9aa6e746, 1, "zS", 57))
+      .InSequence(s).WillOnce(Return(true));
+  EXPECT_CALL(handler, SignalHandler())
+      .InSequence(s).WillOnce(Return(true));
+  EXPECT_CALL(handler, End())
+      .InSequence(s).WillOnce(Return(true));
+
+  ParseEHFrameSection(&section);
+}
+
 // These tests require manual inspection of the test output.
 struct CFIReporterFixture {
   CFIReporterFixture() : reporter("test file name", "test section name") { }
@@ -1885,6 +2258,10 @@ class CFIReporter: public CFIReporterFixture, public Test { };
 
 TEST_F(CFIReporter, Incomplete) {
   reporter.Incomplete(0x0102030405060708ULL, CallFrameInfo::kUnknown);
+}
+
+TEST_F(CFIReporter, EarlyEHTerminator) {
+  reporter.EarlyEHTerminator(0x0102030405060708ULL);
 }
 
 TEST_F(CFIReporter, CIEPointerOutOfRange) {
@@ -1903,6 +2280,14 @@ TEST_F(CFIReporter, UnrecognizedAugmentation) {
   reporter.UnrecognizedAugmentation(0x0123456789abcdefULL, "poodles");
 }
 
+TEST_F(CFIReporter, InvalidPointerEncoding) {
+  reporter.InvalidPointerEncoding(0x0123456789abcdefULL, 0x42);
+}
+
+TEST_F(CFIReporter, UnusablePointerEncoding) {
+  reporter.UnusablePointerEncoding(0x0123456789abcdefULL, 0x42);
+}
+
 TEST_F(CFIReporter, RestoreInCIE) {
   reporter.RestoreInCIE(0x0123456789abcdefULL, 0xfedcba9876543210ULL);
 }
@@ -1918,7 +2303,7 @@ TEST_F(CFIReporter, NoCFARule) {
 }
 
 TEST_F(CFIReporter, EmptyStateStack) {
-  reporter.EmptyStateStack(0x0123456789abcdefULL, CallFrameInfo::kFDE,
+  reporter.EmptyStateStack(0x0123456789abcdefULL, CallFrameInfo::kTerminator,
                            0xfedcba9876543210ULL);
 }
 
@@ -1926,3 +2311,139 @@ TEST_F(CFIReporter, ClearingCFARule) {
   reporter.ClearingCFARule(0x0123456789abcdefULL, CallFrameInfo::kFDE,
                            0xfedcba9876543210ULL);
 }
+
+#ifdef WRITE_ELF
+// See comments at the top of the file mentioning WRITE_ELF for details.
+
+using google_breakpad::TestAssembler::Section;
+
+struct ELFSectionHeader {
+  ELFSectionHeader(unsigned int set_type)
+      : type(set_type), flags(0), address(0), link(0), info(0),
+        alignment(1), entry_size(0) { }
+  Label name;
+  unsigned int type;
+  u_int64_t flags;
+  u_int64_t address;
+  Label file_offset;
+  Label file_size;
+  unsigned int link;
+  unsigned int info;
+  u_int64_t alignment;
+  u_int64_t entry_size;
+};
+
+void AppendSectionHeader(CFISection *table, const ELFSectionHeader &header) {
+  (*table)
+      .D32(header.name)                   // name, index in string tbl
+      .D32(header.type)                   // type
+      .Address(header.flags)              // flags
+      .Address(header.address)            // address in memory
+      .Address(header.file_offset)        // offset in ELF file
+      .Address(header.file_size)          // length in bytes
+      .D32(header.link)                   // link to related section
+      .D32(header.info)                   // miscellaneous
+      .Address(header.alignment)          // alignment
+      .Address(header.entry_size);        // entry size
+}
+
+void WriteELFFrameSection(const char *filename, const char *cfi_name,
+                          const CFISection &cfi) {
+  int elf_class = cfi.AddressSize() == 4 ? ELFCLASS32 : ELFCLASS64;
+  int elf_data = (cfi.endianness() == kBigEndian
+                  ? ELFDATA2MSB : ELFDATA2LSB);
+  CFISection elf(cfi.endianness(), cfi.AddressSize());
+  Label elf_header_size, section_table_offset;
+  elf
+      .Append("\x7f" "ELF")
+      .D8(elf_class)              // 32-bit or 64-bit ELF
+      .D8(elf_data)               // endianness
+      .D8(1)                      // ELF version
+      .D8(ELFOSABI_LINUX)         // Operating System/ABI indication
+      .D8(0)                      // ABI version
+      .Append(7, 0xda)            // padding
+      .D16(ET_EXEC)               // file type: executable file
+      .D16(EM_386)                // architecture: Intel IA-32
+      .D32(EV_CURRENT);           // ELF version
+  elf
+      .Address(0x0123456789abcdefULL) // program entry point
+      .Address(0)                 // program header offset
+      .Address(section_table_offset) // section header offset
+      .D32(0)                     // processor-specific flags
+      .D16(elf_header_size)       // ELF header size in bytes */
+      .D16(elf_class == ELFCLASS32 ? 32 : 56) // program header entry size
+      .D16(0)                     // program header table entry count
+      .D16(elf_class == ELFCLASS32 ? 40 : 64) // section header entry size
+      .D16(3)                     // section  count
+      .D16(1)                     // section name string table
+      .Mark(&elf_header_size);
+
+  // The null section. Every ELF file has one, as the first entry in
+  // the section header table.
+  ELFSectionHeader null_header(SHT_NULL);
+  null_header.file_offset = 0;
+  null_header.file_size = 0;
+
+  // The CFI section. The whole reason for writing out this ELF file
+  // is to put this in it so that we can run other dumping programs on
+  // it to check its contents.
+  ELFSectionHeader cfi_header(SHT_PROGBITS);
+  cfi_header.file_size = cfi.Size();
+
+  // The section holding the names of the sections. This is the
+  // section whose index appears in the e_shstrndx member of the ELF
+  // header.
+  ELFSectionHeader section_names_header(SHT_STRTAB);
+  CFISection section_names(cfi.endianness(), cfi.AddressSize());
+  section_names
+      .Mark(&null_header.name)
+      .AppendCString("")
+      .Mark(&section_names_header.name)
+      .AppendCString(".shstrtab")
+      .Mark(&cfi_header.name)
+      .AppendCString(cfi_name)
+      .Mark(&section_names_header.file_size);
+  
+  // Create the section table. The ELF header's e_shoff member refers
+  // to this, and the e_shnum member gives the number of entries it
+  // contains.
+  CFISection section_table(cfi.endianness(), cfi.AddressSize());
+  AppendSectionHeader(&section_table, null_header);
+  AppendSectionHeader(&section_table, section_names_header);
+  AppendSectionHeader(&section_table, cfi_header);
+
+  // Append the section table and the section contents to the ELF file.
+  elf
+      .Mark(&section_table_offset)
+      .Append(section_table)
+      .Mark(&section_names_header.file_offset)
+      .Append(section_names)
+      .Mark(&cfi_header.file_offset)
+      .Append(cfi);
+
+  string contents;
+  if (!elf.GetContents(&contents)) {
+    fprintf(stderr, "failed to get ELF file contents\n");
+    exit(1);
+  }
+
+  FILE *out = fopen(filename, "w");
+  if (!out) {
+    fprintf(stderr, "error opening ELF file '%s': %s\n",
+            filename, strerror(errno));
+    exit(1);
+  }
+
+  if (fwrite(contents.data(), 1, contents.size(), out) != contents.size()) {
+    fprintf(stderr, "error writing ELF data to '%s': %s\n",
+            filename, strerror(errno));
+    exit(1);
+  }
+
+  if (fclose(out) == EOF) {
+    fprintf(stderr, "error closing ELF file '%s': %s\n",
+            filename, strerror(errno));
+    exit(1);
+  }
+}
+#endif

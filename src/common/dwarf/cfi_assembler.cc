@@ -33,11 +33,13 @@
 // See cfi_assembler.h for details.
 
 #include <cassert>
+#include <stdlib.h>
 
 #include "common/dwarf/cfi_assembler.h"
-#include "common/dwarf/dwarf2enums.h"
 
 namespace google_breakpad {
+
+using dwarf2reader::DwarfPointerEncoding;
   
 CFISection &CFISection::CIEHeader(u_int64_t code_alignment_factor,
                                   int data_alignment_factor,
@@ -47,16 +49,21 @@ CFISection &CFISection::CIEHeader(u_int64_t code_alignment_factor,
                                   bool dwarf64) {
   assert(!entry_length_);
   entry_length_ = new PendingLength();
+  in_fde_ = false;
 
   if (dwarf64) {
     D32(0xffffffff);
     D64(entry_length_->length);
     entry_length_->start = Here();
-    D64(0xffffffffffffffffULL);            // CIE distinguished value
+    // Write the CIE distinguished value. In .debug_frame sections, it's
+    // ~0; in .eh_frame sections, it's zero.
+    D64(eh_frame_ ? 0 : ~(u_int64_t)0);
   } else {
     D32(entry_length_->length);
     entry_length_->start = Here();
-    D32(0xffffffff);                    // CIE distinguished value
+    // Write the CIE distinguished value. In .debug_frame sections, it's
+    // ~0; in .eh_frame sections, it's zero.
+    D32(eh_frame_ ? 0 : ~(u_int32_t)0);
   }
   D8(version);
   AppendCString(augmentation);
@@ -75,19 +82,32 @@ CFISection &CFISection::FDEHeader(Label cie_pointer,
                                   bool dwarf64) {
   assert(!entry_length_);
   entry_length_ = new PendingLength();
+  in_fde_ = true;
+  fde_start_address_ = initial_location;
 
   if (dwarf64) {
     D32(0xffffffff);
     D64(entry_length_->length);
     entry_length_->start = Here();
-    D64(cie_pointer);
+    if (eh_frame_)
+      D64(Here() - cie_pointer);
+    else
+      D64(cie_pointer);
   } else {
     D32(entry_length_->length);
     entry_length_->start = Here();
-    D32(cie_pointer);
+    if (eh_frame_)
+      D32(Here() - cie_pointer);
+    else
+      D32(cie_pointer);
   }
-  Append(endianness(), address_size_, initial_location);
-  Append(endianness(), address_size_, address_range);
+  EncodedPointer(initial_location);
+  // The FDE length in an .eh_frame section uses the same encoding as the
+  // initial location, but ignores the base address (selected by the upper
+  // nybble of the encoding), as it's a length, not an address that can be
+  // made relative.
+  EncodedPointer(address_range,
+                 DwarfPointerEncoding(pointer_encoding_ & 0x0f));
   return *this;
 }
 
@@ -97,7 +117,80 @@ CFISection &CFISection::FinishEntry() {
   entry_length_->length = Here() - entry_length_->start;
   delete entry_length_;
   entry_length_ = NULL;
+  in_fde_ = false;
   return *this;
 }
 
+CFISection &CFISection::EncodedPointer(u_int64_t address,
+                                       DwarfPointerEncoding encoding,
+                                       const EncodedPointerBases &bases) {
+  // Omitted data is extremely easy to emit.
+  if (encoding == dwarf2reader::DW_EH_PE_omit)
+    return *this;
+
+  // If (encoding & dwarf2reader::DW_EH_PE_indirect) != 0, then we assume
+  // that ADDRESS is the address at which the pointer is stored --- in
+  // other words, that bit has no effect on how we write the pointer.
+  encoding = DwarfPointerEncoding(encoding & ~dwarf2reader::DW_EH_PE_indirect);
+
+  // Find the base address to which this pointer is relative. The upper
+  // nybble of the encoding specifies this.
+  u_int64_t base;
+  switch (encoding & 0xf0) {
+    case dwarf2reader::DW_EH_PE_absptr:  base = 0;                  break;
+    case dwarf2reader::DW_EH_PE_pcrel:   base = bases.cfi + Size(); break;
+    case dwarf2reader::DW_EH_PE_textrel: base = bases.text;         break;
+    case dwarf2reader::DW_EH_PE_datarel: base = bases.data;         break;
+    case dwarf2reader::DW_EH_PE_funcrel: base = fde_start_address_; break;
+    case dwarf2reader::DW_EH_PE_aligned: base = 0;                  break;
+    default: abort();
+  };
+
+  // Make ADDRESS relative. Yes, this is appropriate even for "absptr"
+  // values; see gcc/unwind-pe.h.
+  address -= base;
+
+  // Align the pointer, if required.
+  if ((encoding & 0xf0) == dwarf2reader::DW_EH_PE_aligned)
+    Align(AddressSize());
+
+  // Append ADDRESS to this section in the appropriate form. For the
+  // fixed-width forms, we don't need to differentiate between signed and
+  // unsigned encodings, because ADDRESS has already been extended to 64
+  // bits before it was passed to us.
+  switch (encoding & 0x0f) {
+    case dwarf2reader::DW_EH_PE_absptr:
+      Address(address);
+      break;
+
+    case dwarf2reader::DW_EH_PE_uleb128:
+      ULEB128(address);
+      break;
+
+    case dwarf2reader::DW_EH_PE_sleb128:
+      LEB128(address);
+      break;
+
+    case dwarf2reader::DW_EH_PE_udata2:
+    case dwarf2reader::DW_EH_PE_sdata2:
+      D16(address);
+      break;
+
+    case dwarf2reader::DW_EH_PE_udata4:
+    case dwarf2reader::DW_EH_PE_sdata4:
+      D32(address);
+      break;
+
+    case dwarf2reader::DW_EH_PE_udata8:
+    case dwarf2reader::DW_EH_PE_sdata8:
+      D64(address);
+      break;
+
+    default:
+      abort();
+  }
+
+  return *this;
 };
+
+} // namespace google_breakpad

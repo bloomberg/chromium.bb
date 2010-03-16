@@ -46,6 +46,7 @@
 #include <cstring>
 #include <string>
 
+#include "common/dwarf/bytereader-inl.h"
 #include "common/dwarf/dwarf2diehandler.h"
 #include "common/linux/dump_stabs.h"
 #include "common/linux/dump_symbols.h"
@@ -278,6 +279,9 @@ static bool LoadDwarfCFI(const string &dwarf_filename,
                          const ElfW(Ehdr) *elf_header,
                          const char *section_name,
                          const ElfW(Shdr) *section,
+                         bool eh_frame,
+                         const ElfW(Shdr) *got_section,
+                         const ElfW(Shdr) *text_section,
                          Module *module) {
   // Find the appropriate set of register names for this file's
   // architecture.
@@ -321,11 +325,19 @@ static bool LoadDwarfCFI(const string &dwarf_filename,
             dwarf_filename.c_str(), elf_header->e_ident[EI_CLASS]);
     return false;
   }
+  // Provide the base addresses for .eh_frame encoded pointers, if
+  // possible.
+  byte_reader.SetCFIDataBase(section->sh_addr, cfi);
+  if (got_section)
+    byte_reader.SetDataBase(got_section->sh_addr);
+  if (text_section)
+    byte_reader.SetTextBase(got_section->sh_addr);
     
   dwarf2reader::CallFrameInfo::Reporter dwarf_reporter(dwarf_filename,
                                                        section_name);
-  dwarf2reader::CallFrameInfo parser(cfi, cfi_size, &byte_reader,
-                                     &handler, &dwarf_reporter);
+  dwarf2reader::CallFrameInfo parser(cfi, cfi_size,
+                                     &byte_reader, &handler, &dwarf_reporter,
+                                     eh_frame);
   parser.Start();
   return true;
 }
@@ -379,7 +391,25 @@ static bool LoadSymbols(const std::string &obj_file, ElfW(Ehdr) *elf_header,
     // information, the other debugging information could be perfectly
     // useful.
     LoadDwarfCFI(obj_file, elf_header, ".debug_frame",
-                 dwarf_cfi_section, module);
+                 dwarf_cfi_section, false, 0, 0, module);
+  }
+
+  // Linux C++ exception handling information can also provide
+  // unwinding data.
+  const ElfW(Shdr) *eh_frame_section =
+      FindSectionByName(".eh_frame", sections, section_names,
+                        elf_header->e_shnum);
+  if (eh_frame_section) {
+    // Pointers in .eh_frame data may be relative to the base addresses of
+    // certain sections. Provide those sections if present.
+    const ElfW(Shdr) *got_section =
+      FindSectionByName(".got", sections, section_names, elf_header->e_shnum);
+    const ElfW(Shdr) *text_section =
+      FindSectionByName(".text", sections, section_names,
+                        elf_header->e_shnum);
+    // As above, ignore the return value of this function.
+    LoadDwarfCFI(obj_file, elf_header, ".eh_frame",
+                 eh_frame_section, true, got_section, text_section, module);
   }
 
   if (!found_debug_info_section) {

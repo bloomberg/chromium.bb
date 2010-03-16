@@ -78,20 +78,6 @@ struct DwarfCFIToModuleFixture {
 
 class Entry: public DwarfCFIToModuleFixture, public Test { };
 
-TEST_F(Entry, IgnoreVersion) {
-  ASSERT_FALSE(handler.Entry(0xf120e638, 0x2851bc1f7a181d6dULL,
-                             0x40589a48d66e5a88ULL, 4, "", 0x1ad80491));
-  module.GetStackFrameEntries(&entries);
-  EXPECT_EQ(0U, entries.size());
-}
-
-TEST_F(Entry, IgnoreAugmentation) {
-  ASSERT_FALSE(handler.Entry(0x3f9d228a, 0xcf9a94bb805cf5a4ULL,
-                             0xe6c41bf958d4c171ULL, 3, "snazzy", 0x444a14f3));
-  module.GetStackFrameEntries(&entries);
-  EXPECT_EQ(0U, entries.size());
-}
-
 TEST_F(Entry, Accept) {
   ASSERT_TRUE(handler.Entry(0x3b8961b8, 0xa21069698096fc98ULL,
                             0xb440ce248169c8d6ULL, 3, "", 0xea93c106));

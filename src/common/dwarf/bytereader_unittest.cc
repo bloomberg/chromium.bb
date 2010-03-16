@@ -56,6 +56,7 @@ struct ReaderFixture {
 };
 
 class Reader: public ReaderFixture, public Test { };
+class ReaderDeathTest: public ReaderFixture, public Test { };
 
 TEST_F(Reader, SimpleConstructor) {
   ByteReader reader(ENDIANNESS_BIG);
@@ -373,13 +374,13 @@ TEST_F(Reader, ValidEncodings) {
   EXPECT_FALSE(reader.ValidEncoding(DwarfPointerEncoding(0xd0)));
 }
 
-TEST_F(Reader, DW_EH_PE_omit) {
+TEST_F(ReaderDeathTest, DW_EH_PE_omit) {
   static const char data[1] = { 42 };
   ByteReader reader(ENDIANNESS_BIG);
   reader.SetAddressSize(4);
-  EXPECT_EQ(0U, reader.ReadEncodedPointer(data, dwarf2reader::DW_EH_PE_omit,
-                                          &pointer_size));
-  EXPECT_EQ(0U, pointer_size);
+  EXPECT_DEATH(reader.ReadEncodedPointer(data, dwarf2reader::DW_EH_PE_omit,
+                                         &pointer_size),
+               "encoding != DW_EH_PE_omit");
 }
 
 TEST_F(Reader, DW_EH_PE_absptr4) {
@@ -561,6 +562,7 @@ TEST(UsableBase, CFI) {
   EXPECT_FALSE(reader.UsableEncoding(dwarf2reader::DW_EH_PE_textrel));
   EXPECT_FALSE(reader.UsableEncoding(dwarf2reader::DW_EH_PE_datarel));
   EXPECT_FALSE(reader.UsableEncoding(dwarf2reader::DW_EH_PE_funcrel));
+  EXPECT_FALSE(reader.UsableEncoding(dwarf2reader::DW_EH_PE_omit));
   EXPECT_FALSE(reader.UsableEncoding(DwarfPointerEncoding(0x60)));
 }
 
@@ -572,6 +574,7 @@ TEST(UsableBase, Text) {
   EXPECT_TRUE(reader.UsableEncoding(dwarf2reader::DW_EH_PE_textrel));
   EXPECT_FALSE(reader.UsableEncoding(dwarf2reader::DW_EH_PE_datarel));
   EXPECT_FALSE(reader.UsableEncoding(dwarf2reader::DW_EH_PE_funcrel));
+  EXPECT_FALSE(reader.UsableEncoding(dwarf2reader::DW_EH_PE_omit));
   EXPECT_FALSE(reader.UsableEncoding(DwarfPointerEncoding(0x60)));
 }
 
@@ -583,6 +586,7 @@ TEST(UsableBase, Data) {
   EXPECT_FALSE(reader.UsableEncoding(dwarf2reader::DW_EH_PE_textrel));
   EXPECT_TRUE(reader.UsableEncoding(dwarf2reader::DW_EH_PE_datarel));
   EXPECT_FALSE(reader.UsableEncoding(dwarf2reader::DW_EH_PE_funcrel));
+  EXPECT_FALSE(reader.UsableEncoding(dwarf2reader::DW_EH_PE_omit));
   EXPECT_FALSE(reader.UsableEncoding(DwarfPointerEncoding(0x60)));
 }
 
@@ -594,6 +598,7 @@ TEST(UsableBase, Function) {
   EXPECT_FALSE(reader.UsableEncoding(dwarf2reader::DW_EH_PE_textrel));
   EXPECT_FALSE(reader.UsableEncoding(dwarf2reader::DW_EH_PE_datarel));
   EXPECT_TRUE(reader.UsableEncoding(dwarf2reader::DW_EH_PE_funcrel));
+  EXPECT_FALSE(reader.UsableEncoding(dwarf2reader::DW_EH_PE_omit));
   EXPECT_FALSE(reader.UsableEncoding(DwarfPointerEncoding(0x60)));
 }
 
@@ -606,6 +611,7 @@ TEST(UsableBase, ClearFunction) {
   EXPECT_FALSE(reader.UsableEncoding(dwarf2reader::DW_EH_PE_textrel));
   EXPECT_FALSE(reader.UsableEncoding(dwarf2reader::DW_EH_PE_datarel));
   EXPECT_FALSE(reader.UsableEncoding(dwarf2reader::DW_EH_PE_funcrel));
+  EXPECT_FALSE(reader.UsableEncoding(dwarf2reader::DW_EH_PE_omit));
   EXPECT_FALSE(reader.UsableEncoding(DwarfPointerEncoding(0x60)));
 }
 
