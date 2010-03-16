@@ -47,7 +47,15 @@ class DomCheckerTest : public UITest {
     ResultsSet expected_failures, current_failures;
 
     std::string failures_file = use_http ?
-        "expected_failures-http.txt" : "expected_failures-file.txt";
+#if defined(OS_MACOSX)
+        "expected_failures_mac-http.txt" : "expected_failures_mac-file.txt";
+#elif defined(OS_LINUX)
+        "expected_failures_linux-http.txt" : "expected_failures_linux-file.txt";
+#elif defined(OS_WIN)
+        "expected_failures_win-http.txt" : "expected_failures_win-file.txt";
+#else
+        "" : "";
+#endif
 
     GetExpectedFailures(failures_file, &expected_failures);
 
