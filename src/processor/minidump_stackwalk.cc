@@ -216,12 +216,31 @@ static void PrintStack(const CallStack *stack, const string &cpu) {
       const StackFrameARM *frame_arm =
           reinterpret_cast<const StackFrameARM*>(frame);
 
-      if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_R13)
-        sequence = PrintRegister("r13", frame_arm->context.iregs[13], sequence);
-      if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_R14)
-        sequence = PrintRegister("r14", frame_arm->context.iregs[14], sequence);
-      if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_R15)
-        sequence = PrintRegister("r15", frame_arm->context.iregs[15], sequence);
+      // General-purpose callee-saves registers.
+      if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_R4)
+        sequence = PrintRegister("r4", frame_arm->context.iregs[4], sequence);
+      if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_R5)
+        sequence = PrintRegister("r5", frame_arm->context.iregs[5], sequence);
+      if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_R6)
+        sequence = PrintRegister("r6", frame_arm->context.iregs[6], sequence);
+      if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_R7)
+        sequence = PrintRegister("r7", frame_arm->context.iregs[7], sequence);
+      if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_R8)
+        sequence = PrintRegister("r8", frame_arm->context.iregs[8], sequence);
+      if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_R9)
+        sequence = PrintRegister("r9", frame_arm->context.iregs[9], sequence);
+      if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_R10)
+        sequence = PrintRegister("r10", frame_arm->context.iregs[10], sequence);
+
+      // Registers with a dedicated or conventional purpose.
+      if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_FP)
+        sequence = PrintRegister("fp", frame_arm->context.iregs[11], sequence);
+      if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_SP)
+        sequence = PrintRegister("sp", frame_arm->context.iregs[13], sequence);
+      if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_LR)
+        sequence = PrintRegister("lr", frame_arm->context.iregs[14], sequence);
+      if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_PC)
+        sequence = PrintRegister("pc", frame_arm->context.iregs[15], sequence);
     }
     printf("\n");
   }

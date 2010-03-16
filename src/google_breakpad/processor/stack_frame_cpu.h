@@ -189,19 +189,40 @@ struct StackFrameSPARC : public StackFrame {
 };
 
 struct StackFrameARM : public StackFrame {
-  // ContextValidity should eventually contain entries for the validity of
-  // other nonvolatile (callee-save) registers as in
-  // StackFrameX86::ContextValidity. I suspect this list is sufficient
-  // for arm stackwalking.
+  // A flag for each register we might know.
   enum ContextValidity {
     CONTEXT_VALID_NONE = 0,
-    CONTEXT_VALID_R13 = 1 << 0,
-    CONTEXT_VALID_R14 = 1 << 1,
-    CONTEXT_VALID_R15 = 1 << 2,
-    CONTEXT_VALID_ALL = -1
+    CONTEXT_VALID_R0   = 1 << 0,
+    CONTEXT_VALID_R1   = 1 << 1,
+    CONTEXT_VALID_R2   = 1 << 2,
+    CONTEXT_VALID_R3   = 1 << 3,
+    CONTEXT_VALID_R4   = 1 << 4,
+    CONTEXT_VALID_R5   = 1 << 5,
+    CONTEXT_VALID_R6   = 1 << 6,
+    CONTEXT_VALID_R7   = 1 << 7,
+    CONTEXT_VALID_R8   = 1 << 8,
+    CONTEXT_VALID_R9   = 1 << 9,
+    CONTEXT_VALID_R10  = 1 << 10,
+    CONTEXT_VALID_R11  = 1 << 11,
+    CONTEXT_VALID_R12  = 1 << 12,
+    CONTEXT_VALID_R13  = 1 << 13,
+    CONTEXT_VALID_R14  = 1 << 14,
+    CONTEXT_VALID_R15  = 1 << 15,
+    CONTEXT_VALID_ALL  = ~CONTEXT_VALID_NONE,
+
+    // Aliases for registers with dedicated or conventional roles.
+    CONTEXT_VALID_FP   = CONTEXT_VALID_R11,
+    CONTEXT_VALID_SP   = CONTEXT_VALID_R13,
+    CONTEXT_VALID_LR   = CONTEXT_VALID_R14,
+    CONTEXT_VALID_PC   = CONTEXT_VALID_R15
   };
 
   StackFrameARM() : context(), context_validity(CONTEXT_VALID_NONE) {}
+
+  // Return the ContextValidity flag for register rN.
+  static ContextValidity RegisterValidFlag(int n) {
+    return ContextValidity(1 << n);
+  } 
 
   // Register state.  This is only fully valid for the topmost frame in a
   // stack.  In other frames, the values of nonvolatile registers may be
@@ -209,9 +230,13 @@ struct StackFrameARM : public StackFrame {
   // context_validity.
   MDRawContextARM context;
 
-  // context_validity is actually ContextValidity, but int is used because
-  // the OR operator doesn't work well with enumerated types.  This indicates
-  // which fields in context are valid.
+  // For each register in context whose value has been recovered, we set
+  // the corresponding CONTEXT_VALID_ bit in context_validity.
+  //
+  // context_validity's type should actually be ContextValidity, but
+  // we use int instead because the bitwise inclusive or operator
+  // yields an int when applied to enum values, and C++ doesn't
+  // silently convert from ints to enums.
   int context_validity;
 };
 

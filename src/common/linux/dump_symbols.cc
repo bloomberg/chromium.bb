@@ -255,16 +255,19 @@ static bool DwarfCFIRegisterNames(const ElfW(Ehdr) *elf_header,
     NULL
   };
 
+  static const char *const arm_names[] = {
+    "r0",  "r1",  "r2",  "r3",  "r4",  "r5",  "r6",  "r7",
+    "r8",  "r9",  "r10", "r11", "r12", "sp",  "lr",  "pc",
+    "f0",  "f1",  "f2",  "f3",  "f4",  "f5",  "f6",  "f7",
+    "fps", "cpsr",
+    NULL
+  };
+
   const char * const *name_table;
   switch (elf_header->e_machine) {
-    case EM_386:
-      name_table = i386_names;
-      break;
-
-    case EM_X86_64:
-      name_table = x86_64_names;
-      break;
-
+    case EM_386:    name_table = i386_names;   break;
+    case EM_ARM:    name_table = arm_names;    break;
+    case EM_X86_64: name_table = x86_64_names; break;
     default:
       return false;
   }
