@@ -375,15 +375,11 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
     if (!extensionId)
       return;
     BrowserActionButton* actionButton = [buttons_ objectForKey:extensionId];
-    NSRect relativeButtonBounds = [[[actionButton window] contentView]
-        convertRect:[actionButton bounds]
-           fromView:actionButton];
-    NSPoint arrowPoint = [[actionButton window] convertBaseToScreen:NSMakePoint(
-        NSMinX(relativeButtonBounds),
-        NSMinY(relativeButtonBounds))];
+    NSPoint arrowPoint = [actionButton frame].origin;
     // Adjust the anchor point to be at the center of the browser action button.
     arrowPoint.x += kBrowserActionWidth / 2;
-
+    arrowPoint = [[actionButton superview] convertPoint:arrowPoint toView:nil];
+    arrowPoint = [[actionButton window] convertBaseToScreen:arrowPoint];
     [ExtensionPopupController showURL:action->GetPopupUrl(tabId)
                             inBrowser:browser_
                            anchoredAt:arrowPoint

@@ -192,12 +192,15 @@ CGFloat Clamp(CGFloat value, CGFloat min, CGFloat max) {
   NSRect frame = [extensionView_ frame];
   frame.size.height += kBubbleArrowHeight + kBubbleCornerRadius;
   frame.size.width += kBubbleCornerRadius;
+  frame = [extensionView_ convertRectToBase:frame];
   // Adjust the origin according to the height and width so that the arrow is
   // positioned correctly at the middle and slightly down from the button.
   NSPoint windowOrigin = anchor_;
-  windowOrigin.x -= NSWidth(frame) - kBubbleArrowXOffset -
-      (kBubbleArrowWidth / 2.0);
-  windowOrigin.y -= NSHeight(frame) - (kBubbleArrowHeight / 2.0);
+  NSSize offsets = NSMakeSize(kBubbleArrowXOffset + kBubbleArrowWidth / 2.0,
+                              kBubbleArrowHeight / 2.0);
+  offsets = [extensionView_ convertSize:offsets toView:nil];
+  windowOrigin.x -= NSWidth(frame) - offsets.width;
+  windowOrigin.y -= NSHeight(frame) - offsets.height;
   frame.origin = windowOrigin;
 
   // Is the window still animating in? If so, then cancel that and create a new

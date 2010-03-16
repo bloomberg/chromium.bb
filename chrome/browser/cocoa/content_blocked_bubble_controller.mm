@@ -249,8 +249,10 @@ static NSString* ReplaceNSStringPlaceholders(NSString* formatString,
   // so only 1 * kLinkOuterPadding more is needed.
   int delta = blockedContents.size() * kLinkLineHeight - kLinkPadding +
               kLinkOuterPadding;
+  NSSize deltaSize = NSMakeSize(0, delta);
+  deltaSize = [[[self window] contentView] convertSize:deltaSize toView:nil];
   NSRect windowFrame = [[self window] frame];
-  windowFrame.size.height += delta;
+  windowFrame.size.height += deltaSize.height;
   [[self window] setFrame:windowFrame display:NO];
 
   // Create popup list.
@@ -328,9 +330,11 @@ static NSString* ReplaceNSStringPlaceholders(NSString* formatString,
 - (void)showWindow:(id)sender {
   NSWindow* window = [self window];  // completes nib load
 
-  NSPoint origin = [parentWindow_ convertBaseToScreen:anchor_];
-  origin.x -= NSWidth([window frame]) - kBubbleArrowXOffset -
-      kBubbleArrowWidth / 2;
+  NSPoint origin = anchor_;
+  NSSize offsets = NSMakeSize(kBubbleArrowXOffset + kBubbleArrowWidth / 2.0,
+                              0);
+  offsets = [[parentWindow_ contentView] convertSize:offsets toView:nil];
+  origin.x -= NSWidth([window frame]) - offsets.width;
   origin.y -= NSHeight([window frame]);
   [window setFrameOrigin:origin];
   [parentWindow_ addChildWindow:window ordered:NSWindowAbove];

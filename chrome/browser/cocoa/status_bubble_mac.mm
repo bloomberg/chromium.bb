@@ -297,7 +297,12 @@ void StatusBubbleMac::Create() {
     return;
 
   // TODO(avi):fix this for RTL
-  window_ = [[NSWindow alloc] initWithContentRect:CalculateWindowFrame()
+  NSRect window_rect = CalculateWindowFrame();
+  // initWithContentRect has origin in screen coords and size in scaled window
+  // coordinates.
+  window_rect.size =
+      [[parent_ contentView] convertSize:window_rect.size fromView:nil];
+  window_ = [[NSWindow alloc] initWithContentRect:window_rect
                                         styleMask:NSBorderlessWindowMask
                                           backing:NSBackingStoreBuffered
                                             defer:YES];
@@ -554,8 +559,11 @@ void StatusBubbleMac::SwitchParentWindow(NSWindow* parent) {
 NSRect StatusBubbleMac::CalculateWindowFrame() {
   DCHECK(parent_);
 
+  NSSize size = NSMakeSize(0, kWindowHeight);
+  size = [[parent_ contentView] convertSize:size toView:nil];
+
   NSRect rect = [parent_ frame];
-  rect.size.height = kWindowHeight;
+  rect.size.height = size.height;
   rect.size.width = static_cast<int>(kWindowWidthPercent * rect.size.width);
   return rect;
 }

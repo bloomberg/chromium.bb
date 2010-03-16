@@ -850,14 +850,14 @@ void LocationBarViewMac::ContentSettingImageView::OnMousePressed(NSRect bounds)
       profile_->GetPrefs()->GetString(prefs::kAcceptLanguages), &displayHost,
       NULL, NULL);
 
-  // Transform mouse coordinates to content-view space.
+  // Transform mouse coordinates to screen space.
   AutocompleteTextField* textField = owner_->GetAutocompleteTextField();
   NSWindow* window = [textField window];
-  bounds = [[window contentView] convertRect:bounds
-                                    fromView:textField];
+  bounds = [textField convertRect:bounds toView:nil];
+  NSPoint anchor = NSMakePoint(NSMidX(bounds) + 1, NSMinY(bounds));
+  anchor = [window convertBaseToScreen:anchor];
 
   // Open bubble.
-  NSPoint anchor = NSMakePoint(NSMidX(bounds) + 1, NSMinY(bounds));
   [[ContentBlockedBubbleController
         showForType:content_setting_image_model_->get_content_settings_type()
        parentWindow:window

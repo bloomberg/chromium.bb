@@ -732,8 +732,7 @@ class PrefObserverBridge : public NotificationObserver {
 }
 
 - (NSRect)starButtonInWindowCoordinates {
-  return [[[starButton_ window] contentView] convertRect:[starButton_ bounds]
-                                                fromView:starButton_];
+  return [starButton_ convertRect:[starButton_ bounds] toView:nil];
 }
 
 - (CGFloat)desiredHeightForCompression:(CGFloat)compressByHeight {

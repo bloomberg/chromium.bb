@@ -25,7 +25,6 @@
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
 
-
 // C++ class that receives EXTENSION_LOADED notifications and proxies them back
 // to |controller|.
 class ExtensionLoadedNotificationObserver : public NotificationObserver {
@@ -171,15 +170,19 @@ class ExtensionLoadedNotificationObserver : public NotificationObserver {
       NSView* button = [[[window->cocoa_controller() toolbarController]
           browserActionsController] browserActionViewForExtension:extension_];
       DCHECK(button);
-      NSRect boundsRect = [[[button window] contentView]
-          convertRect:[button frame]
-             fromView:[button superview]];
-      CGFloat xPos = NSMinX(boundsRect) + NSWidth([button frame]) / 2;
+      NSRect boundsRect = [[button superview] convertRect:[button frame]
+                                                   toView:nil];
+      CGFloat xPos = NSMidX(boundsRect);
       // If the button is hidden, display the button at the edge of the Browser
       // Actions container.
       // TODO(andybons): Make it point to the chevron once it's implemented.
-      if ([button alphaValue] == 0.0)
-        xPos = NSMaxX([[button superview] frame]);
+      if ([button alphaValue] == 0.0) {
+        NSView* superview = [button superview];
+        NSRect superviewRect =
+            [[superview superview] convertRect:[superview frame]
+                                        toView:nil];
+        xPos = NSMaxX(superviewRect);
+      }
 
       arrowPoint = NSMakePoint(xPos, NSMinY(boundsRect));
       break;
@@ -200,11 +203,10 @@ class ExtensionLoadedNotificationObserver : public NotificationObserver {
           locationBarView->GetAutocompleteTextField();
       size_t index =
           locationBarView->GetPageActionIndex(extension_->page_action());
-      NSView* browserContentWindow = [window->GetNativeHandle() contentView];
       NSRect iconRect = [[field autocompleteTextFieldCell]
           pageActionFrameForIndex:index inFrame:[field frame]];
-      NSRect boundsrect = [browserContentWindow convertRect:iconRect
-                                                   fromView:[field superview]];
+      NSRect boundsrect = [[field superview] convertRect:iconRect
+                                                  toView:nil];
       arrowPoint = NSMakePoint(NSMidX(boundsrect) + 1, NSMinY(boundsrect));
       break;
     }
@@ -229,10 +231,11 @@ class ExtensionLoadedNotificationObserver : public NotificationObserver {
   // Load nib and calculate height based on messages to be shown.
   NSWindow* window = [self initializeWindow];
   int newWindowHeight = [self calculateWindowHeight];
-  NSSize windowDelta = NSMakeSize(
-      0, newWindowHeight - NSHeight([[window contentView] bounds]));
   [infoBubbleView_ setFrameSize:NSMakeSize(
       NSWidth([[window contentView] bounds]), newWindowHeight)];
+  NSSize windowDelta = NSMakeSize(
+      0, newWindowHeight - NSHeight([[window contentView] bounds]));
+  windowDelta = [[window contentView] convertSize:windowDelta toView:nil];
   NSRect newFrame = [window frame];
   newFrame.size.height += windowDelta.height;
   [window setFrame:newFrame display:NO];
@@ -243,8 +246,10 @@ class ExtensionLoadedNotificationObserver : public NotificationObserver {
   // Find window origin, taking into account bubble size and arrow location.
   NSPoint origin =
       [parentWindow_ convertBaseToScreen:[self calculateArrowPoint]];
-  origin.x -= NSWidth([window frame]) - kBubbleArrowXOffset -
-      kBubbleArrowWidth / 2;
+  NSSize offsets = NSMakeSize(kBubbleArrowXOffset + kBubbleArrowWidth / 2.0,
+                              0);
+  offsets = [[window contentView] convertSize:offsets toView:nil];
+  origin.x -= NSWidth([window frame]) - offsets.width;
   origin.y -= NSHeight([window frame]);
   [window setFrameOrigin:origin];
 
