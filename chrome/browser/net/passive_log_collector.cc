@@ -98,7 +98,7 @@ void PassiveLogCollector::RequestTrackerBase::OnAddEntry(
       InsertIntoGraveyard(info);
       // (fall-through)
     case ACTION_DELETE:
-      RemoveFromLiveRequests(info);
+      RemoveFromLiveRequests(entry.source.id);
       break;
     default:
       break;
@@ -160,12 +160,12 @@ PassiveLogCollector::RequestTrackerBase::GetRequestInfoFromGraveyard(
 }
 
 void PassiveLogCollector::RequestTrackerBase::RemoveFromLiveRequests(
-    const RequestInfo& info) {
+    int source_id) {
   // Remove from |live_requests_|.
-  SourceIDToInfoMap::iterator it = live_requests_.find(
-      info.entries[0].source.id);
-  DCHECK(it != live_requests_.end());
-  live_requests_.erase(it);
+  SourceIDToInfoMap::iterator it = live_requests_.find(source_id);
+  // TODO(eroman): Shouldn't have this 'if', is it actually really necessary?
+  if (it != live_requests_.end())
+    live_requests_.erase(it);
 }
 
 void PassiveLogCollector::RequestTrackerBase::SetUnbounded(

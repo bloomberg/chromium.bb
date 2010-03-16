@@ -61,7 +61,7 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
     bool HandleNotificationOfConnectJobID(const net::NetLog::Entry& entry,
                                           RequestInfo* live_entry);
 
-    void RemoveFromLiveRequests(const RequestInfo& info);
+    void RemoveFromLiveRequests(int source_id);
     void InsertIntoGraveyard(const RequestInfo& info);
 
     SourceIDToInfoMap live_requests_;
