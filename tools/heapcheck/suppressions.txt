@@ -197,3 +197,13 @@
   fun:BookmarkModel::AddURL
   fun:BookmarkBarGtkUnittest_*
 }
+
+{
+  bug_38305
+  Heapcheck:Leak
+  fun:browser_sync::UIModelWorker::DoWorkAndWaitUntilDone
+  fun:Syncer::SyncShare
+  fun:FakeSyncShareTask::Run
+  fun:MessageLoop::RunTask
+}
+
