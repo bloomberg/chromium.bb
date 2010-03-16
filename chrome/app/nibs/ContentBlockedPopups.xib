@@ -2,13 +2,13 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.03">
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
-		<string key="IBDocument.SystemVersion">9L31a</string>
-		<string key="IBDocument.InterfaceBuilderVersion">677</string>
+		<string key="IBDocument.SystemVersion">9L30</string>
+		<string key="IBDocument.InterfaceBuilderVersion">680</string>
 		<string key="IBDocument.AppKitVersion">949.54</string>
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="29"/>
+			<integer value="9"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -107,7 +107,7 @@
 											<int key="NSTag">1</int>
 											<reference key="NSControlView" ref="126329017"/>
 											<int key="NSButtonFlags">1211912703</int>
-											<int key="NSButtonFlags2">128</int>
+											<int key="NSButtonFlags2">0</int>
 											<object class="NSButtonImageSource" key="NSAlternateImage" id="564397696">
 												<string key="NSImageName">NSRadioButton</string>
 											</object>
@@ -124,7 +124,7 @@
 											<int key="NSTag">2</int>
 											<reference key="NSControlView" ref="126329017"/>
 											<int key="NSButtonFlags">1211912703</int>
-											<int key="NSButtonFlags2">128</int>
+											<int key="NSButtonFlags2">0</int>
 											<object class="NSImage" key="NSNormalImage">
 												<int key="NSImageFlags">549453824</int>
 												<string key="NSSize">{18, 18}</string>
@@ -236,7 +236,7 @@ QXBwbGUgQ29tcHV0ZXIsIEluYy4sIDIwMDUAAAAAA</bytes>
 										<string key="NSContents">Radio</string>
 										<reference key="NSSupport" ref="26"/>
 										<int key="NSButtonFlags">1211912703</int>
-										<int key="NSButtonFlags2">128</int>
+										<int key="NSButtonFlags2">0</int>
 										<object class="NSImage" key="NSNormalImage">
 											<int key="NSImageFlags">549453824</int>
 											<string key="NSSize">{18, 18}</string>
@@ -731,6 +731,14 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
 				<bool key="EncodedWithXMLCoder">YES</bool>
 				<object class="IBPartialClassDescription">
+					<string key="className">ChromeEventProcessingWindow</string>
+					<string key="superclassName">NSWindow</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">browser/cocoa/chrome_event_processing_window.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
 					<string key="className">ChromeUILocalizer</string>
 					<string key="superclassName">GTMUILocalizer</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
@@ -748,13 +756,9 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							<string>allowBlockToggled:</string>
 							<string>closeBubble:</string>
 							<string>manageBlocking:</string>
-							<string>ok:</string>
-							<string>popupLinkClicked:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
-							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -765,19 +769,13 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<object class="NSMutableArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>allowBlockRadioGroup_</string>
-							<string>bigTitle_</string>
 							<string>bubble_</string>
-							<string>folderPopUpButton_</string>
-							<string>nameTextField_</string>
 							<string>titleLabel_</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>NSMatrix</string>
-							<string>NSTextField</string>
 							<string>InfoBubbleView</string>
-							<string>NSPopUpButton</string>
-							<string>NSTextField</string>
 							<string>NSTextField</string>
 						</object>
 					</object>
@@ -862,7 +860,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">InfoBubbleWindow</string>
-					<string key="superclassName">NSWindow</string>
+					<string key="superclassName">ChromeEventProcessingWindow</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">browser/cocoa/info_bubble_window.h</string>
@@ -880,6 +878,20 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">browser/cocoa/tab_strip_model_observer_bridge.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSWindow</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">browser/cocoa/chrome_browser_window.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSWindow</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">browser/cocoa/themed_window.h</string>
 					</object>
 				</object>
 			</object>
