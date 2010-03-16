@@ -191,5 +191,5 @@
   fun:BookmarkModel::AddURLWithCreationTime
   fun:BookmarkModel::AddURL
   fun:BookmarkModel::AddURL
-  fun:BookmarkBarGtkUnittest_HidesHelpMessageWithBookmark_Test::TestBody
+  fun:BookmarkBarGtkUnittest_*
 }
