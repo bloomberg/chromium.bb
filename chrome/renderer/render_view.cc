@@ -325,7 +325,9 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       webkit_preferences_(webkit_preferences),
       session_storage_namespace_id_(session_storage_namespace_id),
       ALLOW_THIS_IN_INITIALIZER_LIST(text_translator_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(cookie_jar_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(cookie_jar_(this)),
+      cross_origin_access_count_(0),
+      same_origin_access_count_(0) {
   ClearBlockedContentSettings();
   page_translator_.reset(new PageTranslator(&text_translator_, this));
 }
@@ -2886,6 +2888,17 @@ void RenderView::didCreateIsolatedScriptContext(WebFrame* frame) {
   EventBindings::HandleContextCreated(frame, true);
 }
 
+void RenderView::didMakeCrossFrameAccess(WebFrame* frame,
+                                         bool cross_origin,
+                                         const WebString& property,
+                                         unsigned long long event_id) {
+  // TODO(johnnyg): track the individual properties and repeat event_ids.
+  if (cross_origin)
+    cross_origin_access_count_++;
+  else
+    same_origin_access_count_++;
+}
+
 void RenderView::didChangeContentsSize(WebFrame* frame, const WebSize& size) {
   CheckPreferredSize();
 }
@@ -3824,6 +3837,10 @@ void RenderView::OnClosePage(const ViewMsg_ClosePage_Params& params) {
   }
   webview()->dispatchUnloadEvent();
 
+  // Reset stats
+  cross_origin_access_count_ = 0;
+  same_origin_access_count_ = 0;
+
   // Just echo back the params in the ACK.
   Send(new ViewHostMsg_ClosePage_ACK(routing_id_, params));
 }
@@ -4130,6 +4147,12 @@ void RenderView::DumpLoadHistograms() const {
   NavigationState::LoadType load_type = navigation_state->load_type();
   UMA_HISTOGRAM_ENUMERATION("Renderer4.LoadType", load_type,
                             NavigationState::kLoadTypeMax);
+
+  // Site isolation metrics.
+  UMA_HISTOGRAM_COUNTS("SiteIsolation.PageLoadsWithCrossSiteFrameAccess",
+                       cross_origin_access_count_);
+  UMA_HISTOGRAM_COUNTS("SiteIsolation.PageLoadsWithSameSiteFrameAccess",
+                       same_origin_access_count_);
 
   Time request = navigation_state->request_time();
   Time start = navigation_state->start_load_time();

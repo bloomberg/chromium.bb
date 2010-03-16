@@ -376,6 +376,9 @@ class RenderView : public RenderWidget,
   virtual void didCreateScriptContext(WebKit::WebFrame* frame);
   virtual void didDestroyScriptContext(WebKit::WebFrame* frame);
   virtual void didCreateIsolatedScriptContext(WebKit::WebFrame* frame);
+  virtual void didMakeCrossFrameAccess(
+      WebKit::WebFrame* frame, bool crossOrigin, const WebKit::WebString& name,
+      unsigned long long event_id);
   virtual void didChangeContentsSize(
       WebKit::WebFrame* frame, const WebKit::WebSize& size);
   virtual void didChangeScrollOffset(WebKit::WebFrame* frame);
@@ -1167,6 +1170,11 @@ class RenderView : public RenderWidget,
   scoped_ptr<GeolocationDispatcher> geolocation_dispatcher_;
 
   RendererWebCookieJarImpl cookie_jar_;
+
+  // Site isolation metrics flags.  These are per-page-load counts, reset to 0
+  // in OnClosePage.
+  int cross_origin_access_count_;
+  int same_origin_access_count_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderView);
 };
