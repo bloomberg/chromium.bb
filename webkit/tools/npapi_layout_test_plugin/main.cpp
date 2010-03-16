@@ -140,7 +140,8 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode, int16 argc, ch
                 obj->testDocumentOpenInDestroyStream = TRUE;
             } else if (strcasecmp(argn[i], "testwindowopen") == 0) {
                 obj->testWindowOpen = TRUE;
-            }
+            } else if (strcasecmp(argn[i], "src") == 0 && strstr(argv[i], "plugin-document-has-focus.pl"))
+                obj->testKeyboardFocusForPlugins = TRUE;
         }
 
         instance->pdata = obj;
@@ -182,12 +183,17 @@ NPError NPP_SetWindow(NPP instance, NPWindow *window)
         if (obj->logSetWindow) {
             log(instance, "NPP_SetWindow: %d %d", (int)window->width, (int)window->height);
             fflush(stdout);
-            obj->logSetWindow = false;
+            obj->logSetWindow = FALSE;
         }
 
         if (obj->testWindowOpen) {
             testWindowOpen(instance);
             obj->testWindowOpen = FALSE;
+        }
+
+        if (obj->testKeyboardFocusForPlugins) {
+            obj->eventLogging = true;
+            executeScript(obj, "eventSender.keyDown('A');");
         }
     }
 
@@ -292,17 +298,17 @@ int16 NPP_HandleEvent(NPP instance, void *event)
         case WM_RBUTTONDBLCLK:
             break;
         case WM_MOUSEMOVE:
-            log(instance, "adjustCursorEvent");
             break;
         case WM_KEYUP:
-            // TODO(tc): We need to convert evt->wParam from virtual-key code
-            // to key code.
-            log(instance, "NOTIMPLEMENTED: keyUp '%c'", ' ');
+            log(instance, "keyUp '%c'", MapVirtualKey(evt->wParam, MAPVK_VK_TO_CHAR));
+            if (obj->testKeyboardFocusForPlugins) {
+                obj->eventLogging = false;
+                obj->testKeyboardFocusForPlugins = FALSE;
+                executeScript(obj, "layoutTestController.notifyDone();");
+            }
             break;
         case WM_KEYDOWN:
-            // TODO(tc): We need to convert evt->wParam from virtual-key code
-            // to key code.
-            log(instance, "NOTIMPLEMENTED: keyDown '%c'", ' ');
+            log(instance, "keyDown '%c'", MapVirtualKey(evt->wParam, MAPVK_VK_TO_CHAR));
             break;
         case WM_SETCURSOR:
             break;
