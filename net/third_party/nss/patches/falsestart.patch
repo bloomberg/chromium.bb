@@ -1,8 +1,11 @@
-diff --git a/mozilla/security/nss/cmd/strsclnt/strsclnt.c b/mozilla/security/nss/cmd/strsclnt/strsclnt.c
-index c266644..1f71434 100644
---- a/mozilla/security/nss/cmd/strsclnt/strsclnt.c
-+++ b/mozilla/security/nss/cmd/strsclnt/strsclnt.c
-@@ -162,6 +162,7 @@ static PRBool disableLocking  = PR_FALSE;
+Index: mozilla/security/nss/cmd/strsclnt/strsclnt.c
+===================================================================
+RCS file: /cvsroot/mozilla/security/nss/cmd/strsclnt/strsclnt.c,v
+retrieving revision 1.66
+diff -u -p -r1.66 strsclnt.c
+--- mozilla/security/nss/cmd/strsclnt/strsclnt.c	10 Feb 2010 18:07:20 -0000	1.66
++++ mozilla/security/nss/cmd/strsclnt/strsclnt.c	16 Mar 2010 01:25:41 -0000
+@@ -162,6 +162,7 @@ static PRBool disableLocking  = PR_FALSE
  static PRBool ignoreErrors    = PR_FALSE;
  static PRBool enableSessionTickets = PR_FALSE;
  static PRBool enableCompression    = PR_FALSE;
@@ -51,10 +54,13 @@ index c266644..1f71434 100644
  	case 'i': ignoreErrors = PR_TRUE; break;
  
          case 'n': nickName = PL_strdup(optstate->value); break;
-diff --git a/mozilla/security/nss/cmd/tstclnt/tstclnt.c b/mozilla/security/nss/cmd/tstclnt/tstclnt.c
-index c15a0ad..55684e6 100644
---- a/mozilla/security/nss/cmd/tstclnt/tstclnt.c
-+++ b/mozilla/security/nss/cmd/tstclnt/tstclnt.c
+Index: mozilla/security/nss/cmd/tstclnt/tstclnt.c
+===================================================================
+RCS file: /cvsroot/mozilla/security/nss/cmd/tstclnt/tstclnt.c,v
+retrieving revision 1.62
+diff -u -p -r1.62 tstclnt.c
+--- mozilla/security/nss/cmd/tstclnt/tstclnt.c	10 Feb 2010 18:07:21 -0000	1.62
++++ mozilla/security/nss/cmd/tstclnt/tstclnt.c	16 Mar 2010 01:25:41 -0000
 @@ -225,6 +225,7 @@ static void Usage(const char *progName)
      fprintf(stderr, "%-20s Renegotiate N times (resuming session if N>1).\n", "-r N");
      fprintf(stderr, "%-20s Enable the session ticket extension.\n", "-u");
@@ -105,11 +111,14 @@ index c15a0ad..55684e6 100644
      SSL_SetPKCS11PinArg(s, &pwdata);
  
      SSL_AuthCertificateHook(s, SSL_AuthCertificate, (void *)handle);
-diff --git a/mozilla/security/nss/lib/ssl/ssl.h b/mozilla/security/nss/lib/ssl/ssl.h
-index e285ab4..bd1bfd3 100644
---- a/mozilla/security/nss/lib/ssl/ssl.h
-+++ b/mozilla/security/nss/lib/ssl/ssl.h
-@@ -128,6 +128,17 @@ SSL_IMPORT PRFileDesc *SSL_ImportFD(PRFileDesc *model, PRFileDesc *fd);
+Index: mozilla/security/nss/lib/ssl/ssl.h
+===================================================================
+RCS file: /cvsroot/mozilla/security/nss/lib/ssl/ssl.h,v
+retrieving revision 1.38
+diff -u -p -r1.38 ssl.h
+--- mozilla/security/nss/lib/ssl/ssl.h	17 Feb 2010 02:29:07 -0000	1.38
++++ mozilla/security/nss/lib/ssl/ssl.h	16 Mar 2010 01:25:41 -0000
+@@ -128,6 +128,17 @@ SSL_IMPORT PRFileDesc *SSL_ImportFD(PRFi
                                            /* Renegotiation  Info (RI)       */
  					  /* extension in ALL handshakes.   */
                                            /* default: off                   */
@@ -127,11 +136,14 @@ index e285ab4..bd1bfd3 100644
  
  #ifdef SSL_DEPRECATED_FUNCTION 
  /* Old deprecated function names */
-diff --git a/mozilla/security/nss/lib/ssl/ssl3con.c b/mozilla/security/nss/lib/ssl/ssl3con.c
-index 6b37c4f..f073431 100644
---- a/mozilla/security/nss/lib/ssl/ssl3con.c
-+++ b/mozilla/security/nss/lib/ssl/ssl3con.c
-@@ -5656,7 +5656,17 @@ ssl3_RestartHandshakeAfterCertReq(sslSocket *         ss,
+Index: mozilla/security/nss/lib/ssl/ssl3con.c
+===================================================================
+RCS file: /cvsroot/mozilla/security/nss/lib/ssl/ssl3con.c,v
+retrieving revision 1.136
+diff -u -p -r1.136 ssl3con.c
+--- mozilla/security/nss/lib/ssl/ssl3con.c	17 Feb 2010 02:29:07 -0000	1.136
++++ mozilla/security/nss/lib/ssl/ssl3con.c	16 Mar 2010 01:25:41 -0000
+@@ -5656,7 +5656,17 @@ ssl3_RestartHandshakeAfterCertReq(sslSoc
      return rv;
  }
  
@@ -150,7 +162,7 @@ index 6b37c4f..f073431 100644
  
  /* Called from ssl3_HandleHandshakeMessage() when it has deciphered a complete
   * ssl3 Server Hello Done message.
-@@ -5728,6 +5738,12 @@ ssl3_HandleServerHelloDone(sslSocket *ss)
+@@ -5728,6 +5738,12 @@ ssl3_HandleServerHelloDone(sslSocket *ss
  	ss->ssl3.hs.ws = wait_new_session_ticket;
      else
  	ss->ssl3.hs.ws = wait_change_cipher;
@@ -172,11 +184,14 @@ index 6b37c4f..f073431 100644
  	(ss->handshakeCallback)(ss->fd, ss->handshakeCallbackData);
      }
  
-diff --git a/mozilla/security/nss/lib/ssl/ssl3gthr.c b/mozilla/security/nss/lib/ssl/ssl3gthr.c
-index bdd2958..28fe154 100644
---- a/mozilla/security/nss/lib/ssl/ssl3gthr.c
-+++ b/mozilla/security/nss/lib/ssl/ssl3gthr.c
-@@ -188,6 +188,7 @@ ssl3_GatherCompleteHandshake(sslSocket *ss, int flags)
+Index: mozilla/security/nss/lib/ssl/ssl3gthr.c
+===================================================================
+RCS file: /cvsroot/mozilla/security/nss/lib/ssl/ssl3gthr.c,v
+retrieving revision 1.9
+diff -u -p -r1.9 ssl3gthr.c
+--- mozilla/security/nss/lib/ssl/ssl3gthr.c	20 Nov 2008 07:37:25 -0000	1.9
++++ mozilla/security/nss/lib/ssl/ssl3gthr.c	16 Mar 2010 01:25:41 -0000
+@@ -188,6 +188,7 @@ ssl3_GatherCompleteHandshake(sslSocket *
  {
      SSL3Ciphertext cText;
      int            rv;
@@ -184,12 +199,15 @@ index bdd2958..28fe154 100644
  
      PORT_Assert( ss->opt.noLocks || ssl_HaveRecvBufLock(ss) );
      do {
-@@ -207,7 +208,17 @@ ssl3_GatherCompleteHandshake(sslSocket *ss, int flags)
+@@ -207,7 +208,20 @@ ssl3_GatherCompleteHandshake(sslSocket *
  	if (rv < 0) {
  	    return ss->recvdCloseNotify ? 0 : rv;
  	}
 -    } while (ss->ssl3.hs.ws != idle_handshake && ss->gs.buf.len == 0);
 +
++	/* If we kicked off a false start in ssl3_HandleServerHelloDone, break
++	 * out of this loop early without finishing the handshake.
++	 */
 +	if (ss->opt.enableFalseStart) {
 +	    ssl_GetSSL3HandshakeLock(ss);
 +	    canFalseStart = (ss->ssl3.hs.ws == wait_change_cipher ||
@@ -203,10 +221,13 @@ index bdd2958..28fe154 100644
  
      ss->gs.readOffset = 0;
      ss->gs.writeOffset = ss->gs.buf.len;
-diff --git a/mozilla/security/nss/lib/ssl/sslimpl.h b/mozilla/security/nss/lib/ssl/sslimpl.h
-index 7581b98..00f0ce2 100644
---- a/mozilla/security/nss/lib/ssl/sslimpl.h
-+++ b/mozilla/security/nss/lib/ssl/sslimpl.h
+Index: mozilla/security/nss/lib/ssl/sslimpl.h
+===================================================================
+RCS file: /cvsroot/mozilla/security/nss/lib/ssl/sslimpl.h,v
+retrieving revision 1.77
+diff -u -p -r1.77 sslimpl.h
+--- mozilla/security/nss/lib/ssl/sslimpl.h	10 Feb 2010 00:33:50 -0000	1.77
++++ mozilla/security/nss/lib/ssl/sslimpl.h	16 Mar 2010 01:25:41 -0000
 @@ -333,6 +333,7 @@ typedef struct sslOptionsStr {
      unsigned int enableDeflate          : 1;  /* 19 */
      unsigned int enableRenegotiation    : 2;  /* 20-21 */
@@ -215,7 +236,7 @@ index 7581b98..00f0ce2 100644
  } sslOptions;
  
  typedef enum { sslHandshakingUndetermined = 0,
-@@ -1250,6 +1251,8 @@ extern void      ssl_SetAlwaysBlock(sslSocket *ss);
+@@ -1250,6 +1251,8 @@ extern void      ssl_SetAlwaysBlock(sslS
  
  extern SECStatus ssl_EnableNagleDelay(sslSocket *ss, PRBool enabled);
  
@@ -224,27 +245,39 @@ index 7581b98..00f0ce2 100644
  #define SSL_LOCK_READER(ss)		if (ss->recvLock) PZ_Lock(ss->recvLock)
  #define SSL_UNLOCK_READER(ss)		if (ss->recvLock) PZ_Unlock(ss->recvLock)
  #define SSL_LOCK_WRITER(ss)		if (ss->sendLock) PZ_Lock(ss->sendLock)
-diff --git a/mozilla/security/nss/lib/ssl/sslsecur.c b/mozilla/security/nss/lib/ssl/sslsecur.c
-index 8f79135..4dc0475 100644
---- a/mozilla/security/nss/lib/ssl/sslsecur.c
-+++ b/mozilla/security/nss/lib/ssl/sslsecur.c
-@@ -148,6 +148,12 @@ ssl_Do1stHandshake(sslSocket *ss)
- 	    ss->gs.readOffset  = 0;
- 	    break;
- 	}
+Index: mozilla/security/nss/lib/ssl/sslsecur.c
+===================================================================
+RCS file: /cvsroot/mozilla/security/nss/lib/ssl/sslsecur.c,v
+retrieving revision 1.43
+diff -u -p -r1.43 sslsecur.c
+--- mozilla/security/nss/lib/ssl/sslsecur.c	14 Jan 2010 22:15:25 -0000	1.43
++++ mozilla/security/nss/lib/ssl/sslsecur.c	16 Mar 2010 01:25:41 -0000
+@@ -1199,8 +1199,17 @@ ssl_SecureSend(sslSocket *ss, const unsi
+     	ss->writerThread = PR_GetCurrentThread();
+     /* If any of these is non-zero, the initial handshake is not done. */
+     if (!ss->firstHsDone) {
++	PRBool canFalseStart = PR_FALSE;
+ 	ssl_Get1stHandshakeLock(ss);
+-	if (ss->handshake || ss->nextHandshake || ss->securityHandshake) {
 +	if (ss->version >= SSL_LIBRARY_VERSION_3_0 &&
 +	    (ss->ssl3.hs.ws == wait_change_cipher ||
++	     ss->ssl3.hs.ws == wait_finished ||
 +	     ss->ssl3.hs.ws == wait_new_session_ticket) &&
 +	    ssl3_CanFalseStart(ss)) {
-+	    break;
++	    canFalseStart = PR_TRUE;
 +	}
- 	rv = (*ss->handshake)(ss);
- 	++loopCount;
-     /* This code must continue to loop on SECWouldBlock, 
-diff --git a/mozilla/security/nss/lib/ssl/sslsock.c b/mozilla/security/nss/lib/ssl/sslsock.c
-index aab48d6..40f633a 100644
---- a/mozilla/security/nss/lib/ssl/sslsock.c
-+++ b/mozilla/security/nss/lib/ssl/sslsock.c
++	if (!canFalseStart &&
++	    (ss->handshake || ss->nextHandshake || ss->securityHandshake)) {
+ 	    rv = ssl_Do1stHandshake(ss);
+ 	}
+ 	ssl_Release1stHandshakeLock(ss);
+Index: mozilla/security/nss/lib/ssl/sslsock.c
+===================================================================
+RCS file: /cvsroot/mozilla/security/nss/lib/ssl/sslsock.c,v
+retrieving revision 1.66
+diff -u -p -r1.66 sslsock.c
+--- mozilla/security/nss/lib/ssl/sslsock.c	26 Feb 2010 20:44:54 -0000	1.66
++++ mozilla/security/nss/lib/ssl/sslsock.c	16 Mar 2010 01:25:41 -0000
 @@ -183,6 +183,7 @@ static sslOptions ssl_defaults = {
      PR_FALSE,   /* enableDeflate      */
      2,          /* enableRenegotiation (default: requires extension) */
@@ -253,7 +286,7 @@ index aab48d6..40f633a 100644
  };
  
  sslSessionIDLookupFunc  ssl_sid_lookup;
-@@ -728,6 +729,10 @@ SSL_OptionSet(PRFileDesc *fd, PRInt32 which, PRBool on)
+@@ -728,6 +729,10 @@ SSL_OptionSet(PRFileDesc *fd, PRInt32 wh
  	ss->opt.requireSafeNegotiation = on;
  	break;
  
@@ -264,7 +297,7 @@ index aab48d6..40f633a 100644
        default:
  	PORT_SetError(SEC_ERROR_INVALID_ARGS);
  	rv = SECFailure;
-@@ -791,6 +796,7 @@ SSL_OptionGet(PRFileDesc *fd, PRInt32 which, PRBool *pOn)
+@@ -791,6 +796,7 @@ SSL_OptionGet(PRFileDesc *fd, PRInt32 wh
                                    on = ss->opt.enableRenegotiation; break;
      case SSL_REQUIRE_SAFE_NEGOTIATION: 
                                    on = ss->opt.requireSafeNegotiation; break;
@@ -272,7 +305,7 @@ index aab48d6..40f633a 100644
  
      default:
  	PORT_SetError(SEC_ERROR_INVALID_ARGS);
-@@ -841,6 +847,7 @@ SSL_OptionGetDefault(PRInt32 which, PRBool *pOn)
+@@ -841,6 +847,7 @@ SSL_OptionGetDefault(PRInt32 which, PRBo
      case SSL_REQUIRE_SAFE_NEGOTIATION: 
                                    on = ssl_defaults.requireSafeNegotiation; 
  				  break;
@@ -280,7 +313,7 @@ index aab48d6..40f633a 100644
  
      default:
  	PORT_SetError(SEC_ERROR_INVALID_ARGS);
-@@ -984,6 +991,10 @@ SSL_OptionSetDefault(PRInt32 which, PRBool on)
+@@ -984,6 +991,10 @@ SSL_OptionSetDefault(PRInt32 which, PRBo
  	ssl_defaults.requireSafeNegotiation = on;
  	break;
  
@@ -291,10 +324,13 @@ index aab48d6..40f633a 100644
        default:
  	PORT_SetError(SEC_ERROR_INVALID_ARGS);
  	return SECFailure;
-diff --git a/mozilla/security/nss/tests/ssl/sslstress.txt b/mozilla/security/nss/tests/ssl/sslstress.txt
-index 9a3aae8..c2a5c76 100644
---- a/mozilla/security/nss/tests/ssl/sslstress.txt
-+++ b/mozilla/security/nss/tests/ssl/sslstress.txt
+Index: mozilla/security/nss/tests/ssl/sslstress.txt
+===================================================================
+RCS file: /cvsroot/mozilla/security/nss/tests/ssl/sslstress.txt,v
+retrieving revision 1.18
+diff -u -p -r1.18 sslstress.txt
+--- mozilla/security/nss/tests/ssl/sslstress.txt	3 Feb 2010 02:25:36 -0000	1.18
++++ mozilla/security/nss/tests/ssl/sslstress.txt	16 Mar 2010 01:25:41 -0000
 @@ -42,9 +42,11 @@
    noECC     0      _         -c_1000_-C_A                  Stress SSL2 RC4 128 with MD5
    noECC     0      _         -c_1000_-C_c_-T               Stress SSL3 RC4 128 with MD5
