@@ -44,8 +44,8 @@ FirstLastNameField* FirstLastNameField::Parse1(
 
   AutoFillField* next;
   if (ParseText(&q, ASCIIToUTF16("^name"), &v.first_name_) &&
-      ParseText(&q, ASCIIToUTF16(""), &next)) {
-    if (ParseText(&q, ASCIIToUTF16(""), &v.last_name_)) {
+      ParseEmptyText(&q, &next)) {
+    if (ParseEmptyText(&q, &v.last_name_)) {
       // There are three name fields; assume that the middle one is a
       // middle initial (it is, at least, on SmithsonianCheckout.html).
       v.middle_name_ = next;

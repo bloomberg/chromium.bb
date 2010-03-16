@@ -104,6 +104,11 @@ class FormField {
                         const string16& pattern,
                         AutoFillField** dest);
 
+  // Attempts to parse a text field with an empty name or label.  Returns true
+  // on success and fills |dest| with a pointer to the field.
+  static bool ParseEmptyText(std::vector<AutoFillField*>::const_iterator* iter,
+                             AutoFillField** dest);
+
   // Attempts to parse a text field label with the given pattern.  Returns true
   // on success and fills |dest| with a pointer to the field.
   static bool ParseLabelText(std::vector<AutoFillField*>::const_iterator* iter,

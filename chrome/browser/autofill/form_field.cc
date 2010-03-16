@@ -110,6 +110,13 @@ bool FormField::ParseText(std::vector<AutoFillField*>::const_iterator* iter,
 }
 
 // static
+bool FormField::ParseEmptyText(
+    std::vector<AutoFillField*>::const_iterator* iter,
+    AutoFillField** dest) {
+  return ParseText(iter, ASCIIToUTF16("^$"), dest, false);
+}
+
+// static
 bool FormField::ParseLabelText(
     std::vector<AutoFillField*>::const_iterator* iter,
     const string16& pattern,

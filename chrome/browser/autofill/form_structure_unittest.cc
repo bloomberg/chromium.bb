@@ -167,6 +167,7 @@ TEST(FormStructureTest, Heuristics) {
 
   // Compute heuristic types.
   form_structure->GetHeuristicAutoFillTypes();
+  ASSERT_EQ(8U, form_structure->field_count());
 
   // Check that heuristics are no longer UNKNOWN_TYPE.
   // First name.
@@ -273,6 +274,7 @@ TEST(FormStructureTest, HeuristicsSample8) {
 
   // Compute heuristic types.
   form_structure->GetHeuristicAutoFillTypes();
+  ASSERT_EQ(9U, form_structure->field_count());
 
   // Check that heuristics are no longer UNKNOWN_TYPE.
   // First name.
@@ -294,6 +296,92 @@ TEST(FormStructureTest, HeuristicsSample8) {
   // Phone.
   EXPECT_EQ(PHONE_HOME_WHOLE_NUMBER,
       form_structure->field(8)->heuristic_type());
+}
+
+TEST(FormStructureTest, HeuristicsSample6) {
+  scoped_ptr<FormStructure> form_structure;
+  webkit_glue::FormFieldValues values;
+
+  values.method = ASCIIToUTF16("post");
+  values.elements.push_back(
+      webkit_glue::FormField(ASCIIToUTF16("E-mail address"),
+                             ASCIIToUTF16("email"),
+                             string16(),
+                             ASCIIToUTF16("text"),
+                             WebInputElement::Text));
+  values.elements.push_back(
+      webkit_glue::FormField(ASCIIToUTF16("Full name"),
+                             ASCIIToUTF16("name"),
+                             string16(),
+                             ASCIIToUTF16("text"),
+                             WebInputElement::Text));
+  values.elements.push_back(
+      webkit_glue::FormField(ASCIIToUTF16("Company"),
+                             ASCIIToUTF16("company"),
+                             string16(),
+                             ASCIIToUTF16("text"),
+                             WebInputElement::Text));
+  values.elements.push_back(
+      webkit_glue::FormField(ASCIIToUTF16("Address"),
+                             ASCIIToUTF16("address"),
+                             string16(),
+                             ASCIIToUTF16("text"),
+                             WebInputElement::Text));
+  values.elements.push_back(
+      webkit_glue::FormField(ASCIIToUTF16("City"),
+                             ASCIIToUTF16("city"),
+                             string16(),
+                             ASCIIToUTF16("text"),
+                             WebInputElement::Text));
+  // TODO(jhawkins): Add state select control.
+  values.elements.push_back(
+      webkit_glue::FormField(ASCIIToUTF16("Zip Code"),
+                             ASCIIToUTF16("Home.PostalCode"),
+                             string16(),
+                             ASCIIToUTF16("text"),
+                             WebInputElement::Text));
+  // TODO(jhawkins): Phone number.
+  values.elements.push_back(
+      webkit_glue::FormField(string16(),
+                             ASCIIToUTF16("Submit"),
+                             ASCIIToUTF16("continue"),
+                             ASCIIToUTF16("submit"),
+                             WebInputElement::Submit));
+  form_structure.reset(new FormStructure(values));
+  EXPECT_TRUE(form_structure->IsAutoFillable());
+
+  // Check that heuristics are initialized as UNKNOWN_TYPE.
+  std::vector<AutoFillField*>::const_iterator iter;
+  size_t i;
+  for (iter = form_structure->begin(), i = 0;
+       iter != form_structure->end();
+       ++iter, ++i) {
+    // Expect last element to be NULL.
+    if (i == form_structure->field_count()) {
+      ASSERT_EQ(static_cast<AutoFillField*>(NULL), *iter);
+    } else {
+      ASSERT_NE(static_cast<AutoFillField*>(NULL), *iter);
+      EXPECT_EQ(UNKNOWN_TYPE, (*iter)->heuristic_type());
+    }
+  }
+
+  // Compute heuristic types.
+  form_structure->GetHeuristicAutoFillTypes();
+  ASSERT_EQ(6U, form_structure->field_count());
+
+  // Check that heuristics are no longer UNKNOWN_TYPE.
+  // Email.
+  EXPECT_EQ(EMAIL_ADDRESS, form_structure->field(0)->heuristic_type());
+  // Full name.
+  EXPECT_EQ(NAME_FULL, form_structure->field(1)->heuristic_type());
+  // Company
+  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(2)->heuristic_type());
+  // Address.
+  EXPECT_EQ(ADDRESS_HOME_LINE1, form_structure->field(3)->heuristic_type());
+  // City.
+  EXPECT_EQ(ADDRESS_HOME_CITY, form_structure->field(4)->heuristic_type());
+  // Zip.
+  EXPECT_EQ(ADDRESS_HOME_ZIP, form_structure->field(5)->heuristic_type());
 }
 
 }  // namespace

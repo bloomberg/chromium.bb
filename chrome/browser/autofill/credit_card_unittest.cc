@@ -16,7 +16,7 @@ TEST(CreditCardTest, PreviewSummaryString) {
   // Case 0: empty credit card.
   CreditCard credit_card0(string16(), 0);
   string16 summary0 = credit_card0.PreviewSummary();
-  EXPECT_EQ(summary0, string16(ASCIIToUTF16("")));
+  EXPECT_EQ(summary0, string16());
 
   // Case 00: Empty credit card with empty strings.
   CreditCard credit_card00(string16(), 0);
@@ -32,7 +32,7 @@ TEST(CreditCardTest, PreviewSummaryString) {
       "Chicago",
       "Indianapolis");
   string16 summary00 = credit_card00.PreviewSummary();
-  EXPECT_EQ(summary00, string16(ASCIIToUTF16("")));
+  EXPECT_EQ(summary00, string16());
 
   // Case 1: No credit card number.
   CreditCard credit_card1(string16(), 0);
@@ -48,7 +48,7 @@ TEST(CreditCardTest, PreviewSummaryString) {
       "Chicago",
       "Indianapolis");
   string16 summary1 = credit_card1.PreviewSummary();
-  EXPECT_EQ(summary1, string16(ASCIIToUTF16("")));
+  EXPECT_EQ(summary1, string16());
 
   // Case 2: No month.
   CreditCard credit_card2(string16(), 0);

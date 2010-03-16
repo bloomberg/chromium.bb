@@ -93,8 +93,8 @@ TEST_F(AddressFieldTest, ParseTwoLineAddress) {
                                                WebKit::WebInputElement::Text),
                         ASCIIToUTF16("addr1")));
   list_.push_back(
-      new AutoFillField(webkit_glue::FormField(ASCIIToUTF16(""),
-                                               ASCIIToUTF16(""),
+      new AutoFillField(webkit_glue::FormField(string16(),
+                                               string16(),
                                                string16(),
                                                ASCIIToUTF16("text"),
                                                WebKit::WebInputElement::Text),
@@ -123,7 +123,7 @@ TEST_F(AddressFieldTest, ParseTwoLineAddressEcml) {
                                                WebKit::WebInputElement::Text),
                         ASCIIToUTF16("addr1")));
   list_.push_back(
-      new AutoFillField(webkit_glue::FormField(ASCIIToUTF16(""),
+      new AutoFillField(webkit_glue::FormField(string16(),
                                                kEcmlShipToAddress2,
                                                string16(),
                                                ASCIIToUTF16("text"),

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
+#include "base/string16.h"
 #include "chrome/browser/autofill/autofill_common_unittest.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -15,7 +16,7 @@ TEST(AutoFillProfileTest, PreviewSummaryString) {
   // Case 0/null: ""
   AutoFillProfile profile0(string16(), 0);
   string16 summary0 = profile0.PreviewSummary();
-  EXPECT_EQ(summary0, string16(ASCIIToUTF16("")));
+  EXPECT_EQ(summary0, string16());
 
   // Case 0/empty: ""
   AutoFillProfile profile00(string16(), 0);
@@ -35,7 +36,7 @@ TEST(AutoFillProfileTest, PreviewSummaryString) {
       "12345678910",
       "01987654321");
   string16 summary00 = profile00.PreviewSummary();
-  EXPECT_EQ(summary00, string16(ASCIIToUTF16("")));
+  EXPECT_EQ(summary00, string16());
 
   // Case 1: "<address>"
   AutoFillProfile profile1(string16(), 0);
