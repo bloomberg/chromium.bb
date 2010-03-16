@@ -26,6 +26,9 @@ void AddChannelSocket(const std::string& name, int socket);
 // Remove the channel name mapping, and close the corresponding socket.
 void RemoveAndCloseChannelSocket(const std::string& name);
 
+// Returns true if a channel named |name| is available.
+bool ChannelSocketExists(const std::string& name);
+
 // Construct a socket pair appropriate for IPC: UNIX domain, nonblocking.
 // Returns false on error.
 bool SocketPair(int* fd1, int* fd2);

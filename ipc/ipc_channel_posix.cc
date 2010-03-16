@@ -299,6 +299,11 @@ void RemoveAndCloseChannelSocket(const std::string& name) {
 }
 
 // static
+bool ChannelSocketExists(const std::string& name) {
+  return Singleton<PipeMap>()->Lookup(name) != -1;
+}
+
+// static
 bool SocketPair(int* fd1, int* fd2) {
   int pipe_fds[2];
   if (socketpair(AF_UNIX, SOCK_STREAM, 0, pipe_fds) != 0) {
@@ -362,7 +367,8 @@ bool Channel::ChannelImpl::CreatePipe(const std::string& channel_id,
         // initial channel must not be recycled here.  http://crbug.com/26754.
         static bool used_initial_channel = false;
         if (used_initial_channel) {
-          LOG(FATAL) << "Denying attempt to reuse initial IPC channel";
+          LOG(FATAL) << "Denying attempt to reuse initial IPC channel for "
+                     << pipe_name_;
           return false;
         }
         used_initial_channel = true;
