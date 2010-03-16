@@ -38,11 +38,10 @@ class LanguageCheckbox : public views::Checkbox {
   DISALLOW_COPY_AND_ASSIGN(LanguageCheckbox);
 };
 
-LanguageConfigView::LanguageConfigView() :
-    contents_(NULL),
-    hangul_configure_button_(NULL),
-    language_checkbox_(NULL),
-    preferred_language_table_(NULL) {
+LanguageConfigView::LanguageConfigView()
+    : contents_(NULL),
+      hangul_configure_button_(NULL),
+      preferred_language_table_(NULL) {
 }
 
 LanguageConfigView::~LanguageConfigView() {
@@ -55,7 +54,9 @@ void LanguageConfigView::ButtonPressed(
         NULL, gfx::Rect(), new LanguageHangulConfigView());
     window->SetIsAlwaysOnTop(true);
     window->Show();
-  } else if (sender == static_cast<views::Button*>(language_checkbox_)) {
+  } else if (std::find(language_checkboxes_.begin(),
+                       language_checkboxes_.end(),
+                       sender) != language_checkboxes_.end()) {
     LanguageCheckbox* checkbox = static_cast<LanguageCheckbox*>(sender);
     const InputLanguage& language = checkbox->language();
     // Check if the checkbox is now being checked.
@@ -207,16 +208,17 @@ void LanguageConfigView::Init() {
                    active_language_list->end(),
                    language) != active_language_list->end());
     // Create a checkbox.
-    language_checkbox_ = new LanguageCheckbox(language);
-    language_checkbox_->SetChecked(language_is_active);
-    language_checkbox_->set_listener(this);
+    LanguageCheckbox* language_checkbox = new LanguageCheckbox(language);
+    language_checkbox->SetChecked(language_is_active);
+    language_checkbox->set_listener(this);
+    language_checkboxes_.push_back(language_checkbox);
 
     // We use two columns. Start a column if the counter is an even number.
     if (i % 2 == 0) {
       layout->StartRow(0, kDoubleColumnSetId);
     }
     // Add the checkbox to the layout manager.
-    layout->AddView(language_checkbox_);
+    layout->AddView(language_checkbox);
   }
 
   // Add the configure button for the Hangul IME.

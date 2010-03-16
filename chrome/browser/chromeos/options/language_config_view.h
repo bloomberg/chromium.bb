@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_OPTIONS_LANGUAGE_CONFIG_VIEW_H_
 
 #include <string>
+#include <vector>
 
 #include "app/table_model.h"
 #include "chrome/browser/chromeos/cros/language_library.h"
@@ -64,7 +65,7 @@ class LanguageConfigView : public TableModel,
 
   views::View* contents_;
   views::NativeButton* hangul_configure_button_;
-  LanguageCheckbox* language_checkbox_;
+  std::vector<views::Button*> language_checkboxes_;
 
   // A table for preferred languages and its model.
   views::TableView2* preferred_language_table_;
