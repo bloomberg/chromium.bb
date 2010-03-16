@@ -5,6 +5,8 @@
 #ifndef VIEWS_CONTROLS_COMBOBOX_COMBOBOX_H_
 #define VIEWS_CONTROLS_COMBOBOX_COMBOBOX_H_
 
+#include <string>
+
 #include "views/view.h"
 
 class ComboboxModel;
@@ -40,7 +42,7 @@ class Combobox : public View {
   void ModelChanged();
 
   // Gets/Sets the selected item.
-  int selected_item() const { return selected_item_; };
+  int selected_item() const { return selected_item_; }
   void SetSelectedItem(int index);
 
   // Called when the combo box's selection is changed by the user.
@@ -55,6 +57,9 @@ class Combobox : public View {
   virtual void SetEnabled(bool enabled);
   virtual bool SkipDefaultKeyEventProcessing(const KeyEvent& e);
   virtual void PaintFocusBorder(gfx::Canvas* canvas);
+  virtual bool GetAccessibleName(std::wstring* name);
+  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+  virtual void SetAccessibleName(const std::wstring& name);
 
  protected:
   virtual void Focus();
@@ -74,6 +79,9 @@ class Combobox : public View {
 
   // The current selection.
   int selected_item_;
+
+  // The accessible name of this control.
+  std::wstring accessible_name_;
 
   DISALLOW_COPY_AND_ASSIGN(Combobox);
 };

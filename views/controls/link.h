@@ -5,6 +5,8 @@
 #ifndef VIEWS_CONTROLS_LINK_H_
 #define VIEWS_CONTROLS_LINK_H_
 
+#include <string>
+
 #include "views/controls/label.h"
 
 namespace views {
@@ -33,7 +35,7 @@ class LinkController {
 class Link : public Label {
  public:
   Link();
-  Link(const std::wstring& title);
+  explicit Link(const std::wstring& title);
   virtual ~Link();
 
   void SetController(LinkController* controller);
@@ -46,6 +48,10 @@ class Link : public Label {
                                bool canceled);
   virtual bool OnKeyPressed(const KeyEvent& e);
   virtual bool SkipDefaultKeyEventProcessing(const KeyEvent& e);
+
+  // Accessibility accessors, overridden from View:
+  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+  virtual bool GetAccessibleName(std::wstring* name);
 
   virtual void SetFont(const gfx::Font& font);
 
