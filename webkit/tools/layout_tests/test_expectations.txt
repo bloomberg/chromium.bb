@@ -2753,7 +2753,6 @@ BUG36966 : fast/loader/about-blank-hash-kept.html = FAIL
 // WebKit roll 55373:55380
 BUG37136 : fast/loader/api-test-go-to-current-back-forward-item.html = TIMEOUT
 
-BUG37473 : svg/text/text-intro-05-t.svg = TEXT
 
 BUG37248 LINUX : svg/W3C-SVG-1.1/filters-displace-01-f.svg = IMAGE+TEXT PASS TEXT
 BUG37463 MAC DEBUG : svg/custom/transform-ignore-after-invalid.svg = PASS CRASH
@@ -2810,7 +2809,6 @@ BUG_JIANLI WIN LINUX : svg/custom/dominant-baseline-hanging.svg = TEXT
 BUG_JIANLI WIN : editing/deleting/5390681-2.html = IMAGE+TEXT
 
 // Started failing after Chromium r41620. Need rebaseline.
-BUG38239 WIN MAC : fast/dom/prototype-inheritance.html = FAIL
 
 // WebKit roll 55940 -> 56004
 BUG38228 : fast/events/drag-and-drop.html = TEXT
@@ -2835,3 +2833,6 @@ BUG38347 WIN : fast/events/touch = TEXT PASS
 // Need to implement NPP_HandleEvent in the layout_test_plugin
 BUG38353 MAC LINUX : plugins/keyboard-events.html = TEXT
 BUG38353 MAC LINUX : http/tests/plugins/plugin-document-has-focus.html = TEXT
+
+// will rebaseline
+BUG_DGLAZKOV WIN : svg/text/text-intro-05-t.svg = FAIL
