@@ -67,9 +67,11 @@
 # Periodically we should sweep this file and the bug tracker clean by
 # running overnight and removing outdated bugs/suppressions.
 {
-   bug_30547
+   bug_30547_a
    Heapcheck:Leak
+   ...
    fun:std::string::_Rep::_S_create
+   ...
    fun:base::JSONWriter::Write
    fun:JSONStringValueSerializer::Serialize
    fun:BookmarkStorage::SerializeData
@@ -77,6 +79,16 @@
    fun:BookmarkStorage::BookmarkModelDeleted
    fun:BookmarkModel::~BookmarkModel
 }
+
+{
+   bug_30547_b
+   Heapcheck:Leak
+   ...
+   fun:ImportantFileWriter::WriteNow
+   fun:BookmarkStorage::SaveNow
+   fun:BookmarkStorage::BookmarkModelDeleted
+}
+
 # IPCChannelTest.ChannelProxyTest leaks memory.
 {
    bug_26920_a
@@ -104,14 +116,6 @@
    ...
    fun:std::basic_string::basic_string
    fun:IPCChannelTest_ChannelProxyTest_Test::TestBody
-}
-{
-   bug_30547
-   Heapcheck:Leak
-   ...
-   fun:ImportantFileWriter::WriteNow
-   fun:BookmarkStorage::SaveNow
-   fun:BookmarkStorage::BookmarkModelDeleted
 }
 {
    bug_31643
