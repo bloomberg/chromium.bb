@@ -72,6 +72,16 @@
   // performSelector:after:delay: calls that get triggered in the
   // middle of a drag.
   BOOL draggingExited_;
+
+  // Implement basic menu scrolling through this tracking area.
+  scoped_nsobject<NSTrackingArea> scrollTrackingArea_;
+
+  // Timer to continue scrolling as needed.  We own the timer but
+  // don't release it when done (we invalidate it).
+  NSTimer* scrollTimer_;
+
+  // Amount to scroll by on each timer fire.  Can be + or -.
+  CGFloat verticalScrollDelta_;
 }
 
 - (id)initWithParentButton:(BookmarkButton*)button

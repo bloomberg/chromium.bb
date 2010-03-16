@@ -13,8 +13,24 @@
 #import "chrome/browser/cocoa/bookmark_button_cell.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
 
+namespace {
+
+// Frequency of the scrolling timer in seconds.
+const NSTimeInterval kBookmarkBarFolderScrollInterval = 0.2;
+
+// Amount to scroll by per timer fire.  We scroll rather slowly; to
+// accomodate we do 2 at a time.
+const CGFloat kBookmarkBarFolderScrollAmount =
+    2 * (bookmarks::kBookmarkButtonHeight +
+         bookmarks::kBookmarkVerticalPadding);
+}
+
 @interface BookmarkBarFolderController(Private)
 - (void)configureWindow;
+- (void)addScrollTracking;
+- (void)removeScrollTracking;
+- (void)endScroll;
+- (void)addScrollTimerWithDelta:(CGFloat)delta;
 - (IBAction)openBookmarkFolderFromButton:(id)sender;
 @end
 
@@ -39,11 +55,14 @@
                         object:nil];
 
     [self configureWindow];
+    [self addScrollTracking];
   }
   return self;
 }
 
 - (void)dealloc {
+  [self removeScrollTracking];
+  [self endScroll];
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   // Note: we don't need to
   //   [NSObject cancelPreviousPerformRequestsWithTarget:self];
@@ -272,8 +291,114 @@
 
   [[self window] setFrame:windowFrame display:YES];
 
+  // This is what we want, but it won't work so long as we're a child
+  // window of something at a different level.  To fix (make not a
+  // child) would break other things (e.g. Expose').  I really need a
+  // modal loop for the bookmark menus.  TODO(jrg)
+  // [[self window] setLevel:NSPopUpMenuWindowLevel];
+
   [[parentController_ parentWindow] addChildWindow:[self window]
                                            ordered:NSWindowAbove];
+}
+
+// Start a "scroll up" timer.
+- (void)beginScrollWindowUp {
+  [self addScrollTimerWithDelta:kBookmarkBarFolderScrollAmount];
+}
+
+// Start a "scroll down" timer.
+- (void)beginScrollWindowDown {
+  [self addScrollTimerWithDelta:-kBookmarkBarFolderScrollAmount];
+}
+
+// End a scrolling timer.  Can be called excessively with no harm.
+- (void)endScroll {
+  if (scrollTimer_) {
+    [scrollTimer_ invalidate];
+    scrollTimer_ = nil;
+    verticalScrollDelta_ = 0;
+  }
+}
+
+// Perform a scroll of the window on the screen.
+// Called by a timer when scrolling.
+- (void)performScroll:(NSTimer*)timer {
+  NSRect frame = [[self window] frame];
+  NSRect newFrame = frame;
+  newFrame.origin.y += verticalScrollDelta_;
+  [[self window] setFrameOrigin:newFrame.origin];
+
+  // If we've just move a border of the window from offscreen to
+  // onscreen, stop scrolling.
+  NSRect screenRect = [[[self window] screen] frame];
+  if ((!NSPointInRect(frame.origin, screenRect) &&
+       NSPointInRect(newFrame.origin, screenRect)) ||
+      ((NSMaxY(frame) >= NSMaxY(screenRect)) &&
+       (NSMaxY(newFrame) < NSMaxY(screenRect)))) {
+    [self endScroll];
+  }
+}
+
+// Add a timer to fire at a regular interveral which scrolls the
+// window vertically |delta|.
+- (void)addScrollTimerWithDelta:(CGFloat)delta {
+  if (scrollTimer_ && verticalScrollDelta_ == delta)
+    return;
+  [self endScroll];
+  verticalScrollDelta_ = delta;
+  scrollTimer_ =
+      [NSTimer scheduledTimerWithTimeInterval:kBookmarkBarFolderScrollInterval
+                                       target:self
+                                     selector:@selector(performScroll:)
+                                     userInfo:nil
+                                      repeats:YES];
+}
+
+// Called as a result of our tracking area.  Warning: on the main
+// screen (of a single-screened machine), the minimum mouse y value is
+// 1, not 0.  Also, we do not get events when the mouse is above the
+// menubar (to be fixed by setting the proper window level; see
+// initializer).
+- (void)mouseMoved:(NSEvent*)theEvent {
+  DCHECK([theEvent window] == [self window]);
+
+  NSPoint eventScreenLocation =
+      [[theEvent window] convertBaseToScreen:[theEvent locationInWindow]];
+
+  NSRect screenRect = [[[self window] screen] frame];
+  CGFloat closeToTopOfScreen = NSMaxY(screenRect) -
+      kBookmarkBarFolderScrollAmount;
+  if (eventScreenLocation.y <= (NSMinY(screenRect) + 1)) {
+    [self beginScrollWindowUp];
+  } else if (eventScreenLocation.y > closeToTopOfScreen) {
+    [self beginScrollWindowDown];
+  } else {
+    [self endScroll];
+  }
+}
+
+// Add a tracking area so we know when the mouse is pinned to the top
+// or bottom of the screen.  If that happens, and if the mouse
+// position overlaps the window, scroll it.  To be clear, "scroll it"
+// means "move the window vertically", not scroll it's contents with
+// an NSScrollView.
+- (void)addScrollTracking {
+  NSView* view = [[self window] contentView];
+  scrollTrackingArea_.reset([[NSTrackingArea alloc]
+                              initWithRect:[view bounds]
+                                   options:(NSTrackingMouseMoved |
+                                            NSTrackingActiveAlways)
+                                     owner:self
+                                  userInfo:nil]);
+    [view addTrackingArea:scrollTrackingArea_];
+}
+
+// Remove the tracking area associated with scrolling.
+- (void)removeScrollTracking {
+  if (scrollTrackingArea_.get()) {
+    [[[self window] contentView] removeTrackingArea:scrollTrackingArea_];
+  }
+  scrollTrackingArea_.reset();
 }
 
 - (ThemeProvider*)themeProvider {
