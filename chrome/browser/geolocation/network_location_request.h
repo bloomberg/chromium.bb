@@ -51,7 +51,7 @@ class NetworkLocationRequest : private URLFetcher::Delegate {
   bool MakeRequest(const string16& access_token,
                    const RadioData& radio_data,
                    const WifiData& wifi_data,
-                   int64 timestamp);
+                   const base::Time& timestamp);
 
   bool is_request_pending() const { return url_fetcher_ != NULL; }
   const GURL& url() const { return url_; }
@@ -66,7 +66,7 @@ class NetworkLocationRequest : private URLFetcher::Delegate {
                                   const std::string& data);
 
   scoped_refptr<URLRequestContextGetter> url_context_;
-  int64 timestamp_;  // The timestamp of the data used to make the request.
+  base::Time timestamp_;  // The timestamp of the data used to make the request.
   ListenerInterface* listener_;
   const GURL url_;
   string16 host_name_;

@@ -293,13 +293,13 @@ void ParamTraits<Geoposition>::Log(const Geoposition& p, std::wstring* l) {
       StringPrintf(
           L"<Geoposition>"
           L"%.6f %.6f %.6f %.6f "
-          L"%.6f %.6f %.6f "
-          L"%lld ",
+          L"%.6f %.6f %.6f ",
           p.latitude, p.longitude, p.accuracy, p.altitude,
-          p.altitude_accuracy, p.speed, p.heading,
-          p.timestamp));
+          p.altitude_accuracy, p.speed, p.heading));
+  LogParam(p.timestamp, l);
+  l->append(L" ");
   l->append(p.error_message);
-  LogParam<Geoposition::ErrorCode>(p.error_code, l);
+  LogParam(p.error_code, l);
 }
 
 }  // namespace IPC

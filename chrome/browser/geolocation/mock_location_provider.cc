@@ -44,7 +44,7 @@ class AutoMockLocationProvider : public MockLocationProvider {
       position_.accuracy = 3;
       position_.latitude = 4.3;
       position_.longitude = -7.8;
-      position_.timestamp = 4567;
+      position_.timestamp = base::Time::FromDoubleT(4567.8);
     } else {
       position_.error_code = Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
     }

@@ -7,13 +7,13 @@
 
 #include "base/basictypes.h"
 #include "base/id_map.h"
-#include "chrome/common/geoposition.h"
 #include "ipc/ipc_message.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/WebKit/chromium/public/GeolocationServiceBridgeChromium.h"
 
 class GURL;
 class RenderView;
+struct Geoposition;
 
 // GeolocationDispatcher is a delegate for Geolocation messages used by
 // WebKit.

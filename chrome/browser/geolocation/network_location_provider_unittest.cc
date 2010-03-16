@@ -153,7 +153,6 @@ class GeolocationNetworkProviderTest : public testing::Test {
   }
 
   static int IndexToChannal(int index) { return index + 4; }
-  static int IndexToAge(int index) { return (index * 3) + 100; }
 
   // Creates wifi data containing the specified number of access points, with
   // some differentiating charactistics in each.
@@ -163,7 +162,6 @@ class GeolocationNetworkProviderTest : public testing::Test {
       AccessPointData ap;
       ap.mac_address = ASCIIToUTF16(StringPrintf("%02d-34-56-78-54-32", i));
       ap.radio_signal_strength = i;
-      ap.age = IndexToAge(i);
       ap.channel = IndexToChannal(i);
       ap.signal_to_noise = i + 42;
       ap.ssid = ASCIIToUTF16("Some nice network");
@@ -174,8 +172,9 @@ class GeolocationNetworkProviderTest : public testing::Test {
 
   static void ParseRequest(const std::string& request_data,
                            WifiData* wifi_data_out,
+                           int* max_age_out,
                            std::string* access_token_out) {
-    CHECK(wifi_data_out && access_token_out);
+    CHECK(wifi_data_out && max_age_out && access_token_out);
     scoped_ptr<Value> value(base::JSONReader::Read(request_data, false));
     EXPECT_TRUE(value != NULL);
     EXPECT_EQ(Value::TYPE_DICTIONARY, value->GetType());
@@ -187,6 +186,7 @@ class GeolocationNetworkProviderTest : public testing::Test {
     EXPECT_EQ(attr_value, kTestHost);
     // Everything else is optional.
     ListValue* wifi_aps;
+    *max_age_out = kint32min;
     if (dictionary->GetList(L"wifi_towers", &wifi_aps)) {
       int i = 0;
       for (ListValue::const_iterator it = wifi_aps->begin();
@@ -196,7 +196,10 @@ class GeolocationNetworkProviderTest : public testing::Test {
         AccessPointData data;
         ap->GetStringAsUTF16(L"mac_address", &data.mac_address);
         ap->GetInteger(L"signal_strength", &data.radio_signal_strength);
-        ap->GetInteger(L"age", &data.age);
+        int age = kint32min;
+        ap->GetInteger(L"age", &age);
+        if (age > *max_age_out)
+          *max_age_out = age;
         ap->GetInteger(L"channel", &data.channel);
         ap->GetInteger(L"signal_to_noise", &data.signal_to_noise);
         ap->GetStringAsUTF16(L"ssid", &data.ssid);
@@ -212,7 +215,9 @@ class GeolocationNetworkProviderTest : public testing::Test {
   static void CheckEmptyRequestIsValid(const std::string& request_data) {
     WifiData wifi_aps;
     std::string access_token;
-    ParseRequest(request_data, &wifi_aps, &access_token);
+    int max_age;
+    ParseRequest(request_data, &wifi_aps, &max_age, &access_token);
+    EXPECT_EQ(kint32min, max_age);
     EXPECT_EQ(0, static_cast<int>(wifi_aps.access_point_data.size()));
     EXPECT_TRUE(access_token.empty());
   }
@@ -222,7 +227,10 @@ class GeolocationNetworkProviderTest : public testing::Test {
                                   const std::string& expected_access_token) {
     WifiData wifi_aps;
     std::string access_token;
-    ParseRequest(request_data, &wifi_aps, &access_token);
+    int max_age;
+    ParseRequest(request_data, &wifi_aps, &max_age, &access_token);
+    EXPECT_GE(max_age, 0) << "Age must not be negative.";
+    EXPECT_LT(max_age, 10 * 1000) << "This test really shouldn't take 10s.";
     EXPECT_EQ(expected_wifi_aps,
               static_cast<int>(wifi_aps.access_point_data.size()));
     WifiData expected_data = CreateReferenceWifiScanData(expected_wifi_aps);
@@ -234,7 +242,6 @@ class GeolocationNetworkProviderTest : public testing::Test {
       EXPECT_EQ(expected->mac_address, actual->mac_address) << i;
       EXPECT_EQ(expected->radio_signal_strength, actual->radio_signal_strength)
           << i;
-      EXPECT_EQ(expected->age, actual->age) << i;
       EXPECT_EQ(expected->channel, actual->channel) << i;
       EXPECT_EQ(expected->signal_to_noise, actual->signal_to_noise) << i;
       EXPECT_EQ(expected->ssid, actual->ssid) << i;

@@ -10,6 +10,7 @@
 #define CHROME_COMMON_GEOPOSITION_H_
 
 #include "base/string16.h"
+#include "base/time.h"
 
 // The internal representation of a geo position. Some properties use different
 // types when passed to JavaScript.
@@ -51,7 +52,7 @@ struct Geoposition {
   double altitude_accuracy;  // In metres
   double heading;            // In degrees clockwise relative to the true north
   double speed;              // In meters per second
-  int64 timestamp;           // Milliseconds since 1st Jan 1970
+  base::Time timestamp;
 
   // These properties are returned to JavaScript as a PositionError object.
   ErrorCode error_code;

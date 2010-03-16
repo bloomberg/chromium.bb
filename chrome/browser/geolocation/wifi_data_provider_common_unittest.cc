@@ -119,7 +119,6 @@ TEST_F(GeolocationWifiDataProviderCommonTest, DoScanWithResults) {
   MessageLoopQuitListener quit_listener(&main_message_loop_);
   provider_->AddListener(&quit_listener);
   AccessPointData single_access_point;
-  single_access_point.age = 1;
   single_access_point.channel = 2;
   single_access_point.mac_address = 3;
   single_access_point.radio_signal_strength = 4;
@@ -133,7 +132,6 @@ TEST_F(GeolocationWifiDataProviderCommonTest, DoScanWithResults) {
   WifiData data;
   EXPECT_TRUE(provider_->GetData(&data));
   EXPECT_EQ(1, static_cast<int>(data.access_point_data.size()));
-  EXPECT_EQ(single_access_point.age, data.access_point_data.begin()->age);
   EXPECT_EQ(single_access_point.ssid, data.access_point_data.begin()->ssid);
   provider_->RemoveListener(&quit_listener);
 }

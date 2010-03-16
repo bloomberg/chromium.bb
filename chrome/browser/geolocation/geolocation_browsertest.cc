@@ -205,7 +205,7 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
     geoposition.longitude = longitude;
     geoposition.accuracy = 0;
     geoposition.error_code = Geoposition::ERROR_CODE_NONE;
-    geoposition.timestamp = 0;
+    geoposition.timestamp = base::Time::FromDoubleT(0.0);
     EXPECT_TRUE(geoposition.IsValidFix());
     return geoposition;
   }

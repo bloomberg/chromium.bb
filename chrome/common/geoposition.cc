@@ -25,7 +25,6 @@ Geoposition::Geoposition()
       altitude_accuracy(kBadAccuracy),
       heading(kBadHeading),
       speed(kBadSpeed),
-      timestamp(kBadTimestamp),
       error_code(ERROR_CODE_NONE) {
 }
 
@@ -55,7 +54,7 @@ bool Geoposition::is_valid_speed() const {
 }
 
 bool Geoposition::is_valid_timestamp() const {
-  return timestamp != kBadTimestamp;
+  return !timestamp.is_null();
 }
 
 bool Geoposition::IsValidFix() const {

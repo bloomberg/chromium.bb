@@ -33,12 +33,13 @@ bool FormRequestBody(const string16& host_name,
                      const string16& access_token,
                      const RadioData& radio_data,
                      const WifiData& wifi_data,
+                     const base::Time& timestamp,
                      std::string* data);
 // Parsers the server response.
 void GetLocationFromResponse(bool http_post_result,
                              int status_code,
                              const std::string& response_body,
-                             int64 timestamp,
+                             const base::Time& timestamp,
                              const GURL& server_url,
                              Geoposition* position,
                              string16* access_token);
@@ -54,11 +55,15 @@ void AddInteger(const std::wstring& property_name,
                 DictionaryValue* object);
 // Parses the server response body. Returns true if parsing was successful.
 bool ParseServerResponse(const std::string& response_body,
-                         int64 timestamp,
+                         const base::Time& timestamp,
                          Geoposition* position,
                          string16* access_token);
-void AddRadioData(const RadioData& radio_data, DictionaryValue* body_object);
-void AddWifiData(const WifiData& wifi_data, DictionaryValue* body_object);
+void AddRadioData(const RadioData& radio_data,
+                  int age_milliseconds,
+                  DictionaryValue* body_object);
+void AddWifiData(const WifiData& wifi_data,
+                 int age_milliseconds,
+                 DictionaryValue* body_object);
 }  // namespace
 
 int NetworkLocationRequest::url_fetcher_id_for_tests = 0;
@@ -67,7 +72,7 @@ NetworkLocationRequest::NetworkLocationRequest(URLRequestContextGetter* context,
                                                const GURL& url,
                                                const string16& host_name,
                                                ListenerInterface* listener)
-    : url_context_(context), timestamp_(kint64min), listener_(listener),
+    : url_context_(context), listener_(listener),
       url_(url), host_name_(host_name) {
   DCHECK(listener);
 }
@@ -78,14 +83,14 @@ NetworkLocationRequest::~NetworkLocationRequest() {
 bool NetworkLocationRequest::MakeRequest(const string16& access_token,
                                          const RadioData& radio_data,
                                          const WifiData& wifi_data,
-                                         int64 timestamp) {
+                                         const base::Time& timestamp) {
   if (url_fetcher_ != NULL) {
     DLOG(INFO) << "NetworkLocationRequest : Cancelling pending request";
     url_fetcher_.reset();
   }
   std::string post_body;
   if (!FormRequestBody(host_name_, access_token, radio_data, wifi_data,
-                       &post_body)) {
+                       timestamp, &post_body)) {
     return false;
   }
   timestamp_ = timestamp;
@@ -132,6 +137,7 @@ bool FormRequestBody(const string16& host_name,
                      const string16& access_token,
                      const RadioData& radio_data,
                      const WifiData& wifi_data,
+                     const base::Time& timestamp,
                      std::string* data) {
   DCHECK(data);
 
@@ -147,8 +153,15 @@ bool FormRequestBody(const string16& host_name,
 
   body_object.SetBoolean(L"request_address", false);
 
-  AddRadioData(radio_data, &body_object);
-  AddWifiData(wifi_data, &body_object);
+  int age = kint32min;  // Invalid so AddInteger() will ignore.
+  if (!timestamp.is_null()) {
+    // Convert absolute timestamps into a relative age.
+    int64 delta_ms = (base::Time::Now() - timestamp).InMilliseconds();
+    if (delta_ms >= 0 && delta_ms < kint32max)
+      age = static_cast<int>(delta_ms);
+  }
+  AddRadioData(radio_data, age, &body_object);
+  AddWifiData(wifi_data, age, &body_object);
 
   base::JSONWriter::Write(&body_object, false, data);
   DLOG(INFO) << "NetworkLocationRequest::FormRequestBody(): Formed body "
@@ -172,7 +185,7 @@ void FormatPositionError(const GURL& server_url,
 void GetLocationFromResponse(bool http_post_result,
                              int status_code,
                              const std::string& response_body,
-                             int64 timestamp,
+                             const base::Time& timestamp,
                              const GURL& server_url,
                              Geoposition* position,
                              string16* access_token) {
@@ -262,12 +275,12 @@ bool GetAsDouble(const DictionaryValue& object,
 }
 
 bool ParseServerResponse(const std::string& response_body,
-                         int64 timestamp,
+                         const base::Time& timestamp,
                          Geoposition* position,
                          string16* access_token) {
   DCHECK(position);
   DCHECK(access_token);
-  DCHECK(timestamp != kint64min);
+  DCHECK(!timestamp.is_null());
 
   if (response_body.empty()) {
     LOG(WARNING) << "ParseServerResponse() : Response was empty.\n";
@@ -339,7 +352,9 @@ bool ParseServerResponse(const std::string& response_body,
   return true;
 }
 
-void AddRadioData(const RadioData& radio_data, DictionaryValue* body_object) {
+void AddRadioData(const RadioData& radio_data,
+                  int age_milliseconds,
+                  DictionaryValue* body_object) {
   DCHECK(body_object);
 
   AddInteger(L"home_mobile_country_code", radio_data.home_mobile_country_code,
@@ -365,7 +380,7 @@ void AddRadioData(const RadioData& radio_data, DictionaryValue* body_object) {
                radio_data.cell_data[i].mobile_country_code, cell_tower);
     AddInteger(L"mobile_network_code",
                radio_data.cell_data[i].mobile_network_code, cell_tower);
-    AddInteger(L"age", radio_data.cell_data[i].age, cell_tower);
+    AddInteger(L"age", age_milliseconds, cell_tower);
     AddInteger(L"signal_strength",
                radio_data.cell_data[i].radio_signal_strength, cell_tower);
     AddInteger(L"timing_advance", radio_data.cell_data[i].timing_advance,
@@ -375,7 +390,9 @@ void AddRadioData(const RadioData& radio_data, DictionaryValue* body_object) {
   body_object->Set(L"cell_towers", cell_towers);
 }
 
-void AddWifiData(const WifiData& wifi_data, DictionaryValue* body_object) {
+void AddWifiData(const WifiData& wifi_data,
+                 int age_milliseconds,
+                 DictionaryValue* body_object) {
   DCHECK(body_object);
 
   if (wifi_data.access_point_data.empty()) {
@@ -390,7 +407,7 @@ void AddWifiData(const WifiData& wifi_data, DictionaryValue* body_object) {
     DictionaryValue* wifi_tower = new DictionaryValue;
     AddString(L"mac_address", iter->mac_address, wifi_tower);
     AddInteger(L"signal_strength", iter->radio_signal_strength, wifi_tower);
-    AddInteger(L"age", iter->age, wifi_tower);
+    AddInteger(L"age", age_milliseconds, wifi_tower);
     AddInteger(L"channel", iter->channel, wifi_tower);
     AddInteger(L"signal_to_noise", iter->signal_to_noise, wifi_tower);
     AddString(L"ssid", iter->ssid, wifi_tower);

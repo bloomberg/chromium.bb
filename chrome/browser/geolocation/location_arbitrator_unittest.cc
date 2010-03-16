@@ -32,7 +32,7 @@ void SetReferencePosition(Geoposition* position) {
   position->latitude = 51.0;
   position->longitude = -0.1;
   position->accuracy = 400;
-  position->timestamp = 87654321;
+  position->timestamp = base::Time::FromDoubleT(87654321.0);
   ASSERT_TRUE(position->IsInitialized());
   ASSERT_TRUE(position->IsValidFix());
 }

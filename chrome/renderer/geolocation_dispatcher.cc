@@ -97,7 +97,7 @@ void GeolocationDispatcher::OnGeolocationPositionUpdated(
         geoposition.is_valid_altitude_accuracy(), geoposition.altitude_accuracy,
         geoposition.is_valid_heading(), geoposition.heading,
         geoposition.is_valid_speed(), geoposition.speed,
-        geoposition.timestamp);
+        static_cast<int64>(geoposition.timestamp.ToDoubleT() * 1000));
   }
 }
 

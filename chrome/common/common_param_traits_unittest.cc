@@ -176,7 +176,7 @@ TEST(IPCMessageTest, Geoposition) {
   input.altitude_accuracy = 9.3;
   input.speed = 55;
   input.heading = 120;
-  input.timestamp = 1977;
+  input.timestamp = base::Time::FromInternalValue(1977);
   input.error_code = Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
   input.error_message = L"unittest error message for geoposition";
 

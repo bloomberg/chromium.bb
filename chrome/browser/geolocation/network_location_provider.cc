@@ -15,11 +15,6 @@ const int kDataCompleteWaitPeriod = 1000 * 2;  // 2 seconds
 // The maximum size of the cache of positions for previously requested device
 // data.
 const size_t kMaximumCacheSize = 10;
-
-// TODO(joth): Share, or remove usage by porting callers to Time et al.
-int64 GetCurrentTimeMillis() {
-  return static_cast<int64>(base::Time::Now().ToDoubleT() * 1000);
-}
 }  // namespace
 
 // The PositionCache handles caching and retrieving a position returned by a
@@ -98,7 +93,7 @@ class NetworkLocationProvider::PositionCache {
   // timestamp of the position.
   typedef std::map<string16, Geoposition> CacheMap;
   CacheMap cache_;
-  typedef std::map<int64, CacheMap::iterator> CacheTimesMap;
+  typedef std::map<base::Time, CacheMap::iterator> CacheTimesMap;
   CacheTimesMap cache_times_;
 };
 
@@ -125,7 +120,6 @@ NetworkLocationProvider::NetworkLocationProvider(
       wifi_data_provider_(NULL),
       is_radio_data_complete_(false),
       is_wifi_data_complete_(false),
-      device_data_updated_timestamp_(kint64min),
       access_token_(access_token),
       is_new_data_available_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(delayed_start_task_(this)) {
@@ -227,8 +221,8 @@ void NetworkLocationProvider::RequestPosition() {
   delayed_start_task_.RevokeAll();
   const Geoposition* cached_position;
   cached_position = position_cache_->FindPosition(radio_data_, wifi_data_);
-  DCHECK_NE(device_data_updated_timestamp_, kint64min) <<
-    "Timestamp must be set before looking up position";
+  DCHECK(!device_data_updated_timestamp_.is_null()) <<
+      "Timestamp must be set before looking up position";
   if (cached_position) {
     DCHECK(cached_position->IsValidFix());
     // Record the position and update its timestamp.
@@ -260,7 +254,7 @@ void NetworkLocationProvider::RequestPosition() {
 
 void NetworkLocationProvider::OnDeviceDataUpdated() {
   DCHECK(CalledOnValidThread());
-  device_data_updated_timestamp_ = GetCurrentTimeMillis();
+  device_data_updated_timestamp_ = base::Time::Now();
 
   is_new_data_available_ = is_radio_data_complete_ || is_wifi_data_complete_;
   if (delayed_start_task_.empty() ||

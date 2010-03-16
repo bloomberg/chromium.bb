@@ -50,11 +50,10 @@ struct CellData {
         location_area_code(kint32min),
         mobile_network_code(kint32min),
         mobile_country_code(kint32min),
-        age(kint32min),
         radio_signal_strength(kint32min),
         timing_advance(kint32min) {}
   bool Matches(const CellData &other) const {
-    // Ignore age and radio_signal_strength when matching.
+    // Ignore radio_signal_strength when matching.
     return cell_id == other.cell_id &&
            location_area_code == other.location_area_code &&
            mobile_network_code == other.mobile_network_code &&
@@ -66,7 +65,6 @@ struct CellData {
   int location_area_code;     // For current location area
   int mobile_network_code;    // For current cell
   int mobile_country_code;    // For current cell
-  int age;                    // Milliseconds since this cell was primary
   int radio_signal_strength;  // Measured in dBm.
   int timing_advance;         // Timing advance representing the distance from
                               // the cell tower. Each unit is roughly 550
@@ -123,13 +121,11 @@ struct RadioData {
 struct AccessPointData {
   AccessPointData()
       : radio_signal_strength(kint32min),
-        age(kint32min),
         channel(kint32min),
         signal_to_noise(kint32min) {}
   // MAC address, formatted as per MacAddressAsString16.
   string16 mac_address;
   int radio_signal_strength;  // Measured in dBm
-  int age;              // Milliseconds since this access point was detected
   int channel;
   int signal_to_noise;  // Ratio in dB
   string16 ssid;   // Network identifier

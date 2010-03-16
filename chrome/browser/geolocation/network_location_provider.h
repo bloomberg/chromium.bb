@@ -67,8 +67,10 @@ class NetworkLocationProvider
   bool is_wifi_data_complete_;
 
   // The timestamp for the latest device data update.
-  int64 device_data_updated_timestamp_;
+  base::Time device_data_updated_timestamp_;
 
+  // Cached value loaded from the token store or set by a previous server
+  // response, and sent in each subsequent network request.
   string16 access_token_;
 
   // The current best position estimate.
