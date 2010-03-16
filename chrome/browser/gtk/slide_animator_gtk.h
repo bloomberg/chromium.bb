@@ -85,6 +85,9 @@ class SlideAnimatorGtk : public AnimationDelegate {
   void AnimationProgressed(const Animation* animation);
   void AnimationEnded(const Animation* animation);
 
+  // Used during testing; disable or enable animations (default is enabled).
+  static void SetAnimationsForTesting(bool enable);
+
  private:
   static void OnChildSizeAllocate(GtkWidget* child,
                                   GtkAllocation* allocation,
@@ -110,6 +113,8 @@ class SlideAnimatorGtk : public AnimationDelegate {
   // child widget has been allocated, at which point we will move it, and then
   // set this variable to false to indicate it should not be moved again.
   bool child_needs_move_;
+
+  static bool animations_enabled_;
 };
 
 #endif  // CHROME_BROWSER_GTK_SLIDE_ANIMATOR_GTK_H_

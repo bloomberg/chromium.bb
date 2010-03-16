@@ -18,14 +18,8 @@
 
 #if defined(TOOLKIT_VIEWS)
 #include "views/focus/focus_manager.h"
-#endif
-
-// http://crbug.com/37809
-#if defined(OS_LINUX) && defined(TOOLKIT_GTK)
-#define FindDisappearOnNavigate DISABLED_FindDisappearOnNavigate
-#define FindDisappearOnNewTabAndHistory \
-    DISABLED_FindDisappearOnNewTabAndHistory
-#define FindMovesWhenObscuring DISABLED_FindMovesWhenObscuring
+#elif defined(TOOLKIT_GTK)
+#include "chrome/browser/gtk/slide_animator_gtk.h"
 #endif
 
 const std::wstring kSimplePage = L"404_is_enough_for_us.html";
@@ -55,6 +49,13 @@ class FindInPageControllerTest : public InProcessBrowserTest {
  public:
   FindInPageControllerTest() {
     EnableDOMAutomation();
+
+#if defined(TOOLKIT_VIEWS)
+    DropdownBarHost::disable_animations_during_testing_ = true;
+#elif defined(TOOLKIT_GTK)
+    SlideAnimatorGtk::SetAnimationsForTesting(false);
+#endif
+
   }
 
  protected:
@@ -484,12 +485,6 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   EXPECT_EQ(1, ordinal);
 }
 
-// Make sure Find box disappears on Navigate but not on Refresh.
-#if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
-// The last EXPECT_FALSE(fully_visible) is failing all the time on
-// the linux_views bot. See bug: http://crbug.com/28629.
-#define FindDisappearOnNavigate DISABLED_FindDisappearOnNavigate
-#endif
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindDisappearOnNavigate) {
   HTTPTestServer* server = StartHTTPServer();
 
@@ -498,29 +493,25 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindDisappearOnNavigate) {
   GURL url2 = server->TestServerPageW(kFramePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
-#if defined(TOOLKIT_VIEWS)
-  // Open the Find window with animations disabled.
-  DropdownBarHost::disable_animations_during_testing_ = true;
-#endif
   browser()->ShowFindBar();
 
-  gfx::Point position;
   bool fully_visible = false;
 
   // Make sure it is open.
-  EXPECT_TRUE(GetFindBarWindowInfo(&position, &fully_visible));
+  EXPECT_TRUE(GetFindBarWindowInfo(NULL, &fully_visible));
   EXPECT_TRUE(fully_visible);
 
   // Reload the tab and make sure Find window doesn't go away.
   browser()->Reload();
+  ui_test_utils::WaitForNavigationInCurrentTab(browser());
 
-  EXPECT_TRUE(GetFindBarWindowInfo(&position, &fully_visible));
+  EXPECT_TRUE(GetFindBarWindowInfo(NULL, &fully_visible));
   EXPECT_TRUE(fully_visible);
 
   // Navigate and make sure the Find window goes away.
   ui_test_utils::NavigateToURL(browser(), url2);
 
-  EXPECT_TRUE(GetFindBarWindowInfo(&position, &fully_visible));
+  EXPECT_TRUE(GetFindBarWindowInfo(NULL, &fully_visible));
   EXPECT_FALSE(fully_visible);
 }
 
@@ -534,10 +525,6 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   GURL url = server->TestServerPageW(kSimplePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
-#if defined(TOOLKIT_VIEWS)
-  // Open the Find window with animations disabled.
-  DropdownBarHost::disable_animations_during_testing_ = true;
-#endif
   browser()->ShowFindBar();
 
   gfx::Point position;
@@ -576,11 +563,10 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindMovesWhenObscuring) {
   GURL url = server->TestServerPageW(kMoveIfOver);
   ui_test_utils::NavigateToURL(browser(), url);
 
-#if defined(TOOLKIT_VIEWS)
-  // Open the Find window with animations disabled.
-  DropdownBarHost::disable_animations_during_testing_ = true;
-#endif
   browser()->ShowFindBar();
+
+  // This is needed on GTK because the reposition operation is asynchronous.
+  MessageLoop::current()->RunAllPending();
 
   gfx::Point start_position;
   gfx::Point position;
@@ -700,10 +686,6 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
       focus_manager->GetCurrentTargetForAccelerator(escape);
   EXPECT_TRUE(old_target != NULL);
 
-#if defined(TOOLKIT_VIEWS)
-  // Open the Find window with animations disabled.
-  DropdownBarHost::disable_animations_during_testing_ = true;
-#endif
   browser()->ShowFindBar();
 
   // Our Find bar should be the new target.
@@ -732,10 +714,6 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, StayActive) {
   GURL url = server->TestServerPageW(kSimplePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
-#if defined(TOOLKIT_VIEWS)
-  // Open the Find window with animations disabled.
-  DropdownBarHost::disable_animations_during_testing_ = true;
-#endif
   browser()->ShowFindBar();
 
   // Simulate a user clearing the search string. Ideally, we should be
@@ -790,10 +768,6 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, RestartSearchFromF3) {
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PreferPreviousSearch) {
   HTTPTestServer* server = StartHTTPServer();
 
-#if defined(TOOLKIT_VIEWS)
-  DropdownBarHost::disable_animations_during_testing_ = true;
-#endif
-
   // First we navigate to any page.
   GURL url = server->TestServerPageW(kSimplePage);
   ui_test_utils::NavigateToURL(browser(), url);
@@ -825,10 +799,6 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PreferPreviousSearch) {
 // This makes sure that dismissing the find bar with kActivateSelection works.
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, ActivateLinkNavigatesPage) {
   HTTPTestServer* server = StartHTTPServer();
-
-#if defined(TOOLKIT_VIEWS)
-  DropdownBarHost::disable_animations_during_testing_ = true;
-#endif
 
   // First we navigate to our test content.
   GURL url = server->TestServerPageW(kLinkPage);

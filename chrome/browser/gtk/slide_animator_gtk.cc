@@ -26,6 +26,8 @@ void OnChildSizeRequest(GtkWidget* expanded,
 
 }  // namespace
 
+bool SlideAnimatorGtk::animations_enabled_ = true;
+
 SlideAnimatorGtk::SlideAnimatorGtk(GtkWidget* child,
                                    Direction direction,
                                    int duration,
@@ -68,17 +70,24 @@ SlideAnimatorGtk::~SlideAnimatorGtk() {
 }
 
 void SlideAnimatorGtk::Open() {
+  if (!animations_enabled_)
+    return OpenWithoutAnimation();
+
   gtk_widget_show(widget_.get());
   animation_->Show();
 }
 
 void SlideAnimatorGtk::OpenWithoutAnimation() {
+  gtk_widget_show(widget_.get());
   animation_->Reset(1.0);
-  Open();
+  animation_->Show();
   AnimationProgressed(animation_.get());
 }
 
 void SlideAnimatorGtk::Close() {
+  if (!animations_enabled_)
+    return CloseWithoutAnimation();
+
   animation_->Hide();
 }
 
@@ -125,6 +134,11 @@ void SlideAnimatorGtk::AnimationEnded(const Animation* animation) {
     if (delegate_)
       delegate_->Closed();
   }
+}
+
+// static
+void SlideAnimatorGtk::SetAnimationsForTesting(bool enable) {
+  animations_enabled_ = enable;
 }
 
 // static

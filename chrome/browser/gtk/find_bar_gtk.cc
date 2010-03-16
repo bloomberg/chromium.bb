@@ -519,7 +519,8 @@ void FindBarGtk::Observe(NotificationType type,
 bool FindBarGtk::GetFindBarWindowInfo(gfx::Point* position,
                                       bool* fully_visible) {
   if (position)
-    NOTIMPLEMENTED();
+    *position = GetPosition();
+
   if (fully_visible) {
     *fully_visible = !slide_widget_->IsAnimating() &&
                      slide_widget_->IsShowing();
@@ -646,6 +647,24 @@ void FindBarGtk::AdjustTextAlignment() {
   } else {
     gtk_entry_set_alignment(GTK_ENTRY(text_entry_), 0.0);
   }
+}
+
+gfx::Point FindBarGtk::GetPosition() {
+  gfx::Point point;
+
+  GValue value = { 0, };
+  g_value_init(&value, G_TYPE_INT);
+  gtk_container_child_get_property(GTK_CONTAINER(widget()->parent),
+                                   widget(), "x", &value);
+  point.set_x(g_value_get_int(&value));
+
+  gtk_container_child_get_property(GTK_CONTAINER(widget()->parent),
+                                   widget(), "y", &value);
+  point.set_y(g_value_get_int(&value));
+
+  g_value_unset(&value);
+
+  return point;
 }
 
 // static

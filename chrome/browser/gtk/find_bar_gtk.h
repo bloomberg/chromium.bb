@@ -1,5 +1,5 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use
-// of this source code is governed by a BSD-style license that can be
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_GTK_FIND_BAR_GTK_H_
@@ -15,6 +15,7 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/owned_widget_gtk.h"
+#include "gfx/point.h"
 
 class Browser;
 class BrowserWindowGtk;
@@ -106,6 +107,9 @@ class FindBarGtk : public FindBar,
   // and |text_entry_|'s content, to make sure the real text alignment is
   // always in sync with the UI language direction.
   void AdjustTextAlignment();
+
+  // Get the position of the findbar within the floating container.
+  gfx::Point GetPosition();
 
   static void OnParentSet(GtkWidget* widget, GtkObject* old_parent,
                           FindBarGtk* find_bar);
