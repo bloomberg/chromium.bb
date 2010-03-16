@@ -237,7 +237,7 @@ TEST_F(GetCallerFrame, TraditionalScan) {
   EXPECT_EQ(StackFrameX86::FRAME_TRUST_SCAN, frame1->trust);
   // I'd argue that CONTEXT_VALID_EBP shouldn't be here, since the
   // walker does not actually fetch the EBP after a scan (forcing the
-  // next frame to be scanned as well). But we'll grandfather the existing
+  // next frame to be scanned as well). But let's grandfather the existing
   // behavior in for now.
   ASSERT_EQ((StackFrameX86::CONTEXT_VALID_EIP
              | StackFrameX86::CONTEXT_VALID_ESP
@@ -325,8 +325,8 @@ TEST_F(GetCallerFrame, WindowsFrameData) {
 TEST_F(GetCallerFrame, WindowsFrameDataParameterSize) {
   SetModuleSymbols(&module1, "FUNC 1000 100 c module1::wheedle\n");
   SetModuleSymbols(&module2,
-                   // Note bogus parameter size in FUNC record; we should
-                   // prefer the STACK WIN record, and see '4' below.
+                   // Note bogus parameter size in FUNC record; the stack walker
+                   // should prefer the STACK WIN record, and see '4' below.
                    "FUNC aa85 176 beef module2::whine\n"
                    "STACK WIN 4 aa85 176 0 0 4 10 4 0 1"
                    " $T2 $esp .cbLocals + .cbSavedRegs + ="
@@ -429,8 +429,8 @@ TEST_F(GetCallerFrame, WindowsFrameDataParameterSize) {
 
 // Use Windows frame data (a "STACK WIN 4" record, from a
 // FrameTypeFrameData DIA record) to walk a stack frame, where the
-// expression fails to yield both an $eip and an $ebp value, and we
-// must scan.
+// expression fails to yield both an $eip and an $ebp value, and the stack
+// walker must scan.
 TEST_F(GetCallerFrame, WindowsFrameDataScan) {
   SetModuleSymbols(&module1,
                    "STACK WIN 4 c8c 111 0 0 4 10 4 0 1 bad program string\n");
@@ -470,10 +470,10 @@ TEST_F(GetCallerFrame, WindowsFrameDataScan) {
 
   StackFrameX86 *frame1 = static_cast<StackFrameX86 *>(frames->at(1));
   EXPECT_EQ(StackFrameX86::FRAME_TRUST_SCAN, frame1->trust);
-  // I'd argue that CONTEXT_VALID_EBP shouldn't be here, since the
-  // walker does not actually fetch the EBP after a scan (forcing the
-  // next frame to be scanned as well). But we'll grandfather the existing
-  // behavior in for now.
+  // I'd argue that CONTEXT_VALID_EBP shouldn't be here, since the walker
+  // does not actually fetch the EBP after a scan (forcing the next frame
+  // to be scanned as well). But let's grandfather the existing behavior in
+  // for now.
   ASSERT_EQ((StackFrameX86::CONTEXT_VALID_EIP
              | StackFrameX86::CONTEXT_VALID_ESP
              | StackFrameX86::CONTEXT_VALID_EBP),
@@ -486,8 +486,8 @@ TEST_F(GetCallerFrame, WindowsFrameDataScan) {
 
 // Use Windows frame data (a "STACK WIN 4" record, from a
 // FrameTypeFrameData DIA record) to walk a stack frame, where the
-// expression yields an $eip that falls outside of any module, and we
-// must scan.
+// expression yields an $eip that falls outside of any module, and the
+// stack walker must scan.
 TEST_F(GetCallerFrame, WindowsFrameDataBadEIPScan) {
   SetModuleSymbols(&module1,
                    "STACK WIN 4 6e6 e7 0 0 0 8 4 0 1"
@@ -500,8 +500,8 @@ TEST_F(GetCallerFrame, WindowsFrameDataBadEIPScan) {
   stack_section.start() = 0x80000000;
 
   // In this stack, the context's %ebp is pointing at the wrong place, so
-  // we need to scan to find the return address, and then scan again to find
-  // the caller's saved %ebp.
+  // the stack walker needs to scan to find the return address, and then
+  // scan again to find the caller's saved %ebp.
   Label frame0_ebp, frame1_ebp, frame1_esp;
   stack_section
     // frame 0
@@ -510,7 +510,7 @@ TEST_F(GetCallerFrame, WindowsFrameDataBadEIPScan) {
                                 // at *** below
     // The STACK WIN record says that the following two values are
     // frame 1's saved %ebp and return address, but the %ebp is wrong;
-    // they're garbage. We will scan for the right values.
+    // they're garbage. The stack walker will scan for the right values.
     .D32(0x3d937b2b)            // alleged to be frame 1's saved %ebp
     .D32(0x17847f5b)            // alleged to be frame 1's return address
     .D32(frame1_ebp)            // frame 1's real saved %ebp; scan will find
@@ -520,7 +520,7 @@ TEST_F(GetCallerFrame, WindowsFrameDataBadEIPScan) {
     .D32(0x5000d000)            // frame 1's real saved %eip; scan will find
     // Frame 1, in module2::function. The STACK WIN record describes
     // this as the oldest frame, without referring to its contents, so
-    // we don't need to 
+    // we needn't to provide any actual data here.
     .Mark(&frame1_esp)
     .Mark(&frame1_ebp)          // frame 1 %ebp points here
     // A dummy value for frame 1's %ebp to point at. The scan recognizes the
@@ -551,7 +551,7 @@ TEST_F(GetCallerFrame, WindowsFrameDataBadEIPScan) {
   EXPECT_EQ(StackFrameX86::FRAME_TRUST_CFI_SCAN, frame1->trust);
   // I'd argue that CONTEXT_VALID_EBP shouldn't be here, since the
   // walker does not actually fetch the EBP after a scan (forcing the
-  // next frame to be scanned as well). But we'll grandfather the existing
+  // next frame to be scanned as well). But let's grandfather the existing
   // behavior in for now.
   ASSERT_EQ((StackFrameX86::CONTEXT_VALID_EIP
              | StackFrameX86::CONTEXT_VALID_ESP
@@ -568,8 +568,8 @@ TEST_F(GetCallerFrame, WindowsFrameDataBadEIPScan) {
 // does not modify %ebp from the value it had in the caller.
 TEST_F(GetCallerFrame, WindowsFPOUnchangedEBP) {
   SetModuleSymbols(&module1,
-                   // Note bogus parameter size in FUNC record; we should
-                   // prefer the STACK WIN record, and see '8' below.
+                   // Note bogus parameter size in FUNC record; the walker
+                   // should prefer the STACK WIN record, and see the '8' below.
                    "FUNC e8a8 100 feeb module1::discombobulated\n"
                    "STACK WIN 0 e8a8 100 0 0 8 4 10 0 0 0\n");
   Label frame0_esp;
@@ -637,8 +637,8 @@ TEST_F(GetCallerFrame, WindowsFPOUnchangedEBP) {
 // caller in the standard place in the saved register area.
 TEST_F(GetCallerFrame, WindowsFPOUsedEBP) {
   SetModuleSymbols(&module1,
-                   // Note bogus parameter size in FUNC record; we should
-                   // prefer the STACK WIN record, and see '8' below.
+                   // Note bogus parameter size in FUNC record; the walker
+                   // should prefer the STACK WIN record, and see the '8' below.
                    "FUNC 9aa8 e6 abbe module1::RaisedByTheAliens\n"
                    "STACK WIN 0 9aa8 e6 a 0 10 8 4 0 0 1\n");
   Label frame0_esp;
@@ -702,3 +702,192 @@ TEST_F(GetCallerFrame, WindowsFPOUsedEBP) {
   EXPECT_EQ("", frame1->function_name);
   EXPECT_EQ(NULL, frame1->windows_frame_info);
 }
+
+struct CFIFixture: public StackwalkerX86Fixture {
+  CFIFixture() {
+    // Provide a bunch of STACK CFI records; individual tests walk to the
+    // caller from every point in this series, expecting to find the same
+    // set of register values.
+    SetModuleSymbols(&module1,
+                     // The youngest frame's function.
+                     "FUNC 4000 1000 10 enchiridion\n"
+                     // Initially, just a return address.
+                     "STACK CFI INIT 4000 100 .cfa: $esp 4 + .ra: .cfa 4 - ^\n"
+                     // Push %ebx.
+                     "STACK CFI 4001 .cfa: $esp 8 + $ebx: .cfa 8 - ^\n"
+                     // Move %esi into %ebx.  Weird, but permitted.
+                     "STACK CFI 4002 $esi: $ebx\n"
+                     // Allocate frame space, and save %edi.
+                     "STACK CFI 4003 .cfa: $esp 20 + $edi: .cfa 16 - ^\n"
+                     // Put the return address in %edi.
+                     "STACK CFI 4005 .ra: $edi\n"
+                     // Save %ebp, and use it as a frame pointer.
+                     "STACK CFI 4006 .cfa: $ebp 8 + $ebp: .cfa 12 - ^\n"
+
+                     // The calling function.
+                     "FUNC 5000 1000 10 epictetus\n"
+                     // Mark it as end of stack.
+                     "STACK CFI INIT 5000 1000 .cfa: $esp .ra 0\n");
+
+    // Provide some distinctive values for the caller's registers.
+    expected.esp = 0x80000000;
+    expected.eip = 0x40005510;
+    expected.ebp = 0xc0d4aab9;
+    expected.ebx = 0x60f20ce6;
+    expected.esi = 0x53d1379d;
+    expected.edi = 0xafbae234;
+
+    // By default, registers are unchanged.
+    raw_context = expected;
+  }
+
+  // Walk the stack, using stack_section as the contents of the stack
+  // and raw_context as the current register values. (Set
+  // raw_context.esp to the stack's starting address.) Expect two
+  // stack frames; in the older frame, expect the callee-saves
+  // registers to have values matching those in 'expected'.
+  void CheckWalk() {
+    RegionFromSection();
+    raw_context.esp = stack_section.start().Value();
+
+    StackwalkerX86 walker(&system_info, &raw_context, &stack_region, &modules,
+                          &supplier, &resolver);
+    ASSERT_TRUE(walker.Walk(&call_stack));
+    frames = call_stack.frames();
+    ASSERT_EQ(2U, frames->size());
+
+    StackFrameX86 *frame0 = static_cast<StackFrameX86 *>(frames->at(0));
+    EXPECT_EQ(StackFrameX86::FRAME_TRUST_CONTEXT, frame0->trust);
+    ASSERT_EQ(StackFrameX86::CONTEXT_VALID_ALL, frame0->context_validity);
+    EXPECT_EQ("enchiridion", frame0->function_name);
+    EXPECT_EQ(0x40004000U, frame0->function_base);
+    ASSERT_TRUE(frame0->windows_frame_info != NULL);
+    ASSERT_EQ(WindowsFrameInfo::VALID_PARAMETER_SIZE,
+              frame0->windows_frame_info->valid);
+    ASSERT_TRUE(frame0->cfi_frame_info != NULL);
+
+    StackFrameX86 *frame1 = static_cast<StackFrameX86 *>(frames->at(1));
+    EXPECT_EQ(StackFrameX86::FRAME_TRUST_CFI, frame1->trust);
+    ASSERT_EQ((StackFrameX86::CONTEXT_VALID_EIP |
+               StackFrameX86::CONTEXT_VALID_ESP |
+               StackFrameX86::CONTEXT_VALID_EBP |
+               StackFrameX86::CONTEXT_VALID_EBX |
+               StackFrameX86::CONTEXT_VALID_ESI |
+               StackFrameX86::CONTEXT_VALID_EDI),
+              frame1->context_validity);
+    EXPECT_EQ(expected.eip, frame1->context.eip);
+    EXPECT_EQ(expected.esp, frame1->context.esp);
+    EXPECT_EQ(expected.ebp, frame1->context.ebp);
+    EXPECT_EQ(expected.ebx, frame1->context.ebx);
+    EXPECT_EQ(expected.esi, frame1->context.esi);
+    EXPECT_EQ(expected.edi, frame1->context.edi);
+    EXPECT_EQ("epictetus", frame1->function_name);
+  }
+
+  // The values the stack walker should find for the caller's registers.
+  MDRawContextX86 expected;
+};
+
+class CFI: public CFIFixture, public Test { };
+
+TEST_F(CFI, At4000) {
+  Label frame1_esp = expected.esp;
+  stack_section
+    .D32(0x40005510)            // return address
+    .Mark(&frame1_esp);         // This effectively sets stack_section.start().
+  raw_context.eip = 0x40004000;
+  CheckWalk();
+}
+
+TEST_F(CFI, At4001) {
+  Label frame1_esp = expected.esp;
+  stack_section
+    .D32(0x60f20ce6)            // saved %ebx
+    .D32(0x40005510)            // return address
+    .Mark(&frame1_esp);         // This effectively sets stack_section.start().
+  raw_context.eip = 0x40004001;
+  raw_context.ebx = 0x91aa9a8b; // callee's %ebx value
+  CheckWalk();
+}
+
+TEST_F(CFI, At4002) {
+  Label frame1_esp = expected.esp;
+  stack_section
+    .D32(0x60f20ce6)            // saved %ebx
+    .D32(0x40005510)            // return address
+    .Mark(&frame1_esp);         // This effectively sets stack_section.start().
+  raw_context.eip = 0x40004002;
+  raw_context.ebx = 0x53d1379d; // saved %esi
+  raw_context.esi = 0xa5c790ed; // callee's %esi value
+  CheckWalk();
+}
+
+TEST_F(CFI, At4003) {
+  Label frame1_esp = expected.esp;
+  stack_section
+    .D32(0x56ec3db7)            // garbage
+    .D32(0xafbae234)            // saved %edi
+    .D32(0x53d67131)            // garbage
+    .D32(0x60f20ce6)            // saved %ebx
+    .D32(0x40005510)            // return address
+    .Mark(&frame1_esp);         // This effectively sets stack_section.start().
+  raw_context.eip = 0x40004003;
+  raw_context.ebx = 0x53d1379d; // saved %esi
+  raw_context.esi = 0xa97f229d; // callee's %esi
+  raw_context.edi = 0xb05cc997; // callee's %edi
+  CheckWalk();
+}
+
+// The results here should be the same as those at module offset
+// 0x4003.
+TEST_F(CFI, At4004) {
+  Label frame1_esp = expected.esp;
+  stack_section
+    .D32(0xe29782c2)            // garbage
+    .D32(0xafbae234)            // saved %edi
+    .D32(0x5ba29ce9)            // garbage
+    .D32(0x60f20ce6)            // saved %ebx
+    .D32(0x40005510)            // return address
+    .Mark(&frame1_esp);         // This effectively sets stack_section.start().
+  raw_context.eip = 0x40004004;
+  raw_context.ebx = 0x53d1379d; // saved %esi
+  raw_context.esi = 0x0fb7dc4e; // callee's %esi
+  raw_context.edi = 0x993b4280; // callee's %edi
+  CheckWalk();
+}
+
+TEST_F(CFI, At4005) {
+  Label frame1_esp = expected.esp;
+  stack_section
+    .D32(0xe29782c2)            // garbage
+    .D32(0xafbae234)            // saved %edi
+    .D32(0x5ba29ce9)            // garbage
+    .D32(0x60f20ce6)            // saved %ebx
+    .D32(0x8036cc02)            // garbage
+    .Mark(&frame1_esp);         // This effectively sets stack_section.start().
+  raw_context.eip = 0x40004005;
+  raw_context.ebx = 0x53d1379d; // saved %esi
+  raw_context.esi = 0x0fb7dc4e; // callee's %esi
+  raw_context.edi = 0x40005510; // return address
+  CheckWalk();
+}
+
+TEST_F(CFI, At4006) {
+  Label frame0_ebp;
+  Label frame1_esp = expected.esp;
+  stack_section
+    .D32(0xdcdd25cd)            // garbage
+    .D32(0xafbae234)            // saved %edi
+    .D32(0xc0d4aab9)            // saved %ebp
+    .Mark(&frame0_ebp)          // frame pointer points here
+    .D32(0x60f20ce6)            // saved %ebx
+    .D32(0x8036cc02)            // garbage
+    .Mark(&frame1_esp);         // This effectively sets stack_section.start().
+  raw_context.eip = 0x40004006;
+  raw_context.ebp = frame0_ebp.Value();
+  raw_context.ebx = 0x53d1379d; // saved %esi
+  raw_context.esi = 0x743833c9; // callee's %esi
+  raw_context.edi = 0x40005510; // return address
+  CheckWalk();
+}
+

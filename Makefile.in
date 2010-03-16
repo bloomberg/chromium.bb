@@ -72,6 +72,7 @@ bin_PROGRAMS = src/client/linux/linux_dumper_unittest_helper$(EXEEXT) \
 check_PROGRAMS = src/client/linux/linux_client_unittest$(EXEEXT) \
 	src/processor/address_map_unittest$(EXEEXT) \
 	src/processor/basic_source_line_resolver_unittest$(EXEEXT) \
+	src/processor/cfi_frame_info_unittest$(EXEEXT) \
 	src/processor/contained_range_map_unittest$(EXEEXT) \
 	src/processor/minidump_processor_unittest$(EXEEXT) \
 	src/processor/minidump_unittest$(EXEEXT) \
@@ -142,8 +143,9 @@ src_client_linux_libbreakpad_client_la_OBJECTS =  \
 src_libbreakpad_la_LIBADD =
 am_src_libbreakpad_la_OBJECTS = src/processor/basic_code_modules.lo \
 	src/processor/basic_source_line_resolver.lo \
-	src/processor/call_stack.lo src/processor/logging.lo \
-	src/processor/minidump.lo src/processor/minidump_processor.lo \
+	src/processor/call_stack.lo src/processor/cfi_frame_info.lo \
+	src/processor/logging.lo src/processor/minidump.lo \
+	src/processor/minidump_processor.lo \
 	src/processor/pathname_stripper.lo \
 	src/processor/process_state.lo \
 	src/processor/simple_symbol_supplier.lo \
@@ -189,7 +191,17 @@ am_src_processor_basic_source_line_resolver_unittest_OBJECTS =  \
 src_processor_basic_source_line_resolver_unittest_OBJECTS = $(am_src_processor_basic_source_line_resolver_unittest_OBJECTS)
 src_processor_basic_source_line_resolver_unittest_DEPENDENCIES =  \
 	src/processor/basic_source_line_resolver.lo \
+	src/processor/cfi_frame_info.lo \
 	src/processor/pathname_stripper.lo src/processor/logging.lo
+am_src_processor_cfi_frame_info_unittest_OBJECTS = src/processor/src_processor_cfi_frame_info_unittest-cfi_frame_info_unittest.$(OBJEXT) \
+	src/testing/gtest/src/src_processor_cfi_frame_info_unittest-gtest-all.$(OBJEXT) \
+	src/testing/gtest/src/src_processor_cfi_frame_info_unittest-gtest_main.$(OBJEXT) \
+	src/testing/src/src_processor_cfi_frame_info_unittest-gmock-all.$(OBJEXT)
+src_processor_cfi_frame_info_unittest_OBJECTS =  \
+	$(am_src_processor_cfi_frame_info_unittest_OBJECTS)
+src_processor_cfi_frame_info_unittest_DEPENDENCIES =  \
+	src/processor/cfi_frame_info.lo src/processor/logging.lo \
+	src/processor/pathname_stripper.lo
 am_src_processor_contained_range_map_unittest_OBJECTS =  \
 	src/processor/contained_range_map_unittest.$(OBJEXT)
 src_processor_contained_range_map_unittest_OBJECTS =  \
@@ -211,9 +223,9 @@ src_processor_minidump_processor_unittest_OBJECTS =  \
 src_processor_minidump_processor_unittest_DEPENDENCIES =  \
 	src/processor/basic_code_modules.lo \
 	src/processor/basic_source_line_resolver.lo \
-	src/processor/call_stack.lo src/processor/logging.lo \
-	src/processor/minidump_processor.lo src/processor/minidump.lo \
-	src/processor/pathname_stripper.lo \
+	src/processor/call_stack.lo src/processor/cfi_frame_info.lo \
+	src/processor/logging.lo src/processor/minidump_processor.lo \
+	src/processor/minidump.lo src/processor/pathname_stripper.lo \
 	src/processor/process_state.lo src/processor/stackwalker.lo \
 	src/processor/stackwalker_amd64.lo \
 	src/processor/stackwalker_arm.lo \
@@ -227,8 +239,9 @@ src_processor_minidump_stackwalk_OBJECTS =  \
 src_processor_minidump_stackwalk_DEPENDENCIES =  \
 	src/processor/basic_code_modules.lo \
 	src/processor/basic_source_line_resolver.lo \
-	src/processor/call_stack.lo src/processor/logging.lo \
-	src/processor/minidump.lo src/processor/minidump_processor.lo \
+	src/processor/call_stack.lo src/processor/cfi_frame_info.lo \
+	src/processor/logging.lo src/processor/minidump.lo \
+	src/processor/minidump_processor.lo \
 	src/processor/pathname_stripper.lo \
 	src/processor/process_state.lo \
 	src/processor/simple_symbol_supplier.lo \
@@ -337,6 +350,7 @@ SOURCES = $(src_client_linux_libbreakpad_client_la_SOURCES) \
 	$(src_client_linux_linux_dumper_unittest_helper_SOURCES) \
 	$(src_processor_address_map_unittest_SOURCES) \
 	$(src_processor_basic_source_line_resolver_unittest_SOURCES) \
+	$(src_processor_cfi_frame_info_unittest_SOURCES) \
 	$(src_processor_contained_range_map_unittest_SOURCES) \
 	$(src_processor_minidump_dump_SOURCES) \
 	$(src_processor_minidump_processor_unittest_SOURCES) \
@@ -355,6 +369,7 @@ DIST_SOURCES = $(src_client_linux_libbreakpad_client_la_SOURCES) \
 	$(src_client_linux_linux_dumper_unittest_helper_SOURCES) \
 	$(src_processor_address_map_unittest_SOURCES) \
 	$(src_processor_basic_source_line_resolver_unittest_SOURCES) \
+	$(src_processor_cfi_frame_info_unittest_SOURCES) \
 	$(src_processor_contained_range_map_unittest_SOURCES) \
 	$(src_processor_minidump_dump_SOURCES) \
 	$(src_processor_minidump_processor_unittest_SOURCES) \
@@ -556,6 +571,8 @@ src_libbreakpad_la_SOURCES = \
 	src/processor/basic_code_modules.h \
 	src/processor/basic_source_line_resolver.cc \
 	src/processor/call_stack.cc \
+	src/processor/cfi_frame_info.cc \
+	src/processor/cfi_frame_info.h \
 	src/processor/contained_range_map-inl.h \
 	src/processor/contained_range_map.h \
 	src/processor/linked_ptr.h \
@@ -640,8 +657,26 @@ src_processor_basic_source_line_resolver_unittest_SOURCES = \
 
 src_processor_basic_source_line_resolver_unittest_LDADD = \
 	src/processor/basic_source_line_resolver.lo \
+	src/processor/cfi_frame_info.lo \
 	src/processor/pathname_stripper.lo \
 	src/processor/logging.lo
+
+src_processor_cfi_frame_info_unittest_SOURCES = \
+	src/processor/cfi_frame_info_unittest.cc \
+	src/testing/gtest/src/gtest-all.cc \
+	src/testing/gtest/src/gtest_main.cc \
+	src/testing/src/gmock-all.cc
+
+src_processor_cfi_frame_info_unittest_LDADD = \
+	src/processor/cfi_frame_info.lo \
+	src/processor/logging.lo \
+	src/processor/pathname_stripper.lo
+
+src_processor_cfi_frame_info_unittest_CPPFLAGS = \
+	-I$(top_srcdir)/src/testing/include \
+        -I$(top_srcdir)/src/testing/gtest/include \
+	-I$(top_srcdir)/src/testing/gtest \
+	-I$(top_srcdir)/src/testing
 
 src_processor_contained_range_map_unittest_SOURCES = \
 	src/processor/contained_range_map_unittest.cc
@@ -665,6 +700,7 @@ src_processor_minidump_processor_unittest_LDADD = \
 	src/processor/basic_code_modules.lo \
 	src/processor/basic_source_line_resolver.lo \
 	src/processor/call_stack.lo \
+	src/processor/cfi_frame_info.lo \
 	src/processor/logging.lo \
 	src/processor/minidump_processor.lo \
 	src/processor/minidump.lo \
@@ -797,6 +833,7 @@ src_processor_minidump_stackwalk_LDADD = \
 	src/processor/basic_code_modules.lo \
 	src/processor/basic_source_line_resolver.lo \
 	src/processor/call_stack.lo \
+	src/processor/cfi_frame_info.lo \
 	src/processor/logging.lo \
 	src/processor/minidump.lo \
 	src/processor/minidump_processor.lo \
@@ -1105,6 +1142,8 @@ src/processor/basic_source_line_resolver.lo:  \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
 src/processor/call_stack.lo: src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
+src/processor/cfi_frame_info.lo: src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
 src/processor/logging.lo: src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
 src/processor/minidump.lo: src/processor/$(am__dirstamp) \
@@ -1253,6 +1292,21 @@ src/processor/basic_source_line_resolver_unittest.$(OBJEXT):  \
 src/processor/basic_source_line_resolver_unittest$(EXEEXT): $(src_processor_basic_source_line_resolver_unittest_OBJECTS) $(src_processor_basic_source_line_resolver_unittest_DEPENDENCIES) src/processor/$(am__dirstamp)
 	@rm -f src/processor/basic_source_line_resolver_unittest$(EXEEXT)
 	$(CXXLINK) $(src_processor_basic_source_line_resolver_unittest_OBJECTS) $(src_processor_basic_source_line_resolver_unittest_LDADD) $(LIBS)
+src/processor/src_processor_cfi_frame_info_unittest-cfi_frame_info_unittest.$(OBJEXT):  \
+	src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
+src/testing/gtest/src/src_processor_cfi_frame_info_unittest-gtest-all.$(OBJEXT):  \
+	src/testing/gtest/src/$(am__dirstamp) \
+	src/testing/gtest/src/$(DEPDIR)/$(am__dirstamp)
+src/testing/gtest/src/src_processor_cfi_frame_info_unittest-gtest_main.$(OBJEXT):  \
+	src/testing/gtest/src/$(am__dirstamp) \
+	src/testing/gtest/src/$(DEPDIR)/$(am__dirstamp)
+src/testing/src/src_processor_cfi_frame_info_unittest-gmock-all.$(OBJEXT):  \
+	src/testing/src/$(am__dirstamp) \
+	src/testing/src/$(DEPDIR)/$(am__dirstamp)
+src/processor/cfi_frame_info_unittest$(EXEEXT): $(src_processor_cfi_frame_info_unittest_OBJECTS) $(src_processor_cfi_frame_info_unittest_DEPENDENCIES) src/processor/$(am__dirstamp)
+	@rm -f src/processor/cfi_frame_info_unittest$(EXEEXT)
+	$(CXXLINK) $(src_processor_cfi_frame_info_unittest_OBJECTS) $(src_processor_cfi_frame_info_unittest_LDADD) $(LIBS)
 src/processor/contained_range_map_unittest.$(OBJEXT):  \
 	src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
@@ -1421,6 +1475,8 @@ mostlyclean-compile:
 	-rm -f src/processor/basic_source_line_resolver_unittest.$(OBJEXT)
 	-rm -f src/processor/call_stack.$(OBJEXT)
 	-rm -f src/processor/call_stack.lo
+	-rm -f src/processor/cfi_frame_info.$(OBJEXT)
+	-rm -f src/processor/cfi_frame_info.lo
 	-rm -f src/processor/contained_range_map_unittest.$(OBJEXT)
 	-rm -f src/processor/logging.$(OBJEXT)
 	-rm -f src/processor/logging.lo
@@ -1439,6 +1495,7 @@ mostlyclean-compile:
 	-rm -f src/processor/range_map_unittest.$(OBJEXT)
 	-rm -f src/processor/simple_symbol_supplier.$(OBJEXT)
 	-rm -f src/processor/simple_symbol_supplier.lo
+	-rm -f src/processor/src_processor_cfi_frame_info_unittest-cfi_frame_info_unittest.$(OBJEXT)
 	-rm -f src/processor/src_processor_minidump_processor_unittest-minidump_processor_unittest.$(OBJEXT)
 	-rm -f src/processor/src_processor_minidump_unittest-minidump_unittest.$(OBJEXT)
 	-rm -f src/processor/src_processor_minidump_unittest-synth_minidump.$(OBJEXT)
@@ -1465,6 +1522,8 @@ mostlyclean-compile:
 	-rm -f src/processor/stackwalker_x86.lo
 	-rm -f src/testing/gtest/src/src_client_linux_linux_client_unittest-gtest-all.$(OBJEXT)
 	-rm -f src/testing/gtest/src/src_client_linux_linux_client_unittest-gtest_main.$(OBJEXT)
+	-rm -f src/testing/gtest/src/src_processor_cfi_frame_info_unittest-gtest-all.$(OBJEXT)
+	-rm -f src/testing/gtest/src/src_processor_cfi_frame_info_unittest-gtest_main.$(OBJEXT)
 	-rm -f src/testing/gtest/src/src_processor_minidump_processor_unittest-gtest-all.$(OBJEXT)
 	-rm -f src/testing/gtest/src/src_processor_minidump_unittest-gtest-all.$(OBJEXT)
 	-rm -f src/testing/gtest/src/src_processor_minidump_unittest-gtest_main.$(OBJEXT)
@@ -1475,6 +1534,7 @@ mostlyclean-compile:
 	-rm -f src/testing/gtest/src/src_processor_test_assembler_unittest-gtest-all.$(OBJEXT)
 	-rm -f src/testing/gtest/src/src_processor_test_assembler_unittest-gtest_main.$(OBJEXT)
 	-rm -f src/testing/src/src_client_linux_linux_client_unittest-gmock-all.$(OBJEXT)
+	-rm -f src/testing/src/src_processor_cfi_frame_info_unittest-gmock-all.$(OBJEXT)
 	-rm -f src/testing/src/src_processor_minidump_processor_unittest-gmock-all.$(OBJEXT)
 	-rm -f src/testing/src/src_processor_minidump_unittest-gmock-all.$(OBJEXT)
 	-rm -f src/testing/src/src_processor_stackwalker_x86_unittest-gmock-all.$(OBJEXT)
@@ -1505,6 +1565,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/basic_source_line_resolver.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/basic_source_line_resolver_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/call_stack.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/cfi_frame_info.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/contained_range_map_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/logging.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/minidump.Plo@am__quote@
@@ -1517,6 +1578,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/process_state.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/range_map_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/simple_symbol_supplier.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_processor_cfi_frame_info_unittest-cfi_frame_info_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_processor_minidump_processor_unittest-minidump_processor_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_processor_minidump_unittest-minidump_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_processor_minidump_unittest-synth_minidump.Po@am__quote@
@@ -1537,6 +1599,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/stackwalker_x86.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/gtest/src/$(DEPDIR)/src_client_linux_linux_client_unittest-gtest-all.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/gtest/src/$(DEPDIR)/src_client_linux_linux_client_unittest-gtest_main.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/testing/gtest/src/$(DEPDIR)/src_processor_cfi_frame_info_unittest-gtest-all.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/testing/gtest/src/$(DEPDIR)/src_processor_cfi_frame_info_unittest-gtest_main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/gtest/src/$(DEPDIR)/src_processor_minidump_processor_unittest-gtest-all.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/gtest/src/$(DEPDIR)/src_processor_minidump_unittest-gtest-all.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/gtest/src/$(DEPDIR)/src_processor_minidump_unittest-gtest_main.Po@am__quote@
@@ -1547,6 +1611,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/gtest/src/$(DEPDIR)/src_processor_test_assembler_unittest-gtest-all.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/gtest/src/$(DEPDIR)/src_processor_test_assembler_unittest-gtest_main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/src/$(DEPDIR)/src_client_linux_linux_client_unittest-gmock-all.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/testing/src/$(DEPDIR)/src_processor_cfi_frame_info_unittest-gmock-all.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/src/$(DEPDIR)/src_processor_minidump_processor_unittest-gmock-all.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/src/$(DEPDIR)/src_processor_minidump_unittest-gmock-all.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/src/$(DEPDIR)/src_processor_stackwalker_x86_unittest-gmock-all.Po@am__quote@
@@ -1726,6 +1791,62 @@ src/client/linux/minidump_writer/src_client_linux_linux_dumper_unittest_helper-l
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/client/linux/minidump_writer/linux_dumper_unittest_helper.cc' object='src/client/linux/minidump_writer/src_client_linux_linux_dumper_unittest_helper-linux_dumper_unittest_helper.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_client_linux_linux_dumper_unittest_helper_CXXFLAGS) $(CXXFLAGS) -c -o src/client/linux/minidump_writer/src_client_linux_linux_dumper_unittest_helper-linux_dumper_unittest_helper.obj `if test -f 'src/client/linux/minidump_writer/linux_dumper_unittest_helper.cc'; then $(CYGPATH_W) 'src/client/linux/minidump_writer/linux_dumper_unittest_helper.cc'; else $(CYGPATH_W) '$(srcdir)/src/client/linux/minidump_writer/linux_dumper_unittest_helper.cc'; fi`
+
+src/processor/src_processor_cfi_frame_info_unittest-cfi_frame_info_unittest.o: src/processor/cfi_frame_info_unittest.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_cfi_frame_info_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/processor/src_processor_cfi_frame_info_unittest-cfi_frame_info_unittest.o -MD -MP -MF src/processor/$(DEPDIR)/src_processor_cfi_frame_info_unittest-cfi_frame_info_unittest.Tpo -c -o src/processor/src_processor_cfi_frame_info_unittest-cfi_frame_info_unittest.o `test -f 'src/processor/cfi_frame_info_unittest.cc' || echo '$(srcdir)/'`src/processor/cfi_frame_info_unittest.cc
+@am__fastdepCXX_TRUE@	$(am__mv) src/processor/$(DEPDIR)/src_processor_cfi_frame_info_unittest-cfi_frame_info_unittest.Tpo src/processor/$(DEPDIR)/src_processor_cfi_frame_info_unittest-cfi_frame_info_unittest.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/processor/cfi_frame_info_unittest.cc' object='src/processor/src_processor_cfi_frame_info_unittest-cfi_frame_info_unittest.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_cfi_frame_info_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/processor/src_processor_cfi_frame_info_unittest-cfi_frame_info_unittest.o `test -f 'src/processor/cfi_frame_info_unittest.cc' || echo '$(srcdir)/'`src/processor/cfi_frame_info_unittest.cc
+
+src/processor/src_processor_cfi_frame_info_unittest-cfi_frame_info_unittest.obj: src/processor/cfi_frame_info_unittest.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_cfi_frame_info_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/processor/src_processor_cfi_frame_info_unittest-cfi_frame_info_unittest.obj -MD -MP -MF src/processor/$(DEPDIR)/src_processor_cfi_frame_info_unittest-cfi_frame_info_unittest.Tpo -c -o src/processor/src_processor_cfi_frame_info_unittest-cfi_frame_info_unittest.obj `if test -f 'src/processor/cfi_frame_info_unittest.cc'; then $(CYGPATH_W) 'src/processor/cfi_frame_info_unittest.cc'; else $(CYGPATH_W) '$(srcdir)/src/processor/cfi_frame_info_unittest.cc'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) src/processor/$(DEPDIR)/src_processor_cfi_frame_info_unittest-cfi_frame_info_unittest.Tpo src/processor/$(DEPDIR)/src_processor_cfi_frame_info_unittest-cfi_frame_info_unittest.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/processor/cfi_frame_info_unittest.cc' object='src/processor/src_processor_cfi_frame_info_unittest-cfi_frame_info_unittest.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_cfi_frame_info_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/processor/src_processor_cfi_frame_info_unittest-cfi_frame_info_unittest.obj `if test -f 'src/processor/cfi_frame_info_unittest.cc'; then $(CYGPATH_W) 'src/processor/cfi_frame_info_unittest.cc'; else $(CYGPATH_W) '$(srcdir)/src/processor/cfi_frame_info_unittest.cc'; fi`
+
+src/testing/gtest/src/src_processor_cfi_frame_info_unittest-gtest-all.o: src/testing/gtest/src/gtest-all.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_cfi_frame_info_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/gtest/src/src_processor_cfi_frame_info_unittest-gtest-all.o -MD -MP -MF src/testing/gtest/src/$(DEPDIR)/src_processor_cfi_frame_info_unittest-gtest-all.Tpo -c -o src/testing/gtest/src/src_processor_cfi_frame_info_unittest-gtest-all.o `test -f 'src/testing/gtest/src/gtest-all.cc' || echo '$(srcdir)/'`src/testing/gtest/src/gtest-all.cc
+@am__fastdepCXX_TRUE@	$(am__mv) src/testing/gtest/src/$(DEPDIR)/src_processor_cfi_frame_info_unittest-gtest-all.Tpo src/testing/gtest/src/$(DEPDIR)/src_processor_cfi_frame_info_unittest-gtest-all.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/testing/gtest/src/gtest-all.cc' object='src/testing/gtest/src/src_processor_cfi_frame_info_unittest-gtest-all.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_cfi_frame_info_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/gtest/src/src_processor_cfi_frame_info_unittest-gtest-all.o `test -f 'src/testing/gtest/src/gtest-all.cc' || echo '$(srcdir)/'`src/testing/gtest/src/gtest-all.cc
+
+src/testing/gtest/src/src_processor_cfi_frame_info_unittest-gtest-all.obj: src/testing/gtest/src/gtest-all.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_cfi_frame_info_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/gtest/src/src_processor_cfi_frame_info_unittest-gtest-all.obj -MD -MP -MF src/testing/gtest/src/$(DEPDIR)/src_processor_cfi_frame_info_unittest-gtest-all.Tpo -c -o src/testing/gtest/src/src_processor_cfi_frame_info_unittest-gtest-all.obj `if test -f 'src/testing/gtest/src/gtest-all.cc'; then $(CYGPATH_W) 'src/testing/gtest/src/gtest-all.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/gtest/src/gtest-all.cc'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) src/testing/gtest/src/$(DEPDIR)/src_processor_cfi_frame_info_unittest-gtest-all.Tpo src/testing/gtest/src/$(DEPDIR)/src_processor_cfi_frame_info_unittest-gtest-all.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/testing/gtest/src/gtest-all.cc' object='src/testing/gtest/src/src_processor_cfi_frame_info_unittest-gtest-all.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_cfi_frame_info_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/gtest/src/src_processor_cfi_frame_info_unittest-gtest-all.obj `if test -f 'src/testing/gtest/src/gtest-all.cc'; then $(CYGPATH_W) 'src/testing/gtest/src/gtest-all.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/gtest/src/gtest-all.cc'; fi`
+
+src/testing/gtest/src/src_processor_cfi_frame_info_unittest-gtest_main.o: src/testing/gtest/src/gtest_main.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_cfi_frame_info_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/gtest/src/src_processor_cfi_frame_info_unittest-gtest_main.o -MD -MP -MF src/testing/gtest/src/$(DEPDIR)/src_processor_cfi_frame_info_unittest-gtest_main.Tpo -c -o src/testing/gtest/src/src_processor_cfi_frame_info_unittest-gtest_main.o `test -f 'src/testing/gtest/src/gtest_main.cc' || echo '$(srcdir)/'`src/testing/gtest/src/gtest_main.cc
+@am__fastdepCXX_TRUE@	$(am__mv) src/testing/gtest/src/$(DEPDIR)/src_processor_cfi_frame_info_unittest-gtest_main.Tpo src/testing/gtest/src/$(DEPDIR)/src_processor_cfi_frame_info_unittest-gtest_main.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/testing/gtest/src/gtest_main.cc' object='src/testing/gtest/src/src_processor_cfi_frame_info_unittest-gtest_main.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_cfi_frame_info_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/gtest/src/src_processor_cfi_frame_info_unittest-gtest_main.o `test -f 'src/testing/gtest/src/gtest_main.cc' || echo '$(srcdir)/'`src/testing/gtest/src/gtest_main.cc
+
+src/testing/gtest/src/src_processor_cfi_frame_info_unittest-gtest_main.obj: src/testing/gtest/src/gtest_main.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_cfi_frame_info_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/gtest/src/src_processor_cfi_frame_info_unittest-gtest_main.obj -MD -MP -MF src/testing/gtest/src/$(DEPDIR)/src_processor_cfi_frame_info_unittest-gtest_main.Tpo -c -o src/testing/gtest/src/src_processor_cfi_frame_info_unittest-gtest_main.obj `if test -f 'src/testing/gtest/src/gtest_main.cc'; then $(CYGPATH_W) 'src/testing/gtest/src/gtest_main.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/gtest/src/gtest_main.cc'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) src/testing/gtest/src/$(DEPDIR)/src_processor_cfi_frame_info_unittest-gtest_main.Tpo src/testing/gtest/src/$(DEPDIR)/src_processor_cfi_frame_info_unittest-gtest_main.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/testing/gtest/src/gtest_main.cc' object='src/testing/gtest/src/src_processor_cfi_frame_info_unittest-gtest_main.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_cfi_frame_info_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/gtest/src/src_processor_cfi_frame_info_unittest-gtest_main.obj `if test -f 'src/testing/gtest/src/gtest_main.cc'; then $(CYGPATH_W) 'src/testing/gtest/src/gtest_main.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/gtest/src/gtest_main.cc'; fi`
+
+src/testing/src/src_processor_cfi_frame_info_unittest-gmock-all.o: src/testing/src/gmock-all.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_cfi_frame_info_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/src/src_processor_cfi_frame_info_unittest-gmock-all.o -MD -MP -MF src/testing/src/$(DEPDIR)/src_processor_cfi_frame_info_unittest-gmock-all.Tpo -c -o src/testing/src/src_processor_cfi_frame_info_unittest-gmock-all.o `test -f 'src/testing/src/gmock-all.cc' || echo '$(srcdir)/'`src/testing/src/gmock-all.cc
+@am__fastdepCXX_TRUE@	$(am__mv) src/testing/src/$(DEPDIR)/src_processor_cfi_frame_info_unittest-gmock-all.Tpo src/testing/src/$(DEPDIR)/src_processor_cfi_frame_info_unittest-gmock-all.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/testing/src/gmock-all.cc' object='src/testing/src/src_processor_cfi_frame_info_unittest-gmock-all.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_cfi_frame_info_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/src/src_processor_cfi_frame_info_unittest-gmock-all.o `test -f 'src/testing/src/gmock-all.cc' || echo '$(srcdir)/'`src/testing/src/gmock-all.cc
+
+src/testing/src/src_processor_cfi_frame_info_unittest-gmock-all.obj: src/testing/src/gmock-all.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_cfi_frame_info_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/src/src_processor_cfi_frame_info_unittest-gmock-all.obj -MD -MP -MF src/testing/src/$(DEPDIR)/src_processor_cfi_frame_info_unittest-gmock-all.Tpo -c -o src/testing/src/src_processor_cfi_frame_info_unittest-gmock-all.obj `if test -f 'src/testing/src/gmock-all.cc'; then $(CYGPATH_W) 'src/testing/src/gmock-all.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/src/gmock-all.cc'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) src/testing/src/$(DEPDIR)/src_processor_cfi_frame_info_unittest-gmock-all.Tpo src/testing/src/$(DEPDIR)/src_processor_cfi_frame_info_unittest-gmock-all.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/testing/src/gmock-all.cc' object='src/testing/src/src_processor_cfi_frame_info_unittest-gmock-all.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_cfi_frame_info_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/src/src_processor_cfi_frame_info_unittest-gmock-all.obj `if test -f 'src/testing/src/gmock-all.cc'; then $(CYGPATH_W) 'src/testing/src/gmock-all.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/src/gmock-all.cc'; fi`
 
 src/processor/src_processor_minidump_processor_unittest-minidump_processor_unittest.o: src/processor/minidump_processor_unittest.cc
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_minidump_processor_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/processor/src_processor_minidump_processor_unittest-minidump_processor_unittest.o -MD -MP -MF src/processor/$(DEPDIR)/src_processor_minidump_processor_unittest-minidump_processor_unittest.Tpo -c -o src/processor/src_processor_minidump_processor_unittest-minidump_processor_unittest.o `test -f 'src/processor/minidump_processor_unittest.cc' || echo '$(srcdir)/'`src/processor/minidump_processor_unittest.cc

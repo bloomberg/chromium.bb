@@ -1,3 +1,5 @@
+// -*- mode: c++ -*-
+
 // Copyright (c) 2010 Google Inc.
 // All rights reserved.
 //
@@ -45,18 +47,26 @@
 namespace google_breakpad {
 
 struct WindowsFrameInfo;
+struct CFIFrameInfo;
 
 struct StackFrameX86 : public StackFrame {
-  // ContextValidity has one entry for each relevant hardware pointer register
-  // (%eip and %esp) and one entry for each nonvolatile (callee-save) register.
+  // ContextValidity has one entry for each relevant hardware pointer
+  // register (%eip and %esp) and one entry for each general-purpose
+  // register. It's worthwhile having validity flags for caller-saves
+  // registers: they are valid in the youngest frame, and such a frame
+  // might save a callee-saves register in a caller-saves register, but
+  // SimpleCFIWalker won't touch registers unless they're marked as valid.
   enum ContextValidity {
     CONTEXT_VALID_NONE = 0,
     CONTEXT_VALID_EIP  = 1 << 0,
     CONTEXT_VALID_ESP  = 1 << 1,
     CONTEXT_VALID_EBP  = 1 << 2,
-    CONTEXT_VALID_EBX  = 1 << 3,
-    CONTEXT_VALID_ESI  = 1 << 4,
-    CONTEXT_VALID_EDI  = 1 << 5,
+    CONTEXT_VALID_EAX  = 1 << 3,
+    CONTEXT_VALID_EBX  = 1 << 4,
+    CONTEXT_VALID_ECX  = 1 << 5,
+    CONTEXT_VALID_EDX  = 1 << 6,
+    CONTEXT_VALID_ESI  = 1 << 7,
+    CONTEXT_VALID_EDI  = 1 << 8,
     CONTEXT_VALID_ALL  = -1
   };
 
@@ -77,7 +87,8 @@ struct StackFrameX86 : public StackFrame {
      : context(),
        context_validity(CONTEXT_VALID_NONE),
        trust(FRAME_TRUST_NONE),
-       windows_frame_info(NULL) {}
+       windows_frame_info(NULL),
+       cfi_frame_info(NULL) {}
   ~StackFrameX86();
 
   // Register state.  This is only fully valid for the topmost frame in a
@@ -95,10 +106,10 @@ struct StackFrameX86 : public StackFrame {
   // of this frame.
   FrameTrust trust;
 
-  // Any stack walking information we found describing
-  // this.instruction.  These may be NULL if we couldn't find the
-  // appropriate information.
+  // Any stack walking information we found describing this.instruction.
+  // These may be NULL if there is no such information for that address.
   WindowsFrameInfo *windows_frame_info;
+  CFIFrameInfo *cfi_frame_info;
 };
 
 struct StackFramePPC : public StackFrame {

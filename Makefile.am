@@ -88,6 +88,8 @@ src_libbreakpad_la_SOURCES = \
 	src/processor/basic_code_modules.h \
 	src/processor/basic_source_line_resolver.cc \
 	src/processor/call_stack.cc \
+	src/processor/cfi_frame_info.cc \
+	src/processor/cfi_frame_info.h \
 	src/processor/contained_range_map-inl.h \
 	src/processor/contained_range_map.h \
 	src/processor/linked_ptr.h \
@@ -130,6 +132,7 @@ check_PROGRAMS = \
 	src/client/linux/linux_client_unittest \
 	src/processor/address_map_unittest \
 	src/processor/basic_source_line_resolver_unittest \
+	src/processor/cfi_frame_info_unittest \
 	src/processor/contained_range_map_unittest \
 	src/processor/minidump_processor_unittest \
 	src/processor/minidump_unittest \
@@ -197,8 +200,24 @@ src_processor_basic_source_line_resolver_unittest_SOURCES = \
 	src/processor/basic_source_line_resolver_unittest.cc
 src_processor_basic_source_line_resolver_unittest_LDADD = \
 	src/processor/basic_source_line_resolver.lo \
+	src/processor/cfi_frame_info.lo \
 	src/processor/pathname_stripper.lo \
 	src/processor/logging.lo
+
+src_processor_cfi_frame_info_unittest_SOURCES = \
+	src/processor/cfi_frame_info_unittest.cc \
+	src/testing/gtest/src/gtest-all.cc \
+	src/testing/gtest/src/gtest_main.cc \
+	src/testing/src/gmock-all.cc
+src_processor_cfi_frame_info_unittest_LDADD = \
+	src/processor/cfi_frame_info.lo \
+	src/processor/logging.lo \
+	src/processor/pathname_stripper.lo
+src_processor_cfi_frame_info_unittest_CPPFLAGS = \
+	-I$(top_srcdir)/src/testing/include \
+        -I$(top_srcdir)/src/testing/gtest/include \
+	-I$(top_srcdir)/src/testing/gtest \
+	-I$(top_srcdir)/src/testing
 
 src_processor_contained_range_map_unittest_SOURCES = \
 	src/processor/contained_range_map_unittest.cc
@@ -219,6 +238,7 @@ src_processor_minidump_processor_unittest_LDADD = \
 	src/processor/basic_code_modules.lo \
 	src/processor/basic_source_line_resolver.lo \
 	src/processor/call_stack.lo \
+	src/processor/cfi_frame_info.lo \
 	src/processor/logging.lo \
 	src/processor/minidump_processor.lo \
 	src/processor/minidump.lo \
@@ -342,6 +362,7 @@ src_processor_minidump_stackwalk_LDADD = \
 	src/processor/basic_code_modules.lo \
 	src/processor/basic_source_line_resolver.lo \
 	src/processor/call_stack.lo \
+	src/processor/cfi_frame_info.lo \
 	src/processor/logging.lo \
 	src/processor/minidump.lo \
 	src/processor/minidump_processor.lo \

@@ -45,9 +45,37 @@
 #include "processor/scoped_ptr.h"
 #include "processor/stackwalker_x86.h"
 #include "processor/windows_frame_info.h"
+#include "processor/cfi_frame_info.h"
 
 namespace google_breakpad {
 
+
+const StackwalkerX86::CFIWalker::RegisterSet
+StackwalkerX86::cfi_register_map_[] = {
+  // It may seem like $eip and $esp are callee-saves, because (with Unix or
+  // cdecl calling conventions) the callee is responsible for having them
+  // restored upon return. But the callee_saves flags here really means
+  // that the walker should assume they're unchanged if the CFI doesn't
+  // mention them, which is clearly wrong for $eip and $esp.
+  { "$eip", ".ra",  false,
+    StackFrameX86::CONTEXT_VALID_EIP, &MDRawContextX86::eip },
+  { "$esp", ".cfa", false,
+    StackFrameX86::CONTEXT_VALID_ESP, &MDRawContextX86::esp },
+  { "$ebp", NULL,   true,
+    StackFrameX86::CONTEXT_VALID_EBP, &MDRawContextX86::ebp },
+  { "$eax", NULL,   false,
+    StackFrameX86::CONTEXT_VALID_EAX, &MDRawContextX86::eax },
+  { "$ebx", NULL,   true,
+    StackFrameX86::CONTEXT_VALID_EBX, &MDRawContextX86::ebx },
+  { "$ecx", NULL,   false,
+    StackFrameX86::CONTEXT_VALID_ECX, &MDRawContextX86::ecx },
+  { "$edx", NULL,   false,
+    StackFrameX86::CONTEXT_VALID_EDX, &MDRawContextX86::edx },
+  { "$esi", NULL,   true,
+    StackFrameX86::CONTEXT_VALID_ESI, &MDRawContextX86::esi },
+  { "$edi", NULL,   true,
+    StackFrameX86::CONTEXT_VALID_EDI, &MDRawContextX86::edi },
+};
 
 StackwalkerX86::StackwalkerX86(const SystemInfo *system_info,
                                const MDRawContextX86 *context,
@@ -56,7 +84,9 @@ StackwalkerX86::StackwalkerX86(const SystemInfo *system_info,
                                SymbolSupplier *supplier,
                                SourceLineResolverInterface *resolver)
     : Stackwalker(system_info, memory, modules, supplier, resolver),
-      context_(context) {
+      context_(context),
+      cfi_walker_(cfi_register_map_,
+                  (sizeof(cfi_register_map_) / sizeof(cfi_register_map_[0]))) {
   if (memory_->GetBase() + memory_->GetSize() - 1 > 0xffffffff) {
     // The x86 is a 32-bit CPU, the limits of the supplied stack are invalid.
     // Mark memory_ = NULL, which will cause stackwalking to fail.
@@ -71,6 +101,9 @@ StackFrameX86::~StackFrameX86() {
   if (windows_frame_info)
     delete windows_frame_info;
   windows_frame_info = NULL;
+  if (cfi_frame_info)
+    delete cfi_frame_info;
+  cfi_frame_info = NULL;
 }
 
 StackFrame *StackwalkerX86::GetContextFrame() {
@@ -388,6 +421,31 @@ StackFrameX86 *StackwalkerX86::GetCallerByWindowsFrameInfo(
   return frame;
 }
 
+StackFrameX86 *StackwalkerX86::GetCallerByCFIFrameInfo(
+    const vector<StackFrame*> &frames,
+    CFIFrameInfo *cfi_frame_info) {
+  StackFrameX86 *last_frame = static_cast<StackFrameX86*>(frames.back());
+  last_frame->cfi_frame_info = cfi_frame_info;
+
+  scoped_ptr<StackFrameX86> frame(new StackFrameX86());
+  if (!cfi_walker_
+      .FindCallerRegisters(*memory_, *cfi_frame_info,
+                           last_frame->context, last_frame->context_validity,
+                           &frame->context, &frame->context_validity))
+    return NULL;
+  
+  // Make sure we recovered all the essentials.
+  static const int essentials = (StackFrameX86::CONTEXT_VALID_EIP
+                                 | StackFrameX86::CONTEXT_VALID_ESP
+                                 | StackFrameX86::CONTEXT_VALID_EBP);
+  if ((frame->context_validity & essentials) != essentials)
+    return NULL;
+
+  frame->trust = StackFrameX86::FRAME_TRUST_CFI;
+
+  return frame.release();
+}
+
 StackFrameX86 *StackwalkerX86::GetCallerByEBPAtBase(
     const vector<StackFrame *> &frames) {
   StackFrameX86::FrameTrust trust;
@@ -471,13 +529,20 @@ StackFrame *StackwalkerX86::GetCallerFrame(const CallStack *stack) {
   StackFrameX86 *last_frame = static_cast<StackFrameX86 *>(frames.back());
   scoped_ptr<StackFrameX86> new_frame;
 
-  // If we have Windows stack walking information, use that.
+  // If the resolver has Windows stack walking information, use that.
   WindowsFrameInfo *windows_frame_info
       = resolver_->FindWindowsFrameInfo(last_frame);
   if (windows_frame_info)
     new_frame.reset(GetCallerByWindowsFrameInfo(frames, windows_frame_info));
 
-  // Otherwise, hope that we're using a traditional frame structure.
+  // If the resolver has DWARF CFI information, use that.
+  if (!new_frame.get()) {
+    CFIFrameInfo *cfi_frame_info = resolver_->FindCFIFrameInfo(last_frame);
+    if (cfi_frame_info)
+      new_frame.reset(GetCallerByCFIFrameInfo(frames, cfi_frame_info));
+  }
+
+  // Otherwise, hope that the program was using a traditional frame structure.
   if (!new_frame.get())
     new_frame.reset(GetCallerByEBPAtBase(frames));
 

@@ -43,6 +43,7 @@ using std::string;
 
 struct StackFrame;
 struct WindowsFrameInfo;
+struct CFIFrameInfo;
 
 class SourceLineResolverInterface {
  public:
@@ -77,6 +78,12 @@ class SourceLineResolverInterface {
   // ownership of any returned WindowsFrameInfo object.
   virtual WindowsFrameInfo *FindWindowsFrameInfo(const StackFrame *frame) 
     const = 0; 
+
+  // If CFI stack walking information is available covering ADDRESS,
+  // return a CFIFrameInfo structure describing it. If the information
+  // is not available, return NULL. The caller takes ownership of any
+  // returned CFIFrameInfo object.
+  virtual CFIFrameInfo *FindCFIFrameInfo(const StackFrame *frame) const = 0;
 
  protected:
   // SourceLineResolverInterface cannot be instantiated except by subclasses

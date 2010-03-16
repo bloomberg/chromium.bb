@@ -47,6 +47,7 @@
 #include "processor/linked_ptr.h"
 #include "processor/scoped_ptr.h"
 #include "processor/windows_frame_info.h"
+#include "processor/cfi_frame_info.h"
 
 using std::map;
 using std::vector;
@@ -124,6 +125,12 @@ class BasicSourceLineResolver::Module {
   // object.
   WindowsFrameInfo *FindWindowsFrameInfo(const StackFrame *frame) const;
 
+  // If CFI stack walking information is available covering ADDRESS,
+  // return a CFIFrameInfo structure describing it. If the information
+  // is not available, return NULL. The caller takes ownership of any
+  // returned CFIFrameInfo object.
+  CFIFrameInfo *FindCFIFrameInfo(const StackFrame *frame) const;
+
  private:
   friend class BasicSourceLineResolver;
   typedef map<int, string> FileMap;
@@ -167,11 +174,19 @@ class BasicSourceLineResolver::Module {
   // Returns false if an error occurs.
   bool ParsePublicSymbol(char *public_line);
 
-  // Parses a stack frame info declaration, storing it in windows_frame_info_.
+  // Parses a STACK WIN or STACK CFI frame info declaration, storing
+  // it in the appropriate table.
   bool ParseStackInfo(char *stack_info_line);
 
   // Parses a STACK WIN record, storing it in windows_frame_info_.
   bool ParseWindowsFrameInfo(char *stack_info_line);
+
+  // Parses a STACK CFI record, storing it in cfi_frame_info_.
+  bool ParseCFIFrameInfo(char *stack_info_line);
+
+  // Parse RULE_SET, a series of rules of the sort appearing in STACK
+  // CFI records, and store the given rules in FRAME_INFO.
+  bool ParseCFIRuleSet(const string &rule_set, CFIFrameInfo *frame_info) const;
 
   string name_;
   FileMap files_;
@@ -184,6 +199,24 @@ class BasicSourceLineResolver::Module {
   // information is only available as certain types.
   ContainedRangeMap< MemAddr, linked_ptr<WindowsFrameInfo> >
       windows_frame_info_[WINDOWS_FRAME_INFO_LAST];
+
+  // DWARF CFI stack walking data. The Module stores the initial rule sets
+  // and rule deltas as strings, just as they appear in the symbol file:
+  // although the file may contain hundreds of thousands of STACK CFI
+  // records, walking a stack will only ever use a few of them, so it's
+  // best to delay parsing a record until it's actually needed.
+
+  // STACK CFI INIT records: for each range, an initial set of register
+  // recovery rules. The RangeMap's itself gives the starting and ending
+  // addresses.
+  RangeMap<MemAddr, string> cfi_initial_rules_;
+
+  // STACK CFI records: at a given address, the changes to the register
+  // recovery rules that take effect at that address. The map key is the
+  // starting address; the ending address is the key of the next entry in
+  // this map, or the end of the range as given by the cfi_initial_rules_
+  // entry (which FindCFIFrameInfo looks up first).
+  map<MemAddr, string> cfi_delta_rules_;
 };
 
 BasicSourceLineResolver::BasicSourceLineResolver() : modules_(new ModuleMap) {
@@ -258,6 +291,17 @@ WindowsFrameInfo *BasicSourceLineResolver::FindWindowsFrameInfo(
     ModuleMap::const_iterator it = modules_->find(frame->module->code_file());
     if (it != modules_->end()) {
       return it->second->FindWindowsFrameInfo(frame);
+    }
+  }
+  return NULL;
+}
+
+CFIFrameInfo *BasicSourceLineResolver::FindCFIFrameInfo(
+    const StackFrame *frame) const {
+  if (frame->module) {
+    ModuleMap::const_iterator it = modules_->find(frame->module->code_file());
+    if (it != modules_->end()) {
+      return it->second->FindCFIFrameInfo(frame);
     }
   }
   return NULL;
@@ -515,6 +559,47 @@ WindowsFrameInfo *BasicSourceLineResolver::Module::FindWindowsFrameInfo(
   return NULL;
 }
 
+CFIFrameInfo *BasicSourceLineResolver::Module::FindCFIFrameInfo(
+    const StackFrame *frame) const {
+  MemAddr address = frame->instruction - frame->module->base_address();
+  MemAddr initial_base, initial_size;
+  string initial_rules;
+
+  // Find the initial rule whose range covers this address. That
+  // provides an initial set of register recovery rules. Then, walk
+  // forward from the initial rule's starting address to frame's
+  // instruction address, applying delta rules.
+  if (!cfi_initial_rules_.RetrieveRange(address, &initial_rules,
+                                        &initial_base, &initial_size)) {
+    return NULL;
+  }
+
+  // Create a frame info structure, and populate it with the rules from
+  // the STACK CFI INIT record.
+  scoped_ptr<CFIFrameInfo> rules(new CFIFrameInfo());
+  if (!ParseCFIRuleSet(initial_rules, rules.get()))
+    return NULL;
+
+  // Find the first delta rule that falls within the initial rule's range.
+  map<MemAddr, string>::const_iterator delta =
+    cfi_delta_rules_.lower_bound(initial_base);
+
+  // Apply delta rules up to and including the frame's address.
+  while (delta != cfi_delta_rules_.end() && delta->first <= address) {
+    ParseCFIRuleSet(delta->second, rules.get());
+    delta++;
+  }
+
+  return rules.release();
+}
+
+bool BasicSourceLineResolver::Module::ParseCFIRuleSet(
+    const string &rule_set, CFIFrameInfo *frame_info) const {
+  CFIFrameInfoParseHandler handler(frame_info);
+  CFIRuleParser parser(&handler);
+  return parser.Parse(rule_set);
+}
+
 // static
 bool BasicSourceLineResolver::Module::Tokenize(char *line, int max_tokens,
                                                vector<char*> *tokens) {
@@ -650,7 +735,11 @@ bool BasicSourceLineResolver::Module::ParseStackInfo(char *stack_info_line) {
   if (strcmp(platform, "WIN") == 0)
     return ParseWindowsFrameInfo(stack_info_line);
 
-  // Something we don't recognize.
+  // DWARF CFI stack frame info
+  else if (strcmp(platform, "CFI") == 0)
+    return ParseCFIFrameInfo(stack_info_line);
+
+  // Something unrecognized.
   else
     return false;
 }
@@ -718,6 +807,41 @@ bool BasicSourceLineResolver::Module::ParseWindowsFrameInfo(
                          program_string));
   windows_frame_info_[type].StoreRange(rva, code_size, stack_frame_info);
 
+  return true;
+}
+
+bool BasicSourceLineResolver::Module::ParseCFIFrameInfo(
+    char *stack_info_line) {
+  char *cursor;
+
+  // Is this an INIT record or a delta record?
+  char *init_or_address = strtok_r(stack_info_line, " \r\n", &cursor);
+  if (!init_or_address)
+    return false;
+
+  if (strcmp(init_or_address, "INIT") == 0) {
+    // This record has the form "STACK INIT <address> <size> <rules...>".
+    char *address_field = strtok_r(NULL, " \r\n", &cursor);
+    if (!address_field) return false;
+    
+    char *size_field = strtok_r(NULL, " \r\n", &cursor);
+    if (!size_field) return false;
+
+    char *initial_rules = strtok_r(NULL, "\r\n", &cursor);
+    if (!initial_rules) return false;
+
+    MemAddr address = strtoul(address_field, NULL, 16);
+    MemAddr size    = strtoul(size_field,    NULL, 16);
+    cfi_initial_rules_.StoreRange(address, size, initial_rules);
+    return true;
+  }
+
+  // This record has the form "STACK <address> <rules...>".
+  char *address_field = init_or_address;
+  char *delta_rules = strtok_r(NULL, "\r\n", &cursor);
+  if (!delta_rules) return false;
+  MemAddr address = strtoul(address_field, NULL, 16);
+  cfi_delta_rules_[address] = delta_rules;
   return true;
 }
 
