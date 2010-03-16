@@ -148,6 +148,12 @@
    fun:SECMOD_LoadUserModule
 }
 {
+   Pure NSS leak, does not involve glibc.
+   Memcheck:Leak
+   ...
+   fun:SECMOD_AddNewModule
+}
+{
    bug_12614
    Memcheck:Leak
    fun:?alloc
@@ -2233,6 +2239,15 @@
    obj:*
    obj:*
    fun:secmod_ModuleInit
+}
+{
+   bug_32624_c
+   Memcheck:Leak
+   fun:malloc
+   fun:PR_Malloc
+   fun:PORT_Alloc_Util
+   ...
+   fun:PK11_InitPin
 }
 {
    bug_33427_a
