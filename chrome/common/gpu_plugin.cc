@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/gpu_plugin.h"
-
 #include "base/command_line.h"
 #include "base/string_util.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/gpu_plugin.h"
 #include "gpu/gpu_plugin/gpu_plugin.h"
 #include "webkit/glue/plugins/plugin_list.h"
 

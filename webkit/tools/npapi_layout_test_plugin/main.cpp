@@ -140,8 +140,7 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode, int16 argc, ch
                 obj->testDocumentOpenInDestroyStream = TRUE;
             } else if (strcasecmp(argn[i], "testwindowopen") == 0) {
                 obj->testWindowOpen = TRUE;
-            } else if (strcasecmp(argn[i], "src") == 0 && strstr(argv[i], "plugin-document-has-focus.pl"))
-                obj->testKeyboardFocusForPlugins = TRUE;
+            }
         }
 
         instance->pdata = obj;
@@ -183,17 +182,12 @@ NPError NPP_SetWindow(NPP instance, NPWindow *window)
         if (obj->logSetWindow) {
             log(instance, "NPP_SetWindow: %d %d", (int)window->width, (int)window->height);
             fflush(stdout);
-            obj->logSetWindow = FALSE;
+            obj->logSetWindow = false;
         }
 
         if (obj->testWindowOpen) {
             testWindowOpen(instance);
             obj->testWindowOpen = FALSE;
-        }
-
-        if (obj->testKeyboardFocusForPlugins) {
-            obj->eventLogging = true;
-            executeScript(obj, "eventSender.keyDown('A');");
         }
     }
 
@@ -298,17 +292,17 @@ int16 NPP_HandleEvent(NPP instance, void *event)
         case WM_RBUTTONDBLCLK:
             break;
         case WM_MOUSEMOVE:
+            log(instance, "adjustCursorEvent");
             break;
         case WM_KEYUP:
-            log(instance, "keyUp '%c'", MapVirtualKey(evt->wParam, MAPVK_VK_TO_CHAR));
-            if (obj->testKeyboardFocusForPlugins) {
-                obj->eventLogging = false;
-                obj->testKeyboardFocusForPlugins = FALSE;
-                executeScript(obj, "layoutTestController.notifyDone();");
-            }
+            // TODO(tc): We need to convert evt->wParam from virtual-key code
+            // to key code.
+            log(instance, "NOTIMPLEMENTED: keyUp '%c'", ' ');
             break;
         case WM_KEYDOWN:
-            log(instance, "keyDown '%c'", MapVirtualKey(evt->wParam, MAPVK_VK_TO_CHAR));
+            // TODO(tc): We need to convert evt->wParam from virtual-key code
+            // to key code.
+            log(instance, "NOTIMPLEMENTED: keyDown '%c'", ' ');
             break;
         case WM_SETCURSOR:
             break;

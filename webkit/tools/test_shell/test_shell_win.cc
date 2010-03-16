@@ -275,17 +275,13 @@ bool TestShell::RunFileTest(const TestParams& params) {
   if (inspector_test_mode_)
     shell->ShowDevTools();
 
-  GURL url(params.test_url);
-  if (url.is_valid()) {  // Don't hang if we have an invalid path.
-    shell->test_is_preparing_ = true;
-    shell->set_test_params(&params);
-    shell->LoadURL(url);
-    shell->test_is_preparing_ = false;
-    shell->WaitTestFinished();
-    shell->set_test_params(NULL);
-  } else {
-    NOTREACHED() << "Invalid url: " << url.spec();
-  }
+  shell->test_is_preparing_ = true;
+  shell->set_test_params(&params);
+  shell->LoadURL(GURL(params.test_url));
+
+  shell->test_is_preparing_ = false;
+  shell->WaitTestFinished();
+  shell->set_test_params(NULL);
 
   return true;
 }

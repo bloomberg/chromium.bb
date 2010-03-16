@@ -41,9 +41,9 @@ class EventSendingController : public CppBoundClass {
   void Reset();
 
   // Simulate drag&drop system call.
-  void DoDragDrop(const WebKit::WebPoint &event_pos,
-                  const WebKit::WebDragData& drag_data,
-                  WebKit::WebDragOperationsMask operations_mask);
+  static void DoDragDrop(const WebKit::WebPoint &event_pos,
+                         const WebKit::WebDragData& drag_data,
+                         WebKit::WebDragOperationsMask operations_mask);
 
   // JS callback methods.
   void mouseDown(const CppArgumentList& args, CppVariant* result);
@@ -93,17 +93,17 @@ class EventSendingController : public CppBoundClass {
 
  private:
   // Returns the test shell's webview.
-  WebKit::WebView* webview();
+  static WebKit::WebView* webview();
 
   // Returns true if dragMode is true.
   bool drag_mode() { return dragMode.isBool() && dragMode.ToBoolean(); }
 
   // Sometimes we queue up mouse move and mouse up events for drag drop
   // handling purposes.  These methods dispatch the event.
-  void DoMouseMove(const WebKit::WebMouseEvent& e);
-  void DoMouseUp(const WebKit::WebMouseEvent& e);
+  static void DoMouseMove(const WebKit::WebMouseEvent& e);
+  static void DoMouseUp(const WebKit::WebMouseEvent& e);
   static void DoLeapForward(int milliseconds);
-  void ReplaySavedEvents();
+  static void ReplaySavedEvents();
 
   // Helper to return the button type given a button code
   static WebKit::WebMouseEvent::Button GetButtonTypeFromButtonNumber(
@@ -125,7 +125,7 @@ class EventSendingController : public CppBoundClass {
   ScopedRunnableMethodFactory<EventSendingController> method_factory_;
 
   // Non-owning pointer.  The LayoutTestController is owned by the host.
-  TestShell* shell_;
+  static TestShell* shell_;
 
   // Location of last mouseMoveTo event.
   static gfx::Point last_mouse_pos_;

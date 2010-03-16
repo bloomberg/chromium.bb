@@ -60,6 +60,7 @@ using WebKit::WebTouchEvent;
 using WebKit::WebTouchPoint;
 using WebKit::WebView;
 
+TestShell* EventSendingController::shell_ = NULL;
 gfx::Point EventSendingController::last_mouse_pos_;
 WebMouseEvent::Button EventSendingController::pressed_button_ =
     WebMouseEvent::ButtonNone;
@@ -251,8 +252,13 @@ enum KeyLocationCode {
 }  // anonymous namespace
 
 EventSendingController::EventSendingController(TestShell* shell)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
-      shell_(shell) {
+    : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+  // Set static shell_ variable since we can't do it in an initializer list.
+  // We also need to be careful not to assign shell_ to new windows which are
+  // temporary.
+  if (NULL == shell_)
+    shell_ = shell;
+
   // Initialize the map that associates methods of this class with the names
   // they will use when called by JavaScript.  The actual binding of those
   // names to their methods will be done by calling BindToJavaScript() (defined
@@ -332,10 +338,12 @@ void EventSendingController::Reset() {
   touch_points.clear();
 }
 
+// static
 WebView* EventSendingController::webview() {
   return shell_->webView();
 }
 
+// static
 void EventSendingController::DoDragDrop(const WebKit::WebPoint &event_pos,
                                         const WebDragData& drag_data,
                                         WebDragOperationsMask mask) {
@@ -443,6 +451,7 @@ void EventSendingController::mouseUp(
   }
 }
 
+// static
 void EventSendingController::DoMouseUp(const WebMouseEvent& e) {
   webview()->handleInputEvent(e);
 
@@ -521,6 +530,7 @@ void EventSendingController::mouseWheelTo(
   }
 }
 
+// static
 void EventSendingController::DoMouseMove(const WebMouseEvent& e) {
   last_mouse_pos_.SetPoint(e.x, e.y);
 

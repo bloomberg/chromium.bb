@@ -156,9 +156,6 @@ public:
     TestNavigationController* navigation_controller() {
       return navigation_controller_.get();
     }
-    EventSendingController* event_sending_controller() {
-      return event_sending_controller_.get();
-    }
 
     // Resets the LayoutTestController and EventSendingController.  Should be
     // called before loading a page, since some end-editing event notifications

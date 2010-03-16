@@ -558,8 +558,7 @@ void TestWebViewDelegate::startDragging(
 
     // When running a test, we need to fake a drag drop operation otherwise
     // Windows waits for real mouse events to know when the drag is over.
-    shell_->event_sending_controller()->DoDragDrop(
-        mouse_coords, mutable_drag_data, mask);
+    EventSendingController::DoDragDrop(mouse_coords, mutable_drag_data, mask);
   } else {
     // TODO(tc): Drag and drop is disabled in the test shell because we need
     // to be able to convert from WebDragData to an IDataObject.
