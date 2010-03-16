@@ -7078,6 +7078,21 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_STATUSBAR_IME_JAPANESE_IME_INPUT_MODE_ROMAN" desc="In the language menu button, this shows the input mode.">
 	Roman
       </message>
+      <message name="IDS_STATUSBAR_IME_KOREAN_HANJA_MODE" desc="In the language menu button, this shows the input mode.">
+	Enable/Disable Hanja mode
+      </message>
+      <message name="IDS_STATUSBAR_IME_CHINESE_PINYIN_TOGGLE_CHINESE_ENGLISH" desc="In the language menu button, this shows the input mode.">
+	Toggle Chinese/English mode
+      </message>
+      <message name="IDS_STATUSBAR_IME_CHINESE_PINYIN_TOGGLE_FULL_HALF" desc="In the language menu button, this shows the input mode.">
+	Toggle full/half width mode
+      </message>
+      <message name="IDS_STATUSBAR_IME_CHINESE_PINYIN_TOGGLE_FULL_HALF_PUNCTUATION" desc="In the language menu button, this shows the input mode.">
+	Toggle full/half width punctuation mode
+      </message>
+      <message name="IDS_STATUSBAR_IME_CHINESE_PINYIN_TOGGLE_S_T_CHINESE" desc="In the language menu button, this shows the input mode.">
+	Toogle Simplfied/Traditional Chinese mode
+      </message>
 
       <message name="IDS_COMPACT_NAVBAR" desc="The menu item on the app menu to toggle compact navigation bar">
         Toggle Compact Navigation Bar

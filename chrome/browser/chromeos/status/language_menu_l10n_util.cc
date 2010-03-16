@@ -18,16 +18,28 @@ const struct EnglishToResouceId {
   // For both ibus-anthy and ibus-google-japanese-input.
   // - ibus-anthy: third_party/ibus-anthy/files/po/
   // - ibus-google-japanese-input: TBD
-  {"Hiragana", IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_HIRAGANA},
-  {"Katakana", IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_KATAKANA},
-  {"Half width katakana",  // small k is not a typo.
-  IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_HALF_WIDTH_KATAKANA},
-  {"Latin", IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_LATIN},
-  {"Wide Latin", IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_WIDE_LATIN},
-  {"Roman", IDS_STATUSBAR_IME_JAPANESE_IME_INPUT_MODE_ROMAN},
-  {"Kana", IDS_STATUSBAR_IME_JAPANESE_IME_INPUT_MODE_KANA},
+  { "Hiragana", IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_HIRAGANA },
+  { "Katakana", IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_KATAKANA },
+  { "Half width katakana",  // small k is not a typo.
+  IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_HALF_WIDTH_KATAKANA },
+  { "Latin", IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_LATIN },
+  { "Wide Latin", IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_WIDE_LATIN },
+  { "Roman", IDS_STATUSBAR_IME_JAPANESE_IME_INPUT_MODE_ROMAN },
+  { "Kana", IDS_STATUSBAR_IME_JAPANESE_IME_INPUT_MODE_KANA },
 
-  // TODO(yusukes): Support ibus-pinyin, -hangul, -chewing, and -table.
+  // For ibus-hangul: third_party/ibus-hangul/files/po/.
+  { "Enable/Disable Hanja mode", IDS_STATUSBAR_IME_KOREAN_HANJA_MODE },
+
+  // For ibus-pinyin: third_party/ibus-pinyin/files/po/.
+  { "Chinese", IDS_STATUSBAR_IME_CHINESE_PINYIN_TOGGLE_CHINESE_ENGLISH },
+  { "Full/Half width",
+    IDS_STATUSBAR_IME_CHINESE_PINYIN_TOGGLE_FULL_HALF },
+  { "Full/Half width punctuation",
+    IDS_STATUSBAR_IME_CHINESE_PINYIN_TOGGLE_FULL_HALF_PUNCTUATION },
+  { "Simplfied/Traditional Chinese",
+    IDS_STATUSBAR_IME_CHINESE_PINYIN_TOGGLE_S_T_CHINESE },
+
+  // TODO(yusukes): Support ibus-chewing and ibus-table-* if needed.
 };
 const size_t kNumEntries = arraysize(kEnglishToResourceIdArray);
 
