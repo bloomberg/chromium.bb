@@ -228,8 +228,13 @@ STDMETHODIMP ChromeActiveDocument::Load(BOOL fully_avalable,
   // If the original URL contains an anchor, then the URL queried
   // from the moniker does not contain the anchor. To workaround
   // this we retrieve the URL from our BHO.
-  std::wstring url(GetActualUrlFromMoniker(moniker_name, bind_context,
-                                           mgr ? mgr->url() : std::wstring()));
+  std::wstring url(GetActualUrlFromMoniker(
+      moniker_name, bind_context,
+      mgr ? mgr->original_url_with_fragment() : std::wstring()));
+
+  if (mgr) {
+    mgr->set_original_url_with_fragment(L"");
+  }
 
   scoped_refptr<RequestData> data(mgr->GetActiveRequestData(url.c_str()));
   DLOG_IF(INFO, data) << "Got active request data";

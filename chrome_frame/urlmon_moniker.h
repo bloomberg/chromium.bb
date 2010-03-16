@@ -295,6 +295,15 @@ class NavigationManager {
     url_ = url;
   }
 
+  const std::wstring& original_url_with_fragment() const {
+    return original_url_with_fragment_;
+  }
+
+  void set_original_url_with_fragment(const wchar_t* url) {
+    DLOG(INFO) << __FUNCTION__ << " " << url;
+    original_url_with_fragment_ = url;
+  }
+
   // Returns the referrer header value of the current top level navigation.
   const std::string& referrer() const {
     return referrer_;
@@ -355,6 +364,11 @@ class NavigationManager {
   scoped_refptr<RequestHeaders> request_headers_;
   static base::LazyInstance<base::ThreadLocalPointer<NavigationManager> >
       thread_singleton_;
+
+  // If the url being navigated to within ChromeFrame has a fragment, this
+  // member contains this URL. This member is cleared when the Chrome active
+  // document is loaded.
+  std::wstring original_url_with_fragment_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NavigationManager);

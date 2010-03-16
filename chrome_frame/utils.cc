@@ -24,6 +24,7 @@
 #include "chrome_frame/html_utils.h"
 #include "chrome_frame/utils.h"
 #include "googleurl/src/gurl.h"
+#include "googleurl/src/url_canon.h"
 #include "grit/chrome_frame_resources.h"
 
 // Note that these values are all lower case and are compared to
@@ -716,7 +717,22 @@ HRESULT NavigateBrowserToMoniker(IUnknown* browser, IMoniker* moniker,
       DLOG(INFO) << __FUNCTION__ << " " << url;
       ScopedComPtr<IWebBrowserPriv> browser_priv;
       if (SUCCEEDED(hr = browser_priv.QueryFrom(web_browser2))) {
-        ScopedVariant var_url(url);
+        GURL target_url(url);
+        // On IE6 if the original URL has a fragment then the navigation
+        // attempt is ignored. To workaround this we strip the fragment from
+        // the url and initiate the navigation. When the active document loads
+        // we retrieve the original url with the fragment from the Navigation
+        // manager and use it.
+        if (target_url.has_ref()) {
+          url_parse::Component comp;
+          GURL::Replacements replacements;
+          replacements.SetRef("", comp);
+
+          target_url = target_url.ReplaceComponents(replacements);
+          fragment = NULL;
+        }
+
+        ScopedVariant var_url(UTF8ToWide(target_url.spec()).c_str());
         hr = browser_priv->NavigateWithBindCtx(var_url.AsInput(), NULL, NULL,
                                                NULL, headers_var.AsInput(),
                                                bind_ctx,

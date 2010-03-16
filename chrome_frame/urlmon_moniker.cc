@@ -332,6 +332,7 @@ HRESULT NavigationManager::NavigateToCurrentUrlInCF(IBrowserService* browser) {
       GURL parsed_moniker_url(url_);
       if (parsed_moniker_url.has_ref()) {
         fragment = UTF8ToWide(parsed_moniker_url.ref());
+        set_original_url_with_fragment(url_.c_str());
       }
 
       hr = NavigateBrowserToMoniker(browser, moniker, headers.c_str(),
