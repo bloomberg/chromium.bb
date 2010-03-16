@@ -77,7 +77,7 @@ void DownloadsUIHTMLSource::StartDataRequest(const std::string& path,
 
   // Dangerous file.
   localized_strings.SetString(L"danger_desc",
-      l10n_util::GetStringF(IDS_PROMPT_DANGEROUS_DOWNLOAD, L"%s"));
+      l10n_util::GetString(IDS_PROMPT_DANGEROUS_DOWNLOAD));
   localized_strings.SetString(L"danger_save",
       l10n_util::GetString(IDS_SAVE_DOWNLOAD));
   localized_strings.SetString(L"danger_discard",

@@ -265,8 +265,8 @@ Downloads.prototype.setSearchText = function(searchText) {
  */
 Downloads.prototype.updateSummary = function() {
   if (this.searchText_) {
-    this.summary_.textContent = localStrings.formatString(
-        'searchresultsfor', this.searchText_);
+    this.summary_.textContent = localStrings.getStringF('searchresultsfor',
+                                                        this.searchText_);
   } else {
     this.summary_.innerHTML = localStrings.getString('downloads');
   }
@@ -478,8 +478,8 @@ Download.prototype.update = function(download) {
   this.received_ = download.received;
 
   if (this.state_ == Download.States.DANGEROUS) {
-    this.dangerDesc_.innerHTML = localStrings.formatString('danger_desc',
-                                                           this.fileName_);
+    this.dangerDesc_.innerHTML = localStrings.getStringF('danger_desc',
+                                                         this.fileName_);
     this.danger_.style.display = 'block';
     this.safe_.style.display = 'none';
   } else {

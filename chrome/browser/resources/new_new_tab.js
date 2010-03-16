@@ -700,7 +700,7 @@ function syncAlreadyEnabled(message) {
 function formatTabsText(numTabs) {
   if (numTabs == 1)
     return localStrings.getString('closedwindowsingle');
-  return localStrings.formatString('closedwindowmultiple', numTabs);
+  return localStrings.getStringF('closedwindowmultiple', numTabs);
 }
 
 /**
