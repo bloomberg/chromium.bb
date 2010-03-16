@@ -389,16 +389,6 @@ bool OpaqueBrowserFrameView::HitTest(const gfx::Point& l) const {
   return browser_view_->IsPositionInWindowCaption(browser_view_point);
 }
 
-void OpaqueBrowserFrameView::ViewHierarchyChanged(bool is_add,
-                                                  views::View* parent,
-                                                  views::View* child) {
-  if (is_add && child == this) {
-    // The Accessibility glue looks for the product name on these two views to
-    // determine if this is in fact a Chrome window.
-    GetRootView()->SetAccessibleName(l10n_util::GetString(IDS_PRODUCT_NAME));
-  }
-}
-
 bool OpaqueBrowserFrameView::GetAccessibleRole(AccessibilityTypes::Role* role) {
   DCHECK(role);
 

@@ -37,6 +37,7 @@ class BookmarkBarInstructionsView : public views::View,
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View* parent,
                                     views::View* child);
+  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
 
   // LinkController.
   virtual void LinkActivated(views::Link* source, int event_flags);

@@ -86,6 +86,16 @@ void BookmarkBarInstructionsView::ViewHierarchyChanged(bool is_add,
     UpdateColors();
 }
 
+bool BookmarkBarInstructionsView::GetAccessibleRole(
+    AccessibilityTypes::Role* role) {
+  DCHECK(role);
+  if (!role)
+    return false;
+
+  *role = AccessibilityTypes::ROLE_GROUPING;
+  return true;
+}
+
 void BookmarkBarInstructionsView::LinkActivated(views::Link* source,
                                                 int event_flags) {
   delegate_->ShowImportDialog();

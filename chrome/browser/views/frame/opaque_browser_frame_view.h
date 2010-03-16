@@ -51,9 +51,6 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   virtual void Paint(gfx::Canvas* canvas);
   virtual void Layout();
   virtual bool HitTest(const gfx::Point& l) const;
-  virtual void ViewHierarchyChanged(bool is_add,
-                                    views::View* parent,
-                                    views::View* child);
   virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
   virtual bool GetAccessibleName(std::wstring* name);
   virtual void SetAccessibleName(const std::wstring& name);

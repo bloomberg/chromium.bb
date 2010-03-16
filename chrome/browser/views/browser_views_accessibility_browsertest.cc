@@ -1,6 +1,6 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved. Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include <oleacc.h>
 
@@ -8,6 +8,8 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/view_ids.h"
+#include "chrome/browser/views/bookmark_bar_view.h"
+#include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/toolbar_view.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "grit/chromium_strings.h"
@@ -35,31 +37,35 @@ class BrowserViewsAccessibilityTest : public InProcessBrowserTest {
     ::CoUninitialize();
   }
 
-  // Retrieves and initializes an instance of LocationBarView.
-  LocationBarView* GetLocationBarView() {
+  // Retrieves an instance of BrowserWindowTesting
+  BrowserWindowTesting* GetBrowserWindowTesting() {
     BrowserWindow* browser_window = browser()->window();
 
     if (!browser_window)
       return NULL;
 
-    BrowserWindowTesting* browser_window_testing =
-        browser_window->GetBrowserWindowTesting();
+    return browser_window->GetBrowserWindowTesting();
+  }
+
+  // Retrieve an instance of BrowserView
+  BrowserView* GetBrowserView() {
+    return BrowserView::GetBrowserViewForNativeWindow(
+               browser()->window()->GetNativeHandle());
+  }
+
+  // Retrieves and initializes an instance of LocationBarView.
+  LocationBarView* GetLocationBarView() {
+    BrowserWindowTesting* browser_window_testing = GetBrowserWindowTesting();
 
     if (!browser_window_testing)
       return NULL;
 
-    return browser_window_testing->GetLocationBarView();
+    return GetBrowserWindowTesting()->GetLocationBarView();
   }
 
   // Retrieves and initializes an instance of ToolbarView.
   ToolbarView* GetToolbarView() {
-    BrowserWindow* browser_window = browser()->window();
-
-    if (!browser_window)
-      return NULL;
-
-    BrowserWindowTesting* browser_window_testing =
-        browser_window->GetBrowserWindowTesting();
+    BrowserWindowTesting* browser_window_testing = GetBrowserWindowTesting();
 
     if (!browser_window_testing)
       return NULL;
@@ -67,13 +73,20 @@ class BrowserViewsAccessibilityTest : public InProcessBrowserTest {
     return browser_window_testing->GetToolbarView();
   }
 
+  // Retrieves and initializes an instance of BookmarkBarView.
+  BookmarkBarView* GetBookmarkBarView() {
+    BrowserWindowTesting* browser_window_testing = GetBrowserWindowTesting();
+
+    if (!browser_window_testing)
+      return NULL;
+
+    return browser_window_testing->GetBookmarkBarView();
+  }
+
   // Retrieves and verifies the accessibility object for the given View.
   void TestViewAccessibilityObject(views::View* view, std::wstring name,
                                    long role) {
     ASSERT_TRUE(NULL != view);
-
-    // Initialize View accessibility information.
-    view->SetAccessibleName(name);
 
     IAccessible* acc_obj = NULL;
     HRESULT hr = view->GetViewAccessibilityWrapper()->GetInstance(
@@ -129,14 +142,24 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest, TestChromeWindowAccObj) {
   acc_obj->Release();
 }
 
-// Retrieve accessibility object for root view, and verify accessibility info.
-IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest, TestRootViewAccObj) {
-  views::WidgetWin window;
+// Retrieve accessibility object for browser root view and verify
+// accessibility info.
+IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
+                       TestBrowserRootViewAccObj) {
+  views::View* browser_root_view =
+      GetBrowserView()->frame()->GetFrameView()->GetRootView();
 
-  // Verify root view MSAA name and role.
-  TestViewAccessibilityObject(window.GetRootView(),
+  TestViewAccessibilityObject(browser_root_view,
                               l10n_util::GetString(IDS_PRODUCT_NAME),
                               ROLE_SYSTEM_APPLICATION);
+}
+
+// Retrieve accessibility object for browser view and verify accessibility info.
+IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest, TestBrowserViewAccObj) {
+  // Verify root view MSAA name and role.
+  TestViewAccessibilityObject(GetBrowserView(),
+                              l10n_util::GetString(IDS_PRODUCT_NAME),
+                              ROLE_SYSTEM_CLIENT);
 }
 
 // Retrieve accessibility object for toolbar view and verify accessibility info.
@@ -223,6 +246,13 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest, TestAppMenuAccObj) {
   TestViewAccessibilityObject(GetToolbarView()->GetViewByID(VIEW_ID_APP_MENU),
                               l10n_util::GetString(IDS_ACCNAME_APP),
                               ROLE_SYSTEM_BUTTONMENU);
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
+                       TestBookmarkBarViewAccObj) {
+  TestViewAccessibilityObject(GetBookmarkBarView(),
+                              l10n_util::GetString(IDS_ACCNAME_BOOKMARKS),
+                              ROLE_SYSTEM_TOOLBAR);
 }
 
 }  // Namespace.

@@ -5,6 +5,7 @@
 #include "chrome/browser/views/frame/browser_root_view.h"
 
 #include "app/drag_drop_types.h"
+#include "app/l10n_util.h"
 #include "app/os_exchange_data.h"
 #include "chrome/browser/location_bar.h"
 #include "chrome/browser/profile.h"
@@ -12,12 +13,14 @@
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/frame/browser_frame.h"
 #include "chrome/browser/views/tabs/tab_strip.h"
+#include "grit/chromium_strings.h"
 
 BrowserRootView::BrowserRootView(BrowserView* browser_view,
                                  views::Widget* widget)
     : views::RootView(widget),
       browser_view_(browser_view),
       forwarding_to_tab_strip_(false) {
+  SetAccessibleName(l10n_util::GetString(IDS_PRODUCT_NAME));
 }
 
 bool BrowserRootView::GetDropFormats(
