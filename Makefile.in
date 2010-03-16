@@ -15,7 +15,7 @@
 
 @SET_MAKE@
 
-# Copyright (c) 2006, Google Inc.
+# Copyright (c) 2010, Google Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -77,7 +77,9 @@ check_PROGRAMS = src/client/linux/linux_client_unittest$(EXEEXT) \
 	src/processor/minidump_unittest$(EXEEXT) \
 	src/processor/pathname_stripper_unittest$(EXEEXT) \
 	src/processor/postfix_evaluator_unittest$(EXEEXT) \
-	src/processor/range_map_unittest$(EXEEXT) $(am__EXEEXT_1)
+	src/processor/range_map_unittest$(EXEEXT) \
+	src/processor/synth_minidump_unittest$(EXEEXT) \
+	src/processor/test_assembler_unittest$(EXEEXT) $(am__EXEEXT_1)
 @SELFTEST_TRUE@am__append_1 = \
 @SELFTEST_TRUE@	src/processor/stackwalker_selftest
 
@@ -236,7 +238,10 @@ src_processor_minidump_stackwalk_DEPENDENCIES =  \
 	src/processor/stackwalker_sparc.lo \
 	src/processor/stackwalker_x86.lo
 am_src_processor_minidump_unittest_OBJECTS = src/processor/src_processor_minidump_unittest-minidump_unittest.$(OBJEXT) \
+	src/processor/src_processor_minidump_unittest-synth_minidump.$(OBJEXT) \
+	src/processor/src_processor_minidump_unittest-test_assembler.$(OBJEXT) \
 	src/testing/gtest/src/src_processor_minidump_unittest-gtest-all.$(OBJEXT) \
+	src/testing/gtest/src/src_processor_minidump_unittest-gtest_main.$(OBJEXT) \
 	src/testing/src/src_processor_minidump_unittest-gmock-all.$(OBJEXT)
 src_processor_minidump_unittest_OBJECTS =  \
 	$(am_src_processor_minidump_unittest_OBJECTS)
@@ -276,6 +281,23 @@ src_processor_stackwalker_selftest_DEPENDENCIES =  \
 	src/processor/stackwalker_ppc.lo \
 	src/processor/stackwalker_sparc.lo \
 	src/processor/stackwalker_x86.lo
+am_src_processor_synth_minidump_unittest_OBJECTS = src/processor/src_processor_synth_minidump_unittest-synth_minidump_unittest.$(OBJEXT) \
+	src/testing/gtest/src/src_processor_synth_minidump_unittest-gtest-all.$(OBJEXT) \
+	src/testing/gtest/src/src_processor_synth_minidump_unittest-gtest_main.$(OBJEXT) \
+	src/testing/src/src_processor_synth_minidump_unittest-gmock-all.$(OBJEXT) \
+	src/processor/src_processor_synth_minidump_unittest-synth_minidump.$(OBJEXT) \
+	src/processor/src_processor_synth_minidump_unittest-test_assembler.$(OBJEXT)
+src_processor_synth_minidump_unittest_OBJECTS =  \
+	$(am_src_processor_synth_minidump_unittest_OBJECTS)
+src_processor_synth_minidump_unittest_LDADD = $(LDADD)
+am_src_processor_test_assembler_unittest_OBJECTS = src/processor/src_processor_test_assembler_unittest-test_assembler_unittest.$(OBJEXT) \
+	src/testing/gtest/src/src_processor_test_assembler_unittest-gtest-all.$(OBJEXT) \
+	src/testing/gtest/src/src_processor_test_assembler_unittest-gtest_main.$(OBJEXT) \
+	src/testing/src/src_processor_test_assembler_unittest-gmock-all.$(OBJEXT) \
+	src/processor/src_processor_test_assembler_unittest-test_assembler.$(OBJEXT)
+src_processor_test_assembler_unittest_OBJECTS =  \
+	$(am_src_processor_test_assembler_unittest_OBJECTS)
+src_processor_test_assembler_unittest_LDADD = $(LDADD)
 SCRIPTS = $(noinst_SCRIPTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)/src
 depcomp = $(SHELL) $(top_srcdir)/autotools/depcomp
@@ -313,7 +335,9 @@ SOURCES = $(src_client_linux_libbreakpad_client_la_SOURCES) \
 	$(src_processor_pathname_stripper_unittest_SOURCES) \
 	$(src_processor_postfix_evaluator_unittest_SOURCES) \
 	$(src_processor_range_map_unittest_SOURCES) \
-	$(src_processor_stackwalker_selftest_SOURCES)
+	$(src_processor_stackwalker_selftest_SOURCES) \
+	$(src_processor_synth_minidump_unittest_SOURCES) \
+	$(src_processor_test_assembler_unittest_SOURCES)
 DIST_SOURCES = $(src_client_linux_libbreakpad_client_la_SOURCES) \
 	$(src_libbreakpad_la_SOURCES) \
 	$(src_client_linux_linux_client_unittest_SOURCES) \
@@ -328,7 +352,9 @@ DIST_SOURCES = $(src_client_linux_libbreakpad_client_la_SOURCES) \
 	$(src_processor_pathname_stripper_unittest_SOURCES) \
 	$(src_processor_postfix_evaluator_unittest_SOURCES) \
 	$(src_processor_range_map_unittest_SOURCES) \
-	$(src_processor_stackwalker_selftest_SOURCES)
+	$(src_processor_stackwalker_selftest_SOURCES) \
+	$(src_processor_synth_minidump_unittest_SOURCES) \
+	$(src_processor_test_assembler_unittest_SOURCES)
 DATA = $(dist_doc_DATA)
 ETAGS = etags
 CTAGS = ctags
@@ -641,7 +667,10 @@ src_processor_minidump_processor_unittest_LDADD = \
 
 src_processor_minidump_unittest_SOURCES = \
 	src/processor/minidump_unittest.cc \
+	src/processor/synth_minidump.cc \
+	src/processor/test_assembler.cc \
 	src/testing/gtest/src/gtest-all.cc \
+	src/testing/gtest/src/gtest_main.cc \
 	src/testing/src/gmock-all.cc
 
 src_processor_minidump_unittest_CPPFLAGS = \
@@ -692,6 +721,36 @@ src_processor_stackwalker_selftest_LDADD = \
 	src/processor/stackwalker_ppc.lo \
 	src/processor/stackwalker_sparc.lo \
 	src/processor/stackwalker_x86.lo
+
+src_processor_synth_minidump_unittest_SOURCES = \
+	src/processor/synth_minidump_unittest.cc \
+	src/testing/gtest/src/gtest-all.cc \
+	src/testing/gtest/src/gtest_main.cc \
+	src/testing/src/gmock-all.cc \
+	src/processor/synth_minidump.cc \
+	src/processor/synth_minidump.h \
+	src/processor/test_assembler.cc \
+	src/processor/test_assembler.h
+
+src_processor_synth_minidump_unittest_CPPFLAGS = \
+	-I$(top_srcdir)/src/testing/include \
+        -I$(top_srcdir)/src/testing/gtest/include \
+	-I$(top_srcdir)/src/testing/gtest \
+	-I$(top_srcdir)/src/testing
+
+src_processor_test_assembler_unittest_SOURCES = \
+	src/processor/test_assembler_unittest.cc \
+	src/testing/gtest/src/gtest-all.cc \
+	src/testing/gtest/src/gtest_main.cc \
+	src/testing/src/gmock-all.cc \
+	src/processor/test_assembler.cc \
+	src/processor/test_assembler.h
+
+src_processor_test_assembler_unittest_CPPFLAGS = \
+	-I$(top_srcdir)/src/testing/include \
+        -I$(top_srcdir)/src/testing/gtest/include \
+	-I$(top_srcdir)/src/testing/gtest \
+	-I$(top_srcdir)/src/testing
 
 noinst_SCRIPTS = $(check_SCRIPTS)
 src_processor_minidump_dump_SOURCES = \
@@ -1198,7 +1257,16 @@ src/processor/minidump_stackwalk$(EXEEXT): $(src_processor_minidump_stackwalk_OB
 src/processor/src_processor_minidump_unittest-minidump_unittest.$(OBJEXT):  \
 	src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
+src/processor/src_processor_minidump_unittest-synth_minidump.$(OBJEXT):  \
+	src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
+src/processor/src_processor_minidump_unittest-test_assembler.$(OBJEXT):  \
+	src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
 src/testing/gtest/src/src_processor_minidump_unittest-gtest-all.$(OBJEXT):  \
+	src/testing/gtest/src/$(am__dirstamp) \
+	src/testing/gtest/src/$(DEPDIR)/$(am__dirstamp)
+src/testing/gtest/src/src_processor_minidump_unittest-gtest_main.$(OBJEXT):  \
 	src/testing/gtest/src/$(am__dirstamp) \
 	src/testing/gtest/src/$(DEPDIR)/$(am__dirstamp)
 src/testing/src/src_processor_minidump_unittest-gmock-all.$(OBJEXT):  \
@@ -1231,6 +1299,45 @@ src/processor/stackwalker_selftest.$(OBJEXT):  \
 src/processor/stackwalker_selftest$(EXEEXT): $(src_processor_stackwalker_selftest_OBJECTS) $(src_processor_stackwalker_selftest_DEPENDENCIES) src/processor/$(am__dirstamp)
 	@rm -f src/processor/stackwalker_selftest$(EXEEXT)
 	$(CXXLINK) $(src_processor_stackwalker_selftest_OBJECTS) $(src_processor_stackwalker_selftest_LDADD) $(LIBS)
+src/processor/src_processor_synth_minidump_unittest-synth_minidump_unittest.$(OBJEXT):  \
+	src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
+src/testing/gtest/src/src_processor_synth_minidump_unittest-gtest-all.$(OBJEXT):  \
+	src/testing/gtest/src/$(am__dirstamp) \
+	src/testing/gtest/src/$(DEPDIR)/$(am__dirstamp)
+src/testing/gtest/src/src_processor_synth_minidump_unittest-gtest_main.$(OBJEXT):  \
+	src/testing/gtest/src/$(am__dirstamp) \
+	src/testing/gtest/src/$(DEPDIR)/$(am__dirstamp)
+src/testing/src/src_processor_synth_minidump_unittest-gmock-all.$(OBJEXT):  \
+	src/testing/src/$(am__dirstamp) \
+	src/testing/src/$(DEPDIR)/$(am__dirstamp)
+src/processor/src_processor_synth_minidump_unittest-synth_minidump.$(OBJEXT):  \
+	src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
+src/processor/src_processor_synth_minidump_unittest-test_assembler.$(OBJEXT):  \
+	src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
+src/processor/synth_minidump_unittest$(EXEEXT): $(src_processor_synth_minidump_unittest_OBJECTS) $(src_processor_synth_minidump_unittest_DEPENDENCIES) src/processor/$(am__dirstamp)
+	@rm -f src/processor/synth_minidump_unittest$(EXEEXT)
+	$(CXXLINK) $(src_processor_synth_minidump_unittest_OBJECTS) $(src_processor_synth_minidump_unittest_LDADD) $(LIBS)
+src/processor/src_processor_test_assembler_unittest-test_assembler_unittest.$(OBJEXT):  \
+	src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
+src/testing/gtest/src/src_processor_test_assembler_unittest-gtest-all.$(OBJEXT):  \
+	src/testing/gtest/src/$(am__dirstamp) \
+	src/testing/gtest/src/$(DEPDIR)/$(am__dirstamp)
+src/testing/gtest/src/src_processor_test_assembler_unittest-gtest_main.$(OBJEXT):  \
+	src/testing/gtest/src/$(am__dirstamp) \
+	src/testing/gtest/src/$(DEPDIR)/$(am__dirstamp)
+src/testing/src/src_processor_test_assembler_unittest-gmock-all.$(OBJEXT):  \
+	src/testing/src/$(am__dirstamp) \
+	src/testing/src/$(DEPDIR)/$(am__dirstamp)
+src/processor/src_processor_test_assembler_unittest-test_assembler.$(OBJEXT):  \
+	src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
+src/processor/test_assembler_unittest$(EXEEXT): $(src_processor_test_assembler_unittest_OBJECTS) $(src_processor_test_assembler_unittest_DEPENDENCIES) src/processor/$(am__dirstamp)
+	@rm -f src/processor/test_assembler_unittest$(EXEEXT)
+	$(CXXLINK) $(src_processor_test_assembler_unittest_OBJECTS) $(src_processor_test_assembler_unittest_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -1288,6 +1395,13 @@ mostlyclean-compile:
 	-rm -f src/processor/simple_symbol_supplier.lo
 	-rm -f src/processor/src_processor_minidump_processor_unittest-minidump_processor_unittest.$(OBJEXT)
 	-rm -f src/processor/src_processor_minidump_unittest-minidump_unittest.$(OBJEXT)
+	-rm -f src/processor/src_processor_minidump_unittest-synth_minidump.$(OBJEXT)
+	-rm -f src/processor/src_processor_minidump_unittest-test_assembler.$(OBJEXT)
+	-rm -f src/processor/src_processor_synth_minidump_unittest-synth_minidump.$(OBJEXT)
+	-rm -f src/processor/src_processor_synth_minidump_unittest-synth_minidump_unittest.$(OBJEXT)
+	-rm -f src/processor/src_processor_synth_minidump_unittest-test_assembler.$(OBJEXT)
+	-rm -f src/processor/src_processor_test_assembler_unittest-test_assembler.$(OBJEXT)
+	-rm -f src/processor/src_processor_test_assembler_unittest-test_assembler_unittest.$(OBJEXT)
 	-rm -f src/processor/stackwalker.$(OBJEXT)
 	-rm -f src/processor/stackwalker.lo
 	-rm -f src/processor/stackwalker_amd64.$(OBJEXT)
@@ -1305,9 +1419,16 @@ mostlyclean-compile:
 	-rm -f src/testing/gtest/src/src_client_linux_linux_client_unittest-gtest_main.$(OBJEXT)
 	-rm -f src/testing/gtest/src/src_processor_minidump_processor_unittest-gtest-all.$(OBJEXT)
 	-rm -f src/testing/gtest/src/src_processor_minidump_unittest-gtest-all.$(OBJEXT)
+	-rm -f src/testing/gtest/src/src_processor_minidump_unittest-gtest_main.$(OBJEXT)
+	-rm -f src/testing/gtest/src/src_processor_synth_minidump_unittest-gtest-all.$(OBJEXT)
+	-rm -f src/testing/gtest/src/src_processor_synth_minidump_unittest-gtest_main.$(OBJEXT)
+	-rm -f src/testing/gtest/src/src_processor_test_assembler_unittest-gtest-all.$(OBJEXT)
+	-rm -f src/testing/gtest/src/src_processor_test_assembler_unittest-gtest_main.$(OBJEXT)
 	-rm -f src/testing/src/src_client_linux_linux_client_unittest-gmock-all.$(OBJEXT)
 	-rm -f src/testing/src/src_processor_minidump_processor_unittest-gmock-all.$(OBJEXT)
 	-rm -f src/testing/src/src_processor_minidump_unittest-gmock-all.$(OBJEXT)
+	-rm -f src/testing/src/src_processor_synth_minidump_unittest-gmock-all.$(OBJEXT)
+	-rm -f src/testing/src/src_processor_test_assembler_unittest-gmock-all.$(OBJEXT)
 
 distclean-compile:
 	-rm -f *.tab.c
@@ -1347,6 +1468,13 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/simple_symbol_supplier.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_processor_minidump_processor_unittest-minidump_processor_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_processor_minidump_unittest-minidump_unittest.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_processor_minidump_unittest-synth_minidump.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_processor_minidump_unittest-test_assembler.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_processor_synth_minidump_unittest-synth_minidump.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_processor_synth_minidump_unittest-synth_minidump_unittest.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_processor_synth_minidump_unittest-test_assembler.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_processor_test_assembler_unittest-test_assembler.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_processor_test_assembler_unittest-test_assembler_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/stackwalker.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/stackwalker_amd64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/stackwalker_arm.Plo@am__quote@
@@ -1358,9 +1486,16 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/gtest/src/$(DEPDIR)/src_client_linux_linux_client_unittest-gtest_main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/gtest/src/$(DEPDIR)/src_processor_minidump_processor_unittest-gtest-all.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/gtest/src/$(DEPDIR)/src_processor_minidump_unittest-gtest-all.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/testing/gtest/src/$(DEPDIR)/src_processor_minidump_unittest-gtest_main.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/testing/gtest/src/$(DEPDIR)/src_processor_synth_minidump_unittest-gtest-all.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/testing/gtest/src/$(DEPDIR)/src_processor_synth_minidump_unittest-gtest_main.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/testing/gtest/src/$(DEPDIR)/src_processor_test_assembler_unittest-gtest-all.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/testing/gtest/src/$(DEPDIR)/src_processor_test_assembler_unittest-gtest_main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/src/$(DEPDIR)/src_client_linux_linux_client_unittest-gmock-all.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/src/$(DEPDIR)/src_processor_minidump_processor_unittest-gmock-all.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/src/$(DEPDIR)/src_processor_minidump_unittest-gmock-all.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/testing/src/$(DEPDIR)/src_processor_synth_minidump_unittest-gmock-all.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/testing/src/$(DEPDIR)/src_processor_test_assembler_unittest-gmock-all.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
@@ -1592,6 +1727,34 @@ src/processor/src_processor_minidump_unittest-minidump_unittest.obj: src/process
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_minidump_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/processor/src_processor_minidump_unittest-minidump_unittest.obj `if test -f 'src/processor/minidump_unittest.cc'; then $(CYGPATH_W) 'src/processor/minidump_unittest.cc'; else $(CYGPATH_W) '$(srcdir)/src/processor/minidump_unittest.cc'; fi`
 
+src/processor/src_processor_minidump_unittest-synth_minidump.o: src/processor/synth_minidump.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_minidump_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/processor/src_processor_minidump_unittest-synth_minidump.o -MD -MP -MF src/processor/$(DEPDIR)/src_processor_minidump_unittest-synth_minidump.Tpo -c -o src/processor/src_processor_minidump_unittest-synth_minidump.o `test -f 'src/processor/synth_minidump.cc' || echo '$(srcdir)/'`src/processor/synth_minidump.cc
+@am__fastdepCXX_TRUE@	$(am__mv) src/processor/$(DEPDIR)/src_processor_minidump_unittest-synth_minidump.Tpo src/processor/$(DEPDIR)/src_processor_minidump_unittest-synth_minidump.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/processor/synth_minidump.cc' object='src/processor/src_processor_minidump_unittest-synth_minidump.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_minidump_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/processor/src_processor_minidump_unittest-synth_minidump.o `test -f 'src/processor/synth_minidump.cc' || echo '$(srcdir)/'`src/processor/synth_minidump.cc
+
+src/processor/src_processor_minidump_unittest-synth_minidump.obj: src/processor/synth_minidump.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_minidump_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/processor/src_processor_minidump_unittest-synth_minidump.obj -MD -MP -MF src/processor/$(DEPDIR)/src_processor_minidump_unittest-synth_minidump.Tpo -c -o src/processor/src_processor_minidump_unittest-synth_minidump.obj `if test -f 'src/processor/synth_minidump.cc'; then $(CYGPATH_W) 'src/processor/synth_minidump.cc'; else $(CYGPATH_W) '$(srcdir)/src/processor/synth_minidump.cc'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) src/processor/$(DEPDIR)/src_processor_minidump_unittest-synth_minidump.Tpo src/processor/$(DEPDIR)/src_processor_minidump_unittest-synth_minidump.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/processor/synth_minidump.cc' object='src/processor/src_processor_minidump_unittest-synth_minidump.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_minidump_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/processor/src_processor_minidump_unittest-synth_minidump.obj `if test -f 'src/processor/synth_minidump.cc'; then $(CYGPATH_W) 'src/processor/synth_minidump.cc'; else $(CYGPATH_W) '$(srcdir)/src/processor/synth_minidump.cc'; fi`
+
+src/processor/src_processor_minidump_unittest-test_assembler.o: src/processor/test_assembler.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_minidump_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/processor/src_processor_minidump_unittest-test_assembler.o -MD -MP -MF src/processor/$(DEPDIR)/src_processor_minidump_unittest-test_assembler.Tpo -c -o src/processor/src_processor_minidump_unittest-test_assembler.o `test -f 'src/processor/test_assembler.cc' || echo '$(srcdir)/'`src/processor/test_assembler.cc
+@am__fastdepCXX_TRUE@	$(am__mv) src/processor/$(DEPDIR)/src_processor_minidump_unittest-test_assembler.Tpo src/processor/$(DEPDIR)/src_processor_minidump_unittest-test_assembler.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/processor/test_assembler.cc' object='src/processor/src_processor_minidump_unittest-test_assembler.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_minidump_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/processor/src_processor_minidump_unittest-test_assembler.o `test -f 'src/processor/test_assembler.cc' || echo '$(srcdir)/'`src/processor/test_assembler.cc
+
+src/processor/src_processor_minidump_unittest-test_assembler.obj: src/processor/test_assembler.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_minidump_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/processor/src_processor_minidump_unittest-test_assembler.obj -MD -MP -MF src/processor/$(DEPDIR)/src_processor_minidump_unittest-test_assembler.Tpo -c -o src/processor/src_processor_minidump_unittest-test_assembler.obj `if test -f 'src/processor/test_assembler.cc'; then $(CYGPATH_W) 'src/processor/test_assembler.cc'; else $(CYGPATH_W) '$(srcdir)/src/processor/test_assembler.cc'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) src/processor/$(DEPDIR)/src_processor_minidump_unittest-test_assembler.Tpo src/processor/$(DEPDIR)/src_processor_minidump_unittest-test_assembler.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/processor/test_assembler.cc' object='src/processor/src_processor_minidump_unittest-test_assembler.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_minidump_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/processor/src_processor_minidump_unittest-test_assembler.obj `if test -f 'src/processor/test_assembler.cc'; then $(CYGPATH_W) 'src/processor/test_assembler.cc'; else $(CYGPATH_W) '$(srcdir)/src/processor/test_assembler.cc'; fi`
+
 src/testing/gtest/src/src_processor_minidump_unittest-gtest-all.o: src/testing/gtest/src/gtest-all.cc
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_minidump_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/gtest/src/src_processor_minidump_unittest-gtest-all.o -MD -MP -MF src/testing/gtest/src/$(DEPDIR)/src_processor_minidump_unittest-gtest-all.Tpo -c -o src/testing/gtest/src/src_processor_minidump_unittest-gtest-all.o `test -f 'src/testing/gtest/src/gtest-all.cc' || echo '$(srcdir)/'`src/testing/gtest/src/gtest-all.cc
 @am__fastdepCXX_TRUE@	$(am__mv) src/testing/gtest/src/$(DEPDIR)/src_processor_minidump_unittest-gtest-all.Tpo src/testing/gtest/src/$(DEPDIR)/src_processor_minidump_unittest-gtest-all.Po
@@ -1606,6 +1769,20 @@ src/testing/gtest/src/src_processor_minidump_unittest-gtest-all.obj: src/testing
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_minidump_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/gtest/src/src_processor_minidump_unittest-gtest-all.obj `if test -f 'src/testing/gtest/src/gtest-all.cc'; then $(CYGPATH_W) 'src/testing/gtest/src/gtest-all.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/gtest/src/gtest-all.cc'; fi`
 
+src/testing/gtest/src/src_processor_minidump_unittest-gtest_main.o: src/testing/gtest/src/gtest_main.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_minidump_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/gtest/src/src_processor_minidump_unittest-gtest_main.o -MD -MP -MF src/testing/gtest/src/$(DEPDIR)/src_processor_minidump_unittest-gtest_main.Tpo -c -o src/testing/gtest/src/src_processor_minidump_unittest-gtest_main.o `test -f 'src/testing/gtest/src/gtest_main.cc' || echo '$(srcdir)/'`src/testing/gtest/src/gtest_main.cc
+@am__fastdepCXX_TRUE@	$(am__mv) src/testing/gtest/src/$(DEPDIR)/src_processor_minidump_unittest-gtest_main.Tpo src/testing/gtest/src/$(DEPDIR)/src_processor_minidump_unittest-gtest_main.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/testing/gtest/src/gtest_main.cc' object='src/testing/gtest/src/src_processor_minidump_unittest-gtest_main.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_minidump_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/gtest/src/src_processor_minidump_unittest-gtest_main.o `test -f 'src/testing/gtest/src/gtest_main.cc' || echo '$(srcdir)/'`src/testing/gtest/src/gtest_main.cc
+
+src/testing/gtest/src/src_processor_minidump_unittest-gtest_main.obj: src/testing/gtest/src/gtest_main.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_minidump_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/gtest/src/src_processor_minidump_unittest-gtest_main.obj -MD -MP -MF src/testing/gtest/src/$(DEPDIR)/src_processor_minidump_unittest-gtest_main.Tpo -c -o src/testing/gtest/src/src_processor_minidump_unittest-gtest_main.obj `if test -f 'src/testing/gtest/src/gtest_main.cc'; then $(CYGPATH_W) 'src/testing/gtest/src/gtest_main.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/gtest/src/gtest_main.cc'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) src/testing/gtest/src/$(DEPDIR)/src_processor_minidump_unittest-gtest_main.Tpo src/testing/gtest/src/$(DEPDIR)/src_processor_minidump_unittest-gtest_main.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/testing/gtest/src/gtest_main.cc' object='src/testing/gtest/src/src_processor_minidump_unittest-gtest_main.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_minidump_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/gtest/src/src_processor_minidump_unittest-gtest_main.obj `if test -f 'src/testing/gtest/src/gtest_main.cc'; then $(CYGPATH_W) 'src/testing/gtest/src/gtest_main.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/gtest/src/gtest_main.cc'; fi`
+
 src/testing/src/src_processor_minidump_unittest-gmock-all.o: src/testing/src/gmock-all.cc
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_minidump_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/src/src_processor_minidump_unittest-gmock-all.o -MD -MP -MF src/testing/src/$(DEPDIR)/src_processor_minidump_unittest-gmock-all.Tpo -c -o src/testing/src/src_processor_minidump_unittest-gmock-all.o `test -f 'src/testing/src/gmock-all.cc' || echo '$(srcdir)/'`src/testing/src/gmock-all.cc
 @am__fastdepCXX_TRUE@	$(am__mv) src/testing/src/$(DEPDIR)/src_processor_minidump_unittest-gmock-all.Tpo src/testing/src/$(DEPDIR)/src_processor_minidump_unittest-gmock-all.Po
@@ -1619,6 +1796,160 @@ src/testing/src/src_processor_minidump_unittest-gmock-all.obj: src/testing/src/g
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/testing/src/gmock-all.cc' object='src/testing/src/src_processor_minidump_unittest-gmock-all.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_minidump_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/src/src_processor_minidump_unittest-gmock-all.obj `if test -f 'src/testing/src/gmock-all.cc'; then $(CYGPATH_W) 'src/testing/src/gmock-all.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/src/gmock-all.cc'; fi`
+
+src/processor/src_processor_synth_minidump_unittest-synth_minidump_unittest.o: src/processor/synth_minidump_unittest.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_synth_minidump_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/processor/src_processor_synth_minidump_unittest-synth_minidump_unittest.o -MD -MP -MF src/processor/$(DEPDIR)/src_processor_synth_minidump_unittest-synth_minidump_unittest.Tpo -c -o src/processor/src_processor_synth_minidump_unittest-synth_minidump_unittest.o `test -f 'src/processor/synth_minidump_unittest.cc' || echo '$(srcdir)/'`src/processor/synth_minidump_unittest.cc
+@am__fastdepCXX_TRUE@	$(am__mv) src/processor/$(DEPDIR)/src_processor_synth_minidump_unittest-synth_minidump_unittest.Tpo src/processor/$(DEPDIR)/src_processor_synth_minidump_unittest-synth_minidump_unittest.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/processor/synth_minidump_unittest.cc' object='src/processor/src_processor_synth_minidump_unittest-synth_minidump_unittest.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_synth_minidump_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/processor/src_processor_synth_minidump_unittest-synth_minidump_unittest.o `test -f 'src/processor/synth_minidump_unittest.cc' || echo '$(srcdir)/'`src/processor/synth_minidump_unittest.cc
+
+src/processor/src_processor_synth_minidump_unittest-synth_minidump_unittest.obj: src/processor/synth_minidump_unittest.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_synth_minidump_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/processor/src_processor_synth_minidump_unittest-synth_minidump_unittest.obj -MD -MP -MF src/processor/$(DEPDIR)/src_processor_synth_minidump_unittest-synth_minidump_unittest.Tpo -c -o src/processor/src_processor_synth_minidump_unittest-synth_minidump_unittest.obj `if test -f 'src/processor/synth_minidump_unittest.cc'; then $(CYGPATH_W) 'src/processor/synth_minidump_unittest.cc'; else $(CYGPATH_W) '$(srcdir)/src/processor/synth_minidump_unittest.cc'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) src/processor/$(DEPDIR)/src_processor_synth_minidump_unittest-synth_minidump_unittest.Tpo src/processor/$(DEPDIR)/src_processor_synth_minidump_unittest-synth_minidump_unittest.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/processor/synth_minidump_unittest.cc' object='src/processor/src_processor_synth_minidump_unittest-synth_minidump_unittest.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_synth_minidump_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/processor/src_processor_synth_minidump_unittest-synth_minidump_unittest.obj `if test -f 'src/processor/synth_minidump_unittest.cc'; then $(CYGPATH_W) 'src/processor/synth_minidump_unittest.cc'; else $(CYGPATH_W) '$(srcdir)/src/processor/synth_minidump_unittest.cc'; fi`
+
+src/testing/gtest/src/src_processor_synth_minidump_unittest-gtest-all.o: src/testing/gtest/src/gtest-all.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_synth_minidump_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/gtest/src/src_processor_synth_minidump_unittest-gtest-all.o -MD -MP -MF src/testing/gtest/src/$(DEPDIR)/src_processor_synth_minidump_unittest-gtest-all.Tpo -c -o src/testing/gtest/src/src_processor_synth_minidump_unittest-gtest-all.o `test -f 'src/testing/gtest/src/gtest-all.cc' || echo '$(srcdir)/'`src/testing/gtest/src/gtest-all.cc
+@am__fastdepCXX_TRUE@	$(am__mv) src/testing/gtest/src/$(DEPDIR)/src_processor_synth_minidump_unittest-gtest-all.Tpo src/testing/gtest/src/$(DEPDIR)/src_processor_synth_minidump_unittest-gtest-all.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/testing/gtest/src/gtest-all.cc' object='src/testing/gtest/src/src_processor_synth_minidump_unittest-gtest-all.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_synth_minidump_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/gtest/src/src_processor_synth_minidump_unittest-gtest-all.o `test -f 'src/testing/gtest/src/gtest-all.cc' || echo '$(srcdir)/'`src/testing/gtest/src/gtest-all.cc
+
+src/testing/gtest/src/src_processor_synth_minidump_unittest-gtest-all.obj: src/testing/gtest/src/gtest-all.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_synth_minidump_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/gtest/src/src_processor_synth_minidump_unittest-gtest-all.obj -MD -MP -MF src/testing/gtest/src/$(DEPDIR)/src_processor_synth_minidump_unittest-gtest-all.Tpo -c -o src/testing/gtest/src/src_processor_synth_minidump_unittest-gtest-all.obj `if test -f 'src/testing/gtest/src/gtest-all.cc'; then $(CYGPATH_W) 'src/testing/gtest/src/gtest-all.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/gtest/src/gtest-all.cc'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) src/testing/gtest/src/$(DEPDIR)/src_processor_synth_minidump_unittest-gtest-all.Tpo src/testing/gtest/src/$(DEPDIR)/src_processor_synth_minidump_unittest-gtest-all.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/testing/gtest/src/gtest-all.cc' object='src/testing/gtest/src/src_processor_synth_minidump_unittest-gtest-all.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_synth_minidump_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/gtest/src/src_processor_synth_minidump_unittest-gtest-all.obj `if test -f 'src/testing/gtest/src/gtest-all.cc'; then $(CYGPATH_W) 'src/testing/gtest/src/gtest-all.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/gtest/src/gtest-all.cc'; fi`
+
+src/testing/gtest/src/src_processor_synth_minidump_unittest-gtest_main.o: src/testing/gtest/src/gtest_main.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_synth_minidump_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/gtest/src/src_processor_synth_minidump_unittest-gtest_main.o -MD -MP -MF src/testing/gtest/src/$(DEPDIR)/src_processor_synth_minidump_unittest-gtest_main.Tpo -c -o src/testing/gtest/src/src_processor_synth_minidump_unittest-gtest_main.o `test -f 'src/testing/gtest/src/gtest_main.cc' || echo '$(srcdir)/'`src/testing/gtest/src/gtest_main.cc
+@am__fastdepCXX_TRUE@	$(am__mv) src/testing/gtest/src/$(DEPDIR)/src_processor_synth_minidump_unittest-gtest_main.Tpo src/testing/gtest/src/$(DEPDIR)/src_processor_synth_minidump_unittest-gtest_main.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/testing/gtest/src/gtest_main.cc' object='src/testing/gtest/src/src_processor_synth_minidump_unittest-gtest_main.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_synth_minidump_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/gtest/src/src_processor_synth_minidump_unittest-gtest_main.o `test -f 'src/testing/gtest/src/gtest_main.cc' || echo '$(srcdir)/'`src/testing/gtest/src/gtest_main.cc
+
+src/testing/gtest/src/src_processor_synth_minidump_unittest-gtest_main.obj: src/testing/gtest/src/gtest_main.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_synth_minidump_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/gtest/src/src_processor_synth_minidump_unittest-gtest_main.obj -MD -MP -MF src/testing/gtest/src/$(DEPDIR)/src_processor_synth_minidump_unittest-gtest_main.Tpo -c -o src/testing/gtest/src/src_processor_synth_minidump_unittest-gtest_main.obj `if test -f 'src/testing/gtest/src/gtest_main.cc'; then $(CYGPATH_W) 'src/testing/gtest/src/gtest_main.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/gtest/src/gtest_main.cc'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) src/testing/gtest/src/$(DEPDIR)/src_processor_synth_minidump_unittest-gtest_main.Tpo src/testing/gtest/src/$(DEPDIR)/src_processor_synth_minidump_unittest-gtest_main.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/testing/gtest/src/gtest_main.cc' object='src/testing/gtest/src/src_processor_synth_minidump_unittest-gtest_main.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_synth_minidump_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/gtest/src/src_processor_synth_minidump_unittest-gtest_main.obj `if test -f 'src/testing/gtest/src/gtest_main.cc'; then $(CYGPATH_W) 'src/testing/gtest/src/gtest_main.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/gtest/src/gtest_main.cc'; fi`
+
+src/testing/src/src_processor_synth_minidump_unittest-gmock-all.o: src/testing/src/gmock-all.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_synth_minidump_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/src/src_processor_synth_minidump_unittest-gmock-all.o -MD -MP -MF src/testing/src/$(DEPDIR)/src_processor_synth_minidump_unittest-gmock-all.Tpo -c -o src/testing/src/src_processor_synth_minidump_unittest-gmock-all.o `test -f 'src/testing/src/gmock-all.cc' || echo '$(srcdir)/'`src/testing/src/gmock-all.cc
+@am__fastdepCXX_TRUE@	$(am__mv) src/testing/src/$(DEPDIR)/src_processor_synth_minidump_unittest-gmock-all.Tpo src/testing/src/$(DEPDIR)/src_processor_synth_minidump_unittest-gmock-all.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/testing/src/gmock-all.cc' object='src/testing/src/src_processor_synth_minidump_unittest-gmock-all.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_synth_minidump_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/src/src_processor_synth_minidump_unittest-gmock-all.o `test -f 'src/testing/src/gmock-all.cc' || echo '$(srcdir)/'`src/testing/src/gmock-all.cc
+
+src/testing/src/src_processor_synth_minidump_unittest-gmock-all.obj: src/testing/src/gmock-all.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_synth_minidump_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/src/src_processor_synth_minidump_unittest-gmock-all.obj -MD -MP -MF src/testing/src/$(DEPDIR)/src_processor_synth_minidump_unittest-gmock-all.Tpo -c -o src/testing/src/src_processor_synth_minidump_unittest-gmock-all.obj `if test -f 'src/testing/src/gmock-all.cc'; then $(CYGPATH_W) 'src/testing/src/gmock-all.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/src/gmock-all.cc'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) src/testing/src/$(DEPDIR)/src_processor_synth_minidump_unittest-gmock-all.Tpo src/testing/src/$(DEPDIR)/src_processor_synth_minidump_unittest-gmock-all.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/testing/src/gmock-all.cc' object='src/testing/src/src_processor_synth_minidump_unittest-gmock-all.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_synth_minidump_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/src/src_processor_synth_minidump_unittest-gmock-all.obj `if test -f 'src/testing/src/gmock-all.cc'; then $(CYGPATH_W) 'src/testing/src/gmock-all.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/src/gmock-all.cc'; fi`
+
+src/processor/src_processor_synth_minidump_unittest-synth_minidump.o: src/processor/synth_minidump.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_synth_minidump_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/processor/src_processor_synth_minidump_unittest-synth_minidump.o -MD -MP -MF src/processor/$(DEPDIR)/src_processor_synth_minidump_unittest-synth_minidump.Tpo -c -o src/processor/src_processor_synth_minidump_unittest-synth_minidump.o `test -f 'src/processor/synth_minidump.cc' || echo '$(srcdir)/'`src/processor/synth_minidump.cc
+@am__fastdepCXX_TRUE@	$(am__mv) src/processor/$(DEPDIR)/src_processor_synth_minidump_unittest-synth_minidump.Tpo src/processor/$(DEPDIR)/src_processor_synth_minidump_unittest-synth_minidump.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/processor/synth_minidump.cc' object='src/processor/src_processor_synth_minidump_unittest-synth_minidump.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_synth_minidump_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/processor/src_processor_synth_minidump_unittest-synth_minidump.o `test -f 'src/processor/synth_minidump.cc' || echo '$(srcdir)/'`src/processor/synth_minidump.cc
+
+src/processor/src_processor_synth_minidump_unittest-synth_minidump.obj: src/processor/synth_minidump.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_synth_minidump_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/processor/src_processor_synth_minidump_unittest-synth_minidump.obj -MD -MP -MF src/processor/$(DEPDIR)/src_processor_synth_minidump_unittest-synth_minidump.Tpo -c -o src/processor/src_processor_synth_minidump_unittest-synth_minidump.obj `if test -f 'src/processor/synth_minidump.cc'; then $(CYGPATH_W) 'src/processor/synth_minidump.cc'; else $(CYGPATH_W) '$(srcdir)/src/processor/synth_minidump.cc'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) src/processor/$(DEPDIR)/src_processor_synth_minidump_unittest-synth_minidump.Tpo src/processor/$(DEPDIR)/src_processor_synth_minidump_unittest-synth_minidump.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/processor/synth_minidump.cc' object='src/processor/src_processor_synth_minidump_unittest-synth_minidump.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_synth_minidump_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/processor/src_processor_synth_minidump_unittest-synth_minidump.obj `if test -f 'src/processor/synth_minidump.cc'; then $(CYGPATH_W) 'src/processor/synth_minidump.cc'; else $(CYGPATH_W) '$(srcdir)/src/processor/synth_minidump.cc'; fi`
+
+src/processor/src_processor_synth_minidump_unittest-test_assembler.o: src/processor/test_assembler.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_synth_minidump_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/processor/src_processor_synth_minidump_unittest-test_assembler.o -MD -MP -MF src/processor/$(DEPDIR)/src_processor_synth_minidump_unittest-test_assembler.Tpo -c -o src/processor/src_processor_synth_minidump_unittest-test_assembler.o `test -f 'src/processor/test_assembler.cc' || echo '$(srcdir)/'`src/processor/test_assembler.cc
+@am__fastdepCXX_TRUE@	$(am__mv) src/processor/$(DEPDIR)/src_processor_synth_minidump_unittest-test_assembler.Tpo src/processor/$(DEPDIR)/src_processor_synth_minidump_unittest-test_assembler.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/processor/test_assembler.cc' object='src/processor/src_processor_synth_minidump_unittest-test_assembler.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_synth_minidump_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/processor/src_processor_synth_minidump_unittest-test_assembler.o `test -f 'src/processor/test_assembler.cc' || echo '$(srcdir)/'`src/processor/test_assembler.cc
+
+src/processor/src_processor_synth_minidump_unittest-test_assembler.obj: src/processor/test_assembler.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_synth_minidump_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/processor/src_processor_synth_minidump_unittest-test_assembler.obj -MD -MP -MF src/processor/$(DEPDIR)/src_processor_synth_minidump_unittest-test_assembler.Tpo -c -o src/processor/src_processor_synth_minidump_unittest-test_assembler.obj `if test -f 'src/processor/test_assembler.cc'; then $(CYGPATH_W) 'src/processor/test_assembler.cc'; else $(CYGPATH_W) '$(srcdir)/src/processor/test_assembler.cc'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) src/processor/$(DEPDIR)/src_processor_synth_minidump_unittest-test_assembler.Tpo src/processor/$(DEPDIR)/src_processor_synth_minidump_unittest-test_assembler.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/processor/test_assembler.cc' object='src/processor/src_processor_synth_minidump_unittest-test_assembler.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_synth_minidump_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/processor/src_processor_synth_minidump_unittest-test_assembler.obj `if test -f 'src/processor/test_assembler.cc'; then $(CYGPATH_W) 'src/processor/test_assembler.cc'; else $(CYGPATH_W) '$(srcdir)/src/processor/test_assembler.cc'; fi`
+
+src/processor/src_processor_test_assembler_unittest-test_assembler_unittest.o: src/processor/test_assembler_unittest.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_test_assembler_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/processor/src_processor_test_assembler_unittest-test_assembler_unittest.o -MD -MP -MF src/processor/$(DEPDIR)/src_processor_test_assembler_unittest-test_assembler_unittest.Tpo -c -o src/processor/src_processor_test_assembler_unittest-test_assembler_unittest.o `test -f 'src/processor/test_assembler_unittest.cc' || echo '$(srcdir)/'`src/processor/test_assembler_unittest.cc
+@am__fastdepCXX_TRUE@	$(am__mv) src/processor/$(DEPDIR)/src_processor_test_assembler_unittest-test_assembler_unittest.Tpo src/processor/$(DEPDIR)/src_processor_test_assembler_unittest-test_assembler_unittest.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/processor/test_assembler_unittest.cc' object='src/processor/src_processor_test_assembler_unittest-test_assembler_unittest.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_test_assembler_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/processor/src_processor_test_assembler_unittest-test_assembler_unittest.o `test -f 'src/processor/test_assembler_unittest.cc' || echo '$(srcdir)/'`src/processor/test_assembler_unittest.cc
+
+src/processor/src_processor_test_assembler_unittest-test_assembler_unittest.obj: src/processor/test_assembler_unittest.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_test_assembler_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/processor/src_processor_test_assembler_unittest-test_assembler_unittest.obj -MD -MP -MF src/processor/$(DEPDIR)/src_processor_test_assembler_unittest-test_assembler_unittest.Tpo -c -o src/processor/src_processor_test_assembler_unittest-test_assembler_unittest.obj `if test -f 'src/processor/test_assembler_unittest.cc'; then $(CYGPATH_W) 'src/processor/test_assembler_unittest.cc'; else $(CYGPATH_W) '$(srcdir)/src/processor/test_assembler_unittest.cc'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) src/processor/$(DEPDIR)/src_processor_test_assembler_unittest-test_assembler_unittest.Tpo src/processor/$(DEPDIR)/src_processor_test_assembler_unittest-test_assembler_unittest.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/processor/test_assembler_unittest.cc' object='src/processor/src_processor_test_assembler_unittest-test_assembler_unittest.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_test_assembler_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/processor/src_processor_test_assembler_unittest-test_assembler_unittest.obj `if test -f 'src/processor/test_assembler_unittest.cc'; then $(CYGPATH_W) 'src/processor/test_assembler_unittest.cc'; else $(CYGPATH_W) '$(srcdir)/src/processor/test_assembler_unittest.cc'; fi`
+
+src/testing/gtest/src/src_processor_test_assembler_unittest-gtest-all.o: src/testing/gtest/src/gtest-all.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_test_assembler_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/gtest/src/src_processor_test_assembler_unittest-gtest-all.o -MD -MP -MF src/testing/gtest/src/$(DEPDIR)/src_processor_test_assembler_unittest-gtest-all.Tpo -c -o src/testing/gtest/src/src_processor_test_assembler_unittest-gtest-all.o `test -f 'src/testing/gtest/src/gtest-all.cc' || echo '$(srcdir)/'`src/testing/gtest/src/gtest-all.cc
+@am__fastdepCXX_TRUE@	$(am__mv) src/testing/gtest/src/$(DEPDIR)/src_processor_test_assembler_unittest-gtest-all.Tpo src/testing/gtest/src/$(DEPDIR)/src_processor_test_assembler_unittest-gtest-all.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/testing/gtest/src/gtest-all.cc' object='src/testing/gtest/src/src_processor_test_assembler_unittest-gtest-all.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_test_assembler_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/gtest/src/src_processor_test_assembler_unittest-gtest-all.o `test -f 'src/testing/gtest/src/gtest-all.cc' || echo '$(srcdir)/'`src/testing/gtest/src/gtest-all.cc
+
+src/testing/gtest/src/src_processor_test_assembler_unittest-gtest-all.obj: src/testing/gtest/src/gtest-all.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_test_assembler_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/gtest/src/src_processor_test_assembler_unittest-gtest-all.obj -MD -MP -MF src/testing/gtest/src/$(DEPDIR)/src_processor_test_assembler_unittest-gtest-all.Tpo -c -o src/testing/gtest/src/src_processor_test_assembler_unittest-gtest-all.obj `if test -f 'src/testing/gtest/src/gtest-all.cc'; then $(CYGPATH_W) 'src/testing/gtest/src/gtest-all.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/gtest/src/gtest-all.cc'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) src/testing/gtest/src/$(DEPDIR)/src_processor_test_assembler_unittest-gtest-all.Tpo src/testing/gtest/src/$(DEPDIR)/src_processor_test_assembler_unittest-gtest-all.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/testing/gtest/src/gtest-all.cc' object='src/testing/gtest/src/src_processor_test_assembler_unittest-gtest-all.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_test_assembler_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/gtest/src/src_processor_test_assembler_unittest-gtest-all.obj `if test -f 'src/testing/gtest/src/gtest-all.cc'; then $(CYGPATH_W) 'src/testing/gtest/src/gtest-all.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/gtest/src/gtest-all.cc'; fi`
+
+src/testing/gtest/src/src_processor_test_assembler_unittest-gtest_main.o: src/testing/gtest/src/gtest_main.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_test_assembler_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/gtest/src/src_processor_test_assembler_unittest-gtest_main.o -MD -MP -MF src/testing/gtest/src/$(DEPDIR)/src_processor_test_assembler_unittest-gtest_main.Tpo -c -o src/testing/gtest/src/src_processor_test_assembler_unittest-gtest_main.o `test -f 'src/testing/gtest/src/gtest_main.cc' || echo '$(srcdir)/'`src/testing/gtest/src/gtest_main.cc
+@am__fastdepCXX_TRUE@	$(am__mv) src/testing/gtest/src/$(DEPDIR)/src_processor_test_assembler_unittest-gtest_main.Tpo src/testing/gtest/src/$(DEPDIR)/src_processor_test_assembler_unittest-gtest_main.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/testing/gtest/src/gtest_main.cc' object='src/testing/gtest/src/src_processor_test_assembler_unittest-gtest_main.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_test_assembler_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/gtest/src/src_processor_test_assembler_unittest-gtest_main.o `test -f 'src/testing/gtest/src/gtest_main.cc' || echo '$(srcdir)/'`src/testing/gtest/src/gtest_main.cc
+
+src/testing/gtest/src/src_processor_test_assembler_unittest-gtest_main.obj: src/testing/gtest/src/gtest_main.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_test_assembler_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/gtest/src/src_processor_test_assembler_unittest-gtest_main.obj -MD -MP -MF src/testing/gtest/src/$(DEPDIR)/src_processor_test_assembler_unittest-gtest_main.Tpo -c -o src/testing/gtest/src/src_processor_test_assembler_unittest-gtest_main.obj `if test -f 'src/testing/gtest/src/gtest_main.cc'; then $(CYGPATH_W) 'src/testing/gtest/src/gtest_main.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/gtest/src/gtest_main.cc'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) src/testing/gtest/src/$(DEPDIR)/src_processor_test_assembler_unittest-gtest_main.Tpo src/testing/gtest/src/$(DEPDIR)/src_processor_test_assembler_unittest-gtest_main.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/testing/gtest/src/gtest_main.cc' object='src/testing/gtest/src/src_processor_test_assembler_unittest-gtest_main.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_test_assembler_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/gtest/src/src_processor_test_assembler_unittest-gtest_main.obj `if test -f 'src/testing/gtest/src/gtest_main.cc'; then $(CYGPATH_W) 'src/testing/gtest/src/gtest_main.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/gtest/src/gtest_main.cc'; fi`
+
+src/testing/src/src_processor_test_assembler_unittest-gmock-all.o: src/testing/src/gmock-all.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_test_assembler_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/src/src_processor_test_assembler_unittest-gmock-all.o -MD -MP -MF src/testing/src/$(DEPDIR)/src_processor_test_assembler_unittest-gmock-all.Tpo -c -o src/testing/src/src_processor_test_assembler_unittest-gmock-all.o `test -f 'src/testing/src/gmock-all.cc' || echo '$(srcdir)/'`src/testing/src/gmock-all.cc
+@am__fastdepCXX_TRUE@	$(am__mv) src/testing/src/$(DEPDIR)/src_processor_test_assembler_unittest-gmock-all.Tpo src/testing/src/$(DEPDIR)/src_processor_test_assembler_unittest-gmock-all.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/testing/src/gmock-all.cc' object='src/testing/src/src_processor_test_assembler_unittest-gmock-all.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_test_assembler_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/src/src_processor_test_assembler_unittest-gmock-all.o `test -f 'src/testing/src/gmock-all.cc' || echo '$(srcdir)/'`src/testing/src/gmock-all.cc
+
+src/testing/src/src_processor_test_assembler_unittest-gmock-all.obj: src/testing/src/gmock-all.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_test_assembler_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/src/src_processor_test_assembler_unittest-gmock-all.obj -MD -MP -MF src/testing/src/$(DEPDIR)/src_processor_test_assembler_unittest-gmock-all.Tpo -c -o src/testing/src/src_processor_test_assembler_unittest-gmock-all.obj `if test -f 'src/testing/src/gmock-all.cc'; then $(CYGPATH_W) 'src/testing/src/gmock-all.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/src/gmock-all.cc'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) src/testing/src/$(DEPDIR)/src_processor_test_assembler_unittest-gmock-all.Tpo src/testing/src/$(DEPDIR)/src_processor_test_assembler_unittest-gmock-all.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/testing/src/gmock-all.cc' object='src/testing/src/src_processor_test_assembler_unittest-gmock-all.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_test_assembler_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/src/src_processor_test_assembler_unittest-gmock-all.obj `if test -f 'src/testing/src/gmock-all.cc'; then $(CYGPATH_W) 'src/testing/src/gmock-all.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/src/gmock-all.cc'; fi`
+
+src/processor/src_processor_test_assembler_unittest-test_assembler.o: src/processor/test_assembler.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_test_assembler_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/processor/src_processor_test_assembler_unittest-test_assembler.o -MD -MP -MF src/processor/$(DEPDIR)/src_processor_test_assembler_unittest-test_assembler.Tpo -c -o src/processor/src_processor_test_assembler_unittest-test_assembler.o `test -f 'src/processor/test_assembler.cc' || echo '$(srcdir)/'`src/processor/test_assembler.cc
+@am__fastdepCXX_TRUE@	$(am__mv) src/processor/$(DEPDIR)/src_processor_test_assembler_unittest-test_assembler.Tpo src/processor/$(DEPDIR)/src_processor_test_assembler_unittest-test_assembler.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/processor/test_assembler.cc' object='src/processor/src_processor_test_assembler_unittest-test_assembler.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_test_assembler_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/processor/src_processor_test_assembler_unittest-test_assembler.o `test -f 'src/processor/test_assembler.cc' || echo '$(srcdir)/'`src/processor/test_assembler.cc
+
+src/processor/src_processor_test_assembler_unittest-test_assembler.obj: src/processor/test_assembler.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_test_assembler_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/processor/src_processor_test_assembler_unittest-test_assembler.obj -MD -MP -MF src/processor/$(DEPDIR)/src_processor_test_assembler_unittest-test_assembler.Tpo -c -o src/processor/src_processor_test_assembler_unittest-test_assembler.obj `if test -f 'src/processor/test_assembler.cc'; then $(CYGPATH_W) 'src/processor/test_assembler.cc'; else $(CYGPATH_W) '$(srcdir)/src/processor/test_assembler.cc'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) src/processor/$(DEPDIR)/src_processor_test_assembler_unittest-test_assembler.Tpo src/processor/$(DEPDIR)/src_processor_test_assembler_unittest-test_assembler.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/processor/test_assembler.cc' object='src/processor/src_processor_test_assembler_unittest-test_assembler.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_test_assembler_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/processor/src_processor_test_assembler_unittest-test_assembler.obj `if test -f 'src/processor/test_assembler.cc'; then $(CYGPATH_W) 'src/processor/test_assembler.cc'; else $(CYGPATH_W) '$(srcdir)/src/processor/test_assembler.cc'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo

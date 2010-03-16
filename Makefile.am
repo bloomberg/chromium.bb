@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-# Copyright (c) 2006, Google Inc.
+# Copyright (c) 2010, Google Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -135,7 +135,9 @@ check_PROGRAMS = \
 	src/processor/minidump_unittest \
 	src/processor/pathname_stripper_unittest \
 	src/processor/postfix_evaluator_unittest \
-	src/processor/range_map_unittest
+	src/processor/range_map_unittest \
+	src/processor/synth_minidump_unittest \
+	src/processor/test_assembler_unittest
 
 if SELFTEST
 check_PROGRAMS += \
@@ -230,7 +232,10 @@ src_processor_minidump_processor_unittest_LDADD = \
 
 src_processor_minidump_unittest_SOURCES = \
 	src/processor/minidump_unittest.cc \
+	src/processor/synth_minidump.cc \
+	src/processor/test_assembler.cc \
 	src/testing/gtest/src/gtest-all.cc \
+	src/testing/gtest/src/gtest_main.cc \
 	src/testing/src/gmock-all.cc
 src_processor_minidump_unittest_CPPFLAGS = \
 	-I$(top_srcdir)/src/testing/include \
@@ -275,6 +280,34 @@ src_processor_stackwalker_selftest_LDADD = \
 	src/processor/stackwalker_ppc.lo \
 	src/processor/stackwalker_sparc.lo \
 	src/processor/stackwalker_x86.lo
+
+src_processor_synth_minidump_unittest_SOURCES = \
+	src/processor/synth_minidump_unittest.cc \
+	src/testing/gtest/src/gtest-all.cc \
+	src/testing/gtest/src/gtest_main.cc \
+	src/testing/src/gmock-all.cc \
+	src/processor/synth_minidump.cc \
+	src/processor/synth_minidump.h \
+	src/processor/test_assembler.cc \
+	src/processor/test_assembler.h
+src_processor_synth_minidump_unittest_CPPFLAGS = \
+	-I$(top_srcdir)/src/testing/include \
+        -I$(top_srcdir)/src/testing/gtest/include \
+	-I$(top_srcdir)/src/testing/gtest \
+	-I$(top_srcdir)/src/testing
+
+src_processor_test_assembler_unittest_SOURCES = \
+	src/processor/test_assembler_unittest.cc \
+	src/testing/gtest/src/gtest-all.cc \
+	src/testing/gtest/src/gtest_main.cc \
+	src/testing/src/gmock-all.cc \
+	src/processor/test_assembler.cc \
+	src/processor/test_assembler.h
+src_processor_test_assembler_unittest_CPPFLAGS = \
+	-I$(top_srcdir)/src/testing/include \
+        -I$(top_srcdir)/src/testing/gtest/include \
+	-I$(top_srcdir)/src/testing/gtest \
+	-I$(top_srcdir)/src/testing
 
 ## Non-installables
 noinst_PROGRAMS =
