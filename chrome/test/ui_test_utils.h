@@ -195,7 +195,7 @@ class TimedMessageLoopRunner {
 // object, and is stopped when the destructor is called. Note that
 // because of the underlying script that is used:
 //
-//    webkit/tools/layout_tests/webkitpy/layout_tests/layout_package/
+//    third_paty/WebKit/WebKitTools/Scripts/webkitpy/layout_tests/port/
 //        websocket_server.py
 //
 // Only *_wsh.py handlers found under "websocket/tests" from the
@@ -210,6 +210,9 @@ class TestWebSocketServer {
   ~TestWebSocketServer();
 
  private:
+  // Sets up PYTHONPATH to run websocket_server.py.
+  void SetPythonPath();
+
   // Creates a CommandLine for invoking the python interpreter.
   CommandLine* CreatePythonCommandLine();
 

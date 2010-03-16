@@ -580,6 +580,37 @@ void TimedMessageLoopRunner::QuitAfter(int ms) {
   loop_->PostDelayedTask(FROM_HERE, new MessageLoop::QuitTask, ms);
 }
 
+namespace {
+
+void AppendToPythonPath(const FilePath& dir) {
+#if defined(OS_WIN)
+  const wchar_t kPythonPath[] = L"PYTHONPATH";
+  // TODO(ukai): handle longer PYTHONPATH variables.
+  wchar_t oldpath[4096];
+  if (::GetEnvironmentVariable(kPythonPath, oldpath, arraysize(oldpath)) == 0) {
+    ::SetEnvironmentVariableW(kPythonPath, dir.value().c_str());
+  } else if (!wcsstr(oldpath, dir.value().c_str())) {
+    std::wstring newpath(oldpath);
+    newpath.append(L":");
+    newpath.append(dir.value());
+    SetEnvironmentVariableW(kPythonPath, newpath.c_str());
+  }
+#elif defined(OS_POSIX)
+  const char kPythonPath[] = "PYTHONPATH";
+  const char* oldpath = getenv(kPythonPath);
+  if (!oldpath) {
+    setenv(kPythonPath, dir.value().c_str(), 1);
+  } else if (!strstr(oldpath, dir.value().c_str())) {
+    std::string newpath(oldpath);
+    newpath.append(":");
+    newpath.append(dir.value());
+    setenv(kPythonPath, newpath.c_str(), 1);
+  }
+#endif
+}
+
+}  // anonymous namespace
+
 TestWebSocketServer::TestWebSocketServer(const FilePath& root_directory) {
   scoped_ptr<CommandLine> cmd_line(CreateWebSocketServerCommandLine());
   cmd_line->AppendSwitchWithValue("server", "start");
@@ -589,6 +620,7 @@ TestWebSocketServer::TestWebSocketServer(const FilePath& root_directory) {
   websocket_pid_file_ = temp_dir_.path().AppendASCII("websocket.pid");
   cmd_line->AppendSwitchWithValue("pidfile",
                                   websocket_pid_file_.ToWStringHack());
+  SetPythonPath();
   base::LaunchApp(*cmd_line.get(), true, false, NULL);
 }
 
@@ -608,18 +640,31 @@ CommandLine* TestWebSocketServer::CreatePythonCommandLine() {
 #endif
 }
 
+void TestWebSocketServer::SetPythonPath() {
+  FilePath scripts_path;
+  PathService::Get(base::DIR_SOURCE_ROOT, &scripts_path);
+
+  scripts_path = scripts_path
+      .Append(FILE_PATH_LITERAL("third_party"))
+      .Append(FILE_PATH_LITERAL("WebKit"))
+      .Append(FILE_PATH_LITERAL("WebKitTools"))
+      .Append(FILE_PATH_LITERAL("Scripts"));
+  AppendToPythonPath(scripts_path);
+}
+
 CommandLine* TestWebSocketServer::CreateWebSocketServerCommandLine() {
   FilePath src_path;
   // Get to 'src' dir.
   PathService::Get(base::DIR_SOURCE_ROOT, &src_path);
 
   FilePath script_path(src_path);
-  script_path = script_path.AppendASCII("webkit");
-  script_path = script_path.AppendASCII("tools");
-  script_path = script_path.AppendASCII("layout_tests");
+  script_path = script_path.AppendASCII("third_party");
+  script_path = script_path.AppendASCII("WebKit");
+  script_path = script_path.AppendASCII("WebKitTools");
+  script_path = script_path.AppendASCII("Scripts");
   script_path = script_path.AppendASCII("webkitpy");
   script_path = script_path.AppendASCII("layout_tests");
-  script_path = script_path.AppendASCII("layout_package");
+  script_path = script_path.AppendASCII("port");
   script_path = script_path.AppendASCII("websocket_server.py");
 
   CommandLine* cmd_line = CreatePythonCommandLine();
