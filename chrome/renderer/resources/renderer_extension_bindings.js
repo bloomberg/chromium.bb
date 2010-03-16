@@ -247,6 +247,7 @@ var chrome = chrome || {};
       "experimental.accessibility",
       "experimental.bookmarkManager",
       "experimental.extension",
+      "experimental.idle",
       "experimental.history",
       "experimental.metrics",
       "experimental.popup",

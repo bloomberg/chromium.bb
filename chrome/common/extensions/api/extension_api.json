@@ -1825,6 +1825,49 @@
     ]
   },
   {
+    "namespace": "experimental.idle",
+    "nodoc": "true",
+    "types": [],
+    "functions": [
+      {
+        "name": "queryState",
+        "type": "function",
+        "description": "Returns the current state of the browser.",
+        "parameters": [
+          {
+            "name": "threshold",
+            "type": "integer",
+            "minimum": 15,
+            "description": "Threshold used to determine when a machine is in the idle state."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              {
+                "type": "string",
+                "enum": ["active", "idle", "locked"]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "name": "onStateChanged",
+        "type": "function",
+        "description": "Fired when the browser changes to an active state.  Currently only reports the transition from idle to active.",
+        "parameters": [
+          {
+            "type": "string",
+            "enum": ["active"]
+          }
+        ]
+      }
+    ]
+  },
+  {
     "namespace": "toolstrip",
     "nodoc": true,
     "types": [],

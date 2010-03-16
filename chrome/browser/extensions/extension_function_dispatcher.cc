@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/extension_dom_ui.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/extension_history_api.h"
+#include "chrome/browser/extensions/extension_idle_api.h"
 #include "chrome/browser/extensions/extension_i18n_api.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_metrics_module.h"
@@ -156,6 +157,9 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<DeleteUrlHistoryFunction>();
   RegisterFunction<GetVisitsHistoryFunction>();
   RegisterFunction<SearchHistoryFunction>();
+
+  // Idle
+  RegisterFunction<ExtensionIdleQueryStateFunction>();
 
   // Toolstrips.
   RegisterFunction<ToolstripExpandFunction>();
