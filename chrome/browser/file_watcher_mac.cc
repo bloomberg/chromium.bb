@@ -38,6 +38,7 @@ class FileWatcherImpl : public FileWatcher::PlatformDelegate {
       ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
           NewRunnableMethod(this, &FileWatcherImpl::WatchImpl, path, delegate));
     } else {
+      LOG(INFO) << "Adding FileWatcher watch.";
       // During unittests, there is only one thread and it is both the UI
       // thread and the file thread.
       WatchImpl(path, delegate);
@@ -103,6 +104,7 @@ void FSEventsCallback(ConstFSEventStreamRef stream,
           NewRunnableMethod(watcher, &FileWatcherImpl::OnFSEventsCallback,
                             FilePath(paths[i])));
     } else {
+      LOG(INFO) << "FileWatcher event callback for " << paths[i];
       // During unittests, there is only one thread and it is both the UI
       // thread and the file thread.
       watcher->OnFSEventsCallback(FilePath(paths[i]));

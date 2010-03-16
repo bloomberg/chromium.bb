@@ -17,10 +17,20 @@
 #include "base/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_MACOSX)
+// TODO(tony): Tests are flaky on mac.  http://crbug.com/38188
+#define MAYBE(name) FLAKY_ ## name
+#else
+#define MAYBE(name) name
+#endif
+
 namespace {
 
 // For tests where we wait a bit to verify nothing happened
 const int kWaitForEventTime = 500;
+
+// Maximum amount of time to wait on a test.
+const int kMaxTestTimeMs = 10 * 1000;
 
 class FileWatcherTest : public testing::Test {
  public:
@@ -43,6 +53,10 @@ class FileWatcherTest : public testing::Test {
   virtual void SetUp() {
     temp_dir_.reset(new ScopedTempDir);
     ASSERT_TRUE(temp_dir_->CreateUniqueTempDir());
+    // Make sure that not getting an event doesn't cause the whole
+    // test suite to hang.
+    loop_.PostDelayedTask(FROM_HERE, new MessageLoop::QuitTask,
+                          kMaxTestTimeMs);
   }
 
   FilePath test_file() {
@@ -51,6 +65,8 @@ class FileWatcherTest : public testing::Test {
 
   // Write |content| to the test file. Returns true on success.
   bool WriteTestFile(const std::string& content) {
+    // Logging to try and figure out why these tests are flaky on mac.
+    LOG(INFO) << "WriteTestFile";
     int write_size = file_util::WriteFile(test_file(), content.c_str(),
                                           content.length());
     return write_size == static_cast<int>(content.length());
@@ -129,10 +145,8 @@ class TestDelegate : public FileWatcher::Delegate {
 };
 
 
-#if !defined(OS_MACOSX)
-// TODO(tony): Test is flakey on mac.  http://crbug.com/38188
 // Basic test: Create the file and verify that we notice.
-TEST_F(FileWatcherTest, NewFile) {
+TEST_F(FileWatcherTest, MAYBE(NewFile)) {
   FileWatcher watcher;
   TestDelegate delegate(this);
   ASSERT_TRUE(watcher.Watch(test_file(), &delegate));
@@ -143,7 +157,7 @@ TEST_F(FileWatcherTest, NewFile) {
 }
 
 // Verify that modifying the file is caught.
-TEST_F(FileWatcherTest, ModifiedFile) {
+TEST_F(FileWatcherTest, MAYBE(ModifiedFile)) {
   ASSERT_TRUE(WriteTestFile("content"));
   SyncIfPOSIX();
 
@@ -157,7 +171,7 @@ TEST_F(FileWatcherTest, ModifiedFile) {
   VerifyExpectedNumberOfNotifiedDelegates();
 }
 
-TEST_F(FileWatcherTest, DeletedFile) {
+TEST_F(FileWatcherTest, MAYBE(DeletedFile)) {
   ASSERT_TRUE(WriteTestFile("content"));
   SyncIfPOSIX();
 
@@ -172,7 +186,7 @@ TEST_F(FileWatcherTest, DeletedFile) {
 }
 
 // Verify that letting the watcher go out of scope stops notifications.
-TEST_F(FileWatcherTest, Unregister) {
+TEST_F(FileWatcherTest, MAYBE(Unregister)) {
   TestDelegate delegate(this);
 
   {
@@ -211,7 +225,7 @@ class Deleter : public FileWatcher::Delegate {
 }  // anonymous namespace
 
 // Verify that deleting a watcher during the callback doesn't crash.
-TEST_F(FileWatcherTest, DeleteDuringNotify) {
+TEST_F(FileWatcherTest, MAYBE(DeleteDuringNotify)) {
   FileWatcher* watcher = new FileWatcher;
   Deleter deleter(watcher, &loop_);  // Takes ownership of watcher.
   ASSERT_TRUE(watcher->Watch(test_file(), &deleter));
@@ -224,7 +238,7 @@ TEST_F(FileWatcherTest, DeleteDuringNotify) {
   ASSERT_TRUE(deleter.watcher_.get() == NULL);
 }
 
-TEST_F(FileWatcherTest, MultipleWatchersSingleFile) {
+TEST_F(FileWatcherTest, MAYBE(MultipleWatchersSingleFile)) {
   FileWatcher watcher1, watcher2;
   TestDelegate delegate1(this), delegate2(this);
   ASSERT_TRUE(watcher1.Watch(test_file(), &delegate1));
@@ -242,5 +256,4 @@ TEST_F(FileWatcherTest, NonExistentDirectory) {
   ASSERT_FALSE(watcher.Watch(test_file().AppendASCII("FileToWatch"), NULL));
 }
 
-#endif
 }  // namespace
