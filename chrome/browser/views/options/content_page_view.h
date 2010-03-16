@@ -31,8 +31,7 @@ class ContentPageView : public OptionsPageView,
                         public views::LinkController,
                         public ProfileSyncServiceObserver,
                         public views::ButtonListener,
-                        public ConfirmMessageBoxObserver,
-                        public PersonalDataManager::Observer {
+                        public ConfirmMessageBoxObserver {
  public:
   explicit ContentPageView(Profile* profile);
   virtual ~ContentPageView();
@@ -45,9 +44,6 @@ class ContentPageView : public OptionsPageView,
 
   // ConfirmMessageBoxObserver implementation.
   virtual void OnConfirmMessageAccept();
-
-  // PersonalDataManager::Observer implementation.
-  virtual void OnPersonalDataLoaded();
 
   // ProfileSyncServiceObserver method.
   virtual void OnStateChanged();

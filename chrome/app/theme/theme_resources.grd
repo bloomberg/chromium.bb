@@ -112,6 +112,8 @@
       <include name="IDR_DOWNLOAD_PROGRESS_BACKGROUND_32" file="download_progress_background32.png" type="BINDATA" />
       <include name="IDR_DOWNLOAD_PROGRESS_FOREGROUND_32" file="download_progress_foreground32.png" type="BINDATA" />
       <include name="IDR_DOWNLOAD_ICON" file="download_icon.png" type="BINDATA" />
+      <include name="IDR_EXPAND_ARROW_DOWN_ICON" file="expand_arrow_down.png" type="BINDATA" />
+      <include name="IDR_EXPAND_ARROW_RIGHT_ICON" file="expand_arrow_right.png" type="BINDATA" />
       <include name="IDR_FIND_BOX_BACKGROUND" file="find_box_bg.png" type="BINDATA" />
       <include name="IDR_FIND_BOX_BACKGROUND_LEFT" file="find_box_bg_left.png" type="BINDATA" />
       <include name="IDR_FIND_BOX_BACKGROUND_LEFT_RTL" file="find_box_bg_left_rtl.png" type="BINDATA" />

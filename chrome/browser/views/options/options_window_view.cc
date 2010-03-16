@@ -110,6 +110,7 @@ void OptionsWindowView::ShowOptionsPage(OptionsPage page,
       WindowSizer::MonitorInfoProvider* provider =
           WindowSizer::CreateDefaultMonitorInfoProvider();
       frame_bounds = provider->GetMonitorWorkAreaMatching(frame_bounds);
+      delete provider;
     }
     gfx::Point origin = frame_bounds.origin();
     origin.Offset(

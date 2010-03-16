@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "app/gfx/native_widget_types.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
 
@@ -27,18 +28,24 @@ class AutoFillDialogObserver {
 };
 
 // Shows the AutoFill dialog, which allows the user to edit profile information.
-// |profiles| is a vector of autofill profiles that contains the current profile
-// information.  The dialog fills out the profile fields using this data.  Any
-// changes made to the profile information through the dialog should be
-// transferred back into |profiles| and |credit_cards|. |observer| will be
+// |profile| is profile from which you can get vectors of of autofill profiles
+// that contains the current profile information and credit cards.
+// The dialog fills out the profile fields using this data. |observer| will be
 // notified by OnAutoFillDialogAccept when the user has applied changes.
 //
 // The PersonalDataManager owns the contents of these vectors.  The lifetime of
 // the contents is until the PersonalDataManager replaces them with new data
 // whenever the web database is updated.
+#if defined(OS_MACOSX)
+// TODO(dhollowa): update .mm files and remove this.
 void ShowAutoFillDialog(AutoFillDialogObserver* observer,
                         const std::vector<AutoFillProfile*>& profiles,
                         const std::vector<CreditCard*>& credit_cards,
                         Profile* profile);
+#else
+void ShowAutoFillDialog(gfx::NativeWindow parent,
+                        AutoFillDialogObserver* observer,
+                        Profile* profile);
+#endif
 
 #endif  // CHROME_BROWSER_AUTOFILL_AUTOFILL_DIALOG_H_

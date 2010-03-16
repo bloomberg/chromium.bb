@@ -591,12 +591,12 @@
 
       <!-- The width of the AutoFill dialog in characters. -->
       <message name="IDS_AUTOFILL_DIALOG_WIDTH_CHARS" use_name_for_id="true">
-        98
+        94
       </message>
 
       <!-- The height of the AutoFill dialog in lines. -->
       <message name="IDS_AUTOFILL_DIALOG_HEIGHT_LINES" use_name_for_id="true">
-        35
+        32
       </message>
 
       <!-- The URL for About Google Translate. -->

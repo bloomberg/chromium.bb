@@ -11,6 +11,7 @@
 #include "app/combobox_model.h"
 #include "chrome/browser/autofill/autofill_dialog.h"
 #include "chrome/browser/autofill/autofill_profile.h"
+#include "chrome/browser/autofill/personal_data_manager.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/view.h"
@@ -44,13 +45,14 @@ class ScrollView;
 // deletion.
 class AutoFillProfilesView : public views::View,
                              public views::DialogDelegate,
-                             public views::ButtonListener {
+                             public views::ButtonListener,
+                             public PersonalDataManager::Observer {
  public:
   virtual ~AutoFillProfilesView();
 
-  static int Show(AutoFillDialogObserver* observer,
-                  const std::vector<AutoFillProfile*>& profiles,
-                  const std::vector<CreditCard*>& credit_cards);
+  static int Show(gfx::NativeWindow parent,
+                  AutoFillDialogObserver* observer,
+                  PersonalDataManager* personal_data_manager);
 
  protected:
   enum EditableSetType {
@@ -101,6 +103,9 @@ class AutoFillProfilesView : public views::View,
   virtual void ButtonPressed(views::Button* sender,
        const views::Event& event);
 
+  // PersonalDataManager::Observer methods:
+  void OnPersonalDataLoaded();
+
   // Helper structure to keep info on one address or credit card.
   // Keeps info on one item in EditableSetViewContents.
   // Also keeps info on opened status. Allows to quickly add and delete items,
@@ -127,9 +132,11 @@ class AutoFillProfilesView : public views::View,
 
  private:
   AutoFillProfilesView(AutoFillDialogObserver* observer,
-                       const std::vector<AutoFillProfile*>& profiles,
-                       const std::vector<CreditCard*>& credit_cards);
+                       PersonalDataManager* personal_data_manager);
   void Init();
+
+  void GetData();
+  bool IsDataReady() const;
 
   // PhoneSubView encapsulates three phone fields (country, area, and phone)
   // and label above them, so they could be used together in one grid cell.
@@ -306,6 +313,7 @@ class AutoFillProfilesView : public views::View,
     virtual gfx::Size GetPreferredSize();
     virtual void ViewHierarchyChanged(bool is_add, views::View* parent,
                                       views::View* child);
+
     // views::ButtonListener methods:
     virtual void ButtonPressed(views::Button* sender,
                                const views::Event& event);
@@ -353,6 +361,7 @@ class AutoFillProfilesView : public views::View,
   };
 
   AutoFillDialogObserver* observer_;
+  PersonalDataManager* personal_data_manager_;
   std::vector<EditableSetInfo> profiles_set_;
   std::vector<EditableSetInfo> credit_card_set_;
 

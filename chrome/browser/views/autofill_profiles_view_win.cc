@@ -11,8 +11,12 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/message_loop.h"
-// TODO(georgey) remove this when resources available.
+#include "chrome/browser/browser.h"
+#include "chrome/browser/browser_list.h"
+#include "chrome/browser/browser_window.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/theme_resources_util.h"
+#include "chrome/browser/window_sizer.h"
 #include "gfx/size.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -73,37 +77,27 @@ int AutoFillProfilesView::ScrollViewContents::line_height_ = 0;
 // AutoFillProfilesView, public:
 AutoFillProfilesView::AutoFillProfilesView(
     AutoFillDialogObserver* observer,
-    const std::vector<AutoFillProfile*>& profiles,
-    const std::vector<CreditCard*>& credit_cards)
-    : observer_(observer),
+    PersonalDataManager* personal_data_manager)
+    : personal_data_manager_(personal_data_manager),
+      observer_(observer),
       scroll_view_(NULL),
       save_changes_(NULL) {
-  profiles_set_.reserve(profiles.size());
-  for (std::vector<AutoFillProfile*>::const_iterator address_it =
-           profiles.begin();
-       address_it != profiles.end();
-       ++address_it) {
-    profiles_set_.push_back(EditableSetInfo(*address_it, false));
-  }
-  credit_card_set_.reserve(credit_cards.size());
-  for (std::vector<CreditCard*>::const_iterator cc_it = credit_cards.begin();
-       cc_it != credit_cards.end();
-       ++cc_it) {
-    credit_card_set_.push_back(EditableSetInfo(*cc_it, false));
-  }
 }
 
 AutoFillProfilesView::~AutoFillProfilesView() {
+  // Removes observer if we are observing Profile load. Does nothing otherwise.
+  if (personal_data_manager_)
+    personal_data_manager_->RemoveObserver(this);
 }
 
-int AutoFillProfilesView::Show(AutoFillDialogObserver* observer,
-                               const std::vector<AutoFillProfile*>& profiles,
-                               const std::vector<CreditCard*>& credit_cards) {
+int AutoFillProfilesView::Show(gfx::NativeWindow parent,
+                               AutoFillDialogObserver* observer,
+                               PersonalDataManager* personal_data_manager) {
   if (!instance_) {
-    instance_ = new AutoFillProfilesView(observer, profiles, credit_cards);
+    instance_ = new AutoFillProfilesView(observer, personal_data_manager);
 
     // |instance_| will get deleted once Close() is called.
-    views::Window::CreateChromeWindow(NULL, gfx::Rect(), instance_);
+    views::Window::CreateChromeWindow(parent, gfx::Rect(), instance_);
   }
   if (!instance_->window()->IsVisible())
     instance_->window()->Show();
@@ -261,8 +255,17 @@ void AutoFillProfilesView::ButtonPressed(views::Button* sender,
 }
 
 /////////////////////////////////////////////////////////////////////////////
+// AutoFillProfilesView, PersonalDataManager::Observer implementation.
+void  AutoFillProfilesView::OnPersonalDataLoaded() {
+  personal_data_manager_->RemoveObserver(this);
+  GetData();
+  scroll_view_->RebuildView();
+}
+
+/////////////////////////////////////////////////////////////////////////////
 // AutoFillProfilesView, private:
 void AutoFillProfilesView::Init() {
+  GetData();
   scroll_view_ = new AutoFillScrollView(this,
                                         &profiles_set_,
                                         &credit_card_set_);
@@ -278,6 +281,31 @@ void AutoFillProfilesView::Init() {
   layout->StartRow(1, single_column_view_set_id);
   layout->AddView(scroll_view_);
   ValidateAndFixLabel();
+}
+
+void AutoFillProfilesView::GetData() {
+  if (!personal_data_manager_->IsDataLoaded()) {
+    personal_data_manager_->SetObserver(this);
+    return;
+  }
+  profiles_set_.reserve(personal_data_manager_->profiles().size());
+  for (std::vector<AutoFillProfile*>::const_iterator address_it =
+       personal_data_manager_->profiles().begin();
+       address_it != personal_data_manager_->profiles().end();
+       ++address_it) {
+    profiles_set_.push_back(EditableSetInfo(*address_it, false));
+  }
+  credit_card_set_.reserve(personal_data_manager_->credit_cards().size());
+  for (std::vector<CreditCard*>::const_iterator cc_it =
+       personal_data_manager_->credit_cards().begin();
+       cc_it != personal_data_manager_->credit_cards().end();
+       ++cc_it) {
+    credit_card_set_.push_back(EditableSetInfo(*cc_it, false));
+  }
+}
+
+bool AutoFillProfilesView::IsDataReady() const {
+  return personal_data_manager_->IsDataLoaded();
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -563,14 +591,16 @@ void AutoFillProfilesView::EditableSetViewContents::InitTitle(
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   SkBitmap *image = NULL;
   if (editable_fields_set_->is_opened) {
-    // TODO(georgey) fix this when resources available.
-    image = rb.GetBitmapNamed(ThemeResourcesUtil::GetId("app_droparrow"));
+    image =
+        rb.GetBitmapNamed(ThemeResourcesUtil::GetId("expand_arrow_down_icon"));
   } else {
-    // TODO(georgey) fix this when resources available.
-    image = rb.GetBitmapNamed(ThemeResourcesUtil::GetId("arrow_right"));
+    image =
+        rb.GetBitmapNamed(ThemeResourcesUtil::GetId("expand_arrow_right_icon"));
     title_label_preview_ = new views::Label(title_preview);
   }
   expand_item_button_->SetImage(views::CustomButton::BS_NORMAL, image);
+  expand_item_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
+                                         views::ImageButton::ALIGN_MIDDLE);
   title_label_ = new views::Label(title);
   gfx::Font title_font =
       rb.GetFont(ResourceBundle::BaseFont).DeriveFont(0, gfx::Font::BOLD);
@@ -594,7 +624,7 @@ void AutoFillProfilesView::EditableSetViewContents::InitTitle(
   title_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
 
   layout->StartRow(0, three_column_header_);
-  layout->AddView(expand_item_button_);
+  layout->AddView(expand_item_button_, 2, 1);
   if (editable_fields_set_->is_opened) {
     layout->AddView(title_label_, 3, 1);
   } else {
@@ -1005,6 +1035,12 @@ void AutoFillProfilesView::ScrollViewContents::Init() {
   column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
       views::GridLayout::USE_PREF, 0, 0);
+  if (!observer_->IsDataReady()) {
+    layout->StartRow(0, single_column_filled_view_set_id);
+    layout->AddView(new views::Label(
+        l10n_util::GetString(IDS_AUTOFILL_LOADING)));
+    return;
+  }
   const int single_column_left_view_set_id = 1;
   column_set = layout->AddColumnSet(single_column_left_view_set_id);
   column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
@@ -1119,10 +1155,13 @@ void AutoFillProfilesView::AutoFillScrollView::Layout() {
 }
 
 // Declared in "chrome/browser/autofill/autofill_dialog.h"
-void ShowAutoFillDialog(AutoFillDialogObserver* observer,
-                        const std::vector<AutoFillProfile*>& profiles,
-                        const std::vector<CreditCard*>& credit_cards,
+void ShowAutoFillDialog(gfx::NativeWindow parent,
+                        AutoFillDialogObserver* observer,
                         Profile* profile) {
-  AutoFillProfilesView::Show(observer, profiles, credit_cards);
+  DCHECK(profile);
+  PersonalDataManager* personal_data_manager =
+      profile->GetPersonalDataManager();
+  DCHECK(personal_data_manager);
+  AutoFillProfilesView::Show(parent, observer, personal_data_manager);
 }
 

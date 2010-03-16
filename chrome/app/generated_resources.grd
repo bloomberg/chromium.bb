@@ -5205,6 +5205,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_AUTOFILL_DIALOG_TITLE" desc="The title of the AutoFill dialog.">
         AutoFill Profiles
       </message>
+      <message name="IDS_AUTOFILL_LOADING" desc="The indicator that autofill data is being loaded.">
+        Loading...
+      </message>
       <message name="IDS_AUTOFILL_USE_MAC_ADDRESS_BOOK" desc="Checkbox label to enable Address Book on Mac.">
         Include addresses from my Address Book card
       </message>

@@ -73,9 +73,6 @@ ContentPageView::ContentPageView(Profile* profile)
 }
 
 ContentPageView::~ContentPageView() {
-  // Removes observer if we are observing Profile load. Does nothing otherwise.
-  if (profile()->GetPersonalDataManager())
-    profile()->GetPersonalDataManager()->RemoveObserver(this);
   if (sync_service_)
     sync_service_->RemoveObserver(this);
 }
@@ -113,14 +110,9 @@ void ContentPageView::ButtonPressed(
   } else if (sender == change_autofill_settings_button_) {
     // This button should be disabled if we lack PersonalDataManager.
     DCHECK(profile()->GetPersonalDataManager());
-    if (!profile()->GetPersonalDataManager()->IsDataLoaded()) {
-      profile()->GetPersonalDataManager()->SetObserver(this);
-    } else {
-      ShowAutoFillDialog(profile()->GetPersonalDataManager(),
-                         profile()->GetPersonalDataManager()->profiles(),
-                         profile()->GetPersonalDataManager()->credit_cards(),
-                         profile());
-    }
+    ShowAutoFillDialog(GetWindow()->GetNativeWindow(),
+                       profile()->GetPersonalDataManager(),
+                       profile());
   } else if (sender == themes_reset_button_) {
     UserMetricsRecordAction("Options_ThemesReset", profile()->GetPrefs());
     profile()->ClearTheme();
@@ -416,14 +408,6 @@ void ContentPageView::InitBrowsingDataGroup() {
 void ContentPageView::OnConfirmMessageAccept() {
   sync_service_->DisableForUser();
   ProfileSyncService::SyncEvent(ProfileSyncService::STOP_FROM_OPTIONS);
-}
-
-void ContentPageView::OnPersonalDataLoaded() {
-  ShowAutoFillDialog(profile()->GetPersonalDataManager(),
-                     profile()->GetPersonalDataManager()->profiles(),
-                     profile()->GetPersonalDataManager()->credit_cards(),
-                     profile());
-  profile()->GetPersonalDataManager()->RemoveObserver(this);
 }
 
 void ContentPageView::InitSyncGroup() {

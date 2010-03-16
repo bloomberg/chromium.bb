@@ -227,11 +227,17 @@ void AutoFillManager::OnPersonalDataLoaded() {
   // remove ourselves as observer.
   personal_data_->RemoveObserver(this);
 
-  ShowAutoFillDialog(
-      this,
-      personal_data_->web_profiles(),
-      personal_data_->credit_cards(),
-      tab_contents_->profile()->GetOriginalProfile());
+#if !defined(OS_WIN)
+#if defined(OS_MACOSX)
+  ShowAutoFillDialog(this,
+                     personal_data_->web_profiles(),
+                     personal_data_->credit_cards(),
+                     tab_contents_->profile()->GetOriginalProfile());
+#else  // defined(OS_MACOSX)
+  ShowAutoFillDialog(NULL, this,
+                     tab_contents_->profile()->GetOriginalProfile());
+#endif  // defined(OS_MACOSX)
+#endif  // !defined(OS_WIN)
 }
 
 void AutoFillManager::OnInfoBarClosed() {
@@ -254,12 +260,17 @@ void AutoFillManager::OnInfoBarAccepted() {
   // uploaded form structure as the initial profile in the AutoFillDialog.
   personal_data_->SaveImportedFormData();
 
+#if defined(OS_WIN)
+  ShowAutoFillDialog(tab_contents_->GetContentNativeView(), this,
+                     tab_contents_->profile()->GetOriginalProfile());
+#else
   // If the personal data manager has not loaded the data yet, set ourselves as
   // its observer so that we can listen for the OnPersonalDataLoaded signal.
   if (!personal_data_->IsDataLoaded())
     personal_data_->SetObserver(this);
   else
     OnPersonalDataLoaded();
+#endif
 }
 
 void AutoFillManager::OnInfoBarCancelled() {

@@ -179,9 +179,7 @@ void ContentPageGtk::OnPersonalDataLoaded() {
   // remove ourselves as observer.
   personal_data_->RemoveObserver(this);
 
-  ShowAutoFillDialog(
-      personal_data_, personal_data_->profiles(),
-      personal_data_->credit_cards(), profile());
+  ShowAutoFillDialog(NULL, personal_data_, profile());
 }
 
 GtkWidget* ContentPageGtk::InitPasswordSavingGroup() {

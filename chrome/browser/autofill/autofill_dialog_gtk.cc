@@ -16,6 +16,7 @@
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/autofill/form_group.h"
+#include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/options/options_layout_gtk.h"
 #include "chrome/browser/profile.h"
@@ -893,12 +894,13 @@ void AutoFillDialog::AddCreditCard(const CreditCard& credit_card) {
 ///////////////////////////////////////////////////////////////////////////////
 // Factory/finder method:
 
-void ShowAutoFillDialog(AutoFillDialogObserver* observer,
-                        const std::vector<AutoFillProfile*>& profiles,
-                        const std::vector<CreditCard*>& credit_cards,
+void ShowAutoFillDialog(gfx::NativeWindow parent,
+                        AutoFillDialogObserver* observer,
                         Profile *profile) {
   if (!dialog) {
-    dialog = new AutoFillDialog(observer, profiles, credit_cards);
+    dialog = new AutoFillDialog(observer,
+        profile->GetPersonalDataManager()->profiles(),
+        profile->GetPersonalDataManager()->credit_cards());
   }
   dialog->Show();
 }
