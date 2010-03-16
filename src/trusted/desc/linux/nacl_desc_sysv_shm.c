@@ -41,6 +41,14 @@
  * subclass of NaClDesc.
  *
  * NaClDescSysvShm is the subclass that wraps SysV shared memory descriptors.
+ *
+ * Support for SysV shared memory descriptors is much more restricted than
+ * for other types of descriptors.  In particular:
+ * 1) NaCl provides no method for untrusted creation of SysV shared memory.
+ * 2) Importing does not confer ownership of the descriptor, and hence
+ *    we do not do the shmctl(IPC_RMID) to close it.  The lifetime of the
+ *    descriptor is controlled by the X server that created it, and returned
+ *    it for use by Chrome.
  */
 
 int NaClDescSysvShmImportCtor(struct NaClDescSysvShm  *self,
@@ -109,6 +117,10 @@ int NaClDescSysvShmCtor(struct NaClDescSysvShm  *self,
 void NaClDescSysvShmDtor(struct NaClDesc *vself) {
   struct NaClDescSysvShm  *self = (struct NaClDescSysvShm *) vself;
 
+  /*
+   * Importing does NOT confer ownership of the id. Hence the Dtor does not
+   * do the shmctl(IPC_RMID).
+   */
   /* NACL_INVALID_HANDLE is also an invalid id for shmat. */
   self->id = NACL_INVALID_HANDLE;
   vself->vtbl = (struct NaClDescVtbl *) NULL;
@@ -151,11 +163,20 @@ uintptr_t NaClDescSysvShmMap(struct NaClDesc         *vself,
              " NACL_ABI_MAP_SHARED | NACL_ABI_MAP_FIXED\n"));
     return -NACL_ABI_EINVAL;
   }
+  /*
+   * Tail processing below adds the size of the shared memory to start_addr.
+   * If the start_addr were NULL, the SysV shm would be mapped in at an
+   * arbitrary address, but the tail would map into the NULL region.
+   */
+  if (NULL == start_addr) {
+    return -NACL_ABI_EINVAL;
+  }
 
   /*
-   * shmat can only map the shared memory region starting at its beginning.
+   * shmat can only map the shared memory region starting at its beginning
+   * and continuing for its entire size.
    */
-  if (0 != offset || self->size != len) {
+  if (0 != offset || self->size > len) {
     NaClLog(LOG_INFO,
             "NaClDescSysvShmMap: Mapping at non-zero offset or length"
             " mismatch\n");
@@ -200,13 +221,14 @@ uintptr_t NaClDescSysvShmMap(struct NaClDesc         *vself,
   }
 
   /*
-   * If the id does not specify a region that is a multiple of 64K,
-   * we need to mmap a region after the id mapping.
+   * If len is greater than the specified region's size, we need to mmap a
+   * region after the id mapping to close the gap at the end.  ImportCtor
+   * enforces that self->size is a multiple of 4K (the Linux page size).
    */
-  if (!NaClIsAllocPageMultiple((uintptr_t) len)) {
+  if (self->size < NaClRoundAllocPage(len)) {
     int tail_prot = PROT_READ;
-    void* tail_addr = (void*) ((uintptr_t) start_addr + len);
-    size_t tail_size = NaClRoundAllocPage((uintptr_t) len) - (uintptr_t) len;
+    void* tail_addr = (void*) ((uintptr_t) start_addr + self->size);
+    size_t tail_size = NaClRoundAllocPage(len) - self->size;
 
     if (0 != (NACL_ABI_PROT_READ & prot)) {
       tail_prot |= PROT_WRITE;

@@ -89,9 +89,6 @@
           '<@(npmodule_specs)',
         ],
         'action':
-          # TODO(gregoryd): find out how to generate a file
-          # in such a location that can be found in both
-          # NaCl and Chrome builds.
           ['<@(python_exe)', '<(SRPCGEN)',
            '-s',
            'NPModuleRpcs',
@@ -115,9 +112,6 @@
           '<@(npnavigator_specs)',
         ],
         'action':
-          # TODO(gregoryd): find out how to generate a file
-          # in such a location that can be found in both
-          # NaCl and Chrome builds.
           ['<@(python_exe)', '<(SRPCGEN)',
            '-c',
            'NPNavigatorRpcs',
@@ -141,9 +135,6 @@
           '<@(npupcall_specs)',
         ],
         'action':
-          # TODO(gregoryd): find out how to generate a file
-          # in such a location that can be found in both
-          # NaCl and Chrome builds.
           ['<@(python_exe)', '<(SRPCGEN)',
            '-s',
            'NPUpcallRpcs',

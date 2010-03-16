@@ -113,7 +113,6 @@ std::string EventHandler::EventName(double timestamp, int32 type) {
 int EventHandler::handle(void* event) {
   NPPepperEvent* npevent = reinterpret_cast<NPPepperEvent*>(event);
   std::string str = EventName(npevent->timeStampSeconds, npevent->type);
-  int retval = 0;
   switch (npevent->type) {
     case NPEventType_MouseDown:
     case NPEventType_MouseUp:
@@ -159,17 +158,14 @@ int EventHandler::handle(void* event) {
       break;
     case NPEventType_Minimize:
     case NPEventType_Focus:
-      retval = 1;
-      break;
     case NPEventType_Device:
-      // TODO(sehr): add prints as we support these.
       break;
     case NPEventType_Undefined:
     default:
       break;
   }
   addText(str.c_str());
-  return retval;
+  return 1;
 }
 
 bool EventHandler::set_text_box(NPObject* text_box_object) {

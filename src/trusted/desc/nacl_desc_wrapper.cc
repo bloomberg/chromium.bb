@@ -219,7 +219,8 @@ DescWrapper* DescWrapperFactory::MakeShm(size_t size) {
   }
   // HACK: there's an inlining issue with this.
   // size_t rounded_size = NaClRoundAllocPage(size);
-  size_t rounded_size = (size + 0xffff) & ~static_cast<size_t>(0xffff);
+  size_t rounded_size =
+      (size + NACL_PAGESIZE - 1) & ~static_cast<size_t>(NACL_PAGESIZE - 1);
   // TODO(sehr): fix the inlining issue.
   NaClHandle handle = CreateMemoryObject(rounded_size);
   if (kInvalidHandle == handle) {
@@ -260,11 +261,17 @@ DescWrapper* DescWrapperFactory::ImportShmHandle(NaClHandle handle,
 DescWrapper* DescWrapperFactory::ImportSysvShm(int key, size_t size) {
   struct NaClDescSysvShm* sysv_desc = NULL;
   DescWrapper* wrapper = NULL;
+  size_t rounded_size = 0;
 
-  if (static_cast<size_t>(INT_MAX) <= size) {
-    // Avoid overflow when casting to nacl_off64_t by preventing negative size.
+  if (kSizeTMax - NACL_PAGESIZE + 1 <= size) {
+    // Avoid overflow when rounding to the nearest 4K and casting to
+    // nacl_off64_t by preventing negative size.
     goto cleanup;
   }
+  // HACK: there's an inlining issue with using NaClRoundPage. (See above.)
+  // rounded_size = NaClRoundPage(size);
+  rounded_size =
+      (size + NACL_PAGESIZE - 1) & ~static_cast<size_t>(NACL_PAGESIZE - 1);
   sysv_desc = reinterpret_cast<NaClDescSysvShm*>(
       calloc(1, sizeof(*sysv_desc)));
   if (NULL == sysv_desc) {
@@ -272,7 +279,9 @@ DescWrapper* DescWrapperFactory::ImportSysvShm(int key, size_t size) {
   }
   if (!NaClDescSysvShmImportCtor(sysv_desc,
                                  key,
-                                 static_cast<nacl_off64_t>(size))) {
+                                 static_cast<nacl_off64_t>(rounded_size))) {
+    // If rounded_size is negative due to overflow from rounding, it will be
+    // rejected here by NaClDescSysvShmImportCtor.
     delete sysv_desc;
     sysv_desc = NULL;
     goto cleanup;

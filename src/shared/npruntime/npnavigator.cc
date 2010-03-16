@@ -168,7 +168,7 @@ NaClSrpcError NPNavigator::New(char* mimetype,
   } else {
     *nperr = plugin_funcs.newp(mimetype,
                                npp,
-                               0,  // TODO(sehr): what to do with mode?
+                               NP_EMBED,
                                argc,
                                argn,
                                argv,
