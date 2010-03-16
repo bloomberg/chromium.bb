@@ -33,6 +33,7 @@
 
 #include <string>
 #include "common/dwarf/types.h"
+#include "common/dwarf/dwarf2enums.h"
 
 namespace dwarf2reader {
 
@@ -45,13 +46,14 @@ enum Endianness {
 
 // A ByteReader knows how to read single- and multi-byte values of
 // various endiannesses, sizes, and encodings, as used in DWARF
-// debugging information.
+// debugging information and Linux C++ exception handling data.
 class ByteReader {
  public:
   // Construct a ByteReader capable of reading one-, two-, four-, and
   // eight-byte values according to ENDIANNESS, absolute machine-sized
-  // addresses, DWARF-style "initial length" values, and signed and
-  // unsigned LEB128 numbers.
+  // addresses, DWARF-style "initial length" values, signed and
+  // unsigned LEB128 numbers, and Linux C++ exception handling data's
+  // encoded pointers.
   explicit ByteReader(enum Endianness endianness);
   virtual ~ByteReader();
 
@@ -191,6 +193,89 @@ class ByteReader {
   // automatically.
   void SetOffsetSize(uint8 size);
 
+  // The Linux C++ ABI uses a variant of DWARF call frame information
+  // for exception handling. This data is included in the program's
+  // address space as the ".eh_frame" section, and intepreted at
+  // runtime to walk the stack, find exception handlers, and run
+  // cleanup code. The format is mostly the same as DWARF CFI, with
+  // some adjustments made to provide the additional
+  // exception-handling data, and to make the data easier to work with
+  // in memory --- for example, to allow it to be placed in read-only
+  // memory even when describing position-independent code.
+  //
+  // In particular, exception handling data can select a number of
+  // different encodings for pointers that appear in the data, as
+  // described by the DwarfPointerEncoding enum. There are actually
+  // four axes(!) to the encoding:
+  //
+  // - The pointer size: pointers can be 2, 4, or 8 bytes long, or use
+  //   the DWARF LEB128 encoding.
+  //
+  // - The pointer's signedness: pointers can be signed or unsigned.
+  //
+  // - The pointer's base address: the data stored in the exception
+  //   handling data can be the actual address (that is, an absolute
+  //   pointer), or relative to one of a number of different base
+  //   addreses --- including that of the encoded pointer itself, for
+  //   a form of "pc-relative" addressing.
+  //
+  // - The pointer may be indirect: it may be the address where the
+  //   true pointer is stored. (This is used to refer to things via
+  //   global offset table entries, program linkage table entries, or
+  //   other tricks used in position-independent code.)
+  //
+  // There are also two options that fall outside that matrix
+  // altogether: the pointer may be omitted, or it may have padding to
+  // align it on an appropriate address boundary. (That last option
+  // may seem like it should be just another axis, but it is not.)
+
+  // Indicate that the exception handling data is loaded starting at
+  // SECTION_BASE, and that the start of its buffer in our own memory
+  // is BUFFER_BASE. This allows us to find the address that a given
+  // byte in our buffer would have when loaded into the program the
+  // data describes. We need this to resolve DW_EH_PE_pcrel pointers.
+  void SetCFIDataBase(uint64 section_base, const char *buffer_base);
+
+  // Indicate that the base address of the program's ".text" section
+  // is TEXT_BASE. We need this to resolve DW_EH_PE_textrel pointers.
+  void SetTextBase(uint64 text_base);
+
+  // Indicate that the base address for DW_EH_PE_datarel pointers is
+  // DATA_BASE. The proper value depends on the ABI; it is usually the
+  // address of the global offset table, held in a designated register in
+  // position-independent code. You will need to look at the startup code
+  // for the target system to be sure. I tried; my eyes bled.
+  void SetDataBase(uint64 data_base);
+
+  // Indicate that the base address for the FDE we are processing is
+  // FUNCTION_BASE. This is the start address of DW_EH_PE_funcrel
+  // pointers. (This encoding does not seem to be used by the GNU
+  // toolchain.)
+  void SetFunctionBase(uint64 function_base);
+
+  // Indicate that we are no longer processing any FDE, so any use of
+  // a DW_EH_PE_funcrel encoding is an error.
+  void ClearFunctionBase();
+
+  // Return true if ENCODING is a valid pointer encoding.
+  bool ValidEncoding(DwarfPointerEncoding encoding) const;
+
+  // Return true if we have all the information we need to read a
+  // pointer that uses ENCODING. This checks that the appropriate
+  // SetFooBase function for ENCODING has been called.
+  bool UsableEncoding(DwarfPointerEncoding encoding) const;
+
+  // Read an encoded pointer from BUFFER using ENCODING; return the
+  // absolute address it represents, and set *LEN to the pointer's
+  // length in bytes, including any padding for aligned pointers.
+  //
+  // This function calls 'abort' if ENCODING is invalid or refers to a
+  // base address this reader hasn't been given, so you should check
+  // with ValidEncoding and UsableEncoding first if you would rather
+  // die in a more helpful way.
+  uint64 ReadEncodedPointer(const char *buffer, DwarfPointerEncoding encoding,
+                            size_t *len) const;
+
  private:
 
   // Function pointer type for our address and offset readers.
@@ -212,6 +297,12 @@ class ByteReader {
   Endianness endian_;
   uint8 address_size_;
   uint8 offset_size_;
+
+  // Base addresses for Linux C++ exception handling data's encoded pointers.
+  bool have_section_base_, have_text_base_, have_data_base_;
+  bool have_function_base_;
+  uint64 section_base_, text_base_, data_base_, function_base_;
+  const char *buffer_base_;
 };
 
 }  // namespace dwarf2reader

@@ -115,6 +115,7 @@ COVERAGE_SOURCES += stabs_reader.cc
 
 VPATH += $(SRC)/common/dwarf
 bytereader.o: bytereader.cc
+COVERAGE_SOURCES += bytereader.cc
 cfi_assembler.o: cfi_assembler.cc
 dwarf2diehandler.o: dwarf2diehandler.cc
 COVERAGE_SOURCES += dwarf2diehandler.cc
@@ -308,6 +309,26 @@ dwarf_cfi_to_module_unittest.o: override CPPFLAGS += $(GTEST_CPPFLAGS) \
 						     $(GMOCK_CPPFLAGS)
 clean::
 	rm -f dwarf_cfi_to_module_unittest
+
+
+
+### Unit tests for google_breakpad::ByteReader
+check: check-bytereader_unittest
+check-bytereader_unittest: bytereader_unittest
+bytereader_unittest:				\
+	bytereader.o				\
+	cfi_assembler.o				\
+	gtest-all.o				\
+	gtest_main.o				\
+	module.o				\
+	test_assembler.o			\
+	$(empty)
+CPP_EXECUTABLES += bytereader_unittest
+bytereader_unittest.o: bytereader_unittest.cc
+bytereader_unittest.o: override CPPFLAGS += $(GTEST_CPPFLAGS) \
+						$(GMOCK_CPPFLAGS)
+clean::
+	rm -f bytereader_unittest
 
 
 
