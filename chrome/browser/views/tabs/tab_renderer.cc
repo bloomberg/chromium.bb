@@ -87,8 +87,9 @@ const double kMiniTitleChangeThrobOpacity = 0.75;
 // Duration for when the title of an inactive mini-tab changes.
 const int kMiniTitleChangeThrobDuration = 1000;
 
-// Size to render the favicon at when the mouse is over a mini-tab.
-static const int kMiniTabHoverFavIconSize = 24;
+// When the title of a mini-tab in the background changes the size of the icon
+// animates. This is the max size we let the icon go to.
+static const int kMiniTitleChangeMaxFaviconSize = 22;
 
 namespace {
 
@@ -416,13 +417,13 @@ void TabRenderer::PaintIcon(gfx::Canvas* canvas) {
         int x = favicon_bounds_.x();
         int y = favicon_bounds_.y() + fav_icon_hiding_offset_;
         int size = kFavIconSize;
-        if (mini() && (hover_animation_->IsAnimating() ||
-                       hover_animation_->IsShowing())) {
-          int hover_size = hover_animation_->CurrentValueBetween(
-              size, kMiniTabHoverFavIconSize);
-          x -= (hover_size - size) / 2;
-          y -= (hover_size - size) / 2;
-          size = hover_size;
+        if (mini() && mini_title_animation_.get() &&
+            mini_title_animation_->IsAnimating()) {
+          int throb_size = mini_title_animation_->CurrentValueBetween(
+              size, kMiniTitleChangeMaxFaviconSize);
+          x -= (throb_size - size) / 2;
+          y -= (throb_size - size) / 2;
+          size = throb_size;
         }
         canvas->DrawBitmapInt(data_.favicon, 0, 0,
                               data_.favicon.width(),
@@ -823,10 +824,6 @@ bool TabRenderer::ShouldShowCloseBox() const {
 double TabRenderer::GetThrobValue() {
   if (pulse_animation_->IsAnimating())
     return pulse_animation_->GetCurrentValue() * kHoverOpacity;
-
-  if (mini_title_animation_.get() && mini_title_animation_->IsAnimating())
-    return mini_title_animation_->GetCurrentValue() *
-        kMiniTitleChangeThrobOpacity;
 
   return hover_animation_.get() ?
       kHoverOpacity * hover_animation_->GetCurrentValue() : 0;
