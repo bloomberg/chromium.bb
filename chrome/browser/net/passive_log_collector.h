@@ -110,6 +110,22 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
     DISALLOW_COPY_AND_ASSIGN(RequestTracker);
   };
 
+  // Tracks the log entries for the last seen SOURCE_INIT_PROXY_RESOLVER.
+  class InitProxyResolverTracker {
+   public:
+    InitProxyResolverTracker();
+
+    void OnAddEntry(const net::NetLog::Entry& entry);
+
+    const std::vector<net::NetLog::Entry>& entries() const {
+      return entries_;
+    }
+
+   private:
+    std::vector<net::NetLog::Entry> entries_;
+    DISALLOW_COPY_AND_ASSIGN(InitProxyResolverTracker);
+  };
+
   PassiveLogCollector();
   ~PassiveLogCollector();
 
@@ -127,10 +143,15 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
     return &socket_stream_tracker_;
   }
 
+  InitProxyResolverTracker* init_proxy_resolver_tracker() {
+    return &init_proxy_resolver_tracker_;
+  }
+
  private:
   ConnectJobTracker connect_job_tracker_;
   RequestTracker url_request_tracker_;
   RequestTracker socket_stream_tracker_;
+  InitProxyResolverTracker init_proxy_resolver_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(PassiveLogCollector);
 };

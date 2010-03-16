@@ -50,6 +50,11 @@ PassiveLogCollector::RequestTracker* GetSocketStreamTracker(
   return GetPassiveLogCollector(context)->socket_stream_tracker();
 }
 
+PassiveLogCollector::InitProxyResolverTracker* GetInitProxyResolverTracker(
+    URLRequestContext* context) {
+  return GetPassiveLogCollector(context)->init_proxy_resolver_tracker();
+}
+
 std::string GetDetails(const GURL& url) {
   DCHECK(ViewNetInternalsJobFactory::IsSupportedURL(url));
   size_t start = strlen(chrome::kNetworkViewInternalsURL);
@@ -254,9 +259,8 @@ class ProxyServiceLastInitLogSubSection : public SubSection {
   }
 
   virtual void OutputBody(URLRequestContext* context, std::string* out) {
-    net::ProxyService* proxy_service = context->proxy_service();
     OutputTextInPre(net::NetLogUtil::PrettyPrintAsEventTree(
-        proxy_service->init_proxy_resolver_log().entries(), 0), out);
+        GetInitProxyResolverTracker(context)->entries(), 0), out);
   }
 };
 

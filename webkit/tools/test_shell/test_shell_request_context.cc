@@ -58,7 +58,7 @@ void TestShellRequestContext::Init(
 #endif
   host_resolver_ = net::CreateSystemHostResolver(NULL);
   proxy_service_ = net::ProxyService::Create(proxy_config_service.release(),
-                                             false, NULL, NULL, NULL);
+                                             false, NULL, NULL, NULL, NULL);
   ssl_config_service_ = net::SSLConfigService::CreateSystemSSLConfigService();
 
   http_auth_handler_factory_ = net::HttpAuthHandlerFactory::CreateDefault();

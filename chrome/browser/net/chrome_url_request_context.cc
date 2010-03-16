@@ -82,6 +82,7 @@ net::ProxyConfigService* CreateProxyConfigService(
 // Create a proxy service according to the options on command line.
 net::ProxyService* CreateProxyService(
     net::NetworkChangeNotifier* network_change_notifier,
+    net::NetLog* net_log,
     URLRequestContext* context,
     net::ProxyConfigService* proxy_config_service,
     const CommandLine& command_line,
@@ -101,6 +102,7 @@ net::ProxyService* CreateProxyService(
       use_v8,
       context,
       network_change_notifier,
+      net_log,
       io_loop);
 }
 
@@ -150,6 +152,7 @@ ChromeURLRequestContext* FactoryForOriginal::Create() {
 
   context->set_proxy_service(
       CreateProxyService(io_thread()->globals()->network_change_notifier.get(),
+                         io_thread()->globals()->net_log.get(),
                          context,
                          proxy_config_service_.release(),
                          command_line,

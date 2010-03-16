@@ -65,6 +65,9 @@ void PassiveLogCollector::OnAddEntry(const net::NetLog::Entry& entry) {
     case net::NetLog::SOURCE_CONNECT_JOB:
       connect_job_tracker_.OnAddEntry(entry);
       break;
+    case net::NetLog::SOURCE_INIT_PROXY_RESOLVER:
+      init_proxy_resolver_tracker_.OnAddEntry(entry);
+      break;
     default:
       // Drop all other logged events.
       break;
@@ -316,3 +319,35 @@ void PassiveLogCollector::RequestTracker::AddConnectJobInfo(
     AddEntryToRequestInfo(e, is_unbounded(), live_entry);
   }
 }
+
+//----------------------------------------------------------------------------
+// InitProxyResolverTracker
+//----------------------------------------------------------------------------
+
+PassiveLogCollector::InitProxyResolverTracker::InitProxyResolverTracker() {}
+
+void PassiveLogCollector::InitProxyResolverTracker::OnAddEntry(
+    const net::NetLog::Entry& entry) {
+  if (entry.type == net::NetLog::Entry::TYPE_EVENT &&
+      entry.event.type == net::NetLog::TYPE_INIT_PROXY_RESOLVER &&
+      entry.event.phase == net::NetLog::PHASE_BEGIN) {
+    // If this is the start of a new InitProxyResolver, overwrite the old data.
+    entries_.clear();
+    entries_.push_back(entry);
+  } else {
+    // Otherwise append it to the log for the latest InitProxyResolver.
+    if (!entries_.empty() && entries_[0].source.id != entry.source.id) {
+      // If this entry doesn't match what we think was the latest
+      // InitProxyResolver, drop it. (This shouldn't happen, but we will guard
+      // against it).
+      return;
+    }
+    entries_.push_back(entry);
+  }
+
+  // Safety net: INIT_PROXY_RESOLVER shouldn't generate many messages, but in
+  // case something goes wrong, avoid exploding the memory usage.
+  if (entries_.size() > kMaxNumEntriesPerLog)
+    entries_.clear();
+}
+
