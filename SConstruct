@@ -38,6 +38,12 @@ def PrintFinalReport():
 
 atexit.register(PrintFinalReport)
 
+
+def VerboseConfigInfo():
+  "Should we print verbose config information useful for bug reports"
+  if '--help' in sys.argv: return False
+  return ARGUMENTS.get('sysinfo', True)
+
 # ----------------------------------------------------------
 # SANITY CHECKS
 # ----------------------------------------------------------
@@ -91,7 +97,6 @@ ACCEPTABLE_ARGUMENTS = {
 
 def CheckArguments():
   for key in ARGUMENTS:
-    print key
     if key not in ACCEPTABLE_ARGUMENTS:
       print 'ERROR'
       print 'ERROR bad argument: ', key
@@ -1482,19 +1487,19 @@ def SanityCheckAndMapExtraction(all_envs, selected_envs):
       """
       assert 0
 
-  Banner("The following environments have been configured")
-  for family in family_map:
-    env = family_map[family]
-    for tag in RELEVANT_CONFIG:
-      assert tag in env
-      print "%s:  %s" % (tag, env.subst(env.get(tag)))
-    for tag in MAYBE_RELEVANT_CONFIG:
+  if VerboseConfigInfo() and not env.Bit('prebuilt'):
+    Banner("The following environments have been configured")
+    for family in family_map:
+      env = family_map[family]
+      for tag in RELEVANT_CONFIG:
+        assert tag in env
         print "%s:  %s" % (tag, env.subst(env.get(tag)))
-    cc = env.subst('${CC}')
-    print 'CC:', cc
-    if ARGUMENTS.get('sysinfo', 1) and not env.Bit('prebuilt'):
+      for tag in MAYBE_RELEVANT_CONFIG:
+        print "%s:  %s" % (tag, env.subst(env.get(tag)))
+      cc = env.subst('${CC}')
+      print 'CC:', cc
       DumpCompilerVersion(cc, env)
-    print
+      print
 
   if 'TRUSTED' not in family_map or 'UNTRUSTED' not in family_map:
     Banner('W A R N I N G:')
@@ -1518,7 +1523,7 @@ if os.path.exists(pre_base_env.subst('$MAIN_DIR/supplement/supplement.scons')):
       exports=['environment_list', 'linux_env'])
 
 # print sytem info (optionally)
-if ARGUMENTS.get('sysinfo', 1):
+if VerboseConfigInfo():
   Banner('SCONS ARGS:' + str(sys.argv))
   os.system(pre_base_env.subst('${PYTHON} tools/sysinfo.py'))
 
