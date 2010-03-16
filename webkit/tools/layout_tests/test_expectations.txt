@@ -467,9 +467,6 @@ BUG12254 WONTFIX SKIP : fast/xhtmlmp = FAIL
 // because we can't emulate the cahcing behaviors it expects.
 WONTFIX : fast/dom/HTMLScriptElement/nested-execution.html = FAIL
 
-// Touch events are not supported.
-WONTFIX SKIP : fast/events/touch = FAIL
-
 // Deletion UI is a Mail-ism. We don't need to worry about this.
 WONTFIX SKIP : editing/deleting/deletionUI-single-instance.html = FAIL IMAGE
 WONTFIX SKIP : fast/dom/Element/id-in-deletebutton.html = TEXT
@@ -2836,3 +2833,7 @@ BUG_JIANLI MAC : printing/return-from-printing-mode.html = IMAGE
 // WebKit roll 56004 -> 56026
 BUG38278 : fast/events/continuous-platform-wheelevent-in-scrolling-div.html = TIMEOUT
 BUG38278 : fast/events/platform-wheelevent-in-scrolling-div.html = TIMEOUT
+
+// The touch targeting logic was recently changed.
+BUG36415 : fast/events/touch/touch-target.html = TEXT
+BUG36415 : fast/events/touch/basic-multi-touch-events.html = TEXT
