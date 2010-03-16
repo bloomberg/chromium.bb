@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "app/table_model.h"
 #include "chrome/browser/chromeos/cros/language_library.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/label.h"
@@ -20,7 +21,8 @@ class LanguageCheckbox;
 class LanguageHangulConfigView;
 class PreferredLanguageTableModel;
 // A dialog box for showing a password textfield.
-class LanguageConfigView : public views::ButtonListener,
+class LanguageConfigView : public TableModel,
+                           public views::ButtonListener,
                            public views::DialogDelegate,
                            public views::TableViewObserver,
                            public views::View {
@@ -47,6 +49,15 @@ class LanguageConfigView : public views::ButtonListener,
   // views::TableViewObserver overrides:
   virtual void OnSelectionChanged();
 
+  // TableModel overrides:
+  // To workaround crbug.com/38266, implement TreeModel as part of
+  // LanguageConfigView class, rather than a separate class.
+  // TODO(satorux): Implement TableModel as a separate class once the bug
+  // is fixed.
+  virtual std::wstring GetText(int row, int column_id);
+  virtual void SetObserver(TableModelObserver* observer);
+  virtual int RowCount();
+
  private:
   // Initializes UI.
   void Init();
@@ -57,7 +68,6 @@ class LanguageConfigView : public views::ButtonListener,
 
   // A table for preferred languages and its model.
   views::TableView2* preferred_language_table_;
-  scoped_ptr<PreferredLanguageTableModel> preferred_language_table_model_;
   DISALLOW_COPY_AND_ASSIGN(LanguageConfigView);
 };
 

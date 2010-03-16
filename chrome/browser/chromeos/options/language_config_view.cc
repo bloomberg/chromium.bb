@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "app/l10n_util.h"
-#include "app/table_model.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/language_library.h"
 #include "chrome/browser/chromeos/options/language_hangul_config_view.h"
@@ -39,45 +38,14 @@ class LanguageCheckbox : public views::Checkbox {
   DISALLOW_COPY_AND_ASSIGN(LanguageCheckbox);
 };
 
-// The table model for the list of preferred languages.
-class PreferredLanguageTableModel : public TableModel {
- public:
-  PreferredLanguageTableModel()
-      : observer_(NULL) {
-  }
-
-  // TableModel overrides:
-  virtual std::wstring GetText(int row, int column_id) {
-    return L"Not yet implemented";
-  }
-
-  virtual void SetObserver(TableModelObserver* observer) {
-    observer_ = observer;
-  }
-
-  virtual int RowCount() {
-    return 1;
-  }
-
- private:
-  TableModelObserver* observer_;
-  DISALLOW_COPY_AND_ASSIGN(PreferredLanguageTableModel);
-};
-
 LanguageConfigView::LanguageConfigView() :
     contents_(NULL),
     hangul_configure_button_(NULL),
     language_checkbox_(NULL),
-    preferred_language_table_(NULL),
-    preferred_language_table_model_(new PreferredLanguageTableModel) {
+    preferred_language_table_(NULL) {
 }
 
 LanguageConfigView::~LanguageConfigView() {
-  if (preferred_language_table_) {
-    // Reset the model to avoid a destruction issue in TableView2.
-    // See the comment at SetModel() in table_view2.h for details.
-    preferred_language_table_->SetModel(NULL);
-  }
 }
 
 void LanguageConfigView::ButtonPressed(
@@ -148,6 +116,18 @@ void LanguageConfigView::OnSelectionChanged() {
   // TODO(satorux): Implement this.
 }
 
+std::wstring LanguageConfigView::GetText(int row, int column_id) {
+  return L"Not yet implemented";
+}
+
+void LanguageConfigView::SetObserver(TableModelObserver* observer) {
+}
+
+int LanguageConfigView::RowCount() {
+  return 1;
+}
+
+
 // TODO(satorux): Refactor the function.
 void LanguageConfigView::Init() {
   using views::ColumnSet;
@@ -181,7 +161,7 @@ void LanguageConfigView::Init() {
                      TableColumn::LEFT, -1 /* width */, 0 /* percent */);
   columns.push_back(column);
   preferred_language_table_ =
-      new views::TableView2(preferred_language_table_model_.get(),
+      new views::TableView2(this,
                             columns,
                             views::TEXT_ONLY,
                             true, true, true);
