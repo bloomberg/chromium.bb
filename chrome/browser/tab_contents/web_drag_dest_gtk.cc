@@ -75,6 +75,8 @@ gboolean WebDragDestGtk::OnDragMotion(GtkWidget* sender,
       gtk_dnd_util::TEXT_PLAIN,
       gtk_dnd_util::TEXT_URI_LIST,
       gtk_dnd_util::TEXT_HTML,
+      gtk_dnd_util::NETSCAPE_URL,
+      gtk_dnd_util::CHROME_NAMED_URL,
       // TODO(estade): support image drags?
     };
 
@@ -144,6 +146,20 @@ void WebDragDestGtk::OnDragDataReceived(
           UTF8ToUTF16(std::string(reinterpret_cast<char*>(data->data),
                                   data->length));
       // We leave the base URL empty.
+    } else if (data->target ==
+               gtk_dnd_util::GetAtomForTarget(gtk_dnd_util::NETSCAPE_URL)) {
+      std::string netscape_url(reinterpret_cast<char*>(data->data),
+                               data->length);
+      size_t split = netscape_url.find_first_of('\n');
+      if (split != std::string::npos) {
+        drop_data_->url_title = UTF8ToUTF16(netscape_url.substr(0, split));
+        if (split < netscape_url.size() - 1)
+          drop_data_->url = GURL(netscape_url.substr(split + 1));
+      }
+    } else if (data->target ==
+               gtk_dnd_util::GetAtomForTarget(gtk_dnd_util::CHROME_NAMED_URL)) {
+      gtk_dnd_util::ExtractNamedURL(data,
+                                    &drop_data_->url, &drop_data_->url_title);
     }
   }
 
