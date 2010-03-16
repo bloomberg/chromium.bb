@@ -8,7 +8,6 @@
 #include <gtk/gtk.h>
 
 #include "app/active_window_watcher_x.h"
-#include "app/gtk_signal.h"
 #include "base/message_loop.h"
 #include "gfx/size.h"
 #include "views/focus/focus_manager.h"
@@ -225,41 +224,52 @@ class WidgetGtk
   static int GetFlagsForEventButton(const GdkEventButton& event);
 
   // Event handlers:
-  CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnButtonPress, GdkEventButton*);
-  CHROMEGTK_CALLBACK_1(WidgetGtk, void, OnSizeAllocate, GtkAllocation*);
-  CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnPaint, GdkEventExpose*);
-  CHROMEGTK_CALLBACK_4(WidgetGtk, void, OnDragDataGet,
-                       GdkDragContext*, GtkSelectionData*, guint, guint);
-  CHROMEGTK_CALLBACK_6(WidgetGtk, void, OnDragDataReceived,
-                       GdkDragContext*, gint, gint, GtkSelectionData*,
-                       guint, guint);
-  CHROMEGTK_CALLBACK_4(WidgetGtk, gboolean, OnDragDrop,
-                       GdkDragContext*, gint, gint, guint);
-  CHROMEGTK_CALLBACK_1(WidgetGtk, void, OnDragEnd, GdkDragContext*);
-  CHROMEGTK_CALLBACK_2(WidgetGtk, gboolean, OnDragFailed,
-                       GdkDragContext*, GtkDragResult);
-  CHROMEGTK_CALLBACK_2(WidgetGtk, void, OnDragLeave,
-                       GdkDragContext*, guint);
-  CHROMEGTK_CALLBACK_4(WidgetGtk, gboolean, OnDragMotion,
-                       GdkDragContext*, gint, gint, guint);
-  CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnEnterNotify, GdkEventCrossing*);
-  CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnLeaveNotify, GdkEventCrossing*);
-  CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnMotionNotify, GdkEventMotion*);
-  CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnButtonRelease, GdkEventButton*);
-  CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnFocusIn, GdkEventFocus*);
-  CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnFocusOut, GdkEventFocus*);
-  CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnKeyPress, GdkEventKey*);
-  CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnKeyRelease, GdkEventKey*);
-  CHROMEGTK_CALLBACK_4(WidgetGtk, gboolean, OnQueryTooltip,
-                       gint, gint, gboolean, GtkTooltip*);
-  CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnScroll, GdkEventScroll*);
-  CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnVisibilityNotify,
-                       GdkEventVisibility*);
-  CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnGrabBrokeEvent, GdkEvent*);
-  CHROMEGTK_CALLBACK_1(WidgetGtk, void, OnGrabNotify, gboolean);
-  CHROMEGTK_CALLBACK_0(WidgetGtk, void, OnDestroy);
-  CHROMEGTK_CALLBACK_0(WidgetGtk, void, OnShow);
-  CHROMEGTK_CALLBACK_0(WidgetGtk, void, OnHide);
+  virtual void OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation);
+  virtual void OnPaint(GtkWidget* widget, GdkEventExpose* event);
+  virtual void OnDragDataGet(GdkDragContext* context,
+                             GtkSelectionData* data,
+                             guint info,
+                             guint time);
+  virtual void OnDragDataReceived(GdkDragContext* context,
+                                  gint x,
+                                  gint y,
+                                  GtkSelectionData* data,
+                                  guint info,
+                                  guint time);
+  virtual gboolean OnDragDrop(GdkDragContext* context,
+                              gint x,
+                              gint y,
+                              guint time);
+  virtual void OnDragEnd(GdkDragContext* context);
+  virtual gboolean OnDragFailed(GdkDragContext* context,
+                                GtkDragResult result);
+  virtual void OnDragLeave(GdkDragContext* context,
+                           guint time);
+  virtual gboolean OnDragMotion(GdkDragContext* context,
+                                gint x,
+                                gint y,
+                                guint time);
+  virtual gboolean OnEnterNotify(GtkWidget* widget, GdkEventCrossing* event);
+  virtual gboolean OnLeaveNotify(GtkWidget* widget, GdkEventCrossing* event);
+  virtual gboolean OnMotionNotify(GtkWidget* widget, GdkEventMotion* event);
+  virtual gboolean OnButtonPress(GtkWidget* widget, GdkEventButton* event);
+  virtual gboolean OnButtonRelease(GtkWidget* widget, GdkEventButton* event);
+  virtual gboolean OnFocusIn(GtkWidget* widget, GdkEventFocus* event);
+  virtual gboolean OnFocusOut(GtkWidget* widget, GdkEventFocus* event);
+  virtual gboolean OnKeyPress(GtkWidget* widget, GdkEventKey* event);
+  virtual gboolean OnKeyRelease(GtkWidget* widget, GdkEventKey* event);
+  virtual gboolean OnQueryTooltip(gint x,
+                                  gint y,
+                                  gboolean keyboard_mode,
+                                  GtkTooltip* tooltip);
+  virtual gboolean OnScroll(GtkWidget* widget, GdkEventScroll* event);
+  virtual gboolean OnVisibilityNotify(GtkWidget* widget,
+                                      GdkEventVisibility* event) {
+    return false;
+  }
+  virtual gboolean OnGrabBrokeEvent(GtkWidget* widget, GdkEvent* event);
+  virtual void OnGrabNotify(GtkWidget* widget, gboolean was_grabbed);
+  virtual void OnDestroy();
 
   void set_mouse_down(bool mouse_down) { is_mouse_down_ = mouse_down; }
 
@@ -288,7 +298,7 @@ class WidgetGtk
 
   virtual RootView* CreateRootView();
 
-  CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnWindowPaint, GdkEventExpose*);
+  void OnWindowPaint(GtkWidget* widget, GdkEventExpose* event);
 
   // Process a mouse click.
   bool ProcessMousePressed(GdkEventButton* event);
@@ -297,6 +307,71 @@ class WidgetGtk
   bool ProcessScroll(GdkEventScroll* event);
 
   static void SetRootViewForWidget(GtkWidget* widget, RootView* root_view);
+
+  // A set of static signal handlers that bridge.
+  static gboolean CallButtonPress(GtkWidget* widget, GdkEventButton* event);
+  static gboolean CallButtonRelease(GtkWidget* widget, GdkEventButton* event);
+  static gboolean CallDragDrop(GtkWidget* widget,
+                               GdkDragContext* context,
+                               gint x,
+                               gint y,
+                               guint time,
+                               WidgetGtk* host);
+  static gboolean CallDragFailed(GtkWidget* widget,
+                                 GdkDragContext* context,
+                                 GtkDragResult result,
+                                 WidgetGtk* host);
+  static gboolean CallDragMotion(GtkWidget* widget,
+                                 GdkDragContext* context,
+                                 gint x,
+                                 gint y,
+                                 guint time,
+                                 WidgetGtk* host);
+  static gboolean CallEnterNotify(GtkWidget* widget, GdkEventCrossing* event);
+  static gboolean CallFocusIn(GtkWidget* widget, GdkEventFocus* event);
+  static gboolean CallFocusOut(GtkWidget* widget, GdkEventFocus* event);
+  static gboolean CallGrabBrokeEvent(GtkWidget* widget, GdkEvent* event);
+  static gboolean CallKeyPress(GtkWidget* widget, GdkEventKey* event);
+  static gboolean CallKeyRelease(GtkWidget* widget, GdkEventKey* event);
+  static gboolean CallLeaveNotify(GtkWidget* widget, GdkEventCrossing* event);
+  static gboolean CallMotionNotify(GtkWidget* widget, GdkEventMotion* event);
+  static gboolean CallPaint(GtkWidget* widget, GdkEventExpose* event);
+  static gboolean CallQueryTooltip(GtkWidget* widget,
+                                   gint x,
+                                   gint y,
+                                   gboolean keyboard_mode,
+                                   GtkTooltip* tooltip,
+                                   WidgetGtk* host);
+  static gboolean CallScroll(GtkWidget* widget, GdkEventScroll* event);
+  static gboolean CallVisibilityNotify(GtkWidget* widget,
+                                       GdkEventVisibility* event);
+  static gboolean CallWindowPaint(GtkWidget* widget,
+                                  GdkEventExpose* event,
+                                  WidgetGtk* widget_gtk);
+  static void CallDestroy(GtkObject* object);
+  static void CallDragDataGet(GtkWidget* widget,
+                              GdkDragContext* context,
+                              GtkSelectionData* data,
+                              guint info,
+                              guint time,
+                              WidgetGtk* host);
+  static void CallDragDataReceived(GtkWidget* widget,
+                                   GdkDragContext* context,
+                                   gint x,
+                                   gint y,
+                                   GtkSelectionData* data,
+                                   guint info,
+                                   guint time,
+                                   WidgetGtk* host);
+  static void CallDragEnd(GtkWidget* widget,
+                          GdkDragContext* context,
+                          WidgetGtk* host);
+  static void CallDragLeave(GtkWidget* widget,
+                            GdkDragContext* context,
+                            guint time,
+                            WidgetGtk* host);
+  static void CallGrabNotify(GtkWidget* widget, gboolean was_grabbed);
+  static void CallSizeAllocate(GtkWidget* widget, GtkAllocation* allocation);
 
   // Returns the first ancestor of |widget| that is a window.
   static Window* GetWindowImpl(GtkWidget* widget);

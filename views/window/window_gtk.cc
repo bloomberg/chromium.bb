@@ -476,9 +476,9 @@ void WindowGtk::SizeWindowToDefault(GtkWindow* parent) {
   SetBounds(bounds, NULL);
 }
 
-void WindowGtk::OnDestroy(GtkWidget* widget) {
+void WindowGtk::OnDestroy() {
   non_client_view_->WindowClosing();
-  WidgetGtk::OnDestroy(widget);
+  WidgetGtk::OnDestroy();
 }
 
 }  // namespace views

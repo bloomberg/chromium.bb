@@ -364,7 +364,7 @@ void TabContentsViewGtk::OnSizeAllocate(GtkWidget* widget,
   WasSized(new_size);
 }
 
-gboolean TabContentsViewGtk::OnPaint(GtkWidget* widget, GdkEventExpose* event) {
+void TabContentsViewGtk::OnPaint(GtkWidget* widget, GdkEventExpose* event) {
   if (tab_contents()->render_view_host() &&
       !tab_contents()->render_view_host()->IsRenderViewLive()) {
     if (sad_tab_ == NULL) {
@@ -377,15 +377,6 @@ gboolean TabContentsViewGtk::OnPaint(GtkWidget* widget, GdkEventExpose* event) {
     gfx::CanvasPaint canvas(event);
     sad_tab_->ProcessPaint(&canvas);
   }
-  return false;  // False indicates other widgets should get the event as well.
-}
-
-void TabContentsViewGtk::OnShow(GtkWidget* widget) {
-  WasShown();
-}
-
-void TabContentsViewGtk::OnHide(GtkWidget* widget) {
-  WasHidden();
 }
 
 void TabContentsViewGtk::WasHidden() {
