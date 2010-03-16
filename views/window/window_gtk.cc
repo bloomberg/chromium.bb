@@ -259,8 +259,11 @@ void WindowGtk::FrameTypeChanged() {
 // WindowGtk, WidgetGtk overrides:
 
 gboolean WindowGtk::OnButtonPress(GtkWidget* widget, GdkEventButton* event) {
+  int x = 0, y = 0;
+  GetContainedWidgetEventCoordinates(event, &x, &y);
+
   int hittest_code =
-      non_client_view_->NonClientHitTest(gfx::Point(event->x, event->y));
+      non_client_view_->NonClientHitTest(gfx::Point(x, y));
   switch (hittest_code) {
     case HTCAPTION: {
       MouseEvent mouse_pressed(Event::ET_MOUSE_PRESSED, event->x, event->y,
@@ -314,13 +317,18 @@ gboolean WindowGtk::OnConfigureEvent(GtkWidget* widget,
 }
 
 gboolean WindowGtk::OnMotionNotify(GtkWidget* widget, GdkEventMotion* event) {
+  int x = 0, y = 0;
+  GetContainedWidgetEventCoordinates(event, &x, &y);
+
   // Update the cursor for the screen edge.
   int hittest_code =
-      non_client_view_->NonClientHitTest(gfx::Point(event->x, event->y));
-  GdkCursorType cursor_type = HitTestCodeToGdkCursorType(hittest_code);
-  GdkCursor* cursor = gdk_cursor_new(cursor_type);
-  gdk_window_set_cursor(widget->window, cursor);
-  gdk_cursor_destroy(cursor);
+      non_client_view_->NonClientHitTest(gfx::Point(x, y));
+  if (hittest_code != HTCLIENT) {
+    GdkCursorType cursor_type = HitTestCodeToGdkCursorType(hittest_code);
+    GdkCursor* cursor = gdk_cursor_new(cursor_type);
+    gdk_window_set_cursor(widget->window, cursor);
+    gdk_cursor_destroy(cursor);
+  }
 
   return WidgetGtk::OnMotionNotify(widget, event);
 }

@@ -798,6 +798,10 @@ gboolean WidgetGtk::OnEnterNotify(GtkWidget* widget, GdkEventCrossing* event) {
     last_mouse_move_x_ = event->x_root;
     last_mouse_move_y_ = event->y_root;
     last_mouse_event_was_move_ = true;
+
+    int x = 0, y = 0;
+    GetContainedWidgetEventCoordinates(event, &x, &y);
+
     // If this event is the result of pressing a button then one of the button
     // modifiers is set. Unset it as we're compensating for the leave generated
     // when you press a button.
@@ -805,7 +809,7 @@ gboolean WidgetGtk::OnEnterNotify(GtkWidget* widget, GdkEventCrossing* event) {
                  ~(Event::EF_LEFT_BUTTON_DOWN |
                    Event::EF_MIDDLE_BUTTON_DOWN |
                    Event::EF_RIGHT_BUTTON_DOWN));
-    MouseEvent mouse_move(Event::ET_MOUSE_MOVED, event->x, event->y, flags);
+    MouseEvent mouse_move(Event::ET_MOUSE_MOVED, x, y, flags);
     root_view_->OnMouseMoved(mouse_move);
   }
 
@@ -820,10 +824,13 @@ gboolean WidgetGtk::OnLeaveNotify(GtkWidget* widget, GdkEventCrossing* event) {
 }
 
 gboolean WidgetGtk::OnMotionNotify(GtkWidget* widget, GdkEventMotion* event) {
+  int x = 0, y = 0;
+  GetContainedWidgetEventCoordinates(event, &x, &y);
+
   if (has_capture_ && is_mouse_down_) {
     last_mouse_event_was_move_ = false;
     int flags = Event::GetFlagsFromGdkState(event->state);
-    MouseEvent mouse_drag(Event::ET_MOUSE_DRAGGED, event->x, event->y, flags);
+    MouseEvent mouse_drag(Event::ET_MOUSE_DRAGGED, x, y, flags);
     root_view_->OnMouseDragged(mouse_drag);
     return true;
   }
@@ -837,7 +844,7 @@ gboolean WidgetGtk::OnMotionNotify(GtkWidget* widget, GdkEventMotion* event) {
   last_mouse_move_y_ = screen_loc.y();
   last_mouse_event_was_move_ = true;
   int flags = Event::GetFlagsFromGdkState(event->state);
-  MouseEvent mouse_move(Event::ET_MOUSE_MOVED, event->x, event->y, flags);
+  MouseEvent mouse_move(Event::ET_MOUSE_MOVED, x, y, flags);
   root_view_->OnMouseMoved(mouse_move);
   return true;
 }
@@ -1006,12 +1013,16 @@ bool WidgetGtk::ProcessMousePressed(GdkEventButton* event) {
     return true;
   }
 
-  return false;
+  // Returns true to consume the event when widget is not transparent.
+  return !transparent_;
 }
 
 void WidgetGtk::ProcessMouseReleased(GdkEventButton* event) {
+  int x = 0, y = 0;
+  GetContainedWidgetEventCoordinates(event, &x, &y);
+
   last_mouse_event_was_move_ = false;
-  MouseEvent mouse_up(Event::ET_MOUSE_RELEASED, event->x, event->y,
+  MouseEvent mouse_up(Event::ET_MOUSE_RELEASED, x, y,
                       GetFlagsForEventButton(*event));
   // Release the capture first, that way we don't get confused if
   // OnMouseReleased blocks.

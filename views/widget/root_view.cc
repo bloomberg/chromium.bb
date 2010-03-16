@@ -16,6 +16,10 @@
 #include "views/widget/widget.h"
 #include "views/window/window.h"
 
+#if defined(OS_LINUX)
+#include "views/widget/widget_gtk.h"
+#endif  // defined(OS_LINUX)
+
 namespace views {
 
 /////////////////////////////////////////////////////////////////////////////
@@ -929,7 +933,8 @@ void RootView::SetActiveCursor(gfx::NativeCursor cursor) {
     previous_cursor_ = NULL;
   }
 #elif defined(OS_LINUX)
-  gfx::NativeView native_view = GetWidget()->GetNativeView();
+  gfx::NativeView native_view =
+      static_cast<WidgetGtk*>(GetWidget())->window_contents();
   if (!native_view)
     return;
   gdk_window_set_cursor(native_view->window, cursor);
