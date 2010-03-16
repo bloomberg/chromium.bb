@@ -613,10 +613,7 @@ ifeq ($(CROSSARCH), nacl)
 	esac
 endif
 	$(MAKE) -f $(THISMAKEFILE) nacl_libraries
-	# Don't run tests till loader is not ready
-ifeq ($(CROSSARCH), nacl)
 	$(MAKE) -f $(THISMAKEFILE) sdk_minimal_test
-endif
 	$(MAKE) -f $(THISMAKEFILE) redirector
 
 ##################################################################
