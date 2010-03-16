@@ -83,11 +83,10 @@ static TestURLInfo test_db[] = {
   {"http://go/", L"Intranet URL", 1, 1},
   {"http://gooey/", L"Intranet URL 2", 5, 5},
 
-  // URLs for testing offset adjustment
+  // URLs for testing offset adjustment.
   {"http://www.\xEA\xB5\x90\xEC\x9C\xA1.kr/", L"Korean", 2, 2},
   {"http://spaces.com/path%20with%20spaces/foo.html", L"Spaces", 2, 2},
   {"http://ms/c++%20style%20guide", L"Style guide", 2, 2},
-  {"http://foo:bar@baz.com/", L"HTTP auth", 2, 2},
 };
 
 class HistoryURLProviderTest : public testing::Test,
@@ -405,8 +404,6 @@ TEST_F(HistoryURLProviderTest, AdjustOffset) {
   RunAdjustOffsetTest(L"http://www.\uAD50\uC721", 13);
   RunAdjustOffsetTest(L"http://spaces.com/path%20with%20spa", 31);
   RunAdjustOffsetTest(L"http://ms/c++ s", 15);
-  RunAdjustOffsetTest(L"http://foo:ba", std::wstring::npos);
-  RunAdjustOffsetTest(L"http://foo:bar@ba", 9);
 }
 
 TEST_F(HistoryURLProviderTestNoDB, NavigateWithoutDB) {

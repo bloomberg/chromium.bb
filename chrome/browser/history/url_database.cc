@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,7 +38,13 @@ URLDatabase::~URLDatabase() {
 // static
 std::string URLDatabase::GURLToDatabaseURL(const GURL& gurl) {
   // TODO(brettw): do something fancy here with encoding, etc.
-  return gurl.spec();
+
+  // Strip username and password from URL before sending to DB.
+  GURL::Replacements replacements;
+  replacements.ClearUsername();
+  replacements.ClearPassword();
+
+  return (gurl.ReplaceComponents(replacements)).spec();
 }
 
 // Convenience to fill a history::URLRow. Must be in sync with the fields in

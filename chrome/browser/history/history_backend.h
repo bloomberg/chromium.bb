@@ -279,6 +279,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   FRIEND_TEST(HistoryBackendTest, DeleteAll);
   FRIEND_TEST(HistoryBackendTest, ImportedFaviconsTest);
   FRIEND_TEST(HistoryBackendTest, URLsNoLongerBookmarked);
+  FRIEND_TEST(HistoryBackendTest, StripUsernamePasswordTest);
   friend class ::TestingProfile;
 
   ~HistoryBackend();

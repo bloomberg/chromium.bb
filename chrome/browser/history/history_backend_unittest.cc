@@ -564,4 +564,26 @@ TEST_F(HistoryBackendTest, ImportedFaviconsTest) {
   EXPECT_TRUE(url_row3.visit_count() == 0);
 }
 
+TEST_F(HistoryBackendTest, StripUsernamePasswordTest) {
+  ASSERT_TRUE(backend_.get());
+
+  GURL url("http://anyuser:anypass@www.google.com");
+  GURL stripped_url("http://www.google.com");
+
+  // Clear all history.
+  backend_->DeleteAllHistory();
+
+  // Visit the url with username, password.
+  backend_->AddPageVisit(url, base::Time::Now(), 0,
+    PageTransition::GetQualifier(PageTransition::TYPED));
+
+  // Fetch the row information about stripped url from history db.
+  VisitVector visits;
+  URLID row_id = backend_->db_->GetRowForURL(stripped_url, NULL);
+  backend_->db_->GetVisitsForURL(row_id, &visits);
+
+  // Check if stripped url is stored in database.
+  ASSERT_EQ(1U, visits.size());
+}
+
 }  // namespace history
