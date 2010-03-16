@@ -464,13 +464,6 @@ std::string GetApplicationLocale(const std::wstring& pref_locale) {
 
   // Next, try the system locale.
   candidates.push_back(system_locale);
-
-#elif defined(OS_CHROMEOS)
-  // On ChromeOS, first, try user prefs. This restores the locale used
-  // by the previous run of the OS.
-  if (!pref_locale.empty())
-    candidates.push_back(WideToASCII(pref_locale));
-
 #elif defined(OS_POSIX)
   // On POSIX, we also check LANGUAGE environment variable, which is supported
   // by gettext to specify a priority list of prefered languages.
