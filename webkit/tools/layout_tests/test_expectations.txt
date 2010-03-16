@@ -2837,3 +2837,6 @@ BUG38278 : fast/events/platform-wheelevent-in-scrolling-div.html = TIMEOUT
 // The touch targeting logic was recently changed.
 BUG36415 : fast/events/touch/touch-target.html = TEXT
 BUG36415 : fast/events/touch/basic-multi-touch-events.html = TEXT
+
+// Most touch tests flaky on WIN for reasons currently unknown.
+BUG38347 WIN : fast/events/touch = TEXT PASS
