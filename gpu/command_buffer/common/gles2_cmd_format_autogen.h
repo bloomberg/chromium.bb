@@ -748,6 +748,8 @@ struct CheckFramebufferStatus {
   static const CommandId kCmdId = kCheckFramebufferStatus;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
+  typedef GLenum Result;
+
   static uint32 ComputeSize() {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
@@ -756,26 +758,37 @@ struct CheckFramebufferStatus {
     header.SetCmd<ValueType>();
   }
 
-  void Init(GLenum _target) {
+  void Init(GLenum _target, uint32 _result_shm_id, uint32 _result_shm_offset) {
     SetHeader();
     target = _target;
+    result_shm_id = _result_shm_id;
+    result_shm_offset = _result_shm_offset;
   }
 
-  void* Set(void* cmd, GLenum _target) {
-    static_cast<ValueType*>(cmd)->Init(_target);
+  void* Set(
+      void* cmd, GLenum _target, uint32 _result_shm_id,
+      uint32 _result_shm_offset) {
+    static_cast<ValueType*>(
+        cmd)->Init(_target, _result_shm_id, _result_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   gpu::CommandHeader header;
   uint32 target;
+  uint32 result_shm_id;
+  uint32 result_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(CheckFramebufferStatus) == 8,
-               Sizeof_CheckFramebufferStatus_is_not_8);
+COMPILE_ASSERT(sizeof(CheckFramebufferStatus) == 16,
+               Sizeof_CheckFramebufferStatus_is_not_16);
 COMPILE_ASSERT(offsetof(CheckFramebufferStatus, header) == 0,
                OffsetOf_CheckFramebufferStatus_header_not_0);
 COMPILE_ASSERT(offsetof(CheckFramebufferStatus, target) == 4,
                OffsetOf_CheckFramebufferStatus_target_not_4);
+COMPILE_ASSERT(offsetof(CheckFramebufferStatus, result_shm_id) == 8,
+               OffsetOf_CheckFramebufferStatus_result_shm_id_not_8);
+COMPILE_ASSERT(offsetof(CheckFramebufferStatus, result_shm_offset) == 12,
+               OffsetOf_CheckFramebufferStatus_result_shm_offset_not_12);
 
 struct Clear {
   typedef Clear ValueType;

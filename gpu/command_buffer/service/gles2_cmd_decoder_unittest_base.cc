@@ -157,6 +157,26 @@ GLint GLES2DecoderTestBase::GetGLError() {
   return static_cast<GLint>(*GetSharedMemoryAs<GLenum*>());
 }
 
+void GLES2DecoderTestBase::DoBindFramebuffer(
+    GLenum target, GLuint client_id, GLuint service_id) {
+  EXPECT_CALL(*gl_, BindFramebufferEXT(target, service_id))
+      .Times(1)
+      .RetiresOnSaturation();
+  BindFramebuffer cmd;
+  cmd.Init(target, client_id);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+}
+
+void GLES2DecoderTestBase::DoBindRenderbuffer(
+    GLenum target, GLuint client_id, GLuint service_id) {
+  EXPECT_CALL(*gl_, BindRenderbufferEXT(target, service_id))
+      .Times(1)
+      .RetiresOnSaturation();
+  BindRenderbuffer cmd;
+  cmd.Init(target, client_id);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+}
+
 void GLES2DecoderTestBase::DoBindTexture(
     GLenum target, GLuint client_id, GLuint service_id) {
   EXPECT_CALL(*gl_, BindTexture(target, service_id))

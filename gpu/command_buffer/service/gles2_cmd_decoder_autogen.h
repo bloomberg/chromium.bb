@@ -265,11 +265,13 @@ error::Error GLES2DecoderImpl::HandleBufferSubDataImmediate(
 error::Error GLES2DecoderImpl::HandleCheckFramebufferStatus(
     uint32 immediate_data_size, const gles2::CheckFramebufferStatus& c) {
   GLenum target = static_cast<GLenum>(c.target);
+  GLenum* result_dst = GetSharedMemoryAs<GLenum*>(
+      c.result_shm_id, c.result_shm_offset, sizeof(*result_dst));
   if (!ValidateGLenumFrameBufferTarget(target)) {
     SetGLError(GL_INVALID_ENUM);
     return error::kNoError;
   }
-  glCheckFramebufferStatusEXT(target);
+  *result_dst = DoCheckFramebufferStatus(target);
   return error::kNoError;
 }
 
@@ -771,7 +773,7 @@ error::Error GLES2DecoderImpl::HandleFramebufferRenderbuffer(
     SetGLError(GL_INVALID_ENUM);
     return error::kNoError;
   }
-  glFramebufferRenderbufferEXT(
+  DoFramebufferRenderbuffer(
       target, attachment, renderbuffertarget, renderbuffer);
   return error::kNoError;
 }
@@ -799,7 +801,7 @@ error::Error GLES2DecoderImpl::HandleFramebufferTexture2D(
     SetGLError(GL_INVALID_ENUM);
     return error::kNoError;
   }
-  glFramebufferTexture2DEXT(target, attachment, textarget, texture, level);
+  DoFramebufferTexture2D(target, attachment, textarget, texture, level);
   return error::kNoError;
 }
 
@@ -1105,7 +1107,7 @@ error::Error GLES2DecoderImpl::HandleGetFramebufferAttachmentParameteriv(
   if (params == NULL) {
     return error::kOutOfBounds;
   }
-  glGetFramebufferAttachmentParameterivEXT(target, attachment, pname, params);
+  DoGetFramebufferAttachmentParameteriv(target, attachment, pname, params);
   return error::kNoError;
 }
 
@@ -1197,7 +1199,7 @@ error::Error GLES2DecoderImpl::HandleGetRenderbufferParameteriv(
   if (params == NULL) {
     return error::kOutOfBounds;
   }
-  glGetRenderbufferParameterivEXT(target, pname, params);
+  DoGetRenderbufferParameteriv(target, pname, params);
   return error::kNoError;
 }
 
@@ -1522,7 +1524,7 @@ error::Error GLES2DecoderImpl::HandleRenderbufferStorage(
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
-  glRenderbufferStorageEXT(target, internalformat, width, height);
+  DoRenderbufferStorage(target, internalformat, width, height);
   return error::kNoError;
 }
 

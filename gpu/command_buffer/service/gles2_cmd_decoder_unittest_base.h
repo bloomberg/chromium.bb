@@ -131,6 +131,8 @@ class GLES2DecoderTestBase : public testing::Test {
   // EXPECT_EQ that expect both types to be the same.
   GLint GetGLError();
 
+  void DoBindFramebuffer(GLenum target, GLuint client_id, GLuint service_id);
+  void DoBindRenderbuffer(GLenum target, GLuint client_id, GLuint service_id);
   void DoBindTexture(GLenum target, GLuint client_id, GLuint service_id);
 
   void DoTexImage2D(GLenum target, GLint level, GLenum internal_format,

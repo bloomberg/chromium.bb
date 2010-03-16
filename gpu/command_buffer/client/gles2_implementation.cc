@@ -449,11 +449,6 @@ void GLES2Implementation::TexSubImage2D(
   }
 }
 
-GLenum GLES2Implementation::CheckFramebufferStatus(GLenum target) {
-  // TODO(gman): implement.
-  return 0;
-}
-
 void GLES2Implementation::GetActiveAttrib(
     GLuint program, GLuint index, GLsizei bufsize, GLsizei* length, GLint* size,
     GLenum* type, char* name) {

@@ -440,13 +440,16 @@ class GLES2DecoderImpl : public GLES2Decoder {
   // Wrapper for glBindTexture since we need to track the current targets.
   void DoBindTexture(GLenum target, GLuint texture);
 
-  // Wrapper for BufferData.
+  // Wrapper for glBufferData.
   void DoBufferData(
     GLenum target, GLsizeiptr size, const GLvoid * data, GLenum usage);
 
-  // Wrapper for BufferSubData.
+  // Wrapper for glBufferSubData.
   void DoBufferSubData(
     GLenum target, GLintptr offset, GLsizeiptr size, const GLvoid * data);
+
+  // Wrapper for glCheckFramebufferStatus
+  GLenum DoCheckFramebufferStatus(GLenum target);
 
   // Wrapper for glCompileShader.
   void DoCompileShader(GLuint shader);
@@ -460,8 +463,26 @@ class GLES2DecoderImpl : public GLES2Decoder {
   // Wrapper for glEnableVertexAttribArray.
   void DoEnableVertexAttribArray(GLuint index);
 
+  // Wrapper for glFramebufferRenderbufffer.
+  void DoFramebufferRenderbuffer(
+      GLenum target, GLenum attachment, GLenum renderbuffertarget,
+      GLuint renderbuffer);
+
+  // Wrapper for glFramebufferTexture2D.
+  void DoFramebufferTexture2D(
+      GLenum target, GLenum attachment, GLenum textarget, GLuint texture,
+      GLint level);
+
   // Wrapper for glGenerateMipmap
   void DoGenerateMipmap(GLenum target);
+
+  // Wrapper for glGetFramebufferAttachmentParameteriv.
+  void DoGetFramebufferAttachmentParameteriv(
+      GLenum target, GLenum attachment, GLenum pname, GLint* params);
+
+  // Wrapper for glRenderbufferParameteriv.
+  void DoGetRenderbufferParameteriv(
+      GLenum target, GLenum pname, GLint* params);
 
   // Wrapper for glGetShaderiv
   void DoGetShaderiv(GLuint shader, GLenum pname, GLint* params);
@@ -472,6 +493,10 @@ class GLES2DecoderImpl : public GLES2Decoder {
 
   // Wrapper for glLinkProgram
   void DoLinkProgram(GLuint program);
+
+  // Wrapper for glRenderbufferStorage.
+  void DoRenderbufferStorage(
+    GLenum target, GLenum internalformat, GLsizei width, GLsizei height);
 
   // Swaps the buffers (copies/renders to the current window).
   void DoSwapBuffers();
@@ -1309,11 +1334,13 @@ bool GLES2DecoderImpl::ValidateGLenumCompressedTextureInternalFormat(GLenum) {
 }
 
 void GLES2DecoderImpl::DoActiveTexture(GLenum texture_unit) {
-  if (texture_unit > group_->max_texture_units()) {
+  GLuint texture_index = texture_unit - GL_TEXTURE0;
+  if (texture_index > group_->max_texture_units()) {
     SetGLError(GL_INVALID_ENUM);
     return;
   }
-  active_texture_unit_ = texture_unit - GL_TEXTURE0;
+  active_texture_unit_ = texture_index;
+  glActiveTexture(texture_unit);
 }
 
 void GLES2DecoderImpl::DoBindBuffer(GLenum target, GLuint buffer) {
@@ -1449,6 +1476,61 @@ void GLES2DecoderImpl::DoDrawArrays(
       RestoreStateForNonRenderableTextures();
     }
   }
+}
+
+void GLES2DecoderImpl::DoFramebufferRenderbuffer(
+    GLenum target, GLenum attachment, GLenum renderbuffertarget,
+    GLuint renderbuffer) {
+  if (bound_framebuffer_ == 0) {
+    SetGLError(GL_INVALID_OPERATION);
+    return;
+  }
+  glFramebufferRenderbufferEXT(target, attachment, renderbuffertarget,
+                               renderbuffer);
+}
+
+GLenum GLES2DecoderImpl::DoCheckFramebufferStatus(GLenum target) {
+  if (bound_framebuffer_ == 0) {
+    return GL_FRAMEBUFFER_COMPLETE;
+  }
+  return glCheckFramebufferStatusEXT(target);
+}
+
+void GLES2DecoderImpl::DoFramebufferTexture2D(
+    GLenum target, GLenum attachment, GLenum textarget, GLuint texture,
+    GLint level) {
+  if (bound_framebuffer_ == 0) {
+    SetGLError(GL_INVALID_OPERATION);
+    return;
+  }
+  glFramebufferTexture2DEXT(target, attachment, textarget, texture, level);
+}
+
+void GLES2DecoderImpl::DoGetFramebufferAttachmentParameteriv(
+    GLenum target, GLenum attachment, GLenum pname, GLint* params) {
+  if (bound_framebuffer_ == 0) {
+    SetGLError(GL_INVALID_OPERATION);
+    return;
+  }
+  glGetFramebufferAttachmentParameterivEXT(target, attachment, pname, params);
+}
+
+void GLES2DecoderImpl::DoGetRenderbufferParameteriv(
+    GLenum target, GLenum pname, GLint* params) {
+  if (bound_renderbuffer_ == 0) {
+    SetGLError(GL_INVALID_OPERATION);
+    return;
+  }
+  glGetRenderbufferParameterivEXT(target, pname, params);
+}
+
+void GLES2DecoderImpl::DoRenderbufferStorage(
+  GLenum target, GLenum internalformat, GLsizei width, GLsizei height) {
+  if (bound_renderbuffer_ == 0) {
+    SetGLError(GL_INVALID_OPERATION);
+    return;
+  }
+  glRenderbufferStorageEXT(target, internalformat, width, height);
 }
 
 void GLES2DecoderImpl::DoLinkProgram(GLuint program) {

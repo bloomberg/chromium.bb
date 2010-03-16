@@ -54,6 +54,12 @@ void GLES2DecoderTestBase::SpecializedSetup<LinkProgram, 0>() {
 };
 
 template <>
+void GLES2DecoderTestBase::SpecializedSetup<RenderbufferStorage, 0>() {
+  DoBindRenderbuffer(GL_RENDERBUFFER, client_renderbuffer_id_,
+                    kServiceRenderbufferId);
+};
+
+template <>
 void GLES2DecoderTestBase::SpecializedSetup<TexParameterf, 0>() {
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
 };

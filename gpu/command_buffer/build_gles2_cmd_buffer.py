@@ -370,11 +370,17 @@ _ENUM_LISTS = {
     'valid': [
       'GL_FRAMEBUFFER',
     ],
+    'invalid': [
+      'GL_RENDERBUFFER',
+    ],
   },
   'RenderBufferTarget': {
     'type': 'GLenum',
     'valid': [
       'GL_RENDERBUFFER',
+    ],
+    'invalid': [
+      'GL_FRAMEBUFFER',
     ],
   },
   'BufferTarget': {
@@ -429,6 +435,9 @@ _ENUM_LISTS = {
     'valid': [
       'GL_VERTEX_SHADER',
       'GL_FRAGMENT_SHADER',
+    ],
+    'invalid': [
+      'GL_GEOMETRY_SHADER',
     ],
   },
   'FaceType': {
@@ -842,7 +851,7 @@ _ENUM_LISTS = {
 # expectation:  If False the unit test will have no expected calls.
 
 _FUNCTION_INFO = {
-  'ActiveTexture': {'decoder_func': 'DoActiveTexture', 'expectation': False},
+  'ActiveTexture': {'decoder_func': 'DoActiveTexture', 'unit_test': False},
   'BindAttribLocation': {'type': 'GLchar'},
   'BindBuffer': {'decoder_func': 'DoBindBuffer'},
   'BindFramebuffer': {
@@ -856,7 +865,12 @@ _FUNCTION_INFO = {
   'BindTexture': {'decoder_func': 'DoBindTexture'},
   'BufferData': {'type': 'Manual', 'immediate': True},
   'BufferSubData': {'type': 'Data', 'decoder_func': 'DoBufferSubData'},
-  'CheckFramebufferStatus': {'decoder_func': 'glCheckFramebufferStatusEXT'},
+  'CheckFramebufferStatus': {
+    'type': 'Is',
+    'decoder_func': 'DoCheckFramebufferStatus',
+    'gl_test_func': 'glCheckFramebufferStatusEXT',
+    'result': ['GLenum'],
+  },
   'ClearDepthf': {'decoder_func': 'glClearDepth'},
   'CompileShader': {'decoder_func': 'DoCompileShader', 'unit_test': False},
   'CompressedTexImage2D': {'type': 'Manual','immediate': True},
@@ -885,8 +899,14 @@ _FUNCTION_INFO = {
   'EnableVertexAttribArray': {'decoder_func': 'DoEnableVertexAttribArray'},
   'Finish': {'impl_func': False},
   'Flush': {'impl_func': False},
-  'FramebufferRenderbuffer': {'decoder_func': 'glFramebufferRenderbufferEXT'},
-  'FramebufferTexture2D': {'decoder_func': 'glFramebufferTexture2DEXT'},
+  'FramebufferRenderbuffer': {
+    'decoder_func': 'DoFramebufferRenderbuffer',
+    'gl_test_func': 'glFramebufferRenderbufferEXT',
+  },
+  'FramebufferTexture2D': {
+    'decoder_func': 'DoFramebufferTexture2D',
+    'gl_test_func': 'glFramebufferTexture2DEXT',
+  },
   'GenerateMipmap': {
     'decoder_func': 'DoGenerateMipmap',
     'gl_test_func': 'glGenerateMipmapEXT',
@@ -937,15 +957,15 @@ _FUNCTION_INFO = {
   'GetBufferParameteriv': {'type': 'GETn'},
   'GetError': {
     'type': 'Is',
-    'decoder_func':
-    'GetGLError',
+    'decoder_func': 'GetGLError',
     'impl_func': False,
     'result': ['GLenum'],
   },
   'GetFloatv': {'type': 'GETn'},
   'GetFramebufferAttachmentParameteriv': {
     'type': 'GETn',
-    'decoder_func': 'glGetFramebufferAttachmentParameterivEXT',
+    'decoder_func': 'DoGetFramebufferAttachmentParameteriv',
+    'gl_test_func': 'glGetFramebufferAttachmentParameterivEXT',
   },
   'GetIntegerv': {'type': 'GETn'},
   'GetProgramiv': {'type': 'GETn'},
@@ -956,7 +976,8 @@ _FUNCTION_INFO = {
     },
   'GetRenderbufferParameteriv': {
     'type': 'GETn',
-    'decoder_func': 'glGetRenderbufferParameterivEXT',
+    'decoder_func': 'DoGetRenderbufferParameteriv',
+    'gl_test_func': 'glGetRenderbufferParameterivEXT',
   },
   'GetShaderiv': {'type': 'GETn', 'decoder_func': 'DoGetShaderiv'},
   'GetShaderInfoLog': {
@@ -1024,7 +1045,10 @@ _FUNCTION_INFO = {
   'IsTexture': {'type': 'Is'},
   'LinkProgram': {'decoder_func': 'DoLinkProgram'},
   'PixelStorei': {'type': 'Manual'},
-  'RenderbufferStorage': {'decoder_func': 'glRenderbufferStorageEXT'},
+  'RenderbufferStorage': {
+    'decoder_func': 'DoRenderbufferStorage',
+    'gl_test_func': 'glRenderbufferStorageEXT',
+  },
   'ReadPixels': {
     'cmd_comment':
         '// ReadPixels has the result separated from the pixel buffer so that\n'
@@ -1475,6 +1499,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
   %(name)s cmd;
   cmd.Init(%(args)s);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 """
     self.WriteValidUnitTest(func, file, valid_test)
@@ -1867,6 +1892,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
   %(name)s cmd;
   cmd.Init(%(args)s);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
   EXPECT_EQ(GetServiceId(kNewClientId), kNewServiceId);
 }
 """
@@ -1897,6 +1923,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
   cmd.Init(1, &temp);
   EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
   EXPECT_EQ(GetServiceId(kNewClientId), kNewServiceId);
 }
 """
@@ -2032,6 +2059,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
   %(name)s cmd;
   cmd.Init(%(args)s%(comma)skNewClientId);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
   EXPECT_EQ(GetServiceId(kNewClientId), kNewServiceId);
 }
 """
@@ -2102,6 +2130,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
   %(name)s cmd;
   cmd.Init(%(args)s);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
   EXPECT_EQ(GetServiceId(kNewClientId), 0u);
 }
 """
@@ -2136,6 +2165,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
   cmd.Init(1, &client_%(resource_name)s_id_);
   EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(client_%(resource_name)s_id_)));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
   EXPECT_EQ(GetServiceId(kNewClientId), 0u);
 }
 """
@@ -2355,6 +2385,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
   cmd.Init(%(gl_args)s, &temp[0]);
   EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 """
     gl_arg_strings = []
@@ -2533,6 +2564,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
   cmd.Init(%(gl_args)s, &temp[0]);
   EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 """
     gl_arg_strings = []
@@ -3073,6 +3105,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
   %(name)s cmd;
   cmd.Init(%(args)s%(comma)sshared_memory_id_, shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 """
     comma = ""
@@ -3204,6 +3237,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
   EXPECT_EQ(strlen(kInfo) + 1, bucket->size());
   EXPECT_EQ(0, memcmp(bucket->GetData(0, bucket->size()), kInfo,
                       bucket->size()));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 """
     args = func.GetOriginalArgs()

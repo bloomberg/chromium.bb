@@ -31,6 +31,7 @@
 #define GL_TEXTURE_1D 0x0DE0
 #define GL_TEXTURE_3D 0x806F
 #define GL_DOUBLE 0x140A
+#define GL_GEOMETRY_SHADER 0x8DD9
 
 namespace gles2 {
 

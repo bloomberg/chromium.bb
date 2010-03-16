@@ -1014,6 +1014,93 @@ TEST_F(GLES2DecoderWithShaderTest, BindBufferToDifferentTargetFails) {
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
+TEST_F(GLES2DecoderTest, ActiveTextureValidArgs) {
+  EXPECT_CALL(*gl_, ActiveTexture(GL_TEXTURE1));
+  SpecializedSetup<ActiveTexture, 0>();
+  ActiveTexture cmd;
+  cmd.Init(GL_TEXTURE1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_F(GLES2DecoderTest, ActiveTextureInalidArgs) {
+  EXPECT_CALL(*gl_, ActiveTexture(_)).Times(0);
+  SpecializedSetup<ActiveTexture, 0>();
+  ActiveTexture cmd;
+  cmd.Init(GL_TEXTURE0 - 1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+  cmd.Init(kNumTextureUnits);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+}
+
+TEST_F(GLES2DecoderTest, CheckFramebufferStatusWithNoBoundTarget) {
+  EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(_))
+      .Times(0);
+  CheckFramebufferStatus::Result* result =
+      static_cast<CheckFramebufferStatus::Result*>(shared_memory_address_);
+  *result = 0;
+  CheckFramebufferStatus cmd;
+  cmd.Init(GL_FRAMEBUFFER, shared_memory_id_, shared_memory_offset_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(*result, GL_FRAMEBUFFER_COMPLETE);
+}
+
+TEST_F(GLES2DecoderTest, FramebufferRenderbufferWithNoBoundTarget) {
+  EXPECT_CALL(*gl_, FramebufferRenderbufferEXT(_, _, _, _))
+      .Times(0);
+  FramebufferRenderbuffer cmd;
+  cmd.Init(
+    GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER,
+    client_renderbuffer_id_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+}
+
+TEST_F(GLES2DecoderTest, FramebufferTexture2DWithNoBoundTarget) {
+  EXPECT_CALL(*gl_, FramebufferTexture2DEXT(_, _, _, _, _))
+      .Times(0);
+  FramebufferTexture2D cmd;
+  cmd.Init(
+      GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, client_texture_id_,
+      5);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+}
+
+TEST_F(GLES2DecoderTest, GetFramebufferAttachmentParameterivWithNoBoundTarget) {
+  EXPECT_CALL(*gl_, GetFramebufferAttachmentParameterivEXT(_, _, _, _))
+      .Times(0);
+  GetFramebufferAttachmentParameteriv cmd;
+  cmd.Init(
+      GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+      GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE, shared_memory_id_,
+      shared_memory_offset_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+}
+
+TEST_F(GLES2DecoderTest, GetRenderbufferParameterivWithNoBoundTarget) {
+  EXPECT_CALL(*gl_, GetRenderbufferParameterivEXT(_, _, _))
+      .Times(0);
+  GetRenderbufferParameteriv cmd;
+  cmd.Init(
+      GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, shared_memory_id_,
+      shared_memory_offset_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+}
+
+TEST_F(GLES2DecoderTest, RenderbufferStorageWithNoBoundTarget) {
+  EXPECT_CALL(*gl_, RenderbufferStorageEXT(_, _, _, _))
+      .Times(0);
+  RenderbufferStorage cmd;
+  cmd.Init(GL_RENDERBUFFER, GL_RGBA4, 3, 4);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+}
+
 // TODO(gman): BindAttribLocation
 
 // TODO(gman): BindAttribLocationImmediate

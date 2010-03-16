@@ -273,13 +273,17 @@ TEST(GLES2FormatTest, CheckFramebufferStatus) {
   CheckFramebufferStatus cmd = { { 0 } };
   void* next_cmd = cmd.Set(
       &cmd,
-      static_cast<GLenum>(11));
+      static_cast<GLenum>(11),
+      static_cast<uint32>(12),
+      static_cast<uint32>(13));
   EXPECT_EQ(static_cast<uint32>(CheckFramebufferStatus::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   EXPECT_EQ(static_cast<char*>(next_cmd),
             reinterpret_cast<char*>(&cmd) + sizeof(cmd));
   EXPECT_EQ(static_cast<GLenum>(11), cmd.target);
+  EXPECT_EQ(static_cast<uint32>(12), cmd.result_shm_id);
+  EXPECT_EQ(static_cast<uint32>(13), cmd.result_shm_offset);
 }
 
 TEST(GLES2FormatTest, Clear) {

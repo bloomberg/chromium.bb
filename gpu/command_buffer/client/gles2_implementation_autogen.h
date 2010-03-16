@@ -65,7 +65,15 @@ void BufferData(
 void BufferSubData(
     GLenum target, GLintptr offset, GLsizeiptr size, const void* data);
 
-GLenum CheckFramebufferStatus(GLenum target);
+GLenum CheckFramebufferStatus(GLenum target) {
+  typedef CheckFramebufferStatus::Result Result;
+  Result* result = GetResultAs<Result*>();
+  *result = 0;
+  helper_->CheckFramebufferStatus(
+      target, result_shm_id(), result_shm_offset());
+  WaitForCmd();
+  return *result;
+}
 
 void Clear(GLbitfield mask) {
   helper_->Clear(mask);

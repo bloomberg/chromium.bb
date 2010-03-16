@@ -40,6 +40,37 @@ void GLES2DecoderTestBase::SpecializedSetup<GenerateMipmap, 0>() {
       0, 0);
 };
 
+template <>
+void GLES2DecoderTestBase::SpecializedSetup<CheckFramebufferStatus, 0>() {
+  DoBindFramebuffer(GL_FRAMEBUFFER, client_framebuffer_id_,
+                    kServiceFramebufferId);
+};
+
+template <>
+void GLES2DecoderTestBase::SpecializedSetup<FramebufferRenderbuffer, 0>() {
+  DoBindFramebuffer(GL_FRAMEBUFFER, client_framebuffer_id_,
+                    kServiceFramebufferId);
+};
+
+template <>
+void GLES2DecoderTestBase::SpecializedSetup<FramebufferTexture2D, 0>() {
+  DoBindFramebuffer(GL_FRAMEBUFFER, client_framebuffer_id_,
+                    kServiceFramebufferId);
+};
+
+template <>
+void GLES2DecoderTestBase::SpecializedSetup<GetFramebufferAttachmentParameteriv,
+                                            0>() {
+  DoBindFramebuffer(GL_FRAMEBUFFER, client_framebuffer_id_,
+                    kServiceFramebufferId);
+};
+
+template <>
+void GLES2DecoderTestBase::SpecializedSetup<GetRenderbufferParameteriv, 0>() {
+  DoBindRenderbuffer(GL_RENDERBUFFER, client_renderbuffer_id_,
+                    kServiceRenderbufferId);
+};
+
 #include "gpu/command_buffer/service/gles2_cmd_decoder_unittest_1_autogen.h"
 
 }  // namespace gles2

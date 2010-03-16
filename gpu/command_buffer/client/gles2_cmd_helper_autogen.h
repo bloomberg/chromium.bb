@@ -109,10 +109,11 @@
     c.Init(target, offset, size);
   }
 
-  void CheckFramebufferStatus(GLenum target) {
+  void CheckFramebufferStatus(
+      GLenum target, uint32 result_shm_id, uint32 result_shm_offset) {
     gles2::CheckFramebufferStatus& c =
         GetCmdSpace<gles2::CheckFramebufferStatus>();
-    c.Init(target);
+    c.Init(target, result_shm_id, result_shm_offset);
   }
 
   void Clear(GLbitfield mask) {
