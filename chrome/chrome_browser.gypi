@@ -415,6 +415,8 @@
         'browser/chromeos/status/clock_menu_button.h',
         'browser/chromeos/status/language_menu_button.cc',
         'browser/chromeos/status/language_menu_button.h',
+        'browser/chromeos/status/language_menu_l10n_util.cc',
+        'browser/chromeos/status/language_menu_l10n_util.h',
         'browser/chromeos/status/network_menu_button.cc',
         'browser/chromeos/status/network_menu_button.h',
         'browser/chromeos/status/power_menu_button.cc',

@@ -7041,6 +7041,44 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_STATUSBAR_IME_CONFIGURE" desc="Configure the text input method.">
         Configure IME...
       </message>
+    </if>
+    <if expr="pp_ifdef('chromeos') and lang == 'ja'">
+      <message name="IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_HIRAGANA" desc="In the language menu button, this shows a character set in use is set to Hiragana.">
+        Hiragana
+      </message>
+      <message name="IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_KATAKANA" desc="In the language menu button, this shows a character set in use is set to KATAKANA.">
+        Katakana
+      </message>
+      <message name="IDS_STATUSBAR_IME_JAPANESE_IME_INPUT_MODE_KANA" desc="In the language menu button, this shows the input mode.">
+        Kana
+      </message>
+    </if>
+    <if expr="pp_ifdef('chromeos') and lang != 'ja'">
+      <message translateable="false" name="IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_HIRAGANA" desc="">
+        Hiragana
+      </message>
+      <message translateable="false" name="IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_KATAKANA" desc="">
+        Katakana
+      </message>
+      <message translateable="false" name="IDS_STATUSBAR_IME_JAPANESE_IME_INPUT_MODE_KANA" desc="">
+        Kana
+      </message>
+    </if>
+    <if expr="pp_ifdef('chromeos')">
+      <!-- "Half width" part is translateable. -->
+      <message name="IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_HALF_WIDTH_KATAKANA" desc="In the language menu button, this shows a character set in use is set to half width Katakana.">
+	Half width Katakana
+      </message>
+      <message name="IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_LATIN" desc="In the language menu button, this shows a character set in use is set to Latin.">
+	Latin
+      </message>
+      <message name="IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_WIDE_LATIN" desc="In the language menu button, this shows a character set in use is set to wide Latin.">
+	Wide Latin
+      </message>
+      <message name="IDS_STATUSBAR_IME_JAPANESE_IME_INPUT_MODE_ROMAN" desc="In the language menu button, this shows the input mode.">
+	Roman
+      </message>
+
       <message name="IDS_COMPACT_NAVBAR" desc="The menu item on the app menu to toggle compact navigation bar">
         Toggle Compact Navigation Bar
       </message>
