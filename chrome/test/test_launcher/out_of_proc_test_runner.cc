@@ -24,6 +24,8 @@ const char kSingleProcessAltFlag[]   = "single_process";
 const char kChildProcessFlag[]   = "child";
 const char kHelpFlag[]   = "help";
 
+const int64 kTestTimeoutMs = 30000;
+
 class OutOfProcTestRunner : public tests::TestRunner {
  public:
   OutOfProcTestRunner() {
@@ -53,14 +55,19 @@ class OutOfProcTestRunner : public tests::TestRunner {
     new_cmd_line.AppendSwitch(kChildProcessFlag);
 
     base::ProcessHandle process_handle;
-    bool r = base::LaunchApp(new_cmd_line, false, false, &process_handle);
-    if (!r)
+    if (!base::LaunchApp(new_cmd_line, false, false, &process_handle))
       return false;
 
     int exit_code = 0;
-    r = base::WaitForExitCode(process_handle, &exit_code);
-    if (!r)
-      return false;
+    if (!base::WaitForExitCodeWithTimeout(process_handle, &exit_code,
+                                          kTestTimeoutMs)) {
+      LOG(ERROR) << "Test timeout exceeded!";
+
+      exit_code = -1;  // Set a non-zero exit code to signal a failure.
+
+      // Ensure that the process terminates.
+      base::KillProcess(process_handle, -1, true);
+    }
 
     return exit_code == 0;
   }
