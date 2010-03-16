@@ -175,12 +175,14 @@
   fun:GeolocationWifiDataProviderCommonTest::SetUp
 }
 
+# TODO(glider): sometimes the stacks differ between the bot and the local run,
+# e.g. "base::subtle::RefCountedBase::RefCountedBase" vs. "RefCountedBase".
 {
   bug_38293
   Heapcheck:Leak
-  fun:RefCountedBase
-  fun:RefCounted
-  fun:Flag
+  fun:*RefCountedBase
+  fun:*RefCounted
+  fun:*Flag
   fun:base::internal::WeakReferenceOwner::GetRef
   fun:base::WeakPtrFactory::GetWeakPtr
   fun:ScopedRunnableMethodFactory::NewRunnableMethod
