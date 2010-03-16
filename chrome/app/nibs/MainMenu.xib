@@ -729,7 +729,7 @@
 								</object>
 								<object class="NSMenuItem" id="530225222">
 									<reference key="NSMenu" ref="466310130"/>
-									<string key="NSTitle">^IDS_FULLSCREEN_MAC</string>
+									<string key="NSTitle">^IDS_ENTER_FULLSCREEN_MAC</string>
 									<string key="NSKeyEquiv">F</string>
 									<int key="NSKeyEquivModMask">1048576</int>
 									<int key="NSMnemonicLoc">2147483647</int>

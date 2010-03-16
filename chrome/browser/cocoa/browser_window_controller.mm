@@ -51,6 +51,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
+#include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 
 
@@ -864,9 +865,16 @@
           // command updater doesn't know.
           enable &= browser_->CanRestoreTab();
           break;
-        case IDC_FULLSCREEN:
+        case IDC_FULLSCREEN: {
           enable &= [self supportsFullscreen];
+          if ([static_cast<NSObject*>(item) isKindOfClass:[NSMenuItem class]]) {
+            NSString* menuTitle = l10n_util::GetNSString(
+                [self isFullscreen] ? IDS_EXIT_FULLSCREEN_MAC :
+                                      IDS_ENTER_FULLSCREEN_MAC);
+            [static_cast<NSMenuItem*>(item) setTitle:menuTitle];
+          }
           break;
+        }
         case IDC_SYNC_BOOKMARKS:
           enable &= ProfileSyncService::IsSyncEnabled();
           sync_ui_util::UpdateSyncItem(item, enable, browser_->profile());

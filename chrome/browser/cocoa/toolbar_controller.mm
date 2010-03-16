@@ -14,6 +14,7 @@
 #include "chrome/browser/app_menu_model.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/browser_window.h"
 #include "chrome/browser/bubble_positioner.h"
 #import "chrome/browser/cocoa/autocomplete_text_field.h"
 #import "chrome/browser/cocoa/autocomplete_text_field_editor.h"
@@ -127,6 +128,20 @@ class MenuDelegate : public menus::SimpleMenuModel::Delegate {
       menus::Accelerator* accelerator) { return false; }
   virtual void ExecuteCommand(int command_id) {
     browser_->ExecuteCommand(command_id);
+  }
+  virtual bool IsLabelForCommandIdDynamic(int command_id) const {
+    // On Mac, switch between "Enter Full Screen" and "Exit Full Screen".
+    return (command_id == IDC_FULLSCREEN);
+  }
+  virtual string16 GetLabelForCommandId(int command_id) const {
+    if (command_id == IDC_FULLSCREEN) {
+      int string_id = IDS_ENTER_FULLSCREEN_MAC;  // Default to Enter.
+      // Note: On startup, |window()| may be NULL.
+      if (browser_->window() && browser_->window()->IsFullscreen())
+        string_id = IDS_EXIT_FULLSCREEN_MAC;
+      return l10n_util::GetStringUTF16(string_id);
+    }
+    return menus::SimpleMenuModel::Delegate::GetLabelForCommandId(command_id);
   }
 
  private:
