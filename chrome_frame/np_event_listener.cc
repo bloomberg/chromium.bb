@@ -352,7 +352,7 @@ NPIdentifier* NPObjectEventListener::GetCachedStringIds() {
       "addEventListener",
       "removeEventListener",
       "tagName",
-      "parentElement",
+      "parentNode",
     };
     COMPILE_ASSERT(arraysize(identifier_names) == arraysize(_identifiers),
                    mismatched_array_size);
