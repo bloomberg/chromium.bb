@@ -42,5 +42,6 @@ TEST_F(FastShutdown, DISABLED_SlowTermination) {
   // alert().
   ASSERT_TRUE(browser->ApplyAccelerator(IDC_CLOSE_WINDOW));
   ASSERT_TRUE(automation()->WaitForAppModalDialog(action_max_timeout_ms()));
-  automation()->ClickAppModalDialogButton(MessageBoxFlags::DIALOGBUTTON_OK);
+  ASSERT_TRUE(automation()->ClickAppModalDialogButton(
+                  MessageBoxFlags::DIALOGBUTTON_OK));
 }

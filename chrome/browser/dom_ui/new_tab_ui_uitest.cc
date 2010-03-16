@@ -38,7 +38,7 @@ TEST_F(NewTabUITest, NTPHasThumbnails) {
   ASSERT_EQ(1, tab_count);
 
   // Bring up a new tab page.
-  window->RunCommand(IDC_NEW_TAB);
+  ASSERT_TRUE(window->RunCommand(IDC_NEW_TAB));
   ASSERT_TRUE(window->GetTabCount(&tab_count));
   ASSERT_EQ(2, tab_count);
   int load_time;
@@ -76,7 +76,7 @@ TEST_F(NewTabUITest, ChromeInternalLoadsNTP) {
   // Go to the "new tab page" using its old url, rather than chrome://newtab.
   scoped_refptr<TabProxy> tab = window->GetTab(0);
   ASSERT_TRUE(tab.get());
-  tab->NavigateToURLAsync(GURL("chrome-internal:"));
+  ASSERT_TRUE(tab->NavigateToURLAsync(GURL("chrome-internal:")));
   int load_time;
   ASSERT_TRUE(automation()->WaitForInitialNewTabUILoad(&load_time));
 
@@ -123,7 +123,7 @@ TEST_F(NewTabUITest, HomePageLink) {
   ASSERT_EQ(1, tab_count);
 
   // Bring up a new tab page.
-  browser->RunCommand(IDC_NEW_TAB);
+  ASSERT_TRUE(browser->RunCommand(IDC_NEW_TAB));
   ASSERT_TRUE(browser->GetTabCount(&tab_count));
   ASSERT_EQ(2, tab_count);
   int load_time;

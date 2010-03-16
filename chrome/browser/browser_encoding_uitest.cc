@@ -242,7 +242,8 @@ TEST_F(BrowserEncodingTest, TestEncodingAutoDetect) {
   // Set the default charset to one of encodings not supported by the current
   // auto-detector (Please refer to the above comments) to make sure we
   // incorrectly decode the page. Now we use ISO-8859-4.
-  browser->SetStringPreference(prefs::kDefaultCharset, L"ISO-8859-4");
+  ASSERT_TRUE(browser->SetStringPreference(prefs::kDefaultCharset,
+                                           L"ISO-8859-4"));
   scoped_refptr<TabProxy> tab(GetActiveTab());
   ASSERT_TRUE(tab.get());
 

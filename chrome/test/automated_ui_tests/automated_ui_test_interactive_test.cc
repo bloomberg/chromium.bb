@@ -15,7 +15,7 @@ TEST_F(AutomatedUITestBase, DragOut) {
   PlatformThread::Sleep(sleep_timeout_ms());
   ASSERT_TRUE(DragTabOut());
   int window_count;
-  automation()->GetBrowserWindowCount(&window_count);
+  ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
   ASSERT_EQ(2, window_count);
 }
 

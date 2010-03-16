@@ -69,7 +69,7 @@ class DOMStorageTest : public UILayoutTest {
     ASSERT_TRUE(tab.get());
 
     GURL url = GetTestUrl(L"layout_tests", L"clear_dom_storage.html");
-    tab->SetCookie(url, "");
+    ASSERT_TRUE(tab->SetCookie(url, ""));
     ASSERT_TRUE(tab->NavigateToURL(url));
 
     WaitUntilCookieNonEmpty(tab.get(), url, "cleared", kTestIntervalMs,

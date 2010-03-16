@@ -66,7 +66,7 @@ TEST_F(MouseLeaveTest, MAYBE_TestOnMouseOut) {
   ASSERT_TRUE(window->SimulateOSMouseMove(above_content_point));
 
   // Navigate to the test html page.
-  tab->NavigateToURL(test_url);
+  ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS, tab->NavigateToURL(test_url));
 
   const int timeout_ms = 5 * action_max_timeout_ms();
   const int check_interval_ms = action_max_timeout_ms() / 10;

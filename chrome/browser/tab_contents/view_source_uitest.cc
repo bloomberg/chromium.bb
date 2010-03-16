@@ -47,12 +47,12 @@ TEST_F(ViewSourceTest, DoesBrowserRenderInViewSource) {
   url = GURL("view-source:" + url.spec());
   scoped_refptr<TabProxy> tab(GetActiveTab());
   ASSERT_TRUE(tab.get());
-  tab->NavigateToURL(url);
+  ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS, tab->NavigateToURL(url));
 
   // Try to retrieve the cookie that the page sets
   // It should not be there (because we are in view-source mode
   std::string cookie_found;
-  tab->GetCookieByName(url, cookie, &cookie_found);
+  ASSERT_TRUE(tab->GetCookieByName(url, cookie, &cookie_found));
   EXPECT_NE(cookie_data, cookie_found);
 }
 

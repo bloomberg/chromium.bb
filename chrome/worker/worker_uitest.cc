@@ -106,7 +106,8 @@ class WorkerTest : public UILayoutTest {
     // Pass a large number of navigations to tell the tab to block until an auth
     // dialog pops up.
     bool timeout = false;
-    tab->NavigateToURLWithTimeout(url, 100, kTestWaitTimeoutMs, &timeout);
+    EXPECT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
+        tab->NavigateToURLWithTimeout(url, 100, kTestWaitTimeoutMs, &timeout));
     EXPECT_FALSE(timeout);
     return tab->NeedsAuth();
   }
@@ -483,14 +484,16 @@ TEST_F(WorkerTest, DISABLED_LimitTotal) {
   ASSERT_TRUE(tab.get());
   ASSERT_TRUE(tab->NavigateToURL(url));
   scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(window.get());
   for (int i = 1; i < tab_count; ++i)
-    window->AppendTab(url);
+    ASSERT_TRUE(window->AppendTab(url));
 
   // Check that we didn't create more than the max number of workers.
   ASSERT_TRUE(WaitForProcessCountToBe(tab_count, total_workers));
 
   // Now close a page and check that the queued workers were started.
-  tab->NavigateToURL(GetTestUrl(L"google", L"google.html"));
+  ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
+            tab->NavigateToURL(GetTestUrl(L"google", L"google.html")));
 
   ASSERT_TRUE(WaitForProcessCountToBe(tab_count, total_workers));
 #endif
@@ -571,7 +574,7 @@ TEST_F(WorkerTest, DISABLED_QueuedSharedWorkerStartedFromOtherTab) {
   scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
   GURL url2 = GetTestUrl(L"workers", L"single_shared_worker.html");
   url2 = GURL(url2.spec() + StringPrintf("?id=%d", max_workers_per_tab));
-  window->AppendTab(url2);
+  ASSERT_TRUE(window->AppendTab(url2));
 
   std::string value = WaitUntilCookieNonEmpty(tab.get(), url,
       kTestCompleteCookie, kTestIntervalMs, kTestWaitTimeoutMs);

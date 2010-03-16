@@ -201,7 +201,7 @@ class DomCheckerTest : public UITest {
 
     scoped_refptr<TabProxy> tab(GetActiveTab());
     ASSERT_TRUE(tab.get());
-    tab->NavigateToURL(test_url);
+    ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS, tab->NavigateToURL(test_url));
 
     // Wait for the test to finish.
     ASSERT_TRUE(WaitUntilTestCompletes(tab.get()));

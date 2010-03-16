@@ -97,7 +97,7 @@ TEST_F(MetricsServiceTest, CrashRenderers) {
 #if defined(OS_WIN)
     expected_crashes_ = 1;
 #endif
-    tab->NavigateToURLAsync(GURL("about:crash"));
+    ASSERT_TRUE(tab->NavigateToURLAsync(GURL("about:crash")));
   }
 
   // Give the browser a chance to notice the crashed tab.

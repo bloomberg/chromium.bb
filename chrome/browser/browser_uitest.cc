@@ -39,7 +39,7 @@ class BrowserTest : public UITest {
 #elif defined(OS_POSIX)
     // There's nothing to do here if the browser is not running.
     if (IsBrowserRunning()) {
-      automation()->SetFilteredInet(false);
+      EXPECT_TRUE(automation()->SetFilteredInet(false));
 
       int window_count = 0;
       EXPECT_TRUE(automation()->GetBrowserWindowCount(&window_count));
@@ -193,7 +193,8 @@ TEST_F(BrowserTest, MAYBE_OtherRedirectsDontForkProcess) {
 
   // Start with a file:// url
   test_file = test_file.AppendASCII("title2.html");
-  tab->NavigateToURL(net::FilePathToFileURL(test_file));
+  ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
+            tab->NavigateToURL(net::FilePathToFileURL(test_file)));
   int orig_tab_count = -1;
   ASSERT_TRUE(window->GetTabCount(&orig_tab_count));
   int orig_process_count = GetBrowserProcessCount();

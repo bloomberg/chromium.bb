@@ -248,7 +248,7 @@ void UITestBase::LaunchBrowserAndServer() {
   else
     PlatformThread::Sleep(sleep_timeout_ms());
 
-  automation()->SetFilteredInet(ShouldFilterInet());
+  EXPECT_TRUE(automation()->SetFilteredInet(ShouldFilterInet()));
 }
 
 void UITestBase::CloseBrowserAndServer() {
@@ -409,7 +409,7 @@ bool UITestBase::LaunchAnotherBrowserBlockUntilClosed(
 void UITestBase::QuitBrowser() {
   // There's nothing to do here if the browser is not running.
   if (IsBrowserRunning()) {
-    automation()->SetFilteredInet(false);
+    EXPECT_TRUE(automation()->SetFilteredInet(false));
 
     int window_count = 0;
     EXPECT_TRUE(automation()->GetBrowserWindowCount(&window_count));
@@ -435,7 +435,7 @@ void UITestBase::QuitBrowser() {
         automation()->GetBrowserWindow(0);
     EXPECT_TRUE(browser_proxy.get());
     if (browser_proxy.get()) {
-      browser_proxy->ApplyAccelerator(IDC_CLOSE_WINDOW);
+      EXPECT_TRUE(browser_proxy->ApplyAccelerator(IDC_CLOSE_WINDOW));
       browser_proxy = NULL;
     }
 
@@ -519,7 +519,7 @@ scoped_refptr<TabProxy> UITestBase::GetActiveTab() {
 void UITestBase::NavigateToURLAsync(const GURL& url) {
   scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
   ASSERT_TRUE(tab_proxy.get());
-  tab_proxy->NavigateToURLAsync(url);
+  ASSERT_TRUE(tab_proxy->NavigateToURLAsync(url));
 }
 
 void UITestBase::NavigateToURL(const GURL& url) {
@@ -536,9 +536,10 @@ void UITestBase::NavigateToURLBlockUntilNavigationsComplete(
   scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
   ASSERT_TRUE(tab_proxy.get());
   bool is_timeout = true;
-  ASSERT_TRUE(tab_proxy->NavigateToURLWithTimeout(
-      url, number_of_navigations, command_execution_timeout_ms(),
-      &is_timeout)) << url.spec();
+  EXPECT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
+            tab_proxy->NavigateToURLWithTimeout(
+                url, number_of_navigations, command_execution_timeout_ms(),
+                &is_timeout)) << url.spec();
   ASSERT_FALSE(is_timeout) << url.spec();
 }
 
@@ -551,9 +552,10 @@ void UITestBase::NavigateToURLBlockUntilNavigationsComplete(
   scoped_refptr<TabProxy> tab_proxy(window->GetTab(tab_index));
   ASSERT_TRUE(tab_proxy.get());
   bool is_timeout = true;
-  ASSERT_TRUE(tab_proxy->NavigateToURLWithTimeout(
-      url, number_of_navigations, command_execution_timeout_ms(),
-      &is_timeout)) << url.spec();
+  EXPECT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
+            tab_proxy->NavigateToURLWithTimeout(
+                url, number_of_navigations, command_execution_timeout_ms(),
+                &is_timeout)) << url.spec();
   ASSERT_FALSE(is_timeout) << url.spec();
 }
 
@@ -718,7 +720,7 @@ bool UITestBase::WaitUntilCookieValue(TabProxy* tab,
   for (int i = 0; i < kMaxIntervals; ++i) {
     bool browser_survived = CrashAwareSleep(interval_ms);
 
-    tab->GetCookieByName(url, cookie_name, &cookie_value);
+    EXPECT_TRUE(tab->GetCookieByName(url, cookie_name, &cookie_value));
 
     if (cookie_value == expected_value) {
       completed = true;
@@ -744,7 +746,7 @@ std::string UITestBase::WaitUntilCookieNonEmpty(TabProxy* tab,
   for (int i = 0; i < kMaxIntervals; ++i) {
     bool browser_survived = CrashAwareSleep(interval_ms);
 
-    tab->GetCookieByName(url, cookie_name, &cookie_value);
+    EXPECT_TRUE(tab->GetCookieByName(url, cookie_name, &cookie_value));
 
     if (!cookie_value.empty())
       break;
@@ -810,8 +812,8 @@ FilePath UITestBase::GetDownloadDirectory() {
 }
 
 void UITestBase::CloseBrowserAsync(BrowserProxy* browser) const {
-  server_->Send(
-      new AutomationMsg_CloseBrowserRequestAsync(0, browser->handle()));
+  ASSERT_TRUE(server_->Send(
+      new AutomationMsg_CloseBrowserRequestAsync(0, browser->handle())));
 }
 
 bool UITestBase::CloseBrowser(BrowserProxy* browser,

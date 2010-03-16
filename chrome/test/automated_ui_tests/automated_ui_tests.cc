@@ -594,8 +594,13 @@ bool AutomatedUITest::ForceCrash() {
   scoped_refptr<TabProxy> tab(GetActiveTab());
   GURL test_url(chrome::kAboutCrashURL);
   bool did_timeout;
-  tab->NavigateToURLWithTimeout(test_url, 1, kDebuggingTimeoutMsec,
-                                &did_timeout);
+  AutomationMsg_NavigationResponseValues result =
+      tab->NavigateToURLWithTimeout(test_url, 1, kDebuggingTimeoutMsec,
+                                    &did_timeout);
+  if (result != AUTOMATION_MSG_NAVIGATION_SUCCESS) {
+    AddErrorAttribute("navigation_failed");
+    return false;
+  }
   if (!did_timeout) {
     AddInfoAttribute("expected_crash");
     return false;

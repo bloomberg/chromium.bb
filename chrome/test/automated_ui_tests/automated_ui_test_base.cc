@@ -39,9 +39,12 @@ bool AutomatedUITestBase::CloseActiveTab() {
   BrowserProxy* browser = active_browser();
   int tab_count;
   bool is_timeout;
-  browser->GetTabCountWithTimeout(&tab_count,
-                                  action_max_timeout_ms(),
-                                  &is_timeout);
+  if (!browser->GetTabCountWithTimeout(&tab_count,
+                                       action_max_timeout_ms(),
+                                       &is_timeout)) {
+    LogErrorMessage("get_tab_count_with_timeout_failed");
+    return false;
+  }
 
   if (is_timeout) {
     LogInfoMessage("get_tab_count_timed_out");
@@ -101,9 +104,12 @@ bool AutomatedUITestBase::DragTabOut() {
   bool is_timeout;
 
   int tab_count;
-  browser->GetTabCountWithTimeout(&tab_count,
-                                  action_max_timeout_ms(),
-                                  &is_timeout);
+  if (!browser->GetTabCountWithTimeout(&tab_count,
+                                       action_max_timeout_ms(),
+                                       &is_timeout)) {
+    LogErrorMessage("get_tab_count_with_timeout_failed");
+    return false;
+  }
 
   if (tab_count < 2) {
     LogWarningMessage("not_enough_tabs_to_drag_out");
@@ -176,9 +182,12 @@ bool AutomatedUITestBase::DragActiveTab(bool drag_right) {
   bool is_timeout;
 
   int tab_count;
-  browser->GetTabCountWithTimeout(&tab_count,
-                                  action_max_timeout_ms(),
-                                  &is_timeout);
+  if (!browser->GetTabCountWithTimeout(&tab_count,
+                                       action_max_timeout_ms(),
+                                       &is_timeout)) {
+    LogErrorMessage("get_tab_cound_with_timeout_failed");
+    return false;
+  }
 
   if (tab_count < 2) {
     LogWarningMessage("not_enough_tabs_to_drag_around");
@@ -302,10 +311,13 @@ bool AutomatedUITestBase::Navigate(const GURL& url) {
     return false;
   }
   bool did_timeout = false;
-  tab->NavigateToURLWithTimeout(url,
-                                1,
-                                command_execution_timeout_ms(),
-                                &did_timeout);
+  AutomationMsg_NavigationResponseValues result =
+      tab->NavigateToURLWithTimeout(url, 1, command_execution_timeout_ms(),
+                                    &did_timeout);
+  if (result != AUTOMATION_MSG_NAVIGATION_SUCCESS) {
+    LogErrorMessage("navigation_failed");
+    return false;
+  }
 
   if (did_timeout) {
     LogWarningMessage("timeout");

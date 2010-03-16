@@ -216,7 +216,7 @@ TEST_F(RedirectTest, NoHttpToFile) {
   scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
   ASSERT_TRUE(tab_proxy.get());
   std::wstring actual_title;
-  tab_proxy->GetTabTitle(&actual_title);
+  ASSERT_TRUE(tab_proxy->GetTabTitle(&actual_title));
   EXPECT_NE(L"File!", actual_title);
 }
 

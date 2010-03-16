@@ -103,7 +103,7 @@ TEST_F(SessionRestoreUITest, Basic) {
   ASSERT_TRUE(tab_proxy->WaitForTabToBeRestored(action_timeout_ms()));
 
   ASSERT_EQ(url2_, GetActiveTabURL());
-  tab_proxy->GoBack();
+  ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS, tab_proxy->GoBack());
   ASSERT_EQ(url1_, GetActiveTabURL());
 }
 
@@ -246,11 +246,11 @@ TEST_F(SessionRestoreUITest, ClosedTabStaysClosed) {
   scoped_refptr<TabProxy> tab_proxy(browser_proxy->GetTab(0));
   ASSERT_TRUE(tab_proxy.get());
 
-  browser_proxy->AppendTab(url2_);
+  ASSERT_TRUE(browser_proxy->AppendTab(url2_));
 
   scoped_refptr<TabProxy> active_tab(browser_proxy->GetActiveTab());
   ASSERT_TRUE(active_tab.get());
-  active_tab->Close(true);
+  ASSERT_TRUE(active_tab->Close(true));
 
   QuitBrowserAndRestore(1);
   browser_proxy = NULL;
@@ -285,7 +285,7 @@ TEST_F(SessionRestoreUITest, NormalAndPopup) {
   scoped_refptr<TabProxy> tab(popup->GetTab(0));
   ASSERT_TRUE(tab.get());
 
-  tab->NavigateToURL(url1_);
+  ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS, tab->NavigateToURL(url1_));
 
   // Simulate an exit by shuting down the session service. If we don't do this
   // the first window close is treated as though the user closed the window

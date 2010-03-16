@@ -143,6 +143,8 @@ class MemoryTest : public UITest {
     int expected_tab_count = 1;
     for (unsigned counter = 0; counter < urls_length; ++counter) {
       std::string url = urls[counter];
+      
+      SCOPED_TRACE(url);
 
       if (url == "<PAUSE>") {  // Special command to delay on this page
         PlatformThread::Sleep(2000);
@@ -169,8 +171,8 @@ class MemoryTest : public UITest {
 
       if (url == "<NEXTTAB>") {  // Special command to select the next tab.
         int tab_index, tab_count;
-        window->GetActiveTabIndex(&tab_index);
-        window->GetTabCount(&tab_count);
+        EXPECT_TRUE(window->GetActiveTabIndex(&tab_index));
+        EXPECT_TRUE(window->GetTabCount(&tab_count));
         tab_index = (tab_index + 1) % tab_count;
         tab = window->GetTab(tab_index);
         EXPECT_NE(tab, static_cast<TabProxy*>(NULL));
@@ -186,7 +188,8 @@ class MemoryTest : public UITest {
         EXPECT_TRUE(automation()->OpenNewBrowserWindow(Browser::TYPE_NORMAL,
                                                        show_window_));
         int expected_window_count = window_count + 1;
-        automation()->WaitForWindowCountToBecome(expected_window_count, 500);
+        EXPECT_TRUE(automation()->WaitForWindowCountToBecome(
+            expected_window_count, 500));
         EXPECT_TRUE(automation()->GetBrowserWindowCount(&window_count));
         EXPECT_EQ(expected_window_count, window_count);
 
@@ -213,10 +216,10 @@ class MemoryTest : public UITest {
 
       const int kMaxWaitTime = 5000;
       bool timed_out = false;
-      tab->NavigateToURLWithTimeout(GURL(urls[counter]), 1, kMaxWaitTime,
-                                    &timed_out);
-      if (timed_out)
-        printf("warning: %s timed out!\n", urls[counter].c_str());
+      EXPECT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
+          tab->NavigateToURLWithTimeout(GURL(urls[counter]), 1, kMaxWaitTime,
+                                        &timed_out));
+      EXPECT_FALSE(timed_out);
 
       // TODO(mbelshe): Bug 2953
       // The automation crashes periodically if we cycle too quickly.

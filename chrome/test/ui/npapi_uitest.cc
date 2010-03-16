@@ -128,7 +128,7 @@ TEST_F(NPAPITester, DISABLED_SelfDeletePluginInvokeAlert) {
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
 
   // Wait for the alert dialog and then close it.
-  automation()->WaitForAppModalDialog(5000);
+  ASSERT_TRUE(automation()->WaitForAppModalDialog(5000));
   scoped_refptr<WindowProxy> window(automation()->GetActiveWindow());
   ASSERT_TRUE(window.get());
   ASSERT_TRUE(window->SimulateOSKeyPress(base::VKEY_ESCAPE, 0));
@@ -370,10 +370,12 @@ TEST_F(NPAPITester, NPObjectReleasedOnDestruction) {
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
 
   scoped_refptr<BrowserProxy> window_proxy(automation()->GetBrowserWindow(0));
-  window_proxy->AppendTab(GURL(chrome::kAboutBlankURL));
+  ASSERT_TRUE(window_proxy);
+  ASSERT_TRUE(window_proxy->AppendTab(GURL(chrome::kAboutBlankURL)));
 
   scoped_refptr<TabProxy> tab_proxy(window_proxy->GetTab(0));
-  tab_proxy->Close(true);
+  ASSERT_TRUE(tab_proxy.get());
+  ASSERT_TRUE(tab_proxy->Close(true));
 }
 
 // Test that a dialog is properly created when a plugin throws an
@@ -420,7 +422,7 @@ TEST_F(NPAPIVisiblePluginTester, FLAKY_PluginConvertPointTest) {
 
   // TODO(stuartmorgan): When the automation system supports sending clicks,
   // change the test to trigger on mouse-down rather than window focus.
-  browser->BringToFront();
+  ASSERT_TRUE(browser->BringToFront());
   WaitForFinish("convert_point", "1", url, kTestCompleteCookie,
                 kTestCompleteSuccess, kShortWaitTimeout);
 }

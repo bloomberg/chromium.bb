@@ -13,6 +13,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/browser.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/test/automation/automation_handle_tracker.h"
@@ -40,55 +41,56 @@ class BrowserProxy : public AutomationResourceProxy {
 
   // Activates the tab corresponding to (zero-based) tab_index. Returns true if
   // successful.
-  bool ActivateTab(int tab_index);
+  bool ActivateTab(int tab_index) WARN_UNUSED_RESULT;
 
   // Like ActivateTab, but returns false if response is not received before
   // the specified timeout.
   bool ActivateTabWithTimeout(int tab_index, uint32 timeout_ms,
-                              bool* is_timeout);
+                              bool* is_timeout) WARN_UNUSED_RESULT;
 
   // Bring the browser window to the front, activating it. Returns true on
   // success.
-  bool BringToFront();
+  bool BringToFront() WARN_UNUSED_RESULT;
 
   // Like BringToFront, but returns false if action is not completed before
   // the specified timeout.
-  bool BringToFrontWithTimeout(uint32 timeout_ms, bool* is_timeout);
+  bool BringToFrontWithTimeout(uint32 timeout_ms,
+                               bool* is_timeout) WARN_UNUSED_RESULT;
 
   // Checks to see if a navigation command is active or not. Can also
   // return false if action is not completed before the specified
   // timeout; is_timeout will be set in those cases.
   bool IsPageMenuCommandEnabledWithTimeout(int id, uint32 timeout_ms,
-                                           bool* is_timeout);
+                                           bool* is_timeout) WARN_UNUSED_RESULT;
 
   // Append a new tab to the TabStrip.  The new tab is selected.
   // The new tab navigates to the given tab_url.
   // Returns true if successful.
   // TODO(mpcomplete): If the navigation results in an auth challenge, the
   // TabProxy we attach won't know about it.  See bug 666730.
-  bool AppendTab(const GURL& tab_url);
+  bool AppendTab(const GURL& tab_url) WARN_UNUSED_RESULT;
 
   // Gets the (zero-based) index of the currently active tab. Returns true if
   // successful.
-  bool GetActiveTabIndex(int* active_tab_index) const;
+  bool GetActiveTabIndex(int* active_tab_index) const WARN_UNUSED_RESULT;
 
   // Like GetActiveTabIndex, but returns false if active tab is not received
   // before the specified timeout.
   bool GetActiveTabIndexWithTimeout(int* active_tab_index, uint32 timeout_ms,
-                              bool* is_timeout) const;
+                              bool* is_timeout) const WARN_UNUSED_RESULT;
 
   // Returns the number of tabs in the given window.  Returns true if
   // the call was successful.
-  bool GetTabCount(int* num_tabs) const;
+  bool GetTabCount(int* num_tabs) const WARN_UNUSED_RESULT;
 
   // Like GetTabCount, but returns false if tab count is not received within the
   // before timeout.
   bool GetTabCountWithTimeout(int* num_tabs, uint32 timeout_ms,
-                              bool* is_timeout) const;
+                              bool* is_timeout) const WARN_UNUSED_RESULT;
 
   // Returns the type of the given window. Returns true if the call was
   // successful.
-  bool GetType(Browser::Type* type) const;
+  bool GetType(Browser::Type* type) const WARN_UNUSED_RESULT;
 
   // Returns the TabProxy for the tab at the given index, transferring
   // ownership of the pointer to the caller. On failure, returns NULL.
@@ -127,7 +129,7 @@ class BrowserProxy : public AutomationResourceProxy {
   // focus. This leads to a flaky test behavior in circumstances when the
   // desktop screen is locked or the test is being executed over a remote
   // desktop.
-  bool ApplyAccelerator(int id);
+  bool ApplyAccelerator(int id) WARN_UNUSED_RESULT;
 
   // Performs a drag operation between the start and end points (both defined
   // in window coordinates).  |flags| specifies which buttons are pressed for
@@ -135,7 +137,7 @@ class BrowserProxy : public AutomationResourceProxy {
   virtual bool SimulateDrag(const gfx::Point& start,
                             const gfx::Point& end,
                             int flags,
-                            bool press_escape_en_route);
+                            bool press_escape_en_route) WARN_UNUSED_RESULT;
 
   // Like SimulateDrag, but returns false if response is not received before
   // the specified timeout.
@@ -143,106 +145,113 @@ class BrowserProxy : public AutomationResourceProxy {
                                        const gfx::Point& end,
                                        int flags, uint32 timeout_ms,
                                        bool* is_timeout,
-                                       bool press_escape_en_route);
+                                       bool press_escape_en_route)
+                                       WARN_UNUSED_RESULT;
 
   // Block the thread until the tab count is |count|.
   // |wait_timeout| is the timeout, in milliseconds, for waiting.
   // Returns true on success.
-  bool WaitForTabCountToBecome(int count, int wait_timeout);
+  bool WaitForTabCountToBecome(int count, int wait_timeout) WARN_UNUSED_RESULT;
 
   // Block the thread until the specified tab is the active tab.
   // |wait_timeout| is the timeout, in milliseconds, for waiting.
   // Returns false if the tab does not become active.
-  bool WaitForTabToBecomeActive(int tab, int wait_timeout);
+  bool WaitForTabToBecomeActive(int tab, int wait_timeout) WARN_UNUSED_RESULT;
 
   // Opens the FindInPage box. Note: If you just want to search within a tab
   // you don't need to call this function, just use FindInPage(...) directly.
-  bool OpenFindInPage();
+  bool OpenFindInPage() WARN_UNUSED_RESULT;
 
   // Get the x, y coordinates for the Find window. If animating, |x| and |y|
   // will be -1, -1. Returns false on failure.
-  bool GetFindWindowLocation(int* x, int* y);
+  bool GetFindWindowLocation(int* x, int* y) WARN_UNUSED_RESULT;
 
   // Returns whether the Find window is fully visible If animating, |is_visible|
   // will be false. Returns false on failure.
-  bool IsFindWindowFullyVisible(bool* is_visible);
+  bool IsFindWindowFullyVisible(bool* is_visible) WARN_UNUSED_RESULT;
 
   // Run the specified command in the browser (see browser_commands.cc for the
   // list of supported commands).  Returns true if the command was successfully
   // dispatched, false otherwise.
-  bool RunCommandAsync(int browser_command) const;
+  bool RunCommandAsync(int browser_command) const WARN_UNUSED_RESULT;
 
   // Run the specified command in the browser (see browser_commands.cc for the
   // list of supported commands).  Returns true if the command was successfully
   // dispatched and executed, false otherwise.
-  bool RunCommand(int browser_command) const;
+  bool RunCommand(int browser_command) const WARN_UNUSED_RESULT;
 
   // Returns whether the Bookmark bar is visible and whether we are animating
   // it into position. Returns false on failure.
-  bool GetBookmarkBarVisibility(bool* is_visible, bool* is_animating);
+  bool GetBookmarkBarVisibility(bool* is_visible,
+                                bool* is_animating) WARN_UNUSED_RESULT;
 
   // Get the bookmarks as a JSON string and put it in |json_string|.
   // Return true on success.
-  bool GetBookmarksAsJSON(std::string* json_string);
+  bool GetBookmarksAsJSON(std::string* json_string) WARN_UNUSED_RESULT;
 
   // Wait for the bookmarks to load.  Called implicitly by GetBookmarksAsJSON().
-  bool WaitForBookmarkModelToLoad();
+  bool WaitForBookmarkModelToLoad() WARN_UNUSED_RESULT;
 
   // Editing of the bookmark model.  Bookmarks are referenced by id.
   // Bookmark or group (folder) creation:
-  bool AddBookmarkGroup(int64 parent_id, int index, std::wstring& title);
+  bool AddBookmarkGroup(int64 parent_id, int index,
+                        std::wstring& title) WARN_UNUSED_RESULT;
   bool AddBookmarkURL(int64 parent_id, int index,
-                      std::wstring& title, const GURL& url);
+                      std::wstring& title, const GURL& url) WARN_UNUSED_RESULT;
   // Bookmark editing:
-  bool ReparentBookmark(int64 id, int64 new_parent_id, int index);
-  bool SetBookmarkTitle(int64 id, std::wstring& title);
-  bool SetBookmarkURL(int64 id, const GURL& url);
+  bool ReparentBookmark(int64 id, int64 new_parent_id,
+                        int index) WARN_UNUSED_RESULT;
+  bool SetBookmarkTitle(int64 id, std::wstring& title) WARN_UNUSED_RESULT;
+  bool SetBookmarkURL(int64 id, const GURL& url) WARN_UNUSED_RESULT;
   // Finally, bookmark deletion:
-  bool RemoveBookmark(int64 id);
+  bool RemoveBookmark(int64 id) WARN_UNUSED_RESULT;
 
   // Fills |*is_visible| with whether the browser's download shelf is currently
   // visible. The return value indicates success. On failure, |*is_visible| is
   // unchanged.
-  bool IsShelfVisible(bool* is_visible);
+  bool IsShelfVisible(bool* is_visible) WARN_UNUSED_RESULT;
 
   // Shows or hides the download shelf.
-  bool SetShelfVisible(bool is_visible);
+  bool SetShelfVisible(bool is_visible) WARN_UNUSED_RESULT;
 
   // Sets the int value of the specified preference.
-  bool SetIntPreference(const std::wstring& name, int value);
+  bool SetIntPreference(const std::wstring& name, int value) WARN_UNUSED_RESULT;
 
   // Sets the string value of the specified preference.
-  bool SetStringPreference(const std::wstring& name, const std::wstring& value);
+  bool SetStringPreference(const std::wstring& name,
+                           const std::wstring& value) WARN_UNUSED_RESULT;
 
   // Gets the boolean value of the specified preference.
-  bool GetBooleanPreference(const std::wstring& name, bool* value);
+  bool GetBooleanPreference(const std::wstring& name,
+                            bool* value) WARN_UNUSED_RESULT;
 
   // Sets the boolean value of the specified preference.
-  bool SetBooleanPreference(const std::wstring& name, bool value);
+  bool SetBooleanPreference(const std::wstring& name,
+                            bool value) WARN_UNUSED_RESULT;
 
   // Sets default content settings.
   bool SetDefaultContentSetting(ContentSettingsType content_type,
-                                ContentSetting setting);
+                                ContentSetting setting) WARN_UNUSED_RESULT;
 
   // Sets content settings for a particular host (overriding the default).
   bool SetContentSetting(const std::string& host,
                          ContentSettingsType content_type,
-                         ContentSetting setting);
+                         ContentSetting setting) WARN_UNUSED_RESULT;
 
   // Simulates a termination the browser session (as if the user logged off the
   // mahine).
-  bool TerminateSession();
+  bool TerminateSession() WARN_UNUSED_RESULT;
 
   // Sets |is_fullscreen| to whether the browser is currently in fullscreen
   // mode.
-  bool IsFullscreen(bool* is_fullscreen);
+  bool IsFullscreen(bool* is_fullscreen) WARN_UNUSED_RESULT;
 
   // Sets |is_visible| to whether the browser's fullscreen bubble is visible.
-  bool IsFullscreenBubbleVisible(bool* is_visible);
+  bool IsFullscreenBubbleVisible(bool* is_visible) WARN_UNUSED_RESULT;
 
   // Shuts down the session service for the browser's profile. Returns true
   // on success.
-  bool ShutdownSessionService();
+  bool ShutdownSessionService() WARN_UNUSED_RESULT;
 
  protected:
   virtual ~BrowserProxy() {}

@@ -87,11 +87,11 @@ class TabSwitchingUITest : public UITest {
           initial_tab_count + new_tab_count, 10000));
 
       // Switch linearly between tabs.
-      browser_proxy_->ActivateTab(0);
+      ASSERT_TRUE(browser_proxy_->ActivateTab(0));
       int final_tab_count = 0;
       ASSERT_TRUE(browser_proxy_->GetTabCount(&final_tab_count));
       for (int j = initial_tab_count; j < final_tab_count; ++j) {
-        browser_proxy_->ActivateTab(j);
+        ASSERT_TRUE(browser_proxy_->ActivateTab(j));
         ASSERT_TRUE(browser_proxy_->WaitForTabToBecomeActive(j, 10000));
       }
 
@@ -155,8 +155,11 @@ class TabSwitchingUITest : public UITest {
       file_name = path_prefix_;
       file_name = file_name.AppendASCII(files[i]);
       file_name = file_name.AppendASCII("index.html");
-      browser_proxy_->AppendTab(net::FilePathToFileURL(file_name));
-      number_of_new_tabs_opened++;
+      bool success =
+          browser_proxy_->AppendTab(net::FilePathToFileURL(file_name));
+      EXPECT_TRUE(success);
+      if (success)
+        number_of_new_tabs_opened++;
     }
 
     return number_of_new_tabs_opened;

@@ -274,11 +274,11 @@ TEST_F(DownloadTest, FLAKY_PerWindowShelf) {
   EXPECT_TRUE(WaitForDownloadShelfVisible(browser.get()));
 
   // Open a second tab
-  browser->AppendTab(GURL());
+  ASSERT_TRUE(browser->AppendTab(GURL()));
   WaitUntilTabCount(2);
 
   // Hide shelf
-  browser->SetShelfVisible(false);
+  EXPECT_TRUE(browser->SetShelfVisible(false));
   EXPECT_TRUE(WaitForDownloadShelfInvisible(browser.get()));
 
   // Go to first tab
@@ -333,7 +333,7 @@ TEST_F(DownloadTest, FLAKY_IncognitoDownload) {
   ASSERT_EQ(1, window_count);
   EXPECT_EQ(1, GetTabCount());
   bool is_shelf_visible;
-  browser->IsShelfVisible(&is_shelf_visible);
+  EXPECT_TRUE(browser->IsShelfVisible(&is_shelf_visible));
   EXPECT_FALSE(is_shelf_visible);
 
   // Open an Incognito window.
@@ -359,7 +359,7 @@ TEST_F(DownloadTest, FLAKY_IncognitoDownload) {
   ASSERT_EQ(1, window_count);
 
   // Verify that the regular window does not have a download shelf.
-  browser->IsShelfVisible(&is_shelf_visible);
+  EXPECT_TRUE(browser->IsShelfVisible(&is_shelf_visible));
   EXPECT_FALSE(is_shelf_visible);
 
   CleanUpDownload(file);

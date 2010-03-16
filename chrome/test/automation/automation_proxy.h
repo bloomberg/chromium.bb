@@ -10,6 +10,7 @@
 #include "app/message_box_flags.h"
 #include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/process_util.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
@@ -80,54 +81,57 @@ class AutomationProxy : public IPC::Channel::Listener,
   // Waits for any initial page loads to complete.
   // NOTE: this only fires once for a run of the application.
   // Returns true if the load is successful
-  bool WaitForInitialLoads();
+  bool WaitForInitialLoads() WARN_UNUSED_RESULT;
 
   // Waits for the initial destinations tab to report that it has finished
   // querying.  |load_time| is filled in with how long it took, in milliseconds.
   // NOTE: this only fires once for a run of the application.
   // Returns true if the load is successful.
-  bool WaitForInitialNewTabUILoad(int* load_time);
+  bool WaitForInitialNewTabUILoad(int* load_time) WARN_UNUSED_RESULT;
 
   // Open a new browser window of type |type|, returning true on success. |show|
   // identifies whether the window should be shown. Returns true on success.
-  bool OpenNewBrowserWindow(Browser::Type type, bool show);
+  bool OpenNewBrowserWindow(Browser::Type type, bool show) WARN_UNUSED_RESULT;
 
   // Fills the number of open browser windows into the given variable, returning
   // true on success. False likely indicates an IPC error.
-  bool GetBrowserWindowCount(int* num_windows);
+  bool GetBrowserWindowCount(int* num_windows) WARN_UNUSED_RESULT;
 
   // Block the thread until the window count becomes the provided value.
   // Returns true on success.
-  bool WaitForWindowCountToBecome(int target_count, int wait_timeout);
+  bool WaitForWindowCountToBecome(int target_count,
+                                  int wait_timeout) WARN_UNUSED_RESULT;
 
   // Fills the number of open normal browser windows (normal type and
   // non-incognito mode) into the given variable, returning true on success.
   // False likely indicates an IPC error.
-  bool GetNormalBrowserWindowCount(int* num_windows);
+  bool GetNormalBrowserWindowCount(int* num_windows) WARN_UNUSED_RESULT;
 
   // Gets the locale of the chrome browser, currently all browsers forked from
   // the main chrome share the same UI locale, returning true on success.
   // False likely indicates an IPC error.
-  bool GetBrowserLocale(string16* locale);
+  bool GetBrowserLocale(string16* locale) WARN_UNUSED_RESULT;
 
   // Returns whether an app modal dialog window is showing right now (i.e., a
   // javascript alert), and what buttons it contains.
   bool GetShowingAppModalDialog(bool* showing_app_modal_dialog,
-                                MessageBoxFlags::DialogButton* button);
+      MessageBoxFlags::DialogButton* button) WARN_UNUSED_RESULT;
 
   // Simulates a click on a dialog button.
-  bool ClickAppModalDialogButton(MessageBoxFlags::DialogButton button);
+  bool ClickAppModalDialogButton(
+      MessageBoxFlags::DialogButton button) WARN_UNUSED_RESULT;
 
   // Block the thread until a modal dialog is displayed. Returns true on
   // success.
-  bool WaitForAppModalDialog(int wait_timeout);
+  bool WaitForAppModalDialog(int wait_timeout) WARN_UNUSED_RESULT;
 
   // Returns true if one of the tabs in any window displays given url.
-  bool IsURLDisplayed(GURL url);
+  bool IsURLDisplayed(GURL url) WARN_UNUSED_RESULT;
 
   // Get the duration of the last |event_name| in the browser.  Returns
   // false if the IPC failed to send.
-  bool GetMetricEventDuration(const std::string& event_name, int* duration_ms);
+  bool GetMetricEventDuration(const std::string& event_name,
+                              int* duration_ms) WARN_UNUSED_RESULT;
 
   // Returns the BrowserProxy for the browser window at the given index,
   // transferring ownership of the pointer to the caller.
@@ -158,7 +162,7 @@ class AutomationProxy : public IPC::Channel::Listener,
 
   // Tells the browser to enable or disable network request filtering.  Returns
   // false if the message fails to send to the browser.
-  bool SetFilteredInet(bool enabled);
+  bool SetFilteredInet(bool enabled) WARN_UNUSED_RESULT;
 
   // Returns the number of times a network request filter was used to service a
   // network request.  Returns -1 on error.
@@ -166,7 +170,7 @@ class AutomationProxy : public IPC::Channel::Listener,
 
   // Sends the browser a new proxy configuration to start using. Returns true
   // if the proxy config was successfully sent, false otherwise.
-  bool SendProxyConfig(const std::string& new_proxy_config);
+  bool SendProxyConfig(const std::string& new_proxy_config) WARN_UNUSED_RESULT;
 
   // These methods are intended to be called by the background thread
   // to signal that the given event has occurred, and that any corresponding
@@ -179,12 +183,12 @@ class AutomationProxy : public IPC::Channel::Listener,
   // Set whether or not running the save page as... command show prompt the
   // user for a download path.  Returns true if the message is successfully
   // sent.
-  bool SavePackageShouldPromptUser(bool should_prompt);
+  bool SavePackageShouldPromptUser(bool should_prompt) WARN_UNUSED_RESULT;
 
   // Installs the extension crx. Returns true only if extension was installed
   // and loaded successfully.
   // Note: Overinstalls will fail.
-  bool InstallExtension(const FilePath& crx_file);
+  bool InstallExtension(const FilePath& crx_file) WARN_UNUSED_RESULT;
 
   // Gets a list of all enabled extensions' base directories.
   // Returns true on success.
@@ -194,7 +198,7 @@ class AutomationProxy : public IPC::Channel::Listener,
   // Logs in through the Chrome OS login wizard with given |username|
   // and |password|.  Returns true on success.
   bool LoginWithUserAndPass(const std::string& username,
-                            const std::string& password);
+                            const std::string& password) WARN_UNUSED_RESULT;
 #endif
   // Returns the ID of the automation IPC channel, so that it can be
   // passed to the app as a launch parameter.
@@ -205,9 +209,9 @@ class AutomationProxy : public IPC::Channel::Listener,
 #endif
 
   // AutomationMessageSender implementations.
-  virtual bool Send(IPC::Message* message);
+  virtual bool Send(IPC::Message* message) WARN_UNUSED_RESULT;
   virtual bool SendWithTimeout(IPC::Message* message, int timeout,
-                               bool* is_timeout);
+                               bool* is_timeout) WARN_UNUSED_RESULT;
 
   // Wrapper over AutomationHandleTracker::InvalidateHandle. Receives the
   // message from AutomationProxy, unpacks the messages and routes that call to

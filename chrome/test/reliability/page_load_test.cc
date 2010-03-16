@@ -206,9 +206,10 @@ class PageLoadTest : public UITest {
             scoped_refptr<WindowProxy> window(browser->GetWindow());
             if (window.get()) {
               bool activation_timeout;
-              browser->BringToFrontWithTimeout(action_max_timeout_ms(),
-                                               &activation_timeout);
-              if (!activation_timeout) {
+              bool success =
+                  browser->BringToFrontWithTimeout(action_max_timeout_ms(),
+                                                   &activation_timeout);
+              if (success && !activation_timeout) {
                 window->SimulateOSKeyPress(base::VKEY_NEXT, 0);
                 PlatformThread::Sleep(sleep_timeout_ms());
                 window->SimulateOSKeyPress(base::VKEY_NEXT, 0);
@@ -401,8 +402,10 @@ class PageLoadTest : public UITest {
       {
         // TabProxy should be released before Browser is closed.
         scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
+        EXPECT_TRUE(tab_proxy.get());
         if (tab_proxy.get()) {
-          tab_proxy->NavigateToURL(GURL(test_url_1));
+          EXPECT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
+                    tab_proxy->NavigateToURL(GURL(test_url_1)));
         }
       }
       // Kill browser process.
