@@ -2832,3 +2832,7 @@ BUG38227 DEFER : fast/dom/HTMLProgressElement/progress-element.html = MISSING
 BUG38227 DEFER : fast/dom/HTMLProgressElement/set-progress-properties.html = MISSING
 
 BUG_JIANLI MAC : printing/return-from-printing-mode.html = IMAGE
+
+// WebKit roll 56004 -> 56026
+BUG_JIANLI : fast/events/continuous-platform-wheelevent-in-scrolling-div.html = TIMEOUT
+BUG_JIANLI : fast/events/platform-wheelevent-in-scrolling-div.html = TIMEOUT
