@@ -542,6 +542,29 @@ function $(o) {
   return document.getElementById(o);
 }
 
+/**
+ * Partial funciton application.
+ *
+ * Usage:
+ * var g = partial(f, arg1, arg2);
+ * g(arg3, arg4);
+ *
+ * @param {!Function} fn A function to partially apply.
+ * @param {...*} var_args Additional arguments that are partially
+ *     applied to fn.
+ * @return {!Function} A partially-applied form of the function partial() was
+ *     called with.
+ */
+function partial(fn, var_args) {
+  var args = Array.prototype.slice.call(arguments, 1);
+  return function() {
+    // Prepend the bound arguments to the current arguments.
+    var newArgs = Array.prototype.slice.call(arguments);
+    newArgs.unshift.apply(newArgs, args);
+    return fn.apply(this, newArgs);
+  };
+}
+
 var pathArray = [];
 var currentNode = -1;
 var menus = [];
@@ -553,8 +576,8 @@ var photoPreviewElement = null;
 var numColumns = 0;
 var divArray = [];
 var rootsDiv = null;
-var currentlySelectedItems = new Array();
-var currentlySelectedPaths = new Array();
+var currentlySelectedItems = [];
+var currentlySelectedPaths = [];
 var multiSelect = false;
 var selectFolder = false;
 var inSaveMode = false;
@@ -658,7 +681,7 @@ function browseFileResult(info, results) {
      var main = $('dir/' + info.path);
      if (main) {
        clearList(main);
-       createNewList(lastDir, results, main, info.path);    
+       createNewList(lastDir, results, main, info.path);
      } else {
        alert('hmm, got a refresh on an unknown directory: '+ 'dir/' + info.path);
        // not currently displayed, so just return.
@@ -830,7 +853,7 @@ function createFolder(elementId) {
     parent.removeChild(element);
     listitem = parent.parentNode;
 
-    parent.onclick = new Function(getFunctionForItem(currentPath, listitem.id, true));
+    parent.onclick = getFunctionForItem(currentPath, listitem.id, true);
 
     var span = document.createElement('span');
     if (inSelectMode) {
@@ -862,9 +885,9 @@ function deleteFileConfirm(path) {
   var yes = document.createElement('div');
   yes.className = 'deleteYes';
   yes.textContent = localStrings.getString('confirmyes');
-  yes.onclick = new Function('deleteFile("' + path + '")');
+  yes.onclick = partial(deleteFile, path);
   var no = document.createElement('div');
-  no.onclick = new Function('removeDeleteConfirm("' + path + '")');
+  no.onclick = partial(removeDeleteConfirm, path);
   no.textContent = localStrings.getString('confirmcancel');
   no.className = 'deleteNo';
   askingDiv.appendChild(yes);
@@ -931,7 +954,7 @@ function downloadUpdated(results) {
           progressDiv.className = 'downloadstatus';
           element.appendChild(progressDiv);
           var pauseDiv = document.createElement('div');
-          pauseDiv.onclick = new Function('pauseToggleDownload(' + results[x].id + ')');
+          pauseDiv.onclick = partial(pauseToggleDownload, results[x].id);
           pauseDiv.className = 'downloadpause';
           if (results[x].state == "DANGEROUS") {
             pauseDiv.onClick = undefined;
@@ -942,9 +965,9 @@ function downloadUpdated(results) {
             var yes = document.createElement('div');
             yes.className = 'link';
             yes.textContent = localStrings.getString('confirmyes');
-            yes.onclick = new Function('allowDownload(' + results[x].id +')');
+            yes.onclick = partial(allowDownload, results[x].id);
             var no = document.createElement('div');
-            no.onclick = new Function('cancelDownload(' + results[x].id +')');
+            no.onclick = partial(cancelDownload, results[x].id);
             no.textContent = localStrings.getString('confirmcancel');
             no.className = 'link';
             pauseDiv.appendChild(yes);
@@ -1013,8 +1036,8 @@ function dialogNewFolderClick() {
   var element = createNewFormItem('',
                                   true,
                                   id,
-                                  new Function('createFolder("' + id + '")'),
-                                  new Function('createFolderTyping("' + id + '")'));
+                                  partial(createFolder, id),
+                                  partial(createFolderTyping, id));
   list.appendChild(element);
   element.scrollIntoView();
 };
@@ -1299,18 +1322,31 @@ function selectItem(elementid, path) {
 
 function getFunctionForItem(path, id, isDirectory) {
   if (isDirectory) {
-    return 'descend("' + path + '", ' + currentNode + ')';
-  } if(inSelectMode) {
-    return 'selectItem("' + id + '", "' + path + '")';
-  } if (pathIsAudioFile(path)) {
-    return 'playMediaFile("' + path + '")';
-  } if (pathIsVideoFile(path)) {
-    return 'playMediaFile("' + path + '")';
-  } if (pathIsImageFile(path)) {
-    return 'showImage("' + path + '")';
-  } else {
-    return '';
+    return function() {
+      descend(path, currentNode);
+    };
   }
+  if (inSelectMode) {
+    return function() {
+      selectItem(id, path);
+    };
+  }
+  if (pathIsAudioFile(path)) {
+    return function() {
+      playMediaFile(path);
+    };
+  }
+  if (pathIsVideoFile(path)) {
+    return function() {
+      playMediaFile(path);
+    };
+  }
+  if (pathIsImageFile(path)) {
+    return function() {
+      showImage(path);
+    }
+  }
+  return function() {};
 };
 
 var elementIdCounter = 0;
@@ -1323,7 +1359,7 @@ function createNewItem(title, path, isDirectory) {
   elementIdCounter++;
   var link;
   link = document.createElement('div');
-  link.onclick = new Function(getFunctionForItem(path, element.id, isDirectory));
+  link.onclick = getFunctionForItem(path, element.id, isDirectory);
   link.className = 'rowlink';
 
   var icon = document.createElement('div');
@@ -1357,7 +1393,7 @@ function createNewItem(title, path, isDirectory) {
       picasaitem.className = 'menuitem';
       flikritem.className = 'menuitemdisabled';
       emailitem.className = 'menuitemdisabled';
-      picasaitem.onclick = new Function('uploadImage("' + path + '")');
+      picasaitem.onclick = partial(uploadImage, path);
       menu.appendChild(picasaitem);
       menu.appendChild(flikritem);
       menu.appendChild(emailitem);
@@ -1365,11 +1401,11 @@ function createNewItem(title, path, isDirectory) {
     var deleteitem = document.createElement('div');
     deleteitem.textContent = localStrings.getString('delete');
     deleteitem.className = 'menuitem';
-    deleteitem.onclick = new Function('deleteFileConfirm("' + path +'")');
+    deleteitem.onclick = partial(deleteFileConfirm, path);
     menu.appendChild(deleteitem);
     menuicon.align = 'right';
     menuicon.className = 'menuicon';
-    menuicon.onclick = new Function('showMenu("' + path + '")');
+    menuicon.onclick = partial(showMenu, path);
     menuicon.appendChild(menu);
     element.appendChild(menuicon);
     menus[path] = menuicon;
@@ -1412,7 +1448,7 @@ function createNewList(title, results, main, path) {
     var popOutButton = document.createElement('div');
     popOutButton.innerHTML = '&prod;';
     popOutButton.className = 'popout';
-    popOutButton.onclick = new Function('popout("' + path + '");');
+    popOutButton.onclick = partial(popout, path);
     header.appendChild(popOutButton);
   }
   header.appendChild(divTitle);
