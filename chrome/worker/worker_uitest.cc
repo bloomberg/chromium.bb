@@ -237,27 +237,39 @@ TEST_F(WorkerTest, WorkerGC) {
 TEST_F(WorkerTest, DISABLED_WorkerLifecycle) {
   RunWorkerFastLayoutTest("worker-lifecycle.html");
 }
+
 TEST_F(WorkerTest, WorkerLocation) {
   RunWorkerFastLayoutTest("worker-location.html");
 }
+
+TEST_F(WorkerTest, WorkerMapGc) {
+  RunWorkerFastLayoutTest("wrapper-map-gc.html");
+}
+
 TEST_F(WorkerTest, WorkerMessagePort) {
   RunWorkerFastLayoutTest("worker-messageport.html");
 }
+
 TEST_F(WorkerTest, WorkerMessagePortGC) {
   RunWorkerFastLayoutTest("worker-messageport-gc.html");
 }
+
 TEST_F(WorkerTest, WorkerMultiPort) {
   RunWorkerFastLayoutTest("worker-multi-port.html");
 }
+
 TEST_F(WorkerTest, WorkerNavigator) {
   RunWorkerFastLayoutTest("worker-navigator.html");
 }
+
 TEST_F(WorkerTest, WorkerReplaceGlobalConstructor) {
   RunWorkerFastLayoutTest("worker-replace-global-constructor.html");
 }
+
 TEST_F(WorkerTest, WorkerReplaceSelf) {
   RunWorkerFastLayoutTest("worker-replace-self.html");
 }
+
 TEST_F(WorkerTest, WorkerScriptError) {
   RunWorkerFastLayoutTest("worker-script-error.html");
 }
