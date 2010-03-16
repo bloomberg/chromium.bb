@@ -20,6 +20,7 @@ ResourceReceiveResponse Properties:
 +- statusCode : 0
 +- mimeType : application/x-javascript
 +- expectedContentLength : 210
++- url : * DEFINED *
 + }
 + type : 13
 
@@ -28,6 +29,7 @@ ResourceFinish Properties:
 + data : {
 +- identifier : * DEFINED *
 +- didFail : false
++- url : * DEFINED *
 + }
 + type : 14
 Script resource loaded
