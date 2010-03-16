@@ -2810,7 +2810,6 @@ BUG37896 LINUX : fast/images/svg-as-background.html = TIMEOUT PASS
 BUG37869 LINUX : fast/images/animated-svg-as-image.html = IMAGE
 BUG37869 MAC LINUX SKIP : inspector/timeline-network-resource.html = CRASH
 BUG37869 MAC : fast/canvas/webgl/uniform-location.html = TEXT
-BUG37869 MAC : editing/input/option-page-up-down.html = TIMEOUT
 
 // Three flaky tests noticed during a sheriff rotation.
 BUG37962 MAC LINUX DEBUG : fast/dom/HTMLElement/bdo.html = CRASH PASS
