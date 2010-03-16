@@ -27,44 +27,49 @@ namespace {
 
 net::HostResolver* CreateGlobalHostResolver(
     net::NetworkChangeNotifier* network_change_notifier) {
-  net::HostResolver* global_host_resolver = NULL;
-
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-
-  global_host_resolver =
+  net::HostResolver* global_host_resolver =
       net::CreateSystemHostResolver(network_change_notifier);
 
+  // Determine if we should disable IPv6 support.
   if (!command_line.HasSwitch(switches::kEnableIPv6)) {
-    // Measure impact of allowing IPv6 support without probing.
-    const FieldTrial::Probability kDivisor = 100;
-    const FieldTrial::Probability kProbability = 50;  // 50% probability.
-    FieldTrial* trial = new FieldTrial("IPv6_Probe", kDivisor);
-    int skip_group = trial->AppendGroup("_IPv6_probe_skipped", kProbability);
-    trial->AppendGroup("_IPv6_probe_done",
-                       FieldTrial::kAllRemainingProbability);
-    bool use_ipv6_probe = (trial->group() != skip_group);
-
-    // Perform probe, and then optionally use result to disable IPv6.
-    // Some users report confused OS handling of IPv6, leading to large
-    // latency.  If we can show that IPv6 is not supported, then disabliing it
-    // will work around such problems.
-    if ((!net::IPv6Supported() && use_ipv6_probe) ||
-        command_line.HasSwitch(switches::kDisableIPv6))
+    if (command_line.HasSwitch(switches::kDisableIPv6)) {
       global_host_resolver->SetDefaultAddressFamily(net::ADDRESS_FAMILY_IPV4);
+    } else {
+      net::HostResolverImpl* host_resolver_impl =
+          global_host_resolver->GetAsHostResolverImpl();
+      if (host_resolver_impl != NULL) {
+        // (optionally) Use probe to decide if support is warranted.
+
+        // Measure impact of probing to allow IPv6.
+        // Some users report confused OS handling of IPv6, leading to large
+        // latency.  If we can show that IPv6 is not supported, then disabliing
+        // it will work around such problems.
+        const FieldTrial::Probability kDivisor = 100;
+        const FieldTrial::Probability kProbability = 50;  // 50% probability.
+        FieldTrial* trial = new FieldTrial("IPv6_Probe", kDivisor);
+        int skip_group = trial->AppendGroup("_IPv6_probe_skipped",
+                                            kProbability);
+        trial->AppendGroup("_IPv6_probe_done",
+                           FieldTrial::kAllRemainingProbability);
+        bool use_ipv6_probe = (trial->group() != skip_group);
+        if (use_ipv6_probe)
+          host_resolver_impl->ProbeIPv6Support();
+      }
+    }
   }
 
   // If hostname remappings were specified on the command-line, layer these
   // rules on top of the real host resolver. This allows forwarding all requests
   // through a designated test server.
-  if (command_line.HasSwitch(switches::kHostResolverRules)) {
-    net::MappedHostResolver* remapped_resolver =
-        new net::MappedHostResolver(global_host_resolver);
-    global_host_resolver = remapped_resolver;
-    remapped_resolver->SetRulesFromString(
-        command_line.GetSwitchValueASCII(switches::kHostResolverRules));
-  }
+  if (!command_line.HasSwitch(switches::kHostResolverRules))
+    return global_host_resolver;
 
-  return global_host_resolver;
+  net::MappedHostResolver* remapped_resolver =
+      new net::MappedHostResolver(global_host_resolver);
+  remapped_resolver->SetRulesFromString(
+      command_line.GetSwitchValueASCII(switches::kHostResolverRules));
+  return remapped_resolver;
 }
 
 }  // namespace
