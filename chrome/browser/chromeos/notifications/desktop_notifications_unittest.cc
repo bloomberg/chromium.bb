@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,27 +6,8 @@
 
 namespace chromeos {
 
-// TODO(oshima): This does not make much sense in chromeos. Remove this.
-// Max balloon space.
-const int MockBalloonCollection::kMockBalloonSpace = 5;
-
 // static
 std::string DesktopNotificationsTest::log_output_;
-
-void LoggingNotificationProxy::Display() {
-  DesktopNotificationsTest::log("notification displayed\n");
-}
-
-void LoggingNotificationProxy::Error() {
-  DesktopNotificationsTest::log("notification error\n");
-}
-
-void LoggingNotificationProxy::Close(bool by_user) {
-  if (by_user)
-    DesktopNotificationsTest::log("notification closed by user\n");
-  else
-    DesktopNotificationsTest::log("notification closed by script\n");
-}
 
 class MockNotificationUI : public BalloonCollectionImpl::NotificationUI {
  public:
@@ -186,7 +167,7 @@ TEST_F(DesktopNotificationsTest, TestCancel) {
             log_output_);
 }
 
-TEST_F(DesktopNotificationsTest, TestQueueing) {
+TEST_F(DesktopNotificationsTest, TestManyNotifications) {
   int process_id = 0;
   int route_id = 0;
 
@@ -204,28 +185,24 @@ TEST_F(DesktopNotificationsTest, TestQueueing) {
 
   // Build up an expected log of what should be happening.
   std::string expected_log;
-  for (int i = 0; i < balloon_collection_->max_balloon_count(); ++i) {
+  for (int i = 0; i < kLotsOfToasts; ++i) {
     expected_log.append("notification displayed\n");
   }
 
-  // The max number that our balloon collection can hold should be
-  // shown.
-  EXPECT_EQ(balloon_collection_->max_balloon_count(),
-            balloon_collection_->count());
+  EXPECT_EQ(kLotsOfToasts, balloon_collection_->count());
   EXPECT_EQ(expected_log, log_output_);
 
-  // Cancel the notifications from the start; the balloon space should
-  // remain full.
+  // Cancel half of the notifications from the start
   int id;
+  int cancelled = kLotsOfToasts / 2;
   for (id = 1;
-       id <= kLotsOfToasts - balloon_collection_->max_balloon_count();
+       id <= cancelled;
        ++id) {
-    SCOPED_TRACE(StringPrintf("Cancel up to max. loop: id=%d", id));
+    SCOPED_TRACE(StringPrintf("Cancel half of notifications: id=%d", id));
     service_->CancelDesktopNotification(process_id, route_id, id);
     MessageLoopForUI::current()->RunAllPending();
     expected_log.append("notification closed by script\n");
-    expected_log.append("notification displayed\n");
-    EXPECT_EQ(balloon_collection_->max_balloon_count(),
+    EXPECT_EQ(kLotsOfToasts - id,
               balloon_collection_->count());
     EXPECT_EQ(expected_log, log_output_);
   }

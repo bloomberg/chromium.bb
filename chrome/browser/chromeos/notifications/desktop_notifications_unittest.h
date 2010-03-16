@@ -17,6 +17,7 @@
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_object_proxy.h"
+#include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/notifications/notifications_prefs_cache.h"
 #include "chrome/test/testing_profile.h"
@@ -25,35 +26,9 @@
 
 namespace chromeos {
 
-// Mock implementation of Javascript object proxy which logs events that
-// would have been fired on it.
-class LoggingNotificationProxy : public NotificationObjectProxy {
- public:
-  LoggingNotificationProxy() :
-      NotificationObjectProxy(0, 0, 0, false) {}
-
-  // NotificationObjectProxy override
-  virtual void Display();
-  virtual void Error();
-  virtual void Close(bool by_user);
-};
-
-// Test version of a balloon view which doesn't do anything
-// viewable, but does know how to close itself the same as a regular
-// BalloonView.
-class MockBalloonView : public BalloonView {
- public:
-  explicit MockBalloonView(Balloon * balloon) :
-      balloon_(balloon) {}
-  void Show(Balloon* balloon) {}
-  void RepositionToBalloon() {}
-  void Close(bool by_user) { balloon_->OnClose(by_user); }
-  gfx::Size GetSize() const { return balloon_->content_size(); }
-
- private:
-  // Non-owned pointer.
-  Balloon* balloon_;
-};
+class DesktopNotificationsTest;
+typedef LoggingNotificationProxyBase<DesktopNotificationsTest>
+    LoggingNotificationProxy;
 
 // Test version of the balloon collection which counts the number
 // of notifications that are added to it.
@@ -61,16 +36,10 @@ class MockBalloonCollection : public BalloonCollectionImpl {
  public:
   MockBalloonCollection();
 
-  // Our mock collection has an area large enough for a fixed number
-  // of balloons.
-  static const int kMockBalloonSpace;
-  int max_balloon_count() const { return kMockBalloonSpace; }
-
   // BalloonCollectionImpl overrides
   virtual void Add(const Notification& notification,
                    Profile* profile);
   virtual bool Remove(const Notification& notification);
-  virtual bool HasSpace() const { return count() < kMockBalloonSpace; }
   virtual Balloon* MakeBalloon(const Notification& notification,
                                Profile* profile);
   virtual void OnBalloonClosed(Balloon* source);

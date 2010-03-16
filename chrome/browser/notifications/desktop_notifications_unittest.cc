@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,21 +12,6 @@ const int MockBalloonCollection::kMockBalloonSpace = 5;
 
 // static
 std::string DesktopNotificationsTest::log_output_;
-
-void LoggingNotificationProxy::Display() {
-  DesktopNotificationsTest::log("notification displayed\n");
-}
-
-void LoggingNotificationProxy::Error() {
-  DesktopNotificationsTest::log("notification error\n");
-}
-
-void LoggingNotificationProxy::Close(bool by_user) {
-  if (by_user)
-    DesktopNotificationsTest::log("notification closed by user\n");
-  else
-    DesktopNotificationsTest::log("notification closed by script\n");
-}
 
 void MockBalloonCollection::Add(const Notification& notification,
                                 Profile* profile) {
