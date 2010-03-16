@@ -29,17 +29,18 @@ std::wstring ChromeFrameDistribution::GetAppGuid() {
 }
 
 std::wstring ChromeFrameDistribution::GetApplicationName() {
-  // TODO(robertshield): localize
-  return L"Google Chrome Frame";
+  const std::wstring& product_name =
+    installer_util::GetLocalizedString(IDS_PRODUCT_FRAME_NAME_BASE);
+  return product_name;
 }
 
 std::wstring ChromeFrameDistribution::GetAlternateApplicationName() {
-  // TODO(robertshield): localize
-  return L"Chromium technology in your existing browser";
+  const std::wstring& product_name =
+    installer_util::GetLocalizedString(IDS_PRODUCT_FRAME_NAME_BASE);
+  return product_name;
 }
 
 std::wstring ChromeFrameDistribution::GetInstallSubDir() {
-  // TODO(robertshield): localize
   return L"Google\\Chrome Frame";
 }
 
