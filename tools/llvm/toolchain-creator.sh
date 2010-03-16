@@ -268,6 +268,7 @@ InstallMiscTools() {
 # depending under the name it is invoked as
 InstallDriver() {
   Banner "installing driver adaptors"
+  rm -f  ${INSTALL_ROOT}/arm-none-linux-gnueabi/llvm-fake*
   cp tools/llvm/llvm-fake.py ${INSTALL_ROOT}/arm-none-linux-gnueabi/
   for s in gcc g++ as \
            sfigcc bcgcc \
@@ -453,6 +454,21 @@ if [ ${MODE} = 'driver' ] ; then
   exit 0
 fi
 
+
+#@
+#@ driver-symlink
+#@
+#@   Install driver as a symlink into the client
+#@   so that driver development is simplified.
+#@   NOTE: This will make the INSTALL_ROOT unsuitable
+#@         for being tar'ed up as a self contained toolchain.
+if [ ${MODE} = 'driver-symlink' ] ; then
+  abs_path=$(readlink -f tools/llvm/llvm-fake.py)
+  driver=${INSTALL_ROOT}/arm-none-linux-gnueabi/llvm-fake.py
+  ln -sf ${abs_path} ${driver}
+  exit 0
+fi
+
 #@
 #@ prune
 #@
@@ -489,8 +505,6 @@ if [ ${MODE} = 'tar' ] ; then
   CreateTarBall $1
   exit 0
 fi
-
-ExtractLlvmBuildScript
 
 echo "ERROR: unknown mode ${MODE}"
 exit -1
