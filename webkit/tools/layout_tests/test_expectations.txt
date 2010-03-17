@@ -2800,12 +2800,13 @@ BUG37962 MAC : plugins/iframe-shims.html = TEXT PASS
 // Flaky test
 BUG_JIANLI MAC : fast/forms/select-style.html = IMAGE PASS
 
-// Need investigation
-BUG_JIANLI : plugins/round-trip-npobject.html = TEXT
+BUG38375 : plugins/round-trip-npobject.html = TEXT
+BUG38376 WIN : editing/deleting/5390681-2.html = IMAGE+TEXT
+
+// Need rebaseline.
 BUG_JIANLI WIN LINUX : fast/text/international/plane2.html = IMAGE+TEXT
 BUG_JIANLI WIN LINUX : svg/W3C-SVG-1.1/pservers-grad-17-b.svg = TEXT
 BUG_JIANLI WIN LINUX : svg/custom/dominant-baseline-hanging.svg = TEXT
-BUG_JIANLI WIN : editing/deleting/5390681-2.html = IMAGE+TEXT
 
 // Started failing after Chromium r41620. Need rebaseline.
 
