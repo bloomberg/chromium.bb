@@ -65,7 +65,7 @@ TEST(UnloadDllTest, UnloadAviCapDllNoPatching) {
   EXPECT_EQ(SBOX_TEST_FAILED, runner.RunTest(L"UseOneDLL B avicap32.dll"));
 }
 
-TEST(UnloadDllTest, UnloadAviCapDllWithPatching) {
+TEST(UnloadDllTest, FLAKY_UnloadAviCapDllWithPatching) {
   TestRunner runner;
   runner.SetTimeout(2000);
   runner.SetTestState(BEFORE_REVERT);
