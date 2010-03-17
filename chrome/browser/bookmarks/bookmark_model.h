@@ -429,7 +429,7 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
   void OnFavIconDataAvailable(
       FaviconService::Handle handle,
       bool know_favicon,
-      scoped_refptr<RefCountedBytes> data,
+      scoped_refptr<RefCountedMemory> data,
       bool expired,
       GURL icon_url);
 

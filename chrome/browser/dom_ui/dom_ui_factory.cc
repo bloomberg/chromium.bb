@@ -142,9 +142,6 @@ DOMUI* DOMUIFactory::CreateDOMUIForURL(TabContents* tab_contents,
 // static
 RefCountedMemory* DOMUIFactory::GetFaviconResourceBytes(Profile* profile,
                                                         const GURL& page_url) {
-  // The extensions DOM UI might need to load the favicon file so we alwyas run
-  // this on the FILE thread.
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
   if (page_url.SchemeIs(chrome::kExtensionScheme))
     return ExtensionDOMUI::GetFaviconResourceBytes(profile, page_url);
 

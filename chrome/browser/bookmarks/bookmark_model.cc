@@ -765,7 +765,7 @@ BookmarkNode* BookmarkModel::CreateRootNodeFromStarredEntry(
 void BookmarkModel::OnFavIconDataAvailable(
     FaviconService::Handle handle,
     bool know_favicon,
-    scoped_refptr<RefCountedBytes> data,
+    scoped_refptr<RefCountedMemory> data,
     bool expired,
     GURL icon_url) {
   SkBitmap fav_icon;

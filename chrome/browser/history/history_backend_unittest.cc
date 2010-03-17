@@ -6,6 +6,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/history/history_backend.h"
@@ -183,12 +184,12 @@ TEST_F(HistoryBackendTest, DeleteAll) {
 
   std::vector<unsigned char> data;
   data.push_back('1');
-  EXPECT_TRUE(backend_->thumbnail_db_->SetFavIcon(
-                  favicon1, data, Time::Now()));
+  EXPECT_TRUE(backend_->thumbnail_db_->SetFavIcon(favicon1,
+      new RefCountedBytes(data), Time::Now()));
 
   data[0] = '2';
   EXPECT_TRUE(backend_->thumbnail_db_->SetFavIcon(
-                  favicon2, data, Time::Now()));
+                  favicon2, new RefCountedBytes(data), Time::Now()));
 
   // First visit two URLs.
   URLRow row1(GURL("http://www.google.com/"));
@@ -311,11 +312,11 @@ TEST_F(HistoryBackendTest, URLsNoLongerBookmarked) {
   std::vector<unsigned char> data;
   data.push_back('1');
   EXPECT_TRUE(backend_->thumbnail_db_->SetFavIcon(
-                  favicon1, data, Time::Now()));
+                  favicon1, new RefCountedBytes(data), Time::Now()));
 
   data[0] = '2';
   EXPECT_TRUE(backend_->thumbnail_db_->SetFavIcon(
-                  favicon2, data, Time::Now()));
+                  favicon2, new RefCountedBytes(data), Time::Now()));
 
   // First visit two URLs.
   URLRow row1(GURL("http://www.google.com/"));
@@ -509,7 +510,8 @@ TEST_F(HistoryBackendTest, ImportedFaviconsTest) {
   FavIconID favicon1 = backend_->thumbnail_db_->AddFavIcon(favicon_url1);
   std::vector<unsigned char> data;
   data.push_back('1');
-  EXPECT_TRUE(backend_->thumbnail_db_->SetFavIcon(favicon1, data, Time::Now()));
+  EXPECT_TRUE(backend_->thumbnail_db_->SetFavIcon(favicon1,
+      RefCountedBytes::TakeVector(&data), Time::Now()));
   URLRow row1(GURL("http://www.google.com/"));
   row1.set_favicon_id(favicon1);
   row1.set_visit_count(1);

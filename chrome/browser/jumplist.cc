@@ -750,12 +750,12 @@ void JumpList::OnSegmentUsageAvailable(
 void JumpList::OnFavIconDataAvailable(
     FaviconService::Handle handle,
     bool know_favicon,
-    scoped_refptr<RefCountedBytes> data,
+    scoped_refptr<RefCountedMemory> data,
     bool expired,
     GURL icon_url) {
   // Attach the received data to the ShellLinkItem object.
   // This data will be decoded by JumpListUpdateTask.
-  if (know_favicon && data.get() && !data->data.empty()) {
+  if (know_favicon && data.get() && data->size()) {
     if (!icon_urls_.empty() && icon_urls_.front().second)
       icon_urls_.front().second->SetIconData(data);
   }

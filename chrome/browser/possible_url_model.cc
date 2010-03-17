@@ -169,7 +169,7 @@ int PossibleURLModel::CompareValues(int row1, int row2, int column_id) {
 void PossibleURLModel::OnFavIconAvailable(
     FaviconService::Handle h,
     bool fav_icon_available,
-    scoped_refptr<RefCountedBytes> data,
+    scoped_refptr<RefCountedMemory> data,
     bool expired,
     GURL icon_url) {
   if (profile_) {

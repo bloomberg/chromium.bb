@@ -27,8 +27,9 @@ const wchar_t kExtensionURLOverrides[] = L"extensions.chrome_url_overrides";
 
 // Returns a piece of memory with the contents of the file |path|.
 RefCountedMemory* ReadFileData(const FilePath& path) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
-
+  // TODO(arv): We currently read this on the UI thread since extension objects
+  // can only safely be accessed on the UI thread. Read the file on the FILE
+  // thread and cache the result on the UI thread instead.
   if (path.empty())
     return NULL;
 
@@ -71,7 +72,7 @@ void ExtensionDOMUI::ResetExtensionFunctionDispatcher(
 
 void ExtensionDOMUI::ResetExtensionBookmarkManagerEventRouter() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableTabbedBookmarkManager)) {
+          switches::kEnableTabbedBookmarkManager)) {
     extension_bookmark_manager_event_router_.reset(
         new ExtensionBookmarkManagerEventRouter(GetProfile(), tab_contents()));
   }
@@ -317,6 +318,9 @@ void ExtensionDOMUI::UnregisterChromeURLOverrides(
 // static
 RefCountedMemory* ExtensionDOMUI::GetFaviconResourceBytes(Profile* profile,
                                                           GURL page_url) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI)) << "The extension "
+      "objects should only be accessed on the UI thread.";
+
   // Even when the extensions service is enabled by default, it's still
   // disabled in incognito mode.
   ExtensionsService* service = profile->GetExtensionsService();

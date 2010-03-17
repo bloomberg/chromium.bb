@@ -246,10 +246,10 @@ class Writer : public Task {
       BookmarkFaviconFetcher::URLFaviconMap::iterator itr =
           favicons_map_->find(url_string);
       if (itr != favicons_map_->end()) {
-        scoped_refptr<RefCountedBytes> data = itr->second.get();
+        scoped_refptr<RefCountedMemory> data = itr->second.get();
         std::string favicon_data;
-        favicon_data.assign(reinterpret_cast<char*>(&data->data.front()),
-                            data->data.size());
+        favicon_data.assign(reinterpret_cast<const char*>(data->front()),
+                            data->size());
         std::string favicon_base64_encoded;
         if (base::Base64Encode(favicon_data, &favicon_base64_encoded)) {
           GURL favicon_url("data:image/png;base64," + favicon_base64_encoded);
@@ -450,7 +450,7 @@ bool BookmarkFaviconFetcher::FetchNextFavicon() {
 void BookmarkFaviconFetcher::OnFavIconDataAvailable(
     FaviconService::Handle handle,
     bool know_favicon,
-    scoped_refptr<RefCountedBytes> data,
+    scoped_refptr<RefCountedMemory> data,
     bool expired,
     GURL icon_url) {
   GURL url;
@@ -458,7 +458,7 @@ void BookmarkFaviconFetcher::OnFavIconDataAvailable(
     url = GURL(bookmark_urls_.front());
     bookmark_urls_.pop_front();
   }
-  if (know_favicon && data.get() && !data->data.empty() && !url.is_empty()) {
+  if (know_favicon && data.get() && data->size() && !url.is_empty()) {
     favicons_map_->insert(make_pair(url.spec(), data));
   }
 

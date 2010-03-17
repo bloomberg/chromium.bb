@@ -107,7 +107,7 @@ class CustomHomePagesTableModel : public TableModel {
   // fav_icon_handle matches handle and notifies the observer of the change.
   void OnGotFavIcon(FaviconService::Handle handle,
                     bool know_fav_icon,
-                    scoped_refptr<RefCountedBytes> image_data,
+                    scoped_refptr<RefCountedMemory> image_data,
                     bool is_expired,
                     GURL icon_url);
 
@@ -231,18 +231,18 @@ void CustomHomePagesTableModel::LoadFavIcon(Entry* entry) {
 void CustomHomePagesTableModel::OnGotFavIcon(
     FaviconService::Handle handle,
     bool know_fav_icon,
-    scoped_refptr<RefCountedBytes> image_data,
+    scoped_refptr<RefCountedMemory> image_data,
     bool is_expired,
     GURL icon_url) {
   int entry_index;
   Entry* entry = GetEntryByLoadHandle(handle, &entry_index);
   DCHECK(entry);
   entry->fav_icon_handle = 0;
-  if (know_fav_icon && image_data.get() && !image_data->data.empty()) {
+  if (know_fav_icon && image_data.get() && image_data->size()) {
     int width, height;
     std::vector<unsigned char> decoded_data;
-    if (gfx::PNGCodec::Decode(&image_data->data.front(),
-                              image_data->data.size(),
+    if (gfx::PNGCodec::Decode(image_data->front(),
+                              image_data->size(),
                               gfx::PNGCodec::FORMAT_BGRA, &decoded_data,
                               &width, &height)) {
       entry->icon.setConfig(SkBitmap::kARGB_8888_Config, width, height);

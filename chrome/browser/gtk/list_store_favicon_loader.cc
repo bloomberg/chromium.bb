@@ -62,17 +62,18 @@ bool ListStoreFavIconLoader::GetRowByFavIconHandle(
 
 void ListStoreFavIconLoader::OnGotFavIcon(
     FaviconService::Handle handle, bool know_fav_icon,
-    scoped_refptr<RefCountedBytes> image_data, bool is_expired, GURL icon_url) {
+    scoped_refptr<RefCountedMemory> image_data, bool is_expired,
+    GURL icon_url) {
   GtkTreeIter iter;
   if (!GetRowByFavIconHandle(handle, &iter))
     return;
   gtk_list_store_set(list_store_, &iter,
                      favicon_handle_col_, 0,
                      -1);
-  if (know_fav_icon && image_data.get() && !image_data->data.empty()) {
+  if (know_fav_icon && image_data.get() && image_data->size()) {
     SkBitmap icon;
-    if (gfx::PNGCodec::Decode(&image_data->data.front(),
-                              image_data->data.size(), &icon)) {
+    if (gfx::PNGCodec::Decode(image_data->front(),
+                              image_data->size(), &icon)) {
       GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&icon);
       gtk_list_store_set(list_store_, &iter,
                          favicon_col_, pixbuf,

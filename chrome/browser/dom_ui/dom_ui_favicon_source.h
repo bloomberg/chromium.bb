@@ -36,7 +36,7 @@ class DOMUIFavIconSource : public ChromeURLDataManager::DataSource {
   // Called when favicon data is available from the history backend.
   void OnFavIconDataAvailable(FaviconService::Handle request_handle,
                               bool know_favicon,
-                              scoped_refptr<RefCountedBytes> data,
+                              scoped_refptr<RefCountedMemory> data,
                               bool expired,
                               GURL url);
 

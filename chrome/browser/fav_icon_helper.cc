@@ -9,6 +9,7 @@
 #include "app/gfx/codec/png_codec.h"
 #include "app/gfx/favicon_size.h"
 #include "base/callback.h"
+#include "base/ref_counted_memory.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
@@ -89,9 +90,9 @@ void FavIconHelper::SetFavIcon(
 }
 
 void FavIconHelper::UpdateFavIcon(NavigationEntry* entry,
-                                  const std::vector<unsigned char>& data) {
+                                  scoped_refptr<RefCountedMemory> data) {
   SkBitmap image;
-  gfx::PNGCodec::Decode(&data.front(), data.size(), &image);
+  gfx::PNGCodec::Decode(data->front(), data->size(), &image);
   UpdateFavIcon(entry, image);
 }
 
@@ -166,7 +167,7 @@ NavigationEntry* FavIconHelper::GetEntry() {
 void FavIconHelper::OnFavIconDataForInitialURL(
     FaviconService::Handle handle,
     bool know_favicon,
-    scoped_refptr<RefCountedBytes> data,
+    scoped_refptr<RefCountedMemory> data,
     bool expired,
     GURL icon_url) {
   NavigationEntry* entry = GetEntry();
@@ -184,8 +185,8 @@ void FavIconHelper::OnFavIconDataForInitialURL(
     // to be expired (or the wrong url) we'll fetch later on. This way the
     // user doesn't see a flash of the default favicon.
     entry->favicon().set_url(icon_url);
-    if (data && !data->data.empty())
-      UpdateFavIcon(entry, data->data);
+    if (data.get() && data->size())
+      UpdateFavIcon(entry, data);
     entry->favicon().set_is_valid(true);
   }
 
@@ -238,7 +239,7 @@ void FavIconHelper::DownloadFavIconOrAskHistory(NavigationEntry* entry) {
 void FavIconHelper::OnFavIconData(
     FaviconService::Handle handle,
     bool know_favicon,
-    scoped_refptr<RefCountedBytes> data,
+    scoped_refptr<RefCountedMemory> data,
     bool expired,
     GURL icon_url) {
   NavigationEntry* entry = GetEntry();
@@ -248,11 +249,11 @@ void FavIconHelper::OnFavIconData(
   // No need to update the favicon url. By the time we get here
   // UpdateFavIconURL will have set the favicon url.
 
-  if (know_favicon && data && !data->data.empty()) {
+  if (know_favicon && data.get() && data->size()) {
     // There is a favicon, set it now. If expired we'll download the current
     // one again, but at least the user will get some icon instead of the
     // default and most likely the current one is fine anyway.
-    UpdateFavIcon(entry, data->data);
+    UpdateFavIcon(entry, data);
   }
 
   if (!know_favicon || expired) {

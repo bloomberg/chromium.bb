@@ -191,7 +191,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                         const GURL& page_url);
   void SetFavIcon(const GURL& page_url,
                   const GURL& icon_url,
-                  scoped_refptr<RefCountedBytes> data);
+                  scoped_refptr<RefCountedMemory> data);
   void UpdateFavIconMappingAndFetch(scoped_refptr<GetFavIconRequest> request,
                                     const GURL& page_url,
                                     const GURL& icon_url);

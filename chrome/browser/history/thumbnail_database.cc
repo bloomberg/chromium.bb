@@ -11,6 +11,7 @@
 #if defined(OS_MACOSX)
 #include "base/mac_util.h"
 #endif
+#include "base/ref_counted_memory.h"
 #include "base/time.h"
 #include "base/string_util.h"
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
@@ -305,17 +306,17 @@ bool ThumbnailDatabase::ThumbnailScoreForId(URLID id,
 }
 
 bool ThumbnailDatabase::SetFavIcon(URLID icon_id,
-                                   const std::vector<unsigned char>& icon_data,
+                                   scoped_refptr<RefCountedMemory> icon_data,
                                    base::Time time) {
   DCHECK(icon_id);
-  if (icon_data.size()) {
+  if (icon_data->size()) {
     sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
         "UPDATE favicons SET image_data=?, last_updated=? WHERE id=?"));
     if (!statement)
       return 0;
 
-    statement.BindBlob(0, &icon_data.front(),
-                       static_cast<int>(icon_data.size()));
+    statement.BindBlob(0, icon_data->front(),
+                       static_cast<int>(icon_data->size()));
     statement.BindInt64(1, time.ToTimeT());
     statement.BindInt64(2, icon_id);
     return statement.Run();

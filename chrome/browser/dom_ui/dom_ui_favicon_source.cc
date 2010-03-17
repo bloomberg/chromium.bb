@@ -42,7 +42,7 @@ void DOMUIFavIconSource::StartDataRequest(const std::string& path,
 void DOMUIFavIconSource::OnFavIconDataAvailable(
     FaviconService::Handle request_handle,
     bool know_favicon,
-    scoped_refptr<RefCountedBytes> data,
+    scoped_refptr<RefCountedMemory> data,
     bool expired,
     GURL icon_url) {
   FaviconService* favicon_service =
@@ -50,7 +50,7 @@ void DOMUIFavIconSource::OnFavIconDataAvailable(
   int request_id = cancelable_consumer_.GetClientData(favicon_service,
                                                       request_handle);
 
-  if (know_favicon && data.get() && !data->data.empty()) {
+  if (know_favicon && data.get() && data->size()) {
     // Forward the data along to the networking system.
     SendResponse(request_id, data);
   } else {

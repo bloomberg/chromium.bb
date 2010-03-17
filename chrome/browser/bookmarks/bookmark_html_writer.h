@@ -38,7 +38,7 @@ class BookmarksExportObserver {
 class BookmarkFaviconFetcher: public NotificationObserver {
  public:
   // Map of URL and corresponding favicons.
-  typedef std::map<std::string, scoped_refptr<RefCountedBytes> > URLFaviconMap;
+  typedef std::map<std::string, scoped_refptr<RefCountedMemory> > URLFaviconMap;
 
   BookmarkFaviconFetcher(Profile* profile,
                          const FilePath& path,
@@ -69,7 +69,7 @@ class BookmarkFaviconFetcher: public NotificationObserver {
   // html output on the file thread.
   void OnFavIconDataAvailable(FaviconService::Handle handle,
                               bool know_favicon,
-                              scoped_refptr<RefCountedBytes> data,
+                              scoped_refptr<RefCountedMemory> data,
                               bool expired,
                               GURL icon_url);
 

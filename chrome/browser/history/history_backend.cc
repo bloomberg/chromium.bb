@@ -1445,7 +1445,8 @@ void HistoryBackend::SetImportedFavicons(
       favicon_id = thumbnail_db_->AddFavIcon(favicon_usage[i].favicon_url);
       if (!favicon_id)
         continue;  // Unable to add the favicon.
-      thumbnail_db_->SetFavIcon(favicon_id, favicon_usage[i].png_data, now);
+      thumbnail_db_->SetFavIcon(favicon_id,
+          new RefCountedBytes(favicon_usage[i].png_data), now);
     }
 
     // Save the mapping from all the URLs to the favicon.
@@ -1561,7 +1562,7 @@ void HistoryBackend::GetFavIconForURL(
 void HistoryBackend::SetFavIcon(
     const GURL& page_url,
     const GURL& icon_url,
-    scoped_refptr<RefCountedBytes> data) {
+    scoped_refptr<RefCountedMemory> data) {
   DCHECK(data.get());
   if (!thumbnail_db_.get() || !db_.get())
     return;
@@ -1571,7 +1572,7 @@ void HistoryBackend::SetFavIcon(
     id = thumbnail_db_->AddFavIcon(icon_url);
 
   // Set the image data.
-  thumbnail_db_->SetFavIcon(id, data->data, Time::Now());
+  thumbnail_db_->SetFavIcon(id, data, Time::Now());
 
   SetFavIconMapping(page_url, id);
 }

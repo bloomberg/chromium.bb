@@ -10,7 +10,6 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/ref_counted_memory.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/favicon_service.h"
@@ -20,6 +19,7 @@
 
 class NavigationEntry;
 class Profile;
+class RefCountedMemory;
 class SkBitmap;
 class TabContents;
 
@@ -120,7 +120,7 @@ class FavIconHelper : public RenderViewHostDelegate::FavIcon {
   // See description above class for details.
   void OnFavIconDataForInitialURL(FaviconService::Handle handle,
                                   bool know_favicon,
-                                  scoped_refptr<RefCountedBytes> data,
+                                  scoped_refptr<RefCountedMemory> data,
                                   bool expired,
                                   GURL icon_url);
 
@@ -132,7 +132,7 @@ class FavIconHelper : public RenderViewHostDelegate::FavIcon {
   // See description above class for details.
   void OnFavIconData(FaviconService::Handle handle,
                      bool know_favicon,
-                     scoped_refptr<RefCountedBytes> data,
+                     scoped_refptr<RefCountedMemory> data,
                      bool expired,
                      GURL icon_url);
 
@@ -149,7 +149,7 @@ class FavIconHelper : public RenderViewHostDelegate::FavIcon {
   // If the TabContents has a delegate, it is notified of the new favicon
   // (INVALIDATE_FAVICON).
   void UpdateFavIcon(NavigationEntry* entry,
-                     const std::vector<unsigned char>& data);
+                     scoped_refptr<RefCountedMemory> data);
   void UpdateFavIcon(NavigationEntry* entry, const SkBitmap& image);
 
   // Scales the image such that either the width and/or height is 16 pixels

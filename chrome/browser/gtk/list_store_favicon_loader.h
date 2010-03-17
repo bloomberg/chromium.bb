@@ -38,7 +38,7 @@ class ListStoreFavIconLoader {
 
   // Callback from FaviconService:::GetFavIconForURL
   void OnGotFavIcon(FaviconService::Handle handle, bool know_fav_icon,
-                    scoped_refptr<RefCountedBytes> image_data, bool is_expired,
+                    scoped_refptr<RefCountedMemory> image_data, bool is_expired,
                     GURL icon_url);
 
   // The list store we are loading favicons into.

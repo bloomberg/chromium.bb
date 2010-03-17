@@ -132,7 +132,7 @@ class HistoryMenuBridge : public NotificationObserver,
   // GetFaviconForHistoryItem() was called on (UI thread).
   void GotFaviconData(FaviconService::Handle handle,
                       bool know_favicon,
-                      scoped_refptr<RefCountedBytes> data,
+                      scoped_refptr<RefCountedMemory> data,
                       bool expired,
                       GURL url);
 

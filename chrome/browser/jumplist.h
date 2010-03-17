@@ -45,7 +45,7 @@ class ShellLinkItem : public base::RefCountedThreadSafe<ShellLinkItem> {
   const std::wstring& title() const { return title_; }
   const std::wstring& icon() const { return icon_; }
   int index() const { return index_; }
-  scoped_refptr<RefCountedBytes> data() const { return data_; }
+  scoped_refptr<RefCountedMemory> data() const { return data_; }
 
   void SetArguments(const std::wstring& arguments) {
     arguments_ = arguments;
@@ -61,7 +61,7 @@ class ShellLinkItem : public base::RefCountedThreadSafe<ShellLinkItem> {
     favicon_ = favicon;
   }
 
-  void SetIconData(scoped_refptr<RefCountedBytes> data) {
+  void SetIconData(scoped_refptr<RefCountedMemory> data) {
     data_ = data;
   }
 
@@ -73,7 +73,7 @@ class ShellLinkItem : public base::RefCountedThreadSafe<ShellLinkItem> {
   std::wstring arguments_;
   std::wstring title_;
   std::wstring icon_;
-  scoped_refptr<RefCountedBytes> data_;
+  scoped_refptr<RefCountedMemory> data_;
   int index_;
   bool favicon_;
 
@@ -159,7 +159,7 @@ class JumpList : public TabRestoreService::Observer {
   // decompresses collected fav icons and updates a JumpList.
   void OnFavIconDataAvailable(HistoryService::Handle handle,
                               bool know_favicon,
-                              scoped_refptr<RefCountedBytes> data,
+                              scoped_refptr<RefCountedMemory> data,
                               bool expired,
                               GURL icon_url);
 
