@@ -100,6 +100,7 @@
         'renderer/gpu_channel_host.h',
         'renderer/localized_error.cc',
         'renderer/localized_error.h',
+        'renderer/nacl_desc_wrapper_chrome.cc',
         'renderer/navigation_state.h',
         'renderer/notification_provider.cc',
         'renderer/notification_provider.h',
