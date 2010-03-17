@@ -16,9 +16,6 @@
 #include "net/base/x509_certificate.h"
 #endif
 
-// TODO(dkegel): share this between net/base and
-// chrome/browser without putting it in net.lib
-
 namespace net {
 
 // This object bounds the lifetime of an external python-based HTTP/HTTPS/FTP

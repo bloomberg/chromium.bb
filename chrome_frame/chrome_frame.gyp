@@ -183,6 +183,7 @@
         '../build/temp_gyp/googleurl.gyp:googleurl',
         '../chrome/chrome.gyp:common',
         '../chrome/chrome.gyp:utility',
+        '../net/net.gyp:net_test_support',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../third_party/libxml/libxml.gyp:libxml',

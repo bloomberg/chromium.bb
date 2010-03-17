@@ -235,6 +235,7 @@
       'msvs_guid': 'FA39524D-3067-4141-888D-28A86C66F2B9',
       'dependencies': [
         'test_shell_common',
+        '<(DEPTH)/net/net.gyp:net_test_support',
         '<(DEPTH)/tools/imagediff/image_diff.gyp:image_diff',
       ],
       'defines': [
@@ -363,6 +364,7 @@
       'msvs_guid': 'E6766F81-1FCD-4CD7-BC16-E36964A14867',
       'dependencies': [
         'test_shell_common',
+        '<(DEPTH)/net/net.gyp:net_test_support',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/testing/gmock.gyp:gmock',
         '<(DEPTH)/testing/gtest.gyp:gtest',

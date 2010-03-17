@@ -165,7 +165,7 @@ int main(int argc, char* argv[]) {
   // Config the network module so it has access to a limited set of resources.
   net::NetModule::SetResourceProvider(TestShell::NetResourceProvider);
 
-  // On Linux, load the test root certificate.
+  // On Linux and Mac, load the test root certificate.
   net::TestServerLauncher ssl_util;
   ssl_util.LoadTestRootCert();
 

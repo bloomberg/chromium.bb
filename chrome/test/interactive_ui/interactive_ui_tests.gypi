@@ -12,6 +12,7 @@
     '<(DEPTH)/chrome/chrome.gyp:syncapi',
     '<(DEPTH)/third_party/hunspell/hunspell.gyp:hunspell',
     '<(DEPTH)/net/net.gyp:net_resources',
+    '<(DEPTH)/net/net.gyp:net_test_support',
     '<(DEPTH)/skia/skia.gyp:skia',
     '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
     '<(DEPTH)/third_party/libpng/libpng.gyp:libpng',
