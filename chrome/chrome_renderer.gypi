@@ -45,6 +45,8 @@
         # short term I'd like the build to work.
         'renderer/automation/dom_automation_controller.cc',
         'renderer/automation/dom_automation_controller.h',
+        'renderer/automation/dom_automation_v8_extension.cc',
+        'renderer/automation/dom_automation_v8_extension.h',
         'renderer/extensions/bindings_utils.cc',
         'renderer/extensions/bindings_utils.h',
         'renderer/extensions/event_bindings.cc',

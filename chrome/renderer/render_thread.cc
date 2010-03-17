@@ -42,6 +42,7 @@
 #include "base/scoped_handle.h"
 #include "chrome/plugin/plugin_channel_base.h"
 #endif
+#include "chrome/renderer/automation/dom_automation_v8_extension.h"
 #include "chrome/renderer/cookie_message_filter.h"
 #include "chrome/renderer/devtools_agent_filter.h"
 #include "chrome/renderer/extension_groups.h"
@@ -787,6 +788,10 @@ void RenderThread::EnsureWebKitInitialized() {
       command_line.HasSwitch(switches::kNoJsRandomness)) {
     WebScriptController::registerExtension(
         extensions_v8::PlaybackExtension::Get());
+  }
+
+  if (command_line.HasSwitch(switches::kDomAutomationController)) {
+    WebScriptController::registerExtension(DomAutomationV8Extension::Get());
   }
 
   WebRuntimeFeatures::enableMediaPlayer(
