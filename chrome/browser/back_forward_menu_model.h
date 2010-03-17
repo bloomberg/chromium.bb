@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/string16.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"  // For FRIEND_TEST
+#include "webkit/glue/window_open_disposition.h"
 
 class Browser;
 class SkBitmap;
@@ -56,6 +57,11 @@ class BackForwardMenuModel : public menus::MenuModel {
   virtual MenuModel* GetSubmenuModelAt(int index) const;
   virtual void HighlightChangedTo(int index);
   virtual void ActivatedAt(int index);
+
+  // Navigates to the corresponding history item, opening it in a new tab
+  // if necessary.
+  void ActivatedAtWithDisposition(int index,
+                                  WindowOpenDisposition disposition);
   virtual void MenuWillShow();
 
   // Is the item at |index| a separator?

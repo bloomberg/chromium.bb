@@ -9,6 +9,7 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/back_forward_menu_model.h"
 #import "chrome/browser/cocoa/delayedmenu_button.h"
+#import "chrome/browser/cocoa/event_utils.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -93,7 +94,9 @@ using gfx::SkBitmapToNSImage;
 - (void)executeMenuItem:(id)sender {
   DCHECK([sender isKindOfClass:[NSMenuItem class]]);
   int menuID = [sender tag];
-  model_->ActivatedAt(menuID);
+  model_->ActivatedAtWithDisposition(
+      menuID,
+      event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]));
 }
 
 @end  // @implementation BackForwardMenuController

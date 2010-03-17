@@ -349,6 +349,10 @@ class Browser : public TabStripModelDelegate,
   // Returns true if a tab can be restored.
   virtual bool CanRestoreTab();
 
+  // Navigate to an index in the tab history, opening a new tab depending on the
+  // disposition.
+  bool NavigateToIndexWithDisposition(int index, WindowOpenDisposition disp);
+
   // Show a given a URL. If a tab with the same URL (ignoring the ref) is
   // already visible in this browser, it becomes selected. Otherwise a new tab
   // is created.
@@ -796,6 +800,11 @@ class Browser : public TabStripModelDelegate,
 
   // Shared code between Reload() and ReloadAll().
   void ReloadInternal(bool ignore_cache);
+
+  // Depending on the disposition, return the |NavigationController| for the
+  // current tab or clone the current tab and return its |NavigationController|.
+  NavigationController& GetOrCloneNavigationControllerForDisposition(
+       WindowOpenDisposition disp);
 
   // Data members /////////////////////////////////////////////////////////////
 

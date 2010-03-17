@@ -127,14 +127,20 @@ void BackForwardMenuModel::HighlightChangedTo(int index) {
 }
 
 void BackForwardMenuModel::ActivatedAt(int index) {
-  NavigationController& controller = GetTabContents()->controller();
+  ActivatedAtWithDisposition(index, CURRENT_TAB);
+}
+
+void BackForwardMenuModel::ActivatedAtWithDisposition(
+      int index,
+      WindowOpenDisposition disposition) {
+  Profile* profile = browser_->profile();
 
   DCHECK(!IsSeparator(index));
 
   // Execute the command for the last item: "Show Full History".
   if (index == GetItemCount() - 1) {
     UserMetrics::RecordComputedAction(BuildActionName("ShowFullHistory", -1),
-                                      controller.profile());
+                                      profile);
     browser_->ShowSingletonTab(GURL(chrome::kChromeUIHistoryURL));
     return;
   }
@@ -142,18 +148,18 @@ void BackForwardMenuModel::ActivatedAt(int index) {
   // Log whether it was a history or chapter click.
   if (index < GetHistoryItemCount()) {
     UserMetrics::RecordComputedAction(
-        BuildActionName("HistoryClick", index), controller.profile());
+        BuildActionName("HistoryClick", index), profile);
   } else {
     UserMetrics::RecordComputedAction(
         BuildActionName("ChapterClick", index - GetHistoryItemCount() - 1),
-        controller.profile());
+        profile);
   }
 
   int controller_index = MenuIndexToNavEntryIndex(index);
-  if (controller_index >= 0 && controller_index < controller.entry_count())
-    controller.GoToIndex(controller_index);
-  else
+  if (!browser_->NavigateToIndexWithDisposition(controller_index,
+                                                disposition)) {
     NOTREACHED();
+  }
 }
 
 void BackForwardMenuModel::MenuWillShow() {

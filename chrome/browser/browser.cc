@@ -788,6 +788,19 @@ bool Browser::CanRestoreTab() {
   return service && !service->entries().empty();
 }
 
+bool Browser::NavigateToIndexWithDisposition(int index,
+                                             WindowOpenDisposition disp) {
+  NavigationController& controller =
+      GetOrCloneNavigationControllerForDisposition(disp);
+
+  if (index >= 0 && index < controller.entry_count()) {
+    controller.GoToIndex(index);
+    return true;
+  } else {
+    return false;
+  }
+}
+
 void Browser::ShowSingletonTab(const GURL& url) {
   // See if we already have a tab with the given URL and select it if so.
   for (int i = 0; i < tabstrip_model_.count(); i++) {
@@ -842,49 +855,43 @@ void Browser::UpdateCommandsForFullscreenMode(bool is_fullscreen) {
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, Assorted browser commands:
 
+NavigationController& Browser::GetOrCloneNavigationControllerForDisposition(
+       WindowOpenDisposition disposition) {
+  TabContents* current_tab = GetSelectedTabContents();
+  if (disposition == NEW_FOREGROUND_TAB ||
+      disposition == NEW_BACKGROUND_TAB) {
+    TabContents* cloned = current_tab->Clone();
+    tabstrip_model_.AddTabContents(cloned, -1, false,
+                                   PageTransition::LINK,
+                                   disposition == NEW_FOREGROUND_TAB);
+    return cloned->controller();
+  } else {
+    // Default disposition is CURRENT_TAB.
+    return current_tab->controller();
+  }
+}
+
 void Browser::GoBack(WindowOpenDisposition disposition) {
   UserMetrics::RecordAction("Back", profile_);
 
   TabContents* current_tab = GetSelectedTabContents();
   if (current_tab->controller().CanGoBack()) {
-    NavigationController* controller = NULL;
-    if (disposition == NEW_FOREGROUND_TAB ||
-        disposition == NEW_BACKGROUND_TAB) {
-      TabContents* cloned = GetSelectedTabContents()->Clone();
-      tabstrip_model_.AddTabContents(cloned, -1, false,
-                                     PageTransition::LINK,
-                                     disposition == NEW_FOREGROUND_TAB);
-      if (current_tab->interstitial_page()) {
-        // The interstitial won't be copied to the new tab, so we don't need to
-        // go back.
-        return;
-      }
-      controller = &cloned->controller();
-    } else {
-      // Default disposition is CURRENT_TAB.
-      controller = &current_tab->controller();
+    NavigationController& controller =
+        GetOrCloneNavigationControllerForDisposition(disposition);
+    // The interstitial won't be copied to the new tab, so we don't need to
+    // go back.
+    if (!current_tab->interstitial_page()) {
+      controller.GoBack();
     }
-    controller->GoBack();
   }
 }
 
-void Browser::GoForward(WindowOpenDisposition disp) {
-  // TODO(brettw) this is mostly duplicated from GoBack, these should have a
-  // common backend or something.
+void Browser::GoForward(WindowOpenDisposition disposition) {
   UserMetrics::RecordAction("Forward", profile_);
   if (GetSelectedTabContents()->controller().CanGoForward()) {
-    NavigationController* controller = 0;
-    if (disp == NEW_FOREGROUND_TAB || disp == NEW_BACKGROUND_TAB) {
-      TabContents* cloned = GetSelectedTabContents()->Clone();
-      tabstrip_model_.AddTabContents(cloned, -1, false,
-                                     PageTransition::LINK,
-                                     disp == NEW_FOREGROUND_TAB);
-      controller = &cloned->controller();
-    } else {
-      // Default disposition is CURRENT_TAB.
-      controller = &GetSelectedTabContents()->controller();
-    }
-    controller->GoForward();
+    NavigationController& controller =
+        GetOrCloneNavigationControllerForDisposition(disposition);
+    controller.GoForward();
   }
 }
 
