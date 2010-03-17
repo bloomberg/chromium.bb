@@ -45,6 +45,11 @@ class NotificationUIManager
   // Removes a notification.
   virtual bool Cancel(const Notification& notification);
 
+  // Returns balloon collection.
+  BalloonCollection* balloon_collection() {
+    return balloon_collection_.get();
+  }
+
  private:
   // Attempts to display notifications from the show_queue if the user
   // is active.

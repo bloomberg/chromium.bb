@@ -11,13 +11,13 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/notifications/notification.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
 
 class Balloon;
 class BalloonCollection;
+class Notification;
 class Profile;
 class SiteInstance;
 
@@ -28,6 +28,9 @@ class BalloonView {
 
   // Show the view on the screen.
   virtual void Show(Balloon* balloon) = 0;
+
+  // Notify that the content of notification has chagned.
+  virtual void Update() = 0;
 
   // Reposition the view to match the position of its balloon.
   virtual void RepositionToBalloon() = 0;
@@ -47,7 +50,7 @@ class Balloon {
           BalloonCollection* collection);
   virtual ~Balloon();
 
-  const Notification& notification() const { return notification_; }
+  const Notification& notification() const { return *notification_.get(); }
   Profile* profile() const { return profile_; }
 
   const gfx::Point& position() const { return position_; }
@@ -76,6 +79,9 @@ class Balloon {
   // Shows the balloon.
   virtual void Show();
 
+  // Notify that the content of notification has changed.
+  virtual void Update(const Notification& notification);
+
   // Called when the balloon is closed, either by user (through the UI)
   // or by a script.
   virtual void OnClose(bool by_user);
@@ -88,7 +94,7 @@ class Balloon {
   Profile* profile_;
 
   // The notification being shown in this balloon.
-  Notification notification_;
+  scoped_ptr<Notification> notification_;
 
   // The collection that this balloon belongs to.  Non-owned pointer.
   BalloonCollection* collection_;

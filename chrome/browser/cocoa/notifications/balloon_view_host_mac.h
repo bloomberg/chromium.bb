@@ -7,6 +7,7 @@
 
 #include "app/gfx/native_widget_types.h"
 #include "chrome/browser/notifications/balloon.h"
+#include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #import "chrome/browser/renderer_host/render_widget_host_view_mac.h"
 #include "chrome/browser/renderer_host/site_instance.h"

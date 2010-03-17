@@ -160,11 +160,30 @@ class BalloonContainer : public views::View {
     return new_sticky.Union(new_non_sticky).size();
   }
 
-  // Add a ballon to the panel.
+  // Adds a ballon to the panel.
   void Add(Balloon* balloon) {
     BalloonViewImpl* view =
         static_cast<BalloonViewImpl*>(balloon->view());
     GetContainerFor(balloon)->AddChildView(view);
+  }
+
+  // Updates the position of the |balloon|.
+  bool Update(Balloon* balloon) {
+    BalloonViewImpl* view =
+        static_cast<BalloonViewImpl*>(balloon->view());
+    View* container = NULL;
+    if (sticky_container_->HasChildView(view)) {
+      container = sticky_container_;
+    } else if (non_sticky_container_->HasChildView(view)) {
+      container = non_sticky_container_;
+    }
+    if (container) {
+      container->RemoveChildView(view);
+      container->AddChildView(view);
+      return true;
+    } else {
+      return false;
+    }
   }
 
   // Removes a ballon from the panel.
@@ -180,9 +199,15 @@ class BalloonContainer : public views::View {
         non_sticky_container_->GetChildViewCount();
   }
 
-  // Returns true if the container has sticky notification.
-  bool HasStickyNotifications() {
-    return sticky_container_->GetChildViewCount() > 0;
+  // Returns the # of new notifications.
+  bool GetNewNotificationCount() {
+    return sticky_container_->GetNewCount() +
+        non_sticky_container_->GetNewCount();
+  }
+
+  // Returns the # of sticky notifications.
+  bool GetStickyNotificationCount() {
+    return sticky_container_->GetChildViewCount();
   }
 
   // Returns true if the |view| is contained in the panel.
@@ -191,7 +216,7 @@ class BalloonContainer : public views::View {
         non_sticky_container_->HasChildView(view);
   }
 
-  // Update the bounds so that all notifications are visible.
+  // Updates the bounds so that all notifications are visible.
   void UpdateBounds() {
     sticky_container_->UpdateBounds();
     non_sticky_container_->UpdateBounds();
@@ -214,7 +239,9 @@ class BalloonContainer : public views::View {
 
  private:
   BalloonSubContainer* GetContainerFor(Balloon* balloon) const {
-    return balloon->notification().sticky() ?
+    BalloonViewImpl* view =
+        static_cast<BalloonViewImpl*>(balloon->view());
+    return view->sticky() ?
         sticky_container_ : non_sticky_container_;
   }
 
@@ -279,6 +306,14 @@ void NotificationPanel::Hide() {
   }
 }
 
+int NotificationPanel::GetStickyNotificationCount() const {
+  return balloon_container_->GetStickyNotificationCount();
+}
+
+int NotificationPanel::GetNewNotificationCount() const {
+  return balloon_container_->GetNewNotificationCount();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // BalloonCollectionImpl::NotificationUI overrides.
 
@@ -289,6 +324,19 @@ void NotificationPanel::Add(Balloon* balloon) {
   Show();
   UpdatePanel(true);
   StartStaleTimer(balloon);
+}
+
+bool NotificationPanel::Update(Balloon* balloon) {
+  if (balloon_container_->Update(balloon)) {
+    if (state_ == CLOSED || state_ == MINIMIZED)
+      state_ = STICKY_AND_NEW;
+    Show();
+    UpdatePanel(true);
+    StartStaleTimer(balloon);
+    return true;
+  } else {
+    return false;
+  }
 }
 
 void NotificationPanel::Remove(Balloon* balloon) {
@@ -425,7 +473,7 @@ void NotificationPanel::StartStaleTimer(Balloon* balloon) {
 void NotificationPanel::OnStale(BalloonViewImpl* view) {
   if (balloon_container_->HasBalloonView(view) && !view->stale()) {
     view->set_stale();
-    if (balloon_container_->HasStickyNotifications()) {
+    if (balloon_container_->GetStickyNotificationCount() > 0) {
       state_ = STICKY_AND_NEW;
     } else {
       state_ = MINIMIZED;

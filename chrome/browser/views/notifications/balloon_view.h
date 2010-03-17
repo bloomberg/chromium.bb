@@ -53,10 +53,11 @@ class BalloonViewImpl : public BalloonView,
   ~BalloonViewImpl();
 
   // BalloonView interface.
-  void Show(Balloon* balloon);
-  void RepositionToBalloon();
-  void Close(bool by_user);
-  gfx::Size GetSize() const;
+  virtual void Show(Balloon* balloon);
+  virtual void Update() {}
+  virtual void RepositionToBalloon();
+  virtual void Close(bool by_user);
+  virtual gfx::Size GetSize() const;
 
  private:
   // views::View interface.

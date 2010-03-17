@@ -36,14 +36,9 @@
 
 using WebKit::WebNotificationPresenter;
 
-namespace {
-
-// Creates a data:xxxx URL which contains the full HTML for a notification
-// using supplied icon, title, and text, run through a template which contains
-// the standard formatting for notifications.
-static string16 CreateDataUrl(const GURL& icon_url, const string16& title,
-    const string16& body) {
-
+// static
+string16 DesktopNotificationService::CreateDataUrl(
+    const GURL& icon_url, const string16& title, const string16& body) {
   int resource;
   string16 line_name;
   string16 line;
@@ -79,8 +74,6 @@ static string16 CreateDataUrl(const GURL& icon_url, const string16& title,
   string16 format_string = ASCIIToUTF16("data:text/html;charset=utf-8,"
                                         + template_html.as_string());
   return ReplaceStringPlaceholders(format_string, subst, NULL);
-}
-
 }
 
 // A task object which calls the renderer to inform the web page that the
@@ -334,21 +327,20 @@ bool DesktopNotificationService::CancelDesktopNotification(
   scoped_refptr<NotificationObjectProxy> proxy(
       new NotificationObjectProxy(process_id, route_id, notification_id,
                                   false));
-  Notification notif(GURL(), GURL(), L"", proxy, false);
+  Notification notif(GURL(), GURL(), L"", proxy);
   return ui_manager_->Cancel(notif);
 }
 
 
 bool DesktopNotificationService::ShowDesktopNotification(
     const GURL& origin, const GURL& url, int process_id, int route_id,
-    DesktopNotificationSource source, int notification_id,
-    bool sticky) {
+    DesktopNotificationSource source, int notification_id) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   NotificationObjectProxy* proxy =
       new NotificationObjectProxy(process_id, route_id,
                                   notification_id,
                                   source == WorkerNotification);
-  Notification notif(origin, url, DisplayNameForOrigin(origin), proxy, sticky);
+  Notification notif(origin, url, DisplayNameForOrigin(origin), proxy);
   ShowNotification(notif);
   return true;
 }
@@ -356,8 +348,7 @@ bool DesktopNotificationService::ShowDesktopNotification(
 bool DesktopNotificationService::ShowDesktopNotificationText(
     const GURL& origin, const GURL& icon, const string16& title,
     const string16& text, int process_id, int route_id,
-    DesktopNotificationSource source, int notification_id,
-    bool sticky) {
+    DesktopNotificationSource source, int notification_id) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   NotificationObjectProxy* proxy =
       new NotificationObjectProxy(process_id, route_id,
@@ -366,7 +357,7 @@ bool DesktopNotificationService::ShowDesktopNotificationText(
   // "upconvert" the string parameters to a data: URL.
   string16 data_url = CreateDataUrl(icon, title, text);
   Notification notif(
-      origin, GURL(data_url), DisplayNameForOrigin(origin), proxy, sticky);
+      origin, GURL(data_url), DisplayNameForOrigin(origin), proxy);
   ShowNotification(notif);
   return true;
 }

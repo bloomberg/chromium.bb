@@ -40,6 +40,7 @@ class MockBalloonView : public BalloonView {
   explicit MockBalloonView(Balloon * balloon) :
       balloon_(balloon) {}
   void Show(Balloon* balloon) {}
+  void Update() {}
   void RepositionToBalloon() {}
   void Close(bool by_user) { balloon_->OnClose(by_user); }
   gfx::Size GetSize() const { return balloon_->content_size(); }

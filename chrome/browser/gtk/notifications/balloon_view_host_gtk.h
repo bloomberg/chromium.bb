@@ -8,6 +8,7 @@
 #include "app/gfx/native_widget_types.h"
 #include "chrome/browser/gtk/extension_view_gtk.h"
 #include "chrome/browser/notifications/balloon.h"
+#include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
 #include "chrome/browser/renderer_host/site_instance.h"

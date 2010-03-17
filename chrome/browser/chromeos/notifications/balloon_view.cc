@@ -35,7 +35,7 @@ const int kRevokePermissionCommand = 0;
 
 namespace chromeos {
 
-BalloonViewImpl::BalloonViewImpl()
+BalloonViewImpl::BalloonViewImpl(bool sticky, bool controls)
     : balloon_(NULL),
       html_contents_(NULL),
       method_factory_(this),
@@ -43,7 +43,9 @@ BalloonViewImpl::BalloonViewImpl()
       options_menu_contents_(NULL),
       options_menu_menu_(NULL),
       options_menu_button_(NULL),
-      stale_(false) {
+      stale_(false),
+      sticky_(sticky),
+      controls_(controls) {
   // This object is not to be deleted by the views hierarchy,
   // as it is owned by the balloon.
   set_parent_owned(false);
@@ -71,39 +73,44 @@ void BalloonViewImpl::Show(Balloon* balloon) {
 
   html_contents_ = new BalloonViewHost(balloon);
   AddChildView(html_contents_);
-  close_button_ = new views::TextButton(this, dismiss_text);
-  close_button_->SetIcon(*rb.GetBitmapNamed(IDR_BALLOON_CLOSE));
-  close_button_->SetHoverIcon(*rb.GetBitmapNamed(IDR_BALLOON_CLOSE_HOVER));
-  close_button_->SetFont(rb.GetFont(ResourceBundle::SmallFont));
-  close_button_->SetEnabledColor(SK_ColorWHITE);
-  close_button_->SetHoverColor(SK_ColorDKGRAY);
-  close_button_->set_alignment(views::TextButton::ALIGN_CENTER);
-  close_button_->set_icon_placement(views::TextButton::ICON_ON_RIGHT);
-  AddChildView(close_button_);
+  if (controls_) {
+    close_button_ = new views::TextButton(this, dismiss_text);
+    close_button_->SetIcon(*rb.GetBitmapNamed(IDR_BALLOON_CLOSE));
+    close_button_->SetHoverIcon(*rb.GetBitmapNamed(IDR_BALLOON_CLOSE_HOVER));
+    close_button_->SetFont(rb.GetFont(ResourceBundle::SmallFont));
+    close_button_->SetEnabledColor(SK_ColorWHITE);
+    close_button_->SetHoverColor(SK_ColorDKGRAY);
+    close_button_->set_alignment(views::TextButton::ALIGN_CENTER);
+    close_button_->set_icon_placement(views::TextButton::ICON_ON_RIGHT);
+    AddChildView(close_button_);
 
-  options_menu_button_ = new views::MenuButton(NULL, options_text, this, false);
-  options_menu_button_->SetFont(rb.GetFont(ResourceBundle::SmallFont));
-  options_menu_button_->SetIcon(*rb.GetBitmapNamed(IDR_BALLOON_OPTIONS_ARROW));
-  options_menu_button_->SetHoverIcon(
-      *rb.GetBitmapNamed(IDR_BALLOON_OPTIONS_ARROW_HOVER));
-  options_menu_button_->set_alignment(views::TextButton::ALIGN_CENTER);
-  options_menu_button_->set_icon_placement(views::TextButton::ICON_ON_RIGHT);
-  options_menu_button_->SetEnabledColor(SK_ColorWHITE);
-  options_menu_button_->SetHoverColor(SK_ColorDKGRAY);
-  AddChildView(options_menu_button_);
+    options_menu_button_
+        = new views::MenuButton(NULL, options_text, this, false);
+    options_menu_button_->SetFont(rb.GetFont(ResourceBundle::SmallFont));
+    options_menu_button_->SetIcon(
+        *rb.GetBitmapNamed(IDR_BALLOON_OPTIONS_ARROW));
+    options_menu_button_->SetHoverIcon(
+        *rb.GetBitmapNamed(IDR_BALLOON_OPTIONS_ARROW_HOVER));
+    options_menu_button_->set_alignment(views::TextButton::ALIGN_CENTER);
+    options_menu_button_->set_icon_placement(views::TextButton::ICON_ON_RIGHT);
+    options_menu_button_->SetEnabledColor(SK_ColorWHITE);
+    options_menu_button_->SetHoverColor(SK_ColorDKGRAY);
+    AddChildView(options_menu_button_);
 
-  source_label_ = new views::Label(source_label_text);
-  source_label_->SetFont(rb.GetFont(ResourceBundle::SmallFont));
-  source_label_->SetColor(SK_ColorWHITE);
-  source_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  AddChildView(source_label_);
-
-  SetBounds(0, 0,
-            balloon_->content_size().width(),
-            balloon_->content_size().height() +
-            close_button_->GetPreferredSize().height());
+    source_label_ = new views::Label(source_label_text);
+    source_label_->SetFont(rb.GetFont(ResourceBundle::SmallFont));
+    source_label_->SetColor(SK_ColorWHITE);
+    source_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    AddChildView(source_label_);
+  }
   notification_registrar_.Add(this,
     NotificationType::NOTIFY_BALLOON_DISCONNECTED, Source<Balloon>(balloon));
+}
+
+void BalloonViewImpl::Update() {
+  stale_ = false;
+  html_contents_->render_view_host()->NavigateToURL(
+      balloon_->notification().content_url());
 }
 
 void BalloonViewImpl::Close(bool by_user) {
@@ -126,7 +133,10 @@ void BalloonViewImpl::RepositionToBalloon() {
 // views::View interface overrides.
 
 void BalloonViewImpl::Layout() {
-  gfx::Size button_size = close_button_->GetPreferredSize();
+  gfx::Size button_size;
+  if (close_button_) {
+    button_size = close_button_->GetPreferredSize();
+  }
 
   SetBounds(x(), y(),
             balloon_->content_size().width(),
@@ -141,12 +151,13 @@ void BalloonViewImpl::Layout() {
     if (view)
       view->SetSize(gfx::Size(width(), y));
   }
-
-  close_button_->SetBounds(x, y, button_size.width(), button_size.height());
-  x -= close_button_->GetPreferredSize().width();
-  options_menu_button_->SetBounds(
-      x, y, button_size.width(), button_size.height());
-  source_label_->SetBounds(0, y, x, button_size.height());
+  if (controls_) {
+    close_button_->SetBounds(x, y, button_size.width(), button_size.height());
+    x -= close_button_->GetPreferredSize().width();
+    options_menu_button_->SetBounds(
+        x, y, button_size.width(), button_size.height());
+    source_label_->SetBounds(0, y, x, button_size.height());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

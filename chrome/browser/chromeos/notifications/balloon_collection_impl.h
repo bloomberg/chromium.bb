@@ -34,6 +34,7 @@ class BalloonCollectionImpl : public BalloonCollection {
 
     // Add, remove and resize the balloon.
     virtual void Add(Balloon* balloon) = 0;
+    virtual bool Update(Balloon* balloon) = 0;
     virtual void Remove(Balloon* balloon) = 0;
     virtual void ResizeNotification(Balloon* balloon,
                                     const gfx::Size& size) = 0;
@@ -53,9 +54,26 @@ class BalloonCollectionImpl : public BalloonCollection {
   virtual void DisplayChanged() {}
   virtual void OnBalloonClosed(Balloon* source);
 
+  // Adds new system notification.
+  // |sticky| is used to indicate that the notification
+  // is sticky and cannot be dismissed by a user. |controls| turns on/off
+  // info label and option/dismiss buttons.
+  void AddSystemNotification(const Notification& notification,
+                             Profile* profile, bool sticky, bool controls);
+
+  // Update the notification's content. It uses
+  // NotificationDelegate::id() to check the equality of notifications.
+  // Returns true if the notification has been updated. False if
+  // no corresponding notification is found.
+  bool UpdateNotification(const Notification& notification);
+
   // Injects notification ui. Used to inject a mock implementation in tests.
   void set_notification_ui(NotificationUI* ui) {
-    panel_.reset(ui);
+    notification_ui_.reset(ui);
+  }
+
+  NotificationUI* notification_ui() {
+    return notification_ui_.get();
   }
 
  protected:
@@ -68,11 +86,13 @@ class BalloonCollectionImpl : public BalloonCollection {
   // The number of balloons being displayed.
   int count() const { return balloons_.size(); }
 
-  // Queue of active balloons.
   typedef std::deque<Balloon*> Balloons;
+  Balloons::iterator FindBalloon(const Notification& notification);
+
+  // Queue of active balloons.
   Balloons balloons_;
 
-  scoped_ptr<NotificationUI> panel_;
+  scoped_ptr<NotificationUI> notification_ui_;
 
   DISALLOW_COPY_AND_ASSIGN(BalloonCollectionImpl);
 };

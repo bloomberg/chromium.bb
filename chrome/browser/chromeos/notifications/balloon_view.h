@@ -43,27 +43,27 @@ class BalloonViewImpl : public BalloonView,
                         public NotificationObserver,
                         public views::ButtonListener {
  public:
-  BalloonViewImpl();
+  BalloonViewImpl(bool sticky, bool controls);
   ~BalloonViewImpl();
 
   // views::View interface.
   virtual void Layout();
 
   // BalloonView interface.
-  void Show(Balloon* balloon);
-  void Close(bool by_user);
-  void RepositionToBalloon();
+  virtual void Show(Balloon* balloon);
+  virtual void Update();
+  virtual void Close(bool by_user);
+  virtual void RepositionToBalloon();
   gfx::Size GetSize() const;
 
   // True if the notification is stale. False if the notification is new.
-  bool stale() const {
-    return stale_;
-  }
+  bool stale() const { return stale_; }
 
-  // Makes the notification stable.
-  void set_stale() {
-    stale_ = true;
-  }
+  // Makes the notification stale.
+  void set_stale() { stale_ = true; }
+
+  // True if the notification is sticky.
+  bool sticky() { return sticky_; }
 
  private:
   // views::View interface.
@@ -116,6 +116,10 @@ class BalloonViewImpl : public BalloonView,
   views::MenuButton* options_menu_button_;
   bool stale_;
   NotificationRegistrar notification_registrar_;
+  // A sticky flag. A sticky notification cannot be dismissed by a user.
+  bool sticky_;
+  // True if a notification should have info/option/dismiss label/buttons.
+  bool controls_;
 
   DISALLOW_COPY_AND_ASSIGN(BalloonViewImpl);
 };

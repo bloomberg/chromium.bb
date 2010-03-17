@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_OBJECT_PROXY_H_
 #define CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_OBJECT_PROXY_H_
 
-#include "base/ref_counted.h"
+#include <string>
+
+#include "chrome/browser/notifications/notification_delegate.h"
 
 class MessageLoop;
 namespace IPC {
@@ -17,30 +19,17 @@ class Message;
 // when various events occur regarding the desktop notification, and the
 // attached JS listeners will be invoked in the renderer or worker process.
 class NotificationObjectProxy
-    : public base::RefCountedThreadSafe<NotificationObjectProxy> {
+    : public NotificationDelegate {
  public:
   // Creates a Proxy object with the necessary callback information.
   NotificationObjectProxy(int process_id, int route_id,
                           int notification_id, bool worker);
 
-  // To be called when the desktop notification is actually shown.
+  // NotificationDelegate implementation.
   virtual void Display();
-
-  // To be called when the desktop notification cannot be shown due to an
-  // error.
   virtual void Error();
-
-  // To be called when the desktop notification is closed.  If closed by a
-  // user explicitly (as opposed to timeout/script), |by_user| should be true.
   virtual void Close(bool by_user);
-
-  // Compares two proxies by ids to decide if they are equal.
-  bool IsSame(const NotificationObjectProxy& other) const {
-    return (notification_id_ == other.notification_id_ &&
-            route_id_ == other.route_id_ &&
-            process_id_ == other.process_id_ &&
-            worker_ == other.worker_);
-  }
+  virtual std::string id() const;
 
  protected:
   friend class base::RefCountedThreadSafe<NotificationObjectProxy>;

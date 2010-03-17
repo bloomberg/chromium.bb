@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_VIEWS_NOTIFICATIONS_BALLOON_VIEW_HOST_H_
 
 #include "chrome/browser/notifications/balloon.h"
+#include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"

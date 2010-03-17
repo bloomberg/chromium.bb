@@ -49,6 +49,12 @@ void NotificationObjectProxy::Close(bool by_user) {
   }
 }
 
+std::string NotificationObjectProxy::id() const {
+  return StringPrintf("%d:%d:%d:%d", process_id_, route_id_,
+                      notification_id_, worker_);
+}
+
+
 void NotificationObjectProxy::DeliverMessage(IPC::Message* message) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   ChromeThread::PostTask(

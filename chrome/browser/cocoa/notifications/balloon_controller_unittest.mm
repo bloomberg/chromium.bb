@@ -8,6 +8,7 @@
 #include "chrome/browser/cocoa/notifications/balloon_controller.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/balloon_collection.h"
+#include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
 #include "chrome/test/testing_profile.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
@@ -56,8 +57,7 @@ class BalloonControllerTest : public RenderViewHostTestHarness {
 
 TEST_F(BalloonControllerTest, ShowAndCloseTest) {
   Notification n(GURL("http://www.google.com"), GURL("http://www.google.com"),
-      L"http://www.google.com", new NotificationObjectProxy(-1, -1, -1, false),
-      false);
+      L"http://www.google.com", new NotificationObjectProxy(-1, -1, -1, false));
   scoped_ptr<Balloon> balloon(
       new Balloon(n, profile_.get(), collection_.get()));
 
@@ -75,8 +75,7 @@ TEST_F(BalloonControllerTest, ShowAndCloseTest) {
 
 TEST_F(BalloonControllerTest, SizesTest) {
   Notification n(GURL("http://www.google.com"), GURL("http://www.google.com"),
-      L"http://www.google.com", new NotificationObjectProxy(-1, -1, -1, false),
-      false);
+      L"http://www.google.com", new NotificationObjectProxy(-1, -1, -1, false));
   scoped_ptr<Balloon> balloon(
       new Balloon(n, profile_.get(), collection_.get()));
   balloon->set_content_size(gfx::Size(100, 100));

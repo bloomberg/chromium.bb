@@ -6,13 +6,14 @@
 
 #include "base/logging.h"
 #include "chrome/browser/notifications/balloon_collection.h"
+#include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "gfx/rect.h"
 
 Balloon::Balloon(const Notification& notification, Profile* profile,
                  BalloonCollection* collection)
     : profile_(profile),
-      notification_(notification),
+      notification_(new Notification(notification)),
       collection_(collection) {
 }
 
@@ -34,14 +35,22 @@ void Balloon::set_view(BalloonView* balloon_view) {
 }
 
 void Balloon::Show() {
-  notification_.Display();
+  notification_->Display();
   if (balloon_view_.get()) {
     balloon_view_->Show(this);
   }
 }
 
+void Balloon::Update(const Notification& notification) {
+  notification_.reset(new Notification(notification));
+  notification_->Display();
+  if (balloon_view_.get()) {
+    balloon_view_->Update();
+  }
+}
+
 void Balloon::OnClose(bool by_user) {
-  notification_.Close(by_user);
+  notification_->Close(by_user);
   collection_->OnBalloonClosed(this);
 }
 

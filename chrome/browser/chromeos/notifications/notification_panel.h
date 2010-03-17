@@ -71,6 +71,7 @@ class NotificationPanel : public PanelController::Delegate,
 
   // BalloonCollectionImpl::NotificationUI overrides..
   virtual void Add(Balloon* balloon);
+  virtual bool Update(Balloon* balloon);
   virtual void Remove(Balloon* balloon);
   virtual void ResizeNotification(Balloon* balloon,
                                   const gfx::Size& size);
@@ -80,6 +81,12 @@ class NotificationPanel : public PanelController::Delegate,
   virtual SkBitmap GetPanelIcon();
   virtual void ClosePanel();
   virtual void OnPanelStateChanged(PanelController::State state);
+
+  // Returns number of of sticky notifications.
+  int GetStickyNotificationCount() const;
+
+  // Returns number of new notifications.
+  int GetNewNotificationCount() const;
 
  private:
   enum State {
