@@ -275,9 +275,10 @@ static void AdjustLinuxOOMScore(const std::string& process_type) {
     // Pass - browser / zygote process stays at 0.
   } else if (process_type == switches::kExtensionProcess ||
              process_type == switches::kRendererProcess) {
-    // Set in chrome/browser/zygote_host_linux.cc.
-    NOTREACHED() << "process type '" << process_type << "' "
+    LOG(WARNING) << "process type '" << process_type << "' "
                  << "should go through the zygote.";
+    // When debugging, these process types can end up being run directly.
+    return;
   } else {
     NOTREACHED() << "Unknown process type";
   }

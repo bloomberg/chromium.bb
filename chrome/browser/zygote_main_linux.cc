@@ -47,13 +47,19 @@
 
 #include "unicode/timezone.h"
 
+#if defined(ARCH_CPU_X86_FAMILY) && !defined(CHROMIUM_SELINUX)
+// The seccomp sandbox is enabled on all ia32 and x86-64 processor as long as
+// we aren't using SELinux.
+#define SECCOMP_SANDBOX
+#endif
+
 // http://code.google.com/p/chromium/wiki/LinuxZygote
 
 static const int kBrowserDescriptor = 3;
 static const int kMagicSandboxIPCDescriptor = 5;
 static const int kZygoteIdDescriptor = 7;
 static bool g_suid_sandbox_active = false;
-#if defined(ARCH_CPU_X86_FAMILY)
+#if defined(SECCOMP_SANDBOX)
 // |g_proc_fd| is used only by the seccomp sandbox.
 static int g_proc_fd = -1;
 #endif
@@ -241,7 +247,7 @@ class Zygote {
     child = fork();
 
     if (!child) {
-#if defined(ARCH_CPU_X86_FAMILY)
+#if defined(SECCOMP_SANDBOX)
       // Try to open /proc/self/maps as the seccomp sandbox needs access to it
       if (g_proc_fd >= 0) {
         int proc_self_maps = openat(g_proc_fd, "self/maps", O_RDONLY);
@@ -582,15 +588,15 @@ static bool EnterSandbox() {
   }
 
   context_t context = context_new(security_context);
-  context_type_set(context, "chromium_renderer_t");
+  context_type_set(context, "chromium_zygote_t");
   const int r = setcon(context_str(context));
   context_free(context);
   freecon(security_context);
 
   if (r) {
-    LOG(ERROR) << "dynamic transition to type 'chromium_renderer_t' failed. "
+    LOG(ERROR) << "dynamic transition to type 'chromium_zygote_t' failed. "
                   "(this binary has been built with SELinux support, but maybe "
-                  "the policies haven't been loaded into the kernel?";
+                  "the policies haven't been loaded into the kernel?)";
     return false;
   }
 
@@ -604,7 +610,7 @@ bool ZygoteMain(const MainFunctionParams& params) {
   g_am_zygote_or_renderer = true;
 #endif
 
-#if defined(ARCH_CPU_X86_FAMILY)
+#if defined(SECCOMP_SANDBOX)
   // The seccomp sandbox needs access to files in /proc, which might be denied
   // after one of the other sandboxes have been started. So, obtain a suitable
   // file handle in advance.
@@ -616,7 +622,7 @@ bool ZygoteMain(const MainFunctionParams& params) {
                     "sandboxing.";
     }
   }
-#endif  // ARCH_CPU_X86_FAMILY
+#endif  // SECCOMP_SANDBOX
 
   // Turn on the SELinux or SUID sandbox
   if (!EnterSandbox()) {
@@ -625,7 +631,7 @@ bool ZygoteMain(const MainFunctionParams& params) {
     return false;
   }
 
-#if defined(ARCH_CPU_X86_FAMILY)
+#if defined(SECCOMP_SANDBOX)
   // The seccomp sandbox will be turned on when the renderers start. But we can
   // already check if sufficient support is available so that we only need to
   // print one error message for the entire browser session.
@@ -644,7 +650,7 @@ bool ZygoteMain(const MainFunctionParams& params) {
       LOG(INFO) << "Enabling experimental Seccomp sandbox.";
     }
   }
-#endif  // ARCH_CPU_X86_FAMILY
+#endif  // SECCOMP_SANDBOX
 
   Zygote zygote;
   // This function call can return multiple times, once per fork().
