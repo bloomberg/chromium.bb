@@ -25,11 +25,6 @@
 #include "chrome/common/notification_type.h"
 #include "chrome/test/ui_test_utils.h"
 
-// Amount of time to wait to load an extension. This is purposely obscenely
-// long because it will only get used in the case of failure and we want to
-// minimize false positives.
-static const int kTimeoutMs = 60 * 1000;  // 1 minute
-
 ExtensionBrowserTest::ExtensionBrowserTest()
     : target_page_action_count_(-1),
       target_visible_page_action_count_(-1) {
@@ -60,8 +55,6 @@ bool ExtensionBrowserTest::LoadExtensionImpl(const FilePath& path,
     registrar.Add(this, NotificationType::EXTENSION_LOADED,
                   NotificationService::AllSources());
     service->LoadExtension(path);
-    MessageLoop::current()->PostDelayedTask(
-        FROM_HERE, new MessageLoop::QuitTask, kTimeoutMs);
     ui_test_utils::RunMessageLoop();
   }
   size_t num_after = service->extensions()->size();
@@ -137,8 +130,6 @@ bool ExtensionBrowserTest::InstallOrUpdateExtension(const std::string& id,
     installer->set_expected_id(id);
     installer->InstallCrx(path);
 
-    MessageLoop::current()->PostDelayedTask(
-        FROM_HERE, new MessageLoop::QuitTask, kTimeoutMs);
     ui_test_utils::RunMessageLoop();
   }
 
@@ -169,7 +160,7 @@ void ExtensionBrowserTest::ReloadExtension(const std::string& extension_id) {
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
   service->ReloadExtension(extension_id);
   ui_test_utils::RegisterAndWait(NotificationType::EXTENSION_PROCESS_CREATED,
-                                 this, kTimeoutMs);
+                                 this);
 }
 
 void ExtensionBrowserTest::UnloadExtension(const std::string& extension_id) {
@@ -198,9 +189,6 @@ bool ExtensionBrowserTest::WaitForPageActionCountChangeTo(int count) {
       NotificationType::EXTENSION_PAGE_ACTION_COUNT_CHANGED,
       NotificationService::AllSources());
 
-  MessageLoop::current()->PostDelayedTask(FROM_HERE, new MessageLoop::QuitTask,
-                                          kTimeoutMs);
-
   target_page_action_count_ = count;
   LocationBarTesting* location_bar =
       browser()->window()->GetLocationBar()->GetLocationBarForTesting();
@@ -214,9 +202,6 @@ bool ExtensionBrowserTest::WaitForPageActionVisibilityChangeTo(int count) {
   registrar.Add(this,
       NotificationType::EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
       NotificationService::AllSources());
-
-  MessageLoop::current()->PostDelayedTask(FROM_HERE, new MessageLoop::QuitTask,
-                                          kTimeoutMs);
 
   target_visible_page_action_count_ = count;
   LocationBarTesting* location_bar =
@@ -254,25 +239,19 @@ bool ExtensionBrowserTest::WaitForExtensionHostsToLoad() {
 
 bool ExtensionBrowserTest::WaitForExtensionInstall() {
   int before = extension_installs_observed_;
-  ui_test_utils::RegisterAndWait(NotificationType::EXTENSION_INSTALLED, this,
-                                 kTimeoutMs);
+  ui_test_utils::RegisterAndWait(NotificationType::EXTENSION_INSTALLED, this);
   return extension_installs_observed_ == (before + 1);
 }
 
 bool ExtensionBrowserTest::WaitForExtensionInstallError() {
   int before = extension_installs_observed_;
   ui_test_utils::RegisterAndWait(NotificationType::EXTENSION_INSTALL_ERROR,
-                                 this, kTimeoutMs);
+                                 this);
   return extension_installs_observed_ == before;
 }
 
 void ExtensionBrowserTest::WaitForExtensionLoad() {
-  NotificationRegistrar registrar;
-  registrar.Add(this, NotificationType::EXTENSION_LOADED,
-                NotificationService::AllSources());
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, new MessageLoop::QuitTask, kTimeoutMs);
-  ui_test_utils::RunMessageLoop();
+  ui_test_utils::RegisterAndWait(NotificationType::EXTENSION_LOADED, this);
   WaitForExtensionHostsToLoad();
 }
 
@@ -285,7 +264,7 @@ bool ExtensionBrowserTest::WaitForExtensionCrash(
     return true;
   }
   ui_test_utils::RegisterAndWait(NotificationType::EXTENSION_PROCESS_TERMINATED,
-                                 this, kTimeoutMs);
+                                 this);
   return (service->GetExtensionById(extension_id, true) == NULL);
 }
 

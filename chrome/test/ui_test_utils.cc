@@ -544,12 +544,9 @@ int FindInPage(TabContents* tab_contents, const string16& search_string,
 }
 
 void RegisterAndWait(NotificationType::Type type,
-                     NotificationObserver* observer,
-                     int64 timeout_ms) {
+                     NotificationObserver* observer) {
   NotificationRegistrar registrar;
   registrar.Add(observer, type, NotificationService::AllSources());
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, new MessageLoop::QuitTask, timeout_ms);
   RunMessageLoop();
 }
 

@@ -152,10 +152,9 @@ bool IsViewFocused(const Browser* browser, ViewID vid);
 void ClickOnView(const Browser* browser, ViewID vid);
 
 // Register |observer| for the given |type| and run the message loop until
-// either the observer posts a quit task or we timeout.
+// the observer posts a quit task.
 void RegisterAndWait(NotificationType::Type type,
-                     NotificationObserver* observer,
-                     int64 timeout_ms);
+                     NotificationObserver* observer);
 
 // Run a message loop only for the specified amount of time.
 class TimedMessageLoopRunner {
