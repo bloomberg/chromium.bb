@@ -23,9 +23,20 @@ class Widget;
 }
 
 class ExtensionPopup : public BrowserBubble,
+                       public BrowserBubble::Delegate,
                        public NotificationObserver,
-                       public ExtensionView::Container {
+                       public ExtensionView::Container,
+                       public base::RefCounted<ExtensionPopup> {
  public:
+  // Observer to ExtensionPopup events.
+  class Observer {
+   public:
+    // Called when the ExtensionPopup has closed. Note that it
+    // is ref-counted, and thus will be released shortly after
+    // making this delegate call.
+    virtual void ExtensionPopupClosed(ExtensionPopup* popup) {}
+  };
+
   enum PopupChrome {
     BUBBLE_CHROME,
     RECTANGLE_CHROME
@@ -47,6 +58,8 @@ class ExtensionPopup : public BrowserBubble,
   // If |arrow_location| is BOTTOM_*, then the popup 'pops up', otherwise
   // the popup 'drops down'.
   // Pass |activate_on_show| as true to activate the popup window.
+  // Pass |inspect_with_devtools| as true to pin the popup open and show the
+  // devtools window for it.
   // The |chrome| argument controls the chrome that surrounds the pop-up.
   // Passing BUBBLE_CHROME will give the pop-up a bubble-like appearance,
   // including the arrow mentioned above.  Passing RECTANGLE_CHROME will give
@@ -62,7 +75,20 @@ class ExtensionPopup : public BrowserBubble,
                               const gfx::Rect& relative_to,
                               BubbleBorder::ArrowLocation arrow_location,
                               bool activate_on_show,
-                              PopupChrome chrome);
+                              bool inspect_with_devtools,
+                              PopupChrome chrome,
+                              Observer* observer);
+
+  // Closes the ExtensionPopup (this will cause the delegate
+  // ExtensionPopupClosed to fire.
+  void Close();
+
+  // Some clients wish to do their own custom focus change management. If this
+  // is set to false, then the ExtensionPopup will not do anything in response
+  // to the BubbleLostFocus() calls it gets from the BrowserBubble.
+  void set_close_on_lost_focus(bool close_on_lost_focus) {
+    close_on_lost_focus_ = close_on_lost_focus;
+  }
 
   ExtensionHost* host() const { return extension_host_.get(); }
 
@@ -70,6 +96,13 @@ class ExtensionPopup : public BrowserBubble,
   virtual void Hide();
   virtual void Show(bool activate);
   virtual void ResizeToView();
+
+  // BrowserBubble::Delegate methods.
+  virtual void BubbleBrowserWindowMoved(BrowserBubble* bubble);
+  virtual void BubbleBrowserWindowClosing(BrowserBubble* bubble);
+  virtual void BubbleGotFocus(BrowserBubble* bubble);
+  virtual void BubbleLostFocus(BrowserBubble* bubble,
+                               bool lost_focus_to_child);
 
   // NotificationObserver overrides.
   virtual void Observe(NotificationType type,
@@ -93,7 +126,9 @@ class ExtensionPopup : public BrowserBubble,
                  const gfx::Rect& relative_to,
                  BubbleBorder::ArrowLocation arrow_location,
                  bool activate_on_show,
-                 PopupChrome chrome);
+                 bool inspect_with_devtools,
+                 PopupChrome chrome,
+                 Observer* observer);
 
   // Gives the desired bounds (in screen coordinates) given the rect to point
   // to and the size of the contained contents.  Includes all of the
@@ -110,6 +145,16 @@ class ExtensionPopup : public BrowserBubble,
   // Flag used to indicate if the pop-up should be activated upon first display.
   bool activate_on_show_;
 
+  // Flag used to indicate if the pop-up should open a devtools window once
+  // it is shown inspecting it.
+  bool inspect_with_devtools_;
+
+  // If false, ignore BrowserBubble::Delegate::BubbleLostFocus() calls.
+  bool close_on_lost_focus_;
+
+  // Whether the ExtensionPopup is current going about closing itself.
+  bool closing_;
+
   NotificationRegistrar registrar_;
 
   // A separate widget and associated pieces to draw a border behind the
@@ -122,6 +167,9 @@ class ExtensionPopup : public BrowserBubble,
 
   // The type of chrome associated with the popup window.
   PopupChrome popup_chrome_;
+
+  // The observer of this popup.
+  Observer* observer_;
 
   // A cached copy of the arrow-position for the bubble chrome.
   // If a black-border was requested, we still need this value to determine

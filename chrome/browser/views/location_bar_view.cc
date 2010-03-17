@@ -1427,8 +1427,7 @@ LocationBarView::PageActionImageView::PageActionImageView(
       tracker_(NULL),
       current_tab_id_(-1),
       preview_enabled_(false),
-      popup_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+      popup_(NULL) {
   Extension* extension = profile->GetExtensionsService()->GetExtensionById(
       page_action->extension_id(), false);
   DCHECK(extension);
@@ -1447,9 +1446,6 @@ LocationBarView::PageActionImageView::PageActionImageView(
         gfx::Size(Extension::kPageActionIconMaxSize,
                   Extension::kPageActionIconMaxSize));
   }
-
-  registrar_.Add(this, NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE,
-                 Source<Profile>(profile_));
 }
 
 LocationBarView::PageActionImageView::~PageActionImageView() {
@@ -1460,7 +1456,8 @@ LocationBarView::PageActionImageView::~PageActionImageView() {
     HidePopup();
 }
 
-void LocationBarView::PageActionImageView::ExecuteAction(int button) {
+void LocationBarView::PageActionImageView::ExecuteAction(int button,
+    bool inspect_with_devtools) {
   if (current_tab_id_ < 0) {
     NOTREACHED() << "No current tab.";
     return;
@@ -1500,8 +1497,9 @@ void LocationBarView::PageActionImageView::ExecuteAction(int button) {
         rect,
         BubbleBorder::TOP_RIGHT,
         true,  // Activate the popup window.
-        ExtensionPopup::BUBBLE_CHROME);
-    popup_->set_delegate(this);
+        inspect_with_devtools,
+        ExtensionPopup::BUBBLE_CHROME,
+        this);  // ExtensionPopup::Observer
   } else {
     ExtensionBrowserEventRouter::GetInstance()->PageActionExecuted(
         profile_, page_action_->extension_id(), page_action_->id(),
@@ -1547,11 +1545,15 @@ void LocationBarView::PageActionImageView::OnMouseReleased(
 
     if (!context_menu_.get())
       context_menu_.reset(new ExtensionActionContextMenu());
-    context_menu_->Run(extension, point);
+    context_menu_->Run(extension,
+                       extension->page_action(),
+                       this,  // ExtensionActionContextMenuModel::Delegate
+                       profile_->GetPrefs(),
+                       point);
     return;
   }
 
-  ExecuteAction(button);
+  ExecuteAction(button, false);  // inspect_with_devtools
 }
 
 void LocationBarView::PageActionImageView::ShowInfoBubble() {
@@ -1629,56 +1631,22 @@ void LocationBarView::PageActionImageView::UpdateVisibility(
   SetVisible(visible);
 }
 
-void LocationBarView::PageActionImageView::BubbleBrowserWindowClosing(
-    BrowserBubble* bubble) {
-  HidePopup();
+void LocationBarView::PageActionImageView::ShowPopupForDevToolsWindow(
+    Extension* extension, ExtensionAction* extension_action) {
+  ExecuteAction(1,  // left-click
+                true);  // inspect_with_devtools
 }
 
-void LocationBarView::PageActionImageView::BubbleLostFocus(
-    BrowserBubble* bubble, bool lost_focus_to_child) {
-  // Don't close when we are losing focus to a child window, this is the case
-  // for select popups and alert for example.
-  if (!popup_ || lost_focus_to_child)
-    return;
-
-  MessageLoop::current()->PostTask(FROM_HERE,
-      method_factory_.NewRunnableMethod(
-          &LocationBarView::PageActionImageView::HidePopup));
+void LocationBarView::PageActionImageView::ExtensionPopupClosed(
+    ExtensionPopup* popup) {
+  DCHECK_EQ(popup_, popup);
+  // ExtensionPopup is ref-counted, so we don't need to delete it.
+  popup_ = NULL;
 }
 
 void LocationBarView::PageActionImageView::HidePopup() {
-  if (!popup_)
-    return;
-
-  // This sometimes gets called via a timer (See BubbleLostFocus), so clear
-  // the method factory. in case one is pending.
-  method_factory_.RevokeAll();
-
-  // Save the popup in a local since destroying it calls BubbleLostFocus,
-  // which will try to call HidePopup() again.
-  ExtensionPopup* closing_popup = popup_;
-  popup_ = NULL;
-
-  closing_popup->DetachFromBrowser();
-  delete closing_popup;
-}
-
-void LocationBarView::PageActionImageView::Observe(
-    NotificationType type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE:
-      // If we aren't the host of the popup, then disregard the notification.
-      if (!popup_ || Details<ExtensionHost>(popup_->host()) != details)
-        return;
-
-      HidePopup();
-      break;
-    default:
-      NOTREACHED() << "Unexpected notification";
-      break;
-  }
+  if (popup_)
+    popup_->Close();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1767,7 +1735,8 @@ void LocationBarView::TestPageActionPressed(size_t index) {
     if (page_action_views_[i]->IsVisible()) {
       if (current == index) {
         const int kLeftMouseButton = 1;
-        page_action_views_[i]->image_view()->ExecuteAction(kLeftMouseButton);
+        page_action_views_[i]->image_view()->ExecuteAction(kLeftMouseButton,
+            false);  // inspect_with_devtools
         return;
       }
       ++current;

@@ -7,8 +7,12 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/debugger/devtools_manager.h"
+#include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
+#include "chrome/browser/profile.h"
+#include "chrome/browser/renderer_host/render_widget_host_view.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_details.h"
@@ -46,7 +50,9 @@ ExtensionPopup::ExtensionPopup(ExtensionHost* host,
                                const gfx::Rect& relative_to,
                                BubbleBorder::ArrowLocation arrow_location,
                                bool activate_on_show,
-                               PopupChrome chrome)
+                               bool inspect_with_devtools,
+                               PopupChrome chrome,
+                               Observer* observer)
     : BrowserBubble(host->view(),
                     frame,
                     gfx::Point(),
@@ -57,14 +63,26 @@ ExtensionPopup::ExtensionPopup(ExtensionHost* host,
       relative_to_(relative_to),
       extension_host_(host),
       activate_on_show_(activate_on_show),
+      inspect_with_devtools_(inspect_with_devtools),
+      close_on_lost_focus_(true),
+      closing_(false),
       border_widget_(NULL),
       border_(NULL),
       border_view_(NULL),
       popup_chrome_(chrome),
+      observer_(observer),
       anchor_position_(arrow_location) {
+  AddRef();  // Balanced in Close();
+  set_delegate(this);
   host->view()->SetContainer(this);
+
+  // We wait to show the popup until the contained host finishes loading.
   registrar_.Add(this,
                  NotificationType::EXTENSION_HOST_DID_STOP_LOADING,
+                 Source<Profile>(host->profile()));
+
+  // Listen for the containing view calling window.close();
+  registrar_.Add(this, NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE,
                  Source<Profile>(host->profile()));
 
   // TODO(erikkay) Some of this border code is derived from InfoBubble.
@@ -167,16 +185,81 @@ void ExtensionPopup::ResizeToView() {
   }
 }
 
+void ExtensionPopup::BubbleBrowserWindowMoved(BrowserBubble* bubble) {
+  if (!closing_)
+    Close();
+  // TODO(rafaelw) -- the border must move as well.
+}
+
+void ExtensionPopup::BubbleBrowserWindowClosing(BrowserBubble* bubble) {
+  if (!closing_)
+    Close();
+}
+
+void ExtensionPopup::BubbleGotFocus(BrowserBubble* bubble) {
+  // Forward the focus to the renderer.
+  host()->render_view_host()->view()->Focus();
+}
+
+void ExtensionPopup::BubbleLostFocus(BrowserBubble* bubble,
+    bool lost_focus_to_child) {
+  if (closing_ ||                // We are already closing.
+      inspect_with_devtools_ ||  // The popup is being inspected.
+      !close_on_lost_focus_ ||   // Our client is handling focus listening.
+      lost_focus_to_child)       // A child of this view got focus.
+    return;
+
+  // When we do close on BubbleLostFocus, we do it in the next event loop
+  // because a subsequent event in this loop may also want to close this popup
+  // and if so, we want to allow that. Example: Clicking the same browser
+  // action button that opened the popup. If we closed immediately, the
+  // browser action container would fail to discover that the same button
+  // was pressed.
+  MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(this,
+      &ExtensionPopup::Close));
+}
+
+
 void ExtensionPopup::Observe(NotificationType type,
                              const NotificationSource& source,
                              const NotificationDetails& details) {
-  if (type == NotificationType::EXTENSION_HOST_DID_STOP_LOADING) {
-    // Once we receive did stop loading, the content will be complete and
-    // the width will have been computed.  Now it's safe to show.
-    if (extension_host_.get() == Details<ExtensionHost>(details).ptr())
-      Show(activate_on_show_);
-  } else {
-    NOTREACHED() << L"Received unexpected notification";
+  switch (type.value) {
+    case NotificationType::EXTENSION_HOST_DID_STOP_LOADING:
+      // Once we receive did stop loading, the content will be complete and
+      // the width will have been computed.  Now it's safe to show.
+      if (extension_host_.get() == Details<ExtensionHost>(details).ptr()) {
+        Show(activate_on_show_);
+
+        if (inspect_with_devtools_) {
+          // Listen for the the devtools window closing.
+          registrar_.Add(this, NotificationType::DEVTOOLS_WINDOW_CLOSING,
+              Source<Profile>(extension_host_->profile()));
+          DevToolsManager::GetInstance()->ToggleDevToolsWindow(
+              extension_host_->render_view_host(), true);
+        }
+      }
+      break;
+    case NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE:
+      // If we aren't the host of the popup, then disregard the notification.
+      if (Details<ExtensionHost>(host()) != details)
+        return;
+      Close();
+
+      break;
+    case NotificationType::DEVTOOLS_WINDOW_CLOSING:
+      // Make sure its the devtools window that inspecting our popup.
+      if (Details<RenderViewHost>(extension_host_->render_view_host()) != details)
+        return;
+
+      // If the devtools window is closing, we post a task to ourselves to
+      // close the popup. This gives the devtools window a chance to finish
+      // detaching from the inspected RenderViewHost.
+      MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(this,
+          &ExtensionPopup::Close));
+
+      break;
+    default:
+      NOTREACHED() << L"Received unexpected notification";
   }
 }
 
@@ -232,7 +315,9 @@ ExtensionPopup* ExtensionPopup::Show(
     const gfx::Rect& relative_to,
     BubbleBorder::ArrowLocation arrow_location,
     bool activate_on_show,
-    PopupChrome chrome) {
+    bool inspect_with_devtools,
+    PopupChrome chrome,
+    Observer* observer) {
   DCHECK(profile);
   DCHECK(frame_window);
   ExtensionProcessManager* manager = profile->GetExtensionProcessManager();
@@ -253,7 +338,8 @@ ExtensionPopup* ExtensionPopup::Show(
   ExtensionHost* host = manager->CreatePopup(url, browser);
   ExtensionPopup* popup = new ExtensionPopup(host, frame_widget, relative_to,
                                              arrow_location, activate_on_show,
-                                             chrome);
+                                             inspect_with_devtools, chrome,
+                                             observer);
 
   // If the host had somehow finished loading, then we'd miss the notification
   // and not show.  This seems to happen in single-process mode.
@@ -261,4 +347,14 @@ ExtensionPopup* ExtensionPopup::Show(
     popup->Show(activate_on_show);
 
   return popup;
+}
+
+void ExtensionPopup::Close() {
+  if (closing_)
+    return;
+  closing_ = true;
+  DetachFromBrowser();
+  if (observer_)
+    observer_->ExtensionPopupClosed(this);
+  Release();  // Balanced in ctor.
 }

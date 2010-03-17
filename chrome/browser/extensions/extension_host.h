@@ -10,7 +10,6 @@
 #include "base/perftimer.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
-#include "chrome/browser/extensions/extension_popup_host.h"
 #include "chrome/browser/jsmessage_box_client.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
@@ -37,8 +36,7 @@ struct WebPreferences;
 // It handles setting up the renderer process, if needed, with special
 // privileges available to extensions.  It may have a view to be shown in the
 // in the browser UI, or it may be hidden.
-class ExtensionHost : public ExtensionPopupHost::PopupDelegate,
-                      public RenderViewHostDelegate,
+class ExtensionHost : public RenderViewHostDelegate,
                       public RenderViewHostDelegate::View,
                       public ExtensionFunctionDispatcher::Delegate,
                       public NotificationObserver,
@@ -79,6 +77,10 @@ class ExtensionHost : public ExtensionPopupHost::PopupDelegate,
   bool document_element_available() const {
     return document_element_available_;
   }
+  gfx::NativeView GetNativeViewOfHost() {
+    return view() ? view()->native_view() : NULL;
+  }
+
   Profile* profile() const { return profile_; }
 
   ViewType::Type extension_host_type() const { return extension_host_type_; }
@@ -204,12 +206,8 @@ class ExtensionHost : public ExtensionPopupHost::PopupDelegate,
   virtual Browser* GetBrowser(bool include_incognito) const;
   virtual ExtensionHost* GetExtensionHost() { return this; }
 
-  // ExtensionPopupHost::Delegate
   virtual Browser* GetBrowser() const { return GetBrowser(true); }
   virtual RenderViewHost* GetRenderViewHost() { return render_view_host(); }
-  virtual gfx::NativeView GetNativeViewOfHost() {
-    return view() ? view()->native_view() : NULL;
-  }
 
   // Handles keyboard events that were not handled by HandleKeyboardEvent().
   // Platform specific implementation may override this method to handle the

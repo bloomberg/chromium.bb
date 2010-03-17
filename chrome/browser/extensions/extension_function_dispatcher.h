@@ -18,7 +18,6 @@ class Extension;
 class ExtensionDOMUI;
 class ExtensionFunction;
 class ExtensionHost;
-class ExtensionPopupHost;
 class Profile;
 class RenderViewHost;
 class RenderViewHostDelegate;
@@ -95,10 +94,6 @@ class ExtensionFunctionDispatcher {
   // If |include_incognito| is false, and the appropriate browser is incognito,
   // we will fall back to a regular browser window or NULL if unavailable.
   Browser* GetBrowser(bool include_incognito);
-
-  // Get the extension popup hosting environment for the ExtensionHost
-  // or ExtensionDOMUI associted with this dispatcher.
-  ExtensionPopupHost* GetPopupHost();
 
   // Gets the ExtensionHost associated with this object.  In the case of
   // tab hosted extension pages, this will return NULL.

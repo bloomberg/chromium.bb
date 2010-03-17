@@ -171,6 +171,12 @@ void DevToolsManager::ClientHostClosing(DevToolsClientHost* host) {
     }
     return;
   }
+
+  NotificationService::current()->Notify(
+      NotificationType::DEVTOOLS_WINDOW_CLOSING,
+      Source<Profile>(inspected_rvh->site_instance()->GetProcess()->profile()),
+      Details<RenderViewHost>(inspected_rvh));
+
   SendDetachToAgent(inspected_rvh);
 
   inspected_rvh_to_client_host_.erase(inspected_rvh);

@@ -21,9 +21,12 @@
 #include "gfx/point.h"
 
 #if defined(TOOLKIT_VIEWS)
+#include "chrome/browser/renderer_host/render_view_host.h"
+#include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/views/extensions/extension_popup.h"
 #include "views/view.h"
-#endif
+#include "views/focus/focus_manager.h"
+#endif  // TOOLKIT_VIEWS
 
 namespace extension_popup_module_events {
 
@@ -52,6 +55,97 @@ const wchar_t kBorderStyleKey[] = L"borderStyle";
 const char kRectangleChrome[] = "rectangle";
 
 };  // namespace
+
+#if defined(TOOLKIT_VIEWS)
+// ExtensionPopupHost objects implement the environment necessary to host
+// an ExtensionPopup views for the popup api. Its main job is to handle
+// its lifetime and to fire the popup-closed event when the popup is closed.
+// Because the close-on-focus-lost behavior is different from page action
+// and browser action, it also manages its own focus change listening. The
+// difference in close-on-focus-lost is that in the page action and browser
+// action cases, the popup closes when the focus leaves the popup or any of its
+// children. In this case, the popup closes when the focus leaves the popups
+// containing view or any of *its* children.
+class ExtensionPopupHost : public ExtensionPopup::Observer,
+                           public views::WidgetFocusChangeListener,
+                           public base::RefCounted<ExtensionPopupHost> {
+ public:
+  explicit ExtensionPopupHost(ExtensionFunctionDispatcher* dispatcher)
+      : dispatcher_(dispatcher), popup_(NULL) {
+    AddRef();  // Balanced in ExtensionPopupClosed().
+    views::FocusManager::GetWidgetFocusManager()->AddFocusChangeListener(this);
+  }
+
+  ~ExtensionPopupHost() {
+    views::FocusManager::GetWidgetFocusManager()->
+        RemoveFocusChangeListener(this);
+  }
+
+  void set_popup(ExtensionPopup* popup) {
+    popup_ = popup;
+  }
+
+  // Overriden from ExtensionPopup::Observer
+  virtual void ExtensionPopupClosed(ExtensionPopup* popup) {
+    RenderViewHost* render_view_host = dispatcher_->GetExtensionHost() ?
+        dispatcher_->GetExtensionHost()->render_view_host() :
+        dispatcher_->GetExtensionDOMUI()->GetRenderViewHost();
+
+    PopupEventRouter::OnPopupClosed(dispatcher_->profile(),
+                                    render_view_host->routing_id());
+    dispatcher_ = NULL;
+    Release();  // Balanced in ctor.
+  }
+
+  // Overriden from views::WidgetFocusChangeListener
+  virtual void NativeFocusWillChange(gfx::NativeView focused_before,
+                                     gfx::NativeView focused_now) {
+    // If no view is to be focused, then Chrome was deactivated, so hide the
+    // popup.
+    if (focused_now) {
+      gfx::NativeView host_view = dispatcher_->GetExtensionHost() ?
+          dispatcher_->GetExtensionHost()->GetNativeViewOfHost() :
+          dispatcher_->GetExtensionDOMUI()->GetNativeViewOfHost();
+
+      // If the widget hosting the popup contains the newly focused view, then
+      // don't dismiss the pop-up.
+      views::Widget* popup_root_widget = popup_->host()->view()->GetWidget();
+      if (popup_root_widget &&
+          popup_root_widget->ContainsNativeView(focused_now))
+        return;
+
+      // If the widget or RenderWidgetHostView hosting the extension that
+      // launched the pop-up is receiving focus, then don't dismiss the popup.
+      views::Widget* host_widget =
+          views::Widget::GetWidgetFromNativeView(host_view);
+      if (host_widget && host_widget->ContainsNativeView(focused_now))
+        return;
+
+      RenderWidgetHostView* render_host_view =
+          RenderWidgetHostView::GetRenderWidgetHostViewFromNativeView(
+              host_view);
+      if (render_host_view &&
+          render_host_view->ContainsNativeView(focused_now))
+        return;
+    }
+
+    // We are careful here to let the current event loop unwind before
+    // causing the popup to be closed.
+    MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(popup_,
+        &ExtensionPopup::Close));
+  }
+
+ private:
+  // A pointer to the dispatcher that handled the request that opened this
+  // popup view.
+  ExtensionFunctionDispatcher* dispatcher_;
+
+  // A pointer to the popup.
+  ExtensionPopup* popup_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionPopupHost);
+};
+#endif  // TOOLKIT_VIEWS
 
 PopupShowFunction::PopupShowFunction()
 #if defined (TOOLKIT_VIEWS)
@@ -157,19 +251,24 @@ bool PopupShowFunction::RunImpl() {
   BubbleBorder::ArrowLocation arrow_location =
       (NULL != dispatcher()->GetExtensionHost()) ? BubbleBorder::BOTTOM_LEFT :
                                                    BubbleBorder::TOP_LEFT;
-  popup_ = ExtensionPopup::Show(url, GetBrowser(),
+
+  // ExtensionPopupHost manages it's own lifetime.
+  ExtensionPopupHost* popup_host = new ExtensionPopupHost(dispatcher());
+  popup_ = ExtensionPopup::Show(url,
+                                GetBrowser(),
                                 dispatcher()->profile(),
                                 dispatcher()->GetFrameNativeWindow(),
                                 rect,
                                 arrow_location,
                                 give_focus,
-                                chrome);
+                                false,  // inspect_with_devtools
+                                chrome,
+                                popup_host);  // ExtensionPopup::Observer
 
-  ExtensionPopupHost* popup_host = dispatcher()->GetPopupHost();
-  DCHECK(popup_host);
-
-  popup_host->set_child_popup(popup_);
-  popup_->set_delegate(popup_host);
+  // popup_host will handle focus change listening and close the popup when
+  // focus leaves the containing views hierarchy.
+  popup_->set_close_on_lost_focus(false);
+  popup_host->set_popup(popup_);
 #endif  // defined(TOOLKIT_VIEWS)
   return true;
 }

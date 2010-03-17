@@ -7,10 +7,14 @@
 #include "app/l10n_util.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 
@@ -20,20 +24,29 @@ enum MenuEntries {
   DISABLE,
   UNINSTALL,
   MANAGE,
+  INSPECT_POPUP
 };
 
 ExtensionActionContextMenuModel::ExtensionActionContextMenuModel(
-    Extension* extension)
+    Extension* extension, ExtensionAction* extension_action, PrefService* prefs,
+    MenuDelegate* delegate)
   : ALLOW_THIS_IN_INITIALIZER_LIST(SimpleMenuModel(this)),
-    extension_(extension) {
+    extension_(extension),
+    extension_action_(extension_action),
+    delegate_(delegate) {
   AddItem(NAME, UTF8ToUTF16(extension->name()));
   AddSeparator();
   AddItemWithStringId(CONFIGURE, IDS_EXTENSIONS_OPTIONS);
   AddItemWithStringId(DISABLE, IDS_EXTENSIONS_DISABLE);
   AddItemWithStringId(UNINSTALL, IDS_EXTENSIONS_UNINSTALL);
   AddSeparator();
-
   AddItemWithStringId(MANAGE, IDS_MANAGE_EXTENSIONS);
+
+  if (extension_ && delegate_ && prefs &&
+      prefs->GetBoolean(prefs::kExtensionsUIDeveloperMode)) {
+    AddSeparator();
+    AddItemWithStringId(INSPECT_POPUP, IDS_EXTENSION_ACTION_INSPECT_POPUP);
+  }
 }
 
 ExtensionActionContextMenuModel::~ExtensionActionContextMenuModel() {
@@ -52,6 +65,19 @@ bool ExtensionActionContextMenuModel::IsCommandIdEnabled(int command_id) const {
     // homepage url, so we just disable this menu item on those cases, at least
     // for now.
     return extension_->update_url().DomainIs("google.com");
+  } else if (command_id == INSPECT_POPUP) {
+    if (!delegate_ || !extension_)
+      return false;
+    Browser* browser = BrowserList::GetLastActive();
+    if (!browser)
+      return false;
+    TabContents* contents = browser->GetSelectedTabContents();
+    if (!contents)
+      return false;
+
+    // Different tabs can have different popups set. We need to make sure we
+    // only enable the menu item if the current tab has a popup.
+    return (extension_action_->HasPopup(ExtensionTabUtil::GetTabId(contents)));
   }
   return true;
 }
@@ -95,6 +121,11 @@ void ExtensionActionContextMenuModel::ExecuteCommand(int command_id) {
     case MANAGE: {
       browser->OpenURL(GURL(chrome::kChromeUIExtensionsURL), GURL(),
                        SINGLETON_TAB, PageTransition::LINK);
+      break;
+    }
+    case INSPECT_POPUP: {
+      if (delegate_)
+        delegate_->ShowPopupForDevToolsWindow(extension_, extension_action_);
       break;
     }
     default:

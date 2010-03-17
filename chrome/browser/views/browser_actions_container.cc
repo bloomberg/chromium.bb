@@ -13,6 +13,7 @@
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
+#include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
@@ -133,9 +134,9 @@ gfx::Insets BrowserActionButton::GetInsets() const {
   return zero_inset;
 }
 
-void BrowserActionButton::ButtonPressed(
-    views::Button* sender, const views::Event& event) {
-  panel_->OnBrowserActionExecuted(this);
+void BrowserActionButton::ButtonPressed(views::Button* sender,
+    const views::Event& event) {
+  panel_->OnBrowserActionExecuted(this, false);  // inspect_with_devtools
 }
 
 void BrowserActionButton::OnImageLoaded(SkBitmap* image, size_t index) {
@@ -198,7 +199,7 @@ GURL BrowserActionButton::GetPopupUrl() {
 
 bool BrowserActionButton::Activate() {
   if (IsPopup()) {
-    panel_->OnBrowserActionExecuted(this);
+    panel_->OnBrowserActionExecuted(this, false); // inspect_with_devtools
 
     // TODO(erikkay): Run a nested modal loop while the mouse is down to
     // enable menu-like drag-select behavior.
@@ -224,7 +225,8 @@ bool BrowserActionButton::OnMousePressed(const views::MouseEvent& e) {
     // Make the menu appear below the button.
     point.Offset(0, height());
 
-    panel_->GetContextMenu()->Run(extension(), point);
+    panel_->GetContextMenu()->Run(extension(), extension()->browser_action(),
+        panel_, panel_->profile()->GetPrefs(), point);
 
     SetButtonNotPushed();
     return false;
@@ -339,9 +341,6 @@ BrowserActionsContainer::BrowserActionsContainer(
   ExtensionsService* extension_service = profile_->GetExtensionsService();
   if (!extension_service)  // The |extension_service| can be NULL in Incognito.
     return;
-
-  registrar_.Add(this, NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE,
-                 Source<Profile>(profile_));
 
   model_ = extension_service->toolbar_model();
   model_->AddObserver(this);
@@ -484,29 +483,13 @@ void BrowserActionsContainer::OnBrowserActionVisibilityChanged() {
 }
 
 void BrowserActionsContainer::HidePopup() {
-  if (popup_) {
-    // This sometimes gets called via a timer (See BubbleLostFocus), so clear
-    // the task factory in case one is pending.
-    task_factory_.RevokeAll();
-
-    // Save these variables in local temporaries since destroying the popup
-    // calls BubbleLostFocus to be called, which will try to call HidePopup()
-    // again if popup_ is non-null.
-    ExtensionPopup* closing_popup = popup_;
-    BrowserActionButton* closing_button = popup_button_;
-    popup_ = NULL;
-    popup_button_ = NULL;
-
-    closing_popup->DetachFromBrowser();
-    delete closing_popup;
-    closing_button->SetButtonNotPushed();
-    return;
-  }
+  if (popup_)
+    popup_->Close();
 }
 
 void BrowserActionsContainer::TestExecuteBrowserAction(int index) {
   BrowserActionButton* button = browser_action_views_[index]->button();
-  OnBrowserActionExecuted(button);
+  OnBrowserActionExecuted(button, false); // inspect_with_devtools
 }
 
 void BrowserActionsContainer::TestSetIconVisibilityCount(size_t icons) {
@@ -517,7 +500,7 @@ void BrowserActionsContainer::TestSetIconVisibilityCount(size_t icons) {
 }
 
 void BrowserActionsContainer::OnBrowserActionExecuted(
-    BrowserActionButton* button) {
+    BrowserActionButton* button, bool inspect_with_devtools) {
   ExtensionAction* browser_action = button->browser_action();
 
   // Popups just display.  No notification to the extension.
@@ -548,18 +531,15 @@ void BrowserActionsContainer::OnBrowserActionExecuted(
     BubbleBorder::ArrowLocation arrow_location = UILayoutIsRightToLeft() ?
         BubbleBorder::TOP_LEFT : BubbleBorder::TOP_RIGHT;
 
-    popup_ = ExtensionPopup::Show(
-        button->GetPopupUrl(),
-        browser_,
-        browser_->profile(),
-        frame_window,
-        rect,
-        arrow_location,
+    popup_ = ExtensionPopup::Show(button->GetPopupUrl(), browser_,
+        browser_->profile(), frame_window, rect, arrow_location,
         true,  // Activate the popup window.
-        ExtensionPopup::BUBBLE_CHROME);
-    popup_->set_delegate(this);
+        inspect_with_devtools,
+        ExtensionPopup::BUBBLE_CHROME,
+        this);  // ExtensionPopupDelegate
     popup_button_ = button;
     popup_button_->SetButtonPushed();
+
     return;
   }
 
@@ -807,54 +787,6 @@ void BrowserActionsContainer::MoveBrowserAction(
   Extension* extension = service->GetExtensionById(extension_id, false);
   model_->MoveBrowserAction(extension, new_index);
   SchedulePaint();
-}
-
-void BrowserActionsContainer::Observe(NotificationType type,
-                                      const NotificationSource& source,
-                                      const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE:
-      // If we aren't the host of the popup, then disregard the notification.
-      if (!popup_ || Details<ExtensionHost>(popup_->host()) != details)
-        return;
-
-      HidePopup();
-      break;
-
-    default:
-      NOTREACHED() << "Unexpected notification";
-  }
-}
-
-void BrowserActionsContainer::BubbleBrowserWindowMoved(BrowserBubble* bubble) {
-}
-
-void BrowserActionsContainer::BubbleBrowserWindowClosing(
-    BrowserBubble* bubble) {
-  HidePopup();
-}
-
-void BrowserActionsContainer::BubbleGotFocus(BrowserBubble* bubble) {
-  if (!popup_)
-    return;
-
-  // Forward the focus to the renderer.
-  popup_->host()->render_view_host()->view()->Focus();
-}
-
-void BrowserActionsContainer::BubbleLostFocus(BrowserBubble* bubble,
-                                              bool lost_focus_to_child) {
-  // Don't close when we are losing focus to a child window, this is the case
-  // for select popups and alert for example.
-  if (!popup_ || lost_focus_to_child)
-    return;
-
-  // This is a bit annoying.  If you click on the button that generated the
-  // current popup, then we first get this lost focus message, and then
-  // we get the click action.  This results in the popup being immediately
-  // shown again.  To workaround this, we put in a delay.
-  MessageLoop::current()->PostTask(FROM_HERE,
-      task_factory_.NewRunnableMethod(&BrowserActionsContainer::HidePopup));
 }
 
 void BrowserActionsContainer::RunMenu(View* source, const gfx::Point& pt) {
@@ -1140,6 +1072,20 @@ void BrowserActionsContainer::NotifyMenuDeleted(
     BrowserActionOverflowMenuController* controller) {
   DCHECK(controller == overflow_menu_);
   overflow_menu_ = NULL;
+}
+
+void BrowserActionsContainer::ShowPopupForDevToolsWindow(Extension* extension,
+    ExtensionAction* extension_action) {
+  OnBrowserActionExecuted(GetBrowserActionView(extension)->button(),
+      true); // inspect_with_devtools
+}
+
+void BrowserActionsContainer::ExtensionPopupClosed(ExtensionPopup* popup) {
+  // ExtensionPopup is ref-counted, so we don't need to delete it.
+  DCHECK_EQ(popup_, popup);
+  popup_ = NULL;
+  popup_button_->SetButtonNotPushed();
+  popup_button_ = NULL;
 }
 
 bool BrowserActionsContainer::ShouldDisplayBrowserAction(Extension* extension) {

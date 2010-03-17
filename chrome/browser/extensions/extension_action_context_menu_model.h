@@ -9,6 +9,8 @@
 #include "chrome/browser/extensions/extension_install_ui.h"
 
 class Extension;
+class ExtensionAction;
+class PrefService;
 
 // The menu model for the context menu for extension action icons (browser and
 // page actions).
@@ -17,7 +19,25 @@ class ExtensionActionContextMenuModel
       public menus::SimpleMenuModel::Delegate,
       public ExtensionInstallUI::Delegate {
  public:
-  explicit ExtensionActionContextMenuModel(Extension* extension);
+  // Delegate to handle menu commands.
+  class MenuDelegate {
+   public:
+    // Called when the user selects the menu item which requests that the
+    // popup be shown and inspected.
+    virtual void ShowPopupForDevToolsWindow(Extension* extension,
+        ExtensionAction* extension_action) {
+    }
+  };
+
+  // |extension_action|, |prefs|, & |delegate| call all be NULL. If valid
+  // values are provided for all three, and prefs::kExtensionsUIDeveloperMode
+  // is enabled in the PrefService, a menu item will be shown for "Inspect
+  // Popup" which, when selected, will cause ShowPopupForDevToolsWindow() to be
+  // called on |delegate|.
+  ExtensionActionContextMenuModel(Extension* extension,
+                                  ExtensionAction* extension_action,
+                                  PrefService* prefs,
+                                  MenuDelegate* delegate);
   ~ExtensionActionContextMenuModel();
 
   // SimpleMenuModel behavior overrides.
@@ -34,6 +54,12 @@ class ExtensionActionContextMenuModel
  private:
   // The extension we are displaying the context menu for.
   Extension* extension_;
+
+  // The extension action we are displaying the context menu for.
+  ExtensionAction* extension_action_;
+
+  // The delegate which handles the 'inspect popup' menu command.
+  MenuDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionActionContextMenuModel);
 };

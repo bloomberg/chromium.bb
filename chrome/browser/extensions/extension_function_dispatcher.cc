@@ -321,18 +321,6 @@ Browser* ExtensionFunctionDispatcher::GetBrowser(bool include_incognito) {
   return delegate_->GetBrowser(include_incognito);
 }
 
-ExtensionPopupHost* ExtensionFunctionDispatcher::GetPopupHost() {
-  ExtensionHost* extension_host = GetExtensionHost();
-  if (extension_host) {
-    DCHECK(!GetExtensionDOMUI()) <<
-        "Function dispatcher registered in too many environments.";
-    return extension_host->popup_host();
-  } else {
-    ExtensionDOMUI* dom_ui = GetExtensionDOMUI();
-    return dom_ui->popup_host();
-  }
-}
-
 ExtensionHost* ExtensionFunctionDispatcher::GetExtensionHost() {
   return delegate_->GetExtensionHost();
 }

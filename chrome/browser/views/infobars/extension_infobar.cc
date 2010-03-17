@@ -89,10 +89,14 @@ void ExtensionInfoBar::Layout() {
 }
 
 void ExtensionInfoBar::RunMenu(View* source, const gfx::Point& pt) {
-  if (!options_menu_contents_.get()) {
+  if (!options_menu_contents_.get())
     options_menu_contents_.reset(new ExtensionActionContextMenuModel(
-        delegate_->extension_host()->extension()));
-  }
+        delegate_->extension_host()->extension(),
+        // Do not include "Inspect Popup" in menu:
+        NULL,  // ExtensionAction
+        NULL,  // PrefService
+        NULL));  // ExtensionActionContextMenuModel::MenuDelegate
+
   options_menu_menu_.reset(new views::Menu2(options_menu_contents_.get()));
   options_menu_menu_->RunMenuAt(pt, views::Menu2::ALIGN_TOPLEFT);
 }

@@ -18,6 +18,7 @@
 #include "chrome/browser/toolbar_model.h"
 #include "chrome/browser/views/browser_bubble.h"
 #include "chrome/browser/views/extensions/extension_action_context_menu.h"
+#include "chrome/browser/views/extensions/extension_popup.h"
 #include "chrome/browser/views/info_bubble.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/notification_observer.h"
@@ -409,9 +410,9 @@ class LocationBarView : public LocationBar,
   // PageActionImageView is used to display the icon for a given PageAction
   // and notify the extension when the icon is clicked.
   class PageActionImageView : public LocationBarImageView,
-                              public ImageLoadingTracker::Observer,
-                              public NotificationObserver,
-                              public BrowserBubble::Delegate {
+      public ImageLoadingTracker::Observer,
+      public ExtensionActionContextMenuModel::MenuDelegate,
+      public ExtensionPopup::Observer {
    public:
     PageActionImageView(LocationBarView* owner,
                         Profile* profile,
@@ -438,10 +439,12 @@ class LocationBarView : public LocationBar,
     // Overridden from ImageLoadingTracker.
     virtual void OnImageLoaded(SkBitmap* image, size_t index);
 
-    // Overridden from BrowserBubble::Delegate
-    virtual void BubbleBrowserWindowClosing(BrowserBubble* bubble);
-    virtual void BubbleLostFocus(BrowserBubble* bubble,
-                                 bool lost_focus_to_child);
+    // Overridden from ExtensionActionContextMenuModel::MenuDelegate
+    virtual void ShowPopupForDevToolsWindow(Extension* extension,
+        ExtensionAction* extension_action);
+
+    // Overriden from ExtensionPopup::Observer
+    virtual void ExtensionPopupClosed(ExtensionPopup* popup);
 
     // Called to notify the PageAction that it should determine whether to be
     // visible or hidden. |contents| is the TabContents that is active, |url|
@@ -449,16 +452,11 @@ class LocationBarView : public LocationBar,
     void UpdateVisibility(TabContents* contents, const GURL& url);
 
     // Either notify listeners or show a popup depending on the page action.
-    void ExecuteAction(int button);
+    void ExecuteAction(int button, bool inspect_with_devtools);
 
    private:
     // Hides the active popup, if there is one.
     void HidePopup();
-
-    // Overridden from NotificationObserver:
-    virtual void Observe(NotificationType type,
-                         const NotificationSource& source,
-                         const NotificationDetails& details);
 
     // The location bar view that owns us.
     LocationBarView* owner_;
@@ -496,10 +494,6 @@ class LocationBarView : public LocationBar,
 
     // The current popup and the button it came from.  NULL if no popup.
     ExtensionPopup* popup_;
-
-    ScopedRunnableMethodFactory<PageActionImageView> method_factory_;
-
-    NotificationRegistrar registrar_;
 
     DISALLOW_COPY_AND_ASSIGN(PageActionImageView);
   };

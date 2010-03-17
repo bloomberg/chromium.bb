@@ -11,11 +11,13 @@
 
 #include "app/slide_animation.h"
 #include "base/task.h"
+#include "chrome/browser/extensions/extension_action_context_menu_model.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/views/browser_bubble.h"
 #include "chrome/browser/views/extensions/browser_action_overflow_menu_controller.h"
 #include "chrome/browser/views/extensions/extension_action_context_menu.h"
+#include "chrome/browser/views/extensions/extension_popup.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "views/controls/button/menu_button.h"
@@ -225,14 +227,15 @@ class BrowserActionView : public views::View {
 ////////////////////////////////////////////////////////////////////////////////
 class BrowserActionsContainer
   : public views::View,
-    public NotificationObserver,
-    public BrowserBubble::Delegate,
     public views::ViewMenuDelegate,
     public views::DragController,
     public views::ResizeGripper::ResizeGripperDelegate,
     public AnimationDelegate,
     public ExtensionToolbarModel::Observer,
-    public BrowserActionOverflowMenuController::Observer {
+    public BrowserActionOverflowMenuController::Observer,
+    public ExtensionActionContextMenuModel::MenuDelegate,
+    public ExtensionPopup::Observer {
+
   friend class ShowFolderMenuTask;
  public:
   BrowserActionsContainer(Browser* browser, views::View* owner_view);
@@ -284,7 +287,8 @@ class BrowserActionsContainer
   size_t VisibleBrowserActions() const;
 
   // Called when the user clicks on the browser action icon.
-  void OnBrowserActionExecuted(BrowserActionButton* button);
+  void OnBrowserActionExecuted(BrowserActionButton* button,
+                               bool inspect_with_devtools);
 
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize();
@@ -301,17 +305,6 @@ class BrowserActionsContainer
   virtual int OnDragUpdated(const views::DropTargetEvent& event);
   virtual void OnDragExited();
   virtual int OnPerformDrop(const views::DropTargetEvent& event);
-
-  // Overridden from NotificationObserver:
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
-
-  // BrowserBubble::Delegate methods.
-  virtual void BubbleBrowserWindowMoved(BrowserBubble* bubble);
-  virtual void BubbleBrowserWindowClosing(BrowserBubble* bubble);
-  virtual void BubbleGotFocus(BrowserBubble* bubble);
-  virtual void BubbleLostFocus(BrowserBubble* bubble, bool lost_focus_to_child);
 
   // Overridden from views::ViewMenuDelegate:
   virtual void RunMenu(View* source, const gfx::Point& pt);
@@ -335,6 +328,13 @@ class BrowserActionsContainer
   // Overridden from BrowserActionOverflowMenuController::Observer:
   virtual void NotifyMenuDeleted(
       BrowserActionOverflowMenuController* controller);
+
+  // Overridden from ExtensionActionContextMenuModel::MenuDelegate
+  virtual void ShowPopupForDevToolsWindow(Extension* extension,
+      ExtensionAction* extension_action);
+
+  // Overriden from ExtensionPopup::Delegate
+  virtual void ExtensionPopupClosed(ExtensionPopup* popup);
 
   // Moves a browser action with |id| to |new_index|.
   void MoveBrowserAction(const std::string& extension_id, size_t new_index);
@@ -417,8 +417,6 @@ class BrowserActionsContainer
   // that not every BrowserAction in the ToolbarModel will necessarily be in
   // this collection. Some extensions may be disabled in incognito windows.
   BrowserActionViews browser_action_views_;
-
-  NotificationRegistrar registrar_;
 
   Profile* profile_;
 

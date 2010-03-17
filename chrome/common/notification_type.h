@@ -219,6 +219,10 @@ class NotificationType {
     // that was closed, no details are expected.
     WINDOW_CLOSED,
 
+    // Indicates that a devtools window is closing. The source is the Profile*
+    // and the details is the inspected RenderViewHost*.
+    DEVTOOLS_WINDOW_CLOSING,
+
     // Sent when an info bubble has been created but not yet shown. The source
     // is the InfoBubble.
     INFO_BUBBLE_CREATED,

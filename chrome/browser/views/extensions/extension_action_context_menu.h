@@ -10,6 +10,8 @@
 #include "chrome/browser/extensions/extension_action_context_menu_model.h"
 
 class Extension;
+class ExtensionAction;
+class PrefService;
 
 // Displays the context menu for extension action icons (browser/page actions).
 class ExtensionActionContextMenu {
@@ -18,7 +20,11 @@ class ExtensionActionContextMenu {
   ~ExtensionActionContextMenu();
 
   // Display the context menu at a given point.
-  void Run(Extension* extension, const gfx::Point& point);
+  void Run(Extension* extension,
+           ExtensionAction* extension_action,
+           ExtensionActionContextMenuModel::MenuDelegate* delegate,
+           PrefService* prefs,
+           const gfx::Point& point);
 
   // Closes the context menu if open.
   void Cancel();

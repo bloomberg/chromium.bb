@@ -7,6 +7,7 @@
 #include "app/gfx/canvas.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/views/browser_actions_container.h"
 #include "chrome/browser/views/extensions/browser_action_drag_data.h"
@@ -80,7 +81,8 @@ void BrowserActionOverflowMenuController::CancelMenu() {
 
 void BrowserActionOverflowMenuController::ExecuteCommand(int id) {
   BrowserActionView* view = (*views_)[start_index_ + id - 1];
-  owner_->OnBrowserActionExecuted(view->button());
+  owner_->OnBrowserActionExecuted(view->button(),
+                                  false);  // inspect_with_devtools
 }
 
 bool BrowserActionOverflowMenuController::ShowContextMenu(
@@ -90,7 +92,11 @@ bool BrowserActionOverflowMenuController::ShowContextMenu(
     bool is_mouse_gesture) {
   // This blocks until the user choses something or dismisses the menu.
   owner_->GetContextMenu()->Run(
-      (*views_)[start_index_ + id - 1]->button()->extension(), p);
+      (*views_)[start_index_ + id - 1]->button()->extension(),
+      (*views_)[start_index_ + id - 1]->button()->extension()->browser_action(),
+      owner_,
+      owner_->profile()->GetPrefs(),
+      p);
 
   // The user is done with the context menu, so we can close the underlying
   // menu.

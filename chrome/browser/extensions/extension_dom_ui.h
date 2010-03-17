@@ -11,7 +11,6 @@
 #include "chrome/browser/dom_ui/dom_ui.h"
 #include "chrome/browser/extensions/extension_bookmark_manager_api.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
-#include "chrome/browser/extensions/extension_popup_host.h"
 #include "chrome/common/extensions/extension.h"
 
 class ListValue;
@@ -25,7 +24,6 @@ class TabContents;
 // the main tab contents area.
 class ExtensionDOMUI
     : public DOMUI,
-      public ExtensionPopupHost::PopupDelegate,
       public ExtensionFunctionDispatcher::Delegate {
  public:
   explicit ExtensionDOMUI(TabContents* tab_contents);
@@ -47,8 +45,6 @@ class ExtensionDOMUI
   virtual ExtensionDOMUI* GetExtensionDOMUI() { return this; }
   virtual gfx::NativeWindow GetFrameNativeWindow();
 
-  // ExtensionPopupHost::Delegate
-  virtual Browser* GetBrowser() const { return GetBrowser(true); }
   virtual RenderViewHost* GetRenderViewHost();
   virtual Profile* GetProfile();
   virtual gfx::NativeView GetNativeViewOfHost();

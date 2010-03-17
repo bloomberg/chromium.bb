@@ -188,9 +188,12 @@ class BrowserActionButton : public NotificationObserver,
     if (event->button.button != 3)
       return FALSE;
 
+    // TODO(rafaelw): support inspecting popups.
     if (!action->context_menu_model_.get()) {
       action->context_menu_model_.reset(
-          new ExtensionActionContextMenuModel(action->extension_));
+          new ExtensionActionContextMenuModel(action->extension_,
+              action->extension_->browser_action(),
+              action->toolbar_->browser()->profile()->GetPrefs(), NULL));
     }
 
     action->context_menu_.reset(

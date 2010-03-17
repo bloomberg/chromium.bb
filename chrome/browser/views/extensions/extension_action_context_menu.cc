@@ -17,11 +17,15 @@ ExtensionActionContextMenu::~ExtensionActionContextMenu() {
 }
 
 void ExtensionActionContextMenu::Run(Extension* extension,
-                                     const gfx::Point& point) {
+    ExtensionAction* extension_action,
+    ExtensionActionContextMenuModel::MenuDelegate* delegate,
+    PrefService* prefs,
+    const gfx::Point& point) {
   extension_ = extension;
 
   context_menu_contents_.reset(
-      new ExtensionActionContextMenuModel(extension));
+      new ExtensionActionContextMenuModel(extension, extension_action, prefs,
+                                          delegate));
   context_menu_menu_.reset(new views::Menu2(context_menu_contents_.get()));
   // This call blocks until the menu is dismissed or something is selected.
   context_menu_menu_->RunContextMenuAt(point);

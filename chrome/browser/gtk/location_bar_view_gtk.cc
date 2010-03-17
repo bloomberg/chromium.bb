@@ -1217,8 +1217,10 @@ gboolean LocationBarViewGtk::PageActionViewGtk::OnButtonPressed(
     Extension* extension = profile_->GetExtensionsService()->GetExtensionById(
         page_action()->extension_id(), false);
 
+    // TODO(rafaelw): support inspecting popups.
     if (!context_menu_model_.get())
-      context_menu_model_.reset(new ExtensionActionContextMenuModel(extension));
+      context_menu_model_.reset(new ExtensionActionContextMenuModel(extension,
+          page_action_, profile_->GetPrefs(), NULL));
 
     context_menu_.reset(
         new MenuGtk(NULL, context_menu_model_.get()));
