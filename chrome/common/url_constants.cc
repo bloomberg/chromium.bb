@@ -71,6 +71,8 @@ const char kChromeUIHistoryHost[] = "history";
 const char kChromeUIFileBrowseHost[] = "filebrowse";
 const char kChromeUIMediaplayerHost[] = "mediaplayer";
 const char kChromeUIInspectorHost[] = "inspector";
+// TODO(eroman): This value is temporary, while the page is being implemented.
+const char kChromeUINetInternalsHost[] = "net2";
 const char kChromeUINewTabHost[] = "newtab";
 const char kChromeUIThumbnailPath[] = "thumb";
 const char kChromeUIThemePath[] = "theme";

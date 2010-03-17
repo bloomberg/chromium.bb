@@ -64,6 +64,7 @@ without changes to the corresponding grd file.  tet -->
       <include name="IDR_NOTIFICATION_ICON_HTML" file="resources\notification_icon.html" type="BINDATA" />
       <include name="IDR_NOTIFICATION_2LINE_HTML" file="resources\notification_2line.html" type="BINDATA" />
       <include name="IDR_NOTIFICATION_1LINE_HTML" file="resources\notification_1line.html" type="BINDATA" />
+      <include name="IDR_NET_INTERNALS_HTML" file="resources\net_internals\index.html" type="BINDATA" />
     </includes>
   </release>
 </grit>

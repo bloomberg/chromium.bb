@@ -1,0 +1,32 @@
+<html>
+  <head>
+    <title>Under construction...</title>
+    <script>
+
+// TODO(eroman): This is all temporary...
+
+function sendTestMessageToBrowser() {
+  log("Sent message to browser");
+  chrome.send('testMessage', [String((new Date()).toLocaleTimeString())]);
+}
+
+function log(msg) {
+  var l = document.getElementById('log');
+  l.appendChild(document.createTextNode(msg + "\n"));
+}
+
+    </script>
+  </head>
+
+
+  <body>
+    <p>This is a work in progress. See http://crbug.com/37421 for details.</p>
+
+    <input onclick="sendTestMessageToBrowser()"
+           value="SendTestMessageToBrowser"
+           type=button />
+
+    <pre id=log></pre>
+
+  </body>
+</html>
