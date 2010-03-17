@@ -69,6 +69,7 @@ class FileWatcherTest : public testing::Test {
     LOG(INFO) << "WriteTestFile";
     int write_size = file_util::WriteFile(test_file(), content.c_str(),
                                           content.length());
+    SyncIfPOSIX();
     return write_size == static_cast<int>(content.length());
   }
 
@@ -159,7 +160,6 @@ TEST_F(FileWatcherTest, MAYBE(NewFile)) {
 // Verify that modifying the file is caught.
 TEST_F(FileWatcherTest, MAYBE(ModifiedFile)) {
   ASSERT_TRUE(WriteTestFile("content"));
-  SyncIfPOSIX();
 
   FileWatcher watcher;
   TestDelegate delegate(this);
@@ -173,7 +173,6 @@ TEST_F(FileWatcherTest, MAYBE(ModifiedFile)) {
 
 TEST_F(FileWatcherTest, MAYBE(DeletedFile)) {
   ASSERT_TRUE(WriteTestFile("content"));
-  SyncIfPOSIX();
 
   FileWatcher watcher;
   TestDelegate delegate(this);
@@ -182,6 +181,7 @@ TEST_F(FileWatcherTest, MAYBE(DeletedFile)) {
   // Now make sure we get notified if the file is deleted.
   SetExpectedNumberOfNotifiedDelegates(1);
   file_util::Delete(test_file(), false);
+  SyncIfPOSIX();
   VerifyExpectedNumberOfNotifiedDelegates();
 }
 
