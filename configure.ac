@@ -158,8 +158,6 @@ if test "x$NOUVEAU" = xyes; then
 	AC_DEFINE(HAVE_NOUVEAU, 1, [Have nouveau (nvidia) support])
 fi
 
-AM_CONDITIONAL(HAVE_RADEON, [test "x$RADEON" = xyes])
-
 PKG_CHECK_MODULES(CAIRO, cairo, [HAVE_CAIRO=yes], [HAVE_CAIRO=no])
 if test "x$HAVE_CAIRO" = xyes; then
 	AC_DEFINE(HAVE_CAIRO, 1, [Have cairo support])
@@ -234,6 +232,7 @@ if test "x$INTEL" != "xno" -o "x$RADEON" != "xno"; then
 fi
 
 AM_CONDITIONAL(HAVE_INTEL, [test "x$INTEL" != "xno"])
+AM_CONDITIONAL(HAVE_RADEON, [test "x$RADEON" != "xno"])
 
 AC_ARG_WITH([kernel-source],
             [AS_HELP_STRING([--with-kernel-source],
