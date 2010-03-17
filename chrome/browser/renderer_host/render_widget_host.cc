@@ -900,6 +900,7 @@ void RenderWidgetHost::OnMsgShowPopup(
     const ViewHostMsg_ShowPopup_Params& params) {
   view_->ShowPopupWithItems(params.bounds,
                             params.item_height,
+                            params.item_font_size,
                             params.selected_item,
                             params.popup_items);
 }

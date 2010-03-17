@@ -20,11 +20,13 @@
 
 @implementation WebMenuRunner
 
-- (id)initWithItems:(const std::vector<WebMenuItem>&)items {
+- (id)initWithItems:(const std::vector<WebMenuItem>&)items
+           fontSize:(CGFloat)fontSize {
   if ((self = [super init])) {
     menu_.reset([[NSMenu alloc] initWithTitle:@""]);
     [menu_ setAutoenablesItems:NO];
     index_ = -1;
+    fontSize_ = fontSize;
     for (size_t i = 0; i < items.size(); ++i)
       [self addItem:items[i]];
   }
@@ -68,6 +70,7 @@
   [button autorelease];
   [button setMenu:menu_];
   [button selectItemAtIndex:index];
+  [button setFont:[NSFont menuFontOfSize:fontSize_]];
 
   // Display the menu, and set a flag if a menu item was chosen.
   [button performClickWithFrame:bounds inView:view];

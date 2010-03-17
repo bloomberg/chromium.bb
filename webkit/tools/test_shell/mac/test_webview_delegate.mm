@@ -46,6 +46,7 @@ void TestWebViewDelegate::show(WebNavigationPolicy policy) {
     items.push_back(popup_menu_info_->items[i]);
 
   int item_height = popup_menu_info_->itemHeight;
+  double font_size = popup_menu_info_->itemFontSize;
   int selected_index = popup_menu_info_->selectedIndex;
   popup_menu_info_.reset();  // No longer needed.
 
@@ -60,7 +61,8 @@ void TestWebViewDelegate::show(WebNavigationPolicy policy) {
 
   // Display the menu.
   scoped_nsobject<WebMenuRunner> menu_runner;
-  menu_runner.reset([[WebMenuRunner alloc] initWithItems:items]);
+  menu_runner.reset([[WebMenuRunner alloc] initWithItems:items
+                                                fontSize:font_size]);
 
   [menu_runner runMenuInView:shell_->webViewWnd()
                   withBounds:position

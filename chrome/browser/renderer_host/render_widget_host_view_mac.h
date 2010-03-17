@@ -113,6 +113,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   virtual VideoLayer* AllocVideoLayer(const gfx::Size& size);
   virtual void ShowPopupWithItems(gfx::Rect bounds,
                                   int item_height,
+                                  double item_font_size,
                                   int selected_item,
                                   const std::vector<WebMenuItem>& items);
   virtual gfx::Rect GetWindowRect();

@@ -439,6 +439,7 @@ VideoLayer* RenderWidgetHostViewMac::AllocVideoLayer(
 void RenderWidgetHostViewMac::ShowPopupWithItems(
     gfx::Rect bounds,
     int item_height,
+    double item_font_size,
     int selected_item,
     const std::vector<WebMenuItem>& items) {
   is_popup_menu_ = true;
@@ -458,7 +459,8 @@ void RenderWidgetHostViewMac::ShowPopupWithItems(
 
   // Display the menu.
   scoped_nsobject<WebMenuRunner> menu_runner;
-  menu_runner.reset([[WebMenuRunner alloc] initWithItems:items]);
+  menu_runner.reset([[WebMenuRunner alloc] initWithItems:items
+                                                fontSize:item_font_size]);
 
   {
     // Make sure events can be pumped while the menu is up.

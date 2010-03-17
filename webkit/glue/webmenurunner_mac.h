@@ -30,10 +30,14 @@
 
   // The index of the selected menu item.
   int index_;
+
+  // The font size being used for the menu.
+  CGFloat fontSize_;
 }
 
 // Initializes the MenuDelegate with a list of items sent from WebKit.
-- (id)initWithItems:(const std::vector<WebMenuItem>&)items;
+- (id)initWithItems:(const std::vector<WebMenuItem>&)items
+           fontSize:(CGFloat)fontSize;
 
 // Returns YES if an item was selected from the menu, NO if the menu was
 // dismissed.

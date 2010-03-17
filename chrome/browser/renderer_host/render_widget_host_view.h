@@ -161,6 +161,7 @@ class RenderWidgetHostView {
   // Display a native control popup menu for WebKit.
   virtual void ShowPopupWithItems(gfx::Rect bounds,
                                   int item_height,
+                                  double item_font_size,
                                   int selected_item,
                                   const std::vector<WebMenuItem>& items) = 0;
 

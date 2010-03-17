@@ -478,6 +478,9 @@ struct ViewHostMsg_ShowPopup_Params {
   // The height of each item in the menu.
   int item_height;
 
+  // The size of the font to use for those items.
+  double item_font_size;
+
   // The currently selected (displayed) item in the menu.
   int selected_item;
 
@@ -2232,6 +2235,7 @@ struct ParamTraits<ViewHostMsg_ShowPopup_Params> {
   static void Write(Message* m, const param_type& p) {
     WriteParam(m, p.bounds);
     WriteParam(m, p.item_height);
+    WriteParam(m, p.item_font_size);
     WriteParam(m, p.selected_item);
     WriteParam(m, p.popup_items);
   }
@@ -2239,6 +2243,7 @@ struct ParamTraits<ViewHostMsg_ShowPopup_Params> {
     return
         ReadParam(m, iter, &p->bounds) &&
         ReadParam(m, iter, &p->item_height) &&
+        ReadParam(m, iter, &p->item_font_size) &&
         ReadParam(m, iter, &p->selected_item) &&
         ReadParam(m, iter, &p->popup_items);
   }
@@ -2247,6 +2252,8 @@ struct ParamTraits<ViewHostMsg_ShowPopup_Params> {
     LogParam(p.bounds, l);
     l->append(L", ");
     LogParam(p.item_height, l);
+    l->append(L", ");
+    LogParam(p.item_font_size, l);
     l->append(L", ");
     LogParam(p.selected_item, l);
     l->append(L", ");
