@@ -68,6 +68,8 @@ class AutoFillInfoBarDelegateTest : public RenderViewHostTestHarness {
 
   virtual void SetUp() {
     RenderViewHostTestHarness::SetUp();
+    profile()->CreateWebDataService(true);
+    profile()->CreatePersonalDataManager();
     autofill_manager_.reset(new MockAutoFillManager(contents()));
     infobar_.reset(new AutoFillInfoBarDelegate(NULL, autofill_manager_.get()));
   }

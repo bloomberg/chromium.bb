@@ -7,6 +7,7 @@
 #include "build/build_config.h"
 #include "base/command_line.h"
 #include "base/string_util.h"
+#include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/dom_ui/ntp_resource_cache.h"
 #include "chrome/browser/history/history_backend.h"
@@ -227,6 +228,10 @@ void TestingProfile::CreateWebDataService(bool delete_file) {
   web_data_service_ = new WebDataService;
   if (web_data_service_.get())
     web_data_service_->Init(GetPath());
+}
+
+void TestingProfile::CreatePersonalDataManager() {
+  personal_data_.reset(new PersonalDataManager(this));
 }
 
 void TestingProfile::BlockUntilBookmarkModelLoaded() {
