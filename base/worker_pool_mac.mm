@@ -96,6 +96,8 @@ size_t outstanding_ = 0;           // Operations posted but not completed.
 
 bool WorkerPool::PostTask(const tracked_objects::Location& from_here,
                           Task* task, bool task_is_slow) {
+  base::ScopedNSAutoreleasePool autorelease_pool;
+
   // Ignore |task_is_slow|, it doesn't map directly to any tunable aspect of
   // an NSOperation.
 

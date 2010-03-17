@@ -825,17 +825,3 @@
    fun:_ZN2v88internalL23Builtin_Impl_ArraySliceENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE0EEE
    fun:_ZN2v88internalL18Builtin_ArraySliceENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE0EEE
 }
-{
-   bug_38357
-   Memcheck:Leak
-   ...
-   fun:_NSKeyValueCreateImplicitObservationInfo
-   fun:-[NSOperation init]
-   fun:-[TaskOperation initWithTask:]
-   fun:+[TaskOperation taskOperationWithTask:]
-   fun:_ZN10WorkerPool8PostTaskERKN15tracked_objects8LocationEP4Taskb
-   fun:_ZN3net16HostResolverImpl12IPv6ProbeJob5StartEv
-   fun:_ZN3net16HostResolverImpl18OnIPAddressChangedEv
-   fun:_ZN3net16HostResolverImpl16ProbeIPv6SupportEv
-   fun:_ZN12_GLOBAL__N_124CreateGlobalHostResolverEPN3net21NetworkChangeNotifierE
-}
