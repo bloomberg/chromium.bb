@@ -203,6 +203,9 @@ void NativeTableGtk::CreateNativeControl() {
   }
 
   tree_view_ = GTK_TREE_VIEW(gtk_tree_view_new());
+  g_signal_connect(tree_view_, "cursor-changed",
+                   G_CALLBACK(OnCursorChangedThunk), this);
+
   // The tree view must be wrapped in a scroll-view to be scrollable.
   GtkWidget* scrolled = gtk_scrolled_window_new(NULL, NULL);
   gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrolled),
@@ -304,6 +307,25 @@ void NativeTableGtk::SetRowData(int row_index, GtkTreeIter* iter) {
         WideToUTF8(table_->model()->GetText(row_index,
                                             table_->GetVisibleColumnAt(i).id));
     gtk_list_store_set(gtk_model_, iter, gtk_column_index, text.c_str(), -1);
+  }
+}
+
+void NativeTableGtk::OnCursorChanged(GtkWidget* widget) {
+  // Ignore the signal if no row is selected. This can occur when GTK
+  // first opens a window (i.e. no row is selected but the cursor is set
+  // to the first row). When a user clicks on a row, the row is selected,
+  // and then "cursor-changed" signal is emitted, hence the selection
+  // count will be 1 here.
+  if (gtk_tree_selection_count_selected_rows(tree_selection_) == 0) {
+    return;
+  }
+  GtkTreePath *tree_path = NULL;
+  gtk_tree_view_get_cursor(tree_view_, &tree_path, NULL);
+  if (tree_path) {
+    const gint* indices = gtk_tree_path_get_indices(tree_path);
+    CHECK(indices);
+    table_->SelectRow(indices[0]);
+    gtk_tree_path_free(tree_path);
   }
 }
 

@@ -116,7 +116,8 @@ class Table2Example
 
   // TableViewObserver implementation:
   virtual void OnSelectionChanged() {
-    PrintStatus(L"Selection changed");
+    PrintStatus(L"Selection changed: %d",
+                table_->GetFirstSelectedRow());
   }
 
   virtual void OnDoubleClick() {}
