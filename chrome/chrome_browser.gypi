@@ -597,6 +597,8 @@
         'browser/cocoa/extensions/browser_actions_container_view.mm',
         'browser/cocoa/extensions/browser_actions_controller.h',
         'browser/cocoa/extensions/browser_actions_controller.mm',
+        'browser/cocoa/extensions/browser_actions_overflow_menu.h',
+        'browser/cocoa/extensions/browser_actions_overflow_menu.mm',
         'browser/cocoa/extensions/extension_action_context_menu.h',
         'browser/cocoa/extensions/extension_action_context_menu.mm',
         'browser/cocoa/extensions/extension_popup_controller.h',

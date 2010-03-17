@@ -39,13 +39,16 @@ const CGFloat kButtonOpacityLeadPadding = 5.0;
                              withIndex:(NSUInteger)index;
 - (void)removeActionButtonForExtension:(Extension*)extension;
 - (CGFloat)containerWidthWithButtonCount:(NSUInteger)buttonCount;
+- (NSUInteger)containerButtonCapacity;
 - (void)repositionActionButtons;
 - (void)updateButtonOpacityAndDragAbilities;
 - (void)containerFrameChanged;
+- (void)containerDragStart;
 - (void)containerDragging;
 - (void)containerDragFinished;
 - (int)currentTabId;
 - (bool)shouldDisplayBrowserAction:(Extension*)extension;
+- (void)showChevronIfNecessaryWithAnimation:(BOOL)animation;
 @end
 
 // A helper class to proxy extension notifications to the view controller's
@@ -133,6 +136,11 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
              object:containerView_];
     [[NSNotificationCenter defaultCenter]
         addObserver:self
+           selector:@selector(containerDragStart)
+               name:kBrowserActionGrippyDragStartedNotification
+             object:containerView_];
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
            selector:@selector(containerDragging)
                name:kBrowserActionGrippyDraggingNotification
              object:containerView_];
@@ -142,8 +150,10 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
                name:kBrowserActionGrippyDragFinishedNotification
              object:containerView_];
 
+    hiddenButtons_.reset([[NSMutableArray alloc] init]);
     buttons_.reset([[NSMutableDictionary alloc] init]);
     [self createButtons];
+    [self showChevronIfNecessaryWithAnimation:NO];
   }
 
   return self;
@@ -213,10 +223,14 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
   NSString* buttonKey = base::SysUTF8ToNSString(extension->id());
   if (!buttonKey)
     return;
+
   [buttons_ setObject:newButton forKey:buttonKey];
-  [containerView_ addSubview:newButton];
-  if (index >= [self visibleButtonCount])
+  if (index < [self containerButtonCapacity]) {
+    [containerView_ addSubview:newButton];
+  } else {
+    [hiddenButtons_ addObject:newButton];
     [newButton setAlphaValue:0.0];
+  }
 
   [self repositionActionButtons];
   [containerView_ setNeedsDisplay:YES];
@@ -237,6 +251,10 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
     return;
 
   [button removeFromSuperview];
+  // It may or may not be hidden, but it won't matter to NSMutableArray either
+  // way.
+  [hiddenButtons_ removeObject:button];
+
   [buttons_ removeObjectForKey:buttonKey];
   if ([buttons_ count] == 0) {
     // No more buttons? Hide the container.
@@ -273,8 +291,20 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
   if (buttonCount > 0) {
     width = kGrippyXOffset + kContainerPadding +
         (buttonCount * (kBrowserActionWidth + kBrowserActionButtonPadding));
+    // Make room for the chevron if necessary.
+    if ([self buttonCount] != [self visibleButtonCount])
+      width += kChevronWidth + kBrowserActionButtonPadding;
   }
   return width;
+}
+
+- (NSUInteger)containerButtonCapacity {
+  CGFloat containerWidth = [self savedWidth];
+  if (containerWidth == 0)
+    containerWidth = [self containerWidthWithButtonCount:[self buttonCount]];
+
+  return (containerWidth - kGrippyXOffset + kContainerPadding) /
+      (kBrowserActionWidth + kBrowserActionButtonPadding);
 }
 
 // Resizes the container given the number of visible buttons in the container,
@@ -284,6 +314,8 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
   CGFloat width =
       [self containerWidthWithButtonCount:[self visibleButtonCount]];
   [containerView_ resizeToWidth:width animate:animate];
+
+  [self showChevronIfNecessaryWithAnimation:YES];
 
   if (!profile_->IsOffTheRecord())
     profile_->GetPrefs()->SetReal(prefs::kBrowserActionContainerWidth,
@@ -322,6 +354,13 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
   [self updateButtonOpacityAndDragAbilities];
 }
 
+- (void)containerDragStart {
+  while([hiddenButtons_ count] > 0) {
+    [containerView_ addSubview:[hiddenButtons_ objectAtIndex:0]];
+    [hiddenButtons_ removeObjectAtIndex:0];
+  }
+}
+
 - (void)containerDragging {
   [[NSNotificationCenter defaultCenter]
       postNotificationName:kBrowserActionGrippyDraggingNotification
@@ -337,9 +376,14 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
 
     CGFloat intersectionWidth =
         NSWidth(NSIntersectionRect([containerView_ bounds], buttonFrame));
+    // Pad the threshold by 5 pixels in order to have the buttons hide more
+    // easily.
     if (([containerView_ grippyPinned] && intersectionWidth > 0) ||
-        (intersectionWidth <= (NSWidth(buttonFrame) / 2)))
+        (intersectionWidth <= (NSWidth(buttonFrame) / 2) + 5.0)) {
       [button setAlphaValue:0.0];
+      [button removeFromSuperview];
+      [hiddenButtons_ addObject:button];
+    }
   }
 
   [self resizeContainerWithAnimation:NO];
@@ -350,12 +394,7 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
 }
 
 - (NSUInteger)visibleButtonCount {
-  int count = 0;
-  for (BrowserActionButton* button in [buttons_ allValues]) {
-    if ([button alphaValue] > 0.0)
-      ++count;
-  }
-  return count;
+  return [buttons_ count] - [hiddenButtons_ count];
 }
 
 - (void)browserActionClicked:(BrowserActionButton*)sender {
@@ -432,6 +471,11 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
     return 0.0;
 
   return profile_->GetPrefs()->GetReal(prefs::kBrowserActionContainerWidth);
+}
+
+- (void)showChevronIfNecessaryWithAnimation:(BOOL)animation {
+  BOOL hideChevron = [self buttonCount] == [self visibleButtonCount];
+  [containerView_ setChevronHidden:hideChevron animate:animation];
 }
 
 + (void)registerUserPrefs:(PrefService*)prefs {

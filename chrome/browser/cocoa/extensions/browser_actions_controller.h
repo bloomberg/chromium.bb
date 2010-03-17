@@ -49,6 +49,9 @@ extern const NSString* kBrowserActionVisibilityChangedNotification;
   // buttons present in the container view. The ID is a string unique to each
   // extension.
   scoped_nsobject<NSMutableDictionary> buttons_;
+
+  // Array of hidden buttons in the correct order in which the user specified.
+  scoped_nsobject<NSMutableArray> hiddenButtons_;
 }
 
 @property(readonly, nonatomic) BrowserActionsContainerView* containerView;
