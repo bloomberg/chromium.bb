@@ -52,12 +52,10 @@ void ShowInstallPromptDialog(GtkWindow* parent, SkBitmap* skia_icon,
                              Extension *extension,
                              ExtensionInstallUI::Delegate *delegate,
                              const string16& warning_text,
-                             bool is_uninstall) {
+                             ExtensionInstallUI::PromptType type) {
   // Build the dialog.
-  int title_id = is_uninstall ? IDS_EXTENSION_UNINSTALL_PROMPT_TITLE :
-                                IDS_EXTENSION_INSTALL_PROMPT_TITLE;
-  int button_id = is_uninstall ? IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON :
-                                 IDS_EXTENSION_PROMPT_INSTALL_BUTTON;
+  int title_id = ExtensionInstallUI::kTitleIds[type];
+  int button_id = ExtensionInstallUI::kButtonIds[type];
   GtkWidget* dialog = gtk_dialog_new_with_buttons(
       l10n_util::GetStringUTF8(title_id).c_str(),
       parent,
@@ -85,8 +83,7 @@ void ShowInstallPromptDialog(GtkWindow* parent, SkBitmap* skia_icon,
   GtkWidget* right_column_area = gtk_vbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(icon_hbox), right_column_area, TRUE, TRUE, 0);
 
-  int heading_id = is_uninstall ? IDS_EXTENSION_UNINSTALL_PROMPT_HEADING :
-                                  IDS_EXTENSION_INSTALL_PROMPT_HEADING;
+  int heading_id = ExtensionInstallUI::kHeadingIds[type];
   std::string heading_text = WideToUTF8(l10n_util::GetStringF(
       heading_id, UTF8ToWide(extension->name())));
   GtkWidget* heading_label = MakeMarkupLabel("<span weight=\"bold\">%s</span>",
@@ -111,7 +108,7 @@ void ShowInstallPromptDialog(GtkWindow* parent, SkBitmap* skia_icon,
 
 void ExtensionInstallUI::ShowExtensionInstallUIPromptImpl(
     Profile* profile, Delegate* delegate, Extension* extension, SkBitmap* icon,
-    const string16& warning_text, bool is_uninstall) {
+    const string16& warning_text, ExtensionInstallUI::PromptType type) {
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
   if (!browser) {
     delegate->InstallUIAbort();
@@ -126,5 +123,5 @@ void ExtensionInstallUI::ShowExtensionInstallUIPromptImpl(
   }
 
   ShowInstallPromptDialog(browser_window->window(), icon, extension,
-      delegate, warning_text, is_uninstall);
+      delegate, warning_text, type);
 }

@@ -547,16 +547,13 @@ function handleEnableExtension(node, enable) {
  * Handles the 'enableIncognito' checkbox getting changed.
  */
 function handleToggleExtensionIncognito(node, toggleCheckbox) {
-  if (toggleCheckbox)
-    node.checked = !node.checked;
+  var enable = toggleCheckbox ? !node.checked : node.checked;
 
-  if (node.checked) {
-    if (!confirm(templateData["enableIncognitoWarning"])) {
-      node.checked = false;
-      return;
-    }
-  }
-  chrome.send('enableIncognito', [node.extensionId, String(node.checked)]);
+  // This is kinda cheesy, but if we're enabling, we have to wait for the
+  // prompt, so don't show as enabled until the user says OK.
+  node.checked = false;
+
+  chrome.send('enableIncognito', [node.extensionId, String(enable)]);
   requestExtensionsData();
 }
 

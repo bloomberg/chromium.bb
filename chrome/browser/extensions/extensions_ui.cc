@@ -123,9 +123,6 @@ void ExtensionsUIHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetString(IDS_EXTENSIONS_ENABLE));
   localized_strings.SetString(L"enableIncognito",
       l10n_util::GetString(IDS_EXTENSIONS_ENABLE_INCOGNITO));
-  localized_strings.SetString(L"enableIncognitoWarning",
-      l10n_util::GetStringF(IDS_EXTENSIONS_ENABLE_INCOGNITO_WARNING,
-                            l10n_util::GetString(IDS_PRODUCT_NAME)));
   localized_strings.SetString(L"reload",
       l10n_util::GetString(IDS_EXTENSIONS_RELOAD));
   localized_strings.SetString(L"uninstall",
@@ -449,7 +446,19 @@ void ExtensionsDOMHandler::HandleEnableIncognitoMessage(const Value* value) {
   Extension* extension = extensions_service_->GetExtensionById(extension_id,
                                                                true);
   DCHECK(extension);
-  extensions_service_->SetIsIncognitoEnabled(extension, (enable_str == "true"));
+
+  if (enable_str == "true") {
+    // Prompt the user first.
+    scoped_ptr<SkBitmap> icon;
+    Extension::DecodeIcon(extension, Extension::EXTENSION_ICON_LARGE, &icon);
+
+    ui_prompt_type_ = ExtensionInstallUI::ENABLE_INCOGNITO_PROMPT;
+    extension_id_prompting_ = extension_id;
+    ExtensionInstallUI client(dom_ui_->GetProfile());
+    client.ConfirmEnableIncognito(this, extension, icon.get());
+  } else {
+    extensions_service_->SetIsIncognitoEnabled(extension, false);
+  }
 }
 
 void ExtensionsDOMHandler::HandleUninstallMessage(const Value* value) {
@@ -468,7 +477,8 @@ void ExtensionsDOMHandler::HandleUninstallMessage(const Value* value) {
   Extension::DecodeIcon(extension, Extension::EXTENSION_ICON_LARGE,
                         &uninstall_icon);
 
-  extension_id_uninstalling_ = extension_id;
+  ui_prompt_type_ = ExtensionInstallUI::UNINSTALL_PROMPT;
+  extension_id_prompting_ = extension_id;
   ExtensionInstallUI client(dom_ui_->GetProfile());
   client.ConfirmUninstall(this, extension, uninstall_icon.get());
 }
@@ -478,17 +488,31 @@ void ExtensionsDOMHandler::InstallUIProceed(bool create_app_shortcut) {
   // result in it telling us to create a shortcut.
   DCHECK(!create_app_shortcut);
 
-  // The extension can be uninstalled in another window while the uninstall UI
-  // was showing. Do nothing in that case.
-  if (extensions_service_->GetExtensionById(extension_id_uninstalling_, true)) {
-    extensions_service_->UninstallExtension(extension_id_uninstalling_,
-                                            false /* external_uninstall */);
+  // The extension can be uninstalled in another window while the UI was
+  // showing. Do nothing in that case.
+  Extension* extension =
+      extensions_service_->GetExtensionById(extension_id_prompting_, true);
+  if (!extension)
+    return;
+
+  switch (ui_prompt_type_) {
+    case ExtensionInstallUI::UNINSTALL_PROMPT:
+      extensions_service_->UninstallExtension(extension_id_prompting_,
+                                              false /* external_uninstall */);
+      break;
+    case ExtensionInstallUI::ENABLE_INCOGNITO_PROMPT:
+      extensions_service_->SetIsIncognitoEnabled(extension, true);
+      break;
+    default:
+      NOTREACHED();
+      break;
   }
-  extension_id_uninstalling_ = "";
+
+  extension_id_prompting_ = "";
 }
 
 void ExtensionsDOMHandler::InstallUIAbort() {
-  extension_id_uninstalling_ = "";
+  extension_id_prompting_ = "";
 }
 
 void ExtensionsDOMHandler::HandleOptionsMessage(const Value* value) {

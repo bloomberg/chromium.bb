@@ -24,6 +24,18 @@ class TabContents;
 // Displays all the UI around extension installation and uninstallation.
 class ExtensionInstallUI {
  public:
+  enum PromptType {
+    INSTALL_PROMPT = 0,
+    UNINSTALL_PROMPT,
+    ENABLE_INCOGNITO_PROMPT,
+    NUM_PROMPT_TYPES
+  };
+
+  // A mapping from PromptType to message ID for various dialog content.
+  static const int kTitleIds[NUM_PROMPT_TYPES];
+  static const int kHeadingIds[NUM_PROMPT_TYPES];
+  static const int kButtonIds[NUM_PROMPT_TYPES];
+
   class Delegate {
    public:
     // We call this method after ConfirmInstall()/ConfirmUninstall() to signal
@@ -34,17 +46,6 @@ class ExtensionInstallUI {
     // that the installation/uninstallation should stop.
     virtual void InstallUIAbort() = 0;
   };
-
-  static void ShowExtensionInstallPrompt(Profile* profile,
-                                         Delegate* delegate,
-                                         Extension* extension,
-                                         SkBitmap* install_icon,
-                                         const string16& warning_text);
-  static void ShowExtensionUninstallPrompt(Profile* profile,
-                                           Delegate* delegate,
-                                           Extension* extension,
-                                           SkBitmap* install_icon,
-                                           const string16& warning_text);
 
   explicit ExtensionInstallUI(Profile* profile);
 
@@ -65,6 +66,14 @@ class ExtensionInstallUI {
   // on |delegate|.
   virtual void ConfirmUninstall(Delegate* delegate, Extension* extension,
                                 SkBitmap* icon);
+
+  // This is called by the extensions management page to verify whether the
+  // uninstallation should proceed. This is declared virtual for testing.
+  //
+  // We *MUST* eventually call either Proceed() or Abort()
+  // on |delegate|.
+  virtual void ConfirmEnableIncognito(Delegate* delegate, Extension* extension,
+                                      SkBitmap* icon);
 
   // Installation was successful. This is declared virtual for testing.
   virtual void OnInstallSuccess(Extension* extension);
@@ -96,7 +105,7 @@ class ExtensionInstallUI {
   // NOTE: The implementations of this function is platform-specific.
   static void ShowExtensionInstallUIPromptImpl(
       Profile* profile, Delegate* delegate, Extension* extension,
-      SkBitmap* icon, const string16& warning_text, bool is_uninstall);
+      SkBitmap* icon, const string16& warning_text, PromptType type);
 
   Profile* profile_;
   MessageLoop* ui_loop_;

@@ -217,8 +217,12 @@ class ExtensionsDOMHandler
   // necessary.
   NotificationRegistrar registrar_;
 
-  // The id of the extension we are about to un-install.
-  std::string extension_id_uninstalling_;
+  // The id of the extension we are prompting the user about.
+  std::string extension_id_prompting_;
+
+  // The type of prompt that is open. Only ever uninstall or enable-incognito.
+  // Invalid if no prompt is open.
+  ExtensionInstallUI::PromptType ui_prompt_type_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsDOMHandler);
 };

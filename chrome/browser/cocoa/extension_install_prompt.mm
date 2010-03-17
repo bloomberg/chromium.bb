@@ -21,12 +21,11 @@ class Profile;
 
 void ExtensionInstallUI::ShowExtensionInstallUIPromptImpl(
     Profile* profile, Delegate* delegate, Extension* extension, SkBitmap* icon,
-    const string16& warning_text, bool is_uninstall) {
+    const string16& warning_text, ExtensionInstallUI::PromptType type) {
   NSAlert* alert = [[[NSAlert alloc] init] autorelease];
 
   NSButton* continueButton = [alert addButtonWithTitle:l10n_util::GetNSString(
-      is_uninstall ? IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON :
-                     IDS_EXTENSION_PROMPT_INSTALL_BUTTON)];
+      ExtensionInstallUI::kButtonIds[type])];
   // Clear the key equivalent (currently 'Return') because cancel is the default
   // button.
   [continueButton setKeyEquivalent:@""];
@@ -36,8 +35,7 @@ void ExtensionInstallUI::ShowExtensionInstallUIPromptImpl(
   [cancelButton setKeyEquivalent:@"\r"];
 
   [alert setMessageText:l10n_util::GetNSStringF(
-       is_uninstall ? IDS_EXTENSION_UNINSTALL_PROMPT_HEADING :
-                      IDS_EXTENSION_INSTALL_PROMPT_HEADING,
+       ExtensionInstallUI::kHeadingIds[type],
        UTF8ToUTF16(extension->name()))];
   [alert setInformativeText:base::SysUTF16ToNSString(warning_text)];
   [alert setAlertStyle:NSWarningAlertStyle];

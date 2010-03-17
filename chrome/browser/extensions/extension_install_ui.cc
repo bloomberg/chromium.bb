@@ -39,6 +39,25 @@
 #include "chrome/browser/cocoa/extension_installed_bubble_bridge.h"
 #endif
 
+// static
+const int ExtensionInstallUI::kTitleIds[NUM_PROMPT_TYPES] = {
+  IDS_EXTENSION_INSTALL_PROMPT_TITLE,
+  IDS_EXTENSION_UNINSTALL_PROMPT_TITLE,
+  IDS_EXTENSION_ENABLE_INCOGNITO_PROMPT_TITLE
+};
+// static
+const int ExtensionInstallUI::kHeadingIds[NUM_PROMPT_TYPES] = {
+  IDS_EXTENSION_INSTALL_PROMPT_HEADING,
+  IDS_EXTENSION_UNINSTALL_PROMPT_HEADING,
+  IDS_EXTENSION_ENABLE_INCOGNITO_PROMPT_HEADING
+};
+// static
+const int ExtensionInstallUI::kButtonIds[NUM_PROMPT_TYPES] = {
+  IDS_EXTENSION_PROMPT_INSTALL_BUTTON,
+  IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON,
+  IDS_EXTENSION_PROMPT_ENABLE_INCOGNITO_BUTTON
+};
+
 namespace {
 
 static std::wstring GetInstallWarning(Extension* extension) {
@@ -114,22 +133,6 @@ ExtensionInstallUI::ExtensionInstallUI(Profile* profile)
 #endif
 {}
 
-// static
-void ExtensionInstallUI::ShowExtensionInstallPrompt(
-    Profile* profile, Delegate* delegate, Extension* extension, SkBitmap* icon,
-    const string16& warning_text) {
-  ShowExtensionInstallUIPromptImpl(profile, delegate, extension, icon,
-                                   warning_text, false);  // uninstall == false.
-}
-
-// static
-void ExtensionInstallUI::ShowExtensionUninstallPrompt(
-    Profile* profile, Delegate* delegate, Extension* extension, SkBitmap* icon,
-    const string16& warning_text) {
-  ShowExtensionInstallUIPromptImpl(profile, delegate, extension, icon,
-                                   warning_text, true);  // uninstall == true.
-}
-
 void ExtensionInstallUI::ConfirmInstall(Delegate* delegate,
                                         Extension* extension,
                                         SkBitmap* install_icon) {
@@ -166,8 +169,9 @@ void ExtensionInstallUI::ConfirmInstall(Delegate* delegate,
                   Source<ExtensionInstallUI>(this),
                   NotificationService::NoDetails());
 
-  ShowExtensionInstallPrompt(profile_, delegate, extension, &icon_,
-                             WideToUTF16Hack(GetInstallWarning(extension)));
+  ShowExtensionInstallUIPromptImpl(
+      profile_, delegate, extension, &icon_,
+      WideToUTF16Hack(GetInstallWarning(extension)), INSTALL_PROMPT);
 }
 
 void ExtensionInstallUI::ConfirmUninstall(Delegate* delegate,
@@ -182,7 +186,25 @@ void ExtensionInstallUI::ConfirmUninstall(Delegate* delegate,
 
   string16 message =
       l10n_util::GetStringUTF16(IDS_EXTENSION_UNINSTALL_CONFIRMATION);
-  ShowExtensionUninstallPrompt(profile_, delegate, extension, icon, message);
+  ShowExtensionInstallUIPromptImpl(profile_, delegate, extension, icon,
+                                   message, UNINSTALL_PROMPT);
+}
+
+void ExtensionInstallUI::ConfirmEnableIncognito(Delegate* delegate,
+                                                Extension* extension,
+                                                SkBitmap* icon) {
+  DCHECK(ui_loop_ == MessageLoop::current());
+
+  if (!icon) {
+    icon = ResourceBundle::GetSharedInstance().GetBitmapNamed(
+        IDR_EXTENSION_DEFAULT_ICON);
+  }
+
+  string16 message =
+      l10n_util::GetStringFUTF16(IDS_EXTENSION_PROMPT_WARNING_INCOGNITO,
+                                 l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
+  ShowExtensionInstallUIPromptImpl(profile_, delegate, extension, icon,
+                                   message, ENABLE_INCOGNITO_PROMPT);
 }
 
 void ExtensionInstallUI::OnInstallSuccess(Extension* extension) {

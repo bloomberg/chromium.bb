@@ -41,9 +41,9 @@ class InstallDialogContent : public views::View, public views::DialogDelegate {
  public:
   InstallDialogContent(ExtensionInstallUI::Delegate* delegate,
       Extension* extension, SkBitmap* icon, const std::wstring& warning_text,
-      bool is_uninstall)
+      ExtensionInstallUI::PromptType type)
           : delegate_(delegate), icon_(NULL), warning_(NULL),
-            create_shortcut_(NULL), is_uninstall_(is_uninstall) {
+            create_shortcut_(NULL), type_(type) {
     if (extension->IsApp()) {
       icon_size_ = kIconSizeApp;
       right_column_width_ = kRightColumnWidthApp;
@@ -62,16 +62,14 @@ class InstallDialogContent : public views::View, public views::DialogDelegate {
     AddChildView(icon_);
 
     heading_ = new views::Label(
-        l10n_util::GetStringF(is_uninstall ?
-                                  IDS_EXTENSION_UNINSTALL_PROMPT_HEADING :
-                                  IDS_EXTENSION_INSTALL_PROMPT_HEADING,
+        l10n_util::GetStringF(ExtensionInstallUI::kHeadingIds[type_],
                               UTF8ToWide(extension->name())));
     heading_->SetFont(heading_->GetFont().DeriveFont(1, gfx::Font::BOLD));
     heading_->SetMultiLine(true);
     heading_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
     AddChildView(heading_);
 
-    if (!is_uninstall && extension->IsApp()) {
+    if (type_ == ExtensionInstallUI::INSTALL_PROMPT && extension->IsApp()) {
       create_shortcut_ = new views::Checkbox(
           l10n_util::GetString(IDS_EXTENSION_PROMPT_CREATE_SHORTCUT));
       create_shortcut_->SetChecked(true);
@@ -91,10 +89,7 @@ class InstallDialogContent : public views::View, public views::DialogDelegate {
       MessageBoxFlags::DialogButton button) const {
     switch (button) {
       case MessageBoxFlags::DIALOGBUTTON_OK:
-        if (is_uninstall_)
-          return l10n_util::GetString(IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON);
-        else
-          return l10n_util::GetString(IDS_EXTENSION_PROMPT_INSTALL_BUTTON);
+        return l10n_util::GetString(ExtensionInstallUI::kButtonIds[type_]);
       case MessageBoxFlags::DIALOGBUTTON_CANCEL:
         return l10n_util::GetString(IDS_CANCEL);
       default:
@@ -122,10 +117,7 @@ class InstallDialogContent : public views::View, public views::DialogDelegate {
   // WindowDelegate
   virtual bool IsModal() const { return true; }
   virtual std::wstring GetWindowTitle() const {
-    if (is_uninstall_)
-      return l10n_util::GetString(IDS_EXTENSION_UNINSTALL_PROMPT_TITLE);
-    else
-      return l10n_util::GetString(IDS_EXTENSION_INSTALL_PROMPT_TITLE);
+    return l10n_util::GetString(ExtensionInstallUI::kTitleIds[type_]);
   }
   virtual views::View* GetContentsView() { return this; }
 
@@ -191,7 +183,7 @@ class InstallDialogContent : public views::View, public views::DialogDelegate {
   views::Label* heading_;
   views::Label* warning_;
   views::Checkbox* create_shortcut_;
-  bool is_uninstall_;
+  ExtensionInstallUI::PromptType type_;
   int right_column_width_;
   int icon_size_;
 
@@ -203,7 +195,7 @@ class InstallDialogContent : public views::View, public views::DialogDelegate {
 // static
 void ExtensionInstallUI::ShowExtensionInstallUIPromptImpl(
     Profile* profile, Delegate* delegate, Extension* extension, SkBitmap* icon,
-    const string16& warning_text, bool is_uninstall) {
+    const string16& warning_text, PromptType type) {
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
   if (!browser) {
     delegate->InstallUIAbort();
@@ -219,5 +211,5 @@ void ExtensionInstallUI::ShowExtensionInstallUIPromptImpl(
   views::Window::CreateChromeWindow(window->GetNativeHandle(), gfx::Rect(),
       new InstallDialogContent(delegate, extension, icon,
                                UTF16ToWideHack(warning_text),
-                               is_uninstall))->Show();
+                               type))->Show();
 }

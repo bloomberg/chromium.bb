@@ -3221,8 +3221,14 @@ each locale. -->
       <message name="IDS_EXTENSION_UNINSTALL_PROMPT_TITLE" desc="Titlebar of the extension uninstallation prompt window">
         Confirm Uninstallation
       </message>
+      <message name="IDS_EXTENSION_ENABLE_INCOGNITO_PROMPT_TITLE" desc="Titlebar of the extension run-in-incognito prompt window">
+        Confirm Run in Incognito
+      </message>
       <message name="IDS_EXTENSION_INSTALL_PROMPT_HEADING" desc="First bold line in the content area of the extension installation prompt. Asks the user if they want to install a particular extension.">
         Install <ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>?
+      </message>
+      <message name="IDS_EXTENSION_ENABLE_INCOGNITO_PROMPT_HEADING" desc="First bold line in the content area of the run-in-incognito prompt. Asks the user if they want to enable a particular extension in incognito.">
+        Allow <ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph> to run in incognito?
       </message>
       <message name="IDS_EXTENSION_PROMPT_CREATE_SHORTCUT" desc="Label for checkbox that asks the user if they want to create a desktop shortcut for an app install.">
         Create desktop shortcut
@@ -3232,6 +3238,9 @@ each locale. -->
       </message>
       <message name="IDS_EXTENSION_UNINSTALL_CONFIRMATION" desc="The warning you get when you are about to uninstall an extension.">
         Are you sure you want to uninstall this extension?
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_INCOGNITO" desc="The warning you get when you are about to enable an extension in incognito.">
+        Because <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> does not control how extensions handle your personal data, this extension could leave traces on your machine even after you close the incognito window. Allow anyway?
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_NEW_BROWSER" desc="Warning displayed in body of extension dialog when the extension requires access to browser APIs.">
         This extension will have access to your browsing history.
@@ -3364,9 +3373,6 @@ each locale. -->
       <message name="IDS_EXTENSIONS_ENABLE_INCOGNITO" desc="The checkbox for enabling extensions in incognito.">
         Allow this extension to run in incognito
       </message>
-      <message name="IDS_EXTENSIONS_ENABLE_INCOGNITO_WARNING" desc="A warning message displayed when the user attempts to enable a non-incognito-safe extension in incognito.">
-        Because <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> does not control how extensions handle your personal data, this extension could leave traces on your machine even after you close the incognito window. Enable anyway?
-      </message>
       <message name="IDS_EXTENSIONS_RELOAD" desc="The link for reloading extensions.">
         Reload
       </message>
@@ -3443,6 +3449,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON" desc="Text for the uninstall button on the extension uninstall prompt">
         Uninstall
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_ENABLE_INCOGNITO_BUTTON" desc="Text for the allow button on the extension run-in-incognito prompt">
+        Allow
       </message>
 
       <!-- Session Crashed Info Bar-->
