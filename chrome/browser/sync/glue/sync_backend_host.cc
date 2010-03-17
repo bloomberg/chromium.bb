@@ -11,6 +11,8 @@
 #include "chrome/browser/sync/glue/database_model_worker.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/glue/http_bridge.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_type.h"
 #include "webkit/glue/webkit_glue.h"
 
 static const int kSaveChangesIntervalSeconds = 10;
@@ -37,6 +39,13 @@ SyncBackendHost::SyncBackendHost(
       last_auth_error_(AuthError::None()) {
 
   core_ = new Core(this);
+}
+
+SyncBackendHost::SyncBackendHost()
+    : core_thread_("Chrome_SyncCoreThread"),
+      frontend_loop_(MessageLoop::current()),
+      frontend_(NULL),
+      last_auth_error_(AuthError::None()) {
 }
 
 SyncBackendHost::~SyncBackendHost() {
@@ -168,6 +177,14 @@ void SyncBackendHost::DeactivateDataType(
   // with this data type from the sync db.
 }
 
+bool SyncBackendHost::RequestPause() {
+  return core_->syncapi()->RequestPause();
+}
+
+bool SyncBackendHost::RequestResume() {
+  return core_->syncapi()->RequestResume();
+}
+
 void SyncBackendHost::Core::NotifyFrontend(FrontendNotification notification) {
   if (!host_ || !host_->frontend_) {
     return;  // This can happen in testing because the UI loop processes tasks
@@ -182,6 +199,18 @@ void SyncBackendHost::Core::NotifyFrontend(FrontendNotification notification) {
       host_->frontend_->OnSyncCycleCompleted();
       return;
   }
+}
+
+void SyncBackendHost::Core::NotifyPaused() {
+  NotificationService::current()->Notify(NotificationType::SYNC_PAUSED,
+                                         NotificationService::AllSources(),
+                                         NotificationService::NoDetails());
+}
+
+void SyncBackendHost::Core::NotifyResumed() {
+  NotificationService::current()->Notify(NotificationType::SYNC_RESUMED,
+                                         NotificationService::AllSources(),
+                                         NotificationService::NoDetails());
 }
 
 SyncBackendHost::UserShareHandle SyncBackendHost::GetUserShareHandle() const {
@@ -342,6 +371,10 @@ void SyncBackendHost::Core::OnChangesApplied(
     return;
   ChangeProcessor* processor = it->second;
 
+  // Ensure the change processor is willing to accept changes.
+  if (!processor->IsRunning())
+    return;
+
   processor->ApplyChangesFromSyncModel(trans, changes, change_count);
 }
 
@@ -371,6 +404,18 @@ void SyncBackendHost::Core::OnAuthError(const AuthError& auth_error) {
   host_->frontend_loop_->PostTask(FROM_HERE,
       NewRunnableMethod(this, &Core::HandleAuthErrorEventOnFrontendLoop,
       auth_error));
+}
+
+void SyncBackendHost::Core::OnPaused() {
+  host_->frontend_loop_->PostTask(
+      FROM_HERE,
+      NewRunnableMethod(this, &Core::NotifyPaused));
+}
+
+void SyncBackendHost::Core::OnResumed() {
+  host_->frontend_loop_->PostTask(
+      FROM_HERE,
+      NewRunnableMethod(this, &Core::NotifyResumed));
 }
 
 void SyncBackendHost::Core::HandleAuthErrorEventOnFrontendLoop(

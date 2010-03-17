@@ -21,6 +21,7 @@
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/model_associator.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
+#include "chrome/browser/sync/glue/sync_backend_host_mock.h"
 #include "chrome/browser/sync/notification_method.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
 #include "chrome/browser/sync/profile_sync_factory_mock.h"
@@ -39,6 +40,7 @@ using browser_sync::ChangeProcessor;
 using browser_sync::DataTypeController;
 using browser_sync::ModelAssociator;
 using browser_sync::SyncBackendHost;
+using browser_sync::SyncBackendHostMock;
 using testing::_;
 using testing::Return;
 
@@ -239,8 +241,8 @@ class ProfileSyncServiceTest : public testing::Test {
       EXPECT_CALL(factory_, CreateBookmarkSyncComponents(_, _)).
           WillOnce(Return(ProfileSyncFactory::SyncComponents(
               model_associator_, change_processor_)));
-      EXPECT_CALL(factory_, CreateDataTypeManager(_)).
-          WillOnce(MakeDataTypeManager());
+      EXPECT_CALL(factory_, CreateDataTypeManager(_, _)).
+          WillOnce(MakeDataTypeManager(&backend_mock_));
 
       service_->RegisterDataTypeController(
           new browser_sync::BookmarkDataTypeController(&factory_,
@@ -426,6 +428,7 @@ class ProfileSyncServiceTest : public testing::Test {
   scoped_ptr<TestProfileSyncService> service_;
   scoped_ptr<TestingProfile> profile_;
   ProfileSyncFactoryMock factory_;
+  SyncBackendHostMock backend_mock_;
   BookmarkModel* model_;
   TestBookmarkModelAssociator* model_associator_;
   BookmarkChangeProcessor* change_processor_;
@@ -443,8 +446,8 @@ TEST_F(ProfileSyncServiceTest, InitialState) {
 
 TEST_F(ProfileSyncServiceTest, AbortedByShutdown) {
   service_.reset(new TestProfileSyncService(&factory_, profile_.get(), false));
-  EXPECT_CALL(factory_, CreateDataTypeManager(_)).
-      WillOnce(MakeDataTypeManager());
+  EXPECT_CALL(factory_, CreateDataTypeManager(_, _)).
+      WillOnce(MakeDataTypeManager(&backend_mock_));
   EXPECT_CALL(factory_, CreateBookmarkSyncComponents(_, _)).Times(0);
   service_->RegisterDataTypeController(
       new browser_sync::BookmarkDataTypeController(&factory_,
@@ -1330,8 +1333,8 @@ TEST_F(ProfileSyncServiceTestWithData, MAYBE_TestStartupWithOldSyncData) {
     EXPECT_CALL(factory_, CreateBookmarkSyncComponents(_, _)).
         WillOnce(Return(ProfileSyncFactory::SyncComponents(
             model_associator_, change_processor_)));
-    EXPECT_CALL(factory_, CreateDataTypeManager(_)).
-        WillOnce(MakeDataTypeManager());
+    EXPECT_CALL(factory_, CreateDataTypeManager(_, _)).
+        WillOnce(MakeDataTypeManager(&backend_mock_));
 
     service_->RegisterDataTypeController(
         new browser_sync::BookmarkDataTypeController(&factory_,

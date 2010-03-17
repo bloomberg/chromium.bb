@@ -16,10 +16,12 @@ namespace browser_sync {
 class DataTypeManager {
  public:
   enum State {
-    STOPPED,  // No data types are currently running.
-    STARTING, // Data types are being started.
-    STARTED,  // All enabled data types are running.
-    STOPPING  // Data types are being stopped.
+    STOPPED,         // No data types are currently running.
+    PAUSE_PENDING,   // Waiting for the sync backend to pause.
+    STARTING,        // Data types are being started.
+    RESUME_PENDING,  // Waiting for the sync backend to resume.
+    STARTED,         // All enabled data types are running.
+    STOPPING         // Data types are being stopped.
   };
 
   enum StartResult {

@@ -411,7 +411,7 @@ void ProfileSyncService::StartProcessingChangesIfReady() {
   }
 
   data_type_manager_.reset(
-      factory_->CreateDataTypeManager(data_type_controllers_));
+      factory_->CreateDataTypeManager(backend_.get(), data_type_controllers_));
   data_type_manager_->Start(
       NewCallback(this, &ProfileSyncService::DataTypeManagerStartCallback));
 }

@@ -18,7 +18,7 @@
 #include "chrome/browser/sync/glue/autofill_change_processor.h"
 #include "chrome/browser/sync/glue/autofill_data_type_controller.h"
 #include "chrome/browser/sync/glue/autofill_model_associator.h"
-#include "chrome/browser/sync/glue/sync_backend_host.h"
+#include "chrome/browser/sync/glue/sync_backend_host_mock.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
 #include "chrome/browser/sync/profile_sync_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -40,7 +40,7 @@ using base::WaitableEvent;
 using browser_sync::AutofillChangeProcessor;
 using browser_sync::AutofillDataTypeController;
 using browser_sync::AutofillModelAssociator;
-using browser_sync::SyncBackendHost;
+using browser_sync::SyncBackendHostMock;
 using browser_sync::TestIdFactory;
 using browser_sync::UnrecoverableErrorHandler;
 using sync_api::SyncManager;
@@ -243,8 +243,8 @@ class ProfileSyncServiceAutofillTest : public testing::Test {
           WillOnce(MakeAutofillSyncComponents(service_.get(),
                                               &web_database_,
                                               data_type_controller));
-      EXPECT_CALL(factory_, CreateDataTypeManager(_)).
-          WillOnce(MakeDataTypeManager());
+      EXPECT_CALL(factory_, CreateDataTypeManager(_, _)).
+          WillOnce(MakeDataTypeManager(&backend_));
 
       EXPECT_CALL(profile_, GetWebDataService(_)).
           WillOnce(Return(web_data_service_.get()));
@@ -363,6 +363,7 @@ class ProfileSyncServiceAutofillTest : public testing::Test {
   ProfileMock profile_;
   ProfileSyncFactoryMock factory_;
   ProfileSyncServiceObserverMock observer_;
+  SyncBackendHostMock backend_;
   WebDatabaseMock web_database_;
   scoped_refptr<WebDataService> web_data_service_;
 
@@ -406,6 +407,10 @@ class AddAutofillEntriesTask : public Task {
 // TODO(skrul): Test processing of cloud changes.
 
 TEST_F(ProfileSyncServiceAutofillTest, FailModelAssociation) {
+  // Backend will be paused but not resumed.
+  EXPECT_CALL(backend_, RequestPause()).
+      WillOnce(testing::DoAll(Notify(NotificationType::SYNC_PAUSED),
+                              testing::Return(true)));
   // Don't create the root autofill node so startup fails.
   StartSyncService(NULL);
   EXPECT_TRUE(service_->unrecoverable_error_detected());

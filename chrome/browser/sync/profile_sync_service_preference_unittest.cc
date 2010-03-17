@@ -8,6 +8,7 @@
 #include "chrome/browser/sync/glue/preference_data_type_controller.h"
 #include "chrome/browser/sync/glue/preference_model_associator.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
+#include "chrome/browser/sync/glue/sync_backend_host_mock.h"
 #include "chrome/browser/sync/profile_sync_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/protocol/preference_specifics.pb.h"
@@ -23,6 +24,7 @@ using browser_sync::PreferenceChangeProcessor;
 using browser_sync::PreferenceDataTypeController;
 using browser_sync::PreferenceModelAssociator;
 using browser_sync::SyncBackendHost;
+using browser_sync::SyncBackendHostMock;
 using sync_api::SyncManager;
 using testing::_;
 using testing::Return;
@@ -65,8 +67,8 @@ class ProfileSyncServicePreferenceTest : public testing::Test {
       EXPECT_CALL(factory_, CreatePreferenceSyncComponents(_, _)).
           WillOnce(Return(ProfileSyncFactory::SyncComponents(
               model_associator_, change_processor_)));
-      EXPECT_CALL(factory_, CreateDataTypeManager(_)).
-          WillOnce(MakeDataTypeManager());
+      EXPECT_CALL(factory_, CreateDataTypeManager(_, _)).
+          WillOnce(MakeDataTypeManager(&backend_mock_));
 
       service_->RegisterDataTypeController(
           new PreferenceDataTypeController(&factory_,
@@ -133,6 +135,7 @@ class ProfileSyncServicePreferenceTest : public testing::Test {
   scoped_ptr<TestProfileSyncService> service_;
   scoped_ptr<TestingProfile> profile_;
   ProfileSyncFactoryMock factory_;
+  SyncBackendHostMock backend_mock_;
 
   PreferenceModelAssociator* model_associator_;
   PreferenceChangeProcessor* change_processor_;

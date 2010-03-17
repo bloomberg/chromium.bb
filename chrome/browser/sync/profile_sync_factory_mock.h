@@ -24,10 +24,10 @@ class ProfileSyncFactoryMock : public ProfileSyncFactory {
 
   MOCK_METHOD0(CreateProfileSyncService,
                ProfileSyncService*(void));
-  MOCK_METHOD1(CreateDataTypeManager,
+  MOCK_METHOD2(CreateDataTypeManager,
                browser_sync::DataTypeManager*(
-                   const browser_sync::DataTypeController::TypeMap&
-                   controllers));
+                   browser_sync::SyncBackendHost*,
+                   const browser_sync::DataTypeController::TypeMap&));
   MOCK_METHOD3(CreateAutofillSyncComponents,
                SyncComponents(
                    ProfileSyncService* profile_sync_service,

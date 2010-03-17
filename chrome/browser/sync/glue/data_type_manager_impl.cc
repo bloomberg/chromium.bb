@@ -6,6 +6,10 @@
 #include "base/task.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/sync/glue/data_type_manager_impl.h"
+#include "chrome/browser/sync/glue/sync_backend_host.h"
+#include "chrome/common/notification_details.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_source.h"
 
 static const int kStartOrderStart = -1;
 
@@ -22,10 +26,13 @@ static const syncable::ModelType kStartOrder[] = {
 namespace browser_sync {
 
 DataTypeManagerImpl::DataTypeManagerImpl(
+    SyncBackendHost* backend,
     const DataTypeController::TypeMap& controllers)
-    : controllers_(controllers),
+    : backend_(backend),
+      controllers_(controllers),
       state_(DataTypeManager::STOPPED),
       current_type_(kStartOrderStart) {
+  DCHECK(backend_);
   DCHECK(arraysize(kStartOrder) > 0);
   // Ensure all data type controllers are stopped.
   for (DataTypeController::TypeMap::const_iterator it = controllers_.begin();
@@ -42,10 +49,18 @@ void DataTypeManagerImpl::Start(StartCallback* start_callback) {
     return;
   }
 
-  state_ = STARTING;
+  state_ = PAUSE_PENDING;
   start_callback_.reset(start_callback);
   current_type_ = kStartOrderStart;
-  StartNextType();
+
+  // Pause the sync backend before starting the data types.
+  AddObserver(NotificationType::SYNC_PAUSED);
+  if (!backend_->RequestPause()) {
+    RemoveObserver(NotificationType::SYNC_PAUSED);
+    state_ = STOPPED;
+    start_callback_->Run(UNRECOVERABLE_ERROR);
+    start_callback_.reset();
+  }
 }
 
 void DataTypeManagerImpl::StartNextType() {
@@ -67,11 +82,17 @@ void DataTypeManagerImpl::StartNextType() {
     }
   }
 
-  // No more startable types found, we must be done.
+  // No more startable types found, we must be done.  Resume the sync
+  // backend to finish.
   DCHECK_EQ(state_, STARTING);
-  state_ = STARTED;
-  start_callback_->Run(OK);
-  start_callback_.reset();
+  AddObserver(NotificationType::SYNC_RESUMED);
+  state_ = RESUME_PENDING;
+  if (!backend_->RequestResume()) {
+    RemoveObserver(NotificationType::SYNC_RESUMED);
+    FinishStop();
+    start_callback_->Run(UNRECOVERABLE_ERROR);
+    start_callback_.reset();
+  }
 }
 
 void DataTypeManagerImpl::TypeStartCallback(
@@ -143,7 +164,7 @@ void DataTypeManagerImpl::Stop() {
 }
 
 void DataTypeManagerImpl::FinishStop() {
-  DCHECK(state_== STARTING || state_ == STOPPING);
+  DCHECK(state_== STARTING || state_ == STOPPING || state_ == RESUME_PENDING);
   // Simply call the Stop() method on all running data types.
   for (unsigned int i = 0; i < arraysize(kStartOrder); ++i) {
     syncable::ModelType type = kStartOrder[i];
@@ -162,6 +183,40 @@ bool DataTypeManagerImpl::IsRegistered(syncable::ModelType type) {
 
 bool DataTypeManagerImpl::IsEnabled(syncable::ModelType type) {
   return IsRegistered(type) && controllers_[type]->enabled();
+}
+
+void DataTypeManagerImpl::Observe(NotificationType type,
+                                  const NotificationSource& source,
+                                  const NotificationDetails& details) {
+  switch(type.value) {
+    case NotificationType::SYNC_PAUSED:
+      DCHECK_EQ(state_, PAUSE_PENDING);
+      state_ = STARTING;
+      RemoveObserver(NotificationType::SYNC_PAUSED);
+      StartNextType();
+      break;
+    case NotificationType::SYNC_RESUMED:
+      DCHECK_EQ(state_, RESUME_PENDING);
+      state_ = STARTED;
+      RemoveObserver(NotificationType::SYNC_RESUMED);
+      start_callback_->Run(OK);
+      start_callback_.reset();
+      break;
+    default:
+      NOTREACHED();
+  }
+}
+
+void DataTypeManagerImpl::AddObserver(NotificationType type) {
+  notification_registrar_.Add(this,
+                              type,
+                              NotificationService::AllSources());
+}
+
+void DataTypeManagerImpl::RemoveObserver(NotificationType type) {
+  notification_registrar_.Remove(this,
+                                 type,
+                                 NotificationService::AllSources());
 }
 
 }  // namespace browser_sync

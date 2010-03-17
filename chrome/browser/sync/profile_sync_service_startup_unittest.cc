@@ -59,7 +59,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
  protected:
   DataTypeManagerMock* SetUpDataTypeManager() {
     DataTypeManagerMock* data_type_manager = new DataTypeManagerMock();
-    EXPECT_CALL(factory_, CreateDataTypeManager(_)).
+    EXPECT_CALL(factory_, CreateDataTypeManager(_, _)).
         WillOnce(Return(data_type_manager));
     return data_type_manager;
   }

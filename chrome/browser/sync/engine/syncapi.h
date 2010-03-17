@@ -570,6 +570,12 @@ class SyncManager {
     // message, unless otherwise specified, produces undefined behavior.
     virtual void OnInitializationComplete() = 0;
 
+    // The syncer thread has been paused.
+    virtual void OnPaused() = 0;
+
+    // The syncer thread has been resumed.
+    virtual void OnResumed() = 0;
+
    private:
     DISALLOW_COPY_AND_ASSIGN(Observer);
   };
@@ -643,6 +649,18 @@ class SyncManager {
   // |username|, |password|, and |captcha| are owned by the caller.
   void Authenticate(const char* username, const char* password,
                     const char* captcha);
+
+  // Requests the syncer thread to pause.  The observer's OnPause
+  // method will be called when the syncer thread is paused.  Returns
+  // false if the syncer thread can not be paused (e.g. if it is not
+  // started).
+  bool RequestPause();
+
+  // Requests the syncer thread to resume.  The observer's OnResume
+  // method will be called when the syncer thread is resumed.  Returns
+  // false if the syncer thread can not be resumed (e.g. if it is not
+  // paused).
+  bool RequestResume();
 
   // Adds a listener to be notified of sync events.
   // NOTE: It is OK (in fact, it's probably a good idea) to call this before

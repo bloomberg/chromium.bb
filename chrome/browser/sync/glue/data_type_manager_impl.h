@@ -5,15 +5,26 @@
 #ifndef CHROME_BROWSER_SYNC_GLUE_DATA_TYPE_MANAGER_IMPL_H__
 #define CHROME_BROWSER_SYNC_GLUE_DATA_TYPE_MANAGER_IMPL_H__
 
+#include "chrome/browser/sync/glue/data_type_manager.h"
+
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/sync/glue/data_type_manager.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
+#include "chrome/common/notification_type.h"
+
+class NotificationSource;
+class NotificationDetails;
 
 namespace browser_sync {
 
-class DataTypeManagerImpl : public DataTypeManager {
+class SyncBackendHost;
+
+class DataTypeManagerImpl : public DataTypeManager,
+                            public NotificationObserver {
  public:
-  explicit DataTypeManagerImpl(const DataTypeController::TypeMap& controllers);
+  DataTypeManagerImpl(SyncBackendHost* backend,
+                      const DataTypeController::TypeMap& controllers);
   virtual ~DataTypeManagerImpl() {}
 
   // DataTypeManager interface.
@@ -33,6 +44,11 @@ class DataTypeManagerImpl : public DataTypeManager {
     return state_;
   }
 
+  // NotificationObserver implementation.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
  private:
   // Starts the next data type in the kStartOrder list, indicated by
   // the current_type_ member.  If there are no more data types to
@@ -45,11 +61,16 @@ class DataTypeManagerImpl : public DataTypeManager {
   // Stops all data types.
   void FinishStop();
 
+  void AddObserver(NotificationType type);
+  void RemoveObserver(NotificationType type);
+
+  SyncBackendHost* backend_;
   DataTypeController::TypeMap controllers_;
   State state_;
   int current_type_;
 
   scoped_ptr<StartCallback> start_callback_;
+  NotificationRegistrar notification_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(DataTypeManagerImpl);
 };

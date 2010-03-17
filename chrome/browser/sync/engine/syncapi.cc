@@ -1249,6 +1249,14 @@ void SyncManager::Authenticate(const char* username, const char* password,
                       std::string(captcha));
 }
 
+bool SyncManager::RequestPause() {
+  return data_->syncer_thread()->RequestPause();
+}
+
+bool SyncManager::RequestResume() {
+  return data_->syncer_thread()->RequestResume();
+}
+
 const std::string& SyncManager::GetAuthenticatedUsername() {
   DCHECK(data_);
   return data_->username_for_share();
@@ -1744,6 +1752,16 @@ void SyncManager::SyncInternal::HandleSyncerEvent(const SyncerEvent& event) {
                    << event.snapshot->did_commit_items
                    << " talk_mediator(): " << talk_mediator();
     }
+  }
+
+  if (event.what_happened == SyncerEvent::PAUSED) {
+    observer_->OnPaused();
+    return;
+  }
+
+  if (event.what_happened == SyncerEvent::RESUMED) {
+    observer_->OnResumed();
+    return;
   }
 }
 

@@ -15,6 +15,7 @@
 #include "chrome/browser/sync/glue/preference_change_processor.h"
 #include "chrome/browser/sync/glue/preference_data_type_controller.h"
 #include "chrome/browser/sync/glue/preference_model_associator.h"
+#include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_factory_impl.h"
 #include "chrome/browser/webdata/web_data_service.h"
@@ -34,6 +35,7 @@ using browser_sync::PreferenceDataTypeController;
 using browser_sync::PreferenceChangeProcessor;
 using browser_sync::PreferenceDataTypeController;
 using browser_sync::PreferenceModelAssociator;
+using browser_sync::SyncBackendHost;
 using browser_sync::UnrecoverableErrorHandler;
 
 ProfileSyncFactoryImpl::ProfileSyncFactoryImpl(
@@ -73,8 +75,9 @@ ProfileSyncService* ProfileSyncFactoryImpl::CreateProfileSyncService() {
 }
 
 DataTypeManager* ProfileSyncFactoryImpl::CreateDataTypeManager(
+    SyncBackendHost* backend,
     const DataTypeController::TypeMap& controllers) {
-  return new DataTypeManagerImpl(controllers);
+  return new DataTypeManagerImpl(backend, controllers);
 }
 
 ProfileSyncFactory::SyncComponents

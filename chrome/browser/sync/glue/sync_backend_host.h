@@ -76,6 +76,9 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   SyncBackendHost(SyncFrontend* frontend,
                   const FilePath& profile_path,
                   const DataTypeController::TypeMap& data_type_controllers);
+  // For testing.
+  // TODO(skrul): Extract an interface so this is not needed.
+  SyncBackendHost();
   ~SyncBackendHost();
 
   // Called on |frontend_loop_| to kick off asynchronous initialization.
@@ -109,6 +112,16 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   // Deactivates change processing for the given data type.
   void DeactivateDataType(DataTypeController* data_type_controller,
                           ChangeProcessor* change_processor);
+
+  // Requests the backend to pause.  Returns true if the request is
+  // sent sucessfully.  When the backend does pause, a SYNC_PAUSED
+  // notification is sent to the notification service.
+  virtual bool RequestPause();
+
+  // Requests the backend to resume.  Returns true if the request is
+  // sent sucessfully.  When the backend does resume, a SYNC_RESUMED
+  // notification is sent to the notification service.
+  virtual bool RequestResume();
 
   // Called on |frontend_loop_| to obtain a handle to the UserShare needed
   // for creating transactions.
@@ -177,6 +190,8 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     virtual void OnSyncCycleCompleted();
     virtual void OnInitializationComplete();
     virtual void OnAuthError(const GoogleServiceAuthError& auth_error);
+    virtual void OnPaused();
+    virtual void OnResumed();
 
     struct DoInitializeOptions {
       DoInitializeOptions(
@@ -287,6 +302,14 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     // need to be RefCountedThreadSafe because NotifyFrontend is invoked on the
     // |frontend_loop_|.
     void NotifyFrontend(FrontendNotification notification);
+
+    // Sends a SYNC_PAUSED notification to the notification service on
+    // the UI thread.
+    void NotifyPaused();
+
+    // Sends a SYNC_RESUMED notification to the notification service
+    // on the UI thread.
+    void NotifyResumed();
 
     // Invoked when initialization of syncapi is complete and we can start
     // our timer.

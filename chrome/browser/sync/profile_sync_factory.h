@@ -17,6 +17,7 @@ class WebDatabase;
 
 namespace browser_sync {
 class DataTypeManager;
+class SyncBackendHost;
 class UnrecoverableErrorHandler;
 }
 
@@ -42,9 +43,11 @@ class ProfileSyncFactory {
   // is owned by the caller.
   virtual ProfileSyncService* CreateProfileSyncService() = 0;
 
-  // Instantiates a new DataTypeManager with a list of data type
-  // controllers.  The return pointer is owned by the caller.
+  // Instantiates a new DataTypeManager with a SyncBackendHost and a
+  // list of data type controllers.  The return pointer is owned by
+  // the caller.
   virtual browser_sync::DataTypeManager* CreateDataTypeManager(
+      browser_sync::SyncBackendHost* backend,
       const browser_sync::DataTypeController::TypeMap& controllers) = 0;
 
   // Instantiates both a model associator and change processor for the

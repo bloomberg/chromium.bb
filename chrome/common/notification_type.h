@@ -868,6 +868,14 @@ class NotificationType {
     // object, the details are ContentSettingsNotificationsDetails.
     CONTENT_SETTINGS_CHANGED,
 
+    // Sync --------------------------------------------------------------------
+
+    // Sent when the sync backend has been paused.
+    SYNC_PAUSED,
+
+    // Sent when the sync backend has been resumed.
+    SYNC_RESUMED,
+
 #if defined(OS_CHROMEOS)
     // Sent when a chromium os user logs in.
     LOGIN_USER_CHANGED,

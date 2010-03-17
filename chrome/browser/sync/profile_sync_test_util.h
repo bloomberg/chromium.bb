@@ -16,13 +16,23 @@
 #include "chrome/browser/sync/profile_sync_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/unrecoverable_error_handler.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/test/sync/test_http_bridge_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+ACTION_P(Notify, type) {
+  NotificationService::current()->Notify(type,
+                                         NotificationService::AllSources(),
+                                         NotificationService::NoDetails());
+}
+
 // This action is used to mock out the ProfileSyncFactory
-// CreateDataTypeManager method.
-ACTION(MakeDataTypeManager) {
-  return new browser_sync::DataTypeManagerImpl(arg0);
+// CreateDataTypeManager method.  Note that we swap out the supplied
+// SyncBackendHost with a mock since using the live SyncBackendHost in
+// tests does not run the syncer thread and can not properly respond
+// to pause and resume requests.
+ACTION_P(MakeDataTypeManager, backend_mock) {
+  return new browser_sync::DataTypeManagerImpl(backend_mock, arg1);
 }
 
 ACTION_P(InvokeTask, task) {
