@@ -5,8 +5,8 @@
 #ifndef CHROME_COMMON_NATIVE_WINDOW_NOTIFICATION_SOURCE_H_
 #define CHROME_COMMON_NATIVE_WINDOW_NOTIFICATION_SOURCE_H_
 
-#include "app/gfx/native_widget_types.h"
 #include "chrome/common/notification_source.h"
+#include "gfx/native_widget_types.h"
 
 // Specialization of the Source class for native windows.  On Windows, these are
 // HWNDs rather than pointers, and since the Source class expects a pointer

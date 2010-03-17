@@ -6,7 +6,6 @@
 
 #include "app/gfx/canvas.h"
 #include "app/gfx/font.h"
-#include "app/gfx/path.h"
 #include "app/gfx/text_elider.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
@@ -23,6 +22,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
+#include "gfx/path.h"
 #include "gfx/rect.h"
 #include "grit/app_resources.h"
 #include "grit/chromium_strings.h"

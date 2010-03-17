@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "app/clipboard/clipboard.h"
-#include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
 #include "base/platform_file.h"
 #include "base/ref_counted.h"
@@ -29,6 +28,7 @@
 #include "chrome/common/transport_dib.h"
 #include "chrome/common/view_types.h"
 #include "chrome/common/webkit_param_traits.h"
+#include "gfx/native_widget_types.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_platform_file.h"

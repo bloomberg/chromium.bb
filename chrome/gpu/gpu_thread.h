@@ -5,7 +5,6 @@
 #ifndef CHROME_GPU_GPU_THREAD_H_
 #define CHROME_GPU_GPU_THREAD_H_
 
-#include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "build/build_config.h"
@@ -13,6 +12,7 @@
 #include "chrome/common/gpu_native_window_handle.h"
 #include "chrome/gpu/gpu_config.h"
 #include "chrome/gpu/x_util.h"
+#include "gfx/native_widget_types.h"
 
 #if defined(GPU_USE_GLX)
 class GpuBackingStoreGLXContext;

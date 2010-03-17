@@ -5,11 +5,11 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GPU_PROCESSOR_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GPU_PROCESSOR_H_
 
-#include "app/gfx/native_widget_types.h"
 #include "base/callback.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/shared_memory.h"
+#include "gfx/native_widget_types.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/cmd_parser.h"

@@ -10,9 +10,7 @@
 
 #include <algorithm>
 
-#include "app/gfx/blit.h"
 #include "app/gfx/canvas.h"
-#include "app/gfx/native_widget_types.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/basictypes.h"
@@ -29,6 +27,8 @@
 #include "chrome/renderer/command_buffer_proxy.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/render_view.h"
+#include "gfx/blit.h"
+#include "gfx/native_widget_types.h"
 #include "gfx/size.h"
 #include "grit/generated_resources.h"
 #include "grit/renderer_resources.h"

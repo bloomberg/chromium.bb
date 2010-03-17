@@ -8,7 +8,6 @@
 #include <map>
 
 #include "app/clipboard/clipboard.h"
-#include "app/gfx/gtk_native_view_id_manager.h"
 #include "app/l10n_util.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
@@ -20,6 +19,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/x11_util.h"
+#include "gfx/gtk_native_view_id_manager.h"
 #include "grit/generated_resources.h"
 
 #include "third_party/WebKit/WebKit/chromium/public/WebScreenInfo.h"

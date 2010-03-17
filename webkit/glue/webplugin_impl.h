@@ -9,11 +9,11 @@
 #include <map>
 #include <vector>
 
-#include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
 #include "base/linked_ptr.h"
 #include "base/task.h"
 #include "base/weak_ptr.h"
+#include "gfx/native_widget_types.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPlugin.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRect.h"

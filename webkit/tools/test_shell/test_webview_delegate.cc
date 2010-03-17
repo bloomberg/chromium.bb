@@ -8,12 +8,12 @@
 
 #include "webkit/tools/test_shell/test_webview_delegate.h"
 
-#include "app/gfx/native_widget_types.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "base/trace_event.h"
 #include "base/utf_string_conversions.h"
+#include "gfx/native_widget_types.h"
 #include "gfx/point.h"
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityObject.h"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_GFX_SCROLLBAR_SIZE_H_
-#define APP_GFX_SCROLLBAR_SIZE_H_
+#ifndef GFX_SCROLLBAR_SIZE_H_
+#define GFX_SCROLLBAR_SIZE_H_
 
 namespace gfx {
 
@@ -14,4 +14,4 @@ int scrollbar_size();
 
 }  // namespace gfx
 
-#endif  // APP_GFX_SCROLLBAR_SIZE_H_
+#endif  // GFX_SCROLLBAR_SIZE_H_

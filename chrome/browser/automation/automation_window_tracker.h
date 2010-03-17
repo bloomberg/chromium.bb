@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_AUTOMATION_AUTOMATION_WINDOW_TRACKER_H_
 #define CHROME_BROWSER_AUTOMATION_AUTOMATION_WINDOW_TRACKER_H_
 
-#include "app/gfx/native_widget_types.h"
 #include "build/build_config.h"
 #include "chrome/browser/automation/automation_resource_tracker.h"
 #include "chrome/common/native_window_notification_source.h"
+#include "gfx/native_widget_types.h"
 
 class AutomationWindowTracker
     : public AutomationResourceTracker<gfx::NativeWindow> {

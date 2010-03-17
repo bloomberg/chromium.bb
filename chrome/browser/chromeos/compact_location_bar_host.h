@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_CHROMEOS_COMPACT_LOCATION_BAR_HOST_H_
 
 #include "app/animation.h"
-#include "app/gfx/native_widget_types.h"
 #include "base/timer.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/views/dropdown_bar_host.h"
+#include "gfx/native_widget_types.h"
 #include "gfx/rect.h"
 #include "views/controls/textfield/textfield.h"
 

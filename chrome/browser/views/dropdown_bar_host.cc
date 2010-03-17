@@ -4,8 +4,6 @@
 
 #include "chrome/browser/views/dropdown_bar_host.h"
 
-#include "app/gfx/path.h"
-#include "app/gfx/scrollbar_size.h"
 #include "app/slide_animation.h"
 #include "base/keyboard_codes.h"
 #include "base/scoped_handle.h"
@@ -16,6 +14,8 @@
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
+#include "gfx/path.h"
+#include "gfx/scrollbar_size.h"
 #include "views/focus/external_focus_tracker.h"
 #include "views/focus/view_storage.h"
 #include "views/widget/widget.h"

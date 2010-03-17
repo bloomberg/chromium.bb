@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/gfx/native_widget_types.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/string_util.h"
@@ -18,10 +17,11 @@
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/ui/ui_test.h"
-#include "net/base/net_util.h"
-#include "net/url_request/url_request_unittest.h"
+#include "gfx/native_widget_types.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "net/base/net_util.h"
+#include "net/url_request/url_request_unittest.h"
 
 namespace {
 

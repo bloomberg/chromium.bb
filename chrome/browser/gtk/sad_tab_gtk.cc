@@ -6,11 +6,11 @@
 
 #include <string>
 
-#include "app/gfx/gtk_util.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "gfx/gtk_util.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"

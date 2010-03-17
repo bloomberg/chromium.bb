@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_PRINTING_PRINTER_QUERY_H_
 #define CHROME_BROWSER_PRINTING_PRINTER_QUERY_H_
 
-#include "app/gfx/native_widget_types.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/printing/print_job_worker_owner.h"
+#include "gfx/native_widget_types.h"
 
 class CancelableTask;
 class MessageLoop;

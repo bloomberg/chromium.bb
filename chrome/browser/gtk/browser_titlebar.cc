@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "app/gfx/gtk_util.h"
 #include "app/gfx/skbitmap_operations.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
@@ -34,6 +33,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
+#include "gfx/gtk_util.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"

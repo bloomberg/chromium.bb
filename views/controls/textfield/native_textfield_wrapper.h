@@ -5,8 +5,8 @@
 #ifndef VIEWS_CONTROLS_TEXTFIELD_NATIVE_TEXTFIELD_WRAPPER_H_
 #define VIEWS_CONTROLS_TEXTFIELD_NATIVE_TEXTFIELD_WRAPPER_H_
 
-#include "app/gfx/native_widget_types.h"
 #include "base/string16.h"
+#include "gfx/native_widget_types.h"
 
 namespace gfx {
 class Insets;

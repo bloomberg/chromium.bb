@@ -8,9 +8,9 @@
 #include <string>
 #include <vector>
 
-#include "app/gfx/native_widget_types.h"
 #include "base/string16.h"
 #include "build/build_config.h"
+#include "gfx/native_widget_types.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCanvas.h"

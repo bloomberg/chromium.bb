@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_TAB_CONTENTS_WEB_DRAG_SOURCE_WIN_H_
 #define CHROME_BROWSER_TAB_CONTENTS_WEB_DRAG_SOURCE_WIN_H_
 
-#include "app/gfx/native_widget_types.h"
 #include "base/base_drag_source.h"
 #include "base/basictypes.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
+#include "gfx/native_widget_types.h"
 #include "gfx/point.h"
 
 class RenderViewHost;

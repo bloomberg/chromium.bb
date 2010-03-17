@@ -7,7 +7,6 @@
 #ifndef CHROME_BROWSER_VIEWS_NOTIFICATIONS_BALLOON_VIEW_H_
 #define CHROME_BROWSER_VIEWS_NOTIFICATIONS_BALLOON_VIEW_H_
 
-#include "app/gfx/path.h"
 #include "app/menus/simple_menu_model.h"
 #include "app/slide_animation.h"
 #include "base/basictypes.h"
@@ -16,6 +15,7 @@
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
+#include "gfx/path.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"

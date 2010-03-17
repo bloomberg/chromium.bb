@@ -7,10 +7,10 @@
 #include <gtk/gtk.h>
 
 #include "app/gfx/canvas.h"
-#include "app/gfx/gtk_util.h"
 #include "app/os_exchange_data.h"
 #include "app/os_exchange_data_provider_gtk.h"
 #include "base/logging.h"
+#include "gfx/gtk_util.h"
 #include "gfx/point.h"
 #include "gfx/size.h"
 

@@ -4,10 +4,10 @@
 
 #include "views/window/window_gtk.h"
 
-#include "app/gfx/path.h"
 #include "app/l10n_util.h"
 #include "gfx/rect.h"
 #include "base/utf_string_conversions.h"
+#include "gfx/path.h"
 #include "views/event.h"
 #include "views/screen.h"
 #include "views/widget/root_view.h"

@@ -8,10 +8,10 @@
 #include <string>
 #include <vector>
 
-#include "app/gfx/native_widget_types.h"
 #include "chrome/browser/bookmarks/bookmark_drag_data.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/history/snippet.h"
+#include "gfx/native_widget_types.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class BookmarkModel;

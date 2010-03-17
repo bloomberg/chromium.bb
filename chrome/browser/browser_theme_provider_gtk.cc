@@ -6,9 +6,9 @@
 
 #include <gdk-pixbuf/gdk-pixbuf.h>
 
-#include "app/gfx/gtk_util.h"
 #include "app/l10n_util.h"
 #include "base/logging.h"
+#include "gfx/gtk_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 GdkPixbuf* BrowserThemeProvider::GetPixbufNamed(int id) const {

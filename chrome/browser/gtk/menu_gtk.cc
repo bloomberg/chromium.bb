@@ -6,7 +6,6 @@
 
 #include <map>
 
-#include "app/gfx/gtk_util.h"
 #include "app/l10n_util.h"
 #include "app/menus/accelerator_gtk.h"
 #include "app/menus/menu_model.h"
@@ -16,6 +15,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/standard_menus.h"
+#include "gfx/gtk_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 using gtk_util::ConvertAcceleratorsFromWindowsStyle;

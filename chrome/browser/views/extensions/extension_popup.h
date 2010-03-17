@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_VIEWS_EXTENSIONS_EXTENSION_POPUP_H_
 #define CHROME_BROWSER_VIEWS_EXTENSIONS_EXTENSION_POPUP_H_
 
-#include "app/gfx/native_widget_types.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/views/browser_bubble.h"
 #include "chrome/browser/views/extensions/extension_view.h"
 #include "chrome/browser/views/bubble_border.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
+#include "gfx/native_widget_types.h"
 #include "googleurl/src/gurl.h"
 
 class Browser;

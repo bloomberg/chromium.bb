@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_GTK_CERTIFICATE_VIEWER_H_
 #define CHROME_BROWSER_GTK_CERTIFICATE_VIEWER_H_
 
-#include "app/gfx/native_widget_types.h"
+#include "gfx/native_widget_types.h"
 
 typedef struct CERTCertificateStr CERTCertificate;
 

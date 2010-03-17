@@ -7,7 +7,6 @@
 #include <gtk/gtk.h>
 
 #include "app/gfx/color_utils.h"
-#include "app/gfx/gtk_util.h"
 #include "app/gfx/skbitmap_operations.h"
 #include "app/gfx/skia_utils_gtk.h"
 #include "app/resource_bundle.h"
@@ -27,6 +26,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "gfx/gtk_util.h"
 #include "grit/app_resources.h"
 #include "grit/theme_resources.h"
 

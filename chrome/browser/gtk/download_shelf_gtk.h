@@ -9,13 +9,13 @@
 
 #include <vector>
 
-#include "app/gfx/native_widget_types.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/gtk/slide_animator_gtk.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/owned_widget_gtk.h"
+#include "gfx/native_widget_types.h"
 
 class BaseDownloadItemModel;
 class Browser;

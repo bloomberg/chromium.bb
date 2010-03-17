@@ -5,7 +5,7 @@
 #ifndef WEBKIT_GLUE_WEBPLUGIN_PAGE_DELEGATE_
 #define WEBKIT_GLUE_WEBPLUGIN_PAGE_DELEGATE_
 
-#include "app/gfx/native_widget_types.h"
+#include "gfx/native_widget_types.h"
 
 class GURL;
 

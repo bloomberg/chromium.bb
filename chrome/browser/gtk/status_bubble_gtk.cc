@@ -8,7 +8,6 @@
 
 #include <algorithm>
 
-#include "app/gfx/gtk_util.h"
 #include "app/gfx/text_elider.h"
 #include "app/l10n_util.h"
 #include "base/message_loop.h"
@@ -18,6 +17,7 @@
 #include "chrome/browser/gtk/rounded_window.h"
 #include "chrome/browser/gtk/slide_animator_gtk.h"
 #include "chrome/common/notification_service.h"
+#include "gfx/gtk_util.h"
 #include "googleurl/src/gurl.h"
 
 namespace {

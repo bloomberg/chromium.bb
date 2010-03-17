@@ -4,10 +4,10 @@
 
 #include "chrome/browser/gtk/download_item_drag.h"
 
-#include "app/gfx/gtk_util.h"
 #include "app/gtk_dnd_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/download/download_manager.h"
+#include "gfx/gtk_util.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"

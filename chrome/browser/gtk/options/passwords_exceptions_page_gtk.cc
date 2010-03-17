@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "app/gfx/gtk_util.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
@@ -15,6 +14,7 @@
 #include "chrome/browser/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "gfx/gtk_util.h"
 #include "grit/app_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"

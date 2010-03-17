@@ -5,7 +5,7 @@
 #ifndef VIEWS_CONTROLS_SLIDER_NATIVE_SLIDER_WRAPPER_H_
 #define VIEWS_CONTROLS_SLIDER_NATIVE_SLIDER_WRAPPER_H_
 
-#include "app/gfx/native_widget_types.h"
+#include "gfx/native_widget_types.h"
 
 namespace views {
 

@@ -6,7 +6,8 @@
 #define VIEWS_WIDGET_WIDGET_H_
 
 #include <vector>
-#include "app/gfx/native_widget_types.h"
+
+#include "gfx/native_widget_types.h"
 
 class ThemeProvider;
 

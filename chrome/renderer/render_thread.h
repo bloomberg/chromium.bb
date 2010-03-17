@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "app/gfx/native_widget_types.h"
 #include "base/shared_memory.h"
 #include "base/string16.h"
 #include "base/task.h"
@@ -21,6 +20,7 @@
 #include "chrome/common/dom_storage_common.h"
 #include "chrome/renderer/renderer_histogram_snapshots.h"
 #include "chrome/renderer/visitedlink_slave.h"
+#include "gfx/native_widget_types.h"
 #include "ipc/ipc_platform_file.h"
 
 class AppCacheDispatcher;

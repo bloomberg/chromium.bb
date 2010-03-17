@@ -8,7 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include "app/gfx/native_widget_types.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/json/json_reader.h"
@@ -39,6 +38,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/url_constants.h"
+#include "gfx/native_widget_types.h"
 #include "net/base/net_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFindOptions.h"

@@ -45,7 +45,6 @@
 #include <string>
 #include <vector>
 
-#include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/hash_tables.h"
@@ -54,6 +53,7 @@
 #include "base/ref_counted.h"
 #include "base/timer.h"
 #include "chrome/browser/power_save_blocker.h"
+#include "gfx/native_widget_types.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/file_stream.h"
 

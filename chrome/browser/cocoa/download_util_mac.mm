@@ -6,10 +6,10 @@
 
 #include "chrome/browser/cocoa/download_util_mac.h"
 
-#include "app/gfx/native_widget_types.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/cocoa/dock_icon.h"
 #include "chrome/browser/download/download_manager.h"
+#include "gfx/native_widget_types.h"
 #include "skia/ext/skia_utils_mac.h"
 
 namespace download_util {

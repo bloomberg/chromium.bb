@@ -9,9 +9,9 @@
 #include <map>
 #include <vector>
 
-#include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
 #include "base/singleton.h"
+#include "gfx/native_widget_types.h"
 #include "views/accelerator.h"
 
 // The FocusManager class is used to handle focus traversal, store/restore

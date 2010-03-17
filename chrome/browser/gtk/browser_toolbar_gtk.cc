@@ -8,7 +8,6 @@
 #include <gtk/gtk.h>
 #include <X11/XF86keysym.h>
 
-#include "app/gfx/gtk_util.h"
 #include "app/gtk_dnd_util.h"
 #include "app/l10n_util.h"
 #include "app/menus/accelerator_gtk.h"
@@ -47,6 +46,7 @@
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "gfx/gtk_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"

@@ -6,11 +6,11 @@
 
 #include "app/gfx/canvas.h"
 #include "app/gfx/color_utils.h"
-#include "app/gfx/path.h"
 #include "base/keyboard_codes.h"
 #include "chrome/browser/views/bubble_border.h"
 #include "chrome/browser/window_sizer.h"
 #include "chrome/common/notification_service.h"
+#include "gfx/path.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "views/fill_layout.h"
 #include "views/widget/root_view.h"

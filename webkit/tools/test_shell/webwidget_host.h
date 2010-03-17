@@ -5,9 +5,9 @@
 #ifndef WEBKIT_TOOLS_TEST_SHELL_WEBWIDGET_HOST_H_
 #define WEBKIT_TOOLS_TEST_SHELL_WEBWIDGET_HOST_H_
 
-#include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
+#include "gfx/native_widget_types.h"
 #include "gfx/rect.h"
 #include "skia/ext/platform_canvas.h"
 

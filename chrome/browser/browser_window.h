@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_BROWSER_WINDOW_H_
 #define CHROME_BROWSER_BROWSER_WINDOW_H_
 
-#include "app/gfx/native_widget_types.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/common/content_settings_types.h"
+#include "gfx/native_widget_types.h"
 
 class Browser;
 class BrowserWindowTesting;

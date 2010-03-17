@@ -13,7 +13,6 @@
 #include <string>
 #include <vector>
 
-#include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
@@ -41,6 +40,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/property_bag.h"
 #include "chrome/common/renderer_preferences.h"
+#include "gfx/native_widget_types.h"
 #include "gfx/rect.h"
 #include "net/base/load_states.h"
 #include "webkit/glue/dom_operations.h"

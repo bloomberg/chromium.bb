@@ -7,13 +7,13 @@
 
 #include <vector>
 
-#include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
 #include "base/shared_memory.h"
 #include "chrome/renderer/gpu_channel_host.h"
 #include "chrome/renderer/paint_aggregator.h"
 #include "chrome/renderer/render_process.h"
+#include "gfx/native_widget_types.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"

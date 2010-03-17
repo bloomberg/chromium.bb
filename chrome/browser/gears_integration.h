@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_GEARS_INTEGRATION_H__
 #define CHROME_BROWSER_GEARS_INTEGRATION_H__
 
-#include "app/gfx/native_widget_types.h"
 #include "base/callback.h"
 #include "base/string16.h"
 #include "chrome/common/gears_api.h"
+#include "gfx/native_widget_types.h"
 
 // TODO(michaeln): Rework this interface to match how other first class
 // citizens of chrome are structured, as a GearsService with an accessor

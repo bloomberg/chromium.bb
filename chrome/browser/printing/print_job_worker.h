@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_PRINTING_PRINT_JOB_WORKER_H__
 #define CHROME_BROWSER_PRINTING_PRINT_JOB_WORKER_H__
 
-#include "app/gfx/native_widget_types.h"
 #include "base/task.h"
 #include "base/thread.h"
+#include "gfx/native_widget_types.h"
 #include "printing/page_number.h"
 #include "printing/printing_context.h"
 

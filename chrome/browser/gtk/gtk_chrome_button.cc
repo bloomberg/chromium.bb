@@ -4,10 +4,9 @@
 
 #include "chrome/browser/gtk/gtk_chrome_button.h"
 
-#include "app/gfx/gtk_util.h"
 #include "base/basictypes.h"
 #include "chrome/browser/gtk/nine_box.h"
-
+#include "gfx/gtk_util.h"
 #include "grit/app_resources.h"
 
 namespace {

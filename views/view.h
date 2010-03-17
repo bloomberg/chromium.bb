@@ -13,9 +13,9 @@
 #include <string>
 #include <vector>
 
-#include "app/gfx/native_widget_types.h"
 #include "app/os_exchange_data.h"
 #include "base/scoped_ptr.h"
+#include "gfx/native_widget_types.h"
 #include "gfx/rect.h"
 #include "views/accelerator.h"
 #include "views/accessibility/accessibility_types.h"

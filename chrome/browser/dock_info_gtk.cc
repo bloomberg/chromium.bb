@@ -6,13 +6,13 @@
 
 #include <gtk/gtk.h>
 
-#include "app/gfx/native_widget_types.h"
 #include "base/logging.h"
 #include "base/task.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/gtk/browser_window_gtk.h"
 #include "chrome/browser/gtk/gtk_util.h"
+#include "gfx/native_widget_types.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // BaseWindowFinder

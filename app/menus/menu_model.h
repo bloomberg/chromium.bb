@@ -5,9 +5,9 @@
 #ifndef APP_MENUS_MENU_MODEL_H_
 #define APP_MENUS_MENU_MODEL_H_
 
-#include "app/gfx/native_widget_types.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
+#include "gfx/native_widget_types.h"
 
 class SkBitmap;
 

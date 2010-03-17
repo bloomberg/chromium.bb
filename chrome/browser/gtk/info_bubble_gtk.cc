@@ -7,14 +7,14 @@
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 
-#include "app/gfx/gtk_util.h"
-#include "app/gfx/path.h"
 #include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/common/notification_service.h"
+#include "gfx/gtk_util.h"
+#include "gfx/path.h"
 #include "gfx/rect.h"
 
 namespace {

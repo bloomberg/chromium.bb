@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_VIEWS_TABS_NATIVE_VIEW_PHOTOBOOTH_H_
 #define CHROME_BROWSER_VIEWS_TABS_NATIVE_VIEW_PHOTOBOOTH_H_
 
-#include "app/gfx/native_widget_types.h"
+#include "gfx/native_widget_types.h"
 
 namespace gfx {
 class Canvas;

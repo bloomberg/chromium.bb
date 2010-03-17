@@ -10,10 +10,10 @@
 
 #include <vector>
 
-#include "app/gfx/native_widget_types.h"
 #include "base/ref_counted.h"
 #include "base/weak_ptr.h"
 #include "chrome/plugin/npobject_base.h"
+#include "gfx/native_widget_types.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel.h"
 

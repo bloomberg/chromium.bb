@@ -7,7 +7,7 @@
 
 #include <set>
 
-#include "app/gfx/native_widget_types.h"
+#include "gfx/native_widget_types.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 

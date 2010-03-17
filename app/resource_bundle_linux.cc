@@ -8,7 +8,6 @@
 
 #include "app/app_paths.h"
 #include "app/gfx/font.h"
-#include "app/gfx/gtk_util.h"
 #include "app/l10n_util.h"
 #include "base/base_paths.h"
 #include "base/data_pack.h"
@@ -18,6 +17,7 @@
 #include "base/path_service.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
+#include "gfx/gtk_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace {

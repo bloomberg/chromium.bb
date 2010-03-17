@@ -5,7 +5,7 @@
 #ifndef VIEWS_BORDER_H_
 #define VIEWS_BORDER_H_
 
-#include "app/gfx/insets.h"
+#include "gfx/insets.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "views/view.h"
 

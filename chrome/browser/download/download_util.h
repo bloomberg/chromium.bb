@@ -10,9 +10,9 @@
 #include <set>
 #include <string>
 
-#include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
 #include "base/task.h"
+#include "gfx/native_widget_types.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "views/view.h"

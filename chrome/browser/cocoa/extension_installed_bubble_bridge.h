@@ -8,7 +8,7 @@
 #ifndef CHROME_BROWSER_COCOA_EXTENSION_INSTALLED_BUBBLE_BRIDGE_H_
 #define CHROME_BROWSER_COCOA_EXTENSION_INSTALLED_BUBBLE_BRIDGE_H_
 
-#include "app/gfx/native_widget_types.h"
+#include "gfx/native_widget_types.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class Browser;

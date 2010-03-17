@@ -6,12 +6,12 @@
 
 #include <math.h>
 
-#include "app/gfx/gtk_util.h"
 #include "app/l10n_util.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/rounded_window.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
+#include "gfx/gtk_util.h"
 #include "grit/generated_resources.h"
 
 // Roundedness of bubble.

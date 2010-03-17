@@ -9,7 +9,7 @@
 #include <utility>
 #include <vector>
 
-#include "app/gfx/native_widget_types.h"
+#include "gfx/native_widget_types.h"
 
 class BookmarkNode;
 class GURL;

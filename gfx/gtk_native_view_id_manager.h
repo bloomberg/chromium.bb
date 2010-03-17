@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_GFX_GTK_NATIVE_VIEW_ID_MANAGER_H_
-#define APP_GFX_GTK_NATIVE_VIEW_ID_MANAGER_H_
+#ifndef GFX_GTK_NATIVE_VIEW_ID_MANAGER_H_
+#define GFX_GTK_NATIVE_VIEW_ID_MANAGER_H_
 
 #include <map>
 
-#include "app/gfx/native_widget_types.h"
 #include "base/singleton.h"
+#include "gfx/native_widget_types.h"
 
 typedef unsigned long XID;
 
@@ -88,4 +88,4 @@ class GtkNativeViewManager {
   DISALLOW_COPY_AND_ASSIGN(GtkNativeViewManager);
 };
 
-#endif  // APP_GFX_GTK_NATIVE_VIEW_ID_MANAGER_H_
+#endif  // GFX_GTK_NATIVE_VIEW_ID_MANAGER_H_

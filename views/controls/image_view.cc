@@ -5,8 +5,8 @@
 #include "views/controls/image_view.h"
 
 #include "app/gfx/canvas.h"
-#include "app/gfx/insets.h"
 #include "base/logging.h"
+#include "gfx/insets.h"
 
 namespace views {
 

@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "app/gfx/canvas.h"
-#include "app/gfx/insets.h"
 #include "app/resource_bundle.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
@@ -34,6 +33,7 @@
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/views/bubble_border.h"
+#include "gfx/insets.h"
 #include "gfx/point.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"

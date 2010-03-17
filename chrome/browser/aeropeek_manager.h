@@ -7,9 +7,9 @@
 
 #include <list>
 
-#include "app/gfx/insets.h"
 #include "base/waitable_event.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
+#include "gfx/insets.h"
 
 namespace gfx {
 class Size;

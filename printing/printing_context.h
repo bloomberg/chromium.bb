@@ -14,9 +14,9 @@
 
 #include <string>
 
-#include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "gfx/native_widget_types.h"
 #include "printing/print_settings.h"
 
 #if defined(OS_MACOSX)

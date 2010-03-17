@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "app/gfx/gtk_util.h"
 #include "app/gfx/canvas_paint.h"
 #include "app/gfx/text_elider.h"
 #include "app/gtk_dnd_util.h"
@@ -42,6 +41,7 @@
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
+#include "gfx/gtk_util.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"

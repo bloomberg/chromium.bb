@@ -4,7 +4,6 @@
 
 #include "chrome/browser/gtk/content_blocked_bubble_gtk.h"
 
-#include "app/gfx/gtk_util.h"
 #include "app/l10n_util.h"
 #include "chrome/browser/blocked_popup_container.h"
 #include "chrome/browser/content_setting_bubble_model.h"
@@ -18,6 +17,7 @@
 #include "chrome/common/content_settings.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
+#include "gfx/gtk_util.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 

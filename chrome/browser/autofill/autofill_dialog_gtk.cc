@@ -8,7 +8,6 @@
 
 #include <vector>
 
-#include "app/gfx/gtk_util.h"
 #include "app/l10n_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -20,6 +19,7 @@
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/options/options_layout_gtk.h"
 #include "chrome/browser/profile.h"
+#include "gfx/gtk_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"

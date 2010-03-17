@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_STATUS_STATUS_AREA_HOST_H_
 #define CHROME_BROWSER_CHROMEOS_STATUS_STATUS_AREA_HOST_H_
 
-#include "app/gfx/native_widget_types.h"
+#include "gfx/native_widget_types.h"
 
 namespace views {
 class View;

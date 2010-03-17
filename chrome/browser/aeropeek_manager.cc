@@ -8,7 +8,6 @@
 #include <shobjidl.h>
 
 #include "app/gfx/gdi_util.h"
-#include "app/gfx/insets.h"
 #include "app/win_util.h"
 #include "app/win/window_impl.h"
 #include "base/command_line.h"

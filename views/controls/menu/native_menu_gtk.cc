@@ -9,7 +9,6 @@
 #include <string>
 
 #include "app/gfx/font.h"
-#include "app/gfx/gtk_util.h"
 #include "app/l10n_util.h"
 #include "app/menus/menu_model.h"
 #include "base/keyboard_code_conversion_gtk.h"
@@ -17,6 +16,7 @@
 #include "base/message_loop.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "gfx/gtk_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "views/accelerator.h"
 #include "views/controls/menu/menu_2.h"

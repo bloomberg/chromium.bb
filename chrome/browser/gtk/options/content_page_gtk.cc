@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "app/gfx/gtk_util.h"
 #include "app/gtk_util.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
@@ -25,6 +24,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "gfx/gtk_util.h"
 #include "grit/app_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"

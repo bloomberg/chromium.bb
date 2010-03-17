@@ -13,8 +13,8 @@
 
 #include <string>
 
-#include "app/gfx/native_widget_types.h"
 #include "chrome/common/page_transition_types.h"
+#include "gfx/native_widget_types.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class AutocompleteEditModel;

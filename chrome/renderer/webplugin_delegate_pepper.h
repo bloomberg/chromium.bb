@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "app/gfx/native_widget_types.h"
 #include "base/file_path.h"
 #include "base/id_map.h"
 #include "base/ref_counted.h"
@@ -20,6 +19,7 @@
 #include "chrome/renderer/pepper_devices.h"
 #include "chrome/renderer/render_view.h"
 #include "chrome/renderer/command_buffer_proxy.h"
+#include "gfx/native_widget_types.h"
 #include "gfx/rect.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "webkit/glue/webcursor.h"

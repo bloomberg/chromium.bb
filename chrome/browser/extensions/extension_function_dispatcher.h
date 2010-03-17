@@ -9,8 +9,8 @@
 #include <set>
 #include <vector>
 
-#include "app/gfx/native_widget_types.h"
 #include "base/ref_counted.h"
+#include "gfx/native_widget_types.h"
 #include "googleurl/src/gurl.h"
 
 class Browser;

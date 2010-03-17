@@ -5,9 +5,9 @@
 #include "views/painter.h"
 
 #include "app/gfx/canvas.h"
-#include "app/gfx/insets.h"
 #include "app/resource_bundle.h"
 #include "base/logging.h"
+#include "gfx/insets.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 

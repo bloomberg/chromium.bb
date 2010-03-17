@@ -6,7 +6,6 @@
 
 #include "app/gfx/canvas.h"
 #include "app/gfx/font.h"
-#include "app/gfx/path.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
@@ -17,6 +16,7 @@
 #include "chrome/browser/views/frame/browser_frame.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/tabs/tab_strip.h"
+#include "gfx/path.h"
 #include "grit/app_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"

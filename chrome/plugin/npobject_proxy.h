@@ -8,9 +8,9 @@
 #ifndef CHROME_PLUGIN_NPOBJECT_PROXY_H_
 #define CHROME_PLUGIN_NPOBJECT_PROXY_H_
 
-#include "app/gfx/native_widget_types.h"
 #include "base/ref_counted.h"
 #include "chrome/plugin/npobject_base.h"
+#include "gfx/native_widget_types.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel.h"
 #include "third_party/npapi/bindings/npruntime.h"

@@ -4,11 +4,11 @@
 
 #include "chrome/browser/gtk/gtk_tree.h"
 
-#include "app/gfx/gtk_util.h"
 #include "app/table_model.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
+#include "gfx/gtk_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace gtk_tree {

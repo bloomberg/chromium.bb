@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/gfx/native_widget_types.h"
 #include "base/shared_memory.h"
 #include "build/build_config.h"
+#include "gfx/native_widget_types.h"
 #include "ipc/ipc_message_macros.h"
 #include "webkit/glue/webcursor.h"
 

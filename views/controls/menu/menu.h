@@ -5,8 +5,8 @@
 #ifndef CONTROLS_MENU_VIEWS_MENU_H_
 #define CONTROLS_MENU_VIEWS_MENU_H_
 
-#include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
+#include "gfx/native_widget_types.h"
 #include "views/controls/menu/controller.h"
 
 class SkBitmap;

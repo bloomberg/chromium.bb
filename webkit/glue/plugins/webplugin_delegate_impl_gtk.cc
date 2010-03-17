@@ -10,13 +10,13 @@
 #include <gtk/gtk.h>
 #include <gdk/gdkx.h>
 
-#include "app/gfx/blit.h"
 #include "base/basictypes.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "base/stats_counters.h"
 #include "base/string_util.h"
+#include "gfx/blit.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"

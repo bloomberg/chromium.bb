@@ -14,7 +14,6 @@
 #include <string>
 #include <vector>
 
-#include "app/gfx/blit.h"
 #if defined(OS_WIN)
 #include "app/gfx/codec/jpeg_codec.h"
 #include "app/gfx/gdi_util.h"
@@ -34,6 +33,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/webplugin_delegate_proxy.h"
+#include "gfx/blit.h"
 #if defined(OS_WIN)
 #include "skia/ext/vector_platform_device.h"
 #endif

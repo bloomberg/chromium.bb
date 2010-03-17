@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_BOOKMARKS_BOOKMARK_PASTEBOARD_HELPER_MAC_H_
 #define CHROME_BROWSER_BOOKMARKS_BOOKMARK_PASTEBOARD_HELPER_MAC_H_
 
-#include "app/gfx/native_widget_types.h"
 #include "base/file_path.h"
 #include "chrome/browser/bookmarks/bookmark_drag_data.h"
+#include "gfx/native_widget_types.h"
 
 // This set of functions lets C++ code interact with the cocoa pasteboard
 // and dragging methods.

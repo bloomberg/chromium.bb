@@ -12,13 +12,13 @@
 #include <vector>
 
 #include "app/drag_drop_types.h"
-#include "app/gfx/path.h"
 #include "app/os_exchange_data.h"
 #include "app/os_exchange_data_provider_gtk.h"
 #include "base/auto_reset.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
+#include "gfx/path.h"
 #include "views/widget/default_theme_provider.h"
 #include "views/widget/drop_target_gtk.h"
 #include "views/widget/gtk_views_fixed.h"

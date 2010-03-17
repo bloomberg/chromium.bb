@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "app/gfx/native_widget_types.h"
 #include "app/l10n_util.h"
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
@@ -21,6 +20,7 @@
 #include "chrome/third_party/mozilla_security_manager/nsNSSCertHelper.h"
 #include "chrome/third_party/mozilla_security_manager/nsNSSCertificate.h"
 #include "chrome/third_party/mozilla_security_manager/nsUsageArrayHelper.h"
+#include "gfx/native_widget_types.h"
 #include "grit/generated_resources.h"
 #include "net/base/x509_certificate.h"
 

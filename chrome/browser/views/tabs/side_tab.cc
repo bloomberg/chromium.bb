@@ -5,11 +5,11 @@
 #include "chrome/browser/views/tabs/side_tab.h"
 
 #include "app/gfx/canvas.h"
-#include "app/gfx/path.h"
 #include "app/gfx/skia_util.h"
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
 #include "base/utf_string_conversions.h"
+#include "gfx/path.h"
 #include "grit/app_resources.h"
 #include "grit/theme_resources.h"
 #include "views/controls/button/image_button.h"

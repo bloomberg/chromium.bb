@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_COCOA_NOTIFICATIONS_BALLOON_VIEW_HOST_MAC_H_
 #define CHROME_BROWSER_COCOA_NOTIFICATIONS_BALLOON_VIEW_HOST_MAC_H_
 
-#include "app/gfx/native_widget_types.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #import "chrome/browser/renderer_host/render_widget_host_view_mac.h"
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
+#include "gfx/native_widget_types.h"
 #include "webkit/glue/webpreferences.h"
 
 class Profile;

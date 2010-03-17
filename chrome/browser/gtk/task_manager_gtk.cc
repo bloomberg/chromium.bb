@@ -11,7 +11,6 @@
 #include <utility>
 #include <vector>
 
-#include "app/gfx/gtk_util.h"
 #include "app/l10n_util.h"
 #include "app/menus/simple_menu_model.h"
 #include "app/resource_bundle.h"
@@ -29,6 +28,7 @@
 #include "chrome/browser/pref_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "gfx/gtk_util.h"
 #include "grit/app_resources.h"
 #include "grit/chromium_strings.h"
 #include "third_party/skia/include/core/SkBitmap.h"

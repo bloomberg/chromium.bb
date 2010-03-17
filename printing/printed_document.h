@@ -7,10 +7,10 @@
 
 #include <map>
 
-#include "app/gfx/native_widget_types.h"
 #include "base/lock.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "gfx/native_widget_types.h"
 #include "googleurl/src/gurl.h"
 #include "printing/print_settings.h"
 #include "printing/native_metafile.h"

@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
 #include "base/message_loop.h"
@@ -15,6 +14,7 @@
 #include "base/scoped_ptr.h"
 #include "chrome/common/message_router.h"
 #include "chrome/plugin/npobject_base.h"
+#include "gfx/native_widget_types.h"
 #include "ipc/ipc_sync_channel.h"
 
 // Encapsulates an IPC channel between a renderer and a plugin process.

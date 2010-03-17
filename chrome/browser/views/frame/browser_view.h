@@ -9,7 +9,6 @@
 #include <set>
 #include <string>
 
-#include "app/gfx/native_widget_types.h"
 #include "app/menus/simple_menu_model.h"
 #include "base/scoped_ptr.h"
 #include "base/timer.h"
@@ -23,6 +22,7 @@
 #include "chrome/browser/views/tabs/tab_strip.h"
 #include "chrome/browser/views/tabs/base_tab_strip.h"
 #include "chrome/browser/views/unhandled_keyboard_event_handler.h"
+#include "gfx/native_widget_types.h"
 #include "views/window/client_view.h"
 #include "views/window/window_delegate.h"
 

@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_COCOA_EXTENSION_VIEW_MAC_H_
 #define CHROME_BROWSER_COCOA_EXTENSION_VIEW_MAC_H_
 
-#include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
+#include "gfx/native_widget_types.h"
 #include "gfx/size.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 

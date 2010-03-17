@@ -6,7 +6,6 @@
 
 #include <gdk/gdkkeysyms.h>
 
-#include "app/gfx/gtk_util.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/string_util.h"
@@ -27,6 +26,7 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_service.h"
+#include "gfx/gtk_util.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/WebKit/WebKit/chromium/public/gtk/WebInputEventFactory.h"

@@ -5,10 +5,10 @@
 #ifndef CHROME_GPU_GPU_VIEW_X_H_
 #define CHROME_GPU_GPU_VIEW_X_H_
 
-#include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "chrome/gpu/x_util.h"
+#include "gfx/native_widget_types.h"
 #include "ipc/ipc_channel.h"
 
 class GpuBackingStoreGLX;

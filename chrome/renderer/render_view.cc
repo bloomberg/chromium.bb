@@ -10,7 +10,6 @@
 
 #include "app/gfx/color_utils.h"
 #include "app/gfx/favicon_size.h"
-#include "app/gfx/native_widget_types.h"
 #include "app/l10n_util.h"
 #include "app/message_box_flags.h"
 #include "app/resource_bundle.h"
@@ -62,6 +61,7 @@
 #include "chrome/renderer/webplugin_delegate_proxy.h"
 #include "chrome/renderer/websharedworker_proxy.h"
 #include "chrome/renderer/webworker_proxy.h"
+#include "gfx/native_widget_types.h"
 #include "grit/generated_resources.h"
 #include "grit/renderer_resources.h"
 #include "net/base/data_url.h"

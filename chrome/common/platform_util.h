@@ -5,8 +5,8 @@
 #ifndef CHROME_COMMON_PLATFORM_UTIL_H_
 #define CHROME_COMMON_PLATFORM_UTIL_H_
 
-#include "app/gfx/native_widget_types.h"
 #include "base/string16.h"
+#include "gfx/native_widget_types.h"
 
 class FilePath;
 class GURL;

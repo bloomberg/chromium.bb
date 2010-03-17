@@ -7,9 +7,9 @@
 
 #include <vector>
 
-#include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
+#include "gfx/native_widget_types.h"
 
 class Browser;
 class PageNavigator;

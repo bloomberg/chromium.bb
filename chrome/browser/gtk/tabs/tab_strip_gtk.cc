@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "app/gfx/canvas_paint.h"
-#include "app/gfx/gtk_util.h"
 #include "app/gtk_dnd_util.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
@@ -24,6 +23,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
+#include "gfx/gtk_util.h"
 #include "gfx/point.h"
 #include "grit/app_resources.h"
 #include "grit/theme_resources.h"

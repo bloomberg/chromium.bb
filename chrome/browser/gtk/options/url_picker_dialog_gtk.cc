@@ -4,7 +4,6 @@
 
 #include <gtk/gtk.h>
 
-#include "app/gfx/gtk_util.h"
 #include "app/gtk_util.h"
 #include "app/l10n_util.h"
 #include "base/message_loop.h"
@@ -18,6 +17,7 @@
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
+#include "gfx/gtk_util.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"

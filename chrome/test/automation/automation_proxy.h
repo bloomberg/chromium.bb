@@ -8,7 +8,6 @@
 #include <string>
 
 #include "app/message_box_flags.h"
-#include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/process_util.h"
@@ -20,6 +19,7 @@
 #include "chrome/test/automation/automation_constants.h"
 #include "chrome/test/automation/automation_handle_tracker.h"
 #include "chrome/test/automation/browser_proxy.h"
+#include "gfx/native_widget_types.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_message.h"

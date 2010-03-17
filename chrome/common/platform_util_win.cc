@@ -9,7 +9,6 @@
 #include <shellapi.h>
 #include <shlobj.h>
 
-#include "app/gfx/native_widget_types.h"
 #include "app/win_util.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -19,6 +18,7 @@
 #include "base/string_util.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/google_update_constants.h"
+#include "gfx/native_widget_types.h"
 #include "googleurl/src/gurl.h"
 
 namespace platform_util {

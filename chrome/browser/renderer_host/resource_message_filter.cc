@@ -5,7 +5,6 @@
 #include "chrome/browser/renderer_host/resource_message_filter.h"
 
 #include "app/clipboard/clipboard.h"
-#include "app/gfx/native_widget_types.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -56,6 +55,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/worker_messages.h"
+#include "gfx/native_widget_types.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/keygen_handler.h"
 #include "net/base/load_flags.h"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_GFX_INSETS_H_
-#define APP_GFX_INSETS_H_
+#ifndef GFX_INSETS_H_
+#define GFX_INSETS_H_
 
 #include "build/build_config.h"
 
@@ -90,4 +90,4 @@ class Insets {
 
 }  // namespace gfx
 
-#endif  // APP_GFX_INSETS_H_
+#endif  // GFX_INSETS_H_

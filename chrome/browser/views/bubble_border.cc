@@ -5,9 +5,9 @@
 #include "chrome/browser/views/bubble_border.h"
 
 #include "app/gfx/canvas.h"
-#include "app/gfx/path.h"
 #include "app/resource_bundle.h"
 #include "base/logging.h"
+#include "gfx/path.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 

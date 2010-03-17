@@ -7,7 +7,6 @@
 #include <string>
 
 #include "app/gfx/canvas_paint.h"
-#include "app/gfx/gtk_util.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/basictypes.h"
@@ -43,6 +42,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/page_transition_types.h"
 #include "chrome/common/pref_names.h"
+#include "gfx/gtk_util.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/net_util.h"

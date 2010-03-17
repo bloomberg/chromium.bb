@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "app/gfx/insets.h"
+#include "gfx/insets.h"
 #include "views/standard_layout.h"
 #include "views/view.h"
 

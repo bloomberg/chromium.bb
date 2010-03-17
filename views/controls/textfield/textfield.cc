@@ -8,9 +8,9 @@
 #include <gdk/gdkkeysyms.h>
 #endif
 
-#include "app/gfx/insets.h"
 #include "base/keyboard_codes.h"
 #include "base/string_util.h"
+#include "gfx/insets.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/controls/textfield/native_textfield_wrapper.h"
 #include "views/widget/widget.h"

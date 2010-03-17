@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_FONTS_LANGUAGES_WINDOW_H_
 #define CHROME_BROWSER_FONTS_LANGUAGES_WINDOW_H_
 
-#include "app/gfx/native_widget_types.h"
+#include "gfx/native_widget_types.h"
 
 class Profile;
 

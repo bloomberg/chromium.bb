@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_POPUP_HOST_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_POPUP_HOST_H_
 
-#include "app/gfx/native_widget_types.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "build/build_config.h"
@@ -14,6 +13,7 @@
 #endif
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
+#include "gfx/native_widget_types.h"
 
 #if defined(TOOLKIT_VIEWS)
 class ExtensionPopup;

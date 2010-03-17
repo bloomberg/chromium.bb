@@ -6,8 +6,8 @@
 
 #include "app/drag_drop_types.h"
 #include "app/gfx/canvas.h"
-#include "app/gfx/path.h"
 #include "base/string_util.h"
+#include "gfx/path.h"
 #include "views/accessibility/view_accessibility_wrapper.h"
 #include "views/border.h"
 #include "views/widget/root_view.h"

@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_FETCHER_H_
 #define CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_FETCHER_H_
 
-#include "app/gfx/native_widget_types.h"
 #include "base/scoped_vector.h"
+#include "gfx/native_widget_types.h"
 
 class GURL;
 class Profile;

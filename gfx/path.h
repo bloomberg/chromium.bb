@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_GFX_PATH_H_
-#define APP_GFX_PATH_H_
+#ifndef GFX_PATH_H_
+#define GFX_PATH_H_
 
-#include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
+#include "gfx/native_widget_types.h"
 
 #include "third_party/skia/include/core/SkPath.h"
 
@@ -51,4 +51,4 @@ class Path : public SkPath {
 
 }
 
-#endif  // APP_GFX_PATH_H_
+#endif  // GFX_PATH_H_

@@ -7,8 +7,8 @@
 
 #include <string>
 
-#include "app/gfx/native_widget_types.h"
 #include "chrome/common/content_settings_types.h"
+#include "gfx/native_widget_types.h"
 
 // This file contains functions for running a variety of browser dialogs and
 // popups. The dialogs here are the ones that the caller does not need to

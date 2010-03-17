@@ -4,7 +4,6 @@
 
 #include "chrome/browser/gtk/tab_contents_container_gtk.h"
 
-#include "app/gfx/native_widget_types.h"
 #include "app/l10n_util.h"
 #include "chrome/browser/gtk/gtk_expanded_container.h"
 #include "chrome/browser/gtk/gtk_floating_container.h"
@@ -12,6 +11,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
 #include "chrome/common/notification_service.h"
+#include "gfx/native_widget_types.h"
 
 TabContentsContainerGtk::TabContentsContainerGtk(StatusBubbleGtk* status_bubble)
     : tab_contents_(NULL),

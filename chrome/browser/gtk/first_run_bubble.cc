@@ -6,7 +6,6 @@
 
 #include <gtk/gtk.h>
 
-#include "app/gfx/gtk_util.h"
 #include "app/gtk_util.h"
 #include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
@@ -14,6 +13,7 @@
 #include "chrome/browser/options_window.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/common/notification_service.h"
+#include "gfx/gtk_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"

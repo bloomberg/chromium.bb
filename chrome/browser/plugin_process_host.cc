@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "app/app_switches.h"
-#include "app/gfx/native_widget_types.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -34,6 +33,7 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/plugin_messages.h"
 #include "chrome/common/render_messages.h"
+#include "gfx/native_widget_types.h"
 #include "ipc/ipc_switches.h"
 #include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
@@ -46,7 +46,7 @@
 #endif
 
 #if defined(USE_X11)
-#include "app/gfx/gtk_native_view_id_manager.h"
+#include "gfx/gtk_native_view_id_manager.h"
 #endif
 
 #if defined(OS_MACOSX)

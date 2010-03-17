@@ -7,12 +7,12 @@
 
 #include <gtk/gtk.h>
 
-#include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/gfx/point.h"
 #include "base/message_loop.h"
 #include "base/string16.h"
+#include "gfx/native_widget_types.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDragOperation.h"

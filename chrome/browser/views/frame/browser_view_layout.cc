@@ -4,7 +4,6 @@
 
 #include "chrome/browser/views/frame/browser_view_layout.h"
 
-#include "app/gfx/scrollbar_size.h"
 #include "chrome/browser/find_bar.h"
 #include "chrome/browser/find_bar_controller.h"
 #include "chrome/browser/view_ids.h"
@@ -17,6 +16,7 @@
 #include "chrome/browser/views/tabs/side_tab_strip.h"
 #include "chrome/browser/views/tabs/tab_strip.h"
 #include "chrome/browser/views/toolbar_view.h"
+#include "gfx/scrollbar_size.h"
 #include "views/window/window.h"
 
 #if defined(OS_LINUX)

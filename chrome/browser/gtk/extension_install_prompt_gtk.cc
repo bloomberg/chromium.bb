@@ -4,7 +4,6 @@
 
 #include <gtk/gtk.h>
 
-#include "app/gfx/gtk_util.h"
 #include "app/l10n_util.h"
 #include "base/rand_util.h"
 #include "base/string_util.h"
@@ -14,6 +13,7 @@
 #include "chrome/browser/gtk/browser_window_gtk.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/common/extensions/extension.h"
+#include "gfx/gtk_util.h"
 #include "grit/generated_resources.h"
 
 class Profile;

@@ -7,9 +7,9 @@
 
 #if defined(ENABLE_GPU)
 
-#include "app/gfx/native_widget_types.h"
 #include "base/ref_counted.h"
 #include "chrome/common/transport_dib.h"
+#include "gfx/native_widget_types.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/gpu_processor.h"

@@ -12,8 +12,8 @@
 
 #include <string>
 
-#include "app/gfx/native_widget_types.h"
 #include "base/logging.h"
+#include "gfx/native_widget_types.h"
 #include "gfx/rect.h"
 
 namespace app {

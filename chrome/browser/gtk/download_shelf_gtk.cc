@@ -4,7 +4,6 @@
 
 #include "chrome/browser/gtk/download_shelf_gtk.h"
 
-#include "app/gfx/gtk_util.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "chrome/browser/browser.h"
@@ -19,6 +18,7 @@
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_service.h"
+#include "gfx/gtk_util.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 

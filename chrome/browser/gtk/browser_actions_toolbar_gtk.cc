@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "app/gfx/canvas_paint.h"
-#include "app/gfx/gtk_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/extensions/extension_action_context_menu_model.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
@@ -29,6 +28,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
+#include "gfx/gtk_util.h"
 #include "grit/app_resources.h"
 
 namespace {

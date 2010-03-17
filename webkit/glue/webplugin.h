@@ -8,8 +8,8 @@
 #include <string>
 #include <vector>
 
-#include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
+#include "gfx/native_widget_types.h"
 #include "gfx/rect.h"
 
 // TODO(port): this typedef is obviously incorrect on non-Windows

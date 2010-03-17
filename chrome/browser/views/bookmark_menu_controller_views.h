@@ -8,10 +8,10 @@
 #include <map>
 #include <set>
 
-#include "app/gfx/native_widget_types.h"
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 #include "chrome/browser/bookmarks/bookmark_drag_data.h"
 #include "chrome/browser/views/bookmark_context_menu.h"
+#include "gfx/native_widget_types.h"
 #include "views/controls/menu/menu_delegate.h"
 #include "views/controls/menu/menu_item_view.h"
 

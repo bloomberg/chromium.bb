@@ -10,12 +10,12 @@
 #include "app/gfx/canvas.h"
 #include "app/gfx/color_utils.h"
 #include "app/gfx/font.h"
-#include "app/gfx/insets.h"
 #include "app/gfx/text_elider.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
+#include "gfx/insets.h"
 #include "views/background.h"
 
 namespace views {

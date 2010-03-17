@@ -17,7 +17,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 
 #ifdef UNIT_TEST
-#include "app/gfx/native_widget_types.h"
+#include "gfx/native_widget_types.h"
 #include "views/controls/textfield/native_textfield_wrapper.h"
 #endif
 

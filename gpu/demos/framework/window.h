@@ -5,8 +5,8 @@
 #ifndef GPU_DEMOS_FRAMEWORK_WINDOW_H_
 #define GPU_DEMOS_FRAMEWORK_WINDOW_H_
 
-#include "app/gfx/native_widget_types.h"
 #include "base/scoped_ptr.h"
+#include "gfx/native_widget_types.h"
 
 namespace gpu {
 namespace demos {

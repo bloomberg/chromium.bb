@@ -8,9 +8,9 @@
 #include <string>
 #include <vector>
 
-#include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
 #include "chrome/browser/browser_process_impl.h"
+#include "gfx/native_widget_types.h"
 #include "googleurl/src/gurl.h"
 
 class CommandLine;

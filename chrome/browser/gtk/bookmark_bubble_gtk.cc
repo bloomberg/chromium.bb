@@ -6,7 +6,6 @@
 
 #include <gtk/gtk.h>
 
-#include "app/gfx/gtk_util.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/basictypes.h"
@@ -22,6 +21,7 @@
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/notification_service.h"
+#include "gfx/gtk_util.h"
 #include "grit/generated_resources.h"
 
 namespace {

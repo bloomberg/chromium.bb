@@ -6,7 +6,7 @@
 
 #include "views/controls/slider/native_slider_gtk.h"
 
-#include "app/gfx/gtk_util.h"
+#include "gfx/gtk_util.h"
 #include "views/controls/slider/slider.h"
 
 namespace views {

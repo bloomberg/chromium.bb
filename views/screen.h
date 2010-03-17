@@ -5,7 +5,7 @@
 #ifndef VIEWS_SCREEN_H_
 #define VIEWS_SCREEN_H_
 
-#include "app/gfx/native_widget_types.h"
+#include "gfx/native_widget_types.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 

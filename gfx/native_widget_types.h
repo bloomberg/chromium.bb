@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_GFX_NATIVE_WIDGET_TYPES_H_
-#define APP_GFX_NATIVE_WIDGET_TYPES_H_
+#ifndef GFX_NATIVE_WIDGET_TYPES_H_
+#define GFX_NATIVE_WIDGET_TYPES_H_
 
 #include "base/basictypes.h"
 #include "build/build_config.h"
@@ -153,4 +153,4 @@ NativeViewId IdFromNativeView(NativeView view);
 
 }  // namespace gfx
 
-#endif  // APP_GFX_NATIVE_WIDGET_TYPES_H_
+#endif  // GFX_NATIVE_WIDGET_TYPES_H_

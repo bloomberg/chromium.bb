@@ -5,7 +5,7 @@
 #ifndef VIEWS_CONTROLS_MENU_VIEW_MENU_DELEGATE_H_
 #define VIEWS_CONTROLS_MENU_VIEW_MENU_DELEGATE_H_
 
-#include "app/gfx/native_widget_types.h"
+#include "gfx/native_widget_types.h"
 
 namespace gfx {
 class Point;
