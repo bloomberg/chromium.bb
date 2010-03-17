@@ -55,7 +55,7 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
   FRIEND_TEST(SyncerThreadWithSyncerTest, Nudge);
   FRIEND_TEST(SyncerThreadWithSyncerTest, Throttling);
   FRIEND_TEST(SyncerThreadWithSyncerTest, AuthInvalid);
-  FRIEND_TEST(SyncerThreadWithSyncerTest, PauseWhileWaiting);
+  FRIEND_TEST(SyncerThreadWithSyncerTest, Pause);
   friend class SyncerThreadWithSyncerTest;
   friend class SyncerThreadFactory;
  public:
