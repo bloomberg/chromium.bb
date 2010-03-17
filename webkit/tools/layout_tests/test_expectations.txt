@@ -2772,7 +2772,6 @@ BUG37684 SKIP : http/tests/cookies/third-party-cookie-relaxing.html = FAIL
 BUG29393 : http/tests/loading/state-object-security-exception.html = TEXT
 
 // Bugs that went unreported when we upstreamed run_webkit_tests
-BUG37896 WIN : editing/undo/undo-smart-delete-word.html = TEXT
 BUG37896 MAC LINUX : fast/backgrounds/animated-svg-as-background.html = IMAGE
 // New test, added http://trac.webkit.org/changeset/55737
 BUG37896 : fast/events/remove-child-onscroll.html = TIMEOUT
