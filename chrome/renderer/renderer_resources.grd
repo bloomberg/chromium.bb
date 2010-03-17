@@ -22,7 +22,6 @@ without changes to the corresponding grd file. fb9 -->
       <include name="IDR_SAD_PLUGIN" file="resources\sadplugin.png" type="BINDATA" />
       <include name="IDR_EXTENSION_APITEST_JS" file="resources\extension_apitest.js" type="BINDATA" />
       <include name="IDR_EXTENSION_TOOLSTRIP_CSS" file="resources\extension_toolstrip.css" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_DOM_AUTOMATION_JS" file="resources\dom_automation.js" type="BINDATA" />
       <include name="IDR_BASE_JS" file="resources\base.js" type="BINDATA" />
     </includes>
   </release>

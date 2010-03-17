@@ -10,7 +10,6 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
-#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
@@ -26,7 +25,6 @@
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
-#include "chrome/test/automation/javascript_execution_controller.h"
 #if defined(TOOLKIT_VIEWS)
 #include "views/focus/accelerator_handler.h"
 #endif
@@ -87,8 +85,7 @@ class NavigationNotificationObserver : public NotificationObserver {
 
 class DOMOperationObserver : public NotificationObserver {
  public:
-  explicit DOMOperationObserver(RenderViewHost* render_view_host)
-      : did_respond_(false) {
+  explicit DOMOperationObserver(RenderViewHost* render_view_host) {
     registrar_.Add(this, NotificationType::DOM_OPERATION_RESPONSE,
                    Source<RenderViewHost>(render_view_host));
     ui_test_utils::RunMessageLoop();
@@ -100,13 +97,7 @@ class DOMOperationObserver : public NotificationObserver {
     DCHECK(type == NotificationType::DOM_OPERATION_RESPONSE);
     Details<DomOperationNotificationDetails> dom_op_details(details);
     response_ = dom_op_details->json();
-    did_respond_ = true;
     MessageLoopForUI::current()->Quit();
-  }
-
-  bool GetResponse(std::string* response) {
-    *response = response_;
-    return did_respond_;
   }
 
   std::string response() const { return response_; }
@@ -114,7 +105,6 @@ class DOMOperationObserver : public NotificationObserver {
  private:
   NotificationRegistrar registrar_;
   std::string response_;
-  bool did_respond_;
 
   DISALLOW_COPY_AND_ASSIGN(DOMOperationObserver);
 };
@@ -347,36 +337,6 @@ class FindInPageNotificationObserver : public NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(FindInPageNotificationObserver);
 };
 
-class InProcessJavaScriptExecutionController
-    : public base::RefCounted<InProcessJavaScriptExecutionController>,
-      public JavaScriptExecutionController {
- public:
-  explicit InProcessJavaScriptExecutionController(
-      RenderViewHost* render_view_host)
-      : render_view_host_(render_view_host) {}
-
- protected:
-  // Executes |script| and sets the JSON response |json|.
-  bool ExecuteJavaScriptAndGetJSON(const std::string& script,
-                                   std::string* json) {
-    render_view_host_->ExecuteJavascriptInWebFrame(L"", UTF8ToWide(script));
-    DOMOperationObserver dom_op_observer(render_view_host_);
-    return dom_op_observer.GetResponse(json);
-  }
-
-  void FirstObjectAdded() {
-    AddRef();
-  }
-
-  void LastObjectRemoved() {
-    Release();
-  }
-
- private:
-  // Weak pointer to the associated RenderViewHost.
-  RenderViewHost* render_view_host_;
-};
-
 }  // namespace
 
 void RunMessageLoop() {
@@ -465,15 +425,6 @@ void NavigateToURLBlockUntilNavigationsComplete(Browser* browser,
       &browser->GetSelectedTabContents()->controller();
   browser->OpenURL(url, GURL(), CURRENT_TAB, PageTransition::TYPED);
   WaitForNavigations(controller, number_of_navigations);
-}
-
-DOMElementProxyRef GetActiveDOMDocument(Browser* browser) {
-  JavaScriptExecutionController* executor =
-      new InProcessJavaScriptExecutionController(
-          browser->GetSelectedTabContents()->render_view_host());
-  DOMElementProxy* main_doc = NULL;
-  executor->ExecuteJavaScriptAndParse("document;", &main_doc);
-  return main_doc;
 }
 
 Value* ExecuteJavaScript(RenderViewHost* render_view_host,
