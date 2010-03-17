@@ -2829,10 +2829,6 @@ BUG38353 MAC LINUX : http/tests/plugins/plugin-document-has-focus.html = TIMEOUT
 // will rebaseline
 BUG_DGLAZKOV WIN : svg/text/text-intro-05-t.svg = FAIL
 
-// WebKit roll 56073 -> 56096
-BUG38389 WIN LINUX : editing/pasteboard/smart-paste-002.html = TEXT
-BUG38389 WIN LINUX : editing/pasteboard/smart-paste-005.html = TEXT
-
 BUG38392 : plugins/resize-from-plugin.html = TEXT
 
 // Chromium r41818 makes these flaky.
