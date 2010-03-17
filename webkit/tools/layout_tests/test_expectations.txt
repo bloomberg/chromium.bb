@@ -179,6 +179,7 @@ WONTFIX SKIP BUG19635 : media/restore-from-page-cache.html = TIMEOUT
 WONTFIX SKIP BUG19635 : loader/go-back-to-different-window-size.html = TIMEOUT TEXT
 WONTFIX SKIP BUG19635 : fast/loader/crash-copying-backforwardlist.html = TEXT
 WONTFIX SKIP BUG19635 : fast/frames/frame-crash-with-page-cache.html = TEXT
+WONTFIX SKIP BUG19635 : fast/harness/page-cache-crash-on-data-urls.html = TEXT
 
 // Tests that rely on cross-process MessagePorts.  No point in running them in
 // test_shell, since we'd have to use a completely different implementation from
@@ -482,9 +483,14 @@ WONTFIX SKIP : fast/frames/flattening = TIMEOUT
 
 // This should be tested differently (see discussion on https://bugs.webkit.org/show_bug.cgi?id=35063).
 // No need to waste cycles implementing harness support for this variant of the test.
-WONTFIX : fast/loader/api-test-new-window-data-load-base-url.html = TEXT
+WONTFIX SKIP : fast/loader/api-test-new-window-data-load-base-url.html = TEXT
+WONTFIX SKIP : fast/loader/api-test-go-to-current-back-forward-item.html = TIMEOUT
 
+// We're not planning to support rocker-based cursor navigation.
 WONTFIX SKIP : fast/events/spatial-navigation = FAIL
+
+// We're not planning to relax third-party cookie rules any time soon.
+WONTFIX BUG37684 SKIP : http/tests/cookies/third-party-cookie-relaxing.html = FAIL
 
 // -----------------------------------------------------------------
 // CHROME REWRITTEN TESTS
@@ -1112,7 +1118,7 @@ BUG30536 : http/tests/misc/favicon-as-image.html = FAIL
 BUG10323 WIN : http/tests/xmlhttprequest/xmlhttprequest-no-content-length-onProgress.html = FAIL
 
 // Times out because this uses dom storage which we don't implement.
-BUG4360 SKIP : security/autocomplete-cleared-on-back.html = TIMEOUT
+BUG4360 : security/autocomplete-cleared-on-back.html = TIMEOUT
 
 // Post-MERGE failures: these will all need to be fixed one day
 
@@ -2724,9 +2730,6 @@ BUG13907 : media/video-display-aspect-ratio.html = TIMEOUT PASS
 // New test added in WebKit r54783
 BUG35822 : plugins/netscape-browser-object-identity.html = TEXT
 
-// New test added in WebKit r54786
-BUG35823 : fast/harness/page-cache-crash-on-data-urls.html = TEXT TIMEOUT CRASH
-
 // Not known when these started failing.
 BUG35858 MAC LINUX DEBUG : media/remove-from-document.html = CRASH PASS
 BUG35858 MAC RELEASE : media/remove-from-document.html = CRASH PASS TIMEOUT
@@ -2748,10 +2751,6 @@ BUG36019 : fast/images/svg-as-tiled-background.html = IMAGE
 // WebKit roll 55250 to 55339
 BUG36966 : fast/loader/about-blank-hash-kept.html = FAIL
 
-// WebKit roll 55373:55380
-BUG37136 : fast/loader/api-test-go-to-current-back-forward-item.html = TIMEOUT
-
-
 BUG37248 LINUX : svg/W3C-SVG-1.1/filters-displace-01-f.svg = IMAGE+TEXT PASS TEXT
 BUG37463 MAC DEBUG : svg/custom/transform-ignore-after-invalid.svg = PASS CRASH
 
@@ -2762,9 +2761,6 @@ BUG37710 MAC SKIP : media/video-src-change.html = CRASH PASS
 
 // WebKit roll 55654 -> 55670
 BUG_JIANLI :  http/tests/local/send-sliced-dragged-file.html = FAIL
-
-// WebKit roll 55670 -> 55674
-BUG37684 SKIP : http/tests/cookies/third-party-cookie-relaxing.html = FAIL
 
 // Bugs that went unreported when we upstreamed run_webkit_tests
 BUG37896 MAC LINUX : fast/backgrounds/animated-svg-as-background.html = IMAGE
