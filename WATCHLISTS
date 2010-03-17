@@ -30,6 +30,9 @@
     'browser': {
       'filepath': 'chrome/browser/.*',
     },
+    'browser_resources': {
+      'filepath': 'chrome/browser/resources/.*',
+    },
     'download': {
       'filepath': 'download|save_',
     },
@@ -127,6 +130,7 @@
     'base': ['brettw+cc@chromium.org'],
     'views': ['ben+cc@chromium.org'],
     'browser': ['ben+cc@chromium.org'],
+    'browser_resources': ['arv@chromium.org'],
     'download': ['paul@chromium.org'],
     'history': ['brettw+cc@chromium.org'],
     'renderer': ['darin-cc@chromium.org',
