@@ -34,6 +34,7 @@
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/views/bubble_border.h"
+#include "gfx/point.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -469,7 +470,9 @@ void AppLauncher::ShowCreatedWindow(int route_id,
 }
 
 void AppLauncher::StartDragging(const WebDropData& drop_data,
-                             WebKit::WebDragOperationsMask allowed_ops) {
+                                WebKit::WebDragOperationsMask allowed_ops,
+                                const SkBitmap& image,
+                                const gfx::Point& image_offset) {
   // We're not going to do any drag & drop, but we have to tell the renderer the
   // drag & drop ended, othewise the renderer thinks the drag operation is
   // underway and mouse events won't work.
