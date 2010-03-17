@@ -56,13 +56,8 @@ bool NaClBrokerHost::Init() {
 
 void NaClBrokerHost::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(NaClBrokerHost, msg)
-    IPC_MESSAGE_HANDLER(NaClProcessMsg_BrokerReady, OnBrokerReady)
     IPC_MESSAGE_HANDLER(NaClProcessMsg_LoaderLaunched, OnLoaderLaunched)
   IPC_END_MESSAGE_MAP()
-}
-
-void NaClBrokerHost::OnBrokerReady() {
-  NaClBrokerService::GetInstance()->OnBrokerStarted();
 }
 
 bool NaClBrokerHost::LaunchLoader(
@@ -78,14 +73,4 @@ void NaClBrokerHost::OnLoaderLaunched(const std::wstring& loader_channel_id,
 void NaClBrokerHost::StopBroker() {
   stopping_ = true;
   Send(new NaClProcessMsg_StopBroker());
-}
-
-void NaClBrokerHost::OnChildDied() {
-  if (!stopping_) {
-    // If the broker stops unexpectedly (and not when asked by the broker
-    // service), we need to notify the broker service. In any other case
-    // the broker service may have a new broker host pointer by this time.
-    NaClBrokerService::GetInstance()->OnBrokerDied();
-  }
-  ChildProcessHost::OnChildDied();
 }

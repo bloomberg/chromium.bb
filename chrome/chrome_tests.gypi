@@ -452,11 +452,9 @@
         'test/nacl/nacl_test.cc',
       ],
       'conditions': [
-        # TODO(gregoryd): This test will run on Windows only at first.
-        # Refer to ui_tests target above if any problems appear when trying
-        # to enable it on other platforms.
         ['OS=="win"', {
           'dependencies': [
+            'chrome_nacl_win64',
             'crash_service',  # run time dependency
             'security_tests',  # run time dependency
             'test_support_common',

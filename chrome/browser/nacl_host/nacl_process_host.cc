@@ -96,8 +96,8 @@ bool NaClProcessHost::LaunchSelLdr() {
 #if defined(OS_WIN)
   if (running_on_wow64_) {
     NaClBrokerService::GetInstance()->Init(resource_dispatcher_host_);
-    NaClBrokerService::GetInstance()->LaunchLoader(this,
-                                                   ASCIIToWide(channel_id()));
+    return NaClBrokerService::GetInstance()->LaunchLoader(this,
+        ASCIIToWide(channel_id()));
   } else  // NO_LINT
 #endif
     ChildProcessHost::Launch(

@@ -23,9 +23,6 @@ IPC_BEGIN_MESSAGES(NaClProcess)
                        std::wstring,  /* channel ID for the loader */
                        base::ProcessHandle /* loader process handle */)
 
-  // Notify the browser process that the broker is ready (sent by the broker)
-  IPC_MESSAGE_CONTROL0(NaClProcessMsg_BrokerReady)
-
   // Notify the broker that all loader processes have been terminated and it
   // should shutdown.
   IPC_MESSAGE_CONTROL0(NaClProcessMsg_StopBroker)

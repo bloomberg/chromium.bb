@@ -26,9 +26,6 @@ class NaClBrokerHost : public ChildProcessHost {
   // Stop the broker process.
   void StopBroker();
 
- protected:
-  virtual void OnChildDied();
-
  private:
   // ResourceDispatcherHost::Receiver implementation:
   virtual URLRequestContext* GetRequestContext(
@@ -37,8 +34,6 @@ class NaClBrokerHost : public ChildProcessHost {
 
   virtual bool CanShutdown() { return true; }
 
-  // Handler for NaClProcessMsg_BrokerReady message (sent by the broker process)
-  void OnBrokerReady();
   // Handler for NaClProcessMsg_LoaderLaunched message
   void OnLoaderLaunched(const std::wstring& loader_channel_id,
                         base::ProcessHandle handle);

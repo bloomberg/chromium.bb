@@ -13,9 +13,7 @@ NaClBrokerService* NaClBrokerService::GetInstance() {
 }
 
 NaClBrokerService::NaClBrokerService()
-    : broker_started_(false),
-      broker_host_(NULL),
-      loaders_running_(0),
+    : loaders_running_(0),
       resource_dispatcher_host_(NULL),
       initialized_(false) {
 }
@@ -23,40 +21,32 @@ NaClBrokerService::NaClBrokerService()
 void NaClBrokerService::Init(ResourceDispatcherHost* resource_dispatcher_host) {
   if (!initialized_)
     resource_dispatcher_host_ = resource_dispatcher_host;
-
-  if (broker_host_ == NULL)
-    StartBroker();
-
   initialized_ = true;
 }
 
 bool NaClBrokerService::StartBroker() {
-  broker_host_.reset(new NaClBrokerHost(resource_dispatcher_host_));
-  if (!broker_host_->Init()) {
-    // Initialization failed, we will not retry in the future
-    broker_host_.reset(NULL);
+  NaClBrokerHost* broker_host = new NaClBrokerHost(resource_dispatcher_host_);
+  if (!broker_host->Init()) {
+    delete broker_host;
+    return false;
   }
-  return (broker_host_ != NULL);
+  return true;
 }
 
 bool NaClBrokerService::LaunchLoader(NaClProcessHost* nacl_process_host,
                                      const std::wstring& loader_channel_id) {
   // Add task to the list
   pending_launches_[loader_channel_id] = nacl_process_host;
-  if (broker_started_) {
-    // If the broker is not ready yet
-    // we will call LaunchLoader in OnBrokerStarted
-    broker_host_->LaunchLoader(loader_channel_id);
+  NaClBrokerHost* broker_host = GetBrokerHost();
+
+  if (!broker_host) {
+    if (!StartBroker())
+      return false;
+    broker_host = GetBrokerHost();
   }
+  broker_host->LaunchLoader(loader_channel_id);
+
   return true;
-}
-
-void NaClBrokerService::OnBrokerStarted() {
-  PendingLaunchesMap::iterator it;
-  for (it  = pending_launches_.begin(); it != pending_launches_.end(); it++)
-    broker_host_->LaunchLoader(it->first);
-
-  broker_started_ = true;
 }
 
 void NaClBrokerService::OnLoaderLaunched(const std::wstring& channel_id,
@@ -75,16 +65,18 @@ void NaClBrokerService::OnLoaderLaunched(const std::wstring& channel_id,
 void NaClBrokerService::OnLoaderDied() {
   --loaders_running_;
   // Stop the broker only if there are no loaders running or being launched.
-  if (loaders_running_ + pending_launches_.size() == 0 &&
-      broker_host_ != NULL) {
-    broker_host_->StopBroker();
-    // Reset the pointer to the broker host.
-    OnBrokerDied();
+  NaClBrokerHost* broker_host = GetBrokerHost();
+  if (loaders_running_ + pending_launches_.size() == 0 && broker_host != NULL) {
+    broker_host->StopBroker();
   }
 }
 
-void NaClBrokerService::OnBrokerDied() {
-  // NaClBrokerHost object will be destructed by ChildProcessHost
-  broker_started_ = false;
-  broker_host_.release();
+NaClBrokerHost* NaClBrokerService::GetBrokerHost() {
+  for (ChildProcessHost::Iterator iter(ChildProcessInfo::NACL_BROKER_PROCESS);
+       !iter.Done();
+       ++iter) {
+    NaClBrokerHost* broker_host = static_cast<NaClBrokerHost*>(*iter);
+    return broker_host;
+  }
+  return NULL;
 }

@@ -74,6 +74,5 @@ void NaClBrokerThread::OnChannelConnected(int32 peer_pid) {
   bool res = base::OpenProcessHandle(peer_pid, &browser_handle_);
   DCHECK(res);
   ChildProcess::current()->AddRefProcess();
-  Send(new NaClProcessMsg_BrokerReady());
 }
 
