@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "app/gfx/gtk_util.h"
 #include "app/gtk_dnd_util.h"
 #include "base/file_util.h"
 #include "base/mime_util.h"
@@ -19,6 +18,7 @@
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
+#include "gfx/gtk_util.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_util.h"
 #include "webkit/glue/webdropdata.h"
