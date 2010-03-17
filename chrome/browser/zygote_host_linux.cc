@@ -97,6 +97,12 @@ void ZygoteHost::Init(const std::string& sandbox_cmd) {
                                    browser_command_line.GetSwitchValueASCII(
                                        switches::kEnableLogging));
   }
+  if (browser_command_line.HasSwitch(switches::kUserDataDir)) {
+    // Append with value so logs go to the right file.
+    cmd_line.AppendSwitchWithValue(switches::kUserDataDir,
+                                   browser_command_line.GetSwitchValueASCII(
+                                       switches::kUserDataDir));
+  }
   if (browser_command_line.HasSwitch(switches::kEnableSeccompSandbox)) {
     cmd_line.AppendSwitch(switches::kEnableSeccompSandbox);
   }
