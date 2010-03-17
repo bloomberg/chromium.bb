@@ -99,9 +99,7 @@ class UIModelWorker : public browser_sync::ModelSafeWorker {
   };
 
   // This is set by the UI thread, but is not explicitly thread safe, so only
-  // read this value from other threads when you know it is absolutely safe (e.g
-  // there is _no_ way we can be in CallDoWork with state_ = STOPPED, so it is
-  // safe to read / compare in this case).
+  // read this value from other threads when you know it is absolutely safe.
   State state_;
 
   // We keep a reference to any task we have scheduled so we can gracefully

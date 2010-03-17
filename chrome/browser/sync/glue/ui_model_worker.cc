@@ -4,19 +4,21 @@
 
 #include "chrome/browser/sync/glue/ui_model_worker.h"
 
+#include "base/dynamic_annotations.h"
 #include "base/message_loop.h"
 #include "base/waitable_event.h"
 
 namespace browser_sync {
 
 void UIModelWorker::DoWorkAndWaitUntilDone(Closure* work) {
-  // It is possible this gets called when we are in the STOPPING state, because
+  // In most cases, this method is called in WORKING state. It is possible this
+  // gets called when we are in the RUNNING_MANUAL_SHUTDOWN_PUMP state, because
   // the UI loop has initiated shutdown but the syncer hasn't got the memo yet.
   // This is fine, the work will get scheduled and run normally or run by our
-  // code handling this case in Stop().
-  DCHECK_NE(state_, STOPPED);
-  if (state_ == STOPPED)
-    return;
+  // code handling this case in Stop(). Note there _no_ way we can be in here
+  // with state_ = STOPPED, so it is safe to read / compare in this case.
+  CHECK_NE(ANNOTATE_UNPROTECTED_READ(state_), STOPPED);
+
   if (MessageLoop::current() == ui_loop_) {
     DLOG(WARNING) << "DoWorkAndWaitUntilDone called from "
       << "ui_loop_. Probably a nested invocation?";
