@@ -95,69 +95,45 @@ void TranslateInfoBarDelegate::TranslationDeclined() {
 }
 
 bool TranslateInfoBarDelegate::IsLanguageBlacklisted() {
-  if (state_ == kBeforeTranslate) {
-    never_translate_language_ =
-        prefs_->IsLanguageBlacklisted(original_lang_code());
-    return never_translate_language_;
-  }
-  NOTREACHED() << "Invalid mehod called for translate state";
-  return false;
+  never_translate_language_ =
+      prefs_->IsLanguageBlacklisted(original_lang_code());
+  return never_translate_language_;
 }
 
 bool TranslateInfoBarDelegate::IsSiteBlacklisted() {
-  if (state_ == kBeforeTranslate) {
-    never_translate_site_ = prefs_->IsSiteBlacklisted(site_);
-    return never_translate_site_;
-  }
-  NOTREACHED() << "Invalid mehod called for translate state";
-  return false;
+  never_translate_site_ = prefs_->IsSiteBlacklisted(site_);
+  return never_translate_site_;
 }
 
 bool TranslateInfoBarDelegate::ShouldAlwaysTranslate() {
-  if (state_ == kAfterTranslate) {
-    always_translate_ = prefs_->IsLanguagePairWhitelisted(original_lang_code(),
-        target_lang_code());
-    return always_translate_;
-  }
-  NOTREACHED() << "Invalid mehod called for translate state";
-  return false;
+  always_translate_ = prefs_->IsLanguagePairWhitelisted(original_lang_code(),
+      target_lang_code());
+  return always_translate_;
 }
 
 void TranslateInfoBarDelegate::ToggleLanguageBlacklist() {
-  if (state_ == kBeforeTranslate) {
-    never_translate_language_ = !never_translate_language_;
-    if (never_translate_language_)
-      prefs_->BlacklistLanguage(original_lang_code());
-    else
-      prefs_->RemoveLanguageFromBlacklist(original_lang_code());
-  } else {
-    NOTREACHED() << "Invalid method called for translate state";
-  }
+  never_translate_language_ = !never_translate_language_;
+  if (never_translate_language_)
+    prefs_->BlacklistLanguage(original_lang_code());
+  else
+    prefs_->RemoveLanguageFromBlacklist(original_lang_code());
 }
 
 void TranslateInfoBarDelegate::ToggleSiteBlacklist() {
-  if (state_ == kBeforeTranslate) {
-    never_translate_site_ = !never_translate_site_;
-    if (never_translate_site_)
-      prefs_->BlacklistSite(site_);
-    else
-      prefs_->RemoveSiteFromBlacklist(site_);
-  } else {
-    NOTREACHED() << "Invalid mehod called for translate state";
-  }
+  never_translate_site_ = !never_translate_site_;
+  if (never_translate_site_)
+    prefs_->BlacklistSite(site_);
+  else
+    prefs_->RemoveSiteFromBlacklist(site_);
 }
 
 void TranslateInfoBarDelegate::ToggleAlwaysTranslate() {
-  if (state_ == kAfterTranslate) {
-    always_translate_ = !always_translate_;
-    if (always_translate_)
-      prefs_->WhitelistLanguagePair(original_lang_code(), target_lang_code());
-    else
-      prefs_->RemoveLanguagePairFromWhitelist(original_lang_code(),
-          target_lang_code());
-  } else {
-    NOTREACHED() << "Invalid mehod called for translate state";
-  }
+  always_translate_ = !always_translate_;
+  if (always_translate_)
+    prefs_->WhitelistLanguagePair(original_lang_code(), target_lang_code());
+  else
+    prefs_->RemoveLanguagePairFromWhitelist(original_lang_code(),
+        target_lang_code());
 }
 
 void TranslateInfoBarDelegate::GetMessageText(string16 *message_text,

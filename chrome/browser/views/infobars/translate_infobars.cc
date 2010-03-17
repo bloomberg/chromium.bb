@@ -332,9 +332,6 @@ void TranslateInfoBar::UpdateState(
   // Trigger layout and repaint.
   Layout();
   SchedulePaint();
-
-  // Clear options menu model so that it'll be created for new state.
-  options_menu_model_.reset();
 }
 
 // TranslateInfoBar, views::View overrides: ------------------------------------

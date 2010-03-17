@@ -81,4 +81,7 @@ class TranslateNotificationObserverBridge;
 // Verifies that the layout of the infobar is correct for |state|.
 - (bool)verifyLayout:(TranslateInfoBarDelegate::TranslateState)state;
 
+// Teardown and rebuild the options menu.
+- (void)rebuildOptionsMenu;
+
 @end

@@ -178,9 +178,6 @@ class TranslateNotificationObserverBridge :
 // Completely rebuild "from" and "to" language menus from the data model.
 - (void)populateLanguageMenus;
 
-// Teardown and rebuild the options menu.
-- (void)rebuildOptionsMenu;
-
 @end
 
 #pragma mark TranslateInfoBarController class
@@ -262,7 +259,6 @@ class TranslateNotificationObserverBridge :
 - (void)updateState {
   // Fixup our GUI.
   [self loadLabelText];
-  [self rebuildOptionsMenu];
 
   [self resizeAndSetControlVisibility];
   [self layout];

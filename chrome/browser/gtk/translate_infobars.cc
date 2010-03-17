@@ -295,9 +295,6 @@ void TranslateInfoBar::UpdateState(
       NOTIMPLEMENTED() << "Received state " << new_state;
     }
   }
-
-  // Clear options menu model so that it'll be created for new state.
-  options_menu_model_.reset();
 }
 
 void TranslateInfoBar::SetLabels() {

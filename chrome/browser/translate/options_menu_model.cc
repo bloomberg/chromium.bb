@@ -12,26 +12,20 @@
 OptionsMenuModel::OptionsMenuModel(menus::SimpleMenuModel::Delegate* delegate,
     TranslateInfoBarDelegate* translate_delegate)
     : menus::SimpleMenuModel(delegate) {
-  string16 original_language =
-      translate_delegate->GetDisplayNameForLocale(
-          translate_delegate->original_lang_code());
-  TranslateInfoBarDelegate::TranslateState state = translate_delegate->state();
-  if (state == TranslateInfoBarDelegate::kBeforeTranslate) {
-    AddCheckItem(IDC_TRANSLATE_OPTIONS_NEVER_TRANSLATE_LANG,
-        l10n_util::GetStringFUTF16(
-            IDS_TRANSLATE_INFOBAR_OPTIONS_NEVER_TRANSLATE_LANG,
-            original_language));
-    AddCheckItem(IDC_TRANSLATE_OPTIONS_NEVER_TRANSLATE_SITE,
-        l10n_util::GetStringUTF16(
-            IDS_TRANSLATE_INFOBAR_OPTIONS_NEVER_TRANSLATE_SITE));
-  } else if (state == TranslateInfoBarDelegate::kAfterTranslate) {
-    string16 target_language =
-        translate_delegate->GetDisplayNameForLocale(
-            translate_delegate->target_lang_code());
-    AddCheckItem(IDC_TRANSLATE_OPTIONS_ALWAYS,
-        l10n_util::GetStringFUTF16(IDS_TRANSLATE_INFOBAR_OPTIONS_ALWAYS,
-            original_language, target_language));
-  }
+  string16 original_language = translate_delegate->GetDisplayNameForLocale(
+      translate_delegate->original_lang_code());
+  string16 target_language = translate_delegate->GetDisplayNameForLocale(
+      translate_delegate->target_lang_code());
+  AddCheckItem(IDC_TRANSLATE_OPTIONS_ALWAYS,
+      l10n_util::GetStringFUTF16(IDS_TRANSLATE_INFOBAR_OPTIONS_ALWAYS,
+          original_language, target_language));
+  AddCheckItem(IDC_TRANSLATE_OPTIONS_NEVER_TRANSLATE_LANG,
+      l10n_util::GetStringFUTF16(
+          IDS_TRANSLATE_INFOBAR_OPTIONS_NEVER_TRANSLATE_LANG,
+          original_language));
+  AddCheckItem(IDC_TRANSLATE_OPTIONS_NEVER_TRANSLATE_SITE,
+      l10n_util::GetStringUTF16(
+          IDS_TRANSLATE_INFOBAR_OPTIONS_NEVER_TRANSLATE_SITE));
   AddItemWithStringId(IDC_TRANSLATE_OPTIONS_ABOUT,
       IDS_TRANSLATE_INFOBAR_OPTIONS_ABOUT);
 }

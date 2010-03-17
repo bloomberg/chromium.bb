@@ -122,10 +122,11 @@ TEST_F(TranslationBarInfoTest, OptionsMenuItemsHookedUp) {
     .Times(0);
   CreateInfoBar();
 
+  [infobar_controller rebuildOptionsMenu];
   NSMenu* optionsMenu = [infobar_controller optionsMenu];
   NSArray* optionsMenuItems = [optionsMenu itemArray];
 
-  EXPECT_EQ([optionsMenuItems count], 4U);
+  EXPECT_EQ([optionsMenuItems count], 5U);
 
   // First item is the options menu button's title, so there's no need to test
   // that the target on that is setup correctly.
@@ -133,9 +134,16 @@ TEST_F(TranslationBarInfoTest, OptionsMenuItemsHookedUp) {
     NSMenuItem* item = [optionsMenuItems objectAtIndex:i];
     EXPECT_EQ([item target], infobar_controller.get());
   }
-  NSMenuItem* neverTranslateLanguateItem = [optionsMenuItems objectAtIndex:1];
-  NSMenuItem* neverTranslateSiteItem = [optionsMenuItems objectAtIndex:2];
-  NSMenuItem* aboutTranslateItem = [optionsMenuItems objectAtIndex:3];
+  NSMenuItem* alwaysTranslateLanguateItem = [optionsMenuItems objectAtIndex:1];
+  NSMenuItem* neverTranslateLanguateItem = [optionsMenuItems objectAtIndex:2];
+  NSMenuItem* neverTranslateSiteItem = [optionsMenuItems objectAtIndex:3];
+  NSMenuItem* aboutTranslateItem = [optionsMenuItems objectAtIndex:4];
+
+  {
+    EXPECT_CALL(*infobar_delegate, ToggleAlwaysTranslate())
+    .Times(1);
+    [infobar_controller menuItemSelected:alwaysTranslateLanguateItem];
+  }
 
   {
     EXPECT_CALL(*infobar_delegate, ToggleLanguageBlacklist())
