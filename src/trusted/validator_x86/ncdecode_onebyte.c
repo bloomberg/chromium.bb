@@ -887,20 +887,23 @@ void NaClDefOneByteInsts() {
   NaClDefInst(0x99, NACLi_386,
               NACL_IFLAG(OperandSize_w),
               InstCwd);
-  NaClDefOp(SegmentDX_AX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
+  NaClDefOp(RegDX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
+  NaClDefOp(RegAX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
   NaClDefOp(RegAX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
 
   NaClDefInst(0x99, NACLi_386,
               NACL_IFLAG(OperandSize_v),
               InstCdq);
-  NaClDefOp(SegmentDX_AX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
+  NaClDefOp(RegEDX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
+  NaClDefOp(RegEAX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
   NaClDefOp(RegEAX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
 
   NaClDefInst(0x99, NACLi_386,
               NACL_IFLAG(OperandSize_o) | NACL_IFLAG(OpcodeUsesRexW) |
               NACL_IFLAG(Opcode64Only),
               InstCqo);
-  NaClDefOp(SegmentDX_AX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
+  NaClDefOp(RegRDX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
+  NaClDefOp(RegRAX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
   NaClDefOp(RegRAX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
 
   NaClDefInstChoices_32_64(0x9a, 2, 0);
@@ -1560,8 +1563,9 @@ void NaClDefOneByteInsts() {
               NACL_IFLAG(OperandSize_v),
               InstMul);
   NaClDefOp(Opcode4, NACL_OPFLAG(OperandExtendsOpcode));
-  NaClDefOp(SegmentDX_AX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
-  NaClDefOp(RegREAX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
+  NaClDefOp(RegREDX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
+  NaClDefOp(RegREAX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse) |
+            NACL_OPFLAG(OpImplicit));
   NaClDefOp(E_Operand, NACL_OPFLAG(OpUse));
 
   NaClDefInst(0xF7, NACLi_386,
@@ -1569,8 +1573,9 @@ void NaClDefOneByteInsts() {
               NACL_IFLAG(OperandSize_o) | NACL_IFLAG(OpcodeUsesRexW),
               InstMul);
   NaClDefOp(Opcode4, NACL_OPFLAG(OperandExtendsOpcode));
-  NaClDefOp(SegmentDX_AX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
-  NaClDefOp(RegRAX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
+  NaClDefOp(RegRDX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
+  NaClDefOp(RegRAX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse) |
+            NACL_OPFLAG(OpImplicit));
   NaClDefOp(E_Operand, NACL_OPFLAG(OpUse));
 
   NaClDefInstMrmChoices_32_64(0xf7, Opcode5, 1, 2);
@@ -1579,8 +1584,9 @@ void NaClDefOneByteInsts() {
               NACL_IFLAG(OperandSize_v),
               InstImul);
   NaClDefOp(Opcode5, NACL_OPFLAG(OperandExtendsOpcode));
-  NaClDefOp(SegmentDX_AX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
-  NaClDefOp(RegREAX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
+  NaClDefOp(RegREDX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
+  NaClDefOp(RegREAX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse) |
+            NACL_OPFLAG(OpImplicit));
   NaClDefOp(E_Operand, NACL_OPFLAG(OpUse));
 
   NaClDefInst(0xF7, NACLi_386,
@@ -1588,8 +1594,9 @@ void NaClDefOneByteInsts() {
               NACL_IFLAG(OperandSize_o),
               InstImul);
   NaClDefOp(Opcode5, NACL_OPFLAG(OperandExtendsOpcode));
-  NaClDefOp(SegmentDX_AX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
-  NaClDefOp(RegREAX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
+  NaClDefOp(RegRDX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
+  NaClDefOp(RegRAX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse) |
+            NACL_OPFLAG(OpImplicit));
   NaClDefOp(E_Operand, NACL_OPFLAG(OpUse));
 
   NaClDefInstMrmChoices_32_64(0xf7, Opcode6, 1, 2);
@@ -1598,9 +1605,10 @@ void NaClDefOneByteInsts() {
               NACL_IFLAG(OperandSize_v),
               InstDiv);
   NaClDefOp(Opcode6, NACL_OPFLAG(OperandExtendsOpcode));
-  NaClDefOp(RegREAX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
-  NaClDefOp(RegREDX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
-  NaClDefOp(SegmentDX_AX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
+  NaClDefOp(RegREDX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse) |
+            NACL_OPFLAG(OpImplicit));
+  NaClDefOp(RegREAX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse) |
+            NACL_OPFLAG(OpImplicit));
   NaClDefOp(E_Operand, NACL_OPFLAG(OpUse));
 
   NaClDefInst(0xF7, NACLi_386,
@@ -1608,9 +1616,10 @@ void NaClDefOneByteInsts() {
               NACL_IFLAG(OperandSize_o) | NACL_IFLAG(OpcodeUsesRexW),
               InstDiv);
   NaClDefOp(Opcode6, NACL_OPFLAG(OperandExtendsOpcode));
-  NaClDefOp(RegRAX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
-  NaClDefOp(RegRDX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
-  NaClDefOp(SegmentDX_AX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
+  NaClDefOp(RegRDX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse) |
+            NACL_OPFLAG(OpImplicit));
+  NaClDefOp(RegRAX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse) |
+            NACL_OPFLAG(OpImplicit));
   NaClDefOp(E_Operand, NACL_OPFLAG(OpUse));
 
   NaClDefInstMrmChoices_32_64(0xF7, Opcode7, 1, 2);
@@ -1619,9 +1628,10 @@ void NaClDefOneByteInsts() {
               NACL_IFLAG(OperandSize_v),
               InstIdiv);
   NaClDefOp(Opcode7, NACL_OPFLAG(OperandExtendsOpcode));
-  NaClDefOp(RegREAX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
-  NaClDefOp(RegREDX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
-  NaClDefOp(SegmentDX_AX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
+  NaClDefOp(RegREDX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse) |
+            NACL_OPFLAG(OpImplicit));
+  NaClDefOp(RegREAX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse) |
+            NACL_OPFLAG(OpImplicit));
   NaClDefOp(E_Operand, NACL_OPFLAG(OpUse));
 
   NaClDefInst(0xF7, NACLi_386,
@@ -1629,9 +1639,10 @@ void NaClDefOneByteInsts() {
               NACL_IFLAG(OperandSize_o) | NACL_IFLAG(OpcodeUsesRexW),
               InstIdiv);
   NaClDefOp(Opcode7, NACL_OPFLAG(OperandExtendsOpcode));
-  NaClDefOp(RegRAX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
-  NaClDefOp(RegRDX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
-  NaClDefOp(SegmentDX_AX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
+  NaClDefOp(RegRDX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse) |
+            NACL_OPFLAG(OpImplicit));
+  NaClDefOp(RegRAX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse) |
+            NACL_OPFLAG(OpImplicit));
   NaClDefOp(E_Operand, NACL_OPFLAG(OpUse));
 
   NaClDefInst(0xFC, NACLi_386, 0, InstCld);

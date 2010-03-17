@@ -1300,28 +1300,6 @@ static NaClExp* NaClAppendES_EDI(NaClInstState* state) {
   return results;
 }
 
-static NaClExp* NaClAppendSegmentDX_AX(NaClInstState* state) {
-  NaClExp* results = NaClAppendExp(ExprSegmentAddress, 0, 0, &state->nodes);
-  switch (state->operand_size) {
-    case 2:
-      NaClAppendReg(RegDX, &state->nodes);
-      NaClAppendReg(RegAX, &state->nodes);
-      break;
-    case 4:
-      NaClAppendReg(RegEDX, &state->nodes);
-      NaClAppendReg(RegEAX, &state->nodes);
-      break;
-    case 8:
-      NaClAppendReg(RegRDX, &state->nodes);
-      NaClAppendReg(RegRAX, &state->nodes);
-      break;
-    default:
-      NaClFatal("Address size for segment DX:AX not correctly defined", state);
-      break;
-  }
-  return results;
-}
-
 /* Get the Effective address in the mod/rm byte, if the modrm.mod field
  * is 00, and append it to the vector of expression nodes. Operand is
  * the corresponding operand of the opcode associated with the instruction
@@ -1678,9 +1656,6 @@ static NaClExp* NaClAppendOperand(NaClInstState* state, NaClOp* operand) {
 
     case RegES_EDI:
       return NaClAppendES_EDI(state);
-
-    case SegmentDX_AX:
-      return NaClAppendSegmentDX_AX(state);
 
     case Const_1:
       return NaClAppendConst(1,

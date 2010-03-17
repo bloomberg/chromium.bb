@@ -373,9 +373,6 @@ RegXMM13
 RegXMM14
 RegXMM15
 
-# Models segment DX:AX, EDX:EAX, or RDX:RAX, based on the operand size.
-SegmentDX_AX
-
 # One of the eight general purpose registers, less the stack pointer, based
 # on operand size.
 RegGP7
