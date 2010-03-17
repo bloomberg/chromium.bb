@@ -14,8 +14,6 @@
 #include <netinet/ip.h>
 #include <sys/socket.h>
 #include <sys/types.h>
-#else
-#include <Ws2tcpip.h>
 #endif  // defined(OS_POSIX)
 
 #include <vector>
@@ -23,6 +21,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "chrome/browser/sync/notifier/base/nethelpers.h"
+#include "chrome/browser/sync/notifier/gaia_auth/inet_aton.h"
 #include "talk/base/byteorder.h"
 #include "talk/base/common.h"
 #include "talk/base/socketaddress.h"
@@ -50,7 +49,7 @@ void AsyncDNSLookup::DoWork() {
   std::string hostname(server_->IPAsString());
 
   in_addr addr;
-  if (inet_pton(AF_INET, hostname.c_str(), &addr)) {
+  if (inet_aton(hostname.c_str(), &addr)) {
     talk_base::CritScope scope(&cs_);
     ip_list_.push_back(talk_base::NetworkToHost32(addr.s_addr));
   } else {

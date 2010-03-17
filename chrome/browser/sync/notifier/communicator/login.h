@@ -7,14 +7,15 @@
 
 #include <string>
 
-#include "chrome/browser/sync/notifier/base/sigslotrepeater.h"
 #include "chrome/browser/sync/notifier/base/time.h"
+#include "chrome/browser/sync/notifier/gaia_auth/sigslotrepeater.h"
 #include "talk/base/proxyinfo.h"
 #include "talk/base/scoped_ptr.h"
 #include "talk/base/sigslot.h"
 #include "talk/xmpp/xmppengine.h"
 
 namespace buzz {
+class CaptchaChallenge;
 class XmppClient;
 class XmppEngine;
 class XmppClientSettings;
@@ -51,6 +52,7 @@ class Login : public sigslot::has_slots<> {
         int server_count,
         NetworkStatusDetectorTask* network_status,
         talk_base::FirewallManager* firewall,
+        bool no_gaia_auth,
         bool proxy_only,
         bool previous_login_successful);
   ~Login();

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync/notifier/communicator/login_failure.h"
 
+#include "talk/xmpp/prexmppauth.h"
+
 namespace notifier {
 
 LoginFailure::LoginFailure(LoginError error)
@@ -20,9 +22,25 @@ LoginFailure::LoginFailure(LoginError error,
     subcode_(subcode) {
 }
 
+LoginFailure::LoginFailure(LoginError error,
+                           buzz::XmppEngine::Error xmpp_error,
+                           int subcode,
+                           const buzz::CaptchaChallenge& captcha)
+  : error_(error),
+    xmpp_error_(xmpp_error),
+    subcode_(subcode),
+    captcha_(new buzz::CaptchaChallenge(captcha)) {
+}
+
 buzz::XmppEngine::Error LoginFailure::xmpp_error() const {
   ASSERT(error_ == XMPP_ERROR);
   return xmpp_error_;
+}
+
+const buzz::CaptchaChallenge& LoginFailure::captcha() const {
+  ASSERT(xmpp_error_ == buzz::XmppEngine::ERROR_UNAUTHORIZED ||
+         xmpp_error_ == buzz::XmppEngine::ERROR_MISSING_USERNAME);
+  return *captcha_.get();
 }
 
 }  // namespace notifier

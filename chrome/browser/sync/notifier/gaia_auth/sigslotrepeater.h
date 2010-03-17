@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_NOTIFIER_BASE_SIGSLOTREPEATER_H_
-#define CHROME_BROWSER_SYNC_NOTIFIER_BASE_SIGSLOTREPEATER_H_
+#ifndef CHROME_BROWSER_SYNC_NOTIFIER_GAIA_AUTH_INET_ATON_H_SIGSLOTREPEATER_H_
+#define CHROME_BROWSER_SYNC_NOTIFIER_GAIA_AUTH_INET_ATON_H_SIGSLOTREPEATER_H_
 
 // Repeaters are both signals and slots, which are designed as intermediate
 // pass-throughs for signals and slots which don't know about each other (for
@@ -80,4 +80,4 @@ class repeater3 : public signal3<arg1_type, arg2_type, arg3_type, mt_policy>,
 
 }  // namespace sigslot
 
-#endif  // CHROME_BROWSER_SYNC_NOTIFIER_BASE_SIGSLOTREPEATER_H_
+#endif  // CHROME_BROWSER_SYNC_NOTIFIER_GAIA_AUTH_INET_ATON_H_SIGSLOTREPEATER_H_

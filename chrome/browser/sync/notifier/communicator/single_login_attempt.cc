@@ -17,12 +17,14 @@
 #include "chrome/browser/sync/notifier/communicator/product_info.h"
 #include "chrome/browser/sync/notifier/communicator/xmpp_connection_generator.h"
 #include "chrome/browser/sync/notifier/communicator/xmpp_socket_adapter.h"
+#include "chrome/browser/sync/notifier/gaia_auth/gaiaauth.h"
 #include "talk/base/asynchttprequest.h"
 #include "talk/base/firewallsocketserver.h"
 #include "talk/base/signalthread.h"
 #include "talk/base/taskrunner.h"
 #include "talk/base/winsock_initializer.h"
 #include "talk/xmllite/xmlelement.h"
+#include "talk/xmpp/prexmppauth.h"
 #include "talk/xmpp/saslcookiemechanism.h"
 #include "talk/xmpp/saslhandler.h"
 #include "talk/xmpp/xmppclient.h"
@@ -31,15 +33,29 @@
 
 namespace notifier {
 
+static void FillProxyInfo(const buzz::XmppClientSettings& xcs,
+                          talk_base::ProxyInfo* proxy) {
+  ASSERT(proxy != NULL);
+  proxy->type = xcs.proxy();
+  proxy->address.SetIP(xcs.proxy_host());
+  proxy->address.SetPort(xcs.proxy_port());
+  if (xcs.use_proxy_auth()) {
+    proxy->username = xcs.proxy_user();
+    proxy->password = xcs.proxy_pass();
+  }
+}
+
 static void GetClientErrorInformation(
     buzz::XmppClient* client,
     buzz::XmppEngine::Error* error,
     int* subcode,
-    buzz::XmlElement** stream_error) {
+    buzz::XmlElement** stream_error,
+    buzz::CaptchaChallenge* captcha_challenge) {
   ASSERT(client != NULL);
-  ASSERT(error && subcode && stream_error);
+  ASSERT(error && subcode && stream_error && captcha_challenge);
 
   *error = client->GetError(subcode);
+  *captcha_challenge = client->GetCaptchaChallenge();
 
   *stream_error = NULL;
   if (*error == buzz::XmppEngine::ERROR_STREAM) {
@@ -230,7 +246,7 @@ void SingleLoginAttempt::DoLogin(
   // Start connecting.
   client_->Connect(client_settings, login_settings_->lang(),
                    CreateSocket(client_settings),
-                   NULL,
+                   CreatePreXmppAuth(client_settings),
                    CreateSaslHandler(client_settings));
   client_->Start();
 }
@@ -258,6 +274,32 @@ buzz::AsyncSocket* SingleLoginAttempt::CreateSocket(
     adapter->set_firewall(true);
   }
   return adapter;
+}
+
+buzz::PreXmppAuth* SingleLoginAttempt::CreatePreXmppAuth(
+    const buzz::XmppClientSettings& xcs) {
+  if (login_settings_->no_gaia_auth())
+    return NULL;
+
+  // For GMail, use Gaia preauthentication over HTTP.
+  buzz::GaiaAuth* auth = new buzz::GaiaAuth(GetUserAgentString(),
+                                            GetProductSignature());
+  auth->SignalAuthenticationError.connect(
+      this,
+      &SingleLoginAttempt::OnAuthenticationError);
+  auth->SignalCertificateExpired.connect(
+      this,
+      &SingleLoginAttempt::OnCertificateExpired);
+  auth->SignalFreshAuthCookie.connect(
+      this,
+      &SingleLoginAttempt::OnFreshAuthCookie);
+  auth->set_token_service(xcs.token_service());
+
+  talk_base::ProxyInfo proxy;
+  FillProxyInfo(xcs, &proxy);
+  auth->set_proxy(proxy);
+  auth->set_firewall(login_settings_->firewall());
+  return auth;
 }
 
 buzz::SaslHandler* SingleLoginAttempt::CreateSaslHandler(
@@ -449,11 +491,13 @@ void SingleLoginAttempt::OnClientStateChangeClosed(
     buzz::XmppEngine::State previous_state) {
   buzz::XmppEngine::Error error = buzz::XmppEngine::ERROR_NONE;
   int error_subcode = 0;
+  buzz::CaptchaChallenge captcha_challenge;
   buzz::XmlElement* stream_error_ptr;
   GetClientErrorInformation(client_,
                             &error,
                             &error_subcode,
-                            &stream_error_ptr);
+                            &stream_error_ptr,
+                            &captcha_challenge);
   scoped_ptr<buzz::XmlElement> stream_error(stream_error_ptr);
 
   client_->SignalStateChange.disconnect(this);
@@ -467,20 +511,36 @@ void SingleLoginAttempt::OnClientStateChangeClosed(
     SignalUnexpectedDisconnect();
     return;
   } else {
-    HandleConnectionError(error, error_subcode, stream_error.get());
+    HandleConnectionError(error, error_subcode, stream_error.get(),
+                          captcha_challenge);
   }
 }
 
-void SingleLoginAttempt::HandleConnectionPasswordError() {
+void SingleLoginAttempt::HandleConnectionPasswordError(
+    const buzz::CaptchaChallenge& captcha_challenge) {
   LOG(INFO) << "SingleLoginAttempt::HandleConnectionPasswordError";
-  LoginFailure failure(LoginFailure::XMPP_ERROR, code_, subcode_);
+
+  // Clear the auth cookie.
+  std::string current_auth_cookie =
+      login_settings_->user_settings().auth_cookie();
+  login_settings_->modifiable_user_settings()->set_auth_cookie("");
+  // If there was an auth cookie and it was the same as the last auth cookie,
+  // then it is a stale cookie. Retry login.
+  if (!current_auth_cookie.empty() && !cookie_refreshed_) {
+    UseCurrentConnection();
+    return;
+  }
+
+  LoginFailure failure(LoginFailure::XMPP_ERROR, code_, subcode_,
+                       captcha_challenge);
   SignalLoginFailure(failure);
 }
 
 void SingleLoginAttempt::HandleConnectionError(
     buzz::XmppEngine::Error code,
     int subcode,
-    const buzz::XmlElement* stream_error) {
+    const buzz::XmlElement* stream_error,
+    const buzz::CaptchaChallenge& captcha_challenge) {
   LOG(INFO) << "(" << code << ", " << subcode << ")";
 
   // Save off the error code information, so we can use it to tell the user
@@ -490,7 +550,7 @@ void SingleLoginAttempt::HandleConnectionError(
   if ((code_ == buzz::XmppEngine::ERROR_UNAUTHORIZED) ||
       (code_ == buzz::XmppEngine::ERROR_MISSING_USERNAME)) {
     // There was a problem with credentials (username/password).
-    HandleConnectionPasswordError();
+    HandleConnectionPasswordError(captcha_challenge);
     return;
   }
 

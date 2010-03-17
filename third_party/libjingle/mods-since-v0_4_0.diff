@@ -1140,7 +1140,6 @@ diff -r libjingle-0.4.0/talk/base/win32socketserver.cc libjingle/files/talk/base
 > #include "talk/base/winsock_initializer.h"
 269a271
 >   talk_base::EnsureWinsockInit();
-Only in libjingle/files/talk/base: win32window.cc
 diff -r libjingle-0.4.0/talk/base/winping.cc libjingle/files/talk/base/winping.cc
 133c133
 <   return sizeof(ICMP_ECHO_REPLY) + max(8UL, data_size);

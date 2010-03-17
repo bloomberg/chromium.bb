@@ -15,6 +15,8 @@
 
 namespace buzz {
 class AsyncSocket;
+class CaptchaChallenge;
+class PreXmppAuth;
 class SaslHandler;
 class XmppClient;
 class XmppClientSettings;
@@ -94,6 +96,7 @@ class SingleLoginAttempt : public talk_base::Task, public sigslot::has_slots<> {
  private:
   void DoLogin(const ConnectionSettings& connection_settings);
   buzz::AsyncSocket* CreateSocket(const buzz::XmppClientSettings& xcs);
+  buzz::PreXmppAuth* CreatePreXmppAuth(const buzz::XmppClientSettings& xcs);
   static buzz::SaslHandler* CreateSaslHandler(
       const buzz::XmppClientSettings& xcs);
 
@@ -103,8 +106,10 @@ class SingleLoginAttempt : public talk_base::Task, public sigslot::has_slots<> {
   void HandleConnectionError(
       buzz::XmppEngine::Error code,
       int subcode,
-      const buzz::XmlElement* stream_error);
-  void HandleConnectionPasswordError();
+      const buzz::XmlElement* stream_error,
+      const buzz::CaptchaChallenge& captcha_challenge);
+  void HandleConnectionPasswordError(
+      const buzz::CaptchaChallenge& captcha_challenge);
 
   void DiagnoseConnectionError();
   void OnHttpTestDone(talk_base::SignalThread* thread);
