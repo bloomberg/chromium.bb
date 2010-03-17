@@ -323,10 +323,13 @@ void TabContentsViewGtk::ShowContextMenu(const ContextMenuParams& params) {
 // Render view DnD -------------------------------------------------------------
 
 void TabContentsViewGtk::StartDragging(const WebDropData& drop_data,
-                                       WebDragOperationsMask ops) {
+                                       WebDragOperationsMask ops,
+                                       const SkBitmap& image,
+                                       const gfx::Point& image_offset) {
   DCHECK(GetContentNativeView());
 
-  drag_source_->StartDragging(drop_data, &last_mouse_down_);
+  drag_source_->StartDragging(drop_data, &last_mouse_down_, image,
+                              image_offset);
   // TODO(snej): Make use of the WebDragOperationsMask somehow
 }
 

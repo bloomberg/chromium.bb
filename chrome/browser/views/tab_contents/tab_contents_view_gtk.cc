@@ -219,8 +219,11 @@ void TabContentsViewGtk::GetContainerBounds(gfx::Rect* out) const {
 }
 
 void TabContentsViewGtk::StartDragging(const WebDropData& drop_data,
-                                       WebDragOperationsMask ops) {
-  drag_source_->StartDragging(drop_data, &last_mouse_down_);
+                                       WebDragOperationsMask ops,
+                                       const SkBitmap& image,
+                                       const gfx::Point& image_offset) {
+  drag_source_->StartDragging(drop_data, &last_mouse_down_,
+                              image, image_offset);
   // TODO(snej): Make use of WebDragOperationsMask
 }
 

@@ -44,6 +44,7 @@ class WaitableEvent;
 }
 
 namespace gfx {
+class Point;
 class Rect;
 class Size;
 }
@@ -118,7 +119,9 @@ class RenderViewHostDelegate {
     // RenderView. Contextual information about the dragged content is supplied
     // by WebDropData.
     virtual void StartDragging(const WebDropData& drop_data,
-                               WebKit::WebDragOperationsMask allowed_ops) = 0;
+                               WebKit::WebDragOperationsMask allowed_ops,
+                               const SkBitmap& image,
+                               const gfx::Point& image_offset) = 0;
 
     // The page wants to update the mouse cursor during a drag & drop operation.
     // |operation| describes the current operation (none, move, copy, link.)

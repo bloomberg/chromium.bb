@@ -16,8 +16,12 @@ class ConstrainedWindowGtk;
 typedef struct _GtkFloatingContainer GtkFloatingContainer;
 class RenderViewContextMenuGtk;
 class SadTabView;
+class SkBitmap;
 class TabContentsDragSource;
 class WebDragDestGtk;
+namespace gfx {
+class Point;
+}
 namespace views {
 class NativeViewHost;
 }
@@ -61,7 +65,9 @@ class TabContentsViewGtk : public TabContentsView,
   // Backend implementation of RenderViewHostDelegate::View.
   virtual void ShowContextMenu(const ContextMenuParams& params);
   virtual void StartDragging(const WebDropData& drop_data,
-                             WebKit::WebDragOperationsMask ops_allowed);
+                             WebKit::WebDragOperationsMask ops_allowed,
+                             const SkBitmap& image,
+                             const gfx::Point& image_offset);
   virtual void UpdateDragCursor(WebKit::WebDragOperation operation);
   virtual void GotFocus();
   virtual void TakeFocus(bool reverse);

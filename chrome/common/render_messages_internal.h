@@ -1447,9 +1447,11 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // WebDropData struct contains contextual information about the pieces of the
   // page the user dragged. The parent uses this notification to initiate a
   // drag session at the OS level.
-  IPC_MESSAGE_ROUTED2(ViewHostMsg_StartDragging,
+  IPC_MESSAGE_ROUTED4(ViewHostMsg_StartDragging,
                       WebDropData /* drop_data */,
-                      WebKit::WebDragOperationsMask /* ops_allowed */)
+                      WebKit::WebDragOperationsMask /* ops_allowed */,
+                      SkBitmap /* image */,
+                      gfx::Point /* image_offset */)
 
   // The page wants to update the mouse cursor during a drag & drop operation.
   // |is_drop_target| is true if the mouse is over a valid drop target.
