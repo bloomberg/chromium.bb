@@ -9,14 +9,6 @@
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nrd_xfer.h"
 
-// Incomplete definitions for classes defined in Chrome.
-namespace base {
-class SharedMemory;
-class SyncSocket;
-}  // namespace base
-
-class TransportDIB;
-
 namespace nacl {
 // Forward declarations.
 class DescWrapper;
@@ -44,12 +36,12 @@ class DescWrapperFactory {
   // Create a DescWrapper for the designated invalid descriptor
   DescWrapper* MakeInvalid();
 
-  // Create a DescWrapper from a base::SharedMemory
-  DescWrapper* ImportSharedMemory(base::SharedMemory* shm, size_t size);
-  // Create a DescWrapper from a TransportDIB
-  DescWrapper* ImportTransportDIB(TransportDIB* dib);
-  // Create a DescWrapper from a base::SyncSocket
-  DescWrapper* ImportSyncSocket(base::SyncSocket* sock);
+  // Create a DescWrapper from a generic Pepper shared memory descriptor.
+  DescWrapper* ImportPepperSharedMemory(intptr_t shm, size_t size);
+  // Create a DescWrapper from a Pepper2D shared memory descriptor.
+  DescWrapper* ImportPepper2DSharedMemory(intptr_t dib);
+  // Create a DescWrapper from a Pepper synchronization object.
+  DescWrapper* ImportPepperSync(intptr_t sock);
 
   // We will doubtless want more specific factory methods.  For now,
   // we provide a wide-open method.

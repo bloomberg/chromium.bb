@@ -24,9 +24,6 @@
 #include "native_client/src/trusted/plugin/origin.h"
 #include "native_client/src/trusted/plugin/srpc/closure.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
-#ifndef NACL_STANDALONE
-#include "base/shared_memory.h"
-#endif  // NACL_STANDALONE
 
 using nacl::NPIdentifierToWireFormat;
 using nacl::NPModule;

@@ -4,11 +4,6 @@
 
 #include <limits>
 #include <new>
-#ifndef NACL_STANDALONE
-#include "base/shared_memory.h"
-#include "base/sync_socket.h"
-#include "chrome/common/transport_dib.h"
-#endif  // NACL_STANDALONE
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_string.h"
 #include "native_client/src/shared/imc/nacl_imc.h"
@@ -300,80 +295,27 @@ DescWrapper* DescWrapperFactory::ImportSysvShm(int key, size_t size) {
 }
 #endif  // NACL_LINUX
 
-DescWrapper* DescWrapperFactory::ImportSharedMemory(base::SharedMemory* shm,
-                                                    size_t size) {
 #if defined(NACL_STANDALONE)
-  // base::SharedMemory is only present in the Chrome hookup.
-  // TODO(sehr): Add a stub library for the Chrome dependencies for standalone.
-  UNREFERENCED_PARAMETER(shm);
+DescWrapper* DescWrapperFactory::ImportPepperSharedMemory(intptr_t shm_int,
+                                                          size_t size) {
+  // PepperSharedMemory is only present in the Chrome hookup.
+  UNREFERENCED_PARAMETER(shm_int);
   UNREFERENCED_PARAMETER(size);
   return NULL;
-#else
-#if  NACL_LINUX || NACL_OSX
-  return ImportShmHandle(shm->handle().fd, size);
-#elif NACL_WINDOWS
-  return ImportShmHandle(shm->handle(), size);
-#else
-# error "What platform?"
-#endif  // NACL_LINUX || NACL_OSX
-#endif  // NACL_STANDALONE
 }
 
-DescWrapper* DescWrapperFactory::ImportTransportDIB(TransportDIB* dib) {
-#ifdef NACL_STANDALONE
-  // TransportDIB is only present in the Chrome hookup.
-  // TODO(sehr): Add a stub library for the Chrome dependencies for standalone.
-  UNREFERENCED_PARAMETER(dib);
+DescWrapper* DescWrapperFactory::ImportPepper2DSharedMemory(intptr_t shm_int) {
+  // Pepper2DSharedMemory is only present in the Chrome hookup.
+  UNREFERENCED_PARAMETER(shm_int);
   return NULL;
-#else
-#if  NACL_LINUX
-  // TransportDIBs use SysV (X) shared memory on Linux.
-  return ImportSysvShm(dib->handle(), dib->size());
-#elif NACL_OSX
-  // TransportDIBs use mmap shared memory on OSX.
-  return ImportShmHandle(dib->handle().fd, dib->size());
-#elif NACL_WINDOWS
-  // TransportDIBs use MapViewOfFile shared memory on Windows.
-  return ImportShmHandle(dib->handle(), dib->size());
-#else
-# error "What platform?"
-#endif  // NACL_LINUX
-#endif  // NACL_STANDALONE
 }
 
-DescWrapper* DescWrapperFactory::ImportSyncSocket(base::SyncSocket* sock) {
-#ifdef NACL_STANDALONE
-  // TransportDIB is only present in the Chrome hookup.
-  // TODO(sehr): Add a stub library for the Chrome dependencies for standalone.
-  UNREFERENCED_PARAMETER(sock);
+DescWrapper* DescWrapperFactory::ImportPepperSync(intptr_t sync_int) {
+  // PepperSync is only present in the Chrome hookup.
+  UNREFERENCED_PARAMETER(sync_int);
   return NULL;
-#else
-  struct NaClDescSyncSocket* ss_desc = NULL;
-  DescWrapper* wrapper = NULL;
-
-  ss_desc = reinterpret_cast<NaClDescSyncSocket*>(
-      calloc(1, sizeof(*ss_desc)));
-  if (NULL == ss_desc) {
-    goto cleanup;
-  }
-  if (!NaClDescSyncSocketCtor(ss_desc, sock->handle())) {
-    delete ss_desc;
-    ss_desc = NULL;
-    goto cleanup;
-  }
-  wrapper = new(std::nothrow)
-      DescWrapper(common_data_, reinterpret_cast<struct NaClDesc*>(ss_desc));
-  if (NULL == wrapper) {
-    goto cleanup;
-  }
-  ss_desc = NULL;  // DescWrapper takes ownership of ss_desc.
-  return wrapper;
-
- cleanup:
-  NaClDescSafeUnref(reinterpret_cast<struct NaClDesc*>(ss_desc));
-  return NULL;
-#endif  // NACL_STANDALONE
 }
+#endif  // NACL_STANDALONE
 
 DescWrapper* DescWrapperFactory::MakeGeneric(struct NaClDesc* desc) {
   // Return an error if the factory wasn't properly initialized.

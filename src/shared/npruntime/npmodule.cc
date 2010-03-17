@@ -23,12 +23,6 @@
 #include "native_client/src/trusted/plugin/origin.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
 #include "third_party/npapi/bindings/npapi_extensions_private.h"
-#ifndef NACL_STANDALONE
-#include "base/shared_memory.h"
-#endif  // NACL_STANDALONE
-
-// Used to convey pixel BGRA values to the 2D API.
-class TransportDIB;
 
 namespace nacl {
 
@@ -364,13 +358,12 @@ NaClSrpcError NPModule::Device2DInitialize(NPP npp,
   }
   DescWrapperFactory factory;
   // Get the TransportDIB used for the context buffer.
-  intptr_t dib_intptr;
+  intptr_t dib_int;
   device2d_->getStateContext(npp,
                              context2d_,
                              NPExtensionsReservedStateSharedMemory,
-                             &dib_intptr);
-  TransportDIB* dib = reinterpret_cast<TransportDIB*>(dib_intptr);
-  DescWrapper* wrapper = factory.ImportTransportDIB(dib);
+                             &dib_int);
+  DescWrapper* wrapper = factory.ImportPepper2DSharedMemory(dib_int);
   if (NULL == wrapper) {
     return NACL_SRPC_RESULT_APP_ERROR;
   }
@@ -422,11 +415,6 @@ NaClSrpcError NPModule::Device2DDestroy(NPP npp) {
 
   return NACL_SRPC_RESULT_OK;
 }
-
-namespace base {
-class SharedMemory;
-class SyncSocket;
-}  // namespace base
 
 struct Device3DImpl {
   gpu::CommandBuffer* command_buffer;
@@ -488,15 +476,12 @@ NaClSrpcError NPModule::Device3DInitialize(NPP npp,
   }
   Device3DImpl* impl =
       reinterpret_cast<Device3DImpl*>(context3d_->reserved);
-  ::base::SharedMemory* shm =
-      impl->command_buffer->GetRingBuffer().shared_memory;
-  if (NULL == shm) {
-    return NACL_SRPC_RESULT_APP_ERROR;
-  }
+  intptr_t shm_int = reinterpret_cast<intptr_t>(
+      impl->command_buffer->GetRingBuffer().shared_memory);
   DescWrapperFactory factory;
   size_t shm_size = context3d_->commandBufferSize * sizeof(int32_t);
   DescWrapper* wrapper =
-      factory.ImportSharedMemory(shm, static_cast<size_t>(shm_size));
+      factory.ImportPepperSharedMemory(shm_int, static_cast<size_t>(shm_size));
   if (NULL == wrapper) {
     return NACL_SRPC_RESULT_APP_ERROR;
   }
@@ -594,18 +579,15 @@ NaClSrpcError NPModule::Device3DCreateBuffer(NPP npp,
   if (NPERR_NO_ERROR != retval) {
     return NACL_SRPC_RESULT_APP_ERROR;
   }
-  // Look up the base::SharedMemory for the returned id.
+  // Look up the shared memory descriptor for the returned id.
   Device3DImpl* impl =
       reinterpret_cast<Device3DImpl*>(context3d_->reserved);
-  ::base::SharedMemory* shm =
-      impl->command_buffer->GetTransferBuffer(buffer_id).shared_memory;
-  if (NULL == shm) {
-    return NACL_SRPC_RESULT_APP_ERROR;
-  }
+  intptr_t shm_int = reinterpret_cast<intptr_t>(
+      impl->command_buffer->GetTransferBuffer(buffer_id).shared_memory);
   // Create a NaCl descriptor to return.
   DescWrapperFactory factory;
   DescWrapper* wrapper =
-      factory.ImportSharedMemory(shm, static_cast<size_t>(size));
+      factory.ImportPepperSharedMemory(shm_int, static_cast<size_t>(size));
   if (NULL == wrapper) {
     return NACL_SRPC_RESULT_APP_ERROR;
   }
@@ -664,10 +646,8 @@ void AudioCallback(NPDeviceContextAudio* user_data) {
   if (NPERR_NO_ERROR != retval) {
     return;
   }
-  ::base::SharedMemory* shm =
-      reinterpret_cast< ::base::SharedMemory*>(shm_int);
   DescWrapper* shm_wrapper =
-      factory.ImportSharedMemory(shm, static_cast<size_t>(size));
+      factory.ImportPepperSharedMemory(shm_int, static_cast<size_t>(size));
   if (NULL == shm_wrapper) {
     return;
   }
@@ -681,14 +661,12 @@ void AudioCallback(NPDeviceContextAudio* user_data) {
   if (NPERR_NO_ERROR != retval) {
     return;
   }
-  ::base::SyncSocket* sync =
-      reinterpret_cast< ::base::SyncSocket*>(sync_int);
   DescWrapper* sync_wrapper = NULL;
-  if (NULL == sync) {
+  if (0 == sync_int) {
     // The high-latency audio interface does not use a sync socket.
     sync_wrapper = factory.MakeInvalid();
   } else {
-    sync_wrapper = factory.ImportSyncSocket(sync);
+    sync_wrapper = factory.ImportPepperSync(sync_int);
   }
   if (NULL == sync_wrapper) {
     DescWrapper::SafeDelete(shm_wrapper);
