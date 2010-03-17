@@ -236,6 +236,8 @@ void ExtensionsServiceTestBase::InitializeExtensionsService(
     const FilePath& pref_file, const FilePath& extensions_install_dir) {
   ExtensionTestingProfile* profile = new ExtensionTestingProfile();
   prefs_.reset(new PrefService(pref_file));
+  Profile::RegisterUserPrefs(prefs_.get());
+  browser::RegisterUserPrefs(prefs_.get());
   profile_.reset(profile);
 
   CommandLine::ForCurrentProcess()->AppendSwitch(

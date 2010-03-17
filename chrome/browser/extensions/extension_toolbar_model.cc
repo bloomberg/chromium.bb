@@ -6,11 +6,15 @@
 
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/pref_service.h"
+#include "chrome/browser/profile.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/pref_names.h"
 
 ExtensionToolbarModel::ExtensionToolbarModel(ExtensionsService* service)
-    : service_(service) {
+    : service_(service),
+      prefs_(service->profile()->GetPrefs()) {
   DCHECK(service_);
 
   registrar_.Add(this, NotificationType::EXTENSION_LOADED,
@@ -21,6 +25,8 @@ ExtensionToolbarModel::ExtensionToolbarModel(ExtensionsService* service)
                  Source<Profile>(service_->profile()));
   registrar_.Add(this, NotificationType::EXTENSIONS_READY,
                  Source<Profile>(service_->profile()));
+
+  visible_icon_count_ = prefs_->GetInteger(prefs::kExtensionToolbarSize);
 }
 
 ExtensionToolbarModel::~ExtensionToolbarModel() {
@@ -63,6 +69,11 @@ void ExtensionToolbarModel::MoveBrowserAction(Extension* extension,
   FOR_EACH_OBSERVER(Observer, observers_, BrowserActionMoved(extension, index));
 
   UpdatePrefs();
+}
+
+void ExtensionToolbarModel::SetVisibleIconCount(int count) {
+  visible_icon_count_ = count == static_cast<int>(size()) ? -1 : count;
+  prefs_->SetInteger(prefs::kExtensionToolbarSize, visible_icon_count_);
 }
 
 void ExtensionToolbarModel::Observe(NotificationType type,

@@ -269,6 +269,10 @@ const wchar_t kCurrentThemeDisplayProperties[] =
 // (showing developer packing tools and extensions details)
 const wchar_t kExtensionsUIDeveloperMode[] = L"extensions.ui.developer_mode";
 
+// Integer pref that tracks the number of browser actions visible in the browser
+// actions toolbar.
+const wchar_t kExtensionToolbarSize[] = L"extensions.toolbarsize";
+
 // Boolean that indicates whether we should check if we are the default browser
 // on start-up.
 const wchar_t kCheckDefaultBrowser[] = L"browser.check_default_browser";

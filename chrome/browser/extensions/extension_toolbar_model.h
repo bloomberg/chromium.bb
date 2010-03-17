@@ -11,6 +11,7 @@
 #include "chrome/common/notification_registrar.h"
 
 class ExtensionsService;
+class PrefService;
 
 // Model for the browser actions toolbar.
 class ExtensionToolbarModel : public NotificationObserver {
@@ -37,9 +38,11 @@ class ExtensionToolbarModel : public NotificationObserver {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
   void MoveBrowserAction(Extension* extension, int index);
-  // TODO(estade): implement these.
-  void SetVisibleIconCount(int count) {}
-  int GetVisibleIconCount() { return -1; }
+  // If count == size(), this will set the visible icon count to -1, meaning
+  // "show all actions".
+  void SetVisibleIconCount(int count);
+  // As above, a return value of -1 represents "show all actions".
+  int GetVisibleIconCount() { return visible_icon_count_; }
 
   size_t size() const {
     return toolitems_.size();
@@ -83,6 +86,8 @@ class ExtensionToolbarModel : public NotificationObserver {
   // Our ExtensionsService, guaranteed to outlive us.
   ExtensionsService* service_;
 
+  PrefService* prefs_;
+
   // Ordered list of browser action buttons.
   ExtensionList toolitems_;
 
@@ -91,6 +96,10 @@ class ExtensionToolbarModel : public NotificationObserver {
 
   // Keeps track of where the last extension to get disabled was in the list.
   size_t last_extension_removed_index_;
+
+  // The number of icons visible (the rest should be hidden in the overflow
+  // chevron).
+  int visible_icon_count_;
 
   NotificationRegistrar registrar_;
 };

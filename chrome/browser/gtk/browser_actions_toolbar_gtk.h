@@ -81,10 +81,6 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
   // visibility of the overflow button will not change.
   void AnimateToShowNIcons(int count);
 
-  // If the toolbar is at max width and a button is added or removed, then make
-  // sure it stays at the max width.
-  void ButtonAddedOrRemoved();
-
   // Returns true if this extension should be shown in this toolbar. This can
   // return false if we are in an incognito window and the extension is disabled
   // for incognito.
@@ -110,7 +106,7 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
   void DragStarted(BrowserActionButton* button, GdkDragContext* drag_context);
 
   // Sets the width of the button area of the toolbar to |new_width|, clamping
-  // it to appropriate values and updating the model.
+  // it to appropriate values.
   void SetButtonHBoxWidth(int new_width);
 
   CHROMEGTK_CALLBACK_4(BrowserActionsToolbarGtk, gboolean, OnDragMotion,

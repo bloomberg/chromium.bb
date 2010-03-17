@@ -277,6 +277,8 @@ class BrowserActionButton : public NotificationObserver,
   friend class BrowserActionsToolbarGtk;
 };
 
+// BrowserActionsToolbarGtk ----------------------------------------------------
+
 BrowserActionsToolbarGtk::BrowserActionsToolbarGtk(Browser* browser)
     : browser_(browser),
       profile_(browser->profile()),
@@ -330,8 +332,11 @@ BrowserActionsToolbarGtk::BrowserActionsToolbarGtk(Browser* browser)
                    G_CALLBACK(OnHierarchyChangedThunk), this);
 
   int showing_actions = model_->GetVisibleIconCount();
-  if (showing_actions >= 0)
+  if (showing_actions >= 0) {
     SetButtonHBoxWidth(WidthForIconCount(showing_actions));
+    if (showing_actions < static_cast<int>(model_->size()))
+      gtk_widget_show(overflow_button_.widget());
+  }
 
   ViewIDUtil::SetID(button_hbox_, VIEW_ID_BROWSER_ACTION_TOOLBAR);
 }
@@ -453,19 +458,19 @@ void BrowserActionsToolbarGtk::AnimateToShowNIcons(int count) {
   resize_animation_.Show();
 }
 
-void BrowserActionsToolbarGtk::ButtonAddedOrRemoved() {
-  // TODO(estade): this is a little bit janky looking when the removed button
-  // is not the farthest right button.
+void BrowserActionsToolbarGtk::BrowserActionAdded(Extension* extension,
+                                                  int index) {
+  CreateButtonForExtension(extension, index);
+
+  // If we are still initializing the container, don't bother animating.
+  if (model_->size() != extension_button_map_.size())
+    return;
+
+  // Animate the addition if we are showing all browser action buttons.
   if (!GTK_WIDGET_VISIBLE(overflow_button_.widget())) {
     AnimateToShowNIcons(button_count());
     model_->SetVisibleIconCount(button_count());
   }
-}
-
-void BrowserActionsToolbarGtk::BrowserActionAdded(Extension* extension,
-                                                  int index) {
-  CreateButtonForExtension(extension, index);
-  ButtonAddedOrRemoved();
 }
 
 void BrowserActionsToolbarGtk::BrowserActionRemoved(Extension* extension) {
@@ -475,7 +480,13 @@ void BrowserActionsToolbarGtk::BrowserActionRemoved(Extension* extension) {
   }
 
   RemoveButtonForExtension(extension);
-  ButtonAddedOrRemoved();
+
+  if (!GTK_WIDGET_VISIBLE(overflow_button_.widget())) {
+    AnimateToShowNIcons(button_count());
+    model_->SetVisibleIconCount(button_count());
+  } else if (button_count() <= model_->GetVisibleIconCount()) {
+    gtk_widget_hide(overflow_button_.widget());
+  }
 }
 
 void BrowserActionsToolbarGtk::BrowserActionMoved(Extension* extension,
@@ -556,7 +567,6 @@ void BrowserActionsToolbarGtk::SetButtonHBoxWidth(int new_width) {
       gtk_chrome_shrinkable_hbox_get_visible_child_count(
           GTK_CHROME_SHRINKABLE_HBOX(button_hbox_));
 
-  model_->SetVisibleIconCount(showing_icon_count);
   if (model_->size() > static_cast<size_t>(showing_icon_count)) {
     if (!GTK_WIDGET_VISIBLE(overflow_button_.widget())) {
       // When the overflow chevron shows for the first time, take that
@@ -698,6 +708,7 @@ gboolean BrowserActionsToolbarGtk::OnGripperButtonRelease(
       gtk_chrome_shrinkable_hbox_get_visible_child_count(
           GTK_CHROME_SHRINKABLE_HBOX(button_hbox_));
   AnimateToShowNIcons(visible_icon_count);
+  model_->SetVisibleIconCount(visible_icon_count);
 
   return FALSE;
 }

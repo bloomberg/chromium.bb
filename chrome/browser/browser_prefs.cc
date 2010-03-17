@@ -13,6 +13,7 @@
 #include "chrome/browser/dom_ui/new_tab_ui.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/extensions/extension_dom_ui.h"
+#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extensions_ui.h"
 #include "chrome/browser/external_protocol_handler.h"
 #include "chrome/browser/geolocation/geolocation_prefs.h"
@@ -70,7 +71,7 @@ void RegisterLocalState(PrefService* local_state) {
   chrome_browser_net::RegisterPrefs(local_state);
   bookmark_utils::RegisterPrefs(local_state);
   PageInfoModel::RegisterPrefs(local_state);
-#if defined(TOOLKIT_VIEWS)  // TODO(port): whittle this down as we port
+#if defined(TOOLKIT_VIEWS)
   BrowserView::RegisterBrowserViewPrefs(local_state);
 #endif
   TaskManager::RegisterPrefs(local_state);
@@ -98,10 +99,10 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   HostZoomMap::RegisterUserPrefs(user_prefs);
   DevToolsManager::RegisterUserPrefs(user_prefs);
   Blacklist::RegisterUserPrefs(user_prefs);
-#if defined(TOOLKIT_VIEWS)  // TODO(port): whittle this down as we port.
+  ExtensionPrefs::RegisterUserPrefs(user_prefs);
+#if defined(TOOLKIT_VIEWS)
   BrowserActionsContainer::RegisterUserPrefs(user_prefs);
-#endif
-#if defined(TOOLKIT_GTK)
+#elif defined(TOOLKIT_GTK)
   BrowserWindowGtk::RegisterUserPrefs(user_prefs);
 #endif
 #if defined(OS_CHROMEOS)

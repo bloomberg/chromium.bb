@@ -105,6 +105,8 @@ class ExtensionPrefs {
   // Caller takes ownership of returned structure.
   static ExtensionsInfo* CollectExtensionsInfo(ExtensionPrefs* extension_prefs);
 
+  static void RegisterUserPrefs(PrefService* prefs);
+
  private:
 
   // Converts absolute paths in the pref to paths relative to the

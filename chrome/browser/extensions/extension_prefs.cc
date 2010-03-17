@@ -5,6 +5,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/pref_names.h"
 
 using base::Time;
 
@@ -60,12 +61,6 @@ const wchar_t kPrefIncognitoEnabled[] = L"incognito";
 ExtensionPrefs::ExtensionPrefs(PrefService* prefs, const FilePath& root_dir)
     : prefs_(prefs),
       install_directory_(root_dir) {
-  if (!prefs_->FindPreference(kExtensionsPref))
-    prefs_->RegisterDictionaryPref(kExtensionsPref);
-  if (!prefs->FindPreference(kExtensionShelf))
-    prefs->RegisterListPref(kExtensionShelf);
-  if (!prefs->FindPreference(kExtensionToolbar))
-    prefs->RegisterListPref(kExtensionToolbar);
   MakePathsRelative();
 }
 
@@ -579,4 +574,12 @@ ExtensionPrefs::ExtensionsInfo* ExtensionPrefs::CollectExtensionsInfo(
   }
 
   return extensions_info;
+}
+
+// static
+void ExtensionPrefs::RegisterUserPrefs(PrefService* prefs) {
+  prefs->RegisterDictionaryPref(kExtensionsPref);
+  prefs->RegisterListPref(kExtensionShelf);
+  prefs->RegisterListPref(kExtensionToolbar);
+  prefs->RegisterIntegerPref(prefs::kExtensionToolbarSize, -1);
 }
