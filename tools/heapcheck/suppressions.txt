@@ -151,8 +151,6 @@
    bug_34994_a
    Heapcheck:Leak
    ...
-   fun:WebCore::v8StringToWebCoreString
-   ...
    fun:v8::internal::Invoke
    fun:v8::internal::Execution::Call
    fun:v8::Script::Run
@@ -160,8 +158,6 @@
 {
    bug_34994_b
    Heapcheck:Leak
-   ...
-   fun:WebCore::v8StringToWebCoreString
    ...
    fun:v8::internal::Invoke
    fun:v8::internal::Execution::Call
