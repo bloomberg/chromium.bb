@@ -108,11 +108,6 @@ bool WorkerProcessHost::Init() {
   }
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kWorkerStartupDialog)) {
-    cmd_line->AppendSwitch(switches::kWorkerStartupDialog);
-  }
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableLogging)) {
     cmd_line->AppendSwitch(switches::kEnableLogging);
   }
@@ -137,6 +132,27 @@ bool WorkerProcessHost::Init() {
 #endif
 
 #if defined(OS_POSIX)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kWaitForDebuggerChildren)) {
+    // Look to pass-on the kWaitForDebugger flag.
+    std::string value = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+        switches::kWaitForDebuggerChildren);
+    if (value.empty() || value == switches::kWorkerProcess) {
+      cmd_line->AppendSwitch(switches::kWaitForDebugger);
+    }
+  }
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDebugChildren)) {
+    // Look to pass-on the kDebugOnStart flag.
+    std::string value = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+        switches::kDebugChildren);
+    if (value.empty() || value == switches::kWorkerProcess) {
+      // launches a new xterm, and runs the worker process in gdb, reading
+      // optional commands from gdb_chrome file in the working directory.
+      cmd_line->PrependWrapper(L"xterm -e gdb -x gdb_chrome --args");
+    }
+  }
+
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kRendererCmdPrefix)) {
     const std::wstring prefix =

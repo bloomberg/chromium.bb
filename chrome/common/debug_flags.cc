@@ -20,6 +20,8 @@ bool DebugFlags::ProcessDebugFlags(CommandLine* command_line,
     std::string value = current_cmd_line.GetSwitchValueASCII(
         switches::kDebugChildren);
     if (value.empty() ||
+        (type == ChildProcessInfo::WORKER_PROCESS &&
+         value == switches::kWorkerProcess) ||
         (type == ChildProcessInfo::RENDER_PROCESS &&
          value == switches::kRendererProcess) ||
         (type == ChildProcessInfo::PLUGIN_PROCESS &&
@@ -33,6 +35,8 @@ bool DebugFlags::ProcessDebugFlags(CommandLine* command_line,
     std::string value = current_cmd_line.GetSwitchValueASCII(
         switches::kWaitForDebuggerChildren);
     if (value.empty() ||
+        (type == ChildProcessInfo::WORKER_PROCESS &&
+         value == switches::kWorkerProcess) ||
         (type == ChildProcessInfo::RENDER_PROCESS &&
          value == switches::kRendererProcess) ||
         (type == ChildProcessInfo::PLUGIN_PROCESS &&

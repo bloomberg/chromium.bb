@@ -41,7 +41,7 @@ int WorkerMain(const MainFunctionParams& parameters) {
 #endif
 
   const CommandLine& parsed_command_line = parameters.command_line_;
-  if (parsed_command_line.HasSwitch(switches::kWorkerStartupDialog)) {
+  if (parsed_command_line.HasSwitch(switches::kWaitForDebugger)) {
     ChildProcess::WaitForDebugger(L"Worker");
   }
 
