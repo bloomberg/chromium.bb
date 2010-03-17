@@ -141,7 +141,7 @@ TEST_F(L10nUtilTest, GetAppLocale) {
   // Keep a copy of ICU's default locale before we overwrite it.
   icu::Locale locale = icu::Locale::getDefault();
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) && !defined(OS_CHROMEOS)
   // Test the support of LANGUAGE environment variable.
   SetICUDefaultLocale("en-US");
   ::setenv("LANGUAGE", "xx:fr_CA", 1);
@@ -166,19 +166,29 @@ TEST_F(L10nUtilTest, GetAppLocale) {
   // Make sure the follow tests won't be affected by LANGUAGE environment
   // variable.
   ::unsetenv("LANGUAGE");
-#endif
+#endif  // defined(OS_POSIX) && !defined(OS_CHROMEOS)
 
   SetICUDefaultLocale("en-US");
   EXPECT_EQ("en-US", l10n_util::GetApplicationLocale(L""));
 
+  SetICUDefaultLocale("xx");
+  EXPECT_EQ("en-US", l10n_util::GetApplicationLocale(L""));
+
+#if defined(OS_CHROMEOS)
+  // ChromeOS honors preferred locale first in GetApplicationLocale(),
+  // defaulting to en-US, while other targets first honor other signals.
+  SetICUDefaultLocale("en-GB");
+  EXPECT_EQ("en-US", l10n_util::GetApplicationLocale(L""));
+
+  SetICUDefaultLocale("en-US");
+  EXPECT_EQ("en-GB", l10n_util::GetApplicationLocale(L"en-GB"));
+
+#else  // defined(OS_CHROMEOS)
   SetICUDefaultLocale("en-GB");
   EXPECT_EQ("en-GB", l10n_util::GetApplicationLocale(L""));
 
   SetICUDefaultLocale("fr-CA");
   EXPECT_EQ("fr", l10n_util::GetApplicationLocale(L""));
-
-  SetICUDefaultLocale("xx");
-  EXPECT_EQ("en-US", l10n_util::GetApplicationLocale(L""));
 
   SetICUDefaultLocale("es-MX");
   EXPECT_EQ("es-419", l10n_util::GetApplicationLocale(L""));
@@ -200,6 +210,7 @@ TEST_F(L10nUtilTest, GetAppLocale) {
 
   SetICUDefaultLocale("zh-SG");
   EXPECT_EQ("zh-CN", l10n_util::GetApplicationLocale(L""));
+#endif  // defined (OS_CHROMEOS)
 
 #if defined(OS_WIN)
   // We don't allow user prefs for locale on linux/mac.
