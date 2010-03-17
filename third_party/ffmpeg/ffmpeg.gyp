@@ -2,10 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# TODO(fbarchard): Turn off --enable-memalign-hack for all but windows.
+# TODO(fbarchard): Add wmapro.
 # TODO(ajwong): Determine if we want to statically link libz.
-
-
 
 {
   'target_defaults': {
@@ -151,6 +149,7 @@
                 'source/patched-ffmpeg-mt/libavcodec/aac.c',
                 'source/patched-ffmpeg-mt/libavcodec/aac_ac3_parser.c',
                 'source/patched-ffmpeg-mt/libavcodec/aac_parser.c',
+                'source/patched-ffmpeg-mt/libavcodec/aacsbr.c', # TODO(fbarchard): Review this file.
                 'source/patched-ffmpeg-mt/libavcodec/aactab.c',
                 'source/patched-ffmpeg-mt/libavcodec/cabac.c',
                 'source/patched-ffmpeg-mt/libavcodec/error_resilience.c',
@@ -173,6 +172,7 @@
                 'source/patched-ffmpeg-mt/libavcodec/mpegaudiodec.c',
                 'source/patched-ffmpeg-mt/libavcodec/mpegaudiodecheader.c',
                 'source/patched-ffmpeg-mt/libavcodec/mpegvideo.c',
+                'source/patched-ffmpeg-mt/libavcodec/rdft.c', # TODO(fbarchard): Review this file.
                 'source/patched-ffmpeg-mt/libavformat/gxf.c', # TODO(fbarchard): Review this file.
                 'source/patched-ffmpeg-mt/libavformat/id3v2.c',
                 'source/patched-ffmpeg-mt/libavformat/isom.c',
@@ -190,9 +190,9 @@
             }],  # ffmpeg_branding
             ['ffmpeg_branding=="ChromeOS"', {
               'sources': [
-		'source/patched-ffmpeg-mt/libavcodec/aandcttab.c', # TODO(fbarchard): For mpeg4 bsf. Review this file.
-		'source/patched-ffmpeg-mt/libavcodec/error_resilience.c', # TODO(fbarchard): For mpeg4 bsf. Review this file.
-		'source/patched-ffmpeg-mt/libavcodec/faandct.c', # TODO(fbarchard): For mpeg4 bsf. Review this file.
+                'source/patched-ffmpeg-mt/libavcodec/aandcttab.c', # TODO(fbarchard): For mpeg4 bsf. Review this file.
+                'source/patched-ffmpeg-mt/libavcodec/error_resilience.c', # TODO(fbarchard): For mpeg4 bsf. Review this file.
+                'source/patched-ffmpeg-mt/libavcodec/faandct.c', # TODO(fbarchard): For mpeg4 bsf. Review this file.
                 'source/patched-ffmpeg-mt/libavcodec/h263.c',
                 'source/patched-ffmpeg-mt/libavcodec/h263_parser.c', # TODO(fbarchard): Review this file.
                 'source/patched-ffmpeg-mt/libavcodec/h263dec.c',
@@ -200,22 +200,22 @@
                 'source/patched-ffmpeg-mt/libavcodec/intrax8.c',
                 'source/patched-ffmpeg-mt/libavcodec/intrax8dsp.c',
                 'source/patched-ffmpeg-mt/libavcodec/ituh263dec.c', # TODO(fbarchard): Review this file.
-		'source/patched-ffmpeg-mt/libavcodec/ituh263enc.c', # TODO(fbarchard): For mpeg4 bsf. Review this file.
-		'source/patched-ffmpeg-mt/libavcodec/jfdctint.c', # TODO(fbarchard): For mpeg4 bsf. Review this file.
-		'source/patched-ffmpeg-mt/libavcodec/jfdctfst.c', # TODO(fbarchard): For mpeg4 bsf. Review this file.
-		'source/patched-ffmpeg-mt/libavcodec/motion_est.c', # TODO(fbarchard): For mpeg4 bsf. Review this file.
+                'source/patched-ffmpeg-mt/libavcodec/ituh263enc.c', # TODO(fbarchard): For mpeg4 bsf. Review this file.
+                'source/patched-ffmpeg-mt/libavcodec/jfdctint.c', # TODO(fbarchard): For mpeg4 bsf. Review this file.
+                'source/patched-ffmpeg-mt/libavcodec/jfdctfst.c', # TODO(fbarchard): For mpeg4 bsf. Review this file.
+                'source/patched-ffmpeg-mt/libavcodec/motion_est.c', # TODO(fbarchard): For mpeg4 bsf. Review this file.
                 'source/patched-ffmpeg-mt/libavcodec/mpeg4data.h', # TODO(fbarchard): Review this file.
                 'source/patched-ffmpeg-mt/libavcodec/mpeg4video.c', # TODO(fbarchard): Review this file.
                 'source/patched-ffmpeg-mt/libavcodec/mpeg4video.h', # TODO(fbarchard): Review this file.
                 'source/patched-ffmpeg-mt/libavcodec/mpeg4video_parser.c',
                 'source/patched-ffmpeg-mt/libavcodec/mpeg4video_es_bsf.c', # TODO(fbarchard): Review this file.
-		'source/patched-ffmpeg-mt/libavcodec/mpeg4videoenc.c', # TODO(fbarchard): For mpeg4 bsf. Review this file.
-		'source/patched-ffmpeg-mt/libavcodec/mpeg4videodec.c', # TODO(fbarchard): Review this file.
-		'source/patched-ffmpeg-mt/libavcodec/mpegvideo.c', # TODO(fbarchard): For mpeg4 bsf. Review this file.
-		'source/patched-ffmpeg-mt/libavcodec/mpegvideo_enc.c', # TODO(fbarchard): For mpeg4 bsf. Review this file.
+                'source/patched-ffmpeg-mt/libavcodec/mpeg4videoenc.c', # TODO(fbarchard): For mpeg4 bsf. Review this file.
+                'source/patched-ffmpeg-mt/libavcodec/mpeg4videodec.c', # TODO(fbarchard): Review this file.
+                'source/patched-ffmpeg-mt/libavcodec/mpegvideo.c', # TODO(fbarchard): For mpeg4 bsf. Review this file.
+                'source/patched-ffmpeg-mt/libavcodec/mpegvideo_enc.c', # TODO(fbarchard): For mpeg4 bsf. Review this file.
                 'source/patched-ffmpeg-mt/libavcodec/msmpeg4.c',
                 'source/patched-ffmpeg-mt/libavcodec/msmpeg4data.c',
-		'source/patched-ffmpeg-mt/libavcodec/ratecontrol.c', # TODO(fbarchard): For mpeg4 bsf. Review this file.
+                'source/patched-ffmpeg-mt/libavcodec/ratecontrol.c', # TODO(fbarchard): For mpeg4 bsf. Review this file.
                 'source/patched-ffmpeg-mt/libavcodec/vc1.c',
                 'source/patched-ffmpeg-mt/libavcodec/vc1data.c',
                 'source/patched-ffmpeg-mt/libavcodec/vc1dec.c', # TODO(fbarchard): Review this file.
@@ -273,7 +273,7 @@
             ['target_arch=="ia32"', {
               'cflags!': [
                 # Turn off valgrind build option that breaks ffmpeg builds.
-		# Allows config.h HAVE_EBP_AVAILABLE 1 and HAVE_EBX_AVAILABLE 1
+                # Allows config.h HAVE_EBP_AVAILABLE 1 and HAVE_EBX_AVAILABLE 1
                 '-fno-omit-frame-pointer',
               ],
             }],  # target_arch=="ia32"
