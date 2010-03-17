@@ -207,3 +207,9 @@
   fun:MessageLoop::RunTask
 }
 
+{
+  bug_38402
+  Heapcheck:Leak
+  fun:ProfileSyncFactoryImpl::CreateProfileSyncService
+  fun:TestingProfile::CreateProfileSyncService
+}
