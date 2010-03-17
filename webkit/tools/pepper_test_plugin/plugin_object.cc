@@ -35,8 +35,6 @@
 #else
 #include "base/logging.h"
 #include "build/build_config.h"
-#include "gpu/command_buffer/client/gles2_demo_cc.h"
-#include <GLES2/gl2.h>  // NOLINT
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
@@ -328,8 +326,8 @@ NPClass* PluginObject::GetPluginClass() {
 }
 
 namespace {
-void Draw3DCallback(void* data) {
-  static_cast<PluginObject*>(data)->Draw3D();
+void Draw3DCallback(NPP npp, NPDeviceContext3D* /* context */) {
+  static_cast<PluginObject*>(npp->pdata)->Draw3D();
 }
 }
 
@@ -383,9 +381,7 @@ void PluginObject::SetWindow(const NPWindow& window) {
 #if !defined(INDEPENDENT_PLUGIN)
     if (!pgl_context_)
       Initialize3D();
-
-    // Schedule the first call to Draw.
-    browser->pluginthreadasynccall(npp_, Draw3DCallback, this);
+    demo_3d_.SetWindowSize(width_, height_);
 #endif
   }
 
@@ -415,13 +411,16 @@ void PluginObject::Initialize3D() {
   NPDeviceContext3DConfig config;
   config.commandBufferSize = kCommandBufferSize;
   device3d_->initializeContext(npp_, &config, &context3d_);
+  context3d_.repaintCallback = Draw3DCallback;
 
   // Create a PGL context.
   pgl_context_ = pglCreateContext(npp_, device3d_, &context3d_);
 
   // Initialize the demo GL state.
   pglMakeCurrent(pgl_context_);
-  GLFromCPPInit();
+  demo_3d_.SetWindowSize(width_, height_);
+  CHECK(demo_3d_.InitGL());
+
   pglMakeCurrent(PGL_NO_CONTEXT);
 #endif  // INDEPENDENT_PLUGIN
 }
@@ -429,6 +428,8 @@ void PluginObject::Initialize3D() {
 void PluginObject::Destroy3D() {
 #if !defined(INDEPENDENT_PLUGIN)
   DCHECK(pgl_context_);
+
+  demo_3d_.ReleaseGL();
 
   // Destroy the PGL context.
   pglDestroyContext(pgl_context_);
@@ -455,8 +456,7 @@ void PluginObject::Draw3D() {
     pglMakeCurrent(pgl_context_);
   }
 
-  glViewport(0, 0, width_, height_);
-  GLFromCPPDraw();
+  demo_3d_.Draw();
   pglSwapBuffers();
   pglMakeCurrent(PGL_NO_CONTEXT);
 
@@ -471,8 +471,5 @@ void PluginObject::Draw3D() {
                           &context3d_,
                           AsyncFlushCallback,
                           reinterpret_cast<void*>(0x3D2));
-
-  // Schedule another call to Draw.
-  browser->pluginthreadasynccall(npp_, Draw3DCallback, this);
 #endif  // INDEPENDENT_PLUGIN
 }

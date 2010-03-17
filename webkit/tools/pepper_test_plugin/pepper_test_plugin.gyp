@@ -17,13 +17,15 @@
         'INFOPLIST_FILE': 'Info.plist',
       },
       'sources': [
+        'demo_3d.cc',
+        'demo_3d.h',
+        'event_handler.cc',
+        'event_handler.h',
         'main.cc',
         'plugin_object.cc',
         'plugin_object.h',
         'test_object.cc',
         'test_object.h',
-        'event_handler.cc',
-        'event_handler.h'
       ],
       'conditions': [
         ['OS=="win"', {
@@ -62,8 +64,8 @@
           'dependencies': [
             '../../../base/base.gyp:base',
             '../../../skia/skia.gyp:skia',
-            '../../../gpu/gpu.gyp:gles2_demo_lib',
             '../../../gpu/gpu.gyp:pgl',
+            '../../../third_party/gles2_book/gles2_book.gyp:hello_triangle',
           ],
         }],
         ['OS=="mac"', {

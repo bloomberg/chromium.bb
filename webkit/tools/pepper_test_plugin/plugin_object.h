@@ -31,6 +31,7 @@
 #include "third_party/npapi/bindings/nphostapi.h"
 #if !defined(INDEPENDENT_PLUGIN)
 #include "gpu/pgl/pgl.h"
+#include "webkit/tools/pepper_test_plugin/demo_3d.h"
 #endif
 
 extern NPNetscapeFuncs* browser;
@@ -62,6 +63,7 @@ class PluginObject {
 
 #if !defined(INDEPENDENT_PLUGIN)
   PGLContext pgl_context_;
+  pepper::Demo3D demo_3d_;
 #endif
 
   NPDevice* deviceaudio_;

@@ -1,4 +1,4 @@
 include_rules = [
-  "+gpu/command_buffer",
   "+gpu/pgl",
+  "+third_party/gles2_book",
 ]
