@@ -26,6 +26,8 @@ ExtensionInfoBarDelegate::ExtensionInfoBarDelegate(Browser* browser,
 
   registrar_.Add(this, NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE,
                  Source<Profile>(browser->profile()));
+  registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
+                 Source<Profile>(browser->profile()));
 }
 
 ExtensionInfoBarDelegate::~ExtensionInfoBarDelegate() {
@@ -34,6 +36,14 @@ ExtensionInfoBarDelegate::~ExtensionInfoBarDelegate() {
 bool ExtensionInfoBarDelegate::EqualsDelegate(InfoBarDelegate* delegate) const {
   ExtensionInfoBarDelegate* extension_delegate =
       delegate->AsExtensionInfoBarDelegate();
+  // When an extension crashes, an InfoBar is shown (for the crashed extension).
+  // That will result in a call to this function (to see if this InfoBarDelegate
+  // is already showing the 'extension crashed InfoBar', which it never is), but
+  // if it is our extension that crashes, the extension delegate is NULL so
+  // we cannot check.
+  if (!extension_delegate)
+    return false;
+
   // Only allow one InfoBar at a time per extension.
   return extension_delegate->extension_host()->extension() ==
          extension_host_->extension();
@@ -53,8 +63,22 @@ InfoBar* ExtensionInfoBarDelegate::CreateInfoBar() {
 void ExtensionInfoBarDelegate::Observe(NotificationType type,
                                        const NotificationSource& source,
                                        const NotificationDetails& details) {
-  DCHECK(type == NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE);
-  const ExtensionHost* result = Details<ExtensionHost>(details).ptr();
-  if (extension_host_.get() == result)
-    tab_contents_->RemoveInfoBar(this);
+  switch (type.value) {
+    case NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE: {
+      const ExtensionHost* result = Details<ExtensionHost>(details).ptr();
+      if (extension_host_.get() == result)
+        tab_contents_->RemoveInfoBar(this);
+      break;
+    }
+    case NotificationType::EXTENSION_UNLOADED: {
+      Extension* extension = Details<Extension>(details).ptr();
+      if (extension_ == extension)
+        tab_contents_->RemoveInfoBar(this);
+      break;
+    }
+    default: {
+      NOTREACHED() << "Unknown message";
+      break;
+    }
+  }
 }
