@@ -21,6 +21,7 @@ bool ValidateGLenumFaceType(GLenum value);
 bool ValidateGLbooleanFalse(GLenum value);
 bool ValidateGLenumFrameBufferParameter(GLenum value);
 bool ValidateGLenumFrameBufferTarget(GLenum value);
+bool ValidateGLenumGLState(GLenum value);
 bool ValidateGLenumHintMode(GLenum value);
 bool ValidateGLenumHintTarget(GLenum value);
 bool ValidateGLenumIndexType(GLenum value);

@@ -265,8 +265,12 @@ error::Error GLES2DecoderImpl::HandleBufferSubDataImmediate(
 error::Error GLES2DecoderImpl::HandleCheckFramebufferStatus(
     uint32 immediate_data_size, const gles2::CheckFramebufferStatus& c) {
   GLenum target = static_cast<GLenum>(c.target);
-  GLenum* result_dst = GetSharedMemoryAs<GLenum*>(
+  typedef CheckFramebufferStatus::Result Result;
+  Result* result_dst = GetSharedMemoryAs<Result*>(
       c.result_shm_id, c.result_shm_offset, sizeof(*result_dst));
+  if (!result_dst) {
+    return error::kOutOfBounds;
+  }
   if (!ValidateGLenumFrameBufferTarget(target)) {
     SetGLError(GL_INVALID_ENUM);
     return error::kNoError;
@@ -1006,19 +1010,34 @@ error::Error GLES2DecoderImpl::HandleGenTexturesImmediate(
 error::Error GLES2DecoderImpl::HandleGetBooleanv(
     uint32 immediate_data_size, const gles2::GetBooleanv& c) {
   GLenum pname = static_cast<GLenum>(c.pname);
-
-  GLboolean* params;
+  typedef GetBooleanv::Result Result;
   GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  uint32 params_size;
-  if (!SafeMultiplyUint32(num_values, sizeof(*params), &params_size)) {
-    return error::kOutOfBounds;
+  if (num_values == 0) {
+    SetGLError(GL_INVALID_ENUM);
+    return error::kNoError;
   }
-  params = GetSharedMemoryAs<GLboolean*>(
-      c.params_shm_id, c.params_shm_offset, params_size);
+  Result* result = GetSharedMemoryAs<Result*>(
+      c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
+  GLboolean* params = result ? result->GetData() : NULL;
+  if (!ValidateGLenumGLState(pname)) {
+    SetGLError(GL_INVALID_ENUM);
+    return error::kNoError;
+  }
   if (params == NULL) {
     return error::kOutOfBounds;
   }
+  // Check that the client initialized the result.
+  if (result->size != 0) {
+    return error::kInvalidArguments;
+  }
+  CopyRealGLErrorsToWrapper();
   glGetBooleanv(pname, params);
+  GLenum error = glGetError();
+  if (error == GL_NO_ERROR) {
+    result->SetNumResults(num_values);
+  } else {
+    SetGLError(error);
+  }
   return error::kNoError;
 }
 
@@ -1026,15 +1045,15 @@ error::Error GLES2DecoderImpl::HandleGetBufferParameteriv(
     uint32 immediate_data_size, const gles2::GetBufferParameteriv& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLenum pname = static_cast<GLenum>(c.pname);
-
-  GLint* params;
+  typedef GetBufferParameteriv::Result Result;
   GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  uint32 params_size;
-  if (!SafeMultiplyUint32(num_values, sizeof(*params), &params_size)) {
-    return error::kOutOfBounds;
+  if (num_values == 0) {
+    SetGLError(GL_INVALID_ENUM);
+    return error::kNoError;
   }
-  params = GetSharedMemoryAs<GLint*>(
-      c.params_shm_id, c.params_shm_offset, params_size);
+  Result* result = GetSharedMemoryAs<Result*>(
+      c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
+  GLint* params = result ? result->GetData() : NULL;
   if (!ValidateGLenumBufferTarget(target)) {
     SetGLError(GL_INVALID_ENUM);
     return error::kNoError;
@@ -1046,14 +1065,29 @@ error::Error GLES2DecoderImpl::HandleGetBufferParameteriv(
   if (params == NULL) {
     return error::kOutOfBounds;
   }
+  // Check that the client initialized the result.
+  if (result->size != 0) {
+    return error::kInvalidArguments;
+  }
+  CopyRealGLErrorsToWrapper();
   glGetBufferParameteriv(target, pname, params);
+  GLenum error = glGetError();
+  if (error == GL_NO_ERROR) {
+    result->SetNumResults(num_values);
+  } else {
+    SetGLError(error);
+  }
   return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleGetError(
     uint32 immediate_data_size, const gles2::GetError& c) {
-  GLenum* result_dst = GetSharedMemoryAs<GLenum*>(
+  typedef GetError::Result Result;
+  Result* result_dst = GetSharedMemoryAs<Result*>(
       c.result_shm_id, c.result_shm_offset, sizeof(*result_dst));
+  if (!result_dst) {
+    return error::kOutOfBounds;
+  }
   *result_dst = GetGLError();
   return error::kNoError;
 }
@@ -1061,19 +1095,34 @@ error::Error GLES2DecoderImpl::HandleGetError(
 error::Error GLES2DecoderImpl::HandleGetFloatv(
     uint32 immediate_data_size, const gles2::GetFloatv& c) {
   GLenum pname = static_cast<GLenum>(c.pname);
-
-  GLfloat* params;
+  typedef GetFloatv::Result Result;
   GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  uint32 params_size;
-  if (!SafeMultiplyUint32(num_values, sizeof(*params), &params_size)) {
-    return error::kOutOfBounds;
+  if (num_values == 0) {
+    SetGLError(GL_INVALID_ENUM);
+    return error::kNoError;
   }
-  params = GetSharedMemoryAs<GLfloat*>(
-      c.params_shm_id, c.params_shm_offset, params_size);
+  Result* result = GetSharedMemoryAs<Result*>(
+      c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
+  GLfloat* params = result ? result->GetData() : NULL;
+  if (!ValidateGLenumGLState(pname)) {
+    SetGLError(GL_INVALID_ENUM);
+    return error::kNoError;
+  }
   if (params == NULL) {
     return error::kOutOfBounds;
   }
+  // Check that the client initialized the result.
+  if (result->size != 0) {
+    return error::kInvalidArguments;
+  }
+  CopyRealGLErrorsToWrapper();
   glGetFloatv(pname, params);
+  GLenum error = glGetError();
+  if (error == GL_NO_ERROR) {
+    result->SetNumResults(num_values);
+  } else {
+    SetGLError(error);
+  }
   return error::kNoError;
 }
 
@@ -1083,15 +1132,15 @@ error::Error GLES2DecoderImpl::HandleGetFramebufferAttachmentParameteriv(
   GLenum target = static_cast<GLenum>(c.target);
   GLenum attachment = static_cast<GLenum>(c.attachment);
   GLenum pname = static_cast<GLenum>(c.pname);
-
-  GLint* params;
+  typedef GetFramebufferAttachmentParameteriv::Result Result;
   GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  uint32 params_size;
-  if (!SafeMultiplyUint32(num_values, sizeof(*params), &params_size)) {
-    return error::kOutOfBounds;
+  if (num_values == 0) {
+    SetGLError(GL_INVALID_ENUM);
+    return error::kNoError;
   }
-  params = GetSharedMemoryAs<GLint*>(
-      c.params_shm_id, c.params_shm_offset, params_size);
+  Result* result = GetSharedMemoryAs<Result*>(
+      c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
+  GLint* params = result ? result->GetData() : NULL;
   if (!ValidateGLenumFrameBufferTarget(target)) {
     SetGLError(GL_INVALID_ENUM);
     return error::kNoError;
@@ -1107,26 +1156,52 @@ error::Error GLES2DecoderImpl::HandleGetFramebufferAttachmentParameteriv(
   if (params == NULL) {
     return error::kOutOfBounds;
   }
+  // Check that the client initialized the result.
+  if (result->size != 0) {
+    return error::kInvalidArguments;
+  }
+  CopyRealGLErrorsToWrapper();
   DoGetFramebufferAttachmentParameteriv(target, attachment, pname, params);
+  GLenum error = glGetError();
+  if (error == GL_NO_ERROR) {
+    result->SetNumResults(num_values);
+  } else {
+    SetGLError(error);
+  }
   return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleGetIntegerv(
     uint32 immediate_data_size, const gles2::GetIntegerv& c) {
   GLenum pname = static_cast<GLenum>(c.pname);
-
-  GLint* params;
+  typedef GetIntegerv::Result Result;
   GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  uint32 params_size;
-  if (!SafeMultiplyUint32(num_values, sizeof(*params), &params_size)) {
-    return error::kOutOfBounds;
+  if (num_values == 0) {
+    SetGLError(GL_INVALID_ENUM);
+    return error::kNoError;
   }
-  params = GetSharedMemoryAs<GLint*>(
-      c.params_shm_id, c.params_shm_offset, params_size);
+  Result* result = GetSharedMemoryAs<Result*>(
+      c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
+  GLint* params = result ? result->GetData() : NULL;
+  if (!ValidateGLenumGLState(pname)) {
+    SetGLError(GL_INVALID_ENUM);
+    return error::kNoError;
+  }
   if (params == NULL) {
     return error::kOutOfBounds;
   }
+  // Check that the client initialized the result.
+  if (result->size != 0) {
+    return error::kInvalidArguments;
+  }
+  CopyRealGLErrorsToWrapper();
   glGetIntegerv(pname, params);
+  GLenum error = glGetError();
+  if (error == GL_NO_ERROR) {
+    result->SetNumResults(num_values);
+  } else {
+    SetGLError(error);
+  }
   return error::kNoError;
 }
 
@@ -1138,15 +1213,15 @@ error::Error GLES2DecoderImpl::HandleGetProgramiv(
     return error::kNoError;
   }
   GLenum pname = static_cast<GLenum>(c.pname);
-
-  GLint* params;
+  typedef GetProgramiv::Result Result;
   GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  uint32 params_size;
-  if (!SafeMultiplyUint32(num_values, sizeof(*params), &params_size)) {
-    return error::kOutOfBounds;
+  if (num_values == 0) {
+    SetGLError(GL_INVALID_ENUM);
+    return error::kNoError;
   }
-  params = GetSharedMemoryAs<GLint*>(
-      c.params_shm_id, c.params_shm_offset, params_size);
+  Result* result = GetSharedMemoryAs<Result*>(
+      c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
+  GLint* params = result ? result->GetData() : NULL;
   if (!ValidateGLenumProgramParameter(pname)) {
     SetGLError(GL_INVALID_ENUM);
     return error::kNoError;
@@ -1154,7 +1229,18 @@ error::Error GLES2DecoderImpl::HandleGetProgramiv(
   if (params == NULL) {
     return error::kOutOfBounds;
   }
+  // Check that the client initialized the result.
+  if (result->size != 0) {
+    return error::kInvalidArguments;
+  }
+  CopyRealGLErrorsToWrapper();
   glGetProgramiv(program, pname, params);
+  GLenum error = glGetError();
+  if (error == GL_NO_ERROR) {
+    result->SetNumResults(num_values);
+  } else {
+    SetGLError(error);
+  }
   return error::kNoError;
 }
 
@@ -1179,15 +1265,15 @@ error::Error GLES2DecoderImpl::HandleGetRenderbufferParameteriv(
     uint32 immediate_data_size, const gles2::GetRenderbufferParameteriv& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLenum pname = static_cast<GLenum>(c.pname);
-
-  GLint* params;
+  typedef GetRenderbufferParameteriv::Result Result;
   GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  uint32 params_size;
-  if (!SafeMultiplyUint32(num_values, sizeof(*params), &params_size)) {
-    return error::kOutOfBounds;
+  if (num_values == 0) {
+    SetGLError(GL_INVALID_ENUM);
+    return error::kNoError;
   }
-  params = GetSharedMemoryAs<GLint*>(
-      c.params_shm_id, c.params_shm_offset, params_size);
+  Result* result = GetSharedMemoryAs<Result*>(
+      c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
+  GLint* params = result ? result->GetData() : NULL;
   if (!ValidateGLenumRenderBufferTarget(target)) {
     SetGLError(GL_INVALID_ENUM);
     return error::kNoError;
@@ -1199,7 +1285,18 @@ error::Error GLES2DecoderImpl::HandleGetRenderbufferParameteriv(
   if (params == NULL) {
     return error::kOutOfBounds;
   }
+  // Check that the client initialized the result.
+  if (result->size != 0) {
+    return error::kInvalidArguments;
+  }
+  CopyRealGLErrorsToWrapper();
   DoGetRenderbufferParameteriv(target, pname, params);
+  GLenum error = glGetError();
+  if (error == GL_NO_ERROR) {
+    result->SetNumResults(num_values);
+  } else {
+    SetGLError(error);
+  }
   return error::kNoError;
 }
 
@@ -1211,15 +1308,15 @@ error::Error GLES2DecoderImpl::HandleGetShaderiv(
     return error::kNoError;
   }
   GLenum pname = static_cast<GLenum>(c.pname);
-
-  GLint* params;
+  typedef GetShaderiv::Result Result;
   GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  uint32 params_size;
-  if (!SafeMultiplyUint32(num_values, sizeof(*params), &params_size)) {
-    return error::kOutOfBounds;
+  if (num_values == 0) {
+    SetGLError(GL_INVALID_ENUM);
+    return error::kNoError;
   }
-  params = GetSharedMemoryAs<GLint*>(
-      c.params_shm_id, c.params_shm_offset, params_size);
+  Result* result = GetSharedMemoryAs<Result*>(
+      c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
+  GLint* params = result ? result->GetData() : NULL;
   if (!ValidateGLenumShaderParameter(pname)) {
     SetGLError(GL_INVALID_ENUM);
     return error::kNoError;
@@ -1227,7 +1324,18 @@ error::Error GLES2DecoderImpl::HandleGetShaderiv(
   if (params == NULL) {
     return error::kOutOfBounds;
   }
+  // Check that the client initialized the result.
+  if (result->size != 0) {
+    return error::kInvalidArguments;
+  }
+  CopyRealGLErrorsToWrapper();
   DoGetShaderiv(shader, pname, params);
+  GLenum error = glGetError();
+  if (error == GL_NO_ERROR) {
+    result->SetNumResults(num_values);
+  } else {
+    SetGLError(error);
+  }
   return error::kNoError;
 }
 
@@ -1269,15 +1377,15 @@ error::Error GLES2DecoderImpl::HandleGetTexParameterfv(
     uint32 immediate_data_size, const gles2::GetTexParameterfv& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLenum pname = static_cast<GLenum>(c.pname);
-
-  GLfloat* params;
+  typedef GetTexParameterfv::Result Result;
   GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  uint32 params_size;
-  if (!SafeMultiplyUint32(num_values, sizeof(*params), &params_size)) {
-    return error::kOutOfBounds;
+  if (num_values == 0) {
+    SetGLError(GL_INVALID_ENUM);
+    return error::kNoError;
   }
-  params = GetSharedMemoryAs<GLfloat*>(
-      c.params_shm_id, c.params_shm_offset, params_size);
+  Result* result = GetSharedMemoryAs<Result*>(
+      c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
+  GLfloat* params = result ? result->GetData() : NULL;
   if (!ValidateGLenumTextureTarget(target)) {
     SetGLError(GL_INVALID_ENUM);
     return error::kNoError;
@@ -1289,7 +1397,18 @@ error::Error GLES2DecoderImpl::HandleGetTexParameterfv(
   if (params == NULL) {
     return error::kOutOfBounds;
   }
+  // Check that the client initialized the result.
+  if (result->size != 0) {
+    return error::kInvalidArguments;
+  }
+  CopyRealGLErrorsToWrapper();
   glGetTexParameterfv(target, pname, params);
+  GLenum error = glGetError();
+  if (error == GL_NO_ERROR) {
+    result->SetNumResults(num_values);
+  } else {
+    SetGLError(error);
+  }
   return error::kNoError;
 }
 
@@ -1297,15 +1416,15 @@ error::Error GLES2DecoderImpl::HandleGetTexParameteriv(
     uint32 immediate_data_size, const gles2::GetTexParameteriv& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLenum pname = static_cast<GLenum>(c.pname);
-
-  GLint* params;
+  typedef GetTexParameteriv::Result Result;
   GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  uint32 params_size;
-  if (!SafeMultiplyUint32(num_values, sizeof(*params), &params_size)) {
-    return error::kOutOfBounds;
+  if (num_values == 0) {
+    SetGLError(GL_INVALID_ENUM);
+    return error::kNoError;
   }
-  params = GetSharedMemoryAs<GLint*>(
-      c.params_shm_id, c.params_shm_offset, params_size);
+  Result* result = GetSharedMemoryAs<Result*>(
+      c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
+  GLint* params = result ? result->GetData() : NULL;
   if (!ValidateGLenumTextureTarget(target)) {
     SetGLError(GL_INVALID_ENUM);
     return error::kNoError;
@@ -1317,7 +1436,18 @@ error::Error GLES2DecoderImpl::HandleGetTexParameteriv(
   if (params == NULL) {
     return error::kOutOfBounds;
   }
+  // Check that the client initialized the result.
+  if (result->size != 0) {
+    return error::kInvalidArguments;
+  }
+  CopyRealGLErrorsToWrapper();
   glGetTexParameteriv(target, pname, params);
+  GLenum error = glGetError();
+  if (error == GL_NO_ERROR) {
+    result->SetNumResults(num_values);
+  } else {
+    SetGLError(error);
+  }
   return error::kNoError;
 }
 
@@ -1325,15 +1455,15 @@ error::Error GLES2DecoderImpl::HandleGetVertexAttribfv(
     uint32 immediate_data_size, const gles2::GetVertexAttribfv& c) {
   GLuint index = static_cast<GLuint>(c.index);
   GLenum pname = static_cast<GLenum>(c.pname);
-
-  GLfloat* params;
+  typedef GetVertexAttribfv::Result Result;
   GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  uint32 params_size;
-  if (!SafeMultiplyUint32(num_values, sizeof(*params), &params_size)) {
-    return error::kOutOfBounds;
+  if (num_values == 0) {
+    SetGLError(GL_INVALID_ENUM);
+    return error::kNoError;
   }
-  params = GetSharedMemoryAs<GLfloat*>(
-      c.params_shm_id, c.params_shm_offset, params_size);
+  Result* result = GetSharedMemoryAs<Result*>(
+      c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
+  GLfloat* params = result ? result->GetData() : NULL;
   if (!ValidateGLenumVertexAttribute(pname)) {
     SetGLError(GL_INVALID_ENUM);
     return error::kNoError;
@@ -1341,7 +1471,18 @@ error::Error GLES2DecoderImpl::HandleGetVertexAttribfv(
   if (params == NULL) {
     return error::kOutOfBounds;
   }
+  // Check that the client initialized the result.
+  if (result->size != 0) {
+    return error::kInvalidArguments;
+  }
+  CopyRealGLErrorsToWrapper();
   glGetVertexAttribfv(index, pname, params);
+  GLenum error = glGetError();
+  if (error == GL_NO_ERROR) {
+    result->SetNumResults(num_values);
+  } else {
+    SetGLError(error);
+  }
   return error::kNoError;
 }
 
@@ -1349,15 +1490,15 @@ error::Error GLES2DecoderImpl::HandleGetVertexAttribiv(
     uint32 immediate_data_size, const gles2::GetVertexAttribiv& c) {
   GLuint index = static_cast<GLuint>(c.index);
   GLenum pname = static_cast<GLenum>(c.pname);
-
-  GLint* params;
+  typedef GetVertexAttribiv::Result Result;
   GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  uint32 params_size;
-  if (!SafeMultiplyUint32(num_values, sizeof(*params), &params_size)) {
-    return error::kOutOfBounds;
+  if (num_values == 0) {
+    SetGLError(GL_INVALID_ENUM);
+    return error::kNoError;
   }
-  params = GetSharedMemoryAs<GLint*>(
-      c.params_shm_id, c.params_shm_offset, params_size);
+  Result* result = GetSharedMemoryAs<Result*>(
+      c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
+  GLint* params = result ? result->GetData() : NULL;
   if (!ValidateGLenumVertexAttribute(pname)) {
     SetGLError(GL_INVALID_ENUM);
     return error::kNoError;
@@ -1365,7 +1506,18 @@ error::Error GLES2DecoderImpl::HandleGetVertexAttribiv(
   if (params == NULL) {
     return error::kOutOfBounds;
   }
+  // Check that the client initialized the result.
+  if (result->size != 0) {
+    return error::kInvalidArguments;
+  }
+  CopyRealGLErrorsToWrapper();
   glGetVertexAttribiv(index, pname, params);
+  GLenum error = glGetError();
+  if (error == GL_NO_ERROR) {
+    result->SetNumResults(num_values);
+  } else {
+    SetGLError(error);
+  }
   return error::kNoError;
 }
 
@@ -1392,8 +1544,12 @@ error::Error GLES2DecoderImpl::HandleIsBuffer(
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
-  GLboolean* result_dst = GetSharedMemoryAs<GLboolean*>(
+  typedef IsBuffer::Result Result;
+  Result* result_dst = GetSharedMemoryAs<Result*>(
       c.result_shm_id, c.result_shm_offset, sizeof(*result_dst));
+  if (!result_dst) {
+    return error::kOutOfBounds;
+  }
   *result_dst = glIsBuffer(buffer);
   return error::kNoError;
 }
@@ -1401,8 +1557,12 @@ error::Error GLES2DecoderImpl::HandleIsBuffer(
 error::Error GLES2DecoderImpl::HandleIsEnabled(
     uint32 immediate_data_size, const gles2::IsEnabled& c) {
   GLenum cap = static_cast<GLenum>(c.cap);
-  GLboolean* result_dst = GetSharedMemoryAs<GLboolean*>(
+  typedef IsEnabled::Result Result;
+  Result* result_dst = GetSharedMemoryAs<Result*>(
       c.result_shm_id, c.result_shm_offset, sizeof(*result_dst));
+  if (!result_dst) {
+    return error::kOutOfBounds;
+  }
   if (!ValidateGLenumCapability(cap)) {
     SetGLError(GL_INVALID_ENUM);
     return error::kNoError;
@@ -1418,8 +1578,12 @@ error::Error GLES2DecoderImpl::HandleIsFramebuffer(
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
-  GLboolean* result_dst = GetSharedMemoryAs<GLboolean*>(
+  typedef IsFramebuffer::Result Result;
+  Result* result_dst = GetSharedMemoryAs<Result*>(
       c.result_shm_id, c.result_shm_offset, sizeof(*result_dst));
+  if (!result_dst) {
+    return error::kOutOfBounds;
+  }
   *result_dst = glIsFramebufferEXT(framebuffer);
   return error::kNoError;
 }
@@ -1431,8 +1595,12 @@ error::Error GLES2DecoderImpl::HandleIsProgram(
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
-  GLboolean* result_dst = GetSharedMemoryAs<GLboolean*>(
+  typedef IsProgram::Result Result;
+  Result* result_dst = GetSharedMemoryAs<Result*>(
       c.result_shm_id, c.result_shm_offset, sizeof(*result_dst));
+  if (!result_dst) {
+    return error::kOutOfBounds;
+  }
   *result_dst = glIsProgram(program);
   return error::kNoError;
 }
@@ -1444,8 +1612,12 @@ error::Error GLES2DecoderImpl::HandleIsRenderbuffer(
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
-  GLboolean* result_dst = GetSharedMemoryAs<GLboolean*>(
+  typedef IsRenderbuffer::Result Result;
+  Result* result_dst = GetSharedMemoryAs<Result*>(
       c.result_shm_id, c.result_shm_offset, sizeof(*result_dst));
+  if (!result_dst) {
+    return error::kOutOfBounds;
+  }
   *result_dst = glIsRenderbufferEXT(renderbuffer);
   return error::kNoError;
 }
@@ -1457,8 +1629,12 @@ error::Error GLES2DecoderImpl::HandleIsShader(
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
-  GLboolean* result_dst = GetSharedMemoryAs<GLboolean*>(
+  typedef IsShader::Result Result;
+  Result* result_dst = GetSharedMemoryAs<Result*>(
       c.result_shm_id, c.result_shm_offset, sizeof(*result_dst));
+  if (!result_dst) {
+    return error::kOutOfBounds;
+  }
   *result_dst = glIsShader(shader);
   return error::kNoError;
 }
@@ -1470,8 +1646,12 @@ error::Error GLES2DecoderImpl::HandleIsTexture(
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
-  GLboolean* result_dst = GetSharedMemoryAs<GLboolean*>(
+  typedef IsTexture::Result Result;
+  Result* result_dst = GetSharedMemoryAs<Result*>(
       c.result_shm_id, c.result_shm_offset, sizeof(*result_dst));
+  if (!result_dst) {
+    return error::kOutOfBounds;
+  }
   *result_dst = glIsTexture(texture);
   return error::kNoError;
 }

@@ -286,58 +286,58 @@ void GetAttachedShaders(
 GLint GetAttribLocation(GLuint program, const char* name);
 
 void GetBooleanv(GLenum pname, GLboolean* params) {
+  typedef GetBooleanv::Result Result;
+  Result* result = GetResultAs<Result*>();
+  result->SetNumResults(0);
   helper_->GetBooleanv(pname, result_shm_id(), result_shm_offset());
   WaitForCmd();
-  GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  DCHECK_LE(num_values * sizeof(*params), kMaxSizeOfSimpleResult);
-  memcpy(params, result_buffer_, num_values * sizeof(*params));
+  result->CopyResult(params);
 }
-
 void GetBufferParameteriv(GLenum target, GLenum pname, GLint* params) {
+  typedef GetBufferParameteriv::Result Result;
+  Result* result = GetResultAs<Result*>();
+  result->SetNumResults(0);
   helper_->GetBufferParameteriv(
       target, pname, result_shm_id(), result_shm_offset());
   WaitForCmd();
-  GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  DCHECK_LE(num_values * sizeof(*params), kMaxSizeOfSimpleResult);
-  memcpy(params, result_buffer_, num_values * sizeof(*params));
+  result->CopyResult(params);
 }
-
 GLenum GetError();
 
 void GetFloatv(GLenum pname, GLfloat* params) {
+  typedef GetFloatv::Result Result;
+  Result* result = GetResultAs<Result*>();
+  result->SetNumResults(0);
   helper_->GetFloatv(pname, result_shm_id(), result_shm_offset());
   WaitForCmd();
-  GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  DCHECK_LE(num_values * sizeof(*params), kMaxSizeOfSimpleResult);
-  memcpy(params, result_buffer_, num_values * sizeof(*params));
+  result->CopyResult(params);
 }
-
 void GetFramebufferAttachmentParameteriv(
     GLenum target, GLenum attachment, GLenum pname, GLint* params) {
+  typedef GetFramebufferAttachmentParameteriv::Result Result;
+  Result* result = GetResultAs<Result*>();
+  result->SetNumResults(0);
   helper_->GetFramebufferAttachmentParameteriv(
       target, attachment, pname, result_shm_id(), result_shm_offset());
   WaitForCmd();
-  GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  DCHECK_LE(num_values * sizeof(*params), kMaxSizeOfSimpleResult);
-  memcpy(params, result_buffer_, num_values * sizeof(*params));
+  result->CopyResult(params);
 }
-
 void GetIntegerv(GLenum pname, GLint* params) {
+  typedef GetIntegerv::Result Result;
+  Result* result = GetResultAs<Result*>();
+  result->SetNumResults(0);
   helper_->GetIntegerv(pname, result_shm_id(), result_shm_offset());
   WaitForCmd();
-  GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  DCHECK_LE(num_values * sizeof(*params), kMaxSizeOfSimpleResult);
-  memcpy(params, result_buffer_, num_values * sizeof(*params));
+  result->CopyResult(params);
 }
-
 void GetProgramiv(GLuint program, GLenum pname, GLint* params) {
+  typedef GetProgramiv::Result Result;
+  Result* result = GetResultAs<Result*>();
+  result->SetNumResults(0);
   helper_->GetProgramiv(program, pname, result_shm_id(), result_shm_offset());
   WaitForCmd();
-  GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  DCHECK_LE(num_values * sizeof(*params), kMaxSizeOfSimpleResult);
-  memcpy(params, result_buffer_, num_values * sizeof(*params));
+  result->CopyResult(params);
 }
-
 void GetProgramInfoLog(
     GLuint program, GLsizei bufsize, GLsizei* length, char* infolog) {
   helper_->SetBucketSize(kResultBucketId, 0);
@@ -356,22 +356,22 @@ void GetProgramInfoLog(
   }
 }
 void GetRenderbufferParameteriv(GLenum target, GLenum pname, GLint* params) {
+  typedef GetRenderbufferParameteriv::Result Result;
+  Result* result = GetResultAs<Result*>();
+  result->SetNumResults(0);
   helper_->GetRenderbufferParameteriv(
       target, pname, result_shm_id(), result_shm_offset());
   WaitForCmd();
-  GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  DCHECK_LE(num_values * sizeof(*params), kMaxSizeOfSimpleResult);
-  memcpy(params, result_buffer_, num_values * sizeof(*params));
+  result->CopyResult(params);
 }
-
 void GetShaderiv(GLuint shader, GLenum pname, GLint* params) {
+  typedef GetShaderiv::Result Result;
+  Result* result = GetResultAs<Result*>();
+  result->SetNumResults(0);
   helper_->GetShaderiv(shader, pname, result_shm_id(), result_shm_offset());
   WaitForCmd();
-  GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  DCHECK_LE(num_values * sizeof(*params), kMaxSizeOfSimpleResult);
-  memcpy(params, result_buffer_, num_values * sizeof(*params));
+  result->CopyResult(params);
 }
-
 void GetShaderInfoLog(
     GLuint shader, GLsizei bufsize, GLsizei* length, char* infolog) {
   helper_->SetBucketSize(kResultBucketId, 0);
@@ -412,23 +412,23 @@ void GetShaderSource(
 const GLubyte* GetString(GLenum name);
 
 void GetTexParameterfv(GLenum target, GLenum pname, GLfloat* params) {
+  typedef GetTexParameterfv::Result Result;
+  Result* result = GetResultAs<Result*>();
+  result->SetNumResults(0);
   helper_->GetTexParameterfv(
       target, pname, result_shm_id(), result_shm_offset());
   WaitForCmd();
-  GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  DCHECK_LE(num_values * sizeof(*params), kMaxSizeOfSimpleResult);
-  memcpy(params, result_buffer_, num_values * sizeof(*params));
+  result->CopyResult(params);
 }
-
 void GetTexParameteriv(GLenum target, GLenum pname, GLint* params) {
+  typedef GetTexParameteriv::Result Result;
+  Result* result = GetResultAs<Result*>();
+  result->SetNumResults(0);
   helper_->GetTexParameteriv(
       target, pname, result_shm_id(), result_shm_offset());
   WaitForCmd();
-  GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  DCHECK_LE(num_values * sizeof(*params), kMaxSizeOfSimpleResult);
-  memcpy(params, result_buffer_, num_values * sizeof(*params));
+  result->CopyResult(params);
 }
-
 void GetUniformfv(GLuint program, GLint location, GLfloat* params);
 
 void GetUniformiv(GLuint program, GLint location, GLint* params);
@@ -436,23 +436,23 @@ void GetUniformiv(GLuint program, GLint location, GLint* params);
 GLint GetUniformLocation(GLuint program, const char* name);
 
 void GetVertexAttribfv(GLuint index, GLenum pname, GLfloat* params) {
+  typedef GetVertexAttribfv::Result Result;
+  Result* result = GetResultAs<Result*>();
+  result->SetNumResults(0);
   helper_->GetVertexAttribfv(
       index, pname, result_shm_id(), result_shm_offset());
   WaitForCmd();
-  GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  DCHECK_LE(num_values * sizeof(*params), kMaxSizeOfSimpleResult);
-  memcpy(params, result_buffer_, num_values * sizeof(*params));
+  result->CopyResult(params);
 }
-
 void GetVertexAttribiv(GLuint index, GLenum pname, GLint* params) {
+  typedef GetVertexAttribiv::Result Result;
+  Result* result = GetResultAs<Result*>();
+  result->SetNumResults(0);
   helper_->GetVertexAttribiv(
       index, pname, result_shm_id(), result_shm_offset());
   WaitForCmd();
-  GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  DCHECK_LE(num_values * sizeof(*params), kMaxSizeOfSimpleResult);
-  memcpy(params, result_buffer_, num_values * sizeof(*params));
+  result->CopyResult(params);
 }
-
 void GetVertexAttribPointerv(GLuint index, GLenum pname, void** pointer);
 
 void Hint(GLenum target, GLenum mode) {

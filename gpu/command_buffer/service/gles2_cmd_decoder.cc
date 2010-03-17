@@ -212,6 +212,7 @@ class GLES2DecoderImpl : public GLES2Decoder {
   virtual void Destroy();
   virtual bool MakeCurrent();
   virtual uint32 GetServiceIdForTesting(uint32 client_id);
+  virtual GLES2Util* GetGLES2Util() { return &util_; }
 
 #if defined(OS_MACOSX)
   // Overridden from GLES2Decoder.

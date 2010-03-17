@@ -3134,6 +3134,8 @@ struct GetBooleanv {
   static const CommandId kCmdId = kGetBooleanv;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
+  typedef SizedResult<GLboolean> Result;
+
   static uint32 ComputeSize() {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
@@ -3178,6 +3180,8 @@ struct GetBufferParameteriv {
   typedef GetBufferParameteriv ValueType;
   static const CommandId kCmdId = kGetBufferParameteriv;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  typedef SizedResult<GLint> Result;
 
   static uint32 ComputeSize() {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
@@ -3270,6 +3274,8 @@ struct GetFloatv {
   static const CommandId kCmdId = kGetFloatv;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
+  typedef SizedResult<GLfloat> Result;
+
   static uint32 ComputeSize() {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
@@ -3314,6 +3320,8 @@ struct GetFramebufferAttachmentParameteriv {
   typedef GetFramebufferAttachmentParameteriv ValueType;
   static const CommandId kCmdId = kGetFramebufferAttachmentParameteriv;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  typedef SizedResult<GLint> Result;
 
   static uint32 ComputeSize() {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
@@ -3373,6 +3381,8 @@ struct GetIntegerv {
   static const CommandId kCmdId = kGetIntegerv;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
+  typedef SizedResult<GLint> Result;
+
   static uint32 ComputeSize() {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
@@ -3417,6 +3427,8 @@ struct GetProgramiv {
   typedef GetProgramiv ValueType;
   static const CommandId kCmdId = kGetProgramiv;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  typedef SizedResult<GLint> Result;
 
   static uint32 ComputeSize() {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
@@ -3507,6 +3519,8 @@ struct GetRenderbufferParameteriv {
   static const CommandId kCmdId = kGetRenderbufferParameteriv;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
+  typedef SizedResult<GLint> Result;
+
   static uint32 ComputeSize() {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
@@ -3557,6 +3571,8 @@ struct GetShaderiv {
   typedef GetShaderiv ValueType;
   static const CommandId kCmdId = kGetShaderiv;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  typedef SizedResult<GLint> Result;
 
   static uint32 ComputeSize() {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
@@ -3790,6 +3806,8 @@ struct GetTexParameterfv {
   static const CommandId kCmdId = kGetTexParameterfv;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
+  typedef SizedResult<GLfloat> Result;
+
   static uint32 ComputeSize() {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
@@ -3840,6 +3858,8 @@ struct GetTexParameteriv {
   typedef GetTexParameteriv ValueType;
   static const CommandId kCmdId = kGetTexParameteriv;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  typedef SizedResult<GLint> Result;
 
   static uint32 ComputeSize() {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
@@ -3998,6 +4018,8 @@ struct GetVertexAttribfv {
   static const CommandId kCmdId = kGetVertexAttribfv;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
+  typedef SizedResult<GLfloat> Result;
+
   static uint32 ComputeSize() {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
@@ -4048,6 +4070,8 @@ struct GetVertexAttribiv {
   typedef GetVertexAttribiv ValueType;
   static const CommandId kCmdId = kGetVertexAttribiv;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  typedef SizedResult<GLint> Result;
 
   static uint32 ComputeSize() {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT

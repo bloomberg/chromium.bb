@@ -1070,6 +1070,10 @@ TEST_F(GLES2DecoderTest, FramebufferTexture2DWithNoBoundTarget) {
 }
 
 TEST_F(GLES2DecoderTest, GetFramebufferAttachmentParameterivWithNoBoundTarget) {
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .WillOnce(Return(GL_NO_ERROR))
+      .RetiresOnSaturation();
   EXPECT_CALL(*gl_, GetFramebufferAttachmentParameterivEXT(_, _, _, _))
       .Times(0);
   GetFramebufferAttachmentParameteriv cmd;
@@ -1082,6 +1086,10 @@ TEST_F(GLES2DecoderTest, GetFramebufferAttachmentParameterivWithNoBoundTarget) {
 }
 
 TEST_F(GLES2DecoderTest, GetRenderbufferParameterivWithNoBoundTarget) {
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .WillOnce(Return(GL_NO_ERROR))
+      .RetiresOnSaturation();
   EXPECT_CALL(*gl_, GetRenderbufferParameterivEXT(_, _, _))
       .Times(0);
   GetRenderbufferParameteriv cmd;

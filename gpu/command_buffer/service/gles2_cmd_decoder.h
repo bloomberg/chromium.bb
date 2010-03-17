@@ -26,6 +26,7 @@ class XWindowWrapper;
 namespace gles2 {
 
 class ContextGroup;
+class GLES2Util;
 
 // This class implements the AsyncAPIInterface interface, decoding GLES2
 // commands and calling GL.
@@ -83,6 +84,9 @@ class GLES2Decoder : public CommonDecoder {
 
   // Gets a service id by client id.
   virtual uint32 GetServiceIdForTesting(uint32 client_id) = 0;
+
+  // Gets the GLES2 Util which holds info.
+  virtual GLES2Util* GetGLES2Util() = 0;
 
   // Sets a callback which is called when a SwapBuffers command is processed.
   virtual void SetSwapBuffersCallback(Callback0::Type* callback) = 0;

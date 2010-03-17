@@ -90,12 +90,12 @@ GL_APICALL void         GL_APIENTRY glGetActiveAttrib (GLidProgram program, GLui
 GL_APICALL void         GL_APIENTRY glGetActiveUniform (GLidProgram program, GLuint index, GLsizei bufsize, GLsizei* length, GLint* size, GLenum* type, char* name);
 GL_APICALL void         GL_APIENTRY glGetAttachedShaders (GLidProgram program, GLsizei maxcount, GLsizei* count, GLuint* shaders);
 GL_APICALL GLint        GL_APIENTRY glGetAttribLocation (GLidProgram program, const char* name);
-GL_APICALL void         GL_APIENTRY glGetBooleanv (GLenum pname, GLboolean* params);
+GL_APICALL void         GL_APIENTRY glGetBooleanv (GLenumGLState pname, GLboolean* params);
 GL_APICALL void         GL_APIENTRY glGetBufferParameteriv (GLenumBufferTarget target, GLenumBufferParameter pname, GLint* params);
 GL_APICALL GLenum       GL_APIENTRY glGetError (void);
-GL_APICALL void         GL_APIENTRY glGetFloatv (GLenum pname, GLfloat* params);
+GL_APICALL void         GL_APIENTRY glGetFloatv (GLenumGLState pname, GLfloat* params);
 GL_APICALL void         GL_APIENTRY glGetFramebufferAttachmentParameteriv (GLenumFrameBufferTarget target, GLenumAttachment attachment, GLenumFrameBufferParameter pname, GLint* params);
-GL_APICALL void         GL_APIENTRY glGetIntegerv (GLenum pname, GLint* params);
+GL_APICALL void         GL_APIENTRY glGetIntegerv (GLenumGLState pname, GLint* params);
 GL_APICALL void         GL_APIENTRY glGetProgramiv (GLidProgram program, GLenumProgramParameter pname, GLint* params);
 GL_APICALL void         GL_APIENTRY glGetProgramInfoLog (GLidProgram program, GLsizei bufsize, GLsizei* length, char* infolog);
 GL_APICALL void         GL_APIENTRY glGetRenderbufferParameteriv (GLenumRenderBufferTarget target, GLenumRenderBufferParameter pname, GLint* params);
@@ -402,6 +402,98 @@ _ENUM_LISTS = {
     ],
     'invalid': [
       'GL_STATIC_READ',
+    ],
+  },
+  'GLState': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_ACTIVE_TEXTURE',
+      'GL_ALIASED_LINE_WIDTH_RANGE',
+      'GL_ALIASED_POINT_SIZE_RANGE',
+      'GL_ALPHA_BITS',
+      'GL_ARRAY_BUFFER_BINDING',
+      'GL_BLEND',
+      'GL_BLEND_COLOR',
+      'GL_BLEND_DST_ALPHA',
+      'GL_BLEND_DST_RGB',
+      'GL_BLEND_EQUATION_ALPHA',
+      'GL_BLEND_EQUATION_RGB',
+      'GL_BLEND_SRC_ALPHA',
+      'GL_BLEND_SRC_RGB',
+      'GL_BLUE_BITS',
+      'GL_COLOR_CLEAR_VALUE',
+      'GL_COLOR_WRITEMASK',
+      'GL_COMPRESSED_TEXTURE_FORMATS',
+      'GL_CULL_FACE',
+      'GL_CULL_FACE_MODE',
+      'GL_CURRENT_PROGRAM',
+      'GL_DEPTH_BITS',
+      'GL_DEPTH_CLEAR_VALUE',
+      'GL_DEPTH_FUNC',
+      'GL_DEPTH_RANGE',
+      'GL_DEPTH_TEST',
+      'GL_DEPTH_WRITEMASK',
+      'GL_DITHER',
+      'GL_ELEMENT_ARRAY_BUFFER_BINDING',
+      'GL_FRAMEBUFFER_BINDING',
+      'GL_FRONT_FACE',
+      'GL_GENERATE_MIPMAP_HINT',
+      'GL_GREEN_BITS',
+      'GL_IMPLEMENTATION_COLOR_READ_FORMAT',
+      'GL_IMPLEMENTATION_COLOR_READ_TYPE',
+      'GL_LINE_WIDTH',
+      'GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS',
+      'GL_MAX_CUBE_MAP_TEXTURE_SIZE',
+      'GL_MAX_FRAGMENT_UNIFORM_VECTORS',
+      'GL_MAX_RENDERBUFFER_SIZE',
+      'GL_MAX_TEXTURE_IMAGE_UNITS',
+      'GL_MAX_TEXTURE_SIZE',
+      'GL_MAX_VARYING_VECTORS',
+      'GL_MAX_VERTEX_ATTRIBS',
+      'GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS',
+      'GL_MAX_VERTEX_UNIFORM_VECTORS',
+      'GL_MAX_VIEWPORT_DIMS',
+      'GL_NUM_COMPRESSED_TEXTURE_FORMATS',
+      'GL_NUM_SHADER_BINARY_FORMATS',
+      'GL_PACK_ALIGNMENT',
+      'GL_POLYGON_OFFSET_FACTOR',
+      'GL_POLYGON_OFFSET_FILL',
+      'GL_POLYGON_OFFSET_UNITS',
+      'GL_RED_BITS',
+      'GL_RENDERBUFFER_BINDING',
+      'GL_SAMPLE_BUFFERS',
+      'GL_SAMPLE_COVERAGE_INVERT',
+      'GL_SAMPLE_COVERAGE_VALUE',
+      'GL_SAMPLES',
+      'GL_SCISSOR_BOX',
+      'GL_SCISSOR_TEST',
+      'GL_SHADER_BINARY_FORMATS',
+      'GL_SHADER_COMPILER',
+      'GL_STENCIL_BACK_FAIL',
+      'GL_STENCIL_BACK_FUNC',
+      'GL_STENCIL_BACK_PASS_DEPTH_FAIL',
+      'GL_STENCIL_BACK_PASS_DEPTH_PASS',
+      'GL_STENCIL_BACK_REF',
+      'GL_STENCIL_BACK_VALUE_MASK',
+      'GL_STENCIL_BACK_WRITEMASK',
+      'GL_STENCIL_BITS',
+      'GL_STENCIL_CLEAR_VALUE',
+      'GL_STENCIL_FAIL',
+      'GL_STENCIL_FUNC',
+      'GL_STENCIL_PASS_DEPTH_FAIL',
+      'GL_STENCIL_PASS_DEPTH_PASS',
+      'GL_STENCIL_REF',
+      'GL_STENCIL_TEST',
+      'GL_STENCIL_VALUE_MASK',
+      'GL_STENCIL_WRITEMASK',
+      'GL_SUBPIXEL_BITS',
+      'GL_TEXTURE_BINDING_2D',
+      'GL_TEXTURE_BINDING_CUBE_MAP',
+      'GL_UNPACK_ALIGNMENT',
+      'GL_VIEWPORT',
+    ],
+    'invalid': [
+      'GL_FOG_HINT',
     ],
   },
   'TextureTarget': {
@@ -953,22 +1045,23 @@ _FUNCTION_INFO = {
         'GLidProgram program, const char* name, NonImmediate GLint* location',
     'result': ['GLint'],
   },
-  'GetBooleanv': {'type': 'GETn'},
-  'GetBufferParameteriv': {'type': 'GETn'},
+  'GetBooleanv': {'type': 'GETn', 'result': ['SizedResult<GLboolean>']},
+  'GetBufferParameteriv': {'type': 'GETn', 'result': ['SizedResult<GLint>']},
   'GetError': {
     'type': 'Is',
     'decoder_func': 'GetGLError',
     'impl_func': False,
     'result': ['GLenum'],
   },
-  'GetFloatv': {'type': 'GETn'},
+  'GetFloatv': {'type': 'GETn', 'result': ['SizedResult<GLfloat>']},
   'GetFramebufferAttachmentParameteriv': {
     'type': 'GETn',
     'decoder_func': 'DoGetFramebufferAttachmentParameteriv',
     'gl_test_func': 'glGetFramebufferAttachmentParameterivEXT',
+    'result': ['SizedResult<GLint>'],
   },
-  'GetIntegerv': {'type': 'GETn'},
-  'GetProgramiv': {'type': 'GETn'},
+  'GetIntegerv': {'type': 'GETn', 'result': ['SizedResult<GLint>']},
+  'GetProgramiv': {'type': 'GETn', 'result': ['SizedResult<GLint>']},
   'GetProgramInfoLog': {
     'type': 'STRn',
     'get_len_func': 'glGetProgramiv',
@@ -978,8 +1071,13 @@ _FUNCTION_INFO = {
     'type': 'GETn',
     'decoder_func': 'DoGetRenderbufferParameteriv',
     'gl_test_func': 'glGetRenderbufferParameterivEXT',
+    'result': ['SizedResult<GLint>'],
   },
-  'GetShaderiv': {'type': 'GETn', 'decoder_func': 'DoGetShaderiv'},
+  'GetShaderiv': {
+    'type': 'GETn',
+    'decoder_func': 'DoGetShaderiv',
+    'result': ['SizedResult<GLint>'],
+  },
   'GetShaderInfoLog': {
     'type': 'STRn',
     'get_len_func': 'glGetShaderiv',
@@ -1009,8 +1107,8 @@ _FUNCTION_INFO = {
       'type': 'Custom',
       'cmd_args': 'GLenumStringType name, uint32 bucket_id',
   },
-  'GetTexParameterfv': {'type': 'GETn'},
-  'GetTexParameteriv': {'type': 'GETn'},
+  'GetTexParameterfv': {'type': 'GETn', 'result': ['SizedResult<GLfloat>']},
+  'GetTexParameteriv': {'type': 'GETn', 'result': ['SizedResult<GLint>']},
   'GetUniformfv': {
     'type': 'Custom',
     'immediate': False,
@@ -1029,8 +1127,8 @@ _FUNCTION_INFO = {
         'GLidProgram program, const char* name, NonImmediate GLint* location',
     'result': ['GLint'],
   },
-  'GetVertexAttribfv': {'type': 'GETn'},
-  'GetVertexAttribiv': {'type': 'GETn'},
+  'GetVertexAttribfv': {'type': 'GETn', 'result': ['SizedResult<GLfloat>']},
+  'GetVertexAttribiv': {'type': 'GETn', 'result': ['SizedResult<GLint>']},
   'GetVertexAttribPointerv': {
     'type': 'Custom',
     'immediate': False,
@@ -2328,22 +2426,40 @@ class GETnHandler(TypeHandler):
     for arg in all_but_last_args:
       arg.WriteGetCode(file)
 
-    code = """
-  %(last_arg_type)s params;
+    code = """  typedef %(func_name)s::Result Result;
   GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  uint32 params_size;
-  if (!SafeMultiplyUint32(num_values, sizeof(*params), &params_size)) {
-    return error::kOutOfBounds;
+  if (num_values == 0) {
+    SetGLError(GL_INVALID_ENUM);
+    return error::kNoError;
   }
-  params = GetSharedMemoryAs<%(last_arg_type)s>(
-      c.params_shm_id, c.params_shm_offset, params_size);
+  Result* result = GetSharedMemoryAs<Result*>(
+      c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
+  %(last_arg_type)s params = result ? result->GetData() : NULL;
 """
-    file.Write(code % {'last_arg_type': last_arg.type})
+    file.Write(code % {
+        'last_arg_type': last_arg.type,
+        'func_name': func.name,
+      })
     func.WriteHandlerValidation(file)
+    code = """  // Check that the client initialized the result.
+  if (result->size != 0) {
+    return error::kInvalidArguments;
+  }
+  CopyRealGLErrorsToWrapper();
+"""
+    file.Write(code)
     func.WriteHandlerImplementation(file)
-    file.Write("  return error::kNoError;\n")
-    file.Write("}\n")
-    file.Write("\n")
+    code = """  GLenum error = glGetError();
+  if (error == GL_NO_ERROR) {
+    result->SetNumResults(num_values);
+  } else {
+    SetGLError(error);
+  }
+  return error::kNoError;
+}
+
+"""
+    file.Write(code)
 
   def WriteGLES2ImplementationHeader(self, func, file):
     """Overrriden from TypeHandler."""
@@ -2353,16 +2469,71 @@ class GETnHandler(TypeHandler):
     all_but_last_args = func.GetOriginalArgs()[:-1]
     arg_string = (
         ", ".join(["%s" % arg.name for arg in all_but_last_args]))
-    file.Write("  helper_->%s(%s, result_shm_id(), result_shm_offset());\n" %
-               (func.name, arg_string))
-    file.Write("  WaitForCmd();\n")
-    file.Write("  GLsizei num_values = util_.GLGetNumValuesReturned(pname);\n")
-    file.Write(
-        "  DCHECK_LE(num_values * sizeof(*params), kMaxSizeOfSimpleResult);\n")
-    file.Write(
-        "  memcpy(params, result_buffer_, num_values * sizeof(*params));\n")
-    file.Write("}\n")
-    file.Write("\n")
+    code = """  typedef %(func_name)s::Result Result;
+  Result* result = GetResultAs<Result*>();
+  result->SetNumResults(0);
+  helper_->%(func_name)s(%(arg_string)s, result_shm_id(), result_shm_offset());
+  WaitForCmd();
+  result->CopyResult(params);
+}
+"""
+    file.Write(code % {
+        'func_name': func.name,
+        'arg_string': arg_string,
+      })
+
+  def WriteServiceUnitTest(self, func, file):
+    """Overrriden from TypeHandler."""
+    valid_test = """
+TEST_F(%(test_name)s, %(name)sValidArgs) {
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .WillOnce(Return(GL_NO_ERROR))
+      .RetiresOnSaturation();
+  SpecializedSetup<%(name)s, 0>();
+  typedef %(name)s::Result Result;
+  Result* result = static_cast<Result*>(shared_memory_address_);
+  EXPECT_CALL(*gl_, %(gl_func_name)s(%(local_gl_args)s));
+  result->size = 0;
+  %(name)s cmd;
+  cmd.Init(%(args)s);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(decoder_->GetGLES2Util()->GLGetNumValuesReturned(
+                %(valid_pname)s),
+            result->GetNumResults());
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+"""
+    gl_arg_strings = []
+    valid_pname = ''
+    count = 0
+    for arg in func.GetOriginalArgs()[:-1]:
+      arg_value = arg.GetValidGLArg(count, 0)
+      gl_arg_strings.append(arg_value)
+      if arg.name == 'pname':
+        valid_pname = arg_value
+      count += 1
+    gl_arg_strings.append("result->GetData()")
+
+    self.WriteValidUnitTest(func, file, valid_test, {
+        'local_gl_args': ", ".join(gl_arg_strings),
+        'valid_pname': valid_pname,
+      })
+
+    invalid_test = """
+TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
+  EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s)).Times(0);
+  SpecializedSetup<%(name)s, 0>();
+  %(name)s::Result* result =
+      static_cast<%(name)s::Result*>(shared_memory_address_);
+  result->size = 0;
+  %(name)s cmd;
+  cmd.Init(%(args)s);
+  EXPECT_EQ(error::%(parse_result)s, ExecuteCmd(cmd));
+  EXPECT_EQ(0, result->size);%(gl_error_test)s
+}
+"""
+    self.WriteInvalidUnitTest(func, file, invalid_test)
 
 
 class PUTHandler(TypeHandler):
@@ -3128,6 +3299,21 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
           'comma': comma,
         })
 
+    invalid_test = """
+TEST_F(%(test_name)s, %(name)sInvalidArgsBadSharedMemoryId) {
+  EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s)).Times(0);
+  SpecializedSetup<%(name)s, 0>();
+  %(name)s cmd;
+  cmd.Init(%(args)s%(comma)skInvalidSharedMemoryId, shared_memory_offset_);
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+  cmd.Init(%(args)s%(comma)sshared_memory_id_, kInvalidSharedMemoryOffset);
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+}
+"""
+    self.WriteValidUnitTest(func, file, invalid_test, {
+          'comma': comma,
+        })
+
   def WriteServiceImplementation(self, func, file):
     """Overrriden from TypeHandler."""
     file.Write(
@@ -3138,10 +3324,14 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     for arg in args:
       arg.WriteGetCode(file)
 
-    file.Write("  %s* result_dst = GetSharedMemoryAs<%s*>(\n" %
-               (func.return_type, func.return_type))
-    file.Write(
-        "      c.result_shm_id, c.result_shm_offset, sizeof(*result_dst));\n")
+    code = """  typedef %(func_name)s::Result Result;
+  Result* result_dst = GetSharedMemoryAs<Result*>(
+      c.result_shm_id, c.result_shm_offset, sizeof(*result_dst));
+  if (!result_dst) {
+    return error::kOutOfBounds;
+  }
+"""
+    file.Write(code % {'func_name': func.name})
     func.WriteHandlerValidation(file)
     file.Write("  *result_dst = %s(%s);\n" %
                (func.GetGLFunctionName(), func.MakeOriginalArgString("")))
@@ -3156,7 +3346,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
       file.Write("%s %s(%s) {\n" %
                  (func.return_type, func.original_name,
                   func.MakeTypedOriginalArgString("")))
-      file.Write("  typedef %s::Result Result;\n" % func.original_name)
+      file.Write("  typedef %s::Result Result;\n" % func.name)
       file.Write("  Result* result = GetResultAs<Result*>();\n")
       file.Write("  *result = 0;\n")
       arg_string = func.MakeOriginalArgString("")
@@ -4068,8 +4258,9 @@ class GLGenerator(object):
           return_type = match.group(1).strip()
           arg_string = match.group(3)
           (args, num_pointer_args, is_gl_enum) = self.ParseArgs(arg_string)
-          if is_gl_enum:
-            self.Log("%s uses bare GLenum" % func_name)
+          # comment in to find out which functions use bare enums.
+          # if is_gl_enum:
+          #   self.Log("%s uses bare GLenum" % func_name)
           args_for_cmds = args
           if hasattr(func_info, 'cmd_args'):
             (args_for_cmds, num_pointer_args, is_gl_enum) = (
