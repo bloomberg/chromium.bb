@@ -68,7 +68,7 @@ class PyUITest(pyautolib.PyUITestSuite, unittest.TestCase):
         self.assertTrue("Google" == self.GetActiveTabTitle())
   """
 
-  def __init__(self, methodName='runTest', extra_chrome_flags=None):
+  def __init__(self, methodName='runTest', **kwargs):
     """Initialize PyUITest.
 
     When redefining __init__ in a derived class, make sure that:
@@ -77,12 +77,24 @@ class PyUITest(pyautolib.PyUITestSuite, unittest.TestCase):
 
     Args:
       methodName: the default method name. Internal use by unittest module
-      extra_chrome_flags: additional flags to pass when launching chrome
+
+      (The rest of the args can be in any order. They can even be skipped in
+       which case the defaults will be used.)
+
+      extra_chrome_flags: additional flags to pass when launching chrome.
+                          Defaults to None
+      clear_profile: If True, clean the profile dir before use. Defaults to True
+      homepage: the home page. Defaults to "about:blank"
     """
+    # Fetch provided keyword args, or fill in defaults.
+    extra_chrome_flags = kwargs.get('extra_chrome_flags')
+    clear_profile = kwargs.get('clear_profile', True)
+    homepage = kwargs.get('homepage', 'about:blank')
+
     args = sys.argv
-    if extra_chrome_flags is not None:
+    if extra_chrome_flags:
        args.append('--extra-chrome-flags=%s' % extra_chrome_flags)
-    pyautolib.PyUITestSuite.__init__(self, args)
+    pyautolib.PyUITestSuite.__init__(self, args, clear_profile, homepage)
     # Figure out path to chromium binaries
     browser_dir = os.path.normpath(os.path.dirname(pyautolib.__file__))
     os.environ['PATH'] = browser_dir + os.pathsep + os.environ['PATH']

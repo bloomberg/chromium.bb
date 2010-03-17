@@ -9,9 +9,12 @@
 #include "chrome/test/pyautolib/pyautolib.h"
 #include "googleurl/src/gurl.h"
 
-PyUITestSuite::PyUITestSuite(int argc, char** argv)
+PyUITestSuite::PyUITestSuite(
+    int argc, char** argv, bool clear_profile, std::wstring homepage)
     : UITestSuite(argc, argv),
       UITestBase() {
+  set_clear_profile(clear_profile);
+  set_homepage(homepage);
 }
 
 PyUITestSuite::~PyUITestSuite() {

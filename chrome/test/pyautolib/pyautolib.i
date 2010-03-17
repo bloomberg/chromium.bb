@@ -79,7 +79,8 @@ class FilePath {
 
 class PyUITestSuite {
  public:
-  PyUITestSuite(int argc, char** argv);
+  PyUITestSuite(int argc, char** argv, bool clear_profile,
+                std::wstring homepage);
 
   %feature("docstring", "Initialize the entire setup. Should be called "
            "before launching the browser. For internal use.") Initialize;
@@ -130,12 +131,12 @@ class PyUITestSuite {
            "given or first browser window.") IsDownloadShelfVisible;
   bool IsDownloadShelfVisible(int window_index=0);
 
-  %feature("docstring", "Determine if the bookmark bar is visible.  "
+  %feature("docstring", "Determine if the bookmark bar is visible. "
            "If the NTP is visible, only return true if attached "
-	   "(to the chrome).") GetBookmarkBarVisibility;
+           "(to the chrome).") GetBookmarkBarVisibility;
   bool GetBookmarkBarVisibility();
 
-  %feature("docstring", "Wait for the bookmark bar animation to complete.  "
+  %feature("docstring", "Wait for the bookmark bar animation to complete. "
            "|wait_for_open| specifies which kind of change we wait for.")
       WaitForBookmarkBarVisibilityChange;
   bool WaitForBookmarkBarVisibilityChange(bool wait_for_open);

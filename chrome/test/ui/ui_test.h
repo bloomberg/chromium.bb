@@ -435,6 +435,18 @@ class UITestBase {
     ui_test_name_ = name;
   }
 
+  // Sets clear_profile_. Should be called before launching browser to have
+  // any effect.
+  void set_clear_profile(bool clear_profile) {
+    clear_profile_ = clear_profile;
+  }
+
+  // Sets homepage_. Should be called before launching browser to have
+  // any effect.
+  void set_homepage(const std::wstring& homepage) {
+    homepage_ = homepage;
+  }
+
   // Count the number of active browser processes launched by this test.
   // The count includes browser sub-processes.
   int GetBrowserProcessCount();

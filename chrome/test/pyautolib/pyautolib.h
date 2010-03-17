@@ -27,7 +27,10 @@
 class PyUITestSuite : public UITestSuite, public UITestBase {
  public:
   // Only public methods are accessible from swig.
-  PyUITestSuite(int argc, char** argv);
+
+  // Constructor. Lookup pyauto.py for doc on these args.
+  PyUITestSuite(int argc, char** argv, bool clear_profile,
+                std::wstring homepage);
   ~PyUITestSuite();
 
   // Initialize the setup. Should be called before launching the browser.
