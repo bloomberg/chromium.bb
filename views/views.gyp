@@ -42,7 +42,6 @@
         '../app/app.gyp:app_base',
         '../app/app.gyp:app_strings',
         '../app/app.gyp:app_resources',
-        '../chrome/chrome.gyp:chrome_strings',
         '../skia/skia.gyp:skia',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
