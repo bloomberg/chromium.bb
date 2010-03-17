@@ -257,8 +257,11 @@ drm_intel_gem_bo_tile_pitch(drm_intel_bufmgr_gem *bufmgr_gem,
 	unsigned long tile_width;
 	unsigned long i;
 
+	/* If untiled, then just align it so that we can do rendering
+	 * to it with the 3D engine.
+	 */
 	if (tiling_mode == I915_TILING_NONE)
-		return pitch;
+		return ALIGN(pitch, 64);
 
 	if (tiling_mode == I915_TILING_X)
 		tile_width = 512;
