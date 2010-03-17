@@ -551,7 +551,6 @@
       ],
       'sources': [
         # Localizable resources.
-        'resources/chrome_frame_strings.grd',
         'resources/chrome_frame_resources.grd',
       ],
       'direct_dependent_settings': {
@@ -698,7 +697,6 @@
           ],
           'sources': [
             '<(SHARED_INTERMEDIATE_DIR)/chrome_frame/chrome_frame_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/chrome_frame/chrome_frame_strings.rc',
           ],
           'dependencies': [
             '../breakpad/breakpad.gyp:breakpad_handler',

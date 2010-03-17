@@ -36,7 +36,6 @@
 #include "base/scoped_variant_win.h"
 #include "base/string_util.h"
 #include "grit/chrome_frame_resources.h"
-#include "grit/chrome_frame_strings.h"
 #include "chrome_frame/chrome_frame_plugin.h"
 #include "chrome_frame/com_message_event.h"
 #include "chrome_frame/com_type_info_holder.h"

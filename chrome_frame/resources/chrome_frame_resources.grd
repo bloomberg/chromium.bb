@@ -21,11 +21,6 @@ for localizable strings
   </outputs>
   <release seq="1">
     <messages>
-      <!-- TODO(slightlyoff): should these be in chrome_frame_strings.grd
-             instead?  -->
-      <message name="IDS_PROJNAME">
-        ChromeTab
-      </message>
       <message name="IDS_VERSIONMISMATCH_HEADER">
         ChromeFrame Update.
       </message>
@@ -34,6 +29,9 @@ for localizable strings
       </message>
       <message name="IDS_VERSIONUNKNOWN">
         Very old
+      </message>
+      <message name="IDS_CHROME_FRAME_MENU_ABOUT" desc="About Chrome Frame label">
+        About Chrome Frame...
       </message>
     </messages>
     <structures first_id="50000">
