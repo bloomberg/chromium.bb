@@ -2504,5 +2504,39 @@
       }
     ],
     "events": []
+  },
+  {
+    "namespace": "experimental.clipboard",
+    "types": [],
+    "functions": [
+      {
+        "name": "executeCopy",
+        "type": "function",
+        "description": "Triggers a copy operation in the specified tab.",
+        "parameters": [
+          {"type": "integer", "name": "tabId", "minimum": 0},
+          {"type": "function", "name": "callback", "optional": true, "parameters": []}
+        ]
+      },
+      {
+        "name": "executeCut",
+        "type": "function",
+        "description": "Triggers a cut operation in the specified tab.",
+        "parameters": [
+          {"type": "integer", "name": "tabId", "minimum": 0},
+          {"type": "function", "name": "callback", "optional": true, "parameters": []}
+        ]
+      },
+      {
+        "name": "executePaste",
+        "type": "function",
+        "description": "Triggers a paste operation in the specified tab.",
+        "parameters": [
+          {"type": "integer", "name": "tabId", "minimum": 0},
+          {"type": "function", "name": "callback", "optional": true, "parameters": []}
+        ]
+      }
+    ],
+    "events": []
   }
 ]

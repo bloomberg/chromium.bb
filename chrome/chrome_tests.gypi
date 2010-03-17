@@ -1206,6 +1206,7 @@
         'browser/extensions/extension_browsertest.cc',
         'browser/extensions/extension_browsertest.h',
         'browser/extensions/extension_browsertests_misc.cc',
+        'browser/extensions/extension_clipboard_apitest.cc',
         'browser/extensions/extension_crash_recovery_browsertest.cc',
         'browser/extensions/extension_geolocation_apitest.cc',
         'browser/extensions/extension_history_apitest.cc',

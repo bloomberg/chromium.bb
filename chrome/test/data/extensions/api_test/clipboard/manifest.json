@@ -1,0 +1,13 @@
+{
+  "name": "chrome.clipboard",
+  "version": "0.1",
+  "description": "end-to-end browser test for chrome.experimental.clipboard API",
+  "background_page": "test.html",
+  "permissions": ["experimental", "tabs"],
+  "content_scripts": [
+    {
+      "matches": ["http://*/*"],
+      "js": ["test_helper.js"]
+    }
+  ]
+}

@@ -15,7 +15,7 @@
     </script>
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
-  <title>chrome.experimental.* APIs - Google Chrome Extensions - Google Code</title></head><body>  <div id="gc-container" class="labs">
+  <title>chrome.experimental.clipboard - Google Chrome Extensions - Google Code</title></head><body>  <div id="gc-container" class="labs">
       <!-- SUBTEMPLATES: DO NOT MOVE FROM THIS LOCATION -->
       <!-- In particular, sub-templates that recurse, must be used by allowing
            jstemplate to make a copy of the template in this section which
@@ -189,24 +189,24 @@
 
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">chrome.experimental.* APIs</h1>
+        <h1 class="page_title">chrome.experimental.clipboard</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
-        <div id="toc" style="display: none; ">
+        <div id="toc">
           <h2>Contents</h2>
           <ol>
             <li>
-              <a>h2Name</a>
+              <a href="#H2-0">Notes</a>
               <ol>
-                <li>
+                <li style="display: none; ">
                   <a>h3Name</a>
                 </li>
               </ol>
             </li>
               <li>
-                <a href="#apiReference">API reference</a>
+                <a href="#apiReference">API reference: chrome.experimental.clipboard</a>
                 <ol>
-                  <li>
+                  <li style="display: none; ">
                     <a href="#properties">Properties</a>
                     <ol>
                       <li>
@@ -218,11 +218,15 @@
                     <a href="#methods">Methods</a>
                     <ol>
                       <li>
-                        <a href="#method-anchor">methodName</a>
+                        <a href="#method-executeCopy">executeCopy</a>
+                      </li><li>
+                        <a href="#method-executeCut">executeCut</a>
+                      </li><li>
+                        <a href="#method-executePaste">executePaste</a>
                       </li>
                     </ol>
                   </li>
-                  <li>
+                  <li style="display: none; ">
                     <a href="#events">Events</a>
                     <ol>
                       <li>
@@ -230,7 +234,7 @@
                       </li>
                     </ol>
                   </li>
-                  <li>
+                  <li style="display: none; ">
                     <a href="#types">Types</a>
                     <ol>
                       <li>
@@ -245,86 +249,31 @@
         <!-- /TABLE OF CONTENTS -->
 
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"><div id="pageData-name" class="pageData">chrome.experimental.* APIs</div>
+        <div id="static"><!-- BEGIN AUTHORED CONTENT -->
+<p id="classSummary">
+For information on how to use experimental APIs,
+see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
+</p>
+
+<a name="H2-0"></a><h2>Notes</h2>
 
 <p>
-We'd like your <a href="http://groups.google.com/a/chromium.org/group/chromium-extensions/topics">feedback</a>
-on the following experimental APIs:
+For all functions exposed by this API, the argument to the callback indicates
+whether or not the event was successfully dispatched, not whether the event was
+successfully processed and handled. Most callers won't care, since a failure
+generally indicates the tab is going away.
 </p>
 
-<ul>
-  <li><a href="experimental.clipboard.html" js="">experimental.clipboard</a></li><li><a href="experimental.history.html" js="">experimental.history</a></li><li><a href="experimental.processes.html" js="">experimental.processes</a></li>
-</ul>
-
-<p class="caution">
-<b>Caution:</b>
-Don't depend on these experimental APIs.
-They might disappear,
-and they <em>will</em> change.
-Also, the extension gallery doesn't allow you to
-upload extensions that use experimental APIs.
-</p>
-
-<h2 id="using">How to use experimental APIs</h2>
-
-<ol>
-  <li>
-    Make sure you're using the
-<a href="http://www.chromium.org/getting-involved/dev-channel">Dev channel</a>
-    of Google Chrome.
-    Although the experimental APIs might work in other versions,
-    we need your feedback on the latest incarnation of the APIs,
-    which you can find on the Dev channel.
-  </li>
-  <li>
-    Using the
-    <a href="http://code.google.com/chrome/extensions/dev/experimental.html">API documentation for the Dev channel</a>,
-    write the code for your extension.
-  </li>
-  <li>
-    Specify the "experimental"
-    <a href="manifest.html#permissions">permission</a>
-    in your extension's manifest, like this:
-<pre>"permissions": [
-  <b>"experimental"</b>,
-  ...
-],
-</pre>
-  </li>
-  <li>
-    Specify the <b>--enable-experimental-extension-apis</b> flag
-    when you launch the browser.
-    On Windows, you can do this by modifying
-    the properties of the shortcut that you use to launch Google Chrome.
-    For example:
-
-<pre><em>path_to_chrome.exe</em> <b>--enable-experimental-extension-apis</b></pre>
-  </li>
-
-  <li>
-    <a href="http://groups.google.com/a/chromium.org/group/chromium-extensions/topics">Give us feedback!</a>
-    Your comments and suggestions help us
-    improve the APIs and decide
-    which ones should move from experimental to supported.
-  </li>
-</ol>
-
-<h2 id="other">More information</h2>
-
-<p>
-For information on the standard APIs that extensions can use, see
-<a href="api_index.html">chrome.* APIs</a> and
-<a href="api_other.html">Other APIs</a>.
-</p>
+<!-- END AUTHORED CONTENT -->
 </div>
 
         <!-- API PAGE -->
-        <div class="apiPage" style="display: none; ">
+        <div class="apiPage">
         <a name="apiReference"></a>
-        <h2>API reference: chrome.apiname </h2>
+        <h2>API reference: chrome.experimental.clipboard</h2>
 
           <!-- PROPERTIES -->
-          <div class="apiGroup">
+          <div class="apiGroup" style="display: none; ">
             <a name="properties"></a>
             <h3 id="properties">Properties</h3>
 
@@ -348,33 +297,115 @@ For information on the standard APIs that extensions can use, see
 
             <!-- iterates over all functions -->
             <div class="apiItem">
-              <a></a> <!-- method-anchor -->
-              <h4>method name</h4>
+              <a name="method-executeCopy"></a> <!-- method-anchor -->
+              <h4>executeCopy</h4>
 
-              <div class="summary"><span>void</span>
+              <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.module.methodName</span>(<span><span>, </span><span></span>
-                      <var><span></span></var></span>)</div>
+                  <span>chrome.experimental.clipboard.executeCopy</span>(<span class="null"><span style="display: none; ">, </span><span>integer</span>
+                      <var><span>tabId</span></var></span><span class="optional"><span>, </span><span>function</span>
+                      <var><span>callback</span></var></span>)</div>
 
               <div class="description">
-                <p class="todo">Undocumented.</p>
-                <p>
-                  A description from the json schema def of the function goes here.
-                </p>
+                <p class="todo" style="display: none; ">Undocumented.</p>
+                <p>Triggers a copy operation in the specified tab.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
                   <div>
                     <div>
-                    </div>
+          <dt>
+            <var>tabId</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <dd style="display: none; ">
+            Description of this parameter from the json schema.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>callback</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <dd style="display: none; ">
+            Description of this parameter from the json schema.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
                   </div>
                 </dl>
 
                 <!-- RETURNS -->
-                <h4>Returns</h4>
+                <h4 style="display: none; ">Returns</h4>
                 <dl>
-                  <div>
+                  <div style="display: none; ">
                     <div>
                     </div>
                   </div>
@@ -384,7 +415,7 @@ For information on the standard APIs that extensions can use, see
                 <div>
                   <div>
                   <h4>Callback function</h4>
-                  <p>
+                  <p style="display: none; ">
                     The callback <em>parameter</em> should specify a function
                     that looks like this:
                   </p>
@@ -394,9 +425,291 @@ For information on the standard APIs that extensions can use, see
                   </p>
 
                   <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span>);</pre>
+                  <pre>function(<span></span>) <span class="subdued">{...}</span>);</pre>
                   <dl>
+                    <div style="display: none; ">
+                      <div>
+                      </div>
+                    </div>
+                  </dl>
+                  </div>
+                </div>
+
+              </div> <!-- /description -->
+
+            </div><div class="apiItem">
+              <a name="method-executeCut"></a> <!-- method-anchor -->
+              <h4>executeCut</h4>
+
+              <div class="summary"><span style="display: none; ">void</span>
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.experimental.clipboard.executeCut</span>(<span class="null"><span style="display: none; ">, </span><span>integer</span>
+                      <var><span>tabId</span></var></span><span class="optional"><span>, </span><span>function</span>
+                      <var><span>callback</span></var></span>)</div>
+
+              <div class="description">
+                <p class="todo" style="display: none; ">Undocumented.</p>
+                <p>Triggers a cut operation in the specified tab.</p>
+
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
                     <div>
+          <dt>
+            <var>tabId</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <dd style="display: none; ">
+            Description of this parameter from the json schema.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>callback</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <dd style="display: none; ">
+            Description of this parameter from the json schema.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+                  </div>
+                </dl>
+
+                <!-- RETURNS -->
+                <h4 style="display: none; ">Returns</h4>
+                <dl>
+                  <div style="display: none; ">
+                    <div>
+                    </div>
+                  </div>
+                </dl>
+
+                <!-- CALLBACK -->
+                <div>
+                  <div>
+                  <h4>Callback function</h4>
+                  <p style="display: none; ">
+                    The callback <em>parameter</em> should specify a function
+                    that looks like this:
+                  </p>
+                  <p>
+                    If you specify the <em>callback</em> parameter, it should
+                    specify a function that looks like this:
+                  </p>
+
+                  <!-- Note: intentionally longer 80 columns -->
+                  <pre>function(<span></span>) <span class="subdued">{...}</span>);</pre>
+                  <dl>
+                    <div style="display: none; ">
+                      <div>
+                      </div>
+                    </div>
+                  </dl>
+                  </div>
+                </div>
+
+              </div> <!-- /description -->
+
+            </div><div class="apiItem">
+              <a name="method-executePaste"></a> <!-- method-anchor -->
+              <h4>executePaste</h4>
+
+              <div class="summary"><span style="display: none; ">void</span>
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.experimental.clipboard.executePaste</span>(<span class="null"><span style="display: none; ">, </span><span>integer</span>
+                      <var><span>tabId</span></var></span><span class="optional"><span>, </span><span>function</span>
+                      <var><span>callback</span></var></span>)</div>
+
+              <div class="description">
+                <p class="todo" style="display: none; ">Undocumented.</p>
+                <p>Triggers a paste operation in the specified tab.</p>
+
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>tabId</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <dd style="display: none; ">
+            Description of this parameter from the json schema.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>callback</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <dd style="display: none; ">
+            Description of this parameter from the json schema.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+                  </div>
+                </dl>
+
+                <!-- RETURNS -->
+                <h4 style="display: none; ">Returns</h4>
+                <dl>
+                  <div style="display: none; ">
+                    <div>
+                    </div>
+                  </div>
+                </dl>
+
+                <!-- CALLBACK -->
+                <div>
+                  <div>
+                  <h4>Callback function</h4>
+                  <p style="display: none; ">
+                    The callback <em>parameter</em> should specify a function
+                    that looks like this:
+                  </p>
+                  <p>
+                    If you specify the <em>callback</em> parameter, it should
+                    specify a function that looks like this:
+                  </p>
+
+                  <!-- Note: intentionally longer 80 columns -->
+                  <pre>function(<span></span>) <span class="subdued">{...}</span>);</pre>
+                  <dl>
+                    <div style="display: none; ">
                       <div>
                       </div>
                     </div>
@@ -411,7 +724,7 @@ For information on the standard APIs that extensions can use, see
           </div>  <!-- /apiGroup -->
 
           <!-- EVENTS -->
-          <div class="apiGroup">
+          <div class="apiGroup" style="display: none; ">
             <a name="events"></a>
             <h3 id="events">Events</h3>
 
@@ -447,7 +760,7 @@ For information on the standard APIs that extensions can use, see
           </div> <!-- /apiGroup -->
 
           <!-- TYPES -->
-          <div class="apiGroup">
+          <div class="apiGroup" style="display: none; ">
             <a name="types.sort(sortByName)"></a>
             <h3 id="types">Types</h3>
 
@@ -476,7 +789,7 @@ For information on the standard APIs that extensions can use, see
   <a rel="license" href="http://code.google.com/google_bsd_license.html">BSD License</a>.
   </p>
   <p>
-  ©2009 Google
+  ©2010 Google
   </p>
 
 <!-- begin analytics -->
