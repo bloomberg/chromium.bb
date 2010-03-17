@@ -2447,15 +2447,6 @@
    fun:_ZN2v88internal19HandleApiCallHelperILb0EEEPNS0_6ObjectENS0_99_GLOBAL__N__b_slave_webkit_rel_linux_valgrind_layout_build_src_v8_src_builtins.cc_00000000_3065E90216BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEE
 }
 {
-   bug_37727
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZNK7WebCore12RGBA32Buffer16asNewNativeImageEv
-   fun:_ZNK6WebKit15WebImageDecoder15getFrameAtIndexEi
-   fun:_Z11VerifyImageRKN6WebKit15WebImageDecoderERK8FilePathS5_j
-   fun:_ZNK16ImageDecoderTest22TestWebKitImageDecoderERK8FilePathS2_i
-}
-{
    bug_38231
    Memcheck:Leak
    fun:_Znaj

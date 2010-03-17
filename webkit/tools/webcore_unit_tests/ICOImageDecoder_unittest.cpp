@@ -28,20 +28,21 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "config.h"
+
+#include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/scoped_ptr.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebImageDecoder.h"
 #include "webkit/tools/test_shell/image_decoder_unittest.h"
 
-#include "ICOImageDecoder.h"
-#include "SharedBuffer.h"
+using WebKit::WebImageDecoder;
 
 class ICOImageDecoderTest : public ImageDecoderTest {
  public:
   ICOImageDecoderTest() : ImageDecoderTest("ico") { }
 
  protected:
-  virtual WebCore::ImageDecoder* CreateDecoder() const {
-    return new WebCore::ICOImageDecoder();
+   virtual WebKit::WebImageDecoder* CreateWebKitImageDecoder() const {
+     return new WebKit::WebImageDecoder(WebKit::WebImageDecoder::TypeICO);
   }
 };
 
@@ -49,28 +50,12 @@ TEST_F(ICOImageDecoderTest, Decoding) {
   TestDecoding();
 }
 
-#ifndef CALCULATE_MD5_SUMS
-TEST_F(ICOImageDecoderTest, ChunkedDecoding) {
-  TestChunkedDecoding();
-}
-#endif
-
-TEST_F(ICOImageDecoderTest, FaviconSize) {
+TEST_F(ICOImageDecoderTest, ImageNonZeroFrameIndex) {
   // Test that the decoder decodes multiple sizes of icons which have them.
-
   // Load an icon that has both favicon-size and larger entries.
   FilePath multisize_icon_path(data_dir_.AppendASCII("yahoo.ico"));
-  scoped_ptr<WebCore::ImageDecoder> decoder(SetupDecoder(multisize_icon_path,
-                                                         false));
-
-  // Verify the decoding.
   const FilePath md5_sum_path(
       GetMD5SumPath(multisize_icon_path).value() + FILE_PATH_LITERAL("2"));
   static const int kDesiredFrameIndex = 3;
-#ifdef CALCULATE_MD5_SUMS
-  SaveMD5Sum(md5_sum_path, decoder->frameBufferAtIndex(kDesiredFrameIndex));
-#else
-  VerifyImage(decoder.get(), multisize_icon_path, md5_sum_path,
-              kDesiredFrameIndex);
-#endif
+  TestWebKitImageDecoder(multisize_icon_path, md5_sum_path, kDesiredFrameIndex);
 }
