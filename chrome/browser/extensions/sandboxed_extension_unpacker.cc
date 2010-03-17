@@ -76,11 +76,12 @@ void SandboxedExtensionUnpacker::Start() {
   } else {
     // Otherwise, unpack the extension in this process.
     ExtensionUnpacker unpacker(temp_crx_path);
-    if (unpacker.Run() && unpacker.DumpImagesToFile())
-      OnUnpackExtensionSucceeded(*unpacker.parsed_manifest(),
-                                 *unpacker.parsed_catalogs());
-    else
+    if (unpacker.Run() && unpacker.DumpImagesToFile() &&
+        unpacker.DumpMessageCatalogsToFile()) {
+      OnUnpackExtensionSucceeded(*unpacker.parsed_manifest());
+    } else {
       OnUnpackExtensionFailed(unpacker.error_message());
+    }
   }
 }
 
@@ -92,8 +93,7 @@ void SandboxedExtensionUnpacker::StartProcessOnIOThread(
 }
 
 void SandboxedExtensionUnpacker::OnUnpackExtensionSucceeded(
-    const DictionaryValue& manifest,
-    const DictionaryValue& catalogs) {
+    const DictionaryValue& manifest) {
   // Skip check for unittests.
   if (thread_identifier_ != ChromeThread::ID_COUNT)
     DCHECK(ChromeThread::CurrentlyOn(thread_identifier_));
@@ -126,7 +126,7 @@ void SandboxedExtensionUnpacker::OnUnpackExtensionSucceeded(
   if (!RewriteImageFiles())
     return;
 
-  if (!RewriteCatalogFiles(catalogs))
+  if (!RewriteCatalogFiles())
     return;
 
   ReportSuccess();
@@ -334,8 +334,14 @@ bool SandboxedExtensionUnpacker::RewriteImageFiles() {
   return true;
 }
 
-bool SandboxedExtensionUnpacker::RewriteCatalogFiles(
-    const DictionaryValue& catalogs) {
+bool SandboxedExtensionUnpacker::RewriteCatalogFiles() {
+  DictionaryValue catalogs;
+  if (!ExtensionUnpacker::ReadMessageCatalogsFromFile(temp_dir_.path(),
+                                                      &catalogs)) {
+    ReportFailure("Could not read catalog data from disk.");
+    return false;
+  }
+
   // Write our parsed catalogs back to disk.
   for (DictionaryValue::key_iterator key_it = catalogs.begin_keys();
        key_it != catalogs.end_keys(); ++key_it) {

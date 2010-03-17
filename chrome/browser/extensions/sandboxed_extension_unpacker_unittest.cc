@@ -104,8 +104,7 @@ class SandboxedExtensionUnpackerTest : public testing::Test {
 
   void OnUnpackSucceeded() {
     sandboxed_unpacker_->OnUnpackExtensionSucceeded(
-        *unpacker_->parsed_manifest(),
-        *unpacker_->parsed_catalogs());
+        *unpacker_->parsed_manifest());
   }
 
   FilePath GetInstallPath() {
@@ -125,6 +124,7 @@ TEST_F(SandboxedExtensionUnpackerTest, NoCatalogsSuccess) {
   SetupUnpacker("no_l10n.crx");
   ASSERT_TRUE(unpacker_->Run());
   ASSERT_TRUE(unpacker_->DumpImagesToFile());
+  ASSERT_TRUE(unpacker_->DumpMessageCatalogsToFile());
 
   // Check that there is no _locales folder.
   FilePath install_path =
@@ -143,6 +143,7 @@ TEST_F(SandboxedExtensionUnpackerTest, WithCatalogsSuccess) {
   SetupUnpacker("good_l10n.crx");
   ASSERT_TRUE(unpacker_->Run());
   ASSERT_TRUE(unpacker_->DumpImagesToFile());
+  ASSERT_TRUE(unpacker_->DumpMessageCatalogsToFile());
 
   // Check timestamp on _locales/en_US/messages.json.
   FilePath messages_file;

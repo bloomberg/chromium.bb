@@ -121,8 +121,7 @@ class SandboxedExtensionUnpacker : public UtilityProcessHost::Client {
   void StartProcessOnIOThread(const FilePath& temp_crx_path);
 
   // SandboxedExtensionUnpacker
-  void OnUnpackExtensionSucceeded(const DictionaryValue& manifest,
-                                  const DictionaryValue& catalogs);
+  void OnUnpackExtensionSucceeded(const DictionaryValue& manifest);
   void OnUnpackExtensionFailed(const std::string& error_message);
   void OnProcessCrashed();
 
@@ -136,7 +135,7 @@ class SandboxedExtensionUnpacker : public UtilityProcessHost::Client {
   // Overwrites original files with safe results from utility process.
   // Reports error and returns false if it fails.
   bool RewriteImageFiles();
-  bool RewriteCatalogFiles(const DictionaryValue& parsed_catalogs);
+  bool RewriteCatalogFiles();
 
   FilePath crx_path_;
   ChromeThread::ID thread_identifier_;

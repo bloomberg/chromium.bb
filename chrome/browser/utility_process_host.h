@@ -38,8 +38,7 @@ class UtilityProcessHost : public ChildProcessHost {
     // parsed manifest.json file.  |catalogs| contains list of all parsed
     // message catalogs.  |images| contains a list of decoded images and the
     // associated paths where those images live on disk.
-    virtual void OnUnpackExtensionSucceeded(const DictionaryValue& manifest,
-                                            const DictionaryValue& catalogs) {}
+    virtual void OnUnpackExtensionSucceeded(const DictionaryValue& manifest) {}
 
     // Called when an error occurred while unpacking the extension.
     // |error_message| contains a description of the problem.

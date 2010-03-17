@@ -30,9 +30,10 @@ void UtilityThread::OnControlMessageReceived(const IPC::Message& msg) {
 
 void UtilityThread::OnUnpackExtension(const FilePath& extension_path) {
   ExtensionUnpacker unpacker(extension_path);
-  if (unpacker.Run() && unpacker.DumpImagesToFile()) {
+  if (unpacker.Run() && unpacker.DumpImagesToFile() &&
+      unpacker.DumpMessageCatalogsToFile()) {
     Send(new UtilityHostMsg_UnpackExtension_Succeeded(
-      *unpacker.parsed_manifest(), *unpacker.parsed_catalogs()));
+       *unpacker.parsed_manifest()));
   } else {
     Send(new UtilityHostMsg_UnpackExtension_Failed(unpacker.error_message()));
   }

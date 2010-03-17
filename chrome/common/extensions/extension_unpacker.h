@@ -35,11 +35,22 @@ class ExtensionUnpacker {
   // success.
   bool DumpImagesToFile();
 
+  // Write the decoded messages to kDecodedMessageCatalogsFilename.  We do this
+  // instead of sending them over IPC, since they are so large.  Returns true on
+  // success.
+  bool DumpMessageCatalogsToFile();
+
   // Read the decoded images back from the file we saved them to.
   // |extension_path| is the path to the extension we unpacked that wrote the
   // data. Returns true on success.
   static bool ReadImagesFromFile(const FilePath& extension_path,
                                  DecodedImages* images);
+
+  // Read the decoded message catalogs back from the file we saved them to.
+  // |extension_path| is the path to the extension we unpacked that wrote the
+  // data. Returns true on success.
+  static bool ReadMessageCatalogsFromFile(const FilePath& extension_path,
+                                          DictionaryValue* catalogs);
 
   const std::string& error_message() { return error_message_; }
   DictionaryValue* parsed_manifest() {

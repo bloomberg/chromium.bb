@@ -35,6 +35,10 @@ const char kTempExtensionName[] = "TEMP_INSTALL";
 // The file to write our decoded images to, relative to the extension_path.
 const char kDecodedImagesFilename[] = "DECODED_IMAGES";
 
+// The file to write our decoded message catalogs to, relative to the
+// extension_path.
+const char kDecodedMessageCatalogsFilename[] = "DECODED_MESSAGE_CATALOGS";
+
 // Errors
 const char* kCouldNotCreateDirectoryError =
     "Could not create directory for unzipping.";
@@ -210,6 +214,21 @@ bool ExtensionUnpacker::DumpImagesToFile() {
   return true;
 }
 
+bool ExtensionUnpacker::DumpMessageCatalogsToFile() {
+  IPC::Message pickle;
+  IPC::WriteParam(&pickle, *parsed_catalogs_.get());
+
+  FilePath path = extension_path_.DirName().AppendASCII(
+      kDecodedMessageCatalogsFilename);
+  if (!file_util::WriteFile(path, static_cast<const char*>(pickle.data()),
+                            pickle.size())) {
+    SetError("Could not write message catalogs to disk.");
+    return false;
+  }
+
+  return true;
+}
+
 // static
 bool ExtensionUnpacker::ReadImagesFromFile(const FilePath& extension_path,
                                            DecodedImages* images) {
@@ -221,6 +240,19 @@ bool ExtensionUnpacker::ReadImagesFromFile(const FilePath& extension_path,
   IPC::Message pickle(file_str.data(), file_str.size());
   void* iter = NULL;
   return IPC::ReadParam(&pickle, &iter, images);
+}
+
+// static
+bool ExtensionUnpacker::ReadMessageCatalogsFromFile(
+    const FilePath& extension_path, DictionaryValue* catalogs) {
+  FilePath path = extension_path.AppendASCII(kDecodedMessageCatalogsFilename);
+  std::string file_str;
+  if (!file_util::ReadFileToString(path, &file_str))
+    return false;
+
+  IPC::Message pickle(file_str.data(), file_str.size());
+  void* iter = NULL;
+  return IPC::ReadParam(&pickle, &iter, catalogs);
 }
 
 bool ExtensionUnpacker::AddDecodedImage(const FilePath& path) {
@@ -243,9 +275,9 @@ bool ExtensionUnpacker::AddDecodedImage(const FilePath& path) {
 bool ExtensionUnpacker::ReadMessageCatalog(const FilePath& message_path) {
   std::string error;
   JSONFileValueSerializer serializer(message_path);
-  DictionaryValue* root =
-    static_cast<DictionaryValue*>(serializer.Deserialize(&error));
-  if (!root) {
+  scoped_ptr<DictionaryValue> root(
+      static_cast<DictionaryValue*>(serializer.Deserialize(&error)));
+  if (!root.get()) {
     std::string messages_file = WideToASCII(message_path.ToWStringHack());
     if (error.empty()) {
       // If file is missing, Deserialize will fail with empty error.
@@ -262,7 +294,8 @@ bool ExtensionUnpacker::ReadMessageCatalog(const FilePath& message_path) {
   if (!temp_install_dir_.AppendRelativePath(message_path, &relative_path))
     NOTREACHED();
 
-  parsed_catalogs_->Set(relative_path.DirName().ToWStringHack(), root);
+  parsed_catalogs_->Set(relative_path.DirName().ToWStringHack(),
+                        root.release());
 
   return true;
 }
