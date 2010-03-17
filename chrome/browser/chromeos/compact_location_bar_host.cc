@@ -48,8 +48,9 @@ class MouseObserver : public MessageLoopForUI::Observer {
   virtual void DidProcessEvent(GdkEvent* event) {
     // Hide the location bar iff the mouse is pressed on the
     // BrowserView's content area.
-    if (top_level_window_ == gdk_window_get_toplevel(event->any.window) &&
-        event->type == GDK_BUTTON_PRESS &&
+    if (event->type == GDK_BUTTON_PRESS &&
+        GDK_IS_WINDOW(event->any.window) &&
+        top_level_window_ == gdk_window_get_toplevel(event->any.window) &&
         HitContentArea(event)) {
       host_->Hide(true);
     }
