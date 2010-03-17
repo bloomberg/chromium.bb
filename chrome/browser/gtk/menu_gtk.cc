@@ -467,10 +467,14 @@ void MenuGtk::PointMenuPositionFunc(GtkMenu* menu,
 
   GtkRequisition menu_req;
   gtk_widget_size_request(GTK_WIDGET(menu), &menu_req);
-  GdkScreen* screen = gdk_screen_get_default();
-  gint screen_height = gdk_screen_get_height(screen);
+  GdkScreen* screen;
+  gdk_display_get_pointer(gdk_display_get_default(), &screen, NULL, NULL, NULL);
+  gint monitor = gdk_screen_get_monitor_at_point(screen, *x, *y);
 
-  if (*y + menu_req.height >= screen_height)
+  GdkRectangle screen_rect;
+  gdk_screen_get_monitor_geometry(screen, monitor, &screen_rect);
+
+  if (*y + menu_req.height >= screen_rect.height)
     *y -= menu_req.height;
 }
 
