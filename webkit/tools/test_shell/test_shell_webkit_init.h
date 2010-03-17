@@ -62,6 +62,7 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
     WebKit::WebRuntimeFeatures::enableApplicationCache(true);
     WebKit::WebRuntimeFeatures::enableDatabase(true);
     WebKit::WebRuntimeFeatures::enableWebGL(true);
+    WebKit::WebRuntimeFeatures::enablePushState(true);
 
     // Load libraries for media and enable the media player.
     FilePath module_path;

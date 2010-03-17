@@ -1043,15 +1043,14 @@ TEST_F(NavigationControllerTest, InPage) {
   TestNotificationTracker notifications;
   RegisterForAllNavNotifications(&notifications, &controller());
 
-  // Main page. Note that we need "://" so this URL is treated as "standard"
-  // which are the only ones that can have a ref.
-  const GURL url1("http:////foo");
+  // Main page.
+  const GURL url1("http://foo");
   rvh()->SendNavigate(0, url1);
   EXPECT_TRUE(notifications.Check1AndReset(
       NotificationType::NAV_ENTRY_COMMITTED));
 
   // First navigation.
-  const GURL url2("http:////foo#a");
+  const GURL url2("http://foo#a");
   ViewHostMsg_FrameNavigate_Params params = {0};
   params.page_id = 1;
   params.url = url2;
@@ -1066,6 +1065,7 @@ TEST_F(NavigationControllerTest, InPage) {
   EXPECT_TRUE(notifications.Check1AndReset(
       NotificationType::NAV_ENTRY_COMMITTED));
   EXPECT_TRUE(details.is_in_page);
+  EXPECT_FALSE(details.did_replace_entry);
   EXPECT_EQ(2, controller().entry_count());
 
   // Go back one.
@@ -1109,7 +1109,7 @@ TEST_F(NavigationControllerTest, InPage) {
             controller().GetActiveEntry()->url());
 
   // Finally, navigate to an unrelated URL to make sure in_page is not sticky.
-  const GURL url3("http:////bar");
+  const GURL url3("http://bar");
   params.page_id = 2;
   params.url = url3;
   notifications.Reset();
@@ -1117,6 +1117,37 @@ TEST_F(NavigationControllerTest, InPage) {
   EXPECT_TRUE(notifications.Check1AndReset(
       NotificationType::NAV_ENTRY_COMMITTED));
   EXPECT_FALSE(details.is_in_page);
+}
+
+TEST_F(NavigationControllerTest, InPage_Replace) {
+  TestNotificationTracker notifications;
+  RegisterForAllNavNotifications(&notifications, &controller());
+
+  // Main page.
+  const GURL url1("http://foo");
+  rvh()->SendNavigate(0, url1);
+  EXPECT_TRUE(notifications.Check1AndReset(
+      NotificationType::NAV_ENTRY_COMMITTED));
+
+  // First navigation.
+  const GURL url2("http://foo#a");
+  ViewHostMsg_FrameNavigate_Params params = {0};
+  params.page_id = 0;  // Same page_id
+  params.url = url2;
+  params.transition = PageTransition::LINK;
+  params.should_update_history = false;
+  params.gesture = NavigationGestureUser;
+  params.is_post = false;
+
+  // This should NOT generate a new entry.
+  NavigationController::LoadCommittedDetails details;
+  EXPECT_TRUE(controller().RendererDidNavigate(params, 0, &details));
+  EXPECT_TRUE(notifications.Check2AndReset(
+      NotificationType::NAV_LIST_PRUNED,
+      NotificationType::NAV_ENTRY_COMMITTED));
+  EXPECT_TRUE(details.is_in_page);
+  EXPECT_TRUE(details.did_replace_entry);
+  EXPECT_EQ(1, controller().entry_count());
 }
 
 // NotificationObserver implementation used in verifying we've received the

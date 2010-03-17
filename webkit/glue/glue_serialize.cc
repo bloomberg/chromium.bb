@@ -13,6 +13,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebHistoryItem.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebHTTPBody.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPoint.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSerializedScriptValue.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
 #include "webkit/glue/webkit_glue.h"
@@ -21,6 +22,7 @@ using WebKit::WebData;
 using WebKit::WebHistoryItem;
 using WebKit::WebHTTPBody;
 using WebKit::WebPoint;
+using WebKit::WebSerializedScriptValue;
 using WebKit::WebString;
 using WebKit::WebUChar;
 using WebKit::WebVector;
@@ -50,12 +52,13 @@ struct SerializeObject {
 // 4: Adds support for storing FormData::identifier().
 // 5: Adds support for empty FormData
 // 6: Adds support for documentSequenceNumbers
+// 7: Adds support for stateObject
 // Should be const, but unit tests may modify it.
 //
 // NOTE: If the version is -1, then the pickle contains only a URL string.
 // See CreateHistoryStateForURL.
 //
-int kVersion = 6;
+int kVersion = 7;
 
 // A bunch of convenience functions to read/write to SerializeObjects.
 // The serializers assume the input data is in the correct format and so does
@@ -290,6 +293,12 @@ static void WriteHistoryItem(
 
   if (kVersion >= 6)
     WriteInteger64(item.documentSequenceNumber(), obj);
+  if (kVersion >= 7) {
+    bool has_state_object = !item.stateObject().isNull();
+    WriteBoolean(has_state_object, obj);
+    if (has_state_object)
+      WriteString(item.stateObject().toString(), obj);
+  }
 
   // Yes, the referrer is written twice.  This is for backwards
   // compatibility with the format.
@@ -343,6 +352,13 @@ static WebHistoryItem ReadHistoryItem(
 
   if (obj->version >= 6)
     item.setDocumentSequenceNumber(ReadInteger64(obj));
+  if (obj->version >= 7) {
+    bool has_state_object = ReadBoolean(obj);
+    if (has_state_object) {
+      item.setStateObject(
+          WebSerializedScriptValue::fromString(ReadString(obj)));
+    }
+  }
 
   // The extra referrer string is read for backwards compat.
   const WebHTTPBody& http_body = ReadFormData(obj);

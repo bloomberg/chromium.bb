@@ -2711,7 +2711,7 @@ void RenderView::didFinishLoad(WebFrame* frame) {
   navigation_state->user_script_idle_scheduler()->DidFinishLoad();
 }
 
-void RenderView::didChangeLocationWithinPage(
+void RenderView::didNavigateWithinPage(
     WebFrame* frame, bool is_new_navigation) {
 
   // Determine if the UserScriptIdleScheduler already ran scripts on this page,

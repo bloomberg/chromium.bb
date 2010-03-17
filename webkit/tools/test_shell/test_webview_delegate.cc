@@ -877,16 +877,18 @@ void TestWebViewDelegate::didFinishLoad(WebFrame* frame) {
   LocationChangeDone(frame);
 }
 
-void TestWebViewDelegate::didChangeLocationWithinPage(
+void TestWebViewDelegate::didNavigateWithinPage(
     WebFrame* frame, bool is_new_navigation) {
   frame->dataSource()->setExtraData(pending_extra_data_.release());
 
+  UpdateForCommittedLoad(frame, is_new_navigation);
+}
+
+void TestWebViewDelegate::didChangeLocationWithinPage(WebFrame* frame) {
   if (shell_->ShouldDumpFrameLoadCallbacks()) {
     printf("%S - didChangeLocationWithinPageForFrame\n",
            GetFrameDescription(frame).c_str());
   }
-
-  UpdateForCommittedLoad(frame, is_new_navigation);
 }
 
 void TestWebViewDelegate::assignIdentifierToRequest(
@@ -1087,8 +1089,7 @@ void TestWebViewDelegate::UpdateAddressBar(WebView* webView) {
   if (!data_source)
     return;
 
-  // TODO(abarth): This is wrong!
-  SetAddressBarURL(data_source->request().firstPartyForCookies());
+  SetAddressBarURL(data_source->request().url());
 }
 
 void TestWebViewDelegate::LocationChangeDone(WebFrame* frame) {
@@ -1156,6 +1157,7 @@ void TestWebViewDelegate::UpdateURL(WebFrame* frame) {
 
   shell_->navigation_controller()->DidNavigateToEntry(entry.release());
   shell_->UpdateNavigationControls();
+  UpdateAddressBar(frame->view());
 
   last_page_id_updated_ = std::max(last_page_id_updated_, page_id_);
 }

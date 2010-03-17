@@ -817,6 +817,8 @@ void RenderThread::EnsureWebKitInitialized() {
 
   WebRuntimeFeatures::enableWebGL(
       command_line.HasSwitch(switches::kEnableExperimentalWebGL));
+
+  WebRuntimeFeatures::enablePushState(true);
 }
 
 void RenderThread::IdleHandler() {

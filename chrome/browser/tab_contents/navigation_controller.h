@@ -89,7 +89,7 @@ class NavigationController {
     bool is_auto;
 
     // True if the committed entry has replaced the exisiting one.
-    // A non-user initiated redierct causes such replacement.
+    // A non-user initiated redirect causes such replacement.
     // This is somewhat similiar to is_auto, but not exactly the same.
     bool did_replace_entry;
 

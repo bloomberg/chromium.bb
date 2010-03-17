@@ -795,9 +795,10 @@ void NavigationController::RendererDidNavigateInPage(
   if (new_entry->update_virtual_url_with_url())
     UpdateVirtualURLToURL(new_entry, params.url);
   new_entry->set_url(params.url);
-  *did_replace_entry = IsRedirect(params) &&
-                       IsLikelyAutoNavigation(base::TimeTicks::Now());
-  InsertOrReplaceEntry(new_entry, *did_replace_entry);
+
+  // This replaces the existing entry since the page ID didn't change.
+  *did_replace_entry = true;
+  InsertOrReplaceEntry(new_entry, true);
 }
 
 void NavigationController::RendererDidNavigateNewSubframe(

@@ -190,8 +190,10 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
   virtual void didFailLoad(
       WebKit::WebFrame*, const WebKit::WebURLError&);
   virtual void didFinishLoad(WebKit::WebFrame*);
+  virtual void didNavigateWithinPage(
+      WebKit::WebFrame*, bool is_new_navigation);
   virtual void didChangeLocationWithinPage(
-      WebKit::WebFrame*, bool isNewNavigation);
+      WebKit::WebFrame*);
   virtual void assignIdentifierToRequest(
       WebKit::WebFrame*, unsigned identifier, const WebKit::WebURLRequest&);
   virtual void willSendRequest(

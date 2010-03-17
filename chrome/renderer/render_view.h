@@ -352,7 +352,7 @@ class RenderView : public RenderWidget,
   virtual void didFailLoad(
       WebKit::WebFrame* frame, const WebKit::WebURLError& error);
   virtual void didFinishLoad(WebKit::WebFrame* frame);
-  virtual void didChangeLocationWithinPage(
+  virtual void didNavigateWithinPage(
       WebKit::WebFrame* frame, bool is_new_navigation);
   virtual void didUpdateCurrentHistoryItem(WebKit::WebFrame* frame);
   virtual void assignIdentifierToRequest(
