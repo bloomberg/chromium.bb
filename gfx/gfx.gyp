@@ -84,8 +84,8 @@
         }],
         ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
           'sources': [
-            'gtk_native_view_manager.cc',
-            'gtk_native_view_manager.h',
+            'gtk_native_view_id_manager.cc',
+            'gtk_native_view_id_manager.h',
             'gtk_util.cc',
             'gtk_util.h',
           ],
