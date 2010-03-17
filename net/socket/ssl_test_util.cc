@@ -13,17 +13,7 @@
 #if defined(OS_WIN)
 #include <windows.h>
 #include <wincrypt.h>
-#elif defined(USE_NSS)
-#include <nspr.h>
-#include <nss.h>
-#include <secerr.h>
-#include <ssl.h>
-#include <sslerr.h>
-#include <pk11pub.h>
-#include "base/nss_util.h"
 #elif defined(OS_MACOSX)
-#include <Security/Security.h>
-#include "base/scoped_cftyperef.h"
 #include "net/base/x509_certificate.h"
 #endif
 
@@ -31,6 +21,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
+#include "net/base/cert_test_util.h"
 #include "net/base/host_resolver.h"
 #include "net/base/net_test_constants.h"
 #include "net/base/test_completion_callback.h"
@@ -41,83 +32,6 @@
 #if defined(OS_WIN)
 #pragma comment(lib, "crypt32.lib")
 #endif
-
-namespace {
-
-#if defined(USE_NSS)
-static CERTCertificate* LoadTemporaryCert(const FilePath& filename) {
-  base::EnsureNSSInit();
-
-  std::string rawcert;
-  if (!file_util::ReadFileToString(filename, &rawcert)) {
-    LOG(ERROR) << "Can't load certificate " << filename.value();
-    return NULL;
-  }
-
-  CERTCertificate *cert;
-  cert = CERT_DecodeCertFromPackage(const_cast<char *>(rawcert.c_str()),
-                                    rawcert.length());
-  if (!cert) {
-    LOG(ERROR) << "Can't convert certificate " << filename.value();
-    return NULL;
-  }
-
-  // TODO(port): remove this const_cast after NSS 3.12.3 is released
-  CERTCertTrust trust;
-  int rv = CERT_DecodeTrustString(&trust, const_cast<char *>("TCu,Cu,Tu"));
-  if (rv != SECSuccess) {
-    LOG(ERROR) << "Can't decode trust string";
-    CERT_DestroyCertificate(cert);
-    return NULL;
-  }
-
-  rv = CERT_ChangeCertTrust(CERT_GetDefaultCertDB(), cert, &trust);
-  if (rv != SECSuccess) {
-    LOG(ERROR) << "Can't change trust for certificate " << filename.value();
-    CERT_DestroyCertificate(cert);
-    return NULL;
-  }
-
-  return cert;
-}
-#endif
-
-#if defined(OS_MACOSX)
-static net::X509Certificate* LoadTemporaryCert(const FilePath& filename) {
-  std::string rawcert;
-  if (!file_util::ReadFileToString(filename, &rawcert)) {
-    LOG(ERROR) << "Can't load certificate " << filename.value();
-    return NULL;
-  }
-
-  CFDataRef pem = CFDataCreate(kCFAllocatorDefault,
-                               reinterpret_cast<const UInt8*>(rawcert.data()),
-                               static_cast<CFIndex>(rawcert.size()));
-  if (!pem)
-    return NULL;
-  scoped_cftyperef<CFDataRef> scoped_pem(pem);
-
-  SecExternalFormat input_format = kSecFormatUnknown;
-  SecExternalItemType item_type = kSecItemTypeUnknown;
-  CFArrayRef cert_array = NULL;
-  if (SecKeychainItemImport(pem, NULL, &input_format, &item_type, 0, NULL, NULL,
-                            &cert_array))
-    return NULL;
-  scoped_cftyperef<CFArrayRef> scoped_cert_array(cert_array);
-
-  if (!CFArrayGetCount(cert_array))
-    return NULL;
-
-  SecCertificateRef cert_ref = static_cast<SecCertificateRef>(
-      const_cast<void*>(CFArrayGetValueAtIndex(cert_array, 0)));
-  CFRetain(cert_ref);
-  return net::X509Certificate::CreateFromHandle(cert_ref,
-      net::X509Certificate::SOURCE_LONE_CERT_IMPORT,
-      net::X509Certificate::OSCertHandles());
-}
-#endif
-
-}  // namespace
 
 namespace net {
 
@@ -139,9 +53,6 @@ TestServerLauncher::TestServerLauncher() : process_handle_(
     forking_(false),
     connection_attempts_(kDefaultTestConnectionAttempts),
     connection_timeout_(kDefaultTestConnectionTimeout)
-#if defined(USE_NSS)
-, cert_(NULL)
-#endif
 {
   InitCertPath();
 }
@@ -152,9 +63,6 @@ TestServerLauncher::TestServerLauncher(int connection_attempts,
                           forking_(false),
                           connection_attempts_(connection_attempts),
                           connection_timeout_(connection_timeout)
-#if defined(USE_NSS)
-, cert_(NULL)
-#endif
 {
   InitCertPath();
 }
@@ -174,7 +82,7 @@ void AppendToPythonPath(const FilePath& dir) {
 
 #if defined(OS_WIN)
   const wchar_t kPythonPath[] = L"PYTHONPATH";
-  // FIXME(dkegel): handle longer PYTHONPATH variables
+  // TODO(dkegel): handle longer PYTHONPATH variables
   wchar_t oldpath[4096];
   if (GetEnvironmentVariable(kPythonPath, oldpath, arraysize(oldpath)) == 0) {
     SetEnvironmentVariableW(kPythonPath, dir.value().c_str());
@@ -359,10 +267,7 @@ bool TestServerLauncher::Stop() {
 }
 
 TestServerLauncher::~TestServerLauncher() {
-#if defined(USE_NSS)
-  if (cert_)
-    CERT_DestroyCertificate(reinterpret_cast<CERTCertificate*>(cert_));
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
   SetMacTestCertificate(NULL);
 #endif
   Stop();
@@ -395,13 +300,12 @@ bool TestServerLauncher::LoadTestRootCert() {
 
   // This currently leaks a little memory.
   // TODO(dkegel): fix the leak and remove the entry in
-  // tools/valgrind/suppressions.txt
-  cert_ = reinterpret_cast<PrivateCERTCertificate*>(
-          LoadTemporaryCert(GetRootCertPath()));
+  // tools/valgrind/memcheck/suppressions.txt
+  cert_ = LoadTemporaryRootCert(GetRootCertPath());
   DCHECK(cert_);
   return (cert_ != NULL);
 #elif defined(OS_MACOSX)
-  X509Certificate* cert = LoadTemporaryCert(GetRootCertPath());
+  X509Certificate* cert = LoadTemporaryRootCert(GetRootCertPath());
   if (!cert)
     return false;
   SetMacTestCertificate(cert);
@@ -412,7 +316,6 @@ bool TestServerLauncher::LoadTestRootCert() {
 }
 
 bool TestServerLauncher::CheckCATrusted() {
-// TODO(port): Port either this or LoadTemporaryCert to MacOSX.
 #if defined(OS_WIN)
   HCERTSTORE cert_store = CertOpenSystemStore(NULL, L"ROOT");
   if (!cert_store) {
