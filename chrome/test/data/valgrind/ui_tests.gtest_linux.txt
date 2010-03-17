@@ -37,3 +37,4 @@ WorkerTest.WorkerCloseFast
 WorkerTest.WorkerGC
 WorkerTest.WorkerMultiPort
 WorkerTest.WorkerScriptError
+WorkerTest.WorkerMapGc
