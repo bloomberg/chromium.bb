@@ -2832,7 +2832,12 @@ BUG38347 WIN : fast/events/touch = TEXT PASS
 
 // Need to implement NPP_HandleEvent in the layout_test_plugin
 BUG38353 MAC LINUX : plugins/keyboard-events.html = TEXT
-BUG38353 MAC LINUX : http/tests/plugins/plugin-document-has-focus.html = TEXT
+BUG38353 MAC LINUX : http/tests/plugins/plugin-document-has-focus.html = TIMEOUT
 
 // will rebaseline
 BUG_DGLAZKOV WIN : svg/text/text-intro-05-t.svg = FAIL
+
+// WebKit roll 56073 -> 56096
+BUG_YUTAK WIN LINUX : editing/pasteboard/smart-paste-002.html = TEXT
+BUG_YUTAK WIN LINUX : editing/pasteboard/smart-paste-005.html = TEXT
+BUG_YUTAK : plugins/resize-from-plugin.html = TEXT
