@@ -80,45 +80,37 @@ AddressField* AddressField::Parse(
   address_field.is_ecml_ = is_ecml;
 
   // Allow address fields to appear in any order.
-  do {
-    if (ParseText(&q, ASCIIToUTF16("company|business name")))
-      continue;  // Ignore company name for now.
-
-    // Some pages (e.g. PC Connection.html) have an Attention field inside an
-    // address; we ignore this for now.
-    if (ParseText(&q, ASCIIToUTF16("attention|attn.")))
+  while (true) {
+    // We ignore the following:
+    // * Company/Business.
+    // * Attention.
+    // * Province/Region/Other.
+    if (ParseText(&q, ASCIIToUTF16("company|business name")) ||
+        ParseText(&q, ASCIIToUTF16("attention|attn.")) ||
+        ParseText(&q, ASCIIToUTF16("province|region|other"))) {
       continue;
-
-    if (ParseAddressLines(&q, is_ecml, &address_field))
+    } else if (ParseAddressLines(&q, is_ecml, &address_field) ||
+               ParseCity(&q, is_ecml, &address_field) ||
+               ParseZipCode(&q, is_ecml, &address_field) ||
+               ParseCountry(&q, is_ecml, &address_field)) {
       continue;
-
-    if (ParseCity(&q, is_ecml, &address_field))
+    } else if ((!address_field.state_ || address_field.state_->IsEmpty()) &&
+               address_field.ParseState(&q, is_ecml, &address_field)) {
       continue;
-
-    if ((!address_field.state_ || address_field.state_->IsEmpty()) &&
-        address_field.ParseState(&q, is_ecml, &address_field)) {
+    } else if (*q != **iter && ParseEmpty(&q)) {
+      // Ignore non-labeled fields within an address; the page
+      // MapQuest Driving Directions North America.html contains such a field.
+      // We only ignore such fields after we've parsed at least one other field;
+      // otherwise we'd effectively parse address fields before other field
+      // types after any non-labeled fields, and we want email address fields to
+      // have precedence since some pages contain fields labeled
+      // "Email address".
       continue;
+    } else {
+      // No field found.
+      break;
     }
-
-    if (ParseZipCode(&q, is_ecml, &address_field))
-      continue;
-
-    if (ParseCountry(&q, is_ecml, &address_field))
-      continue;
-
-    // Some test pages (e.g. SharperImageModifyAccount.html,
-    // Craft Catalog1.html, FAO Schwarz Billing Info Page.html) have a
-    // "province"/"region"/"other" field; we ignore this field for now.
-    if (ParseText(&q, ASCIIToUTF16("province|region|other")))
-      continue;
-
-    // Ignore non-labeled fields within an address; the page
-    // MapQuest Driving Directions North America.html contains such a field.
-    // We only ignore such fields after we've parsed at least one other field;
-    // otherwise we'd effectively parse address fields before other field types
-    // after any non-labeled fields, and we want email address fields to have
-    // precedence since some pages contain fields labeled "Email address".
-  } while (q != *iter && ParseEmpty(&q));
+  }
 
   // If we have identified any address fields in this field then it should be
   // added to the list of fields.
@@ -200,7 +192,7 @@ bool AddressField::ParseAddressLines(
       return false;
   } else {
     pattern =
-        ASCIIToUTF16("street|address line|address1|street_line1");
+        ASCIIToUTF16("street|address line|address1|street_line1|addr1");
     string16 label_pattern = ASCIIToUTF16("address");
 
     if (!ParseText(iter, pattern, &address_field->address1_))
@@ -221,7 +213,7 @@ bool AddressField::ParseAddressLines(
     pattern = GetEcmlPattern(kEcmlShipToAddress2,
                              kEcmlBillToAddress2, '|');
   } else {
-    pattern = ASCIIToUTF16("^$|address|address2|street|street_line2");
+    pattern = ASCIIToUTF16("^$|address|address2|street|street_line2|addr2");
   }
 
   ParseText(iter, pattern, &address_field->address2_);
@@ -273,7 +265,7 @@ bool AddressField::ParseZipCode(
     pattern = GetEcmlPattern(kEcmlShipToPostalCode,
                              kEcmlBillToPostalCode, '|');
   } else {
-    pattern = ASCIIToUTF16("zip|postal|post code|^1z$");
+    pattern = ASCIIToUTF16("zip|postal|post code|pcode|^1z$");
   }
 
   AddressType tempType;
