@@ -7,9 +7,9 @@
 
 #include <vector>
 
-#include "app/gfx/native_widget_types.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
+#include "gfx/native_widget_types.h"
 
 class Profile;
 

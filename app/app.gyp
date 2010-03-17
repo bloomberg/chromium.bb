@@ -43,7 +43,6 @@
         'gfx/codec/png_codec_unittest.cc',
         'gfx/color_utils_unittest.cc',
         'gfx/font_unittest.cc',
-        'gfx/insets_unittest.cc',
         'gfx/native_theme_win_unittest.cc',
         'gfx/skbitmap_operations_unittest.cc',
         'gfx/text_elider_unittest.cc',
