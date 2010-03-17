@@ -72,7 +72,7 @@ class ExtensionPopupHost : public ExtensionPopup::Observer,
  public:
   explicit ExtensionPopupHost(ExtensionFunctionDispatcher* dispatcher)
       : dispatcher_(dispatcher), popup_(NULL) {
-    AddRef();  // Balanced in ExtensionPopupClosed().
+    AddRef();  // Balanced in DispatchPopupClosedEvent().
     views::FocusManager::GetWidgetFocusManager()->AddFocusChangeListener(this);
   }
 
@@ -87,6 +87,13 @@ class ExtensionPopupHost : public ExtensionPopup::Observer,
 
   // Overriden from ExtensionPopup::Observer
   virtual void ExtensionPopupClosed(ExtensionPopup* popup) {
+    // The OnPopupClosed event should be sent later to give the popup time to
+    // complete closing.
+    MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(this,
+      &ExtensionPopupHost::DispatchPopupClosedEvent));
+  }
+
+  virtual void DispatchPopupClosedEvent() {
     RenderViewHost* render_view_host = dispatcher_->GetExtensionHost() ?
         dispatcher_->GetExtensionHost()->render_view_host() :
         dispatcher_->GetExtensionDOMUI()->GetRenderViewHost();
