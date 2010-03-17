@@ -326,6 +326,17 @@ void ExtensionHost::DidNavigate(RenderViewHost* render_view_host,
       new ExtensionFunctionDispatcher(render_view_host_, this, url_));
 }
 
+void ExtensionHost::InsertInfobarCSS() {
+  DCHECK(!is_background_page());
+
+  static const base::StringPiece css(
+      ResourceBundle::GetSharedInstance().GetRawDataResource(
+      IDR_EXTENSIONS_INFOBAR_CSS));
+
+  render_view_host()->InsertCSSInWebFrame(
+      L"", css.as_string(), "InfobarThemeCSS");
+}
+
 void ExtensionHost::InsertThemeCSS() {
   DCHECK(!is_background_page());
 
@@ -367,7 +378,8 @@ void ExtensionHost::DidStopLoading() {
   did_stop_loading_ = true;
   if (extension_host_type_ == ViewType::EXTENSION_TOOLSTRIP ||
       extension_host_type_ == ViewType::EXTENSION_MOLE ||
-      extension_host_type_ == ViewType::EXTENSION_POPUP) {
+      extension_host_type_ == ViewType::EXTENSION_POPUP ||
+      extension_host_type_ == ViewType::EXTENSION_INFOBAR) {
 #if defined(TOOLKIT_VIEWS)
     if (view_.get())
       view_->DidStopLoading();
@@ -388,6 +400,9 @@ void ExtensionHost::DidStopLoading() {
     } else if (extension_host_type_ == ViewType::EXTENSION_TOOLSTRIP) {
       UMA_HISTOGRAM_TIMES("Extensions.ToolstripLoadTime",
                           since_created_.Elapsed());
+    } else if (extension_host_type_ == ViewType::EXTENSION_INFOBAR) {
+      UMA_HISTOGRAM_TIMES("Extensions.InfobarLoadTime",
+        since_created_.Elapsed());
     }
   }
 }
@@ -402,7 +417,10 @@ void ExtensionHost::DocumentAvailableInMainFrame(RenderViewHost* rvh) {
   if (is_background_page()) {
     extension_->SetBackgroundPageReady();
   } else {
-    InsertThemeCSS();
+    if (extension_host_type_ == ViewType::EXTENSION_INFOBAR)
+      InsertInfobarCSS();
+    else
+      InsertThemeCSS();
 
     // Listen for browser changes so we can resend the CSS.
     registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
@@ -464,7 +482,8 @@ void ExtensionHost::OnMessageBoxClosed(IPC::Message* reply_msg,
 }
 
 void ExtensionHost::Close(RenderViewHost* render_view_host) {
-  if (extension_host_type_ == ViewType::EXTENSION_POPUP) {
+  if (extension_host_type_ == ViewType::EXTENSION_POPUP ||
+      extension_host_type_ == ViewType::EXTENSION_INFOBAR) {
     NotificationService::current()->Notify(
         NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE,
         Source<Profile>(profile_),
@@ -483,7 +502,8 @@ WebPreferences ExtensionHost::GetWebkitPrefs() {
   const bool kIsDomUI = true;
   WebPreferences webkit_prefs =
       RenderViewHostDelegateHelper::GetWebkitPrefs(profile, kIsDomUI);
-  if (extension_host_type_ == ViewType::EXTENSION_POPUP)
+  if (extension_host_type_ == ViewType::EXTENSION_POPUP ||
+      extension_host_type_ == ViewType::EXTENSION_INFOBAR)
     webkit_prefs.allow_scripts_to_close_windows = true;
   return webkit_prefs;
 }
@@ -685,7 +705,8 @@ void ExtensionHost::RenderViewCreated(RenderViewHost* render_view_host) {
 
   if (extension_host_type_ == ViewType::EXTENSION_TOOLSTRIP ||
       extension_host_type_ == ViewType::EXTENSION_MOLE ||
-      extension_host_type_ == ViewType::EXTENSION_POPUP) {
+      extension_host_type_ == ViewType::EXTENSION_POPUP ||
+      extension_host_type_ == ViewType::EXTENSION_INFOBAR) {
     render_view_host->Send(new ViewMsg_EnablePreferredSizeChangedMode(
         render_view_host->routing_id()));
   }
@@ -697,7 +718,8 @@ int ExtensionHost::GetBrowserWindowID() const {
   int window_id = -1;
   if (extension_host_type_ == ViewType::EXTENSION_TOOLSTRIP ||
       extension_host_type_ == ViewType::EXTENSION_MOLE ||
-      extension_host_type_ == ViewType::EXTENSION_POPUP) {
+      extension_host_type_ == ViewType::EXTENSION_POPUP ||
+      extension_host_type_ == ViewType::EXTENSION_INFOBAR) {
     // If the host is bound to a browser, then extract its window id.
     // Extensions hosted in ExternalTabContainer objects may not have
     // an associated browser.

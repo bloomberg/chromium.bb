@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@ const char* ViewType::kToolstrip = "TOOLSTRIP";
 const char* ViewType::kMole = "MOLE";
 const char* ViewType::kBackgroundPage = "BACKGROUND";
 const char* ViewType::kPopup = "POPUP";
+const char* ViewType::kInfobar = "INFOBAR";
 const char* ViewType::kAll = "ALL";
 
 bool ViewType::ShouldAutoResize(ViewType::Type view_type) {

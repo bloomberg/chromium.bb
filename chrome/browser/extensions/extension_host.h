@@ -97,6 +97,9 @@ class ExtensionHost : public ExtensionPopupHost::PopupDelegate,
   // Sets |url_| and navigates |render_view_host_|.
   void NavigateToURL(const GURL& url);
 
+  // Insert a default style sheet for Extension InfoBars.
+  void InsertInfobarCSS();
+
   // Insert the theme CSS for a toolstrip/mole.
   void InsertThemeCSS();
 

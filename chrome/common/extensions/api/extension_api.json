@@ -1392,6 +1392,44 @@
     ]
   },
   {
+    "namespace": "experimental.infoBar",
+    "types": [],
+    "functions": [
+      {
+        "name": "show",
+        "type": "function",
+        "description": "Shows an infobar in the specified tab.",
+        "parameters": [
+          { 
+            "name": "details",
+            "type": "object",
+            "properties": {
+              "tabId": {
+                "type": "integer",
+                "description": "The tab id for the tab to display the infobar in. If not specified the current tab will be used.",
+                "optional": true
+              },
+              "htmlPath": {
+                "type": "string",
+                "description": "The html file that contains the infobar."
+              }
+            }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {
+                "name": "window", "$ref": "Window", "description": "Contains details about the window in which the infobar was created.",
+                "optional": true
+              }
+            ]
+          }
+        ]
+      }      
+    ]
+  },
+  {
     "namespace": "bookmarks",
     "types": [
       {

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,7 @@
 #include "views/widget/widget.h"
 
 // static
-const double InfoBar::kTargetHeight = 36.0;
+const double InfoBar::kDefaultTargetHeight = 36.0;
 const int InfoBar::kHorizontalPadding = 6;
 const int InfoBar::kIconLabelSpacing = 6;
 const int InfoBar::kButtonButtonSpacing = 10;
@@ -107,7 +107,8 @@ InfoBar::InfoBar(InfoBarDelegate* delegate)
     : delegate_(delegate),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           close_button_(new views::ImageButton(this))),
-      ALLOW_THIS_IN_INITIALIZER_LIST(delete_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(delete_factory_(this)),
+      target_height_(kDefaultTargetHeight) {
   // We delete ourselves when we're removed from the view hierarchy.
   set_parent_owned(false);
 
@@ -167,7 +168,7 @@ void InfoBar::Close() {
 // InfoBar, views::View overrides: ---------------------------------------------
 
 gfx::Size InfoBar::GetPreferredSize() {
-  int height = static_cast<int>(kTargetHeight * animation_->GetCurrentValue());
+  int height = static_cast<int>(target_height_ * animation_->GetCurrentValue());
   return gfx::Size(0, height);
 }
 
@@ -200,13 +201,13 @@ void InfoBar::RemoveInfoBar() const {
 }
 
 int InfoBar::CenterY(const gfx::Size prefsize) {
-  return std::max((static_cast<int>(InfoBar::kTargetHeight) -
+  return std::max((static_cast<int>(target_height_) -
       prefsize.height()) / 2, 0);
 }
 
 int InfoBar::OffsetY(views::View* parent, const gfx::Size prefsize) {
   return CenterY(prefsize) -
-      (static_cast<int>(InfoBar::kTargetHeight) - parent->height());
+      (static_cast<int>(target_height_) - parent->height());
 }
 
 // InfoBar, views::ButtonListener implementation: ------------------
@@ -295,7 +296,6 @@ AlertInfoBar::AlertInfoBar(AlertInfoBarDelegate* delegate)
 }
 
 AlertInfoBar::~AlertInfoBar() {
-
 }
 
 // AlertInfoBar, views::View overrides: ----------------------------------------

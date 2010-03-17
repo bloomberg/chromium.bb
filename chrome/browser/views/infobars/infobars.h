@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,9 +52,9 @@ class InfoBar : public views::View,
   // is called.
   void Close();
 
-  // The target height of the infobar, regardless of what its current height
+  // The target height of the InfoBar, regardless of what its current height
   // is (due to animation).
-  static const double kTargetHeight;
+  static const double kDefaultTargetHeight;
 
   static const int kHorizontalPadding;
   static const int kIconLabelSpacing;
@@ -80,6 +80,10 @@ class InfoBar : public views::View,
   // Removes our associated InfoBarDelegate from the associated TabContents.
   // (Will lead to this InfoBar being closed).
   void RemoveInfoBar() const;
+
+  void set_target_height(double height) { target_height_ = height; }
+
+  SlideAnimation* animation() { return animation_.get(); }
 
   // Returns a centered y-position of a control of height specified in
   // |prefsize| within the standard InfoBar height. Stable during an animation.
@@ -131,6 +135,9 @@ class InfoBar : public views::View,
 
   // Used to delete this object after a return to the message loop.
   ScopedRunnableMethodFactory<InfoBar> delete_factory_;
+
+  // The target height for the InfoBar.
+  double target_height_;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBar);
 };

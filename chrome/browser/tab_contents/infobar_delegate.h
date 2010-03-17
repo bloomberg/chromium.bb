@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 class AlertInfoBarDelegate;
 class ConfirmInfoBarDelegate;
 class CrashedExtensionInfoBarDelegate;
+class ExtensionInfoBarDelegate;
 class TranslateInfoBarDelegate;
 class InfoBar;
 class LinkInfoBarDelegate;
@@ -108,6 +109,12 @@ class InfoBarDelegate {
   // Returns a pointer to the TranslateInfoBarDelegate interface, if
   // implemented.
   virtual TranslateInfoBarDelegate* AsTranslateInfoBarDelegate() {
+    return NULL;
+  }
+
+  // Returns a pointer to the ExtensionInfoBarDelegate interface, if
+  // implemented.
+  virtual ExtensionInfoBarDelegate* AsExtensionInfoBarDelegate() {
     return NULL;
   }
 

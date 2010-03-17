@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,6 +20,7 @@
 #include "chrome/browser/extensions/extension_history_api.h"
 #include "chrome/browser/extensions/extension_idle_api.h"
 #include "chrome/browser/extensions/extension_i18n_api.h"
+#include "chrome/browser/extensions/extension_infobar_module.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_metrics_module.h"
 #include "chrome/browser/extensions/extension_page_actions_module.h"
@@ -137,6 +138,9 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<CreateBookmarkFunction>();
   RegisterFunction<MoveBookmarkFunction>();
   RegisterFunction<UpdateBookmarkFunction>();
+
+  // Infobars.
+  RegisterFunction<ShowInfoBarFunction>();
 
   // BookmarkManager
   RegisterFunction<CopyBookmarkManagerFunction>();

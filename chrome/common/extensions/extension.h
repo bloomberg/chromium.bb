@@ -270,6 +270,13 @@ class Extension {
   // an empty FilePath if the extension does not have that icon.
   ExtensionResource GetIconPath(Icons icon);
 
+  // Looks for an extension icon of dimension |icon|. If not found, checks if
+  // the next larger size exists (until one is found or the end is reached). If
+  // an icon is found, the path is returned in |resource| and the dimension
+  // found is returned to the caller (as function return value).
+  // NOTE: |resource| is not guaranteed to be non-empty.
+  Icons GetIconPathAllowLargerSize(ExtensionResource* resource, Icons icon);
+
   const DictionaryValue* manifest_value() const {
     return manifest_value_.get();
   }

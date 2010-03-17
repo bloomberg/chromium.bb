@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1378,6 +1378,20 @@ ExtensionResource Extension::GetIconPath(Icons icon) {
   if (iter == icons_.end())
     return ExtensionResource();
   return GetResource(iter->second);
+}
+
+Extension::Icons Extension::GetIconPathAllowLargerSize(
+    ExtensionResource* resource, Icons icon) {
+  *resource = GetIconPath(icon);
+  if (!resource->GetFilePath().empty())
+    return icon;
+  if (icon == EXTENSION_ICON_BITTY)
+    return GetIconPathAllowLargerSize(resource, EXTENSION_ICON_SMALL);
+  if (icon == EXTENSION_ICON_SMALL)
+    return GetIconPathAllowLargerSize(resource, EXTENSION_ICON_MEDIUM);
+  if (icon == EXTENSION_ICON_MEDIUM)
+    return GetIconPathAllowLargerSize(resource, EXTENSION_ICON_LARGE);
+  return EXTENSION_ICON_LARGE;
 }
 
 bool Extension::CanExecuteScriptOnHost(const GURL& url,
