@@ -184,11 +184,7 @@
 {
   bug_38293
   Heapcheck:Leak
-  fun:*RefCountedBase
-  fun:*RefCounted
-  fun:*Flag
-  fun:base::internal::WeakReferenceOwner::GetRef
-  fun:base::WeakPtrFactory::GetWeakPtr
+  ...
   fun:ScopedRunnableMethodFactory::NewRunnableMethod
   fun:BookmarkBarGtk::BookmarkNodeAdded
   fun:BookmarkModel::AddNode
