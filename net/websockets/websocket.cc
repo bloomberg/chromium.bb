@@ -8,33 +8,14 @@
 #include "net/websockets/websocket.h"
 
 #include "base/message_loop.h"
-#include "net/http/http_response_headers.h"
-#include "net/http/http_util.h"
+#include "net/websockets/websocket_handshake.h"
 
 namespace net {
 
-static const int kWebSocketPort = 80;
-static const int kSecureWebSocketPort = 443;
-
-static const char kServerHandshakeHeader[] =
-    "HTTP/1.1 101 Web Socket Protocol Handshake\r\n";
-static const size_t kServerHandshakeHeaderLength =
-    sizeof(kServerHandshakeHeader) - 1;
-
-static const char kUpgradeHeader[] = "Upgrade: WebSocket\r\n";
-static const size_t kUpgradeHeaderLength = sizeof(kUpgradeHeader) - 1;
-
-static const char kConnectionHeader[] = "Connection: Upgrade\r\n";
-static const size_t kConnectionHeaderLength = sizeof(kConnectionHeader) - 1;
-
-bool WebSocket::Request::is_secure() const {
-  return url_.SchemeIs("wss");
-}
-
 WebSocket::WebSocket(Request* request, WebSocketDelegate* delegate)
     : ready_state_(INITIALIZED),
-      mode_(MODE_INCOMPLETE),
       request_(request),
+      handshake_(NULL),
       delegate_(delegate),
       origin_loop_(MessageLoop::current()),
       socket_stream_(NULL),
@@ -119,7 +100,12 @@ void WebSocket::OnConnected(SocketStream* socket_stream,
   read_consumed_len_ = 0;
 
   DCHECK(!current_write_buf_);
-  const std::string msg = request_->CreateClientHandshakeMessage();
+  DCHECK(!handshake_.get());
+  handshake_.reset(new WebSocketHandshake(
+      request_->url(), request_->origin(), request_->location(),
+      request_->protocol()));
+
+  const std::string msg = handshake_->CreateClientHandshakeMessage();
   IOBufferWithSize* buf = new IOBufferWithSize(msg.size());
   memcpy(buf->data(), msg.data(), msg.size());
   pending_write_bufs_.push_back(buf);
@@ -158,181 +144,6 @@ void WebSocket::OnError(const SocketStream* socket_stream, int error) {
                          NewRunnableMethod(this, &WebSocket::DoError, error));
 }
 
-std::string WebSocket::Request::CreateClientHandshakeMessage() const {
-  std::string msg;
-  msg = "GET ";
-  msg += url_.path();
-  if (url_.has_query()) {
-    msg += "?";
-    msg += url_.query();
-  }
-  msg += " HTTP/1.1\r\n";
-  msg += kUpgradeHeader;
-  msg += kConnectionHeader;
-  msg += "Host: ";
-  msg += StringToLowerASCII(url_.host());
-  if (url_.has_port()) {
-    bool secure = is_secure();
-    int port = url_.EffectiveIntPort();
-    if ((!secure &&
-         port != kWebSocketPort && port != url_parse::PORT_UNSPECIFIED) ||
-        (secure &&
-         port != kSecureWebSocketPort && port != url_parse::PORT_UNSPECIFIED)) {
-      msg += ":";
-      msg += IntToString(port);
-    }
-  }
-  msg += "\r\n";
-  msg += "Origin: ";
-  // It's OK to lowercase the origin as the Origin header does not contain
-  // the path or query portions, as per
-  // http://tools.ietf.org/html/draft-abarth-origin-00.
-  //
-  // TODO(satorux): Should we trim the port portion here if it's 80 for
-  // http:// or 443 for https:// ? Or can we assume it's done by the
-  // client of the library?
-  msg += StringToLowerASCII(origin_);
-  msg += "\r\n";
-  if (!protocol_.empty()) {
-    msg += "WebSocket-Protocol: ";
-    msg += protocol_;
-    msg += "\r\n";
-  }
-  // TODO(ukai): Add cookie if necessary.
-  msg += "\r\n";
-  return msg;
-}
-
-int WebSocket::CheckHandshake() {
-  DCHECK(current_read_buf_);
-  DCHECK(ready_state_ == CONNECTING);
-  mode_ = MODE_INCOMPLETE;
-  const char *start = current_read_buf_->StartOfBuffer() + read_consumed_len_;
-  const char *p = start;
-  size_t len = current_read_buf_->offset() - read_consumed_len_;
-  if (len < kServerHandshakeHeaderLength) {
-    return -1;
-  }
-  if (!memcmp(p, kServerHandshakeHeader, kServerHandshakeHeaderLength)) {
-    mode_ = MODE_NORMAL;
-  } else {
-    int eoh = HttpUtil::LocateEndOfHeaders(p, len);
-    if (eoh < 0)
-      return -1;
-    scoped_refptr<HttpResponseHeaders> headers(
-        new HttpResponseHeaders(HttpUtil::AssembleRawHeaders(p, eoh)));
-    if (headers->response_code() == 407) {
-      mode_ = MODE_AUTHENTICATE;
-      // TODO(ukai): Implement authentication handlers.
-    }
-    DLOG(INFO) << "non-normal websocket connection. "
-               << "response_code=" << headers->response_code()
-               << " mode=" << mode_;
-    // Invalid response code.
-    ready_state_ = CLOSED;
-    return eoh;
-  }
-  const char* end = p + len + 1;
-  p += kServerHandshakeHeaderLength;
-
-  if (mode_ == MODE_NORMAL) {
-    size_t header_size = end - p;
-    if (header_size < kUpgradeHeaderLength)
-      return -1;
-    if (memcmp(p, kUpgradeHeader, kUpgradeHeaderLength)) {
-      DLOG(INFO) << "Bad Upgrade Header "
-                 << std::string(p, kUpgradeHeaderLength);
-      ready_state_ = CLOSED;
-      return p - start;
-    }
-    p += kUpgradeHeaderLength;
-
-    header_size = end - p;
-    if (header_size < kConnectionHeaderLength)
-      return -1;
-    if (memcmp(p, kConnectionHeader, kConnectionHeaderLength)) {
-      DLOG(INFO) << "Bad Connection Header "
-                 << std::string(p, kConnectionHeaderLength);
-      ready_state_ = CLOSED;
-      return p - start;
-    }
-    p += kConnectionHeaderLength;
-  }
-  int eoh = HttpUtil::LocateEndOfHeaders(start, len);
-  if (eoh == -1)
-    return eoh;
-  scoped_refptr<HttpResponseHeaders> headers(
-      new HttpResponseHeaders(HttpUtil::AssembleRawHeaders(start, eoh)));
-  if (!ProcessHeaders(*headers)) {
-    DLOG(INFO) << "Process Headers failed: "
-               << std::string(start, eoh);
-    ready_state_ = CLOSED;
-    return eoh;
-  }
-  switch (mode_) {
-    case MODE_NORMAL:
-      if (CheckResponseHeaders()) {
-        ready_state_ = OPEN;
-      } else {
-        ready_state_ = CLOSED;
-      }
-      break;
-    default:
-      ready_state_ = CLOSED;
-      break;
-  }
-  if (ready_state_ == CLOSED)
-    DLOG(INFO) << "CheckHandshake mode=" << mode_
-               << " " << std::string(start, eoh);
-  return eoh;
-}
-
-// Gets the value of the specified header.
-// It assures only one header of |name| in |headers|.
-// Returns true iff single header of |name| is found in |headers|
-// and |value| is filled with the value.
-// Returns false otherwise.
-static bool GetSingleHeader(const HttpResponseHeaders& headers,
-                            const std::string& name,
-                            std::string* value) {
-  std::string first_value;
-  void* iter = NULL;
-  if (!headers.EnumerateHeader(&iter, name, &first_value))
-    return false;
-
-  // Checks no more |name| found in |headers|.
-  // Second call of EnumerateHeader() must return false.
-  std::string second_value;
-  if (headers.EnumerateHeader(&iter, name, &second_value))
-    return false;
-  *value = first_value;
-  return true;
-}
-
-bool WebSocket::ProcessHeaders(const HttpResponseHeaders& headers) {
-  if (!GetSingleHeader(headers, "websocket-origin", &ws_origin_))
-    return false;
-
-  if (!GetSingleHeader(headers, "websocket-location", &ws_location_))
-    return false;
-
-  if (!request_->protocol().empty()
-      && !GetSingleHeader(headers, "websocket-protocol", &ws_protocol_))
-    return false;
-  return true;
-}
-
-bool WebSocket::CheckResponseHeaders() const {
-  DCHECK(mode_ == MODE_NORMAL);
-  if (!LowerCaseEqualsASCII(request_->origin(), ws_origin_.c_str()))
-    return false;
-  if (request_->location() != ws_location_)
-    return false;
-  if (request_->protocol() != ws_protocol_)
-    return false;
-  return true;
-}
-
 void WebSocket::SendPending() {
   DCHECK(MessageLoop::current() == origin_loop_);
   DCHECK(socket_stream_);
@@ -355,18 +166,24 @@ void WebSocket::DoReceivedData() {
   switch (ready_state_) {
     case CONNECTING:
       {
-        int eoh = CheckHandshake();
+        DCHECK(handshake_.get());
+        DCHECK(current_read_buf_);
+        const char* data =
+            current_read_buf_->StartOfBuffer() + read_consumed_len_;
+        size_t len = current_read_buf_->offset() - read_consumed_len_;
+        int eoh = handshake_->ReadServerHandshake(data, len);
         if (eoh < 0) {
           // Not enough data,  Retry when more data is available.
           return;
         }
         SkipReadBuffer(eoh);
       }
-      if (ready_state_ != OPEN) {
+      if (handshake_->mode() != WebSocketHandshake::MODE_CONNECTED) {
         // Handshake failed.
         socket_stream_->Close();
         return;
       }
+      ready_state_ = OPEN;
       if (delegate_)
         delegate_->OnOpen(this);
       if (current_read_buf_->offset() == read_consumed_len_) {

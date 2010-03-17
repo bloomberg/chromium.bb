@@ -15,6 +15,7 @@
 #include <string>
 
 #include "base/ref_counted.h"
+#include "base/scoped_ptr.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/io_buffer.h"
 #include "net/socket_stream/socket_stream.h"
@@ -26,9 +27,9 @@ namespace net {
 
 class ClientSocketFactory;
 class HostResolver;
-class HttpResponseHeaders;
 
 class WebSocket;
+class WebSocketHandshake;
 
 // Delegate methods will be called on the same message loop as
 // WebSocket is constructed.
@@ -74,7 +75,6 @@ class WebSocket : public base::RefCountedThreadSafe<WebSocket>,
     ~Request() {}
 
     const GURL& url() const { return url_; }
-    bool is_secure() const;
     const std::string& protocol() const { return protocol_; }
     const std::string& origin() const { return origin_; }
     const std::string& location() const { return location_; }
@@ -94,9 +94,6 @@ class WebSocket : public base::RefCountedThreadSafe<WebSocket>,
     ClientSocketFactory* client_socket_factory() const {
       return client_socket_factory_;
     }
-
-    // Creates the client handshake message from |this|.
-    std::string CreateClientHandshakeMessage() const;
 
    private:
     GURL url_;
@@ -147,33 +144,12 @@ class WebSocket : public base::RefCountedThreadSafe<WebSocket>,
   virtual void OnError(const SocketStream* socket, int error);
 
  private:
-  enum Mode {
-    MODE_INCOMPLETE, MODE_NORMAL, MODE_AUTHENTICATE,
-  };
   typedef std::deque< scoped_refptr<IOBufferWithSize> > PendingDataQueue;
 
   friend class WebSocketTest;
 
   friend class base::RefCountedThreadSafe<WebSocket>;
   virtual ~WebSocket();
-
-  // Checks handshake.
-  // Prerequisite: Server handshake message is received in |current_read_buf_|.
-  // Returns number of bytes for server handshake message,
-  // or negative if server handshake message is not received fully yet.
-  int CheckHandshake();
-
-  // Processes server handshake message, parsed as |headers|, and updates
-  // |ws_origin_|, |ws_location_| and |ws_protocol_|.
-  // Returns true if it's ok.
-  // Returns false otherwise (e.g. duplicate WebSocket-Origin: header, etc.)
-  bool ProcessHeaders(const HttpResponseHeaders& headers);
-
-  // Checks |ws_origin_|, |ws_location_| and |ws_protocol_| are valid
-  // against |request_|.
-  // Returns true if it's ok.
-  // Returns false otherwise (e.g. origin mismatch, etc.)
-  bool CheckResponseHeaders() const;
 
   // Sends pending data in |current_write_buf_| and/or |pending_write_bufs_|.
   void SendPending();
@@ -197,15 +173,10 @@ class WebSocket : public base::RefCountedThreadSafe<WebSocket>,
   void DoError(int error);
 
   State ready_state_;
-  Mode mode_;
   scoped_ptr<Request> request_;
+  scoped_ptr<WebSocketHandshake> handshake_;
   WebSocketDelegate* delegate_;
   MessageLoop* origin_loop_;
-
-  // Handshake messages that server sent.
-  std::string ws_origin_;
-  std::string ws_location_;
-  std::string ws_protocol_;
 
   scoped_refptr<SocketStream> socket_stream_;
   int max_pending_send_allowed_;
