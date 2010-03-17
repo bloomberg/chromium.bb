@@ -20,6 +20,7 @@
 // Known browsers which we collect details for.
 enum {
   CHROME_BROWSER = 0,
+  CHROME_NACL_PROCESS,
   IE_BROWSER,
   FIREFOX_BROWSER,
   OPERA_BROWSER,
@@ -38,6 +39,7 @@ MemoryDetails::MemoryDetails() {
       l10n_util::GetString(IDS_PRODUCT_NAME);
   ProcessData g_process_template[MAX_BROWSERS] = {
     { google_browser_name.c_str(), L"chrome.exe", },
+    { google_browser_name.c_str(), L"nacl64.exe", },
     { L"IE", L"iexplore.exe", },
     { L"Firefox", L"firefox.exe", },
     { L"Opera", L"opera.exe", },
@@ -117,7 +119,7 @@ void MemoryDetails::CollectProcessData(
 
       // Get Version Information.
       TCHAR name[MAX_PATH];
-      if (index2 == CHROME_BROWSER) {
+      if (index2 == CHROME_BROWSER || index2 == CHROME_NACL_PROCESS) {
         scoped_ptr<FileVersionInfo> version_info(
             FileVersionInfo::CreateFileVersionInfoForCurrentModule());
         if (version_info != NULL)
@@ -142,7 +144,12 @@ void MemoryDetails::CollectProcessData(
       }
 
       // Add the process info to our list.
-      process_data_[index2].processes.push_back(info);
+      if (index2 == CHROME_NACL_PROCESS) {
+        // Add NaCl processes to Chrome's list
+        process_data_[CHROME_BROWSER].processes.push_back(info);
+      } else {
+        process_data_[index2].processes.push_back(info);
+      }
       break;
     }
   } while (::Process32Next(snapshot, &process_entry));

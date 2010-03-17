@@ -3183,6 +3183,9 @@ each locale. -->
       <message name="IDS_TASK_MANAGER_NACL_PREFIX" desc="The prefix for a Task Manager Native Client module row">
         Native Client module: <ph name="NEXE_NAME">$1<ex>Unknown Native Client module</ex></ph>
       </message>
+      <message name="IDS_TASK_MANAGER_NACL_BROKER_PREFIX" desc="Task Manager row for Native Client broker, which acts as the sanbox manager for NaCl processes">
+        Native Client sandbox manager
+      </message>
 
 
       <!-- Extension Crashed Info Bar-->
