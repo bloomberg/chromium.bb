@@ -338,6 +338,7 @@
         '../chrome/chrome.gyp:debugger',
         '../chrome/chrome.gyp:renderer',
         '../chrome/chrome.gyp:syncapi',
+        '../net/net.gyp:net_test_support',
         '../skia/skia.gyp:skia',
         '../testing/gtest.gyp:gtest',
         '../third_party/icu/icu.gyp:icui18n',
