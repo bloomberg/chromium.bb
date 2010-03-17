@@ -10,9 +10,11 @@
 #include "net/base/cookie_policy.h"
 #include "net/base/cookie_store.h"
 #include "net/base/net_errors.h"
+#include "net/base/sys_addrinfo.h"
 #include "net/socket_stream/socket_stream.h"
 #include "net/url_request/url_request_context.h"
 #include "net/websockets/websocket_job.h"
+#include "net/websockets/websocket_throttle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/platform_test.h"
@@ -206,15 +208,28 @@ class WebSocketJobTest : public PlatformTest {
     websocket_ = new WebSocketJob(delegate);
     socket_ = new MockSocketStream(url, websocket_.get());
     websocket_->InitSocketStream(socket_.get());
-    websocket_->state_ = WebSocketJob::CONNECTING;
     websocket_->set_context(context_.get());
+    websocket_->state_ = WebSocketJob::CONNECTING;
+    struct addrinfo addr;
+    memset(&addr, 0, sizeof(struct addrinfo));
+    addr.ai_family = AF_INET;
+    addr.ai_addrlen = sizeof(struct sockaddr_in);
+    struct sockaddr_in sa_in;
+    memset(&sa_in, 0, sizeof(struct sockaddr_in));
+    memcpy(&sa_in.sin_addr, "\x7f\0\0\1", 4);
+    addr.ai_addr = reinterpret_cast<sockaddr*>(&sa_in);
+    addr.ai_next = NULL;
+    websocket_->addresses_.Copy(&addr, true);
+    Singleton<WebSocketThrottle>::get()->PutInQueue(websocket_);
   }
   WebSocketJob::State GetWebSocketJobState() {
     return websocket_->state_;
   }
   void CloseWebSocketJob() {
-    if (websocket_->socket_)
+    if (websocket_->socket_) {
       websocket_->socket_->DetachDelegate();
+      Singleton<WebSocketThrottle>::get()->RemoveFromQueue(websocket_);
+    }
     websocket_->state_ = WebSocketJob::CLOSED;
     websocket_->delegate_ = NULL;
     websocket_->socket_ = NULL;

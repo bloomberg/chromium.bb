@@ -14,7 +14,6 @@
 
 SocketStreamDispatcherHost::SocketStreamDispatcherHost() : receiver_(NULL) {
   net::WebSocketJob::EnsureInit();
-  net::WebSocketThrottle::Init();
 }
 
 SocketStreamDispatcherHost::~SocketStreamDispatcherHost() {
