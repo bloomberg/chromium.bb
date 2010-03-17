@@ -820,6 +820,8 @@ BUG16779 WONTFIX SKIP : media/audio-mpeg-supported.html = FAIL TIMEOUT
 BUG16779 WONTFIX SKIP : media/audio-data-url.html = FAIL TIMEOUT
 BUG16779 WONTFIX SKIP : media/video-size-intrinsic-scale.html = FAIL TIMEOUT
 
+// Skipped to reduce crashiness during a test run.
+BUG38444 SKIP : media/video-append-source.html = CRASH PASS TIMEOUT
 
 // Function arguments object is copied for each access.
 BUG24194 : fast/js/kde/function_arguments.html = FAIL
