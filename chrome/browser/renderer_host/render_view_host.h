@@ -549,9 +549,7 @@ class RenderViewHost : public RenderWidgetHost {
       const std::vector<webkit_glue::PasswordForm>& forms);
   void OnMsgFormFieldValuesSubmitted(const webkit_glue::FormFieldValues& forms);
   void OnMsgStartDragging(const WebDropData& drop_data,
-                          WebKit::WebDragOperationsMask operations_allowed,
-                          const SkBitmap& image,
-                          const gfx::Point& image_offset);
+                          WebKit::WebDragOperationsMask operations_allowed);
   void OnUpdateDragCursor(WebKit::WebDragOperation drag_operation);
   void OnTakeFocus(bool reverse);
   void OnMsgPageHasOSDD(int32 page_id, const GURL& doc_url, bool autodetected);

@@ -125,11 +125,8 @@ void TabContentsViewWin::GetContainerBounds(gfx::Rect* out) const {
 }
 
 void TabContentsViewWin::StartDragging(const WebDropData& drop_data,
-                                       WebDragOperationsMask ops,
-                                       const SkBitmap& image,
-                                       const gfx::Point& image_offset) {
+                                       WebDragOperationsMask ops) {
   drag_handler_ = new TabContentsDragWin(this);
-  // TODO(estade): make use of |image| and |image_offset|.
   drag_handler_->StartDragging(drop_data, ops);
 }
 

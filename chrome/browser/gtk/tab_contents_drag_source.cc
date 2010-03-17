@@ -70,9 +70,7 @@ TabContents* TabContentsDragSource::tab_contents() const {
 }
 
 void TabContentsDragSource::StartDragging(const WebDropData& drop_data,
-                                          GdkEventButton* last_mouse_down,
-                                          const SkBitmap& image,
-                                          const gfx::Point& image_offset) {
+                                          GdkEventButton* last_mouse_down) {
   int targets_mask = 0;
 
   if (!drop_data.plain_text.empty())
@@ -101,8 +99,6 @@ void TabContentsDragSource::StartDragging(const WebDropData& drop_data,
   }
 
   drop_data_.reset(new WebDropData(drop_data));
-  drag_image_ = image;
-  image_offset_ = image_offset;
 
   GtkTargetList* list = gtk_dnd_util::GetTargetListFromCodeMask(targets_mask);
   if (targets_mask & gtk_dnd_util::CHROME_WEBDROP_FILE_CONTENTS) {
@@ -307,14 +303,6 @@ void TabContentsDragSource::OnDragBegin(GdkDragContext* drag_context) {
                         reinterpret_cast<const guchar*>(
                             generated_download_file_name.value().c_str()),
                         generated_download_file_name.value().length());
-  }
-
-  if (!drag_image_.isNull()) {
-    GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&drag_image_);
-    gtk_drag_set_icon_pixbuf(drag_context, pixbuf,
-                             image_offset_.x(), image_offset_.y());
-    // Let the drag take ownership.
-    g_object_unref(pixbuf);
   }
 }
 

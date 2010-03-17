@@ -13,14 +13,10 @@
 
 class RenderViewContextMenuWin;
 class SadTabView;
-class SkBitmap;
 class TabContentsDragWin;
 struct WebDropData;
 class WebDragSource;
 class WebDropTarget;
-namespace gfx {
-class Point;
-}
 
 // Windows-specific implementation of the TabContentsView. It is a HWND that
 // contains all of the contents of the tab and associated child views.
@@ -59,9 +55,7 @@ class TabContentsViewWin : public TabContentsView,
   // Backend implementation of RenderViewHostDelegate::View.
   virtual void ShowContextMenu(const ContextMenuParams& params);
   virtual void StartDragging(const WebDropData& drop_data,
-                             WebKit::WebDragOperationsMask operations,
-                             const SkBitmap& image,
-                             const gfx::Point& image_offset);
+                             WebKit::WebDragOperationsMask operations);
   virtual void UpdateDragCursor(WebKit::WebDragOperation operation);
   virtual void GotFocus();
   virtual void TakeFocus(bool reverse);

@@ -82,7 +82,6 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebFormElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebHistoryItem.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebImage.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNode.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNodeList.h"
@@ -156,7 +155,6 @@ using WebKit::WebFindOptions;
 using WebKit::WebFormElement;
 using WebKit::WebFrame;
 using WebKit::WebHistoryItem;
-using WebKit::WebImage;
 using WebKit::WebInputElement;
 using WebKit::WebMediaPlayer;
 using WebKit::WebMediaPlayerAction;
@@ -1908,27 +1906,11 @@ void RenderView::setToolTipText(const WebString& text, WebTextDirection hint) {
                                       hint));
 }
 
-void RenderView::startDragging(const WebKit::WebDragData& data,
-                               WebKit::WebDragOperationsMask mask) {
-  startDragging(data, mask, WebImage(), WebPoint());
-}
-
-void RenderView::startDragging(const WebDragData& data,
-                               WebDragOperationsMask mask,
-                               const WebImage& image,
-                               const WebPoint& imageOffset) {
-#if WEBKIT_USING_SKIA
-  SkBitmap bitmap(image.getSkBitmap());
-#elif WEBKIT_USING_CG
-  // Needs implementing: http://crbug.com/11457
-  SkBitmap bitmap;
-#endif
-
+void RenderView::startDragging(const WebPoint& from, const WebDragData& data,
+                               WebDragOperationsMask allowed_ops) {
   Send(new ViewHostMsg_StartDragging(routing_id_,
                                      WebDropData(data),
-                                     mask,
-                                     bitmap,
-                                     imageOffset));
+                                     allowed_ops));
 }
 
 bool RenderView::acceptsLoadDrops() {

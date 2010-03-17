@@ -102,14 +102,12 @@ namespace WebKit {
 class WebAccessibilityCache;
 class WebDataSource;
 class WebDragData;
-class WebImage;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
 class WebStorageNamespace;
 class WebURLRequest;
 struct WebFileChooserParams;
 struct WebFindOptions;
-struct WebPoint;
 }
 
 // We need to prevent a page from trying to create infinite popups. It is not
@@ -250,13 +248,8 @@ class RenderView : public RenderWidget,
   virtual void setToolTipText(
       const WebKit::WebString& text, WebKit::WebTextDirection hint);
   virtual void startDragging(
-      const WebKit::WebDragData& data,
+      const WebKit::WebPoint& from, const WebKit::WebDragData& data,
       WebKit::WebDragOperationsMask mask);
-  virtual void startDragging(
-      const WebKit::WebDragData& data,
-      WebKit::WebDragOperationsMask mask,
-      const WebKit::WebImage& image,
-      const WebKit::WebPoint& imageOffset);
   virtual bool acceptsLoadDrops();
   virtual void focusNext();
   virtual void focusPrevious();

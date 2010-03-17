@@ -126,11 +126,8 @@ void TabContentsViewMac::GetContainerBounds(gfx::Rect* out) const {
   *out = [cocoa_view_.get() NSRectToRect:[cocoa_view_.get() bounds]];
 }
 
-void TabContentsViewMac::StartDragging(
-    const WebDropData& drop_data,
-    WebDragOperationsMask allowed_operations,
-    const SkBitmap& image,
-    const gfx::Point& image_offset) {
+void TabContentsViewMac::StartDragging(const WebDropData& drop_data,
+    WebDragOperationsMask allowed_operations) {
   // By allowing nested tasks, the code below also allows Close(),
   // which would deallocate |this|.  The same problem can occur while
   // processing -sendEvent:, so Close() is deferred in that case.
@@ -141,7 +138,6 @@ void TabContentsViewMac::StartDragging(
   // The drag invokes a nested event loop, arrange to continue
   // processing events.
   MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
-  // TODO(estade): make use of |image| and |image_offset|.
   NSDragOperation mask = static_cast<NSDragOperation>(allowed_operations);
   [cocoa_view_ startDragWithDropData:drop_data
                    dragOperationMask:mask];

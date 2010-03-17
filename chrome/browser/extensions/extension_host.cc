@@ -577,9 +577,7 @@ void ExtensionHost::ShowContextMenu(const ContextMenuParams& params) {
 }
 
 void ExtensionHost::StartDragging(const WebDropData& drop_data,
-    WebDragOperationsMask operation_mask,
-    const SkBitmap& image,
-    const gfx::Point& image_offset) {
+    WebDragOperationsMask operation_mask) {
   // We're not going to do any drag & drop, but we have to tell the renderer the
   // drag & drop ended, othewise the renderer thinks the drag operation is
   // underway and mouse events won't work.  See bug 34061.

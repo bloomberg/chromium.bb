@@ -470,9 +470,7 @@ void AppLauncher::ShowCreatedWindow(int route_id,
 }
 
 void AppLauncher::StartDragging(const WebDropData& drop_data,
-                                WebKit::WebDragOperationsMask allowed_ops,
-                                const SkBitmap& image,
-                                const gfx::Point& image_offset) {
+                             WebKit::WebDragOperationsMask allowed_ops) {
   // We're not going to do any drag & drop, but we have to tell the renderer the
   // drag & drop ended, othewise the renderer thinks the drag operation is
   // underway and mouse events won't work.

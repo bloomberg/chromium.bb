@@ -96,9 +96,7 @@ class InterstitialPage::InterstitialPageRVHViewDelegate
                                  const gfx::Rect& initial_pos);
   virtual void ShowContextMenu(const ContextMenuParams& params);
   virtual void StartDragging(const WebDropData& drop_data,
-                             WebDragOperationsMask operations_allowed,
-                             const SkBitmap& image,
-                             const gfx::Point& image_offset);
+                             WebDragOperationsMask operations_allowed);
   virtual void UpdateDragCursor(WebDragOperation operation);
   virtual void GotFocus();
   virtual void TakeFocus(bool reverse);
@@ -580,9 +578,7 @@ void InterstitialPage::InterstitialPageRVHViewDelegate::ShowContextMenu(
 
 void InterstitialPage::InterstitialPageRVHViewDelegate::StartDragging(
     const WebDropData& drop_data,
-    WebDragOperationsMask allowed_operations,
-    const SkBitmap& image,
-    const gfx::Point& image_offset) {
+    WebDragOperationsMask allowed_operations) {
   NOTREACHED() << "InterstitialPage does not support dragging yet.";
 }
 
