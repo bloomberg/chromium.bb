@@ -30,7 +30,6 @@ class LoginSettings {
                 ServerInformation* server_list,
                 int server_count,
                 talk_base::FirewallManager* firewall,
-                bool no_gaia_auth,
                 bool proxy_only);
 
   ~LoginSettings();
@@ -41,10 +40,6 @@ class LoginSettings {
   // modification of part (FirewallManager) of its state.
   talk_base::FirewallManager* firewall() {
     return firewall_;
-  }
-
-  bool no_gaia_auth() const {
-    return no_gaia_auth_;
   }
 
   bool proxy_only() const {
@@ -80,7 +75,6 @@ class LoginSettings {
 
  private:
   bool proxy_only_;
-  bool no_gaia_auth_;
   talk_base::FirewallManager* firewall_;
   std::string lang_;
 

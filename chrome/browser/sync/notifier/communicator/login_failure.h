@@ -8,10 +8,6 @@
 #include "talk/base/common.h"
 #include "talk/xmpp/xmppengine.h"
 
-namespace buzz {
-class CaptchaChallenge;
-}
-
 namespace notifier {
 
 class LoginFailure {
@@ -32,10 +28,6 @@ class LoginFailure {
   LoginFailure(LoginError error,
                buzz::XmppEngine::Error xmpp_error,
                int subcode);
-  LoginFailure(LoginError error,
-               buzz::XmppEngine::Error xmpp_error,
-               int subcode,
-               const buzz::CaptchaChallenge& captcha);
 
   // Used as the first level of error information.
   LoginError error() const {
@@ -48,20 +40,10 @@ class LoginFailure {
   // (except that the DiagnoseConnectionError has already been done).
   buzz::XmppEngine::Error xmpp_error() const;
 
-  // Returns the captcha challenge.  Valid if and only if
-  //   xmpp_error is buzz::XmppEngine::ERROR_UNAUTHORIZED or
-  //                 buzz::XmppEngine::ERROR_MISSING_USERNAME
-  //
-  // See PhoneWindow::HandleConnectionPasswordError for how to handle this
-  // (after the if (..) { LoginAccountAndConnectionSetting(); ...} because
-  // that is done by SingleLoginAttempt.
-  const buzz::CaptchaChallenge& captcha() const;
-
  private:
   LoginError error_;
   buzz::XmppEngine::Error xmpp_error_;
   int subcode_;
-  scoped_ptr<buzz::CaptchaChallenge> captcha_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginFailure);
 };

@@ -190,7 +190,6 @@ void MediatorThreadImpl::DoLogin(LoginData* login_data) {
                                    NULL,
                                    // talk_base::FirewallManager* is NULL.
                                    NULL,
-                                   false,
                                    // Both the proxy and a non-proxy route
                                    // will be attempted.
                                    false,
