@@ -30,7 +30,7 @@ fun:__dl_*
 fun:sys_*
 
 # ignore libc's printf functions
-fun:_IO_*
+fun_r:_IO_*
 fun:vfprintf
 fun:fwrite
 fun:fflush
