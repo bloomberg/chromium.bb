@@ -113,6 +113,8 @@ void PhoneNumber::SetInfo(const AutoFillType& type, const string16& value) {
     set_city_code(number);
   else if (subgroup == AutoFillType::PHONE_COUNTRY_CODE)
     set_country_code(number);
+  else if (subgroup == AutoFillType::PHONE_WHOLE_NUMBER)
+    set_whole_number(number);
   else
     NOTREACHED();
   // TODO(jhawkins): Add extension support.
@@ -178,6 +180,14 @@ void PhoneNumber::set_number(const string16& number) {
   string16 digits(number);
   StripPunctuation(&digits);
   number_ = digits;
+}
+
+void PhoneNumber::set_whole_number(const string16& whole_number) {
+  string16 number, city_code, country_code;
+  ParsePhoneNumber(whole_number, &number, &city_code, &country_code);
+  set_number(number);
+  set_city_code(city_code);
+  set_country_code(country_code);
 }
 
 PhoneNumber::PhoneNumber(const PhoneNumber& phone_number)

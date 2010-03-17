@@ -1443,9 +1443,9 @@ static AutoFillProfile* AutoFillProfileFromStatement(const sql::Statement& s) {
                    ASCIIToUTF16(s.ColumnString(11)));
   profile->SetInfo(AutoFillType(ADDRESS_HOME_COUNTRY),
                    ASCIIToUTF16(s.ColumnString(12)));
-  profile->SetInfo(AutoFillType(PHONE_HOME_NUMBER),
+  profile->SetInfo(AutoFillType(PHONE_HOME_WHOLE_NUMBER),
                    ASCIIToUTF16(s.ColumnString(13)));
-  profile->SetInfo(AutoFillType(PHONE_FAX_NUMBER),
+  profile->SetInfo(AutoFillType(PHONE_FAX_WHOLE_NUMBER),
                    ASCIIToUTF16(s.ColumnString(14)));
 
   return profile;

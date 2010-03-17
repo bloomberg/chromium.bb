@@ -56,6 +56,7 @@ class PhoneNumber : public FormGroup {
   void set_city_code(const string16& city_code) { city_code_ = city_code; }
   void set_number(const string16& number);
   void set_extension(const string16& extension) { extension_ = extension; }
+  void set_whole_number(const string16& whole_number);
 
   // A helper function for FindInfoMatches that only handles matching the info
   // with the requested field type.

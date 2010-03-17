@@ -26,8 +26,8 @@ void SetProfileInfo(AutoFillProfile* profile,
   profile->SetInfo(AutoFillType(ADDRESS_HOME_STATE), ASCIIToUTF16(state));
   profile->SetInfo(AutoFillType(ADDRESS_HOME_ZIP), ASCIIToUTF16(zipcode));
   profile->SetInfo(AutoFillType(ADDRESS_HOME_COUNTRY), ASCIIToUTF16(country));
-  profile->SetInfo(AutoFillType(PHONE_HOME_NUMBER), ASCIIToUTF16(phone));
-  profile->SetInfo(AutoFillType(PHONE_FAX_NUMBER), ASCIIToUTF16(fax));
+  profile->SetInfo(AutoFillType(PHONE_HOME_WHOLE_NUMBER), ASCIIToUTF16(phone));
+  profile->SetInfo(AutoFillType(PHONE_FAX_WHOLE_NUMBER), ASCIIToUTF16(fax));
 }
 
 void SetCreditCardInfo(CreditCard* credit_card,

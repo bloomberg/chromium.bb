@@ -3,7 +3,10 @@
 // found in the LICENSE file.
 
 #include <list>
+#include <map>
+#include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/file_util.h"
@@ -1116,9 +1119,9 @@ TEST_F(WebDatabaseTest, AutoFillProfile) {
   home_profile.SetInfo(AutoFillType(ADDRESS_HOME_STATE), ASCIIToUTF16("CA"));
   home_profile.SetInfo(AutoFillType(ADDRESS_HOME_ZIP), ASCIIToUTF16("90025"));
   home_profile.SetInfo(AutoFillType(ADDRESS_HOME_COUNTRY), ASCIIToUTF16("US"));
-  home_profile.SetInfo(AutoFillType(PHONE_HOME_NUMBER),
+  home_profile.SetInfo(AutoFillType(PHONE_HOME_WHOLE_NUMBER),
                        ASCIIToUTF16("18181234567"));
-  home_profile.SetInfo(AutoFillType(PHONE_FAX_NUMBER),
+  home_profile.SetInfo(AutoFillType(PHONE_FAX_WHOLE_NUMBER),
                        ASCIIToUTF16("1915243678"));
 
   EXPECT_TRUE(db.AddAutoFillProfile(home_profile));
