@@ -8,4 +8,4 @@ Description: Userspace interface to kernel DRM services
 Version: @PACKAGE_VERSION@
 Requires: libdrm
 Libs: -L${libdir} -ldrm_intel
-Cflags: -I${includedir}
+Cflags: -I${includedir} -I${includedir}/libdrm
