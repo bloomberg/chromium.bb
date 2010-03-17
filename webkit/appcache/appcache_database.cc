@@ -18,8 +18,8 @@
 // Schema -------------------------------------------------------------------
 namespace {
 
-const int kCurrentVersion = 2;
-const int kCompatibleVersion = 2;
+const int kCurrentVersion = 3;
+const int kCompatibleVersion = 3;
 
 const char* kGroupsTable = "Groups";
 const char* kCachesTable = "Caches";
@@ -1081,6 +1081,7 @@ bool AppCacheDatabase::DeleteExistingAndCreateNewDatabase() {
 
   ResetConnectionAndTables();
 
+  // This also deletes the disk cache data.
   FilePath directory = db_file_path_.DirName();
   if (!file_util::Delete(directory, true) ||
       !file_util::CreateDirectory(directory)) {

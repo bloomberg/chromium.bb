@@ -815,8 +815,12 @@ AppCacheStorageImpl::AppCacheStorageImpl(AppCacheService* service)
     : AppCacheStorage(service), is_incognito_(false),
       is_response_deletion_scheduled_(false),
       did_start_deleting_responses_(false),
-      last_deletable_response_rowid_(0), database_(NULL),
-      is_disabled_(false),
+      last_deletable_response_rowid_(0),
+      ALLOW_THIS_IN_INITIALIZER_LIST(doom_callback_(
+          this, &AppCacheStorageImpl::OnDeletedOneResponse)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(init_callback_(
+          this, &AppCacheStorageImpl::OnDiskCacheInitialized)),
+      database_(NULL), is_disabled_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
 }
 
@@ -851,6 +855,8 @@ void AppCacheStorageImpl::Disable() {
   is_disabled_ = true;
   origins_with_groups_.clear();
   working_set()->Disable();
+  if (disk_cache_.get())
+    disk_cache_->Disable();
   scoped_refptr<DisableDatabaseTask> task = new DisableDatabaseTask(this);
   task->Schedule();
 }
@@ -1159,19 +1165,29 @@ void AppCacheStorageImpl::DeleteOneResponse() {
   DCHECK(is_response_deletion_scheduled_);
   DCHECK(!deletable_response_ids_.empty());
 
-  is_response_deletion_scheduled_ = false;
-
   if (!disk_cache()) {
     DCHECK(is_disabled_);
     deletable_response_ids_.clear();
     deleted_response_ids_.clear();
+    is_response_deletion_scheduled_ = false;
     return;
   }
 
   int64 id = deletable_response_ids_.front();
+  int rv = disk_cache_->DoomEntry(id, &doom_callback_);
+  if (rv != net::ERR_IO_PENDING)
+    OnDeletedOneResponse(rv);
+}
+
+void AppCacheStorageImpl::OnDeletedOneResponse(int rv) {
+  is_response_deletion_scheduled_ = false;
+  if (is_disabled_)
+    return;
+
+  int64 id = deletable_response_ids_.front();
   deletable_response_ids_.pop_front();
-  disk_cache_->DoomEntry(Int64ToString(id));
-  deleted_response_ids_.push_back(id);
+  if (rv != net::ERR_ABORTED)
+    deleted_response_ids_.push_back(id);
 
   const size_t kBatchSize = 50U;
   if (deleted_response_ids_.size() >= kBatchSize ||
@@ -1233,24 +1249,36 @@ void AppCacheStorageImpl::RunOnePendingSimpleTask() {
   delete task;
 }
 
-disk_cache::Backend* AppCacheStorageImpl::disk_cache() {
+AppCacheDiskCache* AppCacheStorageImpl::disk_cache() {
+  DCHECK(IsInitTaskComplete());
+
   if (is_disabled_)
     return NULL;
 
   if (!disk_cache_.get()) {
+    int rv = net::OK;
+    disk_cache_.reset(new AppCacheDiskCache);
     if (is_incognito_) {
-      disk_cache_.reset(
-          disk_cache::CreateInMemoryCacheBackend(kMaxMemDiskCacheSize));
+      rv = disk_cache_->InitWithMemBackend(
+          kMaxMemDiskCacheSize, &init_callback_);
     } else {
-      disk_cache_.reset(disk_cache::CreateCacheBackend(
+      rv = disk_cache_->InitWithDiskBackend(
           cache_directory_.AppendASCII(kDiskCacheDirectoryName),
-          false, kMaxDiskCacheSize, net::DISK_CACHE));
+          kMaxDiskCacheSize, false, &init_callback_);
     }
 
-    if (!disk_cache_.get())
-      Disable();
+    if (rv != net::ERR_IO_PENDING)
+      OnDiskCacheInitialized(rv);
   }
   return disk_cache_.get();
+}
+
+void AppCacheStorageImpl::OnDiskCacheInitialized(int rv) {
+  if (rv != net::OK) {
+    // TODO(michaeln): We're unable to open the disk cache, how
+    // do we recover from this error?
+    Disable();
+  }
 }
 
 }  // namespace appcache

@@ -12,8 +12,8 @@
 
 #include "base/file_path.h"
 #include "base/task.h"
-#include "net/disk_cache/disk_cache.h"
 #include "webkit/appcache/appcache_database.h"
+#include "webkit/appcache/appcache_disk_cache.h"
 #include "webkit/appcache/appcache_storage.h"
 
 namespace appcache {
@@ -95,6 +95,9 @@ class AppCacheStorageImpl : public AppCacheStorage {
   void ScheduleDeleteOneResponse();
   void DeleteOneResponse();
 
+  void OnDeletedOneResponse(int rv);
+  void OnDiskCacheInitialized(int rv);
+
   // Sometimes we can respond without having to query the database.
   void DeliverShortCircuitedFindMainResponse(
       const GURL& url, AppCacheEntry found_entry,
@@ -106,7 +109,7 @@ class AppCacheStorageImpl : public AppCacheStorage {
       const AppCacheEntry& entry, const AppCacheEntry& fallback_entry,
       int64 cache_id, const GURL& manifest_url);
 
-  disk_cache::Backend* disk_cache();
+  AppCacheDiskCache* disk_cache();
 
   // The directory in which we place files in the file system.
   FilePath cache_directory_;
@@ -125,6 +128,10 @@ class AppCacheStorageImpl : public AppCacheStorage {
   bool did_start_deleting_responses_;
   int64 last_deletable_response_rowid_;
 
+  // AppCacheDiskCache async callbacks
+  net::CompletionCallbackImpl<AppCacheStorageImpl> doom_callback_;
+  net::CompletionCallbackImpl<AppCacheStorageImpl> init_callback_;
+
   // Created on the IO thread, but only used on the DB thread.
   AppCacheDatabase* database_;
 
@@ -133,7 +140,7 @@ class AppCacheStorageImpl : public AppCacheStorage {
   bool is_disabled_;
 
   // TODO(michaeln): use a disk_cache per group (manifest or group_id).
-  scoped_ptr<disk_cache::Backend> disk_cache_;
+  scoped_ptr<AppCacheDiskCache> disk_cache_;
 
   // Used to short-circuit certain operations without having to schedule
   // any tasks on the background database thread.

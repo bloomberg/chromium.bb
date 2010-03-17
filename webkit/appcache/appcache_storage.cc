@@ -50,7 +50,8 @@ void AppCacheStorage::ResponseInfoLoadTask::OnReadComplete(int result) {
   if (result >= 0) {
     info = new AppCacheResponseInfo(storage_->service(), manifest_url_,
                                     response_id_,
-                                    info_buffer_->http_info.release());
+                                    info_buffer_->http_info.release(),
+                                    info_buffer_->response_data_size);
   }
   FOR_EACH_DELEGATE(delegates_, OnResponseInfoLoaded(info.get(), response_id_));
   delete this;

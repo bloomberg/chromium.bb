@@ -174,6 +174,8 @@ class AppCacheResponseTest : public testing::Test {
     WriteResponse(MakeHttpResponseInfo(raw_headers), body, strlen(kHttpBody));
   }
 
+  int basic_response_size() { return 5; }  // should match kHttpBody above
+
   void WriteResponse(net::HttpResponseInfo* head,
                      IOBuffer* body, int body_len) {
     DCHECK(body);
@@ -369,6 +371,8 @@ class AppCacheResponseTest : public testing::Test {
     EXPECT_TRUE(CompareHttpResponseInfos(
         write_info_buffer_->http_info.get(),
         storage_delegate_->loaded_info_->http_response_info()));
+    EXPECT_EQ(basic_response_size(),
+              storage_delegate_->loaded_info_->response_data_size());
     TestFinished();
   }
 

@@ -11,6 +11,7 @@
 #include "base/task.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/completion_callback.h"
+#include "net/disk_cache/disk_cache.h"
 #include "net/http/http_response_info.h"
 #include "webkit/appcache/appcache_interfaces.h"
 
@@ -19,12 +20,14 @@ class IOBuffer;
 }
 namespace disk_cache {
 class Entry;
-class Backend;
 };
 
 namespace appcache {
 
+class AppCacheDiskCache;
 class AppCacheService;
+
+static const int kUnkownResponseDataSize = -1;
 
 // Response info for a particular response id. Instances are tracked in
 // the working set.
@@ -33,14 +36,15 @@ class AppCacheResponseInfo
  public:
   // AppCacheResponseInfo takes ownership of the http_info.
   AppCacheResponseInfo(AppCacheService* service, const GURL& manifest_url,
-                       int64 response_id, net::HttpResponseInfo* http_info);
-  // TODO(michaeln): should the ctor be hidden from public view?
+                       int64 response_id, net::HttpResponseInfo* http_info,
+                       int64 response_data_size);
 
   const GURL& manifest_url() const { return manifest_url_; }
   int64 response_id() const { return response_id_; }
   const net::HttpResponseInfo* http_response_info() const {
     return http_response_info_.get();
   }
+  int64 response_data_size() const { return response_data_size_; }
 
  private:
   friend class base::RefCounted<AppCacheResponseInfo>;
@@ -49,6 +53,7 @@ class AppCacheResponseInfo
   const GURL manifest_url_;
   const int64 response_id_;
   const scoped_ptr<net::HttpResponseInfo> http_response_info_;
+  const int64 response_data_size_;
   const AppCacheService* service_;
 };
 
@@ -57,9 +62,12 @@ class AppCacheResponseInfo
 struct HttpResponseInfoIOBuffer
     : public base::RefCountedThreadSafe<HttpResponseInfoIOBuffer> {
   scoped_ptr<net::HttpResponseInfo> http_info;
+  int response_data_size;
 
-  HttpResponseInfoIOBuffer() {}
-  HttpResponseInfoIOBuffer(net::HttpResponseInfo* info) : http_info(info) {}
+  HttpResponseInfoIOBuffer()
+      : response_data_size(kUnkownResponseDataSize) {}
+  explicit HttpResponseInfoIOBuffer(net::HttpResponseInfo* info)
+      : http_info(info), response_data_size(kUnkownResponseDataSize) {}
 
  private:
   friend class base::RefCountedThreadSafe<HttpResponseInfoIOBuffer>;
@@ -76,7 +84,22 @@ class AppCacheResponseIO {
  protected:
   friend class ScopedRunnableMethodFactory<AppCacheResponseIO>;
 
-  AppCacheResponseIO(int64 response_id, disk_cache::Backend* disk_cache);
+  template <class T>
+  class EntryCallback : public net::CancelableCompletionCallback<T> {
+   public:
+    typedef net::CancelableCompletionCallback<T> BaseClass;
+    EntryCallback(T* object,  void (T::* method)(int))
+        : BaseClass(object, method), entry_ptr_(NULL) {}
+
+    disk_cache::Entry* entry_ptr_;  // Accessed directly.
+   private:
+    ~EntryCallback() {
+      if (entry_ptr_)
+        entry_ptr_->Close();
+    }
+  };
+
+  AppCacheResponseIO(int64 response_id, AppCacheDiskCache* disk_cache);
 
   virtual void OnIOComplete(int result) = 0;
 
@@ -87,10 +110,11 @@ class AppCacheResponseIO {
   void WriteRaw(int index, int offset, net::IOBuffer* buf, int buf_len);
 
   const int64 response_id_;
-  disk_cache::Backend* disk_cache_;
+  AppCacheDiskCache* disk_cache_;
   disk_cache::Entry* entry_;
   scoped_refptr<HttpResponseInfoIOBuffer> info_buffer_;
   scoped_refptr<net::IOBuffer> buffer_;
+  int buffer_len_;
   net::CompletionCallback* user_callback_;
 
  private:
@@ -107,6 +131,8 @@ class AppCacheResponseIO {
 // operation.  In other words, instances are safe to delete at will.
 class AppCacheResponseReader : public AppCacheResponseIO {
  public:
+  virtual ~AppCacheResponseReader();
+
   // Reads http info from storage. Always returns the result of the read
   // asynchronously through the 'callback'. Returns the number of bytes read
   // or a net:: error code. Guaranteed to not perform partial reads of
@@ -132,10 +158,6 @@ class AppCacheResponseReader : public AppCacheResponseIO {
   // Returns true if there is a read operation, for data or info, pending.
   bool IsReadPending() { return IsIOPending(); }
 
-  // Returns the size of the resource in the disk cache or a negative value
-  // if there  is no disk cache entry.
-  int GetResourceSize();
-
   // Used to support range requests. If not called, the reader will
   // read the entire response body. If called, this must be called prior
   // to the first call to the ReadData method.
@@ -146,17 +168,18 @@ class AppCacheResponseReader : public AppCacheResponseIO {
   friend class MockAppCacheStorage;
 
   // Should only be constructed by the storage class.
-  AppCacheResponseReader(int64 response_id, disk_cache::Backend* disk_cache)
-      : AppCacheResponseIO(response_id, disk_cache),
-        range_offset_(0), range_length_(kint32max),
-        read_position_(0) {}
+  AppCacheResponseReader(int64 response_id, AppCacheDiskCache* disk_cache);
 
   virtual void OnIOComplete(int result);
-  bool OpenEntryIfNeeded();
+  void ContinueReadInfo();
+  void ContinueReadData();
+  void OpenEntryIfNeededAndContinue();
+  void OnOpenEntryComplete(int rv);
 
   int range_offset_;
   int range_length_;
   int read_position_;
+  scoped_refptr<EntryCallback<AppCacheResponseReader> > open_callback_;
 };
 
 // Writes new response data to storage. If the object is deleted
@@ -165,6 +188,8 @@ class AppCacheResponseReader : public AppCacheResponseIO {
 // operation. In other words, instances are safe to delete at will.
 class AppCacheResponseWriter : public AppCacheResponseIO {
  public:
+  virtual ~AppCacheResponseWriter();
+
   // Writes the http info to storage. Always returns the result of the write
   // asynchronously through the 'callback'. Returns the number of bytes written
   // or a net:: error code. The writer acquires a reference to the 'info_buf'
@@ -196,17 +221,27 @@ class AppCacheResponseWriter : public AppCacheResponseIO {
   friend class AppCacheStorageImpl;
   friend class MockAppCacheStorage;
 
+  enum CreationPhase {
+    NO_ATTEMPT,
+    INITIAL_ATTEMPT,
+    DOOM_EXISTING,
+    SECOND_ATTEMPT
+  };
+
   // Should only be constructed by the storage class.
-  AppCacheResponseWriter(int64 response_id, disk_cache::Backend* disk_cache)
-      : AppCacheResponseIO(response_id, disk_cache),
-        info_size_(0), write_position_(0), write_amount_(0) {}
+  AppCacheResponseWriter(int64 response_id, AppCacheDiskCache* disk_cache);
 
   virtual void OnIOComplete(int result);
-  bool CreateEntryIfNeeded();
+  void ContinueWriteInfo();
+  void ContinueWriteData();
+  void CreateEntryIfNeededAndContinue();
+  void OnCreateEntryComplete(int rv);
 
   int info_size_;
   int write_position_;
   int write_amount_;
+  CreationPhase creation_phase_;
+  scoped_refptr<EntryCallback<AppCacheResponseWriter> > create_callback_;
 };
 
 }  // namespace appcache

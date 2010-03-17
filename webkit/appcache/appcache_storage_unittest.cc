@@ -54,7 +54,8 @@ TEST_F(AppCacheStorageTest, AddRemoveResponseInfo) {
   MockAppCacheService service;
   scoped_refptr<AppCacheResponseInfo> info =
       new AppCacheResponseInfo(&service, GURL(),
-                               111, new net::HttpResponseInfo);
+                               111, new net::HttpResponseInfo,
+                               kUnkownResponseDataSize);
 
   EXPECT_EQ(info.get(),
             service.storage()->working_set()->GetResponseInfo(111));

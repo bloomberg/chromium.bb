@@ -123,9 +123,9 @@ const net::HttpResponseInfo* AppCacheURLRequestJob::http_info() const {
 }
 
 void AppCacheURLRequestJob::SetupRangeResponse() {
-  DCHECK(is_range_request() && reader_.get() &&
+  DCHECK(is_range_request() && info_.get() && reader_.get() &&
          is_delivering_appcache_response());
-  int resource_size = reader_->GetResourceSize();
+  int resource_size = static_cast<int>(info_->response_data_size());
   if (resource_size < 0 || !range_requested_.ComputeBounds(resource_size)) {
     range_requested_ = net::HttpByteRange();
     return;

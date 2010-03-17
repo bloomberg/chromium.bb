@@ -20,6 +20,8 @@
         'appcache_backend_impl.h',
         'appcache_database.cc',
         'appcache_database.h',
+        'appcache_disk_cache.cc',
+        'appcache_disk_cache.h',
         'appcache_entry.h',
         'appcache_frontend_impl.cc',
         'appcache_frontend_impl.h',
