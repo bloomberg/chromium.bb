@@ -144,10 +144,6 @@ void RenderWidgetHostViewMac::InitAsPopup(
   [cocoa_view_ setCanBeKeyView:activatable_ ? YES : NO];
   [parent_host_view->GetNativeView() addSubview:cocoa_view_];
 
-  // TODO(avi):Why the hell are these screen coordinates? The Windows code calls
-  // ::MoveWindow() which indicates they should be local, but when running it I
-  // get global ones instead!
-
   NSPoint global_origin = NSPointFromCGPoint(pos.origin().ToCGPoint());
   global_origin.y = [[[cocoa_view_ window] screen] frame].size.height -
       pos.height() - global_origin.y;
