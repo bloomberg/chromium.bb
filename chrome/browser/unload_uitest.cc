@@ -6,11 +6,14 @@
 #include "base/file_util.h"
 #include "base/platform_thread.h"
 #include "chrome/browser/net/url_request_mock_http_job.h"
+#include "chrome/browser/view_ids.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
+#include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/ui/ui_test.h"
 #include "net/url_request/url_request_unittest.h"
+#include "views/event.h"
 
 const std::string NOLISTENERS_HTML =
     "<html><head><title>nolisteners</title></head><body></body></html>";
@@ -143,13 +146,9 @@ class UnloadTest : public UITest {
   // load is purposely async to test the case where the user loads another
   // page without waiting for the first load to complete.
   void NavigateToNolistenersFileTwiceAsync() {
-    // TODO(ojan): We hit a DCHECK in RenderViewHost::OnMsgShouldCloseACK
-    // if we don't sleep here.
-    PlatformThread::Sleep(400);
     NavigateToURLAsync(
         URLRequestMockHTTPJob::GetMockUrl(
             FilePath(FILE_PATH_LITERAL("title2.html"))));
-    PlatformThread::Sleep(400);
     NavigateToURL(
         URLRequestMockHTTPJob::GetMockUrl(
             FilePath(FILE_PATH_LITERAL("title2.html"))));
@@ -185,7 +184,7 @@ class UnloadTest : public UITest {
 };
 
 // Navigate to a page with an infinite unload handler.
-// Then two two async crosssite requests to ensure
+// Then two async crosssite requests to ensure
 // we don't get confused and think we're closing the tab.
 TEST_F(UnloadTest, CrossSiteInfiniteUnloadAsync) {
   // Tests makes no sense in single-process mode since the renderer is hung.
@@ -199,7 +198,7 @@ TEST_F(UnloadTest, CrossSiteInfiniteUnloadAsync) {
 }
 
 // Navigate to a page with an infinite unload handler.
-// Then two two sync crosssite requests to ensure
+// Then two sync crosssite requests to ensure
 // we correctly nav to each one.
 TEST_F(UnloadTest, CrossSiteInfiniteUnloadSync) {
   // Tests makes no sense in single-process mode since the renderer is hung.
@@ -209,6 +208,37 @@ TEST_F(UnloadTest, CrossSiteInfiniteUnloadSync) {
   NavigateToDataURL(INFINITE_UNLOAD_HTML, L"infiniteunload");
   // Must navigate to a non-data URL to trigger cross-site codepath.
   NavigateToNolistenersFileTwice();
+  ASSERT_TRUE(IsBrowserRunning());
+}
+
+// Navigate to a page with an infinite unload handler.
+// Then an async crosssite request followed by an input event to ensure that
+// the short unload timeout (not the long input event timeout) is used.
+// See crbug.com/11007.
+TEST_F(UnloadTest, CrossSiteInfiniteUnloadAsyncInputEvent) {
+  // Tests makes no sense in single-process mode since the renderer is hung.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
+    return;
+
+  NavigateToDataURL(INFINITE_UNLOAD_HTML, L"infiniteunload");
+
+  // Navigate to a new URL asynchronously.
+  NavigateToURLAsync(
+      URLRequestMockHTTPJob::GetMockUrl(
+          FilePath(FILE_PATH_LITERAL("title2.html"))));
+
+  // Now send an input event while we're stalled on the unload handler.
+  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser.get());
+  scoped_refptr<WindowProxy> window(browser->GetWindow());
+  ASSERT_TRUE(window.get());
+  gfx::Rect bounds;
+  ASSERT_TRUE(window->GetViewBounds(VIEW_ID_TAB_0, &bounds, false));
+  ASSERT_TRUE(browser->SimulateDrag(bounds.CenterPoint(), bounds.CenterPoint(),
+                                    views::Event::EF_LEFT_BUTTON_DOWN, false));
+
+  // The title should update before the timeout in CheckTitle.
+  CheckTitle(L"Title Of Awesomeness");
   ASSERT_TRUE(IsBrowserRunning());
 }
 

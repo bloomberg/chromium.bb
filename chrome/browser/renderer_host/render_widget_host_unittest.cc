@@ -7,11 +7,14 @@
 #include "base/keyboard_codes.h"
 #include "base/scoped_ptr.h"
 #include "base/shared_memory.h"
+#include "base/timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/renderer_host/backing_store.h"
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
 #include "chrome/common/render_messages.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using base::TimeDelta;
 
 using WebKit::WebInputEvent;
 using WebKit::WebMouseWheelEvent;
@@ -55,7 +58,7 @@ class RenderWidgetHostProcess : public MockRenderProcessHost {
 
   TransportDIB* current_update_buf_;
 
-  // Set to true when WaitForUpdateMsg should return a successful update messaage
+  // Set to true when WaitForUpdateMsg should return a successful update message
   // reply. False implies timeout.
   bool update_msg_should_reply_;
 
@@ -130,7 +133,8 @@ class MockRenderWidgetHost : public RenderWidgetHost {
         prehandle_keyboard_event_called_(false),
         prehandle_keyboard_event_type_(WebInputEvent::Undefined),
         unhandled_keyboard_event_called_(false),
-        unhandled_keyboard_event_type_(WebInputEvent::Undefined) {
+        unhandled_keyboard_event_type_(WebInputEvent::Undefined),
+        unresponsive_timer_fired_(false) {
   }
 
   // Tests that make sure we ignore keyboard event acknowledgments to events we
@@ -155,6 +159,10 @@ class MockRenderWidgetHost : public RenderWidgetHost {
     prehandle_keyboard_event_ = handle;
   }
 
+  bool unresponsive_timer_fired() const {
+    return unresponsive_timer_fired_;
+  }
+
  protected:
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                                       bool* is_keyboard_shortcut) {
@@ -168,6 +176,10 @@ class MockRenderWidgetHost : public RenderWidgetHost {
     unhandled_keyboard_event_called_ = true;
   }
 
+  virtual void NotifyRendererUnresponsive() {
+    unresponsive_timer_fired_ = true;
+  }
+
  private:
   bool prehandle_keyboard_event_;
   bool prehandle_keyboard_event_called_;
@@ -175,6 +187,8 @@ class MockRenderWidgetHost : public RenderWidgetHost {
 
   bool unhandled_keyboard_event_called_;
   WebInputEvent::Type unhandled_keyboard_event_type_;
+
+  bool unresponsive_timer_fired_;
 };
 
 // RenderWidgetHostTest --------------------------------------------------------
@@ -600,3 +614,39 @@ TEST_F(RenderWidgetHostTest, CoalescesWheelEvents) {
   SendInputEventACK(WebInputEvent::MouseWheel, true);
   EXPECT_EQ(0U, process_->sink().message_count());
 }
+
+// Test that the hang monitor timer expires properly if a new timer is started
+// while one is in progress (see crbug.com/11007).
+TEST_F(RenderWidgetHostTest, DontPostponeHangMonitorTimeout) {
+  // Start with a short timeout.
+  host_->StartHangMonitorTimeout(TimeDelta::FromMilliseconds(10));
+
+  // Immediately try to add a long 30 second timeout.
+  EXPECT_FALSE(host_->unresponsive_timer_fired());
+  host_->StartHangMonitorTimeout(TimeDelta::FromMilliseconds(30000));
+
+  // Wait long enough for first timeout and see if it fired.
+  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+                                          new MessageLoop::QuitTask(), 10);
+  MessageLoop::current()->Run();
+  EXPECT_TRUE(host_->unresponsive_timer_fired());
+}
+
+// Test that the hang monitor timer expires properly if it is started, stopped,
+// and then started again.
+TEST_F(RenderWidgetHostTest, StopAndStartHangMonitorTimeout) {
+  // Start with a short timeout, then stop it.
+  host_->StartHangMonitorTimeout(TimeDelta::FromMilliseconds(10));
+  host_->StopHangMonitorTimeout();
+
+  // Start it again to ensure it still works.
+  EXPECT_FALSE(host_->unresponsive_timer_fired());
+  host_->StartHangMonitorTimeout(TimeDelta::FromMilliseconds(10));
+
+  // Wait long enough for first timeout and see if it fired.
+  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+                                          new MessageLoop::QuitTask(), 10);
+  MessageLoop::current()->Run();
+  EXPECT_TRUE(host_->unresponsive_timer_fired());
+}
+

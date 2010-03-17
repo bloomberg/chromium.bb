@@ -339,22 +339,27 @@ void RenderWidgetHost::DonePaintingToBackingStore() {
 }
 
 void RenderWidgetHost::StartHangMonitorTimeout(TimeDelta delay) {
-  time_when_considered_hung_ = Time::Now() + delay;
-
   // If we already have a timer that will expire at or before the given delay,
-  // then we have nothing more to do now.
+  // then we have nothing more to do now.  If we have set our end time to null
+  // by calling StopHangMonitorTimeout, though, we will need to restart the
+  // timer.
   if (hung_renderer_timer_.IsRunning() &&
-      hung_renderer_timer_.GetCurrentDelay() <= delay)
+      hung_renderer_timer_.GetCurrentDelay() <= delay &&
+      !time_when_considered_hung_.is_null()) {
     return;
+  }
 
   // Either the timer is not yet running, or we need to adjust the timer to
   // fire sooner.
+  time_when_considered_hung_ = Time::Now() + delay;
   hung_renderer_timer_.Stop();
   hung_renderer_timer_.Start(delay, this,
       &RenderWidgetHost::CheckRendererIsUnresponsive);
 }
 
 void RenderWidgetHost::RestartHangMonitorTimeout() {
+  // Setting to null will cause StartHangMonitorTimeout to restart the timer.
+  time_when_considered_hung_ = Time();
   StartHangMonitorTimeout(TimeDelta::FromMilliseconds(kHungRendererDelayMs));
 }
 
