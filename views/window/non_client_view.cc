@@ -4,7 +4,9 @@
 
 #include "views/window/non_client_view.h"
 
+#include "app/l10n_util.h"
 #include "app/theme_provider.h"
+#include "grit/chromium_strings.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 #include "views/window/window.h"
@@ -33,6 +35,7 @@ static const int kClientViewIndex = 1;
 NonClientView::NonClientView(Window* frame)
     : frame_(frame),
       client_view_(NULL) {
+  SetAccessibleName(l10n_util::GetString(IDS_PRODUCT_NAME));
 }
 
 NonClientView::~NonClientView() {

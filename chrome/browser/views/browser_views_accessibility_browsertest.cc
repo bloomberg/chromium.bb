@@ -17,6 +17,7 @@
 #include "views/accessibility/view_accessibility_wrapper.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget_win.h"
+#include "views/window/window.h"
 
 namespace {
 
@@ -97,6 +98,7 @@ class BrowserViewsAccessibilityTest : public InProcessBrowserTest {
     TestAccessibilityInfo(acc_obj, name, role);
   }
 
+
   // Verifies MSAA Name and Role properties of the given IAccessible.
   void TestAccessibilityInfo(IAccessible* acc_obj, std::wstring name,
                              long role) {
@@ -140,6 +142,17 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest, TestChromeWindowAccObj) {
                         ROLE_SYSTEM_WINDOW);
 
   acc_obj->Release();
+}
+
+// Retrieve accessibility object for non client view and verify accessibility
+// info.
+IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest, TestNonClientViewAccObj) {
+  views::View* non_client_view =
+  GetBrowserView()->GetWindow()->GetNonClientView();
+
+  TestViewAccessibilityObject(non_client_view,
+  l10n_util::GetString(IDS_PRODUCT_NAME),
+  ROLE_SYSTEM_WINDOW);
 }
 
 // Retrieve accessibility object for browser root view and verify
@@ -254,6 +267,5 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
                               l10n_util::GetString(IDS_ACCNAME_BOOKMARKS),
                               ROLE_SYSTEM_TOOLBAR);
 }
-
 }  // Namespace.
 
