@@ -6990,6 +6990,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
                desc="The label for the configure button for input methods">
         Configure...
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_INPUT_METHOD"
+               desc="The label for the section header for input methods">
+        Input Method
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_ADD_BUTTON"
+               desc="The label for the add button that opens a new dialog">
+        Add...
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_REMOVE_BUTTON"
+               desc="The label for the remove button for removing a language">
+        Remove
+      </message>
       <message name="IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET" desc="The ethernet network device.">
         Ethernet
       </message>

@@ -18,7 +18,6 @@
 
 namespace chromeos {
 
-class LanguageCheckbox;
 class LanguageHangulConfigView;
 class PreferredLanguageTableModel;
 // A dialog box for showing a password textfield.
@@ -59,16 +58,36 @@ class LanguageConfigView : public TableModel,
   virtual void SetObserver(TableModelObserver* observer);
   virtual int RowCount();
 
+  // Invoked when a language is added from the add button.
+  void OnAddLanguage(const std::string& language_code);
+
  private:
-  // Initializes UI.
+  // Initializes the view.
   void Init();
 
-  views::View* contents_;
-  views::NativeButton* hangul_configure_button_;
-  std::vector<views::Button*> language_checkboxes_;
+  // Initializes the preferred language table codes based on the active
+  // input languages.
+  void InitPreferredLanguageCodes();
 
-  // A table for preferred languages and its model.
+  // Creates the contents on the left, including the language table.
+  views::View* CreateContentsOnLeft();
+
+  // Creates the per-language config view.
+  views::View* CreatePerLanguageConfigView(const std::string& language_code);
+
+  // Deactivates the input languages for the given language code.
+  void DeactivateInputLanguagesFor(const std::string& language_code);
+
+  // The codes of the preferred languages.
+  std::vector<std::string> preferred_language_codes_;
+
+  views::View* root_container_;
+  views::View* right_container_;
+  views::NativeButton* add_language_button_;
+  views::NativeButton* remove_language_button_;
+  views::NativeButton* hangul_configure_button_;
   views::TableView2* preferred_language_table_;
+
   DISALLOW_COPY_AND_ASSIGN(LanguageConfigView);
 };
 
