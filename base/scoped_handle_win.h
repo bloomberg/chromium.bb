@@ -220,6 +220,12 @@ class ScopedHGlobal {
     return data_;
   }
 
+  T* release() {
+    T* data = data_;
+    data_ = NULL;
+    return data;
+  }
+
  private:
   HGLOBAL glob_;
 
