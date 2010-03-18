@@ -146,7 +146,8 @@ NavigationController::NavigationController(TabContents* contents,
       needs_reload_(false),
       user_gesture_observed_(false),
       session_storage_namespace_id_(profile->GetWebKitContext()->
-          dom_storage_context()->AllocateSessionStorageNamespaceId()) {
+          dom_storage_context()->AllocateSessionStorageNamespaceId()),
+      pending_reload_(NO_RELOAD) {
   DCHECK(profile_);
 }
 
@@ -195,27 +196,44 @@ void NavigationController::ReloadInternal(bool check_for_repost,
 
   DiscardNonCommittedEntriesInternal();
   int current_index = GetCurrentEntryIndex();
-  if (check_for_repost_ && check_for_repost && current_index != -1 &&
+  // If we are no where, then we can't reload.  TODO(darin): We should add a
+  // CanReload method.
+  if (current_index == -1) {
+    return;
+  }
+
+  NotificationService::current()->Notify(NotificationType::RELOADING,
+                                         Source<NavigationController>(this),
+                                         NotificationService::NoDetails());
+
+  if (check_for_repost_ && check_for_repost &&
       GetEntryAtIndex(current_index)->has_post_data()) {
     // The user is asking to reload a page with POST data. Prompt to make sure
     // they really want to do this. If they do, the dialog will call us back
     // with check_for_repost = false.
+    pending_reload_ = reload_type;
     tab_contents_->Activate();
     tab_contents_->delegate()->ShowRepostFormWarningDialog(tab_contents_);
   } else {
-    // Base the navigation on where we are now...
-    int current_index = GetCurrentEntryIndex();
-
-    // If we are no where, then we can't reload.  TODO(darin): We should add a
-    // CanReload method.
-    if (current_index == -1)
-      return;
-
     DiscardNonCommittedEntriesInternal();
 
     pending_entry_index_ = current_index;
     entries_[pending_entry_index_]->set_transition_type(PageTransition::RELOAD);
     NavigateToPendingEntry(reload_type);
+  }
+}
+
+void NavigationController::CancelPendingReload() {
+  DCHECK(pending_reload_ != NO_RELOAD);
+  pending_reload_ = NO_RELOAD;
+}
+
+void NavigationController::ContinuePendingReload() {
+  if (pending_reload_ == NO_RELOAD) {
+    NOTREACHED();
+  } else {
+    ReloadInternal(false, pending_reload_);
+    CancelPendingReload();
   }
 }
 

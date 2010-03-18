@@ -2787,7 +2787,7 @@ void Browser::UpdateCommandsForTabState() {
       !(type() & TYPE_APP) && tab_count() > 1);
 
   // Current navigation entry, may be NULL.
-  NavigationEntry* active_entry = current_tab->controller().GetActiveEntry();
+  NavigationEntry* active_entry = nc.GetActiveEntry();
 
   // Page-related commands
   window_->SetStarredState(current_tab->is_starred());

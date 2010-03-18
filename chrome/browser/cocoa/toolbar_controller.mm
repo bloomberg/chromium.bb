@@ -384,6 +384,9 @@ class PrefObserverBridge : public NotificationObserver {
     case IDC_FORWARD:
       button = forwardButton_;
       break;
+    case IDC_RELOAD:
+      button = reloadButton_;
+      break;
     case IDC_HOME:
       button = homeButton_;
       break;

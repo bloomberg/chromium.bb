@@ -2299,7 +2299,8 @@ void AutomationProvider::ReloadAsync(int tab_handle) {
       return;
     }
 
-    tab->Reload(false);
+    const bool check_for_repost = true;
+    tab->Reload(check_for_repost);
   }
 }
 

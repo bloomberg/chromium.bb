@@ -333,7 +333,7 @@ void BrowserWindowCocoa::ShowNewProfileDialog() {
 
 void BrowserWindowCocoa::ShowRepostFormWarningDialog(
     TabContents* tab_contents) {
-  new RepostFormWarningMac(GetNativeHandle(), &tab_contents->controller());
+  new RepostFormWarningMac(GetNativeHandle(), tab_contents);
 }
 
 void BrowserWindowCocoa::ShowContentSettingsWindow(

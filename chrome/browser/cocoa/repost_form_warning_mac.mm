@@ -41,41 +41,61 @@
 
 RepostFormWarningMac::RepostFormWarningMac(
     NSWindow* parent,
-    NavigationController* navigation_controller)
-    : navigation_controller_(navigation_controller),
-      alert_([[NSAlert alloc] init]),
-      delegate_([[RepostDelegate alloc] initWithWarning:this]) {
-  [alert_ setMessageText:
+    TabContents* tab_contents)
+    : ConstrainedWindowMacDelegateSystemSheet(
+        [[[RepostDelegate alloc] initWithWarning:this] autorelease],
+        @selector(alertDidEnd:returnCode:contextInfo:)),
+      navigation_controller_(&tab_contents->controller()) {
+  scoped_nsobject<NSAlert> alert([[NSAlert alloc] init]);
+  [alert setMessageText:
       l10n_util::GetNSStringWithFixup(IDS_HTTP_POST_WARNING_TITLE)];
-  [alert_ setInformativeText:
+  [alert setInformativeText:
       l10n_util::GetNSStringWithFixup(IDS_HTTP_POST_WARNING)];
-  [alert_ addButtonWithTitle:
+  [alert addButtonWithTitle:
       l10n_util::GetNSStringWithFixup(IDS_HTTP_POST_WARNING_RESEND)];
-  [alert_ addButtonWithTitle:
+  [alert addButtonWithTitle:
       l10n_util::GetNSStringWithFixup(IDS_CANCEL)];
 
-  [alert_ beginSheetModalForWindow:parent
-                    modalDelegate:delegate_.get()
-                   didEndSelector:@selector(alertDidEnd:returnCode:contextInfo:)
-                      contextInfo:nil];
+  set_sheet(alert);
 
   registrar_.Add(this, NotificationType::LOAD_START,
                  Source<NavigationController>(navigation_controller_));
   registrar_.Add(this, NotificationType::TAB_CLOSING,
                  Source<NavigationController>(navigation_controller_));
+  registrar_.Add(this, NotificationType::RELOADING,
+                 Source<NavigationController>(navigation_controller_));
+  window_ = tab_contents->CreateConstrainedDialog(this);
 }
 
 RepostFormWarningMac::~RepostFormWarningMac() {
 }
 
+void RepostFormWarningMac::DeleteDelegate() {
+  window_ = NULL;
+  Dismiss();
+  delete this;
+}
+
 void RepostFormWarningMac::Confirm() {
+  if (navigation_controller_) {
+    navigation_controller_->ContinuePendingReload();
+  }
   Destroy();
-  if (navigation_controller_)
-    navigation_controller_->Reload(false);
 }
 
 void RepostFormWarningMac::Cancel() {
+  if (navigation_controller_) {
+    navigation_controller_->CancelPendingReload();
+  }
   Destroy();
+}
+
+void RepostFormWarningMac::Dismiss() {
+  if (sheet() && is_sheet_open()) {
+    // This will call |Cancel()|.
+    [NSApp endSheet:[(NSAlert*)sheet() window]
+         returnCode:NSAlertSecondButtonReturn];
+  }
 }
 
 void RepostFormWarningMac::Observe(NotificationType type,
@@ -84,21 +104,21 @@ void RepostFormWarningMac::Observe(NotificationType type,
   // Close the dialog if we load a page (because reloading might not apply to
   // the same page anymore) or if the tab is closed, because then we won't have
   // a navigation controller anymore.
-  if (alert_ && navigation_controller_ &&
-      (type == NotificationType::LOAD_START ||
-       type == NotificationType::TAB_CLOSING)) {
+  if ((type == NotificationType::LOAD_START ||
+       type == NotificationType::TAB_CLOSING ||
+       type == NotificationType::RELOADING)) {
     DCHECK_EQ(Source<NavigationController>(source).ptr(),
               navigation_controller_);
-    navigation_controller_ = NULL;
-
-    // This will call |Cancel()|.
-    [NSApp endSheet:[alert_ window] returnCode:NSAlertSecondButtonReturn];
+    Dismiss();
   }
 }
 
 void RepostFormWarningMac::Destroy() {
-  if (alert_) {
-    alert_.reset(NULL);
-    MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  navigation_controller_ = NULL;
+  if (sheet()) {
+    set_sheet(nil);
+  }
+  if (window_) {
+    window_->CloseConstrainedWindow();
   }
 }

@@ -400,6 +400,11 @@ class NavigationController {
   }
   static size_t max_entry_count() { return max_entry_count_; }
 
+  // Cancels a repost that brought up a warning.
+  void CancelPendingReload();
+  // Continues a repost that brought up a warning.
+  void ContinuePendingReload();
+
  private:
   class RestoreHelper;
   friend class RestoreHelper;
@@ -556,6 +561,10 @@ class NavigationController {
 
   // The maximum number of entries that a navigation controller can store.
   static size_t max_entry_count_;
+
+  // If a repost is pending, its type (RELOAD or RELOAD_IGNORING_CACHE),
+  // NO_RELOAD otherwise.
+  ReloadType pending_reload_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationController);
 };

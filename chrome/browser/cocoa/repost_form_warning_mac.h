@@ -8,6 +8,8 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/scoped_nsobject.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/cocoa/constrained_window_mac.h"
 #include "chrome/common/notification_registrar.h"
 
 class NavigationController;
@@ -18,11 +20,14 @@ class RepostFormWarningMac;
 // To display the dialog, allocate this object on the heap. It will open the
 // dialog from its constructor and then delete itself when the user dismisses
 // the dialog.
-class RepostFormWarningMac : public NotificationObserver {
+class RepostFormWarningMac : public NotificationObserver,
+                             public ConstrainedWindowMacDelegateSystemSheet {
  public:
   RepostFormWarningMac(NSWindow* parent,
-                       NavigationController* navigation_controller);
+                       TabContents* tab_contents);
   virtual ~RepostFormWarningMac();
+
+  virtual void DeleteDelegate();
 
   void Confirm();
   void Cancel();
@@ -34,7 +39,9 @@ class RepostFormWarningMac : public NotificationObserver {
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // Close the sheet.  This will only be done once, even if Destroy is called
+  // Close the sheet.
+  void Dismiss();
+  // Clean up.  This will only be done once, even if Destroy is called
   // multiple times (eg, from both Confirm and Observe.)
   void Destroy();
 
@@ -43,9 +50,7 @@ class RepostFormWarningMac : public NotificationObserver {
   // Navigation controller, used to continue the reload.
   NavigationController* navigation_controller_;
 
-  scoped_nsobject<NSAlert> alert_;
-
-  scoped_nsobject<RepostDelegate> delegate_;
+  ConstrainedWindow* window_;
 
   DISALLOW_COPY_AND_ASSIGN(RepostFormWarningMac);
 };

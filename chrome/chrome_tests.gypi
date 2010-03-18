@@ -297,6 +297,7 @@
         'browser/process_singleton_linux_uitest.cc',
         'browser/process_singleton_win_uitest.cc',
         'browser/renderer_host/resource_dispatcher_host_uitest.cc',
+        'browser/repost_form_warning_uitest.cc',
         'browser/sanity_uitest.cc',
         'browser/session_history_uitest.cc',
         'browser/sessions/session_restore_uitest.cc',

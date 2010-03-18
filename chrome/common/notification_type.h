@@ -885,6 +885,10 @@ class NotificationType {
     LOGIN_AUTHENTICATION,
 #endif
 
+    // Sent before a page is reloaded or the repost form warning is brought up.
+    // The source is a NavigationController.
+    RELOADING,
+
     // Count (must be last) ----------------------------------------------------
     // Used to determine the number of notification types.  Not valid as
     // a type parameter when registering for or posting notifications.
