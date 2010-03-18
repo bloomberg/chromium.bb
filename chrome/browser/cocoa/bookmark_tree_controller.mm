@@ -24,6 +24,7 @@ static NSString* const kFolderColIdent = @"folder";
 - (void)awakeFromNib {
   [outline_ setTarget:self];
   [outline_ setDoubleAction:@selector(openItems:)];
+  [outline_ setAutoresizesOutlineColumn:NO];  // Prevents issue 35031
   [self registerDragTypes];
 }
 
