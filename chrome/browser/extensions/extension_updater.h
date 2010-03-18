@@ -168,7 +168,8 @@ class ExtensionUpdater
 
   // Called when a crx file has been written into a temp file, and is ready
   // to be installed.
-  void OnCRXFileWritten(const std::string& id, const FilePath& path);
+  void OnCRXFileWritten(const std::string& id, const FilePath& path,
+                        const GURL& download_url);
 
   // Callback for when ExtensionsService::Install is finished.
   void OnExtensionInstallFinished(const FilePath& path, Extension* extension);

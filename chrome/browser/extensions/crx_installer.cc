@@ -39,6 +39,7 @@ CrxInstaller::CrxInstaller(const FilePath& install_directory,
       install_source_(Extension::INTERNAL),
       delete_source_(false),
       allow_privilege_increase_(false),
+      force_app_origin_to_download_url_(false),
       create_app_shortcut_(false),
       frontend_(frontend),
       client_(client) {
@@ -70,6 +71,10 @@ void CrxInstaller::InstallCrx(const FilePath& source_file) {
           source_file,
           g_browser_process->resource_dispatcher_host(),
           this));
+
+  if (force_app_origin_to_download_url_ && original_url_.is_valid()) {
+    unpacker->set_app_origin_override(original_url_.GetOrigin());
+  }
 
   ChromeThread::PostTask(
       ChromeThread::FILE, FROM_HERE,

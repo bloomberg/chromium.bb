@@ -402,7 +402,7 @@ class ExtensionsServiceTest
     path = path.Append(in_path.BaseName());
     ASSERT_TRUE(file_util::CopyFile(in_path, path));
 
-    service_->UpdateExtension(id, path);
+    service_->UpdateExtension(id, path, GURL());
     loop_.RunAllPending();
     std::vector<std::string> errors = GetErrors();
 
@@ -1055,7 +1055,7 @@ TEST_F(ExtensionsServiceTest, UpdateNotInstalledExtension) {
   extensions_path = extensions_path.AppendASCII("extensions");
 
   FilePath path = extensions_path.AppendASCII("good.crx");
-  service_->UpdateExtension(good_crx, path);
+  service_->UpdateExtension(good_crx, path, GURL());
   loop_.RunAllPending();
 
   ASSERT_EQ(0u, service_->extensions()->size());

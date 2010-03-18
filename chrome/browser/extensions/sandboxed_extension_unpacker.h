@@ -96,6 +96,11 @@ class SandboxedExtensionUnpacker : public UtilityProcessHost::Client {
                              ResourceDispatcherHost* rdh,
                              SandboxedExtensionUnpackerClient* cilent);
 
+  const GURL& app_origin_override() const { return app_origin_override_; }
+  void set_app_origin_override(const GURL& val) {
+    app_origin_override_ = val;
+  }
+
   // Start unpacking the extension. The client is called with the results.
   void Start();
 
@@ -137,15 +142,37 @@ class SandboxedExtensionUnpacker : public UtilityProcessHost::Client {
   bool RewriteImageFiles();
   bool RewriteCatalogFiles();
 
+  // The path to the CRX to unpack.
   FilePath crx_path_;
+
+  // Our client's thread. This is the thread we respond on.
   ChromeThread::ID thread_identifier_;
+
+  // ResourceDispatcherHost to pass to the utility process.
   ResourceDispatcherHost* rdh_;
+
+  // Our client.
   scoped_refptr<SandboxedExtensionUnpackerClient> client_;
+
+  // A temporary directory to use for unpacking.
   ScopedTempDir temp_dir_;
+
+  // The root directory of the unpacked extension. This is a child of temp_dir_.
   FilePath extension_root_;
+
+  // Represents the extension we're unpacking.
   scoped_ptr<Extension> extension_;
+
+  // Whether we've received a response from the utility process yet.
   bool got_response_;
+
+  // The public key that was extracted from the CRX header.
   std::string public_key_;
+
+  // If the unpacked extension is an app, its origin will be forced to this
+  // value. This is used when an app is self-hosted. The only valid origin
+  // is the origin it is served from.
+  GURL app_origin_override_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_SANDBOXED_EXTENSION_UNPACKER_H_

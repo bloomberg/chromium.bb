@@ -202,7 +202,8 @@ void ExtensionsService::InstallExtension(const FilePath& extension_path) {
 }
 
 void ExtensionsService::UpdateExtension(const std::string& id,
-                                        const FilePath& extension_path) {
+                                        const FilePath& extension_path,
+                                        const GURL& download_url) {
   if (!GetExtensionByIdInternal(id, true, true)) {
     LOG(WARNING) << "Will not update extension " << id << " because it is not "
                  << "installed";
@@ -215,6 +216,8 @@ void ExtensionsService::UpdateExtension(const std::string& id,
                        NULL));  // no client (silent install)
   installer->set_expected_id(id);
   installer->set_delete_source(true);
+  installer->set_force_app_origin_to_download_url(true);
+  installer->set_original_url(download_url);
   installer->InstallCrx(extension_path);
 }
 

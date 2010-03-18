@@ -51,7 +51,8 @@ class MockService : public ExtensionUpdateService {
   }
 
   virtual void UpdateExtension(const std::string& id,
-                               const FilePath& extension_path) {
+                               const FilePath& extension_path,
+                               const GURL& download_url) {
     EXPECT_TRUE(false);
   }
 
@@ -177,9 +178,11 @@ class ServiceForManifestTests : public MockService {
 class ServiceForDownloadTests : public MockService {
  public:
   virtual void UpdateExtension(const std::string& id,
-                               const FilePath& extension_path) {
+                               const FilePath& extension_path,
+                               const GURL& download_url) {
     extension_id_ = id;
     install_path_ = extension_path;
+    download_url_ = download_url;
   }
 
   virtual Extension* GetExtensionById(const std::string& id, bool) {
@@ -189,6 +192,7 @@ class ServiceForDownloadTests : public MockService {
 
   const std::string& extension_id() { return extension_id_; }
   const FilePath& install_path() { return install_path_; }
+  const GURL& download_url() { return download_url_; }
   const std::string& last_inquired_extension_id() {
     return last_inquired_extension_id_;
   }
@@ -196,6 +200,8 @@ class ServiceForDownloadTests : public MockService {
  private:
   std::string extension_id_;
   FilePath install_path_;
+  GURL download_url_;
+
   // The last extension_id that GetExtensionById was called with.
   std::string last_inquired_extension_id_;
 };
@@ -514,6 +520,7 @@ class ExtensionUpdaterTest : public testing::Test {
     EXPECT_EQ(id, service.extension_id());
     FilePath tmpfile_path = service.install_path();
     EXPECT_FALSE(tmpfile_path.empty());
+    EXPECT_EQ(test_url, service.download_url());
     std::string file_contents;
     EXPECT_TRUE(file_util::ReadFileToString(tmpfile_path, &file_contents));
     EXPECT_TRUE(extension_data == file_contents);
@@ -613,6 +620,7 @@ class ExtensionUpdaterTest : public testing::Test {
     FilePath tmpfile_path = service.install_path();
     EXPECT_FALSE(tmpfile_path.empty());
     EXPECT_EQ(id1, service.extension_id());
+    EXPECT_EQ(url1, service.download_url());
     message_loop.RunAllPending();
     file_util::Delete(tmpfile_path, false);
 
@@ -627,6 +635,7 @@ class ExtensionUpdaterTest : public testing::Test {
         extension_data2);
     message_loop.RunAllPending();
     EXPECT_EQ(id2, service.extension_id());
+    EXPECT_EQ(url2, service.download_url());
     EXPECT_FALSE(service.install_path().empty());
 
     // Make sure the correct crx contents were passed for the update call.

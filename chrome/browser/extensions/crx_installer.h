@@ -64,23 +64,30 @@ class CrxInstaller
   virtual void InstallUIProceed(bool create_app_shortcut);
   virtual void InstallUIAbort();
 
-  const GURL& original_url() { return original_url_; }
+  const GURL& original_url() const { return original_url_; }
   void set_original_url(const GURL& val) { original_url_ = val; }
 
-  Extension::Location install_source() { return install_source_; }
+  Extension::Location install_source() const { return install_source_; }
   void set_install_source(Extension::Location source) {
     install_source_ = source;
   }
 
-  const std::string& expected_id() { return expected_id_; }
+  const std::string& expected_id() const { return expected_id_; }
   void set_expected_id(const std::string& val) { expected_id_ = val; }
 
-  bool delete_source() { return delete_source_; }
+  bool delete_source() const { return delete_source_; }
   void set_delete_source(bool val) { delete_source_ = val; }
 
-  bool allow_privilege_increase() { return allow_privilege_increase_; }
+  bool allow_privilege_increase() const { return allow_privilege_increase_; }
   void set_allow_privilege_increase(bool val) {
     allow_privilege_increase_ = val;
+  }
+
+  bool force_app_origin_to_download_url() const {
+    return force_app_origin_to_download_url_;
+  }
+  void set_force_app_origin_to_download_url(bool val) {
+    force_app_origin_to_download_url_ = val;
   }
 
  private:
@@ -145,6 +152,10 @@ class CrxInstaller
   // for these extensions, so there shouldn't be UI for privilege increase,
   // either. Defaults to false.
   bool allow_privilege_increase_;
+
+  // If true and the installed extension is an app, the origin of that app will
+  // be forced to the origin of |original_url_|. Defaults to false.
+  bool force_app_origin_to_download_url_;
 
   // Whether to create an app shortcut after successful installation. This is
   // set based on the user's selection in the UI and can only ever be true for

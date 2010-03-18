@@ -1457,6 +1457,7 @@ void DownloadManager::OpenChromeExtension(const FilePath& full_path,
     } else {
       installer->set_allow_privilege_increase(true);
       installer->set_original_url(download_url);
+      installer->set_force_app_origin_to_download_url(true);
       installer->InstallCrx(full_path);
     }
   } else {

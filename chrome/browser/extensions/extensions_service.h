@@ -45,7 +45,8 @@ class ExtensionUpdateService {
  public:
   virtual ~ExtensionUpdateService() {}
   virtual const ExtensionList* extensions() const = 0;
-  virtual void UpdateExtension(const std::string& id, const FilePath& path) = 0;
+  virtual void UpdateExtension(const std::string& id, const FilePath& path,
+                               const GURL& download_url) = 0;
   virtual Extension* GetExtensionById(const std::string& id,
                                       bool include_disabled) = 0;
   virtual void UpdateExtensionBlacklist(
@@ -154,7 +155,8 @@ class ExtensionsService
   // TODO(aa): This method can be removed. ExtensionUpdater could use
   // CrxInstaller directly instead.
   virtual void UpdateExtension(const std::string& id,
-                               const FilePath& extension_path);
+                               const FilePath& extension_path,
+                               const GURL& download_url);
 
   // Reloads the specified extension.
   void ReloadExtension(const std::string& extension_id);

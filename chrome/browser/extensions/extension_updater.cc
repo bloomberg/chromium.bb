@@ -144,6 +144,7 @@ class ExtensionUpdaterFileHandler
  public:
   // Writes crx file data into a tempfile, and calls back the updater.
   void WriteTempFile(const std::string& extension_id, const std::string& data,
+                     const GURL& download_url,
                      scoped_refptr<ExtensionUpdater> updater) {
     // Make sure we're running in the right thread.
     DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
@@ -168,7 +169,7 @@ class ExtensionUpdaterFileHandler
         ChromeThread::UI, FROM_HERE,
         NewRunnableMethod(
             updater.get(), &ExtensionUpdater::OnCRXFileWritten, extension_id,
-            path));
+            path, download_url));
   }
 
   void DeleteFile(const FilePath& path) {
@@ -460,7 +461,8 @@ void ExtensionUpdater::OnCRXFetchComplete(const GURL& url,
           ChromeThread::FILE, FROM_HERE,
           NewRunnableMethod(
               file_handler_.get(), &ExtensionUpdaterFileHandler::WriteTempFile,
-              current_extension_fetch_.id, data, make_scoped_refptr(this)));
+              current_extension_fetch_.id, data, url,
+              make_scoped_refptr(this)));
     }
   } else {
     // TODO(asargent) do things like exponential backoff, handling
@@ -481,8 +483,9 @@ void ExtensionUpdater::OnCRXFetchComplete(const GURL& url,
 }
 
 void ExtensionUpdater::OnCRXFileWritten(const std::string& id,
-                                        const FilePath& path) {
-  service_->UpdateExtension(id, path);
+                                        const FilePath& path,
+                                        const GURL& download_url) {
+  service_->UpdateExtension(id, path, download_url);
 }
 
 void ExtensionUpdater::OnExtensionInstallFinished(const FilePath& path,
