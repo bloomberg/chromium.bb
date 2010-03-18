@@ -13,7 +13,6 @@
 #include "app/resource_bundle.h"
 #include "base/logging.h"
 #include "base/string_util.h"
-#include "gfx/insets.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "third_party/skia/include/effects/SkBlurMaskFilter.h"
 #include "views/background.h"
@@ -197,7 +196,11 @@ bool ProgressBar::GetAccessibleName(std::wstring* name) {
   DCHECK(name);
   if (name == NULL)
     return false;
-  // TODO(denisromanov): Return valid text here.
+
+  if (!accessible_name_.empty()) {
+    *name = accessible_name_;
+    return true;
+  }
   return false;
 }
 
@@ -207,6 +210,10 @@ bool ProgressBar::GetAccessibleState(AccessibilityTypes::State* state) {
     return false;
   *state = AccessibilityTypes::STATE_READONLY;
   return true;
+}
+
+void ProgressBar::SetAccessibleName(const std::wstring& name) {
+  accessible_name_.assign(name);
 }
 
 }  // namespace views

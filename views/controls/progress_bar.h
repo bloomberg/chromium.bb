@@ -60,6 +60,7 @@ class ProgressBar : public View {
   virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
   virtual bool GetAccessibleName(std::wstring* name);
   virtual bool GetAccessibleState(AccessibilityTypes::State* state);
+  virtual void SetAccessibleName(const std::wstring& name);
 
   // Maximum value of progress.
   static const int kMaxProgress;
@@ -73,6 +74,9 @@ class ProgressBar : public View {
 
   // The view class name.
   static const char kViewClassName[];
+
+  // The storage string for the accessibility name associated with this control.
+  std::wstring accessible_name_;
 
   DISALLOW_COPY_AND_ASSIGN(ProgressBar);
 };
