@@ -418,9 +418,6 @@ function toggleDevModeExpanded() {
   chrome.send('toggleDeveloperMode', []);
 }
 
-// Experimental flag that enables toggling an extension as incognito enabled.
-var experimentalIncognito = false;
-
 /**
  * Takes the |extensionsData| input argument which represents data about the
  * currently installed/running extensions and populates the html jstemplate with
@@ -469,7 +466,6 @@ var rendered_once_ = false;
 function returnExtensionsData(extensionsData){
   domui_responded_ = true;
   devModeExpanded = extensionsData.developerMode;
-  experimentalIncognito = extensionsData.experimentalIncognito;
 
   var bodyContainer = document.getElementById('body-container');
   var body = document.getElementsByTagName('body')[0];
@@ -850,15 +846,15 @@ function autoUpdate() {
                   i18n-content="options"
                   >OPTIONS</a>
                 <span
-                  jsdisplay="enabled && experimentalIncognito"
+                  jsdisplay="enabled"
                   >|</span>
                 <input type="checkbox"
                   jsvalues=".extensionId:id;.enabled:enabled"
-                  jsdisplay="enabled && experimentalIncognito"
+                  jsdisplay="enabled"
                   jseval="this.checked = enabledIncognito"
                   onchange="handleToggleExtensionIncognito(this, false)" />
                 <label
-                  jsdisplay="enabled && experimentalIncognito"
+                  jsdisplay="enabled"
                   onclick="handleToggleExtensionIncognito(this.previousSibling.previousSibling, true)"
                   i18n-content="enableIncognito">
                   ALLOW THIS EXTENSION TO RUN IN INCOGNITO</label>

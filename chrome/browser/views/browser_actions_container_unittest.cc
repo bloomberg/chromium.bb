@@ -39,9 +39,6 @@ class BrowserActionsContainerTest : public ExtensionBrowserTest {
 
 // Test the basic functionality.
 IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, Basic) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-
   BrowserActionsContainer::disable_animations_during_testing_ = true;
 
   // Load an extension with no browser action.
@@ -65,9 +62,6 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, Basic) {
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, Visibility) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-
   BrowserActionsContainer::disable_animations_during_testing_ = true;
 
   // Load extension A (contains browser action).

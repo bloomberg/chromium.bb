@@ -46,9 +46,6 @@ class BrowserActionApiTest : public ExtensionApiTest {
 };
 
 IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, Basic) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-
   StartHTTPServer();
   ASSERT_TRUE(RunExtensionTest("browser_action/basics")) << message_;
   Extension* extension = GetSingleLoadedExtension();
@@ -148,9 +145,6 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, TabSpecificBrowserActionState) {
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionPopup) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
       "browser_action/popup")));
   Extension* extension = GetSingleLoadedExtension();
@@ -184,9 +178,6 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionPopup) {
 // Test that calling chrome.browserAction.setPopup() can enable and change
 // a popup.
 IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionAddPopup) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-
   ASSERT_TRUE(RunExtensionTest("browser_action/add_popup")) << message_;
   Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;
@@ -274,9 +265,6 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionRemovePopup) {
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, IncognitoBasic) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-
   StartHTTPServer();
 
   ASSERT_TRUE(RunExtensionTest("browser_action/basics")) << message_;
@@ -316,9 +304,6 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DISABLED_IncognitoDragging) {
 IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, IncognitoDragging) {
 #endif
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
-
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
 
   // The tooltips for each respective browser action.
   const char kTooltipA[] = "Make this page red";

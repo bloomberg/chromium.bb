@@ -328,10 +328,6 @@ void ExtensionsDOMHandler::HandleRequestExtensionsData(const Value* value) {
       ->GetBoolean(prefs::kExtensionsUIDeveloperMode);
   results->SetBoolean(L"developerMode", developer_mode);
 
-  results->SetBoolean(L"experimentalIncognito",
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalExtensionApis));
-
   if (icon_loader_.get())
     icon_loader_->Cancel();
 

@@ -22,8 +22,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, IncognitoNoScript) {
 
   // Loads a simple extension which attempts to change the title of every page
   // that loads to "modified".
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("api_test")
       .AppendASCII("incognito").AppendASCII("content_scripts")));
 
@@ -55,8 +53,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, IncognitoYesScript) {
 
   // Loads a simple extension which attempts to change the title of every page
   // that loads to "modified".
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
   ASSERT_TRUE(LoadExtensionIncognito(test_data_dir_.AppendASCII("api_test")
       .AppendASCII("incognito").AppendASCII("content_scripts")));
 
@@ -91,8 +87,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Incognito) {
   ui_test_utils::OpenURLOffTheRecord(browser()->profile(),
       GURL("http://www.example.com:1337/files/extensions/test_file.html"));
 
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
   ASSERT_TRUE(LoadExtensionIncognito(test_data_dir_
       .AppendASCII("incognito").AppendASCII("apis")));
 
@@ -111,8 +105,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoDisabled) {
   ui_test_utils::OpenURLOffTheRecord(browser()->profile(),
       GURL("http://www.example.com:1337/files/extensions/test_file.html"));
 
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
   ASSERT_TRUE(LoadExtension(test_data_dir_
       .AppendASCII("incognito").AppendASCII("apis_disabled")));
 
@@ -126,8 +118,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoPopup) {
 
   ResultCatcher catcher;
 
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
   ASSERT_TRUE(LoadExtensionIncognito(test_data_dir_
       .AppendASCII("incognito").AppendASCII("popup")));
 
