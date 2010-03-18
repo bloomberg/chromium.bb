@@ -57,7 +57,7 @@ StabsReader::StabsReader(const uint8_t *stab,    size_t stab_size,
 const char *StabsReader::SymbolString() {
   ptrdiff_t offset = string_offset_ + symbol_->n_un.n_strx;
   if (offset < 0 || (size_t) offset >= stabstr_size_) {
-    handler_->Warning("symbol %d: name offset outside the string section",
+    handler_->Warning("symbol %d: name offset outside the string section\n",
                       symbol_ - symbols_);
     // Return our null string, to keep our promise about all names being
     // taken from the string section.
