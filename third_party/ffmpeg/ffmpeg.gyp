@@ -315,6 +315,7 @@
                     'source/patched-ffmpeg-mt/libavcodec/arm/dsputil_init_neon.c',
                     'source/patched-ffmpeg-mt/libavcodec/arm/dsputil_neon.S',
                     'source/patched-ffmpeg-mt/libavcodec/arm/fft_neon.S', # TODO(fbarchard): Review this file.
+                    'source/patched-ffmpeg-mt/libavcodec/arm/int_neon.S', # TODO(fbarchard): Review this file.
                     'source/patched-ffmpeg-mt/libavcodec/arm/simple_idct_neon.S',
                     'source/patched-ffmpeg-mt/libavcodec/arm/vp3dsp_neon.S', # TODO(fbarchard): Review this file.
                     'source/patched-ffmpeg-mt/libavcodec/arm/mdct_neon.S', # TODO(fbarchard): Review this file.
