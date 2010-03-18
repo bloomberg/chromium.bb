@@ -2844,3 +2844,5 @@ BUG38397 : websocket/tests/websocket-pending-activity.html = TIMEOUT PASS
 // Unknown flakiness.
 BUG38532 LINUX DEBUG : tables/mozilla/bugs/bug20804.html = IMAGE PASS
 
+// While agl fixes it
+BUG38534 SKIP : tables/mozilla/bugs/bug20804.html = IMAGE
