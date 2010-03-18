@@ -2162,6 +2162,10 @@ BrowserWindow* BrowserWindow::CreateBrowserWindow(Browser* browser) {
   // so we don't need to do anything with the pointer.
   BrowserView* view = new BrowserView(browser);
   BrowserFrame::Create(view, browser->profile());
+
+  view->GetWindow()->GetNonClientView()->
+      SetAccessibleName(l10n_util::GetString(IDS_PRODUCT_NAME));
+
   return view;
 }
 #endif
