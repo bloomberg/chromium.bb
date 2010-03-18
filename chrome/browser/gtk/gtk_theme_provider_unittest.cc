@@ -64,7 +64,7 @@ TEST_F(GtkThemeProviderTest, UsingGtkValues) {
   // weird calculations for edge cases so use that as a simple test.
   GtkWidget* fake_label = provider_->fake_label();
   GtkStyle* label_style = gtk_rc_get_style(fake_label);
-  GdkColor label_color = label_style->text[GTK_STATE_NORMAL];
+  GdkColor label_color = label_style->fg[GTK_STATE_NORMAL];
   EXPECT_EQ(provider_->GetColor(BrowserThemeProvider::COLOR_TAB_TEXT),
             GdkToSkColor(&label_color));
 }
