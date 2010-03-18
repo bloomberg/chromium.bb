@@ -587,6 +587,15 @@
    fun:_ZN7WebCore8XMLNames4initEv
    ...
 }
+{
+   # Intentional crash test
+   intentional_RendererCrashTest
+   Memcheck:Addr4
+   fun:_Z33HandleRendererErrorTestParametersRK11CommandLine
+   fun:_Z12RendererMainRK18MainFunctionParams
+   fun:ChromeMain
+   fun:main
+}
 
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
