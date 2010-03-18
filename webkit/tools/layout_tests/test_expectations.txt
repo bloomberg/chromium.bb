@@ -2356,7 +2356,7 @@ BUG_OJAN LINUX : http/tests/xmlhttprequest/cache-override.html = TEXT
 // These tests time out *and* are slow. The test should be fixed to not timeout,
 // then should be marked as SLOW/PASS.
 BUG2844 WIN : http/tests/appcache/cyrillic-uri.html = TIMEOUT PASS CRASH
-BUG2844 WIN : http/tests/appcache/fail-on-update.html = TIMEOUT PASS TEXT
+BUG2844 WIN : http/tests/appcache/fail-on-update.html = TIMEOUT PASS TEXT CRASH
 BUG2844 WIN : http/tests/appcache/offline-access.html = TIMEOUT PASS
 BUG2844 WIN LINUX DEBUG : http/tests/appcache/update-cache.html = TIMEOUT PASS
 BUG2844 WIN RELEASE : http/tests/appcache/update-cache.html = TIMEOUT PASS
