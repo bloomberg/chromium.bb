@@ -157,7 +157,7 @@ WebPluginDelegateProxy::WebPluginDelegateProxy(
     const base::WeakPtr<RenderView>& render_view)
     : render_view_(render_view),
       plugin_(NULL),
-      windowless_(false),
+      uses_shared_bitmaps_(false),
       window_(gfx::kNullPluginWindow),
       mime_type_(mime_type),
       instance_id_(MSG_ROUTING_NONE),
@@ -457,7 +457,7 @@ void WebPluginDelegateProxy::UpdateGeometry(const gfx::Rect& window_rect,
   param.ack_key = -1;
 #endif
 
-  if (windowless_) {
+  if (uses_shared_bitmaps_) {
     if (!backing_store_canvas_.get() ||
         (window_rect.width() != backing_store_canvas_->getDevice()->width() ||
          window_rect.height() != backing_store_canvas_->getDevice()->height()))
@@ -623,8 +623,7 @@ void WebPluginDelegateProxy::Paint(WebKit::WebCanvas* canvas,
     return;
   }
 
-  // No paint events for windowed plugins.
-  if (!windowless_)
+  if (!uses_shared_bitmaps_)
     return;
 
   // We got a paint before the plugin's coordinates, so there's no buffer to
@@ -929,7 +928,7 @@ void WebPluginDelegateProxy::WindowFrameChanged(gfx::Rect window_frame,
 #endif  // OS_MACOSX
 
 void WebPluginDelegateProxy::OnSetWindow(gfx::PluginWindowHandle window) {
-  windowless_ = !window;
+  uses_shared_bitmaps_ = !window;
   window_ = window;
   if (plugin_)
     plugin_->SetWindow(window);
@@ -1290,6 +1289,12 @@ bool WebPluginDelegateProxy::BindFakePluginWindowHandle() {
   geom.rects_valid = true;
   geom.visible = true;
   render_view_->DidMovePlugin(geom);
+  // Invalidate the plugin region to ensure that the move event actually gets
+  // dispatched (for a plugin on an otherwise static page).
+  render_view_->didInvalidateRect(WebKit::WebRect(plugin_rect_.x(),
+                                                  plugin_rect_.y(),
+                                                  plugin_rect_.width(),
+                                                  plugin_rect_.height()));
 
   return true;
 }

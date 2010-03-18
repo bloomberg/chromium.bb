@@ -215,7 +215,7 @@ class WebPluginDelegateProxy
 
   base::WeakPtr<RenderView> render_view_;
   webkit_glue::WebPlugin* plugin_;
-  bool windowless_;
+  bool uses_shared_bitmaps_;
   gfx::PluginWindowHandle window_;
   scoped_refptr<PluginChannelHost> channel_host_;
   std::string mime_type_;

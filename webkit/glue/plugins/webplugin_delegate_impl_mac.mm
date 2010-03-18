@@ -301,12 +301,17 @@ void WebPluginDelegateImpl::PlatformInitialize() {
   // point, so we just set the initial state directly.
   container_is_visible_ = true;
 
+  // Let the WebPlugin know that we are windowless (unless this is a
+  // Core Animation plugin, in which case BindFakePluginWindowHandle will take
+  // care of setting up the appropriate window handle).
+  if (instance()->drawing_model() != NPDrawingModelCoreAnimation)
+    plugin_->SetWindow(NULL);
+
 #ifndef NP_NO_CARBON
   // If the plugin wants Carbon events, hook up to the source of idle events.
   if (instance()->event_model() == NPEventModelCarbon)
     UpdateIdleEventRate();
 #endif
-  plugin_->SetWindow(NULL);
 
   // QuickTime can crash if it gets other calls (e.g., NPP_Write) before it
   // gets a SetWindow call, so call SetWindow (with a 0x0 rect) immediately.
@@ -443,12 +448,6 @@ void WebPluginDelegateImpl::DrawLayerInSurface() {
 
 void WebPluginDelegateImpl::WindowlessPaint(gfx::NativeDrawingContext context,
                                             const gfx::Rect& damage_rect) {
-  // There is currently nothing to do for the Core Animation drawing model,
-  // but there have been discussions on the plugin-futures mailing list that
-  // might require future work.
-  if (instance()->drawing_model() == NPDrawingModelCoreAnimation)
-    return;
-
   // If we somehow get a paint before we've set up the plugin buffer, bail.
   if (!buffer_context_)
     return;
