@@ -235,6 +235,11 @@ void BrowserList::CloseAllBrowsers(bool use_post) {
 
 // static
 void BrowserList::CloseAllBrowsersAndExit() {
+  NotificationService::current()->Notify(
+      NotificationType::APP_EXITING,
+      NotificationService::AllSources(),
+      NotificationService::NoDetails());
+
 #if !defined(OS_MACOSX)
   // On most platforms, closing all windows causes the application to exit.
   CloseAllBrowsers(true);
@@ -255,6 +260,11 @@ void BrowserList::WindowsSessionEnding() {
   already_ended = true;
 
   browser_shutdown::OnShutdownStarting(browser_shutdown::END_SESSION);
+
+  NotificationService::current()->Notify(
+      NotificationType::APP_EXITING,
+      NotificationService::AllSources(),
+      NotificationService::NoDetails());
 
   // Write important data first.
   g_browser_process->EndSession();

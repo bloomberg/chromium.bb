@@ -49,6 +49,7 @@ class NavigationController;
 class NTPResourceCache;
 class PasswordStore;
 class PersonalDataManager;
+class PinnedTabService;
 class PrefService;
 class ProfileSyncService;
 class ProfileSyncFactory;
@@ -570,6 +571,7 @@ class ProfileImpl : public Profile,
   scoped_refptr<WebKitContext> webkit_context_;
   scoped_ptr<DesktopNotificationService> desktop_notification_service_;
   scoped_ptr<PersonalDataManager> personal_data_manager_;
+  scoped_ptr<PinnedTabService> pinned_tab_service_;
   bool history_service_created_;
   bool favicon_service_created_;
   bool created_web_data_service_;

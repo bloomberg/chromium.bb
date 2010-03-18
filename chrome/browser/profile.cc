@@ -49,6 +49,7 @@
 #include "chrome/browser/ssl/ssl_host_state.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_factory_impl.h"
+#include "chrome/browser/tabs/pinned_tab_service.h"
 #include "chrome/browser/thumbnail_store.h"
 #include "chrome/browser/user_style_sheet_watcher.h"
 #include "chrome/browser/visitedlink_master.h"
@@ -646,6 +647,8 @@ ProfileImpl::ProfileImpl(const FilePath& path)
 #if defined(OS_CHROMEOS)
   chromeos_preferences_.Init(prefs);
 #endif
+
+  pinned_tab_service_.reset(new PinnedTabService(this));
 }
 
 void ProfileImpl::InitExtensions() {

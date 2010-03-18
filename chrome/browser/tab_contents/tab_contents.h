@@ -186,6 +186,12 @@ class TabContents : public PageNavigator,
   // TODO(sky): resolve if this is the right way to identify an app tab. If it
   // is, than this should be passed in the constructor.
   void SetAppExtension(Extension* extension);
+
+  // Convenience for setting the app extension by id. This does nothing if
+  // |app_extension_id| is empty, or an extension can't be found given the
+  // specified id.
+  void SetAppExtensionById(const std::string& app_extension_id);
+
   Extension* app_extension() const { return app_extension_; }
   bool is_app() const { return app_extension_ != NULL; }
 

@@ -91,6 +91,18 @@ class Browser : public TabStripModelDelegate,
     MAXIMIZED_STATE_UNMAXIMIZED
   };
 
+  // Constants passed to AddTabWithURL.
+  enum AddTabTypes {
+    // The tab should be selected.
+    ADD_SELECTED    = 1 << 0,
+
+    // The tab should be pinned.
+    ADD_PINNED      = 1 << 1,
+
+    // See TabStripModel::AddTabContents for details.
+    ADD_FORCE_INDEX = 1 << 2,
+  };
+
   // Constructors, Creation, Showing //////////////////////////////////////////
 
   // Creates a new browser of the given |type| and for the given |profile|. The
@@ -283,6 +295,7 @@ class Browser : public TabStripModelDelegate,
   // will be used to render the tab. |force_index| is passed through to
   // TabStripModel::AddTabContents and its meaning is documented with its
   // declaration.
+  // TODO(sky): nuke this and convert callers to new AddTablWithURL variant.
   TabContents* AddTabWithURL(const GURL& url,
                              const GURL& referrer,
                              PageTransition::Type transition,
@@ -290,6 +303,18 @@ class Browser : public TabStripModelDelegate,
                              int index,
                              bool force_index,
                              SiteInstance* instance);
+
+  // Adds a new tab at the specified index. |add_types| is a bitmask of the
+  // values defined by AddTabTypes; see AddTabTypes for details. If |instance|
+  // is not null, its process will be used to render the tab. If
+  // |app_extension_id| is non-empty the new tab is an app tab.
+  TabContents* AddTabWithURL(const GURL& url,
+                             const GURL& referrer,
+                             PageTransition::Type transition,
+                             int index,
+                             int add_types,
+                             SiteInstance* instance,
+                             const std::string& app_extension_id);
 
   // Add a new tab, given a TabContents. A TabContents appropriate to
   // display the last committed entry is created and returned.
@@ -792,11 +817,6 @@ class Browser : public TabStripModelDelegate,
   // Create a preference dictionary for the provided application name. This is
   // done only once per application name / per session.
   static void RegisterAppPrefs(const std::wstring& app_name);
-
-  // If |app_extension_id| is not empty this sets the application extension of
-  // |contents| to the extension whose id is |app_extension_id|.
-  void SetAppExtensionById(TabContents* contents,
-                           const std::string& app_extension_id);
 
   // Shared code between Reload() and ReloadAll().
   void ReloadInternal(bool ignore_cache);

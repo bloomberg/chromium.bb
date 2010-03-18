@@ -349,6 +349,8 @@ const wchar_t kUseVerticalTabs[] = L"tabs.use_vertical_tabs";
 // Boolean that is true when the translate feature is enabled.
 const wchar_t kEnableTranslate[] = L"translate.enabled";
 
+const wchar_t kPinnedTabs[] = L"pinned_tabs";
+
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
 

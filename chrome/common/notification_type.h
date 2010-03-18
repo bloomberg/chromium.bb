@@ -191,6 +191,14 @@ class NotificationType {
     // containing the affected Browser.  No details are expected.
     BROWSER_WINDOW_READY,
 
+    // This message is sent when a browser is closing. The source is a
+    // Source<Browser> containing the affected Browser. Details is a boolean
+    // that if true indicates that the application will be closed as a result of
+    // this browser window closure (i.e. this was the last opened browser
+    // window on win/linux). This is sent prior to BROWSER_CLOSED, and may be
+    // sent more than once for a particular browser.
+    BROWSER_CLOSING,
+
     // This message is sent after a window has been closed.  The source is a
     // Source<Browser> containing the affected Browser.  Details is a boolean
     // that if true indicates that the application will be closed as a result of
@@ -214,6 +222,12 @@ class NotificationType {
     // at present). No source or details are passed.
     APP_TERMINATING,
 #endif
+
+    // This is sent when the user has chosen to exit the app, but before any
+    // browsers have closed. This is only sent if the user chooses the exit menu
+    // item, not if Chrome exists by some other means (such as the user closing
+    // the last window). The source and details are unspecified.
+    APP_EXITING,
 
     // Indicates that a top window has been closed.  The source is the HWND
     // that was closed, no details are expected.

@@ -28,6 +28,7 @@
 #include "chrome/browser/session_startup_pref.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/shell_integration.h"
+#include "chrome/browser/tabs/pinned_tab_codec.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -334,6 +335,16 @@ void ShowPackExtensionMessage(const std::wstring caption,
 #endif
 }
 
+void UrlsToTabs(const std::vector<GURL>& urls,
+                std::vector<BrowserInit::LaunchWithProfile::Tab>* tabs) {
+  for (size_t i = 0; i < urls.size(); ++i) {
+    BrowserInit::LaunchWithProfile::Tab tab;
+    tab.is_pinned = false;
+    tab.url = urls[i];
+    tabs->push_back(tab);
+  }
+}
+
 }  // namespace
 
 // static
@@ -465,9 +476,7 @@ bool BrowserInit::LaunchWithProfile::Launch(Profile* profile,
     std::vector<GURL> urls_to_open = GetURLsFromCommandLine(profile_);
     RecordLaunchModeHistogram(urls_to_open.empty()?
                               LM_TO_BE_DECIDED : LM_WITH_URLS);
-    // Always attempt to restore the last session. OpenStartupURLs only opens
-    // the home pages if no additional URLs were passed on the command line.
-    if (!OpenStartupURLs(process_startup, urls_to_open)) {
+    if (!process_startup || !OpenStartupURLs(urls_to_open)) {
       // Add the home page and any special first run URLs.
       Browser* browser = NULL;
       if (urls_to_open.empty())
@@ -590,11 +599,9 @@ bool BrowserInit::LaunchWithProfile::OpenApplicationWindow(Profile* profile) {
 }
 
 bool BrowserInit::LaunchWithProfile::OpenStartupURLs(
-    bool is_process_startup,
     const std::vector<GURL>& urls_to_open) {
   SessionStartupPref pref = GetSessionStartupPref(command_line_, profile_);
-  if (is_process_startup &&
-      command_line_.HasSwitch(switches::kTestingChannelID) &&
+  if (command_line_.HasSwitch(switches::kTestingChannelID) &&
       !command_line_.HasSwitch(switches::kRestoreLastSession) &&
       browser_defaults::kDefaultSessionStartupType !=
       SessionStartupPref::DEFAULT) {
@@ -603,48 +610,52 @@ bool BrowserInit::LaunchWithProfile::OpenStartupURLs(
     // we explicitly ignore it during testing.
     return false;
   }
-  switch (pref.type) {
-    case SessionStartupPref::LAST:
-      if (!is_process_startup)
-        return false;
 
-      if (!profile_->DidLastSessionExitCleanly() &&
-          !command_line_.HasSwitch(switches::kRestoreLastSession)) {
-        // The last session crashed. It's possible automatically loading the
-        // page will trigger another crash, locking the user out of chrome.
-        // To avoid this, don't restore on startup but instead show the crashed
-        // infobar.
-        return false;
-      }
-      SessionRestore::RestoreSessionSynchronously(profile_, urls_to_open);
-      return true;
-
-    case SessionStartupPref::URLS:
-      // When the user launches the app only open the default set of URLs if
-      // we aren't going to open any URLs on the command line.
-      if (urls_to_open.empty()) {
-        if (pref.urls.empty()) {
-          // Open a New Tab page.
-          std::vector<GURL> urls;
-          urls.push_back(GURL(chrome::kChromeUINewTabURL));
-          OpenURLsInBrowser(NULL, is_process_startup, urls);
-          return true;
-        }
-        OpenURLsInBrowser(NULL, is_process_startup, pref.urls);
-        return true;
-      }
+  if (pref.type == SessionStartupPref::LAST) {
+    if (!profile_->DidLastSessionExitCleanly() &&
+        !command_line_.HasSwitch(switches::kRestoreLastSession)) {
+      // The last session crashed. It's possible automatically loading the
+      // page will trigger another crash, locking the user out of chrome.
+      // To avoid this, don't restore on startup but instead show the crashed
+      // infobar.
       return false;
-
-    default:
-      return false;
+    }
+    SessionRestore::RestoreSessionSynchronously(profile_, urls_to_open);
+    return true;
   }
+
+  std::vector<Tab> tabs = PinnedTabCodec::ReadPinnedTabs(profile_);
+
+  if (!urls_to_open.empty()) {
+    // If urls were specified on the command line, use them.
+    UrlsToTabs(urls_to_open, &tabs);
+  } else if (pref.type == SessionStartupPref::URLS && !pref.urls.empty()) {
+    // Only use the set of urls specified in preferences if nothing was
+    // specified on the command line.
+    UrlsToTabs(pref.urls, &tabs);
+  }
+
+  if (tabs.empty())
+    return false;
+
+  OpenTabsInBrowser(NULL, true, tabs);
+  return true;
 }
 
 Browser* BrowserInit::LaunchWithProfile::OpenURLsInBrowser(
     Browser* browser,
     bool process_startup,
     const std::vector<GURL>& urls) {
-  DCHECK(!urls.empty());
+  std::vector<Tab> tabs;
+  UrlsToTabs(urls, &tabs);
+  return OpenTabsInBrowser(browser, process_startup, tabs);
+}
+
+Browser* BrowserInit::LaunchWithProfile::OpenTabsInBrowser(
+        Browser* browser,
+        bool process_startup,
+        const std::vector<Tab>& tabs) {
+  DCHECK(!tabs.empty());
   // If we don't yet have a profile, try to use the one we're given from
   // |browser|. While we may not end up actually using |browser| (since it
   // could be a popup window), we can at least use the profile.
@@ -660,17 +671,27 @@ Browser* BrowserInit::LaunchWithProfile::OpenURLsInBrowser(
     browser->ToggleFullscreenMode();
 #endif
 
-  for (size_t i = 0; i < urls.size(); ++i) {
+  bool first_tab = true;
+  for (size_t i = 0; i < tabs.size(); ++i) {
     // We skip URLs that we'd have to launch an external protocol handler for.
     // This avoids us getting into an infinite loop asking ourselves to open
     // a URL, should the handler be (incorrectly) configured to be us. Anyone
     // asking us to open such a URL should really ask the handler directly.
-    if (!process_startup && !URLRequest::IsHandledURL(urls[i]))
+    if (!process_startup && !URLRequest::IsHandledURL(tabs[i].url))
       continue;
+
+    int add_types = first_tab ? Browser::ADD_SELECTED : 0;
+    if (tabs[i].is_pinned)
+      add_types |= Browser::ADD_PINNED;
+
     TabContents* tab = browser->AddTabWithURL(
-        urls[i], GURL(), PageTransition::START_PAGE, (i == 0), -1, false, NULL);
-    if (profile_ && i == 0 && process_startup)
+        tabs[i].url, GURL(), PageTransition::START_PAGE, -1, add_types, NULL,
+        tabs[i].app_id);
+
+    if (profile_ && first_tab && process_startup)
       AddCrashedInfoBarIfNecessary(tab);
+
+    first_tab = false;
   }
   browser->window()->Show();
   // TODO(jcampan): http://crbug.com/8123 we should not need to set the initial

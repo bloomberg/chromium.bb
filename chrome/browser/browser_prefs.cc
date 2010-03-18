@@ -33,6 +33,7 @@
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/session_startup_pref.h"
 #include "chrome/browser/ssl/ssl_manager.h"
+#include "chrome/browser/tabs/pinned_tab_codec.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/task_manager.h"
 
@@ -99,6 +100,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   HostZoomMap::RegisterUserPrefs(user_prefs);
   DevToolsManager::RegisterUserPrefs(user_prefs);
   Blacklist::RegisterUserPrefs(user_prefs);
+  PinnedTabCodec::RegisterUserPrefs(user_prefs);
   ExtensionPrefs::RegisterUserPrefs(user_prefs);
 #if defined(TOOLKIT_VIEWS)
   BrowserActionsContainer::RegisterUserPrefs(user_prefs);

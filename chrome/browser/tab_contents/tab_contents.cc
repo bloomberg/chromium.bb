@@ -482,6 +482,19 @@ void TabContents::SetAppExtension(Extension* extension) {
       NotificationService::NoDetails());
 }
 
+void TabContents::SetAppExtensionById(const std::string& app_extension_id) {
+  if (app_extension_id.empty())
+    return;
+
+  ExtensionsService* extension_service = profile()->GetExtensionsService();
+  if (extension_service && extension_service->is_ready()) {
+    Extension* extension =
+        extension_service->GetExtensionById(app_extension_id, false);
+    if (extension)
+      SetAppExtension(extension);
+  }
+}
+
 const GURL& TabContents::GetURL() const {
   // We may not have a navigation entry yet
   NavigationEntry* entry = controller_.GetActiveEntry();

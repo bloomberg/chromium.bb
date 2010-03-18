@@ -892,6 +892,7 @@
         'browser/tab_contents/thumbnail_generator_unittest.cc',
         'browser/tab_contents/web_contents_unittest.cc',
         'browser/tab_menu_model_unittest.cc',
+        'browser/tabs/pinned_tab_codec_unittest.cc',
         'browser/tabs/tab_strip_model_unittest.cc',
         'browser/task_manager_unittest.cc',
         'browser/translate/translate_manager_unittest.cc',

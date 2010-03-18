@@ -9,6 +9,8 @@
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/app_modal_dialog.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/browser_init.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -17,6 +19,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
+#include "chrome/browser/tabs/pinned_tab_codec.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -116,7 +119,6 @@ class BrowserTest : public ExtensionBrowserTest {
     // And the tab contents of the first tab should have changed.
     EXPECT_TRUE(model->GetTabContentsAt(0) != app_contents);
   }
-
 
  protected:
   virtual void SetUpCommandLine(CommandLine* command_line) {
@@ -456,4 +458,68 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, PageLanguageDetection) {
   lang = ui_test_utils::WaitForLanguageDetection(current_tab);
   EXPECT_EQ("fr", lang);
   EXPECT_EQ("fr", current_tab->language_state().original_language());
+}
+
+// Makes sure pinned tabs are restored correctly on start.
+IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
+  HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
+
+  // Add an pinned app tab.
+  host_resolver()->AddRule("www.example.com", "127.0.0.1");
+  GURL url(server->TestServerPage("empty.html"));
+  TabStripModel* model = browser()->tabstrip_model();
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("app/")));
+  Extension* app_extension = GetExtension();
+  ui_test_utils::NavigateToURL(browser(), url);
+  TabContents* app_contents = new TabContents(browser()->profile(), NULL,
+                                              MSG_ROUTING_NONE, NULL);
+  app_contents->SetAppExtension(app_extension);
+  model->AddTabContents(app_contents, 0, false, 0, false);
+  model->SetTabPinned(0, true);
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Add a non pinned tab.
+  browser()->NewTab();
+
+  // Add a pinned non-app tab.
+  browser()->NewTab();
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+  model->SetTabPinned(2, true);
+
+  // Write out the pinned tabs.
+  PinnedTabCodec::WritePinnedTabs(browser()->profile());
+
+  // Simulate launching again.
+  CommandLine dummy(CommandLine::ARGUMENTS_ONLY);
+  BrowserInit::LaunchWithProfile launch(std::wstring(), dummy);
+  launch.profile_ = browser()->profile();
+  launch.OpenStartupURLs(std::vector<GURL>());
+
+  // The launch should have created a new browser.
+  ASSERT_EQ(2u, BrowserList::GetBrowserCount(browser()->profile()));
+
+  // Find the new browser.
+  Browser* new_browser = NULL;
+  for (BrowserList::const_iterator i = BrowserList::begin();
+       i != BrowserList::end() && !new_browser; ++i) {
+    if (*i != browser())
+      new_browser = *i;
+  }
+  ASSERT_TRUE(new_browser);
+  ASSERT_TRUE(new_browser != browser());
+
+  // We should get back an additional tab for the app.
+  ASSERT_EQ(2, new_browser->tab_count());
+
+  // Make sure the state matches.
+  TabStripModel* new_model = new_browser->tabstrip_model();
+  EXPECT_TRUE(new_model->IsAppTab(0));
+  EXPECT_FALSE(new_model->IsAppTab(1));
+
+  EXPECT_TRUE(new_model->IsTabPinned(0));
+  EXPECT_TRUE(new_model->IsTabPinned(1));
+
+  EXPECT_TRUE(new_model->GetTabContentsAt(0)->app_extension() ==
+              app_extension);
 }

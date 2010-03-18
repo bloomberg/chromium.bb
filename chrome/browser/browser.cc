@@ -638,11 +638,15 @@ void Browser::OnWindowClosing() {
   if (!ShouldCloseWindow())
     return;
 
+  bool exiting = false;
+
 #if defined(OS_WIN) || defined(OS_LINUX)
   // We don't want to do this on Mac since closing all windows isn't a sign
   // that the app is shutting down.
-  if (BrowserList::size() == 1)
+  if (BrowserList::size() == 1) {
     browser_shutdown::OnShutdownStarting(browser_shutdown::WINDOW_CLOSE);
+    exiting = true;
+  }
 #endif
 
   // Don't use HasSessionService here, we want to force creation of the
@@ -654,6 +658,12 @@ void Browser::OnWindowClosing() {
   TabRestoreService* tab_restore_service = profile()->GetTabRestoreService();
   if (tab_restore_service)
     tab_restore_service->BrowserClosing(this);
+
+  // TODO(sky): convert session/tab restore to use notification.
+  NotificationService::current()->Notify(
+      NotificationType::BROWSER_CLOSING,
+      Source<Browser>(this),
+      Details<bool>(&exiting));
 
   CloseAllTabs();
 }
@@ -684,6 +694,22 @@ TabContents* Browser::AddTabWithURL(
     const GURL& url, const GURL& referrer, PageTransition::Type transition,
     bool foreground, int index, bool force_index,
     SiteInstance* instance) {
+  int add_types = 0;
+  if (force_index)
+    add_types |= ADD_FORCE_INDEX;
+  if (foreground)
+    add_types |= ADD_SELECTED;
+  return AddTabWithURL(url, referrer, transition, index, add_types, instance,
+                       std::string());
+}
+
+TabContents* Browser::AddTabWithURL(const GURL& url,
+                                    const GURL& referrer,
+                                    PageTransition::Type transition,
+                                    int index,
+                                    int add_types,
+                                    SiteInstance* instance,
+                                    const std::string& app_extension_id) {
   TabContents* contents = NULL;
   if (type_ == TYPE_NORMAL || tabstrip_model()->empty()) {
     GURL url_to_load = url;
@@ -691,18 +717,29 @@ TabContents* Browser::AddTabWithURL(
       url_to_load = GetHomePage();
     contents = CreateTabContentsForURL(url_to_load, referrer, profile_,
                                        transition, false, instance);
-    tabstrip_model_.AddTabContents(contents, index, force_index,
-                                   transition, foreground);
+    contents->SetAppExtensionById(app_extension_id);
+    // TODO(sky): TabStripModel::AddTabContents should take add_types directly.
+    tabstrip_model_.AddTabContents(contents, index,
+                                   (add_types & ADD_FORCE_INDEX) != 0,
+                                   transition,
+                                   (add_types & ADD_SELECTED) != 0);
+    tabstrip_model_.SetTabPinned(
+        tabstrip_model_.GetIndexOfTabContents(contents),
+        (add_types & ADD_PINNED) != 0);
+
     // By default, content believes it is not hidden.  When adding contents
     // in the background, tell it that it's hidden.
-    if (!foreground)
+    if ((add_types & ADD_SELECTED) == 0) {
+      // TODO(sky): see if this is really needed. I suspect not as
+      // TabStripModel::AddTabContents invokes HideContents if not foreground.
       contents->WasHidden();
+    }
   } else {
     // We're in an app window or a popup window. Find an existing browser to
     // open this URL in, creating one if none exists.
     Browser* b = GetOrCreateTabbedBrowser(profile_);
-    contents = b->AddTabWithURL(url, referrer, transition, foreground, index,
-                                force_index, instance);
+    contents = b->AddTabWithURL(url, referrer, transition, index, add_types,
+                                instance, app_extension_id);
     b->window()->Show();
   }
   return contents;
@@ -748,7 +785,7 @@ TabContents* Browser::AddRestoredTab(
     bool from_last_session) {
   TabContents* new_tab = new TabContents(profile(), NULL,
       MSG_ROUTING_NONE, tabstrip_model_.GetSelectedTabContents());
-  SetAppExtensionById(new_tab, app_extension_id);
+  new_tab->SetAppExtensionById(app_extension_id);
   new_tab->controller().RestoreFromState(navigations, selected_navigation,
                                          from_last_session);
 
@@ -774,7 +811,7 @@ void Browser::ReplaceRestoredTab(
     const std::string& app_extension_id) {
   TabContents* replacement = new TabContents(profile(), NULL,
       MSG_ROUTING_NONE, tabstrip_model_.GetSelectedTabContents());
-  SetAppExtensionById(replacement, app_extension_id);
+  replacement->SetAppExtensionById(app_extension_id);
   replacement->controller().RestoreFromState(navigations, selected_navigation,
                                              from_last_session);
 
@@ -3401,18 +3438,4 @@ bool Browser::RunUnloadEventsHelper(TabContents* contents) {
     return true;
   }
   return false;
-}
-
-void Browser::SetAppExtensionById(TabContents* contents,
-                                  const std::string& app_extension_id) {
-  if (app_extension_id.empty())
-    return;
-
-  ExtensionsService* extension_service = profile()->GetExtensionsService();
-  if (extension_service && extension_service->is_ready()) {
-    Extension* extension =
-        extension_service->GetExtensionById(app_extension_id, false);
-    if (extension)
-      contents->SetAppExtension(extension);
-  }
 }
