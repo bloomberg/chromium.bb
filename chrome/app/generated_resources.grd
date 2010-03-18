@@ -3243,7 +3243,7 @@ each locale. -->
         Are you sure you want to uninstall this extension?
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_INCOGNITO" desc="The warning you get when you are about to enable an extension in incognito.">
-        Because <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> does not control how extensions handle your personal data, this extension could leave traces on your machine even after you close the incognito window. Allow anyway?
+        Are you sure you want to allow this extension to run in incognito? <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> cannot prevent this extension from recording your browsing data.
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_NEW_BROWSER" desc="Warning displayed in body of extension dialog when the extension requires access to browser APIs.">
         This extension will have access to your browsing history.

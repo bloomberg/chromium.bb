@@ -448,6 +448,9 @@ void ExtensionsDOMHandler::HandleEnableIncognitoMessage(const Value* value) {
   DCHECK(extension);
 
   if (enable_str == "true") {
+    if (!extension_id_prompting_.empty())
+      return;  // only one prompt at a time
+
     // Prompt the user first.
     scoped_ptr<SkBitmap> icon;
     Extension::DecodeIcon(extension, Extension::EXTENSION_ICON_LARGE, &icon);
@@ -472,6 +475,9 @@ void ExtensionsDOMHandler::HandleUninstallMessage(const Value* value) {
       extensions_service_->GetExtensionById(extension_id, true);
   if (!extension)
     return;
+
+  if (!extension_id_prompting_.empty())
+    return;  // only one prompt at a time
 
   scoped_ptr<SkBitmap> uninstall_icon;
   Extension::DecodeIcon(extension, Extension::EXTENSION_ICON_LARGE,
