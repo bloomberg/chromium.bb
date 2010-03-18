@@ -252,6 +252,24 @@ NaClSrpcError Device2DRpcServer::Device2DInitialize(
                                     bottom);
 }
 
+NaClSrpcError Device2DRpcServer::Device2DFlush(NaClSrpcChannel* channel,
+                                               int32_t wire_npp,
+                                               int32_t* stride,
+                                               int32_t* left,
+                                               int32_t* top,
+                                               int32_t* right,
+                                               int32_t* bottom) {
+  UNREFERENCED_PARAMETER(channel);
+  NPModule* module = NPModule::GetModule(wire_npp);
+
+  return module->Device2DFlush(WireFormatToNPP(wire_npp),
+                               stride,
+                               left,
+                               top,
+                               right,
+                               bottom);
+}
+
 NaClSrpcError Device2DRpcServer::Device2DDestroy(NaClSrpcChannel* channel,
                                                  int32_t wire_npp) {
   UNREFERENCED_PARAMETER(channel);

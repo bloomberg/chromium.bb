@@ -1,9 +1,17 @@
 # Copyright (c) 2010 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
+# This file declares the RPC methods used to implement npruntime calls from
+# the plugin.
+# All of the following RPC methods are invoked on the NPAPI thread from
+# untrusted code.  This means, due to the Pepper threading model, that they
+# may only be invoked by code that is called from the JavaScript foreground
+# thread in the renderer.
 {
  'name': 'NPModuleRpc',
  'rpcs': [
+          # Implements calls to NPN_GetValue for boolean-valued variables.
           {'name': 'NPN_GetValueBoolean',
            'inputs': [['npp', 'int32_t'],
                       ['var', 'int32_t'],
@@ -12,6 +20,7 @@
                        ['result', 'int32_t'],
                       ]
           },
+          # Implements calls to NPN_GetValue for NPObject-valued variables.
           {'name': 'NPN_GetValueObject',
            'inputs': [['npp', 'int32_t'],
                       ['var', 'int32_t'],
@@ -20,6 +29,7 @@
                        ['result', 'char[]'],
                       ]
           },
+          # Implements calls to NPN_Evaluate.
           {'name': 'NPN_Evaluate',
            'inputs': [['npp', 'int32_t'],
                       ['obj', 'char[]'],
@@ -29,6 +39,7 @@
                        ['result', 'char[]'],
                       ]
           },
+          # Implements calls to NPN_SetStatus.
           {'name': 'NPN_SetStatus',
            'inputs': [['npp', 'int32_t'],
                       ['status', 'string'],
@@ -43,12 +54,18 @@
            'outputs': [['success', 'int32_t'],
                       ]
           },
+          # All of the identifier-related methods rely on the assumption that
+          # NPIdentifiers, once created, do not change.  The plugin uses this
+          # fact to allow caching of the result of calls to
+          # NPN_GetIntIdentifier and NPN_GetStringIdentifier to reduce RPCs.
+          # Implements calls to NPN_GetIntIdentifier.
           {'name': 'NPN_GetIntIdentifier',
            'inputs': [['intval', 'int32_t'],
                      ],
            'outputs': [['id', 'int32_t'],
                       ]
           },
+          # Implements calls to NPN_UTF8FromIdentifier.
           {'name': 'NPN_UTF8FromIdentifier',
            'inputs': [['id', 'int32_t'],
                      ],
@@ -56,18 +73,21 @@
                        ['str', 'string'],
                       ]
           },
+          # Implements calls to NPN_GetStringIdentifier.
           {'name': 'NPN_GetStringIdentifier',
            'inputs': [['strval', 'string'],
                      ],
            'outputs': [['id', 'int32_t'],
                       ]
           },
+          # Implements calls to NPN_IntFromIdentifier.
           {'name': 'NPN_IntFromIdentifier',
            'inputs': [['id', 'int32_t'],
                      ],
            'outputs': [['intval', 'int32_t'],
                       ]
           },
+          # Implements calls to NPN_IdentifierIsString.
           {'name': 'NPN_IdentifierIsString',
            'inputs': [['id', 'int32_t'],
                      ],

@@ -1,9 +1,17 @@
 # Copyright (c) 2010 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
+# This file declares the RPC methods used to implement the Pepper 3D drawing
+# API.  (All but one described in npupcall.srpc.)
+# All of the following RPC methods are invoked on the NPAPI thread from
+# untrusted code.  This means, due to the Pepper threading model, that they
+# may only be invoked by code that is called from the JavaScript foreground
+# thread in the renderer.
 {
  'name': 'Device3DRpc',
  'rpcs': [
+          # Create a context for the current plugin instance.
           {'name': 'Device3DInitialize',
            'inputs': [['npp', 'int32_t'],
                        ['command_buffer_entries_requested', 'int32_t'],
@@ -14,11 +22,13 @@
                        ['put_offset', 'int32_t'],
                       ]
           },
+          # Destroy the context for the current plugin instance.
           {'name': 'Device3DDestroy',
            'inputs': [['npp', 'int32_t'],
                      ],
            'outputs': []
           },
+          # Get a variable for the current plugin instance.
           {'name': 'Device3DGetState',
            'inputs': [['npp', 'int32_t'],
                       ['state', 'int32_t'],
@@ -26,6 +36,7 @@
            'outputs': [['value', 'int32_t'],
                       ]
           },
+          # Set a variable for the current plugin instance.
           {'name': 'Device3DSetState',
            'inputs': [['npp', 'int32_t'],
                       ['state', 'int32_t'],
@@ -33,6 +44,7 @@
                      ],
            'outputs': []
           },
+          # Create a shared memory buffer.
           {'name': 'Device3DCreateBuffer',
            'inputs': [['npp', 'int32_t'],
                       ['size', 'int32_t'],
@@ -41,6 +53,7 @@
                        ['id', 'int32_t'],
                       ]
           },
+          # Destroy a shared memory buffer.
           {'name': 'Device3DDestroyBuffer',
            'inputs': [['npp', 'int32_t'],
                       ['id', 'int32_t'],

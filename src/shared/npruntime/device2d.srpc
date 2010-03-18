@@ -1,9 +1,17 @@
 # Copyright (c) 2010 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
+# This file declares the RPC methods used to implement the Pepper 2D drawing
+# API.  (All but one described in npupcall.srpc.)
+# All of the following RPC methods are invoked on the NPAPI thread from
+# untrusted code.  This means, due to the Pepper threading model, that they
+# may only be invoked by code that is called from the JavaScript foreground
+# thread in the renderer.
 {
  'name': 'Device2DRpc',
  'rpcs': [
+          # Create a drawing context for the current plugin instance.
           {'name': 'Device2DInitialize',
            'inputs': [['npp', 'int32_t'],
                      ],
@@ -15,6 +23,18 @@
                        ['bottom', 'int32_t'],
                       ]
           },
+          # Flush the 2D device context.
+          {'name': 'Device2DFlush',
+           'inputs': [['npp', 'int32_t'],
+                     ],
+           'outputs': [['stride', 'int32_t'],
+                       ['left', 'int32_t'],
+                       ['top', 'int32_t'],
+                       ['right', 'int32_t'],
+                       ['bottom', 'int32_t'],
+                      ]
+          },
+          # Destroy the drawing context for the current plugin instance.
           {'name': 'Device2DDestroy',
            'inputs': [['npp', 'int32_t'],
                      ],

@@ -605,28 +605,6 @@ void NPNavigator::PluginThreadAsyncCall(NPP instance,
   pthread_mutex_unlock(&upcall_mu_);
 }
 
-NaClSrpcError NPNavigator::Device2DFlush(int32_t wire_npp,
-                                         int32_t* stride,
-                                         int32_t* left,
-                                         int32_t* top,
-                                         int32_t* right,
-                                         int32_t* bottom) {
-  // RPCs through the NPUpcallRpcClient are guarded by a mutex.
-  pthread_mutex_lock(&upcall_mu_);
-  NaClSrpcError retval =
-      NPUpcallRpcClient::Device2DFlush(upcall_channel_,
-                                       wire_npp,
-                                       stride,
-                                       left,
-                                       top,
-                                       right,
-                                       bottom);
-  // Release the mutex.
-  pthread_mutex_unlock(&upcall_mu_);
-  // Return the RPC result.
-  return retval;
-}
-
 NaClSrpcError NPNavigator::Device3DFlush(int32_t wire_npp,
                                          int32_t putOffset,
                                          int32_t* getOffset,

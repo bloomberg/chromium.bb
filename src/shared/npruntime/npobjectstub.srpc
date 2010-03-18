@@ -1,6 +1,11 @@
 # Copyright (c) 2010 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
+# This file declares the RPC methods used to implement NPAPI object proxying.
+# It is used in both directions (to browser, to module).
+# All of the following RPC methods are invoked on the NPAPI thread from
+# untrusted code or the JavaScript foreground thread in the renderer.
 {
  'name': 'NPObjectStubRpc',
  'rpcs': [

@@ -36,7 +36,9 @@ NPModule::NPModule(NaClSrpcChannel* channel)
       device2d_(NULL),
       context2d_(NULL),
       device3d_(NULL),
-      context3d_(NULL) {
+      context3d_(NULL),
+      device_audio_(NULL),
+      context_audio_(NULL) {
   // Remember the channel we will be communicating over.
   channel_ = channel;
   // Remember the bridge for this channel.

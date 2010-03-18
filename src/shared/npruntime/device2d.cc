@@ -135,12 +135,13 @@ static NPError FlushContext(NPP instance,
   NPDeviceContext2D* context2d = reinterpret_cast<NPDeviceContext2D*>(context);
   NPNavigator* nav = NPNavigator::GetNavigator();
   NaClSrpcError retval =
-      nav->Device2DFlush(NPPToWireFormat(instance),
-                         &context2d->stride,
-                         &context2d->dirty.left,
-                         &context2d->dirty.top,
-                         &context2d->dirty.right,
-                         &context2d->dirty.bottom);
+      Device2DRpcClient::Device2DFlush(nav->channel(),
+                                       NPPToWireFormat(instance),
+                                       &context2d->stride,
+                                       &context2d->dirty.left,
+                                       &context2d->dirty.top,
+                                       &context2d->dirty.right,
+                                       &context2d->dirty.bottom);
   if (NACL_SRPC_RESULT_OK != retval) {
     return NPERR_GENERIC_ERROR;
   }

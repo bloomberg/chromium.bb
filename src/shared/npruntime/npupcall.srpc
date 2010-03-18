@@ -1,25 +1,23 @@
 # Copyright (c) 2010 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
+# This file declares the RPC methods that support calls from the module to
+# the browser but are required to be done on the NPAPI thread.  These methods
+# are invoked on a separate channel that is listened to by a separate thread
+# in the browser plugin.
 {
  'name': 'NPUpcallRpc',
  'rpcs': [
+          # The npruntime library has already created a closure, and requests
+          # a callback from the browser on the NPAPI thread.
           {'name': 'NPN_PluginThreadAsyncCall',
            'inputs': [['npp', 'int32_t'],
                       ['closure_number', 'int32_t'],
                      ],
            'outputs': []
           },
-          {'name': 'Device2DFlush',
-           'inputs': [['npp', 'int32_t'],
-                     ],
-           'outputs': [['stride', 'int32_t'],
-                       ['left', 'int32_t'],
-                       ['top', 'int32_t'],
-                       ['right', 'int32_t'],
-                       ['bottom', 'int32_t'],
-                      ]
-          },
+          # Flush the 3D device context.
           {'name': 'Device3DFlush',
            'inputs': [['npp', 'int32_t'],
                       ['put_offset', 'int32_t'],

@@ -99,19 +99,12 @@ class NPNavigator : public NPBridge {
                        const char* target,
                        void* notifyData);
 
-  // The following three methods send RPCs to the browser on the upcall thread,
+  // The following methods send RPCs to the browser on the upcall thread,
   // which allows them to be invoked from any thread in the NaCl module.  These
   // APIs synchronize the calls on the upcall channel.
   void PluginThreadAsyncCall(NPP instance,
                              NPClosureTable::FunctionPointer func,
                              void* user_data);
-
-  NaClSrpcError Device2DFlush(int32_t wire_npp,
-                              int32_t* stride,
-                              int32_t* left,
-                              int32_t* top,
-                              int32_t* right,
-                              int32_t* bottom);
 
   NaClSrpcError Device3DFlush(int32_t wire_npp,
                               int32_t putOffset,

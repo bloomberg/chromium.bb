@@ -144,24 +144,6 @@ NaClSrpcError NPUpcallRpcServer::NPN_PluginThreadAsyncCall(
   return NACL_SRPC_RESULT_OK;
 }
 
-NaClSrpcError NPUpcallRpcServer::Device2DFlush(NaClSrpcChannel* channel,
-                                               int32_t wire_npp,
-                                               int32_t* stride,
-                                               int32_t* left,
-                                               int32_t* top,
-                                               int32_t* right,
-                                               int32_t* bottom) {
-  UNREFERENCED_PARAMETER(channel);
-  NPModule* module = NPModule::GetModule(wire_npp);
-
-  return module->Device2DFlush(WireFormatToNPP(wire_npp),
-                               stride,
-                               left,
-                               top,
-                               right,
-                               bottom);
-}
-
 NaClSrpcError NPUpcallRpcServer::Device3DFlush(NaClSrpcChannel* channel,
                                                int32_t wire_npp,
                                                int32_t put_offset,

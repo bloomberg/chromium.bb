@@ -1,14 +1,20 @@
 # Copyright (c) 2010 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
+# This file declares the RPC methods used to implement npruntime calls from
+# the browser to the module.
 {
  'name': 'NPNavigatorRpc',
  'rpcs': [
+          # This is not an npruntime call per se, but is used to convey the
+          # set of services provided by the browser to modules.
           {'name': 'NP_SetUpcallServices',
            'inputs': [['service_string', 'string'],
                      ],
            'outputs': []
           },
+          # NP_Initialize is called once to initialize the plugin.
           {'name': 'NP_Initialize',
            'inputs': [['pid', 'int32_t'],
                       ['upcall_channel_desc', 'handle'],
@@ -16,6 +22,7 @@
            'outputs': [['nacl_pid', 'int32_t'],
                       ]
           },
+          # NP_New creates a new instance of the plugin.
           {'name': 'NPP_New',
            'inputs': [['mimetype', 'string'],
                       ['npp', 'int32_t'],
@@ -26,6 +33,7 @@
            'outputs': [['nperr', 'int32_t'],
                       ]
           },
+          # Implements NPP_SetWindow.
           {'name': 'NPP_SetWindow',
            'inputs': [['npp', 'int32_t'],
                       ['height', 'int32_t'],
@@ -34,18 +42,21 @@
            'outputs': [['nperr', 'int32_t'],
                       ]
           },
+          # Implements NPP_Destroy to destroy a plugin instance.
           {'name': 'NPP_Destroy',
            'inputs': [['npp', 'int32_t'],
                      ],
            'outputs': [['nperr', 'int32_t'],
                       ]
           },
+          # Used by NPP_GetValue to get a pointer to the scriptable instance.
           {'name': 'GetScriptableInstance',
            'inputs': [['npp', 'int32_t'],
                      ],
            'outputs': [['capability', 'char[]'],
                       ]
           },
+          # Implements NPP_HandleEvent.
           {'name': 'NPP_HandleEvent',
            'inputs': [['npp', 'int32_t'],
                       ['npevent', 'char[]'],
@@ -53,6 +64,7 @@
            'outputs': [['return_int16', 'int32_t'],
                       ]
           },
+          # Implements NPP_URLNotify.
           {'name': 'NPP_URLNotify',
            'inputs': [['npp', 'int32_t'],
                       ['str', 'handle'],
@@ -60,6 +72,7 @@
                      ],
            'outputs': []
           },
+          # Implements NPP_StreamAsFile.
           {'name': 'NPP_StreamAsFile',
            'inputs': [['npp', 'int32_t'],
                       ['handle', 'handle'],
@@ -68,11 +81,17 @@
                      ],
            'outputs': []
           },
+          # Used to invoke the closure passed to NPN_PluginThreadAsyncCall.
+          # The closure was entered by NPN_PluginThreadAsyncCall, which then
+          # does an upcall to the browser, as documented in npupcall.srpc.
           {'name': 'DoAsyncCall',
            'inputs': [['number', 'int32_t'],
                      ],
            'outputs': []
           },
+          # Used to invoke the audio callback passed to InitializeContext.
+          # This is responsible for setting up the shared memory and sync
+          # channels for the audio device.
           {'name': 'AudioCallback',
            'inputs': [['number', 'int32_t'],
                       ['shm_desc', 'handle'],
