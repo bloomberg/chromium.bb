@@ -541,18 +541,29 @@
    * tests in the directory.
    */
   function getIndividualTests() {
-    if (!currentState.tests) {
+    if (!currentState.tests)
       return [];
-    } else if (currentState.tests == 'allSlowTests') {
-      return getSlowTests();
-    } else if (currentState.tests == 'allNeedSlowTests') {
-      return getNeedSlowTests();
-    } else if (currentState.tests == 'allIncorrectExpectations') {
-      return getAllTestsWithIncorrectExpectations();
+    
+    switch (currentState.tests) {
+      case 'allSlowTests':
+        return getSlowTests();
+      
+      case 'allNeedSlowTests':
+        return getNeedSlowTests();
+        
+      case 'allIncorrectExpectations':
+        return getAllTestsWithIncorrectExpectations();
+        
+      default:
+        return getIndividualTestsForSubstringList();
     }
+  }
 
-    var separator = stringContains(currentState.tests, ' ') ? ' ' : ',';
-    var testList = currentState.tests.split(separator);
+  function getIndividualTestsForSubstringList() {
+    // Convert windows slashes to unix slashes.
+    var tests = currentState.tests.replace(/\\/g, '/');
+    var separator = stringContains(tests, ' ') ? ' ' : ',';
+    var testList = tests.split(separator);
     
     if (!isLayoutTestResults()) {
       testList.forEach(function(element) {
@@ -568,7 +579,7 @@
 
     // Put the tests into an object first and then move them into an array
     // as a way of deduping.
-    var tests = {};
+    var testsMap = {};
     for (var i = 0; i < testList.length; i++) {
       var path = testList[i];
 
@@ -580,7 +591,7 @@
       var hasAnyMatches = false;
       for (var test in allTests) {
         if (caseInsensitiveContains(test, path)) {
-          tests[test] = 1;
+          testsMap[test] = 1;
           hasAnyMatches = true;
         }
       }
@@ -588,12 +599,12 @@
       // If a path doesn't match any tests, then assume it's a full path
       // to a test that passes on all builders.
       if (!hasAnyMatches) {
-        tests[path] = 1;
+        testsMap[path] = 1;
       }
     }
 
     var testsArray = [];
-    for (var test in tests) {
+    for (var test in testsMap) {
       testsArray.push(test);
     }
     return testsArray;
@@ -1357,8 +1368,8 @@
         innerHTML = currentTime || '&nbsp;';
       }
 
-      html += '<td title="' + resultString + '. Click for more info." ' +
-          'class="results ' + currentResult +
+      html += '<td title="' + (resultString || 'NO DATA') +
+          '. Click for more info." class="results ' + currentResult +
           '" onclick=\'showPopupForBuild(event, "' + builder + '",' + i +
           ',"' + test.test + '")\'>' + innerHTML + '</td>';
 

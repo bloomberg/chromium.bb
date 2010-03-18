@@ -39,15 +39,19 @@ var defaultStateValues = {};
 //////////////////////////////////////////////////////////////////////////////
 // CONSTANTS
 //////////////////////////////////////////////////////////////////////////////
-var BASE_EXPECTATIONS_MAP_ = {
+var GTEST_EXPECTATIONS_MAP_ = {
   'P': 'PASS',
-  'F': 'TEXT',
+  'F': 'FAIL',
   'N': 'NO DATA',
-  'X': 'SKIP'
+  'X': 'DISABLED'
 };
 
 var LAYOUT_TEST_EXPECTATIONS_MAP_ = {
+  'P': 'PASS',
+  'N': 'NO DATA',
+  'X': 'SKIP',
   'T': 'TIMEOUT',
+  'F': 'TEXT',
   'C': 'CRASH',
   'I': 'IMAGE',
   'Z': 'IMAGE+TEXT',
@@ -55,7 +59,6 @@ var LAYOUT_TEST_EXPECTATIONS_MAP_ = {
   // are more precise now though and it just means MISSING.
   'O': 'MISSING'
 };
-LAYOUT_TEST_EXPECTATIONS_MAP_.__proto__ = BASE_EXPECTATIONS_MAP_;
 
 // Keys in the JSON files.
 var WONTFIX_COUNTS_KEY = 'wontfixCounts';
@@ -522,7 +525,7 @@ function getKeys(obj) {
  */
 function getExpectationsMap() {
   return isLayoutTestResults() ? LAYOUT_TEST_EXPECTATIONS_MAP_ :
-      BASE_EXPECTATIONS_MAP_;
+      GTEST_EXPECTATIONS_MAP_;
 }
 
 /**
