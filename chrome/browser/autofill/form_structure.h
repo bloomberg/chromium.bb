@@ -24,6 +24,12 @@ enum RequestMethod {
   POST
 };
 
+enum UploadRequired {
+  UPLOAD_NOT_REQUIRED,
+  UPLOAD_REQUIRED,
+  USE_UPLOAD_RATES
+};
+
 // FormStructure stores a single HTML form together with the values entered
 // in the fields along with additional information needed by AutoFill.
 class FormStructure {
