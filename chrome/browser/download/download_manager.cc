@@ -638,10 +638,13 @@ void DownloadManager::StartDownload(DownloadCreateInfo* info) {
   // bounce around a bunch of threads and we don't want to worry about race
   // conditions where the user changes this pref out from under us.
   if (*prompt_for_download_) {
-    // But never obey the preference for extension installation. Note that we
-    // only care here about the case where an extension is installed, not when
-    // one is downloaded with "save as...".
-    if (!info->is_extension_install)
+    // But never obey the preference for the following scenarios:
+    // 1) Extension installation. Note that we only care here about the case
+    //    where an extension is installed, not when one is downloaded with
+    //    "save as...".
+    // 2) Drag-out download. Since we will save to the destination folder that
+    //    is dropped to, we should not pop up a Save As dialog.
+    if (!info->is_extension_install && info->save_info.file_path.empty())
       info->save_as = true;
   }
 
