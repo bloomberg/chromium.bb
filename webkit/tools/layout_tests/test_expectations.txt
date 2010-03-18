@@ -2591,6 +2591,7 @@ BUG30939 : svg/filters/filter-clip.svg = IMAGE+TEXT
 // Webkit roll 52198->52205
 // Newly added test in r52202
 BUG30939 : svg/filters/filter-source-position.svg = IMAGE+TEXT
+BUG30939 LINUX DEBUG : svg/filters/filter-source-position.svg = IMAGE+TEXT IMAGE
 
 // WebKit roll 52468->52535
 BUG31991 WIN LINUX : fast/text/international/bidi-layout-across-linebreak.html = TEXT
