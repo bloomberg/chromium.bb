@@ -644,20 +644,29 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   const BookmarkNode* sourceNode = [sourceButton bookmarkNode];
   DCHECK(sourceNode);
 
-  int destIndex = [self indexForDragOfButton:sourceButton toPoint:point];
-  if (destIndex >= 0 && sourceNode) {
-    if (copy) {
-      [parentController_ bookmarkModel]->Copy(sourceNode,
-                                              [parentButton_ bookmarkNode],
-                                              destIndex);
-    } else {
-      [parentController_ bookmarkModel]->Move(sourceNode,
-                                              [parentButton_ bookmarkNode],
-                                              destIndex);
-    }
+  // Drop destination.
+  const BookmarkNode* destParent = NULL;
+  int destIndex = 0;
+
+  // First check if we're dropping on a button.  If we have one, and
+  // it's a folder, drop in it.
+  BookmarkButton* button = [self buttonForDroppingOnAtPoint:point];
+  if ([button isFolder]) {
+    destParent = [button bookmarkNode];
+    // Drop it at the end.
+    destIndex = [button bookmarkNode]->GetChildCount();
   } else {
-    NOTREACHED();
+    // Else we're dropping somewhere in the folder, so find the right spot.
+    destParent = [parentButton_ bookmarkNode];
+    destIndex = [self indexForDragOfButton:sourceButton toPoint:point];
   }
+
+  if (copy)
+    [self bookmarkModel]->Copy(sourceNode, destParent, destIndex);
+  else
+    [self bookmarkModel]->Move(sourceNode, destParent, destIndex);
+
+  [self closeAllBookmarkFolders];  // For a hover open, if needed.
 
   // Movement of a node triggers observers (like us) to rebuild the
   // bar so we don't have to do so explicitly.

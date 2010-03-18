@@ -981,7 +981,7 @@ TEST_F(BookmarkBarControllerTest, TestDragButton) {
   EXPECT_TRUE([[[[bar_ buttons] objectAtIndex:2] title] isEqual:@"a"]);
   EXPECT_EQ([[bar_ buttons] count], arraysize(titles));
 
-  // Finally, a drop of the 1st between the next 2
+  // A drop of the 1st between the next 2.
   CGFloat x = NSMinX([[[bar_ buttons] objectAtIndex:2] frame]);
   x += [[bar_ view] frame].origin.x;
   [bar_ dragButton:[[bar_ buttons] objectAtIndex:0]
@@ -991,6 +991,35 @@ TEST_F(BookmarkBarControllerTest, TestDragButton) {
   EXPECT_TRUE([[[[bar_ buttons] objectAtIndex:1] title] isEqual:@"c"]);
   EXPECT_TRUE([[[[bar_ buttons] objectAtIndex:2] title] isEqual:@"a"]);
   EXPECT_EQ([[bar_ buttons] count], arraysize(titles));
+
+  // A drop on a non-folder button.  (Shouldn't try and go in it.)
+  x = NSMidX([[[bar_ buttons] objectAtIndex:0] frame]);
+  x += [[bar_ view] frame].origin.x;
+  [bar_ dragButton:[[bar_ buttons] objectAtIndex:2]
+                to:NSMakePoint(x, 0)
+              copy:NO];
+  EXPECT_EQ(arraysize(titles), [[bar_ buttons] count]);
+
+  // A drop on a folder button.
+  const BookmarkNode* folder = model->AddGroup(model->GetBookmarkBarNode(),
+                                               0,
+                                               L"awesome group");
+  DCHECK(folder);
+  model->AddURL(folder, 0, L"already", GURL("http://www.google.com"));
+  EXPECT_EQ(arraysize(titles) + 1, [[bar_ buttons] count]);
+  EXPECT_EQ(1, folder->GetChildCount());
+  x = [[[bar_ buttons] objectAtIndex:0] frame].size.width / 2;
+  std::wstring title = [[[bar_ buttons] objectAtIndex:2]
+                         bookmarkNode]->GetTitle();
+  [bar_ dragButton:[[bar_ buttons] objectAtIndex:2]
+                to:NSMakePoint(x, 0)
+              copy:NO];
+  // Gone from the bar
+  EXPECT_EQ(arraysize(titles), [[bar_ buttons] count]);
+  // In the folder
+  EXPECT_EQ(2, folder->GetChildCount());
+  // At the end
+  EXPECT_EQ(title, folder->GetChild(1)->GetTitle());
 }
 
 TEST_F(BookmarkBarControllerTest, TestCopyButton) {

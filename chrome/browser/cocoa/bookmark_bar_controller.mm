@@ -726,21 +726,29 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   const BookmarkNode* sourceNode = [sourceButton bookmarkNode];
   DCHECK(sourceNode);
 
-  int destIndex = [self indexForDragOfButton:sourceButton toPoint:point];
-  if (destIndex >= 0 && sourceNode) {
-    // Our destination parent is not sourceNode->GetParent()!
-    if (copy) {
-      bookmarkModel_->Copy(sourceNode,
-                           bookmarkModel_->GetBookmarkBarNode(),
-                           destIndex);
-    } else {
-      bookmarkModel_->Move(sourceNode,
-                           bookmarkModel_->GetBookmarkBarNode(),
-                           destIndex);
-    }
+  // Drop destination.
+  const BookmarkNode* destParent = NULL;
+  int destIndex = 0;
+
+  // First check if we're dropping on a button.  If we have one, and
+  // it's a folder, drop in it.
+  BookmarkButton* button = [self buttonForDroppingOnAtPoint:point];
+  if ([button isFolder]) {
+    destParent = [button bookmarkNode];
+    // Drop it at the end.
+    destIndex = [button bookmarkNode]->GetChildCount();
   } else {
-    NOTREACHED();
+    // Else we're dropping somewhere on the bar, so find the right spot.
+    destParent = bookmarkModel_->GetBookmarkBarNode();
+    destIndex = [self indexForDragOfButton:sourceButton toPoint:point];
   }
+
+  if (copy)
+    bookmarkModel_->Copy(sourceNode, destParent, destIndex);
+  else
+    bookmarkModel_->Move(sourceNode, destParent, destIndex);
+
+  [self closeAllBookmarkFolders];  // For a hover open, if needed.
 
   // Movement of a node triggers observers (like us) to rebuild the
   // bar so we don't have to do so explicitly.
