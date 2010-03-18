@@ -16,6 +16,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDevToolsAgent.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebData.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebHTTPBody.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebHTTPHeaderVisitor.h"
@@ -585,8 +586,8 @@ WebPluginImpl::RoutingStatus WebPluginImpl::RouteToFrame(
   SetReferrer(&request, referrer_flag);
 
   request.setHTTPMethod(WebString::fromUTF8(method));
-  // TODO(wtc): add a WebDocument::firstPartyForCookies method.
-  request.setFirstPartyForCookies(webframe_->top()->url());
+  request.setFirstPartyForCookies(
+      webframe_->document().firstPartyForCookies());
   if (len > 0) {
     if (!SetPostData(&request, buf, len)) {
       // Uhoh - we're in trouble.  There isn't a good way
@@ -982,8 +983,8 @@ bool WebPluginImpl::InitiateHTTPRequest(unsigned long resource_id,
   info.client = client;
   info.request.initialize();
   info.request.setURL(url);
-  // TODO(wtc): add a WebDocument::firstPartyForCookies method.
-  info.request.setFirstPartyForCookies(webframe_->top()->url());
+  info.request.setFirstPartyForCookies(
+      webframe_->document().firstPartyForCookies());
   info.request.setRequestorProcessID(delegate_->GetProcessId());
   info.request.setTargetType(WebURLRequest::TargetIsObject);
   info.request.setHTTPMethod(WebString::fromUTF8(method));
