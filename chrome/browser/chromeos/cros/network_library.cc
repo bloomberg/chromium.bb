@@ -29,7 +29,9 @@ const int NetworkLibrary::kNetworkTrafficeTimerSecs = 1;
 
 NetworkLibrary::NetworkLibrary()
     : traffic_type_(0),
-      network_devices_(0),
+      available_devices_(0),
+      enabled_devices_(0),
+      connected_devices_(0),
       offline_mode_(false) {
   if (CrosLibrary::EnsureLoaded()) {
     Init();
@@ -39,7 +41,7 @@ NetworkLibrary::NetworkLibrary()
 
 NetworkLibrary::~NetworkLibrary() {
   if (CrosLibrary::EnsureLoaded()) {
-    chromeos::DisconnectNetworkStatus(network_status_connection_);
+    DisconnectMonitorNetwork(network_status_connection_);
   }
   g_url_request_job_tracker.RemoveObserver(this);
 }
@@ -82,10 +84,16 @@ void NetworkLibrary::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
+void NetworkLibrary::RequestWifiScan() {
+  if (CrosLibrary::EnsureLoaded()) {
+    RequestScan(TYPE_WIFI);
+  }
+}
+
 void NetworkLibrary::ConnectToWifiNetwork(WifiNetwork network,
                                           const string16& password) {
   if (CrosLibrary::EnsureLoaded()) {
-    chromeos::ConnectToNetwork(network.service_path.c_str(),
+    ConnectToNetwork(network.service_path.c_str(),
         password.empty() ? NULL : UTF16ToUTF8(password).c_str());
   }
 }
@@ -94,15 +102,14 @@ void NetworkLibrary::ConnectToWifiNetwork(const string16& ssid,
                                           const string16& password) {
   if (CrosLibrary::EnsureLoaded()) {
     // First create a service from hidden network.
-    chromeos::ServiceInfo* service =
-        chromeos::GetWifiService(UTF16ToUTF8(ssid).c_str(),
-                                 chromeos::SECURITY_UNKNOWN);
+    ServiceInfo* service = GetWifiService(UTF16ToUTF8(ssid).c_str(),
+                                          SECURITY_UNKNOWN);
     // Now connect to that service.
     if (service) {
-      chromeos::ConnectToNetwork(service->service_path,
+      ConnectToNetwork(service->service_path,
           password.empty() ? NULL : UTF16ToUTF8(password).c_str());
       // Clean up ServiceInfo object.
-      chromeos::FreeServiceInfo(service);
+      FreeServiceInfo(service);
     } else {
       LOG(WARNING) << "Cannot find hidden network: " << ssid;
       // TODO(chocobo): Show error message.
@@ -112,20 +119,20 @@ void NetworkLibrary::ConnectToWifiNetwork(const string16& ssid,
 
 void NetworkLibrary::ConnectToCellularNetwork(CellularNetwork network) {
   if (CrosLibrary::EnsureLoaded()) {
-    chromeos::ConnectToNetwork(network.service_path.c_str(), NULL);
+    ConnectToNetwork(network.service_path.c_str(), NULL);
   }
 }
 
 void NetworkLibrary::EnableEthernetNetworkDevice(bool enable) {
-  EnableNetworkDevice(chromeos::TYPE_ETHERNET, enable);
+  EnableNetworkDevice(TYPE_ETHERNET, enable);
 }
 
 void NetworkLibrary::EnableWifiNetworkDevice(bool enable) {
-  EnableNetworkDevice(chromeos::TYPE_WIFI, enable);
+  EnableNetworkDevice(TYPE_WIFI, enable);
 }
 
 void NetworkLibrary::EnableCellularNetworkDevice(bool enable) {
-  EnableNetworkDevice(chromeos::TYPE_CELLULAR, enable);
+  EnableNetworkDevice(TYPE_CELLULAR, enable);
 }
 
 void NetworkLibrary::EnableOfflineMode(bool enable) {
@@ -142,7 +149,7 @@ void NetworkLibrary::EnableOfflineMode(bool enable) {
     return;
   }
 
-  if (chromeos::SetOfflineMode(enable)) {
+  if (SetOfflineMode(enable)) {
     offline_mode_ = enable;
   }
 }
@@ -151,17 +158,16 @@ NetworkIPConfigVector NetworkLibrary::GetIPConfigs(
     const std::string& device_path) {
   NetworkIPConfigVector ipconfig_vector;
   if (!device_path.empty()) {
-    chromeos::IPConfigStatus* ipconfig_status =
-        chromeos::ListIPConfigs(device_path.c_str());
+    IPConfigStatus* ipconfig_status = ListIPConfigs(device_path.c_str());
     if (ipconfig_status) {
       for (int i = 0; i < ipconfig_status->size; i++) {
-        chromeos::IPConfig ipconfig = ipconfig_status->ips[i];
+        IPConfig ipconfig = ipconfig_status->ips[i];
         ipconfig_vector.push_back(
             NetworkIPConfig(device_path, ipconfig.type, ipconfig.address,
                             ipconfig.netmask, ipconfig.gateway,
                             ipconfig.name_servers));
       }
-      chromeos::FreeIPConfigStatus(ipconfig_status);
+      FreeIPConfigStatus(ipconfig_status);
       // Sort the list of ip configs by type.
       std::sort(ipconfig_vector.begin(), ipconfig_vector.end());
     }
@@ -170,24 +176,23 @@ NetworkIPConfigVector NetworkLibrary::GetIPConfigs(
 }
 
 // static
-void NetworkLibrary::NetworkStatusChangedHandler(void* object,
-    const chromeos::ServiceStatus& service_status) {
+void NetworkLibrary::NetworkStatusChangedHandler(void* object) {
   NetworkLibrary* network = static_cast<NetworkLibrary*>(object);
-  EthernetNetwork ethernet;
-  WifiNetworkVector wifi_networks;
-  CellularNetworkVector cellular_networks;
-  ParseNetworks(service_status, &ethernet, &wifi_networks, &cellular_networks);
-  network->UpdateNetworkStatus(ethernet, wifi_networks, cellular_networks);
+  SystemInfo* system = GetSystemInfo();
+  if (system) {
+    network->UpdateNetworkStatus(system);
+    FreeSystemInfo(system);
+  }
 }
 
 // static
-void NetworkLibrary::ParseNetworks(
-    const chromeos::ServiceStatus& service_status, EthernetNetwork* ethernet,
-    WifiNetworkVector* wifi_networks,
-    CellularNetworkVector* cellular_networks) {
-  DLOG(INFO) << "ParseNetworks:";
-  for (int i = 0; i < service_status.size; i++) {
-    const chromeos::ServiceInfo& service = service_status.services[i];
+void NetworkLibrary::ParseSystem(SystemInfo* system,
+                                 EthernetNetwork* ethernet,
+                                 WifiNetworkVector* wifi_networks,
+                                 CellularNetworkVector* cellular_networks) {
+  DLOG(INFO) << "ParseSystem:";
+  for (int i = 0; i < system->service_size; i++) {
+    const ServiceInfo& service = system->services[i];
     DLOG(INFO) << "  (" << service.type <<
                   ") " << service.name <<
                   " mode=" << service.mode <<
@@ -199,18 +204,17 @@ void NetworkLibrary::ParseNetworks(
                   " fav=" << service.favorite <<
                   " auto=" << service.auto_connect <<
                   " error=" << service.error;
-    bool connecting = service.state == chromeos::STATE_ASSOCIATION ||
-                      service.state == chromeos::STATE_CONFIGURATION ||
-                      service.state == chromeos::STATE_CARRIER;
-    bool connected = service.state == chromeos::STATE_READY;
+    bool connecting = service.state == STATE_ASSOCIATION ||
+                      service.state == STATE_CONFIGURATION ||
+                      service.state == STATE_CARRIER;
+    bool connected = service.state == STATE_READY;
     // if connected, get ip config
     std::string ip_address;
     if (connected && service.device_path) {
-      chromeos::IPConfigStatus* ipconfig_status =
-          chromeos::ListIPConfigs(service.device_path);
+      IPConfigStatus* ipconfig_status = ListIPConfigs(service.device_path);
       if (ipconfig_status) {
         for (int i = 0; i < ipconfig_status->size; i++) {
-          chromeos::IPConfig ipconfig = ipconfig_status->ips[i];
+          IPConfig ipconfig = ipconfig_status->ips[i];
           if (strlen(ipconfig.address) > 0)
             ip_address = ipconfig.address;
           DLOG(INFO) << "          ipconfig: " <<
@@ -224,21 +228,21 @@ void NetworkLibrary::ParseNetworks(
                         " domainname=" << ipconfig.domainname <<
                         " name_servers=" << ipconfig.name_servers;
         }
-        chromeos::FreeIPConfigStatus(ipconfig_status);
+        FreeIPConfigStatus(ipconfig_status);
       }
     }
-    if (service.type == chromeos::TYPE_ETHERNET) {
+    if (service.type == TYPE_ETHERNET) {
       ethernet->connecting = connecting;
       ethernet->connected = connected;
       ethernet->device_path = service.device_path ? service.device_path :
                                                     std::string();
       ethernet->ip_address = ip_address;
-    } else if (service.type == chromeos::TYPE_WIFI) {
+    } else if (service.type == TYPE_WIFI) {
       wifi_networks->push_back(WifiNetwork(service,
                                            connecting,
                                            connected,
                                            ip_address));
-    } else if (service.type == chromeos::TYPE_CELLULAR) {
+    } else if (service.type == TYPE_CELLULAR) {
       cellular_networks->push_back(CellularNetwork(service,
                                                    connecting,
                                                    connected,
@@ -250,73 +254,54 @@ void NetworkLibrary::ParseNetworks(
 void NetworkLibrary::Init() {
   // First, get the currently available networks.  This data is cached
   // on the connman side, so the call should be quick.
-  chromeos::ServiceStatus* service_status = chromeos::GetAvailableNetworks();
-  if (service_status) {
+  SystemInfo* system = GetSystemInfo();
+  if (system) {
     LOG(INFO) << "Getting initial CrOS network info.";
-    EthernetNetwork ethernet;
-    WifiNetworkVector wifi_networks;
-    CellularNetworkVector cellular_networks;
-    ParseNetworks(*service_status, &ethernet, &wifi_networks,
-        &cellular_networks);
-    UpdateNetworkStatus(ethernet, wifi_networks, cellular_networks);
-    chromeos::FreeServiceStatus(service_status);
+    UpdateNetworkStatus(system);
+    FreeSystemInfo(system);
   }
   LOG(INFO) << "Registering for network status updates.";
   // Now, register to receive updates on network status.
-  network_status_connection_ = chromeos::MonitorNetworkStatus(
-      &NetworkStatusChangedHandler, this);
-  // Get the enabled network devices bit flag. If we get a -1, then that means
-  // offline mode is on. So all devices are disabled. This happens when offline
-  // mode is persisted during a reboot and Chrome starts up with it on.
-  network_devices_ = chromeos::GetEnabledNetworkDevices();
-  if (network_devices_ == -1) {
-    offline_mode_ = true;
-    network_devices_ = 0;
-  }
+  network_status_connection_ = MonitorNetwork(&NetworkStatusChangedHandler,
+                                              this);
 }
 
-void NetworkLibrary::EnableNetworkDevice(chromeos::ConnectionType device,
-                                         bool enable) {
+void NetworkLibrary::EnableNetworkDevice(ConnectionType device, bool enable) {
   if (!CrosLibrary::EnsureLoaded())
     return;
 
   // If network device is already enabled/disabled, then don't do anything.
-  if (enable && (network_devices_ & (1 << device))) {
+  if (enable && (enabled_devices_ & (1 << device))) {
     LOG(WARNING) << "Trying to enable a device that's already enabled: "
                  << device;
     return;
   }
-  if (!enable && !(network_devices_ & (1 << device))) {
+  if (!enable && !(enabled_devices_ & (1 << device))) {
     LOG(WARNING) << "Trying to disable a device that's already disabled: "
                  << device;
     return;
   }
 
-  if (chromeos::EnableNetworkDevice(device, enable)) {
-    if (enable)
-      network_devices_ |= (1 << device);
-    else
-      network_devices_ &= ~(1 << device);
-  }
+  EnableNetworkDevice(device, enable);
 }
 
-void NetworkLibrary::UpdateNetworkStatus(const EthernetNetwork& ethernet,
-    const WifiNetworkVector& wifi_networks,
-    const CellularNetworkVector& cellular_networks) {
+void NetworkLibrary::UpdateNetworkStatus(SystemInfo* system) {
   // Make sure we run on UI thread.
   if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
         NewRunnableMethod(this,
-            &NetworkLibrary::UpdateNetworkStatus, ethernet, wifi_networks,
-            cellular_networks));
+            &NetworkLibrary::UpdateNetworkStatus, system));
     return;
   }
 
+  EthernetNetwork ethernet;
+  WifiNetworkVector wifi_networks;
+  CellularNetworkVector cellular_networks;
+  ParseSystem(system, &ethernet, &wifi_networks, &cellular_networks);
+
   ethernet_ = ethernet;
   wifi_networks_ = wifi_networks;
-  // Sort the list of wifi networks by ssid.
-  std::sort(wifi_networks_.begin(), wifi_networks_.end());
   wifi_ = WifiNetwork();
   for (size_t i = 0; i < wifi_networks_.size(); i++) {
     if (wifi_networks_[i].connecting || wifi_networks_[i].connected) {
@@ -325,7 +310,6 @@ void NetworkLibrary::UpdateNetworkStatus(const EthernetNetwork& ethernet,
     }
   }
   cellular_networks_ = cellular_networks;
-  std::sort(cellular_networks_.begin(), cellular_networks_.end());
   cellular_ = CellularNetwork();
   for (size_t i = 0; i < cellular_networks_.size(); i++) {
     if (cellular_networks_[i].connecting || cellular_networks_[i].connected) {
@@ -333,6 +317,12 @@ void NetworkLibrary::UpdateNetworkStatus(const EthernetNetwork& ethernet,
       break;  // There is only one connected or connecting cellular network.
     }
   }
+
+  available_devices_ = system->available_technologies;
+  enabled_devices_ = system->enabled_technologies;
+  connected_devices_ = system->connected_technologies;
+  offline_mode_ = system->offline_mode;
+
   FOR_EACH_OBSERVER(Observer, observers_, NetworkChanged(this));
 }
 

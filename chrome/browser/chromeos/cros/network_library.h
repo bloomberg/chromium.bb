@@ -32,7 +32,7 @@ struct EthernetNetwork {
 struct WifiNetwork {
   WifiNetwork()
       : encrypted(false),
-        encryption(chromeos::SECURITY_UNKNOWN),
+        encryption(SECURITY_UNKNOWN),
         strength(0),
         connecting(false),
         connected(false),
@@ -59,7 +59,7 @@ struct WifiNetwork {
   std::string device_path;
   std::string ssid;
   bool encrypted;
-  chromeos::ConnectionSecurity encryption;
+  ConnectionSecurity encryption;
   std::string passphrase;
   int strength;
   bool connecting;
@@ -192,6 +192,9 @@ class NetworkLibrary : public URLRequestJobTracker::JobObserver {
     return cellular_networks_;
   }
 
+  // Request a scan for new wifi networks.
+  void RequestWifiScan();
+
   // Connect to the specified wireless network with password.
   void ConnectToWifiNetwork(WifiNetwork network, const string16& password);
 
@@ -201,12 +204,20 @@ class NetworkLibrary : public URLRequestJobTracker::JobObserver {
   // Connect to the specified cellular network.
   void ConnectToCellularNetwork(CellularNetwork network);
 
+  bool ethernet_available() const {
+      return available_devices_ & (1 << TYPE_ETHERNET); }
+  bool wifi_available() const {
+      return available_devices_ & (1 << TYPE_WIFI); }
+  bool cellular_available() const {
+      return available_devices_ & (1 << TYPE_CELLULAR); }
+
   bool ethernet_enabled() const {
-      return network_devices_ & (1 << TYPE_ETHERNET); }
+      return enabled_devices_ & (1 << TYPE_ETHERNET); }
   bool wifi_enabled() const {
-      return network_devices_ & (1 << TYPE_WIFI); }
+      return enabled_devices_ & (1 << TYPE_WIFI); }
   bool cellular_enabled() const {
-      return network_devices_ & (1 << TYPE_CELLULAR); }
+      return enabled_devices_ & (1 << TYPE_CELLULAR); }
+
   bool offline_mode() const { return offline_mode_; }
 
   // Enables/disables the ethernet network device.
@@ -232,30 +243,26 @@ class NetworkLibrary : public URLRequestJobTracker::JobObserver {
 
   // This method is called when there's a change in network status.
   // This method is called on a background thread.
-  static void NetworkStatusChangedHandler(void* object,
-      const chromeos::ServiceStatus& service_status);
+  static void NetworkStatusChangedHandler(void* object);
 
-  // This parses ServiceStatus and creates a WifiNetworkVector of wifi networks
+  // This parses SystemInfo and creates a WifiNetworkVector of wifi networks
   // and a CellularNetworkVector of cellular networks.
   // It also sets the ethernet connecting/connected status.
-  static void ParseNetworks(const chromeos::ServiceStatus& service_status,
-                            EthernetNetwork* ethernet,
-                            WifiNetworkVector* wifi_networks,
-                            CellularNetworkVector* ceullular_networks);
+  static void ParseSystem(SystemInfo* system,
+                          EthernetNetwork* ethernet,
+                          WifiNetworkVector* wifi_networks,
+                          CellularNetworkVector* ceullular_networks);
 
   // This methods loads the initial list of networks on startup and starts the
   // monitoring of network changes.
   void Init();
 
   // Enables/disables the specified network device.
-  void EnableNetworkDevice(chromeos::ConnectionType device, bool enable);
+  void EnableNetworkDevice(ConnectionType device, bool enable);
 
-  // Update the network with the ethernet status and a list of wifi and cellular
-  // networks.
+  // Update the network with the SystemInfo object.
   // This will notify all the Observers.
-  void UpdateNetworkStatus(const EthernetNetwork& ethernet,
-                           const WifiNetworkVector& wifi_networks,
-                           const CellularNetworkVector& cellular_networks);
+  void UpdateNetworkStatus(SystemInfo* system);
 
   // Checks network traffic to see if there is any uploading.
   // If there is download traffic, then true is passed in for download.
@@ -287,7 +294,7 @@ class NetworkLibrary : public URLRequestJobTracker::JobObserver {
   int traffic_type_;
 
   // The network status connection for monitoring network status changes.
-  chromeos::NetworkStatusConnection network_status_connection_;
+  MonitorNetworkConnection network_status_connection_;
 
   // The ethernet network.
   EthernetNetwork ethernet_;
@@ -304,9 +311,14 @@ class NetworkLibrary : public URLRequestJobTracker::JobObserver {
   // The current connected (or connecting) cellular network.
   CellularNetwork cellular_;
 
-  // The current enabled network devices. This is a bitwise flag of
-  // ConnectionTypes.
-  int network_devices_;
+  // The current available network devices. Bitwise flag of ConnectionTypes.
+  int available_devices_;
+
+  // The current enabled network devices. Bitwise flag of ConnectionTypes.
+  int enabled_devices_;
+
+  // The current connected network devices. Bitwise flag of ConnectionTypes.
+  int connected_devices_;
 
   bool offline_mode_;
 
