@@ -179,8 +179,8 @@ class ProcessSingletonWinTest : public UITest {
   base::WaitableEvent threads_waker_;
 };
 
-
-TEST_F(ProcessSingletonWinTest, StartupRaceCondition) {
+// http://code.google.com/p/chromium/issues/detail?id=38572
+TEST_F(ProcessSingletonWinTest, DISABLED_StartupRaceCondition) {
   // We use this to stop the attempts loop on the first failure.
   bool failed = false;
   for (size_t attempt = 0; attempt < kNbAttempts && !failed; ++attempt) {
