@@ -303,7 +303,8 @@ SimpleAppCacheSystem::~SimpleAppCacheSystem() {
 void SimpleAppCacheSystem::InitOnUIThread(
     const FilePath& cache_directory) {
   DCHECK(!ui_message_loop_);
-  AppCacheThread::InitIDs(DB_THREAD_ID, IO_THREAD_ID);
+  // TODO(michaeln): provide a cache_thread message loop
+  AppCacheThread::Init(DB_THREAD_ID, IO_THREAD_ID, NULL);
   ui_message_loop_ = MessageLoop::current();
   cache_directory_ = cache_directory;
 }

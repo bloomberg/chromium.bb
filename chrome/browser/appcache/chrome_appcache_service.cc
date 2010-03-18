@@ -23,7 +23,8 @@ ChromeAppCacheService::ChromeAppCacheService(
 
   if (!has_initialized_thread_ids) {
     has_initialized_thread_ids = true;
-    appcache::AppCacheThread::InitIDs(ChromeThread::DB, ChromeThread::IO);
+    appcache::AppCacheThread::Init(ChromeThread::DB, ChromeThread::IO,
+                                   NULL);  // TODO(michaeln): cache_thread
   }
 
   host_contents_settings_map_ = request_context->host_content_settings_map();
