@@ -127,6 +127,10 @@ class CheckFalseTest : public UITest {
   }
 };
 
+#if defined(OS_WIN)
+// http://crbug.com/38497
+#define CheckFails FLAKY_CheckFails
+#endif
 // Launch the app in assertion test mode, then close the app.
 TEST_F(CheckFalseTest, CheckFails) {
   if (UITest::in_process_renderer()) {
