@@ -37,8 +37,8 @@ void DevToolsClientHostImpl::SendMessageToClient(
 void DevToolsClientHostImpl::OnRpcMessage(const DevToolsMessageData& data) {
   static const std::string kDebuggerAgentDelegate = "DebuggerAgentDelegate";
   static const std::string kToolsAgentDelegate = "ToolsAgentDelegate";
-  static const std::string kDebuggerOutput = "DebuggerOutput";
-  static const std::string kFrameNavigate = "FrameNavigate";
+  static const std::string kDebuggerOutput = "debuggerOutput";
+  static const std::string kFrameNavigate = "frameNavigate";
 
   if (data.class_name == kDebuggerAgentDelegate &&
       data.method_name == kDebuggerOutput) {
