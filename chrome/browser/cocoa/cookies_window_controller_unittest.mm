@@ -141,14 +141,15 @@ TEST_F(CookiesWindowControllerTest, CocoaNodeFromTreeNodeCookie) {
   TreeModelNode* node = model.GetRoot()->GetChild(0)->GetChild(0)->GetChild(0);
   CocoaCookieTreeNode* cookie = CocoaNodeFromTreeNode(node);
 
-  EXPECT_TRUE([@"B" isEqualToString:[cookie content]]);
-  EXPECT_TRUE([@"When I close my browser" isEqualToString:[cookie expires]]);
-  EXPECT_TRUE([@"Any kind of connection" isEqualToString:[cookie sendFor]]);
+  CocoaCookieDetails* details = [cookie details];
+  EXPECT_TRUE([@"B" isEqualToString:[details content]]);
+  EXPECT_TRUE([@"When I close my browser" isEqualToString:[details expires]]);
+  EXPECT_TRUE([@"Any kind of connection" isEqualToString:[details sendFor]]);
   EXPECT_TRUE([@"A" isEqualToString:[cookie title]]);
-  EXPECT_TRUE([@"A" isEqualToString:[cookie name]]);
-  EXPECT_TRUE([@"/" isEqualToString:[cookie path]]);
+  EXPECT_TRUE([@"A" isEqualToString:[details name]]);
+  EXPECT_TRUE([@"/" isEqualToString:[details path]]);
   EXPECT_EQ(0U, [[cookie children] count]);
-  EXPECT_TRUE([cookie created]);
+  EXPECT_TRUE([details created]);
   EXPECT_TRUE([cookie isLeaf]);
   EXPECT_EQ(node, [cookie treeNode]);
 }
@@ -179,15 +180,16 @@ TEST_F(CookiesWindowControllerTest, CocoaNodeFromTreeNodeRecursive) {
   EXPECT_EQ(node->GetChild(0), [cookies treeNode]);
 
   // Test cookie node. This is the same as CocoaNodeFromTreeNodeCookie.
-  EXPECT_TRUE([@"B" isEqualToString:[cookie content]]);
-  EXPECT_TRUE([@"When I close my browser" isEqualToString:[cookie expires]]);
-  EXPECT_TRUE([@"Any kind of connection" isEqualToString:[cookie sendFor]]);
+  CocoaCookieDetails* details = [cookie details];
+  EXPECT_TRUE([@"B" isEqualToString:[details content]]);
+  EXPECT_TRUE([@"When I close my browser" isEqualToString:[details expires]]);
+  EXPECT_TRUE([@"Any kind of connection" isEqualToString:[details sendFor]]);
   EXPECT_TRUE([@"A" isEqualToString:[cookie title]]);
-  EXPECT_TRUE([@"A" isEqualToString:[cookie name]]);
-  EXPECT_TRUE([@"/" isEqualToString:[cookie path]]);
-  EXPECT_TRUE([@"foo.com" isEqualToString:[cookie domain]]);
+  EXPECT_TRUE([@"A" isEqualToString:[details name]]);
+  EXPECT_TRUE([@"/" isEqualToString:[details path]]);
+  EXPECT_TRUE([@"foo.com" isEqualToString:[details domain]]);
   EXPECT_EQ(0U, [[cookie children] count]);
-  EXPECT_TRUE([cookie created]);
+  EXPECT_TRUE([details created]);
   EXPECT_TRUE([cookie isLeaf]);
   EXPECT_EQ(node->GetChild(0)->GetChild(0), [cookie treeNode]);
 }
@@ -261,7 +263,7 @@ TEST_F(CookiesWindowControllerTest, TreeNodesRemoved) {
 
   EXPECT_EQ(1U, [cocoa_children count]);
 
-  NSString* title = [[cocoa_children objectAtIndex:0] name];
+  NSString* title = [[[cocoa_children objectAtIndex:0] details] name];
   EXPECT_TRUE([@"A" isEqualToString:title]);
 }
 
@@ -286,11 +288,11 @@ TEST_F(CookiesWindowControllerTest, TreeNodeChildrenReordered) {
 
   // Check default ordering.
   CocoaCookieTreeNode* node = [cocoa_children objectAtIndex:0];
-  EXPECT_TRUE([@"A" isEqualToString:[node name]]);
+  EXPECT_TRUE([@"A" isEqualToString:[[node details] name]]);
   node =  [cocoa_children objectAtIndex:1];
-  EXPECT_TRUE([@"C" isEqualToString:[node name]]);
+  EXPECT_TRUE([@"C" isEqualToString:[[node details] name]]);
   node =  [cocoa_children objectAtIndex:2];
-  EXPECT_TRUE([@"E" isEqualToString:[node name]]);
+  EXPECT_TRUE([@"E" isEqualToString:[[node details] name]]);
 
   CookiesTreeModel* model = [controller_ treeModel];
   // Root --> foo.com --> Cookies.
@@ -307,11 +309,11 @@ TEST_F(CookiesWindowControllerTest, TreeNodeChildrenReordered) {
 
   // Check the new order.
   node = [cocoa_children objectAtIndex:0];
-  EXPECT_TRUE([@"E" isEqualToString:[node name]]);
+  EXPECT_TRUE([@"E" isEqualToString:[[node details] name]]);
   node =  [cocoa_children objectAtIndex:1];
-  EXPECT_TRUE([@"A" isEqualToString:[node name]]);
+  EXPECT_TRUE([@"A" isEqualToString:[[node details] name]]);
   node =  [cocoa_children objectAtIndex:2];
-  EXPECT_TRUE([@"C" isEqualToString:[node name]]);
+  EXPECT_TRUE([@"C" isEqualToString:[[node details] name]]);
 }
 
 TEST_F(CookiesWindowControllerTest, TreeNodeChanged) {
@@ -590,43 +592,45 @@ TEST_F(CookiesWindowControllerTest, CreateDatabaseStorageNodes) {
   CocoaCookieTreeNode* node =
       [[[controller_ cocoaTreeModel] children] objectAtIndex:0];
   EXPECT_TRUE([@"gdbhost1" isEqualToString:[node title]]);
-  EXPECT_EQ(kCocoaCookieTreeNodeTypeFolder, [node nodeType]);
+  EXPECT_EQ(kCocoaCookieDetailsTypeFolder, [node nodeType]);
   EXPECT_EQ(1U, [[node children] count]);
 
   // host1 --> Web Databases.
   node = [[node children] lastObject];
   EXPECT_TRUE([@"Web Databases" isEqualToString:[node title]]);
-  EXPECT_EQ(kCocoaCookieTreeNodeTypeFolder, [node nodeType]);
+  EXPECT_EQ(kCocoaCookieDetailsTypeFolder, [node nodeType]);
   EXPECT_EQ(1U, [[node children] count]);
 
   // Database Storage --> db1.
   node = [[node children] lastObject];
   EXPECT_TRUE([@"db1" isEqualToString:[node title]]);
-  EXPECT_EQ(kCocoaCookieTreeNodeTypeDatabaseStorage, [node nodeType]);
-  EXPECT_TRUE([@"description 1" isEqualToString:[node databaseDescription]]);
-  EXPECT_TRUE([node lastModified]);
-  EXPECT_TRUE([node fileSize]);
+  EXPECT_EQ(kCocoaCookieDetailsTypeTreeDatabase, [node nodeType]);
+  CocoaCookieDetails* details = [node details];
+  EXPECT_TRUE([@"description 1" isEqualToString:[details databaseDescription]]);
+  EXPECT_TRUE([details lastModified]);
+  EXPECT_TRUE([details fileSize]);
 
   // Root --> gdbhost2.
   node =
       [[[controller_ cocoaTreeModel] children] objectAtIndex:1];
   EXPECT_TRUE([@"gdbhost2" isEqualToString:[node title]]);
-  EXPECT_EQ(kCocoaCookieTreeNodeTypeFolder, [node nodeType]);
+  EXPECT_EQ(kCocoaCookieDetailsTypeFolder, [node nodeType]);
   EXPECT_EQ(1U, [[node children] count]);
 
   // host1 --> Web Databases.
   node = [[node children] lastObject];
   EXPECT_TRUE([@"Web Databases" isEqualToString:[node title]]);
-  EXPECT_EQ(kCocoaCookieTreeNodeTypeFolder, [node nodeType]);
+  EXPECT_EQ(kCocoaCookieDetailsTypeFolder, [node nodeType]);
   EXPECT_EQ(1U, [[node children] count]);
 
   // Database Storage --> db2.
   node = [[node children] lastObject];
   EXPECT_TRUE([@"db2" isEqualToString:[node title]]);
-  EXPECT_EQ(kCocoaCookieTreeNodeTypeDatabaseStorage, [node nodeType]);
-  EXPECT_TRUE([@"description 2" isEqualToString:[node databaseDescription]]);
-  EXPECT_TRUE([node lastModified]);
-  EXPECT_TRUE([node fileSize]);
+  EXPECT_EQ(kCocoaCookieDetailsTypeTreeDatabase, [node nodeType]);
+  details = [node details];
+  EXPECT_TRUE([@"description 2" isEqualToString:[details databaseDescription]]);
+  EXPECT_TRUE([details lastModified]);
+  EXPECT_TRUE([details fileSize]);
 }
 
 TEST_F(CookiesWindowControllerTest, CreateLocalStorageNodes) {
@@ -649,43 +653,43 @@ TEST_F(CookiesWindowControllerTest, CreateLocalStorageNodes) {
   CocoaCookieTreeNode* node =
       [[[controller_ cocoaTreeModel] children] objectAtIndex:2];
   EXPECT_TRUE([@"host1" isEqualToString:[node title]]);
-  EXPECT_EQ(kCocoaCookieTreeNodeTypeFolder, [node nodeType]);
+  EXPECT_EQ(kCocoaCookieDetailsTypeFolder, [node nodeType]);
   EXPECT_EQ(1U, [[node children] count]);
 
   // host1 --> Local Storage.
   node = [[node children] lastObject];
   EXPECT_TRUE([@"Local Storage" isEqualToString:[node title]]);
-  EXPECT_EQ(kCocoaCookieTreeNodeTypeFolder, [node nodeType]);
+  EXPECT_EQ(kCocoaCookieDetailsTypeFolder, [node nodeType]);
   EXPECT_EQ(1U, [[node children] count]);
 
   // Local Storage --> origin1.
   node = [[node children] lastObject];
   EXPECT_TRUE([@"origin1" isEqualToString:[node title]]);
-  EXPECT_EQ(kCocoaCookieTreeNodeTypeLocalStorage, [node nodeType]);
-  EXPECT_TRUE([@"origin1" isEqualToString:[node domain]]);
-  EXPECT_TRUE([node lastModified]);
-  EXPECT_TRUE([node fileSize]);
+  EXPECT_EQ(kCocoaCookieDetailsTypeTreeLocalStorage, [node nodeType]);
+  EXPECT_TRUE([@"origin1" isEqualToString:[[node details] domain]]);
+  EXPECT_TRUE([[node details] lastModified]);
+  EXPECT_TRUE([[node details] fileSize]);
 
   // Root --> host2.
   node =
       [[[controller_ cocoaTreeModel] children] objectAtIndex:3];
   EXPECT_TRUE([@"host2" isEqualToString:[node title]]);
-  EXPECT_EQ(kCocoaCookieTreeNodeTypeFolder, [node nodeType]);
+  EXPECT_EQ(kCocoaCookieDetailsTypeFolder, [node nodeType]);
   EXPECT_EQ(1U, [[node children] count]);
 
   // host2 --> Local Storage.
   node = [[node children] lastObject];
   EXPECT_TRUE([@"Local Storage" isEqualToString:[node title]]);
-  EXPECT_EQ(kCocoaCookieTreeNodeTypeFolder, [node nodeType]);
+  EXPECT_EQ(kCocoaCookieDetailsTypeFolder, [node nodeType]);
   EXPECT_EQ(1U, [[node children] count]);
 
   // Local Storage --> origin2.
   node = [[node children] lastObject];
   EXPECT_TRUE([@"origin2" isEqualToString:[node title]]);
-  EXPECT_EQ(kCocoaCookieTreeNodeTypeLocalStorage, [node nodeType]);
-  EXPECT_TRUE([@"origin2" isEqualToString:[node domain]]);
-  EXPECT_TRUE([node lastModified]);
-  EXPECT_TRUE([node fileSize]);
+  EXPECT_EQ(kCocoaCookieDetailsTypeTreeLocalStorage, [node nodeType]);
+  EXPECT_TRUE([@"origin2" isEqualToString:[[node details] domain]]);
+  EXPECT_TRUE([[node details] lastModified]);
+  EXPECT_TRUE([[node details] fileSize]);
 }
 
 }  // namespace

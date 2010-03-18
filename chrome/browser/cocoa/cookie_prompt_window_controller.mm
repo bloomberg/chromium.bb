@@ -19,205 +19,41 @@
 #include "grit/generated_resources.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
-#pragma mark Window Controller
+#pragma mark Selection Adapter
 
-// This class is an apapter allows the cookie details view to be shared
-// by the cookie prompt window and the cookie tree in the cookies and
-// other site data window. As instance of the class is set as the
-// content object of the object controller for the details view and
-// implements the methods expected by bindings inside that view.
+// The subpanes of the cookie details view expect to be able to bind to methods
+// through a key path in the form |content.details.xxxx|. This class serves as
+// an adapter that simply wraps a |CocoaCookieDetails| object. An instance of
+// this class is set as the content object for cookie details view's object
+// controller so that key paths are properly resolved through to the
+// |CocoaCookieDetails| object for the cookie prompt.
 @interface CookiePromptSelectionAdapter : NSObject {
  @private
-  // The type of the cookie prompt being displayed, used to
-  // determine which subview of the details view is visible
-  CookiePromptModalDialog::DialogType promptType_;
-
-  // The following members are used to hold information used in the
-  // cookie prompt detailed information for cookies and web databases.
-  scoped_nsobject<NSString> name_;
-  scoped_nsobject<NSString> domain_;
-  scoped_nsobject<NSString> content_;
-
-  // The following members are used to hold information used in the
-  // cookie prompt detailed information for cookies only.
-  scoped_nsobject<NSString> path_;
-  scoped_nsobject<NSString> sendFor_;
-  scoped_nsobject<NSString> created_;
-  scoped_nsobject<NSString> expires_;
-
-  // The following members are used to hold information used in the
-  // cookie prompt detailed information for local storage only.
-  scoped_nsobject<NSString> localStorageKey_;
-  scoped_nsobject<NSString> localStorageValue_;
+  scoped_nsobject<CocoaCookieDetails> details_;
 }
 
-// Creates and returns an instance approriate for displaying information
-// about a cookie.
-- (id)initWithCookie:(const std::string&)cookie_line
-                 url:(const GURL&)url;
-
-// Creates and returns an instance approriate for displaying information
-// about a local storage.
-- (id)initWithLocalStorage:(const std::string&)domain
-                       key:(const string16&)key
-                     value:(const string16&)value;
-
-// Creates and returns an instance approriate for displaying information
-// about a web database.
-- (id)initWithDatabase:(const std::string&)domain
-                  name:(const string16&)name;
-
-// The following methods are all used in the bindings inside the cookie
-// detail view.
-@property (readonly) BOOL isFolderOrCookieTreeDetails;
-@property (readonly) BOOL isLocalStorageTreeDetails;
-@property (readonly) BOOL isDatabaseTreeDetails;
-@property (readonly) BOOL isDatabasePromptDetails;
-@property (readonly) BOOL isLocalStoragePromptDetails;
-@property (readonly) NSString* name;
-@property (readonly) NSString* content;
-@property (readonly) NSString* domain;
-@property (readonly) NSString* path;
-@property (readonly) NSString* sendFor;
-@property (readonly) NSString* created;
-@property (readonly) NSString* expires;
-@property (readonly) NSString* fileSize;
-@property (readonly) NSString* lastModified;
-@property (readonly) NSString* databaseDescription;
-@property (readonly) NSString* localStorageKey;
-@property (readonly) NSString* localStorageValue;
-
+- (CocoaCookieDetails*)details;
+- (id)initWithDetails:(CocoaCookieDetails*)details;
 @end
 
 @implementation CookiePromptSelectionAdapter
 
-- (id)initWithCookie:(const std::string&)cookie_line
-                 url:(const GURL&)url {
+// The adapter assumes ownership of the details object
+// in its initializer.
+- (id)initWithDetails:(CocoaCookieDetails*)details {
   if ((self = [super init])) {
-    promptType_ = CookiePromptModalDialog::DIALOG_TYPE_COOKIE;
-    net::CookieMonster::ParsedCookie pc(cookie_line);
-    net::CookieMonster::CanonicalCookie cookie(url, pc);
-    const std::string& domain(pc.HasDomain() ? pc.Domain() : url.host());
-    domain_.reset([base::SysUTF8ToNSString(domain) retain]);
-    name_.reset([base::SysUTF8ToNSString(cookie.Name()) retain]);
-    content_.reset([base::SysUTF8ToNSString(cookie.Value()) retain]);
-    path_.reset([base::SysUTF8ToNSString(cookie.Path()) retain]);
-
-    if (cookie.DoesExpire()) {
-      expires_.reset([base::SysWideToNSString(
-          base::TimeFormatFriendlyDateAndTime(cookie.ExpiryDate()))
-          retain]);
-    } else {
-      expires_.reset([l10n_util::GetNSStringWithFixup(
-          IDS_COOKIES_COOKIE_EXPIRES_SESSION) retain]);
-    }
-
-    created_.reset([base::SysWideToNSString(
-        base::TimeFormatFriendlyDateAndTime(cookie.CreationDate()))
-        retain]);
-
-    if (cookie.IsSecure()) {
-      sendFor_.reset([l10n_util::GetNSStringWithFixup(
-          IDS_COOKIES_COOKIE_SENDFOR_SECURE) retain]);
-    } else {
-      sendFor_.reset([l10n_util::GetNSStringWithFixup(
-          IDS_COOKIES_COOKIE_SENDFOR_ANY) retain]);
-    }
+    details_.reset([details retain]);
   }
   return self;
 }
 
-- (id)initWithLocalStorage:(const std::string&)domain
-                       key:(const string16&)key
-                     value:(const string16&)value {
-  if ((self = [super init])) {
-    promptType_ = CookiePromptModalDialog::DIALOG_TYPE_LOCAL_STORAGE;
-    domain_.reset([base::SysUTF8ToNSString(domain) retain]);
-    localStorageKey_.reset([base::SysUTF16ToNSString(key) retain]);
-    localStorageValue_.reset([base::SysUTF16ToNSString(value) retain]);
-  }
-  return self;
-}
-
-- (id)initWithDatabase:(const std::string&)domain
-                  name:(const string16&)name {
-  if ((self = [super init])) {
-    promptType_ = CookiePromptModalDialog::DIALOG_TYPE_DATABASE;
-    name_.reset([base::SysUTF16ToNSString(name) retain]);
-    domain_.reset([base::SysUTF8ToNSString(domain) retain]);
-  }
-  return self;
-}
-
-- (BOOL)isFolderOrCookieTreeDetails {
-  return promptType_ == CookiePromptModalDialog::DIALOG_TYPE_COOKIE;
-}
-
-- (BOOL)isLocalStorageTreeDetails {
-  return false;
-}
-
-- (BOOL)isDatabaseTreeDetails {
-  return false;
-}
-
-- (BOOL) isDatabasePromptDetails {
-  return promptType_ == CookiePromptModalDialog::DIALOG_TYPE_DATABASE;
-}
-
-- (BOOL) isLocalStoragePromptDetails {
-  return promptType_ == CookiePromptModalDialog::DIALOG_TYPE_LOCAL_STORAGE;
-}
-
-- (NSString*)name {
-  return name_;
-}
-
-- (NSString*)content {
-  return content_;
-}
-
-- (NSString*)domain {
-  return domain_;
-}
-
-- (NSString*)path {
-  return path_;
-}
-
-- (NSString*)sendFor {
-  return sendFor_;
-}
-
-- (NSString*)created {
-  return created_;
-}
-
-- (NSString*)expires {
-  return expires_;
-}
-
-- (NSString*)fileSize {
-  return nil;
-}
-
-- (NSString*)lastModified {
-  return nil;
-}
-
-- (NSString*)databaseDescription {
-  return nil;
-}
-
-- (NSString*)localStorageKey {
-  return localStorageKey_;
-}
-
-- (NSString*)localStorageValue {
-  return localStorageValue_;
+- (CocoaCookieDetails*)details {
+  return details_.get();
 }
 
 @end
+
+#pragma mark Window Controller
 
 @implementation CookiePromptWindowController
 
@@ -227,23 +63,10 @@
                ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
     dialog_ = dialog;
-    CookiePromptModalDialog::DialogType type(dialog_->dialog_type());
-    if (type == CookiePromptModalDialog::DIALOG_TYPE_COOKIE) {
-      selectionAdapterObject_.reset([[CookiePromptSelectionAdapter alloc]
-          initWithCookie:dialog_->cookie_line()
-                     url:dialog_->origin()]);
-    } else if (type == CookiePromptModalDialog::DIALOG_TYPE_LOCAL_STORAGE) {
-      selectionAdapterObject_.reset([[CookiePromptSelectionAdapter alloc]
-          initWithLocalStorage:dialog_->origin().host()
-                           key:dialog_->local_storage_key()
-                         value:dialog_->local_storage_value()]);
-    } else if (type == CookiePromptModalDialog::DIALOG_TYPE_DATABASE) {
-      selectionAdapterObject_.reset([[CookiePromptSelectionAdapter alloc]
-          initWithDatabase:dialog_->origin().host()
-                      name:dialog_->database_name()]);
-    } else {
-      NOTIMPLEMENTED();
-    }
+    CocoaCookieDetails* details = [CocoaCookieDetails
+        createFromPromptModalDialog:dialog];
+    selectionAdapterObject_.reset([[CookiePromptSelectionAdapter alloc]
+        initWithDetails:details]);
   }
   return self;
 }
