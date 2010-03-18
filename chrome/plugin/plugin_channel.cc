@@ -18,6 +18,7 @@
 #include "chrome/plugin/webplugin_proxy.h"
 
 #if defined(OS_POSIX)
+#include "base/eintr_wrapper.h"
 #include "ipc/ipc_channel_posix.h"
 #endif
 
@@ -168,14 +169,14 @@ PluginChannel::PluginChannel()
 }
 
 PluginChannel::~PluginChannel() {
+#if defined(OS_POSIX)
+  // Won't be needing this any more.
+  CloseRendererFD();
+#endif
+
   if (renderer_handle_)
     base::CloseProcessHandle(renderer_handle_);
-#if defined(OS_POSIX)
-  // If we still have the renderer FD, close it.
-  if (renderer_fd_ != -1) {
-    close(renderer_fd_);
-  }
-#endif
+
   MessageLoop::current()->PostDelayedTask(FROM_HERE, new PluginReleaseTask(),
                                           kPluginReleaseTimeMS);
 }
@@ -256,6 +257,12 @@ base::WaitableEvent* PluginChannel::GetModalDialogEvent(
 }
 
 void PluginChannel::OnChannelConnected(int32 peer_pid) {
+#if defined(OS_POSIX)
+  // By this point, the renderer must have its own copy of the plugin channel
+  // FD.
+  CloseRendererFD();
+#endif
+
   base::ProcessHandle handle;
   if (!base::OpenProcessHandle(peer_pid, &handle)) {
     NOTREACHED();
@@ -265,6 +272,11 @@ void PluginChannel::OnChannelConnected(int32 peer_pid) {
 }
 
 void PluginChannel::OnChannelError() {
+#if defined(OS_POSIX)
+  // Won't be needing this any more.
+  CloseRendererFD();
+#endif
+
   base::CloseProcessHandle(renderer_handle_);
   renderer_handle_ = 0;
   PluginChannelBase::OnChannelError();
@@ -294,12 +306,23 @@ bool PluginChannel::Init(MessageLoop* ipc_message_loop, bool create_pipe_now) {
   // name. Keep the renderer side FD as a member variable in the PluginChannel
   // to be able to transmit it through IPC.
   int plugin_fd;
-  IPC::SocketPair(&plugin_fd, &renderer_fd_);
+  if (!IPC::SocketPair(&plugin_fd, &renderer_fd_))
+    return false;
   IPC::AddChannelSocket(channel_name(), plugin_fd);
 #endif
+
   if (!PluginChannelBase::Init(ipc_message_loop, create_pipe_now))
     return false;
 
   channel_->AddFilter(filter_.get());
   return true;
 }
+
+#if defined(OS_POSIX)
+void PluginChannel::CloseRendererFD() {
+  if (renderer_fd_ != -1) {
+    HANDLE_EINTR(close(renderer_fd_));
+    renderer_fd_ = -1;
+  }
+}
+#endif

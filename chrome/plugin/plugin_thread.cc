@@ -142,10 +142,8 @@ void PluginThread::OnCreateChannel(int renderer_id,
   if (channel.get()) {
     channel_handle.name = channel->channel_name();
 #if defined(OS_POSIX)
-    // On POSIX, pass the renderer-side FD. Also mark it as auto-close so that
-    // it gets closed after it has been sent.
-    int renderer_fd = channel->DisownRendererFd();
-    channel_handle.socket = base::FileDescriptor(renderer_fd, true);
+    // On POSIX, pass the renderer-side FD.
+    channel_handle.socket = base::FileDescriptor(channel->renderer_fd(), false);
 #endif
     channel->set_off_the_record(off_the_record);
   }

@@ -23,9 +23,6 @@ class PluginChannel : public PluginChannelBase {
   // Get a new PluginChannel object for the current process to talk to the
   // given renderer process. The renderer ID is an opaque unique ID generated
   // by the browser.
-  //
-  // POSIX only: If |channel_fd| > 0, use that file descriptor for the
-  // channel socket.
   static PluginChannel* GetPluginChannel(int renderer_id,
                                          MessageLoop* ipc_message_loop);
 
@@ -43,22 +40,14 @@ class PluginChannel : public PluginChannelBase {
   // dialog to come up.
   base::WaitableEvent* GetModalDialogEvent(gfx::NativeViewId containing_window);
 
-#if defined(OS_POSIX)
-  // When first created, the PluginChannel gets assigned the file descriptor
-  // for the renderer.
-  // After the first time we pass it through the IPC, we don't need it anymore,
-  // and we close it. At that time, we reset renderer_fd_ to -1.
-  int DisownRendererFd() {
-    int value = renderer_fd_;
-    renderer_fd_ = -1;
-    return value;
-  }
-#endif
-
   bool in_send() { return in_send_ != 0; }
 
   bool off_the_record() { return off_the_record_; }
   void set_off_the_record(bool value) { off_the_record_ = value; }
+
+#if defined(OS_POSIX)
+  int renderer_fd() const { return renderer_fd_; }
+#endif
 
  protected:
   // IPC::Channel::Listener implementation:
@@ -84,6 +73,13 @@ class PluginChannel : public PluginChannelBase {
   void OnDestroyInstance(int instance_id, IPC::Message* reply_msg);
   void OnGenerateRouteID(int* route_id);
 
+#if defined(OS_POSIX)
+  // Close the plugin process' copy of the renderer's side of the plugin
+  // channel.  This can be called after the renderer is known to have its own
+  // copy of renderer_fd_.
+  void CloseRendererFD();
+#endif
+
   std::vector<scoped_refptr<WebPluginDelegateStub> > plugin_stubs_;
 
   // Handle to the renderer process who is on the other side of the channel.
@@ -93,8 +89,9 @@ class PluginChannel : public PluginChannelBase {
   int renderer_id_;
 
 #if defined(OS_POSIX)
-  // FD for the renderer end of the pipe. It is stored until we send it over
-  // IPC after which it is cleared. It will be closed by the IPC mechanism.
+  // FD for the renderer end of the socket. It is closed when the IPC layer
+  // indicates that the channel is connected, proving that the renderer has
+  // access to its side of the socket.
   int renderer_fd_;
 #endif
 
