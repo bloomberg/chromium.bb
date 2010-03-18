@@ -582,16 +582,24 @@ int BookmarkBarGtk::GetFirstHiddenBookmark(
       gtk_container_get_children(GTK_CONTAINER(bookmark_toolbar_.get()));
   for (GList* iter = toolbar_items; iter; iter = g_list_next(iter)) {
     GtkWidget* tool_item = reinterpret_cast<GtkWidget*>(iter->data);
-    if (gtk_widget_get_direction(tool_item) == GTK_TEXT_DIR_RTL) {
-      overflow = (tool_item->allocation.x <
-                  bookmark_toolbar_.get()->allocation.x - extra_space);
+    if (extra_space == 0) {
+      // When we don't have to account for any extra space, the calculation
+      // is very simple.
+      overflow = !gtk_widget_get_child_visible(tool_item);
     } else {
-      overflow =
-          (tool_item->allocation.x + tool_item->allocation.width >
-           bookmark_toolbar_.get()->allocation.width +
-           bookmark_toolbar_.get()->allocation.x + extra_space);
+      if (gtk_widget_get_direction(tool_item) == GTK_TEXT_DIR_RTL) {
+        overflow = (tool_item->allocation.x + tool_item->style->xthickness <
+                    bookmark_toolbar_.get()->allocation.x - extra_space);
+      } else {
+        overflow =
+            (tool_item->allocation.x + tool_item->allocation.width +
+             tool_item->style->xthickness >
+             bookmark_toolbar_.get()->allocation.width +
+             bookmark_toolbar_.get()->allocation.x + extra_space);
+      }
+      overflow = overflow || tool_item->allocation.x == -1;
     }
-    overflow = overflow || tool_item->allocation.x == -1;
+
     if (overflow)
       break;
 
@@ -1006,8 +1014,14 @@ void BookmarkBarGtk::OnButtonDragBegin(GtkWidget* button,
   gtk_widget_get_pointer(button, &x, &y);
   gtk_drag_set_icon_widget(drag_context, window, x, y);
 
-  // Hide our node.
+  // Hide our node, but reserve space for it on the toolbar.
+  int index = gtk_toolbar_get_item_index(GTK_TOOLBAR(bookmark_toolbar_.get()),
+                                         GTK_TOOL_ITEM(button->parent));
   gtk_widget_hide(button);
+  toolbar_drop_item_ = CreateBookmarkToolItem(dragged_node_);
+  g_object_ref_sink(GTK_OBJECT(toolbar_drop_item_));
+  gtk_toolbar_set_drop_highlight_item(GTK_TOOLBAR(bookmark_toolbar_.get()),
+                                      GTK_TOOL_ITEM(toolbar_drop_item_), index);
   // Make sure it stays hidden for the duration of the drag.
   gtk_widget_set_no_show_all(button, TRUE);
 }
