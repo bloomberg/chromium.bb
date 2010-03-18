@@ -8,11 +8,11 @@
 #include <unistd.h>
 #endif
 
-#include "app/gfx/codec/png_codec.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "gfx/codec/png_codec.h"
 #include "skia/ext/vector_canvas.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/effects/SkDashPathEffect.h"

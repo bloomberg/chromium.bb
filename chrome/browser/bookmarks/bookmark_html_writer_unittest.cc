@@ -5,7 +5,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "app/l10n_util.h"
-#include "app/gfx/codec/png_codec.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
@@ -17,6 +16,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/importer/firefox2_importer.h"
 #include "chrome/test/testing_profile.h"
+#include "gfx/codec/png_codec.h"
 #include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 

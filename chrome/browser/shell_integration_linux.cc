@@ -13,7 +13,6 @@
 #include <string>
 #include <vector>
 
-#include "app/gfx/codec/png_codec.h"
 #include "base/command_line.h"
 #include "base/eintr_wrapper.h"
 #include "base/file_path.h"
@@ -34,6 +33,7 @@
 #include "chrome/common/chrome_plugin_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/browser/chrome_thread.h"
+#include "gfx/codec/png_codec.h"
 #include "googleurl/src/gurl.h"
 
 namespace {

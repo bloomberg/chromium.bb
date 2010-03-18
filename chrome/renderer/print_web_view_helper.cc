@@ -4,11 +4,11 @@
 
 #include "chrome/renderer/print_web_view_helper.h"
 
-#include "app/gfx/codec/jpeg_codec.h"
 #include "app/l10n_util.h"
 #include "base/logging.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/render_view.h"
+#include "gfx/codec/jpeg_codec.h"
 #include "grit/generated_resources.h"
 #include "printing/units.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"

@@ -9,7 +9,6 @@
 
 #include "chrome/browser/thumbnail_store.h"
 
-#include "app/gfx/codec/jpeg_codec.h"
 #include "app/sql/connection.h"
 #include "app/sql/statement.h"
 #include "base/time.h"
@@ -21,6 +20,7 @@
 #include "chrome/common/ref_counted_util.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/tools/profiles/thumbnail-inl.h"
+#include "gfx/codec/jpeg_codec.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"

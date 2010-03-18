@@ -7,7 +7,6 @@
 #include <string.h>
 #include <algorithm>
 
-#include "app/gfx/codec/jpeg_codec.h"
 #include "app/sql/statement.h"
 #include "app/sql/transaction.h"
 #include "base/basictypes.h"
@@ -21,6 +20,7 @@
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
+#include "gfx/codec/jpeg_codec.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 

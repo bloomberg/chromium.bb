@@ -5,7 +5,6 @@
 #include "chrome/browser/views/create_application_shortcut_view.h"
 
 #include "app/gfx/canvas.h"
-#include "app/gfx/codec/png_codec.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/callback.h"
@@ -15,6 +14,7 @@
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
+#include "gfx/codec/png_codec.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "net/base/load_flags.h"

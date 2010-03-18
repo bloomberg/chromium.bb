@@ -7,7 +7,6 @@
 
 #include "chrome/tools/profiles/thumbnail-inl.h"
 
-#include "app/gfx/codec/jpeg_codec.h"
 #include "base/at_exit.h"
 #include "base/file_path.h"
 #include "base/i18n/icu_util.h"
@@ -18,6 +17,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/common/thumbnail_score.h"
+#include "gfx/codec/jpeg_codec.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 using base::Time;

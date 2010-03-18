@@ -5,7 +5,6 @@
 #import <Cocoa/Cocoa.h>
 #include <vector>
 
-#include "app/gfx/codec/png_codec.h"
 #include "base/ref_counted_memory.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
@@ -15,6 +14,7 @@
 #include "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/cocoa/history_menu_bridge.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
+#include "gfx/codec/png_codec.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class HistoryMenuBridgeTest : public CocoaTest {

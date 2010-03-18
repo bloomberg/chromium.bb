@@ -17,6 +17,8 @@
         '../testing/gtest.gyp:gtest',
       ],
       'sources': [
+        'codec/jpeg_codec_unittest.cc',
+        'codec/png_codec_unittest.cc',
         'insets_unittest.cc',
         'rect_unittest.cc',
         'run_all_unittests.cc',
@@ -56,6 +58,10 @@
       'sources': [
         'blit.cc',
         'blit.h',
+        'codec/jpeg_codec.cc',
+        'codec/jpeg_codec.h',
+        'codec/png_codec.cc',
+        'codec/png_codec.h',
         'gfx_paths.cc',
         'gfx_paths.h',
         'insets.cc',

@@ -8,7 +8,6 @@
 #include <gio/gio.h>
 #include <gtk/gtk.h>
 
-#include "app/gfx/codec/png_codec.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/linux_util.h"
@@ -16,6 +15,7 @@
 #include "base/mime_util.h"
 #include "base/thread.h"
 #include "base/string_util.h"
+#include "gfx/codec/png_codec.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 static int SizeToInt(IconLoader::IconSize size) {

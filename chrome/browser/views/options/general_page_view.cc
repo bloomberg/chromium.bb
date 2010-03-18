@@ -5,7 +5,6 @@
 #include "chrome/browser/views/options/general_page_view.h"
 
 #include "app/combobox_model.h"
-#include "app/gfx/codec/png_codec.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/callback.h"
@@ -29,6 +28,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/installer/util/browser_distribution.h"
+#include "gfx/codec/png_codec.h"
 #include "grit/app_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"

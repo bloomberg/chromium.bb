@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/gfx/codec/png_codec.h"
+#include "gfx/codec/png_codec.h"
 
 #include "base/logging.h"
 #include "base/scoped_ptr.h"

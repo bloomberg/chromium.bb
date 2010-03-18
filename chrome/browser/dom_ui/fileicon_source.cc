@@ -4,11 +4,11 @@
 
 #include "chrome/browser/dom_ui/fileicon_source.h"
 
-#include "app/gfx/codec/png_codec.h"
 #include "base/callback.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/time_format.h"
+#include "gfx/codec/png_codec.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 

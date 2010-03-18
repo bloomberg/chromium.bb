@@ -4,8 +4,8 @@
 
 #include "chrome/browser/history/top_sites.h"
 
-#include "app/gfx/codec/jpeg_codec.h"
 #include "base/logging.h"
+#include "gfx/codec/jpeg_codec.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace history {

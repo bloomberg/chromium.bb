@@ -6,10 +6,10 @@
 
 #include <vector>
 
-#include "app/gfx/codec/png_codec.h"
 #include "base/callback.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/profile.h"
+#include "gfx/codec/png_codec.h"
 #include "gfx/gtk_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 

@@ -39,8 +39,6 @@
       'sources': [
         'animation_unittest.cc',
         'clipboard/clipboard_unittest.cc',
-        'gfx/codec/jpeg_codec_unittest.cc',
-        'gfx/codec/png_codec_unittest.cc',
         'gfx/color_utils_unittest.cc',
         'gfx/font_unittest.cc',
         'gfx/native_theme_win_unittest.cc',

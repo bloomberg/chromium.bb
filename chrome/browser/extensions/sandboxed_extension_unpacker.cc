@@ -6,7 +6,6 @@
 
 #include <set>
 
-#include "app/gfx/codec/png_codec.h"
 #include "base/base64.h"
 #include "base/crypto/signature_verifier.h"
 #include "base/file_util.h"
@@ -23,6 +22,7 @@
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_unpacker.h"
 #include "chrome/common/json_value_serializer.h"
+#include "gfx/codec/png_codec.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 const char SandboxedExtensionUnpacker::kExtensionHeaderMagic[] = "Cr24";

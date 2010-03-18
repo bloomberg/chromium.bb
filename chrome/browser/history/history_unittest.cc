@@ -20,7 +20,6 @@
 #include <time.h>
 #include <algorithm>
 
-#include "app/gfx/codec/jpeg_codec.h"
 #include "app/sql/connection.h"
 #include "app/sql/statement.h"
 #include "base/basictypes.h"
@@ -45,6 +44,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/tools/profiles/thumbnail-inl.h"
+#include "gfx/codec/jpeg_codec.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 

@@ -12,7 +12,6 @@
 #include <string>
 #include <vector>
 
-#include "app/gfx/codec/png_codec.h"
 #include "app/l10n_util.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -33,6 +32,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
+#include "gfx/codec/png_codec.h"
 #include "gfx/icon_util.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"

@@ -4,10 +4,10 @@
 
 #include "app/resource_bundle.h"
 
-#include "app/gfx/codec/png_codec.h"
 #include "app/gfx/font.h"
 #include "base/logging.h"
 #include "base/string_piece.h"
+#include "gfx/codec/png_codec.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 ResourceBundle* ResourceBundle::g_shared_instance_ = NULL;

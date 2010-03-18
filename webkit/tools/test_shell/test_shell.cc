@@ -6,7 +6,6 @@
 
 #include "webkit/tools/test_shell/test_shell.h"
 
-#include "app/gfx/codec/png_codec.h"
 #include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/debug_on_start.h"
@@ -21,6 +20,7 @@
 #include "base/stats_table.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "gfx/codec/png_codec.h"
 #include "gfx/size.h"
 #include "googleurl/src/url_util.h"
 #include "grit/webkit_strings.h"

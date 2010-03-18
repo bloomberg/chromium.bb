@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "app/gfx/codec/png_codec.h"
 #include "base/base64.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -15,6 +14,7 @@
 #include "chrome/browser/chrome_plugin_host.h"
 #include "chrome/common/chrome_plugin_util.h"
 #include "chrome/common/gears_api.h"
+#include "gfx/codec/png_codec.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/dom_operations.h"

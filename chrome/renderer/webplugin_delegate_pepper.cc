@@ -15,7 +15,6 @@
 #include <vector>
 
 #if defined(OS_WIN)
-#include "app/gfx/codec/jpeg_codec.h"
 #include "app/gfx/gdi_util.h"
 #include "app/gfx/native_theme_win.h"
 #endif
@@ -35,6 +34,7 @@
 #include "chrome/renderer/webplugin_delegate_proxy.h"
 #include "gfx/blit.h"
 #if defined(OS_WIN)
+#include "gfx/codec/jpeg_codec.h"
 #include "skia/ext/vector_platform_device.h"
 #endif
 #include "third_party/npapi/bindings/npapi_extensions.h"
@@ -1284,7 +1284,7 @@ bool WebPluginDelegatePepper::DrawJPEGToPlatformDC(
 
   // Ideally we should add JPEG compression to the VectorPlatformDevice class
   // However, Skia currently has no JPEG compression code and we cannot
-  // depend on app/gfx/jpeg_codec.h in Skia. So we do the compression here.
+  // depend on gfx/jpeg_codec.h in Skia. So we do the compression here.
   SkAutoLockPixels lock(bitmap);
   DCHECK(bitmap.getConfig() == SkBitmap::kARGB_8888_Config);
   const uint32_t* pixels =

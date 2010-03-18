@@ -4,7 +4,7 @@
 
 #include <math.h>
 
-#include "app/gfx/codec/jpeg_codec.h"
+#include "gfx/codec/jpeg_codec.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gfx {

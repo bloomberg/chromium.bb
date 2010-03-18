@@ -4,7 +4,6 @@
 
 #include "chrome/browser/history/thumbnail_database.h"
 
-#include "app/gfx/codec/jpeg_codec.h"
 #include "app/sql/statement.h"
 #include "app/sql/transaction.h"
 #include "base/file_util.h"
@@ -18,6 +17,7 @@
 #include "chrome/browser/history/history_publisher.h"
 #include "chrome/browser/history/url_database.h"
 #include "chrome/common/thumbnail_score.h"
+#include "gfx/codec/jpeg_codec.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace history {

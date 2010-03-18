@@ -11,7 +11,6 @@
 
 #include <algorithm>
 
-#include "app/gfx/codec/png_codec.h"
 #include "app/gfx/gdi_util.h"
 #include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
@@ -26,6 +25,7 @@
 #include "base/scoped_handle_win.h"
 #include "base/string_util.h"
 #include "base/win_util.h"
+#include "gfx/codec/png_codec.h"
 
 // Ensure that we pick up this link library.
 #pragma comment(lib, "dwmapi.lib")

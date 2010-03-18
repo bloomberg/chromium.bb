@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/gfx/codec/jpeg_codec.h"
 #include "base/file_util.h"
 #include "base/shared_memory.h"
 #include "chrome/common/content_settings.h"
@@ -10,6 +9,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/print_web_view_helper.h"
 #include "chrome/test/render_view_test.h"
+#include "gfx/codec/jpeg_codec.h"
 #include "net/base/net_errors.h"
 #include "printing/image.h"
 #include "printing/native_metafile.h"

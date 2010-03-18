@@ -4,7 +4,6 @@
 
 #include "chrome/browser/cocoa/history_menu_bridge.h"
 
-#include "app/gfx/codec/png_codec.h"
 #include "app/resource_bundle.h"
 #include "base/callback.h"
 #include "base/stl_util-inl.h"
@@ -19,6 +18,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
+#include "gfx/codec/png_codec.h"
 #include "grit/app_resources.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"

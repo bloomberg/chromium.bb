@@ -5,7 +5,6 @@
 #include "chrome/browser/importer/importer.h"
 
 #include "app/gfx/favicon_size.h"
-#include "app/gfx/codec/png_codec.h"
 #include "app/l10n_util.h"
 #include "base/string_util.h"
 #include "base/thread.h"
@@ -21,6 +20,7 @@
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
+#include "gfx/codec/png_codec.h"
 #include "grit/generated_resources.h"
 #include "skia/ext/image_operations.h"
 #include "webkit/glue/image_decoder.h"

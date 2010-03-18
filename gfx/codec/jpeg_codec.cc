@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/gfx/codec/jpeg_codec.h"
+#include "gfx/codec/jpeg_codec.h"
 
 #include <setjmp.h>
 

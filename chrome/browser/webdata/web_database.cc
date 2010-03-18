@@ -9,7 +9,6 @@
 #include <set>
 #include <string>
 
-#include "app/gfx/codec/png_codec.h"
 #include "app/l10n_util.h"
 #include "app/sql/statement.h"
 #include "app/sql/transaction.h"
@@ -22,6 +21,7 @@
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/common/notification_service.h"
+#include "gfx/codec/png_codec.h"
 #include "webkit/glue/password_form.h"
 
 // Encryptor is the *wrong* way of doing things; we need to turn it into a

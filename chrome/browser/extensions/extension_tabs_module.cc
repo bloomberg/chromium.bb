@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/extension_tabs_module.h"
 
-#include "app/gfx/codec/jpeg_codec.h"
 #include "base/base64.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser.h"
@@ -24,6 +23,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/url_constants.h"
+#include "gfx/codec/jpeg_codec.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"

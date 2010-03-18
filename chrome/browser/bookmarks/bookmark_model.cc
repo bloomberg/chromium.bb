@@ -4,7 +4,6 @@
 
 #include "chrome/browser/bookmarks/bookmark_model.h"
 
-#include "app/gfx/codec/png_codec.h"
 #include "app/l10n_util.h"
 #include "app/l10n_util_collator.h"
 #include "base/callback.h"
@@ -18,6 +17,7 @@
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/notification_service.h"
+#include "gfx/codec/png_codec.h"
 #include "grit/generated_resources.h"
 
 using base::Time;

@@ -4,7 +4,7 @@
 
 #include <math.h>
 
-#include "app/gfx/codec/png_codec.h"
+#include "gfx/codec/png_codec.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkUnPreMultiply.h"
