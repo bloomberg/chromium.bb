@@ -2736,6 +2736,7 @@ BUG35822 : plugins/netscape-browser-object-identity.html = TEXT
 BUG35858 MAC LINUX DEBUG : media/remove-from-document.html = CRASH PASS
 BUG35858 MAC RELEASE : media/remove-from-document.html = CRASH PASS TIMEOUT
 BUG35858 MAC : media/video-source.html = CRASH PASS
+BUG35858 LINUX DEBUG : media/video-source.html = CRASH PASS
 BUG35858 MAC LINUX : media/video-source-type.html = CRASH PASS
 BUG35858 MAC : media/video-src.html = CRASH PASS
 BUG35858 MAC : media/video-src-source.html = CRASH PASS
