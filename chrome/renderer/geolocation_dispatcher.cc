@@ -43,11 +43,6 @@ void GeolocationDispatcher::requestPermissionForFrame(
 }
 
 void GeolocationDispatcher::startUpdating(
-    int bridge_id, bool enableHighAccuracy) {
-  startUpdating(bridge_id, WebKit::WebURL(), enableHighAccuracy);
-}
-
-void GeolocationDispatcher::startUpdating(
     int bridge_id, const WebKit::WebURL& url, bool enableHighAccuracy) {
   render_view_->Send(new ViewHostMsg_Geolocation_StartUpdating(
       render_view_->routing_id(), bridge_id, GURL(url).host(),
