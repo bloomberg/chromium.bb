@@ -6,12 +6,14 @@
 
 #include "app/l10n_util.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_infobar_module_constants.h"
 #include "chrome/browser/extensions/extension_infobar_delegate.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 
@@ -24,9 +26,8 @@ bool ShowInfoBarFunction::RunImpl() {
   std::string html_path;
   EXTENSION_FUNCTION_VALIDATE(args->GetString(keys::kHtmlPath, &html_path));
 
-  GURL url = GURL(std::string(chrome::kExtensionScheme) +
-                  chrome::kStandardSchemeSeparator +
-                  extension_id() + "/" + html_path);
+  Extension* extension = dispatcher()->GetExtension();
+  GURL url = extension->GetResourceURL(extension->url(), html_path);
 
   Browser* browser = dispatcher()->GetBrowser(true);
   if (!browser) {
@@ -40,7 +41,7 @@ bool ShowInfoBarFunction::RunImpl() {
     EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kTabId, &tab_id));
 
     EXTENSION_FUNCTION_VALIDATE(ExtensionTabUtil::GetTabById(
-        tab_id, browser->profile(), false,  // No incognito.
+        tab_id, browser->profile(), true,  // Allow infobar in incognito.
         NULL, NULL, &tab_contents, NULL));
   } else {
     tab_contents = browser->GetSelectedTabContents();

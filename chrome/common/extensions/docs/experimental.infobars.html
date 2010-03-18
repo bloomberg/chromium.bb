@@ -15,7 +15,7 @@
     </script>
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
-  <title>chrome.experimental.infoBar - Google Chrome Extensions - Google Code</title></head><body>  <div id="gc-container" class="labs">
+  <title>chrome.experimental.infobars - Google Chrome Extensions - Google Code</title></head><body>  <div id="gc-container" class="labs">
       <div id="devModeWarning">
         You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
       </div>
@@ -192,7 +192,7 @@
 
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">chrome.experimental.infoBar</h1>
+        <h1 class="page_title">chrome.experimental.infobars</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
         <div id="toc">
@@ -207,7 +207,7 @@
               </ol>
             </li>
               <li>
-                <a href="#apiReference">API reference: chrome.experimental.infoBar</a>
+                <a href="#apiReference">API reference: chrome.experimental.infobars</a>
                 <ol>
                   <li style="display: none; ">
                     <a href="#properties">Properties</a>
@@ -253,7 +253,7 @@
         <!-- API PAGE -->
         <div class="apiPage">
         <a name="apiReference"></a>
-        <h2>API reference: chrome.experimental.infoBar</h2>
+        <h2>API reference: chrome.experimental.infobars</h2>
 
           <!-- PROPERTIES -->
           <div class="apiGroup" style="display: none; ">
@@ -285,13 +285,13 @@
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.infoBar.show</span>(<span class="null"><span style="display: none; ">, </span><span>object</span>
+                  <span>chrome.experimental.infobars.show</span>(<span class="null"><span style="display: none; ">, </span><span>object</span>
                       <var><span>details</span></var></span><span class="null"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Shows an infobar in the specified tab.</p>
+                <p>Shows an infobar in the specified tab. The infobar will be closed automatically when the tab navigates. Use window.close() to close the infobar before then.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>

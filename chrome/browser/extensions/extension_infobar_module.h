@@ -10,7 +10,7 @@
 class ShowInfoBarFunction : public SyncExtensionFunction {
   ~ShowInfoBarFunction() {}
   virtual bool RunImpl();
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.infoBar.show")
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.infobars.show")
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_INFOBAR_MODULE_H_

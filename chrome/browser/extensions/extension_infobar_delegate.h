@@ -12,8 +12,8 @@ class Extension;
 class ExtensionHost;
 class TabContents;
 
-// An interface derived from InfoBarDelegate to form the base interface for
-// extension InfoBars.
+// The InfobarDelegate for creating and managing state for the ExtensionInfobar
+// plus monitor when the extension goes away.
 class ExtensionInfoBarDelegate : public InfoBarDelegate,
                                  public NotificationObserver {
  public:

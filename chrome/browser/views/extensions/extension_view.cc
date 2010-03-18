@@ -62,7 +62,7 @@ void ExtensionView::SetVisible(bool is_visible) {
     NativeViewHost::SetVisible(is_visible);
 
     // Also tell RenderWidgetHostView the new visibility. Despite its name, it
-    // is not part of the View heirarchy and does not know about the change
+    // is not part of the View hierarchy and does not know about the change
     // unless we tell it.
     if (render_view_host()->view()) {
       if (is_visible)

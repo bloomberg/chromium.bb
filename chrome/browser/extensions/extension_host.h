@@ -99,7 +99,7 @@ class ExtensionHost : public RenderViewHostDelegate,
   // Sets |url_| and navigates |render_view_host_|.
   void NavigateToURL(const GURL& url);
 
-  // Insert a default style sheet for Extension InfoBars.
+  // Insert a default style sheet for Extension Infobars.
   void InsertInfobarCSS();
 
   // Insert the theme CSS for a toolstrip/mole.

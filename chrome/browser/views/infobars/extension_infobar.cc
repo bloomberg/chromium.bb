@@ -104,6 +104,8 @@ void ExtensionInfoBar::RunMenu(View* source, const gfx::Point& pt) {
 void ExtensionInfoBar::SetupIconAndMenu() {
   SkBitmap icon;
 
+  // TODO(finnur): http://crbug.com/38521. Use cached version of the Extension
+  // icon instead of loading it here.
   ExtensionResource icon_resource;
   Extension::Icons size = delegate_->extension_host()->extension()->
       GetIconPathAllowLargerSize(&icon_resource,

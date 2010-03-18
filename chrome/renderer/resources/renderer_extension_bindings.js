@@ -250,7 +250,7 @@ var chrome = chrome || {};
       "experimental.extension",
       "experimental.idle",
       "experimental.history",
-      "experimental.infoBar",
+      "experimental.infobars",
       "experimental.metrics",
       "experimental.popup",
       "experimental.processes",

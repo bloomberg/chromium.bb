@@ -1392,13 +1392,13 @@
     ]
   },
   {
-    "namespace": "experimental.infoBar",
+    "namespace": "experimental.infobars",
     "types": [],
     "functions": [
       {
         "name": "show",
         "type": "function",
-        "description": "Shows an infobar in the specified tab.",
+        "description": "Shows an infobar in the specified tab. The infobar will be closed automatically when the tab navigates. Use window.close() to close the infobar before then.",
         "parameters": [
           { 
             "name": "details",
