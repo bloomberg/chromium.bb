@@ -38,6 +38,11 @@ class DOMView : public views::NativeViewHost {
   virtual bool SkipDefaultKeyEventProcessing(const views::KeyEvent& e);
   virtual void Focus();
 
+  // Returns new allocated TabContents instance, caller is responsible deleting.
+  // Override in derived classes to replace TabContents with derivative.
+  virtual TabContents* CreateTabContents(Profile* profile,
+                                         SiteInstance* instance);
+
   scoped_ptr<TabContents> tab_contents_;
 
  private:

@@ -22,10 +22,14 @@ bool DOMView::Init(Profile* profile, SiteInstance* instance) {
     return true;
 
   initialized_ = true;
-  tab_contents_.reset(
-      new TabContents(profile, instance, MSG_ROUTING_NONE, NULL));
+  tab_contents_.reset(CreateTabContents(profile, instance));
   views::NativeViewHost::Attach(tab_contents_->GetNativeView());
   return true;
+}
+
+TabContents* DOMView::CreateTabContents(Profile* profile,
+                                        SiteInstance* instance) {
+  return new TabContents(profile, instance, MSG_ROUTING_NONE, NULL);
 }
 
 void DOMView::LoadURL(const GURL& url) {
