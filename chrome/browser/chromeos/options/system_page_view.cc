@@ -49,6 +49,20 @@ class DateTimeSection : public SettingsPageSection,
   class TimezoneComboboxModel : public ComboboxModel {
    public:
     TimezoneComboboxModel() {
+      // TODO(chocobo): For now, add all the GMT timezones.
+      // We may eventually want to use icu::TimeZone::createEnumeration()
+      // to list all the timezones and pick the ones we want to show.
+      // NOTE: This currently does not handle daylight savings properly
+      // b/c this is just a manually selected list of timezones that
+      // happen to span the GMT-11 to GMT+12 Today. When daylight savings
+      // kick in, this list might have more than one timezone in the same
+      // GMT bucket.
+      timezones_.push_back(icu::TimeZone::createTimeZone(
+          icu::UnicodeString::fromUTF8("Pacific/Samoa")));
+      timezones_.push_back(icu::TimeZone::createTimeZone(
+          icu::UnicodeString::fromUTF8("US/Hawaii")));
+      timezones_.push_back(icu::TimeZone::createTimeZone(
+          icu::UnicodeString::fromUTF8("US/Alaska")));
       timezones_.push_back(icu::TimeZone::createTimeZone(
           icu::UnicodeString::fromUTF8("US/Pacific")));
       timezones_.push_back(icu::TimeZone::createTimeZone(
@@ -57,16 +71,40 @@ class DateTimeSection : public SettingsPageSection,
           icu::UnicodeString::fromUTF8("US/Central")));
       timezones_.push_back(icu::TimeZone::createTimeZone(
           icu::UnicodeString::fromUTF8("US/Eastern")));
-      // For now, add all the GMT timezones.
-      // We may eventually want to use icu::TimeZone::createEnumeration()
-      // to list all the timezones and pick the ones we want to show.
-      for (int i = 11; i >= -12; i--) {
-        // For positive i's, add the extra '+'.
-        std::string str = StringPrintf(i > 0 ? "Etc/GMT+%d" : "Etc/GMT%d", i);
-        icu::TimeZone* timezone = icu::TimeZone::createTimeZone(
-            icu::UnicodeString::fromUTF8(str.c_str()));
-        timezones_.push_back(timezone);
-      }
+      timezones_.push_back(icu::TimeZone::createTimeZone(
+          icu::UnicodeString::fromUTF8("America/Santiago")));
+      timezones_.push_back(icu::TimeZone::createTimeZone(
+          icu::UnicodeString::fromUTF8("America/Sao_Paulo")));
+      timezones_.push_back(icu::TimeZone::createTimeZone(
+          icu::UnicodeString::fromUTF8("Atlantic/South_Georgia")));
+      timezones_.push_back(icu::TimeZone::createTimeZone(
+          icu::UnicodeString::fromUTF8("Atlantic/Cape_Verde")));
+      timezones_.push_back(icu::TimeZone::createTimeZone(
+          icu::UnicodeString::fromUTF8("Europe/London")));
+      timezones_.push_back(icu::TimeZone::createTimeZone(
+          icu::UnicodeString::fromUTF8("Europe/Rome")));
+      timezones_.push_back(icu::TimeZone::createTimeZone(
+          icu::UnicodeString::fromUTF8("Europe/Helsinki")));
+      timezones_.push_back(icu::TimeZone::createTimeZone(
+          icu::UnicodeString::fromUTF8("Europe/Moscow")));
+      timezones_.push_back(icu::TimeZone::createTimeZone(
+          icu::UnicodeString::fromUTF8("Asia/Dubai")));
+      timezones_.push_back(icu::TimeZone::createTimeZone(
+          icu::UnicodeString::fromUTF8("Asia/Karachi")));
+      timezones_.push_back(icu::TimeZone::createTimeZone(
+          icu::UnicodeString::fromUTF8("Asia/Dhaka")));
+      timezones_.push_back(icu::TimeZone::createTimeZone(
+          icu::UnicodeString::fromUTF8("Asia/Bangkok")));
+      timezones_.push_back(icu::TimeZone::createTimeZone(
+          icu::UnicodeString::fromUTF8("Asia/Hong_Kong")));
+      timezones_.push_back(icu::TimeZone::createTimeZone(
+          icu::UnicodeString::fromUTF8("Asia/Tokyo")));
+      timezones_.push_back(icu::TimeZone::createTimeZone(
+          icu::UnicodeString::fromUTF8("Australia/Sydney")));
+      timezones_.push_back(icu::TimeZone::createTimeZone(
+          icu::UnicodeString::fromUTF8("Asia/Magadan")));
+      timezones_.push_back(icu::TimeZone::createTimeZone(
+          icu::UnicodeString::fromUTF8("Pacific/Auckland")));
     }
 
     virtual ~TimezoneComboboxModel() {
@@ -82,7 +120,9 @@ class DateTimeSection : public SettingsPageSection,
       timezones_[index]->getDisplayName(name);
       std::wstring output;
       UTF16ToWide(name.getBuffer(), name.length(), &output);
-      return output;
+      int hour_offset = timezones_[index]->getRawOffset() / 3600000;
+      return StringPrintf(hour_offset == 0 ? L"(GMT) " : (hour_offset > 0 ?
+          L"(GMT+%d) " : L"(GMT%d) "), hour_offset) + output;
     }
 
     virtual std::wstring GetTimeZoneIDAt(int index) {
