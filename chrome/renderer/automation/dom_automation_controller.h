@@ -84,6 +84,11 @@ class DomAutomationController : public CppBoundClass {
   // IPC. It sets the return value to null on unexpected errors or arguments.
   void Send(const CppArgumentList& args, CppVariant* result);
 
+  // Makes the renderer send a javascript value to the app.
+  // The value must be a NPString and should be properly formed JSON.
+  // This function does not modify/escape the returned string in any way.
+  void SendJSON(const CppArgumentList& args, CppVariant* result);
+
   void SetAutomationId(const CppArgumentList& args, CppVariant* result);
 
   // TODO(vibhor): Implement later

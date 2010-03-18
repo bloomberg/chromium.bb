@@ -17,6 +17,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/test/automation/dom_element_proxy.h"
 
 class AppModalDialog;
 class Browser;
@@ -85,6 +86,10 @@ void NavigateToURL(Browser* browser, const GURL& url);
 void NavigateToURLBlockUntilNavigationsComplete(Browser* browser,
                                                 const GURL& url,
                                                 int number_of_navigations);
+
+// Gets the DOMDocument for the active tab in |browser|.
+// Returns a NULL reference on failure.
+DOMElementProxyRef GetActiveDOMDocument(Browser* browser);
 
 // Executes the passed |script| in the frame pointed to by |frame_xpath| (use
 // empty string for main frame) and returns the value the evaluation of the

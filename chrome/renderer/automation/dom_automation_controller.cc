@@ -14,6 +14,7 @@ DomAutomationController::DomAutomationController()
       automation_id_(MSG_ROUTING_NONE) {
   BindMethod("send", &DomAutomationController::Send);
   BindMethod("setAutomationId", &DomAutomationController::SetAutomationId);
+  BindMethod("sendJSON", &DomAutomationController::SendJSON);
 }
 
 void DomAutomationController::Send(const CppArgumentList& args,
@@ -84,6 +85,36 @@ void DomAutomationController::Send(const CppArgumentList& args,
 
   result->Set(succeeded);
   return;
+}
+
+void DomAutomationController::SendJSON(const CppArgumentList& args,
+                                       CppVariant* result) {
+  if (args.size() != 1) {
+    result->SetNull();
+    return;
+  }
+
+  if (automation_id_ == MSG_ROUTING_NONE) {
+    result->SetNull();
+    return;
+  }
+
+  if (!sender_) {
+    NOTREACHED();
+    result->SetNull();
+    return;
+  }
+
+  if (args[0].type != NPVariantType_String) {
+    result->SetNull();
+    return;
+  }
+
+  std::string json = args[0].ToString();
+  result->Set(sender_->Send(
+      new ViewHostMsg_DomOperationResponse(routing_id_, json, automation_id_)));
+
+  automation_id_ = MSG_ROUTING_NONE;
 }
 
 void DomAutomationController::SetAutomationId(
