@@ -39,8 +39,10 @@
 - (NSMutableArray*)addChildFoldersFromNode:(const BookmarkNode*)node;
 
 // Scan the folder tree stemming from the given tree folder and create
-// any newly added folders.
-- (void)createNewFoldersForFolder:(BookmarkFolderInfo*)treeFolder;
+// any newly added folders.  Pass down info for the folder which was
+// selected before we began creating folders.
+- (void)createNewFoldersForFolder:(BookmarkFolderInfo*)treeFolder
+               selectedFolderInfo:(BookmarkFolderInfo*)selectedFolderInfo;
 
 // Scan the folder tree looking for the given bookmark node and return
 // the selection path thereto.
@@ -453,12 +455,13 @@ class BookmarkEditorBaseControllerBridge : public BookmarkModelObserver {
 
 #pragma mark New Folder Handler
 
-- (void)createNewFoldersForFolder:(BookmarkFolderInfo*)folderInfo {
+- (void)createNewFoldersForFolder:(BookmarkFolderInfo*)folderInfo
+               selectedFolderInfo:(BookmarkFolderInfo*)selectedFolderInfo {
   NSArray* subfolders = [folderInfo children];
   const BookmarkNode* parentNode = [folderInfo folderNode];
   DCHECK(parentNode);
   NSUInteger i = 0;
-  for (BookmarkFolderInfo *subFolderInfo in subfolders) {
+  for (BookmarkFolderInfo* subFolderInfo in subfolders) {
     if ([subFolderInfo newFolder]) {
       BookmarkModel* model = [self bookmarkModel];
       const BookmarkNode* newFolder =
@@ -468,8 +471,14 @@ class BookmarkEditorBaseControllerBridge : public BookmarkModelObserver {
       // Update our dictionary with the actual folder node just created.
       [subFolderInfo setFolderNode:newFolder];
       [subFolderInfo setNewFolder:NO];
+      // If the newly created folder was selected, update the selection path.
+      if (subFolderInfo == selectedFolderInfo) {
+        NSIndexPath* selectionPath = [self selectionPathForNode:newFolder];
+        [self setTableSelectionPath:selectionPath];
+      }
     }
-    [self createNewFoldersForFolder:subFolderInfo];
+    [self createNewFoldersForFolder:subFolderInfo
+                 selectedFolderInfo:selectedFolderInfo];
     ++i;
   }
 }
@@ -509,7 +518,8 @@ class BookmarkEditorBaseControllerBridge : public BookmarkModelObserver {
   // Scan the tree looking for nodes marked 'newFolder' and create those nodes.
   NSArray* folderTreeArray = [self folderTreeArray];
   for (BookmarkFolderInfo *folderInfo in folderTreeArray) {
-    [self createNewFoldersForFolder:folderInfo];
+    [self createNewFoldersForFolder:folderInfo
+                 selectedFolderInfo:[self selectedFolder]];
   }
 }
 
