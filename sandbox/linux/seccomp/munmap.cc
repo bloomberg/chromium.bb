@@ -8,7 +8,8 @@
 namespace playground {
 
 int Sandbox::sandbox_munmap(void* start, size_t length) {
-  Debug::syscall(__NR_munmap, "Executing handler");
+  long long tm;
+  Debug::syscall(&tm, __NR_munmap, "Executing handler");
   struct {
     int       sysnum;
     long long cookie;
@@ -26,6 +27,7 @@ int Sandbox::sandbox_munmap(void* start, size_t length) {
       read(sys, threadFdPub(), &rc, sizeof(rc)) != sizeof(rc)) {
     die("Failed to forward munmap() request [sandbox]");
   }
+  Debug::elapsed(tm, __NR_munmap);
   return static_cast<int>(rc);
 }
 

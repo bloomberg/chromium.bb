@@ -124,7 +124,83 @@ Debug::Debug() {
   }
 }
 
-void Debug::message(const char* msg) {
+bool Debug::enter() {
+  // Increment the recursion level in TLS storage. This allows us to
+  // make system calls from within our debugging functions, without triggering
+  // additional debugging output.
+  //
+  // This function can be called from both the sandboxed process and from the
+  // trusted process. Only the sandboxed process needs to worry about
+  // recursively calling system calls. The trusted process doesn't intercept
+  // system calls and thus doesn't have this problem. It also doesn't have
+  // a TLS. We explicitly set the segment selector to zero, when in the
+  // trusted process, so that we can avoid tracking recursion levels.
+  int level;
+  #if defined(__x86_64__)
+  asm volatile("mov  %%gs, %0\n"
+               "test %0, %0\n"
+               "jz   1f\n"
+               "movl %%gs:0x1050-0xD8, %0\n"
+               "incl %%gs:0x1050-0xD8\n"
+             "1:\n"
+               : "=r"(level)
+               :
+               : "memory");
+  #elif defined(__i386__)
+  asm volatile("mov  %%fs, %0\n"
+               "test %0, %0\n"
+               "jz   1f\n"
+               "movl %%fs:0x1034-0x54, %0\n"
+               "incl %%fs:0x1034-0x54\n"
+             "1:\n"
+               : "=r"(level)
+               :
+               : "memory");
+  #else
+  #error "Unsupported target platform"
+  #endif
+  return !level;
+}
+
+bool Debug::leave() {
+  // Decrement the recursion level in TLS storage. This allows us to
+  // make system calls from within our debugging functions, without triggering
+  // additional debugging output.
+  //
+  // This function can be called from both the sandboxed process and from the
+  // trusted process. Only the sandboxed process needs to worry about
+  // recursively calling system calls. The trusted process doesn't intercept
+  // system calls and thus doesn't have this problem. It also doesn't have
+  // a TLS. We explicitly set the segment selector to zero, when in the
+  // trusted process, so that we can avoid tracking recursion levels.
+  int level;
+  #if defined(__x86_64__)
+  asm volatile("mov  %%gs, %0\n"
+               "test %0, %0\n"
+               "jz   1f\n"
+               "decl %%gs:0x1050-0xD8\n"
+               "movl %%gs:0x1050-0xD8, %0\n"
+             "1:\n"
+               : "=r"(level)
+               :
+               : "memory");
+  #elif defined(__i386__)
+  asm volatile("mov  %%fs, %0\n"
+               "test %0, %0\n"
+               "jz   1f\n"
+               "decl %%fs:0x1034-0x54\n"
+               "movl %%fs:0x1034-0x54, %0\n"
+             "1:\n"
+               : "=r"(level)
+               :
+               : "memory");
+  #else
+  #error Unsupported target platform
+  #endif
+  return !level;
+}
+
+void Debug::_message(const char* msg) {
   if (enabled_) {
     Sandbox::SysCalls sys;
     size_t len = strlen(msg);
@@ -142,57 +218,92 @@ void Debug::message(const char* msg) {
   }
 }
 
-void Debug::syscall(int sysnum, const char* msg, int call) {
+void Debug::message(const char* msg) {
+  if (enabled_) {
+    if (enter()) {
+      _message(msg);
+    }
+    leave();
+  }
+}
+
+void Debug::gettimeofday(long long* tm) {
+  if (tm) {
+    struct timeval tv;
+    #if defined(__i386__)
+    // Zero out the lastSyscallNum, so that we don't try to coalesce
+    // calls to gettimeofday(). For debugging purposes, we need the
+    // exact time.
+    asm volatile("movl $0, %fs:0x102C-0x54");
+    #elif !defined(__x86_64__)
+    #error Unsupported target platform
+    #endif
+    ::gettimeofday(&tv, NULL);
+    *tm = 1000ULL*1000ULL*static_cast<unsigned>(tv.tv_sec) +
+          static_cast<unsigned>(tv.tv_usec);
+  }
+}
+
+void Debug::syscall(long long* tm, int sysnum, const char* msg, int call) {
   // This function gets called from the system call wrapper. Avoid calling
   // any library functions that themselves need system calls.
   if (enabled_) {
-    const char *sysname = NULL;
-    if (sysnum >= 0 && sysnum < numSyscallNames_) {
-      sysname = syscallNames_[sysnum];
-    }
-    char unnamed[40] = "Unnamed syscall #";
-    if (!sysname) {
-      itoa(const_cast<char *>(strrchr(sysname = unnamed, '\000')), sysnum);
-    }
-    #if defined(__NR_socketcall) || defined(__NR_ipc)
-    char extra[40];
-    *extra = '\000';
-    #if defined(__NR_socketcall)
-    if (sysnum == __NR_socketcall) {
-      static const char* socketcall_name[] = {
-        0, "socket", "bind", "connect", "listen", "accept", "getsockname",
-        "getpeername", "socketpair", "send", "recv", "sendto","recvfrom",
-        "shutdown", "setsockopt", "getsockopt", "sendmsg", "recvmsg",
-        "accept4"
-      };
-      if (call >= 1 && call < (int)(sizeof(socketcall_name)/sizeof(char *))) {
-        strcat(strcpy(extra, " "), socketcall_name[call]);
-      } else {
-        itoa(strcpy(extra, " #") + 2, call);
+    if (enter() || !tm) {
+      gettimeofday(tm);
+
+      const char *sysname = NULL;
+      if (sysnum >= 0 && sysnum < numSyscallNames_) {
+        sysname = syscallNames_[sysnum];
       }
-    }
-    #endif
-    #if defined(__NR_ipc)
-    if (sysnum == __NR_ipc) {
-      static const char* ipc_name[] = {
-        0, "semop", "semget", "semctl", "semtimedop", 0, 0, 0, 0, 0, 0,
-        "msgsnd", "msgrcv", "msgget", "msgctl", 0, 0, 0, 0, 0, 0,
-        "shmat", "shmdt", "shmget", "shmctl" };
-      if (call >= 1 && call < (int)(sizeof(ipc_name)/sizeof(char *)) &&
-          ipc_name[call]) {
-        strcat(strcpy(extra, " "), ipc_name[call]);
-      } else {
-        itoa(strcpy(extra, " #") + 2, call);
+      static const char kUnnamedMessage[] = "Unnamed syscall #";
+      char unnamed[40];
+      if (!sysname) {
+        memcpy(unnamed, kUnnamedMessage, sizeof(kUnnamedMessage) - 1);
+        itoa(unnamed + sizeof(kUnnamedMessage) - 1, sysnum);
+        sysname = unnamed;
       }
+      #if defined(__NR_socketcall) || defined(__NR_ipc)
+      char extra[40];
+      *extra = '\000';
+      #if defined(__NR_socketcall)
+      if (sysnum == __NR_socketcall) {
+        static const char* socketcall_name[] = {
+          0, "socket", "bind", "connect", "listen", "accept", "getsockname",
+          "getpeername", "socketpair", "send", "recv", "sendto","recvfrom",
+          "shutdown", "setsockopt", "getsockopt", "sendmsg", "recvmsg",
+          "accept4"
+        };
+        if (call >= 1 &&
+            call < (int)(sizeof(socketcall_name)/sizeof(char *))) {
+          strcat(strcpy(extra, " "), socketcall_name[call]);
+        } else {
+          itoa(strcpy(extra, " #") + 2, call);
+        }
+      }
+      #endif
+      #if defined(__NR_ipc)
+      if (sysnum == __NR_ipc) {
+        static const char* ipc_name[] = {
+          0, "semop", "semget", "semctl", "semtimedop", 0, 0, 0, 0, 0, 0,
+          "msgsnd", "msgrcv", "msgget", "msgctl", 0, 0, 0, 0, 0, 0,
+          "shmat", "shmdt", "shmget", "shmctl" };
+        if (call >= 1 && call < (int)(sizeof(ipc_name)/sizeof(char *)) &&
+            ipc_name[call]) {
+          strcat(strcpy(extra, " "), ipc_name[call]);
+        } else {
+          itoa(strcpy(extra, " #") + 2, call);
+        }
+      }
+      #endif
+      #else
+      static const char extra[1] = { 0 };
+      #endif
+      char buf[strlen(sysname) + strlen(extra) + (msg ? strlen(msg) : 0) + 4];
+      strcat(strcat(strcat(strcat(strcpy(buf, sysname), extra), ": "),
+                    msg ? msg : ""), "\n");
+      _message(buf);
     }
-    #endif
-    #else
-    static const char *extra = "";
-    #endif
-    char buf[strlen(sysname) + strlen(extra) + (msg ? strlen(msg) : 0) + 4];
-    strcat(strcat(strcat(strcat(strcpy(buf, sysname), extra), ": "),
-                  msg ? msg : ""), "\n");
-    message(buf);
+    leave();
   }
 }
 
@@ -222,6 +333,29 @@ char* Debug::itoa(char* s, int n) {
   }
 
   return ret;
+}
+
+void Debug::elapsed(long long tm, int sysnum, int call) {
+  if (enabled_) {
+    if (enter()) {
+      // Compute the time that has passed since the system call started.
+      long long delta;
+      gettimeofday(&delta);
+      delta -= tm;
+
+      // Format "Elapsed time: %d.%03dms" without using sprintf().
+      char buf[80];
+      itoa(strrchr(strcpy(buf, "Elapsed time: "), '\000'), delta/1000);
+      delta %= 1000;
+      strcat(buf, delta < 100 ? delta < 10 ? ".00" : ".0" : ".");
+      itoa(strrchr(buf, '\000'), delta);
+      strcat(buf, "ms");
+
+      // Print system call name and elapsed time.
+      syscall(NULL, sysnum, buf, call);
+    }
+    leave();
+  }
 }
 
 } // namespace

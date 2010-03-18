@@ -31,11 +31,21 @@ class Debug {
 
   // If debugging is enabled, write the name of the syscall and an optional
   // message to stderr.
-  static void syscall(int sysnum, const char* msg, int call = -1)
+  static void syscall(long long* tm, int sysnum,
+                      const char* msg, int call = -1)
   #ifndef NDEBUG
   ;
   #else
   { }
+  #endif
+
+  // Print how much wall-time has elapsed since the last call to syscall()
+  static void elapsed(long long tm, int sysnum, int call = -1)
+  #ifndef NDEBUG
+  ;
+  #else
+  {
+  }
   #endif
 
   // Check whether debugging is enabled.
@@ -50,12 +60,16 @@ class Debug {
  private:
   #ifndef NDEBUG
   Debug();
+  static bool  enter();
+  static bool  leave();
+  static void  _message(const char* msg);
+  static void  gettimeofday(long long* tm);
   static char* itoa(char* s, int n);
 
   static Debug debug_;
 
   static bool  enabled_;
-  static int  numSyscallNames_;
+  static int   numSyscallNames_;
   static const char **syscallNames_;
   static std::map<int, std::string> syscallNamesMap_;
   #endif

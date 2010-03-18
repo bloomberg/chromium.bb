@@ -8,7 +8,8 @@
 namespace playground {
 
 int Sandbox::sandbox_exit(int status) {
-  Debug::syscall(__NR_exit, "Executing handler");
+  long long tm;
+  Debug::syscall(&tm, __NR_exit, "Executing handler");
   struct {
     int       sysnum;
     long long cookie;

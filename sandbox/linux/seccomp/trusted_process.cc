@@ -20,6 +20,7 @@ SecureMem::Args* Sandbox::getSecureMem() {
   if (!secureMemPool_.empty()) {
     SecureMem::Args* rc = secureMemPool_.back();
     secureMemPool_.pop_back();
+    memset(rc->scratchPage, 0, sizeof(rc->scratchPage));
     return rc;
   }
   return NULL;
@@ -27,6 +28,16 @@ SecureMem::Args* Sandbox::getSecureMem() {
 
 void Sandbox::trustedProcess(int parentMapsFd, int processFdPub, int sandboxFd,
                              int cloneFd, SecureMem::Args* secureArena) {
+  // The trusted process doesn't have access to TLS. Zero out the segment
+  // registers so that we can later test that we are in the trusted process.
+  #if defined(__x86_64__)
+  asm volatile("mov %0, %%gs\n" : : "r"(0));
+  #elif defined(__i386__)
+  asm volatile("mov %0, %%fs\n" : : "r"(0));
+  #else
+  #error Unsupported target platform
+  #endif
+
   std::map<long long, struct Thread> threads;
   SysCalls  sys;
   long long cookie               = 0;

@@ -8,8 +8,11 @@
 namespace playground {
 
 int Sandbox::sandbox_gettid() {
-  Debug::syscall(__NR_gettid, "Executing handler");
-  return tid();
+  long long tm;
+  Debug::syscall(&tm, __NR_gettid, "Executing handler");
+  pid_t t = tid();
+  Debug::elapsed(tm, __NR_gettid);
+  return t;
 }
 
 } // namespace

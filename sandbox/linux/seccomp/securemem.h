@@ -101,10 +101,20 @@ class SecureMem {
         void*            tmpArg6;
         void*            tmpReturnValue;
 
+        // Scratch space used to return the result of a rdtsc instruction
+        int              rdtscpEax;
+        int              rdtscpEdx;
+        int              rdtscpEcx;
+
         // We often have long sequences of calls to gettimeofday(). This is
         // needlessly expensive. Coalesce them into a single call.
-        long             lastSyscallNum;
+        int              lastSyscallNum;
         int              gettimeofdayCounter;
+
+        // For debugging purposes, we want to be able to log messages. This can
+        // result in additional system calls. Make sure that we don't trigger
+        // logging of those recursive calls.
+        int              recursionLevel;
       } __attribute__((packed));
       char               scratchPage[4096];
     };

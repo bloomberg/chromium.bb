@@ -8,7 +8,9 @@
 namespace playground {
 
 int Sandbox::sandbox_getpid() {
-  Debug::syscall(__NR_getpid, "Executing handler");
+  long long tm;
+  Debug::syscall(&tm, __NR_getpid, "Executing handler");
+  Debug::elapsed(tm, __NR_getpid);
   return pid_;
 }
 

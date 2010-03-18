@@ -9,7 +9,8 @@ namespace playground {
 
 int Sandbox::sandbox_clone(int flags, void* stack, int* pid, int* ctid,
                            void* tls, void *wrapper_sp) {
-  Debug::syscall(__NR_clone, "Executing handler");
+  long long tm;
+  Debug::syscall(&tm, __NR_clone, "Executing handler");
   struct {
     int       sysnum;
     long long cookie;
@@ -43,6 +44,7 @@ int Sandbox::sandbox_clone(int flags, void* stack, int* pid, int* ctid,
       read(sys, threadFdPub(), &rc, sizeof(rc)) != sizeof(rc)) {
     die("Failed to forward clone() request [sandbox]");
   }
+  Debug::elapsed(tm, __NR_clone);
   return static_cast<int>(rc);
 }
 

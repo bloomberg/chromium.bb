@@ -271,19 +271,20 @@ void* Sandbox::defaultSystemCallHandler(int syscallNum, void* arg0, void* arg1,
   // these system calls are not restricted in Seccomp mode. But depending on
   // the exact instruction sequence in libc, we might not be able to reliably
   // filter out these system calls at the time when we instrument the code.
-  SysCalls sys;
-  long     rc;
+  SysCalls  sys;
+  long      rc;
+  long long tm;
   switch (syscallNum) {
     case __NR_read:
-      Debug::syscall(syscallNum, "Allowing unrestricted system call");
+      Debug::syscall(&tm, syscallNum, "Allowing unrestricted system call");
       rc             = sys.read((long)arg0, arg1, (size_t)arg2);
       break;
     case __NR_write:
-      Debug::syscall(syscallNum, "Allowing unrestricted system call");
+      Debug::syscall(&tm, syscallNum, "Allowing unrestricted system call");
       rc             = sys.write((long)arg0, arg1, (size_t)arg2);
       break;
     case __NR_rt_sigreturn:
-      Debug::syscall(syscallNum, "Allowing unrestricted system call");
+      Debug::syscall(&tm, syscallNum, "Allowing unrestricted system call");
       rc             = sys.rt_sigreturn((unsigned long)arg0);
       break;
     default:
@@ -295,7 +296,7 @@ void* Sandbox::defaultSystemCallHandler(int syscallNum, void* arg0, void* arg1,
 
       if ((unsigned)syscallNum <= maxSyscall &&
           syscallTable[syscallNum].handler == UNRESTRICTED_SYSCALL) {
-        Debug::syscall(syscallNum, "Allowing unrestricted system call");
+        Debug::syscall(&tm, syscallNum, "Allowing unrestricted system call");
      perform_unrestricted:
         struct {
           int          sysnum;
@@ -309,9 +310,10 @@ void* Sandbox::defaultSystemCallHandler(int syscallNum, void* arg0, void* arg1,
             read(sys, thread, &rc, sizeof(rc)) != sizeof(rc)) {
           die("Failed to forward unrestricted system call");
         }
+        Debug::elapsed(tm, syscallNum);
         return rc;
       } else if (Debug::isEnabled()) {
-        Debug::syscall(syscallNum,
+        Debug::syscall(&tm, syscallNum,
                        "In production mode, this call would be disallowed");
         goto perform_unrestricted;
       } else {
@@ -321,6 +323,7 @@ void* Sandbox::defaultSystemCallHandler(int syscallNum, void* arg0, void* arg1,
   if (rc < 0) {
     rc               = -sys.my_errno;
   }
+  Debug::elapsed(tm, syscallNum);
   return (void *)rc;
 }
 

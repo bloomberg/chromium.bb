@@ -8,7 +8,8 @@
 namespace playground {
 
 int Sandbox::sandbox_madvise(void* start, size_t length, int advice) {
-  Debug::syscall(__NR_madvise, "Executing handler");
+  long long tm;
+  Debug::syscall(&tm, __NR_madvise, "Executing handler");
   struct {
     int       sysnum;
     long long cookie;
@@ -27,6 +28,7 @@ int Sandbox::sandbox_madvise(void* start, size_t length, int advice) {
       read(sys, threadFdPub(), &rc, sizeof(rc)) != sizeof(rc)) {
     die("Failed to forward madvise() request [sandbox]");
   }
+  Debug::elapsed(tm, __NR_madvise);
   return static_cast<int>(rc);
 }
 

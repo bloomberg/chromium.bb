@@ -19,7 +19,8 @@ namespace playground {
 
 #if defined(__NR_shmget)
 void* Sandbox::sandbox_shmat(int shmid, const void* shmaddr, int shmflg) {
-  Debug::syscall(__NR_shmat, "Executing handler");
+  long long tm;
+  Debug::syscall(&tm, __NR_shmat, "Executing handler");
 
   struct {
     int       sysnum;
@@ -39,11 +40,13 @@ void* Sandbox::sandbox_shmat(int shmid, const void* shmaddr, int shmflg) {
       read(sys, threadFdPub(), &rc, sizeof(rc)) != sizeof(rc)) {
     die("Failed to forward shmat() request [sandbox]");
   }
+  Debug::elapsed(tm, __NR_shmat);
   return reinterpret_cast<void *>(rc);
 }
 
 int Sandbox::sandbox_shmctl(int shmid, int cmd, void* buf) {
-  Debug::syscall(__NR_shmctl, "Executing handler");
+  long long tm;
+  Debug::syscall(&tm, __NR_shmctl, "Executing handler");
 
   struct {
     int       sysnum;
@@ -63,11 +66,13 @@ int Sandbox::sandbox_shmctl(int shmid, int cmd, void* buf) {
       read(sys, threadFdPub(), &rc, sizeof(rc)) != sizeof(rc)) {
     die("Failed to forward shmctl() request [sandbox]");
   }
+  Debug::elapsed(tm, __NR_shmctl);
   return static_cast<int>(rc);
 }
 
 int Sandbox::sandbox_shmdt(const void* shmaddr) {
-  Debug::syscall(__NR_shmdt, "Executing handler");
+  long long tm;
+  Debug::syscall(&tm, __NR_shmdt, "Executing handler");
 
   struct {
     int       sysnum;
@@ -85,11 +90,13 @@ int Sandbox::sandbox_shmdt(const void* shmaddr) {
       read(sys, threadFdPub(), &rc, sizeof(rc)) != sizeof(rc)) {
     die("Failed to forward shmdt() request [sandbox]");
   }
+  Debug::elapsed(tm, __NR_shmdt);
   return static_cast<int>(rc);
 }
 
 int Sandbox::sandbox_shmget(int key, size_t size, int shmflg) {
-  Debug::syscall(__NR_shmget, "Executing handler");
+  long long tm;
+  Debug::syscall(&tm, __NR_shmget, "Executing handler");
 
   struct {
     int       sysnum;
@@ -109,6 +116,7 @@ int Sandbox::sandbox_shmget(int key, size_t size, int shmflg) {
       read(sys, threadFdPub(), &rc, sizeof(rc)) != sizeof(rc)) {
     die("Failed to forward shmget() request [sandbox]");
   }
+  Debug::elapsed(tm, __NR_shmget);
   return static_cast<int>(rc);
 }
 
@@ -240,7 +248,8 @@ bool Sandbox::process_shmget(int parentMapsFd, int sandboxFd, int threadFdPub,
 
 int Sandbox::sandbox_ipc(unsigned call, int first, int second, int third,
                          void* ptr, long fifth) {
-  Debug::syscall(__NR_ipc, "Executing handler", call);
+  long long tm;
+  Debug::syscall(&tm, __NR_ipc, "Executing handler", call);
   struct {
     int       sysnum;
     long long cookie;
@@ -262,6 +271,7 @@ int Sandbox::sandbox_ipc(unsigned call, int first, int second, int third,
       read(sys, threadFdPub(), &rc, sizeof(rc)) != sizeof(rc)) {
     die("Failed to forward ipc() request [sandbox]");
   }
+  Debug::elapsed(tm, __NR_ipc, call);
   return static_cast<int>(rc);
 }
 

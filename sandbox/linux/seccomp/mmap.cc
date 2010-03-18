@@ -1,3 +1,7 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 #include "debug.h"
 #include "sandbox_impl.h"
 
@@ -5,7 +9,8 @@ namespace playground {
 
 void* Sandbox::sandbox_mmap(void *start, size_t length, int prot, int flags,
                           int fd, off_t offset) {
-  Debug::syscall(__NR_mmap, "Executing handler");
+  long long tm;
+  Debug::syscall(&tm, __NR_mmap, "Executing handler");
   struct {
     int       sysnum;
     long long cookie;
@@ -27,6 +32,7 @@ void* Sandbox::sandbox_mmap(void *start, size_t length, int prot, int flags,
       read(sys, threadFdPub(), &rc, sizeof(rc)) != sizeof(rc)) {
     die("Failed to forward mmap() request [sandbox]");
   }
+  Debug::elapsed(tm, __NR_mmap);
   return rc;
 }
 

@@ -8,7 +8,8 @@
 namespace playground {
 
 int Sandbox::sandbox_stat(const char *path, void *buf) {
-  Debug::syscall(__NR_stat, "Executing handler");
+  long long tm;
+  Debug::syscall(&tm, __NR_stat, "Executing handler");
   size_t len                    = strlen(path);
   struct Request {
     int       sysnum;
@@ -31,11 +32,13 @@ int Sandbox::sandbox_stat(const char *path, void *buf) {
       read(sys, threadFdPub(), &rc, sizeof(rc)) != sizeof(rc)) {
     die("Failed to forward stat() request [sandbox]");
   }
+  Debug::elapsed(tm, __NR_stat);
   return static_cast<int>(rc);
 }
 
 int Sandbox::sandbox_lstat(const char *path, void *buf) {
-  Debug::syscall(__NR_lstat, "Executing handler");
+  long long tm;
+  Debug::syscall(&tm, __NR_lstat, "Executing handler");
   size_t len                    = strlen(path);
   struct Request {
     int       sysnum;
@@ -58,12 +61,14 @@ int Sandbox::sandbox_lstat(const char *path, void *buf) {
       read(sys, threadFdPub(), &rc, sizeof(rc)) != sizeof(rc)) {
     die("Failed to forward lstat() request [sandbox]");
   }
+  Debug::elapsed(tm, __NR_lstat);
   return static_cast<int>(rc);
 }
 
 #if defined(__NR_stat64)
 int Sandbox::sandbox_stat64(const char *path, void *buf) {
-  Debug::syscall(__NR_stat64, "Executing handler");
+  long long tm;
+  Debug::syscall(&tm, __NR_stat64, "Executing handler");
   size_t len                    = strlen(path);
   struct Request {
     int       sysnum;
@@ -86,11 +91,13 @@ int Sandbox::sandbox_stat64(const char *path, void *buf) {
       read(sys, threadFdPub(), &rc, sizeof(rc)) != sizeof(rc)) {
     die("Failed to forward stat64() request [sandbox]");
   }
+  Debug::elapsed(tm, __NR_stat64);
   return static_cast<int>(rc);
 }
 
 int Sandbox::sandbox_lstat64(const char *path, void *buf) {
-  Debug::syscall(__NR_lstat64, "Executing handler");
+  long long tm;
+  Debug::syscall(&tm, __NR_lstat64, "Executing handler");
   size_t len                    = strlen(path);
   struct Request {
     int       sysnum;
@@ -113,6 +120,7 @@ int Sandbox::sandbox_lstat64(const char *path, void *buf) {
       read(sys, threadFdPub(), &rc, sizeof(rc)) != sizeof(rc)) {
     die("Failed to forward lstat64() request [sandbox]");
   }
+  Debug::elapsed(tm, __NR_lstat64);
   return static_cast<int>(rc);
 }
 #endif

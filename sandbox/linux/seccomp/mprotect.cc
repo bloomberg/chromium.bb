@@ -8,7 +8,8 @@
 namespace playground {
 
 int Sandbox::sandbox_mprotect(const void *addr, size_t len, int prot) {
-  Debug::syscall(__NR_mprotect, "Executing handler");
+  long long tm;
+  Debug::syscall(&tm, __NR_mprotect, "Executing handler");
   struct {
     int       sysnum;
     long long cookie;
@@ -27,6 +28,7 @@ int Sandbox::sandbox_mprotect(const void *addr, size_t len, int prot) {
       read(sys, threadFdPub(), &rc, sizeof(rc)) != sizeof(rc)) {
     die("Failed to forward mprotect() request [sandbox]");
   }
+  Debug::elapsed(tm, __NR_mprotect);
   return static_cast<int>(rc);
 }
 
