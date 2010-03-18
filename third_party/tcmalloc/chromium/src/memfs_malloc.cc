@@ -101,11 +101,6 @@ void HugetlbSysAllocator::DumpStats(TCMalloc_Printer* printer) {
 void* HugetlbSysAllocator::Alloc(size_t size, size_t *actual_size,
                                  size_t alignment) {
 
-  // don't go any further if we haven't opened the backing file
-  if (hugetlb_fd_ == -1) {
-    return NULL;
-  }
-
   // We don't respond to allocation requests smaller than big_page_size_ unless
   // the caller is willing to take more than they asked for.
   if (actual_size == NULL && size < big_page_size_) {
@@ -166,8 +161,8 @@ void* HugetlbSysAllocator::Alloc(size_t size, size_t *actual_size,
                       MAP_SHARED, hugetlb_fd_, hugetlb_base_);
   if (result == reinterpret_cast<void*>(MAP_FAILED)) {
     if (!FLAGS_memfs_malloc_ignore_mmap_fail) {
-      TCMalloc_MESSAGE(__FILE__, __LINE__, "mmap of size %"PRIuS" failed: %s\n",
-                       size + extra, strerror(errno));
+      TCMalloc_MESSAGE(__FILE__, __LINE__, "mmap failed: %s\n",
+                       strerror(errno));
       failed_ = true;
       if (FLAGS_memfs_malloc_abort_on_fail) {
         CRASH("memfs_malloc_abort_on_fail is set\n");

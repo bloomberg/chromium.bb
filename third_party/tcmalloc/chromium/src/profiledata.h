@@ -177,7 +177,7 @@ class ProfileData {
   // Write contents of eviction buffer to disk.
   void FlushEvicted();
 
-  DISALLOW_COPY_AND_ASSIGN(ProfileData);
+  DISALLOW_EVIL_CONSTRUCTORS(ProfileData);
 };
 
 #endif  // BASE_PROFILEDATA_H_

@@ -34,19 +34,10 @@
 #define TCMALLOC_PAGE_HEAP_H_
 
 #include <config.h>
-#include <google/malloc_extension.h>
 #include "common.h"
 #include "packed-cache-inl.h"
 #include "pagemap.h"
 #include "span.h"
-
-// We need to dllexport PageHeap just for the unittest.  MSVC complains
-// that we don't dllexport the PageHeap members, but we don't need to
-// test those, so I just suppress this warning.
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable:4251)
-#endif
 
 // This #ifdef should almost never be set.  Set NO_TCMALLOC_SAMPLES if
 // you're porting to a system where you really can't get a stacktrace.
@@ -76,7 +67,6 @@ template <int BITS> class MapSelector {
   typedef PackedCache<BITS-kPageShift, uint64_t> CacheType;
 };
 
-// A two-level map for 32-bit machines
 template <> class MapSelector<32> {
  public:
 #ifdef WIN32
@@ -97,7 +87,7 @@ template <> class MapSelector<32> {
 // contiguous runs of pages (called a "span").
 // -------------------------------------------------------------------------
 
-class PERFTOOLS_DLL_DECL PageHeap {
+class PageHeap {
  public:
   PageHeap();
 
@@ -127,8 +117,7 @@ class PERFTOOLS_DLL_DECL PageHeap {
   // REQUIRES: span->sizeclass == 0
   Span* Split(Span* span, Length n);
 
-  // Return the descriptor for the specified page.  Returns NULL if
-  // this PageID was not allocated previously.
+  // Return the descriptor for the specified page.
   inline Span* GetDescriptor(PageID p) const {
     return reinterpret_cast<Span*>(pagemap_.get(p));
   }
@@ -136,20 +125,15 @@ class PERFTOOLS_DLL_DECL PageHeap {
   // Dump state to stderr
   void Dump(TCMalloc_Printer* out);
 
-  // If this page heap is managing a range with starting page # >= start,
-  // store info about the range in *r and return true.  Else return false.
-  bool GetNextRange(PageID start, base::MallocRange* r);
+  // Return number of bytes allocated from system
+  inline uint64_t SystemBytes() const { return system_bytes_; }
 
-  // Page heap statistics
-  struct Stats {
-    Stats() : system_bytes(0), free_bytes(0), unmapped_bytes(0) {}
-    uint64_t system_bytes;    // Total bytes allocated from system
-    uint64_t free_bytes;      // Total bytes on normal freelists
-    uint64_t unmapped_bytes;  // Total bytes on returned freelists
-    uint64_t committed_bytes;  // Bytes committed, always <= system_bytes_.
+  inline uint64_t CommittedBytes() const { return committed_bytes_; }
 
-  };
-  inline Stats stats() const { return stats_; }
+  // Return number of free bytes in heap
+  uint64_t FreeBytes() const {
+    return (static_cast<uint64_t>(free_pages_) << kPageShift);
+  }
 
   bool Check();
   // Like Check() but does some more comprehensive checking.
@@ -157,13 +141,8 @@ class PERFTOOLS_DLL_DECL PageHeap {
   bool CheckList(Span* list, Length min_pages, Length max_pages,
                  int freelist);  // ON_NORMAL_FREELIST or ON_RETURNED_FREELIST
 
-  // Try to release at least num_pages for reuse by the OS.  Returns
-  // the actual number of pages released, which may be less than
-  // num_pages if there weren't enough pages to release. The result
-  // may also be larger than num_pages since page_heap might decide to
-  // release one large range instead of fragmenting it into two
-  // smaller released and unreleased ranges.
-  Length ReleaseAtLeastNPages(Length num_pages);
+  // Release all pages on the free list for reuse by the OS:
+  void ReleaseFreePages();
 
   // Return 0 if we have no information, or else the correct sizeclass for p.
   // Reads and writes to pagemap_cache_ do not require locking.
@@ -192,17 +171,6 @@ class PERFTOOLS_DLL_DECL PageHeap {
   // REQUIRED: kMaxPages >= kMinSystemAlloc;
   static const size_t kMaxPages = kMinSystemAlloc;
 
-  // Never delay scavenging for more than the following number of
-  // deallocated pages.  With 4K pages, this comes to 4GB of
-  // deallocation.
-  // Chrome:  Changed to 64MB
-  static const int kMaxReleaseDelay = 1 << 14;
-
-  // If there is nothing to release, wait for so many pages before
-  // scavenging again.  With 4K pages, this comes to 1GB of memory.
-  // Chrome:  Changed to 16MB
-  static const int kDefaultReleaseDelay = 1 << 12;
-
   // Pick the appropriate map and cache types based on pointer size
   typedef MapSelector<8*sizeof(uintptr_t)>::Type PageMap;
   typedef MapSelector<8*sizeof(uintptr_t)>::CacheType PageMapCache;
@@ -223,8 +191,15 @@ class PERFTOOLS_DLL_DECL PageHeap {
   // Array mapping from span length to a doubly linked list of free spans
   SpanList free_[kMaxPages];
 
-  // Statistics on system, free, and unmapped bytes
-  Stats stats_;
+  // Number of pages kept in free lists
+  uintptr_t free_pages_;
+
+  // Bytes allocated from system
+  uint64_t system_bytes_;
+
+  // Bytes committed, always <= system_bytes_.
+  uint64_t committed_bytes_;
+
   bool GrowHeap(Length n);
 
   // REQUIRES: span->length >= n
@@ -247,42 +222,39 @@ class PERFTOOLS_DLL_DECL PageHeap {
   // span of exactly the specified length.  Else, returns NULL.
   Span* AllocLarge(Length n);
 
-  // Coalesce span with neighboring spans if possible, prepend to
-  // appropriate free list, and adjust stats.
-  void MergeIntoFreeList(Span* span);
-
+#if defined(OS_LINUX)
+  // Coalesce span with neighboring spans if possible.  Add the
+  // resulting span to the appropriate free list.
+  void AddToFreeList(Span* span);
+#else   // ! defined(OS_LINUX)
   // Commit the span.
   void CommitSpan(Span* span);
 
   // Decommit the span.
   void DecommitSpan(Span* span);
-
-  // Prepends span to appropriate free list, and adjusts stats.
-  void PrependToFreeList(Span* span);
-
-  // Removes span from its free list, and adjust stats.
-  void RemoveFromFreeList(Span* span);
+#endif  // ! defined(OS_LINUX)
 
   // Incrementally release some memory to the system.
   // IncrementalScavenge(n) is called whenever n pages are freed.
   void IncrementalScavenge(Length n);
 
-  // Release the last span on the normal portion of this list.
-  // Return the length of that span.
-  Length ReleaseLastNormalSpan(SpanList* slist);
-
+#if defined(OS_LINUX)
+  // Release all pages in the specified free list for reuse by the OS
+  // REQURES: list must be a "normal" list (i.e., not "returned")
+  void ReleaseFreeList(Span* list);
+#else   // ! defined(OS_LINUX)
+  // Releases all memory held in the given list's 'normal' freelist and adds
+  // it to the 'released' freelist.
+  void ReleaseFreeList(Span* list, Span* returned);
+#endif  // ! defined(OS_LINUX)
 
   // Number of pages to deallocate before doing more scavenging
   int64_t scavenge_counter_;
 
-  // Index of last free list where we released memory to the OS.
-  int release_index_;
+  // Index of last free list we scavenged
+  int scavenge_index_;
 };
 
 }  // namespace tcmalloc
-
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
 
 #endif  // TCMALLOC_PAGE_HEAP_H_

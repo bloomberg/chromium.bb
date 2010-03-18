@@ -49,9 +49,12 @@ namespace tcmalloc {
 PageHeap::PageHeap()
     : pagemap_(MetaDataAlloc),
       pagemap_cache_(0),
+      free_pages_(0),
+      system_bytes_(0),
+      committed_bytes_(0),
       scavenge_counter_(0),
       // Start scavenging at kMaxPages list
-      release_index_(kMaxPages) {
+      scavenge_index_(kMaxPages-1) {
   COMPILE_ASSERT(kNumClasses <= (1 << PageMapCache::kValuebits), valuebits);
   DLL_Init(&large_.normal);
   DLL_Init(&large_.returned);
@@ -87,7 +90,6 @@ Span* PageHeap::New(Length n) {
 
   // Grow the heap and try again
   if (!GrowHeap(n)) {
-    ASSERT(stats_.unmapped_bytes+ stats_.committed_bytes==stats_.system_bytes);
     ASSERT(Check());
     return NULL;
   }
@@ -152,20 +154,20 @@ Span* PageHeap::Split(Span* span, Length n) {
 void PageHeap::CommitSpan(Span* span) {
   TCMalloc_SystemCommit(reinterpret_cast<void*>(span->start << kPageShift),
                         static_cast<size_t>(span->length << kPageShift));
-  stats_.committed_bytes += span->length << kPageShift;
+  committed_bytes_ += span->length << kPageShift;
 }
 
 void PageHeap::DecommitSpan(Span* span) {
   TCMalloc_SystemRelease(reinterpret_cast<void*>(span->start << kPageShift),
                          static_cast<size_t>(span->length << kPageShift));
-  stats_.committed_bytes -= span->length << kPageShift;
+  committed_bytes_ -= span->length << kPageShift;
 }
 
 Span* PageHeap::Carve(Span* span, Length n) {
   ASSERT(n > 0);
   ASSERT(span->location != Span::IN_USE);
   const int old_location = span->location;
-  RemoveFromFreeList(span);
+  DLL_Remove(span);
   span->location = Span::IN_USE;
   Event(span, 'A', n);
 
@@ -177,28 +179,23 @@ Span* PageHeap::Carve(Span* span, Length n) {
     Event(leftover, 'S', extra);
     RecordSpan(leftover);
 
-    // The previous span of |leftover| was just splitted -- no need to
-    // coalesce them. The next span of |leftover| was not previously coalesced
-    // with |span|, i.e. is NULL or has got location other than |old_location|.
-    const PageID p = leftover->start;
-    const Length len = leftover->length;
-    Span* next = GetDescriptor(p+len);
-    ASSERT (next == NULL ||
-            next->location == Span::IN_USE ||
-            next->location != leftover->location);
+    // Place leftover span on appropriate free list
+    SpanList* listpair = (extra < kMaxPages) ? &free_[extra] : &large_;
+    Span* dst = (leftover->location == Span::ON_RETURNED_FREELIST
+                 ? &listpair->returned : &listpair->normal);
+    DLL_Prepend(dst, leftover);
 
-    PrependToFreeList(leftover);  // Skip coalescing - no candidates possible
     span->length = n;
     pagemap_.set(span->start + n - 1, span);
   }
   ASSERT(Check());
+  free_pages_ -= n;
   if (old_location == Span::ON_RETURNED_FREELIST) {
     // We need to recommit this address space.
     CommitSpan(span);
   }
   ASSERT(span->location == Span::IN_USE);
   ASSERT(span->length == n);
-  ASSERT(stats_.unmapped_bytes+ stats_.committed_bytes==stats_.system_bytes);
   return span;
 }
 
@@ -208,19 +205,8 @@ void PageHeap::Delete(Span* span) {
   ASSERT(span->length > 0);
   ASSERT(GetDescriptor(span->start) == span);
   ASSERT(GetDescriptor(span->start + span->length - 1) == span);
-  const Length n = span->length;
   span->sizeclass = 0;
   span->sample = 0;
-  span->location = Span::ON_NORMAL_FREELIST;
-  Event(span, 'D', span->length);
-  MergeIntoFreeList(span);  // Coalesces if possible
-  IncrementalScavenge(n);
-  ASSERT(stats_.unmapped_bytes+ stats_.committed_bytes==stats_.system_bytes);
-  ASSERT(Check());
-}
-
-void PageHeap::MergeIntoFreeList(Span* span) {
-  ASSERT(span->location != Span::IN_USE);
 
   // Coalesce -- we guarantee that "p" != 0, so no bounds checking
   // necessary.  We do not bother resetting the stale pagemap
@@ -253,12 +239,12 @@ void PageHeap::MergeIntoFreeList(Span* span) {
     if (prev->location == Span::ON_RETURNED_FREELIST) {
       // We're about to put the merge span into the returned freelist and call
       // DecommitSpan() on it, which will mark the entire span including this
-      // one as released and decrease stats_.committed_bytes by the size of the
+      // one as released and decrease committed_bytes_ by the size of the
       // merged span.  To make the math work out we temporarily increase the
-      // stats_.committed_bytes amount.
-      stats_.committed_bytes += prev->length << kPageShift;
+      // committed_bytes_ amount.
+      committed_bytes_ += prev->length << kPageShift;
     }
-    RemoveFromFreeList(prev);
+    DLL_Remove(prev);
     DeleteSpan(prev);
     span->start -= len;
     span->length += len;
@@ -272,9 +258,9 @@ void PageHeap::MergeIntoFreeList(Span* span) {
     const Length len = next->length;
     if (next->location == Span::ON_RETURNED_FREELIST) {
       // See the comment below 'if (prev->location ...' for explanation.
-      stats_.committed_bytes += next->length << kPageShift;
+      committed_bytes_ += next->length << kPageShift;
     }
-    RemoveFromFreeList(next);
+    DLL_Remove(next);
     DeleteSpan(next);
     span->length += len;
     pagemap_.set(span->start + span->length - 1, span);
@@ -284,35 +270,32 @@ void PageHeap::MergeIntoFreeList(Span* span) {
   Event(span, 'D', span->length);
   span->location = Span::ON_RETURNED_FREELIST;
   DecommitSpan(span);
-  PrependToFreeList(span);
-}
-
-void PageHeap::PrependToFreeList(Span* span) {
-  ASSERT(span->location != Span::IN_USE);
-  SpanList* list = (span->length < kMaxPages) ? &free_[span->length] : &large_;
-  if (span->location == Span::ON_NORMAL_FREELIST) {
-    stats_.free_bytes += (span->length << kPageShift);
-    DLL_Prepend(&list->normal, span);
+  if (span->length < kMaxPages) {
+    DLL_Prepend(&free_[span->length].returned, span);
   } else {
-    stats_.unmapped_bytes += (span->length << kPageShift);
-    DLL_Prepend(&list->returned, span);
+    DLL_Prepend(&large_.returned, span);
   }
-}
+  free_pages_ += n;
 
-void PageHeap::RemoveFromFreeList(Span* span) {
-  ASSERT(span->location != Span::IN_USE);
-  if (span->location == Span::ON_NORMAL_FREELIST) {
-    stats_.free_bytes -= (span->length << kPageShift);
-  } else {
-    stats_.unmapped_bytes -= (span->length << kPageShift);
-  }
-  DLL_Remove(span);
+  IncrementalScavenge(n);
+  ASSERT(Check());
 }
 
 void PageHeap::IncrementalScavenge(Length n) {
   // Fast path; not yet time to release memory
   scavenge_counter_ -= n;
   if (scavenge_counter_ >= 0) return;  // Not yet time to scavenge
+
+  // Never delay scavenging for more than the following number of
+  // deallocated pages.  With 4K pages, this comes to 4GB of
+  // deallocation.
+  // Chrome:  Changed to 64MB
+  static const int kMaxReleaseDelay = 1 << 14;
+
+  // If there is nothing to release, wait for so many pages before
+  // scavenging again.  With 4K pages, this comes to 1GB of memory.
+  // Chrome:  Changed to 16MB
+  static const int kDefaultReleaseDelay = 1 << 12;
 
   const double rate = FLAGS_tcmalloc_release_rate;
   if (rate <= 1e-6) {
@@ -321,64 +304,40 @@ void PageHeap::IncrementalScavenge(Length n) {
     return;
   }
 
-  Length released_pages = ReleaseAtLeastNPages(1);
+  // Find index of free list to scavenge
+  int index = scavenge_index_ + 1;
+  for (int i = 0; i < kMaxPages+1; i++) {
+    if (index > kMaxPages) index = 0;
+    SpanList* slist = (index == kMaxPages) ? &large_ : &free_[index];
+    if (!DLL_IsEmpty(&slist->normal)) {
+      // Release the last span on the normal portion of this list
+      Span* s = slist->normal.prev;
+      ASSERT(s->location == Span::ON_NORMAL_FREELIST);
+      DLL_Remove(s);
+      DecommitSpan(s);
+      s->location = Span::ON_RETURNED_FREELIST;
+      DLL_Prepend(&slist->returned, s);
 
-  if (released_pages == 0) {
-    // Nothing to scavenge, delay for a while.
-    scavenge_counter_ = kDefaultReleaseDelay;
-  } else {
-    printf("HERE!\n");
-    ASSERT(0);
-    // Compute how long to wait until we return memory.
-    // FLAGS_tcmalloc_release_rate==1 means wait for 1000 pages
-    // after releasing one page.
-    const double mult = 1000.0 / rate;
-    double wait = mult * static_cast<double>(released_pages);
-    if (wait > kMaxReleaseDelay) {
-      // Avoid overflow and bound to reasonable range.
-      wait = kMaxReleaseDelay;
-    }
-    scavenge_counter_ = static_cast<int64_t>(wait);
-  }
-}
-
-Length PageHeap::ReleaseLastNormalSpan(SpanList* slist) {
-  Span* s = slist->normal.prev;
-  ASSERT(s->location == Span::ON_NORMAL_FREELIST);
-  RemoveFromFreeList(s);
-  const Length n = s->length;
-  TCMalloc_SystemRelease(reinterpret_cast<void*>(s->start << kPageShift),
-                         static_cast<size_t>(s->length << kPageShift));
-  s->location = Span::ON_RETURNED_FREELIST;
-  MergeIntoFreeList(s);  // Coalesces if possible.
-  return n;
-}
-
-Length PageHeap::ReleaseAtLeastNPages(Length num_pages) {
-  Length released_pages = 0;
-  Length prev_released_pages = -1;
-
-  // Round robin through the lists of free spans, releasing the last
-  // span in each list.  Stop after releasing at least num_pages.
-  while (released_pages < num_pages) {
-    if (released_pages == prev_released_pages) {
-      // Last iteration of while loop made no progress.
-      break;
-    }
-    prev_released_pages = released_pages;
-
-    for (int i = 0; i < kMaxPages+1 && released_pages < num_pages;
-         i++, release_index_++) {
-      if (release_index_ > kMaxPages) release_index_ = 0;
-      SpanList* slist = (release_index_ == kMaxPages) ?
-          &large_ : &free_[release_index_];
-      if (!DLL_IsEmpty(&slist->normal)) {
-        Length released_len = ReleaseLastNormalSpan(slist);
-        released_pages += released_len;
+      // Compute how long to wait until we return memory.
+      // FLAGS_tcmalloc_release_rate==1 means wait for 1000 pages
+      // after releasing one page.
+      const double mult = 1000.0 / rate;
+      double wait = mult * static_cast<double>(s->length);
+      if (wait > kMaxReleaseDelay) {
+        // Avoid overflow and bound to reasonable range
+        wait = kMaxReleaseDelay;
       }
+      scavenge_counter_ = static_cast<int64_t>(wait);
+
+      scavenge_index_ = index;  // Scavenge at index+1 next time
+      // Note: we stop scavenging after finding one.
+      return;
     }
+    index++;
   }
-  return released_pages;
+
+  // Nothing to scavenge, delay for a while
+  scavenge_counter_ = kDefaultReleaseDelay;
 }
 
 void PageHeap::RegisterSizeClass(Span* span, size_t sc) {
@@ -393,10 +352,6 @@ void PageHeap::RegisterSizeClass(Span* span, size_t sc) {
   }
 }
 
-static double MB(uint64_t bytes) {
-  return bytes / 1048576.0;
-}
-
 static double PagesToMB(uint64_t pages) {
   return (pages << kPageShift) / 1048576.0;
 }
@@ -409,8 +364,8 @@ void PageHeap::Dump(TCMalloc_Printer* out) {
     }
   }
   out->printf("------------------------------------------------\n");
-  out->printf("PageHeap: %d sizes; %6.1f MB free; %6.1f MB unmapped\n",
-              nonempty_sizes, MB(stats_.free_bytes), MB(stats_.unmapped_bytes));
+  out->printf("PageHeap: %d sizes; %6.1f MB free\n",
+              nonempty_sizes, PagesToMB(free_pages_));
   out->printf("------------------------------------------------\n");
   uint64_t total_normal = 0;
   uint64_t total_returned = 0;
@@ -462,37 +417,6 @@ void PageHeap::Dump(TCMalloc_Printer* out) {
               PagesToMB(total_returned));
 }
 
-bool PageHeap::GetNextRange(PageID start, base::MallocRange* r) {
-  Span* span = reinterpret_cast<Span*>(pagemap_.Next(start));
-  if (span == NULL) {
-    return false;
-  }
-  r->address = span->start << kPageShift;
-  r->length = span->length << kPageShift;
-  r->fraction = 0;
-  switch (span->location) {
-    case Span::IN_USE:
-      r->type = base::MallocRange::INUSE;
-      r->fraction = 1;
-      if (span->sizeclass > 0) {
-        // Only some of the objects in this span may be in use.
-        const size_t osize = Static::sizemap()->class_to_size(span->sizeclass);
-        r->fraction = (1.0 * osize * span->refcount) / r->length;
-      }
-      break;
-    case Span::ON_NORMAL_FREELIST:
-      r->type = base::MallocRange::FREE;
-      break;
-    case Span::ON_RETURNED_FREELIST:
-      r->type = base::MallocRange::UNMAPPED;
-      break;
-    default:
-      r->type = base::MallocRange::UNKNOWN;
-      break;
-  }
-  return true;
-}
-
 static void RecordGrowth(size_t growth) {
   StackTrace* t = Static::stacktrace_allocator()->New();
   t->depth = GetStackTrace(t->stack, kMaxStackDepth-1, 3);
@@ -518,9 +442,9 @@ bool PageHeap::GrowHeap(Length n) {
   ask = actual_size >> kPageShift;
   RecordGrowth(ask << kPageShift);
 
-  uint64_t old_system_bytes = stats_.system_bytes;
-  stats_.system_bytes += (ask << kPageShift);
-  stats_.committed_bytes += (ask << kPageShift);
+  uint64_t old_system_bytes = system_bytes_;
+  system_bytes_ += (ask << kPageShift);
+  committed_bytes_ += (ask << kPageShift);
   const PageID p = reinterpret_cast<uintptr_t>(ptr) >> kPageShift;
   ASSERT(p > 0);
 
@@ -529,7 +453,7 @@ bool PageHeap::GrowHeap(Length n) {
   // when a program keeps allocating and freeing large blocks.
 
   if (old_system_bytes < kPageMapBigAllocationThreshold
-      && stats_.system_bytes >= kPageMapBigAllocationThreshold) {
+      && system_bytes_ >= kPageMapBigAllocationThreshold) {
     pagemap_.PreallocateMoreMemory();
   }
 
@@ -537,12 +461,13 @@ bool PageHeap::GrowHeap(Length n) {
   // Plus ensure one before and one after so coalescing code
   // does not need bounds-checking.
   if (pagemap_.Ensure(p-1, ask+2)) {
-    // Pretend the new area is allocated and then Delete() it to cause
-    // any necessary coalescing to occur.
+    // Pretend the new area is allocated and then Delete() it to
+    // cause any necessary coalescing to occur.
+    //
+    // We do not adjust free_pages_ here since Delete() will do it for us.
     Span* span = NewSpan(p, ask);
     RecordSpan(span);
     Delete(span);
-    ASSERT(stats_.unmapped_bytes+ stats_.committed_bytes==stats_.system_bytes);
     ASSERT(Check());
     return true;
   } else {
@@ -579,6 +504,27 @@ bool PageHeap::CheckList(Span* list, Length min_pages, Length max_pages,
     CHECK_CONDITION(GetDescriptor(s->start+s->length-1) == s);
   }
   return true;
+}
+
+void PageHeap::ReleaseFreeList(Span* list, Span* returned) {
+  // Walk backwards through list so that when we push these
+  // spans on the "returned" list, we preserve the order.
+  while (!DLL_IsEmpty(list)) {
+    Span* s = list->prev;
+    DLL_Remove(s);
+    DLL_Prepend(returned, s);
+    ASSERT(s->location == Span::ON_NORMAL_FREELIST);
+    s->location = Span::ON_RETURNED_FREELIST;
+    DecommitSpan(s);
+  }
+}
+
+void PageHeap::ReleaseFreePages() {
+  for (Length s = 0; s < kMaxPages; s++) {
+    ReleaseFreeList(&free_[s].normal, &free_[s].returned);
+  }
+  ReleaseFreeList(&large_.normal, &large_.returned);
+  ASSERT(Check());
 }
 
 }  // namespace tcmalloc
