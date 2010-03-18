@@ -20,9 +20,10 @@ TEST_F(BookmarkMenuTest, Basics) {
                                                               action:NULL
                                                        keyEquivalent:@""]);
   [menu addItem:item];
-  NSValue* value = [NSValue valueWithPointer:menu.get()];
-  [menu setRepresentedObject:value];
-  EXPECT_EQ((void*)menu.get(), (void*)[menu node]);
+  long long l = 103849459459598948LL;  // arbitrary
+  NSNumber* number = [NSNumber numberWithLongLong:l];
+  [menu setRepresentedObject:number];
+  EXPECT_EQ(l, [menu id]);
 }
 
 }  // namespace

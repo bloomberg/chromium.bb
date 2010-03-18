@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
+#import "chrome/browser/bookmarks/bookmark_model.h"
 #import "chrome/browser/cocoa/bookmark_button_cell.h"
 #import "chrome/browser/cocoa/bookmark_menu.h"
 
@@ -78,12 +79,14 @@
 
 // We share the context menu among all bookmark buttons.  To allow us
 // to disambiguate when needed (e.g. "open bookmark"), we set the
-// menu's associated node to be our represented object.
+// menu's associated bookmark node ID to be our represented object.
 - (NSMenu*)menu {
   if (empty_)
     return nil;
   BookmarkMenu* menu = (BookmarkMenu*)[super menu];
-  [menu setRepresentedObject:[self representedObject]];
+  const BookmarkNode* node =
+      static_cast<const BookmarkNode*>([[self representedObject] pointerValue]);
+  [menu setRepresentedObject:[NSNumber numberWithLongLong:node->id()]];
   return menu;
 }
 

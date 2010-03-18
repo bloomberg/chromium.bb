@@ -7,15 +7,15 @@
 
 @implementation BookmarkMenu
 
-@synthesize node = node_;
+@synthesize id = id_;
 
 // Convention in the bookmark bar controller: the bookmark button
 // cells have a BookmarkNode as their represented object.  This object
 // is placed in a BookmarkMenu at the time a cell is asked for its
 // menu.
 - (void)setRepresentedObject:(id)object {
-  if ([object isKindOfClass:[NSValue class]]) {
-    node_ = static_cast<const BookmarkNode*>([object pointerValue]);
+  if ([object isKindOfClass:[NSNumber class]]) {
+    id_ = static_cast<int64>([object longLongValue]);
   }
 }
 

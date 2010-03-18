@@ -3,16 +3,18 @@
 // found in the LICENSE file.
 
 #import <Cocoa/Cocoa.h>
-struct BookmarkNode;
+
+#include "base/basictypes.h"
+
 
 // The context menu for bookmark buttons needs to know which
 // BookmarkNode it is talking about.  For example, "Open All" is
 // disabled if the bookmark node is a folder and has no children.
 @interface BookmarkMenu : NSMenu {
  @private
-  const BookmarkNode* node_;
+  int64 id_;  // id of the bookmark node we represent.
 }
 - (void)setRepresentedObject:(id)object;
-@property const BookmarkNode* node;
+@property int64 id;
 @end
 

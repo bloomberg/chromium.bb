@@ -316,7 +316,7 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 - (NSMenu*)offTheSideMenu;
 - (NSButton*)offTheSideButton;
 - (NSButton*)otherBookmarksButton;
-- (BookmarkNode*)nodeFromMenuItem:(id)sender;
+- (const BookmarkNode*)nodeFromMenuItem:(id)sender;
 - (void)updateTheme:(ThemeProvider*)themeProvider;
 - (BookmarkBarFolderController*)folderController;
 - (BookmarkButton*)buttonForDroppingOnAtPoint:(NSPoint)point;

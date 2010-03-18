@@ -33,6 +33,8 @@
 namespace {
 
 class BookmarkButtonCellTest : public CocoaTest {
+  public:
+    BrowserTestHelper helper_;
 };
 
 // Make sure it's not totally bogus
@@ -55,6 +57,11 @@ TEST_F(BookmarkButtonCellTest, MouseEnterStuff) {
   scoped_nsobject<BookmarkButtonCell> cell(
       [[BookmarkButtonCell alloc] initTextCell:@"Testing"]);
   [cell setMenu:[[[BookmarkMenu alloc] initWithTitle:@"foo"] autorelease]];
+
+  BookmarkModel* model = helper_.profile()->GetBookmarkModel();
+  const BookmarkNode* node = model->GetBookmarkBarNode();
+  [cell setBookmarkNode:node];
+
   EXPECT_TRUE([cell.get() showsBorderOnlyWhileMouseInside]);
   EXPECT_TRUE([cell menu]);
 
@@ -64,7 +71,6 @@ TEST_F(BookmarkButtonCellTest, MouseEnterStuff) {
 }
 
 TEST_F(BookmarkButtonCellTest, BookmarkNode) {
-  BrowserTestHelper helper_;
   BookmarkModel& model(*(helper_.profile()->GetBookmarkModel()));
   scoped_nsobject<BookmarkButtonCell> cell(
       [[BookmarkButtonCell alloc] initTextCell:@"Testing"]);

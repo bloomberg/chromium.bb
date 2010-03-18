@@ -188,16 +188,19 @@ class BookmarkBarControllerTest : public CocoaTest {
                   withAnimation:NO];
   }
 
-  // Return a menu item that points to the right URL.
+  // Return a menu item that points to the given URL.
   NSMenuItem* ItemForBookmarkBarMenu(GURL& gurl) {
-    node_.reset(new BookmarkNode(gurl));
-    [menu_ setRepresentedObject:[NSValue valueWithPointer:node_.get()]];
+    BookmarkModel* model = helper_.profile()->GetBookmarkModel();
+    const BookmarkNode* parent = model->GetBookmarkBarNode();
+    const BookmarkNode* node = model->AddURL(parent, parent->GetChildCount(),
+                                             L"A title", gurl);
+    [menu_ setRepresentedObject:[NSNumber numberWithLongLong:node->id()]];
     return menu_item_;
   }
 
   // Does NOT take ownership of node.
   NSMenuItem* ItemForBookmarkBarMenu(const BookmarkNode* node) {
-    [menu_ setRepresentedObject:[NSValue valueWithPointer:node]];
+    [menu_ setRepresentedObject:[NSNumber numberWithLongLong:node->id()]];
     return menu_item_;
   }
 
@@ -208,7 +211,6 @@ class BookmarkBarControllerTest : public CocoaTest {
   scoped_nsobject<BookmarkMenu> menu_;
   scoped_nsobject<NSMenuItem> menu_item_;
   scoped_nsobject<NSButtonCell> cell_;
-  scoped_ptr<BookmarkNode> node_;
 };
 
 TEST_F(BookmarkBarControllerTest, ShowWhenShowBookmarkBarTrue) {
@@ -908,7 +910,7 @@ TEST_F(BookmarkBarControllerTest, TestButtonOrBar) {
   EXPECT_TRUE(first && second);
 
   NSMenuItem* menuItem = [[[first cell] menu] itemAtIndex:0];
-  BookmarkNode* node = [bar_ nodeFromMenuItem:menuItem];
+  const BookmarkNode* node = [bar_ nodeFromMenuItem:menuItem];
   EXPECT_TRUE(node);
   EXPECT_EQ(node, model->GetBookmarkBarNode()->GetChild(0));
 
@@ -936,7 +938,7 @@ TEST_F(BookmarkBarControllerTest, TestMenuNodeAndDisable) {
   BookmarkMenu* menu = static_cast<BookmarkMenu*>([[button cell] menu]);
   EXPECT_TRUE(menu);
   EXPECT_TRUE([menu isKindOfClass:[BookmarkMenu class]]);
-  EXPECT_EQ(folder, [menu node]);
+  EXPECT_EQ(folder->id(), [menu id]);
 
   // Make sure "Open All" is disabled (nothing to open -- no children!)
   // (Assumes "Open All" is the 1st item)
@@ -1191,6 +1193,45 @@ TEST_F(BookmarkBarControllerTest, DropDestination) {
   }
 }
 
+TEST_F(BookmarkBarControllerTest, NodeDeletedWhileMenuIsOpen) {
+  BookmarkModel* model = helper_.profile()->GetBookmarkModel();
+  [bar_ loaded:model];
+
+  const BookmarkNode* parent = model->GetBookmarkBarNode();
+  const BookmarkNode* initialNode = model->AddURL(
+      parent, parent->GetChildCount(),
+      L"initial",
+      GURL("http://www.google.com"));
+
+  NSMenuItem* item = ItemForBookmarkBarMenu(initialNode);
+  EXPECT_EQ(0U, bar_.get()->urls_.size());
+
+  // Basic check of the menu item and an IBOutlet it can call.
+  EXPECT_EQ(initialNode, [bar_ nodeFromMenuItem:item]);
+  [bar_ openBookmarkInNewWindow:item];
+  EXPECT_EQ(1U, bar_.get()->urls_.size());
+  [bar_ clear];
+
+  // Now delete the node and make sure things are happy (no crash,
+  // NULL node caught).
+  model->Remove(parent, parent->IndexOfChild(initialNode));
+  EXPECT_EQ(nil, [bar_ nodeFromMenuItem:item]);
+  // Should not crash by referencing a deleted node.
+  [bar_ openBookmarkInNewWindow:item];
+  // Confirm the above did nothing in case it somehow didn't crash.
+  EXPECT_EQ(0U, bar_.get()->urls_.size());
+
+  // Confirm some more non-crashes.
+  [bar_ openBookmarkInNewForegroundTab:item];
+  [bar_ openBookmarkInIncognitoWindow:item];
+  [bar_ editBookmark:item];
+  [bar_ copyBookmark:item];
+  [bar_ deleteBookmark:item];
+  [bar_ openAllBookmarks:item];
+  [bar_ openAllBookmarksNewWindow:item];
+  [bar_ openAllBookmarksIncognitoWindow:item];
+}
+
 TEST_F(BookmarkBarControllerTest, CloseFolderOnAnimate) {
   BookmarkModel* model = helper_.profile()->GetBookmarkModel();
   const BookmarkNode* parent = model->GetBookmarkBarNode();
@@ -1223,6 +1264,7 @@ TEST_F(BookmarkBarControllerTest, CloseFolderOnAnimate) {
   // should have been closed thus releasing the folderController.
   EXPECT_FALSE([bar_ folderController]);
 }
+
 
 class BookmarkBarControllerNotificationTest : public CocoaTest {
  public:
