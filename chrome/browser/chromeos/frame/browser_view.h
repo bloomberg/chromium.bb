@@ -20,6 +20,8 @@ class ImageButton;
 class Menu2;
 }  // namespace views
 
+class Profile;
+
 namespace chromeos {
 
 class BrowserStatusAreaView;
@@ -76,6 +78,7 @@ class BrowserView : public ::BrowserView,
                                bool is_mouse_gesture);
 
   // StatusAreaHost overrides.
+  virtual Profile* GetProfile() const;
   virtual gfx::NativeWindow GetNativeWindow() const;
   virtual bool ShouldOpenButtonOptions(
       const views::View* button_view) const;

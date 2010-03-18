@@ -14,6 +14,7 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
 #include "chrome/browser/profile.h"
+#include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "unicode/calendar.h"
 
@@ -37,6 +38,10 @@ ClockMenuButton::ClockMenuButton(StatusAreaHost* host)
   SetText(l10n_util::GetStringF(IDS_STATUSBAR_CLOCK_SHORT_TIME_PM, zero, zero));
   set_alignment(TextButton::ALIGN_RIGHT);
   UpdateTextAndSetNextTimer();
+  // Init member prefs so we can update the clock if prefs change.
+  // This only works if we are within a browser and have a profile.
+  if (host->GetProfile())
+    timezone_.Init(prefs::kTimeZone, host->GetProfile()->GetPrefs(), this);
 }
 
 void ClockMenuButton::UpdateTextAndSetNextTimer() {
@@ -121,6 +126,21 @@ bool ClockMenuButton::IsEnabledAt(int index) const {
 void ClockMenuButton::ActivatedAt(int index) {
   host_->OpenButtonOptions(this);
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// ClockMenuButton, NotificationObserver implementation:
+
+void ClockMenuButton::Observe(NotificationType type,
+                              const NotificationSource& source,
+                              const NotificationDetails& details) {
+  if (type == NotificationType::PREF_CHANGED) {
+    const std::wstring* pref_name = Details<std::wstring>(details).ptr();
+    if (!pref_name || *pref_name == prefs::kTimeZone) {
+      UpdateText();
+    }
+  }
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // ClockMenuButton, views::ViewMenuDelegate implementation:

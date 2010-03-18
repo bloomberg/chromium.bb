@@ -480,6 +480,10 @@ void BrowserView::ShowContextMenu(views::View* source,
 }
 
 // StatusAreaHost overrides.
+Profile* BrowserView::GetProfile() const {
+  return browser()->profile();
+}
+
 gfx::NativeWindow BrowserView::GetNativeWindow() const {
   return GetWindow()->GetNativeWindow();
 }

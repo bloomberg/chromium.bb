@@ -11,12 +11,18 @@ namespace views {
 class View;
 }  // namespace views
 
+class Profile;
+
 namespace chromeos {
 
 // This class is an abstraction decoupling StatusAreaView from its host
 // window.
 class StatusAreaHost {
  public:
+  // Returns the Profile if this status area is inside the browser and has a
+  // profile. Otherwise, returns NULL.
+  virtual Profile* GetProfile() const = 0;
+
   // Returns native window hosting the status area.
   virtual gfx::NativeWindow GetNativeWindow() const = 0;
 

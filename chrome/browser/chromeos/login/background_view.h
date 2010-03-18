@@ -12,6 +12,8 @@ namespace views {
 class Widget;
 }
 
+class Profile;
+
 namespace chromeos {
 
 class StatusAreaView;
@@ -37,6 +39,7 @@ class BackgroundView : public views::View, public StatusAreaHost {
   virtual void Layout();
 
   // Overridden from StatusAreaHost:
+  virtual Profile* GetProfile() const { return NULL; }
   virtual gfx::NativeWindow GetNativeWindow() const;
   virtual bool ShouldOpenButtonOptions(
       const views::View* button_view) const;
