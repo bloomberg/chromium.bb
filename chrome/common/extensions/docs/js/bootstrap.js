@@ -1,9 +1,25 @@
+var fileXHREnabled = function() {
+  var xhr = new XMLHttpRequest();
+  try {
+    xhr.onreadystatechange = function() {};
+    xhr.onerror = function() {};
+    xhr.open("GET", "nothing.xml", true);
+    xhr.send(null);
+  } catch (e) {
+    return false;
+  }
+  
+  xhr.abort();
+  return true;
+}();
+
 // Regenerate page if we are passed the "?regenerate" search param
 // or if the user-agent is chrome AND the document is being served
 // from the file:/// scheme.
 if (window.location.search == "?regenerate" ||
     (navigator.userAgent.indexOf("Chrome") > -1) &&
-    (window.location.href.match("^file:")))    {
+    (window.location.href.match("^file:")) &&
+    fileXHREnabled)    {
   
   // Hide body content initially to minimize flashing.
   document.write('<style id="hider" type="text/css">');
@@ -22,5 +38,12 @@ if (window.location.search == "?regenerate" ||
     // as it normally would.
     if (location.hash.length > 1)
       location.href = location.href;
+  }
+} else if ((navigator.userAgent.indexOf("Chrome") > -1) &&
+           (window.location.href.match("^file:")) &&
+            !fileXHREnabled) {
+  window.onload = function() {
+    // Display the warning to use the --allow-file-access-from-files.
+    document.getElementById("devModeWarning").style.display = "block";
   }
 }
