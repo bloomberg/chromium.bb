@@ -42,9 +42,9 @@ class TryChangeUnittest(TryChangeTestsBase):
       'EscapeDot', 'GIT', 'GuessVCS', 'GetMungedDiff',
       'HELP_STRING', 'InvalidScript', 'NoTryServerAccess', 'PrintSuccess',
       'SCM', 'SVN', 'TryChange', 'USAGE',
-      'breakpad', 'datetime', 'errno', 'gclient_utils', 'getpass', 'logging',
-      'optparse', 'os', 'posixpath', 're', 'scm', 'shutil', 'sys', 'tempfile',
-      'urllib',
+      'breakpad', 'datetime', 'errno', 'gclient_utils', 'getpass', 'json',
+      'logging', 'optparse', 'os', 'posixpath', 're', 'scm', 'shutil', 'sys',
+      'tempfile', 'urllib',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(trychange, members)

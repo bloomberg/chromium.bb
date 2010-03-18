@@ -34,6 +34,15 @@ import unittest  # Exposed through the API.
 import urllib2  # Exposed through the API.
 import warnings
 
+# json may not be available.
+try:
+  import simplejson as json
+except ImportError:
+  try:
+    import json
+  except ImportError:
+    json = None
+
 # Local imports.
 import gcl
 import gclient_utils
@@ -196,6 +205,7 @@ class InputApi(object):
     self.basename = os.path.basename
     self.cPickle = cPickle
     self.cStringIO = cStringIO
+    self.json = json
     self.os_path = os.path
     self.pickle = pickle
     self.marshal = marshal
