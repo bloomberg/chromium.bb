@@ -42,7 +42,7 @@ struct WifiNetwork {
       : service_path(service.service_path),
         device_path(service.device_path),
         ssid(service.name),
-        encrypted(service.passphrase_required),
+        encrypted(service.security != SECURITY_NONE),
         encryption(service.security),
         passphrase(service.passphrase),
         strength(service.strength),
