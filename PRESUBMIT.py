@@ -178,8 +178,12 @@ def CheckPendingBuilds(input_api, output_api, url, max_pendings, ignored):
       import simplejson
       data = simplejson.loads(raw_data)
     except ImportError:
+      # TODO(maruel): use json parser.
       # simplejson is much safer. But we should be just fine enough with that:
-      data = eval(raw_data.replace('null', 'None'))
+      patched_data = raw_data.replace('null', 'None')
+      patched_data = patched_data.replace('false', 'False')
+      patched_data = patched_data.replace('true', 'True')
+      data = eval(patched_data)
     out = []
     for (builder_name, builder)  in data.iteritems():
       if builder_name in ignored:
