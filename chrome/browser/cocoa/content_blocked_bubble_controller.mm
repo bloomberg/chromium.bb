@@ -13,9 +13,8 @@
 #import "chrome/browser/cocoa/content_settings_dialog_controller.h"
 #import "chrome/browser/cocoa/hyperlink_button_cell.h"
 #import "chrome/browser/cocoa/info_bubble_view.h"
+#include "chrome/browser/content_setting_bubble_model.h"
 #include "chrome/browser/host_content_settings_map.h"
-#include "chrome/browser/profile.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "grit/generated_resources.h"
@@ -42,51 +41,23 @@ const int kLinkLineHeight = kLinkHeight + kLinkPadding;
 // Space between popup list and surrounding UI elements.
 const int kLinkOuterPadding = 8;
 
-}  // namespace
-
-// If the bubble's tab contents get destroyed, tells the bubble about it.
-class BubbleCloser : public NotificationObserver {
- public:
-  BubbleCloser(ContentBlockedBubbleController* controller,
-               TabContents* tab_contents)
-      : controller_(controller) {
-    registrar_.Add(this, NotificationType::TAB_CONTENTS_DESTROYED,
-                   Source<TabContents>(tab_contents));
-  }
-  virtual ~BubbleCloser() {}
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
-    DCHECK(type == NotificationType::TAB_CONTENTS_DESTROYED);
-    DCHECK(source == Source<TabContents>([controller_ tabContents]));
-    [controller_ setTabContents:NULL];
-  }
- private:
-  ContentBlockedBubbleController* controller_;  // weak, owns us
-  NotificationRegistrar registrar_;
-};
-
-
 // Like |ReplaceStringPlaceholders(const string16&, const string16&, size_t*)|,
 // but for a NSString formatString.
-static NSString* ReplaceNSStringPlaceholders(NSString* formatString,
-                                             const string16& a,
-                                             size_t* offset) {
+NSString* ReplaceNSStringPlaceholders(NSString* formatString,
+                                      const string16& a,
+                                      size_t* offset) {
   return base::SysUTF16ToNSString(
-        ReplaceStringPlaceholders(base::SysNSStringToUTF16(formatString),
-                                  a,
-                                  offset));
+      ReplaceStringPlaceholders(base::SysNSStringToUTF16(formatString),
+                                a,
+                                offset));
 }
 
+}  // namespace
 
 @interface ContentBlockedBubbleController(Private)
-- (id)initWithType:(ContentSettingsType)settingsType
-      parentWindow:(NSWindow*)parentWindow
-        anchoredAt:(NSPoint)anchoredAt
-              host:(const std::string&)host
-       displayHost:(NSString*)displayHost
-       tabContents:(TabContents*)tabContents
-           profile:(Profile*)profile;
+- (id)initWithModel:(ContentSettingBubbleModel*)settingsBubbleModel
+       parentWindow:(NSWindow*)parentWindow
+         anchoredAt:(NSPoint)anchoredAt;
 - (NSButton*)hyperlinkButtonWithFrame:(NSRect)frame
                                 title:(NSString*)title
                                  icon:(NSImage*)icon
@@ -97,35 +68,26 @@ static NSString* ReplaceNSStringPlaceholders(NSString* formatString,
 - (void)popupLinkClicked:(id)sender;
 @end
 
-
 @implementation ContentBlockedBubbleController
 
-+ (ContentBlockedBubbleController*)showForType:(ContentSettingsType)settingsType
-                                  parentWindow:(NSWindow*)parentWindow
-                                    anchoredAt:(NSPoint)anchor
-                                          host:(const std::string&)host
-                                   displayHost:(NSString*)displayHost
-                                   tabContents:(TabContents*)tabContents
-                                       profile:(Profile*)profile {
++ (ContentBlockedBubbleController*)
+    showForModel:(ContentSettingBubbleModel*)contentSettingBubbleModel
+    parentWindow:(NSWindow*)parentWindow
+      anchoredAt:(NSPoint)anchor {
   // Autoreleases itself on bubble close.
-  return [[ContentBlockedBubbleController alloc] initWithType:settingsType
-                                                  parentWindow:parentWindow
-                                                    anchoredAt:anchor
-                                                          host:host
-                                                   displayHost:displayHost
-                                                   tabContents:tabContents
-                                                       profile:profile];
+  return [[ContentBlockedBubbleController alloc]
+             initWithModel:contentSettingBubbleModel
+              parentWindow:parentWindow
+                anchoredAt:anchor];
 }
 
-@synthesize tabContents = tabContents_;
+- (id)initWithModel:(ContentSettingBubbleModel*)contentSettingBubbleModel
+       parentWindow:(NSWindow*)parentWindow
+         anchoredAt:(NSPoint)anchoredAt {
+  // This method takes ownership of |contentSettingBubbleModel| in all cases.
+  scoped_ptr<ContentSettingBubbleModel> model(contentSettingBubbleModel);
+  DCHECK(model.get());
 
-- (id)initWithType:(ContentSettingsType)settingsType
-      parentWindow:(NSWindow*)parentWindow
-        anchoredAt:(NSPoint)anchoredAt
-              host:(const std::string&)host
-       displayHost:(NSString*)displayHost
-       tabContents:(TabContents*)tabContents
-           profile:(Profile*)profile {
   NSString* const nibPaths[CONTENT_SETTINGS_NUM_TYPES] = {
     @"ContentBlockedCookies",
     @"ContentBlockedImages",
@@ -133,21 +95,17 @@ static NSString* ReplaceNSStringPlaceholders(NSString* formatString,
     @"ContentBlockedPlugins",
     @"ContentBlockedPopups",
   };
-  DCHECK_EQ(arraysize(nibPaths),
-            static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
+  COMPILE_ASSERT(arraysize(nibPaths) == CONTENT_SETTINGS_NUM_TYPES,
+                 nibPaths_requires_an_entry_for_every_setting_type);
+  const int settingsType = model->content_type();
+  DCHECK_LT(settingsType, CONTENT_SETTINGS_NUM_TYPES);
   NSString* nibPath =
       [mac_util::MainAppBundle() pathForResource:nibPaths[settingsType]
                                           ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibPath owner:self])) {
     parentWindow_ = parentWindow;
     anchor_ = anchoredAt;
-
-    settingsType_ = settingsType;
-    host_ = host;
-    displayHost_.reset([displayHost retain]);
-    tabContents_ = tabContents;
-    profile_ = profile;
-    closer_.reset(new BubbleCloser(self, tabContents_));
+    contentSettingBubbleModel_.reset(model.release());
 
     // Watch to see if the parent window closes, and if so, close this one.
     NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
@@ -172,23 +130,27 @@ static NSString* ReplaceNSStringPlaceholders(NSString* formatString,
 }
 
 - (void)initializeRadioGroup {
+  // Configure the radio group. For now, only deal with the
+  // strictly needed case of 1 radio group (containing 2 radio buttons).
+  // TODO(joth): Implement the generic case, getting localized strings from the
+  // bubble model instead of the xib, or remove it if it's never needed.
+  // http://crbug.com/38432
+  const ContentSettingBubbleModel::RadioGroups& radioGroups =
+      contentSettingBubbleModel_->bubble_content().radio_groups;
+  DCHECK_EQ(1u, radioGroups.size()) << "Only one radio group supported";
+  const ContentSettingBubbleModel::RadioGroup& radioGroup = radioGroups.at(0);
+
   // Select appropriate radio button..
-  if (profile_) {  // NULL in tests.
-    HostContentSettingsMap* contentSettingsMap =
-        profile_->GetHostContentSettingsMap();
-    ContentSetting setting = contentSettingsMap->GetContentSetting(
-        host_, settingsType_);
-    [allowBlockRadioGroup_ selectCellWithTag:
-        setting == CONTENT_SETTING_ALLOW ? kAllowTag : kBlockTag];
-  }
+  [allowBlockRadioGroup_ selectCellWithTag:
+      radioGroup.default_item == 0 ? kAllowTag : kBlockTag];
 
   // Copy |host_| into radio group label.
   NSCell* radioCell = [allowBlockRadioGroup_ cellWithTag:kAllowTag];
   [radioCell setTitle:ReplaceNSStringPlaceholders([radioCell title],
-                                                  UTF8ToUTF16(host_),
+                                                  UTF8ToUTF16(radioGroup.host),
                                                   NULL)];
 
- // Layout radio group labels post-localization.
+  // Layout radio group labels post-localization.
   [GTMUILocalizerAndLayoutTweaker
       wrapRadioGroupForWidth:allowBlockRadioGroup_];
   CGFloat radioDeltaY = [GTMUILocalizerAndLayoutTweaker
@@ -234,10 +196,8 @@ static NSString* ReplaceNSStringPlaceholders(NSString* formatString,
 - (void)initializePopupList {
   // I didn't put the buttons into a NSMatrix because then they are only one
   // entity in the key view loop. This way, one can tab through all of them.
-  BlockedPopupContainer::BlockedContents blockedContents;
-  DCHECK(tabContents_->blocked_popup_container());
-  tabContents_->blocked_popup_container()->GetBlockedContents(
-      &blockedContents);
+  const ContentSettingBubbleModel::PopupItems& popupItems =
+      contentSettingBubbleModel_->bubble_content().popup_items;
 
   // Get the pre-resize frame of the radio group. Its origin is where the
   // popup list should go.
@@ -247,7 +207,7 @@ static NSString* ReplaceNSStringPlaceholders(NSString* formatString,
   // themselves when the window is enlarged.
   // Heading and radio box are already 1 * kLinkOuterPadding apart in the nib,
   // so only 1 * kLinkOuterPadding more is needed.
-  int delta = blockedContents.size() * kLinkLineHeight - kLinkPadding +
+  int delta = popupItems.size() * kLinkLineHeight - kLinkPadding +
               kLinkOuterPadding;
   NSSize deltaSize = NSMakeSize(0, delta);
   deltaSize = [[[self window] contentView] convertSize:deltaSize toView:nil];
@@ -258,30 +218,29 @@ static NSString* ReplaceNSStringPlaceholders(NSString* formatString,
   // Create popup list.
   int topLinkY = NSMaxY(radioFrame) + delta - kLinkHeight;
   int row = 0;
-  for (BlockedPopupContainer::BlockedContents::const_iterator
-           it(blockedContents.begin()); it != blockedContents.end();
-       ++it, ++row) {
-    SkBitmap icon = (*it)->GetFavIcon();
+  for (std::vector<ContentSettingBubbleModel::PopupItem>::const_iterator
+       it(popupItems.begin()); it != popupItems.end(); ++it, ++row) {
+    const SkBitmap& icon = it->bitmap;
     NSImage* image = nil;
     if (!icon.empty())
       image = gfx::SkBitmapToNSImage(icon);
 
-    string16 title((*it)->GetTitle());
+    std::string title(it->title);
     // The popup may not have committed a load yet, in which case it won't
     // have a URL or title.
     if (title.empty())
-      title = l10n_util::GetStringUTF16(IDS_TAB_LOADING_TITLE);
+      title = l10n_util::GetStringUTF8(IDS_TAB_LOADING_TITLE);
 
     NSRect linkFrame =
         NSMakeRect(NSMinX(radioFrame), topLinkY - kLinkLineHeight * row,
                    200, kLinkHeight);
     NSButton* button = [self
         hyperlinkButtonWithFrame:linkFrame
-                           title:base::SysUTF16ToNSString(title)
+                           title:base::SysUTF8ToNSString(title)
                             icon:image
                   referenceFrame:radioFrame];
     [bubble_ addSubview:button];
-    popupLinks_[button] = *it;
+    popupLinks_[button] = row;
   }
 }
 
@@ -295,7 +254,8 @@ static NSString* ReplaceNSStringPlaceholders(NSString* formatString,
   [self initializeTitle];
   if (allowBlockRadioGroup_)  // not bound in cookie bubble xib
     [self initializeRadioGroup];
-  if (settingsType_ == CONTENT_SETTINGS_TYPE_POPUPS && tabContents_)
+  if (contentSettingBubbleModel_->content_type()
+      == CONTENT_SETTINGS_TYPE_POPUPS)
     [self initializePopupList];
 }
 
@@ -371,11 +331,8 @@ static NSString* ReplaceNSStringPlaceholders(NSString* formatString,
 
 - (IBAction)allowBlockToggled:(id)sender {
   NSButtonCell *selectedCell = [sender selectedCell];
-  ContentSetting setting = [selectedCell tag] == kAllowTag ?
-      CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
-  profile_->GetHostContentSettingsMap()->SetContentSetting(host_,
-                                                           settingsType_,
-                                                           setting);
+  contentSettingBubbleModel_->OnRadioClicked(
+      0, [selectedCell tag] == kAllowTag ? 0 : 1);
 }
 
 - (IBAction)closeBubble:(id)sender {
@@ -383,19 +340,13 @@ static NSString* ReplaceNSStringPlaceholders(NSString* formatString,
 }
 
 - (IBAction)manageBlocking:(id)sender {
-  if (tabContents_) {
-    tabContents_->delegate()->ShowContentSettingsWindow(settingsType_);
-  } else {
-    [ContentSettingsDialogController showContentSettingsForType:settingsType_
-                                                        profile:profile_];
-  }
+  contentSettingBubbleModel_->OnManageLinkClicked();
 }
 
 - (void)popupLinkClicked:(id)sender {
   content_blocked_bubble::PopupLinks::iterator i(popupLinks_.find(sender));
   DCHECK(i != popupLinks_.end());
-  if (tabContents_ && tabContents_->blocked_popup_container())
-    tabContents_->blocked_popup_container()->LaunchPopupForContents(i->second);
+  contentSettingBubbleModel_->OnPopupClicked(i->second);
 }
 
 @end  // ContentBlockedBubbleController

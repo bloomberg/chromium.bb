@@ -10,17 +10,14 @@
 #import "base/cocoa_protocols_mac.h"
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
-#include "chrome/common/content_settings_types.h"
 
-class BubbleCloser;
+class ContentSettingBubbleModel;
 @class InfoBubbleView;
-class Profile;
-class TabContents;
 
 namespace content_blocked_bubble {
-// For every "show popup" button, remember which popup tab contents it should
-// open when clicked.
-typedef std::map<NSButton*, TabContents*> PopupLinks;
+// For every "show popup" button, remember the index of the popup tab contents
+// it should open when clicked.
+typedef std::map<NSButton*, int> PopupLinks;
 }
 
 // Manages a "content blocked" bubble.
@@ -34,29 +31,16 @@ typedef std::map<NSButton*, TabContents*> PopupLinks;
   IBOutlet NSTextField* titleLabel_;
   IBOutlet NSMatrix* allowBlockRadioGroup_;
 
-  ContentSettingsType settingsType_;
-  std::string host_;
-  scoped_nsobject<NSString> displayHost_;
-  Profile* profile_;
-  TabContents* tabContents_;
+  scoped_ptr<ContentSettingBubbleModel> contentSettingBubbleModel_;
   content_blocked_bubble::PopupLinks popupLinks_;
-
-  // Resets |tabContents_| to null if the object |tabContents_| is pointing to
-  // gets destroyed.
-  scoped_ptr<BubbleCloser> closer_;
 }
 
-// Creates and shows a content blocked bubble.
-+ (ContentBlockedBubbleController*)showForType:(ContentSettingsType)settingsType
-                                  parentWindow:(NSWindow*)parentWindow
-                                    anchoredAt:(NSPoint)anchoredAt
-                                          host:(const std::string&)host
-                                   displayHost:(NSString*)displayHost
-                                   tabContents:(TabContents*)tabContents
-                                       profile:(Profile*)profile;
-
-// Returns the tab contents this bubble is for.
-@property(nonatomic, assign) TabContents* tabContents;
+// Creates and shows a content blocked bubble. Takes ownership of
+// |contentSettingBubbleModel| but not of the other objects.
++ (ContentBlockedBubbleController*)
+    showForModel:(ContentSettingBubbleModel*)contentSettingBubbleModel
+    parentWindow:(NSWindow*)parentWindow
+      anchoredAt:(NSPoint)anchoredAt;
 
 // Callback for the "don't block / continue blocking" radio group.
 - (IBAction)allowBlockToggled:(id)sender;

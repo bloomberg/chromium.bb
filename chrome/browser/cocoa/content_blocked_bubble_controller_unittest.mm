@@ -8,9 +8,21 @@
 
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
+#include "chrome/browser/content_setting_bubble_model.h"
+#include "chrome/common/content_settings_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
+
+class DummyContentSettingBubbleModel : public ContentSettingBubbleModel {
+ public:
+  DummyContentSettingBubbleModel(ContentSettingsType content_type)
+      : ContentSettingBubbleModel(NULL, NULL, content_type) {
+    RadioGroup radio_group;
+    radio_group.radio_items.resize(2);
+    add_radio_group(radio_group);
+  }
+};
 
 class ContentBlockedBubbleControllerTest : public CocoaTest {
 };
@@ -31,14 +43,10 @@ TEST_F(ContentBlockedBubbleControllerTest, Init) {
     else
       [parent.get() orderBack:nil];
 
-    ContentBlockedBubbleController* controller =
-        [ContentBlockedBubbleController showForType:settingsType
-                                       parentWindow:parent
-                                         anchoredAt:NSMakePoint(50, 20)
-                                               host:"http://te.net"
-                                        displayHost:@"te.net"
-                                        tabContents:NULL
-                                            profile:NULL];
+    ContentBlockedBubbleController* controller = [ContentBlockedBubbleController
+        showForModel:new DummyContentSettingBubbleModel(settingsType)
+        parentWindow:parent
+         anchoredAt:NSMakePoint(50, 20)];
     EXPECT_TRUE(controller != nil);
     [controller showWindow:nil];
     [parent.get() close];

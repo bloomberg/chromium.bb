@@ -23,6 +23,7 @@
 #import "chrome/browser/cocoa/extensions/extension_popup_controller.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/content_setting_image_model.h"
+#include "chrome/browser/content_setting_bubble_model.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
@@ -858,14 +859,13 @@ void LocationBarViewMac::ContentSettingImageView::OnMousePressed(NSRect bounds)
   anchor = [window convertBaseToScreen:anchor];
 
   // Open bubble.
-  [[ContentBlockedBubbleController
-        showForType:content_setting_image_model_->get_content_settings_type()
-       parentWindow:window
-         anchoredAt:anchor
-               host:url.host()
-        displayHost:base::SysWideToNSString(displayHost)
-        tabContents:tabContents
-            profile:profile_] showWindow:nil];
+  ContentSettingBubbleModel* model =
+      ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+          tabContents, profile_,
+          content_setting_image_model_->get_content_settings_type());
+  [[ContentBlockedBubbleController showForModel:model
+                                   parentWindow:window
+                                     anchoredAt:anchor] showWindow:nil];
 }
 
 const NSString* LocationBarViewMac::ContentSettingImageView::GetToolTip() {
