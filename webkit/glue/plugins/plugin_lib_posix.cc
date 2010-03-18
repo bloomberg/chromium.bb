@@ -64,7 +64,57 @@ bool ELFMatchesCurrentArchitecture(const FilePath& filename) {
   return false;
 }
 
+// This structure matches enough of nspluginwrapper's NPW_PluginInfo
+// for us to extract the real plugin path.
+struct __attribute__((packed)) NSPluginWrapperInfo {
+  char ident[32];  // NSPluginWrapper magic identifier (includes version).
+  char path[PATH_MAX];  // Path to wrapped plugin.
+};
+
+// Test a plugin for whether it's been wrapped by NSPluginWrapper, and
+// if so attempt to unwrap it.  Pass in an opened plugin handle; on
+// success, |dl| and |unwrapped_path| will be filled in with the newly
+// opened plugin.  On failure, params are left unmodified.
+void UnwrapNSPluginWrapper(void **dl, FilePath* unwrapped_path) {
+  NSPluginWrapperInfo* info =
+      reinterpret_cast<NSPluginWrapperInfo*>(dlsym(*dl, "NPW_Plugin"));
+  if (!info)
+    return;  // Not a NSPW plugin.
+
+  // Here we could check the NSPW ident field for the versioning
+  // information, but the path field is available in all versions
+  // anyway.
+
+  // Grab the path to the wrapped plugin.  Just in case the structure
+  // format changes, protect against the path not being null-terminated.
+  char* path_end = static_cast<char*>(memchr(info->path, '\0',
+                                             sizeof(info->path)));
+  if (!path_end)
+    path_end = info->path + sizeof(info->path);
+  FilePath path = FilePath(std::string(info->path, path_end - info->path));
+
+  if (!ELFMatchesCurrentArchitecture(path)) {
+    LOG(WARNING) << path.value() << " is nspluginwrapper wrapping a "
+                 << "plugin for a different architecture; it will "
+                 << "work better if you instead use a native plugin.";
+    return;
+  }
+
+  void* newdl = base::LoadNativeLibrary(path);
+  if (!newdl) {
+    // We couldn't load the unwrapped plugin for some reason, despite
+    // being able to load the wrapped one.  Just use the wrapped one.
+    return;
+  }
+
+  // Unload the wrapped plugin, and use the wrapped plugin instead.
+  base::UnloadNativeLibrary(*dl);
+  *dl = newdl;
+  *unwrapped_path = path;
+}
+
 }  // anonymous namespace
+
 namespace NPAPI {
 
 bool PluginLib::ReadWebPluginInfo(const FilePath& filename,
@@ -81,6 +131,9 @@ bool PluginLib::ReadWebPluginInfo(const FilePath& filename,
     return false;
 
   info->path = filename;
+
+  // Attempt to swap in the wrapped plugin if this is nspluginwrapper.
+  UnwrapNSPluginWrapper(&dl, &info->path);
 
   // See comments in plugin_lib_mac regarding this symbol.
   typedef const char* (*NP_GetMimeDescriptionType)();
