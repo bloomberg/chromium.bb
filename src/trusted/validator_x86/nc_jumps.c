@@ -69,6 +69,14 @@ static Bool NaClCheckAddressRange(NaClPcAddress address,
   return TRUE;
 }
 
+Bool NACL_FLAGS_identity_mask = FALSE;
+
+static INLINE uint8_t NaClGetJumpMask(NaClValidatorState* state) {
+  return NACL_FLAGS_identity_mask
+      ? (uint8_t) 0xFF
+      : (uint8_t) (~state->alignment_mask);
+}
+
 /* Return true if the corresponding address is in the given address set. */
 static INLINE uint8_t NaClAddressSetContains(NaClAddressSet set,
                                              NaClPcAddress address,
@@ -164,45 +172,35 @@ static void NaClAddJumpToJumpSets(NaClValidatorState* state,
                                   NaClPcAddress to_address,
                                   NaClJumpSets* jump_sets,
                                   NaClInstState* inst) {
-  Bool is_good = TRUE;
+  /* If the address is between state->vbase and state->vlimit, assume
+   * good (unless we later find it jumping into a pseudo instruction).
+   * Otherwise, only allow if 0 mod 32.
+   */
+  Bool maybe_good = TRUE;
+  Bool in_range = TRUE;
   DEBUG(printf("Add jump to jump sets: %"
                NACL_PRIxNaClPcAddress" -> %"NACL_PRIxNaClPcAddress"\n",
                from_address, to_address));
   if (to_address < state->vlimit) {
     if (to_address < state->vbase) {
-      /*
-       * the trampolines need to be aligned 0mod32 regardless of the
-       * program's elf flags.  This allows the same library to be used
-       * with both 16 and 32 byte aligned clients.
-       */
-      if (to_address < state->vbase - NACL_TRAMPOLINE_END ||
-          (to_address & (NACL_INSTR_BLOCK_SIZE-1))) {
-        /*
-         * TODO(sehr): once we fully support 16/32 alignment, remove this
-         * in favor of however we communicate the fixed block size.
-         */
-        /* this is an unaligned target in the trampoline area. */
-        /* vprint(("ignoring target %08x in trampoline\n", target)); */
-        is_good = FALSE;
-      }
-      if (0 == to_address) {
-        /* This clause was added to allow the validator to continue after
-         * seeing a call to address 0 as in "callq  0 <NACLALIGN-0x5>.
-         * These can happen when a binary has unresolved symbols. By
-         * setting is_good to FALSE, we get an error message instead
-         * of an assertion failure in NaClAddressSetAdd().
-         */
-        is_good = FALSE;
+      in_range = FALSE;
+      if (to_address == (to_address & ~((NaClPcAddress) 0x1f))) {
+        maybe_good = TRUE;
+      } else {
+        maybe_good = FALSE;
       }
     }
   } else {
-    is_good = FALSE;
+    in_range = FALSE;
+    maybe_good = FALSE;
   }
-  if (is_good) {
+  if (maybe_good) {
     DEBUG(printf("Add jump to target: %"NACL_PRIxNaClPcAddress
                  " -> %"NACL_PRIxNaClPcAddress"\n",
                  from_address, to_address));
-    NaClAddressSetAdd(jump_sets->actual_targets, to_address, state);
+    if (in_range) {
+      NaClAddressSetAdd(jump_sets->actual_targets, to_address, state);
+    }
   } else {
     if (inst == NULL) {
       NaClValidatorPcAddressMessage(LOG_ERROR, state, from_address,
@@ -265,14 +263,6 @@ static Bool NaClMemOffsetMatchesBaseIndex(NaClExpVector* vector,
       r2 == index_register &&
       1 == scale &&
       0 == disp;
-}
-
-Bool NACL_FLAGS_identity_mask = FALSE;
-
-static uint8_t NaClGetJumpMask(NaClValidatorState* state) {
-  return NACL_FLAGS_identity_mask
-      ? (uint8_t) 0xFF
-      : (uint8_t) (~state->alignment_mask);
 }
 
 /* Checks if an indirect jump (in 64-bit mode) is native client compliant.

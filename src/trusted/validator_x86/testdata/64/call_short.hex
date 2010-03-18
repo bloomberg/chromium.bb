@@ -1,0 +1,7 @@
+# Example of a relative address that jumps to before the code block, but is
+# still divisible by the block size.
+@7f8200020260
+90 90 90 90 90 90 90 90 90 90 90 90 90 90
+90 90 90 90 90 90 90 90 90 90 90 90 90
+e8 80 fd fd ff
+c6 05 99 06 5e 00 01
