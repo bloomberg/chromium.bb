@@ -460,6 +460,10 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, PageLanguageDetection) {
   EXPECT_EQ("fr", current_tab->language_state().original_language());
 }
 
+#if defined(OS_MAC)
+// http://crbug.com/38522
+#define RestorePinnedTabs FLAKY_RestorePinnedTabs
+#endif
 // Makes sure pinned tabs are restored correctly on start.
 IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
   HTTPTestServer* server = StartHTTPServer();
