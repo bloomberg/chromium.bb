@@ -9,10 +9,12 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "base/gfx/point.h"
 #include "base/message_loop.h"
 #include "base/string16.h"
 #include "gfx/native_widget_types.h"
 #include "googleurl/src/gurl.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDragOperation.h"
 
 class TabContents;
@@ -31,7 +33,9 @@ class TabContentsDragSource : public MessageLoopForUI::Observer {
   // Starts a drag for the tab contents this TabContentsDragSource was
   // created for.
   void StartDragging(const WebDropData& drop_data,
-                     GdkEventButton* last_mouse_down);
+                     GdkEventButton* last_mouse_down,
+                     const SkBitmap& image,
+                     const gfx::Point& image_offset);
 
   // MessageLoop::Observer implementation:
   virtual void WillProcessEvent(GdkEvent* event);
@@ -78,6 +82,11 @@ class TabContentsDragSource : public MessageLoopForUI::Observer {
   // The drop data for the current drag (for drags that originate in the render
   // view). Non-NULL iff there is a current drag.
   scoped_ptr<WebDropData> drop_data_;
+
+  // The image used for depicting the drag, and the offset between the cursor
+  // and the top left pixel.
+  SkBitmap drag_image_;
+  gfx::Point image_offset_;
 
   // The mime type for the file contents of the current drag (if any).
   GdkAtom drag_file_mime_type_;

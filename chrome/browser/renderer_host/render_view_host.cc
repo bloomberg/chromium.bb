@@ -1389,10 +1389,12 @@ void RenderViewHost::OnMsgFormFieldValuesSubmitted(
 
 void RenderViewHost::OnMsgStartDragging(
     const WebDropData& drop_data,
-    WebDragOperationsMask drag_operations_mask) {
+    WebDragOperationsMask drag_operations_mask,
+    const SkBitmap& image,
+    const gfx::Point& image_offset) {
   RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
   if (view)
-      view->StartDragging(drop_data, drag_operations_mask);
+      view->StartDragging(drop_data, drag_operations_mask, image, image_offset);
 }
 
 void RenderViewHost::OnUpdateDragCursor(WebDragOperation current_op) {

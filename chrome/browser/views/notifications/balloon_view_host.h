@@ -16,6 +16,10 @@
 
 class Profile;
 class RenderViewHost;
+class SkBitmap;
+namespace gfx {
+class Point;
+}
 
 // BalloonViewHost class is a delegate to the renderer host for the HTML
 // notification.  When initialized it creates a new RenderViewHost and loads
@@ -71,7 +75,9 @@ class BalloonViewHost : public views::NativeViewHost,
                                  const gfx::Rect& initial_pos) {}
   virtual void ShowContextMenu(const ContextMenuParams& params) {}
   virtual void StartDragging(const WebDropData& drop_data,
-                             WebKit::WebDragOperationsMask allowed_ops) {}
+                             WebKit::WebDragOperationsMask allowed_ops,
+                             const SkBitmap& image,
+                             const gfx::Point& image_offset) {}
   virtual void UpdateDragCursor(WebKit::WebDragOperation operation) {}
   virtual void GotFocus() {}
   virtual void TakeFocus(bool reverse) {}

@@ -82,6 +82,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebFormElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebHistoryItem.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebImage.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNode.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNodeList.h"
@@ -155,6 +156,7 @@ using WebKit::WebFindOptions;
 using WebKit::WebFormElement;
 using WebKit::WebFrame;
 using WebKit::WebHistoryItem;
+using WebKit::WebImage;
 using WebKit::WebInputElement;
 using WebKit::WebMediaPlayer;
 using WebKit::WebMediaPlayerAction;
@@ -1908,9 +1910,25 @@ void RenderView::setToolTipText(const WebString& text, WebTextDirection hint) {
 
 void RenderView::startDragging(const WebPoint& from, const WebDragData& data,
                                WebDragOperationsMask allowed_ops) {
+  startDragging(data, allowed_ops, WebImage(), WebPoint());
+}
+
+void RenderView::startDragging(const WebDragData& data,
+                               WebDragOperationsMask mask,
+                               const WebImage& image,
+                               const WebPoint& imageOffset) {
+#if WEBKIT_USING_SKIA
+  SkBitmap bitmap(image.getSkBitmap());
+#elif WEBKIT_USING_CG
+  // Needs implementing: http://crbug.com/11457
+  SkBitmap bitmap;
+#endif
+
   Send(new ViewHostMsg_StartDragging(routing_id_,
                                      WebDropData(data),
-                                     allowed_ops));
+                                     mask,
+                                     bitmap,
+                                     imageOffset));
 }
 
 bool RenderView::acceptsLoadDrops() {

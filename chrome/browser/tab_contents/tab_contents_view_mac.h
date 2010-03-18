@@ -20,9 +20,13 @@ class FilePath;
 class FindBarMac;
 @class FocusTracker;
 @class SadTabController;
+class SkBitmap;
 class TabContentsViewMac;
 @class WebDragSource;
 @class WebDropTarget;
+namespace gfx {
+class Point;
+}
 
 @interface TabContentsViewCocoa : BaseView {
  @private
@@ -73,7 +77,9 @@ class TabContentsViewMac : public TabContentsView,
   // Backend implementation of RenderViewHostDelegate::View.
   virtual void ShowContextMenu(const ContextMenuParams& params);
   virtual void StartDragging(const WebDropData& drop_data,
-                             WebKit::WebDragOperationsMask allowed_operations);
+                             WebKit::WebDragOperationsMask allowed_operations,
+                             const SkBitmap& image,
+                             const gfx::Point& image_offset);
   virtual void UpdateDragCursor(WebKit::WebDragOperation operation);
   virtual void GotFocus();
   virtual void TakeFocus(bool reverse);

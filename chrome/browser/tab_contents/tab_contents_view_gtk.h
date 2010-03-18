@@ -57,7 +57,9 @@ class TabContentsViewGtk : public TabContentsView,
   // Backend implementation of RenderViewHostDelegate::View.
   virtual void ShowContextMenu(const ContextMenuParams& params);
   virtual void StartDragging(const WebDropData& drop_data,
-                             WebKit::WebDragOperationsMask allowed_ops);
+                             WebKit::WebDragOperationsMask allowed_ops,
+                             const SkBitmap& image,
+                             const gfx::Point& image_offset);
   virtual void UpdateDragCursor(WebKit::WebDragOperation operation);
   virtual void GotFocus();
   virtual void TakeFocus(bool reverse);
