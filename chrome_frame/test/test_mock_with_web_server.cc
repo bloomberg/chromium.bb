@@ -1158,7 +1158,8 @@ TEST_F(ChromeFrameTestWithWebServer,
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
 }
 
-TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_MenuSaveAs) {
+// http://code.google.com/p/chromium/issues/detail?id=38566
+TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_MenuSaveAs) {
   CloseIeAtEndOfScope last_resort_close_ie;
   chrome_frame_test::TimedMsgLoop loop;
   ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
