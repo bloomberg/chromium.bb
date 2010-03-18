@@ -310,8 +310,9 @@ void AlertInfoBar::Layout() {
                    icon_ps.height());
 
   gfx::Size text_ps = label_->GetPreferredSize();
-  int text_width =
-      GetAvailableWidth() - icon_->bounds().right() - kIconLabelSpacing;
+  int text_width = std::min(
+      text_ps.width(),
+      GetAvailableWidth() - icon_->bounds().right() - kIconLabelSpacing);
   label_->SetBounds(icon_->bounds().right() + kIconLabelSpacing,
                     OffsetY(this, text_ps), text_width, text_ps.height());
 }
@@ -431,6 +432,7 @@ ConfirmInfoBar::ConfirmInfoBar(ConfirmInfoBarDelegate* delegate)
     : AlertInfoBar(delegate),
       ok_button_(NULL),
       cancel_button_(NULL),
+      link_(NULL),
       initialized_(false) {
   ok_button_ = new views::NativeButton(
       this, delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK));
@@ -438,16 +440,48 @@ ConfirmInfoBar::ConfirmInfoBar(ConfirmInfoBarDelegate* delegate)
     ok_button_->SetAppearsAsDefault(true);
   cancel_button_ = new views::NativeButton(
       this, delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_CANCEL));
+
+  // Set up the link.
+  link_ = new views::Link;
+  link_->SetText(delegate->GetLinkText());
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  link_->SetFont(rb.GetFont(ResourceBundle::MediumFont));
+  link_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  link_->SetController(this);
+  link_->MakeReadableOverBackgroundColor(background()->get_color());
 }
 
 ConfirmInfoBar::~ConfirmInfoBar() {
+  if (!initialized_) {
+    delete ok_button_;
+    delete cancel_button_;
+    delete link_;
+  }
+}
+
+// ConfirmInfoBar, views::LinkController implementation: -----------------------
+
+void ConfirmInfoBar::LinkActivated(views::Link* source, int event_flags) {
+  DCHECK(source == link_);
+  DCHECK(link_->IsVisible());
+  DCHECK(!link_->GetText().empty());
+  if (GetDelegate()->LinkClicked(
+          event_utils::DispositionFromEventFlags(event_flags))) {
+    RemoveInfoBar();
+  }
 }
 
 // ConfirmInfoBar, views::View overrides: --------------------------------------
 
 void ConfirmInfoBar::Layout() {
+  // First layout right aligned items (from right to left) in order to determine
+  // the space avalable, then layout the left aligned items.
+
+  // Layout the close button.
   InfoBar::Layout();
-  int available_width = InfoBar::GetAvailableWidth();
+
+  // Layout the cancel and OK buttons.
+  int available_width = AlertInfoBar::GetAvailableWidth();
   int ok_button_width = 0;
   int cancel_button_width = 0;
   gfx::Size ok_ps = ok_button_->GetPreferredSize();
@@ -470,7 +504,16 @@ void ConfirmInfoBar::Layout() {
   int spacing = cancel_button_width > 0 ? kButtonButtonSpacing : 0;
   ok_button_->SetBounds(cancel_button_->x() - spacing - ok_button_width,
                         OffsetY(this, ok_ps), ok_ps.width(), ok_ps.height());
+
+  // Layout the icon and label.
   AlertInfoBar::Layout();
+
+  // Now append the link to the label's right edge.
+  link_->SetVisible(!link_->GetText().empty());
+  gfx::Size link_ps = link_->GetPreferredSize();
+  int link_x = label()->bounds().right() + kEndOfLabelSpacing;
+  int link_w = std::min(GetAvailableWidth() - link_x, link_ps.width());
+  link_->SetBounds(link_x, OffsetY(this, link_ps), link_w, link_ps.height());
 }
 
 void ConfirmInfoBar::ViewHierarchyChanged(bool is_add,
@@ -500,11 +543,7 @@ void ConfirmInfoBar::ButtonPressed(
 // ConfirmInfoBar, InfoBar overrides: ------------------------------------------
 
 int ConfirmInfoBar::GetAvailableWidth() const {
-  if (ok_button_)
-    return ok_button_->x() - kEndOfLabelSpacing;
-  if (cancel_button_)
-    return cancel_button_->x() - kEndOfLabelSpacing;
-  return InfoBar::GetAvailableWidth();
+  return ok_button_->x() - kEndOfLabelSpacing;
 }
 
 // ConfirmInfoBar, private: ----------------------------------------------------
@@ -516,6 +555,7 @@ ConfirmInfoBarDelegate* ConfirmInfoBar::GetDelegate() {
 void ConfirmInfoBar::Init() {
   AddChildView(ok_button_);
   AddChildView(cancel_button_);
+  AddChildView(link_);
 }
 
 // AlertInfoBarDelegate, InfoBarDelegate overrides: ----------------------------

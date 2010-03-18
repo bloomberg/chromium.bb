@@ -186,10 +186,14 @@ class LinkInfoBar : public InfoBar,
   DISALLOW_COPY_AND_ASSIGN(LinkInfoBar);
 };
 
-class ConfirmInfoBar : public AlertInfoBar {
+class ConfirmInfoBar : public AlertInfoBar,
+                       public views::LinkController  {
  public:
   explicit ConfirmInfoBar(ConfirmInfoBarDelegate* delegate);
   virtual ~ConfirmInfoBar();
+
+  // Overridden from views::LinkController:
+  virtual void LinkActivated(views::Link* source, int event_flags);
 
   // Overridden from views::View:
   virtual void Layout();
@@ -213,6 +217,7 @@ class ConfirmInfoBar : public AlertInfoBar {
 
   views::NativeButton* ok_button_;
   views::NativeButton* cancel_button_;
+  views::Link* link_;
 
   bool initialized_;
 

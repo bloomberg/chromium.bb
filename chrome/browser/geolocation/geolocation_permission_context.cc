@@ -21,6 +21,7 @@
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/common/render_messages.h"
 #include "grit/generated_resources.h"
+#include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
 
 namespace {
@@ -37,17 +38,21 @@ class GeolocationConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
       TabContents* tab_contents, GeolocationPermissionContext* context,
       int render_process_id, int render_view_id, int bridge_id,
       const std::string& host)
-    : ConfirmInfoBarDelegate(tab_contents), context_(context),
-      render_process_id_(render_process_id), render_view_id_(render_view_id),
-      bridge_id_(bridge_id), host_(host) {
+      : ConfirmInfoBarDelegate(tab_contents),
+        tab_contents_(tab_contents),
+        context_(context),
+        render_process_id_(render_process_id),
+        render_view_id_(render_view_id),
+        bridge_id_(bridge_id),
+        host_(host) {
   }
 
   // ConfirmInfoBarDelegate
+  virtual void InfoBarClosed() { delete this; }
   virtual Type GetInfoBarType() { return INFO_TYPE; }
   virtual bool Accept() { return SetPermission(true); }
   virtual bool Cancel() { return SetPermission(false); }
   virtual int GetButtons() const { return BUTTON_OK | BUTTON_CANCEL; }
-
   virtual std::wstring GetButtonLabel(InfoBarButton button) const {
     switch (button) {
       case BUTTON_OK:
@@ -60,15 +65,23 @@ class GeolocationConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
         return L"";
     }
   }
-
   virtual std::wstring GetMessageText() const {
     return l10n_util::GetStringF(
         IDS_GEOLOCATION_INFOBAR_QUESTION, UTF8ToWide(host_));
   }
-
   virtual SkBitmap* GetIcon() const {
     return ResourceBundle::GetSharedInstance().GetBitmapNamed(
         IDR_GEOLOCATION_INFOBAR_ICON);
+  }
+  virtual std::wstring GetLinkText() {
+    return l10n_util::GetString(IDS_LEARN_MORE);
+  }
+  virtual bool LinkClicked(WindowOpenDisposition disposition) {
+    // Ignore the click dispostion and always open in a new top level tab.
+    tab_contents_->OpenURL(
+        GURL(l10n_util::GetStringUTF8(IDS_LEARN_MORE_GEOLOCATION_URL)), GURL(),
+        NEW_FOREGROUND_TAB, PageTransition::LINK);
+    return false;  // Do not dismiss the info bar.
   }
 
  private:
@@ -78,11 +91,14 @@ class GeolocationConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
     return true;
   }
 
+  TabContents* tab_contents_;
   scoped_refptr<GeolocationPermissionContext> context_;
   int render_process_id_;
   int render_view_id_;
   int bridge_id_;
   std::string host_;
+
+  DISALLOW_IMPLICIT_CONSTRUCTORS(GeolocationConfirmInfoBarDelegate);
 };
 
 // TODO(bulach): use HostContentSettingsMap instead!

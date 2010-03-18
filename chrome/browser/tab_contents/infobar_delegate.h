@@ -241,6 +241,22 @@ class ConfirmInfoBarDelegate : public AlertInfoBarDelegate {
   // the InfoBarDelegate should be removed from the associated TabContents.
   virtual bool Cancel() { return true; }
 
+  // Returns the text of the link to be displayed, if any. Otherwise returns
+  // and empty string.
+  virtual std::wstring GetLinkText() {
+    return std::wstring();
+  }
+
+  // Called when the Link is clicked. The |disposition| specifies how the
+  // resulting document should be loaded (based on the event flags present when
+  // the link was clicked). This function returns true if the InfoBar should be
+  // closed now or false if it should remain until the user explicitly closes
+  // it.
+  // Will only be called if GetLinkText() returns non-empty string.
+  virtual bool LinkClicked(WindowOpenDisposition disposition) {
+    return true;
+  }
+
   // Overridden from InfoBarDelegate:
   virtual InfoBar* CreateInfoBar();
   virtual ConfirmInfoBarDelegate* AsConfirmInfoBarDelegate() {
