@@ -13,6 +13,22 @@ class Profile;
 class SiteContents;
 class TabContentsDelegate;
 
+namespace chromeos {
+
+class AccountCreationViewDelegate {
+ public:
+  virtual ~AccountCreationViewDelegate() {}
+
+  // Notify about new user name and password. This notification is sent before
+  // server validates form so user may not be created. In this case this
+  // this function will be called on each try.
+  virtual void OnUserCreated(const std::string& username,
+                             const std::string& password) = 0;
+
+  // Notify about navigation errors.
+  virtual void OnPageLoadFailed(const std::string& url) = 0;
+};
+
 class AccountCreationView : public DOMView {
  public:
   AccountCreationView();
@@ -26,12 +42,23 @@ class AccountCreationView : public DOMView {
   void InitDOM(Profile* profile, SiteInstance* site_instance);
   void SetTabContentsDelegate(TabContentsDelegate* delegate);
 
+  // Set delegate that will be notified about user actions.
+  void SetAccountCreationViewDelegate(AccountCreationViewDelegate* delegate);
+
+ protected:
+  // Overriden from DOMView:
+  virtual TabContents* CreateTabContents(Profile* profile,
+                                         SiteInstance* instance);
+
  private:
   // Overriden from views::View:
   virtual void Paint(gfx::Canvas* canvas);
 
+  AccountCreationViewDelegate* delegate_;
+
   DISALLOW_COPY_AND_ASSIGN(AccountCreationView);
 };
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_ACCOUNT_CREATION_VIEW_H_
+}  // namespace chromeos
 
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_ACCOUNT_CREATION_VIEW_H_

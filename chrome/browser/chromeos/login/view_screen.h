@@ -20,13 +20,13 @@ class ViewScreen : public WizardScreen {
   virtual void Show();
   virtual void Hide();
 
+  V* view() { return view_; }
+
  protected:
   // Creates view object and adds it to views hierarchy.
-  virtual void InitView();
+  virtual void CreateView();
   // Creates view object.
-  virtual V* CreateView() = 0;
-
-  V* view() { return view_; }
+  virtual V* AllocateView() = 0;
 
  private:
   // For testing automation
@@ -42,7 +42,7 @@ class DefaultViewScreen : public ViewScreen<V> {
  public:
   explicit DefaultViewScreen(WizardScreenDelegate* delegate)
       : ViewScreen<V>(delegate) {}
-  V* CreateView() {
+  V* AllocateView() {
     return new V(ViewScreen<V>::delegate()->GetObserver(this));
   }
 };
@@ -64,7 +64,7 @@ ViewScreen<V>::~ViewScreen() {
 template <class V>
 void ViewScreen<V>::Show() {
   if (!view_) {
-    InitView();
+    CreateView();
   }
   view_->SetVisible(true);
   // After view is initialized and shown refresh it's state.
@@ -73,15 +73,20 @@ void ViewScreen<V>::Show() {
 
 template <class V>
 void ViewScreen<V>::Hide() {
-  if (view_)
-    view_->SetVisible(false);
+  if (view_) {
+    delegate()->GetWizardView()->RemoveChildView(view_);
+    // RemoveChildView doesn't delete the view and we also can't delete it here
+    // becuase we are in message processing for the view.
+    MessageLoop::current()->DeleteSoon(FROM_HERE, view_);
+    view_ = NULL;
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // ViewScreen, protected:
 template <class V>
-void ViewScreen<V>::InitView() {
-  view_ = CreateView();
+void ViewScreen<V>::CreateView() {
+  view_ = AllocateView();
   delegate()->GetWizardView()->AddChildView(view_);
   view_->Init();
   view_->SetVisible(false);

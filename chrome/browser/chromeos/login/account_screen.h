@@ -5,22 +5,32 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_ACCOUNT_SCREEN_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_ACCOUNT_SCREEN_H_
 
+#include <string>
+
+#include "chrome/browser/chromeos/login/account_creation_view.h"
 #include "chrome/browser/chromeos/login/view_screen.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 
-class AccountCreationView;
 class WizardScreenDelegate;
 
+namespace chromeos {
+
 class AccountScreen : public ViewScreen<AccountCreationView>,
-                      public TabContentsDelegate {
+                      public TabContentsDelegate,
+                      public AccountCreationViewDelegate {
  public:
   explicit AccountScreen(WizardScreenDelegate* delegate);
   virtual ~AccountScreen();
 
+  // AccountCreationViewDelegate implementation:
+  virtual void OnUserCreated(const std::string& username,
+                             const std::string& password);
+  virtual void OnPageLoadFailed(const std::string& url);
+
  private:
   // ViewScreen implementation:
-  virtual void InitView();
-  virtual AccountCreationView* CreateView();
+  virtual void CreateView();
+  virtual AccountCreationView* AllocateView();
 
   // TabContentsDelegate implementation:
   virtual void OpenURLFromTab(TabContents* source,
@@ -35,7 +45,7 @@ class AccountScreen : public ViewScreen<AccountCreationView>,
                               const gfx::Rect& initial_pos,
                               bool user_gesture) {}
   virtual void ActivateContents(TabContents* contents) {}
-  virtual void LoadingStateChanged(TabContents* source) {}
+  virtual void LoadingStateChanged(TabContents* source);
   virtual void CloseContents(TabContents* source) {}
   virtual bool IsPopup(TabContents* source) { return false; }
   virtual void URLStarredChanged(TabContents* source, bool starred) {}
@@ -43,11 +53,11 @@ class AccountScreen : public ViewScreen<AccountCreationView>,
   virtual bool ShouldAddNavigationToHistory() const { return false; }
   virtual void MoveContents(TabContents* source, const gfx::Rect& pos) {}
   virtual void ToolbarSizeChanged(TabContents* source, bool is_animating) {}
-
-  // Indicates if custom CSS was inserted to Gaia page.
-  bool inserted_css_;
+  virtual bool HandleContextMenu(const ContextMenuParams& params);
 
   DISALLOW_COPY_AND_ASSIGN(AccountScreen);
 };
+
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_ACCOUNT_SCREEN_H_

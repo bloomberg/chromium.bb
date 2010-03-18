@@ -204,9 +204,9 @@ LoginScreen* WizardController::GetLoginScreen() {
   return login_screen_.get();
 }
 
-AccountScreen* WizardController::GetAccountScreen() {
+chromeos::AccountScreen* WizardController::GetAccountScreen() {
   if (!account_screen_.get())
-    account_screen_.reset(new AccountScreen(this));
+    account_screen_.reset(new chromeos::AccountScreen(this));
   return account_screen_.get();
 }
 
@@ -245,8 +245,35 @@ void WizardController::OnNetworkConnected() {
   }
 }
 
-void WizardController::OnAccountCreated() {
+void WizardController::OnNetworkOffline() {
+  // TODO(dpolukhin): if(is_out_of_box_) we cannot work offline and
+  // should report some error message here and stay on the same screen.
   SetCurrentScreen(GetLoginScreen());
+}
+
+void WizardController::OnAccountCreateBack() {
+  SetCurrentScreen(GetLoginScreen());
+}
+
+void WizardController::OnAccountCreated() {
+  LoginScreen* login = GetLoginScreen();
+  SetCurrentScreen(login);
+  if (!username_.empty()) {
+    login->view()->SetUsername(username_);
+    if (!password_.empty()) {
+      login->view()->SetPassword(password_);
+      // TODO(dpolukhin): clear password memory for real. Now it is not
+      // a problem becuase we can't extract password from the form.
+      password_.clear();
+      login->view()->Login();
+    }
+  }
+}
+
+void WizardController::OnConnectionFailed() {
+  // TODO(dpolukhin): show error message before going back to network screen.
+  is_out_of_box_ = false;
+  SetCurrentScreen(GetNetworkScreen());
 }
 
 void WizardController::OnLanguageChanged() {
@@ -290,6 +317,12 @@ void WizardController::OnSwitchLanguage(const std::string& lang) {
   OnExit(chromeos::ScreenObserver::LANGUAGE_CHANGED);
 }
 
+void WizardController::OnSetUserNamePassword(const std::string& username,
+                                             const std::string& password) {
+  username_ = username;
+  password_ = password;
+}
+
 void WizardController::SetCurrentScreen(WizardScreen* new_current) {
   if (current_screen_)
     current_screen_->Hide();
@@ -329,12 +362,21 @@ void WizardController::OnExit(ExitCodes exit_code) {
       break;
     case LOGIN_CREATE_ACCOUNT:
       OnLoginCreateAccount();
+      break;
     case NETWORK_CONNECTED:
-    case NETWORK_OFFLINE:
       OnNetworkConnected();
+      break;
+    case NETWORK_OFFLINE:
+      OnNetworkOffline();
+      break;
+    case ACCOUNT_CREATE_BACK:
+      OnAccountCreateBack();
       break;
     case ACCOUNT_CREATED:
       OnAccountCreated();
+      break;
+    case CONNECTION_FAILED:
+      OnConnectionFailed();
       break;
     case LANGUAGE_CHANGED:
       OnLanguageChanged();

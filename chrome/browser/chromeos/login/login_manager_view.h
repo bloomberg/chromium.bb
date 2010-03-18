@@ -106,6 +106,7 @@ class LoginManagerView : public views::View,
   views::Label* password_label_;
   views::Label* error_label_;
   views::NativeButton* sign_in_button_;
+  views::NativeButton* create_account_button_;
 
   // Handles asynchronously loading the version.
   VersionLoader loader_;

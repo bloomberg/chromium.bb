@@ -5,25 +5,65 @@
 #include "chrome/browser/chromeos/login/account_screen.h"
 
 #include "base/logging.h"
+#include "base/string_util.h"
 #include "chrome/browser/chromeos/login/account_creation_view.h"
+#include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "googleurl/src/gurl.h"
 
+namespace chromeos {
+
 namespace {
 
 const char kCreateAccountPageUrl[] =
-    "https://www.google.com/accounts/NewAccount?btmpl=tier2_mobile";
+    "https://www.google.com/accounts/NewAccount?service=mail&hl=en";
+
+const char kCreateAccountDoneUrl[] =
+    "http://mail.google.com/mail/help/intro.html";
+
+const char kCreateAccountBackUrl[] =
+    "about:blank";
+
+const char kCreateAccountCSS[] =
+    "body > table, div.body > h3, div.body > table, a, "
+    "#cookieWarning1, #cookieWarning2 {\n"
+    " display: none !important;\n"
+    "}\n"
+    "tbody tr:nth-child(7), tbody tr:nth-child(8), tbody tr:nth-child(9),"
+    "tbody tr:nth-child(13), tbody tr:nth-child(16), tbody tr:nth-child(17),"
+    "tbody tr:nth-child(18) {\n"
+    " display: none !important;\n"
+    "}\n"
+    "body {\n"
+    " padding: 0;\n"
+    "}\n";
+
+const char kCreateAccountJS[] =
+  "try {\n"
+  " var smhck = document.getElementById('smhck');\n"
+  " smhck.checked = false;\n"
+  " smhck.value = 0;\n"
+  " var tables = document.getElementsByTagName('table');\n"
+  " for (var i = 0; i < tables.length; i++) {\n"
+  "   if (tables[i].bgColor == '#cbdced') tables[i].cellPadding = 0;\n"
+  " }\n"
+  " var submitbtn = document.getElementById('submitbutton');\n"
+  " submitbtn.value = 'Create Account';\n"
+  " submitbtn.parentNode.parentNode.firstElementChild.innerHTML ="
+  "   \"<input type='button' style='width:8em' value='<< Back'"
+  "      onclick='window.location=\\\"about:blank\\\";'/>\";\n"
+  "} catch(err) {\n"
+  "}\n";
 
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
 // AccountScreen, public:
 AccountScreen::AccountScreen(WizardScreenDelegate* delegate)
-    : ViewScreen<AccountCreationView>(delegate),
-      inserted_css_(false) {
+    : ViewScreen<AccountCreationView>(delegate) {
 }
 
 AccountScreen::~AccountScreen() {
@@ -31,8 +71,9 @@ AccountScreen::~AccountScreen() {
 
 ///////////////////////////////////////////////////////////////////////////////
 // AccountScreen, ViewScreen implementation:
-void AccountScreen::InitView() {
-  ViewScreen<AccountCreationView>::InitView();
+void AccountScreen::CreateView() {
+  ViewScreen<AccountCreationView>::CreateView();
+  view()->SetAccountCreationViewDelegate(this);
 
   GURL url(kCreateAccountPageUrl);
   Profile* profile = ProfileManager::GetLoginWizardProfile();
@@ -42,58 +83,46 @@ void AccountScreen::InitView() {
   view()->LoadURL(url);
 }
 
-AccountCreationView* AccountScreen::CreateView() {
+AccountCreationView* AccountScreen::AllocateView() {
   return new AccountCreationView();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // AccountScreen, TabContentsDelegate implementation:
-void AccountScreen::NavigationStateChanged(const TabContents* source,
-                                           unsigned changed_flags) {
-  LOG(INFO) << "NavigationStateChanged: " << changed_flags << '\n';
-  if (!inserted_css_ && source->render_view_host()) {
-    source->render_view_host()->InsertCSSInWebFrame(
-        L"",
-        "body > img, hr, br, a, li, font, pre, b {"
-        " display: none; "
-        "} "
-        "#smhck {"
-        " display: none; "
-        "} "
-        "input + br {"
-        " display: inline; "
-        "} "
-        ".label {"
-        " width: 250px;"
-        " display: inline-block; "
-        "} "
-        "br + #submitbutton {"
-        " display: inline; "
-        "} ",
-        "");
-    source->render_view_host()->ExecuteJavascriptInWebFrame(
-        L"",
-        L"var smhck = document.getElementById('smhck');\n"
-        L"if (smhck.checked) {"
-        L"  smhck.checked = false;\n"
-        L"  smhck.value = 0;\n"
-        L"  var x=document.getElementById('createaccount');\n"
-        L"  for (var i=0;i<x.childNodes.length-4;i++) {\n"
-        L"    if (x.childNodes[i].nodeName == '#text' &&\n"
-        L"        x.childNodes[i+1].nodeName == 'BR' &&\n"
-        L"        x.childNodes[i+2].nodeName == '#text' &&\n"
-        L"        x.childNodes[i+3].nodeName == 'INPUT' &&\n"
-        L"        x.childNodes[i+3].type != 'hidden' &&\n"
-        L"        x.childNodes[i+3].type != 'checkbox' &&\n"
-        L"        x.childNodes[i+3].type != 'submit') {\n"
-        L"      var s = document.createElement('span');\n"
-        L"      s.innerText = x.childNodes[i].textContent;\n"
-        L"      s.className = 'label';\n"
-        L"      x.replaceChild(s, x.childNodes[i]);\n"
-        L"    } else if (x.childNodes[i].nodeName == '#text') {\n"
-        L"      x.childNodes[i].textContent = '';\n"
-        L"    }\n"
-        L"  }\n"
-        L"}\n");
+void AccountScreen::LoadingStateChanged(TabContents* source) {
+  std::string url = source->GetURL().spec();
+  if (url == kCreateAccountDoneUrl) {
+    source->Stop();
+    delegate()->GetObserver(this)->OnExit(ScreenObserver::ACCOUNT_CREATED);
+  } else if (url == kCreateAccountBackUrl) {
+    delegate()->GetObserver(this)->OnExit(ScreenObserver::ACCOUNT_CREATE_BACK);
+  } else if (!source->GetURL().SchemeIsSecure()) {
+    delegate()->GetObserver(this)->OnExit(ScreenObserver::CONNECTION_FAILED);
   }
 }
+
+void AccountScreen::NavigationStateChanged(const TabContents* source,
+                                           unsigned changed_flags) {
+  if (source->render_view_host()) {
+    source->render_view_host()->InsertCSSInWebFrame(
+        L"", kCreateAccountCSS, "");
+    source->render_view_host()->ExecuteJavascriptInWebFrame(
+        L"", ASCIIToWide(kCreateAccountJS));
+  }
+}
+
+bool AccountScreen::HandleContextMenu(const ContextMenuParams& params) {
+  // Just return true because we don't want to show context menue.
+  return true;
+}
+
+void AccountScreen::OnUserCreated(const std::string& username,
+                                  const std::string& password) {
+  delegate()->GetObserver(this)->OnSetUserNamePassword(username, password);
+}
+
+void AccountScreen::OnPageLoadFailed(const std::string& url) {
+  delegate()->GetObserver(this)->OnExit(ScreenObserver::CONNECTION_FAILED);
+}
+
+}  // namespace chromeos

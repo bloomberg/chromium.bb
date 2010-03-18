@@ -12,11 +12,11 @@
 #include "chrome/browser/chromeos/login/view_screen.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
 
-class AccountScreen;
 class WizardContentsView;
 class WizardScreen;
 
 namespace chromeos {
+class AccountScreen;
 class BackgroundView;
 }
 
@@ -67,7 +67,7 @@ class WizardController : public chromeos::ScreenObserver,
   // Lazy initializers and getters for screens.
   NetworkScreen* GetNetworkScreen();
   LoginScreen* GetLoginScreen();
-  AccountScreen* GetAccountScreen();
+  chromeos::AccountScreen* GetAccountScreen();
   UpdateScreen* GetUpdateScreen();
 
  private:
@@ -75,7 +75,10 @@ class WizardController : public chromeos::ScreenObserver,
   void OnLoginSignInSelected();
   void OnLoginCreateAccount();
   void OnNetworkConnected();
+  void OnNetworkOffline();
+  void OnAccountCreateBack();
   void OnAccountCreated();
+  void OnConnectionFailed();
   void OnLanguageChanged();
   void OnUpdateCompleted();
   void OnUpdateNetworkError();
@@ -83,6 +86,8 @@ class WizardController : public chromeos::ScreenObserver,
   // Overridden from chromeos::ScreenObserver:
   virtual void OnExit(ExitCodes exit_code);
   virtual void OnSwitchLanguage(const std::string& lang);
+  virtual void OnSetUserNamePassword(const std::string& username,
+                                     const std::string& password);
 
   // Overridden from WizardScreenDelegate:
   virtual views::View* GetWizardView();
@@ -106,11 +111,14 @@ class WizardController : public chromeos::ScreenObserver,
   // Screens.
   scoped_ptr<NetworkScreen> network_screen_;
   scoped_ptr<LoginScreen> login_screen_;
-  scoped_ptr<AccountScreen> account_screen_;
+  scoped_ptr<chromeos::AccountScreen> account_screen_;
   scoped_ptr<UpdateScreen> update_screen_;
 
   // Screen that's currently active.
   WizardScreen* current_screen_;
+
+  std::string username_;
+  std::string password_;
 
   // True if full OOBE flow should be shown.
   bool is_out_of_box_;

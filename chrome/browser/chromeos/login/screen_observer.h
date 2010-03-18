@@ -24,7 +24,9 @@ class ScreenObserver {
     LOGIN_CREATE_ACCOUNT,
     NETWORK_CONNECTED,
     NETWORK_OFFLINE,
+    ACCOUNT_CREATE_BACK,
     ACCOUNT_CREATED,
+    CONNECTION_FAILED,
     LANGUAGE_CHANGED,
     UPDATE_INSTALLED,
     UPDATE_NOUPDATE,
@@ -39,6 +41,11 @@ class ScreenObserver {
   // Caution: this callback resets (deletes and re-creates) all views
   // (including *this), so do not access it after you call this!
   virtual void OnSwitchLanguage(const std::string& lang) = 0;
+
+  // Notify about new user names and password. It is used to autologin
+  // just created user without asking the same info once again.
+  virtual void OnSetUserNamePassword(const std::string& username,
+                                     const std::string& password) = 0;
 
  protected:
   virtual ~ScreenObserver() {}
