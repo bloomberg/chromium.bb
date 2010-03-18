@@ -24,6 +24,7 @@ webkitpy_dir = os.path.join(base, 'third_party', 'WebKit', 'WebKitTools',
                             'Scripts', 'webkitpy')
 sys.path.append(os.path.join(webkitpy_dir, 'thirdparty'))
 sys.path.append(os.path.join(webkitpy_dir, 'layout_tests'))
+import port
 from layout_package import json_results_generator
 from layout_package import test_expectations
 
@@ -35,6 +36,10 @@ class JSONGeneratorFromXML(object):
 
     def __init__(self, options):
         self._options = options
+
+        if not hasattr(options, 'chromium'):
+            options.chromium = True
+        port_obj = port.get(None, options)
 
         # Check the results directory
         if not os.path.exists(self._options.results_directory):
@@ -52,7 +57,7 @@ class JSONGeneratorFromXML(object):
             minidom.parse(results_xml_file).documentElement)
         results_xml_file.close()
 
-        json_results_generator.JSONResultsGenerator(
+        json_results_generator.JSONResultsGenerator(port_obj,
             self._options.builder_name, self._options.build_name,
             self._options.build_number, self._options.results_directory,
             self._options.builder_base_url,
