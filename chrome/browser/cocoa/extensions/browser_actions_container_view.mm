@@ -2,16 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "chrome/browser/cocoa/extensions/browser_actions_container_view.h"
+
 #include <algorithm>
 
-#include "app/resource_bundle.h"
 #include "base/logging.h"
 #import "base/scoped_nsobject.h"
-#import "chrome/browser/cocoa/extensions/browser_action_button.h"
-#import "chrome/browser/cocoa/extensions/browser_actions_container_view.h"
-#import "chrome/browser/cocoa/menu_button.h"
-#include "grit/theme_resources.h"
-#import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 
 extern const NSString* kBrowserActionGrippyDragStartedNotification =
     @"BrowserActionGrippyDragStartedNotification";
@@ -19,12 +15,9 @@ extern const NSString* kBrowserActionGrippyDraggingNotification =
     @"BrowserActionGrippyDraggingNotification";
 extern const NSString* kBrowserActionGrippyDragFinishedNotification =
     @"BrowserActionGrippyDragFinishedNotification";
-extern const CGFloat kChevronWidth = 14.0;
 
 namespace {
 const CGFloat kAnimationDuration = 0.2;
-const CGFloat kChevronHeight = 28.0;
-const CGFloat kChevronRightPadding = 5.0;
 const CGFloat kGrippyLowerPadding = 4.0;
 const CGFloat kGrippyUpperPadding = 8.0;
 const CGFloat kGrippyWidth = 10.0;
@@ -39,7 +32,6 @@ const CGFloat kUpperPadding = 9.0;
 @interface BrowserActionsContainerView(Private)
 - (NSCursor*)appropriateCursorForGrippy;
 - (void)drawGrippy;
-- (void)updateChevronPosition;
 @end
 
 @implementation BrowserActionsContainerView
@@ -53,9 +45,6 @@ const CGFloat kUpperPadding = 9.0;
 - (id)initWithFrame:(NSRect)frameRect {
   if ((self = [super initWithFrame:frameRect])) {
     grippyRect_ = NSMakeRect(0.0, 0.0, kGrippyWidth, NSHeight([self bounds]));
-    animation_.reset([[NSViewAnimation alloc] init]);
-    [animation_ setDuration:kAnimationDuration];
-    [animation_ setAnimationBlockingMode:NSAnimationNonblocking];
   }
   return self;
 }
@@ -80,11 +69,6 @@ const CGFloat kUpperPadding = 9.0;
   }
 
   [self drawGrippy];
-}
-
-- (void)setFrame:(NSRect)frameRect {
-  [super setFrame:frameRect];
-  [self updateChevronPosition];
 }
 
 // Draws the area that the user can use to resize the container. Currently, two
@@ -160,8 +144,6 @@ const CGFloat kUpperPadding = 9.0;
   if (!NSMouseInRect(initialDragPoint_, grippyRect_, [self isFlipped]))
     return;
 
-  [self setChevronHidden:YES animate:YES];
-
   lastXPos_ = [self frame].origin.x;
   userIsResizing_ = YES;
   [[NSNotificationCenter defaultCenter]
@@ -227,77 +209,6 @@ const CGFloat kUpperPadding = 9.0;
 
 - (CGFloat)resizeDeltaX {
   return [self frame].origin.x - lastXPos_;
-}
-
-- (BOOL)chevronIsHidden {
-  if (!chevronMenuButton_.get())
-    return YES;
-
-  if (![animation_ isAnimating])
-    return [chevronMenuButton_ isHidden];
-
-  DCHECK([[animation_ viewAnimations] count] > 0);
-
-  // The chevron is animating in or out. Determine which one and have the return
-  // value reflect where the animation is headed.
-  NSString* effect = [[[animation_ viewAnimations] objectAtIndex:0]
-      valueForKey:NSViewAnimationEffectKey];
-  if (effect == NSViewAnimationFadeInEffect) {
-    return NO;
-  } else if (effect == NSViewAnimationFadeOutEffect) {
-    return YES;
-  }
-
-  NOTREACHED();
-  return YES;
-}
-
-- (void)setChevronHidden:(BOOL)hidden animate:(BOOL)animate {
-  if (hidden == [self chevronIsHidden])
-    return;
-
-  if (!chevronMenuButton_.get()) {
-    chevronMenuButton_.reset([[MenuButton alloc] init]);
-    [chevronMenuButton_ setBordered:NO];
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    [chevronMenuButton_ setImage:rb.GetNSImageNamed(IDR_BOOKMARK_BAR_CHEVRONS)];
-    [self addSubview:chevronMenuButton_];
-  }
-
-  [self updateChevronPosition];
-  // Stop any running animation.
-  [animation_ stopAnimation];
-
-  if (!animate) {
-    [chevronMenuButton_ setHidden:hidden];
-    return;
-  }
-
-  NSDictionary* animationDictionary;
-  if (hidden) {
-    animationDictionary = [NSDictionary dictionaryWithObjectsAndKeys:
-        chevronMenuButton_.get(), NSViewAnimationTargetKey,
-        NSViewAnimationFadeOutEffect, NSViewAnimationEffectKey,
-        nil];
-  } else {
-    [chevronMenuButton_ setHidden:NO];
-    animationDictionary = [NSDictionary dictionaryWithObjectsAndKeys:
-        chevronMenuButton_.get(), NSViewAnimationTargetKey,
-        NSViewAnimationFadeInEffect, NSViewAnimationEffectKey,
-        nil];
-  }
-  [animation_ setViewAnimations:
-      [NSArray arrayWithObjects:animationDictionary, nil]];
-  [animation_ startAnimation];
-}
-
-- (void)updateChevronPosition {
-  CGFloat xPos = NSWidth([self frame]) - kChevronWidth - kChevronRightPadding;
-  NSRect buttonFrame = NSMakeRect(xPos,
-                                  kLowerPadding,
-                                  kChevronWidth,
-                                  kChevronHeight);
-  [chevronMenuButton_ setFrame:buttonFrame];
 }
 
 @end

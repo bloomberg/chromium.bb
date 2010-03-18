@@ -166,25 +166,10 @@ class ExtensionLoadedNotificationObserver : public NotificationObserver {
 
   switch(type_) {
     case extension_installed_bubble::kBrowserAction: {
-      // Find the center of the bottom of the browser action icon.
-      NSView* button = [[[window->cocoa_controller() toolbarController]
-          browserActionsController] browserActionViewForExtension:extension_];
-      DCHECK(button);
-      NSRect boundsRect = [[button superview] convertRect:[button frame]
-                                                   toView:nil];
-      CGFloat xPos = NSMidX(boundsRect);
-      // If the button is hidden, display the button at the edge of the Browser
-      // Actions container.
-      // TODO(andybons): Make it point to the chevron once it's implemented.
-      if ([button alphaValue] == 0.0) {
-        NSView* superview = [button superview];
-        NSRect superviewRect =
-            [[superview superview] convertRect:[superview frame]
-                                        toView:nil];
-        xPos = NSMaxX(superviewRect);
-      }
-
-      arrowPoint = NSMakePoint(xPos, NSMinY(boundsRect));
+      BrowserActionsController* controller =
+          [[window->cocoa_controller() toolbarController]
+              browserActionsController];
+      arrowPoint = [controller popupPointForBrowserAction:extension_];
       break;
     }
     case extension_installed_bubble::kPageAction: {

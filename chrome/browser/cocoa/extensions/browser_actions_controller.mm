@@ -6,12 +6,14 @@
 
 #include <string>
 
+#include "app/resource_bundle.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/pref_service.h"
 #import "chrome/browser/cocoa/extensions/browser_action_button.h"
 #import "chrome/browser/cocoa/extensions/browser_actions_container_view.h"
 #import "chrome/browser/cocoa/extensions/extension_popup_controller.h"
+#import "chrome/browser/cocoa/menu_button.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/extensions/extensions_service.h"
@@ -20,6 +22,8 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/pref_names.h"
+#include "grit/theme_resources.h"
+#import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 
 extern const CGFloat kBrowserActionButtonPadding = 3;
 
@@ -28,9 +32,14 @@ extern const NSString* kBrowserActionVisibilityChangedNotification =
 
 namespace {
 const CGFloat kAnimationDuration = 0.2;
+const CGFloat kButtonOpacityLeadPadding = 5.0;
+const CGFloat kChevronHeight = 28.0;
+const CGFloat kChevronLowerPadding = 5.0;
+const CGFloat kChevronRightPadding = 5.0;
+const CGFloat kChevronWidth = 14.0;
 const CGFloat kContainerPadding = 2.0;
 const CGFloat kGrippyXOffset = 8.0;
-const CGFloat kButtonOpacityLeadPadding = 5.0;
+
 }  // namespace
 
 @interface BrowserActionsController(Private)
@@ -46,9 +55,13 @@ const CGFloat kButtonOpacityLeadPadding = 5.0;
 - (void)containerDragStart;
 - (void)containerDragging;
 - (void)containerDragFinished;
+- (void)browserActionClicked:(BrowserActionButton*)button;
 - (int)currentTabId;
 - (bool)shouldDisplayBrowserAction:(Extension*)extension;
 - (void)showChevronIfNecessaryWithAnimation:(BOOL)animation;
+- (void)updateChevronPosition;
+- (void)updateOverflowMenu;
+- (void)chevronItemSelected:(BrowserActionButton*)button;
 @end
 
 // A helper class to proxy extension notifications to the view controller's
@@ -150,6 +163,11 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
                name:kBrowserActionGrippyDragFinishedNotification
              object:containerView_];
 
+    animation_.reset([[NSViewAnimation alloc] init]);
+    [animation_ gtm_setDuration:kAnimationDuration
+                      eventMask:NSLeftMouseDownMask];
+    [animation_ setAnimationBlockingMode:NSAnimationNonblocking];
+
     hiddenButtons_.reset([[NSMutableArray alloc] init]);
     buttons_.reset([[NSMutableDictionary alloc] init]);
     [self createButtons];
@@ -230,6 +248,7 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
   } else {
     [hiddenButtons_ addObject:newButton];
     [newButton setAlphaValue:0.0];
+    [self updateOverflowMenu];
   }
 
   [self repositionActionButtons];
@@ -254,6 +273,7 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
   // It may or may not be hidden, but it won't matter to NSMutableArray either
   // way.
   [hiddenButtons_ removeObject:button];
+  [self updateOverflowMenu];
 
   [buttons_ removeObjectForKey:buttonKey];
   if ([buttons_ count] == 0) {
@@ -352,9 +372,11 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
 
 - (void)containerFrameChanged {
   [self updateButtonOpacityAndDragAbilities];
+  [self updateChevronPosition];
 }
 
 - (void)containerDragStart {
+  [self setChevronHidden:YES animate:YES];
   while([hiddenButtons_ count] > 0) {
     [containerView_ addSubview:[hiddenButtons_ objectAtIndex:0]];
     [hiddenButtons_ removeObjectAtIndex:0];
@@ -385,7 +407,7 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
       [hiddenButtons_ addObject:button];
     }
   }
-
+  [self updateOverflowMenu];
   [self resizeContainerWithAnimation:NO];
 }
 
@@ -397,28 +419,20 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
   return [buttons_ count] - [hiddenButtons_ count];
 }
 
-- (void)browserActionClicked:(BrowserActionButton*)sender {
+- (MenuButton*)chevronMenuButton {
+  return chevronMenuButton_.get();
+}
+
+- (void)browserActionClicked:(BrowserActionButton*)button {
   int tabId = [self currentTabId];
   if (tabId < 0) {
     NOTREACHED() << "No current tab.";
     return;
   }
 
-  ExtensionAction* action = [sender extension]->browser_action();
+  ExtensionAction* action = [button extension]->browser_action();
   if (action->HasPopup(tabId)) {
-    NSString* extensionId = base::SysUTF8ToNSString([sender extension]->id());
-    // If the extension ID is not valid UTF-8, then the NSString will be nil
-    // and an exception will be thrown when calling objectForKey below, hosing
-    // the browser. Check it.
-    DCHECK(extensionId);
-    if (!extensionId)
-      return;
-    BrowserActionButton* actionButton = [buttons_ objectForKey:extensionId];
-    NSPoint arrowPoint = [actionButton frame].origin;
-    // Adjust the anchor point to be at the center of the browser action button.
-    arrowPoint.x += kBrowserActionWidth / 2;
-    arrowPoint = [[actionButton superview] convertPoint:arrowPoint toView:nil];
-    arrowPoint = [[actionButton window] convertBaseToScreen:arrowPoint];
+    NSPoint arrowPoint = [self popupPointForBrowserAction:[button extension]];
     [ExtensionPopupController showURL:action->GetPopupUrl(tabId)
                             inBrowser:browser_
                            anchoredAt:arrowPoint
@@ -474,8 +488,131 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
 }
 
 - (void)showChevronIfNecessaryWithAnimation:(BOOL)animation {
-  BOOL hideChevron = [self buttonCount] == [self visibleButtonCount];
-  [containerView_ setChevronHidden:hideChevron animate:animation];
+  [self setChevronHidden:([self buttonCount] == [self visibleButtonCount])
+                 animate:animation];
+}
+
+- (NSPoint)popupPointForBrowserAction:(Extension*)extension {
+  if (!extension->browser_action())
+    return NSZeroPoint;
+
+  NSString* extensionId = base::SysUTF8ToNSString(extension->id());
+  DCHECK(extensionId);
+  if (!extensionId)
+    return NSZeroPoint;
+
+  BrowserActionButton* button = [buttons_ objectForKey:extensionId];
+  NSView* view = button;
+  BOOL isHidden = [hiddenButtons_ containsObject:button];
+  if (isHidden)
+    view = chevronMenuButton_.get();
+
+  NSPoint arrowPoint = [view frame].origin;
+  // Adjust the anchor point to be at the center of the browser action button
+  // or chevron.
+  arrowPoint.x += NSWidth([view frame]) / 2;
+  // Move the arrow up a bit in the case that it's pointing to the chevron.
+  if (isHidden)
+    arrowPoint.y += NSHeight([view frame]) / 4;
+
+  return [[view superview] convertPoint:arrowPoint toView:nil];
+}
+
+- (BOOL)chevronIsHidden {
+  if (!chevronMenuButton_.get())
+    return YES;
+
+  if (![animation_ isAnimating])
+    return [chevronMenuButton_ isHidden];
+
+  DCHECK([[animation_ viewAnimations] count] > 0);
+
+  // The chevron is animating in or out. Determine which one and have the return
+  // value reflect where the animation is headed.
+  NSString* effect = [[[animation_ viewAnimations] objectAtIndex:0]
+      valueForKey:NSViewAnimationEffectKey];
+  if (effect == NSViewAnimationFadeInEffect) {
+    return NO;
+  } else if (effect == NSViewAnimationFadeOutEffect) {
+    return YES;
+  }
+
+  NOTREACHED();
+  return YES;
+}
+
+- (void)setChevronHidden:(BOOL)hidden animate:(BOOL)animate {
+  if (hidden == [self chevronIsHidden])
+    return;
+
+  if (!chevronMenuButton_.get()) {
+    chevronMenuButton_.reset([[MenuButton alloc] init]);
+    [chevronMenuButton_ setBordered:NO];
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    [chevronMenuButton_ setImage:rb.GetNSImageNamed(IDR_BOOKMARK_BAR_CHEVRONS)];
+    [containerView_ addSubview:chevronMenuButton_];
+  }
+
+  if (!hidden)
+    [self updateOverflowMenu];
+
+  [self updateChevronPosition];
+
+  // Stop any running animation.
+  [animation_ stopAnimation];
+
+  if (!animate) {
+    [chevronMenuButton_ setHidden:hidden];
+    return;
+  }
+
+  NSDictionary* animationDictionary;
+  if (hidden) {
+    animationDictionary = [NSDictionary dictionaryWithObjectsAndKeys:
+        chevronMenuButton_.get(), NSViewAnimationTargetKey,
+        NSViewAnimationFadeOutEffect, NSViewAnimationEffectKey,
+        nil];
+  } else {
+    [chevronMenuButton_ setHidden:NO];
+    animationDictionary = [NSDictionary dictionaryWithObjectsAndKeys:
+        chevronMenuButton_.get(), NSViewAnimationTargetKey,
+        NSViewAnimationFadeInEffect, NSViewAnimationEffectKey,
+        nil];
+  }
+  [animation_ setViewAnimations:
+      [NSArray arrayWithObjects:animationDictionary, nil]];
+  [animation_ startAnimation];
+}
+
+- (void)updateChevronPosition {
+  CGFloat xPos = NSWidth([containerView_ frame]) - kChevronWidth -
+      kChevronRightPadding;
+  NSRect buttonFrame = NSMakeRect(xPos,
+                                  kChevronLowerPadding,
+                                  kChevronWidth,
+                                  kChevronHeight);
+  [chevronMenuButton_ setFrame:buttonFrame];
+}
+
+- (void)updateOverflowMenu {
+  overflowMenu_.reset([[NSMenu alloc] initWithTitle:@""]);
+  // See menu_button.h for documentation on why this is needed.
+  [overflowMenu_ addItemWithTitle:@"" action:nil keyEquivalent:@""];
+
+  for (BrowserActionButton* button in hiddenButtons_.get()) {
+    NSString* name = base::SysUTF8ToNSString([button extension]->name());
+    NSMenuItem* item =
+        [overflowMenu_ addItemWithTitle:name
+                                 action:@selector(chevronItemSelected:)
+                          keyEquivalent:@""];
+    [item setRepresentedObject:button];
+    [item setTarget:self];
+  }
+  [chevronMenuButton_ setAttachedMenu:overflowMenu_];
+}
+
+- (void)chevronItemSelected:(id)menuItem {
+  [self browserActionClicked:[menuItem representedObject]];
 }
 
 + (void)registerUserPrefs:(PrefService*)prefs {

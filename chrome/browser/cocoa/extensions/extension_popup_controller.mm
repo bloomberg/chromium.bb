@@ -49,7 +49,7 @@ CGFloat Clamp(CGFloat value, CGFloat min, CGFloat max) {
         anchoredAt:(NSPoint)anchoredAt
      arrowLocation:(BubbleArrowLocation)arrowLocation {
   parentWindow_ = parentWindow;
-  anchor_ = anchoredAt;
+  anchor_ = [parentWindow convertBaseToScreen:anchoredAt];
   host_.reset(host);
 
   scoped_nsobject<InfoBubbleView> view([[InfoBubbleView alloc] init]);

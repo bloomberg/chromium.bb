@@ -17,6 +17,7 @@ class Extension;
 @class ExtensionPopupController;
 class ExtensionToolbarModel;
 class ExtensionsServiceObserverBridge;
+@class MenuButton;
 class PrefService;
 class Profile;
 
@@ -52,6 +53,15 @@ extern const NSString* kBrowserActionVisibilityChangedNotification;
 
   // Array of hidden buttons in the correct order in which the user specified.
   scoped_nsobject<NSMutableArray> hiddenButtons_;
+
+  // The currently running animation.
+  scoped_nsobject<NSAnimation> animation_;
+
+  // The chevron button used when Browser Actions are hidden.
+  scoped_nsobject<MenuButton> chevronMenuButton_;
+
+  // The Browser Actions overflow menu.
+  scoped_nsobject<NSMenu> overflowMenu_;
 }
 
 @property(readonly, nonatomic) BrowserActionsContainerView* containerView;
@@ -72,12 +82,12 @@ extern const NSString* kBrowserActionVisibilityChangedNotification;
 // container.
 - (NSUInteger)visibleButtonCount;
 
+// Returns a pointer to the chevron menu button.
+- (MenuButton*)chevronMenuButton;
+
 // Resizes the container to fit all the visible buttons and other elements
 // (grippy and overflow button).
 - (void)resizeContainerWithAnimation:(BOOL)animate;
-
-// Executes the action designated by the extension.
-- (void)browserActionClicked:(BrowserActionButton*)sender;
 
 // Returns the NSView for the action button associated with an extension.
 - (NSView*)browserActionViewForExtension:(Extension*)extension;
@@ -86,6 +96,19 @@ extern const NSString* kBrowserActionVisibilityChangedNotification;
 // specified, then zero is returned, indicating that the width has never been
 // set.
 - (CGFloat)savedWidth;
+
+// Returns where the popup arrow should point to for a given Browser Action. If
+// it is passed an extension that is not a Browser Action, then it will return
+// NSZeroPoint.
+- (NSPoint)popupPointForBrowserAction:(Extension*)extension;
+
+// Returns whether the chevron button is currently hidden or in the process of
+// being hidden (fading out). Will return NO if it is not hidden or is in the
+// process of fading in.
+- (BOOL)chevronIsHidden;
+
+// Sets whether to show the chevron button.
+- (void)setChevronHidden:(BOOL)hidden animate:(BOOL)animate;
 
 // Registers the user preferences used by this class.
 + (void)registerUserPrefs:(PrefService*)prefs;

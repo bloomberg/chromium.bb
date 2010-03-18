@@ -135,7 +135,7 @@ enum {
         if ([itemObj tag] == kExtensionContextOptions &&
             extension_->options_url().spec().length() <= 0) {
           // Setting the target to nil will disable the item. For some reason
-          // setDisabled:NO does not work.
+          // setEnabled:NO does not work.
           [itemObj setTarget:nil];
         } else {
           [itemObj setTarget:self];

@@ -48,7 +48,7 @@ class ExtensionHost;
 // ExtensionPopupController with the parent window retrieved from |browser|, a
 // host for the popup created by the extension process manager specific to the
 // browser profile and the remaining arguments |anchoredAt| and |arrowLocation|.
-// |anchoredAt| is expected to be in the screen's coordinates at the bottom
+// |anchoredAt| is expected to be in the window's coordinates at the bottom
 // center of the browser action button.
 // The actual display of the popup is delayed until the page contents finish
 // loading in order to minimize UI flashing and resizing.

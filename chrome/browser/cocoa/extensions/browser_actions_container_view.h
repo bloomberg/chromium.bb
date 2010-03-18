@@ -7,11 +7,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "base/scoped_nsobject.h"
-
-@class MenuButton;
-@class BrowserActionButton;
-
 // Sent when a user-initiated drag to resize the container is initiated.
 extern const NSString* kBrowserActionGrippyDragStartedNotification;
 
@@ -21,20 +16,10 @@ extern const NSString* kBrowserActionGrippyDraggingNotification;
 // Sent when a user-initiated drag to resize the container has finished.
 extern const NSString* kBrowserActionGrippyDragFinishedNotification;
 
-// The width of the chevron button in pixels.
-extern const CGFloat kChevronWidth;
-
-
 // The view that encompasses the Browser Action buttons in the toolbar and
 // provides mechanisms for resizing.
 @interface BrowserActionsContainerView : NSView {
  @private
-  // The currently running animation.
-  scoped_nsobject<NSAnimation> animation_;
-
-  // The chevron button used when Browser Actions are hidden.
-  scoped_nsobject<MenuButton> chevronMenuButton_;
-
   // The frame encompasing the grippy used for resizing the container.
   NSRect grippyRect_;
 
@@ -75,14 +60,6 @@ extern const CGFloat kChevronWidth;
 // be queried when a NSViewFrameDidChangeNotification is fired to determine
 // placement of surrounding elements.
 - (CGFloat)resizeDeltaX;
-
-// Returns whether the chevron button is currently hidden or in the process of
-// being hidden (fading out). Will return NO if it is not hidden or is in the
-// process of fading in.
-- (BOOL)chevronIsHidden;
-
-// Sets whether to show the chevron button.
-- (void)setChevronHidden:(BOOL)hidden animate:(BOOL)animate;
 
 @property(nonatomic) BOOL canDragLeft;
 @property(nonatomic) BOOL canDragRight;

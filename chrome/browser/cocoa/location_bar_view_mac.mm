@@ -674,10 +674,8 @@ void LocationBarViewMac::PageActionImageView::OnMousePressed(NSRect bounds) {
     NSWindow* window = [textField window];
     NSRect relativeBounds = [[window contentView] convertRect:bounds
                                                      fromView:textField];
-    NSPoint arrowPoint = [window convertBaseToScreen:NSMakePoint(
-        NSMinX(relativeBounds),
-        NSMinY(relativeBounds))];
-
+    NSPoint arrowPoint = NSMakePoint(NSMinX(relativeBounds),
+                                     NSMinY(relativeBounds));
     // Adjust the anchor point to be at the center of the page action icon.
     arrowPoint.x += [GetImage() size].width / 2;
 

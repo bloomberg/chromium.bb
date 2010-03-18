@@ -16,6 +16,7 @@ class Profile;
 // A context menu used by the Browser and Page Action components that appears
 // if a user right-clicks the view of the given extension.
 @interface ExtensionActionContextMenu : NSMenu {
+ @private
   // The extension that this menu belongs to. Weak.
   Extension* extension_;
 
