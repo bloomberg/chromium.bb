@@ -736,8 +736,8 @@ each locale. -->
         <message name="IDS_SELECT_ALL" desc="The text label of the Select All menu item">
           Select &amp;all
         </message>
-        <message name="IDS_FIND" desc="The text label of the Find in Page menu item">
-          &amp;Find in page
+        <message name="IDS_FIND" desc="The text label of the Find... menu item">
+          &amp;Find...
         </message>
         <message name="IDS_SAVE_PAGE" desc="The text label of the Save Page As menu item">
           Save page &amp;as...
@@ -798,8 +798,8 @@ each locale. -->
         <message name="IDS_SELECT_ALL" desc="In Title Case: The text label of the Select All menu item">
           Select &amp;All
         </message>
-        <message name="IDS_FIND" desc="In Title Case: The text label of the Find in Page menu item">
-          &amp;Find in Page
+        <message name="IDS_FIND" desc="In Title Case: The text label of the Find... menu item">
+          &amp;Find...
         </message>
         <message name="IDS_SAVE_PAGE" desc="In Title Case: The text label of the Save Page As menu item">
           Save Page &amp;As...
