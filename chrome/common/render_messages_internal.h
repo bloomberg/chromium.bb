@@ -508,10 +508,6 @@ IPC_BEGIN_MESSAGES(View)
   // Used to instruct the RenderView to go into "view source" mode.
   IPC_MESSAGE_ROUTED0(ViewMsg_EnableViewSourceMode)
 
-  IPC_MESSAGE_ROUTED2(ViewMsg_UpdateBackForwardListCount,
-                      int /* back_list_count */,
-                      int /* forward_list_count */)
-
   // Retreive information from the MSAA DOM subtree, for accessibility purposes.
   IPC_SYNC_MESSAGE_ROUTED1_1(ViewMsg_GetAccessibilityInfo,
                              webkit_glue::WebAccessibility::InParams

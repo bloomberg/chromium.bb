@@ -204,11 +204,6 @@ class RenderViewHostDelegate {
     // not valid.
     virtual void GoToEntryAtOffset(int offset) = 0;
 
-    // The page requests the size of the back and forward lists
-    // within the NavigationController.
-    virtual void GetHistoryListCount(int* back_list_count,
-                                     int* forward_list_count) = 0;
-
     // Notification when default plugin updates status of the missing plugin.
     virtual void OnMissingPluginStatus(int status) = 0;
 

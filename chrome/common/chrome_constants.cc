@@ -131,6 +131,8 @@ const bool kRecordModeEnabled = false;
 
 const int kHistogramSynchronizerReservedSequenceNumber = 0;
 
+const int kMaxSessionHistoryEntries = 50;
+
 }  // namespace chrome
 
 #undef FPL

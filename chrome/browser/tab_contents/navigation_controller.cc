@@ -22,6 +22,7 @@
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/navigation_types.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
@@ -114,7 +115,8 @@ const base::TimeDelta kMaxAutoNavigationTimeDelta =
 // NavigationController ---------------------------------------------------
 
 // static
-size_t NavigationController::max_entry_count_ = 50;
+size_t NavigationController::max_entry_count_ =
+    chrome::kMaxSessionHistoryEntries;
 
 // static
 bool NavigationController::check_for_repost_ = true;

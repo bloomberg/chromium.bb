@@ -624,8 +624,6 @@ class RenderViewHost : public RenderWidgetHost {
  private:
   friend class TestRenderViewHost;
 
-  void UpdateBackForwardListCount();
-
   // The SiteInstance associated with this RenderViewHost.  All pages drawn
   // in this RenderViewHost are part of this SiteInstance.  Should not change
   // over time.

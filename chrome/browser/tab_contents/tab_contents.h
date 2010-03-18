@@ -802,8 +802,6 @@ class TabContents : public PageNavigator,
                            int active_match_ordinal,
                            bool final_update);
   virtual void GoToEntryAtOffset(int offset);
-  virtual void GetHistoryListCount(int* back_list_count,
-                                   int* forward_list_count);
   virtual void OnMissingPluginStatus(int status);
   virtual void OnCrashedPlugin(const FilePath& plugin_path);
   virtual void OnCrashedWorker();

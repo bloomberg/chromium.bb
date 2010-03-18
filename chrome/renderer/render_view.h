@@ -263,7 +263,6 @@ class RenderView : public RenderWidget,
   virtual void navigateBackForwardSoon(int offset);
   virtual int historyBackListCount();
   virtual int historyForwardListCount();
-  virtual void didAddHistoryItem();
   virtual void focusAccessibilityObject(
       const WebKit::WebAccessibilityObject& acc_obj);
   virtual void didChangeAccessibilityObjectState(
@@ -709,8 +708,6 @@ class RenderView : public RenderWidget,
   void OnExecuteCode(const ViewMsg_ExecuteCode_Params& params);
   void ExecuteCodeImpl(WebKit::WebFrame* frame,
                        const ViewMsg_ExecuteCode_Params& params);
-  void OnUpdateBackForwardListCount(int back_list_count,
-                                    int forward_list_count);
   void OnGetAccessibilityInfo(
       const webkit_glue::WebAccessibility::InParams& in_params,
       webkit_glue::WebAccessibility::OutParams* out_params);
@@ -1010,8 +1007,8 @@ class RenderView : public RenderWidget,
   // choosing operation is underway.
   WebKit::WebFileChooserCompletion* file_chooser_completion_;
 
-  int history_back_list_count_;
-  int history_forward_list_count_;
+  int history_list_offset_;
+  int history_list_length_;
 
   // True if the page has any frame-level unload or beforeunload listeners.
   bool has_unload_listener_;

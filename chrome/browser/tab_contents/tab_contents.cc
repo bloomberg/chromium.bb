@@ -204,15 +204,20 @@ ViewMsg_Navigate_Params::NavigationType GetNavigationType(
   return ViewMsg_Navigate_Params::NORMAL;
 }
 
-void MakeNavigateParams(Profile* profile, const NavigationEntry& entry,
+void MakeNavigateParams(const NavigationController& controller,
                         NavigationController::ReloadType reload_type,
                         ViewMsg_Navigate_Params* params) {
+  const NavigationEntry& entry = *controller.pending_entry();
   params->page_id = entry.page_id();
+  params->pending_history_list_offset = controller.pending_entry_index();
+  params->current_history_list_offset = controller.last_committed_entry_index();
+  params->current_history_list_length = controller.entry_count();
   params->url = entry.url();
   params->referrer = entry.referrer();
   params->transition = entry.transition_type();
   params->state = entry.content_state();
-  params->navigation_type = GetNavigationType(profile, entry, reload_type);
+  params->navigation_type =
+      GetNavigationType(controller.profile(), entry, reload_type);
   params->request_time = base::Time::Now();
 }
 
@@ -739,10 +744,9 @@ bool TabContents::NavigateToPendingEntry(
   // Tell DevTools agent that it is attached prior to the navigation.
   DevToolsManager* devtools_manager = DevToolsManager::GetInstance();
   if (devtools_manager) {  // NULL in unit tests.
-    devtools_manager->OnNavigatingToPendingEntry(
-        render_view_host(),
-        dest_render_view_host,
-        controller_.pending_entry()->url());
+    devtools_manager->OnNavigatingToPendingEntry(render_view_host(),
+                                                 dest_render_view_host,
+                                                 entry.url());
   }
 
   // Used for page load time metrics.
@@ -750,7 +754,7 @@ bool TabContents::NavigateToPendingEntry(
 
   // Navigate in the desired RenderViewHost.
   ViewMsg_Navigate_Params navigate_params;
-  MakeNavigateParams(profile(), entry, reload_type, &navigate_params);
+  MakeNavigateParams(controller_, reload_type, &navigate_params);
   dest_render_view_host->Navigate(navigate_params);
 
   if (entry.page_id() == -1) {
@@ -1805,13 +1809,6 @@ void TabContents::OnFindReply(int request_id,
 void TabContents::GoToEntryAtOffset(int offset) {
   if (!delegate_ || delegate_->OnGoToEntryOffset(offset))
     controller_.GoToOffset(offset);
-}
-
-void TabContents::GetHistoryListCount(int* back_list_count,
-                                      int* forward_list_count) {
-  int current_index = controller_.last_committed_entry_index();
-  *back_list_count = current_index;
-  *forward_list_count = controller_.entry_count() - current_index - 1;
 }
 
 void TabContents::OnMissingPluginStatus(int status) {

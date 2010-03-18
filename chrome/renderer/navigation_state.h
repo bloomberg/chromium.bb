@@ -33,15 +33,18 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
 
   static NavigationState* CreateBrowserInitiated(
       int32 pending_page_id,
+      int pending_history_list_offset,
       PageTransition::Type transition_type,
       base::Time request_time) {
     return new NavigationState(transition_type, request_time, false,
-                               pending_page_id);
+                               pending_page_id,
+                               pending_history_list_offset);
   }
 
   static NavigationState* CreateContentInitiated() {
     // We assume navigations initiated by content are link clicks.
-    return new NavigationState(PageTransition::LINK, base::Time(), true, -1);
+    return new NavigationState(PageTransition::LINK, base::Time(), true, -1,
+                               -1);
   }
 
   static NavigationState* FromDataSource(WebKit::WebDataSource* ds) {
@@ -57,6 +60,12 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
 
   // Contains the page_id for this navigation or -1 if there is none yet.
   int32 pending_page_id() const { return pending_page_id_; }
+
+  // If pending_page_id() is not -1, then this contains the corresponding
+  // offset of the page in the back/forward history list.
+  int pending_history_list_offset() const {
+    return pending_history_list_offset_;
+  }
 
   // Contains the transition type that the browser specified when it
   // initiated the load.
@@ -219,7 +228,8 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
   NavigationState(PageTransition::Type transition_type,
                   const base::Time& request_time,
                   bool is_content_initiated,
-                  int32 pending_page_id)
+                  int32 pending_page_id,
+                  int pending_history_list_offset)
       : transition_type_(transition_type),
         load_type_(UNDEFINED_LOAD),
         request_time_(request_time),
@@ -227,6 +237,7 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
         request_committed_(false),
         is_content_initiated_(is_content_initiated),
         pending_page_id_(pending_page_id),
+        pending_history_list_offset_(pending_history_list_offset),
         postpone_loading_data_(false),
         cache_policy_override_set_(false),
         cache_policy_override_(WebKit::WebURLRequest::UseProtocolCachePolicy),
@@ -248,6 +259,7 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
   bool request_committed_;
   bool is_content_initiated_;
   int32 pending_page_id_;
+  int pending_history_list_offset_;
   GURL searchable_form_url_;
   std::string searchable_form_encoding_;
   scoped_ptr<webkit_glue::PasswordForm> password_form_data_;

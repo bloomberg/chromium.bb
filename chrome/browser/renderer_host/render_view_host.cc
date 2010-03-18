@@ -975,8 +975,6 @@ void RenderViewHost::OnMsgNavigate(const IPC::Message& msg) {
   FilterURL(policy, renderer_id, &validated_params.password_form.action);
 
   delegate_->DidNavigate(this, validated_params);
-
-  UpdateBackForwardListCount();
 }
 
 void RenderViewHost::OnMsgUpdateState(int32 page_id,
@@ -1504,18 +1502,6 @@ void RenderViewHost::OnCrashedPlugin(const FilePath& plugin_path) {
       delegate_->GetBrowserIntegrationDelegate();
   if (integration_delegate)
     integration_delegate->OnCrashedPlugin(plugin_path);
-}
-
-void RenderViewHost::UpdateBackForwardListCount() {
-  int back_list_count = 0, forward_list_count = 0;
-  RenderViewHostDelegate::BrowserIntegration* integration_delegate =
-      delegate_->GetBrowserIntegrationDelegate();
-  if (integration_delegate) {
-    integration_delegate->GetHistoryListCount(&back_list_count,
-                                              &forward_list_count);
-    Send(new ViewMsg_UpdateBackForwardListCount(
-         routing_id(), back_list_count, forward_list_count));
-  }
 }
 
 void RenderViewHost::GetAllSavableResourceLinksForCurrentPage(

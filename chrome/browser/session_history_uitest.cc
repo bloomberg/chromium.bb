@@ -23,6 +23,7 @@ const wchar_t kDocRoot[] = L"chrome/test/data";
 class SessionHistoryTest : public UITest {
  protected:
   SessionHistoryTest() : UITest() {
+    dom_automation_enabled_ = true;
   }
 
   virtual void SetUp() {
@@ -513,6 +514,42 @@ TEST_F(SessionHistoryTest, LocationChangeInSubframe) {
 
   ASSERT_TRUE(tab_->GoBack());
   EXPECT_EQ(L"Default Title", GetTabTitle());
+}
+
+TEST_F(SessionHistoryTest, HistoryLength) {
+  scoped_refptr<HTTPTestServer> server =
+      HTTPTestServer::CreateServer(kDocRoot, NULL);
+  ASSERT_TRUE(server.get());
+
+  int length;
+  ASSERT_TRUE(tab_->ExecuteAndExtractInt(
+      L"", L"domAutomationController.send(history.length)", &length));
+  EXPECT_EQ(1, length);
+
+  ASSERT_TRUE(tab_->NavigateToURL(server->TestServerPage("files/title1.html")));
+
+  ASSERT_TRUE(tab_->ExecuteAndExtractInt(
+      L"", L"domAutomationController.send(history.length)", &length));
+  EXPECT_EQ(2, length);
+
+  // Now test that history.length is updated when the navigation is committed.
+  ASSERT_TRUE(tab_->NavigateToURL(server->TestServerPage(
+      "files/session_history/record_length.html")));
+  ASSERT_TRUE(tab_->ExecuteAndExtractInt(
+      L"", L"domAutomationController.send(history.length)", &length));
+  EXPECT_EQ(3, length);
+  ASSERT_TRUE(tab_->ExecuteAndExtractInt(
+      L"", L"domAutomationController.send(history_length)", &length));
+  EXPECT_EQ(3, length);
+
+  ASSERT_TRUE(tab_->GoBack());
+  ASSERT_TRUE(tab_->GoBack());
+
+  // Ensure history.length is properly truncated.
+  ASSERT_TRUE(tab_->NavigateToURL(server->TestServerPage("files/title2.html")));
+  ASSERT_TRUE(tab_->ExecuteAndExtractInt(
+      L"", L"domAutomationController.send(history.length)", &length));
+  EXPECT_EQ(2, length);
 }
 
 }  // namespace

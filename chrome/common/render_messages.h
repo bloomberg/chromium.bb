@@ -85,6 +85,16 @@ struct ViewMsg_Navigate_Params {
   // ViewHostMsg_FrameNavigate message.
   int32 page_id;
 
+  // If page_id is -1, then pending_history_list_offset will also be -1.
+  // Otherwise, it contains the offset into the history list corresponding to
+  // the current navigation.
+  int pending_history_list_offset;
+
+  // Informs the RenderView of where its current page contents reside in
+  // session history and the total size of the session history list.
+  int current_history_list_offset;
+  int current_history_list_length;
+
   // The URL to load.
   GURL url;
 
@@ -810,6 +820,9 @@ struct ParamTraits<ViewMsg_Navigate_Params> {
   typedef ViewMsg_Navigate_Params param_type;
   static void Write(Message* m, const param_type& p) {
     WriteParam(m, p.page_id);
+    WriteParam(m, p.pending_history_list_offset);
+    WriteParam(m, p.current_history_list_offset);
+    WriteParam(m, p.current_history_list_length);
     WriteParam(m, p.url);
     WriteParam(m, p.referrer);
     WriteParam(m, p.transition);
@@ -820,6 +833,9 @@ struct ParamTraits<ViewMsg_Navigate_Params> {
   static bool Read(const Message* m, void** iter, param_type* p) {
     return
       ReadParam(m, iter, &p->page_id) &&
+      ReadParam(m, iter, &p->pending_history_list_offset) &&
+      ReadParam(m, iter, &p->current_history_list_offset) &&
+      ReadParam(m, iter, &p->current_history_list_length) &&
       ReadParam(m, iter, &p->url) &&
       ReadParam(m, iter, &p->referrer) &&
       ReadParam(m, iter, &p->transition) &&

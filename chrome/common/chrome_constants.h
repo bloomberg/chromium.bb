@@ -79,6 +79,9 @@ extern const bool kRecordModeEnabled;
 
 extern const int kHistogramSynchronizerReservedSequenceNumber;
 
+// The maximum number of session history entries per tab.
+extern const int kMaxSessionHistoryEntries;
+
 }  // namespace chrome
 
 #endif  // CHROME_COMMON_CHROME_CONSTANTS_H_

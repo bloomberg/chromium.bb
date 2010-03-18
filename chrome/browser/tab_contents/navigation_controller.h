@@ -395,9 +395,11 @@ class NavigationController {
   static void DisablePromptOnRepost();
 
   // Maximum number of entries before we start removing entries from the front.
+#ifdef UNIT_TEST
   static void set_max_entry_count(size_t max_entry_count) {
     max_entry_count_ = max_entry_count;
   }
+#endif
   static size_t max_entry_count() { return max_entry_count_; }
 
   // Cancels a repost that brought up a warning.

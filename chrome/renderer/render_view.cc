@@ -306,8 +306,8 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       devtools_agent_(NULL),
       devtools_client_(NULL),
       file_chooser_completion_(NULL),
-      history_back_list_count_(0),
-      history_forward_list_count_(0),
+      history_list_offset_(-1),
+      history_list_length_(0),
       has_unload_listener_(false),
       decrement_shared_popup_at_destruction_(false),
       autofill_query_id_(0),
@@ -559,8 +559,6 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_InstallMissingPlugin, OnInstallMissingPlugin)
     IPC_MESSAGE_HANDLER(ViewMsg_RunFileChooserResponse, OnFileChooserResponse)
     IPC_MESSAGE_HANDLER(ViewMsg_EnableViewSourceMode, OnEnableViewSourceMode)
-    IPC_MESSAGE_HANDLER(ViewMsg_UpdateBackForwardListCount,
-                        OnUpdateBackForwardListCount)
     IPC_MESSAGE_HANDLER(ViewMsg_GetAllSavableResourceLinksForCurrentPage,
                         OnGetAllSavableResourceLinksForCurrentPage)
     IPC_MESSAGE_HANDLER(
@@ -850,6 +848,9 @@ void RenderView::OnNavigate(const ViewMsg_Navigate_Params& params) {
   if (!webview())
     return;
 
+  history_list_offset_ = params.current_history_list_offset;
+  history_list_length_ = params.current_history_list_length;
+
   if (devtools_agent_.get())
     devtools_agent_->OnNavigate();
 
@@ -878,7 +879,10 @@ void RenderView::OnNavigate(const ViewMsg_Navigate_Params& params) {
   // initiated any load resulting from JS execution.
   if (!params.url.SchemeIs(chrome::kJavaScriptScheme)) {
     NavigationState* state = NavigationState::CreateBrowserInitiated(
-        params.page_id, params.transition, params.request_time);
+        params.page_id,
+        params.pending_history_list_offset,
+        params.transition,
+        params.request_time);
     if (params.navigation_type == ViewMsg_Navigate_Params::RESTORE) {
       // We're doing a load of a page that was restored from the last session.
       // By default this prefers the cache over loading (LOAD_PREFERRING_CACHE)
@@ -958,7 +962,10 @@ void RenderView::OnLoadAlternateHTMLText(const std::string& html,
     return;
 
   pending_navigation_state_.reset(NavigationState::CreateBrowserInitiated(
-      new_navigation ? -1 : page_id_, PageTransition::LINK, Time::Now()));
+      new_navigation ? -1 : page_id_,
+      history_list_offset_,
+      PageTransition::LINK,
+      Time::Now()));
   pending_navigation_state_->set_security_info(security_info);
 
   webview()->mainFrame()->loadHTMLString(
@@ -1944,36 +1951,15 @@ void RenderView::focusPrevious() {
 }
 
 void RenderView::navigateBackForwardSoon(int offset) {
-  history_back_list_count_ += offset;
-  history_forward_list_count_ -= offset;
-
   Send(new ViewHostMsg_GoToEntryAtOffset(routing_id_, offset));
 }
 
 int RenderView::historyBackListCount() {
-  return history_back_list_count_;
+  return history_list_offset_ < 0 ? 0 : history_list_offset_;
 }
 
 int RenderView::historyForwardListCount() {
-  return history_forward_list_count_;
-}
-
-void RenderView::didAddHistoryItem() {
-  // We don't want to update the history length for the start page
-  // navigation.
-  WebFrame* main_frame = webview()->mainFrame();
-  DCHECK(main_frame != NULL);
-
-  WebDataSource* ds = main_frame->dataSource();
-  DCHECK(ds != NULL);
-
-  NavigationState* navigation_state = NavigationState::FromDataSource(ds);
-  DCHECK(navigation_state);
-  if (navigation_state->transition_type() == PageTransition::START_PAGE)
-    return;
-
-  history_back_list_count_++;
-  history_forward_list_count_ = 0;
+  return history_list_length_ - historyBackListCount() - 1;
 }
 
 void RenderView::didUpdateInspectorSettings() {
@@ -2512,6 +2498,7 @@ void RenderView::didFailProvisionalLoad(WebFrame* frame,
   if (!navigation_state->is_content_initiated()) {
     pending_navigation_state_.reset(NavigationState::CreateBrowserInitiated(
         navigation_state->pending_page_id(),
+        navigation_state->pending_history_list_offset(),
         navigation_state->transition_type(),
         navigation_state->request_time()));
   }
@@ -2567,6 +2554,13 @@ void RenderView::didCommitProvisionalLoad(WebFrame* frame,
     // We bump our Page ID to correspond with the new session history entry.
     page_id_ = next_page_id_++;
 
+    // Advance our offset in session history, applying the length limit.  There
+    // is now no forward history.
+    history_list_offset_++;
+    if (history_list_offset_ >= chrome::kMaxSessionHistoryEntries)
+      history_list_offset_ = chrome::kMaxSessionHistoryEntries - 1;
+    history_list_length_ = history_list_offset_ + 1;
+
     MessageLoop::current()->PostDelayedTask(FROM_HERE,
         method_factory_.NewRunnableMethod(&RenderView::CapturePageInfo,
                                           page_id_, true),
@@ -2588,6 +2582,8 @@ void RenderView::didCommitProvisionalLoad(WebFrame* frame,
       // This is a successful session history navigation!
       UpdateSessionHistory(frame);
       page_id_ = navigation_state->pending_page_id();
+
+      history_list_offset_ = navigation_state->pending_history_list_offset();
     }
   }
 
@@ -3722,12 +3718,6 @@ void RenderView::OnNotifyRendererViewType(ViewType::Type type) {
 
 void RenderView::OnUpdateBrowserWindowId(int window_id) {
   browser_window_id_ = window_id;
-}
-
-void RenderView::OnUpdateBackForwardListCount(int back_list_count,
-                                              int forward_list_count) {
-  history_back_list_count_ = back_list_count;
-  history_forward_list_count_ = forward_list_count;
 }
 
 void RenderView::OnGetAccessibilityInfo(
