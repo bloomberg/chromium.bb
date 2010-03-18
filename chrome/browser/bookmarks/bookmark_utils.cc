@@ -40,6 +40,8 @@
 #include "views/drag_utils.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
+#elif defined(TOOLKIT_GTK)
+#include "chrome/browser/gtk/custom_drag.h"
 #endif
 
 using base::Time;
@@ -352,9 +354,8 @@ void DragBookmarks(Profile* profile,
   MessageLoop::current()->SetNestableTasksAllowed(true);
   bookmark_pasteboard_helper_mac::StartDrag(profile, nodes, view);
   MessageLoop::current()->SetNestableTasksAllowed(was_nested);
-#else
-  // TODO(arv): Implement for GTK.
-  NOTIMPLEMENTED();
+#elif defined(TOOLKIT_GTK)
+  BookmarkDrag::BeginDrag(profile, nodes);
 #endif
 }
 

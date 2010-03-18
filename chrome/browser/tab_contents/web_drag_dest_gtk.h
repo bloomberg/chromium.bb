@@ -6,13 +6,16 @@
 #define CHROME_BROWSER_TAB_CONTENTS_WEB_DRAG_DEST_GTK_H_
 
 #include <gtk/gtk.h>
+#include <vector>
 
 #include "app/gtk_signal.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
+#include "chrome/browser/bookmarks/bookmark_drag_data.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDragOperation.h"
 #include "webkit/glue/webdropdata.h"
 
+class BookmarkNode;
 class TabContents;
 
 // A helper class that handles DnD for drops in the renderer. In GTK parlance,
@@ -79,6 +82,10 @@ class WebDragDestGtk {
   // destroyed, but we have to cancel the handler if we are destroyed before
   // |widget_| is.
   int destroy_handler_;
+
+  // The bookmark data for the current tab. This will be empty if there is not
+  // a native bookmark drag (or we haven't gotten the data from the source yet).
+  BookmarkDragData bookmark_drag_data_;
 
   ScopedRunnableMethodFactory<WebDragDestGtk> method_factory_;
 

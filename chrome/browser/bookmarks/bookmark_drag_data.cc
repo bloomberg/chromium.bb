@@ -89,8 +89,20 @@ BookmarkDragData::BookmarkDragData(const BookmarkNode* node) {
 
 BookmarkDragData::BookmarkDragData(
     const std::vector<const BookmarkNode*>& nodes) {
+  ReadFromVector(nodes);
+}
+
+bool BookmarkDragData::ReadFromVector(
+    const std::vector<const BookmarkNode*>& nodes) {
+  Clear();
+
+  if (nodes.empty())
+    return false;
+
   for (size_t i = 0; i < nodes.size(); ++i)
     elements.push_back(Element(nodes[i]));
+
+  return true;
 }
 
 #if !defined(OS_MACOSX)
@@ -272,12 +284,14 @@ void BookmarkDragData::Clear() {
   elements.clear();
 }
 
+void BookmarkDragData::SetOriginatingProfile(Profile* profile) {
+  DCHECK(profile_path_.empty());
+
+  if (profile)
+    profile_path_ = profile->GetPath().value();
+}
+
 bool BookmarkDragData::IsFromProfile(Profile* profile) const {
   // An empty path means the data is not associated with any profile.
-  return (!profile_path_.empty() &&
-#if defined(WCHAR_T_IS_UTF16)
-      profile->GetPath().ToWStringHack() == profile_path_);
-#elif defined(WCHAR_T_IS_UTF32)
-      profile->GetPath().value() == profile_path_);
-#endif
+  return !profile_path_.empty() && profile_path_ == profile->GetPath().value();
 }

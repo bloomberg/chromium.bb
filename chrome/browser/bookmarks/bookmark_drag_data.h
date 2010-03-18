@@ -86,6 +86,9 @@ struct BookmarkDragData {
   explicit BookmarkDragData(const BookmarkNode* node);
   explicit BookmarkDragData(const std::vector<const BookmarkNode*>& nodes);
 
+  // Reads bookmarks from the given vector.
+  bool ReadFromVector(const std::vector<const BookmarkNode*>& nodes);
+
   // Writes elements to the clipboard.
   void WriteToClipboard(Profile* profile) const;
 
@@ -137,6 +140,11 @@ struct BookmarkDragData {
 
   // Clears the data.
   void Clear();
+
+  // Sets |profile_path_| to that of |profile|. This is useful for the
+  // constructors/readers that don't set it. This should only be called if the
+  // profile path is not already set.
+  void SetOriginatingProfile(Profile* profile);
 
   // Returns true if this data is from the specified profile.
   bool IsFromProfile(Profile* profile) const;

@@ -10,6 +10,7 @@
 #include "app/clipboard/clipboard_util_win.h"
 #include "app/os_exchange_data.h"
 #include "app/os_exchange_data_provider_win.h"
+#include "chrome/browser/bookmarks/bookmark_drag_data.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "gfx/point.h"
@@ -122,7 +123,9 @@ DWORD WebDropTarget::OnDragEnter(IDataObject* data_object,
   // support for (at the moment experimental) drag and drop extensions.
   if (tab_contents_->GetBookmarkDragDelegate()) {
     OSExchangeData os_exchange_data(new OSExchangeDataProviderWin(data_object));
-    tab_contents_->GetBookmarkDragDelegate()->OnDragEnter(&os_exchange_data);
+    BookmarkDragData bookmark_drag_data;
+    if (bookmark_drag_data.Read(os_exchange_data))
+      tab_contents_->GetBookmarkDragDelegate()->OnDragEnter(bookmark_drag_data);
   }
 
   // We lie here and always return a DROPEFFECT because we don't want to
@@ -150,7 +153,9 @@ DWORD WebDropTarget::OnDragOver(IDataObject* data_object,
 
   if (tab_contents_->GetBookmarkDragDelegate()) {
     OSExchangeData os_exchange_data(new OSExchangeDataProviderWin(data_object));
-    tab_contents_->GetBookmarkDragDelegate()->OnDragOver(&os_exchange_data);
+    BookmarkDragData bookmark_drag_data;
+    if (bookmark_drag_data.Read(os_exchange_data))
+      tab_contents_->GetBookmarkDragDelegate()->OnDragOver(bookmark_drag_data);
   }
 
   if (!is_drop_target_)
@@ -172,7 +177,9 @@ void WebDropTarget::OnDragLeave(IDataObject* data_object) {
 
   if (tab_contents_->GetBookmarkDragDelegate()) {
     OSExchangeData os_exchange_data(new OSExchangeDataProviderWin(data_object));
-    tab_contents_->GetBookmarkDragDelegate()->OnDragLeave(&os_exchange_data);
+    BookmarkDragData bookmark_drag_data;
+    if (bookmark_drag_data.Read(os_exchange_data))
+      tab_contents_->GetBookmarkDragDelegate()->OnDragLeave(bookmark_drag_data);
   }
 }
 
@@ -198,7 +205,9 @@ DWORD WebDropTarget::OnDrop(IDataObject* data_object,
 
   if (tab_contents_->GetBookmarkDragDelegate()) {
     OSExchangeData os_exchange_data(new OSExchangeDataProviderWin(data_object));
-    tab_contents_->GetBookmarkDragDelegate()->OnDrop(&os_exchange_data);
+    BookmarkDragData bookmark_drag_data;
+    if (bookmark_drag_data.Read(os_exchange_data))
+      tab_contents_->GetBookmarkDragDelegate()->OnDrop(bookmark_drag_data);
   }
 
   current_rvh_ = NULL;

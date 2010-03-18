@@ -11,6 +11,7 @@
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/shell_dialogs.h"
 
+struct BookmarkDragData;
 class BookmarkNode;
 class ListValue;
 class Profile;
@@ -25,10 +26,10 @@ class ExtensionBookmarkManagerEventRouter
   virtual ~ExtensionBookmarkManagerEventRouter();
 
   // RenderViewHostDelegate::BookmarkDrag interface
-  virtual void OnDragEnter(const DragData* data);
-  virtual void OnDragOver(const DragData* data);
-  virtual void OnDragLeave(const DragData* data);
-  virtual void OnDrop(const DragData* data);
+  virtual void OnDragEnter(const BookmarkDragData& data);
+  virtual void OnDragOver(const BookmarkDragData& data);
+  virtual void OnDragLeave(const BookmarkDragData& data);
+  virtual void OnDrop(const BookmarkDragData& data);
 
   // The bookmark drag and drop data. This gets set after a drop was done on
   // the page. This returns NULL if no data is available.
@@ -41,7 +42,7 @@ class ExtensionBookmarkManagerEventRouter
   // Helper to actually dispatch an event to extension listeners.
   void DispatchEvent(const char* event_name, const ListValue* args);
 
-  void DispatchDragEvent(const DragData* data, const char* event_name);
+  void DispatchDragEvent(const BookmarkDragData& data, const char* event_name);
 
   Profile* profile_;
   TabContents* tab_contents_;

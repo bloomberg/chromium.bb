@@ -198,6 +198,16 @@ void SetButtonTextColors(GtkWidget* label, GtkThemeProvider* provider) {
 
 // DnD-related -----------------------------------------------------------------
 
+int GetCodeMask(bool folder) {
+  int rv = gtk_dnd_util::CHROME_BOOKMARK_ITEM;
+  if (!folder) {
+    rv |= gtk_dnd_util::TEXT_URI_LIST |
+          gtk_dnd_util::TEXT_PLAIN |
+          gtk_dnd_util::NETSCAPE_URL;
+  }
+  return rv;
+}
+
 void WriteBookmarkToSelection(const BookmarkNode* node,
                               GtkSelectionData* selection_data,
                               guint target_type,
@@ -272,17 +282,19 @@ std::vector<const BookmarkNode*> GetNodesFromSelection(
     Profile* profile,
     gboolean* delete_selection_data,
     gboolean* dnd_success) {
-  *delete_selection_data = FALSE;
-  *dnd_success = FALSE;
+  if (delete_selection_data)
+    *delete_selection_data = FALSE;
+  if (dnd_success)
+    *dnd_success = FALSE;
 
   if ((selection_data != NULL) && (selection_data->length >= 0)) {
-    if (context->action == GDK_ACTION_MOVE) {
+    if (context && delete_selection_data && context->action == GDK_ACTION_MOVE)
       *delete_selection_data = TRUE;
-    }
 
     switch (target_type) {
       case gtk_dnd_util::CHROME_BOOKMARK_ITEM: {
-        *dnd_success = TRUE;
+        if (dnd_success)
+          *dnd_success = TRUE;
         Pickle pickle(reinterpret_cast<char*>(selection_data->data),
                       selection_data->length);
         BookmarkDragData drag_data;

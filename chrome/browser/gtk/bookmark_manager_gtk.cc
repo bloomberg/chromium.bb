@@ -60,12 +60,6 @@ const int kDefaultColumnWidth = 200;
 // The destination targets that the right tree view accepts for dragging.
 const int kDestTargetList[] = { gtk_dnd_util::CHROME_BOOKMARK_ITEM, -1 };
 
-// The source targets that the right tree view supports for dragging.
-const int kSourceTargetMask = gtk_dnd_util::CHROME_BOOKMARK_ITEM |
-                              gtk_dnd_util::TEXT_URI_LIST |
-                              gtk_dnd_util::TEXT_PLAIN |
-                              gtk_dnd_util::NETSCAPE_URL;
-
 // We only have one manager open at a time.
 BookmarkManagerGtk* manager = NULL;
 
@@ -559,7 +553,7 @@ GtkWidget* BookmarkManagerGtk::MakeRightPane() {
       static_cast<GdkDragAction>(GDK_ACTION_MOVE | GDK_ACTION_COPY |
                                  GDK_ACTION_LINK));
   gtk_dnd_util::SetSourceTargetListFromCodeMask(
-      right_tree_view_, kSourceTargetMask);
+      right_tree_view_, bookmark_utils::GetCodeMask(false));
 
   // We connect to drag dest signals, but we don't actually enable the widget
   // as a drag destination unless it corresponds to the contents of a folder.
@@ -1301,7 +1295,7 @@ gboolean BookmarkManagerGtk::OnRightTreeViewMotion(
                                static_cast<gint>(event->y))) {
     bm->delaying_mousedown_ = false;
     GtkTargetList* targets = gtk_dnd_util::GetTargetListFromCodeMask(
-        kSourceTargetMask);
+        bookmark_utils::GetCodeMask(false));
     gtk_drag_begin(tree_view, targets, GDK_ACTION_MOVE,
                    1, reinterpret_cast<GdkEvent*>(event));
     // The drag adds a ref; let it own the list.

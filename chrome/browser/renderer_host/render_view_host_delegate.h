@@ -17,6 +17,7 @@
 #include "webkit/glue/window_open_disposition.h"
 
 struct BookmarkDragData;
+class BookmarkNode;
 struct ContextMenuParams;
 class FilePath;
 class GURL;
@@ -424,21 +425,10 @@ class RenderViewHostDelegate {
 
   class BookmarkDrag {
    public:
-
-#if defined(TOOLKIT_VIEWS)
-    typedef OSExchangeData DragData;
-#elif defined(OS_LINUX)
-     // TODO(arv): GtkSelectionData?
-    class DragData {};
-#else
-    // TODO(arv): NSDraggingInfo?
-    class DragData {};
-#endif
-
-    virtual void OnDragEnter(const DragData* data) = 0;
-    virtual void OnDragOver(const DragData* data) = 0;
-    virtual void OnDragLeave(const DragData* data) = 0;
-    virtual void OnDrop(const DragData* data) = 0;
+    virtual void OnDragEnter(const BookmarkDragData& data) = 0;
+    virtual void OnDragOver(const BookmarkDragData& data) = 0;
+    virtual void OnDragLeave(const BookmarkDragData& data) = 0;
+    virtual void OnDrop(const BookmarkDragData& data) = 0;
   };
 
   // ---------------------------------------------------------------------------

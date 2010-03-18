@@ -27,8 +27,6 @@ namespace keys = extension_bookmarks_module_constants;
 
 namespace {
 
-typedef RenderViewHostDelegate::BookmarkDrag::DragData DragData;
-
 // Returns a single bookmark node from the argument ID.
 // This returns NULL in case of failure.
 const BookmarkNode* GetNodeFromArguments(BookmarkModel* model,
@@ -136,21 +134,6 @@ void BookmarkDragDataToJSON(Profile* profile, const BookmarkDragData& data,
   args->Append(value);
 }
 
-// This is the platform specific function that takes the drag data and creates
-// the BookmarkDragData as needed.
-bool GetBookmarkDragData(const DragData* data,
-                         BookmarkDragData* bookmark_drag_data) {
-#if defined(TOOLKIT_VIEWS)
-  // On TOOLKIT_VIEWS DragData is OSExchangeData.
-  return bookmark_drag_data->Read(*data);
-#elif defined(OS_MACOSX)
-  return bookmark_drag_data->ReadFromDragClipboard();
-#else
-  NOTIMPLEMENTED();
-  return false;
-#endif
-}
-
 }  // namespace
 
 ExtensionBookmarkManagerEventRouter::ExtensionBookmarkManagerEventRouter(
@@ -177,34 +160,38 @@ void ExtensionBookmarkManagerEventRouter::DispatchEvent(const char* event_name,
 }
 
 void ExtensionBookmarkManagerEventRouter::DispatchDragEvent(
-    const DragData* data, const char* event_name) {
-  BookmarkDragData bookmark_drag_data;
-  if (::GetBookmarkDragData(data, &bookmark_drag_data)) {
-    ListValue args;
-    BookmarkDragDataToJSON(profile_, bookmark_drag_data, &args);
-    DispatchEvent(event_name, &args);
-  }
+    const BookmarkDragData& data, const char* event_name) {
+  if (data.size() == 0)
+    return;
+
+  ListValue args;
+  BookmarkDragDataToJSON(profile_, data, &args);
+  DispatchEvent(event_name, &args);
 }
 
-void ExtensionBookmarkManagerEventRouter::OnDragEnter(const DragData* data) {
+void ExtensionBookmarkManagerEventRouter::OnDragEnter(
+    const BookmarkDragData& data) {
   DispatchDragEvent(data, keys::kOnBookmarkDragEnter);
 }
 
-void ExtensionBookmarkManagerEventRouter::OnDragOver(const DragData* data) {
+void ExtensionBookmarkManagerEventRouter::OnDragOver(
+    const BookmarkDragData& data) {
   // Intentionally empty since these events happens too often and floods the
   // message queue. We do not need this event for the bookmark manager anyway.
 }
 
-void ExtensionBookmarkManagerEventRouter::OnDragLeave(const DragData* data) {
+void ExtensionBookmarkManagerEventRouter::OnDragLeave(
+    const BookmarkDragData& data) {
   DispatchDragEvent(data, keys::kOnBookmarkDragLeave);
 }
 
-void ExtensionBookmarkManagerEventRouter::OnDrop(const DragData* data) {
+void ExtensionBookmarkManagerEventRouter::OnDrop(
+    const BookmarkDragData& data) {
   DispatchDragEvent(data, keys::kOnBookmarkDrop);
 
   // Make a copy that is owned by this instance.
   ClearBookmarkDragData();
-  ::GetBookmarkDragData(data, &bookmark_drag_data_);
+  bookmark_drag_data_ = data;
 }
 
 const BookmarkDragData*

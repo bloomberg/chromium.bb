@@ -48,6 +48,10 @@ void SetButtonTextColors(GtkWidget* label, GtkThemeProvider* provider);
 
 // Drag and drop. --------------------------------------------------------------
 
+// Get the DnD target mask for a bookmark drag. This will vary based on whether
+// the node in question is a folder.
+int GetCodeMask(bool folder);
+
 // Pickle a node into a GtkSelection.
 void WriteBookmarkToSelection(const BookmarkNode* node,
                               GtkSelectionData* selection_data,

@@ -9,6 +9,7 @@
 #include "app/gtk_dnd_util.h"
 #include "base/file_path.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/gtk/bookmark_utils_gtk.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -60,6 +61,10 @@ void WebDragDestGtk::UpdateDragStatus(WebDragOperation operation) {
 
 void WebDragDestGtk::DragLeave() {
   tab_contents_->render_view_host()->DragTargetDragLeave();
+
+  if (tab_contents_->GetBookmarkDragDelegate()) {
+    tab_contents_->GetBookmarkDragDelegate()->OnDragLeave(bookmark_drag_data_);
+  }
 }
 
 gboolean WebDragDestGtk::OnDragMotion(GtkWidget* sender,
@@ -77,6 +82,7 @@ gboolean WebDragDestGtk::OnDragMotion(GtkWidget* sender,
       gtk_dnd_util::TEXT_HTML,
       gtk_dnd_util::NETSCAPE_URL,
       gtk_dnd_util::CHROME_NAMED_URL,
+      gtk_dnd_util::CHROME_BOOKMARK_ITEM,
       // TODO(estade): support image drags?
     };
 
@@ -87,12 +93,14 @@ gboolean WebDragDestGtk::OnDragMotion(GtkWidget* sender,
                         time);
     }
   } else if (data_requests_ == 0) {
+    // TODO(snej): Pass appropriate DragOperation instead of hardcoding
     tab_contents_->render_view_host()->
         DragTargetDragOver(gtk_util::ClientPoint(widget_),
                            gtk_util::ScreenPoint(widget_),
                            static_cast<WebDragOperation>(
                                WebDragOperationCopy | WebDragOperationMove));
-    // TODO(snej): Pass appropriate DragOperation instead of hardcoding
+    if (tab_contents_->GetBookmarkDragDelegate())
+      tab_contents_->GetBookmarkDragDelegate()->OnDragOver(bookmark_drag_data_);
     drag_over_time_ = time;
   }
 
@@ -160,19 +168,36 @@ void WebDragDestGtk::OnDragDataReceived(
                gtk_dnd_util::GetAtomForTarget(gtk_dnd_util::CHROME_NAMED_URL)) {
       gtk_dnd_util::ExtractNamedURL(data,
                                     &drop_data_->url, &drop_data_->url_title);
+    } else if (data->target ==
+               gtk_dnd_util::GetAtomForTarget(
+                   gtk_dnd_util::CHROME_BOOKMARK_ITEM)) {
+      bookmark_drag_data_.ReadFromVector(
+          bookmark_utils::GetNodesFromSelection(
+              NULL, data,
+              gtk_dnd_util::CHROME_BOOKMARK_ITEM,
+              tab_contents_->profile(), NULL, NULL));
+      bookmark_drag_data_.SetOriginatingProfile(tab_contents_->profile());
     }
   }
 
   if (data_requests_ == 0) {
     // Tell the renderer about the drag.
     // |x| and |y| are seemingly arbitrary at this point.
+    // TODO(snej): Pass appropriate DragOperation instead of hardcoding.
     tab_contents_->render_view_host()->
         DragTargetDragEnter(*drop_data_.get(),
                             gtk_util::ClientPoint(widget_),
                             gtk_util::ScreenPoint(widget_),
                             static_cast<WebDragOperation>(
                                 WebDragOperationCopy | WebDragOperationMove));
-    // TODO(snej): Pass appropriate DragOperation instead of hardcoding
+
+    // This is non-null if tab_contents_ is showing an ExtensionDOMUI with
+    // support for (at the moment experimental) drag and drop extensions.
+    if (tab_contents_->GetBookmarkDragDelegate()) {
+      tab_contents_->GetBookmarkDragDelegate()->OnDragEnter(
+          bookmark_drag_data_);
+    }
+
     drag_over_time_ = time;
   }
 }
@@ -201,6 +226,11 @@ gboolean WebDragDestGtk::OnDragDrop(GtkWidget* sender, GdkDragContext* context,
   tab_contents_->render_view_host()->
       DragTargetDrop(gtk_util::ClientPoint(widget_),
                      gtk_util::ScreenPoint(widget_));
+
+  // This is non-null if tab_contents_ is showing an ExtensionDOMUI with
+  // support for (at the moment experimental) drag and drop extensions.
+  if (tab_contents_->GetBookmarkDragDelegate())
+    tab_contents_->GetBookmarkDragDelegate()->OnDrop(bookmark_drag_data_);
 
   // The second parameter is just an educated guess, but at least we will
   // get the drag-end animation right sometimes.

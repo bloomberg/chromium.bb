@@ -24,7 +24,7 @@
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/download/download_util.h"
-#include "chrome/browser/gtk/download_item_drag.h"
+#include "chrome/browser/gtk/custom_drag.h"
 #include "chrome/browser/gtk/download_shelf_gtk.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/gtk_util.h"
