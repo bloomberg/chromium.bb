@@ -43,17 +43,17 @@ void StatusAreaView::Init() {
   language_view_ = new LanguageMenuButton(host_);
   AddChildView(language_view_);
 
-  // Clock.
-  clock_view_ = new ClockMenuButton(host_);
-  AddChildView(clock_view_);
+  // Network.
+  network_view_ = new NetworkMenuButton(host_);
+  AddChildView(network_view_);
 
   // Power.
   power_view_ = new PowerMenuButton();
   AddChildView(power_view_);
 
-  // Network.
-  network_view_ = new NetworkMenuButton(host_);
-  AddChildView(network_view_);
+  // Clock.
+  clock_view_ = new ClockMenuButton(host_);
+  AddChildView(clock_view_);
 }
 
 void StatusAreaView::Update() {
