@@ -162,6 +162,10 @@ int ProgressBar::GetProgress() const {
   return progress_;
 }
 
+void ProgressBar::AddProgress(int tick) {
+  SetProgress(progress_ + tick);
+}
+
 void ProgressBar::SetTooltipText(const std::wstring& tooltip_text) {
   tooltip_text_ = tooltip_text;
 }

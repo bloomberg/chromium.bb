@@ -28,6 +28,8 @@ class ScreenObserver {
     LANGUAGE_CHANGED,
     UPDATE_INSTALLED,
     UPDATE_NOUPDATE,
+    UPDATE_NETWORK_ERROR,
+    UPDATE_OTHER_ERROR,
   };
 
   // Method called by a screen when user's done with it.

@@ -16,8 +16,6 @@
 #include "views/controls/label.h"
 #include "views/controls/progress_bar.h"
 #include "views/widget/widget.h"
-#include "views/window/window.h"
-#include "views/window/window_gtk.h"
 
 using views::Background;
 using views::Label;
@@ -25,18 +23,24 @@ using views::View;
 using views::Widget;
 
 namespace {
+
 // Y offset for the 'installing updates' label.
 const int kInstallingUpdatesLabelY = 200;
 // Y offset for the progress bar.
 const int kProgressBarY = 250;
 // Progress bar width.
 const int kProgressBarWidth = 450;
-// Labels colour.
+
+// Label color.
 const SkColor kLabelColor = 0xFF000000;
 
-// Timer constants.
-const int kProgressTimerInterval = 200;
-const int kProgressIncrement = 9;
+// Update window should appear for at least kMinimalUpdateTime seconds.
+const int kMinimalUpdateTime = 3;
+
+// Progress bar increment step.
+const int kUpdateCheckProgressIncrement = 20;
+const int kUpdateCompleteProgressIncrement = 75;
+
 }  // namespace
 
 namespace chromeos {
@@ -44,10 +48,16 @@ namespace chromeos {
 UpdateView::UpdateView(chromeos::ScreenObserver* observer)
     : installing_updates_label_(NULL),
       progress_bar_(NULL),
-      observer_(observer) {
+      observer_(observer),
+      update_result_(UPGRADE_STARTED),
+      update_error_(GOOGLE_UPDATE_NO_ERROR) {
 }
 
 UpdateView::~UpdateView() {
+  // Google Updater is holding a pointer to us until it reports status,
+  // so we need to remove it in case we were stll listening.
+  if (google_updater_.get())
+    google_updater_->set_status_listener(NULL);
 }
 
 void UpdateView::Init() {
@@ -62,17 +72,14 @@ void UpdateView::Init() {
   installing_updates_label_ = new views::Label();
   installing_updates_label_->SetColor(kLabelColor);
   installing_updates_label_->SetFont(base_font);
+  installing_updates_label_->SetHorizontalAlignment(views::Label::ALIGN_CENTER);
+  installing_updates_label_->SetMultiLine(true);
 
   progress_bar_ = new views::ProgressBar();
-  progress_bar_->SetProgress(0);
 
   UpdateLocalizedStrings();
   AddChildView(installing_updates_label_);
   AddChildView(progress_bar_);
-
-  timer_.Start(base::TimeDelta::FromMilliseconds(kProgressTimerInterval),
-               this,
-               &UpdateView::OnTimerElapsed);
 }
 
 void UpdateView::UpdateLocalizedStrings() {
@@ -100,16 +107,87 @@ void UpdateView::Layout() {
   SchedulePaint();
 }
 
-void UpdateView::OnTimerElapsed() {
-  int progress = progress_bar_->GetProgress();
-  if (progress >= 100) {
-    timer_.Stop();
-    if (observer_) {
-      observer_->OnExit(ScreenObserver::UPDATE_NOUPDATE);
+void UpdateView::StartUpdate() {
+  // Zero progress.
+  progress_bar_->SetProgress(0);
+  // Start the minimal update time timer.
+  DCHECK(!minimal_update_time_timer_.IsRunning());
+  minimal_update_time_timer_.Start(
+      base::TimeDelta::FromSeconds(kMinimalUpdateTime),
+      this,
+      &UpdateView::OnMinimalUpdateTimeElapsed);
+  // Create Google Updater object and check if there is an update available.
+  google_updater_ = new GoogleUpdate();
+  google_updater_->set_status_listener(this);
+  google_updater_->CheckForUpdate(false, NULL);
+}
+
+void UpdateView::ExitUpdate() {
+  progress_bar_->SetProgress(100);
+  if (observer_) {
+    switch (update_result_) {
+      case UPGRADE_ALREADY_UP_TO_DATE:
+        observer_->OnExit(ScreenObserver::UPDATE_NOUPDATE);
+        break;
+      case UPGRADE_SUCCESSFUL:
+        observer_->OnExit(ScreenObserver::UPDATE_INSTALLED);
+        break;
+      case UPGRADE_ERROR:
+        if (update_error_ == GOOGLE_UPDATE_ERROR_UPDATING) {
+          observer_->OnExit(ScreenObserver::UPDATE_NETWORK_ERROR);
+        } else {
+          // TODO(denisromanov): figure out what to do if some other error
+          // has occurred.
+          NOTREACHED();
+        }
+        break;
+      default:
+        NOTREACHED();
     }
-  } else {
-    progress += kProgressIncrement;
-    progress_bar_->SetProgress(progress);
+  }
+}
+
+void UpdateView::OnMinimalUpdateTimeElapsed() {
+  if (update_result_ == UPGRADE_SUCCESSFUL ||
+      update_result_ == UPGRADE_ALREADY_UP_TO_DATE ||
+      update_result_ == UPGRADE_ERROR) {
+    ExitUpdate();
+  }
+}
+
+void UpdateView::OnReportResults(GoogleUpdateUpgradeResult result,
+                                 GoogleUpdateErrorCode error_code,
+                                 const std::wstring& version) {
+  // Drop the last reference to the object so that it gets cleaned up here.
+  google_updater_ = NULL;
+  // Depending on the result decide what to do next.
+  update_result_ = result;
+  update_error_ = error_code;
+  switch (update_result_) {
+    case UPGRADE_IS_AVAILABLE:
+      // Advance progress bar.
+      progress_bar_->AddProgress(kUpdateCheckProgressIncrement);
+      // Create new Google Updater instance and install the update.
+      google_updater_ = new GoogleUpdate();
+      google_updater_->set_status_listener(this);
+      google_updater_->CheckForUpdate(true, NULL);
+      break;
+    case UPGRADE_SUCCESSFUL:
+      // Advance progress bar.
+      progress_bar_->AddProgress(kUpdateCompleteProgressIncrement);
+      // Fall through.
+    case UPGRADE_ALREADY_UP_TO_DATE:
+    case UPGRADE_ERROR:
+      if (minimal_update_time_timer_.IsRunning()) {
+        // Minimal time required for the update screen to remain visible
+        // has not yet passed.
+        progress_bar_->AddProgress(kUpdateCheckProgressIncrement);
+      } else {
+        ExitUpdate();
+      }
+      break;
+    default:
+      NOTREACHED();
   }
 }
 

@@ -237,10 +237,12 @@ void WizardController::OnLoginCreateAccount() {
 }
 
 void WizardController::OnNetworkConnected() {
-  if (is_out_of_box_)
+  if (is_out_of_box_) {
     SetCurrentScreen(GetUpdateScreen());
-  else
+    update_screen_->StartUpdate();
+  } else {
     SetCurrentScreen(GetLoginScreen());
+  }
 }
 
 void WizardController::OnAccountCreated() {
@@ -253,6 +255,12 @@ void WizardController::OnLanguageChanged() {
 
 void WizardController::OnUpdateCompleted() {
   SetCurrentScreen(GetLoginScreen());
+}
+
+void WizardController::OnUpdateNetworkError() {
+  // If network connection got interrupted while downloading the update,
+  // return to network selection screen.
+  SetCurrentScreen(GetNetworkScreen());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -302,6 +310,7 @@ void WizardController::ShowFirstScreen(const std::string& first_screen_name) {
     SetCurrentScreen(GetAccountScreen());
   } else if (first_screen_name == kUpdateScreenName) {
     SetCurrentScreen(GetUpdateScreen());
+    update_screen_->StartUpdate();
   } else {
     if (is_out_of_box_) {
       SetCurrentScreen(GetNetworkScreen());
@@ -333,6 +342,9 @@ void WizardController::OnExit(ExitCodes exit_code) {
     case UPDATE_INSTALLED:
     case UPDATE_NOUPDATE:
       OnUpdateCompleted();
+      break;
+    case UPDATE_NETWORK_ERROR:
+      OnUpdateNetworkError();
       break;
     default:
       NOTREACHED();

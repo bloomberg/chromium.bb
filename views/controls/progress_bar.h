@@ -42,6 +42,8 @@ class ProgressBar : public View {
   // Set and get the progress bar progress in range [0, kMaxProgress].
   virtual void SetProgress(int progress);
   virtual int GetProgress() const;
+  // Add progress to current.
+  virtual void AddProgress(int tick);
 
   // Sets the tooltip text.  Default behavior for a progress bar is to show
   // no tooltip on mouse hover. Calling this lets you set a custom tooltip.

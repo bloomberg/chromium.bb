@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_UPDATE_VIEW_H_
 
 #include "base/timer.h"
+#include "chrome/browser/google_update.h"
 #include "views/view.h"
 
 namespace views {
@@ -18,7 +19,8 @@ namespace chromeos {
 class ScreenObserver;
 
 // View for the network selection/initial welcome screen.
-class UpdateView : public views::View {
+class UpdateView : public views::View,
+                   public GoogleUpdateStatusListener {
  public:
   explicit UpdateView(chromeos::ScreenObserver* observer);
   virtual ~UpdateView();
@@ -30,9 +32,20 @@ class UpdateView : public views::View {
   // views::View implementation:
   virtual void Layout();
 
+  // Overridden from GoogleUpdateStatusListener:
+  virtual void OnReportResults(GoogleUpdateUpgradeResult result,
+                               GoogleUpdateErrorCode error_code,
+                               const std::wstring& version);
+
+  // Method that is called by WizardController to start update.
+  void StartUpdate();
+
  private:
+  // Method that reports update results to ScreenObserver.
+  void ExitUpdate();
+
   // Timer notification handler.
-  void OnTimerElapsed();
+  void OnMinimalUpdateTimeElapsed();
 
   // Dialog controls.
   views::Label* installing_updates_label_;
@@ -42,7 +55,14 @@ class UpdateView : public views::View {
   chromeos::ScreenObserver* observer_;
 
   // Timer.
-  base::RepeatingTimer<UpdateView> timer_;
+  base::OneShotTimer<UpdateView> minimal_update_time_timer_;
+
+  // Update status.
+  GoogleUpdateUpgradeResult update_result_;
+  GoogleUpdateErrorCode update_error_;
+
+  // Google Updater.
+  scoped_refptr<GoogleUpdate> google_updater_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateView);
 };
