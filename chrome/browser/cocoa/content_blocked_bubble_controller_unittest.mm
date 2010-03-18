@@ -18,7 +18,7 @@ class DummyContentSettingBubbleModel : public ContentSettingBubbleModel {
  public:
   DummyContentSettingBubbleModel(ContentSettingsType content_type)
       : ContentSettingBubbleModel(NULL, NULL, content_type) {
-    RadioGroup radio_group;
+    RadioGroup radio_group = {0};
     radio_group.radio_items.resize(2);
     add_radio_group(radio_group);
   }
