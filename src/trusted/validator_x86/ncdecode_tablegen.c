@@ -1008,7 +1008,7 @@ static NaClInstNode* NaClInstallInstSeq(int index,
                                         const char* chars_left,
                                         NaClInstNode** root_ptr) {
   NaClInstNode* root = *root_ptr;
-  if (index >= NACL_MAX_BYTES_PER_X86_INSTRUCTION) {
+  if (index > NACL_MAX_BYTES_PER_X86_INSTRUCTION) {
     fprintf(stderr,
             "Too many bytes specified for opcode sequence: '%s'\n",
             opcode_seq);
@@ -1021,7 +1021,7 @@ static NaClInstNode* NaClInstallInstSeq(int index,
   if (*chars_left) {
     int byte = NaClExtractByte(chars_left, opcode_seq);
     return NaClInstallInstSeq(
-        index+2, opcode_seq, chars_left + 2, &(root->succs[byte]));
+        index+1, opcode_seq, chars_left + 2, &(root->succs[byte]));
   } else {
     return root;
   }
@@ -1114,10 +1114,48 @@ static void NaClDefNopSeq(const char* sequence, uint8_t opcode) {
 }
 
 static void NaClDefNops() {
-  NaClDefNopSeq("90", 0x90);     /* nop */
-  NaClDefNopSeq("6690", 0x90);   /* xchg %ax, %ax */
-  NaClDefNopSeq("0f1f00", 0x1f); /* nopl [%[re]ax] */
-  /* TODO(karl) add more nop's, including 32 and 64 specific examples. */
+  /* nop */
+  NaClDefNopSeq("90", 0x90);
+  /* xchg %ax, %ax  */
+  NaClDefNopSeq("6690", 0x90);
+  /* lea %esi, [%esi+0] */
+  NaClDefNopSeq("8d7600", 0x8d);
+  /* lea %esi, [%esi*1+0] */
+  NaClDefNopSeq("8d742600", 0x8d);
+  /* lea %esi, [%esi+0] */
+  NaClDefNopSeq("8db600000000", 0x8d);
+  /* lea %esi, [%esi*1+0] */
+  NaClDefNopSeq("8db42600000000", 0x8d);
+  /* mov %esi, %esi */
+  NaClDefNopSeq("89f6", 0x89);
+  /* lea %edi, [%edi*1+0] */
+  NaClDefNopSeq("8dbc2700000000", 0x8d);
+  /* nop [%[re]ax] */
+  NaClDefNopSeq("0f1f00", 0x1f);
+  /* nop [%[re]ax+0] */
+  NaClDefNopSeq("0f1f4000", 0x1f);
+  /* nop [%[re]ax*1+0] */
+  NaClDefNopSeq("0f1f440000", 0x1f);
+  /* nop [%[re]ax+%[re]ax*1+0] */
+  NaClDefNopSeq("660f1f440000", 0x1f);
+  /* nop [%[re]ax+0] */
+  NaClDefNopSeq("0f1f8000000000", 0x1f);
+  /* nop [%[re]ax+%[re]ax*1+0] */
+  NaClDefNopSeq("0f1f840000000000", 0x1f);
+  /* nop [%[re]ax+%[re]ax+1+0] */
+  NaClDefNopSeq("660f1f840000000000", 0x1f);
+  /* nop %cs:[%re]ax+%[re]ax*1+0] */
+  NaClDefNopSeq("662e0f1f840000000000", 0x1f);
+  /* nop %cs:[%re]ax+%[re]ax*1+0] */
+  NaClDefNopSeq("66662e0f1f840000000000", 0x1f);
+  /* nop %cs:[%re]ax+%[re]ax*1+0] */
+  NaClDefNopSeq("6666662e0f1f840000000000", 0x1f);
+  /* nop %cs:[%re]ax+%[re]ax*1+0] */
+  NaClDefNopSeq("666666662e0f1f840000000000", 0x1f);
+  /* nop %cs:[%re]ax+%[re]ax*1+0] */
+  NaClDefNopSeq("66666666662e0f1f840000000000", 0x1f);
+  /* nop %cs:[%re]ax+%[re]ax*1+0] */
+  NaClDefNopSeq("6666666666662e0f1f840000000000", 0x1f);
 }
 
 /* Build the set of x64 opcode (instructions). */

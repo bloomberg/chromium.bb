@@ -230,7 +230,7 @@ int GrokFlags(int argc, const char *argv[]) {
         if (i == 2) {
           uint8_t byte = HexToByte(buffer);
           FLAGS_decode_instruction[FLAGS_decode_instruction_size++] = byte;
-          if (FLAGS_decode_instruction_size >=
+          if (FLAGS_decode_instruction_size >
               NACL_MAX_BYTES_PER_X86_INSTRUCTION) {
             Fatal("-i=%s specifies too long of a hex value\n", hex_instruction);
           }

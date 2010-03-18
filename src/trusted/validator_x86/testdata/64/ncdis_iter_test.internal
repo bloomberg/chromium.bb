@@ -238,12 +238,11 @@ NaClExpVector[8] = {
   { ExprConstant[0] , 0x200dec, ExprSize32 | ExprSignedHex },
 };
 0000000000000000: 0f 1f 40 00                                  nop
-  { 2, { 0x0f, 0x1f, 0x00 },
+  { 1, { 0x1f, 0x00, 0x00 },
     NACLi_386,
-    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(IgnorePrefixDATA16) | NACL_IFLAG(IgnorePrefixSEGCS),
+    NACL_EMPTY_IFLAGS,
     InstNop,
-    1, {
-      { Opcode0, NACL_OPFLAG(OperandExtendsOpcode) },
+    0, {
   } };
 NaClExpVector[0] = {
 };
@@ -432,12 +431,11 @@ NaClExpVector[4] = {
   { ExprRegister[0] , %rsp, ExprSet | ExprUsed | ExprSize64 },
 };
 0000000000000000: 66 66 2e 0f 1f 84 00 00 00 00 00             nop
-  { 2, { 0x0f, 0x1f, 0x00 },
+  { 1, { 0x1f, 0x00, 0x00 },
     NACLi_386,
-    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(IgnorePrefixDATA16) | NACL_IFLAG(IgnorePrefixSEGCS),
+    NACL_EMPTY_IFLAGS,
     InstNop,
-    1, {
-      { Opcode0, NACL_OPFLAG(OperandExtendsOpcode) },
+    0, {
   } };
 NaClExpVector[0] = {
 };
@@ -586,12 +584,11 @@ NaClExpVector[4] = {
   { ExprRegister[0] , %cl, ExprUsed | ExprSize8 },
 };
 0000000000000000: 66 66 66 66 66 2e 0f 1f 84 00 00 00 00 00    nop
-  { 2, { 0x0f, 0x1f, 0x00 },
+  { 1, { 0x1f, 0x00, 0x00 },
     NACLi_386,
-    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(IgnorePrefixDATA16) | NACL_IFLAG(IgnorePrefixSEGCS),
+    NACL_EMPTY_IFLAGS,
     InstNop,
-    1, {
-      { Opcode0, NACL_OPFLAG(OperandExtendsOpcode) },
+    0, {
   } };
 NaClExpVector[0] = {
 };
@@ -3605,7 +3602,169 @@ NaClExpVector[0] = {
   } };
 NaClExpVector[0] = {
 };
+0000000000000000: 8d 76 00                                     nop
+  { 1, { 0x8d, 0x00, 0x00 },
+    NACLi_386,
+    NACL_EMPTY_IFLAGS,
+    InstNop,
+    0, {
+  } };
+NaClExpVector[0] = {
+};
+0000000000000000: 8d 74 26 00                                  nop
+  { 1, { 0x8d, 0x00, 0x00 },
+    NACLi_386,
+    NACL_EMPTY_IFLAGS,
+    InstNop,
+    0, {
+  } };
+NaClExpVector[0] = {
+};
+0000000000000000: 8d b6 00 00 00 00                            nop
+  { 1, { 0x8d, 0x00, 0x00 },
+    NACLi_386,
+    NACL_EMPTY_IFLAGS,
+    InstNop,
+    0, {
+  } };
+NaClExpVector[0] = {
+};
+0000000000000000: 8d b4 26 00 00 00 00                         nop
+  { 1, { 0x8d, 0x00, 0x00 },
+    NACLi_386,
+    NACL_EMPTY_IFLAGS,
+    InstNop,
+    0, {
+  } };
+NaClExpVector[0] = {
+};
+0000000000000000: 89 f6                                        nop
+  { 1, { 0x89, 0x00, 0x00 },
+    NACLi_386,
+    NACL_EMPTY_IFLAGS,
+    InstNop,
+    0, {
+  } };
+NaClExpVector[0] = {
+};
+0000000000000000: 8d bc 27 00 00 00 00                         nop
+  { 1, { 0x8d, 0x00, 0x00 },
+    NACLi_386,
+    NACL_EMPTY_IFLAGS,
+    InstNop,
+    0, {
+  } };
+NaClExpVector[0] = {
+};
 0000000000000000: 0f 1f 00                                     nop
+  { 1, { 0x1f, 0x00, 0x00 },
+    NACLi_386,
+    NACL_EMPTY_IFLAGS,
+    InstNop,
+    0, {
+  } };
+NaClExpVector[0] = {
+};
+0000000000000000: 0f 1f 40 00                                  nop
+  { 1, { 0x1f, 0x00, 0x00 },
+    NACLi_386,
+    NACL_EMPTY_IFLAGS,
+    InstNop,
+    0, {
+  } };
+NaClExpVector[0] = {
+};
+0000000000000000: 0f 1f 44 00 00                               nop
+  { 1, { 0x1f, 0x00, 0x00 },
+    NACLi_386,
+    NACL_EMPTY_IFLAGS,
+    InstNop,
+    0, {
+  } };
+NaClExpVector[0] = {
+};
+0000000000000000: 66 0f 1f 44 00 00                            nop
+  { 1, { 0x1f, 0x00, 0x00 },
+    NACLi_386,
+    NACL_EMPTY_IFLAGS,
+    InstNop,
+    0, {
+  } };
+NaClExpVector[0] = {
+};
+0000000000000000: 0f 1f 80 00 00 00 00                         nop
+  { 1, { 0x1f, 0x00, 0x00 },
+    NACLi_386,
+    NACL_EMPTY_IFLAGS,
+    InstNop,
+    0, {
+  } };
+NaClExpVector[0] = {
+};
+0000000000000000: 0f 1f 84 00 00 00 00 00                      nop
+  { 1, { 0x1f, 0x00, 0x00 },
+    NACLi_386,
+    NACL_EMPTY_IFLAGS,
+    InstNop,
+    0, {
+  } };
+NaClExpVector[0] = {
+};
+0000000000000000: 66 0f 1f 84 00 00 00 00 00                   nop
+  { 1, { 0x1f, 0x00, 0x00 },
+    NACLi_386,
+    NACL_EMPTY_IFLAGS,
+    InstNop,
+    0, {
+  } };
+NaClExpVector[0] = {
+};
+0000000000000000: 66 2e 0f 1f 84 00 00 00 00 00                nop
+  { 1, { 0x1f, 0x00, 0x00 },
+    NACLi_386,
+    NACL_EMPTY_IFLAGS,
+    InstNop,
+    0, {
+  } };
+NaClExpVector[0] = {
+};
+0000000000000000: 66 66 2e 0f 1f 84 00 00 00 00 00             nop
+  { 1, { 0x1f, 0x00, 0x00 },
+    NACLi_386,
+    NACL_EMPTY_IFLAGS,
+    InstNop,
+    0, {
+  } };
+NaClExpVector[0] = {
+};
+0000000000000000: 66 66 66 2e 0f 1f 84 00 00 00 00 00          nop
+  { 1, { 0x1f, 0x00, 0x00 },
+    NACLi_386,
+    NACL_EMPTY_IFLAGS,
+    InstNop,
+    0, {
+  } };
+NaClExpVector[0] = {
+};
+0000000000000000: 66 66 66 66 2e 0f 1f 84 00 00 00 00 00       nop
+  { 1, { 0x1f, 0x00, 0x00 },
+    NACLi_386,
+    NACL_EMPTY_IFLAGS,
+    InstNop,
+    0, {
+  } };
+NaClExpVector[0] = {
+};
+0000000000000000: 66 66 66 66 66 2e 0f 1f 84 00 00 00 00 00    nop
+  { 1, { 0x1f, 0x00, 0x00 },
+    NACLi_386,
+    NACL_EMPTY_IFLAGS,
+    InstNop,
+    0, {
+  } };
+NaClExpVector[0] = {
+};
+0000000000000000: 66 66 66 66 66 66 2e 0f 1f 84 00 00 00 00 00 nop
   { 1, { 0x1f, 0x00, 0x00 },
     NACLi_386,
     NACL_EMPTY_IFLAGS,
