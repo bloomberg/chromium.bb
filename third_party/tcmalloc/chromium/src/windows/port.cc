@@ -183,13 +183,10 @@ pthread_key_t PthreadKeyCreate(void (*destr_fn)(void*)) {
 // -----------------------------------------------------------------------
 // These functions replace system-alloc.cc
 
-static SpinLock alloc_lock(SpinLock::LINKER_INITIALIZED);
-
 // This is mostly like MmapSysAllocator::Alloc, except it does these weird
 // munmap's in the middle of the page, which is forbidden in windows.
 extern void* TCMalloc_SystemAlloc(size_t size, size_t *actual_size,
                                   size_t alignment) {
-  SpinLockHolder sh(&alloc_lock);
   // Align on the pagesize boundary
   const int pagesize = getpagesize();
   if (alignment < pagesize) alignment = pagesize;
