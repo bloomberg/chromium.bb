@@ -5,6 +5,7 @@
 
 #include <mshtmcid.h>
 
+#include "base/scoped_bstr_win.h"
 #include "chrome/common/url_constants.h"
 #include "chrome_frame/utils.h"
 #include "chrome_frame/test/simulate_input.h"
@@ -245,6 +246,28 @@ ACTION_P3(TypeUrlInAddressBar, loop, url, delay) {
       next_delay);
 }
 
+void ExpectAddressBarUrl(IWebBrowser2* web_browser2,
+                         const std::wstring& expected_url) {
+  EXPECT_NE(static_cast<IWebBrowser2*>(NULL), web_browser2);
+  if(web_browser2) {
+    ScopedBstr address_bar_url;
+    EXPECT_EQ(S_OK, web_browser2->get_LocationURL(address_bar_url.Receive()));
+    EXPECT_EQ(expected_url, std::wstring(address_bar_url));
+  }
+}
+
+// To be tacked on to the EXPECT_CALL of OnLoad. This verifies that
+// the address bar URL matches with the URL reported by OnLoad
+ACTION_P(VerifyAddressBarUrl, mock) {
+  ExpectAddressBarUrl(mock->web_browser2(), std::wstring(arg0));
+}
+
+ACTION_P(VerifyAddressBarUrlWithGcf, mock) {
+  std::wstring expected_url = L"gcf:";
+  expected_url += arg0;
+  ExpectAddressBarUrl(mock->web_browser2(), expected_url);
+}
+
 TEST(ChromeFrameTest, FullTabModeIE_DisallowedUrls) {
   CloseIeAtEndOfScope last_resort_close_ie;
   chrome_frame_test::TimedMsgLoop loop;
@@ -316,6 +339,7 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_FocusTest) {
       .WillOnce(testing::DoAll(
           testing::InvokeWithoutArgs(CreateFunctor(&mock,
               &MockWebBrowserEventSink::ExpectRendererWindowHasfocus)),
+          VerifyAddressBarUrlWithGcf(&mock),
           CloseBrowserMock(&mock)));
 
   EXPECT_CALL(mock, OnQuit()).WillOnce(QUIT_LOOP(loop));
@@ -354,7 +378,9 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_WindowOpenInChrome) {
   mock.ExpectNewWindow(&new_window_mock);
 
   EXPECT_CALL(new_window_mock, OnLoad(testing::StrCaseEq(kWindowOpenPopupUrl)))
-      .WillOnce(CloseBrowserMock(&new_window_mock));
+      .WillOnce(testing::DoAll(
+          VerifyAddressBarUrl(&new_window_mock),
+          CloseBrowserMock(&new_window_mock)));
 
   EXPECT_CALL(new_window_mock, OnQuit())
       .WillOnce(CloseBrowserMock(&mock));
@@ -430,7 +456,9 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_CtrlR) {
 
   //mock.ExpectNavigation(kKeyEventUrl);
   EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kKeyEventUrl)))
-      .WillOnce(CloseBrowserMock(&mock));
+      .WillOnce(testing::DoAll(
+          VerifyAddressBarUrl(&mock),
+          CloseBrowserMock(&mock)));
 
   EXPECT_CALL(mock, OnQuit()).WillOnce(QUIT_LOOP(loop));
 
@@ -522,7 +550,9 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_AboutChromeFrame) {
   mock.ExpectNewWindow(&new_window_mock);
 
   EXPECT_CALL(new_window_mock, OnLoad(testing::StrCaseEq(kAboutVersion)))
-      .WillOnce(CloseBrowserMock(&new_window_mock));
+      .WillOnce(testing::DoAll(
+          VerifyAddressBarUrlWithGcf(&new_window_mock),
+          CloseBrowserMock(&new_window_mock)));
   EXPECT_CALL(new_window_mock, OnQuit())
       .WillOnce(CloseBrowserMock(&mock));
   EXPECT_CALL(mock, OnQuit()).WillOnce(QUIT_LOOP(loop));
@@ -557,34 +587,42 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_BackForward) {
 
   // Navigate to url 2 after the previous navigation is complete.
   EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kSubFrameUrl1)))
-      .WillOnce(Navigate(&mock, kSubFrameUrl2));
+      .WillOnce(testing::DoAll(
+          VerifyAddressBarUrl(&mock),
+          Navigate(&mock, kSubFrameUrl2)));
   mock.ExpectNavigationAndSwitchSequence(kSubFrameUrl2);
 
   // Navigate to url 3 after the previous navigation is complete
   EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kSubFrameUrl2)))
-      .WillOnce(Navigate(&mock, kSubFrameUrl3));
+      .WillOnce(testing::DoAll(
+          VerifyAddressBarUrl(&mock),
+          Navigate(&mock, kSubFrameUrl3)));
 
   // We have reached url 3 and have two back entries for url 1 & 2
   // Go back to url 2 now
   mock.ExpectNavigationAndSwitchSequence(kSubFrameUrl3);
   EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kSubFrameUrl3)))
-      .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(
-          CreateFunctor(ReceivePointer(mock.web_browser2_),
-                        &IWebBrowser::GoBack))));
+      .WillOnce(testing::DoAll(
+          VerifyAddressBarUrl(&mock),
+          testing::IgnoreResult(testing::InvokeWithoutArgs(CreateFunctor(
+              ReceivePointer(mock.web_browser2_), &IWebBrowser::GoBack)))));
 
   // We have reached url 2 and have 1 back & 1 forward entries for url 1 & 3
   // Go back to url 1 now
   mock.ExpectNavigation(kSubFrameUrl2);
   EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kSubFrameUrl2)))
-      .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(
-          CreateFunctor(ReceivePointer(mock.web_browser2_),
-                        &IWebBrowser::GoBack))));
+      .WillOnce(testing::DoAll(
+          VerifyAddressBarUrl(&mock),
+          testing::IgnoreResult(testing::InvokeWithoutArgs(CreateFunctor(
+              ReceivePointer(mock.web_browser2_), &IWebBrowser::GoBack)))));
 
   // We have reached url 1 and have 0 back & 2 forward entries for url 2 & 3
   // Go back to url 1 now
   mock.ExpectNavigation(kSubFrameUrl1);
   EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kSubFrameUrl1)))
-      .WillOnce(CloseBrowserMock(&mock));
+      .WillOnce(testing::DoAll(
+          VerifyAddressBarUrl(&mock),
+          CloseBrowserMock(&mock)));
   EXPECT_CALL(mock, OnQuit()).WillOnce(QUIT_LOOP(loop));
 
   HRESULT hr = mock.LaunchIEAndNavigate(kSubFrameUrl1);
@@ -636,7 +674,9 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_BackForwardAnchor) {
   // Back: 1 (kAnchorUrl)
   // Forward: 0
   EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kAnchor1Url)))
-      .WillOnce(DelaySendString(&loop, 200, tab_enter_keys));
+      .WillOnce(testing::DoAll(
+          VerifyAddressBarUrl(&mock),
+          DelaySendString(&loop, 200, tab_enter_keys)));
   mock.ExpectNavigation(kAnchor2Url);
 
   // Navigate to anchor 3 after the previous navigation is complete
@@ -644,7 +684,9 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_BackForwardAnchor) {
   // Back: 2 (kAnchorUrl, kAnchor1Url)
   // Forward: 0
   EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kAnchor2Url)))
-      .WillOnce(DelaySendString(&loop, 200, tab_enter_keys));
+      .WillOnce(testing::DoAll(
+          VerifyAddressBarUrl(&mock),
+          DelaySendString(&loop, 200, tab_enter_keys)));
   mock.ExpectNavigation(kAnchor3Url);
 
   // We will reach anchor 3 once the navigation is complete,
@@ -653,9 +695,10 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_BackForwardAnchor) {
   // Back: 3 (kAnchorUrl, kAnchor1Url, kAnchor2Url)
   // Forward: 0
   EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kAnchor3Url)))
-      .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(
-          CreateFunctor(ReceivePointer(mock.web_browser2_),
-                        &IWebBrowser::GoBack))));
+      .WillOnce(testing::DoAll(
+          VerifyAddressBarUrl(&mock),
+          testing::IgnoreResult(testing::InvokeWithoutArgs(CreateFunctor(
+              ReceivePointer(mock.web_browser2_), &IWebBrowser::GoBack)))));
   mock.ExpectNavigation(kAnchor2Url);
 
   // We will reach anchor 2 once the navigation is complete,
@@ -664,9 +707,10 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_BackForwardAnchor) {
   // Back: 3 (kAnchorUrl, kAnchor1Url, kAnchor2Url)
   // Forward: 1 (kAnchor3Url)
   EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kAnchor2Url)))
-      .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(
-          CreateFunctor(ReceivePointer(mock.web_browser2_),
-                        &IWebBrowser::GoBack))));
+      .WillOnce(testing::DoAll(
+          VerifyAddressBarUrl(&mock),
+          testing::IgnoreResult(testing::InvokeWithoutArgs(CreateFunctor(
+              ReceivePointer(mock.web_browser2_), &IWebBrowser::GoBack)))));
   mock.ExpectNavigation(kAnchor1Url);
 
   // We will reach anchor 1 once the navigation is complete,
@@ -675,9 +719,10 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_BackForwardAnchor) {
   // Back: 2 (kAnchorUrl, kAnchor1Url)
   // Forward: 2 (kAnchor2Url, kAnchor3Url)
   EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kAnchor1Url)))
-      .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(
-          CreateFunctor(ReceivePointer(mock.web_browser2_),
-                        &IWebBrowser::GoForward))));
+      .WillOnce(testing::DoAll(
+          VerifyAddressBarUrl(&mock),
+          testing::IgnoreResult(testing::InvokeWithoutArgs(CreateFunctor(
+              ReceivePointer(mock.web_browser2_), &IWebBrowser::GoForward)))));
   mock.ExpectNavigation(kAnchor2Url);
 
   // We have reached anchor 2, go forward to anchor 3 again
@@ -685,9 +730,10 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_BackForwardAnchor) {
   // Back: 3 (kAnchorUrl, kAnchor1Url, kAnchor2Url)
   // Forward: 1 (kAnchor3Url)
   EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kAnchor2Url)))
-      .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(
-          CreateFunctor(ReceivePointer(mock.web_browser2_),
-                        &IWebBrowser::GoForward))));
+      .WillOnce(testing::DoAll(
+          VerifyAddressBarUrl(&mock),
+          testing::IgnoreResult(testing::InvokeWithoutArgs(CreateFunctor(
+              ReceivePointer(mock.web_browser2_), &IWebBrowser::GoForward)))));
   mock.ExpectNavigation(kAnchor3Url);
 
   // We have gone a few steps back and forward, this should be enough for now.
@@ -736,7 +782,9 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_ViewSource) {
   ComStackObjectWithUninitialize<MockWebBrowserEventSink> view_source_mock;
   mock.ExpectNewWindow(&view_source_mock);
   EXPECT_CALL(view_source_mock, OnLoad(testing::StrCaseEq(view_source_url)))
-      .WillOnce(CloseBrowserMock(&view_source_mock));
+      .WillOnce(testing::DoAll(
+          VerifyAddressBarUrlWithGcf(&view_source_mock),
+          CloseBrowserMock(&view_source_mock)));
 
   EXPECT_CALL(view_source_mock, OnQuit())
       .WillOnce(CloseBrowserMock(&mock));
@@ -930,7 +978,9 @@ TEST_F(ChromeFrameTestWithWebServer,
   ComStackObjectWithUninitialize<MockWebBrowserEventSink> view_source_mock;
   mock.ExpectNewWindow(&view_source_mock);
   EXPECT_CALL(view_source_mock, OnLoad(testing::StrCaseEq(view_source_url)))
-      .WillOnce(CloseBrowserMock(&view_source_mock));
+      .WillOnce(testing::DoAll(
+          VerifyAddressBarUrlWithGcf(&view_source_mock),
+          CloseBrowserMock(&view_source_mock)));
   EXPECT_CALL(view_source_mock, OnQuit())
       .WillOnce(CloseBrowserMock(&mock));
   EXPECT_CALL(mock, OnQuit()).WillOnce(QUIT_LOOP(loop));
@@ -1189,7 +1239,9 @@ TEST_F(ChromeFrameTestWithWebServer,
 
   mock.ExpectNavigationAndSwitch(kSubFrameUrl1);
   EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kSubFrameUrl1)))
-      .WillOnce(CloseBrowserMock(&mock));
+      .WillOnce(testing::DoAll(
+          VerifyAddressBarUrl(&mock),
+          CloseBrowserMock(&mock)));
 
   EXPECT_CALL(mock, OnQuit()).WillOnce(QUIT_LOOP(loop));
 
