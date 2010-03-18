@@ -101,7 +101,6 @@ class PersonalDataManager : public WebDataServiceConsumer,
   // instance of PersonalDataManager.
   friend class ProfileImpl;
   friend class PersonalDataManagerTest;
-  friend class TestingProfile;
 
   explicit PersonalDataManager(Profile* profile);
 

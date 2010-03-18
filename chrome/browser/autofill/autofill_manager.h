@@ -87,6 +87,10 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
   // Returns the value of the AutoFillEnabled pref.
   bool IsAutoFillEnabled();
 
+ protected:
+  // For AutoFillInfoBarDelegateTest.
+  AutoFillManager();
+
  private:
   // The TabContents hosting this AutoFillManager.
   // Weak reference.

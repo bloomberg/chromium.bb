@@ -6,10 +6,8 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/autofill/autofill_infobar_delegate.h"
 #include "chrome/browser/autofill/autofill_manager.h"
-#include "chrome/browser/renderer_host/test/test_render_view_host.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
-#include "chrome/browser/tab_contents/test_tab_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,9 +18,8 @@ namespace {
 
 class MockAutoFillManager : public AutoFillManager {
  public:
-  explicit MockAutoFillManager(TabContents* tab_contents)
-      : AutoFillManager(tab_contents),
-        responded_(false),
+  explicit MockAutoFillManager()
+      : responded_(false),
         accepted_(false) {}
 
   virtual void OnInfoBarClosed() {
@@ -62,15 +59,12 @@ class MockAutoFillManager : public AutoFillManager {
   DISALLOW_COPY_AND_ASSIGN(MockAutoFillManager);
 };
 
-class AutoFillInfoBarDelegateTest : public RenderViewHostTestHarness {
+class AutoFillInfoBarDelegateTest : public testing::Test {
  public:
   AutoFillInfoBarDelegateTest() {}
 
   virtual void SetUp() {
-    RenderViewHostTestHarness::SetUp();
-    profile()->CreateWebDataService(true);
-    profile()->CreatePersonalDataManager();
-    autofill_manager_.reset(new MockAutoFillManager(contents()));
+    autofill_manager_.reset(new MockAutoFillManager());
     infobar_.reset(new AutoFillInfoBarDelegate(NULL, autofill_manager_.get()));
   }
 

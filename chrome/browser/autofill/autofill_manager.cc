@@ -32,7 +32,9 @@ AutoFillManager::AutoFillManager(TabContents* tab_contents)
 }
 
 AutoFillManager::~AutoFillManager() {
-  personal_data_->RemoveObserver(this);
+  // This is NULL in the MockAutoFillManager.
+  if (personal_data_)
+    personal_data_->RemoveObserver(this);
 }
 
 // static
@@ -323,4 +325,9 @@ bool AutoFillManager::IsAutoFillEnabled() {
   }
 
   return prefs->GetBoolean(prefs::kAutoFillEnabled);
+}
+
+AutoFillManager::AutoFillManager()
+    : tab_contents_(NULL),
+      personal_data_(NULL) {
 }

@@ -21,7 +21,6 @@
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "net/base/cookie_monster.h"
 
-class PersonalDataManager;
 class ProfileSyncFactory;
 class ProfileSyncService;
 class SessionService;
@@ -63,10 +62,6 @@ class TestingProfile : public Profile {
   // deletes the directory containing the files used by WebDataService, this
   // only matters if you're recreating the WebDataService.
   void CreateWebDataService(bool delete_file);
-
-  // Creates the PersonalDataManager.  Consequent calls will recreate the
-  // service.
-  void CreatePersonalDataManager();
 
   // Destroys
 
@@ -140,9 +135,6 @@ class TestingProfile : public Profile {
   virtual WebDataService* GetWebDataServiceWithoutCreating() {
     return web_data_service_.get();
   }
-  virtual PersonalDataManager* GetPersonalDataManager() {
-    return personal_data_.get();
-  }
   virtual PasswordStore* GetPasswordStore(ServiceAccessType access) {
     return NULL;
   }
@@ -162,6 +154,7 @@ class TestingProfile : public Profile {
   virtual TemplateURLFetcher* GetTemplateURLFetcher() { return NULL; }
   virtual ThumbnailStore* GetThumbnailStore() { return NULL; }
   virtual DownloadManager* GetDownloadManager() { return NULL; }
+  virtual PersonalDataManager* GetPersonalDataManager() { return NULL; }
   virtual bool HasCreatedDownloadManager() const { return false; }
   virtual void InitThemes();
   virtual void SetTheme(Extension* extension) {}
@@ -286,10 +279,6 @@ class TestingProfile : public Profile {
 
   // The WebDataService.  Only created if CreateWebDataService is invoked.
   scoped_refptr<WebDataService> web_data_service_;
-
-  // The PersonalDataManager.  Only created if CreatePersonalDataManager is
-  // invoked.
-  scoped_ptr<PersonalDataManager> personal_data_;
 
   // The TemplateURLFetcher. Only created if CreateTemplateURLModel is invoked.
   scoped_ptr<TemplateURLModel> template_url_model_;
