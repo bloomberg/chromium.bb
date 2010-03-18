@@ -12,10 +12,7 @@
 #include <string>
 
 #include "base/process.h"
-#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "base/shared_memory.h"
-#include "base/string16.h"
 #include "base/timer.h"
 #include "chrome/common/transport_dib.h"
 #include "chrome/browser/child_process_launcher.h"
@@ -31,6 +28,10 @@ class RenderWidgetHelper;
 class TabContents;
 class VisitedLinkUpdater;
 class URLRequestContextGetter;
+
+namespace base {
+class SharedMemory;
+}
 
 namespace gfx {
 class Size;
@@ -136,8 +137,7 @@ class BrowserRenderProcessHost : public RenderProcessHost,
                                              CommandLine* renderer_cmd) const;
 
   // Callers can reduce the RenderProcess' priority.
-  // Returns true if the priority is backgrounded; false otherwise.
-  void SetBackgrounded(bool boost);
+  void SetBackgrounded(bool backgrounded);
 
   // The renderer has requested that we initialize its spellchecker. This should
   // generally only be called once per session, as after the first call, all
