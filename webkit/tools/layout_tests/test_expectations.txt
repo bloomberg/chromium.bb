@@ -2840,3 +2840,7 @@ BUG38397 : websocket/tests/url-with-empty-query.html = TEXT PASS
 BUG38397 : websocket/tests/url-with-query-for-no-query.html = TEXT PASS
 BUG38397 : websocket/tests/url-with-query.html = TEXT PASS
 BUG38397 : websocket/tests/websocket-pending-activity.html = TIMEOUT PASS
+
+// Unknown flakiness.
+BUG38532 LINUX DEBUG : tables/mozilla/bugs/bug20804.html = IMAGE PASS
+
