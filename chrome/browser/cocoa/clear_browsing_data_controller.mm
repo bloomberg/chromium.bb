@@ -57,7 +57,13 @@ typedef std::map<Profile*, ClearBrowsingDataController*> ProfileControllerMap;
   ClearBrowsingDataController* controller =
       [ClearBrowsingDataController controllerForProfile:profile];
   if (![controller isWindowLoaded]) {
-    [controller runModalDialog];
+    // This function needs to return instead of blocking, to match the windows
+    // api call.  It caused problems when launching the dialog from the
+    // DomUI history page.  See bug and code review for more details.
+    // http://crbug.com/37976
+    [controller performSelector:@selector(runModalDialog)
+                     withObject:nil
+                     afterDelay:0];
   }
 }
 
@@ -112,7 +118,12 @@ typedef std::map<Profile*, ClearBrowsingDataController*> ProfileControllerMap;
 
 // Run application modal.
 - (void)runModalDialog {
-  [NSApp runModalForWindow:[self window]];
+  // Check again to make sure there is only one window.  Since we use
+  // |performSelector:afterDelay:| it is possible for this to somehow be
+  // triggered twice.
+  if (![self isWindowLoaded]) {
+    [NSApp runModalForWindow:[self window]];
+  }
 }
 
 - (int)removeMask {

@@ -47,6 +47,7 @@ extern NSString* const kClearBrowsingDataControllerRemoveMask;
 
 // Show the clear browsing data window.  Do not use |-initWithProfile:|,
 // go through this instead so we don't end up with multiple instances.
+// This function does not block, so it can be used from DOMUI calls.
 + (void)showClearBrowsingDialogForProfile:(Profile*)profile;
 + (ClearBrowsingDataController*)controllerForProfile:(Profile*)profile;
 
