@@ -232,13 +232,6 @@ hooks = [
     "action": ["python", "src/build/gyp_chromium"],
   },
   {
-    # Workaround IncrediBuild problem. http://crbug.com/17706.
-    "pattern": "\\.grd$",
-    "action": ["python",
-               "src/build/win/clobber_generated_headers.py",
-               "$matching_files"],
-  },
-  {
     # Workaround XCode dependecies problem.
     # TODO(bradnelson): remove this when fixed.
     "pattern": ".",
