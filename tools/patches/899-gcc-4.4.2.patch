@@ -1220,6 +1220,81 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
    operands[4] = gen_lowpart (Pmode, operands[4]);
  }
    [(set_attr "type" "lea")
+@@ -6139,8 +6175,26 @@
+   switch (get_attr_type (insn))
+     {
+     case TYPE_LEA:
+-      operands[2] = SET_SRC (XVECEXP (PATTERN (insn), 0, 0));
+-      return "lea{q}\t{%a2, %0|%0, %a2}";
++      if (flag_control_integrity)
++	{
++	  if ((REGNO (operands[0]) != SP_REG)
++	   && (REGNO (operands[0]) != BP_REG))
++	    {
++	      operands[2] = SET_SRC (XVECEXP (PATTERN (insn), 0, 0));
++              return "lea{q}\t{%a2, %0|%0, %a2}";
++	    }
++	  else if ((REGNO (operands[0]) == SP_REG)
++	        && (REGNO (operands[1]) == BP_REG))
++	    {
++	      return "naclspadj\t{%2, %%r15|%%r15, %2}";
++	    }
++	}
++      else
++	{
++	  operands[2] = SET_SRC (XVECEXP (PATTERN (insn), 0, 0));
++	  return "lea{q}\t{%a2, %0|%0, %a2}";
++	}
++      gcc_unreachable ();
+ 
+     case TYPE_INCDEC:
+       gcc_assert (rtx_equal_p (operands[0], operands[1]));
+@@ -6163,11 +6217,40 @@
+           && (INTVAL (operands[2]) == 128
+ 	      || (INTVAL (operands[2]) < 0
+ 		  && INTVAL (operands[2]) != -128)))
+-        {
+-          operands[2] = GEN_INT (-INTVAL (operands[2]));
+-          return "sub{q}\t{%2, %0|%0, %2}";
+-        }
+-      return "add{q}\t{%2, %0|%0, %2}";
++	{
++	  operands[2] = GEN_INT (-INTVAL (operands[2]));
++          if (flag_control_integrity)
++	    {
++	      if (REGNO (operands[0]) == SP_REG)
++		{
++		  return "naclssp{q}\t{%2, %%r15|%%r15, %2}";
++		}
++	      else if (REGNO (operands[0]) != BP_REG)
++	        {
++		  return "sub{q}\t{%2, %0|%0, %2}";
++		}
++	    }
++	  else
++	    {
++	      return "sub{q}\t{%2, %0|%0, %2}";
++	    }
++	}
++      else if (flag_control_integrity)
++	{
++	  if (REGNO (operands[0]) == SP_REG)
++	    {
++	      return "naclasp{q}\t{%2, %%r15|%%r15, %2}";
++	    }
++	  else if (REGNO (operands[0]) != BP_REG)
++	    {
++	      return "add{q}\t{%2, %0|%0, %2}";
++	    }
++	}
++      else
++	{
++	  return "add{q}\t{%2, %0|%0, %2}";
++	}
++      gcc_unreachable ();
+     }
+ }
+   [(set (attr "type")
 @@ -6461,8 +6497,15 @@
    if (GET_MODE (operands[0]) != Pmode)
      {
@@ -1993,28 +2068,97 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
    [(set_attr "type" "str")
     (set_attr "mode" "QI")
     (set_attr "prefix_rep" "1")])
-@@ -20241,13 +20812,27 @@
+@@ -20230,7 +20827,32 @@
+   switch (get_attr_type (insn))
+     {
+     case TYPE_IMOV:
+-      return "mov{q}\t{%1, %0|%0, %1}";
++      if (REGNO (operands[0]) == SP_REG)
++	{
++	  if (REGNO (operands[0]) == BP_REG)
++	    {
++	      return "mov{q}\t{%1, %0|%0, %1}";
++	    }
++	  else
++	    {
++	      return "naclrestsp\t{%k1, %%r15|%%r15, %1}";
++	    }
++	}
++      else if (REGNO (operands[0]) == BP_REG)
++	{
++	  if (REGNO (operands[0]) == SP_REG)
++	    {
++	      return "mov{q}\t{%1, %0|%0, %1}";
++	    }
++	  else
++	    {
++	      return "naclrestbp\t{%k1, %%r15|%%r15, %1}";
++	    }
++	}
++      else
++	{
++	  return "mov{q}\t{%1, %0|%0, %1}";
++	}
+ 
+     case TYPE_ALU:
+       if (CONST_INT_P (operands[2])
+@@ -20241,13 +20884,60 @@
  	          && INTVAL (operands[2]) != -128)))
  	{
  	  operands[2] = GEN_INT (-INTVAL (operands[2]));
-+          if (flag_control_integrity
-+	      && (REGNO (operands[0]) == SP_REG)
-+	      && (REGNO (operands[1]) != BP_REG))
-+	    return "naclssp{q}\t{%2, %%r15|%%r15, %2}";
- 	  return "sub{q}\t{%2, %0|%0, %2}";
+-	  return "sub{q}\t{%2, %0|%0, %2}";
++          if (flag_control_integrity)
++	    {
++	      if (REGNO (operands[0]) == SP_REG)
++		{
++		  return "naclssp{q}\t{%2, %%r15|%%r15, %2}";
++		}
++	      else if (REGNO (operands[0]) != BP_REG)
++	        {
++		  return "sub{q}\t{%2, %0|%0, %2}";
++		}
++	    }
++	  else
++	    {
++	      return "sub{q}\t{%2, %0|%0, %2}";
++	    }
  	}
-+      if (flag_control_integrity
-+	  && (REGNO (operands[0]) == SP_REG)
-+	  && (REGNO (operands[1]) != BP_REG))
-+        return "naclasp{q}\t{%2, %%r15|%%r15, %2}";
-       return "add{q}\t{%2, %0|%0, %2}";
+-      return "add{q}\t{%2, %0|%0, %2}";
++      else if (flag_control_integrity)
++	{
++	  if (REGNO (operands[0]) == SP_REG)
++	    {
++	      return "naclasp{q}\t{%2, %%r15|%%r15, %2}";
++	    }
++	  else if (REGNO (operands[0]) != BP_REG)
++	    {
++	      return "add{q}\t{%2, %0|%0, %2}";
++	    }
++	}
++      else
++	{
++	  return "add{q}\t{%2, %0|%0, %2}";
++	}
++      gcc_unreachable ();
  
      case TYPE_LEA:
 -      operands[2] = SET_SRC (XVECEXP (PATTERN (insn), 0, 0));
 -      return "lea{q}\t{%a2, %0|%0, %a2}";
-+      if (!flag_control_integrity
-+	  || (REGNO (operands[0]) != SP_REG)
-+	  || (REGNO (operands[1]) == BP_REG))
++      if (flag_control_integrity)
++	{
++	  if ((REGNO (operands[0]) != SP_REG)
++	   && (REGNO (operands[0]) != BP_REG))
++	    {
++	      operands[2] = SET_SRC (XVECEXP (PATTERN (insn), 0, 0));
++              return "lea{q}\t{%a2, %0|%0, %a2}";
++	    }
++	  else if ((REGNO (operands[0]) == SP_REG)
++	        && (REGNO (operands[1]) == BP_REG))
++	    {
++	      return "naclspadj\t{%2, %%r15|%%r15, %2}";
++	    }
++	}
++      else
 +	{
 +	  operands[2] = SET_SRC (XVECEXP (PATTERN (insn), 0, 0));
 +	  return "lea{q}\t{%a2, %0|%0, %a2}";
