@@ -69,7 +69,7 @@ extern const char kDisableSyncTypedUrls[];
 extern const char kDisableWebResources[];
 extern const char kDisableWebSecurity[];
 extern const char kDisableWebSockets[];
-extern const char kDisableXSSAuditor[];
+extern const char kEnableXSSAuditor[];
 extern const char kDiskCacheDir[];
 extern const char kDiskCacheSize[];
 extern const char kDnsLogDetails[];

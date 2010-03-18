@@ -188,7 +188,7 @@ const char kDisableWebSecurity[]            = "disable-web-security";
 const char kDisableWebSockets[]             = "disable-web-sockets";
 
 // Disable WebKit's XSSAuditor.  The XSSAuditor mitigates reflective XSS.
-const char kDisableXSSAuditor[]             = "disable-xss-auditor";
+const char kEnableXSSAuditor[]             = "enable-xss-auditor";
 
 // Use a specific disk cache location, rather than one derived from the
 // UserDatadir.
