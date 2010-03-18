@@ -1,3 +1,6 @@
+Name: valgrind
+URL: http://valgrind.org
+
 The single header file (valgrind.h) in this directory defines runtime
 macros that determine whether the current process is running under
 Valgrind.

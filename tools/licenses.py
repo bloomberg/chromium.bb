@@ -26,10 +26,11 @@ def ParseDir(path):
         raise LicenseError("missing README.chromium")
 
     # Parse metadata fields out of README.chromium.
+    # We provide a default value of "LICENSE" for the license file.
     metadata = {
-        "License File": None,  # Relative path to license text.
-        "Name": None,          # Short name (for header on about:credits).
-        "URL": None,           # Project home page.
+        "License File": "LICENSE",  # Relative path to license text.
+        "Name": None,               # Short name (for header on about:credits).
+        "URL": None,                # Project home page.
         }
     for line in open(readme_path):
         line = line.strip()
@@ -48,8 +49,9 @@ def ParseDir(path):
     license_file = metadata["License File"]
     license_path = os.path.join(path, license_file)
     if not os.path.exists(license_path):
-        raise LicenseError("README.chromium mentions license file '" +
-                           license_file + "' that doesn't exist")
+        raise LicenseError("License file '" + license_file + "' doesn't exist. "
+                           "Either add a 'License File:' section to "
+                           "README.chromium or add the missing file.")
 
     return metadata
 
