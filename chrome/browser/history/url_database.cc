@@ -79,6 +79,20 @@ bool URLDatabase::GetURLRow(URLID url_id, URLRow* info) {
   return false;
 }
 
+bool URLDatabase::GetAllTypedUrls(std::vector<history::URLRow>* urls) {
+  sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
+      "SELECT" HISTORY_URL_ROW_FIELDS "FROM urls WHERE typed_count > 0"));
+  if (!statement)
+    return false;
+
+  while (statement.Step()) {
+    URLRow info;
+    FillURLRow(statement, &info);
+    urls->push_back(info);
+  }
+  return true;
+}
+
 URLID URLDatabase::GetRowForURL(const GURL& url, history::URLRow* info) {
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "SELECT" HISTORY_URL_ROW_FIELDS "FROM urls WHERE url=?"));

@@ -72,6 +72,7 @@ class AutofillSpecifics;
 class BookmarkSpecifics;
 class EntitySpecifics;
 class PreferenceSpecifics;
+class TypedUrlSpecifics;
 }
 
 namespace sync_api {
@@ -169,6 +170,10 @@ class BaseNode {
   // Getter specific to the PREFERENCE datatype.  Returns protobuf
   // data.  Can only be called if GetModelType() == PREFERENCE.
   const sync_pb::PreferenceSpecifics& GetPreferenceSpecifics() const;
+
+  // Getter specific to the TYPED_URLS datatype.  Returns protobuf
+  // data.  Can only be called if GetModelType() == TYPED_URLS.
+  const sync_pb::TypedUrlSpecifics& GetTypedUrlSpecifics() const;
 
   // Returns the local external ID associated with the node.
   int64 GetExternalId() const;
@@ -277,6 +282,10 @@ class WriteNode : public BaseNode {
   // Should only be called if GetModelType() == PREFERENCE.
   void SetPreferenceSpecifics(const sync_pb::PreferenceSpecifics& specifics);
 
+  // Set the typed_url specifics (url, title, typed_count, etc).
+  // Should only be called if GetModelType() == TYPED_URLS.
+  void SetTypedUrlSpecifics(const sync_pb::TypedUrlSpecifics& specifics);
+
   // Implementation of BaseNode's abstract virtual accessors.
   virtual const syncable::Entry* GetEntry() const;
 
@@ -302,6 +311,8 @@ class WriteNode : public BaseNode {
       const sync_pb::BookmarkSpecifics& new_value);
   void PutPreferenceSpecificsAndMarkForSyncing(
       const sync_pb::PreferenceSpecifics& new_value);
+  void PutTypedUrlSpecificsAndMarkForSyncing(
+      const sync_pb::TypedUrlSpecifics& new_value);
   void PutSpecificsAndMarkForSyncing(
       const sync_pb::EntitySpecifics& specifics);
 

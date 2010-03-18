@@ -21,6 +21,10 @@ class SyncBackendHost;
 class UnrecoverableErrorHandler;
 }
 
+namespace history {
+class HistoryBackend;
+};
+
 // Factory class for all profile sync related classes.
 class ProfileSyncFactory {
  public:
@@ -70,6 +74,14 @@ class ProfileSyncFactory {
   // owned by the caller.
   virtual SyncComponents CreatePreferenceSyncComponents(
       ProfileSyncService* profile_sync_service,
+      browser_sync::UnrecoverableErrorHandler* error_handler) = 0;
+
+  // Instantiates both a model associator and change processor for the
+  // typed_url data type.  The pointers in the return struct are owned
+  // by the caller.
+  virtual SyncComponents CreateTypedUrlSyncComponents(
+      ProfileSyncService* profile_sync_service,
+      history::HistoryBackend* history_backend,
       browser_sync::UnrecoverableErrorHandler* error_handler) = 0;
 };
 

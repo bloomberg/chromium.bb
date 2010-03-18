@@ -174,6 +174,9 @@ const char kDisableSyncBookmarks[]          = "disable-sync-bookmarks";
 // Disable syncing of preferences.
 const char kDisableSyncPreferences[]        = "disable-sync-preferences";
 
+// Disable syncing of typed urls.
+const char kDisableSyncTypedUrls[]          = "disable-sync-typed-urls";
+
 // Enables the backend service for web resources, used in the new tab page for
 // loading tips and recommendations from a JSON feed.
 const char kDisableWebResources[]           = "disable-web-resources";
@@ -290,6 +293,9 @@ const char kEnableSyncBookmarks[]           = "enable-sync-bookmarks";
 
 // Enable syncing browser preferences.
 const char kEnableSyncPreferences[]         = "enable-sync-preferences";
+
+// Enable syncing browser typed urls.
+const char kEnableSyncTypedUrls[]           = "enable-sync-typed-urls";
 
 // Enable the tabbed bookmark manager
 const char kEnableTabbedBookmarkManager[]   = "enable-tabbed-bookmark-manager";

@@ -18,7 +18,8 @@ namespace {
 static const syncable::ModelType kStartOrder[] = {
   syncable::BOOKMARKS,
   syncable::PREFERENCES,
-  syncable::AUTOFILL
+  syncable::AUTOFILL,
+  syncable::TYPED_URLS,
 };
 
 }  // namespace

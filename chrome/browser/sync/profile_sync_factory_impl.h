@@ -36,6 +36,11 @@ class ProfileSyncFactoryImpl : public ProfileSyncFactory {
       ProfileSyncService* profile_sync_service,
       browser_sync::UnrecoverableErrorHandler* error_handler);
 
+  virtual SyncComponents CreateTypedUrlSyncComponents(
+      ProfileSyncService* profile_sync_service,
+      history::HistoryBackend* history_backend,
+      browser_sync::UnrecoverableErrorHandler* error_handler);
+
  private:
   Profile* profile_;
   CommandLine* command_line_;

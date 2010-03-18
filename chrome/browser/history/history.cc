@@ -86,6 +86,13 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
 
   virtual void BroadcastNotifications(NotificationType type,
                                       history::HistoryDetails* details) {
+    // Send the notification on the history thread.
+    if (NotificationService::current()) {
+      Details<history::HistoryDetails> det(details);
+      NotificationService::current()->Notify(type,
+                                             NotificationService::AllSources(),
+                                             det);
+    }
     // Send the notification to the history service on the main thread.
     message_loop_->PostTask(FROM_HERE, NewRunnableMethod(history_service_.get(),
         &HistoryService::BroadcastNotifications, type, details));

@@ -689,7 +689,6 @@ std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
   return std::make_pair(url_id, visit_id);
 }
 
-// Note: this method is only for testing purposes.
 void HistoryBackend::AddPagesWithDetails(const std::vector<URLRow>& urls) {
   if (!db_.get())
     return;
@@ -848,6 +847,24 @@ void HistoryBackend::IterateURLs(HistoryService::URLEnumerator* iterator) {
     }
   }
   iterator->OnComplete(false);  // Failure.
+}
+
+bool HistoryBackend::GetAllTypedURLs(std::vector<history::URLRow>* urls) {
+  if (db_.get())
+    return db_->GetAllTypedUrls(urls);
+  return false;
+}
+
+bool HistoryBackend::UpdateURL(const URLID id, const history::URLRow& url) {
+  if (db_.get())
+    return db_->UpdateURLRow(id, url);
+  return false;
+}
+
+bool HistoryBackend::GetURL(const GURL& url, history::URLRow* url_row) {
+  if (db_.get())
+    return db_->GetRowForURL(url, url_row) != 0;
+  return false;
 }
 
 void HistoryBackend::QueryURL(scoped_refptr<QueryURLRequest> request,
@@ -1729,6 +1746,18 @@ void HistoryBackend::ReleaseDBTasks() {
 // Generic operations
 //
 ////////////////////////////////////////////////////////////////////////////////
+
+void HistoryBackend::DeleteURLs(const std::vector<GURL>& urls) {
+  for (std::vector<GURL>::const_iterator url = urls.begin(); url != urls.end();
+       ++url) {
+    expirer_.DeleteURL(*url);
+  }
+
+  db_->GetStartDate(&first_recorded_time_);
+  // Force a commit, if the user is deleting something for privacy reasons, we
+  // want to get it on disk ASAP.
+  Commit();
+}
 
 void HistoryBackend::DeleteURL(const GURL& url) {
   expirer_.DeleteURL(url);

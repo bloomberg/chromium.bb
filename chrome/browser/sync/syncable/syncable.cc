@@ -39,6 +39,7 @@
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/protocol/preference_specifics.pb.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
+#include "chrome/browser/sync/protocol/typed_url_specifics.pb.h"
 #include "chrome/browser/sync/syncable/directory_backing_store.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable-inl.h"
@@ -1063,6 +1064,8 @@ syncable::ModelType Entry::GetServerModelType() const {
     return PREFERENCES;
   if (Get(SERVER_SPECIFICS).HasExtension(sync_pb::autofill))
     return AUTOFILL;
+  if (Get(SERVER_SPECIFICS).HasExtension(sync_pb::typed_url))
+    return TYPED_URLS;
   if (IsRoot())
     return TOP_LEVEL_FOLDER;
   // Loose check for server-created top-level folders that aren't
@@ -1090,6 +1093,8 @@ syncable::ModelType Entry::GetModelType() const {
     return PREFERENCES;
   if (Get(SPECIFICS).HasExtension(sync_pb::autofill))
     return AUTOFILL;
+  if (Get(SPECIFICS).HasExtension(sync_pb::typed_url))
+    return TYPED_URLS;
   if (IsRoot())
     return TOP_LEVEL_FOLDER;
   // Loose check for server-created top-level folders that aren't

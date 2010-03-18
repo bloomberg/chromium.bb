@@ -28,6 +28,7 @@ enum ModelType {
   BOOKMARKS,         // A bookmark folder or a bookmark URL object.
   PREFERENCES,       // A preference folder or a preference object.
   AUTOFILL,          // An autofill folder or an autofill object.
+  TYPED_URLS,        // A typed_url folder or a typed_url object.
   MODEL_TYPE_COUNT,
 };
 

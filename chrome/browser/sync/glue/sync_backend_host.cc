@@ -7,8 +7,10 @@
 #include "base/file_version_info.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/database_model_worker.h"
+#include "chrome/browser/sync/glue/history_model_worker.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/glue/http_bridge.h"
 #include "chrome/common/notification_service.h"
@@ -29,10 +31,12 @@ namespace browser_sync {
 
 SyncBackendHost::SyncBackendHost(
     SyncFrontend* frontend,
+    Profile* profile,
     const FilePath& profile_path,
     const DataTypeController::TypeMap& data_type_controllers)
     : core_thread_("Chrome_SyncCoreThread"),
       frontend_loop_(MessageLoop::current()),
+      profile_(profile),
       frontend_(frontend),
       sync_data_folder_path_(profile_path.Append(kSyncDataFolderName)),
       data_type_controllers_(data_type_controllers),
@@ -71,6 +75,9 @@ void SyncBackendHost::Initialize(
   // when a new type is synced as the worker may already exist and you just
   // need to update routing_info_.
   registrar_.workers[GROUP_DB] = new DatabaseModelWorker();
+  registrar_.workers[GROUP_HISTORY] =
+    new HistoryModelWorker(
+        profile_->GetHistoryService(Profile::IMPLICIT_ACCESS));
   registrar_.workers[GROUP_UI] = new UIModelWorker(frontend_loop_);
   registrar_.workers[GROUP_PASSIVE] = new ModelSafeWorker();
 
@@ -135,9 +142,11 @@ void SyncBackendHost::Shutdown(bool sync_disabled) {
 
   registrar_.routing_info.clear();
   registrar_.workers[GROUP_DB] = NULL;
+  registrar_.workers[GROUP_HISTORY] = NULL;
   registrar_.workers[GROUP_UI] = NULL;
   registrar_.workers[GROUP_PASSIVE] = NULL;
   registrar_.workers.erase(GROUP_DB);
+  registrar_.workers.erase(GROUP_HISTORY);
   registrar_.workers.erase(GROUP_UI);
   registrar_.workers.erase(GROUP_PASSIVE);
   frontend_ = NULL;

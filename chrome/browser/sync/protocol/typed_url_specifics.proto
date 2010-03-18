@@ -1,0 +1,27 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Sync protocol datatype extension for typed urls.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package sync_pb;
+
+import "sync.proto";
+
+// Properties of typed_url sync objects.
+message TypedUrlSpecifics {
+  optional string url = 1;
+  optional string title = 2;
+  optional int32 visit_count = 3;
+  optional int32 typed_count = 4;
+  optional int64 last_visit = 5;
+  optional bool hidden = 6;
+}
+
+extend EntitySpecifics {
+  optional TypedUrlSpecifics typed_url = 40781;
+}

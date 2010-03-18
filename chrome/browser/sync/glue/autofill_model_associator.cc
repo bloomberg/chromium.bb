@@ -108,7 +108,7 @@ bool AutofillModelAssociator::AssociateModels() {
     sync_api::ReadNode sync_child_node(&trans);
     if (!sync_child_node.InitByIdLookup(sync_child_id)) {
       LOG(ERROR) << "Failed to fetch child node.";
-      sync_service_->OnUnrecoverableError();
+      error_handler_->OnUnrecoverableError();
       return false;
     }
     const sync_pb::AutofillSpecifics& autofill(

@@ -54,6 +54,10 @@ class URLDatabase {
   // success and false otherwise.
   bool GetURLRow(URLID url_id, URLRow* info);
 
+  // Looks up all urls that were typed in manually. Fills info with the data.
+  // Returns true on success and false otherwise.
+  bool GetAllTypedUrls(std::vector<history::URLRow>* urls);
+
   // Looks up the given URL and if it exists, fills the given pointers with the
   // associated info and returns the ID of that URL. If the info pointer is
   // NULL, no information about the URL will be filled in, only the ID will be

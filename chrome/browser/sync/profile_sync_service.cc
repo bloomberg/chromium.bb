@@ -184,7 +184,8 @@ void ProfileSyncService::StartUp() {
       profile_->GetPrefs()->GetInt64(prefs::kSyncLastSyncedTime));
 
   backend_.reset(
-      new SyncBackendHost(this, profile_->GetPath(), data_type_controllers_));
+      new SyncBackendHost(this, profile_, profile_->GetPath(),
+                          data_type_controllers_));
 
   // Initialize the backend.  Every time we start up a new SyncBackendHost,
   // we'll want to start from a fresh SyncDB, so delete any old one that might

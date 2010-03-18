@@ -21,6 +21,8 @@ enum ModelSafeGroup {
                        // native model.
   GROUP_UI,            // Models that live on UI thread and are being synced.
   GROUP_DB,            // Models that live on DB thread and are being synced.
+  GROUP_HISTORY,       // Models that live on history thread and are being
+                       // synced.
   MODEL_SAFE_GROUP_COUNT,
 };
 

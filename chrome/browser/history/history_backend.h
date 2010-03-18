@@ -112,8 +112,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Navigation ----------------------------------------------------------------
 
   void AddPage(scoped_refptr<HistoryAddPageArgs> request);
-  void SetPageTitle(const GURL& url, const std::wstring& title);
-  void AddPageWithDetails(const URLRow& info);
+  virtual void SetPageTitle(const GURL& url, const std::wstring& title);
 
   // Indexing ------------------------------------------------------------------
 
@@ -239,9 +238,17 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   void ProcessDBTask(scoped_refptr<HistoryDBTaskRequest> request);
 
+  virtual bool GetAllTypedURLs(std::vector<history::URLRow>* urls);
+
+  virtual bool UpdateURL(const URLID id, const history::URLRow& url);
+
+  virtual bool GetURL(const GURL& url, history::URLRow* url_row);
+
   // Deleting ------------------------------------------------------------------
 
-  void DeleteURL(const GURL& url);
+  virtual void DeleteURLs(const std::vector<GURL>& urls);
+
+  virtual void DeleteURL(const GURL& url);
 
   // Calls ExpireHistoryBackend::ExpireHistoryBetween and commits the change.
   void ExpireHistoryBetween(scoped_refptr<ExpireHistoryRequest> request,
@@ -272,6 +279,9 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   ExpireHistoryBackend* expire_backend() { return &expirer_; }
 #endif
 
+ protected:
+  virtual ~HistoryBackend();
+
  private:
   friend class base::RefCountedThreadSafe<HistoryBackend>;
   friend class CommitLaterTask;  // The commit task needs to call Commit().
@@ -281,8 +291,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   FRIEND_TEST(HistoryBackendTest, URLsNoLongerBookmarked);
   FRIEND_TEST(HistoryBackendTest, StripUsernamePasswordTest);
   friend class ::TestingProfile;
-
-  ~HistoryBackend();
 
   // Computes the name of the specified database on disk.
   FilePath GetThumbnailFileName() const;

@@ -16,6 +16,9 @@
 #include "chrome/browser/sync/glue/preference_data_type_controller.h"
 #include "chrome/browser/sync/glue/preference_model_associator.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
+#include "chrome/browser/sync/glue/typed_url_change_processor.h"
+#include "chrome/browser/sync/glue/typed_url_data_type_controller.h"
+#include "chrome/browser/sync/glue/typed_url_model_associator.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_factory_impl.h"
 #include "chrome/browser/webdata/web_data_service.h"
@@ -26,16 +29,17 @@ using browser_sync::AutofillDataTypeController;
 using browser_sync::AutofillModelAssociator;
 using browser_sync::BookmarkChangeProcessor;
 using browser_sync::BookmarkDataTypeController;
-using browser_sync::BookmarkChangeProcessor;
 using browser_sync::BookmarkModelAssociator;
 using browser_sync::DataTypeController;
 using browser_sync::DataTypeManager;
 using browser_sync::DataTypeManagerImpl;
-using browser_sync::PreferenceDataTypeController;
 using browser_sync::PreferenceChangeProcessor;
 using browser_sync::PreferenceDataTypeController;
 using browser_sync::PreferenceModelAssociator;
 using browser_sync::SyncBackendHost;
+using browser_sync::TypedUrlChangeProcessor;
+using browser_sync::TypedUrlDataTypeController;
+using browser_sync::TypedUrlModelAssociator;
 using browser_sync::UnrecoverableErrorHandler;
 
 ProfileSyncFactoryImpl::ProfileSyncFactoryImpl(
@@ -69,6 +73,13 @@ ProfileSyncService* ProfileSyncFactoryImpl::CreateProfileSyncService() {
   if (command_line_->HasSwitch(switches::kEnableSyncPreferences)) {
     pss->RegisterDataTypeController(
         new PreferenceDataTypeController(this, pss));
+  }
+
+  // TypedUrl sync is disabled by default.  Register only if
+  // explicitly enabled.
+  if (command_line_->HasSwitch(switches::kEnableSyncTypedUrls)) {
+    pss->RegisterDataTypeController(
+        new TypedUrlDataTypeController(this, profile_, pss));
   }
 
   return pss;
@@ -119,5 +130,21 @@ ProfileSyncFactoryImpl::CreatePreferenceSyncComponents(
   PreferenceChangeProcessor* change_processor =
       new PreferenceChangeProcessor(model_associator,
                                     error_handler);
+  return SyncComponents(model_associator, change_processor);
+}
+
+ProfileSyncFactory::SyncComponents
+ProfileSyncFactoryImpl::CreateTypedUrlSyncComponents(
+    ProfileSyncService* profile_sync_service,
+    history::HistoryBackend* history_backend,
+    browser_sync::UnrecoverableErrorHandler* error_handler) {
+  TypedUrlModelAssociator* model_associator =
+      new TypedUrlModelAssociator(profile_sync_service,
+                                  history_backend,
+                                  error_handler);
+  TypedUrlChangeProcessor* change_processor =
+      new TypedUrlChangeProcessor(model_associator,
+                                  history_backend,
+                                  error_handler);
   return SyncComponents(model_associator, change_processor);
 }

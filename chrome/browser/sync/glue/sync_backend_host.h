@@ -25,6 +25,8 @@
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "googleurl/src/gurl.h"
 
+class Profile;
+
 namespace browser_sync {
 
 class ChangeProcessor;
@@ -74,6 +76,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   // and communicates to via the SyncFrontend interface (on the same thread
   // it used to call the constructor).
   SyncBackendHost(SyncFrontend* frontend,
+                  Profile* profile,
                   const FilePath& profile_path,
                   const DataTypeController::TypeMap& data_type_controllers);
   // For testing.
@@ -160,6 +163,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     registrar_.routing_info[syncable::BOOKMARKS] = GROUP_PASSIVE;
     registrar_.routing_info[syncable::PREFERENCES] = GROUP_PASSIVE;
     registrar_.routing_info[syncable::AUTOFILL] = GROUP_PASSIVE;
+    registrar_.routing_info[syncable::TYPED_URLS] = GROUP_PASSIVE;
 
     core_thread_.message_loop()->PostTask(FROM_HERE,
         NewRunnableMethod(core_.get(),
@@ -355,6 +359,8 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   // A reference to the MessageLoop used to construct |this|, so we know how
   // to safely talk back to the SyncFrontend.
   MessageLoop* const frontend_loop_;
+
+  Profile* profile_;
 
   // This is state required to implement ModelSafeWorkerRegistrar.
   struct {

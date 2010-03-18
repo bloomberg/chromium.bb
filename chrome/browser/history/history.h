@@ -41,6 +41,11 @@ class Thread;
 class Time;
 }
 
+namespace browser_sync {
+class HistoryModelWorker;
+class TypedUrlDataTypeController;
+}
+
 namespace history {
 
 class InMemoryHistoryBackend;
@@ -492,8 +497,8 @@ class HistoryService : public CancelableRequestProvider,
 
   // Schedules a HistoryDBTask for running on the history backend thread. See
   // HistoryDBTask for details on what this does.
-  Handle ScheduleDBTask(HistoryDBTask* task,
-                        CancelableRequestConsumerBase* consumer);
+  virtual Handle ScheduleDBTask(HistoryDBTask* task,
+                                CancelableRequestConsumerBase* consumer);
 
   // Testing -------------------------------------------------------------------
 
@@ -525,6 +530,17 @@ class HistoryService : public CancelableRequestProvider,
   // The same as AddPageWithDetails() but takes a vector.
   void AddPagesWithDetails(const std::vector<history::URLRow>& info);
 
+ protected:
+  ~HistoryService();
+
+  // These are not currently used, hopefully we can do something in the future
+  // to ensure that the most important things happen first.
+  enum SchedulePriority {
+    PRIORITY_UI,      // The highest priority (must respond to UI events).
+    PRIORITY_NORMAL,  // Normal stuff like adding a page.
+    PRIORITY_LOW,     // Low priority things like indexing or expiration.
+  };
+
  private:
   class BackendDelegate;
   friend class base::RefCountedThreadSafe<HistoryService>;
@@ -540,16 +556,6 @@ class HistoryService : public CancelableRequestProvider,
   friend class RedirectRequest;
   friend class FavIconRequest;
   friend class TestingProfile;
-
-  ~HistoryService();
-
-  // These are not currently used, hopefully we can do something in the future
-  // to ensure that the most important things happen first.
-  enum SchedulePriority {
-    PRIORITY_UI,      // The highest priority (must respond to UI events).
-    PRIORITY_NORMAL,  // Normal stuff like adding a page.
-    PRIORITY_LOW,     // Low priority things like indexing or expiration.
-  };
 
   // Implementation of NotificationObserver.
   virtual void Observe(NotificationType type,
