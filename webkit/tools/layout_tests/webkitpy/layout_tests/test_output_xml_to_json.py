@@ -15,8 +15,16 @@ import time
 
 from xml.dom import minidom
 
+try:
+    f = os.path.abspath(__file__)
+except NameError:
+    f = os.path.abspath(sys.argv[0])
+base = f[0:f.index("webkit" + os.sep + "tools")]
+webkitpy_dir = os.path.join(base, 'third_party', 'WebKit', 'WebKitTools',
+                            'Scripts', 'webkitpy')
+sys.path.append(os.path.join(webkitpy_dir, 'thirdparty'))
+sys.path.append(os.path.join(webkitpy_dir, 'layout_tests'))
 from layout_package import json_results_generator
-from layout_package import path_utils
 from layout_package import test_expectations
 
 # Builder base URL where we have the archived test results.
@@ -30,7 +38,7 @@ class JSONGeneratorFromXML(object):
 
         # Check the results directory
         if not os.path.exists(self._options.results_directory):
-            path_utils.maybe_make_directory(self._options.results_directory)
+            os.makedirs(self._options.results_directory)
 
         results_xml_file = None
         try:
