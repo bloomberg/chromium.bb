@@ -2834,5 +2834,5 @@ BUG38397 : websocket/tests/url-with-query-for-no-query.html = TEXT PASS
 BUG38397 : websocket/tests/url-with-query.html = TEXT PASS
 BUG38397 : websocket/tests/websocket-pending-activity.html = TIMEOUT PASS
 
-// While agl fixes it
-BUG38534 SKIP : tables/mozilla/bugs/bug20804.html = IMAGE
+// One pixel changes from gray 0x83 to gray 0x81. Valgrind is clean.
+BUG38534 LINUX : tables/mozilla/bugs/bug20804.html = IMAGE PASS
