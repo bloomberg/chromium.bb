@@ -2496,3 +2496,10 @@
    fun:gtk_tooltip_run_requery
    fun:gtk_tooltip_show_tooltip
 }
+{
+   bug_38481
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN145_GLOBAL__N__b_slave_chromium_rel_linux_valgrind_builder_build_src_chrome_browser_autofill_autofill_infobar_delegate_unittest.cc_00000000_8655CC8827AutoFillInfoBarDelegateTest5SetUpEv
+}

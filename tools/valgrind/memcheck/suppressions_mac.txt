@@ -825,3 +825,10 @@
    fun:_ZN2v88internalL23Builtin_Impl_ArraySliceENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE0EEE
    fun:_ZN2v88internalL18Builtin_ArraySliceENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE0EEE
 }
+{
+   bug_38481
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN12_GLOBAL__N_127AutoFillInfoBarDelegateTest5SetUpEv
+}
