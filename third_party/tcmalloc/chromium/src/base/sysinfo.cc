@@ -100,11 +100,33 @@
 //    Some non-trivial getenv-related functions.
 // ----------------------------------------------------------------------
 
+// It's not safe to call getenv() in the malloc hooks, because they
+// might be called extremely early, before libc is done setting up
+// correctly.  In particular, the thread library may not be done
+// setting up errno.  So instead, we use the built-in __environ array
+// if it exists, and otherwise read /proc/self/environ directly, using
+// system calls to read the file, and thus avoid setting errno.
+// /proc/self/environ has a limit of how much data it exports (around
+// 8K), so it's not an ideal solution.
 const char* GetenvBeforeMain(const char* name) {
+#if defined(HAVE___ENVIRON)   // if we have it, it's declared in unistd.h
+  const int namelen = strlen(name);
+  for (char** p = __environ; *p; p++) {
+    if (!memcmp(*p, name, namelen) && (*p)[namelen] == '=')  // it's a match
+      return *p + namelen+1;                                 // point after =
+  }
+  return NULL;
+#elif defined(PLATFORM_WINDOWS)
+  // TODO(mbelshe) - repeated calls to this function will overwrite the
+  // contents of the static buffer.
+  static char envbuf[1024];  // enough to hold any envvar we care about
+  if (!GetEnvironmentVariableA(name, envbuf, sizeof(envbuf)-1))
+    return NULL;
+  return envbuf;
+#else
   // static is ok because this function should only be called before
   // main(), when we're single-threaded.
   static char envbuf[16<<10];
-#ifndef PLATFORM_WINDOWS
   if (*envbuf == '\0') {    // haven't read the environ yet
     int fd = safeopen("/proc/self/environ", O_RDONLY);
     // The -2 below guarantees the last two bytes of the buffer will be \0\0
@@ -129,12 +151,6 @@ const char* GetenvBeforeMain(const char* name) {
     p = endp + 1;
   }
   return NULL;                   // env var never found
-#else
-  // TODO(mbelshe) - repeated calls to this function will overwrite the
-  // contents of the static buffer.
-  if (!GetEnvironmentVariableA(name, envbuf, sizeof(envbuf)-1))
-    return NULL;
-  return envbuf;
 #endif
 }
 
@@ -441,6 +457,48 @@ static void ConstructFilename(const char* spec, pid_t pid,
 }
 #endif
 
+// A templatized helper function instantiated for Mach (OS X) only.
+// It can handle finding info for both 32 bits and 64 bits.
+// Returns true if it successfully handled the hdr, false else.
+#ifdef __MACH__          // Mac OS X, almost certainly
+template<uint32_t kMagic, uint32_t kLCSegment,
+         typename MachHeader, typename SegmentCommand>
+static bool NextExtMachHelper(const mach_header* hdr,
+                              int current_image, int current_load_cmd,
+                              uint64 *start, uint64 *end, char **flags,
+                              uint64 *offset, int64 *inode, char **filename,
+                              uint64 *file_mapping, uint64 *file_pages,
+                              uint64 *anon_mapping, uint64 *anon_pages,
+                              dev_t *dev) {
+  static char kDefaultPerms[5] = "r-xp";
+  if (hdr->magic != kMagic)
+    return false;
+  const char* lc = (const char *)hdr + sizeof(MachHeader);
+  // TODO(csilvers): make this not-quadradic (increment and hold state)
+  for (int j = 0; j < current_load_cmd; j++)  // advance to *our* load_cmd
+    lc += ((const load_command *)lc)->cmdsize;
+  if (((const load_command *)lc)->cmd == kLCSegment) {
+    const intptr_t dlloff = _dyld_get_image_vmaddr_slide(current_image);
+    const SegmentCommand* sc = (const SegmentCommand *)lc;
+    if (start) *start = sc->vmaddr + dlloff;
+    if (end) *end = sc->vmaddr + sc->vmsize + dlloff;
+    if (flags) *flags = kDefaultPerms;  // can we do better?
+    if (offset) *offset = sc->fileoff;
+    if (inode) *inode = 0;
+    if (filename)
+      *filename = const_cast<char*>(_dyld_get_image_name(current_image));
+    if (file_mapping) *file_mapping = 0;
+    if (file_pages) *file_pages = 0;   // could we use sc->filesize?
+    if (anon_mapping) *anon_mapping = 0;
+    if (anon_pages) *anon_pages = 0;
+    if (dev) *dev = 0;
+    return true;
+  }
+
+  return false;
+}
+#endif
+
 ProcMapsIterator::ProcMapsIterator(pid_t pid) {
   Init(pid, NULL, false);
 }
@@ -456,6 +514,7 @@ ProcMapsIterator::ProcMapsIterator(pid_t pid, Buffer *buffer,
 
 void ProcMapsIterator::Init(pid_t pid, Buffer *buffer,
                             bool use_maps_backing) {
+  pid_ = pid;
   using_maps_backing_ = use_maps_backing;
   dynamic_buffer_ = NULL;
   if (!buffer) {
@@ -691,6 +750,7 @@ bool ProcMapsIterator::NextExt(uint64 *start, uint64 *end, char **flags,
   COMPILE_ASSERT(MA_READ == 4, solaris_ma_read_must_equal_4);
   COMPILE_ASSERT(MA_WRITE == 2, solaris_ma_write_must_equal_2);
   COMPILE_ASSERT(MA_EXEC == 1, solaris_ma_exec_must_equal_1);
+  Buffer object_path;
   int nread = 0;            // fill up buffer with text
   NO_INTR(nread = read(fd_, ibuf_, sizeof(prmap_t)));
   if (nread == sizeof(prmap_t)) {
@@ -700,13 +760,27 @@ bool ProcMapsIterator::NextExt(uint64 *start, uint64 *end, char **flags,
     // two middle ints are major and minor device numbers, but I'm not sure.
     sscanf(mapinfo->pr_mapname, "ufs.%*d.%*d.%ld", &inode_from_mapname);
 
+    if (pid_ == 0) {
+      CHECK_LT(snprintf(object_path.buf_, Buffer::kBufSize,
+                        "/proc/self/path/%s", mapinfo->pr_mapname),
+               Buffer::kBufSize);
+    } else {
+      CHECK_LT(snprintf(object_path.buf_, Buffer::kBufSize,
+                        "/proc/%d/path/%s", pid_, mapinfo->pr_mapname),
+               Buffer::kBufSize);
+    }
+    ssize_t len = readlink(object_path.buf_, current_filename_, PATH_MAX);
+    CHECK_LT(len, PATH_MAX);
+    if (len < 0)
+      len = 0;
+    current_filename_[len] = '\0';
+
     if (start) *start = mapinfo->pr_vaddr;
     if (end) *end = mapinfo->pr_vaddr + mapinfo->pr_size;
     if (flags) *flags = kPerms[mapinfo->pr_mflags & 7];
     if (offset) *offset = mapinfo->pr_offset;
     if (inode) *inode = inode_from_mapname;
-    // TODO(csilvers): How to map from /proc/map/object to filename?
-    if (filename) *filename = mapinfo->pr_mapname;  // format is ufs.?.?.inode
+    if (filename) *filename = current_filename_;
     if (file_mapping) *file_mapping = 0;
     if (file_pages) *file_pages = 0;
     if (anon_mapping) *anon_mapping = 0;
@@ -715,7 +789,6 @@ bool ProcMapsIterator::NextExt(uint64 *start, uint64 *end, char **flags,
     return true;
   }
 #elif defined(__MACH__)
-  static char kDefaultPerms[5] = "r-xp";
   // We return a separate entry for each segment in the DLL. (TODO(csilvers):
   // can we do better?)  A DLL ("image") has load-commands, some of which
   // talk about segment boundaries.
@@ -728,25 +801,22 @@ bool ProcMapsIterator::NextExt(uint64 *start, uint64 *end, char **flags,
 
     // We start with the next load command (we've already looked at this one).
     for (current_load_cmd_--; current_load_cmd_ >= 0; current_load_cmd_--) {
-      const char* lc = ((const char *)hdr + sizeof(struct mach_header));
-      // TODO(csilvers): make this not-quadradic (increment and hold state)
-      for (int j = 0; j < current_load_cmd_; j++)  // advance to *our* load_cmd
-        lc += ((const load_command *)lc)->cmdsize;
-      if (((const load_command *)lc)->cmd == LC_SEGMENT) {
-        const intptr_t dlloff = _dyld_get_image_vmaddr_slide(current_image_);
-        const segment_command* sc = (const segment_command *)lc;
-        if (start) *start = sc->vmaddr + dlloff;
-        if (end) *end = sc->vmaddr + sc->vmsize + dlloff;
-        if (flags) *flags = kDefaultPerms;  // can we do better?
-        if (offset) *offset = sc->fileoff;
-        if (inode) *inode = 0;
-        if (filename)
-          *filename = const_cast<char*>(_dyld_get_image_name(current_image_));
-        if (file_mapping) *file_mapping = 0;
-        if (file_pages) *file_pages = 0;   // could we use sc->filesize?
-        if (anon_mapping) *anon_mapping = 0;
-        if (anon_pages) *anon_pages = 0;
-        if (dev) *dev = 0;
+#ifdef MH_MAGIC_64
+      if (NextExtMachHelper<MH_MAGIC_64, LC_SEGMENT_64,
+                            struct mach_header_64, struct segment_command_64>(
+                                hdr, current_image_, current_load_cmd_,
+                                start, end, flags, offset, inode, filename,
+                                file_mapping, file_pages, anon_mapping,
+                                anon_pages, dev)) {
+        return true;
+      }
+#endif
+      if (NextExtMachHelper<MH_MAGIC, LC_SEGMENT,
+                            struct mach_header, struct segment_command>(
+                                hdr, current_image_, current_load_cmd_,
+                                start, end, flags, offset, inode, filename,
+                                file_mapping, file_pages, anon_mapping,
+                                anon_pages, dev)) {
         return true;
       }
     }
