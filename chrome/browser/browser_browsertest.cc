@@ -460,6 +460,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, PageLanguageDetection) {
   EXPECT_EQ("fr", current_tab->language_state().original_language());
 }
 
+// Chromeos defaults to restoring the last session, so this test isn't
+// applicable.
+#if !defined(OS_CHROMEOS)
 #if defined(OS_MAC)
 // http://crbug.com/38522
 #define RestorePinnedTabs FLAKY_RestorePinnedTabs
@@ -527,3 +530,4 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
   EXPECT_TRUE(new_model->GetTabContentsAt(0)->app_extension() ==
               app_extension);
 }
+#endif
