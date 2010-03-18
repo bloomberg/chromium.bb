@@ -21,6 +21,14 @@ import tempfile
 import urllib
 
 try:
+  import simplejson as json
+except ImportError:
+  try:
+    import json
+  except ImportError:
+    json = None
+
+try:
   import breakpad
 except ImportError:
   pass
@@ -621,13 +629,11 @@ def TryChange(argv,
     elif options.issue and options.patchset is None:
       # Retrieve the patch from rietveld when the diff is not specified.
       # When patchset is specified, it's because it's done by gcl/git-try.
-      try:
-        import simplejson
-      except ImportError:
-        parser.error('simplejson library is missing, please install.')
+      if json is None:
+        parser.error('json or simplejson library is missing, please install.')
       api_url = '%s/api/%d' % (options.rietveld_url, options.issue)
       logging.debug(api_url)
-      contents = simplejson.loads(urllib.urlopen(api_url).read())
+      contents = json.loads(urllib.urlopen(api_url).read())
       options.patchset = contents['patchsets'][-1]
       diff_url = ('%s/download/issue%d_%d.diff' %
           (options.rietveld_url,  options.issue, options.patchset))
