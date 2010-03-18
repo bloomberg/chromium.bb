@@ -163,9 +163,9 @@ PREFIX : v8::internal::hashtable<v8::internal::stringdictionaryshape,v8::interna
 # 35176
 PREFIX : std::basic_string<wchar_t,std::char_traits<wchar_t>,std::allocator<wchar_t> >::assign___addressfield::parsezipcode___addressfield::parse___formfieldset::formfieldset___formstructure::getheuristicfieldinfo
 
-# 36874
-PREFIX : webkit::webformelement::getinputelements___formmanager::extractforms___renderview::didfinishdocumentload
-
 # 35467
 SUBSTRING : webcore::scriptcontroller::processingusergesture___webcore::frameloader::requestframe___webcore::htmlframeelementbase::openurl___webcore::htmlframeelementbase::setlocation
+
+# 38525
+SUBSTRING : webkit_glue::webpluginimpl::updategeometry___webkit::webplugincontainerimpl::reportgeometry___webcore::scrollview::framerectschanged
 
