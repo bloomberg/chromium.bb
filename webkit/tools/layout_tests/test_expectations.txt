@@ -209,6 +209,10 @@ BUG36681 DEFER SKIP : java = TEXT
 // Chrome does not support Java LiveConnect.
 WONTFIX SKIP : java/lc3 = TEXT
 
+// this test doesn't make sense on Win or Mac.
+// TODO: move to platform/chromium-linux/.
+WONTFIX SKIP MAC WIN : platform/chromium/fast/text/chromium-linux-fontconfig-renderstyle.html = FAIL
+
 // -----------------------------------------------------------------
 // WONTFIX TESTS
 // -----------------------------------------------------------------
@@ -2797,8 +2801,6 @@ BUG_JIANLI MAC : fast/forms/select-style.html = IMAGE PASS
 BUG38375 : plugins/round-trip-npobject.html = TEXT
 BUG38376 WIN : editing/deleting/5390681-2.html = IMAGE+TEXT
 
-// Started failing after Chromium r41620. Need rebaseline.
-
 // WebKit roll 55940 -> 56004
 BUG38228 : fast/events/drag-and-drop.html = TEXT
 
@@ -2821,9 +2823,6 @@ BUG38347 WIN : fast/events/touch = TEXT PASS
 // Need to implement NPP_HandleEvent in the layout_test_plugin
 BUG38353 MAC LINUX : plugins/keyboard-events.html = TEXT
 BUG38353 MAC LINUX : http/tests/plugins/plugin-document-has-focus.html = TIMEOUT
-
-// will rebaseline
-BUG_DGLAZKOV WIN : svg/text/text-intro-05-t.svg = FAIL
 
 BUG38392 : plugins/resize-from-plugin.html = TEXT
 
