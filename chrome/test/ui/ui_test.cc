@@ -144,7 +144,6 @@ UITestBase::UITestBase(MessageLoop::Type msg_loop_type)
       terminate_timeout_ms_(kWaitForTerminateMsec) {
   PathService::Get(chrome::DIR_APP, &browser_directory_);
   PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory_);
-
 }
 
 UITestBase::~UITestBase() {
@@ -182,9 +181,14 @@ void UITestBase::TearDown() {
   // Check for crashes during the test
   FilePath crash_dump_path;
   PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_dump_path);
-  // Each crash creates two dump files, so we divide by two here.
   int actual_crashes =
-      file_util::CountFilesCreatedAfter(crash_dump_path, test_start_time_) / 2;
+      file_util::CountFilesCreatedAfter(crash_dump_path, test_start_time_);
+
+#if defined(OS_WIN)
+  // Each crash creates two dump files, so we divide by two here.
+  actual_crashes /= 2;
+#endif
+
   std::wstring error_msg =
       L"Encountered an unexpected crash in the program during this test.";
   if (expected_crashes_ > 0 && actual_crashes == 0) {
@@ -1259,8 +1263,8 @@ void UITestBase::PrintIOPerfInfo(const char* test_name) {
     }
 
     // TODO(sgk):  if/when base::ProcessMetrics returns real stats on mac:
-    //scoped_ptr<base::ProcessMetrics> process_metrics(
-    //    base::ProcessMetrics::CreateProcessMetrics(process_handle));
+    // scoped_ptr<base::ProcessMetrics> process_metrics(
+    //     base::ProcessMetrics::CreateProcessMetrics(process_handle));
     scoped_ptr<ChromeTestProcessMetrics> process_metrics(
         ChromeTestProcessMetrics::CreateProcessMetrics(process_handle));
     IoCounters io_counters;
@@ -1362,8 +1366,8 @@ void UITestBase::PrintMemoryUsageInfo(const char* test_name) {
     }
 
     // TODO(sgk):  if/when base::ProcessMetrics returns real stats on mac:
-    //scoped_ptr<base::ProcessMetrics> process_metrics(
-    //    base::ProcessMetrics::CreateProcessMetrics(process_handle));
+    // scoped_ptr<base::ProcessMetrics> process_metrics(
+    //     base::ProcessMetrics::CreateProcessMetrics(process_handle));
     scoped_ptr<ChromeTestProcessMetrics> process_metrics(
         ChromeTestProcessMetrics::CreateProcessMetrics(process_handle));
 

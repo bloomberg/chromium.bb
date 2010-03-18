@@ -491,6 +491,9 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
   // with any associated values) if present in the browser command line.
   static const char* const switch_names[] = {
     switches::kRendererAssertTest,
+#if !defined(OFFICIAL_BUILD)
+    switches::kRendererCheckFalseTest,
+#endif  // !defined(OFFICIAL_BUILD)
     switches::kRendererCrashTest,
     switches::kRendererStartupDialog,
     switches::kNoSandbox,

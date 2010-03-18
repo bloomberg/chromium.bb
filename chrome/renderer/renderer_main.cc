@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#if defined(OS_MACOSX)
+#include <signal.h>
+#include <unistd.h>
+#endif  // OS_MACOSX
+
 #include "app/hi_res_timer_manager.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
@@ -31,8 +36,6 @@
 #if defined(OS_MACOSX)
 #include "base/eintr_wrapper.h"
 #include "chrome/app/breakpad_mac.h"
-#include <signal.h>
-#include <unistd.h>
 #endif  // OS_MACOSX
 
 #if defined(USE_LINUX_BREAKPAD)
@@ -151,6 +154,15 @@ static void HandleRendererErrorTestParameters(const CommandLine& command_line) {
   if (command_line.HasSwitch(switches::kRendererAssertTest)) {
     DCHECK(false);
   }
+
+
+#if !defined(OFFICIAL_BUILD)
+  // This parameter causes an assertion too.
+  if (command_line.HasSwitch(switches::kRendererCheckFalseTest)) {
+    CHECK(false);
+  }
+#endif  // !defined(OFFICIAL_BUILD)
+
 
   // This parameter causes a null pointer crash (crash reporter trigger).
   if (command_line.HasSwitch(switches::kRendererCrashTest)) {

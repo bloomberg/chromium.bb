@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "build/build_config.h"
 #include "base/debug_util.h"
 
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/sysctl.h>
 #include <sys/types.h>
@@ -17,12 +17,12 @@
 #include <cxxabi.h>
 #endif
 
-#include <iostream>
-#include <string>
-
 #if defined(OS_MACOSX)
 #include <AvailabilityMacros.h>
 #endif
+
+#include <iostream>
+#include <string>
 
 #include "base/basictypes.h"
 #include "base/compat_execinfo.h"
@@ -172,7 +172,7 @@ bool DebugUtil::BeingDebugged() {
   size_t info_size = sizeof(info);
 
   int sysctl_result = sysctl(mib, arraysize(mib), &info, &info_size, NULL, 0);
-  DCHECK(sysctl_result == 0);
+  DCHECK_EQ(sysctl_result, 0);
   if (sysctl_result != 0) {
     is_set = true;
     being_debugged = false;
@@ -229,15 +229,33 @@ bool DebugUtil::BeingDebugged() {
   return false;
 }
 
+#endif  // defined(OS_FREEBSD)
+
+// We want to break into the debugger in Debug mode, and cause a crash dump in
+// Release mode. Breakpad behaves as follows:
+//
+// +-------+-----------------+-----------------+
+// | OS    | Dump on SIGTRAP | Dump on SIGABRT |
+// +-------+-----------------+-----------------+
+// | Linux |       N         |        Y        |
+// | Mac   |       Y         |        N        |
+// +-------+-----------------+-----------------+
+//
+// Thus we do the following:
+// Linux: Debug mode, send SIGTRAP; Release mode, send SIGABRT.
+// Mac: Always send SIGTRAP.
+
+#if defined(NDEBUG) && !defined(OS_MACOSX)
+#define DEBUG_BREAK() abort()
+#elif defined(ARCH_CPU_ARM_FAMILY)
+#define DEBUG_BREAK() asm("bkpt 0")
+#else
+#define DEBUG_BREAK() asm("int3")
 #endif
 
 // static
 void DebugUtil::BreakDebugger() {
-#if defined(ARCH_CPU_ARM_FAMILY)
-  asm("bkpt 0");
-#else
-  asm("int3");
-#endif
+  DEBUG_BREAK();
 }
 
 StackTrace::StackTrace() {

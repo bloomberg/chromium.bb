@@ -2,11 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <string>
-#include <windows.h>
+#include "build/build_config.h"
 
-#include "base/command_line.h"
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
+#include <string>
+
 #include "base/basictypes.h"
+#include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/logging_chrome.h"
@@ -14,6 +19,8 @@
 #include "chrome/test/ui/ui_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_WIN)
+// TODO(port)
 namespace {
   class ChromeLoggingTest : public testing::Test {
    public:
@@ -62,13 +69,22 @@ TEST_F(ChromeLoggingTest, EnvironmentLogFileName) {
 
   RestoreEnvironmentVariable();
 }
+#endif  // defined(OS_WIN)
 
-#ifndef NDEBUG  // We don't have assertions in release builds.
+#if defined(OS_LINUX) && (!defined(NDEBUG) || !defined(USE_LINUX_BREAKPAD))
+// On Linux in Debug mode, Chrome generates a SIGTRAP.
+// we do not catch SIGTRAPs, thus no crash dump.
+// This also does not work if Breakpad is disabled.
+#define EXPECTED_ASSERT_CRASHES 0
+#else
+#define EXPECTED_ASSERT_CRASHES 1
+#endif
+
+#if !defined(NDEBUG)  // We don't have assertions in release builds.
 // Tests whether we correctly fail on browser assertions during tests.
 class AssertionTest : public UITest {
  protected:
- AssertionTest() : UITest()
-  {
+  AssertionTest() : UITest() {
     // Initial loads will never complete due to assertion.
     wait_for_initial_loads_ = false;
 
@@ -80,29 +96,67 @@ class AssertionTest : public UITest {
 };
 
 // Launch the app in assertion test mode, then close the app.
-TEST_F(AssertionTest, DISABLED_Assertion) {
+#if defined(OS_WIN)
+// http://crbug.com/26715
+#define Assertion DISABLED_Assertion
+#endif
+TEST_F(AssertionTest, Assertion) {
   if (UITest::in_process_renderer()) {
     // in process mode doesn't do the crashing.
     expected_errors_ = 0;
     expected_crashes_ = 0;
   } else {
     expected_errors_ = 1;
-    expected_crashes_ = 1;
+    expected_crashes_ = EXPECTED_ASSERT_CRASHES;
   }
 }
-#endif  // NDEBUG
+#endif  // !defined(NDEBUG)
+
+#if !defined(OFFICIAL_BUILD)
+// Only works on Linux in Release mode with CHROME_HEADLESS=1
+class CheckFalseTest : public UITest {
+ protected:
+  CheckFalseTest() : UITest() {
+    // Initial loads will never complete due to assertion.
+    wait_for_initial_loads_ = false;
+
+    // We're testing the renderer rather than the browser assertion here,
+    // because the browser assertion would flunk the test during SetUp()
+    // (since TAU wouldn't be able to find the browser window).
+    launch_arguments_.AppendSwitch(switches::kRendererCheckFalseTest);
+  }
+};
+
+// Launch the app in assertion test mode, then close the app.
+TEST_F(CheckFalseTest, CheckFails) {
+  if (UITest::in_process_renderer()) {
+    // in process mode doesn't do the crashing.
+    expected_errors_ = 0;
+    expected_crashes_ = 0;
+  } else {
+    expected_errors_ = 1;
+    expected_crashes_ = EXPECTED_ASSERT_CRASHES;
+  }
+}
+#endif  // !defined(OFFICIAL_BUILD)
 
 // Tests whether we correctly fail on browser crashes during UI Tests.
 class RendererCrashTest : public UITest {
  protected:
- RendererCrashTest() : UITest()
-  {
+  RendererCrashTest() : UITest() {
     // Initial loads will never complete due to crash.
     wait_for_initial_loads_ = false;
 
     launch_arguments_.AppendSwitch(switches::kRendererCrashTest);
   }
 };
+
+#if defined(OS_LINUX) && !defined(USE_LINUX_BREAKPAD)
+// On Linux, do not expect a crash dump if Breakpad is disabled.
+#define EXPECTED_CRASH_CRASHES 0
+#else
+#define EXPECTED_CRASH_CRASHES 1
+#endif
 
 #if defined(OS_WIN)
 // http://crbug.com/32048
@@ -117,6 +171,6 @@ TEST_F(RendererCrashTest, Crash) {
     scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
     ASSERT_TRUE(browser.get());
     ASSERT_TRUE(browser->WaitForTabCountToBecome(1, action_max_timeout_ms()));
-    expected_crashes_ = 1;
+    expected_crashes_ = EXPECTED_CRASH_CRASHES;
   }
 }

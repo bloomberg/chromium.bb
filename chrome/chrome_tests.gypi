@@ -360,6 +360,7 @@
             'browser/sessions/session_restore_uitest.cc',
             # puts up modal dialogs.
             'browser/unload_uitest.cc',
+            'common/logging_chrome_uitest.cc',
             'test/ui/fast_shutdown_uitest.cc',
             'test/ui/layout_plugin_uitest.cc',
             'test/ui/omnibox_uitest.cc',
@@ -401,7 +402,6 @@
             # to LaunchApp and thus have not been tested for success either).
             'browser/process_singleton_win_uitest.cc',
             'browser/views/find_bar_host_uitest.cc',
-            'common/logging_chrome_uitest.cc',
             'test/ui/sandbox_uitests.cc',
           ],
         }],

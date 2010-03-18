@@ -590,6 +590,11 @@ const char kRemoteShellPort[]               = "remote-shell-port";
 // Causes the renderer process to throw an assertion on launch.
 const char kRendererAssertTest[]            = "renderer-assert-test";
 
+#if !defined(OFFICIAL_BUILD)
+// Causes the renderer process to throw an assertion on launch.
+const char kRendererCheckFalseTest[]        = "renderer-check-false-test";
+#endif
+
 // On POSIX only: the contents of this flag are prepended to the renderer
 // command line. Useful values might be "valgrind" or "xterm -e gdb --args".
 const char kRendererCmdPrefix[]             = "renderer-cmd-prefix";
