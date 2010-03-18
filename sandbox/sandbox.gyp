@@ -196,6 +196,13 @@
             },
           ],
         ]},
+        {
+          'target_name': 'timestats',
+          'type': 'executable',
+          'sources': [
+            'linux/seccomp/timestats.cc',
+          ],
+        },
       ],
     }],
     [ 'OS=="linux" and selinux==1', {
