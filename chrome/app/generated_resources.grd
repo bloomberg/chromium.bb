@@ -4692,6 +4692,29 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Unknown error.
       </message>
 
+      <message name="IDS_ERRORPAGES_HEADING_SSL_PROTOCOL_ERROR" desc="Heading in the error page for SSL protocol errors.">
+        SSL connection error.
+      </message>
+      <message name="IDS_ERRORPAGES_SUMMARY_SSL_PROTOCOL_ERROR" desc="Summary in the error page for SSL protocol errors.">
+        Unable to make a secure connection to the server. This may be a problem with the server, or it may be requiring a client authentication certificate that you don't have.
+      </message>
+      <message name="IDS_ERRORPAGES_DETAILS_SSL_PROTOCOL_ERROR" desc="The error message displayed for SSL protocol errors.">
+        SSL protocol error.
+      </message>
+
+      <message name="IDS_ERRORPAGES_HEADING_BAD_SSL_CLIENT_AUTH_CERT" desc="Heading in the error page for SSL client certificate authentication failure.">
+        Certificate-based authentication failed.
+      </message>
+      <message name="IDS_ERRORPAGES_SUMMARY_BAD_SSL_CLIENT_AUTH_CERT" desc="Summary in the error page for SSL client certificate authentication failure.">
+        This server requires a certificate for authentication, and didn't accept the one sent by the
+        browser. Your certificate may have expired, or the server may not trust its issuer.
+        You can try again with a different certificate, if you have one, or you may have to
+        obtain a valid certificate from elsewhere.
+      </message>
+      <message name="IDS_ERRORPAGES_DETAILS_BAD_SSL_CLIENT_AUTH_CERT" desc="The error message for SSL client certificate authentication failure.">
+        Bad SSL client authentication certificate.
+      </message>
+
       <message name="IDS_ERRORPAGES_HTTP_POST_WARNING" desc="The error message displayed when the user navigates back or forward to a page which would resubmit post data. They can hit reload to send POST data again and load the page.">
         This web page requires data that you entered earlier in order to be properly displayed. You can send this data again, but by doing so you will repeat any action this page previously performed. Press Reload to resend that data and display this page.
       </message>
