@@ -30,11 +30,15 @@ void ActiveWindowWatcherX::Init() {
       gdk_screen_get_display(gdk_screen_get_default()), kNetActiveWindow);
 
   GdkWindow* root = gdk_get_default_root_window();
+
   // Set up X Event filter to listen for PropertyChange X events.  These events
   // tell us when the active window changes.
-  gdk_window_add_filter(root, &ActiveWindowWatcherX::OnWindowXEvent, this);
-  XSelectInput(
-      GDK_WINDOW_XDISPLAY(root), GDK_WINDOW_XID(root), PropertyChangeMask);
+  // Don't use XSelectInput directly here, as gdk internally seems to cache the
+  // mask and reapply XSelectInput after this, resetting any mask we set here.
+  gdk_window_set_events(root,
+                        static_cast<GdkEventMask>(gdk_window_get_events(root) |
+                                                  GDK_PROPERTY_CHANGE_MASK));
+  gdk_window_add_filter(NULL, &ActiveWindowWatcherX::OnWindowXEvent, this);
 }
 
 void ActiveWindowWatcherX::NotifyActiveWindowChanged() {
