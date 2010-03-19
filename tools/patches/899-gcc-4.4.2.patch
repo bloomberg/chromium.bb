@@ -1131,12 +1131,12 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
 +      else if (!flag_control_integrity)
 +	return "mov{q}\t{%1, %0|%0, %1}";
 +      else if (REGNO (operands[0]) == SP_REG)
-+	if (REGNO (operands[0]) == BP_REG)
++	if (REGNO (operands[1]) == BP_REG)
 +	  return "mov{q}\t{%1, %0|%0, %1}";
 +	else
 +	  return "naclrestsp\t{%k1, %%r15|%%r15, %k1}";
 +      else if (REGNO (operands[0]) == BP_REG)
-+	if (REGNO (operands[0]) == SP_REG)
++	if (REGNO (operands[1]) == SP_REG)
 +	  return "mov{q}\t{%1, %0|%0, %1}";
 +	else
 +	  return "naclrestbp\t{%k1, %%r15|%%r15, %k1}";
@@ -2094,7 +2094,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
 -      return "mov{q}\t{%1, %0|%0, %1}";
 +      if (REGNO (operands[0]) == SP_REG)
 +	{
-+	  if (REGNO (operands[0]) == BP_REG)
++	  if (REGNO (operands[1]) == BP_REG)
 +	    {
 +	      return "mov{q}\t{%1, %0|%0, %1}";
 +	    }
@@ -2105,7 +2105,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
 +	}
 +      else if (REGNO (operands[0]) == BP_REG)
 +	{
-+	  if (REGNO (operands[0]) == SP_REG)
++	  if (REGNO (operands[1]) == SP_REG)
 +	    {
 +	      return "mov{q}\t{%1, %0|%0, %1}";
 +	    }
