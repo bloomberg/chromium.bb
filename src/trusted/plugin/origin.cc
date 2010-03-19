@@ -61,19 +61,32 @@ namespace nacl {
     return origin;
   }
 
-  // For now we are just checking that NaCl modules are local, or on
-  // code.google.com.  Beware NaCl modules in the browser cache!
-  //
-  // Eventually, after sufficient security testing, we will always
-  // return true.
+// For now, if NACL_STANDALONE is defined, we are just checking that
+// NaCl modules are local, or on code.google.com.  Beware NaCl modules
+// in the browser cache!  (NACL_STANDALONE is defined when being built
+// as a browser plugin.)
+//
+// Eventually, after sufficient security testing, we will switch over
+// to a more permissive security policy.
+//
+// When NACL_STANDALONE is not defined, we use a more permissive
+// security policy (which approximates that of the final policy for
+// the release version of NaCl): the "http" and "https" protocols are
+// white-listed, and that's it.  That is, any host is okay as long as
+// the content is served using http or https.  We must still disallow
+// "file" access due to cache poisoning attacks (see below), but
+// rather than having a black list, we use a whitelist of protocols,
+// in case that there are other, new protocols that exhibit a similar
+// property as "file" or "ftp".
+
   bool OriginIsInWhitelist(nacl::string origin) {
+#if NACL_STANDALONE
     static char const *allowed_origin[] = {
-      /*
-      * do *NOT* add in file://localhost as a way to get old tests to
-      * work.  The file://localhost was only for early stage testing
-      * -- having it can be a security problem if an adversary can
-      * guess browser cache file names.
-      */
+      // do *NOT* add in file://localhost as a way to get old tests to
+      // work.  The file://localhost was only for early stage testing
+      // -- having it can be a security problem if an adversary can
+      // guess browser cache file names.
+
       "http://localhost",
       "http://localhost:80",
       "http://localhost:5103",
@@ -107,5 +120,47 @@ namespace nacl {
 
     dprintf((" FAILED!\n"));
     return false;
+#else  // NACL_STANDALONE
+
+    // All hosts are allowed, but we whitelist protocols.  Some
+    // protocols, such as "file" may be used in a cache-poisoning
+    // attack -- or where the user is tricked into downloading a file
+    // to the user's download directory using a file name that is
+    // suggested by the web site -- where an HTML page guesses the
+    // file name of browser cache entries -- or Download directory
+    // entry -- and loads both an HTML page and a nexe from the cache.
+    // This way both has the same origin, and would be given access
+    // rights to access other URLs from the same origin (the entire
+    // filesystem) due to the same-origin policy.
+    //
+    // We are still potentially vulnerable to DNS rebinding,
+    // anti-anti-DNS-rebindng, ..., (anti-)^(2n)-rebinding attacks,
+    // etc. but we assume that the browser's defense mechanisms --
+    // (anti-)^(2n+1)-rebinding attack mechanisms -- take care of
+    // that.
+
+    static char const *allowed_protocols[] = {
+      "http",
+      "https",
+    };
+
+    nacl::string::iterator it = find(origin.begin(), origin.end(), ':');
+    if (origin.end() == it) {
+      dprintf(("no protospec separator found\n"));
+      return false;
+    }
+
+    nacl::string proto(origin.begin(), it);
+
+    dprintf(("OriginIsInWhitelist, protocol(%s)\n", proto.c_str()));
+    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(allowed_protocols); ++i) {
+      if (proto == allowed_protocols[i]) {
+        dprintf((" found protocol at position %"NACL_PRIdS"\n", i));
+        return true;
+      }
+    }
+
+    return false;
+#endif  // NACL_STANDALONE
   }
 }
