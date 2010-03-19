@@ -6,6 +6,9 @@
 
 #include "chrome/browser/download/download_util.h"
 
+#if defined(OS_WIN)
+#include <shobjidl.h>
+#endif
 #include <string>
 
 #include "app/gfx/canvas.h"
@@ -50,6 +53,10 @@
 #if defined(OS_WIN)
 #include "app/os_exchange_data_provider_win.h"
 #include "base/base_drag_source.h"
+#include "base/scoped_comptr_win.h"
+#include "base/win_util.h"
+#include "chrome/browser/browser_list.h"
+#include "chrome/browser/views/frame/browser_view.h"
 #endif
 
 namespace download_util {
@@ -453,7 +460,37 @@ std::wstring GetProgressStatusText(DownloadItem* download) {
 void UpdateAppIconDownloadProgress(int download_count,
                                    bool progress_known,
                                    float progress) {
-  // Win7 Superbar wants some pixel lovin! http://crbug.com/8039
+#if defined(OS_WIN)
+  // Taskbar progress bar is only supported on Win7.
+  if (win_util::GetWinVersion() < win_util::WINVERSION_WIN7)
+    return;
+
+  ScopedComPtr<ITaskbarList3> taskbar;
+  HRESULT result = taskbar.CreateInstance(CLSID_TaskbarList, NULL,
+                                          CLSCTX_INPROC_SERVER);
+  if (FAILED(result)) {
+    LOG(INFO) << "failed creating a TaskbarList object: " << result;
+    return;
+  }
+
+  result = taskbar->HrInit();
+  if (FAILED(result)) {
+    LOG(ERROR) << "failed initializing an ITaskbarList3 interface.";
+    return;
+  }
+
+  // Iterate through all the browser windows, and draw the progress bar.
+  for (BrowserList::const_iterator browser_iterator = BrowserList::begin();
+      browser_iterator != BrowserList::end(); browser_iterator++) {
+    HWND frame = (*browser_iterator)->window()->GetNativeHandle();
+    if (download_count == 0 || progress == 1.0f)
+      taskbar->SetProgressState(frame, TBPF_NOPROGRESS);
+    else if (!progress_known)
+      taskbar->SetProgressState(frame, TBPF_INDETERMINATE);
+    else
+      taskbar->SetProgressValue(frame, (int)(progress * 100), 100);
+  }
+#endif
 }
 #endif
 
