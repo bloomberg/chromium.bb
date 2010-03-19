@@ -8,7 +8,7 @@ layer at (0,0) size 800x600
       RenderText {#text} at (0,0) size 0x0
 layer at (12,13) size 151x16
   RenderBlock {DIV} at (2,3) size 151x16
-    RenderText {#text} at (1,0) size 61x16
-      text run at (1,0) width 61: " worldhello"
-selection start: position 6 of child 0 {#text} of child 0 {DIV} of child 1 {INPUT} of child 1 {BODY} of child 0 {HTML} of document
-selection end:   position 11 of child 0 {#text} of child 0 {DIV} of child 1 {INPUT} of child 1 {BODY} of child 0 {HTML} of document
+    RenderText {#text} at (1,0) size 57x16
+      text run at (1,0) width 57: "worldhello"
+selection start: position 5 of child 0 {#text} of child 0 {DIV} of child 1 {INPUT} of child 1 {BODY} of child 0 {HTML} of document
+selection end:   position 10 of child 0 {#text} of child 0 {DIV} of child 1 {INPUT} of child 1 {BODY} of child 0 {HTML} of document
