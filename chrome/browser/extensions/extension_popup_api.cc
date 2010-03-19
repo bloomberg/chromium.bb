@@ -6,22 +6,23 @@
 
 #include "base/json/json_writer.h"
 #include "base/string_util.h"
-#include "chrome/common/extensions/extension.h"
-#include "chrome/common/notification_details.h"
-#include "chrome/common/notification_service.h"
-#include "chrome/common/notification_source.h"
-#include "chrome/common/notification_type.h"
-#include "chrome/common/url_constants.h"
 #include "chrome/browser/extensions/extension_dom_ui.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/common/extensions/extension.h"
+#include "chrome/common/notification_details.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_source.h"
+#include "chrome/common/notification_type.h"
+#include "chrome/common/url_constants.h"
 #include "gfx/point.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/renderer_host/render_view_host.h"
+#include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/views/extensions/extension_popup.h"
 #include "views/view.h"
@@ -93,11 +94,26 @@ class ExtensionPopupHost : public ExtensionPopup::Observer,
       &ExtensionPopupHost::DispatchPopupClosedEvent));
   }
 
-  virtual void DispatchPopupClosedEvent() {
-    RenderViewHost* render_view_host = dispatcher_->GetExtensionHost() ?
-        dispatcher_->GetExtensionHost()->render_view_host() :
-        dispatcher_->GetExtensionDOMUI()->GetRenderViewHost();
+  virtual void ExtensionHostCreated(ExtensionHost* host) {
+    // Pop-up views should share the same automation routing configuration as
+    // their hosting views, so register the RenderViewHost of the pop-up with
+    // the AutomationResourceRoutingDelegate interface of the dispatcher.
+    AutomationResourceRoutingDelegate* router =
+        GetRoutingFromDispatcher(dispatcher_);
+    if (router)
+      router->RegisterRenderViewHost(host->render_view_host());
+  }
 
+  virtual void DispatchPopupClosedEvent() {
+    // Unregister the automation resource routing registered upon host
+    // creation.
+    AutomationResourceRoutingDelegate* router =
+        GetRoutingFromDispatcher(dispatcher_);
+    if (router)
+      router->UnregisterRenderViewHost(popup_->host()->render_view_host());
+
+    RenderViewHost* render_view_host =
+        GetRenderViewHostFromDispatcher(dispatcher_);
     PopupEventRouter::OnPopupClosed(dispatcher_->profile(),
                                     render_view_host->routing_id());
     dispatcher_ = NULL;
@@ -143,6 +159,28 @@ class ExtensionPopupHost : public ExtensionPopup::Observer,
   }
 
  private:
+  // Returns the AutomationResourceRoutingDelegate interface for |dispatcher|.
+  static AutomationResourceRoutingDelegate*
+      GetRoutingFromDispatcher(ExtensionFunctionDispatcher* dispatcher) {
+    if (!dispatcher)
+      return NULL;
+
+    RenderViewHost* render_view_host =
+      GetRenderViewHostFromDispatcher(dispatcher);
+    RenderViewHostDelegate* delegate =
+        render_view_host ? render_view_host->delegate() : NULL;
+
+    return delegate ? delegate->GetAutomationResourceRoutingDelegate() : NULL;
+  }
+
+  // Returns the RenderViewHost associated with |dispatcher|.
+  static RenderViewHost* GetRenderViewHostFromDispatcher(
+      ExtensionFunctionDispatcher* dispatcher) {
+    return dispatcher->GetExtensionHost() ?
+        dispatcher->GetExtensionHost()->render_view_host() :
+        dispatcher->GetExtensionDOMUI()->GetRenderViewHost();
+  }
+
   // A pointer to the dispatcher that handled the request that opened this
   // popup view.
   ExtensionFunctionDispatcher* dispatcher_;

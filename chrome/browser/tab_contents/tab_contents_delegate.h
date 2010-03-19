@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "chrome/browser/automation/automation_resource_routing_delegate.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/native_web_keyboard_event.h"
@@ -33,7 +34,7 @@ struct WebApplicationInfo;
 
 // Objects implement this interface to get notified about changes in the
 // TabContents and to provide necessary functionality.
-class TabContentsDelegate {
+class TabContentsDelegate : public AutomationResourceRoutingDelegate {
  public:
   // Opens a new URL inside the passed in TabContents (if source is 0 open
   // in the current front-most tab), unless |disposition| indicates the url

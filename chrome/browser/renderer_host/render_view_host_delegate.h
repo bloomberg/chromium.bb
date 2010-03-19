@@ -16,6 +16,8 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebDragOperation.h"
 #include "webkit/glue/window_open_disposition.h"
 
+
+class AutomationResourceRoutingDelegate;
 struct BookmarkDragData;
 class BookmarkNode;
 struct ContextMenuParams;
@@ -440,6 +442,11 @@ class RenderViewHostDelegate {
   virtual Autocomplete* GetAutocompleteDelegate();
   virtual AutoFill* GetAutoFillDelegate();
   virtual BookmarkDrag* GetBookmarkDragDelegate();
+
+  // Return the delegate for registering RenderViewHosts for automation resource
+  // routing.
+  virtual AutomationResourceRoutingDelegate*
+      GetAutomationResourceRoutingDelegate();
 
   // Gets the URL that is currently being displayed, if there is one.
   virtual const GURL& GetURL() const;

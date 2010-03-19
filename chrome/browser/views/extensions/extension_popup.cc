@@ -336,6 +336,9 @@ ExtensionPopup* ExtensionPopup::Show(
     return NULL;
 
   ExtensionHost* host = manager->CreatePopup(url, browser);
+  if (observer)
+    observer->ExtensionHostCreated(host);
+
   ExtensionPopup* popup = new ExtensionPopup(host, frame_widget, relative_to,
                                              arrow_location, activate_on_show,
                                              inspect_with_devtools, chrome,

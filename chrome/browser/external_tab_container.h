@@ -148,6 +148,10 @@ class ExternalTabContainer : public TabContentsDelegate,
 
   virtual Browser* GetBrowser() { return browser_.get(); }
 
+  // Overriden from TabContentsDelegate::AutomationResourceRoutingDelegate
+  virtual void RegisterRenderViewHost(RenderViewHost* render_view_host);
+  virtual void UnregisterRenderViewHost(RenderViewHost* render_view_host);
+
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
@@ -216,6 +220,11 @@ class ExternalTabContainer : public TabContentsDelegate,
   friend class base::RefCounted<ExternalTabContainer>;
 
   ~ExternalTabContainer();
+
+  // Helper resource automation registration method, allowing registration of
+  // pending RenderViewHosts.
+  void RegisterRenderViewHostForAutomation(RenderViewHost* render_view_host,
+                                           bool pending_view);
 
   // Top level navigations received for a tab while it is waiting for an ack
   // from the external host go here. Scenario is a window.open executes on a

@@ -14,6 +14,7 @@
 #include "gfx/native_widget_types.h"
 #include "googleurl/src/gurl.h"
 
+
 class Browser;
 class ExtensionHost;
 class Profile;
@@ -35,6 +36,13 @@ class ExtensionPopup : public BrowserBubble,
     // is ref-counted, and thus will be released shortly after
     // making this delegate call.
     virtual void ExtensionPopupClosed(ExtensionPopup* popup) {}
+
+    // Called when the ExtensionHost is first created for the pop-up view.
+    // Note that this is invoked BEFORE the ExtensionPopup is created, and can
+    // be used to provide extra configuration of the host before it is pushed
+    // into the popup.  An example use is for automation resource routing in
+    // Chrome-Frame.  See extension_popup_api.cc.
+    virtual void ExtensionHostCreated(ExtensionHost* host) {}
   };
 
   enum PopupChrome {

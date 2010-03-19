@@ -636,9 +636,8 @@ class TabContents : public PageNavigator,
   void set_request_context(URLRequestContextGetter* context) {
     request_context_ = context;
   }
-
   URLRequestContextGetter* request_context() const {
-    return request_context_;
+    return request_context_.get();
   }
 
   LanguageState& language_state() {
@@ -856,6 +855,8 @@ class TabContents : public PageNavigator,
   virtual RenderViewHostDelegate::FavIcon* GetFavIconDelegate();
   virtual RenderViewHostDelegate::Autocomplete* GetAutocompleteDelegate();
   virtual RenderViewHostDelegate::AutoFill* GetAutoFillDelegate();
+  virtual AutomationResourceRoutingDelegate*
+      GetAutomationResourceRoutingDelegate();
   virtual TabContents* GetAsTabContents();
   virtual ViewType::Type GetRenderViewType() const;
   virtual int GetBrowserWindowID() const;

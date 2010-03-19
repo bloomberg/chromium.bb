@@ -2068,6 +2068,11 @@ RenderViewHostDelegate::AutoFill* TabContents::GetAutoFillDelegate() {
   return autofill_manager_.get();
 }
 
+AutomationResourceRoutingDelegate*
+TabContents::GetAutomationResourceRoutingDelegate() {
+  return delegate();
+}
+
 RenderViewHostDelegate::BookmarkDrag* TabContents::GetBookmarkDragDelegate() {
   return bookmark_drag_;
 }

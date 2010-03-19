@@ -62,6 +62,11 @@ RenderViewHostDelegate::GetBookmarkDragDelegate() {
   return NULL;
 }
 
+AutomationResourceRoutingDelegate*
+RenderViewHostDelegate::GetAutomationResourceRoutingDelegate() {
+  return NULL;
+}
+
 const GURL& RenderViewHostDelegate::GetURL() const {
   return GURL::EmptyGURL();
 }

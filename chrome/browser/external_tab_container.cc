@@ -167,8 +167,7 @@ void ExternalTabContainer::Uninitialize() {
       if (DevToolsManager::GetInstance())
         DevToolsManager::GetInstance()->UnregisterDevToolsClientHostFor(rvh);
 
-      AutomationResourceMessageFilter::UnRegisterRenderView(
-          rvh->process()->id(), rvh->routing_id());
+      UnregisterRenderViewHost(rvh);
     }
 
     NotificationService::current()->Notify(
@@ -373,15 +372,11 @@ void ExternalTabContainer::AddNewContents(TabContents* source,
 void ExternalTabContainer::TabContentsCreated(TabContents* new_contents) {
   RenderViewHost* rvh = new_contents->render_view_host();
   DCHECK(rvh != NULL);
-  if (rvh) {
-    // Register this render view as a pending render view, i.e. any network
-    // requests initiated by this render view would be serviced when the
-    // external host connects to the new external tab instance.
-    AutomationResourceMessageFilter::RegisterRenderView(
-        rvh->process()->id(), rvh->routing_id(),
-        tab_handle_, automation_resource_message_filter_,
-        true);
-  }
+
+  // Register this render view as a pending render view, i.e. any network
+  // requests initiated by this render view would be serviced when the
+  // external host connects to the new external tab instance.
+  RegisterRenderViewHostForAutomation(rvh, true);
 }
 
 void ExternalTabContainer::ActivateContents(TabContents* contents) {
@@ -484,6 +479,40 @@ void ExternalTabContainer::ShowPageInfo(Profile* profile,
                                         const NavigationEntry::SSLStatus& ssl,
                                         bool show_history) {
   browser::ShowPageInfo(GetNativeView(), profile, url, ssl, show_history);
+}
+
+void ExternalTabContainer::RegisterRenderViewHostForAutomation(
+    RenderViewHost* render_view_host, bool pending_view) {
+  if (render_view_host) {
+    AutomationResourceMessageFilter::RegisterRenderView(
+        render_view_host->process()->id(),
+        render_view_host->routing_id(),
+        tab_handle(),
+        automation_resource_message_filter_,
+        pending_view);
+  }
+}
+
+
+void ExternalTabContainer::RegisterRenderViewHost(
+    RenderViewHost* render_view_host) {
+  // RenderViewHost instances that are to be associated with this
+  // ExternalTabContainer should share the same resource request automation
+  // settings.
+  RegisterRenderViewHostForAutomation(
+      render_view_host,
+      false);  // Network requests should not be handled later.
+}
+
+void ExternalTabContainer::UnregisterRenderViewHost(
+    RenderViewHost* render_view_host) {
+  // Undo the resource automation registration performed in
+  // ExternalTabContainer::RegisterRenderViewHost.
+  if (render_view_host) {
+    AutomationResourceMessageFilter::UnRegisterRenderView(
+      render_view_host->process()->id(),
+      render_view_host->routing_id());
+  }
 }
 
 bool ExternalTabContainer::HandleContextMenu(const ContextMenuParams& params) {
@@ -623,21 +652,14 @@ void ExternalTabContainer::Observe(NotificationType type,
     case NotificationType::RENDER_VIEW_HOST_CREATED_FOR_TAB: {
       if (load_requests_via_automation_) {
         RenderViewHost* rvh = Details<RenderViewHost>(details).ptr();
-        if (rvh) {
-          AutomationResourceMessageFilter::RegisterRenderView(
-              rvh->process()->id(), rvh->routing_id(),
-              tab_handle_, automation_resource_message_filter_, false);
-        }
+        RegisterRenderViewHostForAutomation(rvh, false);
       }
       break;
     }
     case NotificationType::RENDER_VIEW_HOST_DELETED: {
       if (load_requests_via_automation_) {
         RenderViewHost* rvh = Details<RenderViewHost>(details).ptr();
-        if (rvh) {
-          AutomationResourceMessageFilter::UnRegisterRenderView(
-              rvh->process()->id(), rvh->routing_id());
-        }
+        UnregisterRenderViewHost(rvh);
       }
       break;
     }
