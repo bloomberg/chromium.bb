@@ -70,7 +70,7 @@ void PluginList::UnregisterInternalPlugin(const FilePath& path) {
   NOTREACHED();
 }
 
-bool PluginList::ReadPluginInfo(const FilePath &filename,
+bool PluginList::ReadPluginInfo(const FilePath& filename,
                                 WebPluginInfo* info,
                                 const PluginEntryPoints** entry_points) {
   {
@@ -213,7 +213,7 @@ void PluginList::LoadPlugins(bool refresh) {
   plugins_loaded_ = true;
 }
 
-void PluginList::LoadPlugin(const FilePath &path,
+void PluginList::LoadPlugin(const FilePath& path,
                             std::vector<WebPluginInfo>* plugins) {
   WebPluginInfo plugin_info;
   const PluginEntryPoints* entry_points;

@@ -18,6 +18,9 @@ bool DebugPluginLoading() {
   return CommandLine::ForCurrentProcess()->HasSwitch(kDebugPluginLoading);
 }
 
+// Shorthand way of logging plugin load status.
+#define PLUG_LOG if (DebugPluginLoading()) LOG(INFO)
+
 // We build up a list of files and mtimes so we can sort them.
 typedef std::pair<FilePath, base::Time> FileAndTime;
 typedef std::vector<FileAndTime> FileTimeList;
@@ -121,7 +124,7 @@ void PluginList::LoadPluginsFromDir(const FilePath& path,
   // later sorting by mtime.
   FileTimeList files;
   file_util::FileEnumerator enumerator(path,
-                                       false, // not recursive
+                                       false,  // not recursive
                                        file_util::FileEnumerator::FILES);
   for (FilePath path = enumerator.Next(); !path.value().empty();
        path = enumerator.Next()) {
@@ -135,8 +138,7 @@ void PluginList::LoadPluginsFromDir(const FilePath& path,
     // symlinks.
     FilePath orig_path = path;
     file_util::AbsolutePath(&path);
-    if (DebugPluginLoading())
-      LOG(ERROR) << "Resolved " << orig_path.value() << " -> " << path.value();
+    PLUG_LOG << "Resolved " << orig_path.value() << " -> " << path.value();
 
     // Flash stops working if the containing directory involves 'netscape'.
     // No joke.  So use the other path if it's better.
@@ -168,8 +170,7 @@ void PluginList::LoadPluginsFromDir(const FilePath& path,
       }
     }
     if (skip) {
-      if (DebugPluginLoading())
-        LOG(ERROR) << "Skipping duplicate instance of " << path.value();
+      PLUG_LOG << "Skipping duplicate instance of " << path.value();
       continue;
     }
 
@@ -188,20 +189,15 @@ void PluginList::LoadPluginsFromDir(const FilePath& path,
 
 bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
                                   std::vector<WebPluginInfo>* plugins) {
-  if (DebugPluginLoading()) {
-    LOG(ERROR) << "Considering " << info.path.value()
-              << " (" << info.name << ")";
-  }
+  PLUG_LOG << "Considering " << info.path.value() << " (" << info.name << ")";
 
   if (IsBlacklistedPlugin(info)) {
-    if (DebugPluginLoading())
-      LOG(ERROR) << "Skipping blacklisted plugin " << info.path.value();
+    PLUG_LOG << "Skipping blacklisted plugin " << info.path.value();
     return false;
   }
 
   if (IsUndesirablePlugin(info)) {
-    if (DebugPluginLoading())
-      LOG(ERROR) << info.path.value() << " is undesirable.";
+    PLUG_LOG << info.path.value() << " is undesirable.";
 
     // See if we have a better version of this plugin.
     for (size_t i = 0; i < plugins->size(); ++i) {
@@ -209,10 +205,8 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
           !IsUndesirablePlugin(plugins->at(i))) {
         // Skip the current undesirable one so we can use the better one
         // we just found.
-        if (DebugPluginLoading()) {
-          LOG(ERROR) << "Skipping " << info.path.value() << ", preferring "
-                    << plugins->at(i).path.value();
-        }
+        PLUG_LOG << "Skipping " << info.path.value() << ", preferring "
+                 << plugins->at(i).path.value();
         return false;
       }
     }
@@ -220,8 +214,7 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
 
   // TODO(evanm): prefer the newest version of flash, etc. here?
 
-  if (DebugPluginLoading())
-    LOG(ERROR) << "Using " << info.path.value();
+  PLUG_LOG << "Using " << info.path.value();
 
   return true;
 }
