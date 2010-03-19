@@ -288,8 +288,8 @@ void AppLauncher::BubbleContainer::Layout() {
 ////////////////////////////////////////////////////////////////////////////////
 // AppLauncher
 
-AppLauncher::AppLauncher()
-    : browser_(NULL),
+AppLauncher::AppLauncher(Browser* browser)
+    : browser_(browser),
       popup_(NULL),
       site_instance_(NULL),
       contents_rvh_(NULL),
@@ -343,6 +343,13 @@ AppLauncher::AppLauncher()
   render_view_container_->Attach(rwhv_->GetNativeView());
   contents_rvh_->NavigateToURL(menu_url);
 
+  navigation_bar_->Update(browser);
+  // Set the transient window so that ChromeOS WM treat this
+  // as if a popup window.
+  gtk_window_set_transient_for(
+      GTK_WINDOW(popup_->GetNativeView()),
+      GTK_WINDOW(browser_->window()->GetNativeHandle()));
+
   ActiveWindowWatcherX::AddObserver(this);
 }
 
@@ -352,25 +359,15 @@ AppLauncher::~AppLauncher() {
   ActiveWindowWatcherX::RemoveObserver(this);
 }
 
-void AppLauncher::Update(Browser* browser) {
-  if (browser_ != browser) {
-    browser_ = browser;
-    navigation_bar_->Update(browser);
-    // Set the transient window so that ChromeOS WM treat this
-    // as if a popup window.
-    gtk_window_set_transient_for(
-        GTK_WINDOW(popup_->GetNativeView()),
-        GTK_WINDOW(browser_->window()->GetNativeHandle()));
-  }
-
+void AppLauncher::Update() {
   popup_->SetBounds(browser_->window()->GetRestoredBounds());
   top_container_->Layout();
 }
 
-void AppLauncher::Show(Browser* browser) {
+void AppLauncher::Show() {
   Cleanup();
 
-  Update(browser);
+  Update();
   popup_->Show();
 
   GtkWidget* rwhv_widget = rwhv_->GetNativeView();

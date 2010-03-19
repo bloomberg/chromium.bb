@@ -62,11 +62,11 @@ class AppLauncher : public RenderViewHostDelegate,
                     public ActiveWindowWatcherX::Observer,
                     public views::AcceleratorTarget {
  public:
-  AppLauncher();
+  AppLauncher(Browser* browser);
   ~AppLauncher();
 
   // Shows the menu.
-  void Show(Browser* browser);
+  void Show();
 
  private:
   // TabContentsDelegate and RenderViewHostDelegate::View have some methods
@@ -143,8 +143,8 @@ class AppLauncher : public RenderViewHostDelegate,
   // hidden.
   void Cleanup();
 
-  // Updates the app launcher's state and layout with the |browser|.
-  void Update(Browser* browser);
+  // Updates the app launcher's state.
+  void Update();
 
   // RenderViewHostDelegate overrides.
   virtual int GetBrowserWindowID() const {

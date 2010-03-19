@@ -459,9 +459,9 @@ void BrowserView::ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {
 void BrowserView::ButtonPressed(views::Button* sender,
                                 const views::Event& event) {
   if (!main_menu_.get()) {
-    main_menu_.reset(new AppLauncher());
+    main_menu_.reset(new AppLauncher(browser()));
   }
-  main_menu_->Show(browser());
+  main_menu_->Show();
 }
 
 // views::ContextMenuController overrides.
