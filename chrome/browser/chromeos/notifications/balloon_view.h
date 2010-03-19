@@ -65,6 +65,9 @@ class BalloonViewImpl : public BalloonView,
   // True if the notification is sticky.
   bool sticky() { return sticky_; }
 
+  // True if the notification is closed by the dismiss button.
+  bool closed_by_user() { return closed_by_user_; }
+
  private:
   // views::View interface.
   virtual gfx::Size GetPreferredSize() {
@@ -120,6 +123,8 @@ class BalloonViewImpl : public BalloonView,
   bool sticky_;
   // True if a notification should have info/option/dismiss label/buttons.
   bool controls_;
+  // True if the notification is closed by the dismiss button.
+  bool closed_by_user_;
 
   DISALLOW_COPY_AND_ASSIGN(BalloonViewImpl);
 };

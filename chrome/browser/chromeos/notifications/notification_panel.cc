@@ -32,6 +32,38 @@ const int kStaleTimeoutInSeconds = 10;
 
 using chromeos::BalloonViewImpl;
 
+class PanelWidget : public views::WidgetGtk {
+ public:
+  explicit PanelWidget(chromeos::NotificationPanel* panel)
+      : WidgetGtk(views::WidgetGtk::TYPE_WINDOW),
+        panel_(panel) {
+  }
+
+  // views::WidgetGtk overrides.
+  virtual gboolean OnMotionNotify(GtkWidget* widget, GdkEventMotion* event) {
+    gboolean result = WidgetGtk::OnMotionNotify(widget, event);
+    panel_->DontUpdatePanelOnStale();
+    return result;
+  }
+
+  virtual gboolean OnLeaveNotify(GtkWidget* widget, GdkEventCrossing* event) {
+    gboolean result = views::WidgetGtk::OnLeaveNotify(widget, event);
+    // Leave notify can happen if the mouse moves into the child gdk window.
+    // Make sure the mouse is outside of the panel.
+    gfx::Point p(event->x_root, event->y_root);
+    gfx::Rect bounds;
+    GetBounds(&bounds, true);
+    if (!bounds.Contains(p)) {
+      panel_->OnMouseLeave();
+    }
+    return result;
+  }
+
+ private:
+  chromeos::NotificationPanel* panel_;
+  DISALLOW_COPY_AND_ASSIGN(PanelWidget);
+};
+
 class BalloonSubContainer : public views::View {
  public:
   explicit BalloonSubContainer(int margin)
@@ -258,7 +290,10 @@ class BalloonContainer : public views::View {
 NotificationPanel::NotificationPanel()
     : balloon_container_(NULL),
       state_(CLOSED),
-      task_factory_(this) {
+      task_factory_(this),
+      update_panel_on_mouse_leave_(false),
+      latest_token_(0),
+      stale_token_(0) {
   Init();
 }
 
@@ -273,7 +308,7 @@ void NotificationPanel::Show() {
   if (!panel_widget_.get()) {
     // TODO(oshima): Using window because Popup widget behaves weird
     // when resizing. This needs to be investigated.
-    panel_widget_.reset(new views::WidgetGtk(views::WidgetGtk::TYPE_WINDOW));
+    panel_widget_.reset(new PanelWidget(this));
     gfx::Rect bounds = GetPreferredBounds();
     if (bounds.width() < kBalloonMinWidth ||
         bounds.height() < kBalloonMinHeight) {
@@ -344,7 +379,13 @@ void NotificationPanel::Remove(Balloon* balloon) {
   // no change to the state
   if (balloon_container_->GetNotificationCount() == 0)
     state_ = CLOSED;
-  UpdatePanel(true);
+  if (static_cast<BalloonViewImpl*>(balloon->view())->closed_by_user()) {
+    DontUpdatePanelOnStale();
+    balloon_container_->UpdateBounds();
+    scroll_view_->Layout();
+  } else {
+    UpdatePanel(true);
+  }
 }
 
 void NotificationPanel::ResizeNotification(
@@ -396,6 +437,21 @@ void NotificationPanel::OnPanelStateChanged(PanelController::State state) {
   }
 }
 
+void NotificationPanel::OnMouseLeave() {
+  if (update_panel_on_mouse_leave_) {
+    // TODO(oshima): We need "AS_IS" state, which simply
+    // keeps the current panel size unless it has less notifications
+    // than it can show.
+    if (balloon_container_->GetStickyNotificationCount() > 0 ||
+        balloon_container_->GetNewNotificationCount() > 0) {
+      state_ = STICKY_AND_NEW;
+    } else {
+      state_ = MINIMIZED;
+    }
+    UpdatePanel(true);
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NotificationPanel private.
 
@@ -408,9 +464,12 @@ void NotificationPanel::Init() {
   scroll_view_.reset(new views::ScrollView());
   scroll_view_->set_parent_owned(false);
   scroll_view_->SetContents(balloon_container_);
+  scroll_view_->set_background(
+      views::Background::CreateSolidBackground(SK_ColorWHITE));
 }
 
 void NotificationPanel::UpdatePanel(bool contents_changed) {
+  update_panel_on_mouse_leave_ = false;
   if (contents_changed) {
     balloon_container_->UpdateBounds();
     scroll_view_->Layout();
@@ -461,18 +520,29 @@ gfx::Rect NotificationPanel::GetStickyNewBounds() {
   return gfx::Rect(0, 0, new_width, new_height);
 }
 
+void NotificationPanel::DontUpdatePanelOnStale() {
+  if (stale_token_ != latest_token_) {
+    stale_token_ = latest_token_;
+  }
+  update_panel_on_mouse_leave_ = true;
+}
+
 void NotificationPanel::StartStaleTimer(Balloon* balloon) {
   BalloonViewImpl* view = static_cast<BalloonViewImpl*>(balloon->view());
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       task_factory_.NewRunnableMethod(
-          &NotificationPanel::OnStale, view),
+          &NotificationPanel::OnStale, view, latest_token_++),
       1000 * kStaleTimeoutInSeconds);
 }
 
-void NotificationPanel::OnStale(BalloonViewImpl* view) {
+void NotificationPanel::OnStale(BalloonViewImpl* view, int token) {
   if (balloon_container_->HasBalloonView(view) && !view->stale()) {
     view->set_stale();
+    // don't update panel on stale
+    if (token < stale_token_) {
+      return;
+    }
     if (balloon_container_->GetStickyNotificationCount() > 0) {
       state_ = STICKY_AND_NEW;
     } else {

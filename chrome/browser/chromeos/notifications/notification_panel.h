@@ -82,6 +82,13 @@ class NotificationPanel : public PanelController::Delegate,
   virtual void ClosePanel();
   virtual void OnPanelStateChanged(PanelController::State state);
 
+  // Called when a mouse left the panel window.
+  void OnMouseLeave();
+
+  // Tells that the panel should not update the size or state
+  // when a notification becomes stale.
+  void DontUpdatePanelOnStale();
+
   // Returns number of of sticky notifications.
   int GetStickyNotificationCount() const;
 
@@ -113,7 +120,9 @@ class NotificationPanel : public PanelController::Delegate,
 
   // A callback function that is called when the notification
   // (that the view is associated with) becomes stale after a timeout.
-  void OnStale(BalloonViewImpl* view);
+  // |token| is a unique id assigned to a callback task and is
+  // used to cancel the task.
+  void OnStale(BalloonViewImpl* view, int token);
 
   BalloonContainer* balloon_container_;
   scoped_ptr<views::Widget> panel_widget_;
@@ -121,6 +130,14 @@ class NotificationPanel : public PanelController::Delegate,
   scoped_ptr<views::ScrollView> scroll_view_;
   State state_;
   ScopedRunnableMethodFactory<NotificationPanel> task_factory_;
+  bool update_panel_on_mouse_leave_;
+
+  // Task token is an integer value assigned to each task, and
+  // used to cancel the tasks.
+  // The latest task token.
+  int latest_token_;
+  // A task whose token is smaller than this value is stale and skipped.
+  int stale_token_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationPanel);
 };
