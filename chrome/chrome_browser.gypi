@@ -2362,7 +2362,7 @@
         }],
         ['chromeos==0', {
           'sources/': [
-            ['exclude', '^browser/chromeos'],            
+            ['exclude', '^browser/chromeos'],
           ],
         }],
         ['OS=="linux"', {
@@ -3052,15 +3052,15 @@
         {
           'destination': '<(PRODUCT_DIR)/resources/bookmark_manager/js/cr/ui',
           'files': [
-            'browser/resources/bookmark_manager/js/cr/ui/menuitem.js',
             'browser/resources/bookmark_manager/js/cr/ui/command.js',
-            'browser/resources/bookmark_manager/js/cr/ui/menubutton.js',
+            'browser/resources/bookmark_manager/js/cr/ui/contextmenuhandler.js',
             'browser/resources/bookmark_manager/js/cr/ui/list.js',
-            'browser/resources/bookmark_manager/js/cr/ui/tree.js',
+            'browser/resources/bookmark_manager/js/cr/ui/listitem.js',
             'browser/resources/bookmark_manager/js/cr/ui/listselectionmodel.js',
             'browser/resources/bookmark_manager/js/cr/ui/menu.js',
-            'browser/resources/bookmark_manager/js/cr/ui/listitem.js',
-            'browser/resources/bookmark_manager/js/cr/ui/contextmenuhandler.js',
+            'browser/resources/bookmark_manager/js/cr/ui/menubutton.js',
+            'browser/resources/bookmark_manager/js/cr/ui/menuitem.js',
+            'browser/resources/bookmark_manager/js/cr/ui/tree.js',
           ]
         },
         {
@@ -3074,15 +3074,16 @@
         {
           'destination': '<(PRODUCT_DIR)/resources/bookmark_manager/images',
           'files': [
-            'browser/resources/bookmark_manager/images/folder_open_rtl.png',
-            'browser/resources/bookmark_manager/images/folder_open.png',
-            'browser/resources/bookmark_manager/images/bookmark_manager_recent.png',
             'browser/resources/bookmark_manager/images/bookmark_bar_folder_mac.png',
+            'browser/resources/bookmark_manager/images/bookmark_manager_recent.png',
+            'browser/resources/bookmark_manager/images/bookmark_manager_search.png',
             'browser/resources/bookmark_manager/images/bookmarks_favicon.png',
             'browser/resources/bookmark_manager/images/bookmarks_section.png',
+            'browser/resources/bookmark_manager/images/default_favicon.png',
             'browser/resources/bookmark_manager/images/folder_closed.png',
-            'browser/resources/bookmark_manager/images/bookmark_manager_search.png',
             'browser/resources/bookmark_manager/images/folder_closed_rtl.png',
+            'browser/resources/bookmark_manager/images/folder_open.png',
+            'browser/resources/bookmark_manager/images/folder_open_rtl.png',
           ]
         },
       ]
