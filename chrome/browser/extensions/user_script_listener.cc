@@ -16,6 +16,7 @@
 UserScriptListener::UserScriptListener(ResourceQueue* resource_queue)
     : resource_queue_(resource_queue),
       user_scripts_ready_(false) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK(resource_queue_);
 
   registrar_.Add(this, NotificationType::EXTENSION_LOADED,
@@ -24,6 +25,11 @@ UserScriptListener::UserScriptListener(ResourceQueue* resource_queue)
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::USER_SCRIPTS_UPDATED,
                  NotificationService::AllSources());
+}
+
+void UserScriptListener::ShutdownMainThread() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  registrar_.RemoveAll();
 }
 
 bool UserScriptListener::ShouldDelayRequest(

@@ -194,6 +194,8 @@ ResourceDispatcherHost::~ResourceDispatcherHost() {
   AsyncResourceHandler::GlobalCleanup();
   STLDeleteValues(&pending_requests_);
 
+  user_script_listener_->ShutdownMainThread();
+
   // Clear blocked requests if any left.
   // Note that we have to do this in 2 passes as we cannot call
   // CancelBlockedRequestsForRoute while iterating over

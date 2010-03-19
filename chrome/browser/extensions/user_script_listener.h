@@ -30,6 +30,10 @@ class UserScriptListener
  public:
   explicit UserScriptListener(ResourceQueue* resource_queue);
 
+  // Call this to do necessary cleanup on the main thread before the object
+  // is deleted.
+  void ShutdownMainThread();
+
   // ResourceQueueDelegate:
   virtual bool ShouldDelayRequest(
       URLRequest* request,
