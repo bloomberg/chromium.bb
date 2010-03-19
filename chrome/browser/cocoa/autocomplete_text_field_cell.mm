@@ -304,13 +304,11 @@ CGFloat WidthForKeyword(NSAttributedString* keywordString) {
   LocationBarViewMac::PageActionImageView* view =
       page_action_views_->ViewAt(index);
 
-  // If we are calculating space for a preview page action, the icon is still
-  // loading. We use this function only to get the correct x value for the
-  // extension installed bubble arrow.
-  if (!view->preview_enabled() &&
-      (!view->GetImage() || !view->IsVisible())) {
+  // When this method is called, all the icon images are still loading, so
+  // just check to see whether the view is visible when deciding whether
+  // its NSRect should be made available.
+  if (!view->preview_enabled() && !view->IsVisible())
     return NSZeroRect;
-  }
 
   for (AutocompleteTextFieldIcon* icon in [self layedOutIcons:cellFrame]) {
     if (view == [icon view])
@@ -418,8 +416,11 @@ CGFloat WidthForKeyword(NSAttributedString* keywordString) {
   for (size_t i = 0; i < pageActionCount; ++i) {
     LocationBarViewMac::PageActionImageView* view =
         page_action_views_->ViewAt(i);
-    if (view->preview_enabled() || (view->GetImage() && view->IsVisible())) {
-      NSSize iconSize = view->GetImageSize();
+    if (view->preview_enabled() || view->IsVisible()) {
+      // If this function is called right after a page action icon has been
+      // created, the images for all views will still be loading; in this case,
+      // each visible view will give us its default size.
+      NSSize iconSize = view->GetPreferredImageSize();
       NSRect pageActionFrame =
           [self rightJustifyImage:iconSize
                            inRect:iconFrame

@@ -230,9 +230,12 @@ class LocationBarViewMac : public AutocompleteEditController,
 
     bool preview_enabled() { return preview_enabled_; }
 
-    // Return the size of the image, or a default size if no image available
-    // and preview is enabled.
-    virtual NSSize GetImageSize();
+    // Returns the size of the image, or a default size if no image available.
+    // When a new page action is created, all the icons are destroyed and
+    // recreated; at this point we need to calculate sizes to lay out the
+    // icons even though no images are available yet.  For this case, we return
+    // the default image size for a page icon.
+    virtual NSSize GetPreferredImageSize();
 
     // Either notify listeners or show a popup depending on the Page Action.
     virtual void OnMousePressed(NSRect bounds);

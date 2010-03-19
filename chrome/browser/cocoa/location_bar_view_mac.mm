@@ -646,17 +646,14 @@ LocationBarViewMac::PageActionImageView::~PageActionImageView() {
     tracker_->StopTrackingImageLoad();
 }
 
-NSSize LocationBarViewMac::PageActionImageView::GetImageSize() {
+NSSize LocationBarViewMac::PageActionImageView::GetPreferredImageSize() {
   NSImage* image = GetImage();
-  if (preview_enabled_ && !image) {
+  if (image) {
+    return [image size];
+  } else {
     return NSMakeSize(Extension::kPageActionIconMaxSize,
                       Extension::kPageActionIconMaxSize);
-  } else if (image) {
-    return [image size];
   }
-  // Default value for image size is undefined when preview is not enabled.
-  NOTREACHED();
-  return NSMakeSize(0, 0);
 }
 
 // Overridden from LocationBarImageView. Either notify listeners or show a
