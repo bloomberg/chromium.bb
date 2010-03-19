@@ -2240,7 +2240,7 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_CONTROL3(ViewHostMsg_Geolocation_RequestPermission,
                        int /* render_view_id */,
                        int /* bridge_id */,
-                       std::string /* host of the page*/)
+                       GURL /* GURL of the frame requesting geolocation */)
 
   // The |render_view_id| and |bridge_id| requests Geolocation service to start
   // updating.
@@ -2250,7 +2250,7 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_CONTROL4(ViewHostMsg_Geolocation_StartUpdating,
                        int /* render_view_id */,
                        int /* bridge_id */,
-                       std::string /* host */,
+                       GURL /* GURL of the frame requesting geolocation */,
                        bool /* enable_high_accuracy */)
 
   // The |render_view_id| and |bridge_id| requests Geolocation service to stop

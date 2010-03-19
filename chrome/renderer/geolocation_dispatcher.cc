@@ -39,13 +39,13 @@ bool GeolocationDispatcher::OnMessageReceived(const IPC::Message& message) {
 void GeolocationDispatcher::requestPermissionForFrame(
     int bridge_id, const WebKit::WebURL& url) {
   render_view_->Send(new ViewHostMsg_Geolocation_RequestPermission(
-      render_view_->routing_id(), bridge_id, GURL(url).host()));
+      render_view_->routing_id(), bridge_id, GURL(url)));
 }
 
 void GeolocationDispatcher::startUpdating(
     int bridge_id, const WebKit::WebURL& url, bool enableHighAccuracy) {
   render_view_->Send(new ViewHostMsg_Geolocation_StartUpdating(
-      render_view_->routing_id(), bridge_id, GURL(url).host(),
+      render_view_->routing_id(), bridge_id, GURL(url),
       enableHighAccuracy));
 }
 

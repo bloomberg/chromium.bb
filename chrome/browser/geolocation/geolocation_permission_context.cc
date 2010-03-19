@@ -37,14 +37,14 @@ class GeolocationConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
   GeolocationConfirmInfoBarDelegate(
       TabContents* tab_contents, GeolocationPermissionContext* context,
       int render_process_id, int render_view_id, int bridge_id,
-      const std::string& host)
+      const GURL& requesting_frame_url)
       : ConfirmInfoBarDelegate(tab_contents),
         tab_contents_(tab_contents),
         context_(context),
         render_process_id_(render_process_id),
         render_view_id_(render_view_id),
         bridge_id_(bridge_id),
-        host_(host) {
+        requesting_frame_url_(requesting_frame_url) {
   }
 
   // ConfirmInfoBarDelegate
@@ -67,7 +67,8 @@ class GeolocationConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
   }
   virtual std::wstring GetMessageText() const {
     return l10n_util::GetStringF(
-        IDS_GEOLOCATION_INFOBAR_QUESTION, UTF8ToWide(host_));
+        IDS_GEOLOCATION_INFOBAR_QUESTION,
+        UTF8ToWide(requesting_frame_url_.GetOrigin().spec()));
   }
   virtual SkBitmap* GetIcon() const {
     return ResourceBundle::GetSharedInstance().GetBitmapNamed(
@@ -87,7 +88,8 @@ class GeolocationConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
  private:
   bool SetPermission(bool confirm) {
     context_->SetPermission(
-        render_process_id_, render_view_id_, bridge_id_, host_, confirm);
+        render_process_id_, render_view_id_, bridge_id_, requesting_frame_url_,
+        confirm);
     return true;
   }
 
@@ -96,70 +98,16 @@ class GeolocationConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
   int render_process_id_;
   int render_view_id_;
   int bridge_id_;
-  std::string host_;
+  GURL requesting_frame_url_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(GeolocationConfirmInfoBarDelegate);
 };
-
-// TODO(bulach): use HostContentSettingsMap instead!
-FilePath::StringType StdStringToFilePathString(const std::string& std_string) {
-#if defined(OS_WIN)
-  return UTF8ToWide(std_string);
-#else
-  return std_string;
-#endif
-}
-
-// Returns true if permission was successfully read from file, and *allowed
-// be set accordingly.
-// Returns false otherwise.
-bool ReadPermissionFromFile(
-    const std::string& host, const FilePath& permissions_path, bool* allowed) {
-  DCHECK(allowed);
-  *allowed = false;
-  // TODO(bulach): this is probably wrong! is there any utility to convert a URL
-  // to FilePath?
-  FilePath permission_file(
-      permissions_path.Append(StdStringToFilePathString(host)));
-  if (!file_util::PathExists(permission_file))
-    return false;
-  JSONFileValueSerializer serializer(permission_file);
-  scoped_ptr<Value> root_value(serializer.Deserialize(NULL));
-  bool ret = root_value.get() &&
-             root_value->GetType() == Value::TYPE_DICTIONARY;
-  DictionaryValue* dictionary = static_cast<DictionaryValue*>(root_value.get());
-  return ret &&
-         dictionary->GetBoolean(kAllowedDictionaryKey, allowed);
-}
-
-void SavePermissionToFile(
-    const std::string& host, const FilePath& permissions_path, bool allowed) {
-#if 0
-  if (!file_util::DirectoryExists(permissions_path))
-    file_util::CreateDirectory(permissions_path);
-  // TODO(bulach): this is probably wrong! is there any utility to convert a URL
-  // to FilePath?
-  FilePath permission_file(
-      permissions_path.Append(StdStringToFilePathString(
-          host)));
-  DictionaryValue dictionary;
-  dictionary.SetBoolean(kAllowedDictionaryKey, allowed);
-  std::string permission_data;
-  JSONStringValueSerializer serializer(&permission_data);
-  serializer.Serialize(dictionary);
-  file_util::WriteFile(
-      permission_file, permission_data.c_str(), permission_data.length());
-#endif  // if 0
-}
 
 }  // namespace
 
 GeolocationPermissionContext::GeolocationPermissionContext(
     Profile* profile)
-    : profile_(profile),
-      is_off_the_record_(profile->IsOffTheRecord()),
-      permissions_path_(profile->GetPath().Append(FilePath(
-          kGeolocationPermissionPath))) {
+    : profile_(profile) {
 }
 
 GeolocationPermissionContext::~GeolocationPermissionContext() {
@@ -167,63 +115,27 @@ GeolocationPermissionContext::~GeolocationPermissionContext() {
 
 void GeolocationPermissionContext::RequestGeolocationPermission(
     int render_process_id, int render_view_id, int bridge_id,
-    const std::string& host) {
+    const GURL& requesting_frame) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  std::map<std::string, bool>::const_iterator permission =
-      permissions_.find(host);
-  if (permission != permissions_.end()) {
-    NotifyPermissionSet(
-        render_process_id, render_view_id, bridge_id, permission->second);
-  } else {
-    HandlePermissionMemoryCacheMiss(
-        render_process_id, render_view_id, bridge_id, host);
-  }
+  RequestPermissionFromUI(render_process_id, render_view_id, bridge_id,
+                          requesting_frame);
 }
 
 void GeolocationPermissionContext::SetPermission(
     int render_process_id, int render_view_id, int bridge_id,
-    const std::string& host, bool allowed) {
-  SetPermissionMemoryCacheOnIOThread(host, allowed);
-  SetPermissionOnFileThread(host, allowed);
+    const GURL& requesting_frame, bool allowed) {
   NotifyPermissionSet(render_process_id, render_view_id, bridge_id, allowed);
-}
-
-void GeolocationPermissionContext::HandlePermissionMemoryCacheMiss(
-    int render_process_id, int render_view_id, int bridge_id,
-    const std::string& host) {
-  if (!ChromeThread::CurrentlyOn(ChromeThread::FILE)) {
-    ChromeThread::PostTask(
-        ChromeThread::FILE, FROM_HERE,
-        NewRunnableMethod(
-            this,
-            &GeolocationPermissionContext::HandlePermissionMemoryCacheMiss,
-            render_process_id, render_view_id, bridge_id, host));
-    return;
-  }
-
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
-  // TODO(bulach): should we save a file per host or have some smarter
-  // storage? Use HostContentSettingsMap instead.
-  bool allowed;
-  if (is_off_the_record_ ||
-      !ReadPermissionFromFile(host, permissions_path_, &allowed)) {
-    RequestPermissionFromUI(
-        render_process_id, render_view_id, bridge_id, host);
-  } else {
-    SetPermissionMemoryCacheOnIOThread(host, allowed);
-    NotifyPermissionSet(render_process_id, render_view_id, bridge_id, allowed);
-  }
 }
 
 void GeolocationPermissionContext::RequestPermissionFromUI(
     int render_process_id, int render_view_id, int bridge_id,
-    const std::string& host) {
+    const GURL& requesting_frame) {
   if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
-        NewRunnableMethod(
-            this, &GeolocationPermissionContext::RequestPermissionFromUI,
-            render_process_id, render_view_id, bridge_id, host));
+        NewRunnableMethod(this,
+            &GeolocationPermissionContext::RequestPermissionFromUI,
+            render_process_id, render_view_id, bridge_id, requesting_frame));
     return;
   }
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
@@ -238,10 +150,8 @@ void GeolocationPermissionContext::RequestPermissionFromUI(
     NotifyPermissionSet(render_process_id, render_view_id, bridge_id, false);
     return;
   }
-  tab_contents->AddInfoBar(
-      new GeolocationConfirmInfoBarDelegate(
-          tab_contents, this, render_process_id, render_view_id,
-          bridge_id, host));
+  tab_contents->AddInfoBar(new GeolocationConfirmInfoBarDelegate(tab_contents,
+      this, render_process_id, render_view_id, bridge_id, requesting_frame));
 }
 
 void GeolocationPermissionContext::NotifyPermissionSet(
@@ -249,8 +159,8 @@ void GeolocationPermissionContext::NotifyPermissionSet(
   if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
-        NewRunnableMethod(
-            this, &GeolocationPermissionContext::NotifyPermissionSet,
+        NewRunnableMethod(this,
+            &GeolocationPermissionContext::NotifyPermissionSet,
             render_process_id, render_view_id, bridge_id, allowed));
     return;
   }
@@ -259,44 +169,6 @@ void GeolocationPermissionContext::NotifyPermissionSet(
   CallRenderViewHost(
       render_process_id, render_view_id,
       &RenderViewHost::Send,
-      new ViewMsg_Geolocation_PermissionSet(
-          render_view_id, bridge_id, allowed));
-}
-
-void GeolocationPermissionContext::SetPermissionMemoryCacheOnIOThread(
-    const std::string& host, bool allowed) {
-  if (!ChromeThread::CurrentlyOn(ChromeThread::IO)) {
-    ChromeThread::PostTask(
-        ChromeThread::IO, FROM_HERE,
-        NewRunnableMethod(
-            this,
-            &GeolocationPermissionContext::SetPermissionMemoryCacheOnIOThread,
-            host, allowed));
-    return;
-  }
-
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  permissions_[host] = allowed;
-}
-
-void GeolocationPermissionContext::SetPermissionOnFileThread(
-    const std::string& host, bool allowed) {
-  if (is_off_the_record_)
-    return;
-  if (!ChromeThread::CurrentlyOn(ChromeThread::FILE)) {
-    ChromeThread::PostTask(
-        ChromeThread::FILE, FROM_HERE,
-        NewRunnableMethod(
-            this, &GeolocationPermissionContext::SetPermissionOnFileThread,
-            host, allowed));
-    return;
-  }
-
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
-
-  // TODO(bulach): should we save a file per host or have some smarter
-  // storage? Use HostContentSettingsMap instead.
-#if 0
-  SavePermissionToFile(host, permissions_path_, allowed);
-#endif
+      new ViewMsg_Geolocation_PermissionSet(render_view_id, bridge_id,
+          allowed));
 }

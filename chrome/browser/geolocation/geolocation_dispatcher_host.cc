@@ -88,15 +88,15 @@ void GeolocationDispatcherHost::OnUnregisterDispatcher(int render_view_id) {
 }
 
 void GeolocationDispatcherHost::OnRequestPermission(
-    int render_view_id, int bridge_id, const std::string& host) {
+    int render_view_id, int bridge_id, const GURL& requesting_frame) {
   LOG(INFO) << "permission request";
   geolocation_permission_context_->RequestGeolocationPermission(
       resource_message_filter_process_id_, render_view_id, bridge_id,
-      host);
+      requesting_frame);
 }
 
 void GeolocationDispatcherHost::OnStartUpdating(
-    int render_view_id, int bridge_id, const std::string& host,
+    int render_view_id, int bridge_id, const GURL& requesting_frame,
     bool enable_high_accuracy) {
   // WebKit sends the startupdating request before checking permissions, to
   // optimize the no-location-available case.
