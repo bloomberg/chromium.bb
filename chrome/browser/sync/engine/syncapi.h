@@ -53,6 +53,10 @@
 
 namespace browser_sync {
 class ModelSafeWorkerRegistrar;
+
+namespace sessions {
+struct SyncSessionSnapshot;
+}
 }
 
 // Forward declarations of internal class types so that sync API objects
@@ -564,10 +568,9 @@ class SyncManager {
                                   int change_count) = 0;
 
     // A round-trip sync-cycle took place and the syncer has resolved any
-    // conflicts that may have arisen.  This is kept separate from
-    // OnStatusChanged as there isn't really any state update; it is plainly
-    // a notification of a state transition.
-    virtual void OnSyncCycleCompleted() = 0;
+    // conflicts that may have arisen.
+    virtual void OnSyncCycleCompleted(
+        const browser_sync::sessions::SyncSessionSnapshot* snapshot) = 0;
 
     // Called when user interaction may be required due to an auth problem.
     virtual void OnAuthError(const GoogleServiceAuthError& auth_error) = 0;

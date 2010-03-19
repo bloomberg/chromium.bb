@@ -29,6 +29,10 @@ class Profile;
 
 namespace browser_sync {
 
+namespace sessions {
+struct SyncSessionSnapshot;
+}
+
 class ChangeProcessor;
 class DataTypeController;
 
@@ -135,6 +139,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   Status GetDetailedStatus();
   StatusSummary GetStatusSummary();
   const GoogleServiceAuthError& GetAuthError() const;
+  const sessions::SyncSessionSnapshot* GetLastSessionSnapshot() const;
 
   const FilePath& sync_data_folder_path() const {
     return sync_data_folder_path_;
@@ -191,7 +196,8 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
         const sync_api::BaseTransaction* trans,
         const sync_api::SyncManager::ChangeRecord* changes,
         int change_count);
-    virtual void OnSyncCycleCompleted();
+    virtual void OnSyncCycleCompleted(
+        const sessions::SyncSessionSnapshot* snapshot);
     virtual void OnInitializationComplete();
     virtual void OnAuthError(const GoogleServiceAuthError& auth_error);
     virtual void OnPaused();
@@ -334,6 +340,11 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     void HandleAuthErrorEventOnFrontendLoop(
         const GoogleServiceAuthError& new_auth_error);
 
+    // Called from Core::OnSyncCycleCompleted to handle updating frontend
+    // thread components.
+    void HandleSyncCycleCompletedOnFrontendLoop(
+        sessions::SyncSessionSnapshot* snapshot);
+
     // Our parent SyncBackendHost
     SyncBackendHost* host_;
 
@@ -402,6 +413,9 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
 
   // UI-thread cache of the last AuthErrorState received from syncapi.
   GoogleServiceAuthError last_auth_error_;
+
+  // UI-thread cache of the last SyncSessionSnapshot received from syncapi.
+  scoped_ptr<sessions::SyncSessionSnapshot> last_snapshot_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncBackendHost);
 };

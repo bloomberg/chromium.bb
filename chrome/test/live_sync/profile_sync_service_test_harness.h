@@ -34,10 +34,9 @@ class ProfileSyncServiceTestHarness : public ProfileSyncServiceObserver {
   // since the previous one.  Returns true if a sync cycle has completed.
   bool AwaitSyncCycleCompletion(const std::string& reason);
 
-  // Wait an extra 20 seconds to ensure any rebounding updates
-  // due to a conflict are processed and observed by each client.
-  bool AwaitMutualSyncCycleCompletionWithConflict(
-      ProfileSyncServiceTestHarness* partner);
+  // Blocks the caller until this harness has observed that the sync engine
+  // has "synced" up to at least the specified local timestamp.
+  bool WaitUntilTimestampIsAtLeast(int64 timestamp, const std::string& reason);
 
   // Calling this acts as a barrier and blocks the caller until |this| and
   // |partner| have both completed a sync cycle.  When calling this method,
@@ -53,12 +52,11 @@ class ProfileSyncServiceTestHarness : public ProfileSyncServiceObserver {
 
  private:
   friend class StateChangeTimeoutEvent;
-  friend class ConflictTimeoutEvent;
 
   enum WaitState {
     WAITING_FOR_INITIAL_CALLBACK = 0,
     WAITING_FOR_READY_TO_PROCESS_CHANGES,
-    WAITING_FOR_TIMESTAMP_UPDATE,
+    WAITING_FOR_SYNC_TO_FINISH,
     WAITING_FOR_UPDATES,
     WAITING_FOR_NOTHING,
     NUMBER_OF_STATES
@@ -87,16 +85,15 @@ class ProfileSyncServiceTestHarness : public ProfileSyncServiceObserver {
   // State tracking.  Used for debugging and tracking of state.
   ProfileSyncService::Status last_status_;
 
-  // When awaiting quiescence, we are waiting for a change to this value.  It
-  // is set to the current (ui-threadsafe) last synced timestamp returned by
-  // the sync service when AwaitQuiescence is called, and then we wait for an
-  // OnStatusChanged event to observe a new, more recent last synced timestamp.
-  base::Time last_timestamp_;
+  // This value tracks the max sync timestamp (e.g. synced-to revision) inside
+  // the sync engine.  It gets updated when a sync cycle ends and the session
+  // snapshot implies syncing is "done".
+  int64 last_timestamp_;
 
-  // The minimum value of the 'updates_received' member of SyncManager Status
-  // we need to wait to observe in OnStateChanged when told to
-  // WaitForUpdatesReceivedAtLeast.
-  int64 min_updates_needed_;
+  // The minimum value of the 'max_local_timestamp' member of a
+  // SyncSessionSnapshot we need to wait to observe in OnStateChanged when told
+  // to WaitUntilTimestampIsAtLeast(...).
+  int64 min_timestamp_needed_;
 
   // Credentials used for GAIA authentication.
   std::string username_;

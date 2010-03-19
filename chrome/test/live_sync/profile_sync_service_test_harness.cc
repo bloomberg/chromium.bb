@@ -6,11 +6,15 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/sync/glue/sync_backend_host.h"
+#include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/live_sync/profile_sync_service_test_harness.h"
 #include "chrome/test/ui_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using browser_sync::sessions::SyncSessionSnapshot;
 
 // The default value for min_updates_needed_ when we're not in a call to
 // WaitForUpdatesRecievedAtLeast.
@@ -78,39 +82,12 @@ bool StateChangeTimeoutEvent::Abort() {
   return !did_timeout_;
 }
 
-class ConflictTimeoutEvent
-    : public base::RefCountedThreadSafe<ConflictTimeoutEvent> {
- public:
-  explicit ConflictTimeoutEvent(ProfileSyncServiceTestHarness* caller)
-      : did_run_(false), caller_(caller)  {
-  }
-
-  // The entry point to the class from PostDelayedTask.
-  void Callback();
-  bool did_run_;
-
- private:
-  friend class base::RefCountedThreadSafe<ConflictTimeoutEvent>;
-
-  ~ConflictTimeoutEvent() { }
-
-  // Due to synchronization of the IO loop, the caller will always be alive
-  // if the class is not aborted.
-  ProfileSyncServiceTestHarness* caller_;
-
-  DISALLOW_COPY_AND_ASSIGN(ConflictTimeoutEvent);
-};
-
-void ConflictTimeoutEvent::Callback() {
-  caller_->SignalStateComplete();
-  did_run_ = true;
-}
-
-
 ProfileSyncServiceTestHarness::ProfileSyncServiceTestHarness(
     Profile* p, const std::string& username, const std::string& password)
     : wait_state_(WAITING_FOR_INITIAL_CALLBACK), profile_(p), service_(NULL),
-      last_status_(kInvalidStatus), min_updates_needed_(kMinUpdatesNeededNone),
+      last_status_(kInvalidStatus),
+      last_timestamp_(0),
+      min_timestamp_needed_(kMinUpdatesNeededNone),
       username_(username), password_(password) {
   // Ensure the profile has enough prefs registered for use by sync.
   if (!p->GetPrefs()->FindPreference(prefs::kAcceptLanguages))
@@ -151,22 +128,29 @@ bool ProfileSyncServiceTestHarness::RunStateChangeMachine() {
         SignalStateCompleteWithNextState(WAITING_FOR_NOTHING);
       }
       break;
-    case WAITING_FOR_TIMESTAMP_UPDATE: {
-      const base::Time current_timestamp = service_->last_synced_time();
-      if (current_timestamp == last_timestamp_) {
+    case WAITING_FOR_SYNC_TO_FINISH: {
+      const SyncSessionSnapshot* snap =
+          service_->backend()->GetLastSessionSnapshot();
+      DCHECK(snap) << "Should have been at least one sync session by now";
+      if (snap->has_more_to_sync)
         break;
-      }
-      EXPECT_TRUE(last_timestamp_ < current_timestamp);
-      last_timestamp_ = current_timestamp;
+
+      EXPECT_LE(last_timestamp_, snap->max_local_timestamp);
+      last_timestamp_ = snap->max_local_timestamp;
+
       SignalStateCompleteWithNextState(WAITING_FOR_NOTHING);
       break;
     }
-    case WAITING_FOR_UPDATES:
-      if (status.updates_received < min_updates_needed_) {
+    case WAITING_FOR_UPDATES: {
+      const SyncSessionSnapshot* snap =
+          service_->backend()->GetLastSessionSnapshot();
+      DCHECK(snap) << "Should have been at least one sync session by now";
+      if (snap->max_local_timestamp < min_timestamp_needed_)
         break;
-      }
+
       SignalStateCompleteWithNextState(WAITING_FOR_NOTHING);
       break;
+    }
     case WAITING_FOR_NOTHING:
     default:
       // Invalid state during observer callback which may be triggered by other
@@ -183,15 +167,25 @@ void ProfileSyncServiceTestHarness::OnStateChanged() {
 
 bool ProfileSyncServiceTestHarness::AwaitSyncCycleCompletion(
     const std::string& reason) {
-  wait_state_ = WAITING_FOR_TIMESTAMP_UPDATE;
+  wait_state_ = WAITING_FOR_SYNC_TO_FINISH;
   return AwaitStatusChangeWithTimeout(60, reason);
 }
 
 bool ProfileSyncServiceTestHarness::AwaitMutualSyncCycleCompletion(
     ProfileSyncServiceTestHarness* partner) {
-  return AwaitSyncCycleCompletion("Sync cycle completion on active client.") &&
-         partner->AwaitSyncCycleCompletion(
-            "Sync cycle completion on passive client.");
+  bool success = AwaitSyncCycleCompletion(
+      "Sync cycle completion on active client.");
+  if (!success)
+    return false;
+  return partner->WaitUntilTimestampIsAtLeast(last_timestamp_,
+      "Sync cycle completion on passive client.");
+}
+
+bool ProfileSyncServiceTestHarness::WaitUntilTimestampIsAtLeast(
+    int64 timestamp, const std::string& reason) {
+  wait_state_ = WAITING_FOR_UPDATES;
+  min_timestamp_needed_ = timestamp;
+  return AwaitStatusChangeWithTimeout(60, reason);
 }
 
 bool ProfileSyncServiceTestHarness::AwaitStatusChangeWithTimeout(
@@ -207,33 +201,6 @@ bool ProfileSyncServiceTestHarness::AwaitStatusChangeWithTimeout(
       1000 * timeout_seconds);
   ui_test_utils::RunMessageLoop();
   return timeout_signal->Abort();
-}
-
-bool ProfileSyncServiceTestHarness::AwaitMutualSyncCycleCompletionWithConflict(
-    ProfileSyncServiceTestHarness* partner) {
-
-  if (!AwaitMutualSyncCycleCompletion(partner)) {
-    return false;
-  }
-  if (!partner->AwaitMutualSyncCycleCompletion(this)) {
-    return false;
-  }
-
-  scoped_refptr<ConflictTimeoutEvent> timeout_signal(
-      new ConflictTimeoutEvent(this));
-
-  // Now we want to wait an extra 20 seconds to ensure any rebounding updates
-  // due to a conflict are processed and observed by each client.
-  MessageLoopForUI* loop = MessageLoopForUI::current();
-  loop->PostDelayedTask(FROM_HERE, NewRunnableMethod(timeout_signal.get(),
-      &ConflictTimeoutEvent::Callback), 1000 * 20);
-  // It is possible that timeout has not run yet and loop exited due to
-  // OnStateChanged event. So to avoid pre-mature termination of loop,
-  // we are re-running the loop until did_run_ becomes true.
-  while (!timeout_signal->did_run_) {
-     ui_test_utils::RunMessageLoop();
-  }
-  return true;
 }
 
 bool ProfileSyncServiceTestHarness::WaitForServiceInit() {

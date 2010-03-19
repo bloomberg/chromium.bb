@@ -353,11 +353,11 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest, Sanity) {
     model_one->SetTitle(google_one, L"Google++");
     model_two->SetTitle(google_two, L"Google--");
   }
-  // The extra wait here is because both clients generated changes, and the
-  // first client reaches a happy state before the second client gets a chance
-  // to push, so we explicitly double check.  This shouldn't be necessary once
-  // we have an easy way to verify the head version on each client.
-  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletionWithConflict(client2()));
+
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  // Make sure that client2 has pushed all of it's changes as well.
+  ASSERT_TRUE(client2()->AwaitMutualSyncCycleCompletion(client1()));
+
   BookmarkModelVerifier::ExpectModelsMatch(model_one, model_two);
 
   Cleanup();
@@ -399,7 +399,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     bookmark_utils::ApplyEditsWithNoGroupChange(model_two, bbn_two,
         BookmarkEditor::EditDetails(google_two), title, third_url, NULL);
   }
-  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletionWithConflict(client2()));
+
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  // Make sure that client2 has pushed all of it's changes as well.
+  ASSERT_TRUE(client2()->AwaitMutualSyncCycleCompletion(client1()));
   BookmarkModelVerifier::ExpectModelsMatch(model_one, model_two);
 
   {
@@ -1029,7 +1032,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     // Delete this newly created bookmark
     verifier->Remove(model_one, bbn_one, 0);
   }
-  client1()->AwaitMutualSyncCycleCompletionWithConflict(client2());
+
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  // Make sure that client2 has pushed all of it's changes as well.
+  ASSERT_TRUE(client2()->AwaitMutualSyncCycleCompletion(client1()));
   verifier->ExpectMatch(model_one);
   verifier->ExpectMatch(model_two);
 
@@ -2310,7 +2316,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     ASSERT_TRUE(bm_foo4 != NULL);
   }
 
-  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletionWithConflict(client2()));
+
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  // Make sure that client2 has pushed all of it's changes as well.
+  ASSERT_TRUE(client2()->AwaitMutualSyncCycleCompletion(client1()));
   BookmarkModelVerifier::ExpectModelsMatch(model_one, model_two);
   Cleanup();
 }

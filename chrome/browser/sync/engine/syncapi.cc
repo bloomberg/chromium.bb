@@ -1739,7 +1739,7 @@ void SyncManager::SyncInternal::HandleSyncerEvent(const SyncerEvent& event) {
   // whether we should sync again.
   if (event.what_happened == SyncerEvent::SYNC_CYCLE_ENDED) {
     if (!event.snapshot->has_more_to_sync) {
-      observer_->OnSyncCycleCompleted();
+      observer_->OnSyncCycleCompleted(event.snapshot);
     }
 
     // TODO(chron): Consider changing this back to track has_more_to_sync

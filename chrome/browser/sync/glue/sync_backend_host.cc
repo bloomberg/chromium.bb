@@ -13,6 +13,7 @@
 #include "chrome/browser/sync/glue/history_model_worker.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/glue/http_bridge.h"
+#include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "webkit/glue/webkit_glue.h"
@@ -28,6 +29,8 @@ using browser_sync::DataTypeController;
 typedef GoogleServiceAuthError AuthError;
 
 namespace browser_sync {
+
+using sessions::SyncSessionSnapshot;
 
 SyncBackendHost::SyncBackendHost(
     SyncFrontend* frontend,
@@ -242,6 +245,10 @@ const GoogleServiceAuthError& SyncBackendHost::GetAuthError() const {
   return last_auth_error_;
 }
 
+const SyncSessionSnapshot* SyncBackendHost::GetLastSessionSnapshot() const {
+  return last_snapshot_.get();
+}
+
 void SyncBackendHost::GetWorkers(std::vector<ModelSafeWorker*>* out) {
   AutoLock lock(registrar_lock_);
   out->clear();
@@ -387,9 +394,21 @@ void SyncBackendHost::Core::OnChangesApplied(
   processor->ApplyChangesFromSyncModel(trans, changes, change_count);
 }
 
-void SyncBackendHost::Core::OnSyncCycleCompleted() {
+void SyncBackendHost::Core::OnSyncCycleCompleted(
+    const SyncSessionSnapshot* snapshot) {
   host_->frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-      &Core::NotifyFrontend, SYNC_CYCLE_COMPLETED));
+      &Core::HandleSyncCycleCompletedOnFrontendLoop,
+      new SyncSessionSnapshot(*snapshot)));
+}
+
+void SyncBackendHost::Core::HandleSyncCycleCompletedOnFrontendLoop(
+    SyncSessionSnapshot* snapshot) {
+  if (!host_ || !host_->frontend_)
+    return;
+  DCHECK_EQ(MessageLoop::current(), host_->frontend_loop_);
+
+  host_->last_snapshot_.reset(snapshot);
+  host_->frontend_->OnSyncCycleCompleted();
 }
 
 void SyncBackendHost::Core::OnInitializationComplete() {

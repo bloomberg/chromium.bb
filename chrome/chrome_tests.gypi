@@ -1692,6 +1692,7 @@
         'chrome_resources',
         'chrome_strings',
         'syncapi',
+        'sync_proto',
         'test_support_unit',
         '../net/net.gyp:net_test_support',
         '../printing/printing.gyp:printing',
@@ -1706,6 +1707,7 @@
       'include_dirs': [
         '..',
         '<(INTERMEDIATE_DIR)',
+        '<(protoc_out_dir)',
       ],
       # TODO(phajdan.jr): Only temporary, to make transition easier.
       'defines': [ 'ALLOW_IN_PROC_BROWSER_TEST' ],
