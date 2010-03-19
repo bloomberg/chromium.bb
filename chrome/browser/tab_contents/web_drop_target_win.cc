@@ -20,6 +20,8 @@
 #include "webkit/glue/window_open_disposition.h"
 
 using WebKit::WebDragOperationCopy;
+using WebKit::WebDragOperationMove;
+using WebKit::WebDragOperationsMask;
 
 namespace {
 
@@ -117,7 +119,9 @@ DWORD WebDropTarget::OnDragEnter(IDataObject* data_object,
   tab_contents_->render_view_host()->DragTargetDragEnter(drop_data,
       gfx::Point(client_pt.x, client_pt.y),
       gfx::Point(cursor_position.x, cursor_position.y),
-      WebDragOperationCopy);  // FIXME(snej): Send actual operation
+      static_cast<WebDragOperationsMask>(WebDragOperationCopy |
+                                         WebDragOperationMove));
+      // FIXME(snej): Send actual operation
 
   // This is non-null if tab_contents_ is showing an ExtensionDOMUI with
   // support for (at the moment experimental) drag and drop extensions.
@@ -149,7 +153,9 @@ DWORD WebDropTarget::OnDragOver(IDataObject* data_object,
   tab_contents_->render_view_host()->DragTargetDragOver(
       gfx::Point(client_pt.x, client_pt.y),
       gfx::Point(cursor_position.x, cursor_position.y),
-      WebDragOperationCopy);  // FIXME(snej): Send actual operation
+      static_cast<WebDragOperationsMask>(WebDragOperationCopy |
+                                         WebDragOperationMove));
+      // FIXME(snej): Send actual operation
 
   if (tab_contents_->GetBookmarkDragDelegate()) {
     OSExchangeData os_exchange_data(new OSExchangeDataProviderWin(data_object));
