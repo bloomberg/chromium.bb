@@ -197,7 +197,7 @@ template <class T> class TaskMarshallerThroughWindowsMessages
   // had remained in the thread queue).
   inline bool PopTask(Task* task) {
     AutoLock lock(lock_);
-    if (task == pending_tasks_.front()) {
+    if (!pending_tasks_.empty() && task == pending_tasks_.front()) {
       pending_tasks_.pop();
       return true;
     }
