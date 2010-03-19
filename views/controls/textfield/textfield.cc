@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -225,6 +225,40 @@ bool Textfield::SkipDefaultKeyEventProcessing(const KeyEvent& e) {
 void Textfield::PaintFocusBorder(gfx::Canvas* canvas) {
   if (NativeViewHost::kRenderNativeControlFocus)
     View::PaintFocusBorder(canvas);
+}
+
+bool Textfield::GetAccessibleRole(AccessibilityTypes::Role* role) {
+  DCHECK(role);
+  if (!role)
+    return false;
+
+  *role = AccessibilityTypes::ROLE_TEXT;
+  return true;
+}
+
+bool Textfield::GetAccessibleName(std::wstring* name) {
+  DCHECK(name);
+  if (!name)
+    return false;
+
+  if (!accessible_name_.empty()) {
+    *name = accessible_name_;
+    return true;
+  }
+  return false;
+}
+
+bool Textfield::GetAccessibleState(AccessibilityTypes::State* state) {
+  DCHECK(state);
+  if (!state)
+    return false;
+
+  *state = AccessibilityTypes::STATE_READONLY;
+  return true;
+}
+
+void Textfield::SetAccessibleName(const std::wstring& name) {
+  accessible_name_.assign(name);
 }
 
 void Textfield::SetEnabled(bool enabled) {

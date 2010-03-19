@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,8 @@
 #if defined (OS_LINUX)
 #include <gdk/gdk.h>
 #endif
+
+#include <string>
 
 #include "app/gfx/font.h"
 #include "base/basictypes.h"
@@ -202,6 +204,12 @@ class Textfield : public View {
   virtual void SetEnabled(bool enabled);
   virtual void PaintFocusBorder(gfx::Canvas* canvas);
 
+  // Accessibility accessors, overridden from View:
+  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+  virtual bool GetAccessibleName(std::wstring* name);
+  virtual bool GetAccessibleState(AccessibilityTypes::State* state);
+  virtual void SetAccessibleName(const std::wstring& name);
+
  protected:
   virtual void Focus();
   virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
@@ -261,6 +269,9 @@ class Textfield : public View {
   // TODO(beng): remove this once NativeTextfieldWin subclasses
   //             NativeControlWin.
   bool initialized_;
+
+  // The storage string for the accessibility name associated with this control.
+  std::wstring accessible_name_;
 
   DISALLOW_COPY_AND_ASSIGN(Textfield);
 };

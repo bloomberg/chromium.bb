@@ -170,8 +170,11 @@ BookmarkManagerView::BookmarkManagerView(Profile* profile)
       sync_service_(NULL),
       sync_relogin_required_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(search_factory_(this)) {
+  views::Label* search_label = new views::Label(
+      l10n_util::GetString(IDS_BOOKMARK_MANAGER_SEARCH_TITLE));
   search_tf_ = new views::Textfield();
   search_tf_->set_default_width_in_chars(30);
+  search_tf_->SetAccessibleName(search_label->GetText());
 
   table_view_ = new BookmarkTableView(profile_, NULL);
   table_view_->SetObserver(this);
@@ -226,8 +229,7 @@ BookmarkManagerView::BookmarkManagerView(Profile* profile)
   layout->AddView(tools_menu_button);
   sync_status_button_ = new views::TextButton(this, std::wstring());
   layout->AddView(sync_status_button_);
-  layout->AddView(new views::Label(
-      l10n_util::GetString(IDS_BOOKMARK_MANAGER_SEARCH_TITLE)));
+  layout->AddView(search_label);
   layout->AddView(search_tf_);
 
   layout->AddPaddingRow(0, 3);  // 3px padding between rows.
