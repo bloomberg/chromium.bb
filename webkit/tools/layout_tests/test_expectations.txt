@@ -2841,3 +2841,6 @@ BUG38578 : plugins/override-node-method.html = TEXT
 // Needs layoutTestController.setMediaType() (implemented on Qt only)
 BUG38653 MAC : editing/selection/find-yensign-and-backslash.html = TEXT
 BUG38656 : fast/media/print-restores-previous-mediatype.html = TEXT
+
+// Unknown flakiness.
+BUG38694 MAC LINUX DEBUG : svg/custom/feDisplacementMap-01.svg = IMAGE+TEXT PASS
