@@ -177,6 +177,10 @@ const char kDisableSyncPreferences[]        = "disable-sync-preferences";
 // Disable syncing of typed urls.
 const char kDisableSyncTypedUrls[]          = "disable-sync-typed-urls";
 
+// Disable the tabbed bookmark manager. This makes us use the native bookmark
+// manager instead.
+const char kDisableTabbedBookmarkManager[]  = "disable-tabbed-bookmark-manager";
+
 // Enables the backend service for web resources, used in the new tab page for
 // loading tips and recommendations from a JSON feed.
 const char kDisableWebResources[]           = "disable-web-resources";
@@ -296,9 +300,6 @@ const char kEnableSyncPreferences[]         = "enable-sync-preferences";
 
 // Enable syncing browser typed urls.
 const char kEnableSyncTypedUrls[]           = "enable-sync-typed-urls";
-
-// Enable the tabbed bookmark manager
-const char kEnableTabbedBookmarkManager[]   = "enable-tabbed-bookmark-manager";
 
 // Whether the multiple profiles feature based on the user-data-dir flag is
 // enabled or not.
