@@ -116,16 +116,20 @@ static NPError InitializeContext(NPP instance,
   NPClosureTable::FunctionPointer func =
       reinterpret_cast<NPClosureTable::FunctionPointer>(
           context_audio->config.callback);
+  // Pedantic mode refuses zu format, hence casting to void*. The cast to size_t
+  // fixes the GCC warning about the cast of function ptr to data ptr.
   DebugPrintf("Created the closure %p for %p\n",
-              reinterpret_cast<void*>(func),
-              reinterpret_cast<void*>(context_audio->config.callback));
+              reinterpret_cast<void*>(reinterpret_cast<size_t>(func)),
+              reinterpret_cast<void*>(
+                  reinterpret_cast<size_t>(context_audio->config.callback)));
   if (NULL == nav->closure_table() ||
       !nav->closure_table()->Add(func,
                                  context_audio->reserved,
                                  &id)) {
     return NPERR_GENERIC_ERROR;
   }
-  DebugPrintf("Added the closure %p\n", reinterpret_cast<void*>(func));
+  DebugPrintf("Added the closure %p\n",
+              reinterpret_cast<void*>(reinterpret_cast<size_t>(func)));
   // Make the SRPC to request the setup for the context.
   NaClSrpcChannel* channel = nav->channel();
   NaClSrpcError retval =
@@ -341,7 +345,8 @@ bool DoAudioCallback(NPClosureTable* closure_table,
                    shm_desc,
                    0);
   if (MAP_FAILED == buf) {
-    DebugPrintf("mmap failed %x %d %d\n", shm_size, shm_desc, sync_desc);
+    DebugPrintf("mmap failed %"NACL_PRIx32" %d %d\n",
+                shm_size, shm_desc, sync_desc);
     return false;
   }
   DebugPrintf("mmap succeeded %p\n", buf);
