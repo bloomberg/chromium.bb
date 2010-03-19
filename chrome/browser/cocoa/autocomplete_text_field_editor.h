@@ -27,6 +27,8 @@ class Profile;
 
   // The browser profile for the editor. Weak.
   Profile* profile_;
+
+  scoped_nsobject<NSCharacterSet> forbiddenCharacters_;
 }
 
 @property(nonatomic) Profile* profile;

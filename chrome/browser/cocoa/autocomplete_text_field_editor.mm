@@ -30,8 +30,11 @@ class Extension;
 @synthesize profile = profile_;
 
 - (id)initWithFrame:(NSRect)frameRect {
-  if ((self = [super initWithFrame:frameRect]))
+  if ((self = [super initWithFrame:frameRect])) {
     dropHandler_.reset([[URLDropTargetHandler alloc] initWithView:self]);
+
+    forbiddenCharacters_.reset([[NSCharacterSet controlCharacterSet] retain]);
+  }
   return self;
 }
 
@@ -213,6 +216,35 @@ class Extension;
 // (URLDropTarget protocol)
 - (BOOL)performDragOperation:(id<NSDraggingInfo>)sender {
   return [dropHandler_ performDragOperation:sender];
+}
+
+// Prevent control characters from being entered into the Omnibox.
+// This is invoked for keyboard entry, not for pasting.
+- (void)insertText:(id)aString {
+  // This method is documented as received either |NSString| or
+  // |NSAttributedString|.  The autocomplete code will restyle the
+  // results in any case, so simplify by always using |NSString|.
+  if ([aString isKindOfClass:[NSAttributedString class]])
+    aString = [aString string];
+
+  // Repeatedly remove control characters.  The loop will only ever
+  // execute at allwhen the user enters control characters (using
+  // Ctrl-Alt- or Ctrl-Q).  Making this generally efficient would
+  // probably be a loss, since the input always seems to be a single
+  // character.
+  NSRange range = [aString rangeOfCharacterFromSet:forbiddenCharacters_];
+  while (range.location != NSNotFound) {
+    aString = [aString stringByReplacingCharactersInRange:range withString:@""];
+    range = [aString rangeOfCharacterFromSet:forbiddenCharacters_];
+  }
+  DCHECK_EQ(range.length, 0U);
+
+  // TODO(shess): Beep on empty?  I hate beeps, though.
+  // NOTE: If |aString| is empty, this intentionally replaces the
+  // selection with empty.  This seems consistent with the case where
+  // the input contained a mixture of characters and the string ended
+  // up not empty.
+  [super insertText:aString];
 }
 
 @end

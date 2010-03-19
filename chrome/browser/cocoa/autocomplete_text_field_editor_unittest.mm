@@ -61,6 +61,38 @@ class AutocompleteTextFieldEditorTest : public CocoaTest {
 
 TEST_VIEW(AutocompleteTextFieldEditorTest, field_);
 
+// Test that control characters are stripped from insertions.
+TEST_F(AutocompleteTextFieldEditorTest, InsertStripsControlChars) {
+  // Sets a string in the field.
+  NSString* test_string = @"astring";
+  [field_ setStringValue:test_string];
+  [editor_ selectAll:nil];
+
+  [editor_ insertText:@"t"];
+  EXPECT_TRUE([[field_ stringValue] isEqualToString:@"t"]);
+
+  [editor_ insertText:@"h"];
+  EXPECT_TRUE([[field_ stringValue] isEqualToString:@"th"]);
+
+  // TAB doesn't get inserted.
+  [editor_ insertText:[NSString stringWithFormat:@"%c", 7]];
+  EXPECT_TRUE([[field_ stringValue] isEqualToString:@"th"]);
+
+  // Newline doesn't get inserted.
+  [editor_ insertText:[NSString stringWithFormat:@"%c", 12]];
+  EXPECT_TRUE([[field_ stringValue] isEqualToString:@"th"]);
+
+  // Multi-character strings get through.
+  [editor_ insertText:[NSString stringWithFormat:@"i%cs%c", 8, 127]];
+  EXPECT_TRUE([[field_ stringValue] isEqualToString:@"this"]);
+
+  // Attempting to insert newline when everything is selected clears
+  // the field.
+  [editor_ selectAll:nil];
+  [editor_ insertText:[NSString stringWithFormat:@"%c", 12]];
+  EXPECT_TRUE([[field_ stringValue] isEqualToString:@""]);
+}
+
 // Base class for testing AutocompleteTextFieldObserver messages.
 class AutocompleteTextFieldEditorObserverTest
     : public AutocompleteTextFieldEditorTest {
