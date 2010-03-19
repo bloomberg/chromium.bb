@@ -14,10 +14,6 @@
 #include <string>
 #include <vector>
 
-#if defined(OS_WIN)
-#include "app/gfx/gdi_util.h"
-#include "app/gfx/native_theme_win.h"
-#endif
 #include "base/file_util.h"
 #include "base/md5.h"
 #include "base/message_loop.h"
@@ -35,6 +31,8 @@
 #include "gfx/blit.h"
 #if defined(OS_WIN)
 #include "gfx/codec/jpeg_codec.h"
+#include "gfx/gdi_util.h"
+#include "gfx/native_theme_win.h"
 #include "skia/ext/vector_platform_device.h"
 #endif
 #include "third_party/npapi/bindings/npapi_extensions.h"

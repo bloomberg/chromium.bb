@@ -4,7 +4,6 @@
 
 #include "chrome/browser/browser_theme_pack.h"
 
-#include "app/gfx/color_utils.h"
 #include "app/theme_provider.h"
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
@@ -17,6 +16,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/json_value_serializer.h"
+#include "gfx/color_utils.h"
 #include "grit/theme_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

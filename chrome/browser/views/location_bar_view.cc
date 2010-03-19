@@ -9,7 +9,6 @@
 #endif
 
 #include "app/gfx/canvas.h"
-#include "app/gfx/color_utils.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
@@ -31,6 +30,7 @@
 #include "chrome/browser/views/content_blocked_bubble_contents.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/pref_names.h"
+#include "gfx/color_utils.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/net_util.h"

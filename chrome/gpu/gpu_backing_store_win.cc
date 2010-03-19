@@ -4,12 +4,12 @@
 
 #include "chrome/gpu/gpu_backing_store_win.h"
 
-#include "app/gfx/gdi_util.h"
 #include "app/win_util.h"
 #include "base/logging.h"
 #include "chrome/common/gpu_messages.h"
 #include "chrome/gpu/gpu_view_win.h"
 #include "chrome/gpu/gpu_thread.h"
+#include "gfx/gdi_util.h"
 
 namespace {
 

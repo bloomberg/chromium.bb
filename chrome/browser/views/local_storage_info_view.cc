@@ -6,10 +6,10 @@
 
 #include <algorithm>
 
-#include "app/gfx/color_utils.h"
 #include "app/l10n_util.h"
 #include "base/i18n/time_formatting.h"
 #include "base/utf_string_conversions.h"
+#include "gfx/color_utils.h"
 #include "grit/generated_resources.h"
 #include "views/grid_layout.h"
 #include "views/controls/label.h"

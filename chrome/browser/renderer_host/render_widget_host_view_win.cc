@@ -5,7 +5,6 @@
 #include "chrome/browser/renderer_host/render_widget_host_view_win.h"
 
 #include "app/gfx/canvas.h"
-#include "app/gfx/gdi_util.h"
 #include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
 #include "app/resource_bundle.h"
@@ -29,6 +28,7 @@
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/plugin_messages.h"
 #include "chrome/common/render_messages.h"
+#include "gfx/gdi_util.h"
 #include "gfx/rect.h"
 #include "grit/webkit_resources.h"
 #include "skia/ext/skia_utils_win.h"

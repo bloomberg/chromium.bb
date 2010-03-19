@@ -9,7 +9,6 @@
 #include <set>
 #include <vector>
 
-#include "app/gfx/skbitmap_operations.h"
 #include "app/resource_bundle.h"
 #include "base/data_pack.h"
 #include "base/logging.h"
@@ -22,6 +21,7 @@
 #include "chrome/browser/theme_resources_util.h"
 #include "chrome/common/extensions/extension.h"
 #include "gfx/codec/png_codec.h"
+#include "gfx/skbitmap_operations.h"
 #include "grit/app_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/file_stream.h"

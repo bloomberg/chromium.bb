@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/gfx/native_theme_win.h"
+#include "gfx/native_theme_win.h"
 
 #include <windows.h>
 #include <uxtheme.h>
 #include <vsstyle.h>
 #include <vssym32.h>
 
-#include "app/gfx/gdi_util.h"
 #include "base/logging.h"
 #include "base/scoped_handle.h"
+#include "gfx/gdi_util.h"
 #include "gfx/rect.h"
 #include "skia/ext/platform_canvas.h"
 #include "skia/ext/skia_utils_win.h"

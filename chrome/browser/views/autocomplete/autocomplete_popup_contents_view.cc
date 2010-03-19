@@ -6,7 +6,6 @@
 
 #include "app/bidi_line_iterator.h"
 #include "app/gfx/canvas.h"
-#include "app/gfx/color_utils.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
@@ -15,6 +14,7 @@
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/bubble_positioner.h"
 #include "chrome/browser/views/bubble_border.h"
+#include "gfx/color_utils.h"
 #include "gfx/insets.h"
 #include "gfx/path.h"
 #include "grit/generated_resources.h"

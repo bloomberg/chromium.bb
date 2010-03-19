@@ -5,7 +5,7 @@
 #ifndef APP_GFX_SKBITMAP_OPERATIONS_H_
 #define APP_GFX_SKBITMAP_OPERATIONS_H_
 
-#include "app/gfx/color_utils.h"
+#include "gfx/color_utils.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
 class SkBitmap;

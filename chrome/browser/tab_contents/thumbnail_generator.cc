@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "app/gfx/skbitmap_operations.h"
 #include "base/histogram.h"
 #include "base/time.h"
 #include "build/build_config.h"
@@ -15,6 +14,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/property_bag.h"
 #include "gfx/rect.h"
+#include "gfx/skbitmap_operations.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 

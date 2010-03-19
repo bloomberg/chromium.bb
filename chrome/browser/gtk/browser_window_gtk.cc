@@ -8,8 +8,6 @@
 
 #include <string>
 
-#include "app/gfx/color_utils.h"
-#include "app/gfx/skia_utils_gtk.h"
 #include "app/gtk_util.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
@@ -80,8 +78,10 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
+#include "gfx/color_utils.h"
 #include "gfx/gtk_util.h"
 #include "gfx/rect.h"
+#include "gfx/skia_utils_gtk.h"
 #include "grit/app_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"

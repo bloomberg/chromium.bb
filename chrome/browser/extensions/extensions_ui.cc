@@ -4,8 +4,6 @@
 
 #include "chrome/browser/extensions/extensions_ui.h"
 
-#include "app/gfx/color_utils.h"
-#include "app/gfx/skbitmap_operations.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/base64.h"
@@ -43,6 +41,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "gfx/codec/png_codec.h"
+#include "gfx/color_utils.h"
+#include "gfx/skbitmap_operations.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"

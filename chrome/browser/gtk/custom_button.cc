@@ -4,7 +4,6 @@
 
 #include "chrome/browser/gtk/custom_button.h"
 
-#include "app/gfx/skbitmap_operations.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
@@ -15,6 +14,7 @@
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/common/notification_service.h"
 #include "gfx/gtk_util.h"
+#include "gfx/skbitmap_operations.h"
 #include "grit/theme_resources.h"
 
 CustomDrawButtonBase::CustomDrawButtonBase(GtkThemeProvider* theme_provider,

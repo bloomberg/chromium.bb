@@ -11,7 +11,7 @@
 #endif
 
 #include "app/gfx/canvas.h"
-#include "app/gfx/color_utils.h"
+#include "gfx/color_utils.h"
 #include "views/border.h"
 #include "views/controls/menu/menu_config.h"
 #include "views/controls/menu/menu_controller.h"
@@ -19,7 +19,7 @@
 #include "views/controls/menu/submenu_view.h"
 
 #if defined(OS_WIN)
-#include "app/gfx/native_theme_win.h"
+#include "gfx/native_theme_win.h"
 #endif
 
 #if defined(OS_WIN)

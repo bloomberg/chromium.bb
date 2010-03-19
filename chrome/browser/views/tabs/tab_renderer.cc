@@ -7,9 +7,7 @@
 #include <limits>
 
 #include "app/gfx/canvas.h"
-#include "app/gfx/favicon_size.h"
 #include "app/gfx/font.h"
-#include "app/gfx/skbitmap_operations.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/slide_animation.h"
@@ -20,6 +18,8 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
+#include "gfx/favicon_size.h"
+#include "gfx/skbitmap_operations.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"

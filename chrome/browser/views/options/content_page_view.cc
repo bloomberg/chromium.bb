@@ -10,7 +10,6 @@
 #include <vssym32.h>
 
 #include "app/gfx/canvas.h"
-#include "app/gfx/native_theme_win.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "chrome/browser/autofill/autofill_dialog.h"
@@ -25,6 +24,7 @@
 #include "chrome/browser/views/options/options_group_view.h"
 #include "chrome/browser/views/options/passwords_exceptions_window_view.h"
 #include "chrome/common/pref_names.h"
+#include "gfx/native_theme_win.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "views/controls/button/radio_button.h"

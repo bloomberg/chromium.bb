@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/options/settings_page_view.h"
 
-#include "app/gfx/skia_utils_gtk.h"
+#include "gfx/skia_utils_gtk.h"
 #include "views/controls/label.h"
 #include "views/fill_layout.h"
 #include "views/widget/widget_gtk.h"

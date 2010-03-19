@@ -9,9 +9,9 @@
 
 #include "app/gfx/canvas.h"
 #include "app/gfx/font.h"
-#include "app/gfx/native_theme_win.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "gfx/native_theme_win.h"
 #include "grit/locale_settings.h"
 #include "grit/generated_resources.h"
 #include "views/grid_layout.h"

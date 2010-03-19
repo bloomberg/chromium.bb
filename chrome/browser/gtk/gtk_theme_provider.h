@@ -9,10 +9,10 @@
 #include <string>
 #include <vector>
 
-#include "app/gfx/color_utils.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/owned_widget_gtk.h"
+#include "gfx/color_utils.h"
 
 class CairoCachedSurface;
 class Profile;

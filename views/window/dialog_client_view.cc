@@ -16,7 +16,6 @@
 
 #include "app/gfx/canvas.h"
 #include "app/gfx/font.h"
-#include "app/gfx/skia_utils_gtk.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/keyboard_codes.h"
@@ -25,9 +24,11 @@
 #include "views/standard_layout.h"
 #include "views/window/dialog_delegate.h"
 #include "views/window/window.h"
+
 #if defined(OS_WIN)
-#include "app/gfx/native_theme_win.h"
+#include "gfx/native_theme_win.h"
 #else
+#include "gfx/skia_utils_gtk.h"
 #include "views/window/hit_test.h"
 #include "views/widget/widget.h"
 #endif

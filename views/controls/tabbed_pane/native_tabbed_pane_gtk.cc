@@ -8,11 +8,11 @@
 
 #include "app/gfx/canvas.h"
 #include "app/gfx/font.h"
-#include "app/gfx/skia_utils_gtk.h"
 #include "app/resource_bundle.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "base/utf_string_conversions.h"
+#include "gfx/skia_utils_gtk.h"
 #include "views/background.h"
 #include "views/controls/tabbed_pane/tabbed_pane.h"
 #include "views/fill_layout.h"

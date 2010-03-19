@@ -8,8 +8,6 @@
 #include <utility>
 
 #include "app/gfx/canvas_paint.h"
-#include "app/gfx/favicon_size.h"
-#include "app/gfx/skbitmap_operations.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/throb_animation.h"
@@ -22,6 +20,8 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_service.h"
+#include "gfx/favicon_size.h"
+#include "gfx/skbitmap_operations.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"

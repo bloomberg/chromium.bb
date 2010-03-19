@@ -9,9 +9,9 @@
 #include <shobjidl.h>
 
 #include "app/gfx/canvas.h"
-#include "app/gfx/gdi_util.h"
 #include "app/os_exchange_data.h"
 #include "app/os_exchange_data_provider_win.h"
+#include "gfx/gdi_util.h"
 
 namespace drag_utils {
 

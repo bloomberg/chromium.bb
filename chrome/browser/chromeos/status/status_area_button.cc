@@ -5,8 +5,8 @@
 #include "chrome/browser/chromeos/status/status_area_button.h"
 
 #include "app/gfx/canvas.h"
-#include "app/gfx/skbitmap_operations.h"
 #include "app/resource_bundle.h"
+#include "gfx/skbitmap_operations.h"
 #include "grit/theme_resources.h"
 #include "views/border.h"
 #include "views/view.h"

@@ -7,8 +7,6 @@
 #include <algorithm>
 
 #include "app/gfx/canvas.h"
-#include "app/gfx/color_utils.h"
-#include "app/gfx/skia_util.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/keyboard_codes.h"
@@ -30,6 +28,8 @@
 #include "chrome/browser/views/bookmark_folder_tree_view.h"
 #include "chrome/browser/views/bookmark_table_view.h"
 #include "chrome/common/pref_names.h"
+#include "gfx/color_utils.h"
+#include "gfx/skia_util.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"

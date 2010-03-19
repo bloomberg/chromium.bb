@@ -8,8 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "app/gfx/color_utils.h"
-#include "app/gfx/favicon_size.h"
 #include "app/l10n_util.h"
 #include "app/message_box_flags.h"
 #include "app/resource_bundle.h"
@@ -61,6 +59,8 @@
 #include "chrome/renderer/webplugin_delegate_proxy.h"
 #include "chrome/renderer/websharedworker_proxy.h"
 #include "chrome/renderer/webworker_proxy.h"
+#include "gfx/color_utils.h"
+#include "gfx/favicon_size.h"
 #include "gfx/native_widget_types.h"
 #include "grit/generated_resources.h"
 #include "grit/renderer_resources.h"
@@ -122,7 +122,7 @@
 #if defined(OS_WIN)
 // TODO(port): these files are currently Windows only because they concern:
 //   * theming
-#include "app/gfx/native_theme_win.h"
+#include "gfx/native_theme_win.h"
 #elif defined(USE_X11)
 #include "third_party/WebKit/WebKit/chromium/public/linux/WebRenderTheme.h"
 #endif

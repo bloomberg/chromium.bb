@@ -8,10 +8,10 @@
 #include <map>
 #include <string>
 
-#include "app/gfx/color_utils.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/ref_counted.h"
+#include "gfx/color_utils.h"
 #include "chrome/common/extensions/extension.h"
 
 class BrowserThemeProviderTest;

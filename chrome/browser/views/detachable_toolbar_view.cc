@@ -5,9 +5,9 @@
 #include "chrome/browser/views/detachable_toolbar_view.h"
 
 #include "app/gfx/canvas.h"
-#include "app/gfx/skia_util.h"
 #include "app/resource_bundle.h"
 #include "chrome/browser/browser_theme_provider.h"
+#include "gfx/skia_util.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkShader.h"

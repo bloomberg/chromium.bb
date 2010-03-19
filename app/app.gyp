@@ -39,10 +39,7 @@
       'sources': [
         'animation_unittest.cc',
         'clipboard/clipboard_unittest.cc',
-        'gfx/color_utils_unittest.cc',
         'gfx/font_unittest.cc',
-        'gfx/native_theme_win_unittest.cc',
-        'gfx/skbitmap_operations_unittest.cc',
         'gfx/text_elider_unittest.cc',
         'l10n_util_mac_unittest.mm',
         'l10n_util_unittest.cc',
@@ -68,7 +65,6 @@
         }],
         ['OS!="win"', {
           'sources!': [
-            'gfx/native_theme_win_unittest.cc',
             'os_exchange_data_win_unittest.cc',
             'win_util_unittest.cc',
           ],

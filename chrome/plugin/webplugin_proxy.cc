@@ -8,7 +8,6 @@
 
 #include "app/gfx/canvas.h"
 #if defined(OS_WIN)
-#include "app/gfx/gdi_util.h"
 #include "app/win_util.h"
 #endif
 #if defined(OS_MACOSX)
@@ -26,6 +25,9 @@
 #include "chrome/plugin/plugin_channel.h"
 #include "chrome/plugin/plugin_thread.h"
 #include "gfx/blit.h"
+#if defined(OS_WIN)
+#include "gfx/gdi_util.h"
+#endif
 #include "skia/ext/platform_device.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
 #include "webkit/glue/plugins/webplugin_delegate_impl.h"

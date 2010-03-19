@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/gfx/gdi_util.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/simple_thread.h"
@@ -12,6 +11,7 @@
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/ui/ui_test.h"
+#include "gfx/gdi_util.h"
 #include "net/url_request/url_request_unittest.h"
 #include "printing/image.h"
 #include "printing/printing_test.h"

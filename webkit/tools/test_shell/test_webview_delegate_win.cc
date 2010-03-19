@@ -12,11 +12,11 @@
 #include <shlobj.h>
 #include <shlwapi.h>
 
-#include "app/gfx/gdi_util.h"
 #include "base/message_loop.h"
 #include "base/trace_event.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/native_widget_types.h"
+#include "gfx/gdi_util.h"
 #include "gfx/point.h"
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCursorInfo.h"

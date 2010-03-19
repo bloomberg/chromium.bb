@@ -19,9 +19,11 @@
       'sources': [
         'codec/jpeg_codec_unittest.cc',
         'codec/png_codec_unittest.cc',
+        'color_utils_unittest.cc',
         'insets_unittest.cc',
         'rect_unittest.cc',
         'run_all_unittests.cc',
+        'skbitmap_operations_unittest.cc',
         'test_suite.h',
       ],
       'include_dirs': [
@@ -31,6 +33,7 @@
         ['OS=="win"', {
           'sources': [
             'icon_util_unittest.cc',
+            'native_theme_win_unittest.cc',
           ],
         }],
         ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
@@ -62,12 +65,14 @@
         'codec/jpeg_codec.h',
         'codec/png_codec.cc',
         'codec/png_codec.h',
+        'color_utils.cc',
+        'color_utils.h',
+        'favicon_size.h',
         'gfx_paths.cc',
         'gfx_paths.h',
         'insets.cc',
         'insets.h',
         'native_widget_types.h',
-        'native_widget_types_gtk.cc',
         'path.cc',
         'path.h',
         'path_gtk.cc',
@@ -80,12 +85,22 @@
         'scrollbar_size.h',
         'size.cc',
         'size.h',
+        'skbitmap_operations.cc',
+        'skbitmap_operations.h',
+        'skia_util.cc',
+        'skia_util.h',
+        'skia_utils_gtk.cc',
+        'skia_utils_gtk.h',
       ],
       'conditions': [
         ['OS=="win"', {
           'sources': [
+            'gdi_util.cc',
+            'gdi_util.h',
             'icon_util.cc',
             'icon_util.h',
+            'native_theme_win.cc',
+            'native_theme_win.h',
           ],
         }],
         ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
@@ -94,6 +109,7 @@
             'gtk_native_view_id_manager.h',
             'gtk_util.cc',
             'gtk_util.h',
+            'native_widget_types_gtk.cc',
           ],
         }],
       ],

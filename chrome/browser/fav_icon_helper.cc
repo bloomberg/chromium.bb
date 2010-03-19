@@ -6,7 +6,6 @@
 
 #include "build/build_config.h"
 
-#include "app/gfx/favicon_size.h"
 #include "base/callback.h"
 #include "base/ref_counted_memory.h"
 #include "chrome/browser/profile.h"
@@ -16,6 +15,7 @@
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "gfx/codec/png_codec.h"
+#include "gfx/favicon_size.h"
 #include "skia/ext/image_operations.h"
 
 FavIconHelper::FavIconHelper(TabContents* tab_contents)

@@ -9,7 +9,7 @@
 #include <Vssym32.h>
 
 #include "app/gfx/canvas.h"
-#include "app/gfx/native_theme_win.h"
+#include "gfx/native_theme_win.h"
 #include "views/controls/menu/menu_config.h"
 #include "views/controls/menu/menu_item_view.h"
 

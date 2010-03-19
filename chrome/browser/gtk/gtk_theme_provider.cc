@@ -6,9 +6,6 @@
 
 #include <gtk/gtk.h>
 
-#include "app/gfx/color_utils.h"
-#include "app/gfx/skbitmap_operations.h"
-#include "app/gfx/skia_utils_gtk.h"
 #include "app/resource_bundle.h"
 #include "base/stl_util-inl.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -23,6 +20,9 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
+#include "gfx/color_utils.h"
+#include "gfx/skbitmap_operations.h"
+#include "gfx/skia_utils_gtk.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"

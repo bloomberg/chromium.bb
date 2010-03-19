@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/gfx/skbitmap_operations.h"
+#include "gfx/skbitmap_operations.h"
 
 #include <algorithm>
 

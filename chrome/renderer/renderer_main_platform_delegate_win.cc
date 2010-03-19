@@ -4,12 +4,12 @@
 
 #include "chrome/renderer/renderer_main_platform_delegate.h"
 
-#include "app/gfx/native_theme_win.h"
 #include "base/command_line.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/injection_test_dll.h"
+#include "gfx/native_theme_win.h"
 #include "sandbox/src/sandbox.h"
 #include "unicode/timezone.h"
 

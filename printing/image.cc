@@ -12,7 +12,7 @@
 #include "skia/ext/platform_device.h"
 
 #if defined(OS_WIN)
-#include "app/gfx/gdi_util.h"  // EMF support
+#include "gfx/gdi_util.h"  // EMF support
 #elif defined(OS_MACOSX)
 #include <ApplicationServices/ApplicationServices.h>
 #include "base/scoped_cftyperef.h"

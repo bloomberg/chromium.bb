@@ -6,9 +6,9 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "app/gfx/color_utils.h"
 #include "base/logging.h"
 #include "chrome/browser/browser_theme_pack.h"
+#include "gfx/color_utils.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"
 

@@ -8,11 +8,11 @@
 
 #include "app/gfx/canvas.h"
 #include "app/gfx/font.h"
-#include "app/gfx/native_theme_win.h"
 #include "app/l10n_util_win.h"
 #include "app/resource_bundle.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
+#include "gfx/native_theme_win.h"
 #include "views/controls/tabbed_pane/tabbed_pane.h"
 #include "views/fill_layout.h"
 #include "views/widget/root_view.h"

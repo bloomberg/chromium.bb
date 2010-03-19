@@ -9,8 +9,8 @@
 #include <Vssym32.h>
 
 #include "app/gfx/canvas.h"
-#include "app/gfx/native_theme_win.h"
 #include "app/l10n_util.h"
+#include "gfx/native_theme_win.h"
 #include "grit/app_strings.h"
 #include "views/controls/menu/menu_config.h"
 #include "views/controls/menu/submenu_view.h"

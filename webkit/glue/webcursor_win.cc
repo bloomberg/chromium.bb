@@ -2,9 +2,9 @@
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
-#include "app/gfx/gdi_util.h"
 #include "base/logging.h"
 #include "base/pickle.h"
+#include "gfx/gdi_util.h"
 #include "grit/webkit_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCursorInfo.h"

@@ -10,11 +10,11 @@
 #include <atlframe.h>
 #include <atlmisc.h>
 
-#include "app/gfx/native_theme_win.h"
 #include "app/l10n_util_win.h"
 #include "base/keyboard_codes.h"
 #include "base/logging.h"
 #include "base/win_util.h"
+#include "gfx/native_theme_win.h"
 #include "views/background.h"
 #include "views/border.h"
 #include "views/controls/native/native_view_host.h"

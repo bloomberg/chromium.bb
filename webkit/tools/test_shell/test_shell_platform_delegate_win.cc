@@ -7,11 +7,11 @@
 #include <windows.h>
 #include <commctrl.h>
 
-#include "app/gfx/native_theme_win.h"
 #include "base/command_line.h"
 #include "base/event_recorder.h"
 #include "base/resource_util.h"
 #include "base/win_util.h"
+#include "gfx/native_theme_win.h"
 #include "webkit/tools/test_shell/foreground_helper.h"
 #include "webkit/tools/test_shell/test_shell.h"
 #include "webkit/tools/test_shell/test_shell_platform_delegate.h"
