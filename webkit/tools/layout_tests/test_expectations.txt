@@ -2590,7 +2590,8 @@ BUG30938 MAC : fast/backgrounds/svg-as-background-6.html = IMAGE
 BUG30939 : svg/filters/filter-clip.svg = IMAGE+TEXT
 // Webkit roll 52198->52205
 // Newly added test in r52202
-BUG30939 : svg/filters/filter-source-position.svg = IMAGE+TEXT
+BUG30939 MAC WIN : svg/filters/filter-source-position.svg = IMAGE+TEXT
+BUG30939 LINUX RELEASE : svg/filters/filter-source-position.svg = IMAGE+TEXT
 BUG30939 LINUX DEBUG : svg/filters/filter-source-position.svg = IMAGE+TEXT IMAGE
 
 // WebKit roll 52468->52535
