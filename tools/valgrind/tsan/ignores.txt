@@ -18,6 +18,7 @@ fun:clone
 fun:fork
 fun:pthread_*
 fun_r:_pthread_exit
+fun_r:_pthread_free_pthread_onstack
 fun_r:random_r
 fun_r:random
 fun_r:rand
