@@ -231,6 +231,9 @@ std::string ICULocaleName(const std::string& locale_string) {
   return locale_string;
 }
 
+// Represents the locale-specific ICU text direction.
+l10n_util::TextDirection g_icu_text_direction = l10n_util::UNKNOWN_DIRECTION;
+
 // Sets the default locale of ICU.
 // Once the application locale of Chrome in GetApplicationLocale is determined,
 // the default locale of ICU need to be changed to match the application locale
@@ -247,6 +250,7 @@ void SetICUDefaultLocale(const std::string& locale_string) {
   // presence of actual locale data). However,
   // it does not hurt to have it as a sanity check.
   DCHECK(U_SUCCESS(error_code));
+  g_icu_text_direction = l10n_util::UNKNOWN_DIRECTION;
 }
 
 // Returns true if |locale_name| has an alias in the ICU data file.
@@ -433,9 +437,6 @@ void SplitAndNormalizeLanguageList(const std::string& env_language,
 }  // namespace
 
 namespace l10n_util {
-
-// Represents the locale-specific ICU text direction.
-static TextDirection g_icu_text_direction = UNKNOWN_DIRECTION;
 
 std::string GetApplicationLocale(const std::wstring& pref_locale) {
 #if !defined(OS_MACOSX)
