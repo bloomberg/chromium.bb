@@ -13,7 +13,7 @@
 #endif
 #include "base/callback.h"
 #if defined(OS_MACOSX)
-#include "chrome/common/transport_dib.h"
+#include "app/surface/transport_dib.h"
 #endif
 #include "gpu/command_buffer/service/common_decoder.h"
 

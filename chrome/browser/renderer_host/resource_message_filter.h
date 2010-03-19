@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "app/clipboard/clipboard.h"
+#include "app/surface/transport_dib.h"
 #include "base/callback.h"
 #include "base/file_path.h"
 #include "base/process.h"
@@ -27,7 +28,6 @@
 #include "chrome/common/nacl_types.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/transport_dib.h"
 #include "gfx/native_widget_types.h"
 #include "gfx/rect.h"
 #include "ipc/ipc_channel_proxy.h"

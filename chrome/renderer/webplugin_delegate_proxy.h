@@ -8,10 +8,10 @@
 #include <string>
 #include <vector>
 
+#include "app/surface/transport_dib.h"
 #include "base/file_path.h"
 #include "base/ref_counted.h"
 #include "base/weak_ptr.h"
-#include "chrome/common/transport_dib.h"
 #include "chrome/renderer/plugin_channel_host.h"
 #include "gfx/native_widget_types.h"
 #include "gfx/rect.h"

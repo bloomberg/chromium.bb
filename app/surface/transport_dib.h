@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_TRANSPORT_DIB_H_
-#define CHROME_COMMON_TRANSPORT_DIB_H_
+#ifndef APP_SURFACE_TRANSPORT_DIB_H_
+#define APP_SURFACE_TRANSPORT_DIB_H_
 
 #include "base/basictypes.h"
 
@@ -14,7 +14,7 @@
 #if defined(OS_WIN)
 #include <windows.h>
 #elif defined(USE_X11)
-#include "chrome/common/x11_util.h"
+#include "app/x11_util.h"
 #endif
 
 namespace gfx {
@@ -153,4 +153,4 @@ class TransportDIB {
 
 class MessageLoop;
 
-#endif  // CHROME_COMMON_TRANSPORT_DIB_H_
+#endif  // APP_SURFACE_TRANSPORT_DIB_H_

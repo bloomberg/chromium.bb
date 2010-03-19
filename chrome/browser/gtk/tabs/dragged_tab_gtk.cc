@@ -10,6 +10,7 @@
 
 #include "app/gfx/canvas_paint.h"
 #include "app/l10n_util.h"
+#include "app/x11_util.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/tabs/tab_renderer_gtk.h"
@@ -18,7 +19,6 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
-#include "chrome/common/x11_util.h"
 #include "gfx/gtk_util.h"
 #include "third_party/skia/include/core/SkShader.h"
 

@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/render_widget.h"
 
+#include "app/surface/transport_dib.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -11,7 +12,6 @@
 #include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/transport_dib.h"
 #include "chrome/renderer/render_process.h"
 #include "chrome/renderer/render_thread.h"
 #include "gfx/point.h"

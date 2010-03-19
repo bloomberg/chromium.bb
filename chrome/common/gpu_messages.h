@@ -7,11 +7,11 @@
 
 #include <vector>
 
+#include "app/surface/transport_dib.h"
 #include "base/basictypes.h"
 #include "base/process.h"
 #include "chrome/common/common_param_traits.h"
 #include "chrome/common/gpu_native_window_handle.h"
-#include "chrome/common/transport_dib.h"
 #include "gfx/native_widget_types.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"

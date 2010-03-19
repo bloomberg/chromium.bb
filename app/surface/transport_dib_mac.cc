@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/transport_dib.h"
+#include "app/surface/transport_dib.h"
 
 #include <unistd.h>
 #include <sys/stat.h>

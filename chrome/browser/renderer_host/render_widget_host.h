@@ -7,6 +7,7 @@
 
 #include <deque>
 
+#include "app/surface/transport_dib.h"
 #include "base/process.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
@@ -14,7 +15,6 @@
 #include "chrome/common/edit_command.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/property_bag.h"
-#include "chrome/common/transport_dib.h"
 #include "gfx/native_widget_types.h"
 #include "gfx/size.h"
 #include "ipc/ipc_channel.h"

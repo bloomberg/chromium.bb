@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "app/surface/transport_dib.h"
 #include "base/hash_tables.h"
 #include "base/ref_counted.h"
 #if defined(OS_MACOSX)
@@ -17,7 +18,6 @@
 #include "base/shared_memory.h"
 #include "base/timer.h"
 #include "chrome/common/chrome_plugin_api.h"
-#include "chrome/common/transport_dib.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message.h"
 #include "webkit/glue/webplugin.h"

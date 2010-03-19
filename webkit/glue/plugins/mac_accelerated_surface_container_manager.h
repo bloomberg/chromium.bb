@@ -2,28 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_RENDERER_HOST_GPU_PLUGIN_CONTAINER_MANAGER_MAC_H_
-#define CHROME_BROWSER_RENDERER_HOST_GPU_PLUGIN_CONTAINER_MANAGER_MAC_H_
+#ifndef WEBKIT_GLUE_PLUGINS_MAC_ACCELERATED_SURFACE_CONTAINER_MANAGER_H_
+#define WEBKIT_GLUE_PLUGINS_MAC_ACCELERATED_SURFACE_CONTAINER_MANAGER_H_
 
 #include <OpenGL/OpenGL.h>
 #include <map>
 #include <vector>
 
+#include "app/gfx/native_widget_types.h"
 #include "app/surface/transport_dib.h"
 #include "base/basictypes.h"
-#include "gfx/native_widget_types.h"
 
 namespace webkit_glue {
 struct WebPluginGeometry;
 }
 
-class AcceleratedSurfaceContainerMac;
+class MacAcceleratedSurfaceContainer;
 
 // Helper class that manages the backing store and on-screen rendering
 // of instances of the GPU plugin on the Mac.
-class AcceleratedSurfaceContainerManagerMac {
+class MacAcceleratedSurfaceContainerManager {
  public:
-  AcceleratedSurfaceContainerManagerMac();
+  MacAcceleratedSurfaceContainerManager();
 
   // Allocates a new "fake" PluginWindowHandle, which is used as the
   // key for the other operations.
@@ -61,18 +61,18 @@ class AcceleratedSurfaceContainerManagerMac {
   uint32 current_id_;
 
   // Maps a "fake" plugin window handle to the corresponding container.
-  AcceleratedSurfaceContainerMac* MapIDToContainer(gfx::PluginWindowHandle id);
+  MacAcceleratedSurfaceContainer* MapIDToContainer(gfx::PluginWindowHandle id);
 
   // A map that associates plugin window handles with their containers.
-  typedef std::map<gfx::PluginWindowHandle, AcceleratedSurfaceContainerMac*>
+  typedef std::map<gfx::PluginWindowHandle, MacAcceleratedSurfaceContainer*>
       PluginWindowToContainerMap;
   PluginWindowToContainerMap plugin_window_to_container_map_;
 
   // A list of OpenGL textures waiting to be deleted
   std::vector<GLuint> textures_pending_deletion_;
 
-  DISALLOW_COPY_AND_ASSIGN(AcceleratedSurfaceContainerManagerMac);
+  DISALLOW_COPY_AND_ASSIGN(MacAcceleratedSurfaceContainerManager);
 };
 
-#endif  // CHROME_BROWSER_RENDERER_HOST_GPU_PLUGIN_CONTAINER_MANAGER_MAC_H_
+#endif  // WEBKIT_GLUE_PLUGINS_MAC_ACCELERATED_SURFACE_CONTAINER_MANAGER_H_
 

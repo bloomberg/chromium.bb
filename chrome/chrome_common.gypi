@@ -23,8 +23,6 @@
           # .cc, .h, and .mm files under chrome/common that are used on all
           # platforms, including both 32-bit and 64-bit Windows.
           # Test files are not included.
-          'common/accelerated_surface_mac.cc',
-          'common/accelerated_surface_mac.h',
           'common/app_mode_constants_mac.h',
           'common/app_mode_constants_mac.mm',
           'common/bindings_policy.h',
@@ -53,8 +51,6 @@
           'common/geoposition.h',
           'common/gpu_messages.h',
           'common/gpu_messages_internal.h',
-          'common/io_surface_support_mac.cc',
-          'common/io_surface_support_mac.h',
           'common/logging_chrome.cc',
           'common/logging_chrome.h',
           'common/main_function_params.h',
@@ -250,9 +246,6 @@
         'common/sqlite_utils.h',
         'common/thumbnail_score.cc',
         'common/thumbnail_score.h',
-        'common/transport_dib_linux.cc',
-        'common/transport_dib_mac.cc',
-        'common/transport_dib_win.cc',
         'common/url_constants.cc',
         'common/url_constants.h',
         'common/utility_messages.h',
@@ -268,9 +261,6 @@
         'common/worker_messages_internal.h',
         'common/worker_thread_ticker.cc',
         'common/worker_thread_ticker.h',
-        'common/x11_util.cc',
-        'common/x11_util.h',
-        'common/x11_util_internal.h',
         'common/zip.cc',  # Requires zlib directly.
         'common/zip.h',
       ],

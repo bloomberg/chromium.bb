@@ -6,10 +6,9 @@ include_rules = [
   "+../common",
   "+../service",
 
+  # For IOSurface and TransportDIB support on OS X, and X11 utilities.
+  "+app",
+
   # For gfx::PluginWindowHandle
   "+gfx",
-
-  # For IOSurfaceSupport on Mac OS X, service-side code only.
-  # Can consider moving these files if this dependency is undesirable.
-  "+chrome/common",
 ]

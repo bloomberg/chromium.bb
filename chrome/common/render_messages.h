@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "app/clipboard/clipboard.h"
+#include "app/surface/transport_dib.h"
 #include "base/basictypes.h"
 #include "base/platform_file.h"
 #include "base/ref_counted.h"
@@ -25,7 +26,6 @@
 #include "chrome/common/page_transition_types.h"
 #include "chrome/common/renderer_preferences.h"
 #include "chrome/common/resource_response.h"
-#include "chrome/common/transport_dib.h"
 #include "chrome/common/view_types.h"
 #include "chrome/common/webkit_param_traits.h"
 #include "gfx/native_widget_types.h"

@@ -31,7 +31,7 @@
 #include "views/window/window.h"
 
 #if defined(OS_LINUX)
-#include "chrome/common/x11_util.h"
+#include "app/x11_util.h"
 #else
 #include "app/win_util.h"
 #endif

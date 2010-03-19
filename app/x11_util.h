@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_X11_UTIL_H_
-#define CHROME_COMMON_X11_UTIL_H_
+#ifndef APP_X11_UTIL_H_
+#define APP_X11_UTIL_H_
 
 // This file declares utility functions for X11 (Linux only).
 //
@@ -170,4 +170,4 @@ bool ChangeWindowDesktop(XID window, XID destination);
 
 }  // namespace x11_util
 
-#endif  // CHROME_COMMON_X11_UTIL_H_
+#endif  // APP_X11_UTIL_H_

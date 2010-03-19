@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/accelerated_surface_mac.h"
+#include "app/surface/accelerated_surface_mac.h"
 
+#include "app/surface/io_surface_support_mac.h"
 #include "base/logging.h"
-#include "chrome/common/io_surface_support_mac.h"
 #include "gfx/rect.h"
 
 AcceleratedSurface::AcceleratedSurface()

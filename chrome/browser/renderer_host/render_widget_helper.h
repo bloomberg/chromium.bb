@@ -7,13 +7,13 @@
 
 #include <map>
 
+#include "app/surface/transport_dib.h"
 #include "base/atomic_sequence_num.h"
 #include "base/hash_tables.h"
 #include "base/process.h"
 #include "base/ref_counted.h"
 #include "base/lock.h"
 #include "base/waitable_event.h"
-#include "chrome/common/transport_dib.h"
 
 namespace IPC {
 class Message;

@@ -4,11 +4,11 @@
 
 #include "chrome/browser/renderer_host/backing_store_win.h"
 
+#include "app/surface/transport_dib.h"
 #include "base/command_line.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/transport_dib.h"
 #include "gfx/gdi_util.h"
 #include "skia/ext/platform_canvas.h"
 

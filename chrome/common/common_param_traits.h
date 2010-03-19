@@ -13,11 +13,11 @@
 
 #include <vector>
 
+#include "app/surface/transport_dib.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/geoposition.h"
 #include "chrome/common/page_zoom.h"
 #include "chrome/common/thumbnail_score.h"
-#include "chrome/common/transport_dib.h"
 #include "gfx/native_widget_types.h"
 #include "ipc/ipc_message_utils.h"
 #include "net/base/upload_data.h"

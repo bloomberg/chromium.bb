@@ -31,7 +31,7 @@
 // XWindowWrapper is stubbed out for unit-tests.
 #include "gpu/command_buffer/service/x_utils.h"
 #elif defined(OS_MACOSX)
-#include "chrome/common/accelerated_surface_mac.h"
+#include "app/surface/accelerated_surface_mac.h"
 #endif
 
 namespace gpu {

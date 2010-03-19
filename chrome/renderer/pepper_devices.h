@@ -5,12 +5,12 @@
 #ifndef CHROME_RENDERER_PEPPER_DEVICES_H_
 #define CHROME_RENDERER_PEPPER_DEVICES_H_
 
+#include "app/surface/transport_dib.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/shared_memory.h"
 #include "base/simple_thread.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/transport_dib.h"
 #include "chrome/renderer/audio_message_filter.h"
 #include "gfx/rect.h"
 #include "third_party/npapi/bindings/npapi.h"

@@ -9,8 +9,8 @@
 #include <OpenGL/OpenGL.h>
 #endif
 
+#include "app/surface/transport_dib.h"
 #include "base/shared_memory.h"
-#include "chrome/common/transport_dib.h"
 #include "gfx/native_widget_types.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/webplugin.h"

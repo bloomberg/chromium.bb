@@ -4,7 +4,7 @@
 
 #include "chrome/renderer/mock_render_process.h"
 
-#include "chrome/common/transport_dib.h"
+#include "app/surface/transport_dib.h"
 #include "gfx/rect.h"
 
 MockRenderProcess::MockRenderProcess()

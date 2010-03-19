@@ -9,10 +9,10 @@ extern "C" {
 #include <X11/Xlib.h>
 }
 
+#include "app/x11_util.h"
 #include "base/logging.h"
 #include "base/singleton.h"
 #include "base/scoped_ptr.h"
-#include "chrome/common/x11_util.h"
 
 namespace chromeos {
 

@@ -6,7 +6,7 @@
 // ported from XCB since we can't use XCB on Ubuntu while its 32-bit support
 // remains woefully incomplete.
 
-#include "chrome/common/x11_util.h"
+#include "app/x11_util.h"
 
 #include <gdk/gdk.h>
 #include <gdk/gdkx.h>
@@ -21,7 +21,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/thread.h"
-#include "chrome/common/x11_util_internal.h"
+#include "app/x11_util_internal.h"
 #include "gfx/size.h"
 
 namespace x11_util {

@@ -6,6 +6,7 @@
 
 #include "chrome/browser/renderer_host/render_widget_host_view_mac.h"
 
+#include "app/surface/io_surface_support_mac.h"
 #import "base/chrome_application_mac.h"
 #include "base/histogram.h"
 #import "base/scoped_nsobject.h"
@@ -23,7 +24,6 @@
 #include "chrome/common/edit_command.h"
 #include "chrome/common/plugin_messages.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/io_surface_support_mac.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/WebKit/chromium/public/mac/WebInputEventFactory.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"

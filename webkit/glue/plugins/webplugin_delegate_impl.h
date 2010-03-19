@@ -22,7 +22,7 @@
 #include "webkit/glue/webplugin_delegate.h"
 
 #if defined(OS_MACOSX)
-#include "chrome/common/accelerated_surface_mac.h"
+#include "app/surface/accelerated_surface_mac.h"
 #endif
 
 #if defined(USE_X11)

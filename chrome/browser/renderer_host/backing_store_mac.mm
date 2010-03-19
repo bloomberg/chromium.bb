@@ -6,12 +6,12 @@
 
 #include "chrome/browser/renderer_host/backing_store_mac.h"
 
+#include "app/surface/transport_dib.h"
 #include "base/logging.h"
 #include "base/mac_util.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
-#include "chrome/common/transport_dib.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"

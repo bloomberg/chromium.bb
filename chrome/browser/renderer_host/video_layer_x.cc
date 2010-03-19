@@ -4,8 +4,8 @@
 
 #include "chrome/browser/renderer_host/video_layer_x.h"
 
+#include "app/x11_util_internal.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
-#include "chrome/common/x11_util_internal.h"
 #include "media/base/yuv_convert.h"
 
 VideoLayerX::VideoLayerX(RenderWidgetHost* widget,

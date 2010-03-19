@@ -7,9 +7,9 @@
 
 #include <vector>
 
+#include "app/surface/transport_dib.h"
 #include "base/basictypes.h"
 #include "base/process.h"
-#include "chrome/common/transport_dib.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
 

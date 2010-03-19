@@ -12,6 +12,7 @@
 
 #include "chrome/renderer/render_process.h"
 
+#include "app/surface/transport_dib.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -26,7 +27,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/nacl_types.h"
-#include "chrome/common/transport_dib.h"
 #include "chrome/renderer/render_view.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message_utils.h"

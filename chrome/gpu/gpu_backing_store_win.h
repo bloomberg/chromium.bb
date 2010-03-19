@@ -9,8 +9,8 @@
 
 #include <vector>
 
+#include "app/surface/transport_dib.h"
 #include "base/basictypes.h"
-#include "chrome/common/transport_dib.h"
 #include "gfx/native_widget_types.h"
 #include "gfx/size.h"
 #include "ipc/ipc_channel.h"

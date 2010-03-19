@@ -11,6 +11,7 @@
 #include <queue>
 #include <vector>
 
+#include "app/surface/transport_dib.h"
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/id_map.h"
@@ -27,7 +28,6 @@
 #include "chrome/common/page_zoom.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/renderer_preferences.h"
-#include "chrome/common/transport_dib.h"
 #include "chrome/common/view_types.h"
 #include "chrome/renderer/automation/dom_automation_controller.h"
 #include "chrome/renderer/dom_ui_bindings.h"

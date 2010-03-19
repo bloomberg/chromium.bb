@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_IO_SURFACE_SUPPORT_MAC_H_
-#define CHROME_COMMON_IO_SURFACE_SUPPORT_MAC_H_
+#ifndef APP_SURFACE_IO_SURFACE_SUPPORT_MAC_H_
+#define APP_SURFACE_IO_SURFACE_SUPPORT_MAC_H_
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <mach/mach.h>
@@ -62,5 +62,5 @@ class IOSurfaceSupport {
   DISALLOW_COPY_AND_ASSIGN(IOSurfaceSupport);
 };
 
-#endif  // CHROME_COMMON_IO_SURFACE_SUPPORT_MAC_H_
+#endif  // APP_SURFACE_IO_SURFACE_SUPPORT_MAC_H_
 

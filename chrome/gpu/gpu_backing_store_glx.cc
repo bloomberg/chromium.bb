@@ -6,9 +6,9 @@
 
 #include <GL/glew.h>
 
+#include "app/surface/transport_dib.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/gpu_messages.h"
-#include "chrome/common/transport_dib.h"
 #include "chrome/gpu/gpu_backing_store_glx_context.h"
 #include "chrome/gpu/gpu_thread.h"
 #include "chrome/gpu/gpu_view_x.h"

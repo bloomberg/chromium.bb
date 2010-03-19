@@ -4,8 +4,8 @@
 
 #include "chrome/gpu/gpu_backing_store_glx_context.h"
 
+#include "app/x11_util.h"
 #include "base/scoped_ptr.h"
-#include "chrome/common/x11_util.h"
 #include "chrome/gpu/gpu_thread.h"
 
 // Must be last.

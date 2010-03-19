@@ -11,10 +11,10 @@
 #include <queue>
 #include <string>
 
+#include "app/surface/transport_dib.h"
 #include "base/process.h"
 #include "base/scoped_ptr.h"
 #include "base/timer.h"
-#include "chrome/common/transport_dib.h"
 #include "chrome/browser/child_process_launcher.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/common/notification_registrar.h"

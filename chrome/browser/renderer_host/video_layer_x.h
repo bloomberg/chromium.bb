@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_RENDERER_HOST_VIDEO_LAYER_X_
-#define CHROME_BROWSER_RENDERER_HOST_VIDEO_LAYER_X_
+#ifndef CHROME_BROWSER_RENDERER_HOST_VIDEO_LAYER_X_H_
+#define CHROME_BROWSER_RENDERER_HOST_VIDEO_LAYER_X_H_
 
+#include "app/x11_util.h"
 #include "chrome/browser/renderer_host/video_layer.h"
-#include "chrome/common/x11_util.h"
 
 // Implements a YUV data layer using X to hold the RGB data.
 class VideoLayerX : public VideoLayer {
@@ -48,4 +48,4 @@ class VideoLayerX : public VideoLayer {
   DISALLOW_COPY_AND_ASSIGN(VideoLayerX);
 };
 
-#endif  // CHROME_BROWSER_RENDERER_HOST_VIDEO_LAYER_X_
+#endif  // CHROME_BROWSER_RENDERER_HOST_VIDEO_LAYER_X_H_

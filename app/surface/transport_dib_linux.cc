@@ -7,9 +7,9 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 
+#include "app/surface/transport_dib.h"
+#include "app/x11_util.h"
 #include "base/logging.h"
-#include "chrome/common/transport_dib.h"
-#include "chrome/common/x11_util.h"
 #include "gfx/size.h"
 #include "skia/ext/platform_canvas.h"
 

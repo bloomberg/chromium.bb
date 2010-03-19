@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "chrome/common/x11_util.h"
+#include "app/x11_util.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "webkit/glue/window_open_disposition.h"

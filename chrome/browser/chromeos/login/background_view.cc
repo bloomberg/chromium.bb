@@ -4,12 +4,12 @@
 
 #include "chrome/browser/chromeos/login/background_view.h"
 
+#include "app/x11_util.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/status/clock_menu_button.h"
 #include "chrome/browser/chromeos/status/network_menu_button.h"
 #include "chrome/browser/chromeos/status/status_area_view.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
-#include "chrome/common/x11_util.h"
 #include "views/screen.h"
 #include "views/widget/widget_gtk.h"
 

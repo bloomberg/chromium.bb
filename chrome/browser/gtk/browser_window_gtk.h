@@ -10,6 +10,7 @@
 #include <map>
 
 #include "app/active_window_watcher_x.h"
+#include "app/x11_util.h"
 #include "base/scoped_ptr.h"
 #include "base/timer.h"
 #include "build/build_config.h"
@@ -17,7 +18,6 @@
 #include "chrome/browser/pref_member.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/common/notification_registrar.h"
-#include "chrome/common/x11_util.h"
 #include "gfx/rect.h"
 
 class BookmarkBarGtk;

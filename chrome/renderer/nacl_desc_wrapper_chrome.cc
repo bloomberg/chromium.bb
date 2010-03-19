@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "app/surface/transport_dib.h"
 #include "base/shared_memory.h"
 #include "base/sync_socket.h"
-#include "chrome/common/transport_dib.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_sync_socket.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"

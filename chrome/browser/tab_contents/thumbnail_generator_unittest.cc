@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "app/surface/transport_dib.h"
 #include "base/basictypes.h"
 #include "chrome/browser/renderer_host/backing_store_manager.h"
 #include "chrome/browser/renderer_host/mock_render_process_host.h"
@@ -9,7 +10,6 @@
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/transport_dib.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "skia/ext/platform_canvas.h"

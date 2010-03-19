@@ -7,13 +7,13 @@
 #include <vector>
 
 #include "app/resource_bundle.h"
+#include "app/x11_util.h"
 #include "base/logging.h"
 #include "base/singleton.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
-#include "chrome/common/x11_util.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"

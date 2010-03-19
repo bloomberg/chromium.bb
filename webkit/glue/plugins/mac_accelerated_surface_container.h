@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_RENDERER_HOST_GPU_PLUGIN_CONTAINER_MAC_H_
-#define CHROME_BROWSER_RENDERER_HOST_GPU_PLUGIN_CONTAINER_MAC_H_
+#ifndef WEBKIT_GLUE_PLUGINS_MAC_ACCELERATED_SURFACE_CONTAINER_H_
+#define WEBKIT_GLUE_PLUGINS_MAC_ACCELERATED_SURFACE_CONTAINER_H_
 
 // The "GPU plugin" is currently implemented as a special kind of
 // NPAPI plugin to provide high-performance on-screen 3D rendering for
@@ -23,27 +23,27 @@
 // does not have an on-screen window.
 //
 // This class encapsulates some of the management of these data
-// structures, in conjunction with the AcceleratedSurfaceContainerManagerMac.
+// structures, in conjunction with the MacAcceleratedSurfaceContainerManager.
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <OpenGL/OpenGL.h>
 
+#include "app/gfx/native_widget_types.h"
 #include "app/surface/transport_dib.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
-#include "gfx/native_widget_types.h"
-#include "gfx/rect.h"
+#include "base/gfx/rect.h"
 
 namespace webkit_glue {
 struct WebPluginGeometry;
 }
 
-class AcceleratedSurfaceContainerManagerMac;
+class MacAcceleratedSurfaceContainerManager;
 
-class AcceleratedSurfaceContainerMac {
+class MacAcceleratedSurfaceContainer {
  public:
-  AcceleratedSurfaceContainerMac();
-  virtual ~AcceleratedSurfaceContainerMac();
+  MacAcceleratedSurfaceContainer();
+  virtual ~MacAcceleratedSurfaceContainer();
 
   // Sets the backing store and size of this accelerated surface container.
   // There are two versions: the IOSurface version is used on systems where the
@@ -52,11 +52,11 @@ class AcceleratedSurfaceContainerMac {
   void SetSizeAndIOSurface(int32 width,
                            int32 height,
                            uint64 io_surface_identifier,
-                           AcceleratedSurfaceContainerManagerMac* manager);
+                           MacAcceleratedSurfaceContainerManager* manager);
   void SetSizeAndTransportDIB(int32 width,
                               int32 height,
                               TransportDIB::Handle transport_dib,
-                              AcceleratedSurfaceContainerManagerMac* manager);
+                              MacAcceleratedSurfaceContainerManager* manager);
 
   // Tells the accelerated surface container that it has moved relative to the
   // origin of the window, for example because of a scroll event.
@@ -69,8 +69,7 @@ class AcceleratedSurfaceContainerMac {
 
   // Enqueue our texture for later deletion. Call this before deleting
   // this object.
-  void EnqueueTextureForDeletion(
-      AcceleratedSurfaceContainerManagerMac* manager);
+  void EnqueueTextureForDeletion(MacAcceleratedSurfaceContainerManager* manager);
 
  private:
   // The x and y coordinates of the plugin window on the web page.
@@ -104,8 +103,8 @@ class AcceleratedSurfaceContainerMac {
   // with it.
   GLuint texture_;
 
-  DISALLOW_COPY_AND_ASSIGN(AcceleratedSurfaceContainerMac);
+  DISALLOW_COPY_AND_ASSIGN(MacAcceleratedSurfaceContainer);
 };
 
-#endif  // CHROME_BROWSER_RENDERER_HOST_GPU_PLUGIN_CONTAINER_MAC_H_
+#endif  // WEBKIT_GLUE_PLUGINS_MAC_ACCELERATED_SURFACE_CONTAINER_H_
 

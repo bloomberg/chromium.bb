@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_RENDERER_HOST_BACKING_STORE_X_H_
 #define CHROME_BROWSER_RENDERER_HOST_BACKING_STORE_X_H_
 
+#include "app/x11_util.h"
 #include "base/basictypes.h"
 #include "build/build_config.h"
 #include "chrome/browser/renderer_host/backing_store.h"
-#include "chrome/common/x11_util.h"
 
 typedef struct _GdkDrawable GdkDrawable;
 class SkBitmap;

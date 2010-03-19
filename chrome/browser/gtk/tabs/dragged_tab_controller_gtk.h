@@ -9,12 +9,12 @@
 
 #include <set>
 
+#include "app/x11_util.h"
 #include "base/scoped_ptr.h"
 #include "base/timer.h"
 #include "chrome/browser/dock_info.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/common/notification_registrar.h"
-#include "chrome/common/x11_util.h"
 
 class DraggedTabGtk;
 class TabGtk;

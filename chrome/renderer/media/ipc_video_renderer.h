@@ -10,8 +10,8 @@
 #ifndef CHROME_RENDERER_MEDIA_IPC_VIDEO_RENDERER_H_
 #define CHROME_RENDERER_MEDIA_IPC_VIDEO_RENDERER_H_
 
+#include "app/surface/transport_dib.h"
 #include "base/waitable_event.h"
-#include "chrome/common/transport_dib.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
 #include "ipc/ipc_message.h"
@@ -40,7 +40,7 @@ class IPCVideoRenderer : public webkit_glue::WebVideoRenderer {
   // TODO(scherkus): remove this mega-hack, see http://crbug.com/28207
   class FactoryFactory : public webkit_glue::WebVideoRendererFactoryFactory {
    public:
-    FactoryFactory(int routing_id)
+    explicit FactoryFactory(int routing_id)
         : webkit_glue::WebVideoRendererFactoryFactory(),
           routing_id_(routing_id) {
     }

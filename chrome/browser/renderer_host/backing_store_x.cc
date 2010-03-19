@@ -17,14 +17,14 @@
 #include <algorithm>
 #include <utility>
 
+#include "app/surface/transport_dib.h"
+#include "app/x11_util.h"
+#include "app/x11_util_internal.h"
 #include "base/compiler_specific.h"
 #include "base/histogram.h"
 #include "base/logging.h"
 #include "base/time.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
-#include "chrome/common/transport_dib.h"
-#include "chrome/common/x11_util.h"
-#include "chrome/common/x11_util_internal.h"
 #include "gfx/rect.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"

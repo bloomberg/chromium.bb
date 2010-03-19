@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_ACCELERATED_SURFACE_MAC_H_
-#define CHROME_COMMON_ACCELERATED_SURFACE_MAC_H_
+#ifndef APP_SURFACE_ACCELERATED_SURFACE_MAC_H_
+#define APP_SURFACE_ACCELERATED_SURFACE_MAC_H_
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <OpenGL/OpenGL.h>
 
+#include "app/surface/transport_dib.h"
 #include "base/callback.h"
 #include "base/scoped_cftyperef.h"
 #include "base/scoped_ptr.h"
-#include "chrome/common/transport_dib.h"
 
 namespace gfx {
 class Rect;
@@ -105,4 +105,4 @@ class AcceleratedSurface {
   scoped_ptr<Callback1<TransportDIB::Id>::Type> dib_free_callback_;
 };
 
-#endif  // CHROME_COMMON_ACCELERATED_SURFACE_MAC_H_
+#endif  // APP_SURFACE_ACCELERATED_SURFACE_MAC_H_
