@@ -76,6 +76,31 @@ void OnSubmenuShow(GtkWidget* widget, gpointer user_data) {
 #endif
 }
 
+// Popup menus may get squished if they open up too close to the bottom of the
+// screen. This function takes the size of the screen, the size of the menu,
+// an optional widget, the Y position of the mouse click, and adjusts the popup
+// menu's Y position to make it fit if it's possible to do so.
+// Returns the new Y position of the popup menu.
+int CalculateMenuYPosition(const GdkRectangle* screen_rect,
+                           const GtkRequisition* menu_req,
+                           const GtkWidget* widget, const int y) {
+  CHECK(screen_rect);
+  CHECK(menu_req);
+  // If the menu would run off the bottom of the screen, and there is enough
+  // screen space upwards to accommodate the menu, then pop upwards. If there
+  // is a widget, then also move the anchor point to the top of the widget
+  // rather than the bottom.
+  const int screen_top = screen_rect->y;
+  const int screen_bottom = screen_rect->y + screen_rect->height;
+  const int menu_bottom = y + menu_req->height;
+  int alternate_y = y - menu_req->height;
+  if (widget)
+    alternate_y -= widget->allocation.height;
+  if (menu_bottom >= screen_bottom && alternate_y >= screen_top)
+    return alternate_y;
+  return y;
+}
+
 }  // namespace
 
 MenuGtk::MenuGtk(MenuGtk::Delegate* delegate,
@@ -440,15 +465,7 @@ void MenuGtk::WidgetMenuPositionFunc(GtkMenu* menu,
   if (!start_align)
     *x += widget->allocation.width - menu_req.width;
 
-  // If the menu would run off the bottom of the screen, and there is enough
-  // screen space upwards to accommodate the menu, then pop upwards. Also move
-  // the anchor point to the top of the widget rather than the bottom.
-  const int screen_top = screen_rect.y;
-  const int screen_bottom = screen_rect.y + screen_rect.height;
-  const int menu_bottom = *y + menu_req.height;
-  const int alternate_y = *y - (menu_req.height + widget->allocation.height);
-  if (menu_bottom >= screen_bottom && alternate_y >= screen_top)
-    *y = alternate_y;
+  *y = CalculateMenuYPosition(&screen_rect, &menu_req, widget, *y);
 
   *push_in = FALSE;
 }
@@ -474,8 +491,7 @@ void MenuGtk::PointMenuPositionFunc(GtkMenu* menu,
   GdkRectangle screen_rect;
   gdk_screen_get_monitor_geometry(screen, monitor, &screen_rect);
 
-  if (*y + menu_req.height >= screen_rect.height)
-    *y -= menu_req.height;
+  *y = CalculateMenuYPosition(&screen_rect, &menu_req, NULL, *y);
 }
 
 void MenuGtk::UpdateMenu() {
