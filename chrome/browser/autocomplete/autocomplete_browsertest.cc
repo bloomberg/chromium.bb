@@ -11,6 +11,7 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/location_bar.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
@@ -137,4 +138,24 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, Autocomplete) {
     const AutocompleteResult& result = autocomplete_controller->result();
     EXPECT_TRUE(result.empty()) << AutocompleteResultAsString(result);
   }
+}
+
+IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, TabAwayRevertSelect) {
+  // http://code.google.com/p/chromium/issues/detail?id=38385
+  // Make sure that tabbing away from an empty omnibar causes a revert
+  // and select all.
+  LocationBar* location_bar = GetLocationBar();
+  EXPECT_EQ(UTF8ToWide(chrome::kAboutBlankURL),
+            location_bar->location_entry()->GetText());
+  location_bar->location_entry()->SetUserText(L"");
+  browser()->AddTabWithURL(GURL(chrome::kAboutBlankURL), GURL(),
+                         PageTransition::START_PAGE, true, -1, false, NULL);
+  ui_test_utils::WaitForNavigation(
+      &browser()->GetSelectedTabContents()->controller());
+  EXPECT_EQ(UTF8ToWide(chrome::kAboutBlankURL),
+            location_bar->location_entry()->GetText());
+  browser()->CloseTab();
+  EXPECT_EQ(UTF8ToWide(chrome::kAboutBlankURL),
+            location_bar->location_entry()->GetText());
+  EXPECT_TRUE(location_bar->location_entry()->IsSelectAll());
 }

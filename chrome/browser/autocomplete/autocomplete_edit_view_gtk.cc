@@ -313,16 +313,16 @@ int AutocompleteEditViewGtk::TextWidth() {
 
 void AutocompleteEditViewGtk::SaveStateToTab(TabContents* tab) {
   DCHECK(tab);
-  GetStateAccessor()->SetProperty(
-      tab->property_bag(),
-      AutocompleteEditState(model_->GetStateForTabSwitch(),
-                            ViewState(GetSelection())));
-
   // If any text has been selected, register it as the PRIMARY selection so it
   // can still be pasted via middle-click after the text view is cleared.
   if (!selected_text_.empty()) {
     SavePrimarySelection(selected_text_);
   }
+  // NOTE: GetStateForTabSwitch may affect GetSelection, so order is important.
+  AutocompleteEditModel::State model_state = model_->GetStateForTabSwitch();
+  GetStateAccessor()->SetProperty(
+      tab->property_bag(),
+      AutocompleteEditState(model_state, ViewState(GetSelection())));
 }
 
 void AutocompleteEditViewGtk::Update(const TabContents* contents) {
