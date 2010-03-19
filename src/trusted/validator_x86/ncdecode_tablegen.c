@@ -1108,6 +1108,9 @@ static void NaClDefPrefixBytes() {
   }
 }
 
+/* Define the given character sequence, associated with the given byte
+ * opcode, as a nop.
+ */
 static void NaClDefNopSeq(const char* sequence, uint8_t opcode) {
   NaClDefInstSeq(sequence);
   NaClDefInst(opcode, NACLi_386, NACL_EMPTY_IFLAGS, InstNop);
@@ -1116,20 +1119,7 @@ static void NaClDefNopSeq(const char* sequence, uint8_t opcode) {
 static void NaClDefNops() {
   /* nop */
   NaClDefNopSeq("90", 0x90);
-  /* xchg %ax, %ax  */
   NaClDefNopSeq("6690", 0x90);
-  /* lea %esi, [%esi+0] */
-  NaClDefNopSeq("8d7600", 0x8d);
-  /* lea %esi, [%esi*1+0] */
-  NaClDefNopSeq("8d742600", 0x8d);
-  /* lea %esi, [%esi+0] */
-  NaClDefNopSeq("8db600000000", 0x8d);
-  /* lea %esi, [%esi*1+0] */
-  NaClDefNopSeq("8db42600000000", 0x8d);
-  /* mov %esi, %esi */
-  NaClDefNopSeq("89f6", 0x89);
-  /* lea %edi, [%edi*1+0] */
-  NaClDefNopSeq("8dbc2700000000", 0x8d);
   /* nop [%[re]ax] */
   NaClDefNopSeq("0f1f00", 0x1f);
   /* nop [%[re]ax+0] */

@@ -37,8 +37,6 @@ struct NaClInstState {
   uint8_t length_limit;
   /* Define the number of prefix bytes processed. */
   uint8_t num_prefix_bytes; /* 0..4 */
-  /* Handle that gcc generates multiple 66 prefix values for nops. */
-  uint8_t num_prefix_66;
   /* If REX prefix found, its value. Otherwise zero. */
   uint8_t rexprefix;
   /* If Mod/RM byte defined, its value. Otherwise zero. */

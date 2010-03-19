@@ -109,11 +109,6 @@ OperandSizeDefaultIs64
 # Operand size must be 64 in 64-bit mode.
 OperandSizeForce64
 
-# Ignore prefix 66 when computing operand size. This is needed for some
-# sse instructions, where prefix 66 is being used to define Mmx or Xmm
-# registers, instead of operand size.
-OperandSizeIgnore66
-
 # Address size defaults to size 32 in 64-bit mode. Use of Rex.w promotes
 # the address to 64 bits.
 AddressSizeDefaultIs32

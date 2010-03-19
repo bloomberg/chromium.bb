@@ -45,7 +45,6 @@ static void NaClInstStateInit(NaClInstIter* iter, NaClInstState* state) {
   state->length_limit = (uint8_t) limit;
   DEBUG(printf("length limit = %"NACL_PRIu8"\n", state->length_limit));
   state->num_prefix_bytes = 0;
-  state->num_prefix_66 = 0;
   state->rexprefix = 0;
   state->prefix_mask = 0;
   state->inst = NULL;
@@ -67,7 +66,7 @@ static int NaClExtractOpSize(NaClInstState* state) {
     }
   }
   if (state->prefix_mask & kPrefixDATA16) {
-    return (state->inst->flags & NACL_IFLAG(OperandSizeIgnore66)) ? 4 : 2;
+    return 2;
   }
   if (NACL_TARGET_SUBARCH == 64 &&
       (state->inst->flags & NACL_IFLAG(OperandSizeDefaultIs64))) {
@@ -119,9 +118,6 @@ static Bool NaClConsumePrefixBytes(NaClInstState* state) {
     DEBUG(printf("Consume prefix[%d]: %02"NACL_PRIx8" => %"NACL_PRIx32"\n",
                  i, next_byte, prefix_form));
     state->prefix_mask |= prefix_form;
-    if (kPrefixDATA16 == prefix_form) {
-      ++state->num_prefix_66;
-    }
     ++state->num_prefix_bytes;
     ++state->length;
     DEBUG(printf("  prefix mask: %08"NACL_PRIx32"\n", state->prefix_mask));
@@ -853,15 +849,9 @@ void NaClDecodeInst(NaClInstIter* iter, NaClInstState* state) {
     int num_prefix_bytes = state->num_prefix_bytes;
     if (state->rexprefix) --num_prefix_bytes;
 
-    /* Don't count prefix bytes that explicitly state to ignore,
-     * such as the nop instruction.
+    /* Note: Explicit NOP sequences that use multiple 66 values are
+     * recognized as special cases, and need not be processed here.
      */
-    if (state->inst->flags & NACL_IFLAG(IgnorePrefixDATA16)) {
-      if (state->num_prefix_66 > 0) {
-        num_prefix_bytes -= state->num_prefix_66;
-      }
-    }
-
     if (num_prefix_bytes > 1) {
       state->is_nacl_legal = FALSE;
     }

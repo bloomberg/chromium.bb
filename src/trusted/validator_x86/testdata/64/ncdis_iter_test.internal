@@ -3602,59 +3602,115 @@ NaClExpVector[0] = {
   } };
 NaClExpVector[0] = {
 };
-0000000000000000: 8d 76 00                                     nop
+0000000000000000: 8d 76 00                                     lea %esi, [%rsi]
   { 1, { 0x8d, 0x00, 0x00 },
     NACLi_386,
-    NACL_EMPTY_IFLAGS,
-    InstNop,
-    0, {
+    NACL_IFLAG(OpcodeLtC0InModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
+    InstLea,
+    2, {
+      { G_Operand, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OperandZeroExtends_v) },
+      { M_Operand, NACL_OPFLAG(OpAddress) },
   } };
-NaClExpVector[0] = {
+NaClExpVector[8] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprRegister[0] , %esi, ExprSet | ExprSize32 },
+  { OperandReference[1] , 1, 0 },
+  { ExprMemOffset[4] , 0, ExprAddress },
+  { ExprRegister[0] , %rsi, ExprUsed | ExprSize64 },
+  { ExprRegister[0] , %unknown, 0 },
+  { ExprConstant[0] , 1, ExprSize8 },
+  { ExprConstant[0] , 0x0, ExprSize8 | ExprSignedHex },
 };
-0000000000000000: 8d 74 26 00                                  nop
+0000000000000000: 8d 74 26 00                                  lea %esi, [%rsi]
   { 1, { 0x8d, 0x00, 0x00 },
     NACLi_386,
-    NACL_EMPTY_IFLAGS,
-    InstNop,
-    0, {
+    NACL_IFLAG(OpcodeLtC0InModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
+    InstLea,
+    2, {
+      { G_Operand, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OperandZeroExtends_v) },
+      { M_Operand, NACL_OPFLAG(OpAddress) },
   } };
-NaClExpVector[0] = {
+NaClExpVector[8] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprRegister[0] , %esi, ExprSet | ExprSize32 },
+  { OperandReference[1] , 1, 0 },
+  { ExprMemOffset[4] , 0, ExprAddress },
+  { ExprRegister[0] , %rsi, ExprUsed | ExprSize64 },
+  { ExprRegister[0] , %unknown, 0 },
+  { ExprConstant[0] , 1, ExprSize8 },
+  { ExprConstant[0] , 0x0, ExprSize8 | ExprSignedHex },
 };
-0000000000000000: 8d b6 00 00 00 00                            nop
+0000000000000000: 8d b6 00 00 00 00                            lea %esi, [%rsi]
   { 1, { 0x8d, 0x00, 0x00 },
     NACLi_386,
-    NACL_EMPTY_IFLAGS,
-    InstNop,
-    0, {
+    NACL_IFLAG(OpcodeLtC0InModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
+    InstLea,
+    2, {
+      { G_Operand, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OperandZeroExtends_v) },
+      { M_Operand, NACL_OPFLAG(OpAddress) },
   } };
-NaClExpVector[0] = {
+NaClExpVector[8] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprRegister[0] , %esi, ExprSet | ExprSize32 },
+  { OperandReference[1] , 1, 0 },
+  { ExprMemOffset[4] , 0, ExprAddress },
+  { ExprRegister[0] , %rsi, ExprUsed | ExprSize64 },
+  { ExprRegister[0] , %unknown, 0 },
+  { ExprConstant[0] , 1, ExprSize8 },
+  { ExprConstant[0] , 0x0, ExprSize32 | ExprSignedHex },
 };
-0000000000000000: 8d b4 26 00 00 00 00                         nop
+0000000000000000: 8d b4 26 00 00 00 00                         lea %esi, [%rsi]
   { 1, { 0x8d, 0x00, 0x00 },
     NACLi_386,
-    NACL_EMPTY_IFLAGS,
-    InstNop,
-    0, {
+    NACL_IFLAG(OpcodeLtC0InModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
+    InstLea,
+    2, {
+      { G_Operand, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OperandZeroExtends_v) },
+      { M_Operand, NACL_OPFLAG(OpAddress) },
   } };
-NaClExpVector[0] = {
+NaClExpVector[8] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprRegister[0] , %esi, ExprSet | ExprSize32 },
+  { OperandReference[1] , 1, 0 },
+  { ExprMemOffset[4] , 0, ExprAddress },
+  { ExprRegister[0] , %rsi, ExprUsed | ExprSize64 },
+  { ExprRegister[0] , %unknown, 0 },
+  { ExprConstant[0] , 1, ExprSize8 },
+  { ExprConstant[0] , 0x0, ExprSize32 | ExprSignedHex },
 };
-0000000000000000: 89 f6                                        nop
+0000000000000000: 89 f6                                        mov %esi, %esi
   { 1, { 0x89, 0x00, 0x00 },
     NACLi_386,
-    NACL_EMPTY_IFLAGS,
-    InstNop,
-    0, {
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
+    InstMov,
+    2, {
+      { E_Operand, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OperandZeroExtends_v) },
+      { G_Operand, NACL_OPFLAG(OpUse) },
   } };
-NaClExpVector[0] = {
+NaClExpVector[4] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprRegister[0] , %esi, ExprSet | ExprSize32 },
+  { OperandReference[1] , 1, 0 },
+  { ExprRegister[0] , %esi, ExprUsed | ExprSize32 },
 };
-0000000000000000: 8d bc 27 00 00 00 00                         nop
+0000000000000000: 8d bc 27 00 00 00 00                         lea %edi, [%rdi]
   { 1, { 0x8d, 0x00, 0x00 },
     NACLi_386,
-    NACL_EMPTY_IFLAGS,
-    InstNop,
-    0, {
+    NACL_IFLAG(OpcodeLtC0InModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
+    InstLea,
+    2, {
+      { G_Operand, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OperandZeroExtends_v) },
+      { M_Operand, NACL_OPFLAG(OpAddress) },
   } };
-NaClExpVector[0] = {
+NaClExpVector[8] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprRegister[0] , %edi, ExprSet | ExprSize32 },
+  { OperandReference[1] , 1, 0 },
+  { ExprMemOffset[4] , 0, ExprAddress },
+  { ExprRegister[0] , %rdi, ExprUsed | ExprSize64 },
+  { ExprRegister[0] , %unknown, 0 },
+  { ExprConstant[0] , 1, ExprSize8 },
+  { ExprConstant[0] , 0x0, ExprSize32 | ExprSignedHex },
 };
 0000000000000000: 0f 1f 00                                     nop
   { 1, { 0x1f, 0x00, 0x00 },
