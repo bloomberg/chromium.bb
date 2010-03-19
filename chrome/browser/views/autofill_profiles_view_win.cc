@@ -13,9 +13,11 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/theme_resources_util.h"
 #include "chrome/browser/window_sizer.h"
+#include "chrome/common/pref_names.h"
 #include "gfx/native_theme_win.h"
 #include "gfx/size.h"
 #include "grit/generated_resources.h"
@@ -1159,9 +1161,14 @@ void ShowAutoFillDialog(gfx::NativeWindow parent,
                         AutoFillDialogObserver* observer,
                         Profile* profile) {
   DCHECK(profile);
+
+  // It's possible we haven't shown the InfoBar yet, but if the user is in the
+  // AutoFill dialog, she doesn't need to be asked to enable or disable
+  // AutoFill.
+  profile->GetPrefs()->SetBoolean(prefs::kAutoFillInfoBarShown, true);
+
   PersonalDataManager* personal_data_manager =
       profile->GetPersonalDataManager();
   DCHECK(personal_data_manager);
   AutoFillProfilesView::Show(parent, observer, personal_data_manager);
 }
-
