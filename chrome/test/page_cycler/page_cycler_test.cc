@@ -423,10 +423,10 @@ TEST_F(PageCyclerReferenceTest, name) { \
 // TODO(dumi): re-enable the DB perf tests once we figure out why
 // they're so slow on the release perf bots
 #define PAGE_CYCLER_DATABASE_TESTS(test, name) \
-TEST_F(PageCyclerDatabaseTest, DISABLED_Database##name##File) { \
+TEST_F(PageCyclerDatabaseTest, Database##name##File) { \
   RunTest(test, test, false); \
 } \
-TEST_F(PageCyclerDatabaseReferenceTest, DISABLED_Database##name##File) { \
+TEST_F(PageCyclerDatabaseReferenceTest, Database##name##File) { \
   RunTest(test, test, false); \
 }
 
