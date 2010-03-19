@@ -1,0 +1,2 @@
+# Don't run this test under TSan, it takes ~1-2 minutes to pass.
+ProcessUtilTest.GetAppOutputRestrictedNoZombies
