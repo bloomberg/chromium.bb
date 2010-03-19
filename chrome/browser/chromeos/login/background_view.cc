@@ -29,6 +29,8 @@ BackgroundView::BackgroundView() : status_area_(NULL) {
 
 void BackgroundView::Init() {
   InitStatusArea();
+  Layout();
+  status_area_->SchedulePaint();
 }
 
 void BackgroundView::Teardown() {
