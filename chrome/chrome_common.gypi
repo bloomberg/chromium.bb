@@ -42,6 +42,9 @@
           'common/chrome_counters.h',
           'common/common_param_traits.cc',
           'common/common_param_traits.h',
+          'common/content_settings.cc',
+          'common/content_settings.h',
+          'common/content_settings_types.h',
           'common/debug_flags.cc',
           'common/debug_flags.h',
           'common/devtools_messages.h',
@@ -196,8 +199,6 @@
         'common/command_buffer_messages.h',
         'common/command_buffer_messages_internal.h',
         'common/common_glue.cc',
-        'common/content_settings.h'
-        'common/content_settings_types.h',
         'common/css_colors.h',
         'common/db_message_filter.cc',
         'common/db_message_filter.h',

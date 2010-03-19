@@ -12,6 +12,7 @@
 #include "chrome/browser/browser_prefs.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/favicon_service.h"
+#include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
@@ -190,6 +191,13 @@ class TestingProfile : public Profile {
       host_content_settings_map_ = new HostContentSettingsMap(this);
     return host_content_settings_map_.get();
   }
+  virtual GeolocationContentSettingsMap* GetGeolocationContentSettingsMap() {
+    if (!geolocation_content_settings_map_.get()) {
+      geolocation_content_settings_map_ =
+          new GeolocationContentSettingsMap(this);
+    }
+    return geolocation_content_settings_map_.get();
+  }
   virtual HostZoomMap* GetHostZoomMap() { return NULL; }
   void set_session_service(SessionService* session_service);
   virtual SessionService* GetSessionService() { return session_service_.get(); }
@@ -315,6 +323,8 @@ class TestingProfile : public Profile {
   scoped_refptr<WebKitContext> webkit_context_;
 
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
+  scoped_refptr<GeolocationContentSettingsMap>
+      geolocation_content_settings_map_;
 };
 
 // A profile that derives from another profile.  This does not actually

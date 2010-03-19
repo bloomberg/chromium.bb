@@ -351,6 +351,13 @@ const wchar_t kEnableTranslate[] = L"translate.enabled";
 
 const wchar_t kPinnedTabs[] = L"pinned_tabs";
 
+// Integer containing the default Geolocation content setting.
+const wchar_t kGeolocationDefaultContentSetting[] =
+    L"geolocation.default_content_setting";
+
+// Dictionary that maps [frame, toplevel] to their Geolocation content setting.
+const wchar_t kGeolocationContentSettings[] = L"geolocation.content_settings";
+
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
 

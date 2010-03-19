@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extensions_ui.h"
 #include "chrome/browser/external_protocol_handler.h"
+#include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/geolocation/geolocation_prefs.h"
 #include "chrome/browser/google_url_tracker.h"
 #include "chrome/browser/host_content_settings_map.h"
@@ -102,6 +103,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   Blacklist::RegisterUserPrefs(user_prefs);
   PinnedTabCodec::RegisterUserPrefs(user_prefs);
   ExtensionPrefs::RegisterUserPrefs(user_prefs);
+  GeolocationContentSettingsMap::RegisterUserPrefs(user_prefs);
 #if defined(TOOLKIT_VIEWS)
   BrowserActionsContainer::RegisterUserPrefs(user_prefs);
 #elif defined(TOOLKIT_GTK)

@@ -253,6 +253,8 @@ extern const wchar_t kWebAppCreateInAppsMenu[];
 extern const wchar_t kWebAppCreateInQuickLaunchBar[];
 
 extern const wchar_t kGeolocationAccessToken[];
+extern const wchar_t kGeolocationDefaultContentSetting[];
+extern const wchar_t kGeolocationContentSettings[];
 
 }  // namespace prefs
 

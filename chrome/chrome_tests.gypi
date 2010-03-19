@@ -752,6 +752,7 @@
         'browser/file_watcher_unittest.cc',
         'browser/find_backend_unittest.cc',
         'browser/geolocation/fake_access_token_store.h',
+        'browser/geolocation/geolocation_content_settings_map_unittest.cc',
         'browser/geolocation/location_arbitrator_unittest.cc',
         'browser/geolocation/network_location_provider_unittest.cc',
         'browser/geolocation/wifi_data_provider_common_unittest.cc',

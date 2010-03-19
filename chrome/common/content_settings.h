@@ -17,6 +17,10 @@ enum ContentSetting {
   CONTENT_SETTING_NUM_SETTINGS
 };
 
+// Range-checked conversion of an int to a ContentSetting, for use when reading
+// prefs off disk.
+ContentSetting IntToContentSetting(int content_setting);
+
 // Aggregates the permissions for the different content types.
 struct ContentSettings {
   ContentSettings() {

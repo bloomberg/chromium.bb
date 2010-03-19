@@ -352,7 +352,7 @@ void HostContentSettingsMap::GetSettingsFromDictionary(
     DCHECK(found);
     for (size_t type = 0; type < arraysize(kTypeNames); ++type) {
       if (std::wstring(kTypeNames[type]) == content_type) {
-        settings->settings[type] = static_cast<ContentSetting>(setting);
+        settings->settings[type] = IntToContentSetting(setting);
         break;
       }
     }

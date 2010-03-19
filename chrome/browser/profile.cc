@@ -28,6 +28,7 @@
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/favicon_service.h"
+#include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/spellcheck_host.h"
 #include "chrome/browser/transport_security_persister.h"
 #include "chrome/browser/history/history.h"
@@ -406,6 +407,10 @@ class OffTheRecordProfileImpl : public Profile,
 
   virtual HostZoomMap* GetHostZoomMap() {
     return profile_->GetHostZoomMap();
+  }
+
+  virtual GeolocationContentSettingsMap* GetGeolocationContentSettingsMap() {
+    return profile_->GetGeolocationContentSettingsMap();
   }
 
   virtual Blacklist* GetPrivacyBlacklist() {
@@ -985,6 +990,12 @@ HostZoomMap* ProfileImpl::GetHostZoomMap() {
   if (!host_zoom_map_)
     host_zoom_map_ = new HostZoomMap(this);
   return host_zoom_map_.get();
+}
+
+GeolocationContentSettingsMap* ProfileImpl::GetGeolocationContentSettingsMap() {
+  if (!geolocation_content_settings_map_.get())
+    geolocation_content_settings_map_ = new GeolocationContentSettingsMap(this);
+  return geolocation_content_settings_map_.get();
 }
 
 Blacklist* ProfileImpl::GetPrivacyBlacklist() {
