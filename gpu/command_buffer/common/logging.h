@@ -24,6 +24,8 @@
 #else
 #include <sstream>
 
+#define GPU_LOG LOG
+#define GPU_CHECK CHECK
 // TODO: implement logging through nacl's debug service runtime if
 // available.
 #define CHECK(X) do {} while (0)
