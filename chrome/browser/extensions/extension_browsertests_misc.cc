@@ -294,14 +294,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, RSSMultiRelLink) {
 // Tests that tooltips of a browser action icon can be specified using UTF8.
 // See http://crbug.com/25349.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationBrowserAction) {
-  ExtensionsService* service = browser()->profile()->GetExtensionsService();
-  const size_t size_before = service->extensions()->size();
   FilePath extension_path(test_data_dir_.AppendASCII("browsertest")
                                         .AppendASCII("title_localized"));
   ASSERT_TRUE(LoadExtension(extension_path));
 
-  ASSERT_EQ(size_before + 1, service->extensions()->size());
-  Extension* extension = service->extensions()->at(size_before);
+  ExtensionsService* service = browser()->profile()->GetExtensionsService();
+  const ExtensionList* extensions = service->extensions();
+  ASSERT_EQ(1u, extensions->size());
+  Extension* extension = extensions->at(0);
 
   EXPECT_STREQ(WideToUTF8(L"Hreggvi\u00F0ur: l10n browser action").c_str(),
                extension->description().c_str());
@@ -317,9 +317,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationBrowserAction) {
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationPageAction) {
   HTTPTestServer* server = StartHTTPServer();
 
-  ExtensionsService* service = browser()->profile()->GetExtensionsService();
-  const size_t size_before = service->extensions()->size();
-
   FilePath extension_path(test_data_dir_.AppendASCII("browsertest")
                                         .AppendASCII("title_localized_pa"));
   ASSERT_TRUE(LoadExtension(extension_path));
@@ -329,8 +326,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationPageAction) {
   ui_test_utils::NavigateToURL(browser(), url);
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
 
-  ASSERT_EQ(size_before + 1, service->extensions()->size());
-  Extension* extension = service->extensions()->at(size_before);
+  ExtensionsService* service = browser()->profile()->GetExtensionsService();
+  const ExtensionList* extensions = service->extensions();
+  ASSERT_EQ(1u, extensions->size());
+  Extension* extension = extensions->at(0);
 
   EXPECT_STREQ(WideToUTF8(L"Hreggvi\u00F0ur: l10n page action").c_str(),
                extension->description().c_str());
@@ -699,9 +698,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
   EXPECT_FALSE(result);
 
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
-  const size_t size_before = service->extensions()->size();
   ASSERT_TRUE(LoadExtension(extension_dir));
-  EXPECT_EQ(size_before + 1, service->extensions()->size());
+  EXPECT_EQ(1u, service->extensions()->size());
   // Now the plugin should be in the cache, but we have to reload the page for
   // it to work.
   ui_test_utils::ExecuteJavaScriptAndExtractBool(
@@ -713,9 +711,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
       tab->render_view_host(), L"", L"testPluginWorks()", &result);
   EXPECT_TRUE(result);
 
-  EXPECT_EQ(size_before + 1, service->extensions()->size());
-  UnloadExtension(service->extensions()->at(size_before)->id());
-  EXPECT_EQ(size_before, service->extensions()->size());
+  EXPECT_EQ(1u, service->extensions()->size());
+  UnloadExtension(service->extensions()->at(0)->id());
+  EXPECT_EQ(0u, service->extensions()->size());
 
   // Now the plugin should be out of the cache again, but existing pages will
   // still work until we reload them.

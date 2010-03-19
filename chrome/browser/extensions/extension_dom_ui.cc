@@ -71,8 +71,8 @@ void ExtensionDOMUI::ResetExtensionFunctionDispatcher(
 }
 
 void ExtensionDOMUI::ResetExtensionBookmarkManagerEventRouter() {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableTabbedBookmarkManager)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableTabbedBookmarkManager)) {
     extension_bookmark_manager_event_router_.reset(
         new ExtensionBookmarkManagerEventRouter(GetProfile(), tab_contents()));
   }

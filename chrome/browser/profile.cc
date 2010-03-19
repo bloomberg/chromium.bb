@@ -676,8 +676,8 @@ void ProfileImpl::InitExtensions() {
       true);
 
   // Register the bookmark manager extension.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableTabbedBookmarkManager)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableTabbedBookmarkManager)) {
     FilePath bookmark_manager_path;
     if (PathService::Get(chrome::DIR_BOOKMARK_MANAGER,
                          &bookmark_manager_path)) {
