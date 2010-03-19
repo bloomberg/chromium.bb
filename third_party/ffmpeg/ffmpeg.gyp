@@ -107,6 +107,7 @@
             'source/patched-ffmpeg-mt/libavcodec/vp3dsp.c',
             'source/patched-ffmpeg-mt/libavcodec/xiph.c',
             'source/patched-ffmpeg-mt/libavformat/allformats.c',
+            'source/patched-ffmpeg-mt/libavformat/avi.c',
             'source/patched-ffmpeg-mt/libavformat/avio.c',
             'source/patched-ffmpeg-mt/libavformat/aviobuf.c',
             'source/patched-ffmpeg-mt/libavformat/cutils.c',
