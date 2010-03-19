@@ -46,13 +46,29 @@ void WebSharedWorkerStub::OnStartWorkerContext(
     return;
   impl_->startWorkerContext(url, name_, user_agent, source_code);
   started_ = true;
+
+  // Process any pending connections.
+  for (PendingConnectInfoList::const_iterator iter = pending_connects_.begin();
+       iter != pending_connects_.end();
+       ++iter) {
+    OnConnect(iter->first, iter->second);
+  }
+  pending_connects_.clear();
 }
 
 void WebSharedWorkerStub::OnConnect(int sent_message_port_id, int routing_id) {
-  DCHECK(started_);
-  WebKit::WebMessagePortChannel* channel =
-      new WebMessagePortChannelImpl(routing_id, sent_message_port_id);
-  impl_->connect(channel, NULL);
+  if (started_) {
+    WebKit::WebMessagePortChannel* channel =
+        new WebMessagePortChannelImpl(routing_id, sent_message_port_id);
+    impl_->connect(channel, NULL);
+  } else {
+    // If two documents try to load a SharedWorker at the same time, the
+    // WorkerMsg_Connect for one of the documents can come in before the
+    // worker is started. Just queue up the connect and deliver it once the
+    // worker starts.
+    PendingConnectInfo pending_connect(sent_message_port_id, routing_id);
+    pending_connects_.push_back(pending_connect);
+  }
 }
 
 void WebSharedWorkerStub::OnTerminateWorkerContext() {

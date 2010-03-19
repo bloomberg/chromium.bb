@@ -283,6 +283,10 @@ TEST_F(WorkerTest, WorkerTimeout) {
   RunWorkerFastLayoutTest("worker-timeout.html");
 }
 
+TEST_F(WorkerTest, SharedWorkerInIframe) {
+  RunWorkerFastLayoutTest("shared-worker-in-iframe.html");
+}
+
 // http://crbug.com/27636 - incorrect URL_MISMATCH exceptions sometimes get
 // generated on the windows try bots. FLAKY on Win.
 // http://crbug.com/28445 - flakiness on mac

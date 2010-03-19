@@ -36,6 +36,10 @@ class WebSharedWorkerStub : public WebWorkerStubBase {
   string16 name_;
   bool started_;
 
+  typedef std::pair<int, int> PendingConnectInfo;
+  typedef std::vector<PendingConnectInfo> PendingConnectInfoList;
+  PendingConnectInfoList pending_connects_;
+
   DISALLOW_COPY_AND_ASSIGN(WebSharedWorkerStub);
 };
 
