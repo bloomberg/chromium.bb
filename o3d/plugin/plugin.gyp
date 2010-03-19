@@ -232,6 +232,26 @@
             'ldflags': [
               '-Wl,-znodelete',
               '-Wl,--gc-sections',
+              '<!@(pkg-config --libs-only-L xt)',
+              # The Cg libs use three other libraries without linking to them,
+              # which breaks --as-needed, so we have to specify them here before
+              # the --as-needed flag.
+              '-lGL',       # Used by libCgGL
+              '-lpthread',  # Used by libCg
+              '-lm',        # Used by libCg
+              # GYP dumps all static and shared libraries into one archive group
+              # on the command line in arbitrary order, which breaks
+              # --as-needed, so we have to specify the out-of-order ones before
+              # the --as-needed flag.
+              '-lCgGL',
+              '-lGLEW',
+              '-lrt',
+              # Directs the linker to only generate dependencies on libraries
+              # that we actually use. Must come last.
+              '-Wl,--as-needed',
+            ],
+            'libraries': [
+              '<!@(pkg-config --libs-only-l xt)',
             ],
             'conditions' : [
               ['plugin_rpath != ""',
@@ -248,12 +268,6 @@
                   ],
                 },
               ],
-            ],
-          },
-        ],
-        ['OS == "linux"',
-          {
-            'sources': [
             ],
           },
         ],
