@@ -10,8 +10,8 @@
 #include "base/string16.h"
 #include "base/thread.h"
 #include "base/time.h"
-#include "base/waitable_event.h"
 #include "chrome/browser/history/history_backend.h"
+#include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
@@ -34,7 +34,6 @@
 
 using base::Time;
 using base::Thread;
-using base::WaitableEvent;
 using browser_sync::SyncBackendHost;
 using browser_sync::SyncBackendHostMock;
 using browser_sync::TestIdFactory;
@@ -71,35 +70,6 @@ using testing::Return;
 using testing::SetArgumentPointee;
 using testing::WithArgs;
 
-class TestingProfileSyncService : public ProfileSyncService {
- public:
-  explicit TestingProfileSyncService(ProfileSyncFactory* factory,
-                                     Profile* profile,
-                                     bool bootstrap_sync_authentication)
-      : ProfileSyncService(factory, profile, bootstrap_sync_authentication) {
-    RegisterPreferences();
-    SetSyncSetupCompleted();
-  }
-  virtual ~TestingProfileSyncService() {
-  }
-
-  virtual void InitializeBackend(bool delete_sync_data_folder) {
-    browser_sync::TestHttpBridgeFactory* factory =
-        new browser_sync::TestHttpBridgeFactory();
-    browser_sync::TestHttpBridgeFactory* factory2 =
-        new browser_sync::TestHttpBridgeFactory();
-    backend()->InitializeForTestMode(L"testuser", factory, factory2,
-        delete_sync_data_folder, browser_sync::kDefaultNotificationMethod);
-  }
-
- private:
-  // When testing under ChromiumOS, this method must not return an empty
-  // value value in order for the profile sync service to start.
-  virtual std::string GetLsidForAuthBootstraping() {
-    return "foo";
-  }
-};
-
 class HistoryBackendMock : public HistoryBackend {
  public:
   HistoryBackendMock() : HistoryBackend(FilePath(), NULL, NULL) {}
@@ -108,48 +78,6 @@ class HistoryBackendMock : public HistoryBackend {
   MOCK_METHOD2(SetPageTitle, void(const GURL& url, const std::wstring& title));
   MOCK_METHOD2(GetURL, bool(const GURL& url_id, history::URLRow* url_row));
   MOCK_METHOD1(DeleteURL, void(const GURL& url));
-};
-
-class HistoryThreadNotificationService :
-    public base::RefCountedThreadSafe<HistoryThreadNotificationService> {
- public:
-  explicit HistoryThreadNotificationService(Thread* history_thread)
-    : done_event_(false, false),
-      history_thread_(history_thread) {}
-
-  void Init() {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-    history_thread_->message_loop()->PostTask(
-        FROM_HERE,
-        NewRunnableMethod(this, &HistoryThreadNotificationService::InitTask));
-    done_event_.Wait();
-  }
-
-  void TearDown() {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-    history_thread_->message_loop()->PostTask(
-        FROM_HERE,
-        NewRunnableMethod(this,
-                          &HistoryThreadNotificationService::TearDownTask));
-    done_event_.Wait();
-  }
-
- private:
-  friend class base::RefCountedThreadSafe<HistoryThreadNotificationService>;
-
-  void InitTask() {
-    service_.reset(new NotificationService());
-    done_event_.Signal();
-  }
-
-  void TearDownTask() {
-    service_.reset(NULL);
-    done_event_.Signal();
-  }
-
-  WaitableEvent done_event_;
-  Thread* history_thread_;
-  scoped_ptr<NotificationService> service_;
 };
 
 class HistoryServiceMock : public HistoryService {
@@ -178,11 +106,6 @@ ACTION_P2(RunTaskOnDBThread, thread, backend) {
  return 0;
 }
 
-ACTION(QuitUIMessageLoop) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  MessageLoop::current()->Quit();
-}
-
 ACTION_P3(MakeTypedUrlSyncComponents, service, hb, dtc) {
   TypedUrlModelAssociator* model_associator =
       new TypedUrlModelAssociator(service, hb, dtc);
@@ -195,8 +118,7 @@ class ProfileSyncServiceTypedUrlTest : public testing::Test {
  protected:
   ProfileSyncServiceTypedUrlTest()
       : ui_thread_(ChromeThread::UI, &message_loop_),
-        history_thread_("history"),
-        done_event_(false, false) {
+        history_thread_("history") {
   }
 
   virtual void SetUp() {
@@ -208,7 +130,7 @@ class ProfileSyncServiceTypedUrlTest : public testing::Test {
     history_thread_.Start();
 
     notification_service_ =
-      new HistoryThreadNotificationService(&history_thread_);
+      new ThreadNotificationService(&history_thread_);
     notification_service_->Init();
   }
 
@@ -362,8 +284,7 @@ class ProfileSyncServiceTypedUrlTest : public testing::Test {
   MessageLoopForUI message_loop_;
   ChromeThread ui_thread_;
   Thread history_thread_;
-  WaitableEvent done_event_;
-  scoped_refptr<HistoryThreadNotificationService> notification_service_;
+  scoped_refptr<ThreadNotificationService> notification_service_;
 
   scoped_ptr<TestingProfileSyncService> service_;
   ProfileMock profile_;
@@ -495,4 +416,106 @@ TEST_F(ProfileSyncServiceTypedUrlTest, HasNativeHasSyncMerge) {
   GetTypedUrlsFromSyncDB(&new_sync_entries);
   ASSERT_EQ(1U, new_sync_entries.size());
   EXPECT_TRUE(URLsEqual(merged_entry, new_sync_entries[0]));
+}
+
+TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeAdd) {
+  EXPECT_CALL((*history_backend_.get()), GetAllTypedURLs(_)).
+      WillOnce(Return(true));
+  SetIdleChangeProcessorExpectations();
+  CreateTypedUrlRootTask task(this);
+  StartSyncService(&task);
+
+  history::URLRow added_entry(MakeTypedUrlEntry("http://added.com", "entry",
+                                                1, 2, 15, false));
+
+  history::URLsModifiedDetails details;
+  details.changed_urls.push_back(added_entry);
+  scoped_refptr<ThreadNotifier> notifier = new ThreadNotifier(&history_thread_);
+  notifier->Notify(NotificationType::HISTORY_TYPED_URLS_MODIFIED,
+                   Details<history::URLsModifiedDetails>(&details));
+
+  std::vector<history::URLRow> new_sync_entries;
+  GetTypedUrlsFromSyncDB(&new_sync_entries);
+  ASSERT_EQ(1U, new_sync_entries.size());
+  EXPECT_TRUE(URLsEqual(added_entry, new_sync_entries[0]));
+}
+
+TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeUpdate) {
+  history::URLRow original_entry(MakeTypedUrlEntry("http://mine.com", "entry",
+                                                   1, 2, 15, false));
+  std::vector<history::URLRow> original_entries;
+  original_entries.push_back(original_entry);
+
+  EXPECT_CALL((*history_backend_.get()), GetAllTypedURLs(_)).
+      WillOnce(DoAll(SetArgumentPointee<0>(original_entries), Return(true)));
+  CreateTypedUrlRootTask task(this);
+  StartSyncService(&task);
+
+  history::URLRow updated_entry(MakeTypedUrlEntry("http://mine.com", "entry",
+                                                  3, 7, 19, false));
+
+  history::URLsModifiedDetails details;
+  details.changed_urls.push_back(updated_entry);
+  scoped_refptr<ThreadNotifier> notifier = new ThreadNotifier(&history_thread_);
+  notifier->Notify(NotificationType::HISTORY_TYPED_URLS_MODIFIED,
+                   Details<history::URLsModifiedDetails>(&details));
+
+  std::vector<history::URLRow> new_sync_entries;
+  GetTypedUrlsFromSyncDB(&new_sync_entries);
+  ASSERT_EQ(1U, new_sync_entries.size());
+  EXPECT_TRUE(URLsEqual(updated_entry, new_sync_entries[0]));
+}
+
+TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeRemove) {
+  history::URLRow original_entry1(MakeTypedUrlEntry("http://mine.com", "entry",
+                                                    1, 2, 15, false));
+  history::URLRow original_entry2(MakeTypedUrlEntry("http://mine2.com",
+                                                    "entry2",
+                                                    2, 3, 17, false));
+  std::vector<history::URLRow> original_entries;
+  original_entries.push_back(original_entry1);
+  original_entries.push_back(original_entry2);
+
+  EXPECT_CALL((*history_backend_.get()), GetAllTypedURLs(_)).
+      WillOnce(DoAll(SetArgumentPointee<0>(original_entries), Return(true)));
+  CreateTypedUrlRootTask task(this);
+  StartSyncService(&task);
+
+  history::URLsDeletedDetails changes;
+  changes.all_history = false;
+  changes.urls.insert(GURL("http://mine.com"));
+  scoped_refptr<ThreadNotifier> notifier = new ThreadNotifier(&history_thread_);
+  notifier->Notify(NotificationType::HISTORY_URLS_DELETED,
+                   Details<history::URLsDeletedDetails>(&changes));
+
+  std::vector<history::URLRow> new_sync_entries;
+  GetTypedUrlsFromSyncDB(&new_sync_entries);
+  ASSERT_EQ(1U, new_sync_entries.size());
+  EXPECT_TRUE(URLsEqual(original_entry2, new_sync_entries[0]));
+}
+
+TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeRemoveAll) {
+  history::URLRow original_entry1(MakeTypedUrlEntry("http://mine.com", "entry",
+                                                    1, 2, 15, false));
+  history::URLRow original_entry2(MakeTypedUrlEntry("http://mine2.com",
+                                                    "entry2",
+                                                    2, 3, 17, false));
+  std::vector<history::URLRow> original_entries;
+  original_entries.push_back(original_entry1);
+  original_entries.push_back(original_entry2);
+
+  EXPECT_CALL((*history_backend_.get()), GetAllTypedURLs(_)).
+      WillOnce(DoAll(SetArgumentPointee<0>(original_entries), Return(true)));
+  CreateTypedUrlRootTask task(this);
+  StartSyncService(&task);
+
+  history::URLsDeletedDetails changes;
+  changes.all_history = true;
+  scoped_refptr<ThreadNotifier> notifier = new ThreadNotifier(&history_thread_);
+  notifier->Notify(NotificationType::HISTORY_URLS_DELETED,
+                   Details<history::URLsDeletedDetails>(&changes));
+
+  std::vector<history::URLRow> new_sync_entries;
+  GetTypedUrlsFromSyncDB(&new_sync_entries);
+  ASSERT_EQ(0U, new_sync_entries.size());
 }

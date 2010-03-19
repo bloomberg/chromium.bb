@@ -28,8 +28,6 @@
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/browser/webdata/autofill_entry.h"
 #include "chrome/browser/webdata/web_database.h"
-#include "chrome/common/notification_details.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/test/sync/engine/test_id_factory.h"
 #include "chrome/test/profile_mock.h"
@@ -69,34 +67,6 @@ using testing::Invoke;
 using testing::Return;
 using testing::SetArgumentPointee;
 
-class TestingProfileSyncService : public ProfileSyncService {
- public:
-  explicit TestingProfileSyncService(ProfileSyncFactory* factory,
-                                     Profile* profile,
-                                     bool bootstrap_sync_authentication)
-      : ProfileSyncService(factory, profile, bootstrap_sync_authentication) {
-    RegisterPreferences();
-    SetSyncSetupCompleted();
-  }
-  virtual ~TestingProfileSyncService() {
-  }
-
-  virtual void InitializeBackend(bool delete_sync_data_folder) {
-    browser_sync::TestHttpBridgeFactory* factory =
-        new browser_sync::TestHttpBridgeFactory();
-    browser_sync::TestHttpBridgeFactory* factory2 =
-        new browser_sync::TestHttpBridgeFactory();
-    backend()->InitializeForTestMode(L"testuser", factory, factory2,
-        delete_sync_data_folder, browser_sync::kDefaultNotificationMethod);
-  }
- private:
-  // When testing under ChromiumOS, this method must not return an empty
-  // value value in order for the profile sync service to start.
-  virtual std::string GetLsidForAuthBootstraping() {
-    return "foo";
-  }
-};
-
 class WebDatabaseMock : public WebDatabase {
  public:
   MOCK_METHOD2(RemoveFormElement,
@@ -109,73 +79,6 @@ class WebDatabaseMock : public WebDatabase {
                     std::vector<base::Time>* timestamps));
   MOCK_METHOD1(UpdateAutofillEntries,
                bool(const std::vector<AutofillEntry>& entries));  // NOLINT
-};
-
-class DBThreadNotificationService :  // NOLINT
-    public base::RefCountedThreadSafe<DBThreadNotificationService> {
- public:
-  DBThreadNotificationService() : done_event_(false, false) {}
-
-  void Init() {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-    ChromeThread::PostTask(
-        ChromeThread::DB,
-        FROM_HERE,
-        NewRunnableMethod(this, &DBThreadNotificationService::InitTask));
-    done_event_.Wait();
-  }
-
-  void TearDown() {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-    ChromeThread::PostTask(
-        ChromeThread::DB,
-        FROM_HERE,
-        NewRunnableMethod(this, &DBThreadNotificationService::TearDownTask));
-    done_event_.Wait();
-  }
-
- private:
-  friend class base::RefCountedThreadSafe<DBThreadNotificationService>;
-
-  void InitTask() {
-    service_.reset(new NotificationService());
-    done_event_.Signal();
-  }
-
-  void TearDownTask() {
-    service_.reset(NULL);
-    done_event_.Signal();
-  }
-
-  WaitableEvent done_event_;
-  scoped_ptr<NotificationService> service_;
-};
-
-class DBThreadNotifier :  // NOLINT
-    public base::RefCountedThreadSafe<DBThreadNotifier> {
- public:
-  DBThreadNotifier() : done_event_(false, false) {}
-
-  void Notify(NotificationType type, const NotificationDetails& details) {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-    ChromeThread::PostTask(
-        ChromeThread::DB,
-        FROM_HERE,
-        NewRunnableMethod(this, &DBThreadNotifier::NotifyTask, type, details));
-    done_event_.Wait();
-  }
-
- private:
-  friend class base::RefCountedThreadSafe<DBThreadNotifier>;
-
-  void NotifyTask(NotificationType type, const NotificationDetails& details) {
-    NotificationService::current()->Notify(type,
-                                           NotificationService::AllSources(),
-                                           details);
-    done_event_.Signal();
-  }
-
-  WaitableEvent done_event_;
 };
 
 class WebDataServiceFake : public WebDataService {
@@ -191,11 +94,6 @@ class WebDataServiceFake : public WebDataService {
   }
 };
 
-ACTION(QuitUIMessageLoop) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  MessageLoop::current()->Quit();
-}
-
 ACTION_P3(MakeAutofillSyncComponents, service, wd, dtc) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
   AutofillModelAssociator* model_associator =
@@ -210,15 +108,14 @@ class ProfileSyncServiceAutofillTest : public testing::Test {
  protected:
   ProfileSyncServiceAutofillTest()
       : ui_thread_(ChromeThread::UI, &message_loop_),
-        db_thread_(ChromeThread::DB),
-        done_event_(false, false) {
+        db_thread_(ChromeThread::DB) {
   }
 
   virtual void SetUp() {
     web_data_service_ = new WebDataServiceFake();
     db_thread_.Start();
 
-    notification_service_ = new DBThreadNotificationService();
+    notification_service_ = new ThreadNotificationService(&db_thread_);
     notification_service_->Init();
   }
 
@@ -356,8 +253,7 @@ class ProfileSyncServiceAutofillTest : public testing::Test {
   MessageLoopForUI message_loop_;
   ChromeThread ui_thread_;
   ChromeThread db_thread_;
-  WaitableEvent done_event_;
-  scoped_refptr<DBThreadNotificationService> notification_service_;
+  scoped_refptr<ThreadNotificationService> notification_service_;
 
   scoped_ptr<TestingProfileSyncService> service_;
   ProfileMock profile_;
@@ -405,7 +301,6 @@ class AddAutofillEntriesTask : public Task {
 
 // TODO(skrul): Test abort startup.
 // TODO(skrul): Test processing of cloud changes.
-
 TEST_F(ProfileSyncServiceAutofillTest, FailModelAssociation) {
   // Backend will be paused but not resumed.
   EXPECT_CALL(backend_, RequestPause()).
@@ -523,7 +418,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeAdd) {
 
   AutofillChangeList changes;
   changes.push_back(AutofillChange(AutofillChange::ADD, added_entry.key()));
-  scoped_refptr<DBThreadNotifier> notifier = new DBThreadNotifier();
+  scoped_refptr<ThreadNotifier> notifier = new ThreadNotifier(&db_thread_);
   notifier->Notify(NotificationType::AUTOFILL_ENTRIES_CHANGED,
                    Details<AutofillChangeList>(&changes));
 
@@ -552,7 +447,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeUpdate) {
   AutofillChangeList changes;
   changes.push_back(AutofillChange(AutofillChange::UPDATE,
                                    updated_entry.key()));
-  scoped_refptr<DBThreadNotifier> notifier = new DBThreadNotifier();
+  scoped_refptr<ThreadNotifier> notifier = new ThreadNotifier(&db_thread_);
   notifier->Notify(NotificationType::AUTOFILL_ENTRIES_CHANGED,
                    Details<AutofillChangeList>(&changes));
 
@@ -575,7 +470,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeRemove) {
   AutofillChangeList changes;
   changes.push_back(AutofillChange(AutofillChange::REMOVE,
                                    original_entry.key()));
-  scoped_refptr<DBThreadNotifier> notifier = new DBThreadNotifier();
+  scoped_refptr<ThreadNotifier> notifier = new ThreadNotifier(&db_thread_);
   notifier->Notify(NotificationType::AUTOFILL_ENTRIES_CHANGED,
                    Details<AutofillChangeList>(&changes));
 
@@ -597,7 +492,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeError) {
   AutofillChangeList changes;
   changes.push_back(AutofillChange(AutofillChange::ADD,
                                    evil_entry.key()));
-  scoped_refptr<DBThreadNotifier> notifier = new DBThreadNotifier();
+  scoped_refptr<ThreadNotifier> notifier = new ThreadNotifier(&db_thread_);
   notifier->Notify(NotificationType::AUTOFILL_ENTRIES_CHANGED,
                    Details<AutofillChangeList>(&changes));
 

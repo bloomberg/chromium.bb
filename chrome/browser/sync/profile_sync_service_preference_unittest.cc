@@ -29,14 +29,6 @@ using sync_api::SyncManager;
 using testing::_;
 using testing::Return;
 
-class TestPreferenceModelAssociator
-    : public TestModelAssociator<PreferenceModelAssociator> {
- public:
-  explicit TestPreferenceModelAssociator(ProfileSyncService* service)
-      : TestModelAssociator<PreferenceModelAssociator>(service, service) {
-  }
-};
-
 class ProfileSyncServicePreferenceTest : public testing::Test {
  protected:
   ProfileSyncServicePreferenceTest()
@@ -61,7 +53,9 @@ class ProfileSyncServicePreferenceTest : public testing::Test {
                                                 false));
 
       // Register the preference data type.
-      model_associator_ = new TestPreferenceModelAssociator(service_.get());
+      model_associator_ =
+          new TestModelAssociator<PreferenceModelAssociator>(service_.get(),
+                                                             service_.get());
       change_processor_ = new PreferenceChangeProcessor(model_associator_,
                                                         service_.get());
       EXPECT_CALL(factory_, CreatePreferenceSyncComponents(_, _)).
