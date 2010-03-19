@@ -734,10 +734,6 @@ html[dir='rtl'] #option-menu > [command='hide']:before {
   font-family: inherit;
 }
 
-.win-button-padding-bug .sync-button {
-  margin: 0 -3px;
-}
-
 #footer {
   position: absolute;
   bottom: 0;

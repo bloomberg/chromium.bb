@@ -1655,10 +1655,3 @@ function setUpPromoMessage() {
   syncButton.onclick = syncSectionLinkClicked;
   fixLinkUnderlines($('promo-message'));
 }
-
-// A Windows-specific Webkit bug adds padding to buttons and will push the
-// bookmark sync button in the promo message too far to the right unless we
-// use this fix.  See https://bugs.webkit.org/show_bug.cgi?id=31703
-if (navigator.platform == 'Win32') {
-  addClass(document.body, 'win-button-padding-bug');
-}
