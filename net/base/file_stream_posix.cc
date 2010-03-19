@@ -298,13 +298,8 @@ FileStream::FileStream()
 }
 
 FileStream::FileStream(base::PlatformFile file, int flags)
-    : file_(file),
-      open_flags_(flags) {
-  // If the file handle is opened with base::PLATFORM_FILE_ASYNC, we need to
-  // make sure we will perform asynchronous File IO to it.
-  if (flags & base::PLATFORM_FILE_ASYNC) {
-    async_context_.reset(new AsyncContext());
-  }
+    : file_(base::kInvalidPlatformFileValue) {
+  Open(file, flags);
 }
 
 FileStream::~FileStream() {
@@ -321,6 +316,12 @@ void FileStream::Close() {
     }
     file_ = base::kInvalidPlatformFileValue;
   }
+}
+
+void FileStream::Release() {
+  // Abort any existing asynchronous operations.
+  async_context_.reset();
+  file_ = base::kInvalidPlatformFileValue;
 }
 
 int FileStream::Open(const FilePath& path, int open_flags) {
@@ -340,6 +341,21 @@ int FileStream::Open(const FilePath& path, int open_flags) {
   if (open_flags_ & base::PLATFORM_FILE_ASYNC) {
     async_context_.reset(new AsyncContext());
   }
+
+  return OK;
+}
+
+int FileStream::Open(base::PlatformFile file, int open_flags) {
+  if (IsOpen()) {
+    DLOG(FATAL) << "File is already open!";
+    return ERR_UNEXPECTED;
+  }
+
+  open_flags_ = open_flags;
+  file_ = file;
+
+  if (open_flags & base::PLATFORM_FILE_ASYNC)
+    async_context_.reset(new AsyncContext());
 
   return OK;
 }
@@ -445,7 +461,7 @@ int64 FileStream::Truncate(int64 bytes) {
   if (!IsOpen())
     return ERR_UNEXPECTED;
 
-  // We better be open for reading.
+  // We better be open for writing.
   DCHECK(open_flags_ & base::PLATFORM_FILE_WRITE);
 
   // Seek to the position to truncate from.
