@@ -428,9 +428,14 @@ END_MSG_MAP()
       data = cookie;
     }
 
-    BOOL ret = InternetSetCookieA(url.spec().c_str(), name.c_str(),
-                                  data.c_str());
-    DCHECK(ret) << "InternetSetcookie failed. Error: " << GetLastError();
+    int32 flags = INTERNET_COOKIE_EVALUATE_P3P;
+
+    InternetCookieState cookie_state = static_cast<InternetCookieState>(
+        InternetSetCookieExA(url.spec().c_str(), name.c_str(), data.c_str(),
+                             flags, NULL));
+
+    int32 cookie_action = MapCookieStateToCookieAction(cookie_state);
+    url_fetcher_.AddPrivacyDataForUrl(url.spec(), "", cookie_action);
   }
 
   virtual void OnGetCookiesFromHost(int tab_handle, const GURL& url,
@@ -438,19 +443,25 @@ END_MSG_MAP()
     DWORD cookie_size = 0;
     bool success = true;
     std::string cookie_string;
-    InternetGetCookieA(url.spec().c_str(), NULL, NULL, &cookie_size);
+
+    int32 cookie_action = COOKIEACTION_READ;
+    BOOL result = InternetGetCookieA(url.spec().c_str(), NULL, NULL,
+                                     &cookie_size);
+    DWORD error = 0;
     if (cookie_size) {
       scoped_array<char> cookies(new char[cookie_size + 1]);
       if (!InternetGetCookieA(url.spec().c_str(), NULL, cookies.get(),
                               &cookie_size)) {
         success = false;
-        NOTREACHED() << "InternetGetCookie failed. Error: " << GetLastError();
+        error = GetLastError();
+        NOTREACHED() << "InternetGetCookie failed. Error: " << error;
       } else {
         cookie_string = cookies.get();
       }
     } else {
       success = false;
-      DLOG(INFO) << "InternetGetCookie failed. Error: " << GetLastError();
+      error = GetLastError();
+      DLOG(INFO) << "InternetGetCookie failed. Error: " << error;
     }
 
     if (automation_client_->automation_server()) {
@@ -459,6 +470,11 @@ END_MSG_MAP()
                                                    url, cookie_string,
                                                    cookie_id));
     }
+
+    if (!success && !error)
+      cookie_action = COOKIEACTION_SUPPRESS;
+
+    url_fetcher_.AddPrivacyDataForUrl(url.spec(), "", cookie_action);
   }
 
   virtual void OnAttachExternalTab(int tab_handle,
@@ -480,7 +496,7 @@ END_MSG_MAP()
   LRESULT OnCreate(UINT message, WPARAM wparam, LPARAM lparam,
                    BOOL& handled) {  // NO_LINT
     ModifyStyle(0, WS_CLIPCHILDREN | WS_CLIPSIBLINGS, 0);
-    url_fetcher_.SetErrorDialogsParentWindow(m_hWnd);
+    url_fetcher_.put_notification_window(m_hWnd);
     automation_client_->SetParentWindow(m_hWnd);
     // Only fire the 'interactive' ready state if we aren't there already.
     if (ready_state_ < READYSTATE_INTERACTIVE) {

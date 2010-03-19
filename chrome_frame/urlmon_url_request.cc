@@ -186,6 +186,34 @@ STDMETHODIMP UrlmonUrlRequest::OnProgress(ULONG progress, ULONG max_progress,
       return E_ABORT;
     }
 
+    case BINDSTATUS_COOKIE_SENT:
+      delegate_->AddPrivacyDataForUrl(url(), "", COOKIEACTION_READ);
+      break;
+
+    case BINDSTATUS_COOKIE_SUPPRESSED:
+      delegate_->AddPrivacyDataForUrl(url(), "", COOKIEACTION_SUPPRESS);
+      break;
+
+    case BINDSTATUS_COOKIE_STATE_ACCEPT:
+      delegate_->AddPrivacyDataForUrl(url(), "", COOKIEACTION_ACCEPT);
+      break;
+
+    case BINDSTATUS_COOKIE_STATE_REJECT:
+      delegate_->AddPrivacyDataForUrl(url(), "", COOKIEACTION_REJECT);
+      break;
+
+    case BINDSTATUS_COOKIE_STATE_LEASH:
+      delegate_->AddPrivacyDataForUrl(url(), "", COOKIEACTION_LEASH);
+      break;
+
+    case BINDSTATUS_COOKIE_STATE_DOWNGRADE:
+      delegate_->AddPrivacyDataForUrl(url(), "", COOKIEACTION_DOWNGRADE);
+      break;
+
+    case BINDSTATUS_COOKIE_STATE_UNKNOWN:
+      NOTREACHED() << L"Unknown cookie state received";
+      break;
+
     default:
       DLOG(INFO) << " Obj: " << std::hex << this << " OnProgress(" << url()
           << StringPrintf(L") code: %i status: %ls", status_code, status_text);
@@ -448,6 +476,8 @@ STDMETHODIMP UrlmonUrlRequest::OnResponse(DWORD dwResponseCode,
   DCHECK(binding_ != NULL);
 
   std::string raw_headers = WideToUTF8(response_headers);
+
+  delegate_->AddPrivacyDataForUrl(url(), "", 0);
 
   // Security check for frame busting headers. We don't honor the headers
   // as-such, but instead simply kill requests which we've been asked to
@@ -866,7 +896,7 @@ void UrlmonUrlRequestManager::StartRequestWorker(int request_id,
       request_info.extra_request_headers,
       request_info.upload_data,
       enable_frame_busting_);
-  new_request->set_parent_window(err_dialog_parent_wnd_);
+  new_request->set_parent_window(notification_window_);
 
   // Shall we use previously fetched data?
   if (request_for_url.get()) {
@@ -1009,7 +1039,7 @@ scoped_refptr<UrlmonUrlRequest> UrlmonUrlRequestManager::LookupRequest(
 
 UrlmonUrlRequestManager::UrlmonUrlRequestManager()
     : stopping_(false), worker_thread_("UrlMon fetch thread"),
-      map_empty_(true, true), err_dialog_parent_wnd_(NULL) {
+      map_empty_(true, true), notification_window_(NULL) {
 }
 
 UrlmonUrlRequestManager::~UrlmonUrlRequestManager() {
@@ -1056,7 +1086,35 @@ bool UrlmonUrlRequestManager::ExecuteInWorkerThread(
   return true;
 }
 
-void UrlmonUrlRequestManager::SetErrorDialogsParentWindow(HWND window) {
-  err_dialog_parent_wnd_ = window;
+void UrlmonUrlRequestManager::AddPrivacyDataForUrl(
+    const std::string& url, const std::string& policy_ref,
+    int32 flags) {
+  bool fire_privacy_event = false;
+
+  {
+    AutoLock lock(privacy_info_lock_);
+
+    if (privacy_info_.privacy_records.size() == 0)
+      flags |= PRIVACY_URLISTOPLEVEL;
+
+    if (!privacy_info_.privacy_impacted) {
+      if (flags & (COOKIEACTION_ACCEPT | COOKIEACTION_REJECT |
+                   COOKIEACTION_DOWNGRADE)) {
+        privacy_info_.privacy_impacted = true;
+        fire_privacy_event = true;
+      }
+    }
+
+    PrivacyInfo::PrivacyEntry& privacy_entry =
+        privacy_info_.privacy_records[UTF8ToWide(url)];
+
+    privacy_entry.flags |= flags;
+    privacy_entry.policy_ref = UTF8ToWide(policy_ref);
+  }
+
+  if (fire_privacy_event && IsWindow(notification_window_)) {
+    PostMessage(notification_window_, WM_FIRE_PRIVACY_CHANGE_NOTIFICATION, 1,
+                0);
+  }
 }
 

@@ -902,3 +902,30 @@ std::wstring GuidToString(const GUID& guid) {
   ::StringFromGUID2(guid, WriteInto(&ret, 39), 39);
   return ret;
 }
+
+int32 MapCookieStateToCookieAction(InternetCookieState cookie_state) {
+  int32 cookie_action = COOKIEACTION_NONE;
+
+  switch (cookie_state) {
+    case COOKIE_STATE_UNKNOWN:
+      cookie_action = COOKIEACTION_NONE;
+      break;
+    case COOKIE_STATE_ACCEPT:
+      cookie_action = COOKIEACTION_ACCEPT;
+      break;
+    case COOKIE_STATE_LEASH:
+      cookie_action = COOKIEACTION_LEASH;
+      break;
+    case COOKIE_STATE_DOWNGRADE:
+      cookie_action = COOKIEACTION_DOWNGRADE;
+      break;
+    case COOKIE_STATE_REJECT:
+      cookie_action = COOKIEACTION_REJECT;
+      break;
+    default:
+      cookie_action = COOKIEACTION_REJECT;
+      break;
+  }
+  return cookie_action;
+}
+

@@ -398,6 +398,43 @@ STDMETHODIMP ChromeActiveDocument::GetAddressBarUrl(BSTR* url) {
   return GetUrlForEvents(url);
 }
 
+STDMETHODIMP ChromeActiveDocument::Reset() {
+  next_privacy_record_ = privacy_info_.privacy_records.begin();
+  return S_OK;
+}
+
+STDMETHODIMP ChromeActiveDocument::GetSize(unsigned long* size) {
+  if (!size)
+    return E_POINTER;
+
+  *size = privacy_info_.privacy_records.size();
+  return S_OK;
+}
+
+STDMETHODIMP ChromeActiveDocument::GetPrivacyImpacted(BOOL* privacy_impacted) {
+  if (!privacy_impacted)
+    return E_POINTER;
+
+  *privacy_impacted = privacy_info_.privacy_impacted;
+  return S_OK;
+}
+
+STDMETHODIMP ChromeActiveDocument::Next(BSTR* url, BSTR* policy,
+                                        long* reserved, unsigned long* flags) {
+  if (!url || !policy || !flags)
+    return E_POINTER;
+
+  if (next_privacy_record_ == privacy_info_.privacy_records.end())
+    return HRESULT_FROM_WIN32(ERROR_NO_MORE_ITEMS);
+
+  *url = SysAllocString(next_privacy_record_->first.c_str());
+  *policy = SysAllocString(next_privacy_record_->second.policy_ref.c_str());
+  *flags = next_privacy_record_->second.flags;
+
+  next_privacy_record_++;
+  return S_OK;
+}
+
 HRESULT ChromeActiveDocument::IOleObject_SetClientSite(
     IOleClientSite* client_site) {
   if (client_site == NULL) {
@@ -421,12 +458,12 @@ HRESULT ChromeActiveDocument::IOleObject_SetClientSite(
     in_place_frame_.Release();
   }
 
-  if (client_site != m_spClientSite)
+  if (client_site != m_spClientSite) {
     return Base::IOleObject_SetClientSite(client_site);
+  }
 
   return S_OK;
 }
-
 
 HRESULT ChromeActiveDocument::ActiveXDocActivate(LONG verb) {
   HRESULT hr = S_OK;
@@ -719,6 +756,12 @@ void ChromeActiveDocument::OnDetermineSecurityZone(const GUID* cmd_group_guid,
     out_args->vt = VT_UI4;
     out_args->ulVal = URLZONE_INTERNET;
   }
+}
+
+void ChromeActiveDocument::OnDisplayPrivacyInfo() {
+  privacy_info_ = url_fetcher_.privacy_info();
+  Reset();
+  DoPrivacyDlg(m_hWnd, url_, this, TRUE);
 }
 
 void ChromeActiveDocument::OnOpenURL(int tab_handle,
@@ -1094,6 +1137,34 @@ LRESULT ChromeActiveDocument::OnBack(WORD notify_code, WORD id,
 
   if (web_browser2) {
     web_browser2->GoBack();
+  }
+  return 0;
+}
+
+LRESULT ChromeActiveDocument::OnFirePrivacyChange(UINT message, WPARAM wparam,
+                                                  LPARAM lparam,
+                                                  BOOL& handled) {
+  if (!m_spClientSite)
+    return 0;
+
+  ScopedComPtr<IWebBrowser2> web_browser2;
+  DoQueryService(SID_SWebBrowserApp, m_spClientSite,
+                 web_browser2.Receive());
+  if (!web_browser2) {
+    NOTREACHED() << "Failed to retrieve IWebBrowser2 interface.";
+    return 0;
+  }
+
+  ScopedComPtr<IShellBrowser> shell_browser;
+  DoQueryService(SID_STopLevelBrowser, web_browser2,
+                 shell_browser.Receive());
+  DCHECK(shell_browser.get() != NULL);
+  ScopedComPtr<ITridentService2> trident_services;
+  trident_services.QueryFrom(shell_browser);
+  if (trident_services) {
+    trident_services->FirePrivacyImpactedStateChange(wparam);
+  } else {
+    NOTREACHED() << "Failed to retrieve IWebBrowser2 interface.";
   }
   return 0;
 }

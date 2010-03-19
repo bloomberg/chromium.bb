@@ -27,7 +27,11 @@ class DECLSPEC_NOVTABLE PluginUrlRequestDelegate {
     const char* headers, int size, base::Time last_modified,
     const std::string& redirect_url, int redirect_status) = 0;
   virtual void OnReadComplete(int request_id, const void* buffer, int len) = 0;
-  virtual void OnResponseEnd(int request_id, const URLRequestStatus& status) = 0;
+  virtual void OnResponseEnd(int request_id,
+                             const URLRequestStatus& status) = 0;
+  virtual void AddPrivacyDataForUrl(const std::string& url,
+                                    const std::string& policy_ref,
+                                    int32 flags) {}
  protected:
   PluginUrlRequestDelegate() {}
   ~PluginUrlRequestDelegate() {}

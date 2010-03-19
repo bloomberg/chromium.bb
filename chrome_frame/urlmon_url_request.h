@@ -46,6 +46,23 @@ class UrlmonUrlRequestManager
     : public PluginUrlRequestManager,
       public PluginUrlRequestDelegate {
  public:
+  // Contains the privacy information for all requests issued by this instance.
+  struct PrivacyInfo {
+   public:
+    struct PrivacyEntry {
+      PrivacyEntry() : flags(0) {}
+      std::wstring policy_ref;
+      int32 flags;
+    };
+
+    typedef std::map<std::wstring, PrivacyEntry> PrivacyRecords;
+
+    PrivacyInfo() : privacy_impacted(false) {}
+
+    bool privacy_impacted;
+    PrivacyRecords privacy_records;
+  };
+
   UrlmonUrlRequestManager();
   ~UrlmonUrlRequestManager();
 
@@ -53,7 +70,22 @@ class UrlmonUrlRequestManager
   // Used from ChromeActiveDocument's implementation of IPersistMoniker::Load().
   void UseRequestDataForUrl(RequestData* data, const std::wstring& url);
   void StealMonikerFromRequest(int request_id, IMoniker** moniker);
-  void SetErrorDialogsParentWindow(HWND window);
+
+  // Returns a copy of the url privacy information for this instance.
+  PrivacyInfo privacy_info() {
+    AutoLock lock(privacy_info_lock_);
+    return privacy_info_;
+  }
+
+  virtual void AddPrivacyDataForUrl(const std::string& url,
+                                    const std::string& policy_ref,
+                                    int32 flags);
+
+  // This function passes the window on which notifications are to be fired.
+  void put_notification_window(HWND window) {
+    notification_window_ = window;
+  }
+
  private:
   friend class MessageLoop;
   friend struct RunnableMethodTraits<UrlmonUrlRequestManager>;
@@ -98,7 +130,13 @@ class UrlmonUrlRequestManager
   base::WaitableEvent map_empty_;
   bool stopping_;
   Lock worker_thread_access_;
-  HWND err_dialog_parent_wnd_;
+
+  // This lock is used to synchronize access to the PrivacyInfo data structure
+  // as it can be accessed from the ui thread and the worker thread.
+  Lock privacy_info_lock_;
+  PrivacyInfo privacy_info_;
+  // The window to be used to fire notifications on.
+  HWND notification_window_;
 };
 
 #endif  // CHROME_FRAME_URLMON_URL_REQUEST_H_

@@ -9,6 +9,7 @@
 #include <string>
 #include <shdeprecated.h>
 #include <urlmon.h>
+#include <wininet.h>
 
 #include "base/basictypes.h"
 #include "base/histogram.h"
@@ -385,5 +386,12 @@ extern Lock g_ChromeFrameHistogramLock;
   AutoLock lock(g_ChromeFrameHistogramLock); \
   UMA_HISTOGRAM_TIMES(name, sample); \
 }
+
+// Fired when we want to notify IE about privacy changes.
+#define WM_FIRE_PRIVACY_CHANGE_NOTIFICATION (WM_APP + 1)
+
+// Maps the InternetCookieState enum to the corresponding CookieAction values
+// used for IE privacy stuff.
+int32 MapCookieStateToCookieAction(InternetCookieState cookie_state);
 
 #endif  // CHROME_FRAME_UTILS_H_

@@ -84,6 +84,37 @@ IDocObjectService : public IUnknown {
   STDMETHOD(IsErrorUrl)(LPCTSTR url, BOOL* is_error) = 0;
 };
 
+// This interface is used to notify the shellbrowser about events.
+interface __declspec(uuid("f62d9369-75ef-4578-8856-232802c76468"))
+ITridentService2 : public IUnknown {
+  STDMETHOD(FireBeforeNavigate2)(IDispatch* dispatch,
+      LPCTSTR url, DWORD flags, LPCTSTR frame_name, BYTE* post_data,
+      DWORD post_data_len, LPCTSTR headers, BOOL play_nav_sound,
+      BOOL* cancel) = 0;
+  STDMETHOD(FireNavigateComplete2)(IHTMLWindow2*, uint32);
+  STDMETHOD(FireDownloadBegin)(VOID);
+  STDMETHOD(FireDownloadComplete)(VOID);
+  STDMETHOD(FireDocumentComplete)(IHTMLWindow2*, uint32);
+  STDMETHOD(UpdateDesktopComponent)(IHTMLWindow2*);
+  STDMETHOD(GetPendingUrl)(uint16**);
+  STDMETHOD(ActiveElementChanged)(IHTMLElement*);
+  STDMETHOD(GetUrlSearchComponent)(uint16**);
+  STDMETHOD(IsErrorUrl)(uint16 const*, int32*);
+  STDMETHOD(AttachMyPics)(VOID *, VOID**);
+  STDMETHOD(ReleaseMyPics)(VOID*);
+  STDMETHOD(IsGalleryMeta)(int32, VOID*);
+  STDMETHOD(EmailPicture)(uint16*);
+  STDMETHOD(FireNavigateError)(IHTMLWindow2*,
+                               uint16*,
+                               uint16*,
+                               uint32, int*);
+  STDMETHOD(FirePrintTemplateEvent)(IHTMLWindow2*, int32);
+  STDMETHOD(FireUpdatePageStatus)(IHTMLWindow2*, uint32, int32);
+  STDMETHOD(FirePrivacyImpactedStateChange)(int32 privacy_violated);
+  STDMETHOD(InitAutoImageResize)(VOID);
+  STDMETHOD(UnInitAutoImageResize)(VOID);
+};
+
 // Flags for ITravelLogEx::CountEntryNodes, CreateEnumEntry.
 #define TLEF_RELATIVE_INCLUDE_CURRENT (0x01)  // count the current entry
 #define TLEF_RELATIVE_BACK (0x10)             // count backward entries

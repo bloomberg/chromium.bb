@@ -712,6 +712,11 @@
             'crash_reporting/crash_reporting.gyp:crash_report',
             'crash_reporting/crash_reporting.gyp:vectored_handler_tests',
           ],
+          'link_settings': {
+            'libraries': [
+              '-lshdocvw.lib',
+            ],
+          },
           'msvs_settings': {
             'VCLinkerTool': {
               'OutputFile':

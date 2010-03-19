@@ -8,6 +8,7 @@
 #include <atlbase.h>
 #include <atlcom.h>
 #include <atlctl.h>
+#include <htiframe.h>
 #include <map>
 #include <mshtmcid.h>
 #include <perhist.h>
@@ -25,6 +26,7 @@
 #include "chrome_frame/ole_document_impl.h"
 #include "chrome_frame/resource.h"
 #include "chrome_frame/extra_system_apis.h"
+#include "chrome_frame/utils.h"
 
 class Thread;
 class TabProxy;
@@ -65,6 +67,8 @@ class ChromeActiveDocument;
 // command in the VARIANTARG* parameter pvaIn. (Set pvaIn to NULL if the
 // document cannot perform its own navigation.)
 #define DOCHOST_DOCCANNAVIGATE                      (0)
+
+#define DOCHOST_DISPLAY_PRIVACY                      (75)
 
 // This macro should be defined in the public section of the class.
 #define BEGIN_EXEC_COMMAND_MAP(theClass) \
@@ -121,11 +125,13 @@ class ATL_NO_VTABLE ChromeActiveDocument
       public InPlaceMenu<ChromeActiveDocument>,
       public IWebBrowserEventsUrlService,
       public IPersistHistory,
+      public IEnumPrivacyRecords,
       public HTMLWindowImpl<IHTMLWindow2>,
       public HTMLPrivateWindowImpl<IHTMLPrivateWindow> {
  public:
   typedef ChromeFrameActivexBase<ChromeActiveDocument,
       CLSID_ChromeActiveDocument> Base;
+
   ChromeActiveDocument();
   ~ChromeActiveDocument();
 
@@ -142,10 +148,12 @@ BEGIN_COM_MAP(ChromeActiveDocument)
   COM_INTERFACE_ENTRY(IHTMLFramesCollection2)
   COM_INTERFACE_ENTRY(IHTMLWindow2)
   COM_INTERFACE_ENTRY(IHTMLPrivateWindow)
+  COM_INTERFACE_ENTRY(IEnumPrivacyRecords)
   COM_INTERFACE_ENTRY_CHAIN(Base)
 END_COM_MAP()
 
 BEGIN_MSG_MAP(ChromeActiveDocument)
+  MESSAGE_HANDLER(WM_FIRE_PRIVACY_CHANGE_NOTIFICATION, OnFirePrivacyChange)
   COMMAND_ID_HANDLER(IDC_FORWARD, OnForward)
   COMMAND_ID_HANDLER(IDC_BACK, OnBack)
   CHAIN_MSG_MAP(Base)
@@ -177,6 +185,8 @@ BEGIN_EXEC_COMMAND_MAP(ChromeActiveDocument)
   EXEC_COMMAND_HANDLER(&CGID_MSHTML, IDM_BASELINEFONT3, SetPageFontSize)
   EXEC_COMMAND_HANDLER(&CGID_MSHTML, IDM_BASELINEFONT4, SetPageFontSize)
   EXEC_COMMAND_HANDLER(&CGID_MSHTML, IDM_BASELINEFONT5, SetPageFontSize)
+  EXEC_COMMAND_HANDLER_NO_ARGS(&CGID_ShellDocView, DOCHOST_DISPLAY_PRIVACY,
+                               OnDisplayPrivacyInfo)
 END_EXEC_COMMAND_MAP()
 
   // IPCs from automation server.
@@ -248,6 +258,13 @@ END_EXEC_COMMAND_MAP()
   // ChromeFramePlugin overrides.
   virtual void OnAutomationServerReady();
 
+  // IEnumPrivacyRecords
+  STDMETHOD(Reset)();
+  STDMETHOD(GetSize)(unsigned long* size);
+  STDMETHOD(GetPrivacyImpacted)(BOOL* privacy_impacted);
+  STDMETHOD(Next)(BSTR* url, BSTR* policy, long* reserved,
+                  unsigned long* flags);
+
  protected:
   // ChromeFrameActivexBase overrides
   virtual void OnOpenURL(int tab_handle, const GURL& url_to_open,
@@ -273,6 +290,7 @@ END_EXEC_COMMAND_MAP()
   void OnDetermineSecurityZone(const GUID* cmd_group_guid, DWORD command_id,
                                DWORD cmd_exec_opt, VARIANT* in_args,
                                VARIANT* out_args);
+  void OnDisplayPrivacyInfo();
 
   // Call exec on our site's command target
   HRESULT IEExec(const GUID* cmd_group_guid, DWORD command_id,
@@ -312,6 +330,9 @@ END_EXEC_COMMAND_MAP()
   LRESULT OnBack(WORD notify_code, WORD id, HWND control_window,
                  BOOL& bHandled);
 
+  LRESULT OnFirePrivacyChange(UINT message, WPARAM wparam, LPARAM lparam,
+                              BOOL& handled);
+
  protected:
   typedef std::map<int, bool> EnabledCommandsMap;
 
@@ -338,6 +359,13 @@ END_EXEC_COMMAND_MAP()
   ScopedComPtr<INewWindowManager> popup_manager_;
   bool popup_allowed_;
   HACCEL accelerator_table_;
+
+  // Contains privacy data retrieved from the UrlmonUrlRequestManager. This
+  // is used to return privacy data in response to the View->Privacy policy
+  // command.
+  UrlmonUrlRequestManager::PrivacyInfo privacy_info_;
+  UrlmonUrlRequestManager::PrivacyInfo::PrivacyRecords::iterator
+      next_privacy_record_;
 
  public:
   ScopedComPtr<IOleInPlaceFrame> in_place_frame_;
