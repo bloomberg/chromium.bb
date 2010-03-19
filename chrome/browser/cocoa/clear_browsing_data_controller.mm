@@ -121,6 +121,7 @@ typedef std::map<Profile*, ClearBrowsingDataController*> ProfileControllerMap;
   // Check again to make sure there is only one window.  Since we use
   // |performSelector:afterDelay:| it is possible for this to somehow be
   // triggered twice.
+  DCHECK([NSThread isMainThread]);
   if (![self isWindowLoaded]) {
     [NSApp runModalForWindow:[self window]];
   }
