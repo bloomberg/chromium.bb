@@ -540,6 +540,10 @@ void BrowserWindowCocoa::Paste() {
   [NSApp sendAction:@selector(paste:) to:nil from:nil];
 }
 
+void BrowserWindowCocoa::ToggleTabStripMode() {
+  NOTIMPLEMENTED();
+}
+
 void BrowserWindowCocoa::Observe(NotificationType type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {

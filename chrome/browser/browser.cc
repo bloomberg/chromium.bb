@@ -190,6 +190,7 @@ Browser::Browser(Type type, Profile* profile)
 
   encoding_auto_detect_.Init(prefs::kWebKitUsesUniversalDetector,
                              profile_->GetPrefs(), NULL);
+  use_vertical_tabs_.Init(prefs::kUseVerticalTabs, profile_->GetPrefs(), this);
 }
 
 Browser::~Browser() {
@@ -1566,7 +1567,7 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kWebAppCreateOnDesktop, true);
   prefs->RegisterBooleanPref(prefs::kWebAppCreateInAppsMenu, true);
   prefs->RegisterBooleanPref(prefs::kWebAppCreateInQuickLaunchBar, true);
-  prefs->RegisterBooleanPref(prefs::kUseVerticalTabs, true);
+  prefs->RegisterBooleanPref(prefs::kUseVerticalTabs, false);
   prefs->RegisterBooleanPref(prefs::kEnableTranslate, true);
 }
 
@@ -1992,6 +1993,15 @@ void Browser::BookmarkAllTabs() {
   BookmarkEditor::Show(window()->GetNativeHandle(), profile_,
                        model->GetParentForNewNodes(),  details,
                        BookmarkEditor::SHOW_TREE, NULL);
+}
+
+bool Browser::UseVerticalTabs() const {
+  return use_vertical_tabs_.GetValue();
+}
+
+void Browser::ToggleUseVerticalTabs() {
+  use_vertical_tabs_.SetValue(!UseVerticalTabs());
+  window()->ToggleTabStripMode();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

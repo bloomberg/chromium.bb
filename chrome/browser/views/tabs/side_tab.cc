@@ -56,6 +56,8 @@ SideTab::SideTab(SideTabModel* model)
 
   hover_animation_.reset(new SlideAnimation(this));
   hover_animation_->SetSlideDuration(kHoverDurationMs);
+
+  SetContextMenuController(this);
 }
 
 SideTab::~SideTab() {
@@ -110,6 +112,15 @@ void SideTab::ButtonPressed(views::Button* sender, const views::Event& event) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// SideTab, views::ContextMenuController implementation:
+
+void SideTab::ShowContextMenu(views::View* source,
+                              const gfx::Point& p,
+                              bool is_mouse_gesture) {
+  model_->ShowContextMenu(this, p);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // SideTab, views::View overrides:
 
 void SideTab::Layout() {
@@ -119,14 +130,19 @@ void SideTab::Layout() {
 
   gfx::Size ps = close_button_->GetPreferredSize();
   int close_y = (height() - ps.height()) / 2;
-  close_button_->SetBounds(width() - ps.width() - close_y, close_y, ps.width(),
-                           ps.height());
+  close_button_->SetBounds(
+      std::max(0, width() - ps.width() - close_y),
+      close_y,
+      ps.width(),
+      ps.height());
 
   int title_y = (height() - font_->height()) / 2;
   int title_x = icon_bounds_.right() + kIconTitleSpacing;
-  title_bounds_.SetRect(title_x, title_y,
-                        close_button_->x() - kTitleCloseSpacing - title_x,
-                        font_->height());
+  title_bounds_.SetRect(
+      title_x,
+      title_y,
+      std::max(0, close_button_->x() - kTitleCloseSpacing - title_x),
+      font_->height());
 }
 
 void SideTab::Paint(gfx::Canvas* canvas) {

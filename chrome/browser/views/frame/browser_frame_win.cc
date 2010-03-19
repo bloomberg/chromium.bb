@@ -69,9 +69,6 @@ views::Window* BrowserFrameWin::GetWindow() {
   return this;
 }
 
-void BrowserFrameWin::TabStripCreated(BaseTabStrip* tabstrip) {
-}
-
 int BrowserFrameWin::GetMinimizeButtonOffset() const {
   TITLEBARINFOEX titlebar_info;
   titlebar_info.cbSize = sizeof(TITLEBARINFOEX);
@@ -125,6 +122,14 @@ views::View* BrowserFrameWin::GetFrameView() const {
 
 void BrowserFrameWin::PaintTabStripShadow(gfx::Canvas* canvas) {
   browser_frame_view_->PaintTabStripShadow(canvas);
+}
+
+void BrowserFrameWin::TabStripDisplayModeChanged() {
+  UpdateDWMFrame();
+  // We need to relayout only after the window frame has had a chance to update
+  // the size/position of its controls (e.g. minimize/maximize/close) so that
+  // the tabstrip can layout at its correct bounds.
+  GetRootView()->Layout();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -294,7 +299,7 @@ void BrowserFrameWin::UpdateDWMFrame() {
     // In maximized mode, we only have a titlebar strip of glass, no side/bottom
     // borders.
     if (!browser_view_->IsFullscreen()) {
-      if (browser_view_->UsingSideTabs()) {
+      if (browser_view_->UseVerticalTabs()) {
         margins.cxLeftWidth +=
             GetBoundsForTabStrip(browser_view_->tabstrip()).right();
         margins.cyTopHeight += GetSystemMetrics(SM_CYSIZEFRAME);
@@ -309,7 +314,7 @@ void BrowserFrameWin::UpdateDWMFrame() {
   DwmExtendFrameIntoClientArea(GetNativeView(), &margins);
 
   DWORD window_style = GetWindowLong(GWL_STYLE);
-  if (browser_view_->UsingSideTabs()) {
+  if (browser_view_->UseVerticalTabs()) {
     if (window_style & WS_CAPTION)
       SetWindowLong(GWL_STYLE, window_style & ~WS_CAPTION);
   } else {
