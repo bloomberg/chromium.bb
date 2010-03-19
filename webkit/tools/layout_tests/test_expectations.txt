@@ -2839,5 +2839,5 @@ BUG38578 : plugins/override-node-method.html = TEXT
 
 // WebKit roll 56197:56239.
 // Needs layoutTestController.setMediaType() (implemented on Qt only)
-BUG38653 : editing/selection/find-yensign-and-backslash.html = TEXT
-BUG38656 MAC : fast/media/print-restores-previous-mediatype.html = TEXT
+BUG38653 MAC : editing/selection/find-yensign-and-backslash.html = TEXT
+BUG38656 : fast/media/print-restores-previous-mediatype.html = TEXT
