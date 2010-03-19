@@ -961,6 +961,7 @@ void WidgetGtk::OnWindowPaint(GtkWidget* widget, GdkEventExpose* event) {
   cairo_set_source_rgba(cr, 0, 0, 0, 0);
   cairo_rectangle(cr, 0, 0, width, height);
   cairo_fill(cr);
+  cairo_destroy(cr);
 }
 
 bool WidgetGtk::ProcessMousePressed(GdkEventButton* event) {
