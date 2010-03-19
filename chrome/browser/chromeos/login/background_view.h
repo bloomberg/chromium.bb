@@ -36,6 +36,7 @@ class BackgroundView : public views::View, public StatusAreaHost {
                                                    BackgroundView** view);
 
   // Overridden from views::View:
+  virtual void Paint(gfx::Canvas* canvas);
   virtual void Layout();
 
   // Overridden from StatusAreaHost:
@@ -50,7 +51,16 @@ class BackgroundView : public views::View, public StatusAreaHost {
   // Creates and adds the status_area.
   void InitStatusArea();
 
+  // Invokes SetWindowType for the window. This is invoked during startup and
+  // after we've painted.
+  void UpdateWindowType();
+
   StatusAreaView* status_area_;
+
+  // Has Paint been invoked once? The value of this is passed to the window
+  // manager.
+  // TODO(sky): nuke this when the wm knows when chrome has painted.
+  bool did_paint_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundView);
 };

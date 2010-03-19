@@ -18,9 +18,11 @@
 #include <X11/cursorfont.h>
 #include <X11/Xcursor/Xcursor.h>
 
+using views::WidgetGtk;
+
 namespace chromeos {
 
-BackgroundView::BackgroundView() : status_area_(NULL) {
+BackgroundView::BackgroundView() : status_area_(NULL), did_paint_(false) {
   views::Painter* painter = chromeos::CreateWizardPainter(
       &chromeos::BorderDefinition::kWizardBorder);
   set_background(views::Background::CreateBackgroundPainter(true, painter));
@@ -55,21 +57,26 @@ views::Widget* BackgroundView::CreateWindowContainingView(
     BackgroundView** view) {
   ResetXCursor();
 
-  views::WidgetGtk* window =
-      new views::WidgetGtk(views::WidgetGtk::TYPE_WINDOW);
+  WidgetGtk* window = new WidgetGtk(WidgetGtk::TYPE_WINDOW);
   window->Init(NULL, bounds);
-  chromeos::WmIpc::instance()->SetWindowType(
-      window->GetNativeView(),
-      chromeos::WmIpc::WINDOW_TYPE_LOGIN_BACKGROUND,
-      NULL);
   *view = new BackgroundView();
   window->SetContentsView(*view);
+
+  (*view)->UpdateWindowType();
 
   // This keeps the window from flashing at startup.
   GdkWindow* gdk_window = window->GetNativeView()->window;
   gdk_window_set_back_pixmap(gdk_window, NULL, false);
 
   return window;
+}
+
+void BackgroundView::Paint(gfx::Canvas* canvas) {
+  views::View::Paint(canvas);
+  if (!did_paint_) {
+    did_paint_ = true;
+    UpdateWindowType();
+  }
 }
 
 void BackgroundView::Layout() {
@@ -86,7 +93,7 @@ void BackgroundView::Layout() {
 
 gfx::NativeWindow BackgroundView::GetNativeWindow() const {
   return
-      GTK_WINDOW(static_cast<views::WidgetGtk*>(GetWidget())->GetNativeView());
+      GTK_WINDOW(static_cast<WidgetGtk*>(GetWidget())->GetNativeView());
 }
 
 bool BackgroundView::ShouldOpenButtonOptions(
@@ -111,6 +118,15 @@ void BackgroundView::InitStatusArea() {
   status_area_ = new StatusAreaView(this);
   status_area_->Init();
   AddChildView(status_area_);
+}
+
+void BackgroundView::UpdateWindowType() {
+  std::vector<int> params;
+  params.push_back(did_paint_ ? 1 : 0);
+  WmIpc::instance()->SetWindowType(
+      GTK_WIDGET(GetNativeWindow()),
+      chromeos::WmIpc::WINDOW_TYPE_LOGIN_BACKGROUND,
+      &params);
 }
 
 }  // namespace chromeos

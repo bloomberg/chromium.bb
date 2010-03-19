@@ -146,8 +146,10 @@ bool WidgetGtk::MakeTransparent() {
 
   if (!gdk_screen_is_composited(gdk_screen_get_default())) {
     // Transparency is only supported for compositing window managers.
-    DLOG(WARNING) << "compositing not supported";
-    return false;
+    // NOTE: there's a race during ChromeOS startup such that X might think
+    // compositing isn't supported. We ignore it if the wm says compositing
+    // isn't supported.
+    DLOG(WARNING) << "compositing not supported; allowing anyway";
   }
 
   if (!gdk_screen_get_rgba_colormap(gdk_screen_get_default())) {

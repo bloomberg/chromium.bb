@@ -209,9 +209,10 @@ WidgetGtk* UserController::CreateBorderWindow(int index,
 
 WidgetGtk* UserController::CreateLabelWindow(int index,
                                              WmIpc::WindowType type) {
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   const gfx::Font& font = (type == WmIpc::WINDOW_TYPE_LOGIN_LABEL) ?
-      ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::LargeFont) :
-      ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::BaseFont);
+      rb.GetFont(ResourceBundle::LargeFont).DeriveFont(0, gfx::Font::BOLD) :
+      rb.GetFont(ResourceBundle::BaseFont).DeriveFont(0, gfx::Font::BOLD);
   int width = (type == WmIpc::WINDOW_TYPE_LOGIN_LABEL) ?
       kSize : kUnselectedSize;
   WidgetGtk* window = new WidgetGtk(WidgetGtk::TYPE_WINDOW);
