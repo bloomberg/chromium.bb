@@ -312,7 +312,7 @@ bool AutomatedUITestBase::Navigate(const GURL& url) {
   }
   bool did_timeout = false;
   AutomationMsg_NavigationResponseValues result =
-      tab->NavigateToURLWithTimeout(url, 1, command_execution_timeout_ms(),
+      tab->NavigateToURLWithTimeout(url, 1, action_max_timeout_ms(),
                                     &did_timeout);
   if (result != AUTOMATION_MSG_NAVIGATION_SUCCESS) {
     LogErrorMessage("navigation_failed");

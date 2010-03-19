@@ -45,8 +45,8 @@ using base::TimeTicks;
 // Delay to let browser complete a requested action.
 static const int kWaitForActionMsec = 2000;
 static const int kWaitForActionMaxMsec = 10000;
-// Delay to let the browser complete the test.
-static const int kMaxTestExecutionTime = 30000;
+// Command execution timeout passed to AutomationProxy.
+static const int kCommandExecutionTimeout = 30000;
 // Delay to let the browser shut down before trying more brutal methods.
 static const int kWaitForTerminateMsec = 30000;
 
@@ -111,7 +111,7 @@ UITestBase::UITestBase()
       enable_file_cookies_(true),
       profile_type_(UITestBase::DEFAULT_THEME),
       test_start_time_(base::Time::NowFromSystemTime()),
-      command_execution_timeout_ms_(kMaxTestExecutionTime),
+      command_execution_timeout_ms_(kCommandExecutionTimeout),
       action_timeout_ms_(kWaitForActionMsec),
       action_max_timeout_ms_(kWaitForActionMaxMsec),
       sleep_timeout_ms_(kWaitForActionMsec),
@@ -137,7 +137,7 @@ UITestBase::UITestBase(MessageLoop::Type msg_loop_type)
       profile_type_(UITestBase::DEFAULT_THEME),
       test_start_time_(base::Time::NowFromSystemTime()),
       message_loop_(msg_loop_type),
-      command_execution_timeout_ms_(kMaxTestExecutionTime),
+      command_execution_timeout_ms_(kCommandExecutionTimeout),
       action_timeout_ms_(kWaitForActionMsec),
       action_max_timeout_ms_(kWaitForActionMaxMsec),
       sleep_timeout_ms_(kWaitForActionMsec),
@@ -204,7 +204,7 @@ void UITestBase::InitializeTimeouts() {
   if (command_line.HasSwitch(kUiTestTimeout)) {
     std::wstring timeout_str = command_line.GetSwitchValue(kUiTestTimeout);
     int timeout = StringToInt(WideToUTF16Hack(timeout_str));
-    command_execution_timeout_ms_ = std::max(kMaxTestExecutionTime, timeout);
+    command_execution_timeout_ms_ = std::max(kCommandExecutionTimeout, timeout);
   }
 
   if (command_line.HasSwitch(kUiTestActionTimeout)) {
@@ -542,7 +542,7 @@ void UITestBase::NavigateToURLBlockUntilNavigationsComplete(
   bool is_timeout = true;
   EXPECT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
             tab_proxy->NavigateToURLWithTimeout(
-                url, number_of_navigations, command_execution_timeout_ms(),
+                url, number_of_navigations, action_max_timeout_ms(),
                 &is_timeout)) << url.spec();
   ASSERT_FALSE(is_timeout) << url.spec();
 }
@@ -558,7 +558,7 @@ void UITestBase::NavigateToURLBlockUntilNavigationsComplete(
   bool is_timeout = true;
   EXPECT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
             tab_proxy->NavigateToURLWithTimeout(
-                url, number_of_navigations, command_execution_timeout_ms(),
+                url, number_of_navigations, action_max_timeout_ms(),
                 &is_timeout)) << url.spec();
   ASSERT_FALSE(is_timeout) << url.spec();
 }
