@@ -7,11 +7,6 @@
 namespace extension_manifest_keys {
 
 const wchar_t* kAllFrames = L"all_frames";
-const wchar_t* kApp = L"app";
-const wchar_t* kAppExtent = L"extent";
-const wchar_t* kAppLaunchUrl = L"launch.url";
-const wchar_t* kAppLaunchType = L"launch.window_type";  // TODO(erikkay) rename
-const wchar_t* kAppOrigin = L"origin";
 const wchar_t* kBackground = L"background_page";
 const wchar_t* kBrowserAction = L"browser_action";
 const wchar_t* kChromeURLOverrides = L"chrome_url_overrides";
@@ -23,6 +18,10 @@ const wchar_t* kDefaultLocale = L"default_locale";
 const wchar_t* kDescription = L"description";
 const wchar_t* kIcons = L"icons";
 const wchar_t* kJs = L"js";
+const wchar_t* kLaunch = L"launch";
+const wchar_t* kLaunchContainer = L"launch.container";
+const wchar_t* kLaunchLocalPath = L"launch.local_path";
+const wchar_t* kLaunchWebURL = L"launch.web_url";
 const wchar_t* kMatches = L"matches";
 const wchar_t* kMinimumChromeVersion = L"minimum_chrome_version";
 const wchar_t* kIncludeGlobs = L"include_globs";
@@ -58,6 +57,10 @@ const wchar_t* kType = L"type";
 const wchar_t* kVersion = L"version";
 const wchar_t* kUpdateURL = L"update_url";
 const wchar_t* kOptionsPage = L"options_page";
+const wchar_t* kWebContent = L"web_content";
+const wchar_t* kWebContentEnabled = L"web_content.enabled";
+const wchar_t* kWebOrigin = L"web_content.origin";
+const wchar_t* kWebPaths = L"web_content.paths";
 }  // namespace extension_manifest_keys
 
 namespace extension_manifest_values {
@@ -66,9 +69,9 @@ const char* kRunAtDocumentEnd = "document_end";
 const char* kRunAtDocumentIdle = "document_idle";
 const char* kPageActionTypeTab = "tab";
 const char* kPageActionTypePermanent = "permanent";
-const char* kLaunchTypePanel = "panel";
-const char* kLaunchTypeTab = "tab";
-const char* kLaunchTypeWindow = "window";
+const char* kLaunchContainerPanel = "panel";
+const char* kLaunchContainerTab = "tab";
+const char* kLaunchContainerWindow = "window";
 }  // namespace extension_manifest_values
 
 // Extension-related error messages. Some of these are simple patterns, where a
@@ -76,21 +79,11 @@ const char* kLaunchTypeWindow = "window";
 // printf because we want to unit test them and scanf is hard to make
 // cross-platform.
 namespace extension_manifest_errors {
-const char* kAppsDisabled = "Apps are disabled.";
+const char* kAppsNotEnabled = "Apps are not enabled.";
 const char* kChromeVersionTooLow =
     "This extension requires * version * or greater.";
 const char* kInvalidAllFrames =
     "Invalid value for 'content_scripts[*].all_frames'.";
-const char* kInvalidApp = "Invalid app.";
-const char* kInvalidAppExtent = "Invalid value for app.extent.";
-const char* kInvalidAppExtentPattern = "Invalid value for app.extent[*].";
-const char* kInvalidAppLaunchType =
-    "Invalid value for 'app.launch.window_type'.";
-const char* kInvalidAppLaunchUrl =
-    "Required value 'app.launch.url' is missing or invalid.";
-const char* kInvalidAppOrigin =
-    "Invalid value for 'app.origin'. Value must be a URL of the form "
-    "scheme://host[:port]/ where scheme is http or https.";
 const char* kInvalidBrowserAction =
     "Invalid value for 'browser_action'.";
 const char* kInvalidChromeURLOverrides =
@@ -117,6 +110,12 @@ const char* kInvalidJs =
     "Invalid value for 'content_scripts[*].js[*]'.";
 const char* kInvalidJsList =
     "Required value 'content_scripts[*].js' is invalid.";
+const char* kInvalidLaunchContainer =
+    "Invalid value for 'launch.container'.";
+const char* kInvalidLaunchLocalPath =
+    "Invalid value for 'launch.local_path'.";
+const char* kInvalidLaunchWebURL =
+    "Invalid value for 'launch.web_url'.";
 const char* kInvalidKey =
     "Value 'key' is missing or invalid.";
 const char* kInvalidManifest =
@@ -203,12 +202,24 @@ const char* kInvalidThemeTints =
     "Invalid value for theme images - tints must be decimal numbers.";
 const char* kInvalidUpdateURL =
     "Invalid value for update url: '[*]'.";
+const char* kInvalidWebContentEnabled =
+    "Invalid value for 'web_content.enabled'.";
+const char* kInvalidWebOrigin =
+    "Invalid value for 'web_content.origin'.";
+const char* kInvalidWebPaths =
+    "Invalid value for 'web_content.paths'.";
+const char* kInvalidWebPath =
+    "Invalid value for 'web_contents.paths[*]'.";
 const char* kInvalidDefaultLocale =
     "Invalid value for default locale - locale name must be a string.";
 const char* kOneUISurfaceOnly =
     "An extension cannot have both a page action and a browser action.";
 const char* kThemesCannotContainExtensions =
     "A theme cannot contain extensions code.";
+const char* kLaunchContainerWithoutURL =
+    "Launch container specified, but no local_path or web_url to launch.";
+const char* kLaunchPathAndURLAreExclusive =
+    "The 'launch.local_path' and 'launch.web_url' keys cannot both be set.";
 const char* kLocalesNoDefaultLocaleSpecified =
     "Localization used, but default_locale wasn't specified in the manifest.";
 const char* kLocalesNoDefaultMessages =
@@ -226,6 +237,8 @@ const char* kReservedMessageFound =
 const char* kCannotAccessPage = "Cannot access contents of url \"*\". "
     "Extension manifest must request permission to access this host.";
 const char* kCannotScriptGallery = "The extensions gallery cannot be scripted.";
+const char* kWebContentMustBeEnabled = "The 'web_content.enabled' property "
+    "must be set to true in order to use any other web content features.";
 }  // namespace extension_manifest_errors
 
 namespace extension_urls {

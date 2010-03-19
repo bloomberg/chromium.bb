@@ -478,7 +478,7 @@ RenderProcessHost* TabContents::GetRenderProcessHost() const {
 }
 
 void TabContents::SetAppExtension(Extension* extension) {
-  DCHECK(!extension || extension->IsApp());
+  DCHECK(!extension || extension->GetFullLaunchURL().is_valid());
   app_extension_ = extension;
 
   NotificationService::current()->Notify(
@@ -1284,7 +1284,7 @@ TabContents* TabContents::CloneAndMakePhantom() {
 
   NavigationEntry* entry = controller().GetActiveEntry();
   if (app_extension_)
-    tab_nav.set_url(app_extension_->app_launch_url());
+    tab_nav.set_url(app_extension_->GetFullLaunchURL());
   else if (entry)
     tab_nav.SetFromNavigationEntry(*entry);
 

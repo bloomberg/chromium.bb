@@ -1,0 +1,7 @@
+{
+  "name": "test",
+  "version": "1",
+  "web_content": {
+    "origin": "http://www.google.com/"
+  }
+}

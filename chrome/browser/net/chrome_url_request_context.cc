@@ -854,7 +854,7 @@ ChromeURLRequestContextFactory::ChromeURLRequestContextFactory(Profile* profile)
               new ChromeURLRequestContext::ExtensionInfo(
                   (*iter)->path(),
                   (*iter)->default_locale(),
-                  (*iter)->app_extent(),
+                  std::vector<URLPattern>(),
                   (*iter)->api_permissions()));
     }
   }

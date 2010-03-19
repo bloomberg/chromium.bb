@@ -157,6 +157,8 @@
         'common/extensions/extension_error_reporter.h',
         'common/extensions/extension_error_utils.cc',
         'common/extensions/extension_error_utils.h',
+        'common/extensions/extension_extent.cc',
+        'common/extensions/extension_extent.h',
         'common/extensions/extension_file_util.cc',
         'common/extensions/extension_file_util.h',
         'common/extensions/extension_l10n_util.cc',

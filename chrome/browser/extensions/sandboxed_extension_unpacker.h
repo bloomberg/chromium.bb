@@ -96,9 +96,9 @@ class SandboxedExtensionUnpacker : public UtilityProcessHost::Client {
                              ResourceDispatcherHost* rdh,
                              SandboxedExtensionUnpackerClient* cilent);
 
-  const GURL& app_origin_override() const { return app_origin_override_; }
-  void set_app_origin_override(const GURL& val) {
-    app_origin_override_ = val;
+  const GURL& web_origin() const { return web_origin_; }
+  void set_web_origin(const GURL& val) {
+    web_origin_ = val;
   }
 
   // Start unpacking the extension. The client is called with the results.
@@ -169,10 +169,10 @@ class SandboxedExtensionUnpacker : public UtilityProcessHost::Client {
   // The public key that was extracted from the CRX header.
   std::string public_key_;
 
-  // If the unpacked extension is an app, its origin will be forced to this
-  // value. This is used when an app is self-hosted. The only valid origin
-  // is the origin it is served from.
-  GURL app_origin_override_;
+  // If the unpacked extension uses web content, its origin will be set to this
+  // value. This is used when an app is self-hosted. The only valid origin is
+  // the origin it is served from.
+  GURL web_origin_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_SANDBOXED_EXTENSION_UNPACKER_H_

@@ -50,7 +50,7 @@ static void EncodePinnedTab(TabStripModel* model,
     // . the user is effectively restarting the app, so that returning them to
     //   the app's launch page seems closest to what they expect.
     // . we do the same when restoring a phantom tab.
-    value->SetString(kURL, extension->app_launch_url().spec());
+    value->SetString(kURL, extension->GetFullLaunchURL().spec());
     values->Append(value.release());
   } else {
     NavigationEntry* entry = tab_contents->controller().GetActiveEntry();
