@@ -1078,6 +1078,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
       'CheckDoNotSubmit',
       'CheckDoNotSubmitInDescription', 'CheckDoNotSubmitInFiles',
       'CheckLongLines', 'CheckTreeIsOpen', 'RunPythonUnitTests',
+      'CheckBuildbotPendingBuilds', 'CheckRietveldTryJobExecution',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(presubmit_canned_checks, members)
@@ -1527,6 +1528,83 @@ class CannedChecksUnittest(PresubmitTestsBase):
     results = presubmit_canned_checks.RunPythonUnitTests(
         input_api, presubmit.OutputApi, ['test_module'])
     self.assertEquals(len(results), 0)
+
+  def testCheckRietveldTryJobExecutionBad(self):
+    change = self.mox.CreateMock(presubmit.SvnChange)
+    change.scm = 'svn'
+    change.issue = 2
+    change.patchset = 5
+    input_api = self.MockInputApi(change, True)
+    connection = self.mox.CreateMockAnything()
+    input_api.urllib2.urlopen('uurl/2/get_build_results/5').AndReturn(
+        connection)
+    connection.read().AndReturn('foo')
+    connection.close()
+    self.mox.ReplayAll()
+
+    results = presubmit_canned_checks.CheckRietveldTryJobExecution(
+        input_api, presubmit.OutputApi, 'uurl', ('mac', 'linux'), 'georges')
+    self.assertEquals(len(results), 1)
+    self.assertEquals(results[0].__class__,
+        presubmit.OutputApi.PresubmitNotifyResult)
+
+  def testCheckRietveldTryJobExecutionGood(self):
+    change = self.mox.CreateMock(presubmit.SvnChange)
+    change.scm = 'svn'
+    change.issue = 2
+    change.patchset = 5
+    input_api = self.MockInputApi(change, True)
+    connection = self.mox.CreateMockAnything()
+    input_api.urllib2.urlopen('uurl/2/get_build_results/5').AndReturn(
+        connection)
+    connection.read().AndReturn("""amiga|Foo|blah
+linux|failure|bleh
+mac|success|blew
+""")
+    connection.close()
+    self.mox.ReplayAll()
+
+    results = presubmit_canned_checks.CheckRietveldTryJobExecution(
+        input_api, presubmit.OutputApi, 'uurl', ('mac', 'linux', 'amiga'),
+        'georges')
+    self.assertEquals(len(results), 1)
+    self.assertEquals(results[0].__class__,
+        presubmit.OutputApi.PresubmitPromptWarning)
+
+  def testCheckBuildbotPendingBuildsBad(self):
+    input_api = self.MockInputApi(None, True)
+    input_api.json = presubmit.json
+    connection = self.mox.CreateMockAnything()
+    input_api.urllib2.urlopen('uurl').AndReturn(connection)
+    connection.read().AndReturn('foo')
+    connection.close()
+    self.mox.ReplayAll()
+
+    results = presubmit_canned_checks.CheckBuildbotPendingBuilds(
+        input_api, presubmit.OutputApi, 'uurl', 2, ('foo'))
+    self.assertEquals(len(results), 1)
+    self.assertEquals(results[0].__class__,
+        presubmit.OutputApi.PresubmitNotifyResult)
+
+  def testCheckBuildbotPendingBuildsGood(self):
+    input_api = self.MockInputApi(None, True)
+    input_api.json = presubmit.json
+    connection = self.mox.CreateMockAnything()
+    input_api.urllib2.urlopen('uurl').AndReturn(connection)
+    connection.read().AndReturn("""
+    {
+      'b1': { 'pending_builds': [0, 1, 2, 3, 4, 5, 6, 7] },
+      'foo': { 'pending_builds': [0, 1, 2, 3, 4, 5, 6, 7] },
+      'b2': { 'pending_builds': [0] }
+    }""")
+    connection.close()
+    self.mox.ReplayAll()
+
+    results = presubmit_canned_checks.CheckBuildbotPendingBuilds(
+        input_api, presubmit.OutputApi, 'uurl', 2, ('foo'))
+    self.assertEquals(len(results), 1)
+    self.assertEquals(results[0].__class__,
+        presubmit.OutputApi.PresubmitNotifyResult)
 
 
 if __name__ == '__main__':
