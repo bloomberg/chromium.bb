@@ -4,9 +4,9 @@
 
 #import "chrome/browser/cocoa/download_item_controller.h"
 
-#include "app/gfx/text_elider.h"
 #include "app/l10n_util_mac.h"
 #include "app/resource_bundle.h"
+#include "app/text_elider.h"
 #include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"

@@ -4,8 +4,8 @@
 
 #include "chrome/browser/autocomplete/autocomplete_popup_view_mac.h"
 
-#include "app/gfx/text_elider.h"
 #include "app/resource_bundle.h"
+#include "app/text_elider.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view_mac.h"

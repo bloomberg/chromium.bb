@@ -4,7 +4,7 @@
 
 #import "chrome/browser/autocomplete/autocomplete_popup_view_mac.h"
 
-#include "app/gfx/text_elider.h"
+#include "app/text_elider.h"
 #include "base/scoped_ptr.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete.h"

@@ -7,8 +7,8 @@
 
 #include <vector>
 
-#include "app/gfx/text_elider.h"
 #include "app/table_model.h"
+#include "app/text_elider.h"
 #include "base/scoped_ptr.h"
 #include "base/stl_util-inl.h"
 #include "chrome/browser/password_manager/password_store.h"

@@ -4,7 +4,7 @@
 
 #include "printing/page_overlays.h"
 
-#include "app/gfx/text_elider.h"
+#include "app/text_elider.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"

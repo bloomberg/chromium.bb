@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "app/gfx/font.h"
-#include "app/gfx/text_elider.h"
+#include "app/text_elider.h"
 #include "app/l10n_util.h"
 #include "base/file_path.h"
 #include "base/string_util.h"

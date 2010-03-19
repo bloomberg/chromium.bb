@@ -5,8 +5,8 @@
 #import "chrome/browser/cocoa/download_item_cell.h"
 
 #include "app/gfx/canvas_paint.h"
-#include "app/gfx/text_elider.h"
 #include "app/l10n_util.h"
+#include "app/text_elider.h"
 #include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/browser_theme_provider.h"

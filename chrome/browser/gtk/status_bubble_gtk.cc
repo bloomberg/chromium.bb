@@ -8,8 +8,8 @@
 
 #include <algorithm>
 
-#include "app/gfx/text_elider.h"
 #include "app/l10n_util.h"
+#include "app/text_elider.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"

@@ -6,7 +6,7 @@
 
 #include <vector>
 
-#include "app/gfx/text_elider.h"
+#include "app/text_elider.h"
 
 namespace views {
 

@@ -4,9 +4,9 @@
 
 #include "chrome/browser/tab_contents/tab_contents.h"
 
-#include "app/gfx/text_elider.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "app/text_elider.h"
 #include "base/auto_reset.h"
 #include "base/file_version_info.h"
 #include "base/process_util.h"

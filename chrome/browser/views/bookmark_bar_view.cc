@@ -10,10 +10,10 @@
 #include <vector>
 
 #include "app/gfx/canvas.h"
-#include "app/gfx/text_elider.h"
 #include "app/l10n_util.h"
 #include "app/os_exchange_data.h"
 #include "app/resource_bundle.h"
+#include "app/text_elider.h"
 #include "base/string_util.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"

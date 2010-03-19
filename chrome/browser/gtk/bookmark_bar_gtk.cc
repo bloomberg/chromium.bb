@@ -7,10 +7,10 @@
 #include <vector>
 
 #include "app/gfx/canvas_paint.h"
-#include "app/gfx/text_elider.h"
 #include "app/gtk_dnd_util.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "app/text_elider.h"
 #include "base/pickle.h"
 #include "chrome/browser/bookmarks/bookmark_drag_data.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"

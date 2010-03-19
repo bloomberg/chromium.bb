@@ -251,7 +251,7 @@ void HistoryMenuBridge::AddItemToMenu(HistoryItem* item,
     title = base::SysUTF8ToNSString(url_string);
   NSString* full_title = title;
   if (false && [title length] > kMaximumMenuWidthInChars) {
-    // TODO(rsesek): use app/gfx/text_elider.h once it uses string16 and can
+    // TODO(rsesek): use app/text_elider.h once it uses string16 and can
     // take out the middle of strings.
     title = [NSString stringWithFormat:@"%@…%@",
                [title substringToIndex:kMenuTrimSizeInChars],

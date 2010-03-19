@@ -6,11 +6,11 @@
 
 #include <algorithm>
 
-#include "app/gfx/canvas.h"
-#include "app/gfx/text_elider.h"
-#include "app/l10n_util.h"
 #include "app/animation.h"
+#include "app/gfx/canvas.h"
+#include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "app/text_elider.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_theme_provider.h"

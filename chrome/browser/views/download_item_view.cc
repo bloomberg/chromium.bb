@@ -7,9 +7,9 @@
 #include <vector>
 
 #include "app/gfx/canvas.h"
-#include "app/gfx/text_elider.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "app/text_elider.h"
 #include "app/theme_provider.h"
 #include "base/callback.h"
 #include "base/file_path.h"

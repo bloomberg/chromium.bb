@@ -9,9 +9,9 @@
 
 #include "app/gfx/canvas.h"
 #include "app/gfx/font.h"
-#include "app/gfx/text_elider.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "app/text_elider.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/color_utils.h"

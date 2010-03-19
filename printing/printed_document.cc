@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "app/gfx/font.h"
-#include "app/gfx/text_elider.h"
+#include "app/text_elider.h"
 #include "base/file_util.h"
 #include "base/i18n/file_util_icu.h"
 #include "base/message_loop.h"

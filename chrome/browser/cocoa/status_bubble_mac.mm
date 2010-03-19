@@ -6,7 +6,7 @@
 
 #include <limits>
 
-#include "app/gfx/text_elider.h"
+#include "app/text_elider.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
