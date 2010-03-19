@@ -108,6 +108,12 @@ ExtensionPopup::ExtensionPopup(ExtensionHost* host,
         NULL);
 #endif
 
+    // Keep relative_to_ in frame-relative coordinates to aid in drag
+    // positioning.
+    gfx::Point origin = relative_to_.origin();
+    views::View::ConvertPointToView(NULL, frame_->GetRootView(), &origin);
+    relative_to_.set_origin(origin);
+
     border_ = new BubbleBorder;
     border_->set_arrow_location(arrow_location);
 
@@ -162,8 +168,14 @@ void ExtensionPopup::ResizeToView() {
   // know our position to do it.
   gfx::Size new_size = view()->size();
 
-  gfx::Rect rect = GetOuterBounds(relative_to_, new_size);
+  // Convert rect to screen coordinates.
+  gfx::Rect rect = relative_to_;
   gfx::Point origin = rect.origin();
+  views::View::ConvertPointToScreen(frame_->GetRootView(), &origin);
+  rect.set_origin(origin);
+
+  rect = GetOuterBounds(rect, new_size);
+  origin = rect.origin();
   views::View::ConvertPointToView(NULL, frame_->GetRootView(), &origin);
   if (border_widget_) {
     // Set the bubble-chrome widget according to the outer bounds of the entire
@@ -186,9 +198,7 @@ void ExtensionPopup::ResizeToView() {
 }
 
 void ExtensionPopup::BubbleBrowserWindowMoved(BrowserBubble* bubble) {
-  if (!closing_)
-    Close();
-  // TODO(rafaelw) -- the border must move as well.
+  ResizeToView();
 }
 
 void ExtensionPopup::BubbleBrowserWindowClosing(BrowserBubble* bubble) {
