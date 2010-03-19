@@ -76,6 +76,10 @@ TEST_F(LoginPromptTest, TestBasicAuth) {
             GetActiveTabTitle());
 }
 
+// http://crbug.com/38580
+#if defined(OS_CHROMEOS)
+#define TestDigestAuth FLAKY_TestDigestAuth
+#endif
 // Test that "Digest" HTTP authentication works.
 TEST_F(LoginPromptTest, TestDigestAuth) {
   scoped_refptr<HTTPTestServer> server =
