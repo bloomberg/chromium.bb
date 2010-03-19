@@ -1,5 +1,8 @@
-This directory contains a partial snapshot of the libxslt library from
-http://xmlsoft.org/XSLT, with the following modification:
+Name: libxslt
+URL: http://xmlsoft.org/XSLT
+
+This directory contains a partial snapshot of the libxslt library
+with the following modification:
 
 1) Modified win32/configure.js to be able to clobber a read-only Makefile
 This consists of:

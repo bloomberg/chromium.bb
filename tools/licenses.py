@@ -10,6 +10,27 @@ directories.
 
 import os
 
+# Paths from the root of the tree to directories to skip.
+PRUNE_PATHS = set([
+    # This is just a tiny vsprops file, presumably written by the googleurl
+    # authors.  Not third-party code.
+    "googleurl/third_party/icu",
+
+    # We don't bundle o3d samples into our resulting binaries.
+    "o3d/samples",
+
+    # Written as part of Chromium.
+    "third_party/fuzzymatch",
+
+    # Two directories that are the same as those in base/third_party.
+    "v8/src/third_party/dtoa",
+    "v8/src/third_party/valgrind",
+])
+
+# Directories we don't scan through.
+PRUNE_DIRS = ('.svn', '.git',             # VCS metadata
+              'out', 'Debug', 'Release',  # build files
+              'layout_tests')             # lots of subdirs
 
 class LicenseError(Exception):
     """We raise this exception when a directory's licensing info isn't
@@ -26,7 +47,7 @@ def ParseDir(path):
         raise LicenseError("missing README.chromium")
 
     # Parse metadata fields out of README.chromium.
-    # We provide a default value of "LICENSE" for the license file.
+    # We examine "LICENSE" for the license file by default.
     metadata = {
         "License File": "LICENSE",  # Relative path to license text.
         "Name": None,               # Short name (for header on about:credits).
@@ -34,6 +55,8 @@ def ParseDir(path):
         }
     for line in open(readme_path):
         line = line.strip()
+        if not line:
+            break
         for key in metadata.keys():
             field = key + ": "
             if line.startswith(field):
@@ -46,12 +69,19 @@ def ParseDir(path):
                                "in README.chromium")
 
     # Check that the license file exists.
-    license_file = metadata["License File"]
-    license_path = os.path.join(path, license_file)
-    if not os.path.exists(license_path):
-        raise LicenseError("License file '" + license_file + "' doesn't exist. "
-                           "Either add a 'License File:' section to "
-                           "README.chromium or add the missing file.")
+    for filename in (metadata["License File"], "COPYING"):
+        license_path = os.path.join(path, filename)
+        if os.path.exists(license_path):
+            metadata["License File"] = filename
+            break
+        license_path = None
+
+    if not license_path:
+        raise LicenseError("License file not found. "
+                           "Either add a file named LICENSE, "
+                           "import upstream's COPYING if available, "
+                           "or add a 'License File:' line to README.chromium "
+                           "with the appropriate path.")
 
     return metadata
 
@@ -73,21 +103,28 @@ def ScanThirdPartyDirs(third_party_dirs):
 
 def FindThirdPartyDirs():
     """Find all third_party directories underneath the current directory."""
-    skip_dirs = ('.svn', '.git',             # VCS metadata
-                 'out', 'Debug', 'Release',  # build files
-                 'layout_tests')             # lots of subdirs
-
     third_party_dirs = []
     for path, dirs, files in os.walk('.'):
         path = path[len('./'):]  # Pretty up the path.
 
+        if path in PRUNE_PATHS:
+            dirs[:] = []
+            continue
+
         # Prune out directories we want to skip.
-        for skip in skip_dirs:
+        # (Note that we loop over PRUNE_DIRS so we're not iterating over a
+        # list that we're simultaneously mutating.)
+        for skip in PRUNE_DIRS:
             if skip in dirs:
                 dirs.remove(skip)
 
         if os.path.basename(path) == 'third_party':
-            third_party_dirs.extend([os.path.join(path, dir) for dir in dirs])
+            # Add all subdirectories that are not marked for skipping.
+            for dir in dirs:
+                dirpath = os.path.join(path, dir)
+                if dirpath not in PRUNE_PATHS:
+                    third_party_dirs.append(dirpath)
+
             # Don't recurse into any subdirs from here.
             dirs[:] = []
             continue

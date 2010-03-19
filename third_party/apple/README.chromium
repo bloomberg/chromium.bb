@@ -1,6 +1,5 @@
-This is Chromium's local copy of Apple sample code,
-originally obtained from http://developer.apple.com/.
-See the block comment in each file for license information.
+Name: Apple sample code
+URL: http://developer.apple.com/
 
 Local changes:
 * ImageAndTextCell.h: Changed 'image' property to 'retain' mode to fix a crash.

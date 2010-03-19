@@ -1,3 +1,7 @@
+Name: ffmpeg
+URL: http://ffmpeg.org/
+License File: source/patched-ffmpeg-mt/LICENSE
+
 This file describes how to produce the FFmpeg include directory, and how to
 create the ffmpeg.gyp file and related configurations.
 

@@ -1,7 +1,8 @@
+Name: expat
 URL: http://sourceforge.net/projects/expat/
 Version: 2.7.0
 License: MIT
-License File: COPYING
+License File: files/COPYING
 
 Description:
   This is Expat XML parser - very lightweight C library for parsing XML.

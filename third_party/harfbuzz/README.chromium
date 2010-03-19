@@ -1,6 +1,5 @@
-Harfbuzz
-
-http://freedesktop.org/wiki/Software/HarfBuzz
+Name: Harfbuzz
+URL: http://freedesktop.org/wiki/Software/HarfBuzz
 
 This code was taken from b0d396aa88b3cdf8cea896bfeeba197656e1cdb1
 (git://anongit.freedesktop.org/harfbuzz)
