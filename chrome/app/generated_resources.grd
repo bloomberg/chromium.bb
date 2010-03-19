@@ -6891,6 +6891,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
     <!-- Chrome OS Strings -->
     <if expr="pp_ifdef('chromeos')">
+      <message name="IDS_LOW_BATTERY_TITLE" desc="Title for low battery notification">
+        Battery Low
+      </message>
+      <message name="IDS_LOW_BATTERY_MESSAGE" desc="Message for low battery notification">
+        Less than <ph name="MINUTES">$1<ex>15 mins left</ex></ph>.
+        Please connect charger.
+      </message>
       <message name="IDS_INSTALLING_UPDATE" desc="Label shown on the updates installation screen">
         Please wait while <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph> installs an important update.\nYour computer will restart after this is complete.
       </message>

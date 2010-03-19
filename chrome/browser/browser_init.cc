@@ -21,6 +21,7 @@
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/first_run.h"
 #include "chrome/browser/net/dns_global.h"
+#include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
@@ -64,7 +65,9 @@
 #include "chrome/browser/chromeos/browser_notification_observers.h"
 #include "chrome/browser/dom_ui/mediaplayer_ui.h"
 #include "chrome/browser/chromeos/cros/mount_library.h"
+#include "chrome/browser/chromeos/cros/power_library.h"
 #include "chrome/browser/chromeos/gview_request_interceptor.h"
+#include "chrome/browser/chromeos/low_battery_observer.h"
 #include "chrome/browser/chromeos/usb_mount_observer.h"
 #include "chrome/browser/chromeos/wm_message_listener.h"
 #endif
@@ -402,6 +405,14 @@ bool BrowserInit::LaunchBrowser(
     player->set_profile(profile);
     observe->set_profile(profile);
     lib->AddObserver(observe);
+
+    // Connect the chromeos notifications
+
+    // This observer is a singleton. It is never deleted but the pointer is kept
+    // in a global so that it isn't reported as a leak.
+    static chromeos::LowBatteryObserver* observer =
+        new chromeos::LowBatteryObserver(profile);
+    chromeos::PowerLibrary::Get()->AddObserver(observer);
   }
 #endif
 #if defined(OS_MACOSX)
