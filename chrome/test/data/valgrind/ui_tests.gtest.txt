@@ -10,19 +10,6 @@ ErrorPageTest.DNSError_GoBack2AndForward
 UnloadTest.BrowserCloseInfiniteBeforeUnload
 UnloadTest.BrowserCloseInfiniteBeforeUnloadAlert
 
-# This test hangs under Valgrind;
-# See http://crbug.com/25917 and http://crbug.com/22608
-WorkerTest.LimitTotal
-
-# Occasionally fails under valgrind (http://crbug.com/28445)
-WorkerTest.SingleWorker
-WorkerTest.WorkerXhrHttpLayoutTests
-
-# Fails due to mmap failure (http://crbug.com/28439)
-WorkerTest.SingleSharedWorker
-WorkerTest.MultipleSharedWorkers
-WorkerTest.LimitPerPage
-
 # Don't run reference tests under Valgrind
 # On the Mac, they don't have symbols, even, so suppressions don't work
 # They probably don't have ThreadSanitizer annotations TODO(timurrrr): check
@@ -52,6 +39,62 @@ AutomationProxyTest.NavigateToURLWithTimeout1
 AutomationProxyTest.NavigateToURLWithTimeout2
 # See http://crbug.com/29586.
 NewTabUITest.ChromeInternalLoadsNTP
-# See http://crbug.com/29592, http://crbug.com/30360.
-WorkerTest.MultipleWorkers
 
+##############################################################################
+# We have a special section dedicated to WorkerTest because it's so
+# problematic. Please check here before adding duplicate test exclusions to
+# ui_tests.gtest_linux.txt and ui_tests.gtest_mac.txt.
+#
+# As of 2010/03/18, thestig is disabling all WorkerTests and listing them
+# individually below. Please test them / fix them under Valgrind, and
+# re-enable them one at a time.
+#
+# See: http://crbug.com/38575
+##############################################################################
+
+WorkerTest.IncognitoSharedWorkers
+WorkerTest.FLAKY_IncognitoSharedWorkers
+WorkerTest.LimitPerPage
+WorkerTest.LimitTotal
+WorkerTest.FLAKY_LimitTotal
+WorkerTest.MessagePorts
+WorkerTest.FLAKY_MessagePorts
+WorkerTest.MultipleSharedWorkers
+WorkerTest.MultipleTabsQueuedSharedWorker
+WorkerTest.MultipleWorkers
+WorkerTest.QueuedSharedWorkerShutdown
+WorkerTest.QueuedSharedWorkerStartedFromOtherTab
+WorkerTest.SharedWorkerFastLayoutTests
+WorkerTest.FLAKY_SharedWorkerFastLayoutTests
+WorkerTest.SharedWorkerHttpAuth
+WorkerTest.SingleSharedWorker
+WorkerTest.SingleWorker
+WorkerTest.StressJSExecution
+WorkerTest.UseMachineStack
+WorkerTest.WorkerCall
+WorkerTest.WorkerClonePort
+WorkerTest.WorkerClose
+WorkerTest.WorkerCloseFast
+WorkerTest.WorkerConstructor
+WorkerTest.WorkerContextGc
+WorkerTest.WorkerContextMultiPort
+WorkerTest.WorkerEventListener
+WorkerTest.WorkerGC
+WorkerTest.WorkerHttpAuth
+WorkerTest.WorkerHttpLayoutTests
+WorkerTest.FLAKY_WorkerHttpLayoutTests
+WorkerTest.WorkerLifecycle
+WorkerTest.WorkerLocation
+WorkerTest.WorkerMapGc
+WorkerTest.WorkerMessagePort
+WorkerTest.WorkerMessagePortGC
+WorkerTest.WorkerMultiPort
+WorkerTest.WorkerNavigator
+WorkerTest.WorkerReplaceGlobalConstructor
+WorkerTest.WorkerReplaceSelf
+WorkerTest.WorkerScriptError
+WorkerTest.WorkerTerminate
+WorkerTest.WorkerTimeout
+WorkerTest.WorkerWebSocketLayoutTests
+WorkerTest.FLAKY_WorkerWebSocketLayoutTests
+WorkerTest.WorkerXhrHttpLayoutTests

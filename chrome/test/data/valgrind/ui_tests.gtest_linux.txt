@@ -5,36 +5,3 @@ ChromeMainTest.AppLaunch
 MetricsServiceTest.CrashRenderers
 # See http://crbug.com/29587.
 UnloadTest.CrossSiteInfiniteBeforeUnloadSync
-# See http://crbug.com/29592.
-WorkerTest.SharedWorkerFastLayoutTests
-WorkerTest.FLAKY_SharedWorkerFastLayoutTests
-WorkerTest.IncognitoSharedWorkers
-WorkerTest.WorkerHttpLayoutTests
-
-# Fails due to mmap failure (http://crbug.com/28439)
-WorkerTest.FLAKY_WorkerWebSocketLayoutTests
-WorkerTest.SharedWorkerHttpAuth
-WorkerTest.WorkerHttpAuth
-WorkerTest.WorkerClose
-WorkerTest.FLAKY_WorkerHttpLayoutTests
-WorkerTest.QueuedSharedWorkerShutdown
-WorkerTest.MultipleTabsQueuedSharedWorker
-WorkerTest.QueuedSharedWorkerStartedFromOtherTab
-WorkerTest.FLAKY_IncognitoSharedWorkers
-WorkerTest.WorkerLocation
-WorkerTest.WorkerNavigator
-WorkerTest.WorkerTerminate
-WorkerTest.UseMachineStack
-WorkerTest.WorkerContextGc
-WorkerTest.WorkerMessagePort
-WorkerTest.WorkerReplaceGlobalConstructor
-WorkerTest.WorkerTimeout
-WorkerTest.WorkerCall
-WorkerTest.WorkerEventListener
-WorkerTest.WorkerMessagePortGC
-WorkerTest.WorkerReplaceSelf
-WorkerTest.WorkerCloseFast
-WorkerTest.WorkerGC
-WorkerTest.WorkerMultiPort
-WorkerTest.WorkerScriptError
-WorkerTest.WorkerMapGc

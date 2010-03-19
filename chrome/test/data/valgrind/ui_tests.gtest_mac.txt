@@ -1,6 +1,3 @@
-# See http://crbug.com/36161
-WorkerTest.WorkerCloseFast
-WorkerTest.WorkerScriptError
 # See http://crbug.com/36163
 LoginPromptTest.FLAKY_TestTwoAuths
 
@@ -44,14 +41,6 @@ SessionHistoryTest.FLAKY_LocationReplace
 # See http://crbug.com/30367.
 NewTabUITest.NTPHasThumbnails
 NewTabUITest.UpdateUserPrefsVersion
-# See http://crbug.com/30360.
-WorkerTest.FLAKY_LimitTotal
-WorkerTest.LimitPerPage
-WorkerTest.WorkerXhrHttpLayoutTests
-WorkerTest.FLAKY_SharedWorkerFastLayoutTests
-# See http://crbug.com/28439
-WorkerTest.WorkerHttpAuth
-WorkerTest.SharedWorkerHttpAuth
 
 # Appears to time out on valgrind.
 # http://crbug.com/32818
@@ -77,12 +66,3 @@ NPAPITester.ScheduleTimer
 NPAPIVisiblePluginTester.SelfDeletePluginInNewStream
 NPAPIVisiblePluginTester.MultipleInstancesSyncCalls
 NPAPIVisiblePluginTester.PluginConvertPointTest
-
-# See http://crbug.com/35224
-WorkerTest.MultipleTabsQueuedSharedWorker
-WorkerTest.QueuedSharedWorkerStartedFromOtherTab
-WorkerTest.QueuedSharedWorkerShutdown
-WorkerTest.WorkerClose
-
-# Valgrind started hanging due to WorkerTests. See http://crbug.com/37431
-WorkerTest.*
