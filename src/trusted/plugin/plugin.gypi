@@ -54,6 +54,7 @@
       'srpc/desc_based_handle.cc',
       'srpc/closure.cc',
       'srpc/method_map.cc',
+      'srpc/utility.cc',
       # generic URL-origin / same-domain handling
       'origin.cc',
     ],
