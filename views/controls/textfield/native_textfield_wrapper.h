@@ -61,6 +61,9 @@ class NativeTextfieldWrapper {
   // Updates the font used to render text in the native text field.
   virtual void UpdateFont() = 0;
 
+  // Updates the visibility of the text in the native text field.
+  virtual void UpdateIsPassword() = 0;
+
   // Updates the enabled state of the native text field.
   virtual void UpdateEnabled() = 0;
 
@@ -85,4 +88,4 @@ class NativeTextfieldWrapper {
 
 }  // namespace views
 
-#endif  // #ifndef VIEWS_CONTROLS_TEXTFIELD_NATIVE_TEXTFIELD_WRAPPER_H_
+#endif  // VIEWS_CONTROLS_TEXTFIELD_NATIVE_TEXTFIELD_WRAPPER_H_

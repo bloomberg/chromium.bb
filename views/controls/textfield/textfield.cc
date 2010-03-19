@@ -8,6 +8,8 @@
 #include <gdk/gdkkeysyms.h>
 #endif
 
+#include <string>
+
 #include "base/keyboard_codes.h"
 #include "base/string_util.h"
 #include "gfx/insets.h"
@@ -87,6 +89,15 @@ void Textfield::SetReadOnly(bool read_only) {
 
 bool Textfield::IsPassword() const {
   return style_ & STYLE_PASSWORD;
+}
+
+void Textfield::SetPassword(bool password) {
+  if (password)
+    style_ = static_cast<StyleFlags>(style_ | STYLE_PASSWORD);
+  else
+    style_ = static_cast<StyleFlags>(style_ & ~STYLE_PASSWORD);
+  if (native_wrapper_)
+    native_wrapper_->UpdateIsPassword();
 }
 
 bool Textfield::IsMultiLine() const {
@@ -295,6 +306,7 @@ void Textfield::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
     native_wrapper_->UpdateFont();
     native_wrapper_->UpdateEnabled();
     native_wrapper_->UpdateBorder();
+    native_wrapper_->UpdateIsPassword();
 
 #if defined(OS_WIN)
     // TODO(beng): remove this once NativeTextfieldWin subclasses

@@ -204,6 +204,11 @@ void NativeTextfieldWin::UpdateFont() {
   UpdateTextColor();
 }
 
+void NativeTextfieldWin::UpdateIsPassword() {
+  // TODO: Need to implement for Windows.
+  NOTIMPLEMENTED();
+}
+
 void NativeTextfieldWin::UpdateEnabled() {
   SendMessage(m_hWnd, WM_ENABLE, textfield_->IsEnabled(), 0);
 }

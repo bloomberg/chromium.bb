@@ -129,6 +129,13 @@ void NativeTextfieldGtk::UpdateFont() {
   pango_font_description_free(pfd);
 }
 
+void NativeTextfieldGtk::UpdateIsPassword() {
+  if (!native_view())
+    return;
+  gtk_entry_set_visibility(GTK_ENTRY(native_view()),
+                           !textfield_->IsPassword());
+}
+
 void NativeTextfieldGtk::UpdateEnabled() {
   if (!native_view())
     return;
@@ -234,11 +241,8 @@ gboolean NativeTextfieldGtk::OnChanged() {
 
 void NativeTextfieldGtk::CreateNativeControl() {
   NativeControlCreated(gtk_entry_new());
-  if (textfield_->IsPassword()) {
-    gtk_entry_set_invisible_char(GTK_ENTRY(native_view()),
-                                 static_cast<gunichar>(kPasswordChar));
-    gtk_entry_set_visibility(GTK_ENTRY(native_view()), false);
-  }
+  gtk_entry_set_invisible_char(GTK_ENTRY(native_view()),
+                               static_cast<gunichar>(kPasswordChar));
 }
 
 void NativeTextfieldGtk::NativeControlCreated(GtkWidget* widget) {

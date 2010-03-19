@@ -111,8 +111,9 @@ class Textfield : public View {
   bool read_only() const { return read_only_; }
   void SetReadOnly(bool read_only);
 
-  // Returns true if the Textfield is a password field.
+  // Gets/Sets whether or not this Textfield is a password field.
   bool IsPassword() const;
+  void SetPassword(bool password);
 
   // Whether the text field is multi-line or not, must be set when the text
   // field is created, using StyleFlags.
