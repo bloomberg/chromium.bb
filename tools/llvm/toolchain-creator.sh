@@ -135,7 +135,7 @@ ClearInstallDir() {
 CreateTarBall() {
   local tarball=$1
   Banner "creating tar ball ${tarball}"
-  tar jcf ${tarball} -C ${INSTALL_ROOT} .
+  tar zcf ${tarball} -C ${INSTALL_ROOT} .
 }
 
 

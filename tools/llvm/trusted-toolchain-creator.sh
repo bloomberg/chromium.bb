@@ -99,7 +99,7 @@ ClearInstallDir() {
 CreateTarBall() {
   local tarball=$1
   Banner "creating tar ball ${tarball}"
-  tar cfj ${tarball} -C ${INSTALL_ROOT} .
+  tar cfz ${tarball} -C ${INSTALL_ROOT} .
 }
 
 
