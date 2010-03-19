@@ -145,6 +145,10 @@ function computeDisplayResults(data) {
     var resultList = obj.totalResults;
     obj.mean = Array.avg(resultList);
     obj.stddev = Array.stddev(resultList);
+    obj.stderr = obj.stddev / Math.sqrt(obj.iterations);
+    var ci = 1.96 * obj.stderr;
+    obj.cihigh = obj.mean + ci;
+    obj.cilow = obj.mean - ci;
     obj.min = Array.min(resultList);
     obj.max = Array.max(resultList);
     obj.readbps = obj.bytesRead * 8 / obj.totalTime;
@@ -391,6 +395,9 @@ Use New Tabs Per Page?<input id="newtabs" type="checkbox">
   <th width=50>paint mean</th>
   <th width=50>total mean</th>
   <th width=50>stddev</th>
+  <th width=50>stderr</th>
+  <th width=50>95% CI-low</th>
+  <th width=50>95% CI-high</th>
   <th width=50>min</th>
   <th width=50>max</th>
   <th width=50># Requests</th>
@@ -433,6 +440,9 @@ Use New Tabs Per Page?<input id="newtabs" type="checkbox">
   <td class="avg" jseval="val = paintMean.toFixed(1)" jscontent="val"></td>
   <td class="avg" jseval="val = mean.toFixed(1)" jscontent="val"></td>
   <td class="avg" jseval="val = stddev.toFixed(1)" jscontent="val"></td>
+  <td class="avg" jseval="val = stderr.toFixed(1)" jscontent="val"></td>
+  <td class="avg" jseval="val = cilow.toFixed(1)" jscontent="val"></td>
+  <td class="avg" jseval="val = cihigh.toFixed(1)" jscontent="val"></td>
   <td class="avg" jseval="val = min.toFixed(1)" jscontent="val"></td>
   <td class="avg" jseval="val = max.toFixed(1)" jscontent="val"></td>
   <td class="avg" jseval="val = displayRequests" jscontent="val"></td>
