@@ -65,7 +65,8 @@ class ExistingUserController : public WmMessageListener::Observer,
 
   // LoginStatusConsumer:
   virtual void OnLoginFailure(const std::string error);
-  virtual void OnLoginSuccess(const std::string username);
+  virtual void OnLoginSuccess(const std::string username,
+                              std::vector<std::string> cookies);
 
   // Bounds of the background window.
   const gfx::Rect background_bounds_;

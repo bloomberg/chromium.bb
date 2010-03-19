@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_UTILS_H_
 
 #include <string>
+#include <vector>
 
 class Authenticator;
 class LoginStatusConsumer;
@@ -20,7 +21,8 @@ namespace login_utils {
 
 // Invoked after the user has successfully logged in. This launches a browser
 // and does other bookkeeping after logging in.
-void CompleteLogin(const std::string& username);
+void CompleteLogin(const std::string& username,
+                   std::vector<std::string> cookies);
 
 // Creates and returns the authenticator to use. The caller owns the returned
 // Authenticator and must delete it when done.

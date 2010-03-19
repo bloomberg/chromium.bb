@@ -79,6 +79,7 @@ LoginManagerView::LoginManagerView(ScreenObserver* observer)
     authenticator_.reset(new StubAuthenticator(this));
   else
     authenticator_.reset(login_utils::CreateAuthenticator(this));
+
 }
 
 LoginManagerView::~LoginManagerView() {
@@ -334,12 +335,13 @@ void LoginManagerView::OnLoginFailure(const std::string error) {
   // TODO(someone): get |error| onto the UI somehow?
 }
 
-void LoginManagerView::OnLoginSuccess(const std::string username) {
+void LoginManagerView::OnLoginSuccess(const std::string username,
+                                      std::vector<std::string> cookies) {
   // TODO(cmasone): something sensible if errors occur.
   if (observer_) {
     observer_->OnExit(ScreenObserver::LOGIN_SIGN_IN_SELECTED);
   }
-  login_utils::CompleteLogin(username);
+  login_utils::CompleteLogin(username, cookies);
 }
 
 void LoginManagerView::ShowError(int error_id) {

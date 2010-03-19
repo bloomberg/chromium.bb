@@ -144,13 +144,14 @@ void ExistingUserController::OnLoginFailure(const std::string error) {
   chromeos::WmIpc::instance()->SendMessage(message);
 }
 
-void ExistingUserController::OnLoginSuccess(const std::string username) {
+void ExistingUserController::OnLoginSuccess(const std::string username,
+                                            std::vector<std::string> cookies) {
   // Hide the login windows now.
   STLDeleteElements(&controllers_);
 
   background_window_->Close();
 
-  chromeos::login_utils::CompleteLogin(username);
+  chromeos::login_utils::CompleteLogin(username, cookies);
 
   // Delay deletion as we're on the stack.
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);

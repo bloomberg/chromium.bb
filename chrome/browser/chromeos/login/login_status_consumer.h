@@ -15,7 +15,8 @@ class LoginStatusConsumer {
   virtual ~LoginStatusConsumer() {}
   // These copy data in, so as to avoid potential object lifetime problems.
   virtual void OnLoginFailure(const std::string error) = 0;
-  virtual void OnLoginSuccess(const std::string username) = 0;
+  virtual void OnLoginSuccess(const std::string username,
+                              std::vector<std::string> cookies) = 0;
 };
 
 

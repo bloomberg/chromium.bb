@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_LOGIN_MANAGER_VIEW_H_
 
 #include <string>
+#include <vector>
 
 #include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
@@ -70,7 +71,8 @@ class LoginManagerView : public views::View,
 
   // Overriden from LoginStatusConsumer.
   virtual void OnLoginFailure(const std::string error);
-  virtual void OnLoginSuccess(const std::string username);
+  virtual void OnLoginSuccess(const std::string username,
+                              std::vector<std::string> cookies);
 
  protected:
   // views::View overrides:

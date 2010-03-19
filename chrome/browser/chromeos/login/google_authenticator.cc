@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <string>
 #include <vector>
+#include <time.h>
 
 #include "base/logging.h"
 #include "base/file_path.h"
@@ -14,9 +15,12 @@
 #include "base/string_util.h"
 #include "base/third_party/nss/blapi.h"
 #include "base/third_party/nss/sha256.h"
+#include "base/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
+#include "chrome/browser/chromeos/login/client_login_response_handler.h"
+#include "chrome/browser/chromeos/login/issue_response_handler.h"
 #include "chrome/browser/chromeos/login/google_authenticator.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
@@ -28,11 +32,11 @@
 #include "net/url_request/url_request_status.h"
 #include "third_party/libjingle/files/talk/base/urlencode.h"
 
+using base::Time;
+using base::TimeDelta;
 using namespace chromeos;
 using namespace file_util;
 
-const char GoogleAuthenticator::kClientLoginUrl[] =
-    "https://www.google.com/accounts/ClientLogin";
 const char GoogleAuthenticator::kFormat[] =
     "Email=%s&"
     "Passwd=%s&"
@@ -42,6 +46,7 @@ const char GoogleAuthenticator::kFormat[] =
 const char GoogleAuthenticator::kCookiePersistence[] = "true";
 const char GoogleAuthenticator::kAccountType[] = "HOSTED_OR_GOOGLE";
 const char GoogleAuthenticator::kSource[] = "chromeos";
+const int GoogleAuthenticator::kHttpSuccess = 200;
 
 // Chromium OS system salt stored here
 const char GoogleAuthenticator::kSystemSalt[] = "/home/.shadow/salt";
@@ -55,12 +60,11 @@ bool GoogleAuthenticator::Authenticate(const std::string& username,
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   Profile* profile = profile_manager->GetDefaultProfile(user_data_dir);
-  URLRequestContextGetter *getter =
-      profile->GetOffTheRecordProfile()->GetRequestContext();
-  fetcher_.reset(new URLFetcher(GURL(kClientLoginUrl),
+  getter_ = profile->GetOffTheRecordProfile()->GetRequestContext();
+  fetcher_.reset(new URLFetcher(GURL(AuthResponseHandler::kClientLoginUrl),
                                 URLFetcher::POST,
                                 this));
-  fetcher_->set_request_context(getter);
+  fetcher_->set_request_context(getter_);
   fetcher_->set_load_flags(net::LOAD_DO_NOT_SEND_COOKIES);
   // TODO(cmasone): be more careful about zeroing memory that stores
   // the user's password.
@@ -72,6 +76,10 @@ bool GoogleAuthenticator::Authenticate(const std::string& username,
                                   kSource);
   fetcher_->set_upload_data("application/x-www-form-urlencoded", body);
   fetcher_->Start();
+  if (!client_login_handler_.get())
+    client_login_handler_.reset(new ClientLoginResponseHandler(getter_));
+  if (!issue_handler_.get())
+    issue_handler_.reset(new IssueResponseHandler(getter_));
   username_.assign(username);
   StoreHashedPassword(password);
   return true;
@@ -84,27 +92,32 @@ void GoogleAuthenticator::OnURLFetchComplete(const URLFetcher* source,
                                              const ResponseCookies& cookies,
                                              const std::string& data) {
   if (status.is_success() && response_code == 200) {
-    LOG(INFO) << "ClientLogin successful!";
+    if (client_login_handler_->CanHandle(url)) {
+      fetcher_.reset(client_login_handler_->Handle(data, this));
+    } else if (issue_handler_->CanHandle(url)) {
+      fetcher_.reset(issue_handler_->Handle(data, this));
+    } else {
+      LOG(INFO) << "Online login successful!";
+      ChromeThread::PostTask(
+          ChromeThread::UI, FROM_HERE,
+          NewRunnableFunction(GoogleAuthenticator::OnLoginSuccess,
+                              consumer_,
+                              library_,
+                              username_,
+                              ascii_hash_,
+                              cookies));
+    }
+  } else if (!status.is_success()) {
+    LOG(INFO) << "Network fail";
+    // The fetch failed for network reasons, try offline login.
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
-        NewRunnableFunction(GoogleAuthenticator::OnLoginSuccess,
+        NewRunnableFunction(GoogleAuthenticator::CheckOffline,
                             consumer_,
                             library_,
                             username_,
                             ascii_hash_,
-                            data));
-  } else if (!status.is_success() &&
-             library_->CheckKey(username_.c_str(), ascii_hash_.c_str())) {
-    // The fetch didn't succeed, but offline login did.
-    LOG(INFO) << "Offline login successful!";
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
-        NewRunnableFunction(GoogleAuthenticator::OnLoginSuccess,
-                            consumer_,
-                            library_,
-                            username_,
-                            ascii_hash_,
-                            data));
+                            status));
   } else {
     std::string error;
     if (status.is_success()) {
@@ -119,30 +132,46 @@ void GoogleAuthenticator::OnURLFetchComplete(const URLFetcher* source,
         NewRunnableFunction(
             GoogleAuthenticator::OnLoginFailure, consumer_, error));
   }
-  fetcher_.reset(NULL);
 }
 
 // static
-void GoogleAuthenticator::OnLoginSuccess(
-    LoginStatusConsumer* consumer,
-    CryptohomeLibrary* library,
-    const std::string& username,
-    const std::string& passhash,
-    const std::string& client_login_data) {
-  bool success = library->Mount(username.c_str(), passhash.c_str());
+void GoogleAuthenticator::OnLoginSuccess(LoginStatusConsumer* consumer,
+                                         CryptohomeLibrary* library,
+                                         const std::string& username,
+                                         const std::string& passhash,
+                                         const ResponseCookies& cookies) {
+  if (library->Mount(username.c_str(), passhash.c_str()))
+    consumer->OnLoginSuccess(username, cookies);
+  else
+    GoogleAuthenticator::OnLoginFailure(consumer, "Could not mount cryptohome");
+}
 
-  // Also, convert client_login_data into legit cookies.
-
-  if (success) {
-    consumer->OnLoginSuccess(username);
+// static
+void GoogleAuthenticator::CheckOffline(LoginStatusConsumer* consumer,
+                                       CryptohomeLibrary* library,
+                                       const std::string& username,
+                                       const std::string& passhash,
+                                       const URLRequestStatus& status) {
+  if (library->CheckKey(username.c_str(), passhash.c_str())) {
+    // The fetch didn't succeed, but offline login did.
+    LOG(INFO) << "Offline login successful!";
+    ResponseCookies cookies;
+    GoogleAuthenticator::OnLoginSuccess(consumer,
+                                        library,
+                                        username,
+                                        passhash,
+                                        cookies);
   } else {
-    GoogleAuthenticator::OnLoginFailure(consumer, client_login_data);
+    // We couldn't hit the network, and offline login failed.
+    GoogleAuthenticator::OnLoginFailure(consumer, strerror(status.os_error()));
   }
 }
 
 // static
 void GoogleAuthenticator::OnLoginFailure(LoginStatusConsumer* consumer,
                                          const std::string& data) {
+  // TODO(cmasone): what can we do to expose these OS/server-side error strings
+  // in an internationalizable way?
   consumer->OnLoginFailure(data);
 }
 

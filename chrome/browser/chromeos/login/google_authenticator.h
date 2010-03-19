@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
+#include "chrome/browser/chromeos/login/auth_response_handler.h"
 #include "chrome/browser/net/url_fetcher.h"
 
 class LoginStatusConsumer;
@@ -25,17 +26,25 @@ class GoogleAuthenticator : public Authenticator,
                             public URLFetcher::Delegate {
  public:
   GoogleAuthenticator(LoginStatusConsumer* consumer,
-                      chromeos::CryptohomeLibrary* library)
+                      chromeos::CryptohomeLibrary* library,
+                      AuthResponseHandler* cl_handler,
+                      AuthResponseHandler* i_handler)
       : Authenticator(consumer),
         library_(library),
-        fetcher_(NULL) {
+        fetcher_(NULL),
+        getter_(NULL),
+        client_login_handler_(cl_handler),
+        issue_handler_(i_handler) {
     if (!library && chromeos::CrosLibrary::EnsureLoaded())
       library_ = chromeos::CryptohomeLibrary::Get();
   }
 
   explicit GoogleAuthenticator(LoginStatusConsumer* consumer)
       : Authenticator(consumer),
-        fetcher_(NULL) {
+        fetcher_(NULL),
+        getter_(NULL),
+        client_login_handler_(NULL),
+        issue_handler_(NULL) {
     CHECK(chromeos::CrosLibrary::EnsureLoaded());
     library_ = chromeos::CryptohomeLibrary::Get();
   }
@@ -43,7 +52,11 @@ class GoogleAuthenticator : public Authenticator,
   virtual ~GoogleAuthenticator() {}
 
   // Given a |username| and |password|, this method attempts to authenticate to
-  // the Google accounts servers.
+  // the Google accounts servers.  The ultimate result is either a callback to
+  // consumer_->OnLoginSuccess() with the |username| and a vector of
+  // authentication cookies or a callback to consumer_->OnLoginFailure() with
+  // an error message.
+  //
   // Returns true if the attempt gets sent successfully and false if not.
   bool Authenticate(const std::string& username,
                     const std::string& password);
@@ -59,6 +72,9 @@ class GoogleAuthenticator : public Authenticator,
                                   const ResponseCookies& cookies,
                                   const std::string& data);
 
+  // Returns the ascii encoding of the system salt.
+  std::string SaltAsAscii();
+
   // I need these static methods so I can PostTasks that use methods
   // of sublcasses of LoginStatusConsumer.  I can't seem to make
   // RunnableMethods out of methods belonging to subclasses without referring
@@ -68,7 +84,12 @@ class GoogleAuthenticator : public Authenticator,
                              chromeos::CryptohomeLibrary* library,
                              const std::string& username,
                              const std::string& passhash,
-                             const std::string& client_login_data);
+                             const ResponseCookies& cookies);
+  static void CheckOffline(LoginStatusConsumer* consumer,
+                           chromeos::CryptohomeLibrary* library,
+                           const std::string& username,
+                           const std::string& passhash,
+                           const URLRequestStatus& status);
   static void OnLoginFailure(LoginStatusConsumer* consumer,
                              const std::string& data);
 
@@ -76,23 +97,25 @@ class GoogleAuthenticator : public Authenticator,
   void set_system_salt(const std::vector<unsigned char>& fake_salt) {
     system_salt_ = fake_salt;
   }
+  void set_username(const std::string& fake_user) { username_ = fake_user; }
   void set_password_hash(const std::string& fake_hash) {
     ascii_hash_ = fake_hash;
   }
 
-  // Returns the ascii encoding of the system salt.
-  std::string SaltAsAscii();
  private:
   static const char kCookiePersistence[];
   static const char kAccountType[];
   static const char kSource[];
-  static const char kClientLoginUrl[];
   static const char kFormat[];
+  static const int kHttpSuccess;
   static const char kSystemSalt[];
   static const char kOpenSSLMagic[];
 
   chromeos::CryptohomeLibrary* library_;
   scoped_ptr<URLFetcher> fetcher_;
+  URLRequestContextGetter* getter_;
+  scoped_ptr<AuthResponseHandler> client_login_handler_;
+  scoped_ptr<AuthResponseHandler> issue_handler_;
   std::vector<unsigned char> system_salt_;
   std::string username_;
   std::string ascii_hash_;

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <string>
+#include <vector>
 
 #include "base/logging.h"
 #include "base/path_service.h"
@@ -27,7 +28,7 @@ bool PamGoogleAuthenticator::Authenticate(const std::string& username,
               child_exit_code == 0);
 
   if (ret)
-    consumer_->OnLoginSuccess(username);
+    consumer_->OnLoginSuccess(username, std::vector<std::string>());
   else
     consumer_->OnLoginFailure("");
   return ret;

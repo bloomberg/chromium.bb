@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_AUTHENTICATOR_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_AUTHENTICATOR_H_
 
+#include <vector>
+
 #include "base/logging.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
 
@@ -42,7 +44,7 @@ class StubAuthenticator : public Authenticator {
   // Returns true after calling OnLoginSuccess().
   virtual bool Authenticate(const std::string& username,
                             const std::string& password) {
-    consumer_->OnLoginSuccess(username);
+    consumer_->OnLoginSuccess(username, std::vector<std::string>());
     return true;
   }
 

@@ -68,6 +68,7 @@ bool ExternalCookieHandler::HandleCookies(net::CookieStore *cookie_store) {
     // it in to the cookie jar.
     std::string cookie_line = ReadLine(kChunkSize);
     while (!cookie_line.empty()) {
+      LOG(WARNING) << cookie_line;
       if (!cookie_store->SetCookieWithOptions(url, cookie_line, options))
         return false;
       cookie_line = ReadLine(kChunkSize);
