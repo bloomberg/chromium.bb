@@ -57,13 +57,15 @@ void PluginList::GetPluginDirectories(std::vector<FilePath>* plugin_dirs) {
 }
 
 void PluginList::LoadPluginsFromDir(const FilePath &path,
-                                    std::vector<WebPluginInfo>* plugins) {
+                                    std::vector<WebPluginInfo>* plugins,
+                                    std::set<FilePath>* visited_plugins) {
   file_util::FileEnumerator enumerator(path,
                                        false, // not recursive
                                        file_util::FileEnumerator::DIRECTORIES);
   for (FilePath path = enumerator.Next(); !path.value().empty();
        path = enumerator.Next()) {
     LoadPlugin(path, plugins);
+    visited_plugins->insert(path);
   }
 }
 

@@ -176,6 +176,7 @@ void PluginList::LoadPlugins(bool refresh) {
   base::TimeTicks start_time = base::TimeTicks::Now();
 
   std::vector<WebPluginInfo> new_plugins;
+  std::set<FilePath> visited_plugins;
 
   std::vector<FilePath> directories_to_scan;
   GetPluginDirectories(&directories_to_scan);
@@ -189,15 +190,20 @@ void PluginList::LoadPlugins(bool refresh) {
     LoadPlugin(internal_plugins[i].path, &new_plugins);
   }
 
-  for (size_t i = 0; i < extra_plugin_paths.size(); ++i)
-    LoadPlugin(extra_plugin_paths[i], &new_plugins);
+  for (size_t i = 0; i < extra_plugin_paths.size(); ++i) {
+    const FilePath& path = extra_plugin_paths[i];
+    if (visited_plugins.find(path) != visited_plugins.end())
+      continue;
+    LoadPlugin(path, &new_plugins);
+    visited_plugins.insert(path);
+  }
 
   for (size_t i = 0; i < extra_plugin_dirs.size(); ++i) {
-    LoadPluginsFromDir(extra_plugin_dirs[i], &new_plugins);
+    LoadPluginsFromDir(extra_plugin_dirs[i], &new_plugins, &visited_plugins);
   }
 
   for (size_t i = 0; i < directories_to_scan.size(); ++i) {
-    LoadPluginsFromDir(directories_to_scan[i], &new_plugins);
+    LoadPluginsFromDir(directories_to_scan[i], &new_plugins, &visited_plugins);
   }
 
   // Load the default plugin last.

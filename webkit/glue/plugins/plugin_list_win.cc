@@ -244,7 +244,8 @@ void PluginList::GetPluginDirectories(std::vector<FilePath>* plugin_dirs) {
 }
 
 void PluginList::LoadPluginsFromDir(const FilePath &path,
-                                    std::vector<WebPluginInfo>* plugins) {
+                                    std::vector<WebPluginInfo>* plugins,
+                                    std::set<FilePath>* visited_plugins) {
   WIN32_FIND_DATA find_file_data;
   HANDLE find_handle;
 
@@ -260,6 +261,7 @@ void PluginList::LoadPluginsFromDir(const FilePath &path,
     if (!(find_file_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
       FilePath filename = path.Append(find_file_data.cFileName);
       LoadPlugin(filename, plugins);
+      visited_plugins->insert(filename);
     }
   } while (FindNextFile(find_handle, &find_file_data) != 0);
 

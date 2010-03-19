@@ -7,6 +7,7 @@
 
 #include <string>
 #include <vector>
+#include <set>
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
@@ -143,9 +144,13 @@ class PluginList {
   // Load all plugins from the default plugins directory
   void LoadPlugins(bool refresh);
 
-  // Load all plugins from a specific directory
+  // Load all plugins from a specific directory.
+  // |plugins| is updated with loaded plugin information.
+  // |visited_plugins| is updated with paths to all plugins that were considered
+  //   (including those we didn't load)
   void LoadPluginsFromDir(const FilePath& path,
-                          std::vector<WebPluginInfo>* plugins);
+                          std::vector<WebPluginInfo>* plugins,
+                          std::set<FilePath>* visited_plugins);
 
   // Returns true if we should load the given plugin, or false otherwise.
   // plugins is the list of plugins we have crawled in the current plugin

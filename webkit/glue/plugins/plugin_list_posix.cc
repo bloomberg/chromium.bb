@@ -115,15 +115,16 @@ void PluginList::GetPluginDirectories(std::vector<FilePath>* plugin_dirs) {
 #endif
 }
 
-void PluginList::LoadPluginsFromDir(const FilePath& path,
-                                    std::vector<WebPluginInfo>* plugins) {
+void PluginList::LoadPluginsFromDir(const FilePath& dir_path,
+                                    std::vector<WebPluginInfo>* plugins,
+                                    std::set<FilePath>* visited_plugins) {
   // See ScanPluginsDirectory near
   // http://mxr.mozilla.org/firefox/source/modules/plugin/base/src/nsPluginHostImpl.cpp#5052
 
   // Construct and stat a list of all filenames under consideration, for
   // later sorting by mtime.
   FileTimeList files;
-  file_util::FileEnumerator enumerator(path,
+  file_util::FileEnumerator enumerator(dir_path,
                                        false,  // not recursive
                                        file_util::FileEnumerator::FILES);
   for (FilePath path = enumerator.Next(); !path.value().empty();
@@ -139,6 +140,12 @@ void PluginList::LoadPluginsFromDir(const FilePath& path,
     FilePath orig_path = path;
     file_util::AbsolutePath(&path);
     PLUG_LOG << "Resolved " << orig_path.value() << " -> " << path.value();
+
+    if (visited_plugins->find(path) != visited_plugins->end()) {
+      PLUG_LOG << "Skipping duplicate instance of " << path.value();
+      continue;
+    }
+    visited_plugins->insert(path);
 
     // Flash stops working if the containing directory involves 'netscape'.
     // No joke.  So use the other path if it's better.
@@ -160,19 +167,6 @@ void PluginList::LoadPluginsFromDir(const FilePath& path,
     file_util::FileInfo info;
     if (!file_util::GetFileInfo(path, &info))
       continue;
-
-    // Skip duplicates of the same file in our list.
-    bool skip = false;
-    for (size_t i = 0; i < plugins->size(); ++i) {
-      if (plugins->at(i).path == path) {
-        skip = true;
-        break;
-      }
-    }
-    if (skip) {
-      PLUG_LOG << "Skipping duplicate instance of " << path.value();
-      continue;
-    }
 
     files.push_back(std::make_pair(path, info.last_modified));
   }
