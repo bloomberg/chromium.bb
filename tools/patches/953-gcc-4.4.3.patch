@@ -1,0 +1,19 @@
+write tableswitch relocation data to the .rodata section
+
+by default gcc-4.4.x would put it to .text section, which does not pass the
+NaCl validator.
+diff -uNr gcc-4.4.3.orig/gcc/config/i386/nacl.h gcc-4.4.3/gcc/config/i386/nacl.h
+--- gcc-4.4.3.orig/gcc/config/i386/nacl.h	2010-03-18 21:51:51.000000000 +0000
++++ gcc-4.4.3/gcc/config/i386/nacl.h	2010-03-18 21:52:38.000000000 +0000
+@@ -229,6 +229,11 @@
+ #undef TARGET_SUBTARGET64_DEFAULT
+ #define TARGET_SUBTARGET64_DEFAULT 0
+ 
++/* Configure script incorrectly detects this GAS capability on x86-64 and hence
++ * forces JUMP_TABLES_IN_TEXT_SECTION which cannot validate in NaCl. */
++#undef HAVE_AS_GOTOFF_IN_DATA
++#define HAVE_AS_GOTOFF_IN_DATA 1
++
+ /* NaCl reserves R15 and makes RBP special in x86-64 mode */
+ #undef FIXED_REGISTERS
+ #define FIXED_REGISTERS						\
