@@ -267,7 +267,6 @@ void InterstitialPage::Observe(NotificationType type,
       // request won't be blocked if the same RenderViewHost was used for the
       // new navigation.
       Disable();
-      DCHECK(!resource_dispatcher_host_notified_);
       TakeActionOnResourceDispatcher(CANCEL);
       break;
     case NotificationType::RENDER_WIDGET_HOST_DESTROYED:
