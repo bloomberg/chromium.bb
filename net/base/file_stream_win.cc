@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
+// Copyright (c) 2008 The Chromium Authors. All rights reserved.  Use of this
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
@@ -120,10 +120,16 @@ FileStream::FileStream()
       open_flags_(0) {
 }
 
-FileStream::FileStream(base::PlatformFile file, int open_flags)
-    : file_(INVALID_HANDLE_VALUE),
-      open_flags_(0) {
-  Open(file, open_flags);
+FileStream::FileStream(base::PlatformFile file, int flags)
+    : file_(file),
+      open_flags_(flags) {
+  // If the file handle is opened with base::PLATFORM_FILE_ASYNC, we need to
+  // make sure we will perform asynchronous File IO to it.
+  if (flags & base::PLATFORM_FILE_ASYNC) {
+    async_context_.reset(new AsyncContext(this));
+    MessageLoopForIO::current()->RegisterIOHandler(file_,
+                                                   async_context_.get());
+  }
 }
 
 FileStream::~FileStream() {
@@ -141,13 +147,6 @@ void FileStream::Close() {
   }
 }
 
-void FileStream::Release() {
-  if (file_ != INVALID_HANDLE_VALUE)
-    CancelIo(file_);
-  async_context_.reset();
-  file_ = INVALID_HANDLE_VALUE;
-}
-
 int FileStream::Open(const FilePath& path, int open_flags) {
   if (IsOpen()) {
     DLOG(FATAL) << "File is already open!";
@@ -162,26 +161,6 @@ int FileStream::Open(const FilePath& path, int open_flags) {
     return MapErrorCode(error);
   }
 
-  if (open_flags_ & base::PLATFORM_FILE_ASYNC) {
-    async_context_.reset(new AsyncContext(this));
-    MessageLoopForIO::current()->RegisterIOHandler(file_,
-                                                   async_context_.get());
-  }
-
-  return OK;
-}
-
-int FileStream::Open(base::PlatformFile file, int open_flags) {
-  if (IsOpen()) {
-    DLOG(FATAL) << "File is already open!";
-    return ERR_UNEXPECTED;
-  }
-
-  open_flags_ = open_flags;
-  file_ = file;
-
-  // If the file handle is opened with base::PLATFORM_FILE_ASYNC, we need to
-  // make sure we will perform asynchronous File IO to it.
   if (open_flags_ & base::PLATFORM_FILE_ASYNC) {
     async_context_.reset(new AsyncContext(this));
     MessageLoopForIO::current()->RegisterIOHandler(file_,
