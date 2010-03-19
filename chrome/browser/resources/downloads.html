@@ -6,142 +6,190 @@
 <link rel="icon" href="../../app/theme/downloads_favicon.png">
 <style>
 body {
-  background-color:white;
-  color:black;
-  margin:10px;
+  background-color: white;
+  color: black;
+  margin: 10px;
 }
+
 .header {
-  overflow:auto;
-  clear:both;
+  overflow: auto;
+  clear: both;
 }
+
 .header .logo {
-  float:left;
+  float: left;
 }
+
 .header .form {
-  float:left;
-  margin-top:22px;
-  margin-left:12px;
+  float: left;
+  margin-top: 22px;
+  margin-left: 12px;
 }
-html[dir='rtl'] .logo {
-  float:right;
+
+html[dir=rtl] .logo {
+  float: right;
 }
-html[dir='rtl'] .form {
-  float:right;
-  margin-right:12px;
+
+html[dir=rtl] .form {
+  float: right;
+  margin-right: 12px;
 }
+
 #downloads-summary {
-  margin-top:12px;
-  border-top:1px solid #9cc2ef;
-  background-color:#ebeff9;
-  padding:3px;
-  margin-bottom:6px;
+  margin-top: 12px;
+  border-top: 1px solid #9cc2ef;
+  background-color: #ebeff9;
+  padding: 3px;
+  margin-bottom: 6px;
 }
+
 #downloads-summary-text {
-  font-weight:bold;
+  font-weight: bold;
 }
+
 #downloads-summary > a {
-  float:right;
+  float: right;
 }
-html[dir='rtl'] #downloads-summary > a {
-  float:left;
+
+html[dir=rtl] #downloads-summary > a {
+  float: left;
 }
+
 #downloads-display {
-  max-width:740px;
+  max-width: 740px;
 }
+
 .download {
-  position:relative;
-  margin-top:6px;
-  margin-left:114px;
-  padding-left:56px;
-  margin-bottom:15px;
+  position: relative;
+  margin-top: 6px;
+  margin-left: 114px;
+  padding-left: 56px;
+  margin-bottom: 15px;
 }
-html[dir='rtl'] .download {
-  padding-left:0px;
-  margin-left:0px;
-  margin-right:114px;
-  padding-right:56px;
+
+html[dir=rtl] .download {
+  padding-left: 0px;
+  margin-left: 0px;
+  margin-right: 114px;
+  padding-right: 56px;
 }
+
 .date-container {
-  position:absolute;
-  left:-110px;
-  width:110px;
+  position: absolute;
+  left: -110px;
+  width: 110px;
 }
-html[dir='rtl'] .date-container {
-  left:auto;
-  right:-110px;
+
+html[dir=rtl] .date-container {
+  left: auto;
+  right: -110px;
 }
+
 .date-container .since {
-  color:black;
+  color: black;
 }
+
 .date-container .date {
-  color:#666;
+  color: #666;
 }
+
 .download .icon {
-  position:absolute;
-  top:2px;
-  left:9px;
-  width:32px;
-  height:32px;
+  position: absolute;
+  top: 2px;
+  left: 9px;
+  width: 32px;
+  height: 32px;
 }
-html[dir='rtl'] .icon {
-  left:auto;
-  right:9px;
+
+html[dir=rtl] .icon {
+  left: auto;
+  right: 9px;
 }
+
+.download.otr > .safe,
+.download.otr > .show-dangerous {
+  background: url(chrome://theme/otr_icon_standalone) no-repeat 100% 100%;
+  opacity: .66;
+  -webkit-transition: opacity .15s;
+}
+
+html[dir=rtl] .download.otr > .safe,
+html[dir=rtl] .download.otr > .show-dangerous {
+  background-position: 0% 100%;
+}
+
+.download.otr > .safe:hover,
+.download.otr > .show-dangerous:hover {
+  opacity: 1;
+}
+
 .progress {
-  position:absolute;
-  top:-6px;
-  left:0px;
-  width:48px;
-  height:48px;
+  position: absolute;
+  top: -6px;
+  left: 0px;
+  width: 48px;
+  height: 48px;
 }
-html[dir='rtl'] .progress {
-  left:auto;
-  right:0px;
+
+html[dir=rtl] .progress {
+  left: auto;
+  right: 0px;
 }
+
 .progress.background {
-  background:url('../../app/theme/download_progress_background32.png');
+  background: url('../../app/theme/download_progress_background32.png');
 }
+
 .progress.foreground {
-  background:url('../../app/theme/download_progress_foreground32.png');
+  background: url('../../app/theme/download_progress_foreground32.png');
 }
+
 .name {
-  display:none;
-  padding-right:16px;
-  max-width:450px;
+  display: none;
+  padding-right: 16px;
+  max-width: 450px;
   word-break: break-all;
 }
-html[dir='rtl'] .name {
-  padding-right:0px;
-  padding-left:16px;
+
+html[dir=rtl] .name {
+  padding-right: 0px;
+  padding-left: 16px;
 }
+
 .download .status {
-  display:inline;
-  color:#999;
-  white-space:nowrap;
+  display: inline;
+  color: #999;
+  white-space: nowrap;
 }
+
 .download .url {
-  color:#080;
-  max-width:500px;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
+  color: #080;
+  max-width: 500px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+
 .controls a {
-  color:#777;
-  margin-right:16px;
+  color: #777;
+  margin-right: 16px;
 }
+
 #downloads-pagination {
-  padding-top:24px;
-  margin-left:18px;
+  padding-top: 24px;
+  margin-left: 18px;
 }
+
 .page-navigation {
-  padding:8px;
-  background-color:#ebeff9;
-  margin-right:4px;
+  padding: 8px;
+  background-color: #ebeff9;
+  margin-right: 4px;
 }
+
 .footer {
-  height:24px;
+  height: 24px;
 }
+
 </style>
 <script src="local_strings.js"></script>
 <script>
@@ -228,11 +276,6 @@ function Downloads() {
  * @param {Object} download A backend download object (see downloads_ui.cc)
  */
 Downloads.prototype.updated = function(download) {
-  // For now, simply don't display off the record downloads.
-  // http://crbug.com/36587
-  if (download.otr)
-    return;
-
   var id = download.id;
   if (!!this.downloads_[id]) {
     this.downloads_[id].update(download);
@@ -328,7 +371,8 @@ Downloads.prototype.clear = function() {
  */
 function Download(download) {
   // Create DOM
-  this.node = createElementWithClassName('div', 'download');
+  this.node = createElementWithClassName('div','download' +
+                                         (download.otr ? ' otr' : ''));
 
   // Dates
   this.dateContainer_ = createElementWithClassName('div', 'date-container');
