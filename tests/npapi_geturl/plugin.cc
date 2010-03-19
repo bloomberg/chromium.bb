@@ -10,6 +10,20 @@
 
 namespace {
 
+static NPIdentifier* properties = NULL;
+
+static const NPUTF8* propertyStrings[] = {
+  "__moduleReady",
+};
+
+static const int propertyCount =
+    sizeof(propertyStrings) / sizeof(propertyStrings[0]);
+
+enum {
+  kModuleReadyIdent = 0
+};
+
+
 static NPIdentifier* identifiers = NULL;
 
 static const NPUTF8* identifierStrings[] = {
@@ -22,6 +36,23 @@ static const int identifierCount =
 enum {
   kLoadUrlIdent = 0
 };
+
+
+void InitializeProperties() {
+  // If this has already been run, return.
+  if (NULL != properties) {
+    return;
+  }
+  // Allocate the properties array.
+  properties = new NPIdentifier[propertyCount];
+  if (NULL == properties) {
+    return;
+  }
+  // Populate the properties array.
+  browser->getstringidentifiers(propertyStrings,
+                                propertyCount,
+                                properties);
+}
 
 void InitializeIdentifiers() {
   // If this has already been run, return.
@@ -80,6 +111,7 @@ Plugin* Plugin::New(NPP instance,
                     int16_t argc,
                     char* argn[],
                     char* argv[]) {
+  InitializeProperties();
   InitializeIdentifiers();
   // Create the scriptable object.
   NPObject* object = browser->createobject(instance, GetNPSimpleClass());
@@ -94,6 +126,10 @@ Plugin* Plugin::New(NPP instance,
   for (int16_t i = 0; i < plugin->argc_; ++i) {
     plugin->argn_to_argv_[strdup(argn[i])] = strdup(argv[i]);
   }
+  // The plugin is ready to be used.
+  NPVariant one;
+  INT32_TO_NPVARIANT(1, one);
+  plugin->setProperty(properties[kModuleReadyIdent], &one);
 
   return plugin;
 }
@@ -103,8 +139,10 @@ void Plugin::invalidate() {
 }
 
 bool Plugin::hasMethod(NPIdentifier methodName) {
-  if (identifiers[kLoadUrlIdent] == methodName) {
-    return true;
+  for (int i = 0; i < identifierCount; ++i) {
+    if (identifiers[i] == methodName) {
+      return true;
+    }
   }
   return false;
 }
