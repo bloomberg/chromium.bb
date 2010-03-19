@@ -254,7 +254,8 @@ HRESULT Bho::OnHttpEquiv(IBrowserService_OnHttpEquiv_Fn original_httpequiv,
   } else if (done) {
     DLOG(INFO) << "Releasing cached data.";
     NavigationManager* mgr = NavigationManager::GetThreadInstance();
-    mgr->ReleaseRequestData();
+    if (mgr)
+      mgr->ReleaseRequestData();
   }
 
   return original_httpequiv(browser, shell_view, done, in_arg, out_arg);
