@@ -181,7 +181,7 @@ void TestShell::InitializeTestShell(bool layout_test_mode) {
   // We have fontconfig parse a config file from our resources file. This
   // sets a number of aliases ("sans"->"Arial" etc), but doesn't include any
   // font directories.
-  if (true) {
+  if (layout_test_mode) {
     // fontconfig only knows how to load font config configs from a
     // file name, so we write to a temp file.
     base::StringPiece font_config_xml;
