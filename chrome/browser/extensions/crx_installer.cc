@@ -39,7 +39,7 @@ CrxInstaller::CrxInstaller(const FilePath& install_directory,
       install_source_(Extension::INTERNAL),
       delete_source_(false),
       allow_privilege_increase_(false),
-      force_web_origin_to_download_url_(false),
+      force_app_origin_to_download_url_(false),
       create_app_shortcut_(false),
       frontend_(frontend),
       client_(client) {
@@ -72,8 +72,8 @@ void CrxInstaller::InstallCrx(const FilePath& source_file) {
           g_browser_process->resource_dispatcher_host(),
           this));
 
-  if (force_web_origin_to_download_url_ && original_url_.is_valid()) {
-    unpacker->set_web_origin(original_url_.GetOrigin());
+  if (force_app_origin_to_download_url_ && original_url_.is_valid()) {
+    unpacker->set_app_origin_override(original_url_.GetOrigin());
   }
 
   ChromeThread::PostTask(
@@ -142,7 +142,7 @@ void CrxInstaller::OnUnpackSuccess(const FilePath& temp_dir,
     return;
   }
 
-  if (client_.get() || extension_->GetFullLaunchURL().is_valid()) {
+  if (client_.get() || extension_->IsApp()) {
     Extension::DecodeIcon(extension_.get(), Extension::EXTENSION_ICON_LARGE,
                           &install_icon_);
   }
@@ -177,7 +177,7 @@ void CrxInstaller::ConfirmInstall() {
 
 void CrxInstaller::InstallUIProceed(bool create_app_shortcut) {
   if (create_app_shortcut) {
-    DCHECK(extension_->GetFullLaunchURL().is_valid());
+    DCHECK(extension_->IsApp());
     create_app_shortcut_ = true;
   }
 
@@ -233,7 +233,7 @@ void CrxInstaller::CompleteInstall() {
             IDR_EXTENSION_DEFAULT_ICON);
 
     ShellIntegration::ShortcutInfo shortcut_info;
-    shortcut_info.url = extension_->GetFullLaunchURL();
+    shortcut_info.url = extension_->app_launch_url();
     shortcut_info.extension_id = UTF8ToUTF16(extension_->id());
     shortcut_info.title = UTF8ToUTF16(extension_->name());
     shortcut_info.description = UTF8ToUTF16(extension_->description());

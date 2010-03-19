@@ -1362,7 +1362,7 @@ TEST_F(TabStripModelTest, Apps) {
   FilePath path(FILE_PATH_LITERAL("/foo"));
 #endif
   Extension app_extension(path);
-  app_extension.launch_web_url_ = "http://www.google.com";
+  app_extension.app_launch_url_ = GURL("http://www.google.com");
   TabContents* contents1 = CreateTabContents();
   contents1->SetAppExtension(&app_extension);
   TabContents* contents2 = CreateTabContents();

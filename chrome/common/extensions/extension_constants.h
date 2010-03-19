@@ -8,6 +8,11 @@
 // Keys used in JSON representation of extensions.
 namespace extension_manifest_keys {
   extern const wchar_t* kAllFrames;
+  extern const wchar_t* kApp;
+  extern const wchar_t* kAppExtent;
+  extern const wchar_t* kAppLaunchUrl;
+  extern const wchar_t* kAppLaunchType;
+  extern const wchar_t* kAppOrigin;
   extern const wchar_t* kBackground;
   extern const wchar_t* kBrowserAction;
   extern const wchar_t* kMinimumChromeVersion;
@@ -21,10 +26,6 @@ namespace extension_manifest_keys {
   extern const wchar_t* kExcludeGlobs;
   extern const wchar_t* kIcons;
   extern const wchar_t* kIncludeGlobs;
-  extern const wchar_t* kLaunch;
-  extern const wchar_t* kLaunchContainer;
-  extern const wchar_t* kLaunchLocalPath;
-  extern const wchar_t* kLaunchWebURL;
   extern const wchar_t* kJs;
   extern const wchar_t* kMatches;
   extern const wchar_t* kName;
@@ -58,11 +59,6 @@ namespace extension_manifest_keys {
   extern const wchar_t* kVersion;
   extern const wchar_t* kUpdateURL;
   extern const wchar_t* kOptionsPage;
-  extern const wchar_t* kWebContent;
-  extern const wchar_t* kWebContentEnabled;
-  extern const wchar_t* kWebLaunchUrl;
-  extern const wchar_t* kWebOrigin;
-  extern const wchar_t* kWebPaths;
 }  // namespace extension_manifest_keys
 
 // Some values expected in manifests.
@@ -72,16 +68,22 @@ namespace extension_manifest_values {
   extern const char* kRunAtDocumentIdle;
   extern const char* kPageActionTypeTab;
   extern const char* kPageActionTypePermanent;
-  extern const char* kLaunchContainerPanel;
-  extern const char* kLaunchContainerTab;
-  extern const char* kLaunchContainerWindow;
+  extern const char* kLaunchTypePanel;
+  extern const char* kLaunchTypeTab;
+  extern const char* kLaunchTypeWindow;
 }  // namespace extension_manifest_values
 
 // Error messages returned from Extension::InitFromValue().
 namespace extension_manifest_errors {
-  extern const char* kAppsNotEnabled;
+  extern const char* kAppsDisabled;
   extern const char* kChromeVersionTooLow;
   extern const char* kInvalidAllFrames;
+  extern const char* kInvalidApp;
+  extern const char* kInvalidAppExtent;
+  extern const char* kInvalidAppExtentPattern;
+  extern const char* kInvalidAppLaunchType;
+  extern const char* kInvalidAppLaunchUrl;
+  extern const char* kInvalidAppOrigin;
   extern const char* kInvalidBackground;
   extern const char* kInvalidBrowserAction;
   extern const char* kInvalidChromeURLOverrides;
@@ -97,9 +99,6 @@ namespace extension_manifest_errors {
   extern const char* kInvalidJs;
   extern const char* kInvalidJsList;
   extern const char* kInvalidKey;
-  extern const char* kInvalidLaunchContainer;
-  extern const char* kInvalidLaunchLocalPath;
-  extern const char* kInvalidLaunchWebURL;
   extern const char* kInvalidManifest;
   extern const char* kInvalidMatchCount;
   extern const char* kInvalidMatch;
@@ -109,6 +108,7 @@ namespace extension_manifest_errors {
   extern const char* kInvalidPlugins;
   extern const char* kInvalidPluginsPath;
   extern const char* kInvalidPluginsPublic;
+
   extern const char* kInvalidRunAt;
   extern const char* kInvalidSignature;
   extern const char* kInvalidToolstrip;
@@ -135,10 +135,6 @@ namespace extension_manifest_errors {
   extern const char* kInvalidThemeImages;
   extern const char* kInvalidThemeColors;
   extern const char* kInvalidThemeTints;
-  extern const char* kInvalidWebContentEnabled;
-  extern const char* kInvalidWebOrigin;
-  extern const char* kInvalidWebPaths;
-  extern const char* kInvalidWebPath;
   extern const char* kOneUISurfaceOnly;
   extern const char* kThemesCannotContainExtensions;
   extern const char* kManifestParseError;
@@ -146,8 +142,6 @@ namespace extension_manifest_errors {
   extern const char* kMissingFile;
   extern const char* kInvalidUpdateURL;
   extern const char* kInvalidDefaultLocale;
-  extern const char* kLaunchContainerWithoutURL;
-  extern const char* kLaunchPathAndURLAreExclusive;
   extern const char* kLocalesNoDefaultLocaleSpecified;
   extern const char* kLocalesNoDefaultMessages;
   extern const char* kLocalesNoValidLocaleNamesListed;
@@ -157,7 +151,6 @@ namespace extension_manifest_errors {
   extern const char* kReservedMessageFound;
   extern const char* kCannotAccessPage;
   extern const char* kCannotScriptGallery;
-  extern const char* kWebContentMustBeEnabled;
 }  // namespace extension_manifest_errors
 
 namespace extension_urls {

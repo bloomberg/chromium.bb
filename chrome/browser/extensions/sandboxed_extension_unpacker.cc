@@ -255,18 +255,16 @@ DictionaryValue* SandboxedExtensionUnpacker::RewriteManifestFile(
       static_cast<DictionaryValue*>(manifest.DeepCopy()));
   final_manifest->SetString(extension_manifest_keys::kPublicKey, public_key_);
 
-  // Override the origin if appropriate.
-  bool web_content_enabled = false;
-  if (final_manifest->GetBoolean(extension_manifest_keys::kWebContentEnabled,
-                                 &web_content_enabled) &&
-      web_content_enabled &&
-      web_origin_.is_valid()) {
-    if (final_manifest->HasKey(extension_manifest_keys::kWebOrigin)) {
-      ReportFailure("Unexpected 'web_content.origin' key in manifest.");
+  // Override the app origin if appropriate.
+  DictionaryValue* app = NULL;
+  if (final_manifest->GetDictionary(extension_manifest_keys::kApp, &app) &&
+      !app_origin_override_.is_empty()) {
+    if (app->HasKey(extension_manifest_keys::kAppOrigin)) {
+      ReportFailure("Unexpected 'origin' key in manifest.");
       return NULL;
     }
-    final_manifest->SetString(extension_manifest_keys::kWebOrigin,
-                              web_origin_.spec());
+    app->SetString(extension_manifest_keys::kAppOrigin,
+                   app_origin_override_.spec());
   }
 
   std::string manifest_json;

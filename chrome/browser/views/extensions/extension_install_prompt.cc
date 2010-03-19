@@ -44,7 +44,7 @@ class InstallDialogContent : public views::View, public views::DialogDelegate {
       ExtensionInstallUI::PromptType type)
           : delegate_(delegate), icon_(NULL), warning_(NULL),
             create_shortcut_(NULL), type_(type) {
-    if (extension->GetFullLaunchURL().is_valid()) {
+    if (extension->IsApp()) {
       icon_size_ = kIconSizeApp;
       right_column_width_ = kRightColumnWidthApp;
     } else {
@@ -69,8 +69,7 @@ class InstallDialogContent : public views::View, public views::DialogDelegate {
     heading_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
     AddChildView(heading_);
 
-    if (type_ == ExtensionInstallUI::INSTALL_PROMPT &&
-        extension->GetFullLaunchURL().is_valid()) {
+    if (type_ == ExtensionInstallUI::INSTALL_PROMPT && extension->IsApp()) {
       create_shortcut_ = new views::Checkbox(
           l10n_util::GetString(IDS_EXTENSION_PROMPT_CREATE_SHORTCUT));
       create_shortcut_->SetChecked(true);

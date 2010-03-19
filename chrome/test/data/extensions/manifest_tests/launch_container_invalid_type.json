@@ -1,8 +1,0 @@
-{
-  "name": "test",
-  "version": "1",
-  "launch": {
-    "container": 42,
-    "local_path": "hot.html"
-  }
-}

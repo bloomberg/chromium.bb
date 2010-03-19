@@ -15,7 +15,6 @@
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/common/extensions/extension_action.h"
-#include "chrome/common/extensions/extension_extent.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/extensions/url_pattern.h"
@@ -68,14 +67,11 @@ class Extension {
     EXTENSION_ICON_BITTY = 16,
   };
 
-  enum LaunchContainer {
+  enum AppLaunchType {
     LAUNCH_WINDOW,
     LAUNCH_PANEL,
     LAUNCH_TAB
   };
-
-  bool apps_enabled() const { return apps_enabled_; }
-  void set_apps_enabled(bool val) { apps_enabled_ = val; }
 
   // Icon sizes used by the extension system.
   static const int kIconSizes[];
@@ -292,15 +288,12 @@ class Extension {
     return chrome_url_overrides_;
   }
 
-  bool web_content_enabled() const { return web_content_enabled_; }
-  const ExtensionExtent& web_extent() const { return web_extent_; }
-
-  const std::string& launch_local_path() const { return launch_local_path_; }
-  const std::string& launch_web_url() const { return launch_web_url_; }
-  const LaunchContainer launch_container() const { return launch_container_; }
-
-  // Gets the fully resolved absolute launch URL.
-  GURL GetFullLaunchURL() const;
+  // App stuff.
+  const URLPatternList& app_extent() const { return app_extent_; }
+  const GURL& app_launch_url() const { return app_launch_url_; }
+  bool IsApp() const { return !app_launch_url_.is_empty(); }
+  AppLaunchType app_launch_type() { return app_launch_type_; }
+  const GURL& app_origin() const { return app_origin_; }
 
   // Runtime data:
   // Put dynamic data about the state of a running extension below.
@@ -333,18 +326,6 @@ class Extension {
                        void(UserScript::*add_method)(const std::string& glob),
                        UserScript *instance);
 
-  // Checks that apps features are enabled if the manifest tries to use any of
-  // them.
-  bool CheckAppsAreEnabled(const DictionaryValue* manifest, std::string* error);
-
-  // Helpers to load various chunks of the manifest.
-  bool LoadWebContentEnabled(const DictionaryValue* manifest,
-                             std::string* error);
-  bool LoadWebOrigin(const DictionaryValue* manifest, std::string* error);
-  bool LoadWebPaths(const DictionaryValue* manifest, std::string* error);
-  bool LoadLaunchContainer(const DictionaryValue* manifest, std::string* error);
-  bool LoadLaunchURL(const DictionaryValue* manifest, std::string* error);
-
   // Helper method to load an ExtensionAction from the page_action or
   // browser_action entries in the manifest.
   ExtensionAction* LoadExtensionActionHelper(
@@ -353,6 +334,13 @@ class Extension {
   // Figures out if a source contains keys not associated with themes - we
   // don't want to allow scripts and such to be bundled with themes.
   bool ContainsNonThemeKeys(const DictionaryValue& source);
+
+  // Apps don't have access to all extension features.  This enforces those
+  // restrictions.
+  bool ContainsNonAppKeys(const DictionaryValue& source);
+
+  // Helper method to verify the app section of the manifest.
+  bool LoadAppHelper(const DictionaryValue* app, std::string* error);
 
   // Returns true if the string is one of the known api permissions (see
   // kPermissionNames).
@@ -451,26 +439,18 @@ class Extension {
   // which override the handling of those URLs.
   URLOverrideMap chrome_url_overrides_;
 
-  // Whether apps-related features can be parsed during InitFromValue().
-  // Defaults to the value from --enable-extension-apps.
-  bool apps_enabled_;
+  // Describes the space of URLs that are displayed in the app's custom frame.
+  URLPatternList app_extent_;
 
-  // Whether the extension can contain live web content. Defaults to false.
-  bool web_content_enabled_;
+  // The URL an app should launch to.
+  GURL app_launch_url_;
 
-  // Defines the set of URLs in the extension's web content.
-  ExtensionExtent web_extent_;
+  // How to start when the application is launched.
+  AppLaunchType app_launch_type_;
 
-  // The local path inside the extension to use with the launcher.
-  std::string launch_local_path_;
-
-  // A web url to use with the launcher. Note that this might be relative or
-  // absolute. If relative, it is relative to web_origin_.
-  std::string launch_web_url_;
-
-  // The type of container to launch into.
-  LaunchContainer launch_container_;
-
+  // The web security origin associated with the app. This origin will be
+  // granted the permissions the app requests.
+  GURL app_origin_;
 
   // Runtime data:
 
