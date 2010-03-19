@@ -42,7 +42,6 @@
         आपण समक्रमण सक्षम केले असेल अशा प्रत्येक अतिरिक्त संगणकावर तत्सम बुकमार्क प्राप्त होतील.</translation>
 <translation id="1383861834909034572">पूर्ण झाल्यानंतर उघडेल</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
-<translation id="760641807227525561">पूर्ण स्क्रीन</translation>
 <translation id="3315158641124845231"><ph name="PRODUCT_NAME"/> लपवा</translation>
 <translation id="3496213124478423963">झूम कमी करा</translation>
 <translation id="8608043773967779744">खालील गोपनीयता काळ्यासूचींनी ही सामग्री दर्शविणे प्रतिबंधित केले आहे:</translation>
@@ -93,7 +92,6 @@
 <translation id="4684748086689879921">आयात वगळा</translation>
 <translation id="5516565854418269276">&amp;नेहमी बुकमार्क बार दर्शवा</translation>
 <translation id="6426222199977479699">SSL त्रुटी</translation>
-<translation id="4504497882859943663">अनुवाद चेतावणी</translation>
 <translation id="4194570336751258953">टॅप-टू-क्लिक सक्षम करा</translation>
 <translation id="5111692334209731439">&amp;बुकमार्क व्यवस्थापक</translation>
 <translation id="443008484043213881">साधने</translation>
@@ -687,7 +685,6 @@
 <translation id="9107059250669762581"><ph name="NUMBER_DEFAULT"/> दिवस</translation>
 <translation id="872451400847464257">शोध इंजिन संपादित करा</translation>
 <translation id="6463061331681402734"><ph name="NUMBER_MANY"/> मि</translation>
-<translation id="6408082614319501487">आपल्यासाठी वेबपृष्ठे अनुवादित करण्यासाठी, Google Chrome त्या पृष्ठांची सामग्री Google कडे पाठवेल.</translation>
 <translation id="8717266507183354698"><ph name="SEARCH_TERMS"/> समाविष्ट असलेली सर्व पृष्ठे इतिहासामध्ये पहा</translation>
 <translation id="2466804342846034717">वर योग्य संकेतशब्द प्रविष्ट करा आणि नंतर आपणास खालील चित्रात दिसलेले वर्ण टाइप करा.</translation>
 <translation id="5645845270586517071">सुरक्षा त्रुटी</translation>
@@ -1130,7 +1127,7 @@
 <translation id="8709969075297564489">सर्व्हर प्रमाणपत्र निरस्त करण्यासाठी तपासा</translation>
 <translation id="8698171900303917290">स्थापना करण्यात समस्या?</translation>
 <translation id="4861833787540810454">&amp;प्ले करा</translation>
-<translation id="2552545117464357659">नवीनतम</translation>
+<translation id="2552545117464357659">थोडे नवीन</translation>
 <translation id="5869522115854928033">जतन केलेले संकेतशब्द</translation>
 <translation id="1709220265083931213">प्रगत पर्याय</translation>
 <translation id="4771973620359291008">एक अज्ञात त्रुटी आली आहे.</translation>

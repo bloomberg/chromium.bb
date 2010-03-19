@@ -29,10 +29,10 @@
 <translation id="36224234498066874">清除瀏覽資料...</translation>
 <translation id="7600965453749440009">永遠不要翻譯<ph name="LANGUAGE"/></translation>
 <translation id="8571213806525832805">四週內</translation>
-<translation id="6021004449668343960">Sans-Serif 字型:</translation>
+<translation id="6021004449668343960">Sans-Serif 字型：</translation>
 <translation id="5341849548509163798"><ph name="NUMBER_MANY"/> 小時前</translation>
 <translation id="8460952460426246415">現在，您的書籤將在所有已啟用「書籤同步功能」的電腦中進行同步處理。</translation>
-<translation id="4422428420715047158">網域:</translation>
+<translation id="4422428420715047158">網域：</translation>
 <translation id="4021918302616263355">在「<ph name="ENGINE"/>」搜尋「<ph name="SEARCH_TERMS"/>」的結果</translation>
 <translation id="5376169624176189338">按一下回上一頁，或按住以檢視記錄</translation>
 <translation id="6310545596129886942">剩下 <ph name="NUMBER_FEW"/> 秒</translation>
@@ -42,7 +42,6 @@
         在每部啟用同步功能的電腦裡，您都會收到同樣的書籤。</translation>
 <translation id="1383861834909034572">完成後開啟</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
-<translation id="760641807227525561">全螢幕</translation>
 <translation id="3315158641124845231">隱藏 <ph name="PRODUCT_NAME"/></translation>
 <translation id="3496213124478423963">縮小</translation>
 <translation id="8608043773967779744">下列「私人黑名單」已封鎖此內容：</translation>
@@ -50,9 +49,10 @@
 <translation id="645705751491738698">繼續封鎖 JavaScript</translation>
 <translation id="4780321648949301421">另存網頁...</translation>
 <translation id="9154072353677278078">位於 <ph name="REALM"/> 的 <ph name="DOMAIN"/> 伺服器要求提供使用者名稱和密碼。</translation>
-<translation id="8178665534778830238">內容:</translation>
+<translation id="8178665534778830238">內容：</translation>
 <translation id="8974161578568356045">自動偵測</translation>
 <translation id="1818606096021558659">網頁</translation>
+<translation id="5388588172257446328">使用者名稱：</translation>
 <translation id="1657406563541664238">只要自動傳送使用統計資料及當機報告給 Google，就能助我們一臂之力，讓「<ph name="PRODUCT_NAME"/>」更臻完美</translation>
 <translation id="7982789257301363584">網路</translation>
 <translation id="2336228925368920074">將所有分頁加入書籤...</translation>
@@ -89,11 +89,10 @@
 <translation id="5613020302032141669">向左鍵</translation>
 <translation id="3433489605821183222">伺服器的憑證有錯</translation>
 <translation id="6831043979455480757">翻譯</translation>
-<translation id="6698381487523150993">建立於:</translation>
+<translation id="6698381487523150993">建立於：</translation>
 <translation id="4684748086689879921">略過匯入</translation>
 <translation id="5516565854418269276">永遠顯示書籤列(&amp;A)</translation>
 <translation id="6426222199977479699">SSL 錯誤</translation>
-<translation id="4504497882859943663">翻譯警告</translation>
 <translation id="4194570336751258953">啟用輕觸點選功能</translation>
 <translation id="5111692334209731439">書籤管理員(&amp;B)</translation>
 <translation id="443008484043213881">工具</translation>
@@ -112,7 +111,7 @@
 <translation id="6370820475163108109"><ph name="ORGANIZATION_NAME"/> (<ph name="DOMAIN_NAME"/>)</translation>
 <translation id="8820817407110198400">書籤</translation>
 <translation id="5191625995327478163">語言設定(&amp;L)...</translation>
-<translation id="1674989413181946727">此電腦通用的 SSL 設定:</translation>
+<translation id="1674989413181946727">此電腦通用的 SSL 設定：</translation>
 <translation id="8703575177326907206">您到 <ph name="DOMAIN"/> 的連線未加密。</translation>
 <translation id="4197577448076628265">此擴充功能將可存取您在 <ph name="HOST"/> 的瀏覽記錄及私人資料。</translation>
 <translation id="1644574205037202324">記錄</translation>
@@ -123,7 +122,7 @@
 <translation id="4419098590196511435">遺失內容</translation>
 <translation id="4256316378292851214">另存影片(&amp;V)...</translation>
 <translation id="3512466011168167042">為瀏覽錯誤顯示建議</translation>
-<translation id="7767960058630128695">密碼:</translation>
+<translation id="7767960058630128695">密碼：</translation>
 <translation id="6518014396551869914">複製影像(&amp;Y)</translation>
 <translation id="542155483965056918"><ph name="NUMBER_ZERO"/> mins ago</translation>
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME"/>說明</translation>
@@ -165,10 +164,10 @@
 <translation id="2154710561487035718">複製網址</translation>
 <translation id="4244236525807044920">變更字型及語言設定</translation>
 <translation id="3241680850019875542">請選取要封裝的擴充功能根目錄。如要更新擴充功能，請一併選取要重複使用的秘密金鑰。</translation>
-<translation id="2679629658858164554">網頁網址:</translation>
+<translation id="2679629658858164554">網頁網址：</translation>
 <translation id="6746124502594467657">下移</translation>
 <translation id="4657169630710541069">資源發生錯誤</translation>
-<translation id="3383487468758466563">字型及語言:</translation>
+<translation id="3383487468758466563">字型及語言：</translation>
 <translation id="6163363155248589649">一般(&amp;N)</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="8725178340343806893">我的最愛/書籤</translation>
@@ -188,9 +187,9 @@
 <translation id="7979036127916589816">同步功能發生錯誤</translation>
 <translation id="5455790498993699893"><ph name="ACTIVE_MATCH"/> 個，共 <ph name="TOTAL_MATCHCOUNT"/> 個</translation>
 <translation id="5178488982078290579">已啟用書籤同步功能...</translation>
-<translation id="2303544859777878640">語言:</translation>
+<translation id="2303544859777878640">語言：</translation>
 <translation id="2021921916539001817">從 <ph name="HOST_NAME"/> 傳送中...</translation>
-<translation id="6909042471249949473">清除指定期限內的資料:</translation>
+<translation id="6909042471249949473">清除指定期限內的資料：</translation>
 <translation id="7615851733760445951">&lt;未選取任何 Cookie&gt;</translation>
 <translation id="3660179305079774227">向上鍵</translation>
 <translation id="7392915005464253525">重新開啟已關閉視窗(&amp;E)</translation>
@@ -204,7 +203,7 @@
 <translation id="4022426551683927403">新增到字典(&amp;A)</translation>
 <translation id="2897878306272793870">您確定要開啟 <ph name="TAB_COUNT"/> 分頁嗎？</translation>
 <translation id="362276910939193118">顯示完整記錄</translation>
-<translation id="7879113706359663444">下午 <ph name="HOUR"/>：<ph name="MIUTE"/></translation>
+<translation id="7879113706359663444">下午 <ph name="HOUR"/>:<ph name="MIUTE"/></translation>
 <translation id="1073286447082909762">在新視窗中開啟頁框(&amp;W)</translation>
 <translation id="692135145298539227">刪除</translation>
 <translation id="8343477974731263456">設定書籤同步化功能</translation>
@@ -225,14 +224,14 @@
 <translation id="5774515636230743468">資訊：</translation>
 <translation id="2423578206845792524">另存影像為(&amp;V)...</translation>
 <translation id="1095038624419434542">載入程式的資源時發生錯誤，請重新安裝。</translation>
-<translation id="9068931793451030927">路徑:</translation>
+<translation id="9068931793451030927">路徑：</translation>
 <translation id="7052402604161570346">此類型檔案可能傷害您的電腦，確定要下載 <ph name="FILE_NAME"/> 嗎？</translation>
 <translation id="8642489171979176277">由 Google 工具列匯入</translation>
 <translation id="5905978244564263718">設定自動填入...</translation>
 <translation id="7335374713830044009">在無痕式視窗中開啟頁框(&amp;G)</translation>
 <translation id="3586931643579894722">隱藏詳細資訊</translation>
 <translation id="2011110593081822050">網路工作處理序：<ph name="WORKER_NAME"/></translation>
-<translation id="350069200438440499">檔案名稱:</translation>
+<translation id="350069200438440499">檔案名稱：</translation>
 <translation id="8494979374722910010">嘗試連接伺服器失敗。</translation>
 <translation id="7810202088502699111">系統已封鎖此網頁的彈出式視窗。</translation>
 <translation id="8795916974678578410">開新視窗</translation>
@@ -283,7 +282,7 @@
 <translation id="5362741141255528695">選取秘密金鑰檔案。</translation>
 <translation id="7012108905414904806">不過，本頁包含其他不安全的資源。這些資源在傳輸當中可能被他人看見，而且網頁的外觀或行為甚至可能遭攻擊者變更。</translation>
 <translation id="4515911410595374805">此網頁的某些元件來源未經驗證，因此暫不顯示。</translation>
-<translation id="1195447618553298278">未知的錯誤.</translation>
+<translation id="1195447618553298278">未知的錯誤。</translation>
 <translation id="3353284378027041011"><ph name="NUMBER_FEW"/> 天前</translation>
 <translation id="4800557284502805285">伺服器憑證是以防護力較弱的簽章演算法進行簽署</translation>
 <translation id="6610600335992778838">Wifi</translation>
@@ -332,7 +331,8 @@
 <translation id="6178664161104547336">選取憑證</translation>
 <translation id="5702898740348134351">編輯搜尋引擎(&amp;E)...</translation>
 <translation id="2365740070488517695">提示</translation>
-<translation id="2869459179306435079">匯入設定自:</translation>
+<translation id="4668929960204016307">,</translation>
+<translation id="2869459179306435079">匯入設定自：</translation>
 <translation id="732677191631732447">複製音訊網址(&amp;O)</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="3369624026883419694">正在解析主機...</translation>
@@ -342,7 +342,7 @@
 <translation id="6551701656367809067">「書籤同步功能」發生錯誤，原因是伺服器收到過多的要求；「<ph name="NAME_OF_EXTENSION"/>」對您的書籤進行大量的變更。</translation>
 <translation id="8249296373107784235">取消</translation>
 <translation id="4206067298962112499">允許所有網站使用外掛程式 (建議)</translation>
-<translation id="3967132639560659870">此網頁上有數個 SSL 錯誤:</translation>
+<translation id="3967132639560659870">此網頁上有數個 SSL 錯誤：</translation>
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> 分鐘前</translation>
 <translation id="175196451752279553">重新開啟已關閉分頁(&amp;E)</translation>
 <translation id="5039804452771397117">允許</translation>
@@ -392,7 +392,7 @@
 <translation id="7977590112176369853">&lt;輸入查詢&gt;</translation>
 <translation id="5155632014218747366">如需更多有關此網站上問題的詳細資訊，請造訪 Google <ph name="DIAGNOSTIC_PAGE"/> 有關 <ph name="DOMAIN"/> 的網頁。</translation>
 <translation id="1120026268649657149">關鍵字必須留空或獨一無二。</translation>
-<translation id="7954187762705269222">上午 <ph name="HOUR"/>：<ph name="MIUTE"/></translation>
+<translation id="7954187762705269222">上午 <ph name="HOUR"/>:<ph name="MIUTE"/></translation>
 <translation id="5317780077021120954">儲存</translation>
 <translation id="9027459031423301635">在新分頁中開啟連結(T)</translation>
 <translation id="358344266898797651">塞爾特語</translation>
@@ -403,7 +403,7 @@
 <translation id="4164507027399414915">恢復所有已移除的縮圖</translation>
 <translation id="6620110761915583480">儲存檔案</translation>
 <translation id="7543025879977230179"><ph name="PRODUCT_NAME"/> 選項</translation>
-<translation id="2648845569394238430">搜尋:</translation>
+<translation id="2648845569394238430">搜尋：</translation>
 <translation id="2175607476662778685">快速啟動列</translation>
 <translation id="6434309073475700221">捨棄</translation>
 <translation id="1425127764082410430">在 <ph name="SEARCH_ENGINE"/> 上搜尋「<ph name="SEARCH_TERMS"/>」(&amp;S)</translation>
@@ -432,11 +432,11 @@
 <translation id="219008588003277019">Native Client 模組：<ph name="NEXE_NAME"/></translation>
 <translation id="8295274277480637228">資料來源：<ph name="HOST"/></translation>
 <translation id="8719167808826224921">記住我對所有來自 <ph name="HOST"/> 的 Cookie 和網站資料的設定</translation>
-<translation id="5436510242972373446">搜尋 <ph name="SITE_NAME"/>:</translation>
+<translation id="5436510242972373446">搜尋 <ph name="SITE_NAME"/>：</translation>
 <translation id="6719684875142564568"><ph name="NUMBER_ZERO"/> hours</translation>
 <translation id="7616581516194661584">複製</translation>
 <translation id="8730621377337864115">完成</translation>
-<translation id="245834195813628985">尚餘 <ph name="HOUR"/>：<ph name="MIUTE"/></translation>
+<translation id="245834195813628985">尚餘 <ph name="HOUR"/>:<ph name="MIUTE"/></translation>
 <translation id="6267166720438879315">請選取您在 <ph name="HOST_NAME"/> 的驗證憑證</translation>
 <translation id="7198134478421755850">擴充功能</translation>
 <translation id="4713481510227594233">此電腦的「書籤同步功能」已遭到停用。如果您解除安裝「<ph name="NAME_OF_EXTENSION"/>」，即可在 [工具] 選單中選取 [同步化我的書籤...]，以重新啟用「書籤同步功能」。</translation>
@@ -636,7 +636,7 @@
 <translation id="6463795194797719782">編輯(&amp;E)</translation>
 <translation id="4775879719735953715">預設瀏覽器</translation>
 <translation id="4805261289453566571">重新登入</translation>
-<translation id="4188026131102273494">關鍵字:</translation>
+<translation id="4188026131102273494">關鍵字：</translation>
 <translation id="2290414052248371705">顯示所有內容</translation>
 <translation id="6434892175081553796">關閉此分頁開啟的分頁</translation>
 <translation id="7227780179130368205">偵測到惡意程式!</translation>
@@ -658,7 +658,7 @@
 <translation id="3577682619813191010">複製檔案(&amp;F)</translation>
 <translation id="10122177803156699">顯示</translation>
 <translation id="5260878308685146029">剩下 <ph name="NUMBER_TWO"/> 分鐘</translation>
-<translation id="2192505247865591433">自:</translation>
+<translation id="2192505247865591433">自：</translation>
 <translation id="5921544176073914576">網路釣魚網頁</translation>
 <translation id="7143207342074048698">連線中</translation>
 <translation id="6192792657125177640">例外</translation>
@@ -677,7 +677,6 @@
 <translation id="9107059250669762581"><ph name="NUMBER_DEFAULT"/> 天</translation>
 <translation id="872451400847464257">編輯搜尋引擎</translation>
 <translation id="6463061331681402734"><ph name="NUMBER_MANY"/> 分鐘</translation>
-<translation id="6408082614319501487">「Google 瀏覽器」會將這些網頁內容傳送給 Google 來為您翻譯網頁。</translation>
 <translation id="8717266507183354698">檢視記錄中所有包含 [<ph name="SEARCH_TERMS"/>] 的網頁</translation>
 <translation id="2466804342846034717">請在上方輸入正確的密碼，接著輸入下方圖片中的字元。</translation>
 <translation id="5645845270586517071">安全性錯誤</translation>
@@ -717,7 +716,7 @@
 <translation id="8004582292198964060">瀏覽器</translation>
 <translation id="6357135709975569075"><ph name="NUMBER_ZERO"/> days</translation>
 <translation id="2224551243087462610">編輯資料夾名稱</translation>
-<translation id="5433207235435438329">拼字檢查語言:</translation>
+<translation id="5433207235435438329">拼字檢查語言：</translation>
 <translation id="1358741672408003399">拼字與文法</translation>
 <translation id="2527167509808613699">任何類型的連線</translation>
 <translation id="1234466194727942574">Tabstrip</translation>
@@ -727,14 +726,14 @@
 <translation id="1768211415369530011">以下應用程式將會啟動，如果您接受此要求: \n\n <ph name="APPLICATION"/></translation>
 <translation id="8793043992023823866">匯入中...</translation>
 <translation id="4552416320897244156">PgDwn</translation>
-<translation id="8986267729801483565">檔案下載儲存位置:</translation>
+<translation id="8986267729801483565">檔案下載儲存位置：</translation>
 <translation id="4322394346347055525">關閉其他分頁</translation>
 <translation id="881799181680267069">隱藏其他</translation>
 <translation id="8318945219881683434">無法檢查撤銷狀態。</translation>
 <translation id="4928961172107035048">書籤同步功能發生錯誤！</translation>
 <translation id="994289308992179865">循環播放(&amp;L)</translation>
 <translation id="305803244554250778">在以下位置建立應用程式捷徑：</translation>
-<translation id="3745810751851099214">送至:</translation>
+<translation id="3745810751851099214">送至：</translation>
 <translation id="8877448029301136595">[父目錄]</translation>
 <translation id="1963227389609234879">全部移除</translation>
 <translation id="8027581147000338959">在新視窗中開啟</translation>
@@ -801,6 +800,7 @@
 <translation id="2979639724566107830">於新視窗中開啟</translation>
 <translation id="3381479211481266345">速度敏感度：</translation>
 <translation id="2822854841007275488">阿拉伯文</translation>
+<translation id="5857090052475505287">新資料夾</translation>
 <translation id="5178667623289523808">尋找上一個項目</translation>
 <translation id="2815448242176260024">永不儲存密碼</translation>
 <translation id="2989805286512600854">在新分頁中開啟</translation>
@@ -876,7 +876,7 @@
 <translation id="768570155019561996">此擴充功能將可存取您在多個網站上的私人資料。</translation>
 <translation id="2115926821277323019">必須為有效的網址</translation>
 <translation id="527605982717517565">永遠允許在 <ph name="HOST"/> 執行 JavaScript</translation>
-<translation id="7397054681783221164">清除以下項目:</translation>
+<translation id="7397054681783221164">清除以下項目：</translation>
 <translation id="4891251785049117953">清除已儲存的資料</translation>
 <translation id="580571955903695899">按標題重新排序</translation>
 <translation id="5230516054153933099">視窗</translation>
@@ -888,12 +888,12 @@
 <translation id="2645575947416143543">如果您任職的機構使用自行產生的憑證，而您嘗試連線到使用此類憑證的機構內部網站，以下作法可以解決這個問題，並且絕對安全：將貴機構的根憑證匯入為「根憑證」，系統即會信任由貴機構發行或認證的憑證，並允許您連至內部網站，不再出現錯誤訊息。如要在電腦中加入新的根憑證，請與貴機構的協助人員聯絡。</translation>
 <translation id="3157931365184549694">還原</translation>
 <translation id="7426243339717063209">解除安裝「<ph name="EXTENSION_NAME"/>」？</translation>
-<translation id="6059232451013891645">資料夾:</translation>
+<translation id="6059232451013891645">資料夾：</translation>
 <translation id="8182985032676093812"><ph name="PAGE_URL"/> 的來源</translation>
 <translation id="7042418530779813870">貼上及搜尋(&amp;S)</translation>
 <translation id="2101225219012730419">版本：</translation>
 <translation id="1570242578492689919">字型及編碼</translation>
-<translation id="3031557471081358569">選取要匯入的項目:</translation>
+<translation id="3031557471081358569">選取要匯入的項目：</translation>
 <translation id="3031433885594348982">您到 <ph name="DOMAIN"/> 的連線使用低度加密。</translation>
 <translation id="4047345532928475040">不適用</translation>
 <translation id="5657156137487675418">允許所有 Cookie</translation>
@@ -905,7 +905,7 @@
 <translation id="2354001756790975382">其他書籤</translation>
 <translation id="8561574028787046517"><ph name="PRODUCT_NAME"/> 已經更新</translation>
 <translation id="641480858134062906">無法載入 <ph name="URL"/></translation>
-<translation id="3693415264595406141">密碼:</translation>
+<translation id="3693415264595406141">密碼：</translation>
 <translation id="74568296546932365">保留 <ph name="PAGE_TITLE"/> 為預設搜尋引擎</translation>
 <translation id="6181769708911894002">警告: 造訪此網站可能損害您的電腦!</translation>
 <translation id="3412265149091626468">跳至所選範圍</translation>
@@ -926,7 +926,7 @@
 <translation id="5986279928654338866"><ph name="DOMAIN"/> 伺服器要求提供使用者名稱和密碼。</translation>
 <translation id="521467793286158632">移除所有密碼</translation>
 <translation id="7056713340842386352">常用網頁 [<ph name="PROFILE_NAME"/>]</translation>
-<translation id="5765780083710877561">描述:</translation>
+<translation id="5765780083710877561">描述：</translation>
 <translation id="338583716107319301">分隔線</translation>
 <translation id="7221869452894271364">重新載入此頁</translation>
 <translation id="8646430701497924396">使用 SSL 2.0</translation>
@@ -944,7 +944,7 @@
 <translation id="3169621169201401257">如需進一步瞭解與這類元素相關的問題，請造訪為 <ph name="DOMAIN"/> 而設的 Google <ph name="DIAGNOSTIC_PAGE"/>。</translation>
 <translation id="7385854874724088939">準備列印時出現錯誤，請檢查您的印表機，然後再試一次。</translation>
 <translation id="770015031906360009">希臘文</translation>
-<translation id="4474796446011988286">下列 Cookie 儲存於您的電腦:</translation>
+<translation id="4474796446011988286">下列 Cookie 儲存於您的電腦：</translation>
 <translation id="884923133447025588">未發現撤銷機制。</translation>
 <translation id="7240072072812590475">變更 Gears 設定</translation>
 <translation id="2480155717379390016">停用 <ph name="NAME_OF_EXTENSION"/></translation>
@@ -957,7 +957,7 @@
 <translation id="6483805311199035658">正在開啟「<ph name="FILE"/>」...</translation>
 <translation id="1285266685456062655"><ph name="NUMBER_FEW"/> 小時前</translation>
 <translation id="9154176715500758432">停留在此頁</translation>
-<translation id="5875565123733157100">錯誤類型:</translation>
+<translation id="5875565123733157100">錯誤類型：</translation>
 <translation id="1813278315230285598">服務</translation>
 <translation id="373572798843615002">1 個分頁</translation>
 <translation id="3616741288025931835">清除瀏覽資料(&amp;C)...</translation>
@@ -1005,7 +1005,7 @@
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES"/> K (<ph name="NUM_KILOBYTES_LIVE"/> K 作用中)</translation>
 <translation id="5034259512732355072">選擇其他目錄...</translation>
 <translation id="7505152414826719222">本機儲存區</translation>
-<translation id="5706242308519462060">預設編碼:</translation>
+<translation id="5706242308519462060">預設編碼：</translation>
 <translation id="5280833172404792470">結束全螢幕 (<ph name="ACCELERATOR"/>)</translation>
 <translation id="129553762522093515">近期關閉分頁</translation>
 <translation id="8355915647418390920"><ph name="NUMBER_FEW"/> 天</translation>
@@ -1033,7 +1033,7 @@
 <translation id="494645311413743213">剩下 <ph name="NUMBER_TWO"/> 秒</translation>
 <translation id="1485146213770915382">在網址中應該出現搜尋字詞的位置插入 <ph name="SEARCH_TERMS_LITERAL"/>。</translation>
 <translation id="4839303808932127586">將影片另存為(&amp;V)...</translation>
-<translation id="5626134646977739690">名稱:</translation>
+<translation id="5626134646977739690">名稱：</translation>
 <translation id="7125953501962311360">預設瀏覽器：</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK"/>進一步瞭解<ph name="END_LINK"/>這個問題。</translation>
 <translation id="7774607445702416100">Internet Explorer</translation>
@@ -1059,7 +1059,7 @@
 <translation id="5116628073786783676">另存音訊(&amp;V)...</translation>
 <translation id="2749881179542288782">檢查拼字及文法</translation>
 <translation id="4943872375798546930">沒有結果</translation>
-<translation id="4910619056351738551">給您的建議:</translation>
+<translation id="4910619056351738551">給您的建議：</translation>
 <translation id="5489059749897101717">顯示拼字面板(&amp;S)</translation>
 <translation id="1232569758102978740">未命名</translation>
 <translation id="9149866541089851383">編輯...</translation>
@@ -1095,7 +1095,7 @@
 <translation id="7978412674231730200">秘密金鑰</translation>
 <translation id="9111395131601239814"><ph name="NETWORKDEVICE"/>：<ph name="STATUS"/></translation>
 <translation id="4414232939543644979">新增無痕式視窗(&amp;I)</translation>
-<translation id="3478477629095836699">Cookie 設定:</translation>
+<translation id="3478477629095836699">Cookie 設定：</translation>
 <translation id="6529237754759924038">日期與時間</translation>
 <translation id="7278870042769914968">使用 GTK+ 主題</translation>
 <translation id="2108475813351458355">到 <ph name="DOMAIN"/> 的安全連線</translation>
@@ -1109,6 +1109,7 @@
 <translation id="8629974950076222828">所有書籤均在無痕式視窗中開啟</translation>
 <translation id="4745438305783437565"><ph name="NUMBER_FEW"/> 分鐘</translation>
 <translation id="2649911884196340328">伺服器的安全性憑證有錯誤!</translation>
+<translation id="3828029223314399057">搜尋書籤</translation>
 <translation id="8906421963862390172">拼字檢查工具選項(&amp;S)</translation>
 <translation id="1963692530539281474">剩下 <ph name="NUMBER_DEFAULT"/> 天</translation>
 <translation id="668171684555832681">其他...</translation>
@@ -1152,7 +1153,7 @@
 <translation id="923083373181549309">請重新啟動 <ph name="PRODUCT_NAME"/></translation>
 <translation id="8421864404045570940"><ph name="NUMBER_DEFAULT"/> 秒</translation>
 <translation id="176587472219019965">開新視窗(&amp;N)</translation>
-<translation id="8689341121182997459">逾期:</translation>
+<translation id="8689341121182997459">逾期：</translation>
 <translation id="1857842694030005096">有關此錯誤的更多資訊</translation>
 <translation id="4880827082731008257">搜尋記錄</translation>
 <translation id="8661290697478713397">在無痕式視窗中開啟連結(&amp;G)</translation>
@@ -1171,15 +1172,15 @@
 <translation id="921175996768281472">無法封裝擴充功能</translation>
 <translation id="2183426022964444701">選取擴充功能根目錄。</translation>
 <translation id="5398353896536222911">顯示拼字面板(&amp;S)</translation>
-<translation id="8046048349148382412">完成充電尚需 <ph name="HOUR"/>：<ph name="MIUTE"/></translation>
+<translation id="8046048349148382412">完成充電尚需 <ph name="HOUR"/>:<ph name="MIUTE"/></translation>
 <translation id="3705722231355495246">-</translation>
-<translation id="4268574628540273656">網址:</translation>
+<translation id="4268574628540273656">網址：</translation>
 <translation id="7481312909269577407">下一頁</translation>
 <translation id="3759876923365568382">剩下 <ph name="NUMBER_FEW"/> 天</translation>
 <translation id="5972826969634861500">啟動 <ph name="PRODUCT_NAME"/></translation>
 <translation id="1664314758578115406">新增網頁...</translation>
 <translation id="4084682180776658562">書籤</translation>
-<translation id="4381091992796011497">使用者名稱:</translation>
+<translation id="4381091992796011497">使用者名稱：</translation>
 <translation id="7669151579173473971">於新視窗中開啟設定檔(&amp;P)</translation>
 <translation id="2444683954290143042">同步功能發生錯誤，請重新登入</translation>
 <translation id="5830720307094128296">另存網頁(&amp;A)...</translation>
@@ -1202,9 +1203,9 @@
 <translation id="1177437665183591855">不明伺服器憑證錯誤</translation>
 <translation id="3819800052061700452">全螢幕(&amp;F)</translation>
 <translation id="3533943170037501541">歡迎來到您的首頁！</translation>
-<translation id="3737554291183722650">網頁標題:</translation>
+<translation id="3737554291183722650">網頁標題：</translation>
 <translation id="1581962803218266616">在 Finder 中顯示</translation>
-<translation id="4726901538158498735">預設搜尋:</translation>
+<translation id="4726901538158498735">預設搜尋：</translation>
 <translation id="923467487918828349">全部顯示</translation>
 <translation id="5101042277149003567">開啟所有書籤</translation>
 <translation id="6349678711452810642">設為預設</translation>
@@ -1235,7 +1236,7 @@
 <translation id="4065006016613364460">複製影像網址(&amp;O)</translation>
 <translation id="6965382102122355670">確定</translation>
 <translation id="4481249487722541506">載入未封裝擴充功能</translation>
-<translation id="8542113417382134668">Serif 字型:</translation>
+<translation id="8542113417382134668">Serif 字型：</translation>
 <translation id="2149973817440762519">編輯書籤</translation>
 <translation id="430831869130657585">尾碼</translation>
 <translation id="4057041477816018958"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/></translation>
@@ -1244,7 +1245,7 @@
 <translation id="2301382460326681002">擴充功能根目錄無效。</translation>
 <translation id="4759238208242260848">下載</translation>
 <translation id="1178581264944972037">暫停</translation>
-<translation id="6314919950468685344">固定寬度字型:</translation>
+<translation id="6314919950468685344">固定寬度字型：</translation>
 <translation id="6492313032770352219">磁碟大小：</translation>
 <translation id="5233231016133573565">程序 ID</translation>
 <translation id="5941711191222866238">縮到最小</translation>

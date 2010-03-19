@@ -42,7 +42,6 @@
         Svako dodatno računalo na kojem omogućite sinkronizaciju primit će iste oznake.</translation>
 <translation id="1383861834909034572">Otvori nakon dovršetka</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
-<translation id="760641807227525561">Cijeli zaslon</translation>
 <translation id="3315158641124845231">Sakrij preglednik <ph name="PRODUCT_NAME"/></translation>
 <translation id="3496213124478423963">Smanji</translation>
 <translation id="8608043773967779744">Sljedeće osobne crne liste spriječile su prikazivanje ovog sadržaja:</translation>
@@ -93,7 +92,6 @@
 <translation id="4684748086689879921">Preskoči uvoz</translation>
 <translation id="5516565854418269276">&amp;Uvijek prikaži traku oznake</translation>
 <translation id="6426222199977479699">SSL pogreška</translation>
-<translation id="4504497882859943663">Upozorenje u vezi s prijevodom</translation>
 <translation id="4194570336751258953">Omogući dodir umjesto klika</translation>
 <translation id="5111692334209731439">&amp;Upravitelj oznaka</translation>
 <translation id="443008484043213881">Alati</translation>
@@ -677,7 +675,6 @@
 <translation id="9107059250669762581">Broj dana: <ph name="NUMBER_DEFAULT"/></translation>
 <translation id="872451400847464257">Uredi tražilicu</translation>
 <translation id="6463061331681402734">Broj minuta: <ph name="NUMBER_MANY"/></translation>
-<translation id="6408082614319501487">Da bi umjesto vas preveo web-stranicu, Google Chrome će sadržaj tih stranica poslati Googleu.</translation>
 <translation id="8717266507183354698">Pogledajte sve stranice u povijesti koje sadrže <ph name="SEARCH_TERMS"/></translation>
 <translation id="2466804342846034717">Unesite gore točnu zaporku i zatim upišite znakove koje vidite na slici ispod.</translation>
 <translation id="5645845270586517071">Sigurnosna pogreška</translation>
@@ -1112,6 +1109,7 @@ s
 <translation id="8629974950076222828">Otvori sve oznake u anonimnom prozoru</translation>
 <translation id="4745438305783437565">Broj minuta: <ph name="NUMBER_FEW"/></translation>
 <translation id="2649911884196340328">Sigurnosna potvrda poslužitelja sadrži pogreške!</translation>
+<translation id="3828029223314399057">Pretraži oznake</translation>
 <translation id="8906421963862390172">&amp;Opcije provjere pravopisa</translation>
 <translation id="1963692530539281474">Preostalo dana: <ph name="NUMBER_DEFAULT"/></translation>
 <translation id="668171684555832681">Ostalo...</translation>

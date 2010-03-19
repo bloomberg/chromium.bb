@@ -42,7 +42,6 @@
         同期を有効にしているその他のパソコンにも、それぞれ同じブックマークが保存されます。</translation>
 <translation id="1383861834909034572">ダウンロードが完了したら開きます</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
-<translation id="760641807227525561">全画面表示</translation>
 <translation id="3315158641124845231"><ph name="PRODUCT_NAME"/> を隠す</translation>
 <translation id="3496213124478423963">縮小</translation>
 <translation id="8608043773967779744">次のプライバシー ブラックリストにより、このコンテンツは表示されませんでした:</translation>
@@ -93,7 +92,6 @@
 <translation id="4684748086689879921">インポートをスキップ</translation>
 <translation id="5516565854418269276">ブックマーク バーを常に表示(&amp;A)</translation>
 <translation id="6426222199977479699">SSL エラー</translation>
-<translation id="4504497882859943663">翻訳に関する警告</translation>
 <translation id="4194570336751258953">タップによるクリックを有効にする</translation>
 <translation id="5111692334209731439">ブックマーク マネージャ(&amp;B)</translation>
 <translation id="443008484043213881">ツール</translation>
@@ -687,7 +685,6 @@
 <translation id="9107059250669762581"><ph name="NUMBER_DEFAULT"/> 日</translation>
 <translation id="872451400847464257">検索エンジンの編集</translation>
 <translation id="6463061331681402734"><ph name="NUMBER_MANY"/> 分</translation>
-<translation id="6408082614319501487">ウェブページを翻訳するため、Google Chrome から Google にページのコンテンツが送信されます。</translation>
 <translation id="8717266507183354698"><ph name="SEARCH_TERMS"/> を含む履歴内のページをすべて表示</translation>
 <translation id="2466804342846034717">上に正しいパスワードを入力してから、次の画像に表示されている文字を入力してください。</translation>
 <translation id="5645845270586517071">セキュリティ エラー</translation>
@@ -1119,6 +1116,7 @@
 <translation id="8629974950076222828">すべてのブックマークをシークレット ウインドウで開く</translation>
 <translation id="4745438305783437565"><ph name="NUMBER_FEW"/> 分</translation>
 <translation id="2649911884196340328">このサーバーのセキュリティ証明書にはエラーがあります</translation>
+<translation id="3828029223314399057">ブックマークを検索</translation>
 <translation id="8906421963862390172">スペルチェックのオプション(&amp;S)</translation>
 <translation id="1963692530539281474">残り <ph name="NUMBER_DEFAULT"/> 日</translation>
 <translation id="668171684555832681">その他...</translation>

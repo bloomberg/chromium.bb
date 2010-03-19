@@ -42,7 +42,6 @@
         Fiecare computer suplimentar pe care activaţi sincronizarea va primi aceleaşi marcaje.</translation>
 <translation id="1383861834909034572">Se deschide când este complet</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
-<translation id="760641807227525561">Ecran complet</translation>
 <translation id="3315158641124845231">Ascundeţi <ph name="PRODUCT_NAME"/></translation>
 <translation id="3496213124478423963">Micşoraţi</translation>
 <translation id="8608043773967779744">Afişarea conţinutului a fost blocată de următoarele Liste negre pentru confidenţialitate:</translation>
@@ -93,7 +92,6 @@
 <translation id="4684748086689879921">Ignoraţi importul</translation>
 <translation id="5516565854418269276">&amp;Afişează mereu bara de marcaje</translation>
 <translation id="6426222199977479699">Eroare SSL</translation>
-<translation id="4504497882859943663">Avertisment privind traducerea</translation>
 <translation id="4194570336751258953">Activaţi funcţia de atingere pentru a face clic</translation>
 <translation id="5111692334209731439">&amp;Manager de marcaje</translation>
 <translation id="443008484043213881">Instrumente</translation>
@@ -679,7 +677,6 @@
 <translation id="9107059250669762581"><ph name="NUMBER_DEFAULT"/> zile</translation>
 <translation id="872451400847464257">Editaţi motorul de căutare</translation>
 <translation id="6463061331681402734"><ph name="NUMBER_MANY"/> minute</translation>
-<translation id="6408082614319501487">Pentru a traduce pagini web pentru dvs., Google Chrome va trimite conţinutul respectivelor pagini la Google.</translation>
 <translation id="8717266507183354698">Consultaţi toate paginile din istoric care conţin <ph name="SEARCH_TERMS"/></translation>
 <translation id="2466804342846034717">Introduceţi mai sus parola corectă, apoi introduceţi caracterele afişate în imaginea de mai jos.</translation>
 <translation id="5645845270586517071">Eroare de securitate</translation>
@@ -1111,6 +1108,7 @@
 <translation id="8629974950076222828">Deschideţi toate marcajele într-o fereastră incognito</translation>
 <translation id="4745438305783437565"><ph name="NUMBER_FEW"/> minute</translation>
 <translation id="2649911884196340328">Certificatul de securitate al serverului are erori!</translation>
+<translation id="3828029223314399057">Căutaţi în marcaje</translation>
 <translation id="8906421963862390172">&amp;Opţiunile verificatorului ortografic</translation>
 <translation id="1963692530539281474"><ph name="NUMBER_DEFAULT"/> zile rămase</translation>
 <translation id="668171684555832681">Altul...</translation>

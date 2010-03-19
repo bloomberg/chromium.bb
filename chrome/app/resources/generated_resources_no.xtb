@@ -42,7 +42,6 @@
         Bokmerkene er tilgjengelig på alle datamaskiner som har aktivert synkronisering.</translation>
 <translation id="1383861834909034572">Åpnes ved fullført nedlasting</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
-<translation id="760641807227525561">Full skjerm</translation>
 <translation id="3315158641124845231">Skjul <ph name="PRODUCT_NAME"/></translation>
 <translation id="3496213124478423963">Zoom ut</translation>
 <translation id="8608043773967779744">Følgende personvernsperrelister hindret dette innholdet i å bli vist:</translation>
@@ -93,7 +92,6 @@
 <translation id="4684748086689879921">Hopp over import</translation>
 <translation id="5516565854418269276">Vis &amp;alltid bokmerkerad</translation>
 <translation id="6426222199977479699">SSL-feil</translation>
-<translation id="4504497882859943663">Oversettingsvarsel</translation>
 <translation id="4194570336751258953">Aktiver berøringsklikk</translation>
 <translation id="5111692334209731439">&amp;Bokmerkebehandling</translation>
 <translation id="443008484043213881">Verktøy</translation>
@@ -677,7 +675,6 @@
 <translation id="9107059250669762581"><ph name="NUMBER_DEFAULT"/> dager</translation>
 <translation id="872451400847464257">Rediger søkemotor</translation>
 <translation id="6463061331681402734"><ph name="NUMBER_MANY"/> minutter</translation>
-<translation id="6408082614319501487">Google Chrome sender innholdet på valgte nettsider til Google for oversetting.</translation>
 <translation id="8717266507183354698">Vis alle sider i loggen som inneholder <ph name="SEARCH_TERMS"/></translation>
 <translation id="2466804342846034717">Skriv inn riktig passord ovenfor, og skriv deretter inn tegnene du ser i bildet nedenfor.</translation>
 <translation id="5645845270586517071">Sikkerhetsfeil</translation>
@@ -1115,6 +1112,7 @@ Midlertidig stanset</translation>
 <translation id="8629974950076222828">Åpne alle bokmerker i inkognitovindu</translation>
 <translation id="4745438305783437565"><ph name="NUMBER_FEW"/> minutter</translation>
 <translation id="2649911884196340328">Tjenerens sikkerhetssertifikat inneholder feil.</translation>
+<translation id="3828029223314399057">Søk i bokmerker</translation>
 <translation id="8906421963862390172">&amp;Alternativer for stavekontroll</translation>
 <translation id="1963692530539281474"><ph name="NUMBER_DEFAULT"/> dager igjen</translation>
 <translation id="668171684555832681">Annen</translation>

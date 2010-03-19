@@ -42,7 +42,6 @@
         추가로 동기화되는 컴퓨터도 모두 동일한 북마크를 갖게 됩니다.</translation>
 <translation id="1383861834909034572">완료되면 열기</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
-<translation id="760641807227525561">전체화면</translation>
 <translation id="3315158641124845231"><ph name="PRODUCT_NAME"/> 숨기기</translation>
 <translation id="3496213124478423963">축소</translation>
 <translation id="8608043773967779744">다음 개인정보 접근 차단목록으로 인해 다음 콘텐츠가 표시되지 않습니다.</translation>
@@ -93,7 +92,6 @@
 <translation id="4684748086689879921">가져오기 건너뛰기</translation>
 <translation id="5516565854418269276">북마크바 항상 표시(&amp;A)</translation>
 <translation id="6426222199977479699">SSL 오류</translation>
-<translation id="4504497882859943663">번역 경고</translation>
 <translation id="4194570336751258953">탭하여 클릭 사용</translation>
 <translation id="5111692334209731439">북마크 관리자(&amp;B)</translation>
 <translation id="443008484043213881">도구</translation>
@@ -677,7 +675,6 @@
 <translation id="9107059250669762581"><ph name="NUMBER_DEFAULT"/>일</translation>
 <translation id="872451400847464257">검색엔진 수정</translation>
 <translation id="6463061331681402734"><ph name="NUMBER_MANY"/>분</translation>
-<translation id="6408082614319501487">Google 크롬은 페이지 콘텐츠를 Google에 보내서 웹페이지를 번역합니다.</translation>
 <translation id="8717266507183354698">방문 기록에서 <ph name="SEARCH_TERMS"/>이(가) 포함된 모든 페이지 보기</translation>
 <translation id="2466804342846034717">위에 정확한 비밀번호를 입력한 다음 아래 그림에 보이는 문자를 입력해 주세요.</translation>
 <translation id="5645845270586517071">보안 오류</translation>
@@ -1107,6 +1104,7 @@
 <translation id="8629974950076222828">모든 북마크를 시크릿 창에서 열기</translation>
 <translation id="4745438305783437565"><ph name="NUMBER_FEW"/>분</translation>
 <translation id="2649911884196340328">서버의 보안 인증서에 오류가 있습니다.</translation>
+<translation id="3828029223314399057">북마크 검색</translation>
 <translation id="8906421963862390172">맞춤법 검사기 옵션(&amp;S)</translation>
 <translation id="1963692530539281474"><ph name="NUMBER_DEFAULT"/>일 남음</translation>
 <translation id="668171684555832681">기타...</translation>

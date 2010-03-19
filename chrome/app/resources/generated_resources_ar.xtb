@@ -42,7 +42,6 @@
         سيتلقى كل كمبيوتر إضافي تم تمكين المزامنة عليه الإشارات نفسها.</translation>
 <translation id="1383861834909034572">فتح الملفّ عند انتهاء التحميل.</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
-<translation id="760641807227525561">ملء الشاشة</translation>
 <translation id="3315158641124845231">إخفاء <ph name="PRODUCT_NAME"/></translation>
 <translation id="3496213124478423963">تصغير</translation>
 <translation id="8608043773967779744">منعت القوائم السوداء للخصوصية والتي سيرد ذكرها عرض هذا المحتوى:</translation>
@@ -93,7 +92,6 @@
 <translation id="4684748086689879921">إلغاء الاستيراد</translation>
 <translation id="5516565854418269276">ع&amp;رض شريط الإشارات دائماً</translation>
 <translation id="6426222199977479699">خطأ في SSL</translation>
-<translation id="4504497882859943663">تحذير الترجمة</translation>
 <translation id="4194570336751258953">تمكين الضغط للنقر</translation>
 <translation id="5111692334209731439">&amp;مدير الإشارات</translation>
 <translation id="443008484043213881">الأدوات</translation>
@@ -688,7 +686,6 @@
 <translation id="9107059250669762581">عدد الأيام <ph name="NUMBER_DEFAULT"/></translation>
 <translation id="872451400847464257">تعديل محرّك البحث</translation>
 <translation id="6463061331681402734"><ph name="NUMBER_MANY"/> دقيقة</translation>
-<translation id="6408082614319501487">لترجمة صفحات الويب لك، يرسل متصفح Google Chrome محتويات تلك الصفحات إلى Google.</translation>
 <translation id="8717266507183354698">راجع جميع صفحات السجل المتضمنة &quot;<ph name="SEARCH_TERMS"/>&quot;</translation>
 <translation id="2466804342846034717">أدخل كلمة المرور الصحيحة أعلاه، ثم اكتب الأحرف التي تراها في الصورة التالية.</translation>
 <translation id="5645845270586517071">خطأ في أمن الموقع</translation>
@@ -1124,6 +1121,7 @@
 <translation id="8629974950076222828">فتح كل الإشارات في نافذة التصفح المتخفي</translation>
 <translation id="4745438305783437565"><ph name="NUMBER_FEW"/> دقيقة</translation>
 <translation id="2649911884196340328">تحتوي شهادة أمن الخادم على أخطاء!</translation>
+<translation id="3828029223314399057">بحث في الإشارات المرجعية</translation>
 <translation id="8906421963862390172">خيارات &amp;المدقق الإملائي</translation>
 <translation id="1963692530539281474">عدد الأيام المتبقية <ph name="NUMBER_DEFAULT"/></translation>
 <translation id="668171684555832681">ملف تعريف آخر...</translation>

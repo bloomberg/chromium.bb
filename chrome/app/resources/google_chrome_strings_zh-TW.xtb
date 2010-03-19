@@ -26,12 +26,12 @@
 <translation id="8815061062167142136">不得了! Google 瀏覽器已經損毀。要重新啟動嗎?</translation>
 <translation id="126024305903398738">Google 瀏覽器設定檔匯入工具</translation>
 <translation id="2653935705142821164">瀏覽器成像器</translation>
-<translation id="7241541963706135274">Google 瀏覽器會執行這些工作:</translation>
+<translation id="7241541963706135274">Google 瀏覽器會執行這些工作：</translation>
 <translation id="8446794773162156990">Google 瀏覽器反應異常</translation>
 <translation id="3889417619312448367">解除安裝 Google 瀏覽器</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google 瀏覽器</translation>
-<translation id="8810218179782551669">Google 瀏覽器語言:</translation>
-<translation id="7001386529596391893">在下列位置建立 Google 瀏覽器捷徑:</translation>
+<translation id="8810218179782551669">Google 瀏覽器語言：</translation>
+<translation id="7001386529596391893">在下列位置建立 Google 瀏覽器捷徑：</translation>
 <translation id="7461436095086637522">瀏覽器設定檔匯入工具</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="1195935957447623558">Google 瀏覽器上一次未正確關閉。如果要重新開啟之前的網頁，請按一下 [還原]。</translation>
@@ -86,7 +86,7 @@
 <translation id="1446473746922165495">為 Google 瀏覽器功能表、對話方塊及工具提示等變更語言選項。</translation>
 <translation id="9189723490960700326">您嘗試到達 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但伺服器提供逾期的憑證。由於憑證逾期所以沒有足夠資訊供我們辨別其可靠性。因此 Google 瀏覽器無法保證您的聯絡對象是 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; 而非攻擊者。您必須就止停住。</translation>
 <translation id="7106741999175697885">工作管理員 - Google 瀏覽器</translation>
-<translation id="8449380764213232436">Google 瀏覽器正從 <ph name="BROWSER_COMPONENT"/> 匯入下列項目:</translation>
+<translation id="8449380764213232436">Google 瀏覽器正從 <ph name="BROWSER_COMPONENT"/> 匯入下列項目：</translation>
 <translation id="852884188147941900">瀏覽器作業工具</translation>
 <translation id="3396977131400919238">安裝過程中發生作業系統錯誤，請再次下載「Google 瀏覽器」。</translation>
 <translation id="2618799103663374905">新增 Google 瀏覽器捷徑至您的桌面、快速啟動列及開始功能表</translation>

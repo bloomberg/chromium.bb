@@ -42,7 +42,6 @@
         Kaikki tietokoneet, joissa otat synkronoinnin käyttöön, jakavat samat kirjanmerkit.</translation>
 <translation id="1383861834909034572">Avautuu, kun valmis</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
-<translation id="760641807227525561">Koko näyttö</translation>
 <translation id="3315158641124845231">Piilota <ph name="PRODUCT_NAME"/></translation>
 <translation id="3496213124478423963">Loitonna</translation>
 <translation id="8608043773967779744">Seuraava suojaava kieltolista esti tämän sisällön näyttämisen:</translation>
@@ -93,7 +92,6 @@
 <translation id="4684748086689879921">Ohita tuonti</translation>
 <translation id="5516565854418269276">Näytä kirjanmerkkipalkki &amp;aina</translation>
 <translation id="6426222199977479699">SSL-virhe</translation>
-<translation id="4504497882859943663">Käännösvaroitus</translation>
 <translation id="4194570336751258953">Ota koskeuttamalla napsautus käyttöön</translation>
 <translation id="5111692334209731439">&amp;Kirjanmerkkien hallinta</translation>
 <translation id="443008484043213881">Työkalut</translation>
@@ -677,7 +675,6 @@
 <translation id="9107059250669762581"><ph name="NUMBER_DEFAULT"/> päivää</translation>
 <translation id="872451400847464257">Muokkaa hakukonetta</translation>
 <translation id="6463061331681402734"><ph name="NUMBER_MANY"/> minuuttia</translation>
-<translation id="6408082614319501487">Google Chrome lähettää käännettävien verkkosivujen sisällön Googlelle.</translation>
 <translation id="8717266507183354698">Katso kaikki sivut historiassa, jotka sisältävät termit <ph name="SEARCH_TERMS"/></translation>
 <translation id="2466804342846034717">Anna yläpuolelle oikea salasana ja kirjoita oheisessa kuvassa näkyvät merkit.</translation>
 <translation id="5645845270586517071">Turvallisuusvirhe</translation>
@@ -1110,6 +1107,7 @@
 <translation id="8629974950076222828">Avaa kaikki kirjanmerkit incognito-ikkunassa</translation>
 <translation id="4745438305783437565"><ph name="NUMBER_FEW"/> minuuttia</translation>
 <translation id="2649911884196340328">Palvelimen suojausvarmenteessa on virheitä!</translation>
+<translation id="3828029223314399057">Hae kirjanmerkeistä</translation>
 <translation id="8906421963862390172">Oikoluvun a&amp;setukset</translation>
 <translation id="1963692530539281474"><ph name="NUMBER_DEFAULT"/> päivää jäljellä</translation>
 <translation id="668171684555832681">Joku muu profiili...</translation>

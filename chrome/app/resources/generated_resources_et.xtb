@@ -42,7 +42,6 @@
         Kõik muud arvutid, kus lubate sünkroonimise, saavad samad järjehoidjad.</translation>
 <translation id="1383861834909034572">Avaneb pärast lõpetamist</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
-<translation id="760641807227525561">Täisekraan</translation>
 <translation id="3315158641124845231">Peida <ph name="PRODUCT_NAME"/></translation>
 <translation id="3496213124478423963">Vähenda</translation>
 <translation id="8608043773967779744">Järgmised privaatsuse mustad nimekirjad ei lubanud seda sisu kuvada:</translation>
@@ -93,7 +92,6 @@
 <translation id="4684748086689879921">Jäta import vahele</translation>
 <translation id="5516565854418269276">&amp;Kuva alati järjehoidjariba</translation>
 <translation id="6426222199977479699">SSL-i viga</translation>
-<translation id="4504497882859943663">Tõlkehoiatus</translation>
 <translation id="4194570336751258953">Luba klõpsamine</translation>
 <translation id="5111692334209731439">&amp;Järjehoidjate haldur</translation>
 <translation id="443008484043213881">Tööriistad</translation>
@@ -678,7 +676,6 @@
 <translation id="9107059250669762581"><ph name="NUMBER_DEFAULT"/> päeva</translation>
 <translation id="872451400847464257">Muuda otsingumootorit</translation>
 <translation id="6463061331681402734"><ph name="NUMBER_MANY"/> minutit</translation>
-<translation id="6408082614319501487">Veebilehtede tõlkimiseks saadab Google Chrome nende lehtede sisu Google'ile.</translation>
 <translation id="8717266507183354698">Kuva kõik ajaloo lehed, mis sisaldavad <ph name="SEARCH_TERMS"/></translation>
 <translation id="2466804342846034717">Sisestage ülalpool õige parool ja trükkige seejärel allpool tärgid, mida näete kujutisel.</translation>
 <translation id="5645845270586517071">Turvatõrge</translation>
@@ -1116,6 +1113,7 @@
 <translation id="8629974950076222828">Ava kõik järjehoidjad inkogonito aknas</translation>
 <translation id="4745438305783437565"><ph name="NUMBER_FEW"/> minutit</translation>
 <translation id="2649911884196340328">Serveri turvasert sisaldab vigu!</translation>
+<translation id="3828029223314399057">Otsi jäjehoidjaid</translation>
 <translation id="8906421963862390172">&amp;Õigekirja kontrolli valikud</translation>
 <translation id="1963692530539281474"><ph name="NUMBER_DEFAULT"/> päeva jäänud</translation>
 <translation id="668171684555832681">Muu...</translation>

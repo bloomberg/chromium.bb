@@ -42,7 +42,6 @@
         Om du aktiverar synkronisering på flera datorer läggs bokmärkena till även på dessa.</translation>
 <translation id="1383861834909034572">Öppna när klar</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
-<translation id="760641807227525561">Helskärm</translation>
 <translation id="3315158641124845231">Dölj <ph name="PRODUCT_NAME"/></translation>
 <translation id="3496213124478423963">Zooma ut</translation>
 <translation id="8608043773967779744">Följande sekretessvartlistor förhindrade att innehållet visades:</translation>
@@ -93,7 +92,6 @@
 <translation id="4684748086689879921">Hoppa över import</translation>
 <translation id="5516565854418269276">&amp;Visa alltid bokmärkesfältet</translation>
 <translation id="6426222199977479699">SSL-fel</translation>
-<translation id="4504497882859943663">Översättningsvarning</translation>
 <translation id="4194570336751258953">Aktivera klick på styrplattan</translation>
 <translation id="5111692334209731439">&amp;Bokmärkeshanteraren</translation>
 <translation id="443008484043213881">Verktyg</translation>
@@ -677,7 +675,6 @@
 <translation id="9107059250669762581"><ph name="NUMBER_DEFAULT"/> dagar</translation>
 <translation id="872451400847464257">Redigera sökmotor</translation>
 <translation id="6463061331681402734"><ph name="NUMBER_MANY"/> minuter</translation>
-<translation id="6408082614319501487">Google Chrome skickar innehållet på sidorna till Google så att det kan översättas.</translation>
 <translation id="8717266507183354698">Visa alla sidor i historiken som innehåller <ph name="SEARCH_TERMS"/></translation>
 <translation id="2466804342846034717">Ange rätt lösenord ovan och ange sedan tecknen som visas i bilden nedan.</translation>
 <translation id="5645845270586517071">Säkerhetsfel</translation>
@@ -1111,6 +1108,7 @@
 <translation id="8629974950076222828">Öppna alla bokmärken i ett inkognitofönster</translation>
 <translation id="4745438305783437565"><ph name="NUMBER_FEW"/> minuter</translation>
 <translation id="2649911884196340328">Serverns säkerhetscertifikat innehåller fel!</translation>
+<translation id="3828029223314399057">Sök efter bokmärken</translation>
 <translation id="8906421963862390172">&amp;Alternativ för stavningskontroll</translation>
 <translation id="1963692530539281474"><ph name="NUMBER_DEFAULT"/> dagar kvar</translation>
 <translation id="668171684555832681">Annan...</translation>

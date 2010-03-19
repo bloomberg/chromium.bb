@@ -42,7 +42,6 @@
         Zaznamki bodo na voljo v vseh računalnikih, v katerih omogočite sinhroniziranje.</translation>
 <translation id="1383861834909034572">Odpiranje, ko je končano</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
-<translation id="760641807227525561">Celozaslonsko</translation>
 <translation id="3315158641124845231">Skrij <ph name="PRODUCT_NAME"/></translation>
 <translation id="3496213124478423963">Pomanjšaj</translation>
 <translation id="8608043773967779744">Te vsebine ni bilo mogoče prikazati zaradi teh črnih seznamov za zasebnost:</translation>
@@ -93,7 +92,6 @@
 <translation id="4684748086689879921">Preskoči uvoz</translation>
 <translation id="5516565854418269276">&amp;Vedno prikaži vrstico z zaznamki</translation>
 <translation id="6426222199977479699">Napaka SSL</translation>
-<translation id="4504497882859943663">Opozorilo pri prevajanju</translation>
 <translation id="4194570336751258953">Omogoči klikanje s tapkanjem</translation>
 <translation id="5111692334209731439">&amp;Upravitelj zaznamkov</translation>
 <translation id="443008484043213881">Orodja</translation>
@@ -677,7 +675,6 @@
 <translation id="9107059250669762581"><ph name="NUMBER_DEFAULT"/> dni</translation>
 <translation id="872451400847464257">Urejanje iskalnika</translation>
 <translation id="6463061331681402734"><ph name="NUMBER_MANY"/> mins</translation>
-<translation id="6408082614319501487">Pri prevajanju strani Google Chrome pošlje njihovo vsebino Googlu.</translation>
 <translation id="8717266507183354698">Poglejte vse strani v zgodovini, ki vsebujejo <ph name="SEARCH_TERMS"/></translation>
 <translation id="2466804342846034717">V zgornje polje vnesite pravilno geslo, nato pa vtipkajte znake, prikazane spodaj.</translation>
 <translation id="5645845270586517071">Varnostna napaka</translation>
@@ -1111,6 +1108,7 @@
 <translation id="8629974950076222828">Vse zaznamke odpri v oknu brez beleženja zgodovine</translation>
 <translation id="4745438305783437565"><ph name="NUMBER_FEW"/> min</translation>
 <translation id="2649911884196340328">Varnostni certifikat strežnika vsebuje napake!</translation>
+<translation id="3828029223314399057">Išči po zaznamkih</translation>
 <translation id="8906421963862390172">&amp;Možnosti črkovalnika</translation>
 <translation id="1963692530539281474">še <ph name="NUMBER_DEFAULT"/> dni</translation>
 <translation id="668171684555832681">Drugo ...</translation>

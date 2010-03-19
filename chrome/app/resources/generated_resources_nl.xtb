@@ -42,7 +42,6 @@
         Op elke extra computer waarop u synchronisatie inschakelt, worden dezelfde bladwijzers weergegeven.</translation>
 <translation id="1383861834909034572">Openen wanneer voltooid</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
-<translation id="760641807227525561">Volledig scherm</translation>
 <translation id="3315158641124845231">Verberg <ph name="PRODUCT_NAME"/></translation>
 <translation id="3496213124478423963">Kleiner</translation>
 <translation id="8608043773967779744">De volgende zwarte lijsten voor privacy hebben voorkomen dat deze inhoud is weergegeven:</translation>
@@ -93,7 +92,6 @@
 <translation id="4684748086689879921">Import overslaan</translation>
 <translation id="5516565854418269276">Bladwijzerbalk &amp;altijd weergeven</translation>
 <translation id="6426222199977479699">SSL-fout</translation>
-<translation id="4504497882859943663">Vertalingswaarschuwing</translation>
 <translation id="4194570336751258953">Tikken-voor-klikken inschakelen</translation>
 <translation id="5111692334209731439">&amp;Bladwijzermanager</translation>
 <translation id="443008484043213881">Extra</translation>
@@ -677,7 +675,6 @@
 <translation id="9107059250669762581"><ph name="NUMBER_DEFAULT"/> dagen</translation>
 <translation id="872451400847464257">Zoekmachine bewerken</translation>
 <translation id="6463061331681402734"><ph name="NUMBER_MANY"/> minuten</translation>
-<translation id="6408082614319501487">Google Chrome verzendt de inhoud van webpagina's naar Google om ze voor u te kunnen vertalen.</translation>
 <translation id="8717266507183354698">Alle pagina's in de geschiedenis weergeven met <ph name="SEARCH_TERMS"/></translation>
 <translation id="2466804342846034717">Geef hierboven het juiste wachtwoord op en typ vervolgens de tekens die in de onderstaande afbeelding worden weergegeven.</translation>
 <translation id="5645845270586517071">Beveiligingsfout</translation>
@@ -1111,6 +1108,7 @@
 <translation id="8629974950076222828">Alle bladwijzers openen in incognitovenster</translation>
 <translation id="4745438305783437565"><ph name="NUMBER_FEW"/> minuten</translation>
 <translation id="2649911884196340328">Het beveiligingscertificaat van de server bevat fouten.</translation>
+<translation id="3828029223314399057">Zoeken in bladwijzers</translation>
 <translation id="8906421963862390172">Opties voor &amp;spellingcontrole</translation>
 <translation id="1963692530539281474"><ph name="NUMBER_DEFAULT"/> dagen resterend</translation>
 <translation id="668171684555832681">Anders...</translation>

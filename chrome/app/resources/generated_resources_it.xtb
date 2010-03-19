@@ -42,7 +42,6 @@
         Ogni computer aggiuntivo su cui abiliti la sincronizzazione riceverà gli stessi Preferiti.</translation>
 <translation id="1383861834909034572">Apri al termine</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
-<translation id="760641807227525561">Schermo intero</translation>
 <translation id="3315158641124845231">Nascondi <ph name="PRODUCT_NAME"/></translation>
 <translation id="3496213124478423963">Riduci</translation>
 <translation id="8608043773967779744">Le seguenti blacklist per la privacy hanno impedito la visualizzazione di questi contenuti:</translation>
@@ -93,7 +92,6 @@
 <translation id="4684748086689879921">Ignora importazione</translation>
 <translation id="5516565854418269276">Mostra &amp;sempre barra dei Preferiti</translation>
 <translation id="6426222199977479699">Errore SSL</translation>
-<translation id="4504497882859943663">Avviso sulla traduzione</translation>
 <translation id="4194570336751258953">Attiva tocco per fare clic</translation>
 <translation id="5111692334209731439">&amp;Gestione Preferiti</translation>
 <translation id="443008484043213881">Strumenti</translation>
@@ -678,7 +676,6 @@
 <translation id="9107059250669762581"><ph name="NUMBER_DEFAULT"/> giorni</translation>
 <translation id="872451400847464257">Modifica motore di ricerca</translation>
 <translation id="6463061331681402734"><ph name="NUMBER_MANY"/> min.</translation>
-<translation id="6408082614319501487">Per tradurre automaticamente le pagine web, Google Chrome invierà i contenuti delle pagine a Google.</translation>
 <translation id="8717266507183354698">Visualizza tutte le pagine della cronologia contenenti <ph name="SEARCH_TERMS"/></translation>
 <translation id="2466804342846034717">Inserisci la password corretta nella parte superiore e quindi ridigita i caratteri mostrati nella seguente immagine.</translation>
 <translation id="5645845270586517071">Errore di sicurezza</translation>
@@ -1112,6 +1109,7 @@
 <translation id="8629974950076222828">Apri tutti i Preferiti nella finestra di navigazione in incognito</translation>
 <translation id="4745438305783437565"><ph name="NUMBER_FEW"/> min.</translation>
 <translation id="2649911884196340328">Il certificato di sicurezza del server contiene degli errori!</translation>
+<translation id="3828029223314399057">Cerca tra i Preferiti</translation>
 <translation id="8906421963862390172">&amp;Opzioni correttore ortografico</translation>
 <translation id="1963692530539281474"><ph name="NUMBER_DEFAULT"/> giorni rimanenti</translation>
 <translation id="668171684555832681">Altro...</translation>

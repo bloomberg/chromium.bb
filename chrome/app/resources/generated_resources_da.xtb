@@ -42,7 +42,6 @@
         Alle computere, som du aktiverer synkronisering på, vil have de samme bogmærker.</translation>
 <translation id="1383861834909034572">Åbnes, når afsluttet</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
-<translation id="760641807227525561">Fuld skærm</translation>
 <translation id="3315158641124845231">Skjul <ph name="PRODUCT_NAME"/></translation>
 <translation id="3496213124478423963">Zoom ud</translation>
 <translation id="8608043773967779744">Følgende fortroligheds-blacklister forhindrede dette indhold i at vise:</translation>
@@ -53,6 +52,7 @@
 <translation id="8178665534778830238">Indhold:</translation>
 <translation id="8974161578568356045">Find automatisk</translation>
 <translation id="1818606096021558659">Side</translation>
+<translation id="5388588172257446328">Brugernavn:</translation>
 <translation id="1657406563541664238">Vær med til at gøre <ph name="PRODUCT_NAME"/> bedre ved automatisk at sende forbrugsstatistikker og rapportere om nedbrud til Google</translation>
 <translation id="7982789257301363584">Netværk</translation>
 <translation id="2336228925368920074">Føj alle faner til Bogmærker ...</translation>
@@ -93,7 +93,6 @@
 <translation id="4684748086689879921">Spring import over</translation>
 <translation id="5516565854418269276">&amp;Vis altid bogmærkelinjen</translation>
 <translation id="6426222199977479699">SSL-Fejl</translation>
-<translation id="4504497882859943663">Advarsel om oversættelse</translation>
 <translation id="4194570336751258953">Aktiver tryk for at klikke</translation>
 <translation id="5111692334209731439">&amp;Bogmærkeadministrator</translation>
 <translation id="443008484043213881">Værktøjer</translation>
@@ -332,6 +331,7 @@
 <translation id="6178664161104547336">Vælg et certifikat</translation>
 <translation id="5702898740348134351">&amp;Rediger søgemaskiner ...</translation>
 <translation id="2365740070488517695">Tips</translation>
+<translation id="4668929960204016307">,</translation>
 <translation id="2869459179306435079">Importer indstillinger fra:</translation>
 <translation id="732677191631732447">K&amp;opier lydens webadresse</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME"/></translation>
@@ -678,7 +678,6 @@
 <translation id="9107059250669762581"><ph name="NUMBER_DEFAULT"/> dage</translation>
 <translation id="872451400847464257">Rediger søgemaskine</translation>
 <translation id="6463061331681402734"><ph name="NUMBER_MANY"/> minutter</translation>
-<translation id="6408082614319501487">Google Chrome sender indholdet af disse websider til Google for at kunne oversætte websiderne for dig.</translation>
 <translation id="8717266507183354698">Se alle sider i historik, som indeholder <ph name="SEARCH_TERMS"/></translation>
 <translation id="2466804342846034717">Indtast den korrekte adgangskode ovenfor, og skriv de tegn, du kan se på billedet nedenfor.</translation>
 <translation id="5645845270586517071">Sikkerhedsfejl</translation>
@@ -802,6 +801,7 @@
 <translation id="2979639724566107830">Åbn i nyt vindue</translation>
 <translation id="3381479211481266345">Hastighedsfølsomhed</translation>
 <translation id="2822854841007275488">Arabisk</translation>
+<translation id="5857090052475505287">Ny mappe</translation>
 <translation id="5178667623289523808">Find forrige</translation>
 <translation id="2815448242176260024">Gem aldrig adgangskoder</translation>
 <translation id="2989805286512600854">Åbn på ny fane</translation>
@@ -1110,6 +1110,7 @@
 <translation id="8629974950076222828">Åbn alle bogmærker i inkognitovindue</translation>
 <translation id="4745438305783437565"><ph name="NUMBER_FEW"/> minutter</translation>
 <translation id="2649911884196340328">Serverens sikkerhedscertifikatet har fejl!</translation>
+<translation id="3828029223314399057">Søg i bogmærker</translation>
 <translation id="8906421963862390172">&amp;Indstillinger for stavekontrol</translation>
 <translation id="1963692530539281474"><ph name="NUMBER_DEFAULT"/> dage tilbage</translation>
 <translation id="668171684555832681">Andre ...</translation>
@@ -1276,6 +1277,7 @@ Nøglefil: <ph name="KEY_FILE"/>
 Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye versioner af din udvidelse.</translation>
 <translation id="3036649622769666520">Åbn filer</translation>
 <translation id="7685049629764448582">JavaScript-hukommelse</translation>
+<translation id="3989635538409502728">Log ud</translation>
 <translation id="4508765956121923607">Vis k&amp;ilde</translation>
 <translation id="8080048886850452639">K&amp;opier lydens webadresse</translation>
 <translation id="5849869942539715694">Pak udvidelse ...</translation>

@@ -42,7 +42,6 @@
         启用了“书签同步”功能的其他计算机将会收到相同的书签。</translation>
 <translation id="1383861834909034572">完成时打开</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
-<translation id="760641807227525561">全屏幕</translation>
 <translation id="3315158641124845231">隐藏<ph name="PRODUCT_NAME"/></translation>
 <translation id="3496213124478423963">缩小</translation>
 <translation id="8608043773967779744">以下隐私权黑名单阻止了此内容的显示：</translation>
@@ -93,7 +92,6 @@
 <translation id="4684748086689879921">略过导入</translation>
 <translation id="5516565854418269276">总是显示书签栏(&amp;A)</translation>
 <translation id="6426222199977479699">SSL 错误</translation>
-<translation id="4504497882859943663">翻译警告</translation>
 <translation id="4194570336751258953">启用点按单击</translation>
 <translation id="5111692334209731439">书签管理器(&amp;B)</translation>
 <translation id="443008484043213881">工具</translation>
@@ -687,7 +685,6 @@
 <translation id="9107059250669762581"><ph name="NUMBER_DEFAULT"/> 天</translation>
 <translation id="872451400847464257">修改搜索引擎</translation>
 <translation id="6463061331681402734"><ph name="NUMBER_MANY"/> mins</translation>
-<translation id="6408082614319501487">要翻译网页，谷歌浏览器会将这些网页上的内容发送给 Google。</translation>
 <translation id="8717266507183354698">查看历史记录中所有含“<ph name="SEARCH_TERMS"/>”的网页</translation>
 <translation id="2466804342846034717">在上面输入正确的密码，然后键入下面图片中显示的字符。</translation>
 <translation id="5645845270586517071">安全错误</translation>
@@ -1119,6 +1116,7 @@
 <translation id="8629974950076222828">在隐身窗口中打开所有书签</translation>
 <translation id="4745438305783437565"><ph name="NUMBER_FEW"/> mins</translation>
 <translation id="2649911884196340328">该服务器的安全证书有误！</translation>
+<translation id="3828029223314399057">搜索书签</translation>
 <translation id="8906421963862390172">拼写检查选项(&amp;S)</translation>
 <translation id="1963692530539281474">还有 <ph name="NUMBER_DEFAULT"/> 天</translation>
 <translation id="668171684555832681">其他...</translation>

@@ -42,7 +42,6 @@
         సమకాలీకరణను మీరు ప్రారంభించిన ప్రతి అదనపు కంప్యూటర్‌లో అవే బుక్‌మార్క్‌లను అందుకుంటాయి.</translation>
 <translation id="1383861834909034572">పూర్తి అయిన తర్వాత తెరవబడుతుంది</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
-<translation id="760641807227525561">పూర్తి స్క్రీన్</translation>
 <translation id="3315158641124845231"><ph name="PRODUCT_NAME"/>ను దాచిపెట్టు</translation>
 <translation id="3496213124478423963">దూరంగా జూమ్ చెయ్యి</translation>
 <translation id="8608043773967779744">ఈ క్రింది గోప్యత బ్లాక్‌లిస్ట్‌లు ఈ కంటెంట్‌ను కనిపించకుండా నిరోధించాయి:</translation>
@@ -93,7 +92,6 @@
 <translation id="4684748086689879921">దిగుమతిని దాటవేయి</translation>
 <translation id="5516565854418269276">&amp;ఎల్లప్పుడూ బుక్‌మార్క్‌ల పట్టీని చూపించు</translation>
 <translation id="6426222199977479699">SSL లోపం</translation>
-<translation id="4504497882859943663">అనువాద హెచ్చరిక</translation>
 <translation id="4194570336751258953">క్లిక్ చెయ్యడానికి టాప్ చెయ్యి ప్రారంభించు</translation>
 <translation id="5111692334209731439">&amp;బుక్‌మార్క్ సంచాలకులు</translation>
 <translation id="443008484043213881">ఉపకరణాలు</translation>
@@ -687,7 +685,6 @@
 <translation id="9107059250669762581"><ph name="NUMBER_DEFAULT"/> రోజులు</translation>
 <translation id="872451400847464257">శోధన ఇంజిన్‌ను సవరించు</translation>
 <translation id="6463061331681402734"><ph name="NUMBER_MANY"/> నిమిషాలు</translation>
-<translation id="6408082614319501487">మీ కోసం వెబ్‌పేజీలను అనువదించడానికి, Googleకు ఆ పేజీల యొక్క కంటెంట్‌లను Google Chrome పంపుతుంది.</translation>
 <translation id="8717266507183354698">చరిత్రలోని <ph name="SEARCH_TERMS"/>ను కలిగి ఉన్న అన్ని పేజీలను చూడండి</translation>
 <translation id="2466804342846034717">పైన సరైన పాస్‌వర్డ్‌ను ఎంటర్ చేసి, క్రింద ఉన్న చిత్రంలో మీరు చూసే అక్షరాలను టైప్ చెయ్యండి.</translation>
 <translation id="5645845270586517071">భద్రతా లోపం</translation>
@@ -1133,7 +1130,7 @@
 <translation id="8709969075297564489">సర్వర్ సర్టిఫికెట్ రద్దు కోసం తనిఖీ చెయ్యండి</translation>
 <translation id="8698171900303917290">ఇన్‌స్టాల్ చెయ్యడంలో సమస్యలా?</translation>
 <translation id="4861833787540810454">&amp;ప్లే</translation>
-<translation id="2552545117464357659">సరిక్రొత్తవి</translation>
+<translation id="2552545117464357659">క్రొత్తవి</translation>
 <translation id="5869522115854928033">సేవ్  చేసిన పాస్‌వర్డ్‌లు</translation>
 <translation id="1709220265083931213">అధునాతన ఎంపికలు</translation>
 <translation id="4771973620359291008">తెలియని లోపం ఒకటి ఏర్పడింది.</translation>
