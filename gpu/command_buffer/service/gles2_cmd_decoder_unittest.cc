@@ -16,6 +16,7 @@ using ::gles2::MockGLInterface;
 using ::testing::_;
 using ::testing::DoAll;
 using ::testing::InSequence;
+using ::testing::Invoke;
 using ::testing::MatcherCast;
 using ::testing::Pointee;
 using ::testing::Return;
@@ -30,6 +31,12 @@ namespace gles2 {
 class GLES2DecoderTest : public GLES2DecoderTestBase {
  public:
   GLES2DecoderTest() { }
+
+ protected:
+  void CheckReadPixelsOutOfRange(
+      GLint in_read_x, GLint in_read_y,
+      GLsizei in_read_width, GLsizei in_read_height,
+      bool init);
 };
 
 class GLES2DecoderWithShaderTest : public GLES2DecoderWithShaderTestBase {
@@ -1109,6 +1116,312 @@ TEST_F(GLES2DecoderTest, RenderbufferStorageWithNoBoundTarget) {
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
+namespace {
+
+// A class to emulate glReadPixels
+class ReadPixelsEmulator {
+ public:
+  // pack_alignment is the alignment you want ReadPixels to use
+  // when copying. The actual data passed in pixels should be contiguous.
+  ReadPixelsEmulator(GLsizei width, GLsizei height, GLint bytes_per_pixel,
+                     const void* pixels, GLint pack_alignment)
+      : width_(width),
+        height_(height),
+        pack_alignment_(pack_alignment),
+        bytes_per_pixel_(bytes_per_pixel),
+        pixels_(reinterpret_cast<const int8*>(pixels)) {
+  }
+
+  void ReadPixels(
+      GLint x, GLint y, GLsizei width, GLsizei height,
+      GLenum format, GLenum type, void* pixels) const {
+    DCHECK_GE(x, 0);
+    DCHECK_GE(y, 0);
+    DCHECK_LE(x + width, width_);
+    DCHECK_LE(y + height, height_);
+    for (GLint yy = 0; yy < height; ++yy) {
+      const int8* src = GetPixelAddress(x, y + yy);
+      const void* dst = ComputePackAlignmentAddress(0, yy, width, pixels);
+      memcpy(const_cast<void*>(dst), src, width * bytes_per_pixel_);
+    }
+  }
+
+  bool CompareRowSegment(
+      GLint x, GLint y, GLsizei width, const void* data) const {
+    DCHECK(x + width <= width_ || width == 0);
+    return memcmp(data, GetPixelAddress(x, y), width * bytes_per_pixel_) == 0;
+  }
+
+  // Helper to compute address of pixel in pack aligned data.
+  const void* ComputePackAlignmentAddress(
+      GLint x, GLint y, GLsizei width, const void* address) const {
+    GLint unpadded_row_size = ComputeImageDataSize(width, 1);
+    GLint two_rows_size = ComputeImageDataSize(width, 2);
+    GLsizei padded_row_size = two_rows_size - unpadded_row_size;
+    GLint offset = y * padded_row_size + x * bytes_per_pixel_;
+    return static_cast<const int8*>(address) + offset;
+  }
+
+  GLint ComputeImageDataSize(GLint width, GLint height) const {
+    GLint row_size = width * bytes_per_pixel_;
+    if (height > 1) {
+      GLint temp = row_size + pack_alignment_;
+      GLint padded_row_size = (temp / pack_alignment_) * pack_alignment_;
+      GLint size_of_all_but_last_row = (height - 1) * padded_row_size;
+      return size_of_all_but_last_row + row_size;
+    } else {
+      return height * row_size;
+    }
+  }
+
+ private:
+  const int8* GetPixelAddress(GLint x, GLint y) const {
+    return pixels_ + (width_ * y + x) * bytes_per_pixel_;
+  }
+
+  GLint pack_alignment_;
+  GLint bytes_per_pixel_;
+  GLsizei width_;
+  GLsizei height_;
+  const int8* pixels_;
+};
+
+}  // anonymous namespace
+
+void GLES2DecoderTest::CheckReadPixelsOutOfRange(
+    GLint in_read_x, GLint in_read_y,
+    GLsizei in_read_width, GLsizei in_read_height,
+    bool init) {
+  const GLsizei kWidth = 5;
+  const GLsizei kHeight = 3;
+  const GLint kBytesPerPixel = 3;
+  const GLint kPackAlignment = 4;
+  const GLenum kFormat = GL_RGB;
+  static const int8 kSrcPixels[kWidth * kHeight * kBytesPerPixel] = {
+    12, 13, 14, 18, 19, 18, 19, 12, 13, 14, 18, 19, 18, 19, 13,
+    29, 28, 23, 22, 21, 22, 21, 29, 28, 23, 22, 21, 22, 21, 28,
+    31, 34, 39, 37, 32, 37, 32, 31, 34, 39, 37, 32, 37, 32, 34,
+  };
+
+  ClearSharedMemory();
+
+  // We need to setup an FBO so we can know the max size that ReadPixels will
+  // access
+  if (init) {
+    DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
+    DoTexImage2D(GL_TEXTURE_2D, 0, kFormat, kWidth, kHeight, 0,
+                 kFormat, GL_UNSIGNED_BYTE, 0, 0);
+    DoBindFramebuffer(GL_FRAMEBUFFER, client_framebuffer_id_,
+                      kServiceFramebufferId);
+  }
+
+  // We need to tell our mock GL to return the info about our FBO.
+  EXPECT_CALL(*gl_, GetFramebufferAttachmentParameterivEXT(
+      GL_FRAMEBUFFER,
+      GL_COLOR_ATTACHMENT0,
+      GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE,
+      _))
+      .WillOnce(SetArgumentPointee<3>(GL_TEXTURE))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetFramebufferAttachmentParameterivEXT(
+            GL_FRAMEBUFFER,
+            GL_COLOR_ATTACHMENT0,
+            GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME,
+            _))
+      .WillOnce(SetArgumentPointee<3>(kServiceTextureId))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetFramebufferAttachmentParameterivEXT(
+      GL_FRAMEBUFFER,
+      GL_COLOR_ATTACHMENT0,
+      GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LEVEL,
+      _))
+      .WillOnce(SetArgumentPointee<3>(0))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetFramebufferAttachmentParameterivEXT(
+      GL_FRAMEBUFFER,
+      GL_COLOR_ATTACHMENT0,
+      GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_CUBE_MAP_FACE,
+      _))
+      .WillOnce(SetArgumentPointee<3>(0))
+      .RetiresOnSaturation();
+
+  ReadPixelsEmulator emu(
+      kWidth, kHeight, kBytesPerPixel, kSrcPixels, kPackAlignment);
+  typedef ReadPixels::Result Result;
+  Result* result = GetSharedMemoryAs<Result*>();
+  uint32 result_shm_id = kSharedMemoryId;
+  uint32 result_shm_offset = kSharedMemoryOffset;
+  uint32 pixels_shm_id = kSharedMemoryId;
+  uint32 pixels_shm_offset = kSharedMemoryOffset + sizeof(*result);
+  void* dest = &result[1];
+  EXPECT_CALL(*gl_, GetError())
+     .WillOnce(Return(GL_NO_ERROR))
+     .WillOnce(Return(GL_NO_ERROR))
+     .RetiresOnSaturation();
+  // ReadPixels will be called for valid size only even though the command
+  // is requesting a larger size.
+  GLint read_x = std::max(0, in_read_x);
+  GLint read_y = std::max(0, in_read_y);
+  GLint read_end_x = std::max(0, std::min(kWidth, in_read_x + in_read_width));
+  GLint read_end_y = std::max(0, std::min(kHeight, in_read_y + in_read_height));
+  GLint read_width = read_end_x - read_x;
+  GLint read_height = read_end_y - read_y;
+  if (read_width > 0 && read_height > 0) {
+    for (GLint yy = read_y; yy < read_end_y; ++yy) {
+      EXPECT_CALL(
+          *gl_, ReadPixels(read_x, yy, read_width, 1,
+                           kFormat, GL_UNSIGNED_BYTE, _))
+          .WillOnce(Invoke(&emu, &ReadPixelsEmulator::ReadPixels))
+          .RetiresOnSaturation();
+    }
+  }
+  ReadPixels cmd;
+  cmd.Init(in_read_x, in_read_y, in_read_width, in_read_height,
+           kFormat, GL_UNSIGNED_BYTE,
+           pixels_shm_id, pixels_shm_offset,
+           result_shm_id, result_shm_offset);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+
+  GLint unpadded_row_size = emu.ComputeImageDataSize(in_read_width, 1);
+  scoped_array<int8> zero(new int8[unpadded_row_size]);
+  scoped_array<int8> pack(new int8[kPackAlignment]);
+  memset(zero.get(), 0, unpadded_row_size);
+  memset(pack.get(), kInitialMemoryValue, kPackAlignment);
+  for (GLint yy = 0; yy < in_read_height; ++yy) {
+    const int8* row = static_cast<const int8*>(
+        emu.ComputePackAlignmentAddress(0, yy, in_read_width, dest));
+    GLint y = in_read_y + yy;
+    if (y < 0 || y >= kHeight) {
+      EXPECT_EQ(0, memcmp(zero.get(), row, unpadded_row_size));
+    } else {
+      // check off left.
+      GLint num_left_pixels = std::max(-in_read_x, 0);
+      GLint num_left_bytes = num_left_pixels * kBytesPerPixel;
+      EXPECT_EQ(0, memcmp(zero.get(), row, num_left_bytes));
+
+      // check off right.
+      GLint num_right_pixels = std::max(in_read_x + in_read_width - kWidth, 0);
+      GLint num_right_bytes = num_right_pixels * kBytesPerPixel;
+      EXPECT_EQ(0, memcmp(zero.get(),
+                            row + unpadded_row_size - num_right_bytes,
+                            num_right_bytes));
+
+      // check middle.
+      GLint x = std::max(in_read_x, 0);
+      GLint num_middle_pixels =
+          std::max(in_read_width - num_left_pixels - num_right_pixels, 0);
+      EXPECT_TRUE(emu.CompareRowSegment(
+          x, y, num_middle_pixels, row + num_left_bytes));
+    }
+
+    // check padding
+    if (yy != in_read_height - 1) {
+      GLint num_padding_bytes =
+          (kPackAlignment - 1) - (unpadded_row_size % kPackAlignment);
+      EXPECT_EQ(0,
+                memcmp(pack.get(), row + unpadded_row_size, num_padding_bytes));
+    }
+  }
+}
+
+TEST_F(GLES2DecoderTest, ReadPixels) {
+  const GLsizei kWidth = 5;
+  const GLsizei kHeight = 3;
+  const GLint kBytesPerPixel = 3;
+  const GLint kPackAlignment = 4;
+  static const int8 kSrcPixels[kWidth * kHeight * kBytesPerPixel] = {
+    12, 13, 14, 18, 19, 18, 19, 12, 13, 14, 18, 19, 18, 19, 13,
+    29, 28, 23, 22, 21, 22, 21, 29, 28, 23, 22, 21, 22, 21, 28,
+    31, 34, 39, 37, 32, 37, 32, 31, 34, 39, 37, 32, 37, 32, 34,
+  };
+
+  ReadPixelsEmulator emu(
+      kWidth, kHeight, kBytesPerPixel, kSrcPixels, kPackAlignment);
+  typedef ReadPixels::Result Result;
+  Result* result = GetSharedMemoryAs<Result*>();
+  uint32 result_shm_id = kSharedMemoryId;
+  uint32 result_shm_offset = kSharedMemoryOffset;
+  uint32 pixels_shm_id = kSharedMemoryId;
+  uint32 pixels_shm_offset = kSharedMemoryOffset + sizeof(*result);
+  void* dest = &result[1];
+  EXPECT_CALL(*gl_, GetError())
+     .WillOnce(Return(GL_NO_ERROR))
+     .WillOnce(Return(GL_NO_ERROR))
+     .RetiresOnSaturation();
+  EXPECT_CALL(
+      *gl_, ReadPixels(0, 0, kWidth, kHeight, GL_RGB, GL_UNSIGNED_BYTE, _))
+      .WillOnce(Invoke(&emu, &ReadPixelsEmulator::ReadPixels));
+  ReadPixels cmd;
+  cmd.Init(0, 0, kWidth, kHeight, GL_RGB, GL_UNSIGNED_BYTE,
+           pixels_shm_id, pixels_shm_offset,
+           result_shm_id, result_shm_offset);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  for (GLint yy = 0; yy < kHeight; ++yy) {
+    EXPECT_TRUE(emu.CompareRowSegment(
+        0, yy, kWidth,
+        emu.ComputePackAlignmentAddress(0, yy, kWidth, dest)));
+  }
+}
+
+TEST_F(GLES2DecoderTest, ReadPixelsOutOfRange) {
+  static GLint tests[][4] = {
+    { -2, -1, 9, 5, },  // out of range on all sides
+    { 2, 1, 9, 5, },  // out of range on right, bottom
+    { -7, -4, 9, 5, },  // out of range on left, top
+    { 0, -5, 9, 5, },  // completely off top
+    { 0, 3, 9, 5, },  // completely off bottom
+    { -9, 0, 9, 5, },  // completely off left
+    { 5, 0, 9, 5, },  // completely off right
+  };
+
+  for (size_t tt = 0; tt < arraysize(tests); ++tt) {
+    CheckReadPixelsOutOfRange(
+        tests[tt][0], tests[tt][1], tests[tt][2], tests[tt][3], tt == 0);
+  }
+}
+
+TEST_F(GLES2DecoderTest, ReadPixelsInvalidArgs) {
+  typedef ReadPixels::Result Result;
+  Result* result = GetSharedMemoryAs<Result*>();
+  uint32 result_shm_id = kSharedMemoryId;
+  uint32 result_shm_offset = kSharedMemoryOffset;
+  uint32 pixels_shm_id = kSharedMemoryId;
+  uint32 pixels_shm_offset = kSharedMemoryOffset + sizeof(*result);
+  EXPECT_CALL(*gl_, ReadPixels(_, _, _, _, _, _, _)).Times(0);
+  ReadPixels cmd;
+  cmd.Init(0, 0, -1, 1, GL_RGB, GL_UNSIGNED_BYTE,
+           pixels_shm_id, pixels_shm_offset,
+           result_shm_id, result_shm_offset);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+  cmd.Init(0, 0, 1, -1, GL_RGB, GL_UNSIGNED_BYTE,
+           pixels_shm_id, pixels_shm_offset,
+           result_shm_id, result_shm_offset);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+  cmd.Init(0, 0, 1, 1, GL_RGB, GL_INT,
+           pixels_shm_id, pixels_shm_offset,
+           result_shm_id, result_shm_offset);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+  cmd.Init(0, 0, 1, 1, GL_RGB, GL_UNSIGNED_BYTE,
+           kInvalidSharedMemoryId, pixels_shm_offset,
+           result_shm_id, result_shm_offset);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+  cmd.Init(0, 0, 1, 1, GL_RGB, GL_UNSIGNED_BYTE,
+           pixels_shm_id, kInvalidSharedMemoryOffset,
+           result_shm_id, result_shm_offset);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+  cmd.Init(0, 0, 1, 1, GL_RGB, GL_UNSIGNED_BYTE,
+           pixels_shm_id, pixels_shm_offset,
+           kInvalidSharedMemoryId, result_shm_offset);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+  cmd.Init(0, 0, 1, 1, GL_RGB, GL_UNSIGNED_BYTE,
+           pixels_shm_id, pixels_shm_offset,
+           result_shm_id, kInvalidSharedMemoryOffset);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+}
+
 // TODO(gman): BindAttribLocation
 
 // TODO(gman): BindAttribLocationImmediate
@@ -1142,8 +1455,6 @@ TEST_F(GLES2DecoderTest, RenderbufferStorageWithNoBoundTarget) {
 // TODO(gman): GetUniformLocationImmediate
 
 // TODO(gman): PixelStorei
-
-// TODO(gman): ReadPixels
 
 // TODO(gman): TexImage2D
 

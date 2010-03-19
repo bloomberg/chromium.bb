@@ -92,6 +92,11 @@ class TextureManager {
         GLenum format,
         GLenum type);
 
+    // Get the width and height for a particular level. Returns false if level
+    // does not exist.
+    bool GetLevelSize(
+        GLint face, GLint level, GLsizei* width, GLsizei* height) const;
+
     // Sets a texture parameter.
     // TODO(gman): Expand to SetParameteri,f,iv,fv
     void SetParameter(GLenum pname, GLint param);

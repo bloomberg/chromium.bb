@@ -1972,7 +1972,10 @@ error::Error GLES2DecoderImpl::HandleReadPixels(
   GLsizei height = c.height;
   GLenum format = c.format;
   GLenum type = c.type;
-  // TODO(gman): Handle out of range rectangles.
+  if (width < 0 || height < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   typedef gles2::ReadPixels::Result Result;
   uint32 pixels_size;
   if (!GLES2Util::ComputeImageDataSize(
@@ -1992,12 +1995,142 @@ error::Error GLES2DecoderImpl::HandleReadPixels(
     SetGLError(GL_INVALID_ENUM);
     return error::kNoError;
   }
-  if (width < 0 || height < 0) {
+  if (width == 0 || height == 0) {
+    return error::kNoError;
+  }
+
+  CopyRealGLErrorsToWrapper();
+
+  // Get the size of the current fbo or backbuffer.
+  GLsizei max_width = 0;
+  GLsizei max_height = 0;
+  if (bound_framebuffer_ != 0) {
+    // Assume we have to have COLOR_ATTACHMENT0. Should we check for depth and
+    // stencil.
+    GLint fb_type = 0;
+    glGetFramebufferAttachmentParameterivEXT(
+        GL_FRAMEBUFFER,
+        GL_COLOR_ATTACHMENT0,
+        GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE,
+        &fb_type);
+    switch (fb_type) {
+      case GL_RENDERBUFFER:
+        {
+          GLint renderbuffer_id = 0;
+          glGetFramebufferAttachmentParameterivEXT(
+              GL_FRAMEBUFFER,
+              GL_COLOR_ATTACHMENT0,
+              GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME,
+              &renderbuffer_id);
+          if (renderbuffer_id != 0) {
+            glGetRenderbufferParameterivEXT(
+                GL_RENDERBUFFER,
+                GL_RENDERBUFFER_WIDTH,
+                &max_width);
+            glGetRenderbufferParameterivEXT(
+                GL_RENDERBUFFER,
+                GL_RENDERBUFFER_HEIGHT,
+                &max_height);
+          }
+          break;
+        }
+      case GL_TEXTURE:
+        {
+          GLint texture_id = 0;
+          glGetFramebufferAttachmentParameterivEXT(
+              GL_FRAMEBUFFER,
+              GL_COLOR_ATTACHMENT0,
+              GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME,
+              &texture_id);
+          if (texture_id != 0) {
+            TextureManager::TextureInfo* texture_info =
+                GetTextureInfo(texture_id);
+            if (texture_info) {
+              GLint level = 0;
+              GLint face = 0;
+              glGetFramebufferAttachmentParameterivEXT(
+                  GL_FRAMEBUFFER,
+                  GL_COLOR_ATTACHMENT0,
+                  GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LEVEL,
+                  &level);
+              glGetFramebufferAttachmentParameterivEXT(
+                  GL_FRAMEBUFFER,
+                  GL_COLOR_ATTACHMENT0,
+                  GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_CUBE_MAP_FACE,
+                  &face);
+              texture_info->GetLevelSize(
+                  face ? face : GL_TEXTURE_2D, level, &max_width, &max_height);
+            }
+          }
+          break;
+        }
+      default:
+        // unknown so assume max_width = 0.
+        break;
+    }
+  } else {
+    // TODO(gman): Get these values from the proper place.
+    max_width = 300;
+    max_height = 150;
+  }
+
+  GLint max_x;
+  GLint max_y;
+  if (!SafeAdd(x, width, &max_x) || !SafeAdd(y, height, &max_y)) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
-  CopyRealGLErrorsToWrapper();
-  glReadPixels(x, y, width, height, format, type, pixels);
+
+  if (x < 0 || y < 0 || max_x > max_width || max_y > max_height) {
+    // The user requested an out of range area. Get the results 1 line
+    // at a time.
+    uint32 temp_size;
+    if (!GLES2Util::ComputeImageDataSize(
+        width, 1, format, type, pack_alignment_, &temp_size)) {
+      SetGLError(GL_INVALID_VALUE);
+      return error::kNoError;
+    }
+    GLsizei unpadded_row_size = temp_size;
+    if (!GLES2Util::ComputeImageDataSize(
+        width, 2, format, type, pack_alignment_, &temp_size)) {
+      SetGLError(GL_INVALID_VALUE);
+      return error::kNoError;
+    }
+    GLsizei padded_row_size = temp_size - unpadded_row_size;
+    if (padded_row_size < 0 || unpadded_row_size < 0) {
+      SetGLError(GL_INVALID_VALUE);
+      return error::kNoError;
+    }
+
+    GLint dest_x_offset = std::max(-x, 0);
+    uint32 dest_row_offset;
+    if (!GLES2Util::ComputeImageDataSize(
+      dest_x_offset, 1, format, type, pack_alignment_, &dest_row_offset)) {
+      SetGLError(GL_INVALID_VALUE);
+      return error::kNoError;
+    }
+
+    // Copy each row into the larger dest rect.
+    int8* dst = static_cast<int8*>(pixels);
+    GLint read_x = std::max(0, x);
+    GLint read_end_x = std::max(0, std::min(max_width, max_x));
+    GLint read_width = read_end_x - read_x;
+    for (GLint yy = 0; yy < height; ++yy) {
+      GLint ry = y + yy;
+
+      // Clear the row.
+      memset(dst, 0, unpadded_row_size);
+
+      // If the row is in range, copy it.
+      if (ry >= 0 && ry < max_height && read_width > 0) {
+        glReadPixels(
+            read_x, ry, read_width, 1, format, type, dst + dest_row_offset);
+      }
+      dst += padded_row_size;
+    }
+  } else {
+    glReadPixels(x, y, width, height, format, type, pixels);
+  }
   GLenum error = glGetError();
   if (error == GL_NO_ERROR) {
     *result = true;

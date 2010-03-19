@@ -134,7 +134,6 @@ class GLES2DecoderTestBase : public testing::Test {
   void DoBindFramebuffer(GLenum target, GLuint client_id, GLuint service_id);
   void DoBindRenderbuffer(GLenum target, GLuint client_id, GLuint service_id);
   void DoBindTexture(GLenum target, GLuint client_id, GLuint service_id);
-
   void DoTexImage2D(GLenum target, GLint level, GLenum internal_format,
                     GLsizei width, GLsizei height, GLint border,
                     GLenum format, GLenum type,

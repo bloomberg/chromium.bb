@@ -274,6 +274,23 @@ TEST_F(TextureInfoTest, POTCubeMap) {
   EXPECT_TRUE(info_->cube_complete());
 }
 
+TEST_F(TextureInfoTest, GetLevelSize) {
+  manager_.SetInfoTarget(info_, GL_TEXTURE_2D);
+  info_->SetLevelInfo(
+      GL_TEXTURE_2D, 1, GL_RGBA, 4, 5, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE);
+  GLsizei width = -1;
+  GLsizei height = -1;
+  EXPECT_FALSE(info_->GetLevelSize(GL_TEXTURE_2D, -1, &width, &height));
+  EXPECT_FALSE(info_->GetLevelSize(GL_TEXTURE_2D, 1000, &width, &height));
+  EXPECT_TRUE(info_->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height));
+  EXPECT_EQ(0, width);
+  EXPECT_EQ(0, height);
+  EXPECT_TRUE(info_->GetLevelSize(GL_TEXTURE_2D, 1, &width, &height));
+  EXPECT_EQ(4, width);
+  EXPECT_EQ(5, height);
+  manager_.RemoveTextureInfo(info_->texture_id());
+  EXPECT_FALSE(info_->GetLevelSize(GL_TEXTURE_2D, 1, &width, &height));
+}
 
 }  // namespace gles2
 }  // namespace gpu

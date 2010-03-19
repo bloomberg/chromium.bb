@@ -108,7 +108,7 @@ bool TextureManager::TextureInfo::MarkMipmapsGenerated() {
 }
 
 bool TextureManager::TextureInfo::CanGenerateMipmaps() const {
-  if (npot() || level_infos_.empty()) {
+  if (npot() || level_infos_.empty() || IsDeleted()) {
     return false;
   }
   const TextureInfo::LevelInfo& first = level_infos_[0][0];
@@ -158,6 +158,19 @@ void TextureManager::TextureInfo::SetLevelInfo(
   info.type = type;
   max_level_set_ = std::max(max_level_set_, level);
   Update();
+}
+
+bool TextureManager::TextureInfo::GetLevelSize(
+    GLint face, GLint level, GLsizei* width, GLsizei* height) const {
+  size_t face_index = GLTargetToFaceIndex(face);
+  if (!IsDeleted() && level >= 0 && face_index < level_infos_.size() &&
+      static_cast<size_t>(level) < level_infos_[face_index].size()) {
+    const LevelInfo& info = level_infos_[GLTargetToFaceIndex(face)][level];
+    *width = info.width;
+    *height = info.height;
+    return true;
+  }
+  return false;
 }
 
 void TextureManager::TextureInfo::SetParameter(GLenum pname, GLint param) {
