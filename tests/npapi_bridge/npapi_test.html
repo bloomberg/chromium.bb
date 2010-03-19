@@ -4,8 +4,8 @@
   <!-- Copyright 2008 Google Inc.  All rights reserved. -->
   <head>
     <title>NPAPI Objects and Proxies</title>
-    <META HTTP-EQUIV="Pragma" CONTENT="no-cache">
-    <META HTTP-EQUIV="Expires" CONTENT="-1">
+    <META HTTP-EQUIV="Pragma" CONTENT="no-cache" />
+    <META HTTP-EQUIV="Expires" CONTENT="-1" />
   </head>
   <body onload="nacllib.waitForModulesAndRunTests();"
           onunload="nacllib.cleanUp();" >
@@ -44,9 +44,15 @@ nacllib.test = function() {
   document.getElementById('button_embed2_fillRect').disabled = null;
   document.getElementById('button_embed2_setProxy').disabled = null;
   document.getElementById('button_embed2_useProxy').disabled = null;
-  // These two remain disabled until tested.
-  // document.getElementById('button_embed3_cyclingOff').disabled = null;
-  // document.getElementById('button_embed3_cyclingOn').disabled = null;
+  // Chrome supports the NPP_PluginThreadAsyncCall which is required for
+  // color cycling. The nspluginwrapper, required for 64-bit Firefox, does
+  // not support the NPP_PluginThreadAsyncCall. So color cycling should not
+  // be enabled for anything other than Chrome.
+  var is_chrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
+  if (is_chrome) {
+    document.getElementById('button_embed3_cyclingOff').disabled = null;
+    document.getElementById('button_embed3_cyclingOn').disabled = null;
+  }
   // Color the first canvas.
   var canvas1 = document.getElementById("canvas1");
   var context1 = canvas1.getContext("2d");
@@ -78,21 +84,21 @@ nacllib.test = function() {
          summary="three columns of canvases and controls">
     <tr>
       <td align="center">
-        <b>  canvas1 </b> <br/>
+        <b> canvas1 </b> <br/>
         <canvas id="canvas1" width="150" height="150"></canvas>
       </td>
       <td align="center">
-        <b>  canvas2 </b> <br/>
+        <b> canvas2 </b> <br/>
         <canvas id="canvas2" width="150" height="150"></canvas>
       </td>
       <td align="center">
-        <b>  canvas3 </b> <br/>
+        <b> canvas3 </b> <br/>
         <canvas id="canvas3" width="150" height="150"></canvas>
       </td>
     </tr>
     <tr>
       <td align="center">
-        <b>  embed1 </b> <p>
+        <b> embed1 </b> <p>
         <!-- `embed` element test -->
         <embed id="embed1" src="npapi_test.nexe" type="application/x-nacl-srpc"
                name="nacl_module"
@@ -109,7 +115,7 @@ nacllib.test = function() {
                id='button_embed1_useProxy' onclick='embed1.useProxy()' />
       </td>
       <td align="center">
-        <b>  embed2 </b> <p>
+        <b> embed2 </b> <p>
         <!-- `embed` element test -->
         <embed id="embed2" src="npapi_test.nexe" type="application/x-nacl-srpc"
                name="nacl_module"
@@ -126,18 +132,18 @@ nacllib.test = function() {
                id='button_embed2_useProxy' onclick='embed2.useProxy()' />
       </td>
       <td align="center">
-        <b>  embed3 </b> <p>
+        <b> embed3 </b> <p>
         <!-- `embed` element test -->
         <embed id="embed3" src="npapi_test.nexe" type="application/x-nacl-srpc"
                name="nacl_module"
                width="0" height="0"
                canvas="canvas3"
                cycle="auto" />
-        <input type=button value="stop color cyling on canvas3"
+        <input type=button value="stop color cycling on canvas3"
                disabled="true"
                id='button_embed3_cyclingOff' onclick='embed3.cycling(0)' />
         <br/>
-        <input type=button value="start color cyling on canvas3"
+        <input type=button value="start color cycling on canvas3"
                disabled="true"
                id='button_embed3_cyclingOn' onclick='embed3.cycling(1)' />
       </td>
