@@ -436,42 +436,47 @@ HRESULT MonikerPatch::BindToObject(IMoniker_BindToObject_Fn original,
   HRESULT hr = me->GetDisplayName(bind_ctx, NULL, &url);
   DCHECK(SUCCEEDED(hr));
   NavigationManager* mgr = NavigationManager::GetThreadInstance();
-  DCHECK(mgr);
-  bool interest = mgr ? mgr->IsTopLevelUrl(url) : false;
-  if (interest) {
-    scoped_refptr<RequestData> request_data(mgr->GetActiveRequestData(url));
-    if (request_data) {
-      DLOG(INFO) << " got cached content";
-      mgr->set_referrer(request_data->headers()->GetReferrer());
-      DLOG(INFO) << "referrer is: " << mgr->referrer();
-      // Create a new CF document object and initialize it with
-      // the already cached data.
-      ScopedComPtr<IUnknown> cf_doc;
-      hr = cf_doc.CreateInstance(CLSID_ChromeActiveDocument);
-      DCHECK(SUCCEEDED(hr));
-      ScopedComPtr<IPersistMoniker> persist_moniker;
-      hr = persist_moniker.QueryFrom(cf_doc);
-      DCHECK(SUCCEEDED(hr));
-      hr = persist_moniker->Load(TRUE, me, bind_ctx, STGM_READ);
-      DCHECK(SUCCEEDED(hr));
-      hr = persist_moniker.QueryInterface(iid, obj);
-      DCHECK(SUCCEEDED(hr));
-    } else {
-      DLOG(INFO) << " creating callback object";
-      CComObject<CFUrlmonBindStatusCallback>* callback = NULL;
-      hr = CComObject<CFUrlmonBindStatusCallback>::CreateInstance(
-          &callback);
-      callback->AddRef();
-      hr = callback->Initialize(bind_ctx, mgr->GetActiveRequestHeaders());
-      DCHECK(SUCCEEDED(hr));
-      hr = original(me, bind_ctx, to_left, iid, obj);
-      callback->Release();
-      if (SUCCEEDED(hr) && (*obj) == NULL) {
-        DCHECK(hr == MK_S_ASYNCHRONOUS);
+  if (mgr) {
+    bool interest = mgr ? mgr->IsTopLevelUrl(url) : false;
+    if (interest) {
+      scoped_refptr<RequestData> request_data(mgr->GetActiveRequestData(url));
+      if (request_data) {
+        DLOG(INFO) << " got cached content";
+        mgr->set_referrer(request_data->headers()->GetReferrer());
+        DLOG(INFO) << "referrer is: " << mgr->referrer();
+        // Create a new CF document object and initialize it with
+        // the already cached data.
+        ScopedComPtr<IUnknown> cf_doc;
+        hr = cf_doc.CreateInstance(CLSID_ChromeActiveDocument);
+        DCHECK(SUCCEEDED(hr));
+        ScopedComPtr<IPersistMoniker> persist_moniker;
+        hr = persist_moniker.QueryFrom(cf_doc);
+        DCHECK(SUCCEEDED(hr));
+        hr = persist_moniker->Load(TRUE, me, bind_ctx, STGM_READ);
+        DCHECK(SUCCEEDED(hr));
+        hr = persist_moniker.QueryInterface(iid, obj);
+        DCHECK(SUCCEEDED(hr));
+      } else {
+        DLOG(INFO) << " creating callback object";
+        CComObject<CFUrlmonBindStatusCallback>* callback = NULL;
+        hr = CComObject<CFUrlmonBindStatusCallback>::CreateInstance(
+            &callback);
+        callback->AddRef();
+        hr = callback->Initialize(bind_ctx, mgr->GetActiveRequestHeaders());
+        DCHECK(SUCCEEDED(hr));
+        hr = original(me, bind_ctx, to_left, iid, obj);
+        callback->Release();
+        if (SUCCEEDED(hr) && (*obj) == NULL) {
+          DCHECK(hr == MK_S_ASYNCHRONOUS);
+        }
       }
+    } else {
+      DLOG(INFO) << " -- calling original. (no interest)";
+      hr = original(me, bind_ctx, to_left, iid, obj);
     }
   } else {
-    DLOG(INFO) << " -- calling original. (no interest)";
+    // We don't have a NavigationManager instance for cases like View Source
+    // etc.
     hr = original(me, bind_ctx, to_left, iid, obj);
   }
 
