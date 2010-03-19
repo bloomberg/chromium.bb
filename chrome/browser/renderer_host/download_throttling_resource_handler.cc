@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/common/resource_response.h"
 #include "net/base/io_buffer.h"
+#include "net/base/mime_sniffer.h"
 
 DownloadThrottlingResourceHandler::DownloadThrottlingResourceHandler(
     ResourceDispatcherHost* host,
@@ -83,8 +84,11 @@ bool DownloadThrottlingResourceHandler::OnWillRead(int request_id,
   // We should only have this invoked once, as such we only deal with one
   // tmp buffer.
   DCHECK(!tmp_buffer_.get());
+  // If the caller passed a negative |min_size| then chose an appropriate
+  // default. The BufferedResourceHandler requires this to be at least 2 times
+  // the size required for mime detection.
   if (min_size < 0)
-    min_size = 1024;
+    min_size = 2 * net::kMaxBytesToSniff;
   tmp_buffer_ = new net::IOBuffer(min_size);
   *buf = tmp_buffer_.get();
   // TODO(willchan): Remove after debugging bug 16371.
