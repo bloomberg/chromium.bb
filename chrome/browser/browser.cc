@@ -381,9 +381,9 @@ bool Browser::OpenApplication(Profile* profile, const std::string& app_id) {
     return false;
 
   // TODO(erikkay): Support refocus.
-  Extension::AppLaunchType launch_type =
-      extension_app->app_launch_type();
-  switch (launch_type) {
+  Extension::LaunchContainer launch_container =
+      extension_app->launch_container();
+  switch (launch_container) {
     case Extension::LAUNCH_WINDOW:
     case Extension::LAUNCH_PANEL:
       Browser::OpenApplicationWindow(profile, extension_app);
@@ -421,8 +421,9 @@ void Browser::OpenApplicationWindow(Profile* profile, const GURL& url,
     // Set UPDATE_SHORTCUT as the pending web app action. This action is picked
     // up in LoadingStateChanged to schedule a GetApplicationInfo. And when
     // the web app info is available, TabContents notifies Browser via
-    // OnDidGetApplicationInfo, which calls web_app::UpdateShortcutForTabContents
-    // when it sees UPDATE_SHORTCUT as pending web app action.
+    // OnDidGetApplicationInfo, which calls
+    // web_app::UpdateShortcutForTabContents when it sees UPDATE_SHORTCUT as
+    // pending web app action.
     browser->pending_web_app_action_ = UPDATE_SHORTCUT;
   }
 }
@@ -430,13 +431,13 @@ void Browser::OpenApplicationWindow(Profile* profile, const GURL& url,
 // static
 void Browser::OpenApplicationWindow(Profile* profile, Extension* extension) {
   OpenApplicationWindow(profile,
-      extension->app_launch_url(),
-      (extension->app_launch_type() == Extension::LAUNCH_PANEL));
+      extension->GetFullLaunchURL(),
+      (extension->launch_container() == Extension::LAUNCH_PANEL));
 }
 
 // static
 bool Browser::OpenApplicationTab(Profile* profile, Extension* extension) {
-  DCHECK_EQ(extension->app_launch_type(), Extension::LAUNCH_TAB);
+  DCHECK_EQ(extension->launch_container(), Extension::LAUNCH_TAB);
 
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
   if (!browser || browser->type() != Browser::TYPE_NORMAL)
@@ -444,7 +445,7 @@ bool Browser::OpenApplicationTab(Profile* profile, Extension* extension) {
 
   // TODO(erikkay): This doesn't seem like the right transition in all cases.
   PageTransition::Type transition = PageTransition::START_PAGE;
-  GURL url = extension->app_launch_url();
+  GURL url = extension->GetFullLaunchURL();
   TabContents* tab_contents =
       browser->CreateTabContentsForURL(url, GURL(), profile,
                                        transition, false, NULL);

@@ -83,11 +83,11 @@ class CrxInstaller
     allow_privilege_increase_ = val;
   }
 
-  bool force_app_origin_to_download_url() const {
-    return force_app_origin_to_download_url_;
+  bool force_web_origin_to_download_url() const {
+    return force_web_origin_to_download_url_;
   }
-  void set_force_app_origin_to_download_url(bool val) {
-    force_app_origin_to_download_url_ = val;
+  void set_force_web_origin_to_download_url(bool val) {
+    force_web_origin_to_download_url_ = val;
   }
 
  private:
@@ -153,9 +153,9 @@ class CrxInstaller
   // either. Defaults to false.
   bool allow_privilege_increase_;
 
-  // If true and the installed extension is an app, the origin of that app will
+  // If true and the installed extension uses web content, the web origin will
   // be forced to the origin of |original_url_|. Defaults to false.
-  bool force_app_origin_to_download_url_;
+  bool force_web_origin_to_download_url_;
 
   // Whether to create an app shortcut after successful installation. This is
   // set based on the user's selection in the UI and can only ever be true for

@@ -216,7 +216,7 @@ void ExtensionsService::UpdateExtension(const std::string& id,
                        NULL));  // no client (silent install)
   installer->set_expected_id(id);
   installer->set_delete_source(true);
-  installer->set_force_app_origin_to_download_url(true);
+  installer->set_force_web_origin_to_download_url(true);
   installer->set_original_url(download_url);
   installer->InstallCrx(extension_path);
 }
@@ -511,7 +511,7 @@ void ExtensionsService::NotifyExtensionLoaded(Extension* extension) {
               new ChromeURLRequestContext::ExtensionInfo(
                   extension->path(),
                   extension->default_locale(),
-                  extension->app_extent(),
+                  std::vector<URLPattern>(),
                   extension->api_permissions())));
     }
 
@@ -705,15 +705,6 @@ void ExtensionsService::OnExtensionLoaded(Extension* extension,
 
   // The extension is now loaded, remove its data from unloaded extension map.
   unloaded_extension_paths_.erase(extension->id());
-
-  if (extension->IsApp() &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExtensionApps)) {
-    ReportExtensionLoadError(extension->path(), errors::kAppsDisabled,
-                             NotificationType::EXTENSION_INSTALL_ERROR,
-                             true);  // be noisy
-    return;
-  }
 
   // TODO(aa): Need to re-evaluate this branch. Does this still make sense now
   // that extensions are enabled by default?

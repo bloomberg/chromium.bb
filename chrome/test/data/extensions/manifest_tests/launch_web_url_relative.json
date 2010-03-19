@@ -1,0 +1,11 @@
+{
+  "name": "test",
+  "version": "1",
+  "web_content": {
+    "enabled": true,
+    "origin": "http://www.google.com/"
+  },
+  "launch": {
+    "web_url": "launch.html"
+  }
+}
