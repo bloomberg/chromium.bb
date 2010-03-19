@@ -67,6 +67,7 @@ WorkerTest.QueuedSharedWorkerStartedFromOtherTab
 WorkerTest.SharedWorkerFastLayoutTests
 WorkerTest.FLAKY_SharedWorkerFastLayoutTests
 WorkerTest.SharedWorkerHttpAuth
+WorkerTest.SharedWorkerInIframe
 WorkerTest.SingleSharedWorker
 WorkerTest.SingleWorker
 WorkerTest.StressJSExecution
