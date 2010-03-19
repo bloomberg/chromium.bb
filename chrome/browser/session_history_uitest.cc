@@ -516,6 +516,10 @@ TEST_F(SessionHistoryTest, LocationChangeInSubframe) {
   EXPECT_EQ(L"Default Title", GetTabTitle());
 }
 
+// http://code.google.com/p/chromium/issues/detail?id=38583
+#if defined(OS_WIN)
+#define HistoryLength DISABLED_HistoryLength
+#endif  // defined(OS_WIN)
 TEST_F(SessionHistoryTest, HistoryLength) {
   scoped_refptr<HTTPTestServer> server =
       HTTPTestServer::CreateServer(kDocRoot, NULL);
