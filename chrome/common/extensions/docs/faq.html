@@ -282,6 +282,9 @@ try the
         <li><a href="#faq-dev-11">Can two extensions communicate with each other?</a></li>
         <li><a href="#faq-dev-12">What debugging tools are available to extension developers?</a></li>
         <li><a href="#faq-dev-13">Can extensions use Google Analytics?</a></li>
+        <li><a href="#faq-dev-14">How do I determine which version of Google Chrome is deployed to which channel?</a></li>
+        <li><a href="#faq-dev-15">Can I add a content script to chrome:// URLs?</a></li>
+        <li><a href="#faq-dev-16">Why do wildcard matches not work for top level domains (TLDs)?</a></li>
       </ul>
 </div>
 
@@ -431,9 +434,84 @@ try the
 <p>
   Yes, since extensions are built just like websites, they can use
   <a href="http://www.google.com/analytics/">Google Analytics</a> to track
-  usage.
+  usage.  However, we strongly advise you to modify the tracking code to pull
+  an HTTPS version of the Google Analytics library.  See
+  <a href="tut_analytics.html">this tutorial</a> for more information on doing
+  this.
 </p>
 
+<h3 id="faq-dev-14">How do I determine which version of Google Chrome is deployed to which channel?</h3>
+<p>
+  To determine which version of Google Chrome is currently available on each
+  of the different platforms, visit
+  <a href="http://omahaproxy.appspot.com">omahaproxy.appspot.com</a>.  On that
+  site you will see data in a format similar to:
+</p>
+<pre>cf,dev,#.#.###.#
+cf,beta,#.#.###.#
+cf,stable,#.#.###.#
+linux,dev,#.#.###.#
+linux,beta,#.#.###.#
+linux,stable,#.#.###.#
+mac,dev,#.#.###.#
+mac,beta,#.#.###.#
+mac,stable,#.#.###.#
+win,dev,#.#.###.#
+win,beta,#.#.###.#
+win,stable,#.#.###.#</pre>
+<p>
+  Each line represents a different platform and channel combination. The
+  listed platforms are <code>cf</code> (Google Chrome Frame),
+  <code>linux</code>, <code>mac</code>, and <code>win</code>.  The listed
+  channels are <code>dev</code>, <code>beta</code>, and <code>stable</code>.
+  The four-part number at the end of each line represents the version of Google
+  Chrome currently deployed to that platform-channel combination.
+</p>
+
+<h3 id="faq-dev-15">Can I add a content script to chrome:// URLs?</h3>
+<p>
+  No. The extensions APIs have been designed to minimize backwards
+  compatibility issues that can arise when new versions of the browser are
+  pushed. Allowing content scripts on <code>chrome://</code>
+  URLs would mean that developers would begin to rely on the DOM, CSS, and
+  JavaScript of these pages to stay the same.  In the best case, these pages
+  could not be updated as quickly as they are being updated right now.
+  In the worst case, it could mean that an update to one
+  of these pages could cause an extension to break, causing key parts of the
+  browser to stop working for users of that extension.
+</p>
+
+<p>
+  The reason that <a href="override.html">replacing the content</a>
+  hosted at these URLs entirely is
+  allowed is because it forces an extension developer to implement all of the
+  functionality they want without depending on the browser's internal implementation
+  to stay the same.
+</p>
+
+<h3 id="faq-dev-16">Why do wildcard matches not work for top level domains
+  (TLDs)?</h3>
+<p>
+  You cannot use wildcard match patterns like <code>http://google.*/*</code>
+  to match TLDs (like <code>http://google.es</code> and
+  <code>http://google.fr</code>) due to the
+  complexity of actually restricting such a match to only the desired domains.
+</p>
+<p>
+  For the example of <code>http://google.*/*</code>, the Google domains would
+  be matched, but so would <code>http://google.someotherdomain.com</code>.
+  Additionally, many sites do not own all of the TLDs for their
+  domain.  For an example, assume you want to use
+  <code>http://example.*/*</code> to match <code>http://example.com</code> and
+  <code>http://example.es</code>, but <code>http://example.net</code> is a
+  hostile site.  If your extension has a bug, the hostile site could potentially
+  attack your extension in order to get access to your extension's increased
+  privileges.
+</p>
+<p>
+  You should explicitly enumerate the TLDs that you wish to run
+  your extension on.
+</p>
 </div>
 
         <!-- API PAGE -->
