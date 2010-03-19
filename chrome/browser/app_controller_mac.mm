@@ -678,10 +678,10 @@ void RecordLastRunAppBundlePath() {
         // We have no browser window. Only create a window if we are using the
         // new tabbed bookmark manager.
         if (CommandLine::ForCurrentProcess()->HasSwitch(
-                switches::kEnableTabbedBookmarkManager)) {
-          Browser::OpenBookmarkManagerWindow(defaultProfile);
-        } else {
+                switches::kDisableTabbedBookmarkManager)) {
           [BookmarkManagerController showBookmarkManager:defaultProfile];
+        } else {
+          Browser::OpenBookmarkManagerWindow(defaultProfile);
         }
       }
       break;

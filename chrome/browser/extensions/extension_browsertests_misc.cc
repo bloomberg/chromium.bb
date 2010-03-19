@@ -294,14 +294,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, RSSMultiRelLink) {
 // Tests that tooltips of a browser action icon can be specified using UTF8.
 // See http://crbug.com/25349.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationBrowserAction) {
+  ExtensionsService* service = browser()->profile()->GetExtensionsService();
+  const size_t size_before = service->extensions()->size();
   FilePath extension_path(test_data_dir_.AppendASCII("browsertest")
                                         .AppendASCII("title_localized"));
   ASSERT_TRUE(LoadExtension(extension_path));
 
-  ExtensionsService* service = browser()->profile()->GetExtensionsService();
-  const ExtensionList* extensions = service->extensions();
-  ASSERT_EQ(1u, extensions->size());
-  Extension* extension = extensions->at(0);
+  ASSERT_EQ(size_before + 1, service->extensions()->size());
+  Extension* extension = service->extensions()->at(size_before);
 
   EXPECT_STREQ(WideToUTF8(L"Hreggvi\u00F0ur: l10n browser action").c_str(),
                extension->description().c_str());
@@ -317,6 +317,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationBrowserAction) {
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationPageAction) {
   HTTPTestServer* server = StartHTTPServer();
 
+  ExtensionsService* service = browser()->profile()->GetExtensionsService();
+  const size_t size_before = service->extensions()->size();
+
   FilePath extension_path(test_data_dir_.AppendASCII("browsertest")
                                         .AppendASCII("title_localized_pa"));
   ASSERT_TRUE(LoadExtension(extension_path));
@@ -326,10 +329,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationPageAction) {
   ui_test_utils::NavigateToURL(browser(), url);
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
 
-  ExtensionsService* service = browser()->profile()->GetExtensionsService();
-  const ExtensionList* extensions = service->extensions();
-  ASSERT_EQ(1u, extensions->size());
-  Extension* extension = extensions->at(0);
+  ASSERT_EQ(size_before + 1, service->extensions()->size());
+  Extension* extension = service->extensions()->at(size_before);
 
   EXPECT_STREQ(WideToUTF8(L"Hreggvi\u00F0ur: l10n page action").c_str(),
                extension->description().c_str());
@@ -415,10 +416,8 @@ void NavigateToFeedAndValidate(HTTPTestServer* server,
     // TODO(finnur): Implement this is a non-flaky way.
   }
 
-  // There should be only one extension in the list (ours). Get its id.
   ExtensionsService* service = browser->profile()->GetExtensionsService();
-  ASSERT_EQ(1u, service->extensions()->size());
-  Extension* extension = (*service->extensions())[0];
+  Extension* extension = service->extensions()->back();
   std::string id = extension->id();
 
   // Navigate to the subscribe page directly.
@@ -443,7 +442,7 @@ void NavigateToFeedAndValidate(HTTPTestServer* server,
                                   expected_error));
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedValidFeed1) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed1) {
   HTTPTestServer* server = StartHTTPServer();
 
   ASSERT_TRUE(LoadExtension(
@@ -456,7 +455,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedValidFeed1) {
                             "No error");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedValidFeed2) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed2) {
   HTTPTestServer* server = StartHTTPServer();
 
   ASSERT_TRUE(LoadExtension(
@@ -469,7 +468,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedValidFeed2) {
                             "No error");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedValidFeed3) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed3) {
   HTTPTestServer* server = StartHTTPServer();
 
   ASSERT_TRUE(LoadExtension(
@@ -482,7 +481,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedValidFeed3) {
                             "No error");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedValidFeed4) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed4) {
   HTTPTestServer* server = StartHTTPServer();
 
   ASSERT_TRUE(LoadExtension(
@@ -495,7 +494,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedValidFeed4) {
                             "No error");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedValidFeed0) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed0) {
   HTTPTestServer* server = StartHTTPServer();
 
   ASSERT_TRUE(LoadExtension(
@@ -510,7 +509,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedValidFeed0) {
                             "No error");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedValidFeed5) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed5) {
   HTTPTestServer* server = StartHTTPServer();
 
   ASSERT_TRUE(LoadExtension(
@@ -524,7 +523,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedValidFeed5) {
                             "This feed contains no entries.");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedInvalidFeed1) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed1) {
   HTTPTestServer* server = StartHTTPServer();
 
   ASSERT_TRUE(LoadExtension(
@@ -538,7 +537,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedInvalidFeed1) {
                             "Not a valid feed.");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedInvalidFeed2) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed2) {
   HTTPTestServer* server = StartHTTPServer();
 
   ASSERT_TRUE(LoadExtension(
@@ -552,7 +551,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedInvalidFeed2) {
                             "Not a valid feed.");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedInvalidFeed3) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed3) {
   HTTPTestServer* server = StartHTTPServer();
 
   ASSERT_TRUE(LoadExtension(
@@ -566,7 +565,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedInvalidFeed3) {
                             "Not a valid feed.");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_ParseFeedValidFeedNoLinks) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeedNoLinks) {
   HTTPTestServer* server = StartHTTPServer();
 
   ASSERT_TRUE(LoadExtension(
@@ -698,8 +697,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
   EXPECT_FALSE(result);
 
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
+  const size_t size_before = service->extensions()->size();
   ASSERT_TRUE(LoadExtension(extension_dir));
-  EXPECT_EQ(1u, service->extensions()->size());
+  EXPECT_EQ(size_before + 1, service->extensions()->size());
   // Now the plugin should be in the cache, but we have to reload the page for
   // it to work.
   ui_test_utils::ExecuteJavaScriptAndExtractBool(
@@ -711,9 +711,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
       tab->render_view_host(), L"", L"testPluginWorks()", &result);
   EXPECT_TRUE(result);
 
-  EXPECT_EQ(1u, service->extensions()->size());
-  UnloadExtension(service->extensions()->at(0)->id());
-  EXPECT_EQ(0u, service->extensions()->size());
+  EXPECT_EQ(size_before + 1, service->extensions()->size());
+  UnloadExtension(service->extensions()->at(size_before)->id());
+  EXPECT_EQ(size_before, service->extensions()->size());
 
   // Now the plugin should be out of the cache again, but existing pages will
   // still work until we reload them.
