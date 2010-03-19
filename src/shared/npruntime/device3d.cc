@@ -117,6 +117,7 @@ static NPError InitializeContext(NPP instance,
   impl->size = size;
   context3d->reserved = impl;
   context3d->commandBuffer = map_addr;
+  context3d->error = NPDeviceContext3DError_NoError;
   return NPERR_NO_ERROR;
 
  cleanup:

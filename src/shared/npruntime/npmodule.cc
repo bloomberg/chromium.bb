@@ -414,6 +414,8 @@ NaClSrpcError NPModule::Device2DDestroy(NPP npp) {
   if (NPERR_NO_ERROR != retval) {
     return NACL_SRPC_RESULT_APP_ERROR;
   }
+  delete context2d_;
+  context2d_ = NULL;
 
   return NACL_SRPC_RESULT_OK;
 }
@@ -529,6 +531,8 @@ NaClSrpcError NPModule::Device3DDestroy(NPP npp) {
   if (NPERR_NO_ERROR != retval) {
     return NACL_SRPC_RESULT_APP_ERROR;
   }
+  delete context3d_;
+  context3d_ = NULL;
 
   return NACL_SRPC_RESULT_OK;
 }
@@ -761,7 +765,13 @@ NaClSrpcError NPModule::AudioDestroy(NPP npp) {
   if (NULL == device_audio_ || NULL == context_audio_) {
     return NACL_SRPC_RESULT_APP_ERROR;
   }
-  device_audio_->destroyContext(npp, context_audio_);
+  NPError retval = device_audio_->destroyContext(npp, context_audio_);
+  if (NPERR_NO_ERROR != retval) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+  delete context_audio_;
+  context_audio_ = NULL;
+
   return NACL_SRPC_RESULT_OK;
 }
 

@@ -10,6 +10,7 @@
 #include <inttypes.h>
 #include <stdlib.h>
 #include <nacl/nacl_inttypes.h>
+#include <sys/errno.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -28,6 +29,7 @@
 using nacl::NPClosureTable;
 using nacl::NPNavigator;
 using nacl::NPPToWireFormat;
+using nacl::DebugPrintf;
 
 namespace {
 
@@ -64,23 +66,24 @@ static NPError QueryConfig(NPP instance,
 static NPError InitializeContext(NPP instance,
                                  const NPDeviceConfig* config,
                                  NPDeviceContext* context) {
+  DebugPrintf("Audio::InitializeContext %p %p\n",
+              reinterpret_cast<const void*>(config),
+              reinterpret_cast<void*>(context));
   const NPDeviceContextAudioConfig* config_audio =
       reinterpret_cast<const NPDeviceContextAudioConfig*>(config);
   NPDeviceContextAudio* context_audio =
       reinterpret_cast<NPDeviceContextAudio*>(context);
 
   // Initialize the context structure.
-  context_audio->config.sampleRate = -1;
-  context_audio->config.sampleType = -1;
-  context_audio->config.outputChannelMap = -1;
-  context_audio->config.inputChannelMap = -1;
-  context_audio->config.sampleFrameCount = -1;
-  context_audio->config.flags = -1;
+  context_audio->config = *config_audio;
   context_audio->outBuffer = NULL;
   context_audio->inBuffer = NULL;
   context_audio->reserved = NULL;
 
+  DebugPrintf("Set the config and base stuff\n");
   // Get the configuration parameters for passing.
+  // TODO(sehr): the SRPC generators speak int32_t, while npruntime likes
+  // int32.  Find a way to avoid all these casts.
   int32_t sample_rate = static_cast<int32_t>(config_audio->sampleRate);
   int32_t sample_type = static_cast<int32_t>(config_audio->sampleType);
   int32_t output_channel_map =
@@ -90,6 +93,7 @@ static NPError InitializeContext(NPP instance,
   int32_t sample_frame_count =
       static_cast<int32_t>(config_audio->sampleFrameCount);
   int32_t flags = static_cast<int32_t>(config_audio->flags);
+  DebugPrintf("Set the configs\n");
 
   // Create an implementation structure to hold the descriptors
   // when they are returned.
@@ -97,6 +101,7 @@ static NPError InitializeContext(NPP instance,
   if (NULL == impl) {
     return NPERR_GENERIC_ERROR;
   }
+  DebugPrintf("Created the impl\n");
   context_audio->reserved = reinterpret_cast<void*>(impl);
   // Remember the context this is for so that the callback can get it.
   impl->context = context_audio;
@@ -111,12 +116,16 @@ static NPError InitializeContext(NPP instance,
   NPClosureTable::FunctionPointer func =
       reinterpret_cast<NPClosureTable::FunctionPointer>(
           context_audio->config.callback);
+  DebugPrintf("Created the closure %p for %p\n",
+              reinterpret_cast<void*>(func),
+              reinterpret_cast<void*>(context_audio->config.callback));
   if (NULL == nav->closure_table() ||
       !nav->closure_table()->Add(func,
                                  context_audio->reserved,
                                  &id)) {
     return NPERR_GENERIC_ERROR;
   }
+  DebugPrintf("Added the closure %p\n", reinterpret_cast<void*>(func));
   // Make the SRPC to request the setup for the context.
   NaClSrpcChannel* channel = nav->channel();
   NaClSrpcError retval =
@@ -130,6 +139,7 @@ static NPError InitializeContext(NPP instance,
           input_channel_map,
           sample_frame_count,
           flags);
+  DebugPrintf("Called init\n");
   if (NACL_SRPC_RESULT_OK != retval) {
     return NPERR_GENERIC_ERROR;
   }
@@ -208,9 +218,9 @@ static NPError DestroyContext(NPP instance, NPDeviceContext* context) {
     return NPERR_GENERIC_ERROR;
   }
   impl = reinterpret_cast<AudioImpl*>(context_audio->reserved);
-  if (NULL != context_audio->inBuffer) {
-    munmap(context_audio->inBuffer, impl->shared_memory_size);
-    context_audio->inBuffer = NULL;
+  if (NULL != context_audio->outBuffer) {
+    munmap(context_audio->outBuffer, impl->shared_memory_size);
+    context_audio->outBuffer = NULL;
   }
   // Close the shared memory descriptor.
   if (kInvalidDesc != impl->shared_memory_desc) {
@@ -259,6 +269,30 @@ NPError MapBuffer(NPP instance,
   return NPERR_GENERIC_ERROR;
 }
 
+static void* AudioCallbackThread(void* data) {
+  NPDeviceContextAudio* context_audio =
+      reinterpret_cast<NPDeviceContextAudio*>(data);
+  DebugPrintf("AudioCallbackThread %p\n", data);
+  if (NULL == context_audio) {
+    return NULL;
+  }
+  DebugPrintf("AudioCallbackThread impl %p\n", context_audio->reserved);
+  AudioImpl* impl = reinterpret_cast<AudioImpl*>(context_audio->reserved);
+  if (NULL == impl) {
+    return NULL;
+  }
+  DebugPrintf("AudioCallbackThread entering loop\n");
+  int pending_data;
+  while (sizeof(pending_data) ==
+         read(impl->sync_desc, &pending_data, sizeof(pending_data))) {
+    DebugPrintf("invoking callback\n");
+    if (NULL != context_audio->config.callback) {
+      context_audio->config.callback(context_audio);
+    }
+  }
+  return NULL;
+}
+
 }  // namespace
 
 namespace nacl {
@@ -288,6 +322,7 @@ bool DoAudioCallback(NPClosureTable* closure_table,
   uint32_t id = static_cast<uint32_t>(number);
   NPClosureTable::FunctionPointer func;
   void* user_data;
+  DebugPrintf("DoAudioCallback\n");
   if (NULL == closure_table ||
       !closure_table->Remove(id, &func, &user_data) ||
       NULL == func ||
@@ -296,11 +331,36 @@ bool DoAudioCallback(NPClosureTable* closure_table,
   }
   // Place the returned handle in the struct passed as user_data.
   AudioImpl* impl = reinterpret_cast<AudioImpl*>(user_data);
+  impl->sync_desc = sync_desc;
   impl->shared_memory_desc = shm_desc;
   impl->shared_memory_size = shm_size;
-  impl->sync_desc = sync_desc;
-  // Invoke the function with the data.
-  (*func)(reinterpret_cast<void*>(impl->context));
+  void* buf = mmap(NULL,
+                   shm_size,
+                   PROT_READ | PROT_WRITE,
+                   MAP_SHARED,
+                   shm_desc,
+                   0);
+  if (MAP_FAILED == buf) {
+    DebugPrintf("mmap failed %x %d %d\n", shm_size, shm_desc, sync_desc);
+    return false;
+  }
+  DebugPrintf("mmap succeeded %p\n", buf);
+  impl->context->outBuffer = buf;
+  if (impl->context->config.startThread) {
+    DebugPrintf("starting thread\n");
+    pthread_t callback_thread;
+    int ret = pthread_create(&callback_thread,
+                             NULL,
+                             AudioCallbackThread,
+                             impl->context);
+    if (0 != ret) {
+      DebugPrintf("Thread creation failed %d %d\n", ret, errno);
+      return false;
+    }
+  } else {
+    // Invoke the function with the data.
+    (*func)(reinterpret_cast<void*>(impl->context));
+  }
   // Return success.
   return true;
 }
