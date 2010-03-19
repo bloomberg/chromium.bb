@@ -206,6 +206,13 @@
                 </li>
               </ol>
             </li><li>
+              <a href="#pi">Programmatic injection</a>
+              <ol>
+                <li style="display: none; ">
+                  <a>h3Name</a>
+                </li>
+              </ol>
+            </li><li>
               <a href="#execution-environment">Execution environment</a>
               <ol>
                 <li style="display: none; ">
@@ -351,9 +358,14 @@ learn about the
 
 <h2 id="registration">Manifest</h2>
 
-<p>Content scripts are registered in an extension's <a href="manifest.html">manifest.json</a> file, like so:
+<p>If your content script's code should always be injected,
+register it in the
+<a href="manifest.html">extension manifest</a>
+using the <code>content_scripts</code> field,
+as in the following example.
+</p>
 
-</p><pre>{
+<pre>{
   "name": "My extension",
   ...
   <b>"content_scripts": [
@@ -366,9 +378,28 @@ learn about the
   ...
 }</pre>
 
-<p>An extension can contain any number of content scripts, and a content script can consist of any number of JavaScript or CSS files. The value of the <code>matches</code> property controls when the content script will run.
+<p>
+If you want to inject the code only sometimes,
+use the
+<a href="manifest.html#permissions"><code>permissions</code></a> field instead,
+as described in <a href="#pi">Programmatic injection</a>.
+</p>
 
-</p><p>Each content script registered in the manifest can specify the following properties:</p>
+<pre>{
+  "name": "My extension",
+  ...
+  <b>"permissions": [
+    "tabs", "http://www.google.com/*"
+  ]</b>,
+  ...
+}</pre>
+
+<p>
+Using the <code>content_scripts</code> field,
+an extension can insert multiple content scripts into a page;
+each of these content scripts can have multiple JavaScript and CSS files.
+Each item in the <code>content_scripts</code> array
+can have the following properties:</p>
 
 <table>
   <tbody><tr>
@@ -377,7 +408,7 @@ learn about the
     <th>Description</th>
   </tr>
   <tr>
-    <td>matches</td>
+    <td><code>matches</code></td>
     <td>array of strings</td>
     <td><em>Required.</em>
     Controls the pages this content script will be injected into.
@@ -385,42 +416,42 @@ learn about the
     for more details on the syntax of these strings.</td>
   </tr>
   <tr>
-    <td>js</td>
-    <td><nobr>array of strings</nobr></td>
-    <td><em>Optional.</em>
-    The list of JavaScript files to be injected into matching pages. These are injected in the order they appear in this array.</td>
-  </tr>
-  <tr>
-    <td>css</td>
+    <td><code>css<code></code></code></td>
     <td>array of strings</td>
     <td><em>Optional.</em>
     The list of CSS files to be injected into matching pages. These are injected in the order they appear in this array, before any DOM is constructed or displayed for the page.</td>
   </tr>
   <tr>
-    <td>run_at</td>
-    <td>string</td>
+    <td><code>js<code></code></code></td>
+    <td><nobr>array of strings</nobr></td>
     <td><em>Optional.</em>
-    Controls when the files in <code>js</code> are injected. Can be <code>"document_start"</code>, <code>"document_end"</code>, or <code>"document_idle"</code>. Defaults to <code>"document_idle"</code>.
-
-    <br><br>
-
-    In the case of <code>"document_start"</code>, the files are injected after any files from <code>"css"</code>, but before any other DOM is constructed or any other script is run.
-
-    <br><br>
-
-    In the case of <code>"document_end"</code>, the files are injected immediately after the DOM is complete, but before subresources like images and frames have loaded.
-
-    <br><br>
-
-    In the case of <code>"document_idle"</code>, the browser chooses a time to inject scripts between <code>"document_end"</code> and immediately after the <code><a href="http://www.whatwg.org/specs/web-apps/current-work/#handler-onload">window.onload</a></code> event fires. The exact moment of injection depends on how complex the document is and how long it is taking to load, and is optimized for page load speed.
-
-    <br><br>
-
-    <b>NOTE:</b> In <code>document_idle</code>, content scripts may not necessarily receive the window.onload event, because they may run after it has
-    already fired. In most cases, listening for the onload event is unnecessary for content scripts running at <code>document_idle</code> because they are guaranteed to run after the DOM is complete. If your script definitely needs to run after <code>window.onload</code> you can check if it has already fired by using the <code><a href="http://www.whatwg.org/specs/web-apps/current-work/#dom-document-readystate">document.readyState</a></code> property.</td>
+    The list of JavaScript files to be injected into matching pages. These are injected in the order they appear in this array.</td>
   </tr>
   <tr>
-    <td>all_frames</td>
+    <td><code>run_at<code></code></code></td>
+    <td>string</td>
+    <td><em>Optional.</em>
+    Controls when the files in <code>js</code> are injected. Can be "document_start", "document_end", or "document_idle". Defaults to "document_idle".
+
+    <br><br>
+
+    In the case of "document_start", the files are injected after any files from <code>css</code>, but before any other DOM is constructed or any other script is run.
+
+    <br><br>
+
+    In the case of "document_end", the files are injected immediately after the DOM is complete, but before subresources like images and frames have loaded.
+
+    <br><br>
+
+    In the case of "document_idle", the browser chooses a time to inject scripts between "document_end" and immediately after the <code><a href="http://www.whatwg.org/specs/web-apps/current-work/#handler-onload">window.onload</a></code> event fires. The exact moment of injection depends on how complex the document is and how long it is taking to load, and is optimized for page load speed.
+
+    <br><br>
+
+    <b>Note:</b> With "document_idle", content scripts may not necessarily receive the <code>window.onload</code> event, because they may run after it has
+    already fired. In most cases, listening for the <code>onload</code> event is unnecessary for content scripts running at "document_idle" because they are guaranteed to run after the DOM is complete. If your script definitely needs to run after <code>window.onload</code>, you can check if <code>onload</code> has already fired by using the <code><a href="http://www.whatwg.org/specs/web-apps/current-work/#dom-document-readystate">document.readyState</a></code> property.</td>
+  </tr>
+  <tr>
+    <td><code>all_frames<code></code></code></td>
     <td>boolean</td>
     <td><em>Optional.</em>
     Controls whether the content script runs in all frames of the matching page, or only the top frame.
@@ -428,6 +459,74 @@ learn about the
     Defaults to <code>false</code>, meaning that only the top frame is matched.</td>
   </tr>
 </tbody></table>
+
+<h2 id="pi">Programmatic injection</h2>
+
+<p>
+Inserting code into a page programmatically is useful
+when your JavaScript or CSS code
+shouldn't be injected into every single page
+that matches the pattern —
+for example, if you want a script to run
+only when the user clicks a browser action's icon.
+</p>
+
+<p>
+To insert code into a page,
+your extension must have
+<a href="xhr.html#requesting-permission">cross-origin permissions</a>
+for the page.
+It also must be able to use the <code>chrome.tabs</code> module.
+You can get both kinds of permission
+using the manifest file's
+<a href="manifest.html#permissions">permissions</a> field.
+</p>
+
+<p>
+Once you have permissions set up,
+you can inject JavaScript into a page by calling
+<a href="tabs.html#method-executeScript"><code>executeScript()</code></a>.
+To inject CSS, use
+<a href="tabs.html#method-insertCSS"><code>insertCSS()</code></a>.
+</p>
+
+<p>
+The following code
+(from the
+<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/browserAction/make_page_red/">make_page_red</a> example)
+reacts to a user click
+by inserting JavaScript into the current tab's page
+and executing the script.
+</p>
+
+<pre><em>/* in background.html */</em>
+chrome.browserAction.onClicked.addListener(function(tab) {
+  chrome.tabs.executeScript(null,
+                           {code:"document.body.bgColor='red'"});
+});
+
+<em>/* in manifest.json */</em>
+"permissions": [
+  "tabs", "http://*/*"
+],
+</pre>
+
+<p>
+When the browser is displaying an HTTP page
+and the user clicks this extension's browser action,
+the extension sets the page's <code>bgcolor</code> property to 'red'.
+The result,
+unless the page has CSS that sets the background color,
+is that the page turns red.
+</p>
+
+<p>
+Usually, instead of inserting code directly (as in the previous sample),
+you put the code in a file.
+You inject the file's contents like this:
+</p>
+
+<pre>chrome.tabs.executeScript(null, {file: "content_script.js"});</pre>
 
 
 <h2 id="execution-environment">Execution environment</h2>
@@ -568,6 +667,17 @@ cross-site requests for its content script.
 You can find other simple examples of communication via messages in the
 <a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/messaging/">examples/api/messaging</a>
 directory.
+</p>
+
+<p>
+See
+<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/browserAction/make_page_red/">make_page_red</a> and
+<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/email_this_page/">email_this_page</a>
+for examples of programmatic injection.
+
+</p>
+
+<p>
 For more examples and for help in viewing the source code, see
 <a href="samples.html">Samples</a>.
 </p>

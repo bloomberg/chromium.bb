@@ -1282,10 +1282,8 @@ For other examples and for help in viewing the source code, see
                       <var><span>callback</span></var></span>)</div>
 
               <div class="description">
-                <p class="todo">Undocumented.</p>
-                <p style="display: none; ">
-                  A description from the json schema def of the function goes here.
-                </p>
+                <p class="todo" style="display: none; ">Undocumented.</p>
+                <p>Injects JavaScript code into a page. For details, see the <a href="content_scripts.html#pi">programmatic injection</a> section of the content scripts doc.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -1319,7 +1317,7 @@ For other examples and for help in viewing the source code, see
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The id of tab which run the script, default to selected tab of current window.</dd>
+          <dd>The ID of the tab in which to run the script; defaults to the selected tab of the current window.</dd>
 
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
@@ -1360,7 +1358,7 @@ For other examples and for help in viewing the source code, see
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Details of the script to run. Either the code or file property must be set, but both may not be set at the same time.</dd>
+          <dd>Details of the script to run. Either the code or the file property must be set, but both may not be set at the same time.</dd>
 
           <!-- OBJECT PROPERTIES -->
           <dd>
@@ -1476,7 +1474,7 @@ For other examples and for help in viewing the source code, see
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>If allFrames is true, this function injects script into all frames of current page. By default, it's false and only inject script into top main frame.</dd>
+          <dd>If allFrames is true, this function injects script into all frames of current page. By default, it's false and script is injected only into the top main frame.</dd>
 
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
@@ -1521,7 +1519,7 @@ For other examples and for help in viewing the source code, see
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>When all scripts are executed, this callback is called.</dd>
+          <dd>Called after all the JavaScript has been executed.</dd>
 
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
@@ -2132,10 +2130,8 @@ For other examples and for help in viewing the source code, see
                       <var><span>callback</span></var></span>)</div>
 
               <div class="description">
-                <p class="todo">Undocumented.</p>
-                <p style="display: none; ">
-                  A description from the json schema def of the function goes here.
-                </p>
+                <p class="todo" style="display: none; ">Undocumented.</p>
+                <p>Injects CSS into a page. For details, see the <a href="content_scripts.html#pi">programmatic injection</a> section of the content scripts doc.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -2169,7 +2165,7 @@ For other examples and for help in viewing the source code, see
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The id of tab which run the script, default to selected tab of current window.</dd>
+          <dd>The ID of the tab in which to insert the CSS; defaults to the selected tab of the current window.</dd>
 
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
@@ -2210,7 +2206,7 @@ For other examples and for help in viewing the source code, see
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Details of the css text to insert. Either the code or file property must be set, but both may not be set at the same time.</dd>
+          <dd>Details of the CSS text to insert. Either the code or the file property must be set, but both may not be set at the same time.</dd>
 
           <!-- OBJECT PROPERTIES -->
           <dd>
@@ -2326,7 +2322,7 @@ For other examples and for help in viewing the source code, see
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>If allFrames is true, this function injects css text into all frames of current page. By default, it's false and only inject css text into top main frame.</dd>
+          <dd>If allFrames is true, this function injects CSS text into all frames of current page. By default, it's false and CSS is injected only into the top main frame.</dd>
 
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
@@ -2371,7 +2367,7 @@ For other examples and for help in viewing the source code, see
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>When all css are inserted, this callback is called.</dd>
+          <dd>Called when all the CSS has been inserted.</dd>
 
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
