@@ -48,6 +48,11 @@ class ValgrindTool(object):
     # Override if tool prefers nonxml output
     return True
 
+  def SelfContained(self):
+    # Returns true iff the tool is distibuted as a self-contained
+    # .sh script (e.g. ThreadSanitizer)
+    return False
+
   def ToolName(self):
     raise RuntimeError, "This method should be implemented " \
                         "in the tool-specific subclass"
@@ -249,9 +254,12 @@ class ValgrindTool(object):
     tool_name = self.ToolName()
 
     # Construct the valgrind command.
-    proc = ["valgrind",
-            "--tool=%s" % tool_name,
-            "--num-callers=%i" % self._num_callers]
+    if self.SelfContained():
+      proc = ["valgrind-%s.sh" % tool_name]
+    else:
+      proc = ["valgrind", "--tool=%s" % tool_name]
+
+    proc += ["--num-callers=%i" % self._num_callers]
 
     if self._options.trace_children:
       proc += ["--trace-children=yes"]
@@ -441,6 +449,9 @@ class ThreadSanitizer(ValgrindTool):
 
   def UseXML(self):
     return False
+
+  def SelfContained(self):
+    return True
 
   def ExtendOptionParser(self, parser):
     ValgrindTool.ExtendOptionParser(self, parser)

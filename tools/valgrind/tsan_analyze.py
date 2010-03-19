@@ -105,10 +105,6 @@ class TsanAnalyze:
       if (self.line_ == ''):
         break
 
-      if re.search("ERROR SUMMARY", self.line_):
-        # TSAN has finished working. The remaining reports are duplicates.
-        break
-
       tmp = []
       while re.search(TsanAnalyze.THREAD_CREATION_STR, self.line_):
         tmp.extend(self.ReadSection())
@@ -117,11 +113,6 @@ class TsanAnalyze:
         tmp.extend(self.ReadSection())
         self.races.append(tmp)
 
-    while True:
-      # Read the list of used suppressions.
-      self.ReadLine()
-      if (self.line_ == ''):
-        break
       match = re.search(" used_suppression:\s+([0-9]+)\s(.*)", self.line_)
       if match:
         count, supp_name = match.groups()

@@ -16,6 +16,7 @@
 export THISDIR=`dirname $0`
 
 setup_memcheck() {
+  RUN_COMMAND="valgrind"
   # Prefer a 32-bit gdb if it's available.
   GDB="/usr/bin/gdb32";
   if [ ! -x $GDB ]; then
@@ -30,6 +31,7 @@ setup_memcheck() {
 }
 
 setup_tsan() {
+  RUN_COMMAND="valgrind-tsan.sh"
   IGNORE_FILE="$THISDIR/tsan/ignores.txt"
   DEFAULT_TOOL_FLAGS=("--announce-threads" "--pure-happens-before=yes" \
                       "--ignore=$IGNORE_FILE")
@@ -102,8 +104,7 @@ G_SLICE=always-malloc \
 NSS_DISABLE_ARENA_FREE_LIST=1 \
 G_DEBUG=fatal_warnings \
 GTEST_DEATH_TEST_USE_FORK=1 \
-valgrind \
-  --tool=$TOOL_NAME \
+$RUN_COMMAND \
   --trace-children=yes \
   --suppressions="$SUPPRESSIONS" \
   "${DEFAULT_TOOL_FLAGS[@]}" \
