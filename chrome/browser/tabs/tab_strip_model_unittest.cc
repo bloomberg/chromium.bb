@@ -70,6 +70,8 @@ class TabStripDummyDelegate : public TabStripModelDelegate {
   virtual bool CanCloseContentsAt(int index) { return can_close_ ; }
   virtual bool CanBookmarkAllTabs() const { return false; }
   virtual void BookmarkAllTabs() {}
+  virtual bool UseVerticalTabs() const { return false; }
+  virtual void ToggleUseVerticalTabs() {}
 
  private:
   // A dummy TabContents we give to callers that expect us to actually build a
