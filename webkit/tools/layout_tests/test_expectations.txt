@@ -2846,3 +2846,5 @@ BUG38656 : fast/media/print-restores-previous-mediatype.html = TEXT
 BUG38694 MAC LINUX DEBUG : svg/custom/feDisplacementMap-01.svg = IMAGE+TEXT PASS
 BUG38704 WIN RELEASE: svg/text/text-text-06-t.svg = CRASH PASS
 BUG38706 : svg/custom/deep-dynamic-updates.svg = IMAGE+TEXT PASS
+// Update these upstream.
+BUG_DGLAZKOV MAC : editing/style/apply-through-end-of-document.html = TEXT
