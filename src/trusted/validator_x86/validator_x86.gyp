@@ -243,6 +243,7 @@
     {
       'target_name': 'ncopcode_utils_gen',
       'type': 'none',
+      'hard_dependency': 1,
       'direct_dependent_settings': {
         'include_dirs': ['<(SHARED_INTERMEDIATE_DIR)'],
       },
@@ -386,6 +387,7 @@
     # ----------------------------------------------------------------------
     {
       'target_name': 'ncvalidate_gen',
+      'hard_dependency': 1,
       'type': 'none',
       'variables': {
         'target_base': 'ncvalidate_gen',
@@ -447,6 +449,7 @@
         {
           'target_name': 'ncvalidate_gen64',
           'type': 'none',
+          'hard_dependency': 1,
           'variables': {
             'target_base': 'ncvalidate_gen',
             'win_target': 'x64',
