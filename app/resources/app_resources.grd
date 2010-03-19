@@ -149,6 +149,7 @@
       <include name="IDR_INFOBARBUTTON_BOTTOM_LEFT_P" file="infobarbutton_bl_p.png" type="BINDATA" />
       <include name="IDR_INFOBARBUTTON_BOTTOM_P" file="infobarbutton_b_p.png" type="BINDATA" />
       <include name="IDR_INFOBARBUTTON_BOTTOM_RIGHT_P" file="infobarbutton_br_p.png" type="BINDATA" />
+      <include name="IDR_INFOBARBUTTON_MENU_DROPARROW" file="infobarbutton_menu_droparrow.png" type="BINDATA" />
     </includes>
   </release>
 </grit>
