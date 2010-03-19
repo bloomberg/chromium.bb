@@ -148,7 +148,7 @@
    # Filed with Apple as rdar://7255382
    bug_20459a
    Memcheck:Leak
-   fun:malloc_zone_malloc
+   ...
    fun:_CFRuntimeCreateInstance
    fun:CFRunLoopSourceCreate
    fun:CFMachPortCreateRunLoopSource
@@ -228,6 +228,7 @@
    fun:malloc_zone_calloc
    fun:_internal_class_createInstanceFromZone
    fun:+[NSObject allocWithZone:]
+   ...
    fun:-[NSCustomObject nibInstantiate]
    fun:-[NSIBObjectData instantiateObject:]
    fun:-[NSIBObjectData nibInstantiateWithOwner:topLevelObjects:]
