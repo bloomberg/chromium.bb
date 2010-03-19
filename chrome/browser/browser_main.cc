@@ -312,23 +312,10 @@ void AddFirstRunNewTabs(BrowserInit* browser_init,
       browser_init->AddFirstRunTab(*it);
   }
 }
-
-void AddDefaultBookmarks(BrowserInit* browser_init,
-                         const std::vector<GURL>& bookmarks) {
-  for (std::vector<GURL>::const_iterator it = bookmarks.begin();
-       it != bookmarks.end(); ++it) {
-    if (it->is_valid())
-      browser_init->AddDefaultBookmark(*it);
-  }
-}
 #else  // OS_MACOSX
 // TODO(cpu): implement first run experience for other platforms.
 void AddFirstRunNewTabs(BrowserInit* browser_init,
                         const std::vector<GURL>& new_tabs) {
-}
-
-void AddDefaultBookmarks(BrowserInit* browser_init,
-                         const std::vector<GURL>& bookmarks) {
 }
 #endif
 
@@ -633,9 +620,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
     // The master prefs might specify a set of urls to display.
     if (master_prefs.new_tabs.size())
       AddFirstRunNewTabs(&browser_init, master_prefs.new_tabs);
-    // The master prefs might specify a set of initial bookmarks.
-    if (master_prefs.bookmarks.size())
-      AddDefaultBookmarks(&browser_init, master_prefs.bookmarks);
 
     // If we are running in App mode, we do not want to show the importer
     // (first run) UI.

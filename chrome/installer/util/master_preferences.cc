@@ -129,10 +129,6 @@ std::vector<GURL> GetFirstRunTabs(const DictionaryValue* prefs) {
   return GetNamedList(L"first_run_tabs", prefs);
 }
 
-std::vector<GURL> GetDefaultBookmarks(const DictionaryValue* prefs) {
-  return GetNamedList(L"default_bookmarks", prefs);
-}
-
 bool SetDistroBooleanPreference(DictionaryValue* prefs,
                                 const std::wstring& name,
                                 bool value) {

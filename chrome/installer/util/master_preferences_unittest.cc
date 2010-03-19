@@ -209,30 +209,6 @@ TEST_F(MasterPreferencesTest, FirstRunTabs) {
   EXPECT_EQ(GURL("new_tab_page"), tabs[2]);
 }
 
-TEST_F(MasterPreferencesTest, FirstRunBookMarks) {
-  const char text[] =
-    "{ \n"
-    "  \"distribution\": { \n"
-    "     \"something here\": true\n"
-    "  },\n"
-    "  \"default_bookmarks\": [\n"
-    "     \"http://google.com/b1\",\n"
-    "     \"https://google.com/b2\"\n"
-    "  ]\n"
-    "} \n";
-
-  EXPECT_TRUE(file_util::WriteFile(prefs_file(), text, sizeof(text)));
-  scoped_ptr<DictionaryValue> prefs(
-      installer_util::ParseDistributionPreferences(prefs_file()));
-  EXPECT_TRUE(prefs.get() != NULL);
-
-  typedef std::vector<GURL> BookmarksVector;
-  BookmarksVector bookmarks = installer_util::GetDefaultBookmarks(prefs.get());
-  ASSERT_EQ(2, bookmarks.size());
-  EXPECT_EQ(GURL("http://google.com/b1"), bookmarks[0]);
-  EXPECT_EQ(GURL("https://google.com/b2"), bookmarks[1]);
-}
-
 // In this test instead of using our synthetic json file, we use an
 // actual test case from the extensions unittest. The hope here is that if
 // they change something in the manifest this test will break, but in
