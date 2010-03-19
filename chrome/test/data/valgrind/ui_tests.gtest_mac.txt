@@ -66,3 +66,6 @@ NPAPITester.ScheduleTimer
 NPAPIVisiblePluginTester.SelfDeletePluginInNewStream
 NPAPIVisiblePluginTester.MultipleInstancesSyncCalls
 NPAPIVisiblePluginTester.PluginConvertPointTest
+
+# See http://crbug.com/38657
+BrowserEncodingTest.TestEncodingAliasMapping
