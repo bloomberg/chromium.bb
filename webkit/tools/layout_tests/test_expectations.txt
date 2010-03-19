@@ -2830,7 +2830,8 @@ BUG38397 : websocket/tests/websocket-pending-activity.html = TIMEOUT PASS
 // One pixel changes from gray 0x83 to gray 0x81. Valgrind is clean.
 BUG38534 LINUX : tables/mozilla/bugs/bug20804.html = IMAGE PASS
 
-// While I figure out what went wrong.  -- agl
+// This runs correctly on the builder, using the builder's working directory.
+// I can only assume that the Gods are Making Merriment at my expense. --agl
 BUG_AGL LINUX : platform/chromium/fast/text/chromium-linux-fontconfig-renderstyle.html = IMAGE
 
 // WebKit roll 56165:56197.
