@@ -2835,9 +2835,10 @@ BUG_AGL LINUX : platform/chromium/fast/text/chromium-linux-fontconfig-renderstyl
 
 // WebKit roll 56165:56197.
 // Baseline wasn't checked with the test. Will clear up on next roll.
-BUG_DGLAZKOV WIN LINUX MAC : fast/dynamic/float-remove-above-line-2.html = FAIL
+BUG_DGLAZKOV WIN LINUX MAC : fast/dynamic/float-remove-above-line-2.html = MISSING
 // New test (http://trac.webkit.org/changeset/56191), failing upstream as well
 // will try to help fix on next roll.
-BUG_DGLAZKOV : fast/css/nth-child-odd-case-insensitive.html = TEXT PASS
+BUG_DGLAZKOV SKIP : fast/css/nth-child-odd-case-insensitive.html = CRASH TEXT PASS
 // New test (http://trac.webkit.org/changeset/56198), requires changes to PluginObject
 BUG38578 : plugins/override-node-method.html = TEXT
+BUG_DGLAZKOV MAC : editing/style/apply-through-end-of-document.html = TEXT
