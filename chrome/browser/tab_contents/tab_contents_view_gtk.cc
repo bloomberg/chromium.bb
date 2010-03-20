@@ -114,11 +114,11 @@ TabContentsViewGtk::TabContentsViewGtk(TabContents* tab_contents)
       constrained_window_(NULL) {
   gtk_widget_set_name(expanded_, "chrome-tab-contents-view");
   g_signal_connect(expanded_, "size-allocate",
-                   G_CALLBACK(OnSizeAllocate), this);
+                   G_CALLBACK(OnSizeAllocateThunk), this);
   g_signal_connect(expanded_, "child-size-request",
-                   G_CALLBACK(OnChildSizeRequest), this);
+                   G_CALLBACK(OnChildSizeRequestThunk), this);
   g_signal_connect(floating_.get(), "set-floating-position",
-                   G_CALLBACK(OnSetFloatingPosition), this);
+                   G_CALLBACK(OnSetFloatingPositionThunk), this);
 
   gtk_container_add(GTK_CONTAINER(floating_.get()), expanded_);
   gtk_widget_show(expanded_);
@@ -181,7 +181,7 @@ RenderWidgetHostView* TabContentsViewGtk::CreateViewForWidget(
   gtk_widget_add_events(content_view, GDK_LEAVE_NOTIFY_MASK |
                         GDK_POINTER_MOTION_MASK);
   g_signal_connect(content_view, "button-press-event",
-                   G_CALLBACK(OnMouseDown), this);
+                   G_CALLBACK(OnMouseDownThunk), this);
   InsertIntoContentArea(content_view);
 
   // Renderer target DnD.
@@ -340,51 +340,47 @@ void TabContentsViewGtk::InsertIntoContentArea(GtkWidget* widget) {
 }
 
 gboolean TabContentsViewGtk::OnMouseDown(GtkWidget* widget,
-    GdkEventButton* event, TabContentsViewGtk* view) {
-  view->last_mouse_down_ = *event;
+                                         GdkEventButton* event) {
+  last_mouse_down_ = *event;
   return FALSE;
 }
 
 void TabContentsViewGtk::OnChildSizeRequest(GtkWidget* widget,
                                             GtkWidget* child,
-                                            GtkRequisition* requisition,
-                                            TabContentsViewGtk* view) {
-  if (view->tab_contents()->delegate()) {
+                                            GtkRequisition* requisition) {
+  if (tab_contents()->delegate()) {
     requisition->height +=
-        view->tab_contents()->delegate()->GetExtraRenderViewHeight();
+        tab_contents()->delegate()->GetExtraRenderViewHeight();
   }
 }
 
 void TabContentsViewGtk::OnSizeAllocate(GtkWidget* widget,
-                                        GtkAllocation* allocation,
-                                        TabContentsViewGtk* view) {
+                                        GtkAllocation* allocation) {
   int width = allocation->width;
   int height = allocation->height;
   // |delegate()| can be NULL here during browser teardown.
-  if (view->tab_contents()->delegate())
-    height += view->tab_contents()->delegate()->GetExtraRenderViewHeight();
+  if (tab_contents()->delegate())
+    height += tab_contents()->delegate()->GetExtraRenderViewHeight();
   gfx::Size size(width, height);
-  view->requested_size_ = size;
+  requested_size_ = size;
 
   // We manually tell our RWHV to resize the renderer content.  This avoids
   // spurious resizes from GTK+.
-  RenderWidgetHostView* rwhv = view->tab_contents()->GetRenderWidgetHostView();
+  RenderWidgetHostView* rwhv = tab_contents()->GetRenderWidgetHostView();
   if (rwhv)
     rwhv->SetSize(size);
-  if (view->tab_contents()->interstitial_page())
-    view->tab_contents()->interstitial_page()->SetSize(size);
+  if (tab_contents()->interstitial_page())
+    tab_contents()->interstitial_page()->SetSize(size);
 }
 
-// static
 void TabContentsViewGtk::OnSetFloatingPosition(
-    GtkFloatingContainer* floating_container, GtkAllocation* allocation,
-    TabContentsViewGtk* tab_contents_view) {
+    GtkWidget* floating_container, GtkAllocation* allocation) {
   // Place each ConstrainedWindow in the center of the view.
   int half_view_width = std::max((allocation->x + allocation->width) / 2, 0);
   int half_view_height = std::max((allocation->y + allocation->height) / 2, 0);
-  if (tab_contents_view->constrained_window_) {
-    GtkWidget* widget = tab_contents_view->constrained_window_->widget();
-    DCHECK(widget->parent == tab_contents_view->floating_.get());
+  if (constrained_window_) {
+    GtkWidget* widget = constrained_window_->widget();
+    DCHECK(widget->parent == floating_.get());
 
     GtkRequisition requisition;
     gtk_widget_size_request(widget, &requisition);

@@ -9,6 +9,7 @@
 
 #include <map>
 
+#include "app/gtk_signal.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 #include "chrome/browser/bookmarks/bookmark_context_menu_controller.h"
@@ -67,41 +68,33 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
   // respectively. We have to override these separate from OnMenuItemActivated
   // because we need to handle right clicks and opening bookmarks with
   // different dispositions.
-  static gboolean OnButtonPressed(GtkWidget* sender,
-                                  GdkEventButton* event,
-                                  BookmarkMenuController* controller);
-  static gboolean OnButtonReleased(GtkWidget* sender,
-                                   GdkEventButton* event,
-                                   BookmarkMenuController* controller);
+  CHROMEGTK_CALLBACK_1(BookmarkMenuController, gboolean, OnButtonPressed,
+                       GdkEventButton*);
+  CHROMEGTK_CALLBACK_1(BookmarkMenuController, gboolean, OnButtonReleased,
+                       GdkEventButton*);
+
   // We connect this handler to the button-press-event signal for folder nodes.
   // It suppresses the normal behavior (popping up the submenu) to allow these
   // nodes to be draggable. The submenu is instead popped up on a
   // button-release-event.
-  static gboolean OnFolderButtonPressed(GtkWidget* sender,
-                                        GdkEventButton* event,
-                                        BookmarkMenuController* controller);
+  CHROMEGTK_CALLBACK_1(BookmarkMenuController, gboolean, OnFolderButtonPressed,
+                       GdkEventButton*);
 
   // We have to stop drawing |triggering_widget_| as active when the menu
   // closes.
-  static void OnMenuHidden(GtkWidget* menu, BookmarkMenuController* controller);
+  CHROMEGTK_CALLBACK_0(BookmarkMenuController, void, OnMenuHidden)
 
   // We respond to the activate signal because things other than mouse button
   // events can trigger it.
-  static void OnMenuItemActivated(GtkMenuItem* menuitem,
-                                  BookmarkMenuController* controller);
+  CHROMEGTK_CALLBACK_0(BookmarkMenuController, void, OnMenuItemActivated);
 
   // The individual GtkMenuItems in the BookmarkMenu are all drag sources.
-  static void OnMenuItemDragBegin(GtkWidget* menu_item,
-                                  GdkDragContext* drag_context,
-                                  BookmarkMenuController* bar);
-  static void OnMenuItemDragEnd(GtkWidget* menu_item,
-                                GdkDragContext* drag_context,
-                                BookmarkMenuController* controller);
-  static void OnMenuItemDragGet(
-      GtkWidget* widget, GdkDragContext* context,
-      GtkSelectionData* selection_data,
-      guint target_type, guint time,
-      BookmarkMenuController* controller);
+  CHROMEGTK_CALLBACK_1(BookmarkMenuController, void, OnMenuItemDragBegin,
+                       GdkDragContext*);
+  CHROMEGTK_CALLBACK_1(BookmarkMenuController, void, OnMenuItemDragEnd,
+                       GdkDragContext*);
+  CHROMEGTK_CALLBACK_4(BookmarkMenuController, void, OnMenuItemDragGet,
+                       GdkDragContext*, GtkSelectionData*, guint, guint);
 
   Browser* browser_;
   Profile* profile_;

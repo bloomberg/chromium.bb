@@ -375,13 +375,13 @@ void BookmarkManagerGtk::InitWidgets() {
       gtk_util::ConvertAcceleratorsFromWindowsStyle(
           l10n_util::GetStringUTF8(IDS_BOOKMARK_MANAGER_IMPORT_MENU)).c_str());
   g_signal_connect(import_item, "activate",
-                   G_CALLBACK(OnImportItemActivated), this);
+                   G_CALLBACK(OnImportItemActivatedThunk), this);
 
   GtkWidget* export_item = gtk_menu_item_new_with_mnemonic(
       gtk_util::ConvertAcceleratorsFromWindowsStyle(
           l10n_util::GetStringUTF8(IDS_BOOKMARK_MANAGER_EXPORT_MENU)).c_str());
   g_signal_connect(export_item, "activate",
-                   G_CALLBACK(OnExportItemActivated), this);
+                   G_CALLBACK(OnExportItemActivatedThunk), this);
 
   GtkWidget* tools_menu = gtk_menu_new();
   gtk_menu_shell_append(GTK_MENU_SHELL(tools_menu), import_item);
@@ -394,7 +394,7 @@ void BookmarkManagerGtk::InitWidgets() {
   // Build the sync status menu item.
   sync_status_menu_ = gtk_menu_item_new_with_label("");
   g_signal_connect(sync_status_menu_, "activate",
-                   G_CALLBACK(OnSyncStatusMenuActivated), this);
+                   G_CALLBACK(OnSyncStatusMenuActivatedThunk), this);
 
   GtkWidget* menu_bar = gtk_menu_bar_new();
   gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), organize_);
@@ -457,15 +457,15 @@ GtkWidget* BookmarkManagerGtk::MakeLeftPane() {
   // When a row is collapsed that contained the selected node, we want to select
   // it.
   g_signal_connect(left_tree_view_, "row-collapsed",
-                   G_CALLBACK(OnLeftTreeViewRowCollapsed), this);
+                   G_CALLBACK(OnLeftTreeViewRowCollapsedThunk), this);
   g_signal_connect(left_tree_view_, "focus-in-event",
-                   G_CALLBACK(OnLeftTreeViewFocusIn), this);
+                   G_CALLBACK(OnLeftTreeViewFocusInThunk), this);
   g_signal_connect(left_tree_view_, "button-press-event",
-                   G_CALLBACK(OnTreeViewButtonPress), this);
+                   G_CALLBACK(OnTreeViewButtonPressThunk), this);
   g_signal_connect(left_tree_view_, "button-release-event",
-                   G_CALLBACK(OnTreeViewButtonRelease), this);
+                   G_CALLBACK(OnTreeViewButtonReleaseThunk), this);
   g_signal_connect(left_tree_view_, "key-press-event",
-                   G_CALLBACK(OnTreeViewKeyPress), this);
+                   G_CALLBACK(OnTreeViewKeyPressThunk), this);
 
   GtkCellRenderer* cell_renderer_text = bookmark_utils::GetCellRendererText(
       GTK_TREE_VIEW(left_tree_view_));
@@ -478,9 +478,9 @@ GtkWidget* BookmarkManagerGtk::MakeLeftPane() {
   gtk_dnd_util::SetDestTargetList(left_tree_view_, kDestTargetList);
 
   g_signal_connect(left_tree_view_, "drag-data-received",
-                   G_CALLBACK(&OnLeftTreeViewDragReceived), this);
+                   G_CALLBACK(OnLeftTreeViewDragReceivedThunk), this);
   g_signal_connect(left_tree_view_, "drag-motion",
-                   G_CALLBACK(&OnLeftTreeViewDragMotion), this);
+                   G_CALLBACK(OnLeftTreeViewDragMotionThunk), this);
 
   GtkWidget* scrolled = gtk_scrolled_window_new(NULL, NULL);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled),
@@ -529,22 +529,22 @@ GtkWidget* BookmarkManagerGtk::MakeRightPane() {
   gtk_tree_selection_set_mode(right_selection(), GTK_SELECTION_MULTIPLE);
 
   g_signal_connect(right_tree_view_, "row-activated",
-                   G_CALLBACK(OnRightTreeViewRowActivated), this);
+                   G_CALLBACK(OnRightTreeViewRowActivatedThunk), this);
   g_signal_connect(right_selection(), "changed",
                    G_CALLBACK(OnRightSelectionChanged), this);
   g_signal_connect(right_tree_view_, "focus-in-event",
-                   G_CALLBACK(OnRightTreeViewFocusIn), this);
+                   G_CALLBACK(OnRightTreeViewFocusInThunk), this);
   g_signal_connect(right_tree_view_, "button-press-event",
-                   G_CALLBACK(OnRightTreeViewButtonPress), this);
+                   G_CALLBACK(OnRightTreeViewButtonPressThunk), this);
   g_signal_connect(right_tree_view_, "motion-notify-event",
-                   G_CALLBACK(OnRightTreeViewMotion), this);
+                   G_CALLBACK(OnRightTreeViewMotionThunk), this);
   // This handler just controls showing the context menu.
   g_signal_connect(right_tree_view_, "button-press-event",
-                   G_CALLBACK(OnTreeViewButtonPress), this);
+                   G_CALLBACK(OnTreeViewButtonPressThunk), this);
   g_signal_connect(right_tree_view_, "button-release-event",
-                   G_CALLBACK(OnTreeViewButtonRelease), this);
+                   G_CALLBACK(OnTreeViewButtonReleaseThunk), this);
   g_signal_connect(right_tree_view_, "key-press-event",
-                   G_CALLBACK(OnTreeViewKeyPress), this);
+                   G_CALLBACK(OnTreeViewKeyPressThunk), this);
 
   // GDK_ACTION_MOVE is necessary to reorder bookmarks within the
   // right tree.  COPY and LINK are necessary for drags to the
@@ -559,13 +559,13 @@ GtkWidget* BookmarkManagerGtk::MakeRightPane() {
   // as a drag destination unless it corresponds to the contents of a folder.
   // See BuildRightStore().
   g_signal_connect(right_tree_view_, "drag-data-get",
-                   G_CALLBACK(&OnRightTreeViewDragGet), this);
+                   G_CALLBACK(OnRightTreeViewDragGetThunk), this);
   g_signal_connect(right_tree_view_, "drag-data-received",
-                   G_CALLBACK(&OnRightTreeViewDragReceived), this);
+                   G_CALLBACK(OnRightTreeViewDragReceivedThunk), this);
   g_signal_connect(right_tree_view_, "drag-motion",
-                   G_CALLBACK(&OnRightTreeViewDragMotion), this);
+                   G_CALLBACK(OnRightTreeViewDragMotionThunk), this);
   g_signal_connect(right_tree_view_, "drag-begin",
-                   G_CALLBACK(&OnRightTreeViewDragBegin), this);
+                   G_CALLBACK(OnRightTreeViewDragBeginThunk), this);
 
   GtkWidget* scrolled = gtk_scrolled_window_new(NULL, NULL);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled),
@@ -897,7 +897,7 @@ void BookmarkManagerGtk::PerformSearch() {
   }
 }
 
-void BookmarkManagerGtk::OnSearchTextChanged() {
+void BookmarkManagerGtk::OnSearchTextChanged(GtkWidget* widget) {
   search_factory_.RevokeAll();
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
       search_factory_.NewRunnableMethod(&BookmarkManagerGtk::PerformSearch),
@@ -931,7 +931,6 @@ void BookmarkManagerGtk::OnRightSelectionChanged(GtkTreeSelection* selection,
   bm->ResetOrganizeMenu(false);
 }
 
-// static
 void BookmarkManagerGtk::OnLeftTreeViewDragReceived(
     GtkWidget* tree_view,
     GdkDragContext* context,
@@ -939,15 +938,14 @@ void BookmarkManagerGtk::OnLeftTreeViewDragReceived(
     gint y,
     GtkSelectionData* selection_data,
     guint target_type,
-    guint time,
-    BookmarkManagerGtk* bm) {
+    guint time) {
   gboolean get_nodes_success = FALSE;
   gboolean delete_selection_data = FALSE;
 
   std::vector<const BookmarkNode*> nodes =
       bookmark_utils::GetNodesFromSelection(context, selection_data,
                                             target_type,
-                                            bm->profile_,
+                                            profile_,
                                             &delete_selection_data,
                                             &get_nodes_success);
 
@@ -966,9 +964,8 @@ void BookmarkManagerGtk::OnLeftTreeViewDragReceived(
   }
 
   GtkTreeIter iter;
-  gtk_tree_model_get_iter(GTK_TREE_MODEL(bm->left_store_), &iter, path);
-  const BookmarkNode* folder =
-      bm->GetNodeAt(GTK_TREE_MODEL(bm->left_store_), &iter);
+  gtk_tree_model_get_iter(GTK_TREE_MODEL(left_store_), &iter, path);
+  const BookmarkNode* folder = GetNodeAt(GTK_TREE_MODEL(left_store_), &iter);
   gboolean dnd_success = FALSE;
 
   if (folder) {
@@ -976,7 +973,7 @@ void BookmarkManagerGtk::OnLeftTreeViewDragReceived(
          it != nodes.end(); ++it) {
       // Don't try to drop a node into one of its descendants.
       if (!folder->HasAncestor(*it)) {
-        bm->model_->Move(*it, folder, folder->GetChildCount());
+        model_->Move(*it, folder, folder->GetChildCount());
         dnd_success = TRUE;
       }
     }
@@ -987,14 +984,12 @@ void BookmarkManagerGtk::OnLeftTreeViewDragReceived(
                   time);
 }
 
-// static
 gboolean BookmarkManagerGtk::OnLeftTreeViewDragMotion(
     GtkWidget* tree_view,
     GdkDragContext* context,
     gint x,
     gint y,
-    guint time,
-    BookmarkManagerGtk* bm) {
+    guint time) {
   GtkTreePath* path;
   GtkTreeViewDropPosition pos;
   gtk_tree_view_get_dest_row_at_pos(GTK_TREE_VIEW(tree_view), x, y,
@@ -1005,7 +1000,7 @@ gboolean BookmarkManagerGtk::OnLeftTreeViewDragMotion(
     GtkTreeIter iter;
     GtkTreeModel* model = gtk_tree_view_get_model(GTK_TREE_VIEW(tree_view));
     gtk_tree_model_get_iter(model, &iter, path);
-    if (bm->GetNodeAt(model, &iter) == NULL)
+    if (GetNodeAt(model, &iter) == NULL)
       return FALSE;
 
     // Only allow INTO.
@@ -1023,41 +1018,36 @@ gboolean BookmarkManagerGtk::OnLeftTreeViewDragMotion(
   return TRUE;
 }
 
-// static
 void BookmarkManagerGtk::OnLeftTreeViewRowCollapsed(
-    GtkTreeView *tree_view,
+    GtkWidget* tree_view,
     GtkTreeIter* iter,
-    GtkTreePath* path,
-    BookmarkManagerGtk* bm) {
+    GtkTreePath* path) {
   // If a selection still exists, do nothing.
-  if (gtk_tree_selection_get_selected(bm->left_selection(), NULL, NULL))
+  if (gtk_tree_selection_get_selected(left_selection(), NULL, NULL))
     return;
 
-  gtk_tree_selection_select_path(bm->left_selection(), path);
+  gtk_tree_selection_select_path(left_selection(), path);
 }
 
-// static
 void BookmarkManagerGtk::OnRightTreeViewDragGet(
     GtkWidget* tree_view,
     GdkDragContext* context,
     GtkSelectionData* selection_data,
     guint target_type,
-    guint time,
-    BookmarkManagerGtk* bm) {
+    guint time) {
   // No selection, do nothing. This shouldn't get hit, but if it does an early
   // return avoids a crash.
-  if (gtk_tree_selection_count_selected_rows(bm->right_selection()) == 0) {
+  if (gtk_tree_selection_count_selected_rows(right_selection()) == 0) {
     NOTREACHED();
     return;
   }
 
-  bookmark_utils::WriteBookmarksToSelection(bm->GetRightSelection(),
+  bookmark_utils::WriteBookmarksToSelection(GetRightSelection(),
                                             selection_data,
                                             target_type,
-                                            bm->profile_);
+                                            profile_);
 }
 
-// static
 void BookmarkManagerGtk::OnRightTreeViewDragReceived(
     GtkWidget* tree_view,
     GdkDragContext* context,
@@ -1065,15 +1055,14 @@ void BookmarkManagerGtk::OnRightTreeViewDragReceived(
     gint y,
     GtkSelectionData* selection_data,
     guint target_type,
-    guint time,
-    BookmarkManagerGtk* bm) {
+    guint time) {
   gboolean dnd_success = FALSE;
   gboolean delete_selection_data = FALSE;
 
   std::vector<const BookmarkNode*> nodes =
       bookmark_utils::GetNodesFromSelection(context, selection_data,
                                             target_type,
-                                            bm->profile_,
+                                            profile_,
                                             &delete_selection_data,
                                             &dnd_success);
 
@@ -1097,9 +1086,9 @@ void BookmarkManagerGtk::OnRightTreeViewDragReceived(
   // |path| will be null when we are looking at an empty folder.
   if (!drop_before && !drop_after && path) {
     GtkTreeIter iter;
-    GtkTreeModel* model = GTK_TREE_MODEL(bm->right_store_);
+    GtkTreeModel* model = GTK_TREE_MODEL(right_store_);
     gtk_tree_model_get_iter(model, &iter, path);
-    const BookmarkNode* node = bm->GetNodeAt(model, &iter);
+    const BookmarkNode* node = GetNodeAt(model, &iter);
     if (node && node->is_folder()) {
       parent = node;
       idx = parent->GetChildCount();
@@ -1113,7 +1102,7 @@ void BookmarkManagerGtk::OnRightTreeViewDragReceived(
     if (path && drop_after)
       gtk_tree_path_next(path);
     // We will get a null path when the drop is below the lowest row.
-    parent = bm->GetFolder();
+    parent = GetFolder();
     idx = !path ? parent->GetChildCount() : gtk_tree_path_get_indices(path)[0];
   }
 
@@ -1121,7 +1110,7 @@ void BookmarkManagerGtk::OnRightTreeViewDragReceived(
        it != nodes.end(); ++it) {
     // Don't try to drop a node into one of its descendants.
     if (!parent->HasAncestor(*it)) {
-      bm->model_->Move(*it, parent, idx);
+      model_->Move(*it, parent, idx);
       idx = parent->IndexOfChild(*it) + 1;
     }
   }
@@ -1130,28 +1119,24 @@ void BookmarkManagerGtk::OnRightTreeViewDragReceived(
   gtk_drag_finish(context, dnd_success, delete_selection_data, time);
 }
 
-// static
 void BookmarkManagerGtk::OnRightTreeViewDragBegin(
     GtkWidget* tree_view,
-    GdkDragContext* drag_context,
-    BookmarkManagerGtk* bm) {
+    GdkDragContext* drag_context) {
   gtk_drag_set_icon_stock(drag_context, GTK_STOCK_DND, 0, 0);
 }
 
-// static
 gboolean BookmarkManagerGtk::OnRightTreeViewDragMotion(
     GtkWidget* tree_view,
     GdkDragContext* context,
     gint x,
     gint y,
-    guint time,
-    BookmarkManagerGtk* bm) {
+    guint time) {
   GtkTreePath* path;
   GtkTreeViewDropPosition pos;
   gtk_tree_view_get_dest_row_at_pos(GTK_TREE_VIEW(tree_view), x, y,
                                     &path, &pos);
 
-  const BookmarkNode* parent = bm->GetFolder();
+  const BookmarkNode* parent = GetFolder();
   if (path) {
     int idx =
         gtk_tree_path_get_indices(path)[gtk_tree_path_get_depth(path) - 1];
@@ -1172,40 +1157,32 @@ gboolean BookmarkManagerGtk::OnRightTreeViewDragMotion(
   return TRUE;
 }
 
-// static
 void BookmarkManagerGtk::OnRightTreeViewRowActivated(
-    GtkTreeView* tree_view,
+    GtkWidget* tree_view,
     GtkTreePath* path,
-    GtkTreeViewColumn* column,
-    BookmarkManagerGtk* bm) {
-  std::vector<const BookmarkNode*> nodes = bm->GetRightSelection();
+    GtkTreeViewColumn* column) {
+  std::vector<const BookmarkNode*> nodes = GetRightSelection();
   if (nodes.empty())
     return;
   if (nodes.size() == 1 && nodes[0]->is_folder()) {
     // Double click on a folder descends into the folder.
-    bm->SelectInTree(nodes[0], false);
+    SelectInTree(nodes[0], false);
     return;
   }
-  bookmark_utils::OpenAll(GTK_WINDOW(bm->window_), bm->profile_, NULL, nodes,
+  bookmark_utils::OpenAll(GTK_WINDOW(window_), profile_, NULL, nodes,
                           CURRENT_TAB);
 }
 
-// static
-void BookmarkManagerGtk::OnLeftTreeViewFocusIn(
-    GtkTreeView* tree_view,
-    GdkEventFocus* event,
-    BookmarkManagerGtk* bm) {
-  if (!bm->organize_is_for_left_)
-    bm->ResetOrganizeMenu(true);
+void BookmarkManagerGtk::OnLeftTreeViewFocusIn(GtkWidget* tree_view,
+                                               GdkEventFocus* event) {
+  if (!organize_is_for_left_)
+    ResetOrganizeMenu(true);
 }
 
-// static
-void BookmarkManagerGtk::OnRightTreeViewFocusIn(
-    GtkTreeView* tree_view,
-    GdkEventFocus* event,
-    BookmarkManagerGtk* bm) {
-  if (bm->organize_is_for_left_)
-    bm->ResetOrganizeMenu(false);
+void BookmarkManagerGtk::OnRightTreeViewFocusIn(GtkWidget* tree_view,
+                                                GdkEventFocus* event) {
+  if (organize_is_for_left_)
+    ResetOrganizeMenu(false);
 }
 
 // We do a couple things in this handler.
@@ -1224,12 +1201,10 @@ void BookmarkManagerGtk::OnRightTreeViewFocusIn(
 // We return TRUE for when we want to ignore events (i.e., stop the default
 // handler from handling them), and FALSE for when we want to continue
 // propagation.
-//
-// static
 gboolean BookmarkManagerGtk::OnRightTreeViewButtonPress(
-    GtkWidget* tree_view, GdkEventButton* event, BookmarkManagerGtk* bm) {
+    GtkWidget* tree_view, GdkEventButton* event) {
   // Always let cached mousedown events through.
-  if (bm->sending_delayed_mousedown_)
+  if (sending_delayed_mousedown_)
     return FALSE;
 
   if (event->button != 1)
@@ -1238,8 +1213,8 @@ gboolean BookmarkManagerGtk::OnRightTreeViewButtonPress(
   // If a user double clicks, we will get two button presses in a row without
   // any intervening mouse up, hence we must flush delayed mousedowns here as
   // well as in the button release handler.
-  if (bm->delaying_mousedown_) {
-    bm->SendDelayedMousedown();
+  if (delaying_mousedown_) {
+    SendDelayedMousedown();
     return FALSE;
   }
 
@@ -1261,13 +1236,13 @@ gboolean BookmarkManagerGtk::OnRightTreeViewButtonPress(
   if (path == NULL) {
     // Checking that the widget already has focus matches libegg behavior.
     if (GTK_WIDGET_HAS_FOCUS(tree_view))
-      gtk_tree_selection_unselect_all(bm->right_selection());
+      gtk_tree_selection_unselect_all(right_selection());
     return FALSE;
   }
 
-  if (gtk_tree_selection_path_is_selected(bm->right_selection(), path)) {
-    bm->mousedown_event_ = *event;
-    bm->delaying_mousedown_ = true;
+  if (gtk_tree_selection_path_is_selected(right_selection(), path)) {
+    mousedown_event_ = *event;
+    delaying_mousedown_ = true;
     gtk_tree_path_free(path);
     return TRUE;
   }
@@ -1276,24 +1251,23 @@ gboolean BookmarkManagerGtk::OnRightTreeViewButtonPress(
   return FALSE;
 }
 
-// static
 gboolean BookmarkManagerGtk::OnRightTreeViewMotion(
-    GtkWidget* tree_view, GdkEventMotion* event, BookmarkManagerGtk* bm) {
+    GtkWidget* tree_view, GdkEventMotion* event) {
   // Swallow motion events when no row is selected. This prevents the initiation
   // of empty drags.
-  if (gtk_tree_selection_count_selected_rows(bm->right_selection()) == 0)
+  if (gtk_tree_selection_count_selected_rows(right_selection()) == 0)
     return TRUE;
 
   // Otherwise this handler is only used for the multi-drag workaround.
-  if (!bm->delaying_mousedown_)
+  if (!delaying_mousedown_)
     return FALSE;
 
   if (gtk_drag_check_threshold(tree_view,
-                               static_cast<gint>(bm->mousedown_event_.x),
-                               static_cast<gint>(bm->mousedown_event_.y),
+                               static_cast<gint>(mousedown_event_.x),
+                               static_cast<gint>(mousedown_event_.y),
                                static_cast<gint>(event->x),
                                static_cast<gint>(event->y))) {
-    bm->delaying_mousedown_ = false;
+    delaying_mousedown_ = false;
     GtkTargetList* targets = gtk_dnd_util::GetTargetListFromCodeMask(
         bookmark_utils::GetCodeMask(false));
     gtk_drag_begin(tree_view, targets, GDK_ACTION_MOVE,
@@ -1305,39 +1279,36 @@ gboolean BookmarkManagerGtk::OnRightTreeViewMotion(
   return FALSE;
 }
 
-// static
 gboolean BookmarkManagerGtk::OnTreeViewButtonPress(
-    GtkWidget* tree_view, GdkEventButton* button, BookmarkManagerGtk* bm) {
+    GtkWidget* tree_view, GdkEventButton* button) {
   if (button->button != 3)
     return FALSE;
 
-  if (bm->ignore_rightclicks_)
+  if (ignore_rightclicks_)
     return FALSE;
 
   // If the cursor is not hovering over a selected row, let it propagate
   // to the default handler so that a selection change may occur.
   if (!CursorIsOverSelection(GTK_TREE_VIEW(tree_view))) {
-    bm->ignore_rightclicks_ = true;
+    ignore_rightclicks_ = true;
     gtk_propagate_event(tree_view, reinterpret_cast<GdkEvent*>(button));
-    bm->ignore_rightclicks_ = false;
+    ignore_rightclicks_ = false;
   }
 
-  bm->context_menu_->PopupAsContext(button->time);
+  context_menu_->PopupAsContext(button->time);
   return TRUE;
 }
 
-// static
 gboolean BookmarkManagerGtk::OnTreeViewButtonRelease(
-    GtkWidget* tree_view, GdkEventButton* button, BookmarkManagerGtk* bm) {
-  if (bm->delaying_mousedown_ && (tree_view == bm->right_tree_view_))
-    bm->SendDelayedMousedown();
+    GtkWidget* tree_view, GdkEventButton* button) {
+  if (delaying_mousedown_ && (tree_view == right_tree_view_))
+    SendDelayedMousedown();
 
   return FALSE;
 }
 
-// static
-gboolean BookmarkManagerGtk::OnTreeViewKeyPress(
-    GtkWidget* tree_view, GdkEventKey* key, BookmarkManagerGtk* bm) {
+gboolean BookmarkManagerGtk::OnTreeViewKeyPress(GtkWidget* tree_view,
+                                                GdkEventKey* key) {
   int command = -1;
 
   if ((key->state & gtk_accelerator_get_default_mod_mask()) ==
@@ -1369,9 +1340,9 @@ gboolean BookmarkManagerGtk::OnTreeViewKeyPress(
   if (command == -1)
     return FALSE;
 
-  if (bm->organize_menu_controller_.get() &&
-      bm->organize_menu_controller_->IsCommandIdEnabled(command)) {
-    bm->organize_menu_controller_->ExecuteCommand(command);
+  if (organize_menu_controller_.get() &&
+      organize_menu_controller_->IsCommandIdEnabled(command)) {
+    organize_menu_controller_->ExecuteCommand(command);
     return TRUE;
   }
 
@@ -1392,24 +1363,20 @@ void BookmarkManagerGtk::OnFolderNameEdited(GtkCellRendererText* render,
                        UTF8ToWide(new_folder_name));
 }
 
-// static
-void BookmarkManagerGtk::OnImportItemActivated(
-    GtkMenuItem* menuitem, BookmarkManagerGtk* bm) {
+void BookmarkManagerGtk::OnImportItemActivated(GtkWidget* menuitem) {
   SelectFileDialog::FileTypeInfo file_type_info;
   file_type_info.extensions.resize(1);
   file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("html"));
   file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("htm"));
   file_type_info.include_all_files = true;
-  bm->select_file_dialog_->SelectFile(
+  select_file_dialog_->SelectFile(
       SelectFileDialog::SELECT_OPEN_FILE, string16(),
       FilePath(""), &file_type_info, 0,
-      std::string(), GTK_WINDOW(bm->window_),
+      std::string(), GTK_WINDOW(window_),
       reinterpret_cast<void*>(IDS_BOOKMARK_MANAGER_IMPORT_MENU));
 }
 
-// static
-void BookmarkManagerGtk::OnExportItemActivated(
-    GtkMenuItem* menuitem, BookmarkManagerGtk* bm) {
+void BookmarkManagerGtk::OnExportItemActivated(GtkWidget* menuitem) {
   SelectFileDialog::FileTypeInfo file_type_info;
   file_type_info.extensions.resize(1);
   file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("html"));
@@ -1420,22 +1387,20 @@ void BookmarkManagerGtk::OnExportItemActivated(
   // save locations differently for different user tasks.
   FilePath suggested_path;
   PathService::Get(chrome::DIR_USER_DATA, &suggested_path);
-  bm->select_file_dialog_->SelectFile(
+  select_file_dialog_->SelectFile(
       SelectFileDialog::SELECT_SAVEAS_FILE, string16(),
       suggested_path.Append("bookmarks.html"), &file_type_info, 0,
-      "html", GTK_WINDOW(bm->window_),
+      "html", GTK_WINDOW(window_),
       reinterpret_cast<void*>(IDS_BOOKMARK_MANAGER_EXPORT_MENU));
 }
 
-// static
-void BookmarkManagerGtk::OnSyncStatusMenuActivated(GtkMenuItem* menu_item,
-                                                   BookmarkManagerGtk* bm) {
-  if (bm->sync_relogin_required_) {
-    DCHECK(bm->sync_service_);
-    bm->sync_service_->ShowLoginDialog();
+void BookmarkManagerGtk::OnSyncStatusMenuActivated(GtkWidget* menu_item) {
+  if (sync_relogin_required_) {
+    DCHECK(sync_service_);
+    sync_service_->ShowLoginDialog();
   } else {
     sync_ui_util::OpenSyncMyBookmarksDialog(
-        bm->profile_, ProfileSyncService::START_FROM_BOOKMARK_MANAGER);
+        profile_, ProfileSyncService::START_FROM_BOOKMARK_MANAGER);
   }
 }
 

@@ -7,6 +7,7 @@
 
 #include <gtk/gtk.h>
 
+#include "app/gtk_signal.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/gtk/focus_store_gtk.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
@@ -80,25 +81,21 @@ class TabContentsViewGtk : public TabContentsView,
   void CancelDragIfAny();
 
   // We keep track of the timestamp of the latest mousedown event.
-  static gboolean OnMouseDown(GtkWidget* widget,
-                              GdkEventButton* event, TabContentsViewGtk* view);
+  CHROMEGTK_CALLBACK_1(TabContentsViewGtk, gboolean, OnMouseDown,
+                       GdkEventButton*);
 
   // Used to adjust the size of its children when the size of |expanded_| is
   // changed.
-  static void OnChildSizeRequest(GtkWidget* widget,
-                                 GtkWidget* child,
-                                 GtkRequisition* requisition,
-                                 TabContentsViewGtk* view);
+  CHROMEGTK_CALLBACK_2(TabContentsViewGtk, void, OnChildSizeRequest,
+                       GtkWidget*, GtkRequisition*);
 
   // Used to propagate the size change of |expanded_| to our RWHV to resize the
   // renderer content.
-  static void OnSizeAllocate(GtkWidget* widget,
-                             GtkAllocation* allocation,
-                             TabContentsViewGtk* view);
+  CHROMEGTK_CALLBACK_1(TabContentsViewGtk, void, OnSizeAllocate,
+                       GtkAllocation*);
 
-  static void OnSetFloatingPosition(
-      GtkFloatingContainer* floating_container, GtkAllocation* allocation,
-      TabContentsViewGtk* tab_contents_view);
+  CHROMEGTK_CALLBACK_1(TabContentsViewGtk, void, OnSetFloatingPosition,
+                       GtkAllocation*);
 
   // Contains |expanded_| as its GtkBin member.
   OwnedWidgetGtk floating_;

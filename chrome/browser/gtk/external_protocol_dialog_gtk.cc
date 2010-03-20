@@ -98,7 +98,8 @@ ExternalProtocolDialogGtk::ExternalProtocolDialogGtk(const GURL& url)
   gtk_widget_show_all(dialog_);
 }
 
-void ExternalProtocolDialogGtk::OnDialogResponse(int response) {
+void ExternalProtocolDialogGtk::OnDialogResponse(GtkWidget* widget,
+                                                 int response) {
   if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(checkbox_))) {
     if (response == GTK_RESPONSE_ACCEPT) {
       ExternalProtocolHandler::SetBlockState(
