@@ -166,9 +166,39 @@ def gyp_spawn(sh, escape, cmd, args, env):
     return SCons.Platform.posix.exec_spawnvpe(stripped_args, env)
 """
 
-escape_quotes_re = re.compile('^([^=]*=)"([^"]*)"$')
-def escape_quotes(s):
-    return escape_quotes_re.sub('\\1\\"\\2\\"', s)
+
+def EscapeShellArgument(s):
+  """Quotes an argument so that it will be interpreted literally by a POSIX
+     shell. Taken from
+     http://stackoverflow.com/questions/35817/whats-the-best-way-to-escape-ossystem-calls-in-python
+     """
+  return "'" + s.replace("'", "'\\''") + "'"
+
+
+def InvertNaiveSConsQuoting(s):
+  """SCons tries to "help" with quoting by naively putting double-quotes around
+     command-line arguments containing space or tab, which is broken for all
+     but trivial cases, so we undo it. (See quote_spaces() in Subst.py)"""
+  if ' ' in s or '\t' in s:
+    # Then SCons will put double-quotes around this, so add our own quotes
+    # to close its quotes at the beginning and end.
+    s = '"' + s + '"'
+  return s
+
+
+def EscapeSConsVariableExpansion(s):
+  """SCons has its own variable expansion syntax using $. We must escape it for
+    strings to be interpreted literally. For some reason this requires four
+    dollar signs, not two, even without the shell involved."""
+  return s.replace('$', '$$$$')
+
+
+def EscapeCppDefine(s):
+  """Escapes a CPP define so that it will reach the compiler unaltered."""
+  s = EscapeShellArgument(s)
+  s = InvertNaiveSConsQuoting(s)
+  s = EscapeSConsVariableExpansion(s)
+  return s
 
 
 def GenerateConfig(fp, config, indent='', src_dir=''):
@@ -197,7 +227,7 @@ def GenerateConfig(fp, config, indent='', src_dir=''):
       value = config.get(gyp_var)
       if value:
         if gyp_var in ('defines',):
-          value = [escape_quotes(v) for v in value]
+          value = [EscapeCppDefine(v) for v in value]
         if gyp_var in ('include_dirs',):
           if src_dir and not src_dir.endswith('/'):
             src_dir += '/'

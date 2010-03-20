@@ -539,6 +539,14 @@ def ExpandXcodeVariables(string, expansions):
   return string
 
 
+def EscapeXCodeArgument(s):
+  """We must escape the arguments that we give to XCode so that it knows not to
+     split on spaces and to respect backslash and quote literals."""
+  s = s.replace('\\', '\\\\')
+  s = s.replace('"', '\\"')
+  return '"' + s + '"'
+
+
 def GenerateOutput(target_list, target_dicts, data, params):
   options = params['options']
   generator_flags = params.get('generator_flags', {})
@@ -1109,12 +1117,7 @@ exit 1
         xcbc.AppendBuildSetting('HEADER_SEARCH_PATHS', include_dir)
       if 'defines' in configuration:
         for define in configuration['defines']:
-          # If the define is of the form A="B", escape the quotes
-          # yielding A=\"\\\"B\\\"\".  The extra set of quotes tell
-          # Xcode NOT to split on spaces, and still define a string
-          # literal (with quotes).
-          set_define = re.sub(r'^([^=]*=)"([^"]*)"$',
-                              r'\1"\"\2\""', define)
+          set_define = EscapeXCodeArgument(define)
           xcbc.AppendBuildSetting('GCC_PREPROCESSOR_DEFINITIONS', set_define)
       if 'xcode_settings' in configuration:
         for xck, xcv in configuration['xcode_settings'].iteritems():

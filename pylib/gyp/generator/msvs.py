@@ -484,6 +484,80 @@ def _GenerateExternalRules(p, rules, output_dir, spec,
       })
 
 
+def _EscapeEnvironmentVariableExpansion(s):
+  """Escapes any % characters so that Windows-style environment variable
+     expansions will leave them alone.
+     See http://connect.microsoft.com/VisualStudio/feedback/details/106127/cl-d-name-text-containing-percentage-characters-doesnt-compile
+     to understand why we have to do this."""
+  s = s.replace('%', '%%')
+  return s
+
+
+quote_replacer_regex = re.compile(r'(\\*)"')
+def _EscapeCommandLineArgument(s):
+  """Escapes a Windows command-line argument, so that the Win32
+     CommandLineToArgv function will turn the escaped result back into the
+     original string. See http://msdn.microsoft.com/en-us/library/17w5ykft.aspx
+     ("Parsing C++ Command-Line Arguments") to understand why we have to do
+     this."""
+  def replace(match):
+    # For a literal quote, CommandLineToArgv requires an odd number of
+    # backslashes preceding it, and it produces half as many literal backslashes
+    # (rounded down). So we need to produce 2n+1 backslashes.
+    return 2 * match.group(1) + '\\"'
+  # Escape all quotes so that they are interpreted literally.
+  s = quote_replacer_regex.sub(replace, s)
+  # Now add unescaped quotes so that any whitespace is interpreted literally.
+  s = '"' + s + '"'
+  return s
+
+
+delimiters_replacer_regex = re.compile(r'(\\*)([,;]+)')
+def _EscapeVCProjCommandLineArgListItem(s):
+  """The VCProj format stores string lists in a single string using commas and
+     semi-colons as separators, which must be quoted if they are to be
+     interpreted literally. However, command-line arguments may already have
+     quotes, and the VCProj parser is ignorant of the backslash escaping
+     convention used by CommandLineToArgv, so the command-line quotes and the
+     VCProj quotes may not be the same quotes. So to store a general
+     command-line argument in a VCProj list, we need to parse the existing
+     quoting according to VCProj's convention and quote any delimiters that are
+     not already quoted by that convention. The quotes that we add will also be
+     seen by CommandLineToArgv, so if backslashes precede them then we also have
+     to escape those backslashes according to the CommandLineToArgv
+     convention."""
+  def replace(match):
+    # For a non-literal quote, CommandLineToArgv requires an even number of
+    # backslashes preceding it, and it produces half as many literal
+    # backslashes. So we need to produce 2n backslashes.
+    return 2 * match.group(1) + '"' + match.group(2) + '"'
+  list = s.split('"')
+  # The unquoted segments are at the even-numbered indices.
+  for i in range(0, len(list), 2):
+    list[i] = delimiters_replacer_regex.sub(replace, list[i])
+  # Concatenate back into a single string
+  s = '"'.join(list)
+  if len(list) % 2 == 0:
+    # String ends while still quoted according to VCProj's convention. This
+    # means the delimiter and the next list item that follow this one in the
+    # .vcproj file will be misinterpreted as part of this item. There is nothing
+    # we can do about this. Adding an extra quote would correct the problem in
+    # the VCProj but cause the same problem on the final command-line. Moving
+    # the item to the end of the list does works, but that's only possible if
+    # there's only one such item. Let's just warn the user.
+    print >> sys.stderr, ('Warning: MSVS may misinterpret the odd number of ' +
+        'quotes in ' + s)
+  return s
+
+
+def _EscapeCppDefine(s):
+  """Escapes a CPP define so that it will reach the compiler unaltered."""
+  s = _EscapeEnvironmentVariableExpansion(s)
+  s = _EscapeCommandLineArgument(s)
+  s = _EscapeVCProjCommandLineArgListItem(s)
+  return s
+
+
 def _GenerateRules(p, output_dir, options, spec,
                    sources, excluded_sources,
                    actions_to_add):
@@ -651,9 +725,10 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
     defines = []
     for d in c.get('defines', []):
       if type(d) == list:
-        fd = '='.join([str(dpart).replace('"', '\\"') for dpart in d])
+        fd = '='.join([str(dpart) for dpart in d])
       else:
-        fd = str(d).replace('"', '\\"')
+        fd = str(d)
+      fd = _EscapeCppDefine(fd)
       defines.append(fd)
 
     _ToolAppend(tools, 'VCCLCompilerTool',

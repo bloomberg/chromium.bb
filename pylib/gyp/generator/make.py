@@ -195,9 +195,14 @@ r"""
 escape_quotes = $(subst ','\'',$(1))
 # This comment is here just to include a ' to unconfuse syntax highlighting.
 # Define an escape_vars function to escape '$' variable syntax.
-# This allows us to read/write command lines wth shell variables (e.g.
+# This allows us to read/write command lines with shell variables (e.g.
 # $LD_LIBRARY_PATH), without triggering make substitution.
 escape_vars = $(subst $$,$$$$,$(1))
+# Helper that expands to a shell command to echo a string exactly as it is in
+# make. This uses printf instead of echo because printf's behaviour with respect
+# to escape sequences is more portable than echo's across different shells
+# (e.g., dash, bash).
+exact_echo = printf '%s\n' '$(call escape_quotes,$(1))'
 """
 """
 # Helper to compare the command we're about to run against the command
@@ -225,10 +230,10 @@ prereq_changed = $(filter-out $|,$?)
 # Second argument, if non-zero, makes it do C/C++ dependency munging.
 define do_cmd
 $(if $(or $(command_changed),$(prereq_changed)),
-  @echo '  $($(quiet)cmd_$(1))'
+  @$(call exact_echo,  $($(quiet)cmd_$(1)))
   @mkdir -p $(dir $@) $(dir $(depfile))
   @$(cmd_$(1))
-  @echo '$(call escape_vars,$(call escape_quotes,cmd_$@ := $(cmd_$(1))))' > $(depfile)
+  @$(call exact_echo,$(call escape_vars,cmd_$@ := $(cmd_$(1)))) > $(depfile)
   @$(if $(2),$(fixup_dep))
 )
 endef
@@ -403,7 +408,30 @@ def Target(filename):
   return os.path.splitext(filename)[0] + '.o'
 
 
+def EscapeShellArgument(s):
+  """Quotes an argument so that it will be interpreted literally by a POSIX
+     shell. Taken from
+     http://stackoverflow.com/questions/35817/whats-the-best-way-to-escape-ossystem-calls-in-python
+     """
+  return "'" + s.replace("'", "'\\''") + "'"
+
+
+def EscapeMakeVariableExpansion(s):
+  """Make has its own variable expansion syntax using $. We must escape it for
+     string to be interpreted literally."""
+  return s.replace('$', '$$')
+
+
+def EscapeCppDefine(s):
+  """Escapes a CPP define so that it will reach the compiler unaltered."""
+  s = EscapeShellArgument(s)
+  s = EscapeMakeVariableExpansion(s)
+  return s
+
+
 def QuoteIfNecessary(string):
+  """TODO: Should this ideally be replaced with one or more of the above
+     functions?"""
   if '"' in string:
     string = '"' + string.replace('"', '\\"') + '"'
   return string
@@ -736,7 +764,8 @@ class MakefileWriter:
     # Write configuration-specific variables for CFLAGS, etc.
     for configname in sorted(configs.keys()):
       config = configs[configname]
-      self.WriteList(config.get('defines'), 'DEFS_%s' % configname, prefix='-D')
+      self.WriteList(config.get('defines'), 'DEFS_%s' % configname, prefix='-D',
+          quoter=EscapeCppDefine)
       self.WriteLn("# Flags passed to both C and C++ files.");
       self.WriteList(config.get('cflags'), 'CFLAGS_%s' % configname)
       self.WriteLn("# Flags passed to only C (and not C++) files.");
@@ -945,7 +974,7 @@ class MakefileWriter:
                            phony = True)
 
 
-  def WriteList(self, list, variable=None, prefix=''):
+  def WriteList(self, list, variable=None, prefix='', quoter=QuoteIfNecessary):
     """Write a variable definition that is a list of values.
 
     E.g. WriteList(['a','b'], 'foo', prefix='blah') writes out
@@ -954,7 +983,7 @@ class MakefileWriter:
     """
     self.fp.write(variable + " := ")
     if list:
-      list = [QuoteIfNecessary(prefix + l) for l in list]
+      list = [quoter(prefix + l) for l in list]
       self.fp.write(" \\\n\t".join(list))
     self.fp.write("\n\n")
 
