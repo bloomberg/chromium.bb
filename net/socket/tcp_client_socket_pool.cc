@@ -177,7 +177,9 @@ TCPClientSocketPool::TCPClientSocketPool(
             base::TimeDelta::FromSeconds(kUnusedIdleSocketTimeout),
             base::TimeDelta::FromSeconds(kUsedIdleSocketTimeout),
             new TCPConnectJobFactory(client_socket_factory, host_resolver),
-            network_change_notifier) {}
+            network_change_notifier) {
+  base_.enable_backup_jobs();
+}
 
 TCPClientSocketPool::~TCPClientSocketPool() {}
 
