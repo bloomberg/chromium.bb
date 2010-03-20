@@ -41,7 +41,8 @@ except ImportError:
     import json
   except ImportError:
     # Import the one included in depot_tools.
-    import third_party.simplejson as json
+    sys.path.append(os.path.join(os.path.dirname(__file__), 'third_party'))
+    import simplejson as json
 
 # Local imports.
 import gcl
