@@ -15,12 +15,27 @@ npapi_runtime_inputs = [
   'plugin.cc',
 ]
 
-env.ComponentProgram('npapi_runtime.nexe', npapi_runtime_inputs,
-                     EXTRA_LIBS=['google_nacl_imc',
-                                 'google_nacl_npruntime',
-                                 'pthread',
-                                 'srpc'])
+npapi_runtime_nexe = env.ComponentProgram('npapi_runtime.nexe',
+                                          npapi_runtime_inputs,
+                                          EXTRA_LIBS=['google_nacl_imc',
+                                                      'google_nacl_npruntime',
+                                                      'pthread',
+                                                      'srpc'])
 
 # Note that the html is required to run this program.
 env.Publish('npapi_runtime.nexe', 'run',
-            ['npapi_runtime.html'])
+            ['npapi_runtime.html',
+             env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
+
+# Run the example tests under Selenium.
+BROWSER_TESTS = ['browser_tests']
+node = env.BrowserTester(
+    'npapi_runtime_browser_test.out',
+     url='npapi_runtime.html',
+     files=[npapi_runtime_nexe,
+            env.File('npapi_runtime.html'),
+            env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
+            ],
+     browser='*firefox',
+     )
+env.AddNodeToTestSuite(node, BROWSER_TESTS, 'run_npapi_runtime_browser_test')

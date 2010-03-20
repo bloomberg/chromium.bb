@@ -27,6 +27,7 @@ static const NPUTF8* identifierStrings[] = {
   "invokeRemoveProperty",
   "invokeArgret",
   "invokeDefault",
+  "__moduleReady",
 };
 
 static const int identifierCount =
@@ -46,7 +47,8 @@ enum {
   kInvokeSetPropertyIdent,
   kInvokeRemovePropertyIdent,
   kInvokeArgretIdent,
-  kInvokeDefaultIdent
+  kInvokeDefaultIdent,
+  kPropertyModuleReady
 };
 
 void InitializeIdentifiers() {
@@ -127,6 +129,10 @@ Plugin* Plugin::New(NPP instance,
   NPVariant* copy = new NPVariant;
   INT32_TO_NPVARIANT(1, *copy);
   plugin->properties_[identifiers[kPropertySetIdent]] = copy;
+  // The plugin is ready to be used.
+  NPVariant* ready = new NPVariant;
+  INT32_TO_NPVARIANT(1, *ready);
+  plugin->properties_[identifiers[kPropertyModuleReady]] = ready;
 
   return plugin;
 }

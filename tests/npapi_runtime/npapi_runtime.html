@@ -5,15 +5,16 @@
      found in the LICENSE file. -->
 <head>
   <title>NPAPI Runtime Feature Test</title>
-  <META HTTP-EQUIV="Pragma" CONTENT="no-cache">
-  <META HTTP-EQUIV="Expires" CONTENT="-1">
+  <META HTTP-EQUIV="Pragma" CONTENT="no-cache" />
+  <META HTTP-EQUIV="Expires" CONTENT="-1" />
 <style type="text/css">
   td.notrun { background-color: skyblue }
   td.pass { background-color: lime }
   td.fail { background-color: red }
 </style>
 </head>
-<body>
+<body onload="nacllib.waitForModulesAndRunTests();"
+      onunload="nacllib.cleanUp();" >
 
 <script type="text/javascript">
 //<![CDATA[
@@ -28,6 +29,10 @@ var plugin;
 var kSampleInt = 1;
 var kSampleString = 'hello, world';
 var kSampleObject = new Array(10);
+
+var failingCount;
+var testTimeoutHandler = 0;
+var testTimedOut = false;
 
 // The queue of small tests.
 var testQueue = [ ];
@@ -273,7 +278,7 @@ var testExpectedPass = function(element, has_return, fp) {
       SetTestResult(element, 'fail');
     } else {
       SetTestResult(element, 'pass');
-      --failing_count;
+      --failingCount;
     }
   } catch (string) {
     SetTestResult(element, 'fail');
@@ -288,7 +293,7 @@ var testExpectedFail = function(element, fp) {
   } catch (string) {
     if (undefined == result) {
       SetTestResult(element, 'pass');
-      --failing_count;
+      --failingCount;
     } else {
       SetTestResult(element, 'fail');
     }
@@ -300,7 +305,7 @@ var RunAllTests = function() {
   var len = testQueue.length;
   // All tests are considered failure until they have run successfully.
   // This catches runs that end prematurely.
-  failing_count = len;
+  failingCount = len;
   for (i = 0; i < len; ++i) {
     var test_descr = testQueue[i];
     if ('pass' == test_descr[0]) {
@@ -309,19 +314,24 @@ var RunAllTests = function() {
       testExpectedFail(test_descr[1], test_descr[2]);
     }
   }
-  if (0 == failing_count) {
+  if (0 != testTimeoutHandler) {
+    clearTimeout(testTimeoutHandler);
+    testTimeoutHandler = 0;
+  }
+  if (0 == failingCount) {
     // All tests passed -- set the selenium magic to success here.
+    document.cookie = 'status=OK';
   }
 }
 
+function HandleTestTimeout() {
+  clearTimeout(testTimeoutHandler);
+  testTimeoutHandler = 0;
+  testTimedOut = true;
+}
+
 var EnqueueAndRunTests = function() {
-  // Setup -- abort entire test if this fails.
-  try {
-    plugin = document.getElementById('nacl_module');
-  } catch (string) {
-    window.alert('Npruntime test setup failed.');
-    return;
-  }
+  plugin = document.getElementById('nacl_module');
   // Enqueue the tests.
   BrowserToNacl();
   NaclToAny(JSObject, 'nacl_browser');
@@ -329,13 +339,12 @@ var EnqueueAndRunTests = function() {
   // Run them all.
   RunAllTests();
 }
-
-var plugin;
 //]]>
 </script>
 
 <h1>Native Client NPAPI NPRuntime Feature Test</h1>
-<table cellspacing=5 cellpadding=5 border=5>
+<table cellspacing="5" cellpadding="5" border="5"
+       summary="NPAPI NPRuntime Feature Test Table">
   <tr>
     <td>
     </td>
@@ -354,7 +363,7 @@ var plugin;
       <b> Argn/argv string </b>
     </td>
     <td valign=top>
-      <table>
+      <table summary="Argn/argv string, Browser to NaCl">
         <tr>
           <td id="browser_nacl_argn_argv" class="notrun">
             returned value
@@ -363,7 +372,7 @@ var plugin;
       </table>
     </td>
     <td valign=top>
-      <table>
+      <table summary="Argn/argv string, NaCl to browser">
         <tr>
           <td id="nacl_browser_argn_argv" class="notrun">
             returned value
@@ -372,7 +381,7 @@ var plugin;
       </table>
     </td>
     <td valign=top>
-      <table>
+      <table summary="Argn/argv string, NaCl to NaCl">
         <tr>
           <td id="nacl_nacl_argn_argv" class="notrun">
             returned value
@@ -384,9 +393,8 @@ var plugin;
   <tr>
     <td>
       <b> Property read </b>
-    </b>
     <td valign=top>
-      <table>
+      <table summary="Property read, Browser to NaCl">
         <tr>
           <td id="browser_nacl_read_notset" class="notrun">
             property not set
@@ -400,7 +408,7 @@ var plugin;
       </table>
     </td>
     <td>
-      <table>
+      <table summary="Property read, NaCl to Browser">
         <tr>
           <td id="nacl_browser_read_notset" class="notrun">
             property not set
@@ -414,7 +422,7 @@ var plugin;
       </table>
     </td>
     <td>
-      <table>
+      <table summary="Property read, NaCl to NaCl">
         <tr>
           <td id="nacl_nacl_read_notset" class="notrun">
             property not set
@@ -431,9 +439,8 @@ var plugin;
   <tr>
     <td>
       <b> Property write </b>
-    </b>
     <td valign=top>
-      <table>
+      <table summary="Property write, Browser to NaCl">
         <tr>
           <td id="browser_nacl_int_write" class="notrun">
             write integer
@@ -482,7 +489,7 @@ var plugin;
       </table>
     </td>
     <td>
-      <table>
+      <table summary="Property write, NaCl to Browser">
         <tr>
           <td id="nacl_browser_int_write" class="notrun">
             write integer
@@ -531,7 +538,7 @@ var plugin;
       </table>
     </td>
     <td>
-      <table>
+      <table summary="Property write, NaCl to NaCl">
         <tr>
           <td id="nacl_nacl_int_write" class="notrun">
             write integer
@@ -583,9 +590,8 @@ var plugin;
   <tr>
     <td>
       <b> Argument/return </b>
-    </b>
     <td valign=top>
-      <table>
+      <table summary="Argument/return, Browser to NaCl">
         <tr>
           <td id="browser_nacl_int_argret" class="notrun">
             integer
@@ -604,7 +610,7 @@ var plugin;
       </table>
     </td>
     <td>
-      <table>
+      <table summary="Argument/return, NaCl to Browser">
         <tr>
           <td id="nacl_browser_int_argret" class="notrun">
             integer
@@ -623,7 +629,7 @@ var plugin;
       </table>
     </td>
     <td>
-      <table>
+      <table summary="Argument/return, NaCl to NaCl">
         <tr>
           <td id="nacl_nacl_int_argret" class="notrun">
             integer
@@ -645,9 +651,8 @@ var plugin;
   <tr>
     <td>
       <b> Invoke default </b>
-    </b>
     <td valign=top>
-      <table>
+      <table summary="Invoke default, Browser to NaCl">
         <tr>
           <td id="browser_nacl_invoke_default" class="notrun">
             invoke
@@ -656,7 +661,7 @@ var plugin;
       </table>
     </td>
     <td>
-      <table>
+      <table summary="Invoke default, NaCl to Browser">
         <tr>
           <td id="nacl_browser_invoke_default" class="notrun">
             invoke
@@ -665,7 +670,7 @@ var plugin;
       </table>
     </td>
     <td>
-      <table>
+      <table summary="Invoke default, NaCl to NaCl">
         <tr>
           <td id="nacl_nacl_invoke_default" class="notrun">
             invoke
@@ -682,15 +687,33 @@ var plugin;
   <tr> <td align="center" class="pass"> Test passed </td> </tr>
   <tr> <td align="center" class="fail"> Test failed </td> </tr>
 </table>
-<p>
-<p>
-  <embed id="nacl_module"
-         width=0
-         height=0
-         onload="EnqueueAndRunTests();"
-         src="npapi_runtime.nexe"
-         type="application/x-nacl-srpc" />
-</p>
 
+<div id="status">NO-STATUS</div>
+
+<embed id="nacl_module" name="nacl_module"
+       width="0" height="0"
+       src="npapi_runtime.nexe" type="application/x-nacl-srpc" />
+
+<script type="text/javascript" src="nacl_js_lib.js"></script>
+<script type="text/javascript">
+  //<![CDATA[
+  var nacllib = new NaclLib(document.getElementsByName('nacl_module'),
+                            document.getElementById('status'),
+                            100);
+
+  nacllib.test = function() {
+    testTimeoutHandler = setTimeout('HandleTestTimeout()', 10000);
+    EnqueueAndRunTests();
+    if (0 == failingCount) {
+      return '';
+    } else if (testTimedOut) {
+      return 'Test timed out.';
+    } else {
+      return 'Test failed.';
+    }
+  }
+
+  //]]>
+</script>
 </body>
 </html>
