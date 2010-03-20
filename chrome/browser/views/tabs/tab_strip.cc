@@ -744,7 +744,8 @@ TabStrip::TabStrip(TabStripModel* model)
 TabStrip::~TabStrip() {
   active_animation_.reset(NULL);
 
-  model_->RemoveObserver(this);
+  // TODO(beng): (1031854) Restore this line once XPFrame/VistaFrame are dead.
+  // model_->RemoveObserver(this);
 
   // TODO(beng): remove this if it doesn't work to fix the TabSelectedAt bug.
   drag_controller_.reset(NULL);
@@ -815,15 +816,6 @@ void TabStrip::InitTabStripButtons() {
 
 bool TabStrip::IsCompatibleWith(TabStrip* other) const {
   return model_->profile() == other->model()->profile();
-}
-
-void TabStrip::InitFromModel() {
-  // Walk the model, calling our insertion observer method for each item within
-  // it.
-  for (int i = 0; i < model_->count(); ++i) {
-    TabInsertedAt(model_->GetTabContentsAt(i), i,
-                  i == model_->selected_index());
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1314,18 +1306,6 @@ bool TabStrip::IsCommandEnabledForTab(
   int index = GetIndexOfTab(tab);
   if (model_->ContainsIndex(index))
     return model_->IsContextMenuCommandEnabled(index, command_id);
-  return false;
-}
-
-bool TabStrip::IsCommandCheckedForTab(
-    TabStripModel::ContextMenuCommand command_id, const Tab* tab) const {
-  // TODO(beng): move to TabStripModel, see note in IsTabPinned.
-  if (command_id == TabStripModel::CommandTogglePinned)
-    return IsTabPinned(tab);
-
-  int index = GetIndexOfTab(tab);
-  if (model_->ContainsIndex(index))
-    return model_->IsContextMenuCommandChecked(index, command_id);
   return false;
 }
 

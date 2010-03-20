@@ -1044,10 +1044,6 @@ void BrowserWindowGtk::Paste() {
   DoCutCopyPaste(this, &RenderViewHost::Paste, "paste-clipboard");
 }
 
-void BrowserWindowGtk::ToggleTabStripMode() {
-  NOTIMPLEMENTED();
-}
-
 void BrowserWindowGtk::ConfirmBrowserCloseWithPendingDownloads() {
   new DownloadInProgressDialogGtk(browser());
 }

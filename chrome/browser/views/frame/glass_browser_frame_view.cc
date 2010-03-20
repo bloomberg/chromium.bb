@@ -83,7 +83,7 @@ GlassBrowserFrameView::~GlassBrowserFrameView() {
 
 gfx::Rect GlassBrowserFrameView::GetBoundsForTabStrip(
     BaseTabStrip* tabstrip) const {
-  if (browser_view_->UseVerticalTabs()) {
+  if (browser_view_->UsingSideTabs()) {
     gfx::Size ps = tabstrip->GetPreferredSize();
     return gfx::Rect(0, NonClientTopBorderHeight(), ps.width(),
                      browser_view_->height());
@@ -120,9 +120,6 @@ void GlassBrowserFrameView::UpdateThrobber(bool running) {
 }
 
 void GlassBrowserFrameView::PaintTabStripShadow(gfx::Canvas* canvas) {
-  if (!browser_view_->UseVerticalTabs())
-    return;
-
   ThemeProvider* tp = GetThemeProvider();
   SkBitmap* shadow_top = tp->GetBitmapNamed(IDR_SIDETABS_SHADOW_TOP);
   SkBitmap* shadow_middle = tp->GetBitmapNamed(IDR_SIDETABS_SHADOW_MIDDLE);
@@ -245,7 +242,7 @@ int GlassBrowserFrameView::NonClientTopBorderHeight() const {
   // We'd like to use FrameBorderThickness() here, but the maximized Aero glass
   // frame has a 0 frame border around most edges and a CXSIZEFRAME-thick border
   // at the top (see AeroGlassFrame::OnGetMinMaxInfo()).
-  const int kRestoredHeight = browser_view_->UseVerticalTabs() ?
+  const int kRestoredHeight = browser_view_->UsingSideTabs() ?
       -2 : kNonClientRestoredExtraThickness;
   return GetSystemMetrics(SM_CXSIZEFRAME) + (browser_view_->IsMaximized() ?
       -kTabstripTopShadowThickness : kRestoredHeight);
@@ -277,7 +274,7 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
 
   // Draw the toolbar background, setting src_y of the paint to the tab
   // strip height as the toolbar background begins at the top of the tabs.
-  int src_y = browser_view_->UseVerticalTabs()
+  int src_y = browser_view_->UsingSideTabs()
       ? TabRenderer::GetMinimumUnselectedSize().height()
       : browser_view_->GetTabStripHeight() - 1;
   canvas->TileImageInt(*theme_toolbar, 0, src_y,
@@ -327,7 +324,7 @@ void GlassBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
       tp->GetBitmapNamed(IDR_CONTENT_TOP_LEFT_CORNER)->height();
 
   gfx::Rect client_area_bounds = CalculateClientAreaBounds(width(), height());
-  if (browser_view_->UseVerticalTabs()) {
+  if (browser_view_->UsingSideTabs()) {
     client_area_bounds.Inset(
         GetBoundsForTabStrip(browser_view_->tabstrip()).width() - 4, 0, 0, 0);
   }

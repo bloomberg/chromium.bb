@@ -41,6 +41,10 @@ class BrowserFrame {
   // construction.
   virtual views::Window* GetWindow() = 0;
 
+  // Notification that the tab strip has been created. This should let the
+  // BrowserRootView know about it so it can enable drag and drop.
+  virtual void TabStripCreated(BaseTabStrip* tabstrip) = 0;
+
   // Determine the distance of the left edge of the minimize button from the
   // left edge of the window. Used in our Non-Client View's Layout.
   virtual int GetMinimizeButtonOffset() const = 0;
@@ -70,10 +74,6 @@ class BrowserFrame {
   // calls this method _after_ the TabStrip has painted itself so the shadow is
   // rendered above the tabs.
   virtual void PaintTabStripShadow(gfx::Canvas* canvas) = 0;
-
-  // Notifies the frame that the tab strip display mode changed so it can update
-  // its frame treatment if necessary.
-  virtual void TabStripDisplayModeChanged() = 0;
 };
 
 #endif  // CHROME_BROWSER_VIEWS_FRAME_BROWSER_FRAME_H_

@@ -151,7 +151,7 @@ class BrowserView : public BrowserBubbleHost,
   bool IsTabStripVisible() const;
 
   // Returns true if the vertical tabstrip is in use.
-  bool UseVerticalTabs() const;
+  bool UsingSideTabs() const;
 
   // Returns true if the profile associated with this Browser window is
   // off the record.
@@ -322,7 +322,6 @@ class BrowserView : public BrowserBubbleHost,
   virtual void Cut();
   virtual void Copy();
   virtual void Paste();
-  virtual void ToggleTabStripMode();
 
   // Overridden from BrowserWindowTesting:
   virtual BookmarkBarView* GetBookmarkBarView() const;
@@ -398,10 +397,9 @@ class BrowserView : public BrowserBubbleHost,
   // override to implemnet different layout pocily.
   virtual views::LayoutManager* CreateLayoutManager() const;
 
-  // Initializes a new TabStrip for the browser view. This can be performed
-  // multiple times over the life of the browser, and is run when the display
-  // mode for the tabstrip changes from horizontal to vertical.
-  void InitTabStrip(TabStripModel* tab_strip_model);
+  // Returns a new TabStrip for the browser view. A subclass may
+  // override to return a different TabStrip implementation.
+  virtual BaseTabStrip* CreateTabStrip(TabStripModel* tab_strip_model);
 
   // Browser window related initializations.
   virtual void Init();

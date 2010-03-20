@@ -46,10 +46,6 @@ class Tab : public TabRenderer,
     virtual bool IsCommandEnabledForTab(
         TabStripModel::ContextMenuCommand command_id, const Tab* tab) const = 0;
 
-    // Returns true if the specified command is checked for the specified Tab.
-    virtual bool IsCommandCheckedForTab(
-        TabStripModel::ContextMenuCommand command_id, const Tab* tab) const = 0;
-
     // Executes the specified command for the specified Tab.
     virtual void ExecuteCommandForTab(
         TabStripModel::ContextMenuCommand command_id, Tab* tab) = 0;

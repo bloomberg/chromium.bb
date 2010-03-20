@@ -99,7 +99,6 @@ class TestBrowserWindow : public BrowserWindow {
   virtual void Cut() { }
   virtual void Copy() { }
   virtual void Paste() { }
-  virtual void ToggleTabStripMode() { }
 
  protected:
   virtual void DestroyBrowser() {}

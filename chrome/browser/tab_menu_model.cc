@@ -43,9 +43,4 @@ void TabMenuModel::Build() {
   AddItemWithStringId(TabStripModel::CommandRestoreTab, IDS_RESTORE_TAB);
   AddItemWithStringId(TabStripModel::CommandBookmarkAllTabs,
                       IDS_TAB_CXMENU_BOOKMARK_ALL_TABS);
-#if defined(OS_WIN)
-  AddSeparator();
-  AddCheckItemWithStringId(TabStripModel::CommandUseVerticalTabs,
-                           IDS_TAB_CXMENU_USE_VERTICAL_TABS);
-#endif
 }

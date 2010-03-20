@@ -310,9 +310,6 @@ class BrowserWindow {
   virtual void Copy() = 0;
   virtual void Paste() = 0;
 
-  // Switches between available tabstrip display modes.
-  virtual void ToggleTabStripMode() = 0;
-
   // Construct a BrowserWindow implementation for the specified |browser|.
   static BrowserWindow* CreateBrowserWindow(Browser* browser);
 

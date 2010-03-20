@@ -285,7 +285,7 @@ int BrowserViewLayout::LayoutTabStrip() {
   gfx::Rect layout_bounds =
       browser_view_->frame()->GetBoundsForTabStrip(tabstrip_);
 
-  if (browser_view_->UseVerticalTabs()) {
+  if (browser_view_->UsingSideTabs()) {
     vertical_layout_rect_.Inset(
         layout_bounds.right() - kBrowserViewTabStripHorizontalOverlap, 0, 0, 0);
   } else {
@@ -301,7 +301,7 @@ int BrowserViewLayout::LayoutTabStrip() {
   layout_bounds.set_origin(tabstrip_origin);
   tabstrip_->SetVisible(true);
   tabstrip_->SetBounds(layout_bounds);
-  return browser_view_->UseVerticalTabs() ? 0 : layout_bounds.bottom();
+  return browser_view_->UsingSideTabs() ? 0 : layout_bounds.bottom();
 }
 
 int BrowserViewLayout::LayoutToolbar(int top) {
@@ -309,7 +309,7 @@ int BrowserViewLayout::LayoutToolbar(int top) {
   bool visible = browser_view_->IsToolbarVisible();
   toolbar_->location_bar()->SetFocusable(visible);
   int y = 0;
-  if (!browser_view_->UseVerticalTabs()) {
+  if (!browser_view_->UsingSideTabs()) {
     y = top -
       ((visible && browser_view_->IsTabStripVisible())
        ? kToolbarTabStripVerticalOverlap : 0);
