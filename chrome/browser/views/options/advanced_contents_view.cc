@@ -17,6 +17,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/file_util.h"
+#include "base/i18n/rtl.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/thread.h"
@@ -146,9 +147,9 @@ FileDisplayArea::~FileDisplayArea() {
 
 void FileDisplayArea::SetFile(const FilePath& file_path) {
   // Force file path to have LTR directionality.
-  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) {
+  if (base::i18n::IsRTL()) {
     string16 localized_file_path;
-    l10n_util::WrapPathWithLTRFormatting(file_path, &localized_file_path);
+    base::i18n::WrapPathWithLTRFormatting(file_path, &localized_file_path);
     text_field_->SetText(UTF16ToWide(localized_file_path));
   } else {
     text_field_->SetText(file_path.ToWStringHack());
@@ -210,7 +211,7 @@ void FileDisplayArea::InitClass() {
     // We'd prefer to use UILayoutIsRightToLeft() to perform the RTL
     // environment check, but it's nonstatic, so, instead, we check whether the
     // locale is RTL.
-    bool ui_is_rtl = l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT;
+    bool ui_is_rtl = base::i18n::IsRTL();
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     default_folder_icon_ = *rb.GetBitmapNamed(ui_is_rtl ?
                                               IDR_FOLDER_CLOSED_RTL :
@@ -756,7 +757,7 @@ void WebContentSection::ButtonPressed(
 void WebContentSection::InitControlLayout() {
   AdvancedSection::InitControlLayout();
 
-  if (l10n_util::GetTextDirection() == l10n_util::LEFT_TO_RIGHT) {
+  if (!base::i18n::IsRTL()) {
     gears_label_ = new views::Label(
         l10n_util::GetString(IDS_OPTIONS_GEARSSETTINGS_GROUP_NAME));
   } else {
@@ -765,7 +766,7 @@ void WebContentSection::InitControlLayout() {
     std::wstring gearssetting_group_name =
         l10n_util::GetString(IDS_OPTIONS_GEARSSETTINGS_GROUP_NAME);
     gearssetting_group_name.push_back(
-        static_cast<wchar_t>(l10n_util::kRightToLeftMark));
+        static_cast<wchar_t>(base::i18n::kRightToLeftMark));
     gears_label_ = new views::Label(gearssetting_group_name);
   }
   gears_settings_button_ = new views::NativeButton(

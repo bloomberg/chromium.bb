@@ -13,6 +13,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/callback.h"
+#include "base/i18n/rtl.h"
 #include "base/keyboard_codes.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
@@ -83,7 +84,7 @@ class DockView : public views::View {
     SkBitmap* high_icon = rb.GetBitmapNamed(IDR_DOCK_HIGH);
     SkBitmap* wide_icon = rb.GetBitmapNamed(IDR_DOCK_WIDE);
 
-    bool rtl_ui = l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT;
+    bool rtl_ui = base::i18n::IsRTL();
     if (rtl_ui) {
       // Flip canvas to draw the mirrored tab images for RTL UI.
       canvas->save();
@@ -1136,7 +1137,7 @@ bool DraggedTabController::CompleteDrag() {
         gfx::Size(browser_rect.width(), browser_rect.height()));
     // When modifying the following if statement, please make sure not to
     // introduce issue listed in http://crbug.com/6223 comment #11.
-    bool rtl_ui = (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT);
+    bool rtl_ui = base::i18n::IsRTL();
     bool has_dock_position = (dock_info_.type() != DockInfo::NONE);
     if (rtl_ui && has_dock_position) {
       // Mirror X axis so the docked tab is aligned using the mouse click as

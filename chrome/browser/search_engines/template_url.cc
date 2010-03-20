@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "base/i18n/icu_string_conversions.h"
+#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -546,8 +547,8 @@ bool TemplateURL::SupportsReplacement(const TemplateURL* turl) {
 
 std::wstring TemplateURL::AdjustedShortNameForLocaleDirection() const {
   std::wstring bidi_safe_short_name;
-  if (l10n_util::AdjustStringForLocaleDirection(short_name_,
-                                                &bidi_safe_short_name))
+  if (base::i18n::AdjustStringForLocaleDirection(short_name_,
+                                                 &bidi_safe_short_name))
     return bidi_safe_short_name;
   return short_name_;
 }

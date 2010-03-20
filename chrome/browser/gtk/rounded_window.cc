@@ -7,7 +7,7 @@
 #include <gtk/gtk.h>
 #include <math.h>
 
-#include "app/l10n_util.h"
+#include "base/i18n/rtl.h"
 #include "chrome/browser/gtk/gtk_util.h"
 
 namespace gtk_util {
@@ -60,7 +60,7 @@ std::vector<GdkPoint> MakeFramePolygonPoints(RoundedWindowData* data,
 
   std::vector<GdkPoint> points;
 
-  bool ltr = l10n_util::GetTextDirection() == l10n_util::LEFT_TO_RIGHT;
+  bool ltr = !base::i18n::IsRTL();
   // If we have a stroke, we have to offset some of our points by 1 pixel.
   // We have to inset by 1 pixel when we draw horizontal lines that are on the
   // bottom or when we draw vertical lines that are closer to the end (end is

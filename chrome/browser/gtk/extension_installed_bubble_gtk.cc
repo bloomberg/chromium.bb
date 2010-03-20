@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/i18n/rtl.h"
 #include "base/message_loop.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/gtk/browser_actions_toolbar_gtk.h"
@@ -202,7 +203,7 @@ void ExtensionInstalledBubbleGtk::ShowInternal() {
       FALSE, FALSE, 0);
 
   InfoBubbleGtk::ArrowLocationGtk arrow_location =
-      (l10n_util::GetTextDirection() == l10n_util::LEFT_TO_RIGHT) ?
+      !base::i18n::IsRTL() ?
       InfoBubbleGtk::ARROW_LOCATION_TOP_RIGHT :
       InfoBubbleGtk::ARROW_LOCATION_TOP_LEFT;
   info_bubble_ = InfoBubbleGtk::Show(browser_window->window(),

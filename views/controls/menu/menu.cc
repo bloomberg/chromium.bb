@@ -4,13 +4,13 @@
 
 #include "views/controls/menu/menu.h"
 
-#include "app/l10n_util.h"
+#include "base/i18n/rtl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace views {
 
 bool Menu::Delegate::IsRightToLeftUILayout() const {
-  return l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT;
+  return base::i18n::IsRTL();
 }
 
 const SkBitmap& Menu::Delegate::GetEmptyIcon() const {

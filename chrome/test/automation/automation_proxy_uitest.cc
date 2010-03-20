@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
+#include "base/i18n/rtl.h"
 #include "base/keyboard_codes.h"
 #include "base/string_util.h"
 #include "base/sys_info.h"
@@ -122,8 +123,8 @@ TEST_F(AutomationProxyVisibleTest, MAYBE_WindowGetViewBounds) {
     EXPECT_TRUE(automation()->GetBrowserLocale(&browser_locale));
 
     const std::string& locale_utf8 = UTF16ToUTF8(browser_locale);
-    if (l10n_util::GetTextDirectionForLocale(locale_utf8.c_str()) ==
-        l10n_util::RIGHT_TO_LEFT) {
+    if (base::i18n::GetTextDirectionForLocale(locale_utf8.c_str()) ==
+        base::i18n::RIGHT_TO_LEFT) {
       EXPECT_LT(bounds2.x(), bounds.x());
     } else {
       EXPECT_GT(bounds2.x(), bounds.x());

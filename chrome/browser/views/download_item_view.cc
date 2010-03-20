@@ -13,6 +13,7 @@
 #include "app/theme_provider.h"
 #include "base/callback.h"
 #include "base/file_path.h"
+#include "base/i18n/rtl.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -90,7 +91,7 @@ class DownloadShelfContextMenuWin : public DownloadShelfContextMenu {
 
     // The menu's alignment is determined based on the UI layout.
     views::Menu2::Alignment alignment;
-    if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
+    if (base::i18n::IsRTL())
       alignment = views::Menu2::ALIGN_TOPRIGHT;
     else
       alignment = views::Menu2::ALIGN_TOPLEFT;
@@ -285,8 +286,8 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
     } else {
       ElideString(rootname, kFileNameMaxLength - extension.length(), &rootname);
       std::wstring filename = rootname + L"." + extension;
-      if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
-        l10n_util::WrapStringWithLTRFormatting(&filename);
+      if (base::i18n::IsRTL())
+        base::i18n::WrapStringWithLTRFormatting(&filename);
       dangerous_download_label_ = new views::Label(
           l10n_util::GetStringF(IDS_PROMPT_DANGEROUS_DOWNLOAD, filename));
     }

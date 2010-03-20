@@ -6,8 +6,8 @@
 
 #include "app/clipboard/clipboard.h"
 #include "app/clipboard/scoped_clipboard_writer.h"
-#include "app/l10n_util.h"
 #include "app/message_box_flags.h"
+#include "base/i18n/rtl.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "views/controls/button/checkbox.h"
@@ -120,10 +120,10 @@ void MessageBoxView::Init(int dialog_flags,
   if (dialog_flags & MessageBoxFlags::kAutoDetectAlignment) {
     // Determine the alignment and directionality based on the first character
     // with strong directionality.
-    l10n_util::TextDirection direction =
-        l10n_util::GetFirstStrongCharacterDirection(message_label_->GetText());
+    base::i18n::TextDirection direction =
+        base::i18n::GetFirstStrongCharacterDirection(message_label_->GetText());
     views::Label::Alignment alignment;
-    if (direction == l10n_util::RIGHT_TO_LEFT)
+    if (direction == base::i18n::RIGHT_TO_LEFT)
       alignment = views::Label::ALIGN_RIGHT;
     else
       alignment = views::Label::ALIGN_LEFT;

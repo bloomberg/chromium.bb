@@ -4,9 +4,10 @@
 
 #include "chrome/browser/dom_ui/dom_ui.h"
 
-#include "app/l10n_util.h"
+#include "base/i18n/rtl.h"
 #include "base/json/json_writer.h"
 #include "base/stl_util-inl.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_theme_provider.h"
@@ -129,12 +130,12 @@ void DOMMessageHandler::SetURLAndTitle(DictionaryValue* dictionary,
   // as the title, we mark the title as LTR since URLs are always treated as
   // left to right strings.
   std::wstring title_to_set(title);
-  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) {
+  if (base::i18n::IsRTL()) {
     if (using_url_as_the_title) {
-      l10n_util::WrapStringWithLTRFormatting(&title_to_set);
+      base::i18n::WrapStringWithLTRFormatting(&title_to_set);
     } else {
       bool success =
-          l10n_util::AdjustStringForLocaleDirection(title, &title_to_set);
+          base::i18n::AdjustStringForLocaleDirection(title, &title_to_set);
       DCHECK(success ? (title != title_to_set) : (title == title_to_set));
     }
   }

@@ -9,6 +9,7 @@
 
 #include "app/l10n_util.h"
 #include "base/hash_tables.h"
+#include "base/i18n/rtl.h"
 #include "base/linked_ptr.h"
 #include "base/scoped_ptr.h"
 #include "base/singleton.h"
@@ -95,10 +96,10 @@ bool ExtensionMessageBundle::AppendReservedMessagesForLocale(
   SubstitutionMap append_messages;
   append_messages[kUILocaleKey] = app_locale;
 
-  // Calling l10n_util::GetTextDirection on non-UI threads doesn't seems safe,
+  // Calling base::i18n::GetTextDirection on non-UI threads doesn't seems safe,
   // so we use GetTextDirectionForLocale instead.
-  if (l10n_util::GetTextDirectionForLocale(app_locale.c_str()) ==
-      l10n_util::RIGHT_TO_LEFT) {
+  if (base::i18n::GetTextDirectionForLocale(app_locale.c_str()) ==
+      base::i18n::RIGHT_TO_LEFT) {
     append_messages[kBidiDirectionKey] = "rtl";
     append_messages[kBidiReversedDirectionKey] = "ltr";
     append_messages[kBidiStartEdgeKey] = kBidiRightEdgeValue;

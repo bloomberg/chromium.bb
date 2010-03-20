@@ -8,6 +8,7 @@
 
 #include "app/gtk_util.h"
 #include "app/l10n_util.h"
+#include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/options_window.h"
@@ -148,7 +149,7 @@ FirstRunBubble::FirstRunBubble(Profile* profile,
   gtk_widget_grab_focus(keep_button);
 
   InfoBubbleGtk::ArrowLocationGtk arrow_location =
-      (l10n_util::GetTextDirection() == l10n_util::LEFT_TO_RIGHT) ?
+      !base::i18n::IsRTL() ?
       InfoBubbleGtk::ARROW_LOCATION_TOP_LEFT :
       InfoBubbleGtk::ARROW_LOCATION_TOP_RIGHT;
   bubble_ = InfoBubbleGtk::Show(parent_,

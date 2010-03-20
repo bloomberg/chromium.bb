@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/i18n/file_util_icu.h"
+#include "base/i18n/rtl.h"
 #include "base/path_service.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
@@ -21,15 +22,7 @@
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "build/build_config.h"
-#include "unicode/coll.h"
-#include "unicode/locid.h"
 #include "unicode/rbbi.h"
-#include "unicode/uchar.h"
-#include "unicode/uscript.h"
-
-#if defined(TOOLKIT_GTK)
-#include <gtk/gtk.h>
-#endif
 
 #if defined(OS_MACOSX)
 #include "app/l10n_util_mac.h"
@@ -188,71 +181,6 @@ static const char* const kAcceptLanguageList[] = {
   "zu",     // Zulu
 };
 
-
-// Get language and region from the OS.
-void GetLanguageAndRegionFromOS(std::string* lang, std::string* region) {
-  // Later we may have to change this to be OS-dependent so that
-  // it's not affected by ICU's default locale. It's all right
-  // to do this way because SetICUDefaultLocale is internal
-  // to this file and we know that it's not yet called when this function
-  // is called.
-  icu::Locale locale = icu::Locale::getDefault();
-  const char* language = locale.getLanguage();
-  const char* country = locale.getCountry();
-  DCHECK(language);
-  *lang = language;
-  *region = country;
-}
-
-// Convert Chrome locale name to ICU locale name
-std::string ICULocaleName(const std::string& locale_string) {
-  // If not Spanish, just return it.
-  if (locale_string.substr(0, 2) != "es")
-    return locale_string;
-  // Expand es to es-ES.
-  if (LowerCaseEqualsASCII(locale_string, "es"))
-    return "es-ES";
-  // Map es-419 (Latin American Spanish) to es-FOO depending on the system
-  // locale.  If it's es-RR other than es-ES, map to es-RR. Otherwise, map
-  // to es-MX (the most populous in Spanish-speaking Latin America).
-  if (LowerCaseEqualsASCII(locale_string, "es-419")) {
-    std::string lang, region;
-    GetLanguageAndRegionFromOS(&lang, &region);
-    if (LowerCaseEqualsASCII(lang, "es") &&
-        !LowerCaseEqualsASCII(region, "es")) {
-      lang.append("-");
-      lang.append(region);
-      return lang;
-    }
-    return "es-MX";
-  }
-  // Currently, Chrome has only "es" and "es-419", but later we may have
-  // more specific "es-RR".
-  return locale_string;
-}
-
-// Represents the locale-specific ICU text direction.
-l10n_util::TextDirection g_icu_text_direction = l10n_util::UNKNOWN_DIRECTION;
-
-// Sets the default locale of ICU.
-// Once the application locale of Chrome in GetApplicationLocale is determined,
-// the default locale of ICU need to be changed to match the application locale
-// so that ICU functions work correctly in a locale-dependent manner.
-// This is handy in that we don't have to call GetApplicationLocale()
-// everytime we call locale-dependent ICU APIs as long as we make sure
-// that this is called before any locale-dependent API is called.
-void SetICUDefaultLocale(const std::string& locale_string) {
-  icu::Locale locale(ICULocaleName(locale_string).c_str());
-  UErrorCode error_code = U_ZERO_ERROR;
-  icu::Locale::setDefault(locale, error_code);
-  // This return value is actually bogus because Locale object is
-  // an ID and setDefault seems to always succeed (regardless of the
-  // presence of actual locale data). However,
-  // it does not hurt to have it as a sanity check.
-  DCHECK(U_SUCCESS(error_code));
-  g_icu_text_direction = l10n_util::UNKNOWN_DIRECTION;
-}
-
 // Returns true if |locale_name| has an alias in the ICU data file.
 bool IsDuplicateName(const std::string& locale_name) {
   static const char* const kDuplicateNames[] = {
@@ -386,7 +314,7 @@ bool CheckAndResolveLocale(const std::string& locale,
 // ISO-639.
 std::string GetSystemLocale() {
   std::string language, region;
-  GetLanguageAndRegionFromOS(&language, &region);
+  base::i18n::GetLanguageAndRegionFromOS(&language, &region);
   std::string ret;
   if (!language.empty())
     ret.append(language);
@@ -490,7 +418,7 @@ std::string GetApplicationLocale(const std::wstring& pref_locale) {
   std::vector<std::string>::const_iterator i = candidates.begin();
   for (; i != candidates.end(); ++i) {
     if (CheckAndResolveLocale(*i, locale_path, &resolved_locale)) {
-      SetICUDefaultLocale(resolved_locale);
+      base::i18n::SetICUDefaultLocale(resolved_locale);
       return resolved_locale;
     }
   }
@@ -498,7 +426,7 @@ std::string GetApplicationLocale(const std::wstring& pref_locale) {
   // Fallback on en-US.
   const std::string fallback_locale("en-US");
   if (IsLocaleAvailable(fallback_locale, locale_path)) {
-    SetICUDefaultLocale(fallback_locale);
+    base::i18n::SetICUDefaultLocale(fallback_locale);
     return fallback_locale;
   }
 
@@ -527,7 +455,7 @@ std::string GetApplicationLocale(const std::wstring& pref_locale) {
   // Mac doesn't use a locale directory tree of resources (it uses Mac style
   // resources), so mirror the Windows/Linux behavior of calling
   // SetICUDefaultLocale.
-  SetICUDefaultLocale(app_locale);
+  base::i18n::SetICUDefaultLocale(app_locale);
   return app_locale;
 #endif  // !defined(OS_MACOSX)
 }
@@ -567,9 +495,8 @@ string16 GetDisplayNameForLocale(const std::string& locale,
   DCHECK(U_SUCCESS(error));
   display_name.resize(actual_size);
   // Add an RTL mark so parentheses are properly placed.
-  if (is_for_ui && GetTextDirection() == RIGHT_TO_LEFT) {
-    display_name.push_back(static_cast<char16>(kRightToLeftMark));
-  }
+  if (is_for_ui && base::i18n::IsRTL())
+    display_name.push_back(static_cast<char16>(base::i18n::kRightToLeftMark));
   return display_name;
 }
 
@@ -816,157 +743,6 @@ string16 ToUpper(const string16& string) {
                       WriteInto(&result, upper_u_str.length() + 1));
   return result;
 }
-
-TextDirection GetICUTextDirection() {
-  if (g_icu_text_direction == UNKNOWN_DIRECTION) {
-    const icu::Locale& locale = icu::Locale::getDefault();
-    g_icu_text_direction = GetTextDirectionForLocale(locale.getName());
-  }
-  return g_icu_text_direction;
-}
-
-TextDirection GetTextDirection() {
-#if defined(TOOLKIT_GTK)
-  GtkTextDirection gtk_dir = gtk_widget_get_default_direction();
-  return (gtk_dir == GTK_TEXT_DIR_LTR) ? LEFT_TO_RIGHT : RIGHT_TO_LEFT;
-#else
-  return GetICUTextDirection();
-#endif
-}
-
-TextDirection GetTextDirectionForLocale(const char* locale_name) {
-  UErrorCode status = U_ZERO_ERROR;
-  ULayoutType layout_dir = uloc_getCharacterOrientation(locale_name, &status);
-  DCHECK(U_SUCCESS(status));
-  // Treat anything other than RTL as LTR.
-  return (layout_dir != ULOC_LAYOUT_RTL) ? LEFT_TO_RIGHT : RIGHT_TO_LEFT;
-}
-
-TextDirection GetFirstStrongCharacterDirection(const std::wstring& text) {
-#if defined(WCHAR_T_IS_UTF32)
-  string16 text_utf16 = WideToUTF16(text);
-  const UChar* string = text_utf16.c_str();
-#else
-  const UChar* string = text.c_str();
-#endif
-  size_t length = text.length();
-  size_t position = 0;
-  while (position < length) {
-    UChar32 character;
-    size_t next_position = position;
-    U16_NEXT(string, next_position, length, character);
-
-    // Now that we have the character, we use ICU in order to query for the
-    // appropriate Unicode BiDi character type.
-    int32_t property = u_getIntPropertyValue(character, UCHAR_BIDI_CLASS);
-    if ((property == U_RIGHT_TO_LEFT) ||
-        (property == U_RIGHT_TO_LEFT_ARABIC) ||
-        (property == U_RIGHT_TO_LEFT_EMBEDDING) ||
-        (property == U_RIGHT_TO_LEFT_OVERRIDE)) {
-      return RIGHT_TO_LEFT;
-    } else if ((property == U_LEFT_TO_RIGHT) ||
-               (property == U_LEFT_TO_RIGHT_EMBEDDING) ||
-               (property == U_LEFT_TO_RIGHT_OVERRIDE)) {
-      return LEFT_TO_RIGHT;
-    }
-
-    position = next_position;
-  }
-
-  return LEFT_TO_RIGHT;
-}
-
-bool AdjustStringForLocaleDirection(const std::wstring& text,
-                                    std::wstring* localized_text) {
-  if (GetTextDirection() == LEFT_TO_RIGHT || text.length() == 0)
-    return false;
-
-  // Marking the string as LTR if the locale is RTL and the string does not
-  // contain strong RTL characters. Otherwise, mark the string as RTL.
-  *localized_text = text;
-  bool has_rtl_chars = StringContainsStrongRTLChars(text);
-  if (!has_rtl_chars)
-    WrapStringWithLTRFormatting(localized_text);
-  else
-    WrapStringWithRTLFormatting(localized_text);
-
-  return true;
-}
-
-bool StringContainsStrongRTLChars(const std::wstring& text) {
-#if defined(WCHAR_T_IS_UTF32)
-  string16 text_utf16 = WideToUTF16(text);
-  const UChar* string = text_utf16.c_str();
-#else
-  const UChar* string = text.c_str();
-#endif
-  size_t length = text.length();
-  size_t position = 0;
-  while (position < length) {
-    UChar32 character;
-    size_t next_position = position;
-    U16_NEXT(string, next_position, length, character);
-
-    // Now that we have the character, we use ICU in order to query for the
-    // appropriate Unicode BiDi character type.
-    int32_t property = u_getIntPropertyValue(character, UCHAR_BIDI_CLASS);
-    if ((property == U_RIGHT_TO_LEFT) || (property == U_RIGHT_TO_LEFT_ARABIC))
-      return true;
-
-    position = next_position;
-  }
-
-  return false;
-}
-
-void WrapStringWithLTRFormatting(std::wstring* text) {
-  // Inserting an LRE (Left-To-Right Embedding) mark as the first character.
-  text->insert(0, 1, static_cast<wchar_t>(kLeftToRightEmbeddingMark));
-
-  // Inserting a PDF (Pop Directional Formatting) mark as the last character.
-  text->push_back(static_cast<wchar_t>(kPopDirectionalFormatting));
-}
-
-void WrapStringWithRTLFormatting(std::wstring* text) {
-  // Inserting an RLE (Right-To-Left Embedding) mark as the first character.
-  text->insert(0, 1, static_cast<wchar_t>(kRightToLeftEmbeddingMark));
-
-  // Inserting a PDF (Pop Directional Formatting) mark as the last character.
-  text->push_back(static_cast<wchar_t>(kPopDirectionalFormatting));
-}
-
-void WrapPathWithLTRFormatting(const FilePath& path,
-                               string16* rtl_safe_path) {
-  // Wrap the overall path with LRE-PDF pair which essentialy marks the
-  // string as a Left-To-Right string.
-  // Inserting an LRE (Left-To-Right Embedding) mark as the first character.
-  rtl_safe_path->push_back(kLeftToRightEmbeddingMark);
-#if defined(OS_MACOSX)
-    rtl_safe_path->append(UTF8ToUTF16(path.value()));
-#elif defined(OS_WIN)
-    rtl_safe_path->append(path.value());
-#else  // defined(OS_POSIX) && !defined(OS_MACOSX)
-    std::wstring wide_path = base::SysNativeMBToWide(path.value());
-    rtl_safe_path->append(WideToUTF16(wide_path));
-#endif
-  // Inserting a PDF (Pop Directional Formatting) mark as the last character.
-  rtl_safe_path->push_back(kPopDirectionalFormatting);
-}
-
-std::wstring GetDisplayStringInLTRDirectionality(std::wstring* text) {
-  if (GetTextDirection() == RIGHT_TO_LEFT)
-    WrapStringWithLTRFormatting(text);
-  return *text;
-}
-
-int DefaultCanvasTextAlignment() {
-  if (GetTextDirection() == LEFT_TO_RIGHT) {
-    return gfx::Canvas::TEXT_ALIGN_LEFT;
-  } else {
-    return gfx::Canvas::TEXT_ALIGN_RIGHT;
-  }
-}
-
 
 // Compares the character data stored in two different strings by specified
 // Collator instance.

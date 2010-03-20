@@ -8,6 +8,7 @@
 #include "app/resource_bundle.h"
 #include "app/table_model_observer.h"
 #include "base/callback.h"
+#include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/favicon_service.h"
@@ -113,7 +114,7 @@ std::wstring PossibleURLModel::GetText(int row, int col_id) {
     // since those should always have LTR directionality. Please refer to
     // http://crbug.com/6726 for more information.
     std::wstring localized_title;
-    if (l10n_util::AdjustStringForLocaleDirection(title, &localized_title))
+    if (base::i18n::AdjustStringForLocaleDirection(title, &localized_title))
       return localized_title;
     return title;
   }
@@ -121,11 +122,11 @@ std::wstring PossibleURLModel::GetText(int row, int col_id) {
   // TODO(brettw): this should probably pass the GURL up so the URL elider
   // can be used at a higher level when we know the width.
   const string16& url = results_[row].display_url.display_url();
-  if (l10n_util::GetTextDirection() == l10n_util::LEFT_TO_RIGHT)
+  if (!base::i18n::IsRTL())
     return UTF16ToWideHack(url);
   // Force URL to be LTR.
   std::wstring localized_url = UTF16ToWideHack(url);
-  l10n_util::WrapStringWithLTRFormatting(&localized_url);
+  base::i18n::WrapStringWithLTRFormatting(&localized_url);
   return localized_url;
 }
 

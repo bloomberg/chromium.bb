@@ -9,6 +9,7 @@
 #include "app/l10n_util.h"
 #include "app/menus/accelerator_gtk.h"
 #include "app/menus/menu_model.h"
+#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/stl_util-inl.h"
@@ -459,7 +460,7 @@ void MenuGtk::WidgetMenuPositionFunc(GtkMenu* menu,
 
   bool start_align =
     !!g_object_get_data(G_OBJECT(widget), "left-align-popup");
-  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
+  if (base::i18n::IsRTL())
     start_align = !start_align;
 
   if (!start_align)

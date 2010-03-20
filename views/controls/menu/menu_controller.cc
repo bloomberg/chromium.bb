@@ -7,6 +7,7 @@
 #include "app/gfx/canvas.h"
 #include "app/l10n_util.h"
 #include "app/os_exchange_data.h"
+#include "base/i18n/rtl.h"
 #include "base/keyboard_codes.h"
 #include "base/time.h"
 #include "views/controls/button/menu_button.h"
@@ -730,14 +731,14 @@ bool MenuController::OnKeyDown(int key_code
     // Handling of VK_RIGHT and VK_LEFT is different depending on the UI
     // layout.
     case base::VKEY_RIGHT:
-      if (l10n_util::TextDirection() == l10n_util::RIGHT_TO_LEFT)
+      if (base::i18n::IsRTL())
         CloseSubmenu();
       else
         OpenSubmenuChangeSelectionIfCan();
       break;
 
     case base::VKEY_LEFT:
-      if (l10n_util::TextDirection() == l10n_util::RIGHT_TO_LEFT)
+      if (base::i18n::IsRTL())
         OpenSubmenuChangeSelectionIfCan();
       else
         CloseSubmenu();

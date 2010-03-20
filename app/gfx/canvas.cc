@@ -8,6 +8,7 @@
 
 #include "app/gfx/font.h"
 #include "app/l10n_util.h"
+#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "gfx/rect.h"
 #include "third_party/skia/include/core/SkShader.h"
@@ -218,7 +219,7 @@ void Canvas::DrawStringInt(const std::wstring& text,
                            const SkColor& color,
                            int x, int y, int w, int h) {
   DrawStringInt(text, font, color, x, y, w, h,
-                l10n_util::DefaultCanvasTextAlignment());
+                gfx::Canvas::DefaultCanvasTextAlignment());
 }
 
 void Canvas::DrawStringInt(const std::wstring& text,
@@ -265,6 +266,13 @@ SkBitmap Canvas::ExtractBitmap() const {
   SkBitmap result;
   device_bitmap.copyTo(&result, SkBitmap::kARGB_8888_Config);
   return result;
+}
+
+// static
+int Canvas::DefaultCanvasTextAlignment() {
+  if (!base::i18n::IsRTL())
+    return gfx::Canvas::TEXT_ALIGN_LEFT;
+  return gfx::Canvas::TEXT_ALIGN_RIGHT;
 }
 
 }  // namespace gfx

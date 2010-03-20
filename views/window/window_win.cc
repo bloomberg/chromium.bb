@@ -13,6 +13,7 @@
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
 #include "app/win_util.h"
+#include "base/i18n/rtl.h"
 #include "base/win_util.h"
 #include "gfx/icon_util.h"
 #include "gfx/path.h"
@@ -405,7 +406,7 @@ void WindowWin::UpdateWindowTitle() {
   // the native frame is being used, since this also updates the taskbar, etc.
   std::wstring window_title = window_delegate_->GetWindowTitle();
   std::wstring localized_text;
-  if (l10n_util::AdjustStringForLocaleDirection(window_title, &localized_text))
+  if (base::i18n::AdjustStringForLocaleDirection(window_title, &localized_text))
     window_title.assign(localized_text);
   SetWindowText(GetNativeView(), window_title.c_str());
 }
@@ -991,7 +992,7 @@ void WindowWin::OnRButtonUp(UINT ht_component, const CPoint& point) {
                                MAKELPARAM(screen_point.x, screen_point.y));
     if (ht_component == HTCAPTION || ht_component == HTSYSMENU) {
       UINT flags = TPM_LEFTBUTTON | TPM_RIGHTBUTTON | TPM_RETURNCMD;
-      if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
+      if (base::i18n::IsRTL())
         flags |= TPM_RIGHTALIGN;
       HMENU system_menu = GetSystemMenu(GetNativeView(), FALSE);
       int id = TrackPopupMenu(system_menu, flags, screen_point.x,

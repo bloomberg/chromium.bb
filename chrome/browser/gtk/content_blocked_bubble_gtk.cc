@@ -5,6 +5,7 @@
 #include "chrome/browser/gtk/content_blocked_bubble_gtk.h"
 
 #include "app/l10n_util.h"
+#include "base/i18n/rtl.h"
 #include "chrome/browser/blocked_popup_container.h"
 #include "chrome/browser/content_setting_bubble_model.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
@@ -165,7 +166,7 @@ void ContentSettingBubbleGtk::BuildBubble() {
   gtk_box_pack_start(GTK_BOX(bubble_content), bottom_box, FALSE, FALSE, 0);
 
   InfoBubbleGtk::ArrowLocationGtk arrow_location =
-      (l10n_util::GetTextDirection() == l10n_util::LEFT_TO_RIGHT) ?
+      !base::i18n::IsRTL() ?
       InfoBubbleGtk::ARROW_LOCATION_TOP_RIGHT :
       InfoBubbleGtk::ARROW_LOCATION_TOP_LEFT;
   info_bubble_ = InfoBubbleGtk::Show(

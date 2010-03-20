@@ -8,8 +8,8 @@
 #include <utility>
 #include <vector>
 
-#include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/i18n/rtl.h"
 #include "base/json/json_reader.h"
 #include "base/stats_counters.h"
 #include "base/string_util.h"
@@ -1297,13 +1297,13 @@ void RenderViewHost::OnMsgSetTooltipText(
   std::wstring wrapped_tooltip_text = tooltip_text;
   if (!tooltip_text.empty()) {
     if (text_direction_hint == WebKit::WebTextDirectionLeftToRight &&
-        l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) {
+        base::i18n::IsRTL()) {
       // Force the tooltip to have LTR directionality.
-      l10n_util::WrapStringWithLTRFormatting(&wrapped_tooltip_text);
+      base::i18n::WrapStringWithLTRFormatting(&wrapped_tooltip_text);
     } else if (text_direction_hint == WebKit::WebTextDirectionRightToLeft &&
-               l10n_util::GetTextDirection() == l10n_util::LEFT_TO_RIGHT) {
+               !base::i18n::IsRTL()) {
       // Force the tooltip to have RTL directionality.
-      l10n_util::WrapStringWithRTLFormatting(&wrapped_tooltip_text);
+      base::i18n::WrapStringWithRTLFormatting(&wrapped_tooltip_text);
     }
   }
   if (view())

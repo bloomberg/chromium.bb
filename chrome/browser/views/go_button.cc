@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "base/compiler_specific.h"
+#include "base/i18n/rtl.h"
 #include "base/message_loop.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser.h"
@@ -104,8 +105,8 @@ bool GoButton::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
   // Note that we mark the URL's text as LTR (instead of examining the
   // characters and guessing the text directionality) since URLs are always
   // treated as left-to-right text, even when they contain RTL characters.
-  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
-    l10n_util::WrapStringWithLTRFormatting(&current_text);
+  if (base::i18n::IsRTL())
+    base::i18n::WrapStringWithLTRFormatting(&current_text);
 
   AutocompleteEditModel* edit_model = location_bar_->location_entry()->model();
   if (edit_model->CurrentTextIsURL()) {

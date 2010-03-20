@@ -12,6 +12,7 @@
 #include "app/message_box_flags.h"
 #include "app/win_util.h"
 #include "base/command_line.h"
+#include "base/i18n/rtl.h"
 #include "base/path_service.h"
 #include "base/win_util.h"
 #include "chrome/browser/first_run.h"
@@ -132,7 +133,7 @@ void PrepareRestartOnCrashEnviroment(const CommandLine &parsed_command_line) {
   dlg_strings.append(L"|");
   dlg_strings.append(l10n_util::GetString(IDS_CRASH_RECOVERY_CONTENT));
   dlg_strings.append(L"|");
-  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
+  if (base::i18n::IsRTL())
     dlg_strings.append(env_vars::kRtlLocale);
   else
     dlg_strings.append(env_vars::kLtrLocale);

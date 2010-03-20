@@ -7,7 +7,7 @@
 #include <limits>
 
 #include "app/gfx/font.h"
-#include "app/l10n_util.h"
+#include "base/i18n/rtl.h"
 #include "gfx/rect.h"
 #include "third_party/skia/include/core/SkShader.h"
 
@@ -24,7 +24,7 @@ void DoDrawText(HDC hdc, const std::wstring& text,
   // 1. The current locale is RTL.
   // 2. The string itself has RTL directionality.
   if (flags & DT_RTLREADING) {
-    if (l10n_util::AdjustStringForLocaleDirection(text, &localized_text)) {
+    if (base::i18n::AdjustStringForLocaleDirection(text, &localized_text)) {
       string_ptr = localized_text.c_str();
       string_size = static_cast<int>(localized_text.length());
     }
@@ -42,7 +42,7 @@ int ComputeFormatFlags(int flags, const std::wstring& text) {
   if (!(flags & (gfx::Canvas::TEXT_ALIGN_CENTER |
                  gfx::Canvas::TEXT_ALIGN_RIGHT |
                  gfx::Canvas::TEXT_ALIGN_LEFT))) {
-    flags |= l10n_util::DefaultCanvasTextAlignment();
+    flags |= gfx::Canvas::DefaultCanvasTextAlignment();
   }
 
   // horizontal alignment
@@ -113,8 +113,8 @@ int ComputeFormatFlags(int flags, const std::wstring& text) {
   // using RTL directionality then we respect that and pass DT_RTLREADING to
   // ::DrawText even if the locale is LTR.
   if ((flags & gfx::Canvas::FORCE_RTL_DIRECTIONALITY) ||
-      ((l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) &&
-       (f & DT_RIGHT) && l10n_util::StringContainsStrongRTLChars(text))) {
+      (base::i18n::IsRTL() &&
+       (f & DT_RIGHT) && base::i18n::StringContainsStrongRTLChars(text))) {
     f |= DT_RTLREADING;
   }
 

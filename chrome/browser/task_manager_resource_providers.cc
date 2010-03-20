@@ -10,6 +10,7 @@
 #include "app/resource_bundle.h"
 #include "base/basictypes.h"
 #include "base/file_version_info.h"
+#include "base/i18n/rtl.h"
 #include "base/process_util.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
@@ -73,8 +74,8 @@ std::wstring TaskManagerTabContentsResource::GetTitle() const {
   if (tab_title.empty()) {
     tab_title = UTF8ToWide(tab_contents_->GetURL().spec());
     // Force URL to be LTR.
-    if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
-      l10n_util::WrapStringWithLTRFormatting(&tab_title);
+    if (base::i18n::IsRTL())
+      base::i18n::WrapStringWithLTRFormatting(&tab_title);
   } else {
     // Since the tab_title will be concatenated with
     // IDS_TASK_MANAGER_TAB_PREFIX, we need to explicitly set the tab_title to
@@ -85,7 +86,7 @@ std::wstring TaskManagerTabContentsResource::GetTitle() const {
     // as LTR format, the concatenated result will be "!Yahoo! Mail: The best
     // web-based Email :BAT", in which the capital letters "BAT" stands for
     // the Hebrew word for "tab".
-    l10n_util::AdjustStringForLocaleDirection(tab_title, &tab_title);
+    base::i18n::AdjustStringForLocaleDirection(tab_title, &tab_title);
   }
 
   return l10n_util::GetStringF(IDS_TASK_MANAGER_TAB_PREFIX, tab_title);
@@ -532,7 +533,7 @@ TaskManagerExtensionProcessResource::TaskManagerExtensionProcessResource(
   // "Great Extension!" the concatenated result would be something like
   // "!Great Extension :NOISNETXE", in which capital letters "NOISNETXE"
   // stand for the Hebrew word for "extension".
-  l10n_util::AdjustStringForLocaleDirection(extension_name, &extension_name);
+  base::i18n::AdjustStringForLocaleDirection(extension_name, &extension_name);
   title_ = l10n_util::GetStringF(IDS_TASK_MANAGER_EXTENSION_PREFIX,
                                  extension_name);
 }

@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "app/gfx/canvas.h"
-#include "app/l10n_util.h"
 #include "app/throb_animation.h"
 #include "app/resource_bundle.h"
 #include "views/controls/button/button.h"
@@ -321,7 +320,7 @@ void TextButton::Paint(gfx::Canvas* canvas, bool for_drag) {
                                  text_bounds.y(),
                                  text_bounds.width(),
                                  text_bounds.height(),
-                                 l10n_util::DefaultCanvasTextAlignment());
+                                 gfx::Canvas::DefaultCanvasTextAlignment());
 #else
       canvas->DrawStringInt(text_,
                             font_,

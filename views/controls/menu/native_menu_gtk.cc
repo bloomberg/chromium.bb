@@ -9,8 +9,8 @@
 #include <string>
 
 #include "app/gfx/font.h"
-#include "app/l10n_util.h"
 #include "app/menus/menu_model.h"
+#include "base/i18n/rtl.h"
 #include "base/keyboard_code_conversion_gtk.h"
 #include "base/keyboard_codes.h"
 #include "base/message_loop.h"
@@ -328,7 +328,7 @@ void NativeMenuGtk::MenuPositionFunc(GtkMenu* menu,
   *x = position->point.x();
   *y = position->point.y();
   views::Menu2::Alignment alignment = position->alignment;
-  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) {
+  if (base::i18n::IsRTL()) {
     switch (alignment) {
       case Menu2::ALIGN_TOPRIGHT:
         alignment = Menu2::ALIGN_TOPLEFT;

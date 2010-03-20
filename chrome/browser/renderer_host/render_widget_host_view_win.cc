@@ -10,6 +10,7 @@
 #include "app/resource_bundle.h"
 #include "base/command_line.h"
 #include "base/histogram.h"
+#include "base/i18n/rtl.h"
 #include "base/process_util.h"
 #include "base/thread.h"
 #include "base/win_util.h"
@@ -558,7 +559,7 @@ void RenderWidgetHostViewWin::UpdateCursorIfOverSelf() {
     BOOL result = ::ScreenToClient(m_hWnd, &pt);
     DCHECK(result);
     if (render_widget_host_->GetRootWindowResizerRect().Contains(pt.x, pt.y)) {
-      if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
+      if (base::i18n::IsRTL())
         SetCursor(kCursorResizeLeft);
       else
         SetCursor(kCursorResizeRight);
@@ -651,8 +652,7 @@ void RenderWidgetHostViewWin::DrawResizeCorner(const gfx::Rect& paint_rect,
     canvas.getDevice()->accessBitmap(true).eraseARGB(0, 0, 0, 0);
     int x = resize_corner_rect.x() + resize_corner_rect.width() -
         bitmap->width();
-    bool rtl_dir = (l10n_util::GetTextDirection() ==
-        l10n_util::RIGHT_TO_LEFT);
+    bool rtl_dir = base::i18n::IsRTL();
     if (rtl_dir) {
       canvas.TranslateInt(bitmap->width(), 0);
       canvas.ScaleInt(-1, 1);
@@ -1235,7 +1235,7 @@ LRESULT RenderWidgetHostViewWin::OnMouseEvent(UINT message, WPARAM wparam,
           render_widget_host_->GetRootWindowResizerRect().
               Contains(GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam))) {
         WPARAM wparam = HTBOTTOMRIGHT;
-        if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
+        if (base::i18n::IsRTL())
           wparam = HTBOTTOMLEFT;
         HWND root_hwnd = ::GetAncestor(m_hWnd, GA_ROOT);
         if (SendMessage(root_hwnd, WM_NCLBUTTONDOWN, wparam, lparam) == 0)

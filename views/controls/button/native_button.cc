@@ -10,6 +10,7 @@
 #endif
 
 #include "app/l10n_util.h"
+#include "base/i18n/rtl.h"
 #include "base/keyboard_codes.h"
 #include "base/logging.h"
 #include "views/controls/native/native_view_host.h"
@@ -71,7 +72,7 @@ void NativeButton::SetLabel(const std::wstring& label) {
   // RTL strings explicitly (using the appropriate Unicode formatting) so that
   // Windows displays the text correctly regardless of the HWND hierarchy.
   std::wstring localized_label;
-  if (l10n_util::AdjustStringForLocaleDirection(label_, &localized_label))
+  if (base::i18n::AdjustStringForLocaleDirection(label_, &localized_label))
     label_ = localized_label;
 
   if (native_wrapper_)

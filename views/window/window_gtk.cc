@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "gfx/rect.h"
+#include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/path.h"
 #include "views/event.h"
@@ -203,7 +204,7 @@ void WindowGtk::UpdateWindowTitle() {
   // the native frame is being used, since this also updates the taskbar, etc.
   std::wstring window_title = window_delegate_->GetWindowTitle();
   std::wstring localized_text;
-  if (l10n_util::AdjustStringForLocaleDirection(window_title, &localized_text))
+  if (base::i18n::AdjustStringForLocaleDirection(window_title, &localized_text))
     window_title.assign(localized_text);
 
   gtk_window_set_title(GetNativeWindow(), WideToUTF8(window_title).c_str());

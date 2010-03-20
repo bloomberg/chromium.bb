@@ -6,6 +6,7 @@
 #include "app/text_elider.h"
 #include "app/l10n_util.h"
 #include "base/file_path.h"
+#include "base/i18n/rtl.h"
 #include "base/string_util.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -178,8 +179,8 @@ TEST(TextEliderTest, TestFilenameEliding) {
   for (size_t i = 0; i < arraysize(testcases); ++i) {
     FilePath filepath(testcases[i].input);
     std::wstring expected = testcases[i].output;
-    if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
-      l10n_util::WrapStringWithLTRFormatting(&expected);
+    if (base::i18n::IsRTL())
+      base::i18n::WrapStringWithLTRFormatting(&expected);
     EXPECT_EQ(expected, ElideFilename(filepath,
         font,
         font.GetStringWidth(testcases[i].output)));

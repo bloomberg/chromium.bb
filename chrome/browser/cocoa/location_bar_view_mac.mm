@@ -6,6 +6,7 @@
 
 #include "app/l10n_util_mac.h"
 #include "app/resource_bundle.h"
+#include "base/i18n/rtl.h"
 #include "base/nsimage_cache_mac.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
@@ -82,7 +83,7 @@ std::wstring CalculateMinString(const std::wstring& description) {
   } else {
     min_string = description.substr(0, chop_index);
   }
-  l10n_util::AdjustStringForLocaleDirection(min_string, &min_string);
+  base::i18n::AdjustStringForLocaleDirection(min_string, &min_string);
   return min_string;
 }
 

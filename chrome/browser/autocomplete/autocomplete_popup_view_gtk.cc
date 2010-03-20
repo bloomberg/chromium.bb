@@ -10,9 +10,9 @@
 #include <string>
 
 #include "app/gfx/font.h"
-#include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/basictypes.h"
+#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
@@ -397,7 +397,7 @@ gboolean AutocompletePopupViewGtk::HandleButtonRelease(GtkWidget* widget,
 
 gboolean AutocompletePopupViewGtk::HandleExpose(GtkWidget* widget,
                                                 GdkEventExpose* event) {
-  bool ltr = (l10n_util::GetTextDirection() == l10n_util::LEFT_TO_RIGHT);
+  bool ltr = !base::i18n::IsRTL();
   const AutocompleteResult& result = model_->result();
 
   gfx::Rect window_rect = GetWindowRect(event->window);

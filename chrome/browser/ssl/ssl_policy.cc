@@ -8,6 +8,7 @@
 #include "app/resource_bundle.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/i18n/rtl.h"
 #include "base/singleton.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
@@ -218,9 +219,7 @@ void SSLPolicy::ShowErrorPage(SSLCertErrorHandler* handler) {
 
   strings.SetString(L"back", l10n_util::GetString(IDS_SSL_ERROR_PAGE_BACK));
 
-  strings.SetString(L"textdirection",
-      (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) ?
-      L"rtl" : L"ltr");
+  strings.SetString(L"textdirection", base::i18n::IsRTL() ? L"rtl" : L"ltr");
 
   static const base::StringPiece html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(

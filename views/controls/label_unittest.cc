@@ -4,6 +4,7 @@
 
 #include "app/gfx/canvas.h"
 #include "app/l10n_util.h"
+#include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "views/border.h"
@@ -65,8 +66,7 @@ TEST(LabelTest, ColorProperty) {
 
 TEST(LabelTest, AlignmentProperty) {
   Label label;
-  bool reverse_alignment =
-      l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT;
+  bool reverse_alignment = base::i18n::IsRTL();
 
   label.SetHorizontalAlignment(Label::ALIGN_RIGHT);
   EXPECT_EQ(

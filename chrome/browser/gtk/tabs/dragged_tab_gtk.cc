@@ -9,8 +9,8 @@
 #include <algorithm>
 
 #include "app/gfx/canvas_paint.h"
-#include "app/l10n_util.h"
 #include "app/x11_util.h"
+#include "base/i18n/rtl.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/tabs/tab_renderer_gtk.h"
@@ -160,7 +160,7 @@ void DraggedTabGtk::Layout() {
     renderer_->SetBounds(gfx::Rect(0, 0, prefsize.width(), prefsize.height()));
   } else {
     int left = 0;
-    if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
+    if (base::i18n::IsRTL())
       left = GetPreferredSize().width() - attached_tab_size_.width();
 
     // The renderer_'s width should be attached_tab_size_.width() in both LTR

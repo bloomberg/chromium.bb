@@ -15,6 +15,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/file_util.h"
+#include "base/i18n/rtl.h"
 #include "base/i18n/time_formatting.h"
 #include "base/path_service.h"
 #include "base/singleton.h"
@@ -366,8 +367,8 @@ DictionaryValue* CreateDownloadItemValue(DownloadItem* download, int id) {
   file_value->SetString(L"file_path", download->full_path().ToWStringHack());
   // Keep file names as LTR.
   std::wstring file_name = download->GetFileName().ToWStringHack();
-  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
-    l10n_util::WrapStringWithLTRFormatting(&file_name);
+  if (base::i18n::IsRTL())
+    base::i18n::WrapStringWithLTRFormatting(&file_name);
   file_value->SetString(L"file_name", file_name);
   file_value->SetString(L"url", download->url().spec());
   file_value->SetBoolean(L"otr", download->is_otr());
@@ -414,7 +415,7 @@ std::wstring GetProgressStatusText(DownloadItem* download) {
   // Adjust both strings for the locale direction since we don't yet know which
   // string we'll end up using for constructing the final progress string.
   std::wstring amount_localized;
-  if (l10n_util::AdjustStringForLocaleDirection(amount, &amount_localized)) {
+  if (base::i18n::AdjustStringForLocaleDirection(amount, &amount_localized)) {
     amount.assign(amount_localized);
     received_size.assign(amount_localized);
   }
@@ -423,8 +424,8 @@ std::wstring GetProgressStatusText(DownloadItem* download) {
     amount_units = GetByteDisplayUnits(total);
     std::wstring total_text = FormatBytes(total, amount_units, true);
     std::wstring total_text_localized;
-    if (l10n_util::AdjustStringForLocaleDirection(total_text,
-                                                  &total_text_localized))
+    if (base::i18n::AdjustStringForLocaleDirection(total_text,
+                                                   &total_text_localized))
       total_text.assign(total_text_localized);
 
     amount = l10n_util::GetStringF(IDS_DOWNLOAD_TAB_PROGRESS_SIZE,
@@ -437,8 +438,8 @@ std::wstring GetProgressStatusText(DownloadItem* download) {
   std::wstring speed_text = FormatSpeed(download->CurrentSpeed(),
                                         amount_units, true);
   std::wstring speed_text_localized;
-  if (l10n_util::AdjustStringForLocaleDirection(speed_text,
-                                                &speed_text_localized))
+  if (base::i18n::AdjustStringForLocaleDirection(speed_text,
+                                                 &speed_text_localized))
     speed_text.assign(speed_text_localized);
 
   base::TimeDelta remaining;

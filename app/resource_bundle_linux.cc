@@ -13,6 +13,7 @@
 #include "base/data_pack.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/string_piece.h"
@@ -40,8 +41,7 @@ GdkPixbuf* LoadPixbuf(RefCountedStaticMemory* data, bool rtl_enabled) {
   if (!pixbuf)
     return NULL;
 
-  if ((l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) &&
-      rtl_enabled) {
+  if (base::i18n::IsRTL() && rtl_enabled) {
     // |pixbuf| will get unreffed and destroyed (see below). The returned value
     // has ref count 1.
     return gdk_pixbuf_flip(pixbuf, TRUE);

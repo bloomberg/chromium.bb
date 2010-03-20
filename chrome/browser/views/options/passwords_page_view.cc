@@ -5,6 +5,7 @@
 #include "chrome/browser/views/options/passwords_page_view.h"
 
 #include "app/l10n_util.h"
+#include "base/i18n/rtl.h"
 #include "base/string_util.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/pref_service.h"
@@ -71,16 +72,16 @@ std::wstring PasswordsTableModel::GetText(int row,
     case IDS_PASSWORDS_PAGE_VIEW_SITE_COLUMN: {  // Site.
       const std::wstring& url = saved_signons_[row]->display_url.display_url();
       // Force URL to have LTR directionality.
-      if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) {
+      if (base::i18n::IsRTL()) {
         std::wstring localized_url = url;
-        l10n_util::WrapStringWithLTRFormatting(&localized_url);
+        base::i18n::WrapStringWithLTRFormatting(&localized_url);
         return localized_url;
       }
       return url;
     }
     case IDS_PASSWORDS_PAGE_VIEW_USERNAME_COLUMN: {  // Username.
       std::wstring username = GetPasswordFormAt(row)->username_value;
-      l10n_util::AdjustStringForLocaleDirection(username, &username);
+      base::i18n::AdjustStringForLocaleDirection(username, &username);
       return username;
     }
     default:

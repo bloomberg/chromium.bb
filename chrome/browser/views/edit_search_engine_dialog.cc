@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/i18n/rtl.h"
 #include "base/string_util.h"
 #include "chrome/browser/search_engines/edit_search_engine_controller.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -203,7 +204,7 @@ void EditSearchEngineDialog::Init() {
   layout->StartRowWithPadding(0, 2, 0, unrelated_y);
   std::wstring description =
       l10n_util::GetString(IDS_SEARCH_ENGINES_EDITOR_URL_DESCRIPTION_LABEL);
-  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) {
+  if (base::i18n::IsRTL()) {
     const std::wstring reversed_percent(L"s%");
     std::wstring::size_type percent_index =
         description.find(L"%s", static_cast<std::wstring::size_type>(0));

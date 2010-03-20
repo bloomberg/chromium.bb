@@ -15,6 +15,7 @@
 #include "app/l10n_util_win.h"
 #include "app/resource_bundle.h"
 #include "app/table_model.h"
+#include "base/i18n/rtl.h"
 #include "base/string_util.h"
 #include "base/win_util.h"
 #include "gfx/favicon_size.h"
@@ -1131,7 +1132,7 @@ void TableView::PaintAltText() {
   // Pad by 1 for halo.
   canvas.DrawStringWithHalo(alt_text_, font, SK_ColorDKGRAY, SK_ColorWHITE, 1,
                             1, bounds.width() - 2, bounds.height() - 2,
-                            l10n_util::DefaultCanvasTextAlignment());
+                            gfx::Canvas::DefaultCanvasTextAlignment());
   canvas.getTopPlatformDevice().drawToHDC(dc, bounds.x(), bounds.y(), NULL);
   ReleaseDC(GetNativeControlHWND(), dc);
 }

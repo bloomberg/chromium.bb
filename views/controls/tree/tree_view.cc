@@ -11,6 +11,7 @@
 #include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
 #include "app/resource_bundle.h"
+#include "base/i18n/rtl.h"
 #include "base/keyboard_codes.h"
 #include "base/stl_util-inl.h"
 #include "base/win_util.h"
@@ -399,7 +400,7 @@ LRESULT TreeView::OnNotify(int w_param, LPNMHDR l_param) {
 
         // Adjust the string direction if such adjustment is required.
         std::wstring localized_text;
-        if (l10n_util::AdjustStringForLocaleDirection(text, &localized_text))
+        if (base::i18n::AdjustStringForLocaleDirection(text, &localized_text))
           text.swap(localized_text);
 
         wcsncpy_s(info->item.pszText, info->item.cchTextMax, text.c_str(),
@@ -729,7 +730,7 @@ LRESULT CALLBACK TreeView::TreeWndProc(HWND window,
         return 0;
 
       HDC dc = canvas.beginPlatformPaint();
-      if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) {
+      if (base::i18n::IsRTL()) {
         // gfx::Canvas ends up configuring the DC with a mode of GM_ADVANCED.
         // For some reason a graphics mode of ADVANCED triggers all the text
         // to be mirrored when RTL. Set the mode back to COMPATIBLE and
@@ -757,7 +758,7 @@ LRESULT CALLBACK TreeView::TreeWndProc(HWND window,
                          -canvas.paintStruct().rcPaint.top, NULL);
       }
       SendMessage(window, WM_PRINTCLIENT, reinterpret_cast<WPARAM>(dc), 0);
-      if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) {
+      if (base::i18n::IsRTL()) {
         // Reset the origin of the dc back to 0. This way when we copy the bits
         // over we copy the right bits.
         SetViewportOrgEx(dc, 0, 0, NULL);

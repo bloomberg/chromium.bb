@@ -16,6 +16,7 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/native_library.h"
 #include "base/registry.h"
@@ -519,17 +520,17 @@ int MessageBox(HWND hwnd,
     return IDOK;
 
   UINT actual_flags = flags;
-  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
+  if (base::i18n::IsRTL())
     actual_flags |= MB_RIGHT | MB_RTLREADING;
 
   std::wstring localized_text;
   const wchar_t* text_ptr = text.c_str();
-  if (l10n_util::AdjustStringForLocaleDirection(text, &localized_text))
+  if (base::i18n::AdjustStringForLocaleDirection(text, &localized_text))
     text_ptr = localized_text.c_str();
 
   std::wstring localized_caption;
   const wchar_t* caption_ptr = caption.c_str();
-  if (l10n_util::AdjustStringForLocaleDirection(caption, &localized_caption))
+  if (base::i18n::AdjustStringForLocaleDirection(caption, &localized_caption))
     caption_ptr = localized_caption.c_str();
 
   return ::MessageBox(hwnd, text_ptr, caption_ptr, actual_flags);

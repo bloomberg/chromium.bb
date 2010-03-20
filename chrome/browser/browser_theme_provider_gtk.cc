@@ -6,7 +6,7 @@
 
 #include <gdk-pixbuf/gdk-pixbuf.h>
 
-#include "app/l10n_util.h"
+#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "gfx/gtk_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -34,8 +34,7 @@ GdkPixbuf* BrowserThemeProvider::GetPixbufImpl(int id, bool rtl_enabled) const {
 
   // We loaded successfully.  Cache the pixbuf.
   if (pixbuf) {
-    if ((l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) &&
-        rtl_enabled) {
+    if (base::i18n::IsRTL() && rtl_enabled) {
       GdkPixbuf* original_pixbuf = pixbuf;
       pixbuf = gdk_pixbuf_flip(pixbuf, TRUE);
       g_object_unref(original_pixbuf);

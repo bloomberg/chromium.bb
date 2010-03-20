@@ -8,8 +8,8 @@
 
 #include <algorithm>
 
-#include "app/l10n_util.h"
 #include "app/text_elider.h"
+#include "base/i18n/rtl.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
@@ -157,7 +157,7 @@ void StatusBubbleGtk::MouseMoved(
     if (!toplevel || !GTK_WIDGET_REALIZED(toplevel))
       return;
 
-    bool ltr = (l10n_util::GetTextDirection() == l10n_util::LEFT_TO_RIGHT);
+    bool ltr = !base::i18n::IsRTL();
 
     GtkRequisition requisition;
     gtk_widget_size_request(container_.get(), &requisition);
@@ -219,7 +219,7 @@ void StatusBubbleGtk::Observe(NotificationType type,
 }
 
 void StatusBubbleGtk::InitWidgets() {
-  bool ltr = (l10n_util::GetTextDirection() == l10n_util::LEFT_TO_RIGHT);
+  bool ltr = !base::i18n::IsRTL();
 
   label_ = gtk_label_new(NULL);
 
@@ -275,7 +275,7 @@ void StatusBubbleGtk::SetFlipHorizontally(bool flip_horizontally) {
 
   flip_horizontally_ = flip_horizontally;
 
-  bool ltr = (l10n_util::GetTextDirection() == l10n_util::LEFT_TO_RIGHT);
+  bool ltr = !base::i18n::IsRTL();
   bool on_left = (ltr && !flip_horizontally) || (!ltr && flip_horizontally);
 
   gtk_alignment_set_padding(GTK_ALIGNMENT(padding_),

@@ -20,6 +20,7 @@
 #include "base/base_drag_source.h"
 #include "base/base_drop_target.h"
 #include "base/basictypes.h"
+#include "base/i18n/rtl.h"
 #include "base/iat_patch.h"
 #include "base/keyboard_codes.h"
 #include "base/lazy_instance.h"
@@ -1993,7 +1994,7 @@ LONG AutocompleteEditViewWin::ClipXCoordToVisibleText(
   // paragraph.
   bool ltr_text_in_ltr_layout = true;
   if ((pf2.wEffects & PFE_RTLPARA) ||
-      l10n_util::StringContainsStrongRTLChars(GetText())) {
+      base::i18n::StringContainsStrongRTLChars(GetText())) {
     ltr_text_in_ltr_layout = false;
   }
   const int length = GetTextLength();

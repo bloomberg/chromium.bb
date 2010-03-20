@@ -11,6 +11,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/text_elider.h"
+#include "base/i18n/rtl.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_theme_provider.h"
@@ -497,7 +498,7 @@ gfx::Size StatusBubbleViews::GetPreferredSize() {
 void StatusBubbleViews::SetBounds(int x, int y, int w, int h) {
   // If the UI layout is RTL, we need to mirror the position of the bubble
   // relative to the parent.
-  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) {
+  if (base::i18n::IsRTL()) {
     gfx::Rect frame_bounds;
     frame_->GetBounds(&frame_bounds, false);
     int mirrored_x = frame_bounds.width() - x - w;
@@ -558,9 +559,8 @@ void StatusBubbleViews::SetURL(const GURL& url, const std::wstring& languages) {
   // An URL is always treated as a left-to-right string. On right-to-left UIs
   // we need to explicitly mark the URL as LTR to make sure it is displayed
   // correctly.
-  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT &&
-      !url_text_.empty())
-    l10n_util::WrapStringWithLTRFormatting(&url_text_);
+  if (base::i18n::IsRTL() && !url_text_.empty())
+    base::i18n::WrapStringWithLTRFormatting(&url_text_);
 
   if (IsFrameVisible())
     view_->SetText(url_text_);

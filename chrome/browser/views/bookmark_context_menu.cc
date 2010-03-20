@@ -5,6 +5,7 @@
 #include "chrome/browser/views/bookmark_context_menu.h"
 
 #include "app/l10n_util.h"
+#include "base/i18n/rtl.h"
 #include "chrome/browser/profile.h"
 #include "grit/generated_resources.h"
 #include "views/controls/menu/menu_item_view.h"
@@ -35,8 +36,7 @@ BookmarkContextMenu::~BookmarkContextMenu() {
 
 void BookmarkContextMenu::RunMenuAt(const gfx::Point& point) {
   // width/height don't matter here.
-  views::MenuItemView::AnchorPosition anchor =
-      (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) ?
+  views::MenuItemView::AnchorPosition anchor = base::i18n::IsRTL() ?
       views::MenuItemView::TOPRIGHT : views::MenuItemView::TOPLEFT;
   menu_->RunMenuAt(parent_window_, NULL, gfx::Rect(point.x(), point.y(), 0, 0),
                    anchor, true);

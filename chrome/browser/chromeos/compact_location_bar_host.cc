@@ -6,8 +6,8 @@
 
 #include <algorithm>
 
-#include "app/l10n_util.h"
 #include "app/slide_animation.h"
+#include "base/i18n/rtl.h"
 #include "base/keyboard_codes.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_process.h"
@@ -217,9 +217,8 @@ gfx::Rect CompactLocationBarHost::GetBoundsUnderTab(int index) const {
                           view()->GetPreferredSize());
 
   // For RTL case x() defines tab right corner.
-  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) {
+  if (base::i18n::IsRTL())
     navbar_bounds.set_x(navbar_bounds.x() + bounds.width());
-  }
   navbar_bounds.set_x(navbar_bounds.x() + tabstrip->x());
   navbar_bounds.set_y(navbar_bounds.y() + tabstrip->y());
 

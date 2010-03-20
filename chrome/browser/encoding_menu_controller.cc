@@ -5,6 +5,7 @@
 #include "chrome/browser/encoding_menu_controller.h"
 
 #include "app/l10n_util.h"
+#include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser_process.h"
@@ -135,8 +136,8 @@ void EncodingMenuController::GetEncodingMenuItems(Profile* profile,
     if (it->encoding_id) {
       std::wstring encoding = it->encoding_display_name;
       std::wstring bidi_safe_encoding;
-      if (l10n_util::AdjustStringForLocaleDirection(encoding,
-                                                    &bidi_safe_encoding))
+      if (base::i18n::AdjustStringForLocaleDirection(encoding,
+                                                     &bidi_safe_encoding))
         encoding.swap(bidi_safe_encoding);
       menuItems->push_back(EncodingMenuItem(it->encoding_id,
                                             WideToUTF16(encoding)));

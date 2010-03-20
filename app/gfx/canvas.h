@@ -211,6 +211,15 @@ class Canvas : public skia::PlatformCanvas {
   static void SizeStringInt(const std::wstring& test, const gfx::Font& font,
                             int *width, int* height, int flags);
 
+  // Returns the default text alignment to be used when drawing text on a
+  // gfx::Canvas based on the directionality of the system locale language. This
+  // function is used by gfx::Canvas::DrawStringInt when the text alignment is
+  // not specified.
+  //
+  // This function returns either gfx::Canvas::TEXT_ALIGN_LEFT or
+  // gfx::Canvas::TEXT_ALIGN_RIGHT.
+  static int DefaultCanvasTextAlignment();
+
  private:
 #if defined(OS_WIN)
   // Draws text with the specified color, font and location. The text is

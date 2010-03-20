@@ -8,6 +8,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/i18n/rtl.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/gtk/accessible_widget_helper_gtk.h"
@@ -182,7 +183,7 @@ void EditSearchEngineDialog::Init(GtkWindow* parent_window, Profile* profile) {
   // is displayed correctly when rendered in an RTL context.
   std::string description =
       l10n_util::GetStringUTF8(IDS_SEARCH_ENGINES_EDITOR_URL_DESCRIPTION_LABEL);
-  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) {
+  if (base::i18n::IsRTL()) {
     const std::string reversed_percent("s%");
     std::wstring::size_type percent_index =
         description.find("%s", static_cast<std::string::size_type>(0));

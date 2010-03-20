@@ -8,6 +8,7 @@
 #include "app/resource_bundle.h"
 #include "base/compiler_specific.h"
 #include "base/i18n/number_formatting.h"
+#include "base/i18n/rtl.h"
 #include "base/process_util.h"
 #include "base/stats_table.h"
 #include "base/string_util.h"
@@ -122,8 +123,8 @@ std::wstring TaskManagerModel::GetResourceNetworkUsage(int index) const {
   std::wstring net_byte =
       FormatSpeed(net_usage, GetByteDisplayUnits(net_usage), true);
   // Force number string to have LTR directionality.
-  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
-    l10n_util::WrapStringWithLTRFormatting(&net_byte);
+  if (base::i18n::IsRTL())
+    base::i18n::WrapStringWithLTRFormatting(&net_byte);
   return net_byte;
 }
 
@@ -450,7 +451,7 @@ std::wstring TaskManagerModel::GetMemCellText(int64 number) const {
   std::wstring str = UTF16ToWide(base::FormatNumber(number / 1024));
 
   // Adjust number string if necessary.
-  l10n_util::AdjustStringForLocaleDirection(str, &str);
+  base::i18n::AdjustStringForLocaleDirection(str, &str);
   return l10n_util::GetStringF(IDS_TASK_MANAGER_MEM_CELL_TEXT, str);
 #else
   // System expectation is to show "100 KB", "200 MB", etc.

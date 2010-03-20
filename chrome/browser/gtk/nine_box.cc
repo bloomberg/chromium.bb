@@ -4,10 +4,10 @@
 
 #include "chrome/browser/gtk/nine_box.h"
 
-#include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
 #include "base/basictypes.h"
+#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "gfx/gtk_util.h"
 #include "gfx/point.h"
@@ -132,7 +132,7 @@ void NineBox::RenderToWidgetWithOpacity(GtkWidget* dst, double opacity) const {
     cairo_translate(cr, dst->allocation.x, dst->allocation.y);
   }
 
-  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) {
+  if (base::i18n::IsRTL()) {
     cairo_translate(cr, dst_width, 0.0f);
     cairo_scale(cr, -1.0f, 1.0f);
   }
@@ -224,7 +224,7 @@ void NineBox::ContourWidget(GtkWidget* widget) const {
   cairo_destroy(cr);
 
   // Mask the widget's window's shape.
-  if (l10n_util::GetTextDirection() == l10n_util::LEFT_TO_RIGHT) {
+  if (!base::i18n::IsRTL()) {
     gtk_widget_shape_combine_mask(widget, mask, 0, 0);
   } else {
     GdkBitmap* flipped_mask = gdk_pixmap_new(NULL, width, height, 1);

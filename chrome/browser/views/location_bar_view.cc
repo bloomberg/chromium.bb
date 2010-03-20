@@ -12,6 +12,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
+#include "base/i18n/rtl.h"
 #include "base/stl_util-inl.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/alternate_nav_url_fetcher.h"
@@ -996,7 +997,7 @@ std::wstring LocationBarView::SelectedKeywordView::CalculateMinString(
   } else {
     min_string = description.substr(0, chop_index);
   }
-  l10n_util::AdjustStringForLocaleDirection(min_string, &min_string);
+  base::i18n::AdjustStringForLocaleDirection(min_string, &min_string);
   return min_string;
 }
 

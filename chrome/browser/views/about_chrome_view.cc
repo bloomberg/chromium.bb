@@ -10,6 +10,7 @@
 #include "app/resource_bundle.h"
 #include "base/callback.h"
 #include "base/file_version_info.h"
+#include "base/i18n/rtl.h"
 #include "base/i18n/word_iterator.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
@@ -127,8 +128,7 @@ AboutChromeView::~AboutChromeView() {
 }
 
 void AboutChromeView::Init() {
-  text_direction_is_rtl_ =
-      l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT;
+  text_direction_is_rtl_ = base::i18n::IsRTL();
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
   scoped_ptr<FileVersionInfo> version_info(
@@ -871,9 +871,9 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
             l10n_util::GetStringF(IDS_UPGRADE_ALREADY_UP_TO_DATE,
                                   l10n_util::GetString(IDS_PRODUCT_NAME),
                                   current_version_);
-        if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) {
+        if (base::i18n::IsRTL()) {
           update_label_text.push_back(
-              static_cast<wchar_t>(l10n_util::kLeftToRightMark));
+              static_cast<wchar_t>(base::i18n::kLeftToRightMark));
         }
         update_label_.SetText(update_label_text);
         show_success_indicator = true;

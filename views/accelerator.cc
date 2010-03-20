@@ -9,6 +9,7 @@
 #endif
 
 #include "app/l10n_util.h"
+#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "grit/app_strings.h"
@@ -92,10 +93,8 @@ std::wstring Accelerator::GetShortcutText() const {
   // required.
   std::wstring shortcut_rtl;
   bool adjust_shortcut_for_rtl = false;
-  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT &&
-      shortcut.length() == 1 &&
-      !IsAsciiAlpha(shortcut.at(0)) &&
-      !IsAsciiDigit(shortcut.at(0))) {
+  if (base::i18n::IsRTL() && shortcut.length() == 1 &&
+      !IsAsciiAlpha(shortcut.at(0)) && !IsAsciiDigit(shortcut.at(0))) {
     adjust_shortcut_for_rtl = true;
     shortcut_rtl.assign(shortcut);
   }

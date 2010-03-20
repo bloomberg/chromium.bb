@@ -5,6 +5,7 @@
 #include "chrome/browser/gtk/go_button_gtk.h"
 
 #include "app/l10n_util.h"
+#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "chrome/app/chrome_dll_resource.h"
@@ -175,8 +176,8 @@ gboolean GoButtonGtk::OnQueryTooltip(GtkTooltip* tooltip) {
   std::string text;
   if (visible_mode_ == MODE_GO) {
     std::wstring current_text_wstr(location_bar_->location_entry()->GetText());
-    if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
-      l10n_util::WrapStringWithLTRFormatting(&current_text_wstr);
+    if (base::i18n::IsRTL())
+      base::i18n::WrapStringWithLTRFormatting(&current_text_wstr);
     string16 current_text = WideToUTF16Hack(
         l10n_util::TruncateString(current_text_wstr, kMaxTooltipTextLength));
 

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "app/l10n_util.h"
+#include "base/i18n/rtl.h"
 #include "base/linked_ptr.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
@@ -129,8 +130,8 @@ class ExtensionMessageBundleTest : public testing::Test {
               handler->GetL10nMessage(ExtensionMessageBundle::kUILocaleKey));
 
     std::string text_dir = "ltr";
-    if (l10n_util::GetTextDirectionForLocale(ui_locale.c_str()) ==
-        l10n_util::RIGHT_TO_LEFT)
+    if (base::i18n::GetTextDirectionForLocale(ui_locale.c_str()) ==
+        base::i18n::RIGHT_TO_LEFT)
       text_dir = "rtl";
 
     EXPECT_EQ(text_dir, handler->GetL10nMessage(

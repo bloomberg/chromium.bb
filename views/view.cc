@@ -11,7 +11,7 @@
 
 #include "app/drag_drop_types.h"
 #include "app/gfx/canvas.h"
-#include "app/l10n_util.h"
+#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/scoped_handle.h"
@@ -235,8 +235,7 @@ void View::SetLayoutManager(LayoutManager* layout_manager) {
 }
 
 bool View::UILayoutIsRightToLeft() const {
-  return (ui_mirroring_is_enabled_for_rtl_languages_ &&
-          l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT);
+  return (ui_mirroring_is_enabled_for_rtl_languages_ && base::i18n::IsRTL());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

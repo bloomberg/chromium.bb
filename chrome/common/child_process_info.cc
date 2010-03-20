@@ -8,6 +8,7 @@
 
 #include "app/l10n_util.h"
 #include "base/atomicops.h"
+#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/process_util.h"
 #include "base/rand_util.h"
@@ -92,7 +93,7 @@ std::wstring ChildProcessInfo::GetLocalizedTitle() const {
   // to avoid the wrong concatenation result similar to "!Yahoo! Mail: the
   // best web-based Email: NIGULP", in which "NIGULP" stands for the Hebrew
   // or Arabic word for "plugin".
-  l10n_util::AdjustStringForLocaleDirection(title, &title);
+  base::i18n::AdjustStringForLocaleDirection(title, &title);
   return l10n_util::GetStringF(message_id, title);
 }
 

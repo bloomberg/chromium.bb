@@ -9,6 +9,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/basictypes.h"
+#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
@@ -221,7 +222,7 @@ BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWindow* toplevel_window,
   gtk_container_set_focus_child(GTK_CONTAINER(content), table);
 
   InfoBubbleGtk::ArrowLocationGtk arrow_location =
-      (l10n_util::GetTextDirection() == l10n_util::LEFT_TO_RIGHT) ?
+      !base::i18n::IsRTL() ?
       InfoBubbleGtk::ARROW_LOCATION_TOP_LEFT :
       InfoBubbleGtk::ARROW_LOCATION_TOP_RIGHT;
   bubble_ = InfoBubbleGtk::Show(toplevel_window_,

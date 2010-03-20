@@ -13,6 +13,7 @@
 #include "app/table_model_observer.h"
 #include "app/tree_node_model.h"
 #include "base/callback.h"
+#include "base/i18n/rtl.h"
 #include "base/linked_ptr.h"
 #include "base/string_util.h"
 #include "chrome/browser/extensions/extensions_service.h"
@@ -590,7 +591,7 @@ std::wstring CookiesTreeModel::FormExtensionNodeName(
   // "Great Extension!" the concatenated result would be something like
   // "!Great Extension :NOISNETXE", in which capital letters "NOISNETXE"
   // stand for the Hebrew word for "extension".
-  l10n_util::AdjustStringForLocaleDirection(extension_name, &extension_name);
+  base::i18n::AdjustStringForLocaleDirection(extension_name, &extension_name);
   return l10n_util::GetStringF(IDS_TASK_MANAGER_EXTENSION_PREFIX,
                                extension_name);
 }

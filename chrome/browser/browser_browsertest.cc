@@ -5,6 +5,7 @@
 #include <string>
 
 #include "app/l10n_util.h"
+#include "base/i18n/rtl.h"
 #include "base/sys_info.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/app_modal_dialog.h"
@@ -135,9 +136,9 @@ class BrowserTest : public ExtensionBrowserTest {
     std::wstring page_title = WindowCaptionFromPageTitle(expected_title);
 #if defined(OS_WIN)
     std::string locale = g_browser_process->GetApplicationLocale();
-    if (l10n_util::GetTextDirectionForLocale(locale.c_str()) ==
-        l10n_util::RIGHT_TO_LEFT) {
-      l10n_util::WrapStringWithLTRFormatting(&page_title);
+    if (base::i18n::GetTextDirectionForLocale(locale.c_str()) ==
+        base::i18n::RIGHT_TO_LEFT) {
+      base::i18n::WrapStringWithLTRFormatting(&page_title);
     }
 
     return page_title;

@@ -8,6 +8,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/i18n/rtl.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/find_bar_controller.h"
@@ -73,7 +74,7 @@ std::vector<GdkPoint> MakeFramePolygonPoints(int width,
   using gtk_util::MakeBidiGdkPoint;
   std::vector<GdkPoint> points;
 
-  bool ltr = l10n_util::GetTextDirection() == l10n_util::LEFT_TO_RIGHT;
+  bool ltr = !base::i18n::IsRTL();
   // If we have a stroke, we have to offset some of our points by 1 pixel.
   // We have to inset by 1 pixel when we draw horizontal lines that are on the
   // bottom or when we draw vertical lines that are closer to the end (end is
@@ -404,7 +405,7 @@ void FindBarGtk::AudibleAlert() {
 }
 
 gfx::Rect FindBarGtk::GetDialogPosition(gfx::Rect avoid_overlapping_rect) {
-  bool ltr = l10n_util::GetTextDirection() == l10n_util::LEFT_TO_RIGHT;
+  bool ltr = !base::i18n::IsRTL();
   // 15 is the size of the scrollbar, copied from ScrollbarThemeChromium.
   // The height is not used.
   // At very low browser widths we can wind up with a negative |dialog_bounds|
@@ -838,7 +839,7 @@ gboolean FindBarGtk::OnExpose(GtkWidget* widget, GdkEventExpose* e,
     GtkAllocation border_allocation = bar->border_bin_->allocation;
 
     // Blit the left part of the background image once on the left.
-    bool rtl = l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT;
+    bool rtl = base::i18n::IsRTL();
     CairoCachedSurface* background_left = bar->theme_provider_->GetSurfaceNamed(
         rtl ? IDR_FIND_BOX_BACKGROUND_LEFT_RTL : IDR_FIND_BOX_BACKGROUND_LEFT,
         widget);

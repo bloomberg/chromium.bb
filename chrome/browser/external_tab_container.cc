@@ -6,8 +6,8 @@
 
 #include <string>
 
-#include "app/l10n_util.h"
 #include "app/win_util.h"
+#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/win_util.h"
 #include "chrome/app/chrome_dll_resource.h"
@@ -539,7 +539,7 @@ bool ExternalTabContainer::HandleContextMenu(const ContextMenuParams& params) {
   ipc_params.page_url = params.page_url;
   ipc_params.frame_url = params.frame_url;
 
-  bool rtl = l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT;
+  bool rtl = base::i18n::IsRTL();
   automation_->Send(
       new AutomationMsg_ForwardContextMenuToExternalHost(0, tab_handle_,
           external_context_menu_->GetMenuHandle(),

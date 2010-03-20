@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "base/i18n/number_formatting.h"
+#include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/save_package.h"
@@ -38,8 +39,8 @@ std::wstring DownloadItemModel::GetStatusText() {
   // we mark the total string as an LTR string if the UI layout is
   // right-to-left so that the string "456 MB" is treated as an LTR run.
   std::wstring simple_total = FormatBytes(total, amount_units, true);
-  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
-    l10n_util::WrapStringWithLTRFormatting(&simple_total);
+  if (base::i18n::IsRTL())
+    base::i18n::WrapStringWithLTRFormatting(&simple_total);
 
   TimeDelta remaining;
   std::wstring simple_time;

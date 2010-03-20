@@ -14,6 +14,7 @@
 #include "app/os_exchange_data.h"
 #include "app/resource_bundle.h"
 #include "base/command_line.h"
+#include "base/i18n/rtl.h"
 #include "base/keyboard_codes.h"
 #include "base/time.h"
 #include "build/build_config.h"
@@ -211,7 +212,7 @@ class ResizeCorner : public views::View {
     SkBitmap* bitmap = ResourceBundle::GetSharedInstance().GetBitmapNamed(
         IDR_TEXTAREA_RESIZER);
     bitmap->buildMipMap(false);
-    bool rtl_dir = (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT);
+    bool rtl_dir = base::i18n::IsRTL();
     if (rtl_dir) {
       canvas->TranslateInt(width(), 0);
       canvas->ScaleInt(-1, 1);
@@ -930,7 +931,7 @@ gfx::Rect BrowserView::GetRootWindowResizerRect() const {
   gfx::Rect client_rect = contents_split_->bounds();
   gfx::Size resize_corner_size = ResizeCorner::GetSize();
   int x = client_rect.width() - resize_corner_size.width();
-  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
+  if (base::i18n::IsRTL())
     x = 0;
   return gfx::Rect(x, client_rect.height() - resize_corner_size.height(),
                    resize_corner_size.width(), resize_corner_size.height());
@@ -1548,7 +1549,7 @@ int BrowserView::NonClientHitTest(const gfx::Point& point) {
     gfx::Rect resize_corner_rect(client_rect.right - resize_corner_size.width(),
         client_rect.bottom - resize_corner_size.height(),
         resize_corner_size.width(), resize_corner_size.height());
-    bool rtl_dir = (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT);
+    bool rtl_dir = base::i18n::IsRTL();
     if (rtl_dir)
       resize_corner_rect.set_x(0);
     if (resize_corner_rect.Contains(point)) {

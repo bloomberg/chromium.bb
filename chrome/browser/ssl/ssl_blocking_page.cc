@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/histogram.h"
+#include "base/i18n/rtl.h"
 #include "base/string_piece.h"
 #include "base/values.h"
 #include "chrome/browser/browser.h"
@@ -78,9 +79,7 @@ std::string SSLBlockingPage::GetHTMLContents() {
   strings.SetString(L"exit",
                     l10n_util::GetString(IDS_SSL_BLOCKING_PAGE_EXIT));
 
-  strings.SetString(L"textdirection",
-      (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) ?
-       L"rtl" : L"ltr");
+  strings.SetString(L"textdirection", base::i18n::IsRTL() ? L"rtl" : L"ltr");
 
   static const base::StringPiece html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(

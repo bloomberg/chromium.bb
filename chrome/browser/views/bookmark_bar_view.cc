@@ -14,6 +14,7 @@
 #include "app/os_exchange_data.h"
 #include "app/resource_bundle.h"
 #include "app/text_elider.h"
+#include "base/i18n/rtl.h"
 #include "base/string_util.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
@@ -140,7 +141,7 @@ static std::wstring CreateToolTipForURLAndTitle(const gfx::Point& screen_loc,
   // First the title.
   if (!title.empty()) {
     std::wstring localized_title;
-    if (l10n_util::AdjustStringForLocaleDirection(title, &localized_title))
+    if (base::i18n::AdjustStringForLocaleDirection(title, &localized_title))
       result.append(gfx::ElideText(localized_title, tt_font, max_width));
     else
       result.append(gfx::ElideText(title, tt_font, max_width));
@@ -158,8 +159,8 @@ static std::wstring CreateToolTipForURLAndTitle(const gfx::Point& screen_loc,
     // the Unicode BiDi algorithm puts certain characters on the left by
     // default.
     std::wstring elided_url(gfx::ElideUrl(url, tt_font, max_width, languages));
-    if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
-      l10n_util::WrapStringWithLTRFormatting(&elided_url);
+    if (base::i18n::IsRTL())
+      base::i18n::WrapStringWithLTRFormatting(&elided_url);
     result.append(elided_url);
   }
   return result;

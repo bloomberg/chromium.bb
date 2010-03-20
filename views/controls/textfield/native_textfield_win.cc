@@ -11,6 +11,7 @@
 #include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
 #include "app/win_util.h"
+#include "base/i18n/rtl.h"
 #include "base/keyboard_codes.h"
 #include "base/string_util.h"
 #include "base/win_util.h"
@@ -131,7 +132,7 @@ void NativeTextfieldWin::UpdateText() {
   // Adjusting the string direction before setting the text in order to make
   // sure both RTL and LTR strings are displayed properly.
   std::wstring text_to_set;
-  if (!l10n_util::AdjustStringForLocaleDirection(text, &text_to_set))
+  if (!base::i18n::AdjustStringForLocaleDirection(text, &text_to_set))
     text_to_set = text;
   if (textfield_->style() & Textfield::STYLE_LOWERCASE)
     text_to_set = l10n_util::ToLower(text_to_set);
@@ -808,7 +809,7 @@ LONG NativeTextfieldWin::ClipXCoordToVisibleText(LONG x,
   // paragraph.
   bool ltr_text_in_ltr_layout = true;
   if ((pf2.wEffects & PFE_RTLPARA) ||
-      l10n_util::StringContainsStrongRTLChars(GetText())) {
+      base::i18n::StringContainsStrongRTLChars(GetText())) {
     ltr_text_in_ltr_layout = false;
   }
   const int length = GetTextLength();

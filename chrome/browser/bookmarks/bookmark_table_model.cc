@@ -9,6 +9,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/table_model_observer.h"
+#include "base/i18n/rtl.h"
 #include "base/i18n/time_formatting.h"
 #include "base/string_util.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -314,7 +315,7 @@ std::wstring BookmarkTableModel::GetText(int row, int column_id) {
       // TODO(xji): Consider adding a special case if the title text is a URL,
       // since those should always be displayed LTR. Please refer to
       // http://crbug.com/6726 for more information.
-      l10n_util::AdjustStringForLocaleDirection(title, &title);
+      base::i18n::AdjustStringForLocaleDirection(title, &title);
       return title;
     }
 
@@ -326,8 +327,8 @@ std::wstring BookmarkTableModel::GetText(int row, int column_id) {
           : std::wstring();
       std::wstring url_text = net::FormatUrl(node->GetURL(), languages, false,
           UnescapeRule::SPACES, NULL, NULL, NULL);
-      if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
-        l10n_util::WrapStringWithLTRFormatting(&url_text);
+      if (base::i18n::IsRTL())
+        base::i18n::WrapStringWithLTRFormatting(&url_text);
       return url_text;
     }
 
@@ -353,8 +354,8 @@ std::wstring BookmarkTableModel::GetText(int row, int column_id) {
       // Firefox, IE, Nautilus, gedit choose to format only the whole path as
       // LTR too. The point here is to display the path the same way as it's
       // displayed by other software.
-      if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
-        l10n_util::WrapStringWithLTRFormatting(&path);
+      if (base::i18n::IsRTL())
+        base::i18n::WrapStringWithLTRFormatting(&path);
       return path;
     }
   }

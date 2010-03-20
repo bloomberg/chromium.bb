@@ -10,6 +10,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/basictypes.h"
+#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "chrome/app/chrome_dll_resource.h"
@@ -120,7 +121,7 @@ std::wstring CalculateMinString(const std::wstring& description) {
   } else {
     min_string = description.substr(0, chop_index);
   }
-  l10n_util::AdjustStringForLocaleDirection(min_string, &min_string);
+  base::i18n::AdjustStringForLocaleDirection(min_string, &min_string);
   return min_string;
 }
 
@@ -841,7 +842,7 @@ void LocationBarViewGtk::ShowFirstRunBubbleInternal(bool use_OEM_bubble) {
   // of star button, so shift x and y co-ordinates.
   int y_offset = widget()->allocation.height + kFirstRunBubbleTopMargin;
   int x_offset = 0;
-  if (l10n_util::GetTextDirection() == l10n_util::LEFT_TO_RIGHT)
+  if (!base::i18n::IsRTL())
     x_offset = kFirstRunBubbleLeftMargin;
   else
     x_offset = widget()->allocation.width - kFirstRunBubbleLeftMargin;

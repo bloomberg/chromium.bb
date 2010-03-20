@@ -16,9 +16,6 @@
 
 namespace l10n_util {
 
-// Represents the locale-specific text direction.
-static TextDirection g_text_direction = UNKNOWN_DIRECTION;
-
 std::wstring GetString(int message_id) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   return UTF16ToWide(rb.GetLocalizedString(message_id));

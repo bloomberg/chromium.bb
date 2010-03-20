@@ -11,6 +11,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/histogram.h"
+#include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_thread.h"
@@ -238,9 +239,7 @@ void SafeBrowsingBlockingPage::PopulateMultipleThreatStringDictionary(
       l10n_util::GetString(IDS_SAFE_BROWSING_MALWARE_PROCEED_BUTTON));
   strings->SetString(L"back_button",
       l10n_util::GetString(IDS_SAFE_BROWSING_MALWARE_BACK_BUTTON));
-  strings->SetString(L"textdirection",
-      (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) ?
-      L"rtl" : L"ltr");
+  strings->SetString(L"textdirection", base::i18n::IsRTL() ? L"rtl" : L"ltr");
 }
 
 void SafeBrowsingBlockingPage::PopulateMalwareStringDictionary(
@@ -280,9 +279,7 @@ void SafeBrowsingBlockingPage::PopulateMalwareStringDictionary(
       l10n_util::GetString(IDS_SAFE_BROWSING_MALWARE_PROCEED_BUTTON));
   strings->SetString(L"back_button",
       l10n_util::GetString(IDS_SAFE_BROWSING_MALWARE_BACK_BUTTON));
-  strings->SetString(L"textdirection",
-      (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) ?
-      L"rtl" : L"ltr");
+  strings->SetString(L"textdirection", base::i18n::IsRTL() ? L"rtl" : L"ltr");
 }
 
 void SafeBrowsingBlockingPage::PopulatePhishingStringDictionary(
@@ -303,9 +300,7 @@ void SafeBrowsingBlockingPage::PopulatePhishingStringDictionary(
       l10n_util::GetString(IDS_SAFE_BROWSING_PHISHING_BACK_BUTTON));
   strings->SetString(L"report_error",
       l10n_util::GetString(IDS_SAFE_BROWSING_PHISHING_REPORT_ERROR));
-  strings->SetString(L"textdirection",
-      (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) ?
-      L"rtl" : L"ltr");
+  strings->SetString(L"textdirection", base::i18n::IsRTL() ? L"rtl" : L"ltr");
 }
 
 void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {

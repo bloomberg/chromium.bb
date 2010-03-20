@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "base/file_util.h"
+#include "base/i18n/rtl.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/singleton.h"
@@ -299,8 +300,7 @@ void ChromeURLDataManager::DataSource::SetFontAndTextDirection(
       l10n_util::GetString(web_font_size_id));
 
   localized_strings->SetString(L"textdirection",
-      (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) ?
-       L"rtl" : L"ltr");
+      base::i18n::IsRTL() ? L"rtl" : L"ltr");
 }
 
 URLRequestJob* ChromeURLDataManager::Factory(URLRequest* request,

@@ -8,9 +8,9 @@
 
 #include "app/gfx/canvas_paint.h"
 #include "app/gtk_dnd_util.h"
-#include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/slide_animation.h"
+#include "base/i18n/rtl.h"
 #include "base/string_util.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/browser_theme_provider.h"
@@ -1239,7 +1239,7 @@ int TabStripGtk::GetMiniTabCount() const {
 }
 
 int TabStripGtk::GetAvailableWidthForTabs(TabGtk* last_tab) const {
-  if (l10n_util::GetTextDirection() == l10n_util::LEFT_TO_RIGHT)
+  if (!base::i18n::IsRTL())
     return last_tab->x() - bounds_.x() + last_tab->width();
   else
     return bounds_.width() - last_tab->x();

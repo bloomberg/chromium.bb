@@ -10,6 +10,7 @@
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
 #include "base/compiler_specific.h"
+#include "base/i18n/rtl.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/bubble_positioner.h"
@@ -484,7 +485,7 @@ int AutocompleteResultView::DrawString(
       const bool force_rtl_directionality =
            !(classifications[i].style & ACMatchClassification::URL) &&
            (run_direction == UBIDI_RTL) &&
-           (l10n_util::GetTextDirection() == l10n_util::LEFT_TO_RIGHT);
+           !base::i18n::IsRTL();
 
       if (text_start < text_end) {
         x += DrawStringFragment(canvas,

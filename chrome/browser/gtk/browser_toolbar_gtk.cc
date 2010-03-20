@@ -13,6 +13,7 @@
 #include "app/menus/accelerator_gtk.h"
 #include "app/resource_bundle.h"
 #include "base/base_paths.h"
+#include "base/i18n/rtl.h"
 #include "base/keyboard_codes_posix.h"
 #include "base/logging.h"
 #include "base/path_service.h"
@@ -449,7 +450,7 @@ gfx::Rect BrowserToolbarGtk::GetLocationStackBounds() const {
 
   GtkWidget* left;
   GtkWidget* right;
-  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) {
+  if (base::i18n::IsRTL()) {
     left = go_->widget();
     right = star_->widget();
   } else {

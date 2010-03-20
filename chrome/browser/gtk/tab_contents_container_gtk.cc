@@ -4,7 +4,7 @@
 
 #include "chrome/browser/gtk/tab_contents_container_gtk.h"
 
-#include "app/l10n_util.h"
+#include "base/i18n/rtl.h"
 #include "chrome/browser/gtk/gtk_expanded_container.h"
 #include "chrome/browser/gtk/gtk_floating_container.h"
 #include "chrome/browser/gtk/status_bubble_gtk.h"
@@ -167,7 +167,7 @@ void TabContentsContainerGtk::OnSetFloatingPosition(
   GtkRequisition requisition;
   gtk_widget_size_request(status->widget(), &requisition);
 
-  bool ltr = (l10n_util::GetTextDirection() == l10n_util::LEFT_TO_RIGHT);
+  bool ltr = !base::i18n::IsRTL();
 
   GValue value = { 0, };
   g_value_init(&value, G_TYPE_INT);

@@ -3,11 +3,12 @@
 // found in the LICENSE file.
 
 #include "app/l10n_util.h"
-#include "app/l10n_util_win.h"
 
 #include <algorithm>
 #include <windowsx.h>
 
+#include "app/l10n_util_win.h"
+#include "base/i18n/rtl.h"
 #include "base/string_util.h"
 #include "base/win_util.h"
 
@@ -39,12 +40,11 @@ void AdjustLogFont(const std::wstring& font_family,
 namespace l10n_util {
 
 int GetExtendedStyles() {
-  return GetTextDirection() == LEFT_TO_RIGHT ? 0 :
-      WS_EX_LAYOUTRTL | WS_EX_RTLREADING;
+  return !base::i18n::IsRTL() ? 0 : WS_EX_LAYOUTRTL | WS_EX_RTLREADING;
 }
 
 int GetExtendedTooltipStyles() {
-  return GetTextDirection() == LEFT_TO_RIGHT ? 0 : WS_EX_LAYOUTRTL;
+  return !base::i18n::IsRTL() ? 0 : WS_EX_LAYOUTRTL;
 }
 
 void HWNDSetRTLLayout(HWND hwnd) {

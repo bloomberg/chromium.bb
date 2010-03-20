@@ -11,6 +11,7 @@
 #include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
 #include "app/win_util.h"
+#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "views/screen.h"
@@ -174,8 +175,8 @@ LRESULT TooltipManagerWin::OnNotify(int w_param,
             TrimTooltipToFit(&clipped_text_, &tooltip_width_, &line_count_,
                              screen_loc.x(), screen_loc.y());
             // Adjust the clipped tooltip text for locale direction.
-            l10n_util::AdjustStringForLocaleDirection(clipped_text_,
-                                                      &clipped_text_);
+            base::i18n::AdjustStringForLocaleDirection(clipped_text_,
+                                                       &clipped_text_);
             tooltip_info->lpszText = const_cast<WCHAR*>(clipped_text_.c_str());
           } else {
             tooltip_text_.clear();

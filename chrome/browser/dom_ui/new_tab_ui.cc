@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/histogram.h"
+#include "base/i18n/rtl.h"
 #include "base/singleton.h"
 #include "base/thread.h"
 #include "chrome/browser/browser.h"
@@ -643,15 +644,15 @@ void NewTabUI::SetURLTitleAndDirection(DictionaryValue* dictionary,
   // example, without LRE-PDF pair, the title "Yahoo!" will be rendered as
   // "!Yahoo" within the tooltip when the mouse is over the title link.
   std::wstring direction = kDefaultHtmlTextDirection;
-  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) {
+  if (base::i18n::IsRTL()) {
     if (using_url_as_the_title) {
-      l10n_util::WrapStringWithLTRFormatting(&title_to_set);
+      base::i18n::WrapStringWithLTRFormatting(&title_to_set);
     } else {
-      if (l10n_util::StringContainsStrongRTLChars(wstring_title)) {
-        l10n_util::WrapStringWithRTLFormatting(&title_to_set);
+      if (base::i18n::StringContainsStrongRTLChars(wstring_title)) {
+        base::i18n::WrapStringWithRTLFormatting(&title_to_set);
         direction = kRTLHtmlTextDirection;
       } else {
-        l10n_util::WrapStringWithLTRFormatting(&title_to_set);
+        base::i18n::WrapStringWithLTRFormatting(&title_to_set);
       }
     }
   }

@@ -9,6 +9,7 @@
 #include "app/text_elider.h"
 #include "base/auto_reset.h"
 #include "base/file_version_info.h"
+#include "base/i18n/rtl.h"
 #include "base/process_util.h"
 #include "base/string16.h"
 #include "base/string_util.h"
@@ -2855,8 +2856,8 @@ std::wstring TabContents::GetMessageBoxTitle(const GURL& frame_url,
   std::wstring base_address = gfx::ElideUrl(clean_url, gfx::Font(), 0,
       profile()->GetPrefs()->GetString(prefs::kAcceptLanguages));
   // Force URL to have LTR directionality.
-  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
-    l10n_util::WrapStringWithLTRFormatting(&base_address);
+  if (base::i18n::IsRTL())
+    base::i18n::WrapStringWithLTRFormatting(&base_address);
 
   return l10n_util::GetStringF(
       is_alert ? IDS_JAVASCRIPT_ALERT_TITLE : IDS_JAVASCRIPT_MESSAGEBOX_TITLE,

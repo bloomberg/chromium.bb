@@ -11,9 +11,9 @@
 #include <map>
 
 #include "app/gtk_util.h"
-#include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/x11_util.h"
+#include "base/i18n/rtl.h"
 #include "base/linux_util.h"
 #include "base/logging.h"
 #include "chrome/browser/browser_list.h"
@@ -504,16 +504,14 @@ void SetButtonTriggersNavigation(GtkWidget* button) {
 }
 
 int MirroredLeftPointForRect(GtkWidget* widget, const gfx::Rect& bounds) {
-  if (l10n_util::GetTextDirection() != l10n_util::RIGHT_TO_LEFT) {
+  if (base::i18n::IsRTL())
     return bounds.x();
-  }
   return widget->allocation.width - bounds.x() - bounds.width();
 }
 
 int MirroredXCoordinate(GtkWidget* widget, int x) {
-  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) {
+  if (base::i18n::IsRTL())
     return widget->allocation.width - x;
-  }
   return x;
 }
 

@@ -5,6 +5,7 @@
 #include "chrome/browser/language_combobox_model.h"
 
 #include "app/l10n_util.h"
+#include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -86,16 +87,16 @@ std::wstring LanguageList::GetLanguageNameAt(int index) const {
   // parentheses or languages appearing in the wrong order.
   std::wstring locale_name_localized;
   std::wstring locale_name;
-  if (l10n_util::AdjustStringForLocaleDirection(locale_names_[index],
-                                                &locale_name_localized))
+  if (base::i18n::AdjustStringForLocaleDirection(locale_names_[index],
+                                                 &locale_name_localized))
     locale_name.assign(locale_name_localized);
   else
     locale_name.assign(locale_names_[index]);
 
   std::wstring native_name_localized;
   std::wstring native_name;
-  if (l10n_util::AdjustStringForLocaleDirection(it->second.native_name,
-                                                &native_name_localized))
+  if (base::i18n::AdjustStringForLocaleDirection(it->second.native_name,
+                                                 &native_name_localized))
     native_name.assign(native_name_localized);
   else
     native_name.assign(it->second.native_name);
@@ -106,7 +107,7 @@ std::wstring LanguageList::GetLanguageNameAt(int index) const {
   std::wstring formatted_item;
   SStringPrintf(&formatted_item, L"%ls - %ls", locale_name.c_str(),
                 native_name.c_str());
-  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
+  if (base::i18n::IsRTL())
     // Somehow combo box (even with LAYOUTRTL flag) doesn't get this
     // right so we add RTL BDO (U+202E) to set the direction
     // explicitly.
