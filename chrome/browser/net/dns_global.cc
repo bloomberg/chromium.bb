@@ -543,13 +543,21 @@ DnsGlobalInit::DnsGlobalInit(PrefService* user_prefs,
   // latency of page loads.
   FieldTrial::Probability kDivisor = 100;
   // For each option (i.e., non-default), we have a fixed probability.
-  FieldTrial::Probability kProbabilityPerGroup = 3;  // 3% probability.
+  FieldTrial::Probability kProbabilityPerGroup = 5;  // 5% probability.
 
   trial_ = new FieldTrial("DnsImpact", kDivisor);
 
   // First option is to disable prefetching completely.
   int disabled_prefetch = trial_->AppendGroup("_disabled_prefetch",
                                               kProbabilityPerGroup);
+
+
+  // We're running two experiments at the same time.  The first set of trials
+  // modulates the delay-time until we declare a congestion event (and purge
+  // our queue).  The second modulates the number of concurrent resolutions
+  // we do at any time.  Users are in exactly one trial (or the default) during
+  // any one run, and hence only one experiment at a time.
+  // Experiment 1:
   // Set congestion detection at 250, 500, or 750ms, rather than the 1 second
   // default.
   int max_250ms_prefetch = trial_->AppendGroup("_max_250ms_queue_prefetch",
@@ -561,6 +569,16 @@ DnsGlobalInit::DnsGlobalInit(PrefService* user_prefs,
   // Set congestion detection at 2 seconds instead of the 1 second default.
   int max_2s_prefetch = trial_->AppendGroup("_max_2s_queue_prefetch",
                                             kProbabilityPerGroup);
+  // Experiment 2:
+  // Set max simultaneous resoultions to 2, 4, or 6, and scale the congestion
+  // limit proportionally (so we don't impact average probability of asserting
+  // congesion very much).
+  int max_2_concurrent_prefetch = trial_->AppendGroup(
+        "_max_2 concurrent_prefetch", kProbabilityPerGroup);
+  int max_4_concurrent_prefetch = trial_->AppendGroup(
+        "_max_4 concurrent_prefetch", kProbabilityPerGroup);
+  int max_6_concurrent_prefetch = trial_->AppendGroup(
+        "_max_6 concurrent_prefetch", kProbabilityPerGroup);
 
   trial_->AppendGroup("_default_enabled_prefetch",
       FieldTrial::kAllRemainingProbability);
@@ -571,9 +589,7 @@ DnsGlobalInit::DnsGlobalInit(PrefService* user_prefs,
 
   if (trial_->group() != disabled_prefetch) {
     // Initialize the DNS prefetch system.
-
     size_t max_concurrent = kMaxPrefetchConcurrentLookups;
-
     int max_queueing_delay_ms = kMaxPrefetchQueueingDelayMs;
 
     if (trial_->group() == max_250ms_prefetch)
@@ -584,6 +600,16 @@ DnsGlobalInit::DnsGlobalInit(PrefService* user_prefs,
       max_queueing_delay_ms = 750;
     else if (trial_->group() == max_2s_prefetch)
       max_queueing_delay_ms = 2000;
+    if (trial_->group() == max_2_concurrent_prefetch)
+      max_concurrent = 2;
+    else if (trial_->group() == max_4_concurrent_prefetch)
+      max_concurrent = 4;
+    else if (trial_->group() == max_6_concurrent_prefetch)
+      max_concurrent = 6;
+    // Scale acceptable delay so we don't cause congestion limits to fire as
+    // we modulate max_concurrent (*if* we are modulating it at all).
+    max_queueing_delay_ms = (kMaxPrefetchQueueingDelayMs *
+                             kMaxPrefetchConcurrentLookups) / max_concurrent;
 
     TimeDelta max_queueing_delay(
         TimeDelta::FromMilliseconds(max_queueing_delay_ms));

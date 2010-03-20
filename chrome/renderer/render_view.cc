@@ -1640,7 +1640,8 @@ void RenderView::didStopLoading() {
 
   Send(new ViewHostMsg_DidStopLoading(routing_id_));
 
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
       method_factory_.NewRunnableMethod(&RenderView::CapturePageInfo, page_id_,
                                         false),
       kDelayForCaptureMs);
@@ -2561,7 +2562,8 @@ void RenderView::didCommitProvisionalLoad(WebFrame* frame,
       history_list_offset_ = chrome::kMaxSessionHistoryEntries - 1;
     history_list_length_ = history_list_offset_ + 1;
 
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
         method_factory_.NewRunnableMethod(&RenderView::CapturePageInfo,
                                           page_id_, true),
         kDelayForForcedCaptureMs);
@@ -4146,9 +4148,17 @@ void RenderView::DumpLoadHistograms() const {
       NavigationState::FromDataSource(main_frame->dataSource());
   Time finish = navigation_state->finish_load_time();
 
-  // If we've already dumped or we haven't finished loading, do nothing.
-  if (navigation_state->load_histograms_recorded() || finish.is_null())
+  // If we've already dumped, do nothing.
+  if (navigation_state->load_histograms_recorded())
     return;
+
+  // Handle case where user hits "stop" or "back" before loading completely.
+  bool abandoned_page = finish.is_null();
+  if (abandoned_page) {
+    finish = Time::Now();
+    navigation_state->set_finish_load_time(finish);
+  }
+  UMA_HISTOGRAM_ENUMERATION("Renderer4.Abandoned", abandoned_page ? 1 : 0, 2);
 
   LogNavigationState(navigation_state, main_frame->dataSource());
 
@@ -4271,8 +4281,11 @@ void RenderView::DumpLoadHistograms() const {
   static bool use_dns_histogram(FieldTrialList::Find("DnsImpact") &&
       !FieldTrialList::Find("DnsImpact")->group_name().empty());
   if (use_dns_histogram) {
-    UMA_HISTOGRAM_ENUMERATION(FieldTrial::MakeName(
-        "Renderer4.LoadType", "DnsImpact"),
+    UMA_HISTOGRAM_ENUMERATION(
+        FieldTrial::MakeName("Renderer4.Abandoned", "DnsImpact"),
+        abandoned_page ? 1 : 0, 2);
+    UMA_HISTOGRAM_ENUMERATION(
+        FieldTrial::MakeName("Renderer4.LoadType", "DnsImpact"),
         load_type, NavigationState::kLoadTypeMax);
     switch (load_type) {
       case NavigationState::NORMAL_LOAD:
@@ -4296,6 +4309,45 @@ void RenderView::DumpLoadHistograms() const {
       case NavigationState::LINK_LOAD_CACHE_STALE_OK:
         UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
             "Renderer4.BeginToFinish_LinkLoadStaleOk", "DnsImpact"),
+            begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
+            kBeginToFinishBucketCount);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static bool use_packet_split_histogram(FieldTrialList::Find("PacketSplit") &&
+      !FieldTrialList::Find("PacketSplit")->group_name().empty());
+  if (use_packet_split_histogram) {
+    UMA_HISTOGRAM_ENUMERATION(
+        FieldTrial::MakeName("Renderer4.Abandoned", "PacketSplit"),
+        abandoned_page ? 1 : 0, 2);
+    UMA_HISTOGRAM_ENUMERATION(
+        FieldTrial::MakeName("Renderer4.LoadType", "PacketSplit"),
+        load_type, NavigationState::kLoadTypeMax);
+    switch (load_type) {
+      case NavigationState::NORMAL_LOAD:
+        UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
+            "Renderer4.BeginToFinish_NormalLoad", "PacketSplit"),
+            begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
+            kBeginToFinishBucketCount);
+        break;
+      case NavigationState::LINK_LOAD_NORMAL:
+        UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
+            "Renderer4.BeginToFinish_LinkLoadNormal", "PacketSplit"),
+            begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
+            kBeginToFinishBucketCount);
+        break;
+      case NavigationState::LINK_LOAD_RELOAD:
+        UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
+            "Renderer4.BeginToFinish_LinkLoadReload", "PacketSplit"),
+            begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
+            kBeginToFinishBucketCount);
+        break;
+      case NavigationState::LINK_LOAD_CACHE_STALE_OK:
+        UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
+            "Renderer4.BeginToFinish_LinkLoadStaleOk", "PacketSplit"),
             begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
             kBeginToFinishBucketCount);
         break;
