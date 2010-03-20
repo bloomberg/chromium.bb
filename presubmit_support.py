@@ -34,14 +34,14 @@ import unittest  # Exposed through the API.
 import urllib2  # Exposed through the API.
 import warnings
 
-# json may not be available.
 try:
   import simplejson as json
 except ImportError:
   try:
     import json
   except ImportError:
-    json = None
+    # Import the one included in depot_tools.
+    import third_party.simplejson as json
 
 # Local imports.
 import gcl
