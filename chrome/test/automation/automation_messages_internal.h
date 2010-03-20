@@ -1161,7 +1161,14 @@ IPC_BEGIN_MESSAGES(Automation)
                              FilePath /* root directory of extension */,
                              AutomationMsg_ExtensionResponseValues)
 
-  // Retrieves a list of the root directories of all enabled extensions.
+  // Retrieves a list of the root directories of all enabled extensions
+  // that have been installed into Chrome by dropping a .crx file onto
+  // Chrome or an equivalent action.  Other types of extensions are not
+  // included on the list (e.g. "component" extensions, "external"
+  // extensions or extensions loaded via --load-extension since the first
+  // two are generally not useful for testing (e.g. an external extension
+  // could mess with an automated test if it's present on some systems only)
+  // and the last would generally be explicitly loaded by tests.
   IPC_SYNC_MESSAGE_ROUTED0_1(AutomationMsg_GetEnabledExtensions,
                              std::vector<FilePath>)
 

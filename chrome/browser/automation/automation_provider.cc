@@ -2495,7 +2495,9 @@ void AutomationProvider::GetEnabledExtensions(
     for (size_t i = 0; i < extensions->size(); ++i) {
       Extension* extension = (*extensions)[i];
       DCHECK(extension);
-      result->push_back(extension->path());
+      if (extension->location() == Extension::INTERNAL) {
+        result->push_back(extension->path());
+      }
     }
   }
 }
