@@ -504,7 +504,7 @@ void SetButtonTriggersNavigation(GtkWidget* button) {
 }
 
 int MirroredLeftPointForRect(GtkWidget* widget, const gfx::Rect& bounds) {
-  if (base::i18n::IsRTL())
+  if (!base::i18n::IsRTL())
     return bounds.x();
   return widget->allocation.width - bounds.x() - bounds.width();
 }
