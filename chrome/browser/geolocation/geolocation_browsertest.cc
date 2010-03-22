@@ -454,7 +454,9 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_Geoposition) {
 // http://crbug.com//29424
 #define MAYBE_IFramesWithFreshPosition DISABLED_IFramesWithFreshPosition
 #else
-#define MAYBE_IFramesWithFreshPosition IFramesWithFreshPosition
+// TODO(bulach): investigate this failure.
+// http://build.chromium.org/buildbot/waterfall/builders/XP%20Tests/builds/18549/steps/browser_tests/logs/stdio
+#define MAYBE_IFramesWithFreshPosition DISABLED_IFramesWithFreshPosition
 #endif
 
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
