@@ -1,0 +1,375 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <!-- Copyright 2009 Google Inc.  All rights reserved. -->
+  <head>
+    <title> SRPC Plugin Properties Test </title>
+    <META HTTP-EQUIV="Pragma" CONTENT="no-cache">
+    <META HTTP-EQUIV="Expires" CONTENT="-1">
+    <style type="text/css">
+      td.notrun { background-color: skyblue }
+      td.pass { background-color: lime }
+      td.fail { background-color: red }
+    </style>
+    <script type="application/x-javascript">
+      //<![CDATA[
+// The count of failing tests.  Set from the queue length and decremented
+// whenever a test passes.
+var failing_count;
+
+// The queue of small tests.
+var testQueue = [ ];
+var appendTest = function(test_descr) {
+  testQueue[testQueue.length] = test_descr;
+}
+
+var expectPass = function(element, has_return, fp) {
+  appendTest(new Array('pass', element, has_return, fp));
+}
+
+var expectFail = function(element, fp) {
+  appendTest(new Array('fail', element, fp));
+}
+
+var PluginProperties = function() {
+  // TODO(gregoryd, sehr): remove the check when the tests pass on Chrome.
+  var is_chrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
+  // Test the properties of plugin instances.
+  if (!is_chrome) {
+    // Attempt to set height with invalid type.
+    expectFail('plugin_height_null',
+               function() {
+                 server.height = undefined;
+               });
+    expectFail('plugin_height_string',
+               function() {
+                 server.height = 'string';
+               });
+    expectFail('plugin_height_object',
+               function() {
+                 server.height = new Array(10);
+               });
+  }
+  // Attempt to set height to a valid type.
+  expectFail('plugin_height_conforming',
+             false,
+             function() {
+               server.height = 100;
+             });
+  if (!is_chrome) {
+    // Attempt to set width with invalid type.
+    expectFail('plugin_width_null',
+               function() {
+                 server.width = undefined;
+               });
+    expectFail('plugin_width_string',
+               function() {
+                 server.width = 'string';
+               });
+    expectFail('plugin_width_object',
+               function() {
+                 server.width = new Array(10);
+               });
+  }
+  // Attempt to set width to a valid type.
+  expectPass('plugin_width_conforming',
+             false,
+             function() {
+               server.width = 100;
+             });
+  if (!is_chrome) {
+    // Attempt to set videoUpdateMode with invalid type.
+    expectFail('plugin_video_null',
+               function() {
+                 server.videoUpdateMode = undefined;
+               });
+    expectFail('plugin_video_string',
+               function() {
+                 server.videoUpdateMode = 'string';
+               });
+    expectFail('plugin_video_object',
+               function() {
+                 server.videoUpdateMode = new Array(10);
+               });
+  }
+  // Attempt to set src to a valid type.
+  expectPass('plugin_video_conforming',
+             false,
+             function() {
+               server.videoUpdateMode = 1;
+             });
+  if (!is_chrome) {
+    // Attempt to set src with invalid type.
+    expectFail('plugin_src_null',
+               function() {
+                 server.src = undefined;
+               });
+    expectFail('plugin_src_integer',
+               function() {
+                 server.src = 100;
+               });
+    expectFail('plugin_src_object',
+               function() {
+                 server.src = new Array(10);
+               });
+  }
+  // Attempt to set src to a valid type.
+  expectPass('plugin_src_conforming',
+             false,
+             function() {
+               server.src = 'srpc_nrd_client.nexe';
+             });
+}
+
+// The test run functions.
+var SetTestResult = function(element_id, result) {
+  var element = document.getElementById(element_id);
+  element.className = result;
+}
+
+var testExpectedPass = function(element, has_return, fp) {
+  var result = undefined;
+  try {
+    result = fp();
+    if (has_return && (undefined == result)) {
+      SetTestResult(element, 'fail');
+    } else {
+      SetTestResult(element, 'pass');
+      --failing_count;
+    }
+  } catch (string) {
+    SetTestResult(element, 'fail');
+  }
+}
+
+var testExpectedFail = function(element, fp) {
+  var result = undefined;
+  try {
+    result = fp();
+    SetTestResult(element, 'fail');
+  } catch (string) {
+    if (undefined == result) {
+      SetTestResult(element, 'pass');
+      --failing_count;
+    } else {
+      SetTestResult(element, 'fail');
+    }
+  }
+}
+
+var RunAllTests = function() {
+  var i;
+  var len = testQueue.length;
+  // All tests are considered failure until they have run successfully.
+  // This catches runs that end prematurely.
+  failing_count = len;
+  for (i = 0; i < len; ++i) {
+    var test_descr = testQueue[i];
+    if ('pass' == test_descr[0]) {
+      testExpectedPass(test_descr[1], test_descr[2], test_descr[3]);
+    } else {
+      testExpectedFail(test_descr[1], test_descr[2]);
+    }
+  }
+  if (0 == failing_count) {
+    // Set the magic Selenium variable to signal success.
+    document.cookie = 'status=OK';
+  }
+}
+
+var EnqueueAndRunTests = function() {
+  // Plugin properties.
+  // Enqueue the tests.
+  PluginProperties();
+  // Run them all.
+  RunAllTests();
+}
+      //]]>
+    </script>
+  </head>
+  <body onload="nacllib.waitForModulesAndRunTests();"
+        onunload="nacllib.cleanUp();" >
+    <h1> SRPC Plugin Properties Test </h1>
+    <table cellspacing=5 cellpadding=5 border=5 summary="Test status table">
+      <tr>
+        <td>
+        </td>
+        <td>
+          <b> height </b>
+        </td>
+        <td>
+          <b> width </b>
+        </td>
+        <td>
+          <b> videoUpdateMode  </b>
+        </td>
+        <td>
+          <b> src  </b>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <b> Argument type tests </b>
+        </td>
+        <td valign=top>
+          <table summary="Height tests">
+            <tr>
+              <td id="plugin_height_null" class="notrun">
+                undefined
+              </td>
+            </tr>
+            <tr>
+              <td id="plugin_height_string" class="notrun">
+                string
+              </td>
+            </tr>
+            <tr>
+              <td id="plugin_height_object" class="notrun">
+                object
+              </td>
+            </tr>
+          </table>
+        </td>
+        <td valign=top>
+          <table summary="Width tests">
+            <tr>
+              <td id="plugin_width_null" class="notrun">
+                undefined
+              </td>
+            </tr>
+            <tr>
+              <td id="plugin_width_string" class="notrun">
+                string
+              </td>
+            </tr>
+            <tr>
+              <td id="plugin_width_object" class="notrun">
+                object
+              </td>
+            </tr>
+          </table>
+        </td>
+        <td valign=top>
+          <table summary="Video tests">
+            <tr>
+              <td id="plugin_video_null" class="notrun">
+                undefined
+              </td>
+            </tr>
+            <tr>
+              <td id="plugin_video_string" class="notrun">
+                string
+              </td>
+            </tr>
+            <tr>
+              <td id="plugin_video_object" class="notrun">
+                object
+              </td>
+            </tr>
+          </table>
+        </td>
+        <td valign=top>
+          <table summary="src tests">
+            <tr>
+              <td id="plugin_src_null" class="notrun">
+                undefined
+              </td>
+            </tr>
+            <tr>
+              <td id="plugin_src_integer" class="notrun">
+                integer
+              </td>
+            </tr>
+            <tr>
+              <td id="plugin_src_object" class="notrun">
+                object
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <b> Expected behavior </b>
+        </td>
+        <td valign=top>
+          <table summary="Height conforming test">
+            <tr>
+              <td id="plugin_height_conforming" class="notrun">
+                integer
+              </td>
+            </tr>
+          </table>
+        </td>
+        <td valign=top>
+          <table summary="Width conforming test">
+            <tr>
+              <td id="plugin_width_conforming" class="notrun">
+                integer
+              </td>
+            </tr>
+          </table>
+        </td>
+        <td valign=top>
+          <table summary="Video conforming test">
+            <tr>
+              <td id="plugin_video_conforming" class="notrun">
+                integer
+              </td>
+            </tr>
+          </table>
+        </td>
+        <td valign=top>
+          <table summary="src conforming test">
+            <tr>
+              <td id="plugin_src_conforming" class="notrun">
+                string
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+
+    <table summary="The color codes used for identifying test outcomes">
+      <tr> <td align="center"> <em> Legend </em> </td> </tr>
+      <tr> <td align="center" class="notrun"> Test not run </td> </tr>
+      <tr> <td align="center" class="pass"> Test passed </td> </tr>
+      <tr> <td align="center" class="fail"> Test failed </td> </tr>
+    </table>
+    <p>
+    <b>
+      NOTE: Some versions of some WebKit-based browsers do not correctly report
+      JavaScript exceptions raised by NPAPI plugins.  This can cause some of
+      the above tests to spuriously report failure.
+    </b>
+    </p>
+
+    <div id=status>NO-STATUS</div>
+
+    <embed type="application/x-nacl-srpc" id="nacl_server" name="nacl_module"
+            width="0" height="0" src="srpc_test.nexe" />
+
+    <script type="text/javascript" src="nacl_js_lib.js"></script>
+    <script type="text/javascript">
+      //<![CDATA[
+      var nacllib = new NaclLib(document.getElementsByName("nacl_module"),
+                                document.getElementById("status"),
+                                100);
+
+      nacllib.test = function() {
+        server = document.getElementById("nacl_server");
+        EnqueueAndRunTests();
+        if (0 == testQueue.length) {
+          return "No tests run.";
+        } else if (0 != failing_count) {
+          return "Tests failed.";
+        } else {
+          return "";
+        }
+      }
+      //]]>
+    </script>
+  </body>
+</html>

@@ -1,0 +1,767 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <!-- Copyright 2009 Google Inc.  All rights reserved. -->
+  <head>
+    <title> SRPC Shared Memory API Test </title>
+    <META HTTP-EQUIV="Pragma" CONTENT="no-cache">
+    <META HTTP-EQUIV="Expires" CONTENT="-1">
+    <style type="text/css">
+      td.notrun { background-color: skyblue }
+      td.pass { background-color: lime }
+      td.fail { background-color: red }
+    </style>
+    <script type="application/x-javascript">
+      //<![CDATA[
+var SetTestResult = function(element_id, result) {
+  var element = document.getElementById(element_id);
+  element.className = result;
+}
+
+// The NaCl module.  Used to produce handles and for __shmFactory invocations.
+var server;
+// All shared memory regions will have this size.
+var shm_size = 65536;
+// Handle to a shared memory object returned by a NaCl module
+var nacl_shm_handle;
+// Shared memory object resulting from mapping a handle from a NaCl module.
+var nacl_shm;
+// A mapped shared memory object created by the __shmFactory method.
+var factory_shm;
+// The epitome of a test string.
+var test_str = 'Hello, world.';
+// The test string's length.
+var str_len = test_str.length;
+// The count of failing tests.  Set from the queue length, and decremented
+// whenever a test passes.
+var failing_count;
+
+// The queue of small tests.
+var testQueue = [ ];
+var appendTest = function(test_descr) {
+  testQueue[testQueue.length] = test_descr;
+}
+
+var expectPass = function(element, has_return, fp) {
+  appendTest(new Array('pass', element, has_return, fp));
+}
+
+var expectFail = function(element, fp) {
+  appendTest(new Array('fail', element, fp));
+}
+
+var SharedMemoryFactory = function() {
+  // Test the creation of shared memory objects.
+  // Attempt to create with the wrong number of parameters.
+  expectFail('factory_too_few',
+             function() {
+               return server.__shmFactory();
+             });
+  expectFail('factory_too_many',
+             function() {
+               return server.__shmFactory(shm_size, 'extra');
+             });
+  // Attempt to create a shared memory region with size of invalid type.
+  expectFail('factory_size_null',
+             function() {
+               return server.__shmFactory(undefined);
+             });
+  expectFail('factory_size_string',
+             function() {
+               return server.__shmFactory('string');
+             });
+  expectFail('factory_size_object',
+             function() {
+               return server.__shmFactory(new Array(10));
+             });
+  // Attempt to create a shared memory region with an invalid size.
+  expectFail('factory_size_invalid',
+             function() {
+               return server.__shmFactory(-1);
+             });
+  // Attempt to create a shared memory region with a valid size.
+  expectPass('factory_conforming',
+             true,
+             function() {
+               return server.__shmFactory(shm_size);
+             });
+}
+
+var SharedMemoryMaps = function() {
+  // Test the map method of a handle object.
+  // Get a handle to an invalid shared memory object from a NaCl module.
+  expectPass('map_invalid',
+             true,
+             function() {
+               return server.get_invalid_handle();
+             });
+  // Attempt to map with the wrong number of parameters.
+  expectFail('map_too_many',
+             function() {
+               nacl_shm_handle.map(1);
+             });
+  // Attempt to map with the correct number of parameters.
+  expectPass('map_valid',
+             true,
+             function() {
+               return nacl_shm_handle.map();
+             });
+  // Attempt to write to a negative offset.
+  expectFail('map_offset_neg',
+             function() {
+               nacl_shm.write(-1, str_len, test_str);
+             });
+  // Attempt to write to an offset larger than the region size.
+  expectFail('map_offset_big',
+             function() {
+               nacl_shm.write(shm_size, str_len, test_str);
+             });
+  // Attempt to write with a negative length.
+  expectFail('map_length_neg',
+             function() {
+               nacl_shm.write(0, -1, test_str);
+             });
+  // Attempt to write with a length larger than the region size.
+  expectFail('map_length_big',
+             function() {
+               nacl_shm.write(0, str_len + 1, test_str);
+             });
+  // Attempt to write to a valid offset.
+  expectPass('map_conforming', false,
+             function() {
+               nacl_shm.write(0, str_len, test_str);
+             });
+}
+
+var SharedMemoryWrites = function() {
+  // Test the write method.
+  // Attempt to write with the wrong number of parameters.
+  expectFail('write_too_few',
+             function() {
+               factory_shm.write(0, str_len);
+             });
+  expectFail('write_too_many',
+             function() {
+               factory_shm.write(0, str_len, test_str, 'extra');
+             });
+  // Attempt to write with a badly typed offset parameter.
+  expectFail('write_offset_null',
+             function() {
+               factory_shm.write(undefined, str_len, test_str);
+             });
+  expectFail('write_offset_string',
+             function() {
+               factory_shm.write('string', str_len, test_str);
+             });
+  expectFail('write_offset_object',
+             function() {
+               factory_shm.write(new Array(10), str_len, test_str);
+             });
+  // Attempt to write to a negative offset.
+  expectFail('write_offset_neg',
+             function() {
+               factory_shm.write(-1, str_len, test_str);
+             });
+  // Attempt to write to an offset larger than the region size.
+  expectFail('write_offset_big',
+             function() {
+               factory_shm.write(shm_size + 1, str_len, test_str);
+             });
+  // Attempt to write with a badly typed length parameter.
+  expectFail('write_length_null',
+             function() {
+               factory_shm.write(0, undefined, test_str);
+             });
+  expectFail('write_length_string',
+             function() {
+               factory_shm.write(0, 'string', test_str);
+             });
+  expectFail('write_length_object',
+             function() {
+               factory_shm.write(0, new Array(10), test_str);
+             });
+  // Attempt to write with a negative length.
+  expectFail('write_length_neg',
+             function() {
+               factory_shm.write(0, -1, test_str);
+             });
+  // Attempt to write with a length larger than the region size.
+  expectFail('write_length_big',
+             function() {
+               factory_shm.write(0, shm_size + 1, test_str);
+             });
+  // Attempt to write with a badly typed string parameter.
+  expectFail('write_string_null',
+             function() {
+               factory_shm.write(0, str_len, undefined);
+             });
+  expectFail('write_string_integer',
+             function() {
+               factory_shm.write(0, str_len, 10);
+             });
+  expectFail('write_string_object',
+             function() {
+               factory_shm.write(0, str_len, new Array(10));
+             });
+  // Attempt to write overlapping the end of the region.
+  expectFail('write_overlap',
+             function() {
+               factory_shm.write(shm_size - str_len + 1, str_len, test_str);
+             });
+  // Attempt to write with string.length != length.
+  expectFail('write_length_mismatch',
+             function() {
+               factory_shm.write(0, str_len + 1, test_str);
+             });
+  // Attempt a valid write.  This should pass.
+  expectPass('write_conforming',
+             false,
+             function() {
+               factory_shm.write(0, str_len, test_str);
+             });
+}
+
+var SharedMemoryReads = function() {
+  // Test the read method.
+  // Attempt to read with the wrong number of parameters.
+  expectFail('read_too_few',
+             function() {
+               return factory_shm.read(0);
+             });
+  expectFail('read_too_many',
+             function() {
+               return factory_shm.read(0, str_len, 'extra');
+             });
+  // Attempt to read with a badly typed offset parameter.
+  expectFail('read_offset_null',
+             function() {
+               return factory_shm.read(undefined, str_len);
+             });
+  expectFail('read_offset_string',
+             function() {
+               return factory_shm.read('string', str_len);
+             });
+  expectFail('read_offset_object',
+             function() {
+               return factory_shm.read(new Array(10), str_len);
+             });
+  // Attempt to read from a negative offset.
+  expectFail('read_offset_neg',
+             function() {
+               return factory_shm.read(-1, str_len);
+             });
+  // Attempt to read from an offset larger than the region size.
+  expectFail('read_offset_big',
+             function() {
+               return factory_shm.read(shm_size + 1, str_len);
+             });
+  // Attempt to read with a badly typed length parameter.
+  expectFail('read_length_null',
+             function() {
+               return factory_shm.read(0, undefined);
+             });
+  expectFail('read_length_string',
+             function() {
+               return factory_shm.read(0, 'string');
+             });
+  expectFail('read_length_object',
+             function() {
+               return factory_shm.read(0, new Array(10));
+             });
+  // Attempt to read with a negative length.
+  expectFail('read_length_neg',
+             function() {
+               return factory_shm.read(0, -1);
+             });
+  // Attempt to read with a length larger than the region size.
+  expectFail('read_length_big',
+             function() {
+               return factory_shm.read(0, shm_size + 1);
+             });
+  // Attempt to read overlapping the end of the region.
+  expectFail('read_overlap',
+             function() {
+               return factory_shm.read(shm_size - str_len + 1, str_len);
+             });
+  // Attempt a valid read, and ensure return is correct.  This should pass.
+  expectPass('read_conforming',
+             true,
+             function() {
+               return factory_shm.read(0, str_len);
+             });
+}
+
+// The test run functions.
+var testExpectedPass = function(element, has_return, fp) {
+  var result = undefined;
+  try {
+    result = fp();
+    if (has_return && (undefined == result)) {
+      SetTestResult(element, 'fail');
+    } else {
+      SetTestResult(element, 'pass');
+      --failing_count;
+    }
+  } catch (string) {
+    SetTestResult(element, 'fail');
+  }
+}
+
+var testExpectedFail = function(element, fp) {
+  var result = undefined;
+  try {
+    result = fp();
+    SetTestResult(element, 'fail');
+  } catch (string) {
+    if (undefined == result) {
+      SetTestResult(element, 'pass');
+      --failing_count;
+    } else {
+      SetTestResult(element, 'fail');
+    }
+  }
+}
+
+var RunAllTests = function() {
+  var i;
+  var len = testQueue.length;
+  // All tests are considered failure until they have run successfully.
+  // This catches runs that end prematurely.
+  failing_count = len;
+  for (i = 0; i < len; ++i) {
+    var test_descr = testQueue[i];
+    if ('pass' == test_descr[0]) {
+      testExpectedPass(test_descr[1], test_descr[2], test_descr[3]);
+    } else {
+      testExpectedFail(test_descr[1], test_descr[2]);
+    }
+  }
+  if (0 == failing_count) {
+    // Set the magic Selenium variable to signal success.
+    document.cookie = 'status=OK';
+  }
+}
+
+var EnqueueAndRunTests = function() {
+  // Setup -- abort entire test if this fails.
+  try {
+    nacl_shm_handle = server.get_shm_handle(shm_size);
+    nacl_shm = server.get_shm_handle(shm_size).map();
+    factory_shm = server.__shmFactory(shm_size);
+  } catch (string) {
+    window.alert('Memory Maps test setup failed.');
+    return;
+  }
+  // Enqueue the tests.
+  SharedMemoryFactory();
+  SharedMemoryMaps();
+  SharedMemoryWrites();
+  SharedMemoryReads();
+  // Run them all.
+  RunAllTests();
+}
+      //]]>
+    </script>
+  </head>
+  <body onload="nacllib.waitForModulesAndRunTests();"
+        onunload="nacllib.cleanUp();" >
+    <h1> SRPC Shared Memory API Test </h1>
+    <table cellspacing=5 cellpadding=5 border=5 summary="Test status table">
+      <tr>
+        <td>
+        </td>
+        <td>
+          <b> __shmFactory tests </b>
+        </td>
+        <td>
+          <b> handle mapping tests </b>
+        </td>
+        <td>
+          <b> write method tests </b>
+        </td>
+        <td>
+          <b> read method tests </b>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <b> Argument count tests </b>
+        </td>
+        <td valign=top>
+          <table summary="Factory arugments tests">
+            <tr>
+              <td id="factory_too_few" class="notrun">
+                argc: too few
+              </td>
+            </tr>
+            <tr>
+              <td id="factory_too_many" class="notrun">
+                argc: too many
+              </td>
+            </tr>
+          </table>
+        </td>
+        <td>
+          <table summary="Map arguments test">
+            <tr>
+              <td id="map_too_many" class="notrun">
+                argc: too many
+              </td>
+            </tr>
+          </table>
+        </td>
+        <td>
+          <table summary="Write argument tests">
+            <tr>
+              <td id="write_too_few" class="notrun">
+                argc: too few
+              </td>
+            </tr>
+            <tr>
+              <td id="write_too_many" class="notrun">
+                argc: too many
+              </td>
+            </tr>
+          </table>
+        </td>
+        <td>
+          <table summary="Read arguments tests">
+            <tr>
+              <td id="read_too_few" class="notrun">
+                argc: too few
+              </td>
+            </tr>
+            <tr>
+              <td id="read_too_many" class="notrun">
+                argc: too many
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <b> Argument type tests </b>
+        </td>
+        <td valign=top>
+          <table summary="Factory size tests">
+            <tr>
+              <td id="factory_size_null" class="notrun">
+                arg[0]: (size) undefined
+              </td>
+            </tr>
+            <tr>
+              <td id="factory_size_string" class="notrun">
+                arg[0]: (size) string
+              </td>
+            </tr>
+            <tr>
+              <td id="factory_size_object" class="notrun">
+                arg[0]: (size) object
+              </td>
+            </tr>
+          </table>
+        </td>
+        <td valign=top>
+        </td>
+        <td valign=top>
+          <table summary="Write offset tests">
+            <tr>
+              <td id="write_offset_null" class="notrun">
+                arg[0]: (offset) undefined
+              </td>
+            </tr>
+            <tr>
+              <td id="write_offset_string" class="notrun">
+                arg[0]: (offset) string
+              </td>
+            </tr>
+            <tr>
+              <td id="write_offset_object" class="notrun">
+                arg[0]: (offset) object
+              </td>
+            </tr>
+            <tr>
+              <td id="write_length_null" class="notrun">
+                arg[1]: (length) undefined
+              </td>
+            </tr>
+            <tr>
+              <td id="write_length_string" class="notrun">
+                arg[1]: (length) string
+              </td>
+            </tr>
+            <tr>
+              <td id="write_length_object" class="notrun">
+                arg[1]: (length) object
+              </td>
+            </tr>
+            <tr>
+              <td id="write_string_null" class="notrun">
+                arg[2]: (string) undefined
+              </td>
+            </tr>
+            <tr>
+              <td id="write_string_integer" class="notrun">
+                arg[2]: (string) integer
+              </td>
+            </tr>
+            <tr>
+              <td id="write_string_object" class="notrun">
+                arg[2]: (string) object
+              </td>
+            </tr>
+          </table>
+        </td>
+        <td valign=top>
+          <table summary="Read offset tests">
+            <tr>
+              <td id="read_offset_null" class="notrun">
+                arg[0]: (offset) undefined
+              </td>
+            </tr>
+            <tr>
+              <td id="read_offset_string" class="notrun">
+                arg[0]: (offset) string
+              </td>
+            </tr>
+            <tr>
+              <td id="read_offset_object" class="notrun">
+                arg[0]: (offset) object
+              </td>
+            </tr>
+            <tr>
+              <td id="read_length_null" class="notrun">
+                arg[1]: (length) undefined
+              </td>
+            </tr>
+            <tr>
+              <td id="read_length_string" class="notrun">
+                arg[1]: (length) string
+              </td>
+            </tr>
+            <tr>
+              <td id="read_length_object" class="notrun">
+                arg[1]: (length) object
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <b> Argument range tests </b>
+        </td>
+        <td valign=top>
+          <table summary="Factory invalid size test">
+            <tr>
+              <td id="factory_size_invalid" class="notrun">
+                arg[0]: (size) invalid/negative
+              </td>
+            </tr>
+          </table>
+        </td>
+        <td valign=top>
+          <table summary="Map invalid offset tests">
+            <tr>
+              <td id="map_offset_neg" class="notrun">
+                arg[0]: (offset) negative
+              </td>
+            </tr>
+            <tr>
+              <td id="map_offset_big" class="notrun">
+                arg[0]: (offset) too big
+              </td>
+            </tr>
+            <tr>
+              <td id="map_length_neg" class="notrun">
+                arg[1]: (length) negative
+              </td>
+            </tr>
+            <tr>
+              <td id="map_length_big" class="notrun">
+                arg[1]: (length) too big
+              </td>
+            </tr>
+          </table>
+        </td>
+        <td valign=top>
+          <table summary="Write invalid offset tests">
+            <tr>
+              <td id="write_offset_neg" class="notrun">
+                arg[0]: (offset) negative
+              </td>
+            </tr>
+            <tr>
+              <td id="write_offset_big" class="notrun">
+                arg[0]: (offset) too big
+              </td>
+            </tr>
+            <tr>
+              <td id="write_length_neg" class="notrun">
+                arg[1]: (length) negative
+              </td>
+            </tr>
+            <tr>
+              <td id="write_length_big" class="notrun">
+                arg[1]: (length) too big
+              </td>
+            </tr>
+          </table>
+        </td>
+        <td valign=top>
+          <table summary="Read invalid offset tests">
+            <tr>
+              <td id="read_offset_neg" class="notrun">
+                arg[0]: (offset) negative
+              </td>
+            </tr>
+            <tr>
+              <td id="read_offset_big" class="notrun">
+                arg[0]: (offset) too big
+              </td>
+            </tr>
+            <tr>
+              <td id="read_length_neg" class="notrun">
+                arg[1]: (length) negative
+              </td>
+            </tr>
+            <tr>
+              <td id="read_length_big" class="notrun">
+                arg[1]: (length) too big
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <b> Semantic error tests </b>
+        </td>
+        <td>
+        </td>
+        <td valign=top>
+          <table summary="Invalid map test">
+            <tr>
+              <td id="map_invalid" class="notrun">
+                NaCl module returns invalid handle
+              </td>
+            </tr>
+          </table>
+        </td>
+        <td valign=top>
+          <table summary="Write error tests">
+            <tr>
+              <td id="write_overlap" class="notrun">
+                Write overlaps end of region
+              </td>
+            </tr>
+            <tr>
+              <td id="write_length_mismatch" class="notrun">
+                Length disagrees with str.length
+              </td>
+            </tr>
+          </table>
+        </td>
+        <td valign=top>
+          <table summary="Read error tests">
+            <tr>
+              <td id="read_overlap" class="notrun">
+                Read overlaps end of region
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <b> Expected behavior </b>
+        </td>
+        <td valign=top>
+          <table summary="Factory conforming test">
+            <tr>
+              <td id="factory_conforming" class="notrun">
+                Conforming usage
+              </td>
+            </tr>
+          </table>
+        </td>
+        <td valign=top>
+          <table summary="Map conforming tests">
+            <tr>
+              <td id="map_valid" class="notrun">
+                Conforming invocation of map
+              </td>
+            </tr>
+            <tr>
+              <td id="map_conforming" class="notrun">
+                Conforming write to shared memory
+              </td>
+            </tr>
+          </table>
+        </td>
+        <td valign=top>
+          <table summary="Write conforming test">
+            <tr>
+              <td id="write_conforming" class="notrun">
+                Conforming usage
+              </td>
+            </tr>
+          </table>
+        </td>
+        <td valign=top>
+          <table summary="Read conforming test">
+            <tr>
+              <td id="read_conforming" class="notrun">
+                Conforming usage
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+
+    <table summary="The color codes used for identifying test outcomes">
+      <tr> <td align="center"> <em> Legend </em> </td> </tr>
+      <tr> <td align="center" class="notrun"> Test not run </td> </tr>
+      <tr> <td align="center" class="pass"> Test passed </td> </tr>
+      <tr> <td align="center" class="fail"> Test failed </td> </tr>
+    </table>
+    <p>
+    <b>
+      NOTE: Some versions of some WebKit-based browsers do not correctly report
+      JavaScript exceptions raised by NPAPI plugins.  This can cause some of
+      the above tests to spuriously report failure.
+    </b>
+    </p>
+
+    <div id=status>NO-STATUS</div>
+
+    <embed type="application/x-nacl-srpc" id="nacl_server" name="nacl_module"
+            width="0" height="0" src="srpc_shm.nexe" />
+
+    <script type="text/javascript" src="nacl_js_lib.js"></script>
+    <script type="text/javascript">
+      //<![CDATA[
+      var nacllib = new NaclLib(document.getElementsByName("nacl_module"),
+                                document.getElementById("status"),
+                                100);
+
+      nacllib.test = function() {
+        server = document.getElementById("nacl_server");
+        EnqueueAndRunTests();
+        if (0 == testQueue.length) {
+          return "No tests run.";
+        } else if (0 != failing_count) {
+          return "Tests failed.";
+        } else {
+          return "";
+        }
+      }
+      //]]>
+    </script>
+  </body>
+</html>

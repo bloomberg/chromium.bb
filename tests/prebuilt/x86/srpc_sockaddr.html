@@ -1,0 +1,416 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <!-- Copyright 2009 Google Inc.  All rights reserved. -->
+  <head>
+    <title> SRPC Socket Address API Test </title>
+    <META HTTP-EQUIV="Pragma" CONTENT="no-cache">
+    <META HTTP-EQUIV="Expires" CONTENT="-1">
+    <style type="text/css">
+      td.notrun { background-color: skyblue }
+      td.pass { background-color: lime }
+      td.fail { background-color: red }
+    </style>
+    <script type="application/x-javascript">
+      //<![CDATA[
+var SetTestResult = function(element_id, result) {
+  var element = document.getElementById(element_id);
+  element.className = result;
+}
+
+// The NaCl module.  Used to produce handles and for __shmFactory invocations.
+var server;
+// The default socket address for the plugin.
+var default_addr;
+// The address string of the default socket address for the plugin.
+var addr_str;
+// The count of failing tests.  Set from the queue length, and decremented
+// whenever a test passes.
+var failing_count;
+
+// The queue of small tests.
+var testQueue = [ ];
+var appendTest = function(test_descr) {
+  testQueue[testQueue.length] = test_descr;
+}
+
+var expectPass = function(element, has_return, fp) {
+  appendTest(new Array('pass', element, has_return, fp));
+}
+
+var expectFail = function(element, fp) {
+  appendTest(new Array('fail', element, fp));
+}
+
+var DefaultSocketAddress = function() {
+  // Test the creation of socket address objects.
+  // Attempt to retrieve with the wrong number of parameters.
+  expectFail('default_too_many',
+             function() {
+               return server.__defaultSocketAddress('extra');
+             });
+  // Attempt to get the default socket address.
+  expectPass('default_conforming',
+             true,
+             function() {
+               return server.__defaultSocketAddress();
+             });
+  // Attempt to get the string form of the socket address.
+  expectPass('default_tostring',
+             true,
+             function() {
+               var sockaddr = server.__defaultSocketAddress();
+               if (sockaddr.toString() == addr_str) {
+                 return true;
+               }
+               // undefined return will trigger failure.
+               return server.__defaultSocketAddress().toString();
+             });
+}
+
+var SocketAddressFactory = function() {
+  // Test the creation of socket address objects.
+  // Attempt to create with the wrong number of parameters.
+  expectFail('factory_too_few',
+             function() {
+               return server.__socketAddressFactory();
+             });
+  expectFail('factory_too_many',
+             function() {
+               return server.__socketAddressFactory(addr_str, 'extra');
+             });
+  // Attempt to create a shared memory region with size of invalid type.
+  expectFail('factory_null',
+             function() {
+               return server.__socketAddressFactory(undefined);
+             });
+  expectFail('factory_integer',
+             function() {
+               return server.__socketAddressFactory(1);
+             });
+  expectFail('factory_object',
+             function() {
+               return server.__socketAddressFactory(new Array(10));
+             });
+  // Attempt to create a socket address with a valid string.
+  expectPass('factory_conforming',
+             true,
+             function() {
+               return server.__socketAddressFactory(addr_str);
+             });
+  // Check that toString returns the string used to create the address.
+  expectPass('factory_tostring',
+             true,
+             function() {
+               var sockaddr = server.__socketAddressFactory(addr_str);
+               if (sockaddr.toString() == addr_str) {
+                 return true;
+               }
+               // undefined return will trigger failure.
+             });
+}
+
+var Connect = function() {
+  // Test connection to socket address objects.
+  // Attempt to create with the wrong number of parameters.
+  expectFail('connect_too_many',
+             function() {
+               return default_addr.connect('extra');
+             });
+  expectFail('connect_invalid',
+             function() {
+               // There's a slight chance this is a valid address, I suppose.
+               var sockaddr = server.__socketAddressFactory('abcd');
+               return sockaddr.connect();
+             });
+  // Attempt to connect to the default socket address.
+  expectPass('connect_default',
+             true,
+             function() {
+               return default_addr.connect();
+             });
+  // Attempt to connect to a created socket address.
+  expectPass('connect_sockaddr',
+             true,
+             function() {
+               var sockaddr = server.__socketAddressFactory(addr_str);
+               return sockaddr.connect();
+             });
+  // Attempt to connect to a socket address returned from a NaCl module.
+  expectPass('connect_nacl',
+             true,
+             function() {
+               var sockaddr = server.start_server();
+               return sockaddr.connect();
+             });
+}
+
+// The test run functions.
+var testExpectedPass = function(element, has_return, fp) {
+  var result = undefined;
+  try {
+    result = fp();
+    if (has_return && (undefined == result)) {
+      SetTestResult(element, 'fail');
+    } else {
+      SetTestResult(element, 'pass');
+      --failing_count;
+    }
+  } catch (string) {
+    SetTestResult(element, 'fail');
+  }
+}
+
+var testExpectedFail = function(element, fp) {
+  var result = undefined;
+  try {
+    result = fp();
+    SetTestResult(element, 'fail');
+  } catch (string) {
+    if (undefined == result) {
+      SetTestResult(element, 'pass');
+      --failing_count;
+    } else {
+      SetTestResult(element, 'fail');
+    }
+  }
+}
+
+var RunAllTests = function() {
+  var i;
+  var len = testQueue.length;
+  // All tests are considered failure until they have run successfully.
+  // This catches runs that end prematurely.
+  failing_count = len;
+  for (i = 0; i < len; ++i) {
+    var test_descr = testQueue[i];
+    if ('pass' == test_descr[0]) {
+      testExpectedPass(test_descr[1], test_descr[2], test_descr[3]);
+    } else {
+      testExpectedFail(test_descr[1], test_descr[2]);
+    }
+  }
+  if (0 == failing_count) {
+    // Set the magic Selenium variable to signal success.
+    document.cookie = 'status=OK';
+  }
+}
+
+var EnqueueAndRunTests = function() {
+  // Setup -- abort entire test if this fails.
+  try {
+    // If these fail at the beginning, all the tests will abort.
+    // Otherwise more specific tests are done on them.
+    default_addr = server.__defaultSocketAddress();
+    addr_str = default_addr.toString();
+  } catch (string) {
+    window.alert('Socket address test setup failed.');
+    return;
+  }
+  // Enqueue the tests.
+  DefaultSocketAddress();
+  SocketAddressFactory();
+  Connect();
+  // Run them all.
+  RunAllTests();
+}
+      //]]>
+    </script>
+  </head>
+  <body onload="nacllib.waitForModulesAndRunTests();"
+        onunload="nacllib.cleanUp();" >
+    <h1> SRPC Socket Address API Test </h1>
+    <table cellspacing=5 cellpadding=5 border=5 summary="Test status table">
+      <tr>
+        <td>
+        </td>
+        <td>
+          <b> __defaultSocketAddress tests </b>
+        </td>
+        <td>
+          <b> __socketAddressFactory tests </b>
+        </td>
+        <td>
+          <b> connect tests </b>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <b> Argument count tests </b>
+        </td>
+        <td>
+          <table summary="Default argument count test">
+            <tr>
+              <td id="default_too_many" class="notrun">
+                argc: too many
+              </td>
+            </tr>
+          </table>
+        </td>
+        <td valign=top>
+          <table summary="Factory argument count tests">
+            <tr>
+              <td id="factory_too_few" class="notrun">
+                argc: too few
+              </td>
+            </tr>
+            <tr>
+              <td id="factory_too_many" class="notrun">
+                argc: too many
+              </td>
+            </tr>
+          </table>
+        </td>
+        <td>
+          <table summary="Connect argument count test">
+            <tr>
+              <td id="connect_too_many" class="notrun">
+                argc: too many
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <b> Argument type tests </b>
+        </td>
+        <td valign=top>
+        </td>
+        <td valign=top>
+          <table summary="Factory argument type tests">
+            <tr>
+              <td id="factory_null" class="notrun">
+                arg[0]: (address) undefined
+              </td>
+            </tr>
+            <tr>
+              <td id="factory_integer" class="notrun">
+                arg[0]: (address) integer
+              </td>
+            </tr>
+            <tr>
+              <td id="factory_object" class="notrun">
+                arg[0]: (address) object
+              </td>
+            </tr>
+          </table>
+        </td>
+        <td valign=top>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <b> Semantic error tests </b>
+        </td>
+        <td>
+        </td>
+        <td>
+        </td>
+        <td>
+          <table summary="Invalid connection test">
+            <tr>
+              <td id="connect_invalid" class="notrun">
+                to bad socket address
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <b> Expected behavior </b>
+        </td>
+        <td valign=top>
+          <table summary="Default behavior tests">
+            <tr>
+              <td id="default_conforming" class="notrun">
+                conforming invocation
+              </td>
+            </tr>
+            <tr>
+              <td id="default_tostring" class="notrun">
+                toString
+              </td>
+            </tr>
+          </table>
+        </td>
+        <td valign=top>
+          <table summary="Factory behavior tests">
+            <tr>
+              <td id="factory_conforming" class="notrun">
+                conforming invocation
+              </td>
+            </tr>
+            <tr>
+              <td id="factory_tostring" class="notrun">
+                toString
+              </td>
+            </tr>
+          </table>
+        </td>
+        <td valign=top>
+          <table summary="Connection behavior tests">
+            <tr>
+              <td id="connect_default" class="notrun">
+                to default
+              </td>
+            </tr>
+            <tr>
+              <td id="connect_sockaddr" class="notrun">
+                to JavaScript-created address
+              </td>
+            </tr>
+            <tr>
+              <td id="connect_nacl" class="notrun">
+                to address returned from NaCl
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+
+    <table summary="The color codes used for identifying test outcomes">
+      <tr> <td align="center"> <em> Legend </em> </td> </tr>
+      <tr> <td align="center" class="notrun"> Test not run </td> </tr>
+      <tr> <td align="center" class="pass"> Test passed </td> </tr>
+      <tr> <td align="center" class="fail"> Test failed </td> </tr>
+    </table>
+    <p>
+    <b>
+      NOTE: Some versions of some WebKit-based browsers do not correctly report
+      JavaScript exceptions raised by NPAPI plugins.  This can cause some of
+      the above tests to spuriously report failure.
+    </b>
+    </p>
+
+    <div id=status>NO-STATUS</div>
+
+    <embed type="application/x-nacl-srpc" id="nacl_server" name="nacl_module"
+            width="0" height="0" src="srpc_nrd_server.nexe" />
+
+    <script type="text/javascript" src="nacl_js_lib.js"></script>
+    <script type="text/javascript">
+      //<![CDATA[
+      var nacllib = new NaclLib(document.getElementsByName("nacl_module"),
+                                document.getElementById("status"),
+                                100);
+
+      nacllib.test = function() {
+        server = document.getElementById("nacl_server");
+        EnqueueAndRunTests();
+        if (0 == testQueue.length) {
+          return "No tests run.";
+        } else if (0 != failing_count) {
+          return "Tests failed.";
+        } else {
+          return "";
+        }
+      }
+      //]]>
+    </script>
+  </body>
+</html>

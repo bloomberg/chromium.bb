@@ -1,0 +1,706 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <!-- Copyright 2009 Google Inc.  All rights reserved. -->
+  <head>
+    <title> SRPC Parameter Passing Test </title>
+    <META HTTP-EQUIV="Pragma" CONTENT="no-cache">
+    <META HTTP-EQUIV="Expires" CONTENT="-1">
+    <style type="text/css">
+      td.notrun { background-color: skyblue }
+      td.pass { background-color: lime }
+      td.fail { background-color: red }
+    </style>
+    <script type="application/x-javascript">
+      //<![CDATA[
+var SetTestResult = function(element_id, result) {
+  var element = document.getElementById(element_id);
+  element.className = result;
+}
+
+// The NaCl module.
+var server;
+// The default socket address for the plugin.
+var default_addr;
+// The address string of the default socket address for the plugin.
+var addr_str;
+// The count of failing tests.  Set from the queue length, and decremented
+// whenever a test passes.
+var failing_count;
+
+// The queue of small tests.
+var testQueue = [ ];
+var appendTest = function(test_descr) {
+  testQueue[testQueue.length] = test_descr;
+}
+
+var expectPass = function(element, has_return, fp) {
+  appendTest(new Array('pass', element, has_return, fp));
+}
+
+var expectFail = function(element, fp) {
+  appendTest(new Array('fail', element, fp));
+}
+
+// Tests passing scalar types.
+var ScalarTypes = function() {
+  expectPass('bool_passret',
+             true,
+             function() {
+               if (!server.bool(true) && server.bool(false)) {
+                 return true;
+               }
+             });
+  expectFail('int_as_bool',
+             function() {
+               return server.bool(1);
+             });
+  expectFail('array_as_bool',
+             function() {
+               return server.bool(new Array(10));
+             });
+  expectFail('handle_as_bool',
+             function() {
+               return server.bool(server.__defaultSocketAddress());
+             });
+  expectPass('double_passret',
+             true,
+             function() {
+               var dval = 3.1415;
+               if (server.double(dval) == -dval) {
+                 return true;
+               }
+             });
+  expectFail('bool_as_double',
+             function() {
+               return server.double(true);
+             });
+  expectFail('array_as_double',
+             function() {
+               return server.double(new Array(10));
+             });
+  expectFail('handle_as_double',
+             function() {
+               return server.double(server.__defaultSocketAddress());
+             });
+  expectPass('int_passret',
+             true,
+             function() {
+               var ival = 12345;
+               if (server.int(ival) == -ival) {
+                 return true;
+               }
+             });
+  expectFail('bool_as_int',
+             function() {
+               return server.int(true);
+             });
+  expectFail('array_as_int',
+             function() {
+               return server.int(new Array(10));
+             });
+  expectFail('handle_as_int',
+             function() {
+               return server.int(server.__defaultSocketAddress());
+             });
+}
+
+// Tests passing array types.
+var ArrayTypes = function() {
+  expectPass('chararr_passret',
+             true,
+             function() {
+               var carr = [ 72, 101, 108, 108, 111 ];
+               var ret_arr = server.char_array(carr, 5);
+               if (ret_arr[0] == carr[4] &&
+                   ret_arr[1] == carr[3] &&
+                   ret_arr[2] == carr[2] &&
+                   ret_arr[3] == carr[1] &&
+                   ret_arr[4] == carr[0]) {
+                 return true;
+               }
+             });
+  expectFail('bool_as_char_array',
+             function() {
+               return server.char_array(true);
+             });
+  expectFail('int_as_char_array',
+             function() {
+               return server.char_array(1);
+             });
+  expectFail('double_as_char_array',
+             function() {
+               return server.char_array(1.0);
+             });
+  expectFail('handle_as_char_array',
+             function() {
+               return server.char_array(server.__defaultSocketAddress());
+             });
+  expectPass('doublearr_passret',
+             true,
+             function() {
+               var darr = [ 3.1, 1.4, 4.1, 1.5, 5.9 ];
+               var ret_arr = server.double_array(darr, 5);
+               if (ret_arr[0] == darr[4] &&
+                   ret_arr[1] == darr[3] &&
+                   ret_arr[2] == darr[2] &&
+                   ret_arr[3] == darr[1] &&
+                   ret_arr[4] == darr[0]) {
+                 return true;
+               }
+             });
+  expectFail('bool_as_double_array',
+             function() {
+               return server.double_array(true);
+             });
+  expectFail('int_as_double_array',
+             function() {
+               return server.double_array(1);
+             });
+  expectFail('double_as_double_array',
+             function() {
+               return server.double_array(1.0);
+             });
+  expectFail('handle_as_double_array',
+             function() {
+               return server.double_array(server.__defaultSocketAddress());
+             });
+  expectPass('intarr_passret',
+             true,
+             function() {
+               var iarr = [ 1, 2, 3, 4, 5 ];
+               var ret_arr = server.int_array(iarr, 5);
+               if (ret_arr[0] == iarr[4] &&
+                   ret_arr[1] == iarr[3] &&
+                   ret_arr[2] == iarr[2] &&
+                   ret_arr[3] == iarr[1] &&
+                   ret_arr[4] == iarr[0]) {
+                 return true;
+               }
+             });
+  expectFail('bool_as_int_array',
+             function() {
+               return server.int_array(true);
+             });
+  expectFail('int_as_int_array',
+             function() {
+               return server.int_array(1);
+             });
+  expectFail('double_as_int_array',
+             function() {
+               return server.int_array(1.0);
+             });
+  expectFail('handle_as_int_array',
+             function() {
+               return server.int_array(server.__defaultSocketAddress());
+             });
+}
+
+// Tests passing more complex or special-purpose types.
+var SpecialTypes = function() {
+  expectPass('string_send',
+             true,
+             function() {
+               var str = 'one more test';
+               var ret = server.string(str);
+               if (str.length == ret) {
+                 return true;
+               }
+             });
+  expectPass('string_return',
+             true,
+             function() {
+               var ret = server.stringret(0);
+               if ('string' == typeof(ret)) {
+                 return true;
+               }
+             });
+  expectFail('bool_as_string',
+             function() {
+               return server.string(true);
+             });
+  expectFail('int_as_string',
+             function() {
+               return server.string(1);
+             });
+  expectFail('double_as_string',
+             function() {
+               return server.string(1);
+             });
+  expectFail('array_as_string',
+             function() {
+               var iarr = [ 1, 2, 3, 4, 5 ];
+               return server.string(iarr);
+             });
+  expectPass('handle_send',
+             false,
+             function() {
+               var hnd = server.__defaultSocketAddress();
+               server.handle(hnd);
+             });
+  expectPass('handle_return',
+             true,
+             function() {
+               var ret = server.handleret();
+               if ('object' == typeof(ret)) {
+                 return true;
+               }
+             });
+  expectPass('invalid_handle_return',
+             true,
+             function() {
+               var ret = server.invalid_handle_ret();
+               if ('object' == typeof(ret)) {
+                 return true;
+               }
+             });
+  expectPass('invalid_handle_send',
+             false,
+             function() {
+               var ret = server.invalid_handle_ret();
+               if ('object' == typeof(ret)) {
+                 server.invalid_handle(ret);
+               }
+             });
+  expectFail('bool_as_handle',
+             function() {
+               return server.handle(true);
+             });
+  expectFail('int_as_handle',
+             function() {
+               return server.handle(1);
+             });
+  expectFail('double_as_handle',
+             function() {
+               return server.handle(1);
+             });
+  expectFail('array_as_handle',
+             function() {
+               var iarr = [ 1, 2, 3, 4, 5 ];
+               return server.handle(iarr);
+             });
+}
+
+// Functions to support running each of the tests.
+var testExpectedPass = function(element, has_return, fp) {
+  var result = undefined;
+  try {
+    result = fp();
+    if (has_return && (undefined == result)) {
+      SetTestResult(element, 'fail');
+    } else {
+      SetTestResult(element, 'pass');
+      --failing_count;
+    }
+  } catch (string) {
+    SetTestResult(element, 'fail');
+  }
+}
+
+var testExpectedFail = function(element, fp) {
+  var result = undefined;
+  try {
+    result = fp();
+    SetTestResult(element, 'fail');
+  } catch (string) {
+    if (undefined == result) {
+      SetTestResult(element, 'pass');
+      --failing_count;
+    } else {
+      SetTestResult(element, 'fail');
+    }
+  }
+}
+
+var RunAllTests = function() {
+  var i;
+  var len = testQueue.length;
+  // All tests are considered failure until they have run successfully.
+  // This catches runs that end prematurely.
+  failing_count = len;
+  for (i = 0; i < len; ++i) {
+    var test_descr = testQueue[i];
+    if ('pass' == test_descr[0]) {
+      testExpectedPass(test_descr[1], test_descr[2], test_descr[3]);
+    } else {
+      testExpectedFail(test_descr[1], test_descr[2]);
+    }
+  }
+  if (0 == failing_count) {
+    // Set the magic Selenium variable to signal success.
+    document.cookie = 'status=OK';
+  }
+}
+
+var EnqueueAndRunTests = function() {
+  // Setup -- abort entire test if this fails.
+  try {
+    // If these fail at the beginning, all the tests will abort.
+    // Otherwise more specific tests are done on them.
+    default_addr = server.__defaultSocketAddress();
+    addr_str = default_addr.toString();
+  } catch (string) {
+    window.alert('Socket address test setup failed.');
+    return;
+  }
+  // Enqueue the tests.
+  ScalarTypes();
+  ArrayTypes();
+  SpecialTypes();
+  // Run them all.
+  RunAllTests();
+}
+      //]]>
+    </script>
+  </head>
+  <body onload="nacllib.waitForModulesAndRunTests();"
+        onunload="nacllib.cleanUp();" >
+    <h1> SRPC Parameter Passing Test </h1>
+    <table cellspacing=5 cellpadding=5 border=5 summary="Test status table">
+      <tr>
+        <td>
+        </td>
+        <td>
+          <b> Scalar types </b>
+        </td>
+        <td>
+          <b> Array types </b>
+        </td>
+        <td>
+          <b> Special types </b>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <b> Boolean </b>
+        </td>
+        <td valign=top>
+          <table summary="Boolean test status">
+            <tr>
+              <td id="bool_passret" class="notrun">
+                pass/return
+              </td>
+            </tr>
+            <tr>
+              <td id="int_as_bool" class="notrun">
+                int as bool
+              </td>
+            </tr>
+            <tr>
+              <td id="array_as_bool" class="notrun">
+                array as bool
+              </td>
+            </tr>
+            <tr>
+              <td id="handle_as_bool" class="notrun">
+                handle as bool
+              </td>
+            </tr>
+          </table>
+        </td>
+        <td valign=top>
+        </td>
+        <td valign=top>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <b> Character (1-byte) </b>
+        </td>
+        <td valign=top>
+        </td>
+        <td valign=top>
+          <table summary="Character test status">
+            <tr>
+              <td id="chararr_passret" class="notrun">
+                pass/return
+              </td>
+            </tr>
+            <tr>
+              <td id="bool_as_char_array" class="notrun">
+                bool as char array
+              </td>
+            </tr>
+            <tr>
+              <td id="int_as_char_array" class="notrun">
+                int as char array
+              </td>
+            </tr>
+            <tr>
+              <td id="double_as_char_array" class="notrun">
+                double as char array
+              </td>
+            </tr>
+            <tr>
+              <td id="handle_as_char_array" class="notrun">
+                handle as char array
+              </td>
+            </tr>
+          </table>
+        </td>
+        <td>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <b> Double (8-byte fp) </b>
+        </td>
+        <td valign=top>
+          <table summary="Double test status">
+            <tr>
+              <td id="double_passret" class="notrun">
+                pass/return
+              </td>
+            </tr>
+            <tr>
+              <td id="bool_as_double" class="notrun">
+                bool as double
+              </td>
+            </tr>
+            <tr>
+              <td id="array_as_double" class="notrun">
+                array as double
+              </td>
+            </tr>
+            <tr>
+              <td id="handle_as_double" class="notrun">
+                handle as double
+              </td>
+            </tr>
+          </table>
+        </td>
+        <td valign=top>
+          <table summary="Double array test status">
+            <tr>
+              <td id="doublearr_passret" class="notrun">
+                pass/return
+              </td>
+            </tr>
+            <tr>
+              <td id="bool_as_double_array" class="notrun">
+                bool as double array
+              </td>
+            </tr>
+            <tr>
+              <td id="int_as_double_array" class="notrun">
+                int as double array
+              </td>
+            </tr>
+            <tr>
+              <td id="double_as_double_array" class="notrun">
+                double as double array
+              </td>
+            </tr>
+            <tr>
+              <td id="handle_as_double_array" class="notrun">
+                handle as double array
+              </td>
+            </tr>
+          </table>
+        </td>
+        <td>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <b> Integer (4-byte) </b>
+        </td>
+        <td valign=top>
+          <table summary="Integer test status">
+            <tr>
+              <td id="int_passret" class="notrun">
+                pass/return
+              </td>
+            </tr>
+            <tr>
+              <td id="bool_as_int" class="notrun">
+                bool as int
+              </td>
+            </tr>
+            <tr>
+              <td id="array_as_int" class="notrun">
+                array as int
+              </td>
+            </tr>
+            <tr>
+              <td id="handle_as_int" class="notrun">
+                handle as int
+              </td>
+            </tr>
+          </table>
+        </td>
+        <td valign=top>
+          <table summary="Integer array test status">
+            <tr>
+              <td id="intarr_passret" class="notrun">
+                pass/return
+              </td>
+            </tr>
+            <tr>
+              <td id="bool_as_int_array" class="notrun">
+                bool as int array
+              </td>
+            </tr>
+            <tr>
+              <td id="int_as_int_array" class="notrun">
+                int as int array
+              </td>
+            </tr>
+            <tr>
+              <td id="double_as_int_array" class="notrun">
+                double as int array
+              </td>
+            </tr>
+            <tr>
+              <td id="handle_as_int_array" class="notrun">
+                handle as int array
+              </td>
+            </tr>
+          </table>
+        </td>
+        <td valign=top>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <b> Strings (NUL-terminated)  </b>
+        </td>
+        <td valign=top>
+        </td>
+        <td valign=top>
+        </td>
+        <td valign=top>
+          <table summary="String tests status">
+            <tr>
+              <td id="string_send" class="notrun">
+                send to NaCl
+              </td>
+            </tr>
+            <tr>
+              <td id="bool_as_string" class="notrun">
+                bool as string
+              </td>
+            </tr>
+            <tr>
+              <td id="int_as_string" class="notrun">
+                int as string
+              </td>
+            </tr>
+            <tr>
+              <td id="double_as_string" class="notrun">
+                double as string
+              </td>
+            </tr>
+            <tr>
+              <td id="array_as_string" class="notrun">
+                array as string
+              </td>
+            </tr>
+            <tr>
+              <td id="string_return" class="notrun">
+                return from NaCl
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <b> Handle (descriptor) </b>
+        </td>
+        <td valign=top>
+          <table summary="Handle tests">
+          </table>
+        </td>
+        <td valign=top>
+          <table summary="Handle tests">
+          </table>
+        </td>
+        <td valign=top>
+          <table summary="Handle tests status">
+            <tr>
+              <td id="handle_send" class="notrun">
+                send to NaCl
+              </td>
+            </tr>
+            <tr>
+              <td id="bool_as_handle" class="notrun">
+                bool as handle
+              </td>
+            </tr>
+            <tr>
+              <td id="int_as_handle" class="notrun">
+                int as handle
+              </td>
+            </tr>
+            <tr>
+              <td id="double_as_handle" class="notrun">
+                double as handle
+              </td>
+            </tr>
+            <tr>
+              <td id="array_as_handle" class="notrun">
+                array as handle
+              </td>
+            </tr>
+            <tr>
+              <td id="handle_return" class="notrun">
+                return from NaCl
+              </td>
+            </tr>
+            <tr>
+              <td id="invalid_handle_send" class="notrun">
+                send invalid to NaCl
+              </td>
+            </tr>
+            <tr>
+              <td id="invalid_handle_return" class="notrun">
+                return invalid from NaCl
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+
+    <table summary="The color codes used for identifying test outcomes">
+      <tr> <td align="center"> <em> Legend </em> </td> </tr>
+      <tr> <td align="center" class="notrun"> Test not run </td> </tr>
+      <tr> <td align="center" class="pass"> Test passed </td> </tr>
+      <tr> <td align="center" class="fail"> Test failed </td> </tr>
+    </table>
+    <p>
+    <b>
+      NOTE: Some versions of some WebKit-based browsers do not correctly report
+      JavaScript exceptions raised by NPAPI plugins.  This can cause some of
+      the above tests to spuriously report failure.
+    </b>
+    </p>
+
+    <div id=status>NO-STATUS</div>
+
+    <embed type="application/x-nacl-srpc" id="nacl_server" name="nacl_module"
+           width="0" height="0" src="srpc_test.nexe" />
+
+    <script type="text/javascript" src="nacl_js_lib.js"></script>
+    <script type="text/javascript">
+      //<![CDATA[
+      var nacllib = new NaclLib(document.getElementsByName("nacl_module"),
+                                document.getElementById("status"),
+                                100);
+
+      nacllib.test = function() {
+        server = document.getElementById("nacl_server");
+        EnqueueAndRunTests();
+        if (0 == testQueue.length) {
+          return "No tests run.";
+        } else if (0 != failing_count) {
+          return "Tests failed.";
+        } else {
+          return "";
+        }
+      }
+      //]]>
+    </script>
+  </body>
+</html>

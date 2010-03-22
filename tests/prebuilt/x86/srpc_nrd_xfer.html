@@ -1,0 +1,306 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <!-- Copyright 2008 Google Inc.  All rights reserved. -->
+  <head>
+    <title> SRPC Descriptor Passing Test </title>
+    <META HTTP-EQUIV="Pragma" CONTENT="no-cache">
+    <META HTTP-EQUIV="Expires" CONTENT="-1">
+    <style type="text/css">
+      td.notrun { background-color: skyblue }
+      td.pass { background-color: lime }
+      td.fail { background-color: red }
+    </style>
+    <script type="application/x-javascript">
+      //<![CDATA[
+var server = 0;
+var client = 0;
+var num_passing = 0;
+var num_failing = 0;
+
+var GeneralLog = function(str) {
+  var output = document.getElementById('GeneralOutput');
+  output.innerHTML += str + '<br>';
+}
+
+var SocketAddressLog = function(str) {
+  var output = document.getElementById('SocketAddressOutput');
+  output.innerHTML += str + '<br>';
+}
+
+var SetTestResult = function(element_id, result) {
+  var element = document.getElementById(element_id);
+  if ('pass' == result) {
+    element.className = 'pass';
+    ++num_passing;
+  } else {
+    element.className = 'fail';
+    ++num_failing;
+  }
+}
+var SocketAddressNaClToNacl = function() {
+  SocketAddressLog('<b> NaCl to NaCl Test');
+  SocketAddressLog('Invoking server.start_server');
+  var socket_address = server.start_server();
+  SocketAddressLog('Invoking NaCl client.sock_addr_client');
+  client_errors = client.sock_addr_client(socket_address);
+  var server_errors = server.report();
+  if (client_errors == 0 && server_errors == 0) {
+    SocketAddressLog('TEST PASSED');
+    SetTestResult('addr_nacl_nacl', 'pass');
+  } else if (client_errors == 0) {
+    SocketAddressLog('Server errors -- NaClToNaCl TEST FAILED');
+    SetTestResult('addr_nacl_nacl', 'fail');
+  } else {
+    SocketAddressLog('Client errors -- NaClToNaCl TEST FAILED');
+    SetTestResult('addr_nacl_nacl', 'fail');
+  }
+}
+
+var SocketAddressNaClToBrowser = function() {
+  SocketAddressLog('<b> NaCl to Browser Test');
+  SocketAddressLog('Invoking server.start_server');
+  var socket_address2 = server.start_server();
+  SocketAddressLog('Invoking connect');
+  var con_sock = socket_address2.connect();
+  SocketAddressLog('Invoking getmsg');
+  var retval = con_sock.getmsg(100);
+  var str = '';
+  for (var i = 0; i < retval.length && retval[i] != 0; i++) {
+    str += String.fromCharCode(retval[i]);
+  }
+  SocketAddressLog(str);
+  var server_errors = server.report();
+  if (server_errors == 0) {
+    SocketAddressLog('TEST PASSED');
+    SetTestResult('addr_nacl_browser', 'pass');
+  } else {
+    SocketAddressLog('Server errors -- NaClToBrowser TEST FAILED');
+    SetTestResult('addr_nacl_browser', 'fail');
+  }
+}
+
+var SharedMemoryLog = function(str) {
+  var output = document.getElementById('SharedMemoryOutput');
+  output.innerHTML += str + '<br>';
+}
+
+var SharedMemoryBrowserToBrowser = function() {
+  // This tests the basic creation of shared memory objects and manipulation
+  // within the JavaScript bridge.  It creates a shared memory region, writes a
+  // string into it, and tests that reading a substring suffix is correct.
+  var in_str = 'hello, world';
+  var test_offset = 7;
+  SharedMemoryLog('<b> Browser to Browser Test');
+  var shared_memory = server.__shmFactory(65536);
+  SharedMemoryLog('created shared memory region');
+  shared_memory.write(0, in_str.length, in_str);
+  SharedMemoryLog('wrote to shared memory region');
+  var rval = shared_memory.read(test_offset, in_str.length - test_offset);
+  if (rval == in_str.substring(test_offset)) {
+    SharedMemoryLog('TEST PASSED');
+    SetTestResult('mem_browser_browser', 'pass');
+  } else {
+    SharedMemoryLog('Strings miscompare: BrowserToBrowser TEST FAILED');
+    SetTestResult('mem_browser_browser', 'fail');
+  }
+}
+
+var SharedMemoryBrowserToNaCl = function() {
+  // This tests passing of shared memory objects from the browser to NaCl
+  // modules.  It creates a shared memory region, writes a string to the region,
+  // invokes a method in the server that checks for the expected string and
+  // writes another string immediately after.  It then checks the written
+  // return string and error count.
+  var in_str = 'hello, world';
+  var compare_string = 'Quod erat demonstrandum';
+  var region_size = 65536;
+  SharedMemoryLog('<b> Browser to NaCl Test');
+  var shared_memory = server.__shmFactory(region_size);
+  SharedMemoryLog('created shared memory region');
+  shared_memory.write(0, in_str.length, in_str);
+  SharedMemoryLog('wrote to shared memory region');
+  var server_errors = server.test_shared_memory(shared_memory, in_str);
+  var rval = shared_memory.read(in_str.length, compare_string.length);
+  if (server_errors == 0 && rval == compare_string) {
+    SharedMemoryLog('TEST PASSED');
+    SetTestResult('mem_browser_nacl', 'pass');
+  } else {
+    SharedMemoryLog('Strings miscompare: BrowserToNaCl TEST FAILED');
+    SetTestResult('mem_browser_nacl', 'fail');
+  }
+}
+
+var SharedMemoryNaClToBrowser = function() {
+  // This tests passing of shared memory objects from NaCl to the browser.
+  // It invokes a method in client to create a shared memory region and write a
+  // string to the region.
+  var region_size = 65536;
+  SharedMemoryLog('<b> NaCl to Browser Test');
+  var retval = client.shared_memory_client(region_size);
+  var handle = retval[0];
+  var in_str = retval[1];
+  var client_errors = retval[2];
+  SharedMemoryLog('Compare to: ' + in_str);
+  var shared_memory = handle.map();
+  var read_string = shared_memory.read(0, in_str.length);
+  if (client_errors == 0 && in_str == read_string) {
+    SharedMemoryLog('TEST PASSED');
+    SetTestResult('mem_nacl_browser', 'pass');
+  } else {
+    SharedMemoryLog('Strings miscompare: NaClToBrowser TEST FAILED');
+    SetTestResult('mem_nacl_browser', 'fail');
+  }
+}
+
+var SharedMemoryNaClToNaCl = function() {
+  // This tests passing of shared memory objects from NaCl to NaCl.
+  // It invokes a method in client to create a shared memory region and write a
+  // string to the region.  This region is then passed to the server, which
+  // checks the region and writes its own string and an error count.
+  var compare_string = 'Quod erat demonstrandum';
+  var region_size = 65536;
+  SharedMemoryLog('<b> NaCl to NaCl Test');
+  var retval = client.shared_memory_client(region_size);
+  var handle = retval[0];
+  var in_str = retval[1];
+  var client_errors = retval[2];
+  SharedMemoryLog('Compare to: ' + in_str);
+  var shared_memory = handle.map();
+  var server_errors = server.test_shared_memory(shared_memory, in_str);
+  var rval = shared_memory.read(in_str.length, compare_string.length);
+  if (client_errors == 0 && server_errors == 0 && rval == compare_string) {
+    SharedMemoryLog('TEST PASSED');
+    SetTestResult('mem_nacl_nacl', 'pass');
+  } else {
+    SharedMemoryLog('Strings miscompare: NaClToNaCl TEST FAILED');
+    SetTestResult('mem_nacl_nacl', 'fail');
+  }
+}
+
+var RunAllTests = function() {
+  // socket address passing tests.
+  SocketAddressNaClToBrowser();
+  SocketAddressNaClToNacl();
+  // shared memory passing tests.
+  SharedMemoryBrowserToBrowser();
+  SharedMemoryBrowserToNaCl();
+  SharedMemoryNaClToBrowser();
+  SharedMemoryNaClToNaCl();
+}
+      //]]>
+    </script>
+  </head>
+  <body onload="nacllib.waitForModulesAndRunTests();"
+        onunload="nacllib.cleanUp();" >
+    <h1> SRPC Descriptor Passing Test </h1>
+    <table border=5 cellpadding=5%
+           summary="A three-column table of test results">
+      <tr>
+        <td align=center>
+          <button type="button" onclick="RunAllTests()"> Run All Tests </button>
+        </td>
+        <td align=center> <b> Socket Address Passing </b> </td>
+        <td align=center> <b> Shared Memory Passing </b> </td>
+      </tr>
+      <tr>
+        <td align=center> <b> Browser to Browser </b> </td>
+        <td align=center> <em> Not applicable </em> </td>
+        <td align=center id="mem_browser_browser" class="notrun">
+          <button type="button" onclick="SharedMemoryBrowserToBrowser()">
+            Run Test
+          </button>
+        </td>
+      </tr>
+      <tr>
+        <td> <b> Browser to NaCl </b> </td>
+        <td align=center> <em> Not applicable </em> </td>
+        <td align=center id="mem_browser_nacl" class="notrun">
+          <button type="button" onclick="SharedMemoryBrowserToNaCl()">
+            Run Test
+          </button>
+        </td>
+      </tr>
+      <tr>
+        <td> <b> NaCl to Browser </b> </td>
+        <td align=center id="addr_nacl_browser" class="notrun">
+          <button type="button" onclick="SocketAddressNaClToBrowser()">
+            Run Test
+          </button>
+        </td>
+        <td align=center id="mem_nacl_browser" class="notrun">
+          <button type="button" onclick="SharedMemoryNaClToBrowser()">
+            Run Test
+          </button>
+        </td>
+      </tr>
+      <tr>
+        <td> <b> NaCl to NaCl </b> </td>
+        <td align=center id="addr_nacl_nacl" class="notrun">
+          <button type="button" onclick="SocketAddressNaClToNacl()">
+            Run Test
+          </button>
+        </td>
+        <td align=center id="mem_nacl_nacl" class="notrun">
+          <button type="button" onclick="SharedMemoryNaClToNaCl()">
+            Run Test
+          </button>
+        </td>
+      </tr>
+    </table>
+    <table summary="The color codes used for identifying test outcomes">
+      <tr> <td align="center"> <em> Legend </em> </td> </tr>
+      <tr> <td align="center" class="notrun"> Test not run </td> </tr>
+      <tr> <td align="center" class="pass"> Test passed </td> </tr>
+      <tr> <td align="center" class="fail"> Test failed </td> </tr>
+    </table>
+    <br/>
+    <h2> Output logs </h2>
+    <br/>
+    <table border=5 cellpadding=5% summary="A three-column test output log">
+      <tr>
+        <td> <b> General test output </b> </td>
+        <td> <b> Socket address test output </b> </td>
+        <td> <b> Shared memory test output </b> </td>
+      </tr>
+      <tr>
+        <td valign=top id="GeneralOutput"> </td>
+        <td valign=top id="SocketAddressOutput"> </td>
+        <td valign=top id="SharedMemoryOutput"> </td>
+      </tr>
+    </table>
+
+    <div id=status>NO-STATUS</div>
+
+    <embed type="application/x-nacl-srpc" id="nacl_client"
+           name="nacl_module" width="0" height="0"
+           src="srpc_nrd_client.nexe" />
+    <embed type="application/x-nacl-srpc" id="nacl_server"
+           name="nacl_module" width="0" height="0"
+           src="srpc_nrd_server.nexe" />
+
+    <script type="text/javascript" src="nacl_js_lib.js"></script>
+    <script type="text/javascript">
+      //<![CDATA[
+      var nacllib = new NaclLib(document.getElementsByName("nacl_module"),
+                                document.getElementById("status"),
+                                100);
+
+      nacllib.test = function() {
+        server = document.getElementById("nacl_server");
+        client = document.getElementById("nacl_client");
+        RunAllTests();
+        if (0 == num_passing && 0 == num_failing) {
+          return "No tests run.";
+        } else if (0 != num_failing) {
+          return "Tests failed.";
+        } else {
+          // Set the magic Selenium variable to signal success.
+          document.cookie = 'status=OK';
+          return "";
+        }
+      }
+      //]]>
+    </script>
+  </body>
+</html>

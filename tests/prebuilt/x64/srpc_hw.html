@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>SRPC Simple Plug-in</title>
+    <META HTTP-EQUIV="Pragma" CONTENT="no-cache">
+    <META HTTP-EQUIV="Expires" CONTENT="-1">
+  </head>
+  <body onload="nacllib.waitForModulesAndRunTests();"
+        onunload="nacllib.cleanUp();" >
+<script type="text/javascript">
+//<![CDATA[
+function fortytwo() {
+  var result = "";
+  try {
+    result = document.getElementById('pluginobj').fortytwo();
+  } catch(e) {
+    result = "ERROR: " + e;
+  }
+  alert("" + result);
+}
+
+function helloworld() {
+  var result = "";
+  try {
+    result = document.getElementById('pluginobj').helloworld();
+  } catch(e) {
+    result = "ERROR: " + e;
+  }
+  alert("" + result);
+}
+//]]>
+</script>
+
+<h1>Native Client SRPC Simple Plug-in</h1>
+<p>
+  <button onclick='fortytwo()'>Call fortytwo()</button>
+  <button onclick='helloworld()'>Call helloworld()</button>
+
+  <embed name="nacl_module"
+         id="pluginobj"
+         width=0 height=0
+         src="srpc_hw.nexe"
+         type="application/x-nacl-srpc" />
+</p>
+
+<p>If the plug-in is working correctly, a click on the "Call fortytwo" button
+  should open a popup dialog containing <b>42</b> as value.</p>
+
+<p> Clicking on the "Call helloworld" button
+  should open a popup dialog containing <b>hello, world</b> as value.</p>
+
+<h2>Status</h2>
+<div id=status>NO-STATUS</div>
+
+<script type="text/javascript" src="nacl_js_lib.js"></script>
+<script type="text/javascript">
+//<![CDATA[
+var nacllib = new NaclLib(document.getElementsByName("nacl_module"),
+                          document.getElementById("status"),
+                          100);
+
+nacllib.test = function() {
+  var plugin = document.getElementById("pluginobj");
+  if ('42' != plugin.fortytwo()) {
+    return "expected 42";
+  }
+
+  if ('hello, world.' != plugin.helloworld()) {
+    return "expected 'hello, world.'";
+  }
+
+  document.cookie = 'status=OK';
+
+  return "";
+};
+//]]>
+</script>
+
+  </body>
+</html>
