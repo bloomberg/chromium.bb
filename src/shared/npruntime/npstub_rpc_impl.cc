@@ -16,6 +16,7 @@
 #include "native_client/src/shared/npruntime/structure_translations.h"
 
 using nacl::NPObjectStub;
+using nacl::NPIdentifierToWireFormat;
 using nacl::NPVariantsToWireFormat;
 using nacl::WireFormatToNPP;
 using nacl::WireFormatToNPVariants;
@@ -313,8 +314,6 @@ NaClSrpcError NPObjectStubRpcServer::NPN_Enumerate(
     int32_t* id_count) {
   UNREFERENCED_PARAMETER(channel);
   UNREFERENCED_PARAMETER(wire_npp);
-  UNREFERENCED_PARAMETER(id_list_length);
-  UNREFERENCED_PARAMETER(id_list_bytes);
   // Initialize to report failure.
   *success = 0;
 
@@ -327,8 +326,22 @@ NaClSrpcError NPObjectStubRpcServer::NPN_Enumerate(
   uint32_t identifier_count;
   // Invoke the implementation.
   *success = stub->Enumerate(&identifiers, &identifier_count);
-  // TODO(sehr): Serialize the return identifier vector.
+  // Serialize the identifiers for return.
+  nacl_abi_size_t next_id_offset = 0;
+  for (uint32_t i = 0; i < identifier_count; ++i) {
+    if (*id_list_length <= next_id_offset) {
+      // Not enough bytes to store the returned identifiers.
+      return NACL_SRPC_RESULT_APP_ERROR;
+    }
+    *reinterpret_cast<int32_t*>(id_list_bytes + next_id_offset) =
+        NPIdentifierToWireFormat(identifiers[i]);
+    next_id_offset += sizeof(int32_t);
+  }
+  *id_list_length = next_id_offset;
   *id_count = identifier_count;
+  // Free the memory the client returned.
+  ::NPN_MemFree(identifiers);
+  // Return success.
   return NACL_SRPC_RESULT_OK;
 }
 

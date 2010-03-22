@@ -463,6 +463,10 @@ bool NPObjectProxy::Enumerate(NPIdentifier** identifiers,
   UNREFERENCED_PARAMETER(identifiers);
   DebugPrintf("Enumerate(%p)\n", reinterpret_cast<void*>(this));
 
+  // Initialize for errors.
+  *identifiers = NULL;
+  *identifier_count = 0;
+  // Set up for the RPC.
   NPBridge* bridge = NPBridge::LookupBridge(npp_);
   if (NULL == bridge) {
     return false;
@@ -485,9 +489,21 @@ bool NPObjectProxy::Enumerate(NPIdentifier** identifiers,
   if (NACL_SRPC_RESULT_OK != srpc_result) {
     return false;
   }
-  // TODO(sehr): we're still not copying the identifier list, etc.
-  // Again, SRPC only handles int32_t, so we need a cast.
+  // Check the validity of the return values.
+  if (0 > ident_count) {
+    return false;
+  }
+  NPIdentifier* identifier_array =
+      static_cast<NPIdentifier*>(::NPN_MemAlloc(idents_size));
+  if (NULL == identifier_array) {
+    return false;
+  }
+  // Deserialize the NPIdentifiers.
+  *identifiers = identifier_array;
   *identifier_count = static_cast<uint32_t>(ident_count);
+  for (int32_t i = 0; i < ident_count; ++i) {
+    identifier_array[i] = WireFormatToNPIdentifier(idents[i]);
+  }
   return false;
 }
 
