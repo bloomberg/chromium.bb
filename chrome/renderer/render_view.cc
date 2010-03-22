@@ -2924,6 +2924,9 @@ void RenderView::CheckPreferredSize() {
   // be put in that mode by getting a |ViewMsg_EnablePreferredSizeChangedMode|
   // message.
   if (send_preferred_size_changes_) {
+    if (!webview())
+      return;
+
     // WebCore likes to tell us things have changed even when they haven't, so
     // cache the width and height and only send the IPC message when we're sure
     // they're different.
