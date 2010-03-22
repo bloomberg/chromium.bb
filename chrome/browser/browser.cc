@@ -98,6 +98,7 @@
 #include "chrome/browser/task_manager.h"
 #include "chrome/browser/user_data_manager.h"
 #include "chrome/browser/view_ids.h"
+#include "chrome/browser/views/app_launcher.h"
 #include "chrome/browser/views/location_bar_view.h"
 #endif  // OS_WIN
 
@@ -1028,6 +1029,13 @@ void Browser::CloseWindow() {
 
 void Browser::NewTab() {
   UserMetrics::RecordAction("NewTab", profile_);
+#if defined(OS_WIN)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kAppLauncherForNewTab)) {
+    AppLauncher::Show(this);
+    return;
+  }
+#endif
   if (type() == TYPE_NORMAL) {
     AddBlankTab(true);
   } else {

@@ -11,7 +11,6 @@
 #include "app/menus/simple_menu_model.h"
 #include "app/theme_provider.h"
 #include "chrome/app/chrome_dll_resource.h"
-#include "chrome/browser/chromeos/app_launcher.h"
 #include "chrome/browser/chromeos/compact_location_bar_host.h"
 #include "chrome/browser/chromeos/compact_navigation_bar.h"
 #include "chrome/browser/chromeos/frame/panel_browser_view.h"
@@ -20,6 +19,7 @@
 #include "chrome/browser/chromeos/status/status_area_button.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/view_ids.h"
+#include "chrome/browser/views/app_launcher.h"
 #include "chrome/browser/views/frame/browser_extender.h"
 #include "chrome/browser/views/frame/browser_frame_gtk.h"
 #include "chrome/browser/views/frame/browser_view.h"
@@ -338,7 +338,6 @@ class BrowserViewLayout : public ::BrowserViewLayout {
 
 BrowserView::BrowserView(Browser* browser)
     : ::BrowserView(browser),
-      main_menu_(NULL),
       main_menu_button_(NULL),
       status_area_(NULL),
       compact_navigation_bar_(NULL),
@@ -458,10 +457,7 @@ void BrowserView::ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {
 // views::ButtonListener overrides.
 void BrowserView::ButtonPressed(views::Button* sender,
                                 const views::Event& event) {
-  if (!main_menu_.get()) {
-    main_menu_.reset(new AppLauncher(browser()));
-  }
-  main_menu_->Show();
+  AppLauncher::Show(browser());
 }
 
 // views::ContextMenuController overrides.

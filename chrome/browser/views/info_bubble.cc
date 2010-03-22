@@ -264,7 +264,7 @@ void InfoBubble::Init(views::Window* parent,
   // Calculate and set the bounds for all windows and views.
   gfx::Rect window_bounds;
 
-  bool prefer_arrow_on_right =
+  bool prefer_arrow_on_right = delegate &&
       (contents->UILayoutIsRightToLeft() == delegate->PreferOriginSideAnchor());
 
 #if defined(OS_WIN)

@@ -10,7 +10,9 @@
 #include "app/os_exchange_data.h"
 #include "app/resource_bundle.h"
 #include "app/slide_animation.h"
+#include "base/command_line.h"
 #include "base/stl_util-inl.h"
+#include "chrome/browser/browser.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -19,8 +21,10 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/view_ids.h"
+#include "chrome/browser/views/app_launcher.h"
 #include "chrome/browser/views/tabs/dragged_tab_controller.h"
 #include "chrome/browser/views/tabs/tab.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "gfx/path.h"
 #include "gfx/size.h"
@@ -818,6 +822,10 @@ bool TabStrip::IsCompatibleWith(TabStrip* other) const {
   return model_->profile() == other->model()->profile();
 }
 
+gfx::Rect TabStrip::GetNewTabButtonBounds() {
+  return newtab_button_->bounds();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // TabStrip, BaseTabStrip implementation:
 
@@ -1399,6 +1407,16 @@ bool TabStrip::HasAvailableDragActions() const {
 
 void TabStrip::ButtonPressed(views::Button* sender, const views::Event& event) {
   if (sender == newtab_button_) {
+    // TODO(jcampan): if we decide to keep the app launcher as the default
+    //                behavior for the new tab button, we should add a method
+    //                on the TabStripDelegate to do so.
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kAppLauncherForNewTab)) {
+      NavigationController& controller =
+          model_->GetSelectedTabContents()->controller();
+      AppLauncher::Show(Browser::GetBrowserForController(&controller, NULL));
+      return;
+    }
     UserMetrics::RecordAction("NewTab_Button", model_->profile());
     model_->delegate()->AddBlankTab(true);
   }

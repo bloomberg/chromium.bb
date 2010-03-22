@@ -39,6 +39,9 @@ const char kAppId[]                         = "app-id";
 // panel window.
 const char kAppLaunchAsPanel[]              = "app-launch-as-panel";
 
+// Makes the app launcher popup when a new tab is created.
+const char kAppLauncherForNewTab[]          = "app-launcher-new-tab";
+
 // Authentication white list for servers
 const char kAuthServerWhitelist[]           = "auth-server-whitelist";
 

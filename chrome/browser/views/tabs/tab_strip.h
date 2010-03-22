@@ -61,18 +61,21 @@ class TabStrip : public BaseTabStrip,
   // Removes the drag source Tab from this TabStrip, and deletes it.
   void DestroyDraggedSourceTab(Tab* tab);
 
-  // Retrieve the ideal bounds for the Tab at the specified index.
+  // Retrieves the ideal bounds for the Tab at the specified index.
   gfx::Rect GetIdealBounds(int index);
 
   // Returns the currently selected tab.
   Tab* GetSelectedTab() const;
 
-  // Create the new tab button.
+  // Creates the new tab button.
   void InitTabStripButtons();
 
   // Return true if this tab strip is compatible with the provided tab strip.
   // Compatible tab strips can transfer tabs during drag and drop.
   bool IsCompatibleWith(TabStrip* other) const;
+
+  // Returns the bounds of the new tab button.
+  gfx::Rect GetNewTabButtonBounds();
 
   // BaseTabStrip implementation:
   virtual int GetPreferredHeight();
