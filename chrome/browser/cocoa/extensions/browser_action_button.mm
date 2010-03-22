@@ -62,7 +62,8 @@ class ExtensionImageTrackerBridge : public NotificationObserver,
   }
 
   // ImageLoadingTracker::Observer implementation.
-  void OnImageLoaded(SkBitmap* image, size_t index) {
+  void OnImageLoaded(ImageLoadingTracker* source, SkBitmap* image,
+                     size_t index) {
     if (image)
       [owner_ setDefaultIcon:gfx::SkBitmapToNSImage(*image)];
     tracker_ = NULL;

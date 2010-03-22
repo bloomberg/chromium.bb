@@ -689,8 +689,8 @@ void LocationBarViewMac::PageActionImageView::OnMousePressed(NSRect bounds) {
   }
 }
 
-void LocationBarViewMac::PageActionImageView::OnImageLoaded(SkBitmap* image,
-                                                            size_t index) {
+void LocationBarViewMac::PageActionImageView::OnImageLoaded(
+    ImageLoadingTracker* source, SkBitmap* image, size_t index) {
   // We loaded icons()->size() icons, plus one extra if the Page Action had
   // a default icon.
   int total_icons = page_action_->icon_paths()->size();

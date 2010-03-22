@@ -1161,8 +1161,8 @@ void LocationBarViewGtk::PageActionViewGtk::UpdateVisibility(
   }
 }
 
-void LocationBarViewGtk::PageActionViewGtk::OnImageLoaded(SkBitmap* image,
-                                                          size_t index) {
+void LocationBarViewGtk::PageActionViewGtk::OnImageLoaded(
+    ImageLoadingTracker* source, SkBitmap* image, size_t index) {
   // We loaded icons()->size() icons, plus one extra if the page action had
   // a default icon.
   size_t total_icons = page_action_->icon_paths()->size();
