@@ -60,6 +60,7 @@
 #include "chrome/common/result_codes.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/master_preferences.h"
+#include "grit/app_locale_settings.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/cookie_monster.h"
@@ -97,6 +98,7 @@
 #include <commctrl.h>
 #include <shellapi.h>
 
+#include "app/l10n_util_win.h"
 #include "app/win_util.h"
 #include "base/nss_util.h"
 #include "base/registry.h"
@@ -331,6 +333,19 @@ class GetLinuxDistroTask : public Task {
   DISALLOW_COPY_AND_ASSIGN(GetLinuxDistroTask);
 };
 #endif  // USE_LINUX_BREAKPAD
+
+#if defined(OS_WIN)
+
+// gfx::Font callbacks
+void AdjustUIFont(LOGFONT* logfont) {
+  l10n_util::AdjustUIFont(logfont);
+}
+
+int GetMinimumFontSize() {
+  return StringToInt(l10n_util::GetString(IDS_MINIMUM_UI_FONT_SIZE).c_str());
+}
+
+#endif
 }  // namespace
 
 // Main routine for running as the Browser process.
@@ -548,7 +563,10 @@ int BrowserMain(const MainFunctionParams& parameters) {
   if (!views::ViewsDelegate::views_delegate)
     views::ViewsDelegate::views_delegate = new ChromeViewsDelegate;
 #endif
-
+#if defined(OS_WIN)
+  gfx::Font::adjust_font_callback = &AdjustUIFont;
+  gfx::Font::get_minimum_font_size_callback = &GetMinimumFontSize;
+#endif
 
   if (is_first_run) {
 #if defined(OS_WIN)

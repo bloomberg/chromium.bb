@@ -9,17 +9,18 @@
 
 #include <algorithm>
 
-#include "app/l10n_util.h"
-#include "app/l10n_util_win.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/win_util.h"
-#include "grit/app_locale_settings.h"
 
 namespace gfx {
 
-/*static*/
+// static
 Font::HFontRef* Font::base_font_ref_;
+
+// static
+Font::AdjustFontCallback Font::adjust_font_callback = NULL;
+Font::GetMinimumFontSizeCallback Font::get_minimum_font_size_callback = NULL;
 
 // If the tmWeight field of a TEXTMETRIC structure has a value >= this, the
 // font is bold.
@@ -33,8 +34,9 @@ static int AdjustFontSize(int lf_height, int size_delta) {
   } else {
     lf_height += size_delta;
   }
-  int min_font_size =
-    StringToInt(l10n_util::GetString(IDS_MINIMUM_UI_FONT_SIZE).c_str());
+  int min_font_size = 0;
+  if (Font::get_minimum_font_size_callback)
+    min_font_size = Font::get_minimum_font_size_callback();
   // Make sure lf_height is not smaller than allowed min font size for current
   // locale.
   if (abs(lf_height) < min_font_size) {
@@ -99,7 +101,8 @@ Font::HFontRef* Font::GetBaseFontRef() {
     NONCLIENTMETRICS metrics;
     win_util::GetNonClientMetrics(&metrics);
 
-    l10n_util::AdjustUIFont(&metrics.lfMessageFont);
+    if (adjust_font_callback)
+      adjust_font_callback(&metrics.lfMessageFont);
     metrics.lfMessageFont.lfHeight =
         AdjustFontSize(metrics.lfMessageFont.lfHeight, 0);
     HFONT font = CreateFontIndirect(&metrics.lfMessageFont);

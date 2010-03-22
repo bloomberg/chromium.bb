@@ -93,10 +93,10 @@
       },
       'sources': [
         # Files that are not required for Win64 Native Client loader
-        'animation.cc',
-        'animation.h',
         'active_window_watcher_x.cc',
         'active_window_watcher_x.h',
+        'animation.cc',
+        'animation.h',
         'bidi_line_iterator.cc',
         'clipboard/clipboard.cc',
         'clipboard/clipboard.h',

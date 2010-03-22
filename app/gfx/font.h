@@ -125,6 +125,19 @@ class Font {
   int vertical_dlus_to_pixels(int dlus) {
     return dlus * font_ref_->height() / 8;
   }
+
+  // Callback that returns the minimum height that should be used for
+  // gfx::Fonts. Optional. If not specified, the minimum font size is 0.
+  typedef int (*GetMinimumFontSizeCallback)();
+  static GetMinimumFontSizeCallback get_minimum_font_size_callback;
+
+  // Callback that adjusts a LOGFONT to meet suitability requirements of the
+  // embedding application. Optional. If not specified, no adjustments are
+  // performed other than clamping to a minimum font height if
+  // |get_minimum_font_size_callback| is specified.
+  typedef void (*AdjustFontCallback)(LOGFONT* lf);
+  static AdjustFontCallback adjust_font_callback;
+
 #elif !defined(OS_MACOSX)
   static Font CreateFont(PangoFontDescription* desc);
   // We need a copy constructor and assignment operator to deal with

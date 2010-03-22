@@ -7,7 +7,6 @@
 #include <limits>
 
 #include "app/gfx/font.h"
-#include "app/l10n_util.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "gfx/rect.h"
