@@ -29,7 +29,7 @@ DevToolsManager* DevToolsManager::GetInstance() {
 
 // static
 void DevToolsManager::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterBooleanPref(prefs::kDevToolsOpenDocked, false);
+  prefs->RegisterBooleanPref(prefs::kDevToolsOpenDocked, true);
 }
 
 DevToolsManager::DevToolsManager()

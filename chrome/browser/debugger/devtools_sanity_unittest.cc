@@ -137,7 +137,11 @@ class DevToolsSanityTest : public InProcessBrowserTest {
     // first.
     Browser* browser = window_->browser();
     devtools_manager->UnregisterDevToolsClientHostFor(inspected_rvh_);
-    BrowserClosedObserver close_observer(browser);
+
+    // Wait only when DevToolsWindow has a browser. For docked DevTools, this
+    // is NULL and we skip the wait.
+    if (browser)
+      BrowserClosedObserver close_observer(browser);
   }
 
   TabContents* client_contents_;

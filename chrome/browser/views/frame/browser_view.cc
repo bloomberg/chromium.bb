@@ -679,19 +679,6 @@ void BrowserView::Show() {
   // that should be added and this should be removed.
   RestoreFocus();
 
-  // Restore split offset.
-  int split_offset = g_browser_process->local_state()->GetInteger(
-      prefs::kDevToolsSplitLocation);
-  if (split_offset == -1) {
-    // Initial load, set to default value.
-    split_offset = 2 * contents_split_->height() / 3;
-  }
-  // Make sure user can see both panes.
-  int min_split_size = contents_split_->height() / 10;
-  split_offset = std::min(contents_split_->height() - min_split_size,
-                          std::max(min_split_size, split_offset));
-  contents_split_->set_divider_offset(split_offset);
-
   frame_->GetWindow()->Show();
 }
 
@@ -1816,6 +1803,20 @@ void BrowserView::UpdateDevToolsForContents(TabContents* tab_contents) {
           new views::ExternalFocusTracker(devtools_container_,
                                           GetFocusManager()));
     }
+
+    // Restore split offset.
+    int split_offset = g_browser_process->local_state()->GetInteger(
+        prefs::kDevToolsSplitLocation);
+    if (split_offset == -1) {
+      // Initial load, set to default value.
+      split_offset = 2 * contents_split_->height() / 3;
+    }
+    // Make sure user can see both panes.
+    int min_split_size = contents_split_->height() / 10;
+    split_offset = std::min(contents_split_->height() - min_split_size,
+                            std::max(min_split_size, split_offset));
+    contents_split_->set_divider_offset(split_offset);
+
     devtools_container_->SetVisible(true);
     contents_split_->Layout();
   } else if (should_hide) {
