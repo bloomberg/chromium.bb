@@ -207,12 +207,6 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
   }
 
   CGFloat width = [self savedWidth];
-  // The width will never be 0 (due to the container's minimum size restriction)
-  // except when no width has been saved. In this case, set the width to be as
-  // if all buttons are shown.
-  if (width == 0)
-    width = [self containerWidthWithButtonCount:[self buttonCount]];
-
   [containerView_ resizeToWidth:width animate:NO];
 }
 
@@ -320,9 +314,6 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
 
 - (NSUInteger)containerButtonCapacity {
   CGFloat containerWidth = [self savedWidth];
-  if (containerWidth == 0)
-    containerWidth = [self containerWidthWithButtonCount:[self buttonCount]];
-
   return (containerWidth - kGrippyXOffset + kContainerPadding) /
       (kBrowserActionWidth + kBrowserActionButtonPadding);
 }
@@ -338,8 +329,7 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
   [self showChevronIfNecessaryWithAnimation:YES];
 
   if (!profile_->IsOffTheRecord())
-    profile_->GetPrefs()->SetReal(prefs::kBrowserActionContainerWidth,
-        NSWidth([containerView_ frame]));
+    toolbarModel_->SetVisibleIconCount([self visibleButtonCount]);
 
   [[NSNotificationCenter defaultCenter]
       postNotificationName:kBrowserActionVisibilityChangedNotification
@@ -479,12 +469,26 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
 }
 
 - (CGFloat)savedWidth {
-  // Don't use the standard saved width for incognito until a separate pref is
-  // added.
-  if (profile_->IsOffTheRecord())
-    return 0.0;
+  if (!toolbarModel_)
+    return 0;
+  if (!profile_->GetPrefs()->HasPrefPath(prefs::kExtensionToolbarSize)) {
+    // Migration code to the new VisibleIconCount pref.
+    // TODO(mpcomplete): remove this at some point.
+    double predefinedWidth =
+        profile_->GetPrefs()->GetReal(prefs::kBrowserActionContainerWidth);
+    if (predefinedWidth != 0) {
+      int iconWidth = kBrowserActionWidth + kBrowserActionButtonPadding;
+      int extraWidth = kContainerPadding + kChevronWidth;
+      toolbarModel_->SetVisibleIconCount(
+          (predefinedWidth - extraWidth) / iconWidth);
+    }
+  }
 
-  return profile_->GetPrefs()->GetReal(prefs::kBrowserActionContainerWidth);
+  int savedButtonCount = toolbarModel_->GetVisibleIconCount();
+  if (savedButtonCount < 0 ||  // all icons are visible
+      static_cast<NSUInteger>(savedButtonCount) > [self buttonCount])
+    savedButtonCount = [self buttonCount];
+  return [self containerWidthWithButtonCount:savedButtonCount];
 }
 
 - (void)showChevronIfNecessaryWithAnimation:(BOOL)animation {

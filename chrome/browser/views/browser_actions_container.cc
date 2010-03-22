@@ -338,11 +338,7 @@ BrowserActionsContainer::BrowserActionsContainer(
       ALLOW_THIS_IN_INITIALIZER_LIST(show_menu_task_factory_(this)) {
   SetID(VIEW_ID_BROWSER_ACTION_TOOLBAR);
 
-  ExtensionsService* extension_service = profile_->GetExtensionsService();
-  if (!extension_service)  // The |extension_service| can be NULL in Incognito.
-    return;
-
-  model_ = extension_service->toolbar_model();
+  model_ = profile_->GetExtensionsService()->toolbar_model();
   model_->AddObserver(this);
 
   resize_animation_.reset(new SlideAnimation(this));
@@ -360,15 +356,24 @@ BrowserActionsContainer::BrowserActionsContainer(
   chevron_->EnableCanvasFlippingForRTLUI(true);
   AddChildView(chevron_);
 
-  int predefined_width =
-      profile_->GetPrefs()->GetInteger(prefs::kBrowserActionContainerWidth);
-  if (predefined_width == 0) {
-    // The width will never be 0 (due to container min size restriction)
-    // except when no width has been saved. So, in that case ask the model
-    // how many icons we'll show and set initial size to that.
-    predefined_width = IconCountToWidth(model_->size());
+  if (!profile_->GetPrefs()->HasPrefPath(prefs::kExtensionToolbarSize)) {
+    // Migration code to the new VisibleIconCount pref.
+    // TODO(mpcomplete): remove this after users are upgraded to 5.0.
+    int predefined_width =
+        profile_->GetPrefs()->GetInteger(prefs::kBrowserActionContainerWidth);
+    if (predefined_width != 0) {
+      int icon_width = (kButtonSize + kBrowserActionButtonPadding);
+      model_->SetVisibleIconCount(
+          (predefined_width - WidthOfNonIconArea()) / icon_width);
+    }
   }
-  container_size_ = gfx::Size(predefined_width, kButtonSize);
+
+  int visible_actions = model_->GetVisibleIconCount();
+  if (visible_actions < 0)  // all icons should be visible
+    visible_actions = model_->size();
+  else
+    chevron_->SetVisible(true);
+  container_size_ = gfx::Size(IconCountToWidth(visible_actions), kButtonSize);
 }
 
 BrowserActionsContainer::~BrowserActionsContainer() {
@@ -567,8 +572,6 @@ gfx::Size BrowserActionsContainer::GetPreferredSize() {
 }
 
 void BrowserActionsContainer::Layout() {
-  if (!resize_gripper_ || !chevron_)
-    return;  // These classes are not created in Incognito mode.
   if (browser_action_views_.size() == 0) {
     resize_gripper_->SetVisible(false);
     chevron_->SetVisible(false);
@@ -895,14 +898,16 @@ void BrowserActionsContainer::BrowserActionAdded(Extension* extension,
   browser_action_views_.insert(browser_action_views_.begin() + index, view);
   AddChildView(index, view);
 
+  // If we are still initializing the container, don't bother animating.
+  if (model_->size() != browser_action_views_.size())
+    return;
+
   // For details on why we do the following see the class comments in the
   // header.
 
   // Determine if we need to increase (we only do that if the container was
-  // showing all icons before the addition of this icon). We use -1 because
-  // we don't want to count the view that we just added.
-  if (visible_actions < browser_action_views_.size() - 1 ||
-      extension->being_upgraded()) {
+  // showing all icons before the addition of this icon).
+  if (model_->GetVisibleIconCount() >= 0 || extension->being_upgraded()) {
     // Some icons were hidden, don't increase the size of the container.
     OnBrowserActionVisibilityChanged();
   } else {
@@ -1064,8 +1069,11 @@ void BrowserActionsContainer::AnimationEnded(const Animation* animation) {
   OnBrowserActionVisibilityChanged();
   suppress_chevron_ = false;
 
-  profile_->GetPrefs()->SetInteger(prefs::kBrowserActionContainerWidth,
-                                   container_size_.width());
+  // Don't save the icon count in incognito because there may be fewer icons
+  // in that mode. The result is that the container in a normal window is always
+  // at least as wide as in an incognito window.
+  if (!profile_->IsOffTheRecord())
+    model_->SetVisibleIconCount(VisibleBrowserActions());
 }
 
 void BrowserActionsContainer::NotifyMenuDeleted(
