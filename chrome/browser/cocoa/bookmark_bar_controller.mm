@@ -1633,7 +1633,9 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 }
 
 - (void)beingDeleted:(BookmarkModel*)model {
-  [self clearBookmarkBar];
+  // The browser may be being torn down; little is safe to do.  As an
+  // example, it may not be safe to clear the pasteboard.
+  // http://crbug.com/38665
 }
 
 // TODO(jrg): for now this is brute force.
