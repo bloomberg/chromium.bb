@@ -1417,6 +1417,7 @@
         'theme_resources',
         '../skia/skia.gyp:skia',
         '../testing/gtest.gyp:gtest',
+        '../third_party/WebKit/WebKit/chromium/WebKit.gyp:webkit',
       ],
       'include_dirs': [
         '..',
