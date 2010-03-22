@@ -1,6 +1,6 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved. Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef VIEWS_CONTROLS_MENU_NATIVE_MENU_GTK_H_
 #define VIEWS_CONTROLS_MENU_NATIVE_MENU_GTK_H_
@@ -36,9 +36,13 @@ class NativeMenuGtk : public MenuWrapper {
   virtual void Rebuild();
   virtual void UpdateStates();
   virtual gfx::NativeMenu GetNativeMenu() const;
+  virtual MenuAction GetMenuAction() const;
 
  private:
   static void OnMenuHidden(GtkWidget* widget, NativeMenuGtk* menu);
+  static void OnMenuMoveCurrent(GtkMenu* widget,
+                                GtkMenuDirectionType focus_direction,
+                                NativeMenuGtk* menu);
 
   void AddSeparatorAt(int index);
   GtkWidget* AddMenuItemAt(int index, GtkRadioMenuItem* radio_group,
@@ -110,6 +114,9 @@ class NativeMenuGtk : public MenuWrapper {
   // used to delete the menu2 when its native menu gtk is destroyed first.
   Menu2* host_menu_;
   gulong destroy_handler_id_;
+
+  // The action that took place during the call to RunMenuAt.
+  MenuAction menu_action_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeMenuGtk);
 };

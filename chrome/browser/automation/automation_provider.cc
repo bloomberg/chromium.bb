@@ -86,6 +86,11 @@
 #include "chrome/browser/automation/ui_controls.h"
 #endif  // !defined(OS_MACOSX)
 
+#if defined(TOOLKIT_VIEWS)
+#include "views/focus/focus_manager.h"
+#include "views/view.h"
+#endif  // defined(TOOLKIT_VIEWS)
+
 using base::Time;
 
 class AutomationInterstitialPage : public InterstitialPage {
@@ -345,7 +350,11 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AutomationMsg_ConstrainedWindowCount,
                         GetConstrainedWindowCount)
     IPC_MESSAGE_HANDLER(AutomationMsg_FindInPage, HandleFindInPageRequest)
+#if defined(TOOLKIT_VIEWS)
     IPC_MESSAGE_HANDLER(AutomationMsg_GetFocusedViewID, GetFocusedViewID)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WaitForFocusedViewIDToChange,
+                                    WaitForFocusedViewIDToChange)
+#endif
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_InspectElement,
                                     HandleInspectElementRequest)
     IPC_MESSAGE_HANDLER(AutomationMsg_DownloadDirectory, GetDownloadDirectory)
@@ -497,6 +506,7 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_LoginWithUserAndPass,
                                     LoginWithUserAndPass)
 #endif
+    IPC_MESSAGE_HANDLER(AutomationMsg_IsPopUpMenuOpen, IsPopUpMenuOpen)
   IPC_END_MESSAGE_MAP()
 }
 
@@ -2528,3 +2538,99 @@ void AutomationProvider::SetContentSetting(
     *success = true;
   }
 }
+
+#if defined(TOOLKIT_VIEWS)
+void AutomationProvider::GetFocusedViewID(int handle, int* view_id) {
+  *view_id = -1;
+  if (window_tracker_->ContainsHandle(handle)) {
+    gfx::NativeWindow window = window_tracker_->GetResource(handle);
+    views::FocusManager* focus_manager =
+        views::FocusManager::GetFocusManagerForNativeWindow(window);
+    DCHECK(focus_manager);
+    views::View* focused_view = focus_manager->GetFocusedView();
+    if (focused_view)
+      *view_id = focused_view->GetID();
+  }
+}
+
+// Helper class that waits until the focus has changed to a view other
+// than the one with the provided view id.
+class ViewFocusChangeWaiter : public views::FocusChangeListener {
+ public:
+  ViewFocusChangeWaiter(views::FocusManager* focus_manager,
+                        int previous_view_id,
+                        AutomationProvider* automation,
+                        IPC::Message* reply_message)
+      : focus_manager_(focus_manager),
+        previous_view_id_(previous_view_id),
+        automation_(automation),
+        reply_message_(reply_message),
+        ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+    focus_manager_->AddFocusChangeListener(this);
+    // Call the focus change notification once in case the focus has
+    // already changed.
+    FocusWillChange(NULL, focus_manager_->GetFocusedView());
+  }
+
+  ~ViewFocusChangeWaiter() {
+    focus_manager_->RemoveFocusChangeListener(this);
+  }
+
+  // Inherited from FocusChangeListener
+  virtual void FocusWillChange(views::View* focused_before,
+                               views::View* focused_now) {
+    // This listener is called before focus actually changes. Post a task
+    // that will get run after focus changes.
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        method_factory_.NewRunnableMethod(
+            &ViewFocusChangeWaiter::FocusChanged,
+            focused_before,
+            focused_now));
+  }
+
+ private:
+  void FocusChanged(views::View* focused_before,
+                    views::View* focused_now) {
+    if (focused_now && focused_now->GetID() != previous_view_id_) {
+      AutomationMsg_WaitForFocusedViewIDToChange::WriteReplyParams(
+          reply_message_, true, focused_now->GetID());
+
+      automation_->Send(reply_message_);
+      delete this;
+    }
+  }
+
+  views::FocusManager* focus_manager_;
+  int previous_view_id_;
+  AutomationProvider* automation_;
+  IPC::Message* reply_message_;
+  ScopedRunnableMethodFactory<ViewFocusChangeWaiter> method_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(ViewFocusChangeWaiter);
+};
+
+void AutomationProvider::WaitForFocusedViewIDToChange(
+    int handle, int previous_view_id, IPC::Message* reply_message) {
+  if (!window_tracker_->ContainsHandle(handle))
+    return;
+  gfx::NativeWindow window = window_tracker_->GetResource(handle);
+  views::FocusManager* focus_manager =
+      views::FocusManager::GetFocusManagerForNativeWindow(window);
+
+  // The waiter will respond to the IPC and delete itself when done.
+  new ViewFocusChangeWaiter(focus_manager,
+                            previous_view_id,
+                            this,
+                            reply_message);
+}
+#else
+void AutomationProvider::GetFocusedViewID(int handle, int* view_id) {
+  NOTIMPLEMENTED();
+};
+
+void AutomationProvider::WaitForFocusedViewIDToChange(
+    int handle, int previous_view_id, IPC::Message* reply_message) {
+  NOTIMPLEMENTED();
+}
+#endif  // defined(TOOLKIT_VIEWS)

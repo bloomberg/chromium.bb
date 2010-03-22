@@ -20,6 +20,8 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { base::VKEY_L, false, true, false, IDC_FOCUS_LOCATION },
   { base::VKEY_D, false, false, true, IDC_FOCUS_LOCATION },
   { base::VKEY_F6, false, false, false, IDC_FOCUS_LOCATION },
+  { base::VKEY_F10, false, false, false, IDC_FOCUS_MENU_BAR },
+  { base::VKEY_MENU, false, false, false, IDC_FOCUS_MENU_BAR },
 
   // Tab/window controls.
   { base::VKEY_T, false, true, false, IDC_NEW_TAB },
