@@ -252,7 +252,7 @@ o3d.State.STENCIL_DECREMENT = 7;
  * Returns a Param for a given state. If the param does not already exist it
  * will be created. If the state_name is invalid it will return null.
  * @param {string} state_name name of the state
- * @returns {o3d.Param}  param or null if no matching state.
+ * @return {o3d.Param}  param or null if no matching state.
  * 
  * Example:
  * 
@@ -501,9 +501,9 @@ o3d.State.prototype.set = function() {
   var stateParams = this.state_params_;
 
   if (stateParams['AlphaBlendEnable'].value) {
-    this.gl.enable(this.gl.ALPHA);
+    this.gl.enable(this.gl.BLEND);
   } else {
-    this.gl.disable(this.gl.ALPHA);
+    this.gl.disable(this.gl.BLEND);
   }
 
   if (stateParams['SeparateAlphaBlendEnable'].value) {
@@ -513,10 +513,15 @@ o3d.State.prototype.set = function() {
         this.convertBlendFunc(stateParams['SourceBlendAlphaFunction'].value),
         this.convertBlendFunc(
             stateParams['DestinationBlendAlphaFunction'].value));
+    this.gl.blendEquationSeparate(
+      this.convertBlendEquation(stateParams['BlendEquation'].value),
+      this.convertBlendEquation(stateParams['BlendAlphaEquation'].value));
   } else {
-    this.gl.blendFuncSeparate(
+    this.gl.blendFunc(
         this.convertBlendFunc(stateParams['SourceBlendFunction'].value),
         this.convertBlendFunc(stateParams['DestinationBlendFunction'].value));
+    this.gl.blendEquation(
+      this.convertBlendEquation(stateParams['BlendEquation'].value));
   }
 
   switch (stateParams['CullMode'].value) {
@@ -531,15 +536,6 @@ o3d.State.prototype.set = function() {
     default:
       this.gl.disable(this.gl.CULL_FACE);
       break;
-  }
-
-  if (stateParams['SeparateAlphaBlendEnable'].value) {
-    this.gl.blendEquationSeparate(
-      this.convertBlendEquation(stateParams['BlendEquation'].value),
-      this.convertBlendEquation(stateParams['BlendAlphaEquation'].value));
-  } else {
-    this.gl.blendEquation(
-      this.convertBlendEquation(stateParams['BlendEquation'].value));
   }
 
   if (stateParams['DitherEnable'].value) {

@@ -73,7 +73,7 @@ o3d.Buffer.prototype.ArrayType = WebGLFloatArray;
  * the types of fields set on the buffer.
  * 
  * @param {number} numElements Number of elements to allocate..
- * @returns {boolean}  True if operation was successful.
+ * @return {boolean}  True if operation was successful.
  */
 o3d.Buffer.prototype.allocateElements =
     function(numElements) {
@@ -106,7 +106,7 @@ o3d.Buffer.prototype.resize = function(numElements) {
  * @param {string} field_type type of data in the field. Valid types
  *     are "FloatField", "UInt32Field", and "UByteNField".
  * @param {number} num_components number of components in the field.
- * @returns {!o3d.Field}  The created field.
+ * @return {!o3d.Field}  The created field.
  */
 o3d.Buffer.prototype.createField =
     function(fieldType, numComponents) {
@@ -166,7 +166,7 @@ o3d.Buffer.prototype.unlock = function() {
  * 
  * @param {!Array.<number>} values contains data to assign to the Buffer
  *     data itself.
- * @returns {boolean}  True if operation was successful.
+ * @return {boolean}  True if operation was successful.
  */
 o3d.Buffer.prototype.set =
     function(values) {
@@ -213,7 +213,7 @@ o3d.VertexBufferBase.prototype.get = function() {
  * 
  * @param {number} start_index index of the element value to get.
  * @param {number} numElements the number of elements to get.
- * @returns {!Array.<number>}  An array of values.
+ * @return {!Array.<number>}  An array of values.
  */
 o3d.VertexBufferBase.prototype.getAt =
     function(start_index, numElements) {

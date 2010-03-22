@@ -72,7 +72,7 @@ o3d.BoundingBox.prototype.maxExtent = [0, 0, 0];
  * Multiplies the bounding box by the given matrix returning a new bounding
  * box.
  * @param {!o3d.math.Matrix4} matrix The matrix to multiply by.
- * @returns {!o3d.BoundingBox}  The new bounding box.
+ * @return {!o3d.BoundingBox}  The new bounding box.
  */
 o3d.BoundingBox.prototype.mul =
     function(matrix) {
@@ -84,7 +84,7 @@ o3d.BoundingBox.prototype.mul =
  * Adds a bounding box to this bounding box returning a bounding box that
  * encompases both.
  * @param {!o3d.BoundingBox} box BoundingBox to add to this BoundingBox.
- * @returns {!o3d.BoundingBox}  The new bounding box.
+ * @return {!o3d.BoundingBox}  The new bounding box.
  */
 o3d.BoundingBox.prototype.add =
     function(box) {
@@ -98,7 +98,7 @@ o3d.BoundingBox.prototype.add =
  * TODO(petersont): this can also take six coordinates as input.
  * @param {!o3d.math.Point3} start position of start of ray in local space.
  * @param {!o3d.math.Point3} end position of end of ray in local space.
- * @returns {!o3d.RayIntersectionInfo}  RayIntersectionInfo. If result.value
+ * @return {!o3d.RayIntersectionInfo}  RayIntersectionInfo. If result.value
  *     is false then something was wrong like using this function with an
  *     uninitialized bounding box. If result.intersected is true then the ray
  *     intersected the box and result.position is the exact point of
@@ -114,7 +114,7 @@ o3d.BoundingBox.prototype.intersectRay =
  * Returns true if the bounding box is inside the frustum.
  * @param {!o3d.math.Matrix4} matrix Matrix to transform the box from its
  *     local space to view frustum space.
- * @returns {boolean}  True if the box is in the frustum.
+ * @return {boolean}  True if the box is in the frustum.
  */
 o3d.BoundingBox.prototype.inFrustum =
     function(matrix) {

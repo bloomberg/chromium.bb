@@ -94,7 +94,7 @@ o3d.Shape.prototype.addElement = function(element) {
  * @param {o3d.Element} element The element to add.
  */
 o3d.Shape.prototype.removeElement = function(element) {
-  
+  o3d.removeFromArray(this.elements, element);
 };
 
 
@@ -108,15 +108,25 @@ o3d.Shape.prototype.removeElement = function(element) {
 o3d.Shape.prototype.writeToDrawLists =
     function(drawListInfos, world, transform) {
   var elements = this.elements;
+
+  // Iterate through elements of this shape.
   for (var i = 0; i < elements.length; ++i) {
     var element = elements[i];
+
+    // For each element look at the DrawElements for that element.
     for (var j = 0; j < element.drawElements.length; ++j) {
       var drawElement = element.drawElements[j];
-      var materialDrawList = drawElement.material.drawList;
+      var material = drawElement.material || drawElement.owner.material;
+      var materialDrawList = material.drawList;
+
+      // Iterate through the drawlists we might write to.
       for (var k = 0; k < drawListInfos.length; ++k) {
         var drawListInfo = drawListInfos[k];
         var list = drawListInfo.list;
         var context = drawListInfo.context;
+
+        // If any of those drawlists matches the material on the drawElement,
+        // add the drawElement to the list.
         if (materialDrawList == list) {
           list.list_.push({
             view: context.view,
@@ -130,3 +140,5 @@ o3d.Shape.prototype.writeToDrawLists =
     }
   }
 };
+
+

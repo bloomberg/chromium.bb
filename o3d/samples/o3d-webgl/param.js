@@ -749,16 +749,29 @@ o3d.ParamMatrix4.prototype.applyToLocation = function(gl, location) {
 };
 
 /**
+ * A counter to ensure each texture sampler gets a unqiue id.
+ * @private
+ */
+o3d.Param.texture_index_ = 0;
+
+/**
  * Called to specify the value of a uniform variable.
  */
 o3d.ParamSampler.prototype.applyToLocation = function(gl, location) {
-  var i = 0;
+  // When before the effect object assigns values to parameters,
+  // it sets this variable to 0.
+  var i = o3d.Param.texture_index_;
   gl.activeTexture(gl.TEXTURE0 + i);
-  if (!this.value || !this.value.texture || !this.value.texture.texture_) {
-    throw ('Attempt to use texture parameter before texture value set.');
+
+  var value = null;
+
+  if (this.value && this.value.texture && this.value.texture.texture_) {
+    value = this.value.texture.texture_;
   }
-  gl.bindTexture(gl.TEXTURE_2D, this.value.texture.texture_);
+
+  gl.bindTexture(gl.TEXTURE_2D, value);
   gl.uniform1i(location, i);
+  o3d.Param.texture_index_++;
 };
 
 

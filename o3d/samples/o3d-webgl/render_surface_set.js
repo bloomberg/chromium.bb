@@ -88,7 +88,7 @@ o3d.RenderSurfaceSet.prototype.clearFramebufferObjects_ =
 
   this.gl.framebufferRenderbuffer(
       this.gl.FRAMEBUFFER,
-      this.gl.DEPTH_STENCIL_ATTACHMENT,
+      this.gl.DEPTH_ATTACHMENT,
       this.gl.RENDERBUFFER,
       0);
 

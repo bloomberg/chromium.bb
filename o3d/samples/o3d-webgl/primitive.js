@@ -124,6 +124,8 @@ o3d.Primitive.prototype.render = function() {
   var streamBank = this.streamBank;
   var indexBuffer = this.indexBuffer;
 
+  var enabled_attribs = [];
+
   for (var semantic = 0;
        semantic < streamBank.vertexStreams.length;
        ++semantic) {
@@ -139,6 +141,7 @@ o3d.Primitive.prototype.render = function() {
 
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buffer.gl_buffer_);
         this.gl.enableVertexAttribArray(gl_index);
+        enabled_attribs.push(gl_index);
 
         // TODO(petersont): Change that hard-coded 4 down there.
         this.gl.vertexAttribPointer(
@@ -154,4 +157,8 @@ o3d.Primitive.prototype.render = function() {
                        this.numberPrimitives * 3,
                        this.gl.UNSIGNED_SHORT,
                        0);
+
+  for (var i = 0; i < enabled_attribs.length; ++i) {
+    this.gl.disableVertexAttribArray(enabled_attribs[i]);
+  }
 };

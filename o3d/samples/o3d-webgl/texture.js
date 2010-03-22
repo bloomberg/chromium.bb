@@ -284,16 +284,6 @@ o3d.Texture2D.prototype.setFromBitmap =
                      0,  // Level.
                      bitmap.canvas_,
                      bitmap.defer_flip_verically_to_texture_);
-
-  this.gl.texParameteri(this.gl.TEXTURE_2D, 
-      this.gl.TEXTURE_MAG_FILTER, this.gl.LINEAR);
-  this.gl.texParameteri(this.gl.TEXTURE_2D,
-      this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
-  this.gl.texParameteri(this.gl.TEXTURE_2D,
-      this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
-  this.gl.texParameteri(this.gl.TEXTURE_2D,
-      this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
-
   if (bitmap.defer_mipmaps_to_texture_) {
     this.generateMips();
   }
@@ -325,7 +315,21 @@ o3d.Texture2D.prototype.drawImage =
     function(source_img, source_mip, source_x, source_y, source_width,
              source_height, dest_mip, dest_x, dest_y, dest_width,
              dest_height) {
-  o3d.notImplemented();
+  var canvas = o3d.Bitmap.getScratchCanvas_();
+  canvas.width = dest_width;
+  canvas.height = dest_height;
+
+  var context = canvas.getContext('2d');
+
+  context.translate(-source_x, -source_y);
+  context.scale(dest_width / source_width,
+                dest_height / source_height);
+
+  context.drawImage(source_img.canvas_,
+      0, 0, source_img.canvas_.width, source_img.canvas_.height);
+
+  this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture_);
+  this.gl.texSubImage2D(this.gl.TEXTURE_2D, 0, 0, 0, canvas);
 };
 
 

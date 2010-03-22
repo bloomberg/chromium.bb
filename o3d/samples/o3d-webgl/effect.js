@@ -124,8 +124,28 @@ o3d.EffectStreamInfo.prototype.semanticIndex = 0;
 o3d.Effect = function() {
   o3d.ParamObject.call(this);
   this.program_ = null;
+  this.uniforms_ = {};
+  this.attributes_ = {};
 };
 o3d.inherit('Effect', 'ParamObject');
+
+
+/**
+ * An object mapping the names of uniform variables to objects containing
+ * information about the variable.
+ * @type {Object}
+ * @private
+ */
+o3d.Effect.prototype.uniforms_ = {};
+
+
+/**
+ * An object mapping the names of attributes to objects containing
+ * information about the attribute.
+ * @type {Object}
+ * @private
+ */
+o3d.Effect.prototype.attributes_ = {};
 
 
 /**
@@ -158,7 +178,8 @@ o3d.Effect.prototype.bindAttributesAndLinkIfReady = function() {
       this.gl.bindAttribLocation(this.program_, i, attributes[i]);
     }
     this.gl.linkProgram(this.program_);
-    this.getAllUniforms();
+    this.getUniforms_();
+    this.getAttributes_();
   }
 };
 
@@ -213,18 +234,52 @@ o3d.Effect.prototype.loadPixelShaderFromString =
 
 
 /**
+ * Loads a glsl vertex shader and pixel shader from one string.
+ * Assumes the vertex shader and pixel shader are separated by
+ * the text '// #o3d SplitMarker'.
+ * @param {string} shaderString The string.
+ */
+o3d.Effect.prototype.loadFromFXString =
+    function(shaderString) {
+  var splitIndex = shaderString.indexOf('// #o3d SplitMarker');
+  this.loadVertexShaderFromString(shaderString.substr(0, splitIndex));
+  this.loadPixelShaderFromString(shaderString.substr(splitIndex));
+};
+
+
+/**
  * Iterates through the active uniforms of the program and gets the
  * location of each one and stores them by name in the uniforms
  * object.
+ * @private
  */
-o3d.Effect.prototype.getAllUniforms =
+o3d.Effect.prototype.getUniforms_ =
     function() {
-  this.uniforms = {};
+  this.uniforms_ = {};
   var numUniforms = this.gl.getProgramParameter(
       this.program_, this.gl.ACTIVE_UNIFORMS);
   for (var i = 0; i < numUniforms; ++i) {
     var info = this.gl.getActiveUniform(this.program_, i);
-    this.uniforms[info.name] = {info:info,
+    this.uniforms_[info.name] = {info:info,
+        location:this.gl.getUniformLocation(this.program_, info.name)};
+  }
+};
+
+
+/**
+ * Iterates through the active uniforms of the program and gets the
+ * location of each one and stores them by name in the uniforms
+ * object.
+ * @private
+ */
+o3d.Effect.prototype.getAttributes_ =
+    function() {
+  this.attributes_ = {};
+  var numAttributes = this.gl.getProgramParameter(
+      this.program_, this.gl.ACTIVE_ATTRIBUTES);
+  for (var i = 0; i < numAttributes; ++i) {
+    var info = this.gl.getActiveAttrib(this.program_, i);
+    this.attributes_[info.name] = {info:info,
         location:this.gl.getUniformLocation(this.program_, info.name)};
   }
 };
@@ -272,8 +327,8 @@ o3d.Effect.prototype.createUniformParameters =
                   'worldProjectionInverseTranspose': true,
                   'worldViewProjectionInverseTranspose': true};
 
-  for (name in this.uniforms) {
-    var info = this.uniforms[name].info;
+  for (name in this.uniforms_) {
+    var info = this.uniforms_[name].info;
 
     if (sasNames[name])
       continue;
@@ -353,21 +408,28 @@ o3d.Effect.prototype.getParameterInfo = function() {
  *     EffectStreamInfo objects.
  */
 o3d.Effect.prototype.getStreamInfo = function() {
-  var r = [];
-  // TODO(petersont): This is a stub, will remove later and replace with
-  // something that actually gets its streams from the shader.
-  var standard_semantic_index_pairs = [
-    {semantic: o3d.Stream.POSITION, index: 0},
-    {semantic: o3d.Stream.NORMAL, index: 0},
-    {semantic: o3d.Stream.COLOR, index: 0},
-    {semantic: o3d.Stream.TEXCOORD, index: 0}
-  ];
+  var infoList = [];
 
-  for (var i = 0; i < standard_semantic_index_pairs.length; ++i) {
-    var p = standard_semantic_index_pairs[i];
-    r.push(new o3d.EffectStreamInfo(p.semantic, p.index));
+  for (var name in this.attributes_) {
+    var attributes = {
+      'position': {semantic: o3d.Stream.POSITION, index: 0},
+      'normal': {semantic: o3d.Stream.NORMAL, index: 0},
+      'tangent': {semantic: o3d.Stream.TANGENT, index: 0},
+      'binormal': {semantic: o3d.Stream.BINORMAL, index: 0},
+      'color': {semantic: o3d.Stream.COLOR, index: 0},
+      'texCoord0': {semantic: o3d.Stream.TEXCOORD, index: 0},
+      'texCoord1': {semantic: o3d.Stream.TEXCOORD, index: 1},
+      'texCoord2': {semantic: o3d.Stream.TEXCOORD, index: 2},
+      'texCoord3': {semantic: o3d.Stream.TEXCOORD, index: 3},
+      'texCoord4': {semantic: o3d.Stream.TEXCOORD, index: 4},
+      'texCoord5': {semantic: o3d.Stream.TEXCOORD, index: 5},
+      'texCoord6': {semantic: o3d.Stream.TEXCOORD, index: 6},
+      'texCoord7': {semantic: o3d.Stream.TEXCOORD, index: 7}};
+    var semantic_index_pair = attributes[name];
+    infoList.push(new o3d.EffectStreamInfo(
+        semantic_index_pair.semantic, semantic_index_pair.index));
   }
-  return r;
+  return infoList;
 };
 
 
@@ -377,17 +439,19 @@ o3d.Effect.prototype.getStreamInfo = function() {
  * the objects nearer the begining of the list.
  * 
  * @param {!Array.<!o3d.ParamObject>} object_list The param objects to search.
+ * @private
  */
-o3d.Effect.prototype.searchForParams = function(object_list) {
+o3d.Effect.prototype.searchForParams_ = function(object_list) {
   var filled_map = {};
-  for (name in this.uniforms) {
+  for (name in this.uniforms_) {
     filled_map[name] = false;
   }
   this.gl.useProgram(this.program_);
+  o3d.Param.texture_index_ = 0;
   for (var i = 0; i < object_list.length; ++i) {
     var obj = object_list[i];
-    for (name in this.uniforms) {
-      var uniformInfo = this.uniforms[name];
+    for (name in this.uniforms_) {
+      var uniformInfo = this.uniforms_[name];
       if (filled_map[name]) {
         continue;
       }
@@ -399,7 +463,7 @@ o3d.Effect.prototype.searchForParams = function(object_list) {
     }
   }
 
-  for (name in this.uniforms) {
+  for (name in this.uniforms_) {
     if (!filled_map[name]) {
       throw ('Uniform param not filled: '+name);
     }

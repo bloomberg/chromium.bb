@@ -479,6 +479,14 @@ o3d.Client.prototype.fullscreen = false;
 
 
 /**
+ * Whether content is displayed in full-screen mode or in a plugin window.  The
+ * default is false [not full-screen].
+ * @type {!Array<function(!o3d.Event): void>}
+ */
+o3d.Client.prototype.event_callbacks_ = [];
+
+
+/**
  * Returns the width of the current drawing area [plugin or full-screen] in
  * pixels.
  */
@@ -518,7 +526,16 @@ o3d.Client.prototype.__defineSetter__('height',
  */
 o3d.Client.prototype.initWithCanvas = function(canvas) {
   var gl;
-  try {gl = canvas.getContext("experimental-webgl") } catch(e) { }
+
+  var standard_attributes = {
+    alpha : true,
+    depth : true,
+    stencil : true,
+    antialias : true,
+    premultipliedAlpha : true
+  };
+
+  try {gl = canvas.getContext("experimental-webgl", standard_attributes) } catch(e) { }
   if (!gl)
       try {gl = canvas.getContext("moz-webgl") } catch(e) { }
   if (!gl) {
@@ -526,7 +543,8 @@ o3d.Client.prototype.initWithCanvas = function(canvas) {
       return null;
   }
 
-  canvas.client.gl = gl;
+  this.gl = gl;
+
   gl.client = this;
   gl.displayInfo = {width: canvas.width,
                     height: canvas.height};
@@ -640,7 +658,7 @@ o3d.Client.prototype.clearLostResourcesCallback =
  */
 o3d.Client.prototype.setEventCallback =
     function(type, handler) {
-  this.eventCallbacks[type] = handler;
+  this.event_callbacks_[type] = handler;
 };
 
 
@@ -650,7 +668,7 @@ o3d.Client.prototype.setEventCallback =
  */
 o3d.Client.prototype.clearEventCallback =
     function(type) {
-  this.eventCallbacks[type] = null;
+  this.event_callbacks_[type] = null;
 };
 
 

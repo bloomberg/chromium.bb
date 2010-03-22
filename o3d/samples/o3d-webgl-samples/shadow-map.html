@@ -197,7 +197,7 @@ function initRenderGraph() {
   g_renderSurfaceSet.renderDepthStencilSurface = depthSurface;
 
   g_renderSurfaceSet.parent = shadowPassRenderRoot;
-  
+
   // Create a render sub-graph for the shadow map generation.
   g_shadowViewInfo = o3djs.rendergraph.createBasicView(
       g_pack,
@@ -263,7 +263,6 @@ function initMaterials() {
   g_shadowSampler.addressModeU = g_o3d.Sampler.BORDER;
   g_shadowSampler.addressModeV = g_o3d.Sampler.BORDER;
   g_shadowSampler.borderColor = [1, 1, 1, 1];
-
 }
 
 
@@ -587,12 +586,9 @@ function moveLight(delta) {
 
     // Convert texture coords to [0, 1] range.
     projCoords /= projCoords.w;
-    projCoords.x =  0.5 * projCoords.x + 0.5;
-    projCoords.y =  0.5 * projCoords.y + 0.5;
-    projCoords.z =  0.5 * projCoords.z + 0.5;
+    projCoords = 0.5 * projCoords + 0.5;
 
     float depth = projCoords.z;
-
     float light;
 
     // If the rednered point is farther from the light than the distance encoded

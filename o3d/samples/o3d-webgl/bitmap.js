@@ -74,6 +74,24 @@ o3d.Bitmap.SLICE = 7;
 
 
 /**
+ * The scratch canvas object.
+ * @private
+ */
+o3d.Bitmap.scratch_canvas_ = null;
+
+
+/**
+ * Gets a canvas to use for scratch work.
+ * @private
+ */
+o3d.Bitmap.getScratchCanvas_ = function() {
+  if (!o3d.Bitmap.scratch_canvas_)
+    o3d.Bitmap.scratch_canvas_ = document.createElement('CANVAS');
+  return o3d.Bitmap.scratch_canvas_;
+}
+
+
+/**
  * In webgl the bitmap object is represented by an offscreen canvas.
  * @type {Canvas}
  * @private
@@ -87,6 +105,7 @@ o3d.Bitmap.prototype.canvas_ = null;
 o3d.Bitmap.prototype.flipVertically = function() {
   this.defer_flip_vertically_to_texture_ = true;
 };
+
 
 
 /**
