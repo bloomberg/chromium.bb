@@ -18,6 +18,7 @@
 #endif
 
 #include "base/file_util.h"
+#include "base/leak_annotations.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
@@ -301,6 +302,7 @@ bool TestServerLauncher::LoadTestRootCert() {
   // This currently leaks a little memory.
   // TODO(dkegel): fix the leak and remove the entry in
   // tools/valgrind/memcheck/suppressions.txt
+  ANNOTATE_SCOPED_MEMORY_LEAK;  // Tell heap checker about the leak.
   cert_ = LoadTemporaryRootCert(GetRootCertPath());
   DCHECK(cert_);
   return (cert_ != NULL);
