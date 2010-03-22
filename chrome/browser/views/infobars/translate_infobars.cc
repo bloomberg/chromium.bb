@@ -25,7 +25,6 @@
 #include "views/controls/button/text_button.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
-#include "views/controls/message_box_view.h"
 
 // IDs for various menus.
 static const int kMenuIDOptions          = 1000;
@@ -204,10 +203,22 @@ class TranslateTextButton : public views::TextButton {
 
 TranslateTextButton::TranslateTextButton(views::ButtonListener* listener,
     int label_id)
-    : TextButton(listener, l10n_util::GetString(label_id)) {
+    // Don't use text to construct TextButton because we need to set font
+    // before setting text so that the button will resize to fit entire text.
+    : TextButton(listener, std::wstring()) {
   set_border(new TranslateButtonBorder);
   SetNormalHasBorder(true);  // Normal button state has border.
   SetAnimationDuration(0);  // Disable animation during state change.
+  // Set font colors for different states.
+  SetEnabledColor(SK_ColorBLACK);
+  SetHighlightColor(SK_ColorBLACK);
+  SetHoverColor(SK_ColorBLACK);
+  // Set font then text, then size button to fit text.
+  SetFont(ResourceBundle::GetSharedInstance().GetFont(
+      ResourceBundle::MediumFont));
+  SetText(l10n_util::GetString(label_id));
+  ClearMaxTextSize();
+  SizeToPreferredSize();
 }
 
 TranslateTextButton::~TranslateTextButton() {
@@ -243,12 +254,12 @@ TranslateInfoBar::TranslateInfoBar(TranslateInfoBarDelegate* delegate)
   string16 language_name = delegate->GetDisplayNameForLocale(
       GetDelegate()->original_lang_code());
   original_language_menu_button_ = CreateMenuButton(kMenuIDOriginalLanguage,
-      UTF16ToWideHack(language_name));
+      UTF16ToWideHack(language_name), true);
   AddChildView(original_language_menu_button_);
 
   // Create options menu button.
   options_menu_button_ = CreateMenuButton(kMenuIDOptions,
-      l10n_util::GetString(IDS_TRANSLATE_INFOBAR_OPTIONS));
+      l10n_util::GetString(IDS_TRANSLATE_INFOBAR_OPTIONS), false);
   AddChildView(options_menu_button_);
 
   // Create state-dependent controls.
@@ -274,7 +285,7 @@ void TranslateInfoBar::UpdateState(
             GetDelegate()->GetDisplayNameForLocale(
                 GetDelegate()->target_lang_code());
         target_language_menu_button_ = CreateMenuButton(kMenuIDTargetLanguage,
-            UTF16ToWideHack(language_name));
+            UTF16ToWideHack(language_name), true);
         AddChildView(target_language_menu_button_);
       }
       if (!revert_button_) {
@@ -306,10 +317,8 @@ void TranslateInfoBar::UpdateState(
 
   // If translation is pending, create "Translating..." label.
   if (translation_pending && !translating_label_) {
-    translating_label_ = new views::Label(
+    translating_label_ = CreateLabel(
         l10n_util::GetString(IDS_TRANSLATE_INFOBAR_TRANSLATING));
-    translating_label_->SetColor(SK_ColorBLACK);
-    translating_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
     AddChildView(translating_label_);
   }
 
@@ -646,15 +655,11 @@ void TranslateInfoBar::CreateLabels() {
   std::wstring message_text = UTF16ToWideHack(message_text_utf16);
 
   // Create label controls.
-  const gfx::Font& font = ResourceBundle::GetSharedInstance().GetFont(
-      ResourceBundle::MediumFont);
   std::wstring label_1 = message_text.substr(0, offsets[0]);
   if (label_1_) {
     label_1_->SetText(label_1);
   } else {
-    label_1_ = new views::Label(label_1, font);
-    label_1_->SetColor(SK_ColorBLACK);
-    label_1_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    label_1_ = CreateLabel(label_1);
     AddChildView(label_1_);
   }
 
@@ -663,9 +668,7 @@ void TranslateInfoBar::CreateLabels() {
   if (label_2_) {
     label_2_->SetText(label_2);
   } else {
-    label_2_ = new views::Label(label_2, font);
-    label_2_->SetColor(SK_ColorBLACK);
-    label_2_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    label_2_ = CreateLabel(label_2);
     AddChildView(label_2_);
   }
 
@@ -675,22 +678,45 @@ void TranslateInfoBar::CreateLabels() {
     if (label_3_) {
       label_3_->SetText(label_3);
     } else {
-      label_3_ = new views::Label(label_3, font);
-      label_3_->SetColor(SK_ColorBLACK);
-      label_3_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+      label_3_ = CreateLabel(label_3);
       AddChildView(label_3_);
     }
   }
 }
 
+views::Label* TranslateInfoBar::CreateLabel(const std::wstring& text) {
+  views::Label* label = new views::Label(text,
+      ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::MediumFont));
+  label->SetColor(SK_ColorBLACK);
+  label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  return label;
+}
+
 views::MenuButton* TranslateInfoBar::CreateMenuButton(int menu_id,
-    const std::wstring& label) {
+    const std::wstring& text, bool normal_has_border) {
+  // Don't use text to instantiate MenuButton because we need to set font before
+  // setting text so that the button will resize to fit entire text.
   views::MenuButton* menu_button =
-      new views::MenuButton(NULL, label, this, true);
+      new views::MenuButton(NULL, std::wstring(), this, true);
   menu_button->SetID(menu_id);
   menu_button->set_border(new TranslateButtonBorder);
-  menu_button->SetNormalHasBorder(true);
-  menu_button->SetAnimationDuration(0);
+  menu_button->set_menu_marker(ResourceBundle::GetSharedInstance().
+      GetBitmapNamed(IDR_INFOBARBUTTON_MENU_DROPARROW));
+  if (normal_has_border) {
+    menu_button->SetNormalHasBorder(true);  // Normal button state has border.
+    // Disable animation during state change.
+    menu_button->SetAnimationDuration(0);
+  }
+  // Set font colors for different states.
+  menu_button->SetEnabledColor(SK_ColorBLACK);
+  menu_button->SetHighlightColor(SK_ColorBLACK);
+  menu_button->SetHoverColor(SK_ColorBLACK);
+  // Set font then text, then size button to fit text.
+  menu_button->SetFont(ResourceBundle::GetSharedInstance().GetFont(
+      ResourceBundle::MediumFont));
+  menu_button->SetText(text);
+  menu_button->ClearMaxTextSize();
+  menu_button->SizeToPreferredSize();
   return menu_button;
 }
 

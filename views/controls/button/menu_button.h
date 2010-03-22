@@ -42,6 +42,10 @@ class MenuButton : public TextButton {
     menu_delegate_ = delegate;
   }
 
+  void set_menu_marker(const SkBitmap* menu_marker) {
+    menu_marker_ = menu_marker;
+  }
+
   // Activate the button (called when the button is pressed).
   virtual bool Activate();
 
@@ -91,7 +95,7 @@ class MenuButton : public TextButton {
 
   // The down arrow used to differentiate the menu button from normal
   // text buttons.
-  const SkBitmap* const menu_marker_;
+  const SkBitmap* menu_marker_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuButton);
 };

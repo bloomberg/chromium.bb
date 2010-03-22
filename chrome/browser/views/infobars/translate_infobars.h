@@ -60,7 +60,9 @@ class TranslateInfoBar : public InfoBar,
 
  private:
   void CreateLabels();
-  views::MenuButton* CreateMenuButton(int menu_id, const std::wstring& label);
+  views::Label* CreateLabel(const std::wstring& label);
+  views::MenuButton* CreateMenuButton(int menu_id, const std::wstring& label,
+      bool normal_has_border);
   gfx::Point DetermineMenuPositionAndAlignment(views::MenuButton* menu_button,
       views::Menu2::Alignment* alignment);
   void OnLanguageModified(views::MenuButton* menu_button,
