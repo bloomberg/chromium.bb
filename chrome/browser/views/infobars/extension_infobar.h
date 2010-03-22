@@ -10,7 +10,7 @@
 #include "chrome/browser/views/extensions/extension_view.h"
 #include "views/controls/menu/view_menu_delegate.h"
 
-class ExtensionActionContextMenuModel;
+class ExtensionContextMenuModel;
 class ExtensionInfoBarDelegate;
 
 namespace views {
@@ -47,7 +47,7 @@ class ExtensionInfoBar : public InfoBar,
   ExtensionInfoBarDelegate* delegate_;
 
   // The dropdown menu for accessing the contextual extension actions.
-  scoped_ptr<ExtensionActionContextMenuModel> options_menu_contents_;
+  scoped_ptr<ExtensionContextMenuModel> options_menu_contents_;
   scoped_ptr<views::Menu2> options_menu_menu_;
   views::MenuButton* menu_;
 

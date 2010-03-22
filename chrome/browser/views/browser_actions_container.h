@@ -11,12 +11,11 @@
 
 #include "app/slide_animation.h"
 #include "base/task.h"
-#include "chrome/browser/extensions/extension_action_context_menu_model.h"
+#include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/views/browser_bubble.h"
 #include "chrome/browser/views/extensions/browser_action_overflow_menu_controller.h"
-#include "chrome/browser/views/extensions/extension_action_context_menu.h"
 #include "chrome/browser/views/extensions/extension_popup.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
@@ -34,6 +33,10 @@ class ExtensionAction;
 class ExtensionPopup;
 class PrefService;
 class Profile;
+
+namespace views {
+class Menu2;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserActionButton
@@ -115,6 +118,9 @@ class BrowserActionButton : public views::MenuButton,
 
   // The browser action shelf.
   BrowserActionsContainer* panel_;
+
+  scoped_ptr<ExtensionContextMenuModel> context_menu_contents_;
+  scoped_ptr<views::Menu2> context_menu_menu_;
 
   NotificationRegistrar registrar_;
 
@@ -233,7 +239,7 @@ class BrowserActionsContainer
     public AnimationDelegate,
     public ExtensionToolbarModel::Observer,
     public BrowserActionOverflowMenuController::Observer,
-    public ExtensionActionContextMenuModel::MenuDelegate,
+    public ExtensionContextMenuModel::PopupDelegate,
     public ExtensionPopup::Observer {
 
   friend class ShowFolderMenuTask;
@@ -255,10 +261,8 @@ class BrowserActionsContainer
   // Returns the profile this container is associated with.
   Profile* profile() const { return profile_; }
 
-  // Returns the context menu for Browser Actions. Constructs the menu object if
-  // not constructed yet. This menu is used for all browser actions (regardless
-  // of whether they are in the overflow menu or not).
-  ExtensionActionContextMenu* GetContextMenu();
+  // Returns the browser this container is associated with.
+  Browser* browser() const { return browser_; }
 
   // Returns the current tab's ID, or -1 if there is no current tab.
   int GetCurrentTabId() const;
@@ -269,7 +273,7 @@ class BrowserActionsContainer
   }
 
   // Retrieve the BrowserActionView for |extension|.
-  BrowserActionView* GetBrowserActionView(Extension* extension);
+  BrowserActionView* GetBrowserActionView(ExtensionAction* action);
 
   // Update the views to reflect the state of the browser action icons.
   void RefreshBrowserActionViews();
@@ -329,9 +333,8 @@ class BrowserActionsContainer
   virtual void NotifyMenuDeleted(
       BrowserActionOverflowMenuController* controller);
 
-  // Overridden from ExtensionActionContextMenuModel::MenuDelegate
-  virtual void ShowPopupForDevToolsWindow(Extension* extension,
-      ExtensionAction* extension_action);
+  // Overridden from ExtensionContextMenuModel::PopupDelegate
+  virtual void InspectPopup(ExtensionAction* action);
 
   // Overriden from ExtensionPopup::Delegate
   virtual void ExtensionPopupClosed(ExtensionPopup* popup);
@@ -366,8 +369,8 @@ class BrowserActionsContainer
   virtual void BrowserActionRemoved(Extension* extension);
   virtual void BrowserActionMoved(Extension* extension, int index);
 
-  // Closes the overflow and context menu if open.
-  void CloseMenus();
+  // Closes the overflow menu if open.
+  void CloseOverflowMenu();
 
   // Cancels the timer for showing the drop down menu.
   void StopShowFolderDropMenuTimer();
@@ -448,10 +451,6 @@ class BrowserActionsContainer
   // The menu to show for the overflow button (chevron). This class manages its
   // own lifetime so that it can stay alive during drag and drop operations.
   BrowserActionOverflowMenuController* overflow_menu_;
-
-  // The context menu that the overflow menu shows. Is NULL until the menu is
-  // shown for the first time.
-  scoped_ptr<ExtensionActionContextMenu> context_menu_;
 
   // The animation that happens when the container snaps to place.
   scoped_ptr<SlideAnimation> resize_animation_;

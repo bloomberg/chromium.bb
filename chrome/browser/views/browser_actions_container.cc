@@ -33,6 +33,7 @@
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/button/text_button.h"
+#include "views/controls/menu/menu_2.h"
 #include "views/drag_utils.h"
 #include "views/window/window.h"
 
@@ -225,8 +226,11 @@ bool BrowserActionButton::OnMousePressed(const views::MouseEvent& e) {
     // Make the menu appear below the button.
     point.Offset(0, height());
 
-    panel_->GetContextMenu()->Run(extension(), extension()->browser_action(),
-        panel_, panel_->profile()->GetPrefs(), point);
+    // Reconstructs the menu every time because the menu's contents are dynamic.
+    context_menu_contents_.reset(new ExtensionContextMenuModel(
+        extension(), panel_->browser(), panel_));
+    context_menu_menu_.reset(new views::Menu2(context_menu_contents_.get()));
+    context_menu_menu_->RunContextMenuAt(point);
 
     SetButtonNotPushed();
     return false;
@@ -380,7 +384,6 @@ BrowserActionsContainer::~BrowserActionsContainer() {
   if (model_)
     model_->RemoveObserver(this);
   StopShowFolderDropMenuTimer();
-  CloseMenus();
   HidePopup();
   DeleteBrowserActionViews();
 }
@@ -398,18 +401,12 @@ int BrowserActionsContainer::GetCurrentTabId() const {
   return tab_contents->controller().session_id().id();
 }
 
-ExtensionActionContextMenu* BrowserActionsContainer::GetContextMenu() {
-  if (!context_menu_.get())
-    context_menu_.reset(new ExtensionActionContextMenu());
-  return context_menu_.get();
-}
-
 BrowserActionView* BrowserActionsContainer::GetBrowserActionView(
-    Extension* extension) {
+    ExtensionAction* action) {
   for (BrowserActionViews::iterator iter =
        browser_action_views_.begin(); iter != browser_action_views_.end();
        ++iter) {
-    if ((*iter)->button()->extension() == extension)
+    if ((*iter)->button()->browser_action() == action)
       return *iter;
   }
 
@@ -421,10 +418,7 @@ void BrowserActionsContainer::RefreshBrowserActionViews() {
     browser_action_views_[i]->button()->UpdateState();
 }
 
-void BrowserActionsContainer::CloseMenus() {
-  if (context_menu_.get())
-    context_menu_->Cancel();
-  // Close the overflow menu if open.
+void BrowserActionsContainer::CloseOverflowMenu() {
   if (overflow_menu_)
     overflow_menu_->CancelMenu();
 }
@@ -881,8 +875,7 @@ void BrowserActionsContainer::BrowserActionAdded(Extension* extension,
            "exists.";
   }
 #endif
-
-  CloseMenus();
+  CloseOverflowMenu();
 
   if (!ShouldDisplayBrowserAction(extension))
     return;
@@ -923,7 +916,7 @@ void BrowserActionsContainer::BrowserActionAdded(Extension* extension,
 }
 
 void BrowserActionsContainer::BrowserActionRemoved(Extension* extension) {
-  CloseMenus();
+  CloseOverflowMenu();
 
   if (popup_ && popup_->host()->extension() == extension)
     HidePopup();
@@ -1082,9 +1075,9 @@ void BrowserActionsContainer::NotifyMenuDeleted(
   overflow_menu_ = NULL;
 }
 
-void BrowserActionsContainer::ShowPopupForDevToolsWindow(Extension* extension,
-    ExtensionAction* extension_action) {
-  OnBrowserActionExecuted(GetBrowserActionView(extension)->button(),
+void BrowserActionsContainer::InspectPopup(
+    ExtensionAction* action) {
+  OnBrowserActionExecuted(GetBrowserActionView(action)->button(),
       true); // inspect_with_devtools
 }
 

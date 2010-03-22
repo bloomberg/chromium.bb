@@ -23,7 +23,6 @@
 #include "chrome/browser/content_setting_bubble_model.h"
 #include "chrome/browser/content_setting_image_model.h"
 #include "chrome/browser/extensions/extension_accessibility_api_constants.h"
-#include "chrome/browser/extensions/extension_action_context_menu_model.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extensions_service.h"
@@ -138,8 +137,6 @@ const GdkColor LocationBarViewGtk::kBackgroundColorByLevel[3] = {
 };
 
 LocationBarViewGtk::LocationBarViewGtk(
-    CommandUpdater* command_updater,
-    ToolbarModel* toolbar_model,
     const BubblePositioner* bubble_positioner,
     Browser* browser)
     : security_icon_event_box_(NULL),
@@ -155,8 +152,8 @@ LocationBarViewGtk::LocationBarViewGtk(
       tab_to_search_hint_trailing_label_(NULL),
       type_to_search_hint_(NULL),
       profile_(NULL),
-      command_updater_(command_updater),
-      toolbar_model_(toolbar_model),
+      command_updater_(browser->command_updater()),
+      toolbar_model_(browser->toolbar_model()),
       browser_(browser),
       bubble_positioner_(bubble_positioner),
       disposition_(CURRENT_TAB),
@@ -1196,6 +1193,12 @@ void LocationBarViewGtk::PageActionViewGtk::TestActivatePageAction() {
   OnButtonPressed(widget(), &event);
 }
 
+void LocationBarViewGtk::PageActionViewGtk::InspectPopup(
+    ExtensionAction* action) {
+  // TODO(estade): http://crbug.com/24477
+  NOTIMPLEMENTED();
+}
+
 gboolean LocationBarViewGtk::PageActionViewGtk::OnButtonPressed(
     GtkWidget* sender,
     GdkEvent* event) {
@@ -1218,11 +1221,8 @@ gboolean LocationBarViewGtk::PageActionViewGtk::OnButtonPressed(
     Extension* extension = profile_->GetExtensionsService()->GetExtensionById(
         page_action()->extension_id(), false);
 
-    // TODO(rafaelw): support inspecting popups.
-    if (!context_menu_model_.get())
-      context_menu_model_.reset(new ExtensionActionContextMenuModel(extension,
-          page_action_, profile_->GetPrefs(), NULL));
-
+    context_menu_model_.reset(
+        new ExtensionContextMenuModel(extension, owner_->browser_, this));
     context_menu_.reset(
         new MenuGtk(NULL, context_menu_model_.get()));
     context_menu_->Popup(sender, event);

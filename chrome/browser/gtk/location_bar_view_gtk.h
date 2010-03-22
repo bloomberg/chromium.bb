@@ -15,6 +15,7 @@
 #include "base/scoped_vector.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view_gtk.h"
+#include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/gtk/info_bubble_gtk.h"
 #include "chrome/browser/gtk/menu_gtk.h"
@@ -34,7 +35,6 @@ class CommandUpdater;
 class ContentSettingImageModel;
 class ContentSettingBubbleGtk;
 class ExtensionAction;
-class ExtensionActionContextMenuModel;
 class GtkThemeProvider;
 class Profile;
 class SkBitmap;
@@ -46,9 +46,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
                            public LocationBarTesting,
                            public NotificationObserver {
  public:
-  LocationBarViewGtk(CommandUpdater* command_updater,
-                     ToolbarModel* toolbar_model,
-                     const BubblePositioner* bubble_positioner,
+  LocationBarViewGtk(const BubblePositioner* bubble_positioner,
                      Browser* browser_);
   virtual ~LocationBarViewGtk();
 
@@ -171,7 +169,8 @@ class LocationBarViewGtk : public AutocompleteEditController,
     DISALLOW_COPY_AND_ASSIGN(ContentSettingImageViewGtk);
   };
 
-  class PageActionViewGtk : public ImageLoadingTracker::Observer {
+  class PageActionViewGtk : public ImageLoadingTracker::Observer,
+                            public ExtensionContextMenuModel::PopupDelegate {
    public:
     PageActionViewGtk(
         LocationBarViewGtk* owner, Profile* profile,
@@ -198,6 +197,9 @@ class LocationBarViewGtk : public AutocompleteEditController,
 
     // Simulate left mouse click on the page action button.
     void TestActivatePageAction();
+
+    // Overridden from ExtensionContextMenuModel::PopupDelegate:
+    virtual void InspectPopup(ExtensionAction* action);
 
    private:
     static gboolean OnButtonPressedThunk(GtkWidget* sender,
@@ -254,7 +256,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
 
     // The context menu view and model for this extension action.
     scoped_ptr<MenuGtk> context_menu_;
-    scoped_ptr<ExtensionActionContextMenuModel> context_menu_model_;
+    scoped_ptr<ExtensionContextMenuModel> context_menu_model_;
 
     DISALLOW_COPY_AND_ASSIGN(PageActionViewGtk);
   };

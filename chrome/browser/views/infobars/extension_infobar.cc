@@ -7,14 +7,17 @@
 #include "app/gfx/canvas.h"
 #include "app/resource_bundle.h"
 #include "app/slide_animation.h"
-#include "chrome/browser/extensions/extension_action_context_menu_model.h"
+#include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/extension_infobar_delegate.h"
 #include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/platform_util.h"
 #include "grit/browser_resources.h"
 #include "grit/theme_resources.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/menu_2.h"
+#include "views/widget/widget.h"
 
 // The horizontal margin between the menu and the Extension (HTML) view.
 static const int kMenuHorizontalMargin = 1;
@@ -89,13 +92,13 @@ void ExtensionInfoBar::Layout() {
 }
 
 void ExtensionInfoBar::RunMenu(View* source, const gfx::Point& pt) {
-  if (!options_menu_contents_.get())
-    options_menu_contents_.reset(new ExtensionActionContextMenuModel(
-        delegate_->extension_host()->extension(),
-        // Do not include "Inspect Popup" in menu:
-        NULL,  // ExtensionAction
-        NULL,  // PrefService
-        NULL));  // ExtensionActionContextMenuModel::MenuDelegate
+  if (!options_menu_contents_.get()) {
+    Browser* browser = BrowserView::GetBrowserViewForNativeWindow(
+        platform_util::GetTopLevel(source->GetWidget()->GetNativeView()))->
+            browser();
+    options_menu_contents_.reset(new ExtensionContextMenuModel(
+        delegate_->extension_host()->extension(), browser, NULL));
+  }
 
   options_menu_menu_.reset(new views::Menu2(options_menu_contents_.get()));
   options_menu_menu_->RunMenuAt(pt, views::Menu2::ALIGN_TOPLEFT);

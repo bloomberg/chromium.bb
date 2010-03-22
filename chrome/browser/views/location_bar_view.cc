@@ -28,8 +28,10 @@
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/browser/views/extensions/extension_popup.h"
+#include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/content_blocked_bubble_contents.h"
 #include "chrome/common/content_settings.h"
+#include "chrome/common/platform_util.h"
 #include "chrome/common/pref_names.h"
 #include "gfx/color_utils.h"
 #include "grit/generated_resources.h"
@@ -1543,14 +1545,12 @@ void LocationBarView::PageActionImageView::OnMouseReleased(
 
     Extension* extension = profile_->GetExtensionsService()->GetExtensionById(
         page_action()->extension_id(), false);
-
-    if (!context_menu_.get())
-      context_menu_.reset(new ExtensionActionContextMenu());
-    context_menu_->Run(extension,
-                       extension->page_action(),
-                       this,  // ExtensionActionContextMenuModel::Delegate
-                       profile_->GetPrefs(),
-                       point);
+    Browser* browser = BrowserView::GetBrowserViewForNativeWindow(
+        platform_util::GetTopLevel(GetWidget()->GetNativeView()))->browser();
+    context_menu_contents_.reset(new ExtensionContextMenuModel(
+        extension, browser, this));
+    context_menu_menu_.reset(new views::Menu2(context_menu_contents_.get()));
+    context_menu_menu_->RunContextMenuAt(point);
     return;
   }
 
@@ -1632,8 +1632,8 @@ void LocationBarView::PageActionImageView::UpdateVisibility(
   SetVisible(visible);
 }
 
-void LocationBarView::PageActionImageView::ShowPopupForDevToolsWindow(
-    Extension* extension, ExtensionAction* extension_action) {
+void LocationBarView::PageActionImageView::InspectPopup(
+    ExtensionAction* action) {
   ExecuteAction(1,  // left-click
                 true);  // inspect_with_devtools
 }

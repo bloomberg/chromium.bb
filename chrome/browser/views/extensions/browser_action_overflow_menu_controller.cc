@@ -7,12 +7,14 @@
 #include "app/gfx/canvas.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/views/browser_actions_container.h"
 #include "chrome/browser/views/extensions/browser_action_drag_data.h"
 #include "chrome/common/extensions/extension.h"
 #include "views/controls/menu/menu_item_view.h"
+#include "views/controls/menu/menu_2.h"
 
 BrowserActionOverflowMenuController::BrowserActionOverflowMenuController(
     BrowserActionsContainer* owner,
@@ -70,7 +72,9 @@ bool BrowserActionOverflowMenuController::RunMenu(gfx::NativeWindow window,
     menu_->RunMenuForDropAt(window, bounds, anchor);
   } else {
     menu_->RunMenuAt(window, menu_button_, bounds, anchor, false);
-    delete this;
+    // Give the context menu (if any) a chance to execute the user-selected
+    // command.
+    MessageLoop::current()->DeleteSoon(FROM_HERE, this);
   }
   return true;
 }
@@ -90,13 +94,13 @@ bool BrowserActionOverflowMenuController::ShowContextMenu(
     int id,
     const gfx::Point& p,
     bool is_mouse_gesture) {
-  // This blocks until the user choses something or dismisses the menu.
-  owner_->GetContextMenu()->Run(
+  context_menu_contents_.reset(new ExtensionContextMenuModel(
       (*views_)[start_index_ + id - 1]->button()->extension(),
-      (*views_)[start_index_ + id - 1]->button()->extension()->browser_action(),
-      owner_,
-      owner_->profile()->GetPrefs(),
-      p);
+      owner_->browser(),
+      owner_));
+  context_menu_menu_.reset(new views::Menu2(context_menu_contents_.get()));
+  // This blocks until the user choses something or dismisses the menu.
+  context_menu_menu_->RunContextMenuAt(p);
 
   // The user is done with the context menu, so we can close the underlying
   // menu.

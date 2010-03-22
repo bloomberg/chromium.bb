@@ -249,7 +249,8 @@ void ExtensionInstalledBubble::ShowInternal() {
           &ExtensionInstalledBubble::ShowInternal), kAnimationWaitTime);
       return;
     }
-    reference_view = container->GetBrowserActionView(extension_);
+    reference_view = container->GetBrowserActionView(
+        extension_->browser_action());
     // If the view is not visible then it is in the chevron, so point the
     // install bubble to the chevron instead. If this is an incognito window,
     // both could be invisible.

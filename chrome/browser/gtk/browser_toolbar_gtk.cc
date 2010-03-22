@@ -79,10 +79,7 @@ const GdkColor kSecureColor = GDK_COLOR_RGB(255, 245, 195);
 
 BrowserToolbarGtk::BrowserToolbarGtk(Browser* browser, BrowserWindowGtk* window)
     : toolbar_(NULL),
-      location_bar_(new LocationBarViewGtk(browser->command_updater(),
-                                           browser->toolbar_model(),
-                                           this,
-                                           browser)),
+      location_bar_(new LocationBarViewGtk(this, browser)),
       model_(browser->toolbar_model()),
       page_menu_model_(this, browser),
       app_menu_model_(this, browser),

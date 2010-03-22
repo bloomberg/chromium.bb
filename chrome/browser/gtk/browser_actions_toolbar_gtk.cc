@@ -8,8 +8,8 @@
 
 #include "app/gfx/canvas_paint.h"
 #include "chrome/browser/browser.h"
-#include "chrome/browser/extensions/extension_action_context_menu_model.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
+#include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/gtk/cairo_cached_surface.h"
@@ -62,7 +62,8 @@ gint WidthForIconCount(gint icon_count) {
 }  // namespace
 
 class BrowserActionButton : public NotificationObserver,
-                            public ImageLoadingTracker::Observer {
+                            public ImageLoadingTracker::Observer,
+                            public ExtensionContextMenuModel::PopupDelegate {
  public:
   BrowserActionButton(BrowserActionsToolbarGtk* toolbar,
                       Extension* extension)
@@ -177,6 +178,12 @@ class BrowserActionButton : public NotificationObserver,
   }
 
  private:
+  // ExtensionContextMenuModel::PopupDelegate implementation.
+  virtual void InspectPopup(ExtensionAction* action) {
+    // TODO(estade): http://crbug.com/24477
+    NOTIMPLEMENTED();
+  }
+
   void SetImage(GdkPixbuf* image) {
     gtk_button_set_image(GTK_BUTTON(button_.get()),
         gtk_image_new_from_pixbuf(image));
@@ -188,18 +195,15 @@ class BrowserActionButton : public NotificationObserver,
     if (event->button.button != 3)
       return FALSE;
 
-    // TODO(rafaelw): support inspecting popups.
-    if (!action->context_menu_model_.get()) {
-      action->context_menu_model_.reset(
-          new ExtensionActionContextMenuModel(action->extension_,
-              action->extension_->browser_action(),
-              action->toolbar_->browser()->profile()->GetPrefs(), NULL));
-    }
-
+    action->context_menu_model_.reset(
+        new ExtensionContextMenuModel(
+            action->extension_,
+            action->toolbar_->browser(),
+            action));
     action->context_menu_.reset(
         new MenuGtk(NULL, action->context_menu_model_.get()));
-
     action->context_menu_->Popup(widget, event);
+
     return TRUE;
   }
 
@@ -275,7 +279,7 @@ class BrowserActionButton : public NotificationObserver,
 
   // The context menu view and model for this extension action.
   scoped_ptr<MenuGtk> context_menu_;
-  scoped_ptr<ExtensionActionContextMenuModel> context_menu_model_;
+  scoped_ptr<ExtensionContextMenuModel> context_menu_model_;
 
   friend class BrowserActionsToolbarGtk;
 };

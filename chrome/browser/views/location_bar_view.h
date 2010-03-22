@@ -12,12 +12,12 @@
 #include "app/gfx/font.h"
 #include "base/task.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
+#include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/location_bar.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/toolbar_model.h"
 #include "chrome/browser/views/browser_bubble.h"
-#include "chrome/browser/views/extensions/extension_action_context_menu.h"
 #include "chrome/browser/views/extensions/extension_popup.h"
 #include "chrome/browser/views/info_bubble.h"
 #include "chrome/common/content_settings_types.h"
@@ -26,6 +26,7 @@
 #include "gfx/rect.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
+#include "views/controls/menu/menu_2.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/painter.h"
 
@@ -35,6 +36,7 @@
 #include "chrome/browser/autocomplete/autocomplete_edit_view_gtk.h"
 #endif
 
+class Browser;
 class BubblePositioner;
 class CommandUpdater;
 class ContentSettingImageModel;
@@ -102,7 +104,7 @@ class LocationBarView : public LocationBar,
   void Update(const TabContents* tab_for_state_restoring);
 
   void SetProfile(Profile* profile);
-  Profile* profile() { return profile_; }
+  Profile* profile() const { return profile_; }
 
   // Returns the current TabContents.
   TabContents* GetTabContents() const;
@@ -411,7 +413,7 @@ class LocationBarView : public LocationBar,
   // and notify the extension when the icon is clicked.
   class PageActionImageView : public LocationBarImageView,
       public ImageLoadingTracker::Observer,
-      public ExtensionActionContextMenuModel::MenuDelegate,
+      public ExtensionContextMenuModel::PopupDelegate,
       public ExtensionPopup::Observer {
    public:
     PageActionImageView(LocationBarView* owner,
@@ -439,9 +441,8 @@ class LocationBarView : public LocationBar,
     // Overridden from ImageLoadingTracker.
     virtual void OnImageLoaded(SkBitmap* image, size_t index);
 
-    // Overridden from ExtensionActionContextMenuModel::MenuDelegate
-    virtual void ShowPopupForDevToolsWindow(Extension* extension,
-        ExtensionAction* extension_action);
+    // Overridden from ExtensionContextMenuModelModel::Delegate
+    virtual void InspectPopup(ExtensionAction* action);
 
     // Overriden from ExtensionPopup::Observer
     virtual void ExtensionPopupClosed(ExtensionPopup* popup);
@@ -473,7 +474,8 @@ class LocationBarView : public LocationBar,
     PageActionMap page_action_icons_;
 
     // The context menu for this page action.
-    scoped_ptr<ExtensionActionContextMenu> context_menu_;
+    scoped_ptr<ExtensionContextMenuModel> context_menu_contents_;
+    scoped_ptr<views::Menu2> context_menu_menu_;
 
     // The object that is waiting for the image loading to complete
     // asynchronously.
@@ -571,6 +573,9 @@ class LocationBarView : public LocationBar,
 
   // Helper to show the first run info bubble.
   void ShowFirstRunBubbleInternal(bool use_OEM_bubble);
+
+  // Current browser. Not owned by us.
+  Browser* browser_;
 
   // Current profile. Not owned by us.
   Profile* profile_;
