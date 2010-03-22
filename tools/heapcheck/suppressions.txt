@@ -93,7 +93,7 @@
 {
    bug_26920_a
    Heapcheck:Leak
-   fun:IPC::ChannelProxy::ChannelProxy
+   fun:*ChannelProxy
    fun:IPCChannelTest_ChannelProxyTest_Test::TestBody
 }
 # TODO(glider): deal with asterisks in stack traces
