@@ -155,6 +155,7 @@ void BugReportView::SetupControl() {
       l10n_util::GetString(IDS_BUGREPORT_BUG_TYPE));
   bug_type_combo_ = new views::Combobox(bug_type_model_.get());
   bug_type_combo_->set_listener(this);
+  bug_type_combo_->SetAccessibleName(bug_type_label_->GetText());
 
   page_title_label_ = new views::Label(
       l10n_util::GetString(IDS_BUGREPORT_REPORT_PAGE_TITLE));
@@ -164,6 +165,7 @@ void BugReportView::SetupControl() {
   // page_url_text_'s text (if any) is filled in after dialog creation.
   page_url_text_ = new views::Textfield;
   page_url_text_->SetController(this);
+  page_url_text_->SetAccessibleName(page_url_label_->GetText());
 
   description_label_ = new views::Label(
       l10n_util::GetString(IDS_BUGREPORT_DESCRIPTION_LABEL));
@@ -174,6 +176,7 @@ void BugReportView::SetupControl() {
   description_text_ =
       new views::Textfield(views::Textfield::STYLE_MULTILINE);
   description_text_->SetHeightInLines(kDescriptionLines);
+  description_text_->SetAccessibleName(description_label_->GetText());
 #endif
 
   include_page_source_checkbox_ = new views::Checkbox(
@@ -332,8 +335,7 @@ bool BugReportView::Accept() {
           UTF16ToUTF8(description_text_->text()),
           include_page_image_checkbox_->checked() && png_data_.get() ?
               reinterpret_cast<const char *>(&((*png_data_.get())[0])) : NULL,
-          png_data_->size()
-          );
+          png_data_->size());
   }
   return true;
 }
