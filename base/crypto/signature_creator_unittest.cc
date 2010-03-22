@@ -6,6 +6,7 @@
 
 #include "base/crypto/signature_creator.h"
 #include "base/crypto/signature_verifier.h"
+#include "base/leak_annotations.h"
 #include "base/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -17,6 +18,9 @@ TEST(SignatureCreatorTest, BasicTest) {
 
   std::vector<uint8> key_info;
   key_original->ExportPrivateKey(&key_info);
+  // This test currently leaks some memory,
+  // see http://crbug.com/34742
+  ANNOTATE_SCOPED_MEMORY_LEAK;
   scoped_ptr<base::RSAPrivateKey> key(
       base::RSAPrivateKey::CreateFromPrivateKeyInfo(key_info));
   ASSERT_TRUE(key.get());

@@ -3,12 +3,17 @@
 // found in the LICENSE file.
 
 #include "base/crypto/rsa_private_key.h"
+#include "base/leak_annotations.h"
 #include "base/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Generate random private keys with two different sizes. Reimport, then
 // export them again. We should get back the same exact bytes.
 TEST(RSAPrivateKeyUnitTest, InitRandomTest) {
+  // This test currently leaks some memory,
+  // see http://crbug.com/34742
+  ANNOTATE_SCOPED_MEMORY_LEAK;
+
   scoped_ptr<base::RSAPrivateKey> keypair1(base::RSAPrivateKey::Create(1024));
   scoped_ptr<base::RSAPrivateKey> keypair2(base::RSAPrivateKey::Create(2048));
   ASSERT_TRUE(keypair1.get());
@@ -48,6 +53,10 @@ TEST(RSAPrivateKeyUnitTest, InitRandomTest) {
 // Verify that generated public keys look good. This test data was generated
 // with the openssl command line tool.
 TEST(RSAPrivateKeyUnitTest, PublicKeyTest) {
+  // This test currently leaks some memory,
+  // see http://crbug.com/34742
+  ANNOTATE_SCOPED_MEMORY_LEAK;
+
   const uint8 private_key_info[] = {
     0x30, 0x82, 0x02, 0x78, 0x02, 0x01, 0x00, 0x30, 
     0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86, 0xf7, 
@@ -185,6 +194,10 @@ TEST(RSAPrivateKeyUnitTest, PublicKeyTest) {
 //
 // This test case verifies these two failures modes don't occur.
 TEST(RSAPrivateKeyUnitTest, ShortIntegers) {
+  // This test currently leaks some memory,
+  // see http://crbug.com/34742
+  ANNOTATE_SCOPED_MEMORY_LEAK;
+
   const uint8 short_integer_with_high_bit[] = {
     0x30, 0x82, 0x02, 0x77, 0x02, 0x01, 0x00, 0x30, 
     0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86, 0xf7, 
