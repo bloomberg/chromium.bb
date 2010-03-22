@@ -6,6 +6,7 @@
 
 #include "app/gfx/canvas.h"
 #include "app/gfx/font.h"
+#include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
 #if defined(OS_WIN)
@@ -14,6 +15,7 @@
 #endif
 #include "gfx/path.h"
 #include "grit/app_resources.h"
+#include "grit/app_strings.h"
 #include "views/window/client_view.h"
 #if defined(OS_LINUX)
 #include "views/window/hit_test.h"
@@ -71,6 +73,8 @@ CustomFrameView::CustomFrameView(Window* frame)
   InitClass();
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+
+  close_button_->SetAccessibleName(l10n_util::GetString(IDS_APP_ACCNAME_CLOSE));
 
   // Close button images will be set in LayoutWindowControls().
   AddChildView(close_button_);
@@ -569,7 +573,7 @@ void CustomFrameView::InitClass() {
 #if defined(OS_WIN)
     title_font_ = new gfx::Font(win_util::GetWindowTitleFont());
 #elif defined(OS_LINUX)
-    // TODO: need to resolve what font this is.
+    // TODO(ben): need to resolve what font this is.
     title_font_ = new gfx::Font();
 #endif
     initialized = true;

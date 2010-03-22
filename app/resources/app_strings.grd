@@ -201,6 +201,9 @@ need to be translated for each locale.-->
       <message name="IDS_APP_ACCACTION_PRESS" desc="The accessible default action for a button.">
         Press
       </message>
+      <message name="IDS_APP_ACCNAME_CLOSE" desc="The accessible name for the Close button.">
+        Close
+      </message>
 
       <!-- Scroll Bar Context Menu Labels -->
       <message name="IDS_APP_SCROLLBAR_CXMENU_SCROLLHERE" desc="The label for the 'Scroll Here' item">
