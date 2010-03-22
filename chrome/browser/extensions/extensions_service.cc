@@ -338,7 +338,10 @@ void ExtensionsService::LoadComponentExtensions() {
        it != component_extension_manifests_.end(); ++it) {
     JSONStringValueSerializer serializer(it->manifest);
     scoped_ptr<Value> manifest(serializer.Deserialize(NULL));
-    DCHECK(manifest.get());
+    if (!manifest.get()) {
+      NOTREACHED() << "Failed to retrieve manifest for extension";
+      continue;
+    }
 
     scoped_ptr<Extension> extension(new Extension(it->root_directory));
     extension->set_location(Extension::COMPONENT);
