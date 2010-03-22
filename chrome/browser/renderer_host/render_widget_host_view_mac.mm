@@ -49,6 +49,7 @@ static inline int ToWebKitModifiers(NSUInteger flags) {
 - (void)keyEvent:(NSEvent *)theEvent wasKeyEquivalent:(BOOL)equiv;
 - (void)cancelChildPopups;
 - (void)callSetNeedsDisplayInRect:(NSValue*)rect;
+- (void)attachPluginLayer;
 @end
 
 namespace {
@@ -58,19 +59,19 @@ const size_t kMaxTooltipLength = 1024;
 
 }
 
-// GPUPluginLayer --------------------------------------------------------------
+// AcceleratedPluginLayer ------------------------------------------------------
 
-// This subclass of CAOpenGLLayer hosts the output of the GPU-accelerated
-// plugins on the page.
+// This subclass of CAOpenGLLayer hosts the output of accelerated plugins on
+// the page.
 
-@interface GPUPluginLayer : CAOpenGLLayer {
+@interface AcceleratedPluginLayer : CAOpenGLLayer {
   RenderWidgetHostViewMac* renderWidgetHostView_;  // weak
 }
 
 - (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)r;
 @end
 
-@implementation GPUPluginLayer
+@implementation AcceleratedPluginLayer
 - (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)r {
   self = [super init];
   if (self != nil) {
@@ -79,15 +80,26 @@ const size_t kMaxTooltipLength = 1024;
   return self;
 }
 
--(void)drawInCGLContext:(CGLContextObj)glContext
-       pixelFormat:(CGLPixelFormatObj)pixelFormat
-       forLayerTime:(CFTimeInterval)timeInterval
-       displayTime:(const CVTimeStamp *)timeStamp {
+- (void)drawInCGLContext:(CGLContextObj)glContext
+             pixelFormat:(CGLPixelFormatObj)pixelFormat
+            forLayerTime:(CFTimeInterval)timeInterval
+             displayTime:(const CVTimeStamp *)timeStamp {
   renderWidgetHostView_->DrawAcceleratedSurfaceInstances(glContext);
   [super drawInCGLContext:glContext
               pixelFormat:pixelFormat
              forLayerTime:timeInterval
               displayTime:timeStamp];
+}
+
+- (void)setFrame:(CGRect)rect {
+  // The frame we get when the superlayer resizes doesn't make sense, so ignore
+  // it and just match the superlayer's size. See the email thread referenced in
+  // ensureAcceleratedPluginLayer for an explanation of why the superlayer
+  // isn't trustworthy.
+  if ([self superlayer])
+    [super setFrame:[[self superlayer] bounds]];
+  else
+    [super setFrame:rect];
 }
 @end
 
@@ -217,9 +229,8 @@ gfx::NativeView RenderWidgetHostViewMac::GetNativeView() {
 
 void RenderWidgetHostViewMac::MovePluginWindows(
     const std::vector<webkit_glue::WebPluginGeometry>& moves) {
-  // The only case we need to notice plugin window moves is the case
-  // of the GPU plugin. As soon as the GPU plugin becomes the GPU
-  // process all of this code will go away.
+  // Handle movement of accelerated plugins, which are the only "windowed"
+  // plugins that exist on the Mac.
   if (moves.size() > 0) {
     for (std::vector<webkit_glue::WebPluginGeometry>::const_iterator iter =
              moves.begin();
@@ -236,9 +247,6 @@ void RenderWidgetHostViewMac::MovePluginWindows(
       }
     }
   }
-
-  // All plugin stuff is TBD. TODO(avi,awalker): fill in
-  // http://crbug.com/8192
 }
 
 void RenderWidgetHostViewMac::Focus() {
@@ -516,29 +524,8 @@ void RenderWidgetHostViewMac::KillSelf() {
 
 gfx::PluginWindowHandle
 RenderWidgetHostViewMac::AllocateFakePluginWindowHandle() {
-  // If we don't already have a GPUPluginLayer allocated for our view,
-  // set one up now.
-  if (gpu_plugin_layer_.get() == nil) {
-    RenderWidgetHostViewCocoa* our_view = native_view();
-    // Try to get AppKit to allocate the layer
-    [our_view setWantsLayer:YES];
-    CALayer* root_layer = [our_view layer];
-    if (root_layer == nil) {
-      root_layer = [CALayer layer];
-      [our_view setLayer:root_layer];
-    }
-
-    GPUPluginLayer* gpu_layer =
-        [[GPUPluginLayer alloc] initWithRenderWidgetHostViewMac:this];
-
-    // Make our layer resize to fit the superlayer
-    gpu_layer.autoresizingMask = kCALayerWidthSizable | kCALayerHeightSizable;
-    // Set up its initial size
-    [gpu_layer setFrame:NSRectToCGRect([our_view bounds])];
-
-    [root_layer addSublayer:gpu_layer];
-    gpu_plugin_layer_.reset(gpu_layer);
-  }
+  // Make sure we have a layer for the plugin to draw into.
+  [cocoa_view_ ensureAcceleratedPluginLayer];
 
   return plugin_container_manager_.AllocateFakePluginWindowHandle();
 }
@@ -572,7 +559,7 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceSetTransportDIB(
 
 void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
     gfx::PluginWindowHandle window) {
-  [gpu_plugin_layer_.get() setNeedsDisplay];
+  [cocoa_view_ drawAcceleratedPluginLayer];
 }
 
 void RenderWidgetHostViewMac::DrawAcceleratedSurfaceInstances(
@@ -588,6 +575,10 @@ void RenderWidgetHostViewMac::DrawAcceleratedSurfaceInstances(
   glLoadIdentity();
 
   plugin_container_manager_.Draw(context);
+}
+
+void RenderWidgetHostViewMac::AcceleratedSurfaceContextChanged() {
+  plugin_container_manager_.ForceTextureReload();
 }
 
 void RenderWidgetHostViewMac::SetVisuallyDeemphasized(bool deemphasized) {
@@ -1061,9 +1052,9 @@ bool RenderWidgetHostViewMac::ContainsNativeView(
       renderWidgetHostView_->whiteout_start_time_ = base::TimeTicks::Now();
   }
 
-  // This helps keep the GPU plugins' output in better sync with the
+  // This helps keep accelerated plugins' output in better sync with the
   // window as it resizes.
-  [renderWidgetHostView_->gpu_plugin_layer_.get() setNeedsDisplay];
+  [accelerated_plugin_layer_.get() setNeedsDisplay];
 }
 
 - (BOOL)canBecomeKeyView {
@@ -1676,6 +1667,53 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
     static_cast<RenderViewHost*>(renderWidgetHostView_->render_widget_host_)->
       ForwardEditCommand("PasteAndMatchStyle", "");
   }
+}
+
+- (void)ensureAcceleratedPluginLayer {
+  if (accelerated_plugin_layer_.get())
+    return;
+
+  AcceleratedPluginLayer* plugin_layer = [[AcceleratedPluginLayer alloc]
+      initWithRenderWidgetHostViewMac:renderWidgetHostView_.get()];
+  accelerated_plugin_layer_.reset(plugin_layer);
+  // Make our layer resize to fit the superlayer
+  plugin_layer.autoresizingMask = kCALayerWidthSizable |
+                                  kCALayerHeightSizable;
+  // Make the view layer-backed so that there will be a layer to hang the
+  // |layer| off of. This is not the "right" way to host a sublayer in a view,
+  // but the right way would require making the whole view's drawing system
+  // layer-based (using setLayer:). We don't want to do that (at least not
+  // yet) so instead we override setLayer: and re-bind our plugin layer each
+  // time the view's layer changes. For discussion see:
+  // http://lists.apple.com/archives/Cocoa-dev/2009/Feb/msg01132.html
+  [self setWantsLayer:YES];
+  [self attachPluginLayer];
+}
+
+- (void)attachPluginLayer {
+  CALayer* plugin_layer = accelerated_plugin_layer_.get();
+  if (!plugin_layer)
+    return;
+
+  CALayer* root_layer = [self layer];
+  DCHECK(root_layer != nil);
+  [plugin_layer setFrame:NSRectToCGRect([self bounds])];
+  [root_layer addSublayer:plugin_layer];
+  renderWidgetHostView_->AcceleratedSurfaceContextChanged();
+}
+
+- (void)setLayer:(CALayer *)newLayer {
+  CALayer* plugin_layer = accelerated_plugin_layer_.get();
+  if (!newLayer && [plugin_layer superlayer])
+    [plugin_layer removeFromSuperlayer];
+
+  [super setLayer:newLayer];
+  if ([self layer])
+    [self attachPluginLayer];
+}
+
+- (void)drawAcceleratedPluginLayer {
+  [accelerated_plugin_layer_.get() setNeedsDisplay];
 }
 
 @end

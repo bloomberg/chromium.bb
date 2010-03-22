@@ -67,6 +67,10 @@ class AcceleratedSurfaceContainerMac {
   // coordinate system will work out.
   void Draw(CGLContextObj context);
 
+  // Causes the next Draw call to trigger a texture upload. Should be called any
+  // time the drawing context has changed.
+  void ForceTextureReload() { texture_needs_upload_ = true; }
+
   // Enqueue our texture for later deletion. Call this before deleting
   // this object.
   void EnqueueTextureForDeletion(
@@ -103,6 +107,9 @@ class AcceleratedSurfaceContainerMac {
   // need to do is ensure it is re-bound before attempting to draw
   // with it.
   GLuint texture_;
+
+  // True if we need to upload the texture again during the next draw.
+  bool texture_needs_upload_;
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratedSurfaceContainerMac);
 };

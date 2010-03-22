@@ -53,6 +53,10 @@ class AcceleratedSurfaceContainerManagerMac {
   // context, which must already be current.
   void Draw(CGLContextObj context);
 
+  // Causes the next Draw call on each container to trigger a texture upload.
+  // Should be called any time the drawing context has changed.
+  void ForceTextureReload();
+
   // Called by the container to enqueue its OpenGL texture objects for
   // deletion.
   void EnqueueTextureForDeletion(GLuint texture);

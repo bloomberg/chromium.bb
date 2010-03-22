@@ -52,11 +52,20 @@ class RWHVMEditCommandHelper;
   // insertText: and insertNewline: to synthesize the corresponding Char event.
   scoped_nsobject<NSEvent> currentKeyEvent_;
   NSWindow* lastWindow_;  // weak
+
+  // The Core Animation layer, if any, hosting the accelerated plugins' output.
+  scoped_nsobject<CALayer> accelerated_plugin_layer_;
 }
 
 - (void)setCanBeKeyView:(BOOL)can;
 - (void)setCloseOnDeactivate:(BOOL)b;
 - (void)setToolTipAtMousePoint:(NSString *)string;
+// Makes sure that the initial layer setup for accelerated plugin drawing has
+// been done. Can be called multiple times.
+- (void)ensureAcceleratedPluginLayer;
+// Triggers a refresh of the accelerated plugin layer; should be called whenever
+// the shared surface for one of the plugins is updated.
+- (void)drawAcceleratedPluginLayer;
 @end
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -139,6 +148,9 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   virtual void AcceleratedSurfaceBuffersSwapped(gfx::PluginWindowHandle window);
   // Draws the current GPU-accelerated plug-in instances into the given context.
   virtual void DrawAcceleratedSurfaceInstances(CGLContextObj context);
+  // Informs the plug-in instances that their drawing context has changed.
+  virtual void AcceleratedSurfaceContextChanged();
+
   virtual void SetVisuallyDeemphasized(bool deemphasized);
 
   void KillSelf();
@@ -206,9 +218,6 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   // We save the latest cursor position here and return it when an input
   // methods needs it.
   NSRect im_caret_rect_;
-
-  // The Core Animation layer, if any, hosting the GPU plugins' output.
-  scoped_nsobject<CALayer> gpu_plugin_layer_;
 
  private:
   // Updates the display cursor to the current cursor if the cursor is over this

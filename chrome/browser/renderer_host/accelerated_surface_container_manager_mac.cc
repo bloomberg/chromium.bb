@@ -81,6 +81,15 @@ void AcceleratedSurfaceContainerManagerMac::Draw(CGLContextObj context) {
   glFlush();
 }
 
+void AcceleratedSurfaceContainerManagerMac::ForceTextureReload() {
+  for (PluginWindowToContainerMap::const_iterator i =
+          plugin_window_to_container_map_.begin();
+       i != plugin_window_to_container_map_.end(); ++i) {
+    AcceleratedSurfaceContainerMac* container = i->second;
+    container->ForceTextureReload();
+  }
+}
+
 void AcceleratedSurfaceContainerManagerMac::EnqueueTextureForDeletion(
     GLuint texture) {
   if (texture) {

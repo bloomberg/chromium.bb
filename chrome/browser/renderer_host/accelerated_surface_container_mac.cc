@@ -15,7 +15,8 @@ AcceleratedSurfaceContainerMac::AcceleratedSurfaceContainerMac()
       surface_(NULL),
       width_(0),
       height_(0),
-      texture_(0) {
+      texture_(0),
+      texture_needs_upload_(true) {
 }
 
 AcceleratedSurfaceContainerMac::~AcceleratedSurfaceContainerMac() {
@@ -77,22 +78,7 @@ void AcceleratedSurfaceContainerMac::Draw(CGLContextObj context) {
     glBindTexture(target, texture_);
     glTexParameterf(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameterf(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    // When using an IOSurface, the texture does not need to be repeatedly
-    // uploaded, so bind the IOSurface once during texture gen in this case.
-    if (io_surface_support) {
-      DCHECK(surface_);
-      // Don't think we need to identify a plane.
-      GLuint plane = 0;
-      io_surface_support->CGLTexImageIOSurface2D(context,
-                                                 target,
-                                                 GL_RGBA,
-                                                 width_,
-                                                 height_,
-                                                 GL_BGRA,
-                                                 GL_UNSIGNED_INT_8_8_8_8_REV,
-                                                 surface_,
-                                                 plane);
-    } else {
+    if (!io_surface_support) {
       // Reserve space on the card for the actual texture upload, done with the
       // glTexSubImage2D() call, below.
       glTexImage2D(target,
@@ -107,6 +93,24 @@ void AcceleratedSurfaceContainerMac::Draw(CGLContextObj context) {
     }
   }
 
+  // When using an IOSurface, the texture does not need to be repeatedly
+  // uploaded, just when we've been told we have to.
+  if (io_surface_support && texture_needs_upload_) {
+    DCHECK(surface_);
+    glBindTexture(target, texture_);
+    // Don't think we need to identify a plane.
+    GLuint plane = 0;
+    io_surface_support->CGLTexImageIOSurface2D(context,
+                                               target,
+                                               GL_RGBA,
+                                               width_,
+                                               height_,
+                                               GL_BGRA,
+                                               GL_UNSIGNED_INT_8_8_8_8_REV,
+                                               surface_,
+                                               plane);
+    texture_needs_upload_ = false;
+  }
   // If using TransportDIBs, the texture needs to be uploaded every frame.
   if (transport_dib_.get() != NULL) {
     void* pixel_memory = transport_dib_->memory();
