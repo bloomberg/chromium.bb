@@ -7,39 +7,16 @@
 #include <nss.h>
 #include <pk11pub.h>
 
+#include "base/crypto/scoped_nss_types.h"
 #include "base/logging.h"
 #include "base/nss_util.h"
 #include "base/scoped_ptr.h"
 
-namespace {
-
-template <typename Type, void (*Destroyer)(Type*)>
-struct NSSDestroyer {
-  void operator()(Type* ptr) const {
-    if (ptr)
-      Destroyer(ptr);
-  }
-};
-
-void DestroyContext(PK11Context* context) {
-  PK11_DestroyContext(context, PR_TRUE);
-}
-
-// Define some convenient scopers around NSS pointers.
-typedef scoped_ptr_malloc<
-    PK11SlotInfo, NSSDestroyer<PK11SlotInfo, PK11_FreeSlot> > ScopedNSSSlot;
-typedef scoped_ptr_malloc<
-    PK11SymKey, NSSDestroyer<PK11SymKey, PK11_FreeSymKey> > ScopedNSSSymKey;
-typedef scoped_ptr_malloc<
-    PK11Context, NSSDestroyer<PK11Context, DestroyContext> > ScopedNSSContext;
-
-}  // namespace
-
 namespace base {
 
 struct HMACPlatformData {
-  ScopedNSSSlot slot_;
-  ScopedNSSSymKey sym_key_;
+  ScopedPK11Slot slot_;
+  ScopedPK11SymKey sym_key_;
 };
 
 HMAC::HMAC(HashAlgorithm hash_alg)
@@ -100,10 +77,10 @@ bool HMAC::Sign(const std::string& data,
   }
 
   SECItem param = { siBuffer, NULL, 0 };
-  ScopedNSSContext context(PK11_CreateContextBySymKey(CKM_SHA_1_HMAC,
-                                                      CKA_SIGN,
-                                                      plat_->sym_key_.get(),
-                                                      &param));
+  ScopedPK11Context context(PK11_CreateContextBySymKey(CKM_SHA_1_HMAC,
+                                                       CKA_SIGN,
+                                                       plat_->sym_key_.get(),
+                                                       &param));
   if (!context.get()) {
     NOTREACHED();
     return false;

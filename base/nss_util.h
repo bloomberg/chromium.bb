@@ -7,6 +7,9 @@
 
 #include "base/basictypes.h"
 
+// This file specifically doesn't depend on any NSS or NSPR headers because it
+// is included by various (non-crypto) parts of chrome to call the
+// initialization functions.
 namespace base {
 
 class Time;
