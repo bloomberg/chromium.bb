@@ -29,9 +29,14 @@
 #endif
 
 #ifndef NDEBUG
-#define TEST_ITERATIONS "2"
+#define TEST_ITERATIONS 2
+#define DATABASE_TEST_ITERATIONS 2
 #else
-#define TEST_ITERATIONS "10"
+#define TEST_ITERATIONS 10
+// For some unknown reason, the DB perf tests are much much slower on the
+// Vista perf bot, so we have to cut down the number of iterations to 5
+// to make sure each test finishes in less than 10 minutes.
+#define DATABASE_TEST_ITERATIONS 5
 #endif
 
 // URL at which data files may be found for HTTP tests.  The document root of
@@ -192,6 +197,10 @@ class PageCyclerTest : public UITest {
     return false;
   }
 
+  virtual int GetTestIterations() {
+    return TEST_ITERATIONS;
+  }
+
   // For HTTP tests, the name must be safe for use in a URL without escaping.
   void RunPageCycler(const char* name, std::wstring* pages,
                      std::string* timings, bool use_http) {
@@ -213,10 +222,11 @@ class PageCyclerTest : public UITest {
 
     // run N iterations
     GURL::Replacements replacements;
-    const char query_string[] = "iterations=" TEST_ITERATIONS "&auto=1";
+    const std::string query_string =
+        "iterations=" + IntToString(GetTestIterations()) + "&auto=1";
     replacements.SetQuery(
-        query_string,
-        url_parse::Component(0, arraysize(query_string) - 1));
+        query_string.c_str(),
+        url_parse::Component(0, query_string.length()));
     test_url = test_url.ReplaceComponents(replacements);
 
     scoped_refptr<TabProxy> tab(GetActiveTab());
@@ -392,6 +402,10 @@ class PageCyclerDatabaseTest : public PageCyclerTest {
   virtual bool HasErrors(const std::string timings) {
     return HasDatabaseErrors(timings);
   }
+
+  virtual int GetTestIterations() {
+    return DATABASE_TEST_ITERATIONS;
+  }
 };
 
 class PageCyclerDatabaseReferenceTest : public PageCyclerReferenceTest {
@@ -407,6 +421,10 @@ class PageCyclerDatabaseReferenceTest : public PageCyclerReferenceTest {
   virtual bool HasErrors(const std::string timings) {
     return HasDatabaseErrors(timings);
   }
+
+  virtual int GetTestIterations() {
+    return DATABASE_TEST_ITERATIONS;
+  }
 };
 
 // This macro simplifies setting up regular and reference build tests.
@@ -420,13 +438,11 @@ TEST_F(PageCyclerReferenceTest, name) { \
 
 // This macro simplifies setting up regular and reference build tests
 // for HTML5 database tests.
-// TODO(dumi): re-enable the DB perf tests once we figure out why
-// they're so slow on the release perf bots
 #define PAGE_CYCLER_DATABASE_TESTS(test, name) \
-TEST_F(PageCyclerDatabaseTest, DISABLED_Database##name##File) { \
+TEST_F(PageCyclerDatabaseTest, Database##name##File) { \
   RunTest(test, test, false); \
 } \
-TEST_F(PageCyclerDatabaseReferenceTest, DISABLED_Database##name##File) { \
+TEST_F(PageCyclerDatabaseReferenceTest, Database##name##File) { \
   RunTest(test, test, false); \
 }
 
