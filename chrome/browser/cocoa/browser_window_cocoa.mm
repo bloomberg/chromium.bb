@@ -237,7 +237,7 @@ void BrowserWindowCocoa::FocusToolbar() {
   NOTIMPLEMENTED();
 }
 
-void BrowserWindowCocoa::FocusPageAndAppMenus();
+void BrowserWindowCocoa::FocusPageAndAppMenus() {
   // Chrome uses the standard Mac OS X menu bar, so this isn't needed.
 }
 
