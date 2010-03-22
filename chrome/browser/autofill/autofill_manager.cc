@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/autofill/autofill_dialog.h"
 #include "chrome/browser/autofill/autofill_infobar_delegate.h"
+#include "chrome/browser/autofill/autofill_xml_parser.h"
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -29,12 +30,14 @@ AutoFillManager::AutoFillManager(TabContents* tab_contents)
   personal_data_ =
       tab_contents_->profile()->GetOriginalProfile()->GetPersonalDataManager();
   DCHECK(personal_data_);
+  download_manager_.SetObserver(this);
 }
 
 AutoFillManager::~AutoFillManager() {
   // This is NULL in the MockAutoFillManager.
   if (personal_data_)
     personal_data_->RemoveObserver(this);
+  download_manager_.SetObserver(NULL);
 }
 
 // static
@@ -87,6 +90,14 @@ void AutoFillManager::FormsSeen(
     FormStructure* form_structure = new FormStructure(*iter);
     DeterminePossibleFieldTypes(form_structure);
     form_structures_.push_back(form_structure);
+    std::string request_xml;
+    if (form_structure->IsAutoFillable() &&
+        form_structure->EncodeUploadRequest(true, true, &request_xml)) {
+      download_manager_.StartRequest(request_xml,
+                                     form_structure->FormSignature(),
+                                     true,
+                                     false);
+    }
   }
 }
 
@@ -282,6 +293,48 @@ void AutoFillManager::Reset() {
   form_structures_.reset();
 }
 
+void AutoFillManager::OnLoadedAutoFillHeuristics(
+    const std::string& form_signature,
+    const std::string& heuristic_xml) {
+  for (ScopedVector<FormStructure>::iterator it = form_structures_.begin();
+      it != form_structures_.end();
+      ++it) {
+    if ((*it)->FormSignature() == form_signature) {
+      // Create a vector of AutoFillFieldTypes,
+      // to assign the parsed field types to.
+      std::vector<AutoFillFieldType> field_types;
+      UploadRequired upload_required = USE_UPLOAD_RATES;
+
+      // Create a parser.
+      AutoFillQueryXmlParser parse_handler(&field_types, &upload_required);
+      buzz::XmlParser parser(&parse_handler);
+      parser.Parse(heuristic_xml.c_str(), heuristic_xml.length(), true);
+      if (parse_handler.succeeded()) {
+        DCHECK(field_types.size() == (*it)->field_count());
+        if (field_types.size() == (*it)->field_count()) {
+          for (size_t i = 0; i < (*it)->field_count(); ++i) {
+            if (field_types[i] != NO_SERVER_DATA &&
+                field_types[i] != UNKNOWN_TYPE) {
+             FieldTypeSet types = (*it)->field(i)->possible_types();
+             types.insert(field_types[i]);
+             (*it)->set_possible_types(i, types);
+            }
+          }
+        }
+        return;
+      }
+    }
+  }
+}
+
+void AutoFillManager::OnUploadedAutoFillHeuristics(
+    const std::string& form_signature) {
+}
+
+void AutoFillManager::OnHeuristicsRequestError(
+    const std::string& form_signature, int http_error) {
+}
+
 void AutoFillManager::DeterminePossibleFieldTypes(
     FormStructure* form_structure) {
   // TODO(jhawkins): Update field text.
@@ -311,10 +364,15 @@ void AutoFillManager::HandleSubmit() {
 
 void AutoFillManager::UploadFormData() {
   std::string xml;
-  bool ok = upload_form_structure_->EncodeUploadRequest(false, &xml);
+  bool ok = upload_form_structure_->EncodeUploadRequest(false, false, &xml);
   DCHECK(ok);
 
-  // TODO(jhawkins): Initiate the upload request thread.
+  // TODO(georgey): enable upload request when we make sure that our data is in
+  // line with toolbar data:
+  // download_manager_.StartRequest(xml,
+  //                                upload_form_structure_->FormSignature(),
+  //                                false,
+  //                                form_is_autofilled);
 }
 
 bool AutoFillManager::IsAutoFillEnabled() {

@@ -121,6 +121,8 @@
         # Windows version of autofill dialog is defined in
         # 'browser/views/autofill_profiles_view_win.cc'
         'browser/autofill/autofill_dialog.h',
+        'browser/autofill/autofill_download.cc',
+        'browser/autofill/autofill_download.h',
         'browser/autofill/autofill_field.cc',
         'browser/autofill/autofill_field.h',
         'browser/autofill/autofill_infobar_delegate.cc',

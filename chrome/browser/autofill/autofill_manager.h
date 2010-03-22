@@ -6,10 +6,12 @@
 #define CHROME_BROWSER_AUTOFILL_AUTOFILL_MANAGER_H_
 
 #include <vector>
+#include <string>
 
 #include "base/scoped_ptr.h"
 #include "base/scoped_vector.h"
 #include "chrome/browser/autofill/autofill_dialog.h"
+#include "chrome/browser/autofill/autofill_download.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 
@@ -30,7 +32,8 @@ class TabContents;
 // forms.
 class AutoFillManager : public RenderViewHostDelegate::AutoFill,
                         public AutoFillDialogObserver,
-                        public PersonalDataManager::Observer {
+                        public PersonalDataManager::Observer,
+                        public AutoFillDownloadManager::Observer {
  public:
   explicit AutoFillManager(TabContents* tab_contents);
   virtual ~AutoFillManager();
@@ -73,6 +76,13 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
   // Resets the stored form data.
   virtual void Reset();
 
+  // AutoFillDownloadManager::Observer implementation:
+  virtual void OnLoadedAutoFillHeuristics(const std::string& form_signature,
+                                          const std::string& heuristic_xml);
+  virtual void OnUploadedAutoFillHeuristics(const std::string& form_signature);
+  virtual void OnHeuristicsRequestError(const std::string& form_signature,
+                                        int http_error);
+
   // Uses heuristics and existing personal data to determine the possible field
   // types.
   void DeterminePossibleFieldTypes(FormStructure* form_structure);
@@ -102,6 +112,9 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
   // Weak reference.
   // May be NULL.  NULL indicates OTR.
   PersonalDataManager* personal_data_;
+
+  // Handles queries and uploads to AutoFill servers.
+  AutoFillDownloadManager download_manager_;
 
   // Our copy of the form data.
   ScopedVector<FormStructure> form_structures_;

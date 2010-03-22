@@ -36,8 +36,10 @@ class FormStructure {
  public:
   explicit FormStructure(const webkit_glue::FormFieldValues& values);
 
-  // Encodes the XML upload request from this FormStructure.
-  bool EncodeUploadRequest(bool auto_fill_used, std::string* encoded_xml) const;
+  // Encodes the XML query or upload request from this FormStructure.
+  // |query| - true means request is a query, upload otherwise.
+  bool EncodeUploadRequest(bool auto_fill_used, bool query,
+                           std::string* encoded_xml) const;
 
   // Runs several heuristics against the form fields to determine their possible
   // types.

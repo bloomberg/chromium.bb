@@ -90,53 +90,69 @@ FormStructure::FormStructure(const FormFieldValues& values)
 }
 
 bool FormStructure::EncodeUploadRequest(bool auto_fill_used,
+                                        bool query,
                                         std::string* encoded_xml) const {
   bool auto_fillable = IsAutoFillable();
   DCHECK(auto_fillable);  // Caller should've checked for search pages.
   if (!auto_fillable)
     return false;
 
-  buzz::XmlElement autofill_upload(buzz::QName("autofillupload"));
+  buzz::XmlElement autofil_request_xml(query ? buzz::QName("autofillquery") :
+                                               buzz::QName("autofillupload"));
+  buzz::XmlElement *encompassing_xml_element = &autofil_request_xml;
+  if (query)
+    encompassing_xml_element = new buzz::XmlElement(buzz::QName("form"));
 
-  // Attributes for the <autofillupload> element.
+  // Attributes for the <autofillupload>/<autofillquery> element.
   //
   // TODO(jhawkins): Work with toolbar devs to make a spec for autofill clients.
   // For now these values are hacked from the toolbar code.
-  autofill_upload.SetAttr(buzz::QName(kAttributeClientVersion),
-                          "6.1.1715.1442/en (GGLL)");
+  autofil_request_xml.SetAttr(buzz::QName(kAttributeClientVersion),
+                              "6.1.1715.1442/en (GGLL)");
 
-  autofill_upload.SetAttr(buzz::QName(kAttributeFormSignature),
-                          FormSignature());
+  encompassing_xml_element->SetAttr(query ? buzz::QName(kAttributeSignature) :
+                                    buzz::QName(kAttributeFormSignature),
+                                    FormSignature());
 
-  autofill_upload.SetAttr(buzz::QName(kAttributeAutoFillUsed),
-                          auto_fill_used ? "true" : "false");
+  if (!query) {
+    autofil_request_xml.SetAttr(buzz::QName(kAttributeAutoFillUsed),
+                                auto_fill_used ? "true" : "false");
 
-  // TODO(jhawkins): Hook this up to the personal data manager.
-  // personaldata_manager_->GetDataPresent();
-  autofill_upload.SetAttr(buzz::QName(kAttributeDataPresent), "");
+    // TODO(jhawkins): Hook this up to the personal data manager.
+    // personaldata_manager_->GetDataPresent();
+    autofil_request_xml.SetAttr(buzz::QName(kAttributeDataPresent), "");
+  }
 
   // Add the child nodes for the form fields.
   for (size_t index = 0; index < field_count(); index++) {
     const AutoFillField* field = fields_[index];
+    if (!query) {
     FieldTypeSet types = field->possible_types();
-    for (FieldTypeSet::const_iterator type = types.begin();
-         type != types.end(); type++) {
+      for (FieldTypeSet::const_iterator type = types.begin();
+           type != types.end(); type++) {
+        buzz::XmlElement *field_element = new buzz::XmlElement(
+            buzz::QName(kXMLElementField));
+
+        field_element->SetAttr(buzz::QName(kAttributeSignature),
+                               field->FieldSignature());
+        field_element->SetAttr(buzz::QName(kAttributeAutoFillType),
+                               IntToString(*type));
+        encompassing_xml_element->AddElement(field_element);
+      }
+    } else {
       buzz::XmlElement *field_element = new buzz::XmlElement(
           buzz::QName(kXMLElementField));
-
       field_element->SetAttr(buzz::QName(kAttributeSignature),
                              field->FieldSignature());
-
-      field_element->SetAttr(buzz::QName(kAttributeAutoFillType),
-                             IntToString(*type));
-
-      autofill_upload.AddElement(field_element);
+      encompassing_xml_element->AddElement(field_element);
     }
   }
+  if (query)
+    autofil_request_xml.AddElement(encompassing_xml_element);
 
   // Obtain the XML structure as a string.
   *encoded_xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
-  *encoded_xml += autofill_upload.Str().c_str();
+  *encoded_xml += autofil_request_xml.Str().c_str();
 
   return true;
 }
