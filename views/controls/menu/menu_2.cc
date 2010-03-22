@@ -42,4 +42,8 @@ void Menu2::UpdateStates() {
   wrapper_->UpdateStates();
 }
 
+MenuWrapper::MenuAction Menu2::GetMenuAction() const {
+  return wrapper_->GetMenuAction();
+}
+
 }  // namespace

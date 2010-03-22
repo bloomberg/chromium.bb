@@ -36,6 +36,7 @@ class Menu2;
 class ToolbarView : public AccessibleToolbarView,
                     public views::ViewMenuDelegate,
                     public views::DragController,
+                    public views::FocusChangeListener,
                     public menus::SimpleMenuModel::Delegate,
                     public LocationBarView::Delegate,
                     public NotificationObserver,
@@ -44,7 +45,7 @@ class ToolbarView : public AccessibleToolbarView,
                     public BubblePositioner {
  public:
   explicit ToolbarView(Browser* browser);
-  virtual ~ToolbarView() { }
+  virtual ~ToolbarView();
 
   // Create the contents of the Browser Toolbar
   void Init(Profile* profile);
@@ -62,6 +63,19 @@ class ToolbarView : public AccessibleToolbarView,
   // Sets the app menu model.
   void SetAppMenuModel(AppMenuModel* model);
 
+  // Focuses the page menu and enters a special mode where the page
+  // and app menus are focusable and allow for keyboard navigation just
+  // like a normal menu bar. As soon as focus leaves one of the menus,
+  // the special mode is exited.
+  //
+  // Pass it the storage id of the view where focus should be returned
+  // if the user escapes, and the menu button to focus initially. If
+  // |menu_to_focus| is NULL, it will focus the page menu by default.
+  //
+  // Not used on the Mac, which has a "normal" menu bar.
+  void EnterMenuBarEmulationMode(int last_focused_view_storage_id,
+                                 views::MenuButton* menu_to_focus);
+
   // Accessors...
   Browser* browser() const { return browser_; }
   BrowserActionsContainer* browser_actions() const { return browser_actions_; }
@@ -70,6 +84,10 @@ class ToolbarView : public AccessibleToolbarView,
   LocationBarView* location_bar() const { return location_bar_; }
   views::MenuButton* page_menu() const { return page_menu_; }
   views::MenuButton* app_menu() const { return app_menu_; }
+
+  // Overridden from views::FocusChangeListener:
+  virtual void FocusWillChange(views::View* focused_before,
+                               views::View* focused_now);
 
   // Overridden from AccessibleToolbarView:
   virtual bool IsAccessibleViewTraversable(views::View* view);
@@ -106,6 +124,7 @@ class ToolbarView : public AccessibleToolbarView,
   virtual void ExecuteCommand(int command_id);
 
   // Overridden from views::View:
+  virtual bool AcceleratorPressed(const views::Accelerator& accelerator);
   virtual gfx::Size GetPreferredSize();
   virtual void Layout();
   virtual void Paint(gfx::Canvas* canvas);
@@ -138,6 +157,13 @@ class ToolbarView : public AccessibleToolbarView,
   void RunPageMenu(const gfx::Point& pt);
   void RunAppMenu(const gfx::Point& pt);
 
+  // Check if the menu exited with a code indicating the user wants to
+  // switch to the other menu, and then switch to that other menu.
+  void SwitchToOtherMenuIfNeeded(views::Menu2* previous_menu,
+                                 views::MenuButton* next_menu_button);
+
+  void ActivateMenuButton(views::MenuButton* menu_button);
+
   // Types of display mode this toolbar can have.
   enum DisplayMode {
     DISPLAYMODE_NORMAL,       // Normal toolbar with buttons, etc.
@@ -147,6 +173,14 @@ class ToolbarView : public AccessibleToolbarView,
   bool IsDisplayModeNormal() const {
     return display_mode_ == DISPLAYMODE_NORMAL;
   }
+
+  // Take the menus out of the focus traversal, unregister accelerators,
+  // and stop listening to focus change events.
+  void ExitMenuBarEmulationMode();
+
+  // Restore the view that was focused before EnterMenuBarEmulationMode
+  // was called.
+  void RestoreLastFocusedView();
 
   scoped_ptr<BackForwardMenuModel> back_menu_model_;
   scoped_ptr<BackForwardMenuModel> forward_menu_model_;
@@ -186,6 +220,13 @@ class ToolbarView : public AccessibleToolbarView,
   // TODO(beng): build these into MenuButton.
   scoped_ptr<views::Menu2> page_menu_menu_;
   scoped_ptr<views::Menu2> app_menu_menu_;
+
+  // Storage id for the last view that was focused before focus
+  // was given to one of the toolbar views.
+  int last_focused_view_storage_id_;
+
+  // Used to post tasks to switch to the next/previous menu.
+  ScopedRunnableMethodFactory<ToolbarView> method_factory_;
 };
 
 #endif  // CHROME_BROWSER_VIEWS_TOOLBAR_VIEW_H_

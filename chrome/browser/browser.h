@@ -460,6 +460,7 @@ class Browser : public TabStripModelDelegate,
   void FocusToolbar();
   void FocusLocationBar();
   void FocusSearch();
+  void FocusPageAndAppMenus();
 
   // Show various bits of UI
   void OpenFile();

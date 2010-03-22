@@ -348,6 +348,14 @@ IPC_BEGIN_MESSAGES(Automation)
                              int /* view_handle */,
                              int /* focused_view_id */)
 
+  // Block until the focused view id changes to something other than
+  // |previous_view_id|.
+  IPC_SYNC_MESSAGE_ROUTED2_2(AutomationMsg_WaitForFocusedViewIDToChange,
+                             int /* window handle */,
+                             int /* previous_view_id */,
+                             bool /* success */,
+                             int /* new_view_id */)
+
   // This message shows/hides the window.
   IPC_SYNC_MESSAGE_ROUTED2_1(AutomationMsg_SetWindowVisible,
                              int /* view_handle */,
@@ -1287,5 +1295,11 @@ IPC_BEGIN_MESSAGES(Automation)
                              int /* browser_handle */,
                              int64 /* id */,
                              bool /* success */)
+
+  // Determine if a pop-up menu is open.
+  IPC_SYNC_MESSAGE_ROUTED1_2(AutomationMsg_IsPopUpMenuOpen,
+                             int /* window handle */,
+                             bool /* success */,
+                             bool /* is_open */)
 
 IPC_END_MESSAGES(Automation)

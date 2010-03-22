@@ -230,6 +230,7 @@
         'test/automated_ui_tests/automated_ui_test_interactive_test.cc',
         'test/automated_ui_tests/automated_ui_tests.cc',
         'test/automated_ui_tests/automated_ui_tests.h',
+        'test/automated_ui_tests/keyboard_access_uitest.cc',
       ],
       'conditions': [
         ['OS=="linux"', {

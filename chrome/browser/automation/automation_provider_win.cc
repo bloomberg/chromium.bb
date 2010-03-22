@@ -231,19 +231,6 @@ void AutomationProvider::WindowSimulateDrag(int handle,
   }
 }
 
-void AutomationProvider::GetFocusedViewID(int handle, int* view_id) {
-  *view_id = -1;
-  if (window_tracker_->ContainsHandle(handle)) {
-    HWND hwnd = window_tracker_->GetResource(handle);
-    views::FocusManager* focus_manager =
-        views::FocusManager::GetFocusManagerForNativeView(hwnd);
-    DCHECK(focus_manager);
-    views::View* focused_view = focus_manager->GetFocusedView();
-    if (focused_view)
-      *view_id = focused_view->GetID();
-  }
-}
-
 void AutomationProvider::GetWindowBounds(int handle, gfx::Rect* bounds,
                                          bool* success) {
   *success = false;
@@ -505,4 +492,14 @@ void AutomationProvider::GetWindowTitle(int handle, string16* text) {
   int length = ::GetWindowTextLength(window) + 1;
   ::GetWindowText(window, WriteInto(&result, length), length);
   text->assign(WideToUTF16(result));
+}
+
+void AutomationProvider::IsPopUpMenuOpen(
+    int handle, bool* success, bool* is_open) {
+  *success = true;
+
+  // Check for the existence of a pop-up menu using its
+  // window class (#32768). Note that this won't cover
+  // bookmark menus.
+  *is_open = (::FindWindow(L"#32768", 0) != NULL);
 }

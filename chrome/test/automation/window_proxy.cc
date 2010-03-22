@@ -8,6 +8,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/time.h"
 #include "chrome/test/automation/automation_constants.h"
 #include "chrome/test/automation/automation_messages.h"
 #include "chrome/test/automation/automation_proxy.h"
@@ -15,6 +16,9 @@
 #include "chrome/test/automation/tab_proxy.h"
 #include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
+
+using base::TimeDelta;
+using base::TimeTicks;
 
 bool WindowProxy::SimulateOSClick(const gfx::Point& click, int flags) {
   if (!is_valid()) return false;
@@ -123,6 +127,14 @@ bool WindowProxy::GetFocusedViewID(int* view_id) {
                                                           view_id));
 }
 
+bool WindowProxy::WaitForFocusedViewIDToChange(
+    int old_view_id, int* new_view_id) {
+  bool result = false;
+  sender_->Send(new AutomationMsg_WaitForFocusedViewIDToChange
+                (0, handle_, old_view_id, &result, new_view_id));
+  return result;
+}
+
 scoped_refptr<BrowserProxy> WindowProxy::GetBrowser() {
   return GetBrowserWithTimeout(base::kNoTimeout, NULL);
 }
@@ -162,4 +174,23 @@ bool WindowProxy::IsMaximized(bool* maximized) {
   sender_->Send(new AutomationMsg_IsWindowMaximized(0, handle_, maximized,
                                                     &result));
   return result;
+}
+
+bool WindowProxy::WaitForPopupMenuOpen(uint32 timeout_ms) {
+  const TimeTicks start = TimeTicks::Now();
+  const TimeDelta timeout = TimeDelta::FromMilliseconds(timeout_ms);
+  while (TimeTicks::Now() - start < timeout) {
+    PlatformThread::Sleep(automation::kSleepTime);
+
+    bool is_open = false;
+    bool success = false;
+    if (!sender_->Send(new AutomationMsg_IsPopUpMenuOpen(
+            0, handle_, &success, &is_open)))
+      return false;
+    if (!success)
+      return false;
+    if (is_open)
+      return true;
+  }
+  return false;
 }
