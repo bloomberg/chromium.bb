@@ -1,5 +1,8 @@
-WTL 8.0 from http://www.microsoft.com/downloads/details.aspx?FamilyID=e5ba5ba4-6e6b-462a-b24c-61115e846f0c
-with min and max replaced respectively with __min and __max. See below for an explanation.
+Name: WTL 8.0
+URL: http://www.microsoft.com/downloads/details.aspx?FamilyID=e5ba5ba4-6e6b-462a-b24c-61115e846f0c
+License File: Ms-PL.txt
+
+With min and max replaced respectively with __min and __max. See below for an explanation.
 
 ---
 

@@ -32,6 +32,16 @@ PRUNE_DIRS = ('.svn', '.git',             # VCS metadata
               'out', 'Debug', 'Release',  # build files
               'layout_tests')             # lots of subdirs
 
+# Directories where we check out directly from upstream, and therefore
+# can't provide a README.chromium.  Please prefer a README.chromium
+# wherever possible.
+SPECIAL_CASES = {
+    'third_party/ots': {
+        "Name": "OTS (OpenType Sanitizer)",
+        "URL": "http://code.google.com/p/ots/",
+    }
+}
+
 class LicenseError(Exception):
     """We raise this exception when a directory's licensing info isn't
     fully filled out."""
@@ -41,11 +51,6 @@ class LicenseError(Exception):
 def ParseDir(path):
     """Examine a third_party/foo component and extract its metadata."""
 
-    # Try to find README.chromium.
-    readme_path = os.path.join(path, 'README.chromium')
-    if not os.path.exists(readme_path):
-        raise LicenseError("missing README.chromium")
-
     # Parse metadata fields out of README.chromium.
     # We examine "LICENSE" for the license file by default.
     metadata = {
@@ -53,20 +58,30 @@ def ParseDir(path):
         "Name": None,               # Short name (for header on about:credits).
         "URL": None,                # Project home page.
         }
-    for line in open(readme_path):
-        line = line.strip()
-        if not line:
-            break
-        for key in metadata.keys():
-            field = key + ": "
-            if line.startswith(field):
-                metadata[key] = line[len(field):]
+
+    if path in SPECIAL_CASES:
+        metadata.update(SPECIAL_CASES[path])
+    else:
+        # Try to find README.chromium.
+        readme_path = os.path.join(path, 'README.chromium')
+        if not os.path.exists(readme_path):
+            raise LicenseError("missing README.chromium")
+
+        for line in open(readme_path):
+            line = line.strip()
+            if not line:
+                break
+            for key in metadata.keys():
+                field = key + ": "
+                if line.startswith(field):
+                    metadata[key] = line[len(field):]
 
     # Check that all expected metadata is present.
     for key, value in metadata.iteritems():
         if not value:
             raise LicenseError("couldn't find '" + key + "' line "
-                               "in README.chromium")
+                               "in README.chromium or licences.py "
+                               "SPECIAL_CASES")
 
     # Check that the license file exists.
     for filename in (metadata["License File"], "COPYING"):
@@ -96,6 +111,8 @@ def ScanThirdPartyDirs(third_party_dirs):
             errors.append((path, e.args[0]))
             continue
         print path, "OK:", metadata["License File"]
+
+    print
 
     for path, error in sorted(errors):
         print path + ": " + error
