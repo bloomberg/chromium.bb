@@ -126,7 +126,7 @@ class ProfileSyncServiceTypedUrlTest : public testing::Test {
     history_service_ = new HistoryServiceMock();
     EXPECT_CALL((*history_service_.get()), ScheduleDBTask(_, _))
         .WillRepeatedly(RunTaskOnDBThread(&history_thread_,
-                                          history_backend_));
+                                          history_backend_.get()));
     history_thread_.Start();
 
     notification_service_ =
