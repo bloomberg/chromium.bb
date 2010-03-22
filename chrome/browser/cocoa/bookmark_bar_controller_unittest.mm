@@ -22,6 +22,7 @@
 #include "chrome/common/pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+#import "third_party/ocmock/OCMock/OCMock.h"
 
 // Just like a BookmarkBarController but openURL: is stubbed out.
 @interface BookmarkBarControllerNoOpen : BookmarkBarController {
@@ -781,6 +782,40 @@ TEST_F(BookmarkBarControllerTest, MiddleClick) {
 
   [first otherMouseUp:test_event_utils::MakeMouseEvent(NSOtherMouseUp, 0)];
   EXPECT_EQ(bar_.get()->urls_.size(), 1U);
+}
+
+// Command-click on a folder should open all the marks in it.
+TEST_F(BookmarkBarControllerTest, CommandClickOnFolder) {
+  BookmarkModel* model = helper_.profile()->GetBookmarkModel();
+  const BookmarkNode* parent = model->GetBookmarkBarNode();
+  const BookmarkNode* folder = model->AddGroup(parent,
+                                               parent->GetChildCount(),
+                                               L"group");
+  model->AddURL(folder, folder->GetChildCount(),
+                L"f1", GURL("http://framma-lamma.com"));
+  model->AddURL(folder, folder->GetChildCount(),
+                L"f2", GURL("http://framma-lamma-ding-dong.com"));
+
+  ASSERT_EQ(1U, [[bar_ buttons] count]);
+  NSButton* first = [[bar_ buttons] objectAtIndex:0];
+  EXPECT_TRUE(first);
+
+  // Create the right kind of event; mock NSApp so [NSApp
+  // currentEvent] finds it.
+  NSEvent* commandClick = test_event_utils::MouseEventAtPoint(NSZeroPoint,
+                                                              NSLeftMouseDown,
+                                                              NSCommandKeyMask);
+  id fakeApp = [OCMockObject partialMockForObject:NSApp];
+  [[[fakeApp stub] andReturn:commandClick] currentEvent];
+  id oldApp = NSApp;
+  NSApp = fakeApp;
+
+  // Click!
+  [first performClick:first];
+  EXPECT_EQ(2U, bar_.get()->urls_.size());
+
+  // Replace NSApp
+  NSApp = oldApp;
 }
 
 TEST_F(BookmarkBarControllerTest, TestBuildOffTheSideMenu) {

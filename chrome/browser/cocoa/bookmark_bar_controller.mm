@@ -179,6 +179,10 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 
 - (void)watchForClickOutside:(BOOL)watch;
 
+// An ObjC version of bookmark_utils::OpenAllImpl().
+- (void)openBookmarkNodesRecursive:(const BookmarkNode*)node
+                       disposition:(WindowOpenDisposition)disposition;
+
 @end
 
 @implementation BookmarkBarController
@@ -1122,24 +1126,48 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   return menu;
 }
 
-// Heuristics:
-// 1: click and hold (without moving much): opens it
-// 2: click and release (normal button push): opens it.
-// This is called on the second one.
+// This IBAction is called when the user clicks (mouseUp, really) on a
+// "folder" bookmark button.  (In this context, "Click" does not
+// include right-click to open a context menu which follows a
+// different path).  Scenarios when folder X is clicked:
+//  *Predicate*        *Action*
+//  (nothing)          Open Folder X
+//  Folder X open      Close folder X
+//  Folder Y open      Close Y, open X
+//  Cmd-click          Open All with proper disposition
 //
-// Called from a Folder bookmark button to open the folder.
+//  Note complication in which a click-drag engages drag and drop, not
+//  a click-to-open.  Thus the path to get here is a little twisted.
 - (IBAction)openBookmarkFolderFromButton:(id)sender {
   DCHECK(sender);
+  BOOL same = false;
+
   if (folderController_) {
     // closeAllBookmarkFolders sets folderController_ to nil
     // so we need the SAME check to happen first.
-    BOOL same = ([folderController_ parentButton] == sender);
+    same = ([folderController_ parentButton] == sender);
     [self closeAllBookmarkFolders];
-    // If click on same folder, close it and be done.
-    // Else we clicked on a different folder so more work to do.
-    if (same)
-      return;
   }
+
+  // Watch out for a modifier click.  For example, command-click
+  // should open all.
+  //
+  // NOTE: we cannot use [[sender cell] mouseDownFlags] because we
+  // thwart the normal mouse click mechanism to make buttons
+  // draggable.  Thus we must use [NSApp currentEvent].
+  DCHECK([sender bookmarkNode]->is_folder());
+  WindowOpenDisposition disposition =
+      event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
+  if (disposition == NEW_BACKGROUND_TAB) {
+    [self openBookmarkNodesRecursive:[sender bookmarkNode]
+                         disposition:disposition];
+    return;
+  }
+
+  // If click on same folder, close it and be done.
+  // Else we clicked on a different folder so more work to do.
+  if (same)
+    return;
 
   // Folder controller, like many window controllers, owns itself.
   folderController_ = [[BookmarkBarFolderController alloc]
@@ -1260,7 +1288,6 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   }
 }
 
-// An ObjC version of bookmark_utils::OpenAllImpl().
 - (void)openBookmarkNodesRecursive:(const BookmarkNode*)node
                        disposition:(WindowOpenDisposition)disposition {
   DCHECK(node);
