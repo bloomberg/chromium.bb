@@ -1379,6 +1379,11 @@ bool SyncManager::SyncInternal::Init(
   syncer_thread()->WatchTalkMediator(talk_mediator());
   allstatus()->WatchSyncerThread(syncer_thread());
 
+  // Subscribe to the syncer thread's channel.
+  syncer_event_.reset(
+      NewEventListenerHookup(syncer_thread()->relay_channel(), this,
+          &SyncInternal::HandleSyncerEvent));
+
   syncer_thread()->Start();  // Start the syncer thread. This won't actually
                              // result in any syncing until at least the
                              // DirectoryManager broadcasts the OPENED event,
@@ -1718,10 +1723,8 @@ SyncManager::Status SyncManager::SyncInternal::ComputeAggregatedStatus() {
 
 void SyncManager::SyncInternal::HandleSyncerEvent(const SyncerEvent& event) {
   if (!initialized()) {
-    // We get here if A) We have successfully authenticated at least once
-    // (because we attach HandleSyncerEvent only once we receive notification
-    // of successful authentication [locally or otherwise]), but B) the initial
-    // sync had not completed at that time.
+    // This could be the first time that the syncer has completed a full
+    // download; if so, we should signal that initialization is complete.
     if (event.snapshot->is_share_usable)
       MarkAndNotifyInitializationComplete();
     return;
@@ -1825,13 +1828,10 @@ void SyncManager::SyncInternal::HandleAuthWatcherEvent(
 
         if (lookup->initial_sync_ended())
           MarkAndNotifyInitializationComplete();
-      }
-      {
-        // Start watching the syncer channel directly here.
-        DCHECK(syncer_thread() != NULL);
-        syncer_event_.reset(
-            NewEventListenerHookup(syncer_thread()->relay_channel(), this,
-                &SyncInternal::HandleSyncerEvent));
+
+        // If we are transitioning from having bad to good credentials, that
+        // could mean that the syncer can now make forward progress.  Wake it.
+        syncer_thread_->NudgeSyncer(0, SyncerThread::kLocal);
       }
       return;
     // Authentication failures translate to GoogleServiceAuthError events.
