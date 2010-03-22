@@ -51,10 +51,11 @@ const CGFloat kGrippyXOffset = 8.0;
 - (NSUInteger)containerButtonCapacity;
 - (void)repositionActionButtons;
 - (void)updateButtonOpacityAndDragAbilities;
-- (void)containerFrameChanged;
-- (void)containerDragStart;
-- (void)containerDragging;
-- (void)containerDragFinished;
+- (void)containerFrameChanged:(NSNotification*)notification;
+- (void)containerDragStart:(NSNotification*)notification;
+- (void)containerDragging:(NSNotification*)notification;
+- (void)containerDragFinished:(NSNotification*)notification;
+- (void)actionButtonUpdated:(NSNotification*)notification;
 - (void)browserActionClicked:(BrowserActionButton*)button;
 - (int)currentTabId;
 - (bool)shouldDisplayBrowserAction:(Extension*)extension;
@@ -62,6 +63,7 @@ const CGFloat kGrippyXOffset = 8.0;
 - (void)updateChevronPosition;
 - (void)updateOverflowMenu;
 - (void)chevronItemSelected:(BrowserActionButton*)button;
+- (BrowserActionButton*)buttonForExtension:(Extension*)extension;
 @end
 
 // A helper class to proxy extension notifications to the view controller's
@@ -144,22 +146,22 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
     [containerView_ setPostsFrameChangedNotifications:YES];
     [[NSNotificationCenter defaultCenter]
         addObserver:self
-           selector:@selector(containerFrameChanged)
+           selector:@selector(containerFrameChanged:)
                name:NSViewFrameDidChangeNotification
              object:containerView_];
     [[NSNotificationCenter defaultCenter]
         addObserver:self
-           selector:@selector(containerDragStart)
+           selector:@selector(containerDragStart:)
                name:kBrowserActionGrippyDragStartedNotification
              object:containerView_];
     [[NSNotificationCenter defaultCenter]
         addObserver:self
-           selector:@selector(containerDragging)
+           selector:@selector(containerDragging:)
                name:kBrowserActionGrippyDraggingNotification
              object:containerView_];
     [[NSNotificationCenter defaultCenter]
         addObserver:self
-           selector:@selector(containerDragFinished)
+           selector:@selector(containerDragFinished:)
                name:kBrowserActionGrippyDragFinishedNotification
              object:containerView_];
 
@@ -205,6 +207,12 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
 
     [self createActionButtonForExtension:*iter withIndex:i++];
   }
+
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(actionButtonUpdated:)
+             name:kBrowserActionButtonUpdatedNotification
+           object:nil];
 
   CGFloat width = [self savedWidth];
   [containerView_ resizeToWidth:width animate:NO];
@@ -288,11 +296,9 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
 
     CGFloat xOffset = kGrippyXOffset +
         (i * (kBrowserActionWidth + kBrowserActionButtonPadding));
-    NSString* extensionId = base::SysUTF8ToNSString((*iter)->id());
-    DCHECK(extensionId);
-    if (!extensionId)
+    BrowserActionButton* button = [self buttonForExtension:(*iter)];
+    if (!button)
       continue;
-    BrowserActionButton* button = [buttons_ objectForKey:extensionId];
     NSRect buttonFrame = [button frame];
     buttonFrame.origin.x = xOffset;
     [button setFrame:buttonFrame];
@@ -305,9 +311,13 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
   if (buttonCount > 0) {
     width = kGrippyXOffset + kContainerPadding +
         (buttonCount * (kBrowserActionWidth + kBrowserActionButtonPadding));
-    // Make room for the chevron if necessary.
-    if ([self buttonCount] != [self visibleButtonCount])
-      width += kChevronWidth + kBrowserActionButtonPadding;
+  }
+  // Make room for the chevron if any buttons are hidden.
+  if ([self buttonCount] != [self visibleButtonCount]) {
+    width += kChevronWidth + kBrowserActionButtonPadding;
+    // Add extra padding if all buttons are hidden.
+    if ([self visibleButtonCount] == 0)
+      width += 3 * kBrowserActionButtonPadding;
   }
   return width;
 }
@@ -360,12 +370,12 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
   [[containerView_ window] invalidateCursorRectsForView:containerView_];
 }
 
-- (void)containerFrameChanged {
+- (void)containerFrameChanged:(NSNotification*)notification {
   [self updateButtonOpacityAndDragAbilities];
   [self updateChevronPosition];
 }
 
-- (void)containerDragStart {
+- (void)containerDragStart:(NSNotification*)notification {
   [self setChevronHidden:YES animate:YES];
   while([hiddenButtons_ count] > 0) {
     [containerView_ addSubview:[hiddenButtons_ objectAtIndex:0]];
@@ -373,15 +383,17 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
   }
 }
 
-- (void)containerDragging {
+- (void)containerDragging:(NSNotification*)notification {
   [[NSNotificationCenter defaultCenter]
       postNotificationName:kBrowserActionGrippyDraggingNotification
                     object:self];
 }
 
 // Handles when a user initiated drag to resize the container has finished.
-- (void)containerDragFinished {
-  for (BrowserActionButton* button in [buttons_ allValues]) {
+- (void)containerDragFinished:(NSNotification*)notification {
+  for (ExtensionList::iterator iter = toolbarModel_->begin();
+       iter != toolbarModel_->end(); ++iter) {
+    BrowserActionButton* button = [self buttonForExtension:(*iter)];
     NSRect buttonFrame = [button frame];
     if (NSContainsRect([containerView_ bounds], buttonFrame))
       continue;
@@ -399,6 +411,18 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
   }
   [self updateOverflowMenu];
   [self resizeContainerWithAnimation:NO];
+}
+
+- (void)actionButtonUpdated:(NSNotification*)notification {
+  BrowserActionButton* button = [notification object];
+  if (![hiddenButtons_ containsObject:button])
+    return;
+
+  // +1 item because of the title placeholder. See |updateOverflowMenu|.
+  NSUInteger menuIndex = [hiddenButtons_ indexOfObject:button] + 1;
+  NSMenuItem* item = [[chevronMenuButton_ attachedMenu] itemAtIndex:menuIndex];
+  DCHECK(button == [item representedObject]);
+  [item setImage:[button compositedImage]];
 }
 
 - (NSUInteger)buttonCount {
@@ -499,13 +523,10 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
 - (NSPoint)popupPointForBrowserAction:(Extension*)extension {
   if (!extension->browser_action())
     return NSZeroPoint;
-
-  NSString* extensionId = base::SysUTF8ToNSString(extension->id());
-  DCHECK(extensionId);
-  if (!extensionId)
+  BrowserActionButton* button = [self buttonForExtension:extension];
+  if (!button)
     return NSZeroPoint;
 
-  BrowserActionButton* button = [buttons_ objectForKey:extensionId];
   NSView* view = button;
   BOOL isHidden = [hiddenButtons_ containsObject:button];
   if (isHidden)
@@ -610,6 +631,7 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
                                  action:@selector(chevronItemSelected:)
                           keyEquivalent:@""];
     [item setRepresentedObject:button];
+    [item setImage:[button compositedImage]];
     [item setTarget:self];
   }
   [chevronMenuButton_ setAttachedMenu:overflowMenu_];
@@ -617,6 +639,14 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
 
 - (void)chevronItemSelected:(id)menuItem {
   [self browserActionClicked:[menuItem representedObject]];
+}
+
+- (BrowserActionButton*)buttonForExtension:(Extension*)extension {
+  NSString* extensionId = base::SysUTF8ToNSString(extension->id());
+  DCHECK(extensionId);
+  if (!extensionId)
+    return nil;
+  return [buttons_ objectForKey:extensionId];
 }
 
 + (void)registerUserPrefs:(PrefService*)prefs {

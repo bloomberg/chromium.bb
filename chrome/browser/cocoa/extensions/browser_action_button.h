@@ -16,6 +16,10 @@ class ExtensionAction;
 class ExtensionImageTrackerBridge;
 class Profile;
 
+// Fired when the Browser Action's state has changed. Usually the image needs to
+// be updated.
+extern const NSString* kBrowserActionButtonUpdatedNotification;
+
 extern const CGFloat kBrowserActionWidth;
 
 @interface BrowserActionButton : NSButton {
@@ -42,6 +46,10 @@ extern const CGFloat kBrowserActionWidth;
 - (void)setTabSpecificIcon:(NSImage*)image;
 
 - (void)updateState;
+
+// Returns a pointer to an autoreleased NSImage with the badge, shadow and
+// cell image drawn into it.
+- (NSImage*)compositedImage;
 
 @property(readwrite, nonatomic) int tabId;
 @property(readonly, nonatomic) Extension* extension;

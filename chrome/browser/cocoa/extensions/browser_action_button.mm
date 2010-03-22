@@ -17,6 +17,9 @@
 #include "gfx/size.h"
 #include "skia/ext/skia_utils_mac.h"
 
+extern const NSString* kBrowserActionButtonUpdatedNotification =
+    @"BrowserActionButtonUpdatedNotification";
+
 static const CGFloat kBrowserActionBadgeOriginYOffset = 5;
 
 // Since the container is the maximum height of the toolbar, we have to move the
@@ -27,6 +30,10 @@ static const CGFloat kBrowserActionOriginYOffset = 5;
 // The size of each button on the toolbar.
 static const CGFloat kBrowserActionHeight = 27;
 extern const CGFloat kBrowserActionWidth = 29;
+
+namespace {
+const CGFloat kShadowOffset = 2.0;
+}  // anonymous namespace
 
 // A helper class to bridge the asynchronous Skia bitmap loading mechanism to
 // the extension's button.
@@ -84,6 +91,11 @@ class ExtensionImageTrackerBridge : public NotificationObserver,
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionImageTrackerBridge);
 };
+
+@interface BrowserActionCell(Internals)
+- (void)setIconShadow;
+- (void)drawBadgeWithinFrame:(NSRect)frame;
+@end
 
 @implementation BrowserActionButton
 
@@ -156,6 +168,53 @@ class ExtensionImageTrackerBridge : public NotificationObserver,
   [[self cell] setTabId:tabId_];
 
   [self setNeedsDisplay:YES];
+
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:kBrowserActionButtonUpdatedNotification
+      object:self];
+}
+
+- (NSImage*)compositedImage {
+  NSRect bounds = NSMakeRect(0, 0, kBrowserActionWidth, kBrowserActionHeight);
+  NSBitmapImageRep* bitmap = [[NSBitmapImageRep alloc]
+      initWithBitmapDataPlanes:NULL
+                    pixelsWide:NSWidth(bounds)
+                    pixelsHigh:NSWidth(bounds)
+                 bitsPerSample:8
+               samplesPerPixel:4
+                      hasAlpha:YES
+                      isPlanar:NO
+                colorSpaceName:NSCalibratedRGBColorSpace
+                  bitmapFormat:0
+                   bytesPerRow:0
+                  bitsPerPixel:0];
+
+  [NSGraphicsContext saveGraphicsState];
+  [NSGraphicsContext setCurrentContext:
+      [NSGraphicsContext graphicsContextWithBitmapImageRep:bitmap]];
+  [[self cell] setIconShadow];
+
+  NSImage* actionImage = [self image];
+  // Never draw within a flipped coordinate system.
+  // TODO(andybons): Figure out why |flipped| can be yes in certain cases.
+  // http://crbug.com/38943
+  [actionImage setFlipped:NO];
+  CGFloat xPos = floor((NSWidth(bounds) - [actionImage size].width) / 2);
+  CGFloat yPos = floor((NSHeight(bounds) - [actionImage size].height) / 2);
+  [actionImage drawAtPoint:NSMakePoint(xPos, yPos)
+                  fromRect:NSZeroRect
+                 operation:NSCompositeSourceOver
+                  fraction:1.0];
+
+  bounds.origin.y += kShadowOffset - kBrowserActionBadgeOriginYOffset;
+  bounds.origin.x -= kShadowOffset;
+  [[self cell] drawBadgeWithinFrame:bounds];
+
+  [NSGraphicsContext restoreGraphicsState];
+  NSImage* compositeImage =
+      [[[NSImage alloc] initWithSize:[bitmap size]] autorelease];
+  [compositeImage addRepresentation:bitmap];
+  return compositeImage;
 }
 
 @synthesize tabId = tabId_;
@@ -165,29 +224,29 @@ class ExtensionImageTrackerBridge : public NotificationObserver,
 
 @implementation BrowserActionCell
 
-- (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
-  [NSGraphicsContext saveGraphicsState];
-
+- (void)setIconShadow {
   // Create the shadow below and to the right of the drawn image.
   scoped_nsobject<NSShadow> imgShadow([[NSShadow alloc] init]);
-  [imgShadow.get() setShadowOffset:NSMakeSize(2.0, -2.0)];
+  [imgShadow.get() setShadowOffset:NSMakeSize(kShadowOffset, -kShadowOffset)];
   [imgShadow setShadowBlurRadius:2.0];
   [imgShadow.get() setShadowColor:[[NSColor blackColor]
           colorWithAlphaComponent:0.3]];
   [imgShadow set];
+}
 
+- (void)drawBadgeWithinFrame:(NSRect)frame {
+  gfx::CanvasPaint canvas(frame, false);
+  canvas.set_composite_alpha(true);
+  gfx::Rect boundingRect(NSRectToCGRect(frame));
+  extensionAction_->PaintBadge(&canvas, boundingRect, tabId_);
+}
+
+- (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
+  [NSGraphicsContext saveGraphicsState];
+  [self setIconShadow];
   [super drawInteriorWithFrame:cellFrame inView:controlView];
-
-  // CanvasPaint draws its content to the current NSGraphicsContext in its
-  // destructor, so it is enclosed in a nested block.
-  {
-    cellFrame.origin.y += kBrowserActionBadgeOriginYOffset;
-    gfx::CanvasPaint canvas(cellFrame, false);
-    canvas.set_composite_alpha(true);
-    gfx::Rect boundingRect(NSRectToCGRect(cellFrame));
-    extensionAction_->PaintBadge(&canvas, boundingRect, tabId_);
-  }
-
+  cellFrame.origin.y += kBrowserActionBadgeOriginYOffset;
+  [self drawBadgeWithinFrame:cellFrame];
   [NSGraphicsContext restoreGraphicsState];
 }
 
