@@ -60,5 +60,9 @@ chrome.test.runTests([
       }
     );
     setupWindow();
+  },
+  function domPaste() {
+    document.body.addEventListener('paste', chrome.test.callbackPass());
+    document.execCommand('paste');
   }
 ]);
