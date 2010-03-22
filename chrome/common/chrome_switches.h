@@ -192,6 +192,7 @@ extern const char kSyncerThreadTimedStop[];
 extern const char kTabCountToLoadOnSessionRestore[];
 extern const char kTestName[];
 extern const char kTestSandbox[];
+extern const char kTestType[];
 extern const char kTestingChannelID[];
 extern const char kThumbnailStore[];
 extern const char kTrustedPlugins[];
@@ -230,6 +231,7 @@ extern const char kLoginScreenSize[];
 extern const char kTestLoadLibcros[];
 extern const char kProfile[];
 extern const char kLoginProfile[];
+extern const char kLoginUser[];
 extern const char kChromeosFrame[];
 #endif
 

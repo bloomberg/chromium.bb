@@ -685,6 +685,9 @@ const char kTestName[]                      = "test-name";
 // Runs the security test for the sandbox.
 const char kTestSandbox[]                   = "test-sandbox";
 
+// Pass the type of the current test harness ("browser" or "ui")
+const char kTestType[]                      = "test-type";
+
 // The value of this switch tells the app to listen for and broadcast
 // testing-related messages on IPC channel with the given ID.
 const char kTestingChannelID[]              = "testing-channel";
@@ -803,6 +806,9 @@ const char kProfile[]                       = "profile";
 
 // Specifies the profile to use once a chromeos user is logged in.
 const char kLoginProfile[]                  = "login-profile";
+
+// Specifies the user which is already logged in.
+const char kLoginUser[]                     = "login-user";
 
 // Use the frame layout used in chromeos.
 const char kChromeosFrame[]                 = "chromeos-frame";

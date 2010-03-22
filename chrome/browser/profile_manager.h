@@ -74,14 +74,14 @@ class ProfileManager : public NonThreadSafe,
   // Invokes ShutdownSessionService() on all profiles.
   static void ShutdownSessionServices();
 
-  // Returns profile to use for Chrome in login wizard mode.
-  static Profile* GetLoginWizardProfile();
-
   // Returns the default profile.  This adds the profile to the
   // ProfileManager if it doesn't already exist.  This method returns NULL if
   // the profile doesn't exist and we can't create it.
-  // The profile used can be overridden by using --profile on
+  // The profile used can be overridden by using --login-profile on cros.
   Profile* GetDefaultProfile(const FilePath& user_data_dir);
+
+  // Same as instance method but provides the default user_data_dir as well.
+  static Profile* GetDefaultProfile();
 
   // Returns a profile for a specific profile directory within the user data
   // dir. This will return an existing profile it had already been created,

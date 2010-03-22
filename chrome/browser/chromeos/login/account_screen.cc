@@ -76,7 +76,7 @@ void AccountScreen::CreateView() {
   view()->SetAccountCreationViewDelegate(this);
 
   GURL url(kCreateAccountPageUrl);
-  Profile* profile = ProfileManager::GetLoginWizardProfile();
+  Profile* profile = ProfileManager::GetDefaultProfile();
   view()->InitDOM(profile,
                   SiteInstance::CreateSiteInstanceForURL(profile, url));
   view()->SetTabContentsDelegate(this);

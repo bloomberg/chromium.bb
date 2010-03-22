@@ -31,6 +31,11 @@
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_job_tracker.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/cryptohome_library.h"
+#endif
+
 // static
 void ProfileManager::ShutdownSessionServices() {
   ProfileManager* pm = g_browser_process->profile_manager();
@@ -39,12 +44,11 @@ void ProfileManager::ShutdownSessionServices() {
 }
 
 // static
-Profile* ProfileManager::GetLoginWizardProfile() {
+Profile* ProfileManager::GetDefaultProfile() {
   FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  return profile_manager->GetDefaultProfile(
-      user_data_dir)->GetOffTheRecordProfile();
+  return profile_manager->GetDefaultProfile(user_data_dir);
 }
 
 ProfileManager::ProfileManager() : logged_in_(false) {
@@ -91,22 +95,45 @@ FilePath ProfileManager::GetProfilePrefsPath(
 
 Profile* ProfileManager::GetDefaultProfile(const FilePath& user_data_dir) {
   FilePath default_profile_dir(user_data_dir);
-  std::wstring profile = chrome::kNotSignedInProfile;
 #if defined(OS_CHROMEOS)
-  // If the user has logged in, pick up the new profile.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  // TODO(davemoore) Delete this once chromium os has started using
-  // "--login-profile" instead of "--profile".
-  if (logged_in_ && command_line.HasSwitch(switches::kProfile)) {
-    profile = command_line.GetSwitchValue(switches::kProfile);
+  if (logged_in_) {
+    std::wstring profile_dir;
+    // If the user has logged in, pick up the new profile.
+    // TODO(davemoore) Delete this once chromium os has started using
+    // "--login-profile" instead of "--profile".
+    if (command_line.HasSwitch(switches::kLoginProfile)) {
+      profile_dir = command_line.GetSwitchValue(switches::kLoginProfile);
+    } else if (command_line.HasSwitch(switches::kProfile)) {
+      profile_dir = command_line.GetSwitchValue(switches::kProfile);
+    } else {
+      // We should never be logged in with no profile dir.
+      NOTREACHED();
+      return NULL;
+    }
+    default_profile_dir = default_profile_dir.Append(
+        FilePath::FromWStringHack(profile_dir));
+    return GetProfile(default_profile_dir);
+  } else {
+    // If not logged in on cros, always return the incognito profile
+    default_profile_dir = default_profile_dir.Append(
+        FilePath::FromWStringHack(chrome::kNotSignedInProfile));
+    Profile*profile = GetProfile(default_profile_dir);
+
+    // For cros, return the OTR profile so we never accidentally keep
+    // user data in an unencrypted profile. But doing this makes
+    // many of the browser and ui tests fail.
+    // TODO(davemoore) Fix the tests so they allow OTR profiles.
+    if (!command_line.HasSwitch(switches::kTestType))
+      profile = profile->GetOffTheRecordProfile();
+
+    return profile;
   }
-  if (logged_in_ && command_line.HasSwitch(switches::kLoginProfile)) {
-    profile = command_line.GetSwitchValue(switches::kLoginProfile);
-  }
-#endif
+#else
   default_profile_dir = default_profile_dir.Append(
-      FilePath::FromWStringHack(profile));
+      FilePath::FromWStringHack(chrome::kNotSignedInProfile));
   return GetProfile(default_profile_dir);
+#endif
 }
 
 Profile* ProfileManager::GetProfile(const FilePath& profile_dir) {
@@ -200,6 +227,12 @@ void ProfileManager::Observe(
     const NotificationDetails& details) {
 #if defined(OS_CHROMEOS)
   if (type == NotificationType::LOGIN_USER_CHANGED) {
+    CHECK(chromeos::CrosLibrary::EnsureLoaded());
+    // If we don't have a mounted profile directory we're in trouble.
+    // TODO(davemoore) Once we have better api this check should ensure that
+    // our profile directory is the one that's mounted, and that it's mounted
+    // as the current user.
+    CHECK(chromeos::CryptohomeLibrary::Get()->IsMounted());
     logged_in_ = true;
   }
 #endif

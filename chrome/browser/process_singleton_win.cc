@@ -264,10 +264,7 @@ LRESULT ProcessSingleton::OnCopyData(HWND hwnd, const COPYDATASTRUCT* cds) {
     PrefService* prefs = g_browser_process->local_state();
     DCHECK(prefs);
 
-    FilePath user_data_dir;
-    PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-    ProfileManager* profile_manager = g_browser_process->profile_manager();
-    Profile* profile = profile_manager->GetDefaultProfile(user_data_dir);
+    Profile* profile = ProfileManager::GetDefaultProfile();
     if (!profile) {
       // We should only be able to get here if the profile already exists and
       // has been created.

@@ -60,7 +60,7 @@ bool GoogleAuthenticator::Authenticate(const std::string& username,
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   Profile* profile = profile_manager->GetDefaultProfile(user_data_dir);
-  getter_ = profile->GetOffTheRecordProfile()->GetRequestContext();
+  getter_ = profile->GetRequestContext();
   fetcher_.reset(new URLFetcher(GURL(AuthResponseHandler::kClientLoginUrl),
                                 URLFetcher::POST,
                                 this));

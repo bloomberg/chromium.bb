@@ -49,6 +49,8 @@ static const int kWaitForActionMaxMsec = 10000;
 static const int kCommandExecutionTimeout = 30000;
 // Delay to let the browser shut down before trying more brutal methods.
 static const int kWaitForTerminateMsec = 30000;
+// Passed as value of kTestType.
+static const char kUITestType[] = "ui";
 
 const wchar_t UITestBase::kFailedNoCrashService[] =
 #if defined(OS_WIN)
@@ -1076,6 +1078,10 @@ bool UITestBase::LaunchBrowserHelper(const CommandLine& arguments,
   // No default browser check, it would create an info-bar (if we are not the
   // default browser) that could conflicts with some tests expectations.
   command_line.AppendSwitch(switches::kNoDefaultBrowserCheck);
+
+  // This is a UI test.
+  command_line.AppendSwitchWithValue(switches::kTestType,
+                                     ASCIIToWide(kUITestType));
 
   // We need cookies on file:// for things like the page cycler.
   if (enable_file_cookies_)

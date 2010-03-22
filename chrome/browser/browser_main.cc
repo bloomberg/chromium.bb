@@ -132,6 +132,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/external_metrics.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/views/browser_dialogs.h"
 #endif
 
@@ -755,6 +756,15 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   // Try to create/load the profile.
   ProfileManager* profile_manager = browser_process->profile_manager();
+#if defined(OS_CHROMEOS)
+  if (parsed_command_line.HasSwitch(switches::kLoginUser)) {
+    std::string username =
+        parsed_command_line.GetSwitchValueASCII(switches::kLoginUser);
+    LOG(INFO) << "Relaunching browser for user: " << username;
+    chromeos::UserManager::Get()->UserLoggedIn(username);
+  }
+#endif
+
   Profile* profile = profile_manager->GetDefaultProfile(user_data_dir);
 
 #if defined(OS_WIN)

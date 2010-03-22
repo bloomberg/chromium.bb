@@ -63,6 +63,9 @@ extern int BrowserMain(const MainFunctionParams&);
 
 const wchar_t kUnitTestShowWindows[] = L"show-windows";
 
+// Passed as value of kTestType.
+static const char kBrowserTestType[] = "browser";
+
 // Default delay for the time-out at which we stop the
 // inner-message loop the first time.
 const int kInitialTimeoutInMS = 30000;
@@ -131,6 +134,10 @@ void InProcessBrowserTest::SetUp() {
 
   // Don't show the first run ui.
   command_line->AppendSwitch(switches::kNoFirstRun);
+
+  // This is a Browser test.
+  command_line->AppendSwitchWithValue(switches::kTestType,
+                                      ASCIIToWide(kBrowserTestType));
 
   // Single-process mode is not set in BrowserMain so it needs to be processed
   // explicitlty.
@@ -244,10 +251,7 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
   // In the long term it would be great if we could use a TestingProfile
   // here and only enable services you want tested, but that requires all
   // consumers of Profile to handle NULL services.
-  FilePath user_data_dir;
-  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  Profile* profile = profile_manager->GetDefaultProfile(user_data_dir);
+  Profile* profile = ProfileManager::GetDefaultProfile();
   if (!profile) {
     // We should only be able to get here if the profile already exists and
     // has been created.

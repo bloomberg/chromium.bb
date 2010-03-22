@@ -31,6 +31,9 @@ class CryptohomeLibrary {
   virtual bool CheckKey(const std::string& user_email,
                         const std::string& passhash);
 
+  // Asks cryptohomed if a drive is currently mounted.
+  virtual bool IsMounted();
+
  private:
   friend struct DefaultSingletonTraits<CryptohomeLibrary>;
   friend class MockCryptohomeLibrary;

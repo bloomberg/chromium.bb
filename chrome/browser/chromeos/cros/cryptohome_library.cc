@@ -23,4 +23,8 @@ bool CryptohomeLibrary::Mount(const std::string& user_email,
   return chromeos::CryptohomeMount(user_email.c_str(), passhash.c_str());
 }
 
+bool CryptohomeLibrary::IsMounted() {
+  return chromeos::CryptohomeIsMounted();
+}
+
 }  // namespace chromeos
