@@ -313,6 +313,12 @@ static void codeAttach(
 #ifndef SQLITE_OMIT_AUTHORIZATION
   if( pAuthArg ){
     char *zAuthArg = pAuthArg->u.zToken;
+    int i;
+    char iBuf[32];
+    if( sqlite3ExprIsInteger(pAuthArg, &i) ){
+      sqlite3_snprintf(sizeof(iBuf), iBuf, "%d", pAuthArg->u.iValue);
+      zAuthArg = iBuf;
+    }
     if( NEVER(zAuthArg==0) ){
       goto attach_end;
     }
