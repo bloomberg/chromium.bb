@@ -452,9 +452,9 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_Geoposition) {
 #if defined(OS_MACOSX)
 // TODO(bulach): investigate why this fails on mac. It may be related to:
 // http://crbug.com//29424
-#define MAYBE_IFramesWithCachedPosition DISABLED_IFramesWithCachedPosition
+#define MAYBE_IFramesWithFreshPosition DISABLED_IFramesWithFreshPosition
 #else
-#define MAYBE_IFramesWithCachedPosition DISABLED_IFramesWithCachedPosition
+#define MAYBE_IFramesWithFreshPosition IFramesWithFreshPosition
 #endif
 
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
@@ -495,8 +495,17 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   CheckGeoposition(geoposition);
 }
 
+
+#if defined(OS_MACOSX)
+// TODO(bulach): investigate why this fails on mac. It may be related to:
+// http://crbug.com//29424
+#define MAYBE_IFramesWithCachedPosition DISABLED_IFramesWithCachedPosition
+#else
 // TODO(bulach): enable this test when we roll to
 // https://bugs.webkit.org/show_bug.cgi?id=36315
+#define MAYBE_IFramesWithCachedPosition DISABLED_IFramesWithCachedPosition
+#endif
+
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
                        MAYBE_IFramesWithCachedPosition) {
   html_for_tests_ = "files/geolocation/iframes_different_origin.html";
