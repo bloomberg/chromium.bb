@@ -27,10 +27,5 @@ FocusManager* FocusManager::GetFocusManagerForNativeView(
   return widget ? widget->GetFocusManager() : NULL;
 }
 
-// static
-FocusManager* FocusManager::GetFocusManagerForNativeWindow(
-    gfx::NativeWindow native_window) {
-  return GetFocusManagerForNativeView(native_window);
-}
-
 }  // namespace views
+

@@ -278,10 +278,6 @@ class FocusManager {
   static FocusManager* GetFocusManagerForNativeView(
       gfx::NativeView native_view);
 
-  // Retrieves the FocusManager associated with the passed native view.
-  static FocusManager* GetFocusManagerForNativeWindow(
-      gfx::NativeWindow native_window);
-
  private:
   // Returns the next focusable view.
   View* GetNextFocusableView(View* starting_view, bool reverse, bool dont_loop);

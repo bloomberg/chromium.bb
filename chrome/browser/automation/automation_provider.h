@@ -247,9 +247,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
 #endif  // defined(OS_WIN)
 
   void GetFocusedViewID(int handle, int* view_id);
-  void WaitForFocusedViewIDToChange(int handle,
-                                    int previous_view_id,
-                                    IPC::Message* reply_message);
 
   // Helper function to find the browser window that contains a given
   // NavigationController and activate that tab.
@@ -581,10 +578,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   // Returns the associated view for the tab handle passed in.
   // Returns NULL on failure.
   RenderViewHost* GetViewForTab(int tab_handle);
-
-  // Returns true if any popup menu is open. Currently only fully implemented
-  // on Windows and doesn't support bookmark menus.
-  void IsPopUpMenuOpen(int handle, bool* success, bool* is_open);
 
   typedef ObserverList<NotificationObserver> NotificationObserverList;
   typedef std::map<NavigationController*, LoginHandler*> LoginHandlerMap;

@@ -306,8 +306,7 @@ NativeMenuWin::NativeMenuWin(menus::MenuModel* model, HWND system_menu_for)
       owner_draw_(l10n_util::NeedOverrideDefaultUIFont(NULL, NULL) &&
                   !system_menu_for),
       system_menu_for_(system_menu_for),
-      first_item_index_(0),
-      menu_action_(MENU_ACTION_NONE) {
+      first_item_index_(0) {
 }
 
 NativeMenuWin::~NativeMenuWin() {
@@ -323,24 +322,10 @@ void NativeMenuWin::RunMenuAt(const gfx::Point& point, int alignment) {
   UpdateStates();
   UINT flags = TPM_LEFTBUTTON | TPM_RECURSE;
   flags |= GetAlignmentFlags(alignment);
-  menu_action_ = MENU_ACTION_NONE;
-
-  // Set a hook function so we can listen for keyboard events while the
-  // menu is open, and store a pointer to this object in a static
-  // variable so the hook has access to it (ugly, but it's the
-  // only way).
-  open_native_menu_win_ = this;
-  HHOOK hhook = SetWindowsHookEx(WH_MSGFILTER, MenuMessageHook,
-                                 GetModuleHandle(NULL), ::GetCurrentThreadId());
-
   // Command dispatch is done through WM_MENUCOMMAND, handled by the host
   // window.
-  HWND hwnd = host_window_->hwnd();
   TrackPopupMenuEx(menu_, flags, point.x(), point.y(), host_window_->hwnd(),
                    NULL);
-
-  UnhookWindowsHookEx(hhook);
-  open_native_menu_win_ = NULL;
 }
 
 void NativeMenuWin::CancelMenu() {
@@ -385,57 +370,8 @@ gfx::NativeMenu NativeMenuWin::GetNativeMenu() const {
   return menu_;
 }
 
-NativeMenuWin::MenuAction NativeMenuWin::GetMenuAction() const {
-  return menu_action_;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // NativeMenuWin, private:
-
-// static
-NativeMenuWin* NativeMenuWin::open_native_menu_win_ = NULL;
-
-// static
-bool NativeMenuWin::GetHighlightedMenuItemInfo(
-    HMENU menu, bool* has_parent, bool* has_submenu) {
-  for (int i = 0; i < ::GetMenuItemCount(menu); i++) {
-    UINT state = ::GetMenuState(menu, i, MF_BYPOSITION);
-    if (state & MF_HILITE) {
-      if (state & MF_POPUP) {
-        HMENU submenu = GetSubMenu(menu, i);
-        if (GetHighlightedMenuItemInfo(submenu, has_parent, has_submenu))
-          *has_parent = true;
-        else
-          *has_submenu = true;
-      }
-      return true;
-    }
-  }
-  return false;
-}
-
-// static
-LRESULT CALLBACK NativeMenuWin::MenuMessageHook(
-    int n_code, WPARAM w_param, LPARAM l_param) {
-  LRESULT result = CallNextHookEx(NULL, n_code, w_param, l_param);
-
-  MSG* msg = reinterpret_cast<MSG*>(l_param);
-  if (msg->message == WM_KEYDOWN) {
-    NativeMenuWin* this_ptr = open_native_menu_win_;
-    bool has_parent = false;
-    bool has_submenu = false;
-    GetHighlightedMenuItemInfo(this_ptr->menu_, &has_parent, &has_submenu);
-    if (msg->wParam == VK_LEFT && !has_parent) {
-      this_ptr->menu_action_ = MENU_ACTION_PREVIOUS;
-      ::EndMenu();
-    } else if (msg->wParam == VK_RIGHT && !has_parent && !has_submenu) {
-      this_ptr->menu_action_ = MENU_ACTION_NEXT;
-      ::EndMenu();
-    }
-  }
-
-  return result;
-}
 
 bool NativeMenuWin::IsSeparatorItemAt(int menu_index) const {
   MENUITEMINFO mii = {0};

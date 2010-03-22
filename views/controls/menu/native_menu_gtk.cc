@@ -76,8 +76,7 @@ NativeMenuGtk::NativeMenuGtk(Menu2* menu)
       activated_menu_(NULL),
       activated_index_(-1),
       activate_factory_(this),
-      host_menu_(menu),
-      menu_action_(MENU_ACTION_NONE) {
+      host_menu_(menu) {
 }
 
 NativeMenuGtk::~NativeMenuGtk() {
@@ -94,7 +93,6 @@ NativeMenuGtk::~NativeMenuGtk() {
 void NativeMenuGtk::RunMenuAt(const gfx::Point& point, int alignment) {
   activated_menu_ = NULL;
   activated_index_ = -1;
-  menu_action_ = MENU_ACTION_NONE;
 
   UpdateStates();
   Position position = { point, static_cast<Menu2::Alignment>(alignment) };
@@ -106,18 +104,13 @@ void NativeMenuGtk::RunMenuAt(const gfx::Point& point, int alignment) {
   menu_shown_ = true;
   // Listen for "hide" signal so that we know when to return from the blocking
   // RunMenuAt call.
-  gint hide_handle_id =
+  gint handle_id =
       g_signal_connect(menu_, "hide", G_CALLBACK(OnMenuHidden), this);
-
-  gint move_handle_id =
-      g_signal_connect(menu_, "move-current", G_CALLBACK(OnMenuMoveCurrent),
-                       this);
 
   // Block until menu is no longer shown by running a nested message loop.
   MessageLoopForUI::current()->Run(NULL);
 
-  g_signal_handler_disconnect(G_OBJECT(menu_), hide_handle_id);
-  g_signal_handler_disconnect(G_OBJECT(menu_), move_handle_id);
+  g_signal_handler_disconnect(G_OBJECT(menu_), handle_id);
   menu_shown_ = false;
 
   if (activated_menu_) {
@@ -181,10 +174,6 @@ gfx::NativeMenu NativeMenuGtk::GetNativeMenu() const {
   return menu_;
 }
 
-NativeMenuGtk::MenuAction NativeMenuGtk::GetMenuAction() const {
-  return menu_action_;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // NativeMenuGtk, private:
 
@@ -197,26 +186,6 @@ void NativeMenuGtk::OnMenuHidden(GtkWidget* widget, NativeMenuGtk* menu) {
   }
   // Quit the nested message loop we spawned in RunMenuAt.
   MessageLoop::current()->Quit();
-}
-
-// static
-void NativeMenuGtk::OnMenuMoveCurrent(GtkMenu* menu_widget,
-                                      GtkMenuDirectionType focus_direction,
-                                      NativeMenuGtk* menu) {
-  GtkWidget* parent = GTK_MENU_SHELL(menu_widget)->parent_menu_shell;
-  GtkWidget* menu_item = GTK_MENU_SHELL(menu_widget)->active_menu_item;
-  GtkWidget* submenu = NULL;
-  if (menu_item) {
-    submenu = gtk_menu_item_get_submenu(GTK_MENU_ITEM(menu_item));
-  }
-
-  if (focus_direction == GTK_MENU_DIR_CHILD && submenu == NULL) {
-    menu->GetAncestor()->menu_action_ = MENU_ACTION_NEXT;
-    gtk_menu_popdown(menu_widget);
-  } else if (focus_direction == GTK_MENU_DIR_PARENT && parent == NULL) {
-    menu->GetAncestor()->menu_action_ = MENU_ACTION_PREVIOUS;
-    gtk_menu_popdown(menu_widget);
-  }
 }
 
 void NativeMenuGtk::AddSeparatorAt(int index) {
@@ -405,7 +374,6 @@ void NativeMenuGtk::OnActivate(GtkMenuItem* menu_item) {
     NativeMenuGtk* ancestor = GetAncestor();
     ancestor->activated_menu_ = this;
     activated_index_ = position;
-    ancestor->menu_action_ = MENU_ACTION_SELECTED;
   }
 }
 
