@@ -20,10 +20,11 @@
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/win_util.h"
-
+#include "chrome/common/json_value_serializer.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/l10n_string_util.h"
+#include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/work_item_list.h"
 
@@ -161,6 +162,18 @@ bool InstallUtil::IsChromeSxSProcess() {
                                           installer_util::kInstallBinaryDir) &&
          FilePath::CompareEqualIgnoreCase(exe_dir.DirName().BaseName().value(),
                                           chrome_sxs_dir);
+}
+
+bool InstallUtil::IsMSIProcess() {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  CHECK(command_line);
+
+  scoped_ptr<DictionaryValue> prefs(installer_util::GetInstallPreferences(
+      *command_line));
+  bool value = false;
+  return (installer_util::GetDistroBooleanPreference(prefs.get(),
+              installer_util::master_preferences::kMsi, &value) &&
+          value);
 }
 
 bool InstallUtil::BuildDLLRegistrationList(const std::wstring& install_path,

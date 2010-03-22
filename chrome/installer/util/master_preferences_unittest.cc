@@ -243,3 +243,81 @@ TEST(MasterPrefsExtension, ValidateExtensionJSON) {
   EXPECT_TRUE(extensions->GetString(
       L"behllobkkfkfnphdnhnkndlbkcpglgmj.manifest.version", &version));
 }
+
+// Test that we are parsing master preferences correctly.
+TEST_F(MasterPreferencesTest, GetInstallPreferencesTest) {
+  // Create a temporary prefs file.
+  FilePath prefs_file;
+  ASSERT_TRUE(file_util::CreateTemporaryFile(&prefs_file));
+  const char text[] =
+    "{ \n"
+    "  \"distribution\": { \n"
+    "     \"skip_first_run_ui\": true,\n"
+    "     \"create_all_shortcuts\": false,\n"
+    "     \"do_not_launch_chrome\": true,\n"
+    "     \"system_level\": true,\n"
+    "     \"verbose_logging\": false\n"
+    "  }\n"
+    "} \n";
+  EXPECT_TRUE(file_util::WriteFile(prefs_file, text, sizeof(text)));
+
+  // Make sure command line values override the values in master preferences.
+  std::wstring cmd_str(
+      L"setup.exe --installerdata=\"" + prefs_file.value() + L"\"");
+  cmd_str.append(L" --create-all-shortcuts");
+  cmd_str.append(L" --do-not-launch-chrome");
+  cmd_str.append(L" --alt-desktop-shortcut");
+  CommandLine cmd_line = CommandLine::FromString(cmd_str);
+  scoped_ptr<DictionaryValue> prefs(
+      installer_util::GetInstallPreferences(cmd_line));
+  EXPECT_TRUE(prefs.get() != NULL);
+
+  // Check prefs that do not have any equivalent command line option.
+  bool value = false;
+  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
+      installer_util::master_preferences::kDistroSkipFirstRunPref, &value) &&
+      value);
+  EXPECT_FALSE(installer_util::GetDistroBooleanPreference(prefs.get(),
+      installer_util::master_preferences::kDistroShowWelcomePage, &value));
+
+  // Now check that prefs got merged correctly.
+  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
+      installer_util::master_preferences::kCreateAllShortcuts, &value) &&
+      value);
+  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
+      installer_util::master_preferences::kDoNotLaunchChrome, &value) &&
+      value);
+  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
+      installer_util::master_preferences::kAltShortcutText, &value) &&
+      value);
+  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
+      installer_util::master_preferences::kSystemLevel, &value) &&
+      value);
+  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
+      installer_util::master_preferences::kVerboseLogging, &value));
+  EXPECT_FALSE(value);
+
+  // Delete temporary prefs file.
+  EXPECT_TRUE(file_util::Delete(prefs_file, false));
+
+  // Check that if master prefs doesn't exist, we can still parse the common
+  // prefs.
+  cmd_str = L"setup.exe --create-all-shortcuts --do-not-launch-chrome"
+            L" --alt-desktop-shortcut";
+  cmd_line.ParseFromString(cmd_str);
+  prefs.reset(installer_util::GetInstallPreferences(cmd_line));
+  EXPECT_TRUE(prefs.get() != NULL);
+  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
+      installer_util::master_preferences::kCreateAllShortcuts, &value) &&
+      value);
+  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
+      installer_util::master_preferences::kDoNotLaunchChrome, &value) &&
+      value);
+  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
+      installer_util::master_preferences::kAltShortcutText, &value) &&
+      value);
+  EXPECT_FALSE(installer_util::GetDistroBooleanPreference(prefs.get(),
+      installer_util::master_preferences::kSystemLevel, &value));
+  EXPECT_FALSE(installer_util::GetDistroBooleanPreference(prefs.get(),
+      installer_util::master_preferences::kVerboseLogging, &value));
+}

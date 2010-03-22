@@ -66,6 +66,11 @@ class InstallUtil {
   // by either --chrome-sxs or the executable path).
   static bool IsChromeSxSProcess();
 
+  // Returns true if this setup process is running as an install managed by an
+  // MSI wrapper. This is indicated by the presence of --msi on the command line
+  // or the presence of "msi": true in the master preferences file.
+  static bool IsMSIProcess();
+
   // Adds all DLLs in install_path whose names are given by dll_names to a
   // work item list containing registration or unregistration actions.
   //

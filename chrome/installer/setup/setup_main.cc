@@ -597,13 +597,15 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
   CommandLine::Init(0, NULL);
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
   installer::InitInstallerLogging(parsed_command_line);
-  scoped_ptr<DictionaryValue> prefs(setup_util::GetInstallPreferences(
+  scoped_ptr<DictionaryValue> prefs(installer_util::GetInstallPreferences(
       parsed_command_line));
   bool value = false;
   if (installer_util::GetDistroBooleanPreference(prefs.get(),
           installer_util::master_preferences::kVerboseLogging, &value) &&
       value)
     logging::SetMinLogLevel(logging::LOG_INFO);
+
+  LOG(INFO) << "Command Line: " << parsed_command_line.command_line_string();
 
   bool system_install = false;
   installer_util::GetDistroBooleanPreference(prefs.get(),
@@ -714,7 +716,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
   // MSI demands that custom actions always return 0 (ERROR_SUCCESS) or it will
   // rollback the action. If we're uninstalling we want to avoid this, so always
   // report success, squashing any more informative return codes.
-  if (!(parsed_command_line.HasSwitch(installer_util::switches::kMsi) &&
+  if (!(InstallUtil::IsMSIProcess() &&
         parsed_command_line.HasSwitch(installer_util::switches::kUninstall))) {
     // Note that we allow the status installer_util::UNINSTALL_REQUIRES_REBOOT
     // to pass through, since this is only returned on uninstall which is never
@@ -722,5 +724,6 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
     dist->GetInstallReturnCode(install_status);
   }
 
+  LOG(INFO) << "Installation complete, returning: " << return_code;
   return return_code;
 }

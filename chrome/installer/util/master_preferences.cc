@@ -8,7 +8,9 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "chrome/common/json_value_serializer.h"
+#include "chrome/installer/util/util_constants.h"
 #include "googleurl/src/gurl.h"
+
 
 namespace {
 const wchar_t* kDistroDict = L"distribution";
@@ -46,30 +48,6 @@ std::vector<GURL> GetNamedList(const wchar_t* name,
 }
 
 namespace installer_util {
-namespace master_preferences {
-const wchar_t kAltFirstRunBubble[] = L"oem_bubble";
-const wchar_t kAltShortcutText[] = L"alternate_shortcut_text";
-const wchar_t kChromeShortcutIconIndex[] = L"chrome_shortcut_icon_index";
-const wchar_t kCreateAllShortcuts[] = L"create_all_shortcuts";
-const wchar_t kDistroImportBookmarksPref[] = L"import_bookmarks";
-const wchar_t kDistroImportHistoryPref[] = L"import_history";
-const wchar_t kDistroImportHomePagePref[] = L"import_home_page";
-const wchar_t kDistroImportSearchPref[] = L"import_search_engine";
-const wchar_t kDistroPingDelay[] = L"ping_delay";
-const wchar_t kDistroShowWelcomePage[] = L"show_welcome_page";
-const wchar_t kDistroSkipFirstRunPref[] = L"skip_first_run_ui";
-const wchar_t kDoNotCreateShortcuts[] = L"do_not_create_shortcuts";
-const wchar_t kDoNotLaunchChrome[] = L"do_not_launch_chrome";
-const wchar_t kDoNotRegisterForUpdateLaunch[] =
-    L"do_not_register_for_update_launch";
-const wchar_t kMakeChromeDefault[] = L"make_chrome_default";
-const wchar_t kMakeChromeDefaultForUser[] = L"make_chrome_default_for_user";
-const wchar_t kMsi[] = L"msi";
-const wchar_t kRequireEula[] = L"require_eula";
-const wchar_t kSystemLevel[] = L"system_level";
-const wchar_t kVerboseLogging[] = L"verbose_logging";
-const wchar_t kExtensionsBlock[] = L"extensions.settings";
-}
 
 bool GetDistroBooleanPreference(const DictionaryValue* prefs,
                                 const std::wstring& name,
@@ -103,6 +81,61 @@ bool GetDistroIntegerPreference(const DictionaryValue* prefs,
   return true;
 }
 
+DictionaryValue* GetInstallPreferences(const CommandLine& cmd_line) {
+  DictionaryValue* prefs = NULL;
+#if defined(OS_WIN)
+  if (cmd_line.HasSwitch(installer_util::switches::kInstallerData)) {
+    FilePath prefs_path(
+        cmd_line.GetSwitchValue(installer_util::switches::kInstallerData));
+    prefs = installer_util::ParseDistributionPreferences(prefs_path);
+  }
+
+  if (!prefs)
+    prefs = new DictionaryValue();
+
+  if (cmd_line.HasSwitch(installer_util::switches::kCreateAllShortcuts))
+    installer_util::SetDistroBooleanPreference(
+        prefs, installer_util::master_preferences::kCreateAllShortcuts, true);
+
+  if (cmd_line.HasSwitch(installer_util::switches::kDoNotCreateShortcuts))
+    installer_util::SetDistroBooleanPreference(
+        prefs, installer_util::master_preferences::kDoNotCreateShortcuts, true);
+
+  if (cmd_line.HasSwitch(installer_util::switches::kMsi))
+    installer_util::SetDistroBooleanPreference(
+        prefs, installer_util::master_preferences::kMsi, true);
+
+  if (cmd_line.HasSwitch(
+        installer_util::switches::kDoNotRegisterForUpdateLaunch))
+    installer_util::SetDistroBooleanPreference(
+        prefs,
+        installer_util::master_preferences::kDoNotRegisterForUpdateLaunch,
+        true);
+
+  if (cmd_line.HasSwitch(installer_util::switches::kDoNotLaunchChrome))
+    installer_util::SetDistroBooleanPreference(
+        prefs, installer_util::master_preferences::kDoNotLaunchChrome, true);
+
+  if (cmd_line.HasSwitch(installer_util::switches::kMakeChromeDefault))
+    installer_util::SetDistroBooleanPreference(
+        prefs, installer_util::master_preferences::kMakeChromeDefault, true);
+
+  if (cmd_line.HasSwitch(installer_util::switches::kSystemLevel))
+    installer_util::SetDistroBooleanPreference(
+        prefs, installer_util::master_preferences::kSystemLevel, true);
+
+  if (cmd_line.HasSwitch(installer_util::switches::kVerboseLogging))
+    installer_util::SetDistroBooleanPreference(
+        prefs, installer_util::master_preferences::kVerboseLogging, true);
+
+  if (cmd_line.HasSwitch(installer_util::switches::kAltDesktopShortcut))
+    installer_util::SetDistroBooleanPreference(
+        prefs, installer_util::master_preferences::kAltShortcutText, true);
+#endif
+
+  return prefs;
+}
+
 DictionaryValue* ParseDistributionPreferences(
     const FilePath& master_prefs_path) {
   if (!file_util::PathExists(master_prefs_path)) {
@@ -113,6 +146,7 @@ DictionaryValue* ParseDistributionPreferences(
   std::string json_data;
   if (!file_util::ReadFileToString(master_prefs_path, &json_data))
     return NULL;
+
   JSONStringValueSerializer json(json_data);
   scoped_ptr<Value> root(json.Deserialize(NULL));
 

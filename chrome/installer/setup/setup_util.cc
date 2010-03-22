@@ -33,61 +33,6 @@ int setup_util::ApplyDiffPatch(const std::wstring& src,
   return ApplyBinaryPatch(src.c_str(), patch.c_str(), dest.c_str());
 }
 
-DictionaryValue* setup_util::GetInstallPreferences(
-    const CommandLine& cmd_line) {
-  DictionaryValue* prefs = NULL;
-
-  if (cmd_line.HasSwitch(installer_util::switches::kInstallerData)) {
-    FilePath prefs_path(
-        cmd_line.GetSwitchValue(installer_util::switches::kInstallerData));
-    prefs = installer_util::ParseDistributionPreferences(prefs_path);
-  }
-
-  if (!prefs)
-    prefs = new DictionaryValue();
-
-  if (cmd_line.HasSwitch(installer_util::switches::kCreateAllShortcuts))
-    installer_util::SetDistroBooleanPreference(
-        prefs, installer_util::master_preferences::kCreateAllShortcuts, true);
-
-  if (cmd_line.HasSwitch(installer_util::switches::kDoNotCreateShortcuts))
-    installer_util::SetDistroBooleanPreference(
-        prefs, installer_util::master_preferences::kDoNotCreateShortcuts, true);
-
-  if (cmd_line.HasSwitch(installer_util::switches::kMsi))
-    installer_util::SetDistroBooleanPreference(
-        prefs, installer_util::master_preferences::kMsi, true);
-
-  if (cmd_line.HasSwitch(
-        installer_util::switches::kDoNotRegisterForUpdateLaunch))
-    installer_util::SetDistroBooleanPreference(
-        prefs,
-        installer_util::master_preferences::kDoNotRegisterForUpdateLaunch,
-        true);
-
-  if (cmd_line.HasSwitch(installer_util::switches::kDoNotLaunchChrome))
-    installer_util::SetDistroBooleanPreference(
-        prefs, installer_util::master_preferences::kDoNotLaunchChrome, true);
-
-  if (cmd_line.HasSwitch(installer_util::switches::kMakeChromeDefault))
-    installer_util::SetDistroBooleanPreference(
-        prefs, installer_util::master_preferences::kMakeChromeDefault, true);
-
-  if (cmd_line.HasSwitch(installer_util::switches::kSystemLevel))
-    installer_util::SetDistroBooleanPreference(
-        prefs, installer_util::master_preferences::kSystemLevel, true);
-
-  if (cmd_line.HasSwitch(installer_util::switches::kVerboseLogging))
-    installer_util::SetDistroBooleanPreference(
-        prefs, installer_util::master_preferences::kVerboseLogging, true);
-
-  if (cmd_line.HasSwitch(installer_util::switches::kAltDesktopShortcut))
-    installer_util::SetDistroBooleanPreference(
-        prefs, installer_util::master_preferences::kAltShortcutText, true);
-
-  return prefs;
-}
-
 installer::Version* setup_util::GetVersionFromDir(
     const std::wstring& chrome_path) {
   LOG(INFO) << "Looking for Chrome version folder under " << chrome_path;

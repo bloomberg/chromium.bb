@@ -132,6 +132,7 @@ const wchar_t kInstallerDir[] = L"Installer";
 const wchar_t kSxSSuffix[] = L" SxS";
 
 const wchar_t kUninstallStringField[] = L"UninstallString";
+const wchar_t kUninstallArgumentsField[] = L"UninstallArguments";
 const wchar_t kUninstallDisplayNameField[] = L"DisplayName";
 const wchar_t kUninstallMetricsName[] = L"uninstall_metrics";
 const wchar_t kUninstallInstallationDate[] = L"installation_date";

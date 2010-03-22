@@ -99,6 +99,11 @@ void AppendUninstallCommandLineFlags(std::wstring* uninstall_cmd_line,
     uninstall_cmd_line->append(installer_util::switches::kChromeSxS);
   }
 
+  if (InstallUtil::IsMSIProcess()) {
+    uninstall_cmd_line->append(L" --");
+    uninstall_cmd_line->append(installer_util::switches::kMsi);
+  }
+
   // Propagate the verbose logging switch to uninstalls too.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(installer_util::switches::kVerboseLogging)) {
@@ -128,21 +133,29 @@ void AddUninstallShortcutWorkItems(HKEY reg_root,
                           file_util::GetFilenameFromPath(exe_path));
   uninstall_cmd.append(L"\"");
 
-  AppendUninstallCommandLineFlags(&uninstall_cmd,
-                                  reg_root == HKEY_LOCAL_MACHINE);
-
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
-  if (command_line.HasSwitch(installer_util::switches::kMsi)) {
-    // If we're running at the behest of an MSI, store our uninstall string
-    // in the Google Update client state key.
-    std::wstring update_state_key = dist->GetStateKey();
-    install_list->AddCreateRegKeyWorkItem(reg_root, update_state_key);
-    install_list->AddSetRegValueWorkItem(reg_root, update_state_key,
-        installer_util::kUninstallStringField, uninstall_cmd, true);
-  } else {
-    // Otherwise, create DisplayName, UninstallString and InstallLocation keys.
+
+  // When we are installed via an MSI, we need to store our uninstall strings
+  // in the Google Update client state key. We do this even for non-MSI
+  // managed installs to avoid breaking the edge case whereby an MSI-managed
+  // install is updated by a non-msi installer (which would confuse the MSI
+  // machinery if these strings were not also updated).
+  std::wstring uninstall_arguments;
+  AppendUninstallCommandLineFlags(&uninstall_arguments,
+                                  reg_root == HKEY_LOCAL_MACHINE);
+  std::wstring update_state_key = dist->GetStateKey();
+  install_list->AddCreateRegKeyWorkItem(reg_root, update_state_key);
+  install_list->AddSetRegValueWorkItem(reg_root, update_state_key,
+      installer_util::kUninstallStringField, uninstall_cmd, true);
+  install_list->AddSetRegValueWorkItem(reg_root, update_state_key,
+      installer_util::kUninstallArgumentsField, uninstall_arguments, true);
+
+  // MSI installations will manage their own uninstall shortcuts.
+  if (!InstallUtil::IsMSIProcess()) {
+    AppendUninstallCommandLineFlags(&uninstall_cmd,
+                                    reg_root == HKEY_LOCAL_MACHINE);
     std::wstring uninstall_reg = dist->GetUninstallRegPath();
     install_list->AddCreateRegKeyWorkItem(reg_root, uninstall_reg);
     install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,

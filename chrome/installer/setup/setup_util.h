@@ -7,8 +7,6 @@
 #ifndef CHROME_INSTALLER_SETUP_SETUP_UTIL_H_
 #define CHROME_INSTALLER_SETUP_SETUP_UTIL_H_
 
-#include "base/command_line.h"
-#include "base/values.h"
 #include "chrome/installer/util/version.h"
 
 namespace setup_util {
@@ -18,11 +16,6 @@ namespace setup_util {
   int ApplyDiffPatch(const std::wstring& src,
                      const std::wstring& patch,
                      const std::wstring& dest);
-
-  // Parse command line and read master preferences, if present, to get
-  // distribution related install options. Merge them if any command line
-  // options present (command line value takes precedence).
-  DictionaryValue* GetInstallPreferences(const CommandLine& cmd_line);
 
   // Find the version of Chrome from an install source directory.
   // Chrome_path should contain a version folder.

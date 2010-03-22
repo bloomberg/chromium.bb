@@ -37,6 +37,8 @@
           'util/install_util.h',
           'util/l10n_string_util.cc',
           'util/l10n_string_util.h',
+          'util/master_preferences_constants.cc',
+          'util/master_preferences_constants.h',
           'util/move_tree_work_item.cc',
           'util/move_tree_work_item.h',
           'util/self_reg_work_item.cc',
@@ -70,6 +72,7 @@
           },
           'dependencies': [
             'installer_util_strings',
+            '../../build/temp_gyp/googleurl.gyp:googleurl',
             '../chrome.gyp:common_constants',
             '../chrome.gyp:chrome_resources',
             '../chrome.gyp:chrome_strings',
@@ -114,6 +117,8 @@
           ],
           'sources': [
             'util/google_chrome_distribution_dummy.cc',
+            'util/master_preferences.h',
+            'util/master_preferences_dummy.cc',
           ],
           'configurations': {
             'Common_Base': {
@@ -136,6 +141,8 @@
           'sources': [
             'util/master_preferences.cc',
             'util/master_preferences.h',
+            'util/master_preferences_constants.cc',
+            'util/master_preferences_constants.h',
           ],
           'include_dirs': [
             '<(DEPTH)',
