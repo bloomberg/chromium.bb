@@ -194,8 +194,6 @@
         'common/chrome_plugin_lib.h',
         'common/chrome_plugin_util.cc',
         'common/chrome_plugin_util.h',
-        'common/command_buffer_messages.h',
-        'common/command_buffer_messages_internal.h',
         'common/common_glue.cc',
         'common/css_colors.h',
         'common/db_message_filter.cc',
