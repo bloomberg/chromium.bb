@@ -4,8 +4,8 @@
 
 #include "views/controls/resize_gripper.h"
 
-#include "base/logging.h"
 #include "app/resource_bundle.h"
+#include "base/logging.h"
 #include "grit/app_resources.h"
 
 namespace views {
@@ -74,6 +74,25 @@ void ResizeGripper::OnMouseReleased(const views::MouseEvent& event,
     ReportResizeAmount(initial_position_, true);
   else
     ReportResizeAmount(event.x(), true);
+}
+
+bool ResizeGripper::GetAccessibleRole(AccessibilityTypes::Role* role) {
+  DCHECK(role);
+  *role = AccessibilityTypes::ROLE_SEPARATOR;
+  return true;
+}
+
+bool ResizeGripper::GetAccessibleName(std::wstring* name) {
+  DCHECK(name);
+  if (!accessible_name_.empty()) {
+    *name = accessible_name_;
+    return true;
+  }
+  return false;
+}
+
+void ResizeGripper::SetAccessibleName(const std::wstring& name) {
+  accessible_name_.assign(name);
 }
 
 void ResizeGripper::ReportResizeAmount(int resize_amount, bool last_update) {

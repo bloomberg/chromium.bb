@@ -144,6 +144,10 @@ class BrowserActionView : public views::View {
   // returned object.
   gfx::Canvas* GetIconWithBadge();
 
+  // Accessibility accessors, overridden from View.
+  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+  virtual bool GetAccessibleName(std::wstring* name);
+
  private:
   virtual void Layout();
 
@@ -310,6 +314,8 @@ class BrowserActionsContainer
   virtual int OnDragUpdated(const views::DropTargetEvent& event);
   virtual void OnDragExited();
   virtual int OnPerformDrop(const views::DropTargetEvent& event);
+  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+  virtual bool GetAccessibleName(std::wstring* name);
 
   // Overridden from views::ViewMenuDelegate:
   virtual void RunMenu(View* source, const gfx::Point& pt);

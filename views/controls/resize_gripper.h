@@ -44,6 +44,9 @@ class ResizeGripper : public ImageView {
   virtual bool OnMousePressed(const views::MouseEvent& event);
   virtual bool OnMouseDragged(const views::MouseEvent& event);
   virtual void OnMouseReleased(const views::MouseEvent& event, bool canceled);
+  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+  virtual bool GetAccessibleName(std::wstring* name);
+  virtual void SetAccessibleName(const std::wstring& name);
 
   static const char kViewClassName[];
 
@@ -57,6 +60,9 @@ class ResizeGripper : public ImageView {
 
   // The mouse position at start (in screen coordinates).
   int initial_position_;
+
+  // The storage string for the accessibility name associated with this control.
+  std::wstring accessible_name_;
 
   DISALLOW_COPY_AND_ASSIGN(ResizeGripper);
 };

@@ -5,6 +5,7 @@
 #include "chrome/browser/views/browser_actions_container.h"
 
 #include "app/gfx/canvas.h"
+#include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/slide_animation.h"
 #include "base/stl_util-inl.h"
@@ -28,6 +29,7 @@
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "grit/app_resources.h"
+#include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
@@ -163,7 +165,12 @@ void BrowserActionButton::UpdateState() {
   else if (!default_icon_.isNull())
     SetIcon(default_icon_);
 
-  SetTooltipText(UTF8ToWide(browser_action()->GetTitle(tab_id)));
+  // If the browser action name is empty, show the extension name instead.
+  std::wstring name = UTF8ToWide(browser_action()->GetTitle(tab_id));
+  if (name.empty())
+    name = UTF8ToWide(extension()->name());
+  SetTooltipText(name);
+  SetAccessibleName(name);
   GetParent()->SchedulePaint();
 }
 
@@ -307,6 +314,18 @@ gfx::Canvas* BrowserActionView::GetIconWithBadge() {
   return canvas;
 }
 
+bool BrowserActionView::GetAccessibleRole(AccessibilityTypes::Role* role) {
+  DCHECK(role);
+  *role = AccessibilityTypes::ROLE_GROUPING;
+  return true;
+}
+
+bool BrowserActionView::GetAccessibleName(std::wstring* name) {
+  DCHECK(name);
+  *name = l10n_util::GetString(IDS_ACCNAME_EXTENSIONS_BROWSER_ACTION);
+  return true;
+}
+
 void BrowserActionView::Layout() {
   button_->SetBounds(0, kControlVertOffset, width(), kButtonSize);
 }
@@ -348,6 +367,8 @@ BrowserActionsContainer::BrowserActionsContainer(
 
   resize_animation_.reset(new SlideAnimation(this));
   resize_gripper_ = new views::ResizeGripper(this);
+  resize_gripper_->SetAccessibleName(
+      l10n_util::GetString(IDS_ACCNAME_SEPARATOR));
   resize_gripper_->SetVisible(false);
   AddChildView(resize_gripper_);
 
@@ -357,6 +378,8 @@ BrowserActionsContainer::BrowserActionsContainer(
   chevron_ = new views::MenuButton(NULL, std::wstring(), this, false);
   chevron_->SetVisible(false);
   chevron_->SetIcon(*chevron_image);
+  chevron_->SetAccessibleName(
+      l10n_util::GetString(IDS_ACCNAME_EXTENSIONS_CHEVRON));
   // Chevron contains >> that should point left in LTR locales.
   chevron_->EnableCanvasFlippingForRTLUI(true);
   AddChildView(chevron_);
@@ -777,6 +800,19 @@ int BrowserActionsContainer::OnPerformDrop(
 
   OnDragExited();  // Perform clean up after dragging.
   return DragDropTypes::DRAG_MOVE;
+}
+
+bool BrowserActionsContainer::GetAccessibleRole(
+    AccessibilityTypes::Role* role) {
+  DCHECK(role);
+  *role = AccessibilityTypes::ROLE_GROUPING;
+  return true;
+}
+
+bool BrowserActionsContainer::GetAccessibleName(std::wstring* name) {
+  DCHECK(name);
+  *name = l10n_util::GetString(IDS_ACCNAME_EXTENSIONS);
+  return !name->empty();
 }
 
 void BrowserActionsContainer::MoveBrowserAction(
