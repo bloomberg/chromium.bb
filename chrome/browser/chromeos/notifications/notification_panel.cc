@@ -42,7 +42,7 @@ class PanelWidget : public views::WidgetGtk {
   // views::WidgetGtk overrides.
   virtual gboolean OnMotionNotify(GtkWidget* widget, GdkEventMotion* event) {
     gboolean result = WidgetGtk::OnMotionNotify(widget, event);
-    panel_->DontUpdatePanelOnStale();
+    panel_->OnMouseMotion();
     return result;
   }
 
@@ -79,9 +79,8 @@ class BalloonSubContainer : public views::View {
 
   virtual void Layout() {
     // Layout bottom up
-    int count = GetChildViewCount();
     int height = 0;
-    for (int i = count - 1; i >= 0; --i) {
+    for (int i = GetChildViewCount() - 1; i >= 0; --i) {
       views::View* child = GetChildViewAt(i);
       child->SetBounds(0, height, child->width(), child->height());
       height += child->height() + margin_;
@@ -94,9 +93,9 @@ class BalloonSubContainer : public views::View {
     int height = 0;
     int max_width = 0;
     for (int i = GetChildViewCount() - 1; i >= 0; --i) {
-      views::View* c = GetChildViewAt(i);
-      height += c->height() + margin_;
-      max_width = std::max(max_width, c->width());
+      views::View* child = GetChildViewAt(i);
+      height += child->height() + margin_;
+      max_width = std::max(max_width, child->width());
     }
     if (height > 0)
       height -= margin_;
@@ -115,7 +114,7 @@ class BalloonSubContainer : public views::View {
         if (rect.IsEmpty()) {
           rect = view->bounds();
         } else {
-          rect = rect.Union(bounds());
+          rect = rect.Union(view->bounds());
         }
       }
     }
@@ -183,13 +182,13 @@ class BalloonContainer : public views::View {
 
   // Returns the size that covers sticky and new notifications.
   gfx::Size GetStickyNewSize() {
-    gfx::Rect new_sticky = sticky_container_->bounds();
+    gfx::Rect sticky = sticky_container_->bounds();
     gfx::Rect new_non_sticky = non_sticky_container_->GetNewBounds();
-    if (new_sticky.IsEmpty())
+    if (sticky.IsEmpty())
       return new_non_sticky.size();
     if (new_non_sticky.IsEmpty())
-      return new_sticky.size();
-    return new_sticky.Union(new_non_sticky).size();
+      return sticky.size();
+    return sticky.Union(new_non_sticky).size();
   }
 
   // Adds a ballon to the panel.
@@ -232,13 +231,19 @@ class BalloonContainer : public views::View {
   }
 
   // Returns the # of new notifications.
-  bool GetNewNotificationCount() {
+  int GetNewNotificationCount() {
     return sticky_container_->GetNewCount() +
         non_sticky_container_->GetNewCount();
   }
 
+  // Returns the # of sticky and new notifications.
+  int GetStickyNewNotificationCount() {
+    return sticky_container_->GetChildViewCount() +
+        non_sticky_container_->GetNewCount();
+  }
+
   // Returns the # of sticky notifications.
-  bool GetStickyNotificationCount() {
+  int GetStickyNotificationCount() {
     return sticky_container_->GetChildViewCount();
   }
 
@@ -291,9 +296,7 @@ NotificationPanel::NotificationPanel()
     : balloon_container_(NULL),
       state_(CLOSED),
       task_factory_(this),
-      update_panel_on_mouse_leave_(false),
-      latest_token_(0),
-      stale_token_(0) {
+      min_bounds_(0, 0, kBalloonMinWidth, kBalloonMinHeight) {
   Init();
 }
 
@@ -310,12 +313,7 @@ void NotificationPanel::Show() {
     // when resizing. This needs to be investigated.
     panel_widget_.reset(new PanelWidget(this));
     gfx::Rect bounds = GetPreferredBounds();
-    if (bounds.width() < kBalloonMinWidth ||
-        bounds.height() < kBalloonMinHeight) {
-      // Gtk uses its own default size when the size is empty.
-      // Use the minimum size as a default.
-      bounds.SetRect(0, 0, kBalloonMinWidth, kBalloonMinHeight);
-    }
+    bounds = bounds.Union(min_bounds_);
     panel_widget_->Init(NULL, bounds);
     // TODO(oshima): I needed the following code in order to get sizing
     // reliably. Investigate and fix it in WidgetGtk.
@@ -341,20 +339,12 @@ void NotificationPanel::Hide() {
   }
 }
 
-int NotificationPanel::GetStickyNotificationCount() const {
-  return balloon_container_->GetStickyNotificationCount();
-}
-
-int NotificationPanel::GetNewNotificationCount() const {
-  return balloon_container_->GetNewNotificationCount();
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // BalloonCollectionImpl::NotificationUI overrides.
 
 void NotificationPanel::Add(Balloon* balloon) {
   balloon_container_->Add(balloon);
-  if (state_ == CLOSED || state_ == MINIMIZED)
+  if (state_ == CLOSED || state_ == MINIMIZED || state_ == KEEP_SIZE)
     state_ = STICKY_AND_NEW;
   Show();
   UpdatePanel(true);
@@ -379,8 +369,8 @@ void NotificationPanel::Remove(Balloon* balloon) {
   // no change to the state
   if (balloon_container_->GetNotificationCount() == 0)
     state_ = CLOSED;
-  if (static_cast<BalloonViewImpl*>(balloon->view())->closed_by_user()) {
-    DontUpdatePanelOnStale();
+  if (state_ == KEEP_SIZE) {
+    // Just update the content.
     balloon_container_->UpdateBounds();
     scroll_view_->Layout();
   } else {
@@ -420,10 +410,10 @@ void NotificationPanel::ClosePanel() {
 void NotificationPanel::OnPanelStateChanged(PanelController::State state) {
   switch (state) {
     case PanelController::EXPANDED:
-      // Geting expanded in STICKY_AND_NEW state means that a new
-      // notification is added, so just leave the state. Otherwise,
-      // expand to full.
-      if (state_ != STICKY_AND_NEW)
+      // Geting expanded in STICKY_AND_NEW or in KEEP_SIZE state means
+      // that a new notification is added, so just leave the
+      // state. Otherwise, expand to full.
+      if (state_ != STICKY_AND_NEW && state_ != KEEP_SIZE)
         state_ = FULL;
       // When the panel is to be expanded, we either show all, or
       // show only sticky/new, depending on the state.
@@ -438,18 +428,21 @@ void NotificationPanel::OnPanelStateChanged(PanelController::State state) {
 }
 
 void NotificationPanel::OnMouseLeave() {
-  if (update_panel_on_mouse_leave_) {
-    // TODO(oshima): We need "AS_IS" state, which simply
-    // keeps the current panel size unless it has less notifications
-    // than it can show.
-    if (balloon_container_->GetStickyNotificationCount() > 0 ||
-        balloon_container_->GetNewNotificationCount() > 0) {
-      state_ = STICKY_AND_NEW;
-    } else {
-      state_ = MINIMIZED;
-    }
-    UpdatePanel(true);
+  if (balloon_container_->GetNotificationCount() == 0) {
+    state_ = CLOSED;
   }
+  UpdatePanel(true);
+}
+
+void NotificationPanel::OnMouseMotion() {
+  state_ = KEEP_SIZE;
+}
+
+NotificationPanelTester* NotificationPanel::GetTester() {
+  if (!tester_.get()) {
+    tester_.reset(new NotificationPanelTester(this));
+  }
+  return tester_.get();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -469,12 +462,20 @@ void NotificationPanel::Init() {
 }
 
 void NotificationPanel::UpdatePanel(bool contents_changed) {
-  update_panel_on_mouse_leave_ = false;
   if (contents_changed) {
     balloon_container_->UpdateBounds();
     scroll_view_->Layout();
   }
   switch(state_) {
+    case KEEP_SIZE: {
+      gfx::Rect min_bounds = GetPreferredBounds();
+      gfx::Rect panel_bounds;
+      panel_widget_->GetBounds(&panel_bounds, true);
+      if (min_bounds.height() < panel_bounds.height())
+        panel_widget_->SetBounds(min_bounds);
+      // no change.
+      break;
+    }
     case CLOSED:
       balloon_container_->MakeAllStale();
       Hide();
@@ -506,7 +507,7 @@ gfx::Rect NotificationPanel::GetPreferredBounds() {
   // Adjust the width to avoid showing a horizontal scroll bar.
   if (new_height != pref_size.height())
     new_width += scroll_view_->GetScrollBarWidth();
-  return gfx::Rect(0, 0, new_width, new_height);
+  return gfx::Rect(0, 0, new_width, new_height).Union(min_bounds_);
 }
 
 gfx::Rect NotificationPanel::GetStickyNewBounds() {
@@ -517,14 +518,7 @@ gfx::Rect NotificationPanel::GetStickyNewBounds() {
   // Adjust the width to avoid showing a horizontal scroll bar.
   if (new_height != pref_size.height())
     new_width += scroll_view_->GetScrollBarWidth();
-  return gfx::Rect(0, 0, new_width, new_height);
-}
-
-void NotificationPanel::DontUpdatePanelOnStale() {
-  if (stale_token_ != latest_token_) {
-    stale_token_ = latest_token_;
-  }
-  update_panel_on_mouse_leave_ = true;
+  return gfx::Rect(0, 0, new_width, new_height).Union(min_bounds_);
 }
 
 void NotificationPanel::StartStaleTimer(Balloon* balloon) {
@@ -532,18 +526,17 @@ void NotificationPanel::StartStaleTimer(Balloon* balloon) {
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       task_factory_.NewRunnableMethod(
-          &NotificationPanel::OnStale, view, latest_token_++),
+          &NotificationPanel::OnStale, view),
       1000 * kStaleTimeoutInSeconds);
 }
 
-void NotificationPanel::OnStale(BalloonViewImpl* view, int token) {
+void NotificationPanel::OnStale(BalloonViewImpl* view) {
   if (balloon_container_->HasBalloonView(view) && !view->stale()) {
     view->set_stale();
     // don't update panel on stale
-    if (token < stale_token_) {
+    if (state_ == KEEP_SIZE)
       return;
-    }
-    if (balloon_container_->GetStickyNotificationCount() > 0) {
+    if (balloon_container_->GetStickyNewNotificationCount() > 0) {
       state_ = STICKY_AND_NEW;
     } else {
       state_ = MINIMIZED;
@@ -551,5 +544,21 @@ void NotificationPanel::OnStale(BalloonViewImpl* view, int token) {
     UpdatePanel(false);
   }
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// NotificationPanelTester public.
+
+int NotificationPanelTester::GetNotificationCount() const {
+  return panel_->balloon_container_->GetNotificationCount();
+}
+
+int NotificationPanelTester::GetStickyNotificationCount() const {
+  return panel_->balloon_container_->GetStickyNotificationCount();
+}
+
+int NotificationPanelTester::GetNewNotificationCount() const {
+  return panel_->balloon_container_->GetNewNotificationCount();
+}
+
 
 }  // namespace chromeos

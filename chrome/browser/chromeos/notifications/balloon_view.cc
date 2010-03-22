@@ -45,8 +45,7 @@ BalloonViewImpl::BalloonViewImpl(bool sticky, bool controls)
       options_menu_button_(NULL),
       stale_(false),
       sticky_(sticky),
-      controls_(controls),
-      closed_by_user_(false) {
+      controls_(controls) {
   // This object is not to be deleted by the views hierarchy,
   // as it is owned by the balloon.
   set_parent_owned(false);
@@ -115,7 +114,6 @@ void BalloonViewImpl::Update() {
 }
 
 void BalloonViewImpl::Close(bool by_user) {
-  closed_by_user_ = by_user;
   MessageLoop::current()->PostTask(
       FROM_HERE,
       method_factory_.NewRunnableMethod(

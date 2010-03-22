@@ -16,9 +16,9 @@
 
 namespace chromeos {
 
-class SystemNotificationDelegate : public NotificationDelegate {
+class MockNotificationDelegate : public NotificationDelegate {
  public:
-  explicit SystemNotificationDelegate(const std::string id) : id_(id) {}
+  explicit MockNotificationDelegate(const std::string& id) : id_(id) {}
 
   virtual void Display() {}
   virtual void Error() {}
@@ -28,7 +28,7 @@ class SystemNotificationDelegate : public NotificationDelegate {
  private:
   std::string id_;
 
-  DISALLOW_COPY_AND_ASSIGN(SystemNotificationDelegate);
+  DISALLOW_COPY_AND_ASSIGN(MockNotificationDelegate);
 };
 
 class NotificationTest : public InProcessBrowserTest {
@@ -46,38 +46,120 @@ class NotificationTest : public InProcessBrowserTest {
     return static_cast<NotificationPanel*>(
         GetBalloonCollectionImpl()->notification_ui());
   }
+
+  Notification NewMockNotification(const std::string& id) {
+    return NewMockNotification(new MockNotificationDelegate(id));
+  }
+
+  Notification NewMockNotification(NotificationDelegate* delegate) {
+    return SystemNotificationFactory::Create(
+        GURL(), ASCIIToUTF16(""), ASCIIToUTF16(""),
+        delegate);
+  }
+
+  void RunAllPending() {
+    MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+    ui_test_utils::RunMessageLoop();
+  }
 };
+
+IN_PROC_BROWSER_TEST_F(NotificationTest, TestBasic) {
+  BalloonCollectionImpl* collection = GetBalloonCollectionImpl();
+  NotificationPanel* panel = GetNotificationPanel();
+  NotificationPanelTester* tester = panel->GetTester();
+
+  // Using system notification as regular notification.
+  collection->Add(NewMockNotification("1"), browser()->profile());
+
+  EXPECT_EQ(1, tester->GetNewNotificationCount());
+  EXPECT_EQ(1, tester->GetNotificationCount());
+  EXPECT_EQ(0, tester->GetStickyNotificationCount());
+  EXPECT_EQ(NotificationPanel::STICKY_AND_NEW, tester->state());
+
+  collection->Add(NewMockNotification("2"), browser()->profile());
+
+  EXPECT_EQ(2, tester->GetNewNotificationCount());
+  EXPECT_EQ(2, tester->GetNotificationCount());
+  EXPECT_EQ(NotificationPanel::STICKY_AND_NEW, tester->state());
+
+  collection->Remove(NewMockNotification("1"));
+  RunAllPending();
+
+  EXPECT_EQ(1, tester->GetNewNotificationCount());
+  EXPECT_EQ(1, tester->GetNotificationCount());
+  EXPECT_EQ(NotificationPanel::STICKY_AND_NEW, tester->state());
+
+  collection->Remove(NewMockNotification("2"));
+  RunAllPending();
+  EXPECT_EQ(0, tester->GetNewNotificationCount());
+  EXPECT_EQ(0, tester->GetNotificationCount());
+  EXPECT_EQ(NotificationPanel::CLOSED, tester->state());
+}
+
+IN_PROC_BROWSER_TEST_F(NotificationTest, TestMouseMotion) {
+  BalloonCollectionImpl* collection = GetBalloonCollectionImpl();
+  NotificationPanel* panel = GetNotificationPanel();
+  NotificationPanelTester* tester = panel->GetTester();
+
+  // Using system notification as regular notification.
+  collection->Add(NewMockNotification("1"), browser()->profile());
+  collection->Add(NewMockNotification("2"), browser()->profile());
+
+  EXPECT_EQ(NotificationPanel::STICKY_AND_NEW, tester->state());
+
+  panel->OnMouseMotion();
+  EXPECT_EQ(NotificationPanel::KEEP_SIZE, tester->state());
+
+  collection->Remove(NewMockNotification("1"));
+  RunAllPending();
+
+  EXPECT_EQ(1, tester->GetNewNotificationCount());
+  EXPECT_EQ(1, tester->GetNotificationCount());
+  EXPECT_EQ(NotificationPanel::KEEP_SIZE, tester->state());
+
+  collection->Remove(NewMockNotification("2"));
+  RunAllPending();
+  EXPECT_EQ(0, tester->GetNotificationCount());
+  EXPECT_EQ(NotificationPanel::CLOSED, tester->state());
+
+  collection->Add(NewMockNotification("3"), browser()->profile());
+  EXPECT_EQ(NotificationPanel::STICKY_AND_NEW, tester->state());
+  collection->Remove(NewMockNotification("3"));
+
+  RunAllPending();
+  EXPECT_EQ(0, tester->GetNotificationCount());
+  EXPECT_EQ(NotificationPanel::CLOSED, tester->state());
+}
 
 IN_PROC_BROWSER_TEST_F(NotificationTest, TestSystemNotification) {
   BalloonCollectionImpl* collection = GetBalloonCollectionImpl();
   NotificationPanel* panel = GetNotificationPanel();
-  scoped_refptr<SystemNotificationDelegate> delegate(
-      new SystemNotificationDelegate("power"));
+  scoped_refptr<MockNotificationDelegate> delegate(
+      new MockNotificationDelegate("power"));
+  NotificationPanelTester* tester = panel->GetTester();
 
-  Notification notify = SystemNotificationFactory::Create(
-      GURL(), ASCIIToUTF16("Title"), ASCIIToUTF16("test"), delegate.get());
+  Notification notify = NewMockNotification(delegate.get());
   collection->AddSystemNotification(notify, browser()->profile(), true, false);
 
-  EXPECT_EQ(1, panel->GetNewNotificationCount());
-  EXPECT_EQ(1, panel->GetStickyNotificationCount());
+  EXPECT_EQ(1, tester->GetNewNotificationCount());
+  EXPECT_EQ(1, tester->GetStickyNotificationCount());
 
   Notification update = SystemNotificationFactory::Create(
       GURL(), ASCIIToUTF16("Title"), ASCIIToUTF16("updated"), delegate.get());
   collection->UpdateNotification(update);
 
-  EXPECT_EQ(1, panel->GetStickyNotificationCount());
+  EXPECT_EQ(1, tester->GetStickyNotificationCount());
 
   // Dismiss the notification.
   // TODO(oshima): Consider updating API to Remove(NotificationDelegate)
   // or Remove(std::string id);
   collection->Remove(Notification(GURL(), GURL(),
                                   std::wstring(), delegate.get()));
+  RunAllPending();
 
-  MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
-  ui_test_utils::RunMessageLoop();
-
-  EXPECT_EQ(0, panel->GetStickyNotificationCount());
-  EXPECT_EQ(0, panel->GetNewNotificationCount());
+  EXPECT_EQ(0, tester->GetStickyNotificationCount());
+  EXPECT_EQ(0, tester->GetNewNotificationCount());
   // TODO(oshima): check content, etc..
 }
+
 }  // namespace chromeos

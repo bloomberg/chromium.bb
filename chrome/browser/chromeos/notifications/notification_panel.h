@@ -23,6 +23,7 @@ namespace chromeos {
 
 class BalloonContainer;
 class BalloonViewImpl;
+class NotificationPanelTester;
 
 // NotificationPanel is a panel that displays notifications. It has
 // several states and displays the different portion of notifications
@@ -36,32 +37,45 @@ class BalloonViewImpl;
 //   stale: one of new notifications became stale.
 //   expand: a user pressed minimized panel to expand.
 //   minimize: a user pressed the panel's title bar to minimize.
+//   user: the user's mouse moved over the panel, indicates
+//         that user is trying to interact with the panel.
 // For state, see State enum's description below.
 //
-//  CLOSE<--(event=close)-+     +--(event=stale, cond=has new|sticky)
+//
+// [CLOSE]<-(event=close)-+     +--(event=stale, cond=has new|sticky)
 //   |                    |     |         (event=new)
-//   |                    |     V              |
-//   +--(event=new)--> STICKY_AND_NEW----------+
-//   |                  |           ^
-//   |    (event=stale,             |
-//   |    cond=has new, no sticy)  (event=new)
-//   |       (event=minimize)       |
-//   |                  |           |
-//   |                  V           |
-//   |                    MINIMIZED  ---(event=close)--> [CLOSE]
-//   |                     |     ^
-//   |                     |     |
-//   |          (event=expand)  (event=minmize)
-//   |                     V     |
-//   +--(event=open)---->    FULL  --(event=stale)(event=new)
-//                         |     |              |
-//              (event=close)    +--------------+
+//   |                    |     V           |
+//   +--(event=new)-->[STICKY_AND_NEW]----- +--------(event=user)
+//   |                  ^           |                      |
+//   |                  |  (event=stale,                   V
+//   |                  |  cond=has new, no sticy)  +[ KEEP_SIZE ]<-+
+//   |          (event=new)   (event=minimize)      |      |        |
+//   |                  |           |               |      |        |
+//   |                  |           |  (event=minimize)(event=close)|
+//   |                  |           +---------------+      |        |
+//   |                  |           V                      V        |
+//   |                  [ MINIMIZED ]---(event=close)--> [CLOSE]    |
+//   |                     |     ^                                  |
+//   |                     |     |                                  |
+//   |          (event=expand)  (event=minmize)                 (event=user)
+//   |                     V     |                                  |
+//   +--(event=open)---->[  FULL  ]-------------+-------------------+
+//                         |     ^              |
+//              (event=close)    +-------(event=stale)(event=new)
 //                         |
 //          [CLOSE] <------+
 //
 class NotificationPanel : public PanelController::Delegate,
                           public BalloonCollectionImpl::NotificationUI {
  public:
+  enum State {
+    FULL,  // Show all notifications
+    KEEP_SIZE,  // Don't change the size.
+    STICKY_AND_NEW,  // Show only new and sticky notifications.
+    MINIMIZED,  // The panel is minimized.
+    CLOSED,  // The panel is closed.
+  };
+
   NotificationPanel();
   virtual ~NotificationPanel();
 
@@ -84,24 +98,12 @@ class NotificationPanel : public PanelController::Delegate,
 
   // Called when a mouse left the panel window.
   void OnMouseLeave();
+  void OnMouseMotion();
 
-  // Tells that the panel should not update the size or state
-  // when a notification becomes stale.
-  void DontUpdatePanelOnStale();
-
-  // Returns number of of sticky notifications.
-  int GetStickyNotificationCount() const;
-
-  // Returns number of new notifications.
-  int GetNewNotificationCount() const;
+  NotificationPanelTester* GetTester();
 
  private:
-  enum State {
-    FULL,  // Show all notifications
-    STICKY_AND_NEW,  // Show only new and sticky notifications.
-    MINIMIZED,  // The panel is minimized.
-    CLOSED,  // The panel is closed.
-  };
+  friend class NotificationPanelTester;
 
   void Init();
 
@@ -120,9 +122,7 @@ class NotificationPanel : public PanelController::Delegate,
 
   // A callback function that is called when the notification
   // (that the view is associated with) becomes stale after a timeout.
-  // |token| is a unique id assigned to a callback task and is
-  // used to cancel the task.
-  void OnStale(BalloonViewImpl* view, int token);
+  void OnStale(BalloonViewImpl* view);
 
   BalloonContainer* balloon_container_;
   scoped_ptr<views::Widget> panel_widget_;
@@ -130,16 +130,35 @@ class NotificationPanel : public PanelController::Delegate,
   scoped_ptr<views::ScrollView> scroll_view_;
   State state_;
   ScopedRunnableMethodFactory<NotificationPanel> task_factory_;
-  bool update_panel_on_mouse_leave_;
+  gfx::Rect min_bounds_;
 
-  // Task token is an integer value assigned to each task, and
-  // used to cancel the tasks.
-  // The latest task token.
-  int latest_token_;
-  // A task whose token is smaller than this value is stale and skipped.
-  int stale_token_;
+  scoped_ptr<NotificationPanelTester> tester_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationPanel);
+};
+
+class NotificationPanelTester {
+ public:
+  explicit NotificationPanelTester(NotificationPanel* panel)
+      : panel_(panel) {
+  }
+
+  NotificationPanel::State state() {
+    return panel_->state_;
+  }
+
+  // Returns number of of sticky and new notifications.
+  int GetNotificationCount() const;
+
+  // Returns number of new notifications.
+  int GetNewNotificationCount() const;
+
+  // Returns number of of sticky notifications.
+  int GetStickyNotificationCount() const;
+
+ private:
+  NotificationPanel* panel_;
+  DISALLOW_COPY_AND_ASSIGN(NotificationPanelTester);
 };
 
 }  // namespace chromeos
