@@ -161,19 +161,24 @@ ConnectJob* TCPClientSocketPool::TCPConnectJobFactory::NewConnectJob(
     const PoolBase::Request& request,
     ConnectJob::Delegate* delegate,
     const BoundNetLog& net_log) const {
-  return new TCPConnectJob(
-      group_name, request.params(),
-      base::TimeDelta::FromSeconds(kTCPConnectJobTimeoutInSeconds),
-      client_socket_factory_, host_resolver_, delegate, net_log);
+  return new TCPConnectJob(group_name, request.params(), ConnectionTimeout(),
+                           client_socket_factory_, host_resolver_, delegate,
+                           net_log);
+}
+
+base::TimeDelta
+    TCPClientSocketPool::TCPConnectJobFactory::ConnectionTimeout() const {
+  return base::TimeDelta::FromSeconds(kTCPConnectJobTimeoutInSeconds);
 }
 
 TCPClientSocketPool::TCPClientSocketPool(
     int max_sockets,
     int max_sockets_per_group,
+    const std::string& name,
     HostResolver* host_resolver,
     ClientSocketFactory* client_socket_factory,
     NetworkChangeNotifier* network_change_notifier)
-    : base_(max_sockets, max_sockets_per_group,
+    : base_(max_sockets, max_sockets_per_group, name,
             base::TimeDelta::FromSeconds(kUnusedIdleSocketTimeout),
             base::TimeDelta::FromSeconds(kUsedIdleSocketTimeout),
             new TCPConnectJobFactory(client_socket_factory, host_resolver),

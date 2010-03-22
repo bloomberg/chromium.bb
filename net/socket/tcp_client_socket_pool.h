@@ -101,6 +101,7 @@ class TCPClientSocketPool : public ClientSocketPool {
   TCPClientSocketPool(
       int max_sockets,
       int max_sockets_per_group,
+      const std::string& name,
       HostResolver* host_resolver,
       ClientSocketFactory* client_socket_factory,
       NetworkChangeNotifier* network_change_notifier);
@@ -131,6 +132,12 @@ class TCPClientSocketPool : public ClientSocketPool {
   virtual LoadState GetLoadState(const std::string& group_name,
                                  const ClientSocketHandle* handle) const;
 
+  virtual base::TimeDelta ConnectionTimeout() const {
+    return base_.ConnectionTimeout();
+  }
+
+  virtual const std::string& name() const { return base_.name(); }
+
  protected:
   virtual ~TCPClientSocketPool();
 
@@ -154,6 +161,8 @@ class TCPClientSocketPool : public ClientSocketPool {
         const PoolBase::Request& request,
         ConnectJob::Delegate* delegate,
         const BoundNetLog& net_log) const;
+
+    virtual base::TimeDelta ConnectionTimeout() const;
 
    private:
     ClientSocketFactory* const client_socket_factory_;
