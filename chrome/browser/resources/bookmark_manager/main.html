@@ -681,6 +681,9 @@ var dnd = {
     // We never want to do that for the bookmark manager.
     e.preventDefault();
 
+    // Set to none. This will get set to something if we can do the drop.
+    e.dataTransfer.dropEffect = 'none';
+
     if (!this.dragData)
       return;
 
