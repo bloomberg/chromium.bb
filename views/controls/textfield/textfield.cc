@@ -183,6 +183,18 @@ void Textfield::RemoveBorder() {
     native_wrapper_->UpdateBorder();
 }
 
+void Textfield::UpdateAllProperties() {
+  if (native_wrapper_) {
+    native_wrapper_->UpdateText();
+    native_wrapper_->UpdateTextColor();
+    native_wrapper_->UpdateBackgroundColor();
+    native_wrapper_->UpdateReadOnly();
+    native_wrapper_->UpdateFont();
+    native_wrapper_->UpdateEnabled();
+    native_wrapper_->UpdateBorder();
+    native_wrapper_->UpdateIsPassword();
+  }
+}
 
 void Textfield::SyncText() {
   if (native_wrapper_)
@@ -299,14 +311,7 @@ void Textfield::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
     AddChildView(native_wrapper_->GetView());
     // TODO(beng): Move this initialization to NativeTextfieldWin once it
     //             subclasses NativeControlWin.
-    native_wrapper_->UpdateText();
-    native_wrapper_->UpdateTextColor();
-    native_wrapper_->UpdateBackgroundColor();
-    native_wrapper_->UpdateReadOnly();
-    native_wrapper_->UpdateFont();
-    native_wrapper_->UpdateEnabled();
-    native_wrapper_->UpdateBorder();
-    native_wrapper_->UpdateIsPassword();
+    UpdateAllProperties();
 
 #if defined(OS_WIN)
     // TODO(beng): remove this once NativeTextfieldWin subclasses
@@ -322,20 +327,6 @@ void Textfield::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
 
 std::string Textfield::GetClassName() const {
   return kViewClassName;
-}
-
-NativeTextfieldWrapper* Textfield::CreateWrapper() {
-  NativeTextfieldWrapper* native_wrapper =
-      NativeTextfieldWrapper::CreateWrapper(this);
-
-  native_wrapper->UpdateText();
-  native_wrapper->UpdateBackgroundColor();
-  native_wrapper->UpdateReadOnly();
-  native_wrapper->UpdateFont();
-  native_wrapper->UpdateEnabled();
-  native_wrapper->UpdateBorder();
-
-  return native_wrapper;
 }
 
 base::KeyboardCode Textfield::Keystroke::GetKeyboardCode() const {

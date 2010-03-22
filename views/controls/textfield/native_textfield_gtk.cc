@@ -243,6 +243,7 @@ void NativeTextfieldGtk::CreateNativeControl() {
   NativeControlCreated(gtk_entry_new());
   gtk_entry_set_invisible_char(GTK_ENTRY(native_view()),
                                static_cast<gunichar>(kPasswordChar));
+  textfield_->UpdateAllProperties();
 }
 
 void NativeTextfieldGtk::NativeControlCreated(GtkWidget* widget) {

@@ -184,6 +184,10 @@ class Textfield : public View {
   bool draw_border() const { return draw_border_; }
   void RemoveBorder();
 
+  // Updates all properties on the textfield. This is invoked internally.
+  // Users of Textfield never need to invoke this directly.
+  void UpdateAllProperties();
+
   // Invoked by the edit control when the value changes. This method set
   // the text_ member variable to the value contained in edit control.
   // This is important because the edit control can be replaced if it has
@@ -215,10 +219,6 @@ class Textfield : public View {
   virtual void Focus();
   virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
   virtual std::string GetClassName() const;
-
-  // Creates a new native wrapper properly initialized and returns it. Ownership
-  // is passed to the caller.
-  NativeTextfieldWrapper* CreateWrapper();
 
   // The object that actually implements the native text field.
   NativeTextfieldWrapper* native_wrapper_;
