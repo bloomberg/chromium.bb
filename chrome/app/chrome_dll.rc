@@ -48,8 +48,6 @@ BEGIN
     VK_F6,          IDC_FOCUS_LOCATION,         VIRTKEY
     "D",            IDC_FOCUS_LOCATION,         VIRTKEY, ALT
     "L",            IDC_FOCUS_LOCATION,         VIRTKEY, CONTROL
-    VK_F10,         IDC_FOCUS_MENU_BAR,         VIRTKEY
-    VK_MENU,        IDC_FOCUS_MENU_BAR,         VIRTKEY
     "K",            IDC_FOCUS_SEARCH,           VIRTKEY, CONTROL
     "E",            IDC_FOCUS_SEARCH,           VIRTKEY, CONTROL
     "T",            IDC_FOCUS_TOOLBAR,          VIRTKEY, SHIFT, ALT

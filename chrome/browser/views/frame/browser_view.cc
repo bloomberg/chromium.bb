@@ -638,10 +638,10 @@ void BrowserView::TraverseNextAccessibleToolbar(bool forward) {
   // TODO(mohamed) This needs to be smart, that applies to all toolbars.
   //               Currently it just traverses between bookmarks and toolbar.
   if (!forward && toolbar_->IsVisible() && toolbar_->IsEnabled()) {
-    toolbar_->RequestFocus();
+    toolbar_->InitiateTraversal(last_focused_view_storage_id_);
   } else if (forward && bookmark_bar_view_->IsVisible() &&
              bookmark_bar_view_->IsEnabled()) {
-    bookmark_bar_view_->RequestFocus();
+    bookmark_bar_view_->InitiateTraversal(last_focused_view_storage_id_);
   }
 }
 
@@ -876,31 +876,17 @@ void BrowserView::UpdateToolbar(TabContents* contents,
 }
 
 void BrowserView::FocusToolbar() {
-  // Start the traversal within the main toolbar, passing it the storage id
-  // of the view where focus should be returned if the user exits the toolbar.
-  SaveFocusedView();
-  toolbar_->InitiateTraversal(last_focused_view_storage_id_);
-}
-
-void BrowserView::FocusPageAndAppMenus() {
-  // Chrome doesn't have a traditional menu bar, but it has menu buttons in
-  // the main toolbar that play the same role.  If the user presses a key
-  // that would typically focus the menu bar, tell the toolbar to focus
-  // the first menu button.  Pass it the storage id of the view where
-  // focus should be returned if the user presses escape.
-  //
-  // Not used on the Mac, which has a normal menu bar.
-  SaveFocusedView();
-  toolbar_->EnterMenuBarEmulationMode(last_focused_view_storage_id_, NULL);
-}
-
-void BrowserView::SaveFocusedView() {
+  // Remove existing views in the storage, traversal should be restarted.
   views::ViewStorage* view_storage = views::ViewStorage::GetSharedInstance();
   if (view_storage->RetrieveView(last_focused_view_storage_id_))
     view_storage->RemoveView(last_focused_view_storage_id_);
-  views::View* focused_view = GetRootView()->GetFocusedView();
-  if (focused_view)
-    view_storage->StoreView(last_focused_view_storage_id_, focused_view);
+
+  // Store the last focused view into the storage, to handle existing traversal.
+  view_storage->StoreView(last_focused_view_storage_id_,
+                          GetRootView()->GetFocusedView());
+
+  // Start the traversal within the main toolbar.
+  toolbar_->InitiateTraversal(last_focused_view_storage_id_);
 }
 
 void BrowserView::DestroyBrowser() {

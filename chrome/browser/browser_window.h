@@ -150,11 +150,6 @@ class BrowserWindow {
   // Focuses the toolbar (for accessibility).
   virtual void FocusToolbar() = 0;
 
-  // Focuses the page and app menus like they were a menu bar.
-  //
-  // Not used on the Mac, which has a "normal" menu bar.
-  virtual void FocusPageAndAppMenus() = 0;
-
   // Returns whether the bookmark bar is visible or not.
   virtual bool IsBookmarkBarVisible() const = 0;
 

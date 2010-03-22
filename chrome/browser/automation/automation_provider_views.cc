@@ -33,3 +33,4 @@ void AutomationProvider::WindowGetViewBounds(int handle, int view_id,
     }
   }
 }
+
