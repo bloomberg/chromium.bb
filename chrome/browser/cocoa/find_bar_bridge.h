@@ -1,19 +1,23 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_COCOA_FIND_BAR_BRIDGE_H_
 #define CHROME_BROWSER_COCOA_FIND_BAR_BRIDGE_H_
 
-#import <Cocoa/Cocoa.h>
-
-#import "base/logging.h"
-#import "base/scoped_nsobject.h"
-#import "chrome/browser/find_bar.h"
+#include "base/logging.h"
+#include "chrome/browser/find_bar.h"
 
 class BrowserWindowCocoa;
 class FindBarController;
+
+// This class is included by find_bar_host_browsertest.cc, so it has to be
+// objc-free.
+#ifdef __OBJC__
 @class FindBarCocoaController;
+#else
+class FindBarCocoaController;
+#endif
 
 // Implementation of FindBar for the Mac.  This class simply passes
 // each message along to |cocoa_controller_|.
@@ -30,13 +34,14 @@ class FindBarController;
 // object is owned by the Browser.  FindBarCocoaController is retained
 // by bother FindBarBridge and BrowserWindowController, since both use it.
 
-class FindBarBridge : public FindBar {
+class FindBarBridge : public FindBar,
+                      public FindBarTesting {
  public:
   FindBarBridge();
   virtual ~FindBarBridge();
 
   FindBarCocoaController* find_bar_cocoa_controller() {
-    return cocoa_controller_.get();
+    return cocoa_controller_;
   }
 
   virtual void SetFindBarController(FindBarController* find_bar_controller) {
@@ -49,8 +54,7 @@ class FindBarBridge : public FindBar {
   }
 
   virtual FindBarTesting* GetFindBarTesting() {
-    NOTIMPLEMENTED();
-    return NULL;
+    return this;
   }
 
   // Methods from FindBar.
@@ -68,10 +72,17 @@ class FindBarBridge : public FindBar {
   virtual void MoveWindowIfNecessary(const gfx::Rect& selection_rect,
                                      bool no_redraw);
 
+  // Methods from FindBarTesting.
+  virtual bool GetFindBarWindowInfo(gfx::Point* position,
+                                    bool* fully_visible);
+
+  // Used to disable find bar animations when testing.
+  static bool disable_animations_during_testing_;
+
  private:
   // Pointer to the cocoa controller which manages the cocoa view.  Is
-  // never null.
-  scoped_nsobject<FindBarCocoaController> cocoa_controller_;
+  // never nil.
+  FindBarCocoaController* cocoa_controller_;
 
   // Pointer back to the owning controller.
   FindBarController* find_bar_controller_;  // weak, owns us

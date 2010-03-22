@@ -147,6 +147,7 @@ const float kFindBarCloseDuration = 0.15;
     textView:(NSTextView*)textView
     doCommandBySelector:(SEL)command {
   if (command == @selector(insertNewline:)) {
+    // Pressing Return
     NSEvent* event = [NSApp currentEvent];
 
     if ([event modifierFlags] & NSShiftKeyMask)
@@ -154,6 +155,13 @@ const float kFindBarCloseDuration = 0.15;
     else
       [nextButton_ performClick:nil];
 
+    return YES;
+  } else if (command == @selector(insertLineBreak:)) {
+    // Pressing Ctrl-Return
+    if (findBarBridge_) {
+      findBarBridge_->GetFindBarController()->EndFindSession(
+          FindBarController::kActivateSelection);
+    }
     return YES;
   } else if (command == @selector(pageUp:) ||
              command == @selector(pageUpAndModifySelection:) ||
@@ -289,6 +297,10 @@ const float kFindBarCloseDuration = 0.15;
 - (BOOL)isFindBarVisible {
   // Find bar is visible if any part of it is on the screen.
   return NSIntersectsRect([[self view] bounds], [findBarView_ frame]);
+}
+
+- (BOOL)isFindBarAnimating {
+  return (currentAnimation_.get() != nil);
 }
 
 // NSAnimation delegate methods.

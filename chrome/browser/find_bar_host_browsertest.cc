@@ -6,20 +6,23 @@
 #include "base/message_loop.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/find_bar.h"
 #include "chrome/browser/find_bar_controller.h"
 #include "chrome/browser/find_notification_details.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
-#include "chrome/browser/views/find_bar_host.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 
 #if defined(TOOLKIT_VIEWS)
+#include "chrome/browser/views/find_bar_host.h"
 #include "views/focus/focus_manager.h"
 #elif defined(TOOLKIT_GTK)
 #include "chrome/browser/gtk/slide_animator_gtk.h"
+#elif defined(OS_MACOSX)
+#include "chrome/browser/cocoa/find_bar_bridge.h"
 #endif
 
 const std::wstring kSimplePage = L"404_is_enough_for_us.html";
@@ -54,6 +57,8 @@ class FindInPageControllerTest : public InProcessBrowserTest {
     DropdownBarHost::disable_animations_during_testing_ = true;
 #elif defined(TOOLKIT_GTK)
     SlideAnimatorGtk::SetAnimationsForTesting(false);
+#elif defined(OS_MACOSX)
+    FindBarBridge::disable_animations_during_testing_ = true;
 #endif
 
   }
@@ -495,23 +500,24 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindDisappearOnNavigate) {
 
   browser()->ShowFindBar();
 
+  gfx::Point position;
   bool fully_visible = false;
 
   // Make sure it is open.
-  EXPECT_TRUE(GetFindBarWindowInfo(NULL, &fully_visible));
+  EXPECT_TRUE(GetFindBarWindowInfo(&position, &fully_visible));
   EXPECT_TRUE(fully_visible);
 
   // Reload the tab and make sure Find window doesn't go away.
   browser()->Reload();
   ui_test_utils::WaitForNavigationInCurrentTab(browser());
 
-  EXPECT_TRUE(GetFindBarWindowInfo(NULL, &fully_visible));
+  EXPECT_TRUE(GetFindBarWindowInfo(&position, &fully_visible));
   EXPECT_TRUE(fully_visible);
 
   // Navigate and make sure the Find window goes away.
   ui_test_utils::NavigateToURL(browser(), url2);
 
-  EXPECT_TRUE(GetFindBarWindowInfo(NULL, &fully_visible));
+  EXPECT_TRUE(GetFindBarWindowInfo(&position, &fully_visible));
   EXPECT_FALSE(fully_visible);
 }
 
@@ -556,8 +562,16 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   EXPECT_FALSE(fully_visible);
 }
 
+// TODO(rohitrao): The FindMovesWhenObscuring test does not pass on mac.
+// http://crbug.com/22036
+#if defined(OS_MACOSX)
+#define MAYBE_FindMovesWhenObscuring DISABLED_FindMovesWhenObscuring
+#else
+#define MAYBE_FindMovesWhenObscuring FindMovesWhenObscuring
+#endif
+
 // Make sure Find box moves out of the way if it is obscuring the active match.
-IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindMovesWhenObscuring) {
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_FindMovesWhenObscuring) {
   HTTPTestServer* server = StartHTTPServer();
 
   GURL url = server->TestServerPageW(kMoveIfOver);

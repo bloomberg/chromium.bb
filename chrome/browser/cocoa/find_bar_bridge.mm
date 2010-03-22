@@ -1,27 +1,33 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/cocoa/find_bar_bridge.h"
+#include "chrome/browser/cocoa/find_bar_bridge.h"
 
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/cocoa/find_bar_cocoa_controller.h"
 
+// static
+bool FindBarBridge::disable_animations_during_testing_ = false;
+
 FindBarBridge::FindBarBridge()
     : find_bar_controller_(NULL) {
-  cocoa_controller_.reset([[FindBarCocoaController alloc] init]);
+  cocoa_controller_ = [[FindBarCocoaController alloc] init];
   [cocoa_controller_ setFindBarBridge:this];
 }
 
 FindBarBridge::~FindBarBridge() {
+  [cocoa_controller_ release];
 }
 
 void FindBarBridge::Show(bool animate) {
-  [cocoa_controller_ showFindBar:(animate ? YES : NO)];
+  bool really_animate = animate && !disable_animations_during_testing_;
+  [cocoa_controller_ showFindBar:(really_animate ? YES : NO)];
 }
 
 void FindBarBridge::Hide(bool animate) {
-  [cocoa_controller_ hideFindBar:(animate ? YES : NO)];
+  bool really_animate = animate && !disable_animations_during_testing_;
+  [cocoa_controller_ hideFindBar:(really_animate ? YES : NO)];
 }
 
 void FindBarBridge::SetFocusAndSelection() {
@@ -62,4 +68,18 @@ void FindBarBridge::StopAnimation() {
 
 void FindBarBridge::RestoreSavedFocus() {
   [cocoa_controller_ restoreSavedFocus];
+}
+
+bool FindBarBridge::GetFindBarWindowInfo(gfx::Point* position,
+                                         bool* fully_visible) {
+  // TODO(rohitrao): Return the proper position.  http://crbug.com/22036
+  *position = gfx::Point(0, 0);
+
+  NSWindow* window = [[cocoa_controller_ view] window];
+  bool window_visible = [window isVisible] ? true : false;
+  *fully_visible = window_visible &&
+                   [cocoa_controller_ isFindBarVisible] &&
+                   ![cocoa_controller_ isFindBarAnimating];
+
+  return window_visible;
 }

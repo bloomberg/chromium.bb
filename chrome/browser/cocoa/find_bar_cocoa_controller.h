@@ -73,5 +73,6 @@ class FindNotificationDetails;
 - (void)updateUIForFindResult:(const FindNotificationDetails&)results
                      withText:(const string16&)findText;
 - (BOOL)isFindBarVisible;
+- (BOOL)isFindBarAnimating;
 
 @end
