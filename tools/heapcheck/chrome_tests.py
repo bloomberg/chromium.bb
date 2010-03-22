@@ -20,16 +20,6 @@ import sys
 import google.logging_utils
 import google.path_utils
 
-# Import the platform_utils up in the layout tests which have been modified to
-# work under non-Windows platforms instead of the ones that are in the
-# tools/python/google directory. (See chrome_tests.sh which sets PYTHONPATH
-# correctly.)
-#
-# TODO(erg): Copy/Move the relevant functions from the layout_package version
-# of platform_utils back up to google.platform_utils
-# package. http://crbug.com/6164
-import layout_package.path_utils
-
 import common
 import heapcheck_test
 
@@ -119,9 +109,9 @@ class ChromeTests(object):
     self._source_dir = os.path.dirname(os.path.dirname(script_dir))
 
     # Since this path is used for string matching, make sure it's always
-    # an absolute Windows-style path.
-    self._source_dir = layout_package.path_utils.get_absolute_path(
-        self._source_dir)
+    # an absolute Unix-style path.
+    self._source_dir = os.path.abspath(self._source_dir).replace('\\', '/')
+
     heapcheck_test_script = os.path.join(script_dir, "heapcheck_test.py")
     self._command_preamble = [heapcheck_test_script]
 
