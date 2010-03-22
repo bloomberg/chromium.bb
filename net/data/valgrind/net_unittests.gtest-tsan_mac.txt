@@ -35,4 +35,4 @@ DiskCacheBackendTest.*DisableFailure*
 
 # Strange reports from __NSThread__main__ appeared with the new TSan binaries
 # See http://crbug.com/38926
-DirectoryLister.*
+DirectoryLister*
