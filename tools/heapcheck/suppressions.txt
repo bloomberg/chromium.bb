@@ -77,7 +77,7 @@
    fun:BookmarkStorage::SerializeData
    fun:BookmarkStorage::SaveNow
    fun:BookmarkStorage::BookmarkModelDeleted
-   fun:BookmarkModel::~BookmarkModel
+   fun:*~BookmarkModel
 }
 
 {
@@ -131,6 +131,17 @@
    fun:IPC::Channel::ChannelImpl::Connect
    fun:IPC::Channel::Connect
    fun:IPC::ChannelProxy::Context::OnChannelOpened
+}
+{
+  bug_18698
+  Heapcheck:Leak
+  fun:__gnu_cxx::new_allocator::allocate
+  fun:std::_Vector_base::_M_allocate
+  fun:std::vector::_M_insert_aux
+  fun:std::vector::push_back
+  fun:IPC::ChannelProxy::Context::OnAddFilter
+  fun:void DispatchToMethod
+  fun:RunnableMethod::Run
 }
 {
    bug_34570
@@ -208,4 +219,11 @@
   Heapcheck:Leak
   fun:ProfileSyncFactoryImpl::CreateProfileSyncService
   fun:TestingProfile::CreateProfileSyncService
+}
+
+{
+  bug_38895
+  Heapcheck:Leak
+  fun:gfx::GdkPixbufFromSkBitmap
+  fun:KeywordEditorView::SetColumnValues
 }
