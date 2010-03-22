@@ -1979,6 +1979,9 @@
           'include_dirs': [
             '..',
           ],
+          'cflags': [
+             '-Wno-uninitialized',
+          ],
           'sources': [
             'test/pyautolib/pyautolib.cc',
             'test/pyautolib/pyautolib.h',
