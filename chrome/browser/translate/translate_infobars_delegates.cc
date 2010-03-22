@@ -32,6 +32,7 @@ void TranslateInfoBarDelegate::InfoBarDismissed() {
       !language_state.translation_pending()) {
     // The user closed the infobar without clicking the translate button.
     TranslationDeclined();
+    UMA_HISTOGRAM_COUNTS("Translate.DeclineTranslateCloseInfobar", 1);
   }
 }
 

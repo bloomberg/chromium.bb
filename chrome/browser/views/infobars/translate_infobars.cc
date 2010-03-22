@@ -268,6 +268,9 @@ TranslateInfoBar::TranslateInfoBar(TranslateInfoBarDelegate* delegate)
   // Register for PAGE_TRANSLATED notification.
   notification_registrar_.Add(this, NotificationType::PAGE_TRANSLATED,
       Source<TabContents>(GetDelegate()->tab_contents()));
+
+  if (GetDelegate()->state() == TranslateInfoBarDelegate::kBeforeTranslate)
+    UMA_HISTOGRAM_COUNTS("Translate.ShowBeforeTranslateInfobar", 1);
 }
 
 TranslateInfoBar::~TranslateInfoBar() {
@@ -577,22 +580,27 @@ bool TranslateInfoBar::GetAcceleratorForCommandId(int command_id,
 
 void TranslateInfoBar::ExecuteCommand(int command_id) {
   if (command_id >= IDC_TRANSLATE_TARGET_LANGUAGE_BASE) {
+    UMA_HISTOGRAM_COUNTS("Translate.ModifyTargetLang", 1);
     OnLanguageModified(target_language_menu_button_,
         command_id - IDC_TRANSLATE_TARGET_LANGUAGE_BASE);
   } else if (command_id >= IDC_TRANSLATE_ORIGINAL_LANGUAGE_BASE) {
+    UMA_HISTOGRAM_COUNTS("Translate.ModifyOriginalLang", 1);
     OnLanguageModified(original_language_menu_button_,
         command_id - IDC_TRANSLATE_ORIGINAL_LANGUAGE_BASE);
   } else {
     switch (command_id) {
       case IDC_TRANSLATE_OPTIONS_NEVER_TRANSLATE_LANG:
+        UMA_HISTOGRAM_COUNTS("Translate.NeverTranslateLang", 1);
         GetDelegate()->ToggleLanguageBlacklist();
         break;
 
       case IDC_TRANSLATE_OPTIONS_NEVER_TRANSLATE_SITE:
+        UMA_HISTOGRAM_COUNTS("Translate.NeverTranslateSite", 1);
         GetDelegate()->ToggleSiteBlacklist();
         break;
 
       case IDC_TRANSLATE_OPTIONS_ALWAYS:
+        UMA_HISTOGRAM_COUNTS("Translate.AlwaysTranslateLang", 1);
         GetDelegate()->ToggleAlwaysTranslate();
         break;
 
@@ -621,8 +629,10 @@ void TranslateInfoBar::ButtonPressed(
   if (sender == accept_button_) {
     GetDelegate()->Translate();
     UpdateState(GetDelegate()->state());
+    UMA_HISTOGRAM_COUNTS("Translate.Translate", 1);
   } else if (sender == deny_button_) {
     GetDelegate()->TranslationDeclined();
+    UMA_HISTOGRAM_COUNTS("Translate.DeclineTranslate", 1);
     RemoveInfoBar();
   } else if (sender == revert_button_) {
     GetDelegate()->RevertTranslation();
