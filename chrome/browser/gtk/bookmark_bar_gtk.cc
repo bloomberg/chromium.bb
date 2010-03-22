@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,6 +32,7 @@
 #include "chrome/browser/gtk/tabstrip_origin_provider.h"
 #include "chrome/browser/gtk/tabs/tab_strip_gtk.h"
 #include "chrome/browser/gtk/view_id_util.h"
+#include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/ntp_background_util.h"
 #include "chrome/browser/pref_service.h"
@@ -365,7 +366,8 @@ void BookmarkBarGtk::OnStateChanged() {
 }
 
 void BookmarkBarGtk::ShowImportDialog() {
-  ImportDialogGtk::Show(window_->window(), browser_->profile(), FAVORITES);
+  ImportDialogGtk::Show(window_->window(), browser_->profile(),
+                        importer::FAVORITES);
 }
 
 void BookmarkBarGtk::EnterFullscreen() {

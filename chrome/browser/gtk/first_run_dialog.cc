@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/gtk/gtk_util.h"
+#include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/common/platform_util.h"
@@ -169,7 +170,8 @@ void FirstRunDialog::OnDialogResponse(GtkWidget* widget, int response) {
       const ProfileInfo& source_profile =
           importer_host_->GetSourceProfileInfoAt(
           gtk_combo_box_get_active(GTK_COMBO_BOX(import_profile_)));
-      int items = SEARCH_ENGINES + HISTORY + FAVORITES + HOME_PAGE + PASSWORDS;
+      int items = importer::SEARCH_ENGINES + importer::HISTORY +
+          importer::FAVORITES + importer::HOME_PAGE + importer::PASSWORDS;
       // TODO(port): Should we do the actual import in a new process like
       // Windows?
       StartImportingWithUI(GTK_WINDOW(dialog_), items, importer_host_.get(),

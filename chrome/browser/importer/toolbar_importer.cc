@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,10 @@
 #include "net/base/cookie_monster.h"
 #include "net/base/data_url.h"
 #include "net/url_request/url_request_context.h"
+
+using importer::FAVORITES;
+using importer::NONE;
+using importer::ProfileInfo;
 
 //
 // ToolbarImporterUtils
@@ -158,7 +162,8 @@ void Toolbar5Importer::OnURLFetchComplete(
 }
 
 void Toolbar5Importer::ContinueImport() {
-  DCHECK((items_to_import_ == FAVORITES) || (items_to_import_ == NONE)) <<
+  DCHECK((items_to_import_ == FAVORITES) ||
+         (items_to_import_ == NONE)) <<
       "The items requested are not supported";
 
   // The order here is important.  Each Begin... will clear the flag

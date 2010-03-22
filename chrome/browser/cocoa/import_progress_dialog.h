@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "chrome/browser/importer/importer.h"
+#include "chrome/browser/importer/importer_data_types.h"
 
 class ImporterObserverBridge;
 
@@ -47,8 +48,8 @@ class ImporterObserverBridge;
 - (void)closeDialog;
 
 // Methods called by importer_host via ImporterObserverBridge.
-- (void)ImportItemStarted:(ImportItem)item;
-- (void)ImportItemEnded:(ImportItem)item;
+- (void)ImportItemStarted:(importer::ImportItem)item;
+- (void)ImportItemEnded:(importer::ImportItem)item;
 - (void)ImportStarted;
 - (void)ImportEnded;
 
@@ -73,13 +74,13 @@ class ImporterObserverBridge : public ImporterHost::Observer {
   virtual ~ImporterObserverBridge() {}
 
   // Invoked when data for the specified item is about to be collected.
-  virtual void ImportItemStarted(ImportItem item) {
+  virtual void ImportItemStarted(importer::ImportItem item) {
     [owner_ ImportItemStarted:item];
   }
 
   // Invoked when data for the specified item has been collected from the
   // source profile and is now ready for further processing.
-  virtual void ImportItemEnded(ImportItem item) {
+  virtual void ImportItemEnded(importer::ImportItem item) {
     [owner_ ImportItemEnded:item];
   }
 

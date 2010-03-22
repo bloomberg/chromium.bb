@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,13 +23,23 @@
 #include "chrome/browser/importer/ie_importer.h"
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/importer_bridge.h"
+#include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/password_manager/ie7_password.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/chrome_paths.h"
 #include "webkit/glue/password_form.h"
 
+using importer::FAVORITES;
+using importer::FIREFOX2;
+using importer::FIREFOX3;
+using importer::HISTORY;
+using importer::ImportItem;
+using importer::MS_IE;
+using importer::PASSWORDS;
+using importer::SEARCH_ENGINES;
 using webkit_glue::PasswordForm;
+
 
 class ImporterTest : public testing::Test {
  public:

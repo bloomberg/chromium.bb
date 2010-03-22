@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/importer/importer_data_types.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "views/controls/button/checkbox.h"
@@ -25,7 +26,7 @@ namespace browser {
 void ShowImporterView(views::Widget* parent,
                       Profile* profile) {
   views::Window::CreateChromeWindow(parent->GetNativeView(), gfx::Rect(),
-                                    new ImporterView(profile, ALL))->Show();
+      new ImporterView(profile, importer::ALL))->Show();
 }
 
 }  // namespace browser
@@ -61,16 +62,16 @@ void ImporterView::SetupControl() {
 
   history_checkbox_ =
       InitCheckbox(l10n_util::GetString(IDS_IMPORT_HISTORY_CHKBOX),
-                   (initial_state_ & HISTORY) != 0);
+                   (initial_state_ & importer::HISTORY) != 0);
   favorites_checkbox_ =
       InitCheckbox(l10n_util::GetString(IDS_IMPORT_FAVORITES_CHKBOX),
-                   (initial_state_ & FAVORITES) != 0);
+                   (initial_state_ & importer::FAVORITES) != 0);
   passwords_checkbox_ =
       InitCheckbox(l10n_util::GetString(IDS_IMPORT_PASSWORDS_CHKBOX),
-                   (initial_state_ & PASSWORDS) != 0);
+                   (initial_state_ & importer::PASSWORDS) != 0);
   search_engines_checkbox_ =
       InitCheckbox(l10n_util::GetString(IDS_IMPORT_SEARCH_ENGINES_CHKBOX),
-                   (initial_state_ & SEARCH_ENGINES) != 0);
+                   (initial_state_ & importer::SEARCH_ENGINES) != 0);
 
   // Arranges controls by using GridLayout.
   const int column_set_id = 0;
@@ -207,39 +208,39 @@ views::Checkbox* ImporterView::InitCheckbox(const std::wstring& text,
 }
 
 uint16 ImporterView::GetCheckedItems() {
-  uint16 items = NONE;
+  uint16 items = importer::NONE;
   if (history_checkbox_->IsEnabled() && history_checkbox_->checked())
-    items |= HISTORY;
+    items |= importer::HISTORY;
   if (favorites_checkbox_->IsEnabled() && favorites_checkbox_->checked())
-    items |= FAVORITES;
+    items |= importer::FAVORITES;
   if (passwords_checkbox_->IsEnabled() && passwords_checkbox_->checked())
-    items |= PASSWORDS;
+    items |= importer::PASSWORDS;
   if (search_engines_checkbox_->IsEnabled() &&
       search_engines_checkbox_->checked())
-    items |= SEARCH_ENGINES;
+    items |= importer::SEARCH_ENGINES;
   return items;
 }
 
 void ImporterView::SetCheckedItemsState(uint16 items) {
-  if (items & HISTORY) {
+  if (items & importer::HISTORY) {
     history_checkbox_->SetEnabled(true);
   } else {
     history_checkbox_->SetEnabled(false);
     history_checkbox_->SetChecked(false);
   }
-  if (items & FAVORITES) {
+  if (items & importer::FAVORITES) {
     favorites_checkbox_->SetEnabled(true);
   } else {
     favorites_checkbox_->SetEnabled(false);
     favorites_checkbox_->SetChecked(false);
   }
-  if (items & PASSWORDS) {
+  if (items & importer::PASSWORDS) {
     passwords_checkbox_->SetEnabled(true);
   } else {
     passwords_checkbox_->SetEnabled(false);
     passwords_checkbox_->SetChecked(false);
   }
-  if (items & SEARCH_ENGINES) {
+  if (items & importer::SEARCH_ENGINES) {
     search_engines_checkbox_->SetEnabled(true);
   } else {
     search_engines_checkbox_->SetEnabled(false);
@@ -249,14 +250,15 @@ void ImporterView::SetCheckedItemsState(uint16 items) {
 
 void ImporterView::SetCheckedItems(uint16 items) {
   if (history_checkbox_->IsEnabled())
-    history_checkbox_->SetChecked(!!(items & HISTORY));
+    history_checkbox_->SetChecked(!!(items & importer::HISTORY));
 
   if (favorites_checkbox_->IsEnabled())
-    favorites_checkbox_->SetChecked(!!(items & FAVORITES));
+    favorites_checkbox_->SetChecked(!!(items & importer::FAVORITES));
 
   if (passwords_checkbox_->IsEnabled())
-    passwords_checkbox_->SetChecked(!!(items & PASSWORDS));
+    passwords_checkbox_->SetChecked(!!(items & importer::PASSWORDS));
 
   if (search_engines_checkbox_->IsEnabled())
-    search_engines_checkbox_->SetChecked(!!(items & SEARCH_ENGINES));
+    search_engines_checkbox_->SetChecked(!!(items &
+                                            importer::SEARCH_ENGINES));
 }

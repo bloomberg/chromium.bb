@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,13 @@
 #include "chrome/browser/importer/importer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+
+using importer::HISTORY;
+using importer::FAVORITES;
+using importer::COOKIES;
+using importer::PASSWORDS;
+using importer::SEARCH_ENGINES;
+using importer::NONE;
 
 class ImportSettingsDialogTest : public CocoaTest {
  public:
@@ -86,8 +93,7 @@ TEST_F(ImportSettingsDialogTest, ChooseVariousBrowsers) {
   EXPECT_TRUE([controller_ passwordsAvailable]);
   EXPECT_FALSE([controller_ importSearchEngines]);
   EXPECT_FALSE([controller_ searchEnginesAvailable]);
-  EXPECT_EQ(HISTORY | FAVORITES | PASSWORDS,
-            [controller_ servicesToImport]);
+  EXPECT_EQ(HISTORY | FAVORITES | PASSWORDS, [controller_ servicesToImport]);
 
   [controller_ cancel:nil];
 }

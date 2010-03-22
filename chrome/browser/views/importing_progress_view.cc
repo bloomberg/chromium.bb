@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -97,47 +97,47 @@ ImportingProgressView::~ImportingProgressView() {
 ////////////////////////////////////////////////////////////////////////////////
 // ImportingProgressView, ImporterObserver implementation:
 
-void ImportingProgressView::ImportItemStarted(ImportItem item) {
+void ImportingProgressView::ImportItemStarted(importer::ImportItem item) {
   DCHECK(items_ & item);
   switch (item) {
-    case FAVORITES:
+    case importer::FAVORITES:
       state_bookmarks_->Start();
       break;
-    case SEARCH_ENGINES:
+    case importer::SEARCH_ENGINES:
       state_searches_->Start();
       break;
-    case PASSWORDS:
+    case importer::PASSWORDS:
       state_passwords_->Start();
       break;
-    case HISTORY:
+    case importer::HISTORY:
       state_history_->Start();
       break;
-    case COOKIES:
+    case importer::COOKIES:
       state_cookies_->Start();
       break;
   }
 }
 
-void ImportingProgressView::ImportItemEnded(ImportItem item) {
+void ImportingProgressView::ImportItemEnded(importer::ImportItem item) {
   DCHECK(items_ & item);
   switch (item) {
-    case FAVORITES:
+    case importer::FAVORITES:
       state_bookmarks_->Stop();
       state_bookmarks_->SetChecked(true);
       break;
-    case SEARCH_ENGINES:
+    case importer::SEARCH_ENGINES:
       state_searches_->Stop();
       state_searches_->SetChecked(true);
       break;
-    case PASSWORDS:
+    case importer::PASSWORDS:
       state_passwords_->Stop();
       state_passwords_->SetChecked(true);
       break;
-    case HISTORY:
+    case importer::HISTORY:
       state_history_->Stop();
       state_history_->SetChecked(true);
       break;
-    case COOKIES:
+    case importer::COOKIES:
       state_cookies_->Stop();
       state_cookies_->SetChecked(true);
       break;
@@ -254,31 +254,31 @@ void ImportingProgressView::InitControlLayout() {
   layout->AddView(label_info_);
   layout->AddPaddingRow(0, kUnrelatedControlVerticalSpacing);
 
-  if (items_ & HISTORY) {
+  if (items_ & importer::HISTORY) {
     layout->StartRow(0, double_column_view_set_id);
     layout->AddView(state_history_.get());
     layout->AddView(label_history_.get());
     layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   }
-  if (items_ & FAVORITES && !bookmarks_import_) {
+  if (items_ & importer::FAVORITES && !bookmarks_import_) {
     layout->StartRow(0, double_column_view_set_id);
     layout->AddView(state_bookmarks_.get());
     layout->AddView(label_bookmarks_.get());
     layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   }
-  if (items_ & SEARCH_ENGINES) {
+  if (items_ & importer::SEARCH_ENGINES) {
     layout->StartRow(0, double_column_view_set_id);
     layout->AddView(state_searches_.get());
     layout->AddView(label_searches_.get());
     layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   }
-  if (items_ & PASSWORDS) {
+  if (items_ & importer::PASSWORDS) {
     layout->StartRow(0, double_column_view_set_id);
     layout->AddView(state_passwords_.get());
     layout->AddView(label_passwords_.get());
     layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   }
-  if (items_ & COOKIES) {
+  if (items_ & importer::COOKIES) {
     layout->StartRow(0, double_column_view_set_id);
     layout->AddView(state_cookies_.get());
     layout->AddView(label_cookies_.get());
@@ -299,7 +299,7 @@ void StartImportingWithUI(HWND parent_window,
   DCHECK(items != 0);
   ImportingProgressView* v = new ImportingProgressView(
       source_profile.description, items, coordinator, observer, parent_window,
-      source_profile.browser_type == BOOKMARKS_HTML);
+      source_profile.browser_type == importer::BOOKMARKS_HTML);
   views::Window* window =
     views::Window::CreateChromeWindow(parent_window, gfx::Rect(), v);
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "chrome/browser/importer/importer.h"
+#include "chrome/browser/importer/importer_data_types.h"
 #include "googleurl/src/gurl.h"
 
 struct sqlite3;
@@ -25,7 +26,7 @@ class Firefox3Importer : public Importer {
   Firefox3Importer() { }
 
   // Importer methods.
-  virtual void StartImport(ProfileInfo profile_info,
+  virtual void StartImport(importer::ProfileInfo profile_info,
                            uint16 items,
                            ImporterBridge* bridge);
 

@@ -12,6 +12,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/first_run.h"
+#include "chrome/browser/importer/importer.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/shell_integration.h"
@@ -187,16 +188,16 @@ int FirstRunViewBase::GetImportItems() const {
   // the process take way too much time among other issues. So for the time
   // being we say: TODO(CPU): Bug 1196875
   int items = import_items_;
-  if (!(dont_import_items_ & HISTORY))
-    items = items | HISTORY;
-  if (!(dont_import_items_ & FAVORITES))
-    items = items | FAVORITES;
-  if (!(dont_import_items_ & PASSWORDS))
-    items = items | PASSWORDS;
-  if (!(dont_import_items_ & SEARCH_ENGINES))
-    items = items | SEARCH_ENGINES;
+  if (!(dont_import_items_ & importer::HISTORY))
+    items = items | importer::HISTORY;
+  if (!(dont_import_items_ & importer::FAVORITES))
+    items = items | importer::FAVORITES;
+  if (!(dont_import_items_ & importer::PASSWORDS))
+    items = items | importer::PASSWORDS;
+  if (!(dont_import_items_ & importer::SEARCH_ENGINES))
+    items = items | importer::SEARCH_ENGINES;
   if (!homepage_defined_)
-    items = items | HOME_PAGE;
+    items = items | importer::HOME_PAGE;
   return items;
 };
 

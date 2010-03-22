@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 
 #include "base/file_path.h"
 #include "chrome/common/sqlite_utils.h"
+#include "chrome/browser/importer/importer_data_types.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
 #if __OBJC__
@@ -31,7 +32,7 @@ class SafariImporter : public Importer {
   explicit SafariImporter(const FilePath& library_dir);
 
   // Importer methods.
-  virtual void StartImport(ProfileInfo profile_info,
+  virtual void StartImport(importer::ProfileInfo profile_info,
                            uint16 items,
                            ImporterBridge* bridge);
 

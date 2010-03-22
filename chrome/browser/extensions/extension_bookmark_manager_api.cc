@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/extension_dom_ui.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/importer/importer.h"
+#include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
@@ -287,12 +288,12 @@ void ImportBookmarksFunction::FileSelected(const FilePath& path,
                                            int index,
                                            void* params) {
   ImporterHost* host = new ImporterHost();
-  ProfileInfo profile_info;
-  profile_info.browser_type = BOOKMARKS_HTML;
+  importer::ProfileInfo profile_info;
+  profile_info.browser_type = importer::BOOKMARKS_HTML;
   profile_info.source_path = path.ToWStringHack();
   host->StartImportSettings(profile_info,
                             profile(),
-                            FAVORITES,
+                            importer::FAVORITES,
                             new ProfileWriter(profile()),
                             true);
   Release();  // Balanced in BookmarkManagerIOFunction::SelectFile()

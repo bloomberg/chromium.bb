@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include <gtk/gtk.h>
 
 #include "chrome/browser/importer/importer.h"
+#include "chrome/browser/importer/importer_data_types.h"
 
 class Profile;
 
@@ -21,8 +22,8 @@ class ImportProgressDialogGtk : public ImporterHost::Observer {
                           ImportObserver* observer, bool first_run);
 
   // Overridden from ImporterHost::Observer:
-  virtual void ImportItemStarted(ImportItem item);
-  virtual void ImportItemEnded(ImportItem item);
+  virtual void ImportItemStarted(importer::ImportItem item);
+  virtual void ImportItemEnded(importer::ImportItem item);
   virtual void ImportStarted();
   virtual void ImportEnded();
 

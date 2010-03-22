@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #import "chrome/browser/cocoa/first_run_dialog.h"
 #import "chrome/browser/cocoa/import_progress_dialog.h"
 #include "chrome/browser/importer/importer.h"
+#include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/installer/util/google_update_constants.h"
@@ -136,8 +137,8 @@ bool FirstRunController::DoFirstRun(Profile* profile,
 
   // Import bookmarks.
   if (!browser_import_disabled && [dialog.get() importBookmarks]) {
-    const ProfileInfo& source_profile = importer_host_->GetSourceProfileInfoAt(
-        [dialog.get() browserImportSelectedIndex]);
+    const importer::ProfileInfo& source_profile = importer_host_->
+        GetSourceProfileInfoAt([dialog.get() browserImportSelectedIndex]);
     int16 items = source_profile.services_supported;
     // TODO(port): Do the actual import in a new process like Windows.
     gc.release();

@@ -36,6 +36,7 @@
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/hang_monitor/hung_window_detector.h"
 #include "chrome/browser/importer/importer.h"
+#include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/profile.h"
@@ -312,10 +313,10 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
   if (installer_util::GetDistroBooleanPreference(prefs.get(),
       installer_util::master_preferences::kDistroImportSearchPref, &value)) {
     if (value) {
-      import_items += SEARCH_ENGINES;
-      out_prefs->do_import_items += SEARCH_ENGINES;
+      import_items += importer::SEARCH_ENGINES;
+      out_prefs->do_import_items += importer::SEARCH_ENGINES;
     } else {
-      out_prefs->dont_import_items += SEARCH_ENGINES;
+      out_prefs->dont_import_items += importer::SEARCH_ENGINES;
     }
   }
 
@@ -344,15 +345,15 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
   if (installer_util::GetDistroBooleanPreference(prefs.get(),
       installer_util::master_preferences::kDistroImportHistoryPref, &value) &&
       value)
-    import_items += HISTORY;
+    import_items += importer::HISTORY;
   if (installer_util::GetDistroBooleanPreference(prefs.get(),
       installer_util::master_preferences::kDistroImportBookmarksPref, &value) &&
       value)
-    import_items += FAVORITES;
+    import_items += importer::FAVORITES;
   if (installer_util::GetDistroBooleanPreference(prefs.get(),
       installer_util::master_preferences::kDistroImportHomePagePref, &value) &&
       value)
-    import_items += HOME_PAGE;
+    import_items += importer::HOME_PAGE;
 
   if (import_items) {
     // There is something to import from the default browser. This launches

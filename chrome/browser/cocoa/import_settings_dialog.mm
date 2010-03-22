@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
+#include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/importer_list.h"
 #include "chrome/browser/profile.h"
 
@@ -120,7 +121,7 @@ bool importSettingsDialogVisible = false;
   NSMutableArray* browserProfiles =
       [NSMutableArray arrayWithCapacity:profilesCount];
   for (int i = 0; i < profilesCount; ++i) {
-    const ProfileInfo& sourceProfile = importerList.GetSourceProfileInfoAt(i);
+    const importer::ProfileInfo& sourceProfile = importerList.GetSourceProfileInfoAt(i);
     NSString* browserName =
         base::SysWideToNSString(sourceProfile.description);
     uint16 browserServices = sourceProfile.services_supported;
@@ -169,7 +170,7 @@ bool importSettingsDialogVisible = false;
 
 - (IBAction)ok:(id)sender {
   [self closeDialog];
-  const ProfileInfo& sourceProfile =
+  const importer::ProfileInfo& sourceProfile =
       importerList_.get()->GetSourceProfileInfoAt([self sourceBrowserIndex]);
   uint16 items = sourceProfile.services_supported;
   // ProfileInfo.services_supported is a uint16 while the call to
@@ -213,22 +214,24 @@ bool importSettingsDialogVisible = false;
   ImportSettingsProfile* profile =
       [sourceBrowsersList_.get() objectAtIndex:browserIndex];
   uint16 items = [profile services];
-  [self setHistoryAvailable:(items & HISTORY) ? YES : NO];
+  [self setHistoryAvailable:(items & importer::HISTORY) ? YES : NO];
   [self setImportHistory:[self historyAvailable]];
-  [self setFavoritesAvailable:(items & FAVORITES) ? YES : NO];
+  [self setFavoritesAvailable:(items & importer::FAVORITES) ? YES : NO];
   [self setImportFavorites:[self favoritesAvailable]];
-  [self setPasswordsAvailable:(items & PASSWORDS) ? YES : NO];
+  [self setPasswordsAvailable:(items & importer::PASSWORDS) ? YES : NO];
   [self setImportPasswords:[self passwordsAvailable]];
-  [self setSearchEnginesAvailable:(items & SEARCH_ENGINES) ? YES : NO];
+  [self setSearchEnginesAvailable:(items & importer::SEARCH_ENGINES) ?
+      YES : NO];
   [self setImportSearchEngines:[self searchEnginesAvailable]];
 }
 
 - (uint16)servicesToImport {
   uint16 servicesToImport = 0;
-  if ([self importHistory]) servicesToImport |= HISTORY;
-  if ([self importFavorites]) servicesToImport |= FAVORITES;
-  if ([self importPasswords]) servicesToImport |= PASSWORDS;
-  if ([self importSearchEngines]) servicesToImport |= SEARCH_ENGINES;
+  if ([self importHistory]) servicesToImport |= importer::HISTORY;
+  if ([self importFavorites]) servicesToImport |= importer::FAVORITES;
+  if ([self importPasswords]) servicesToImport |= importer::PASSWORDS;
+  if ([self importSearchEngines]) servicesToImport |=
+      importer::SEARCH_ENGINES;
   return servicesToImport;
 }
 

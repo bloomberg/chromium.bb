@@ -26,6 +26,7 @@
 #include "base/win_util.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/importer/importer_bridge.h"
+#include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/password_manager/ie7_password.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/common/time_format.h"
@@ -74,32 +75,32 @@ void IEImporter::StartImport(ProfileInfo profile_info,
   // Some IE settings (such as Protected Storage) are obtained via COM APIs.
   win_util::ScopedCOMInitializer com_initializer;
 
-  if ((items & HOME_PAGE) && !cancelled())
+  if ((items & importer::HOME_PAGE) && !cancelled())
     ImportHomepage();  // Doesn't have a UI item.
   // The order here is important!
-  if ((items & HISTORY) && !cancelled()) {
-    bridge_->NotifyItemStarted(HISTORY);
+  if ((items & importer::HISTORY) && !cancelled()) {
+    bridge_->NotifyItemStarted(importer::HISTORY);
     ImportHistory();
-    bridge_->NotifyItemEnded(HISTORY);
+    bridge_->NotifyItemEnded(importer::HISTORY);
   }
-  if ((items & FAVORITES) && !cancelled()) {
-    bridge_->NotifyItemStarted(FAVORITES);
+  if ((items & importer::FAVORITES) && !cancelled()) {
+    bridge_->NotifyItemStarted(importer::FAVORITES);
     ImportFavorites();
-    bridge_->NotifyItemEnded(FAVORITES);
+    bridge_->NotifyItemEnded(importer::FAVORITES);
   }
-  if ((items & SEARCH_ENGINES) && !cancelled()) {
-    bridge_->NotifyItemStarted(SEARCH_ENGINES);
+  if ((items & importer::SEARCH_ENGINES) && !cancelled()) {
+    bridge_->NotifyItemStarted(importer::SEARCH_ENGINES);
     ImportSearchEngines();
-    bridge_->NotifyItemEnded(SEARCH_ENGINES);
+    bridge_->NotifyItemEnded(importer::SEARCH_ENGINES);
   }
-  if ((items & PASSWORDS) && !cancelled()) {
-    bridge_->NotifyItemStarted(PASSWORDS);
+  if ((items & importer::PASSWORDS) && !cancelled()) {
+    bridge_->NotifyItemStarted(importer::PASSWORDS);
     // Always import IE6 passwords.
     ImportPasswordsIE6();
 
     if (CurrentIEVersion() >= 7)
       ImportPasswordsIE7();
-    bridge_->NotifyItemEnded(PASSWORDS);
+    bridge_->NotifyItemEnded(importer::PASSWORDS);
   }
   bridge_->NotifyEnded();
 }

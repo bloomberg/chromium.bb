@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,6 +24,7 @@
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/menu_gtk.h"
 #include "chrome/browser/importer/importer.h"
+#include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/sync_ui_util.h"
@@ -1454,9 +1455,9 @@ void BookmarkManagerGtk::FileSelected(const FilePath& path,
     // ImporterHost is ref counted and will delete itself when done.
     ImporterHost* host = new ImporterHost();
     ProfileInfo profile_info;
-    profile_info.browser_type = BOOKMARKS_HTML;
+    profile_info.browser_type = importer::BOOKMARKS_HTML;
     profile_info.source_path = path.ToWStringHack();
-    StartImportingWithUI(GTK_WINDOW(window_), FAVORITES, host,
+    StartImportingWithUI(GTK_WINDOW(window_), importer::FAVORITES, host,
                          profile_info, profile_,
                          new ImportObserverImpl(profile()), false);
   } else if (id == IDS_BOOKMARK_MANAGER_EXPORT_MENU) {

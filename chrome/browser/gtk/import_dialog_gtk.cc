@@ -11,6 +11,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/gtk/accessible_widget_helper_gtk.h"
 #include "chrome/browser/gtk/gtk_util.h"
+#include "chrome/browser/importer/importer_data_types.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 
@@ -91,25 +92,25 @@ ImportDialogGtk::ImportDialogGtk(GtkWindow* parent, Profile* profile,
       l10n_util::GetStringUTF8(IDS_IMPORT_FAVORITES_CHKBOX).c_str());
   gtk_box_pack_start(GTK_BOX(vbox), bookmarks_, FALSE, FALSE, 0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bookmarks_),
-      (initial_state_ & FAVORITES) != 0);
+      (initial_state_ & importer::FAVORITES) != 0);
 
   search_engines_ = gtk_check_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_IMPORT_SEARCH_ENGINES_CHKBOX).c_str());
   gtk_box_pack_start(GTK_BOX(vbox), search_engines_, FALSE, FALSE, 0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(search_engines_),
-      (initial_state_ & SEARCH_ENGINES) != 0);
+      (initial_state_ & importer::SEARCH_ENGINES) != 0);
 
   passwords_ = gtk_check_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_IMPORT_PASSWORDS_CHKBOX).c_str());
   gtk_box_pack_start(GTK_BOX(vbox), passwords_, FALSE, FALSE, 0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(passwords_),
-      (initial_state_ & PASSWORDS) != 0);
+      (initial_state_ & importer::PASSWORDS) != 0);
 
   history_ = gtk_check_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_IMPORT_HISTORY_CHKBOX).c_str());
   gtk_box_pack_start(GTK_BOX(vbox), history_, FALSE, FALSE, 0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(history_),
-      (initial_state_ & HISTORY) !=0);
+      (initial_state_ & importer::HISTORY) !=0);
 
   gtk_box_pack_start(GTK_BOX(content_area), vbox, FALSE, FALSE, 0);
 
@@ -145,15 +146,15 @@ ImportDialogGtk::~ImportDialogGtk() {
 void ImportDialogGtk::OnDialogResponse(GtkWidget* widget, int response) {
   gtk_widget_hide_all(dialog_);
   if (response == GTK_RESPONSE_ACCEPT) {
-    uint16 items = NONE;
+    uint16 items = importer::NONE;
     if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(bookmarks_)))
-      items |= FAVORITES;
+      items |= importer::FAVORITES;
     if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(search_engines_)))
-      items |= SEARCH_ENGINES;
+      items |= importer::SEARCH_ENGINES;
     if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(passwords_)))
-      items |= PASSWORDS;
+      items |= importer::PASSWORDS;
     if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(history_)))
-      items |= HISTORY;
+      items |= importer::HISTORY;
 
     if (items == 0) {
       ImportComplete();

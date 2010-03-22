@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,13 +76,13 @@ void InProcessImporterBridge::SetPasswordForm(
       NewRunnableMethod(writer_, &ProfileWriter::AddPasswordForm, form));
 }
 
-void InProcessImporterBridge::NotifyItemStarted(ImportItem item) {
+void InProcessImporterBridge::NotifyItemStarted(importer::ImportItem item) {
   ChromeThread::PostTask(
       ChromeThread::UI, FROM_HERE,
       NewRunnableMethod(host_, &ImporterHost::ImportItemStarted, item));
 }
 
-void InProcessImporterBridge::NotifyItemEnded(ImportItem item) {
+void InProcessImporterBridge::NotifyItemEnded(importer::ImportItem item) {
   ChromeThread::PostTask(
       ChromeThread::UI, FROM_HERE,
       NewRunnableMethod(host_, &ImporterHost::ImportItemEnded, item));

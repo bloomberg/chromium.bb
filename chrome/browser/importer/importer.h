@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,10 +15,14 @@
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
+#include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/importer_list.h"
 #include "chrome/common/notification_registrar.h"
 #include "gfx/native_widget_types.h"
 #include "googleurl/src/gurl.h"
+
+using importer::ImportItem;
+using importer::ProfileInfo;
 
 class ImporterBridge;
 class Profile;
@@ -35,26 +39,6 @@ class URLRow;
 namespace webkit_glue {
 struct PasswordForm;
 }
-
-// An enumeration of the type of data we want to import.
-enum ImportItem {
-  NONE           = 0x0000,
-  HISTORY        = 0x0001,
-  FAVORITES      = 0x0002,
-  COOKIES        = 0x0004,  // not supported yet.
-  PASSWORDS      = 0x0008,
-  SEARCH_ENGINES = 0x0010,
-  HOME_PAGE      = 0x0020,
-  ALL            = 0x003f
-};
-
-struct ProfileInfo {
-  std::wstring description;
-  ProfileType browser_type;
-  std::wstring source_path;
-  std::wstring app_path;
-  uint16 services_supported;  // bitmap of ImportItem
-};
 
 class FirefoxProfileLock;
 class Importer;
@@ -273,8 +257,8 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
   }
 
   // Returns the ProfileInfo with the given browser type.
-  const ProfileInfo& GetSourceProfileInfoForBrowserType(int browser_type)
-      const {
+  const ProfileInfo& GetSourceProfileInfoForBrowserType(
+      int browser_type) const {
     return importer_list_.GetSourceProfileInfoForBrowserType(browser_type);
   }
 

@@ -20,6 +20,7 @@
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_theme_provider.h"
+#include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -876,7 +877,7 @@ void BookmarkBarView::ShowImportDialog() {
   views::Window::CreateChromeWindow(
       GetWindow()->GetNativeWindow(),
       gfx::Rect(),
-      new ImporterView(profile_, FAVORITES))->Show();
+      new ImporterView(profile_, importer::FAVORITES))->Show();
 #endif
 }
 

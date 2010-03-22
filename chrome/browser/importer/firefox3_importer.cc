@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,6 +24,13 @@
 #include "webkit/glue/password_form.h"
 
 using base::Time;
+using importer::BOOKMARKS_HTML;
+using importer::FAVORITES;
+using importer::HISTORY;
+using importer::HOME_PAGE;
+using importer::PASSWORDS;
+using importer::ProfileInfo;
+using importer::SEARCH_ENGINES;
 using webkit_glue::PasswordForm;
 
 void Firefox3Importer::StartImport(ProfileInfo profile_info,

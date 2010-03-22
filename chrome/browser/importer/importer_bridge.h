@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "base/string16.h"
 
 #include "chrome/browser/importer/importer.h"
+#include "chrome/browser/importer/importer_data_types.h"
 // TODO: remove this, see friend declaration in ImporterBridge.
 #include "chrome/browser/importer/toolbar_importer.h"
 
@@ -44,11 +45,11 @@ class ImporterBridge : public base::RefCountedThreadSafe<ImporterBridge> {
 
   // Notifies the coordinator that the collection of data for the specified
   // item has begun.
-  virtual void NotifyItemStarted(ImportItem item) = 0;
+  virtual void NotifyItemStarted(importer::ImportItem item) = 0;
 
   // Notifies the coordinator that the collection of data for the specified
   // item has completed.
-  virtual void NotifyItemEnded(ImportItem item) = 0;
+  virtual void NotifyItemEnded(importer::ImportItem item) = 0;
 
   // Notifies the coordinator that the import operation has begun.
   virtual void NotifyStarted() = 0;
@@ -95,8 +96,8 @@ class InProcessImporterBridge : public ImporterBridge {
                            bool unique_on_host_and_path);
   virtual void SetPasswordForm(const webkit_glue::PasswordForm& form);
 
-  virtual void NotifyItemStarted(ImportItem item);
-  virtual void NotifyItemEnded(ImportItem item);
+  virtual void NotifyItemStarted(importer::ImportItem item);
+  virtual void NotifyItemEnded(importer::ImportItem item);
   virtual void NotifyStarted();
   virtual void NotifyEnded();
 

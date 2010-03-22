@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_VIEWS_IMPORTING_PROGRESS_VIEW_H_
 
 #include "chrome/browser/importer/importer.h"
+#include "chrome/browser/importer/importer_data_types.h"
 #include "views/view.h"
 #include "views/window/dialog_delegate.h"
 #include "views/window/window.h"
@@ -32,8 +33,8 @@ class ImportingProgressView : public views::View,
 
  protected:
   // Overridden from ImporterHost::Observer:
-  virtual void ImportItemStarted(ImportItem item);
-  virtual void ImportItemEnded(ImportItem item);
+  virtual void ImportItemStarted(importer::ImportItem item);
+  virtual void ImportItemEnded(importer::ImportItem item);
   virtual void ImportStarted();
   virtual void ImportEnded();
 

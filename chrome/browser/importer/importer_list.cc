@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,21 +56,21 @@ void ImporterList::DetectSourceProfiles() {
 #endif
 }
 
-Importer* ImporterList::CreateImporterByType(ProfileType type) {
+Importer* ImporterList::CreateImporterByType(importer::ProfileType type) {
   switch (type) {
 #if defined(OS_WIN)
-    case MS_IE:
+    case importer::MS_IE:
       return new IEImporter();
 #endif
-    case BOOKMARKS_HTML:
-    case FIREFOX2:
+    case importer::BOOKMARKS_HTML:
+    case importer::FIREFOX2:
       return new Firefox2Importer();
-    case FIREFOX3:
+    case importer::FIREFOX3:
       return new Firefox3Importer();
-    case GOOGLE_TOOLBAR5:
+    case importer::GOOGLE_TOOLBAR5:
       return new Toolbar5Importer();
 #if defined(OS_MACOSX)
-    case SAFARI:
+    case importer::SAFARI:
       return new SafariImporter(mac_util::GetUserLibraryPath());
 #endif  // OS_MACOSX
   }
@@ -87,12 +87,13 @@ std::wstring ImporterList::GetSourceProfileNameAt(int index) const {
   return source_profiles_[index]->description;
 }
 
-const ProfileInfo& ImporterList::GetSourceProfileInfoAt(int index) const {
+const importer::ProfileInfo& ImporterList::GetSourceProfileInfoAt(
+    int index) const {
   DCHECK(index >=0 && index < GetAvailableProfileCount());
   return *source_profiles_[index];
 }
 
-const ProfileInfo& ImporterList::GetSourceProfileInfoForBrowserType(
+const importer::ProfileInfo& ImporterList::GetSourceProfileInfoForBrowserType(
     int browser_type) const {
   int count = GetAvailableProfileCount();
   for (int i = 0; i < count; ++i) {
@@ -100,7 +101,7 @@ const ProfileInfo& ImporterList::GetSourceProfileInfoForBrowserType(
       return *source_profiles_[i];
   }
   NOTREACHED();
-  return *(new ProfileInfo());
+  return *(new importer::ProfileInfo());
 }
 
 #if defined(OS_WIN)
@@ -108,11 +109,11 @@ void ImporterList::DetectIEProfiles() {
   // IE always exists and don't have multiple profiles.
   ProfileInfo* ie = new ProfileInfo();
   ie->description = l10n_util::GetString(IDS_IMPORT_FROM_IE);
-  ie->browser_type = MS_IE;
+  ie->browser_type = importer::MS_IE;
   ie->source_path.clear();
   ie->app_path.clear();
-  ie->services_supported = HISTORY | FAVORITES | COOKIES | PASSWORDS |
-      SEARCH_ENGINES;
+  ie->services_supported = importer::HISTORY | importer::FAVORITES |
+      importer::COOKIES | importer::PASSWORDS | importer::SEARCH_ENGINES;
   source_profiles_.push_back(ie);
 }
 #endif
@@ -165,7 +166,7 @@ void ImporterList::DetectFirefoxProfiles() {
   }
 
   // Detects which version of Firefox is installed.
-  ProfileType firefox_type;
+  importer::ProfileType firefox_type;
   FilePath app_path;
   int version = 0;
 #if defined(OS_WIN)
@@ -175,16 +176,16 @@ void ImporterList::DetectFirefoxProfiles() {
     GetFirefoxVersionAndPathFromProfile(source_path, &version, &app_path);
 
   if (version == 2) {
-    firefox_type = FIREFOX2;
+    firefox_type = importer::FIREFOX2;
   } else if (version == 3) {
-    firefox_type = FIREFOX3;
+    firefox_type = importer::FIREFOX3;
   } else {
     // Ignores other versions of firefox.
     return;
   }
 
   if (!source_path.empty()) {
-    ProfileInfo* firefox = new ProfileInfo();
+    importer::ProfileInfo* firefox = new importer::ProfileInfo();
     firefox->description = l10n_util::GetString(IDS_IMPORT_FROM_FIREFOX);
     firefox->browser_type = firefox_type;
     firefox->source_path = source_path.ToWStringHack();
@@ -193,31 +194,31 @@ void ImporterList::DetectFirefoxProfiles() {
 #endif
     if (firefox->app_path.empty())
       firefox->app_path = app_path.ToWStringHack();
-    firefox->services_supported = HISTORY | FAVORITES | COOKIES | PASSWORDS |
-        SEARCH_ENGINES;
+    firefox->services_supported = importer::HISTORY | importer::FAVORITES |
+        importer::COOKIES | importer::PASSWORDS | importer::SEARCH_ENGINES;
     source_profiles_.push_back(firefox);
   }
 }
 
 void ImporterList::DetectGoogleToolbarProfiles() {
   if (!FirstRun::IsChromeFirstRun()) {
-    ProfileInfo* google_toolbar = new ProfileInfo();
-    google_toolbar->browser_type = GOOGLE_TOOLBAR5;
+    importer::ProfileInfo* google_toolbar = new importer::ProfileInfo();
+    google_toolbar->browser_type = importer::GOOGLE_TOOLBAR5;
     google_toolbar->description = l10n_util::GetString(
                                   IDS_IMPORT_FROM_GOOGLE_TOOLBAR);
     google_toolbar->source_path.clear();
     google_toolbar->app_path.clear();
-    google_toolbar->services_supported = FAVORITES;
+    google_toolbar->services_supported = importer::FAVORITES;
     source_profiles_.push_back(google_toolbar);
   }
 }
 
 #if defined(OS_MACOSX)
 void ImporterList::DetectSafariProfiles() {
-  uint16 items = NONE;
+  uint16 items = importer::NONE;
   if (SafariImporter::CanImport(mac_util::GetUserLibraryPath(), &items)) {
-    ProfileInfo* safari = new ProfileInfo();
-    safari->browser_type = SAFARI;
+    importer::ProfileInfo* safari = new importer::ProfileInfo();
+    safari->browser_type = importer::SAFARI;
     safari->description = l10n_util::GetString(IDS_IMPORT_FROM_SAFARI);
     safari->source_path.clear();
     safari->app_path.clear();

@@ -20,6 +20,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/importer/importer.h"
+#include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -607,10 +608,10 @@ void BookmarkManagerView::FileSelected(const FilePath& path,
     // ImporterHost is ref counted and will delete itself when done.
     ImporterHost* host = new ImporterHost();
     ProfileInfo profile_info;
-    profile_info.browser_type = BOOKMARKS_HTML;
+    profile_info.browser_type = importer::BOOKMARKS_HTML;
     profile_info.source_path = path.ToWStringHack();
-    StartImportingWithUI(GetWidget()->GetNativeView(), FAVORITES, host,
-                         profile_info, profile_,
+    StartImportingWithUI(GetWidget()->GetNativeView(), importer::FAVORITES,
+                         host, profile_info, profile_,
                          new ImportObserverImpl(profile()), false);
   } else if (id == IDS_BOOKMARK_MANAGER_EXPORT_MENU) {
     bookmark_html_writer::WriteBookmarks(profile(), path, NULL);

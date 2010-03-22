@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,15 +19,15 @@ namespace {
 // Convert ImportItem enum into the name of the ImportProgressDialogController
 // property corresponding to the text for that item, this makes the code to
 // change the values for said properties much more readable.
-NSString* keyForImportItem(ImportItem item) {
+NSString* keyForImportItem(importer::ImportItem item) {
   switch(item) {
-    case HISTORY:
+    case importer::HISTORY:
       return @"historyStatusText";
-    case FAVORITES:
+    case importer::FAVORITES:
       return @"favoritesStatusText";
-    case PASSWORDS:
+    case importer::PASSWORDS:
       return @"savedPasswordStatusText";
-    case SEARCH_ENGINES:
+    case importer::SEARCH_ENGINES:
       return @"searchStatusText";
     default:
       DCHECK(false);
@@ -82,10 +82,14 @@ NSString* keyForImportItem(ImportItem item) {
     // Enable/disable item titles.
     NSColor* disabled = [NSColor disabledControlTextColor];
     NSColor* active = [NSColor textColor];
-    [self setFavoritesImportEnabled:items & FAVORITES ? active : disabled];
-    [self setSearchImportEnabled:items & SEARCH_ENGINES ? active : disabled];
-    [self setPasswordImportEnabled:items & PASSWORDS ? active : disabled];
-    [self setHistoryImportEnabled:items & HISTORY ? active : disabled];
+    [self setFavoritesImportEnabled:items & importer::FAVORITES ? active :
+        disabled];
+    [self setSearchImportEnabled:items & importer::SEARCH_ENGINES ? active :
+        disabled];
+    [self setPasswordImportEnabled:items & importer::PASSWORDS ? active :
+        disabled];
+    [self setHistoryImportEnabled:items & importer::HISTORY ? active :
+        disabled];
   }
   return self;
 }
@@ -129,11 +133,11 @@ NSString* keyForImportItem(ImportItem item) {
     [self release];
   }
 }
-- (void)ImportItemStarted:(ImportItem)item {
+- (void)ImportItemStarted:(importer::ImportItem)item {
   [self setValue:progress_text_ forKey:keyForImportItem(item)];
 }
 
-- (void)ImportItemEnded:(ImportItem)item {
+- (void)ImportItemEnded:(importer::ImportItem)item {
   [self setValue:done_text_ forKey:keyForImportItem(item)];
 }
 
@@ -158,7 +162,7 @@ NSString* keyForImportItem(ImportItem item) {
 void StartImportingWithUI(gfx::NativeWindow parent_window,
                           int16 items,
                           ImporterHost* coordinator,
-                          const ProfileInfo& source_profile,
+                          const importer::ProfileInfo& source_profile,
                           Profile* target_profile,
                           ImportObserver* observer,
                           bool first_run) {
