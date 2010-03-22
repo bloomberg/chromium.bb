@@ -39,7 +39,8 @@ UrlmonUrlRequest::UrlmonUrlRequest()
     : pending_read_size_(0),
       headers_received_(false),
       thread_(NULL),
-      parent_window_(NULL) {
+      parent_window_(NULL),
+      privileged_mode_(false) {
   DLOG(INFO) << StringPrintf("Created request. Obj: %X", this);
 }
 
@@ -546,9 +547,11 @@ STDMETHODIMP UrlmonUrlRequest::GetWindow(const GUID& guid_reason,
 STDMETHODIMP UrlmonUrlRequest::Authenticate(HWND* parent_window,
                                             LPWSTR* user_name,
                                             LPWSTR* password) {
-  if (!parent_window) {
+  if (!parent_window)
     return E_INVALIDARG;
-  }
+
+  if (privileged_mode_)
+    return E_ACCESSDENIED;
 
   DCHECK(::IsWindow(parent_window_));
   *parent_window = parent_window_;
@@ -897,6 +900,7 @@ void UrlmonUrlRequestManager::StartRequestWorker(int request_id,
       request_info.upload_data,
       enable_frame_busting_);
   new_request->set_parent_window(notification_window_);
+  new_request->set_privileged_mode(privileged_mode_);
 
   // Shall we use previously fetched data?
   if (request_for_url.get()) {
@@ -1039,7 +1043,8 @@ scoped_refptr<UrlmonUrlRequest> UrlmonUrlRequestManager::LookupRequest(
 
 UrlmonUrlRequestManager::UrlmonUrlRequestManager()
     : stopping_(false), worker_thread_("UrlMon fetch thread"),
-      map_empty_(true, true), notification_window_(NULL) {
+      map_empty_(true, true), notification_window_(NULL),
+      privileged_mode_(false) {
 }
 
 UrlmonUrlRequestManager::~UrlmonUrlRequestManager() {

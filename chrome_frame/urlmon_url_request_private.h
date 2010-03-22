@@ -40,6 +40,12 @@ class UrlmonUrlRequest
     parent_window_ = parent_window;
   }
 
+  // This function passes information on whether ChromeFrame is running in
+  // privileged mode.
+  void set_privileged_mode(bool privileged_mode) {
+    privileged_mode_ = privileged_mode;
+  }
+
  protected:
   UrlmonUrlRequest();
   ~UrlmonUrlRequest();
@@ -302,7 +308,8 @@ class UrlmonUrlRequest
   PlatformThreadId thread_;
   HWND parent_window_;
   bool headers_received_;
-
+  // Set to true if the ChromeFrame instance is running in privileged mode.
+  bool privileged_mode_;
   DISALLOW_COPY_AND_ASSIGN(UrlmonUrlRequest);
 };
 

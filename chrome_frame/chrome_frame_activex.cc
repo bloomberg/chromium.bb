@@ -410,6 +410,8 @@ HRESULT ChromeFrameActivex::IOleObject_SetClientSite(
 
       if (SUCCEEDED(service_hr) && wants_privileged)
         is_privileged_ = true;
+
+      url_fetcher_.set_privileged_mode(is_privileged_);
     }
 
     std::wstring chrome_extra_arguments;

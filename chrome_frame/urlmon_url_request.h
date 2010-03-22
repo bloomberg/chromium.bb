@@ -86,6 +86,12 @@ class UrlmonUrlRequestManager
     notification_window_ = window;
   }
 
+  // This function passes information on whether ChromeFrame is running in
+  // privileged mode.
+  void set_privileged_mode(bool privileged_mode) {
+    privileged_mode_ = privileged_mode;
+  }
+
  private:
   friend class MessageLoop;
   friend struct RunnableMethodTraits<UrlmonUrlRequestManager>;
@@ -137,6 +143,8 @@ class UrlmonUrlRequestManager
   PrivacyInfo privacy_info_;
   // The window to be used to fire notifications on.
   HWND notification_window_;
+  // Set to true if the ChromeFrame instance is running in privileged mode.
+  bool privileged_mode_;
 };
 
 #endif  // CHROME_FRAME_URLMON_URL_REQUEST_H_
