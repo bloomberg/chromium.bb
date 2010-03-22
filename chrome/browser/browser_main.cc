@@ -930,8 +930,8 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // Perform A/B test to measure global impact of SDCH support.
   // Set up a field trial to see what disabling SDCH does to latency of page
   // layout globally.
-  FieldTrial::Probability kSDCH_DIVISOR = 10000;
-  FieldTrial::Probability kSDCH_DISABLE_PROBABILITY = 5;  // 0.05% probability.
+  FieldTrial::Probability kSDCH_DIVISOR = 100;
+  FieldTrial::Probability kSDCH_DISABLE_PROBABILITY = 5;  // 5% probability.
   scoped_refptr<FieldTrial> sdch_trial =
       new FieldTrial("GlobalSdch", kSDCH_DIVISOR);
 
