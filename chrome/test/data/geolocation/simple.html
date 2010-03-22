@@ -30,8 +30,8 @@
     function geoGetLastError() {
       return "" + (last_error ? last_error.code : 0);
     }
-    function geoDisableAlerts() {
-      display_alert = false;
+    function geoEnableAlerts(enabled) {
+      display_alert = enabled;
       return "" + display_alert;
     }
   </script>
