@@ -124,14 +124,6 @@ class TabProxy : public AutomationResourceProxy {
       NavigateToURLBlockUntilNavigationsComplete(
           const GURL& url, int number_of_navigations) WARN_UNUSED_RESULT;
 
-  // Navigates to a url. This is same as NavigateToURL with a timeout option.
-  // The function blocks until the |number_of_navigations| navigations
-  // completes or timeout (in milliseconds) occurs. If return after timeout,
-  // is_timeout is set to true.
-  AutomationMsg_NavigationResponseValues NavigateToURLWithTimeout(
-      const GURL& url, int number_of_navigations, uint32 timeout_ms,
-      bool* is_timeout) WARN_UNUSED_RESULT;
-
   // Navigates to a url in an externally hosted tab.
   // This method accepts the same kinds of URL input that
   // can be passed to Chrome on the command line. This is a synchronous call and
@@ -269,9 +261,8 @@ class TabProxy : public AutomationResourceProxy {
   bool GetDownloadDirectory(FilePath* download_directory) WARN_UNUSED_RESULT;
 
   // Shows an interstitial page.  Blocks until the interstitial page
-  // has been loaded. Return false if a failure happens.3
-  bool ShowInterstitialPage(const std::string& html_text,
-                            int timeout_ms) WARN_UNUSED_RESULT;
+  // has been loaded. Return false if a failure happens.
+  bool ShowInterstitialPage(const std::string& html_text) WARN_UNUSED_RESULT;
 
   // Hides the currently shown interstitial page. Blocks until the interstitial
   // page has been hidden. Return false if a failure happens.

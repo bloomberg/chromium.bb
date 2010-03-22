@@ -357,7 +357,7 @@ TEST_F(SessionRestoreUITest, DontRestoreWhileIncognito) {
   LaunchBrowser(launch_arguments_, false);
 
   // A new window should appear;
-  ASSERT_TRUE(automation()->WaitForWindowCountToBecome(2, action_timeout_ms()));
+  ASSERT_TRUE(automation()->WaitForWindowCountToBecome(2));
 
   // And it shouldn't have url1_ in it.
   browser_proxy = automation()->GetBrowserWindow(1);
@@ -414,7 +414,7 @@ TEST_F(SessionRestoreUITest,
   app_launch_arguments.AppendSwitchWithValue(switches::kApp,
                                              UTF8ToWide(url2_.spec()));
   LaunchBrowser(app_launch_arguments, false);
-  ASSERT_TRUE(automation()->WaitForWindowCountToBecome(2, action_timeout_ms()));
+  ASSERT_TRUE(automation()->WaitForWindowCountToBecome(2));
 
   // Close the first window. The only window left is the App window.
   CloseWindow(0, 2);

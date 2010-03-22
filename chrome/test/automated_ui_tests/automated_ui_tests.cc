@@ -593,16 +593,9 @@ bool AutomatedUITest::FuzzyTestDialog(int num_actions) {
 bool AutomatedUITest::ForceCrash() {
   scoped_refptr<TabProxy> tab(GetActiveTab());
   GURL test_url(chrome::kAboutCrashURL);
-  bool did_timeout;
-  AutomationMsg_NavigationResponseValues result =
-      tab->NavigateToURLWithTimeout(test_url, 1, kDebuggingTimeoutMsec,
-                                    &did_timeout);
+  AutomationMsg_NavigationResponseValues result = tab->NavigateToURL(test_url);
   if (result != AUTOMATION_MSG_NAVIGATION_SUCCESS) {
     AddErrorAttribute("navigation_failed");
-    return false;
-  }
-  if (!did_timeout) {
-    AddInfoAttribute("expected_crash");
     return false;
   }
   return true;

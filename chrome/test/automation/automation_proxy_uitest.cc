@@ -290,63 +290,6 @@ TEST_F(AutomationProxyTest, NavigateToURL) {
   // TODO(vibhor) : Add a test using testserver.
 }
 
-TEST_F(AutomationProxyTest, NavigateToURLWithTimeout1) {
-  scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
-  ASSERT_TRUE(window.get());
-  scoped_refptr<TabProxy> tab(window->GetTab(0));
-  ASSERT_TRUE(tab.get());
-
-  FilePath filename(test_data_directory_);
-  filename = filename.AppendASCII("title2.html");
-
-  bool is_timeout;
-  ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
-            tab->NavigateToURLWithTimeout(net::FilePathToFileURL(filename),
-                                          1, 5000, &is_timeout));
-  ASSERT_FALSE(is_timeout);
-
-  std::wstring title;
-  ASSERT_TRUE(tab->GetTabTitle(&title));
-  ASSERT_STREQ(L"Title Of Awesomeness", title.c_str());
-
-  // Use timeout high enough to allow the browser to create a url request job.
-  const int kLowTimeoutMs = 250;
-  ASSERT_GE(URLRequestSlowHTTPJob::kDelayMs, kLowTimeoutMs);
-  ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_ERROR,
-            tab->NavigateToURLWithTimeout(
-                URLRequestSlowHTTPJob::GetMockUrl(filename),
-                1, kLowTimeoutMs, &is_timeout));
-  ASSERT_TRUE(is_timeout);
-}
-
-TEST_F(AutomationProxyTest, NavigateToURLWithTimeout2) {
-  scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
-  ASSERT_TRUE(window.get());
-  scoped_refptr<TabProxy> tab(window->GetTab(0));
-  ASSERT_TRUE(tab.get());
-
-  FilePath filename1(test_data_directory_);
-  filename1 = filename1.AppendASCII("title1.html");
-
-  bool is_timeout;
-
-  // Use timeout high enough to allow the browser to create a url request job.
-  const int kLowTimeoutMs = 250;
-  ASSERT_GE(URLRequestSlowHTTPJob::kDelayMs, kLowTimeoutMs);
-  ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_ERROR,
-            tab->NavigateToURLWithTimeout(
-                URLRequestSlowHTTPJob::GetMockUrl(filename1),
-                1, kLowTimeoutMs, &is_timeout));
-  ASSERT_TRUE(is_timeout);
-
-  FilePath filename2(test_data_directory_);
-  filename2 = filename2.AppendASCII("title1.html");
-  ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
-            tab->NavigateToURLWithTimeout(net::FilePathToFileURL(filename2),
-                                          1, 5000, &is_timeout));
-  ASSERT_FALSE(is_timeout);
-}
-
 TEST_F(AutomationProxyTest, GoBackForward) {
   scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(window.get());
@@ -1439,7 +1382,7 @@ TEST_F(AutomationProxyTest, DISABLED_AppModalDialogTest) {
       "<body onload='onload()'></body></html>";
   ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
             tab->NavigateToURL(GURL(content)));
-  EXPECT_TRUE(automation()->WaitForAppModalDialog(3000));
+  EXPECT_TRUE(automation()->WaitForAppModalDialog());
   EXPECT_TRUE(automation()->GetShowingAppModalDialog(&modal_dialog_showing,
                                                      &button));
   EXPECT_TRUE(modal_dialog_showing);
@@ -1467,7 +1410,7 @@ TEST_F(AutomationProxyTest, DISABLED_AppModalDialogTest) {
       "</head><body onload='onload()'></body></html>";
   ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
             tab->NavigateToURL(GURL(content)));
-  EXPECT_TRUE(automation()->WaitForAppModalDialog(3000));
+  EXPECT_TRUE(automation()->WaitForAppModalDialog());
   EXPECT_TRUE(automation()->GetShowingAppModalDialog(&modal_dialog_showing,
                                                      &button));
   EXPECT_TRUE(modal_dialog_showing);
@@ -1488,7 +1431,7 @@ TEST_F(AutomationProxyTest, DISABLED_AppModalDialogTest) {
   // Try again.
   ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
             tab->NavigateToURL(GURL(content)));
-  EXPECT_TRUE(automation()->WaitForAppModalDialog(3000));
+  EXPECT_TRUE(automation()->WaitForAppModalDialog());
   EXPECT_TRUE(automation()->GetShowingAppModalDialog(&modal_dialog_showing,
                                                      &button));
   EXPECT_TRUE(modal_dialog_showing);

@@ -185,19 +185,16 @@ class PageLoadTest : public UITest {
     test_log << "browser_launched_seconds=";
     test_log << (time_now.ToDoubleT() - time_start) << std::endl;
 
-    bool is_timeout = false;
     int result = AUTOMATION_MSG_NAVIGATION_ERROR;
     // This is essentially what NavigateToURL does except we don't fire
     // assertion when page loading fails. We log the result instead.
     {
       // TabProxy should be released before Browser is closed.
       scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
-      if (tab_proxy.get()) {
-        result = tab_proxy->NavigateToURLWithTimeout(url, 1, g_timeout_ms,
-                                                     &is_timeout);
-      }
+      if (tab_proxy.get())
+        result = tab_proxy->NavigateToURL(url);
 
-      if (!is_timeout && result == AUTOMATION_MSG_NAVIGATION_SUCCESS) {
+      if (result == AUTOMATION_MSG_NAVIGATION_SUCCESS) {
         if (g_page_down) {
           // Page down twice.
           scoped_refptr<BrowserProxy> browser(
@@ -205,11 +202,7 @@ class PageLoadTest : public UITest {
           if (browser.get()) {
             scoped_refptr<WindowProxy> window(browser->GetWindow());
             if (window.get()) {
-              bool activation_timeout;
-              bool success =
-                  browser->BringToFrontWithTimeout(action_max_timeout_ms(),
-                                                   &activation_timeout);
-              if (success && !activation_timeout) {
+              if (browser->BringToFront()) {
                 window->SimulateOSKeyPress(base::VKEY_NEXT, 0);
                 PlatformThread::Sleep(sleep_timeout_ms());
                 window->SimulateOSKeyPress(base::VKEY_NEXT, 0);
@@ -241,31 +234,19 @@ class PageLoadTest : public UITest {
     // <url> <navigation_result> <browser_crash_count> <renderer_crash_count>
     // <plugin_crash_count> <crash_dump_count> [chrome_log=<path>
     // v8_log=<path>] crash_dump=<path>
-    if (is_timeout) {
-      metrics.result = NAVIGATION_TIME_OUT;
-      // After timeout, the test automation is in the transition state since
-      // there might be pending IPC messages and the browser (automation
-      // provider) is still working on the request. Here we just skip the url
-      // and send the next request. The pending IPC messages will be properly
-      // discarded by automation message filter. The browser will accept the
-      // new request and visit the next URL.
-      // We will revisit the issue if we encounter the situation where browser
-      // needs to be restarted after timeout.
-    } else {
-      switch (result) {
-        case AUTOMATION_MSG_NAVIGATION_ERROR:
-          metrics.result = NAVIGATION_ERROR;
-          break;
-        case AUTOMATION_MSG_NAVIGATION_SUCCESS:
-          metrics.result = NAVIGATION_SUCCESS;
-          break;
-        case AUTOMATION_MSG_NAVIGATION_AUTH_NEEDED:
-          metrics.result = NAVIGATION_AUTH_NEEDED;
-          break;
-        default:
-          metrics.result = NAVIGATION_ERROR;
-          break;
-      }
+    switch (result) {
+      case AUTOMATION_MSG_NAVIGATION_ERROR:
+        metrics.result = NAVIGATION_ERROR;
+        break;
+      case AUTOMATION_MSG_NAVIGATION_SUCCESS:
+        metrics.result = NAVIGATION_SUCCESS;
+        break;
+      case AUTOMATION_MSG_NAVIGATION_AUTH_NEEDED:
+        metrics.result = NAVIGATION_AUTH_NEEDED;
+        break;
+      default:
+        metrics.result = NAVIGATION_ERROR;
+        break;
     }
 
     if (log_file.is_open()) {

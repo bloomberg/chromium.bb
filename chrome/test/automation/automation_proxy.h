@@ -40,17 +40,14 @@ class AutomationMessageSender : public IPC::Message::Sender {
   // Sends a message synchronously; it doesn't return until a response has been
   // received or a timeout has expired.
   //
-  // Use base::kNoTimeout for no timeout.
-  //
   // The function returns true if a response is received, and returns false if
-  // there is a failure or timeout (in milliseconds). If return after timeout,
-  // is_timeout is set to true.
+  // there is a failure or timeout (in milliseconds).
+  //
   // NOTE: When timeout occurs, the connection between proxy provider may be
   //       in transit state. Specifically, there might be pending IPC messages,
   //       and the proxy provider might be still working on the previous
   //       request.
-  virtual bool SendWithTimeout(IPC::Message* message, int timeout,
-                               bool* is_timeout) = 0;
+  virtual bool Send(IPC::Message* message) = 0;
 };
 
 // This is the interface that external processes can use to interact with
@@ -99,8 +96,7 @@ class AutomationProxy : public IPC::Channel::Listener,
 
   // Block the thread until the window count becomes the provided value.
   // Returns true on success.
-  bool WaitForWindowCountToBecome(int target_count,
-                                  int wait_timeout) WARN_UNUSED_RESULT;
+  bool WaitForWindowCountToBecome(int target_count) WARN_UNUSED_RESULT;
 
   // Fills the number of open normal browser windows (normal type and
   // non-incognito mode) into the given variable, returning true on success.
@@ -123,7 +119,7 @@ class AutomationProxy : public IPC::Channel::Listener,
 
   // Block the thread until a modal dialog is displayed. Returns true on
   // success.
-  bool WaitForAppModalDialog(int wait_timeout) WARN_UNUSED_RESULT;
+  bool WaitForAppModalDialog() WARN_UNUSED_RESULT;
 
   // Returns true if one of the tabs in any window displays given url.
   bool IsURLDisplayed(GURL url) WARN_UNUSED_RESULT;
@@ -208,10 +204,8 @@ class AutomationProxy : public IPC::Channel::Listener,
   base::file_handle_mapping_vector fds_to_map() const;
 #endif
 
-  // AutomationMessageSender implementations.
+  // AutomationMessageSender implementation.
   virtual bool Send(IPC::Message* message) WARN_UNUSED_RESULT;
-  virtual bool SendWithTimeout(IPC::Message* message, int timeout,
-                               bool* is_timeout) WARN_UNUSED_RESULT;
 
   // Wrapper over AutomationHandleTracker::InvalidateHandle. Receives the
   // message from AutomationProxy, unpacks the messages and routes that call to

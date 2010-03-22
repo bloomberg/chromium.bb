@@ -43,25 +43,13 @@ class BrowserProxy : public AutomationResourceProxy {
   // successful.
   bool ActivateTab(int tab_index) WARN_UNUSED_RESULT;
 
-  // Like ActivateTab, but returns false if response is not received before
-  // the specified timeout.
-  bool ActivateTabWithTimeout(int tab_index, uint32 timeout_ms,
-                              bool* is_timeout) WARN_UNUSED_RESULT;
-
   // Bring the browser window to the front, activating it. Returns true on
   // success.
   bool BringToFront() WARN_UNUSED_RESULT;
 
-  // Like BringToFront, but returns false if action is not completed before
-  // the specified timeout.
-  bool BringToFrontWithTimeout(uint32 timeout_ms,
-                               bool* is_timeout) WARN_UNUSED_RESULT;
-
-  // Checks to see if a navigation command is active or not. Can also
-  // return false if action is not completed before the specified
-  // timeout; is_timeout will be set in those cases.
-  bool IsPageMenuCommandEnabledWithTimeout(int id, uint32 timeout_ms,
-                                           bool* is_timeout) WARN_UNUSED_RESULT;
+  // Checks to see if a navigation command is active or not. If the call was
+  // successful, puts the result in |enabled| and returns true.
+  bool IsPageMenuCommandEnabled(int id, bool* enabled) WARN_UNUSED_RESULT;
 
   // Append a new tab to the TabStrip.  The new tab is selected.
   // The new tab navigates to the given tab_url.
@@ -74,19 +62,9 @@ class BrowserProxy : public AutomationResourceProxy {
   // successful.
   bool GetActiveTabIndex(int* active_tab_index) const WARN_UNUSED_RESULT;
 
-  // Like GetActiveTabIndex, but returns false if active tab is not received
-  // before the specified timeout.
-  bool GetActiveTabIndexWithTimeout(int* active_tab_index, uint32 timeout_ms,
-                              bool* is_timeout) const WARN_UNUSED_RESULT;
-
   // Returns the number of tabs in the given window.  Returns true if
   // the call was successful.
   bool GetTabCount(int* num_tabs) const WARN_UNUSED_RESULT;
-
-  // Like GetTabCount, but returns false if tab count is not received within the
-  // before timeout.
-  bool GetTabCountWithTimeout(int* num_tabs, uint32 timeout_ms,
-                              bool* is_timeout) const WARN_UNUSED_RESULT;
 
   // Returns the type of the given window. Returns true if the call was
   // successful.
@@ -102,11 +80,6 @@ class BrowserProxy : public AutomationResourceProxy {
   // Returns the TabProxy for the currently active tab, transferring
   // ownership of the pointer to the caller. On failure, returns NULL.
   scoped_refptr<TabProxy> GetActiveTab() const;
-
-  // Like GetActiveTab, but returns NULL if no response is received before
-  // the specified timout.
-  scoped_refptr<TabProxy> GetActiveTabWithTimeout(uint32 timeout_ms,
-      bool* is_timeout) const;
 
   // Returns the WindowProxy for this browser's window. It can be used to
   // retreive view bounds, simulate clicks and key press events.  The caller
@@ -138,15 +111,6 @@ class BrowserProxy : public AutomationResourceProxy {
                             const gfx::Point& end,
                             int flags,
                             bool press_escape_en_route) WARN_UNUSED_RESULT;
-
-  // Like SimulateDrag, but returns false if response is not received before
-  // the specified timeout.
-  virtual bool SimulateDragWithTimeout(const gfx::Point& start,
-                                       const gfx::Point& end,
-                                       int flags, uint32 timeout_ms,
-                                       bool* is_timeout,
-                                       bool press_escape_en_route)
-                                       WARN_UNUSED_RESULT;
 
   // Block the thread until the tab count is |count|.
   // |wait_timeout| is the timeout, in milliseconds, for waiting.

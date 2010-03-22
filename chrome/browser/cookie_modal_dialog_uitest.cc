@@ -32,8 +32,7 @@ class CookieModalDialogTest : public UITest {
 
     bool modal_dialog_showing = false;
     MessageBoxFlags::DialogButton available_buttons;
-    ASSERT_TRUE(automation()->WaitForAppModalDialog(
-        action_max_timeout_ms()));
+    ASSERT_TRUE(automation()->WaitForAppModalDialog());
     ASSERT_TRUE(automation()->GetShowingAppModalDialog(&modal_dialog_showing,
         &available_buttons));
     ASSERT_TRUE(modal_dialog_showing);

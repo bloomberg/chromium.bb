@@ -47,7 +47,7 @@ TEST_F(ChromeMainTest, SecondLaunch) {
   ASSERT_TRUE(LaunchAnotherBrowserBlockUntilClosed(
                   CommandLine(CommandLine::ARGUMENTS_ONLY)));
 
-  ASSERT_TRUE(automation()->WaitForWindowCountToBecome(2, action_timeout_ms()));
+  ASSERT_TRUE(automation()->WaitForWindowCountToBecome(2));
 }
 
 TEST_F(ChromeMainTest, ReuseBrowserInstanceWhenOpeningFile) {

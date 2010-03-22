@@ -91,7 +91,7 @@ TEST_F(NPAPIVisiblePluginTester, GetURLRequest404Response) {
   NavigateToURL(url);
 
   // Wait for the alert dialog and then close it.
-  automation()->WaitForAppModalDialog(action_max_timeout_ms());
+  automation()->WaitForAppModalDialog();
   scoped_refptr<WindowProxy> window(automation()->GetActiveWindow());
   ASSERT_TRUE(window.get());
   ASSERT_TRUE(window->SimulateOSKeyPress(base::VKEY_ESCAPE, 0));

@@ -249,16 +249,7 @@ bool AutomationProxy::GetBrowserWindowCount(int* num_windows) {
     return false;
   }
 
-  bool succeeded = SendWithTimeout(
-      new AutomationMsg_BrowserWindowCount(0, num_windows),
-      command_execution_timeout_ms(), NULL);
-
-  if (!succeeded) {
-    DLOG(ERROR) << "GetWindowCount did not complete in a timely fashion";
-    return false;
-  }
-
-  return succeeded;
+  return Send(new AutomationMsg_BrowserWindowCount(0, num_windows));
 }
 
 bool AutomationProxy::GetNormalBrowserWindowCount(int* num_windows) {
@@ -267,26 +258,16 @@ bool AutomationProxy::GetNormalBrowserWindowCount(int* num_windows) {
     return false;
   }
 
-  bool succeeded = SendWithTimeout(
-      new AutomationMsg_NormalBrowserWindowCount(0, num_windows),
-      command_execution_timeout_ms(), NULL);
-
-  if (!succeeded) {
-    DLOG(ERROR) << "GetNormalWindowCount did not complete in a timely fashion";
-    return false;
-  }
-
-  return succeeded;
+  return Send(new AutomationMsg_NormalBrowserWindowCount(0, num_windows));
 }
 
-bool AutomationProxy::WaitForWindowCountToBecome(int count,
-                                                 int wait_timeout) {
+bool AutomationProxy::WaitForWindowCountToBecome(int count) {
   bool wait_success = false;
-  bool send_success = SendWithTimeout(
-      new AutomationMsg_WaitForBrowserWindowCountToBecome(0, count,
-                                                          &wait_success),
-      wait_timeout, NULL);
-  return wait_success && send_success;
+  if (!Send(new AutomationMsg_WaitForBrowserWindowCountToBecome(
+                0, count, &wait_success))) {
+    return false;
+  }
+  return wait_success;
 }
 
 bool AutomationProxy::GetShowingAppModalDialog(
@@ -299,11 +280,8 @@ bool AutomationProxy::GetShowingAppModalDialog(
 
   int button_int = 0;
 
-  if (!SendWithTimeout(
-          new AutomationMsg_ShowingAppModalDialog(
-              0, showing_app_modal_dialog, &button_int),
-          command_execution_timeout_ms(), NULL)) {
-    DLOG(ERROR) << "ShowingAppModalDialog did not complete in a timely fashion";
+  if (!Send(new AutomationMsg_ShowingAppModalDialog(
+                0, showing_app_modal_dialog, &button_int))) {
     return false;
   }
 
@@ -315,22 +293,19 @@ bool AutomationProxy::ClickAppModalDialogButton(
     MessageBoxFlags::DialogButton button) {
   bool succeeded = false;
 
-  if (!SendWithTimeout(
-          new AutomationMsg_ClickAppModalDialogButton(
-              0, button, &succeeded),
-          command_execution_timeout_ms(), NULL)) {
+  if (!Send(new AutomationMsg_ClickAppModalDialogButton(
+                0, button, &succeeded))) {
     return false;
   }
 
   return succeeded;
 }
 
-bool AutomationProxy::WaitForAppModalDialog(int wait_timeout) {
+bool AutomationProxy::WaitForAppModalDialog() {
   bool wait_success = false;
-  bool send_success = SendWithTimeout(
-      new AutomationMsg_WaitForAppModalDialogToBeShown(0, &wait_success),
-      wait_timeout, NULL);
-  return wait_success && send_success;
+  if (!Send(new AutomationMsg_WaitForAppModalDialogToBeShown(0, &wait_success)))
+    return false;
+  return wait_success;
 }
 
 bool AutomationProxy::IsURLDisplayed(GURL url) {
@@ -401,11 +376,8 @@ void AutomationProxy::OnChannelError() {
 
 scoped_refptr<WindowProxy> AutomationProxy::GetActiveWindow() {
   int handle = 0;
-
-  if (!SendWithTimeout(new AutomationMsg_ActiveWindow(0, &handle),
-                       command_execution_timeout_ms(), NULL)) {
+  if (!Send(new AutomationMsg_ActiveWindow(0, &handle)))
     return NULL;
-  }
 
   return ProxyObjectFromHandle<WindowProxy>(handle);
 }
@@ -413,51 +385,32 @@ scoped_refptr<WindowProxy> AutomationProxy::GetActiveWindow() {
 scoped_refptr<BrowserProxy> AutomationProxy::GetBrowserWindow(
     int window_index) {
   int handle = 0;
-
-  if (!SendWithTimeout(new AutomationMsg_BrowserWindow(0, window_index,
-                                                       &handle),
-                       command_execution_timeout_ms(), NULL)) {
-    DLOG(ERROR) << "GetBrowserWindow did not complete in a timely fashion";
+  if (!Send(new AutomationMsg_BrowserWindow(0, window_index, &handle)))
     return NULL;
-  }
 
   return ProxyObjectFromHandle<BrowserProxy>(handle);
 }
 
 bool AutomationProxy::GetBrowserLocale(string16* locale) {
   DCHECK(locale != NULL);
-  if (!SendWithTimeout(new AutomationMsg_GetBrowserLocale(0, locale),
-                       command_execution_timeout_ms(), NULL)) {
-    DLOG(ERROR) << "GetBrowserLocale did not complete in a timely fashion";
+  if (!Send(new AutomationMsg_GetBrowserLocale(0, locale)))
     return false;
-  }
 
-  // An empty locale means that the browser has no UI language
-  // which is impossible.
-  DCHECK(!locale->empty());
   return !locale->empty();
 }
 
 scoped_refptr<BrowserProxy> AutomationProxy::FindNormalBrowserWindow() {
   int handle = 0;
-
-  if (!SendWithTimeout(new AutomationMsg_FindNormalBrowserWindow(0, &handle),
-                       command_execution_timeout_ms(), NULL)) {
+  if (!Send(new AutomationMsg_FindNormalBrowserWindow(0, &handle)))
     return NULL;
-  }
 
   return ProxyObjectFromHandle<BrowserProxy>(handle);
 }
 
 scoped_refptr<BrowserProxy> AutomationProxy::GetLastActiveBrowserWindow() {
   int handle = 0;
-
-  if (!SendWithTimeout(new AutomationMsg_LastActiveBrowserWindow(
-      0, &handle), command_execution_timeout_ms(), NULL)) {
-    DLOG(ERROR) <<
-        "GetLastActiveBrowserWindow did not complete in a timely fashion";
+  if (!Send(new AutomationMsg_LastActiveBrowserWindow(0, &handle)))
     return NULL;
-  }
 
   return ProxyObjectFromHandle<BrowserProxy>(handle);
 }
@@ -473,26 +426,13 @@ base::file_handle_mapping_vector AutomationProxy::fds_to_map() const {
 #endif  // defined(OS_POSIX)
 
 bool AutomationProxy::Send(IPC::Message* message) {
-  return SendWithTimeout(message, base::kNoTimeout, NULL);
-}
-
-bool AutomationProxy::SendWithTimeout(IPC::Message* message, int timeout,
-                                      bool* is_timeout) {
-  // DCHECK_EQ(listener_thread_id_, PlatformThread::CurrentId());
-
-  if (is_timeout)
-    *is_timeout = false;
-
-  if (channel_.get()) {
-    bool result = channel_->SendWithTimeout(message, timeout);
-    if (!result && is_timeout)
-      *is_timeout = true;
-    return result;
+  if (!channel_.get()) {
+    LOG(ERROR) << "Automation channel has been closed; dropping message!";
+    delete message;
+    return false;
   }
 
-  DLOG(WARNING) << "Channel has been closed; dropping message!";
-  delete message;
-  return false;
+  return channel_->SendWithTimeout(message, command_execution_timeout_ms());
 }
 
 void AutomationProxy::InvalidateHandle(const IPC::Message& message) {

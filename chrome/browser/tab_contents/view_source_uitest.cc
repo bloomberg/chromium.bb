@@ -20,12 +20,13 @@ class ViewSourceTest : public UITest {
 
   bool IsPageMenuCommandEnabled(int command) {
     scoped_refptr<BrowserProxy> window_proxy(automation()->GetBrowserWindow(0));
+    EXPECT_TRUE(window_proxy.get());
     if (!window_proxy.get())
       return false;
 
-    bool timed_out;
-    return window_proxy->IsPageMenuCommandEnabledWithTimeout(
-        command, 5000, &timed_out) && !timed_out;
+    bool enabled;
+    EXPECT_TRUE(window_proxy->IsPageMenuCommandEnabled(command, &enabled));
+    return enabled;
   }
 
  protected:

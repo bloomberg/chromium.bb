@@ -78,12 +78,6 @@ class WindowProxy : public AutomationResourceProxy {
   // of the screen, if false in the coordinates of the browser.
   bool GetViewBounds(int view_id, gfx::Rect* bounds, bool screen_coordinates);
 
-  // Like GetViewBounds except returns false if timeout occurs before view
-  // bounds are obtained, and sets is_timeout accordingly.
-  bool GetViewBoundsWithTimeout(int view_id, gfx::Rect* bounds,
-                                bool screen_coordinates, uint32 timeout_ms,
-                                bool* is_timeout);
-
   // Gets the position and size of the window. Returns true if setting the
   // bounds was successful.
   bool GetBounds(gfx::Rect* bounds);

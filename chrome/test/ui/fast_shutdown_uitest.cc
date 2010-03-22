@@ -41,7 +41,7 @@ TEST_F(FastShutdown, DISABLED_SlowTermination) {
   // Close the browser. We should launch the unload handler, which is an
   // alert().
   ASSERT_TRUE(browser->ApplyAccelerator(IDC_CLOSE_WINDOW));
-  ASSERT_TRUE(automation()->WaitForAppModalDialog(action_max_timeout_ms()));
+  ASSERT_TRUE(automation()->WaitForAppModalDialog());
   ASSERT_TRUE(automation()->ClickAppModalDialogButton(
                   MessageBoxFlags::DIALOGBUTTON_OK));
 }

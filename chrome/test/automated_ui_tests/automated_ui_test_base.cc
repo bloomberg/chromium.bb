@@ -38,16 +38,8 @@ bool AutomatedUITestBase::BackButton() {
 bool AutomatedUITestBase::CloseActiveTab() {
   BrowserProxy* browser = active_browser();
   int tab_count;
-  bool is_timeout;
-  if (!browser->GetTabCountWithTimeout(&tab_count,
-                                       action_max_timeout_ms(),
-                                       &is_timeout)) {
-    LogErrorMessage("get_tab_count_with_timeout_failed");
-    return false;
-  }
-
-  if (is_timeout) {
-    LogInfoMessage("get_tab_count_timed_out");
+  if (!browser->GetTabCount(&tab_count)) {
+    LogErrorMessage("get_tab_count_failed");
     return false;
   }
 
@@ -101,13 +93,10 @@ bool AutomatedUITestBase::DragTabOut() {
     LogErrorMessage("active_window_not_found");
     return false;
   }
-  bool is_timeout;
 
   int tab_count;
-  if (!browser->GetTabCountWithTimeout(&tab_count,
-                                       action_max_timeout_ms(),
-                                       &is_timeout)) {
-    LogErrorMessage("get_tab_count_with_timeout_failed");
+  if (!browser->GetTabCount(&tab_count)) {
+    LogErrorMessage("get_tab_count_failed");
     return false;
   }
 
@@ -117,9 +106,7 @@ bool AutomatedUITestBase::DragTabOut() {
   }
 
   int tab_index;
-  if (!browser->GetActiveTabIndexWithTimeout(&tab_index,
-                                             action_max_timeout_ms(),
-                                             &is_timeout)) {
+  if (!browser->GetActiveTabIndex(&tab_index)) {
     LogWarningMessage("no_active_tab");
     return false;
   }
@@ -130,19 +117,15 @@ bool AutomatedUITestBase::DragTabOut() {
   }
 
   gfx::Rect dragged_tab_bounds;
-  if (!window->GetViewBoundsWithTimeout(VIEW_ID_TAB_0 + tab_index,
-                                        &dragged_tab_bounds, false,
-                                        action_max_timeout_ms(),
-                                        &is_timeout)) {
+  if (!window->GetViewBounds(VIEW_ID_TAB_0 + tab_index,
+                             &dragged_tab_bounds, false)) {
     LogWarningMessage("no_tab_view_found");
     return false;
   }
 
   gfx::Rect urlbar_bounds;
-  if (!window->GetViewBoundsWithTimeout(VIEW_ID_LOCATION_BAR,
-                                        &urlbar_bounds, false,
-                                        action_max_timeout_ms(),
-                                        &is_timeout)) {
+  if (!window->GetViewBounds(VIEW_ID_LOCATION_BAR,
+                             &urlbar_bounds, false)) {
     LogWarningMessage("no_location_bar_found");
     return false;
   }
@@ -155,10 +138,8 @@ bool AutomatedUITestBase::DragTabOut() {
   end.set_x(start.x());
   end.set_y(start.y() + 3 * urlbar_bounds.height());
 
-  if (!browser->SimulateDragWithTimeout(start, end,
-                                        views::Event::EF_LEFT_BUTTON_DOWN,
-                                        action_max_timeout_ms(),
-                                        &is_timeout, false)) {
+  if (!browser->SimulateDrag(start, end, views::Event::EF_LEFT_BUTTON_DOWN,
+                             false)) {
     LogWarningMessage("failed_to_simulate_drag");
     return false;
   }
@@ -179,13 +160,10 @@ bool AutomatedUITestBase::DragActiveTab(bool drag_right) {
     LogErrorMessage("active_window_not_found");
     return false;
   }
-  bool is_timeout;
 
   int tab_count;
-  if (!browser->GetTabCountWithTimeout(&tab_count,
-                                       action_max_timeout_ms(),
-                                       &is_timeout)) {
-    LogErrorMessage("get_tab_cound_with_timeout_failed");
+  if (!browser->GetTabCount(&tab_count)) {
+    LogErrorMessage("get_tab_count_failed");
     return false;
   }
 
@@ -195,18 +173,14 @@ bool AutomatedUITestBase::DragActiveTab(bool drag_right) {
   }
 
   int tab_index;
-  if (!browser->GetActiveTabIndexWithTimeout(&tab_index,
-                                             action_max_timeout_ms(),
-                                             &is_timeout)) {
+  if (!browser->GetActiveTabIndex(&tab_index)) {
     LogWarningMessage("no_active_tab");
     return false;
   }
 
   gfx::Rect dragged_tab_bounds;
-  if (!window->GetViewBoundsWithTimeout(VIEW_ID_TAB_0 + tab_index,
-                                        &dragged_tab_bounds, false,
-                                        action_max_timeout_ms(),
-                                        &is_timeout)) {
+  if (!window->GetViewBounds(VIEW_ID_TAB_0 + tab_index,
+                             &dragged_tab_bounds, false)) {
     LogWarningMessage("no_tab_view_found");
     return false;
   }
@@ -232,11 +206,8 @@ bool AutomatedUITestBase::DragActiveTab(bool drag_right) {
     destination_point.Offset(-2 * dragged_tab_bounds.width() / 3, 0);
   }
 
-  if (!browser->SimulateDragWithTimeout(dragged_tab_point,
-                                        destination_point,
-                                        views::Event::EF_LEFT_BUTTON_DOWN,
-                                        action_max_timeout_ms(),
-                                        &is_timeout, false)) {
+  if (!browser->SimulateDrag(dragged_tab_point, destination_point,
+                             views::Event::EF_LEFT_BUTTON_DOWN, false)) {
     LogWarningMessage("failed_to_simulate_drag");
     return false;
   }
@@ -288,9 +259,7 @@ bool AutomatedUITestBase::OpenAndActivateNewBrowserWindow(
     LogErrorMessage("browser_window_not_found");
     return false;
   }
-  bool is_timeout;
-  if (!browser->ActivateTabWithTimeout(0, action_max_timeout_ms(),
-                                       &is_timeout)) {
+  if (!browser->ActivateTab(0)) {
     LogWarningMessage("failed_to_activate_tab");
     return false;
   }
@@ -310,19 +279,12 @@ bool AutomatedUITestBase::Navigate(const GURL& url) {
     LogErrorMessage("active_tab_not_found");
     return false;
   }
-  bool did_timeout = false;
-  AutomationMsg_NavigationResponseValues result =
-      tab->NavigateToURLWithTimeout(url, 1, action_max_timeout_ms(),
-                                    &did_timeout);
+  AutomationMsg_NavigationResponseValues result = tab->NavigateToURL(url);
   if (result != AUTOMATION_MSG_NAVIGATION_SUCCESS) {
     LogErrorMessage("navigation_failed");
     return false;
   }
 
-  if (did_timeout) {
-    LogWarningMessage("timeout");
-    return false;
-  }
   return true;
 }
 
@@ -410,19 +372,12 @@ scoped_refptr<TabProxy> AutomatedUITestBase::GetActiveTab() {
     return false;
   }
 
-  bool did_timeout;
-  scoped_refptr<TabProxy> tab =
-      browser->GetActiveTabWithTimeout(action_max_timeout_ms(), &did_timeout);
-  if (did_timeout)
-    return NULL;
-  return tab;
+  return browser->GetActiveTab();
 }
 
 scoped_refptr<WindowProxy> AutomatedUITestBase::GetAndActivateWindowForBrowser(
     BrowserProxy* browser) {
-  bool did_timeout;
-  if (!browser->BringToFrontWithTimeout(action_max_timeout_ms(),
-                                        &did_timeout)) {
+  if (!browser->BringToFront()) {
     LogWarningMessage("failed_to_bring_window_to_front");
     return NULL;
   }

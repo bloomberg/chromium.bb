@@ -539,12 +539,9 @@ void UITestBase::NavigateToURLBlockUntilNavigationsComplete(
     const GURL& url, int number_of_navigations) {
   scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
   ASSERT_TRUE(tab_proxy.get());
-  bool is_timeout = true;
   EXPECT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
-            tab_proxy->NavigateToURLWithTimeout(
-                url, number_of_navigations, action_max_timeout_ms(),
-                &is_timeout)) << url.spec();
-  ASSERT_FALSE(is_timeout) << url.spec();
+            tab_proxy->NavigateToURLBlockUntilNavigationsComplete(
+                url, number_of_navigations)) << url.spec();
 }
 
 void UITestBase::NavigateToURLBlockUntilNavigationsComplete(
@@ -555,12 +552,9 @@ void UITestBase::NavigateToURLBlockUntilNavigationsComplete(
   ASSERT_TRUE(window.get());
   scoped_refptr<TabProxy> tab_proxy(window->GetTab(tab_index));
   ASSERT_TRUE(tab_proxy.get());
-  bool is_timeout = true;
   EXPECT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
-            tab_proxy->NavigateToURLWithTimeout(
-                url, number_of_navigations, action_max_timeout_ms(),
-                &is_timeout)) << url.spec();
-  ASSERT_FALSE(is_timeout) << url.spec();
+            tab_proxy->NavigateToURLBlockUntilNavigationsComplete(
+                url, number_of_navigations)) << url.spec();
 }
 
 bool UITestBase::WaitForDownloadShelfVisible(BrowserProxy* browser) {

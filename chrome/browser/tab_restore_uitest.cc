@@ -283,8 +283,7 @@ TEST_F(TabRestoreUITest, MAYBE_BasicRestoreFromClosedWindow) {
 
   // Close the final tab in the first browser.
   EXPECT_TRUE(tab_proxy->Close(true));
-  ASSERT_TRUE(automation()->WaitForWindowCountToBecome(
-      1, action_max_timeout_ms()));
+  ASSERT_TRUE(automation()->WaitForWindowCountToBecome(1));
 
   // Tab and browser are no longer valid.
   tab_proxy = NULL;
@@ -333,12 +332,10 @@ TEST_F(TabRestoreUITest, DISABLED_DontLoadRestoredTab) {
   ASSERT_EQ(current_tab_count, starting_tab_count + 2);
 
   // Make sure that there's nothing else to restore.
-  bool is_timeout = false;
-  bool enabled =
-    browser_proxy->IsPageMenuCommandEnabledWithTimeout(IDC_RESTORE_TAB,
-        action_max_timeout_ms(), &is_timeout);
-  if (!is_timeout)
-    ASSERT_FALSE(enabled);
+  bool enabled;
+  ASSERT_TRUE(browser_proxy->IsPageMenuCommandEnabled(IDC_RESTORE_TAB,
+                                                      &enabled));
+  EXPECT_FALSE(enabled);
 }
 
 // Open a window with multiple tabs, close a tab, then close the window.
@@ -434,8 +431,7 @@ TEST_F(TabRestoreUITest, RestoreIntoSameWindow) {
   tab_proxy = browser_proxy->GetTab(0);
   ASSERT_TRUE(tab_proxy.get());
   EXPECT_TRUE(tab_proxy->Close(true));
-  ASSERT_TRUE(automation()->WaitForWindowCountToBecome(
-      1, action_max_timeout_ms()));
+  ASSERT_TRUE(automation()->WaitForWindowCountToBecome(1));
   browser_proxy = NULL;
   tab_proxy = NULL;
 

@@ -105,10 +105,8 @@ class WorkerTest : public UILayoutTest {
   bool NavigateAndWaitForAuth(TabProxy* tab, const GURL& url) {
     // Pass a large number of navigations to tell the tab to block until an auth
     // dialog pops up.
-    bool timeout = false;
     EXPECT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
-        tab->NavigateToURLWithTimeout(url, 100, kTestWaitTimeoutMs, &timeout));
-    EXPECT_FALSE(timeout);
+              tab->NavigateToURLBlockUntilNavigationsComplete(url, 100));
     return tab->NeedsAuth();
   }
 };

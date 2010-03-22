@@ -75,14 +75,6 @@ bool WindowProxy::Activate() {
 
 bool WindowProxy::GetViewBounds(int view_id, gfx::Rect* bounds,
                                 bool screen_coordinates) {
-  return GetViewBoundsWithTimeout(view_id, bounds, screen_coordinates,
-                                  base::kNoTimeout, NULL);
-}
-
-bool WindowProxy::GetViewBoundsWithTimeout(int view_id, gfx::Rect* bounds,
-                                           bool screen_coordinates,
-                                           uint32 timeout_ms,
-                                           bool* is_timeout) {
   if (!is_valid())
     return false;
 
@@ -93,9 +85,10 @@ bool WindowProxy::GetViewBoundsWithTimeout(int view_id, gfx::Rect* bounds,
 
   bool result = false;
 
-  sender_->SendWithTimeout(new AutomationMsg_WindowViewBounds(
-      0, handle_, view_id, screen_coordinates, &result, bounds),
-      timeout_ms, is_timeout);
+  if (!sender_->Send(new AutomationMsg_WindowViewBounds(
+          0, handle_, view_id, screen_coordinates, &result, bounds))) {
+    return false;
+  }
 
   return result;
 }

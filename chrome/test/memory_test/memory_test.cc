@@ -189,7 +189,7 @@ class MemoryTest : public UITest {
                                                        show_window_));
         int expected_window_count = window_count + 1;
         EXPECT_TRUE(automation()->WaitForWindowCountToBecome(
-            expected_window_count, 500));
+            expected_window_count));
         EXPECT_TRUE(automation()->GetBrowserWindowCount(&window_count));
         EXPECT_EQ(expected_window_count, window_count);
 
@@ -214,12 +214,8 @@ class MemoryTest : public UITest {
         continue;
       }
 
-      const int kMaxWaitTime = 5000;
-      bool timed_out = false;
       EXPECT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
-          tab->NavigateToURLWithTimeout(GURL(urls[counter]), 1, kMaxWaitTime,
-                                        &timed_out));
-      EXPECT_FALSE(timed_out);
+          tab->NavigateToURL(GURL(urls[counter])));
 
       // TODO(mbelshe): Bug 2953
       // The automation crashes periodically if we cycle too quickly.

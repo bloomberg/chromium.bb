@@ -128,7 +128,7 @@ TEST_F(NPAPITester, DISABLED_SelfDeletePluginInvokeAlert) {
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
 
   // Wait for the alert dialog and then close it.
-  ASSERT_TRUE(automation()->WaitForAppModalDialog(5000));
+  ASSERT_TRUE(automation()->WaitForAppModalDialog());
   scoped_refptr<WindowProxy> window(automation()->GetActiveWindow());
   ASSERT_TRUE(window.get());
   ASSERT_TRUE(window->SimulateOSKeyPress(base::VKEY_ESCAPE, 0));
@@ -200,7 +200,7 @@ TEST_F(NPAPIVisiblePluginTester, AlertInWindowMessage) {
 
   bool modal_dialog_showing = false;
   MessageBoxFlags::DialogButton available_buttons;
-  ASSERT_TRUE(automation()->WaitForAppModalDialog(kShortWaitTimeout));
+  ASSERT_TRUE(automation()->WaitForAppModalDialog());
   ASSERT_TRUE(automation()->GetShowingAppModalDialog(&modal_dialog_showing,
       &available_buttons));
   ASSERT_TRUE(modal_dialog_showing);
@@ -209,7 +209,7 @@ TEST_F(NPAPIVisiblePluginTester, AlertInWindowMessage) {
       MessageBoxFlags::DIALOGBUTTON_OK));
 
   modal_dialog_showing = false;
-  ASSERT_TRUE(automation()->WaitForAppModalDialog(kShortWaitTimeout));
+  ASSERT_TRUE(automation()->WaitForAppModalDialog());
   ASSERT_TRUE(automation()->GetShowingAppModalDialog(&modal_dialog_showing,
       &available_buttons));
   ASSERT_TRUE(modal_dialog_showing);
