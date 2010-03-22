@@ -398,6 +398,10 @@ const char kHostResolverRules[]             = "host-resolver-rules";
 // setting encodes the target browser and what items to import.
 const char kImport[]                        = "import";
 
+// Perform bookmark importing from an HTML file. The value associated with this
+// setting encodes the file path. It may be used jointly with kImport.
+const char kImportFromFile[]                = "import-from-file";
+
 // Runs plugins inside the renderer process
 const char kInProcessPlugins[]              = "in-process-plugins";
 

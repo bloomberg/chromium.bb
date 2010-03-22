@@ -45,10 +45,9 @@ class FirstRun {
   // Creates the quick launch shortcut to chrome for the current user. Returns
   // false if it fails. It will overwrite the shortcut if it exists.
   static bool CreateChromeQuickLaunchShortcut();
-  // Import browser items in this process. The browser and the items to
-  // import are encoded int the command line. This function is paired with
-  // FirstRun::ImportSettings(). This function might or might not show
-  // a visible UI depending on the cmdline parameters.
+  // Import bookmarks and browser items in this process. This function is
+  // paired with FirstRun::ImportSettings(). This function might or might not
+  // show a visible UI depending on the cmdline parameters.
   static int ImportNow(Profile* profile, const CommandLine& cmdline);
 #endif  // OS_WIN
 
@@ -100,6 +99,14 @@ class FirstRun {
   static bool SetShowWelcomePagePref();
 
  private:
+#if defined(OS_WIN)
+  // Import bookmarks from an html file. The path to the file is provided in
+  // the command line.
+  static int ImportFromFile(Profile* profile, const CommandLine& cmdline);
+  // Import browser items in this process. The browser and the items to
+  // import are encoded int the command line.
+  static int ImportFromBrowser(Profile* profile, const CommandLine& cmdline);
+#endif  // OS_WIN
   // This class is for scoping purposes.
   DISALLOW_IMPLICIT_CONSTRUCTORS(FirstRun);
 };

@@ -672,7 +672,36 @@ bool FirstRun::ImportSettings(Profile* profile, int browser_type,
   return (import_runner.exit_code() == ResultCodes::NORMAL_EXIT);
 }
 
-int FirstRun::ImportNow(Profile* profile, const CommandLine& cmdline) {
+int FirstRun::ImportFromFile(Profile* profile, const CommandLine& cmdline) {
+  std::wstring file_path = cmdline.GetSwitchValue(switches::kImportFromFile);
+  if (file_path.empty()) {
+    NOTREACHED();
+    return false;
+  }
+  scoped_refptr<ImporterHost> importer_host = new ImporterHost();
+  FirstRunImportObserver observer;
+
+  importer_host->set_headless();
+
+  ProfileInfo profile_info;
+  profile_info.browser_type = importer::BOOKMARKS_HTML;
+  profile_info.source_path = file_path;
+
+  StartImportingWithUI(
+      NULL,
+      importer::FAVORITES,
+      importer_host,
+      profile_info,
+      profile,
+      &observer,
+      true);
+
+  observer.RunLoop();
+  return observer.import_result();
+}
+
+int FirstRun::ImportFromBrowser(Profile* profile,
+                                const CommandLine& cmdline) {
   std::wstring import_info = cmdline.GetSwitchValue(switches::kImport);
   if (import_info.empty()) {
     NOTREACHED();
@@ -705,6 +734,19 @@ int FirstRun::ImportNow(Profile* profile, const CommandLine& cmdline) {
       true);
   observer.RunLoop();
   return observer.import_result();
+}
+
+int FirstRun::ImportNow(Profile* profile, const CommandLine& cmdline) {
+  int return_code = true;
+  if (cmdline.HasSwitch(switches::kImportFromFile)) {
+    // Silently import preset bookmarks from file.
+    // This is an OEM scenario.
+    return_code = ImportFromFile(profile, cmdline);
+  }
+  if (cmdline.HasSwitch(switches::kImport)) {
+    return_code = ImportFromBrowser(profile, cmdline);
+  }
+  return return_code;
 }
 
 //////////////////////////////////////////////////////////////////////////

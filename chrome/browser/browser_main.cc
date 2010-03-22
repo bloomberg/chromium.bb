@@ -495,7 +495,8 @@ int BrowserMain(const MainFunctionParams& parameters) {
       parsed_command_line.HasSwitch(switches::kFirstRun);
 
   scoped_ptr<BrowserProcessImpl> browser_process;
-  if (parsed_command_line.HasSwitch(switches::kImport)) {
+  if (parsed_command_line.HasSwitch(switches::kImport) ||
+      parsed_command_line.HasSwitch(switches::kImportFromFile)) {
     // We use different BrowserProcess when importing so no GoogleURLTracker is
     // instantiated (as it makes a URLRequest and we don't have an IO thread,
     // see bug #1292702).
@@ -817,7 +818,8 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // Importing other browser settings is done in a browser-like process
   // that exits when this task has finished.
 #if defined(OS_WIN)
-  if (parsed_command_line.HasSwitch(switches::kImport))
+  if (parsed_command_line.HasSwitch(switches::kImport) ||
+      parsed_command_line.HasSwitch(switches::kImportFromFile))
     return FirstRun::ImportNow(profile, parsed_command_line);
 #endif
 
