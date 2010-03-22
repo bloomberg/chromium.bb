@@ -159,7 +159,7 @@ Directory::Kernel::Kernel(const FilePath& db_path,
                           const KernelLoadInfo& info)
     : db_path(db_path),
       refcount(1),
-      name_(name),
+      name(name),
       metahandles_index(new Directory::MetahandlesIndex),
       ids_index(new Directory::IdsIndex),
       parent_id_child_index(new Directory::ParentIdChildIndex),
@@ -170,13 +170,10 @@ Directory::Kernel::Kernel(const FilePath& db_path,
       dirty_metahandles(new MetahandleSet),
       channel(new Directory::Channel(syncable::DIRECTORY_DESTROYED)),
       changes_channel(new Directory::ChangesChannel(kShutdownChangesEvent)),
-      last_sync_timestamp_(info.kernel_info.last_sync_timestamp),
-      initial_sync_ended_(info.kernel_info.initial_sync_ended),
-      store_birthday_(info.kernel_info.store_birthday),
-      cache_guid_(info.cache_guid),
-      next_metahandle(info.max_metahandle + 1),
-      next_id(info.kernel_info.next_id) {
-  info_status_ = Directory::KERNEL_SHARE_INFO_VALID;
+      info_status(Directory::KERNEL_SHARE_INFO_VALID),
+      persisted_info(info.kernel_info),
+      cache_guid(info.cache_guid),
+      next_metahandle(info.max_metahandle + 1) {
 }
 
 inline void DeleteEntry(EntryKernel* kernel) {
@@ -531,18 +528,15 @@ void Directory::TakeSnapshotForSaveChanges(SaveChangesSnapshot* snapshot) {
   }
 
   // Fill kernel_info_status and kernel_info.
-  PersistedKernelInfo& info = snapshot->kernel_info;
-  info.initial_sync_ended = kernel_->initial_sync_ended_;
-  info.last_sync_timestamp = kernel_->last_sync_timestamp_;
+  snapshot->kernel_info = kernel_->persisted_info;
   // To avoid duplicates when the process crashes, we record the next_id to be
   // greater magnitude than could possibly be reached before the next save
   // changes.  In other words, it's effectively impossible for the user to
   // generate 65536 new bookmarks in 3 seconds.
-  info.next_id = kernel_->next_id - 65536;
-  info.store_birthday = kernel_->store_birthday_;
-  snapshot->kernel_info_status = kernel_->info_status_;
+  snapshot->kernel_info.next_id -= 65536;
+  snapshot->kernel_info_status = kernel_->info_status;
   // This one we reset on failure.
-  kernel_->info_status_ = KERNEL_SHARE_INFO_VALID;
+  kernel_->info_status = KERNEL_SHARE_INFO_VALID;
 }
 
 bool Directory::SaveChanges() {
@@ -568,7 +562,7 @@ void Directory::VacuumAfterSaveChanges(const SaveChangesSnapshot& snapshot) {
   // Need a write transaction as we are about to permanently purge entries.
   WriteTransaction trans(this, VACUUM_AFTER_SAVE, __FILE__, __LINE__);
   ScopedKernelLock lock(this);
-  kernel_->flushed_metahandles_.Push(0);  // Begin flush marker
+  kernel_->flushed_metahandles.Push(0);  // Begin flush marker
   // Now drop everything we can out of memory.
   for (OriginalEntries::const_iterator i = snapshot.dirty_metas.begin();
        i != snapshot.dirty_metas.end(); ++i) {
@@ -581,7 +575,7 @@ void Directory::VacuumAfterSaveChanges(const SaveChangesSnapshot& snapshot) {
       // We now drop deleted metahandles that are up to date on both the client
       // and the server.
       size_t num_erased = 0;
-      kernel_->flushed_metahandles_.Push(entry->ref(META_HANDLE));
+      kernel_->flushed_metahandles.Push(entry->ref(META_HANDLE));
       num_erased = kernel_->ids_index->erase(entry);
       DCHECK(1 == num_erased);
       num_erased = kernel_->metahandles_index->erase(entry);
@@ -609,7 +603,7 @@ void Directory::VacuumAfterSaveChanges(const SaveChangesSnapshot& snapshot) {
 
 void Directory::HandleSaveChangesFailure(const SaveChangesSnapshot& snapshot) {
   ScopedKernelLock lock(this);
-  kernel_->info_status_ = KERNEL_SHARE_INFO_DIRTY;
+  kernel_->info_status = KERNEL_SHARE_INFO_DIRTY;
 
   // Because we optimistically cleared the dirty bit on the real entries when
   // taking the snapshot, we must restore it on failure.  Not doing this could
@@ -638,46 +632,46 @@ void Directory::HandleSaveChangesFailure(const SaveChangesSnapshot& snapshot) {
 
 int64 Directory::last_sync_timestamp() const {
   ScopedKernelLock lock(this);
-  return kernel_->last_sync_timestamp_;
+  return kernel_->persisted_info.last_sync_timestamp;
 }
 
 void Directory::set_last_sync_timestamp(int64 timestamp) {
   ScopedKernelLock lock(this);
-  if (kernel_->last_sync_timestamp_ == timestamp)
+  if (kernel_->persisted_info.last_sync_timestamp == timestamp)
     return;
-  kernel_->last_sync_timestamp_ = timestamp;
-  kernel_->info_status_ = KERNEL_SHARE_INFO_DIRTY;
+  kernel_->persisted_info.last_sync_timestamp = timestamp;
+  kernel_->info_status = KERNEL_SHARE_INFO_DIRTY;
 }
 
 bool Directory::initial_sync_ended() const {
   ScopedKernelLock lock(this);
-  return kernel_->initial_sync_ended_;
+  return kernel_->persisted_info.initial_sync_ended;
 }
 
 void Directory::set_initial_sync_ended(bool x) {
   ScopedKernelLock lock(this);
-  if (kernel_->initial_sync_ended_ == x)
+  if (kernel_->persisted_info.initial_sync_ended == x)
     return;
-  kernel_->initial_sync_ended_ = x;
-  kernel_->info_status_ = KERNEL_SHARE_INFO_DIRTY;
+  kernel_->persisted_info.initial_sync_ended = x;
+  kernel_->info_status = KERNEL_SHARE_INFO_DIRTY;
 }
 
 string Directory::store_birthday() const {
   ScopedKernelLock lock(this);
-  return kernel_->store_birthday_;
+  return kernel_->persisted_info.store_birthday;
 }
 
 void Directory::set_store_birthday(string store_birthday) {
   ScopedKernelLock lock(this);
-  if (kernel_->store_birthday_ == store_birthday)
+  if (kernel_->persisted_info.store_birthday == store_birthday)
     return;
-  kernel_->store_birthday_ = store_birthday;
-  kernel_->info_status_ = KERNEL_SHARE_INFO_DIRTY;
+  kernel_->persisted_info.store_birthday = store_birthday;
+  kernel_->info_status = KERNEL_SHARE_INFO_DIRTY;
 }
 
 string Directory::cache_guid() const {
   // No need to lock since nothing ever writes to it after load.
-  return kernel_->cache_guid_;
+  return kernel_->cache_guid;
 }
 
 void Directory::GetAllMetaHandles(BaseTransaction* trans,
@@ -1391,8 +1385,8 @@ Id Directory::NextId() {
   int64 result;
   {
     ScopedKernelLock lock(this);
-    result = (kernel_->next_id)--;
-    kernel_->info_status_ = KERNEL_SHARE_INFO_DIRTY;
+    result = (kernel_->persisted_info.next_id)--;
+    kernel_->info_status = KERNEL_SHARE_INFO_DIRTY;
   }
   DCHECK_LT(result, 0);
   return Id::CreateFromClientString(Int64ToString(result));

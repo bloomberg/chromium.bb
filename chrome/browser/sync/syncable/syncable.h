@@ -657,9 +657,14 @@ class Directory {
   // Various data that the Directory::Kernel we are backing (persisting data
   // for) needs saved across runs of the application.
   struct PersistedKernelInfo {
+    // Last sync timestamp fetched from the server.
     int64 last_sync_timestamp;
+    // true iff we ever reached the end of the changelog.
     bool initial_sync_ended;
+    // The store birthday we were given by the server. Contents are opaque to
+    // the client.
     std::string store_birthday;
+    // The next local ID that has not been used with this cache-GUID.
     int64 next_id;
     PersistedKernelInfo() : last_sync_timestamp(0),
         initial_sync_ended(false),
@@ -721,7 +726,7 @@ class Directory {
   bool initial_sync_ended() const;
   void set_initial_sync_ended(bool value);
 
-  const std::string& name() const { return kernel_->name_; }
+  const std::string& name() const { return kernel_->name; }
 
   // (Account) Store birthday is opaque to the client,
   // so we keep it in the format it is in the proto buffer
@@ -908,17 +913,18 @@ class Directory {
 
     ~Kernel();
 
+    void AddRef();  // For convenience.
+    void Release();
+
     FilePath const db_path;
     // TODO(timsteele): audit use of the member and remove if possible
     volatile base::subtle::AtomicWord refcount;
-    void AddRef();  // For convenience.
-    void Release();
 
     // Implements ReadTransaction / WriteTransaction using a simple lock.
     Lock transaction_mutex;
 
-    // The name of this directory, used as a key into open_files_;
-    std::string const name_;
+    // The name of this directory.
+    std::string const name;
 
     // Protects all members below.
     // The mutex effectively protects all the indices, but not the
@@ -952,31 +958,29 @@ class Directory {
     // releasing the transaction mutex.
     ChangesChannel* const changes_channel;
     Lock changes_channel_mutex;
-    KernelShareInfoStatus info_status_;
-    // These 5 members are backed in the share_info table, and
+    KernelShareInfoStatus info_status;
+
+    // These 3 members are backed in the share_info table, and
     // their state is marked by the flag above.
-    // Last sync timestamp fetched from the server.
-    int64 last_sync_timestamp_;
-    // true iff we ever reached the end of the changelog.
-    bool initial_sync_ended_;
-    // The store birthday we were given by the server. Contents are opaque to
-    // the client.
-    std::string store_birthday_;
+
+    // A structure containing the Directory state that is written back into the
+    // database on SaveChanges.
+    PersistedKernelInfo persisted_info;
+
     // A unique identifier for this account's cache db, used to generate
     // unique server IDs. No need to lock, only written at init time.
-    std::string cache_guid_;
+    std::string cache_guid;
 
     // It doesn't make sense for two threads to run SaveChanges at the same
     // time; this mutex protects that activity.
     Lock save_changes_mutex;
 
-    // The next metahandle and id are protected by kernel mutex.
+    // The next metahandle is protected by kernel mutex.
     int64 next_metahandle;
-    int64 next_id;
 
     // Keep a history of recently flushed metahandles for debugging
     // purposes.  Protected by the save_changes_mutex.
-    DebugQueue<int64, 1000> flushed_metahandles_;
+    DebugQueue<int64, 1000> flushed_metahandles;
   };
 
   Kernel* kernel_;
