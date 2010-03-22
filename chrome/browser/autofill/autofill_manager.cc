@@ -299,7 +299,11 @@ void AutoFillManager::DeterminePossibleFieldTypes(
 void AutoFillManager::HandleSubmit() {
   // If there wasn't enough data to import then we don't want to send an upload
   // to the server.
-  if (!personal_data_->ImportFormData(form_structures_.get(), this))
+  // TODO(jhawkins): Import form data from |form_structures_|.  That will
+  // require querying the FormManager for updated field values.
+  std::vector<FormStructure*> import;
+  import.push_back(upload_form_structure_.get());
+  if (!personal_data_->ImportFormData(import, this))
     return;
 
   UploadFormData();
