@@ -45,14 +45,9 @@ class Label : public View {
   // The view class name.
   static const char kViewClassName[];
 
-  // Create a new label with a default font and empty value
   Label();
-
-  // Create a new label with a default font
   explicit Label(const std::wstring& text);
-
   Label(const std::wstring& text, const gfx::Font& font);
-
   virtual ~Label();
 
   // Overridden to compute the size required to display this label
@@ -66,8 +61,12 @@ class Label : public View {
   // GetPreferredSize().height() if the receiver is not multi-line
   virtual int GetHeightForWidth(int w);
 
+  // Overriden to dirty our text bounds if we're multi-line.
+  virtual void DidChangeBounds(const gfx::Rect& previous,
+                               const gfx::Rect& current);
+
   // Returns views/Label.
-  virtual std::string GetClassName() const;
+  virtual std::string GetClassName() const { return kViewClassName; }
 
   // Overridden to paint
   virtual void Paint(gfx::Canvas* canvas);
@@ -79,11 +78,12 @@ class Label : public View {
   // Set the font.
   void SetFont(const gfx::Font& font);
 
-  // Return the font used by this label
-  gfx::Font GetFont() const;
-
   // Set the label text.
   void SetText(const std::wstring& text);
+
+  // Return the font used by this label.
+  // TODO(pkasting): Convert to unix_hacker() style.
+  gfx::Font GetFont() const { return font_; }
 
   // Return the label text.
   const std::wstring GetText() const;
@@ -95,20 +95,10 @@ class Label : public View {
   const GURL GetURL() const;
 
   // Set the color
-  virtual void SetColor(const SkColor& color);
+  virtual void SetColor(const SkColor& color) { color_ = color; }
 
   // Return a reference to the currently used color
-  virtual SkColor GetColor() const;
-
-  // Set and Get the highlight color
-  virtual void SetHighlightColor(const SkColor& color) {
-    highlight_color_ = color;
-  }
-  virtual SkColor GetHighlightColor() const { return highlight_color_; }
-
-  // Whether to draw highlighted text.
-  virtual bool DrawHighlighted() const { return highlighted_; }
-  virtual void SetDrawHighlighted(bool h);
+  virtual SkColor GetColor() const { return color_; }
 
   // Set horizontal alignment. If the locale is RTL, and the RTL alignment
   // setting is set as USE_UI_ALIGNMENT, the alignment is flipped around.
@@ -120,7 +110,8 @@ class Label : public View {
   // more information.
   void SetHorizontalAlignment(Alignment a);
 
-  Alignment GetHorizontalAlignment() const;
+  // TODO(pkasting): Convert to unix_hacker() style.
+  Alignment GetHorizontalAlignment() const { return horiz_alignment_; }
 
   // Set the RTL alignment mode. The RTL alignment mode is initialized to
   // USE_UI_ALIGNMENT when the label is constructed. USE_UI_ALIGNMENT applies
@@ -129,20 +120,23 @@ class Label : public View {
   // RTL locales. For such labels, we need to set the RTL alignment mode to
   // AUTO_DETECT_ALIGNMENT so that subsequent SetHorizontalAlignment() calls
   // will not flip the label's alignment around.
-  void SetRTLAlignmentMode(RTLAlignmentMode mode);
-
-  RTLAlignmentMode GetRTLAlignmentMode() const;
+  // TODO(pkasting): Convert both of these to unix_hacker() style.
+  void SetRTLAlignmentMode(RTLAlignmentMode mode) {
+    rtl_alignment_mode_ = mode;
+  }
+  RTLAlignmentMode GetRTLAlignmentMode() const { return rtl_alignment_mode_; }
 
   // Set whether the label text can wrap on multiple lines.
   // Default is false.
   void SetMultiLine(bool f);
 
+  // Return whether the label text can wrap on multiple lines.
+  // TODO(pkasting): Convert to unix_hacker() style.
+  bool IsMultiLine() const { return is_multi_line_; }
+
   // Set whether the label text can be split on words.
   // Default is false. This only works when is_multi_line is true.
   void SetAllowCharacterBreak(bool f);
-
-  // Return whether the label text can wrap on multiple lines
-  bool IsMultiLine();
 
   // Sets the tooltip text.  Default behavior for a label (single-line) is to
   // show the full text if it is wider than its bounds.  Calling this overrides
@@ -195,9 +189,8 @@ class Label : public View {
   void set_paint_as_focused(bool paint_as_focused) {
     paint_as_focused_ = paint_as_focused;
   }
-  void set_has_focus_border(bool has_focus_border) {
-    has_focus_border_ = has_focus_border;
-  }
+
+  void SetHasFocusBorder(bool has_focus_border);
 
  private:
   // These tests call CalculateDrawStringParams in order to verify the
@@ -207,10 +200,12 @@ class Label : public View {
 
   static gfx::Font GetDefaultFont();
 
+  void Init(const std::wstring& text, const gfx::Font& font);
+
   // Returns parameters to be used for the DrawString call.
   void CalculateDrawStringParams(std::wstring* paint_text,
                                  gfx::Rect* text_bounds,
-                                 int* flags);
+                                 int* flags) const;
 
   // If the mouse is over the text, SetContainsMouse(true) is invoked, otherwise
   // SetContainsMouse(false) is invoked.
@@ -222,11 +217,13 @@ class Label : public View {
   void SetContainsMouse(bool contains_mouse);
 
   // Returns where the text is drawn, in the receivers coordinate system.
-  gfx::Rect GetTextBounds();
+  gfx::Rect GetTextBounds() const;
 
-  int ComputeMultiLineFlags();
-  gfx::Size GetTextSize();
-  void Init(const std::wstring& text, const gfx::Font& font);
+  gfx::Size GetTextSize() const;
+
+  int ComputeMultiLineFlags() const;
+
+  gfx::Rect GetAvailableRect() const;
 
   // The colors to use for enabled and disabled labels.
   static SkColor kEnabledColor, kDisabledColor;
@@ -235,9 +232,8 @@ class Label : public View {
   GURL url_;
   gfx::Font font_;
   SkColor color_;
-  SkColor highlight_color_;
-  gfx::Size text_size_;
-  bool text_size_valid_;
+  mutable gfx::Size text_size_;
+  mutable bool text_size_valid_;
   bool is_multi_line_;
   bool allow_character_break_;
   bool url_set_;
@@ -259,8 +255,6 @@ class Label : public View {
   // allows this view to reserve space for a focus border that it otherwise
   // might not have because it is not itself focusable.
   bool has_focus_border_;
-  // Whether the text is drawn with an inset highlight.
-  bool highlighted_;
 
   DISALLOW_COPY_AND_ASSIGN(Label);
 };

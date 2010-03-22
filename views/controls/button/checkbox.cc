@@ -207,7 +207,7 @@ void Checkbox::Init(const std::wstring& label_text) {
   // Checkboxs don't need to enforce a minimum size.
   set_ignore_minimum_size(true);
   label_ = new Label(label_text);
-  label_->set_has_focus_border(true);
+  label_->SetHasFocusBorder(true);
   label_->SetHorizontalAlignment(Label::ALIGN_LEFT);
   AddChildView(label_);
 }
