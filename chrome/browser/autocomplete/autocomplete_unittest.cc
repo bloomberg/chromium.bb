@@ -280,6 +280,22 @@ TEST(AutocompleteTest, InputType) {
   }
 }
 
+TEST(AutocompleteTest, InputTypeWithDesiredTLD) {
+  struct test_data {
+    const wchar_t* input;
+    const AutocompleteInput::Type type;
+  } input_cases[] = {
+    { L"401k", AutocompleteInput::REQUESTED_URL },
+    { L"999999999999999", AutocompleteInput::REQUESTED_URL },
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(input_cases); ++i) {
+    AutocompleteInput input(input_cases[i].input, L"com", true, false, false);
+    EXPECT_EQ(input_cases[i].type, input.type()) << "Input: " <<
+        input_cases[i].input;
+  }
+}
+
 // This tests for a regression where certain input in the omnibox caused us to
 // crash. As long as the test completes without crashing, we're fine.
 TEST(AutocompleteTest, InputCrash) {

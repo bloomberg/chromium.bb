@@ -283,6 +283,7 @@ TEST(URLFixerUpperTest, FixupURL) {
     {"http://google", "com", "http://www.google.com/"},
     {"..google..", "com", "http://www.google.com/"},
     {"http://www.google", "com", "http://www.google.com/"},
+    {"9999999999999999", "com", "http://www.9999999999999999.com/"},
     {"google/foo", "com", "http://www.google.com/foo"},
     {"google.com/foo", "com", "http://google.com/foo"},
     {"google/?foo=.com", "com", "http://www.google.com/?foo=.com"},

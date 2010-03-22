@@ -172,8 +172,22 @@ AutocompleteInput::Type AutocompleteInput::Parse(
   const std::wstring host(text.substr(parts->host.begin, parts->host.len));
   const size_t registry_length =
       net::RegistryControlledDomainService::GetRegistryLength(host, false);
-  if (registry_length == std::wstring::npos)
+  if (registry_length == std::wstring::npos) {
+    // Try to append the desired_tld.
+    if (!desired_tld.empty()) {
+      std::wstring host_with_tld(host);
+      if (host[host.length() - 1] != '.')
+        host_with_tld += '.';
+      host_with_tld += desired_tld;
+      if (net::RegistryControlledDomainService::GetRegistryLength(
+          host_with_tld, false) != std::wstring::npos)
+        return REQUESTED_URL;  // Something like "99999999999" that looks like a
+                               // bad IP address, but becomes valid on attaching
+                               // a TLD.
+    }
     return QUERY;  // Could be a broken IP address, etc.
+  }
+
 
   // See if the hostname is valid.  While IE and GURL allow hostnames to contain
   // many other characters (perhaps for weird intranet machines), it's extremely
@@ -182,7 +196,8 @@ AutocompleteInput::Type AutocompleteInput::Parse(
   url_canon::CanonHostInfo host_info;
   const std::string canonicalized_host(net::CanonicalizeHost(host, &host_info));
   if ((host_info.family == url_canon::CanonHostInfo::NEUTRAL) &&
-      !net::IsCanonicalizedHostCompliant(canonicalized_host)) {
+      !net::IsCanonicalizedHostCompliant(canonicalized_host,
+                                         WideToUTF8(desired_tld))) {
     // Invalid hostname.  There are several possible cases:
     // * Our checker is too strict and the user pasted in a real-world URL
     //   that's "invalid" but resolves.  To catch these, we return UNKNOWN when
