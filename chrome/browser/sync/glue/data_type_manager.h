@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SYNC_GLUE_DATA_TYPE_MANAGER_H__
 #define CHROME_BROWSER_SYNC_GLUE_DATA_TYPE_MANAGER_H__
 
+#include <set>
+
 #include "base/task.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/syncable/model_type.h"
@@ -16,48 +18,50 @@ namespace browser_sync {
 class DataTypeManager {
  public:
   enum State {
-    STOPPED,         // No data types are currently running.
-    PAUSE_PENDING,   // Waiting for the sync backend to pause.
-    STARTING,        // Data types are being started.
-    RESUME_PENDING,  // Waiting for the sync backend to resume.
-    STARTED,         // All enabled data types are running.
-    STOPPING         // Data types are being stopped.
+    STOPPED,           // No data types are currently running.
+    RESTARTING,        // Configuration has been changed...
+    DOWNLOAD_PENDING,  // Not implemented yet: Waiting for the syncer to
+                       // complete the initial download of new data
+                       // types.
+    PAUSE_PENDING,     // Waiting for the sync backend to pause.
+    CONFIGURING,       // Data types are being started.
+    RESUME_PENDING,    // Waiting for the sync backend to resume.
+    CONFIGURED,        // All enabled data types are running.
+    STOPPING           // Data types are being stopped.
   };
 
-  enum StartResult {
-    OK,                 // All enabled data types were started normally.
-    BUSY,               // Start() was called while start is already
-                        // in progress.
-    ASSOCIATION_FAILED, // An error occurred during model association.
-    ABORTED,            // Start was aborted by calling Stop() before
-                        // all types were started.
-    UNRECOVERABLE_ERROR // A data type experienced an unrecoverable error
-                        // during startup.
+  enum ConfigureResult {
+    OK,                  // Configuration finished without error.
+    ASSOCIATION_FAILED,  // An error occurred during model association.
+    ABORTED,             // Start was aborted by calling Stop() before
+                         // all types were started.
+    UNRECOVERABLE_ERROR  // A data type experienced an unrecoverable error
+                         // during startup.
   };
 
-  typedef Callback1<StartResult>::Type StartCallback;
+  typedef std::set<syncable::ModelType> TypeSet;
 
   virtual ~DataTypeManager() {}
 
-  // Begins asynchronous start up of all registered data types.  Upon
-  // successful completion or failure, the start_callback will be
-  // invoked with the corresponding StartResult.  This is an all or
-  // nothing process -- if any of the registered data types fail to
-  // start, the startup process will halt and any data types that have
-  // been started will be stopped.
-  virtual void Start(StartCallback* start_callback) = 0;
+  // Begins asynchronous configuration of data types.  Any currently
+  // running data types that are not in the desired_types set will be
+  // stopped.  Any stopped data types that are in the desired_types
+  // set will be started.  All other data types are left in their
+  // current state.  A SYNC_CONFIGURE_START notification will be sent
+  // to the UI thread when configuration is started and a
+  // SYNC_CONFIGURE_DONE notification will be sent (with a
+  // ConfigurationResult detail) when configuration is complete.
+  //
+  // Note that you may call Configure() while configuration is in
+  // progress.  Configuration will be complete only when the
+  // desired_types supplied in the last call to Configure is achieved.
+  virtual void Configure(const TypeSet& desired_types) = 0;
 
   // Synchronously stops all registered data types.  If called after
-  // Start() is called but before it finishes, it will abort the start
-  // and any data types that have been started will be stopped.
+  // Configure() is called but before it finishes, it will abort the
+  // configure and any data types that have been started will be
+  // stopped.
   virtual void Stop() = 0;
-
-  // Returns true if the given data type has been registered.
-  virtual bool IsRegistered(syncable::ModelType type) = 0;
-
-  // Returns true if the given data type has been registered and is
-  // enabled.
-  virtual bool IsEnabled(syncable::ModelType type) = 0;
 
   // Reference to map of data type controllers.
   virtual const DataTypeController::TypeMap& controllers() = 0;

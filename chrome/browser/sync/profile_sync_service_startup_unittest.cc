@@ -12,6 +12,7 @@
 #include "chrome/browser/sync/profile_sync_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
+#include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -19,6 +20,7 @@
 using browser_sync::DataTypeManager;
 using browser_sync::DataTypeManagerMock;
 using testing::_;
+using testing::DoAll;
 using testing::InvokeArgument;
 using testing::Mock;
 using testing::Return;
@@ -74,7 +76,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
 
 TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(StartFirstTime)) {
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
-  EXPECT_CALL(*data_type_manager, Start(_)).Times(0);
+  EXPECT_CALL(*data_type_manager, Configure(_)).Times(0);
 
   // We've never completed startup.
   profile_.GetPrefs()->ClearPref(prefs::kSyncHasSetupCompleted);
@@ -90,10 +92,9 @@ TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(StartFirstTime)) {
   Mock::VerifyAndClearExpectations(data_type_manager);
 
   // Then start things up.
-  EXPECT_CALL(*data_type_manager, Start(_)).
-      WillOnce(InvokeCallback(DataTypeManager::OK));
+  EXPECT_CALL(*data_type_manager, Configure(_)).Times(1);
   EXPECT_CALL(*data_type_manager, state()).
-      WillOnce(Return(DataTypeManager::STARTED));
+      WillOnce(Return(DataTypeManager::CONFIGURED));
   EXPECT_CALL(*data_type_manager, Stop()).Times(1);
   EXPECT_CALL(observer_, OnStateChanged()).Times(3);
   service_->EnableForUser();
@@ -101,10 +102,9 @@ TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(StartFirstTime)) {
 
 TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(StartNormal)) {
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
-  EXPECT_CALL(*data_type_manager, Start(_)).
-      WillOnce(InvokeCallback(DataTypeManager::OK));
+  EXPECT_CALL(*data_type_manager, Configure(_)).Times(1);
   EXPECT_CALL(*data_type_manager, state()).
-      WillOnce(Return(DataTypeManager::STARTED));
+      WillOnce(Return(DataTypeManager::CONFIGURED));
   EXPECT_CALL(*data_type_manager, Stop()).Times(1);
 
   EXPECT_CALL(observer_, OnStateChanged()).Times(2);
@@ -114,8 +114,12 @@ TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(StartNormal)) {
 
 TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(StartFailure)) {
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
-  EXPECT_CALL(*data_type_manager, Start(_)).
-      WillOnce(InvokeCallback(DataTypeManager::ASSOCIATION_FAILED));
+  DataTypeManager::ConfigureResult result =
+      DataTypeManager::ASSOCIATION_FAILED;
+  EXPECT_CALL(*data_type_manager, Configure(_)).
+      WillOnce(DoAll(Notify(NotificationType::SYNC_CONFIGURE_START),
+                     NotifyWithResult(NotificationType::SYNC_CONFIGURE_DONE,
+                                      &result)));
   EXPECT_CALL(*data_type_manager, Stop()).Times(1);
   EXPECT_CALL(*data_type_manager, state()).
       WillOnce(Return(DataTypeManager::STOPPED));
@@ -126,8 +130,8 @@ TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(StartFailure)) {
   EXPECT_TRUE(service_->unrecoverable_error_detected());
 }
 
-class ProfileSyncServiceStartupBootstrapTest :
-    public ProfileSyncServiceStartupTest {
+class ProfileSyncServiceStartupBootstrapTest
+    : public ProfileSyncServiceStartupTest {
  public:
   ProfileSyncServiceStartupBootstrapTest() {}
   virtual ~ProfileSyncServiceStartupBootstrapTest() {}
@@ -140,10 +144,9 @@ class ProfileSyncServiceStartupBootstrapTest :
 
 TEST_F(ProfileSyncServiceStartupBootstrapTest, SKIP_MACOSX(StartFirstTime)) {
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
-  EXPECT_CALL(*data_type_manager, Start(_)).
-      WillOnce(InvokeCallback(DataTypeManager::OK));
+  EXPECT_CALL(*data_type_manager, Configure(_)).Times(1);
   EXPECT_CALL(*data_type_manager, state()).
-      WillOnce(Return(DataTypeManager::STARTED));
+      WillOnce(Return(DataTypeManager::CONFIGURED));
   EXPECT_CALL(*data_type_manager, Stop()).Times(1);
   EXPECT_CALL(observer_, OnStateChanged()).Times(3);
 

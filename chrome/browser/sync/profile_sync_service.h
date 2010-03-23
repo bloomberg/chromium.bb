@@ -21,8 +21,14 @@
 #include "chrome/browser/sync/sync_setup_wizard.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/unrecoverable_error_handler.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
+
+class NotificationDetails;
+class NotificationSource;
+class NotificationType;
 
 // Various UI components such as the New Tab page can be driven by observing
 // the ProfileSyncService through this interface.
@@ -42,7 +48,8 @@ class ProfileSyncServiceObserver {
 // ProfileSyncService is the layer between browser subsystems like bookmarks,
 // and the sync backend.
 class ProfileSyncService : public browser_sync::SyncFrontend,
-                           public browser_sync::UnrecoverableErrorHandler {
+                           public browser_sync::UnrecoverableErrorHandler,
+                           public NotificationObserver {
  public:
   typedef ProfileSyncServiceObserver Observer;
   typedef browser_sync::SyncBackendHost::Status Status;
@@ -202,6 +209,11 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
       browser_sync::DataTypeController* data_type_controller,
       browser_sync::ChangeProcessor* change_processor);
 
+  // NotificationObserver implementation.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
  protected:
   // Call this after any of the subsystems being synced (the bookmark
   // model and the sync backend) finishes its initialization.  When everything
@@ -222,9 +234,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // Methods to register and remove preferences.
   void RegisterPreferences();
   void ClearPreferences();
-
-  void DataTypeManagerStartCallback(
-      browser_sync::DataTypeManager::StartResult result);
 
   // Tests need to override this.  If |delete_sync_data_folder| is true, then
   // this method will delete all previous "Sync Data" folders. (useful if the
@@ -316,11 +325,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // doing any work that might corrupt things further.
   bool unrecoverable_error_detected_;
 
-  // True if at least one of the data types started up was started for
-  // the first time.  TODO(sync): Remove this when we have full
-  // support for starting multiple data types.
-  bool startup_had_first_time_;
-
   // Which peer-to-peer notification method to use.
   browser_sync::NotificationMethod notification_method_;
 
@@ -328,6 +332,8 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   scoped_ptr<browser_sync::DataTypeManager> data_type_manager_;
 
   ObserverList<Observer> observers_;
+
+  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncService);
 };

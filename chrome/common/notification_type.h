@@ -890,6 +890,12 @@ class NotificationType {
     // Sent when the sync backend has been resumed.
     SYNC_RESUMED,
 
+    // The sync service has started the configuration process.
+    SYNC_CONFIGURE_START,
+
+    // The sync service is finished the configuration process.
+    SYNC_CONFIGURE_DONE,
+
 #if defined(OS_CHROMEOS)
     // Sent when a chromium os user logs in.
     LOGIN_USER_CHANGED,

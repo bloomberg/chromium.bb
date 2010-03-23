@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync/profile_sync_service.h"
 
+#include <set>
+
 #include "app/l10n_util.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -21,6 +23,10 @@
 #include "chrome/browser/sync/glue/data_type_manager.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/notification_details.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_source.h"
+#include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/time_format.h"
 #include "grit/generated_resources.h"
@@ -50,8 +56,13 @@ ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
       is_auth_in_progress_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(wizard_(this)),
       unrecoverable_error_detected_(false),
-      startup_had_first_time_(false),
       notification_method_(browser_sync::kDefaultNotificationMethod) {
+  registrar_.Add(this,
+                 NotificationType::SYNC_CONFIGURE_START,
+                 NotificationService::AllSources());
+  registrar_.Add(this,
+                 NotificationType::SYNC_CONFIGURE_DONE,
+                 NotificationService::AllSources());
 }
 
 ProfileSyncService::~ProfileSyncService() {
@@ -82,7 +93,7 @@ void ProfileSyncService::Initialize() {
 
 void ProfileSyncService::RegisterDataTypeController(
     DataTypeController* data_type_controller) {
-  DCHECK(data_type_controllers_.count(data_type_controller->type()) == 0);
+  DCHECK_EQ(data_type_controllers_.count(data_type_controller->type()), 0U);
   data_type_controllers_[data_type_controller->type()] =
       data_type_controller;
 }
@@ -403,7 +414,6 @@ void ProfileSyncService::OnUserCancelledDialog() {
 
 void ProfileSyncService::StartProcessingChangesIfReady() {
   DCHECK(backend_initialized_);
-  startup_had_first_time_ = false;
 
   // If we're running inside Chromium OS, always allow merges and
   // consider the sync setup complete.
@@ -411,21 +421,16 @@ void ProfileSyncService::StartProcessingChangesIfReady() {
     SetSyncSetupCompleted();
   }
 
-  data_type_manager_.reset(
-      factory_->CreateDataTypeManager(backend_.get(), data_type_controllers_));
-  data_type_manager_->Start(
-      NewCallback(this, &ProfileSyncService::DataTypeManagerStartCallback));
-}
-
-void ProfileSyncService::DataTypeManagerStartCallback(
-    DataTypeManager::StartResult result) {
-  if (result != DataTypeManager::OK) {
-    OnUnrecoverableError();
-    return;
+  std::set<syncable::ModelType> types;
+  for (DataTypeController::TypeMap::const_iterator it =
+           data_type_controllers_.begin();
+       it != data_type_controllers_.end(); ++it) {
+    types.insert((*it).first);
   }
 
-  wizard_.Step(SyncSetupWizard::DONE);
-  FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
+  data_type_manager_.reset(
+      factory_->CreateDataTypeManager(backend_.get(), data_type_controllers_));
+  data_type_manager_->Configure(types);
 }
 
 void ProfileSyncService::ActivateDataType(
@@ -440,6 +445,33 @@ void ProfileSyncService::DeactivateDataType(
     ChangeProcessor* change_processor) {
   change_processor->Stop();
   backend_->DeactivateDataType(data_type_controller, change_processor);
+}
+
+void ProfileSyncService::Observe(NotificationType type,
+                                 const NotificationSource& source,
+                                 const NotificationDetails& details) {
+  switch (type.value) {
+    case NotificationType::SYNC_CONFIGURE_START: {
+      // TODO(sync): Maybe toast?
+      break;
+    }
+    case NotificationType::SYNC_CONFIGURE_DONE: {
+      DataTypeManager::ConfigureResult result =
+          *(Details<DataTypeManager::ConfigureResult>(details).ptr());
+      if (result != DataTypeManager::OK) {
+        OnUnrecoverableError();
+        return;
+      }
+
+      // TODO(sync): Less wizard, more toast.
+      wizard_.Step(SyncSetupWizard::DONE);
+      FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
+      break;
+    }
+    default: {
+      NOTREACHED();
+    }
+  }
 }
 
 void ProfileSyncService::AddObserver(Observer* observer) {
@@ -470,5 +502,5 @@ bool ProfileSyncService::ShouldPushChanges() {
   if (!data_type_manager_.get())
     return false;
 
-  return data_type_manager_->state() == DataTypeManager::STARTED;
+  return data_type_manager_->state() == DataTypeManager::CONFIGURED;
 }

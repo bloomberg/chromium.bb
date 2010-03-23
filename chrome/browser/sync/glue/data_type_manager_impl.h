@@ -7,6 +7,9 @@
 
 #include "chrome/browser/sync/glue/data_type_manager.h"
 
+#include <map>
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/notification_observer.h"
@@ -18,6 +21,7 @@ class NotificationDetails;
 
 namespace browser_sync {
 
+class DataTypeController;
 class SyncBackendHost;
 
 class DataTypeManagerImpl : public DataTypeManager,
@@ -28,13 +32,9 @@ class DataTypeManagerImpl : public DataTypeManager,
   virtual ~DataTypeManagerImpl() {}
 
   // DataTypeManager interface.
-  virtual void Start(StartCallback* start_callback);
+  virtual void Configure(const TypeSet& desired_types);
 
   virtual void Stop();
-
-  virtual bool IsRegistered(syncable::ModelType type);
-
-  virtual bool IsEnabled(syncable::ModelType type);
 
   virtual const DataTypeController::TypeMap& controllers() {
     return controllers_;
@@ -61,15 +61,24 @@ class DataTypeManagerImpl : public DataTypeManager,
   // Stops all data types.
   void FinishStop();
 
+  void Restart();
   void AddObserver(NotificationType type);
   void RemoveObserver(NotificationType type);
+  void NotifyStart();
+  void NotifyDone(ConfigureResult result);
+  void ResumeSyncer();
+  void PauseSyncer();
 
   SyncBackendHost* backend_;
+  // Map of all data type controllers that are available for sync.
+  // This list is determined at startup by various command line flags.
   DataTypeController::TypeMap controllers_;
   State state_;
-  int current_type_;
+  DataTypeController* current_dtc_;
+  std::map<syncable::ModelType, int> start_order_;
+  std::vector<DataTypeController*> needs_start_;
+  std::vector<DataTypeController*> needs_stop_;
 
-  scoped_ptr<StartCallback> start_callback_;
   NotificationRegistrar notification_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(DataTypeManagerImpl);
