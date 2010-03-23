@@ -79,6 +79,8 @@ CustomFrameView::CustomFrameView(Window* frame)
   // Close button images will be set in LayoutWindowControls().
   AddChildView(close_button_);
 
+  restore_button_->SetAccessibleName(
+      l10n_util::GetString(IDS_APP_ACCNAME_RESTORE));
   restore_button_->SetImage(CustomButton::BS_NORMAL,
                             rb.GetBitmapNamed(IDR_RESTORE));
   restore_button_->SetImage(CustomButton::BS_HOT,
@@ -87,6 +89,8 @@ CustomFrameView::CustomFrameView(Window* frame)
                             rb.GetBitmapNamed(IDR_RESTORE_P));
   AddChildView(restore_button_);
 
+  maximize_button_->SetAccessibleName(
+    l10n_util::GetString(IDS_APP_ACCNAME_MAXIMIZE));
   maximize_button_->SetImage(CustomButton::BS_NORMAL,
                              rb.GetBitmapNamed(IDR_MAXIMIZE));
   maximize_button_->SetImage(CustomButton::BS_HOT,
@@ -95,6 +99,8 @@ CustomFrameView::CustomFrameView(Window* frame)
                              rb.GetBitmapNamed(IDR_MAXIMIZE_P));
   AddChildView(maximize_button_);
 
+  minimize_button_->SetAccessibleName(
+      l10n_util::GetString(IDS_APP_ACCNAME_MINIMIZE));
   minimize_button_->SetImage(CustomButton::BS_NORMAL,
                              rb.GetBitmapNamed(IDR_MINIMIZE));
   minimize_button_->SetImage(CustomButton::BS_HOT,
