@@ -22,7 +22,7 @@ for platform in ['Win32', 'x64']:
                               stdout=('Running %s\n' % platform))
   except WindowsError, e:
     # Assume the exe is 64-bit if it can't load on 32-bit systems.
-    if platform == 'x64' and e.errno == 193:
+    if platform == 'x64' and (e.errno == 193 or '[Error 193]' in str(e)):
       continue
     raise
 
