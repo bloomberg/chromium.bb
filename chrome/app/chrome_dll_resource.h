@@ -273,3 +273,8 @@
 // Custom context menu entries
 #define IDC_CONTENT_CONTEXT_CUSTOM_FIRST 47000
 #define IDC_CONTENT_CONTEXT_CUSTOM_LAST  48000
+
+// Context menu items added by extensions.
+#define IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST 49000
+#define IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST 50000
+

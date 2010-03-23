@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -81,7 +81,7 @@ class ExtensionMessageService
   void PostMessageFromRenderer(int port_id, const std::string& message);
 
   // Send an event to every registered extension renderer.
-  void DispatchEventToRenderers(
+  virtual void DispatchEventToRenderers(
       const std::string& event_name, const std::string& event_args,
       bool has_incognito_data);
 
@@ -132,11 +132,12 @@ class ExtensionMessageService
  private:
   friend class ChromeThread;
   friend class DeleteTask<ExtensionMessageService>;
+  friend class MockExtensionMessageService;
 
   // A map of channel ID to its channel object.
   typedef std::map<int, MessageChannel*> MessageChannelMap;
 
-  ~ExtensionMessageService();
+  virtual ~ExtensionMessageService();
 
   // Allocates a pair of port ids.
   // NOTE: this can be called from any thread.

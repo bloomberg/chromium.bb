@@ -738,6 +738,7 @@
         'browser/download/save_package_unittest.cc',
         'browser/encoding_menu_controller_unittest.cc',
         'browser/extensions/convert_user_script_unittest.cc',
+        'browser/extensions/extension_menu_manager_unittest.cc',
         'browser/extensions/extension_messages_unittest.cc',
         'browser/extensions/extension_process_manager_unittest.cc',
         'browser/extensions/extension_ui_unittest.cc',

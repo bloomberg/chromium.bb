@@ -80,6 +80,10 @@ var chrome = chrome || {};
         };
       }
 
+      if (request.customCallback) {
+        request.customCallback(name, request, response);
+      }
+
       if (request.callback) {
         // Callbacks currently only support one callback argument.
         var callbackArgs = response ? [JSON.parse(response)] : [];
@@ -165,8 +169,11 @@ var chrome = chrome || {};
   }
 
   // Send an API request and optionally register a callback.
-  function sendRequest(functionName, args, argSchemas) {
+  function sendRequest(functionName, args, argSchemas, customCallback) {
     var request = prepareRequest(args, argSchemas);
+    if (customCallback) {
+      request.customCallback = customCallback;
+    }
     // JSON.stringify doesn't support a root object which is undefined.
     if (request.args === undefined)
       request.args = null;
@@ -187,8 +194,8 @@ var chrome = chrome || {};
     }
     var requestId = GetNextRequestId();
     requests[requestId] = request;
-    return StartRequest(functionName, sargs, requestId,
-                        request.callback ? true : false);
+    var hasCallback = (request.callback || customCallback) ? true : false;
+    return StartRequest(functionName, sargs, requestId, hasCallback);
   }
 
   // Send a special API request that is not JSON stringifiable, and optionally
@@ -289,6 +296,25 @@ var chrome = chrome || {};
       new chrome.Event("experimental.popup.onClosed." + renderViewId);
   }
 
+  function setupHiddenContextMenuEvent(extensionId) {
+    var eventName = "contextMenu/" + extensionId;
+    chromeHidden.contextMenuEvent = new chrome.Event(eventName);
+    chromeHidden.contextMenuHandlers = {};
+    chromeHidden.contextMenuEvent.addListener(function() {
+      var menuItemId = arguments[0].menuItemId;
+      var onclick = chromeHidden.contextMenuHandlers[menuItemId];
+      if (onclick) {
+        onclick.apply(onclick, arguments);
+      }
+
+      var parentMenuItemId = arguments[0].parentMenuItemId;
+      var parentOnclick = chromeHidden.contextMenuHandlers[parentMenuItemId];
+      if (parentOnclick) {
+        parentOnclick.apply(parentOnclick, arguments);
+      }
+    });
+  }
+
   chromeHidden.onLoad.addListener(function (extensionId) {
     chrome.initExtension(extensionId, false);
 
@@ -341,7 +367,8 @@ var chrome = chrome || {};
               retval = this.handleRequest.apply(this, arguments);
             } else {
               retval = sendRequest(this.name, arguments,
-                                   this.definition.parameters);
+                                   this.definition.parameters,
+                                   this.customCallback);
             }
 
             // Validate return value if defined - only in debug.
@@ -549,6 +576,28 @@ var chrome = chrome || {};
           details, this.name, this.definition.parameters, "page action");
     };
 
+    apiFunctions["experimental.contextMenu.create"].customCallback =
+        function(name, request, response) {
+      if (chrome.extension.lastError || !response) {
+        return;
+      }
+
+      // Set up the onclick handler if we were passed one in the request.
+      if (request.args.onclick) {
+        var menuItemId = JSON.parse(response);
+        chromeHidden.contextMenuHandlers[menuItemId] = request.args.onclick;
+      }
+    };
+
+    apiFunctions["experimental.contextMenu.remove"].customCallback =
+        function(name, request, response) {
+      // Remove any onclick handler we had registered for this menu item.
+      if (request.args.length > 0) {
+        var menuItemId = request.args[0];
+        delete chromeHidden.contextMenuHandlers[menuItemId];
+      }
+    }
+
     if (chrome.test) {
       chrome.test.getApiDefinitions = GetExtensionAPIDefinition;
     }
@@ -557,6 +606,7 @@ var chrome = chrome || {};
     setupPageActionEvents(extensionId);
     setupToolstripEvents(GetRenderViewId());
     setupPopupEvents(GetRenderViewId());
+    setupHiddenContextMenuEvent(extensionId);
   });
 
   if (!chrome.experimental)

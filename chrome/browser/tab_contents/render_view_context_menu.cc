@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <functional>
+
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 
 #include "app/clipboard/clipboard.h"
@@ -14,6 +16,8 @@
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/extensions/extension_menu_manager.h"
+#include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/fonts_languages_window.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/browser_url_util.h"
@@ -64,6 +68,190 @@ RenderViewContextMenu::~RenderViewContextMenu() {
 void RenderViewContextMenu::Init() {
   InitMenu();
   DoInit();
+}
+
+static bool ExtensionContextMatch(ContextMenuParams params,
+                                  ExtensionMenuItem::ContextList contexts) {
+  bool has_link = !params.link_url.is_empty();
+  bool has_selection = !params.selection_text.empty();
+
+  if (contexts.Contains(ExtensionMenuItem::ALL) ||
+      (has_selection && contexts.Contains(ExtensionMenuItem::SELECTION)) ||
+      (has_link && contexts.Contains(ExtensionMenuItem::LINK)) ||
+      (params.is_editable && contexts.Contains(ExtensionMenuItem::EDITABLE))) {
+    return true;
+  }
+
+  switch (params.media_type) {
+    case WebContextMenuData::MediaTypeImage:
+      return contexts.Contains(ExtensionMenuItem::IMAGE);
+
+    case WebContextMenuData::MediaTypeVideo:
+      return contexts.Contains(ExtensionMenuItem::VIDEO);
+
+    case WebContextMenuData::MediaTypeAudio:
+      return contexts.Contains(ExtensionMenuItem::AUDIO);
+
+    default:
+      break;
+  }
+
+  // PAGE is the least specific context, so we only examine that if none of the
+  // other contexts apply.
+  if (!has_link && !has_selection && !params.is_editable &&
+      params.media_type == WebContextMenuData::MediaTypeNone &&
+      contexts.Contains(ExtensionMenuItem::PAGE))
+    return true;
+
+  return false;
+}
+
+void RenderViewContextMenu::GetItemsForExtension(
+    const std::string& extension_id,
+    std::vector<const ExtensionMenuItem*>* items) {
+  ExtensionsService* service = profile_->GetExtensionsService();
+
+  // Get the set of possible items, and iterate to find which ones are
+  // applicable.
+  std::vector<const ExtensionMenuItem*> potential_items =
+      service->menu_manager()->MenuItems(extension_id);
+
+  std::vector<const ExtensionMenuItem*>::const_iterator i;
+  for (i = potential_items.begin(); i != potential_items.end(); ++i) {
+    const ExtensionMenuItem* item = *i;
+    if (ExtensionContextMatch(params_, item->contexts()))
+      items->push_back(item);
+  }
+}
+
+bool RenderViewContextMenu::MaybeStartExtensionSubMenu(
+    const string16& selection_text, const std::string& extension_name,
+    std::vector<const ExtensionMenuItem*>* items, int* index) {
+  if (items->size() == 0 ||
+      (items->size() == 1 && items->at(0)->child_count() == 0))
+    return false;
+
+  int menu_id = IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST + (*index)++;
+  string16 title;
+  const ExtensionMenuItem* first_item = items->at(0);
+  if (first_item->child_count() > 0) {
+    title = first_item->TitleWithReplacement(selection_text);
+    extension_item_map_[menu_id] = first_item->id();
+  } else {
+    title = UTF8ToUTF16(extension_name);
+  }
+  StartSubMenu(menu_id, title);
+
+  // If we have 1 parent item with a submenu of children, pull the
+  // parent out of |items| and put the children in.
+  if (items->size() == 1 && first_item->child_count() > 0) {
+    const ExtensionMenuItem* parent = first_item;
+    items->clear();
+    for (int j = 0; j < parent->child_count(); j++) {
+      const ExtensionMenuItem* child = parent->ChildAt(j);
+      if (ExtensionContextMatch(params_, child->contexts()))
+        items->push_back(child);
+    }
+  }
+
+  return true;
+}
+
+void RenderViewContextMenu::AppendExtensionItems(
+    const std::string& extension_id, int* index) {
+  Extension* extension =
+      profile_->GetExtensionsService()->GetExtensionById(extension_id, false);
+  DCHECK_GE(*index, 0);
+  int max_index =
+      IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST - IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST;
+  if (!extension || *index >= max_index)
+    return;
+
+  std::vector<const ExtensionMenuItem*> items;
+  GetItemsForExtension(extension_id, &items);
+  if (items.empty())
+    return;
+
+  string16 selection_text = PrintableSelectionText();
+
+  // If this is the first extension-provided menu item, add a separator.
+  if (*index == 0)
+    AppendSeparator();
+
+  bool submenu_started = MaybeStartExtensionSubMenu(
+      selection_text, extension->name(), &items, index);
+
+  ExtensionMenuItem::Type last_type = ExtensionMenuItem::NORMAL;
+  for (std::vector<const ExtensionMenuItem*>::iterator i = items.begin();
+       i != items.end(); ++i) {
+    const ExtensionMenuItem* item = *i;
+    if (item->type() == ExtensionMenuItem::SEPARATOR) {
+      // We don't want the case of an extension with one top-level item that is
+      // just a separator, so make sure this is inside a submenu.
+      if (submenu_started) {
+        AppendSeparator();
+        last_type = ExtensionMenuItem::SEPARATOR;
+      }
+      continue;
+    }
+
+    // Auto-prepend a separator, if needed, to group radio items together.
+    if (item->type() != ExtensionMenuItem::RADIO &&
+        item->type() != ExtensionMenuItem::SEPARATOR &&
+        last_type == ExtensionMenuItem::RADIO) {
+      AppendSeparator();
+    }
+
+    int menu_id = IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST + (*index)++;
+    if (menu_id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST)
+      return;
+    extension_item_map_[menu_id] = item->id();
+    string16 title = item->TitleWithReplacement(selection_text);
+    if (item->type() == ExtensionMenuItem::NORMAL) {
+      AppendMenuItem(menu_id, title);
+    } else if (item->type() == ExtensionMenuItem::CHECKBOX) {
+      AppendCheckboxMenuItem(menu_id, title);
+    } else if (item->type() == ExtensionMenuItem::RADIO) {
+      // Auto-append a separator if needed to group radio items together.
+      if (*index > 0 && last_type != ExtensionMenuItem::RADIO &&
+          last_type != ExtensionMenuItem::SEPARATOR)
+        AppendSeparator();
+
+      AppendRadioMenuItem(menu_id, title);
+    } else {
+      NOTREACHED();
+    }
+    last_type = item->type();
+  }
+
+  if (submenu_started)
+    FinishSubMenu();
+}
+
+void RenderViewContextMenu::AppendAllExtensionItems() {
+  extension_item_map_.clear();
+  ExtensionsService* service = profile_->GetExtensionsService();
+  ExtensionMenuManager* menu_manager = service->menu_manager();
+
+  // Get a list of extension id's that have context menu items, and sort it by
+  // the extension's name.
+  std::set<std::string> ids = menu_manager->ExtensionIds();
+  std::vector<std::pair<std::string, std::string> > sorted_ids;
+  for (std::set<std::string>::iterator i = ids.begin(); i != ids.end(); ++i) {
+    Extension* extension = service->GetExtensionById(*i, false);
+    if (extension)
+      sorted_ids.push_back(
+          std::pair<std::string, std::string>(extension->name(), *i));
+  }
+  // TODO(asargent) - See if this works properly for i18n names (bug 32363).
+  std::sort(sorted_ids.begin(), sorted_ids.end());
+
+  int index = 0;
+  std::vector<std::pair<std::string, std::string> >::const_iterator i;
+  for (i = sorted_ids.begin();
+       i != sorted_ids.end(); ++i) {
+    AppendExtensionItems(i->second, &index);
+  }
 }
 
 void RenderViewContextMenu::InitMenu() {
@@ -122,6 +310,9 @@ void RenderViewContextMenu::InitMenu() {
 
   if (has_selection)
     AppendSearchProvider();
+
+  if (!is_devtools)
+    AppendAllExtensionItems();
 
   // In the DevTools popup menu, "developer items" is normally the only section,
   // so omit the separator there.
@@ -247,8 +438,7 @@ void RenderViewContextMenu::AppendSearchProvider() {
   if (!selection_navigation_url_.is_valid())
     return;
 
-  string16 printable_selection_text(
-      WideToUTF16(l10n_util::TruncateString(params_.selection_text, 50)));
+  string16 printable_selection_text = PrintableSelectionText();
   // Escape "&" as "&&".
   for (size_t i = printable_selection_text.find('&'); i != string16::npos;
        i = printable_selection_text.find('&', i + 2))
@@ -356,10 +546,22 @@ void RenderViewContextMenu::AppendEditableItems() {
       l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_WRITING_DIRECTION_RTL));
 
   FinishSubMenu();
-#endif // OS_MACOSX
+#endif  // OS_MACOSX
 
   AppendSeparator();
   AppendMenuItem(IDS_CONTENT_CONTEXT_SELECTALL);
+}
+
+ExtensionMenuItem* RenderViewContextMenu::GetExtensionMenuItem(int id) const {
+  ExtensionMenuManager* manager =
+      profile_->GetExtensionsService()->menu_manager();
+  std::map<int, int>::const_iterator i = extension_item_map_.find(id);
+  if (i != extension_item_map_.end()) {
+    ExtensionMenuItem* item = manager->GetItemById(i->second);
+    if (item)
+      return item;
+  }
+  return NULL;
 }
 
 // Menu delegate functions -----------------------------------------------------
@@ -381,6 +583,16 @@ bool RenderViewContextMenu::IsItemCommandEnabled(int id) const {
     }
     NOTREACHED();
     return false;
+  }
+
+  // Extension items.
+  if (id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
+      id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
+    ExtensionMenuItem* item = GetExtensionMenuItem(id);
+    if (item)
+      return ExtensionContextMatch(params_, item->enabled_contexts());
+    else
+      return false;
   }
 
   switch (id) {
@@ -572,6 +784,15 @@ bool RenderViewContextMenu::ItemIsChecked(int id) const {
             WebContextMenuData::MediaLoop) != 0;
   }
 
+  if (id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
+      id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
+    ExtensionMenuItem* item = GetExtensionMenuItem(id);
+    if (item)
+      return item->checked();
+    else
+      return false;
+  }
+
 #if defined(OS_MACOSX)
     if (id == IDC_WRITING_DIRECTION_DEFAULT)
       return params_.writing_direction_default &
@@ -625,6 +846,20 @@ void RenderViewContextMenu::ExecuteItemCommand(int id) {
         PerformCustomContextMenuAction(action);
     return;
   }
+
+  // Process extension menu items.
+  if (id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
+      id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
+    ExtensionMenuManager* manager =
+        profile_->GetExtensionsService()->menu_manager();
+    std::map<int, int>::const_iterator i = extension_item_map_.find(id);
+    if (i != extension_item_map_.end()) {
+      manager->ExecuteCommand(profile_, source_tab_contents_, params_,
+                              i->second);
+    }
+    return;
+  }
+
 
   switch (id) {
     case IDS_CONTENT_CONTEXT_OPENLINKNEWTAB:
@@ -940,6 +1175,10 @@ bool RenderViewContextMenu::IsDevCommandEnabled(int id) const {
   }
 
   return true;
+}
+
+string16 RenderViewContextMenu::PrintableSelectionText() {
+  return WideToUTF16(l10n_util::TruncateString(params_.selection_text, 50));
 }
 
 // Controller functions --------------------------------------------------------

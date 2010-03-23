@@ -24,6 +24,12 @@ class QuotaLimitHeuristic;
     } \
   } while (0)
 
+#define EXTENSION_FUNCTION_ERROR(error) do { \
+    error_ = error; \
+    bad_message_ = true; \
+    return false; \
+  } while (0)
+
 #define DECLARE_EXTENSION_FUNCTION_NAME(name) \
   public: static const char* function_name() { return name; }
 

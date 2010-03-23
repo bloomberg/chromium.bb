@@ -2354,6 +2354,95 @@
     "events": []
   },
   {
+    "namespace": "experimental.contextMenu",
+    "types": [],
+    "functions": [
+      {
+        "name": "create",
+        "type": "function",
+        "description": "An API to add items to context menus.",        
+        "parameters": [
+          {
+            "type": "object",
+            "name": "createProperties", 
+            "properties": {
+              "type": {
+                "type": "string",
+                "optional": true,
+                "description": "The type of menu item - one of 'NORMAL', 'CHECKBOX', 'RADIO', or 'SEPARATOR'. Defaults to 'NORMAL' if not specified."
+              },
+              "title": {
+                "type": "string",
+                "optional": "true",
+                "description": "This must be specified unless type is 'SEPARATOR'."
+              },
+              "checked": {
+                "type": "boolean",
+                "optional": true,
+                "description": " For items of type CHECKBOX or RADIO, should this be selected (RADIO) or checked (CHECKBOX)? Only one RADIO item can be selected at a time in a given group of RADIO items, with the last one to have checked == true winning."
+              },
+              "contexts": {
+                "type": "array",
+                "items": {"type": "string"},
+                "minItems": 1,
+                "optional": true,
+                "description": "List of contexts this menu item will appear in. Legal values are: 'ALL', 'PAGE', 'SELECTION', 'LINK', 'EDITABLE', 'IMAGE', 'VIDEO', and 'AUDIO'. Defaults to ['PAGE']."
+              },
+              "enabledContexts": {
+                "type": "array",
+                "optional": true,
+                "items": {"type": "string"},
+                "minItems": 1,
+                "description": "By default the values you pass for the contexts parameter make an item both shown and selectable in those contexts. If you want to limit the contexts where an item is selectable (i.e. not greyed out), you put the ones you want selectable in enabledContexts and any not listed will be shown but disabled. So, for example, if you wanted an item to appear for links and images but only be enabled for links, you would set 'contexts' : ['LINK', 'IMAGE'] and 'enabledContexts' : ['LINK']."
+              },
+              "onclick": {
+                "type": "function",
+                "optional": true,
+                "description": "Function to be called back when your menu item or one of its children is clicked."
+              }, 
+              "parentId": {
+                "type": "integer",
+                "optional": true,
+                "description": "The id of a parent menu item - this makes the item a child of a previously added item."
+              }
+            }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": [
+              {
+                "name": "menuItemId",
+                "type": "integer",
+                "description": "The id of the newly created context menu item."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "remove",
+        "type": "function",
+        "description": "Remove a context menu item.",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "menuItemId",
+            "description": "The id of the context menu item to remove."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": [],
+            "description": "Called when the context menu has been removed."
+          }
+        ]
+      }
+    ]  
+  },
+  {
     "namespace": "experimental.metrics",
     "nodoc": true,
     "types": [

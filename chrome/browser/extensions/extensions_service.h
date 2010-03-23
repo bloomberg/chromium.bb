@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,7 @@
 #include "base/tuple.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/extensions/extension_menu_manager.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
@@ -272,6 +273,9 @@ class ExtensionsService
 
   ExtensionsQuotaService* quota_service() { return &quota_service_; }
 
+  // Access to menu items added by extensions.
+  ExtensionMenuManager* menu_manager() { return &menu_manager_; }
+
   // Notify the frontend that there was an error loading an extension.
   // This method is public because ExtensionsServiceBackend can post to here.
   void ReportExtensionLoadError(const FilePath& extension_path,
@@ -355,6 +359,9 @@ class ExtensionsService
   OrphanedDevTools orphaned_dev_tools_;
 
   NotificationRegistrar registrar_;
+
+  // Keeps track of menu items added by extensions.
+  ExtensionMenuManager menu_manager_;
 
   // List of registered component extensions (see Extension::Location).
   typedef std::vector<ComponentExtensionInfo> RegisteredComponentExtensions;
