@@ -59,12 +59,13 @@ ContentPageGtk::ContentPageGtk(Profile* profile)
         InitSyncGroup(), false);
     UpdateSyncControls();
   }
+
   options_builder.AddOptionGroup(
       l10n_util::GetStringUTF8(IDS_OPTIONS_PASSWORDS_GROUP_NAME),
       InitPasswordSavingGroup(), false);
   options_builder.AddOptionGroup(
       l10n_util::GetStringUTF8(IDS_AUTOFILL_SETTING_WINDOWS_GROUP_NAME),
-      InitFormAutofillGroup(), false);
+      InitFormAutoFillGroup(), false);
   options_builder.AddOptionGroup(
       l10n_util::GetStringUTF8(IDS_OPTIONS_BROWSING_DATA_GROUP_NAME),
       InitBrowsingDataGroup(), false);
@@ -78,6 +79,7 @@ ContentPageGtk::ContentPageGtk(Profile* profile)
                               profile->GetPrefs(), this);
   enable_form_autofill_.Init(prefs::kAutoFillEnabled,
                              profile->GetPrefs(), this);
+
   if (browser_defaults::kCanToggleSystemTitleBar) {
     use_custom_chrome_frame_.Init(prefs::kUseCustomChromeFrame,
                                   profile->GetPrefs(), this);
@@ -132,9 +134,11 @@ void ContentPageGtk::NotifyPrefChanged(const std::wstring* pref_name) {
     if (enable_form_autofill_.GetValue()) {
       gtk_toggle_button_set_active(
           GTK_TOGGLE_BUTTON(form_autofill_enable_radio_), TRUE);
+      gtk_widget_set_sensitive(autofill_button_, TRUE);
     } else {
       gtk_toggle_button_set_active(
           GTK_TOGGLE_BUTTON(form_autofill_disable_radio_), TRUE);
+      gtk_widget_set_sensitive(autofill_button_, FALSE);
     }
   }
   if (browser_defaults::kCanToggleSystemTitleBar &&
@@ -217,14 +221,14 @@ GtkWidget* ContentPageGtk::InitPasswordSavingGroup() {
   return vbox;
 }
 
-GtkWidget* ContentPageGtk::InitFormAutofillGroup() {
+GtkWidget* ContentPageGtk::InitFormAutoFillGroup() {
   GtkWidget* vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
 
   // Enable radio button.
   form_autofill_enable_radio_ = gtk_radio_button_new_with_label(NULL,
       l10n_util::GetStringUTF8(IDS_OPTIONS_AUTOFILL_ENABLE).c_str());
   g_signal_connect(G_OBJECT(form_autofill_enable_radio_), "toggled",
-                   G_CALLBACK(OnAutofillRadioToggledThunk), this);
+                   G_CALLBACK(OnAutoFillRadioToggledThunk), this);
   gtk_box_pack_start(GTK_BOX(vbox), form_autofill_enable_radio_, FALSE,
                      FALSE, 0);
 
@@ -233,22 +237,22 @@ GtkWidget* ContentPageGtk::InitFormAutofillGroup() {
       GTK_RADIO_BUTTON(form_autofill_enable_radio_),
       l10n_util::GetStringUTF8(IDS_OPTIONS_AUTOFILL_DISABLE).c_str());
   g_signal_connect(G_OBJECT(form_autofill_disable_radio_), "toggled",
-                   G_CALLBACK(OnAutofillRadioToggledThunk), this);
+                   G_CALLBACK(OnAutoFillRadioToggledThunk), this);
   gtk_box_pack_start(GTK_BOX(vbox), form_autofill_disable_radio_, FALSE,
                      FALSE, 0);
 
   GtkWidget* button_hbox = gtk_hbox_new(FALSE, gtk_util::kControlSpacing);
   gtk_container_add(GTK_CONTAINER(vbox), button_hbox);
 
-  // Autofill button.
-  GtkWidget* autofill_button = gtk_button_new_with_label(
+  // AutoFill button.
+  autofill_button_ = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_OPTIONS_AUTOFILL_SETTINGS).c_str());
-  if (!personal_data_)
-    gtk_widget_set_sensitive(autofill_button, FALSE);
+  if (!profile()->GetPrefs()->GetBoolean(prefs::kAutoFillEnabled))
+    gtk_widget_set_sensitive(autofill_button_, FALSE);
 
-  g_signal_connect(G_OBJECT(autofill_button), "clicked",
-                   G_CALLBACK(OnAutofillButtonClickedThunk), this);
-  gtk_box_pack_start(GTK_BOX(button_hbox), autofill_button, FALSE, FALSE, 0);
+  g_signal_connect(G_OBJECT(autofill_button_), "clicked",
+                   G_CALLBACK(OnAutoFillButtonClickedThunk), this);
+  gtk_box_pack_start(GTK_BOX(button_hbox), autofill_button_, FALSE, FALSE, 0);
 
   return vbox;
 }
@@ -401,7 +405,7 @@ void ContentPageGtk::UpdateSyncControls() {
   }
 }
 
-void ContentPageGtk::OnAutofillButtonClicked(GtkWidget* widget) {
+void ContentPageGtk::OnAutoFillButtonClicked(GtkWidget* widget) {
   DCHECK(personal_data_);
   // If the personal data manager has not loaded the data yet, set ourselves as
   // its observer so that we can listen for the OnPersonalDataLoaded signal.
@@ -418,20 +422,17 @@ void ContentPageGtk::OnImportButtonClicked(GtkWidget* widget) {
 }
 
 void ContentPageGtk::OnGtkThemeButtonClicked(GtkWidget* widget) {
-  UserMetricsRecordAction("Options_GtkThemeSet",
-                                profile()->GetPrefs());
+  UserMetricsRecordAction("Options_GtkThemeSet", profile()->GetPrefs());
   profile()->SetNativeTheme();
 }
 
 void ContentPageGtk::OnResetDefaultThemeButtonClicked(GtkWidget* widget) {
-  UserMetricsRecordAction("Options_ThemesReset",
-                                profile()->GetPrefs());
+  UserMetricsRecordAction("Options_ThemesReset", profile()->GetPrefs());
   profile()->ClearTheme();
 }
 
 void ContentPageGtk::OnGetThemesButtonClicked(GtkWidget* widget) {
-  UserMetricsRecordAction("Options_ThemesGallery",
-                          profile()->GetPrefs());
+  UserMetricsRecordAction("Options_ThemesGallery", profile()->GetPrefs());
   BrowserList::GetLastActive()->OpenThemeGalleryTabAndActivate();
 }
 
@@ -485,7 +486,7 @@ void ContentPageGtk::OnPasswordRadioToggled(GtkWidget* widget) {
   ask_to_save_passwords_.SetValue(enabled);
 }
 
-void ContentPageGtk::OnAutofillRadioToggled(GtkWidget* widget) {
+void ContentPageGtk::OnAutoFillRadioToggled(GtkWidget* widget) {
   if (initializing_)
     return;
 
@@ -500,9 +501,11 @@ void ContentPageGtk::OnAutofillRadioToggled(GtkWidget* widget) {
   if (enabled) {
     UserMetricsRecordAction("Options_FormAutofill_Enable",
                              profile()->GetPrefs());
+    gtk_widget_set_sensitive(autofill_button_, TRUE);
   } else {
     UserMetricsRecordAction("Options_FormAutofill_Disable",
                             profile()->GetPrefs());
+    gtk_widget_set_sensitive(autofill_button_, FALSE);
   }
   enable_form_autofill_.SetValue(enabled);
 }

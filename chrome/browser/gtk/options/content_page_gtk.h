@@ -48,7 +48,7 @@ class ContentPageGtk : public OptionsPageBase,
 
   // Initialize the option group widgets, return their container.
   GtkWidget* InitPasswordSavingGroup();
-  GtkWidget* InitFormAutofillGroup();
+  GtkWidget* InitFormAutoFillGroup();
   GtkWidget* InitBrowsingDataGroup();
   GtkWidget* InitThemesGroup();
   GtkWidget* InitSyncGroup();
@@ -60,8 +60,8 @@ class ContentPageGtk : public OptionsPageBase,
   CHROMEGTK_CALLBACK_0(ContentPageGtk, void, OnSystemTitleBarRadioToggled);
   CHROMEGTK_CALLBACK_0(ContentPageGtk, void, OnShowPasswordsButtonClicked);
   CHROMEGTK_CALLBACK_0(ContentPageGtk, void, OnPasswordRadioToggled);
-  CHROMEGTK_CALLBACK_0(ContentPageGtk, void, OnAutofillButtonClicked);
-  CHROMEGTK_CALLBACK_0(ContentPageGtk, void, OnAutofillRadioToggled);
+  CHROMEGTK_CALLBACK_0(ContentPageGtk, void, OnAutoFillButtonClicked);
+  CHROMEGTK_CALLBACK_0(ContentPageGtk, void, OnAutoFillRadioToggled);
   CHROMEGTK_CALLBACK_0(ContentPageGtk, void, OnSyncStartStopButtonClicked);
   CHROMEGTK_CALLBACK_0(ContentPageGtk, void, OnSyncActionLinkClicked);
   CHROMEGTK_CALLBACK_1(ContentPageGtk, void, OnStopSyncDialogResponse, int);
@@ -70,9 +70,10 @@ class ContentPageGtk : public OptionsPageBase,
   GtkWidget* passwords_asktosave_radio_;
   GtkWidget* passwords_neversave_radio_;
 
-  // Widgets for the Form Autofill group.
+  // Widgets for the Form AutoFill group.
   GtkWidget* form_autofill_enable_radio_;
   GtkWidget* form_autofill_disable_radio_;
+  GtkWidget* autofill_button_;
 
   // Widgets for the Appearance group.
   GtkWidget* system_title_bar_show_radio_;
