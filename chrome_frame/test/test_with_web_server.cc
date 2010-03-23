@@ -699,7 +699,7 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_ReferrerTest) {
   // registry config value is set to PATCH_METHOD_IBROWSER_AND_MONIKER.
   ProtocolPatchMethod patch_method =
       static_cast<ProtocolPatchMethod>(
-          GetConfigInt(PATCH_METHOD_IBROWSER, kPatchProtocols));
+          GetConfigInt(PATCH_METHOD_IBROWSER_AND_MONIKER, kPatchProtocols));
   if (patch_method != PATCH_METHOD_IBROWSER_AND_MONIKER) {
     LOG(ERROR) << "Not running test. Moniker patch not enabled.";
     return;
@@ -795,7 +795,7 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestPostReissue) {
   // registry config value is set to PATCH_METHOD_IBROWSER_AND_MONIKER.
   ProtocolPatchMethod patch_method =
       static_cast<ProtocolPatchMethod>(
-          GetConfigInt(PATCH_METHOD_IBROWSER, kPatchProtocols));
+          GetConfigInt(PATCH_METHOD_IBROWSER_AND_MONIKER, kPatchProtocols));
   if (patch_method != PATCH_METHOD_IBROWSER_AND_MONIKER) {
     LOG(ERROR) << "Not running test. Moniker patch not enabled.";
     return;
@@ -836,7 +836,7 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestMultipleGet) {
   // registry config value is set to PATCH_METHOD_IBROWSER_AND_MONIKER.
   ProtocolPatchMethod patch_method =
       static_cast<ProtocolPatchMethod>(
-          GetConfigInt(PATCH_METHOD_IBROWSER, kPatchProtocols));
+          GetConfigInt(PATCH_METHOD_IBROWSER_AND_MONIKER, kPatchProtocols));
   if (patch_method != PATCH_METHOD_IBROWSER_AND_MONIKER) {
     LOG(ERROR) << "Not running test. Moniker patch not enabled.";
     return;
