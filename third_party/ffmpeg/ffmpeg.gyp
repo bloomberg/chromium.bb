@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# TODO(fbarchard): Add wmapro.
 # TODO(ajwong): Determine if we want to statically link libz.
 
 {
@@ -223,6 +222,7 @@
                 'source/patched-ffmpeg-mt/libavcodec/vc1dsp.c',
                 'source/patched-ffmpeg-mt/libavcodec/wma.c',
                 'source/patched-ffmpeg-mt/libavcodec/wmadec.c',
+                'source/patched-ffmpeg-mt/libavcodec/wmaprodec.c', # TODO(fbarchard): Review this file.
                 'source/patched-ffmpeg-mt/libavcodec/wmv2.c',
                 'source/patched-ffmpeg-mt/libavcodec/wmv2dec.c',
                 'source/patched-ffmpeg-mt/libavcodec/vc1_asftoannexg_bsf.c', # TODO(fbarchard): Review this file.
