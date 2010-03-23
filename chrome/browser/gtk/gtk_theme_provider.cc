@@ -195,7 +195,7 @@ void GtkThemeProvider::SetNativeTheme() {
   profile()->GetPrefs()->SetBoolean(prefs::kUsesSystemTheme, true);
   ClearAllThemeData();
   LoadGtkValues();
-  NotifyThemeChanged();
+  NotifyThemeChanged(NULL);
 }
 
 void GtkThemeProvider::Observe(NotificationType type,
@@ -395,8 +395,8 @@ void GtkThemeProvider::LoadThemePrefs() {
   }
 }
 
-void GtkThemeProvider::NotifyThemeChanged() {
-  BrowserThemeProvider::NotifyThemeChanged();
+void GtkThemeProvider::NotifyThemeChanged(Extension* extension) {
+  BrowserThemeProvider::NotifyThemeChanged(extension);
 
   // Notify all GtkChromeButtons of their new rendering mode:
   for (std::vector<GtkWidget*>::iterator it = chrome_buttons_.begin();
@@ -424,7 +424,7 @@ void GtkThemeProvider::OnStyleSet(GtkWidget* widget,
   if (provider->profile()->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme)) {
     provider->ClearAllThemeData();
     provider->LoadGtkValues();
-    provider->NotifyThemeChanged();
+    provider->NotifyThemeChanged(NULL);
   }
 
   // Free the old icons only after the theme change notification has gone

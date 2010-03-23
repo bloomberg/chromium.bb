@@ -119,7 +119,7 @@ class GtkThemeProvider : public BrowserThemeProvider,
   virtual void LoadThemePrefs();
 
   // Let all the browser views know that themes have changed.
-  virtual void NotifyThemeChanged();
+  virtual void NotifyThemeChanged(Extension* extension);
 
   // Additionally frees the CairoCachedSurfaces.
   virtual void FreePlatformCaches();

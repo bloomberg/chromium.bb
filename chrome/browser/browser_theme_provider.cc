@@ -21,7 +21,9 @@
 #include "chrome/browser/theme_resources_util.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/notification_details.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "gfx/codec/png_codec.h"
@@ -292,7 +294,7 @@ void BrowserThemeProvider::SetTheme(Extension* extension) {
   BuildFromExtension(extension);
   SaveThemeID(extension->id());
 
-  NotifyThemeChanged();
+  NotifyThemeChanged(extension);
   UserMetrics::RecordAction("Themes_Installed", profile_);
 }
 
@@ -317,7 +319,7 @@ void BrowserThemeProvider::RemoveUnusedThemes() {
 
 void BrowserThemeProvider::UseDefaultTheme() {
   ClearAllThemeData();
-  NotifyThemeChanged();
+  NotifyThemeChanged(NULL);
   UserMetrics::RecordAction("Themes_Reset", profile_);
 }
 
@@ -561,12 +563,12 @@ void BrowserThemeProvider::LoadThemePrefs() {
   }
 }
 
-void BrowserThemeProvider::NotifyThemeChanged() {
+void BrowserThemeProvider::NotifyThemeChanged(Extension* extension) {
   // Redraw!
   NotificationService* service = NotificationService::current();
   service->Notify(NotificationType::BROWSER_THEME_CHANGED,
                   Source<BrowserThemeProvider>(this),
-                  NotificationService::NoDetails());
+                  Details<Extension>(extension));
 #if defined(OS_MACOSX)
   NotifyPlatformThemeChanged();
 #endif  // OS_MACOSX

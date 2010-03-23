@@ -206,7 +206,9 @@ class BrowserThemeProvider : public NonThreadSafe,
   virtual void LoadThemePrefs();
 
   // Let all the browser views know that themes have changed.
-  virtual void NotifyThemeChanged();
+  // extension is NULL iff the theme is being set to the
+  // default/system theme.
+  virtual void NotifyThemeChanged(Extension* extension);
 
 #if defined(OS_MACOSX)
   // Let all the browser views know that themes have changed in a platform way.
