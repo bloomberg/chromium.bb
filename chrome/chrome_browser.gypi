@@ -13,6 +13,7 @@
         'chrome_resources',
         'chrome_strings',
         'component_extensions',
+        'net_internals_resources',
         'platform_locale_settings',
         'sync_proto',
         'theme_resources',
@@ -3101,6 +3102,31 @@
             'browser/resources/bookmark_manager/images/folder_closed_rtl.png',
             'browser/resources/bookmark_manager/images/folder_open.png',
             'browser/resources/bookmark_manager/images/folder_open_rtl.png',
+          ]
+        },
+      ]
+    },
+    {
+      'target_name': 'net_internals_resources',
+      'type': 'none',
+      # TODO(eroman): Once the msvs port supports it, change this to recursively
+      # copy the entire directory instead of listing the files.
+      # http://code.google.com/p/gyp/issues/detail?id=143.
+      'copies': [
+        {
+          'destination': '<(PRODUCT_DIR)/resources/net_internals',
+          'files': [
+            'browser/resources/net_internals/detailsview.js',
+            'browser/resources/net_internals/index.html',
+            'browser/resources/net_internals/layoutmanager.js',
+            'browser/resources/net_internals/loggrouper.js',
+            'browser/resources/net_internals/logviewpainter.js',
+            'browser/resources/net_internals/main.css',
+            'browser/resources/net_internals/main.js',
+            'browser/resources/net_internals/requestsview.js',
+            'browser/resources/net_internals/sourceentry.js',
+            'browser/resources/net_internals/timelineviewpainter.js',
+            'browser/resources/net_internals/util.js',
           ]
         },
       ]

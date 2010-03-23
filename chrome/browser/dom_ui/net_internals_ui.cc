@@ -5,16 +5,24 @@
 #include "chrome/browser/dom_ui/net_internals_ui.h"
 
 #include "app/resource_bundle.h"
+#include "base/file_util.h"
+#include "base/path_service.h"
 #include "base/singleton.h"
 #include "base/string_piece.h"
+#include "base/string_util.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/io_thread.h"
+#include "chrome/browser/net/chrome_net_log.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 
-#include "grit/browser_resources.h"
-
 namespace {
+
+// TODO(eroman): Bootstrap the net-internals page using the passively logged
+//               data.
 
 class NetInternalsHTMLSource : public ChromeURLDataManager::DataSource {
  public:
@@ -72,7 +80,8 @@ class NetInternalsMessageHandler
 class NetInternalsMessageHandler::IOThreadImpl
     : public base::RefCountedThreadSafe<
           NetInternalsMessageHandler::IOThreadImpl,
-          ChromeThread::DeleteOnUIThread> {
+          ChromeThread::DeleteOnUIThread>,
+      public ChromeNetLog::Observer {
  public:
   // Type for methods that can be used as MessageHandler callbacks.
   typedef void (IOThreadImpl::*MessageHandler)(const Value*);
@@ -80,8 +89,11 @@ class NetInternalsMessageHandler::IOThreadImpl
   // Creates a proxy for |handler| that will live on the IO thread.
   // |handler| is a weak pointer, since it is possible for the DOMMessageHandler
   // to be deleted on the UI thread while we were executing on the IO thread.
-  explicit IOThreadImpl(
-      const base::WeakPtr<NetInternalsMessageHandler>& handler);
+  // |io_thread| is the global IOThread (it is passed in as an argument since
+  // we need to grab it from the UI thread).
+  IOThreadImpl(
+      const base::WeakPtr<NetInternalsMessageHandler>& handler,
+      IOThread* io_thread);
 
   ~IOThreadImpl();
 
@@ -91,9 +103,6 @@ class NetInternalsMessageHandler::IOThreadImpl
   // on the IO thread.
   DOMUI::MessageCallback* CreateCallback(MessageHandler method);
 
-  // Called once the DOMUI has attached to the renderer, on the IO thread.
-  void Attach();
-
   // Called once the DOMUI has been deleted (i.e. renderer went away), on the
   // IO thread.
   void Detach();
@@ -102,8 +111,12 @@ class NetInternalsMessageHandler::IOThreadImpl
   // Javascript message handlers:
   //--------------------------------
 
-  // TODO(eroman): This is temporary!
-  void OnTestMessage(const Value* value);
+  // This message is called after the webpage's onloaded handler has fired.
+  // it indicates that the renderer is ready to start receiving captured data.
+  void OnRendererReady(const Value* value);
+
+  // ChromeNetLog::Observer implementation:
+  virtual void OnAddEntry(const net::NetLog::Entry& entry);
 
  private:
   class CallbackHelper;
@@ -120,6 +133,12 @@ class NetInternalsMessageHandler::IOThreadImpl
   // Pointer to the UI-thread message handler. Only access this from
   // the UI thread.
   base::WeakPtr<NetInternalsMessageHandler> handler_;
+
+  // The global IOThread, which contains the global NetLog to observer.
+  IOThread* io_thread_;
+
+  // True if we have attached an observer to the NetLog already.
+  bool is_observing_log_;
   friend class base::RefCountedThreadSafe<IOThreadImpl>;
 };
 
@@ -169,19 +188,30 @@ NetInternalsHTMLSource::NetInternalsHTMLSource()
 void NetInternalsHTMLSource::StartDataRequest(const std::string& path,
                                               bool is_off_the_record,
                                               int request_id) {
-  // Serve up the HTML contained in the resource bundle.
-  base::StringPiece html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_NET_INTERNALS_HTML));
+  // The provided |path| identifies a file in resources/net_internals/.
+  std::string data_string;
+  FilePath file_path;
+  PathService::Get(chrome::DIR_NET_INTERNALS, &file_path);
+  std::string filename = path.empty() ? "index.html" : path;
+  file_path = file_path.AppendASCII(filename);
 
-  scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
-  html_bytes->data.resize(html.size());
-  std::copy(html.begin(), html.end(), html_bytes->data.begin());
+  if (!file_util::ReadFileToString(file_path, &data_string)) {
+    LOG(WARNING) << "Could not read resource: " << file_path.value();
+    data_string = StringPrintf(
+        "Failed to read file RESOURCES/net_internals/%s",
+        filename.c_str());
+  }
 
-  SendResponse(request_id, html_bytes);
+  scoped_refptr<RefCountedBytes> bytes(new RefCountedBytes);
+  bytes->data.resize(data_string.size());
+  std::copy(data_string.begin(), data_string.end(), bytes->data.begin());
+
+  SendResponse(request_id, bytes);
 }
 
 std::string NetInternalsHTMLSource::GetMimeType(const std::string&) const {
+  // TODO(eroman): This is incorrect -- some of the subresources may be
+  //               css/javascript.
   return "text/html";
 }
 
@@ -203,23 +233,16 @@ NetInternalsMessageHandler::~NetInternalsMessageHandler() {
 
 DOMMessageHandler* NetInternalsMessageHandler::Attach(DOMUI* dom_ui) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  proxy_ = new IOThreadImpl(this->AsWeakPtr());
-
+  proxy_ = new IOThreadImpl(this->AsWeakPtr(), g_browser_process->io_thread());
   DOMMessageHandler* result = DOMMessageHandler::Attach(dom_ui);
-
-  // Notify the handler on the IO thread that a renderer is attached.
-  ChromeThread::PostTask(ChromeThread::IO, FROM_HERE,
-      NewRunnableMethod(proxy_.get(), &IOThreadImpl::Attach));
-
   return result;
 }
 
 void NetInternalsMessageHandler::RegisterMessages() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
-  // TODO(eroman): Register message handlers here.
-  dom_ui_->RegisterMessageCallback("testMessage",
-      proxy_->CreateCallback(&IOThreadImpl::OnTestMessage));
+  dom_ui_->RegisterMessageCallback("notifyReady",
+      proxy_->CreateCallback(&IOThreadImpl::OnRendererReady));
 }
 
 void NetInternalsMessageHandler::CallJavascriptFunction(
@@ -236,8 +259,11 @@ void NetInternalsMessageHandler::CallJavascriptFunction(
 ////////////////////////////////////////////////////////////////////////////////
 
 NetInternalsMessageHandler::IOThreadImpl::IOThreadImpl(
-    const base::WeakPtr<NetInternalsMessageHandler>& handler)
-    : handler_(handler) {
+    const base::WeakPtr<NetInternalsMessageHandler>& handler,
+    IOThread* io_thread)
+    : handler_(handler),
+      io_thread_(io_thread),
+      is_observing_log_(false) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 }
 
@@ -252,38 +278,131 @@ NetInternalsMessageHandler::IOThreadImpl::CreateCallback(
   return new CallbackHelper(this, method);
 }
 
-void NetInternalsMessageHandler::IOThreadImpl::Attach() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  // TODO(eroman): Register with network stack to observe events.
-}
-
 void NetInternalsMessageHandler::IOThreadImpl::Detach() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  // TODO(eroman): Unregister with network stack to observe events.
+  // Unregister with network stack to observe events.
+  if (is_observing_log_)
+    io_thread_->globals()->net_log->RemoveObserver(this);
 }
 
-void NetInternalsMessageHandler::IOThreadImpl::OnTestMessage(
+void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
     const Value* value) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(!is_observing_log_) << "notifyReady called twice";
 
-  // TODO(eroman): This is just a temporary method, to see something in
-  //               action. We expect to have been called with an array
-  //               containing 1 string, and print it to the screen.
-  std::string str;
-  if (value && value->GetType() == Value::TYPE_LIST) {
-    const ListValue* list_value = static_cast<const ListValue*>(value);
-    Value* list_member;
-    if (list_value->Get(0, &list_member) &&
-        list_member->GetType() == Value::TYPE_STRING) {
-      const StringValue* string_value =
-          static_cast<const StringValue*>(list_member);
-      string_value->GetAsString(&str);
+  // Register with network stack to observe events.
+  is_observing_log_ = true;
+  io_thread_->globals()->net_log->AddObserver(this);
+
+  // Tell the javascript about the relationship between event type enums and
+  // their symbolic name.
+  {
+    std::vector<net::NetLog::EventType> event_types =
+        net::NetLog::GetAllEventTypes();
+
+    DictionaryValue* dict = new DictionaryValue();
+
+    for (size_t i = 0; i < event_types.size(); ++i) {
+      const char* name = net::NetLog::EventTypeToString(event_types[i]);
+      dict->SetInteger(ASCIIToWide(name),
+                       static_cast<int>(event_types[i]));
     }
+
+    CallJavascriptFunction(L"setLogEventTypeConstants", dict);
   }
 
-  CallJavascriptFunction(
-      L"log",
-      Value::CreateStringValue("Browser received testMessage: " + str));
+  // Tell the javascript about the relationship between event phase enums and
+  // their symbolic name.
+  {
+    DictionaryValue* dict = new DictionaryValue();
+
+    dict->SetInteger(L"PHASE_BEGIN", net::NetLog::PHASE_BEGIN);
+    dict->SetInteger(L"PHASE_END", net::NetLog::PHASE_END);
+    dict->SetInteger(L"PHASE_NONE", net::NetLog::PHASE_NONE);
+
+    CallJavascriptFunction(L"setLogEventPhaseConstants", dict);
+  }
+
+  // Tell the javascript about the relationship between source type enums and
+  // their symbolic name.
+  // TODO(eroman): Don't duplicate the values, it will never stay up to date!
+  {
+    DictionaryValue* dict = new DictionaryValue();
+
+    dict->SetInteger(L"NONE", net::NetLog::SOURCE_NONE);
+    dict->SetInteger(L"URL_REQUEST", net::NetLog::SOURCE_URL_REQUEST);
+    dict->SetInteger(L"SOCKET_STREAM", net::NetLog::SOURCE_SOCKET_STREAM);
+    dict->SetInteger(L"INIT_PROXY_RESOLVER",
+                     net::NetLog::SOURCE_INIT_PROXY_RESOLVER);
+    dict->SetInteger(L"CONNECT_JOB", net::NetLog::SOURCE_CONNECT_JOB);
+
+    CallJavascriptFunction(L"setLogSourceTypeConstants", dict);
+  }
+
+  // Tell the javascript about the relationship between entry type enums and
+  // their symbolic name.
+  {
+    DictionaryValue* dict = new DictionaryValue();
+
+    dict->SetInteger(L"TYPE_EVENT", net::NetLog::Entry::TYPE_EVENT);
+    dict->SetInteger(L"TYPE_STRING", net::NetLog::Entry::TYPE_STRING);
+    dict->SetInteger(L"TYPE_ERROR_CODE", net::NetLog::Entry::TYPE_ERROR_CODE);
+
+    CallJavascriptFunction(L"setLogEntryTypeConstants", dict);
+  }
+}
+
+void NetInternalsMessageHandler::IOThreadImpl::OnAddEntry(
+    const net::NetLog::Entry& entry) {
+  DCHECK(is_observing_log_);
+
+  // JSONify the NetLog::Entry.
+  // TODO(eroman): Need a better format for this.
+  DictionaryValue* entry_dict = new DictionaryValue();
+
+  // Set the entry type.
+  {
+    net::NetLog::Entry::Type entry_type = entry.type;
+    if (entry_type == net::NetLog::Entry::TYPE_STRING_LITERAL)
+      entry_type = net::NetLog::Entry::TYPE_STRING;
+    entry_dict->SetInteger(L"type", static_cast<int>(entry_type));
+  }
+
+  // Set the entry time.
+  entry_dict->SetInteger(
+      L"time",
+      static_cast<int>((entry.time - base::TimeTicks()).InMilliseconds()));
+
+  // Set the entry source.
+  DictionaryValue* source_dict = new DictionaryValue();
+  source_dict->SetInteger(L"id", entry.source.id);
+  source_dict->SetInteger(L"type", static_cast<int>(entry.source.type));
+  entry_dict->Set(L"source", source_dict);
+
+  // Set the event info (if it is an event entry).
+  if (entry.type == net::NetLog::Entry::TYPE_EVENT) {
+    DictionaryValue* event_dict = new DictionaryValue();
+    event_dict->SetInteger(L"type", static_cast<int>(entry.event.type));
+    event_dict->SetInteger(L"phase", static_cast<int>(entry.event.phase));
+    entry_dict->Set(L"event", event_dict);
+  }
+
+  // Add the string information (events my have a string too, due to current
+  // hacks).
+  if (entry.type == net::NetLog::Entry::TYPE_STRING || !entry.string.empty()) {
+    entry_dict->SetString(L"string", entry.string);
+  }
+
+  // Treat string literals the same as strings.
+  if (entry.type == net::NetLog::Entry::TYPE_STRING_LITERAL) {
+    entry_dict->SetString(L"string", entry.literal);
+  }
+
+  if (entry.type == net::NetLog::Entry::TYPE_ERROR_CODE) {
+    entry_dict->SetInteger(L"error_code", entry.error_code);
+  }
+
+  CallJavascriptFunction(L"onLogEntryAdded", entry_dict);
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::DispatchToMessageHandler(

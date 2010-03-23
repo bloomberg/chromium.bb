@@ -1,0 +1,134 @@
+/*
+Copyright (c) 2010 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+*/
+
+* {
+  -webkit-box-sizing: border-box;
+}
+body {
+  font-family: sans-serif;
+}
+
+#filterBox {
+  background: #efefef;
+  padding: 5px;
+  border-bottom: 1px solid gray;
+  overflow: hidden;
+}
+
+#filterBox * {
+  white-space: nowrap;
+  font-family: sans-serif;
+  font-size: 12px;
+}
+
+#filterBox input {
+  width: 100%;
+}
+
+#actionBox {
+  background: #efefef;
+  white-space: nowrap;
+  border-top: 1px solid gray;
+  overflow: hidden;
+}
+
+#requestsBox {
+  overflow-x: hidden;
+  overflow-y: auto
+}
+
+#detailsBox {
+  overflow: auto;
+}
+
+#splitterBox {
+  background: #bfbfbf;
+  border-left: 1px inset black;
+  border-right: 1px solid black;
+  position:absolute;
+  width: 8px;
+  cursor: col-resize;
+  user-select: none;
+}
+
+#requestsListTable {
+  cursor: pointer;
+}
+
+#requestsListTable thead td {
+  text-align: left;
+  font-weight: bold;
+  background: rgb(229, 236, 249);
+}
+
+#requestsListTable td {
+  padding: 3px;
+  border-left: 1px solid #afafaf;
+  border-bottom: 1px solid #afafaf;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+#requestsListTableBody .mouseover {
+  background: rgb(244,244,255);
+}
+
+#requestsListTableBody .selected,
+#requestsListTableBody .mouseover .selected {
+  background: #C3D9FF;
+}
+
+#requestsListTableBody .source_CONNECT_JOB {
+  color: blue;
+}
+
+#requestsListTableBody .source_INIT_PROXY_RESOLVER {
+  color: orange;
+}
+
+.tabSwitcher {
+  margin-top: 10px;
+  margin-left: 10px;
+}
+
+.tabSwitcher th {
+  background: rgb(229,236,249);
+  cursor: pointer;
+  background-clip: border-box;
+  border-top-left-radius: 5px 5px;
+  border-top-right-radius: 5px 5px;
+  padding-left: 4px;
+  padding-top: 4px;
+  padding-right: 4px;
+  font-size: 12px;
+  margin-left: 30px;
+}
+
+.tabSwitcher th.selected, .tabSwitcherLine {
+  background: rgb(195,217,255);
+}
+
+.tabSwitcherLine {
+  height: 10px;
+}
+
+#detailsTabArea {
+  margin-top: 10px;
+}
+
+.logSourceEntry {
+  margin: 5px;
+}
+
+.logSourceEntry * p {
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.logSourceEntry * td {
+  font-size: 10px;
+}

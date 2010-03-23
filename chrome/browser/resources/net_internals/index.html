@@ -1,32 +1,65 @@
 <html>
+<!--
+Copyright (c) 2010 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
   <head>
-    <title>Under construction...</title>
-    <script>
-
-// TODO(eroman): This is all temporary...
-
-function sendTestMessageToBrowser() {
-  log("Sent message to browser");
-  chrome.send('testMessage', [String((new Date()).toLocaleTimeString())]);
-}
-
-function log(msg) {
-  var l = document.getElementById('log');
-  l.appendChild(document.createTextNode(msg + "\n"));
-}
-
-    </script>
+    <link tyle="text/css" rel="stylesheet" href="main.css" />
+    <script src="main.js"></script>
+    <script src="util.js"></script>
+    <script src="requestsview.js"></script>
+    <script src="detailsview.js"></script>
+    <script src="sourceentry.js"></script>
+    <script src="layoutmanager.js"></script>
+    <script src="timelineviewpainter.js"></script>
+    <script src="logviewpainter.js"></script>
+    <script src="loggrouper.js"></script>
   </head>
-
-
-  <body>
-    <p>This is a work in progress. See http://crbug.com/37421 for details.</p>
-
-    <input onclick="sendTestMessageToBrowser()"
-           value="SendTestMessageToBrowser"
-           type=button />
-
-    <pre id=log></pre>
-
+  <body onload="onLoaded()">
+    <!-- Filter Box: This the top bar which contains the search box.  -->
+    <div id=filterBox>
+      <table width=100% height=100%>
+        <tr>
+          <td width=1%>Filter:</td>
+          <td width=98%><input type="search" incremental id=filterInput /></td>
+          <td width=1% id=filterCount>(1 of 34)</td>
+        </tr>
+      </table>
+    </div>
+    <!-- Requests Box: This the panel on the left which lists the requests -->
+    <div id=requestsBox>
+      <table id=requestsListTable cellspacing=0 cellpadding=0>
+        <thead>
+          <tr>
+            <td><input type=checkbox id=selectAll /></td>
+            <td>ID</td>
+            <td>Source</td>
+            <td>URL</td>
+          </tr>
+        </thead>
+        <!-- Requests table body: This is where request rows go into -->
+        <tbody id=requestsListTableBody></tbody>
+      </table>
+    </div>
+    <!-- Action Box: This is a button bar along the bottom -->
+    <div id=actionBox>
+      <input type=button value="Stop capturing" onclick="alert('TODO')" />
+      <input type=button value="Delete selected" id=deleteSelected />
+    </div>
+    <!-- Splitter Box: This is a handle to resize the vertical divider -->
+    <div id=splitterBox></div>
+    <!-- Details box: This is the panel on the right which shows information -->
+    <div id=detailsBox>
+      <table class=tabSwitcher cellspacing=0>
+        <tr>
+          <th id=detailsLogTabHandle>Log</th>
+          <td class=tabSwitcherSpacer>&nbsp;</td>
+          <th id=detailsTimelineTabHandle>Timeline</th>
+        </tr>
+      </table>
+      <div class=tabSwitcherLine></div>
+      <div id=detailsTabArea></div>
+    </div>
   </body>
 </html>

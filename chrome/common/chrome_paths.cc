@@ -131,6 +131,11 @@ bool PathProvider(int key, FilePath* result) {
         return false;
       cur = cur.Append(FILE_PATH_LITERAL("inspector"));
       break;
+    case chrome::DIR_NET_INTERNALS:
+      if (!PathService::Get(chrome::DIR_RESOURCES, &cur))
+        return false;
+      cur = cur.Append(FILE_PATH_LITERAL("net_internals"));
+      break;
     case chrome::DIR_APP_DICTIONARIES:
 #if defined(OS_LINUX) || defined(OS_MACOSX)
       // We can't write into the EXE dir on Linux, so keep dictionaries

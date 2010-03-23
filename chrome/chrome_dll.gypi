@@ -387,6 +387,7 @@
                   'files': [
                     '<(PRODUCT_DIR)/resources/inspector/',
                     '<(PRODUCT_DIR)/resources/bookmark_manager/'
+                    '<(PRODUCT_DIR)/resources/net_internals/'
                   ],
                   'conditions': [
                     ['mac_breakpad==1', {
