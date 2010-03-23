@@ -37,9 +37,6 @@ deps = {
   "src/third_party/protobuf2/src":
     "http://protobuf.googlecode.com/svn/trunk@305",
 
-  "src/tools/gyp":
-    "http://gyp.googlecode.com/svn/trunk@800",
-
   "src/v8":
     "http://v8.googlecode.com/svn/trunk@4209",
 
@@ -145,6 +142,9 @@ deps_os = {
       ("http://nativeclient.googlecode.com/svn/trunk/src/third_party/mingw-w64/mingw/bin@" +
        Var("nacl_revision")),
 
+    "src/tools/gyp":
+      "http://gyp.googlecode.com/svn/trunk@794",
+
   },
   "mac": {
     "src/chrome/tools/test/reference_build/chrome_mac":
@@ -171,6 +171,9 @@ deps_os = {
 
     "src/third_party/swig/mac":
       "/trunk/deps/third_party/swig/mac@" + Var("swig_revision"),
+
+    "src/tools/gyp":
+      "http://gyp.googlecode.com/svn/trunk@800",
   },
   "unix": {
     # Linux, really.
@@ -189,6 +192,9 @@ deps_os = {
 
     "src/third_party/swig/linux":
       "/trunk/deps/third_party/swig/linux@" + Var("swig_revision"),
+
+    "src/tools/gyp":
+      "http://gyp.googlecode.com/svn/trunk@800",
   },
 }
 
