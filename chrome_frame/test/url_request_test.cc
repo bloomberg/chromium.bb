@@ -85,6 +85,46 @@ TEST(UrlmonUrlRequestTest, Simple1) {
   server.TearDown();
 }
 
+// Same as Simple1 except we use the HEAD verb to fetch only the headers
+// from the server.
+TEST(UrlmonUrlRequestTest, Head) {
+  MockUrlDelegate mock;
+  ChromeFrameHTTPServer server;
+  chrome_frame_test::TimedMsgLoop loop;
+  win_util::ScopedCOMInitializer init_com;
+  CComObjectStackEx<UrlmonUrlRequest> request;
+
+  server.SetUp();
+  request.AddRef();
+  request.Initialize(&mock, 1,  // request_id
+      server.Resolve(L"files/chrome_frame_window_open.html").spec(),
+      "head",
+      "",      // referrer
+      "",      // extra request
+      NULL,    // upload data
+      true);   // frame busting
+
+  testing::InSequence s;
+  EXPECT_CALL(mock, OnResponseStarted(1, testing::_, testing::_, testing::_,
+                                      testing::_, testing::_, testing::_))
+    .Times(1)
+    .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(CreateFunctor(
+        &request, &UrlmonUrlRequest::Read, 512))));
+
+
+  // For HEAD requests we don't expect content reads.
+  EXPECT_CALL(mock, OnReadComplete(1, testing::_, testing::_)).Times(0);
+
+  EXPECT_CALL(mock, OnResponseEnd(1, testing::_))
+    .Times(1)
+    .WillOnce(QUIT_LOOP_SOON(loop, 2));
+
+  request.Start();
+  loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+  request.Release();
+  server.TearDown();
+}
+
 TEST(UrlmonUrlRequestTest, UnreachableUrl) {
   MockUrlDelegate mock;
   chrome_frame_test::TimedMsgLoop loop;

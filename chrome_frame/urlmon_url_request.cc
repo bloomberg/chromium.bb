@@ -146,6 +146,8 @@ HRESULT UrlmonUrlRequest::SetRequestData(RequestData* data) {
 void UrlmonUrlRequest::StealMoniker(IMoniker** moniker) {
   // Could be called in any thread. There should be no race
   // since moniker_ is not released while we are in manager's request map.
+  DLOG(INFO) << __FUNCTION__ << " id: " << id();
+  DLOG_IF(WARNING, moniker == NULL) << __FUNCTION__ << " no moniker";
   *moniker = moniker_.Detach();
 }
 
@@ -311,6 +313,12 @@ STDMETHODIMP UrlmonUrlRequest::GetBindInfo(DWORD* bind_flags,
   } else if (LowerCaseEqualsASCII(method(), "put")) {
     bind_info->dwBindVerb = BINDVERB_PUT;
     upload_data = true;
+  } else if (LowerCaseEqualsASCII(method(), "head")) {
+    std::wstring verb(ASCIIToWide(StringToUpperASCII(method())));
+    bind_info->dwBindVerb = BINDVERB_CUSTOM;
+    bind_info->szCustomVerb = reinterpret_cast<wchar_t*>(
+        ::CoTaskMemAlloc((verb.length() + 1) * sizeof(wchar_t)));
+    lstrcpyW(bind_info->szCustomVerb, verb.c_str());
   } else {
     NOTREACHED() << "Unknown HTTP method.";
     status_.set_result(URLRequestStatus::FAILED, net::ERR_METHOD_NOT_SUPPORTED);
@@ -912,14 +920,14 @@ void UrlmonUrlRequestManager::StartRequestWorker(int request_id,
 }
 
 void UrlmonUrlRequestManager::ReadRequest(int request_id, int bytes_to_read) {
-  DLOG(INFO) << __FUNCTION__;
+  DLOG(INFO) << __FUNCTION__ << " id: " << request_id;
   ExecuteInWorkerThread(FROM_HERE, NewRunnableMethod(this,
       &UrlmonUrlRequestManager::ReadRequestWorker, request_id, bytes_to_read));
 }
 
 void UrlmonUrlRequestManager::ReadRequestWorker(int request_id,
                                                 int bytes_to_read) {
-  DLOG(INFO) << __FUNCTION__;
+  DLOG(INFO) << __FUNCTION__ << " id: " << request_id;
   DCHECK_EQ(worker_thread_.thread_id(), PlatformThread::CurrentId());
   scoped_refptr<UrlmonUrlRequest> request = LookupRequest(request_id);
   // if zero, it may just have had network error.
@@ -929,13 +937,13 @@ void UrlmonUrlRequestManager::ReadRequestWorker(int request_id,
 }
 
 void UrlmonUrlRequestManager::EndRequest(int request_id) {
-  DLOG(INFO) << __FUNCTION__;
+  DLOG(INFO) << __FUNCTION__ << " id: " << request_id;
   ExecuteInWorkerThread(FROM_HERE, NewRunnableMethod(this,
       &UrlmonUrlRequestManager::EndRequestWorker, request_id));
 }
 
 void UrlmonUrlRequestManager::EndRequestWorker(int request_id) {
-  DLOG(INFO) << __FUNCTION__;
+  DLOG(INFO) << __FUNCTION__ << " id: " << request_id;
   DCHECK_EQ(worker_thread_.thread_id(), PlatformThread::CurrentId());
   scoped_refptr<UrlmonUrlRequest> request = LookupRequest(request_id);
   if (request) {
@@ -1068,7 +1076,11 @@ void UrlmonUrlRequestManager::StealMonikerFromRequestWorker(int request_id,
     if (request) {
       request->StealMoniker(moniker);
       request->Stop();
+    } else {
+      DLOG(INFO) << __FUNCTION__ << " request not found.";
     }
+  } else {
+    DLOG(INFO) << __FUNCTION__ << " request stopping.";
   }
 
   done->Signal();
