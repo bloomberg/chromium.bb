@@ -268,7 +268,8 @@ TEST_F(WorkerTest, WorkerReplaceSelf) {
   RunWorkerFastLayoutTest("worker-replace-self.html");
 }
 
-TEST_F(WorkerTest, WorkerScriptError) {
+// http://crbug.com/38918
+TEST_F(WorkerTest, DISABLED_WorkerScriptError) {
   RunWorkerFastLayoutTest("worker-script-error.html");
 }
 
