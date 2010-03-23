@@ -19,9 +19,11 @@
 #include "webkit/glue/webdropdata.h"
 #include "webkit/glue/window_open_disposition.h"
 
-using WebKit::WebDragOperationCopy;
-using WebKit::WebDragOperationMove;
 using WebKit::WebDragOperationsMask;
+using WebKit::WebDragOperationNone;
+using WebKit::WebDragOperationCopy;
+using WebKit::WebDragOperationLink;
+using WebKit::WebDragOperationMove;
 
 namespace {
 
@@ -34,6 +36,27 @@ DWORD GetPreferredDropEffect(DWORD effect) {
   if (effect & DROPEFFECT_MOVE)
     return DROPEFFECT_MOVE;
   return DROPEFFECT_NONE;
+}
+
+DWORD GetPreferredDragCursor(WebDragOperationsMask op) {
+  if (op & WebDragOperationCopy)
+    return DROPEFFECT_COPY;
+  if (op & WebDragOperationLink)
+    return DROPEFFECT_LINK;
+  if (op & WebDragOperationMove)
+    return DROPEFFECT_MOVE;
+  return DROPEFFECT_NONE;
+}
+
+WebDragOperationsMask WinDragOpToWebDragOp(DWORD effect) {
+  WebDragOperationsMask op = WebDragOperationNone;
+  if (effect & DROPEFFECT_COPY)
+    op = static_cast<WebDragOperationsMask>(op | WebDragOperationCopy);
+  if (effect & DROPEFFECT_LINK)
+    op = static_cast<WebDragOperationsMask>(op | WebDragOperationLink);
+  if (effect & DROPEFFECT_MOVE)
+    op = static_cast<WebDragOperationsMask>(op | WebDragOperationMove);
+  return op;
 }
 
 }  // anonymous namespace
@@ -85,7 +108,7 @@ WebDropTarget::WebDropTarget(HWND source_hwnd, TabContents* tab_contents)
     : BaseDropTarget(source_hwnd),
       tab_contents_(tab_contents),
       current_rvh_(NULL),
-      is_drop_target_(false),
+      drag_cursor_(WebDragOperationNone),
       interstitial_drop_target_(new InterstitialDropTarget(tab_contents)) {
 }
 
@@ -112,16 +135,14 @@ DWORD WebDropTarget::OnDragEnter(IDataObject* data_object,
   if (drop_data.url.is_empty())
     OSExchangeDataProviderWin::GetPlainTextURL(data_object, &drop_data.url);
 
-  is_drop_target_ = true;
+  drag_cursor_ = WebDragOperationNone;
 
   POINT client_pt = cursor_position;
   ScreenToClient(GetHWND(), &client_pt);
   tab_contents_->render_view_host()->DragTargetDragEnter(drop_data,
       gfx::Point(client_pt.x, client_pt.y),
       gfx::Point(cursor_position.x, cursor_position.y),
-      static_cast<WebDragOperationsMask>(WebDragOperationCopy |
-                                         WebDragOperationMove));
-      // FIXME(snej): Send actual operation
+      WinDragOpToWebDragOp(effect));
 
   // This is non-null if tab_contents_ is showing an ExtensionDOMUI with
   // support for (at the moment experimental) drag and drop extensions.
@@ -153,9 +174,7 @@ DWORD WebDropTarget::OnDragOver(IDataObject* data_object,
   tab_contents_->render_view_host()->DragTargetDragOver(
       gfx::Point(client_pt.x, client_pt.y),
       gfx::Point(cursor_position.x, cursor_position.y),
-      static_cast<WebDragOperationsMask>(WebDragOperationCopy |
-                                         WebDragOperationMove));
-      // FIXME(snej): Send actual operation
+      WinDragOpToWebDragOp(effect));
 
   if (tab_contents_->GetBookmarkDragDelegate()) {
     OSExchangeData os_exchange_data(new OSExchangeDataProviderWin(data_object));
@@ -164,10 +183,7 @@ DWORD WebDropTarget::OnDragOver(IDataObject* data_object,
       tab_contents_->GetBookmarkDragDelegate()->OnDragOver(bookmark_drag_data);
   }
 
-  if (!is_drop_target_)
-    return DROPEFFECT_NONE;
-
-  return GetPreferredDropEffect(effect);
+  return GetPreferredDragCursor(drag_cursor_);
 }
 
 void WebDropTarget::OnDragLeave(IDataObject* data_object) {

@@ -26,6 +26,9 @@
 #include "webkit/glue/webdropdata.h"
 
 using WebKit::WebDragOperationsMask;
+using WebKit::WebDragOperationCopy;
+using WebKit::WebDragOperationLink;
+using WebKit::WebDragOperationMove;
 
 namespace {
 
@@ -56,6 +59,17 @@ LRESULT CALLBACK MsgFilterProc(int code, WPARAM wparam, LPARAM lparam) {
     }
   }
   return CallNextHookEx(msg_hook, code, wparam, lparam);
+}
+
+DWORD WebDragOpToWinDragOp(WebDragOperationsMask op) {
+  DWORD win_op = DROPEFFECT_NONE;
+  if (op & WebDragOperationCopy)
+    win_op |= DROPEFFECT_COPY;
+  if (op & WebDragOperationLink)
+    win_op |= DROPEFFECT_LINK;
+  if (op & WebDragOperationMove)
+    win_op |= DROPEFFECT_MOVE;
+  return win_op;
 }
 
 }  // namespace
@@ -287,8 +301,7 @@ void TabContentsDragWin::DoDragging(const WebDropData& drop_data,
   bool old_state = MessageLoop::current()->NestableTasksAllowed();
   MessageLoop::current()->SetNestableTasksAllowed(true);
   DoDragDrop(OSExchangeDataProviderWin::GetIDataObject(data), drag_source_,
-             DROPEFFECT_COPY | DROPEFFECT_LINK, &effects);
-  // TODO(snej): Use 'ops' param instead of hardcoding dropeffects
+             WebDragOpToWinDragOp(ops), &effects);
   MessageLoop::current()->SetNestableTasksAllowed(old_state);
 }
 

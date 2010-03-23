@@ -7,6 +7,7 @@
 
 #include "base/base_drop_target.h"
 #include "base/scoped_ptr.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDragOperation.h"
 
 class InterstitialDropTarget;
 class RenderViewHost;
@@ -27,8 +28,8 @@ class WebDropTarget : public BaseDropTarget {
   WebDropTarget(HWND source_hwnd, TabContents* contents);
   virtual ~WebDropTarget();
 
-  void set_is_drop_target(bool is_drop_target) {
-    is_drop_target_ = is_drop_target;
+  void set_drag_cursor(WebKit::WebDragOperation op) {
+    drag_cursor_ = op;
   }
 
  protected:
@@ -61,7 +62,7 @@ class WebDropTarget : public BaseDropTarget {
 
   // Used to determine what cursor we should display when dragging over web
   // content area.  This can be updated async during a drag operation.
-  bool is_drop_target_;
+  WebKit::WebDragOperation drag_cursor_;
 
   // A special drop target handler for when we try to d&d while an interstitial
   // page is showing.

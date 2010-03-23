@@ -285,7 +285,7 @@ void TabContentsViewWin::CancelDragAndCloseTab() {
 }
 
 void TabContentsViewWin::UpdateDragCursor(WebDragOperation operation) {
-  drop_target_->set_is_drop_target(operation != WebDragOperationNone);
+  drop_target_->set_drag_cursor(operation);
 }
 
 void TabContentsViewWin::GotFocus() {
