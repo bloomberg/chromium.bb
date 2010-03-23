@@ -447,7 +447,7 @@ HRESULT ChromeFrameActivex::IOleObject_SetClientSite(
     url_fetcher_.set_frame_busting(!is_privileged_);
     automation_client_->SetUrlFetcher(&url_fetcher_);
     if (!InitializeAutomation(profile_name, chrome_extra_arguments,
-                              IsIEInPrivate(), true)) {
+                              IsIEInPrivate())) {
       return E_FAIL;
     }
   }

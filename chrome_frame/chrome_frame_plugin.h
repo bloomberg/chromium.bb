@@ -51,22 +51,14 @@ END_MSG_MAP()
 
   bool InitializeAutomation(const std::wstring& profile_name,
                             const std::wstring& extra_chrome_arguments,
-                            bool incognito, bool is_widget_mode) {
+                            bool incognito) {
     DCHECK(IsValid());
     // We don't want to do incognito when privileged, since we're
     // running in browser chrome or some other privileged context.
     bool incognito_mode = !is_privileged_ && incognito;
-    ChromeFrameLaunchParams chrome_launch_params = {
-      kCommandExecutionTimeout,
-      GURL(),
-      GURL(),
-      profile_name,
-      extra_chrome_arguments,
-      true,
-      incognito_mode,
-      is_widget_mode
-    };
-    return automation_client_->Initialize(this, chrome_launch_params);
+    return automation_client_->Initialize(this, kCommandExecutionTimeout, true,
+                                          profile_name, extra_chrome_arguments,
+                                          incognito_mode);
   }
 
   // ChromeFrameDelegate implementation

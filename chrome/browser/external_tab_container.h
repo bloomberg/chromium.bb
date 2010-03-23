@@ -65,8 +65,7 @@ class ExternalTabContainer : public TabContentsDelegate,
             bool handle_top_level_requests,
             TabContents* existing_tab_contents,
             const GURL& initial_url,
-            const GURL& referrer,
-            bool infobars_enabled);
+            const GURL& referrer);
 
   // Unhook the keystroke listener and notify about the closing TabContents.
   // This function gets called from three places, which is fine.
@@ -203,8 +202,6 @@ class ExternalTabContainer : public TabContentsDelegate,
 
   virtual void TabContentsCreated(TabContents* new_contents);
 
-  virtual bool infobars_enabled();
-
  protected:
   // Overridden from views::WidgetWin:
   virtual LRESULT OnCreate(LPCREATESTRUCT create_struct);
@@ -327,9 +324,6 @@ class ExternalTabContainer : public TabContentsDelegate,
   // Set to true if the ExternalTabContainer instance is waiting for an ack
   // from the host.
   bool pending_;
-
-  // Set to true if the ExternalTabContainer if infobars should be enabled.
-  bool infobars_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalTabContainer);
 };

@@ -356,7 +356,6 @@ struct ExternalTabSettings {
   bool handle_top_level_requests;
   GURL initial_url;
   GURL referrer;
-  bool infobars_enabled;
 };
 
 // Traits for ExternalTabSettings structure to pack/unpack.

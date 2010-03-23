@@ -88,7 +88,6 @@ struct ChromeFrameLaunchParams {
   std::wstring extra_chrome_arguments;
   bool perform_version_check;
   bool incognito_mode;
-  bool is_widget_mode;
 };
 
 // We must create and destroy automation proxy in a thread with a message loop.
@@ -159,7 +158,11 @@ class ChromeFrameAutomationClient
 
   // Called from UI thread.
   virtual bool Initialize(ChromeFrameDelegate* chrome_frame_delegate,
-                          const ChromeFrameLaunchParams& chrome_launch_params);
+                          int automation_server_launch_timeout,
+                          bool perform_version_check,
+                          const std::wstring& profile_name,
+                          const std::wstring& extra_chrome_arguments,
+                          bool incognito);
   void Uninitialize();
 
   virtual bool InitiateNavigation(const std::string& url,

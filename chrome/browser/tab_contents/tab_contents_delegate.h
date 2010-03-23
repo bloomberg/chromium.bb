@@ -283,9 +283,6 @@ class TabContentsDelegate : public AutomationResourceRoutingDelegate {
   // typically happens when popups are created.
   virtual void TabContentsCreated(TabContents* new_contents) {}
 
-  // Returns whether infobars are enabled. Overrideable by child classes.
-  virtual bool infobars_enabled() { return true; }
-
  protected:
   ~TabContentsDelegate() {}
 };

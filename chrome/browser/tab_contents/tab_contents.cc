@@ -951,11 +951,6 @@ bool TabContents::FocusLocationBarByDefault() {
 }
 
 void TabContents::AddInfoBar(InfoBarDelegate* delegate) {
-  if (delegate_ && !delegate_->infobars_enabled()) {
-    delegate->InfoBarClosed();
-    return;
-  }
-
   // Look through the existing InfoBarDelegates we have for a match. If we've
   // already got one that matches, then we don't add the new one.
   for (int i = 0; i < infobar_delegate_count(); ++i) {
@@ -982,10 +977,6 @@ void TabContents::AddInfoBar(InfoBarDelegate* delegate) {
 }
 
 void TabContents::RemoveInfoBar(InfoBarDelegate* delegate) {
-  if (delegate_ && !delegate_->infobars_enabled()) {
-    return;
-  }
-
   std::vector<InfoBarDelegate*>::iterator it =
       find(infobar_delegates_.begin(), infobar_delegates_.end(), delegate);
   if (it != infobar_delegates_.end()) {
@@ -1006,11 +997,6 @@ void TabContents::RemoveInfoBar(InfoBarDelegate* delegate) {
 
 void TabContents::ReplaceInfoBar(InfoBarDelegate* old_delegate,
                                  InfoBarDelegate* new_delegate) {
-  if (delegate_ && !delegate_->infobars_enabled()) {
-    new_delegate->InfoBarClosed();
-    return;
-  }
-
   std::vector<InfoBarDelegate*>::iterator it =
       find(infobar_delegates_.begin(), infobar_delegates_.end(), old_delegate);
   DCHECK(it != infobar_delegates_.end());
