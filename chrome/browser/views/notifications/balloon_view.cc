@@ -315,7 +315,7 @@ void BalloonViewImpl::Show(Balloon* balloon) {
                                               Widget::DeleteOnDestroy);
   html_container_->SetAlwaysOnTop(true);
   html_container_->Init(NULL, contents_rect);
-  html_container_->SetContentsView(html_contents_);
+  html_container_->SetContentsView(html_contents_->view());
 
   gfx::Rect balloon_rect(x(), y(), width(), height());
   frame_container_ = Widget::CreatePopupWidget(Widget::Transparent,

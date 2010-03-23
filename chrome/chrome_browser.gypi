@@ -1568,6 +1568,8 @@
         'browser/net/websocket_experiment/websocket_experiment_task.h',
         'browser/notifications/balloon.cc',
         'browser/notifications/balloon.h',
+        'browser/notifications/balloon_host.h',
+        'browser/notifications/balloon_host.cc',
         'browser/notifications/balloon_collection.cc',
         'browser/notifications/balloon_collection.h',
         'browser/notifications/balloon_collection_impl.h',
@@ -2661,7 +2663,7 @@
             ['exclude', '^browser/views/'],
           ],
           'conditions': [
-            ['OS=="linux" and (toolkit_views==1 or chromeos==1)',{
+            ['OS=="linux" and (toolkit_views==1 or chromeos==1)',{      
               'dependencies': [
                 '../views/views.gyp:views',
               ],

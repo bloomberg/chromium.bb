@@ -72,7 +72,7 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   balloon_ = balloon;
 
   html_contents_ = new BalloonViewHost(balloon);
-  AddChildView(html_contents_);
+  AddChildView(html_contents_->view());
   if (controls_) {
     close_button_ = new views::TextButton(this, dismiss_text);
     close_button_->SetIcon(*rb.GetBitmapNamed(IDR_BALLOON_CLOSE));
@@ -109,8 +109,9 @@ void BalloonViewImpl::Show(Balloon* balloon) {
 
 void BalloonViewImpl::Update() {
   stale_ = false;
-  html_contents_->render_view_host()->NavigateToURL(
-      balloon_->notification().content_url());
+  if (html_contents_->render_view_host())
+    html_contents_->render_view_host()->NavigateToURL(
+        balloon_->notification().content_url());
 }
 
 void BalloonViewImpl::Close(bool by_user) {
@@ -145,7 +146,7 @@ void BalloonViewImpl::Layout() {
   int x = width() - button_size.width();
   int y = height() - button_size.height();
 
-  html_contents_->SetBounds(0, 0, width(), y);
+  html_contents_->view()->SetBounds(0, 0, width(), y);
   if (html_contents_->render_view_host()) {
     RenderWidgetHostView* view = html_contents_->render_view_host()->view();
     if (view)

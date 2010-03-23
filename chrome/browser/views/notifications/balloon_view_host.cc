@@ -4,14 +4,7 @@
 
 #include "chrome/browser/views/notifications/balloon_view_host.h"
 
-#include "base/string_util.h"
-#include "chrome/browser/browser_list.h"
-#include "chrome/browser/extensions/extension_process_manager.h"
-#include "chrome/browser/in_process_webkit/dom_storage_context.h"
-#include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/notifications/balloon.h"
-#include "chrome/browser/notifications/notification.h"
-#include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #if defined(OS_WIN)
@@ -20,13 +13,6 @@
 #if defined(OS_LINUX)
 #include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
 #endif
-#include "chrome/browser/renderer_host/site_instance.h"
-#include "chrome/common/bindings_policy.h"
-#include "chrome/common/notification_service.h"
-#include "chrome/common/notification_type.h"
-#include "chrome/common/render_messages.h"
-#include "chrome/common/renderer_preferences.h"
-#include "chrome/common/url_constants.h"
 #include "views/widget/widget.h"
 #if defined(OS_WIN)
 #include "views/widget/widget_win.h"
@@ -35,138 +21,60 @@
 #include "views/widget/widget_gtk.h"
 #endif
 
+class BalloonViewHostView : public views::NativeViewHost {
+ public:
+  explicit BalloonViewHostView(BalloonViewHost* host)
+      : host_(host),
+        initialized_(false) {
+  }
+
+  virtual void ViewHierarchyChanged(bool is_add,
+                                    views::View* parent,
+                                    views::View* child) {
+    NativeViewHost::ViewHierarchyChanged(is_add, parent, child);
+    if (is_add && GetWidget() && !initialized_)
+      host_->Init(GetWidget()->GetNativeView());
+    initialized_ = true;
+  }
+
+ private:
+  // The host owns this object.
+  BalloonViewHost* host_;
+
+  bool initialized_;
+};
+
 BalloonViewHost::BalloonViewHost(Balloon* balloon)
-    : initialized_(false),
-      balloon_(balloon),
-      render_view_host_(NULL),
-      should_notify_on_disconnect_(false),
-      is_extension_page_(false) {
-  DCHECK(balloon_);
-
-  // If the notification is for an extension URL, make sure to use the extension
-  // process to render it, so that it can communicate with other views in the
-  // extension.
-  const GURL& balloon_url = balloon_->notification().content_url();
-  if (balloon_url.SchemeIs(chrome::kExtensionScheme)) {
-    is_extension_page_ = true;
-    site_instance_ =
-      balloon_->profile()->GetExtensionProcessManager()->GetSiteInstanceForURL(
-          balloon_url);
-  } else {
-    site_instance_ = SiteInstance::CreateSiteInstance(balloon_->profile());
-  }
+    : BalloonHost(balloon) {
+  native_host_.reset(new BalloonViewHostView(this));
 }
 
-void BalloonViewHost::Shutdown() {
-  if (render_view_host_) {
-    render_view_host_->Shutdown();
-    render_view_host_ = NULL;
-  }
+void BalloonViewHost::Init(gfx::NativeView parent_native_view) {
+  parent_native_view_ = parent_native_view;
+  BalloonHost::Init();
 }
 
-WebPreferences BalloonViewHost::GetWebkitPrefs() {
-  WebPreferences prefs;
-  prefs.allow_scripts_to_close_windows = true;
-  return prefs;
-}
+void BalloonViewHost::InitRenderWidgetHostView() {
+  DCHECK(render_view_host_);
 
-void BalloonViewHost::Close(RenderViewHost* render_view_host) {
-  balloon_->CloseByScript();
-}
-
-void BalloonViewHost::RenderViewCreated(RenderViewHost* render_view_host) {
-  render_view_host->Send(new ViewMsg_EnablePreferredSizeChangedMode(
-      render_view_host->routing_id()));
-}
-
-void BalloonViewHost::RendererReady(RenderViewHost* /* render_view_host */) {
-  should_notify_on_disconnect_ = true;
-  NotificationService::current()->Notify(
-      NotificationType::NOTIFY_BALLOON_CONNECTED,
-      Source<Balloon>(balloon_), NotificationService::NoDetails());
-}
-
-void BalloonViewHost::RendererGone(RenderViewHost* /* render_view_host */) {
-  if (!should_notify_on_disconnect_)
-    return;
-
-  should_notify_on_disconnect_ = false;
-  NotificationService::current()->Notify(
-      NotificationType::NOTIFY_BALLOON_DISCONNECTED,
-      Source<Balloon>(balloon_), NotificationService::NoDetails());
-}
-
-// RenderViewHostDelegate::View methods implemented to allow links to
-// open pages in new tabs.
-void BalloonViewHost::CreateNewWindow(int route_id) {
-  delegate_view_helper_.CreateNewWindow(
-      route_id, balloon_->profile(), site_instance_.get(),
-      DOMUIFactory::GetDOMUIType(balloon_->notification().content_url()), NULL);
-}
-
-void BalloonViewHost::ShowCreatedWindow(int route_id,
-                                        WindowOpenDisposition disposition,
-                                        const gfx::Rect& initial_pos,
-                                        bool user_gesture) {
-  // Don't allow pop-ups from notifications.
-  if (disposition == NEW_POPUP)
-    return;
-
-  TabContents* contents = delegate_view_helper_.GetCreatedWindow(route_id);
-  if (contents) {
-    Browser* browser = BrowserList::GetLastActive();
-    browser->AddTabContents(contents, disposition, initial_pos, user_gesture);
-  }
-}
-
-void BalloonViewHost::UpdatePreferredSize(const gfx::Size& new_size) {
-  balloon_->SetContentPreferredSize(new_size);
-}
-
-void BalloonViewHost::Init(gfx::NativeView parent_hwnd) {
-  DCHECK(!render_view_host_) << "BalloonViewHost already initialized.";
-  int64 session_storage_namespace_id = balloon_->profile()->GetWebKitContext()->
-      dom_storage_context()->AllocateSessionStorageNamespaceId();
-  RenderViewHost* rvh = new RenderViewHost(site_instance_.get(),
-                                           this, MSG_ROUTING_NONE,
-                                           session_storage_namespace_id);
-  render_view_host_ = rvh;
-
-  if (is_extension_page_) {
-    rvh->AllowBindings(BindingsPolicy::EXTENSION);
-  }
-
-  // Pointer is owned by the RVH.
-  RenderWidgetHostView* view = RenderWidgetHostView::CreateViewForWidget(rvh);
-  rvh->set_view(view);
+  render_widget_host_view_ =
+      RenderWidgetHostView::CreateViewForWidget(render_view_host_);
 
   // TODO(johnnyg): http://crbug.com/23954.  Need a cross-platform solution.
 #if defined(OS_WIN)
   RenderWidgetHostViewWin* view_win =
-      static_cast<RenderWidgetHostViewWin*>(view);
+      static_cast<RenderWidgetHostViewWin*>(render_widget_host_view_);
 
   // Create the HWND.
-  HWND hwnd = view_win->Create(parent_hwnd);
+  HWND hwnd = view_win->Create(parent_native_view_);
   view_win->ShowWindow(SW_SHOW);
-  Attach(hwnd);
+  native_host_->Attach(hwnd);
 #elif defined(OS_LINUX)
   RenderWidgetHostViewGtk* view_gtk =
-      static_cast<RenderWidgetHostViewGtk*>(view);
+      static_cast<RenderWidgetHostViewGtk*>(render_widget_host_view_);
   view_gtk->InitAsChild();
-  Attach(view_gtk->native_view());
+  native_host_->Attach(view_gtk->native_view());
 #else
   NOTIMPLEMENTED();
 #endif
-
-  // Start up the renderer and point it at the balloon contents URL.
-  rvh->CreateRenderView(GetProfile()->GetRequestContext());
-  rvh->NavigateToURL(balloon_->notification().content_url());
-  initialized_ = true;
-}
-
-void BalloonViewHost::ViewHierarchyChanged(bool is_add, views::View* parent,
-                                           views::View* child) {
-  NativeViewHost::ViewHierarchyChanged(is_add, parent, child);
-  if (is_add && GetWidget() && !initialized_)
-    Init(GetWidget()->GetNativeView());
 }
