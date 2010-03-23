@@ -79,6 +79,9 @@ void NativeButton::SetLabel(const std::wstring& label) {
 
   if (native_wrapper_)
     native_wrapper_->UpdateLabel();
+
+  // Update the accessible name whenever the label changes.
+  SetAccessibleName(label);
 }
 
 void NativeButton::SetIsDefault(bool is_default) {

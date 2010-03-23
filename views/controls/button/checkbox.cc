@@ -160,12 +160,6 @@ bool Checkbox::GetAccessibleRole(AccessibilityTypes::Role* role) {
   return true;
 }
 
-bool Checkbox::GetAccessibleName(std::wstring* name) {
-  DCHECK(name);
-  *name = label_->GetText();
-  return !name->empty();
-}
-
 std::string Checkbox::GetClassName() const {
   return kViewClassName;
 }
