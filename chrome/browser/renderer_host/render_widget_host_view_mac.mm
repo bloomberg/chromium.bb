@@ -1054,7 +1054,7 @@ bool RenderWidgetHostViewMac::ContainsNativeView(
 
   // This helps keep accelerated plugins' output in better sync with the
   // window as it resizes.
-  [accelerated_plugin_layer_.get() setNeedsDisplay];
+  [acceleratedPluginLayer_.get() setNeedsDisplay];
 }
 
 - (BOOL)canBecomeKeyView {
@@ -1670,15 +1670,14 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 }
 
 - (void)ensureAcceleratedPluginLayer {
-  if (accelerated_plugin_layer_.get())
+  if (acceleratedPluginLayer_.get())
     return;
 
-  AcceleratedPluginLayer* plugin_layer = [[AcceleratedPluginLayer alloc]
+  AcceleratedPluginLayer* pluginLayer = [[AcceleratedPluginLayer alloc]
       initWithRenderWidgetHostViewMac:renderWidgetHostView_.get()];
-  accelerated_plugin_layer_.reset(plugin_layer);
+  acceleratedPluginLayer_.reset(pluginLayer);
   // Make our layer resize to fit the superlayer
-  plugin_layer.autoresizingMask = kCALayerWidthSizable |
-                                  kCALayerHeightSizable;
+  pluginLayer.autoresizingMask = kCALayerWidthSizable | kCALayerHeightSizable;
   // Make the view layer-backed so that there will be a layer to hang the
   // |layer| off of. This is not the "right" way to host a sublayer in a view,
   // but the right way would require making the whole view's drawing system
@@ -1691,21 +1690,21 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 }
 
 - (void)attachPluginLayer {
-  CALayer* plugin_layer = accelerated_plugin_layer_.get();
-  if (!plugin_layer)
+  CALayer* pluginLayer = acceleratedPluginLayer_.get();
+  if (!pluginLayer)
     return;
 
-  CALayer* root_layer = [self layer];
-  DCHECK(root_layer != nil);
-  [plugin_layer setFrame:NSRectToCGRect([self bounds])];
-  [root_layer addSublayer:plugin_layer];
+  CALayer* rootLayer = [self layer];
+  DCHECK(rootLayer != nil);
+  [pluginLayer setFrame:NSRectToCGRect([self bounds])];
+  [rootLayer addSublayer:pluginLayer];
   renderWidgetHostView_->AcceleratedSurfaceContextChanged();
 }
 
 - (void)setLayer:(CALayer *)newLayer {
-  CALayer* plugin_layer = accelerated_plugin_layer_.get();
-  if (!newLayer && [plugin_layer superlayer])
-    [plugin_layer removeFromSuperlayer];
+  CALayer* pluginLayer = acceleratedPluginLayer_.get();
+  if (!newLayer && [pluginLayer superlayer])
+    [pluginLayer removeFromSuperlayer];
 
   [super setLayer:newLayer];
   if ([self layer])
@@ -1713,7 +1712,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 }
 
 - (void)drawAcceleratedPluginLayer {
-  [accelerated_plugin_layer_.get() setNeedsDisplay];
+  [acceleratedPluginLayer_.get() setNeedsDisplay];
 }
 
 @end

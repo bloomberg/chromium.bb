@@ -54,7 +54,7 @@ class RWHVMEditCommandHelper;
   NSWindow* lastWindow_;  // weak
 
   // The Core Animation layer, if any, hosting the accelerated plugins' output.
-  scoped_nsobject<CALayer> accelerated_plugin_layer_;
+  scoped_nsobject<CALayer> acceleratedPluginLayer_;
 }
 
 - (void)setCanBeKeyView:(BOOL)can;
