@@ -555,6 +555,7 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
 #if defined(OS_MACOSX)
     // Allow this to be set when invoking the browser and relayed along.
     switches::kEnableSandboxLogging,
+    switches::kEnableFlashCoreAnimation,
 #endif
   };
 

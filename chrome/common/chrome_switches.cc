@@ -841,6 +841,10 @@ const char kNoProcessSingletonDialog[]      = "no-process-singleton-dialog";
 // Cause the OS X sandbox write to syslog every time an access to a resource
 // is denied by the sandbox.
 const char kEnableSandboxLogging[]          = "enable-sandbox-logging";
+
+// Temporary flag to allow Flash to negotiate the Core Animation drawing model.
+// This will eventually become the default, and the flag can be removed.
+const char kEnableFlashCoreAnimation[]      = "enable-flash-core-animation";
 #else
 // Enable Kiosk mode.
 const char kKioskMode[]                     = "kiosk";

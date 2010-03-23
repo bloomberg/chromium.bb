@@ -13,11 +13,14 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/basictypes.h"
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/ref_counted.h"
 #include "base/string_util.h"
+#include "base/sys_info.h"
 #include "chrome/common/child_process_logging.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/plugin_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/plugin/npobject_proxy.h"
@@ -281,13 +284,41 @@ bool WebPluginDelegateProxy::Initialize(const GURL& url,
     }
   }
 #if defined(OS_MACOSX)
-  // Until we have a way to support accelerated (3D) drawing on Macs, ask
+  // Unless we have a real way to support accelerated (3D) drawing on Macs
+  // (which for now at least means the Core Animation drawing model), ask
   // Flash to use windowless mode so that it use CoreGraphics instead of opening
-  // OpenGL contexts overlaying the browser window (which will fail or crash
-  // because Mac OS X does not allow that across processes).
+  // OpenGL contexts overlaying the browser window (which requires a very
+  // expensive extra copy for us).
   if (!transparent_ && mime_type_ == "application/x-shockwave-flash") {
-    params.arg_names.push_back("wmode");
-    params.arg_values.push_back("opaque");
+    bool force_opaque_mode = false;
+    if (StartsWith(info_.version, L"10.0", false) ||
+        StartsWith(info_.version, L"9.", false)) {
+      // Older versions of Flash don't support CA (and they assume QuickDraw
+      // support, so we can't rely on negotiation to do the right thing).
+      force_opaque_mode = true;
+    } else if (!CommandLine::ForCurrentProcess()->HasSwitch(
+                   switches::kEnableFlashCoreAnimation)) {
+      // Temporary switch for testing; once we are confident that there are no
+      // regressions from CoreGraphics mode to CoreAnimation mode, this switch
+      // (and the chrome_switches.h and command_line.h includes) can be removed.
+      force_opaque_mode = true;
+    } else {
+      // Current betas of Flash 10.1 don't respect QuickDraw negotiation either,
+      // so we still have to force opaque mode on 10.5 (where we don't support
+      // Core Animation). If the final version of Flash 10.1 is fixed to do
+      // drawing model negotiation correctly instead of assuming that QuickDraw
+      // is available without asking, this whole block (and the sys_info.h
+      // include) can be removed.
+      int32 major, minor, bugfix;
+      base::SysInfo::OperatingSystemVersionNumbers(&major, &minor, &bugfix);
+      if (major < 10 || (major == 10 && minor < 6))
+        force_opaque_mode = true;
+    }
+
+    if (force_opaque_mode) {
+      params.arg_names.push_back("wmode");
+      params.arg_values.push_back("opaque");
+    }
   }
 
   params.containing_window_frame = render_view_->rootWindowRect();
