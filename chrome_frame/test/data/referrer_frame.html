@@ -7,13 +7,15 @@
 
     <script type="text/javascript">
       function onLoad() {
-        var referrer_search = /referrer_main.html/;
-        var referrer_pos = document.referrer.search(referrer_search);
+        if (isRunningInChrome()) {
+          var referrer_search = /referrer_main.html/;
+          var referrer_pos = document.referrer.search(referrer_search);
 
-        if (referrer_pos != -1) {
-          onSuccess("FullTab_ReferrerTest", 1);
-        } else {
-          onFailure("FullTab_ReferrerTest", 1, "Failed to find referrer");
+          if (referrer_pos != -1) {
+            onSuccess("FullTab_ReferrerTest", 1);
+          } else {
+            onFailure("FullTab_ReferrerTest", 1, "Failed to find referrer");
+          }
         }
       }
     </script>

@@ -33,11 +33,8 @@ std::string FindReferrerFromHeaders(const wchar_t* headers,
     if (!both_headers[i])
       continue;
     std::string raw_headers_utf8 = WideToUTF8(both_headers[i]);
-    std::string http_headers =
-        net::HttpUtil::AssembleRawHeaders(raw_headers_utf8.c_str(),
-                                          raw_headers_utf8.length());
-    net::HttpUtil::HeadersIterator it(http_headers.begin(),
-                                      http_headers.end(), "\r\n");
+    net::HttpUtil::HeadersIterator it(raw_headers_utf8.begin(),
+                                      raw_headers_utf8.end(), "\r\n");
     while (it.GetNext()) {
       if (LowerCaseEqualsASCII(it.name(), "referer")) {
         referrer = it.values();

@@ -497,9 +497,7 @@ STDMETHODIMP UrlmonUrlRequest::OnResponse(DWORD dwResponseCode,
   // NOTE(slightlyoff): We don't use net::HttpResponseHeaders here because
   //    of lingering ICU/base_noicu issues.
   if (enable_frame_busting_) {
-    std::string http_headers = net::HttpUtil::AssembleRawHeaders(
-        raw_headers.c_str(), raw_headers.length());
-    if (http_utils::HasFrameBustingHeader(http_headers)) {
+    if (http_utils::HasFrameBustingHeader(raw_headers)) {
       DLOG(ERROR) << "X-Frame-Options header other than ALLOWALL " <<
           "detected, navigation canceled";
       return E_FAIL;
