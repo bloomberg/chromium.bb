@@ -64,7 +64,8 @@ static const char* NaClRunModeName(NaClRunMode mode) {
 }
 
 /* Defines the run mode files that should be generated. */
-static NaClRunMode FLAGS_run_mode = X86_32;
+static NaClRunMode FLAGS_run_mode =
+    (NACL_TARGET_SUBARCH == 32) ? X86_32: X86_64;
 
 /* Holds the current instruction prefix. */
 static NaClInstPrefix current_opcode_prefix = NoPrefix;
