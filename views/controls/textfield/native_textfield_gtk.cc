@@ -11,11 +11,13 @@
 #include "gfx/gtk_util.h"
 #include "gfx/insets.h"
 #include "gfx/skia_utils_gtk.h"
+#include "views/controls/textfield/gtk_views_entry.h"
 #include "views/controls/textfield/textfield.h"
 
 namespace views {
+
 // A character used to hide a text in password mode.
-const char kPasswordChar = '*';
+static const char kPasswordChar = '*';
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeTextfieldGtk, public:
@@ -31,6 +33,26 @@ NativeTextfieldGtk::NativeTextfieldGtk(Textfield* textfield)
 }
 
 NativeTextfieldGtk::~NativeTextfieldGtk() {
+}
+
+// Returns the inner border of an entry.
+// static
+gfx::Insets NativeTextfieldGtk::GetEntryInnerBorder(GtkEntry* entry) {
+  const GtkBorder* inner_border = gtk_entry_get_inner_border(entry);
+  if (inner_border)
+    return gfx::Insets(*inner_border);
+
+  // No explicit border set, try the style.
+  GtkBorder* style_border;
+  gtk_widget_style_get(GTK_WIDGET(entry), "inner-border", &style_border, NULL);
+  if (style_border) {
+    gfx::Insets insets = gfx::Insets(*style_border);
+    gtk_border_free(style_border);
+    return insets;
+  }
+
+  // If border is null, Gtk uses 2 on all sides.
+  return gfx::Insets(2, 2, 2, 2);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -150,21 +172,7 @@ gfx::Insets NativeTextfieldGtk::CalculateInsets() {
   GtkEntry* entry = GTK_ENTRY(widget);
   gfx::Insets insets;
 
-  const GtkBorder* inner_border = gtk_entry_get_inner_border(entry);
-  if (inner_border) {
-    insets += gfx::Insets(*inner_border);
-  } else {
-    // No explicit border set, try the style.
-    GtkBorder* style_border;
-    gtk_widget_style_get(widget, "inner-border", &style_border, NULL);
-    if (style_border) {
-      insets += gfx::Insets(*style_border);
-      gtk_border_free(style_border);
-    } else {
-      // If border is null, Gtk uses 2 on all sides.
-      insets += gfx::Insets(2, 2, 2, 2);
-    }
-  }
+  insets += GetEntryInnerBorder(entry);
 
   if (entry->has_frame) {
     insets += gfx::Insets(widget->style->ythickness,
@@ -240,7 +248,7 @@ gboolean NativeTextfieldGtk::OnChanged() {
 // NativeTextfieldGtk, NativeControlGtk overrides:
 
 void NativeTextfieldGtk::CreateNativeControl() {
-  NativeControlCreated(gtk_entry_new());
+  NativeControlCreated(gtk_views_entry_new(this));
   gtk_entry_set_invisible_char(GTK_ENTRY(native_view()),
                                static_cast<gunichar>(kPasswordChar));
   textfield_->UpdateAllProperties();

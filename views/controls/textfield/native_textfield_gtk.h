@@ -19,6 +19,12 @@ class NativeTextfieldGtk : public NativeControlGtk,
   explicit NativeTextfieldGtk(Textfield* parent);
   ~NativeTextfieldGtk();
 
+  // Returns the textfield this NativeTextfieldGtk wraps.
+  Textfield* textfield() const { return textfield_; }
+
+  // Returns the inner border of the entry.
+  static gfx::Insets GetEntryInnerBorder(GtkEntry* entry);
+
   // Overridden from NativeTextfieldWrapper:
   virtual string16 GetText() const;
   virtual void UpdateText();

@@ -13,6 +13,7 @@
 
 #include "base/basictypes.h"
 #include "base/keyboard_codes.h"
+#include "base/logging.h"
 #include "base/string16.h"
 #include "gfx/font.h"
 #include "views/view.h"
@@ -184,6 +185,17 @@ class Textfield : public View {
   bool draw_border() const { return draw_border_; }
   void RemoveBorder();
 
+  // Sets the text to display when empty.
+  void set_text_to_display_when_empty(const string16& text) {
+    text_to_display_when_empty_ = text;
+#if !defined(OS_LINUX)
+    NOTIMPLEMENTED();
+#endif
+  }
+  const string16& text_to_display_when_empty() {
+    return text_to_display_when_empty_;
+  }
+
   // Updates all properties on the textfield. This is invoked internally.
   // Users of Textfield never need to invoke this directly.
   void UpdateAllProperties();
@@ -273,6 +285,9 @@ class Textfield : public View {
 
   // The storage string for the accessibility name associated with this control.
   std::wstring accessible_name_;
+
+  // Text to display when empty.
+  string16 text_to_display_when_empty_;
 
   DISALLOW_COPY_AND_ASSIGN(Textfield);
 };
