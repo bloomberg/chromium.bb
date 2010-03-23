@@ -1417,7 +1417,8 @@ void TabStrip::ButtonPressed(views::Button* sender, const views::Event& event) {
         switches::kAppLauncherForNewTab)) {
       NavigationController& controller =
           model_->GetSelectedTabContents()->controller();
-      AppLauncher::Show(Browser::GetBrowserForController(&controller, NULL));
+      AppLauncher::ShowForNewTab(Browser::GetBrowserForController(&controller,
+                                                                  NULL));
       return;
     }
     UserMetrics::RecordAction(UserMetricsAction("NewTab_Button"),

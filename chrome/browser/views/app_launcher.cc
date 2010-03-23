@@ -343,13 +343,14 @@ void InfoBubbleContentsView::ViewHierarchyChanged(
 
 gfx::Size InfoBubbleContentsView::GetPreferredSize() {
   gfx::Rect bounds = app_launcher_->browser()->window()->GetRestoredBounds();
-  return gfx::Size(bounds.width() * 2 / 3, bounds.width() * 4 / 5);
+  return gfx::Size(bounds.width() * 2 / 3, bounds.height() * 4 / 5);
 }
 
 void InfoBubbleContentsView::Layout() {
   if (bounds().IsEmpty() || GetChildViewCount() == 0)
     return;
 
+  gfx::Rect bounds = GetLocalBounds(false);
   int navigation_bar_height =
       kNavigationBarHeight + kNavigationEntryYMargin * 2;
   const views::Border* border = navigation_bar_->border();
@@ -358,11 +359,12 @@ void InfoBubbleContentsView::Layout() {
     border->GetInsets(&insets);
     navigation_bar_height += insets.height();
   }
-  navigation_bar_->SetBounds(x(), y(), width(), navigation_bar_height);
+  navigation_bar_->SetBounds(bounds.x(), bounds.y(),
+                             bounds.width(), navigation_bar_height);
   int render_y = navigation_bar_->bounds().bottom();
   gfx::Size rwhv_size =
-      gfx::Size(width(), std::max(0, height() - render_y + y()));
-  render_view_container_->SetBounds(x(), render_y,
+      gfx::Size(width(), std::max(0, bounds.height() - render_y + bounds.y()));
+  render_view_container_->SetBounds(bounds.x(), render_y,
                                     rwhv_size.width(), rwhv_size.height());
   app_launcher_->rwhv_->SetSize(rwhv_size);
 }
@@ -408,24 +410,27 @@ AppLauncher::~AppLauncher() {
 }
 
 // static
-AppLauncher* AppLauncher::Show(Browser* browser) {
+AppLauncher* AppLauncher::Show(Browser* browser, const gfx::Rect& bounds) {
   AppLauncher* app_launcher = new AppLauncher(browser);
-
   BrowserView* browser_view = static_cast<BrowserView*>(browser->window());
-  TabStrip* tabstrip = browser_view->tabstrip()->AsTabStrip();
-  if (!tabstrip) {
-    delete app_launcher;
-    return NULL;
-  }
-  gfx::Rect bounds = tabstrip->GetNewTabButtonBounds();
-  gfx::Point origin = bounds.origin();
-  views::RootView::ConvertPointToScreen(tabstrip, &origin);
-  bounds.set_origin(origin);
   app_launcher->info_bubble_ =
       InfoBubble::Show(browser_view->frame()->GetWindow(), bounds,
                        app_launcher->info_bubble_content_, app_launcher);
   app_launcher->info_bubble_content_->BubbleShown();
   return app_launcher;
+}
+
+// static
+AppLauncher* AppLauncher::ShowForNewTab(Browser* browser) {
+  BrowserView* browser_view = static_cast<BrowserView*>(browser->window());
+  TabStrip* tabstrip = browser_view->tabstrip()->AsTabStrip();
+  if (!tabstrip)
+    return NULL;
+  gfx::Rect bounds = tabstrip->GetNewTabButtonBounds();
+  gfx::Point origin = bounds.origin();
+  views::RootView::ConvertPointToScreen(tabstrip, &origin);
+  bounds.set_origin(origin);
+  return Show(browser, bounds);
 }
 
 void AppLauncher::Hide() {

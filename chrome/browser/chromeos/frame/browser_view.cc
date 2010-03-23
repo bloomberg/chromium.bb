@@ -33,6 +33,7 @@
 #include "views/controls/button/button.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/menu/menu_2.h"
+#include "views/widget/root_view.h"
 #include "views/window/hit_test.h"
 #include "views/window/window.h"
 
@@ -446,7 +447,11 @@ void BrowserView::ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {
 // views::ButtonListener overrides.
 void BrowserView::ButtonPressed(views::Button* sender,
                                 const views::Event& event) {
-  AppLauncher::Show(browser());
+  gfx::Rect bounds = main_menu_button_->bounds();
+  gfx::Point origin = bounds.origin();
+  views::RootView::ConvertPointToScreen(this, &origin);
+  bounds.set_origin(origin);
+  ::AppLauncher::Show(browser(), bounds);
 }
 
 // views::ContextMenuController overrides.

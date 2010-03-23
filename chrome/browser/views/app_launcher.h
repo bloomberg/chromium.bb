@@ -55,10 +55,16 @@ class AppLauncher : public InfoBubbleDelegate,
                     public RenderViewHostDelegate,
                     public RenderViewHostDelegate::View {
  public:
+  // Shows an application launcher bubble pointing to the |bounds| (which should
+  // be in screen coordinates).
+  // The caller DOES NOT OWN the AppLauncher returned.  It is deleted
+  // automatically when the AppLauncher is closed.
+  static AppLauncher* Show(Browser* browser, const gfx::Rect& bounds);
+
   // Shows an application launcher bubble pointing to the new tab button.
   // The caller DOES NOT OWN the AppLauncher returned.  It is deleted
   // automatically when the AppLauncher is closed.
-  static AppLauncher* Show(Browser* browser);
+  static AppLauncher* ShowForNewTab(Browser* browser);
 
   // Returns the browser this AppLauncher is associated with.
   Browser* browser() const { return browser_; }

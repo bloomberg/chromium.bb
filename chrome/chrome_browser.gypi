@@ -2679,6 +2679,8 @@
                 ['include', '^browser/extensions/'],
                 ['include', '^browser/views/about_chrome_view.cc'],
                 ['include', '^browser/views/about_chrome_view.h'],
+                ['include', '^browser/views/app_launcher.cc'],
+                ['include', '^browser/views/app_launcher.h'],
                 ['include', '^browser/views/accelerator_table_gtk.cc'],
                 ['include', '^browser/views/accelerator_table_gtk.h'],
                 ['include', '^browser/views/accessible_toolbar_view.cc'],

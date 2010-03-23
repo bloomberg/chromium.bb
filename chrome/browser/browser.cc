@@ -1033,7 +1033,7 @@ void Browser::NewTab() {
 #if defined(OS_WIN)
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kAppLauncherForNewTab)) {
-    AppLauncher::Show(this);
+    AppLauncher::ShowForNewTab(this);
     return;
   }
 #endif
