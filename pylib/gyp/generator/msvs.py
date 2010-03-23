@@ -5,6 +5,7 @@
 # found in the LICENSE file.
 
 import ntpath
+import posixpath
 import os
 import re
 import subprocess
@@ -103,7 +104,10 @@ def _FixPath(path):
   """
   if fixpath_prefix and path and not os.path.isabs(path) and not path[0] == '$':
     path = os.path.join(fixpath_prefix, path)
-  return path.replace('/', '\\')
+  path = path.replace('/', '\\')
+  if len(path) > 0 and path[-1] == '\\':
+    path = path[:-1]
+  return path
 
 
 def _SourceInFolders(sources, prefix=None, excluded=None):
@@ -976,12 +980,24 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
       dst = os.path.join(cpy['destination'], os.path.basename(src))
       # _AddCustomBuildTool() will call _FixPath() on the inputs and
       # outputs, so do the same for our generated command line.
-      cmd = 'mkdir "%s" 2>nul & set ERRORLEVEL=0 & copy /Y "%s" "%s"' % (
-          _FixPath(cpy['destination']), _FixPath(src), _FixPath(dst))
-      _AddCustomBuildTool(p, spec,
-                          inputs=[src], outputs=[dst],
-                          description='Copying %s to %s' % (src, dst),
-                          cmd=cmd)
+      if src.endswith('/'):
+        src_bare = src[:-1]
+        base_dir = posixpath.split(src_bare)[0]
+        outer_dir = posixpath.split(src_bare)[1]
+        cmd = 'cd "%s" && xcopy /e /f /y "%s" "%s\\%s\\"' % (
+            _FixPath(base_dir), outer_dir, _FixPath(dst), outer_dir)
+        _AddCustomBuildTool(p, spec,
+                            inputs=[src, build_file],
+                            outputs=['dummy_copies', dst],
+                            description='Copying %s to %s' % (src, dst),
+                            cmd=cmd)
+      else:
+        cmd = 'mkdir "%s" 2>nul & set ERRORLEVEL=0 & copy /Y "%s" "%s"' % (
+            _FixPath(cpy['destination']), _FixPath(src), _FixPath(dst))
+        _AddCustomBuildTool(p, spec,
+                            inputs=[src], outputs=[dst],
+                            description='Copying %s to %s' % (src, dst),
+                            cmd=cmd)
 
   # Write it out.
   p.Write()

@@ -24,19 +24,17 @@ test.built_file_must_match('copies-out/file2',
                            'file2 contents\n',
                            chdir='relocate/src')
 
-# TODO Not yet implemented on msvs
-if test.format != 'msvs':
-  test.built_file_must_match('copies-out/directory/file3',
-                             'file3 contents\n',
-                             chdir='relocate/src')
-  test.built_file_must_match('copies-out/directory/file4',
-                             'file4 contents\n',
-                             chdir='relocate/src')
-  test.built_file_must_match('copies-out/directory/subdir/file5',
-                             'file5 contents\n',
-                             chdir='relocate/src')
-  test.built_file_must_match('copies-out/subdir/file6',
-                             'file6 contents\n',
-                             chdir='relocate/src')
+test.built_file_must_match('copies-out/directory/file3',
+                           'file3 contents\n',
+                           chdir='relocate/src')
+test.built_file_must_match('copies-out/directory/file4',
+                           'file4 contents\n',
+                           chdir='relocate/src')
+test.built_file_must_match('copies-out/directory/subdir/file5',
+                           'file5 contents\n',
+                           chdir='relocate/src')
+test.built_file_must_match('copies-out/subdir/file6',
+                           'file6 contents\n',
+                           chdir='relocate/src')
 
 test.pass_test()
