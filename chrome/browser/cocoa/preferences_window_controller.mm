@@ -1316,19 +1316,11 @@ const int kDisabledIndex = 1;
 
 - (IBAction)themesGallery:(id)sender {
   [self recordUserAction:UserMetricsAction("Options_ThemesGallery")];
-  Browser* browser =
-      BrowserList::FindBrowserWithType(profile_, Browser::TYPE_NORMAL);
+  Browser* browser = BrowserList::GetLastActive();
 
-  if (!browser || !browser->GetSelectedTabContents()) {
+  if (!browser || !browser->GetSelectedTabContents())
     browser = Browser::Create(profile_);
-    browser->OpenURL(
-        GURL(l10n_util::GetStringUTF8(IDS_THEMES_GALLERY_URL)),
-        GURL(), NEW_WINDOW, PageTransition::LINK);
-  } else {
-    browser->OpenURL(
-        GURL(l10n_util::GetStringUTF8(IDS_THEMES_GALLERY_URL)),
-        GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
-  }
+  browser->OpenThemeGalleryTabAndActivate();
 }
 
 // Called when the "stop syncing" confirmation dialog started by
