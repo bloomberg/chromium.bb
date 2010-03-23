@@ -7,4 +7,4 @@ URLFetcher*Test.*
 HttpBridgeTest.*
 
 # http://crbug.com/26214
-ExtensionsServiceTest.InstallExtension
+ExtensionTest.InitFromValueInvalid
