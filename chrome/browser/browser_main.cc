@@ -335,6 +335,89 @@ class GetLinuxDistroTask : public Task {
 };
 #endif  // USE_LINUX_BREAKPAD
 
+void InitializeNetworkOptions(const CommandLine& parsed_command_line) {
+  if (parsed_command_line.HasSwitch(switches::kEnableFileCookies)) {
+    // Enable cookie storage for file:// URLs.  Must do this before the first
+    // Profile (and therefore the first CookieMonster) is created.
+    net::CookieMonster::EnableFileScheme();
+  }
+
+  if (parsed_command_line.HasSwitch(switches::kFixedHttpPort)) {
+    net::HttpNetworkSession::set_fixed_http_port(StringToInt(
+        parsed_command_line.GetSwitchValueASCII(switches::kFixedHttpPort)));
+  }
+
+  if (parsed_command_line.HasSwitch(switches::kFixedHttpsPort)) {
+    net::HttpNetworkSession::set_fixed_https_port(StringToInt(
+        parsed_command_line.GetSwitchValueASCII(switches::kFixedHttpsPort)));
+  }
+
+  if (parsed_command_line.HasSwitch(switches::kIgnoreCertificateErrors))
+    net::HttpNetworkTransaction::IgnoreCertificateErrors(true);
+
+  if (parsed_command_line.HasSwitch(switches::kMaxSpdySessionsPerDomain)) {
+    int value = StringToInt(
+        parsed_command_line.GetSwitchValueASCII(
+            switches::kMaxSpdySessionsPerDomain));
+    net::SpdySessionPool::set_max_sessions_per_domain(value);
+  }
+}
+
+// Returns the new local state object, guaranteed non-NULL.
+PrefService* InitializeLocalState(const CommandLine& parsed_command_line,
+                                  bool is_first_run) {
+  FilePath local_state_path;
+  PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path);
+  bool local_state_file_exists = file_util::PathExists(local_state_path);
+
+  // Load local state.  This includes the application locale so we know which
+  // locale dll to load.
+  PrefService* local_state = g_browser_process->local_state();
+  DCHECK(local_state);
+
+  // Initialize ResourceBundle which handles files loaded from external
+  // sources. This has to be done before uninstall code path and before prefs
+  // are registered.
+  local_state->RegisterStringPref(prefs::kApplicationLocale, L"");
+  local_state->RegisterBooleanPref(prefs::kMetricsReportingEnabled,
+      GoogleUpdateSettings::GetCollectStatsConsent());
+
+  if (is_first_run) {
+#if defined(OS_WIN)
+    // During first run we read the google_update registry key to find what
+    // language the user selected when downloading the installer. This
+    // becomes our default language in the prefs.
+    // Other platforms obey the system locale.
+    std::wstring install_lang;
+    if (GoogleUpdateSettings::GetLanguage(&install_lang))
+      local_state->SetString(prefs::kApplicationLocale, install_lang);
+#endif  // defined(OS_WIN)
+  }
+
+  // If the local state file for the current profile doesn't exist and the
+  // parent profile command line flag is present, then we should inherit some
+  // local state from the parent profile.
+  // Checking that the local state file for the current profile doesn't exist
+  // is the most robust way to determine whether we need to inherit or not
+  // since the parent profile command line flag can be present even when the
+  // current profile is not a new one, and in that case we do not want to
+  // inherit and reset the user's setting.
+  if (!local_state_file_exists &&
+      parsed_command_line.HasSwitch(switches::kParentProfile)) {
+    FilePath parent_profile =
+        parsed_command_line.GetSwitchValuePath(switches::kParentProfile);
+    PrefService parent_local_state(parent_profile);
+    parent_local_state.RegisterStringPref(prefs::kApplicationLocale,
+                                          std::wstring());
+    // Right now, we only inherit the locale setting from the parent profile.
+    local_state->SetString(
+        prefs::kApplicationLocale,
+        parent_local_state.GetString(prefs::kApplicationLocale));
+  }
+
+  return local_state;
+}
+
 #if defined(OS_WIN)
 
 // gfx::Font callbacks
@@ -347,6 +430,30 @@ int GetMinimumFontSize() {
 }
 
 #endif
+
+#if defined(TOOLKIT_GTK)
+void InitializeToolkit() {
+  // It is important for this to happen before the first run dialog, as it
+  // styles the dialog as well.
+  gtk_util::InitRCStyles();
+}
+#elif defined(TOOLKIT_VIEWS)
+void InitializeToolkit() {
+  // The delegate needs to be set before any UI is created so that windows
+  // display the correct icon.
+  if (!views::ViewsDelegate::views_delegate)
+    views::ViewsDelegate::views_delegate = new ChromeViewsDelegate;
+
+#if defined(OS_WIN)
+  gfx::Font::adjust_font_callback = &AdjustUIFont;
+  gfx::Font::get_minimum_font_size_callback = &GetMinimumFontSize;
+#endif
+}
+#else
+void InitializeToolkit() {
+}
+#endif
+
 }  // namespace
 
 // Main routine for running as the Browser process.
@@ -539,69 +646,10 @@ int BrowserMain(const MainFunctionParams& parameters) {
   }
 #endif
 
-  FilePath local_state_path;
-  PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path);
-  bool local_state_file_exists = file_util::PathExists(local_state_path);
+  PrefService* local_state = InitializeLocalState(parsed_command_line,
+                                                  is_first_run);
 
-  // Load local state.  This includes the application locale so we know which
-  // locale dll to load.
-  PrefService* local_state = browser_process->local_state();
-  DCHECK(local_state);
-
-  // Initialize ResourceBundle which handles files loaded from external
-  // sources. This has to be done before uninstall code path and before prefs
-  // are registered.
-  local_state->RegisterStringPref(prefs::kApplicationLocale, L"");
-  local_state->RegisterBooleanPref(prefs::kMetricsReportingEnabled,
-      GoogleUpdateSettings::GetCollectStatsConsent());
-
-#if defined(TOOLKIT_GTK)
-  // It is important for this to happen before the first run dialog, as it
-  // styles the dialog as well.
-  gtk_util::InitRCStyles();
-#elif defined(TOOLKIT_VIEWS)
-  // The delegate needs to be set before any UI is created so that windows
-  // display the correct icon.
-  if (!views::ViewsDelegate::views_delegate)
-    views::ViewsDelegate::views_delegate = new ChromeViewsDelegate;
-#endif
-#if defined(OS_WIN)
-  gfx::Font::adjust_font_callback = &AdjustUIFont;
-  gfx::Font::get_minimum_font_size_callback = &GetMinimumFontSize;
-#endif
-
-  if (is_first_run) {
-#if defined(OS_WIN)
-    // During first run we read the google_update registry key to find what
-    // language the user selected when downloading the installer. This
-    // becomes our default language in the prefs.
-    // Other platforms obey the system locale.
-    std::wstring install_lang;
-    if (GoogleUpdateSettings::GetLanguage(&install_lang))
-      local_state->SetString(prefs::kApplicationLocale, install_lang);
-#endif  // defined(OS_WIN)
-  }
-
-  // If the local state file for the current profile doesn't exist and the
-  // parent profile command line flag is present, then we should inherit some
-  // local state from the parent profile.
-  // Checking that the local state file for the current profile doesn't exist
-  // is the most robust way to determine whether we need to inherit or not
-  // since the parent profile command line flag can be present even when the
-  // current profile is not a new one, and in that case we do not want to
-  // inherit and reset the user's setting.
-  if (!local_state_file_exists &&
-      parsed_command_line.HasSwitch(switches::kParentProfile)) {
-    FilePath parent_profile =
-        parsed_command_line.GetSwitchValuePath(switches::kParentProfile);
-    PrefService parent_local_state(parent_profile);
-    parent_local_state.RegisterStringPref(prefs::kApplicationLocale,
-                                          std::wstring());
-    // Right now, we only inherit the locale setting from the parent profile.
-    local_state->SetString(
-        prefs::kApplicationLocale,
-        parent_local_state.GetString(prefs::kApplicationLocale));
-  }
+  InitializeToolkit();  // Must happen before we try to display any UI.
 
   // If we're running tests (ui_task is non-null), then the ResourceBundle
   // has already been initialized.
@@ -671,32 +719,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
     CheckForWin2000();
   }
 
-  if (parsed_command_line.HasSwitch(switches::kEnableFileCookies)) {
-    // Enable cookie storage for file:// URLs.  Must do this before the first
-    // Profile (and therefore the first CookieMonster) is created.
-    net::CookieMonster::EnableFileScheme();
-  }
-
-  if (parsed_command_line.HasSwitch(switches::kFixedHttpPort)) {
-    net::HttpNetworkSession::set_fixed_http_port(StringToInt(
-        parsed_command_line.GetSwitchValueASCII(switches::kFixedHttpPort)));
-  }
-
-  if (parsed_command_line.HasSwitch(switches::kFixedHttpsPort)) {
-    net::HttpNetworkSession::set_fixed_https_port(StringToInt(
-        parsed_command_line.GetSwitchValueASCII(switches::kFixedHttpsPort)));
-  }
-
-  if (parsed_command_line.HasSwitch(switches::kIgnoreCertificateErrors))
-    net::HttpNetworkTransaction::IgnoreCertificateErrors(true);
-
-  if (parsed_command_line.HasSwitch(switches::kMaxSpdySessionsPerDomain)) {
-    int value = StringToInt(
-        parsed_command_line.GetSwitchValueASCII(
-            switches::kMaxSpdySessionsPerDomain));
-    net::SpdySessionPool::set_max_sessions_per_domain(value);
-  }
-
+  InitializeNetworkOptions(parsed_command_line);
 
   // Initialize histogram statistics gathering system.
   StatisticsRecorder statistics;
