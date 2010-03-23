@@ -155,7 +155,7 @@ DWORD WebDropTarget::OnDragEnter(IDataObject* data_object,
 
   // We lie here and always return a DROPEFFECT because we don't want to
   // wait for the IPC call to return.
-  return GetPreferredDropEffect(effect);
+  return GetPreferredDragCursor(drag_cursor_);
 }
 
 DWORD WebDropTarget::OnDragOver(IDataObject* data_object,
