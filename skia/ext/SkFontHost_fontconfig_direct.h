@@ -35,10 +35,6 @@ class FontConfigDirect : public FontConfigInterface {
     virtual int Open(unsigned fileid);
 
   private:
-    // Return true if font_a and font_b are completely interchangeable;
-    // e.g., there exist free clones of certain well-known fonts.
-    bool IsMetricCompatibleReplacement(const char* font_a, const char* font_b);
-
     SkMutex mutex_;
     std::map<unsigned, std::string> fileid_to_filename_;
     std::map<std::string, unsigned> filename_to_fileid_;

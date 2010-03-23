@@ -22,13 +22,21 @@
 
 #include <fontconfig/fontconfig.h>
 
-FontConfigDirect::FontConfigDirect()
-    : next_file_id_(0) {
-  FcInit();
-}
+namespace {
 
-bool FontConfigDirect::IsMetricCompatibleReplacement(const char* font_a,
-                                                     const char* font_b)
+// Equivalence classes, used to match the Liberation fonts with their
+// metric-compatible replacements.  See the discussion in
+// GetFontEquivClass().
+enum FontEquivClass
+{
+    OTHER,
+    SANS,
+    SERIF
+};
+
+// Match the font name against a whilelist of fonts, returning the equivalence
+// class.
+FontEquivClass GetFontEquivClass(const char* fontname)
 {
     // It would be nice for fontconfig to tell us whether a given suggested
     // replacement is a "strong" match (that is, an equivalent font) or
@@ -36,65 +44,36 @@ bool FontConfigDirect::IsMetricCompatibleReplacement(const char* font_a,
     // substitute).  However, I played around with the fontconfig API for
     // a good few hours and could not make it reveal this information.
     //
-    // So instead, we hardcode.  These are from
-    // /etc/fonts/conf.d/30-metric-aliases.conf on my Ubuntu Karmic
-    // system.
+    // So instead, we hardcode.  Initially this function emulated
+    //   /etc/fonts/conf.d/30-metric-aliases.conf
+    // from my Ubuntu system, but we're better off being very conservative.
 
-    // We represent the data with a table. Two names with the same
-    // id are in the same class.
-    struct FontEquivClass {
-        char id;
-        const char name[20];
-    };
-    static const FontEquivClass kFontEquivClasses[] = {
-        { 0, "Arial" },
-        { 0, "Liberation Sans" },
-        { 0, "Albany" },
-        { 0, "Albany Amt" },
-
-        { 1, "Times New Roman" },
-        { 1, "Liberation Serif" },
-        { 1, "Thorndale" },
-        { 1, "Thorndale AMT" },
-
-        // Note that Liberation Mono doesn't much *look* like Courier New,
-        // but it's reportedly metric-compatible.
-        { 2, "Courier New" },
-        { 2, "Liberation Mono" },
-        { 2, "Cumberland" },
-        { 2, "Cumberland AMT" },
-
-        { 3, "Helvetica" },
-        { 3, "Nimbus Sans L" },
-
-        { 4, "Times" },
-        { 4, "Nimbus Roman No9 L" },
-
-        { 5, "Courier" },
-        { 5, "Nimbus Mono L" },
-    };
-    static const size_t kClassCount =
-        sizeof(kFontEquivClasses)/sizeof(kFontEquivClasses[0]);
-
-    int class_a = -1;
-    for (size_t i = 0; i < kClassCount; ++i) {
-        if (strcasecmp(kFontEquivClasses[i].name, font_a) == 0) {
-            class_a = kFontEquivClasses[i].id;
-            break;
-        }
+    if (strcasecmp(fontname, "Arial") == 0 ||
+        strcasecmp(fontname, "Liberation Sans") == 0) {
+        return SANS;
+    } else if (strcasecmp(fontname, "Times New Roman") == 0 ||
+               strcasecmp(fontname, "Liberation Serif") == 0) {
+        return SERIF;
     }
-    if (class_a == -1)
-        return false;
+    return OTHER;
+}
 
-    int class_b = -1;
-    for (size_t i = 0; i < kClassCount; ++i) {
-        if (strcasecmp(kFontEquivClasses[i].name, font_b) == 0) {
-            class_b = kFontEquivClasses[i].id;
-            break;
-        }
-    }
 
-    return class_a == class_b;
+// Return true if |font_a| and |font_b| are visually and at the metrics
+// level interchangeable.
+bool IsMetricCompatibleReplacement(const char* font_a, const char* font_b)
+{
+    FontEquivClass class_a = GetFontEquivClass(font_a);
+    FontEquivClass class_b = GetFontEquivClass(font_b);
+
+    return class_a != OTHER && class_a == class_b;
+}
+
+}  // anonymous namespace
+
+FontConfigDirect::FontConfigDirect()
+    : next_file_id_(0) {
+  FcInit();
 }
 
 // -----------------------------------------------------------------------------
