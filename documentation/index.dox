@@ -13,16 +13,16 @@
  <li> @ref about </li>
  </ul>
 
- \section locations SDK file locations
+ \section locations toolchain file locations
 
  <p>
- The Native Client SDK is under
+ The Native Client toolchain is under
  <code>src/third_party/nacl_sdk/<em>platform</em>/sdk/nacl-sdk</code>,
  where <code><em>platform</em></code> is
  <code>linux</code>,
  <code>mac</code>, or
  <code>windows</code>.
- The SDK doesn't depend on the rest of the Native Client build;
+ The toolchain doesn't depend on the rest of the Native Client build;
  you can copy the <code>nacl-sdk</code> directory
  anywhere you like,
  as long as you avoid spaces in the pathname.
@@ -30,13 +30,13 @@
 
  <p>
  The following table
- shows where you can find some commonly used files in the SDK.
+ shows where you can find some commonly used files in the toolchain.
  </p>
 
 <table
  style="border-collapse: collapse;">
   <caption>
-    File locations in the SDK
+    File locations in the toolchain
   </caption>
   <tr>
     <th scope="col">Type of file</th>
