@@ -186,7 +186,9 @@ class UnloadTest : public UITest {
 // Navigate to a page with an infinite unload handler.
 // Then two async crosssite requests to ensure
 // we don't get confused and think we're closing the tab.
-TEST_F(UnloadTest, CrossSiteInfiniteUnloadAsync) {
+//
+// This test is flaky on the valgrind UI bots. http://crbug.com/39057
+TEST_F(UnloadTest, FLAKY_CrossSiteInfiniteUnloadAsync) {
   // Tests makes no sense in single-process mode since the renderer is hung.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
     return;
