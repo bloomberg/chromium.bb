@@ -4,6 +4,7 @@
 
 #include "app/gfx/font.h"
 
+#include <algorithm>
 #include <fontconfig/fontconfig.h>
 #include <gtk/gtk.h>
 
@@ -46,6 +47,30 @@ static std::wstring FindBestMatchFontFamilyName(const char* family_name) {
   FcPatternDestroy(pattern);
   free(family_name_copy);
   return font_family;
+}
+
+// Pango scales font sizes. This returns the scale factor. See
+// pango_cairo_context_set_resolution for details.
+// NOTE: this isn't entirely accurate, in that Pango also consults the
+// FC_PIXEL_SIZE first (see get_font_size in pangocairo-fcfont), but this
+// seems to give us the same sizes as used by Pango for all our fonts in both
+// English and Thai.
+float Font::GetPangoScaleFactor() {
+  static float scale_factor = 0;
+  static bool determined_scale = false;
+  if (!determined_scale) {
+    PangoContext* context = gdk_pango_context_get();
+    scale_factor = pango_cairo_context_get_resolution(context);
+    // Until we switch to vector graphics, force the max DPI to 96.0.
+    scale_factor = std::min(scale_factor, 96.f);
+    g_object_unref(context);
+    if (scale_factor <= 0)
+      scale_factor = 1;
+    else
+      scale_factor /= 72.0;
+    determined_scale = true;
+  }
+  return scale_factor;
 }
 
 // static
@@ -105,7 +130,9 @@ PangoFontDescription* Font::PangoFontFromGfxFont(
   gfx::Font font = gfx_font;  // Copy so we can call non-const methods.
   PangoFontDescription* pfd = pango_font_description_new();
   pango_font_description_set_family(pfd, WideToUTF8(font.FontName()).c_str());
-  pango_font_description_set_size(pfd, font.FontSize() * PANGO_SCALE);
+  // Set the absolute size to avoid overflowing UI elements.
+  pango_font_description_set_absolute_size(pfd,
+      font.FontSize() * PANGO_SCALE * Font::GetPangoScaleFactor());
 
   switch (font.style()) {
     case gfx::Font::NORMAL:

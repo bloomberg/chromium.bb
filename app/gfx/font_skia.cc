@@ -22,28 +22,6 @@ namespace {
 // IsFallbackFontAllowed function in skia/ext/SkFontHost_fontconfig_direct.cpp.
 const char* kFallbackFontFamilyName = "sans";
 
-// Pango scales font sizes. This returns the scale factor. See
-// pango_cairo_context_set_resolution for details.
-// NOTE: this isn't entirely accurate, in that Pango also consults the
-// FC_PIXEL_SIZE first (see get_font_size in pangocairo-fcfont), but this
-// seems to give us the same sizes as used by Pango for all our fonts in both
-// English and Thia.
-static double GetPangoScaleFactor() {
-  static float scale_factor = 0;
-  static bool determined_scale = false;
-  if (!determined_scale) {
-    PangoContext* context = gdk_pango_context_get();
-    scale_factor = pango_cairo_context_get_resolution(context);
-    g_object_unref(context);
-    if (scale_factor <= 0)
-      scale_factor = 1;
-    else
-      scale_factor /= 72.0;
-    determined_scale = true;
-  }
-  return scale_factor;
-}
-
 // Retrieves the pango metrics for a pango font description. Caches the metrics
 // and never frees them. The metrics objects are relatively small and
 // very expensive to look up.
@@ -190,7 +168,7 @@ Font Font::DeriveFont(int size_delta, int style) const {
 void Font::PaintSetup(SkPaint* paint) const {
   paint->setAntiAlias(false);
   paint->setSubpixelText(false);
-  paint->setTextSize(SkFloatToScalar(font_size_ * GetPangoScaleFactor()));
+  paint->setTextSize(SkFloatToScalar(font_size_ * Font::GetPangoScaleFactor()));
   paint->setTypeface(typeface_);
   paint->setFakeBoldText((BOLD & style_) && !typeface_->isBold());
   paint->setTextSkewX((ITALIC & style_) && !typeface_->isItalic() ?
