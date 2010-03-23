@@ -65,6 +65,17 @@ class InfoBar : public SlideAnimatorGtk::Delegate,
   // (Will lead to this InfoBar being closed).
   void RemoveInfoBar() const;
 
+  // Adds |display_text| to the infobar. If |link_text| is not empty, it is
+  // rendered as a hyperlink and inserted into |display_text| at |link_offset|,
+  // or right aligned in the infobar if |link_offset| is |npos|. |link_padding|
+  // pixels are inserted around the link (pass 0 for not padding). If a link
+  // is supplied, |link_callback| must not be null. It will be invoked on click.
+  void AddLabelAndLink(const std::wstring& display_text,
+                       const std::wstring& link,
+                       size_t link_offset,
+                       guint link_padding,
+                       GCallback link_callback);
+
   // The top level widget of the infobar.
   scoped_ptr<SlideAnimatorGtk> slide_widget_;
 

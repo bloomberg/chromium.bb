@@ -167,6 +167,69 @@ void InfoBar::Observe(NotificationType type,
   UpdateBorderColor();
 }
 
+// TODO(joth): This method factors out some common functionality between the
+// various derived infobar classes, however the class hierarchy itself could
+// use refactoring to reduce this duplication. http://crbug.com/38924
+void InfoBar::AddLabelAndLink(const std::wstring& display_text,
+                              const std::wstring& link_text,
+                              size_t link_offset,
+                              guint link_padding,
+                              GCallback callback) {
+  GtkWidget* link_button = NULL;
+  if (link_text.empty()) {
+    // No link text, so skip creating the link and splitting display_text.
+    link_offset = std::wstring::npos;
+  } else {
+    // If we have some link text, create the link button.
+    link_button = gtk_chrome_link_button_new(WideToUTF8(link_text).c_str());
+    gtk_chrome_link_button_set_use_gtk_theme(
+        GTK_CHROME_LINK_BUTTON(link_button), FALSE);
+    DCHECK(callback);
+    g_signal_connect(link_button, "clicked", callback, this);
+    gtk_util::SetButtonTriggersNavigation(link_button);
+  }
+
+  GtkWidget* hbox = gtk_hbox_new(FALSE, 0);
+  // We want the link to be horizontally shrinkable, so that the Chrome
+  // window can be resized freely even with a very long link.
+  gtk_widget_set_size_request(hbox, 0, -1);
+  gtk_box_pack_start(GTK_BOX(hbox_), hbox, TRUE, TRUE, 0);
+
+  // If link_offset is npos, we right-align the link instead of embedding it
+  // in the text.
+  if (link_offset == std::wstring::npos) {
+    if (link_button)
+      gtk_box_pack_end(GTK_BOX(hbox), link_button, FALSE, FALSE, 0);
+    GtkWidget* label = gtk_label_new(WideToUTF8(display_text).c_str());
+    // In order to avoid the link_button and the label overlapping with each
+    // other, we make the label shrinkable.
+    gtk_widget_set_size_request(label, 0, -1);
+    gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
+    gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
+    gtk_widget_modify_fg(label, GTK_STATE_NORMAL, &gfx::kGdkBlack);
+    gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, TRUE, 0);
+  } else {
+    DCHECK(link_button);
+    // Need to insert the link inside the display text.
+    GtkWidget* initial_label = gtk_label_new(
+        WideToUTF8(display_text.substr(0, link_offset)).c_str());
+    GtkWidget* trailing_label = gtk_label_new(
+        WideToUTF8(display_text.substr(link_offset)).c_str());
+
+    // TODO(joth): Unlike the right-align case above, none of the label widgets
+    // are set as shrinkable here, meaning the text will run under the close
+    // button etc. when the width is restricted, rather than eliding.
+    gtk_widget_modify_fg(initial_label, GTK_STATE_NORMAL, &gfx::kGdkBlack);
+    gtk_widget_modify_fg(trailing_label, GTK_STATE_NORMAL, &gfx::kGdkBlack);
+
+    // We don't want any spacing between the elements, so we pack them into
+    // this hbox that doesn't use kElementPadding.
+    gtk_box_pack_start(GTK_BOX(hbox), initial_label, FALSE, FALSE, 0);
+    gtk_util::CenterWidgetInHBox(hbox, link_button, false, link_padding);
+    gtk_box_pack_start(GTK_BOX(hbox), trailing_label, FALSE, FALSE, 0);
+  }
+}
+
 void InfoBar::UpdateBorderColor() {
   GdkColor border_color = theme_provider_->GetBorderColor();
   gtk_widget_modify_bg(border_bin_.get(), GTK_STATE_NORMAL, &border_color);
@@ -185,16 +248,7 @@ class AlertInfoBar : public InfoBar {
  public:
   explicit AlertInfoBar(AlertInfoBarDelegate* delegate)
       : InfoBar(delegate) {
-    std::wstring text = delegate->GetMessageText();
-    GtkWidget* label = gtk_label_new(WideToUTF8(text).c_str());
-    // We want the label to be horizontally shrinkable, so that the Chrome
-    // window can be resized freely even with a very long message.
-    gtk_widget_set_size_request(label, 0, -1);
-    gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
-    gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
-    gtk_widget_modify_fg(label, GTK_STATE_NORMAL, &gfx::kGdkBlack);
-    gtk_box_pack_start(GTK_BOX(hbox_), label, TRUE, TRUE, 0);
-
+    AddLabelAndLink(delegate->GetMessageText(), std::wstring(), 0, 0, NULL);
     gtk_widget_show_all(border_bin_.get());
   }
 };
@@ -209,49 +263,8 @@ class LinkInfoBar : public InfoBar {
     std::wstring display_text =
         delegate->GetMessageTextWithOffset(&link_offset);
     std::wstring link_text = delegate->GetLinkText();
-
-    // Create the link button.
-    GtkWidget* link_button =
-        gtk_chrome_link_button_new(WideToUTF8(link_text).c_str());
-    gtk_chrome_link_button_set_use_gtk_theme(
-        GTK_CHROME_LINK_BUTTON(link_button), FALSE);
-    g_signal_connect(link_button, "clicked",
-                     G_CALLBACK(OnLinkClick), this);
-    gtk_util::SetButtonTriggersNavigation(link_button);
-
-    GtkWidget* hbox = gtk_hbox_new(FALSE, 0);
-    // We want the link to be horizontally shrinkable, so that the Chrome
-    // window can be resized freely even with a very long link.
-    gtk_widget_set_size_request(hbox, 0, -1);
-    gtk_box_pack_start(GTK_BOX(hbox_), hbox, TRUE, TRUE, 0);
-    // If link_offset is npos, we right-align the link instead of embedding it
-    // in the text.
-    if (link_offset == std::wstring::npos) {
-      gtk_box_pack_end(GTK_BOX(hbox), link_button, FALSE, FALSE, 0);
-      GtkWidget* label = gtk_label_new(WideToUTF8(display_text).c_str());
-      // In order to avoid the link_button and the label overlapping with each
-      // other, we make the label shrinkable.
-      gtk_widget_set_size_request(label, 0, -1);
-      gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
-      gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
-      gtk_widget_modify_fg(label, GTK_STATE_NORMAL, &gfx::kGdkBlack);
-      gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, TRUE, 0);
-    } else {
-      GtkWidget* initial_label = gtk_label_new(
-          WideToUTF8(display_text.substr(0, link_offset)).c_str());
-      GtkWidget* trailing_label = gtk_label_new(
-          WideToUTF8(display_text.substr(link_offset)).c_str());
-
-      gtk_widget_modify_fg(initial_label, GTK_STATE_NORMAL, &gfx::kGdkBlack);
-      gtk_widget_modify_fg(trailing_label, GTK_STATE_NORMAL, &gfx::kGdkBlack);
-
-      // We don't want any spacing between the elements, so we pack them into
-      // this hbox that doesn't use kElementPadding.
-      gtk_box_pack_start(GTK_BOX(hbox), initial_label, FALSE, FALSE, 0);
-      gtk_util::CenterWidgetInHBox(hbox, link_button, false, 0);
-      gtk_box_pack_start(GTK_BOX(hbox), trailing_label, FALSE, FALSE, 0);
-    }
-
+    AddLabelAndLink(display_text, link_text, link_offset, 0,
+                    G_CALLBACK(OnLinkClick));
     gtk_widget_show_all(border_bin_.get());
   }
 
@@ -266,13 +279,16 @@ class LinkInfoBar : public InfoBar {
 
 // ConfirmInfoBar --------------------------------------------------------------
 
-class ConfirmInfoBar : public AlertInfoBar {
+class ConfirmInfoBar : public InfoBar {
  public:
   explicit ConfirmInfoBar(ConfirmInfoBarDelegate* delegate)
-      : AlertInfoBar(delegate) {
+      : InfoBar(delegate) {
     AddConfirmButton(ConfirmInfoBarDelegate::BUTTON_CANCEL);
     AddConfirmButton(ConfirmInfoBarDelegate::BUTTON_OK);
-
+    std::wstring display_text = delegate->GetMessageText();
+    std::wstring link_text = delegate->GetLinkText();
+    AddLabelAndLink(display_text, link_text, display_text.size(),
+                    kElementPadding, G_CALLBACK(OnLinkClick));
     gtk_widget_show_all(border_bin_.get());
   }
 
@@ -299,6 +315,13 @@ class ConfirmInfoBar : public AlertInfoBar {
   static void OnOkButton(GtkWidget* button, ConfirmInfoBar* info_bar) {
     if (info_bar->delegate_->AsConfirmInfoBarDelegate()->Accept())
       info_bar->RemoveInfoBar();
+  }
+
+  static void OnLinkClick(GtkWidget* button, ConfirmInfoBar* link_info_bar) {
+    if (link_info_bar->delegate_->AsConfirmInfoBarDelegate()->
+        LinkClicked(gtk_util::DispositionForCurrentButtonPressEvent())) {
+      link_info_bar->RemoveInfoBar();
+    }
   }
 };
 
