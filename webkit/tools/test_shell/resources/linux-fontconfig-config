@@ -123,4 +123,16 @@
       <bool>false</bool>
     </edit>
   </match>
+
+  <match target="pattern">
+    <test name="family" compare="eq">
+      <string>SlightHintedGeorgia</string>
+    </test>
+    <edit name="family" mode="assign">
+      <string>Georgia</string>
+    </edit>
+    <edit name="hintstyle" mode="assign">
+      <const>hintslight</const>
+    </edit>
+  </match>
 </fontconfig>

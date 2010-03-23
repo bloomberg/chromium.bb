@@ -689,6 +689,7 @@
               },
               'inputs': [
                 '<(input_path)',
+                'resources/linux-fontconfig-config',
               ],
               'outputs': [
                 '<(out_dir)/grit/test_shell_resources.h',
