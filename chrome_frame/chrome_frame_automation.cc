@@ -450,13 +450,10 @@ ChromeFrameAutomationClient::~ChromeFrameAutomationClient() {
 
 bool ChromeFrameAutomationClient::Initialize(
     ChromeFrameDelegate* chrome_frame_delegate,
-    int automation_server_launch_timeout,
-    bool perform_version_check,
-    const std::wstring& profile_name,
-    const std::wstring& extra_chrome_arguments,
-    bool incognito) {
+    const ChromeFrameLaunchParams& chrome_launch_params) {
   DCHECK(!IsWindow());
   chrome_frame_delegate_ = chrome_frame_delegate;
+  chrome_launch_params_ = chrome_launch_params;
   ui_thread_id_ = PlatformThread::CurrentId();
 #ifndef NDEBUG
   // In debug mode give more time to work with a debugger.
@@ -464,10 +461,11 @@ bool ChromeFrameAutomationClient::Initialize(
     // Don't use INFINITE (which is -1) or even MAXINT since we will convert
     // from milliseconds to microseconds when stored in a base::TimeDelta,
     // thus * 1000. An hour should be enough.
-    automation_server_launch_timeout = 60 * 60 * 1000;
+    chrome_launch_params_.automation_server_launch_timeout = 60 * 60 * 1000;
   } else {
-    DCHECK_LT(automation_server_launch_timeout, MAXINT / 2000);
-    automation_server_launch_timeout *= 2;
+    DCHECK_LT(chrome_launch_params_.automation_server_launch_timeout,
+              MAXINT / 2000);
+    chrome_launch_params_.automation_server_launch_timeout *= 2;
   }
 #endif  // NDEBUG
 
@@ -490,13 +488,9 @@ bool ChromeFrameAutomationClient::Initialize(
   // InitializeComplete is called successfully.
   init_state_ = INITIALIZING;
 
-  chrome_launch_params_.automation_server_launch_timeout =
-      automation_server_launch_timeout;
-  chrome_launch_params_.profile_name = profile_name;
-  chrome_launch_params_.extra_chrome_arguments = extra_chrome_arguments;
-  chrome_launch_params_.perform_version_check = perform_version_check;
-  chrome_launch_params_.url = navigate_after_initialization_ ? GURL() : url_;
-  chrome_launch_params_.incognito_mode = incognito;
+  if (navigate_after_initialization_) {
+    chrome_launch_params_.url = url_;
+  }
 
   proxy_factory_->GetAutomationServer(
       static_cast<ProxyFactory::LaunchDelegate*>(this),
@@ -841,6 +835,7 @@ void ChromeFrameAutomationClient::CreateExternalTab() {
     handle_top_level_requests_,
     chrome_launch_params_.url,
     chrome_launch_params_.referrer,
+    !chrome_launch_params_.is_widget_mode  // Infobars disabled in widget mode.
   };
 
   THREAD_SAFE_UMA_HISTOGRAM_CUSTOM_COUNTS(

@@ -320,7 +320,7 @@ bool ChromeFrameNPAPI::Initialize(NPMIMEType mime_type, NPP instance,
   // TODO(stoyan): Ask host for specific interface whether to honor
   // host's in-private mode.
   return InitializeAutomation(profile_name, extra_arguments,
-                              GetBrowserIncognitoMode());
+                              GetBrowserIncognitoMode(), true);
 }
 
 void ChromeFrameNPAPI::Uninitialize() {

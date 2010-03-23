@@ -54,7 +54,8 @@ ExternalTabContainer::ExternalTabContainer(
       external_method_factory_(this),
       enabled_extension_automation_(false),
       waiting_for_unload_event_(false),
-      pending_(false) {
+      pending_(false),
+      infobars_enabled_(true) {
 }
 
 ExternalTabContainer::~ExternalTabContainer() {
@@ -69,7 +70,8 @@ bool ExternalTabContainer::Init(Profile* profile,
                                 bool handle_top_level_requests,
                                 TabContents* existing_contents,
                                 const GURL& initial_url,
-                                const GURL& referrer) {
+                                const GURL& referrer,
+                                bool infobars_enabled) {
   if (IsWindow()) {
     NOTREACHED();
     return false;
@@ -77,6 +79,7 @@ bool ExternalTabContainer::Init(Profile* profile,
 
   load_requests_via_automation_ = load_requests_via_automation;
   handle_top_level_requests_ = handle_top_level_requests;
+  infobars_enabled_ = infobars_enabled;
 
   set_window_style(WS_POPUP | WS_CLIPCHILDREN);
   views::WidgetWin::Init(NULL, bounds);
@@ -351,7 +354,8 @@ void ExternalTabContainer::AddNewContents(TabContents* source,
       handle_top_level_requests_,
       new_contents,
       GURL(),
-      GURL());
+      GURL(),
+      true);
 
   if (result) {
     uintptr_t cookie = reinterpret_cast<uintptr_t>(new_container.get());
@@ -377,6 +381,10 @@ void ExternalTabContainer::TabContentsCreated(TabContents* new_contents) {
   // requests initiated by this render view would be serviced when the
   // external host connects to the new external tab instance.
   RegisterRenderViewHostForAutomation(rvh, true);
+}
+
+bool ExternalTabContainer::infobars_enabled() {
+  return infobars_enabled_;
 }
 
 void ExternalTabContainer::ActivateContents(TabContents* contents) {
