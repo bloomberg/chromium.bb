@@ -53,7 +53,7 @@ class MockVideoDecodeEngine : public VideoDecodeEngine {
                                  bool* got_result, Task* done_cb));
   MOCK_METHOD1(Flush, void(Task* done_cb));
   MOCK_CONST_METHOD0(state, State());
-  MOCK_CONST_METHOD0(GetSurfaceFormat, VideoSurface::Format());
+  MOCK_CONST_METHOD0(GetSurfaceFormat, VideoFrame::Format());
 };
 
 // Class that just mocks the private functions.
@@ -63,11 +63,11 @@ class DecoderPrivateMock : public VideoDecoderImpl {
       : VideoDecoderImpl(engine) {
   }
 
-  MOCK_METHOD3(EnqueueVideoFrame, bool(VideoSurface::Format surface_format,
+  MOCK_METHOD3(EnqueueVideoFrame, bool(VideoFrame::Format surface_format,
                                        const TimeTuple& time,
                                        const AVFrame* frame));
   MOCK_METHOD0(EnqueueEmptyFrame, void());
-  MOCK_METHOD3(CopyPlane, void(size_t plane, const VideoSurface& surface,
+  MOCK_METHOD3(CopyPlane, void(size_t plane, const VideoFrame* video_frame,
                                const AVFrame* frame));
   MOCK_METHOD4(FindPtsAndDuration, TimeTuple(const AVRational& time_base,
                                              const PtsHeap& pts_heap,
@@ -341,7 +341,7 @@ TEST_F(VideoDecoderImplTest, DoDecode_TestStateTransition) {
                       WithArg<3>(InvokeRunnable())));
   EXPECT_CALL(*mock_engine, GetSurfaceFormat())
       .Times(3)
-      .WillRepeatedly(Return(VideoSurface::YV16));
+      .WillRepeatedly(Return(VideoFrame::YV16));
   EXPECT_CALL(*mock_decoder, FindPtsAndDuration(_, _, _, _))
       .WillOnce(Return(kTestPts1))
       .WillOnce(Return(kTestPts2))
@@ -427,7 +427,7 @@ TEST_F(VideoDecoderImplTest, DoDecode_EnqueueVideoFrameError) {
                       SetArgumentPointee<2>(true),
                       WithArg<3>(InvokeRunnable())));
   EXPECT_CALL(*mock_engine, GetSurfaceFormat())
-      .WillOnce(Return(VideoSurface::YV16));
+      .WillOnce(Return(VideoFrame::YV16));
   EXPECT_CALL(*mock_decoder, FindPtsAndDuration(_, _, _, _))
       .WillOnce(Return(kTestPts1));
   EXPECT_CALL(*mock_decoder, EnqueueVideoFrame(_, _, _))

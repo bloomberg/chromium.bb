@@ -6,7 +6,7 @@
 
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/render_thread.h"
-#include "media/base/buffers.h"
+#include "media/base/video_frame.h"
 #include "media/base/media_format.h"
 
 IPCVideoRenderer::IPCVideoRenderer(
@@ -123,39 +123,37 @@ void IPCVideoRenderer::DoUpdateVideo() {
     return;
   }
 
-  media::VideoSurface surface;
-  CHECK(frame->Lock(&surface));
-  CHECK(surface.width == static_cast<size_t>(video_size_.width()));
-  CHECK(surface.height == static_cast<size_t>(video_size_.height()));
-  CHECK(surface.format == media::VideoSurface::YV12);
-  CHECK(surface.planes == 3);
+  CHECK(frame->width() == static_cast<size_t>(video_size_.width()));
+  CHECK(frame->height() == static_cast<size_t>(video_size_.height()));
+  CHECK(frame->format() == media::VideoFrame::YV12);
+  CHECK(frame->planes() == 3);
 
   uint8* dest = reinterpret_cast<uint8*>(transport_dib_->memory());
 
   // Copy Y plane.
-  const uint8* src = surface.data[media::VideoSurface::kYPlane];
-  size_t stride = surface.strides[media::VideoSurface::kYPlane];
-  for (size_t row = 0; row < surface.height; ++row) {
-    memcpy(dest, src, surface.width);
-    dest += surface.width;
+  const uint8* src = frame->data(media::VideoFrame::kYPlane);
+  size_t stride = frame->stride(media::VideoFrame::kYPlane);
+  for (size_t row = 0; row < frame->height(); ++row) {
+    memcpy(dest, src, frame->width());
+    dest += frame->width();
     src += stride;
   }
 
   // Copy U plane.
-  src = surface.data[media::VideoSurface::kUPlane];
-  stride = surface.strides[media::VideoSurface::kUPlane];
-  for (size_t row = 0; row < surface.height / 2; ++row) {
-    memcpy(dest, src, surface.width / 2);
-    dest += surface.width / 2;
+  src = frame->data(media::VideoFrame::kUPlane);
+  stride = frame->stride(media::VideoFrame::kUPlane);
+  for (size_t row = 0; row < frame->height() / 2; ++row) {
+    memcpy(dest, src, frame->width() / 2);
+    dest += frame->width() / 2;
     src += stride;
   }
 
   // Copy V plane.
-  src = surface.data[media::VideoSurface::kVPlane];
-  stride = surface.strides[media::VideoSurface::kVPlane];
-  for (size_t row = 0; row < surface.height / 2; ++row) {
-    memcpy(dest, src, surface.width / 2);
-    dest += surface.width / 2;
+  src = frame->data(media::VideoFrame::kVPlane);
+  stride = frame->stride(media::VideoFrame::kVPlane);
+  for (size_t row = 0; row < frame->height() / 2; ++row) {
+    memcpy(dest, src, frame->width() / 2);
+    dest += frame->width() / 2;
     src += stride;
   }
 
@@ -167,8 +165,6 @@ void IPCVideoRenderer::DoUpdateVideo() {
   Send(new ViewHostMsg_UpdateVideo(routing_id_,
                                    transport_dib_->id(),
                                    video_rect_));
-
-  frame->Unlock();
 }
 
 void IPCVideoRenderer::DoDestroyVideo() {

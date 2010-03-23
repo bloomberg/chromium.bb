@@ -1,6 +1,6 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef MEDIA_FILTERS_FFMPEG_VIDEO_DECODE_ENGINE_H_
 #define MEDIA_FILTERS_FFMPEG_VIDEO_DECODE_ENGINE_H_
@@ -27,7 +27,7 @@ class FFmpegVideoDecodeEngine : public VideoDecodeEngine {
   virtual void DecodeFrame(const Buffer& buffer, AVFrame* yuv_frame,
                            bool* got_result, Task* done_cb);
   virtual void Flush(Task* done_cb);
-  virtual VideoSurface::Format GetSurfaceFormat() const;
+  virtual VideoFrame::Format GetSurfaceFormat() const;
 
   virtual State state() const { return state_; }
 

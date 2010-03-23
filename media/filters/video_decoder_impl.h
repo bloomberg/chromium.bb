@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 
 #include "base/time.h"
 #include "media/base/pts_heap.h"
+#include "media/base/video_frame.h"
 #include "media/filters/decoder_base.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
@@ -60,14 +61,14 @@ class VideoDecoderImpl : public DecoderBase<VideoDecoder, VideoFrame> {
   virtual void DoSeek(base::TimeDelta time, Task* done_cb);
   virtual void DoDecode(Buffer* buffer, Task* done_cb);
 
-  virtual bool EnqueueVideoFrame(VideoSurface::Format surface_format,
+  virtual bool EnqueueVideoFrame(VideoFrame::Format surface_format,
                                  const TimeTuple& time,
                                  const AVFrame* frame);
 
   // Create an empty video frame and queue it.
   virtual void EnqueueEmptyFrame();
 
-  virtual void CopyPlane(size_t plane, const VideoSurface& surface,
+  virtual void CopyPlane(size_t plane, const VideoFrame& video_frame,
                          const AVFrame* frame);
 
   // Methods that pickup after the decode engine has finished its action.

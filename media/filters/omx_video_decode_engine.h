@@ -38,7 +38,7 @@ class OmxVideoDecodeEngine : public VideoDecodeEngine,
   virtual void DecodeFrame(const Buffer& buffer, AVFrame* yuv_frame,
                            bool* got_result, Task* done_cb);
   virtual void Flush(Task* done_cb);
-  virtual VideoSurface::Format GetSurfaceFormat() const;
+  virtual VideoFrame::Format GetSurfaceFormat() const;
 
   virtual State state() const { return state_; }
 

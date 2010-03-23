@@ -136,8 +136,8 @@ void OmxVideoDecodeEngine::Flush(Task* done_cb) {
   omx_codec_->Flush(TaskToCallbackAdapter::NewCallback(done_cb));
 }
 
-VideoSurface::Format OmxVideoDecodeEngine::GetSurfaceFormat() const {
-  return VideoSurface::YV12;
+VideoFrame::Format OmxVideoDecodeEngine::GetSurfaceFormat() const {
+  return VideoFrame::YV12;
 }
 
 void OmxVideoDecodeEngine::Stop(Callback0::Type* done_cb) {

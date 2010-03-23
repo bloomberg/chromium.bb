@@ -1,8 +1,8 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-#include "media/base/buffers.h"
+#include "media/base/video_frame.h"
 #include "media/base/yuv_convert.h"
 #include "webkit/glue/media/video_renderer_impl.h"
 #include "webkit/glue/webmediaplayer_impl.h"
@@ -129,31 +129,26 @@ void VideoRendererImpl::SlowPaint(media::VideoFrame* video_frame,
       timestamp != last_converted_timestamp_) {
     last_converted_frame_ = video_frame;
     last_converted_timestamp_ = timestamp;
-    media::VideoSurface frame_in;
-    if (video_frame->Lock(&frame_in)) {
-      DCHECK(frame_in.format == media::VideoSurface::YV12 ||
-             frame_in.format == media::VideoSurface::YV16);
-      DCHECK(frame_in.strides[media::VideoSurface::kUPlane] ==
-             frame_in.strides[media::VideoSurface::kVPlane]);
-      DCHECK(frame_in.planes == media::VideoSurface::kNumYUVPlanes);
-      bitmap_.lockPixels();
-      media::YUVType yuv_type = (frame_in.format == media::VideoSurface::YV12) ?
-                                media::YV12 : media::YV16;
-      media::ConvertYUVToRGB32(frame_in.data[media::VideoSurface::kYPlane],
-                               frame_in.data[media::VideoSurface::kUPlane],
-                               frame_in.data[media::VideoSurface::kVPlane],
-                               static_cast<uint8*>(bitmap_.getPixels()),
-                               frame_in.width,
-                               frame_in.height,
-                               frame_in.strides[media::VideoSurface::kYPlane],
-                               frame_in.strides[media::VideoSurface::kUPlane],
-                               bitmap_.rowBytes(),
-                               yuv_type);
-      bitmap_.unlockPixels();
-      video_frame->Unlock();
-    } else {
-      NOTREACHED();
-    }
+    DCHECK(video_frame->format() == media::VideoFrame::YV12 ||
+           video_frame->format() == media::VideoFrame::YV16);
+    DCHECK(video_frame->stride(media::VideoFrame::kUPlane) ==
+           video_frame->stride(media::VideoFrame::kVPlane));
+    DCHECK(video_frame->planes() == media::VideoFrame::kNumYUVPlanes);
+    bitmap_.lockPixels();
+    media::YUVType yuv_type =
+        (video_frame->format() == media::VideoFrame::YV12) ?
+        media::YV12 : media::YV16;
+    media::ConvertYUVToRGB32(video_frame->data(media::VideoFrame::kYPlane),
+                             video_frame->data(media::VideoFrame::kUPlane),
+                             video_frame->data(media::VideoFrame::kVPlane),
+                             static_cast<uint8*>(bitmap_.getPixels()),
+                             video_frame->width(),
+                             video_frame->height(),
+                             video_frame->stride(media::VideoFrame::kYPlane),
+                             video_frame->stride(media::VideoFrame::kUPlane),
+                             bitmap_.rowBytes(),
+                             yuv_type);
+    bitmap_.unlockPixels();
   }
 
   // 2. Paint the bitmap to canvas.
@@ -173,112 +168,101 @@ void VideoRendererImpl::SlowPaint(media::VideoFrame* video_frame,
 void VideoRendererImpl::FastPaint(media::VideoFrame* video_frame,
                                   skia::PlatformCanvas* canvas,
                                   const gfx::Rect& dest_rect) {
-  media::VideoSurface frame_in;
-  if (video_frame->Lock(&frame_in)) {
-    DCHECK(frame_in.format == media::VideoSurface::YV12 ||
-           frame_in.format == media::VideoSurface::YV16);
-    DCHECK(frame_in.strides[media::VideoSurface::kUPlane] ==
-           frame_in.strides[media::VideoSurface::kVPlane]);
-    DCHECK(frame_in.planes == media::VideoSurface::kNumYUVPlanes);
-    const SkBitmap& bitmap = canvas->getDevice()->accessBitmap(true);
-    media::YUVType yuv_type = (frame_in.format == media::VideoSurface::YV12) ?
-                              media::YV12 : media::YV16;
-    int y_shift = yuv_type;  // 1 for YV12, 0 for YV16.
+  DCHECK(video_frame->format() == media::VideoFrame::YV12 ||
+         video_frame->format() == media::VideoFrame::YV16);
+  DCHECK(video_frame->stride(media::VideoFrame::kUPlane) ==
+         video_frame->stride(media::VideoFrame::kVPlane));
+  DCHECK(video_frame->planes() == media::VideoFrame::kNumYUVPlanes);
+  const SkBitmap& bitmap = canvas->getDevice()->accessBitmap(true);
+  media::YUVType yuv_type = (video_frame->format() == media::VideoFrame::YV12) ?
+                            media::YV12 : media::YV16;
+  int y_shift = yuv_type;  // 1 for YV12, 0 for YV16.
 
-    // Create a rectangle backed by SkScalar.
-    SkRect scalar_dest_rect;
-    scalar_dest_rect.iset(dest_rect.x(), dest_rect.y(),
-                          dest_rect.right(), dest_rect.bottom());
+  // Create a rectangle backed by SkScalar.
+  SkRect scalar_dest_rect;
+  scalar_dest_rect.iset(dest_rect.x(), dest_rect.y(),
+                        dest_rect.right(), dest_rect.bottom());
 
-    // Transform the destination rectangle to local coordinates.
-    const SkMatrix& local_matrix = canvas->getTotalMatrix();
-    SkRect local_dest_rect;
-    local_matrix.mapRect(&local_dest_rect, scalar_dest_rect);
+  // Transform the destination rectangle to local coordinates.
+  const SkMatrix& local_matrix = canvas->getTotalMatrix();
+  SkRect local_dest_rect;
+  local_matrix.mapRect(&local_dest_rect, scalar_dest_rect);
 
-    // After projecting the destination rectangle to local coordinates, round
-    // the projected rectangle to integer values, this will give us pixel values
-    // of the rectangle.
-    SkIRect local_dest_irect, local_dest_irect_saved;
-    local_dest_rect.round(&local_dest_irect);
-    local_dest_rect.round(&local_dest_irect_saved);
+  // After projecting the destination rectangle to local coordinates, round
+  // the projected rectangle to integer values, this will give us pixel values
+  // of the rectangle.
+  SkIRect local_dest_irect, local_dest_irect_saved;
+  local_dest_rect.round(&local_dest_irect);
+  local_dest_rect.round(&local_dest_irect_saved);
 
-    // Only does the paint if the destination rect intersects with the clip
-    // rect.
-    if (local_dest_irect.intersect(canvas->getTotalClip().getBounds())) {
-      // At this point |local_dest_irect| contains the rect that we should draw
-      // to within the clipping rect.
+  // Only does the paint if the destination rect intersects with the clip
+  // rect.
+  if (local_dest_irect.intersect(canvas->getTotalClip().getBounds())) {
+    // At this point |local_dest_irect| contains the rect that we should draw
+    // to within the clipping rect.
 
-      // Calculate the address for the top left corner of destination rect in
-      // the canvas that we will draw to. The address is obtained by the base
-      // address of the canvas shifted by "left" and "top" of the rect.
-      uint8* dest_rect_pointer = static_cast<uint8*>(bitmap.getPixels()) +
-                                 local_dest_irect.fTop * bitmap.rowBytes() +
-                                 local_dest_irect.fLeft * 4;
+    // Calculate the address for the top left corner of destination rect in
+    // the canvas that we will draw to. The address is obtained by the base
+    // address of the canvas shifted by "left" and "top" of the rect.
+    uint8* dest_rect_pointer = static_cast<uint8*>(bitmap.getPixels()) +
+        local_dest_irect.fTop * bitmap.rowBytes() +
+        local_dest_irect.fLeft * 4;
 
-      // Project the clip rect to the original video frame, obtains the
-      // dimensions of the projected clip rect, "left" and "top" of the rect.
-      // The math here are all integer math so we won't have rounding error and
-      // write outside of the canvas.
-      // We have the assumptions of dest_rect.width() and dest_rect.height()
-      // being non-zero, these are valid assumptions since finding intersection
-      // above rejects empty rectangle so we just do a DCHECK here.
-      DCHECK_NE(0, dest_rect.width());
-      DCHECK_NE(0, dest_rect.height());
-      size_t frame_clip_width = local_dest_irect.width() *
-                                frame_in.width /
-                                local_dest_irect_saved.width();
-      size_t frame_clip_height = local_dest_irect.height() *
-                                 frame_in.height /
-                                 local_dest_irect_saved.height();
+    // Project the clip rect to the original video frame, obtains the
+    // dimensions of the projected clip rect, "left" and "top" of the rect.
+    // The math here are all integer math so we won't have rounding error and
+    // write outside of the canvas.
+    // We have the assumptions of dest_rect.width() and dest_rect.height()
+    // being non-zero, these are valid assumptions since finding intersection
+    // above rejects empty rectangle so we just do a DCHECK here.
+    DCHECK_NE(0, dest_rect.width());
+    DCHECK_NE(0, dest_rect.height());
+    size_t frame_clip_width = local_dest_irect.width() *
+        video_frame->width() / local_dest_irect_saved.width();
+    size_t frame_clip_height = local_dest_irect.height() *
+        video_frame->height() / local_dest_irect_saved.height();
 
-      // Project the "left" and "top" of the final destination rect to local
-      // coordinates of the video frame, use these values to find the offsets
-      // in the video frame to start reading.
-      size_t frame_clip_left = (local_dest_irect.fLeft -
-                                local_dest_irect_saved.fLeft) *
-                               frame_in.width /
-                               local_dest_irect_saved.width();
-      size_t frame_clip_top = (local_dest_irect.fTop -
-                               local_dest_irect_saved.fTop) *
-                              frame_in.height /
-                              local_dest_irect_saved.height();
+    // Project the "left" and "top" of the final destination rect to local
+    // coordinates of the video frame, use these values to find the offsets
+    // in the video frame to start reading.
+    size_t frame_clip_left =
+        (local_dest_irect.fLeft - local_dest_irect_saved.fLeft) *
+        video_frame->width() / local_dest_irect_saved.width();
+    size_t frame_clip_top =
+        (local_dest_irect.fTop - local_dest_irect_saved.fTop) *
+        video_frame->height() / local_dest_irect_saved.height();
 
-      // Use the "left" and "top" of the destination rect to locate the offset
-      // in Y, U and V planes.
-      size_t y_offset = frame_in.strides[media::VideoSurface::kYPlane] *
-                        frame_clip_top + frame_clip_left;
-      // For format YV12, there is one U, V value per 2x2 block.
-      // For format YV16, there is one u, V value per 2x1 block.
-      size_t uv_offset = (frame_in.strides[media::VideoSurface::kUPlane] *
-                         (frame_clip_top >> y_shift)) +
-                         (frame_clip_left >> 1);
-      uint8* frame_clip_y = frame_in.data[media::VideoSurface::kYPlane] +
-                            y_offset;
-      uint8* frame_clip_u = frame_in.data[media::VideoSurface::kUPlane] +
-                            uv_offset;
-      uint8* frame_clip_v = frame_in.data[media::VideoSurface::kVPlane] +
-                            uv_offset;
-      bitmap.lockPixels();
+    // Use the "left" and "top" of the destination rect to locate the offset
+    // in Y, U and V planes.
+    size_t y_offset = video_frame->stride(media::VideoFrame::kYPlane) *
+        frame_clip_top + frame_clip_left;
+    // For format YV12, there is one U, V value per 2x2 block.
+    // For format YV16, there is one u, V value per 2x1 block.
+    size_t uv_offset = (video_frame->stride(media::VideoFrame::kUPlane) *
+                        (frame_clip_top >> y_shift)) + (frame_clip_left >> 1);
+    uint8* frame_clip_y =
+        video_frame->data(media::VideoFrame::kYPlane) + y_offset;
+    uint8* frame_clip_u =
+        video_frame->data(media::VideoFrame::kUPlane) + uv_offset;
+    uint8* frame_clip_v =
+        video_frame->data(media::VideoFrame::kVPlane) + uv_offset;
+    bitmap.lockPixels();
 
-      // TODO(hclam): do rotation and mirroring here.
-      media::ScaleYUVToRGB32(frame_clip_y,
-                             frame_clip_u,
-                             frame_clip_v,
-                             dest_rect_pointer,
-                             frame_clip_width,
-                             frame_clip_height,
-                             local_dest_irect.width(),
-                             local_dest_irect.height(),
-                             frame_in.strides[media::VideoSurface::kYPlane],
-                             frame_in.strides[media::VideoSurface::kUPlane],
-                             bitmap.rowBytes(),
-                             yuv_type,
-                             media::ROTATE_0);
-      bitmap.unlockPixels();
-    }
-    video_frame->Unlock();
-  } else {
-    NOTREACHED();
+    // TODO(hclam): do rotation and mirroring here.
+    media::ScaleYUVToRGB32(frame_clip_y,
+                           frame_clip_u,
+                           frame_clip_v,
+                           dest_rect_pointer,
+                           frame_clip_width,
+                           frame_clip_height,
+                           local_dest_irect.width(),
+                           local_dest_irect.height(),
+                           video_frame->stride(media::VideoFrame::kYPlane),
+                           video_frame->stride(media::VideoFrame::kUPlane),
+                           bitmap.rowBytes(),
+                           yuv_type,
+                           media::ROTATE_0);
+    bitmap.unlockPixels();
   }
 }
 

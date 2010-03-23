@@ -1,11 +1,11 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef MEDIA_FILTERS_VIDEO_DECODE_ENGINE_H_
 #define MEDIA_FILTERS_VIDEO_DECODE_ENGINE_H_
 
-#include "media/base/buffers.h"  // For VideoSurface.
+#include "media/base/video_frame.h"
 
 // FFmpeg types.
 //
@@ -48,7 +48,7 @@ class VideoDecodeEngine {
 
   // Returns the VideoSurface::Format of the resulting |yuv_frame| from
   // DecodeFrame().
-  virtual VideoSurface::Format GetSurfaceFormat() const = 0;
+  virtual VideoFrame::Format GetSurfaceFormat() const = 0;
 
   // Returns the current state of the decode engine.
   virtual State state() const  = 0;

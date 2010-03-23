@@ -9,7 +9,7 @@
 #include <X11/extensions/Xrender.h>
 #include <X11/extensions/Xcomposite.h>
 
-#include "media/base/buffers.h"
+#include "media/base/video_frame.h"
 #include "media/base/yuv_convert.h"
 
 X11VideoRenderer* X11VideoRenderer::instance_ = NULL;
@@ -153,31 +153,26 @@ void X11VideoRenderer::Paint() {
     return;
 
   // Convert YUV frame to RGB.
-  media::VideoSurface frame_in;
-  if (video_frame->Lock(&frame_in)) {
-    DCHECK(frame_in.format == media::VideoSurface::YV12 ||
-           frame_in.format == media::VideoSurface::YV16);
-    DCHECK(frame_in.strides[media::VideoSurface::kUPlane] ==
-           frame_in.strides[media::VideoSurface::kVPlane]);
-    DCHECK(frame_in.planes == media::VideoSurface::kNumYUVPlanes);
+  DCHECK(video_frame->format() == media::VideoFrame::YV12 ||
+         video_frame->format() == media::VideoFrame::YV16);
+  DCHECK(video_frame->stride(media::VideoFrame::kUPlane) ==
+         video_frame->stride(media::VideoFrame::kVPlane));
+  DCHECK(video_frame->planes() == media::VideoFrame::kNumYUVPlanes);
 
-    DCHECK(image_->data);
-    media::YUVType yuv_type = (frame_in.format == media::VideoSurface::YV12) ?
-        media::YV12 : media::YV16;
-    media::ConvertYUVToRGB32(frame_in.data[media::VideoSurface::kYPlane],
-                             frame_in.data[media::VideoSurface::kUPlane],
-                             frame_in.data[media::VideoSurface::kVPlane],
-                             (uint8*)image_->data,
-                             frame_in.width,
-                             frame_in.height,
-                             frame_in.strides[media::VideoSurface::kYPlane],
-                             frame_in.strides[media::VideoSurface::kUPlane],
-                             image_->bytes_per_line,
-                             yuv_type);
-    video_frame->Unlock();
-  } else {
-    NOTREACHED();
-  }
+  DCHECK(image_->data);
+  media::YUVType yuv_type =
+      (video_frame->format() == media::VideoFrame::YV12) ?
+      media::YV12 : media::YV16;
+  media::ConvertYUVToRGB32(video_frame->data(media::VideoFrame::kYPlane),
+                           video_frame->data(media::VideoFrame::kUPlane),
+                           video_frame->data(media::VideoFrame::kVPlane),
+                           (uint8*)image_->data,
+                           video_frame->width(),
+                           video_frame->height(),
+                           video_frame->stride(media::VideoFrame::kYPlane),
+                           video_frame->stride(media::VideoFrame::kUPlane),
+                           image_->bytes_per_line,
+                           yuv_type);
 
   if (use_render_) {
     // If XRender is used, we'll upload the image to a pixmap. And then

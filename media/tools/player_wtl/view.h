@@ -1,6 +1,6 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef MEDIA_TOOLS_PLAYER_WTL_VIEW_H_
 #define MEDIA_TOOLS_PLAYER_WTL_VIEW_H_
@@ -9,7 +9,7 @@
 #include <process.h>
 #include <string.h>
 
-#include "media/base/buffers.h"
+#include "media/base/video_frame.h"
 #include "media/base/yuv_convert.h"
 #include "media/tools/player_wtl/movie.h"
 #include "media/tools/player_wtl/player_wtl.h"
@@ -121,10 +121,7 @@ class WtlVideoWindow : public CScrollWindowImpl<WtlVideoWindow> {
   }
 
   // Convert the video frame to RGB and Blit.
-  void ConvertFrame(media::VideoFrame * video_frame) {
-    media::VideoSurface frame_in;
-    bool lock_result = video_frame->Lock(&frame_in);
-    DCHECK(lock_result);
+  void ConvertFrame(media::VideoFrame* video_frame) {
     BITMAP bm;
     bmp_.GetBitmap(&bm);
     int dibwidth = bm.bmWidth;
@@ -133,11 +130,11 @@ class WtlVideoWindow : public CScrollWindowImpl<WtlVideoWindow> {
     uint8 *movie_dib_bits = reinterpret_cast<uint8 *>(bm.bmBits) +
         bm.bmWidthBytes * (bm.bmHeight - 1);
     int dibrowbytes = -bm.bmWidthBytes;
-    int clipped_width = frame_in.width;
+    int clipped_width = video_frame->width();
     if (dibwidth < clipped_width) {
       clipped_width = dibwidth;
     }
-    int clipped_height = frame_in.height;
+    int clipped_height = video_frame->height();
     if (dibheight < clipped_height) {
       clipped_height = dibheight;
     }
@@ -186,7 +183,7 @@ class WtlVideoWindow : public CScrollWindowImpl<WtlVideoWindow> {
     // Append each frame to end of file.
     bool enable_dump_yuv_file = media::Movie::get()->GetDumpYuvFileEnable();
     if (enable_dump_yuv_file) {
-      DumpYUV(frame_in);
+      DumpYUV(video_frame);
     }
 
 #ifdef TESTING
@@ -196,7 +193,7 @@ class WtlVideoWindow : public CScrollWindowImpl<WtlVideoWindow> {
     bool enable_draw = media::Movie::get()->GetDrawEnable();
     if (enable_draw) {
       DCHECK(bm.bmBitsPixel == 32);
-      DrawYUV(frame_in,
+      DrawYUV(video_frame,
               movie_dib_bits,
               dibrowbytes,
               clipped_width,
@@ -344,38 +341,39 @@ class WtlVideoWindow : public CScrollWindowImpl<WtlVideoWindow> {
 
   // Draw a frame of YUV to an RGB buffer with scaling.
   // Handles different YUV formats.
-  void DrawYUV(const media::VideoSurface &frame_in,
+  void DrawYUV(const media::VideoFrame* video_frame,
                uint8 *movie_dib_bits,
                int dibrowbytes,
                int clipped_width,
                int clipped_height,
                int scaled_width,
                int scaled_height) {
-    media::YUVType yuv_type = (frame_in.format == media::VideoSurface::YV12) ?
-        media::YV12 : media::YV16;
+    media::YUVType yuv_type =
+      (video_frame->format() == media::VideoFrame::YV12) ?
+      media::YV12 : media::YV16;
 
     // Simple convert is not necessary for performance, but allows
     // easier alternative implementations.
     if ((view_rotate_ == media::ROTATE_0) &&   // Not scaled or rotated
         (view_size_ == 2)) {
-      media::ConvertYUVToRGB32(frame_in.data[0],
-                               frame_in.data[1],
-                               frame_in.data[2],
+      media::ConvertYUVToRGB32(video_frame->data(0),
+                               video_frame->data(1),
+                               video_frame->data(2),
                                movie_dib_bits,
                                scaled_width, scaled_height,
-                               frame_in.strides[0],
-                               frame_in.strides[1],
+                               video_frame->stride(0),
+                               video_frame->stride(1),
                                dibrowbytes,
                                yuv_type);
     } else {
-      media::ScaleYUVToRGB32(frame_in.data[0],
-                             frame_in.data[1],
-                             frame_in.data[2],
+      media::ScaleYUVToRGB32(video_frame->data(0),
+                             video_frame->data(1),
+                             video_frame->data(2),
                              movie_dib_bits,
                              clipped_width, clipped_height,
                              scaled_width, scaled_height,
-                             frame_in.strides[0],
-                             frame_in.strides[1],
+                             video_frame->stride(0),
+                             video_frame->stride(1),
                              dibrowbytes,
                              yuv_type,
                              view_rotate_);
@@ -383,28 +381,30 @@ class WtlVideoWindow : public CScrollWindowImpl<WtlVideoWindow> {
   }
 
   // Diagnostic function to write out YUV in format compatible with PYUV tool.
-  void DumpYUV(const media::VideoSurface &frame_in) {
+  void DumpYUV(const media::VideoFrame* video_frame) {
     FILE * file_yuv = fopen("raw.yuv", "ab+");  // Open for append binary.
     if (file_yuv != NULL) {
       fseek(file_yuv, 0, SEEK_END);
-      const size_t frame_size = frame_in.width * frame_in.height;
-      for (size_t y = 0; y < frame_in.height; ++y)
-        fwrite(frame_in.data[0]+frame_in.strides[0]*y,
-          frame_in.width,   sizeof(uint8), file_yuv);
-      for (size_t y = 0; y < frame_in.height/2; ++y)
-        fwrite(frame_in.data[1]+frame_in.strides[1]*y,
-          frame_in.width/2, sizeof(uint8), file_yuv);
-      for (size_t y = 0; y < frame_in.height/2; ++y)
-        fwrite(frame_in.data[2]+frame_in.strides[2]*y,
-          frame_in.width/2, sizeof(uint8), file_yuv);
+      const size_t frame_size =
+        video_frame->width() * video_frame->height();
+      for (size_t y = 0; y < video_frame->height(); ++y)
+        fwrite(video_frame->data(0) + video_frame->stride(0)*y,
+          video_frame->width(), sizeof(uint8), file_yuv);
+      for (size_t y = 0; y < video_frame->height()/2; ++y)
+        fwrite(video_frame->data(1) + video_frame->stride(1)*y,
+          video_frame->width() / 2, sizeof(uint8), file_yuv);
+      for (size_t y = 0; y < video_frame->height()/2; ++y)
+        fwrite(video_frame->data(2) + video_frame->stride(2)*y,
+          video_frame->width() / 2, sizeof(uint8), file_yuv);
       fclose(file_yuv);
 
 #if TESTING
       static int frame_dump_count = 0;
       char outputbuf[512];
       _snprintf_s(outputbuf, sizeof(outputbuf), "yuvdump %4d %dx%d stride %d\n",
-                  frame_dump_count, frame_in.width, frame_in.height,
-                  frame_in.strides[0]);
+                  frame_dump_count, video_frame->width(),
+                  video_frame->height(),
+                  video_frame->stride(0));
       OutputDebugStringA(outputbuf);
       ++frame_dump_count;
 #endif

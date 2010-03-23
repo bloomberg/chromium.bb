@@ -7,7 +7,7 @@
 #include "base/task.h"
 #include "media/base/filters.h"
 #include "media/base/limits.h"
-#include "media/base/video_frame_impl.h"
+#include "media/base/video_frame.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 #include "media/filters/ffmpeg_interfaces.h"
 #include "media/filters/video_decode_engine.h"
@@ -195,21 +195,21 @@ void VideoDecoderImpl::OnDecodeComplete(AVFrame* yuv_frame, bool* got_frame,
   }
 }
 
-bool VideoDecoderImpl::EnqueueVideoFrame(VideoSurface::Format surface_format,
+bool VideoDecoderImpl::EnqueueVideoFrame(VideoFrame::Format surface_format,
                                          const TimeTuple& time,
                                          const AVFrame* frame) {
   // TODO(fbarchard): Work around for FFmpeg http://crbug.com/27675
   // The decoder is in a bad state and not decoding correctly.
   // Checking for NULL avoids a crash in CopyPlane().
-  if (!frame->data[VideoSurface::kYPlane] ||
-      !frame->data[VideoSurface::kUPlane] ||
-      !frame->data[VideoSurface::kVPlane]) {
+  if (!frame->data[VideoFrame::kYPlane] ||
+      !frame->data[VideoFrame::kUPlane] ||
+      !frame->data[VideoFrame::kVPlane]) {
     return true;
   }
 
   scoped_refptr<VideoFrame> video_frame;
-  VideoFrameImpl::CreateFrame(surface_format, width_, height_,
-                              time.timestamp, time.duration, &video_frame);
+  VideoFrame::CreateFrame(surface_format, width_, height_,
+                          time.timestamp, time.duration, &video_frame);
   if (!video_frame) {
     return false;
   }
@@ -219,31 +219,26 @@ bool VideoDecoderImpl::EnqueueVideoFrame(VideoSurface::Format surface_format,
   // avcodec_decode_video() call.
   // TODO(scherkus): figure out pre-allocation/buffer cycling scheme.
   // TODO(scherkus): is there a cleaner way to figure out the # of planes?
-  VideoSurface surface;
-  if (!video_frame->Lock(&surface)) {
-    return false;
-  }
-  CopyPlane(VideoSurface::kYPlane, surface, frame);
-  CopyPlane(VideoSurface::kUPlane, surface, frame);
-  CopyPlane(VideoSurface::kVPlane, surface, frame);
-  video_frame->Unlock();
+  CopyPlane(VideoFrame::kYPlane, *video_frame, frame);
+  CopyPlane(VideoFrame::kUPlane, *video_frame, frame);
+  CopyPlane(VideoFrame::kVPlane, *video_frame, frame);
   EnqueueResult(video_frame);
   return true;
 }
 
 void VideoDecoderImpl::CopyPlane(size_t plane,
-                                 const VideoSurface& surface,
+                                 const VideoFrame& video_frame,
                                  const AVFrame* frame) {
-  DCHECK(surface.width % 2 == 0);
+  DCHECK(video_frame.width() % 2 == 0);
   const uint8* source = frame->data[plane];
   const size_t source_stride = frame->linesize[plane];
-  uint8* dest = surface.data[plane];
-  const size_t dest_stride = surface.strides[plane];
-  size_t bytes_per_line = surface.width;
-  size_t copy_lines = surface.height;
-  if (plane != VideoSurface::kYPlane) {
+  uint8* dest = video_frame.data(plane);
+  const size_t dest_stride = video_frame.stride(plane);
+  size_t bytes_per_line = video_frame.width();
+  size_t copy_lines = video_frame.height();
+  if (plane != VideoFrame::kYPlane) {
     bytes_per_line /= 2;
-    if (surface.format == VideoSurface::YV12) {
+    if (video_frame.format() == VideoFrame::YV12) {
       copy_lines = (copy_lines + 1) / 2;
     }
   }
@@ -257,7 +252,7 @@ void VideoDecoderImpl::CopyPlane(size_t plane,
 
 void VideoDecoderImpl::EnqueueEmptyFrame() {
   scoped_refptr<VideoFrame> video_frame;
-  VideoFrameImpl::CreateEmptyFrame(&video_frame);
+  VideoFrame::CreateEmptyFrame(&video_frame);
   EnqueueResult(video_frame);
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -167,19 +167,19 @@ TEST_F(FFmpegVideoDecodeEngineTest, DecodeFrame_DecodeError) {
 TEST_F(FFmpegVideoDecodeEngineTest, GetSurfaceFormat) {
   // YV12 formats.
   codec_context_.pix_fmt = PIX_FMT_YUV420P;
-  EXPECT_EQ(VideoSurface::YV12, test_engine_->GetSurfaceFormat());
+  EXPECT_EQ(VideoFrame::YV12, test_engine_->GetSurfaceFormat());
   codec_context_.pix_fmt = PIX_FMT_YUVJ420P;
-  EXPECT_EQ(VideoSurface::YV12, test_engine_->GetSurfaceFormat());
+  EXPECT_EQ(VideoFrame::YV12, test_engine_->GetSurfaceFormat());
 
   // YV16 formats.
   codec_context_.pix_fmt = PIX_FMT_YUV422P;
-  EXPECT_EQ(VideoSurface::YV16, test_engine_->GetSurfaceFormat());
+  EXPECT_EQ(VideoFrame::YV16, test_engine_->GetSurfaceFormat());
   codec_context_.pix_fmt = PIX_FMT_YUVJ422P;
-  EXPECT_EQ(VideoSurface::YV16, test_engine_->GetSurfaceFormat());
+  EXPECT_EQ(VideoFrame::YV16, test_engine_->GetSurfaceFormat());
 
   // Invalid value.
   codec_context_.pix_fmt = PIX_FMT_NONE;
-  EXPECT_EQ(VideoSurface::INVALID, test_engine_->GetSurfaceFormat());
+  EXPECT_EQ(VideoFrame::INVALID, test_engine_->GetSurfaceFormat());
 }
 
 }  // namespace media

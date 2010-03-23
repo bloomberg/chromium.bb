@@ -6,7 +6,7 @@
 
 #include "base/task.h"
 #include "media/base/callback.h"
-#include "media/base/video_frame_impl.h"
+#include "media/base/buffers.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 #include "media/ffmpeg/ffmpeg_util.h"
 #include "media/filters/ffmpeg_demuxer.h"
@@ -103,22 +103,22 @@ void FFmpegVideoDecodeEngine::Flush(Task* done_cb) {
   avcodec_flush_buffers(codec_context_);
 }
 
-VideoSurface::Format FFmpegVideoDecodeEngine::GetSurfaceFormat() const {
+VideoFrame::Format FFmpegVideoDecodeEngine::GetSurfaceFormat() const {
   // J (Motion JPEG) versions of YUV are full range 0..255.
   // Regular (MPEG) YUV is 16..240.
   // For now we will ignore the distinction and treat them the same.
   switch (codec_context_->pix_fmt) {
     case PIX_FMT_YUV420P:
     case PIX_FMT_YUVJ420P:
-      return VideoSurface::YV12;
+      return VideoFrame::YV12;
       break;
     case PIX_FMT_YUV422P:
     case PIX_FMT_YUVJ422P:
-      return VideoSurface::YV16;
+      return VideoFrame::YV16;
       break;
     default:
       // TODO(scherkus): More formats here?
-      return VideoSurface::INVALID;
+      return VideoFrame::INVALID;
   }
 }
 
