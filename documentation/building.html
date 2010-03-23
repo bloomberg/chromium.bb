@@ -28,7 +28,7 @@ as described in the Getting Started section
 You might not need to build Native Client, at all.
 You can use Native Client and develop modules without building Native Client,
 since the platform-specific distributions
-include binaries for Native Client and its SDK.
+include binaries for Native Client and its toolchain.
 For more information,
 see <a href="getting_started.html">Getting Started</a>.
 </p>
@@ -42,7 +42,8 @@ see <a href="getting_started.html">Getting Started</a>.
   <li> <a href="#python">Check your Python version</a> </li>
   </ul></li>
 <li> <a href="#building">Build Native Client</a> </li>
-<li> <a href="#sdk">If you need to build the SDK</a> </li>
+<li> <a href="#sdk">If you need to build the toolchain (all the compilers and
+     associated libraries)</a> </li>
 <li> <a href="#more">More build options</a>
   <ul>
   <li> <a href="#h-option">-h: Help</a></li>
@@ -130,10 +131,10 @@ For example:
 
 <li><a name="build"> </a>
   Build Native Client.
-  Unless you've recently downloaded or built the Native Client SDK,
+  Unless you've recently downloaded or built the Native Client toolchain,
   specify the <code>--download</code> flag
-  to download the latest build of the SDK.
-  The following command downloads the SDK
+  to download the latest build of the toolchain.
+  The following command downloads the toolchain
   and builds Native Client.
 
 <p>
@@ -142,7 +143,7 @@ Linux or Mac:
 
 <pre class="platform-linux-mac">
 <kbd>./scons -c</kbd>             <em>#clean (optional)</em>
-<kbd>./scons --download</kbd>     <em>#build; <b>--download</b> is optional if you already have the latest SDK</em>
+<kbd>./scons --download</kbd>     <em>#build; <b>--download</b> is optional if you already have the latest toolchain</em>
 </pre>
 
 <p>
@@ -151,7 +152,7 @@ Windows:
 
 <pre class="platform-windows">
 <kbd>.\scons.bat -c</kbd>         <em>#clean (optional)</em>
-<kbd>.\scons.bat --download</kbd> <em>#build; <b>--download</b> is optional if you already have the latest SDK</em>
+<kbd>.\scons.bat --download</kbd> <em>#build; <b>--download</b> is optional if you already have the latest toolchain</em>
 </pre>
 
 <p>
@@ -256,7 +257,7 @@ Start by
 </p>
 
 
-<h2><a name="sdk"> </a> If you need to build the SDK </h2>
+<h2><a name="sdk"> </a> If you need to build the toolchain </h2>
 
 <p class="comment">
 [PENDING: We haven't tested this section since
@@ -266,22 +267,22 @@ the massive upheaval to our codebase.]
 <p>
 You can probably ignore this section.
 The platform-specific distributions of Native Client
-have prebuilt SDKs,
+have prebuilt toolchains,
 and the source distribution
-includes a <code>--download</code> option to get the SDK.
-You don't need to build the SDK unless you
-have changed SDK files &mdash;
+includes a <code>--download</code> option to get the toolchain.
+You don't need to build the toolchain unless you
+have changed toolchain files &mdash;
 such as to change the tools or add doc comments.
 </p>
 
 <p>
-To build the SDK,
+To build the toolchain,
 you need <code>make</code> and <code>texinfo</code>.
 </p>
 
 <p>
 Currently, you can build only on Linux or Mac;
-you can't build the SDK on Windows, even with Cygwin.
+you can't build the toolchain on Windows, even with Cygwin.
 <span class="comment">[PENDING:
 When the Windows build starts working, add this:
 You can get <code>make</code> as part of Cygwin.]
@@ -290,14 +291,14 @@ You can get <code>make</code> as part of Cygwin.]
 
 <p class="technote">
 <b>Technical detail:</b>
-Building the SDK requires <code>make</code>
-because part of the SDK
+Building the toolchain requires <code>make</code>
+because part of the toolchain
 is derived from GNU tools, such as GCC,
 that are built using <code>make</code>.
 </p>
 
 <p>
-Here's how to build the SDK:
+Here's how to build the toolchain:
 </p>
 
 <ol>
@@ -311,7 +312,7 @@ For example:
 </pre>
 
 <li> Run <code>make</code>,
-     specifying where to put the SDK (<code>SDKLOC=</code>...).
+     specifying where to put the toolchain (<code>SDKLOC=</code>...).
 
 <p>
 Linux:
