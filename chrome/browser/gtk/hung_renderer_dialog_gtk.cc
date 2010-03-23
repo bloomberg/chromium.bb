@@ -157,12 +157,15 @@ void HungRendererDialogGtk::ShowForTabContents(TabContents* hung_contents) {
         title = UTF16ToUTF8(TabContents::GetDefaultTitle());
       SkBitmap favicon = it->GetFavIcon();
 
+      GdkPixbuf* pixbuf = NULL;
+      if (favicon.width() > 0)
+        pixbuf = gfx::GdkPixbufFromSkBitmap(&favicon);
       gtk_list_store_set(model_, &tree_iter,
-          COL_FAVICON, favicon.width() > 0
-              ? gfx::GdkPixbufFromSkBitmap(&favicon)
-              : NULL,
+          COL_FAVICON, pixbuf,
           COL_TITLE, title.c_str(),
           -1);
+      if (pixbuf)
+        g_object_unref(pixbuf);
     }
   }
   gtk_widget_show_all(GTK_WIDGET(dialog_));
@@ -223,4 +226,3 @@ void HideForTabContents(TabContents* contents) {
 }
 
 }  // namespace hung_renderer_dialog
-

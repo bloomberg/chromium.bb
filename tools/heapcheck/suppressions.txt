@@ -220,10 +220,3 @@
   fun:ProfileSyncFactoryImpl::CreateProfileSyncService
   fun:TestingProfile::CreateProfileSyncService
 }
-
-{
-  bug_38895
-  Heapcheck:Leak
-  fun:gfx::GdkPixbufFromSkBitmap
-  fun:KeywordEditorView::SetColumnValues
-}

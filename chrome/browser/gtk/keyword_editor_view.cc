@@ -241,6 +241,7 @@ void KeywordEditorView::SetColumnValues(int model_row, GtkTreeIter* iter) {
       COL_KEYWORD, WideToUTF8(table_model_->GetText(
           model_row, IDS_SEARCH_ENGINES_EDITOR_KEYWORD_COLUMN)).c_str(),
       -1);
+  g_object_unref(pixbuf);
 }
 
 int KeywordEditorView::GetListStoreRowForModelRow(int model_row) const {

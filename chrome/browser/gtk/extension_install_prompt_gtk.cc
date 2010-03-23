@@ -77,6 +77,7 @@ void ShowInstallPromptDialog(GtkWindow* parent, SkBitmap* skia_icon,
   // Put Icon in the left column.
   GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(skia_icon);
   GtkWidget* icon = gtk_image_new_from_pixbuf(pixbuf);
+  g_object_unref(pixbuf);
   gtk_box_pack_start(GTK_BOX(icon_hbox), icon, TRUE, TRUE, 0);
 
   // Create a new vbox for the right column.

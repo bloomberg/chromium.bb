@@ -224,6 +224,7 @@ GtkWidget* NativeMenuGtk::AddMenuItemAt(int index,
         GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&icon);
         gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),
                                       gtk_image_new_from_pixbuf(pixbuf));
+        g_object_unref(pixbuf);
       } else {
         menu_item = gtk_menu_item_new_with_mnemonic(label.c_str());
       }

@@ -35,7 +35,8 @@ extern const GdkColor kGdkBlack;
 extern const GdkColor kGdkGreen;
 
 // Convert and copy a SkBitmap to a GdkPixbuf. NOTE: this uses BGRAToRGBA, so
-// it is an expensive operation.
+// it is an expensive operation.  The returned GdkPixbuf will have a refcount of
+// 1, and the caller is responsible for unrefing it when done.
 GdkPixbuf* GdkPixbufFromSkBitmap(const SkBitmap* bitmap);
 
 // Modify the given region by subtracting the given rectangles.

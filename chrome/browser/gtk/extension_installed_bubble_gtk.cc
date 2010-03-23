@@ -150,6 +150,7 @@ void ExtensionInstalledBubbleGtk::ShowInternal() {
   gtk_box_pack_start(GTK_BOX(bubble_content), icon_column, FALSE, FALSE,
       kIconPadding);
   GtkWidget* image = gtk_image_new_from_pixbuf(pixbuf);
+  g_object_unref(pixbuf);
   gtk_box_pack_start(GTK_BOX(icon_column), image, FALSE, FALSE, 0);
 
   // Center text column.
