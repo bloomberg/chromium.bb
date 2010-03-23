@@ -61,7 +61,12 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, Basic) {
   EXPECT_EQ(0, browser_actions_bar()->NumberOfBrowserActions());
 }
 
+// TODO(mpcomplete): http://code.google.com/p/chromium/issues/detail?id=38992
+#if defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, DISABLED_Visibility) {
+#else
 IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, Visibility) {
+#endif
   BrowserActionsContainer::disable_animations_during_testing_ = true;
 
   // Load extension A (contains browser action).
