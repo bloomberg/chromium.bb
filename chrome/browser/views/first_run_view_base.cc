@@ -97,6 +97,7 @@ void FirstRunViewBase::SetupControls() {
         l10n_util::GetString(IDS_FR_CUSTOMIZE_DEFAULT_BROWSER));
     default_browser_->SetMultiLine(true);
     AddChildView(default_browser_);
+    default_browser_->set_listener(this);
   } else {
     non_default_browser_label_ = new Label(
         l10n_util::GetStringF(IDS_OPTIONS_DEFAULTBROWSER_SXS,
@@ -148,6 +149,15 @@ void FirstRunViewBase::Layout() {
 
   int width = canvas.width() - 2 * kPanelHorizMargin;
   if (default_browser_) {
+#if defined(OS_WIN)
+    // Add or remove a shield icon before calculating the button width.
+    // (If a button has a shield icon, Windows automatically adds the icon width
+    // to the button width.)
+    views::DialogClientView* client_view = GetDialogClientView();
+    if (client_view)
+      client_view->ok_button()->SetNeedElevation(default_browser_->checked());
+#endif
+
     int height = default_browser_->GetHeightForWidth(width);
     default_browser_->SetBounds(kPanelHorizMargin, next_v_space, width, height);
     AdjustDialogWidth(default_browser_);
@@ -157,6 +167,18 @@ void FirstRunViewBase::Layout() {
                                           width, height);
     AdjustDialogWidth(non_default_browser_label_);
   }
+}
+
+void FirstRunViewBase::ButtonPressed(views::Button* sender,
+                                     const views::Event& event) {
+#if defined(OS_WIN)
+  if (default_browser_ && sender == default_browser_) {
+    // Update the elevation state of the "start chromium" button so we can add
+    // a shield icon when we need elevation.
+    views::DialogClientView* client_view = GetDialogClientView();
+    client_view->ok_button()->SetNeedElevation(default_browser_->checked());
+  }
+#endif
 }
 
 bool FirstRunViewBase::CanResize() const {

@@ -26,7 +26,6 @@ class Profile;
 // FirstRunCustomizeView implements the dialog that allows the user to do
 // some simple customizations during the first run.
 class FirstRunCustomizeView : public FirstRunViewBase,
-                              public views::ButtonListener,
                               public ComboboxModel {
  public:
   class CustomizeViewObserver {
@@ -54,7 +53,7 @@ class FirstRunCustomizeView : public FirstRunViewBase,
   virtual bool Accept();
   virtual bool Cancel();
 
-  // Overridden form views::ButtonListener.
+  // Overridden form FirstRunViewBase.
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
   // Overridden form ComboboxModel.

@@ -167,6 +167,9 @@ void FirstRunCustomizeView::ButtonPressed(
     // Disable the import combobox if the user unchecks the checkbox.
     import_from_combo_->SetEnabled(import_cbox_->checked());
   }
+
+  // Call the function of the base class to update its buttons.
+  FirstRunViewBase::ButtonPressed(sender, event);
 }
 
 int FirstRunCustomizeView::GetItemCount() {

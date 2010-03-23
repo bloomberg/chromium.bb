@@ -1,6 +1,6 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved. Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "views/controls/button/native_button.h"
 
@@ -40,6 +40,7 @@ NativeButton::NativeButton(ButtonListener* listener)
     : Button(listener),
       native_wrapper_(NULL),
       is_default_(false),
+      need_elevation_(false),
       ignore_minimum_size_(false) {
   InitBorder();
   SetFocusable(true);
@@ -49,6 +50,7 @@ NativeButton::NativeButton(ButtonListener* listener, const std::wstring& label)
     : Button(listener),
       native_wrapper_(NULL),
       is_default_(false),
+      need_elevation_(false),
       ignore_minimum_size_(false) {
   SetLabel(label);  // SetLabel takes care of label layout in RTL UI.
   InitBorder();
@@ -87,6 +89,12 @@ void NativeButton::SetIsDefault(bool is_default) {
   else
     RemoveAccelerator(Accelerator(base::VKEY_RETURN, false, false, false));
   SetAppearsAsDefault(is_default);
+}
+
+void NativeButton::SetNeedElevation(bool need_elevation) {
+  need_elevation_ = need_elevation;
+  if (native_wrapper_)
+    native_wrapper_->UpdateLabel();
 }
 
 void NativeButton::SetAppearsAsDefault(bool appears_as_default) {

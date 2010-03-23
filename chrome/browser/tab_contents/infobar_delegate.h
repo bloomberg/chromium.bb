@@ -233,6 +233,9 @@ class ConfirmInfoBarDelegate : public AlertInfoBarDelegate {
   // returns "OK" for the OK button and "Cancel" for the Cancel button.
   virtual std::wstring GetButtonLabel(InfoBarButton button) const;
 
+  // Return whether or not the specified button needs elevation.
+  virtual bool NeedElevation(InfoBarButton button) const { return false; }
+
   // Called when the OK button is pressed. If the function returns true, the
   // InfoBarDelegate should be removed from the associated TabContents.
   virtual bool Accept() { return true; }

@@ -1,12 +1,13 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved. Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "views/controls/button/native_button_win.h"
 
 #include <commctrl.h>
 
 #include "base/logging.h"
+#include "base/win_util.h"
 #include "views/controls/button/checkbox.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/button/radio_button.h"
@@ -32,6 +33,14 @@ NativeButtonWin::~NativeButtonWin() {
 // NativeButtonWin, NativeButtonWrapper implementation:
 
 void NativeButtonWin::UpdateLabel() {
+  // Show or hide the shield icon of Windows onto this button every time when we
+  // update the button text so Windows can lay out the shield icon and the
+  // button text correctly.
+  if (win_util::GetWinVersion() >= win_util::WINVERSION_VISTA) {
+    Button_SetElevationRequiredState(native_view(),
+                                     native_button_->need_elevation());
+  }
+
   SetWindowText(native_view(), native_button_->label().c_str());
 }
 

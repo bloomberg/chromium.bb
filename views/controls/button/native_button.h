@@ -1,6 +1,6 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved. Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef VIEWS_CONTROLS_BUTTON_NATIVE_BUTTON_H_
 #define VIEWS_CONTROLS_BUTTON_NATIVE_BUTTON_H_
@@ -37,12 +37,16 @@ class NativeButton : public Button {
   void SetIsDefault(bool default_button);
   bool is_default() const { return is_default_; }
 
+  // Sets/Gets whether or not pressing this button requires elevation.
+  void SetNeedElevation(bool need_elevation);
+  bool need_elevation() const { return need_elevation_; }
+
   // Sets whether or not the button appears as the default button. This does
   // not make it behave as the default (i.e. no enter key accelerator is
   // registered, use SetIsDefault for that).
   void SetAppearsAsDefault(bool default_button);
 
-  void set_ignore_minimum_size(bool ignore_minimum_size) {
+  void set_ignore_minimum_size(bool ignore_minimum_size) {1
     ignore_minimum_size_ = ignore_minimum_size;
   }
 
@@ -81,6 +85,10 @@ class NativeButton : public Button {
 
   // True if the button is the default button in its context.
   bool is_default_;
+
+  // True if this button requires elevation (or sudo). This flag is currently
+  // used for adding a shield icon on Windows Vista or later.
+  bool need_elevation_;
 
   // The font used to render the button label.
   gfx::Font font_;

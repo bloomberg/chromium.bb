@@ -438,6 +438,8 @@ ConfirmInfoBar::ConfirmInfoBar(ConfirmInfoBarDelegate* delegate)
       this, delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK));
   if (delegate->GetButtons() & ConfirmInfoBarDelegate::BUTTON_OK_DEFAULT)
     ok_button_->SetAppearsAsDefault(true);
+  if (delegate->NeedElevation(ConfirmInfoBarDelegate::BUTTON_OK))
+    ok_button_->SetNeedElevation(true);
   cancel_button_ = new views::NativeButton(
       this, delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_CANCEL));
 

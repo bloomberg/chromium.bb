@@ -25,6 +25,7 @@ class ImporterHost;
 // first-run dialogs. This amounts to the bitmap, the two separators, the
 // progress throbber and some common resize code.
 class FirstRunViewBase : public views::View,
+                         public views::ButtonListener,
                          public views::DialogDelegate {
  public:
   explicit FirstRunViewBase(Profile* profile, bool homepage_defined,
@@ -39,6 +40,9 @@ class FirstRunViewBase : public views::View,
   virtual bool CanMaximize() const;
   virtual bool IsAlwaysOnTop() const;
   virtual bool HasAlwaysOnTopMenu() const;
+
+  // Overridden form views::ButtonListener.
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
   // Overridden from views::DialogDelegate.
   std::wstring GetDialogButtonLabel(MessageBoxFlags::DialogButton button) const;

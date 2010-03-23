@@ -133,6 +133,10 @@ class DefaultBrowserInfoBarDelegate : public ConfirmInfoBarDelegate {
         l10n_util::GetString(IDS_DONT_ASK_AGAIN_INFOBAR_BUTTON_LABEL);
   }
 
+  virtual bool NeedElevation(InfoBarButton button) const {
+    return button == BUTTON_OK;
+  }
+
   virtual bool Accept() {
     action_taken_ = true;
     UMA_HISTOGRAM_COUNTS("DefaultBrowserWarning.SetAsDefault", 1);
