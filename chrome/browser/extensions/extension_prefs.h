@@ -59,9 +59,13 @@ class ExtensionPrefs {
   // Called to change the extension's state when it is enabled/disabled.
   void SetExtensionState(Extension* extension, Extension::State);
 
-  // If |require| is true, the preferences for |extension| will be set to
+  // Did the extension ask to escalate its permission during an upgrade?
+  bool DidExtensionEscalatePermissions(const std::string& id);
+
+  // If |did_escalate| is true, the preferences for |extension| will be set to
   // require the install warning when the user tries to enable.
-  void SetShowInstallWarningOnEnable(Extension* extension, bool require);
+  void SetDidExtensionEscalatePermissions(Extension* extension,
+                                          bool did_escalate);
 
   // Returns the version string for the currently installed extension, or
   // the empty string if not found.
@@ -83,9 +87,6 @@ class ExtensionPrefs {
   // Based on extension id, checks prefs to see if it is blacklisted.
   bool IsExtensionBlacklisted(const std::string& id);
 
-  // Did the extension ask to escalate its permission during an upgrade?
-  bool DidExtensionEscalatePermissions(const std::string& id);
-
   // Returns the last value set via SetLastPingDay. If there isn't such a
   // pref, the returned Time will return true for is_null().
   base::Time LastPingDay(const std::string& extension_id);
@@ -103,7 +104,11 @@ class ExtensionPrefs {
   // version directory and the location. Blacklisted extensions won't be saved
   // and neither will external extensions the user has explicitly uninstalled.
   // Caller takes ownership of returned structure.
-  static ExtensionsInfo* CollectExtensionsInfo(ExtensionPrefs* extension_prefs);
+  ExtensionsInfo* GetInstalledExtensionsInfo();
+
+  // Returns the ExtensionInfo from the prefs for the given extension. If the
+  // extension is not present, NULL is returned.
+  ExtensionInfo* GetInstalledExtensionInfo(const std::string& extension_id);
 
   static void RegisterUserPrefs(PrefService* prefs);
 

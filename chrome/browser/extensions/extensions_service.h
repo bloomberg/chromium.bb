@@ -222,7 +222,7 @@ class ExtensionsService
   // Called when the initial extensions load has completed.
   virtual void OnLoadedInstalledExtensions();
 
-  // Called by the backend when an extension has been loaded.
+  // Called when an extension has been loaded.
   void OnExtensionLoaded(Extension* extension,
                          bool allow_privilege_increase);
 

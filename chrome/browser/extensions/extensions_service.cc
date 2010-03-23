@@ -59,7 +59,7 @@ class InstalledExtensionSet {
  public:
   explicit InstalledExtensionSet(ExtensionPrefs* prefs) {
     scoped_ptr<ExtensionPrefs::ExtensionsInfo> info(
-        ExtensionPrefs::CollectExtensionsInfo(prefs));
+        prefs->GetInstalledExtensionsInfo());
 
     for (size_t i = 0; i < info->size(); ++i) {
       std::string version;
@@ -247,11 +247,19 @@ void ExtensionsService::ReloadExtension(const std::string& extension_id) {
     path = unloaded_extension_paths_[extension_id];
   }
 
-  // We should always be able to remember the extension's path. If it's not in
-  // the map, someone failed to update |unloaded_extension_paths_|.
-  CHECK(!path.empty());
-
-  LoadExtension(path);
+  // Check the installed extensions to see if what we're reloading was already
+  // installed.
+  scoped_ptr<ExtensionInfo> installed_extension(
+      extension_prefs_->GetInstalledExtensionInfo(extension_id));
+  if (installed_extension.get() &&
+      installed_extension->extension_manifest.get()) {
+    LoadInstalledExtension(*installed_extension, false);
+  } else {
+    // We should always be able to remember the extension's path. If it's not in
+    // the map, someone failed to update |unloaded_extension_paths_|.
+    CHECK(!path.empty());
+    LoadExtension(path);
+  }
 }
 
 void ExtensionsService::UninstallExtension(const std::string& extension_id,
@@ -368,7 +376,7 @@ void ExtensionsService::LoadAllExtensions() {
 
   // Load the previously installed extensions.
   scoped_ptr<ExtensionPrefs::ExtensionsInfo> info(
-      ExtensionPrefs::CollectExtensionsInfo(extension_prefs_.get()));
+      extension_prefs_->GetInstalledExtensionsInfo());
 
   // If any extensions need localization, we bounce them all to the file thread
   // for re-reading and localization.
@@ -738,7 +746,7 @@ void ExtensionsService::OnExtensionLoaded(Extension* extension,
           // Extension has changed permissions significantly. Disable it. We
           // send a notification below.
           extension_prefs_->SetExtensionState(extension, Extension::DISABLED);
-          extension_prefs_->SetShowInstallWarningOnEnable(extension, true);
+          extension_prefs_->SetDidExtensionEscalatePermissions(extension, true);
         }
       } else {
         // We already have the extension of the same or older version.

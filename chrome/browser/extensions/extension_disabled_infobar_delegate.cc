@@ -39,7 +39,7 @@ class ExtensionDisabledDialogDelegate
   // ExtensionInstallUI::Delegate
   virtual void InstallUIProceed(bool create_app_shortcut) {
     ExtensionPrefs* prefs = service_->extension_prefs();
-    prefs->SetShowInstallWarningOnEnable(extension_, false);
+    prefs->SetDidExtensionEscalatePermissions(extension_, false);
     service_->EnableExtension(extension_->id());
     Release();
   }

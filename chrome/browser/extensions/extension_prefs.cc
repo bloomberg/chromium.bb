@@ -36,7 +36,7 @@ const wchar_t kPrefVersion[] = L"manifest.version";
 const wchar_t kPrefBlacklist[] = L"blacklist";
 
 // Indicates whether to show an install warning when the user enables.
-const wchar_t kShowInstallWarning[] = L"install_warning_on_enable";
+const wchar_t kExtensionDidEscalatePermissions[] = L"install_warning_on_enable";
 
 // A preference that tracks extension shelf configuration.  This is a list
 // object read from the Preferences file, containing a list of toolstrip URLs.
@@ -188,7 +188,15 @@ bool ExtensionPrefs::IsExtensionBlacklisted(const std::string& extension_id) {
 
 bool ExtensionPrefs::DidExtensionEscalatePermissions(
     const std::string& extension_id) {
-  return ReadExtensionPrefBoolean(extension_id, kShowInstallWarning);
+  return ReadExtensionPrefBoolean(extension_id,
+                                  kExtensionDidEscalatePermissions);
+}
+
+void ExtensionPrefs::SetDidExtensionEscalatePermissions(
+    Extension* extension, bool did_escalate) {
+  UpdateExtensionPref(extension->id(), kExtensionDidEscalatePermissions,
+                      Value::CreateBooleanValue(did_escalate));
+  prefs_->SavePersistentPrefs();
 }
 
 void ExtensionPrefs::UpdateBlacklist(
@@ -418,13 +426,6 @@ void ExtensionPrefs::SetExtensionState(Extension* extension,
   prefs_->SavePersistentPrefs();
 }
 
-void ExtensionPrefs::SetShowInstallWarningOnEnable(
-    Extension* extension, bool require) {
-  UpdateExtensionPref(extension->id(), kShowInstallWarning,
-                      Value::CreateBooleanValue(require));
-  prefs_->SavePersistentPrefs();
-}
-
 std::string ExtensionPrefs::GetVersionString(const std::string& extension_id) {
   DictionaryValue* extension = GetExtensionPref(extension_id);
   if (!extension)
@@ -499,81 +500,103 @@ DictionaryValue* ExtensionPrefs::GetExtensionPref(
   return extension;
 }
 
-// static
-ExtensionPrefs::ExtensionsInfo* ExtensionPrefs::CollectExtensionsInfo(
-    ExtensionPrefs* prefs) {
-  scoped_ptr<DictionaryValue> extension_data(
-      prefs->CopyCurrentExtensions());
+// Helper function for GetInstalledExtensionsInfo.
+static ExtensionInfo* GetInstalledExtensionInfoImpl(
+    DictionaryValue* extension_data,
+    DictionaryValue::key_iterator extension_id) {
+  DictionaryValue* ext;
+  if (!extension_data->GetDictionaryWithoutPathExpansion(*extension_id, &ext)) {
+    LOG(WARNING) << "Invalid pref for extension " << *extension_id;
+    NOTREACHED();
+    return NULL;
+  }
+  if (ext->HasKey(kPrefBlacklist)) {
+    bool is_blacklisted = false;
+    if (!ext->GetBoolean(kPrefBlacklist, &is_blacklisted)) {
+      NOTREACHED() << "Invalid blacklist pref:" << *extension_id;
+      return NULL;
+    }
+    if (is_blacklisted) {
+      LOG(WARNING) << "Blacklisted extension: " << *extension_id;
+      return NULL;
+    }
+  }
+  int state_value;
+  if (!ext->GetInteger(kPrefState, &state_value)) {
+    LOG(WARNING) << "Missing state pref for extension " << *extension_id;
+    NOTREACHED();
+    return NULL;
+  }
+  if (state_value == Extension::KILLBIT) {
+    LOG(WARNING) << "External extension has been uninstalled by the user "
+                 << *extension_id;
+    return NULL;
+  }
+  FilePath::StringType path;
+  if (!ext->GetString(kPrefPath, &path)) {
+    LOG(WARNING) << "Missing path pref for extension " << *extension_id;
+    NOTREACHED();
+    return NULL;
+  }
+  int location_value;
+  if (!ext->GetInteger(kPrefLocation, &location_value)) {
+    LOG(WARNING) << "Missing location pref for extension " << *extension_id;
+    NOTREACHED();
+    return NULL;
+  }
+
+  // Only the following extension types can be installed permanently in the
+  // preferences.
+  Extension::Location location =
+      static_cast<Extension::Location>(location_value);
+  if (location != Extension::INTERNAL &&
+      location != Extension::LOAD &&
+      !Extension::IsExternalLocation(location)) {
+    NOTREACHED();
+    return NULL;
+  }
+
+  DictionaryValue* manifest = NULL;
+  if (!ext->GetDictionary(kPrefManifest, &manifest)) {
+    LOG(WARNING) << "Missing manifest for extension " << *extension_id;
+    // Just a warning for now.
+  }
+
+  return new ExtensionInfo(manifest, WideToASCII(*extension_id),
+                           FilePath(path), location);
+}
+
+ExtensionPrefs::ExtensionsInfo* ExtensionPrefs::GetInstalledExtensionsInfo() {
+  scoped_ptr<DictionaryValue> extension_data(CopyCurrentExtensions());
 
   ExtensionsInfo* extensions_info = new ExtensionsInfo;
 
   for (DictionaryValue::key_iterator extension_id(
            extension_data->begin_keys());
        extension_id != extension_data->end_keys(); ++extension_id) {
-    DictionaryValue* ext;
-    if (!extension_data->GetDictionaryWithoutPathExpansion(*extension_id,
-                                                            &ext)) {
-      LOG(WARNING) << "Invalid pref for extension " << *extension_id;
-      NOTREACHED();
-      continue;
-    }
-    if (ext->HasKey(kPrefBlacklist)) {
-      bool is_blacklisted = false;
-      if (!ext->GetBoolean(kPrefBlacklist, &is_blacklisted)) {
-        NOTREACHED() << "Invalid blacklist pref:" << *extension_id;
-        continue;
-      }
-      if (is_blacklisted) {
-        LOG(WARNING) << "Blacklisted extension: " << *extension_id;
-        continue;
-      }
-    }
-    int state_value;
-    if (!ext->GetInteger(kPrefState, &state_value)) {
-      LOG(WARNING) << "Missing state pref for extension " << *extension_id;
-      NOTREACHED();
-      continue;
-    }
-    if (state_value == Extension::KILLBIT) {
-      LOG(WARNING) << "External extension has been uninstalled by the user "
-                   << *extension_id;
-      continue;
-    }
-    FilePath::StringType path;
-    if (!ext->GetString(kPrefPath, &path)) {
-      LOG(WARNING) << "Missing path pref for extension " << *extension_id;
-      NOTREACHED();
-      continue;
-    }
-    int location_value;
-    if (!ext->GetInteger(kPrefLocation, &location_value)) {
-      LOG(WARNING) << "Missing location pref for extension " << *extension_id;
-      NOTREACHED();
-      continue;
-    }
-
-    // Only the following extension types can be installed permanently in the
-    // preferences.
-    Extension::Location location =
-        static_cast<Extension::Location>(location_value);
-    if (location != Extension::INTERNAL &&
-        location != Extension::LOAD &&
-        !Extension::IsExternalLocation(location)) {
-      NOTREACHED();
-      continue;
-    }
-
-    DictionaryValue* manifest = NULL;
-    if (!ext->GetDictionary(kPrefManifest, &manifest)) {
-      LOG(WARNING) << "Missing manifest for extension " << *extension_id;
-      // Just a warning for now.
-    }
-
-    extensions_info->push_back(linked_ptr<ExtensionInfo>(new ExtensionInfo(
-        manifest, WideToASCII(*extension_id), FilePath(path), location)));
+    ExtensionInfo* info = GetInstalledExtensionInfoImpl(extension_data.get(),
+                                                        extension_id);
+    if (info)
+      extensions_info->push_back(linked_ptr<ExtensionInfo>(info));
   }
 
   return extensions_info;
+}
+
+ExtensionInfo* ExtensionPrefs::GetInstalledExtensionInfo(
+    const std::string& extension_id) {
+  scoped_ptr<DictionaryValue> extension_data(CopyCurrentExtensions());
+
+  for (DictionaryValue::key_iterator extension_iter(
+           extension_data->begin_keys());
+       extension_iter != extension_data->end_keys(); ++extension_iter) {
+    if (WideToASCII(*extension_iter) == extension_id) {
+      return GetInstalledExtensionInfoImpl(extension_data.get(),
+                                           extension_iter);
+    }
+  }
+
+  return NULL;
 }
 
 // static
