@@ -131,6 +131,7 @@
         'chrome_frame_npapi_unittest.cc',
         'chrome_frame_unittest_main.cc',
         'chrome_launcher_unittest.cc',
+        'function_stub_unittest.cc',
         'test/com_message_event_unittest.cc',
         'test/html_util_unittests.cc',
         'test/http_negotiate_unittest.cc',
@@ -141,6 +142,7 @@
         'unittest_precompile.cc',
         'urlmon_upload_data_stream.cc',
         'urlmon_upload_data_stream_unittest.cc',
+        'vtable_patch_manager_unittest.cc',
       ],
       'include_dirs': [
         # To allow including "chrome_tab.h"
@@ -202,7 +204,6 @@
         'test/chrome_frame_test_utils.h',
         'test/chrome_frame_automation_mock.cc',
         'test/chrome_frame_automation_mock.h',
-        'test/function_stub_unittest.cc',
         'test/http_server.cc',
         'test/http_server.h',
         'test/proxy_factory_mock.cc',
@@ -344,6 +345,7 @@
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         'chrome_frame_npapi',
+        'chrome_frame_ie',
         'npchrome_frame',
       ],
       'sources': [
@@ -407,6 +409,7 @@
         '../testing/gtest.gyp:gtest',
         '../third_party/WebKit/WebKit/chromium/WebKit.gyp:webkit',
         'base_noicu',
+        'chrome_frame_ie',
         'chrome_frame_npapi',
         'chrome_frame_strings',
       ],
@@ -603,6 +606,7 @@
         'find_dialog.cc',
         'find_dialog.h',
         'function_stub.h',
+        'function_stub.cc',
         'http_negotiate.h',
         'http_negotiate.cc',
         'iids.cc',

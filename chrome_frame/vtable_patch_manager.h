@@ -12,8 +12,19 @@
 #include "base/lock.h"
 
 struct FunctionStub;
+
 // This namespace provides methods to patch VTable methods of COM interfaces.
 namespace vtable_patch {
+
+// Internal implementation, exposed only for testing.
+namespace internal {
+
+// Replaces *entry with new_proc iff *entry is curr_proc.
+// Returns true iff *entry was rewritten.
+// Note: does not crash on access violation.
+bool ReplaceFunctionPointer(void** entry, void* new_proc, void* curr_proc);
+
+}  // namespace internal
 
 // This structure represents information about one VTable method.
 // We allocate an array of these structures per VTable that we patch to
