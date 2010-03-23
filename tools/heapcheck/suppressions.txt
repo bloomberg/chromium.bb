@@ -133,7 +133,7 @@
    fun:IPC::ChannelProxy::Context::OnChannelOpened
 }
 {
-  bug_18698
+  bug_39014
   Heapcheck:Leak
   fun:__gnu_cxx::new_allocator::allocate
   fun:std::_Vector_base::_M_allocate
@@ -176,7 +176,7 @@
 }
 
 {
-  bug_20703
+  bug_39016
   Heapcheck:Leak
   ...
   fun:::RenderThreadTest::SetUp
@@ -234,4 +234,17 @@
   ...
   fun:BookmarkModel::Load
   fun:TestingProfile::CreateBookmarkModel
+}
+
+{
+  bug_38487
+  Heapcheck:Leak
+  fun:browser_sync::TypedUrlDataTypeController::Stop
+  fun:browser_sync::DataTypeManagerImpl::FinishStop
+  fun:browser_sync::DataTypeManagerImpl::Stop
+  fun:ProfileSyncService::Shutdown
+  fun:~ProfileSyncService
+  fun:~TestingProfileSyncService
+  fun:scoped_ptr::reset
+  fun:ProfileSyncServiceTypedUrlTest::TearDown
 }
