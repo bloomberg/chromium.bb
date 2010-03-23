@@ -464,7 +464,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, PageLanguageDetection) {
 // Chromeos defaults to restoring the last session, so this test isn't
 // applicable.
 #if !defined(OS_CHROMEOS)
-#if defined(OS_MAC)
+#if defined(OS_MACOSX)
 // http://crbug.com/38522
 #define RestorePinnedTabs FLAKY_RestorePinnedTabs
 #endif
