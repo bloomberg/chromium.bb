@@ -451,7 +451,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
  }
  
  /* Reset from the function's potential modifications.  */
-@@ -8746,6 +8794,87 @@
+@@ -8746,6 +8794,88 @@
     grossly off.  Return -1 if the address contains ASHIFT, so it is not
     strictly valid, but still used for computing length of lea instruction.  */
  
@@ -519,6 +519,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
 +  /* In lea mode don't use R15, don't use nacl: prefix */
 +  if (NACL_LEA_MATCH_ADDRESS_OPERAND
 +      || !flag_control_integrity || !TARGET_64BIT) return 0;
++  if (!reg) return 1;
 +  base_reg = GET_CODE (reg) == SUBREG ? SUBREG_REG (reg) : reg;
 +  switch (REGNO(base_reg))
 +    {
@@ -644,10 +645,15 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
        tmp = XEXP (addr, 1);
        if (!CONST_INT_P (tmp))
  	return 0;
-@@ -8855,6 +9039,49 @@
+@@ -8855,6 +9039,54 @@
    base_reg = base && GET_CODE (base) == SUBREG ? SUBREG_REG (base) : base;
    index_reg = index && GET_CODE (index) == SUBREG ? SUBREG_REG (index) : index;
  
++  if (!base_reg && !index_reg && CONST_INT_P (disp) && gen_r15(0))
++    {
++      base_reg = base = gen_rtx_REG (Pmode, R15_REG);
++    }
++
 +  /* Disallow positive constant displacement followed by a register offset for
 +   * NaCl64. This may hurt when a symbol is referenced with integer overflow in
 +   * mind. NaCl64 will miss overflow because of sandboxing base addition in the
