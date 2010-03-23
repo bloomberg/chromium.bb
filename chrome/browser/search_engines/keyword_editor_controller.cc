@@ -32,7 +32,8 @@ int KeywordEditorController::AddTemplateURL(const std::wstring& title,
                                             const std::wstring& url) {
   DCHECK(!url.empty());
 
-  UserMetrics::RecordAction("KeywordEditor_AddKeyword", profile_);
+  UserMetrics::RecordAction(UserMetricsAction("KeywordEditor_AddKeyword"),
+                            profile_);
 
   TemplateURL* template_url = new TemplateURL();
   template_url->set_short_name(title);
@@ -72,7 +73,8 @@ void KeywordEditorController::ModifyTemplateURL(const TemplateURL* template_url,
 
   table_model_->ModifyTemplateURL(index, title, keyword, url);
 
-  UserMetrics::RecordAction("KeywordEditor_ModifiedKeyword", profile_);
+  UserMetrics::RecordAction(UserMetricsAction("KeywordEditor_ModifiedKeyword"),
+                            profile_);
 }
 
 bool KeywordEditorController::CanMakeDefault(const TemplateURL* url) const {
@@ -87,7 +89,8 @@ bool KeywordEditorController::CanRemove(const TemplateURL* url) const {
 
 void KeywordEditorController::RemoveTemplateURL(int index) {
   table_model_->Remove(index);
-  UserMetrics::RecordAction("KeywordEditor_RemoveKeyword", profile_);
+  UserMetrics::RecordAction(UserMetricsAction("KeywordEditor_RemoveKeyword"),
+                            profile_);
 }
 
 int KeywordEditorController::MakeDefaultTemplateURL(int index) {

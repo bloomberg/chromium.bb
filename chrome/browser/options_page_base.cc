@@ -18,9 +18,9 @@ OptionsPageBase::OptionsPageBase(Profile* profile)
 OptionsPageBase::~OptionsPageBase() {
 }
 
-void OptionsPageBase::UserMetricsRecordAction(const char* action,
+void OptionsPageBase::UserMetricsRecordAction(const UserMetricsAction& action,
                                               PrefService* prefs) {
-  UserMetrics::RecordComputedAction(action, profile());
+  UserMetrics::RecordAction(action, profile());
   if (prefs)
     prefs->ScheduleSavePersistentPrefs();
 }

@@ -331,7 +331,8 @@ void BookmarkBubbleView::ButtonPressed(
 
 void BookmarkBubbleView::LinkActivated(Link* source, int event_flags) {
   DCHECK(source == remove_link_);
-  UserMetrics::RecordAction("BookmarkBubble_Unstar", profile_);
+  UserMetrics::RecordAction(UserMetricsAction("BookmarkBubble_Unstar"),
+                            profile_);
 
   // Set this so we remove the bookmark after the window closes.
   remove_bookmark_ = true;
@@ -344,7 +345,8 @@ void BookmarkBubbleView::ItemChanged(Combobox* combobox,
                                      int prev_index,
                                      int new_index) {
   if (new_index + 1 == parent_model_.GetItemCount()) {
-    UserMetrics::RecordAction("BookmarkBubble_EditFromCombobox", profile_);
+    UserMetrics::RecordAction(
+              UserMetricsAction("BookmarkBubble_EditFromCombobox"), profile_);
 
     ShowEditor();
     return;
@@ -381,7 +383,8 @@ void BookmarkBubbleView::Close() {
 
 void BookmarkBubbleView::HandleButtonPressed(views::Button* sender) {
   if (sender == edit_button_) {
-    UserMetrics::RecordAction("BookmarkBubble_Edit", profile_);
+    UserMetrics::RecordAction(UserMetricsAction("BookmarkBubble_Edit"),
+                              profile_);
     ShowEditor();
   } else {
     DCHECK(sender == close_button_);
@@ -436,8 +439,9 @@ void BookmarkBubbleView::ApplyEdits() {
     const std::wstring new_title = UTF16ToWide(title_tf_->text());
     if (new_title != node->GetTitle()) {
       model->SetTitle(node, new_title);
-      UserMetrics::RecordAction("BookmarkBubble_ChangeTitleInBubble",
-                                profile_);
+      UserMetrics::RecordAction(
+          UserMetricsAction("BookmarkBubble_ChangeTitleInBubble"),
+          profile_);
     }
     // Last index means 'Choose another folder...'
     if (parent_combobox_->selected_item() <
@@ -445,7 +449,8 @@ void BookmarkBubbleView::ApplyEdits() {
       const BookmarkNode* new_parent =
           parent_model_.GetNodeAt(parent_combobox_->selected_item());
       if (new_parent != node->GetParent()) {
-        UserMetrics::RecordAction("BookmarkBubble_ChangeParent", profile_);
+        UserMetrics::RecordAction(
+            UserMetricsAction("BookmarkBubble_ChangeParent"), profile_);
         model->Move(node, new_parent, new_parent->GetChildCount());
       }
     }

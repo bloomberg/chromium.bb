@@ -483,7 +483,7 @@ void ToolbarView::WriteDragData(views::View* sender,
                                 OSExchangeData* data) {
   DCHECK(GetDragOperations(sender, press_pt) != DragDropTypes::DRAG_NONE);
 
-  UserMetrics::RecordAction("Toolbar_DragStar", profile_);
+  UserMetrics::RecordAction(UserMetricsAction("Toolbar_DragStar"), profile_);
 
   // If there is a bookmark for the URL, add the bookmark drag data for it. We
   // do this to ensure the bookmark is moved, rather than creating an new

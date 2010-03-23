@@ -573,7 +573,8 @@ private:
 
   TabContents* contents = tabStripModel_->GetTabContentsAt(index);
   if (contents)
-    UserMetrics::RecordAction("CloseTab_Mouse", contents->profile());
+    UserMetrics::RecordAction(UserMetricsAction("CloseTab_Mouse"),
+                              contents->profile());
   const NSInteger numberOfOpenTabs = [self numberOfOpenTabs];
   if (numberOfOpenTabs > 1) {
     bool isClosingLastTab = index == numberOfOpenTabs - 1;
@@ -1567,12 +1568,14 @@ private:
   // Either insert a new tab or open in a current tab.
   switch (disposition) {
     case NEW_FOREGROUND_TAB:
-      UserMetrics::RecordAction("Tab_DropURLBetweenTabs", browser_->profile());
+      UserMetrics::RecordAction(UserMetricsAction("Tab_DropURLBetweenTabs"),
+                                browser_->profile());
       browser_->AddTabWithURL(url, GURL(), PageTransition::TYPED, true, index,
                               true, NULL);
       break;
     case CURRENT_TAB:
-      UserMetrics::RecordAction("Tab_DropURLOnTab", browser_->profile());
+      UserMetrics::RecordAction(UserMetricsAction("Tab_DropURLOnTab"),
+                                browser_->profile());
       tabStripModel_->GetTabContentsAt(index)->OpenURL(url, GURL(), CURRENT_TAB,
                                                        PageTransition::TYPED);
       tabStripModel_->SelectTabContentsAt(index, true);

@@ -192,7 +192,7 @@ void CookieFilterPageGtk::OnClearOnCloseToggled(GtkWidget* toggle_button) {
 }
 
 void CookieFilterPageGtk::OnShowCookiesClicked(GtkWidget* button) {
-  UserMetricsRecordAction("Options_ShowCookies", NULL);
+  UserMetricsRecordAction(UserMetricsAction("Options_ShowCookies"), NULL);
   CookiesView::Show(GTK_WINDOW(gtk_widget_get_toplevel(button)),
                     profile(),
                     new BrowsingDataDatabaseHelper(

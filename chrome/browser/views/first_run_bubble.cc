@@ -157,10 +157,13 @@ void FirstRunBubbleView::BubbleShown() {
 
 void FirstRunBubbleView::ButtonPressed(views::Button* sender,
                                        const views::Event& event) {
-  UserMetrics::RecordAction("FirstRunBubbleView_Clicked", profile_);
+  UserMetrics::RecordAction(UserMetricsAction("FirstRunBubbleView_Clicked"),
+                            profile_);
   bubble_window_->Close();
   if (change_button_ == sender) {
-    UserMetrics::RecordAction("FirstRunBubbleView_ChangeButton", profile_);
+    UserMetrics::RecordAction(
+                    UserMetricsAction("FirstRunBubbleView_ChangeButton"),
+                    profile_);
     Browser* browser = BrowserList::GetLastActive();
     if (browser) {
       ShowOptionsWindow(OPTIONS_PAGE_GENERAL, OPTIONS_GROUP_DEFAULT_SEARCH,
@@ -310,7 +313,8 @@ void FirstRunOEMBubbleView::BubbleShown() {
 
 void FirstRunOEMBubbleView::ButtonPressed(views::Button* sender,
                                           const views::Event& event) {
-  UserMetrics::RecordAction("FirstRunOEMBubbleView_Clicked", profile_);
+  UserMetrics::RecordAction(UserMetricsAction("FirstRunOEMBubbleView_Clicked"),
+                            profile_);
   bubble_window_->Close();
 }
 

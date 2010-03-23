@@ -1322,7 +1322,8 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   const BookmarkNode* node = [self nodeFromMenuItem:sender];
   if (node) {
     [self openBookmarkNodesRecursive:node disposition:NEW_FOREGROUND_TAB];
-    UserMetrics::RecordAction("OpenAllBookmarks", browser_->profile());
+    UserMetrics::RecordAction(UserMetricsAction("OpenAllBookmarks"),
+                              browser_->profile());
   }
 }
 
@@ -1330,7 +1331,8 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   const BookmarkNode* node = [self nodeFromMenuItem:sender];
   if (node) {
     [self openBookmarkNodesRecursive:node disposition:NEW_WINDOW];
-    UserMetrics::RecordAction("OpenAllBookmarksNewWindow", browser_->profile());
+    UserMetrics::RecordAction(UserMetricsAction("OpenAllBookmarksNewWindow"),
+                              browser_->profile());
   }
 }
 
@@ -1338,8 +1340,9 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   const BookmarkNode* node = [self nodeFromMenuItem:sender];
   if (node) {
     [self openBookmarkNodesRecursive:node disposition:OFF_THE_RECORD];
-    // Must be on 1 line due to UMA scripts
-    UserMetrics::RecordAction("OpenAllBookmarksIncognitoWindow", browser_->profile());
+    UserMetrics::RecordAction(
+        UserMetricsAction("OpenAllBookmarksIncognitoWindow"),
+        browser_->profile());
   }
 }
 

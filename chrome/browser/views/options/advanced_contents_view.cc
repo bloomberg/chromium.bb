@@ -506,31 +506,31 @@ void PrivacySection::ButtonPressed(
     views::Button* sender, const views::Event& event) {
   if (sender == enable_link_doctor_checkbox_) {
     bool enabled = enable_link_doctor_checkbox_->checked();
-    UserMetricsRecordAction(enabled ?
+    UserMetricsRecordAction(UserMetricsAction(enabled ?
                                 "Options_LinkDoctorCheckbox_Enable" :
-                                "Options_LinkDoctorCheckbox_Disable",
+                                "Options_LinkDoctorCheckbox_Disable"),
                             profile()->GetPrefs());
     alternate_error_pages_.SetValue(enabled);
   } else if (sender == enable_suggest_checkbox_) {
     bool enabled = enable_suggest_checkbox_->checked();
-    UserMetricsRecordAction(enabled ?
+    UserMetricsRecordAction(UserMetricsAction(enabled ?
                                 "Options_UseSuggestCheckbox_Enable" :
-                                "Options_UseSuggestCheckbox_Disable",
+                                "Options_UseSuggestCheckbox_Disable"),
                             profile()->GetPrefs());
     use_suggest_.SetValue(enabled);
   } else if (sender == enable_dns_prefetching_checkbox_) {
     bool enabled = enable_dns_prefetching_checkbox_->checked();
-    UserMetricsRecordAction(enabled ?
+    UserMetricsRecordAction(UserMetricsAction(enabled ?
                                 "Options_DnsPrefetchCheckbox_Enable" :
-                                "Options_DnsPrefetchCheckbox_Disable",
+                                "Options_DnsPrefetchCheckbox_Disable"),
                             profile()->GetPrefs());
     dns_prefetch_enabled_.SetValue(enabled);
     chrome_browser_net::EnableDnsPrefetch(enabled);
   } else if (sender == enable_safe_browsing_checkbox_) {
     bool enabled = enable_safe_browsing_checkbox_->checked();
-    UserMetricsRecordAction(enabled ?
+    UserMetricsRecordAction(UserMetricsAction(enabled ?
                                 "Options_SafeBrowsingCheckbox_Enable" :
-                                "Options_SafeBrowsingCheckbox_Disable",
+                                "Options_SafeBrowsingCheckbox_Disable"),
                             profile()->GetPrefs());
     safe_browsing_.SetValue(enabled);
     SafeBrowsingService* safe_browsing_service =
@@ -540,20 +540,20 @@ void PrivacySection::ButtonPressed(
   } else if (reporting_enabled_checkbox_ &&
              (sender == reporting_enabled_checkbox_)) {
     bool enabled = reporting_enabled_checkbox_->checked();
-    UserMetricsRecordAction(enabled ?
+    UserMetricsRecordAction(UserMetricsAction(enabled ?
                                 "Options_MetricsReportingCheckbox_Enable" :
-                                "Options_MetricsReportingCheckbox_Disable",
+                                "Options_MetricsReportingCheckbox_Disable"),
                             profile()->GetPrefs());
     ResolveMetricsReportingEnabled();
     if (enabled == reporting_enabled_checkbox_->checked())
       RestartMessageBox::ShowMessageBox(GetWindow()->GetNativeWindow());
     enable_metrics_recording_.SetValue(enabled);
   } else if (sender == content_settings_button_) {
-    UserMetricsRecordAction("Options_ContentSettings", NULL);
+    UserMetricsRecordAction(UserMetricsAction("Options_ContentSettings"), NULL);
     browser::ShowContentSettingsWindow(GetWindow()->GetNativeWindow(),
         CONTENT_SETTINGS_TYPE_DEFAULT, profile());
   } else if (sender == clear_data_button_) {
-    UserMetricsRecordAction("Options_ClearData", NULL);
+    UserMetricsRecordAction(UserMetricsAction("Options_ClearData"), NULL);
     views::Window::CreateChromeWindow(
         GetWindow()->GetNativeWindow(),
         gfx::Rect(),
@@ -744,7 +744,7 @@ WebContentSection::WebContentSection(Profile* profile)
 void WebContentSection::ButtonPressed(
     views::Button* sender, const views::Event& event) {
   if (sender == gears_settings_button_) {
-    UserMetricsRecordAction("Options_GearsSettings", NULL);
+    UserMetricsRecordAction(UserMetricsAction("Options_GearsSettings"), NULL);
     GearsSettingsPressed(GetAncestor(GetWidget()->GetNativeView(), GA_ROOT));
   } else if (sender == change_content_fonts_button_) {
     views::Window::CreateChromeWindow(
@@ -845,21 +845,23 @@ void SecuritySection::ButtonPressed(
   if (sender == enable_ssl2_checkbox_) {
     bool enabled = enable_ssl2_checkbox_->checked();
     if (enabled) {
-      UserMetricsRecordAction("Options_SSL2_Enable", NULL);
+      UserMetricsRecordAction(UserMetricsAction("Options_SSL2_Enable"), NULL);
     } else {
-      UserMetricsRecordAction("Options_SSL2_Disable", NULL);
+      UserMetricsRecordAction(UserMetricsAction("Options_SSL2_Disable"), NULL);
     }
     net::SSLConfigServiceWin::SetSSL2Enabled(enabled);
   } else if (sender == check_for_cert_revocation_checkbox_) {
     bool enabled = check_for_cert_revocation_checkbox_->checked();
     if (enabled) {
-      UserMetricsRecordAction("Options_CheckCertRevocation_Enable", NULL);
+      UserMetricsRecordAction(
+          UserMetricsAction("Options_CheckCertRevocation_Enable"), NULL);
     } else {
-      UserMetricsRecordAction("Options_CheckCertRevocation_Disable", NULL);
+      UserMetricsRecordAction(
+          UserMetricsAction("Options_CheckCertRevocation_Disable"), NULL);
     }
     net::SSLConfigServiceWin::SetRevCheckingEnabled(enabled);
   } else if (sender == manage_certificates_button_) {
-    UserMetricsRecordAction("Options_ManagerCerts", NULL);
+    UserMetricsRecordAction(UserMetricsAction("Options_ManagerCerts"), NULL);
     CRYPTUI_CERT_MGR_STRUCT cert_mgr = { 0 };
     cert_mgr.dwSize = sizeof(CRYPTUI_CERT_MGR_STRUCT);
     cert_mgr.hwndParent = GetWindow()->GetNativeWindow();
@@ -995,7 +997,7 @@ NetworkSection::NetworkSection(Profile* profile)
 void NetworkSection::ButtonPressed(
     views::Button* sender, const views::Event& event) {
   if (sender == change_proxies_button_) {
-    UserMetricsRecordAction("Options_ChangeProxies", NULL);
+    UserMetricsRecordAction(UserMetricsAction("Options_ChangeProxies"), NULL);
     base::Thread* thread = g_browser_process->file_thread();
     DCHECK(thread);
     thread->message_loop()->PostTask(FROM_HERE, new OpenConnectionDialogTask);
@@ -1112,23 +1114,25 @@ void DownloadSection::ButtonPressed(
   } else if (sender == download_ask_for_save_location_checkbox_) {
     bool enabled = download_ask_for_save_location_checkbox_->checked();
     if (enabled) {
-      UserMetricsRecordAction("Options_AskForSaveLocation_Enable",
-                              profile()->GetPrefs());
+      UserMetricsRecordAction(
+                UserMetricsAction("Options_AskForSaveLocation_Enable"),
+                profile()->GetPrefs());
     } else {
-      UserMetricsRecordAction("Options_AskForSaveLocation_Disable",
-                              profile()->GetPrefs());
+      UserMetricsRecordAction(
+                UserMetricsAction("Options_AskForSaveLocation_Disable"),
+                profile()->GetPrefs());
     }
     ask_for_save_location_.SetValue(enabled);
   } else if (sender == reset_file_handlers_button_) {
     profile()->GetDownloadManager()->ResetAutoOpenFiles();
-    UserMetricsRecordAction("Options_ResetAutoOpenFiles",
+    UserMetricsRecordAction(UserMetricsAction("Options_ResetAutoOpenFiles"),
                             profile()->GetPrefs());
   }
 }
 
 void DownloadSection::FileSelected(const FilePath& path,
                                    int index, void* params) {
-  UserMetricsRecordAction("Options_SetDownloadDirectory",
+  UserMetricsRecordAction(UserMetricsAction("Options_SetDownloadDirectory"),
                           profile()->GetPrefs());
   default_download_location_.SetValue(path.ToWStringHack());
   // We need to call this manually here since because we're setting the value
@@ -1252,7 +1256,7 @@ class TranslateSection : public AdvancedSection,
   // Preferences for this section:
   BooleanPrefMember enable_translate_;
 
-  DISALLOW_COPY_AND_ASSIGN(TranslateSection );
+  DISALLOW_COPY_AND_ASSIGN(TranslateSection);
 };
 
 TranslateSection::TranslateSection(Profile* profile)
@@ -1265,8 +1269,9 @@ void TranslateSection::ButtonPressed(
     views::Button* sender, const views::Event& event) {
   DCHECK(sender == enable_translate_checkbox_);
   bool enabled = enable_translate_checkbox_->checked();
-  UserMetricsRecordAction(enabled ? "Options_Translate_Enable" :
-                                    "Options_Translate_Disable",
+  UserMetricsRecordAction(enabled ?
+                          UserMetricsAction("Options_Translate_Enable") :
+                          UserMetricsAction("Options_Translate_Disable"),
                           profile()->GetPrefs());
   enable_translate_.SetValue(enabled);
 }

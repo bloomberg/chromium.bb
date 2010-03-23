@@ -250,16 +250,16 @@ void TouchpadSection::ButtonPressed(
   if (sender == enable_tap_to_click_checkbox_) {
     bool enabled = enable_tap_to_click_checkbox_->checked();
     UserMetricsRecordAction(enabled ?
-                                "Options_TapToClickCheckbox_Enable" :
-                                "Options_TapToClickCheckbox_Disable",
-                            profile()->GetPrefs());
+        UserMetricsAction("Options_TapToClickCheckbox_Enable") :
+        UserMetricsAction("Options_TapToClickCheckbox_Disable"),
+        profile()->GetPrefs());
     tap_to_click_enabled_.SetValue(enabled);
   } else if (sender == enable_vert_edge_scroll_checkbox_) {
     bool enabled = enable_vert_edge_scroll_checkbox_->checked();
     UserMetricsRecordAction(enabled ?
-                                "Options_VertEdgeScrollCheckbox_Enable" :
-                                "Options_VertEdgeScrollCheckbox_Disable",
-                            profile()->GetPrefs());
+        UserMetricsAction("Options_VertEdgeScrollCheckbox_Enable") :
+        UserMetricsAction("Options_VertEdgeScrollCheckbox_Disable"),
+        profile()->GetPrefs());
     vert_edge_scroll_enabled_.SetValue(enabled);
   }
 }
@@ -267,13 +267,15 @@ void TouchpadSection::ButtonPressed(
 void TouchpadSection::SliderValueChanged(views::Slider* sender) {
   if (sender == speed_factor_slider_) {
     double value = speed_factor_slider_->value();
-    UserMetricsRecordAction("Options_SpeedFactorSlider_Changed",
-                            profile()->GetPrefs());
+    UserMetricsRecordAction(
+        UserMetricsAction("Options_SpeedFactorSlider_Changed"),
+        profile()->GetPrefs());
     speed_factor_.SetValue(value);
   } else if (sender == sensitivity_slider_) {
     double value = sensitivity_slider_->value();
-    UserMetricsRecordAction("Options_SensitivitySlider_Changed",
-                            profile()->GetPrefs());
+    UserMetricsRecordAction(
+        UserMetricsAction("Options_SensitivitySlider_Changed"),
+        profile()->GetPrefs());
     sensitivity_.SetValue(value);
   }
 }

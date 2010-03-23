@@ -129,7 +129,8 @@ void BookmarkMenuButton::RunMenu(views::View* source,
                                  bool for_drop) {
   Profile* profile = browser_->profile();
 
-  UserMetrics::RecordAction("BookmarkMenu_clicked", profile);
+  UserMetrics::RecordAction(UserMetricsAction("BookmarkMenu_clicked"),
+                            profile);
 
   BookmarkMenuController* menu = new BookmarkMenuController(
       browser_, profile, browser_->GetSelectedTabContents(), hwnd,

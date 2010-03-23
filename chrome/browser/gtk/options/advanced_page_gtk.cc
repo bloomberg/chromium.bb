@@ -47,7 +47,7 @@ void AdvancedPageGtk::Init() {
 }
 
 void AdvancedPageGtk::OnResetToDefaultsClicked(GtkWidget* button) {
-  UserMetricsRecordAction("Options_ResetToDefaults", NULL);
+  UserMetricsRecordAction(UserMetricsAction("Options_ResetToDefaults"), NULL);
   GtkWidget* dialog_ = gtk_message_dialog_new(
       GTK_WINDOW(gtk_widget_get_toplevel(page_)),
       static_cast<GtkDialogFlags>(GTK_DIALOG_MODAL),

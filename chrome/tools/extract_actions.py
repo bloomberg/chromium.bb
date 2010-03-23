@@ -37,7 +37,10 @@ KNOWN_COMPUTED_USERS = [
   'render_view_host.cc',  # called using webkit identifiers
   'user_metrics.cc',  # method definition
   'new_tab_ui.cc',  # most visited clicks 1-9
+  'extension_metrics_module.cc', # extensions hook for user metrics
 ]
+
+number_of_files_total = 0
 
 def AddComputedActions(actions):
   """Add computed actions to the actions list.
@@ -67,7 +70,7 @@ def AddWebKitEditorActions(actions):
   action_re = re.compile(r'''\{ [\w']+, +\w+, +"(.*)" +\},''')
 
   editor_file = os.path.join(path_utils.ScriptDir(), '..', '..', 'webkit',
-                             'glue', 'editor_client_impl.cc')
+                             'api', 'src','EditorClientImpl.cc')
   for line in open(editor_file):
     match = action_re.search(line)
     if match:  # Plain call to RecordAction
@@ -80,22 +83,23 @@ def GrepForActions(path, actions):
     path: path to the file
     actions: set of actions to add to
   """
-
-  action_re = re.compile(r'[> ]UserMetrics:?:?RecordAction\(L"(.*)"')
-  other_action_re = re.compile(r'[> ]UserMetrics:?:?RecordAction\(')
+  global number_of_files_total
+  number_of_files_total = number_of_files_total + 1
+  # we look for the UserMetricsAction structur constructor
+  # this should be on one line
+  action_re = re.compile(r'UserMetricsAction\("([^"]*)')
   computed_action_re = re.compile(r'UserMetrics::RecordComputedAction')
+  line_number = 0
   for line in open(path):
+    line_number = line_number + 1
     match = action_re.search(line)
     if match:  # Plain call to RecordAction
       actions.add(match.group(1))
-    elif other_action_re.search(line):
-      # Warn if this file shouldn't be mentioning RecordAction.
-      if os.path.basename(path) != 'user_metrics.cc':
-        print >>sys.stderr, 'WARNING: %s has funny RecordAction' % path
     elif computed_action_re.search(line):
       # Warn if this file shouldn't be calling RecordComputedAction.
       if os.path.basename(path) not in KNOWN_COMPUTED_USERS:
-        print >>sys.stderr, 'WARNING: %s has RecordComputedAction' % path
+        print >>sys.stderr, 'WARNING: {0} has RecordComputedAction at {1}'.\
+                             format(path, line_number)
 
 def WalkDirectory(root_path, actions):
   for path, dirs, files in os.walk(root_path):
@@ -103,13 +107,14 @@ def WalkDirectory(root_path, actions):
       dirs.remove('.svn')
     for file in files:
       ext = os.path.splitext(file)[1]
-      if ext == '.cc':
+      if ext in ('.cc', '.mm', '.c', '.m'):
         GrepForActions(os.path.join(path, file), actions)
 
 def main(argv):
   actions = set()
   AddComputedActions(actions)
-  AddWebKitEditorActions(actions)
+  # TODO(fmantek): bring back webkit editor actions.
+  # AddWebKitEditorActions(actions)
 
   # Walk the source tree to process all .cc files.
   chrome_root = os.path.join(path_utils.ScriptDir(), '..')
@@ -117,6 +122,10 @@ def main(argv):
   webkit_root = os.path.join(path_utils.ScriptDir(), '..', '..', 'webkit')
   WalkDirectory(os.path.join(webkit_root, 'glue'), actions)
   WalkDirectory(os.path.join(webkit_root, 'port'), actions)
+
+  # print "Scanned {0} number of files".format(number_of_files_total)
+  # print "Found {0} entries".format(len(actions))
+
 
   # Print out the actions as a sorted list.
   for action in sorted(actions):

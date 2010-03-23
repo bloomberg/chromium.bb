@@ -1098,7 +1098,8 @@ void BookmarkBarView::BookmarkNodeFavIconLoaded(BookmarkModel* model,
 void BookmarkBarView::WriteDragData(View* sender,
                                     const gfx::Point& press_pt,
                                     OSExchangeData* data) {
-  UserMetrics::RecordAction("BookmarkBar_DragButton", profile_);
+  UserMetrics::RecordAction(UserMetricsAction("BookmarkBar_DragButton"),
+                            profile_);
 
   for (int i = 0; i < GetBookmarkButtonCount(); ++i) {
     if (sender == GetBookmarkButton(i)) {
@@ -1217,7 +1218,8 @@ void BookmarkBarView::ButtonPressed(views::Button* sender,
     bookmark_utils::OpenAll(GetWindow()->GetNativeWindow(), profile_,
         GetPageNavigator(), node, disposition_from_event_flags);
   }
-  UserMetrics::RecordAction("ClickedBookmarkBarURLButton", profile_);
+  UserMetrics::RecordAction(UserMetricsAction("ClickedBookmarkBarURLButton"),
+                            profile_);
 }
 
 void BookmarkBarView::ShowContextMenu(View* source,

@@ -10,9 +10,11 @@
 #include "base/basictypes.h"
 #include "chrome/browser/options_window.h"
 #include "chrome/common/notification_observer.h"
+#include "chrome/browser/metrics/user_metrics.h"
 
 class PrefService;
 class Profile;
+struct UserMetricsAction;
 
 ///////////////////////////////////////////////////////////////////////////////
 // OptionsPageBase
@@ -40,7 +42,8 @@ class OptionsPageBase : public NotificationObserver {
   Profile* profile() const { return profile_; }
 
   // Records a user action and schedules the prefs file to be saved.
-  void UserMetricsRecordAction(const char* action, PrefService* prefs);
+  void UserMetricsRecordAction(const UserMetricsAction &action,
+                               PrefService* prefs);
 
   // Allows the UI to update when a preference value changes. The parameter is
   // the specific pref that changed, or NULL if all pref UI should be

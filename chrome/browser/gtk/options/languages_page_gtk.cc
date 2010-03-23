@@ -453,7 +453,7 @@ void LanguagesPageGtk::OnDictionaryLanguageChanged(GtkWidget* widget) {
     spellcheck_language_added_ = "";
   }
 
-  UserMetricsRecordAction("Options_DictionaryLanguage",
+  UserMetricsRecordAction(UserMetricsAction("Options_DictionaryLanguage"),
                           profile()->GetPrefs());
   dictionary_language_.SetValue(ASCIIToWide(language));
 }

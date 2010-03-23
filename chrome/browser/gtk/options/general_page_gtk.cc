@@ -394,13 +394,13 @@ void GeneralPageGtk::OnStartupRadioToggled(GtkWidget* toggle_button) {
   }
   SaveStartupPref();
   if (toggle_button == startup_homepage_radio_) {
-    UserMetricsRecordAction("Options_Startup_Homepage",
+    UserMetricsRecordAction(UserMetricsAction("Options_Startup_Homepage"),
                             profile()->GetPrefs());
   } else if (toggle_button == startup_last_session_radio_) {
-    UserMetricsRecordAction("Options_Startup_LastSession",
+    UserMetricsRecordAction(UserMetricsAction("Options_Startup_LastSession"),
                             profile()->GetPrefs());
   } else if (toggle_button == startup_custom_radio_) {
-    UserMetricsRecordAction("Options_Startup_Custom",
+    UserMetricsRecordAction(UserMetricsAction("Options_Startup_Custom"),
                             profile()->GetPrefs());
   }
 }
@@ -435,12 +435,12 @@ void GeneralPageGtk::OnNewTabIsHomePageToggled(GtkWidget* toggle_button) {
   }
   if (toggle_button == homepage_use_newtab_radio_) {
     SetHomepage(GURL());
-    UserMetricsRecordAction("Options_Homepage_UseNewTab",
+    UserMetricsRecordAction(UserMetricsAction("Options_Homepage_UseNewTab"),
                             profile()->GetPrefs());
     gtk_widget_set_sensitive(homepage_use_url_entry_, FALSE);
   } else if (toggle_button == homepage_use_url_radio_) {
     SetHomepageFromEntry();
-    UserMetricsRecordAction("Options_Homepage_UseURL",
+    UserMetricsRecordAction(UserMetricsAction("Options_Homepage_UseURL"),
                             profile()->GetPrefs());
     gtk_widget_set_sensitive(homepage_use_url_entry_, TRUE);
   }
@@ -458,11 +458,13 @@ void GeneralPageGtk::OnShowHomeButtonToggled(GtkWidget* toggle_button) {
   bool enabled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(toggle_button));
   show_home_button_.SetValue(enabled);
   if (enabled) {
-    UserMetricsRecordAction("Options_Homepage_ShowHomeButton",
-                            profile()->GetPrefs());
+    UserMetricsRecordAction(
+        UserMetricsAction("Options_Homepage_ShowHomeButton"),
+        profile()->GetPrefs());
   } else {
-    UserMetricsRecordAction("Options_Homepage_HideHomeButton",
-                            profile()->GetPrefs());
+    UserMetricsRecordAction(
+        UserMetricsAction("Options_Homepage_HideHomeButton"),
+        profile()->GetPrefs());
   }
 }
 
@@ -481,7 +483,7 @@ void GeneralPageGtk::OnBrowserUseAsDefaultClicked(GtkWidget* button) {
   // If the user made Chrome the default browser, then he/she arguably wants
   // to be notified when that changes.
   profile()->GetPrefs()->SetBoolean(prefs::kCheckDefaultBrowser, true);
-  UserMetricsRecordAction("Options_SetAsDefaultBrowser",
+  UserMetricsRecordAction(UserMetricsAction("Options_SetAsDefaultBrowser"),
                           profile()->GetPrefs());
 }
 

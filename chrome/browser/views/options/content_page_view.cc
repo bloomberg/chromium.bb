@@ -87,26 +87,29 @@ void ContentPageView::ButtonPressed(
       sender == passwords_neversave_radio_) {
     bool enabled = passwords_asktosave_radio_->checked();
     if (enabled) {
-      UserMetricsRecordAction("Options_PasswordManager_Enable",
-                              profile()->GetPrefs());
+      UserMetricsRecordAction(
+          UserMetricsAction("Options_PasswordManager_Enable"),
+          profile()->GetPrefs());
     } else {
-      UserMetricsRecordAction("Options_PasswordManager_Disable",
-                              profile()->GetPrefs());
+      UserMetricsRecordAction(
+          UserMetricsAction("Options_PasswordManager_Disable"),
+          profile()->GetPrefs());
     }
     ask_to_save_passwords_.SetValue(enabled);
   } else if (sender == form_autofill_enable_radio_ ||
              sender == form_autofill_disable_radio_) {
     bool enabled = form_autofill_enable_radio_->checked();
     if (enabled) {
-      UserMetricsRecordAction("Options_FormAutofill_Enable",
+      UserMetricsRecordAction(UserMetricsAction("Options_FormAutofill_Enable"),
                               profile()->GetPrefs());
     } else {
-      UserMetricsRecordAction("Options_FormAutofill_Disable",
+      UserMetricsRecordAction(UserMetricsAction("Options_FormAutofill_Disable"),
                               profile()->GetPrefs());
     }
     ask_to_save_form_autofill_.SetValue(enabled);
   } else if (sender == show_passwords_button_) {
-    UserMetricsRecordAction("Options_ShowPasswordsExceptions", NULL);
+    UserMetricsRecordAction(
+        UserMetricsAction("Options_ShowPasswordsExceptions"), NULL);
     PasswordsExceptionsWindowView::Show(profile());
   } else if (sender == change_autofill_settings_button_) {
     // This button should be disabled if we lack PersonalDataManager.
@@ -115,7 +118,8 @@ void ContentPageView::ButtonPressed(
                        profile()->GetPersonalDataManager(),
                        profile());
   } else if (sender == themes_reset_button_) {
-    UserMetricsRecordAction("Options_ThemesReset", profile()->GetPrefs());
+    UserMetricsRecordAction(UserMetricsAction("Options_ThemesReset"),
+                            profile()->GetPrefs());
     profile()->ClearTheme();
   } else if (sender == import_button_) {
     views::Window::CreateChromeWindow(
@@ -146,7 +150,8 @@ void ContentPageView::ButtonPressed(
 
 void ContentPageView::LinkActivated(views::Link* source, int event_flags) {
   if (source == themes_gallery_link_) {
-    UserMetricsRecordAction("Options_ThemesGallery", profile()->GetPrefs());
+    UserMetricsRecordAction(UserMetricsAction("Options_ThemesGallery"),
+                            profile()->GetPrefs());
     BrowserList::GetLastActive()->OpenThemeGalleryTabAndActivate();
     return;
   }

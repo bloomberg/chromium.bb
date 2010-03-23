@@ -190,7 +190,7 @@ bool FirstRunView::Accept() {
   FirstRun::ImportSettings(profile_,
       importer_host_->GetSourceProfileInfoAt(0).browser_type,
       GetImportItems(), window()->GetNativeWindow());
-  UserMetrics::RecordAction("FirstRunDef_Accept", profile_);
+  UserMetrics::RecordAction(UserMetricsAction("FirstRunDef_Accept"), profile_);
   if (default_browser_ && default_browser_->checked())
     SetDefaultBrowser();
 
@@ -201,7 +201,7 @@ bool FirstRunView::Accept() {
 }
 
 bool FirstRunView::Cancel() {
-  UserMetrics::RecordAction("FirstRunDef_Cancel", profile_);
+  UserMetrics::RecordAction(UserMetricsAction("FirstRunDef_Cancel"), profile_);
   MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
   return true;
 }
@@ -215,5 +215,6 @@ void FirstRunView::CustomizeAccepted() {
 
 // Notification from the customize dialog that the user cancelled.
 void FirstRunView::CustomizeCanceled() {
-  UserMetrics::RecordAction("FirstRunCustom_Cancel", profile_);
+  UserMetrics::RecordAction(UserMetricsAction("FirstRunCustom_Cancel"),
+                            profile_);
 }

@@ -1467,7 +1467,7 @@ void RenderViewHost::OnDevToolsRuntimeFeatureStateChanged(
 }
 
 void RenderViewHost::OnUserMetricsRecordAction(const std::string& action) {
-  UserMetrics::RecordComputedAction(action.c_str(), process()->profile());
+  UserMetrics::RecordComputedAction(action, process()->profile());
 }
 
 bool RenderViewHost::PreHandleKeyboardEvent(

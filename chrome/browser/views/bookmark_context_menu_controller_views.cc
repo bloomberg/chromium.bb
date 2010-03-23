@@ -285,16 +285,19 @@ void BookmarkContextMenuControllerViews::ExecuteCommand(int id) {
       WindowOpenDisposition initial_disposition;
       if (id == IDS_BOOMARK_BAR_OPEN_ALL) {
         initial_disposition = NEW_FOREGROUND_TAB;
-        UserMetrics::RecordAction("BookmarkBar_ContextMenu_OpenAll",
-                                  profile_);
+        UserMetrics::RecordAction(
+            UserMetricsAction("BookmarkBar_ContextMenu_OpenAll"),
+            profile_);
       } else if (id == IDS_BOOMARK_BAR_OPEN_ALL_NEW_WINDOW) {
         initial_disposition = NEW_WINDOW;
-        UserMetrics::RecordAction("BookmarkBar_ContextMenu_OpenAllInNewWindow",
-                                  profile_);
+        UserMetrics::RecordAction(
+            UserMetricsAction("BookmarkBar_ContextMenu_OpenAllInNewWindow"),
+            profile_);
       } else {
         initial_disposition = OFF_THE_RECORD;
-        UserMetrics::RecordAction("BookmarkBar_ContextMenu_OpenAllIncognito",
-                                  profile_);
+        UserMetrics::RecordAction(
+            UserMetricsAction("BookmarkBar_ContextMenu_OpenAllIncognito"),
+            profile_);
       }
       bookmark_utils::OpenAll(parent_window_, profile_, navigator_, selection_,
                               initial_disposition);
@@ -303,7 +306,8 @@ void BookmarkContextMenuControllerViews::ExecuteCommand(int id) {
 
     case IDS_BOOKMARK_BAR_RENAME_FOLDER:
     case IDS_BOOKMARK_BAR_EDIT:
-      UserMetrics::RecordAction("BookmarkBar_ContextMenu_Edit", profile_);
+      UserMetrics::RecordAction(
+          UserMetricsAction("BookmarkBar_ContextMenu_Edit"), profile_);
 
       if (selection_.size() != 1) {
         NOTREACHED();
@@ -326,7 +330,8 @@ void BookmarkContextMenuControllerViews::ExecuteCommand(int id) {
       break;
 
     case IDS_BOOKMARK_BAR_REMOVE: {
-      UserMetrics::RecordAction("BookmarkBar_ContextMenu_Remove", profile_);
+      UserMetrics::RecordAction(
+          UserMetricsAction("BookmarkBar_ContextMenu_Remove"), profile_);
 
       delegate_->WillRemoveBookmarks(selection_);
       for (size_t i = 0; i < selection_.size(); ++i) {
@@ -339,7 +344,8 @@ void BookmarkContextMenuControllerViews::ExecuteCommand(int id) {
     }
 
     case IDS_BOOMARK_BAR_ADD_NEW_BOOKMARK: {
-      UserMetrics::RecordAction("BookmarkBar_ContextMenu_Add", profile_);
+      UserMetrics::RecordAction(
+          UserMetricsAction("BookmarkBar_ContextMenu_Add"), profile_);
 
       BookmarkEditor::Configuration editor_config;
       BookmarkEditor::Handler* handler = NULL;
@@ -357,8 +363,9 @@ void BookmarkContextMenuControllerViews::ExecuteCommand(int id) {
     }
 
     case IDS_BOOMARK_BAR_NEW_FOLDER: {
-      UserMetrics::RecordAction("BookmarkBar_ContextMenu_NewFolder",
-                                profile_);
+      UserMetrics::RecordAction(
+          UserMetricsAction("BookmarkBar_ContextMenu_NewFolder"),
+          profile_);
       EditFolderController::Show(profile_, parent_window_,
                                  GetParentForNewNodes(), true,
                                  configuration_ != BOOKMARK_BAR);
@@ -370,8 +377,9 @@ void BookmarkContextMenuControllerViews::ExecuteCommand(int id) {
       break;
 
     case IDS_BOOKMARK_MANAGER_SHOW_IN_FOLDER:
-      UserMetrics::RecordAction("BookmarkBar_ContextMenu_ShowInFolder",
-                                profile_);
+      UserMetrics::RecordAction(
+          UserMetricsAction("BookmarkBar_ContextMenu_ShowInFolder"),
+          profile_);
 
       if (selection_.size() != 1) {
         NOTREACHED();
@@ -382,7 +390,8 @@ void BookmarkContextMenuControllerViews::ExecuteCommand(int id) {
       break;
 
     case IDS_BOOKMARK_MANAGER:
-      UserMetrics::RecordAction("ShowBookmarkManager", profile_);
+      UserMetrics::RecordAction(UserMetricsAction("ShowBookmarkManager"),
+                                profile_);
       {
         Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
         if (browser)
@@ -393,7 +402,8 @@ void BookmarkContextMenuControllerViews::ExecuteCommand(int id) {
       break;
 
     case IDS_BOOKMARK_MANAGER_SORT:
-      UserMetrics::RecordAction("BookmarkManager_Sort", profile_);
+      UserMetrics::RecordAction(UserMetricsAction("BookmarkManager_Sort"),
+                                profile_);
       model->SortChildren(parent_);
       break;
 

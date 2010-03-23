@@ -1043,7 +1043,8 @@ int TabStrip::OnPerformDrop(const DropTargetEvent& event) {
     return DragDropTypes::DRAG_NONE;
 
   if (drop_before) {
-    UserMetrics::RecordAction("Tab_DropURLBetweenTabs", model_->profile());
+    UserMetrics::RecordAction(UserMetricsAction("Tab_DropURLBetweenTabs"),
+                              model_->profile());
 
     // Insert a new tab.
     TabContents* contents =
@@ -1053,7 +1054,8 @@ int TabStrip::OnPerformDrop(const DropTargetEvent& event) {
     model_->AddTabContents(contents, drop_index, false,
                            PageTransition::GENERATED, true);
   } else {
-    UserMetrics::RecordAction("Tab_DropURLOnTab", model_->profile());
+    UserMetrics::RecordAction(UserMetricsAction("Tab_DropURLOnTab"),
+                              model_->profile());
 
     model_->GetTabContentsAt(drop_index)->controller().LoadURL(
         url, GURL(), PageTransition::GENERATED);
@@ -1295,7 +1297,8 @@ void TabStrip::CloseTab(Tab* tab) {
   if (model_->ContainsIndex(tab_index)) {
     TabContents* contents = model_->GetTabContentsAt(tab_index);
     if (contents)
-      UserMetrics::RecordAction("CloseTab_Mouse", contents->profile());
+      UserMetrics::RecordAction(UserMetricsAction("CloseTab_Mouse"),
+                                contents->profile());
     Tab* last_tab = GetTabAt(GetTabCount() - 1);
     // Limit the width available to the TabStrip for laying out Tabs, so that
     // Tabs are not resized until a later time (when the mouse pointer leaves
@@ -1417,7 +1420,8 @@ void TabStrip::ButtonPressed(views::Button* sender, const views::Event& event) {
       AppLauncher::Show(Browser::GetBrowserForController(&controller, NULL));
       return;
     }
-    UserMetrics::RecordAction("NewTab_Button", model_->profile());
+    UserMetrics::RecordAction(UserMetricsAction("NewTab_Button"),
+                              model_->profile());
     model_->delegate()->AddBlankTab(true);
   }
 }

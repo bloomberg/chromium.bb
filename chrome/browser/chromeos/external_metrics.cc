@@ -1,5 +1,5 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use
-// of this source code is governed by a BSD-style license that can be
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/external_metrics.h"
@@ -47,11 +47,13 @@ static Profile* external_metrics_profile = NULL;
 // call RecordAction in a way that gets picked up by the processing scripts.
 
 static void RecordTabOverviewKeystroke(const char* ignore) {
-  UserMetrics::RecordAction("TabOverview_Keystroke", external_metrics_profile);
+  UserMetrics::RecordAction(UserMetricsAction("TabOverview_Keystroke"),
+                            external_metrics_profile);
 }
 
 static void RecordTabOverviewExitMouse(const char* ignore) {
-  UserMetrics::RecordAction("TabOverview_ExitMouse", external_metrics_profile);
+  UserMetrics::RecordAction(UserMetricsAction("TabOverview_ExitMouse"),
+                            external_metrics_profile);
 }
 
 static void RecordBootTime(const char* info) {

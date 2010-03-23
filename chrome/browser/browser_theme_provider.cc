@@ -295,7 +295,7 @@ void BrowserThemeProvider::SetTheme(Extension* extension) {
   SaveThemeID(extension->id());
 
   NotifyThemeChanged(extension);
-  UserMetrics::RecordAction("Themes_Installed", profile_);
+  UserMetrics::RecordAction(UserMetricsAction("Themes_Installed"), profile_);
 }
 
 void BrowserThemeProvider::RemoveUnusedThemes() {
@@ -320,7 +320,7 @@ void BrowserThemeProvider::RemoveUnusedThemes() {
 void BrowserThemeProvider::UseDefaultTheme() {
   ClearAllThemeData();
   NotifyThemeChanged(NULL);
-  UserMetrics::RecordAction("Themes_Reset", profile_);
+  UserMetrics::RecordAction(UserMetricsAction("Themes_Reset"), profile_);
 }
 
 std::string BrowserThemeProvider::GetThemeID() const {
@@ -542,7 +542,7 @@ void BrowserThemeProvider::LoadThemePrefs() {
     }
 
     if (loaded_pack) {
-      UserMetrics::RecordAction("Themes.Loaded", profile_);
+      UserMetrics::RecordAction(UserMetricsAction("Themes.Loaded"), profile_);
     } else {
       // TODO(erg): We need to pop up a dialog informing the user that their
       // theme is being migrated.
@@ -552,11 +552,12 @@ void BrowserThemeProvider::LoadThemePrefs() {
         if (extension) {
           DLOG(ERROR) << "Migrating theme";
           BuildFromExtension(extension);
-          UserMetrics::RecordAction("Themes.Migrated", profile_);
+          UserMetrics::RecordAction(UserMetricsAction("Themes.Migrated"),
+                                    profile_);
         } else {
           DLOG(ERROR) << "Theme is mysteriously gone.";
           ClearAllThemeData();
-          UserMetrics::RecordAction("Themes.Gone", profile_);
+          UserMetrics::RecordAction(UserMetricsAction("Themes.Gone"), profile_);
         }
       }
     }

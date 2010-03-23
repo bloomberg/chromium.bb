@@ -551,7 +551,7 @@ void LanguagesPageView::SaveChanges() {
   }
 
   if (ui_language_index_selected_ != -1) {
-    UserMetricsRecordAction("Options_AppLanguage",
+    UserMetricsRecordAction(UserMetricsAction("Options_AppLanguage"),
                             g_browser_process->local_state());
     app_locale_.SetValue(ASCIIToWide(ui_language_model_->
         GetLocaleFromIndex(ui_language_index_selected_)));
@@ -563,7 +563,7 @@ void LanguagesPageView::SaveChanges() {
   }
 
   if (spellcheck_language_index_selected_ != -1) {
-    UserMetricsRecordAction("Options_DictionaryLanguage",
+    UserMetricsRecordAction(UserMetricsAction("Options_DictionaryLanguage"),
                             profile()->GetPrefs());
     dictionary_language_.SetValue(ASCIIToWide(dictionary_language_model_->
         GetLocaleFromIndex(spellcheck_language_index_selected_)));

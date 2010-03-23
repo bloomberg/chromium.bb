@@ -186,7 +186,7 @@ void CookieFilterPageView::ButtonPressed(
     clear_site_data_on_exit_.SetValue(clear_on_close_check_->checked());
   } else {
     DCHECK_EQ(sender, show_cookies_button_);
-    UserMetricsRecordAction("Options_ShowCookies", NULL);
+    UserMetricsRecordAction(UserMetricsAction("Options_ShowCookies"), NULL);
     CookiesView::ShowCookiesWindow(profile());
   }
 }

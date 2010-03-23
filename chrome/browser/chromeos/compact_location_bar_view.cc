@@ -281,7 +281,7 @@ void CompactLocationBarView::WriteDragData(views::View* sender,
                                            OSExchangeData* data) {
   DCHECK(GetDragOperations(sender, press_pt) != DragDropTypes::DRAG_NONE);
 
-  UserMetrics::RecordAction("CompactLocationBar_DragStar",
+  UserMetrics::RecordAction(UserMetricsAction("CompactLocationBar_DragStar"),
                             browser()->profile());
 
   // If there is a bookmark for the URL, add the bookmark drag data for it. We

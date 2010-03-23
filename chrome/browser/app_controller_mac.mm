@@ -663,13 +663,15 @@ void RecordLastRunAppBundlePath() {
       break;
     }
     case IDC_IMPORT_SETTINGS: {
-      UserMetrics::RecordAction("Import_ShowDlg", defaultProfile);
+      UserMetrics::RecordAction(UserMetricsAction("Import_ShowDlg"),
+                                defaultProfile);
       [ImportSettingsDialogController
           showImportSettingsDialogForProfile:defaultProfile];
       break;
     }
     case IDC_SHOW_BOOKMARK_MANAGER:
-      UserMetrics::RecordAction("ShowBookmarkManager", defaultProfile);
+      UserMetrics::RecordAction(UserMetricsAction("ShowBookmarkManager"),
+                                defaultProfile);
       if (Browser* browser = ActivateBrowser(defaultProfile)) {
         // Call through browser which takes care of opening a tab or the old
         // bookmark manager window.
@@ -727,7 +729,8 @@ void RecordLastRunAppBundlePath() {
           defaultProfile, ProfileSyncService::START_FROM_WRENCH);
       break;
     case IDC_TASK_MANAGER:
-      UserMetrics::RecordAction("TaskManager", defaultProfile);
+      UserMetrics::RecordAction(UserMetricsAction("TaskManager"),
+                                defaultProfile);
       TaskManagerMac::Show();
       break;
   }

@@ -521,7 +521,8 @@ void BookmarkManagerView::ButtonPressed(views::Button* sender,
       DCHECK(sync_service_);
       sync_service_->ShowLoginDialog();
     } else {
-      UserMetrics::RecordAction("BookmarkManager_Sync", profile_);
+      UserMetrics::RecordAction(UserMetricsAction("BookmarkManager_Sync"),
+                                profile_);
       sync_ui_util::OpenSyncMyBookmarksDialog(
           profile_, ProfileSyncService::START_FROM_BOOKMARK_MANAGER);
     }
@@ -585,12 +586,14 @@ void BookmarkManagerView::RunMenu(views::View* source, const gfx::Point& pt) {
 void BookmarkManagerView::ExecuteCommand(int id) {
   switch (id) {
     case IDS_BOOKMARK_MANAGER_IMPORT_MENU:
-      UserMetrics::RecordAction("BookmarkManager_Import", profile_);
+      UserMetrics::RecordAction(UserMetricsAction("BookmarkManager_Import"),
+                                profile_);
       ShowImportBookmarksFileChooser();
       break;
 
     case IDS_BOOKMARK_MANAGER_EXPORT_MENU:
-      UserMetrics::RecordAction("BookmarkManager_Export", profile_);
+      UserMetrics::RecordAction(UserMetricsAction("BookmarkManager_Export"),
+                                profile_);
       ShowExportBookmarksFileChooser();
       break;
 

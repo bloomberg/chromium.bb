@@ -996,7 +996,8 @@ void BookmarkBarGtk::OnClicked(GtkWidget* sender) {
       gtk_util::DispositionForCurrentButtonPressEvent(),
       PageTransition::AUTO_BOOKMARK);
 
-  UserMetrics::RecordAction("ClickedBookmarkBarURLButton", profile_);
+  UserMetrics::RecordAction(UserMetricsAction("ClickedBookmarkBarURLButton"),
+                            profile_);
 }
 
 void BookmarkBarGtk::OnButtonDragBegin(GtkWidget* button,

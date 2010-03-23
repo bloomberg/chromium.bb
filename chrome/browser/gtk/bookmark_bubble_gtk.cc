@@ -287,7 +287,8 @@ void BookmarkBubbleGtk::OnNameActivate(GtkWidget* widget) {
 void BookmarkBubbleGtk::OnFolderChanged(GtkWidget* widget) {
   size_t cur_folder = gtk_combo_box_get_active(GTK_COMBO_BOX(folder_combo_));
   if (cur_folder == folder_nodes_.size()) {
-    UserMetrics::RecordAction("BookmarkBubble_EditFromCombobox", profile_);
+    UserMetrics::RecordAction(
+        UserMetricsAction("BookmarkBubble_EditFromCombobox"), profile_);
     // GTK doesn't handle having the combo box destroyed from the changed
     // signal.  Since showing the editor also closes the bubble, delay this
     // so that GTK can unwind.  Specifically gtk_menu_shell_button_release
@@ -310,7 +311,8 @@ void BookmarkBubbleGtk::OnFolderPopupShown(GtkWidget* widget,
 }
 
 void BookmarkBubbleGtk::OnEditClicked(GtkWidget* widget) {
-  UserMetrics::RecordAction("BookmarkBubble_Edit", profile_);
+  UserMetrics::RecordAction(UserMetricsAction("BookmarkBubble_Edit"),
+                            profile_);
   ShowEditor();
 }
 
@@ -319,7 +321,8 @@ void BookmarkBubbleGtk::OnCloseClicked(GtkWidget* widget) {
 }
 
 void BookmarkBubbleGtk::OnRemoveClicked(GtkWidget* widget) {
-  UserMetrics::RecordAction("BookmarkBubble_Unstar", profile_);
+  UserMetrics::RecordAction(UserMetricsAction("BookmarkBubble_Unstar"),
+                            profile_);
 
   apply_edits_ = false;
   remove_bookmark_ = true;
@@ -340,8 +343,9 @@ void BookmarkBubbleGtk::ApplyEdits() {
 
     if (new_title != node->GetTitle()) {
       model->SetTitle(node, new_title);
-      UserMetrics::RecordAction("BookmarkBubble_ChangeTitleInBubble",
-                                profile_);
+      UserMetrics::RecordAction(
+          UserMetricsAction("BookmarkBubble_ChangeTitleInBubble"),
+          profile_);
     }
 
     size_t cur_folder = gtk_combo_box_get_active(GTK_COMBO_BOX(folder_combo_));
@@ -350,7 +354,8 @@ void BookmarkBubbleGtk::ApplyEdits() {
     if (cur_folder < folder_nodes_.size()) {
       const BookmarkNode* new_parent = folder_nodes_[cur_folder];
       if (new_parent != node->GetParent()) {
-        UserMetrics::RecordAction("BookmarkBubble_ChangeParent", profile_);
+        UserMetrics::RecordAction(
+            UserMetricsAction("BookmarkBubble_ChangeParent"), profile_);
         model->Move(node, new_parent, new_parent->GetChildCount());
       }
     }

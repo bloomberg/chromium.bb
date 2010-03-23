@@ -1086,43 +1086,45 @@ bool DraggedTabController::CompleteDrag() {
     if (dock_info_.type() != DockInfo::NONE) {
       switch (dock_info_.type()) {
         case DockInfo::LEFT_OF_WINDOW:
-          UserMetrics::RecordAction("DockingWindow_Left",
+          UserMetrics::RecordAction(UserMetricsAction("DockingWindow_Left"),
                                     source_tabstrip_->model()->profile());
           break;
 
         case DockInfo::RIGHT_OF_WINDOW:
-          UserMetrics::RecordAction("DockingWindow_Right",
+          UserMetrics::RecordAction(UserMetricsAction("DockingWindow_Right"),
                                     source_tabstrip_->model()->profile());
           break;
 
         case DockInfo::BOTTOM_OF_WINDOW:
-          UserMetrics::RecordAction("DockingWindow_Bottom",
+          UserMetrics::RecordAction(UserMetricsAction("DockingWindow_Bottom"),
                                     source_tabstrip_->model()->profile());
           break;
 
         case DockInfo::TOP_OF_WINDOW:
-          UserMetrics::RecordAction("DockingWindow_Top",
+          UserMetrics::RecordAction(UserMetricsAction("DockingWindow_Top"),
                                     source_tabstrip_->model()->profile());
           break;
 
         case DockInfo::MAXIMIZE:
-          UserMetrics::RecordAction("DockingWindow_Maximize",
+          UserMetrics::RecordAction(UserMetricsAction("DockingWindow_Maximize"),
                                     source_tabstrip_->model()->profile());
           break;
 
         case DockInfo::LEFT_HALF:
-          UserMetrics::RecordAction("DockingWindow_LeftHalf",
+          UserMetrics::RecordAction(UserMetricsAction("DockingWindow_LeftHalf"),
                                     source_tabstrip_->model()->profile());
           break;
 
         case DockInfo::RIGHT_HALF:
-          UserMetrics::RecordAction("DockingWindow_RightHalf",
-                                    source_tabstrip_->model()->profile());
+          UserMetrics::RecordAction(
+              UserMetricsAction("DockingWindow_RightHalf"),
+              source_tabstrip_->model()->profile());
           break;
 
         case DockInfo::BOTTOM_HALF:
-          UserMetrics::RecordAction("DockingWindow_BottomHalf",
-                                    source_tabstrip_->model()->profile());
+          UserMetrics::RecordAction(
+              UserMetricsAction("DockingWindow_BottomHalf"),
+              source_tabstrip_->model()->profile());
           break;
 
         default:

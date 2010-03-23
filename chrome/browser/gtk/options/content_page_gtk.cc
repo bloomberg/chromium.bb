@@ -422,17 +422,20 @@ void ContentPageGtk::OnImportButtonClicked(GtkWidget* widget) {
 }
 
 void ContentPageGtk::OnGtkThemeButtonClicked(GtkWidget* widget) {
-  UserMetricsRecordAction("Options_GtkThemeSet", profile()->GetPrefs());
+  UserMetricsRecordAction(UserMetricsAction("Options_GtkThemeSet"),
+                          profile()->GetPrefs());
   profile()->SetNativeTheme();
 }
 
 void ContentPageGtk::OnResetDefaultThemeButtonClicked(GtkWidget* widget) {
-  UserMetricsRecordAction("Options_ThemesReset", profile()->GetPrefs());
+  UserMetricsRecordAction(UserMetricsAction("Options_ThemesReset"),
+                          profile()->GetPrefs());
   profile()->ClearTheme();
 }
 
 void ContentPageGtk::OnGetThemesButtonClicked(GtkWidget* widget) {
-  UserMetricsRecordAction("Options_ThemesGallery", profile()->GetPrefs());
+  UserMetricsRecordAction(UserMetricsAction("Options_ThemesGallery"),
+                          profile()->GetPrefs());
   BrowserList::GetLastActive()->OpenThemeGalleryTabAndActivate();
 }
 
@@ -450,10 +453,10 @@ void ContentPageGtk::OnSystemTitleBarRadioToggled(GtkWidget* widget) {
   bool use_custom = gtk_toggle_button_get_active(
       GTK_TOGGLE_BUTTON(system_title_bar_hide_radio_));
   if (use_custom) {
-    UserMetricsRecordAction("Options_CustomFrame_Enable",
+    UserMetricsRecordAction(UserMetricsAction("Options_CustomFrame_Enable"),
                             profile()->GetPrefs());
   } else {
-    UserMetricsRecordAction("Options_CustomFrame_Disable",
+    UserMetricsRecordAction(UserMetricsAction("Options_CustomFrame_Disable"),
                             profile()->GetPrefs());
   }
 
@@ -477,11 +480,12 @@ void ContentPageGtk::OnPasswordRadioToggled(GtkWidget* widget) {
   bool enabled = gtk_toggle_button_get_active(
       GTK_TOGGLE_BUTTON(passwords_asktosave_radio_));
   if (enabled) {
-    UserMetricsRecordAction("Options_PasswordManager_Enable",
-                             profile()->GetPrefs());
-  } else {
-    UserMetricsRecordAction("Options_PasswordManager_Disable",
+    UserMetricsRecordAction(UserMetricsAction("Options_PasswordManager_Enable"),
                             profile()->GetPrefs());
+  } else {
+    UserMetricsRecordAction(
+        UserMetricsAction("Options_PasswordManager_Disable"),
+        profile()->GetPrefs());
   }
   ask_to_save_passwords_.SetValue(enabled);
 }
@@ -499,11 +503,11 @@ void ContentPageGtk::OnAutoFillRadioToggled(GtkWidget* widget) {
   bool enabled = gtk_toggle_button_get_active(
       GTK_TOGGLE_BUTTON(form_autofill_enable_radio_));
   if (enabled) {
-    UserMetricsRecordAction("Options_FormAutofill_Enable",
-                             profile()->GetPrefs());
+    UserMetricsRecordAction(UserMetricsAction("Options_FormAutofill_Enable"),
+                            profile()->GetPrefs());
     gtk_widget_set_sensitive(autofill_button_, TRUE);
   } else {
-    UserMetricsRecordAction("Options_FormAutofill_Disable",
+    UserMetricsRecordAction(UserMetricsAction("Options_FormAutofill_Disable"),
                             profile()->GetPrefs());
     gtk_widget_set_sensitive(autofill_button_, FALSE);
   }

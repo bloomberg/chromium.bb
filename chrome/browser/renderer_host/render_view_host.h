@@ -36,6 +36,7 @@ struct ViewHostMsg_DidPrintPage_Params;
 struct ViewMsg_Navigate_Params;
 struct WebDropData;
 struct WebPreferences;
+struct UserMetricsAction;
 
 namespace gfx {
 class Point;

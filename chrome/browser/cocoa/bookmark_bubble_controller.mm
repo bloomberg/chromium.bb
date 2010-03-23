@@ -146,7 +146,8 @@
 }
 
 - (IBAction)edit:(id)sender {
-  UserMetrics::RecordAction("BookmarkBubble_Edit", model_->profile());
+  UserMetrics::RecordAction(UserMetricsAction("BookmarkBubble_Edit"),
+                            model_->profile());
   [self showEditor];
 }
 
@@ -169,7 +170,8 @@
 
 - (IBAction)remove:(id)sender {
   model_->SetURLStarred(node_->GetURL(), node_->GetTitle(), false);
-  UserMetrics::RecordAction("BookmarkBubble_Unstar", model_->profile());
+  UserMetrics::RecordAction(UserMetricsAction("BookmarkBubble_Unstar"),
+                            model_->profile());
   node_ = NULL;  // no longer valid
   [self ok:sender];
 }
@@ -181,8 +183,9 @@
   NSMenuItem* selected = [folderPopUpButton_ selectedItem];
   ChooseAnotherFolder* chooseItem = [[self class] chooseAnotherFolderObject];
   if ([[selected representedObject] isEqual:chooseItem]) {
-    UserMetrics::RecordAction("BookmarkBubble_EditFromCombobox",
-                              model_->profile());
+    UserMetrics::RecordAction(
+        UserMetricsAction("BookmarkBubble_EditFromCombobox"),
+        model_->profile());
     [self showEditor];
   }
 }
@@ -210,8 +213,9 @@
   NSString* newTitle = [nameTextField_ stringValue];
   if (![oldTitle isEqual:newTitle]) {
     model_->SetTitle(node_, base::SysNSStringToWide(newTitle));
-    UserMetrics::RecordAction("BookmarkBubble_ChangeTitleInBubble",
-                              model_->profile());
+    UserMetrics::RecordAction(
+        UserMetricsAction("BookmarkBubble_ChangeTitleInBubble"),
+        model_->profile());
   }
   // Then the parent folder.
   const BookmarkNode* oldParent = node_->GetParent();
@@ -227,7 +231,7 @@
   if (oldParent != newParent) {
     int index = newParent->GetChildCount();
     model_->Move(node_, newParent, index);
-    UserMetrics::RecordAction("BookmarkBubble_ChangeParent",
+    UserMetrics::RecordAction(UserMetricsAction("BookmarkBubble_ChangeParent"),
                               model_->profile());
   }
 }

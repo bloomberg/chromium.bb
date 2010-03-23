@@ -923,35 +923,40 @@ void RenderViewContextMenu::ExecuteItemCommand(int id) {
       break;
 
     case IDS_CONTENT_CONTEXT_PLAY:
-      UserMetrics::RecordAction("MediaContextMenu_Play", profile_);
+      UserMetrics::RecordAction(UserMetricsAction("MediaContextMenu_Play"),
+                                profile_);
       MediaPlayerActionAt(gfx::Point(params_.x, params_.y),
                           WebMediaPlayerAction(
                               WebMediaPlayerAction::Play, true));
       break;
 
     case IDS_CONTENT_CONTEXT_PAUSE:
-      UserMetrics::RecordAction("MediaContextMenu_Pause", profile_);
+      UserMetrics::RecordAction(UserMetricsAction("MediaContextMenu_Pause"),
+                                profile_);
       MediaPlayerActionAt(gfx::Point(params_.x, params_.y),
                           WebMediaPlayerAction(
                               WebMediaPlayerAction::Play, false));
       break;
 
     case IDS_CONTENT_CONTEXT_MUTE:
-      UserMetrics::RecordAction("MediaContextMenu_Mute", profile_);
+      UserMetrics::RecordAction(UserMetricsAction("MediaContextMenu_Mute"),
+                                profile_);
       MediaPlayerActionAt(gfx::Point(params_.x, params_.y),
                           WebMediaPlayerAction(
                               WebMediaPlayerAction::Mute, true));
       break;
 
     case IDS_CONTENT_CONTEXT_UNMUTE:
-      UserMetrics::RecordAction("MediaContextMenu_Unmute", profile_);
+      UserMetrics::RecordAction(UserMetricsAction("MediaContextMenu_Unmute"),
+                                profile_);
       MediaPlayerActionAt(gfx::Point(params_.x, params_.y),
                           WebMediaPlayerAction(
                               WebMediaPlayerAction::Mute, false));
       break;
 
     case IDS_CONTENT_CONTEXT_LOOP:
-      UserMetrics::RecordAction("MediaContextMenu_Loop", profile_);
+      UserMetrics::RecordAction(UserMetricsAction("MediaContextMenu_Loop"),
+                                profile_);
       MediaPlayerActionAt(gfx::Point(params_.x, params_.y),
                           WebMediaPlayerAction(
                               WebMediaPlayerAction::Loop,
@@ -1204,7 +1209,8 @@ void RenderViewContextMenu::CopyImageAt(int x, int y) {
 }
 
 void RenderViewContextMenu::Inspect(int x, int y) {
-  UserMetrics::RecordAction("DevTools_InspectElement", profile_);
+  UserMetrics::RecordAction(UserMetricsAction("DevTools_InspectElement"),
+                            profile_);
   DevToolsManager::GetInstance()->InspectElement(
       source_tab_contents_->render_view_host(), x, y);
 }
