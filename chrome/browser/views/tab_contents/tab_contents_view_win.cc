@@ -6,7 +6,6 @@
 
 #include <windows.h>
 
-#include "app/gfx/canvas_paint.h"
 #include "app/os_exchange_data.h"
 #include "base/file_path.h"
 #include "base/keyboard_codes.h"
@@ -26,6 +25,7 @@
 #include "chrome/browser/views/sad_tab_view.h"
 #include "chrome/browser/views/tab_contents/render_view_context_menu_win.h"
 #include "chrome/browser/views/tab_contents/tab_contents_drag_win.h"
+#include "gfx/canvas_paint.h"
 #include "views/focus/view_storage.h"
 #include "views/screen.h"
 #include "views/widget/root_view.h"

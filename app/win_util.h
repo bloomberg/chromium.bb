@@ -10,9 +10,9 @@
 #include <string>
 #include <vector>
 
-#include "app/gfx/font.h"
 #include "base/fix_wp64.h"
 #include "base/scoped_handle.h"
+#include "gfx/font.h"
 #include "gfx/rect.h"
 
 class FilePath;

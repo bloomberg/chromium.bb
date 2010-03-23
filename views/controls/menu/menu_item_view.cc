@@ -4,8 +4,8 @@
 
 #include "views/controls/menu/menu_item_view.h"
 
-#include "app/gfx/canvas.h"
 #include "app/l10n_util.h"
+#include "gfx/canvas.h"
 #include "grit/app_strings.h"
 #include "views/controls/menu/menu_config.h"
 #include "views/controls/menu/menu_controller.h"

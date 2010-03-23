@@ -6,11 +6,11 @@
 
 #include <algorithm>
 
-#include "app/gfx/canvas.h"
-#include "app/gfx/font.h"
 #include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
+#include "gfx/canvas.h"
+#include "gfx/font.h"
 #include "gfx/rect.h"
 #include "grit/app_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"

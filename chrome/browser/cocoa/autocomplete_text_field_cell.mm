@@ -4,9 +4,9 @@
 
 #import "chrome/browser/cocoa/autocomplete_text_field_cell.h"
 
-#include "app/gfx/font.h"
 #include "app/resource_bundle.h"
 #include "base/logging.h"
+#include "gfx/font.h"
 
 namespace {
 

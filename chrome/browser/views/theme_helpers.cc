@@ -8,8 +8,8 @@
 #include <atlapp.h>
 #include <atltheme.h>
 
-#include "app/gfx/canvas.h"
 #include "base/logging.h"
+#include "gfx/canvas.h"
 #include "skia/ext/bitmap_platform_device_win.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 

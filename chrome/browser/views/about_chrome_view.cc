@@ -5,7 +5,6 @@
 #include "chrome/browser/views/about_chrome_view.h"
 
 #include "app/bidi_line_iterator.h"
-#include "app/gfx/canvas.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/callback.h"
@@ -18,6 +17,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/platform_util.h"
 #include "chrome/common/url_constants.h"
+#include "gfx/canvas.h"
 #include "gfx/color_utils.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"

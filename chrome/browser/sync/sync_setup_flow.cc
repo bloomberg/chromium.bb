@@ -4,7 +4,6 @@
 
 #include "chrome/browser/sync/sync_setup_flow.h"
 
-#include "app/gfx/font.h"
 #include "app/gfx/font_util.h"
 #include "base/callback.h"
 #include "base/histogram.h"
@@ -25,6 +24,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/pref_names.h"
+#include "gfx/font.h"
 #include "grit/locale_settings.h"
 
 // XPath expression for finding specific iframes.

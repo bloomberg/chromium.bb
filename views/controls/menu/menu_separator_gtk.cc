@@ -4,7 +4,7 @@
 
 #include "views/controls/menu/menu_separator.h"
 
-#include "app/gfx/canvas.h"
+#include "gfx/canvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "views/controls/menu/menu_config.h"
 

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/views/frame/browser_frame_gtk.h"
 
-#include "app/gfx/font.h"
 #include "base/logging.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/profile.h"
@@ -14,6 +13,7 @@
 #include "chrome/browser/views/frame/browser_root_view.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/frame/opaque_browser_frame_view.h"
+#include "gfx/font.h"
 #include "views/widget/root_view.h"
 #include "views/window/hit_test.h"
 

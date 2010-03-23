@@ -5,7 +5,7 @@
 #ifndef VIEWS_CONTROLS_LABEL_H_
 #define VIEWS_CONTROLS_LABEL_H_
 
-#include "app/gfx/font.h"
+#include "gfx/font.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"

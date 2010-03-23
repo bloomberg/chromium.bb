@@ -6,8 +6,6 @@
 
 #include "app/gtk_util.h"
 #include "app/l10n_util.h"
-#include "app/gfx/canvas_paint.h"
-#include "app/gfx/font.h"
 #include "app/menus/simple_menu_model.h"
 #include "app/resource_bundle.h"
 #include "app/slide_animation.h"
@@ -30,7 +28,9 @@
 #include "chrome/browser/gtk/nine_box.h"
 #include "chrome/browser/gtk/standard_menus.h"
 #include "chrome/common/notification_service.h"
+#include "gfx/canvas_paint.h"
 #include "gfx/color_utils.h"
+#include "gfx/font.h"
 #include "gfx/skia_utils_gtk.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"

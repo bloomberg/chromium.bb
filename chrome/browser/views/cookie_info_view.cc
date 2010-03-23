@@ -6,13 +6,13 @@
 
 #include <algorithm>
 
-#include "app/gfx/canvas.h"
 #include "app/l10n_util.h"
 #include "base/i18n/time_formatting.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/browser/cookies_tree_model.h"
 #include "chrome/browser/profile.h"
+#include "gfx/canvas.h"
 #include "gfx/color_utils.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"

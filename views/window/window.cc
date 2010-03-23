@@ -4,10 +4,10 @@
 
 #include "views/window/window.h"
 
-#include "app/gfx/font.h"
 #include "app/gfx/font_util.h"
 #include "app/resource_bundle.h"
 #include "base/string_util.h"
+#include "gfx/font.h"
 #include "gfx/size.h"
 #include "views/widget/widget.h"
 

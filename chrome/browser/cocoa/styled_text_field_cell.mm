@@ -4,11 +4,11 @@
 
 #import "chrome/browser/cocoa/styled_text_field_cell.h"
 
-#include "app/gfx/font.h"
 #include "app/resource_bundle.h"
 #include "base/logging.h"
 #include "chrome/browser/browser_theme_provider.h"
 #import "chrome/browser/cocoa/themed_window.h"
+#include "gfx/font.h"
 #include "grit/theme_resources.h"
 
 @implementation StyledTextFieldCell

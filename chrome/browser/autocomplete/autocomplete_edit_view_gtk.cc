@@ -11,7 +11,6 @@
 
 #include "app/clipboard/clipboard.h"
 #include "app/clipboard/scoped_clipboard_writer.h"
-#include "app/gfx/font.h"
 #include "app/l10n_util.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
@@ -27,6 +26,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/toolbar_model.h"
 #include "chrome/common/notification_service.h"
+#include "gfx/font.h"
 #include "gfx/gtk_util.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"

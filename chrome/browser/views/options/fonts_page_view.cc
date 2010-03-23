@@ -12,8 +12,6 @@
 #include <vector>
 
 #include "app/combobox_model.h"
-#include "app/gfx/canvas.h"
-#include "app/gfx/font.h"
 #include "app/l10n_util.h"
 #include "app/l10n_util_collator.h"
 #include "app/resource_bundle.h"
@@ -25,6 +23,8 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/shell_dialogs.h"
 #include "chrome/common/pref_names.h"
+#include "gfx/canvas.h"
+#include "gfx/font.h"
 #include "gfx/native_theme_win.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"

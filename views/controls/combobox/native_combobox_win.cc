@@ -5,10 +5,10 @@
 #include "views/controls/combobox/native_combobox_win.h"
 
 #include "app/combobox_model.h"
-#include "app/gfx/font.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/i18n/rtl.h"
+#include "gfx/font.h"
 #include "gfx/native_theme_win.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/widget/widget.h"

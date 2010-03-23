@@ -4,12 +4,12 @@
 
 #include "chrome/browser/views/tabs/dragged_tab_view.h"
 
-#include "app/gfx/canvas.h"
 #include "base/callback.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/views/tabs/native_view_photobooth.h"
 #include "chrome/browser/views/tabs/tab_renderer.h"
+#include "gfx/canvas.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "views/widget/widget.h"
 #if defined(OS_WIN)

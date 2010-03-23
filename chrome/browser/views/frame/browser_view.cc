@@ -9,7 +9,6 @@
 #endif
 
 #include "app/drag_drop_types.h"
-#include "app/gfx/canvas.h"
 #include "app/l10n_util.h"
 #include "app/os_exchange_data.h"
 #include "app/resource_bundle.h"
@@ -62,6 +61,7 @@
 #include "chrome/common/native_window_notification_source.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
+#include "gfx/canvas.h"
 #include "gfx/scrollbar_size.h"
 #include "grit/app_resources.h"
 #include "grit/chromium_strings.h"

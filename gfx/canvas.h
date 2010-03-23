@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_GFX_CANVAS_H_
-#define APP_GFX_CANVAS_H_
+#ifndef GFX_CANVAS_H_
+#define GFX_CANVAS_H_
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -235,4 +235,4 @@ class Canvas : public skia::PlatformCanvas {
 
 }  // namespace gfx;
 
-#endif  // APP_GFX_CANVAS_H_
+#endif  // GFX_CANVAS_H_

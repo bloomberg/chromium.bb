@@ -4,7 +4,7 @@
 
 #include "views/controls/menu/submenu_view.h"
 
-#include "app/gfx/canvas.h"
+#include "gfx/canvas.h"
 #include "views/controls/menu/menu_controller.h"
 #include "views/controls/menu/menu_scroll_view_container.h"
 #include "views/widget/root_view.h"

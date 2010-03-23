@@ -8,13 +8,13 @@
 #include <utility>
 #include <vector>
 
-#include "app/gfx/font.h"
 #include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/language_library.h"
 #include "chrome/browser/chromeos/options/language_hangul_config_view.h"
 #include "chrome/browser/language_combobox_model.h"
+#include "gfx/font.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "views/controls/combobox/combobox.h"

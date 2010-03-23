@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "app/gfx/font.h"
 #include "app/text_elider.h"
 #include "base/file_util.h"
 #include "base/i18n/file_util_icu.h"
@@ -19,6 +18,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/time.h"
 #include "base/i18n/time_formatting.h"
+#include "gfx/font.h"
 #include "printing/page_number.h"
 #include "printing/page_overlays.h"
 #include "printing/printed_pages_source.h"

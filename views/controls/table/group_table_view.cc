@@ -4,10 +4,10 @@
 
 #include "views/controls/table/group_table_view.h"
 
-#include "app/gfx/canvas.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/task.h"
+#include "gfx/canvas.h"
 
 namespace views {
 

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/login/account_creation_view.h"
 
-#include "app/gfx/canvas.h"
 #include "base/callback.h"
 #include "base/string_util.h"
 #include "base/values.h"
@@ -13,6 +12,7 @@
 #include "chrome/browser/dom_ui/dom_ui.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/bindings_policy.h"
+#include "gfx/canvas.h"
 #include "ipc/ipc_message.h"
 #include "views/border.h"
 #include "webkit/glue/form_field_values.h"

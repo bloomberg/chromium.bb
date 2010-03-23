@@ -7,7 +7,6 @@
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
 
-#include "app/gfx/canvas_paint.h"
 #include "base/string_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/download_shelf.h"
@@ -22,6 +21,7 @@
 #include "chrome/browser/tab_contents/web_drag_dest_gtk.h"
 #include "chrome/browser/views/sad_tab_view.h"
 #include "chrome/browser/views/tab_contents/render_view_context_menu_gtk.h"
+#include "gfx/canvas_paint.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"

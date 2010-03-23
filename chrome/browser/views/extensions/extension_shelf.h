@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_VIEWS_EXTENSIONS_EXTENSION_SHELF_H_
 #define CHROME_BROWSER_VIEWS_EXTENSIONS_EXTENSION_SHELF_H_
 
-#include "app/gfx/canvas.h"
 #include "app/slide_animation.h"
 #include "base/task.h"
 #include "chrome/browser/extensions/extension_shelf_model.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/views/browser_bubble.h"
 #include "chrome/browser/views/detachable_toolbar_view.h"
+#include "gfx/canvas.h"
 #include "views/view.h"
 
 class Browser;

@@ -8,12 +8,12 @@
 #include "views/screen.h"
 #endif
 
-#include "app/gfx/canvas.h"
 #include "app/l10n_util.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/keyboard_codes.h"
 #include "base/message_loop.h"
+#include "gfx/canvas.h"
 #include "grit/app_strings.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "views/controls/menu/menu.h"

@@ -8,9 +8,9 @@
 #include <unicode/coll.h>
 #include <unicode/uchar.h>
 
-#include "app/gfx/font.h"
 #include "base/basictypes.h"
 #include "base/string16.h"
+#include "gfx/font.h"
 
 class FilePath;
 class GURL;

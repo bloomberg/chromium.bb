@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_VIEWS_TABS_SIDE_TAB_H_
 #define CHROME_BROWSER_VIEWS_TABS_SIDE_TAB_H_
 
-#include "app/gfx/font.h"
 #include "app/slide_animation.h"
 #include "chrome/browser/views/tabs/side_tab_strip_model.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "gfx/font.h"
 #include "views/controls/button/button.h"
 #include "views/view.h"
 

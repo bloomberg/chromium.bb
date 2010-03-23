@@ -4,9 +4,9 @@
 
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 
-#include "app/gfx/canvas.h"
 #include "app/resource_bundle.h"
 #include "base/logging.h"
+#include "gfx/canvas.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "third_party/skia/include/effects/SkBlurMaskFilter.h"
 #include "views/border.h"

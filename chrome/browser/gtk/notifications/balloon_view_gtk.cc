@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "app/gfx/canvas.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/slide_animation.h"
@@ -36,6 +35,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
+#include "gfx/canvas.h"
 #include "gfx/insets.h"
 #include "gfx/native_widget_types.h"
 #include "grit/generated_resources.h"

@@ -10,7 +10,7 @@
 #include <Vssym32.h>
 #endif
 
-#include "app/gfx/canvas.h"
+#include "gfx/canvas.h"
 #include "gfx/color_utils.h"
 #include "views/border.h"
 #include "views/controls/menu/menu_config.h"

@@ -4,11 +4,11 @@
 
 #include "chrome/browser/views/fullscreen_exit_bubble.h"
 
-#include "app/gfx/canvas.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/keyboard_codes.h"
 #include "chrome/app/chrome_dll_resource.h"
+#include "gfx/canvas.h"
 #include "grit/generated_resources.h"
 #include "views/screen.h"
 #include "views/widget/root_view.h"

@@ -20,6 +20,7 @@
         'codec/jpeg_codec_unittest.cc',
         'codec/png_codec_unittest.cc',
         'color_utils_unittest.cc',
+        'font_unittest.cc',
         'insets_unittest.cc',
         'rect_unittest.cc',
         'run_all_unittests.cc',
@@ -61,6 +62,11 @@
       'sources': [
         'blit.cc',
         'blit.h',
+        'canvas.cc',
+        'canvas.h',
+        'canvas_linux.cc',
+        'canvas_mac.mm',
+        'canvas_win.cc',
         'codec/jpeg_codec.cc',
         'codec/jpeg_codec.h',
         'codec/png_codec.cc',
@@ -68,6 +74,11 @@
         'color_utils.cc',
         'color_utils.h',
         'favicon_size.h',
+        'font.h',
+        'font_gtk.cc',
+        'font_mac.mm',
+        'font_skia.cc',
+        'font_win.cc',
         'gfx_paths.cc',
         'gfx_paths.h',
         'insets.cc',
@@ -104,6 +115,11 @@
           ],
         }],
         ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
+          'dependencies': [
+            # font_gtk.cc uses fontconfig.
+            # TODO(evanm): I think this is wrong; it should just use GTK.
+            '../build/linux/system.gyp:fontconfig',
+          ],
           'sources': [
             'gtk_native_view_id_manager.cc',
             'gtk_native_view_id_manager.h',

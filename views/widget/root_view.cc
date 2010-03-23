@@ -7,10 +7,10 @@
 #include <algorithm>
 
 #include "app/drag_drop_types.h"
-#include "app/gfx/canvas.h"
 #include "base/keyboard_codes.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "gfx/canvas.h"
 #include "views/fill_layout.h"
 #include "views/focus/view_storage.h"
 #include "views/widget/widget.h"

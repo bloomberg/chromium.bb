@@ -4,7 +4,6 @@
 
 #include "chrome/browser/views/bookmark_bubble_view.h"
 
-#include "app/gfx/canvas.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/keyboard_codes.h"
@@ -17,6 +16,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/views/info_bubble.h"
 #include "chrome/common/notification_service.h"
+#include "gfx/canvas.h"
 #include "gfx/color_utils.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"

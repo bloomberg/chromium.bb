@@ -4,9 +4,9 @@
 
 #include "views/widget/tooltip_manager_gtk.h"
 
-#include "app/gfx/font.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
+#include "gfx/font.h"
 #include "views/focus/focus_manager.h"
 #include "views/screen.h"
 #include "views/widget/root_view.h"

@@ -4,11 +4,11 @@
 
 #include "chrome/browser/chromeos/status/power_menu_button.h"
 
-#include "app/gfx/canvas.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/time.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "gfx/canvas.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 

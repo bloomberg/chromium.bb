@@ -4,8 +4,6 @@
 
 #include "chrome/browser/chromeos/status/clock_menu_button.h"
 
-#include "app/gfx/canvas.h"
-#include "app/gfx/font.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/i18n/time_formatting.h"
@@ -15,6 +13,8 @@
 #include "chrome/browser/chromeos/status/status_area_host.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
+#include "gfx/canvas.h"
+#include "gfx/font.h"
 #include "grit/generated_resources.h"
 #include "unicode/calendar.h"
 

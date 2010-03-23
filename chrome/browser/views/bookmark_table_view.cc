@@ -7,7 +7,6 @@
 #include <commctrl.h>
 
 #include "app/drag_drop_types.h"
-#include "app/gfx/canvas.h"
 #include "app/l10n_util.h"
 #include "app/os_exchange_data.h"
 #include "app/os_exchange_data_provider_win.h"
@@ -19,6 +18,7 @@
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
+#include "gfx/canvas.h"
 #include "grit/generated_resources.h"
 #include "views/controls/table/table_view_observer.h"
 #include "views/view_constants.h"

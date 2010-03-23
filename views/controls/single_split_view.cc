@@ -8,7 +8,7 @@
 #include <gdk/gdk.h>
 #endif
 
-#include "app/gfx/canvas.h"
+#include "gfx/canvas.h"
 #include "skia/ext/skia_utils_win.h"
 #include "views/background.h"
 

@@ -4,7 +4,6 @@
 
 #import "chrome/browser/cocoa/extensions/browser_action_button.h"
 
-#include "app/gfx/canvas_paint.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/cocoa/extensions/extension_action_context_menu.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
@@ -13,6 +12,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
+#include "gfx/canvas_paint.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
 #include "skia/ext/skia_utils_mac.h"

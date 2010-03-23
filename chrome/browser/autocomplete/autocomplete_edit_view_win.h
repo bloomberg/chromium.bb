@@ -12,7 +12,6 @@
 #include <atlmisc.h>
 #include <tom.h>  // For ITextDocument, a COM interface to CRichEditCtrl.
 
-#include "app/gfx/font.h"
 #include "app/menus/simple_menu_model.h"
 #include "base/scoped_comptr_win.h"
 #include "base/scoped_ptr.h"
@@ -21,6 +20,7 @@
 #include "chrome/browser/toolbar_model.h"
 #include "chrome/browser/views/autocomplete/autocomplete_popup_contents_view.h"
 #include "chrome/common/page_transition_types.h"
+#include "gfx/font.h"
 #include "webkit/glue/window_open_disposition.h"
 #include "views/controls/menu/menu_2.h"
 

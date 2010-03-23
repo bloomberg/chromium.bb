@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <string>
 
-#include "app/gfx/canvas.h"
 #include "app/menus/simple_menu_model.h"
 #include "app/theme_provider.h"
 #include "chrome/app/chrome_dll_resource.h"
@@ -28,6 +27,7 @@
 #include "chrome/browser/views/tabs/tab_strip.h"
 #include "chrome/browser/views/toolbar_view.h"
 #include "chrome/browser/views/toolbar_star_toggle.h"
+#include "gfx/canvas.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "views/controls/button/button.h"

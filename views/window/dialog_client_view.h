@@ -5,7 +5,7 @@
 #ifndef VIEWS_WINDOW_DIALOG_CLIENT_VIEW_H_
 #define VIEWS_WINDOW_DIALOG_CLIENT_VIEW_H_
 
-#include "app/gfx/font.h"
+#include "gfx/font.h"
 #include "views/focus/focus_manager.h"
 #include "views/controls/button/button.h"
 #include "views/window/client_view.h"

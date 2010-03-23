@@ -5,11 +5,11 @@
 #include "views/widget/root_view.h"
 
 #include "app/drag_drop_types.h"
-#include "app/gfx/canvas_paint.h"
 #include "app/os_exchange_data.h"
 #include "app/os_exchange_data_provider_win.h"
 #include "base/base_drag_source.h"
 #include "base/logging.h"
+#include "gfx/canvas_paint.h"
 
 namespace views {
 

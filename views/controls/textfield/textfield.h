@@ -11,10 +11,10 @@
 
 #include <string>
 
-#include "app/gfx/font.h"
 #include "base/basictypes.h"
 #include "base/keyboard_codes.h"
 #include "base/string16.h"
+#include "gfx/font.h"
 #include "views/view.h"
 #include "third_party/skia/include/core/SkColor.h"
 

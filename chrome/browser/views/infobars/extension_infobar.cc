@@ -4,7 +4,6 @@
 
 #include "chrome/browser/views/infobars/extension_infobar.h"
 
-#include "app/gfx/canvas.h"
 #include "app/resource_bundle.h"
 #include "app/slide_animation.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
@@ -13,6 +12,7 @@
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/platform_util.h"
+#include "gfx/canvas.h"
 #include "grit/browser_resources.h"
 #include "grit/theme_resources.h"
 #include "views/controls/button/menu_button.h"

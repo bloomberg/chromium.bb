@@ -6,9 +6,9 @@
 
 #include <algorithm>
 
-#include "app/gfx/canvas.h"
 #include "app/throb_animation.h"
 #include "app/resource_bundle.h"
+#include "gfx/canvas.h"
 #include "views/controls/button/button.h"
 #include "views/event.h"
 #include "grit/app_resources.h"

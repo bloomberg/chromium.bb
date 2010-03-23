@@ -8,10 +8,10 @@
 #include <gdk/gdk.h>
 #endif
 
-#include "app/gfx/font.h"
 #include "base/keyboard_codes.h"
 #include "base/logging.h"
 #include "gfx/color_utils.h"
+#include "gfx/font.h"
 #include "views/event.h"
 
 namespace {

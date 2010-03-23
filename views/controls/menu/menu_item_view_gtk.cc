@@ -4,8 +4,8 @@
 
 #include "views/controls/menu/menu_item_view.h"
 
-#include "app/gfx/canvas.h"
 #include "app/resource_bundle.h"
+#include "gfx/canvas.h"
 #include "gfx/favicon_size.h"
 #include "grit/app_resources.h"
 #include "views/controls/button/text_button.h"

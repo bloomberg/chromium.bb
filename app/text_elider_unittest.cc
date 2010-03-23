@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/gfx/font.h"
 #include "app/text_elider.h"
 #include "app/l10n_util.h"
 #include "base/file_path.h"
 #include "base/i18n/rtl.h"
 #include "base/string_util.h"
+#include "gfx/font.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

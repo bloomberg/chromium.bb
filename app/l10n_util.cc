@@ -8,7 +8,6 @@
 
 #include "app/app_paths.h"
 #include "app/app_switches.h"
-#include "app/gfx/canvas.h"
 #include "app/l10n_util_collator.h"
 #include "app/resource_bundle.h"
 #include "base/command_line.h"
@@ -22,6 +21,7 @@
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "build/build_config.h"
+#include "gfx/canvas.h"
 #include "unicode/rbbi.h"
 
 #if defined(OS_MACOSX)

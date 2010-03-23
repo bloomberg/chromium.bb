@@ -4,13 +4,13 @@
 
 #include "chrome/browser/views/tabs/side_tab_strip.h"
 
-#include "app/gfx/canvas.h"
 #include "base/command_line.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "gfx/canvas.h"
 
 namespace {
 const int kVerticalTabSpacing = 2;

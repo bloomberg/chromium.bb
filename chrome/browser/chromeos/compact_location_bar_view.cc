@@ -9,7 +9,6 @@
 
 #include "app/l10n_util.h"
 #include "app/drag_drop_types.h"
-#include "app/gfx/canvas.h"
 #include "app/resource_bundle.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/bookmarks/bookmark_drag_data.h"
@@ -26,6 +25,7 @@
 #include "chrome/browser/views/event_utils.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/toolbar_star_toggle.h"
+#include "gfx/canvas.h"
 #include "gfx/point.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"

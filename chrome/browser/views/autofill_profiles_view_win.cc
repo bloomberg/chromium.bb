@@ -6,7 +6,6 @@
 #include <vsstyle.h>
 #include <vssym32.h>
 
-#include "app/gfx/canvas.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/message_loop.h"
@@ -18,6 +17,7 @@
 #include "chrome/browser/theme_resources_util.h"
 #include "chrome/browser/window_sizer.h"
 #include "chrome/common/pref_names.h"
+#include "gfx/canvas.h"
 #include "gfx/native_theme_win.h"
 #include "gfx/size.h"
 #include "grit/generated_resources.h"

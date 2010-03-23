@@ -4,8 +4,8 @@
 
 #include "views/background.h"
 
-#include "app/gfx/canvas.h"
 #include "base/logging.h"
+#include "gfx/canvas.h"
 #include "gfx/color_utils.h"
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/skia/include/core/SkPaint.h"

@@ -9,7 +9,6 @@
 #include <shellapi.h>
 #endif
 
-#include "app/gfx/canvas.h"
 #include "app/resource_bundle.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -17,6 +16,7 @@
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_constants.h"
+#include "gfx/canvas.h"
 #include "gfx/favicon_size.h"
 #include "grit/app_resources.h"
 #include "grit/theme_resources.h"

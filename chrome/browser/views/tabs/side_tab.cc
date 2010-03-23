@@ -4,10 +4,10 @@
 
 #include "chrome/browser/views/tabs/side_tab.h"
 
-#include "app/gfx/canvas.h"
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
 #include "base/utf_string_conversions.h"
+#include "gfx/canvas.h"
 #include "gfx/path.h"
 #include "gfx/skia_util.h"
 #include "grit/app_resources.h"

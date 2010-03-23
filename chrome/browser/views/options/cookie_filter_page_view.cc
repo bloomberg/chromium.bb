@@ -4,7 +4,6 @@
 
 #include "chrome/browser/views/options/cookie_filter_page_view.h"
 
-#include "app/gfx/canvas.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "chrome/browser/browser.h"
@@ -15,6 +14,7 @@
 #include "chrome/browser/views/options/cookies_view.h"
 #include "chrome/browser/views/options/exceptions_view.h"
 #include "chrome/common/pref_names.h"
+#include "gfx/canvas.h"
 #include "gfx/native_theme_win.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"

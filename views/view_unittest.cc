@@ -5,10 +5,10 @@
 #include <map>
 
 #include "app/clipboard/clipboard.h"
-#include "app/gfx/canvas.h"
 #include "base/keyboard_codes.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
+#include "gfx/canvas.h"
 #include "gfx/path.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "views/background.h"

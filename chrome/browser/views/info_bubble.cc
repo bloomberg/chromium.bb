@@ -4,11 +4,11 @@
 
 #include "chrome/browser/views/info_bubble.h"
 
-#include "app/gfx/canvas.h"
 #include "base/keyboard_codes.h"
 #include "chrome/browser/views/bubble_border.h"
 #include "chrome/browser/window_sizer.h"
 #include "chrome/common/notification_service.h"
+#include "gfx/canvas.h"
 #include "gfx/color_utils.h"
 #include "gfx/path.h"
 #include "third_party/skia/include/core/SkPaint.h"

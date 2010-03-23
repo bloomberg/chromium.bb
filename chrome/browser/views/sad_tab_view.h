@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_VIEWS_SAD_TAB_VIEW_H_
 #define CHROME_BROWSER_VIEWS_SAD_TAB_VIEW_H_
 
-#include "app/gfx/font.h"
 #include "base/basictypes.h"
+#include "gfx/font.h"
 #include "views/controls/link.h"
 #include "views/view.h"
 

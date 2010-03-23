@@ -5,7 +5,7 @@
 #ifndef VIEWS_CONTROLS_MENU_MENU_CONFIG_H_
 #define VIEWS_CONTROLS_MENU_MENU_CONFIG_H_
 
-#include "app/gfx/font.h"
+#include "gfx/font.h"
 
 namespace views {
 

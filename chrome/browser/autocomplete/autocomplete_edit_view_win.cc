@@ -10,7 +10,6 @@
 
 #include "app/clipboard/clipboard.h"
 #include "app/clipboard/scoped_clipboard_writer.h"
-#include "app/gfx/canvas.h"
 #include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
 #include "app/os_exchange_data.h"
@@ -43,6 +42,7 @@
 #include "chrome/common/gfx/utils.h"
 #include "chrome/common/notification_service.h"
 #include "googleurl/src/url_util.h"
+#include "gfx/canvas.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "skia/ext/skia_utils_win.h"

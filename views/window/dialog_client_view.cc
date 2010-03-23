@@ -14,11 +14,11 @@
 
 #include <algorithm>
 
-#include "app/gfx/canvas.h"
-#include "app/gfx/font.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/keyboard_codes.h"
+#include "gfx/canvas.h"
+#include "gfx/font.h"
 #include "grit/app_strings.h"
 #include "views/controls/button/native_button.h"
 #include "views/standard_layout.h"

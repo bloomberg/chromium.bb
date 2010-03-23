@@ -5,9 +5,9 @@
 #include "views/controls/button/menu_button.h"
 
 #include "app/drag_drop_types.h"
-#include "app/gfx/canvas.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "gfx/canvas.h"
 #include "grit/app_strings.h"
 #include "grit/app_resources.h"
 #include "views/controls/button/button.h"

@@ -7,8 +7,8 @@
 
 #include <string>
 
-#include "app/gfx/font.h"
 #include "base/time.h"
+#include "gfx/font.h"
 #include "views/background.h"
 #include "views/controls/button/text_button.h"
 

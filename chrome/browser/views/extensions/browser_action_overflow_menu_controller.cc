@@ -4,7 +4,6 @@
 
 #include "chrome/browser/views/extensions/browser_action_overflow_menu_controller.h"
 
-#include "app/gfx/canvas.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
@@ -13,6 +12,7 @@
 #include "chrome/browser/views/browser_actions_container.h"
 #include "chrome/browser/views/extensions/browser_action_drag_data.h"
 #include "chrome/common/extensions/extension.h"
+#include "gfx/canvas.h"
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/menu_2.h"
 

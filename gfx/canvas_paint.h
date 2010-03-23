@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_GFX_CANVAS_PAINT_H_
-#define APP_GFX_CANVAS_PAINT_H_
+#ifndef GFX_CANVAS_PAINT_H_
+#define GFX_CANVAS_PAINT_H_
 
-#include "app/gfx/canvas.h"
+#include "gfx/canvas.h"
 #include "skia/ext/canvas_paint.h"
 
 // Define a skia::CanvasPaint type that wraps our gfx::Canvas like the
@@ -17,4 +17,4 @@ typedef skia::CanvasPaintT<Canvas> CanvasPaint;
 
 }  // namespace gfx
 
-#endif  // APP_GFX_CANVAS_PAINT_H_
+#endif  // GFX_CANVAS_PAINT_H_

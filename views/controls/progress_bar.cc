@@ -6,13 +6,13 @@
 
 #include <string>
 
-#include "app/gfx/canvas.h"
-#include "app/gfx/font.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/logging.h"
 #include "base/string_util.h"
+#include "gfx/canvas.h"
 #include "gfx/color_utils.h"
+#include "gfx/font.h"
 #include "gfx/insets.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "third_party/skia/include/effects/SkBlurMaskFilter.h"

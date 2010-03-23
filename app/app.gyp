@@ -39,7 +39,6 @@
       'sources': [
         'animation_unittest.cc',
         'clipboard/clipboard_unittest.cc',
-        'gfx/font_unittest.cc',
         'l10n_util_mac_unittest.mm',
         'l10n_util_unittest.cc',
         'os_exchange_data_win_unittest.cc',

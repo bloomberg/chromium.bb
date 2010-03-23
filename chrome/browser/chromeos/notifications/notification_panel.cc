@@ -6,10 +6,10 @@
 
 #include "chrome/browser/chromeos/notifications/notification_panel.h"
 
-#include "app/gfx/canvas.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "chrome/browser/chromeos/notifications/balloon_view.h"
+#include "gfx/canvas.h"
 #include "grit/generated_resources.h"
 #include "views/background.h"
 #include "views/controls/scroll_view.h"

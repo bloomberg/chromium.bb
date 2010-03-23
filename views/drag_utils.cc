@@ -4,14 +4,14 @@
 
 #include "views/drag_utils.h"
 
-#include "app/gfx/canvas.h"
-#include "app/gfx/font.h"
 #include "app/l10n_util.h"
 #include "app/os_exchange_data.h"
 #include "app/resource_bundle.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
+#include "gfx/canvas.h"
+#include "gfx/font.h"
 #include "googleurl/src/gurl.h"
 #include "grit/app_resources.h"
 #include "views/controls/button/text_button.h"

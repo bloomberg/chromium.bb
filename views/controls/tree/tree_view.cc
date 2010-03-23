@@ -6,8 +6,6 @@
 
 #include <vector>
 
-#include "app/gfx/canvas.h"
-#include "app/gfx/canvas_paint.h"
 #include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
 #include "app/resource_bundle.h"
@@ -15,6 +13,8 @@
 #include "base/keyboard_codes.h"
 #include "base/stl_util-inl.h"
 #include "base/win_util.h"
+#include "gfx/canvas.h"
+#include "gfx/canvas_paint.h"
 #include "gfx/favicon_size.h"
 #include "gfx/icon_util.h"
 #include "gfx/point.h"

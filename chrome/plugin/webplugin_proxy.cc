@@ -6,7 +6,6 @@
 
 #include "build/build_config.h"
 
-#include "app/gfx/canvas.h"
 #if defined(OS_WIN)
 #include "app/win_util.h"
 #endif
@@ -25,6 +24,7 @@
 #include "chrome/plugin/plugin_channel.h"
 #include "chrome/plugin/plugin_thread.h"
 #include "gfx/blit.h"
+#include "gfx/canvas.h"
 #if defined(OS_WIN)
 #include "gfx/gdi_util.h"
 #endif

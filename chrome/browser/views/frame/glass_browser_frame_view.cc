@@ -4,7 +4,6 @@
 
 #include "chrome/browser/views/frame/glass_browser_frame_view.h"
 
-#include "app/gfx/canvas.h"
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
 #include "chrome/app/chrome_dll_resource.h"
@@ -12,6 +11,7 @@
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/tabs/side_tab_strip.h"
 #include "chrome/browser/views/tabs/tab_strip.h"
+#include "gfx/canvas.h"
 #include "gfx/icon_util.h"
 #include "grit/app_resources.h"
 #include "grit/theme_resources.h"

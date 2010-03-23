@@ -11,8 +11,6 @@
 #include <vector>
 
 #include "app/app_paths.h"
-#include "app/gfx/canvas.h"
-#include "app/gfx/font.h"
 #include "app/resource_bundle.h"
 #include "base/at_exit.h"
 #include "base/file_path.h"
@@ -23,6 +21,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/common/chrome_paths.h"
+#include "gfx/canvas.h"
+#include "gfx/font.h"
 #include "third_party/cros/chromeos_cros_api.h"
 #include "third_party/cros/chromeos_ime.h"
 #include "views/controls/label.h"

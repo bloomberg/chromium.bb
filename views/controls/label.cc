@@ -7,15 +7,15 @@
 #include <math.h>
 #include <limits>
 
-#include "app/gfx/canvas.h"
-#include "app/gfx/font.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/text_elider.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
+#include "gfx/canvas.h"
 #include "gfx/color_utils.h"
+#include "gfx/font.h"
 #include "gfx/insets.h"
 #include "views/background.h"
 

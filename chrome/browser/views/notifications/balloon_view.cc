@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "app/gfx/canvas.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/message_loop.h"
@@ -22,6 +21,7 @@
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
+#include "gfx/canvas.h"
 #include "gfx/insets.h"
 #include "gfx/native_widget_types.h"
 #include "grit/generated_resources.h"

@@ -7,9 +7,9 @@
 
 #include <string>
 
-#include "app/gfx/canvas.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
+#include "gfx/canvas.h"
 #include "views/controls/label.h"
 
 class TabContents;

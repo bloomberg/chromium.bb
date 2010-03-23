@@ -9,7 +9,6 @@
 
 #include "app/animation.h"
 #include "app/slide_animation.h"
-#include "app/gfx/canvas.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/callback.h"
@@ -26,6 +25,7 @@
 #include "chrome/browser/views/tabs/tab_strip.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_service.h"
+#include "gfx/canvas.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "views/event.h"

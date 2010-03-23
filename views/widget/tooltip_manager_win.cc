@@ -7,13 +7,13 @@
 #include <windowsx.h>
 #include <limits>
 
-#include "app/gfx/font.h"
 #include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
 #include "app/win_util.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "gfx/font.h"
 #include "views/screen.h"
 #include "views/view.h"
 #include "views/widget/root_view.h"

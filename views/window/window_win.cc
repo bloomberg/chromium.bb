@@ -7,14 +7,14 @@
 #include <dwmapi.h>
 #include <shellapi.h>
 
-#include "app/gfx/canvas_paint.h"
-#include "app/gfx/font.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
 #include "app/win_util.h"
 #include "base/i18n/rtl.h"
 #include "base/win_util.h"
+#include "gfx/canvas_paint.h"
+#include "gfx/font.h"
 #include "gfx/icon_util.h"
 #include "gfx/path.h"
 #include "views/widget/root_view.h"

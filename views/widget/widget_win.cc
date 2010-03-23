@@ -4,12 +4,12 @@
 
 #include "views/widget/widget_win.h"
 
-#include "app/gfx/canvas.h"
 #include "app/l10n_util_win.h"
 #include "app/system_monitor.h"
 #include "app/win_util.h"
 #include "base/string_util.h"
 #include "base/win_util.h"
+#include "gfx/canvas.h"
 #include "gfx/native_theme_win.h"
 #include "gfx/path.h"
 #include "views/accessibility/view_accessibility.h"

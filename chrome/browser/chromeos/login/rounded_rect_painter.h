@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_ROUNDED_RECT_PAINTER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_ROUNDED_RECT_PAINTER_H_
 
-#include "app/gfx/canvas.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace views {
 class Border;

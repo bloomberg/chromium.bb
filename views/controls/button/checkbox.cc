@@ -4,8 +4,8 @@
 
 #include "views/controls/button/checkbox.h"
 
-#include "app/gfx/canvas.h"
 #include "base/logging.h"
+#include "gfx/canvas.h"
 #include "views/controls/label.h"
 
 namespace views {

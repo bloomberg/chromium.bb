@@ -7,7 +7,6 @@
 #include <atlbase.h>
 
 #include "app/app_paths.h"
-#include "app/gfx/font.h"
 #include "app/l10n_util.h"
 #include "base/debug_util.h"
 #include "base/file_util.h"
@@ -16,6 +15,7 @@
 #include "base/resource_util.h"
 #include "base/string_piece.h"
 #include "base/win_util.h"
+#include "gfx/font.h"
 
 namespace {
 

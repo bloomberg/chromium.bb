@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <vector>
 
-#include "app/gfx/canvas.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
@@ -16,6 +15,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/translate/languages_menu_model.h"
 #include "chrome/browser/translate/options_menu_model.h"
+#include "gfx/canvas.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"

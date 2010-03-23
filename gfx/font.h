@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_GFX_FONT_H_
-#define APP_GFX_FONT_H_
+#ifndef GFX_FONT_H_
+#define GFX_FONT_H_
 
 #include "build/build_config.h"
 
@@ -284,4 +284,4 @@ class Font {
 
 }  // namespace gfx
 
-#endif  // APP_GFX_FONT_H_
+#endif  // GFX_FONT_H_

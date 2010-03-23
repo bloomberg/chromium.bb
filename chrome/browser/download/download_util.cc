@@ -11,7 +11,6 @@
 #endif
 #include <string>
 
-#include "app/gfx/canvas.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/file_util.h"
@@ -28,6 +27,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/time_format.h"
+#include "gfx/canvas.h"
 #include "gfx/rect.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"

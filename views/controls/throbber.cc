@@ -4,9 +4,9 @@
 
 #include "views/controls/throbber.h"
 
-#include "app/gfx/canvas.h"
 #include "app/resource_bundle.h"
 #include "base/time.h"
+#include "gfx/canvas.h"
 #include "grit/app_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 

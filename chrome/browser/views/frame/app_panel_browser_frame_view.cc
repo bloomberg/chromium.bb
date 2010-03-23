@@ -4,14 +4,14 @@
 
 #include "chrome/browser/views/frame/app_panel_browser_frame_view.h"
 
-#include "app/gfx/canvas.h"
-#include "app/gfx/font.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/views/frame/browser_frame.h"
 #include "chrome/browser/views/frame/browser_view.h"
+#include "gfx/canvas.h"
+#include "gfx/font.h"
 #include "gfx/path.h"
 #include "grit/app_resources.h"
 #include "grit/chromium_strings.h"

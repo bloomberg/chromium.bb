@@ -4,8 +4,8 @@
 
 #include "chrome/browser/views/tabs/native_view_photobooth_gtk.h"
 
-#include "app/gfx/canvas.h"
 #include "base/logging.h"
+#include "gfx/canvas.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // NativeViewPhotoboothGtk, public:

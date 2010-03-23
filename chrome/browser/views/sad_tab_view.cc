@@ -4,10 +4,10 @@
 
 #include "chrome/browser/views/sad_tab_view.h"
 
-#include "app/gfx/canvas.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "gfx/canvas.h"
 #include "gfx/size.h"
 #include "gfx/skia_util.h"
 #include "grit/generated_resources.h"

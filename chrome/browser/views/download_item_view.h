@@ -18,7 +18,6 @@
 
 #include <string>
 
-#include "app/gfx/font.h"
 #include "app/slide_animation.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
@@ -27,6 +26,7 @@
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/icon_manager.h"
+#include "gfx/font.h"
 #include "views/event.h"
 #include "views/controls/button/button.h"
 #include "views/view.h"

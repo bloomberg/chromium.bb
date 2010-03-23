@@ -6,12 +6,12 @@
 
 #include <algorithm>
 
-#include "app/gfx/canvas.h"
 #include "chrome/browser/chromeos/status/clock_menu_button.h"
 #include "chrome/browser/chromeos/status/language_menu_button.h"
 #include "chrome/browser/chromeos/status/network_menu_button.h"
 #include "chrome/browser/chromeos/status/power_menu_button.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
+#include "gfx/canvas.h"
 
 namespace chromeos {
 

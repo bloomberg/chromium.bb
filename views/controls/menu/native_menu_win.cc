@@ -4,13 +4,13 @@
 
 #include "views/controls/menu/native_menu_win.h"
 
-#include "app/gfx/canvas.h"
-#include "app/gfx/font.h"
 #include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
 #include "base/keyboard_codes.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
+#include "gfx/canvas.h"
+#include "gfx/font.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "views/accelerator.h"
 #include "views/controls/menu/menu_2.h"

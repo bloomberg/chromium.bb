@@ -4,7 +4,6 @@
 
 #import "chrome/browser/cocoa/download_item_cell.h"
 
-#include "app/gfx/canvas_paint.h"
 #include "app/l10n_util.h"
 #include "app/text_elider.h"
 #include "base/mac_util.h"
@@ -15,6 +14,7 @@
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_util.h"
+#include "gfx/canvas_paint.h"
 #include "grit/theme_resources.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 #import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"

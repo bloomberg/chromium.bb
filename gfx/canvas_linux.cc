@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/gfx/canvas.h"
+#include "gfx/canvas.h"
 
 #include <cairo/cairo.h>
 #include <gtk/gtk.h>
 #include <pango/pango.h>
 #include <pango/pangocairo.h>
 
-#include "app/gfx/font.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
+#include "gfx/font.h"
 #include "gfx/rect.h"
 
 namespace {

@@ -4,8 +4,6 @@
 
 #include "chrome/browser/views/tabs/tab.h"
 
-#include "app/gfx/canvas.h"
-#include "app/gfx/font.h"
 #include "app/l10n_util.h"
 #include "app/menus/simple_menu_model.h"
 #include "app/resource_bundle.h"
@@ -13,6 +11,8 @@
 #include "chrome/browser/tab_menu_model.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/tabs/tab_strip.h"
+#include "gfx/canvas.h"
+#include "gfx/font.h"
 #include "gfx/path.h"
 #include "gfx/size.h"
 #include "grit/generated_resources.h"

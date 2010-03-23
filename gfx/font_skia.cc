@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/gfx/font.h"
+#include "gfx/font.h"
 
 #include <gdk/gdk.h>
 #include <map>
 #include <pango/pango.h>
 
-#include "app/gfx/canvas.h"
 #include "base/logging.h"
 #include "base/string_piece.h"
 #include "base/sys_string_conversions.h"
+#include "gfx/canvas.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/core/SkPaint.h"
 

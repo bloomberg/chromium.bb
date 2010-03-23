@@ -9,7 +9,6 @@
 #include <map>
 #include <vector>
 
-#include "app/gfx/font.h"
 #include "base/task.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
@@ -23,6 +22,7 @@
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
+#include "gfx/font.h"
 #include "gfx/rect.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"

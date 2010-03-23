@@ -9,8 +9,6 @@
 
 #include <algorithm>
 
-#include "app/gfx/canvas.h"
-#include "app/gfx/font.h"
 #include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
 #include "app/resource_bundle.h"
@@ -18,7 +16,9 @@
 #include "base/i18n/rtl.h"
 #include "base/string_util.h"
 #include "base/win_util.h"
+#include "gfx/canvas.h"
 #include "gfx/favicon_size.h"
+#include "gfx/font.h"
 #include "gfx/icon_util.h"
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/skia/include/core/SkBitmap.h"

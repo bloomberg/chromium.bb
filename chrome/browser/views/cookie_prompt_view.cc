@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "app/gfx/canvas.h"
 #include "app/l10n_util.h"
 #include "base/i18n/time_formatting.h"
 #include "base/message_loop.h"
@@ -21,6 +20,7 @@
 #include "chrome/browser/views/local_storage_set_item_info_view.h"
 #include "chrome/browser/views/options/content_settings_window_view.h"
 #include "chrome/common/pref_names.h"
+#include "gfx/canvas.h"
 #include "gfx/color_utils.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"

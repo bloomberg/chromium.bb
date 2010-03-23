@@ -4,11 +4,11 @@
 
 #include "app/gfx/font_util.h"
 
-#include "app/gfx/font.h"
 #include "app/l10n_util.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "gfx/font.h"
 
 namespace gfx {
 

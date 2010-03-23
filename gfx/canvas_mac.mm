@@ -4,11 +4,11 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "app/gfx/canvas.h"
+#include "gfx/canvas.h"
 
-#include "app/gfx/font.h"
 #include "base/scoped_cftyperef.h"
 #include "base/sys_string_conversions.h"
+#include "gfx/font.h"
 #include "gfx/rect.h"
 #include "third_party/skia/include/core/SkShader.h"
 

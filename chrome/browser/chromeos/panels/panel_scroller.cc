@@ -4,11 +4,11 @@
 
 #include "chrome/browser/chromeos/panels/panel_scroller.h"
 
-#include "app/gfx/canvas.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
+#include "gfx/canvas.h"
 #include "chrome/browser/chromeos/panels/panel_scroller_container.h"
 #include "chrome/browser/chromeos/panels/panel_scroller_header.h"
 #include "views/widget/widget_gtk.h"

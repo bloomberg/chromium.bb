@@ -4,12 +4,12 @@
 
 #include "app/resource_bundle.h"
 
-#include "app/gfx/font.h"
 #include "app/l10n_util.h"
 #include "base/data_pack.h"
 #include "base/logging.h"
 #include "base/string16.h"
 #include "base/string_piece.h"
+#include "gfx/font.h"
 
 namespace {
 

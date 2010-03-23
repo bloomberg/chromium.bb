@@ -4,8 +4,6 @@
 
 #include "views/window/custom_frame_view.h"
 
-#include "app/gfx/canvas.h"
-#include "app/gfx/font.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
@@ -13,6 +11,8 @@
 #include "app/win_util.h"
 #include "base/win_util.h"
 #endif
+#include "gfx/canvas.h"
+#include "gfx/font.h"
 #include "gfx/path.h"
 #include "grit/app_resources.h"
 #include "grit/app_strings.h"

@@ -4,8 +4,8 @@
 
 #include "views/border.h"
 
-#include "app/gfx/canvas.h"
 #include "base/logging.h"
+#include "gfx/canvas.h"
 
 namespace views {
 

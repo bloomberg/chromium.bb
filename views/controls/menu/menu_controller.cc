@@ -4,12 +4,12 @@
 
 #include "views/controls/menu/menu_controller.h"
 
-#include "app/gfx/canvas.h"
 #include "app/l10n_util.h"
 #include "app/os_exchange_data.h"
 #include "base/i18n/rtl.h"
 #include "base/keyboard_codes.h"
 #include "base/time.h"
+#include "gfx/canvas.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/menu_scroll_view_container.h"
 #include "views/controls/menu/submenu_view.h"

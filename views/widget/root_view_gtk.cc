@@ -6,8 +6,8 @@
 
 #include <gtk/gtk.h>
 
-#include "app/gfx/canvas_paint.h"
 #include "base/logging.h"
+#include "gfx/canvas_paint.h"
 #include "views/widget/widget_gtk.h"
 
 namespace views {
