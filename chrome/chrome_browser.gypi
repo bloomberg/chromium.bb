@@ -2945,10 +2945,13 @@
             }],
             ['OS=="linux" and toolkit_views==1', {
               'sources/': [
+                ['include', '^browser/gtk/dialogs_gtk.cc'],
                 ['include', '^browser/gtk/external_protocol_dialog_gtk.cc'],
                 ['include', '^browser/gtk/external_protocol_dialog_gtk.h'],
                 ['include', '^browser/views/notifications/balloon_view.cc'],
                 ['include', '^browser/views/notifications/balloon_view.h'],
+
+                ['exclude', '^browser/views/select_file_dialog.cc'],
               ],
             }],
             # GTK build only
