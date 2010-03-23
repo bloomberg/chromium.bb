@@ -82,7 +82,7 @@ class HeapcheckWrapper(object):
     """
     leak_report = re.compile(
         'Leak of ([0-9]*) bytes in ([0-9]*) objects allocated from:')
-    stack_line = re.compile('\s*@\s*(?:0x)?[0-9a-fA-F]*\s*(\S*)')
+    stack_line = re.compile('\s*@\s*(?:0x)?[0-9a-fA-F]*\s*([^\n]*)')
     return_code = 0
     # leak signature: [number of bytes, number of objects]
     cur_leak_signature = None
