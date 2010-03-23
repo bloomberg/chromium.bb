@@ -1,0 +1,2 @@
+# Verify that the validator doesn't report a set for a push (nativeclient issue 369).
+41 ff 74 3f 20

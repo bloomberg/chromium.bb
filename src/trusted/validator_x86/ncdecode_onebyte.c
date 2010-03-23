@@ -1783,7 +1783,7 @@ void NaClDefOneByteInsts() {
   NaClDefOp(Opcode6, NACL_OPFLAG(OperandExtendsOpcode));
   NaClDefOp(RegRESP, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) |
             NACL_OPFLAG(OpImplicit));
-  NaClDefOp(E_Operand, NACL_OPFLAG(OpSet));
+  NaClDefOp(E_Operand, NACL_OPFLAG(OpUse));
 
   NaClDefInst(0xff, NACLi_386,
               NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OperandSize_v) |
@@ -1792,7 +1792,7 @@ void NaClDefOneByteInsts() {
   NaClDefOp(Opcode6, NACL_OPFLAG(OperandExtendsOpcode));
   NaClDefOp(RegESP, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) |
             NACL_OPFLAG(OpImplicit));
-  NaClDefOp(E_Operand, NACL_OPFLAG(OpSet));
+  NaClDefOp(E_Operand, NACL_OPFLAG(OpUse));
 
   NaClDefInst(0xff, NACLi_386,
               NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OperandSize_o) |
@@ -1801,5 +1801,5 @@ void NaClDefOneByteInsts() {
   NaClDefOp(Opcode6, NACL_OPFLAG(OperandExtendsOpcode));
   NaClDefOp(RegRSP, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) |
             NACL_OPFLAG(OpImplicit));
-  NaClDefOp(E_Operand, NACL_OPFLAG(OpSet));
+  NaClDefOp(E_Operand, NACL_OPFLAG(OpUse));
 }

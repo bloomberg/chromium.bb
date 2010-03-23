@@ -205,13 +205,13 @@ NaClExpVector[4] = {
     3, {
       { Opcode6, NACL_OPFLAG(OperandExtendsOpcode) },
       { RegRSP, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
-      { E_Operand, NACL_OPFLAG(OpSet) },
+      { E_Operand, NACL_OPFLAG(OpUse) },
   } };
 NaClExpVector[8] = {
   { OperandReference[1] , 1, ExprImplicit },
   { ExprRegister[0] , %rsp, ExprSet | ExprUsed | ExprSize64 },
   { OperandReference[1] , 2, 0 },
-  { ExprMemOffset[4] , 0, ExprSet },
+  { ExprMemOffset[4] , 0, ExprUsed },
   { ExprRegister[0] , %rip, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
@@ -3828,4 +3828,24 @@ NaClExpVector[0] = {
     0, {
   } };
 NaClExpVector[0] = {
+};
+0000000000000000: 41 ff 74 3f 20                               push [%r15+%rdi*1+0x20]
+  { 1, { 0xff, 0x00, 0x00 },
+    NACLi_386,
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o) | NACL_IFLAG(OperandSizeDefaultIs64),
+    InstPush,
+    3, {
+      { Opcode6, NACL_OPFLAG(OperandExtendsOpcode) },
+      { RegRSP, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { E_Operand, NACL_OPFLAG(OpUse) },
+  } };
+NaClExpVector[8] = {
+  { OperandReference[1] , 1, ExprImplicit },
+  { ExprRegister[0] , %rsp, ExprSet | ExprUsed | ExprSize64 },
+  { OperandReference[1] , 2, 0 },
+  { ExprMemOffset[4] , 0, ExprUsed },
+  { ExprRegister[0] , %r15, ExprUsed | ExprSize64 },
+  { ExprRegister[0] , %rdi, ExprUsed | ExprSize64 },
+  { ExprConstant[0] , 1, ExprSize8 },
+  { ExprConstant[0] , 0x20, ExprSize8 | ExprSignedHex },
 };
