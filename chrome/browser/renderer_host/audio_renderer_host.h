@@ -180,7 +180,8 @@ class AudioRendererHost
         int sample_rate,                     // Sampling frequency/rate.
         char bits_per_sample,                // Number of bits per sample.
         uint32 decoded_packet_size,          // Number of bytes per packet.
-        uint32 buffer_capacity               // Number of bytes in the buffer.
+        uint32 buffer_capacity,              // Number of bytes in the buffer.
+        bool low_latency                     // Use low-latency (socket) code
     );
     ~IPCAudioSource();
 
@@ -288,7 +289,8 @@ class AudioRendererHost
   // required properties. See IPCAudioSource::CreateIPCAudioSource() for more
   // details.
   void OnCreateStream(const IPC::Message& msg, int stream_id,
-                      const ViewHostMsg_Audio_CreateStream_Params& params);
+                      const ViewHostMsg_Audio_CreateStream_Params& params,
+                      bool low_latency);
 
   // Starts buffering for the audio output stream. Delegates the start method
   // call to the corresponding IPCAudioSource::Play().

@@ -1824,9 +1824,10 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               std::string /* proxy list */)
 
   // Request that got sent to browser for creating an audio output stream
-  IPC_MESSAGE_ROUTED2(ViewHostMsg_CreateAudioStream,
+  IPC_MESSAGE_ROUTED3(ViewHostMsg_CreateAudioStream,
                       int /* stream_id */,
-                      ViewHostMsg_Audio_CreateStream_Params)
+                      ViewHostMsg_Audio_CreateStream_Params,
+                      bool /* low-latency */)
 
   // Tell the browser the audio buffer prepared for stream
   // (render_view_id, stream_id) is filled and is ready to be consumed.

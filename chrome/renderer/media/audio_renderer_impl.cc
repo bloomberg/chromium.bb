@@ -253,7 +253,8 @@ void AudioRendererImpl::OnCreateStream(
   params.packet_size = packet_size;
   params.buffer_capacity = buffer_capacity;
 
-  filter_->Send(new ViewHostMsg_CreateAudioStream(0, stream_id_, params));
+  filter_->Send(new ViewHostMsg_CreateAudioStream(0, stream_id_, params,
+                                                  false));
 }
 
 void AudioRendererImpl::OnPlay() {

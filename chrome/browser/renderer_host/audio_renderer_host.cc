@@ -95,7 +95,8 @@ AudioRendererHost::IPCAudioSource::CreateIPCAudioSource(
     int sample_rate,
     char bits_per_sample,
     uint32 decoded_packet_size,
-    uint32 buffer_capacity) {
+    uint32 buffer_capacity,
+    bool low_latency) {
   // Perform come preliminary checks on the parameters.
   // Make sure the renderer didn't ask for too much memory.
   if (buffer_capacity > kMaxBufferCapacity ||
@@ -153,16 +154,7 @@ AudioRendererHost::IPCAudioSource::CreateIPCAudioSource(
         source->shared_memory_.Map(decoded_packet_size) &&
         source->shared_memory_.ShareToProcess(process_handle,
                                               &foreign_memory_handle)) {
-      // TODO(cpu): better define what triggers the low latency mode.
-      if (decoded_packet_size > kLowLatencyPacketThreshold) {
-        // Regular latency mode.
-        host->Send(new ViewMsg_NotifyAudioStreamCreated(
-            route_id, stream_id, foreign_memory_handle, decoded_packet_size));
-
-        // Also request the first packet to kick start the pre-rolling.
-        source->StartBuffering();
-        return source;
-      } else {
+      if (low_latency) {
         // Low latency mode. We use SyncSocket to signal.
         base::SyncSocket* sockets[2] = {0};
         if (base::SyncSocket::CreatePair(sockets)) {
@@ -186,6 +178,14 @@ AudioRendererHost::IPCAudioSource::CreateIPCAudioSource(
             return source;
           }
         }
+      } else {
+        // Regular latency mode.
+        host->Send(new ViewMsg_NotifyAudioStreamCreated(
+            route_id, stream_id, foreign_memory_handle, decoded_packet_size));
+
+        // Also request the first packet to kick start the pre-rolling.
+        source->StartBuffering();
+        return source;
       }
     }
     // Failure. Close and free acquired resources.
@@ -462,7 +462,7 @@ bool AudioRendererHost::IsAudioRendererHostMessage(
 
 void AudioRendererHost::OnCreateStream(
     const IPC::Message& msg, int stream_id,
-    const ViewHostMsg_Audio_CreateStream_Params& params) {
+    const ViewHostMsg_Audio_CreateStream_Params& params, bool low_latency) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   DCHECK(Lookup(msg.routing_id(), stream_id) == NULL);
 
@@ -477,7 +477,8 @@ void AudioRendererHost::OnCreateStream(
       params.sample_rate,
       params.bits_per_sample,
       params.packet_size,
-      params.buffer_capacity);
+      params.buffer_capacity,
+      low_latency);
 
   // If we have created the source successfully, adds it to the map.
   if (source) {

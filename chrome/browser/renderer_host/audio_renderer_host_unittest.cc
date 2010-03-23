@@ -161,7 +161,8 @@ class AudioRendererHostTest : public testing::Test {
             AudioManager::kAudioCDSampleRate,
             16,
             kPacketSize,
-            kBufferCapacity);
+            kBufferCapacity,
+            false);
     EXPECT_TRUE(source);
     EXPECT_EQ(kProcessId, source->process_id());
     EXPECT_EQ(kRouteId, source->route_id());

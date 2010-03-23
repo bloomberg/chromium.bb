@@ -173,7 +173,7 @@ NPError AudioDeviceContext::Initialize(AudioMessageFilter* filter,
       " bits, " << config->outputChannelMap << "channels";
 
   stream_id_ = filter_->AddDelegate(this);
-  filter->Send(new ViewHostMsg_CreateAudioStream(0, stream_id_, params));
+  filter->Send(new ViewHostMsg_CreateAudioStream(0, stream_id_, params, true));
   return NPERR_NO_ERROR;
 }
 
