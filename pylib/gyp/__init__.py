@@ -312,7 +312,7 @@ def main(args):
                            'cygwin':   'msvs',
                            'freebsd7': 'make',
                            'freebsd8': 'make',
-                           'linux2':   'scons',}[sys.platform] ]
+                           'linux2':   'make',}[sys.platform] ]
 
   if not options.generator_output and options.use_environment:
     g_o = os.environ.get('GYP_GENERATOR_OUTPUT')

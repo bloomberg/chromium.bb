@@ -210,7 +210,7 @@ def main(argv=None):
       'freebsd8': 'make',
       'cygwin':   'msvs',
       'win32':    'msvs',
-      'linux2':   'scons',
+      'linux2':   'make',
       'darwin':   'xcode',
     }[sys.platform] ]
 
