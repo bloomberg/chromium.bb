@@ -170,8 +170,12 @@ void TranslateManager::InitiateTranslation(TabContents* tab,
     return;
   }
 
-  if (TranslatePrefs::ShouldAutoTranslate(prefs, page_lang, ui_lang)) {
-    // The user has previously select "always translate" for this language.
+  // If the user has previously selected "always translate" for this language we
+  // automatically translate.  Note that in incognito mode we disable that
+  // feature; the user will get an infobar, so they can control whether the
+  // page's text is sent to the translate server.
+  if (TranslatePrefs::ShouldAutoTranslate(prefs, page_lang, ui_lang) &&
+      !tab->profile()->IsOffTheRecord()) {
     tab->TranslatePage(page_lang, ui_lang);
     return;
   }

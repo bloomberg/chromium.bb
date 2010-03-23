@@ -528,8 +528,8 @@ TEST_F(TranslateManagerTest, UnsupportedUILanguage) {
   browser_process->SetApplicationLocale(original_lang);
 }
 
-// Tests that the translate preference is honored.
-TEST_F(TranslateManagerTest, TranslatePref) {
+// Tests that the translate enabled preference is honored.
+TEST_F(TranslateManagerTest, TranslateEnabledPref) {
   // Make sure the pref allows translate.
   PrefService* prefs = contents()->profile()->GetPrefs();
   prefs->SetBoolean(prefs::kEnableTranslate, true);
@@ -555,4 +555,129 @@ TEST_F(TranslateManagerTest, TranslatePref) {
   SimulateOnPageContents(url, 1, L"Le YouTube", "fr");
   infobar = GetTranslateInfoBar();
   EXPECT_TRUE(infobar == NULL);
+}
+
+// Tests the "Never translate <language>" pref.
+TEST_F(TranslateManagerTest, NeverTranslateLanguagePref) {
+  // Simulate navigating to a page and getting its language.
+  GURL url("http://www.google.fr");
+  SimulateNavigation(url, 0, L"Le Google", "fr");
+
+  // An infobar should be shown.
+  EXPECT_TRUE(GetTranslateInfoBar() != NULL);
+
+  // Select never translate this language.
+  PrefService* prefs = contents()->profile()->GetPrefs();
+  TranslatePrefs translate_prefs(contents()->profile()->GetPrefs());
+  EXPECT_FALSE(translate_prefs.IsLanguageBlacklisted("fr"));
+  EXPECT_TRUE(translate_prefs.CanTranslate(prefs, "fr", url));
+  translate_prefs.BlacklistLanguage("fr");
+  EXPECT_TRUE(translate_prefs.IsLanguageBlacklisted("fr"));
+  EXPECT_FALSE(translate_prefs.CanTranslate(prefs, "fr", url));
+
+  // Close the infobar.
+  EXPECT_TRUE(CloseTranslateInfoBar());
+
+  // Navigate to a new page also in French.
+  SimulateNavigation(GURL("http://wwww.youtube.fr"), 1, L"Le YouTube", "fr");
+
+  // There should not be a translate infobar.
+  EXPECT_TRUE(GetTranslateInfoBar() == NULL);
+
+  // Remove the language from the blacklist.
+  translate_prefs.RemoveLanguageFromBlacklist("fr");
+  EXPECT_FALSE(translate_prefs.IsLanguageBlacklisted("fr"));
+  EXPECT_TRUE(translate_prefs.CanTranslate(prefs, "fr", url));
+
+  // Navigate to a page in French.
+  SimulateNavigation(url, 2, L"Le Google", "fr");
+
+  // There should be a translate infobar.
+  EXPECT_TRUE(GetTranslateInfoBar() != NULL);
+}
+
+// Tests the "Never translate this site" pref.
+TEST_F(TranslateManagerTest, NeverTranslateSitePref) {
+  // Simulate navigating to a page and getting its language.
+  GURL url("http://www.google.fr");
+  std::string host(url.host());
+  SimulateNavigation(url, 0, L"Le Google", "fr");
+
+  // An infobar should be shown.
+  EXPECT_TRUE(GetTranslateInfoBar() != NULL);
+
+  // Select never translate this site.
+  PrefService* prefs = contents()->profile()->GetPrefs();
+  TranslatePrefs translate_prefs(contents()->profile()->GetPrefs());
+  EXPECT_FALSE(translate_prefs.IsSiteBlacklisted(host));
+  EXPECT_TRUE(translate_prefs.CanTranslate(prefs, "fr", url));
+  translate_prefs.BlacklistSite(host);
+  EXPECT_TRUE(translate_prefs.IsSiteBlacklisted(host));
+  EXPECT_FALSE(translate_prefs.CanTranslate(prefs, "fr", url));
+
+  // Close the infobar.
+  EXPECT_TRUE(CloseTranslateInfoBar());
+
+  // Navigate to a new page also on the same site.
+  SimulateNavigation(GURL("http://www.google.fr/hello"), 1, L"Bonjour", "fr");
+
+  // There should not be a translate infobar.
+  EXPECT_TRUE(GetTranslateInfoBar() == NULL);
+
+  // Remove the site from the blacklist.
+  translate_prefs.RemoveSiteFromBlacklist(host);
+  EXPECT_FALSE(translate_prefs.IsSiteBlacklisted(host));
+  EXPECT_TRUE(translate_prefs.CanTranslate(prefs, "fr", url));
+
+  // Navigate to a page in French.
+  SimulateNavigation(url, 0, L"Le Google", "fr");
+
+  // There should be a translate infobar.
+  EXPECT_TRUE(GetTranslateInfoBar() != NULL);
+}
+
+// Tests the "Always translate this language" pref.
+TEST_F(TranslateManagerTest, AlwaysTranslateLanguagePref) {
+  // Select always translate French to English.
+  TranslatePrefs translate_prefs(contents()->profile()->GetPrefs());
+  translate_prefs.WhitelistLanguagePair("fr", "en");
+
+  // Load a page in French.
+  SimulateNavigation(GURL("http://www.google.fr"), 0, L"Le Google", "fr");
+
+  // It should have triggered an automatic translation to English.
+  int page_id = 0;
+  std::string original_lang, target_lang;
+  EXPECT_TRUE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
+  EXPECT_EQ(0, page_id);
+  EXPECT_EQ("fr", original_lang);
+  EXPECT_EQ("en", target_lang);
+  process()->sink().ClearMessages();
+  // And we should have no infobar (since we don't send the page translated
+  // notification, the after translate infobar is not shown).
+  EXPECT_TRUE(GetTranslateInfoBar() == NULL);
+
+  // Try another language, it should not be autotranslated.
+  SimulateNavigation(GURL("http://www.google.es"), 1, L"El Google", "es");
+  EXPECT_FALSE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
+  EXPECT_TRUE(GetTranslateInfoBar() != NULL);
+  EXPECT_TRUE(CloseTranslateInfoBar());
+
+  // Let's switch to incognito mode, it should not be autotranslated in that
+  // case either.
+  TestingProfile* test_profile =
+      static_cast<TestingProfile*>(contents()->profile());
+  test_profile->set_off_the_record(true);
+  SimulateNavigation(GURL("http://www.youtube.fr"), 2, L"Le YouTube", "fr");
+  EXPECT_FALSE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
+  EXPECT_TRUE(GetTranslateInfoBar() != NULL);
+  EXPECT_TRUE(CloseTranslateInfoBar());
+  test_profile->set_off_the_record(false);  // Get back to non incognito.
+
+  // Now revert the always translate pref and make sure we go back to expected
+  // behavior, which is show an infobar.
+  translate_prefs.RemoveLanguagePairFromWhitelist("fr", "en");
+  SimulateNavigation(GURL("http://www.google.fr"), 3, L"Le Google", "fr");
+  EXPECT_FALSE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
+  EXPECT_TRUE(GetTranslateInfoBar() != NULL);
 }
