@@ -373,6 +373,9 @@ const char kGpuLauncher[]                   = "gpu-launcher";
 // Makes this process a GPU sub-process.
 const char kGpuProcess[]                    = "gpu-process";
 
+// Causes the GPU process to display a dialog on launch.
+const char kGpuStartupDialog[]              = "gpu-startup-dialog";
+
 // Make Windows happy by allowing it to show "Enable access to this program"
 // checkbox in Add/Remove Programs->Set Program Access and Defaults. This
 // only shows an error box because the only way to hide Chrome is by

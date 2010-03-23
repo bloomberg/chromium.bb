@@ -5,6 +5,7 @@
 #include "base/message_loop.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/main_function_params.h"
 #include "chrome/gpu/gpu_config.h"
 #include "chrome/gpu/gpu_process.h"
@@ -27,6 +28,11 @@ int GpuMain(const MainFunctionParams& parameters) {
   // Needs to be called after we have chrome::DIR_USER_DATA.
   InitCrashReporter();
 #endif
+
+  const CommandLine& command_line = parameters.command_line_;
+  if (command_line.HasSwitch(switches::kGpuStartupDialog)) {
+    ChildProcess::WaitForDebugger(L"Gpu");
+  }
 
   MessageLoop main_message_loop(MessageLoop::TYPE_UI);
   std::wstring app_name = chrome::kBrowserAppName;

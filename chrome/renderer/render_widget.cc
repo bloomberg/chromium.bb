@@ -27,6 +27,7 @@
 #include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_POSIX)
+#include "ipc/ipc_channel_posix.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
 #include "third_party/skia/include/core/SkMallocPixelRef.h"
 #endif  // defined(OS_POSIX)
@@ -733,6 +734,12 @@ void RenderWidget::OnSetTextDirection(WebTextDirection direction) {
 
 void RenderWidget::OnGpuChannelEstablished(
     const IPC::ChannelHandle& channel_handle) {
+#if defined(OS_POSIX)
+  // If we received a ChannelHandle, register it now.
+  if (channel_handle.socket.fd >= 0)
+    IPC::AddChannelSocket(channel_handle.name, channel_handle.socket.fd);
+#endif
+
   if (channel_handle.name.size() != 0) {
     // Connect to the GPU process if a channel name was received.
     gpu_channel_->Connect(channel_handle.name);

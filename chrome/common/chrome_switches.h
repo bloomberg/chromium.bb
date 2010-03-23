@@ -117,6 +117,7 @@ extern const char kFirstRun[];
 extern const char kForceFieldTestNameAndValue[];
 extern const char kGpuLauncher[];
 extern const char kGpuProcess[];
+extern const char kGpuStartupDialog[];
 extern const char kHideIcons[];
 extern const char kHomePage[];
 extern const char kHostResolverRules[];

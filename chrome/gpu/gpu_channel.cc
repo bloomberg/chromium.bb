@@ -177,6 +177,15 @@ void GpuChannel::OnDestroyCommandBuffer(int route_id) {
 
 bool GpuChannel::Init(const std::string& channel_name) {
   channel_name_ = channel_name;
+#if defined(OS_POSIX)
+  // This gets called when the GpuChannel is initially created. At this
+  // point, create the socketpair and assign the GPU side FD to the channel
+  // name. Keep the renderer side FD as a member variable in the PluginChannel
+  // to be able to transmit it through IPC.
+  int gpu_fd;
+  IPC::SocketPair(&gpu_fd, &renderer_fd_);
+  IPC::AddChannelSocket(channel_name, gpu_fd);
+#endif
   channel_.reset(new IPC::SyncChannel(
       channel_name, IPC::Channel::MODE_SERVER, this, NULL,
       ChildProcess::current()->io_message_loop(), false,

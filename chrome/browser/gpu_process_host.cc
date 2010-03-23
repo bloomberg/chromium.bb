@@ -171,6 +171,7 @@ void GpuProcessHost::PropagateBrowserCommandLineToGpu(
   static const char* const switch_names[] = {
     switches::kDisableLogging,
     switches::kEnableLogging,
+    switches::kGpuStartupDialog,
     switches::kLoggingLevel,
   };
 
