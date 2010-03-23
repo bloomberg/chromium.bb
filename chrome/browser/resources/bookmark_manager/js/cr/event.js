@@ -3,15 +3,15 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview This is a simple pure JS event class that can be used with
- * {@code cr.ui.EventTarget}. It should not be used with DOM EventTargets.
+ * @fileoverview This provides a nicer way to create events than what DOM
+ * provides. These events can be used with DOM EventTarget interfaces as well
+ * as with {@code cr.EventTarget}.
  */
 
 cr.define('cr', function() {
 
-  // cr.Event is called CustomEvent in here to prevent naming conflicts. We
-  // alse store the original Event in case someone does a global alias of
-  // cr.Event.
+  // cr.Event is called CrEvent in here to prevent naming conflicts. We also
+  // store the original Event in case someone does a global alias of cr.Event.
 
   const DomEvent = Event;
 
@@ -19,22 +19,25 @@ cr.define('cr', function() {
    * Creates a new event to be used with cr.EventTarget or DOM EventTarget
    * objects.
    * @param {string} type The name of the event.
-   * @param {boolean=}
+   * @param {boolean=} opt_bubbles Whether the event bubbles. Default is false.
+   * @param {boolean=} opt_preventable Whether the default action of the event
+   *     can be prevented.
    * @constructor
+   * @extends {DomEvent}
    */
-  function CustomEvent(type, opt_bubbles, opt_capture) {
+  function CrEvent(type, opt_bubbles, opt_preventable) {
     var e = cr.doc.createEvent('Event');
-    e.initEvent(type, !!opt_bubbles, !!opt_capture);
-    e.__proto__ = CustomEvent.prototype;
+    e.initEvent(type, !!opt_bubbles, !!opt_preventable);
+    e.__proto__ = CrEvent.prototype;
     return e;
   }
 
-  CustomEvent.prototype = {
+  CrEvent.prototype = {
     __proto__: DomEvent.prototype
   };
 
   // Export
   return {
-    Event: CustomEvent
+    Event: CrEvent
   };
 });

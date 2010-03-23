@@ -2,10 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * @fileoverview This contains an implementation of the EventTarget interface
+ * as defined by DOM Level 2 Events.
+ */
+
 cr.define('cr', function() {
 
-  // TODO(arv): object.handleEvent
-
+  /**
+   * Creates a new EventTarget. This class implements the DOM level 2
+   * EventTarget interface and can be used wherever those are used.
+   * @constructor
+   */
   function EventTarget() {
   }
 
@@ -19,7 +27,7 @@ cr.define('cr', function() {
      */
     addEventListener: function(type, handler) {
       if (!this.listeners_)
-        this.listeners_ = {__proto__: null};
+        this.listeners_ = Object.create(null);
       if (!(type in this.listeners_)) {
         this.listeners_[type] = [handler];
       } else {
