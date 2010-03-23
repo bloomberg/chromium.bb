@@ -54,6 +54,12 @@
            'outputs': [['success', 'int32_t'],
                       ]
           },
+          {'name': 'NPN_UserAgent',
+           'inputs': [['npp', 'int32_t'],
+                     ],
+           'outputs': [['strval', 'string'],
+                      ]
+          },
           # All of the identifier-related methods rely on the assumption that
           # NPIdentifiers, once created, do not change.  The plugin uses this
           # fact to allow caching of the result of calls to
