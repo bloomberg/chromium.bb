@@ -742,12 +742,21 @@ bool RenderViewContextMenu::IsItemCommandEnabled(int id) const {
     case IDC_SPELLCHECK_SUGGESTION_4:
     case IDC_SPELLCHECK_MENU:
     case IDC_SPELLPANEL_TOGGLE:
+#if !defined(OS_MACOSX)
+    // TODO(jeremy): re-enable - http://crbug.com/34512 .
     case IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS:
+#endif
     case IDS_CONTENT_CONTEXT_VIEWFRAMEINFO:
       return true;
 
     case IDC_CHECK_SPELLING_OF_THIS_FIELD:
       return profile_->GetPrefs()->GetBoolean(prefs::kEnableSpellCheck);
+
+#if defined(OS_MACOSX)
+    // TODO(jeremy): re-enable - http://crbug.com/34512 .
+    case IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS:
+      return false;
+#endif
 
 #if defined(OS_MACOSX)
     case IDC_WRITING_DIRECTION_DEFAULT:  // Provided to match OS defaults.
