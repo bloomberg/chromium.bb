@@ -62,14 +62,17 @@ void WebDragSource::OnDragSourceCancel() {
 }
 
 void WebDragSource::OnDragSourceDrop() {
-  // Delegate to the UI thread if we do drag-and-drop in the background thread.
-  if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
-        NewRunnableMethod(this, &WebDragSource::OnDragSourceDrop));
-    return;
-  }
+  // On Windows, we check for drag end in IDropSource::QueryContinueDrag which
+  // happens before IDropTarget::Drop is called. HTML5 requires the "dragend"
+  // event to happen after the "drop" event. Since  Windows calls these two
+  // directly after each other we can just post a task to handle the
+  // OnDragSourceDrop after the current task.
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(this, &WebDragSource::DelayedOnDragSourceDrop));
+}
 
+void WebDragSource::DelayedOnDragSourceDrop() {
   if (!render_view_host_)
     return;
 

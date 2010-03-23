@@ -46,6 +46,10 @@ class WebDragSource : public BaseDragSource,
   // Cannot construct thusly.
   WebDragSource();
 
+  // OnDragSourceDrop schedules its main work to be done after IDropTarget::Drop
+  // by posting a task to this function.
+  void DelayedOnDragSourceDrop();
+
   // Keep a reference to the window so we can translate the cursor position.
   gfx::NativeWindow source_wnd_;
 
