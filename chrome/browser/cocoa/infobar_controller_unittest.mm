@@ -180,8 +180,9 @@ TEST_F(LinkInfoBarControllerTest, ShowAndClickLinkWithoutClosing) {
 TEST_VIEW(ConfirmInfoBarControllerTest, [controller_ view]);
 
 TEST_F(ConfirmInfoBarControllerTest, ShowAndDismiss) {
-  // Make sure someone looked at the message and icon.
+  // Make sure someone looked at the message, link, and icon.
   EXPECT_TRUE(delegate_.message_text_accessed);
+  EXPECT_TRUE(delegate_.link_text_accessed);
   EXPECT_TRUE(delegate_.icon_accessed);
 
   // Check to make sure the infobar message was set properly.
@@ -192,6 +193,7 @@ TEST_F(ConfirmInfoBarControllerTest, ShowAndDismiss) {
   [controller_ dismiss:nil];
   EXPECT_FALSE(delegate_.ok_clicked);
   EXPECT_FALSE(delegate_.cancel_clicked);
+  EXPECT_FALSE(delegate_.link_clicked);
   EXPECT_TRUE(delegate_.closed);
 }
 
@@ -201,6 +203,7 @@ TEST_F(ConfirmInfoBarControllerTest, ShowAndClickOK) {
   [controller_ ok:nil];
   EXPECT_TRUE(delegate_.ok_clicked);
   EXPECT_FALSE(delegate_.cancel_clicked);
+  EXPECT_FALSE(delegate_.link_clicked);
   EXPECT_TRUE(delegate_.closed);
 }
 
@@ -212,6 +215,7 @@ TEST_F(ConfirmInfoBarControllerTest, ShowAndClickOKWithoutClosing) {
   [controller_ ok:nil];
   EXPECT_TRUE(delegate_.ok_clicked);
   EXPECT_FALSE(delegate_.cancel_clicked);
+  EXPECT_FALSE(delegate_.link_clicked);
   EXPECT_FALSE(delegate_.closed);
 }
 
@@ -221,6 +225,7 @@ TEST_F(ConfirmInfoBarControllerTest, ShowAndClickCancel) {
   [controller_ cancel:nil];
   EXPECT_FALSE(delegate_.ok_clicked);
   EXPECT_TRUE(delegate_.cancel_clicked);
+  EXPECT_FALSE(delegate_.link_clicked);
   EXPECT_TRUE(delegate_.closed);
 }
 
@@ -232,6 +237,29 @@ TEST_F(ConfirmInfoBarControllerTest, ShowAndClickCancelWithoutClosing) {
   [controller_ cancel:nil];
   EXPECT_FALSE(delegate_.ok_clicked);
   EXPECT_TRUE(delegate_.cancel_clicked);
+  EXPECT_FALSE(delegate_.link_clicked);
+  EXPECT_FALSE(delegate_.closed);
+}
+
+TEST_F(ConfirmInfoBarControllerTest, ShowAndClickLink) {
+  // Check that clicking on the link calls LinkClicked() on the
+  // delegate.  It should also close the infobar.
+  [controller_ linkClicked];
+  EXPECT_FALSE(delegate_.ok_clicked);
+  EXPECT_FALSE(delegate_.cancel_clicked);
+  EXPECT_TRUE(delegate_.link_clicked);
+  EXPECT_TRUE(delegate_.closed);
+}
+
+TEST_F(ConfirmInfoBarControllerTest, ShowAndClickLinkWithoutClosing) {
+  delegate_.closes_on_action = false;
+
+  // Check that clicking on the link calls LinkClicked() on the
+  // delegate.  It should not close the infobar.
+  [controller_ linkClicked];
+  EXPECT_FALSE(delegate_.ok_clicked);
+  EXPECT_FALSE(delegate_.cancel_clicked);
+  EXPECT_TRUE(delegate_.link_clicked);
   EXPECT_FALSE(delegate_.closed);
 }
 

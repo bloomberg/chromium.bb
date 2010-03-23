@@ -85,4 +85,6 @@ class InfoBarDelegate;
 // Called when the ok and cancel buttons are clicked.
 - (IBAction)ok:(id)sender;
 - (IBAction)cancel:(id)sender;
+// Called when there is a click on the link in the infobar.
+- (void)linkClicked;
 @end

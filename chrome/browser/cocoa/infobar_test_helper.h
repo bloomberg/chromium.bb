@@ -100,6 +100,7 @@ class MockConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
         icon_accessed(false),
         ok_clicked(false),
         cancel_clicked(false),
+        link_clicked(false),
         closed(false),
         closes_on_action(true) {
   }
@@ -139,12 +140,23 @@ class MockConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
     closed = true;
   }
 
+  virtual std::wstring GetLinkText() {
+    link_text_accessed = true;
+    return std::wstring();
+  }
+
+  virtual bool LinkClicked(WindowOpenDisposition disposition) {
+    link_clicked = true;
+    return closes_on_action;
+  }
+
   // These are declared mutable to get around const-ness issues.
   mutable bool message_text_accessed;
   mutable bool link_text_accessed;
   mutable bool icon_accessed;
   bool ok_clicked;
   bool cancel_clicked;
+  bool link_clicked;
   bool closed;
 
   // Determines whether the infobar closes when an action is taken or not.

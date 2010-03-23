@@ -36,6 +36,12 @@ const float kAnimateCloseDuration = 0.12;
 // Removes the ok and cancel buttons, and resizes the textfield to use the
 // space.
 - (void)removeButtons;
+
+// Sets the info bar message to the specified |message|, with a hypertext
+// style link. |link| will be inserted into message at |link_offset|.
+-(void)setLabelToMessage:(NSString*)message
+                withLink:(NSString*)link
+                atOffset:(NSUInteger)link_offset;
 @end
 
 @implementation InfoBarController
@@ -179,6 +185,57 @@ const float kAnimateCloseDuration = 0.12;
   [self cleanUpAfterAnimation:YES];
 }
 
+// TODO(joth): This method factors out some common functionality between the
+// various derived infobar classes, however the class hierarchy itself could
+// use refactoring to reduce this duplication. http://crbug.com/38924
+-(void)setLabelToMessage:(NSString*)message
+                withLink:(NSString*)link
+                atOffset:(NSUInteger)link_offset {
+  // Create an attributes dictionary for the entire message.  We have
+  // to expicitly set the font the control's font.  We also override
+  // the cursor to give us the normal cursor rather than the text
+  // insertion cursor.
+  NSMutableDictionary* linkAttributes =
+      [NSMutableDictionary dictionaryWithObject:[NSCursor arrowCursor]
+                                         forKey:NSCursorAttributeName];
+  [linkAttributes setObject:[label_ font]
+                     forKey:NSFontAttributeName];
+
+  // Create the attributed string for the main message text.
+  NSMutableAttributedString* infoText =
+      [[[NSMutableAttributedString alloc]
+         initWithString:message] autorelease];
+  [infoText addAttributes:linkAttributes
+                    range:NSMakeRange(0, [infoText length])];
+
+  // Add additional attributes to style the link text appropriately as
+  // well as linkify it.  We use an empty string for the NSLink
+  // attribute because the actual object we pass doesn't matter, but
+  // it cannot be nil.
+  [linkAttributes setObject:[NSColor blueColor]
+                     forKey:NSForegroundColorAttributeName];
+  [linkAttributes setObject:[NSNumber numberWithBool:YES]
+                     forKey:NSUnderlineStyleAttributeName];
+  [linkAttributes setObject:[NSCursor pointingHandCursor]
+                     forKey:NSCursorAttributeName];
+  [linkAttributes setObject:[NSString string]  // dummy value
+                     forKey:NSLinkAttributeName];
+
+  // Insert the link text into the string at the appropriate offset.
+  NSAttributedString* attributed_string =
+      [[[NSAttributedString alloc] initWithString:link
+                                       attributes:linkAttributes] autorelease];
+  [infoText insertAttributedString:attributed_string
+                           atIndex:link_offset];
+
+  // Update the label view with the new text.  The view must be
+  // selectable and allow editing text attributes for the
+  // linkification to work correctly.
+  [label_ setAllowsEditingTextAttributes:YES];
+  [label_ setSelectable:YES];
+  [label_ setAttributedStringValue:infoText];
+}
+
 @end
 
 
@@ -224,50 +281,9 @@ const float kAnimateCloseDuration = 0.12;
   DCHECK(delegate);
   size_t offset = std::wstring::npos;
   std::wstring message = delegate->GetMessageTextWithOffset(&offset);
-
-  // Create an attributes dictionary for the entire message.  We have
-  // to expicitly set the font the control's font.  We also override
-  // the cursor to give us the normal cursor rather than the text
-  // insertion cursor.
-  NSMutableDictionary* linkAttributes =
-      [NSMutableDictionary dictionaryWithObject:[NSCursor arrowCursor]
-                           forKey:NSCursorAttributeName];
-  [linkAttributes setObject:[label_ font]
-                  forKey:NSFontAttributeName];
-
-  // Create the attributed string for the main message text.
-  NSMutableAttributedString* infoText =
-      [[[NSMutableAttributedString alloc]
-         initWithString:base::SysWideToNSString(message)] autorelease];
-  [infoText addAttributes:linkAttributes
-                    range:NSMakeRange(0, [infoText length])];
-
-  // Add additional attributes to style the link text appropriately as
-  // well as linkify it.  We use an empty string for the NSLink
-  // attribute because the actual object we pass doesn't matter, but
-  // it cannot be nil.
-  [linkAttributes setObject:[NSColor blueColor]
-                     forKey:NSForegroundColorAttributeName];
-  [linkAttributes setObject:[NSNumber numberWithBool:YES]
-                     forKey:NSUnderlineStyleAttributeName];
-  [linkAttributes setObject:[NSCursor pointingHandCursor]
-                     forKey:NSCursorAttributeName];
-  [linkAttributes setObject:[NSString string]  // dummy value
-                     forKey:NSLinkAttributeName];
-
-  // Insert the link text into the string at the appropriate offset.
-  [infoText insertAttributedString:
-              [[[NSAttributedString alloc]
-                 initWithString:base::SysWideToNSString(delegate->GetLinkText())
-                     attributes:linkAttributes] autorelease]
-            atIndex:offset];
-
-  // Update the label view with the new text.  The view must be
-  // selectable and allow editing text attributes for the
-  // linkification to work correctly.
-  [label_ setAllowsEditingTextAttributes:YES];
-  [label_ setSelectable:YES];
-  [label_ setAttributedStringValue:infoText];
+  [self setLabelToMessage:base::SysWideToNSString(message)
+                 withLink:base::SysWideToNSString(delegate->GetLinkText())
+                 atOffset:offset];
 }
 
 // Called when someone clicks on the link in the infobar.  This method
@@ -372,8 +388,34 @@ const float kAnimateCloseDuration = 0.12;
   frame.size.width = rightEdge - NSMinX(frame);
   [label_ setFrame:frame];
 
-  // Set the text.
-  [label_ setStringValue:base::SysWideToNSString(delegate->GetMessageText())];
+  // Set the text and link.
+  NSString* message = base::SysWideToNSString(delegate->GetMessageText());
+  std::wstring link = delegate->GetLinkText();
+  if (link.empty()) {
+    // Simple case: no link, so just set the message directly.
+    [label_ setStringValue:message];
+  } else {
+    // Inserting the link unintentionally causes the text to have a slightly
+    // different result to the simple case above: text is truncated on word
+    // boundaries (if needed) rather than elided with ellipses.
+
+    // Add spacing between the label and the link.
+    message = [message stringByAppendingString:@"   "];
+    [self setLabelToMessage:message
+                   withLink:base::SysWideToNSString(link)
+                   atOffset:[message length]];
+  }
+}
+
+// Called when someone clicks on the link in the infobar.  This method
+// is called by the InfobarTextField on its delegate (the
+// LinkInfoBarController).
+- (void)linkClicked {
+  WindowOpenDisposition disposition =
+      event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
+  if (delegate_ &&
+      delegate_->AsConfirmInfoBarDelegate()->LinkClicked(disposition))
+    [self removeInfoBar];
 }
 
 @end
