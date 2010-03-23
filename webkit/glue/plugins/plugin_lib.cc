@@ -173,6 +173,13 @@ bool PluginLib::Load() {
     if (library == 0)
       return rv;
 
+#if defined(OS_MACOSX)
+    // According to the WebKit source, QuickTime at least requires us to call
+    // UseResFile on the plugin resources before loading.
+    if (library->bundle_resource_ref != -1)
+      UseResFile(library->bundle_resource_ref);
+#endif
+
     rv = true;  // assume success now
 
     entry_points_.np_initialize =
