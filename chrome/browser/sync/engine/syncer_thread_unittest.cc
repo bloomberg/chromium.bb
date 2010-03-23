@@ -720,7 +720,8 @@ class ListenerMock {
   MOCK_METHOD1(HandleEvent, void(const SyncerEvent&));
 };
 
-TEST_F(SyncerThreadWithSyncerTest, Pause) {
+// TODO(skrul): Bug 39070.
+TEST_F(SyncerThreadWithSyncerTest, DISABLED_Pause) {
   WaitableEvent sync_cycle_ended_event(false, false);
   WaitableEvent paused_event(false, false);
   WaitableEvent resumed_event(false, false);
