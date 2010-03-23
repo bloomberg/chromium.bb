@@ -265,7 +265,7 @@ TEST_F(WebSocketJobTest, SimpleHandshake) {
   websocket_->OnSentData(socket_.get(), strlen(kHandshakeRequestMessage));
   EXPECT_EQ(strlen(kHandshakeRequestMessage), delegate.amount_sent());
 
-  static const char* kHandshakeResponseMessage =
+  const char kHandshakeResponseMessage[] =
       "HTTP/1.1 101 Web Socket Protocol Handshake\r\n"
       "Upgrade: WebSocket\r\n"
       "Connection: Upgrade\r\n"
@@ -323,7 +323,7 @@ TEST_F(WebSocketJobTest, SlowHandshake) {
   EXPECT_EQ(strlen(kHandshakeRequestMessage), delegate.amount_sent());
   EXPECT_EQ(WebSocketJob::CONNECTING, GetWebSocketJobState());
 
-  static const char* kHandshakeResponseMessage =
+  const char kHandshakeResponseMessage[] =
       "HTTP/1.1 101 Web Socket Protocol Handshake\r\n"
       "Upgrade: WebSocket\r\n"
       "Connection: Upgrade\r\n"
@@ -393,7 +393,7 @@ TEST_F(WebSocketJobTest, HandshakeWithCookie) {
   websocket_->OnSentData(socket_, strlen(kHandshakeRequestExpected));
   EXPECT_EQ(strlen(kHandshakeRequestMessage), delegate.amount_sent());
 
-  static const char* kHandshakeResponseMessage =
+  const char kHandshakeResponseMessage[] =
       "HTTP/1.1 101 Web Socket Protocol Handshake\r\n"
       "Upgrade: WebSocket\r\n"
       "Connection: Upgrade\r\n"
@@ -472,7 +472,7 @@ TEST_F(WebSocketJobTest, HandshakeWithCookieButNotAllowed) {
   websocket_->OnSentData(socket_, strlen(kHandshakeRequestExpected));
   EXPECT_EQ(strlen(kHandshakeRequestMessage), delegate.amount_sent());
 
-  static const char* kHandshakeResponseMessage =
+  const char kHandshakeResponseMessage[] =
       "HTTP/1.1 101 Web Socket Protocol Handshake\r\n"
       "Upgrade: WebSocket\r\n"
       "Connection: Upgrade\r\n"
