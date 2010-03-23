@@ -258,7 +258,8 @@ void ExtensionPopup::Observe(NotificationType type,
       break;
     case NotificationType::DEVTOOLS_WINDOW_CLOSING:
       // Make sure its the devtools window that inspecting our popup.
-      if (Details<RenderViewHost>(extension_host_->render_view_host()) != details)
+      if (Details<RenderViewHost>(extension_host_->render_view_host()) !=
+          details)
         return;
 
       // If the devtools window is closing, we post a task to ourselves to

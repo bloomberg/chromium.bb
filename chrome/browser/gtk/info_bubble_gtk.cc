@@ -49,10 +49,11 @@ InfoBubbleGtk* InfoBubbleGtk::Show(GtkWindow* toplevel_window,
                                    GtkWidget* content,
                                    ArrowLocationGtk arrow_location,
                                    bool match_system_theme,
+                                   bool grab_input,
                                    GtkThemeProvider* provider,
                                    InfoBubbleGtkDelegate* delegate) {
   InfoBubbleGtk* bubble = new InfoBubbleGtk(provider, match_system_theme);
-  bubble->Init(toplevel_window, rect, content, arrow_location);
+  bubble->Init(toplevel_window, rect, content, arrow_location, grab_input);
   bubble->set_delegate(delegate);
   return bubble;
 }
@@ -67,37 +68,51 @@ InfoBubbleGtk::InfoBubbleGtk(GtkThemeProvider* provider,
       mask_region_(NULL),
       preferred_arrow_location_(ARROW_LOCATION_TOP_LEFT),
       current_arrow_location_(ARROW_LOCATION_TOP_LEFT),
-      match_system_theme_(match_system_theme) {
+      match_system_theme_(match_system_theme),
+      grab_input_(true),
+      closed_by_escape_(false) {
 }
 
 InfoBubbleGtk::~InfoBubbleGtk() {
+  // Notify the delegate that we're about to close.  This gives the chance
+  // to save state / etc from the hosted widget before it's destroyed.
+  if (delegate_)
+    delegate_->InfoBubbleClosing(this, closed_by_escape_);
+
   g_object_unref(accel_group_);
   if (mask_region_) {
     gdk_region_destroy(mask_region_);
     mask_region_ = NULL;
   }
 
-  g_signal_handlers_disconnect_by_func(
-      toplevel_window_,
-      reinterpret_cast<gpointer>(HandleToplevelConfigureThunk),
-      this);
-  g_signal_handlers_disconnect_by_func(
-      toplevel_window_,
-      reinterpret_cast<gpointer>(HandleToplevelUnmapThunk),
-      this);
+  if (toplevel_window_) {
+    g_signal_handlers_disconnect_by_func(
+        toplevel_window_,
+        reinterpret_cast<gpointer>(HandleToplevelConfigureThunk),
+        this);
+    g_signal_handlers_disconnect_by_func(
+        toplevel_window_,
+        reinterpret_cast<gpointer>(HandleToplevelUnmapThunk),
+        this);
+  }
   toplevel_window_ = NULL;
 }
 
 void InfoBubbleGtk::Init(GtkWindow* toplevel_window,
                          const gfx::Rect& rect,
                          GtkWidget* content,
-                         ArrowLocationGtk arrow_location) {
+                         ArrowLocationGtk arrow_location,
+                         bool grab_input) {
   DCHECK(!window_);
   toplevel_window_ = toplevel_window;
   rect_ = rect;
   preferred_arrow_location_ = arrow_location;
 
-  window_ = gtk_window_new(GTK_WINDOW_POPUP);
+  grab_input_ = grab_input;
+  // Using a TOPLEVEL window may cause placement issues with certain WMs but it
+  // is necessary to be able to focus the window.
+  window_ = gtk_window_new(grab_input ? GTK_WINDOW_POPUP : GTK_WINDOW_TOPLEVEL);
+
   gtk_widget_set_app_paintable(window_, TRUE);
   // Resizing is handled by the program, not user.
   gtk_window_set_resizable(GTK_WINDOW(window_), FALSE);
@@ -140,26 +155,31 @@ void InfoBubbleGtk::Init(GtkWindow* toplevel_window,
                    G_CALLBACK(&HandleToplevelConfigureThunk), this);
   g_signal_connect(toplevel_window, "unmap-event",
                    G_CALLBACK(&HandleToplevelUnmapThunk), this);
+  // Set |toplevel_window_| to NULL if it gets destroyed.
+  g_signal_connect(toplevel_window, "destroy",
+                   G_CALLBACK(gtk_widget_destroyed), &toplevel_window_);
 
   gtk_widget_show_all(window_);
 
-  // We add a GTK (application-level) grab.  This means we will get all
-  // mouse events for our application, even if they were delivered on another
-  // window.  We don't need this to get button presses outside of the bubble's
-  // window so we'll know to close it (the pointer grab takes care of that), but
-  // it prevents other widgets from getting highlighted when the pointer moves
-  // over them.
-  //
-  // (Ideally we wouldn't add the window to a group and it would just get all
-  // the mouse events, but gtk_grab_add() doesn't appear to do anything in that
-  // case.  Adding it to the toplevel window's group first appears to block
-  // enter/leave events for that window and its subwindows, although other
-  // browser windows still receive them).
-  gtk_window_group_add_window(gtk_window_get_group(toplevel_window),
-                              GTK_WINDOW(window_));
-  gtk_grab_add(window_);
+  if (grab_input_) {
+    // We add a GTK (application-level) grab.  This means we will get all
+    // mouse events for our application, even if they were delivered on another
+    // window.  We don't need this to get button presses outside of the bubble's
+    // window so we'll know to close it (the pointer grab takes care of that),
+    // but it prevents other widgets from getting highlighted when the pointer
+    // moves over them.
+    //
+    // (Ideally we wouldn't add the window to a group and it would just get all
+    // the mouse events, but gtk_grab_add() doesn't appear to do anything in
+    // that case.  Adding it to the toplevel window's group first appears to
+    // block enter/leave events for that window and its subwindows, although
+    // other browser windows still receive them).
+    gtk_window_group_add_window(gtk_window_get_group(toplevel_window),
+                                GTK_WINDOW(window_));
+    gtk_grab_add(window_);
 
-  GrabPointerAndKeyboard();
+    GrabPointerAndKeyboard();
+  }
 
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
@@ -321,18 +341,13 @@ void InfoBubbleGtk::Observe(NotificationType type,
 }
 
 void InfoBubbleGtk::HandlePointerAndKeyboardUngrabbedByContent() {
-  GrabPointerAndKeyboard();
+  if (grab_input_)
+    GrabPointerAndKeyboard();
 }
 
-void InfoBubbleGtk::CloseInternal(bool closed_by_escape) {
-  // Notify the delegate that we're about to close.  This gives the chance
-  // to save state / etc from the hosted widget before it's destroyed.
-  if (delegate_)
-    delegate_->InfoBubbleClosing(this, closed_by_escape);
-
+void InfoBubbleGtk::Close() {
   // We don't need to ungrab the pointer or keyboard here; the X server will
   // automatically do that when we destroy our window.
-
   DCHECK(window_);
   gtk_widget_destroy(window_);
   // |this| has been deleted, see HandleDestroy.
@@ -365,7 +380,8 @@ void InfoBubbleGtk::GrabPointerAndKeyboard() {
 }
 
 gboolean InfoBubbleGtk::HandleEscape() {
-  CloseInternal(true);  // Close by escape.
+  closed_by_escape_ = true;
+  Close();
   return TRUE;
 }
 
@@ -411,9 +427,13 @@ gboolean InfoBubbleGtk::HandleButtonPress(GdkEventButton* event) {
     return FALSE;
   }
 
-  // Otherwise we had a click outside of our window, close ourself.
-  Close();
-  return TRUE;
+  if (grab_input_) {
+    // Otherwise we had a click outside of our window, close ourself.
+    Close();
+    return TRUE;
+  }
+
+  return FALSE;
 }
 
 gboolean InfoBubbleGtk::HandleDestroy() {

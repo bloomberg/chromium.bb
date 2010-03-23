@@ -1224,7 +1224,8 @@ gboolean LocationBarViewGtk::PageActionViewGtk::OnButtonPressed(
       ExtensionPopupGtk::Show(
           page_action_->GetPopupUrl(current_tab_id_),
           owner_->browser_,
-          gtk_util::GetWidgetRectRelativeToToplevel(event_box_.get()));
+          gtk_util::GetWidgetRectRelativeToToplevel(event_box_.get()),
+          false);
     } else {
       ExtensionBrowserEventRouter::GetInstance()->PageActionExecuted(
           profile_,

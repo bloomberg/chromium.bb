@@ -61,12 +61,13 @@ class InfoBubbleGtk : public NotificationObserver {
                              GtkWidget* content,
                              ArrowLocationGtk arrow_location,
                              bool match_system_theme,
+                             bool grab_input,
                              GtkThemeProvider* provider,
                              InfoBubbleGtkDelegate* delegate);
 
   // Close the bubble if it's open.  This will delete the widgets and object,
   // so you shouldn't hold a InfoBubbleGtk pointer after calling Close().
-  void Close() { CloseInternal(false); }
+  void Close();
 
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,
@@ -96,7 +97,8 @@ class InfoBubbleGtk : public NotificationObserver {
   void Init(GtkWindow* toplevel_window,
             const gfx::Rect& rect,
             GtkWidget* content,
-            ArrowLocationGtk arrow_location);
+            ArrowLocationGtk arrow_location,
+            bool grab_input);
 
   // Make the points for our polygon frame, either for fill (the mask), or for
   // when we stroke the border.
@@ -132,10 +134,6 @@ class InfoBubbleGtk : public NotificationObserver {
 
   // Sets the delegate.
   void set_delegate(InfoBubbleGtkDelegate* delegate) { delegate_ = delegate; }
-
-  // Closes the window and notifies the delegate. |closed_by_escape| is true if
-  // the close is the result of pressing escape.
-  void CloseInternal(bool closed_by_escape);
 
   // Grab (in the X sense) the pointer and keyboard.  This is needed to make
   // sure that we have the input focus.
@@ -234,6 +232,13 @@ class InfoBubbleGtk : public NotificationObserver {
   // is being used. For example, the bookmark bubble does, but extension popups
   // do not.
   bool match_system_theme_;
+
+  // If true, the popup owns all X input for the duration of its existence.
+  // This will usually be true, the exception being when inspecting extension
+  // popups with dev tools.
+  bool grab_input_;
+
+  bool closed_by_escape_;
 
   NotificationRegistrar registrar_;
 

@@ -178,10 +178,32 @@ class BrowserActionButton : public NotificationObserver,
   }
 
  private:
+  // Returns true to prevent further processing of the event that caused us to
+  // show the popup, or false to continue processing.
+  bool ShowPopup(bool devtools) {
+    ExtensionAction* browser_action = extension_->browser_action();
+
+    int tab_id = toolbar_->GetCurrentTabId();
+    if (tab_id < 0) {
+      NOTREACHED() << "No current tab.";
+      return true;
+    }
+
+    if (browser_action->HasPopup(tab_id)) {
+      ExtensionPopupGtk::Show(
+          browser_action->GetPopupUrl(tab_id),
+          toolbar_->browser(),
+          gtk_util::GetWidgetRectRelativeToToplevel(widget()),
+          devtools);
+      return true;
+    }
+
+    return false;
+  }
+
   // ExtensionContextMenuModel::PopupDelegate implementation.
   virtual void InspectPopup(ExtensionAction* action) {
-    // TODO(estade): http://crbug.com/24477
-    NOTIMPLEMENTED();
+    ShowPopup(true);
   }
 
   void SetImage(GdkPixbuf* image) {
@@ -208,24 +230,12 @@ class BrowserActionButton : public NotificationObserver,
   }
 
   static void OnClicked(GtkWidget* widget, BrowserActionButton* action) {
-    ExtensionAction* browser_action = action->extension_->browser_action();
-
-    int tab_id = action->toolbar_->GetCurrentTabId();
-    if (tab_id < 0) {
-      NOTREACHED() << "No current tab.";
+    if (action->ShowPopup(false))
       return;
-    }
 
-    if (browser_action->HasPopup(tab_id)) {
-      ExtensionPopupGtk::Show(
-          browser_action->GetPopupUrl(tab_id),
-          action->toolbar_->browser(),
-          gtk_util::GetWidgetRectRelativeToToplevel(widget));
-    } else {
-      ExtensionBrowserEventRouter::GetInstance()->BrowserActionExecuted(
-          action->toolbar_->browser()->profile(), action->extension_->id(),
-          action->toolbar_->browser());
-    }
+    ExtensionBrowserEventRouter::GetInstance()->BrowserActionExecuted(
+        action->toolbar_->browser()->profile(), action->extension_->id(),
+        action->toolbar_->browser());
   }
 
   static gboolean OnExposeEvent(GtkWidget* widget,
@@ -541,7 +551,8 @@ void BrowserActionsToolbarGtk::ExecuteCommandById(int command_id) {
   if (browser_action->HasPopup(tab_id)) {
     ExtensionPopupGtk::Show(
         browser_action->GetPopupUrl(tab_id), browser(),
-        gtk_util::GetWidgetRectRelativeToToplevel(overflow_button_.widget()));
+        gtk_util::GetWidgetRectRelativeToToplevel(overflow_button_.widget()),
+        false);
   } else {
     ExtensionBrowserEventRouter::GetInstance()->BrowserActionExecuted(
         browser()->profile(), extension->id(), browser());
@@ -644,10 +655,11 @@ void BrowserActionsToolbarGtk::OnHierarchyChanged(GtkWidget* widget,
 
 void BrowserActionsToolbarGtk::OnSetFocus(GtkWidget* widget,
                                           GtkWidget* focus_widget) {
+  ExtensionPopupGtk* popup = ExtensionPopupGtk::get_current_extension_popup();
   // The focus of the parent window has changed. Close the popup. Delay the hide
   // because it will destroy the RenderViewHost, which may still be on the
   // call stack.
-  if (!ExtensionPopupGtk::get_current_extension_popup())
+  if (!popup || popup->being_inspected())
     return;
   MessageLoop::current()->PostTask(FROM_HERE,
       method_factory_.NewRunnableMethod(&BrowserActionsToolbarGtk::HidePopup));

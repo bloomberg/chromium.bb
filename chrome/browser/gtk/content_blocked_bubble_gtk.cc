@@ -174,7 +174,8 @@ void ContentSettingBubbleGtk::BuildBubble() {
       bounds_,
       bubble_content,
       arrow_location,
-      true,
+      true,  // match_system_theme
+      true,  // grab_input
       theme_provider,
       this);
 }

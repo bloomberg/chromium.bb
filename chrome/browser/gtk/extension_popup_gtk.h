@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_GTK_EXTENSION_POPUP_GTK_H_
 
 #include "base/scoped_ptr.h"
+#include "base/task.h"
 #include "chrome/browser/gtk/info_bubble_gtk.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
@@ -20,12 +21,14 @@ class ExtensionPopupGtk : public NotificationObserver,
  public:
   ExtensionPopupGtk(Browser* browser,
                     ExtensionHost* host,
-                    const gfx::Rect& relative_to);
+                    const gfx::Rect& relative_to,
+                    bool inspect);
   virtual ~ExtensionPopupGtk();
 
   static void Show(const GURL& url,
                    Browser* browser,
-                   const gfx::Rect& relative_to);
+                   const gfx::Rect& relative_to,
+                   bool inspect);
 
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,
@@ -46,6 +49,10 @@ class ExtensionPopupGtk : public NotificationObserver,
     return current_extension_popup_;
   }
 
+  bool being_inspected() const {
+    return being_inspected_;
+  }
+
  private:
   // Shows the popup widget. Called after loading completes.
   void ShowPopup();
@@ -64,6 +71,11 @@ class ExtensionPopupGtk : public NotificationObserver,
   NotificationRegistrar registrar_;
 
   static ExtensionPopupGtk* current_extension_popup_;
+
+  // Whether a devtools window is attached to this bubble.
+  bool being_inspected_;
+
+  ScopedRunnableMethodFactory<ExtensionPopupGtk> method_factory_;
 
   // Used for testing. ---------------------------------------------------------
   gfx::Rect GetViewBounds();
