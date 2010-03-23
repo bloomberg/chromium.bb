@@ -10,6 +10,7 @@
 #include "chrome/browser/pref_member.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_service.h"
+#include "unicode/calendar.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/menu/view_menu_delegate.h"
@@ -51,6 +52,8 @@ class ClockMenuButton : public views::MenuButton,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
+  const icu::Calendar* calendar() const { return cal_.get(); }
+
   // Updates the time on the menu button. Can be called by host if timezone
   // changes.
   void UpdateText();
@@ -63,6 +66,7 @@ class ClockMenuButton : public views::MenuButton,
   void UpdateTextAndSetNextTimer();
 
   base::OneShotTimer<ClockMenuButton> timer_;
+  scoped_ptr<icu::Calendar> cal_;
 
   // The clock menu.
   // NOTE: we use a scoped_ptr here as menu calls into 'this' from the

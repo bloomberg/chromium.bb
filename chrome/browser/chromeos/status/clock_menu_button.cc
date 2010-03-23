@@ -16,7 +16,6 @@
 #include "gfx/canvas.h"
 #include "gfx/font.h"
 #include "grit/generated_resources.h"
-#include "unicode/calendar.h"
 
 namespace chromeos {
 
@@ -72,13 +71,13 @@ void ClockMenuButton::UpdateText() {
   // Use icu::Calendar because the correct timezone is set on icu::TimeZone's
   // default timezone.
   UErrorCode error = U_ZERO_ERROR;
-  scoped_ptr<icu::Calendar> cal(icu::Calendar::createInstance(error));
-  if (!cal.get())
+  cal_.reset(icu::Calendar::createInstance(error));
+  if (!cal_.get())
     return;
 
-  int hour = cal->get(UCAL_HOUR, error);
-  int minute = cal->get(UCAL_MINUTE, error);
-  int ampm = cal->get(UCAL_AM_PM, error);
+  int hour = cal_->get(UCAL_HOUR, error);
+  int minute = cal_->get(UCAL_MINUTE, error);
+  int ampm = cal_->get(UCAL_AM_PM, error);
 
   if (hour == 0)
     hour = 12;

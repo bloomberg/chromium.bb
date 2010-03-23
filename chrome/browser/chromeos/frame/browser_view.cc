@@ -17,7 +17,6 @@
 #include "chrome/browser/chromeos/status/network_menu_button.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
-#include "chrome/browser/view_ids.h"
 #include "chrome/browser/views/app_launcher.h"
 #include "chrome/browser/views/frame/browser_extender.h"
 #include "chrome/browser/views/frame/browser_frame_gtk.h"
@@ -27,6 +26,7 @@
 #include "chrome/browser/views/tabs/tab_strip.h"
 #include "chrome/browser/views/toolbar_view.h"
 #include "chrome/browser/views/toolbar_star_toggle.h"
+#include "chrome/browser/view_ids.h"
 #include "gfx/canvas.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -107,17 +107,6 @@ class ChromeosTabStrip : public TabStrip {
   DISALLOW_COPY_AND_ASSIGN(ChromeosTabStrip);
 };
 
-// View ID used only in ChromeOS.
-enum ChromeOSViewIds {
-  // Start with the offset that is big enough to avoid possible
-  // collison.
-  VIEW_ID_MAIN_MENU = VIEW_ID_PREDEFINED_COUNT + 10000,
-  VIEW_ID_COMPACT_NAV_BAR,
-  VIEW_ID_STATUS_AREA,
-  VIEW_ID_SPACER,
-  VIEW_ID_OTR_AVATAR,
-};
-
 }  // namespace
 
 namespace chromeos {
@@ -150,7 +139,7 @@ class BrowserViewLayout : public ::BrowserViewLayout {
       case VIEW_ID_SPACER:
         spacer_ = view;
         break;
-      case VIEW_ID_MAIN_MENU:
+      case VIEW_ID_APP_MENU_BUTTON:
         main_menu_button_ = view;
         break;
       case VIEW_ID_STATUS_AREA:
@@ -358,7 +347,7 @@ BrowserView::~BrowserView() {
 void BrowserView::Init() {
   ::BrowserView::Init();
   main_menu_button_ = new views::ImageButton(this);
-  main_menu_button_->SetID(VIEW_ID_MAIN_MENU);
+  main_menu_button_->SetID(VIEW_ID_APP_MENU_BUTTON);
   ThemeProvider* theme_provider =
       frame()->GetThemeProviderForFrame();
   SkBitmap* image = theme_provider->GetBitmapNamed(IDR_APP_LAUNCHER_BUTTON);
