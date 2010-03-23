@@ -1146,6 +1146,8 @@ static void NaClDefNops() {
   NaClDefNopSeq("66666666662e0f1f840000000000", 0x1f);
   /* nop %cs:[%re]ax+%[re]ax*1+0] */
   NaClDefNopSeq("6666666666662e0f1f840000000000", 0x1f);
+  /* UD2 */
+  NaClDefNopSeq("0f0b", 0x0b);
 }
 
 /* Build the set of x64 opcode (instructions). */

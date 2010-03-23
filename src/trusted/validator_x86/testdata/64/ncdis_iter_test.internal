@@ -3849,3 +3849,12 @@ NaClExpVector[8] = {
   { ExprConstant[0] , 1, ExprSize8 },
   { ExprConstant[0] , 0x20, ExprSize8 | ExprSignedHex },
 };
+0000000000000000: 0f 0b                                        nop
+  { 1, { 0x0b, 0x00, 0x00 },
+    NACLi_386,
+    NACL_EMPTY_IFLAGS,
+    InstNop,
+    0, {
+  } };
+NaClExpVector[0] = {
+};
