@@ -124,6 +124,8 @@ void ConfigureButtonForNode(const BookmarkNode* node, BookmarkModel* model,
   std::string label_string = WideToUTF8(node->GetTitle());
   if (!label_string.empty()) {
     GtkWidget* label = gtk_label_new(label_string.c_str());
+    // Until we switch to vector graphics, force the font size.
+    gtk_util::ForceFontSizePixels(label, 13.4);  // 13.4px == 10pt @ 96dpi
 
     // Ellipsize long bookmark names.
     if (node != model->other_node()) {

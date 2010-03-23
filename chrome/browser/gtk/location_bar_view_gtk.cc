@@ -22,6 +22,7 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/content_setting_bubble_model.h"
 #include "chrome/browser/content_setting_image_model.h"
+#include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_accessibility_api_constants.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
@@ -347,6 +348,22 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
                       "chrome-page-action-hbox");
   gtk_box_pack_end(GTK_BOX(hbox_.get()), page_action_hbox_.get(),
                    FALSE, FALSE, 0);
+
+  // Until we switch to vector graphics, force the font size of labels.
+  gtk_util::ForceFontSizePixels(type_to_search_hint_,
+      browser_defaults::kAutocompleteEditFontPixelSize);
+  gtk_util::ForceFontSizePixels(info_label_,
+      browser_defaults::kAutocompleteEditFontPixelSize);
+  gtk_util::ForceFontSizePixels(tab_to_search_full_label_,
+      browser_defaults::kAutocompleteEditFontPixelSize);
+  gtk_util::ForceFontSizePixels(tab_to_search_partial_label_,
+      browser_defaults::kAutocompleteEditFontPixelSize);
+  gtk_util::ForceFontSizePixels(tab_to_search_hint_leading_label_,
+      browser_defaults::kAutocompleteEditFontPixelSize);
+  gtk_util::ForceFontSizePixels(tab_to_search_hint_trailing_label_,
+      browser_defaults::kAutocompleteEditFontPixelSize);
+  gtk_util::ForceFontSizePixels(type_to_search_hint_,
+      browser_defaults::kAutocompleteEditFontPixelSize);
 
   registrar_.Add(this,
                  NotificationType::BROWSER_THEME_CHANGED,
