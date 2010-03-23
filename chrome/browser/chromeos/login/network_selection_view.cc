@@ -13,6 +13,7 @@
 #include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/common/pref_names.h"
@@ -145,7 +146,7 @@ void NetworkSelectionView::UpdateLocalizedStrings() {
 
 void NetworkSelectionView::Refresh() {
   ChangeNetworkNotification(true);
-  NetworkChanged(chromeos::NetworkLibrary::Get());
+  NetworkChanged(chromeos::CrosLibrary::Get()->GetNetworkLibrary());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -247,12 +248,12 @@ void NetworkSelectionView::ItemChanged(views::Combobox* sender,
         OpenPasswordDialog(network->wifi_network);
         return;
       } else {
-        NetworkLibrary::Get()->ConnectToWifiNetwork(
+        CrosLibrary::Get()->GetNetworkLibrary()->ConnectToWifiNetwork(
             network->wifi_network, string16());
       }
     } else if (NetworkList::NETWORK_CELLULAR ==
                network->network_type) {
-      NetworkLibrary::Get()->ConnectToCellularNetwork(
+      CrosLibrary::Get()->GetNetworkLibrary()->ConnectToCellularNetwork(
           network->cellular_network);
     }
   }
@@ -380,9 +381,9 @@ void NetworkSelectionView::ShowConnectingStatus(bool connecting,
 void NetworkSelectionView::ChangeNetworkNotification(bool subscribe) {
   network_notification_ = subscribe;
   if (subscribe)
-    chromeos::NetworkLibrary::Get()->AddObserver(this);
+    chromeos::CrosLibrary::Get()->GetNetworkLibrary()->AddObserver(this);
   else
-    chromeos::NetworkLibrary::Get()->RemoveObserver(this);
+    chromeos::CrosLibrary::Get()->GetNetworkLibrary()->RemoveObserver(this);
 }
 
 void NetworkSelectionView::UpdateConnectingNetworkLabel() {

@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/preferences.h"
 
 #include "base/string_util.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/synaptics_library.h"
 #include "chrome/browser/pref_member.h"
 #include "chrome/browser/pref_service.h"
@@ -45,18 +46,21 @@ void Preferences::NotifyPrefChanged(const std::wstring* pref_name) {
   if (!pref_name || *pref_name == prefs::kTimeZone)
     SetTimeZone(timezone_.GetValue());
   if (!pref_name || *pref_name == prefs::kTapToClickEnabled)
-    SynapticsLibrary::Get()->SetBoolParameter(PARAM_BOOL_TAP_TO_CLICK,
+    CrosLibrary::Get()->GetSynapticsLibrary()->SetBoolParameter(
+        PARAM_BOOL_TAP_TO_CLICK,
         tap_to_click_enabled_.GetValue());
   if (!pref_name || *pref_name == prefs::kVertEdgeScrollEnabled)
-    SynapticsLibrary::Get()->SetBoolParameter(
+    CrosLibrary::Get()->GetSynapticsLibrary()->SetBoolParameter(
         PARAM_BOOL_VERTICAL_EDGE_SCROLLING,
         vert_edge_scroll_enabled_.GetValue());
   if (!pref_name || *pref_name == prefs::kTouchpadSpeedFactor)
-    SynapticsLibrary::Get()->SetRangeParameter(PARAM_RANGE_SPEED_SENSITIVITY,
-                                               speed_factor_.GetValue());
+    CrosLibrary::Get()->GetSynapticsLibrary()->SetRangeParameter(
+        PARAM_RANGE_SPEED_SENSITIVITY,
+        speed_factor_.GetValue());
   if (!pref_name || *pref_name == prefs::kTouchpadSensitivity)
-    SynapticsLibrary::Get()->SetRangeParameter(PARAM_RANGE_TOUCH_SENSITIVITY,
-                                               sensitivity_.GetValue());
+    CrosLibrary::Get()->GetSynapticsLibrary()->SetRangeParameter(
+          PARAM_RANGE_TOUCH_SENSITIVITY,
+          sensitivity_.GetValue());
 }
 
 void Preferences::SetTimeZone(const std::wstring& id) {

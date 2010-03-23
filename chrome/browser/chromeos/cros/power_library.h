@@ -12,7 +12,7 @@
 
 namespace chromeos {
 
-// This class handles the interaction with the ChromeOS power library APIs.
+// This interface defines interaction with the ChromeOS power library APIs.
 // Classes can add themselves as observers. Users can get an instance of this
 // library class like this: PowerLibrary::Get()
 class PowerLibrary {
@@ -21,36 +21,60 @@ class PowerLibrary {
    public:
     virtual void PowerChanged(PowerLibrary* obj) = 0;
   };
-
-  // This gets the singleton PowerLibrary
-  static PowerLibrary* Get();
-
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
-
+  virtual ~PowerLibrary() {}
+  virtual void AddObserver(Observer* observer) = 0;
+  virtual void RemoveObserver(Observer* observer) = 0;
   // Whether or not the line power is connected.
-  bool line_power_on() const;
+  virtual bool line_power_on() const = 0;
 
   // Whether or not the battery is fully charged..
-  bool battery_fully_charged() const;
+  virtual bool battery_fully_charged() const = 0;
 
   // The percentage (0-100) of remaining battery.
-  double battery_percentage() const;
+  virtual double battery_percentage() const = 0;
 
   // Whether there is a battery present.
-  bool battery_is_present() const;
+  virtual bool battery_is_present() const = 0;
 
   // The amount of time until battery is empty.
-  base::TimeDelta battery_time_to_empty() const;
+  virtual base::TimeDelta battery_time_to_empty() const = 0;
 
   // The amount of time until battery is full.
-  base::TimeDelta battery_time_to_full() const;
+  virtual base::TimeDelta battery_time_to_full() const = 0;
+};
+
+
+// This class handles the interaction with the ChromeOS power library APIs.
+// Classes can add themselves as observers. Users can get an instance of this
+// library class like this: PowerLibrary::Get()
+class PowerLibraryImpl : public PowerLibrary {
+ public:
+  PowerLibraryImpl();
+  virtual ~PowerLibraryImpl();
+
+  // PowerLibrary overrides.
+  virtual void AddObserver(Observer* observer);
+  virtual void RemoveObserver(Observer* observer);
+
+  // Whether or not the line power is connected.
+  virtual bool line_power_on() const;
+
+  // Whether or not the battery is fully charged..
+  virtual bool battery_fully_charged() const;
+
+  // The percentage (0-100) of remaining battery.
+  virtual double battery_percentage() const;
+
+  // Whether there is a battery present.
+  virtual bool battery_is_present() const;
+
+  // The amount of time until battery is empty.
+  virtual base::TimeDelta battery_time_to_empty() const;
+
+  // The amount of time until battery is full.
+  virtual base::TimeDelta battery_time_to_full() const;
 
  private:
-  friend struct DefaultSingletonTraits<PowerLibrary>;
-
-  PowerLibrary();
-  ~PowerLibrary();
 
   // This method is called when there's a change in power status.
   // This method is called on a background thread.
@@ -73,7 +97,7 @@ class PowerLibrary {
   // The latest power status.
   chromeos::PowerStatus status_;
 
-  DISALLOW_COPY_AND_ASSIGN(PowerLibrary);
+  DISALLOW_COPY_AND_ASSIGN(PowerLibraryImpl);
 };
 
 }  // namespace chromeos

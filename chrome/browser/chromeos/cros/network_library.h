@@ -126,10 +126,7 @@ struct NetworkIPConfig {
 };
 typedef std::vector<NetworkIPConfig> NetworkIPConfigVector;
 
-// This class handles the interaction with the ChromeOS network library APIs.
-// Classes can add themselves as observers. Users can get an instance of this
-// library class like this: NetworkLibrary::Get()
-class NetworkLibrary : public URLRequestJobTracker::JobObserver {
+class NetworkLibrary {
  public:
   class Observer {
    public:
@@ -147,8 +144,88 @@ class NetworkLibrary : public URLRequestJobTracker::JobObserver {
     virtual void NetworkTraffic(NetworkLibrary* obj, int traffic_type) = 0;
   };
 
-  // This gets the singleton NetworkLibrary
-  static NetworkLibrary* Get();
+  virtual ~NetworkLibrary() {}
+  virtual void AddObserver(Observer* observer) = 0;
+  virtual void RemoveObserver(Observer* observer) = 0;
+
+  virtual const EthernetNetwork& ethernet_network() const = 0;
+  virtual bool ethernet_connecting() const = 0;
+  virtual bool ethernet_connected() const = 0;
+
+  virtual const std::string& wifi_ssid() const = 0;
+  virtual bool wifi_connecting() const = 0;
+  virtual bool wifi_connected() const = 0;
+  virtual int wifi_strength() const = 0;
+
+  virtual const std::string& cellular_name() const = 0;
+  virtual bool cellular_connecting() const = 0;
+  virtual bool cellular_connected() const = 0;
+  virtual int cellular_strength() const = 0;
+
+  // Return true if any network is currently connected.
+  virtual bool Connected() const = 0;
+
+  // Return true if any network is currently connecting.
+  virtual bool Connecting() const = 0;
+
+  // Returns the current IP address if connected. If not, returns empty string.
+  virtual const std::string& IPAddress() const = 0;
+
+  // Returns the current list of wifi networks.
+  virtual const WifiNetworkVector& wifi_networks() const = 0;
+
+  // Returns the current list of cellular networks.
+  virtual const CellularNetworkVector& cellular_networks() const = 0;
+
+  // Request a scan for new wifi networks.
+  virtual void RequestWifiScan() = 0;
+
+  // Connect to the specified wireless network with password.
+  virtual void ConnectToWifiNetwork(WifiNetwork network,
+                                    const string16& password) = 0;
+
+  // Connect to the specified wifi ssid with password.
+  virtual void ConnectToWifiNetwork(const string16& ssid,
+                                    const string16& password) = 0;
+
+  // Connect to the specified cellular network.
+  virtual void ConnectToCellularNetwork(CellularNetwork network) = 0;
+
+  virtual bool ethernet_available() const = 0;
+  virtual bool wifi_available() const = 0;
+  virtual bool cellular_available() const = 0;
+
+  virtual bool ethernet_enabled() const = 0;
+  virtual bool wifi_enabled() const = 0;
+  virtual bool cellular_enabled() const = 0;
+
+  virtual bool offline_mode() const = 0;
+
+  // Enables/disables the ethernet network device.
+  virtual void EnableEthernetNetworkDevice(bool enable) = 0;
+
+  // Enables/disables the wifi network device.
+  virtual void EnableWifiNetworkDevice(bool enable) = 0;
+
+  // Enables/disables the cellular network device.
+  virtual void EnableCellularNetworkDevice(bool enable) = 0;
+
+  // Enables/disables offline mode.
+  virtual void EnableOfflineMode(bool enable) = 0;
+
+  // Fetches IP configs for a given device_path
+  virtual NetworkIPConfigVector GetIPConfigs(
+      const std::string& device_path) = 0;
+};
+
+// This class handles the interaction with the ChromeOS network library APIs.
+// Classes can add themselves as observers. Users can get an instance of this
+// library class like this: NetworkLibrary::Get()
+class NetworkLibraryImpl : public NetworkLibrary,
+                           public URLRequestJobTracker::JobObserver {
+ public:
+  NetworkLibraryImpl();
+  virtual ~NetworkLibraryImpl();
 
   // URLRequestJobTracker::JobObserver methods (called on the IO thread):
   virtual void OnJobAdded(URLRequestJob* job);
@@ -158,88 +235,89 @@ class NetworkLibrary : public URLRequestJobTracker::JobObserver {
                              int status_code);
   virtual void OnBytesRead(URLRequestJob* job, int byte_count);
 
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
+  // NetworkLibrary overrides.
+  virtual void AddObserver(Observer* observer);
+  virtual void RemoveObserver(Observer* observer);
 
-  const EthernetNetwork& ethernet_network() const { return ethernet_; }
-  bool ethernet_connecting() const { return ethernet_.connecting; }
-  bool ethernet_connected() const { return ethernet_.connected; }
+  virtual const EthernetNetwork& ethernet_network() const { return ethernet_; }
+  virtual bool ethernet_connecting() const { return ethernet_.connecting; }
+  virtual bool ethernet_connected() const { return ethernet_.connected; }
 
-  const std::string& wifi_ssid() const { return wifi_.ssid; }
-  bool wifi_connecting() const { return wifi_.connecting; }
-  bool wifi_connected() const { return wifi_.connected; }
-  int wifi_strength() const { return wifi_.strength; }
+  virtual const std::string& wifi_ssid() const { return wifi_.ssid; }
+  virtual bool wifi_connecting() const { return wifi_.connecting; }
+  virtual bool wifi_connected() const { return wifi_.connected; }
+  virtual int wifi_strength() const { return wifi_.strength; }
 
-  const std::string& cellular_name() const { return cellular_.name; }
-  bool cellular_connecting() const { return cellular_.connecting; }
-  bool cellular_connected() const { return cellular_.connected; }
-  int cellular_strength() const { return cellular_.strength; }
+  virtual const std::string& cellular_name() const { return cellular_.name; }
+  virtual bool cellular_connecting() const { return cellular_.connecting; }
+  virtual bool cellular_connected() const { return cellular_.connected; }
+  virtual int cellular_strength() const { return cellular_.strength; }
 
   // Return true if any network is currently connected.
-  bool Connected() const;
+  virtual bool Connected() const;
 
   // Return true if any network is currently connecting.
-  bool Connecting() const;
+  virtual bool Connecting() const;
 
   // Returns the current IP address if connected. If not, returns empty string.
-  const std::string& IPAddress() const;
+  virtual const std::string& IPAddress() const;
 
   // Returns the current list of wifi networks.
-  const WifiNetworkVector& wifi_networks() const { return wifi_networks_; }
+  virtual const WifiNetworkVector& wifi_networks() const {
+    return wifi_networks_;
+  }
 
   // Returns the current list of cellular networks.
-  const CellularNetworkVector& cellular_networks() const {
+  virtual const CellularNetworkVector& cellular_networks() const {
     return cellular_networks_;
   }
 
   // Request a scan for new wifi networks.
-  void RequestWifiScan();
+  virtual void RequestWifiScan();
 
   // Connect to the specified wireless network with password.
-  void ConnectToWifiNetwork(WifiNetwork network, const string16& password);
+  virtual void ConnectToWifiNetwork(WifiNetwork network,
+                                    const string16& password);
 
   // Connect to the specified wifi ssid with password.
-  void ConnectToWifiNetwork(const string16& ssid, const string16& password);
+  virtual void ConnectToWifiNetwork(const string16& ssid,
+                                    const string16& password);
 
   // Connect to the specified cellular network.
-  void ConnectToCellularNetwork(CellularNetwork network);
+  virtual void ConnectToCellularNetwork(CellularNetwork network);
 
-  bool ethernet_available() const {
+  virtual bool ethernet_available() const {
       return available_devices_ & (1 << TYPE_ETHERNET); }
-  bool wifi_available() const {
+  virtual bool wifi_available() const {
       return available_devices_ & (1 << TYPE_WIFI); }
-  bool cellular_available() const {
+  virtual bool cellular_available() const {
       return available_devices_ & (1 << TYPE_CELLULAR); }
 
-  bool ethernet_enabled() const {
+  virtual bool ethernet_enabled() const {
       return enabled_devices_ & (1 << TYPE_ETHERNET); }
-  bool wifi_enabled() const {
+  virtual bool wifi_enabled() const {
       return enabled_devices_ & (1 << TYPE_WIFI); }
-  bool cellular_enabled() const {
+  virtual bool cellular_enabled() const {
       return enabled_devices_ & (1 << TYPE_CELLULAR); }
 
-  bool offline_mode() const { return offline_mode_; }
+  virtual bool offline_mode() const { return offline_mode_; }
 
   // Enables/disables the ethernet network device.
-  void EnableEthernetNetworkDevice(bool enable);
+  virtual void EnableEthernetNetworkDevice(bool enable);
 
   // Enables/disables the wifi network device.
-  void EnableWifiNetworkDevice(bool enable);
+  virtual void EnableWifiNetworkDevice(bool enable);
 
   // Enables/disables the cellular network device.
-  void EnableCellularNetworkDevice(bool enable);
+  virtual void EnableCellularNetworkDevice(bool enable);
 
   // Enables/disables offline mode.
-  void EnableOfflineMode(bool enable);
+  virtual void EnableOfflineMode(bool enable);
 
   // Fetches IP configs for a given device_path
-  NetworkIPConfigVector GetIPConfigs(const std::string& device_path);
+  virtual NetworkIPConfigVector GetIPConfigs(const std::string& device_path);
 
  private:
-  friend struct DefaultSingletonTraits<NetworkLibrary>;
-
-  NetworkLibrary();
-  ~NetworkLibrary();
 
   // This method is called when there's a change in network status.
   // This method is called on a background thread.
@@ -287,7 +365,7 @@ class NetworkLibrary : public URLRequestJobTracker::JobObserver {
 
   // Timer for sending NetworkTraffic notification every
   // kNetworkTrafficeTimerSecs seconds.
-  base::OneShotTimer<NetworkLibrary> timer_;
+  base::OneShotTimer<NetworkLibraryImpl> timer_;
 
   // The current traffic type that will be sent out for the next NetworkTraffic
   // notification. This is a bitfield of TrafficTypeMasks.
@@ -322,7 +400,7 @@ class NetworkLibrary : public URLRequestJobTracker::JobObserver {
 
   bool offline_mode_;
 
-  DISALLOW_COPY_AND_ASSIGN(NetworkLibrary);
+  DISALLOW_COPY_AND_ASSIGN(NetworkLibraryImpl);
 };
 
 }  // namespace chromeos

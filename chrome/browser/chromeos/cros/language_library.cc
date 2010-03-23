@@ -12,9 +12,9 @@
 // Allows InvokeLater without adding refcounting. This class is a Singleton and
 // won't be deleted until it's last InvokeLater is run.
 template <>
-struct RunnableMethodTraits<chromeos::LanguageLibrary> {
-  void RetainCallee(chromeos::LanguageLibrary* obj) {}
-  void ReleaseCallee(chromeos::LanguageLibrary* obj) {}
+struct RunnableMethodTraits<chromeos::LanguageLibraryImpl> {
+  void RetainCallee(chromeos::LanguageLibraryImpl* obj) {}
+  void ReleaseCallee(chromeos::LanguageLibraryImpl* obj) {}
 };
 
 namespace {
@@ -41,32 +41,27 @@ bool FindAndUpdateProperty(const chromeos::ImeProperty& new_prop,
 
 namespace chromeos {
 
-LanguageLibrary::LanguageLibrary() : language_status_connection_(NULL) {
+LanguageLibraryImpl::LanguageLibraryImpl() : language_status_connection_(NULL) {
 }
 
-LanguageLibrary::~LanguageLibrary() {
-  if (EnsureLoadedAndStarted()) {
+LanguageLibraryImpl::~LanguageLibraryImpl() {
+  if (language_status_connection_) {
     chromeos::DisconnectLanguageStatus(language_status_connection_);
   }
 }
 
-LanguageLibrary::Observer::~Observer() {
+LanguageLibraryImpl::Observer::~Observer() {
 }
 
-// static
-LanguageLibrary* LanguageLibrary::Get() {
-  return Singleton<LanguageLibrary>::get();
-}
-
-void LanguageLibrary::AddObserver(Observer* observer) {
+void LanguageLibraryImpl::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
 
-void LanguageLibrary::RemoveObserver(Observer* observer) {
+void LanguageLibraryImpl::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-chromeos::InputLanguageList* LanguageLibrary::GetActiveLanguages() {
+chromeos::InputLanguageList* LanguageLibraryImpl::GetActiveLanguages() {
   chromeos::InputLanguageList* result = NULL;
   if (EnsureLoadedAndStarted()) {
     result = chromeos::GetActiveLanguages(language_status_connection_);
@@ -74,7 +69,7 @@ chromeos::InputLanguageList* LanguageLibrary::GetActiveLanguages() {
   return result ? result : CreateFallbackInputLanguageList();
 }
 
-chromeos::InputLanguageList* LanguageLibrary::GetSupportedLanguages() {
+chromeos::InputLanguageList* LanguageLibraryImpl::GetSupportedLanguages() {
   chromeos::InputLanguageList* result = NULL;
   if (EnsureLoadedAndStarted()) {
     result = chromeos::GetSupportedLanguages(language_status_connection_);
@@ -82,14 +77,14 @@ chromeos::InputLanguageList* LanguageLibrary::GetSupportedLanguages() {
   return result ? result : CreateFallbackInputLanguageList();
 }
 
-void LanguageLibrary::ChangeLanguage(
+void LanguageLibraryImpl::ChangeLanguage(
     LanguageCategory category, const std::string& id) {
   if (EnsureLoadedAndStarted()) {
     chromeos::ChangeLanguage(language_status_connection_, category, id.c_str());
   }
 }
 
-void LanguageLibrary::ActivateImeProperty(const std::string& key) {
+void LanguageLibraryImpl::ActivateImeProperty(const std::string& key) {
   DCHECK(!key.empty());
   if (EnsureLoadedAndStarted()) {
     chromeos::ActivateImeProperty(
@@ -97,7 +92,7 @@ void LanguageLibrary::ActivateImeProperty(const std::string& key) {
   }
 }
 
-void LanguageLibrary::DeactivateImeProperty(const std::string& key) {
+void LanguageLibraryImpl::DeactivateImeProperty(const std::string& key) {
   DCHECK(!key.empty());
   if (EnsureLoadedAndStarted()) {
     chromeos::DeactivateImeProperty(
@@ -105,7 +100,7 @@ void LanguageLibrary::DeactivateImeProperty(const std::string& key) {
   }
 }
 
-bool LanguageLibrary::ActivateLanguage(
+bool LanguageLibraryImpl::ActivateLanguage(
     LanguageCategory category, const std::string& id) {
   bool success = false;
   if (EnsureLoadedAndStarted()) {
@@ -115,7 +110,7 @@ bool LanguageLibrary::ActivateLanguage(
   return success;
 }
 
-bool LanguageLibrary::DeactivateLanguage(
+bool LanguageLibraryImpl::DeactivateLanguage(
     LanguageCategory category, const std::string& id) {
   bool success = false;
   if (EnsureLoadedAndStarted()) {
@@ -125,7 +120,7 @@ bool LanguageLibrary::DeactivateLanguage(
   return success;
 }
 
-bool LanguageLibrary::GetImeConfig(
+bool LanguageLibraryImpl::GetImeConfig(
     const char* section, const char* config_name, ImeConfigValue* out_value) {
   bool success = false;
   if (EnsureLoadedAndStarted()) {
@@ -135,7 +130,7 @@ bool LanguageLibrary::GetImeConfig(
   return success;
 }
 
-bool LanguageLibrary::SetImeConfig(
+bool LanguageLibraryImpl::SetImeConfig(
     const char* section, const char* config_name, const ImeConfigValue& value) {
   bool success = false;
   if (EnsureLoadedAndStarted()) {
@@ -146,27 +141,30 @@ bool LanguageLibrary::SetImeConfig(
 }
 
 // static
-void LanguageLibrary::LanguageChangedHandler(
+void LanguageLibraryImpl::LanguageChangedHandler(
     void* object, const chromeos::InputLanguage& current_language) {
-  LanguageLibrary* language_library = static_cast<LanguageLibrary*>(object);
+  LanguageLibraryImpl* language_library =
+      static_cast<LanguageLibraryImpl*>(object);
   language_library->UpdateCurrentLanguage(current_language);
 }
 
 // static
-void LanguageLibrary::RegisterPropertiesHandler(
+void LanguageLibraryImpl::RegisterPropertiesHandler(
     void* object, const ImePropertyList& prop_list) {
-  LanguageLibrary* language_library = static_cast<LanguageLibrary*>(object);
+  LanguageLibraryImpl* language_library =
+      static_cast<LanguageLibraryImpl*>(object);
   language_library->RegisterProperties(prop_list);
 }
 
 // static
-void LanguageLibrary::UpdatePropertyHandler(
+void LanguageLibraryImpl::UpdatePropertyHandler(
     void* object, const ImePropertyList& prop_list) {
-  LanguageLibrary* language_library = static_cast<LanguageLibrary*>(object);
+  LanguageLibraryImpl* language_library =
+      static_cast<LanguageLibraryImpl*>(object);
   language_library->UpdateProperty(prop_list);
 }
 
-bool LanguageLibrary::EnsureStarted() {
+bool LanguageLibraryImpl::EnsureStarted() {
   if (language_status_connection_) {
     if (chromeos::LanguageStatusConnectionIsAlive(
             language_status_connection_)) {
@@ -184,11 +182,12 @@ bool LanguageLibrary::EnsureStarted() {
   return language_status_connection_ != NULL;
 }
 
-bool LanguageLibrary::EnsureLoadedAndStarted() {
-  return CrosLibrary::EnsureLoaded() && EnsureStarted();
+bool LanguageLibraryImpl::EnsureLoadedAndStarted() {
+  return CrosLibrary::Get()->EnsureLoaded() &&
+         EnsureStarted();
 }
 
-void LanguageLibrary::UpdateCurrentLanguage(
+void LanguageLibraryImpl::UpdateCurrentLanguage(
     const chromeos::InputLanguage& current_language) {
   // Make sure we run on UI thread.
   if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
@@ -197,7 +196,8 @@ void LanguageLibrary::UpdateCurrentLanguage(
         ChromeThread::UI, FROM_HERE,
         // NewRunnableMethod() copies |current_language| by value.
         NewRunnableMethod(
-            this, &LanguageLibrary::UpdateCurrentLanguage, current_language));
+            this, &LanguageLibraryImpl::UpdateCurrentLanguage,
+            current_language));
     return;
   }
 
@@ -206,12 +206,12 @@ void LanguageLibrary::UpdateCurrentLanguage(
   FOR_EACH_OBSERVER(Observer, observers_, LanguageChanged(this));
 }
 
-void LanguageLibrary::RegisterProperties(const ImePropertyList& prop_list) {
+void LanguageLibraryImpl::RegisterProperties(const ImePropertyList& prop_list) {
   if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
         NewRunnableMethod(
-            this, &LanguageLibrary::RegisterProperties, prop_list));
+            this, &LanguageLibraryImpl::RegisterProperties, prop_list));
     return;
   }
 
@@ -220,12 +220,12 @@ void LanguageLibrary::RegisterProperties(const ImePropertyList& prop_list) {
   FOR_EACH_OBSERVER(Observer, observers_, ImePropertiesChanged(this));
 }
 
-void LanguageLibrary::UpdateProperty(const ImePropertyList& prop_list) {
+void LanguageLibraryImpl::UpdateProperty(const ImePropertyList& prop_list) {
   if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
         NewRunnableMethod(
-            this, &LanguageLibrary::UpdateProperty, prop_list));
+            this, &LanguageLibraryImpl::UpdateProperty, prop_list));
     return;
   }
 

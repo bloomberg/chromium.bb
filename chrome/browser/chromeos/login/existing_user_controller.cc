@@ -74,8 +74,8 @@ void ExistingUserController::Init() {
 
   WmMessageListener::instance()->AddObserver(this);
 
-  if (CrosLibrary::EnsureLoaded())
-    LoginLibrary::Get()->EmitLoginPromptReady();
+  if (CrosLibrary::Get()->EnsureLoaded())
+    CrosLibrary::Get()->GetLoginLibrary()->EmitLoginPromptReady();
 }
 
 ExistingUserController::~ExistingUserController() {

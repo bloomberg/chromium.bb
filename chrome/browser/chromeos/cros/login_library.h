@@ -12,41 +12,41 @@
 
 namespace chromeos {
 
-// This class handles the interaction with the ChromeOS login library APIs.
-// Users can get an instance of this library class like this:
-//   LoginLibrary::Get()
+// This interface defines the interaction with the ChromeOS login library APIs.
 class LoginLibrary {
  public:
-  // If the libray fails to load the first time we check, we don't want to
-  // keep trying to load the library.  If it fails the first time, it fails.
-  static bool tried_and_failed;
-
-  // This gets the singleton LoginLibrary.
-  static LoginLibrary* Get();
-
+  virtual ~LoginLibrary() {}
   // Requests that the Upstart signal login-prompt-ready be emitted.
-  bool EmitLoginPromptReady();
+  virtual bool EmitLoginPromptReady() = 0;
 
   // Tells the session manager to start a logged-in session for the user
   // |user_email|.  |unique_id| is meant to be used when we have a non-human-
   // readable unique identifier by which we distinguish users (to deal with
   // potential email address changes over time).
-  bool StartSession(const std::string& user_email,
-                    const std::string& unique_id /* unused */);
+  virtual bool StartSession(const std::string& user_email,
+                            const std::string& unique_id /* unused */) = 0;
 
   // Tells the session manager to terminate the current logged-in session.
   // In the event that we ever support multiple simultaneous user sessions,
   // This will tell the session manager to terminate the session for the user
   // indicated by |unique_id|.
-  bool StopSession(const std::string& unique_id /* unused */);
+  virtual bool StopSession(const std::string& unique_id /* unused */) = 0;
+};
+
+// This class handles the interaction with the ChromeOS login library APIs.
+class LoginLibraryImpl : public LoginLibrary {
+ public:
+  LoginLibraryImpl() {}
+  virtual ~LoginLibraryImpl() {}
+
+  // LoginLibrary overrides.
+  virtual bool EmitLoginPromptReady();
+  virtual bool StartSession(const std::string& user_email,
+                            const std::string& unique_id /* unused */);
+  virtual bool StopSession(const std::string& unique_id /* unused */);
 
  private:
-  friend struct DefaultSingletonTraits<LoginLibrary>;
-
-  LoginLibrary() {}
-  ~LoginLibrary() {}
-
-  DISALLOW_COPY_AND_ASSIGN(LoginLibrary);
+  DISALLOW_COPY_AND_ASSIGN(LoginLibraryImpl);
 };
 
 }  // namespace chromeos

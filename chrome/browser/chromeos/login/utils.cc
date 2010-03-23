@@ -34,8 +34,8 @@ void CompleteLogin(const std::string& username,
                    std::vector<std::string> cookies) {
   LOG(INFO) << "LoginManagerView: OnLoginSuccess()";
 
-  if (CrosLibrary::EnsureLoaded())
-    LoginLibrary::Get()->StartSession(username, "");
+  if (CrosLibrary::Get()->EnsureLoaded())
+    CrosLibrary::Get()->GetLoginLibrary()->StartSession(username, "");
 
   UserManager::Get()->UserLoggedIn(username);
 

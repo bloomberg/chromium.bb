@@ -13,6 +13,7 @@
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
+#include "chrome/browser/chromeos/cros/mock_library_loader.h"
 #include "chrome/browser/chromeos/login/mock_auth_response_handler.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/net/url_fetcher.h"
@@ -22,6 +23,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace chromeos {
+using ::testing::AnyNumber;
 using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
 using ::testing::_;
@@ -47,10 +49,33 @@ class GoogleAuthenticatorTest : public ::testing::Test {
   }
   ~GoogleAuthenticatorTest() {}
 
+  virtual void SetUp() {
+    chromeos::CrosLibrary::TestApi* test_api =
+        chromeos::CrosLibrary::Get()->GetTestApi();
+
+    loader_ = new MockLibraryLoader();
+    ON_CALL(*loader_, Load(_))
+        .WillByDefault(Return(true));
+    EXPECT_CALL(*loader_, Load(_))
+        .Times(AnyNumber());
+
+    test_api->SetLibraryLoader(loader_);
+
+    mock_library_ = new MockCryptohomeLibrary();
+    test_api->SetCryptohomeLibrary(mock_library_);
+}
+
+  // Tears down the test fixture.
+  virtual void TearDown() {
+  }
+
   unsigned char fake_hash_[32];
   std::string hash_ascii_;
   std::string username_;
   ResponseCookies cookies_;
+  // Mocks, destroyed by CrosLibrary class.
+  MockCryptohomeLibrary* mock_library_;
+  MockLibraryLoader* loader_;
 };
 
 TEST_F(GoogleAuthenticatorTest, SaltToAsciiTest) {
@@ -60,8 +85,7 @@ TEST_F(GoogleAuthenticatorTest, SaltToAsciiTest) {
   fake_salt[7] = 10 << 4;
   std::vector<unsigned char> salt_v(fake_salt, fake_salt + sizeof(fake_salt));
 
-  MockCryptohomeLibrary library;
-  GoogleAuthenticator auth(NULL, &library, NULL, NULL);
+  GoogleAuthenticator auth(NULL, NULL, NULL);
   auth.set_system_salt(salt_v);
 
   EXPECT_EQ("0a010000000000a0", auth.SaltAsAscii());
@@ -91,24 +115,24 @@ TEST_F(GoogleAuthenticatorTest, OnLoginSuccessTest) {
   MockConsumer consumer;
   EXPECT_CALL(consumer, OnLoginSuccess(username_, _));
 
-  MockCryptohomeLibrary library;
-  EXPECT_CALL(library, Mount(username_, hash_ascii_))
+  EXPECT_CALL(*mock_library_, Mount(username_, hash_ascii_))
       .WillOnce(Return(true));
 
-  GoogleAuthenticator auth(&consumer, &library, NULL, NULL);
-  auth.OnLoginSuccess(&consumer, &library, username_, hash_ascii_, cookies_);
+  GoogleAuthenticator auth(&consumer, NULL, NULL);
+  auth.OnLoginSuccess(&consumer, username_, hash_ascii_,
+                      cookies_);
 }
 
 TEST_F(GoogleAuthenticatorTest, MountFailureTest) {
   MockConsumer consumer;
   EXPECT_CALL(consumer, OnLoginFailure(_));
 
-  MockCryptohomeLibrary library;
-  EXPECT_CALL(library, Mount(username_, hash_ascii_))
+  EXPECT_CALL(*mock_library_, Mount(username_, hash_ascii_))
       .WillOnce(Return(false));
 
-  GoogleAuthenticator auth(&consumer, &library, NULL, NULL);
-  auth.OnLoginSuccess(&consumer, &library, username_, hash_ascii_, cookies_);
+  GoogleAuthenticator auth(&consumer, NULL, NULL);
+  auth.OnLoginSuccess(&consumer, username_, hash_ascii_,
+                      cookies_);
 }
 
 static void Quit() { MessageLoop::current()->Quit(); }
@@ -125,11 +149,10 @@ TEST_F(GoogleAuthenticatorTest, LoginNetFailureTest) {
   MockConsumer consumer;
   EXPECT_CALL(consumer, OnLoginFailure(data))
       .WillOnce(InvokeWithoutArgs(Quit));
-  MockCryptohomeLibrary library;
-  EXPECT_CALL(library, CheckKey(username_, hash_ascii_))
+  EXPECT_CALL(*mock_library_, CheckKey(username_, hash_ascii_))
       .WillOnce(Return(false));
 
-  GoogleAuthenticator auth(&consumer, &library, NULL, NULL);
+  GoogleAuthenticator auth(&consumer, NULL, NULL);
   auth.set_password_hash(hash_ascii_);
   auth.set_username(username_);
   auth.OnURLFetchComplete(NULL, source, status, 0, cookies_, data);
@@ -148,9 +171,8 @@ TEST_F(GoogleAuthenticatorTest, LoginDeniedTest) {
   MockConsumer consumer;
   EXPECT_CALL(consumer, OnLoginFailure(data))
       .WillOnce(InvokeWithoutArgs(Quit));
-  MockCryptohomeLibrary library;
 
-  GoogleAuthenticator auth(&consumer, &library, NULL, NULL);
+  GoogleAuthenticator auth(&consumer, NULL, NULL);
   auth.OnURLFetchComplete(NULL, source, status, 403, cookies_, data);
   MessageLoop::current()->Run();  // So tasks can be posted.
 }
@@ -168,13 +190,12 @@ TEST_F(GoogleAuthenticatorTest, OfflineLoginTest) {
   MockConsumer consumer;
   EXPECT_CALL(consumer, OnLoginSuccess(username_, cookies_))
       .WillOnce(InvokeWithoutArgs(Quit));
-  MockCryptohomeLibrary library;
-  EXPECT_CALL(library, CheckKey(username_, hash_ascii_))
+  EXPECT_CALL(*mock_library_, CheckKey(username_, hash_ascii_))
       .WillOnce(Return(true));
-  EXPECT_CALL(library, Mount(username_, hash_ascii_))
+  EXPECT_CALL(*mock_library_, Mount(username_, hash_ascii_))
       .WillOnce(Return(true));
 
-  GoogleAuthenticator auth(&consumer, &library, NULL, NULL);
+  GoogleAuthenticator auth(&consumer, NULL, NULL);
   auth.set_password_hash(hash_ascii_);
   auth.set_username(username_);
   auth.OnURLFetchComplete(NULL, source, status, 0, cookies_, data);
@@ -193,13 +214,11 @@ TEST_F(GoogleAuthenticatorTest, ClientLoginPassIssueAuthTokenFailTest) {
   MockConsumer consumer;
   EXPECT_CALL(consumer, OnLoginFailure(data))
       .WillOnce(InvokeWithoutArgs(Quit));
-  MockCryptohomeLibrary library;
   MockAuthResponseHandler* cl_handler = new MockAuthResponseHandler;
   EXPECT_CALL(*cl_handler, CanHandle(cl_source))
       .WillOnce(Return(true));
 
   GoogleAuthenticator auth(&consumer,
-                           &library,
                            cl_handler,  // takes ownership.
                            new IssueResponseHandler(NULL));
   auth.set_password_hash(hash_ascii_);
@@ -230,12 +249,10 @@ TEST_F(GoogleAuthenticatorTest, OnlineLoginTest) {
   MockConsumer consumer;
   EXPECT_CALL(consumer, OnLoginSuccess(username_, cookies_))
       .WillOnce(InvokeWithoutArgs(Quit));
-  MockCryptohomeLibrary library;
-  EXPECT_CALL(library, Mount(username_, hash_ascii_))
+  EXPECT_CALL(*mock_library_, Mount(username_, hash_ascii_))
       .WillOnce(Return(true));
 
   GoogleAuthenticator auth(&consumer,
-                           &library,
                            new ClientLoginResponseHandler(NULL),
                            new IssueResponseHandler(NULL));
   auth.set_password_hash(hash_ascii_);

@@ -45,21 +45,28 @@ class MountLibrary {
                               const std::string& path) = 0;
   };
 
-  // This gets the singleton MountLibrary
-  static MountLibrary* Get();
+  virtual ~MountLibrary() {}
+  virtual void AddObserver(Observer* observer) = 0;
+  virtual void RemoveObserver(Observer* observer) = 0;
+  virtual const DiskVector& disks() const = 0;
+};
 
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
 
-  const DiskVector& disks() const { return disks_; }
+// This class handles the interaction with the ChromeOS mount library APIs.
+// Classes can add themselves as observers. Users can get an instance of this
+// library class like this: MountLibrary::Get().
+class MountLibraryImpl : public MountLibrary {
+ public:
+  MountLibraryImpl();
+  virtual ~MountLibraryImpl();
+
+  // MountLibrary overrides.
+  virtual void AddObserver(Observer* observer);
+  virtual void RemoveObserver(Observer* observer);
+  virtual const DiskVector& disks() const { return disks_; }
 
  private:
-  friend struct DefaultSingletonTraits<MountLibrary>;
-
   void ParseDisks(const MountStatus& status);
-
-  MountLibrary();
-  ~MountLibrary();
 
   // This method is called when there's a change in mount status.
   // This method is called the UI Thread.
@@ -87,7 +94,7 @@ class MountLibrary {
   // The list of disks found.
   DiskVector disks_;
 
-  DISALLOW_COPY_AND_ASSIGN(MountLibrary);
+  DISALLOW_COPY_AND_ASSIGN(MountLibraryImpl);
 };
 
 }  // namespace chromeos

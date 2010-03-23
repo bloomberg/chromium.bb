@@ -12,27 +12,22 @@
 // Allows InvokeLater without adding refcounting. This class is a Singleton and
 // won't be deleted until it's last InvokeLater is run.
 template <>
-struct RunnableMethodTraits<chromeos::MountLibrary> {
-  void RetainCallee(chromeos::MountLibrary* obj) {}
-  void ReleaseCallee(chromeos::MountLibrary* obj) {}
+struct RunnableMethodTraits<chromeos::MountLibraryImpl> {
+  void RetainCallee(chromeos::MountLibraryImpl* obj) {}
+  void ReleaseCallee(chromeos::MountLibraryImpl* obj) {}
 };
 
 namespace chromeos {
 
-// static
-MountLibrary* MountLibrary::Get() {
-  return Singleton<MountLibrary>::get();
-}
-
-void MountLibrary::AddObserver(Observer* observer) {
+void MountLibraryImpl::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
 
-void MountLibrary::RemoveObserver(Observer* observer) {
+void MountLibraryImpl::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void MountLibrary::ParseDisks(const MountStatus& status) {
+void MountLibraryImpl::ParseDisks(const MountStatus& status) {
   disks_.clear();
   for (int i = 0; i < status.size; i++) {
     std::string path;
@@ -51,32 +46,32 @@ void MountLibrary::ParseDisks(const MountStatus& status) {
   }
 }
 
-MountLibrary::MountLibrary() {
-  if (CrosLibrary::EnsureLoaded()) {
+MountLibraryImpl::MountLibraryImpl() : mount_status_connection_(NULL) {
+  if (CrosLibrary::Get()->EnsureLoaded()) {
     Init();
   } else {
     LOG(ERROR) << "Cros Library has not been loaded";
   }
 }
 
-MountLibrary::~MountLibrary() {
-  if (CrosLibrary::EnsureLoaded()) {
+MountLibraryImpl::~MountLibraryImpl() {
+  if (mount_status_connection_) {
     DisconnectMountStatus(mount_status_connection_);
   }
 }
 
 // static
-void MountLibrary::MountStatusChangedHandler(void* object,
+void MountLibraryImpl::MountStatusChangedHandler(void* object,
                                              const MountStatus& status,
                                              MountEventType evt,
                                              const  char* path) {
-  MountLibrary* mount = static_cast<MountLibrary*>(object);
+  MountLibraryImpl* mount = static_cast<MountLibraryImpl*>(object);
   std::string devicepath = path;
   mount->ParseDisks(status);
   mount->UpdateMountStatus(status, evt, devicepath);
 }
 
-void MountLibrary::Init() {
+void MountLibraryImpl::Init() {
   // Getting the monitor status so that the daemon starts up.
   MountStatus* mount = RetrieveMountInformation();
   FreeMountStatus(mount);
@@ -85,7 +80,7 @@ void MountLibrary::Init() {
       &MountStatusChangedHandler, this);
 }
 
-void MountLibrary::UpdateMountStatus(const MountStatus& status,
+void MountLibraryImpl::UpdateMountStatus(const MountStatus& status,
                                      MountEventType evt,
                                      const std::string& path) {
   // Make sure we run on UI thread.

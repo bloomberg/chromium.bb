@@ -7,6 +7,7 @@
 #include <string>
 
 #include "app/combobox_model.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/status/network_menu_button.h"
@@ -52,7 +53,8 @@ class NetworkSection : public SettingsPageSection,
   class WifiNetworkComboModel : public ComboboxModel {
    public:
     WifiNetworkComboModel() {
-      wifi_networks_ = NetworkLibrary::Get()->wifi_networks();
+      wifi_networks_ =
+          CrosLibrary::Get()->GetNetworkLibrary()->wifi_networks();
     }
 
     virtual int GetItemCount() {
@@ -124,11 +126,11 @@ NetworkSection::NetworkSection(Profile* profile)
     : SettingsPageSection(profile, IDS_OPTIONS_SETTINGS_SECTION_TITLE_NETWORK),
       wifi_ssid_combobox_(NULL),
       last_selected_wifi_ssid_index_(0) {
-  NetworkLibrary::Get()->AddObserver(this);
+  CrosLibrary::Get()->GetNetworkLibrary()->AddObserver(this);
 }
 
 NetworkSection::~NetworkSection() {
-  NetworkLibrary::Get()->RemoveObserver(this);
+  CrosLibrary::Get()->GetNetworkLibrary()->RemoveObserver(this);
 }
 
 void NetworkSection::ItemChanged(views::Combobox* sender,
@@ -161,8 +163,9 @@ void NetworkSection::ItemChanged(views::Combobox* sender,
     window->Show();
     view->SetLoginTextfieldFocus();
   } else {
-    NetworkLibrary::Get()->ConnectToWifiNetwork(activated_wifi_network_,
-                                                string16());
+    CrosLibrary::Get()->GetNetworkLibrary()->ConnectToWifiNetwork(
+        activated_wifi_network_,
+        string16());
   }
 }
 
@@ -170,7 +173,8 @@ void NetworkSection::ButtonPressed(views::Button* sender,
                                    const views::Event& event) {
   if (sender == ethernet_options_button_) {
     NetworkConfigView* view =
-        new NetworkConfigView(NetworkLibrary::Get()->ethernet_network());
+        new NetworkConfigView(
+            CrosLibrary::Get()->GetNetworkLibrary()->ethernet_network());
     views::Window* window = views::Window::CreateChromeWindow(
         NULL, gfx::Rect(), view);
     window->SetIsAlwaysOnTop(true);
@@ -349,7 +353,7 @@ void NetworkSection::InitContents(GridLayout* layout) {
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
   // Call NetworkChanged to set initial values.
-  NetworkChanged(NetworkLibrary::Get());
+  NetworkChanged(CrosLibrary::Get()->GetNetworkLibrary());
 }
 
 void NetworkSection::SelectWifi(const std::string& wifi_ssid) {

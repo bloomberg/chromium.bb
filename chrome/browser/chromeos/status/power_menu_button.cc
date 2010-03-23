@@ -24,11 +24,11 @@ PowerMenuButton::PowerMenuButton()
     : StatusAreaButton(this),
       ALLOW_THIS_IN_INITIALIZER_LIST(power_menu_(this)) {
   UpdateIcon();
-  PowerLibrary::Get()->AddObserver(this);
+  CrosLibrary::Get()->GetPowerLibrary()->AddObserver(this);
 }
 
 PowerMenuButton::~PowerMenuButton() {
-  PowerLibrary::Get()->RemoveObserver(this);
+  CrosLibrary::Get()->GetPowerLibrary()->RemoveObserver(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -43,7 +43,7 @@ menus::MenuModel::ItemType PowerMenuButton::GetTypeAt(int index) const {
 }
 
 string16 PowerMenuButton::GetLabelAt(int index) const {
-  PowerLibrary* cros = PowerLibrary::Get();
+  PowerLibrary* cros = CrosLibrary::Get()->GetPowerLibrary();
   // The first item shows the percentage of battery left.
   if (index == 0) {
     // If fully charged, always show 100% even if internal number is a bit less.
@@ -122,9 +122,9 @@ void PowerMenuButton::DrawPowerIcon(gfx::Canvas* canvas, SkBitmap icon) {
 }
 
 void PowerMenuButton::UpdateIcon() {
-  PowerLibrary* cros = PowerLibrary::Get();
+  PowerLibrary* cros = CrosLibrary::Get()->GetPowerLibrary();
   int id = IDR_STATUSBAR_BATTERY_UNKNOWN;
-  if (CrosLibrary::EnsureLoaded()) {
+  if (CrosLibrary::Get()->EnsureLoaded()) {
     if (!cros->battery_is_present()) {
       id = IDR_STATUSBAR_BATTERY_MISSING;
     } else if (cros->line_power_on() && cros->battery_fully_charged()) {

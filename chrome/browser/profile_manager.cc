@@ -227,12 +227,12 @@ void ProfileManager::Observe(
     const NotificationDetails& details) {
 #if defined(OS_CHROMEOS)
   if (type == NotificationType::LOGIN_USER_CHANGED) {
-    CHECK(chromeos::CrosLibrary::EnsureLoaded());
+    CHECK(chromeos::CrosLibrary::Get()->EnsureLoaded());
     // If we don't have a mounted profile directory we're in trouble.
     // TODO(davemoore) Once we have better api this check should ensure that
     // our profile directory is the one that's mounted, and that it's mounted
     // as the current user.
-    CHECK(chromeos::CryptohomeLibrary::Get()->IsMounted());
+    CHECK(chromeos::CrosLibrary::Get()->GetCryptohomeLibrary()->IsMounted());
     logged_in_ = true;
   }
 #endif

@@ -9,8 +9,8 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/string_util.h"
-#include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
 #include "gfx/canvas.h"
 #include "gfx/skbitmap_operations.h"
@@ -35,12 +35,12 @@ NetworkMenuButton::NetworkMenuButton(StatusAreaHost* host)
       ALLOW_THIS_IN_INITIALIZER_LIST(animation_connecting_(this)) {
   animation_connecting_.SetThrobDuration(kThrobDuration);
   animation_connecting_.SetTweenType(SlideAnimation::NONE);
-  NetworkChanged(NetworkLibrary::Get());
-  NetworkLibrary::Get()->AddObserver(this);
+  NetworkChanged(CrosLibrary::Get()->GetNetworkLibrary());
+  CrosLibrary::Get()->GetNetworkLibrary()->AddObserver(this);
 }
 
 NetworkMenuButton::~NetworkMenuButton() {
-  NetworkLibrary::Get()->RemoveObserver(this);
+  CrosLibrary::Get()->GetNetworkLibrary()->RemoveObserver(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -86,7 +86,7 @@ void NetworkMenuButton::ActivatedAt(int index) {
   if (refreshing_menu_)
     return;
 
-  NetworkLibrary* cros = NetworkLibrary::Get();
+  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
   int flags = menu_items_[index].flags;
   if (flags & FLAG_OPTIONS) {
     host_->OpenButtonOptions(this);
@@ -184,7 +184,7 @@ void NetworkMenuButton::AnimationProgressed(const Animation* animation) {
 void NetworkMenuButton::DrawPressed(gfx::Canvas* canvas) {
   // If ethernet connected and not current connecting, then show ethernet
   // pressed icon. Otherwise, show the bars pressed icon.
-  if (NetworkLibrary::Get()->ethernet_connected() &&
+  if (CrosLibrary::Get()->GetNetworkLibrary()->ethernet_connected() &&
       !animation_connecting_.IsAnimating())
     canvas->DrawBitmapInt(IconForDisplay(
         *ResourceBundle::GetSharedInstance().
@@ -212,7 +212,7 @@ void NetworkMenuButton::DrawIcon(gfx::Canvas* canvas) {
   canvas->DrawBitmapInt(icon(), 0, 0);
 
   // If wifi, we draw the wifi signal bars.
-  NetworkLibrary* cros = NetworkLibrary::Get();
+  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
   if (cros->wifi_connecting() ||
       (!cros->ethernet_connected() && cros->wifi_connected())) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
@@ -296,7 +296,7 @@ void NetworkMenuButton::DrawIcon(gfx::Canvas* canvas) {
 
 void NetworkMenuButton::NetworkChanged(NetworkLibrary* cros) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  if (CrosLibrary::EnsureLoaded()) {
+  if (CrosLibrary::Get()->EnsureLoaded()) {
     if (cros->wifi_connecting() || cros->cellular_connecting()) {
       // Start the connecting animation if not running.
       if (!animation_connecting_.IsAnimating()) {
@@ -395,7 +395,7 @@ SkBitmap NetworkMenuButton::IconForDisplay(SkBitmap icon, SkBitmap badge) {
 
 void NetworkMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
   refreshing_menu_ = true;
-  NetworkLibrary::Get()->RequestWifiScan();
+  CrosLibrary::Get()->GetNetworkLibrary()->RequestWifiScan();
   InitMenuItems();
   network_menu_.Rebuild();
   network_menu_.UpdateStates();
@@ -406,7 +406,7 @@ void NetworkMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
 void NetworkMenuButton::InitMenuItems() {
   menu_items_.clear();
   // Populate our MenuItems with the current list of wifi networks.
-  NetworkLibrary* cros = NetworkLibrary::Get();
+  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
   // Ethernet

@@ -26,17 +26,15 @@ class GoogleAuthenticator : public Authenticator,
                             public URLFetcher::Delegate {
  public:
   GoogleAuthenticator(LoginStatusConsumer* consumer,
-                      chromeos::CryptohomeLibrary* library,
                       AuthResponseHandler* cl_handler,
                       AuthResponseHandler* i_handler)
       : Authenticator(consumer),
-        library_(library),
         fetcher_(NULL),
         getter_(NULL),
         client_login_handler_(cl_handler),
         issue_handler_(i_handler) {
-    if (!library && chromeos::CrosLibrary::EnsureLoaded())
-      library_ = chromeos::CryptohomeLibrary::Get();
+    CHECK(chromeos::CrosLibrary::Get()->EnsureLoaded());
+    library_ = chromeos::CrosLibrary::Get()->GetCryptohomeLibrary();
   }
 
   explicit GoogleAuthenticator(LoginStatusConsumer* consumer)
@@ -45,8 +43,8 @@ class GoogleAuthenticator : public Authenticator,
         getter_(NULL),
         client_login_handler_(NULL),
         issue_handler_(NULL) {
-    CHECK(chromeos::CrosLibrary::EnsureLoaded());
-    library_ = chromeos::CryptohomeLibrary::Get();
+    CHECK(chromeos::CrosLibrary::Get()->EnsureLoaded());
+    library_ = chromeos::CrosLibrary::Get()->GetCryptohomeLibrary();
   }
 
   virtual ~GoogleAuthenticator() {}
@@ -81,12 +79,10 @@ class GoogleAuthenticator : public Authenticator,
   // to the subclasses specifically, and I want to allow mocked out
   // LoginStatusConsumers to be used here as well.
   static void OnLoginSuccess(LoginStatusConsumer* consumer,
-                             chromeos::CryptohomeLibrary* library,
                              const std::string& username,
                              const std::string& passhash,
                              const ResponseCookies& cookies);
   static void CheckOffline(LoginStatusConsumer* consumer,
-                           chromeos::CryptohomeLibrary* library,
                            const std::string& username,
                            const std::string& passhash,
                            const URLRequestStatus& status);

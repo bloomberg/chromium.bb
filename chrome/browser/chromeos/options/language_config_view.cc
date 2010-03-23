@@ -11,6 +11,7 @@
 #include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/language_library.h"
 #include "chrome/browser/chromeos/options/language_hangul_config_view.h"
 #include "chrome/browser/language_combobox_model.h"
@@ -88,7 +89,7 @@ class AddLanguageView : public views::View,
   LanguageComboboxModel* CreateLanguageComboboxModel() {
     // GetSupportedLanguages() never return NULL.
     scoped_ptr<InputLanguageList> supported_language_list(
-        LanguageLibrary::Get()->GetSupportedLanguages());
+        CrosLibrary::Get()->GetLanguageLibrary()->GetSupportedLanguages());
 
     std::set<std::string> language_set;
     for (size_t i = 0; i < supported_language_list->size(); ++i) {
@@ -209,7 +210,7 @@ views::View* LanguageConfigView::CreatePerLanguageConfigView(
   // TODO(satorux): Implement ways to activate/deactivate individual input
   // methods. For instance a language can have multiple input methods.
   scoped_ptr<InputLanguageList> supported_language_list(
-      LanguageLibrary::Get()->GetSupportedLanguages());
+      CrosLibrary::Get()->GetLanguageLibrary()->GetSupportedLanguages());
 
   for (size_t i = 0; i < supported_language_list->size(); ++i) {
     const InputLanguage& language = supported_language_list->at(i);
@@ -315,7 +316,7 @@ void LanguageConfigView::Init() {
 
 void LanguageConfigView::InitPreferredLanguageCodes() {
   scoped_ptr<InputLanguageList> active_language_list(
-      LanguageLibrary::Get()->GetActiveLanguages());
+      CrosLibrary::Get()->GetLanguageLibrary()->GetActiveLanguages());
 
   for (size_t i = 0; i < active_language_list->size(); ++i) {
     const InputLanguage& language = active_language_list->at(i);
@@ -395,12 +396,12 @@ void LanguageConfigView::OnAddLanguage(const std::string& language_code) {
 
     // Activate the first input language associated with the language.
     scoped_ptr<InputLanguageList> supported_language_list(
-        LanguageLibrary::Get()->GetSupportedLanguages());
+        CrosLibrary::Get()->GetLanguageLibrary()->GetSupportedLanguages());
     for (size_t i = 0; i < supported_language_list->size(); ++i) {
       const InputLanguage& language = supported_language_list->at(i);
       if (language.language_code == language_code) {
-        LanguageLibrary::Get()->ActivateLanguage(language.category,
-                                                 language.id);
+        CrosLibrary::Get()->GetLanguageLibrary()->ActivateLanguage(
+            language.category, language.id);
         break;
       }
     }
@@ -410,17 +411,17 @@ void LanguageConfigView::OnAddLanguage(const std::string& language_code) {
 void LanguageConfigView::DeactivateInputLanguagesFor(
     const std::string& language_code) {
   scoped_ptr<InputLanguageList> active_language_list(
-      LanguageLibrary::Get()->GetActiveLanguages());
+      CrosLibrary::Get()->GetLanguageLibrary()->GetActiveLanguages());
 
   for (size_t i = 0; i < active_language_list->size(); ++i) {
     const InputLanguage& language = active_language_list->at(i);
     if (language.language_code == language_code) {
-      LanguageLibrary::Get()->DeactivateLanguage(language.category,
-                                                 language.id);
+      CrosLibrary::Get()->GetLanguageLibrary()->DeactivateLanguage(
+          language.category, language.id);
     }
   }
   // Switch back to the US English.
-  LanguageLibrary::Get()->ChangeLanguage(
+  CrosLibrary::Get()->GetLanguageLibrary()->ChangeLanguage(
       chromeos::LANGUAGE_CATEGORY_XKB, "USA");
 }
 

@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/observer_list.h"
-#include "base/singleton.h"
 #include "base/time.h"
 #include "third_party/cros/chromeos_language.h"
 
@@ -25,77 +24,106 @@ class LanguageLibrary {
     virtual void LanguageChanged(LanguageLibrary* obj) = 0;
     virtual void ImePropertiesChanged(LanguageLibrary* obj) = 0;
   };
+  virtual ~LanguageLibrary() {}
 
-  // This gets the singleton LanguageLibrary
-  static LanguageLibrary* Get();
-
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
+  virtual void AddObserver(Observer* observer) = 0;
+  virtual void RemoveObserver(Observer* observer) = 0;
 
   // Returns the list of IMEs and keyboard layouts we can select
   // (i.e. active). If the cros library is not found or IBus/DBus daemon
   // is not alive, this function returns a fallback language list (and
   // never returns NULL).
-  InputLanguageList* GetActiveLanguages();
+  virtual InputLanguageList* GetActiveLanguages() = 0;
 
   // Returns the list of IMEs and keyboard layouts we support, including
   // ones not active. If the cros library is not found or IBus/DBus
   // daemon is not alive, this function returns a fallback language list
   // (and never returns NULL).
-  InputLanguageList* GetSupportedLanguages();
+  virtual InputLanguageList* GetSupportedLanguages() = 0;
 
   // Changes the current IME engine to |id| and enable IME (when |category|
   // is LANGUAGE_CATEGORY_IME). Changes the current XKB layout to |id| and
   // disable IME (when |category| is LANGUAGE_CATEGORY_XKB). |id| is a unique
   // identifier of a IME engine or XKB layout. Please check chromeos_language.h
   // in src third_party/cros/ for details.
-  void ChangeLanguage(LanguageCategory category, const std::string& id);
+  virtual void ChangeLanguage(LanguageCategory category,
+                              const std::string& id) = 0;
 
   // Activates an IME property identified by |key|. Examples of keys are:
   // "InputMode.Katakana", "InputMode.HalfWidthKatakana", "TypingMode.Romaji",
   // and "TypingMode.Kana."
-  void ActivateImeProperty(const std::string& key);
+  virtual void ActivateImeProperty(const std::string& key) = 0;
 
   // Deactivates an IME property identified by |key|.
-  void DeactivateImeProperty(const std::string& key);
+  virtual void DeactivateImeProperty(const std::string& key) = 0;
 
   // Activates the language specified by |category| and |id|. Returns true
   // on success.
-  bool ActivateLanguage(LanguageCategory category, const std::string& id);
+  virtual bool ActivateLanguage(LanguageCategory category,
+                                const std::string& id) = 0;
 
   // Dectivates the language specified by |category| and |id|. Returns
   // true on success.
-  bool DeactivateLanguage(LanguageCategory category, const std::string& id);
+  virtual bool DeactivateLanguage(LanguageCategory category,
+                                  const std::string& id) = 0;
 
   // Get a configuration of ibus-daemon or IBus engines and stores it on
   // |out_value|. Returns true if |out_value| is successfully updated.
   // When you would like to retrieve 'panel/custom_font', |section| should
   // be "panel", and |config_name| should be "custom_font".
-  bool GetImeConfig(
-      const char* section, const char* config_name, ImeConfigValue* out_value);
+  virtual bool GetImeConfig(
+      const char* section, const char* config_name,
+      ImeConfigValue* out_value) = 0;
 
   // Updates a configuration of ibus-daemon or IBus engines with |value|.
   // Returns true if the configuration is successfully updated.
   // You can specify |section| and |config_name| arguments in the same way
   // as GetImeConfig() above.
-  bool SetImeConfig(const char* section,
-                    const char* config_name,
-                    const ImeConfigValue& value);
+  virtual bool SetImeConfig(const char* section,
+                            const char* config_name,
+                            const ImeConfigValue& value) = 0;
 
-  const InputLanguage& current_language() const {
+  virtual const InputLanguage& current_language() const = 0;
+
+  virtual const ImePropertyList& current_ime_properties() const = 0;
+
+};
+
+// This class handles the interaction with the ChromeOS language library APIs.
+// Classes can add themselves as observers. Users can get an instance of this
+// library class like this: LanguageLibrary::Get()
+class LanguageLibraryImpl : public LanguageLibrary {
+ public:
+  LanguageLibraryImpl();
+  virtual ~LanguageLibraryImpl();
+
+  // LanguageLibrary overrides.
+  virtual void AddObserver(Observer* observer);
+  virtual void RemoveObserver(Observer* observer);
+  virtual InputLanguageList* GetActiveLanguages();
+  virtual InputLanguageList* GetSupportedLanguages();
+  virtual void ChangeLanguage(LanguageCategory category, const std::string& id);
+  virtual void ActivateImeProperty(const std::string& key);
+  virtual void DeactivateImeProperty(const std::string& key);
+  virtual bool ActivateLanguage(LanguageCategory category,
+                                const std::string& id);
+  virtual bool DeactivateLanguage(LanguageCategory category,
+                                  const std::string& id);
+  virtual bool GetImeConfig(
+      const char* section, const char* config_name, ImeConfigValue* out_value);
+  virtual bool SetImeConfig(const char* section,
+                            const char* config_name,
+                            const ImeConfigValue& value);
+
+  virtual const InputLanguage& current_language() const {
     return current_language_;
   }
 
-  const ImePropertyList& current_ime_properties() const {
+  virtual const ImePropertyList& current_ime_properties() const {
     return current_ime_properties_;
   }
 
  private:
-  friend struct DefaultSingletonTraits<LanguageLibrary>;
-
-  LanguageLibrary();
-  ~LanguageLibrary();
-
   // This method is called when there's a change in language status.
   static void LanguageChangedHandler(
       void* object, const InputLanguage& current_language);
@@ -140,7 +168,7 @@ class LanguageLibrary {
   // empty when no IME is used.
   ImePropertyList current_ime_properties_;
 
-  DISALLOW_COPY_AND_ASSIGN(LanguageLibrary);
+  DISALLOW_COPY_AND_ASSIGN(LanguageLibraryImpl);
 };
 
 }  // namespace chromeos

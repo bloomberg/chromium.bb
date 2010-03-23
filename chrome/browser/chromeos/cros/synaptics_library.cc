@@ -10,16 +10,13 @@
 
 namespace chromeos {
 
-// static
-SynapticsLibrary* SynapticsLibrary::Get() {
-  return Singleton<SynapticsLibrary>::get();
-}
-
-void SynapticsLibrary::SetBoolParameter(SynapticsParameter param, bool value) {
+void SynapticsLibraryImpl::SetBoolParameter(SynapticsParameter param,
+                                            bool value) {
   SetParameter(param, value ? 1 : 0);
 }
 
-void SynapticsLibrary::SetRangeParameter(SynapticsParameter param, int value) {
+void SynapticsLibraryImpl::SetRangeParameter(SynapticsParameter param,
+                                             int value) {
   if (value < 1)
     value = 1;
   if (value > 10)
@@ -27,8 +24,8 @@ void SynapticsLibrary::SetRangeParameter(SynapticsParameter param, int value) {
   SetParameter(param, value);
 }
 
-void SynapticsLibrary::SetParameter(SynapticsParameter param, int value) {
-  if (CrosLibrary::EnsureLoaded()) {
+void SynapticsLibraryImpl::SetParameter(SynapticsParameter param, int value) {
+  if (CrosLibrary::Get()->EnsureLoaded()) {
     // This calls SetSynapticsParameter in the cros library which is
     // potentially time consuming. So we run this on the FILE thread.
     ChromeThread::PostTask(

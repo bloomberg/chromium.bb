@@ -22,7 +22,7 @@ using views::Window;
 
 GoogleUpdate::GoogleUpdate()
     : listener_(NULL) {
-  chromeos::CrosLibrary::EnsureLoaded();
+  chromeos::CrosLibrary::Get()->EnsureLoaded();
 }
 
 GoogleUpdate::~GoogleUpdate() {

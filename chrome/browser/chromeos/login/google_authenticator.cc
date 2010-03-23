@@ -47,6 +47,7 @@ const char GoogleAuthenticator::kCookiePersistence[] = "true";
 const char GoogleAuthenticator::kAccountType[] = "HOSTED_OR_GOOGLE";
 const char GoogleAuthenticator::kSource[] = "chromeos";
 const int GoogleAuthenticator::kHttpSuccess = 200;
+const int kPassHashLen = 32;
 
 // Chromium OS system salt stored here
 const char GoogleAuthenticator::kSystemSalt[] = "/home/.shadow/salt";
@@ -102,7 +103,6 @@ void GoogleAuthenticator::OnURLFetchComplete(const URLFetcher* source,
           ChromeThread::UI, FROM_HERE,
           NewRunnableFunction(GoogleAuthenticator::OnLoginSuccess,
                               consumer_,
-                              library_,
                               username_,
                               ascii_hash_,
                               cookies));
@@ -114,7 +114,6 @@ void GoogleAuthenticator::OnURLFetchComplete(const URLFetcher* source,
         ChromeThread::UI, FROM_HERE,
         NewRunnableFunction(GoogleAuthenticator::CheckOffline,
                             consumer_,
-                            library_,
                             username_,
                             ascii_hash_,
                             status));
@@ -136,11 +135,11 @@ void GoogleAuthenticator::OnURLFetchComplete(const URLFetcher* source,
 
 // static
 void GoogleAuthenticator::OnLoginSuccess(LoginStatusConsumer* consumer,
-                                         CryptohomeLibrary* library,
                                          const std::string& username,
                                          const std::string& passhash,
                                          const ResponseCookies& cookies) {
-  if (library->Mount(username.c_str(), passhash.c_str()))
+  if (CrosLibrary::Get()->GetCryptohomeLibrary()->Mount(username.c_str(),
+                                                        passhash.c_str()))
     consumer->OnLoginSuccess(username, cookies);
   else
     GoogleAuthenticator::OnLoginFailure(consumer, "Could not mount cryptohome");
@@ -148,16 +147,15 @@ void GoogleAuthenticator::OnLoginSuccess(LoginStatusConsumer* consumer,
 
 // static
 void GoogleAuthenticator::CheckOffline(LoginStatusConsumer* consumer,
-                                       CryptohomeLibrary* library,
                                        const std::string& username,
                                        const std::string& passhash,
                                        const URLRequestStatus& status) {
-  if (library->CheckKey(username.c_str(), passhash.c_str())) {
+  if (CrosLibrary::Get()->GetCryptohomeLibrary()->CheckKey(username.c_str(),
+                                                           passhash.c_str())) {
     // The fetch didn't succeed, but offline login did.
     LOG(INFO) << "Offline login successful!";
     ResponseCookies cookies;
     GoogleAuthenticator::OnLoginSuccess(consumer,
-                                        library,
                                         username,
                                         passhash,
                                         cookies);
@@ -196,12 +194,12 @@ std::string GoogleAuthenticator::SaltAsAscii() {
   FilePath salt_path(kSystemSalt);
   LoadSystemSalt(salt_path);
   unsigned int salt_len = system_salt_.size();
-  char ascii_salt[2 * salt_len];
+  char ascii_salt[2 * salt_len + 1];
   if (GoogleAuthenticator::BinaryToHex(system_salt_,
                                        salt_len,
                                        ascii_salt,
                                        sizeof(ascii_salt))) {
-    return std::string(ascii_salt, sizeof(ascii_salt));
+    return std::string(ascii_salt, sizeof(ascii_salt) - 1);
   } else {
     return std::string();
   }
@@ -211,8 +209,8 @@ void GoogleAuthenticator::StoreHashedPassword(const std::string& password) {
   // Get salt, ascii encode, update sha with that, then update with ascii
   // of password, then end.
   std::string ascii_salt = SaltAsAscii();
-  unsigned char passhash_buf[32];
-  char ascii_buf[32];
+  unsigned char passhash_buf[kPassHashLen];
+  char ascii_buf[kPassHashLen + 1];
 
   // Hash salt and password
   SHA256Context ctx;
@@ -234,7 +232,7 @@ void GoogleAuthenticator::StoreHashedPassword(const std::string& password) {
               passhash.size() / 2,  // only want top half, at least for now.
               ascii_buf,
               sizeof(ascii_buf));
-  ascii_hash_.assign(ascii_buf, sizeof(ascii_buf));
+  ascii_hash_.assign(ascii_buf, sizeof(ascii_buf) - 1);
 }
 
 // static
@@ -246,6 +244,6 @@ bool GoogleAuthenticator::BinaryToHex(const std::vector<unsigned char>& binary,
     return false;
   memset(hex_string, 0, len);
   for (uint i = 0, j = 0; i < binary_len; i++, j+=2)
-    sprintf(hex_string + j, "%02x", binary[i]);
+    snprintf(hex_string + j, len - j, "%02x", binary[i]);
   return true;
 }

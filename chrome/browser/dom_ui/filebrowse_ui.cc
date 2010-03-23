@@ -43,6 +43,7 @@
 #include "grit/locale_settings.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/mount_library.h"
 #endif
 
@@ -307,14 +308,16 @@ FilebrowseHandler::FilebrowseHandler()
       download_manager_(NULL) {
   lister_ = NULL;
 #if defined(OS_CHROMEOS)
-  chromeos::MountLibrary* lib = chromeos::MountLibrary::Get();
+  chromeos::MountLibrary* lib =
+      chromeos::CrosLibrary::Get()->GetMountLibrary();
   lib->AddObserver(this);
 #endif
 }
 
 FilebrowseHandler::~FilebrowseHandler() {
 #if defined(OS_CHROMEOS)
-  chromeos::MountLibrary* lib = chromeos::MountLibrary::Get();
+  chromeos::MountLibrary* lib =
+      chromeos::CrosLibrary::Get()->GetMountLibrary();
   lib->RemoveObserver(this);
 #endif
   if (lister_.get()) {
@@ -437,7 +440,8 @@ void FilebrowseHandler::HandleGetRoots(const Value* value) {
   DictionaryValue info_value;
   // TODO(dhg): add other entries, make this more general
 #if defined(OS_CHROMEOS)
-  chromeos::MountLibrary* lib = chromeos::MountLibrary::Get();
+  chromeos::MountLibrary* lib =
+      chromeos::CrosLibrary::Get()->GetMountLibrary();
   const chromeos::MountLibrary::DiskVector& disks = lib->disks();
 
   for (size_t i = 0; i < disks.size(); ++i) {

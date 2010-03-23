@@ -10,33 +10,42 @@
 
 namespace chromeos {
 
-// This class handles the interaction with the ChromeOS synaptics library APIs.
+// This interface defines interaction with the ChromeOS synaptics library APIs.
 // Users can get an instance of this library class like this:
 //   SynapticsLibrary::Get()
 // For a list of SynapticsPrameters, see third_party/cros/chromeos_synaptics.h
 class SynapticsLibrary {
  public:
-  // This gets the singleton SynapticsLibrary.
-  static SynapticsLibrary* Get();
-
+  virtual ~SynapticsLibrary() {}
   // Sets a boolean parameter. The actual call will be run on the FILE thread.
-  void SetBoolParameter(SynapticsParameter param, bool value);
+  virtual void SetBoolParameter(SynapticsParameter param, bool value) = 0;
 
   // Sets a range parameter. The actual call will be run on the FILE thread.
   // Value should be between 1 and 10 inclusive.
-  void SetRangeParameter(SynapticsParameter param, int value);
+  virtual void SetRangeParameter(SynapticsParameter param, int value) = 0;
+};
+
+
+// This class handles the interaction with the ChromeOS synaptics library APIs.
+// Users can get an instance of this library class like this:
+//   SynapticsLibrary::Get()
+// For a list of SynapticsPrameters, see third_party/cros/chromeos_synaptics.h
+class SynapticsLibraryImpl : public SynapticsLibrary {
+ public:
+  SynapticsLibraryImpl() {}
+  virtual ~SynapticsLibraryImpl() {}
+
+  // SynapticsLibrary overrides.
+  virtual void SetBoolParameter(SynapticsParameter param, bool value);
+  virtual void SetRangeParameter(SynapticsParameter param, int value);
 
  private:
-  friend struct DefaultSingletonTraits<SynapticsLibrary>;
-
-  SynapticsLibrary() {}
-  ~SynapticsLibrary() {}
 
   // This helper methods calls into the libcros library to set the parameter.
   // This call is run on the FILE thread.
   void SetParameter(SynapticsParameter param, int value);
 
-  DISALLOW_COPY_AND_ASSIGN(SynapticsLibrary);
+  DISALLOW_COPY_AND_ASSIGN(SynapticsLibraryImpl);
 };
 
 }  // namespace chromeos

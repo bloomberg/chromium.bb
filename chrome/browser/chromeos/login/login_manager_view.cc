@@ -157,12 +157,12 @@ void LoginManagerView::Init() {
   // Controller to handle events from textfields
   username_field_->SetController(this);
   password_field_->SetController(this);
-  if (CrosLibrary::EnsureLoaded()) {
+  if (CrosLibrary::Get()->EnsureLoaded()) {
     loader_.GetVersion(
         &consumer_, NewCallback(this, &LoginManagerView::OnOSVersion));
   } else if (!kStubOutLogin) {
     error_label_->SetText(
-        ASCIIToWide(CrosLibrary::load_error_string()));
+        ASCIIToWide(CrosLibrary::Get()->load_error_string()));
     username_field_->SetReadOnly(true);
     password_field_->SetReadOnly(true);
   }
@@ -316,7 +316,7 @@ void LoginManagerView::ButtonPressed(
 
 void LoginManagerView::OnLoginFailure(const std::string error) {
   LOG(INFO) << "LoginManagerView: OnLoginFailure() " << error;
-  NetworkLibrary* network = NetworkLibrary::Get();
+  NetworkLibrary* network = CrosLibrary::Get()->GetNetworkLibrary();
 
   // Send notification of failure
   AuthenticationNotificationDetails details(false);
@@ -326,7 +326,7 @@ void LoginManagerView::OnLoginFailure(const std::string error) {
 
   // Check networking after trying to login in case user is
   // cached locally or the local admin account.
-  if (!network || !CrosLibrary::EnsureLoaded())
+  if (!network || !CrosLibrary::Get()->EnsureLoaded())
     ShowError(IDS_LOGIN_ERROR_NO_NETWORK_LIBRARY);
   else if (!network->Connected())
     ShowError(IDS_LOGIN_ERROR_NETWORK_NOT_CONNECTED);
@@ -353,7 +353,7 @@ void LoginManagerView::ShowError(int error_id) {
 
 bool LoginManagerView::HandleKeystroke(views::Textfield* s,
     const views::Textfield::Keystroke& keystroke) {
-  if (!kStubOutLogin && !CrosLibrary::EnsureLoaded())
+  if (!kStubOutLogin && !CrosLibrary::Get()->EnsureLoaded())
     return false;
 
   if (keystroke.GetKeyboardCode() == base::VKEY_TAB) {

@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "base/string_util.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -30,7 +31,7 @@ IPConfigView::IPConfigView(const std::string& device_path)
 
 void IPConfigView::RefreshData() {
   NetworkIPConfigVector ipconfigs =
-      NetworkLibrary::Get()->GetIPConfigs(device_path_);
+      CrosLibrary::Get()->GetNetworkLibrary()->GetIPConfigs(device_path_);
   for (NetworkIPConfigVector::const_iterator it = ipconfigs.begin();
        it != ipconfigs.end(); ++it) {
     const NetworkIPConfig& ipconfig = *it;

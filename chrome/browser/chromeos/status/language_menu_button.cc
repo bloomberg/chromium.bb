@@ -11,6 +11,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/status/language_menu_l10n_util.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
 #include "grit/generated_resources.h"
@@ -123,7 +124,8 @@ namespace chromeos {
 
 LanguageMenuButton::LanguageMenuButton(StatusAreaHost* host)
     : MenuButton(NULL, std::wstring(), this, false),
-      language_list_(LanguageLibrary::Get()->GetActiveLanguages()),
+      language_list_(CrosLibrary::Get()->GetLanguageLibrary()->
+                       GetActiveLanguages()),
       model_(NULL),
       // Be aware that the constructor of |language_menu_| calls GetItemCount()
       // in this class. Therefore, GetItemCount() have to return 0 when
@@ -138,11 +140,11 @@ LanguageMenuButton::LanguageMenuButton(StatusAreaHost* host)
   // Display the default XKB name (usually "US").
   const std::wstring name = FormatInputLanguage(language_list_->at(0), false);
   UpdateIcon(name);
-  LanguageLibrary::Get()->AddObserver(this);
+  CrosLibrary::Get()->GetLanguageLibrary()->AddObserver(this);
 }
 
 LanguageMenuButton::~LanguageMenuButton() {
-  LanguageLibrary::Get()->RemoveObserver(this);
+  CrosLibrary::Get()->GetLanguageLibrary()->RemoveObserver(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -169,12 +171,13 @@ bool LanguageMenuButton::IsItemCheckedAt(int index) const {
 
   if (IndexIsInLanguageList(index)) {
     const InputLanguage& language = language_list_->at(index);
-    return language == LanguageLibrary::Get()->current_language();
+    return language == CrosLibrary::Get()->GetLanguageLibrary()->
+          current_language();
   }
 
   if (GetPropertyIndex(index, &index)) {
     const ImePropertyList& property_list
-        = LanguageLibrary::Get()->current_ime_properties();
+        = CrosLibrary::Get()->GetLanguageLibrary()->current_ime_properties();
     return property_list.at(index).is_selection_item_checked;
   }
 
@@ -191,7 +194,7 @@ int LanguageMenuButton::GetGroupIdAt(int index) const {
 
   if (GetPropertyIndex(index, &index)) {
     const ImePropertyList& property_list
-        = LanguageLibrary::Get()->current_ime_properties();
+        = CrosLibrary::Get()->GetLanguageLibrary()->current_ime_properties();
     return property_list.at(index).selection_item_id;
   }
 
@@ -248,7 +251,7 @@ menus::MenuModel::ItemType LanguageMenuButton::GetTypeAt(int index) const {
 
   if (GetPropertyIndex(index, &index)) {
     const ImePropertyList& property_list
-        = LanguageLibrary::Get()->current_ime_properties();
+        = CrosLibrary::Get()->GetLanguageLibrary()->current_ime_properties();
     if (property_list.at(index).is_selection_item) {
       return menus::MenuModel::TYPE_RADIO;
     }
@@ -271,7 +274,7 @@ string16 LanguageMenuButton::GetLabelAt(int index) const {
     name = FormatInputLanguage(language_list_->at(index), true);
   } else if (GetPropertyIndex(index, &index)) {
     const ImePropertyList& property_list
-        = LanguageLibrary::Get()->current_ime_properties();
+        = CrosLibrary::Get()->GetLanguageLibrary()->current_ime_properties();
     return LanguageMenuL10nUtil::GetStringUTF16(
         property_list.at(index).label);
   }
@@ -291,14 +294,15 @@ void LanguageMenuButton::ActivatedAt(int index) {
   if (IndexIsInLanguageList(index)) {
     // Inter-IME switching or IME-XKB switching.
     const InputLanguage& language = language_list_->at(index);
-    LanguageLibrary::Get()->ChangeLanguage(language.category, language.id);
+    CrosLibrary::Get()->GetLanguageLibrary()->ChangeLanguage(language.category,
+                                                              language.id);
     return;
   }
 
   if (GetPropertyIndex(index, &index)) {
     // Intra-IME switching (e.g. Japanese-Hiragana to Japanese-Katakana).
     const ImePropertyList& property_list
-        = LanguageLibrary::Get()->current_ime_properties();
+        = CrosLibrary::Get()->GetLanguageLibrary()->current_ime_properties();
     const std::string key = property_list.at(index).key;
     if (property_list.at(index).is_selection_item) {
       // Radio button is clicked.
@@ -306,16 +310,16 @@ void LanguageMenuButton::ActivatedAt(int index) {
       // First, deactivate all other properties in the same radio group.
       for (int i = 0; i < static_cast<int>(property_list.size()); ++i) {
         if (i != index && id == property_list.at(i).selection_item_id) {
-          LanguageLibrary::Get()->DeactivateImeProperty(
+          CrosLibrary::Get()->GetLanguageLibrary()->DeactivateImeProperty(
               property_list.at(i).key);
         }
       }
       // Then, activate the property clicked.
-      LanguageLibrary::Get()->ActivateImeProperty(key);
+      CrosLibrary::Get()->GetLanguageLibrary()->ActivateImeProperty(key);
     } else {
       // Command button like "Switch to half punctuation mode" is clicked.
       // We can always use "Deactivate" for command buttons.
-      LanguageLibrary::Get()->DeactivateImeProperty(key);
+      CrosLibrary::Get()->GetLanguageLibrary()->DeactivateImeProperty(key);
     }
     return;
   }
@@ -328,7 +332,8 @@ void LanguageMenuButton::ActivatedAt(int index) {
 // LanguageMenuButton, views::ViewMenuDelegate implementation:
 
 void LanguageMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
-  language_list_.reset(LanguageLibrary::Get()->GetActiveLanguages());
+  language_list_.reset(CrosLibrary::Get()->GetLanguageLibrary()->
+                         GetActiveLanguages());
   RebuildModel();
   language_menu_.Rebuild();
   language_menu_.UpdateStates();
@@ -379,9 +384,9 @@ void LanguageMenuButton::RebuildModel() {
   }
 
   const ImePropertyList& property_list
-      = LanguageLibrary::Get()->current_ime_properties();
+      = CrosLibrary::Get()->GetLanguageLibrary()->current_ime_properties();
   const InputLanguage& current_language
-      = LanguageLibrary::Get()->current_language();
+      = CrosLibrary::Get()->GetLanguageLibrary()->current_language();
   if ((!property_list.empty()) &&
       (current_language.category == chromeos::LANGUAGE_CATEGORY_IME)) {
     if (need_separator)

@@ -10,22 +10,17 @@
 
 namespace chromeos {
 
-// static
-LoginLibrary* LoginLibrary::Get() {
-  return Singleton<LoginLibrary>::get();
-}
-
-bool LoginLibrary::EmitLoginPromptReady() {
+bool LoginLibraryImpl::EmitLoginPromptReady() {
   return chromeos::EmitLoginPromptReady();
 }
 
-bool LoginLibrary::StartSession(const std::string& user_email,
+bool LoginLibraryImpl::StartSession(const std::string& user_email,
                                 const std::string& unique_id /* unused */) {
   // only pass unique_id through once we use it for something.
   return chromeos::StartSession(user_email.c_str(), "");
 }
 
-bool LoginLibrary::StopSession(const std::string& unique_id /* unused */) {
+bool LoginLibraryImpl::StopSession(const std::string& unique_id /* unused */) {
   // only pass unique_id through once we use it for something.
   return chromeos::StopSession("");
 }

@@ -8,22 +8,18 @@
 #include "chrome/browser/chrome_thread.h"
 
 namespace chromeos {
-// static
-CryptohomeLibrary* CryptohomeLibrary::Get() {
-  return Singleton<CryptohomeLibrary>::get();
-}
 
-bool CryptohomeLibrary::CheckKey(const std::string& user_email,
-                                 const std::string& passhash) {
+bool CryptohomeLibraryImpl::CheckKey(const std::string& user_email,
+                                     const std::string& passhash) {
   return chromeos::CryptohomeCheckKey(user_email.c_str(), passhash.c_str());
 }
 
-bool CryptohomeLibrary::Mount(const std::string& user_email,
-                              const std::string& passhash) {
+bool CryptohomeLibraryImpl::Mount(const std::string& user_email,
+                                  const std::string& passhash) {
   return chromeos::CryptohomeMount(user_email.c_str(), passhash.c_str());
 }
 
-bool CryptohomeLibrary::IsMounted() {
+bool CryptohomeLibraryImpl::IsMounted() {
   return chromeos::CryptohomeIsMounted();
 }
 

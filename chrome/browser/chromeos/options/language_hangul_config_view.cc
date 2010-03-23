@@ -6,6 +6,7 @@
 
 #include "app/combobox_model.h"
 #include "app/l10n_util.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/language_library.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -76,10 +77,10 @@ class HangulKeyboardComboboxModel : public ComboboxModel {
   DISALLOW_COPY_AND_ASSIGN(HangulKeyboardComboboxModel);
 };
 
-LanguageHangulConfigView::LanguageHangulConfigView() :
-    contents_(NULL),
-    hangul_keyboard_combobox_(NULL),
-    hangul_keyboard_combobox_model_(new HangulKeyboardComboboxModel) {
+LanguageHangulConfigView::LanguageHangulConfigView()
+    : contents_(NULL),
+      hangul_keyboard_combobox_(NULL),
+      hangul_keyboard_combobox_model_(new HangulKeyboardComboboxModel) {
 }
 
 LanguageHangulConfigView::~LanguageHangulConfigView() {
@@ -91,7 +92,7 @@ void LanguageHangulConfigView::ItemChanged(
   config.type = ImeConfigValue::kValueTypeString;
   config.string_value =
       hangul_keyboard_combobox_model_->GetItemIDAt(new_index);
-  LanguageLibrary::Get()->SetImeConfig(
+  CrosLibrary::Get()->GetLanguageLibrary()->SetImeConfig(
       kHangulSection, kHangulKeyboardConfigName, config);
 
   UpdateHangulKeyboardCombobox();
@@ -158,7 +159,7 @@ void LanguageHangulConfigView::Init() {
 void LanguageHangulConfigView::UpdateHangulKeyboardCombobox() {
   DCHECK(hangul_keyboard_combobox_);
   ImeConfigValue config;
-  if (LanguageLibrary::Get()->GetImeConfig(
+  if (CrosLibrary::Get()->GetLanguageLibrary()->GetImeConfig(
           kHangulSection, kHangulKeyboardConfigName, &config)) {
     const int index
         = hangul_keyboard_combobox_model_->GetIndexFromID(config.string_value);

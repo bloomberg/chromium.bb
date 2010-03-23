@@ -11,23 +11,37 @@
 #include "third_party/cros/chromeos_cryptohome.h"
 
 namespace chromeos {
-class MockCryptohomeLibrary;
 
-// This class handles the interaction with the ChromeOS cryptohome library APIs.
-// Users can get an instance of this library class like this:
-//   CryptohomeLibrary::Get()
+// This interface defines the interaction with the ChromeOS cryptohome library
+// APIs.
 class CryptohomeLibrary {
  public:
-  // This gets the singleton CryptohomeLibrary.
-  static CryptohomeLibrary* Get();
+  virtual ~CryptohomeLibrary() {}
 
   // Asks cryptohomed to try to find the cryptohome for |user_email| and then
   // mount it using |passhash| to unlock the key.
   virtual bool Mount(const std::string& user_email,
-                     const std::string& passhash);
+                     const std::string& passhash) = 0;
 
   // Asks cryptohomed to try to find the cryptohome for |user_email| and then
   // use |passhash| to unlock the key.
+  virtual bool CheckKey(const std::string& user_email,
+                        const std::string& passhash) = 0;
+
+  // Asks cryptohomed if a drive is currently mounted.
+  virtual bool IsMounted() = 0;
+
+};
+
+// This class handles the interaction with the ChromeOS cryptohome library APIs.
+class CryptohomeLibraryImpl : public CryptohomeLibrary {
+ public:
+  CryptohomeLibraryImpl() {}
+  virtual ~CryptohomeLibraryImpl() {}
+
+  // CryptohomeLibrary overrides.
+  virtual bool Mount(const std::string& user_email,
+                     const std::string& passhash);
   virtual bool CheckKey(const std::string& user_email,
                         const std::string& passhash);
 
@@ -35,13 +49,7 @@ class CryptohomeLibrary {
   virtual bool IsMounted();
 
  private:
-  friend struct DefaultSingletonTraits<CryptohomeLibrary>;
-  friend class MockCryptohomeLibrary;
-
-  CryptohomeLibrary() {}
-  ~CryptohomeLibrary() {}
-
-  DISALLOW_COPY_AND_ASSIGN(CryptohomeLibrary);
+  DISALLOW_COPY_AND_ASSIGN(CryptohomeLibraryImpl);
 };
 
 }  // namespace chromeos

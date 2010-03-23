@@ -64,6 +64,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/browser_notification_observers.h"
 #include "chrome/browser/dom_ui/mediaplayer_ui.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/mount_library.h"
 #include "chrome/browser/chromeos/cros/power_library.h"
 #include "chrome/browser/chromeos/gview_request_interceptor.h"
@@ -403,7 +404,8 @@ bool BrowserInit::LaunchBrowser(
   if (process_startup) {
     // TODO(dhg): Try to make this just USBMountObserver::Get()->set_profile
     // and have the constructor take care of everything else.
-    chromeos::MountLibrary* lib = chromeos::MountLibrary::Get();
+    chromeos::MountLibrary* lib =
+        chromeos::CrosLibrary::Get()->GetMountLibrary();
     chromeos::USBMountObserver* observe = chromeos::USBMountObserver::Get();
     MediaPlayer* player = MediaPlayer::Get();
     player->set_profile(profile);
@@ -416,7 +418,7 @@ bool BrowserInit::LaunchBrowser(
     // in a global so that it isn't reported as a leak.
     static chromeos::LowBatteryObserver* observer =
         new chromeos::LowBatteryObserver(profile);
-    chromeos::PowerLibrary::Get()->AddObserver(observer);
+    chromeos::CrosLibrary::Get()->GetPowerLibrary()->AddObserver(observer);
   }
 #endif
 #if defined(OS_MACOSX)
@@ -931,6 +933,7 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
   }
 
   bool silent_launch = false;
+
   if (command_line.HasSwitch(switches::kAutomationClientChannelID)) {
     std::string automation_channel_id = command_line.GetSwitchValueASCII(
         switches::kAutomationClientChannelID);

@@ -22,7 +22,7 @@
       'sources': [
         'candidate_window.cc',
         # For loading libcros.
-        '../cros/cros_library.cc',
+        '../cros/cros_library_loader.cc',
       ],
     },
   ],

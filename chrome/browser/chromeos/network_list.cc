@@ -81,7 +81,7 @@ void NetworkList::NetworkChanged(chromeos::NetworkLibrary* network_lib) {
   networks_.clear();
   // Index of the last added network item.
   int index = 0;
-  if (!network_lib || !CrosLibrary::EnsureLoaded())
+  if (!network_lib || !CrosLibrary::Get()->EnsureLoaded())
     return;
 
   if (network_lib->ethernet_connected() || network_lib->ethernet_connecting()) {

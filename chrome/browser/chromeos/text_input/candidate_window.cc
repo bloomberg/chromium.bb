@@ -19,7 +19,7 @@
 #include "base/process_util.h"
 #include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/cros_library_loader.h"
 #include "chrome/common/chrome_paths.h"
 #include "gfx/canvas.h"
 #include "gfx/font.h"
@@ -948,8 +948,10 @@ int main(int argc, char** argv) {
 
   // Load libcros.
   chrome::RegisterPathProvider();  // for libcros.so.
-  CHECK(chromeos::CrosLibrary::EnsureLoaded())
-      << "Failed to load libcros";
+  chromeos::CrosLibraryLoader lib_loader;
+  std::string error_string;
+  CHECK(lib_loader.Load(&error_string))
+      << "Failed to load libcros, " << error_string;
 
   // Create the main message loop.
   MessageLoop main_message_loop(MessageLoop::TYPE_UI);

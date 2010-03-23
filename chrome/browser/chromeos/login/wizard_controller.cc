@@ -410,7 +410,8 @@ void ShowLoginWizard(const std::string& first_screen_name,
                      const gfx::Size& size) {
   gfx::Rect screen_bounds(CalculateScreenBounds(size));
 
-  if (first_screen_name.empty() && chromeos::CrosLibrary::EnsureLoaded() &&
+  if (first_screen_name.empty() &&
+      chromeos::CrosLibrary::Get()->EnsureLoaded() &&
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableLoginImages)) {
     std::vector<chromeos::UserManager::User> users =
@@ -426,8 +427,8 @@ void ShowLoginWizard(const std::string& first_screen_name,
   controller->ShowBackground(screen_bounds);
   controller->Init(first_screen_name, screen_bounds, true);
   controller->Show();
-  if (chromeos::CrosLibrary::EnsureLoaded())
-    chromeos::LoginLibrary::Get()->EmitLoginPromptReady();
+  if (chromeos::CrosLibrary::Get()->EnsureLoaded())
+    chromeos::CrosLibrary::Get()->GetLoginLibrary()->EmitLoginPromptReady();
 }
 
 }  // namespace browser

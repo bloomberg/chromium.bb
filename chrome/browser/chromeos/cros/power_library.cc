@@ -12,80 +12,77 @@
 // Allows InvokeLater without adding refcounting. This class is a Singleton and
 // won't be deleted until it's last InvokeLater is run.
 template <>
-struct RunnableMethodTraits<chromeos::PowerLibrary> {
-  void RetainCallee(chromeos::PowerLibrary* obj) {}
-  void ReleaseCallee(chromeos::PowerLibrary* obj) {}
+struct RunnableMethodTraits<chromeos::PowerLibraryImpl> {
+  void RetainCallee(chromeos::PowerLibraryImpl* obj) {}
+  void ReleaseCallee(chromeos::PowerLibraryImpl* obj) {}
 };
 
 namespace chromeos {
 
-PowerLibrary::PowerLibrary() : status_(chromeos::PowerStatus()) {
-  if (CrosLibrary::EnsureLoaded()) {
+PowerLibraryImpl::PowerLibraryImpl()
+    : power_status_connection_(NULL),
+      status_(chromeos::PowerStatus()) {
+  if (CrosLibrary::Get()->EnsureLoaded()) {
     Init();
   }
 }
 
-PowerLibrary::~PowerLibrary() {
-  if (CrosLibrary::EnsureLoaded()) {
+PowerLibraryImpl::~PowerLibraryImpl() {
+  if (power_status_connection_) {
     chromeos::DisconnectPowerStatus(power_status_connection_);
   }
 }
 
-// static
-PowerLibrary* PowerLibrary::Get() {
-  return Singleton<PowerLibrary>::get();
-}
-
-void PowerLibrary::AddObserver(Observer* observer) {
+void PowerLibraryImpl::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
 
-void PowerLibrary::RemoveObserver(Observer* observer) {
+void PowerLibraryImpl::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-bool PowerLibrary::line_power_on() const {
+bool PowerLibraryImpl::line_power_on() const {
   return status_.line_power_on;
 }
 
-bool PowerLibrary::battery_is_present() const {
+bool PowerLibraryImpl::battery_is_present() const {
   return status_.battery_is_present;
 }
 
-bool PowerLibrary::battery_fully_charged() const {
+bool PowerLibraryImpl::battery_fully_charged() const {
   return status_.battery_state == chromeos::BATTERY_STATE_FULLY_CHARGED;
 }
 
-double PowerLibrary::battery_percentage() const {
+double PowerLibraryImpl::battery_percentage() const {
   return status_.battery_percentage;
 }
 
-base::TimeDelta PowerLibrary::battery_time_to_empty() const {
+base::TimeDelta PowerLibraryImpl::battery_time_to_empty() const {
   return base::TimeDelta::FromSeconds(status_.battery_time_to_empty);
 }
 
-base::TimeDelta PowerLibrary::battery_time_to_full() const {
+base::TimeDelta PowerLibraryImpl::battery_time_to_full() const {
   return base::TimeDelta::FromSeconds(status_.battery_time_to_full);
 }
 
 // static
-void PowerLibrary::PowerStatusChangedHandler(void* object,
+void PowerLibraryImpl::PowerStatusChangedHandler(void* object,
     const chromeos::PowerStatus& status) {
-  PowerLibrary* power = static_cast<PowerLibrary*>(object);
+  PowerLibraryImpl* power = static_cast<PowerLibraryImpl*>(object);
   power->UpdatePowerStatus(status);
 }
 
-void PowerLibrary::Init() {
+void PowerLibraryImpl::Init() {
   power_status_connection_ = chromeos::MonitorPowerStatus(
       &PowerStatusChangedHandler, this);
 }
 
-void PowerLibrary::UpdatePowerStatus(const chromeos::PowerStatus& status) {
+void PowerLibraryImpl::UpdatePowerStatus(const chromeos::PowerStatus& status) {
   // Make sure we run on UI thread.
   if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
-        NewRunnableMethod(this, &PowerLibrary::UpdatePowerStatus, status));
+        NewRunnableMethod(this, &PowerLibraryImpl::UpdatePowerStatus, status));
     return;
   }
 

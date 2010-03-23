@@ -14,9 +14,9 @@
 // Allows InvokeLater without adding refcounting. This class is a Singleton and
 // won't be deleted until it's last InvokeLater is run.
 template <>
-struct RunnableMethodTraits<chromeos::NetworkLibrary> {
-  void RetainCallee(chromeos::NetworkLibrary* obj) {}
-  void ReleaseCallee(chromeos::NetworkLibrary* obj) {}
+struct RunnableMethodTraits<chromeos::NetworkLibraryImpl> {
+  void RetainCallee(chromeos::NetworkLibraryImpl* obj) {}
+  void ReleaseCallee(chromeos::NetworkLibraryImpl* obj) {}
 };
 
 namespace chromeos {
@@ -25,82 +25,78 @@ namespace chromeos {
 // NetworkLibrary
 
 // static
-const int NetworkLibrary::kNetworkTrafficeTimerSecs = 1;
+const int NetworkLibraryImpl::kNetworkTrafficeTimerSecs = 1;
 
-NetworkLibrary::NetworkLibrary()
+NetworkLibraryImpl::NetworkLibraryImpl()
     : traffic_type_(0),
+      network_status_connection_(NULL),
       available_devices_(0),
       enabled_devices_(0),
       connected_devices_(0),
       offline_mode_(false) {
-  if (CrosLibrary::EnsureLoaded()) {
+  if (CrosLibrary::Get()->EnsureLoaded()) {
     Init();
   }
   g_url_request_job_tracker.AddObserver(this);
 }
 
-NetworkLibrary::~NetworkLibrary() {
-  if (CrosLibrary::EnsureLoaded()) {
+NetworkLibraryImpl::~NetworkLibraryImpl() {
+  if (network_status_connection_) {
     DisconnectMonitorNetwork(network_status_connection_);
   }
   g_url_request_job_tracker.RemoveObserver(this);
 }
 
-// static
-NetworkLibrary* NetworkLibrary::Get() {
-  return Singleton<NetworkLibrary>::get();
-}
-
 ////////////////////////////////////////////////////////////////////////////////
-// NetworkLibrary, URLRequestJobTracker::JobObserver implementation:
+// NetworkLibraryImpl, URLRequestJobTracker::JobObserver implementation:
 
-void NetworkLibrary::OnJobAdded(URLRequestJob* job) {
+void NetworkLibraryImpl::OnJobAdded(URLRequestJob* job) {
   CheckNetworkTraffic(false);
 }
 
-void NetworkLibrary::OnJobRemoved(URLRequestJob* job) {
+void NetworkLibraryImpl::OnJobRemoved(URLRequestJob* job) {
   CheckNetworkTraffic(false);
 }
 
-void NetworkLibrary::OnJobDone(URLRequestJob* job,
+void NetworkLibraryImpl::OnJobDone(URLRequestJob* job,
                                const URLRequestStatus& status) {
   CheckNetworkTraffic(false);
 }
 
-void NetworkLibrary::OnJobRedirect(URLRequestJob* job, const GURL& location,
+void NetworkLibraryImpl::OnJobRedirect(URLRequestJob* job, const GURL& location,
                                    int status_code) {
   CheckNetworkTraffic(false);
 }
 
-void NetworkLibrary::OnBytesRead(URLRequestJob* job, int byte_count) {
+void NetworkLibraryImpl::OnBytesRead(URLRequestJob* job, int byte_count) {
   CheckNetworkTraffic(true);
 }
 
-void NetworkLibrary::AddObserver(Observer* observer) {
+void NetworkLibraryImpl::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
 
-void NetworkLibrary::RemoveObserver(Observer* observer) {
+void NetworkLibraryImpl::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void NetworkLibrary::RequestWifiScan() {
-  if (CrosLibrary::EnsureLoaded()) {
+void NetworkLibraryImpl::RequestWifiScan() {
+  if (CrosLibrary::Get()->EnsureLoaded()) {
     RequestScan(TYPE_WIFI);
   }
 }
 
-void NetworkLibrary::ConnectToWifiNetwork(WifiNetwork network,
+void NetworkLibraryImpl::ConnectToWifiNetwork(WifiNetwork network,
                                           const string16& password) {
-  if (CrosLibrary::EnsureLoaded()) {
+  if (CrosLibrary::Get()->EnsureLoaded()) {
     ConnectToNetwork(network.service_path.c_str(),
         password.empty() ? NULL : UTF16ToUTF8(password).c_str());
   }
 }
 
-void NetworkLibrary::ConnectToWifiNetwork(const string16& ssid,
+void NetworkLibraryImpl::ConnectToWifiNetwork(const string16& ssid,
                                           const string16& password) {
-  if (CrosLibrary::EnsureLoaded()) {
+  if (CrosLibrary::Get()->EnsureLoaded()) {
     // First create a service from hidden network.
     ServiceInfo* service = GetWifiService(UTF16ToUTF8(ssid).c_str(),
                                           SECURITY_UNKNOWN);
@@ -117,26 +113,26 @@ void NetworkLibrary::ConnectToWifiNetwork(const string16& ssid,
   }
 }
 
-void NetworkLibrary::ConnectToCellularNetwork(CellularNetwork network) {
-  if (CrosLibrary::EnsureLoaded()) {
+void NetworkLibraryImpl::ConnectToCellularNetwork(CellularNetwork network) {
+  if (CrosLibrary::Get()->EnsureLoaded()) {
     ConnectToNetwork(network.service_path.c_str(), NULL);
   }
 }
 
-void NetworkLibrary::EnableEthernetNetworkDevice(bool enable) {
+void NetworkLibraryImpl::EnableEthernetNetworkDevice(bool enable) {
   EnableNetworkDevice(TYPE_ETHERNET, enable);
 }
 
-void NetworkLibrary::EnableWifiNetworkDevice(bool enable) {
+void NetworkLibraryImpl::EnableWifiNetworkDevice(bool enable) {
   EnableNetworkDevice(TYPE_WIFI, enable);
 }
 
-void NetworkLibrary::EnableCellularNetworkDevice(bool enable) {
+void NetworkLibraryImpl::EnableCellularNetworkDevice(bool enable) {
   EnableNetworkDevice(TYPE_CELLULAR, enable);
 }
 
-void NetworkLibrary::EnableOfflineMode(bool enable) {
-  if (!CrosLibrary::EnsureLoaded())
+void NetworkLibraryImpl::EnableOfflineMode(bool enable) {
+  if (!CrosLibrary::Get()->EnsureLoaded())
     return;
 
   // If network device is already enabled/disabled, then don't do anything.
@@ -154,7 +150,7 @@ void NetworkLibrary::EnableOfflineMode(bool enable) {
   }
 }
 
-NetworkIPConfigVector NetworkLibrary::GetIPConfigs(
+NetworkIPConfigVector NetworkLibraryImpl::GetIPConfigs(
     const std::string& device_path) {
   NetworkIPConfigVector ipconfig_vector;
   if (!device_path.empty()) {
@@ -176,8 +172,8 @@ NetworkIPConfigVector NetworkLibrary::GetIPConfigs(
 }
 
 // static
-void NetworkLibrary::NetworkStatusChangedHandler(void* object) {
-  NetworkLibrary* network = static_cast<NetworkLibrary*>(object);
+void NetworkLibraryImpl::NetworkStatusChangedHandler(void* object) {
+  NetworkLibraryImpl* network = static_cast<NetworkLibraryImpl*>(object);
   SystemInfo* system = GetSystemInfo();
   if (system) {
     network->UpdateNetworkStatus(system);
@@ -186,7 +182,7 @@ void NetworkLibrary::NetworkStatusChangedHandler(void* object) {
 }
 
 // static
-void NetworkLibrary::ParseSystem(SystemInfo* system,
+void NetworkLibraryImpl::ParseSystem(SystemInfo* system,
                                  EthernetNetwork* ethernet,
                                  WifiNetworkVector* wifi_networks,
                                  CellularNetworkVector* cellular_networks) {
@@ -251,7 +247,7 @@ void NetworkLibrary::ParseSystem(SystemInfo* system,
   }
 }
 
-void NetworkLibrary::Init() {
+void NetworkLibraryImpl::Init() {
   // First, get the currently available networks.  This data is cached
   // on the connman side, so the call should be quick.
   SystemInfo* system = GetSystemInfo();
@@ -266,8 +262,9 @@ void NetworkLibrary::Init() {
                                               this);
 }
 
-void NetworkLibrary::EnableNetworkDevice(ConnectionType device, bool enable) {
-  if (!CrosLibrary::EnsureLoaded())
+void NetworkLibraryImpl::EnableNetworkDevice(ConnectionType device,
+                                             bool enable) {
+  if (!CrosLibrary::Get()->EnsureLoaded())
     return;
 
   // If network device is already enabled/disabled, then don't do anything.
@@ -285,13 +282,13 @@ void NetworkLibrary::EnableNetworkDevice(ConnectionType device, bool enable) {
   EnableNetworkDevice(device, enable);
 }
 
-void NetworkLibrary::UpdateNetworkStatus(SystemInfo* system) {
+void NetworkLibraryImpl::UpdateNetworkStatus(SystemInfo* system) {
   // Make sure we run on UI thread.
   if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
         NewRunnableMethod(this,
-            &NetworkLibrary::UpdateNetworkStatus, system));
+            &NetworkLibraryImpl::UpdateNetworkStatus, system));
     return;
   }
 
@@ -326,7 +323,7 @@ void NetworkLibrary::UpdateNetworkStatus(SystemInfo* system) {
   FOR_EACH_OBSERVER(Observer, observers_, NetworkChanged(this));
 }
 
-void NetworkLibrary::CheckNetworkTraffic(bool download) {
+void NetworkLibraryImpl::CheckNetworkTraffic(bool download) {
   // If we already have a pending upload and download notification, then
   // shortcut and return.
   if (traffic_type_ == (Observer::TRAFFIC_DOWNLOAD | Observer::TRAFFIC_UPLOAD))
@@ -351,32 +348,32 @@ void NetworkLibrary::CheckNetworkTraffic(bool download) {
   // running, then start a new timer.
   if (traffic_type_ && !timer_.IsRunning()) {
     timer_.Start(base::TimeDelta::FromSeconds(kNetworkTrafficeTimerSecs), this,
-                 &NetworkLibrary::NetworkTrafficTimerFired);
+                 &NetworkLibraryImpl::NetworkTrafficTimerFired);
   }
 }
 
-void NetworkLibrary:: NetworkTrafficTimerFired() {
+void NetworkLibraryImpl:: NetworkTrafficTimerFired() {
   ChromeThread::PostTask(
       ChromeThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &NetworkLibrary::NotifyNetworkTraffic,
+      NewRunnableMethod(this, &NetworkLibraryImpl::NotifyNetworkTraffic,
                         traffic_type_));
   // Reset traffic type so that we don't send the same data next time.
   traffic_type_ = 0;
 }
 
-void NetworkLibrary::NotifyNetworkTraffic(int traffic_type) {
+void NetworkLibraryImpl::NotifyNetworkTraffic(int traffic_type) {
   FOR_EACH_OBSERVER(Observer, observers_, NetworkTraffic(this, traffic_type));
 }
 
-bool NetworkLibrary::Connected() const {
+bool NetworkLibraryImpl::Connected() const {
   return ethernet_connected() || wifi_connected() || cellular_connected();
 }
 
-bool NetworkLibrary::Connecting() const {
+bool NetworkLibraryImpl::Connecting() const {
   return ethernet_connecting() || wifi_connecting() || cellular_connecting();
 }
 
-const std::string& NetworkLibrary::IPAddress() const {
+const std::string& NetworkLibraryImpl::IPAddress() const {
   // Returns highest priority IP address.
   if (ethernet_connected())
     return ethernet_.ip_address;
