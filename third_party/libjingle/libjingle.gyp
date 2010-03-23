@@ -216,8 +216,6 @@
             'files/talk/base/win32.h',
             'files/talk/base/win32filesystem.cc',
             'files/talk/base/win32filesystem.h',
-            'files/talk/base/win32socketserver.cc',
-            'files/talk/base/win32socketserver.h',
             'files/talk/base/win32window.h',
             'files/talk/base/win32window.cc',
             'files/talk/base/winfirewall.cc',

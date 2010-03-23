@@ -18,9 +18,6 @@
 #include "chrome/browser/sync/notifier/listener/subscribe_task.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
 #include "talk/base/thread.h"
-#if defined(OS_WIN)
-#include "talk/base/win32socketserver.h"
-#endif
 #include "talk/xmpp/xmppclient.h"
 #include "talk/xmpp/xmppclientsettings.h"
 
@@ -48,34 +45,12 @@ void MediatorThreadImpl::Run() {
             << NotificationMethodToString(notification_method_);
 
   MessageLoop message_loop;
-#if defined(OS_WIN)
-  scoped_ptr<talk_base::SocketServer> socket_server(
-      new talk_base::Win32SocketServer(this));
-  talk_base::SocketServer* old_socket_server = socketserver();
-  set_socketserver(socket_server.get());
-
-  // Since we just changed the socket server, ensure that any queued up
-  // messages are processed.
-  socket_server->WakeUp();
-#endif
 
   Post(this, CMD_PUMP_AUXILIARY_LOOPS);
   ProcessMessages(talk_base::kForever);
-
-#if defined(OS_WIN)
-  set_socketserver(old_socket_server);
-  socket_server.reset();
-#endif
 }
 
 void MediatorThreadImpl::PumpAuxiliaryLoops() {
-#if defined(OS_WIN)
-  ::MSG message;
-  if (::PeekMessage(&message, NULL, 0, 0, PM_REMOVE)) {
-    ::TranslateMessage(&message);
-    ::DispatchMessage(&message);
-  }
-#endif
   if (pump_.get() && pump_->HasPendingTimeoutTask()) {
     pump_->WakeTasks();
   }
