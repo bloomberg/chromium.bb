@@ -283,10 +283,8 @@ void WebPluginDelegateImpl::PlatformInitialize() {
         [renderer_ setLayer:layer_];
         UpdateAcceleratedSurface();
         redraw_timer_.reset(new base::RepeatingTimer<WebPluginDelegateImpl>);
-        redraw_timer_->Start(
-            base::TimeDelta::FromMilliseconds(kCoreAnimationRedrawPeriodMs),
-            this,
-            &WebPluginDelegateImpl::DrawLayerInSurface);
+        // This will start the timer, but only if we are visible.
+        PluginVisibilityChanged();
       }
       break;
     }
@@ -416,13 +414,10 @@ void WebPluginDelegateImpl::WindowlessUpdateGeometry(
   if (window_rect == window_rect_ && old_clip_was_empty == new_clip_is_empty)
     return;
 
-#ifndef NP_NO_CARBON
   // If visibility has changed, switch our idle event rate.
-  if (instance()->event_model() == NPEventModelCarbon &&
-      old_clip_was_empty != new_clip_is_empty) {
-    UpdateIdleEventRate();
+  if (old_clip_was_empty != new_clip_is_empty) {
+    PluginVisibilityChanged();
   }
-#endif
 
   SetPluginRect(window_rect);
   WindowlessSetWindow(true);
@@ -639,10 +634,7 @@ void WebPluginDelegateImpl::SetContainerVisibility(bool is_visible) {
   // off screen (i.e., cached_clip_rect_ is empty), then container visibility
   // doesn't change anything.
   if (!cached_clip_rect_.IsEmpty()) {
-#ifndef NP_NO_CARBON
-    if (instance() && instance()->event_model() == NPEventModelCarbon)
-      UpdateIdleEventRate();
-#endif
+    PluginVisibilityChanged();
     WindowlessSetWindow(true);
   }
 }
@@ -712,6 +704,23 @@ void WebPluginDelegateImpl::PluginScreenLocationChanged() {
     UpdateDummyWindowBounds(plugin_origin);
   }
 #endif
+}
+
+void WebPluginDelegateImpl::PluginVisibilityChanged() {
+#ifndef NP_NO_CARBON
+  if (instance()->event_model() == NPEventModelCarbon)
+    UpdateIdleEventRate();
+#endif
+  if (instance()->drawing_model() == NPDrawingModelCoreAnimation) {
+    bool plugin_visible = container_is_visible_ && !clip_rect_.IsEmpty();
+    if (plugin_visible && !redraw_timer_->IsRunning()) {
+      redraw_timer_->Start(
+          base::TimeDelta::FromMilliseconds(kCoreAnimationRedrawPeriodMs),
+          this, &WebPluginDelegateImpl::DrawLayerInSurface);
+    } else if (!plugin_visible) {
+      redraw_timer_->Stop();
+    }
+  }
 }
 
 #ifndef NP_NO_CARBON

@@ -377,6 +377,9 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   // Informs the browser about the updated accelerated drawing surface.
   void UpdateAcceleratedSurface();
 
+  // Updates anything that depends on plugin visibility.
+  void PluginVisibilityChanged();
+
   // Uses a CARenderer to draw the plug-in's layer in our OpenGL surface.
   void DrawLayerInSurface();
 
