@@ -159,18 +159,6 @@ NaClSrpcError NPModuleRpcServer::NPN_GetURL(NaClSrpcChannel* channel,
   return NACL_SRPC_RESULT_OK;
 }
 
-NaClSrpcError NPModuleRpcServer::NPN_UserAgent(NaClSrpcChannel* channel,
-                                               int32_t wire_npp,
-                                               char** strval) {
-  UNREFERENCED_PARAMETER(channel);
-
-  if (NULL == strval) {
-    return NACL_SRPC_RESULT_APP_ERROR;
-  }
-  *strval = const_cast<char*>(::NPN_UserAgent(WireFormatToNPP(wire_npp)));
-  return NACL_SRPC_RESULT_OK;
-}
-
 NaClSrpcError NPModuleRpcServer::NPN_GetIntIdentifier(NaClSrpcChannel* channel,
                                                       int32_t intval,
                                                       int32_t* id) {
@@ -206,13 +194,7 @@ NaClSrpcError NPModuleRpcServer::NPN_GetStringIdentifier(
     int32_t* id) {
   UNREFERENCED_PARAMETER(channel);
 
-  NPIdentifier ident;
-  if (!NPModule::IsValidIdentifierString(strval)) {
-    ident = NULL;
-  } else {
-    ident = ::NPN_GetStringIdentifier(strval);
-  }
-  *id = NPIdentifierToWireFormat(ident);
+  *id = NPIdentifierToWireFormat(::NPN_GetStringIdentifier(strval));
 
   return NACL_SRPC_RESULT_OK;
 }

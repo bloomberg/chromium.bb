@@ -340,7 +340,7 @@ bool DoAudioCallback(NPClosureTable* closure_table,
   impl->shared_memory_size = shm_size;
   void* buf = mmap(NULL,
                    shm_size,
-                   PROT_WRITE,
+                   PROT_READ | PROT_WRITE,
                    MAP_SHARED,
                    shm_desc,
                    0);

@@ -264,18 +264,6 @@ NPError NPNavigator::GetUrl(NPP npp, const char* url, const char* target) {
   return static_cast<NPError>(nperr);
 }
 
-char* NPNavigator::UserAgent(NPP npp) {
-  char* strval = NULL;
-  NaClSrpcError retval =
-      NPModuleRpcClient::NPN_UserAgent(channel(),
-                                       NPPToWireFormat(npp),
-                                       &strval);
-  if (NACL_SRPC_RESULT_OK != retval) {
-    return NULL;
-  }
-  return strval;
-}
-
 NPError NPNavigator::GetUrlNotify(NPP npp,
                                   const char* url,
                                   const char* target,

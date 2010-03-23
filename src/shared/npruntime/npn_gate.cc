@@ -142,14 +142,8 @@ void NPN_Status(NPP instance,
 }
 
 const char* NPN_UserAgent(NPP instance) {
-  if (NULL == instance) {
-    return NULL;
-  }
-  NPNavigator* navigator = NPNavigator::GetNavigator();
-  if (NULL == navigator) {
-    return NULL;
-  }
-  return navigator->UserAgent(instance);
+  // TODO(sehr): implement this.
+  return NULL;
 }
 
 void* NPN_MemAlloc(uint32_t size) {
