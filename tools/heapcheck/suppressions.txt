@@ -114,7 +114,7 @@
    fun:__gnu_cxx::new_allocator::allocate
    fun:std::string::_Rep::_S_create
    ...
-   fun:std::basic_string::basic_string
+   fun:*basic_string
    fun:IPCChannelTest_ChannelProxyTest_Test::TestBody
 }
 {
@@ -219,4 +219,19 @@
   Heapcheck:Leak
   fun:ProfileSyncFactoryImpl::CreateProfileSyncService
   fun:TestingProfile::CreateProfileSyncService
+}
+
+{
+  bug_39007
+  Heapcheck:Leak
+  ...
+  fun:RenderViewTest::TearDown
+}
+
+{
+  bug_39009
+  Heapcheck:Leak
+  ...
+  fun:BookmarkModel::Load
+  fun:TestingProfile::CreateBookmarkModel
 }
