@@ -15,7 +15,7 @@ AcceleratedSurfaceContainerManagerMac::AcceleratedSurfaceContainerManagerMac()
 gfx::PluginWindowHandle
 AcceleratedSurfaceContainerManagerMac::AllocateFakePluginWindowHandle() {
   AcceleratedSurfaceContainerMac* container =
-      new AcceleratedSurfaceContainerMac();
+      new AcceleratedSurfaceContainerMac(this);
   gfx::PluginWindowHandle res =
       static_cast<gfx::PluginWindowHandle>(++current_id_);
   plugin_window_to_container_map_.insert(std::make_pair(res, container));
@@ -37,8 +37,7 @@ void AcceleratedSurfaceContainerManagerMac::SetSizeAndIOSurface(
     uint64 io_surface_identifier) {
   AcceleratedSurfaceContainerMac* container = MapIDToContainer(id);
   if (container)
-    container->SetSizeAndIOSurface(width, height,
-                                      io_surface_identifier, this);
+    container->SetSizeAndIOSurface(width, height, io_surface_identifier);
 }
 
 void AcceleratedSurfaceContainerManagerMac::SetSizeAndTransportDIB(
@@ -48,8 +47,7 @@ void AcceleratedSurfaceContainerManagerMac::SetSizeAndTransportDIB(
     TransportDIB::Handle transport_dib) {
   AcceleratedSurfaceContainerMac* container = MapIDToContainer(id);
   if (container)
-    container->SetSizeAndTransportDIB(width, height,
-                                      transport_dib, this);
+    container->SetSizeAndTransportDIB(width, height, transport_dib);
 }
 
 void AcceleratedSurfaceContainerManagerMac::MovePluginContainer(
@@ -60,6 +58,24 @@ void AcceleratedSurfaceContainerManagerMac::MovePluginContainer(
 }
 
 void AcceleratedSurfaceContainerManagerMac::Draw(CGLContextObj context) {
+  // Clean up old texture objects. This is essentially a pre-emptive
+  // cleanup, as the resources will be released when the OpenGL
+  // context associated with the CAOpenGLLayer is destroyed. However,
+  // if we render many plugins in the same layer, we should try to
+  // eagerly reclaim their resources. Note also that the OpenGL
+  // context must be current when performing the deletion, and it
+  // seems risky to make the OpenGL context current at an arbitrary
+  // point in time, which is why the deletion does not occur in the
+  // container's destructor.
+  for (std::vector<GLuint>::iterator iter =
+           textures_pending_deletion_.begin();
+       iter != textures_pending_deletion_.end();
+       ++iter) {
+    GLuint texture = *iter;
+    glDeleteTextures(1, &texture);
+  }
+  textures_pending_deletion_.clear();
+
   glClearColor(0, 0, 0, 0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 

@@ -42,7 +42,8 @@ class AcceleratedSurfaceContainerManagerMac;
 
 class AcceleratedSurfaceContainerMac {
  public:
-  AcceleratedSurfaceContainerMac();
+  AcceleratedSurfaceContainerMac(
+      AcceleratedSurfaceContainerManagerMac* manager);
   virtual ~AcceleratedSurfaceContainerMac();
 
   // Sets the backing store and size of this accelerated surface container.
@@ -51,12 +52,10 @@ class AcceleratedSurfaceContainerMac {
   // used on Mac OS X 10.5 and earlier.
   void SetSizeAndIOSurface(int32 width,
                            int32 height,
-                           uint64 io_surface_identifier,
-                           AcceleratedSurfaceContainerManagerMac* manager);
+                           uint64 io_surface_identifier);
   void SetSizeAndTransportDIB(int32 width,
                               int32 height,
-                              TransportDIB::Handle transport_dib,
-                              AcceleratedSurfaceContainerManagerMac* manager);
+                              TransportDIB::Handle transport_dib);
 
   // Tells the accelerated surface container that it has moved relative to the
   // origin of the window, for example because of a scroll event.
@@ -71,17 +70,13 @@ class AcceleratedSurfaceContainerMac {
   // time the drawing context has changed.
   void ForceTextureReload() { texture_needs_upload_ = true; }
 
-  // Enqueue our texture for later deletion. Call this before deleting
-  // this object.
-  void EnqueueTextureForDeletion(
-      AcceleratedSurfaceContainerManagerMac* manager);
-
  private:
+  // The manager of this accelerated surface container.
+  AcceleratedSurfaceContainerManagerMac* manager_;
+
   // The x and y coordinates of the plugin window on the web page.
   int x_;
   int y_;
-
-  void ReleaseIOSurface();
 
   // The IOSurfaceRef, if any, that has been handed from the GPU
   // plugin process back to the browser process for drawing.
@@ -110,6 +105,12 @@ class AcceleratedSurfaceContainerMac {
 
   // True if we need to upload the texture again during the next draw.
   bool texture_needs_upload_;
+
+  // Releases the IOSurface reference, if any, retained by this object.
+  void ReleaseIOSurface();
+
+  // Enqueue our texture for later deletion.
+  void EnqueueTextureForDeletion();
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratedSurfaceContainerMac);
 };

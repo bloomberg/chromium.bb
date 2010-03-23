@@ -9,8 +9,10 @@
 #include "webkit/glue/webplugin.h"
 #include "chrome/browser/renderer_host/accelerated_surface_container_manager_mac.h"
 
-AcceleratedSurfaceContainerMac::AcceleratedSurfaceContainerMac()
-    : x_(0),
+AcceleratedSurfaceContainerMac::AcceleratedSurfaceContainerMac(
+    AcceleratedSurfaceContainerManagerMac* manager)
+    : manager_(manager),
+      x_(0),
       y_(0),
       surface_(NULL),
       width_(0),
@@ -20,6 +22,7 @@ AcceleratedSurfaceContainerMac::AcceleratedSurfaceContainerMac()
 }
 
 AcceleratedSurfaceContainerMac::~AcceleratedSurfaceContainerMac() {
+  EnqueueTextureForDeletion();
   ReleaseIOSurface();
 }
 
@@ -33,14 +36,13 @@ void AcceleratedSurfaceContainerMac::ReleaseIOSurface() {
 void AcceleratedSurfaceContainerMac::SetSizeAndIOSurface(
     int32 width,
     int32 height,
-    uint64 io_surface_identifier,
-    AcceleratedSurfaceContainerManagerMac* manager) {
+    uint64 io_surface_identifier) {
   ReleaseIOSurface();
   IOSurfaceSupport* io_surface_support = IOSurfaceSupport::Initialize();
   if (io_surface_support) {
     surface_ = io_surface_support->IOSurfaceLookup(
         static_cast<uint32>(io_surface_identifier));
-    EnqueueTextureForDeletion(manager);
+    EnqueueTextureForDeletion();
     width_ = width;
     height_ = height;
   }
@@ -49,11 +51,10 @@ void AcceleratedSurfaceContainerMac::SetSizeAndIOSurface(
 void AcceleratedSurfaceContainerMac::SetSizeAndTransportDIB(
     int32 width,
     int32 height,
-    TransportDIB::Handle transport_dib,
-    AcceleratedSurfaceContainerManagerMac* manager) {
+    TransportDIB::Handle transport_dib) {
   if (TransportDIB::is_valid(transport_dib)) {
     transport_dib_.reset(TransportDIB::Map(transport_dib));
-    EnqueueTextureForDeletion(manager);
+    EnqueueTextureForDeletion();
     width_ = width;
     height_ = height;
   }
@@ -154,9 +155,10 @@ void AcceleratedSurfaceContainerMac::Draw(CGLContextObj context) {
   }
 }
 
-void AcceleratedSurfaceContainerMac::EnqueueTextureForDeletion(
-    AcceleratedSurfaceContainerManagerMac* manager) {
-  manager->EnqueueTextureForDeletion(texture_);
-  texture_ = 0;
+void AcceleratedSurfaceContainerMac::EnqueueTextureForDeletion() {
+  if (texture_) {
+    manager_->EnqueueTextureForDeletion(texture_);
+    texture_ = 0;
+  }
 }
 
