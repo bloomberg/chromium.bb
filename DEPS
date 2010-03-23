@@ -25,7 +25,9 @@ deps = {
   "third_party/binutils":
     (Var("native_client_trunk") + "/src/third_party/binutils@" +
      Var("tools_rev")),
-  "native_client/src/third_party/breakpad/src":
+  "breakpad":
+    Var("native_client_trunk") + "/src/native_client/src/third_party/breakpad",
+  "breakpad/src":
     "http://google-breakpad.googlecode.com/svn/trunk/src@" +
     Var("breakpad_rev"),
   "third_party/gcc":
