@@ -9,13 +9,9 @@
 Obtain one of these from PyUITestSuite::GetBookmarkModel() call.
 """
 
-# TODO(jrg): establish a standard path for pyauto tests.
-# This "adjustment" assumes we live in "src/chrome/test/pyautolib".
 import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), 'third_party'))
-
 import simplejson as json
+import sys
 
 class BookmarkModel(object):
 

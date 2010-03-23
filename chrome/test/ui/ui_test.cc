@@ -138,7 +138,6 @@ UITestBase::UITestBase(MessageLoop::Type msg_loop_type)
       enable_file_cookies_(true),
       profile_type_(UITestBase::DEFAULT_THEME),
       test_start_time_(base::Time::NowFromSystemTime()),
-      message_loop_(msg_loop_type),
       command_execution_timeout_ms_(kCommandExecutionTimeout),
       action_timeout_ms_(kWaitForActionMsec),
       action_max_timeout_ms_(kWaitForActionMaxMsec),

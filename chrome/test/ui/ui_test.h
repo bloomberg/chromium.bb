@@ -617,8 +617,6 @@ class UITestBase {
 
   scoped_ptr<AutomationProxy> server_;
 
-  MessageLoop message_loop_;            // Enables PostTask to main thread.
-
   int command_execution_timeout_ms_;
   int action_timeout_ms_;
   int action_max_timeout_ms_;
@@ -632,10 +630,13 @@ class UITest : public UITestBase, public PlatformTest {
  protected:
   UITest() {}
   explicit UITest(MessageLoop::Type msg_loop_type)
-    : UITestBase(msg_loop_type), PlatformTest() {
+    : UITestBase(), PlatformTest(), message_loop_(msg_loop_type) {
   }
   virtual void SetUp();
   virtual void TearDown();
+
+ private:
+  MessageLoop message_loop_;  // Enables PostTask to main thread.
 };
 
 // These exist only to support the gTest assertion macros, and

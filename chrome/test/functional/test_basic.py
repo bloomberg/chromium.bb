@@ -5,6 +5,7 @@
 
 import unittest
 
+import pyauto_functional
 from pyauto import PyUITest
 
 
@@ -15,4 +16,4 @@ class SimpleTest(PyUITest):
 
 
 if __name__ == '__main__':
-  unittest.main()
+  pyauto_functional.Main()

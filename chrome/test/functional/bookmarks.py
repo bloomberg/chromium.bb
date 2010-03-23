@@ -4,7 +4,7 @@
 # found in the LICENSE file.
 
 # Must import this first
-import pyauto_test_utils
+import pyauto_functional
 
 import unittest
 
@@ -115,4 +115,4 @@ class BookmarksTest(pyauto.PyUITest):
 
 
 if __name__ == '__main__':
-  unittest.main()
+  pyauto_functional.Main()

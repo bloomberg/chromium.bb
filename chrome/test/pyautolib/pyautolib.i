@@ -77,10 +77,19 @@ class FilePath {
   explicit FilePath(const StringType& path);
 };
 
-class PyUITestSuite {
+class PyUITestSuiteBase {
  public:
-  PyUITestSuite(int argc, char** argv, bool clear_profile,
-                std::wstring homepage);
+  %feature("docstring", "Create the suite.") PyUITestSuiteBase;
+  PyUITestSuiteBase(int argc, char** argv);
+  ~PyUITestSuiteBase();
+
+  %feature("docstring", "Initialize from the path to browser dir.") Initialize;
+  void Initialize(const FilePath& browser_dir);
+};
+
+class PyUITestBase {
+ public:
+  PyUITestBase(bool clear_profile, std::wstring homepage);
 
   %feature("docstring", "Initialize the entire setup. Should be called "
            "before launching the browser. For internal use.") Initialize;

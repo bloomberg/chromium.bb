@@ -9,56 +9,80 @@
 #include "chrome/test/pyautolib/pyautolib.h"
 #include "googleurl/src/gurl.h"
 
-PyUITestSuite::PyUITestSuite(
-    int argc, char** argv, bool clear_profile, std::wstring homepage)
-    : UITestSuite(argc, argv),
-      UITestBase() {
-  set_clear_profile(clear_profile);
-  set_homepage(homepage);
+
+// PyUITestSuiteBase
+PyUITestSuiteBase::PyUITestSuiteBase(int argc, char** argv)
+    : UITestSuite(argc, argv) {
 }
 
-PyUITestSuite::~PyUITestSuite() {
-  UITestSuite::Shutdown();
+PyUITestSuiteBase::~PyUITestSuiteBase() {
+  pool_.Recycle();
+  Shutdown();
 }
 
-void PyUITestSuite::Initialize(const FilePath& browser_dir) {
-  UITestSuite::SetBrowserDirectory(browser_dir);
-  UITestBase::SetBrowserDirectory(browser_dir);
+void PyUITestSuiteBase::Initialize(const FilePath& browser_dir) {
+  SetBrowserDirectory(browser_dir);
   UITestSuite::Initialize();
 }
 
-void PyUITestSuite::SetUp() {
+// PyUITestBase
+PyUITestBase::PyUITestBase(bool clear_profile, std::wstring homepage)
+    : UITestBase() {
+  set_clear_profile(clear_profile);
+  set_homepage(homepage);
+  message_loop_ = GetSharedMessageLoop(MessageLoop::TYPE_DEFAULT);
+}
+
+PyUITestBase::~PyUITestBase() {
+}
+
+// static, refer .h for why it needs to be static
+MessageLoop* PyUITestBase::message_loop_ = NULL;
+
+// static
+MessageLoop* PyUITestBase::GetSharedMessageLoop(
+  MessageLoop::Type msg_loop_type) {
+  if (!message_loop_)   // Create a shared instance of MessageLoop
+    message_loop_ = new MessageLoop(msg_loop_type);
+  return message_loop_;
+}
+
+void PyUITestBase::Initialize(const FilePath& browser_dir) {
+  UITestBase::SetBrowserDirectory(browser_dir);
+}
+
+void PyUITestBase::SetUp() {
   UITestBase::SetUp();
 }
 
-void PyUITestSuite::TearDown() {
+void PyUITestBase::TearDown() {
   UITestBase::TearDown();
 }
 
-void PyUITestSuite::NavigateToURL(const char* url_string) {
+void PyUITestBase::NavigateToURL(const char* url_string) {
   GURL url(url_string);
   UITestBase::NavigateToURL(url);
 }
 
-void PyUITestSuite::NavigateToURL(
+void PyUITestBase::NavigateToURL(
     const char* url_string, int window_index, int tab_index) {
   GURL url(url_string);
   UITestBase::NavigateToURL(url, window_index, tab_index);
 }
 
-bool PyUITestSuite::AppendTab(const GURL& tab_url, int window_index) {
+bool PyUITestBase::AppendTab(const GURL& tab_url, int window_index) {
   scoped_refptr<BrowserProxy> browser_proxy =
       automation()->GetBrowserWindow(window_index);
   return browser_proxy->AppendTab(tab_url);
 }
 
-bool PyUITestSuite::ApplyAccelerator(int id, int window_index) {
+bool PyUITestBase::ApplyAccelerator(int id, int window_index) {
   scoped_refptr<BrowserProxy> browser_proxy =
       automation()->GetBrowserWindow(window_index);
   return browser_proxy->ApplyAccelerator(id);
 }
 
-bool PyUITestSuite::RunCommand(int browser_command, int window_index){
+bool PyUITestBase::RunCommand(int browser_command, int window_index) {
   scoped_refptr<BrowserProxy> browser_proxy =
       automation()->GetBrowserWindow(window_index);
   EXPECT_TRUE(browser_proxy.get());
@@ -67,20 +91,20 @@ bool PyUITestSuite::RunCommand(int browser_command, int window_index){
   return browser_proxy->RunCommand(browser_command);
 }
 
-bool PyUITestSuite::ActivateTab(int tab_index, int window_index) {
+bool PyUITestBase::ActivateTab(int tab_index, int window_index) {
   scoped_refptr<BrowserProxy> browser_proxy =
       automation()->GetBrowserWindow(window_index);
   return browser_proxy->ActivateTab(tab_index);
 }
 
-void PyUITestSuite::SetDownloadShelfVisible(bool is_visible, int window_index) {
+void PyUITestBase::SetDownloadShelfVisible(bool is_visible, int window_index) {
   scoped_refptr<BrowserProxy> browser_proxy =
       automation()->GetBrowserWindow(window_index);
   ASSERT_TRUE(browser_proxy.get());
   EXPECT_TRUE(browser_proxy->SetShelfVisible(is_visible));
 }
 
-bool PyUITestSuite::IsDownloadShelfVisible(int window_index) {
+bool PyUITestBase::IsDownloadShelfVisible(int window_index) {
   scoped_refptr<BrowserProxy> browser_proxy =
       automation()->GetBrowserWindow(window_index);
   EXPECT_TRUE(browser_proxy.get());
@@ -91,22 +115,22 @@ bool PyUITestSuite::IsDownloadShelfVisible(int window_index) {
   return visible;
 }
 
-int PyUITestSuite::GetTabCount(int window_index) {
+int PyUITestBase::GetTabCount(int window_index) {
   return UITestBase::GetTabCount(window_index);
 }
 
-GURL PyUITestSuite::GetActiveTabURL(int window_index) {
+GURL PyUITestBase::GetActiveTabURL(int window_index) {
   return UITestBase::GetActiveTabURL(window_index);
 }
 
-void PyUITestSuite::OpenFindInPage(int window_index) {
+void PyUITestBase::OpenFindInPage(int window_index) {
   scoped_refptr<BrowserProxy> browser_proxy =
       automation()->GetBrowserWindow(window_index);
   ASSERT_TRUE(browser_proxy.get());
   EXPECT_TRUE(browser_proxy->OpenFindInPage());
 }
 
-bool PyUITestSuite::IsFindInPageVisible(int window_index) {
+bool PyUITestBase::IsFindInPageVisible(int window_index) {
   scoped_refptr<BrowserProxy> browser_proxy =
       automation()->GetBrowserWindow(window_index);
   EXPECT_TRUE(browser_proxy.get());
@@ -117,7 +141,7 @@ bool PyUITestSuite::IsFindInPageVisible(int window_index) {
   return is_visible;
 }
 
-FilePath PyUITestSuite::GetDownloadDirectory() {
+FilePath PyUITestBase::GetDownloadDirectory() {
   FilePath download_dir;
   scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
   EXPECT_TRUE(tab_proxy.get());
@@ -127,15 +151,15 @@ FilePath PyUITestSuite::GetDownloadDirectory() {
   return download_dir;
 }
 
-bool PyUITestSuite::OpenNewBrowserWindow(bool show) {
+bool PyUITestBase::OpenNewBrowserWindow(bool show) {
   return automation()->OpenNewBrowserWindow(Browser::TYPE_NORMAL, show);
 }
 
-bool PyUITestSuite::InstallExtension(const FilePath& crx_file) {
+bool PyUITestBase::InstallExtension(const FilePath& crx_file) {
   return automation()->InstallExtension(crx_file);
 }
 
-bool PyUITestSuite::GetBookmarkBarVisibility() {
+bool PyUITestBase::GetBookmarkBarVisibility() {
   scoped_refptr<BrowserProxy> browser_proxy =
       automation()->GetBrowserWindow(0);  // Window doesn't matter.
   EXPECT_TRUE(browser_proxy.get());
@@ -148,7 +172,7 @@ bool PyUITestSuite::GetBookmarkBarVisibility() {
   return visible;
 }
 
-bool PyUITestSuite::WaitForBookmarkBarVisibilityChange(bool wait_for_open) {
+bool PyUITestBase::WaitForBookmarkBarVisibilityChange(bool wait_for_open) {
   scoped_refptr<BrowserProxy> browser_proxy =
       automation()->GetBrowserWindow(0);  // Window doesn't matter.
   EXPECT_TRUE(browser_proxy.get());
@@ -163,7 +187,7 @@ bool PyUITestSuite::WaitForBookmarkBarVisibilityChange(bool wait_for_open) {
   return completed;
 }
 
-std::string PyUITestSuite::_GetBookmarksAsJSON() {
+std::string PyUITestBase::_GetBookmarksAsJSON() {
   scoped_refptr<BrowserProxy> browser_proxy =
       automation()->GetBrowserWindow(0);  // Window doesn't matter.
   EXPECT_TRUE(browser_proxy.get());
@@ -175,7 +199,7 @@ std::string PyUITestSuite::_GetBookmarksAsJSON() {
   return s;
 }
 
-bool PyUITestSuite::AddBookmarkGroup(std::wstring& parent_id, int index,
+bool PyUITestBase::AddBookmarkGroup(std::wstring& parent_id, int index,
                                      std::wstring& title) {
   scoped_refptr<BrowserProxy> browser_proxy =
       automation()->GetBrowserWindow(0);  // Window doesn't matter.
@@ -187,7 +211,7 @@ bool PyUITestSuite::AddBookmarkGroup(std::wstring& parent_id, int index,
                                          index, title);
 }
 
-bool PyUITestSuite::AddBookmarkURL(std::wstring& parent_id, int index,
+bool PyUITestBase::AddBookmarkURL(std::wstring& parent_id, int index,
                                    std::wstring& title, std::wstring& url) {
   scoped_refptr<BrowserProxy> browser_proxy =
       automation()->GetBrowserWindow(0);  // Window doesn't matter.
@@ -200,8 +224,8 @@ bool PyUITestSuite::AddBookmarkURL(std::wstring& parent_id, int index,
                                        GURL(WideToUTF16(url)));
 }
 
-bool PyUITestSuite::ReparentBookmark(std::wstring& id, std::wstring& new_parent_id,
-                                     int index) {
+bool PyUITestBase::ReparentBookmark(
+    std::wstring& id, std::wstring& new_parent_id, int index) {
   scoped_refptr<BrowserProxy> browser_proxy =
       automation()->GetBrowserWindow(0);  // Window doesn't matter.
   EXPECT_TRUE(browser_proxy.get());
@@ -214,7 +238,7 @@ bool PyUITestSuite::ReparentBookmark(std::wstring& id, std::wstring& new_parent_
       index);
 }
 
-bool PyUITestSuite::SetBookmarkTitle(std::wstring& id, std::wstring& title) {
+bool PyUITestBase::SetBookmarkTitle(std::wstring& id, std::wstring& title) {
   scoped_refptr<BrowserProxy> browser_proxy =
       automation()->GetBrowserWindow(0);  // Window doesn't matter.
   EXPECT_TRUE(browser_proxy.get());
@@ -225,7 +249,7 @@ bool PyUITestSuite::SetBookmarkTitle(std::wstring& id, std::wstring& title) {
                                          title);
 }
 
-bool PyUITestSuite::SetBookmarkURL(std::wstring& id, std::wstring& url) {
+bool PyUITestBase::SetBookmarkURL(std::wstring& id, std::wstring& url) {
   scoped_refptr<BrowserProxy> browser_proxy =
       automation()->GetBrowserWindow(0);  // Window doesn't matter.
   EXPECT_TRUE(browser_proxy.get());
@@ -236,7 +260,7 @@ bool PyUITestSuite::SetBookmarkURL(std::wstring& id, std::wstring& url) {
                                        GURL(WideToUTF16(url)));
 }
 
-bool PyUITestSuite::RemoveBookmark(std::wstring& id) {
+bool PyUITestBase::RemoveBookmark(std::wstring& id) {
   scoped_refptr<BrowserProxy> browser_proxy =
       automation()->GetBrowserWindow(0);  // Window doesn't matter.
   EXPECT_TRUE(browser_proxy.get());

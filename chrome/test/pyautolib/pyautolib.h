@@ -8,6 +8,7 @@
 #ifndef CHROME_TEST_PYAUTOLIB_PYAUTOLIB_H_
 #define CHROME_TEST_PYAUTOLIB_PYAUTOLIB_H_
 
+#include "base/message_loop.h"
 #include "base/scoped_nsautorelease_pool.h"
 #include "chrome/test/ui/ui_test.h"
 #include "chrome/test/ui/ui_test_suite.h"
@@ -19,19 +20,27 @@
 // all methods in python just for the sake of providing default args. This
 // seems cumbersome and unwanted.
 
-// TODO(nirnimesh): separate out the UITestSuite and UITestBase parts
-//                  crbug.com/32292
+// Test Suite for Pyauto tests. All one-time initializations go here.
+class PyUITestSuiteBase : public UITestSuite {
+ public:
+  PyUITestSuiteBase(int argc, char** argv);
+  ~PyUITestSuiteBase();
+
+  void Initialize(const FilePath& browser_dir);
+
+ private:
+  base::ScopedNSAutoreleasePool pool_;
+};
 
 // The primary class that interfaces with Automation Proxy.
 // This class is accessed from python using swig.
-class PyUITestSuite : public UITestSuite, public UITestBase {
+class PyUITestBase : public UITestBase {
  public:
   // Only public methods are accessible from swig.
 
   // Constructor. Lookup pyauto.py for doc on these args.
-  PyUITestSuite(int argc, char** argv, bool clear_profile,
-                std::wstring homepage);
-  ~PyUITestSuite();
+  PyUITestBase(bool clear_profile, std::wstring homepage);
+  ~PyUITestBase();
 
   // Initialize the setup. Should be called before launching the browser.
   // |browser_dir| is the path to dir containing chromium binaries.
@@ -128,7 +137,13 @@ class PyUITestSuite : public UITestSuite, public UITestBase {
   bool RemoveBookmark(std::wstring& id);
 
  private:
-  base::ScopedNSAutoreleasePool pool_;
+  // Enables PostTask to main thread.
+  // Should be shared across multiple instances of PyUITestBase so that this
+  // class is re-entrant and multiple instances can be created.
+  // This is necessary since python's unittest module creates instances of
+  // TestCase at load time itself.
+  static MessageLoop* GetSharedMessageLoop(MessageLoop::Type msg_loop_type);
+  static MessageLoop* message_loop_;
 };
 
 #endif  // CHROME_TEST_PYAUTOLIB_PYAUTOLIB_H_

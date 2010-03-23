@@ -6,6 +6,7 @@
 import time
 import unittest
 
+import pyauto_functional
 import pyauto
 
 class BookmarkBarTest(pyauto.PyUITest):
@@ -40,4 +41,4 @@ class BookmarkBarTest(pyauto.PyUITest):
     self.assertFalse(self.GetBookmarkBarVisibility())
 
 if __name__ == '__main__':
-  unittest.main()
+  pyauto_functional.Main()
