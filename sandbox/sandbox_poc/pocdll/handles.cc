@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,7 @@ void POCDLL_API TestGetHandle(HANDLE log) {
   FILE *output = handle2file.Translate(log, "w");
 
   // Initialize the NTAPI functions we need
-  HMODULE ntdll_handle = ::LoadLibraryA("ntdll.dll");
+  HMODULE ntdll_handle = ::GetModuleHandle(L"ntdll.dll");
   if (!ntdll_handle) {
     fprintf(output, "[ERROR] Cannot load ntdll.dll. Error %d\r\n",
             ::GetLastError());
@@ -35,7 +35,6 @@ void POCDLL_API TestGetHandle(HANDLE log) {
   if (!NtQueryObject || !NtQueryInformationFile || !NtQuerySystemInformation) {
     fprintf(output, "[ERROR] Cannot load all NT functions. Error %d\r\n",
                     ::GetLastError());
-    ::FreeLibrary(ntdll_handle);
     return;
   }
 
@@ -48,7 +47,6 @@ void POCDLL_API TestGetHandle(HANDLE log) {
   if (!buffer_size) {
     fprintf(output, "[ERROR] Get the number of handles. Error 0x%X\r\n",
                     status);
-    ::FreeLibrary(ntdll_handle);
     return;
   }
 
@@ -60,12 +58,11 @@ void POCDLL_API TestGetHandle(HANDLE log) {
   if (STATUS_SUCCESS != status) {
     fprintf(output, "[ERROR] Failed to get the handle list. Error 0x%X\r\n",
                     status);
-    ::FreeLibrary(ntdll_handle);
     delete [] system_handles;
     return;
   }
 
-  for (unsigned int  i = 0; i <  system_handles->NumberOfHandles; ++i) {
+  for (ULONG i = 0; i < system_handles->NumberOfHandles; ++i) {
     USHORT h = system_handles->Information[i].Handle;
     if (system_handles->Information[i].ProcessId != ::GetCurrentProcessId())
       continue;
@@ -122,8 +119,8 @@ void POCDLL_API TestGetHandle(HANDLE log) {
       // This function does not return the size of the buffer. We need to
       // iterate and always increase the buffer size until the function
       // succeeds. (Or at least does not fail with STATUS_BUFFER_OVERFLOW)
-      DWORD size_file = MAX_PATH;
-      IO_STATUS_BLOCK status_block;
+      ULONG size_file = MAX_PATH;
+      IO_STATUS_BLOCK status_block = {0};
       do {
         // Delete the previous buffer create. The buffer was too small
         if (file_name) {
@@ -186,6 +183,4 @@ void POCDLL_API TestGetHandle(HANDLE log) {
   if (system_handles) {
     delete [] system_handles;
   }
-
-  ::FreeLibrary(ntdll_handle);
 }

@@ -209,8 +209,6 @@ TEST(PolicyTargetTest, OpenProcess) {
       "Opens a process";
 }
 
-#if !defined(_WIN64)
-
 // Launches the app in the sandbox and ask it to wait in an
 // infinite loop. Waits for 2 seconds and then check if the
 // desktop associated with the app thread is not the same as the
@@ -338,6 +336,5 @@ TEST(PolicyTargetTest, WinstaPolicy) {
   temp_policy->DestroyAlternateDesktop();
   temp_policy->Release();
 }
-#endif  // _WIN64
 
 }  // namespace sandbox

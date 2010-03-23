@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -148,15 +148,15 @@ int APIENTRY _tWinMain(HINSTANCE instance, HINSTANCE, wchar_t* command_line,
       return -4;
     }
 
-    // Initialization is finished, so we can enter lock-down mode
-    target_service->LowerToken();
-
     // We now know what we should load, so load it
     HMODULE dll_module = ::LoadLibraryA(dll_name.c_str());
     if (dll_module == NULL) {
       // TODO(finnur): write the failure to the log file
       return -5;
     }
+
+    // Initialization is finished, so we can enter lock-down mode
+    target_service->LowerToken();
 
     lpfnInit init_function =
         (lpfnInit) ::GetProcAddress(dll_module, entry_point.c_str());

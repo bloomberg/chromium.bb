@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -102,12 +102,14 @@ TEST(RegistryPolicyTest, TestKeyAnyAccess) {
   EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(
       L"Reg_OpenKey open read HKEY_LOCAL_MACHINE software\\microsoft"));
 
-  // Tests write access on key allowed for read-write.
-  EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(
-      L"Reg_OpenKey create write HKEY_LOCAL_MACHINE software\\microsoft"));
+  if (::IsUserAnAdmin()) {
+    // Tests write access on key allowed for read-write.
+    EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(
+        L"Reg_OpenKey create write HKEY_LOCAL_MACHINE software\\microsoft"));
 
-  EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(
-      L"Reg_OpenKey open write HKEY_LOCAL_MACHINE software\\microsoft"));
+    EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(
+        L"Reg_OpenKey open write HKEY_LOCAL_MACHINE software\\microsoft"));
+  }
 
   // Tests subdirectory access on keys where we don't have subdirectory acess.
   EXPECT_EQ(SBOX_TEST_DENIED, runner.RunTest(L"Reg_OpenKey create read "

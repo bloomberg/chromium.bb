@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -108,10 +108,12 @@ typedef enum _SYSTEM_INFORMATION_CLASS {
   SystemHandleInformation = 16
 } SYSTEM_INFORMATION_CLASS;
 
-typedef struct
-{
-  NTSTATUS Status;
-  ULONG Information;
+typedef struct _IO_STATUS_BLOCK {
+    union {
+        NTSTATUS Status;
+        PVOID Pointer;
+    };
+    ULONG_PTR Information;
 } IO_STATUS_BLOCK, *PIO_STATUS_BLOCK;
 
 #define InitializeObjectAttributes( p, n, a, r, s ) { \

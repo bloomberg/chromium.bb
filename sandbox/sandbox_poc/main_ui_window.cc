@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -96,9 +96,9 @@ unsigned int MainUIWindow::CreateMainWindowAndLoop(
   if (NULL == window)
     return ::GetLastError();
 
-  ::SetWindowLong(window,
-                  GWL_USERDATA,
-                  static_cast<LONG>(reinterpret_cast<LONG_PTR>(this)));
+  ::SetWindowLongPtr(window,
+                     GWLP_USERDATA,
+                     reinterpret_cast<LONG_PTR>(this));
 
   ::SetWindowText(window, L"Sandbox Proof of Concept");
 
@@ -233,9 +233,9 @@ MainUIWindow* MainUIWindow::FromWindow(HWND main_window) {
   // so that we can retrieve it with this function later. This prevents us
   // from having to define all the message handling functions (that we refer to
   // in the window proc) as static
-  ::GetWindowLong(main_window, GWL_USERDATA);
+  ::GetWindowLongPtr(main_window, GWLP_USERDATA);
   return reinterpret_cast<MainUIWindow*>(
-      static_cast<LONG_PTR>(::GetWindowLong(main_window, GWL_USERDATA)));
+      ::GetWindowLongPtr(main_window, GWLP_USERDATA));
 }
 
 BOOL MainUIWindow::OnCreate(HWND parent_window, LPCREATESTRUCT) {
