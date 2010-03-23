@@ -222,9 +222,8 @@ void TabContentsViewGtk::StartDragging(const WebDropData& drop_data,
                                        WebDragOperationsMask ops,
                                        const SkBitmap& image,
                                        const gfx::Point& image_offset) {
-  drag_source_->StartDragging(drop_data, &last_mouse_down_,
+  drag_source_->StartDragging(drop_data, ops, &last_mouse_down_,
                               image, image_offset);
-  // TODO(snej): Make use of WebDragOperationsMask
 }
 
 void TabContentsViewGtk::SetPageTitle(const std::wstring& title) {

@@ -33,6 +33,7 @@ class TabContentsDragSource : public MessageLoopForUI::Observer {
   // Starts a drag for the tab contents this TabContentsDragSource was
   // created for.
   void StartDragging(const WebDropData& drop_data,
+                     WebKit::WebDragOperationsMask allowed_ops,
                      GdkEventButton* last_mouse_down,
                      const SkBitmap& image,
                      const gfx::Point& image_offset);

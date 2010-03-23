@@ -226,4 +226,15 @@ bool ExtractURIList(GtkSelectionData* selection_data, std::vector<GURL>* urls) {
   return true;
 }
 
+GdkDragAction WebDragOpToGdkDragAction(WebKit::WebDragOperationsMask op) {
+  GdkDragAction action = static_cast<GdkDragAction>(0);
+  if (op & WebKit::WebDragOperationCopy)
+    action = static_cast<GdkDragAction>(action | GDK_ACTION_COPY);
+  if (op & WebKit::WebDragOperationLink)
+    action = static_cast<GdkDragAction>(action | GDK_ACTION_LINK);
+  if (op & WebKit::WebDragOperationMove)
+    action = static_cast<GdkDragAction>(action | GDK_ACTION_MOVE);
+  return action;
+}
+
 }  // namespace gtk_dnd_util

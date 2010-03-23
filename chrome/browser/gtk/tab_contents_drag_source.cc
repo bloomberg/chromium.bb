@@ -24,6 +24,7 @@
 #include "webkit/glue/webdropdata.h"
 
 using WebKit::WebDragOperation;
+using WebKit::WebDragOperationsMask;
 using WebKit::WebDragOperationNone;
 
 TabContentsDragSource::TabContentsDragSource(
@@ -70,6 +71,7 @@ TabContents* TabContentsDragSource::tab_contents() const {
 }
 
 void TabContentsDragSource::StartDragging(const WebDropData& drop_data,
+                                          WebDragOperationsMask allowed_ops,
                                           GdkEventButton* last_mouse_down,
                                           const SkBitmap& image,
                                           const gfx::Point& image_offset) {
@@ -123,7 +125,7 @@ void TabContentsDragSource::StartDragging(const WebDropData& drop_data,
   // initiating event from webkit.
   GdkDragContext* context = gtk_drag_begin(
       drag_widget_, list,
-      static_cast<GdkDragAction>(GDK_ACTION_COPY | GDK_ACTION_LINK),
+      gtk_dnd_util::WebDragOpToGdkDragAction(allowed_ops),
       1,  // Drags are always initiated by the left button.
       reinterpret_cast<GdkEvent*>(last_mouse_down));
   // The drag adds a ref; let it own the list.

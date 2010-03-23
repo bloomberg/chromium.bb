@@ -16,9 +16,25 @@
 #include "net/base/net_util.h"
 
 using WebKit::WebDragOperation;
-using WebKit::WebDragOperationCopy;
-using WebKit::WebDragOperationMove;
 using WebKit::WebDragOperationNone;
+using WebKit::WebDragOperationCopy;
+using WebKit::WebDragOperationLink;
+using WebKit::WebDragOperationMove;
+
+namespace {
+
+WebDragOperation GdkDragActionToWebDragOp(GdkDragAction action) {
+  WebDragOperation op = WebDragOperationNone;
+  if (action & GDK_ACTION_COPY)
+    op = static_cast<WebDragOperation>(op | WebDragOperationCopy);
+  if (action & GDK_ACTION_LINK)
+    op = static_cast<WebDragOperation>(op | WebDragOperationLink);
+  if (action & GDK_ACTION_MOVE)
+    op = static_cast<WebDragOperation>(op | WebDragOperationMove);
+  return op;
+}
+
+}  // namespace
 
 WebDragDestGtk::WebDragDestGtk(TabContents* tab_contents, GtkWidget* widget)
     : tab_contents_(tab_contents),
@@ -26,7 +42,10 @@ WebDragDestGtk::WebDragDestGtk(TabContents* tab_contents, GtkWidget* widget)
       context_(NULL),
       method_factory_(this) {
   gtk_drag_dest_set(widget, static_cast<GtkDestDefaults>(0),
-                    NULL, 0, GDK_ACTION_COPY);
+                    NULL, 0,
+                    static_cast<GdkDragAction>(GDK_ACTION_COPY |
+                                               GDK_ACTION_LINK |
+                                               GDK_ACTION_MOVE));
   g_signal_connect(widget, "drag-motion",
                    G_CALLBACK(OnDragMotionThunk), this);
   g_signal_connect(widget, "drag-leave",
@@ -35,6 +54,8 @@ WebDragDestGtk::WebDragDestGtk(TabContents* tab_contents, GtkWidget* widget)
                    G_CALLBACK(OnDragDropThunk), this);
   g_signal_connect(widget, "drag-data-received",
                    G_CALLBACK(OnDragDataReceivedThunk), this);
+  // TODO(tony): Need a drag-data-delete handler for moving content out of
+  // the tab contents.  http://crbug.com/38989
 
   destroy_handler_ = g_signal_connect(
       widget, "destroy", G_CALLBACK(gtk_widget_destroyed), &widget_);
@@ -49,12 +70,8 @@ WebDragDestGtk::~WebDragDestGtk() {
 
 void WebDragDestGtk::UpdateDragStatus(WebDragOperation operation) {
   if (context_) {
-    // TODO(estade): we might want to support other actions besides copy,
-    // but that would increase the cost of getting our drag success guess
-    // wrong.
     is_drop_target_ = operation != WebDragOperationNone;
-    gdk_drag_status(context_, is_drop_target_ ? GDK_ACTION_COPY :
-                    static_cast<GdkDragAction>(0),
+    gdk_drag_status(context_, gtk_dnd_util::WebDragOpToGdkDragAction(operation),
                     drag_over_time_);
   }
 }
@@ -97,8 +114,7 @@ gboolean WebDragDestGtk::OnDragMotion(GtkWidget* sender,
     tab_contents_->render_view_host()->
         DragTargetDragOver(gtk_util::ClientPoint(widget_),
                            gtk_util::ScreenPoint(widget_),
-                           static_cast<WebDragOperation>(
-                               WebDragOperationCopy | WebDragOperationMove));
+                           GdkDragActionToWebDragOp(context->actions));
     if (tab_contents_->GetBookmarkDragDelegate())
       tab_contents_->GetBookmarkDragDelegate()->OnDragOver(bookmark_drag_data_);
     drag_over_time_ = time;
@@ -186,10 +202,9 @@ void WebDragDestGtk::OnDragDataReceived(
     // TODO(snej): Pass appropriate DragOperation instead of hardcoding.
     tab_contents_->render_view_host()->
         DragTargetDragEnter(*drop_data_.get(),
-                            gtk_util::ClientPoint(widget_),
-                            gtk_util::ScreenPoint(widget_),
-                            static_cast<WebDragOperation>(
-                                WebDragOperationCopy | WebDragOperationMove));
+            gtk_util::ClientPoint(widget_),
+            gtk_util::ScreenPoint(widget_),
+            GdkDragActionToWebDragOp(context->actions));
 
     // This is non-null if tab_contents_ is showing an ExtensionDOMUI with
     // support for (at the moment experimental) drag and drop extensions.
@@ -232,8 +247,9 @@ gboolean WebDragDestGtk::OnDragDrop(GtkWidget* sender, GdkDragContext* context,
   if (tab_contents_->GetBookmarkDragDelegate())
     tab_contents_->GetBookmarkDragDelegate()->OnDrop(bookmark_drag_data_);
 
-  // The second parameter is just an educated guess, but at least we will
-  // get the drag-end animation right sometimes.
+  // The second parameter is just an educated guess as to whether or not the
+  // drag succeeded, but at least we will get the drag-end animation right
+  // sometimes.
   gtk_drag_finish(context, is_drop_target_, FALSE, time);
   return TRUE;
 }
