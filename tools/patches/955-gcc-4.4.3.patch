@@ -1,0 +1,24 @@
+Disable "bt" instruction even if optimization for size is used.
+
+--- gcc-4.4.3/gcc/config/i386/i386.md	2010-03-23 08:39:02.000000000 +0100
++++ gcc-4.4.3/gcc/config/i386/i386.md	2010-03-23 16:23:14.000000000 +0100
+@@ -14485,7 +14485,8 @@
+ 	    (const_int 1)
+ 	    (match_operand:DI 1 "nonmemory_operand" "rN"))
+ 	  (const_int 0)))]
+-  "TARGET_64BIT && (TARGET_USE_BT || optimize_function_for_size_p (cfun))"
++  "TARGET_64BIT && (TARGET_USE_BT ||
++   optimize_function_for_size_p (cfun) && !flag_control_integrity)"
+   "bt{q}\t{%1, %0|%0, %1}"
+   [(set_attr "type" "alu1")])
+ 
+@@ -14497,7 +14498,8 @@
+ 	    (const_int 1)
+ 	    (match_operand:SI 1 "nonmemory_operand" "rN"))
+ 	  (const_int 0)))]
+-  "TARGET_USE_BT || optimize_function_for_size_p (cfun)"
++  "TARGET_USE_BT ||
++   optimize_function_for_size_p (cfun) && !flag_control_integrity"
+   "bt{l}\t{%1, %0|%0, %1}"
+   [(set_attr "type" "alu1")])
+ 
