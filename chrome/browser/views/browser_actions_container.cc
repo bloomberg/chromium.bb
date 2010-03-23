@@ -142,8 +142,7 @@ void BrowserActionButton::ButtonPressed(views::Button* sender,
   panel_->OnBrowserActionExecuted(this, false);  // inspect_with_devtools
 }
 
-void BrowserActionButton::OnImageLoaded(ImageLoadingTracker* source,
-                                        SkBitmap* image, size_t index) {
+void BrowserActionButton::OnImageLoaded(SkBitmap* image, size_t index) {
   if (image)
     default_icon_ = *image;
 

@@ -69,8 +69,7 @@ class BrowserActionButton : public views::MenuButton,
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
   // Overridden from ImageLoadingTracker.
-  virtual void OnImageLoaded(ImageLoadingTracker* source, SkBitmap* image,
-                             size_t index);
+  virtual void OnImageLoaded(SkBitmap* image, size_t index);
 
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,

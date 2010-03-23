@@ -1561,8 +1561,8 @@ void LocationBarView::PageActionImageView::ShowInfoBubble() {
   ShowInfoBubbleImpl(ASCIIToWide(tooltip_), GetColor(false, TEXT));
 }
 
-void LocationBarView::PageActionImageView::OnImageLoaded(
-    ImageLoadingTracker* source, SkBitmap* image, size_t index) {
+void LocationBarView::PageActionImageView::OnImageLoaded(SkBitmap* image,
+                                                         size_t index) {
   // We loaded icons()->size() icons, plus one extra if the page action had
   // a default icon.
   size_t total_icons = page_action_->icon_paths()->size();

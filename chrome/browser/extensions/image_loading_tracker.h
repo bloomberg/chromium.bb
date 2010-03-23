@@ -21,22 +21,18 @@ class Size;
 // Consider abstracting out a FilePathProvider (ExtensionResource) and moving
 // back to chrome/browser/ if other subsystems want to use it.
 class ImageLoadingTracker
-    : public base::RefCountedThreadSafe<ImageLoadingTracker> {
+  : public base::RefCountedThreadSafe<ImageLoadingTracker> {
  public:
   class Observer {
    public:
     // Will be called when the image with the given index has loaded.
     // The |image| is owned by the tracker, so the observer should make a copy
     // if they need to access it after this call.
-    virtual void OnImageLoaded(ImageLoadingTracker* source,
-                               SkBitmap* image,
-                               size_t index) = 0;
+    virtual void OnImageLoaded(SkBitmap* image, size_t index) = 0;
   };
 
   ImageLoadingTracker(Observer* observer, size_t image_count)
-      : observer_(observer),
-        image_count_(image_count),
-        posted_count_(0) {
+    : observer_(observer), image_count_(image_count), posted_count_(0) {
     AddRef();  // We hold on to a reference to ourself to make sure we don't
                // get deleted until we get a response from image loading (see
                // ImageLoadingDone).

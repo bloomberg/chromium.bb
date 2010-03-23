@@ -109,7 +109,7 @@ void ImageLoadingTracker::PostLoadImageTask(const ExtensionResource& resource,
 
 void ImageLoadingTracker::OnImageLoaded(SkBitmap* image, size_t index) {
   if (observer_)
-    observer_->OnImageLoaded(this, image, index);
+    observer_->OnImageLoaded(image, index);
 
   if (image)
     delete image;

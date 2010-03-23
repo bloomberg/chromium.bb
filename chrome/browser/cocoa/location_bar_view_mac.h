@@ -241,9 +241,7 @@ class LocationBarViewMac : public AutocompleteEditController,
     virtual void OnMousePressed(NSRect bounds);
 
     // Overridden from ImageLoadingTracker.
-    virtual void OnImageLoaded(ImageLoadingTracker* source,
-                               SkBitmap* image,
-                               size_t index);
+    virtual void OnImageLoaded(SkBitmap* image, size_t index);
 
     // Called to notify the Page Action that it should determine whether to be
     // visible or hidden. |contents| is the TabContents that is active, |url|

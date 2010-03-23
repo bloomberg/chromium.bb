@@ -439,8 +439,7 @@ class LocationBarView : public LocationBar,
     virtual void ShowInfoBubble();
 
     // Overridden from ImageLoadingTracker.
-    virtual void OnImageLoaded(ImageLoadingTracker* source, SkBitmap* image,
-                               size_t index);
+    virtual void OnImageLoaded(SkBitmap* image, size_t index);
 
     // Overridden from ExtensionContextMenuModelModel::Delegate
     virtual void InspectPopup(ExtensionAction* action);
