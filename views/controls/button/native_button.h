@@ -46,7 +46,7 @@ class NativeButton : public Button {
   // registered, use SetIsDefault for that).
   void SetAppearsAsDefault(bool default_button);
 
-  void set_ignore_minimum_size(bool ignore_minimum_size) {1
+  void set_ignore_minimum_size(bool ignore_minimum_size) {
     ignore_minimum_size_ = ignore_minimum_size;
   }
 
