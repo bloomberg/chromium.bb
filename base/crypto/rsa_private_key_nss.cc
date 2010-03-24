@@ -11,6 +11,7 @@
 #include <iostream>
 #include <list>
 
+#include "base/leak_annotations.h"
 #include "base/logging.h"
 #include "base/nss_util.h"
 #include "base/scoped_ptr.h"
@@ -63,6 +64,9 @@ RSAPrivateKey* RSAPrivateKey::Create(uint16 num_bits) {
 // static
 RSAPrivateKey* RSAPrivateKey::CreateFromPrivateKeyInfo(
     const std::vector<uint8>& input) {
+  // This method currently leaks some memory.
+  // See http://crbug.com/34742.
+  ANNOTATE_SCOPED_MEMORY_LEAK;
   scoped_ptr<RSAPrivateKey> result(new RSAPrivateKey);
 
   PK11SlotInfo *slot = PK11_GetInternalSlot();
