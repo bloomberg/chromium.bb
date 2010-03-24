@@ -8,18 +8,25 @@
 #include <gtk/gtk.h>
 
 #include "chrome/common/notification_registrar.h"
+#include "chrome/browser/gtk/constrained_window_gtk.h"
+#include "app/gtk_signal.h"
 
 class NavigationController;
+class TabContents;
 
 // Displays a dialog that warns the user that they are about to resubmit a form.
 // To display the dialog, allocate this object on the heap. It will open the
 // dialog from its constructor and then delete itself when the user dismisses
 // the dialog.
-class RepostFormWarningGtk : public NotificationObserver {
+class RepostFormWarningGtk : public NotificationObserver,
+    ConstrainedWindowGtkDelegate {
  public:
-  RepostFormWarningGtk(GtkWindow* parent,
-                       NavigationController* navigation_controller);
+  RepostFormWarningGtk(GtkWindow* parent, TabContents* tab_contents);
   virtual ~RepostFormWarningGtk();
+
+  virtual GtkWidget* GetWidgetRoot();
+
+  virtual void DeleteDelegate();
 
  private:
   // NotificationObserver implementation.
@@ -29,13 +36,15 @@ class RepostFormWarningGtk : public NotificationObserver {
                        const NotificationDetails& details);
 
   // Tell Gtk to destroy the dialog window.  This will only be done once, even
-  // if Destroy is called multiple times (eg, from both OnResponse and Observe.)
+  // if Destroy is called multiple times.
   void Destroy();
 
-  static void OnResponse(GtkWidget* widget,
-                         int response,
-                         RepostFormWarningGtk* dialog);
-  static void OnWindowDestroy(GtkWidget* widget, RepostFormWarningGtk* dialog);
+  CHROMEGTK_CALLBACK_0(RepostFormWarningGtk, void, OnRefresh);
+  CHROMEGTK_CALLBACK_0(RepostFormWarningGtk, void, OnCancel);
+  CHROMEGTK_CALLBACK_1(RepostFormWarningGtk,
+                       void,
+                       OnHierarchyChanged,
+                       GtkWidget*);
 
   NotificationRegistrar registrar_;
 
@@ -43,6 +52,10 @@ class RepostFormWarningGtk : public NotificationObserver {
   NavigationController* navigation_controller_;
 
   GtkWidget* dialog_;
+  GtkWidget* ok_;
+  GtkWidget* cancel_;
+
+  ConstrainedWindow* window_;
 
   DISALLOW_COPY_AND_ASSIGN(RepostFormWarningGtk);
 };

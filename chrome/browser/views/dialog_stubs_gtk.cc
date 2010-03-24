@@ -71,8 +71,7 @@ void EditSearchEngine(gfx::NativeWindow parent,
 
 void ShowRepostFormWarningDialog(gfx::NativeWindow parent_window,
                                  TabContents* tab_contents) {
-  new RepostFormWarningGtk(GTK_WINDOW(parent_window),
-                           &tab_contents->controller());
+  new RepostFormWarningGtk(GTK_WINDOW(parent_window), tab_contents);
 }
 
 void ShowContentSettingsWindow(gfx::NativeWindow parent_window,
