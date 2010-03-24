@@ -23,7 +23,8 @@ class PrefService;
 // Plug-ins and Pop-ups pages in the Content Settings window.
 
 class ContentFilterPageView : public OptionsPageView,
-                              public views::ButtonListener {
+                              public views::ButtonListener,
+                              public views::LinkController {
  public:
   ContentFilterPageView(Profile* profile, ContentSettingsType content_type);
   virtual ~ContentFilterPageView();
@@ -34,6 +35,9 @@ class ContentFilterPageView : public OptionsPageView,
 
   // views::ButtonListener implementation:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+
+  // views::LinkController implementation:
+  virtual void LinkActivated(views::Link* source, int event_flags);
 
  private:
   ContentSettingsType content_type_;

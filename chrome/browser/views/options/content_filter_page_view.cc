@@ -6,10 +6,13 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "chrome/browser/browser.h"
+#include "chrome/browser/browser_window.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/views/options/exceptions_view.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "gfx/canvas.h"
 #include "gfx/native_theme_win.h"
 #include "grit/generated_resources.h"
@@ -121,6 +124,19 @@ void ContentFilterPageView::InitControlLayout() {
   layout->StartRow(0, single_column_set_id);
   layout->AddView(exceptions_button_, 1, 1, GridLayout::LEADING,
                   GridLayout::FILL);
+
+  // Add the "Disable individual plug-ins..." link on the plug-ins page.
+  if (content_type_ == CONTENT_SETTINGS_TYPE_PLUGINS) {
+    layout->AddPaddingRow(0, kUnrelatedControlVerticalSpacing);
+
+    views::Link* plugins_page_link = new views::Link(
+        l10n_util::GetString(IDS_PLUGIN_SELECTIVE_DISABLE));
+    plugins_page_link->SetController(this);
+
+    layout->StartRow(0, single_column_set_id);
+    layout->AddView(plugins_page_link, 1, 1, GridLayout::LEADING,
+                    GridLayout::FILL);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -139,4 +155,19 @@ void ContentFilterPageView::ButtonPressed(views::Button* sender,
   profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
       content_type_,
       allow_radio_->checked() ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// ContentFilterPageView, views::LinkController implementation:
+
+void ContentFilterPageView::LinkActivated(views::Link* source,
+                                          int event_flags) {
+  DCHECK_EQ(content_type_, CONTENT_SETTINGS_TYPE_PLUGINS);
+
+  // We open a new browser window so the Options dialog doesn't get lost
+  // behind other windows.
+  Browser* browser = Browser::Create(profile());
+  browser->OpenURL(GURL(chrome::kChromeUIPluginsURL), GURL(),
+                   NEW_FOREGROUND_TAB, PageTransition::LINK);
+  browser->window()->Show();
 }
