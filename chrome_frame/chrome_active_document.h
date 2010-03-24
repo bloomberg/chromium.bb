@@ -296,7 +296,7 @@ END_EXEC_COMMAND_MAP()
   HRESULT IEExec(const GUID* cmd_group_guid, DWORD command_id,
                  DWORD cmd_exec_opt, VARIANT* in_args, VARIANT* out_args);
 
-  bool IsUrlZoneRestricted(const std::wstring& url);
+  unsigned long MapUrlToZone(const wchar_t* url);
 
   // Parses the URL and returns information whether it is a new navigation and
   // the actual url after stripping out the cf: prefix if any.

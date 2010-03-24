@@ -1255,3 +1255,55 @@ TEST_F(ChromeFrameTestWithWebServer,
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds * 2);
 }
 
+TEST(IEPrivacy, NavigationToRestrictedSite) {
+  CloseIeAtEndOfScope last_resort_close_ie;
+  chrome_frame_test::TimedMsgLoop loop;
+  ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
+  ChromeFrameHTTPServer server;
+  server.SetUp();
+
+  ScopedComPtr<IInternetSecurityManager> security_manager;
+  HRESULT hr = security_manager.CreateInstance(CLSID_InternetSecurityManager);
+  ASSERT_HRESULT_SUCCEEDED(hr);
+  // Add localhost to restricted sites zone.
+  hr = security_manager->SetZoneMapping(URLZONE_UNTRUSTED,
+      L"http://localhost:1337", SZM_CREATE);
+
+  EXPECT_CALL(mock, OnFileDownload(VARIANT_TRUE, _))
+      .Times(testing::AnyNumber());
+
+  testing::InSequence s;
+  const wchar_t* url = L"http://localhost:1337/files/meta_tag.html";
+  EXPECT_CALL(mock, OnBeforeNavigate2(_,
+      testing::Field(&VARIANT::bstrVal,
+      testing::StrCaseEq(url)), _, _, _, _, _)).Times(1);
+
+  EXPECT_CALL(mock, OnNavigateComplete2(_,
+      testing::Field(&VARIANT::bstrVal, testing::StrCaseEq(url)))).Times(1);
+
+  EXPECT_CALL(mock, OnBeforeNavigate2(_,
+      testing::Field(&VARIANT::bstrVal,
+      testing::StrCaseEq(url)), _, _, _, _, _)).Times(1);
+
+  EXPECT_CALL(mock, OnBeforeNavigate2(_,
+      testing::Field(&VARIANT::bstrVal,
+      testing::StartsWith(L"res://")), _, _, _, _, _)).Times(1);
+
+  EXPECT_CALL(mock, OnNavigateComplete2(_,
+      testing::Field(&VARIANT::bstrVal, testing::StrCaseEq(url))))
+      .Times(1).WillOnce(CloseBrowserMock(&mock));
+
+  EXPECT_CALL(mock, OnQuit()).WillOnce(QUIT_LOOP(loop));
+
+  EXPECT_CALL(mock, OnLoad(_)).Times(0);
+
+  hr = mock.LaunchIEAndNavigate(url);
+  ASSERT_HRESULT_SUCCEEDED(hr);
+  if (hr == S_OK) {
+    ASSERT_TRUE(mock.web_browser2() != NULL);
+    loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds * 2);
+  }
+
+  ASSERT_HRESULT_SUCCEEDED(security_manager->SetZoneMapping(URLZONE_UNTRUSTED,
+      L"http://localhost:1337", SZM_DELETE));
+}

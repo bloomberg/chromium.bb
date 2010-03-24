@@ -752,6 +752,8 @@ void ChromeActiveDocument::OnDetermineSecurityZone(const GUID* cmd_group_guid,
                                                    DWORD cmd_exec_opt,
                                                    VARIANT* in_args,
                                                    VARIANT* out_args) {
+  // Always return URLZONE_INTERNET since that is the Chrome's behaviour.
+  // Correct step is to use MapUrlToZone().
   if (out_args != NULL) {
     out_args->vt = VT_UI4;
     out_args->ulVal = URLZONE_INTERNET;
@@ -878,7 +880,8 @@ HRESULT ChromeActiveDocument::IEExec(const GUID* cmd_group_guid,
   return hr;
 }
 
-bool ChromeActiveDocument::IsUrlZoneRestricted(const std::wstring& url) {
+unsigned long ChromeActiveDocument::MapUrlToZone(const wchar_t* url) {
+  unsigned long zone = URLZONE_INVALID;
   if (security_manager_.get() == NULL) {
     HRESULT hr = CoCreateInstance(
         CLSID_InternetSecurityManager,
@@ -891,13 +894,12 @@ bool ChromeActiveDocument::IsUrlZoneRestricted(const std::wstring& url) {
       NOTREACHED() << __FUNCTION__
                    << " Failed to create InternetSecurityManager. Error: 0x%x"
                    << hr;
-      return true;
+      return zone;
     }
   }
 
-  DWORD zone = URLZONE_UNTRUSTED;
-  security_manager_->MapUrlToZone(url.c_str(), &zone, 0);
-  return zone == URLZONE_UNTRUSTED;
+  security_manager_->MapUrlToZone(url, &zone, 0);
+  return zone;
 }
 
 bool ChromeActiveDocument::ParseUrl(const std::wstring& url,
@@ -928,7 +930,7 @@ bool ChromeActiveDocument::ParseUrl(const std::wstring& url,
     return false;
   }
 
-  if (IsUrlZoneRestricted(initial_url)) {
+  if (URLZONE_UNTRUSTED == MapUrlToZone(initial_url.c_str())) {
     DLOG(WARNING) << __FUNCTION__
                   << " Disallowing navigation to restricted url: "
                   << initial_url;

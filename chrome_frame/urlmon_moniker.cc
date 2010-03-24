@@ -450,9 +450,10 @@ HRESULT MonikerPatch::BindToObject(IMoniker_BindToObject_Fn original,
         hr = persist_moniker.QueryFrom(cf_doc);
         DCHECK(SUCCEEDED(hr));
         hr = persist_moniker->Load(TRUE, me, bind_ctx, STGM_READ);
-        DCHECK(SUCCEEDED(hr));
-        hr = persist_moniker.QueryInterface(iid, obj);
-        DCHECK(SUCCEEDED(hr));
+        if (SUCCEEDED(hr)) {
+          hr = persist_moniker.QueryInterface(iid, obj);
+          DCHECK(SUCCEEDED(hr));
+        }
       } else {
         DLOG(INFO) << " creating callback object";
         CComObject<CFUrlmonBindStatusCallback>* callback = NULL;
