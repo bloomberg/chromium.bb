@@ -14,7 +14,7 @@ a {
   font-size: 103%;
 }
 
-div#header {
+#header {
   margin-bottom: 1.05em;
   overflow: hidden;
   padding-bottom: 1.5em;
@@ -23,11 +23,11 @@ div#header {
   position: relative;
 }
 
-html[dir='rtl'] div#header {
+html[dir=rtl] #header {
   padding-right: 0;
 }
 
-div#header h1 {
+#header h1 {
   background: url('../../app/theme/extensions_section.png') 0px 20px no-repeat;
   display: inline;
   margin: 0;
@@ -35,7 +35,7 @@ div#header h1 {
   padding-left: 75px;
   padding-top: 40px;
 }
-html[dir='rtl'] div#header h1 {
+html[dir=rtl] #header h1 {
   background: url('../../app/theme/extensions_section.png') right no-repeat;
   padding-right: 95px;
   padding-left: 0;
@@ -63,7 +63,7 @@ div.content {
   width: 100%;
 }
 
-html[dir='rtl'] .section-header {
+html[dir=rtl] .section-header {
   padding-right: 5px;
   padding-left: 0;
 }
@@ -134,7 +134,7 @@ body.showDevMode .showInDevMode {
   padding-top: 0.8em;
   width: 100%;
 }
-html[dir='rtl'] .developer-mode {
+html[dir=rtl] .developer-mode {
   padding-right: 10px;
   padding-left: 0;
 }
@@ -176,7 +176,7 @@ html[dir='rtl'] .developer-mode {
   font-weight: bold;
 }
 
-html[dir='rtl'] #get-moar-extensions {
+html[dir=rtl] #get-moar-extensions {
    text-align: left;
 }
 
@@ -199,7 +199,7 @@ html[dir='rtl'] #get-moar-extensions {
   text-align: right;
 }
 
-html[dir='rtl'] .extension-options-cell {
+html[dir=rtl] .extension-options-cell {
   text-align: left;
 }
 
@@ -210,7 +210,7 @@ html[dir='rtl'] .extension-options-cell {
   list-style-type: none;
 }
 
-html[dir='rtl'] .extension-views {
+html[dir=rtl] .extension-views {
   margin: 0 2ex 0 0;
 }
 
@@ -223,13 +223,13 @@ button {
   -webkit-box-align: center;
 }
 
-#dialog input[type="button"] {
+#dialog input[type=button] {
   font-size: 12px;
   height: 25px;
   width: 100px;
 }
 
-#dialog input[type="text"] {
+#dialog input[type=text] {
   font-size: 12px;
   font-family: Helvetica, Arial, sans-serif;
   width: 220px;
@@ -248,7 +248,7 @@ button {
   -webkit-user-select:none;
 }
 
-html[dir='rtl'] #dialogBackground {
+html[dir=rtl] #dialogBackground {
   right: 0;
   left: auto;
 }
@@ -268,7 +268,7 @@ html[dir='rtl'] #dialogBackground {
   -webkit-box-orient: vertical;
 }
 
-html[dir='rtl'] #dialog {
+html[dir=rtl] #dialog {
   font-size: 13px;
 }
 
@@ -279,7 +279,7 @@ html[dir='rtl'] #dialog {
   width: 100%;
 }
 
-html[dir='rtl'] #dialogHeader {
+html[dir=rtl] #dialogHeader {
   margin-left: -20px;
 }
 
@@ -303,7 +303,7 @@ html[dir='rtl'] #dialogHeader {
   -webkit-box-pack: end;
 }
 
-html[dir='rtl'] .dialogBrowseRow {
+html[dir=rtl] .dialogBrowseRow {
   margin-right: -24px;
   /* margin-left: 0px; */
 }
@@ -318,7 +318,7 @@ html[dir='rtl'] .dialogBrowseRow {
   margin-top: 20px;
 }
 
-html[dir='rtl'] #dialogContentFooter {
+html[dir=rtl] #dialogContentFooter {
   margin-right: -12px;
   margin-left: 0px;
 }
@@ -330,75 +330,75 @@ html[dir='rtl'] #dialogContentFooter {
  * expects to correctly populate the page.
  */
 var extensionDataFormat = {
-  "developerMode": false,
-  "extensions": [
+  'developerMode': false,
+  'extensions': [
     {
-      "id": "0000000000000000000000000000000000000000",
-      "name": "Google Chrome",
-      "description": "Extension long format description",
-      "version": "1.0.231",
-      "enabled": "true",
-      "enabledIncognito": "false",
-      "allow_reload": true,
-      "order": 1,
-      "options_url": "options.html",
-      "icon": "relative-path-to-icon.png",
-      "content_scripts": [
+      'id': '0000000000000000000000000000000000000000',
+      'name': 'Google Chrome',
+      'description': 'Extension long format description',
+      'version': '1.0.231',
+      'enabled': 'true',
+      'enabledIncognito': 'false',
+      'allow_reload': true,
+      'order': 1,
+      'options_url': 'options.html',
+      'icon': 'relative-path-to-icon.png',
+      'content_scripts': [
         {
-          "js": ["script1_file1.js", "script1_file2.js"],
-          "css": ["script1_file1.css", "script1_file2.css"],
-          "matches": ["http://*/*", "http://other.com/*"]
+          'js': ['script1_file1.js', 'script1_file2.js'],
+          'css': ['script1_file1.css', 'script1_file2.css'],
+          'matches': ['http://*/*', 'http://other.com/*']
         },
         {
-          "js": ["script2_file1.js", "script2_file2.js"],
-          "css": ["script2_file1.css", "script2_file2.css"],
-          "matches": ["http://*/*", "http://other.com/*"]
+          'js': ['script2_file1.js', 'script2_file2.js'],
+          'css': ['script2_file1.css', 'script2_file2.css'],
+          'matches': ['http://*/*', 'http://other.com/*']
         }
       ],
       // TODO(aa): It would be nice to also render what type of view each one
       // is, like 'toolstrip', 'background', etc. Eventually, if we can also
       // debug and inspect content scripts, maybe we don't need to list the
       // components, just the views.
-      "views": [
+      'views': [
         {
-          "path": "toolstrip.html",
-          "renderViewId": 1,
-          "renderProcessId": 1
+          'path': 'toolstrip.html',
+          'renderViewId': 1,
+          'renderProcessId': 1
         },
         {
-          "path": "background.html",
-          "renderViewId": 2,
-          "renderProcessId": 1
+          'path': 'background.html',
+          'renderViewId': 2,
+          'renderProcessId': 1
         }
       ]
     },
     {
-      "id": "0000000000000000000000000000000000000001",
-      "name": "RSS Subscriber",
-      "description": "Extension long format description",
-      "version": "1.0.231",
-      "enabled": "true",
-      "enabledIncognito": "false",
-      "allow_reload": false,
-      "order": 2,
-      "icon": "",
-      "content_scripts": [
+      'id': '0000000000000000000000000000000000000001',
+      'name': 'RSS Subscriber',
+      'description': 'Extension long format description',
+      'version': '1.0.231',
+      'enabled': 'true',
+      'enabledIncognito': 'false',
+      'allow_reload': false,
+      'order': 2,
+      'icon': '',
+      'content_scripts': [
         {
-          "js": ["script1_file1.js", "script1_file2.js"],
-          "css": ["script1_file1.css", "script1_file2.css"],
-          "matches": ["http://*/*", "http://other.com/*"]
+          'js': ['script1_file1.js', 'script1_file2.js'],
+          'css': ['script1_file1.css', 'script1_file2.css'],
+          'matches': ['http://*/*', 'http://other.com/*']
         },
         {
-          "js": ["script2_file1.js", "script2_file2.js"],
-          "css": ["script2_file1.css", "script2_file2.css"],
-          "matches": ["http://*/*", "http://other.com/*"]
+          'js': ['script2_file1.js', 'script2_file2.js'],
+          'css': ['script2_file1.css', 'script2_file2.css'],
+          'matches': ['http://*/*', 'http://other.com/*']
         }
       ],
-      "views": [
+      'views': [
         {
-          "path": "foo/bar/toolstrip.html",
-          "renderViewId": 3,
-          "renderProcessId": 1
+          'path': 'foo/bar/toolstrip.html',
+          'renderViewId': 3,
+          'renderProcessId': 1
         }
       ]
     }
@@ -449,7 +449,7 @@ function renderTemplate(extensionsData) {
  * ExtensionDOMHandler should reply to returnExtensionsData() (below).
  */
 function requestExtensionsData() {
-  chrome.send("requestExtensionsData", []);
+  chrome.send('requestExtensionsData', []);
 }
 
 // Used for observing function of the backend datasource for this page by
@@ -468,42 +468,42 @@ function returnExtensionsData(extensionsData){
   devModeExpanded = extensionsData.developerMode;
 
   var bodyContainer = document.getElementById('body-container');
-  var body = document.getElementsByTagName('body')[0];
+  var body = document.body;
 
   // Set all page content to be visible so we can measure heights.
-  bodyContainer.style.visibility = "hidden";
-  body.className = "";
+  bodyContainer.style.visibility = 'hidden';
+  body.className = '';
   var slidables = document.getElementsByClassName('showInDevMode');
   for (var i = 0; i < slidables.length; i++)
-    slidables[i].style.height = "auto";
+    slidables[i].style.height = 'auto';
 
   renderTemplate(extensionsData);
 
-  // Explicitly set the height for each element that wants to be "slid" in and
+  // Explicitly set the height for each element that wants to be 'slid' in and
   // out when the devModeExpanded is toggled.
   var slidables = document.getElementsByClassName('showInDevMode');
   for (var i = 0; i < slidables.length; i++)
-    slidables[i].style.height = slidables[i].offsetHeight + "px";
+    slidables[i].style.height = slidables[i].offsetHeight + 'px';
 
   // Reset visibility of page based on the current dev mode.
   document.getElementById('collapse').style.display =
-     devModeExpanded ? "inline" : "none";
+     devModeExpanded ? 'inline' : 'none';
   document.getElementById('expand').style.display =
-     devModeExpanded ? "none" : "inline";
-  bodyContainer.style.visibility = "visible";
+     devModeExpanded ? 'none' : 'inline';
+  bodyContainer.style.visibility = 'visible';
   body.className = devModeExpanded ?
-     "showDevModeInitial" : "hideDevModeInitial";
+     'showDevModeInitial' : 'hideDevModeInitial';
 
   if (rendered_once_)
     return;
 
   // Blech, JSTemplate always inserts the strings as text, which is usually a
   // feature, but in this case it contains HTML that we want to be rendered.
-  var elm = document.getElementById("try-gallery");
+  var elm = document.getElementById('try-gallery');
   if (elm)
     elm.innerHTML = elm.textContent;
 
-  elm = document.getElementById("get-moar-extensions");
+  elm = document.getElementById('get-moar-extensions');
   if (elm)
     elm.innerHTML = elm.textContent;
 
@@ -606,14 +606,14 @@ function packExtension() {
  * Shows to modal HTML pack dialog.
  */
 function showPackDialog() {
-  document.getElementById('dialogBackground').style.display="-webkit-box";
+  document.getElementById('dialogBackground').style.display = '-webkit-box';
 }
 
 /**
  * Hides the pack dialog.
  */
 function hidePackDialog() {
-  document.getElementById('dialogBackground').style.display="none"
+  document.getElementById('dialogBackground').style.display = 'none'
 }
 
 /*
@@ -623,12 +623,12 @@ function toggleDeveloperMode() {
   toggleDevModeExpanded();
 
   document.getElementById('collapse').style.display =
-      devModeExpanded ? "inline" : "none";
+      devModeExpanded ? 'inline' : 'none';
   document.getElementById('expand').style.display =
-      devModeExpanded ? "none" : "inline";
+      devModeExpanded ? 'none' : 'inline';
 
-  document.getElementsByTagName('body')[0].className =
-      devModeExpanded ? "showDevMode" : "hideDevMode";
+  document.body.className =
+      devModeExpanded ? 'showDevMode' : 'hideDevMode';
 }
 
 /**
@@ -656,10 +656,11 @@ function autoUpdate() {
   chrome.send('autoupdate', []);
 }
 
+document.addEventListener('DOMContentLoaded', requestExtensionsData);
+
 </script>
 </head>
-<body onload="requestExtensionsData();"
-      i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
+<body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
   <div id="dialogBackground">
     <div id="dialogHBackground">
       <div id="dialog">
@@ -733,9 +734,9 @@ function autoUpdate() {
             <td width="18" padding="">
               <img id="collapse" class="developer-mode-image"
                    style="display:none" onclick="toggleDeveloperMode();"
-                   src="minus.png" />
+                   src="minus.png">
               <img id="expand" class="developer-mode-image"
-                   onclick="toggleDeveloperMode();" src="plus.png" />
+                   onclick="toggleDeveloperMode();" src="plus.png">
             </td>
             <td width="50" align="right">
               <div class="developer-mode-link">
@@ -773,7 +774,7 @@ function autoUpdate() {
           <tr jsvalues=".className:enabled ? 'extension_enabled' : 'extension_disabled'">
           <td width="62" height="50" align="center" valign="top">
             <span jsdisplay="icon"><img jsvalues=".src:icon" width="48"
-                height="48" />
+                height="48">
           </td>
           <td valign="top">
             <div>
@@ -852,7 +853,7 @@ function autoUpdate() {
                   jsvalues=".extensionId:id;.enabled:enabled"
                   jsdisplay="enabled"
                   jseval="this.checked = enabledIncognito"
-                  onchange="handleToggleExtensionIncognito(this, false)" />
+                  onchange="handleToggleExtensionIncognito(this, false)">
                 <label
                   jsdisplay="enabled"
                   onclick="handleToggleExtensionIncognito(this.previousSibling.previousSibling, true)"

@@ -24,11 +24,11 @@ div#header {
   position: relative;
 }
 
-html[dir='rtl'] div#header {
+html[dir=rtl] #header {
   padding-right: 0;
 }
 
-div#header h1 {
+#header h1 {
   background: url('../../app/theme/extensions_section.png') 0px 20px no-repeat;
   display: inline;
   margin: 0;
@@ -37,7 +37,7 @@ div#header h1 {
   padding-top: 40px;
 }
 
-html[dir='rtl'] div#header h1 {
+html[dir=rtl] #header h1 {
   background: url('../../app/theme/extensions_section.png') right no-repeat;
   padding-right: 95px;
   padding-left: 0;
@@ -65,7 +65,7 @@ div.content {
   width: 100%;
 }
 
-html[dir='rtl'] .section-header {
+html[dir=rtl] .section-header {
   padding-right: 5px;
   padding-left: 0;
 }
@@ -93,11 +93,11 @@ html[dir='rtl'] .section-header {
   -webkit-box-flex: 1;
 }
 
-.wbox#top {
+#top {
   padding-right: 5px;
 }
 
-html[dir='rtl'] .wbox#top {
+html[dir=rtl] #top {
   padding-left: 5px;
   padding-right: 0;
 }
@@ -156,19 +156,19 @@ body.showTmiMode .showInTmiMode {
   width: 100%;
 }
 
-html[dir='rtl'] .tmi-mode {
+html[dir=rtl] .tmi-mode {
   padding-right: 10px;
   padding-left: 0;
 }
 
-.plugin_disabled > td {
+.plugin-disabled > td {
   background: url('gray.png') 0px 0px;
   color: #a0a0a0;
   padding-bottom: 4px;
   padding-top: 5px;
 }
 
-.plugin_enabled > td {
+.plugin-enabled > td {
   padding-bottom: 4px;
   padding-top: 5px;
 }
@@ -182,7 +182,7 @@ html[dir='rtl'] .tmi-mode {
   padding-left: 5px;
 }
 
-html[dir='rtl'] .plugin-text {
+html[dir=rtl] .plugin-text {
   padding-right: 5px;
   padding-left: 0;
 }
@@ -218,18 +218,18 @@ html[dir='rtl'] .plugin-text {
   padding-left: 1em;
 }
 
-html[dir='rtl'] .plugin-details td+td {
+html[dir=rtl] .plugin-details td+td {
   padding-right: 1em;
   padding-left: 0;
 }
 
 /* Make the MIME Types tables smaller. */
-.plugin-details .mime_types {
+.plugin-details .mime-types {
   font-size: 95%;
 }
 
 /* Separate the header from the contents in each MIME Types table. */
-.plugin-details .mime_types .header td {
+.plugin-details .mime-types .header td {
   padding-bottom: 0.1em;
   border-bottom: 1px solid;
 }
@@ -239,7 +239,7 @@ html[dir='rtl'] .plugin-details td+td {
   padding-left: 0.4em;
 }
 
-html[dir='rtl'] .hlisting td+td {
+html[dir=rtl] .hlisting td+td {
   padding-right: 0.4em;
   padding-left: 0;
 }
@@ -251,7 +251,7 @@ html[dir='rtl'] .hlisting td+td {
   margin-bottom: 0.2em;
 }
 
-html[dir='rtl'] .plugin-actions {
+html[dir=rtl] .plugin-actions {
   padding-right: 5px;
   padding-left: 0;
 }
@@ -421,10 +421,10 @@ function formatFileExtension(ext) {
 
 // Unfortunately, we don't have notifications for plugin (list) status changes
 // (yet), so in the meanwhile just update regularly.
-setInterval('requestPluginsData()', 30000);
+setInterval(requestPluginsData, 30000);
 
 // Get data and have it displayed upon loading.
-window.onload = requestPluginsData;
+document.addEventListener('DOMContentLoaded', requestPluginsData);
 
 </script>
 </head>
@@ -450,9 +450,9 @@ window.onload = requestPluginsData;
           <td width="18">
             <img id="collapse" class="tmi-mode-image"
                  style="display:none" onclick="toggleTmiMode();"
-                 src="minus.png"></img>
+                 src="minus.png">
             <img id="expand" class="tmi-mode-image"
-                 onclick="toggleTmiMode();" src="plus.png"></img>
+                 onclick="toggleTmiMode();" src="plus.png">
           </td>
           <td>
             <div class="tmi-mode-link">
@@ -475,7 +475,7 @@ window.onload = requestPluginsData;
       <div class="plugin" jsselect="plugins">
         <table width="100%" cellpadding="2" cellspacing="0">
         <tr jsvalues=
-                ".className:enabled ? 'plugin_enabled' : 'plugin_disabled'">
+                ".className:enabled ? 'plugin-enabled' : 'plugin-disabled'">
         <td valign="top">
           <div class="plugin-text">
             <div>
@@ -503,7 +503,7 @@ window.onload = requestPluginsData;
                 <table><tr jsdisplay="mimeTypes.length > 0">
                   <td class="plugin-details-label"
                       i18n-content="pluginMimeTypes">MIME_TYPES:</td>
-                  <td><table width="100%" class="mime_types">
+                  <td><table width="100%" class="mime-types">
                     <tr class="header">
                       <td i18n-content="pluginMimeTypesMimeType"
                           >MIME type</td>
