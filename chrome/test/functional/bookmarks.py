@@ -6,7 +6,9 @@
 # Must import this first
 import pyauto_functional
 
+import logging
 import os
+import sys
 import unittest
 
 import pyauto
@@ -274,6 +276,105 @@ class BookmarksTest(pyauto.PyUITest):
     self.assertEqual(other_child_0['type'], 'url')
     self.assertEqual(other_child_0['name'], list_of_titles[3])
     self.assertEqual(other_child_0['url'], list_of_urls[3])
+
+  def testOrdering(self):
+    """Add/delete a set of bookmarks, and verify their ordering."""
+    bookmarks = self.GetBookmarkModel()
+    bar_id = bookmarks.BookmarkBar()['id']
+    orig_nodes_count = bookmarks.NodeCount()
+
+    url_data = self._GetTestURLs("urls_and_titles")
+    list_of_titles = url_data.values()
+
+    for index, (url, name) in enumerate(url_data.iteritems()):
+      self.AddBookmarkURL(bar_id, index, name, url)
+
+    # check that we added them correctly
+    bookmarks = self.GetBookmarkModel()
+    self.assertEqual(orig_nodes_count + len(url_data) , bookmarks.NodeCount())
+
+    for node, (url, name) in zip(bookmarks.BookmarkBar()['children'],
+                                 url_data.iteritems()):
+      self.assertEqual(node['type'], 'url')
+      self.assertEqual(node['name'], name)
+      self.assertEqual(node['url'], url)
+
+    # remove a few of them.
+    remove_indices = [3, 5, 9, 12]
+    new_list_of_titles = list_of_titles[:]
+    assert len(remove_indices) <= len(url_data) and \
+           max(remove_indices) < len(url_data)
+
+    for index in remove_indices:
+      node = bookmarks.FindByTitle(list_of_titles[index])
+      self.RemoveBookmark(node[0]['id'])
+      new_list_of_titles.remove(list_of_titles[index])
+    logging.debug('Removed: %s' % [list_of_titles[x] for x in remove_indices])
+
+    # Confirm removal.
+    bookmarks = self.GetBookmarkModel()
+    for index in remove_indices:
+      nodes = bookmarks.FindByTitle(list_of_titles[index])
+      self.assertEqual(0, len(nodes))
+
+    # Confirm that other bookmarks were not removed and their order is intact.
+    self.assertEqual(len(new_list_of_titles),
+                     len(bookmarks.BookmarkBar()['children']))
+    for title, node in zip(new_list_of_titles,
+                           bookmarks.BookmarkBar()['children']):
+      self.assertEqual(title, node['name'])
+
+  def testDeepNesting(self):
+    """Deep nested folders. Move a bookmark around."""
+    url_data = self._GetTestURLs("urls_and_titles")
+    list_of_urls = url_data.keys()
+    list_of_titles = url_data.values()
+
+    bookmarks = self.GetBookmarkModel()
+    nodes = bookmarks.NodeCount()
+
+    bar_folder_id = bookmarks.BookmarkBar()['id']
+
+    # Created deep nested folders
+    num_folders = 15
+    assert num_folders >= 3
+    for i in range(num_folders):
+      self.AddBookmarkGroup(bar_folder_id, 0 ,'Group %d' % i)
+      bookmarks = self.GetBookmarkModel()
+      added_nodes = bookmarks.FindByID(bar_folder_id)['children']
+      self.assertEqual(1, len(added_nodes))
+      self.assertEqual('Group %d' % i, added_nodes[0]['name'])
+      bar_folder_id = added_nodes[0]['id']
+
+    self.assertEqual(nodes + num_folders, bookmarks.NodeCount())
+
+    # Add a bookmark to the leaf folder
+    a_url = list_of_urls[0]
+    a_title = list_of_titles[0]
+    leaf_folder = bookmarks.FindByTitle('Group %d' % (num_folders - 1))[0]
+    self.AddBookmarkURL(leaf_folder['id'], 0, a_title, a_url)
+
+    bookmarks = self.GetBookmarkModel()
+    nodes = bookmarks.FindByTitle('Group %d' % (num_folders - 1))
+    self.assertEqual(1, len(nodes))
+    mynode = nodes[0]['children'][0]
+    self.assertEqual(a_title, mynode['name'])
+    self.assertEqual(a_url, mynode['url'])
+
+    # Move bookmark to another group, say Group 2
+    self.ReparentBookmark(bookmarks.FindByTitle(a_title)[0]['id'],
+                          bookmarks.FindByTitle('Group 2')[0]['id'], 0)
+
+    bookmarks = self.GetBookmarkModel()
+    # Bookmark moves to right place
+    node = bookmarks.FindByTitle('Group 2')[0]
+    self.assertEqual(2, len(node['children']))
+    self.assertEqual(a_title, node['children'][0]['name'])
+    self.assertEqual(a_url, node['children'][0]['url'])
+
+    # Bookmark removed from leaf folder
+    nodes = bookmarks.FindByTitle('Group %d' % (num_folders - 1))
+    self.assertEqual([], nodes[0]['children'])
 
 
 if __name__ == '__main__':
