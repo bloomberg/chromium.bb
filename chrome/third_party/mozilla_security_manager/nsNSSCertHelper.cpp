@@ -64,6 +64,26 @@ std::string BMPtoUTF8(PRArenaPool* arena, unsigned char* data,
   return std::string(reinterpret_cast<char*>(&utf8_val.front()), utf8_val_len);
 }
 
+SECOidTag RegisterDynamicOid(const char* oid_string) {
+  SECOidTag rv = SEC_OID_UNKNOWN;
+  unsigned char buffer[1024];
+  SECOidData od;
+  od.oid.type = siDEROID;
+  od.oid.data = buffer;
+  od.oid.len = sizeof(buffer);
+
+  if (SEC_StringToOID(NULL, &od.oid, oid_string, 0) == SECSuccess) {
+    od.offset = SEC_OID_UNKNOWN;
+    od.mechanism = CKM_INVALID_MECHANISM;
+    od.supportedExtension = INVALID_CERT_EXTENSION;
+    od.desc = oid_string;
+
+    rv = SECOID_AddEntry(&od);
+  }
+  DCHECK_NE(rv, SEC_OID_UNKNOWN) << oid_string;
+  return rv;
+}
+
 }  // namespace
 
 namespace mozilla_security_manager {
@@ -72,52 +92,49 @@ SECOidTag ms_cert_ext_certtype = SEC_OID_UNKNOWN;
 SECOidTag ms_certsrv_ca_version = SEC_OID_UNKNOWN;
 SECOidTag ms_nt_principal_name = SEC_OID_UNKNOWN;
 SECOidTag ms_ntds_replication = SEC_OID_UNKNOWN;
-#define MICROSOFT_OID 0x2b, 0x6, 0x1, 0x4, 0x1, 0x82, 0x37
-static const unsigned char kMsCertExtCerttype[] = {MICROSOFT_OID, 20, 2};
-static const unsigned char kMsCertSrvCAVersion[] = {MICROSOFT_OID, 21, 1};
-static const unsigned char kMsNTPrincipalName[] = {MICROSOFT_OID, 20, 2, 3};
-static const unsigned char kMsNTDSReplication[] = {MICROSOFT_OID, 25, 1};
+SECOidTag eku_ms_individual_code_signing = SEC_OID_UNKNOWN;
+SECOidTag eku_ms_commercial_code_signing = SEC_OID_UNKNOWN;
+SECOidTag eku_ms_trust_list_signing = SEC_OID_UNKNOWN;
+SECOidTag eku_ms_time_stamping = SEC_OID_UNKNOWN;
+SECOidTag eku_ms_server_gated_crypto = SEC_OID_UNKNOWN;
+SECOidTag eku_ms_encrypting_file_system = SEC_OID_UNKNOWN;
+SECOidTag eku_ms_file_recovery = SEC_OID_UNKNOWN;
+SECOidTag eku_ms_windows_hardware_driver_verification = SEC_OID_UNKNOWN;
+SECOidTag eku_ms_qualified_subordination = SEC_OID_UNKNOWN;
+SECOidTag eku_ms_key_recovery = SEC_OID_UNKNOWN;
+SECOidTag eku_ms_document_signing = SEC_OID_UNKNOWN;
+SECOidTag eku_ms_lifetime_signing = SEC_OID_UNKNOWN;
+SECOidTag eku_ms_smart_card_logon = SEC_OID_UNKNOWN;
+SECOidTag eku_ms_key_recovery_agent = SEC_OID_UNKNOWN;
+SECOidTag eku_netscape_server_gated_crypto = SEC_OID_UNKNOWN;
 
 void RegisterDynamicOids() {
   if (ms_cert_ext_certtype != SEC_OID_UNKNOWN)
     return;
 
-  SECOidData od;
-  od.oid.data = const_cast<unsigned char*>(kMsCertExtCerttype);
-  od.oid.len = sizeof(kMsCertExtCerttype);
-  od.offset = SEC_OID_UNKNOWN;
-  od.mechanism = CKM_INVALID_MECHANISM;
-  od.supportedExtension = INVALID_CERT_EXTENSION;
-  od.desc = "ms_cert_ext_certtype";
-  ms_cert_ext_certtype = SECOID_AddEntry(&od);
-  DCHECK_NE(ms_cert_ext_certtype, SEC_OID_UNKNOWN);
+  ms_cert_ext_certtype = RegisterDynamicOid("1.3.6.1.4.1.311.20.2");
+  ms_certsrv_ca_version = RegisterDynamicOid("1.3.6.1.4.1.311.21.1");
+  ms_nt_principal_name = RegisterDynamicOid("1.3.6.1.4.1.311.20.2.3");
+  ms_nt_principal_name = RegisterDynamicOid("1.3.6.1.4.1.311.25.1");
 
-  od.oid.data = const_cast<unsigned char*>(kMsCertSrvCAVersion);
-  od.oid.len = sizeof(kMsCertSrvCAVersion);
-  od.offset = SEC_OID_UNKNOWN;
-  od.mechanism = CKM_INVALID_MECHANISM;
-  od.supportedExtension = INVALID_CERT_EXTENSION;
-  od.desc = "ms_certsrv_ca_version";
-  ms_certsrv_ca_version = SECOID_AddEntry(&od);
-  DCHECK_NE(ms_certsrv_ca_version, SEC_OID_UNKNOWN);
-
-  od.oid.data = const_cast<unsigned char*>(kMsNTPrincipalName);
-  od.oid.len = sizeof(kMsNTPrincipalName);
-  od.offset = SEC_OID_UNKNOWN;
-  od.mechanism = CKM_INVALID_MECHANISM;
-  od.supportedExtension = INVALID_CERT_EXTENSION;
-  od.desc = "ms_nt_principal_name";
-  ms_nt_principal_name = SECOID_AddEntry(&od);
-  DCHECK_NE(ms_nt_principal_name, SEC_OID_UNKNOWN);
-
-  od.oid.data = const_cast<unsigned char*>(kMsNTDSReplication);
-  od.oid.len = sizeof(kMsNTDSReplication);
-  od.offset = SEC_OID_UNKNOWN;
-  od.mechanism = CKM_INVALID_MECHANISM;
-  od.supportedExtension = INVALID_CERT_EXTENSION;
-  od.desc = "ms_ntds_replication";
-  ms_ntds_replication = SECOID_AddEntry(&od);
-  DCHECK_NE(ms_ntds_replication, SEC_OID_UNKNOWN);
+  eku_ms_individual_code_signing = RegisterDynamicOid("1.3.6.1.4.1.311.2.1.21");
+  eku_ms_commercial_code_signing = RegisterDynamicOid("1.3.6.1.4.1.311.2.1.22");
+  eku_ms_trust_list_signing = RegisterDynamicOid("1.3.6.1.4.1.311.10.3.1");
+  eku_ms_time_stamping = RegisterDynamicOid("1.3.6.1.4.1.311.10.3.2");
+  eku_ms_server_gated_crypto = RegisterDynamicOid("1.3.6.1.4.1.311.10.3.3");
+  eku_ms_encrypting_file_system = RegisterDynamicOid("1.3.6.1.4.1.311.10.3.4");
+  eku_ms_file_recovery = RegisterDynamicOid("1.3.6.1.4.1.311.10.3.4.1");
+  eku_ms_windows_hardware_driver_verification = RegisterDynamicOid(
+      "1.3.6.1.4.1.311.10.3.5");
+  eku_ms_qualified_subordination = RegisterDynamicOid(
+      "1.3.6.1.4.1.311.10.3.10");
+  eku_ms_key_recovery = RegisterDynamicOid("1.3.6.1.4.1.311.10.3.11");
+  eku_ms_document_signing = RegisterDynamicOid("1.3.6.1.4.1.311.10.3.12");
+  eku_ms_lifetime_signing = RegisterDynamicOid("1.3.6.1.4.1.311.10.3.13");
+  eku_ms_smart_card_logon = RegisterDynamicOid("1.3.6.1.4.1.311.20.2.2");
+  eku_ms_key_recovery_agent = RegisterDynamicOid("1.3.6.1.4.1.311.21.6");
+  eku_netscape_server_gated_crypto = RegisterDynamicOid(
+      "2.16.840.1.113730.4.1");
 }
 
 std::string ProcessRawBytes(SECItem* data) {
@@ -295,6 +312,24 @@ std::string GetOIDText(SECItem* oid) {
     case SEC_OID_X509_AUTH_INFO_ACCESS:
       string_id = IDS_CERT_X509_AUTH_INFO_ACCESS;
       break;
+    case SEC_OID_EXT_KEY_USAGE_SERVER_AUTH:
+      string_id = IDS_CERT_EKU_TLS_WEB_SERVER_AUTHENTICATION;
+      break;
+    case SEC_OID_EXT_KEY_USAGE_CLIENT_AUTH:
+      string_id = IDS_CERT_EKU_TLS_WEB_CLIENT_AUTHENTICATION;
+      break;
+    case SEC_OID_EXT_KEY_USAGE_CODE_SIGN:
+      string_id = IDS_CERT_EKU_CODE_SIGNING;
+      break;
+    case SEC_OID_EXT_KEY_USAGE_EMAIL_PROTECT:
+      string_id = IDS_CERT_EKU_EMAIL_PROTECTION;
+      break;
+    case SEC_OID_EXT_KEY_USAGE_TIME_STAMP:
+      string_id = IDS_CERT_EKU_TIME_STAMPING;
+      break;
+    case SEC_OID_OCSP_RESPONDER:
+      string_id = IDS_CERT_EKU_OCSP_SIGNING;
+      break;
 
     // There are a billionty other OIDs we could add here.  I tried to get the
     // important ones...
@@ -307,6 +342,36 @@ std::string GetOIDText(SECItem* oid) {
         string_id = IDS_CERT_EXT_MS_NT_PRINCIPAL_NAME;
       else if (oid_tag == ms_ntds_replication)
         string_id = IDS_CERT_EXT_MS_NTDS_REPLICATION;
+      else if (oid_tag == eku_ms_individual_code_signing)
+        string_id = IDS_CERT_EKU_MS_INDIVIDUAL_CODE_SIGNING;
+      else if (oid_tag == eku_ms_commercial_code_signing)
+        string_id = IDS_CERT_EKU_MS_COMMERCIAL_CODE_SIGNING;
+      else if (oid_tag == eku_ms_trust_list_signing)
+        string_id = IDS_CERT_EKU_MS_TRUST_LIST_SIGNING;
+      else if (oid_tag == eku_ms_time_stamping)
+        string_id = IDS_CERT_EKU_MS_TIME_STAMPING;
+      else if (oid_tag == eku_ms_server_gated_crypto)
+        string_id = IDS_CERT_EKU_MS_SERVER_GATED_CRYPTO;
+      else if (oid_tag == eku_ms_encrypting_file_system)
+        string_id = IDS_CERT_EKU_MS_ENCRYPTING_FILE_SYSTEM;
+      else if (oid_tag == eku_ms_file_recovery)
+        string_id = IDS_CERT_EKU_MS_FILE_RECOVERY;
+      else if (oid_tag == eku_ms_windows_hardware_driver_verification)
+        string_id = IDS_CERT_EKU_MS_WINDOWS_HARDWARE_DRIVER_VERIFICATION;
+      else if (oid_tag == eku_ms_qualified_subordination)
+        string_id = IDS_CERT_EKU_MS_QUALIFIED_SUBORDINATION;
+      else if (oid_tag == eku_ms_key_recovery)
+        string_id = IDS_CERT_EKU_MS_KEY_RECOVERY;
+      else if (oid_tag == eku_ms_document_signing)
+        string_id = IDS_CERT_EKU_MS_DOCUMENT_SIGNING;
+      else if (oid_tag == eku_ms_lifetime_signing)
+        string_id = IDS_CERT_EKU_MS_LIFETIME_SIGNING;
+      else if (oid_tag == eku_ms_smart_card_logon)
+        string_id = IDS_CERT_EKU_MS_SMART_CARD_LOGON;
+      else if (oid_tag == eku_ms_key_recovery_agent)
+        string_id = IDS_CERT_EKU_MS_KEY_RECOVERY_AGENT;
+      else if (oid_tag == eku_netscape_server_gated_crypto)
+        string_id = IDS_CERT_EKU_NETSCAPE_SERVER_GATED_CRYPTO;
       else
         string_id = -1;
       break;
@@ -776,12 +841,20 @@ std::string ProcessExtKeyUsage(SECItem* extension_data) {
   SECItem* oid;
   for (oids = extension_key_usage->oids; oids != NULL && *oids != NULL;
        ++oids) {
-    // TODO(mattm): Need to either lookup strings here based on the OIDs or add
-    // more OIDS to GetOIDText.  (See the strings of the form
-    // CertDumpEKU_<underlined-OID> in Mozilla.)
-
     oid = *oids;
-    rv += GetOIDText(oid);
+    std::string oid_dump = DumpOidString(oid);
+    std::string oid_text = GetOIDText(oid);
+
+    // If oid is one we recognize, oid_text will have a text description of the OID,
+    // which we display along with the oid_dump.  If we don't recognize the OID,
+    // GetOIDText will return the same value as DumpOidString, so just display
+    // the OID alone.
+    if (oid_dump == oid_text)
+      rv += oid_dump;
+    else
+      rv += l10n_util::GetStringFUTF8(IDS_CERT_EXT_KEY_USAGE_FORMAT,
+                                      UTF8ToUTF16(oid_text),
+                                      UTF8ToUTF16(oid_dump));
     rv += '\n';
   }
   CERT_DestroyOidSequence(extension_key_usage);
