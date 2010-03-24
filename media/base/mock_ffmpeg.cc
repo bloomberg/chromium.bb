@@ -92,6 +92,16 @@ void av_register_all() {
   media::MockFFmpeg::get()->AVRegisterAll();
 }
 
+int av_lockmgr_register(int (*cb)(void**, enum AVLockOp)) {
+  media::MockFFmpeg* mock = media::MockFFmpeg::get();
+  // Here |mock| may be NULL when this function is called from ~FFmpegGlue().
+  if (mock != NULL) {
+    return media::MockFFmpeg::get()->AVRegisterLockManager(cb);
+  } else {
+    return 0;
+  }
+}
+
 AVCodec* avcodec_find_decoder(enum CodecID id) {
   return media::MockFFmpeg::get()->AVCodecFindDecoder(id);
 }
