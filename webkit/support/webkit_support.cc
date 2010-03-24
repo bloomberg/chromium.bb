@@ -42,8 +42,9 @@ class TestEnvironment {
 
  private:
   base::AtExitManager at_exit_manager_;
-  TestWebKitClient webkit_client_;
   MessageLoopForUI main_message_loop_;
+  // TestWebKitClient must be instantiated after the MessageLoopForUI.
+  TestWebKitClient webkit_client_;
 };
 
 class WebPluginImplWithPageDelegate
@@ -128,6 +129,12 @@ void SetDatabaseQuota(int quota) {
 
 void ClearAllDatabases() {
   SimpleDatabaseSystem::GetInstance()->ClearAllDatabases();
+}
+
+// Bridge for SimpleResourceLoaderBridge
+
+void SetAcceptAllCookies(bool accept) {
+  SimpleResourceLoaderBridge::SetAcceptAllCookies(accept);
 }
 
 }  // namespace webkit_support

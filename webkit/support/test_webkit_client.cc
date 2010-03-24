@@ -44,6 +44,9 @@
 #include "third_party/WebKit/WebKit/chromium/public/win/WebThemeEngine.h"
 #include "webkit/tools/test_shell/test_shell_webthemeengine.h"
 #endif
+#if defined(OS_MACOSX)
+#include "base/mac_util.h"
+#endif
 
 using WebKit::WebScriptController;
 
@@ -66,10 +69,19 @@ TestWebKitClient::TestWebKitClient() {
   WebKit::WebRuntimeFeatures::enableDatabase(true);
 
   // Load libraries for media and enable the media player.
+  bool enable_media = false;
   FilePath module_path;
-  WebKit::WebRuntimeFeatures::enableMediaPlayer(
-      PathService::Get(base::DIR_MODULE, &module_path) &&
-      media::InitializeMediaLibrary(module_path));
+  if (PathService::Get(base::DIR_MODULE, &module_path)) {
+#if defined(OS_MACOSX)
+    if (mac_util::AmIBundled())
+      module_path = module_path.DirName().DirName().DirName();
+#endif
+    if (media::InitializeMediaLibrary(module_path))
+      enable_media = true;
+  }
+  WebKit::WebRuntimeFeatures::enableMediaPlayer(enable_media);
+  LOG_IF(WARNING, !enable_media) << "Failed to initialize the media library.\n";
+
   // TODO(joth): Make a dummy geolocation service implemenation for
   // test_shell, and set this to true. http://crbug.com/36451
   WebKit::WebRuntimeFeatures::enableGeolocation(false);

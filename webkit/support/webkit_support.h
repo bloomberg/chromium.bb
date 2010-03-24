@@ -41,6 +41,7 @@ WebKit::WebMediaPlayer* CreateMediaPlayer(WebKit::WebFrame* frame,
 // The following functions are used by LayoutTestController.
 void SetDatabaseQuota(int quota);
 void ClearAllDatabases();
+void SetAcceptAllCookies(bool accept);
 
 }  // namespace webkit_support
 
