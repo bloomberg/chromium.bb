@@ -144,7 +144,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, TabSpecificBrowserActionState) {
   EXPECT_EQ("hi!", GetBrowserActionsBar().GetTooltip(0));
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionPopup) {
+// Crashy, http://crbug.com/39158.
+IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DISABLED_BrowserActionPopup) {
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
       "browser_action/popup")));
   Extension* extension = GetSingleLoadedExtension();
