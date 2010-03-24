@@ -95,13 +95,10 @@ struct FileUploadData;
 }
 
 namespace WebKit {
-class WebGeolocationServiceInterfaceChromium;
-}
-
-namespace WebKit {
 class WebAccessibilityCache;
 class WebDataSource;
 class WebDragData;
+class WebGeolocationServiceInterface;
 class WebImage;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
