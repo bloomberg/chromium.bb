@@ -81,7 +81,7 @@ NACL_PLATFORM_DIR_MAP = {
 def _PlatformSubdir(env):
   platform = NACL_CANONICAL_PLATFORM_MAP[env['PLATFORM']]
   arch = env['BUILD_ARCHITECTURE']
-  subarch = env['BUILD_SUBARCH']
+  subarch = env['TARGET_SUBARCH']
   return NACL_PLATFORM_DIR_MAP[platform][arch][subarch]
 
 
@@ -383,12 +383,12 @@ def generate(env):
         _SetX86SdkEnvMultilib(env, root)
       else:
         # TODO(pasko): remove this legacy code when multilib is used by default.
-        if env['BUILD_SUBARCH'] == '32':
+        if env['TARGET_SUBARCH'] == '32':
           _SetEnvForX86Sdk(env, root)
-        elif env['BUILD_SUBARCH'] == '64':
+        elif env['TARGET_SUBARCH'] == '64':
           _SetEnvForX86Sdk64(env, root)
         else:
-          print "ERROR: unknown BUILD_SUBARCH: ", env['BUILD_SUBARCH']
+          print "ERROR: unknown TARGET_SUBARCH: ", env['TARGET_SUBARCH']
           assert 0
     elif env['BUILD_ARCHITECTURE'] == 'arm':
       _SetEnvForArmSdk(env, root)
