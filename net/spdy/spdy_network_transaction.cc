@@ -246,8 +246,13 @@ int SpdyNetworkTransaction::DoInitConnectionComplete(int result) {
 int SpdyNetworkTransaction::DoSendRequest() {
   next_state_ = STATE_SEND_REQUEST_COMPLETE;
   CHECK(!stream_.get());
-  UploadDataStream* upload_data = request_->upload_data ?
-      new UploadDataStream(request_->upload_data) : NULL;
+  UploadDataStream* upload_data = NULL;
+  if (request_->upload_data) {
+    int error_code;
+    upload_data = UploadDataStream::Create(request_->upload_data, &error_code);
+    if (!upload_data)
+      return error_code;
+  }
   stream_ = spdy_->GetOrCreateStream(*request_, upload_data, net_log_);
   // Release the reference to |spdy_| since we don't need it anymore.
   spdy_ = NULL;

@@ -48,6 +48,10 @@ class URLRequestContextGetter;
 struct ViewHostMsg_CreateWorker_Params;
 struct WebPluginInfo;
 
+namespace file_util {
+struct FileInfo;
+}
+
 namespace printing {
 class PrinterQuery;
 class PrintJobManager;
@@ -122,6 +126,8 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
  private:
   friend class ChromeThread;
   friend class DeleteTask<ResourceMessageFilter>;
+  typedef void (*FileInfoWriteFunc)(IPC::Message* reply_msg,
+                                    const file_util::FileInfo& file_info);
 
   virtual ~ResourceMessageFilter();
 
@@ -306,7 +312,10 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   void OnSetCacheMode(bool enabled);
 
   void OnGetFileSize(const FilePath& path, IPC::Message* reply_msg);
-  void OnGetFileSizeOnFileThread(const FilePath& path, IPC::Message* reply_msg);
+  void OnGetFileModificationTime(const FilePath& path, IPC::Message* reply_msg);
+  void OnGetFileInfoOnFileThread(const FilePath& path,
+                                 IPC::Message* reply_msg,
+                                 FileInfoWriteFunc write_func);
   void OnKeygen(uint32 key_size_index, const std::string& challenge_string,
                 const GURL& url, std::string* signed_public_key);
   void OnGetExtensionMessageBundle(const std::string& extension_id,

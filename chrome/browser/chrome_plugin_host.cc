@@ -656,7 +656,8 @@ CPError STDCALL CPR_AppendFileToUpload(CPRequest* request, const char* filepath,
 
   if (!length) length = kuint64max;
   FilePath path(FilePath::FromWStringHack(UTF8ToWide(filepath)));
-  handler->request()->AppendFileRangeToUpload(path, offset, length);
+  handler->request()->AppendFileRangeToUpload(path, offset, length,
+                                              base::Time());
   return CPERR_SUCCESS;
 }
 

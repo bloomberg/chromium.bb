@@ -30,7 +30,8 @@ class WebKitClientImpl : public WebKit::WebKitClient {
   virtual bool deleteEmptyDirectory(const WebKit::WebString& path);
   virtual bool getFileSize(const WebKit::WebString& path, long long& result);
   virtual bool getFileModificationTime(
-      const WebKit::WebString& path, time_t& result);
+      const WebKit::WebString& path,
+      double& result);
   virtual WebKit::WebString directoryName(const WebKit::WebString& path);
   virtual WebKit::WebString pathByAppendingComponent(
       const WebKit::WebString& path, const WebKit::WebString& component);

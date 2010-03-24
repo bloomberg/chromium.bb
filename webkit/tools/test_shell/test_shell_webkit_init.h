@@ -152,6 +152,15 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
         reinterpret_cast<int64*>(&result));
   }
 
+  virtual bool getFileModificationTime(const WebKit::WebString& path,
+                                       double& result) {
+    file_util::FileInfo info;
+    if (!file_util::GetFileInfo(webkit_glue::WebStringToFilePath(path), &info))
+      return false;
+    result = info.last_modified.ToDoubleT();
+    return true;
+  }
+
   virtual unsigned long long visitedLinkHash(const char* canonicalURL,
                                              size_t length) {
     return 0;

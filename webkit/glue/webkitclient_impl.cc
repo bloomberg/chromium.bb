@@ -454,7 +454,7 @@ bool WebKitClientImpl::getFileSize(const WebKit::WebString& path,
 }
 
 bool WebKitClientImpl::getFileModificationTime(const WebKit::WebString& path,
-                                               time_t& result) {
+                                               double& result) {
   NOTREACHED();
   return false;
 }

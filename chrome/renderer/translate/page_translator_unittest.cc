@@ -73,8 +73,11 @@ class DummyResourceLoaderBridge : public webkit_glue::ResourceLoaderBridge {
   DummyResourceLoaderBridge() { }
 
   virtual void AppendDataToUpload(const char* data, int data_len) {}
-  virtual void AppendFileRangeToUpload(const FilePath& file_path,
-                                       uint64 offset, uint64 length) {}
+  virtual void AppendFileRangeToUpload(
+      const FilePath& file_path,
+      uint64 offset,
+      uint64 length,
+      const base::Time& expected_modification_time) {}
   virtual void SetUploadIdentifier(int64 identifier) {}
   virtual bool Start(Peer* peer) { return false; }
   virtual void Cancel() {}

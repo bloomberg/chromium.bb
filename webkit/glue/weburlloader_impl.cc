@@ -375,7 +375,16 @@ void WebURLLoaderImpl::Context::Start(
           }
           break;
         case WebHTTPBody::Element::TypeFile:
-          bridge_->AppendFileToUpload(WebStringToFilePath(element.filePath));
+          if (element.fileLength == -1) {
+            bridge_->AppendFileToUpload(
+                WebStringToFilePath(element.filePath));
+          } else {
+            bridge_->AppendFileRangeToUpload(
+                WebStringToFilePath(element.filePath),
+                static_cast<uint64>(element.fileStart),
+                static_cast<uint64>(element.fileLength),
+                base::Time::FromDoubleT(element.fileInfo.modificationTime));
+          }
           break;
         default:
           NOTREACHED();

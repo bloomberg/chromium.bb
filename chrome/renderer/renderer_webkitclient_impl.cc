@@ -98,6 +98,21 @@ bool RendererWebKitClientImpl::getFileSize(const WebString& path,
   return false;
 }
 
+bool RendererWebKitClientImpl::getFileModificationTime(
+    const WebKit::WebString& path,
+    double& result) {
+  base::Time time;
+  if (RenderThread::current()->Send(
+          new ViewHostMsg_GetFileModificationTime(
+              webkit_glue::WebStringToFilePath(path), &time))) {
+    result = time.ToDoubleT();
+    return true;
+  }
+
+  result = 0;
+  return false;
+}
+
 unsigned long long RendererWebKitClientImpl::visitedLinkHash(
     const char* canonical_url,
     size_t length) {

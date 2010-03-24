@@ -5,10 +5,12 @@
 #include "chrome_frame/urlmon_upload_data_stream.h"
 
 #include "net/base/io_buffer.h"
+#include "net/base/net_errors.h"
 
 void UrlmonUploadDataStream::Initialize(net::UploadData* upload_data) {
   upload_data_ = upload_data;
-  request_body_stream_.reset(new net::UploadDataStream(upload_data));
+  request_body_stream_.reset(net::UploadDataStream::Create(upload_data, NULL));
+  DCHECK(request_body_stream_.get());
 }
 
 STDMETHODIMP UrlmonUploadDataStream::Read(void* pv, ULONG cb, ULONG* read) {
@@ -69,7 +71,9 @@ STDMETHODIMP UrlmonUploadDataStream::Seek(LARGE_INTEGER move, DWORD origin,
   // STREAM_SEEK_SETs to work with a 0 offset, but fail on everything else.
   if (origin == STREAM_SEEK_SET && move.QuadPart == 0) {
     if (request_body_stream_->position() != 0) {
-      request_body_stream_.reset(new net::UploadDataStream(upload_data_));
+      request_body_stream_.reset(
+          net::UploadDataStream::Create(upload_data_, NULL));
+      DCHECK(request_body_stream_.get());
     }
     if (new_pos) {
       new_pos->QuadPart = 0;

@@ -265,6 +265,17 @@ class GetRawCookiesCompletion : public net::CompletionCallback {
   scoped_refptr<URLRequestContext> context_;
 };
 
+void WriteFileSize(IPC::Message* reply_msg,
+                   const file_util::FileInfo& file_info) {
+  ViewHostMsg_GetFileSize::WriteReplyParams(reply_msg, file_info.size);
+}
+
+void WriteFileModificationTime(IPC::Message* reply_msg,
+                               const file_util::FileInfo& file_info) {
+  ViewHostMsg_GetFileModificationTime::WriteReplyParams(
+      reply_msg, file_info.last_modified);
+}
+
 }  // namespace
 
 ResourceMessageFilter::ResourceMessageFilter(
@@ -520,6 +531,8 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
                           OnCloseCurrentConnections)
       IPC_MESSAGE_HANDLER(ViewHostMsg_SetCacheMode, OnSetCacheMode)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetFileSize, OnGetFileSize)
+      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetFileModificationTime,
+                                      OnGetFileModificationTime)
       IPC_MESSAGE_HANDLER(ViewHostMsg_Keygen, OnKeygen)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetExtensionMessageBundle,
                                       OnGetExtensionMessageBundle)
@@ -1318,18 +1331,41 @@ void ResourceMessageFilter::OnGetFileSize(const FilePath& path,
   ChromeThread::PostTask(
       ChromeThread::FILE, FROM_HERE,
       NewRunnableMethod(
-          this, &ResourceMessageFilter::OnGetFileSizeOnFileThread, path,
-          reply_msg));
+          this, &ResourceMessageFilter::OnGetFileInfoOnFileThread, path,
+          reply_msg, &WriteFileSize));
 }
 
-void ResourceMessageFilter::OnGetFileSizeOnFileThread(
-    const FilePath& path, IPC::Message* reply_msg) {
+void ResourceMessageFilter::OnGetFileModificationTime(const FilePath& path,
+                                                      IPC::Message* reply_msg) {
+  // Get file modification time only when the child process has been granted
+  // permission to upload the file.
+  if (!ChildProcessSecurityPolicy::GetInstance()->CanUploadFile(id(), path)) {
+    ViewHostMsg_GetFileModificationTime::WriteReplyParams(reply_msg,
+                                                          base::Time());
+    Send(reply_msg);
+    return;
+  }
+
+  // Getting file modification time could take a long time if it lives on a
+  // network share, so run it on the FILE thread.
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableMethod(
+          this, &ResourceMessageFilter::OnGetFileInfoOnFileThread,
+          path, reply_msg, &WriteFileModificationTime));
+}
+
+void ResourceMessageFilter::OnGetFileInfoOnFileThread(
+    const FilePath& path,
+    IPC::Message* reply_msg,
+    FileInfoWriteFunc write_func) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
 
-  int64 result;
-  if (!file_util::GetFileSize(path, &result))
-    result = -1;
-  ViewHostMsg_GetFileSize::WriteReplyParams(reply_msg, result);
+  file_util::FileInfo file_info;
+  file_info.size = 0;
+  file_util::GetFileInfo(path, &file_info);
+
+  (*write_func)(reply_msg, file_info);
 
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,

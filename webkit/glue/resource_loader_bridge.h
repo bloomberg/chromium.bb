@@ -208,13 +208,16 @@ class ResourceLoaderBridge {
   // Call this method before calling Start() to append the contents of a file
   // to the request body.  May only be used with HTTP(S) POST requests.
   void AppendFileToUpload(const FilePath& file_path) {
-    AppendFileRangeToUpload(file_path, 0, kuint64max);
+    AppendFileRangeToUpload(file_path, 0, kuint64max, base::Time());
   }
 
   // Call this method before calling Start() to append the contents of a file
   // to the request body.  May only be used with HTTP(S) POST requests.
-  virtual void AppendFileRangeToUpload(const FilePath& file_path,
-                                       uint64 offset, uint64 length) = 0;
+  virtual void AppendFileRangeToUpload(
+      const FilePath& file_path,
+      uint64 offset,
+      uint64 length,
+      const base::Time& expected_modification_time) = 0;
 
   // Call this method before calling Start() to assign an upload identifier to
   // this request.  This is used to enable caching of POST responses.  A value

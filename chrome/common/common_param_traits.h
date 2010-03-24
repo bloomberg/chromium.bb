@@ -318,6 +318,7 @@ struct ParamTraits<net::UploadData::Element> {
       WriteParam(m, p.file_path());
       WriteParam(m, p.file_range_offset());
       WriteParam(m, p.file_range_length());
+      WriteParam(m, p.expected_file_modification_time());
     }
   }
   static bool Read(const Message* m, void** iter, param_type* r) {
@@ -334,13 +335,17 @@ struct ParamTraits<net::UploadData::Element> {
       DCHECK(type == net::UploadData::TYPE_FILE);
       FilePath file_path;
       uint64 offset, length;
+      base::Time expected_modification_time;
       if (!ReadParam(m, iter, &file_path))
         return false;
       if (!ReadParam(m, iter, &offset))
         return false;
       if (!ReadParam(m, iter, &length))
         return false;
-      r->SetToFilePathRange(file_path, offset, length);
+      if (!ReadParam(m, iter, &expected_modification_time))
+        return false;
+      r->SetToFilePathRange(file_path, offset, length,
+                            expected_modification_time);
     }
     return true;
   }

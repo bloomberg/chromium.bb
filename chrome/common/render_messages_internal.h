@@ -15,6 +15,7 @@
 #include "base/file_path.h"
 #include "base/nullable_string16.h"
 #include "base/sync_socket.h"
+#include "base/time.h"
 #include "base/values.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/extensions/update_manifest.h"
@@ -2100,6 +2101,12 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_GetFileSize,
                               FilePath /* path */,
                               int64 /* result */)
+
+  // Get file modification time in seconds. Set result to 0 if failed to get the
+  // file modification time.
+  IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_GetFileModificationTime,
+                              FilePath /* path */,
+                              base::Time /* result */)
 
   // Sent by the renderer process to acknowledge receipt of a
   // ViewMsg_CSSInsertRequest message and css has been inserted into the frame.

@@ -147,7 +147,8 @@ class PluginRequestHandlerProxy
   void AppendFileRangeToUpload(const FilePath &filepath,
                                uint64 offset, uint64 length) {
     upload_content_.push_back(net::UploadData::Element());
-    upload_content_.back().SetToFilePathRange(filepath, offset, length);
+    upload_content_.back().SetToFilePathRange(filepath, offset, length,
+                                              base::Time());
   }
 
   CPError Start(int renderer_id, int render_view_id) {
@@ -186,7 +187,8 @@ class PluginRequestHandlerProxy
           bridge_->AppendFileRangeToUpload(
               upload_content_[i].file_path(),
               upload_content_[i].file_range_offset(),
-              upload_content_[i].file_range_length());
+              upload_content_[i].file_range_length(),
+              upload_content_[i].expected_file_modification_time());
           break;
         }
         default: {

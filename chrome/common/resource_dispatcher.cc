@@ -52,8 +52,11 @@ class IPCResourceLoaderBridge : public ResourceLoaderBridge {
 
   // ResourceLoaderBridge
   virtual void AppendDataToUpload(const char* data, int data_len);
-  virtual void AppendFileRangeToUpload(const FilePath& path,
-                                       uint64 offset, uint64 length);
+  virtual void AppendFileRangeToUpload(
+      const FilePath& path,
+      uint64 offset,
+      uint64 length,
+      const base::Time& expected_modification_time);
   virtual void SetUploadIdentifier(int64 identifier);
   virtual bool Start(Peer* peer);
   virtual void Cancel();
@@ -152,12 +155,14 @@ void IPCResourceLoaderBridge::AppendDataToUpload(const char* data,
 }
 
 void IPCResourceLoaderBridge::AppendFileRangeToUpload(
-    const FilePath& path, uint64 offset, uint64 length) {
+    const FilePath& path, uint64 offset, uint64 length,
+    const base::Time& expected_modification_time) {
   DCHECK(request_id_ == -1) << "request already started";
 
   if (!request_.upload_data)
     request_.upload_data = new net::UploadData();
-  request_.upload_data->AppendFileRange(path, offset, length);
+  request_.upload_data->AppendFileRange(path, offset, length,
+                                        expected_modification_time);
 }
 
 void IPCResourceLoaderBridge::SetUploadIdentifier(int64 identifier) {

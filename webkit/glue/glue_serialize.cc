@@ -19,6 +19,7 @@
 #include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebData;
+using WebKit::WebFileInfo;
 using WebKit::WebHistoryItem;
 using WebKit::WebHTTPBody;
 using WebKit::WebPoint;
@@ -53,12 +54,13 @@ struct SerializeObject {
 // 5: Adds support for empty FormData
 // 6: Adds support for documentSequenceNumbers
 // 7: Adds support for stateObject
+// 8: Adds support for file range and modification time
 // Should be const, but unit tests may modify it.
 //
 // NOTE: If the version is -1, then the pickle contains only a URL string.
 // See CreateHistoryStateForURL.
 //
-int kVersion = 7;
+int kVersion = 8;
 
 // A bunch of convenience functions to read/write to SerializeObjects.
 // The serializers assume the input data is in the correct format and so does
@@ -230,6 +232,9 @@ static void WriteFormData(const WebHTTPBody& http_body, SerializeObject* obj) {
                 obj);
     } else {
       WriteString(element.filePath, obj);
+      WriteInteger64(element.fileStart, obj);
+      WriteInteger64(element.fileLength, obj);
+      WriteReal(element.fileInfo.modificationTime, obj);
     }
   }
   WriteInteger64(http_body.identifier(), obj);
@@ -257,7 +262,16 @@ static WebHTTPBody ReadFormData(const SerializeObject* obj) {
       if (length >= 0)
         http_body.appendData(WebData(static_cast<const char*>(data), length));
     } else {
-      http_body.appendFile(ReadString(obj));
+      WebString file_path = ReadString(obj);
+      long long file_start = 0;
+      long long file_length = -1;
+      WebFileInfo file_info;
+      if (obj->version >= 8) {
+        file_start = ReadInteger64(obj);
+        file_length = ReadInteger64(obj);
+        file_info.modificationTime = ReadReal(obj);
+      }
+      http_body.appendFileRange(file_path, file_start, file_length, file_info);
     }
   }
   if (obj->version >= 4)
