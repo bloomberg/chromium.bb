@@ -128,9 +128,12 @@ void ExecuteCodeInTabFunction::DidLoadFile(bool success,
 bool ExecuteCodeInTabFunction::Execute(const std::string& code_string) {
   TabContents* contents = NULL;
   Browser* browser = NULL;
-  if (!ExtensionTabUtil::GetTabById(execute_tab_id_, profile(),
-                                    include_incognito(), &browser, NULL,
-                                    &contents, NULL) && contents && browser) {
+
+  bool success = ExtensionTabUtil::GetTabById(
+      execute_tab_id_, profile(), include_incognito(), &browser, NULL,
+      &contents, NULL) && contents && browser;
+
+  if (!success) {
     SendResponse(false);
     return false;
   }
