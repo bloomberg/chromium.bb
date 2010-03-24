@@ -1202,6 +1202,7 @@
         'browser/browser_browsertest.cc',
         'browser/browser_init_browsertest.cc',
         'browser/browsing_data_local_storage_helper_unittest.cc',
+        'browser/chromeos/compact_navigation_bar_browsertest.cc',
         'browser/chromeos/notifications/notification_browsertest.cc',
         'browser/crash_recovery_browsertest.cc',
         'browser/download/save_page_browsertest.cc',

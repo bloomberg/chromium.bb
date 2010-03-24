@@ -71,15 +71,6 @@ enum ViewID {
   // The Download shelf.
   VIEW_ID_DOWNLOAD_SHELF,
 
-#if defined(OS_CHROMEOS)
-  // ChromeOS view ids start here.
-  VIEW_ID_APP_MENU_BUTTON = 10000,
-  VIEW_ID_COMPACT_NAV_BAR,
-  VIEW_ID_STATUS_AREA,
-  VIEW_ID_SPACER,
-  VIEW_ID_OTR_AVATAR,
-#endif
-
   // Used in chrome/browser/gtk/view_id_util_browsertests.cc
   // If you add new ids, make sure the above test passes.
   VIEW_ID_PREDEFINED_COUNT

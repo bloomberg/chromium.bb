@@ -114,6 +114,9 @@ class InProcessBrowserTest : public testing::Test {
   void EnableDOMAutomation() { dom_automation_enabled_ = true; }
   void EnableSingleProcess() { single_process_ = true; }
 
+  // Run all pending events in the message loop.
+  void RunAllPendingEvents();
+
  private:
   // Invokes CreateBrowser to create a browser, then RunTestOnMainThread, and
   // destroys the browser.

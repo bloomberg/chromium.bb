@@ -315,3 +315,9 @@ void InProcessBrowserTest::SetInitialTimeoutInMS(int timeout_value) {
   DCHECK_GT(timeout_value, 0);
   initial_timeout_ = timeout_value;
 }
+
+void InProcessBrowserTest::RunAllPendingEvents() {
+  MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+  ui_test_utils::RunMessageLoop();
+}
+

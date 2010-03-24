@@ -449,6 +449,7 @@
         'browser/chromeos/usb_mount_observer.h',
         'browser/chromeos/version_loader.cc',
         'browser/chromeos/version_loader.h',
+        'browser/chromeos/view_ids.h',
         'browser/chromeos/wm_ipc.cc',
         'browser/chromeos/wm_ipc.h',
         'browser/chromeos/wm_message_listener.cc',
