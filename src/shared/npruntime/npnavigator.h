@@ -93,6 +93,8 @@ class NPNavigator : public NPBridge {
   NPError GetValue(NPP npp, NPNVariable var, NPObject** value);
   // Sends NPN_GetURL request to the plugin.
   NPError GetUrl(NPP npp, const char* url, const char* target);
+  // Sends NPN_UserAgent request to the plugin.
+  char* UserAgent(NPP npp);
   // Sends NPN_GetURLNotify request to the plugin.
   NPError GetUrlNotify(NPP npp,
                        const char* url,

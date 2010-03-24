@@ -28,10 +28,18 @@ namespace nacl {
 template <typename NativeType, typename WireType> class NPWireTrivial {
  public:
   WireType ToWire(NativeType native) {
+    // NULL values are not entered into the table.
+    if (NULL == native) {
+      return -1;
+    }
     return reinterpret_cast<WireType>(native);
   }
 
   NativeType ToNative(WireType wire) {
+    // Error values return NULL.
+    if (-1 == wire) {
+      return NULL;
+    }
     return reinterpret_cast<NativeType>(wire);
   }
 };
@@ -60,6 +68,10 @@ template <typename NativeType, typename WireType> class NPWireOwner {
     if (!IsProperlyInitialized()) {
       return -1;
     }
+    // NULL values are not entered into the table.
+    if (NULL == native) {
+      return -1;
+    }
     static WireType next_wire_value = 0;
     if (to_wire_map_->end() == to_wire_map_->find(native)) {
       if (0 > next_wire_value) {
@@ -74,6 +86,10 @@ template <typename NativeType, typename WireType> class NPWireOwner {
 
   NativeType ToNative(WireType wire) {
     if (!IsProperlyInitialized()) {
+      return NULL;
+    }
+    // Error values return NULL.
+    if (-1 == wire) {
       return NULL;
     }
     if (to_native_map_->end() == to_native_map_->find(wire)) {
@@ -118,6 +134,10 @@ template <typename NativeType, typename WireType> class NPWireLocalCopy {
     if (!IsProperlyInitialized()) {
       return -1;
     }
+    // NULL values are not entered into the table.
+    if (NULL == native) {
+      return -1;
+    }
     if (to_wire_map_->end() == to_wire_map_->find(native)) {
       return -1;
     }
@@ -126,6 +146,10 @@ template <typename NativeType, typename WireType> class NPWireLocalCopy {
 
   NativeType ToNative(WireType wire) {
     if (!IsProperlyInitialized()) {
+      return NULL;
+    }
+    // Error values return NULL.
+    if (-1 == wire) {
       return NULL;
     }
     if (to_native_map_->end() == to_native_map_->find(wire)) {

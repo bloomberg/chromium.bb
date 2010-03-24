@@ -98,6 +98,11 @@ void SrpcClient::GetMethods() {
                                                &name,
                                                &input_types,
                                                &output_types);
+    if (!nacl::NPModule::IsValidIdentifierString(name, NULL)) {
+      // If name is not an ECMAScript identifier, do not enter it into the
+      // methods_ table.
+      continue;
+    }
     uintptr_t ident = PortablePluginInterface::GetStrIdentifierCallback(name);
     MethodInfo* method_info = new(std::nothrow) MethodInfo(NULL,
                                                            name,

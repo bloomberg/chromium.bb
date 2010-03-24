@@ -142,8 +142,14 @@ void NPN_Status(NPP instance,
 }
 
 const char* NPN_UserAgent(NPP instance) {
-  // TODO(sehr): implement this.
-  return NULL;
+  if (NULL == instance) {
+    return NULL;
+  }
+  NPNavigator* navigator = NPNavigator::GetNavigator();
+  if (NULL == navigator) {
+    return NULL;
+  }
+  return navigator->UserAgent(instance);
 }
 
 void* NPN_MemAlloc(uint32_t size) {
@@ -512,7 +518,7 @@ bool NPN_Enumerate(NPP npp,
 }
 
 void NPN_PluginThreadAsyncCall(NPP instance,
-                               void (*func)(void*),
+                               void (*func)(void* invocation_user_data),
                                void* user_data) {
   if (NULL == instance) {
     return;

@@ -65,8 +65,6 @@ deps = {
      Var("chrome_rev")),
   "base":
     Var("chromium_trunk") + "/src/base@" + Var("chrome_rev"),
-  "chrome/common":
-    Var("chromium_trunk") + "/src/chrome/common@" + Var("chrome_rev"),
   "gpu/GLES2":
     Var("chromium_trunk") + "/src/gpu/GLES2@" + Var("chrome_rev"),
   "gpu/KHR":
