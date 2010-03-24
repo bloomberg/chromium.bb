@@ -95,7 +95,7 @@ function tabsCompleteListener(tabId, changeInfo) {
 * @param {function(number)} callback The closure.
 */
 function countItemsInHistory(callback) {
-  var query = {'search': ''};
+  var query = {'text': ''};
   chrome.experimental.history.search(query, function(results) {
     callback(results.length);
   });
@@ -128,7 +128,7 @@ chrome.test.runTests([
     // basicSearch callback.
     function basicSearchTestVerification() {
       removeItemVisitedListener();
-      var query = { 'search': '' };
+      var query = { 'text': '' };
       chrome.experimental.history.search(query, function(results) {
         assertEq(1, results.length);
         assertEq(GOOGLE_URL, results[0].url);
@@ -152,7 +152,7 @@ chrome.test.runTests([
     function timeScopedSearchTestVerification() {
       removeItemVisitedListener();
 
-      var query = { 'search': '',
+      var query = { 'text': '',
                     'startTime': startDate.getTime(),
                     'endTime': endDate.getTime() };
        chrome.experimental.history.search(query, function(results) {
@@ -200,7 +200,7 @@ chrome.test.runTests([
 
       endDate = new Date();
       endDate.setTime(endDate.getTime() + 1000);
-      var query = { 'search': '',
+      var query = { 'text': '',
                     'startTime': startDate.getTime(),
                     'endTime': endDate.getTime() };
        chrome.experimental.history.search(query, function(results) {
@@ -245,7 +245,7 @@ chrome.test.runTests([
 
       removeItemVisitedListener();
 
-      var query = { 'search': '', 'maxResults': 1 };
+      var query = { 'text': '', 'maxResults': 1 };
       chrome.experimental.history.search(query, function(results) {
         assertEq(1, results.length);
         assertEq(PICASA_URL, results[0].url);
@@ -268,13 +268,13 @@ chrome.test.runTests([
       var validateTest = function() {
         // Continue with the test.
         // A title search for www.a.com should find a.
-        var query = { 'search': 'www.a.com' };
+        var query = { 'text': 'www.a.com' };
         chrome.experimental.history.search(query, function(results) {
           assertEq(1, results.length);
           assertEq(A_RELATIVE_URL, results[0].url);
 
           // Text in the body of b.html.
-          query = { 'search': 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' };
+          query = { 'text': 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' };
           chrome.experimental.history.search(query, function(results) {
             assertEq(1, results.length);
             assertEq(B_RELATIVE_URL, results[0].url);
@@ -330,7 +330,7 @@ chrome.test.runTests([
       removeItemVisitedListener();
 
       // Verify that we received the url.
-      var query = { 'search': '' };
+      var query = { 'text': '' };
       chrome.experimental.history.search(query, function(results) {
         assertEq(1, results.length);
         assertEq(GOOGLE_URL, results[0].url);
@@ -357,7 +357,7 @@ chrome.test.runTests([
     function deleteUrlTestVerification() {
       removeItemRemovedListener();
 
-      var query = { 'search': '' };
+      var query = { 'text': '' };
       chrome.experimental.history.search(query, function(results) {
         assertEq(0, results.length);
 
@@ -369,7 +369,7 @@ chrome.test.runTests([
     function onAddedItem() {
       removeItemVisitedListener();
 
-      var query = { 'search': '' };
+      var query = { 'text': '' };
       chrome.experimental.history.search(query, function(results) {
         assertEq(1, results.length);
         assertEq(GOOGLE_URL, results[0].url);
@@ -395,7 +395,7 @@ chrome.test.runTests([
     function deleteRangeTestVerification() {
       removeItemRemovedListener();
 
-      var query = { 'search': '' };
+      var query = { 'text': '' };
       chrome.experimental.history.search(query, function(results) {
         assertEq(1, results.length);
         assertEq(PICASA_URL, results[0].url);
@@ -448,7 +448,7 @@ chrome.test.runTests([
     function deleteRange2TestVerification() {
       removeItemRemovedListener();
 
-      var query = { 'search': '' };
+      var query = { 'text': '' };
       chrome.experimental.history.search(query, function(results) {
         assertEq(1, results.length);
         assertEq(GOOGLE_URL, results[0].url);

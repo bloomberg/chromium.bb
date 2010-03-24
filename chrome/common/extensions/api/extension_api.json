@@ -1746,7 +1746,7 @@
             "name": "query",
             "type": "object",
             "properties": {
-              "search": {"type": "string", "description": "A free-text query to the history service, leave empty to retrieve all pages."},
+              "text": {"type": "string", "description": "A free-text query to the history service.  Leave empty to retrieve all pages."},
               "startTime": {"type": "number", "optional": true, "description": "Limit results to those visited after this date, represented in milliseconds since the epoch."},
               "endTime": {"type": "number", "optional": true, "description": "Limit results to those visited before this date, represented in milliseconds since the epoch."},
               "maxResults": {"type": "integer", "optional": true, "minimum": 0, "description": "The maximum number of results to retrieve.  Defaults to 100."}

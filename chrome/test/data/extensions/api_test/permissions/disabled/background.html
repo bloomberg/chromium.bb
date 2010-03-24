@@ -5,7 +5,7 @@
 chrome.test.runTests([
   function history() {
     try {
-      var query = { 'search': '', 'maxResults': 1 };
+      var query = { 'text': '', 'maxResults': 1 };
       chrome.experimental.history.search(query, function(results) {
         chrome.test.fail();
       });

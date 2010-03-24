@@ -243,7 +243,7 @@ bool SearchHistoryFunction::RunAsyncImpl() {
 
   // Initialize the HistoryQuery
   std::wstring search_text;
-  EXTENSION_FUNCTION_VALIDATE(json->GetString(keys::kSearchKey, &search_text));
+  EXTENSION_FUNCTION_VALIDATE(json->GetString(keys::kTextKey, &search_text));
 
   history::QueryOptions options;
   options.SetRecentDayRange(1);
