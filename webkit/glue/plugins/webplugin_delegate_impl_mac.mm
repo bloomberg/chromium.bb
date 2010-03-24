@@ -1110,10 +1110,12 @@ static bool EventIsRelatedToDrag(const WebInputEvent& event, int drag_buttons) {
                (drag_buttons & WebInputEvent::MiddleButtonDown)) ||
               (mouse_event->button == WebMouseEvent::ButtonRight &&
                (drag_buttons & WebInputEvent::RightButtonDown)));
-    case WebInputEvent::MouseMove:
     case WebInputEvent::MouseEnter:
-    case WebInputEvent::MouseLeave:
       return (event.modifiers & WebEventButtonModifierMask()) != 0;
+    case WebInputEvent::MouseLeave:
+    case WebInputEvent::MouseMove:
+      return (drag_buttons &&
+              drag_buttons == (event.modifiers & WebEventButtonModifierMask()));
     default:
       return false;
   }
