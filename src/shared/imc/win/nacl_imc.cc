@@ -12,10 +12,13 @@
                   // <windows.h>.
 #endif
 
+#include <atlbase.h>
+#include <atlconv.h>
 #include <algorithm>
 #include <ctype.h>
 #include <limits.h>
 #include <stdio.h>
+#include <string>
 #include <windows.h>
 #include <sys/types.h>
 
@@ -54,6 +57,14 @@ struct ControlHeader {
   uint32_t message_length;
   uint32_t handle_count;
 };
+
+// TODO(gregoryd): a similar function exists in Chrome's base, but we cannot
+// use it here since it cannot be built with scons.
+std::wstring ASCIIToWide(const char* ascii) {
+  USES_CONVERSION;
+  std::wstring wide_string(A2CW(ascii));
+  return wide_string;
+}
 
 bool GetSocketName(const SocketAddress* address, char* name) {
   if (address == NULL || !isprint(address->path[0])) {
@@ -155,8 +166,8 @@ Handle BoundSocket(const SocketAddress* address) {
     return kInvalidHandle;
   }
   // Create a named pipe in nonblocking mode.
-  return CreateNamedPipeA(
-      name,
+  return CreateNamedPipeW(
+      ASCIIToWide(name).c_str(),
       PIPE_ACCESS_DUPLEX | FILE_FLAG_FIRST_PIPE_INSTANCE,
       PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_NOWAIT,
       PIPE_UNLIMITED_INSTANCES,
@@ -174,8 +185,8 @@ int SocketPair(Handle pair[2]) {
     sprintf_s(name, kPipePathMax, "%s%u.%lu",
               kPipePrefix, GetCurrentProcessId(),
               AtomicIncrement(&socket_pair_count, 1));
-    pair[0] = CreateNamedPipeA(
-        name,
+    pair[0] = CreateNamedPipeW(
+        ASCIIToWide(name).c_str(),
         PIPE_ACCESS_DUPLEX | FILE_FLAG_FIRST_PIPE_INSTANCE,
         PIPE_TYPE_BYTE | PIPE_READMODE_BYTE,
         1,
@@ -189,7 +200,7 @@ int SocketPair(Handle pair[2]) {
       return -1;
     }
   } while (pair[0] == INVALID_HANDLE_VALUE);
-  pair[1] = CreateFileA(name,
+  pair[1] = CreateFileW(ASCIIToWide(name).c_str(),
                         GENERIC_READ | GENERIC_WRITE,
                         0,              // no sharing
                         NULL,           // default security attributes
@@ -305,7 +316,7 @@ int SendDatagramTo(Handle handle, const MessageHeader* message, int flags,
     return -1;
   }
   for (;;) {
-    handle = CreateFileA(pipe_name,
+    handle = CreateFileW(ASCIIToWide(pipe_name).c_str(),
                          GENERIC_READ | GENERIC_WRITE,
                          0,              // no sharing
                          NULL,           // default security attributes
@@ -326,7 +337,7 @@ int SendDatagramTo(Handle handle, const MessageHeader* message, int flags,
         if (!GetSocketNameWithOldPrefix(name, pipe_name)) {
           return -1;
         }
-        handle = CreateFileA(pipe_name,
+        handle = CreateFileW(ASCIIToWide(pipe_name).c_str(),
                              GENERIC_READ | GENERIC_WRITE,
                              0,              // no sharing
                              NULL,           // default security attributes
