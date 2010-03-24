@@ -52,6 +52,9 @@ const int kOTRSideSpacing = 2;
 // inserted in compact nvaigation bar mode.
 const int kCompactNavbarSpaceHeight = 3;
 
+// The padding of the app launcher to the left side of the border.
+const int kAppLauncherLeftPadding = 5;
+
 // A space we insert between the tabstrip and the content in
 // Compact mode.
 class Spacer : public views::View {
@@ -449,6 +452,9 @@ void BrowserView::ButtonPressed(views::Button* sender,
                                 const views::Event& event) {
   gfx::Rect bounds = main_menu_button_->bounds();
   gfx::Point origin = bounds.origin();
+  // Move the origin to the right otherwise the app launcher info bubble left
+  // border will show out of screen.
+  origin.Offset(kAppLauncherLeftPadding, 0);
   views::RootView::ConvertPointToScreen(this, &origin);
   bounds.set_origin(origin);
   ::AppLauncher::Show(browser(), bounds);

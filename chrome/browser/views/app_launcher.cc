@@ -50,6 +50,9 @@ const int kNavigationEntryPadding = 2;
 const int kNavigationEntryXMargin = 3;
 const int kNavigationEntryYMargin = 1;
 
+// Padding between the navigation bar and the render view contents.
+const int kNavigationBarBottomPadding = 3;
+
 // NavigationBar size.
 const int kNavigationBarHeight = 25;
 
@@ -343,7 +346,7 @@ void InfoBubbleContentsView::ViewHierarchyChanged(
 
 gfx::Size InfoBubbleContentsView::GetPreferredSize() {
   gfx::Rect bounds = app_launcher_->browser()->window()->GetRestoredBounds();
-  return gfx::Size(bounds.width() * 2 / 3, bounds.height() * 4 / 5);
+  return gfx::Size(bounds.width() * 6 / 7, bounds.height() * 9 / 10);
 }
 
 void InfoBubbleContentsView::Layout() {
@@ -361,7 +364,8 @@ void InfoBubbleContentsView::Layout() {
   }
   navigation_bar_->SetBounds(bounds.x(), bounds.y(),
                              bounds.width(), navigation_bar_height);
-  int render_y = navigation_bar_->bounds().bottom();
+  int render_y = navigation_bar_->bounds().bottom() +
+      kNavigationBarBottomPadding;
   gfx::Size rwhv_size =
       gfx::Size(width(), std::max(0, bounds.height() - render_y + bounds.y()));
   render_view_container_->SetBounds(bounds.x(), render_y,
