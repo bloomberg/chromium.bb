@@ -914,14 +914,16 @@ static bool NPEventFromWebKeyboardEvent(const WebKeyboardEvent& event,
 static bool NPEventFromWebInputEvent(const WebInputEvent& event,
                                      NPEvent* np_event) {
   np_event->when = TickCount();
-  if (WebInputEventIsWebMouseEvent(event)) {
+  if (event.type == WebInputEvent::MouseWheel) {
+    return false;  // Carbon NPAPI event model has no "mouse wheel" concept.
+  } else if (WebInputEventIsWebMouseEvent(event)) {
     return NPEventFromWebMouseEvent(*static_cast<const WebMouseEvent*>(&event),
                                     np_event);
   } else if (WebInputEventIsWebKeyboardEvent(event)) {
     return NPEventFromWebKeyboardEvent(
         *static_cast<const WebKeyboardEvent*>(&event), np_event);
   }
-  DLOG(WARNING) << "unknown event type" << event.type;
+  DLOG(WARNING) << "unknown event type " << event.type;
   return false;
 }
 #endif  // !NP_NO_CARBON
@@ -1186,20 +1188,16 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
 #ifndef NP_NO_CARBON
     case NPEventModelCarbon: {
       NPEvent np_event = {0};
-      if (!NPEventFromWebInputEvent(event, &np_event)) {
-        LOG(WARNING) << "NPEventFromWebInputEvent failed";
+      if (!NPEventFromWebInputEvent(event, &np_event))
         return false;
-      }
       ret = instance()->NPP_HandleEvent(&np_event) != 0;
       break;
     }
 #endif
     case NPEventModelCocoa: {
       NPCocoaEvent np_cocoa_event;
-      if (!NPCocoaEventFromWebInputEvent(event, &np_cocoa_event)) {
-        LOG(WARNING) << "NPCocoaEventFromWebInputEvent failed";
+      if (!NPCocoaEventFromWebInputEvent(event, &np_cocoa_event))
         return false;
-      }
 
       // Keep track of whether or not we are in a drag that started outside the
       // plugin; if we are, filter out drag-related events (and convert the end
