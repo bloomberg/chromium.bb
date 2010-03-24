@@ -10,10 +10,6 @@
 class CommandLine;
 class MetricsService;
 
-// Displays a warning message if the user is running chrome on windows 2000.
-// Returns true if the OS is win2000, false otherwise.
-bool CheckForWin2000();
-
 // Handle uninstallation when given the appropriate the command-line switch.
 // If |chrome_still_running| is true a modal dialog will be shown asking the
 // user to close the other chrome instance.

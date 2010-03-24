@@ -14,8 +14,6 @@
 #include "chrome/app/breakpad_linux.h"
 #endif
 
-namespace Platform {
-
 void WillInitializeMainMessageLoop(const MainFunctionParams& parameters) {
 }
 
@@ -31,7 +29,9 @@ void RecordBreakpadStatusUMA(MetricsService* metrics) {
   metrics->RecordBreakpadHasDebugger(DebugUtil::BeingDebugged());
 }
 
-}  // namespace Platform
+void WarnAboutMinimumSystemRequirements() {
+  // Nothing to warn about on GTK right now.
+}
 
 // From browser_main_win.h, stubs until we figure out the right thing...
 
@@ -41,10 +41,6 @@ int DoUninstallTasks(bool chrome_still_running) {
 
 bool DoUpgradeTasks(const CommandLine& command_line) {
   return ResultCodes::NORMAL_EXIT;
-}
-
-bool CheckForWin2000() {
-  return false;
 }
 
 int HandleIconsCommands(const CommandLine &parsed_command_line) {

@@ -363,6 +363,16 @@ void InitializeNetworkOptions(const CommandLine& parsed_command_line) {
   }
 }
 
+// Creates key child threads. We need to do this explicitly since
+// ChromeThread::PostTask silently deletes a posted task if the target message
+// loop isn't created.
+void CreateChildThreads(BrowserProcessImpl* process) {
+  process->db_thread();
+  process->file_thread();
+  process->process_launcher_thread();
+  process->io_thread();
+}
+
 // Returns the new local state object, guaranteed non-NULL.
 PrefService* InitializeLocalState(const CommandLine& parsed_command_line,
                                   bool is_first_run) {
@@ -454,6 +464,32 @@ void InitializeToolkit() {
 }
 #endif
 
+#if defined(OS_CHROMEOS)
+void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line) {
+  if (parsed_command_line.HasSwitch(switches::kLoginManager)) {
+    std::string first_screen =
+        parsed_command_line.GetSwitchValueASCII(switches::kLoginScreen);
+    std::string size_arg =
+        parsed_command_line.GetSwitchValueASCII(
+            switches::kLoginScreenSize);
+    gfx::Size size(0, 0);
+    // Allow the size of the login window to be set explicitly. If not set,
+    // default to the entire screen. This is mostly useful for testing.
+    if (size_arg.size()) {
+      std::vector<std::string> dimensions;
+      SplitString(size_arg, ',', &dimensions);
+      if (dimensions.size() == 2)
+        size.SetSize(StringToInt(dimensions[0]), StringToInt(dimensions[1]));
+    }
+    browser::ShowLoginWizard(first_screen, size);
+  }
+}
+#else
+void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line) {
+  // Dummy empty function for non-ChromeOS builds to avoid extra ifdefs below.
+}
+#endif
+
 }  // namespace
 
 // Main routine for running as the Browser process.
@@ -533,7 +569,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // Do platform-specific things (such as finishing initializing Cocoa)
   // prior to instantiating the message loop. This could be turned into a
   // broadcast notification.
-  Platform::WillInitializeMainMessageLoop(parameters);
+  WillInitializeMainMessageLoop(parameters);
 
   MessageLoop main_message_loop(MessageLoop::TYPE_UI);
 
@@ -656,7 +692,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
   if (parameters.ui_task) {
     g_browser_process->SetApplicationLocale("en-US");
   } else {
-    // Mac starts it earlier in Platform::WillInitializeMainMessageLoop (because
+    // Mac starts it earlier in WillInitializeMainMessageLoop (because
     // it is needed when loading the MainMenu.nib and the language doesn't
     // depend on anything since it comes from Cocoa.
 #if defined(OS_MACOSX)
@@ -690,34 +726,27 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   BrowserInit browser_init;
 
+  // On first run, we need to process the master preferences before the
+  // browser's profile_manager object is created, but after ResourceBundle
+  // is initialized.
   FirstRun::MasterPrefs master_prefs = {0};
-  bool first_run_ui_bypass = false;
+  bool first_run_ui_bypass = false;  // True to skip first run UI.
   if (is_first_run) {
-    // On first run, we need to process the master preferences before the
-    // browser's profile_manager object is created, but after ResourceBundle
-    // is initialized.
     first_run_ui_bypass =
         !FirstRun::ProcessMasterPreferences(user_data_dir,
                                             FilePath(), &master_prefs);
-    // The master prefs might specify a set of urls to display.
-    if (master_prefs.new_tabs.size())
-      AddFirstRunNewTabs(&browser_init, master_prefs.new_tabs);
+    AddFirstRunNewTabs(&browser_init, master_prefs.new_tabs);
 
     // If we are running in App mode, we do not want to show the importer
     // (first run) UI.
     if (!first_run_ui_bypass &&
         (parsed_command_line.HasSwitch(switches::kApp) ||
-         parsed_command_line.HasSwitch(switches::kNoFirstRun))) {
+         parsed_command_line.HasSwitch(switches::kNoFirstRun)))
       first_run_ui_bypass = true;
-    }
   }
 
-  if (!parsed_command_line.HasSwitch(switches::kNoErrorDialogs)) {
-    // Display a warning if the user is running windows 2000.
-    // TODO(port): We should probably change this to a "check for minimum
-    // requirements" function, implemented by each platform.
-    CheckForWin2000();
-  }
+  if (!parsed_command_line.HasSwitch(switches::kNoErrorDialogs))
+    WarnAboutMinimumSystemRequirements();
 
   InitializeNetworkOptions(parsed_command_line);
 
@@ -747,12 +776,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
                           base::Time::Now().ToTimeT());
   }
 
-  // Create the child threads.  We need to do this since ChromeThread::PostTask
-  // silently deletes a posted task if the target message loop isn't created.
-  browser_process->db_thread();
-  browser_process->file_thread();
-  browser_process->process_launcher_thread();
-  browser_process->io_thread();
+  CreateChildThreads(browser_process.get());
 
 #if defined(OS_WIN)
   // Record last shutdown time into a histogram.
@@ -827,26 +851,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
   PrefService* user_prefs = profile->GetPrefs();
   DCHECK(user_prefs);
 
-#if defined(OS_CHROMEOS)
-  if (parsed_command_line.HasSwitch(switches::kLoginManager)) {
-    std::string first_screen =
-        parsed_command_line.GetSwitchValueASCII(switches::kLoginScreen);
-    std::string size_arg =
-        parsed_command_line.GetSwitchValueASCII(
-            switches::kLoginScreenSize);
-    gfx::Size size(0, 0);
-    // Allow the size of the login window to be set explicitly. If not set,
-    // default to the entire screen. This is mostly useful for testing.
-    if (size_arg.size()) {
-      std::vector<std::string> dimensions;
-      SplitString(size_arg, ',', &dimensions);
-      if (dimensions.size() == 2) {
-        size.SetSize(StringToInt(dimensions[0]), StringToInt(dimensions[1]));
-      }
-    }
-    browser::ShowLoginWizard(first_screen, size);
-  }
-#endif  // OS_CHROMEOS
+  OptionallyRunChromeOSLoginManager(parsed_command_line);
 
   // Importing other browser settings is done in a browser-like process
   // that exits when this task has finished.
@@ -1046,7 +1051,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
 #endif
 
   HandleTestParameters(parsed_command_line);
-  Platform::RecordBreakpadStatusUMA(metrics);
+  RecordBreakpadStatusUMA(metrics);
 
   // Stat the directory with the inspector's files so that we can know if we
   // should display the entry in the context menu or not.

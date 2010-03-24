@@ -202,7 +202,7 @@ unsigned int BrowserProcessImpl::ReleaseModule() {
   module_ref_count_--;
   if (0 == module_ref_count_) {
     MessageLoop::current()->PostTask(
-        FROM_HERE, NewRunnableFunction(Platform::DidEndMainMessageLoop));
+        FROM_HERE, NewRunnableFunction(DidEndMainMessageLoop));
     MessageLoop::current()->Quit();
   }
   return module_ref_count_;

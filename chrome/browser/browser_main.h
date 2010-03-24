@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,8 +9,6 @@
 
 struct MainFunctionParams;
 class MetricsService;
-
-namespace Platform {
 
 // Perform platform-specific work that needs to be done before the main
 // message loop is created, initialized, and entered.
@@ -26,6 +24,8 @@ void DidEndMainMessageLoop();
 // are registered with the UMA metrics service.
 void RecordBreakpadStatusUMA(MetricsService* metrics);
 
-}  // namespace Platform
+// Displays a warning message if some minimum level of OS support is not
+// present on the current platform.
+void WarnAboutMinimumSystemRequirements();
 
 #endif  // CHROME_BROWSER_BROWSER_MAIN_H_

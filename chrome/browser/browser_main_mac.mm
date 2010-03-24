@@ -1,4 +1,4 @@
-// Copyright (c) 2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,8 +20,6 @@
 #include "chrome/common/main_function_params.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/result_codes.h"
-
-namespace Platform {
 
 // Tell Cooca to finish its initalization, which we want to do manually
 // instead of calling NSApplicationMain(). The primary reason is that NSAM()
@@ -71,7 +69,9 @@ void RecordBreakpadStatusUMA(MetricsService* metrics) {
   metrics->RecordBreakpadHasDebugger(DebugUtil::BeingDebugged());
 }
 
-}  // namespace Platform
+void WarnAboutMinimumSystemRequirements() {
+  // Nothing to check for on Mac right now.
+}
 
 // From browser_main_win.h, stubs until we figure out the right thing...
 
@@ -80,10 +80,6 @@ int DoUninstallTasks(bool chrome_still_running) {
 }
 
 bool DoUpgradeTasks(const CommandLine& command_line) {
-  return false;
-}
-
-bool CheckForWin2000() {
   return false;
 }
 

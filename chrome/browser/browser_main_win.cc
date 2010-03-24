@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,8 +29,6 @@
 #include "views/focus/accelerator_handler.h"
 #include "views/window/window.h"
 
-namespace Platform {
-
 void WillInitializeMainMessageLoop(const MainFunctionParams& parameters) {
   OleInitialize(NULL);
 }
@@ -45,19 +43,14 @@ void RecordBreakpadStatusUMA(MetricsService* metrics) {
   metrics->RecordBreakpadHasDebugger(TRUE == ::IsDebuggerPresent());
 }
 
-}  // namespace Platform
-
-// Displays a warning message if the user is running chrome on windows 2000.
-// Returns true if the OS is win2000, false otherwise.
-bool CheckForWin2000() {
+void WarnAboutMinimumSystemRequirements() {
   if (win_util::GetWinVersion() == win_util::WINVERSION_2000) {
+    // Display a warning message if the user is running chrome on Windows 2000.
     const std::wstring text = l10n_util::GetString(IDS_UNSUPPORTED_OS_WIN2000);
     const std::wstring caption = l10n_util::GetString(IDS_PRODUCT_NAME);
     win_util::MessageBox(NULL, text, caption,
                          MB_OK | MB_ICONWARNING | MB_TOPMOST);
-    return true;
   }
-  return false;
 }
 
 int AskForUninstallConfirmation() {
