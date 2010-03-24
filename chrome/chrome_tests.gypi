@@ -659,6 +659,7 @@
         'browser/cocoa/draggable_button_unittest.mm',
         'browser/cocoa/edit_search_engine_cocoa_controller_unittest.mm',
         'browser/cocoa/extension_installed_bubble_controller_unittest.mm',
+        'browser/cocoa/extensions/browser_actions_container_view_unittest.mm',
         'browser/cocoa/extensions/extension_popup_controller_unittest.mm',
         'browser/cocoa/event_utils_unittest.mm',
         'browser/cocoa/fast_resize_view_unittest.mm',

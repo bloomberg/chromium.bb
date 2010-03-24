@@ -188,6 +188,8 @@ class ExtensionImageTrackerBridge : public NotificationObserver,
   [NSGraphicsContext saveGraphicsState];
   [NSGraphicsContext setCurrentContext:
       [NSGraphicsContext graphicsContextWithBitmapImageRep:bitmap]];
+  [[NSColor clearColor] set];
+  NSRectFill(bounds);
   [[self cell] setIconShadow];
 
   NSImage* actionImage = [self image];

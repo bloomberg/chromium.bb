@@ -43,6 +43,10 @@ extern const NSString* kBrowserActionVisibilityChangedNotification;
   // The model that tracks the order of the toolbar icons. Weak.
   ExtensionToolbarModel* toolbarModel_;
 
+  // The frame to be used for the container when updating the chevron position
+  // during animation.
+  NSRect animationContainerEndFrame_;
+
   // The observer for the ExtensionsService we're getting events from.
   scoped_ptr<ExtensionsServiceObserverBridge> observer_;
 
@@ -54,8 +58,8 @@ extern const NSString* kBrowserActionVisibilityChangedNotification;
   // Array of hidden buttons in the correct order in which the user specified.
   scoped_nsobject<NSMutableArray> hiddenButtons_;
 
-  // The currently running animation.
-  scoped_nsobject<NSAnimation> animation_;
+  // The currently running chevron animation (fade in/out).
+  scoped_nsobject<NSAnimation> chevronAnimation_;
 
   // The chevron button used when Browser Actions are hidden.
   scoped_nsobject<MenuButton> chevronMenuButton_;
@@ -85,16 +89,16 @@ extern const NSString* kBrowserActionVisibilityChangedNotification;
 // Returns a pointer to the chevron menu button.
 - (MenuButton*)chevronMenuButton;
 
-// Resizes the container to fit all the visible buttons and other elements
-// (grippy and overflow button).
-- (void)resizeContainerWithAnimation:(BOOL)animate;
+// Resizes the container given the number of visible buttons, taking into
+// account the size of the grippy. Also updates the persistent width preference.
+- (void)resizeContainerAndAnimate:(BOOL)animate;
 
 // Returns the NSView for the action button associated with an extension.
 - (NSView*)browserActionViewForExtension:(Extension*)extension;
 
-// Returns the saved width preference as specified by the user. If none is
-// specified, then zero is returned, indicating that the width has never been
-// set.
+// Returns the saved width determined by the number of shown Browser Actions
+// preference property. If no preference is found, then the width for the
+// container is returned as if all buttons are shown.
 - (CGFloat)savedWidth;
 
 // Returns where the popup arrow should point to for a given Browser Action. If
@@ -106,9 +110,6 @@ extern const NSString* kBrowserActionVisibilityChangedNotification;
 // being hidden (fading out). Will return NO if it is not hidden or is in the
 // process of fading in.
 - (BOOL)chevronIsHidden;
-
-// Sets whether to show the chevron button.
-- (void)setChevronHidden:(BOOL)hidden animate:(BOOL)animate;
 
 // Registers the user preferences used by this class.
 + (void)registerUserPrefs:(PrefService*)prefs;

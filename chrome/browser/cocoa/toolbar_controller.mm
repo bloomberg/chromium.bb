@@ -67,6 +67,9 @@ const CGFloat kBrowserActionsContainerLeftPadding = 5.0;
 // The minimum width of the location bar in pixels.
 const CGFloat kMinimumLocationBarWidth = 100.0;
 
+// The duration of any animation that occurs within the toolbar in seconds.
+const CGFloat kAnimationDuration = 0.2;
+
 }  // namespace
 
 @interface ToolbarController(Private)
@@ -75,12 +78,13 @@ const CGFloat kMinimumLocationBarWidth = 100.0;
 - (void)prefChanged:(std::wstring*)prefName;
 - (BackgroundGradientView*)backgroundGradientView;
 - (void)toolbarFrameChanged;
-- (void)pinGoButtonToLeftOfBrowserActionsContainer;
+- (void)pinGoButtonToLeftOfBrowserActionsContainerAndAnimate:(BOOL)animate;
 - (void)maintainMinimumLocationBarWidth;
-- (void)adjustBrowserActionsContainerForNewWindow;
-- (void)browserActionsContainerDragged;
-- (void)browserActionsVisibilityChanged;
-- (void)adjustLocationAndGoPositionsBy:(CGFloat)dX;
+- (void)adjustBrowserActionsContainerForNewWindow:(NSNotification*)notification;
+- (void)browserActionsContainerDragged:(NSNotification*)notification;
+- (void)browserActionsContainerDragFinished:(NSNotification*)notification;
+- (void)browserActionsVisibilityChanged:(NSNotification*)notification;
+- (void)adjustLocationAndGoPositionsBy:(CGFloat)dX animate:(BOOL)animate;
 @end
 
 namespace {
@@ -591,7 +595,7 @@ class PrefObserverBridge : public NotificationObserver {
   if (!hide)
     moveX *= -1;  // Reverse the direction of the move.
 
-  [self adjustLocationAndGoPositionsBy:moveX];
+  [self adjustLocationAndGoPositionsBy:moveX animate:NO];
   [browserActionsContainerView_ setFrame:NSOffsetRect(
       [browserActionsContainerView_ frame], moveX, 0)];
 
@@ -616,28 +620,34 @@ class PrefObserverBridge : public NotificationObserver {
               containerView:browserActionsContainerView_]);
     [[NSNotificationCenter defaultCenter]
         addObserver:self
-           selector:@selector(browserActionsContainerDragged)
+           selector:@selector(browserActionsContainerDragged:)
                name:kBrowserActionGrippyDraggingNotification
              object:browserActionsController_];
     [[NSNotificationCenter defaultCenter]
         addObserver:self
-           selector:@selector(browserActionsVisibilityChanged)
+           selector:@selector(browserActionsContainerDragFinished:)
+               name:kBrowserActionGrippyDragFinishedNotification
+             object:browserActionsController_];
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(browserActionsVisibilityChanged:)
                name:kBrowserActionVisibilityChangedNotification
              object:browserActionsController_];
     [[NSNotificationCenter defaultCenter]
         addObserver:self
-           selector:@selector(adjustBrowserActionsContainerForNewWindow)
+           selector:@selector(adjustBrowserActionsContainerForNewWindow:)
                name:NSWindowDidBecomeKeyNotification
              object:[[self view] window]];
   }
 
   CGFloat dX = NSWidth([browserActionsContainerView_ frame]) * -1;
-  [self adjustLocationAndGoPositionsBy:dX];
+  [self adjustLocationAndGoPositionsBy:dX animate:NO];
   BOOL rightBorderShown = !([pageButton_ isHidden] && [wrenchButton_ isHidden]);
   [browserActionsContainerView_ setRightBorderShown:rightBorderShown];
 }
 
-- (void)adjustBrowserActionsContainerForNewWindow {
+- (void)adjustBrowserActionsContainerForNewWindow:
+    (NSNotification*)notification {
   [self toolbarFrameChanged];
   [[NSNotificationCenter defaultCenter]
       removeObserver:self
@@ -645,28 +655,35 @@ class PrefObserverBridge : public NotificationObserver {
               object:[[self view] window]];
 }
 
-- (void)browserActionsContainerDragged {
+- (void)browserActionsContainerDragged:(NSNotification*)notification {
   CGFloat locationBarWidth = NSWidth([locationBar_ frame]);
   locationBarAtMinSize_ = locationBarWidth <= kMinimumLocationBarWidth;
   [browserActionsContainerView_ setCanDragLeft:!locationBarAtMinSize_];
   [browserActionsContainerView_ setGrippyPinned:locationBarAtMinSize_];
-
   [self adjustLocationAndGoPositionsBy:
-      [browserActionsContainerView_ resizeDeltaX]];
+      [browserActionsContainerView_ resizeDeltaX] animate:NO];
 }
 
-- (void)browserActionsVisibilityChanged {
-  [self pinGoButtonToLeftOfBrowserActionsContainer];
+- (void)browserActionsContainerDragFinished:(NSNotification*)notification {
+  [browserActionsController_ resizeContainerAndAnimate:YES];
+  [self pinGoButtonToLeftOfBrowserActionsContainerAndAnimate:YES];
 }
 
-- (void)pinGoButtonToLeftOfBrowserActionsContainer {
+- (void)browserActionsVisibilityChanged:(NSNotification*)notification {
+  [self pinGoButtonToLeftOfBrowserActionsContainerAndAnimate:NO];
+}
+
+- (void)pinGoButtonToLeftOfBrowserActionsContainerAndAnimate:(BOOL)animate {
   NSRect goFrame = [goButton_ frame];
-  NSRect containerFrame = [browserActionsContainerView_ frame];
+  NSRect containerFrame = animate ?
+      [browserActionsContainerView_ animationEndFrame] :
+      [browserActionsContainerView_ frame];
+
   CGFloat leftPadding = containerFrame.origin.x -
       (goFrame.origin.x + NSWidth(goFrame));
   if (leftPadding != kBrowserActionsContainerLeftPadding) {
     CGFloat dX = leftPadding - kBrowserActionsContainerLeftPadding;
-    [self adjustLocationAndGoPositionsBy:dX];
+    [self adjustLocationAndGoPositionsBy:dX animate:animate];
   }
 }
 
@@ -675,7 +692,7 @@ class PrefObserverBridge : public NotificationObserver {
   locationBarAtMinSize_ = locationBarWidth <= kMinimumLocationBarWidth;
   if (locationBarAtMinSize_) {
     CGFloat dX = kMinimumLocationBarWidth - locationBarWidth;
-    [self adjustLocationAndGoPositionsBy:dX];
+    [self adjustLocationAndGoPositionsBy:dX animate:NO];
   }
 }
 
@@ -716,11 +733,11 @@ class PrefObserverBridge : public NotificationObserver {
       [browserActionsContainerView_ setGrippyPinned:NO];
     }
     [browserActionsContainerView_ setFrame:containerFrame];
-    [self pinGoButtonToLeftOfBrowserActionsContainer];
+    [self pinGoButtonToLeftOfBrowserActionsContainerAndAnimate:NO];
   }
 }
 
-- (void)adjustLocationAndGoPositionsBy:(CGFloat)dX {
+- (void)adjustLocationAndGoPositionsBy:(CGFloat)dX animate:(BOOL)animate {
   // Ensure that the 'Go' button is in its proper place.
   NSRect goFrame = [goButton_ frame];
   NSRect locationFrame = [locationBar_ frame];
@@ -729,9 +746,20 @@ class PrefObserverBridge : public NotificationObserver {
   if (rightDelta != 0.0)
     [goButton_ setFrame:NSOffsetRect(goFrame, rightDelta, 0)];
 
-  [goButton_ setFrame:NSOffsetRect([goButton_ frame], dX, 0)];
+  goFrame = NSOffsetRect([goButton_ frame], dX, 0);
   locationFrame.size.width += dX;
-  [locationBar_ setFrame:locationFrame];
+
+  if (!animate) {
+    [goButton_ setFrame:goFrame];
+    [locationBar_ setFrame:locationFrame];
+    return;
+  }
+
+  [NSAnimationContext beginGrouping];
+  [[NSAnimationContext currentContext] setDuration:kAnimationDuration];
+  [[goButton_ animator] setFrame:goFrame];
+  [[locationBar_ animator] setFrame:locationFrame];
+  [NSAnimationContext endGrouping];
 }
 
 - (NSRect)starButtonInWindowCoordinates {

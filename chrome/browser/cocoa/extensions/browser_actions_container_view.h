@@ -23,12 +23,19 @@ extern const NSString* kBrowserActionGrippyDragFinishedNotification;
   // The frame encompasing the grippy used for resizing the container.
   NSRect grippyRect_;
 
+  // The end frame of the animation currently running for this container or
+  // NSZeroRect if none is in progress.
+  NSRect animationEndFrame_;
+
   // Used to cache the original position within the container that initiated the
   // drag.
   NSPoint initialDragPoint_;
 
   // Used to cache the previous x-pos of the frame rect for resizing purposes.
   CGFloat lastXPos_;
+
+  // The maximum width of the container.
+  CGFloat maxWidth_;
 
   // Whether there is a border to the right of the last Browser Action.
   BOOL rightBorderShown_;
@@ -61,9 +68,11 @@ extern const NSString* kBrowserActionGrippyDragFinishedNotification;
 // placement of surrounding elements.
 - (CGFloat)resizeDeltaX;
 
+@property(nonatomic, readonly) NSRect animationEndFrame;
 @property(nonatomic) BOOL canDragLeft;
 @property(nonatomic) BOOL canDragRight;
 @property(nonatomic) BOOL grippyPinned;
+@property(nonatomic) CGFloat maxWidth;
 @property(readonly, nonatomic) BOOL userIsResizing;
 @property(nonatomic) BOOL rightBorderShown;
 
