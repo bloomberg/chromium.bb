@@ -29,7 +29,7 @@ deps = {
     "/trunk/deps/third_party/WebKit@33467",
 
   "src/third_party/icu":
-    "/trunk/deps/third_party/icu42@37341",
+    "/trunk/deps/third_party/icu42@42287",
 
   "src/third_party/hunspell":
    "/trunk/deps/third_party/hunspell128@41000",
