@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -372,6 +372,12 @@ ExtensionResource ExtensionsDOMHandler::PickExtensionIcon(
     return ExtensionResource();
 }
 
+ExtensionInstallUI* ExtensionsDOMHandler::GetExtensionInstallUI() {
+  if (!install_ui_.get())
+    install_ui_.reset(new ExtensionInstallUI(dom_ui_->GetProfile()));
+  return install_ui_.get();
+}
+
 void ExtensionsDOMHandler::HandleToggleDeveloperMode(const Value* value) {
   bool developer_mode = dom_ui_->GetProfile()->GetPrefs()
       ->GetBoolean(prefs::kExtensionsUIDeveloperMode);
@@ -448,13 +454,10 @@ void ExtensionsDOMHandler::HandleEnableIncognitoMessage(const Value* value) {
       return;  // only one prompt at a time
 
     // Prompt the user first.
-    scoped_ptr<SkBitmap> icon;
-    Extension::DecodeIcon(extension, Extension::EXTENSION_ICON_LARGE, &icon);
-
     ui_prompt_type_ = ExtensionInstallUI::ENABLE_INCOGNITO_PROMPT;
     extension_id_prompting_ = extension_id;
-    ExtensionInstallUI client(dom_ui_->GetProfile());
-    client.ConfirmEnableIncognito(this, extension, icon.get());
+
+    GetExtensionInstallUI()->ConfirmEnableIncognito(this, extension);
   } else {
     extensions_service_->SetIsIncognitoEnabled(extension, false);
   }
@@ -475,14 +478,10 @@ void ExtensionsDOMHandler::HandleUninstallMessage(const Value* value) {
   if (!extension_id_prompting_.empty())
     return;  // only one prompt at a time
 
-  scoped_ptr<SkBitmap> uninstall_icon;
-  Extension::DecodeIcon(extension, Extension::EXTENSION_ICON_LARGE,
-                        &uninstall_icon);
-
   ui_prompt_type_ = ExtensionInstallUI::UNINSTALL_PROMPT;
   extension_id_prompting_ = extension_id;
-  ExtensionInstallUI client(dom_ui_->GetProfile());
-  client.ConfirmUninstall(this, extension, uninstall_icon.get());
+
+  GetExtensionInstallUI()->ConfirmUninstall(this, extension);
 }
 
 void ExtensionsDOMHandler::InstallUIProceed(bool create_app_shortcut) {

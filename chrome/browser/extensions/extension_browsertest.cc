@@ -87,20 +87,18 @@ class MockAbortExtensionInstallUI : public ExtensionInstallUI {
   MockAbortExtensionInstallUI() : ExtensionInstallUI(NULL) {}
 
   // Simulate a user abort on an extension installation.
-  void ConfirmInstall(
-      Delegate* delegate, Extension* extension, SkBitmap* icon) {
+  virtual void ConfirmInstall(Delegate* delegate, Extension* extension) {
     delegate->InstallUIAbort();
     MessageLoopForUI::current()->Quit();
   }
 
-  void ConfirmUninstall(Delegate* delegate, Extension* extension,
-                        SkBitmap* icon) {}
+  virtual void ConfirmUninstall(Delegate* delegate, Extension* extension) {}
 
-  void OnInstallSuccess(Extension* extension) {}
+  virtual void OnInstallSuccess(Extension* extension) {}
 
-  void OnInstallFailure(const std::string& error) {}
+  virtual void OnInstallFailure(const std::string& error) {}
 
-  void OnOverinstallAttempted(Extension* extension) {}
+  virtual void OnOverinstallAttempted(Extension* extension) {}
 };
 
 bool ExtensionBrowserTest::InstallOrUpdateExtension(const std::string& id,

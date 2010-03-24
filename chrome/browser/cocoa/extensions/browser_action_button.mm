@@ -42,13 +42,12 @@ class ExtensionImageTrackerBridge : public NotificationObserver,
  public:
   ExtensionImageTrackerBridge(BrowserActionButton* owner, Extension* extension)
       : owner_(owner),
-        tracker_(NULL) {
+        tracker_(this) {
     // The Browser Action API does not allow the default icon path to be
     // changed at runtime, so we can load this now and cache it.
     std::string path = extension->browser_action()->default_icon_path();
     if (!path.empty()) {
-      tracker_ = new ImageLoadingTracker(this, 1);
-      tracker_->PostLoadImageTask(extension->GetResource(path),
+      tracker_.LoadImage(extension->GetResource(path),
           gfx::Size(Extension::kBrowserActionIconMaxSize,
                     Extension::kBrowserActionIconMaxSize));
     }
@@ -57,15 +56,12 @@ class ExtensionImageTrackerBridge : public NotificationObserver,
   }
 
   ~ExtensionImageTrackerBridge() {
-    if (tracker_)
-      tracker_->StopTrackingImageLoad();
   }
 
   // ImageLoadingTracker::Observer implementation.
-  void OnImageLoaded(SkBitmap* image, size_t index) {
+  void OnImageLoaded(SkBitmap* image, ExtensionResource resource, int index) {
     if (image)
       [owner_ setDefaultIcon:gfx::SkBitmapToNSImage(*image)];
-    tracker_ = NULL;
     [owner_ updateState];
   }
 
@@ -83,8 +79,8 @@ class ExtensionImageTrackerBridge : public NotificationObserver,
   // Weak. Owns us.
   BrowserActionButton* owner_;
 
-  // Loads the button's icons for us on the file thread. Weak.
-  ImageLoadingTracker* tracker_;
+  // Loads the button's icons for us on the file thread.
+  ImageLoadingTracker tracker_;
 
   // Used for registering to receive notifications and automatic clean up.
   NotificationRegistrar registrar_;

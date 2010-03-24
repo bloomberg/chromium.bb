@@ -193,7 +193,8 @@ class LocationBarViewGtk : public AutocompleteEditController,
     void UpdateVisibility(TabContents* contents, GURL url);
 
     // A callback from ImageLoadingTracker for when the image has loaded.
-    virtual void OnImageLoaded(SkBitmap* image, size_t index);
+    virtual void OnImageLoaded(
+        SkBitmap* image, ExtensionResource resource, int index);
 
     // Simulate left mouse click on the page action button.
     void TestActivatePageAction();
@@ -237,8 +238,8 @@ class LocationBarViewGtk : public AutocompleteEditController,
     GdkPixbuf* last_icon_pixbuf_;
 
     // The object that is waiting for the image loading to complete
-    // asynchronously.  It will delete itself once it is done.
-    ImageLoadingTracker* tracker_;
+    // asynchronously.
+    ImageLoadingTracker tracker_;
 
     // The widgets for this page action.
     OwnedWidgetGtk event_box_;

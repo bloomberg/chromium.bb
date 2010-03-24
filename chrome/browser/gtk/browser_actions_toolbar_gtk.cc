@@ -69,7 +69,7 @@ class BrowserActionButton : public NotificationObserver,
                       Extension* extension)
       : toolbar_(toolbar),
         extension_(extension),
-        tracker_(NULL),
+        tracker_(this),
         tab_specific_icon_(NULL),
         default_icon_(NULL) {
     button_.Own(
@@ -85,8 +85,7 @@ class BrowserActionButton : public NotificationObserver,
     // changed at runtime, so we can load this now and cache it.
     std::string path = extension_->browser_action()->default_icon_path();
     if (!path.empty()) {
-      tracker_ = new ImageLoadingTracker(this, 1);
-      tracker_->PostLoadImageTask(extension_->GetResource(path),
+      tracker_.LoadImage(extension_->GetResource(path),
           gfx::Size(Extension::kBrowserActionIconMaxSize,
                     Extension::kBrowserActionIconMaxSize));
     }
@@ -112,9 +111,6 @@ class BrowserActionButton : public NotificationObserver,
       g_object_unref(default_icon_);
 
     button_.Destroy();
-
-    if (tracker_)
-      tracker_->StopTrackingImageLoad();
   }
 
   GtkWidget* widget() { return button_.get(); }
@@ -132,12 +128,11 @@ class BrowserActionButton : public NotificationObserver,
   }
 
   // ImageLoadingTracker::Observer implementation.
-  void OnImageLoaded(SkBitmap* image, size_t index) {
+  void OnImageLoaded(SkBitmap* image, ExtensionResource resource, int index) {
     if (image) {
       default_skbitmap_ = *image;
       default_icon_ = gfx::GdkPixbufFromSkBitmap(image);
     }
-    tracker_ = NULL;  // The tracker object will delete itself when we return.
     UpdateState();
   }
 
@@ -274,7 +269,7 @@ class BrowserActionButton : public NotificationObserver,
   OwnedWidgetGtk button_;
 
   // Loads the button's icons for us on the file thread.
-  ImageLoadingTracker* tracker_;
+  ImageLoadingTracker tracker_;
 
   // If we are displaying a tab-specific icon, it will be here.
   GdkPixbuf* tab_specific_icon_;
@@ -644,8 +639,8 @@ gboolean BrowserActionsToolbarGtk::OnDragFailed(GtkWidget* widget,
   return TRUE;
 }
 
-void BrowserActionsToolbarGtk::OnHierarchyChanged(GtkWidget* widget,
-                                                  GtkWidget* previous_toplevel) {
+void BrowserActionsToolbarGtk::OnHierarchyChanged(
+    GtkWidget* widget, GtkWidget* previous_toplevel) {
   GtkWidget* toplevel = gtk_widget_get_toplevel(widget);
   if (!GTK_WIDGET_TOPLEVEL(toplevel))
     return;

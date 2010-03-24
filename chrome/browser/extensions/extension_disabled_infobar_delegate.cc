@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,16 +24,11 @@ class ExtensionDisabledDialogDelegate
   ExtensionDisabledDialogDelegate(Profile* profile,
                                   ExtensionsService* service,
                                   Extension* extension)
-        : profile_(profile), service_(service), extension_(extension) {
+        : service_(service), extension_(extension) {
     AddRef();  // Balanced in Proceed or Abort.
 
-    // Do this now because we can't touch extension on the file loop.
-    install_icon_resource_ =
-        extension_->GetIconPath(Extension::EXTENSION_ICON_LARGE);
-
-    ChromeThread::PostTask(
-        ChromeThread::FILE, FROM_HERE,
-        NewRunnableMethod(this, &ExtensionDisabledDialogDelegate::Start));
+    install_ui_.reset(new ExtensionInstallUI(profile));
+    install_ui_->ConfirmInstall(this, extension_);
   }
 
   // ExtensionInstallUI::Delegate
@@ -53,29 +48,11 @@ class ExtensionDisabledDialogDelegate
 
   virtual ~ExtensionDisabledDialogDelegate() {}
 
-  void Start() {
-    // We start on the file thread so we can decode the install icon.
-    FilePath install_icon_path = install_icon_resource_.GetFilePath();
-    Extension::DecodeIconFromPath(
-        install_icon_path, Extension::EXTENSION_ICON_LARGE, &install_icon_);
-    // Then we display the UI on the UI thread.
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
-        NewRunnableMethod(
-            this, &ExtensionDisabledDialogDelegate::ConfirmInstall));
-  }
+  // The UI for showing the install dialog when enabling.
+  scoped_ptr<ExtensionInstallUI> install_ui_;
 
-  void ConfirmInstall() {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-    ExtensionInstallUI ui(profile_);
-    ui.ConfirmInstall(this, extension_, install_icon_.get());
-  }
-
-  Profile* profile_;
   ExtensionsService* service_;
   Extension* extension_;
-  ExtensionResource install_icon_resource_;
-  scoped_ptr<SkBitmap> install_icon_;
 };
 
 class ExtensionDisabledInfobarDelegate

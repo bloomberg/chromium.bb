@@ -69,7 +69,8 @@ class BrowserActionButton : public views::MenuButton,
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
   // Overridden from ImageLoadingTracker.
-  virtual void OnImageLoaded(SkBitmap* image, size_t index);
+  virtual void OnImageLoaded(
+      SkBitmap* image, ExtensionResource resource, int index);
 
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,
@@ -105,9 +106,8 @@ class BrowserActionButton : public views::MenuButton,
   Extension* extension_;
 
   // The object that is waiting for the image loading to complete
-  // asynchronously. This object can potentially outlive the BrowserActionView,
-  // and takes care of deleting itself.
-  ImageLoadingTracker* tracker_;
+  // asynchronously.
+  ImageLoadingTracker tracker_;
 
   // Whether we are currently showing/just finished showing a context menu.
   bool showing_context_menu_;
@@ -245,8 +245,6 @@ class BrowserActionsContainer
     public BrowserActionOverflowMenuController::Observer,
     public ExtensionContextMenuModel::PopupDelegate,
     public ExtensionPopup::Observer {
-
-  friend class ShowFolderMenuTask;
  public:
   BrowserActionsContainer(Browser* browser, views::View* owner_view);
   virtual ~BrowserActionsContainer();
@@ -368,6 +366,8 @@ class BrowserActionsContainer
   static bool disable_animations_during_testing_;
 
  private:
+  friend class ShowFolderMenuTask;
+
   typedef std::vector<BrowserActionView*> BrowserActionViews;
 
   // ExtensionToolbarModel::Observer implementation.

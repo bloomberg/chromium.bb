@@ -241,7 +241,8 @@ class LocationBarViewMac : public AutocompleteEditController,
     virtual void OnMousePressed(NSRect bounds);
 
     // Overridden from ImageLoadingTracker.
-    virtual void OnImageLoaded(SkBitmap* image, size_t index);
+    virtual void OnImageLoaded(
+        SkBitmap* image, ExtensionResource resource, int index);
 
     // Called to notify the Page Action that it should determine whether to be
     // visible or hidden. |contents| is the TabContents that is active, |url|
@@ -263,7 +264,7 @@ class LocationBarViewMac : public AutocompleteEditController,
     PageActionImageView() : owner_(NULL),
                             profile_(NULL),
                             page_action_(NULL),
-                            tracker_(NULL),
+                            tracker_(this),
                             current_tab_id_(-1),
                             preview_enabled_(false) {}
 
@@ -289,7 +290,7 @@ class LocationBarViewMac : public AutocompleteEditController,
 
     // The object that is waiting for the image loading to complete
     // asynchronously.
-    ImageLoadingTracker* tracker_;
+    ImageLoadingTracker tracker_;
 
     // The tab id we are currently showing the icon for.
     int current_tab_id_;

@@ -1057,6 +1057,7 @@ LocationBarViewGtk::PageActionViewGtk::PageActionViewGtk(
       profile_(profile),
       page_action_(page_action),
       last_icon_pixbuf_(NULL),
+      tracker_(this),
       preview_enabled_(false) {
   event_box_.Own(gtk_event_box_new());
   gtk_widget_set_size_request(event_box_.get(),
@@ -1083,19 +1084,15 @@ LocationBarViewGtk::PageActionViewGtk::PageActionViewGtk(
   if (!page_action_->default_icon_path().empty())
     icon_paths.push_back(page_action_->default_icon_path());
 
-  tracker_ = new ImageLoadingTracker(this, icon_paths.size());
   for (std::vector<std::string>::iterator iter = icon_paths.begin();
        iter != icon_paths.end(); ++iter) {
-    tracker_->PostLoadImageTask(
-        extension->GetResource(*iter),
-        gfx::Size(Extension::kPageActionIconMaxSize,
-                  Extension::kPageActionIconMaxSize));
+    tracker_.LoadImage(extension->GetResource(*iter),
+                       gfx::Size(Extension::kPageActionIconMaxSize,
+                                 Extension::kPageActionIconMaxSize));
   }
 }
 
 LocationBarViewGtk::PageActionViewGtk::~PageActionViewGtk() {
-  if (tracker_)
-    tracker_->StopTrackingImageLoad();
   image_.Destroy();
   event_box_.Destroy();
   for (PixbufMap::iterator iter = pixbufs_.begin(); iter != pixbufs_.end();
@@ -1178,11 +1175,11 @@ void LocationBarViewGtk::PageActionViewGtk::UpdateVisibility(
   }
 }
 
-void LocationBarViewGtk::PageActionViewGtk::OnImageLoaded(SkBitmap* image,
-                                                          size_t index) {
+void LocationBarViewGtk::PageActionViewGtk::OnImageLoaded(
+    SkBitmap* image, ExtensionResource resource, int index) {
   // We loaded icons()->size() icons, plus one extra if the page action had
   // a default icon.
-  size_t total_icons = page_action_->icon_paths()->size();
+  int total_icons = static_cast<int>(page_action_->icon_paths()->size());
   if (!page_action_->default_icon_path().empty())
     total_icons++;
   DCHECK(index < total_icons);
@@ -1191,15 +1188,11 @@ void LocationBarViewGtk::PageActionViewGtk::OnImageLoaded(SkBitmap* image,
   // index greater than the number of icons, it must be the default icon.
   if (image) {
     GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(image);
-    if (index < page_action_->icon_paths()->size())
+    if (index < static_cast<int>(page_action_->icon_paths()->size()))
       pixbufs_[page_action_->icon_paths()->at(index)] = pixbuf;
     else
       pixbufs_[page_action_->default_icon_path()] = pixbuf;
   }
-
-  // If we are done, release the tracker.
-  if (index == (total_icons - 1))
-    tracker_ = NULL;
 
   owner_->UpdatePageActions();
 }

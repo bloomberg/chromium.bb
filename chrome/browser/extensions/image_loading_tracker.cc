@@ -1,60 +1,55 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/image_loading_tracker.h"
 
 #include "base/file_util.h"
-#include "base/logging.h"
-#include "base/message_loop.h"
-#include "base/scoped_ptr.h"
-#include "base/task.h"
-#include "base/thread.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/common/extensions/extension_resource.h"
-#include "gfx/size.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/image_decoder.h"
 
 ////////////////////////////////////////////////////////////////////////////////
-// ImageLoadingTracker::LoadImageTask
+// ImageLoadingTracker::ImageLoader
 
-// The LoadImageTask is for asynchronously loading the image on the file thread.
-// If the image is successfully loaded and decoded it will report back on the
-// calling thread to let the caller know the image is done loading.
-class ImageLoadingTracker::LoadImageTask : public Task {
+// A RefCounted class for loading images on the File thread and reporting back
+// on the UI thread.
+class ImageLoadingTracker::ImageLoader
+    : public base::RefCountedThreadSafe<ImageLoader> {
  public:
-  // Constructor for the LoadImageTask class. |tracker| is the object that
-  // we use to communicate back to the entity that wants the image after we
-  // decode it. |path| is the path to load the image from. |max_size| is the
-  // maximum size for the loaded image. It will be resized to fit this if
-  // larger. |index| is an identifier for the image that we pass back to the
-  // caller.
-  LoadImageTask(ImageLoadingTracker* tracker,
-                const ExtensionResource& resource,
-                const gfx::Size& max_size,
-                size_t index)
-    : tracker_(tracker),
-      resource_(resource),
-      max_size_(max_size),
-      index_(index) {
+  explicit ImageLoader(ImageLoadingTracker* tracker)
+      : tracker_(tracker) {
     CHECK(ChromeThread::GetCurrentThreadIdentifier(&callback_thread_id_));
+    DCHECK(!ChromeThread::CurrentlyOn(ChromeThread::FILE));
   }
 
-  void ReportBack(SkBitmap* image) {
+  // Lets this class know that the tracker is no longer interested in the
+  // results.
+  void StopTracking() {
+    tracker_ = NULL;
+  }
+
+  // Instructs the loader to load a task on the File thread.
+  void LoadImage(const ExtensionResource& resource,
+                 const gfx::Size& max_size) {
+    DCHECK(!ChromeThread::CurrentlyOn(ChromeThread::FILE));
     ChromeThread::PostTask(
-        callback_thread_id_, FROM_HERE,
-        NewRunnableMethod(
-            tracker_, &ImageLoadingTracker::OnImageLoaded, image, index_));
+        ChromeThread::FILE, FROM_HERE,
+        NewRunnableMethod(this, &ImageLoader::LoadOnFileThread, resource,
+                          max_size));
   }
 
-  virtual void Run() {
+  void LoadOnFileThread(ExtensionResource resource,
+                        const gfx::Size& max_size) {
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+
     // Read the file from disk.
     std::string file_contents;
-    FilePath path = resource_.GetFilePath();
+    FilePath path = resource.GetFilePath();
     if (path.empty() || !file_util::ReadFileToString(path, &file_contents)) {
-      ReportBack(NULL);
+      ReportBack(NULL, resource);
       return;
     }
 
@@ -65,55 +60,83 @@ class ImageLoadingTracker::LoadImageTask : public Task {
     scoped_ptr<SkBitmap> decoded(new SkBitmap());
     *decoded = decoder.Decode(data, file_contents.length());
     if (decoded->empty()) {
-      ReportBack(NULL);
+      ReportBack(NULL, resource);
       return;  // Unable to decode.
     }
 
-    if (decoded->width() > max_size_.width() ||
-        decoded->height() > max_size_.height()) {
+    if (decoded->width() > max_size.width() ||
+        decoded->height() > max_size.height()) {
       // The bitmap is too big, re-sample.
       *decoded = skia::ImageOperations::Resize(
           *decoded, skia::ImageOperations::RESIZE_LANCZOS3,
-          max_size_.width(), max_size_.height());
+          max_size.width(), max_size.height());
     }
 
-    ReportBack(decoded.release());
+    ReportBack(decoded.release(), resource);
+  }
+
+  void ReportBack(SkBitmap* image, const ExtensionResource& resource) {
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+
+    ChromeThread::PostTask(
+        callback_thread_id_, FROM_HERE,
+        NewRunnableMethod(this, &ImageLoader::ReportOnUIThread,
+                                image, resource));
+  }
+
+  void ReportOnUIThread(SkBitmap* image, ExtensionResource resource) {
+    DCHECK(!ChromeThread::CurrentlyOn(ChromeThread::FILE));
+
+    if (tracker_)
+      tracker_->OnImageLoaded(image, resource);
+
+    if (image)
+      delete image;
   }
 
  private:
+  // The tracker we are loading the image for. If NULL, it means the tracker is
+  // no longer interested in the reply.
+  ImageLoadingTracker* tracker_;
+
   // The thread that we need to call back on to report that we are done.
   ChromeThread::ID callback_thread_id_;
 
-  // The object that is waiting for us to respond back.
-  ImageLoadingTracker* tracker_;
-
-  // The image resource to load asynchronously.
-  ExtensionResource resource_;
-
-  // The max size for the loaded image.
-  gfx::Size max_size_;
-
-  // The index of the icon being loaded.
-  size_t index_;
+  DISALLOW_COPY_AND_ASSIGN(ImageLoader);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 // ImageLoadingTracker
 
-void ImageLoadingTracker::PostLoadImageTask(const ExtensionResource& resource,
-                                            const gfx::Size& max_size) {
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
-      new LoadImageTask(this, resource, max_size, posted_count_++));
+ImageLoadingTracker::ImageLoadingTracker(Observer* observer)
+    : observer_(observer),
+      responses_(0) {
 }
 
-void ImageLoadingTracker::OnImageLoaded(SkBitmap* image, size_t index) {
-  if (observer_)
-    observer_->OnImageLoaded(image, index);
+ImageLoadingTracker::~ImageLoadingTracker() {
+  // The loader is created lazily and is NULL if the tracker is destroyed before
+  // any valid image load tasks have been posted.
+  if (loader_)
+    loader_->StopTracking();
+}
 
-  if (image)
-    delete image;
+void ImageLoadingTracker::LoadImage(const ExtensionResource& resource,
+                                    gfx::Size max_size) {
+  // If we don't have a path we don't need to do any further work, just respond
+  // back.
+  if (resource.relative_path().empty()) {
+    OnImageLoaded(NULL, resource);
+    return;
+  }
 
-  if (--image_count_ == 0)
-    Release();  // We are no longer needed.
+  // Instruct the ImageLoader to load this on the File thread. LoadImage does
+  // not block.
+  if (!loader_)
+    loader_ = new ImageLoader(this);
+  loader_->LoadImage(resource, max_size);
+}
+
+void ImageLoadingTracker::OnImageLoaded(
+    SkBitmap* image, const ExtensionResource& resource) {
+  observer_->OnImageLoaded(image, resource, responses_++);
 }

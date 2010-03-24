@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,7 +56,7 @@ class ExtensionsUIHTMLSource : public ChromeURLDataManager::DataSource {
   DISALLOW_COPY_AND_ASSIGN(ExtensionsUIHTMLSource);
 };
 
-// The handler for Javascript messages related to the "extensions" view.
+// The handler for JavaScript messages related to the "extensions" view.
 class ExtensionsDOMHandler
     : public DOMMessageHandler,
       public NotificationObserver,
@@ -201,6 +201,10 @@ class ExtensionsDOMHandler
   // Called on the UI thread.
   void OnIconsLoaded(DictionaryValue* json_data);
 
+  // Returns the ExtensionInstallUI object for this class, creating it if
+  // needed.
+  ExtensionInstallUI* GetExtensionInstallUI();
+
   // Our model.
   scoped_refptr<ExtensionsService> extensions_service_;
 
@@ -212,6 +216,10 @@ class ExtensionsDOMHandler
 
   // Used to load icons asynchronously on the file thread.
   scoped_refptr<IconLoader> icon_loader_;
+
+  // Used to show confirmation UI for uninstalling/enabling extensions in
+  // incognito mode.
+  scoped_ptr<ExtensionInstallUI> install_ui_;
 
   // We monitor changes to the extension system so that we can reload when
   // necessary.

@@ -73,8 +73,8 @@ class AsyncUninstaller : public base::RefCountedThreadSafe<AsyncUninstaller>,
     if (!browser)
       return;
 
-    ExtensionInstallUI client(browser->profile());
-    client.ConfirmUninstall(this, extension_, uninstall_icon->get());
+    install_ui_.reset(new ExtensionInstallUI(browser->profile()));
+    install_ui_->ConfirmUninstall(this, extension_);
   }
 
   // The extension that we're loading the icon for. Weak.
@@ -82,6 +82,8 @@ class AsyncUninstaller : public base::RefCountedThreadSafe<AsyncUninstaller>,
 
   // The uninstall icon shown by the confirmation dialog.
   scoped_ptr<SkBitmap> uninstall_icon_;
+
+  scoped_ptr<ExtensionInstallUI> install_ui_;
 
   DISALLOW_COPY_AND_ASSIGN(AsyncUninstaller);
 };

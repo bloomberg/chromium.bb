@@ -1,17 +1,18 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_INSTALL_UI_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_INSTALL_UI_H_
 
+#include <string>
+
 #include "base/file_path.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "chrome/browser/extensions/image_loading_tracker.h"
 #include "gfx/native_widget_types.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-
-#include <string>
 
 class Extension;
 class ExtensionsService;
@@ -22,7 +23,7 @@ class SandboxedExtensionUnpacker;
 class TabContents;
 
 // Displays all the UI around extension installation and uninstallation.
-class ExtensionInstallUI {
+class ExtensionInstallUI : public ImageLoadingTracker::Observer {
  public:
   enum PromptType {
     INSTALL_PROMPT = 0,
@@ -56,24 +57,21 @@ class ExtensionInstallUI {
   //
   // We *MUST* eventually call either Proceed() or Abort()
   // on |delegate|.
-  virtual void ConfirmInstall(Delegate* delegate, Extension* extension,
-                              SkBitmap* icon);
+  virtual void ConfirmInstall(Delegate* delegate, Extension* extension);
 
   // This is called by the extensions management page to verify whether the
   // uninstallation should proceed. This is declared virtual for testing.
   //
   // We *MUST* eventually call either Proceed() or Abort()
   // on |delegate|.
-  virtual void ConfirmUninstall(Delegate* delegate, Extension* extension,
-                                SkBitmap* icon);
+  virtual void ConfirmUninstall(Delegate* delegate, Extension* extension);
 
   // This is called by the extensions management page to verify whether the
   // uninstallation should proceed. This is declared virtual for testing.
   //
   // We *MUST* eventually call either Proceed() or Abort()
   // on |delegate|.
-  virtual void ConfirmEnableIncognito(Delegate* delegate, Extension* extension,
-                                      SkBitmap* icon);
+  virtual void ConfirmEnableIncognito(Delegate* delegate, Extension* extension);
 
   // Installation was successful. This is declared virtual for testing.
   virtual void OnInstallSuccess(Extension* extension);
@@ -85,10 +83,19 @@ class ExtensionInstallUI {
   // installed. This is declared virtual for testing.
   virtual void OnOverinstallAttempted(Extension* extension);
 
+  // ImageLoadingTracker::Observer overrides.
+  virtual void OnImageLoaded(
+      SkBitmap* image, ExtensionResource resource, int index);
+
  private:
   // When a Theme is downloaded it is applied and an info bar is shown to give
   // the user a choice to keep it or undo the installation.
   void ShowThemeInfoBar(Extension* new_theme);
+
+  // Starts the process of showing a confirmation UI, which is split into two.
+  // 1) Set off a 'load icon' task.
+  // 2) Handle the load icon response and show the UI (OnImageLoaded).
+  void ShowConfirmation(PromptType prompt_type);
 
 #if defined(OS_MACOSX)
   // When an extension is installed on Mac with neither browser action nor
@@ -111,9 +118,17 @@ class ExtensionInstallUI {
   MessageLoop* ui_loop_;
   std::string previous_theme_id_;  // Used to undo theme installation.
   SkBitmap icon_;  // The extensions installation icon.
+  Extension* extension_;  // The extension we are showing the UI for.
+  Delegate* delegate_;    // The delegate we will call Proceed/Abort on after
+                          // confirmation UI.
+  PromptType prompt_type_;  // The type of prompt we are going to show.
+
+  // Keeps track of extension images being loaded on the File thread for the
+  // purpose of showing the install UI.
+  ImageLoadingTracker tracker_;
 
 #if defined(TOOLKIT_GTK)
-  // Also needed to undo theme installation in the linux UI.
+  // Also needed to undo theme installation in the Linux UI.
   bool previous_use_gtk_theme_;
 #endif
 };

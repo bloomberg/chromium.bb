@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,11 +20,15 @@ class ExtensionResource {
 
   // Returns actual path to the resource (default or locale specific).
   // *** MIGHT HIT FILESYSTEM. Do not call on UI thread! ***
+  // NOTE: If you need to access ExtensionResources, such as bitmaps, on the UI
+  // thread, please use the ImageLoadingTracker, which uses the File thread.
   const FilePath& GetFilePath() const;
 
   // Static version to avoid creating an instance of ExtensionResource
   // when all we want is the localization code.
   // *** MIGHT HIT FILESYSTEM. Do not call on UI thread! ***
+  // NOTE: If you need to access ExtensionResources, such as bitmaps, on the UI
+  // thread, please use the ImageLoadingTracker, which uses the File thread.
   static FilePath GetFilePath(const FilePath& extension_root,
                               const FilePath& relative_path);
 
@@ -32,7 +36,7 @@ class ExtensionResource {
   const FilePath& extension_root() const { return extension_root_; }
   const FilePath& relative_path() const { return relative_path_; }
 
-  // Unittest helpers.
+  // Unit test helpers.
   FilePath::StringType NormalizeSeperators(FilePath::StringType path) const;
   bool ComparePathWithDefault(const FilePath& path) const;
 

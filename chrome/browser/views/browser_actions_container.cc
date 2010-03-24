@@ -98,7 +98,7 @@ BrowserActionButton::BrowserActionButton(Extension* extension,
     : ALLOW_THIS_IN_INITIALIZER_LIST(MenuButton(this, L"", NULL, false)),
       browser_action_(extension->browser_action()),
       extension_(extension),
-      tracker_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(this)),
       showing_context_menu_(false),
       panel_(panel) {
   set_alignment(TextButton::ALIGN_CENTER);
@@ -120,16 +120,12 @@ BrowserActionButton::BrowserActionButton(Extension* extension,
   // will crash. But since we know that ImageLoadingTracker is asynchronous,
   // this should be OK. And doing this in the constructor means that we don't
   // have to protect against it getting done multiple times.
-  tracker_ = new ImageLoadingTracker(this, 1);
-  tracker_->PostLoadImageTask(
-      extension->GetResource(relative_path),
-      gfx::Size(Extension::kBrowserActionIconMaxSize,
-                Extension::kBrowserActionIconMaxSize));
+  tracker_.LoadImage(extension->GetResource(relative_path),
+                     gfx::Size(Extension::kBrowserActionIconMaxSize,
+                               Extension::kBrowserActionIconMaxSize));
 }
 
 BrowserActionButton::~BrowserActionButton() {
-  if (tracker_)
-    tracker_->StopTrackingImageLoad();
 }
 
 gfx::Insets BrowserActionButton::GetInsets() const {
@@ -142,11 +138,10 @@ void BrowserActionButton::ButtonPressed(views::Button* sender,
   panel_->OnBrowserActionExecuted(this, false);  // inspect_with_devtools
 }
 
-void BrowserActionButton::OnImageLoaded(SkBitmap* image, size_t index) {
+void BrowserActionButton::OnImageLoaded(
+    SkBitmap* image, ExtensionResource resource, int index) {
   if (image)
     default_icon_ = *image;
-
-  tracker_ = NULL;  // The tracker object will delete itself when we return.
 
   // Call back to UpdateState() because a more specific icon might have been set
   // while the load was outstanding.
@@ -207,7 +202,7 @@ GURL BrowserActionButton::GetPopupUrl() {
 
 bool BrowserActionButton::Activate() {
   if (IsPopup()) {
-    panel_->OnBrowserActionExecuted(this, false); // inspect_with_devtools
+    panel_->OnBrowserActionExecuted(this, false);  // |inspect_with_devtools|.
 
     // TODO(erikkay): Run a nested modal loop while the mouse is down to
     // enable menu-like drag-select behavior.
@@ -511,7 +506,7 @@ void BrowserActionsContainer::HidePopup() {
 
 void BrowserActionsContainer::TestExecuteBrowserAction(int index) {
   BrowserActionButton* button = browser_action_views_[index]->button();
-  OnBrowserActionExecuted(button, false); // inspect_with_devtools
+  OnBrowserActionExecuted(button, false);  // |inspect_with_devtools|.
 }
 
 void BrowserActionsContainer::TestSetIconVisibilityCount(size_t icons) {
@@ -1114,7 +1109,7 @@ void BrowserActionsContainer::NotifyMenuDeleted(
 void BrowserActionsContainer::InspectPopup(
     ExtensionAction* action) {
   OnBrowserActionExecuted(GetBrowserActionView(action)->button(),
-      true); // inspect_with_devtools
+      true);  // |inspect_with_devtools|.
 }
 
 void BrowserActionsContainer::ExtensionPopupClosed(ExtensionPopup* popup) {

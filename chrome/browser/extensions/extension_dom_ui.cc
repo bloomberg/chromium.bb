@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -331,6 +331,8 @@ RefCountedMemory* ExtensionDOMUI::GetFaviconResourceBytes(Profile* profile,
   if (!extension)
     return NULL;
 
-  return ReadFileData(
-      extension->GetIconPath(Extension::EXTENSION_ICON_BITTY).GetFilePath());
+  // TODO(arv): Move this off of the UI thread and onto the File thread. If
+  //            possible to do this asynchronously, use ImageLoadingTracker.
+  return ReadFileData(extension->GetIconPath(
+      Extension::EXTENSION_ICON_BITTY).GetFilePath());
 }

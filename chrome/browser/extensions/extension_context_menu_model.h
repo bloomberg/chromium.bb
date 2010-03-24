@@ -64,6 +64,9 @@ class ExtensionContextMenuModel
   // The delegate which handles the 'inspect popup' menu command (or NULL).
   PopupDelegate* delegate_;
 
+  // Keeps track of the extension install UI.
+  scoped_ptr<ExtensionInstallUI> install_ui_;
+
   DISALLOW_COPY_AND_ASSIGN(ExtensionContextMenuModel);
 };
 

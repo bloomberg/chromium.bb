@@ -109,12 +109,8 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id) {
       break;
     }
     case UNINSTALL: {
-      scoped_ptr<SkBitmap> uninstall_icon;
-      Extension::DecodeIcon(extension_, Extension::EXTENSION_ICON_LARGE,
-                            &uninstall_icon);
-
-      ExtensionInstallUI client(profile_);
-      client.ConfirmUninstall(this, extension_, uninstall_icon.get());
+      install_ui_.reset(new ExtensionInstallUI(profile_));
+      install_ui_->ConfirmUninstall(this, extension_);
       break;
     }
     case MANAGE: {

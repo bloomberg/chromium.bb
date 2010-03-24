@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -166,7 +166,7 @@ void CrxInstaller::ConfirmInstall() {
 
   if (client_.get()) {
     AddRef();  // Balanced in Proceed() and Abort().
-    client_->ConfirmInstall(this, extension_.get(), install_icon_.get());
+    client_->ConfirmInstall(this, extension_.get());
   } else {
     ChromeThread::PostTask(
         ChromeThread::FILE, FROM_HERE,

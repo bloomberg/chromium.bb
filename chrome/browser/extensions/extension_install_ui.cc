@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -127,16 +127,22 @@ static std::wstring GetInstallWarning(Extension* extension) {
 }  // namespace
 
 ExtensionInstallUI::ExtensionInstallUI(Profile* profile)
-    : profile_(profile), ui_loop_(MessageLoop::current())
+    : profile_(profile),
+      ui_loop_(MessageLoop::current()),
+      extension_(NULL),
+      delegate_(NULL),
+      prompt_type_(NUM_PROMPT_TYPES),
+      ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(this))
 #if defined(TOOLKIT_GTK)
-    ,previous_use_gtk_theme_(false)
+    , previous_use_gtk_theme_(false)
 #endif
 {}
 
 void ExtensionInstallUI::ConfirmInstall(Delegate* delegate,
-                                        Extension* extension,
-                                        SkBitmap* install_icon) {
+                                        Extension* extension) {
   DCHECK(ui_loop_ == MessageLoop::current());
+  extension_ = extension;
+  delegate_ = delegate;
 
   // We special-case themes to not show any confirm UI. Instead they are
   // immediately installed, and then we show an infobar (see OnInstallSuccess)
@@ -148,7 +154,7 @@ void ExtensionInstallUI::ConfirmInstall(Delegate* delegate,
       previous_theme_id_ = previous_theme->id();
 
 #if defined(TOOLKIT_GTK)
-    // On linux, we also need to take the user's system settings into account
+    // On Linux, we also need to take the user's system settings into account
     // to undo theme installation.
     previous_use_gtk_theme_ =
         GtkThemeProvider::GetFrom(profile_)->UseGtkTheme();
@@ -158,53 +164,25 @@ void ExtensionInstallUI::ConfirmInstall(Delegate* delegate,
     return;
   }
 
-  if (!install_icon) {
-    install_icon = ResourceBundle::GetSharedInstance().GetBitmapNamed(
-        IDR_EXTENSION_DEFAULT_ICON);
-  }
-  icon_ = *install_icon;
-
-  NotificationService* service = NotificationService::current();
-  service->Notify(NotificationType::EXTENSION_WILL_SHOW_CONFIRM_DIALOG,
-                  Source<ExtensionInstallUI>(this),
-                  NotificationService::NoDetails());
-
-  ShowExtensionInstallUIPromptImpl(
-      profile_, delegate, extension, &icon_,
-      WideToUTF16Hack(GetInstallWarning(extension)), INSTALL_PROMPT);
+  ShowConfirmation(INSTALL_PROMPT);
 }
 
 void ExtensionInstallUI::ConfirmUninstall(Delegate* delegate,
-                                          Extension* extension,
-                                          SkBitmap* icon) {
+                                          Extension* extension) {
   DCHECK(ui_loop_ == MessageLoop::current());
+  extension_ = extension;
+  delegate_ = delegate;
 
-  if (!icon) {
-    icon = ResourceBundle::GetSharedInstance().GetBitmapNamed(
-        IDR_EXTENSION_DEFAULT_ICON);
-  }
-
-  string16 message =
-      l10n_util::GetStringUTF16(IDS_EXTENSION_UNINSTALL_CONFIRMATION);
-  ShowExtensionInstallUIPromptImpl(profile_, delegate, extension, icon,
-                                   message, UNINSTALL_PROMPT);
+  ShowConfirmation(UNINSTALL_PROMPT);
 }
 
 void ExtensionInstallUI::ConfirmEnableIncognito(Delegate* delegate,
-                                                Extension* extension,
-                                                SkBitmap* icon) {
+                                                Extension* extension) {
   DCHECK(ui_loop_ == MessageLoop::current());
+  extension_ = extension;
+  delegate_ = delegate;
 
-  if (!icon) {
-    icon = ResourceBundle::GetSharedInstance().GetBitmapNamed(
-        IDR_EXTENSION_DEFAULT_ICON);
-  }
-
-  string16 message =
-      l10n_util::GetStringFUTF16(IDS_EXTENSION_PROMPT_WARNING_INCOGNITO,
-                                 l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
-  ShowExtensionInstallUIPromptImpl(profile_, delegate, extension, icon,
-                                   message, ENABLE_INCOGNITO_PROMPT);
+  ShowConfirmation(ENABLE_INCOGNITO_PROMPT);
 }
 
 void ExtensionInstallUI::OnInstallSuccess(Extension* extension) {
@@ -213,7 +191,7 @@ void ExtensionInstallUI::OnInstallSuccess(Extension* extension) {
     return;
   }
 
-  // GetLastActiveWithProfile will fail on the build bots. This needs to
+  // GetLastActiveWithProfile will fail on the build bots. This needs to be
   // implemented differently if any test is created which depends on
   // ExtensionInstalledBubble showing.
 #if defined(TOOLKIT_VIEWS)
@@ -258,6 +236,50 @@ void ExtensionInstallUI::OnOverinstallAttempted(Extension* extension) {
   ShowThemeInfoBar(extension);
 }
 
+void ExtensionInstallUI::OnImageLoaded(
+    SkBitmap* image, ExtensionResource resource, int index) {
+  if (image)
+    icon_ = *image;
+  else
+    icon_ = SkBitmap();
+  if (icon_.empty()) {
+    icon_ = *ResourceBundle::GetSharedInstance().GetBitmapNamed(
+        IDR_EXTENSION_DEFAULT_ICON);
+  }
+
+  switch (prompt_type_) {
+    case INSTALL_PROMPT: {
+      NotificationService* service = NotificationService::current();
+      service->Notify(NotificationType::EXTENSION_WILL_SHOW_CONFIRM_DIALOG,
+          Source<ExtensionInstallUI>(this),
+          NotificationService::NoDetails());
+
+      ShowExtensionInstallUIPromptImpl(
+          profile_, delegate_, extension_, &icon_,
+          WideToUTF16Hack(GetInstallWarning(extension_)), INSTALL_PROMPT);
+      break;
+    }
+    case UNINSTALL_PROMPT: {
+      string16 message =
+          l10n_util::GetStringUTF16(IDS_EXTENSION_UNINSTALL_CONFIRMATION);
+      ShowExtensionInstallUIPromptImpl(profile_, delegate_, extension_, &icon_,
+          message, UNINSTALL_PROMPT);
+      break;
+    }
+    case ENABLE_INCOGNITO_PROMPT: {
+      string16 message =
+          l10n_util::GetStringFUTF16(IDS_EXTENSION_PROMPT_WARNING_INCOGNITO,
+          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
+      ShowExtensionInstallUIPromptImpl(profile_, delegate_, extension_, &icon_,
+          message, ENABLE_INCOGNITO_PROMPT);
+      break;
+    }
+    default:
+      NOTREACHED() << "Unknown message";
+      break;
+  }
+}
+
 void ExtensionInstallUI::ShowThemeInfoBar(Extension* new_theme) {
   if (!new_theme->IsTheme())
     return;
@@ -288,6 +310,16 @@ void ExtensionInstallUI::ShowThemeInfoBar(Extension* new_theme) {
     tab_contents->ReplaceInfoBar(old_delegate, new_delegate);
   else
     tab_contents->AddInfoBar(new_delegate);
+}
+
+void ExtensionInstallUI::ShowConfirmation(PromptType prompt_type) {
+  // Load the image asynchronously. For the response, check OnImageLoaded.
+  prompt_type_ = prompt_type;
+  ExtensionResource image =
+      extension_->GetIconPath(Extension::EXTENSION_ICON_LARGE);
+  tracker_.LoadImage(image,
+                     gfx::Size(Extension::EXTENSION_ICON_LARGE,
+                               Extension::EXTENSION_ICON_LARGE));
 }
 
 #if defined(OS_MACOSX)

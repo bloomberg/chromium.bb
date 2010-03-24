@@ -1484,7 +1484,7 @@ ExtensionResource Extension::GetIconPath(Icons icon) {
 Extension::Icons Extension::GetIconPathAllowLargerSize(
     ExtensionResource* resource, Icons icon) {
   *resource = GetIconPath(icon);
-  if (!resource->GetFilePath().empty())
+  if (!resource->relative_path().empty())
     return icon;
   if (icon == EXTENSION_ICON_BITTY)
     return GetIconPathAllowLargerSize(resource, EXTENSION_ICON_SMALL);

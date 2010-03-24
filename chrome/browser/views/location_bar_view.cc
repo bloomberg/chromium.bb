@@ -1427,7 +1427,7 @@ LocationBarView::PageActionImageView::PageActionImageView(
       owner_(owner),
       profile_(profile),
       page_action_(page_action),
-      tracker_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(this)),
       current_tab_id_(-1),
       preview_enabled_(false),
       popup_(NULL) {
@@ -1441,20 +1441,15 @@ LocationBarView::PageActionImageView::PageActionImageView(
   if (!page_action_->default_icon_path().empty())
     icon_paths.push_back(page_action_->default_icon_path());
 
-  tracker_ = new ImageLoadingTracker(this, icon_paths.size());
   for (std::vector<std::string>::iterator iter = icon_paths.begin();
        iter != icon_paths.end(); ++iter) {
-    tracker_->PostLoadImageTask(
-        extension->GetResource(*iter),
-        gfx::Size(Extension::kPageActionIconMaxSize,
-                  Extension::kPageActionIconMaxSize));
+    tracker_.LoadImage(extension->GetResource(*iter),
+                       gfx::Size(Extension::kPageActionIconMaxSize,
+                                 Extension::kPageActionIconMaxSize));
   }
 }
 
 LocationBarView::PageActionImageView::~PageActionImageView() {
-  if (tracker_)
-    tracker_->StopTrackingImageLoad();
-
   if (popup_)
     HidePopup();
 }
@@ -1561,11 +1556,11 @@ void LocationBarView::PageActionImageView::ShowInfoBubble() {
   ShowInfoBubbleImpl(ASCIIToWide(tooltip_), GetColor(false, TEXT));
 }
 
-void LocationBarView::PageActionImageView::OnImageLoaded(SkBitmap* image,
-                                                         size_t index) {
+void LocationBarView::PageActionImageView::OnImageLoaded(
+    SkBitmap* image, ExtensionResource resource, int index) {
   // We loaded icons()->size() icons, plus one extra if the page action had
   // a default icon.
-  size_t total_icons = page_action_->icon_paths()->size();
+  int total_icons = static_cast<int>(page_action_->icon_paths()->size());
   if (!page_action_->default_icon_path().empty())
     total_icons++;
   DCHECK(index < total_icons);
@@ -1573,15 +1568,11 @@ void LocationBarView::PageActionImageView::OnImageLoaded(SkBitmap* image,
   // Map the index of the loaded image back to its name. If we ever get an
   // index greater than the number of icons, it must be the default icon.
   if (image) {
-    if (index < page_action_->icon_paths()->size())
+    if (index < static_cast<int>(page_action_->icon_paths()->size()))
       page_action_icons_[page_action_->icon_paths()->at(index)] = *image;
     else
       page_action_icons_[page_action_->default_icon_path()] = *image;
   }
-
-  // If we are done, release the tracker.
-  if (index == total_icons - 1)
-    tracker_ = NULL;
 
   owner_->UpdatePageActions();
 }

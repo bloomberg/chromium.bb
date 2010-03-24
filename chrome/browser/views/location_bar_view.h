@@ -439,12 +439,13 @@ class LocationBarView : public LocationBar,
     virtual void ShowInfoBubble();
 
     // Overridden from ImageLoadingTracker.
-    virtual void OnImageLoaded(SkBitmap* image, size_t index);
+    virtual void OnImageLoaded(
+        SkBitmap* image, ExtensionResource resource, int index);
 
     // Overridden from ExtensionContextMenuModelModel::Delegate
     virtual void InspectPopup(ExtensionAction* action);
 
-    // Overriden from ExtensionPopup::Observer
+    // Overridden from ExtensionPopup::Observer
     virtual void ExtensionPopupClosed(ExtensionPopup* popup);
 
     // Called to notify the PageAction that it should determine whether to be
@@ -479,7 +480,7 @@ class LocationBarView : public LocationBar,
 
     // The object that is waiting for the image loading to complete
     // asynchronously.
-    ImageLoadingTracker* tracker_;
+    ImageLoadingTracker tracker_;
 
     // The tab id we are currently showing the icon for.
     int current_tab_id_;

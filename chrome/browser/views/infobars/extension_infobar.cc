@@ -13,7 +13,6 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/platform_util.h"
 #include "gfx/canvas.h"
-#include "grit/browser_resources.h"
 #include "grit/theme_resources.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/menu_2.h"
@@ -31,7 +30,8 @@ static const int kDropArrowLeftMargin = 3;
 
 ExtensionInfoBar::ExtensionInfoBar(ExtensionInfoBarDelegate* delegate)
     : InfoBar(delegate),
-      delegate_(delegate) {
+      delegate_(delegate),
+      ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(this)) {
   ExtensionHost* extension_host = delegate_->extension_host();
 
   // We set the target height for the InfoBar to be the height of the
@@ -91,6 +91,36 @@ void ExtensionInfoBar::Layout() {
   view->SetBounds(x, 0, width() - x - kFarRightMargin - 1, height() - 1);
 }
 
+void ExtensionInfoBar::OnImageLoaded(
+    SkBitmap* image, ExtensionResource resource, int index) {
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+
+  // We fall back on the default extension icon on failure.
+  SkBitmap* icon;
+  if (!image || image->empty())
+    icon = rb.GetBitmapNamed(IDR_EXTENSIONS_SECTION);
+  else
+    icon = image;
+
+  SkBitmap* drop_image = rb.GetBitmapNamed(IDR_APP_DROPARROW);
+
+  int image_size = Extension::EXTENSION_ICON_BITTY;
+  scoped_ptr<gfx::Canvas> canvas(
+      new gfx::Canvas(image_size + kDropArrowLeftMargin + drop_image->width(),
+      image_size, false));
+  canvas->DrawBitmapInt(*icon,
+                        0, 0, icon->width(), icon->height(),
+                        0, 0, image_size, image_size,
+                        false);
+  canvas->DrawBitmapInt(*drop_image,
+                        image_size + kDropArrowLeftMargin,
+                        image_size / 2);
+  menu_->SetIcon(canvas->ExtractBitmap());
+  menu_->SetVisible(true);
+
+  Layout();
+}
+
 void ExtensionInfoBar::RunMenu(View* source, const gfx::Point& pt) {
   if (!options_menu_contents_.get()) {
     Browser* browser = BrowserView::GetBrowserViewForNativeWindow(
@@ -105,46 +135,20 @@ void ExtensionInfoBar::RunMenu(View* source, const gfx::Point& pt) {
 }
 
 void ExtensionInfoBar::SetupIconAndMenu() {
-  SkBitmap icon;
+  menu_ = new views::MenuButton(NULL, std::wstring(), this, false);
+  menu_->SetVisible(false);
+  AddChildView(menu_);
 
-  // TODO(finnur): http://crbug.com/38521. Use cached version of the Extension
-  // icon instead of loading it here.
   ExtensionResource icon_resource;
   Extension::Icons size = delegate_->extension_host()->extension()->
       GetIconPathAllowLargerSize(&icon_resource,
                                  Extension::EXTENSION_ICON_BITTY);
-  if (!icon_resource.GetFilePath().empty()) {
-    scoped_ptr<SkBitmap> bitmap;
-    Extension::DecodeIconFromPath(icon_resource.GetFilePath(), size, &bitmap);
-    if (bitmap.get())
-      icon = *bitmap.release();
+  if (!icon_resource.relative_path().empty()) {
+    // Create a tracker to load the image. It will report back on OnImageLoaded.
+    tracker_.LoadImage(icon_resource, gfx::Size(size, size));
+  } else {
+    OnImageLoaded(NULL, icon_resource, 0);  // |image|, |index|.
   }
-
-  // Failure to get the path or failure to decode it causes fall-back to the
-  // default extension icon.
-  if (icon.empty()) {
-    icon = *ResourceBundle::GetSharedInstance().GetBitmapNamed(
-        IDR_EXTENSION_DEFAULT_ICON);
-  }
-
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  SkBitmap* drop_image = rb.GetBitmapNamed(IDR_APP_DROPARROW);
-  menu_ = new views::MenuButton(NULL, std::wstring(), this, false);
-
-  int image_size = Extension::EXTENSION_ICON_BITTY;
-  scoped_ptr<gfx::Canvas> canvas(
-      new gfx::Canvas(image_size + kDropArrowLeftMargin + drop_image->width(),
-                      image_size, false));
-  canvas->DrawBitmapInt(icon,
-                        0, 0, icon.width(), icon.height(),
-                        0, 0, image_size, image_size,
-                        false);
-  canvas->DrawBitmapInt(*drop_image,
-                        image_size + kDropArrowLeftMargin,
-                        image_size / 2);
-  menu_->SetIcon(canvas->ExtractBitmap());
-
-  AddChildView(menu_);
 }
 
 InfoBar* ExtensionInfoBarDelegate::CreateInfoBar() {

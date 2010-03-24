@@ -185,14 +185,20 @@ class Extension {
   static bool IsPrivilegeIncrease(Extension* old_extension,
                                   Extension* new_extension);
 
+  // *** HITS THE FILESYSTEM. Do not call on UI thread! ***
   // Given an extension and icon size, read it if present and decode it into
   // result.
+  // NOTE: If you need the icon on the UI thread, please use the
+  // ImageLoadingTracker, which uses the File thread internally to decode.
   static void DecodeIcon(Extension* extension,
                          Icons icon_size,
                          scoped_ptr<SkBitmap>* result);
 
+  // *** HITS THE FILESYSTEM. Do not call on UI thread! ***
   // Given an icon_path and icon size, read it if present and decode it into
   // result.
+  // NOTE: If you need the icon on the UI thread, please use the
+  // ImageLoadingTracker, which uses the File thread internally to decode.
   static void DecodeIconFromPath(const FilePath& icon_path,
                                  Icons icon_size,
                                  scoped_ptr<SkBitmap>* result);
