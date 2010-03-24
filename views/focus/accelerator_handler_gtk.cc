@@ -4,9 +4,6 @@
 
 #include <gtk/gtk.h>
 
-#include "base/keyboard_code_conversion_gtk.h"
-#include "base/keyboard_codes.h"
-#include "views/accelerator.h"
 #include "views/focus/accelerator_handler.h"
 #include "views/focus/focus_manager.h"
 #include "views/widget/widget_gtk.h"
@@ -51,14 +48,6 @@ bool AcceleratorHandler::Dispatch(GdkEvent* event) {
 
   if (event->type == GDK_KEY_PRESS) {
     KeyEvent view_key_event(key_event);
-
-    // If it's the Alt key, don't send it to the focus manager until release
-    // (to handle focusing the menu bar).
-    if (view_key_event.GetKeyCode() == base::VKEY_MENU) {
-      last_key_pressed_ = key_event->keyval;
-      return true;
-    }
-
     // FocusManager::OnKeyPressed and OnKeyReleased return false if this
     // message has been consumed and should not be propagated further.
     if (!focus_manager->OnKeyEvent(view_key_event)) {
@@ -71,14 +60,6 @@ bool AcceleratorHandler::Dispatch(GdkEvent* event) {
   // as accelerators to avoid unpaired key release.
   if (event->type == GDK_KEY_RELEASE &&
       key_event->keyval == last_key_pressed_) {
-    // Special case: the Alt key can trigger an accelerator on release
-    // rather than on press.
-    if (base::WindowsKeyCodeForGdkKeyCode(key_event->keyval) ==
-        base::VKEY_MENU) {
-      Accelerator accelerator(base::VKEY_MENU, false, false, false);
-      focus_manager->ProcessAccelerator(accelerator);
-    }
-
     last_key_pressed_ = 0;
     return true;
   }

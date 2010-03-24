@@ -231,6 +231,19 @@ void AutomationProvider::WindowSimulateDrag(int handle,
   }
 }
 
+void AutomationProvider::GetFocusedViewID(int handle, int* view_id) {
+  *view_id = -1;
+  if (window_tracker_->ContainsHandle(handle)) {
+    HWND hwnd = window_tracker_->GetResource(handle);
+    views::FocusManager* focus_manager =
+        views::FocusManager::GetFocusManagerForNativeView(hwnd);
+    DCHECK(focus_manager);
+    views::View* focused_view = focus_manager->GetFocusedView();
+    if (focused_view)
+      *view_id = focused_view->GetID();
+  }
+}
+
 void AutomationProvider::GetWindowBounds(int handle, gfx::Rect* bounds,
                                          bool* success) {
   *success = false;

@@ -783,10 +783,6 @@ void BrowserWindowGtk::FocusToolbar() {
   NOTIMPLEMENTED();
 }
 
-void BrowserWindowGtk::FocusPageAndAppMenus() {
-  NOTIMPLEMENTED();
-}
-
 bool BrowserWindowGtk::IsBookmarkBarVisible() const {
   return browser_->SupportsWindowFeature(Browser::FEATURE_BOOKMARKBAR) &&
       bookmark_bar_.get() &&
