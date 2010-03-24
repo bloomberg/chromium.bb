@@ -7,6 +7,7 @@ import atexit
 import glob
 import os
 import stat
+import subprocess
 import sys
 sys.path.append("./common")
 import sets
@@ -269,6 +270,28 @@ else:
   TARGET_ROOT = '${DESTINATION_ROOT}/${BUILD_TYPE}-%s-to-%s' % (BUILD_NAME,
                                                                 TARGET_NAME)
 pre_base_env.Replace(TARGET_ROOT=TARGET_ROOT)
+
+
+def FixupArmEnvironment():
+  """ Glean settings by invoking setup scripts and capturing environment."""
+  nacl_dir = Dir('#/').abspath
+  p = subprocess.Popen(
+      'source ' + nacl_dir +
+      '/tools/llvm/setup_arm_trusted_toolchain.sh && ' +
+      'source ' + nacl_dir +
+      '/tools/llvm/setup_arm_untrusted_toolchain.sh && ' +
+      sys.executable + " -c 'import os ; print os.environ'",
+      stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+  (stdout, stderr) = p.communicate()
+  arm_env = eval(stdout)
+  for k in arm_env:
+    if k.startswith('NACL_') or k.startswith('ARM_'):
+      os.environ[k] = arm_env[k]
+
+
+# Source setup bash scripts and glean the settings.
+if pre_base_env['TARGET_ARCHITECTURE'] == 'arm':
+  FixupArmEnvironment()
 
 
 # ----------------------------------------------------------
