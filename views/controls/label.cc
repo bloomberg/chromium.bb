@@ -4,8 +4,7 @@
 
 #include "views/controls/label.h"
 
-#include <math.h>
-#include <limits>
+#include <cmath>
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
@@ -62,9 +61,13 @@ int Label::GetBaseline() {
 }
 
 int Label::GetHeightForWidth(int w) {
-  return is_multi_line_ ?
-      (GetTextSize().height() + GetInsets().height()) :
-      View::GetHeightForWidth(w);
+  if (!is_multi_line_)
+    return View::GetHeightForWidth(w);
+
+  w = std::max(0, w - GetInsets().width());
+  int h = font_.height();
+  gfx::Canvas::SizeStringInt(text_, font_, &w, &h, ComputeMultiLineFlags());
+  return h + GetInsets().height();
 }
 
 void Label::DidChangeBounds(const gfx::Rect& previous,
@@ -371,10 +374,14 @@ gfx::Rect Label::GetTextBounds() const {
 
 gfx::Size Label::GetTextSize() const {
   if (!text_size_valid_) {
-    int w = is_multi_line_ ?
-        GetAvailableRect().width() : std::numeric_limits<int>::max();
+    int w = GetAvailableRect().width();
     int h = font_.height();
-    gfx::Canvas::SizeStringInt(text_, font_, &w, &h, ComputeMultiLineFlags());
+    // For single-line strings, ignore the available width and calculate how
+    // wide the text wants to be.
+    int flags = ComputeMultiLineFlags();
+    if (!is_multi_line_)
+      flags |= gfx::Canvas::NO_ELLIPSIS;
+    gfx::Canvas::SizeStringInt(text_, font_, &w, &h, flags);
     text_size_.SetSize(w, h);
     text_size_valid_ = true;
   }
@@ -388,10 +395,10 @@ int Label::ComputeMultiLineFlags() const {
 
   int flags = gfx::Canvas::MULTI_LINE;
 #if !defined(OS_WIN)
-    // Don't ellide multiline labels on Linux.
-    // Todo(davemoore): Do we depend on elliding multiline text?
+    // Don't elide multiline labels on Linux.
+    // Todo(davemoore): Do we depend on eliding multiline text?
     // Pango insists on limiting the number of lines to one if text is
-    // ellided. You can get around this if you can pass a maximum height
+    // elided. You can get around this if you can pass a maximum height
     // but we don't currently have that data when we call the pango code.
     flags |= gfx::Canvas::NO_ELLIPSIS;
 #endif
