@@ -195,12 +195,9 @@ html[dir=rtl] #get-moar-extensions {
   margin-top: 0.4em;
 }
 
-.extension-options-cell {
-  text-align: right;
-}
-
-html[dir=rtl] .extension-options-cell {
-  text-align: left;
+.extension-actions input {
+  margin: 0 3px 0 10px;
+  vertical-align: text-bottom;
 }
 
 .extension-views {
@@ -846,9 +843,6 @@ document.addEventListener('DOMContentLoaded', requestExtensionsData);
                   href="javascript:void();"
                   i18n-content="options"
                   >OPTIONS</a>
-                <span
-                  jsdisplay="enabled"
-                  >|</span>
                 <input type="checkbox"
                   jsvalues=".extensionId:id;.enabled:enabled"
                   jsdisplay="enabled"
