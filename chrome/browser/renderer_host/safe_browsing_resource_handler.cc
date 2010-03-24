@@ -14,7 +14,7 @@
 // Maximum time in milliseconds to wait for the safe browsing service to
 // verify a URL. After this amount of time the outstanding check will be
 // aborted, and the URL will be treated as if it were safe.
-static const int kCheckUrlTimeoutMs = 1000;
+static const int kCheckUrlTimeoutMs = 5000;
 
 // TODO(eroman): Downgrade these CHECK()s to DCHECKs once there is more
 //               unit test coverage.
