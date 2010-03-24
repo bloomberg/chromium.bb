@@ -1,4 +1,6 @@
 # These tests fail under valgrind.
+# See http://crbug.com/29583.
+ChromeMainTest.AppLaunch
 # See http://crbug.com/29585.
 MetricsServiceTest.CrashRenderers
 # See http://crbug.com/29587.
