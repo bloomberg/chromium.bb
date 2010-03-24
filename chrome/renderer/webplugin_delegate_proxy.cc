@@ -544,10 +544,7 @@ void WebPluginDelegateProxy::UpdateGeometry(const gfx::Rect& window_rect,
 
   IPC::Message* msg;
 #if defined (OS_WIN)
-  if (info_.name.find(L"Windows Media Player") != std::wstring::npos) {
-    // Need to update geometry synchronously with WMP, otherwise if a site
-    // scripts the plugin to start playing while it's in the middle of handling
-    // an update geometry message, videos don't play.  See urls in bug 20260.
+  if (UseSynchronousGeometryUpdates()) {
     msg = new PluginMsg_UpdateGeometrySync(instance_id_, param);
   } else  // NO_LINT
 #endif
@@ -1444,3 +1441,28 @@ void WebPluginDelegateProxy::OnAcceleratedSurfaceBuffersSwapped(
     render_view_->AcceleratedSurfaceBuffersSwapped(window);
 }
 #endif
+
+#if defined(OS_WIN)
+bool WebPluginDelegateProxy::UseSynchronousGeometryUpdates() {
+  // Need to update geometry synchronously with WMP, otherwise if a site
+  // scripts the plugin to start playing while it's in the middle of handling
+  // an update geometry message, videos don't play.  See urls in bug 20260.
+  if (info_.name.find(L"Windows Media Player") != std::wstring::npos)
+    return true;
+
+  // The move networks plugin needs to be informed of geometry updates
+  // synchronously.
+  std::vector<WebPluginMimeType>::iterator index;
+  for (index = info_.mime_types.begin(); index != info_.mime_types.end();
+       index++) {
+    if (index->mime_type == "application/x-vnd.moveplayer.qm" ||
+        index->mime_type == "application/x-vnd.moveplay2.qm" ||
+        index->mime_type == "application/x-vnd.movenetworks.qm" ||
+        index->mime_type == "application/x-vnd.mnplayer.qm") {
+      return true;
+    }
+  }
+  return false;
+}
+#endif
+

@@ -209,6 +209,10 @@ void PluginList::LoadPlugins(bool refresh) {
     LoadPluginsFromDir(directories_to_scan[i], &new_plugins, &visited_plugins);
   }
 
+#if defined OS_WIN
+  LoadPluginsFromRegistry(&new_plugins, &visited_plugins);
+#endif
+
   // Load the default plugin last.
   if (webkit_glue::IsDefaultPluginEnabled())
     LoadPlugin(FilePath(kDefaultPluginLibraryName), &new_plugins);

@@ -88,7 +88,7 @@ void GetPluginsInRegistryDirectory(
 
     std::wstring path;
     if (key.ReadValue(kRegistryPath, &path))
-      plugin_dirs->insert(FilePath(path).DirName());
+      plugin_dirs->insert(FilePath(path));
   }
 }
 
@@ -117,11 +117,6 @@ void GetFirefoxDirectory(std::set<FilePath>* plugin_dirs) {
   for (unsigned int i = 0; i < paths.size(); ++i) {
     plugin_dirs->insert(paths[i].Append(L"plugins"));
   }
-
-  GetPluginsInRegistryDirectory(
-      HKEY_CURRENT_USER, kRegistryMozillaPlugins, plugin_dirs);
-  GetPluginsInRegistryDirectory(
-      HKEY_LOCAL_MACHINE, kRegistryMozillaPlugins, plugin_dirs);
 
   FilePath firefox_app_data_plugin_path;
   if (PathService::Get(base::DIR_APP_DATA, &firefox_app_data_plugin_path)) {
@@ -267,6 +262,23 @@ void PluginList::LoadPluginsFromDir(const FilePath &path,
 
   DCHECK(GetLastError() == ERROR_NO_MORE_FILES);
   FindClose(find_handle);
+}
+
+void PluginList::LoadPluginsFromRegistry(
+    std::vector<WebPluginInfo>* plugins,
+    std::set<FilePath>* visited_plugins) {
+  std::set<FilePath> plugin_dirs;
+
+  GetPluginsInRegistryDirectory(
+      HKEY_CURRENT_USER, kRegistryMozillaPlugins, &plugin_dirs);
+  GetPluginsInRegistryDirectory(
+      HKEY_LOCAL_MACHINE, kRegistryMozillaPlugins, &plugin_dirs);
+
+  for (std::set<FilePath>::iterator i = plugin_dirs.begin();
+       i != plugin_dirs.end(); ++i) {
+    LoadPlugin(*i, plugins);
+    visited_plugins->insert(*i);
+  }
 }
 
 // Compares Windows style version strings (i.e. 1,2,3,4).  Returns true if b's

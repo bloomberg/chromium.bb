@@ -213,6 +213,11 @@ class WebPluginDelegateProxy
   OldTransportDIBMap old_transport_dibs_;
 #endif  // OS_MACOSX
 
+#if defined(OS_WIN)
+  // Returns true if we should update the plugin geometry synchronously.
+  bool UseSynchronousGeometryUpdates();
+#endif
+
   base::WeakPtr<RenderView> render_view_;
   webkit_glue::WebPlugin* plugin_;
   bool uses_shared_bitmaps_;

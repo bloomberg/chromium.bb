@@ -219,6 +219,11 @@ class PluginList {
 #if defined(OS_WIN)
   // true if we shouldn't load the new WMP plugin.
   bool dont_load_new_wmp_;
+
+  // Loads plugins registered under HKCU\Software\MozillaPlugins and
+  // HKLM\Software\MozillaPlugins.
+  void LoadPluginsFromRegistry(std::vector<WebPluginInfo>* plugins,
+                               std::set<FilePath>* visited_plugins);
 #endif
 
   //
