@@ -428,9 +428,6 @@ void WebPluginDelegateImpl::DrawLayerInSurface() {
 
   surface_->Clear(window_rect_);
 
-  // Ensure all changes are made before rendering. Not sure where the |-begin|
-  // comes from, but not doing this causes nothing to render.
-  [CATransaction commit];
   [renderer_ beginFrameAtTime:CACurrentMediaTime() timeStamp:NULL];
   CGRect layerRect = [layer_ bounds];
   [renderer_ addUpdateRect:layerRect];
