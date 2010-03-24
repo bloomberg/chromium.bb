@@ -465,8 +465,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, PageLanguageDetection) {
 // applicable.
 #if !defined(OS_CHROMEOS)
 #if defined(OS_MACOSX)
-// http://crbug.com/38522
-#define RestorePinnedTabs FLAKY_RestorePinnedTabs
+// Crashy, http://crbug.com/38522
+#define RestorePinnedTabs DISABLED_RestorePinnedTabs
 #endif
 // Makes sure pinned tabs are restored correctly on start.
 IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
