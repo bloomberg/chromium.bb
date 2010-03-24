@@ -121,11 +121,6 @@ gboolean PaintNoBackground(GtkWidget* widget,
   return TRUE;
 }
 
-void OnLabelAllocate(GtkWidget* label, GtkAllocation* allocation,
-                     gpointer user_data) {
-  gtk_widget_set_size_request(label, allocation->width, -1);
-}
-
 }  // namespace
 
 namespace event_utils {
@@ -805,11 +800,6 @@ gfx::Rect GetWidgetRectRelativeToToplevel(GtkWidget* widget) {
 void SuppressDefaultPainting(GtkWidget* container) {
   g_signal_connect(container, "expose-event",
                    G_CALLBACK(PaintNoBackground), NULL);
-}
-
-void WrapLabelAtAllocationHack(GtkWidget* label) {
-  g_signal_connect(label, "size-allocate",
-                   G_CALLBACK(OnLabelAllocate), NULL);
 }
 
 WindowOpenDisposition DispositionForCurrentButtonPressEvent() {

@@ -242,15 +242,6 @@ gfx::Rect GetWidgetRectRelativeToToplevel(GtkWidget* widget);
 // expose events are connected.
 void SuppressDefaultPainting(GtkWidget* container);
 
-// Set the label to use a request size equal to the allocation size.  This
-// causes the label to wrap at the width of the container it is in, instead of
-// at the default width.
-// This is called a hack because the gtk docs state that it is logically
-// inconsistent for a widget to make its size request depend on its allocation.
-// It does, however, have the intended effect of wrapping the label at the
-// proper width.
-void WrapLabelAtAllocationHack(GtkWidget* label);
-
 // Get the window open disposition from the state in gtk_get_current_event().
 // This is designed to be called inside a "clicked" event handler. It is an
 // error to call it when gtk_get_current_event() won't return a GdkEventButton*.

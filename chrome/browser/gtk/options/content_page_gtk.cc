@@ -31,8 +31,33 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 
+namespace {
+
 // Background color for the status label when it's showing an error.
 static const GdkColor kSyncLabelErrorBgColor = GDK_COLOR_RGB(0xff, 0x9a, 0x9a);
+
+// Helper for WrapLabelAtAllocationHack.
+void OnLabelAllocate(GtkWidget* label, GtkAllocation* allocation) {
+  gtk_widget_set_size_request(label, allocation->width, -1);
+
+  // Disconnect ourselves.  Repeatedly resizing based on allocation causes
+  // the dialog to become unshrinkable.
+  g_signal_handlers_disconnect_by_func(label, (void*)OnLabelAllocate,
+                                       NULL);
+}
+
+// Set the label to use a request size equal to its initial allocation
+// size.  This causes the label to wrap at the width of the container
+// it is in, instead of at the default width.  This is called a hack
+// because GTK doesn't really work when a widget to make its size
+// request depend on its allocation.  It does, however, have the
+// intended effect of wrapping the label at the proper width.
+void WrapLabelAtAllocationHack(GtkWidget* label) {
+  g_signal_connect(label, "size-allocate",
+                   G_CALLBACK(OnLabelAllocate), NULL);
+}
+
+}  // anonymous namespace
 
 ///////////////////////////////////////////////////////////////////////////////
 // ContentPageGtk, public:
@@ -328,7 +353,7 @@ GtkWidget* ContentPageGtk::InitSyncGroup() {
   // Sync label.
   sync_status_label_background_ = gtk_event_box_new();
   sync_status_label_ = gtk_label_new("");
-  gtk_util::WrapLabelAtAllocationHack(sync_status_label_);
+  WrapLabelAtAllocationHack(sync_status_label_);
 
   gtk_label_set_line_wrap(GTK_LABEL(sync_status_label_), TRUE);
   gtk_misc_set_alignment(GTK_MISC(sync_status_label_), 0, 0);
