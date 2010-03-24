@@ -38,7 +38,7 @@ deps = {
     "http://protobuf.googlecode.com/svn/trunk@305",
 
   "src/v8":
-    "http://v8.googlecode.com/svn/trunk@4209",
+    "http://v8.googlecode.com/svn/trunk@4244",
 
   "src/native_client":
     "http://nativeclient.googlecode.com/svn/trunk/src/native_client@" +
