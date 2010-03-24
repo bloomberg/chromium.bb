@@ -197,8 +197,8 @@ class NavigationBar : public views::View,
                                     browser->profile(),
                                     browser->command_updater(), false, this);
     autocomplete_view->Init();
-    gtk_widget_show_all(autocomplete_view->widget());
-    gtk_widget_hide(autocomplete_view->widget());
+    gtk_widget_show_all(autocomplete_view->GetNativeView());
+    gtk_widget_hide(autocomplete_view->GetNativeView());
     location_entry_.reset(autocomplete_view);
 #else
     NOTIMPLEMENTED();

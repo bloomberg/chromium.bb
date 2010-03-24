@@ -177,30 +177,23 @@ class LocationBarViewMac : public AutocompleteEditController,
   // current URL's scheme is https.
   class SecurityImageView : public LocationBarImageView {
    public:
-    enum Image {
-      LOCK = 0,
-      WARNING
-    };
-
     SecurityImageView(LocationBarViewMac* owner,
                       Profile* profile,
                       ToolbarModel* model);
     virtual ~SecurityImageView();
 
     // Sets the image to the appropriate icon.
-    void SetImageShown(Image image);
+    void SetImageShown(int resource_id);
 
     // Shows the page info dialog.
     virtual void OnMousePressed(NSRect bounds);
 
    private:
-    // The lock icon shown when using HTTPS. Loaded lazily, the first time it's
-    // needed.
-    scoped_nsobject<NSImage> lock_icon_;
-
-    // The warning icon shown when HTTPS is broken. Loaded lazily, the first
-    // time it's needed.
-    scoped_nsobject<NSImage> warning_icon_;
+    // Icons for various states.  Lazily loaded the first time they're needed.
+    scoped_nsobject<NSImage> ev_secure_icon_;
+    scoped_nsobject<NSImage> secure_icon_;
+    scoped_nsobject<NSImage> security_warning_icon_;
+    scoped_nsobject<NSImage> security_error_icon_;
 
     // The location bar view that owns us.
     LocationBarViewMac* owner_;
@@ -382,7 +375,7 @@ class LocationBarViewMac : public AutocompleteEditController,
 
  private:
   // Sets the SSL icon we should be showing.
-  void SetSecurityIcon(ToolbarModel::Icon icon);
+  void SetSecurityIcon(int resource_id);
 
   // Sets the label for the SSL icon.
   void SetSecurityIconLabel();

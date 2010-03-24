@@ -476,7 +476,7 @@ class AutocompleteEditViewWin
 
   // Security UI-related data.
   COLORREF background_color_;
-  ToolbarModel::SecurityLevel scheme_security_level_;
+  ToolbarModel::SecurityLevel security_level_;
 
   // This interface is useful for accessing the CRichEditCtrl at a low level.
   mutable ITextDocument* text_object_model_;

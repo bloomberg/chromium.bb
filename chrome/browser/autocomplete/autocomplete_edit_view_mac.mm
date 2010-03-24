@@ -61,15 +61,6 @@ const NSColor* ColorWithRGBBytes(int rr, int gg, int bb) {
                                     blue:static_cast<float>(bb)/255.0
                                    alpha:1.0];
 }
-const NSColor* SecureBackgroundColor() {
-  return ColorWithRGBBytes(255, 245, 195);  // Yellow
-}
-const NSColor* NormalBackgroundColor() {
-  return [NSColor controlBackgroundColor];
-}
-const NSColor* InsecureBackgroundColor() {
-  return [NSColor controlBackgroundColor];
-}
 
 const NSColor* HostTextColor() {
   return [NSColor blackColor];
@@ -77,11 +68,14 @@ const NSColor* HostTextColor() {
 const NSColor* BaseTextColor() {
   return [NSColor darkGrayColor];
 }
-const NSColor* SecureSchemeColor() {
-  return ColorWithRGBBytes(0x00, 0x96, 0x14);
+const NSColor* EVSecureSchemeColor() {
+  return ColorWithRGBBytes(0x07, 0x95, 0x00);
 }
-const NSColor* InsecureSchemeColor() {
-  return ColorWithRGBBytes(0xc8, 0x00, 0x00);
+const NSColor* SecureSchemeColor() {
+  return ColorWithRGBBytes(0x00, 0x0e, 0x95);
+}
+const NSColor* SecurityErrorSchemeColor() {
+  return ColorWithRGBBytes(0xa2, 0x00, 0x00);
 }
 
 // Store's the model and view state across tab switches.
@@ -410,32 +404,23 @@ void AutocompleteEditViewMac::SetText(const std::wstring& display_text) {
   // TODO(shess): GTK has this as a member var, figure out why.
   // [Could it be to not change if no change?  If so, I'm guessing
   // AppKit may already handle that.]
-  const ToolbarModel::SecurityLevel scheme_security_level =
-      toolbar_model_->GetSchemeSecurityLevel();
-
-  if (scheme_security_level == ToolbarModel::SECURE) {
-    [field_ setBackgroundColor:SecureBackgroundColor()];
-  } else if (scheme_security_level == ToolbarModel::NORMAL) {
-    [field_ setBackgroundColor:NormalBackgroundColor()];
-  } else if (scheme_security_level == ToolbarModel::INSECURE) {
-    [field_ setBackgroundColor:InsecureBackgroundColor()];
-  } else {
-    NOTREACHED() << "Unexpected scheme_security_level: "
-                 << scheme_security_level;
-  }
+  const ToolbarModel::SecurityLevel security_level =
+      toolbar_model_->GetSecurityLevel();
 
   // Emphasize the scheme for security UI display purposes (if necessary).
   if (!model_->user_input_in_progress() && scheme.is_nonempty() &&
-      (scheme_security_level != ToolbarModel::NORMAL)) {
+      (security_level != ToolbarModel::NONE)) {
     NSColor* color;
-    if (scheme_security_level == ToolbarModel::SECURE) {
-      color = SecureSchemeColor();
-    } else {
-      color = InsecureSchemeColor();
+    if (security_level == ToolbarModel::EV_SECURE) {
+      color = EVSecureSchemeColor();
+    } else if (security_level == ToolbarModel::SECURITY_ERROR) {
+      color = SecurityErrorSchemeColor();
       // Add a strikethrough through the scheme.
       [as addAttribute:NSStrikethroughStyleAttributeName
                  value:[NSNumber numberWithInt:NSUnderlineStyleSingle]
                  range:ComponentToNSRange(scheme)];
+    } else {
+      color = SecureSchemeColor();
     }
     [as addAttribute:NSForegroundColorAttributeName value:color
                range:ComponentToNSRange(scheme)];

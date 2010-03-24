@@ -76,7 +76,8 @@ static const int kInnerPadding = 4;
 // TODO(deanm): Eventually this should be painted with the background png
 // image, but for now we get pretty close by just drawing a solid border.
 const GdkColor kBorderColor = GDK_COLOR_RGB(0xbe, 0xc8, 0xd4);
-const GdkColor kEvTextColor = GDK_COLOR_RGB(0x00, 0x96, 0x14);  // Green.
+const GdkColor kEvSecureTextColor = GDK_COLOR_RGB(0x07, 0x95, 0x00);
+const GdkColor kSecurityErrorTextColor = GDK_COLOR_RGB(0xa2, 0x00, 0x00);
 const GdkColor kKeywordBackgroundColor = GDK_COLOR_RGB(0xf0, 0xf4, 0xfa);
 const GdkColor kKeywordBorderColor = GDK_COLOR_RGB(0xcb, 0xde, 0xf7);
 
@@ -131,19 +132,18 @@ std::wstring CalculateMinString(const std::wstring& description) {
 // LocationBarViewGtk
 
 // static
-const GdkColor LocationBarViewGtk::kBackgroundColorByLevel[3] = {
-  GDK_COLOR_RGB(255, 245, 195),  // SecurityLevel SECURE: Yellow.
-  GDK_COLOR_RGB(255, 255, 255),  // SecurityLevel NORMAL: White.
-  GDK_COLOR_RGB(255, 255, 255),  // SecurityLevel INSECURE: White.
-};
+const GdkColor LocationBarViewGtk::kBackgroundColor =
+    GDK_COLOR_RGB(255, 255, 255);
 
 LocationBarViewGtk::LocationBarViewGtk(
     const BubblePositioner* bubble_positioner,
     Browser* browser)
     : security_icon_event_box_(NULL),
-      security_lock_icon_image_(NULL),
+      ev_secure_icon_image_(NULL),
+      secure_icon_image_(NULL),
       security_warning_icon_image_(NULL),
-      info_label_(NULL),
+      security_error_icon_image_(NULL),
+      security_info_label_(NULL),
       tab_to_search_box_(NULL),
       tab_to_search_full_label_(NULL),
       tab_to_search_partial_label_(NULL),
@@ -194,21 +194,25 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   gtk_widget_set_redraw_on_allocate(hbox_.get(), TRUE);
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  security_lock_icon_image_ = gtk_image_new_from_pixbuf(
-      rb.GetPixbufNamed(IDR_LOCK));
-  gtk_widget_set_name(security_lock_icon_image_, "chrome-security-lock-icon");
-  gtk_widget_hide(GTK_WIDGET(security_lock_icon_image_));
-  security_warning_icon_image_ = gtk_image_new();
+  ev_secure_icon_image_ =
+      gtk_image_new_from_pixbuf(rb.GetPixbufNamed(IDR_EV_SECURE));
+  gtk_widget_set_name(ev_secure_icon_image_, "chrome-ev-secure-icon");
+  secure_icon_image_ = gtk_image_new_from_pixbuf(rb.GetPixbufNamed(IDR_SECURE));
+  gtk_widget_set_name(secure_icon_image_, "chrome-secure-icon");
+  security_warning_icon_image_ =
+      gtk_image_new_from_pixbuf(rb.GetPixbufNamed(IDR_SECURITY_WARNING));
   gtk_widget_set_name(security_warning_icon_image_,
                       "chrome-security-warning-icon");
-  gtk_widget_hide(GTK_WIDGET(security_warning_icon_image_));
+  security_error_icon_image_ =
+      gtk_image_new_from_pixbuf(rb.GetPixbufNamed(IDR_SECURITY_ERROR));
+  gtk_widget_set_name(security_error_icon_image_,
+                      "chrome-security-error-icon");
 
-  info_label_ = gtk_label_new(NULL);
-  gtk_widget_modify_base(info_label_, GTK_STATE_NORMAL,
-      &LocationBarViewGtk::kBackgroundColorByLevel[0]);
-  gtk_widget_hide(GTK_WIDGET(info_label_));
-  gtk_widget_set_name(info_label_,
-                      "chrome-location-bar-info-label");
+  security_info_label_ = gtk_label_new(NULL);
+  gtk_widget_modify_base(security_info_label_, GTK_STATE_NORMAL,
+                         &LocationBarViewGtk::kBackgroundColor);
+  gtk_widget_set_name(security_info_label_,
+                      "chrome-location-bar-security-info-label");
 
   g_signal_connect(hbox_.get(), "expose-event",
                    G_CALLBACK(&HandleExposeThunk), this);
@@ -269,7 +273,7 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
                               kBottomMargin + kBorderThickness,
                               0, 0);
   }
-  gtk_container_add(GTK_CONTAINER(align), location_entry_->widget());
+  gtk_container_add(GTK_CONTAINER(align), location_entry_->GetNativeView());
   gtk_box_pack_start(GTK_BOX(entry_box), align, TRUE, TRUE, 0);
 
   // Tab to search notification (the hint on the right hand side).
@@ -303,15 +307,19 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   gtk_widget_set_sensitive(type_to_search_hint_, FALSE);
   gtk_box_pack_end(GTK_BOX(entry_box), type_to_search_hint_, FALSE, FALSE, 0);
 
-  // Pack info_label_ and security icons in hbox.  We hide/show them
+  // Pack security_info_label_ and security icons in hbox.  We hide/show them
   // by SetSecurityIcon() and SetInfoText().
-  gtk_box_pack_end(GTK_BOX(hbox_.get()), info_label_, FALSE, FALSE, 0);
+  gtk_box_pack_end(GTK_BOX(hbox_.get()), security_info_label_, FALSE, FALSE, 0);
 
   GtkWidget* security_icon_box = gtk_hbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(security_icon_box),
-                     security_lock_icon_image_, FALSE, FALSE, 0);
+                     ev_secure_icon_image_, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(security_icon_box),
+                     secure_icon_image_, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(security_icon_box),
                      security_warning_icon_image_, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(security_icon_box),
+                     security_error_icon_image_, FALSE, FALSE, 0);
 
   // GtkImage is a "no window" widget and requires a GtkEventBox to receive
   // events.
@@ -352,7 +360,7 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   // Until we switch to vector graphics, force the font size of labels.
   gtk_util::ForceFontSizePixels(type_to_search_hint_,
       browser_defaults::kAutocompleteEditFontPixelSize);
-  gtk_util::ForceFontSizePixels(info_label_,
+  gtk_util::ForceFontSizePixels(security_info_label_,
       browser_defaults::kAutocompleteEditFontPixelSize);
   gtk_util::ForceFontSizePixels(tab_to_search_full_label_,
       browser_defaults::kAutocompleteEditFontPixelSize);
@@ -410,7 +418,7 @@ GtkWidget* LocationBarViewGtk::GetPageActionWidget(
 }
 
 void LocationBarViewGtk::Update(const TabContents* contents) {
-  SetSecurityIcon(toolbar_model_->GetIcon());
+  SetSecurityIcon(toolbar_model_->GetSecurityIcon());
   UpdateContentSettingsIcons();
   UpdatePageActions();
   SetInfoText();
@@ -691,10 +699,6 @@ void LocationBarViewGtk::Observe(NotificationType type,
     gtk_util::SetLabelColor(tab_to_search_hint_leading_label_, NULL);
     gtk_util::SetLabelColor(tab_to_search_hint_trailing_label_, NULL);
     gtk_util::SetLabelColor(type_to_search_hint_, NULL);
-
-    gtk_image_set_from_stock(GTK_IMAGE(security_warning_icon_image_),
-                             GTK_STOCK_DIALOG_WARNING,
-                             GTK_ICON_SIZE_SMALL_TOOLBAR);
   } else {
     gtk_widget_modify_bg(tab_to_search_box_, GTK_STATE_NORMAL,
                          &kKeywordBackgroundColor);
@@ -708,10 +712,6 @@ void LocationBarViewGtk::Observe(NotificationType type,
     gtk_util::SetLabelColor(tab_to_search_hint_trailing_label_,
                             &kHintTextColor);
     gtk_util::SetLabelColor(type_to_search_hint_, &kHintTextColor);
-
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    gtk_image_set_from_pixbuf(GTK_IMAGE(security_warning_icon_image_),
-                              rb.GetPixbufNamed(IDR_WARNING));
   }
 }
 
@@ -745,8 +745,7 @@ gboolean LocationBarViewGtk::HandleExpose(GtkWidget* widget,
                     alloc_rect->width,
                     alloc_rect->height - kTopMargin -
                     kBottomMargin - 2 * kBorderThickness);
-    gdk_cairo_set_source_color(cr, const_cast<GdkColor*>(
-        &kBackgroundColorByLevel[toolbar_model_->GetSchemeSecurityLevel()]));
+    gdk_cairo_set_source_color(cr, const_cast<GdkColor*>(&kBackgroundColor));
     cairo_fill(cr);
 
     cairo_destroy(cr);
@@ -755,21 +754,28 @@ gboolean LocationBarViewGtk::HandleExpose(GtkWidget* widget,
   return FALSE;  // Continue propagating the expose.
 }
 
-void LocationBarViewGtk::SetSecurityIcon(ToolbarModel::Icon icon) {
-  gtk_widget_hide(GTK_WIDGET(security_lock_icon_image_));
+void LocationBarViewGtk::SetSecurityIcon(int resource_id) {
+  gtk_widget_hide(GTK_WIDGET(ev_secure_icon_image_));
+  gtk_widget_hide(GTK_WIDGET(secure_icon_image_));
   gtk_widget_hide(GTK_WIDGET(security_warning_icon_image_));
-  if (icon != ToolbarModel::NO_ICON)
-    gtk_widget_show(GTK_WIDGET(security_icon_event_box_));
-  else
+  gtk_widget_hide(GTK_WIDGET(security_error_icon_image_));
+  if (resource_id == 0) {
     gtk_widget_hide(GTK_WIDGET(security_icon_event_box_));
-  switch (icon) {
-    case ToolbarModel::LOCK_ICON:
-      gtk_widget_show(GTK_WIDGET(security_lock_icon_image_));
+    return;
+  }
+  gtk_widget_show(GTK_WIDGET(security_icon_event_box_));
+  switch (resource_id) {
+    case IDR_EV_SECURE:
+      gtk_widget_show(GTK_WIDGET(ev_secure_icon_image_));
       break;
-    case ToolbarModel::WARNING_ICON:
+    case IDR_SECURE:
+      gtk_widget_show(GTK_WIDGET(secure_icon_image_));
+      break;
+    case IDR_SECURITY_WARNING:
       gtk_widget_show(GTK_WIDGET(security_warning_icon_image_));
       break;
-    case ToolbarModel::NO_ICON:
+    case IDR_SECURITY_ERROR:
+      gtk_widget_show(GTK_WIDGET(security_error_icon_image_));
       break;
     default:
       NOTREACHED();
@@ -778,22 +784,17 @@ void LocationBarViewGtk::SetSecurityIcon(ToolbarModel::Icon icon) {
 }
 
 void LocationBarViewGtk::SetInfoText() {
-  std::wstring info_text, info_tooltip;
-  ToolbarModel::InfoTextType info_text_type =
-      toolbar_model_->GetInfoText(&info_text, &info_tooltip);
-  if (info_text_type == ToolbarModel::INFO_EV_TEXT) {
-    gtk_widget_modify_fg(GTK_WIDGET(info_label_), GTK_STATE_NORMAL,
-                         &kEvTextColor);
-    gtk_widget_show(GTK_WIDGET(info_label_));
+  std::wstring info_text = toolbar_model_->GetSecurityInfoText();
+  if (info_text.empty()) {
+    gtk_widget_hide(GTK_WIDGET(security_info_label_));
   } else {
-    DCHECK_EQ(info_text_type, ToolbarModel::INFO_NO_INFO);
-    DCHECK(info_text.empty());
-    // Clear info_text.  Should we reset the fg here?
-    gtk_widget_hide(GTK_WIDGET(info_label_));
+    gtk_widget_modify_fg(GTK_WIDGET(security_info_label_), GTK_STATE_NORMAL,
+        toolbar_model_->GetSecurityLevel() == ToolbarModel::EV_SECURE ?
+            &kEvSecureTextColor : &kSecurityErrorTextColor);
+    gtk_widget_show(GTK_WIDGET(security_info_label_));
   }
-  gtk_label_set_text(GTK_LABEL(info_label_), WideToUTF8(info_text).c_str());
-  gtk_widget_set_tooltip_text(GTK_WIDGET(info_label_),
-                              WideToUTF8(info_tooltip).c_str());
+  gtk_label_set_text(GTK_LABEL(security_info_label_),
+                     WideToUTF8(info_text).c_str());
 }
 
 void LocationBarViewGtk::SetKeywordLabel(const std::wstring& keyword) {

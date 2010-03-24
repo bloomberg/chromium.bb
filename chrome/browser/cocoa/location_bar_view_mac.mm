@@ -62,11 +62,13 @@ std::wstring GetKeywordName(Profile* profile, const std::wstring& keyword) {
   return std::wstring();
 }
 
-// Values for the green text color displayed for EV certificates, based
-// on the values for kEvTextColor in location_bar_view_gtk.cc.
-static const CGFloat kEvTextColorRedComponent = 0.0;
-static const CGFloat kEvTextColorGreenComponent = 0.59;
-static const CGFloat kEvTextColorBlueComponent = 0.08;
+// Values for the label colors for different security states.
+static const CGFloat kEVSecureTextColorRedComponent = 0.03;
+static const CGFloat kEVSecureTextColorGreenComponent = 0.58;
+static const CGFloat kEVSecureTextColorBlueComponent = 0.0;
+static const CGFloat kSecurityErrorTextColorRedComponent = 0.63;
+static const CGFloat kSecurityErrorTextColorGreenComponent = 0.0;
+static const CGFloat kSecurityErrorTextColorBlueComponent = 0.0;
 
 // Build a short string to use in keyword-search when the field isn't
 // very big.
@@ -205,7 +207,7 @@ void LocationBarViewMac::SaveStateToContents(TabContents* contents) {
 
 void LocationBarViewMac::Update(const TabContents* contents,
                                 bool should_restore_state) {
-  SetSecurityIcon(toolbar_model_->GetIcon());
+  SetSecurityIcon(toolbar_model_->GetSecurityIcon());
   page_action_views_.RefreshViews();
   RefreshContentSettingsViews();
   // AutocompleteEditView restores state if the tab is non-NULL.
@@ -455,41 +457,36 @@ NSImage* LocationBarViewMac::GetTabButtonImage() {
 }
 
 void LocationBarViewMac::SetSecurityIconLabel() {
-  std::wstring info_text;
-  std::wstring info_tooltip;
-  ToolbarModel::InfoTextType info_text_type =
-      toolbar_model_->GetInfoText(&info_text, &info_tooltip);
-  if (info_text_type == ToolbarModel::INFO_EV_TEXT) {
-    NSString* icon_label = base::SysWideToNSString(info_text);
-    NSColor* color = [NSColor colorWithCalibratedRed:kEvTextColorRedComponent
-                                               green:kEvTextColorGreenComponent
-                                                blue:kEvTextColorBlueComponent
-                                               alpha:1.0];
-    security_image_view_.SetLabel(icon_label, [field_ font], color);
-  } else {
+  // TODO(shess): Separate from security icon and move icon to left of address.
+  std::wstring security_info_text(toolbar_model_->GetSecurityInfoText());
+  if (security_info_text.empty()) {
     security_image_view_.SetLabel(nil, nil, nil);
+  } else {
+    NSString* icon_label = base::SysWideToNSString(security_info_text);
+    NSColor* color;
+    if (toolbar_model_->GetSecurityLevel() == ToolbarModel::EV_SECURE) {
+      color = [NSColor colorWithCalibratedRed:kEVSecureTextColorRedComponent
+                                        green:kEVSecureTextColorGreenComponent
+                                         blue:kEVSecureTextColorBlueComponent
+                                        alpha:1.0];
+    } else {
+      color =
+          [NSColor colorWithCalibratedRed:kSecurityErrorTextColorRedComponent
+                                    green:kSecurityErrorTextColorGreenComponent
+                                     blue:kSecurityErrorTextColorBlueComponent
+                                    alpha:1.0];
+    }
+    security_image_view_.SetLabel(icon_label, [field_ font], color);
   }
 }
 
-void LocationBarViewMac::SetSecurityIcon(ToolbarModel::Icon icon) {
-  switch (icon) {
-    case ToolbarModel::LOCK_ICON:
-      security_image_view_.SetImageShown(SecurityImageView::LOCK);
-      security_image_view_.SetVisible(true);
-      SetSecurityIconLabel();
-      break;
-    case ToolbarModel::WARNING_ICON:
-      security_image_view_.SetImageShown(SecurityImageView::WARNING);
-      security_image_view_.SetVisible(true);
-      SetSecurityIconLabel();
-      break;
-    case ToolbarModel::NO_ICON:
-      security_image_view_.SetVisible(false);
-      break;
-    default:
-      NOTREACHED();
-      security_image_view_.SetVisible(false);
-      break;
+void LocationBarViewMac::SetSecurityIcon(int resource_id) {
+  if (resource_id == 0) {
+    security_image_view_.SetVisible(false);
+  } else {
+    security_image_view_.SetImageShown(resource_id);
+    security_image_view_.SetVisible(true);
+    SetSecurityIconLabel();
   }
   [field_ resetFieldEditorFrameIfNeeded];
 }
@@ -569,34 +566,30 @@ LocationBarViewMac::SecurityImageView::SecurityImageView(
     LocationBarViewMac* owner,
     Profile* profile,
     ToolbarModel* model)
-    : lock_icon_(nil),
-      warning_icon_(nil),
+    : ev_secure_icon_(nil),
+      secure_icon_(nil),
+      security_warning_icon_(nil),
+      security_error_icon_(nil),
       owner_(owner),
       profile_(profile),
       model_(model) {}
 
 LocationBarViewMac::SecurityImageView::~SecurityImageView() {}
 
-void LocationBarViewMac::SecurityImageView::SetImageShown(Image image) {
-  switch (image) {
-    case LOCK:
-      if (!lock_icon_.get()) {
-        ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-        lock_icon_.reset([rb.GetNSImageNamed(IDR_LOCK) retain]);
-      }
-      SetImage(lock_icon_);
-      break;
-    case WARNING:
-      if (!warning_icon_.get()) {
-        ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-        warning_icon_.reset([rb.GetNSImageNamed(IDR_WARNING) retain]);
-      }
-      SetImage(warning_icon_);
-      break;
-    default:
-      NOTREACHED();
-      break;
+void LocationBarViewMac::SecurityImageView::SetImageShown(int resource_id) {
+  scoped_nsobject<NSImage>* icon;
+  switch (resource_id) {
+    case IDR_EV_SECURE:        icon = &ev_secure_icon_; break;
+    case IDR_SECURE:           icon = &secure_icon_; break;
+    case IDR_SECURITY_WARNING: icon = &security_warning_icon_; break;
+    case IDR_SECURITY_ERROR:   icon = &security_error_icon_; break;
+    default:                   NOTREACHED(); return;
   }
+  if (!icon->get()) {
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    icon->reset([rb.GetNSImageNamed(resource_id) retain]);
+  }
+  SetImage(*icon);
 }
 
 void LocationBarViewMac::SecurityImageView::OnMousePressed(NSRect bounds) {

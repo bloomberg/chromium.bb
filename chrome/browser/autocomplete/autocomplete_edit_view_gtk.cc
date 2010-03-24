@@ -43,10 +43,11 @@
 namespace {
 
 const char kTextBaseColor[] = "#808080";
-const char kSecureSchemeColor[] = "#009614";
-const char kInsecureSchemeColor[] = "#c80000";
+const char kEVSecureSchemeColor[] = "#079500";
+const char kSecureSchemeColor[] = "#000e95";
+const char kSecurityErrorSchemeColor[] = "#a20000";
 
-const double kStrikethroughStrokeRed = 210.0 / 256.0;
+const double kStrikethroughStrokeRed = 162.0 / 256.0;
 const double kStrikethroughStrokeWidth = 2.0;
 
 size_t GetUTF8Offset(const std::wstring& wide_text, size_t wide_text_offset) {
@@ -118,8 +119,9 @@ AutocompleteEditViewGtk::AutocompleteEditViewGtk(
       tag_table_(NULL),
       text_buffer_(NULL),
       faded_text_tag_(NULL),
+      ev_secure_scheme_tag_(NULL),
       secure_scheme_tag_(NULL),
-      insecure_scheme_tag_(NULL),
+      security_error_scheme_tag_(NULL),
       model_(new AutocompleteEditModel(this, controller, profile)),
       popup_view_(AutocompletePopupView::CreatePopupView(gfx::Font(), this,
                                                          model_.get(),
@@ -129,7 +131,7 @@ AutocompleteEditViewGtk::AutocompleteEditViewGtk(
       toolbar_model_(toolbar_model),
       command_updater_(command_updater),
       popup_window_mode_(popup_window_mode),
-      scheme_security_level_(ToolbarModel::NORMAL),
+      security_level_(ToolbarModel::NONE),
       mark_set_handler_id_(0),
 #if defined(OS_CHROMEOS)
       button_1_pressed_(false),
@@ -210,10 +212,12 @@ void AutocompleteEditViewGtk::Init() {
 
   faded_text_tag_ = gtk_text_buffer_create_tag(text_buffer_,
       NULL, "foreground", kTextBaseColor, NULL);
+  ev_secure_scheme_tag_ = gtk_text_buffer_create_tag(text_buffer_,
+      NULL, "foreground", kEVSecureSchemeColor, NULL);
   secure_scheme_tag_ = gtk_text_buffer_create_tag(text_buffer_,
       NULL, "foreground", kSecureSchemeColor, NULL);
-  insecure_scheme_tag_ = gtk_text_buffer_create_tag(text_buffer_,
-      NULL, "foreground", kInsecureSchemeColor, NULL);
+  security_error_scheme_tag_ = gtk_text_buffer_create_tag(text_buffer_,
+      NULL, "foreground", kSecurityErrorSchemeColor, NULL);
   normal_text_tag_ = gtk_text_buffer_create_tag(text_buffer_,
       NULL, "foreground", "#000000", NULL);
 
@@ -281,7 +285,7 @@ void AutocompleteEditViewGtk::Init() {
   SetBaseColor();
 #endif
 
-  ViewIDUtil::SetID(widget(), VIEW_ID_AUTOCOMPLETE);
+  ViewIDUtil::SetID(GetNativeView(), VIEW_ID_AUTOCOMPLETE);
 }
 
 void AutocompleteEditViewGtk::SetFocus() {
@@ -331,15 +335,9 @@ void AutocompleteEditViewGtk::Update(const TabContents* contents) {
       model_->UpdatePermanentText(toolbar_model_->GetText());
 
   ToolbarModel::SecurityLevel security_level =
-        toolbar_model_->GetSchemeSecurityLevel();
-  bool changed_security_level = (security_level != scheme_security_level_);
-  scheme_security_level_ = security_level;
-
-  // TODO(deanm): This doesn't exactly match Windows.  There there is a member
-  // background_color_.  I think we can get away with just the level though.
-  if (changed_security_level) {
-    SetBaseColor();
-  }
+        toolbar_model_->GetSecurityLevel();
+  bool changed_security_level = (security_level != security_level_);
+  security_level_ = security_level;
 
   if (contents) {
     selected_text_.clear();
@@ -579,10 +577,7 @@ void AutocompleteEditViewGtk::SetBaseColor() {
   bool use_gtk = theme_provider_->UseGtkTheme();
 #endif
 
-  // If we're on a secure connection, ignore what the theme wants us to do
-  // and use a yellow background.
-  bool is_secure = (scheme_security_level_ == ToolbarModel::SECURE);
-  if (use_gtk && !is_secure) {
+  if (use_gtk) {
     gtk_widget_modify_base(text_view_, GTK_STATE_NORMAL, NULL);
 
     // Grab the text colors out of the style and set our tags to use them.
@@ -593,20 +588,20 @@ void AutocompleteEditViewGtk::SetBaseColor() {
     GdkColor average_color = gtk_util::AverageColors(
         style->text[GTK_STATE_NORMAL], style->base[GTK_STATE_NORMAL]);
 
-    g_object_set(faded_text_tag_, "foreground-gdk",
-                 &average_color, NULL);
+    g_object_set(faded_text_tag_, "foreground-gdk", &average_color, NULL);
     g_object_set(normal_text_tag_, "foreground-gdk",
                  &style->text[GTK_STATE_NORMAL], NULL);
   } else {
+    const GdkColor* background_color_ptr;
 #if defined(TOOLKIT_VIEWS)
     const GdkColor background_color = gfx::SkColorToGdkColor(
-        LocationBarView::GetColor(is_secure, LocationBarView::BACKGROUND));
-    gtk_widget_modify_base(text_view_, GTK_STATE_NORMAL,
-        &background_color);
+        LocationBarView::GetColor(ToolbarModel::NONE,
+                                  LocationBarView::BACKGROUND));
+    background_color_ptr = &background_color;
 #else
-    gtk_widget_modify_base(text_view_, GTK_STATE_NORMAL,
-        &LocationBarViewGtk::kBackgroundColorByLevel[scheme_security_level_]);
+    background_color_ptr = &LocationBarViewGtk::kBackgroundColor;
 #endif
+    gtk_widget_modify_base(text_view_, GTK_STATE_NORMAL, background_color_ptr);
 
     g_object_set(faded_text_tag_, "foreground", kTextBaseColor, NULL);
     g_object_set(normal_text_tag_, "foreground", "#000000", NULL);
@@ -1342,22 +1337,23 @@ void AutocompleteEditViewGtk::EmphasizeURLComponents() {
   strikethrough_ = CharRange();
   // Emphasize the scheme for security UI display purposes (if necessary).
   if (!model_->user_input_in_progress() && scheme.is_nonempty() &&
-      (scheme_security_level_ != ToolbarModel::NORMAL)) {
+      (security_level_ != ToolbarModel::NONE)) {
     CharRange scheme_range = CharRange(GetUTF8Offset(text, scheme.begin),
                                        GetUTF8Offset(text, scheme.end()));
     ItersFromCharRange(scheme_range, &start, &end);
 
-    if (scheme_security_level_ == ToolbarModel::SECURE) {
-      gtk_text_buffer_apply_tag(text_buffer_, secure_scheme_tag_,
-                                &start, &end);
-    } else {
+    if (security_level_ == ToolbarModel::SECURITY_ERROR) {
       strikethrough_ = scheme_range;
       // When we draw the strikethrough, we don't want to include the ':' at the
       // end of the scheme.
       strikethrough_.cp_max--;
 
-      gtk_text_buffer_apply_tag(text_buffer_, insecure_scheme_tag_,
+      gtk_text_buffer_apply_tag(text_buffer_, security_error_scheme_tag_,
                                 &start, &end);
+    } else {
+      gtk_text_buffer_apply_tag(text_buffer_,
+          (security_level_ == ToolbarModel::EV_SECURE) ?
+              ev_secure_scheme_tag_ : secure_scheme_tag_, &start, &end);
     }
   }
 }

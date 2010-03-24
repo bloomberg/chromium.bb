@@ -120,9 +120,8 @@ class LocationBarViewGtk : public AutocompleteEditController,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // Translation between a security level and the background color.  Both the
-  // location bar and edit have to manage and match the background color.
-  static const GdkColor kBackgroundColorByLevel[3];
+  // Edit background color.
+  static const GdkColor kBackgroundColor;
 
  private:
   class ContentSettingImageViewGtk : public InfoBubbleGtkDelegate {
@@ -276,7 +275,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
                                         LocationBarViewGtk* location_bar);
 
   // Set the SSL icon we should be showing.
-  void SetSecurityIcon(ToolbarModel::Icon icon);
+  void SetSecurityIcon(int resource_id);
 
   // Sets the text that should be displayed in the info label and its associated
   // tooltip text.  Call with an empty string if the info label should be
@@ -308,12 +307,13 @@ class LocationBarViewGtk : public AutocompleteEditController,
   // The outermost widget we want to be hosted.
   OwnedWidgetGtk hbox_;
 
-  // SSL icons.
+  // SSL state.
   GtkWidget* security_icon_event_box_;
-  GtkWidget* security_lock_icon_image_;
+  GtkWidget* ev_secure_icon_image_;
+  GtkWidget* secure_icon_image_;
   GtkWidget* security_warning_icon_image_;
-  // Toolbar info text (EV cert info).
-  GtkWidget* info_label_;
+  GtkWidget* security_error_icon_image_;
+  GtkWidget* security_info_label_;
 
   // Content setting icons.
   OwnedWidgetGtk content_setting_hbox_;

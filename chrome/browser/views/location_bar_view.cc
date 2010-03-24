@@ -57,10 +57,6 @@ static const SkBitmap* kBackground = NULL;
 
 static const SkBitmap* kPopupBackground = NULL;
 
-// The delay the mouse has to be hovering over the lock/warning icon before the
-// info bubble is shown.
-static const int kInfoBubbleHoverDelayMs = 500;
-
 // The tab key image.
 static const SkBitmap* kTabButtonBitmap = NULL;
 
@@ -139,11 +135,11 @@ LocationBarView::LocationBarView(Profile* profile,
       model_(model),
       delegate_(delegate),
       disposition_(CURRENT_TAB),
+      security_image_view_(this),
       location_entry_view_(NULL),
       selected_keyword_view_(profile),
       keyword_hint_view_(profile),
       type_to_search_view_(l10n_util::GetString(IDS_OMNIBOX_EMPTY_TEXT)),
-      security_image_view_(this, profile, model, bubble_positioner),
       popup_window_mode_(popup_window_mode),
       first_run_bubble_(this),
       bubble_positioner_(bubble_positioner) {
@@ -170,46 +166,39 @@ void LocationBarView::Init() {
     font_ = font_.DeriveFont(3);
   }
 
+  AddChildView(&security_image_view_);
+  security_image_view_.SetVisible(false);
+  security_image_view_.set_parent_owned(false);
+
   // URL edit field.
   // View container for URL edit field.
 #if defined(OS_WIN)
-  views::Widget* widget = GetWidget();
   location_entry_.reset(new AutocompleteEditViewWin(font_, this, model_, this,
-                                                    widget->GetNativeView(),
-                                                    profile_, command_updater_,
-                                                    popup_window_mode_,
-                                                    bubble_positioner_));
+      GetWidget()->GetNativeView(), profile_, command_updater_,
+      popup_window_mode_, bubble_positioner_));
 #else
   location_entry_.reset(new AutocompleteEditViewGtk(this, model_, profile_,
-                                                    command_updater_,
-                                                    popup_window_mode_,
-                                                    bubble_positioner_));
+      command_updater_, popup_window_mode_, bubble_positioner_));
   location_entry_->Init();
   // Make all the children of the widget visible. NOTE: this won't display
   // anything, it just toggles the visible flag.
-  gtk_widget_show_all(location_entry_->widget());
+  gtk_widget_show_all(location_entry_->GetNativeView());
   // Hide the widget. NativeViewHostGtk will make it visible again as
   // necessary.
-  gtk_widget_hide(location_entry_->widget());
+  gtk_widget_hide(location_entry_->GetNativeView());
 #endif
   location_entry_view_ = new views::NativeViewHost;
   location_entry_view_->SetID(VIEW_ID_AUTOCOMPLETE);
   AddChildView(location_entry_view_);
   location_entry_view_->set_focus_view(this);
-  location_entry_view_->Attach(
-#if defined(OS_WIN)
-                               location_entry_->m_hWnd
-#else
-                               location_entry_->widget()
-#endif
-                               );  // NOLINT
+  location_entry_view_->Attach(location_entry_->GetNativeView());
 
   AddChildView(&selected_keyword_view_);
   selected_keyword_view_.SetFont(font_);
   selected_keyword_view_.SetVisible(false);
   selected_keyword_view_.set_parent_owned(false);
 
-  SkColor dimmed_text = GetColor(false, DEEMPHASIZED_TEXT);
+  SkColor dimmed_text = GetColor(ToolbarModel::NONE, DEEMPHASIZED_TEXT);
 
   AddChildView(&type_to_search_view_);
   type_to_search_view_.SetVisible(false);
@@ -223,9 +212,9 @@ void LocationBarView::Init() {
   keyword_hint_view_.SetColor(dimmed_text);
   keyword_hint_view_.set_parent_owned(false);
 
-  AddChildView(&security_image_view_);
-  security_image_view_.SetVisible(false);
-  security_image_view_.set_parent_owned(false);
+  AddChildView(&security_info_label_);
+  security_info_label_.SetVisible(false);
+  security_info_label_.set_parent_owned(false);
 
   for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
     ContentSettingImageView* content_blocked_view =
@@ -235,10 +224,6 @@ void LocationBarView::Init() {
     AddChildView(content_blocked_view);
     content_blocked_view->SetVisible(false);
   }
-
-  AddChildView(&info_label_);
-  info_label_.SetVisible(false);
-  info_label_.set_parent_owned(false);
 
   // Notify us when any ancestor is resized.  In this case we want to tell the
   // AutocompleteEditView to close its popup.
@@ -256,60 +241,66 @@ bool LocationBarView::IsInitialized() const {
 }
 
 // static
-SkColor LocationBarView::GetColor(bool is_secure, ColorKind kind) {
-  enum SecurityState {
-    NOT_SECURE = 0,
-    SECURE,
-    NUM_STATES
-  };
-
-  static bool initialized = false;
-  static SkColor colors[NUM_STATES][NUM_KINDS];
-  if (!initialized) {
+SkColor LocationBarView::GetColor(ToolbarModel::SecurityLevel security_level,
+                                  ColorKind kind) {
+  switch (kind) {
 #if defined(OS_WIN)
-    colors[NOT_SECURE][BACKGROUND] = color_utils::GetSysSkColor(COLOR_WINDOW);
-    colors[NOT_SECURE][TEXT] = color_utils::GetSysSkColor(COLOR_WINDOWTEXT);
-    colors[NOT_SECURE][SELECTED_TEXT] =
-        color_utils::GetSysSkColor(COLOR_HIGHLIGHTTEXT);
+    case BACKGROUND:    return color_utils::GetSysSkColor(COLOR_WINDOW);
+    case TEXT:          return color_utils::GetSysSkColor(COLOR_WINDOWTEXT);
+    case SELECTED_TEXT: return color_utils::GetSysSkColor(COLOR_HIGHLIGHTTEXT);
 #else
     // TODO(beng): source from theme provider.
-    colors[NOT_SECURE][BACKGROUND] = SK_ColorWHITE;
-    colors[NOT_SECURE][TEXT] = SK_ColorBLACK;
-    colors[NOT_SECURE][SELECTED_TEXT] = SK_ColorWHITE;
+    case BACKGROUND:    return SK_ColorWHITE;
+    case TEXT:          return SK_ColorBLACK;
+    case SELECTED_TEXT: return SK_ColorWHITE;
 #endif
-    colors[SECURE][BACKGROUND] = SkColorSetRGB(255, 245, 195);
-    colors[SECURE][TEXT] = SK_ColorBLACK;
-    colors[SECURE][SELECTED_TEXT] = 0;  // Unused
-    colors[NOT_SECURE][DEEMPHASIZED_TEXT] =
-        color_utils::AlphaBlend(colors[NOT_SECURE][TEXT],
-                                colors[NOT_SECURE][BACKGROUND], 128);
-    colors[SECURE][DEEMPHASIZED_TEXT] =
-        color_utils::AlphaBlend(colors[SECURE][TEXT],
-                                colors[SECURE][BACKGROUND], 128);
-    colors[NOT_SECURE][SECURITY_TEXT] = color_utils::GetReadableColor(
-        SkColorSetRGB(200, 0, 0), colors[NOT_SECURE][BACKGROUND]);
-    colors[SECURE][SECURITY_TEXT] = SkColorSetRGB(0, 150, 20);
-    colors[NOT_SECURE][SECURITY_INFO_BUBBLE_TEXT] =
-        colors[NOT_SECURE][SECURITY_TEXT];
-    colors[SECURE][SECURITY_INFO_BUBBLE_TEXT] = color_utils::GetReadableColor(
-        SkColorSetRGB(0, 153, 51), colors[NOT_SECURE][BACKGROUND]);
-    colors[NOT_SECURE][SCHEME_STRIKEOUT] = color_utils::GetReadableColor(
-        SkColorSetRGB(210, 0, 0), colors[NOT_SECURE][BACKGROUND]);
-    colors[SECURE][SCHEME_STRIKEOUT] = 0;  // Unused
-    initialized = true;
-  }
 
-  return colors[is_secure ? SECURE : NOT_SECURE][kind];
+    case DEEMPHASIZED_TEXT:
+      return color_utils::AlphaBlend(GetColor(security_level, TEXT),
+                                     GetColor(security_level, BACKGROUND), 128);
+
+    case SECURITY_TEXT: {
+      SkColor color;
+      switch (security_level) {
+        case ToolbarModel::EV_SECURE:
+          color = SkColorSetRGB(7, 149, 0);
+          break;
+
+        case ToolbarModel::SECURE:
+        case ToolbarModel::SECURITY_WARNING:
+          color = SkColorSetRGB(0, 14, 149);
+          break;
+
+        case ToolbarModel::SECURITY_ERROR:
+          color = SkColorSetRGB(162, 0, 0);
+          break;
+
+        default:
+          NOTREACHED();
+          return GetColor(security_level, TEXT);
+      }
+      return color_utils::GetReadableColor(color, GetColor(security_level,
+                                                           BACKGROUND));
+    }
+
+    default:
+      NOTREACHED();
+      return GetColor(security_level, TEXT);
+  }
 }
 
 void LocationBarView::Update(const TabContents* tab_for_state_restoring) {
-  SetSecurityIcon(model_->GetIcon());
+  security_image_view_.SetSecurityIcon(model_->GetSecurityIcon());
+  // The visibility of the |security_info_label_| will be set during layout.
+  std::wstring security_info_text(model_->GetSecurityInfoText());
+  security_info_label_.SetText(security_info_text);
+  if (!security_info_text.empty()) {
+    security_info_label_.SetColor(GetColor(model_->GetSecurityLevel(),
+                                           SECURITY_TEXT));
+  }
+
   RefreshContentSettingViews();
   RefreshPageActionViews();
-  std::wstring info_text, info_tooltip;
-  ToolbarModel::InfoTextType info_text_type =
-      model_->GetInfoText(&info_text, &info_tooltip);
-  SetInfoText(info_text, info_text_type, info_tooltip);
   location_entry_->Update(tab_for_state_restoring);
   Layout();
   SchedulePaint();
@@ -362,7 +353,6 @@ void LocationBarView::SetProfile(Profile* profile) {
     for (ContentSettingViews::const_iterator i(content_setting_views_.begin());
          i != content_setting_views_.end(); ++i)
       (*i)->set_profile(profile);
-    security_image_view_.set_profile(profile);
   }
 }
 
@@ -419,10 +409,9 @@ void LocationBarView::Paint(gfx::Canvas* canvas) {
 
   canvas->TileImageInt(*background, 0, 0, 0, 0, width(), height());
   int top_margin = TopMargin();
-  canvas->FillRectInt(
-      GetColor(model_->GetSchemeSecurityLevel() == ToolbarModel::SECURE,
-               BACKGROUND),
-      0, top_margin, width(), std::max(height() - top_margin - kVertMargin, 0));
+  canvas->FillRectInt(GetColor(ToolbarModel::NONE, BACKGROUND), 0,
+                      top_margin, width(),
+                      std::max(height() - top_margin - kVertMargin, 0));
 }
 
 void LocationBarView::VisibleBoundsInRootChanged() {
@@ -546,6 +535,11 @@ void LocationBarView::DoLayout(const bool force_layout) {
 
   int entry_width = width() - (kEntryPadding * 2);
 
+  gfx::Size security_image_size;
+  if (security_image_view_.IsVisible()) {
+    security_image_size = security_image_view_.GetPreferredSize();
+    entry_width -= security_image_size.width() + kInnerPadding;
+  }
   for (PageActionViews::const_iterator i(page_action_views_.begin());
        i != page_action_views_.end(); ++i) {
     if ((*i)->IsVisible())
@@ -555,16 +549,6 @@ void LocationBarView::DoLayout(const bool force_layout) {
        i != content_setting_views_.end(); ++i) {
     if ((*i)->IsVisible())
       entry_width -= (*i)->GetPreferredSize().width() + kInnerPadding;
-  }
-  gfx::Size security_image_size;
-  if (security_image_view_.IsVisible()) {
-    security_image_size = security_image_view_.GetPreferredSize();
-    entry_width -= security_image_size.width() + kInnerPadding;
-  }
-  gfx::Size info_label_size;
-  if (info_label_.IsVisible()) {
-    info_label_size = info_label_.GetPreferredSize();
-    entry_width -= (info_label_size.width() + kInnerPadding);
   }
 
 #if defined(OS_WIN)
@@ -582,7 +566,7 @@ void LocationBarView::DoLayout(const bool force_layout) {
     return;
   const int available_width = AvailableWidth(max_edit_width);
   bool needs_layout = force_layout;
-  needs_layout |= AdjustHints(available_width);
+  needs_layout |= AdjustAutocollapseViews(available_width);
 
   if (!needs_layout)
     return;
@@ -591,23 +575,8 @@ void LocationBarView::DoLayout(const bool force_layout) {
   int location_y = TopMargin();
   int location_height = std::max(height() - location_y - kVertMargin, 0);
 
-  // First set the bounds for the label that appears to the right of the
-  // security icon.
+  // Lay out items to the right of the edit field.
   int offset = width() - kEntryPadding;
-  if (info_label_.IsVisible()) {
-    offset -= info_label_size.width();
-    info_label_.SetBounds(offset, location_y,
-                          info_label_size.width(), location_height);
-    offset -= kInnerPadding;
-  }
-  if (security_image_view_.IsVisible()) {
-    offset -= security_image_size.width();
-    security_image_view_.SetBounds(offset, location_y,
-                                   security_image_size.width(),
-                                   location_height);
-    offset -= kInnerPadding;
-  }
-
   for (PageActionViews::const_iterator i(page_action_views_.begin());
        i != page_action_views_.end(); ++i) {
     if ((*i)->IsVisible()) {
@@ -630,8 +599,19 @@ void LocationBarView::DoLayout(const bool force_layout) {
       offset -= kInnerPadding;
     }
   }
-  gfx::Rect location_bounds(kEntryPadding, location_y, entry_width,
-                            location_height);
+
+  // Now lay out items to the left of the edit field.
+  offset = kEntryPadding;
+  if (security_image_view_.IsVisible()) {
+    security_image_view_.SetBounds(offset, location_y,
+                                   security_image_size.width(),
+                                   location_height);
+    offset = security_image_view_.bounds().right() + kInnerPadding;
+  }
+
+  // Now lay out the edit field and views that autocollapse to give it more
+  // room.
+  gfx::Rect location_bounds(offset, location_y, entry_width, location_height);
   if (selected_keyword_view_.IsVisible()) {
     LayoutView(true, &selected_keyword_view_, available_width,
                &location_bounds);
@@ -640,6 +620,10 @@ void LocationBarView::DoLayout(const bool force_layout) {
                &location_bounds);
   } else if (type_to_search_view_.IsVisible()) {
     LayoutView(false, &type_to_search_view_, available_width,
+               &location_bounds);
+  }
+  if (security_info_label_.IsVisible()) {
+    LayoutView(false, &security_info_label_, available_width,
                &location_bounds);
   }
 
@@ -679,7 +663,7 @@ bool LocationBarView::NeedsResize(View* view, int available_width) {
   return (view->width() != size.width());
 }
 
-bool LocationBarView::AdjustHints(int available_width) {
+bool LocationBarView::AdjustAutocollapseViews(int available_width) {
   const std::wstring keyword(location_entry_->model()->keyword());
   const bool is_keyword_hint(location_entry_->model()->is_keyword_hint());
   const bool show_selected_keyword = !keyword.empty() && !is_keyword_hint;
@@ -689,8 +673,15 @@ bool LocationBarView::AdjustHints(int available_width) {
 
   if (show_search_hint) {
     // Only show type to search if all the text fits.
-    gfx::Size view_pref = type_to_search_view_.GetPreferredSize();
-    show_search_hint = UsePref(view_pref.width(), available_width);
+    gfx::Size preferred_size = type_to_search_view_.GetPreferredSize();
+    show_search_hint = UsePref(preferred_size.width(), available_width);
+  }
+
+  bool show_security_info_label = !security_info_label_.GetText().empty();
+  if (show_security_info_label) {
+    // Only show the security info label if all the text fits.
+    gfx::Size preferred_size = security_info_label_.GetPreferredSize();
+    show_security_info_label = UsePref(preferred_size.width(), available_width);
   }
 
   // NOTE: This isn't just one big || statement as ToggleVisibility MUST be
@@ -700,6 +691,8 @@ bool LocationBarView::AdjustHints(int available_width) {
                                    &selected_keyword_view_);
   needs_layout |= ToggleVisibility(show_keyword_hint, &keyword_hint_view_);
   needs_layout |= ToggleVisibility(show_search_hint, &type_to_search_view_);
+  needs_layout |= ToggleVisibility(show_security_info_label,
+                                   &security_info_label_);
   if (show_selected_keyword) {
     if (selected_keyword_view_.keyword() != keyword) {
       needs_layout = true;
@@ -725,40 +718,20 @@ void LocationBarView::LayoutView(bool leading,
   gfx::Size view_size = view->GetPreferredSize();
   if (!UsePref(view_size.width(), available_width))
     view_size = view->GetMinimumSize();
-  if (view_size.width() + kInnerPadding < bounds->width()) {
-    view->SetVisible(true);
-    if (leading) {
-      view->SetBounds(bounds->x(), bounds->y(), view_size.width(),
-                      bounds->height());
-      bounds->Offset(view_size.width() + kInnerPadding, 0);
-    } else {
-      view->SetBounds(bounds->right() - view_size.width(), bounds->y(),
-                      view_size.width(), bounds->height());
-    }
-    bounds->set_width(bounds->width() - view_size.width() - kInnerPadding);
-  } else {
+  if (view_size.width() + kInnerPadding >= bounds->width()) {
     view->SetVisible(false);
+    return;
   }
-}
-
-void LocationBarView::SetSecurityIcon(ToolbarModel::Icon icon) {
-  switch (icon) {
-    case ToolbarModel::LOCK_ICON:
-      security_image_view_.SetImageShown(SecurityImageView::LOCK);
-      security_image_view_.SetVisible(true);
-      break;
-    case ToolbarModel::WARNING_ICON:
-      security_image_view_.SetImageShown(SecurityImageView::WARNING);
-      security_image_view_.SetVisible(true);
-      break;
-    case ToolbarModel::NO_ICON:
-      security_image_view_.SetVisible(false);
-      break;
-    default:
-      NOTREACHED();
-      security_image_view_.SetVisible(false);
-      break;
+  if (leading) {
+    view->SetBounds(bounds->x(), bounds->y(), view_size.width(),
+                    bounds->height());
+    bounds->Offset(view_size.width() + kInnerPadding, 0);
+  } else {
+    view->SetBounds(bounds->right() - view_size.width(), bounds->y(),
+                    view_size.width(), bounds->height());
   }
+  bounds->set_width(bounds->width() - view_size.width() - kInnerPadding);
+  view->SetVisible(true);
 }
 
 void LocationBarView::RefreshContentSettingViews() {
@@ -804,8 +777,7 @@ void LocationBarView::RefreshPageActionViews() {
 
     for (size_t i = 0; i < page_actions.size(); ++i) {
       page_action_views_[i] = new PageActionWithBadgeView(
-          new PageActionImageView(this, profile_,
-                                  page_actions[i], bubble_positioner_));
+          new PageActionImageView(this, profile_, page_actions[i]));
       page_action_views_[i]->SetVisible(false);
       AddChildView(page_action_views_[i]);
     }
@@ -832,23 +804,12 @@ void LocationBarView::RefreshPageActionViews() {
   }
 }
 
-void LocationBarView::SetInfoText(const std::wstring& text,
-                                  ToolbarModel::InfoTextType text_type,
-                                  const std::wstring& tooltip_text) {
-  info_label_.SetVisible(!text.empty());
-  info_label_.SetText(text);
-  if (text_type == ToolbarModel::INFO_EV_TEXT)
-    info_label_.SetColor(GetColor(true, SECURITY_TEXT));
-  info_label_.SetTooltipText(tooltip_text);
-}
-
 bool LocationBarView::ToggleVisibility(bool new_vis, View* view) {
   DCHECK(view);
-  if (view->IsVisible() != new_vis) {
-    view->SetVisible(new_vis);
-    return true;
-  }
-  return false;
+  if (view->IsVisible() == new_vis)
+    return false;
+  view->SetVisible(new_vis);
+  return true;
 }
 
 #if defined(OS_WIN)
@@ -872,6 +833,40 @@ void LocationBarView::OnMouseEvent(const views::MouseEvent& event, UINT msg) {
 }
 #endif
 
+void LocationBarView::ShowFirstRunBubbleInternal(bool use_OEM_bubble) {
+  if (!location_entry_view_)
+    return;
+  if (!location_entry_view_->GetWidget()->IsActive()) {
+    // The browser is no longer active.  Let's not show the info bubble, this
+    // would make the browser the active window again.
+    return;
+  }
+
+  gfx::Point location;
+
+  // If the UI layout is RTL, the coordinate system is not transformed and
+  // therefore we need to adjust the X coordinate so that bubble appears on the
+  // right hand side of the location bar.
+  if (UILayoutIsRightToLeft())
+    location.Offset(width(), 0);
+  views::View::ConvertPointToScreen(this, &location);
+
+  // We try to guess that 20 pixels offset is a good place for the first
+  // letter in the OmniBox.
+  gfx::Rect bounds(location.x(), location.y(), 20, height());
+
+  // Moving the bounds "backwards" so that it appears within the location bar
+  // if the UI layout is RTL.
+  if (UILayoutIsRightToLeft())
+    bounds.set_x(location.x() - 20);
+
+#if defined(OS_WIN)
+  FirstRunBubble::Show(profile_, GetWindow(), bounds, use_OEM_bubble);
+#else
+  // First run bubble doesn't make sense for Chrome OS.
+#endif
+}
+
 bool LocationBarView::GetAccessibleName(std::wstring* name) {
   DCHECK(name);
 
@@ -891,6 +886,39 @@ bool LocationBarView::GetAccessibleRole(AccessibilityTypes::Role* role) {
 
 void LocationBarView::SetAccessibleName(const std::wstring& name) {
   accessible_name_.assign(name);
+}
+
+// SecurityImageView------------------------------------------------------------
+
+LocationBarView::SecurityImageView::SecurityImageView(
+    const LocationBarView* parent)
+    : parent_(parent) {
+  SetSecurityIcon(0);
+}
+
+LocationBarView::SecurityImageView::~SecurityImageView() {
+}
+
+void LocationBarView::SecurityImageView::SetSecurityIcon(int icon_id) {
+  if (icon_id == 0) {
+    SetVisible(false);
+    return;
+  }
+
+  SetImage(ResourceBundle::GetSharedInstance().GetBitmapNamed(icon_id));
+  SetVisible(true);
+}
+
+bool LocationBarView::SecurityImageView::OnMousePressed(
+    const views::MouseEvent& event) {
+  TabContents* tab = parent_->GetTabContents();
+  NavigationEntry* nav_entry = tab->controller().GetActiveEntry();
+  if (!nav_entry) {
+    NOTREACHED();
+    return true;
+  }
+  tab->ShowPageInfo(nav_entry->url(), nav_entry->ssl(), true);
+  return true;
 }
 
 // SelectedKeywordView -------------------------------------------------------
@@ -1131,214 +1159,6 @@ bool LocationBarView::SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
 #endif
 }
 
-// ShowInfoBubbleTask-----------------------------------------------------------
-
-class LocationBarView::ShowInfoBubbleTask : public Task {
- public:
-  explicit ShowInfoBubbleTask(
-      LocationBarView::LocationBarImageView* image_view);
-  virtual void Run();
-  void Cancel();
-
- private:
-  LocationBarView::LocationBarImageView* image_view_;
-  bool cancelled_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShowInfoBubbleTask);
-};
-
-LocationBarView::ShowInfoBubbleTask::ShowInfoBubbleTask(
-    LocationBarView::LocationBarImageView* image_view)
-    : image_view_(image_view),
-      cancelled_(false) {
-}
-
-void LocationBarView::ShowInfoBubbleTask::Run() {
-  if (cancelled_)
-    return;
-
-  if (!image_view_->GetWidget()->IsActive()) {
-    // The browser is no longer active.  Let's not show the info bubble, this
-    // would make the browser the active window again.  Also makes sure we NULL
-    // show_info_bubble_task_ to prevent the SecurityImageView from keeping a
-    // dangling pointer.
-    image_view_->show_info_bubble_task_ = NULL;
-    return;
-  }
-
-  image_view_->ShowInfoBubble();
-}
-
-void LocationBarView::ShowInfoBubbleTask::Cancel() {
-  cancelled_ = true;
-}
-
-// -----------------------------------------------------------------------------
-
-void LocationBarView::ShowFirstRunBubbleInternal(bool use_OEM_bubble) {
-  if (!location_entry_view_)
-    return;
-  if (!location_entry_view_->GetWidget()->IsActive()) {
-    // The browser is no longer active.  Let's not show the info bubble, this
-    // would make the browser the active window again.
-    return;
-  }
-
-  gfx::Point location;
-
-  // If the UI layout is RTL, the coordinate system is not transformed and
-  // therefore we need to adjust the X coordinate so that bubble appears on the
-  // right hand side of the location bar.
-  if (UILayoutIsRightToLeft())
-    location.Offset(width(), 0);
-  views::View::ConvertPointToScreen(this, &location);
-
-  // We try to guess that 20 pixels offset is a good place for the first
-  // letter in the OmniBox.
-  gfx::Rect bounds(location.x(), location.y(), 20, height());
-
-  // Moving the bounds "backwards" so that it appears within the location bar
-  // if the UI layout is RTL.
-  if (UILayoutIsRightToLeft())
-    bounds.set_x(location.x() - 20);
-
-#if defined(OS_WIN)
-  FirstRunBubble::Show(profile_, GetWindow(), bounds, use_OEM_bubble);
-#else
-  // First run bubble doesn't make sense for Chrome OS.
-#endif
-}
-
-// LocationBarImageView---------------------------------------------------------
-
-LocationBarView::LocationBarImageView::LocationBarImageView(
-    const BubblePositioner* bubble_positioner)
-    : info_bubble_(NULL),
-      show_info_bubble_task_(NULL),
-      bubble_positioner_(bubble_positioner) {
-}
-
-LocationBarView::LocationBarImageView::~LocationBarImageView() {
-  if (show_info_bubble_task_)
-    show_info_bubble_task_->Cancel();
-
-  if (info_bubble_)
-    info_bubble_->Close();
-}
-
-void LocationBarView::LocationBarImageView::OnMouseMoved(
-    const views::MouseEvent& event) {
-  if (show_info_bubble_task_) {
-    show_info_bubble_task_->Cancel();
-    show_info_bubble_task_ = NULL;
-  }
-
-  if (info_bubble_) {
-    // If an info bubble is currently showing, nothing to do.
-    return;
-  }
-
-  show_info_bubble_task_ = new ShowInfoBubbleTask(this);
-  MessageLoop::current()->PostDelayedTask(FROM_HERE, show_info_bubble_task_,
-      kInfoBubbleHoverDelayMs);
-}
-
-void LocationBarView::LocationBarImageView::OnMouseExited(
-    const views::MouseEvent& event) {
-  if (show_info_bubble_task_) {
-    show_info_bubble_task_->Cancel();
-    show_info_bubble_task_ = NULL;
-  }
-
-  if (info_bubble_)
-    info_bubble_->Close();
-}
-
-void LocationBarView::LocationBarImageView::InfoBubbleClosing(
-    InfoBubble* info_bubble, bool closed_by_escape) {
-  info_bubble_ = NULL;
-}
-
-void LocationBarView::LocationBarImageView::ShowInfoBubbleImpl(
-    const std::wstring& text, SkColor text_color) {
-  gfx::Rect bounds(bubble_positioner_->GetLocationStackBounds());
-  gfx::Point location;
-  views::View::ConvertPointToScreen(this, &location);
-  bounds.set_x(location.x());
-  bounds.set_width(width());
-
-  views::Label* label = new views::Label(text);
-  label->SetMultiLine(true);
-  label->SetColor(text_color);
-  label->SetFont(ResourceBundle::GetSharedInstance().GetFont(
-      ResourceBundle::BaseFont).DeriveFont(2));
-  label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  label->SizeToFit(0);
-  DCHECK(info_bubble_ == NULL);
-  info_bubble_ = InfoBubble::Show(GetWindow(), bounds, label, this);
-  show_info_bubble_task_ = NULL;
-}
-
-// SecurityImageView------------------------------------------------------------
-
-// static
-SkBitmap* LocationBarView::SecurityImageView::lock_icon_ = NULL;
-SkBitmap* LocationBarView::SecurityImageView::warning_icon_ = NULL;
-
-LocationBarView::SecurityImageView::SecurityImageView(
-    const LocationBarView* parent,
-    Profile* profile,
-    ToolbarModel* model,
-    const BubblePositioner* bubble_positioner)
-    : LocationBarImageView(bubble_positioner),
-      parent_(parent),
-      profile_(profile),
-      model_(model) {
-  if (!lock_icon_) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    lock_icon_ = rb.GetBitmapNamed(IDR_LOCK);
-    warning_icon_ = rb.GetBitmapNamed(IDR_WARNING);
-  }
-  SetImageShown(LOCK);
-}
-
-LocationBarView::SecurityImageView::~SecurityImageView() {
-}
-
-void LocationBarView::SecurityImageView::SetImageShown(Image image) {
-  switch (image) {
-    case LOCK:
-      SetImage(lock_icon_);
-      break;
-    case WARNING:
-      SetImage(warning_icon_);
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
-}
-
-bool LocationBarView::SecurityImageView::OnMousePressed(
-    const views::MouseEvent& event) {
-  TabContents* tab = parent_->GetTabContents();
-  NavigationEntry* nav_entry = tab->controller().GetActiveEntry();
-  if (!nav_entry) {
-    NOTREACHED();
-    return true;
-  }
-  tab->ShowPageInfo(nav_entry->url(), nav_entry->ssl(), true);
-  return true;
-}
-
-void LocationBarView::SecurityImageView::ShowInfoBubble() {
-  std::wstring text;
-  model_->GetIconHoverText(&text);
-  ShowInfoBubbleImpl(text, GetColor(
-      model_->GetSecurityLevel() == ToolbarModel::SECURE,
-      SECURITY_INFO_BUBBLE_TEXT));
-}
-
 // ContentSettingImageView------------------------------------------------------
 
 LocationBarView::ContentSettingImageView::ContentSettingImageView(
@@ -1364,16 +1184,16 @@ void LocationBarView::ContentSettingImageView::UpdateFromTabContents(
     const TabContents* tab_contents) {
   int old_icon = content_setting_image_model_->get_icon();
   content_setting_image_model_->UpdateFromTabContents(tab_contents);
-  if (content_setting_image_model_->is_visible()) {
-    if (old_icon != content_setting_image_model_->get_icon()) {
-      ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-      SetImage(rb.GetBitmapNamed(content_setting_image_model_->get_icon()));
-    }
-    SetTooltipText(UTF8ToWide(content_setting_image_model_->get_tooltip()));
-    SetVisible(true);
-  } else {
+  if (!content_setting_image_model_->is_visible()) {
     SetVisible(false);
+    return;
   }
+  if (old_icon != content_setting_image_model_->get_icon()) {
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    SetImage(rb.GetBitmapNamed(content_setting_image_model_->get_icon()));
+  }
+  SetTooltipText(UTF8ToWide(content_setting_image_model_->get_tooltip()));
+  SetVisible(true);
 }
 
 bool LocationBarView::ContentSettingImageView::OnMousePressed(
@@ -1421,10 +1241,8 @@ bool LocationBarView::ContentSettingImageView::CloseOnEscape() {
 LocationBarView::PageActionImageView::PageActionImageView(
     LocationBarView* owner,
     Profile* profile,
-    ExtensionAction* page_action,
-    const BubblePositioner* bubble_positioner)
-    : LocationBarImageView(bubble_positioner),
-      owner_(owner),
+    ExtensionAction* page_action)
+    : owner_(owner),
       profile_(profile),
       page_action_(page_action),
       ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(this)),
@@ -1505,13 +1323,6 @@ void LocationBarView::PageActionImageView::ExecuteAction(int button,
   }
 }
 
-void LocationBarView::PageActionImageView::OnMouseMoved(
-    const views::MouseEvent& event) {
-  // PageActionImageView uses normal tooltips rather than the info bubble,
-  // so just do nothing here rather than letting LocationBarImageView start
-  // its hover timer.
-}
-
 bool LocationBarView::PageActionImageView::OnMousePressed(
     const views::MouseEvent& event) {
   // We are interested in capturing mouse messages, but we want want to wait
@@ -1550,10 +1361,6 @@ void LocationBarView::PageActionImageView::OnMouseReleased(
   }
 
   ExecuteAction(button, false);  // inspect_with_devtools
-}
-
-void LocationBarView::PageActionImageView::ShowInfoBubble() {
-  ShowInfoBubbleImpl(ASCIIToWide(tooltip_), GetColor(false, TEXT));
 }
 
 void LocationBarView::PageActionImageView::OnImageLoaded(

@@ -58,8 +58,6 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   // Initialize, create the underlying widgets, etc.
   void Init();
 
-  GtkWidget* widget() { return alignment_.get(); }
-
   // Returns the width, in pixels, needed to display the current text. The
   // returned value includes margins and borders.
   int TextWidth();
@@ -379,8 +377,9 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   GtkTextTagTable* tag_table_;
   GtkTextBuffer* text_buffer_;
   GtkTextTag* faded_text_tag_;
+  GtkTextTag* ev_secure_scheme_tag_;
   GtkTextTag* secure_scheme_tag_;
-  GtkTextTag* insecure_scheme_tag_;
+  GtkTextTag* security_error_scheme_tag_;
   GtkTextTag* normal_text_tag_;
 
   scoped_ptr<AutocompleteEditModel> model_;
@@ -396,7 +395,7 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   // different presentation (smaller font size). This is used for popups.
   bool popup_window_mode_;
 
-  ToolbarModel::SecurityLevel scheme_security_level_;
+  ToolbarModel::SecurityLevel security_level_;
 
   // Selection at the point where the user started using the
   // arrows to move around in the popup.

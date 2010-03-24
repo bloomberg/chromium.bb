@@ -7,6 +7,7 @@
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/autocomplete_text_field_cell.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
+#include "grit/theme_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -200,8 +201,7 @@ TEST_F(AutocompleteTextFieldCellTest, TextFrame) {
   EXPECT_TRUE(NSContainsRect(cursorFrame, textFrame));
 
   // Security icon takes up space on the right
-  security_image_view_.SetImageShown(
-      LocationBarViewMac::SecurityImageView::LOCK);
+  security_image_view_.SetImageShown(IDR_SECURE);
   security_image_view_.SetVisible(true);
 
   textFrame = [cell textFrameForFrame:bounds];
@@ -265,8 +265,7 @@ TEST_F(AutocompleteTextFieldCellTest, DrawingRectForBounds) {
   EXPECT_TRUE(NSContainsRect(NSInsetRect(textFrame, 1, 1), drawingRect));
   EXPECT_TRUE(NSEqualRects(drawingRect, originalDrawingRect));
 
-  security_image_view_.SetImageShown(
-      LocationBarViewMac::SecurityImageView::LOCK);
+  security_image_view_.SetImageShown(IDR_SECURE);
   security_image_view_.SetVisible(true);
 
   textFrame = [cell textFrameForFrame:bounds];
@@ -280,8 +279,7 @@ TEST_F(AutocompleteTextFieldCellTest, SecurityImageFrame) {
   AutocompleteTextFieldCell* cell =
       static_cast<AutocompleteTextFieldCell*>([view_ cell]);
   const NSRect bounds([view_ bounds]);
-  security_image_view_.SetImageShown(
-      LocationBarViewMac::SecurityImageView::LOCK);
+  security_image_view_.SetImageShown(IDR_SECURE);
 
   security_image_view_.SetVisible(false);
   EXPECT_EQ(0u, [[cell layedOutIcons:bounds] count]);
@@ -349,8 +347,7 @@ TEST_F(AutocompleteTextFieldCellTest, PageActionImageFrame) {
   AutocompleteTextFieldCell* cell =
       static_cast<AutocompleteTextFieldCell*>([view_ cell]);
   const NSRect bounds([view_ bounds]);
-  security_image_view_.SetImageShown(
-      LocationBarViewMac::SecurityImageView::LOCK);
+  security_image_view_.SetImageShown(IDR_SECURE);
 
   TestPageActionImageView page_action_view;
   // We'll assume that the extensions code enforces icons smaller than the

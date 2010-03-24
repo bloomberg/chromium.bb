@@ -69,10 +69,6 @@ const int kToolbarHeightLocationBarOnly = kToolbarHeight - 2;
 // Interior spacing between toolbar widgets.
 const int kToolbarWidgetSpacing = 4;
 
-// The color used as the base[] color of the location entry during a secure
-// connection.
-const GdkColor kSecureColor = GDK_COLOR_RGB(255, 245, 195);
-
 }  // namespace
 
 // BrowserToolbarGtk, public ---------------------------------------------------
@@ -595,14 +591,6 @@ gboolean BrowserToolbarGtk::OnLocationHboxExpose(GtkWidget* location_hbox,
       (right->allocation.x - left->allocation.x) + right->allocation.width,
       (right->allocation.y - left->allocation.y) + right->allocation.height
     };
-
-    // Make sure our off screen entry has the correct base color if we're in
-    // secure mode.
-    gtk_widget_modify_base(
-        offscreen_entry_.get(), GTK_STATE_NORMAL,
-        (browser_->toolbar_model()->GetSchemeSecurityLevel() ==
-         ToolbarModel::SECURE) ?
-        &kSecureColor : NULL);
 
     gtk_util::DrawTextEntryBackground(offscreen_entry_.get(),
                                       location_hbox, &e->area,

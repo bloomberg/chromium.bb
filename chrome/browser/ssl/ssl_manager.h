@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -92,12 +92,8 @@ class SSLManager : public NotificationObserver {
                                       int* cert_status,
                                       int* security_bits);
 
-  // Sets |short_name| to <organization_name> [<country>] and |ca_name|
-  // to something like:
-  // "Verified by <issuer_organization_name>"
-  static bool GetEVCertNames(const net::X509Certificate& cert,
-                             std::wstring* short_name,
-                             std::wstring* ca_name);
+  // Returns "<organization_name> [<country>]".
+  static std::wstring GetEVCertName(const net::X509Certificate& cert);
 
  private:
   // SSLMessageInfo contains the information necessary for displaying a message

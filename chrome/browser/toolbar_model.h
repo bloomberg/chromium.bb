@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,53 +19,33 @@ class NavigationEntry;
 class ToolbarModel {
  public:
   enum SecurityLevel {
-    SECURE = 0,
-    NORMAL,
-    INSECURE
-  };
-
-  enum Icon {
-    NO_ICON = 0,
-    LOCK_ICON,
-    WARNING_ICON
-  };
-
-  enum InfoTextType {
-    INFO_NO_INFO = 0,
-    INFO_EV_TEXT,
+    NONE = 0,          // HTTP/no URL/user is editing
+    EV_SECURE,         // HTTPS with valid EV cert
+    SECURE,            // HTTPS (non-EV)
+    SECURITY_WARNING,  // HTTPS, but with mixed content on the page
+    SECURITY_ERROR,    // Attempted HTTPS and failed, page not authenticated
+    NUM_SECURITY_LEVELS,
   };
 
   explicit ToolbarModel(Browser* browser);
   ~ToolbarModel();
 
   // Returns the text that should be displayed in the location bar.
-  // Default value: empty string.
   std::wstring GetText() const;
 
   // Returns the security level that the toolbar should display.
-  // Default value: NORMAL.
   SecurityLevel GetSecurityLevel() const;
 
-  // Returns the security level that should be used in the scheme part of the
-  // displayed URL.  If SECURE, then the scheme is painted in green.  If
-  // INSECURE, it is painted in red and stricken-out.
-  // Default value: NORMAL.
-  SecurityLevel GetSchemeSecurityLevel() const;
-
-  // Returns the icon that should be displayed on the right of the location bar.
-  // Default value: NO_ICON.
-  Icon GetIcon() const;
+  // Returns the resource_id of the icon to show to the left of the address.
+  int GetSecurityIcon() const;
 
   // Sets the text displayed in the info bubble that appears when the user
   // hovers the mouse over the icon.
-  // Default value: empty string.
   void GetIconHoverText(std::wstring* text) const;
 
-  // Sets |text| to contain the text that should be displayed on the right of
-  // the location bar, and |tooltip| to the tooltip text that should be shown
-  // when the mouse hover over that info label.
-  // Default value: NO_INFO and empty string for |text| and |tooltip|.
-  InfoTextType GetInfoText(std::wstring* text, std::wstring* tooltip) const;
+  // Returns the text, if any, that should be displayed on the right of the
+  // location bar.
+  std::wstring GetSecurityInfoText() const;
 
   // Getter/setter of whether the text in location bar is currently being
   // edited.

@@ -407,8 +407,9 @@ AutocompleteEditViewWin::AutocompleteEditViewWin(
       in_drag_(false),
       initiated_drag_(false),
       drop_highlight_position_(-1),
-      background_color_(0),
-      scheme_security_level_(ToolbarModel::NORMAL),
+      background_color_(skia::SkColorToCOLORREF(LocationBarView::GetColor(
+          ToolbarModel::NONE, LocationBarView::BACKGROUND))),
+      security_level_(ToolbarModel::NONE),
       text_object_model_(NULL) {
   // Dummy call to a function exported by riched20.dll to ensure it sets up an
   // import dependency on the dll.
@@ -459,6 +460,8 @@ AutocompleteEditViewWin::AutocompleteEditViewWin(
   cf.yOffset = -font_y_adjustment_ * kTwipsPerPixel;
   SetDefaultCharFormat(cf);
 
+  SetBackgroundColor(background_color_);
+
   // By default RichEdit has a drop target. Revoke it so that we can install our
   // own. Revoke takes care of deleting the existing one.
   RevokeDragDrop(m_hWnd);
@@ -508,30 +511,21 @@ void AutocompleteEditViewWin::Update(
       model_->UpdatePermanentText(toolbar_model_->GetText());
 
   const ToolbarModel::SecurityLevel security_level =
-      toolbar_model_->GetSchemeSecurityLevel();
-  const COLORREF background_color =
-      skia::SkColorToCOLORREF(LocationBarView::GetColor(
-          security_level == ToolbarModel::SECURE, LocationBarView::BACKGROUND));
-  const bool changed_security_level =
-      (security_level != scheme_security_level_);
+      toolbar_model_->GetSecurityLevel();
+  const bool changed_security_level = (security_level != security_level_);
 
   // Bail early when no visible state will actually change (prevents an
   // unnecessary ScopedFreeze, and thus UpdateWindow()).
-  if ((background_color == background_color_) && !changed_security_level &&
-      !visibly_changed_permanent_text && !tab_for_state_restoring)
+  if (!changed_security_level && !visibly_changed_permanent_text &&
+      !tab_for_state_restoring)
     return;
 
-  // Update our local state as desired.  We set scheme_security_level_ here so
-  // it will already be correct before we get to any RevertAll()s below and use
-  // it.
-  ScopedFreeze freeze(this, GetTextObjectModel());
-  if (background_color_ != background_color) {
-    background_color_ = background_color;
-    SetBackgroundColor(background_color_);
-  }
-  scheme_security_level_ = security_level;
+  // Update our local state as desired.  We set security_level_ here so it will
+  // already be correct before we get to any RevertAll()s below and use it.
+  security_level_ = security_level;
 
   // When we're switching to a new tab, restore its state, if any.
+  ScopedFreeze freeze(this, GetTextObjectModel());
   if (tab_for_state_restoring) {
     // Make sure we reset our own state first.  The new tab may not have any
     // saved state, or it may not have had input in progress, in which case we
@@ -2060,11 +2054,11 @@ void AutocompleteEditViewWin::EmphasizeURLComponents() {
   // Set the baseline emphasis.
   CHARFORMAT cf = {0};
   cf.dwMask = CFM_COLOR;
-  const bool is_secure = (scheme_security_level_ == ToolbarModel::SECURE);
   // If we're going to emphasize parts of the text, then the baseline state
   // should be "de-emphasized".  If not, then everything should be rendered in
   // the standard text color.
-  cf.crTextColor = skia::SkColorToCOLORREF(LocationBarView::GetColor(is_secure,
+  cf.crTextColor = skia::SkColorToCOLORREF(LocationBarView::GetColor(
+      security_level_,
       emphasize ? LocationBarView::DEEMPHASIZED_TEXT : LocationBarView::TEXT));
   // NOTE: Don't use SetDefaultCharFormat() instead of the below; that sets the
   // format that will get applied to text added in the future, not to text
@@ -2075,7 +2069,7 @@ void AutocompleteEditViewWin::EmphasizeURLComponents() {
   if (emphasize) {
     // We've found a host name, give it more emphasis.
     cf.crTextColor = skia::SkColorToCOLORREF(LocationBarView::GetColor(
-        is_secure, LocationBarView::TEXT));
+        security_level_, LocationBarView::TEXT));
     SetSelection(host.begin, host.end());
     SetSelectionCharFormat(cf);
   }
@@ -2083,13 +2077,13 @@ void AutocompleteEditViewWin::EmphasizeURLComponents() {
   // Emphasize the scheme for security UI display purposes (if necessary).
   insecure_scheme_component_.reset();
   if (!model_->user_input_in_progress() && scheme.is_nonempty() &&
-      (scheme_security_level_ != ToolbarModel::NORMAL)) {
-    if (!is_secure) {
+      (security_level_ != ToolbarModel::NONE)) {
+    if (security_level_ == ToolbarModel::SECURITY_ERROR) {
       insecure_scheme_component_.begin = scheme.begin;
       insecure_scheme_component_.len = scheme.len;
     }
     cf.crTextColor = skia::SkColorToCOLORREF(LocationBarView::GetColor(
-        is_secure, LocationBarView::SECURITY_TEXT));
+        security_level_, LocationBarView::SECURITY_TEXT));
     SetSelection(scheme.begin, scheme.end());
     SetSelectionCharFormat(cf);
   }
@@ -2183,8 +2177,8 @@ void AutocompleteEditViewWin::DrawSlashForInsecureScheme(
   canvas.save();
   if (selection_rect.isEmpty() ||
       canvas.clipRect(selection_rect, SkRegion::kDifference_Op)) {
-    paint.setColor(LocationBarView::GetColor(false,
-        LocationBarView::SCHEME_STRIKEOUT));
+    paint.setColor(LocationBarView::GetColor(security_level_,
+                                             LocationBarView::SECURITY_TEXT));
     canvas.drawLine(start_point.fX, start_point.fY,
                     end_point.fX, end_point.fY, paint);
   }
@@ -2192,7 +2186,7 @@ void AutocompleteEditViewWin::DrawSlashForInsecureScheme(
 
   // Draw the selected portion of the stroke.
   if (!selection_rect.isEmpty() && canvas.clipRect(selection_rect)) {
-    paint.setColor(LocationBarView::GetColor(false,
+    paint.setColor(LocationBarView::GetColor(security_level_,
                                              LocationBarView::SELECTED_TEXT));
     canvas.drawLine(start_point.fX, start_point.fY,
                     end_point.fX, end_point.fY, paint);

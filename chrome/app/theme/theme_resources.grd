@@ -123,7 +123,10 @@
       <include name="IDR_BLOCKED_JAVASCRIPT" file="blocked_javascript.png" type="BINDATA" />
       <include name="IDR_BLOCKED_PLUGINS" file="blocked_plugins.png" type="BINDATA" />
       <include name="IDR_BLOCKED_POPUPS" file="blocked_popups.png" type="BINDATA" />
-      <include name="IDR_LOCK" file="lock_small.png" type="BINDATA" />
+      <include name="IDR_EV_SECURE" file="ev_secure.png" type="BINDATA" />
+      <include name="IDR_SECURE" file="secure.png" type="BINDATA" />
+      <include name="IDR_SECURITY_WARNING" file="security_warning.png" type="BINDATA" />
+      <include name="IDR_SECURITY_ERROR" file="security_error.png" type="BINDATA" />
       <include name="IDR_WARNING" file="alert_small.png" type="BINDATA" />
       <include name="IDR_STOP" file="stop.png" type="BINDATA" />
       <include name="IDR_STOP_NOBORDER" file="stop_noborder.png" type="BINDATA" />

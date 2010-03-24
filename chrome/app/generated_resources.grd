@@ -4754,12 +4754,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Secure connection to <ph name="DOMAIN">$1<ex>paypal.com</ex></ph>
       </message>
 
-      <message name="IDS_SECURE_CONNECTION_EV" desc="Short text shown in the location when the connection is secure with an EV cert.">
+      <message name="IDS_SECURE_CONNECTION_EV" desc="Short text shown in the location bar when the connection is secure with an EV cert.">
         <ph name="ORGANIZATION">$1<ex>Paypal Inc.</ex></ph> [<ph name="COUNTRY">$2<ex>US</ex></ph>]
       </message>
 
-      <message name="IDS_SECURE_CONNECTION_EV_CA" desc="Info popup text showing the certification authority's name when hovering the mouse over the EV label  ie., we have a secure connection to the site with an EV cert.">
-        Verified by <ph name="ISSUER">$1<ex>VeriSign</ex></ph>
+      <message name="IDS_SECURITY_BROKEN" desc="Short text shown in the location bar when a secure connection cannot be established.">
+        Untrusted website
       </message>
 
       <!-- Page Information Window -->

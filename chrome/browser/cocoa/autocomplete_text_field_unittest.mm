@@ -11,6 +11,7 @@
 #import "chrome/browser/cocoa/autocomplete_text_field_editor.h"
 #import "chrome/browser/cocoa/autocomplete_text_field_unittest_helper.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
+#include "grit/theme_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -581,8 +582,7 @@ TEST_F(AutocompleteTextFieldObserverTest, SecurityIconMouseDown) {
 
   MockSecurityImageView security_image_view(NULL, NULL, NULL);
   [cell setSecurityImageView:&security_image_view];
-  security_image_view.SetImageShown(
-      LocationBarViewMac::SecurityImageView::LOCK);
+  security_image_view.SetImageShown(IDR_SECURE);
   security_image_view.SetVisible(true);
 
   NSRect iconFrame([cell securityImageFrameForFrame:[field_ bounds]]);
@@ -598,8 +598,7 @@ TEST_F(AutocompleteTextFieldObserverTest, PageActionMouseDown) {
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
 
   MockSecurityImageView security_image_view(NULL, NULL, NULL);
-  security_image_view.SetImageShown(
-      LocationBarViewMac::SecurityImageView::LOCK);
+  security_image_view.SetImageShown(IDR_SECURE);
   [cell setSecurityImageView:&security_image_view];
 
   MockPageActionImageView page_action_view;
