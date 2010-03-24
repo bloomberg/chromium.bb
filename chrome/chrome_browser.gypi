@@ -932,8 +932,6 @@
         'browser/extensions/extension_context_menu_model.h',
         'browser/extensions/extension_creator.cc',
         'browser/extensions/extension_creator.h',
-        'browser/extensions/extension_data_deleter.cc',
-        'browser/extensions/extension_data_deleter.h',
         'browser/extensions/extension_disabled_infobar_delegate.cc',
         'browser/extensions/extension_disabled_infobar_delegate.h',
         'browser/extensions/extension_devtools_bridge.cc',

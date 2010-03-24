@@ -7,7 +7,6 @@
 #include "build/build_config.h"
 #include "base/command_line.h"
 #include "base/string_util.h"
-#include "chrome/common/url_constants.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/dom_ui/ntp_resource_cache.h"
 #include "chrome/browser/history/history_backend.h"
@@ -103,28 +102,6 @@ class TestURLRequestContextGetter : public URLRequestContextGetter {
   virtual URLRequestContext* GetURLRequestContext() {
     if (!context_)
       context_ = new TestURLRequestContext();
-    return context_.get();
-  }
-
- private:
-  scoped_refptr<URLRequestContext> context_;
-};
-
-class TestExtensionURLRequestContext : public URLRequestContext {
- public:
-  TestExtensionURLRequestContext() {
-    net::CookieMonster* cookie_monster = new net::CookieMonster(NULL);
-    const char* schemes[] = {chrome::kExtensionScheme};
-    cookie_monster->SetCookieableSchemes(schemes, 1);
-    cookie_store_ = cookie_monster;
-  }
-};
-
-class TestExtensionURLRequestContextGetter : public URLRequestContextGetter {
- public:
-  virtual URLRequestContext* GetURLRequestContext() {
-    if (!context_)
-      context_ = new TestExtensionURLRequestContext();
     return context_.get();
   }
 
@@ -298,12 +275,6 @@ URLRequestContextGetter* TestingProfile::GetRequestContext() {
 void TestingProfile::CreateRequestContext() {
   if (!request_context_)
     request_context_ = new TestURLRequestContextGetter();
-}
-
-URLRequestContextGetter* TestingProfile::GetRequestContextForExtensions() {
-  if (!extensions_request_context_)
-      extensions_request_context_ = new TestExtensionURLRequestContextGetter();
-  return extensions_request_context_.get();
 }
 
 void TestingProfile::set_session_service(SessionService* session_service) {

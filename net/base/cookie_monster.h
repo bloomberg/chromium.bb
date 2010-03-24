@@ -112,9 +112,6 @@ class CookieMonster : public CookieStore {
   // one passed into the function via |delete_after|.
   int DeleteAllCreatedAfter(const base::Time& delete_begin, bool sync_to_store);
 
-  // Delete all cookies that match the given URL.
-  int DeleteAllForURL(const GURL& url, bool sync_to_store);
-
   // Delete one specific cookie.
   bool DeleteCookie(const std::string& domain,
                     const CanonicalCookie& cookie,
@@ -178,10 +175,6 @@ class CookieMonster : public CookieStore {
                       bool include_secure,
                       const std::string& path,
                       CookieList* list);
-
-  // Internal helper returning all cookies for a given URL. The caller is
-  // assumed to hold lock_ and having called InitIfNecessary().
-  CookieList InternalGetAllCookiesForURL(const GURL& url);
 
   // Delete any cookies that are equivalent to |ecc| (same path, key, etc).
   // If |skip_httponly| is true, httponly cookies will not be deleted.  The

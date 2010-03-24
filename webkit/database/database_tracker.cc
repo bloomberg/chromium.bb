@@ -420,22 +420,6 @@ void DatabaseTracker::ScheduleDatabaseForDeletion(
       origin_identifier, database_name));
 }
 
-void DatabaseTracker::ScheduleDatabasesForDeletion(
-    const DatabaseSet& databases,
-    net::CompletionCallback* callback) {
-  DCHECK(!callback ||
-         deletion_callbacks_.find(callback) == deletion_callbacks_.end());
-  DCHECK(!databases.empty());
-  if (callback)
-    deletion_callbacks_[callback] = databases;
-  for (DatabaseSet::const_iterator ori = databases.begin();
-       ori != databases.end(); ++ori) {
-    for (std::set<string16>::const_iterator db = ori->second.begin();
-         db != ori->second.end(); ++db)
-      ScheduleDatabaseForDeletion(ori->first, *db);
-  }
-}
-
 int DatabaseTracker::DeleteDatabase(const string16& origin_identifier,
                                     const string16& database_name,
                                     net::CompletionCallback* callback) {
@@ -493,42 +477,18 @@ int DatabaseTracker::DeleteDataModifiedSince(
     }
   }
 
-  if (rv != net::OK)
-    return rv;
-
   if (!to_be_deleted.empty()) {
-    ScheduleDatabasesForDeletion(to_be_deleted, callback);
-    return net::ERR_IO_PENDING;
+    if (callback)
+      deletion_callbacks_[callback] = to_be_deleted;
+    for (DatabaseSet::iterator ori = to_be_deleted.begin();
+         ori != to_be_deleted.end(); ++ori) {
+      for (std::set<string16>::iterator db = ori->second.begin();
+           db != ori->second.end(); ++db)
+        ScheduleDatabaseForDeletion(ori->first, *db);
+    }
+    rv = net::ERR_IO_PENDING;
   }
-  return net::OK;
-}
-
-int DatabaseTracker::DeleteDataForOrigin(const string16& origin,
-                                         net::CompletionCallback* callback) {
-  if (!LazyInit())
-    return net::ERR_FAILED;
-
-  DCHECK(!callback ||
-         deletion_callbacks_.find(callback) == deletion_callbacks_.end());
-  DatabaseSet to_be_deleted;
-
-  std::vector<DatabaseDetails> details;
-  if (!databases_table_->GetAllDatabaseDetailsForOrigin(origin, &details))
-    return net::ERR_FAILED;
-  for (std::vector<DatabaseDetails>::const_iterator db = details.begin();
-       db != details.end(); ++db) {
-    // Check if the database is opened by any renderer.
-    if (database_connections_.IsDatabaseOpened(origin, db->database_name))
-      to_be_deleted[origin].insert(db->database_name);
-    else
-      DeleteClosedDatabase(origin, db->database_name);
-  }
-
-  if (!to_be_deleted.empty()) {
-    ScheduleDatabasesForDeletion(to_be_deleted, callback);
-    return net::ERR_IO_PENDING;
-  }
-  return net::OK;
+  return rv;
 }
 
 // static

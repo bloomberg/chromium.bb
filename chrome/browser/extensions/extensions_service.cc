@@ -19,7 +19,6 @@
 #include "chrome/browser/extensions/extension_accessibility_api.h"
 #include "chrome/browser/extensions/extension_bookmarks_module.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
-#include "chrome/browser/extensions/extension_data_deleter.h"
 #include "chrome/browser/extensions/extension_dom_ui.h"
 #include "chrome/browser/extensions/extension_history_api.h"
 #include "chrome/browser/extensions/extension_host.h"
@@ -42,7 +41,6 @@
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "googleurl/src/gurl.h"
 #include "webkit/database/database_tracker.h"
 #include "webkit/database/database_util.h"
 
@@ -270,7 +268,6 @@ void ExtensionsService::UninstallExtension(const std::string& extension_id,
 
   // Callers should not send us nonexistant extensions.
   DCHECK(extension);
-  GURL extension_url(extension->url());
 
   extension_prefs_->OnExtensionUninstalled(extension, external_uninstall);
 
@@ -286,17 +283,7 @@ void ExtensionsService::UninstallExtension(const std::string& extension_id,
   ExtensionDOMUI::UnregisterChromeURLOverrides(profile_,
       extension->GetChromeURLOverrides());
 
-  // TODO(mnissler, erikkay) Check whether we should really unload the extension
-  // first, so we we're sure it's not running while we clean up.
   UnloadExtension(extension_id);
-
-  ClearExtensionData(extension_url);
-}
-
-void ExtensionsService::ClearExtensionData(const GURL& extension_url) {
-  scoped_refptr<ExtensionDataDeleter> deleter(
-      new ExtensionDataDeleter(profile_, extension_url));
-  deleter->StartDeleting();
 }
 
 void ExtensionsService::EnableExtension(const std::string& extension_id) {
