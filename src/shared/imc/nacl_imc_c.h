@@ -67,8 +67,8 @@ typedef struct NaClSocketAddress {
 */
 
 typedef struct NaClIOVec {
-  void*           base;
-  nacl_abi_size_t length;
+  void*  base;
+  size_t length;
 } NaClIOVec;
 
 /* The maximum number of handles to be passed by NaClSendDatagram() */

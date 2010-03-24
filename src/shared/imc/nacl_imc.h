@@ -77,10 +77,12 @@ struct SocketAddress {
  *  @nacl
  *  I/O vector for the scatter/gather operation used by SendDatagram() and
  *  ReceiveDatagram()
+ *
+ *  NB: length's range is restricted to that of an uint32_t.
  */
 struct IOVec {
-  void*     base;
-  uint32_t  length;
+  void*   base;
+  size_t  length;
 };
 
 /**
@@ -161,6 +163,7 @@ bool WouldBlock();
  *  If kDontWait flag is specified with the call and the other peer of the
  *  socket is unable to receive more data, the function returns -1 without
  *  waiting, and the subsequent WouldBlock() will return true.
+ *  The total number of bytes sent must be less than 2**32.
  *
  *  Note it is not safe to send messages from the same socket handle by
  *  multiple threads simultaneously.
@@ -175,6 +178,7 @@ int SendDatagram(Handle socket, const MessageHeader* message, int flags);
  *  @nacl
  *  Sends the message to the socket specified by the name. The socket parameter
  *  should be a socket created by BoundSocket().
+ *  The total number of bytes sent must be less than 2**32.
  *  @param socket The socket descriptor.
  *  @param message Pointer to MessageHeader to send.
  *  @param flags Either 0 or kDontWait.
@@ -189,7 +193,7 @@ int SendDatagramTo(Handle socket, const MessageHeader* message, int flags,
  *  @nacl
  *  Sends the message to the remote peer of the connection created by
  *  SocketPair().
- *
+ *  The total number of bytes sent must be less than 2**32.
  *  Note it is not safe to send messages from the same socket handle by
  *  multiple threads simultaneously.
  *  @param socket The socket descriptor.
@@ -205,6 +209,7 @@ int Send(Handle socket, const void* buffer, size_t length, int flags);
  *  @nacl
  *  Sends the message to the socket specified by the name. The socket parameter
  *  should be a socket created by BoundSocket().
+ *  The total number of bytes sent must be less than 2**32.
  *  @param socket The socket descriptor.
  *  @param buffer Pointer to the data to send.
  *  @param length The length of the data to send.
@@ -249,6 +254,14 @@ int ReceiveDatagram(Handle socket, MessageHeader* message, int flags);
  *  @see ReceiveDatagram()
  */
 int Receive(Handle socket, void* buffer, size_t length, int flags);
+
+/**
+ *  @nacl
+ *
+ *  Message size validator.  The ABI requires that the data size must
+ *  be less than 2**32 bytes.
+ */
+bool MessageSizeIsValid(const MessageHeader *message);
 
 /**
  *  @nacl

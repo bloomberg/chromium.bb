@@ -22,6 +22,8 @@
 #include <sys/types.h>
 #include <sys/un.h>
 
+#include "native_client/src/shared/platform/nacl_log.h"
+
 #define OSX_BLEMISH_HEURISTIC 1
 /*
  * TODO(bsy,bradnelson): remove SIGPIPE_FIX.  It is needed for future
@@ -297,7 +299,27 @@ int SendDatagram(Handle handle, const MessageHeader* message, int flags) {
 
   (void) flags;  /* BUG(shiki): unused parameter */
 
+  /*
+   * The following assert was an earlier attempt to remember/check the
+   * assumption that our struct IOVec -- which we must define to be
+   * cross platform -- is compatible with struct iovec on *x systems.
+   * The length field of IOVec was switched to be uint32_t at oen point
+   * to use concrete types, which introduced a problem on 64-bit systems.
+   *
+   * Clearly, the assert does not check a strong-enough condition,
+   * since structure padding would make the two sizes the same.
+   *
   assert(sizeof(struct iovec) == sizeof(IOVec));
+   *
+   * Don't do this again!
+   */
+  NaClLog(5, "SendDatagram: Checking uint32 precondition\n");
+
+  if (!MessageSizeIsValid(message)) {
+    errno = EMSGSIZE;
+    return -1;
+  }
+
   if (kHandleCountMax < message->handle_count ||
       kIovLengthMax < message->iov_length) {
     errno = EMSGSIZE;
@@ -395,9 +417,29 @@ int Receive(Handle handle, MessageHeader* message, int flags,
   struct iovec vec[kIovLengthMax];
   unsigned char buf[CMSG_SPACE(kHandleCountMax * sizeof(int))];
 
-  assert(sizeof(struct iovec) == sizeof(IOVec));
   if (kHandleCountMax < message->handle_count ||
       kIovLengthMax < message->iov_length) {
+    errno = EMSGSIZE;
+    return -1;
+  }
+
+  /*
+   * The following assert was an earlier attempt to remember/check the
+   * assumption that our struct IOVec -- which we must define to be
+   * cross platform -- is compatible with struct iovec on *x systems.
+   * The length field of IOVec was switched to be uint32_t at oen point
+   * to use concrete types, which introduced a problem on 64-bit systems.
+   *
+   * Clearly, the assert does not check a strong-enough condition,
+   * since structure padding would make the two sizes the same.
+   *
+  assert(sizeof(struct iovec) == sizeof(IOVec));
+   *
+   * Don't do this again!
+   */
+  NaClLog(5, "Receive: Checking uint32 precondition\n");
+
+  if (!MessageSizeIsValid(message)) {
     errno = EMSGSIZE;
     return -1;
   }
@@ -497,7 +539,7 @@ int Receive(Handle handle, MessageHeader* message, int flags,
   // Receive the sent data.
   msg.msg_name = 0;
   msg.msg_namelen = 0;
-  assert(sizeof(struct iovec) == sizeof(IOVec));
+
   msg.msg_control = 0;
   msg.msg_controllen = 0;
   msg.msg_flags = 0;

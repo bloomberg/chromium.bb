@@ -237,6 +237,10 @@ int SendDatagram(Handle handle, const MessageHeader* message, int flags) {
     SetLastError(ERROR_INVALID_PARAMETER);
     return -1;
   }
+  if (!MessageSizeIsValid(message)) {
+    SetLastError(ERROR_INVALID_PARAMETER);
+    return -1;
+  }
   if (0 < message->handle_count && message->handles) {
     // TODO(shiki): On Windows Vista, we can use GetNamedPipeClientProcessId()
     // and GetNamedPipeServerProcessId() and probably we can remove
@@ -284,7 +288,7 @@ int SendDatagram(Handle handle, const MessageHeader* message, int flags) {
     if (UINT32_MAX - header.message_length < message->iov[i].length) {
       return -1;
     }
-    header.message_length += message->iov[i].length;
+    header.message_length += static_cast<uint32_t>(message->iov[i].length);
   }
   if (WriteAll(handle, &header, sizeof header) != sizeof header) {
     return -1;
@@ -308,6 +312,10 @@ int SendDatagram(Handle handle, const MessageHeader* message, int flags) {
 int SendDatagramTo(Handle handle, const MessageHeader* message, int flags,
                    const SocketAddress* name) {
   if (kHandleCountMax < message->handle_count) {
+    SetLastError(ERROR_INVALID_PARAMETER);
+    return -1;
+  }
+  if (!MessageSizeIsValid(message)) {
     SetLastError(ERROR_INVALID_PARAMETER);
     return -1;
   }
@@ -446,7 +454,8 @@ int ReceiveDatagram(Handle handle, MessageHeader* message, int flags,
            i < message->iov_length && count < header.message_length;
            ++i) {
         IOVec* iov = &message->iov[i];
-        uint32_t len = std::min(iov->length, total_message_bytes);
+        uint32_t len = std::min(static_cast<uint32_t>(iov->length),
+                                total_message_bytes);
         if (ReadAll(handle, iov->base, len) != len) {
           break;
         }
@@ -498,6 +507,11 @@ int ReceiveDatagram(Handle handle, MessageHeader* message, int flags,
 }  // namespace
 
 int ReceiveDatagram(Handle handle, MessageHeader* message, int flags) {
+  if (!MessageSizeIsValid(message)) {
+    SetLastError(ERROR_INVALID_PARAMETER);
+    return -1;
+  }
+
   // If handle is a bound socket, it is a named pipe in non-blocking mode.
   // Set is_bound_socket to true if handle has been created by BoundSocket().
   DWORD state;

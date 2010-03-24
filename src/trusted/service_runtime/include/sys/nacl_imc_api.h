@@ -61,8 +61,8 @@ struct NaClAbiNaClImcMsgHdr {
 
 #ifndef __native_client__
 struct NaClImcMsgIoVec {
-  void            *base;
-  nacl_abi_size_t length;
+  void    *base;
+  size_t  length;
 };
 
 struct NaClImcMsgHdr {

@@ -22,6 +22,7 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_process.h"
 #include "native_client/src/shared/imc/nacl_imc.h"
+#include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
 
@@ -820,6 +821,8 @@ int main(int ac,
 
   setvbuf(stdout, obuf, _IOLBF, sizeof obuf);
 
+  NaClLogModuleInit();
+
   while (-1 != (opt = getopt(ac, av, "lr:st:"))) {
     switch (opt) {
       case 'l': {
@@ -886,5 +889,8 @@ int main(int ac,
   errors += TestNaClSocket(rep_count);
 
   printf("%s\n", (errors == 0) ? "PASSED" : "FAILED");
+
+  NaClLogModuleFini();
+
   return errors;
 }

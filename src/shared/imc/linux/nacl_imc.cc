@@ -20,6 +20,8 @@
 #include <sys/types.h>
 #include <sys/un.h>
 
+#include "native_client/src/shared/platform/nacl_log.h"
+
 namespace nacl {
 
 namespace {
@@ -121,9 +123,30 @@ int SendDatagramTo(Handle handle, const MessageHeader* message, int flags,
     msg.msg_name = 0;
     msg.msg_namelen = 0;
   }
+  /*
+   * The following assert was an earlier attempt to remember/check the
+   * assumption that our struct IOVec -- which we must define to be
+   * cross platform -- is compatible with struct iovec on *x systems.
+   * The length field of IOVec was switched to be uint32_t at one point
+   * to use concrete types, which introduced a problem on 64-bit systems.
+   *
+   * Clearly, the assert does not check a strong-enough condition,
+   * since structure padding would make the two sizes the same.
+   *
   assert(sizeof(struct iovec) == sizeof(IOVec));
+   *
+   * Don't do this again!
+   */
+  NaClLog(5, "SendDatagramTo: Checking uint32 precondition\n");
+
+  if (!MessageSizeIsValid(message)) {
+    errno = EMSGSIZE;
+    return -1;
+  }
+
   msg.msg_iov = reinterpret_cast<struct iovec*>(message->iov);
   msg.msg_iovlen = message->iov_length;
+
   if (0 < message->handle_count && message->handles != NULL) {
     int size = message->handle_count * sizeof(int);
     msg.msg_control = buf;
@@ -153,7 +176,16 @@ int ReceiveDatagram(Handle handle, MessageHeader* message, int flags) {
   }
   msg.msg_name = 0;
   msg.msg_namelen = 0;
-  assert(sizeof(struct iovec) == sizeof(IOVec));
+
+  NaClLog(5, "ReceiveDatagram: Checking uint32 precondition\n");
+  /*
+   * Make sure we cannot receive more than 2**32-1 bytes.
+   */
+  if (!MessageSizeIsValid(message)) {
+    errno = EMSGSIZE;
+    return -1;
+  }
+
   msg.msg_iov = reinterpret_cast<struct iovec*>(message->iov);
   msg.msg_iovlen = message->iov_length;
   if (0 < message->handle_count && message->handles != NULL) {
