@@ -15,3 +15,7 @@ fun:*base*subtle*NoBarrier_CompareAndSwap*
 # TODO(timurrrr): investigate whether we need to instrument them
 obj:*/Security*
 obj:*/libcrypto*
+# SensitiveAllocator::free is a part of the Security framework.
+# It calls bzero (0xffff0633) which can't be resolved and thus should be
+# ignored recursively.
+fun_r:*SensitiveAllocator*free*

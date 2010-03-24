@@ -64,6 +64,14 @@
   fun:-[NSOperationQueue dealloc]
 }
 
+{
+  Another race deallocating NSOperationQueue
+  ThreadSanitizer:Race
+  ...
+  fun:-[NSIndexSet dealloc]
+  fun:-[NSOperationQueue dealloc]
+}
+
 # A related OpenRadar bug is at http://openradar.appspot.com/7396501.
 {
    A benign race on a debug counter in __NSAutoreleaseObject
