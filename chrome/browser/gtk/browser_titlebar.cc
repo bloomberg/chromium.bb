@@ -490,8 +490,7 @@ void BrowserTitlebar::MaximizeButtonClicked() {
       height = screen_rect.height;
     }
 
-    browser_window_->SetBounds(gfx::Rect(x, y, width, height),
-                               BrowserWindow::WINDOW_BOUNDS);
+    browser_window_->SetBounds(gfx::Rect(x, y, width, height));
   }
   gdk_event_free(event);
 }

@@ -220,7 +220,7 @@
       windowRect.set_origin(WindowSizer::GetDefaultPopupOrigin(size));
     }
 
-    windowShim_->SetBounds(windowRect, BrowserWindow::WINDOW_BOUNDS);
+    windowShim_->SetBounds(windowRect);
 
     // Puts the incognito badge on the window frame, if necessary.
     [self installIncognitoBadge];
@@ -985,10 +985,6 @@
 
 - (void)setStarredState:(BOOL)isStarred {
   [toolbarController_ setStarredState:isStarred];
-}
-
-- (NSRect)tabContentsFrame {
-  return [[self tabContentArea] frame];
 }
 
 // Return the rect, in WebKit coordinates (flipped), of the window's grow box

@@ -495,8 +495,7 @@ void MediaPlayer::PopupPlaylist() {
   playlist_browser_->window()->SetBounds(gfx::Rect(kPopupLeft,
                                                    kPopupTop,
                                                    kPopupWidth,
-                                                   kPopupHeight),
-                                         BrowserWindow::WINDOW_BOUNDS);
+                                                   kPopupHeight));
   playlist_browser_->window()->Show();
 }
 
@@ -514,8 +513,7 @@ void MediaPlayer::PopupMediaPlayer() {
   mediaplayer_browser_->window()->SetBounds(gfx::Rect(kPopupLeft,
                                                       kPopupTop,
                                                       kPopupWidth,
-                                                      kPopupHeight),
-                                            BrowserWindow::WINDOW_BOUNDS);
+                                                      kPopupHeight));
   mediaplayer_browser_->window()->Show();
 }
 

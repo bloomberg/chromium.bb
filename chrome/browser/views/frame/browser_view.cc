@@ -682,21 +682,8 @@ void BrowserView::Show() {
   frame_->GetWindow()->Show();
 }
 
-void BrowserView::SetBounds(const gfx::Rect& bounds, BoundsType bounds_type) {
-  gfx::Rect new_bounds = bounds;
-  if (bounds_type == CONTENT_BOUNDS) {
-    // Caluclate how much larger the window needs to be to accomidate |bounds|.
-    gfx::Rect container_bounds = contents_container_->bounds();
-    int width_offset = bounds.width() - container_bounds.width();
-    int height_offset = bounds.height() - container_bounds.height();
-
-    gfx::Rect win_bounds;
-    GetWidget()->GetBounds(&win_bounds, true);
-    new_bounds.set_width(win_bounds.width() + width_offset);
-    new_bounds.set_height(win_bounds.height() + height_offset);
-  }
-
-  GetWidget()->SetBounds(new_bounds);
+void BrowserView::SetBounds(const gfx::Rect& bounds) {
+  GetWidget()->SetBounds(bounds);
 }
 
 void BrowserView::Close() {

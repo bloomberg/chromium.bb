@@ -582,8 +582,7 @@ void BrowserWindowGtk::Show() {
   gtk_widget_set_size_request(contents_container_->widget(), -1, -1);
 }
 
-void BrowserWindowGtk::SetBounds(const gfx::Rect& bounds,
-                                 BoundsType bounds_type) {
+void BrowserWindowGtk::SetBoundsImpl(const gfx::Rect& bounds, bool exterior) {
   gint x = static_cast<gint>(bounds.x());
   gint y = static_cast<gint>(bounds.y());
   gint width = static_cast<gint>(bounds.width());
@@ -591,12 +590,16 @@ void BrowserWindowGtk::SetBounds(const gfx::Rect& bounds,
 
   gtk_window_move(window_, x, y);
 
-  if (bounds_type == WINDOW_BOUNDS) {
+  if (exterior) {
     SetWindowSize(window_, width, height);
   } else {
     gtk_widget_set_size_request(contents_container_->widget(),
                                 width, height);
   }
+}
+
+void BrowserWindowGtk::SetBounds(const gfx::Rect& bounds) {
+  SetBoundsImpl(bounds, true);
 }
 
 void BrowserWindowGtk::Close() {
@@ -1393,8 +1396,7 @@ void BrowserWindowGtk::SetGeometryHints() {
   if (browser_->bounds_overridden()) {
     // For popups, bounds are set in terms of the client area rather than the
     // entire window.
-    SetBounds(bounds, (browser_->type() & Browser::TYPE_POPUP) ?
-              BrowserWindow::CONTENT_BOUNDS : BrowserWindow::WINDOW_BOUNDS);
+    SetBoundsImpl(bounds, !(browser_->type() & Browser::TYPE_POPUP));
   } else {
     // Ignore the position but obey the size.
     SetWindowSize(window_, bounds.width(), bounds.height());

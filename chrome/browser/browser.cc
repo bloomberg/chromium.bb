@@ -1934,8 +1934,7 @@ void Browser::DuplicateContentsAt(int index) {
     // been given an offset by the OS, so we shouldn't copy the old bounds.
     BrowserWindow* new_window = browser->window();
     new_window->SetBounds(gfx::Rect(new_window->GetRestoredBounds().origin(),
-                                    window()->GetRestoredBounds().size()),
-                          BrowserWindow::WINDOW_BOUNDS);
+                          window()->GetRestoredBounds().size()));
 
     // We need to show the browser now. Otherwise ContainerWin assumes the
     // TabContents is invisible and won't size it.
@@ -2276,8 +2275,7 @@ void Browser::MoveContents(TabContents* source, const gfx::Rect& pos) {
     NOTREACHED() << "moving invalid browser type";
     return;
   }
-
-  window_->SetBounds(pos, BrowserWindow::CONTENT_BOUNDS);
+  window_->SetBounds(pos);
 }
 
 void Browser::DetachContents(TabContents* source) {

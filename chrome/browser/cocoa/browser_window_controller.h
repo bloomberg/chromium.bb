@@ -163,9 +163,6 @@ class TabStripModelObserverBridge;
 // Sets whether or not the current page in the frontmost tab is bookmarked.
 - (void)setStarredState:(BOOL)isStarred;
 
-// Returns the current frame of the the content area.
-- (NSRect)tabContentsFrame;
-
 // Return the rect, in WebKit coordinates (flipped), of the window's grow box
 // in the coordinate system of the content area of the currently selected tab.
 - (NSRect)selectedTabGrowBoxRect;

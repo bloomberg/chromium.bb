@@ -37,19 +37,11 @@ class Rect;
 // NOTE: All getters may return NULL.
 class BrowserWindow {
  public:
-  enum BoundsType {
-    WINDOW_BOUNDS = 0,
-    CONTENT_BOUNDS
-  };
-
   // Show the window, or activates it if it's already visible.
   virtual void Show() = 0;
 
-  // Sets the window's size and position to the specified values. SetBounds
-  // will always move the window so its window origin is bounds.origin(), but
-  // will change either the size of the window or the content area based on
-  // |bounds_type|.
-  virtual void SetBounds(const gfx::Rect& bounds, BoundsType bounds_type) = 0;
+  // Sets the window's size and position to the specified values.
+  virtual void SetBounds(const gfx::Rect& bounds) = 0;
 
   // Closes the frame as soon as possible.  If the frame is not in a drag
   // session, it will close immediately; otherwise, it will move offscreen (so

@@ -64,27 +64,13 @@ void BrowserWindowCocoa::Show() {
   [window() makeKeyAndOrderFront:controller_];
 }
 
-void BrowserWindowCocoa::SetBounds(const gfx::Rect& bounds,
-                                   BoundsType bounds_type) {
-  gfx::Rect win_bounds = bounds;
-  if (bounds_type == BrowserWindow::CONTENT_BOUNDS) {
-    // Fetch the size of the content area in the NSWindow.
-    NSSize content_area_size = [controller_ tabContentsFrame].size;
-    int width_offset = bounds.width() - content_area_size.width;
-    int height_offset = bounds.height() - content_area_size.height;
-
-    // Adjust the size relative to the current frame size.
-    NSSize current_frame = [window() frame].size;
-    win_bounds.set_width(current_frame.width + width_offset);
-    win_bounds.set_height(current_frame.height + height_offset);
-  }
-
-  NSRect cocoa_bounds = NSMakeRect(win_bounds.x(), 0, win_bounds.width(),
-                                   win_bounds.height());
+void BrowserWindowCocoa::SetBounds(const gfx::Rect& bounds) {
+  NSRect cocoa_bounds = NSMakeRect(bounds.x(), 0, bounds.width(),
+                                   bounds.height());
   // Flip coordinates based on the primary screen.
   NSScreen* screen = [[NSScreen screens] objectAtIndex:0];
   cocoa_bounds.origin.y =
-      [screen frame].size.height - win_bounds.height() - win_bounds.y();
+      [screen frame].size.height - bounds.height() - bounds.y();
 
   [window() setFrame:cocoa_bounds display:YES];
 }

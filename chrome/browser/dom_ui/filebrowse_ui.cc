@@ -650,11 +650,9 @@ void FilebrowseHandler::OpenNewWindow(const Value* value, bool popup) {
     if (popup) {
       // TODO(dhg): Remove these from being hardcoded. Allow javascript
       // to specify.
-      browser->window()->SetBounds(gfx::Rect(0, 0, 400, 300),
-                                   BrowserWindow::WINDOW_BOUNDS);
+      browser->window()->SetBounds(gfx::Rect(0, 0, 400, 300));
     } else {
-      browser->window()->SetBounds(gfx::Rect(0, 0, 800, 600),
-                                   BrowserWindow::WINDOW_BOUNDS);
+      browser->window()->SetBounds(gfx::Rect(0, 0, 800, 600));
     }
     browser->window()->Show();
   } else {
@@ -979,8 +977,7 @@ Browser* FileBrowseUI::OpenPopup(Profile* profile,
     browser->window()->SetBounds(gfx::Rect(kPopupLeft,
                                            kPopupTop,
                                            kPopupWidth,
-                                           kPopupHeight),
-                                 BrowserWindow::WINDOW_BOUNDS);
+                                           kPopupHeight));
 
     browser->window()->Show();
   }
