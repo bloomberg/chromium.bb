@@ -241,6 +241,8 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
       plugin_wnd_proc_(NULL),
       last_message_(0),
       is_calling_wndproc(false),
+      keyboard_layout_(NULL),
+      parent_thread_id_(0),
       dummy_window_for_activation_(NULL),
       handle_event_message_filter_hook_(NULL),
       handle_event_pump_messages_event_(NULL),
@@ -1071,6 +1073,10 @@ static bool NPEventFromWebKeyboardEvent(const WebKeyboardEvent& event,
       np_event->event = WM_KEYDOWN;
       np_event->lParam = 0;
       return true;
+    case WebInputEvent::Char:
+      np_event->event = WM_CHAR;
+      np_event->lParam = 0;
+      return true;
     case WebInputEvent::KeyUp:
       np_event->event = WM_KEYUP;
       np_event->lParam = 0x8000;
@@ -1096,6 +1102,7 @@ static bool NPEventFromWebInputEvent(const WebInputEvent& event,
       return NPEventFromWebMouseEvent(
           *static_cast<const WebMouseEvent*>(&event), np_event);
     case WebInputEvent::KeyDown:
+    case WebInputEvent::Char:
     case WebInputEvent::KeyUp:
       if (event.size < sizeof(WebKeyboardEvent)) {
         NOTREACHED();
@@ -1115,6 +1122,25 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
   NPEvent np_event;
   if (!NPEventFromWebInputEvent(event, &np_event)) {
     return false;
+  }
+
+  // Synchronize the keyboard layout with the one of the browser process. Flash
+  // uses the keyboard layout of this window to verify a WM_CHAR message is
+  // valid. That is, Flash discards a WM_CHAR message unless its character is
+  // the one translated with ToUnicode(). (Since a plug-in is running on a
+  // separate process from the browser process, we need to syncronize it
+  // manually.)
+  if (np_event.event == WM_CHAR) {
+    if (!keyboard_layout_)
+      keyboard_layout_ = GetKeyboardLayout(GetCurrentThreadId());
+    if (!parent_thread_id_)
+      parent_thread_id_ = GetWindowThreadProcessId(parent_, NULL);
+    HKL parent_layout = GetKeyboardLayout(parent_thread_id_);
+    if (keyboard_layout_ != parent_layout) {
+      std::wstring layout_name(StringPrintf(L"%08x", parent_layout));
+      LoadKeyboardLayout(layout_name.c_str(), KLF_ACTIVATE);
+      keyboard_layout_ = parent_layout;
+    }
   }
 
   if (ShouldTrackEventForModalLoops(&np_event)) {
