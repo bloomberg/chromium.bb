@@ -112,13 +112,13 @@ void CompactLocationBarView::Init() {
 
   location_entry_->Init();
   location_entry_->Update(browser()->GetSelectedTabContents());
-  gtk_widget_show_all(location_entry_->widget());
-  gtk_widget_hide(location_entry_->widget());
+  gtk_widget_show_all(location_entry_->GetNativeView());
+  gtk_widget_hide(location_entry_->GetNativeView());
 
   location_entry_view_ = new views::NativeViewHost;
   AddChildView(location_entry_view_);
   location_entry_view_->set_focus_view(this);
-  location_entry_view_->Attach(location_entry_->widget());
+  location_entry_view_->Attach(location_entry_->GetNativeView());
 
   star_ = new ToolbarStarToggle(this);
   star_->SetDragController(this);
