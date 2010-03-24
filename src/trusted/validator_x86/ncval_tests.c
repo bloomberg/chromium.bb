@@ -8,6 +8,7 @@
  * ncval_tests.c - simple unit tests for NaCl validator
  */
 #include "native_client/src/include/portability.h"
+#include <assert.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -58,20 +59,6 @@ struct NCValTestCase NCValTests[] = {
     "test 2",
     "like test 1 but no illegal inst",
     1, 9, 0, 26, 0x80000000,
-    (uint8_t *)"\x55"
-    "\x89\xe5"
-    "\x83\xec\x08"
-    "\xe8\x81\x00\x00\x00"
-    "\xe8\xd3\x00\x00\x00"
-    "\xe8\xf3\x04\x00\x00"
-    "\xc9"
-    "\x90"
-    "\x00\x00\xf4",
-  },
-  {
-    "test 3",
-    "like test 1 but no illegal inst, with bad alignment",
-    1, 9, 0, 26, 0x80000001,
     (uint8_t *)"\x55"
     "\x89\xe5"
     "\x83\xec\x08"
@@ -892,6 +879,7 @@ static void TestValidator(struct NCValTestCase *vtest) {
 
   vstate = NCValidateInit(vtest->vaddr,
                           vtest->vaddr + vtest->testsize, 16);
+  assert (vstate != NULL);
   NCValidateSegment(byte0, (uint32_t)vtest->vaddr, vtest->testsize, vstate);
   free(byte0);
   rc = NCValidateFinish(vstate);
@@ -909,12 +897,31 @@ static void TestValidator(struct NCValTestCase *vtest) {
   exit(-1);
 }
 
+void test_fail_on_bad_alignment() {
+  struct NCValidatorState *vstate;
+
+  vstate = NCValidateInit(0x80000000, 0x80001000, 16);
+  assert (vstate != NULL);
+  NCValidateFreeState(&vstate);
+
+  /* Unaligned start addresses are not allowed. */
+  vstate = NCValidateInit(0x80000001, 0x80001000, 16);
+  assert (vstate == NULL);
+
+  /* Only alignments of 32 and 64 bytes are supported. */
+  vstate = NCValidateInit(0x80000000, 0x80001000, 64);
+  assert (vstate == NULL);
+}
+
 void ncvalidate_unittests() {
   size_t i;
 
   for (i = 0; i < ARRAYSIZE(NCValTests); i++) {
     TestValidator(&NCValTests[i]);
   }
+
+  test_fail_on_bad_alignment();
+
   Info("\nAll tests passed.\n\n");
 }
 

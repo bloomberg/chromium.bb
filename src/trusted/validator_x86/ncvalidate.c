@@ -280,7 +280,6 @@ static void InitBadPrefixMask() {
 struct NCValidatorState *NCValidateInit(const uint32_t vbase,
                                         const uint32_t vlimit,
                                         const uint8_t alignment) {
-  uint32_t alignbase = vbase & (~alignment);
   struct NCValidatorState *vstate;
 
   dprint(("NCValidateInit(%08x, %08x, %08x)\n", vbase, vlimit, alignment));
@@ -288,15 +287,16 @@ struct NCValidatorState *NCValidateInit(const uint32_t vbase,
   do {
     if (vlimit <= vbase) break;
     if (alignment != 16 && alignment != 32) break;
+    if ((vbase & (alignment - 1)) != 0) break;
     dprint(("ncv_init(%x, %x)\n", vbase, vlimit));
     vstate = (struct NCValidatorState *)calloc(1, sizeof(*vstate));
     if (vstate == NULL) break;
-    vstate->iadrbase = alignbase;
+    vstate->iadrbase = vbase;
     vstate->iadrlimit = vlimit;
     vstate->alignment = alignment;
     vstate->alignmask = alignment-1;
-    vstate->vttable = (uint8_t *)calloc(IATOffset(vlimit - alignbase) + 1, 1);
-    vstate->kttable = (uint8_t *)calloc(IATOffset(vlimit - alignbase) + 1, 1);
+    vstate->vttable = (uint8_t *)calloc(IATOffset(vlimit - vbase) + 1, 1);
+    vstate->kttable = (uint8_t *)calloc(IATOffset(vlimit - vbase) + 1, 1);
     if (vstate->vttable == NULL || vstate->kttable == NULL) break;
     dprint(("  allocated tables\n"));
     Stats_Init(vstate);
@@ -389,6 +389,8 @@ int NCValidateFinish(struct NCValidatorState *vstate) {
   }
   /* check basic block boundaries */
   if (vstate->iadrbase & vstate->alignmask) {
+    /* This should never happen because the alignment of iadrbase is */
+    /* checked in NCValidateInit(). */
     ValidatePrintError(vstate->iadrbase, "Bad base address alignment");
     Stats_BadAlignment(vstate);
   }
