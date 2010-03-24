@@ -27,7 +27,7 @@
 - (void)handleClick:(id)sender {
   // Pass along the click notification to our owner.
   DCHECK(statusIcon_);
-  statusIcon_->HandleClick();
+  statusIcon_->DispatchClickEvent();
 }
 
 @end
@@ -74,28 +74,6 @@ void StatusIconMac::SetPressedImage(const SkBitmap& bitmap) {
 
 void StatusIconMac::SetToolTip(const string16& tool_tip) {
   [item() setToolTip:base::SysUTF16ToNSString(tool_tip)];
-}
-
-void StatusIconMac::AddObserver(StatusIconObserver* observer) {
-  observers_.push_back(observer);
-}
-
-void StatusIconMac::RemoveObserver(StatusIconObserver* observer) {
-  std::vector<StatusIconObserver*>::iterator iter =
-      std::find(observers_.begin(), observers_.end(), observer);
-  if (iter != observers_.end())
-    observers_.erase(iter);
-}
-
-void StatusIconMac::HandleClick() {
-  // Walk observers, call callback for each one.
-  for (std::vector<StatusIconObserver*>::const_iterator iter =
-           observers_.begin();
-       iter != observers_.end();
-       ++iter) {
-    StatusIconObserver* observer = *iter;
-    observer->OnClicked();
-  }
 }
 
 // static factory method

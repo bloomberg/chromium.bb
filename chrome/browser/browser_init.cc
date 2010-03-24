@@ -421,17 +421,13 @@ bool BrowserInit::LaunchBrowser(
     chromeos::CrosLibrary::Get()->GetPowerLibrary()->AddObserver(observer);
   }
 #endif
-#if defined(OS_MACOSX)
-  // TODO(atwilson): Status tray UI is currently only supported on the mac
-  // (http://crbug.com/37375).
+
   if (command_line.HasSwitch(switches::kLongLivedExtensions)) {
     // Create status icons
     StatusTrayManager* tray = g_browser_process->status_tray_manager();
     if (tray)
       tray->Init(profile);
   }
-#endif
-
   return true;
 }
 

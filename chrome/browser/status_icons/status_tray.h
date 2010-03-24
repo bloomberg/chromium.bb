@@ -10,20 +10,15 @@
 
 class StatusIcon;
 
-// Factory interface for creating icons to improve testability.
-class StatusIconFactory {
- public:
-  virtual StatusIcon* CreateIcon() = 0;
-  virtual ~StatusIconFactory() { }
-};
-
 // Provides a cross-platform interface to the system's status tray, and exposes
 // APIs to add/remove icons to the tray and attach context menus.
 class StatusTray {
  public:
-  // Takes ownership of |factory|.
-  explicit StatusTray(StatusIconFactory* factory);
-  ~StatusTray();
+  // Static factory method that is implemented separately for each platform to
+  // produce the appropriate platform-specific instance.
+  static StatusTray* Create();
+
+  virtual ~StatusTray();
 
   // Gets the current status icon associated with this identifier, or creates
   // a new one if none exists. The StatusTray retains ownership of the
@@ -33,15 +28,27 @@ class StatusTray {
   // Removes the current status icon associated with this identifier, if any.
   void RemoveStatusIcon(const string16& identifier);
 
- private:
+ protected:
+  StatusTray();
+  // Factory method for creating a status icon.
+  virtual StatusIcon* CreateStatusIcon() = 0;
+
+  // Removes all StatusIcons (used by derived classes to clean up in case they
+  // track external state used by the StatusIcons).
+  void RemoveAllIcons();
+
   typedef base::hash_map<string16, StatusIcon*> StatusIconMap;
+  // Returns the list of active status icons so subclasses can operate on them.
+  const StatusIconMap& status_icons() { return status_icons_; }
+
+ private:
   // Map containing all active StatusIcons.
   // Key: String identifiers (passed in to GetStatusIcon)
   // Value: The StatusIcon associated with that identifier (strong pointer -
   //   StatusIcons are freed when the StatusTray destructor is called).
   StatusIconMap status_icons_;
 
-  scoped_ptr<StatusIconFactory> factory_;
+  DISALLOW_COPY_AND_ASSIGN(StatusTray);
 };
 
 #endif  // CHROME_BROWSER_STATUS_ICONS_STATUS_TRAY_H_

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_STATUS_ICONS_STATUS_ICON_H_
 #define CHROME_BROWSER_STATUS_ICONS_STATUS_ICON_H_
 
+#include <vector>
+
 #include "base/string16.h"
 
 class SkBitmap;
@@ -14,6 +16,7 @@ class StatusIcon {
   // Creates a new StatusIcon.
   static StatusIcon* Create();
 
+  StatusIcon() {}
   virtual ~StatusIcon() {}
 
   // Sets the image associated with this status icon.
@@ -33,9 +36,16 @@ class StatusIcon {
     virtual void OnClicked() = 0;
   };
 
-  // Adds/removes a observer for status bar events.
-  virtual void AddObserver(StatusIcon::StatusIconObserver* observer) = 0;
-  virtual void RemoveObserver(StatusIcon::StatusIconObserver* observer) = 0;
+  // Adds/removes an observer for status bar events.
+  void AddObserver(StatusIconObserver* observer);
+  void RemoveObserver(StatusIconObserver* observer);
+
+  // Dispatches a click event to the observers.
+  void DispatchClickEvent();
+
+ private:
+  std::vector<StatusIconObserver*> observers_;
+  DISALLOW_COPY_AND_ASSIGN(StatusIcon);
 };
 
 

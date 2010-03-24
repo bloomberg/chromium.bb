@@ -67,6 +67,7 @@ const wchar_t kBrowserAppID[] = L"Chrome";
 #else
 const wchar_t kBrowserAppID[] = L"Chromium";
 #endif
+const wchar_t kStatusTrayWindowClass[] = L"Chrome_StatusTrayWindow";
 #endif  // defined(OS_WIN)
 
 const wchar_t kMessageWindowClass[] = L"Chrome_MessageWindow";

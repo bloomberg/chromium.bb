@@ -13,11 +13,6 @@
 
 class SkBitmap;
 
-class MockStatusIconObserver : public StatusIcon::StatusIconObserver {
- public:
-  MOCK_METHOD0(OnClicked, void());
-};
-
 class StatusIconMacTest : public CocoaTest {
 };
 
@@ -32,29 +27,3 @@ TEST_F(StatusIconMacTest, Create) {
   icon->SetPressedImage(*pressed);
   icon->SetToolTip(ASCIIToUTF16("tool tip"));
 }
-
-TEST_F(StatusIconMacTest, ObserverAdd) {
-  // Make sure that observers are invoked when we click items.
-  StatusIconMac icon;
-  MockStatusIconObserver observer, observer2;
-  EXPECT_CALL(observer, OnClicked()).Times(2);
-  EXPECT_CALL(observer2, OnClicked());
-  icon.AddObserver(&observer);
-  icon.HandleClick();
-  icon.AddObserver(&observer2);
-  icon.HandleClick();
-  icon.RemoveObserver(&observer);
-  icon.RemoveObserver(&observer2);
-}
-
-TEST_F(StatusIconMacTest, ObserverRemove) {
-  // Make sure that observers are no longer invoked after they are removed.
-  StatusIconMac icon;
-  MockStatusIconObserver observer;
-  EXPECT_CALL(observer, OnClicked());
-  icon.AddObserver(&observer);
-  icon.HandleClick();
-  icon.RemoveObserver(&observer);
-  icon.HandleClick();
-}
-

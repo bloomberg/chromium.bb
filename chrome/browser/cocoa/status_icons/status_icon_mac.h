@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_COCOA_STATUS_ICONS_STATUS_ICON_MAC_H_
 #define CHROME_BROWSER_COCOA_STATUS_ICONS_STATUS_ICON_MAC_H_
 
-#include <vector>
-
 #import <Cocoa/Cocoa.h>
 
 #include "base/scoped_nsobject.h"
@@ -22,21 +20,10 @@ class StatusIconMac : public StatusIcon {
   StatusIconMac();
   virtual ~StatusIconMac();
 
-  // Sets the image associated with this status icon.
+  // Overridden from StatusIcon
   virtual void SetImage(const SkBitmap& image);
-
-  // Sets the pressed image associated with this status icon.
   virtual void SetPressedImage(const SkBitmap& image);
-
-  // Sets the hover text for this status icon.
   virtual void SetToolTip(const string16& tool_tip);
-
-  // Adds/removes a observer for status bar events.
-  virtual void AddObserver(StatusIcon::StatusIconObserver* observer);
-  virtual void RemoveObserver(StatusIcon::StatusIconObserver* observer);
-
-  // Called back if the user clicks on the status bar icon.
-  void HandleClick();
 
  private:
   // Getter for item_ that allows lazy initialization.
@@ -44,7 +31,8 @@ class StatusIconMac : public StatusIcon {
   scoped_nsobject<NSStatusItem> item_;
 
   scoped_nsobject<StatusItemController> controller_;
-  std::vector<StatusIcon::StatusIconObserver*> observers_;
+
+  DISALLOW_COPY_AND_ASSIGN(StatusIconMac);
 };
 
 

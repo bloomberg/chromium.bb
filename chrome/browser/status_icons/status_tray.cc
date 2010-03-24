@@ -7,14 +7,18 @@
 #include "base/stl_util-inl.h"
 #include "chrome/browser/status_icons/status_icon.h"
 
-StatusTray::StatusTray(StatusIconFactory* factory)
-    : factory_(factory) {
+StatusTray::StatusTray() {
 }
 
 StatusTray::~StatusTray() {
+  RemoveAllIcons();
+}
+
+void StatusTray::RemoveAllIcons() {
   // Walk any active status icons and delete them.
   STLDeleteContainerPairSecondPointers(status_icons_.begin(),
                                        status_icons_.end());
+  status_icons_.clear();
 }
 
 StatusIcon* StatusTray::GetStatusIcon(const string16& identifier) {
@@ -23,7 +27,7 @@ StatusIcon* StatusTray::GetStatusIcon(const string16& identifier) {
     return iter->second;
 
   // No existing StatusIcon, create a new one.
-  StatusIcon* icon = factory_->CreateIcon();
+  StatusIcon* icon = CreateStatusIcon();
   if (icon)
     status_icons_[identifier] = icon;
   return icon;

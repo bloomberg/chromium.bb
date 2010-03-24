@@ -18,34 +18,31 @@ class MockStatusIcon : public StatusIcon {
   virtual void RemoveObserver(StatusIcon::StatusIconObserver* observer) {}
 };
 
-class TestStatusIconFactory : public StatusIconFactory {
+class TestStatusTray : public StatusTray {
  public:
-  MOCK_METHOD0(CreateIcon, StatusIcon*());
+  MOCK_METHOD0(CreateStatusIcon, StatusIcon*());
 };
 
 TEST(StatusTrayTest, Create) {
   // Check for creation and leaks.
-  TestStatusIconFactory* factory = new TestStatusIconFactory();
-  StatusTray tray(factory);
-  EXPECT_CALL(*factory, CreateIcon()).WillOnce(Return(new MockStatusIcon()));
+  TestStatusTray tray;
+  EXPECT_CALL(tray, CreateStatusIcon()).WillOnce(Return(new MockStatusIcon()));
   tray.GetStatusIcon(ASCIIToUTF16("test"));
 }
 
 TEST(StatusTrayTest, GetIconTwice) {
-  TestStatusIconFactory* factory = new TestStatusIconFactory();
-  StatusTray tray(factory);
+  TestStatusTray tray;
   string16 id = ASCIIToUTF16("test");
   // We should not try to create a new icon if we get the same ID twice.
-  EXPECT_CALL(*factory, CreateIcon()).WillOnce(Return(new MockStatusIcon()));
+  EXPECT_CALL(tray, CreateStatusIcon()).WillOnce(Return(new MockStatusIcon()));
   StatusIcon* icon =  tray.GetStatusIcon(id);
   EXPECT_EQ(icon, tray.GetStatusIcon(id));
 }
 
 TEST(StatusTrayTest, GetIconAfterRemove) {
-  TestStatusIconFactory* factory = new TestStatusIconFactory();
-  StatusTray tray(factory);
+  TestStatusTray tray;
   string16 id = ASCIIToUTF16("test");
-  EXPECT_CALL(*factory, CreateIcon()).Times(2)
+  EXPECT_CALL(tray, CreateStatusIcon()).Times(2)
       .WillOnce(Return(new MockStatusIcon()))
       .WillOnce(Return(new MockStatusIcon()));
   StatusIcon* icon =  tray.GetStatusIcon(id);

@@ -14,21 +14,6 @@
 #include "grit/browser_resources.h"
 #include "grit/theme_resources.h"
 
-class StatusIconFactoryImpl : public StatusIconFactory {
- public:
-  virtual StatusIcon* CreateIcon();
-};
-
-StatusIcon* StatusIconFactoryImpl::CreateIcon() {
-#ifdef OS_MACOSX
-  return StatusIcon::Create();
-#else
-  // TODO(atwilson): Add support for non-Mac platforms.
-  return 0;
-#endif
-}
-
-
 StatusTrayManager::StatusTrayManager() {
 }
 
@@ -36,9 +21,10 @@ StatusTrayManager::~StatusTrayManager() {
 }
 
 void StatusTrayManager::Init(Profile* profile) {
+#if !defined(OS_LINUX)
   DCHECK(profile);
   profile_ = profile;
-  status_tray_.reset(new StatusTray(new StatusIconFactoryImpl()));
+  status_tray_.reset(StatusTray::Create());
   StatusIcon* icon = status_tray_->GetStatusIcon(ASCIIToUTF16("chrome_main"));
   if (icon) {
     // Create an icon and add ourselves as a click observer on it
@@ -50,6 +36,7 @@ void StatusTrayManager::Init(Profile* profile) {
     icon->SetPressedImage(*pressed);
     icon->AddObserver(this);
   }
+#endif
 }
 
 void StatusTrayManager::OnClicked() {
