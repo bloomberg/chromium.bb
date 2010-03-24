@@ -490,7 +490,14 @@ class ThreadSanitizer(ValgrindTool):
     # The -v flag is needed for printing the list of used suppressions.
     ret += ["-v"]
 
+    # This should shorten filepaths for local builds.
     ret += ["--file-prefix-to-cut=%s/" % self._source_dir]
+
+    # This should shorten filepaths on bots.
+    ret += ["--file-prefix-to-cut=build/src/"]
+
+    # This should shorten filepaths for functions intercepted in TSan.
+    ret += ["--file-prefix-to-cut=scripts/tsan/tsan/"]
 
     if self.EvalBoolFlag(self._options.pure_happens_before):
       ret += ["--pure-happens-before=yes"] # "no" is the default value for TSAN
@@ -504,6 +511,9 @@ class ThreadSanitizer(ValgrindTool):
     # --show-pc flag is needed for parsing the error logs on Darwin.
     if platform_suffix == 'mac':
       ret += ["--show-pc=yes"]
+
+    # Don't show googletest frames in stacks.
+    ret += ["--cut_stack_below=testing*Test*Run*"]
 
     return ret
 
