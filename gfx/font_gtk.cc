@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
+#include "gfx/gtk_util.h"
 
 namespace gfx {
 
@@ -56,14 +57,9 @@ static std::wstring FindBestMatchFontFamilyName(const char* family_name) {
 // seems to give us the same sizes as used by Pango for all our fonts in both
 // English and Thai.
 float Font::GetPangoScaleFactor() {
-  static float scale_factor = 0;
+  static float scale_factor = gfx::GetPangoResolution();
   static bool determined_scale = false;
   if (!determined_scale) {
-    PangoContext* context = gdk_pango_context_get();
-    scale_factor = pango_cairo_context_get_resolution(context);
-    // Until we switch to vector graphics, force the max DPI to 96.0.
-    scale_factor = std::min(scale_factor, 96.f);
-    g_object_unref(context);
     if (scale_factor <= 0)
       scale_factor = 1;
     else

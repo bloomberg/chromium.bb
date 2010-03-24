@@ -43,6 +43,10 @@ GdkPixbuf* GdkPixbufFromSkBitmap(const SkBitmap* bitmap);
 void SubtractRectanglesFromRegion(GdkRegion* region,
                                   const std::vector<Rect>& cutouts);
 
+// Returns the resolution (DPI) used by pango. A negative values means the
+// resolution hasn't been set.
+double GetPangoResolution();
+
 }  // namespace gfx
 
 namespace {

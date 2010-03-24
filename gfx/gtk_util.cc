@@ -87,4 +87,20 @@ void SubtractRectanglesFromRegion(GdkRegion* region,
   }
 }
 
+double GetPangoResolution() {
+  static double resolution;
+  static bool determined_resolution = false;
+  if (!determined_resolution) {
+    determined_resolution = true;
+    PangoContext* default_context = gdk_pango_context_get();
+    resolution = pango_cairo_context_get_resolution(default_context);
+#if !defined(OS_CHROMEOS)
+    // Until we switch to vector graphics, force the max DPI to 96.0.
+    resolution = std::min(resolution, 96.);
+#endif
+    g_object_unref(default_context);
+  }
+  return resolution;
+}
+
 }  // namespace gfx

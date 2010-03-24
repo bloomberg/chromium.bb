@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/font.h"
+#include "gfx/gtk_util.h"
 #include "gfx/rect.h"
 
 namespace {
@@ -21,20 +22,6 @@ const gunichar kAcceleratorChar = '&';
 // Font settings that we initialize once and then use when drawing text in
 // DrawStringInt().
 static cairo_font_options_t* cairo_font_options = NULL;
-
-// Returns the resolution used by pango. A negative values means the resolution
-// hasn't been set.
-static double GetPangoResolution() {
-  static double resolution;
-  static bool determined_resolution = false;
-  if (!determined_resolution) {
-    determined_resolution = true;
-    PangoContext* default_context = gdk_pango_context_get();
-    resolution = pango_cairo_context_get_resolution(default_context);
-    g_object_unref(default_context);
-  }
-  return resolution;
-}
 
 // Update |cairo_font_options| based on GtkSettings, allocating it if needed.
 static void UpdateCairoFontOptions() {
@@ -155,7 +142,7 @@ static void SetupPangoLayout(PangoLayout* layout,
   // Set the resolution to match that used by Gtk. If we don't set the
   // resolution and the resolution differs from the default, Gtk and Chrome end
   // up drawing at different sizes.
-  double resolution = GetPangoResolution();
+  double resolution = gfx::GetPangoResolution();
   if (resolution > 0) {
     pango_cairo_context_set_resolution(pango_layout_get_context(layout),
                                        resolution);

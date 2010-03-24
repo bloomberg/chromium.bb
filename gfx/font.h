@@ -232,8 +232,7 @@ class Font {
   // The default font, used for the default constructor.
   static Font* default_font_;
 
-  // Return the scale factor for fonts that account for DPI.  We clamp the
-  // max DPI to prevent large fonts from overflowing UI elements.
+  // Return the scale factor for fonts that account for DPI.
   static float GetPangoScaleFactor();
 
   // The average width of a character, initialized and cached if needed.
