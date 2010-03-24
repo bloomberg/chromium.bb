@@ -307,6 +307,8 @@ int16 NPP_HandleEvent(NPP instance, void *event)
                 executeScript(obj, "layoutTestController.notifyDone();");
             }
             break;
+        case WM_CHAR:
+            break;
         case WM_KEYDOWN:
             log(instance, "keyDown '%c'", MapVirtualKey(evt->wParam, MAPVK_VK_TO_CHAR));
             break;
