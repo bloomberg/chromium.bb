@@ -3507,38 +3507,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
 
-      <!-- about:plugins strings -->
-      <message name="IDS_ABOUT_PLUGINS_TITLE" desc="Title on the about:plugins page">
-        About Plug-ins
-      </message>
-      <message name="IDS_ABOUT_PLUGINS_HEADING_PLUGS" desc="about:plugins page heading if the user has at least one plugin installed">
-        Installed plug-ins
-      </message>
-      <message name="IDS_ABOUT_PLUGINS_HEADING_NOPLUGS" desc="about:plugins page heading if the user has no plugins installed">
-        No plug-ins are installed
-      </message>
-      <message name="IDS_ABOUT_PLUGINS_FILENAME_LABEL" desc="about:plugins file name label">
-        File name:
-      </message>
-      <message name="IDS_ABOUT_PLUGINS_MIMETYPE_LABEL" desc="about:plugins mime type table heading">
-        MIME Type
-      </message>
-      <message name="IDS_ABOUT_PLUGINS_DESCRIPTION_LABEL" desc="about:plugins description table heading">
-        Description
-      </message>
-      <message name="IDS_ABOUT_PLUGINS_SUFFIX_LABEL" desc="about:plugins suffix table heading">
-        Suffixes
-      </message>
-      <message name="IDS_ABOUT_PLUGINS_ENABLED_LABEL" desc="about:plugins enabled table heading">
-        Enabled
-      </message>
-      <message name="IDS_ABOUT_PLUGINS_ENABLED_YES" desc="about:plugins enabled label">
-        Yes
-      </message>
-      <message name="IDS_ABOUT_PLUGINS_ENABLED_NO" desc="about:plugins not enabled label">
-        No
-      </message>
-
       <!-- about:version strings -->
       <message name="IDS_ABOUT_VERSION_TITLE" desc="Title on the about:version page">
         About Version

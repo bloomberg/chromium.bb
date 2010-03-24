@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -85,7 +85,6 @@ const char kDnsPath[] = "dns";
 const char kHistogramsPath[] = "histograms";
 const char kMemoryRedirectPath[] = "memory-redirect";
 const char kMemoryPath[] = "memory";
-const char kPluginsPath[] = "plugins";
 const char kStatsPath[] = "stats";
 const char kSyncPath[] = "sync";
 const char kTasksPath[] = "tasks";
@@ -334,40 +333,6 @@ static std::string AboutObjects(const std::string& query) {
   return data;
 }
 #endif  // TRACK_ALL_TASK_OBJECTS
-
-std::string AboutPlugins() {
-  // Strings used in the JsTemplate file.
-  DictionaryValue localized_strings;
-  localized_strings.SetString(L"title",
-      l10n_util::GetString(IDS_ABOUT_PLUGINS_TITLE));
-  localized_strings.SetString(L"headingPlugs",
-      l10n_util::GetString(IDS_ABOUT_PLUGINS_HEADING_PLUGS));
-  localized_strings.SetString(L"headingNoPlugs",
-      l10n_util::GetString(IDS_ABOUT_PLUGINS_HEADING_NOPLUGS));
-  localized_strings.SetString(L"filename",
-      l10n_util::GetString(IDS_ABOUT_PLUGINS_FILENAME_LABEL));
-  localized_strings.SetString(L"mimetype",
-      l10n_util::GetString(IDS_ABOUT_PLUGINS_MIMETYPE_LABEL));
-  localized_strings.SetString(L"description",
-      l10n_util::GetString(IDS_ABOUT_PLUGINS_DESCRIPTION_LABEL));
-  localized_strings.SetString(L"suffixes",
-      l10n_util::GetString(IDS_ABOUT_PLUGINS_SUFFIX_LABEL));
-  localized_strings.SetString(L"enabled",
-      l10n_util::GetString(IDS_ABOUT_PLUGINS_ENABLED_LABEL));
-  localized_strings.SetString(L"enabled_yes",
-      l10n_util::GetString(IDS_ABOUT_PLUGINS_ENABLED_YES));
-  localized_strings.SetString(L"enabled_no",
-      l10n_util::GetString(IDS_ABOUT_PLUGINS_ENABLED_NO));
-
-  ChromeURLDataManager::DataSource::SetFontAndTextDirection(&localized_strings);
-
-  static const base::StringPiece plugins_html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_ABOUT_PLUGINS_HTML));
-
-  return jstemplate_builder::GetTemplatesHtml(
-      plugins_html, &localized_strings, "t" /* template root node id */);
-}
 
 std::string AboutStats() {
   // We keep the DictionaryValue tree live so that we can do delta
@@ -694,8 +659,6 @@ void AboutSource::StartDataRequest(const std::string& path_raw,
   } else if (path == kTasksPath) {
     response = AboutObjects(info);
 #endif
-  } else if (path == kPluginsPath) {
-    response = AboutPlugins();
   } else if (path == kStatsPath) {
     response = AboutStats();
 #if defined(USE_TCMALLOC)
@@ -929,6 +892,12 @@ bool WillHandleBrowserAboutURL(GURL* url, Profile* profile) {
   // Rewrite about:net-internals/* URLs to chrome://net-internals/*
   if (StartsWithAboutSpecifier(*url, chrome::kAboutNetInternalsURL)) {
     *url = RemapAboutURL(chrome::kNetworkViewInternalsURL, *url);
+    return true;
+  }
+
+  // Rewrite about:plugins to chrome://plugins/.
+  if (LowerCaseEqualsASCII(url->spec(), chrome::kAboutPluginsURL)) {
+    *url = GURL(chrome::kChromeUIPluginsURL);
     return true;
   }
 
