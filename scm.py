@@ -494,6 +494,17 @@ class SVN(object):
     return dom.getElementsByTagName('entry')[0].getAttribute('revision')
 
   @staticmethod
+  def CaptureBaseRevision(cwd):
+    """Get the base revision of a SVN repository.
+
+    Returns:
+      Int base revision
+    """
+    info = SVN.Capture(["info", "--xml"], cwd)
+    dom = xml.dom.minidom.parseString(info)
+    return dom.getElementsByTagName('entry')[0].getAttribute('revision')
+
+  @staticmethod
   def CaptureStatus(files):
     """Returns the svn 1.5 svn status emulated output.
 

@@ -248,7 +248,7 @@ Valid options:
 """,
     "revinfo":
     """Outputs source path, server URL and revision information for every
-dependency in all solutions (no local checkout required).
+dependency in all solutions.
 
 usage: revinfo [options]
 """,
@@ -798,13 +798,20 @@ class GClient(object):
       self._SaveEntries(entries)
 
   def PrintRevInfo(self):
-    """Output revision info mapping for the client and its dependencies. This
-    allows the capture of an overall "revision" for the source tree that can
-    be used to reproduce the same tree in the future. The actual output
+    """Output revision info mapping for the client and its dependencies.
+
+    This allows the capture of an overall "revision" for the source tree that
+    can be used to reproduce the same tree in the future. The actual output
     contains enough information (source paths, svn server urls and revisions)
-    that it can be used either to generate external svn commands (without
+    that it can be used either to generate external svn/git commands (without
     gclient) or as input to gclient's --rev option (with some massaging of
     the data).
+
+    Since we care about the revision of the current source tree, for git
+    repositories this command uses the revision of the HEAD. For subversion we
+    use BASE.
+
+    The --snapshot option allows creating a .gclient file to reproduce the tree.
 
     Raises:
       Error: If the client has conflicting entries.
@@ -827,21 +834,11 @@ class GClient(object):
     if not solutions:
       raise gclient_utils.Error("No solution specified")
 
-    # Inner helper to generate base url and rev tuple (including honoring
-    # |revision_overrides|)
+    # Inner helper to generate base url and rev tuple
     def GetURLAndRev(name, original_url):
-      url, revision = gclient_utils.SplitUrlRevision(original_url)
-      if not revision:
-        if revision_overrides.has_key(name):
-          return (url, revision_overrides[name])
-        else:
-          scm = gclient_scm.CreateSCM(solution["url"], self._root_dir, name)
-          return (url, scm.revinfo(self._options, [], None))
-      else:
-        if revision_overrides.has_key(name):
-          return (url, revision_overrides[name])
-        else:
-          return (url, revision)
+      url, _ = gclient_utils.SplitUrlRevision(original_url)
+      scm = gclient_scm.CreateSCM(original_url, self._root_dir, name)
+      return (url, scm.revinfo(self._options, [], None))
 
     # text of the snapshot gclient file
     new_gclient = ""

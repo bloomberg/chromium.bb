@@ -806,7 +806,7 @@ class SVNWrapper(SCMWrapper):
   def revinfo(self, options, args, file_list):
     """Display revision"""
     __pychecker__ = 'unusednames=args,file_list,options'
-    return scm.SVN.CaptureHeadRevision(self.url)
+    return scm.SVN.CaptureBaseRevision(self.checkout_path)
 
   def runhooks(self, options, args, file_list):
     self.status(options, args, file_list)
