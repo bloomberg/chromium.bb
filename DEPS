@@ -6,6 +6,7 @@ vars = {
   "breakpad_rev": "452",
   "chrome_rev": "42043",
   "nacl_sdk_rev": "1520",
+  "nacl_breakpad_gyp_rev": "1789",
   "gyp_rev": "770",
   "gtest_rev": "267",
   "tools_rev": "1680",
@@ -26,7 +27,9 @@ deps = {
     (Var("native_client_trunk") + "/src/third_party/binutils@" +
      Var("tools_rev")),
   "breakpad":
-    Var("native_client_trunk") + "/src/native_client/src/third_party/breakpad",
+    Var("native_client_trunk")
+    + "/src/native_client/src/third_party/breakpad@"
+    + Var("nacl_breakpad_gyp_rev"),
   "breakpad/src":
     "http://google-breakpad.googlecode.com/svn/trunk/src@" +
     Var("breakpad_rev"),
