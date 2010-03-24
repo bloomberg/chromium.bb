@@ -38,11 +38,6 @@ class GtkKeyBindingsHandler {
   explicit GtkKeyBindingsHandler(GtkWidget* parent_widget);
   ~GtkKeyBindingsHandler();
 
-  // Key bindings handler will be disabled when IME is disabled by webkit.
-  void set_enabled(bool enabled) {
-    enabled_ = enabled;
-  }
-
   // Matches a key event against predefined gtk key bindings, false will be
   // returned if the key event doesn't correspond to a predefined key binding.
   // Edit commands matched with |wke| will be stored in |edit_commands|.
@@ -127,10 +122,6 @@ class GtkKeyBindingsHandler {
 
   // Buffer to store the match results.
   EditCommands edit_commands_;
-
-  // Indicates if key bindings handler is enabled or not.
-  // It'll only be enabled if IME is enabled by webkit.
-  bool enabled_;
 };
 
 #endif  // CHROME_BROWSER_RENDERER_HOST_GTK_KEY_BINDINGS_HANDLER_H_

@@ -14,8 +14,7 @@
 
 GtkKeyBindingsHandler::GtkKeyBindingsHandler(GtkWidget* parent_widget)
     : handler_(CreateNewHandler()),
-      edit_commands_(NULL),
-      enabled_(false) {
+      edit_commands_(NULL) {
   DCHECK(GTK_IS_FIXED(parent_widget));
   // We need add the |handler_| object into gtk widget hierarchy, so that
   // gtk_bindings_activate_event() can find correct display and keymaps from
@@ -29,7 +28,7 @@ GtkKeyBindingsHandler::~GtkKeyBindingsHandler() {
 
 bool GtkKeyBindingsHandler::Match(const NativeWebKeyboardEvent& wke,
                                   EditCommands* edit_commands) {
-  if (!enabled_ || wke.type == WebKit::WebInputEvent::Char || !wke.os_event)
+  if (wke.type == WebKit::WebInputEvent::Char || !wke.os_event)
     return false;
 
   edit_commands_.clear();

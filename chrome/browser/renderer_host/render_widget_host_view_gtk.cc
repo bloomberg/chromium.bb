@@ -526,7 +526,6 @@ void RenderWidgetHostViewGtk::SetIsLoading(bool is_loading) {
 void RenderWidgetHostViewGtk::IMEUpdateStatus(int control,
                                               const gfx::Rect& caret_rect) {
   im_context_->UpdateStatus(control, caret_rect);
-  key_bindings_handler_->set_enabled(control != IME_DISABLE);
 }
 
 void RenderWidgetHostViewGtk::DidPaintBackingStoreRects(

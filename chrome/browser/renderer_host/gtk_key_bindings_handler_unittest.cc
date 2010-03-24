@@ -72,9 +72,6 @@ class GtkKeyBindingsHandlerTest : public testing::Test {
                       const EditCommand expected_result[],
                       size_t size) {
     EditCommands result;
-    handler_->set_enabled(false);
-    ASSERT_FALSE(handler_->Match(event, &result));
-    handler_->set_enabled(true);
     ASSERT_TRUE(handler_->Match(event, &result));
     ASSERT_EQ(size, result.size());
     for (size_t i = 0; i < size; ++i) {
