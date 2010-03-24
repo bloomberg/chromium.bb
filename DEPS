@@ -101,10 +101,6 @@ deps = {
 
   "src/third_party/swig/Lib":
     "/trunk/deps/third_party/swig/Lib@" + Var("swig_revision"),
-
-  "src/third_party/ffmpeg/source/patched-ffmpeg-mt":
-    "/trunk/deps/third_party/ffmpeg/patched-ffmpeg-mt@" +
-    Var("ffmpeg_revision"),
 }
 
 
@@ -169,6 +165,9 @@ deps_os = {
     # TODO(ajwong): Move this into the OS-independent block.
     "src/third_party/yasm/source/patched-yasm":
       "/trunk/deps/third_party/yasm/patched-yasm@29937",
+    "src/third_party/ffmpeg/source/patched-ffmpeg-mt":
+      "/trunk/deps/third_party/ffmpeg/patched-ffmpeg-mt@" +
+      Var("ffmpeg_revision"),
 
     "src/third_party/swig/mac":
       "/trunk/deps/third_party/swig/mac@" + Var("swig_revision"),
@@ -187,6 +186,9 @@ deps_os = {
     # TODO(ajwong): Move this into the OS-independent block.
     "src/third_party/yasm/source/patched-yasm":
       "/trunk/deps/third_party/yasm/patched-yasm@29937",
+    "src/third_party/ffmpeg/source/patched-ffmpeg-mt":
+      "/trunk/deps/third_party/ffmpeg/patched-ffmpeg-mt@" +
+      Var("ffmpeg_revision"),
 
     "src/third_party/swig/linux":
       "/trunk/deps/third_party/swig/linux@" + Var("swig_revision"),
