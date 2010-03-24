@@ -130,7 +130,7 @@ class BrowserInit {
 
    private:
     FRIEND_TEST(BrowserTest, RestorePinnedTabs);
-    FRIEND_TEST(BrowserTest, FLAKY_RestorePinnedTabs);
+    FRIEND_TEST(BrowserTest, DISABLED_RestorePinnedTabs);
 
     // If the process was launched with the web application command line flags,
     // e.g. --app=http://www.google.com/ or --app_id=... return true.
