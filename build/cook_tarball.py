@@ -160,9 +160,11 @@ def CookTarball(tgz_name, build_mode):
   shutil.rmtree(os.path.join(dst_dir, 'native_client', 'tools', 'BUILD'),
                 ignore_errors=True)
 
-  # Drop any sdk present.
+  # Drop any toolchain present.
   shutil.rmtree(os.path.join(dst_dir, 'native_client', 'src',
                              'third_party', 'nacl_sdk'),
+                ignore_errors=True)
+  shutil.rmtree(os.path.join(dst_dir, 'native_client', 'compiler'),
                 ignore_errors=True)
 
   # Pick scons version.
@@ -193,7 +195,7 @@ def CookTarball(tgz_name, build_mode):
   cmd = ('PATH=$PATH:/cygdrive/c/cygwin/bin '
          'MAKEINFO=`pwd`/makeinfo_dummy '
          'make '
-         'SDKLOC=`pwd`/../src/third_party/nacl_sdk/%(tool_platform)s/sdk '
+         'SDKLOC=`pwd`/../compiler/%(tool_platform)s/sdk '
          'HAMMER=scons') % {'tool_platform': tool_platform}
   if sys.platform == 'win32':
     cmd = "c:\\cygwin\\bin\\bash -c '%s'" % cmd
@@ -215,7 +217,7 @@ def CookTarball(tgz_name, build_mode):
   if ret:
     return ret
 
-  # Drop items only needed for sdk build.
+  # Drop items only needed for toolchain build.
   shutil.rmtree(os.path.join(dst_dir, 'third_party', 'binutils'),
                 ignore_errors=True)
   shutil.rmtree(os.path.join(dst_dir, 'third_party', 'newlib'),
