@@ -27,6 +27,7 @@ fun:__cxa_atexit
 fun:__new_exitfn
 fun:_dl_*
 fun:__dl_*
+fun:*_setjmp*
 
 # dark magic with 'errno' here.
 fun:sys_*
