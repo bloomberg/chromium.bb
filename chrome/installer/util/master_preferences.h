@@ -34,6 +34,12 @@ bool GetDistroBooleanPreference(const DictionaryValue* prefs,
                                 const std::wstring& name,
                                 bool* value);
 
+// This function gets value of a string preference from master
+// preferences. Returns true if the value is read successfully, otherwise false.
+bool GetDistroStringPreference(const DictionaryValue* prefs,
+                               const std::wstring& name,
+                               std::wstring* value);
+
 // This function gets value of an integer preference from master
 // preferences. Returns true if the value is read successfully, otherwise false.
 bool GetDistroIntegerPreference(const DictionaryValue* prefs,
@@ -53,6 +59,7 @@ bool GetDistroIntegerPreference(const DictionaryValue* prefs,
 //      "chrome_shortcut_icon_index": 0,
 //      "create_all_shortcuts": true,
 //      "import_bookmarks": false,
+//      "import_bookmarks_from_file": "c:\\path",
 //      "import_history": false,
 //      "import_home_page": false,
 //      "import_search_engine": true,

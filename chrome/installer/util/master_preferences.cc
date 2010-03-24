@@ -65,6 +65,27 @@ bool GetDistroBooleanPreference(const DictionaryValue* prefs,
   return true;
 }
 
+bool GetDistroStringPreference(const DictionaryValue* prefs,
+                               const std::wstring& name,
+                               std::wstring* value) {
+  if (!prefs || !value)
+    return false;
+
+  DictionaryValue* distro = NULL;
+  if (!prefs->GetDictionary(kDistroDict, &distro) || !distro)
+    return false;
+
+  std::wstring str_value;
+  if (!distro->GetString(name, &str_value))
+    return false;
+
+  if (str_value.empty())
+    return false;
+
+  *value = str_value;
+  return true;
+}
+
 bool GetDistroIntegerPreference(const DictionaryValue* prefs,
                                 const std::wstring& name,
                                 int* value) {

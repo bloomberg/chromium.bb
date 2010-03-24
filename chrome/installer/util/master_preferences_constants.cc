@@ -11,6 +11,8 @@ namespace master_preferences {
   const wchar_t kChromeShortcutIconIndex[] = L"chrome_shortcut_icon_index";
   const wchar_t kCreateAllShortcuts[] = L"create_all_shortcuts";
   const wchar_t kDistroImportBookmarksPref[] = L"import_bookmarks";
+  const wchar_t kDistroImportBookmarksFromFilePref[] =
+    L"import_bookmarks_from_file";
   const wchar_t kDistroImportHistoryPref[] = L"import_history";
   const wchar_t kDistroImportHomePagePref[] = L"import_home_page";
   const wchar_t kDistroImportSearchPref[] = L"import_search_engine";

@@ -106,6 +106,12 @@ class FirstRun {
   // Import browser items in this process. The browser and the items to
   // import are encoded int the command line.
   static int ImportFromBrowser(Profile* profile, const CommandLine& cmdline);
+  // Imports settings in a separate process. It is the implementation of the
+  // public version.
+  static bool ImportSettings(Profile* profile, int browser_type,
+                             int items_to_import,
+                             const std::wstring& import_path,
+                             gfx::NativeView parent_window);
 #endif  // OS_WIN
   // This class is for scoping purposes.
   DISALLOW_IMPLICIT_CONSTRUCTORS(FirstRun);

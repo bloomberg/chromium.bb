@@ -40,6 +40,7 @@ TEST_F(MasterPreferencesTest, ParseDistroParams) {
     "     \"import_search_engine\": true,\n"
     "     \"import_history\": true,\n"
     "     \"import_bookmarks\": true,\n"
+    "     \"import_bookmarks_from_file\": \"c:\\\\foo\",\n"
     "     \"import_home_page\": true,\n"
     "     \"create_all_shortcuts\": true,\n"
     "     \"do_not_launch_chrome\": true,\n"
@@ -79,6 +80,11 @@ TEST_F(MasterPreferencesTest, ParseDistroParams) {
   EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
       installer_util::master_preferences::kDistroImportBookmarksPref, &value) &&
       value);
+  std::wstring str_value;
+  EXPECT_TRUE(installer_util::GetDistroStringPreference(prefs.get(),
+      installer_util::master_preferences::kDistroImportBookmarksFromFilePref,
+      &str_value));
+  EXPECT_STREQ(L"c:\\foo", str_value.c_str());
   EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
       installer_util::master_preferences::kDistroImportHomePagePref, &value) &&
       value);
@@ -130,6 +136,7 @@ TEST_F(MasterPreferencesTest, ParseMissingDistroParams) {
     "     \"skip_first_run_ui\": true,\n"
     "     \"import_search_engine\": true,\n"
     "     \"import_bookmarks\": false,\n"
+    "     \"import_bookmarks_from_file\": \"\",\n"
     "     \"create_all_shortcuts\": true,\n"
     "     \"do_not_launch_chrome\": true,\n"
     "     \"chrome_shortcut_icon_index\": \"bac\"\n"
@@ -155,6 +162,10 @@ TEST_F(MasterPreferencesTest, ParseMissingDistroParams) {
   EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
       installer_util::master_preferences::kDistroImportBookmarksPref, &value));
   EXPECT_FALSE(value);
+  std::wstring str_value;
+  EXPECT_FALSE(installer_util::GetDistroStringPreference(prefs.get(),
+      installer_util::master_preferences::kDistroImportBookmarksFromFilePref,
+      &str_value));
   EXPECT_FALSE(installer_util::GetDistroBooleanPreference(prefs.get(),
       installer_util::master_preferences::kDistroImportHomePagePref, &value));
 

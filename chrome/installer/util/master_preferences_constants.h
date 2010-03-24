@@ -25,6 +25,9 @@ extern const wchar_t kChromeShortcutIconIndex[];
 extern const wchar_t kCreateAllShortcuts[];
 // Boolean pref that triggers silent import of the default browser bookmarks.
 extern const wchar_t kDistroImportBookmarksPref[];
+// String pref that triggers silent import of bookmarks from the html file at
+// given path.
+extern const wchar_t kDistroImportBookmarksFromFilePref[];
 // Boolean pref that triggers silent import of the default browser history.
 extern const wchar_t kDistroImportHistoryPref[];
 // Boolean pref that triggers silent import of the default browser homepage.

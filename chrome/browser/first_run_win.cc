@@ -355,13 +355,18 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
       value)
     import_items += importer::HOME_PAGE;
 
-  if (import_items) {
+  std::wstring import_bookmarks_path;
+  installer_util::GetDistroStringPreference(prefs.get(),
+      installer_util::master_preferences::kDistroImportBookmarksFromFilePref,
+      &import_bookmarks_path);
+
+  if (import_items || !import_bookmarks_path.empty()) {
     // There is something to import from the default browser. This launches
     // the importer process and blocks until done or until it fails.
     scoped_refptr<ImporterHost> importer_host = new ImporterHost();
     if (!FirstRun::ImportSettings(NULL,
           importer_host->GetSourceProfileInfoAt(0).browser_type,
-          import_items, NULL)) {
+          import_items, import_bookmarks_path, NULL)) {
       LOG(WARNING) << "silent import failed";
     }
   }
@@ -625,7 +630,9 @@ bool DecodeImportParams(const std::wstring& encoded,
 }  // namespace
 
 bool FirstRun::ImportSettings(Profile* profile, int browser_type,
-                              int items_to_import, HWND parent_window) {
+                              int items_to_import,
+                              const std::wstring& import_bookmarks_path,
+                              HWND parent_window) {
   const CommandLine& cmdline = *CommandLine::ForCurrentProcess();
   CommandLine import_cmd(cmdline.GetProgram());
   // Propagate user data directory switch.
@@ -642,8 +649,15 @@ bool FirstRun::ImportSettings(Profile* profile, int browser_type,
       switches::kLang,
       ASCIIToWide(g_browser_process->GetApplicationLocale()));
 
-  import_cmd.CommandLine::AppendSwitchWithValue(switches::kImport,
-      EncodeImportParams(browser_type, items_to_import, parent_window));
+  if (items_to_import) {
+    import_cmd.CommandLine::AppendSwitchWithValue(switches::kImport,
+        EncodeImportParams(browser_type, items_to_import, parent_window));
+  }
+
+  if (!import_bookmarks_path.empty()) {
+    import_cmd.CommandLine::AppendSwitchWithValue(
+        switches::kImportFromFile, import_bookmarks_path.c_str());
+  }
 
   if (cmdline.HasSwitch(switches::kChromeFrame)) {
     import_cmd.AppendSwitch(switches::kChromeFrame);
@@ -670,6 +684,13 @@ bool FirstRun::ImportSettings(Profile* profile, int browser_type,
     profile->GetPrefs()->ReloadPersistentPrefs();
 
   return (import_runner.exit_code() == ResultCodes::NORMAL_EXIT);
+}
+
+bool FirstRun::ImportSettings(Profile* profile, int browser_type,
+                              int items_to_import,
+                              HWND parent_window) {
+  return ImportSettings(profile, browser_type, items_to_import,
+                        std::wstring(), parent_window);
 }
 
 int FirstRun::ImportFromFile(Profile* profile, const CommandLine& cmdline) {
