@@ -87,7 +87,7 @@ static const CGFloat kDragImageOpacity = 0.7;
 
 // Overridden to release bar visibility.
 - (void)endDrag {
-  DCHECK(visibilityDelegate_);
+  // visibilityDelegate_ can be nil if we're detached, and that's fine.
   [visibilityDelegate_ releaseBarVisibilityForOwner:self
                                       withAnimation:YES
                                               delay:YES];
