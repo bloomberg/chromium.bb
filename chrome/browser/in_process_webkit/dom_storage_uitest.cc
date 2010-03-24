@@ -40,7 +40,8 @@ class DOMStorageTest : public UILayoutTest {
  protected:
   DOMStorageTest()
       : UILayoutTest(),
-        test_dir_(FilePath().AppendASCII("storage").AppendASCII("domstorage")) {
+        test_dir_(FilePath().AppendASCII("LayoutTests").
+                  AppendASCII("storage").AppendASCII("domstorage")) {
   }
 
   virtual ~DOMStorageTest() { }
@@ -54,7 +55,8 @@ class DOMStorageTest : public UILayoutTest {
   // Add those to the list to be copied.
   void AddJSTestResources() {
     // Add other paths our tests require.
-    FilePath js_dir = FilePath().AppendASCII("fast").AppendASCII("js");
+    FilePath js_dir = FilePath().AppendASCII("LayoutTests").
+                      AppendASCII("fast").AppendASCII("js");
     AddResourceForLayoutTest(js_dir, FilePath().AppendASCII("resources"));
   }
 
