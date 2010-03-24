@@ -228,6 +228,7 @@ class MockClientSocketFactory : public ClientSocketFactory {
   // Set a list of ClientSocketTypes to be used.
   void set_client_socket_types(ClientSocketType* type_list) {
     client_socket_types_ = type_list;
+    client_socket_index_ = 0;
   }
 
  private:
@@ -748,6 +749,97 @@ TEST_F(TCPClientSocketPoolTest, BackupSocketCancel) {
     // One socket is stalled, the other is active.
     EXPECT_EQ(0, pool_->IdleSocketCount());
   }
+}
+
+// Test the case where a socket took long enough to start the creation
+// of the backup socket and never completes, and then the backup
+// connection fails.
+TEST_F(TCPClientSocketPoolTest, BackupSocketFailAfterStall) {
+  MockClientSocketFactory::ClientSocketType case_types[] = {
+    // The first socket will not connect.
+    MockClientSocketFactory::MOCK_STALLED_CLIENT_SOCKET,
+    // The second socket will fail immediately.
+    MockClientSocketFactory::MOCK_FAILING_CLIENT_SOCKET
+  };
+
+  client_socket_factory_.set_client_socket_types(case_types);
+
+  EXPECT_EQ(0, pool_->IdleSocketCount());
+
+  TestCompletionCallback callback;
+  ClientSocketHandle handle;
+  TCPSocketParams dest("www.google.com", 80, LOW, GURL(), false);
+  int rv = handle.Init("b", dest, LOW, &callback, pool_, NULL);
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_FALSE(handle.is_initialized());
+  EXPECT_FALSE(handle.socket());
+
+  // Create the first socket, set the timer.
+  MessageLoop::current()->RunAllPending();
+
+  // Wait for the backup socket timer to fire.
+  PlatformThread::Sleep(ClientSocketPool::kMaxConnectRetryIntervalMs);
+
+  // Let the second connect be synchronous. Otherwise, the emulated
+  // host resolution takes an extra trip through the message loop.
+  host_resolver_->set_synchronous_mode(true);
+
+  // Let the appropriate socket connect.
+  MessageLoop::current()->RunAllPending();
+
+  EXPECT_EQ(ERR_CONNECTION_FAILED, callback.WaitForResult());
+  EXPECT_FALSE(handle.is_initialized());
+  EXPECT_FALSE(handle.socket());
+  EXPECT_EQ(0, pool_->IdleSocketCount());
+  handle.Reset();
+
+  // Reset for the next case.
+  host_resolver_->set_synchronous_mode(false);
+}
+
+// Test the case where a socket took long enough to start the creation
+// of the backup socket and eventually completes, but the backup socket
+// fails.
+TEST_F(TCPClientSocketPoolTest, BackupSocketFailAfterDelay) {
+  MockClientSocketFactory::ClientSocketType case_types[] = {
+    // The first socket will connect, although delayed.
+    MockClientSocketFactory::MOCK_DELAYED_CLIENT_SOCKET,
+    // The second socket will not connect.
+    MockClientSocketFactory::MOCK_FAILING_CLIENT_SOCKET
+  };
+
+  client_socket_factory_.set_client_socket_types(case_types);
+
+  EXPECT_EQ(0, pool_->IdleSocketCount());
+
+  TestCompletionCallback callback;
+  ClientSocketHandle handle;
+  TCPSocketParams dest("www.google.com", 80, LOW, GURL(), false);
+  int rv = handle.Init("b", dest, LOW, &callback, pool_, NULL);
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_FALSE(handle.is_initialized());
+  EXPECT_FALSE(handle.socket());
+
+  // Create the first socket, set the timer.
+  MessageLoop::current()->RunAllPending();
+
+  // Wait for the backup socket timer to fire.
+  PlatformThread::Sleep(ClientSocketPool::kMaxConnectRetryIntervalMs);
+
+  // Let the second connect be synchronous. Otherwise, the emulated
+  // host resolution takes an extra trip through the message loop.
+  host_resolver_->set_synchronous_mode(true);
+
+  // Let the appropriate socket connect.
+  MessageLoop::current()->RunAllPending();
+
+  EXPECT_EQ(ERR_CONNECTION_FAILED, callback.WaitForResult());
+  EXPECT_FALSE(handle.is_initialized());
+  EXPECT_FALSE(handle.socket());
+  handle.Reset();
+
+  // Reset for the next case.
+  host_resolver_->set_synchronous_mode(false);
 }
 
 }  // namespace
