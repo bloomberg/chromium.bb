@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -93,8 +93,13 @@ static void LaunchNaClChildProcess(bool no_sandbox,
                                    sandbox::TargetServices* target_services) {
   ChildProcess nacl_process;
   nacl_process.set_main_thread(new NaClThread());
-  if (!no_sandbox && target_services)
+  if (!no_sandbox && target_services) {
+    // Cause advapi32 to load before the sandbox is turned on.
+    unsigned int dummy_rand;
+    rand_s(&dummy_rand);
+    // Turn the sanbox on.
     target_services->LowerToken();
+  }
   MessageLoop::current()->Run();
 }
 #elif defined(OS_MACOSX) || defined(OS_LINUX)

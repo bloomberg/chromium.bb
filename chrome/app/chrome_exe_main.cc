@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,7 +33,6 @@ int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE, wchar_t*, int) {
 
   // Initialize the sandbox services.
   sandbox::SandboxInterfaceInfo sandbox_info = {0};
-#ifndef _WIN64  // Sandbox does not support Win64 yet - remove when it does
   sandbox_info.broker_services = sandbox::SandboxFactory::GetBrokerServices();
   if (!sandbox_info.broker_services)
     sandbox_info.target_services = sandbox::SandboxFactory::GetTargetServices();
@@ -42,7 +41,6 @@ int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE, wchar_t*, int) {
     // Enforces strong DEP support. Vista uses the NXCOMPAT flag in the exe.
     sandbox::SetCurrentProcessDEP(sandbox::DEP_ENABLED);
   }
-#endif  // _WIN64
   // Load and launch the chrome dll. *Everything* happens inside.
   MainDllLoader* loader = MakeMainDllLoader();
   int rc = loader->Launch(instance, &sandbox_info);

@@ -1,4 +1,4 @@
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2009-2010 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -503,8 +503,7 @@
             '../breakpad/breakpad.gyp:breakpad_sender_win64',
             '../base/base.gyp:base_nacl_win64',
             '../chrome_frame/chrome_frame.gyp:npchrome_frame',
-            # TODO(gregoryd): build sandbox for 64 bit
-            # '../sandbox/sandbox.gyp:sandbox',
+            '../sandbox/sandbox.gyp:sandbox_win64',
           ],
           'defines': [
             '<@(nacl_win64_defines)',

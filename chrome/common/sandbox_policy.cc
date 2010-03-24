@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -176,6 +176,20 @@ void AddDllEvictionPolicy(sandbox::TargetPolicy* policy) {
   }
 }
 
+bool Is64BitWindows()
+{
+#if defined(_WIN64)
+  return true;  // 64-bit programs run only on Win64
+#elif defined(_WIN32)
+  // 32-bit programs run on both 32-bit and 64-bit Windows
+  // so must sniff.
+  BOOL f64 = FALSE;
+  return IsWow64Process(GetCurrentProcess(), &f64) && f64;
+#else
+  return false;  // no other code can run on 64-bit Windows
+#endif
+}
+
 // Adds the generic policy rules to a sandbox TargetPolicy.
 bool AddGenericPolicy(sandbox::TargetPolicy* policy) {
   sandbox::ResultCode result;
@@ -186,6 +200,14 @@ bool AddGenericPolicy(sandbox::TargetPolicy* policy) {
                            L"\\??\\pipe\\chrome.*");
   if (result != sandbox::SBOX_ALL_OK)
     return false;
+
+  if (Is64BitWindows()) {
+    result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_NAMED_PIPES,
+                             sandbox::TargetPolicy::NAMEDPIPES_ALLOW_ANY,
+                             L"\\\\.\\pipe\\chrome.nacl.*");
+    if (result != sandbox::SBOX_ALL_OK)
+      return false;
+  }
 
   // Add the policy for debug message only in debug
 #ifndef NDEBUG
@@ -396,6 +418,7 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
   }
 
   bool in_sandbox =
+      (type != ChildProcessInfo::NACL_BROKER_PROCESS) &&
       !browser_command_line.HasSwitch(switches::kNoSandbox) &&
       (type != ChildProcessInfo::PLUGIN_PROCESS ||
        browser_command_line.HasSwitch(switches::kSafePlugins));
