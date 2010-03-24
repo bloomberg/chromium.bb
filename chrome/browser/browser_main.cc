@@ -45,6 +45,7 @@
 #include "chrome/browser/plugin_service.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/process_singleton.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/shell_integration.h"
@@ -107,7 +108,6 @@
 #include "chrome/browser/browser_trial.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/url_fixer_upper.h"
-#include "chrome/browser/profile.h"
 #include "chrome/browser/rlz/rlz.h"
 #include "chrome/browser/views/user_data_dir_dialog.h"
 #include "chrome/common/env_vars.h"
@@ -976,8 +976,8 @@ int BrowserMain(const MainFunctionParams& parameters) {
   browser_process->google_url_tracker();
   browser_process->intranet_redirect_detector();
 
-  // Have Chrome plugins write their data to the profile directory.
-  PluginService::GetInstance()->SetChromePluginDataDir(profile->GetPath());
+  // Do initialize the plug-in service (and related preferences).
+  PluginService::InitGlobalInstance(profile);
 
   // Prepare for memory caching of SDCH dictionaries.
   // Perform A/B test to measure global impact of SDCH support.

@@ -866,6 +866,8 @@
         'browser/dom_ui/new_tab_ui.h',
         'browser/dom_ui/ntp_resource_cache.cc',
         'browser/dom_ui/ntp_resource_cache.h',
+        'browser/dom_ui/plugins_ui.cc',
+        'browser/dom_ui/plugins_ui.h',
         'browser/dom_ui/print_ui.cc',
         'browser/dom_ui/print_ui.h',
         'browser/dom_ui/shown_sections_handler.cc',

@@ -163,38 +163,36 @@ const wchar_t kDnsStartupPrefetchList[] = L"StartupDNSPrefetchList";
 // sub-resource hostnames (and expected latency benefits from pre-resolving such
 // sub-resource hostnames).
 // This list is adaptively grown and pruned.
-extern const wchar_t kDnsHostReferralList[] = L"HostReferralList";
+const wchar_t kDnsHostReferralList[] = L"HostReferralList";
 
 // Is the cookie prompt expanded?
-extern const wchar_t kCookiePromptExpanded[] = L"cookieprompt.expanded";
+const wchar_t kCookiePromptExpanded[] = L"cookieprompt.expanded";
 
 #if defined(USE_NSS)
 // Prefs for SSLConfigServicePref.  Currently, these are only present on
 // and used by NSS-using OSes.
-extern const wchar_t kCertRevocationCheckingEnabled[] =
-    L"ssl.rev_checking.enabled";
-extern const wchar_t kSSL2Enabled[] = L"ssl.ssl2.enabled";
-extern const wchar_t kSSL3Enabled[] = L"ssl.ssl3.enabled";
-extern const wchar_t kTLS1Enabled[] = L"ssl.tls1.enabled";
+const wchar_t kCertRevocationCheckingEnabled[] = L"ssl.rev_checking.enabled";
+const wchar_t kSSL2Enabled[] = L"ssl.ssl2.enabled";
+const wchar_t kSSL3Enabled[] = L"ssl.ssl3.enabled";
+const wchar_t kTLS1Enabled[] = L"ssl.tls1.enabled";
 #endif
 
 #if defined(OS_CHROMEOS)
 // A string pref set to the timezone.
-extern const wchar_t kTimeZone[] = L"settings.datetime.timezone";
+const wchar_t kTimeZone[] = L"settings.datetime.timezone";
 
 // A boolean pref set to true if TapToClick is being done in browser.
-extern const wchar_t kTapToClickEnabled[] =
-    L"settings.touchpad.enable_tap_to_click";
+const wchar_t kTapToClickEnabled[] = L"settings.touchpad.enable_tap_to_click";
 
 // A boolean pref set to true if VertEdgeScroll is being done in browser.
-extern const wchar_t kVertEdgeScrollEnabled[] =
+const wchar_t kVertEdgeScrollEnabled[] =
     L"settings.touchpad.enable_vert_edge_scroll";
 
 // A integer pref for the touchpad speed factor.
-extern const wchar_t kTouchpadSpeedFactor[] = L"settings.touchpad.speed_factor";
+const wchar_t kTouchpadSpeedFactor[] = L"settings.touchpad.speed_factor";
 
 // A integer pref for the touchpad sensitivity.
-extern const wchar_t kTouchpadSensitivity[] = L"settings.touchpad.sensitivity";
+const wchar_t kTouchpadSensitivity[] = L"settings.touchpad.sensitivity";
 #endif
 
 // The disabled messages in IPC logging.
@@ -272,6 +270,9 @@ const wchar_t kExtensionsUIDeveloperMode[] = L"extensions.ui.developer_mode";
 // Integer pref that tracks the number of browser actions visible in the browser
 // actions toolbar.
 const wchar_t kExtensionToolbarSize[] = L"extensions.toolbarsize";
+
+// List pref containing information (dictionaries) on plugins.
+const wchar_t kPluginsPluginsList[] = L"plugins.plugins_list";
 
 // Boolean that indicates whether we should check if we are the default browser
 // on start-up.
@@ -407,7 +408,7 @@ const wchar_t kStabilityStatsVersion[] =
 
 // Build time, in seconds since an epoch, which is used to assure that stability
 // metrics reported reflect stability of the same build.
-extern const wchar_t kStabilityStatsBuildTime[] =
+const wchar_t kStabilityStatsBuildTime[] =
     L"user_experience_metrics.stability.stats_buildtime";
 
 // False if we received a session end and either we crashed during processing

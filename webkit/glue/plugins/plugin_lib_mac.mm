@@ -123,6 +123,7 @@ bool ReadPlistPluginInfo(const FilePath& filename, CFBundleRef bundle,
     info->desc = base::SysNSStringToWide(plugin_desc);
   else
     info->desc = UTF8ToWide(filename.BaseName().value());
+  info->enabled = true;
 
   return true;
 }
@@ -220,6 +221,7 @@ bool ReadSTRPluginInfo(const FilePath& filename, CFBundleRef bundle,
     info->desc = UTF8ToWide(plugin_descs[0]);
   else
     info->desc = UTF8ToWide(filename.BaseName().value());
+  info->enabled = true;
 
   return true;
 }

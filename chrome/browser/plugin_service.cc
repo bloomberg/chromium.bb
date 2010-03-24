@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,12 +10,15 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/thread.h"
+#include "base/values.h"
 #include "base/waitable_event.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_plugin_host.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/plugin_process_host.h"
+#include "chrome/browser/pref_service.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/common/chrome_plugin_lib.h"
 #include "chrome/common/chrome_paths.h"
@@ -25,6 +28,7 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #ifndef DISABLE_NACL
 #include "native_client/src/trusted/plugin/nacl_entry_points.h"
@@ -46,6 +50,34 @@ static void NotifyPluginsOfActivation() {
 
 // static
 bool PluginService::enable_chrome_plugins_ = true;
+
+// static
+void PluginService::InitGlobalInstance(Profile* profile) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+
+  // Disable plugins listed as disabled in prefs.
+  if (const ListValue* saved_plugins_list =
+          profile->GetPrefs()->GetList(prefs::kPluginsPluginsList)) {
+    for (ListValue::const_iterator it = saved_plugins_list->begin();
+         it != saved_plugins_list->end();
+         ++it) {
+      if (!(*it)->IsType(Value::TYPE_DICTIONARY)) {
+        LOG(WARNING) << "Invalid entry in " << prefs::kPluginsPluginsList;
+        continue;  // Oops, don't know what to do with this item.
+      }
+
+      DictionaryValue* plugin = static_cast<DictionaryValue*>(*it);
+      FilePath::StringType path;
+      bool enabled = true;
+      plugin->GetBoolean(L"enabled", &enabled);
+      if (!enabled && plugin->GetString(L"path", &path))
+        NPAPI::PluginList::Singleton()->DisablePlugin(FilePath(path));
+    }
+  }
+
+  // Have Chrome plugins write their data to the profile directory.
+  GetInstance()->SetChromePluginDataDir(profile->GetPath());
+}
 
 // static
 PluginService* PluginService::GetInstance() {

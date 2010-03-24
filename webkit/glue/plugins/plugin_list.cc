@@ -1,8 +1,10 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "webkit/glue/plugins/plugin_list.h"
+
+#include <algorithm>
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -106,6 +108,7 @@ bool PluginList::CreateWebPluginInfo(const PluginVersionInfo& pvi,
   info->desc = pvi.file_description;
   info->version = pvi.file_version;
   info->path = pvi.path;
+  info->enabled = true;
 
   for (size_t i = 0; i < mime_types.size(); ++i) {
     WebPluginMimeType mime_type;
@@ -214,7 +217,17 @@ void PluginList::LoadPlugins(bool refresh) {
   base::TimeDelta elapsed = end_time - start_time;
   DLOG(INFO) << "Loaded plugin list in " << elapsed.InMilliseconds() << " ms.";
 
+  // Only update the data now since loading plugins can take a while.
   AutoLock lock(lock_);
+
+  // Go through and mark new plugins in the disabled list as, well, disabled.
+  for (std::vector<WebPluginInfo>::iterator it = new_plugins.begin();
+       it != new_plugins.end();
+       ++it) {
+    if (disabled_plugins_.find(it->path) != disabled_plugins_.end())
+      it->enabled = false;
+  }
+
   plugins_ = new_plugins;
   plugins_loaded_ = true;
 }
@@ -331,6 +344,20 @@ void PluginList::GetPlugins(bool refresh, std::vector<WebPluginInfo>* plugins) {
   *plugins = plugins_;
 }
 
+void PluginList::GetEnabledPlugins(bool refresh,
+                                   std::vector<WebPluginInfo>* plugins) {
+  LoadPlugins(refresh);
+
+  plugins->clear();
+  AutoLock lock(lock_);
+  for (std::vector<WebPluginInfo>::const_iterator it = plugins_.begin();
+       it != plugins_.end();
+       ++it) {
+    if (it->enabled)
+      plugins->push_back(*it);
+  }
+}
+
 bool PluginList::GetPluginInfo(const GURL& url,
                                const std::string& mime_type,
                                bool allow_wildcard,
@@ -360,6 +387,55 @@ bool PluginList::GetPluginInfoByPath(const FilePath& plugin_path,
   }
 
   return false;
+}
+
+bool PluginList::EnablePlugin(const FilePath& filename) {
+  AutoLock lock(lock_);
+
+  bool did_enable = false;
+
+  std::set<FilePath>::iterator entry = disabled_plugins_.find(filename);
+  if (entry == disabled_plugins_.end())
+    return did_enable;  // Early exit if plugin not in disabled list.
+
+  disabled_plugins_.erase(entry);  // Remove from disabled list.
+
+  // Set enabled flags if necessary.
+  for (std::vector<WebPluginInfo>::iterator it = plugins_.begin();
+       it != plugins_.end();
+       ++it) {
+    if (it->path == filename) {
+      DCHECK(!it->enabled);  // Should have been disabled.
+      it->enabled = true;
+      did_enable = true;
+    }
+  }
+
+  return did_enable;
+}
+
+bool PluginList::DisablePlugin(const FilePath& filename) {
+  AutoLock lock(lock_);
+
+  bool did_disable = false;
+
+  if (disabled_plugins_.find(filename) != disabled_plugins_.end())
+    return did_disable;  // Early exit if plugin already in disabled list.
+
+  disabled_plugins_.insert(filename);  // Add to disabled list.
+
+  // Unset enabled flags if necessary.
+  for (std::vector<WebPluginInfo>::iterator it = plugins_.begin();
+       it != plugins_.end();
+       ++it) {
+    if (it->path == filename) {
+      DCHECK(it->enabled);  // Should have been enabled.
+      it->enabled = false;
+      did_disable = true;
+    }
+  }
+
+  return did_disable;
 }
 
 void PluginList::Shutdown() {

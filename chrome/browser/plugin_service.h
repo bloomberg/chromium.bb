@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,6 +31,7 @@ class Message;
 
 class MessageLoop;
 class PluginProcessHost;
+class Profile;
 class URLRequestContext;
 class ResourceDispatcherHost;
 class ResourceMessageFilter;
@@ -41,6 +42,10 @@ class PluginService
     : public base::WaitableEventWatcher::Delegate,
       public NotificationObserver {
  public:
+  // Initializes the global instance; should be called on startup from the main
+  // thread.
+  static void InitGlobalInstance(Profile* profile);
+
   // Returns the PluginService singleton.
   static PluginService* GetInstance();
 

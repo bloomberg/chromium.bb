@@ -1,0 +1,558 @@
+<!DOCTYPE HTML>
+<html i18n-values="dir:textdirection;">
+<head>
+<meta charset="utf-8">
+<title i18n-content="pluginsTitle"></title>
+<style>
+
+body {
+  margin: 10px;
+  min-width: 47em;
+}
+
+a {
+  color: blue;
+  font-size: 103%;
+}
+
+div#header {
+  margin-bottom: 1.05em;
+  overflow: hidden;
+  padding-bottom: 1.5em;
+  padding-left: 0;
+  padding-top: 1.5em;
+  position: relative;
+}
+
+html[dir='rtl'] div#header {
+  padding-right: 0;
+}
+
+div#header h1 {
+  background: url('../../app/theme/extensions_section.png') 0px 20px no-repeat;
+  display: inline;
+  margin: 0;
+  padding-bottom: 43px;
+  padding-left: 75px;
+  padding-top: 40px;
+}
+
+html[dir='rtl'] div#header h1 {
+  background: url('../../app/theme/extensions_section.png') right no-repeat;
+  padding-right: 95px;
+  padding-left: 0;
+}
+
+h1 {
+  font-size: 156%;
+  font-weight: bold;
+  padding: 0;
+  margin: 0;
+}
+
+div.content {
+  font-size: 88%;
+  margin-top: 5px;
+}
+
+.section-header {
+  background: #ebeff9;
+  border-top: 1px solid #b5c7de;
+  font-size: 99%;
+  padding-bottom: 2px;
+  padding-left: 5px;
+  padding-top: 3px;
+  width: 100%;
+}
+
+html[dir='rtl'] .section-header {
+  padding-right: 5px;
+  padding-left: 0;
+}
+
+.section-header > table tr td:first-child {
+  width: 100%;
+}
+
+.section-header > table {
+  width: 100%;
+}
+
+.section-header-title {
+  font-weight: bold;
+}
+
+.vbox-container {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+}
+
+.wbox {
+  display: -webkit-box;
+  -webkit-box-align: stretch;
+  -webkit-box-flex: 1;
+}
+
+.wbox#top {
+  padding-right: 5px;
+}
+
+html[dir='rtl'] .wbox#top {
+  padding-left: 5px;
+  padding-right: 0;
+}
+
+.showInTmiMode {
+  overflow: hidden;
+}
+
+body.hideTmiModeInitial .showInTmiMode {
+  height: 0 !important;
+  opacity: 0;
+}
+
+body.hideTmiMode .showInTmiMode {
+  height: 0 !important;
+  opacity: 0;
+  -webkit-transition: all .1s ease-out;
+}
+
+body.showTmiModeInitial .showInTmiMode {
+  opacity: 1;
+}
+
+body.showTmiMode .showInTmiMode {
+  opacity: 1;
+  -webkit-transition: all .1s ease-in;
+}
+
+.wbox-tmi-mode {
+  -webkit-box-align: stretch;
+  -webkit-box-flex: 1;
+}
+
+.tmi-mode-image {
+  margin-top: 2px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+.tmi-mode-link {
+  margin-right: 3px;
+  white-space: nowrap;
+}
+
+.tmi-mode-link a {
+  font-size: 97%;
+}
+
+.tmi-mode {
+  background: #f4f6fc;
+  border-bottom: 1px solid #edeff5;
+  font-size: 89%;
+  padding-bottom: 0.8em;
+  padding-left: 10px;
+  padding-top: 0.8em;
+  width: 100%;
+}
+
+html[dir='rtl'] .tmi-mode {
+  padding-right: 10px;
+  padding-left: 0;
+}
+
+.plugin_disabled > td {
+  background: url('gray.png') 0px 0px;
+  color: #a0a0a0;
+  padding-bottom: 4px;
+  padding-top: 5px;
+}
+
+.plugin_enabled > td {
+  padding-bottom: 4px;
+  padding-top: 5px;
+}
+
+.plugin {
+  border-bottom: 1px solid #cdcdcd;
+}
+
+/* Indent the text related to each plug-in. */
+.plugin-text {
+  padding-left: 5px;
+}
+
+html[dir='rtl'] .plugin-text {
+  padding-right: 5px;
+  padding-left: 0;
+}
+
+.plugin-name {
+  font-weight: bold;
+}
+
+.no-plugins {
+  margin: 6em 0 0;
+  text-align: center;
+  font-size: 1.2em;
+}
+
+/* Use tables for layout, so eliminate extra spacing. */
+.plugin-details table {
+  -webkit-border-horizontal-spacing: 0;
+  -webkit-border-vertical-spacing: 0;
+}
+
+/* Separate the inital line, Description, Location, and MIME Types lines. */
+.plugin-details > div {
+  padding-top: 0.1em
+}
+
+/* Align rows of tables along the top. */
+.plugin-details tr {
+  vertical-align: top;
+}
+
+/* Separate columns by 1em for the most part. */
+.plugin-details td+td {
+  padding-left: 1em;
+}
+
+html[dir='rtl'] .plugin-details td+td {
+  padding-right: 1em;
+  padding-left: 0;
+}
+
+/* Make the MIME Types tables smaller. */
+.plugin-details .mime_types {
+  font-size: 95%;
+}
+
+/* Separate the header from the contents in each MIME Types table. */
+.plugin-details .mime_types .header td {
+  padding-bottom: 0.1em;
+  border-bottom: 1px solid;
+}
+
+/* Separate the columns for tables used for horizontal listings only a bit. */
+.hlisting td+td {
+  padding-left: 0.4em;
+}
+
+html[dir='rtl'] .hlisting td+td {
+  padding-right: 0.4em;
+  padding-left: 0;
+}
+
+/* Match the indentation of .plugin-text. */
+.plugin-actions {
+  padding-left: 5px;
+  margin-top: 0.2em;
+  margin-bottom: 0.2em;
+}
+
+html[dir='rtl'] .plugin-actions {
+  padding-right: 5px;
+  padding-left: 0;
+}
+
+button {
+  font-size: 104%;
+}
+
+</style>
+<script>
+
+/**
+ * This variable structure is here to document the structure that the template
+ * expects to correctly populate the page.
+ */
+var pluginDataFormat = {
+  'plugins': [
+    {
+      'path': '/blahblah/blahblah/MyCrappyPlugin.plugin',
+      'name': 'MyCrappyPlugin',
+      'version': '1.2.3',
+      'description': 'My crappy plugin',
+      'mimeTypes': [
+        { 'description': 'Foo Media',
+          'fileExtensions': [ 'foo' ],
+          'mimeType': 'application/x-my-foo' },
+        { 'description': 'Bar Stuff',
+          'fileExtensions': [ 'bar','baz' ],
+          'mimeType': 'application/my-bar' }
+      ],
+      'enabled': true
+    },
+    {
+      'path': '/foobar/baz/YourGreatPlugin.plugin',
+      'name': 'YourGreatPlugin',
+      'version': '4.5',
+      'description': 'Your great plugin',
+      'mimeTypes': [
+        { 'description': 'Baz Stuff',
+          'fileExtensions': [ 'baz' ],
+          'mimeType': 'application/x-your-baz' }
+      ],
+      'enabled': false
+    }
+  ]
+};
+
+/**
+ * Takes the |pluginsData| input argument which represents data about the
+ * currently installed/running plugins and populates the html jstemplate with
+ * that data. It expects an object structure like the above.
+ * @param {Object} pluginsData Detailed info about installed plugins
+ */
+function renderTemplate(pluginsData) {
+  // This is the javascript code that processes the template:
+  var input = new JsEvalContext(pluginsData);
+  var output = document.getElementById('pluginTemplate');
+  jstProcess(input, output);
+}
+
+/**
+ * Asks the C++ PluginsDOMHandler to get details about the installed plugins and
+ * return detailed data about the configuration. The PluginsDOMHandler should
+ * reply to returnPluginsData() (below).
+ */
+function requestPluginsData() {
+  chrome.send('requestPluginsData', []);
+}
+
+/**
+ * Called by the dom_ui_ to re-populate the page with data representing the
+ * current state of installed plugins.
+ */
+function returnPluginsData(pluginsData){
+  var bodyContainer = document.getElementById('body-container');
+  var body = document.body;
+
+  // Set all page content to be visible so we can measure heights.
+  bodyContainer.style.visibility = 'hidden';
+  body.className = '';
+  var slidables = document.getElementsByClassName('showInTmiMode');
+  for (var i = 0; i < slidables.length; i++)
+    slidables[i].style.height = 'auto';
+
+  renderTemplate(pluginsData);
+
+  // Make sure the left column (with "Description:", "Location:", etc.) is the
+  // same size for all plugins.
+  var labels = document.getElementsByClassName('plugin-details-label');
+  var maxLabelWidth = 0;
+  for (var i = 0; i < labels.length; i++)
+    labels[i].style.width = 'auto';
+  for (var i = 0; i < labels.length; i++)
+    maxLabelWidth = Math.max(maxLabelWidth, labels[i].offsetWidth);
+  for (var i = 0; i < labels.length; i++)
+    labels[i].style.width = maxLabelWidth + 'px';
+
+  // Explicitly set the height for each element that wants to be "slid" in and
+  // out when the tmiModeExpanded is toggled.
+  var slidables = document.getElementsByClassName('showInTmiMode');
+  for (var i = 0; i < slidables.length; i++)
+    slidables[i].style.height = slidables[i].offsetHeight + 'px';
+
+  // Reset visibility of page based on the current tmi mode.
+  document.getElementById('collapse').style.display =
+     tmiModeExpanded ? 'inline' : 'none';
+  document.getElementById('expand').style.display =
+     tmiModeExpanded ? 'none' : 'inline';
+  bodyContainer.style.visibility = 'visible';
+  body.className = tmiModeExpanded ?
+     'showTmiModeInitial' : 'hideTmiModeInitial';
+}
+
+/**
+ * Handles a 'enable' or 'disable' button getting clicked.
+ */
+function handleEnablePlugin(node, enable) {
+  // Tell the C++ PluginsDOMHandler to enable/disable the plugin.
+  chrome.send('enablePlugin', [node.pluginPath, String(enable)]);
+  requestPluginsData();
+}
+
+// Keeps track of whether details have been made visible (expanded) or not.
+var tmiModeExpanded = false;
+
+/*
+ * Toggles visibility of details.
+ */
+function toggleTmiMode() {
+  tmiModeExpanded = !tmiModeExpanded;
+
+  document.getElementById('collapse').style.display =
+      tmiModeExpanded ? 'inline' : 'none';
+  document.getElementById('expand').style.display =
+      tmiModeExpanded ? 'none' : 'inline';
+
+  document.body.className =
+      tmiModeExpanded ? 'showTmiMode' : 'hideTmiMode';
+}
+
+/**
+ * Determines whether a plugin's version should be displayed.
+ */
+function shouldDisplayPluginVersion(plugin) {
+  return !!plugin.version;
+}
+
+/**
+ * Determines whether a plugin's description should be displayed.
+ */
+function shouldDisplayPluginDescription(plugin) {
+  // Only display the description if it's not blank and if it's not just the
+  // name, version, or combination thereof.
+  return plugin.description &&
+         plugin.description != plugin.name &&
+         plugin.description != plugin.version &&
+         plugin.description != 'Version ' + plugin.version &&
+         plugin.description != plugin.name + ' ' + plugin.version;
+}
+
+/**
+ * Formats a file extension for display.
+ */
+function formatFileExtension(ext) {
+  return '.' + ext;
+}
+
+// Unfortunately, we don't have notifications for plugin (list) status changes
+// (yet), so in the meanwhile just update regularly.
+setInterval('requestPluginsData()', 30000);
+
+// Get data and have it displayed upon loading.
+window.onload = requestPluginsData;
+
+</script>
+</head>
+<body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
+<div id="body-container" style="visibility:hidden">
+
+  <div id="header"><h1 i18n-content="pluginsTitle">TITLE</h1></div>
+
+  <div id="pluginTemplate">
+
+    <div id="container" class="vbox-container">
+    <div id="top" class="wbox">
+
+      <div class="section-header">
+        <table cellpadding="0" cellspacing="0"><tr valign="center">
+          <td>
+            <span class="section-header-title" i18n-content="pluginsTitle"
+              >TITLE</span>
+            <span class="section-header-title"
+                  jsdisplay="plugins.length > 0">(<span
+                  jscontent="plugins.length"></span>)</span>
+          </td>
+          <td width="18">
+            <img id="collapse" class="tmi-mode-image"
+                 style="display:none" onclick="toggleTmiMode();"
+                 src="minus.png"></img>
+            <img id="expand" class="tmi-mode-image"
+                 onclick="toggleTmiMode();" src="plus.png"></img>
+          </td>
+          <td>
+            <div class="tmi-mode-link">
+              <a onclick="toggleTmiMode();" style="cursor: default"
+                 i18n-content="pluginsDetailsModeLink">DETAILS</a>
+            </div>
+          </td>
+        </tr></table>
+      </div>
+
+    </div>
+    </div>
+
+    <div class="content">
+      <div class="plugin-name no-plugins" jsdisplay="plugins.length === 0">
+        <div i18n-content="noPlugins">NO_PLUGINS_ARE_INSTALLED</div>
+      </div>
+
+      <div jsdisplay="plugins.length > 0">
+      <div class="plugin" jsselect="plugins">
+        <table width="100%" cellpadding="2" cellspacing="0">
+        <tr jsvalues=
+                ".className:enabled ? 'plugin_enabled' : 'plugin_disabled'">
+        <td valign="top">
+          <div class="plugin-text">
+            <div>
+              <span class="plugin-name"
+                    jscontent="name">PLUGIN NAME</span>
+              <span jsdisplay="shouldDisplayPluginVersion($this)">
+                - <span i18n-content="pluginVersion">VERSION</span>
+                <span jscontent="version">x.x.x.x</span>
+              </span>
+              <span jsdisplay="!enabled"
+                    i18n-content="pluginDisabled">(DISABLED)</span>
+            </div>
+            <div class="plugin-details">
+              <div><table><tr jsdisplay="shouldDisplayPluginDescription($this)">
+                <td class="plugin-details-label"
+                    i18n-content="pluginDescription">DESCRIPTION:</td>
+                <td jsvalues=".innerHTML:description"></td>
+              </tr></table></div>
+              <div><table><tr>
+                <td class="plugin-details-label"
+                    i18n-content="pluginPath">PATH:</td>
+                <td jscontent="path"></td>
+              </tr></table></div>
+              <div class="showInTmiMode">
+                <table><tr jsdisplay="mimeTypes.length > 0">
+                  <td class="plugin-details-label"
+                      i18n-content="pluginMimeTypes">MIME_TYPES:</td>
+                  <td><table width="100%" class="mime_types">
+                    <tr class="header">
+                      <td i18n-content="pluginMimeTypesMimeType"
+                          >MIME type</td>
+                      <td i18n-content="pluginMimeTypesDescription"
+                          >DESCRIPTION</td>
+                      <td i18n-content="pluginMimeTypesFileExtensions"
+                          >FILE_EXTENSIONS</td>
+                    </tr>
+                    <tr jsselect="mimeTypes">
+                      <td jscontent="mimeType"></td>
+                      <td jscontent="description"></td>
+                      <td><table jsdisplay="fileExtensions.length > 0"
+                                 class="hlisting">
+                        <tr><td jsselect="fileExtensions">
+                          <span jscontent="formatFileExtension($this)"></span>
+                        </td></tr>
+                      </table></td>
+                    </tr>
+                  </table></td>
+                </tr></table>
+              </div>
+            </div>
+          </div>
+
+          <div class="plugin-actions">
+            <span>
+              <a
+                jsvalues=".pluginPath:path"
+                jsdisplay="enabled"
+                onclick="handleEnablePlugin(this, false)"
+                href="javascript:void();"
+                i18n-content="disable"
+                >DISABLE</a>
+              <a
+                jsvalues=".pluginPath:path"
+                jsdisplay="!enabled"
+                onclick="handleEnablePlugin(this, true)"
+                href="javascript:void();"
+                i18n-content="enable"
+                >ENABLE</a>
+            </span>
+          </div>
+        </td>
+        </tr>
+        </table>
+      </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

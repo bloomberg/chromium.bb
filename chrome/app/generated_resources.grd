@@ -3460,6 +3460,47 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Allow
       </message>
 
+      <!-- chrome://plugins page -->
+      <message name="IDS_PLUGINS_TITLE" desc="Title for the chrome://plugins page.">
+        Plug-ins
+      </message>
+      <message name="IDS_PLUGINS_DETAILS_MODE_LINK" desc="Text of the link for details mode.">
+        Details
+      </message>
+      <message name="IDS_PLUGINS_NONE_INSTALLED" desc="Text that lets the user know that no plug-ins are installed.">
+        No plug-ins installed.
+      </message>
+      <message name="IDS_PLUGINS_DISABLED_PLUGIN" desc="Text that signifies that the plug-in is currently disabled.">
+        (Disabled)
+      </message>
+      <message name="IDS_PLUGINS_VERSION" desc="The label in front of a plug-in version number.">
+        Version:
+      </message>
+      <message name="IDS_PLUGINS_DESCRIPTION" desc="The label in front of a plug-in description.">
+        Description:
+      </message>
+      <message name="IDS_PLUGINS_PATH" desc="The label in front of a plug-in path (file/location on disk).">
+        Location:
+      </message>
+      <message name="IDS_PLUGINS_MIME_TYPES" desc="The label in front of a plug-in's MIME types table.">
+        MIME types:
+      </message>
+      <message name="IDS_PLUGINS_MIME_TYPES_MIME_TYPE" desc="The label over the MIME type column in a plug-in's MIME types table.">
+        MIME type
+      </message>
+      <message name="IDS_PLUGINS_MIME_TYPES_DESCRIPTION" desc="The label over the description column in a plug-in's MIME types table.">
+        Description
+      </message>
+      <message name="IDS_PLUGINS_MIME_TYPES_FILE_EXTENSIONS" desc="The label over the file extensions column in a plug-in's MIME types table.">
+        File extensions
+      </message>
+      <message name="IDS_PLUGINS_DISABLE" desc="The link for disabling a plug-in.">
+        Disable
+      </message>
+      <message name="IDS_PLUGINS_ENABLE" desc="The link for enabling a plug-in.">
+        Enable
+      </message>
+
       <!-- Session Crashed Info Bar-->
       <message name="IDS_SESSION_CRASHED_VIEW_RESTORE_BUTTON" desc="Title of the restore button in the session crashed view.">
         Restore

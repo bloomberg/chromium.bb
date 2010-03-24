@@ -5,6 +5,7 @@
 #ifndef WEBKIT_GLUE_PLUGINS_PLUGIN_LIST_H_
 #define WEBKIT_GLUE_PLUGINS_PLUGIN_LIST_H_
 
+#include <set>
 #include <string>
 #include <vector>
 #include <set>
@@ -114,8 +115,11 @@ class PluginList {
   // Shutdown all plugins.  Should be called at process teardown.
   void Shutdown();
 
-  // Get all the plugins
+  // Get all the plugins.
   void GetPlugins(bool refresh, std::vector<WebPluginInfo>* plugins);
+
+  // Get all the enabled plugins.
+  void GetEnabledPlugins(bool refresh, std::vector<WebPluginInfo>* plugins);
 
   // Returns true if a plugin is found for the given url and mime type.
   // The mime type which corresponds to the URL is optionally returned
@@ -136,6 +140,19 @@ class PluginList {
   // Load a specific plugin with full path.
   void LoadPlugin(const FilePath& filename,
                   std::vector<WebPluginInfo>* plugins);
+
+  // Enable a specific plugin, specified by path. Returns |true| iff a plugin
+  // currently in the plugin list was actually enabled as a result; regardless
+  // of return value, if a plugin is found in the future with the given name, it
+  // will be enabled. Note that plugins are enabled by default as far as
+  // |PluginList| is concerned.
+  bool EnablePlugin(const FilePath& filename);
+
+  // Disable a specific plugin, specified by path. Returns |true| iff a plugin
+  // currently in the plugin list was actually disabled as a result; regardless
+  // of return value, if a plugin is found in the future with the given name, it
+  // will be disabled.
+  bool DisablePlugin(const FilePath& filename);
 
  private:
   // Constructors are private for singletons
@@ -221,6 +238,9 @@ class PluginList {
 
   // Holds information about internal plugins.
   std::vector<PluginVersionInfo> internal_plugins_;
+
+  // Path names of plugins to disable (the default is to enable them all).
+  std::set<FilePath> disabled_plugins_;
 
   // Need synchronization for the above members since this object can be
   // accessed on multiple threads.

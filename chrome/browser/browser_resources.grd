@@ -52,6 +52,7 @@ without changes to the corresponding grd file. fbt1 -->
       <include name="IDR_EXTENSION_DEFAULT_ICON" file="resources\extension_default_icon.png" type="BINDATA" />
       <include name="IDR_EXTENSIONS_INFOBAR_CSS" file="resources\extensions_infobar.css" flattenhtml="true" type="BINDATA" />
       <include name="IDR_EXTENSIONS_TOOLSTRIP_THEME_CSS" file="resources\extensions_toolstrip.css" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_PLUGINS_HTML" file="resources\plugins.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_PRINT_TAB_HTML" file="resources\print_tab.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_PRINT_TAB_CSS" file="resources\print_tab.css" type="BINDATA" />
       <include name="IDR_PRINT_TAB_JS" file="resources\print_tab.js" type="BINDATA" />

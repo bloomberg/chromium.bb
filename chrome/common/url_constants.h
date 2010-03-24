@@ -32,7 +32,7 @@ extern const char kStandardSchemeSeparator[];
 // Null terminated list of schemes that are savable.
 extern const char* kSavableSchemes[];
 
-// About URLs (including schmes).
+// About URLs (including schemes).
 extern const char kAboutBlankURL[];
 extern const char kAboutBrowserCrash[];
 extern const char kAboutCacheURL[];
@@ -51,6 +51,7 @@ extern const char kChromeUIDevToolsURL[];
 extern const char kChromeUIDownloadsURL[];
 extern const char kChromeUIExtensionsURL[];
 extern const char kChromeUIHistoryURL[];
+extern const char kChromeUIPluginsURL[];
 extern const char kChromeUIFileBrowseURL[];
 extern const char kChromeUIMediaplayerURL[];
 extern const char kChromeUIIPCURL[];
@@ -66,6 +67,7 @@ extern const char kChromeUIDownloadsHost[];
 extern const char kChromeUIExtensionsHost[];
 extern const char kChromeUIFavIconPath[];
 extern const char kChromeUIHistoryHost[];
+extern const char kChromeUIPluginsHost[];
 extern const char kChromeUIFileBrowseHost[];
 extern const char kChromeUIMediaplayerHost[];
 extern const char kChromeUIInspectorHost[];

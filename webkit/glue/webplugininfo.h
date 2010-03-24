@@ -39,6 +39,9 @@ struct WebPluginInfo {
 
   // A list of all the mime types that this plugin supports.
   std::vector<WebPluginMimeType> mime_types;
+
+  // Whether the plugin is enabled.
+  bool enabled;
 };
 
 #endif  // WEBKIT_GLUE_WEBPLUGININFO_H_
