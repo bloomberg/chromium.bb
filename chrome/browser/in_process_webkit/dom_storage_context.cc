@@ -190,6 +190,11 @@ void DOMStorageContext::DeleteLocalStorageFile(const FilePath& file_path) {
   file_util::Delete(file_path, false);
 }
 
+void DOMStorageContext::DeleteLocalStorageForOrigin(const string16& origin_id) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  DeleteLocalStorageFile(GetLocalStorageFilePath(origin_id));
+}
+
 void DOMStorageContext::DeleteAllLocalStorageFiles() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
 
@@ -263,4 +268,13 @@ void DOMStorageContext::ClearLocalState(const FilePath& profile_path,
         file_util::Delete(file_path, false);
     }
   }
+}
+
+FilePath DOMStorageContext::GetLocalStorageFilePath(
+    const string16& origin_id) const {
+  FilePath storageDir = webkit_context_->data_path().Append(
+      DOMStorageContext::kLocalStorageDirectory);
+  FilePath::StringType id =
+      webkit_glue::WebStringToFilePathString(origin_id);
+  return storageDir.Append(id.append(kLocalStorageExtension));
 }
