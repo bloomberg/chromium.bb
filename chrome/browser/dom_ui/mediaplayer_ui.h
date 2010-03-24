@@ -32,6 +32,7 @@ class MediaPlayer : public NotificationObserver,
   void ForcePlayMediaURL(const GURL& url);
   void TogglePlaylistWindowVisible();
   void ShowPlaylistWindow();
+  void ToggleFullscreen();
   void ClosePlaylistWindow();
   void SetPlaylistOffset(int offset);
   void RegisterNewHandler(MediaplayerHandler* handler,

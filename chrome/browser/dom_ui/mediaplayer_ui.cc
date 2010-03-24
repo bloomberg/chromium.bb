@@ -104,6 +104,8 @@ class MediaplayerHandler : public DOMMessageHandler,
 
   void HandleTogglePlaylist(const Value* value);
   void HandleSetCurrentPlaylistOffset(const Value* value);
+  void HandleToggleFullscreen(const Value* value);
+
 
   const std::vector<GURL>& GetCurrentPlaylist();
 
@@ -214,6 +216,8 @@ void MediaplayerHandler::RegisterMessages() {
       NewCallback(this, &MediaplayerHandler::HandleTogglePlaylist));
   dom_ui_->RegisterMessageCallback("setCurrentPlaylistOffset",
       NewCallback(this, &MediaplayerHandler::HandleSetCurrentPlaylistOffset));
+  dom_ui_->RegisterMessageCallback("toggleFullscreen",
+      NewCallback(this, &MediaplayerHandler::HandleToggleFullscreen));
 }
 
 void MediaplayerHandler::GetPlaylistValue(ListValue& value) {
@@ -244,6 +248,10 @@ const std::vector<GURL>& MediaplayerHandler::GetCurrentPlaylist() {
 
 int MediaplayerHandler::GetCurrentPlaylistOffset() {
   return currentOffset_;
+}
+
+void MediaplayerHandler::HandleToggleFullscreen(const Value* value) {
+  MediaPlayer::Get()->ToggleFullscreen();
 }
 
 void MediaplayerHandler::HandleSetCurrentPlaylistOffset(const Value* value) {
@@ -462,6 +470,12 @@ void MediaPlayer::NotifyPlaylistChanged() {
   if (handler_ && playlist_) {
     playlist_->SetCurrentPlaylist(handler_->GetCurrentPlaylist(),
                                   handler_->GetCurrentPlaylistOffset());
+  }
+}
+
+void MediaPlayer::ToggleFullscreen() {
+  if (handler_ && mediaplayer_browser_) {
+    mediaplayer_browser_->ToggleFullscreenMode();
   }
 }
 

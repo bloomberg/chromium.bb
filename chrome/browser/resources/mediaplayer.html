@@ -8,7 +8,7 @@
   -webkit-appearance: slider-horizontal;
   position: absolute;
   left: 93px;
-  right:90px;
+  right:120px;
   bottom:-2px;
   height: 30px;
 }
@@ -22,7 +22,7 @@ body {
   -webkit-appearance: slider-horizontal;
   position: absolute;
   left: 93px;
-  right:90px;
+  right:120px;
   bottom:-2px;
   height: 30px;
 }
@@ -100,6 +100,7 @@ body {
   height: 80px;
   width: 30px;
   right: 30px;
+  z-index: 99999;
   background: black;
   background: -webkit-gradient(linear,
                                left top,
@@ -114,12 +115,39 @@ body {
   height: 80px;
   width: 30px;
   right: 30px;
+  z-index: 99999;
   background: black;
   background: -webkit-gradient(linear,
                                left top,
                                left bottom,
                                from(#323232),
                                to(#070707));
+}
+
+.audio.fullscreen {
+  position:absolute;
+  right: 60px;
+  cursor: pointer;
+  bottom:0;
+  z-index: 9999;
+  width: 30px;
+  background: url('../../app/theme/mediaplayer_full_screen.png');
+  background-repeat: no-repeat;
+  background-position: 4px 4px;
+  height: 30px;
+}
+
+.video.fullscreen {
+  position:absolute;
+  right: 60px;
+  cursor: pointer;
+  bottom:0;
+  z-index: 9999;
+  width: 30px;
+  background: url('../../app/theme/mediaplayer_full_screen.png');
+  background-repeat: no-repeat;
+  background-position: 4px 4px;
+  height: 30px;
 }
 
 .volumeslider {
@@ -191,7 +219,7 @@ body {
 }
 
 .duration {
-  right: 58px;
+  right: 88px;
   color: white;
   position: absolute;
   top: 7px;
@@ -467,6 +495,12 @@ function setupPlaybackControls() {
   soundbutton.onclick = toggleVolumeVisible;
   element.appendChild(soundbutton);
 
+  var fullscreen = document.createElement('div');
+  fullscreen.id = 'fullscreen';
+  fullscreen.className = controlsclass + ' fullscreen';
+  fullscreen.onclick = toggleFullscreen;
+  element.appendChild(fullscreen);
+
   var volume = document.createElement('div');
   volume.id = 'volume';
   volume.className = controlsclass + ' volume';
@@ -509,7 +543,7 @@ function playAudioFile(uri) {
 };
 
 function toggleFullscreen() {
-
+  chrome.send('toggleFullscreen', ['']);
 };
 
 function onMetadataAvail() {
