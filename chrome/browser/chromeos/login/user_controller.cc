@@ -124,6 +124,8 @@ void UserController::Login() {
 
 WidgetGtk* UserController::CreateControlsWindow(int index, int* height) {
   password_field_ = new views::Textfield(views::Textfield::STYLE_PASSWORD);
+  password_field_->set_text_to_display_when_empty(
+      l10n_util::GetStringUTF16(IDS_LOGIN_EMPTY_PASSWORD_TEXT));
   password_field_->SetController(this);
   submit_button_ = new views::NativeButton(
       this, l10n_util::GetString(IDS_LOGIN_BUTTON));
