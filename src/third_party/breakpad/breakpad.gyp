@@ -2,9 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# This file is a nacl-specific replacement for chrome's
+# trunk/src/breakpad/breakpad.gypi. It is NOT INTENDED TO BE USED IN PLACE.
+# The NaCl DEPS file should move it to the /breakpad directory, which is a
+# peer to Native Client, as a replacement for the Chrome file of the same
+# name + location.
+
 {
   'includes': [
-    '../../../build/common.gypi',
+    '../native_client/build/common.gypi',
     'breakpad_sender.gypi',
     'breakpad_handler.gypi',
   ],
