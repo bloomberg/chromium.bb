@@ -99,6 +99,9 @@ class LayoutTestController : public CppBoundClass {
   // Changes the cookie policy from the default to allow all cookies.
   void setAlwaysAcceptCookies(const CppArgumentList& args, CppVariant* result);
 
+  // Shows DevTools window.
+  void showWebInspector(const CppArgumentList& args, CppVariant* result);
+
   // Gives focus to the window.
   void setWindowIsKey(const CppArgumentList& args, CppVariant* result);
 

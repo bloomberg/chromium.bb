@@ -101,6 +101,7 @@ LayoutTestController::LayoutTestController(TestShell* shell) :
   BindMethod("setCloseRemainingWindowsWhenComplete", &LayoutTestController::setCloseRemainingWindowsWhenComplete);
   BindMethod("objCIdentityIsEqual", &LayoutTestController::objCIdentityIsEqual);
   BindMethod("setAlwaysAcceptCookies", &LayoutTestController::setAlwaysAcceptCookies);
+  BindMethod("showWebInspector", &LayoutTestController::showWebInspector);
   BindMethod("setWindowIsKey", &LayoutTestController::setWindowIsKey);
   BindMethod("setTabKeyCyclesThroughElements", &LayoutTestController::setTabKeyCyclesThroughElements);
   BindMethod("setUserStyleSheetLocation", &LayoutTestController::setUserStyleSheetLocation);
@@ -558,6 +559,12 @@ void LayoutTestController::setAlwaysAcceptCookies(
   if (args.size() > 0) {
     SimpleResourceLoaderBridge::SetAcceptAllCookies(CppVariantToBool(args[0]));
   }
+  result->SetNull();
+}
+
+void LayoutTestController::showWebInspector(
+    const CppArgumentList& args, CppVariant* result) {
+  shell_->ShowDevTools();
   result->SetNull();
 }
 
