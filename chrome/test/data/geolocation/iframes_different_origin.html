@@ -1,22 +1,20 @@
 <html>
 <script>
-var iframe_id = 0;
-function addIFrame(url) {
-  var iframe = document.createElement('iframe');
+var iframe_hosts = ['http://127.0.0.1', 'http://localhost'];
+function addIFrame(iframe_id) {
+  var port = location.port;
+  var path = location.pathname.substring(0, location.pathname.lastIndexOf('/'));
+  var url = iframe_hosts[iframe_id] + ':' + port + path + '/simple.html';
+  var id = 'iframe_' + iframe_id;
+  var iframe = document.getElementById(id);
   iframe.src = url;
-  iframe.id = 'iframe_' + (iframe_id++);
-  document.body.appendChild(iframe);
-}
-
-function addIFrames() {
-  port = location.port;
-  path = location.pathname.substring(0, location.pathname.lastIndexOf('/'));
-  addIFrame('http://localhost:' + port + path + '/simple.html');
-  addIFrame('http://127.0.0.1:' + port + path + '/simple.html');
-  return "1";
+  return "" + iframe_id;
 }
 </script>
 <body>
+<iframe id="iframe_0"></iframe>
+<iframe id="iframe_1"></iframe>
 Testing Geolocation with iframes.
 </body>
 </html>
+
