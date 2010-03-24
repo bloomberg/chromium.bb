@@ -133,7 +133,7 @@
               '<(validate_gen_out)/ncdisasmtab.h',
             ],
             'action': ['<(PRODUCT_DIR)/ncdecode_table<(EXECUTABLE_SUFFIX)',
-                       '-m32', '<@(_outputs)'],
+                       '<@(_outputs)'],
             'message': 'Running ncdecode_table',
             'process_outputs_as_sources': 1,
           },

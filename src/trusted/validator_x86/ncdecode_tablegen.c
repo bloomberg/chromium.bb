@@ -1456,33 +1456,10 @@ static FILE* NaClMustOpen(const char* fname, const char* how) {
   return f;
 }
 
-/* Recognizes flags in argv, processes them, and then removes them.
- * Returns the updated value for argc.
- */
-static int NaClGrokFlags(int argc, const char* argv[]) {
-  int i;
-  int new_argc;
-  if (argc == 0) return 0;
-  new_argc = 1;
-  for (i = 1; i < argc; ++i) {
-    if (0 == strcmp("-m32", argv[i])) {
-      FLAGS_run_mode = X86_32;
-    } else if (0 == strcmp("-m64", argv[i])) {
-      FLAGS_run_mode = X86_64;
-    } else {
-      argv[new_argc++] = argv[i];
-    }
-  }
-  return new_argc;
-}
-
 int main(const int argc, const char* argv[]) {
   FILE *f;
-  int new_argc = NaClGrokFlags(argc, argv);
-  if (new_argc != 2) {
-    fprintf(stderr,
-            "ERROR: usage: ncdecode_tablegen [options] "
-            "file\n");
+  if (argc != 2) {
+    fprintf(stderr, "ERROR: usage: ncdecode_tablegen file\n");
     return -1;
   }
 
