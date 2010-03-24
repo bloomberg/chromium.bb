@@ -78,6 +78,7 @@ FtpDirectoryListingResponseDelegate::FtpDirectoryListingResponseDelegate(
     : client_(client),
       loader_(loader),
       original_response_(response),
+      buffer_(base::Time::Now()),
       updated_histograms_(false),
       had_parsing_error_(false) {
   Init();

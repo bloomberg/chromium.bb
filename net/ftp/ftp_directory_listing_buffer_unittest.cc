@@ -54,10 +54,14 @@ TEST(FtpDirectoryListingBufferTest, Parse) {
   test_dir = test_dir.AppendASCII("data");
   test_dir = test_dir.AppendASCII("ftp");
 
+  base::Time mock_current_time;
+  ASSERT_TRUE(base::Time::FromString(L"Tue, 15 Nov 1994 12:45:26 GMT",
+                                     &mock_current_time));
+
   for (size_t i = 0; i < arraysize(test_files); i++) {
     SCOPED_TRACE(StringPrintf("Test[%" PRIuS "]: %s", i, test_files[i]));
 
-    net::FtpDirectoryListingBuffer buffer;
+    net::FtpDirectoryListingBuffer buffer(mock_current_time);
 
     std::string test_listing;
     EXPECT_TRUE(file_util::ReadFileToString(test_dir.AppendASCII(test_files[i]),
@@ -85,14 +89,7 @@ TEST(FtpDirectoryListingBufferTest, Parse) {
 
       SCOPED_TRACE(StringPrintf("Filename: %s", name.c_str()));
 
-      int year;
-      if (lines[8 * i + 3] == "current") {
-        base::Time::Exploded now_exploded;
-        base::Time::Now().LocalExplode(&now_exploded);
-        year = now_exploded.year;
-      } else {
-        year = StringToInt(lines[8 * i + 3]);
-      }
+      int year = StringToInt(lines[8 * i + 3]);
       int month = StringToInt(lines[8 * i + 4]);
       int day_of_month = StringToInt(lines[8 * i + 5]);
       int hour = StringToInt(lines[8 * i + 6]);

@@ -43,11 +43,12 @@ std::string DetectEncoding(const std::string& text) {
 
 namespace net {
 
-FtpDirectoryListingBuffer::FtpDirectoryListingBuffer()
+FtpDirectoryListingBuffer::FtpDirectoryListingBuffer(
+    const base::Time& current_time)
     : current_parser_(NULL) {
-  parsers_.insert(new FtpDirectoryListingParserLs());
+  parsers_.insert(new FtpDirectoryListingParserLs(current_time));
   parsers_.insert(new FtpDirectoryListingParserMlsd());
-  parsers_.insert(new FtpDirectoryListingParserNetware());
+  parsers_.insert(new FtpDirectoryListingParserNetware(current_time));
   parsers_.insert(new FtpDirectoryListingParserVms());
   parsers_.insert(new FtpDirectoryListingParserWindows());
 }
