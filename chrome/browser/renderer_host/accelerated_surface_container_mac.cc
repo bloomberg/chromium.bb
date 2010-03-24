@@ -79,7 +79,9 @@ void AcceleratedSurfaceContainerMac::Draw(CGLContextObj context) {
     glBindTexture(target, texture_);
     glTexParameterf(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameterf(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    if (!io_surface_support) {
+    if (io_surface_support) {
+      texture_needs_upload_ = true;
+    } else {
       // Reserve space on the card for the actual texture upload, done with the
       // glTexSubImage2D() call, below.
       glTexImage2D(target,
