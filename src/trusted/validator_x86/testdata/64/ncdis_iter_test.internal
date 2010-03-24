@@ -3317,7 +3317,7 @@ NaClExpVector[8] = {
 0000000000000000: 0f ae f8                                     sfence
   { 2, { 0x0f, 0xae, 0x00 },
     NACLi_SFENCE_CLFLUSH,
-    NACL_IFLAG(OpcodeInModRm),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIs0x3),
     InstSfence,
     1, {
       { Opcode7, NACL_OPFLAG(OperandExtendsOpcode) },
@@ -3855,6 +3855,55 @@ NaClExpVector[8] = {
     NACL_EMPTY_IFLAGS,
     InstNop,
     0, {
+  } };
+NaClExpVector[0] = {
+};
+0000000000000000: 0f 70 00 00                                  pshufw %mmx0, [%rax], 0x0
+  { 2, { 0x0f, 0x70, 0x00 },
+    NACLi_SSE,
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b),
+    InstPshufw,
+    3, {
+      { Mmx_G_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
+      { Mmx_E_Operand, NACL_OPFLAG(OpUse) },
+      { I_Operand, NACL_OPFLAG(OpUse) },
+  } };
+NaClExpVector[10] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprRegister[0] , %mmx0, ExprSet | ExprUsed },
+  { OperandReference[1] , 1, 0 },
+  { ExprMemOffset[4] , 0, ExprUsed },
+  { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
+  { ExprRegister[0] , %unknown, 0 },
+  { ExprConstant[0] , 1, ExprSize8 },
+  { ExprConstant[0] , 0, ExprSize8 },
+  { OperandReference[1] , 2, 0 },
+  { ExprConstant[0] , 0x0, ExprUsed | ExprSize8 | ExprUnsignedHex },
+};
+0000000000000000: 0f ae 38                                     clflush [%rax]
+  { 2, { 0x0f, 0xae, 0x00 },
+    NACLi_SFENCE_CLFLUSH,
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeLtC0InModRm),
+    InstClflush,
+    2, {
+      { Opcode7, NACL_OPFLAG(OperandExtendsOpcode) },
+      { Mb_Operand, NACL_OPFLAG(OpUse) },
+  } };
+NaClExpVector[6] = {
+  { OperandReference[1] , 1, 0 },
+  { ExprMemOffset[4] , 0, ExprUsed },
+  { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
+  { ExprRegister[0] , %unknown, 0 },
+  { ExprConstant[0] , 1, ExprSize8 },
+  { ExprConstant[0] , 0, ExprSize8 },
+};
+0000000000000000: 0f ae fc                                     sfence
+  { 2, { 0x0f, 0xae, 0x00 },
+    NACLi_SFENCE_CLFLUSH,
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIs0x3),
+    InstSfence,
+    1, {
+      { Opcode7, NACL_OPFLAG(OperandExtendsOpcode) },
   } };
 NaClExpVector[0] = {
 };

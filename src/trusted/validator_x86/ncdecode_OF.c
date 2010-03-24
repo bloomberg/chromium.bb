@@ -8,6 +8,7 @@
  * Defines two byte opcodes beginning with OF.
  */
 
+#include "native_client/src/trusted/validator_x86/ncdecode_forms.h"
 #include "native_client/src/trusted/validator_x86/ncdecode_tablegen.h"
 
 static void NaClDefJmp0FPair(uint8_t opcode, NaClMnemonic name) {
@@ -81,7 +82,7 @@ static void NaClDefBswap() {
 
 void NaClDef0FInsts() {
   int i;
-  NaClDefInstPrefix(Prefix0F);
+  NaClDefDefaultInstPrefix(Prefix0F);
 
   /* Note: The SSE instructions that begin with 0F are not defined here. Look
    * at ncdecode_sse.c for the definitions of SSE instruction.
@@ -229,19 +230,23 @@ void NaClDef0FInsts() {
   NaClDefOp(G_Operand, NACL_OPFLAG(OpUse));
 
   NaClDefInst(0xae, NACLi_SSE2,
-              NACL_IFLAG(OpcodeInModRm),
+              NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIs0x3),
               InstLfence);
   NaClDefOp(Opcode5, NACL_OPFLAG(OperandExtendsOpcode));
 
   NaClDefInst(0xae, NACLi_SSE2,
-              NACL_IFLAG(OpcodeInModRm),
+              NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIs0x3),
               InstMfence);
   NaClDefOp(Opcode6, NACL_OPFLAG(OperandExtendsOpcode));
 
+  NaClDefInstMrmChoices(0xae, Opcode7, 2);
   NaClDefInst(0xae, NACLi_SFENCE_CLFLUSH,
-              NACL_IFLAG(OpcodeInModRm),
+              NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIs0x3),
               InstSfence);
   NaClDefOp(Opcode7, NACL_OPFLAG(OperandExtendsOpcode));
+
+  DEF_USUBO_INST(Mb_)(NACLi_SFENCE_CLFLUSH, 0xae, Prefix0F,
+                      Opcode7, InstClflush, UnaryUse);
 
   NaClDefInstChoices_32_64(0xaf, 1, 2);
   NaClDefInst(0xaf, NACLi_386,

@@ -108,6 +108,7 @@ static void NaClDefBinarySseInsts() {
   DEF_BINST(Vps, Wps)(NACLi_SSE, 0x57, Prefix0F, InstXorps, Binary);
 
   DEF_BINST(Gd_, Upd)(NACLi_SSE2, 0x50, Prefix660F, InstMovmskpd, Move);
+  NaClAddIFlags(NACL_IFLAG(OperandSizeDefaultIs64));
   DEF_BINST(Vpd, Wpd)(NACLi_SSE2, 0x51, Prefix660F, InstSqrtpd, Move);
   DEF_BINST(Vpd, Wpd)(NACLi_SSE2, 0x54, Prefix660F, InstAndpd, Binary);
   DEF_BINST(Vpd, Wpd)(NACLi_SSE2, 0x55, Prefix660F, InstAndnpd, Binary);
@@ -115,7 +116,7 @@ static void NaClDefBinarySseInsts() {
   DEF_BINST(Vpd, Wpd)(NACLi_SSE2, 0x57, Prefix660F, InstXorpd, Binary);
 
   DEF_BINST(Vsd, Wsd)(NACLi_SSE2, 0x51, PrefixF20F, InstSqrtsd, Move);
-
+  NaClAddIFlags(NACL_IFLAG(OperandSizeDefaultIs64));
   DEF_BINST(Vss, Wss)(NACLi_SSE, 0x51, PrefixF30F, InstSqrtss, Move);
   DEF_BINST(Vss, Wss)(NACLi_SSE, 0x52, PrefixF30F, InstRsqrtss, Move);
   DEF_BINST(Vss, Wss)(NACLi_SSE, 0x53, PrefixF30F, InstRcpss, Move);
@@ -176,7 +177,7 @@ static void NaClDefBinarySseInsts() {
   DEF_BINST(Vdq, EdQ)(NACLi_SSE2, 0x6e, Prefix660F, InstMovd, Move);
   DEF_BINST(Vdq, Wdq)(NACLi_SSE2, 0x6f, Prefix660F, InstMovdqa, Move);
 
-  DEF_BINST(Pq_, Qq_)(NACLi_SSE, 0x70, Prefix0F, InstPshuflw, Binary);
+  DEF_BINST(Pq_, Qq_)(NACLi_SSE, 0x70, Prefix0F, InstPshufw, Binary);
   NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_b));
   NaClDefOp(I_Operand, NACL_OPFLAG(OpUse));
 

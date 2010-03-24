@@ -8,16 +8,21 @@
  * a more concise way of specifying opcodes.
  */
 
+#include <assert.h>
+
 #include "native_client/src/trusted/validator_x86/ncdecode_forms.h"
 #include "native_client/src/trusted/validator_x86/ncdecode_tablegen.h"
 
-NaClOpFlags NaClGetDestFlags(NcInstCat icat) {
+NaClOpFlags NaClGetDestFlags(NaClInstCat icat) {
   switch (icat) {
+    case UnarySet:
     case Move:
     case Exchange:
       return NACL_OPFLAG(OpSet);
+    case UnaryUpdate:
     case Binary:
       return NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse);
+    case UnaryUse:
     case Compare:
       return NACL_OPFLAG(OpUse);
   }
@@ -25,8 +30,15 @@ NaClOpFlags NaClGetDestFlags(NcInstCat icat) {
   return NACL_EMPTY_OPFLAGS;
 }
 
-NaClOpFlags NaClGetSourceFlags(NcInstCat icat) {
+NaClOpFlags NaClGetSourceFlags(NaClInstCat icat) {
   switch (icat) {
+    case UnarySet:
+    case UnaryUse:
+    case UnaryUpdate:
+      fprintf(stderr,
+              "Illegal to use unary categorization for binary operation\n");
+      assert(0);
+      break;
     case Move:
     case Binary:
     case Compare:
@@ -38,172 +50,176 @@ NaClOpFlags NaClGetSourceFlags(NcInstCat icat) {
   return NACL_EMPTY_OPFLAGS;
 }
 
-NaClOpFlags NaClGetIcatFlags(NcInstCat icat, int operand_index) {
+NaClOpFlags NaClGetIcatFlags(NaClInstCat icat, int operand_index) {
   return operand_index == 1 ? NaClGetDestFlags(icat) : NaClGetSourceFlags(icat);
 }
 
-void DEF_OPERAND(Edq)(NcInstCat icat, int operand_index) {
+void DEF_OPERAND(Edq)(NaClInstCat icat, int operand_index) {
   NaClDefOp(Edq_Operand, NaClGetIcatFlags(icat, operand_index));
 }
 
-void DEF_OPERAND(EdQ)(NcInstCat icat, int operand_index) {
+void DEF_OPERAND(EdQ)(NaClInstCat icat, int operand_index) {
   /* TODO(karl) fix measurement of size to use Rex.W */
   NaClDefOp(E_Operand, NaClGetIcatFlags(icat, operand_index));
 }
 
-void DEF_OPERAND(Gd_)(NcInstCat icat, int operand_index) {
+void DEF_OPERAND(Gd_)(NaClInstCat icat, int operand_index) {
   NaClDefOp(Gv_Operand, NaClGetIcatFlags(icat, operand_index));
 }
 
-void DEF_OPERAND(Gdq)(NcInstCat icat, int operand_index) {
+void DEF_OPERAND(Gdq)(NaClInstCat icat, int operand_index) {
   NaClDefOp(Gdq_Operand, NaClGetIcatFlags(icat, operand_index));
 }
 
-void DEF_OPERAND(I__)(NcInstCat icat, int operand_index) {
+void DEF_OPERAND(I__)(NaClInstCat icat, int operand_index) {
   NaClDefOp(I_Operand, NaClGetIcatFlags(icat, operand_index));
 }
 
-void DEF_OPERAND(Md_)(NcInstCat icat, int operand_index) {
+void DEF_OPERAND(Mb_)(NaClInstCat icat, int operand_index) {
+  NaClDefOp(Mb_Operand, NaClGetIcatFlags(icat, operand_index));
+}
+
+void DEF_OPERAND(Md_)(NaClInstCat icat, int operand_index) {
   NaClDefOp(Mv_Operand, NaClGetIcatFlags(icat, operand_index));
 }
 
-void DEF_OPERAND(Mdq)(NcInstCat icat, int operand_index) {
+void DEF_OPERAND(Mdq)(NaClInstCat icat, int operand_index) {
   NaClDefOp(Mdq_Operand, NaClGetIcatFlags(icat, operand_index));
 }
 
-void DEF_OPERAND(Mpd)(NcInstCat icat, int operand_index) {
+void DEF_OPERAND(Mpd)(NaClInstCat icat, int operand_index) {
   NaClDefOp(Mdq_Operand, NaClGetIcatFlags(icat, operand_index));
 }
 
-void DEF_OPERAND(Mps)(NcInstCat icat, int operand_index) {
+void DEF_OPERAND(Mps)(NaClInstCat icat, int operand_index) {
   NaClDefOp(Mdq_Operand, NaClGetIcatFlags(icat, operand_index));
 }
 
-void DEF_OPERAND(Mq_)(NcInstCat icat, int operand_index) {
+void DEF_OPERAND(Mq_)(NaClInstCat icat, int operand_index) {
   NaClDefOp(Mo_Operand, NaClGetIcatFlags(icat, operand_index));
 }
 
-void DEF_OPERAND(Nq_)(NcInstCat icat, int operand_index) {
+void DEF_OPERAND(Nq_)(NaClInstCat icat, int operand_index) {
   NaClDefOp(Mmx_N_Operand, NaClGetIcatFlags(icat, operand_index));
 }
 
-void DEF_OPERAND(Pd_)(NcInstCat icat, int operand_index) {
+void DEF_OPERAND(Pd_)(NaClInstCat icat, int operand_index) {
   NaClDefOp(Mmx_Gd_Operand, NaClGetIcatFlags(icat, operand_index));
 }
 
-void DEF_OPERAND(Pdq)(NcInstCat icat, int operand_index) {
+void DEF_OPERAND(Pdq)(NaClInstCat icat, int operand_index) {
   /* TODO(karl) add dq size restriction. */
   NaClDefOp(Mmx_G_Operand, NaClGetIcatFlags(icat, operand_index));
 }
 
-void DEF_OPERAND(PdQ)(NcInstCat icat, int operand_index) {
+void DEF_OPERAND(PdQ)(NaClInstCat icat, int operand_index) {
   /* TODO(karl) add d/q size restriction. */
   NaClDefOp(Mmx_G_Operand, NaClGetIcatFlags(icat, operand_index));
 }
 
-void DEF_OPERAND(Pq_)(NcInstCat icat, int operand_index) {
+void DEF_OPERAND(Pq_)(NaClInstCat icat, int operand_index) {
   /* TODO(karl) Add q size restriction. */
   NaClDefOp(Mmx_G_Operand, NaClGetIcatFlags(icat, operand_index));
 }
 
-void DEF_OPERAND(Ppi)(NcInstCat icat, int operand_index) {
+void DEF_OPERAND(Ppi)(NaClInstCat icat, int operand_index) {
   NaClDefOp(Mmx_G_Operand, NaClGetIcatFlags(icat, operand_index));
 }
 
-void DEF_OPERAND(Qd_)(NcInstCat icat, int operand_index) {
+void DEF_OPERAND(Qd_)(NaClInstCat icat, int operand_index) {
   /* TODO(karl) add d size restriction. */
   NaClDefOp(Mmx_E_Operand, NaClGetIcatFlags(icat, operand_index));
 }
 
-void DEF_OPERAND(Qpi)(NcInstCat icat, int operand_index) {
+void DEF_OPERAND(Qpi)(NaClInstCat icat, int operand_index) {
   NaClDefOp(Mmx_E_Operand, NaClGetIcatFlags(icat, operand_index));
 }
 
-void DEF_OPERAND(Qq_)(NcInstCat icat, int operand_index) {
+void DEF_OPERAND(Qq_)(NaClInstCat icat, int operand_index) {
   /* TODO(karl) add q size restriction. */
   NaClDefOp(Mmx_E_Operand, NaClGetIcatFlags(icat, operand_index));
 }
 
-void DEF_OPERAND(Udq)(NcInstCat icat, int operand_index) {
+void DEF_OPERAND(Udq)(NaClInstCat icat, int operand_index) {
   /* TODO(karl) Add code to restrict valid values to using
    * the ModRm r/m field, when the ModRm mod field must be 0x3.
    */
   NaClDefOp(Xmm_E_Operand, NaClGetIcatFlags(icat, operand_index));
 }
 
-void DEF_OPERAND(Upd)(NcInstCat icat, int operand_index) {
+void DEF_OPERAND(Upd)(NaClInstCat icat, int operand_index) {
   /* TODO(karl) Add code to restrict valid values to using
    * the ModRm r/m field, when the ModRm mod field must be 0x3.
    */
   NaClDefOp(Xmm_E_Operand, NaClGetIcatFlags(icat, operand_index));
 }
 
-void DEF_OPERAND(Ups)(NcInstCat icat, int operand_index) {
+void DEF_OPERAND(Ups)(NaClInstCat icat, int operand_index) {
   /* TODO(karl) Add code to restrict valid values to using
    * the ModRm r/m field, when the ModRm mod field must be 0x3.
    */
   NaClDefOp(Xmm_E_Operand, NaClGetIcatFlags(icat, operand_index));
 }
 
-void DEF_OPERAND(Uq_)(NcInstCat icat, int operand_index) {
+void DEF_OPERAND(Uq_)(NaClInstCat icat, int operand_index) {
   /* TODO(karl) Add code to restrict valid values to using
    * the ModRm r/m field, when the ModRm mod field must be 0x3.
    */
   NaClDefOp(Xmm_E_Operand, NaClGetIcatFlags(icat, operand_index));
 }
 
-void DEF_OPERAND(Vdq)(NcInstCat icat, int operand_index) {
+void DEF_OPERAND(Vdq)(NaClInstCat icat, int operand_index) {
   /* TODO(karl) Add dq size restriction. */
   NaClDefOp(Xmm_G_Operand, NaClGetIcatFlags(icat, operand_index));
 }
-void DEF_OPERAND(VdQ)(NcInstCat icat, int operand_index) {
+void DEF_OPERAND(VdQ)(NaClInstCat icat, int operand_index) {
   /* TODO(karl) Add d/q size restriction. */
   NaClDefOp(Xmm_G_Operand, NaClGetIcatFlags(icat, operand_index));
 }
 
-void DEF_OPERAND(Vpd)(NcInstCat icat, int operand_index) {
+void DEF_OPERAND(Vpd)(NaClInstCat icat, int operand_index) {
   NaClDefOp(Xmm_G_Operand, NaClGetIcatFlags(icat, operand_index));
 }
 
-void DEF_OPERAND(Vps)(NcInstCat icat, int operand_index) {
+void DEF_OPERAND(Vps)(NaClInstCat icat, int operand_index) {
   NaClDefOp(Xmm_G_Operand, NaClGetIcatFlags(icat, operand_index));
 }
 
-void DEF_OPERAND(Vq_)(NcInstCat icat, int operand_index) {
+void DEF_OPERAND(Vq_)(NaClInstCat icat, int operand_index) {
   NaClDefOp(Xmm_Go_Operand, NaClGetIcatFlags(icat, operand_index));
 }
 
-void DEF_OPERAND(Vsd)(NcInstCat icat, int operand_index) {
+void DEF_OPERAND(Vsd)(NaClInstCat icat, int operand_index) {
   NaClDefOp(Xmm_G_Operand, NaClGetIcatFlags(icat, operand_index));
 }
 
-void DEF_OPERAND(Vss)(NcInstCat icat, int operand_index) {
+void DEF_OPERAND(Vss)(NaClInstCat icat, int operand_index) {
   NaClDefOp(Xmm_G_Operand, NaClGetIcatFlags(icat, operand_index));
 }
 
-void DEF_OPERAND(Wdq)(NcInstCat icat, int operand_index) {
+void DEF_OPERAND(Wdq)(NaClInstCat icat, int operand_index) {
   /* TODO(karl) Add dq size restriction. */
   NaClDefOp(Xmm_E_Operand, NaClGetIcatFlags(icat, operand_index));
 }
 
-void DEF_OPERAND(Wpd)(NcInstCat icat, int operand_index) {
+void DEF_OPERAND(Wpd)(NaClInstCat icat, int operand_index) {
   NaClDefOp(Xmm_E_Operand, NaClGetIcatFlags(icat, operand_index));
 }
 
-void DEF_OPERAND(Wps)(NcInstCat icat, int operand_index) {
+void DEF_OPERAND(Wps)(NaClInstCat icat, int operand_index) {
   NaClDefOp(Xmm_E_Operand, NaClGetIcatFlags(icat, operand_index));
 }
 
-void DEF_OPERAND(Wq_)(NcInstCat icat, int operand_index) {
+void DEF_OPERAND(Wq_)(NaClInstCat icat, int operand_index) {
   /* TODO(karl) Add q size restriction. */
   NaClDefOp(Xmm_Eo_Operand, NaClGetIcatFlags(icat, operand_index));
 }
 
-void DEF_OPERAND(Wsd)(NcInstCat icat, int operand_index) {
+void DEF_OPERAND(Wsd)(NaClInstCat icat, int operand_index) {
   NaClDefOp(Xmm_E_Operand, NaClGetIcatFlags(icat, operand_index));
 }
 
-void DEF_OPERAND(Wss)(NcInstCat icat, int operand_index) {
+void DEF_OPERAND(Wss)(NaClInstCat icat, int operand_index) {
   NaClDefOp(Xmm_E_Operand, NaClGetIcatFlags(icat, operand_index));
 }
 
@@ -214,6 +230,41 @@ void DEF_NULL_OPRDS_INST(NaClInstType itype, uint8_t opbyte,
   NaClResetToDefaultInstPrefix();
 }
 
+/* Generic macro for implementing a unary instruction function whose
+ * argument is described by a (3) character type name. Defines
+ * implementation for corresponding function declared by macro
+ * DECLARE_UNARY_INST.
+ */
+#define DEFINE_UNARY_INST(XXX) \
+void DEF_UNARY_INST(XXX)(NaClInstType itype, uint8_t opbyte, \
+                         NaClInstPrefix prefix, NaClMnemonic inst,      \
+                         NaClInstCat icat) {                            \
+  NaClDefInstPrefix(prefix);                                            \
+  NaClDefInst(opbyte, itype, NACL_IFLAG(OpcodeUsesModRm), inst);        \
+  DEF_OPERAND(XXX)(icat, 1); \
+  NaClResetToDefaultInstPrefix();               \
+}
+
+/* Generic macro for implementing a unary instruction whose
+ * argument is described by a (3) character type name. Defines
+ * implementation for corresponding function declared by macro
+ * DELARE_UNARY_OINST.
+ */
+#define DEFINE_UNARY_OINST(XXX) \
+void DEF_USUBO_INST(XXX)(NaClInstType itype, uint8_t opbyte, \
+                         NaClInstPrefix prefix, \
+                         NaClOpKind modrm_opcode, \
+                         NaClMnemonic inst, \
+                         NaClInstCat icat) { \
+  NaClDefInstPrefix(prefix); \
+  NaClDefInst(opbyte, itype, NACL_IFLAG(OpcodeInModRm), inst); \
+  NaClDefOp(modrm_opcode, NACL_IFLAG(OperandExtendsOpcode)); \
+  DEF_OPERAND(XXX)(icat, 1); \
+  NaClResetToDefaultInstPrefix();             \
+}
+
+DEFINE_UNARY_OINST(Mb_)
+
 /* Generic macro for implementing a binary instruction function whose
  * arguments are described by (3) character type names. Defines
  * implementation for corresponding function declared by macro
@@ -222,7 +273,7 @@ void DEF_NULL_OPRDS_INST(NaClInstType itype, uint8_t opbyte,
 #define DEFINE_BINARY_INST(XXX, YYY) \
 void DEF_BINST(XXX, YYY)(NaClInstType itype, uint8_t opbyte, \
                          NaClInstPrefix prefix, NaClMnemonic inst, \
-                         NcInstCat icat) { \
+                         NaClInstCat icat) { \
   NaClDefInstPrefix(prefix); \
   NaClDefInst(opbyte, itype, NACL_IFLAG(OpcodeUsesModRm), inst); \
   DEF_OPERAND(XXX)(icat, 1); \
@@ -374,7 +425,7 @@ void DEF_OINST(XXX, YYY)(NaClInstType itype, uint8_t opbyte, \
                          NaClInstPrefix prefix, \
                          NaClOpKind modrm_opcode, \
                          NaClMnemonic inst, \
-                         NcInstCat icat) { \
+                         NaClInstCat icat) { \
   NaClDefInstPrefix(prefix); \
   NaClDefInst(opbyte, itype, NACL_IFLAG(OpcodeInModRm), inst); \
   NaClDefOp(modrm_opcode, NACL_IFLAG(OperandExtendsOpcode)); \

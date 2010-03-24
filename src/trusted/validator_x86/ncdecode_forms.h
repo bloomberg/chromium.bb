@@ -23,10 +23,19 @@
  * side effecting operations change this value), and Source is a second (use)
  * argument.
  *
+ * Note: Unary operands assume form:
+ *
+ *     OP Dest
+ *
  * Reading the text associated with each instruction, one should be able to
  * categorize (most) instructions, into one of the following:
  */
-typedef enum NcInstCat {
+typedef enum NaClInstCat {
+  /* The following are for categorizing operands with a single operand. */
+  UnarySet,    /* The value of Dest is set to a predetermined value. */
+  UnaryUse,    /* The value of Dest is not modified. */
+  UnaryUpdate, /* Dest := f(Dest) for some f. */
+  /* The following are for categorizing operations with 2 or more operands. */
   Move,       /* Dest := f(Source) for some f. */
   Binary,     /* Dest := f(Dest, Source) for some f. */
   Compare,    /* Sets flag using f(Dest, Source). The value of Dest is not
@@ -35,22 +44,22 @@ typedef enum NcInstCat {
   Exchange,   /* Dest := f(Dest, Source) for some f, and
                  Source := g(Dest, Source) for some g.
               */
-} NcInstCat;
+} NaClInstCat;
 
 /* Returns the operand flags for the destination argument of the instruction,
  * given the category of instruction.
  */
-NaClOpFlags NaClGetDestFlags(NcInstCat icat);
+NaClOpFlags NaClGetDestFlags(NaClInstCat icat);
 
 /* Returns the operand flags for the source argument of the instruction,
  * given the category of instruction.
  */
-NaClOpFlags NaClGetSourceFlags(NcInstCat icat);
+NaClOpFlags NaClGetSourceFlags(NaClInstCat icat);
 
 /* Returns the operand flags for the operand with the given index (one-based)
  * of the instruction, given the category of the instruction.
  */
-NaClOpFlags NaClGetIcatFlags(NcInstCat icat, int operand_index);
+NaClOpFlags NaClGetIcatFlags(NaClInstCat icat, int operand_index);
 
 /*
  * Operands are encoded using up to 3 characters. Each character defines
@@ -102,7 +111,7 @@ NaClOpFlags NaClGetIcatFlags(NcInstCat icat, int operand_index);
  * the type it should recognize.
  */
 #define DECLARE_OPERAND(XXX) \
-  void DEF_OPERAND(XXX)(NcInstCat icat, int operand_index)
+  void DEF_OPERAND(XXX)(NaClInstCat icat, int operand_index)
 
 /* The following list are the current set of known (i.e. implemented
  * operand types.
@@ -191,6 +200,46 @@ DECLARE_OPERAND(Wss);
 void DEF_NULL_OPRDS_INST(NaClInstType itype, uint8_t opbyte,
                          NaClInstPrefix prefix, NaClMnemonic inst);
 
+/* Generic macro to define the name of a unary instruction with one type
+ * argument, and use the modrm byte to decode the argument.
+ */
+#define DEF_UNARY_INST(XXX) NaClDef ## XXX ## Inst
+
+/* Declares a unary instruction function whose argument is described
+ * by a (3) character sequence type name. Asumes the instruction
+ * uses the modrm byte to decode the argument.
+ *
+ * NOTE: We use macros to define function headers so that type checking
+ * can happen on arguments to the corresponding defining function.
+ */
+#define DECLARE_UNARY_INST(XXX) \
+  void DEF_UNARY_INST(XXX)(NaClInstType itype, uint8_t opbyte, \
+                           NaClInstPrefix prefix, NaClMnemonic inst,    \
+                           NaClInstCat icat)
+
+/* Generic macro to define the name of a unary instruction with two type
+ * arguments, and used the modrm field of the modrm byt to refine
+ * the opcode being defined.
+ */
+#define DEF_USUBO_INST(XXX) NaClDef ## XXX ## SubInst
+
+/* Declares a unary instruction function whose argument is
+ * decribed by a (3) character sequence type name. Assumes
+ * the the modrm field of the modrm byte is used to refine the
+ * opcode being defined.
+ *
+ * NOTE: We use macros to define function headers so that type checking
+ * can happen on arguments to the corresponding defining function.
+ */
+#define DECLARE_UNARY_OINST(XXX) \
+  void DEF_USUBO_INST(XXX)(NaClInstType itype, uint8_t opbyte, \
+                           NaClInstPrefix prefix,              \
+                           NaClOpKind modrm_opcode,            \
+                           NaClMnemonic inst,                  \
+                           NaClInstCat icat)
+
+DECLARE_UNARY_OINST(Mb_);
+
 /* Generic macro to define the name of an opcode with two type arguments,
  * and use the modrm byte to decode at least one of these arguments.
  */
@@ -206,7 +255,7 @@ void DEF_NULL_OPRDS_INST(NaClInstType itype, uint8_t opbyte,
 #define DECLARE_BINARY_INST(XXX, YYY) \
   void DEF_BINST(XXX, YYY)(NaClInstType itype, uint8_t opbyte, \
                            NaClInstPrefix prefix, NaClMnemonic inst,     \
-                           NcInstCat icat)
+                           NaClInstCat icat)
 
 /* The set of binary instructions, with typed arguments, that are recognized. */
 
@@ -344,7 +393,7 @@ DECLARE_BINARY_INST(Wsd, Vsd);
 
 DECLARE_BINARY_INST(Wss, Vss);
 
-/* Generic macro to define the name of an opcode with two type
+/* Generic macro to define the name of a binary instruction with two type
  * arguments, and uses the modrm field of the modrm byte to refine
  * the opcode being defined.
  */
@@ -363,7 +412,7 @@ DECLARE_BINARY_INST(Wss, Vss);
                            NaClInstPrefix prefix, \
                            NaClOpKind modrm_opcode, \
                            NaClMnemonic inst, \
-                           NcInstCat icat)
+                           NaClInstCat icat)
 
 /* The set of binary functions (with opcode refinement in the modrm byte),
  * with typed aruments, that are recognized.
