@@ -2558,7 +2558,7 @@
    fun:_ZN7testing8internal18FunctionMockerBaseIFbvEE10InvokeWithERKNSt3tr15tupleINS4_10_NullClassES6_S6_S6_S6_S6_S6_S6_S6_S6_EE
    fun:_ZN7testing8internal14FunctionMockerIFbvEE6InvokeEv
    fun:_ZN12browser_sync19SyncBackendHostMock12RequestPauseEv
-   fun:_ZN12browser_sync19DataTypeManagerImpl5StartEP14CallbackRunnerI6Tuple1INS_15DataTypeManager11StartResultEEE
+   ...
    fun:_ZN18ProfileSyncService29StartProcessingChangesIfReadyEv
    fun:_ZN18ProfileSyncService20OnBackendInitializedEv
    fun:_ZN12browser_sync15SyncBackendHost4Core14NotifyFrontendENS1_20FrontendNotificationE
