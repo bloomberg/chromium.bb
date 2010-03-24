@@ -179,9 +179,7 @@ class TestingProfile : public Profile {
   void CreateRequestContext();
 
   virtual URLRequestContextGetter* GetRequestContextForMedia() { return NULL; }
-  virtual URLRequestContextGetter* GetRequestContextForExtensions() {
-      return NULL;
-  }
+  virtual URLRequestContextGetter* GetRequestContextForExtensions();
 
   virtual net::SSLConfigService* GetSSLConfigService() { return NULL; }
   virtual Blacklist* GetPrivacyBlacklist() { return NULL; }
@@ -303,6 +301,7 @@ class TestingProfile : public Profile {
   // Internally, this is a TestURLRequestContextGetter that creates a dummy
   // request context. Currently, only the CookieMonster is hooked up.
   scoped_refptr<URLRequestContextGetter> request_context_;
+  scoped_refptr<URLRequestContextGetter> extensions_request_context_;
 
   // Do we have a history service? This defaults to the value of
   // history_service, but can be explicitly set.

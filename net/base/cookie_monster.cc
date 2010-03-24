@@ -782,6 +782,20 @@ int CookieMonster::DeleteAllCreatedAfter(const Time& delete_begin,
   return DeleteAllCreatedBetween(delete_begin, Time(), sync_to_store);
 }
 
+int CookieMonster::DeleteAllForURL(const GURL& url,
+                                   bool sync_to_store) {
+  AutoLock autolock(lock_);
+  InitIfNecessary();
+  CookieList cookies = InternalGetAllCookiesForURL(url);
+  int num_deleted = 0;
+  for (CookieMap::iterator it = cookies_.begin(); it != cookies_.end();) {
+    CookieMap::iterator curit = it;
+    ++it;
+    InternalDeleteCookie(curit, true);
+  }
+  return num_deleted;
+}
+
 bool CookieMonster::DeleteCookie(const std::string& domain,
                                  const CanonicalCookie& cookie,
                                  bool sync_to_store) {
@@ -911,37 +925,7 @@ CookieMonster::CookieList CookieMonster::GetAllCookies() {
 CookieMonster::CookieList CookieMonster::GetAllCookiesForURL(const GURL& url) {
   AutoLock autolock(lock_);
   InitIfNecessary();
-
-  // Do not return removed cookies.
-  GarbageCollectExpired(Time::Now(),
-                        CookieMapItPair(cookies_.begin(), cookies_.end()),
-                        NULL);
-
-  CookieList cookie_list;
-  if (!HasCookieableScheme(url))
-    return cookie_list;
-
-  bool secure = url.SchemeIsSecure();
-
-  // Query for the full host, For example: 'a.c.blah.com'.
-  std::string key(url.host());
-  FindRawCookies(key, secure, url.path(), &cookie_list);
-
-  // See if we can search for domain cookies, i.e. if the host has a TLD + 1.
-  const std::string domain(GetEffectiveDomain(url.scheme(), key));
-  if (domain.empty())
-    return cookie_list;
-
-  // Use same logic as in FindCookiesForHostAndDomain.
-  DCHECK_LE(domain.length(), key.length());
-  DCHECK_EQ(0, key.compare(key.length() - domain.length(), domain.length(),
-                           domain));
-  for (key = "." + key; key.length() > domain.length(); ) {
-    FindRawCookies(key, secure, url.path(), &cookie_list);
-    const size_t next_dot = key.find('.', 1);  // Skip over leading dot.
-    key.erase(0, next_dot);
-  }
-  return cookie_list;
+  return InternalGetAllCookiesForURL(url);
 }
 
 void CookieMonster::FindCookiesForHostAndDomain(
@@ -1030,6 +1014,39 @@ void CookieMonster::FindRawCookies(const std::string& key,
   }
 }
 
+CookieMonster::CookieList CookieMonster::InternalGetAllCookiesForURL(
+    const GURL& url) {
+  // Do not return removed cookies.
+  GarbageCollectExpired(Time::Now(),
+                        CookieMapItPair(cookies_.begin(), cookies_.end()),
+                        NULL);
+
+  CookieList cookie_list;
+  if (!HasCookieableScheme(url))
+    return cookie_list;
+
+  bool secure = url.SchemeIsSecure();
+
+  // Query for the full host, For example: 'a.c.blah.com'.
+  std::string key(url.host());
+  FindRawCookies(key, secure, url.path(), &cookie_list);
+
+  // See if we can search for domain cookies, i.e. if the host has a TLD + 1.
+  const std::string domain(GetEffectiveDomain(url.scheme(), key));
+  if (domain.empty())
+    return cookie_list;
+
+  // Use same logic as in FindCookiesForHostAndDomain.
+  DCHECK_LE(domain.length(), key.length());
+  DCHECK_EQ(0, key.compare(key.length() - domain.length(), domain.length(),
+                           domain));
+  for (key = "." + key; key.length() > domain.length(); ) {
+    FindRawCookies(key, secure, url.path(), &cookie_list);
+    const size_t next_dot = key.find('.', 1);  // Skip over leading dot.
+    key.erase(0, next_dot);
+  }
+  return cookie_list;
+}
 
 CookieMonster::ParsedCookie::ParsedCookie(const std::string& cookie_line)
     : is_valid_(false),
