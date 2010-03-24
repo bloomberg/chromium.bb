@@ -92,6 +92,7 @@ FindBarView::FindBarView(FindBarHost* host)
   find_text_->SetFont(rb.GetFont(ResourceBundle::BaseFont));
   find_text_->set_default_width_in_chars(kDefaultCharWidth);
   find_text_->SetController(this);
+  find_text_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_FIND));
   AddChildView(find_text_);
 
   match_count_text_ = new views::Label();
@@ -115,6 +116,8 @@ FindBarView::FindBarView(FindBarHost* host)
       rb.GetBitmapNamed(IDR_FINDINPAGE_PREV_P));
   find_previous_button_->SetTooltipText(
       l10n_util::GetString(IDS_FIND_IN_PAGE_PREVIOUS_TOOLTIP));
+  find_previous_button_->SetAccessibleName(
+      l10n_util::GetString(IDS_ACCNAME_PREVIOUS));
   AddChildView(find_previous_button_);
 
   find_next_button_ = new views::ImageButton(this);
@@ -128,6 +131,7 @@ FindBarView::FindBarView(FindBarHost* host)
       rb.GetBitmapNamed(IDR_FINDINPAGE_NEXT_P));
   find_next_button_->SetTooltipText(
       l10n_util::GetString(IDS_FIND_IN_PAGE_NEXT_TOOLTIP));
+  find_next_button_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_NEXT));
   AddChildView(find_next_button_);
 
   close_button_ = new views::ImageButton(this);
@@ -141,6 +145,7 @@ FindBarView::FindBarView(FindBarHost* host)
                           rb.GetBitmapNamed(IDR_CLOSE_BAR_P));
   close_button_->SetTooltipText(
       l10n_util::GetString(IDS_FIND_IN_PAGE_CLOSE_TOOLTIP));
+  close_button_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_CLOSE));
   AddChildView(close_button_);
 
   if (kDialog_left == NULL) {
