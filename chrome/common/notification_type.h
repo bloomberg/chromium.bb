@@ -896,12 +896,6 @@ class NotificationType {
     // The sync service is finished the configuration process.
     SYNC_CONFIGURE_DONE,
 
-    // Cookies -----------------------------------------------------------------
-
-    // Sent when a cookie changes. The source is a Profile object, the details
-    // are a ChromeCookieDetails object.
-    COOKIE_CHANGED,
-
 #if defined(OS_CHROMEOS)
     // Sent when a chromium os user logs in.
     LOGIN_USER_CHANGED,

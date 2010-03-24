@@ -14,7 +14,6 @@
 
 #include "base/basictypes.h"
 #include "base/lock.h"
-#include "base/ref_counted.h"
 #include "base/time.h"
 #include "net/base/cookie_store.h"
 
@@ -34,9 +33,8 @@ namespace net {
 //  - Verify that our domain enforcement and non-dotted handling is correct
 class CookieMonster : public CookieStore {
  public:
-  class CanonicalCookie;
-  class Delegate;
   class ParsedCookie;
+  class CanonicalCookie;
   class PersistentCookieStore;
 
   // NOTE(deanm):
@@ -52,23 +50,19 @@ class CookieMonster : public CookieStore {
   typedef std::pair<std::string, CanonicalCookie> CookieListPair;
   typedef std::vector<CookieListPair> CookieList;
 
-  // The store passed in should not have had Init() called on it yet. This
-  // class will take care of initializing it. The backing store is NOT owned by
-  // this class, but it must remain valid for the duration of the cookie
-  // monster's existence. If |store| is NULL, then no backing store will be
-  // updated. If |delegate| is non-NULL, it will be notified on
-  // creation/deletion of cookies.
-  CookieMonster(PersistentCookieStore* store, Delegate* delegate);
+  // The store passed in should not have had Init() called on it yet. This class
+  // will take care of initializing it. The backing store is NOT owned by this
+  // class, but it must remain valid for the duration of the cookie monster's
+  // existence. If |store| is NULL, then no backing store will be updated.
+  explicit CookieMonster(PersistentCookieStore* store);
 
 #ifdef UNIT_TEST
   CookieMonster(PersistentCookieStore* store,
-                Delegate* delegate,
                 int last_access_threshold_milliseconds)
       : initialized_(false),
         store_(store),
         last_access_threshold_(base::TimeDelta::FromMilliseconds(
-            last_access_threshold_milliseconds)),
-        delegate_(delegate) {
+            last_access_threshold_milliseconds)) {
     SetDefaultCookieableSchemes();
   }
 #endif
@@ -254,13 +248,71 @@ class CookieMonster : public CookieStore {
 
   std::vector<std::string> cookieable_schemes_;
 
-  scoped_refptr<Delegate> delegate_;
-
   // Lock for thread-safety
   Lock lock_;
 
   DISALLOW_COPY_AND_ASSIGN(CookieMonster);
 };
+
+class CookieMonster::ParsedCookie {
+ public:
+  typedef std::pair<std::string, std::string> TokenValuePair;
+  typedef std::vector<TokenValuePair> PairList;
+
+  // The maximum length of a cookie string we will try to parse
+  static const size_t kMaxCookieSize = 4096;
+  // The maximum number of Token/Value pairs.  Shouldn't have more than 8.
+  static const int kMaxPairs = 16;
+
+  // Construct from a cookie string like "BLAH=1; path=/; domain=.google.com"
+  ParsedCookie(const std::string& cookie_line);
+  ~ParsedCookie() { }
+
+  // You should not call any other methods on the class if !IsValid
+  bool IsValid() const { return is_valid_; }
+
+  const std::string& Name() const { return pairs_[0].first; }
+  const std::string& Token() const { return Name(); }
+  const std::string& Value() const { return pairs_[0].second; }
+
+  bool HasPath() const { return path_index_ != 0; }
+  const std::string& Path() const { return pairs_[path_index_].second; }
+  bool HasDomain() const { return domain_index_ != 0; }
+  const std::string& Domain() const { return pairs_[domain_index_].second; }
+  bool HasExpires() const { return expires_index_ != 0; }
+  const std::string& Expires() const { return pairs_[expires_index_].second; }
+  bool HasMaxAge() const { return maxage_index_ != 0; }
+  const std::string& MaxAge() const { return pairs_[maxage_index_].second; }
+  bool IsSecure() const { return secure_index_ != 0; }
+  bool IsHttpOnly() const { return httponly_index_ != 0; }
+
+  // Return the number of attributes, for example, returning 2 for:
+  //   "BLAH=hah; path=/; domain=.google.com"
+  size_t NumberOfAttributes() const { return pairs_.size() - 1; }
+
+  // For debugging only!
+  std::string DebugString() const;
+
+ private:
+  void ParseTokenValuePairs(const std::string& cookie_line);
+  void SetupAttributes();
+
+  PairList pairs_;
+  bool is_valid_;
+  // These will default to 0, but that should never be valid since the
+  // 0th index is the user supplied token/value, not an attribute.
+  // We're really never going to have more than like 8 attributes, so we
+  // could fit these into 3 bits each if we're worried about size...
+  size_t path_index_;
+  size_t domain_index_;
+  size_t expires_index_;
+  size_t maxage_index_;
+  size_t secure_index_;
+  size_t httponly_index_;
+
+  DISALLOW_COPY_AND_ASSIGN(ParsedCookie);
+};
+
 
 class CookieMonster::CanonicalCookie {
  public:
@@ -329,79 +381,6 @@ class CookieMonster::CanonicalCookie {
   bool has_expires_;
   bool secure_;
   bool httponly_;
-};
-
-class CookieMonster::Delegate
-    : public base::RefCountedThreadSafe<CookieMonster::Delegate> {
- public:
-  // Will be called when a cookie is added or removed. The function is passed
-  // the respective |cookie| which was added to or removed from the cookies for
-  // |domain_key|. If |removed| is true, the cookie was deleted.
-  virtual void OnCookieChanged(const std::string& domain_key,
-                               const CookieMonster::CanonicalCookie& cookie,
-                               bool removed) = 0;
- protected:
-  friend class base::RefCountedThreadSafe<CookieMonster::Delegate>;
-  virtual ~Delegate() {}
-};
-
-class CookieMonster::ParsedCookie {
- public:
-  typedef std::pair<std::string, std::string> TokenValuePair;
-  typedef std::vector<TokenValuePair> PairList;
-
-  // The maximum length of a cookie string we will try to parse
-  static const size_t kMaxCookieSize = 4096;
-  // The maximum number of Token/Value pairs.  Shouldn't have more than 8.
-  static const int kMaxPairs = 16;
-
-  // Construct from a cookie string like "BLAH=1; path=/; domain=.google.com"
-  ParsedCookie(const std::string& cookie_line);
-  ~ParsedCookie() { }
-
-  // You should not call any other methods on the class if !IsValid
-  bool IsValid() const { return is_valid_; }
-
-  const std::string& Name() const { return pairs_[0].first; }
-  const std::string& Token() const { return Name(); }
-  const std::string& Value() const { return pairs_[0].second; }
-
-  bool HasPath() const { return path_index_ != 0; }
-  const std::string& Path() const { return pairs_[path_index_].second; }
-  bool HasDomain() const { return domain_index_ != 0; }
-  const std::string& Domain() const { return pairs_[domain_index_].second; }
-  bool HasExpires() const { return expires_index_ != 0; }
-  const std::string& Expires() const { return pairs_[expires_index_].second; }
-  bool HasMaxAge() const { return maxage_index_ != 0; }
-  const std::string& MaxAge() const { return pairs_[maxage_index_].second; }
-  bool IsSecure() const { return secure_index_ != 0; }
-  bool IsHttpOnly() const { return httponly_index_ != 0; }
-
-  // Return the number of attributes, for example, returning 2 for:
-  //   "BLAH=hah; path=/; domain=.google.com"
-  size_t NumberOfAttributes() const { return pairs_.size() - 1; }
-
-  // For debugging only!
-  std::string DebugString() const;
-
- private:
-  void ParseTokenValuePairs(const std::string& cookie_line);
-  void SetupAttributes();
-
-  PairList pairs_;
-  bool is_valid_;
-  // These will default to 0, but that should never be valid since the
-  // 0th index is the user supplied token/value, not an attribute.
-  // We're really never going to have more than like 8 attributes, so we
-  // could fit these into 3 bits each if we're worried about size...
-  size_t path_index_;
-  size_t domain_index_;
-  size_t expires_index_;
-  size_t maxage_index_;
-  size_t secure_index_;
-  size_t httponly_index_;
-
-  DISALLOW_COPY_AND_ASSIGN(ParsedCookie);
 };
 
 typedef base::RefCountedThreadSafe<CookieMonster::PersistentCookieStore>

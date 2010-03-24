@@ -73,7 +73,7 @@ class URLRequestTestContext : public URLRequestContext {
                                                http_auth_handler_factory_),
           disk_cache::CreateInMemoryCacheBackend(0));
     // In-memory cookie store.
-    cookie_store_ = new net::CookieMonster(NULL, NULL);
+    cookie_store_ = new net::CookieMonster(NULL);
   }
 
   virtual ~URLRequestTestContext() {

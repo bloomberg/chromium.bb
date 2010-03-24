@@ -33,7 +33,7 @@ void TestShellRequestContext::Init(
     const FilePath& cache_path,
     net::HttpCache::Mode cache_mode,
     bool no_proxy) {
-  cookie_store_ = new net::CookieMonster(NULL, NULL);
+  cookie_store_ = new net::CookieMonster(NULL);
   cookie_policy_ = new net::StaticCookiePolicy();
 
   // hard-code A-L and A-C for test shells
