@@ -51,7 +51,7 @@ NACL_CANONICAL_PLATFORM_MAP = {
 }
 
 # NACL_PLATFORM_DIR_MAP is a mapping from the canonical platform,
-# TARGET_ARCHITECHTURE and TARGET_SUBARCH to a subdirectory name in the
+# BUILD_ARCHITECHTURE and BUILD_SUBARCH to a subdirectory name in the
 # download target directory. See _GetNaclSdkRoot below.
 NACL_PLATFORM_DIR_MAP = {
     'win': {
@@ -80,8 +80,8 @@ NACL_PLATFORM_DIR_MAP = {
 
 def _PlatformSubdir(env):
   platform = NACL_CANONICAL_PLATFORM_MAP[env['PLATFORM']]
-  arch = env['TARGET_ARCHITECTURE']
-  subarch = env['TARGET_SUBARCH']
+  arch = env['BUILD_ARCHITECTURE']
+  subarch = env['BUILD_SUBARCH']
   return NACL_PLATFORM_DIR_MAP[platform][arch][subarch]
 
 
@@ -123,7 +123,7 @@ def _GetNaclSdkRoot(env, sdk_mode):
 
   elif sdk_mode == 'download':
     platform = _PlatformSubdir(env)
-    if env['TARGET_ARCHITECTURE'] == 'arm':
+    if env['BUILD_ARCHITECTURE'] == 'arm':
       root = os.path.join(env['MAIN_DIR'], 'compiler', platform)
     else:
       # TODO(bradnelson): Once the toolchain tarballs have been made to match,
@@ -178,7 +178,7 @@ def DownloadSdk(env):
   sync_tgz.SyncTgz(url[0], target, url[1], url[2])
 
   # For arm also add trusted toolchain.
-  if env['TARGET_ARCHITECTURE'] == 'arm':
+  if env['BUILD_ARCHITECTURE'] == 'arm':
     sync_tgz.SyncTgz(url[0].replace('-untrusted', '-trusted'),
                      target.replace('-untrusted', '-trusted'), url[1], url[2])
 
@@ -378,22 +378,22 @@ def generate(env):
   if sdk_mode == 'manual':
     _SetEnvForSdkManually(env)
   else:
-    if env['TARGET_ARCHITECTURE'] == 'x86':
+    if env['BUILD_ARCHITECTURE'] == 'x86':
       if SCons.Script.ARGUMENTS.get('multilib') == 'true':
         _SetX86SdkEnvMultilib(env, root)
       else:
         # TODO(pasko): remove this legacy code when multilib is used by default.
-        if env['TARGET_SUBARCH'] == '32':
+        if env['BUILD_SUBARCH'] == '32':
           _SetEnvForX86Sdk(env, root)
-        elif env['TARGET_SUBARCH'] == '64':
+        elif env['BUILD_SUBARCH'] == '64':
           _SetEnvForX86Sdk64(env, root)
         else:
-          print "ERROR: unknown TARGET_SUBARCH: ", env['TARGET_SUBARCH']
+          print "ERROR: unknown BUILD_SUBARCH: ", env['BUILD_SUBARCH']
           assert 0
-    elif env['TARGET_ARCHITECTURE'] == 'arm':
+    elif env['BUILD_ARCHITECTURE'] == 'arm':
       _SetEnvForArmSdk(env, root)
     else:
-      print "ERROR: unknown TARGET_ARCHITECTURE: ", env['TARGET_ARCHITECTURE']
+      print "ERROR: unknown BUILD_ARCHITECTURE: ", env['BUILD_ARCHITECTURE']
       assert 0
 
   env.Prepend(LIBPATH='${NACL_SDK_LIB}')
