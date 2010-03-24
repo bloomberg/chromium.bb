@@ -37,6 +37,7 @@ class Profile;
 
 - (IBAction)showCookies:(id)sender;
 - (IBAction)openFlashPlayerSettings:(id)sender;
+- (IBAction)openPluginsPage:(id)sender;
 
 - (IBAction)showCookieExceptions:(id)sender;
 - (IBAction)showImagesExceptions:(id)sender;

@@ -17,6 +17,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "grit/locale_settings.h"
 
 
@@ -225,6 +226,14 @@ class PrefObserverBridge : public NotificationObserver {
 - (IBAction)openFlashPlayerSettings:(id)sender {
   Browser* browser = Browser::Create(profile_);
   browser->OpenURL(GURL(l10n_util::GetStringUTF8(IDS_FLASH_STORAGE_URL)),
+                   GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+  browser->window()->Show();
+}
+
+// Called when the user clicks the "Disable individual plug-ins..." button.
+- (IBAction)openPluginsPage:(id)sender {
+  Browser* browser = Browser::Create(profile_);
+  browser->OpenURL(GURL(chrome::kChromeUIPluginsURL),
                    GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
   browser->window()->Show();
 }
