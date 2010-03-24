@@ -3337,6 +3337,9 @@ each locale. -->
       <message name="IDS_EXTENSIONS_DEVELOPER_MODE_PREFIX" desc="Text of the prefix for the developer mode buttons.">
         Developer mode:
       </message>
+      <message name="IDS_EXTENSIONS_INSPECT_POPUPS_INSTRUCTIONS" desc="Text that appears under 'Inspect Active Views' with instructions on how to inspect a page or browser action.">
+        To inspect a page or browser action, right-click its icon and select 'Inspect Popup'.
+      </message>
       <message name="IDS_EXTENSIONS_LOAD_UNPACKED_BUTTON" desc="Text of the 'Load Extension' button.">
         Load unpacked extension...
       </message>

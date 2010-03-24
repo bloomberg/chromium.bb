@@ -9,5 +9,6 @@
   "order": 2,
   "enabledIncognito": false,
   "content_scripts": [],
-  "views": []
+  "views": [],
+  "hasPopupAction": false
 }

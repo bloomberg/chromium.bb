@@ -320,6 +320,9 @@ html[dir=rtl] #dialogContentFooter {
   margin-left: 0px;
 }
 
+.inspectPopupNote {
+  color: grey;
+}
 </style>
 <script>
 /**
@@ -397,7 +400,8 @@ var extensionDataFormat = {
           'renderViewId': 3,
           'renderProcessId': 1
         }
-      ]
+      ],
+      "hasPopupAction": false
     }
   ]
 };
@@ -792,7 +796,7 @@ document.addEventListener('DOMContentLoaded', requestExtensionsData);
                 <span jscontent="id"></span>
               </div>
               <div class="extension-details">
-                <span jsdisplay="views.length > 0" i18n-content="inspectViews">
+                <span jsdisplay="views.length > 0 || hasPopupAction" i18n-content="inspectViews">
                   INSPECT ACTIVE VIEWS:
                 </span>
                 <ul class="extension-views">
@@ -801,6 +805,10 @@ document.addEventListener('DOMContentLoaded', requestExtensionsData);
                        onclick="sendInspectMessage(this.extensionView); return false;">
                        <span jscontent="path"></span>
                     </a>
+                  </li>
+                  <li i18n-content="inspectPopupsInstructions" 
+                      class="inspectPopupNote" jsdisplay="hasPopupAction">
+                    INSPECT POPUP INSRUCTIONS
                   </li>
                 </ul>
               </div>

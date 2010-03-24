@@ -117,6 +117,8 @@ void ExtensionsUIHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetString(IDS_EXTENSIONS_VERSION));
   localized_strings.SetString(L"inspectViews",
       l10n_util::GetString(IDS_EXTENSIONS_INSPECT_VIEWS));
+  localized_strings.SetString(L"inspectPopupsInstructions",
+      l10n_util::GetString(IDS_EXTENSIONS_INSPECT_POPUPS_INSTRUCTIONS));
   localized_strings.SetString(L"disable",
       l10n_util::GetString(IDS_EXTENSIONS_DISABLE));
   localized_strings.SetString(L"enable",
@@ -788,6 +790,8 @@ DictionaryValue* ExtensionsDOMHandler::CreateExtensionDetailValue(
     views->Append(view_value);
   }
   extension_data->Set(L"views", views);
+  extension_data->SetBoolean(L"hasPopupAction",
+      extension->browser_action() || extension->page_action());
 
   return extension_data;
 }
