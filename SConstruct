@@ -275,13 +275,14 @@ pre_base_env.Replace(TARGET_ROOT=TARGET_ROOT)
 def FixupArmEnvironment():
   """ Glean settings by invoking setup scripts and capturing environment."""
   nacl_dir = Dir('#/').abspath
-  p = subprocess.Popen(
+  p = subprocess.Popen([
+      '/bin/bash', '-c',
       'source ' + nacl_dir +
       '/tools/llvm/setup_arm_trusted_toolchain.sh && ' +
       'source ' + nacl_dir +
       '/tools/llvm/setup_arm_untrusted_toolchain.sh && ' +
-      sys.executable + " -c 'import os ; print os.environ'",
-      stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+      sys.executable + " -c 'import os ; print os.environ'"],
+      stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   (stdout, stderr) = p.communicate()
   arm_env = eval(stdout)
   for k in arm_env:
