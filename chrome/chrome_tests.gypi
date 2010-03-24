@@ -1205,6 +1205,7 @@
         'browser/chromeos/compact_navigation_bar_browsertest.cc',
         'browser/chromeos/notifications/notification_browsertest.cc',
         'browser/crash_recovery_browsertest.cc',
+        'browser/dom_ui/mediaplayer_browsertest.cc',
         'browser/download/save_page_browsertest.cc',
         'browser/extensions/autoupdate_interceptor.cc',
         'browser/extensions/autoupdate_interceptor.h',
@@ -1264,6 +1265,7 @@
         ['chromeos==0', {
           'sources/': [
             ['exclude', '^browser/chromeos'],
+            ['exclude', 'browser/dom_ui/mediaplayer_test.cc'],
           ],
         }],
         ['OS=="win"', {
