@@ -430,8 +430,7 @@ void SRPC_Plugin::URLNotify(const char* url,
     if (NULL != closure) {
       closure->Run(NULL, NULL);
     } else {
-      plugin()->get_handle()->GetPortablePluginInterface()->RunOnfailHandler(
-          GetPluginIdentifier());
+      plugin()->get_handle()->GetPortablePluginInterface()->RunOnfailHandler();
     }
   }
   delete closure;  // NB: delete NULL is okay

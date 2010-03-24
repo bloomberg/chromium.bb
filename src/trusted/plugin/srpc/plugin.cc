@@ -302,8 +302,7 @@ bool Plugin::Init(struct PortableHandleInitializer* init_info) {
   }
 
   nacl::string *href = NULL;
-  if (PortablePluginInterface::GetOrigin(
-          init_info->plugin_interface_->GetPluginIdentifier(), &href)) {
+  if (init_info->plugin_interface_->GetOrigin(&href)) {
     origin_ = nacl::UrlToOrigin(*href);
     dprintf(("Plugin::New: origin %s\n", origin_.c_str()));
     // Check that origin is in the list of permitted origins.
@@ -391,6 +390,8 @@ bool Plugin::Load(nacl::string remote_url,
                   const char* local_url,
                   const void* buffer,
                   int32_t size) {
+  PortablePluginInterface* plugin_interface = GetPortablePluginInterface();
+
   if (NULL == buffer) {
     dprintf(("Plugin::Load(%s)\n", local_url));
   } else {
@@ -407,9 +408,7 @@ bool Plugin::Load(nacl::string remote_url,
     const char *message = "Load failed: NaCl module did not"
                           " come from a whitelisted source."
                           "See nacl_plugin/origin.cc for the list.";
-    PortablePluginInterface::Alert(
-      GetPortablePluginInterface()->GetPluginIdentifier(),
-      message);
+    plugin_interface->Alert(message);
     return false;
   }
   // Catch any bad accesses, etc., while loading.
@@ -422,14 +421,11 @@ bool Plugin::Load(nacl::string remote_url,
   dprintf(("Load: NaCl module from '%s'\n", local_url_));
 
   // check ABI version compatibility
-  PortablePluginInterface *plugin_interface = GetPortablePluginInterface();
   bool success = false;
   if (NULL == buffer) {
-    success = PortablePluginInterface::CheckExecutableVersion(
-        plugin_interface->GetPluginIdentifier(), local_url_);
+    success = plugin_interface->CheckExecutableVersion(local_url_);
   } else {
-    success = PortablePluginInterface::CheckExecutableVersion(
-        plugin_interface->GetPluginIdentifier(), buffer, size);
+    success = plugin_interface->CheckExecutableVersion(buffer, size);
   }
   if (!success) {
     dprintf(("Load: FAILED due to possible ABI version mismatch\n"));
@@ -437,10 +433,10 @@ bool Plugin::Load(nacl::string remote_url,
   }
   // Load a file via a forked sel_ldr process.
   service_runtime_interface_ =
-    new(std::nothrow) ServiceRuntimeInterface(GetPortablePluginInterface(),
-                                              this);
+    new(std::nothrow) ServiceRuntimeInterface(plugin_interface, this);
   if (NULL == service_runtime_interface_) {
     dprintf((" ServiceRuntimeInterface Ctor failed\n"));
+    plugin_interface->Alert("ServiceRuntimeInterface Ctor failed");
     return false;
   }
   bool service_runtime_started = false;
@@ -453,6 +449,7 @@ bool Plugin::Load(nacl::string remote_url,
   }
   if (!service_runtime_started) {
     dprintf(("  Load: FAILED to start service runtime"));
+    plugin_interface->Alert("Load: FAILED to start service runtime");
     return false;
   }
 
@@ -465,7 +462,7 @@ bool Plugin::Load(nacl::string remote_url,
   // Plugin takes ownership of socket_ from service_runtime_interface_,
   // so we do not need to call NPN_RetainObject.
   // Invoke the onload handler, if any.
-  plugin_interface->RunOnloadHandler(plugin_interface->GetPluginIdentifier());
+  plugin_interface->RunOnloadHandler();
   return true;
 }
 

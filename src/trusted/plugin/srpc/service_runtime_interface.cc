@@ -71,11 +71,19 @@ bool ServiceRuntimeInterface::InitCommunication(const void* buffer,
            "Got service channel descriptor %p\n",
            static_cast<void *>(default_socket_address_)));
 
+  if (NULL == default_socket_address_) {
+    dprintf(("ServiceRuntimeInterface::InitCommunication "
+             "no valid socket address\n"));
+    plugin_interface_->Alert("service runtime: no valid socket address");
+    return false;
+  }
   ScriptableHandle<ConnectedSocket> *raw_channel;
   // The first connect on the socket address returns the service
   // runtime command channel.  This channel is created before the NaCl
   // module runs, and is private to the service runtime.  This channel
   // is used for a secure plugin<->service runtime communication path
+
+
   // that can be used to forcibly shut down the sel_ldr.
   dprintf((" connecting for SrtSocket\n"));
   SocketAddress *real_socket_address =
@@ -84,6 +92,7 @@ bool ServiceRuntimeInterface::InitCommunication(const void* buffer,
   if (NULL == raw_channel) {
     dprintf(("ServiceRuntimeInterface::Start: "
             "service runtime Connect failed.\n"));
+    plugin_interface_->Alert("service runtime Connect failed");
     return false;
   }
   dprintf((" constructing SrtSocket\n"));
@@ -138,6 +147,7 @@ bool ServiceRuntimeInterface::InitCommunication(const void* buffer,
   if (!runtime_channel_->SetOrigin(plugin_->nacl_module_origin())) {
     dprintf(("ServiceRuntimeInterface::Start: "
             "set_orign RPC failed.\n"));
+    plugin_interface_->Alert("Could not set origin");
     // BUG: leaking raw_channel and runtime_channel_.
     return false;
   }
@@ -160,6 +170,7 @@ bool ServiceRuntimeInterface::InitCommunication(const void* buffer,
 
     if (!runtime_channel_->LoadModule(real_shared_memory->desc())) {
       dprintf(("ServiceRuntimeInterface::Start failed to send nexe\n"));
+      plugin_interface_->Alert("failed to send nexe");
       shared_memory->Unref();
       // TODO(gregoryd): close communication channels
       delete subprocess_;
@@ -187,6 +198,8 @@ bool ServiceRuntimeInterface::InitCommunication(const void* buffer,
   if (!runtime_channel_->StartModule(&load_status)) {
     dprintf(("ServiceRuntimeInterface::Start: "
             "module_start RPC failed.\n"));
+    plugin_interface_->Alert("Could not start nacl module");
+
     // BUG: leaking raw_channel and runtime_channel_.
     return false;
   }
@@ -195,6 +208,9 @@ bool ServiceRuntimeInterface::InitCommunication(const void* buffer,
     dprintf(("ServiceRuntimeInterface::Start: "
             "module load status %d",
             load_status));
+    nacl::stringstream ss;
+    ss << "Loading of module failed with status " << load_status;
+    plugin_interface_->Alert(ss.str());
     // BUG: leaking raw_channel and runtime_channel_.
     return false;
   }
@@ -275,9 +291,13 @@ bool ServiceRuntimeInterface::Start(const char* nacl_file) {
 
   subprocess_ = new(std::nothrow) nacl::SelLdrLauncher();
   if (NULL == subprocess_) {
+    dprintf(("ServiceRuntimeInterface: Could not create SelLdrLauncher"));
+    plugin_interface_->Alert("Could not create SelLdrLauncher");
     return false;
   }
   if (!subprocess_->Start(nacl_file, 5, kArgv, kEmpty)) {
+    dprintf(("ServiceRuntimeInterface: Could not start SelLdrLauncher"));
+    plugin_interface_->Alert("Could not start SelLdrLauncher");
     delete subprocess_;
     subprocess_ = NULL;
     return false;

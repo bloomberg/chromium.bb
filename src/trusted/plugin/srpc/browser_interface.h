@@ -53,31 +53,30 @@ class PortablePluginInterface {
   // these functions can be made virtual and implemented in the
   // browser-specific class, such as SRPC_Plugin
   static uintptr_t GetStrIdentifierCallback(const char *method_name);
-  static bool Alert(nacl_srpc::PluginIdentifier plugin_identifier,
-                    const nacl::string& text);
+  bool Alert(const nacl::string& text);
 
-  static bool GetOrigin(nacl_srpc::PluginIdentifier plugin_identifier,
-                        nacl::string **origin);
+  bool GetOrigin(nacl::string **origin);
+
   // To indicate successful loading of a module, invoke the onload handler.
-  bool RunOnloadHandler(nacl_srpc::PluginIdentifier plugin_identifier);
+  bool RunOnloadHandler();
   // To indicate unsuccessful loading of a module, invoke the onfail handler.
-  bool RunOnfailHandler(nacl_srpc::PluginIdentifier plugin_identifier);
+  bool RunOnfailHandler();
   static void* BrowserAlloc(int size);
   static void BrowserRelease(void* ptr);
   static char *MemAllocStrdup(const char *str);
   // Convert an identifier to a string
+  // TODO(gregoryd): this is not thread safe, should return c++ string
+  // c.f. http://code.google.com/p/nativeclient/issues/detail?id=376
   static const char* IdentToString(uintptr_t ident);
-  static bool CheckExecutableVersion(nacl_srpc::PluginIdentifier instance,
-                                     const char *filename);
+  bool CheckExecutableVersion(const char *filename);
 
-  static bool CheckExecutableVersion(nacl_srpc::PluginIdentifier instance,
-                                     const void* buffer,
-                                     int32_t size);
+  bool CheckExecutableVersion(const void* buffer, int32_t size);
+
   void InitializeIdentifiers();
   virtual ~PortablePluginInterface() {}
  private:
-  static bool CheckExecutableVersionCommon(nacl_srpc::PluginIdentifier instance,
-                                           const char *version);
+  bool CheckExecutableVersionCommon(const uint8_t *version);
+
  public:
   static uintptr_t kConnectIdent;
   static uintptr_t kHeightIdent;

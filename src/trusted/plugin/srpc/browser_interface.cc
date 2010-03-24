@@ -18,7 +18,6 @@
 #include "native_client/src/include/checked_cast.h"
 #include "native_client/src/include/nacl_elf.h"
 #include "native_client/src/include/portability_io.h"
-#include "native_client/src/include/portability_string.h"
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/trusted/plugin/npinstance.h"
 #include "native_client/src/trusted/plugin/srpc/utility.h"
@@ -99,11 +98,9 @@ static void CleanString(nacl::string* text) {
 }
 
 
-bool PortablePluginInterface::Alert(
-    nacl_srpc::PluginIdentifier plugin_identifier,
-    const nacl::string& text) {
+bool PortablePluginInterface::Alert(const nacl::string& text) {
   NPObject* window;
-  NPP npp = plugin_identifier;
+  NPP npp = GetPluginIdentifier();
   NPN_GetValue(npp, NPNVWindowNPObject, &window);
 
   // usually these messages are important enough to call attention to them
@@ -130,10 +127,8 @@ bool PortablePluginInterface::Alert(
 }
 
 
-bool PortablePluginInterface::GetOrigin(
-    nacl_srpc::PluginIdentifier plugin_identifier,
-    nacl::string **origin) {
-  NPP instance = plugin_identifier;
+bool PortablePluginInterface::GetOrigin(nacl::string **origin) {
+  NPP instance = GetPluginIdentifier();
   NPVariant loc_value;
   NPVariant href_value;
 
@@ -240,15 +235,13 @@ char* LookupArgvForString(int argc,
 
 }  // namespace
 
-bool PortablePluginInterface::RunOnloadHandler(
-    nacl_srpc::PluginIdentifier plugin_identifier) {
-  return RunHandler(plugin_identifier,
+bool PortablePluginInterface::RunOnloadHandler() {
+  return RunHandler(GetPluginIdentifier(),
                     LookupArgvForString(argc(), argn(), argv(), "onload"));
 }
 
-bool PortablePluginInterface::RunOnfailHandler(
-    nacl_srpc::PluginIdentifier plugin_identifier) {
-  return RunHandler(plugin_identifier,
+bool PortablePluginInterface::RunOnfailHandler() {
+  return RunHandler(GetPluginIdentifier(),
                     LookupArgvForString(argc(), argn(), argv(), "onfail"));
 }
 
@@ -274,30 +267,24 @@ const char* PortablePluginInterface::IdentToString(uintptr_t ident) {
 }
 
 bool PortablePluginInterface::CheckExecutableVersionCommon(
-    nacl_srpc::PluginIdentifier instance,
-    const char *version) {
+    const uint8_t *version) {
   if ((NULL != version) && (EF_NACL_ABIVERSION == *version)) {
     return true;
   }
 
   if (NULL == version) {
-    Alert(instance, "Load failed: Unknown error");
+    Alert("Load failed: Unknown error");
   } else {
-    char alert[256];
-    SNPRINTF(alert,
-      sizeof alert,
-      "Load failed: ABI version mismatch: expected %d, got %d",
-      EF_NACL_ABIVERSION,
-      *version);
-    Alert(instance, alert);
+    nacl::stringstream ss;
+    ss << "Load failed: ABI version mismatch: expected " <<
+      EF_NACL_ABIVERSION << ", got " << *version;
+    Alert(ss.str());
   }
   return false;
 }
 
 // TODO(gregoryd): consider refactoring and moving the code to service_runtime
-bool PortablePluginInterface::CheckExecutableVersion(
-    nacl_srpc::PluginIdentifier instance,
-    const char *filename) {
+bool PortablePluginInterface::CheckExecutableVersion(const char *filename) {
   FILE *f;
   uint8_t nacl_abi_version = kInvalidAbiVersion;
   bool success = false;
@@ -312,26 +299,25 @@ bool PortablePluginInterface::CheckExecutableVersion(
   }
 
   if (success) {
-    return CheckExecutableVersionCommon(
-      instance,
-      reinterpret_cast<char*>(&nacl_abi_version));
+    return CheckExecutableVersionCommon(&nacl_abi_version);
   } else {
-    Alert(instance, "Load failed: Generic file error");
+    Alert("Load failed: Generic file error");
     return false;
   }
 }
 
-bool PortablePluginInterface::CheckExecutableVersion(
-    nacl_srpc::PluginIdentifier instance,
-    const void* buffer,
-    int32_t size) {
+bool PortablePluginInterface::CheckExecutableVersion(const void* buffer,
+                                                     int32_t size) {
+  // NOTE: EI_ABIVERSION is an offset from the buffer beginning
+  // TODO(gregory): try to get rid of the cast by changing the function
+  //                signature to size_t and propagagte change upwards
   if ((EI_ABIVERSION + sizeof(char)) > static_cast<uint32_t>(size)) {
     return false;
   }
 
-  const char *nacl_abi_version =
-    reinterpret_cast<const char*>(buffer) + EI_ABIVERSION;
-  return CheckExecutableVersionCommon(instance, nacl_abi_version);
+  const uint8_t *nacl_abi_version =
+    reinterpret_cast<const uint8_t*>(buffer) + EI_ABIVERSION;
+  return CheckExecutableVersionCommon(nacl_abi_version);
 }
 
 char *PortablePluginInterface::MemAllocStrdup(const char *str) {
