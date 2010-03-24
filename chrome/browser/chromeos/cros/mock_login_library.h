@@ -19,6 +19,7 @@ class MockLoginLibrary : public LoginLibrary {
   MOCK_METHOD0(EmitLoginPromptReady, bool(void));
   MOCK_METHOD2(StartSession, bool(const std::string&, const std::string&));
   MOCK_METHOD1(StartSession, bool(const std::string&));
+  MOCK_METHOD1(StopSession, bool(const std::string&));
 };
 
 }  // namespace chromeos

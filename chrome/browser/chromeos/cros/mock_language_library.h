@@ -16,6 +16,10 @@ class MockLanguageLibrary : public LanguageLibrary {
  public:
   MockLanguageLibrary() {}
   virtual ~MockLanguageLibrary() {}
+
+  MOCK_METHOD1(AddObserver, void(Observer*));
+  MOCK_METHOD1(RemoveObserver, void(Observer*));
+
   MOCK_METHOD0(GetActiveLanguages, InputLanguageList*(void));
   MOCK_METHOD0(GetSupportedLanguages, InputLanguageList*(void));
   MOCK_METHOD2(ChangeLanguage, void(LanguageCategory, const std::string&));

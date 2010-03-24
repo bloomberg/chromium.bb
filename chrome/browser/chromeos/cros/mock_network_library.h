@@ -38,6 +38,7 @@ class MockNetworkLibrary : public NetworkLibrary {
   MOCK_CONST_METHOD0(wifi_networks, const WifiNetworkVector&(void));
   MOCK_CONST_METHOD0(cellular_networks, const CellularNetworkVector&(void));
 
+  MOCK_METHOD0(RequestWifiScan, void(void));
   MOCK_METHOD2(ConnectToWifiNetwork, void(WifiNetwork,
                                           const string16&));
   MOCK_METHOD2(ConnectToWifiNetwork, void(const string16&,

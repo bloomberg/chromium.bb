@@ -17,12 +17,12 @@ class MockPowerLibrary : public PowerLibrary {
   MOCK_METHOD1(AddObserver, void(Observer*));
   MOCK_METHOD1(RemoveObserver, void(Observer*));
 
-  MOCK_CONST_METHOD1(line_power_on, bool(void));
-  MOCK_CONST_METHOD1(battery_fully_charged, bool(void));
-  MOCK_CONST_METHOD1(battery_percentage, double(void));
-  MOCK_CONST_METHOD1(battery_is_present, bool(void));
-  MOCK_CONST_METHOD1(battery_time_to_empty, base::TimeDelta(void));
-  MOCK_CONST_METHOD1(battery_time_to_full, base::TimeDelta(void));
+  MOCK_CONST_METHOD0(line_power_on, bool(void));
+  MOCK_CONST_METHOD0(battery_fully_charged, bool(void));
+  MOCK_CONST_METHOD0(battery_percentage, double(void));
+  MOCK_CONST_METHOD0(battery_is_present, bool(void));
+  MOCK_CONST_METHOD0(battery_time_to_empty, base::TimeDelta(void));
+  MOCK_CONST_METHOD0(battery_time_to_full, base::TimeDelta(void));
 };
 
 }  // namespace chromeos
