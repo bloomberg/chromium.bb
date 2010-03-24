@@ -778,7 +778,7 @@ void AeroPeekWindow::Update(bool is_loading) {
   // thumbnail image of this window now.
   if (!hwnd()) {
     gfx::Rect bounds;
-    WindowImpl::Init(NULL, bounds);
+    WindowImpl::Init(frame_window_, bounds);
     return;
   }
 
