@@ -621,6 +621,7 @@
         'browser/cocoa/bookmark_button_cell_unittest.mm',
         'browser/cocoa/bookmark_editor_base_controller_unittest.mm',
         'browser/cocoa/bookmark_editor_controller_unittest.mm',
+        'browser/cocoa/bookmark_folder_target_unittest.mm',
         'browser/cocoa/bookmark_item_unittest.mm',
         'browser/cocoa/bookmark_manager_controller_unittest.mm',
         'browser/cocoa/bookmark_menu_unittest.mm',

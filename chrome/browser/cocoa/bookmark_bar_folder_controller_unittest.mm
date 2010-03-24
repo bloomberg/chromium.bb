@@ -13,6 +13,18 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
+// Add a redirect to make testing easier.
+@interface BookmarkBarFolderController(MakeTestingEasier)
+- (IBAction)openBookmarkFolderFromButton:(id)sender;
+@end
+
+@implementation BookmarkBarFolderController(MakeTestingEasier)
+- (IBAction)openBookmarkFolderFromButton:(id)sender {
+  [[self folderTarget] openBookmarkFolderFromButton:sender];
+}
+@end
+
+
 @interface BookmarkBarFolderControllerPong : BookmarkBarFolderController {
   BOOL childFolderWillShow_;
   BOOL childFolderWillClose_;
@@ -32,6 +44,13 @@
 - (void)childFolderWillClose:(id<BookmarkButtonControllerProtocol>)child {
   childFolderWillClose_ = YES;
 }
+
+// We don't have a real BookmarkBarController as our parent root so
+// we fake this one out.
+- (void)closeAllBookmarkFolders {
+  [self closeBookmarkFolder:self];
+}
+
 @end
 
 class BookmarkBarFolderControllerTest : public CocoaTest {
@@ -50,7 +69,10 @@ class BookmarkBarFolderControllerTest : public CocoaTest {
                     L"sibbling group");
     const BookmarkNode* folderB = model->AddGroup(folderA,
                                                   folderA->GetChildCount(),
-                                                  L"subgroup");
+                                                  L"subgroup 1");
+    model->AddGroup(folderA,
+                    folderA->GetChildCount(),
+                    L"subgroup 2");
     model->AddURL(folderA, folderA->GetChildCount(), L"title a",
                   GURL("http://www.google.com/a"));
     longTitleNode_ = model->AddURL(
@@ -209,17 +231,20 @@ TEST_F(BookmarkBarFolderControllerTest, OpenFolder) {
   EXPECT_TRUE(bbfc.get());
 
   EXPECT_FALSE([bbfc folderController]);
-  [bbfc openBookmarkFolderFromButton:[[bbfc buttons] objectAtIndex:0]];
+  BookmarkButton* button = [[bbfc buttons] objectAtIndex:0];
+  [bbfc openBookmarkFolderFromButton:button];
   id controller = [bbfc folderController];
   EXPECT_TRUE(controller);
+  EXPECT_EQ([controller parentButton], button);
 
-  // Open the same one --> no change.
+  // Click the same one --> it gets closed.
   [bbfc openBookmarkFolderFromButton:[[bbfc buttons] objectAtIndex:0]];
-  EXPECT_EQ(controller, [bbfc folderController]);
+  EXPECT_FALSE([bbfc folderController]);
 
   // Open a new one --> change.
   [bbfc openBookmarkFolderFromButton:[[bbfc buttons] objectAtIndex:1]];
   EXPECT_NE(controller, [bbfc folderController]);
+  EXPECT_NE([[bbfc folderController] parentButton], button);
 
   // Close it --> all gone!
   [bbfc closeBookmarkFolder:nil];

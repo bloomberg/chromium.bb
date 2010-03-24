@@ -511,6 +511,8 @@
         'browser/cocoa/bookmark_editor_base_controller.mm',
         'browser/cocoa/bookmark_editor_controller.h',
         'browser/cocoa/bookmark_editor_controller.mm',
+        'browser/cocoa/bookmark_folder_target.h',
+        'browser/cocoa/bookmark_folder_target.mm',
         'browser/cocoa/bookmark_item.h',
         'browser/cocoa/bookmark_item.mm',
         'browser/cocoa/bookmark_manager_controller.h',

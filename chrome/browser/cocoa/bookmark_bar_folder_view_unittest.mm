@@ -103,6 +103,17 @@
 - (void)childFolderWillClose:(id<BookmarkButtonControllerProtocol>)child {
 }
 
+- (void)openBookmarkNodesRecursive:(const BookmarkNode*)node
+                       disposition:(WindowOpenDisposition)disposition {
+}
+
+- (void)addNewFolderControllerWithParentButton:(BookmarkButton*)parentButton {
+}
+
+- (BookmarkBarFolderController*)folderController {
+  return nil;
+}
+
 @end
 
 namespace {

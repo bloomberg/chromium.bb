@@ -24,6 +24,18 @@
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 
+// Add a redirect to make testing easier.
+@interface BookmarkBarController(MakeTestingEasier)
+- (IBAction)openBookmarkFolderFromButton:(id)sender;
+@end
+
+@implementation BookmarkBarController(MakeTestingEasier)
+- (IBAction)openBookmarkFolderFromButton:(id)sender {
+  [[self folderTarget] openBookmarkFolderFromButton:sender];
+}
+@end
+
+
 // Just like a BookmarkBarController but openURL: is stubbed out.
 @interface BookmarkBarControllerNoOpen : BookmarkBarController {
  @public

@@ -8,6 +8,7 @@
 #import "chrome/browser/cocoa/bookmark_button.h"
 
 @class BookmarkBarFolderView;
+@class BookmarkFolderTarget;
 
 // A controller for the pop-up windows from bookmark folder buttons
 // which look sort of like menus.
@@ -62,6 +63,9 @@
   // not necessarily fired yet).
   scoped_nsobject<BookmarkButton> hoverButton_;
 
+  // Logic for dealing with a click on a bookmark folder button.
+  scoped_nsobject<BookmarkFolderTarget> folderTarget_;
+
   // A controller for a pop-up bookmark folder window (custom menu).
   // We (self) are the parentController_ for our folderController_.
   // This is not a scoped_nsobject because it owns itself (when its
@@ -98,5 +102,6 @@
 - (NSPoint)windowTopLeft;
 - (NSArray*)buttons;
 - (BookmarkBarFolderController*)folderController;
+- (id)folderTarget;
 @end
 

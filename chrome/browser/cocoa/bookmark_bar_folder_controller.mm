@@ -11,7 +11,10 @@
 #import "chrome/browser/cocoa/bookmark_bar_controller.h" // namespace bookmarks
 #import "chrome/browser/cocoa/bookmark_bar_folder_view.h"
 #import "chrome/browser/cocoa/bookmark_button_cell.h"
+#import "chrome/browser/cocoa/bookmark_folder_target.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
+#import "chrome/browser/cocoa/event_utils.h"
+
 
 namespace {
 
@@ -31,7 +34,6 @@ const CGFloat kBookmarkBarFolderScrollAmount =
 - (void)removeScrollTracking;
 - (void)endScroll;
 - (void)addScrollTimerWithDelta:(CGFloat)delta;
-- (IBAction)openBookmarkFolderFromButton:(id)sender;
 @end
 
 
@@ -46,6 +48,7 @@ const CGFloat kBookmarkBarFolderScrollAmount =
     parentButton_.reset([button retain]);
     parentController_.reset([controller retain]);
     buttons_.reset([[NSMutableArray alloc] init]);
+    folderTarget_.reset([[BookmarkFolderTarget alloc] initWithController:self]);
 
     // Register for theme changes.
     NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
@@ -104,6 +107,11 @@ const CGFloat kBookmarkBarFolderScrollAmount =
   return [parentController_ cellForBookmarkNode:child];
 }
 
+// Redirect to our logic shared with BookmarkBarController.
+- (IBAction)openBookmarkFolderFromButton:(id)sender {
+  [folderTarget_ openBookmarkFolderFromButton:sender];
+}
+
 // Create a bookmark button for the given node using frame.
 //
 // If |node| is NULL this is an "(empty)" button.
@@ -159,9 +167,12 @@ const CGFloat kBookmarkBarFolderScrollAmount =
   return mainView_;
 }
 
-// Exposed for testing.
 - (BookmarkBarFolderController*)folderController {
   return folderController_;
+}
+
+- (id)folderTarget {
+  return folderTarget_.get();
 }
 
 // Compute and return the top left point of our window (screen
@@ -532,7 +543,6 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)info {
   draggingExited_ = NO;
   NSPoint currentLocation = [info draggingLocation];
-
   BookmarkButton* button = [self buttonForDroppingOnAtPoint:currentLocation];
   if ([button isFolder]) {
     if (hoverButton_ == button) {
@@ -540,6 +550,9 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     }
     if (hoverButton_) {
       // Oops, another one triggered or open.
+      DCHECK(
+          [[hoverButton_ target]
+            respondsToSelector:@selector(closeBookmarkFolderOnHoverButton:)]);
       [NSObject cancelPreviousPerformRequestsWithTarget:[hoverButton_
                                                           target]];
       [self performSelector:@selector(closeBookmarkFolderOnHoverButton:)
@@ -547,6 +560,8 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
                  afterDelay:bookmarks::kDragHoverCloseDelay];
     }
     hoverButton_.reset([button retain]);
+    DCHECK([[hoverButton_ target]
+               respondsToSelector:@selector(openBookmarkFolderFromButton:)]);
     [[hoverButton_ target]
         performSelector:@selector(openBookmarkFolderFromButton:)
              withObject:hoverButton_
@@ -556,7 +571,11 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   // If we get here we may no longer have a hover button.
   if (!button) {
     if (hoverButton_) {
-      [NSObject cancelPreviousPerformRequestsWithTarget:[hoverButton_ target]];
+      [NSObject cancelPreviousPerformRequestsWithTarget:[hoverButton_
+                                                          target]];
+      DCHECK(
+          [[hoverButton_ target]
+            respondsToSelector:@selector(closeBookmarkFolderOnHoverButton:)]);
       [self performSelector:@selector(closeBookmarkFolderOnHoverButton:)
                  withObject:hoverButton_
                  afterDelay:bookmarks::kDragHoverCloseDelay];
@@ -738,7 +757,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 
   // Open a new one if meaningful.
   if ([sender isFolder])
-    [self openBookmarkFolderFromButton:sender];
+    [folderTarget_ openBookmarkFolderFromButton:sender];
 }
 
 // Called from BookmarkButton.
@@ -772,22 +791,27 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 }
 
 - (IBAction)openBookmark:(id)sender {
-  // Carent controller closes it all...
+  // Parent controller closes it all...
   [parentController_ openBookmark:sender];
 }
 
-// Unlike the bookmark_bar_controller, we do not watch for click outside.
-- (IBAction)openBookmarkFolderFromButton:(id)sender {
-  if (folderController_) {
-    // If the same we have nothing to do.
-    if ([folderController_ parentButton] == sender)
-      return;
+// Flow up the chain until someone (the top level controller) knows
+// what to do.
+- (void)openBookmarkNodesRecursive:(const BookmarkNode*)node
+                       disposition:(WindowOpenDisposition)disposition {
+  [parentController_ openBookmarkNodesRecursive:node
+                                    disposition:disposition];
+}
 
-    [self closeBookmarkFolder:sender];
-  }
+// Add a new folder controller as triggered by the given folder button.
+- (void)addNewFolderControllerWithParentButton:(BookmarkButton*)parentButton {
+  if (folderController_)
+    [self closeAllBookmarkFolders];
+
+  // Folder controller, like many window controllers, owns itself.
   folderController_ = [[BookmarkBarFolderController alloc]
-                        initWithParentButton:sender
-                            parentController:self];
+                                            initWithParentButton:parentButton
+                                                parentController:self];
   [folderController_ showWindow:self];
 }
 

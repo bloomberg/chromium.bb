@@ -22,6 +22,7 @@
 @class BookmarkBarFolderController;
 @class BookmarkBarView;
 @class BookmarkButton;
+@class BookmarkFolderTarget;
 class BookmarkModel;
 @class BookmarkMenu;
 class BookmarkNode;
@@ -165,6 +166,9 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 
   // Delegate that can resize us.
   id<ViewResizer> resizeDelegate_;  // weak
+
+  // Logic for dealing with a click on a bookmark folder button.
+  scoped_nsobject<BookmarkFolderTarget> folderTarget_;
 
   // A controller for a pop-up bookmark folder window (custom menu).
   // This is not a scoped_nsobject because it owns itself (when its
@@ -320,6 +324,7 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 - (BookmarkBarFolderController*)folderController;
 - (BookmarkButton*)buttonForDroppingOnAtPoint:(NSPoint)point;
 - (BOOL)isEventAClickOutside:(NSEvent*)event;
+- (id)folderTarget;
 @end
 
 // The (internal) |NSPasteboard| type string for bookmark button drags, used for

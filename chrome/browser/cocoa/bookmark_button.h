@@ -4,7 +4,9 @@
 
 #import <Cocoa/Cocoa.h>
 #import "chrome/browser/cocoa/draggable_button.h"
+#include "webkit/glue/window_open_disposition.h"
 
+@class BookmarkBarFolderController;
 @class BookmarkButton;
 class BookmarkModel;
 class BookmarkNode;
@@ -102,6 +104,17 @@ class ThemeProvider;
 
 // Called just before a child folder closes.
 - (void)childFolderWillClose:(id<BookmarkButtonControllerProtocol>)child;
+
+// Return a controller's folder controller for a subfolder, or nil.
+- (BookmarkBarFolderController*)folderController;
+
+// Recursively open all bookmarks from this folder using the given disposition.
+- (void)openBookmarkNodesRecursive:(const BookmarkNode*)node
+                       disposition:(WindowOpenDisposition)disposition;
+
+// Add a new folder controller as triggered by the given folder button.
+// If there is a current folder controller, close it.
+- (void)addNewFolderControllerWithParentButton:(BookmarkButton*)parentButton;
 
 @end  // @protocol BookmarkButtonControllerProtocol
 

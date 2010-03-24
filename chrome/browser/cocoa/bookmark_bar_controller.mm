@@ -22,6 +22,7 @@
 #import "chrome/browser/cocoa/bookmark_button.h"
 #import "chrome/browser/cocoa/bookmark_button_cell.h"
 #import "chrome/browser/cocoa/bookmark_editor_controller.h"
+#import "chrome/browser/cocoa/bookmark_folder_target.h"
 #import "chrome/browser/cocoa/bookmark_menu.h"
 #import "chrome/browser/cocoa/bookmark_menu_cocoa_controller.h"
 #import "chrome/browser/cocoa/bookmark_name_folder_controller.h"
@@ -208,6 +209,7 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
     buttons_.reset([[NSMutableArray alloc] init]);
     delegate_ = delegate;
     resizeDelegate_ = resizeDelegate;
+    folderTarget_.reset([[BookmarkFolderTarget alloc] initWithController:self]);
 
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     folderImage_.reset([rb.GetNSImageNamed(IDR_BOOKMARK_BAR_FOLDER) retain]);
@@ -455,7 +457,7 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
     return;
   // Else open a new one if it makes sense to do so.
   if ([sender bookmarkNode]->is_folder())
-    [self openBookmarkFolderFromButton:sender];
+    [folderTarget_ openBookmarkFolderFromButton:sender];
 }
 
 // BookmarkButtonDelegate protocol implementation.
@@ -525,6 +527,12 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   }
   return NO;
 }
+
+// Exposed for testing.
+- (id)folderTarget {
+  return folderTarget_.get();
+}
+
 
 // Keep the "no items" label centered in response to a frame size change.
 - (void)centerNoItemsLabel {
@@ -851,6 +859,8 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
       hoverButton_.reset();
     }
     hoverButton_.reset([button retain]);
+    DCHECK([[hoverButton_ target]
+               respondsToSelector:@selector(openBookmarkFolderFromButton:)]);
     [[hoverButton_ target]
             performSelector:@selector(openBookmarkFolderFromButton:)
                  withObject:hoverButton_
@@ -1069,6 +1079,11 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   }
 }
 
+// Redirect to our logic shared with BookmarkBarFolderController.
+- (IBAction)openBookmarkFolderFromButton:(id)sender {
+  [folderTarget_ openBookmarkFolderFromButton:sender];
+}
+
 // Recursively add the given bookmark node and all its children to
 // menu, one menu item per node.
 - (void)addNode:(const BookmarkNode*)child toMenu:(NSMenu*)menu {
@@ -1132,54 +1147,20 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   return menu;
 }
 
-// This IBAction is called when the user clicks (mouseUp, really) on a
-// "folder" bookmark button.  (In this context, "Click" does not
-// include right-click to open a context menu which follows a
-// different path).  Scenarios when folder X is clicked:
-//  *Predicate*        *Action*
-//  (nothing)          Open Folder X
-//  Folder X open      Close folder X
-//  Folder Y open      Close Y, open X
-//  Cmd-click          Open All with proper disposition
-//
-//  Note complication in which a click-drag engages drag and drop, not
-//  a click-to-open.  Thus the path to get here is a little twisted.
-- (IBAction)openBookmarkFolderFromButton:(id)sender {
-  DCHECK(sender);
-  BOOL same = false;
-
-  if (folderController_) {
-    // closeAllBookmarkFolders sets folderController_ to nil
-    // so we need the SAME check to happen first.
-    same = ([folderController_ parentButton] == sender);
+// Add a new folder controller as triggered by the given folder button.
+- (void)addNewFolderControllerWithParentButton:(BookmarkButton*)parentButton {
+  DCHECK(!folderController_);
+  if (folderController_)
     [self closeAllBookmarkFolders];
-  }
-
-  // Watch out for a modifier click.  For example, command-click
-  // should open all.
-  //
-  // NOTE: we cannot use [[sender cell] mouseDownFlags] because we
-  // thwart the normal mouse click mechanism to make buttons
-  // draggable.  Thus we must use [NSApp currentEvent].
-  DCHECK([sender bookmarkNode]->is_folder());
-  WindowOpenDisposition disposition =
-      event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
-  if (disposition == NEW_BACKGROUND_TAB) {
-    [self openBookmarkNodesRecursive:[sender bookmarkNode]
-                         disposition:disposition];
-    return;
-  }
-
-  // If click on same folder, close it and be done.
-  // Else we clicked on a different folder so more work to do.
-  if (same)
-    return;
 
   // Folder controller, like many window controllers, owns itself.
   folderController_ = [[BookmarkBarFolderController alloc]
-                            initWithParentButton:sender
-                                parentController:self];
+                                            initWithParentButton:parentButton
+                                                parentController:self];
   [folderController_ showWindow:self];
+
+  // Only BookmarkBarController has this; the
+  // BookmarkBarFolderController does not.
   [self watchForClickOutside:YES];
 }
 
