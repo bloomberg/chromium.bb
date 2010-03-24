@@ -328,7 +328,7 @@ bool ExtensionMessageService::OpenChannelOnUIThreadImpl(
     const std::string& channel_name) {
   DCHECK_EQ(MessageLoop::current()->type(), MessageLoop::TYPE_UI);
 
-  // TODO(mpcomplete): notify source if reciever doesn't exist
+  // TODO(mpcomplete): notify source if receiver doesn't exist
   if (!source)
     return false;  // Closed while in flight.
 

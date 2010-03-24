@@ -833,19 +833,19 @@ TEST_F(SyncableDirectoryTest, TestCaseChangeRename) {
 }
 
 TEST_F(SyncableDirectoryTest, TestShareInfo) {
-  dir_->set_last_sync_timestamp(100);
+  dir_->set_last_download_timestamp(100);
   dir_->set_store_birthday("Jan 31st");
   {
     ReadTransaction trans(dir_.get(), __FILE__, __LINE__);
-    EXPECT_EQ(100, dir_->last_sync_timestamp());
+    EXPECT_EQ(100, dir_->last_download_timestamp());
     EXPECT_EQ("Jan 31st", dir_->store_birthday());
   }
-  dir_->set_last_sync_timestamp(200);
+  dir_->set_last_download_timestamp(200);
   dir_->set_store_birthday("April 10th");
   dir_->SaveChanges();
   {
     ReadTransaction trans(dir_.get(), __FILE__, __LINE__);
-    EXPECT_EQ(200, dir_->last_sync_timestamp());
+    EXPECT_EQ(200, dir_->last_download_timestamp());
     EXPECT_EQ("April 10th", dir_->store_birthday());
   }
 }

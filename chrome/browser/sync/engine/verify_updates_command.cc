@@ -42,7 +42,7 @@ void VerifyUpdatesCommand::ModelChangingExecuteImpl(
 
   LOG(INFO) << update_count << " entries to verify";
   for (int i = 0; i < update_count; i++) {
-    const SyncEntity entry =
+    const SyncEntity& entry =
         *reinterpret_cast<const SyncEntity *>(&(updates.entries(i)));
     ModelSafeGroup g = GetGroupForModelType(entry.GetModelType(),
                                             session->routing_info());

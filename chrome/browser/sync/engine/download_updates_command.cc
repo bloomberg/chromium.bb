@@ -39,8 +39,8 @@ void DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
     LOG(ERROR) << "Scoped dir lookup failed!";
     return;
   }
-  LOG(INFO) << "Getting updates from ts " << dir->last_sync_timestamp();
-  get_updates->set_from_timestamp(dir->last_sync_timestamp());
+  LOG(INFO) << "Getting updates from ts " << dir->last_download_timestamp();
+  get_updates->set_from_timestamp(dir->last_download_timestamp());
 
   // We want folders for our associated types, always.  If we were to set
   // this to false, the server would send just the non-container items
@@ -67,10 +67,15 @@ void DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
   StatusController* status = session->status_controller();
   if (!ok) {
     status->increment_num_consecutive_errors();
-    LOG(ERROR) << "PostClientToServerMessage() failed";
+    status->mutable_updates_response()->Clear();
+    LOG(ERROR) << "PostClientToServerMessage() failed during GetUpdates";
     return;
   }
   status->mutable_updates_response()->CopyFrom(update_response);
+
+  LOG(INFO) << "GetUpdates from ts " << get_updates->from_timestamp()
+            << " returned " << update_response.get_updates().entries_size()
+            << " updates.";
 }
 
 void DownloadUpdatesCommand::SetRequestedTypes(

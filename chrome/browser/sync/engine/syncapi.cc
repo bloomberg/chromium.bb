@@ -1828,10 +1828,6 @@ void SyncManager::SyncInternal::HandleAuthWatcherEvent(
 
         if (lookup->initial_sync_ended())
           MarkAndNotifyInitializationComplete();
-
-        // If we are transitioning from having bad to good credentials, that
-        // could mean that the syncer can now make forward progress.  Wake it.
-        syncer_thread_->NudgeSyncer(0, SyncerThread::kLocal);
       }
       return;
     // Authentication failures translate to GoogleServiceAuthError events.

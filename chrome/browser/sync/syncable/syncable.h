@@ -658,7 +658,7 @@ class Directory {
   // for) needs saved across runs of the application.
   struct PersistedKernelInfo {
     // Last sync timestamp fetched from the server.
-    int64 last_sync_timestamp;
+    int64 last_download_timestamp;
     // true iff we ever reached the end of the changelog.
     bool initial_sync_ended;
     // The store birthday we were given by the server. Contents are opaque to
@@ -666,7 +666,7 @@ class Directory {
     std::string store_birthday;
     // The next local ID that has not been used with this cache-GUID.
     int64 next_id;
-    PersistedKernelInfo() : last_sync_timestamp(0),
+    PersistedKernelInfo() : last_download_timestamp(0),
         initial_sync_ended(false),
         next_id(0) {
     }
@@ -720,8 +720,8 @@ class Directory {
   // The sync timestamp is an index into the list of changes for an account.
   // It doesn't actually map to any time scale, it's name is an historical
   // anomaly.
-  int64 last_sync_timestamp() const;
-  void set_last_sync_timestamp(int64 timestamp);
+  int64 last_download_timestamp() const;
+  void set_last_download_timestamp(int64 timestamp);
 
   bool initial_sync_ended() const;
   void set_initial_sync_ended(bool value);

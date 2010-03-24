@@ -69,7 +69,7 @@ class AsyncNetworkAliveLinux : public AsyncNetworkAlive {
       return;
     }
 
-    // Since we recieved a change from the socket, read the change in.
+    // Since we received a change from the socket, read the change in.
     if (FD_ISSET(fd, &rdfs)) {
       char buf[4096];
       struct iovec iov = { buf, sizeof(buf) };

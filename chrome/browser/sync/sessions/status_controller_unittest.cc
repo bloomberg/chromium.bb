@@ -103,8 +103,6 @@ TEST_F(StatusControllerTest, StaysClean) {
   EXPECT_FALSE(status.TestAndClearIsDirty());
   status.update_conflicts_resolved(true);
   EXPECT_FALSE(status.TestAndClearIsDirty());
-  status.set_got_new_timestamp();
-  EXPECT_FALSE(status.TestAndClearIsDirty());
 
   status.set_items_committed();
   EXPECT_FALSE(status.TestAndClearIsDirty());
@@ -196,13 +194,11 @@ TEST_F(StatusControllerTest, HasConflictingUpdates) {
 TEST_F(StatusControllerTest, CountUpdates) {
   StatusController status(routes_);
   EXPECT_EQ(0, status.CountUpdates());
-  EXPECT_TRUE(status.got_zero_updates());
   ClientToServerResponse* response(status.mutable_updates_response());
   sync_pb::SyncEntity* entity1 = response->mutable_get_updates()->add_entries();
   sync_pb::SyncEntity* entity2 = response->mutable_get_updates()->add_entries();
   ASSERT_TRUE(entity1 != NULL && entity2 != NULL);
   EXPECT_EQ(2, status.CountUpdates());
-  EXPECT_FALSE(status.got_zero_updates());
 }
 
 // Test TotalNumConflictingItems
@@ -242,7 +238,8 @@ TEST_F(StatusControllerTest, Unrestricted) {
   status.ComputeMaxLocalTimestamp();
   status.commit_ids();
   status.HasBookmarkCommitActivity();
-  status.got_zero_updates();
+  status.download_updates_succeeded();
+  status.server_says_nothing_more_to_download();
   status.group_restriction();
 }
 

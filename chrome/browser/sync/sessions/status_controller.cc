@@ -81,10 +81,6 @@ void StatusController::set_num_consecutive_errors(int value) {
     shared_.error_counters.mutate()->consecutive_errors = value;
 }
 
-void StatusController::set_got_new_timestamp() {
-  shared_.control_params.got_new_timestamp = true;
-}
-
 void StatusController::set_current_sync_timestamp(syncable::ModelType model,
                                                   int64 current_timestamp) {
   PerModelTypeState* state = GetOrCreateModelTypeState(false, model);

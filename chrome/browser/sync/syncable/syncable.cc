@@ -630,16 +630,16 @@ void Directory::HandleSaveChangesFailure(const SaveChangesSnapshot& snapshot) {
   }
 }
 
-int64 Directory::last_sync_timestamp() const {
+int64 Directory::last_download_timestamp() const {
   ScopedKernelLock lock(this);
-  return kernel_->persisted_info.last_sync_timestamp;
+  return kernel_->persisted_info.last_download_timestamp;
 }
 
-void Directory::set_last_sync_timestamp(int64 timestamp) {
+void Directory::set_last_download_timestamp(int64 timestamp) {
   ScopedKernelLock lock(this);
-  if (kernel_->persisted_info.last_sync_timestamp == timestamp)
+  if (kernel_->persisted_info.last_download_timestamp == timestamp)
     return;
-  kernel_->persisted_info.last_sync_timestamp = timestamp;
+  kernel_->persisted_info.last_download_timestamp = timestamp;
   kernel_->info_status = KERNEL_SHARE_INFO_DIRTY;
 }
 

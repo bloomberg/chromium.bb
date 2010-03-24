@@ -315,7 +315,7 @@ void ResourceDispatcher::OnUploadProgress(
       request_info.peer->GetURLForDebugging().possibly_invalid_spec());
   request_info.peer->OnUploadProgress(position, size);
 
-  // Acknowlegde reciept
+  // Acknowledge receipt
   message_sender()->Send(
       new ViewHostMsg_UploadProgress_ACK(message.routing_id(), request_id));
 }

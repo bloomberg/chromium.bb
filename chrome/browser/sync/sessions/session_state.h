@@ -174,7 +174,7 @@ class UpdateProgress {
   bool HasConflictingUpdates() const;
 
  private:
-  // Some container for updates that failed verification.
+  // Container for updates that passed verification.
   std::vector<VerifiedUpdate> verified_updates_;
 
   // Stores the result of the various ApplyUpdate attempts we've made.
@@ -185,8 +185,7 @@ class UpdateProgress {
 struct SyncCycleControlParameters {
   SyncCycleControlParameters() : conflict_sets_built(false),
                                  conflicts_resolved(false),
-                                 items_committed(false),
-                                 got_new_timestamp(false) {}
+                                 items_committed(false) {}
   // Set to true by BuildAndProcessConflictSetsCommand if the RESOLVE_CONFLICTS
   // step is needed.
   bool conflict_sets_built;
@@ -196,9 +195,6 @@ struct SyncCycleControlParameters {
 
   // Set to true by PostCommitMessageCommand if any commits were successful.
   bool items_committed;
-
-  // The server sent us updates and a newer timestamp as part of the session.
-  bool got_new_timestamp;
 };
 
 // DirtyOnWrite wraps a value such that any write operation will update a

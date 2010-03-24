@@ -18,10 +18,9 @@ void SyncerEndCommand::ExecuteImpl(sessions::SyncSession* session) {
   sessions::StatusController* status(session->status_controller());
   status->set_syncing(false);
 
-  if (!session->HasMoreToSync()) {
-    // This might be the first time we've fully completed a sync cycle.
-    DCHECK(status->got_zero_updates());
-
+  // This might be the first time we've fully completed a sync cycle.
+  if (!session->HasMoreToSync() &&
+      status->server_says_nothing_more_to_download()) {
     syncable::ScopedDirLookup dir(session->context()->directory_manager(),
                                   session->context()->account_name());
     if (!dir.good()) {

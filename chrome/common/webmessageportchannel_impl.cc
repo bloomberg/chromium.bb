@@ -152,7 +152,7 @@ void WebMessagePortChannelImpl::Entangle(
 
 void WebMessagePortChannelImpl::QueueMessages() {
   // This message port is being sent elsewhere (perhaps to another process).
-  // The new endpoint needs to recieve the queued messages, including ones that
+  // The new endpoint needs to receive the queued messages, including ones that
   // could still be in-flight.  So we tell the browser to queue messages, and it
   // sends us an ack, whose receipt we know means that no more messages are
   // in-flight.  We then send the queued messages to the browser, which prepends

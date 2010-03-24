@@ -18,6 +18,7 @@
 #include "chrome/browser/sync/engine/process_commit_response_command.h"
 #include "chrome/browser/sync/engine/process_updates_command.h"
 #include "chrome/browser/sync/engine/resolve_conflicts_command.h"
+#include "chrome/browser/sync/engine/store_timestamps_command.h"
 #include "chrome/browser/sync/engine/syncer_end_command.h"
 #include "chrome/browser/sync/engine/syncer_types.h"
 #include "chrome/browser/sync/engine/syncer_util.h"
@@ -139,9 +140,18 @@ void Syncer::SyncShare(sessions::SyncSession* session,
         LOG(INFO) << "Processing Updates";
         ProcessUpdatesCommand process_updates;
         process_updates.Execute(session);
+        next_step = STORE_TIMESTAMPS;
+        break;
+      }
+      case STORE_TIMESTAMPS: {
+        LOG(INFO) << "Storing timestamps";
+        StoreTimestampsCommand store_timestamps;
+        store_timestamps.Execute(session);
         // We should download all of the updates before attempting to process
         // them.
-        if (session->status_controller()->CountUpdates() == 0) {
+        if (session->status_controller()->
+                server_says_nothing_more_to_download() ||
+            !session->status_controller()->download_updates_succeeded()) {
           next_step = APPLY_UPDATES;
         } else {
           next_step = DOWNLOAD_UPDATES;

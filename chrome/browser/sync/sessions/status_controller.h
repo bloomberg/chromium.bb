@@ -82,7 +82,7 @@ class StatusController {
   ClientToServerResponse* mutable_commit_response() {
     return &shared_.commit_response;
   }
-  const ClientToServerResponse& updates_response() {
+  const ClientToServerResponse& updates_response() const {
     return shared_.updates_response;
   }
   ClientToServerResponse* mutable_updates_response() {
@@ -135,9 +135,6 @@ class StatusController {
   bool conflicts_resolved() const {
     return shared_.control_params.conflicts_resolved;
   }
-  bool got_new_timestamp() const {
-    return shared_.control_params.got_new_timestamp;
-  }
   bool did_commit_items() const {
     return shared_.control_params.items_committed;
   }
@@ -159,7 +156,23 @@ class StatusController {
     return shared_.commit_set.HasBookmarkCommitId();
   }
 
-  bool got_zero_updates() const { return CountUpdates() == 0; }
+  // Returns true if the last download_updates_command received a valid
+  // server response.
+  bool download_updates_succeeded() const {
+    return updates_response().has_get_updates();
+  }
+
+  // Returns true if the last updates response indicated that we were fully
+  // up to date.  This is subtle: if it's false, it could either mean that
+  // the server said there WAS more to download, or it could mean that we
+  // were unable to reach the server.
+  bool server_says_nothing_more_to_download() const {
+    if (!download_updates_succeeded())
+      return false;
+    // The server indicates "you're up to date" by not sending a new
+    // timestamp.
+    return !updates_response().get_updates().has_new_timestamp();
+  }
 
   ModelSafeGroup group_restriction() const {
     return group_restriction_;
@@ -173,7 +186,6 @@ class StatusController {
   void set_num_consecutive_errors(int value);
   void increment_num_consecutive_errors();
   void increment_num_consecutive_errors_by(int value);
-  void set_got_new_timestamp();
   void set_current_sync_timestamp(syncable::ModelType model,
                                   int64 current_timestamp);
   void set_num_server_changes_remaining(int64 changes_remaining);

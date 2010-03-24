@@ -895,6 +895,8 @@
         'browser/sync/engine/process_updates_command.h',
         'browser/sync/engine/resolve_conflicts_command.cc',
         'browser/sync/engine/resolve_conflicts_command.h',
+        'browser/sync/engine/store_timestamps_command.cc',
+        'browser/sync/engine/store_timestamps_command.h',
         'browser/sync/engine/syncapi.h',
         'browser/sync/engine/syncer.cc',
         'browser/sync/engine/syncer.h',

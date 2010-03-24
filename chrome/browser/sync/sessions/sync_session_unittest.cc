@@ -133,17 +133,54 @@ TEST_F(SyncSessionTest, MoreToSyncIfConflictSetsBuilt) {
   EXPECT_TRUE(session_->HasMoreToSync());
 }
 
-TEST_F(SyncSessionTest, MoreToSyncIfDidNotGetZeroUpdates) {
-  // We're not done getting updates until we get an empty response.
-  ClientToServerResponse response;
-  response.mutable_get_updates()->add_entries();
-  status()->mutable_updates_response()->CopyFrom(response);
-  EXPECT_TRUE(session_->HasMoreToSync());
-  status()->mutable_updates_response()->Clear();
+TEST_F(SyncSessionTest, MoreToDownloadIfDownloadFailed) {
+  // When DownloadUpdatesCommand fails, these should be false.
+  EXPECT_FALSE(status()->server_says_nothing_more_to_download());
+  EXPECT_FALSE(status()->download_updates_succeeded());
+
+  // Download updates has its own loop in the syncer; it shouldn't factor
+  // into HasMoreToSync.
   EXPECT_FALSE(session_->HasMoreToSync());
-  status()->mutable_updates_response()->CopyFrom(response);
-  EXPECT_TRUE(session_->HasMoreToSync());
 }
+
+TEST_F(SyncSessionTest, MoreToDownloadIfGotTimestamp) {
+  // When the server returns a timestamp, that means there's more to download.
+  status()->mutable_updates_response()->mutable_get_updates()
+      ->set_new_timestamp(1000000L);
+  EXPECT_FALSE(status()->server_says_nothing_more_to_download());
+  EXPECT_TRUE(status()->download_updates_succeeded());
+
+  // Download updates has its own loop in the syncer; it shouldn't factor
+  // into HasMoreToSync.
+  EXPECT_FALSE(session_->HasMoreToSync());
+}
+
+TEST_F(SyncSessionTest, MoreToDownloadIfGotNoTimestamp) {
+  // When the server returns a timestamp, that means we're up to date.
+  status()->mutable_updates_response()->mutable_get_updates()
+      ->clear_new_timestamp();
+  EXPECT_TRUE(status()->server_says_nothing_more_to_download());
+  EXPECT_TRUE(status()->download_updates_succeeded());
+
+  // Download updates has its own loop in the syncer; it shouldn't factor
+  // into HasMoreToSync.
+  EXPECT_FALSE(session_->HasMoreToSync());
+}
+
+TEST_F(SyncSessionTest, MoreToDownloadIfGotTimestampAndEntries) {
+  // The actual entry count should not factor into the HasMoreToSync
+  // determination.
+  status()->mutable_updates_response()->mutable_get_updates()->add_entries();
+  status()->mutable_updates_response()->mutable_get_updates()
+      ->set_new_timestamp(1000000L);;
+  EXPECT_FALSE(status()->server_says_nothing_more_to_download());
+  EXPECT_TRUE(status()->download_updates_succeeded());
+
+  // Download updates has its own loop in the syncer; it shouldn't factor
+  // into HasMoreToSync.
+  EXPECT_FALSE(session_->HasMoreToSync());
+}
+
 
 TEST_F(SyncSessionTest, MoreToSyncIfConflictsResolved) {
   // Conflict resolution happens after get updates and commit,
@@ -152,16 +189,6 @@ TEST_F(SyncSessionTest, MoreToSyncIfConflictsResolved) {
   status()->update_conflicts_resolved(true);
   EXPECT_TRUE(session_->HasMoreToSync());
 }
-
-TEST_F(SyncSessionTest, MoreToSyncIfTimestampDirty) {
-  // If there are more changes on the server that weren't processed during this
-  // GetUpdates request, the client should send another GetUpdates request and
-  // use new_timestamp as the from_timestamp value within GetUpdatesMessage.
-  status()->set_got_new_timestamp();
-  status()->update_conflicts_resolved(true);
-  EXPECT_TRUE(session_->HasMoreToSync());
-}
-
 
 }  // namespace
 }  // namespace sessions

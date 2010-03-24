@@ -24,7 +24,7 @@ class ProfileSyncService;
 // A window controller that handles the preferences window. The bulk of the
 // work is handled via Cocoa Bindings and getter/setter methods that wrap
 // cross-platform PrefMember objects. When prefs change in the back-end
-// (that is, outside of this UI), our observer recieves a notification and can
+// (that is, outside of this UI), our observer receives a notification and can
 // tickle the KVO to update the UI so we are always in sync. The bindings are
 // specified in the nib file. Preferences are persisted into the back-end
 // as they are changed in the UI, and are thus immediately available even while

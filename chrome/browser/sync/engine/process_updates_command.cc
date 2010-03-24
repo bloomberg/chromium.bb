@@ -25,6 +25,15 @@ using sessions::StatusController;
 ProcessUpdatesCommand::ProcessUpdatesCommand() {}
 ProcessUpdatesCommand::~ProcessUpdatesCommand() {}
 
+bool ProcessUpdatesCommand::ModelNeutralExecuteImpl(SyncSession* session) {
+  const GetUpdatesResponse& updates =
+      session->status_controller()->updates_response().get_updates();
+  const int update_count = updates.entries_size();
+
+  // Don't bother processing updates if there were none.
+  return update_count != 0;
+}
+
 void ProcessUpdatesCommand::ModelChangingExecuteImpl(SyncSession* session) {
   syncable::ScopedDirLookup dir(session->context()->directory_manager(),
                                 session->context()->account_name());
@@ -33,38 +42,8 @@ void ProcessUpdatesCommand::ModelChangingExecuteImpl(SyncSession* session) {
     return;
   }
 
-  const GetUpdatesResponse& updates =
-      session->status_controller()->updates_response().get_updates();
-  const int update_count = updates.entries_size();
-
-  LOG(INFO) << "Get updates from ts " << dir->last_sync_timestamp() <<
-    " returned " << update_count << " updates.";
-
   StatusController* status = session->status_controller();
-  if (updates.has_changes_remaining()) {
-    int64 changes_left = updates.changes_remaining();
-    LOG(INFO) << "Changes remaining:" << changes_left;
-    status->set_num_server_changes_remaining(changes_left);
-  }
 
-  int64 new_timestamp = 0;
-  if (updates.has_new_timestamp()) {
-    new_timestamp = updates.new_timestamp();
-    LOG(INFO) << "Get Updates got new timestamp: " << new_timestamp;
-    if (0 == update_count) {
-      if (new_timestamp > dir->last_sync_timestamp()) {
-        dir->set_last_sync_timestamp(new_timestamp);
-        status->set_got_new_timestamp();
-      }
-      return;
-    }
-  }
-
-  // If we have updates that are ALL supposed to be skipped, we don't want to
-  // get them again.  In fact, the account's final updates are all supposed to
-  // be skipped and we DON'T step past them, we will sync forever.
-  int64 latest_skip_timestamp = 0;
-  bool any_non_skip_results = false;
   const sessions::UpdateProgress& progress(status->update_progress());
   vector<sessions::VerifiedUpdate>::const_iterator it;
   for (it = progress.VerifiedUpdatesBegin();
@@ -72,46 +51,21 @@ void ProcessUpdatesCommand::ModelChangingExecuteImpl(SyncSession* session) {
        ++it) {
     const sync_pb::SyncEntity& update = it->second;
 
-    any_non_skip_results = (it->first != VERIFY_SKIP);
-    if (!any_non_skip_results) {
-      // ALL updates were to be skipped, including this one.
-      if (update.sync_timestamp() > latest_skip_timestamp) {
-        latest_skip_timestamp = update.sync_timestamp();
-      }
-    } else {
-      latest_skip_timestamp = 0;
-    }
-
     if (it->first != VERIFY_SUCCESS && it->first != VERIFY_UNDELETE)
       continue;
     switch (ProcessUpdate(dir, update)) {
       case SUCCESS_PROCESSED:
       case SUCCESS_STORED:
-        // We can update the timestamp because we store the update even if we
-        // can't apply it now.
-        if (update.sync_timestamp() > new_timestamp)
-          new_timestamp = update.sync_timestamp();
         break;
       default:
         NOTREACHED();
         break;
     }
-
-  }
-
-  if (latest_skip_timestamp > new_timestamp)
-    new_timestamp = latest_skip_timestamp;
-
-  if (new_timestamp > dir->last_sync_timestamp()) {
-    dir->set_last_sync_timestamp(new_timestamp);
-    status->set_got_new_timestamp();
   }
 
   status->set_num_consecutive_errors(0);
-  // TODO(tim): Related to bug 30665, the Directory needs last sync timestamp
-  // per data type.  Until then, use UNSPECIFIED.
-  status->set_current_sync_timestamp(syncable::UNSPECIFIED,
-                                     dir->last_sync_timestamp());
+
+  // TODO(nick): The following line makes no sense to me.
   status->set_syncing(true);
   return;
 }

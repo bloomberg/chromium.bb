@@ -280,7 +280,7 @@ bool DirectoryBackingStore::SaveChanges(
                    "SET last_sync_timestamp = ?, initial_sync_ended = ?, "
                    "store_birthday = ?, "
                    "next_id = ?");
-    update.bind_int64(0, info.last_sync_timestamp);
+    update.bind_int64(0, info.last_download_timestamp);
     update.bind_bool(1, info.initial_sync_ended);
     update.bind_string(2, info.store_birthday);
     update.bind_int64(3, info.next_id);
@@ -444,7 +444,7 @@ void DirectoryBackingStore::LoadInfo(Directory::KernelLoadInfo* info) {
                   "store_birthday, next_id, cache_guid "
                   "FROM share_info");
     CHECK(SQLITE_ROW == query.step());
-    info->kernel_info.last_sync_timestamp = query.column_int64(0);
+    info->kernel_info.last_download_timestamp = query.column_int64(0);
     info->kernel_info.initial_sync_ended = query.column_bool(1);
     info->kernel_info.store_birthday = query.column_string(2);
     info->kernel_info.next_id = query.column_int64(3);

@@ -16,9 +16,9 @@
 
 using browser_sync::sessions::SyncSessionSnapshot;
 
-// The default value for min_updates_needed_ when we're not in a call to
-// WaitForUpdatesRecievedAtLeast.
-static const int kMinUpdatesNeededNone = -1;
+// The default value for min_timestamp_needed_ when we're not in the
+// WAITING_FOR_UPDATES state.
+static const int kMinTimestampNeededNone = -1;
 
 static const ProfileSyncService::Status kInvalidStatus = {};
 
@@ -87,7 +87,7 @@ ProfileSyncServiceTestHarness::ProfileSyncServiceTestHarness(
     : wait_state_(WAITING_FOR_INITIAL_CALLBACK), profile_(p), service_(NULL),
       last_status_(kInvalidStatus),
       last_timestamp_(0),
-      min_timestamp_needed_(kMinUpdatesNeededNone),
+      min_timestamp_needed_(kMinTimestampNeededNone),
       username_(username), password_(password) {
   // Ensure the profile has enough prefs registered for use by sync.
   if (!p->GetPrefs()->FindPreference(prefs::kAcceptLanguages))
