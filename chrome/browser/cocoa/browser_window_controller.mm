@@ -365,7 +365,8 @@
 // from this method.
 - (void)windowWillClose:(NSNotification*)notification {
   DCHECK_EQ([notification object], [self window]);
-  DCHECK(!browser_->tabstrip_model()->count());
+  DCHECK(!browser_->tabstrip_model()->HasNonPhantomTabs() ||
+         !browser_->tabstrip_model()->count());
   [savedRegularWindow_ close];
   // We delete statusBubble here because we need to kill off the dependency
   // that its window has on our window before our window goes away.
@@ -1063,6 +1064,10 @@
     tabOrigin = [[self tabStripView] convertPoint:tabOrigin fromView:nil];
     destinationFrame.origin = tabOrigin;
 
+    // Before the tab is detached from its originating tab strip, store the
+    // pinned state so that it can be maintained between the windows.
+    bool isPinned = dragBWC->browser_->tabstrip_model()->IsTabPinned(index);
+
     // Now that we have enough information about the tab, we can remove it from
     // the dragging window. We need to do this *before* we add it to the new
     // window as this will remove the TabContents' delegate.
@@ -1071,7 +1076,9 @@
     // Deposit it into our model at the appropriate location (it already knows
     // where it should go from tracking the drag). Doing this sets the tab's
     // delegate to be the Browser.
-    [tabStripController_ dropTabContents:contents withFrame:destinationFrame];
+    [tabStripController_ dropTabContents:contents
+                               withFrame:destinationFrame
+                             asPinnedTab:isPinned];
   } else {
     // Moving within a window.
     int index = [tabStripController_ modelIndexForTabView:view];
@@ -1114,7 +1121,7 @@
   // Disable screen updates so that this appears as a single visual change.
   base::ScopedNSDisableScreenUpdates disabler;
 
-  // Fetch the tab contents for the tab being dragged
+  // Fetch the tab contents for the tab being dragged.
   int index = [tabStripController_ modelIndexForTabView:tabView];
   TabContents* contents = browser_->tabstrip_model()->GetTabContentsAt(index);
 
@@ -1132,6 +1139,9 @@
 
   NSRect tabRect = [tabView frame];
 
+  // Before detaching the tab, store the pinned state.
+  bool isPinned = browser_->tabstrip_model()->IsTabPinned(index);
+
   // Detach it from the source window, which just updates the model without
   // deleting the tab contents. This needs to come before creating the new
   // Browser because it clears the TabContents' delegate, which gets hooked
@@ -1145,6 +1155,10 @@
       browser_->tabstrip_model()->TearOffTabContents(contents,
                                                      browserRect,
                                                      dockInfo);
+
+  // Propagate the tab pinned state of the new tab (which is the only tab in
+  // this new window).
+  newBrowser->tabstrip_model()->SetTabPinned(0, isPinned);
 
   // Get the new controller by asking the new window for its delegate.
   BrowserWindowController* controller =

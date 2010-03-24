@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,9 +15,17 @@
 @implementation TabController
 
 @synthesize loadingState = loadingState_;
-@synthesize pinned = pinned_;
+@synthesize mini = mini_;
+@synthesize phantom = phantom_;
 @synthesize target = target_;
 @synthesize action = action_;
+
+namespace {
+
+// If the tab is phantom, the opacity of the TabView is adjusted to this value.
+const CGFloat kPhantomTabAlpha = 105.0 / 255.0;
+
+};  // anonymous namespace
 
 namespace TabControllerInternal {
 
@@ -53,7 +61,7 @@ class MenuDelegate : public menus::SimpleMenuModel::Delegate {
     // (this is not a checkmark menu item, per Apple's HIG).
     if (command_id == TabStripModel::CommandTogglePinned) {
       return l10n_util::GetStringUTF16(
-          [owner_ pinned] ? IDS_TAB_CXMENU_UNPIN_TAB_MAC
+          [owner_ mini] ? IDS_TAB_CXMENU_UNPIN_TAB_MAC
                           : IDS_TAB_CXMENU_PIN_TAB_MAC);
     }
     return string16();
@@ -64,7 +72,7 @@ class MenuDelegate : public menus::SimpleMenuModel::Delegate {
   TabController* owner_;  // weak, owns me
 };
 
-}  // namespace
+}  // TabControllerInternal namespace
 
 // The min widths match the windows values and are sums of left + right
 // padding, of which we have no comparable constants (we draw using paths, not
@@ -72,7 +80,7 @@ class MenuDelegate : public menus::SimpleMenuModel::Delegate {
 + (CGFloat)minTabWidth { return 31; }
 + (CGFloat)minSelectedTabWidth { return 47; }
 + (CGFloat)maxTabWidth { return 220; }
-+ (CGFloat)pinnedTabWidth { return 53; }
++ (CGFloat)miniTabWidth { return 53; }
 
 - (TabView*)tabView {
   return static_cast<TabView*>([self view]);
@@ -152,7 +160,7 @@ class MenuDelegate : public menus::SimpleMenuModel::Delegate {
 
 - (void)setTitle:(NSString*)title {
   [[self view] setToolTip:title];
-  if ([self pinned] && ![self selected]) {
+  if ([self mini] && ![self selected]) {
     TabView* tabView = static_cast<TabView*>([self view]);
     DCHECK([tabView isKindOfClass:[TabView class]]);
     [tabView startAlert];
@@ -208,7 +216,7 @@ class MenuDelegate : public menus::SimpleMenuModel::Delegate {
   if (!iconView_)
     return NO;
 
-  if ([self pinned])
+  if ([self mini])
     return YES;
 
   int iconCapacity = [self iconCapacity];
@@ -220,7 +228,7 @@ class MenuDelegate : public menus::SimpleMenuModel::Delegate {
 // Returns YES if we should be showing the close button. The selected tab
 // always shows the close button.
 - (BOOL)shouldShowCloseButton {
-  if ([self pinned])
+  if ([self mini])
     return NO;
   return ([self selected] || [self iconCapacity] >= 3);
 }
@@ -235,8 +243,13 @@ class MenuDelegate : public menus::SimpleMenuModel::Delegate {
   [iconView_ setHidden:newShowIcon ? NO : YES];
   isIconShowing_ = newShowIcon;
 
-  // If the tab is pinned, hide the title.
-  [titleView_ setHidden:[self pinned]];
+  // If the tab is a mini-tab, hide the title.
+  [titleView_ setHidden:[self mini]];
+
+  // If it's a phantom mini-tab, draw it alpha-style. Windows does this.
+  CGFloat alphaValue = [self phantom] ? kPhantomTabAlpha
+                                      : 1.0;
+  [[self view] setAlphaValue:alphaValue];
 
   BOOL oldShowCloseButton = [closeButton_ isHidden] ? NO : YES;
   BOOL newShowCloseButton = [self shouldShowCloseButton] ? YES : NO;

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -194,9 +194,6 @@ TEST_F(TabRestoreServiceTest, Restore) {
 
 // Tests restoring a single pinned tab.
 TEST_F(TabRestoreServiceTest, RestorePinnedAndApp) {
-  if (!browser_defaults::kEnablePinnedTabs)
-    return;
-
   AddThreeNavigations();
 
   // Have the service record the tab.
@@ -373,9 +370,6 @@ TEST_F(TabRestoreServiceTest, LoadPreviousSessionAndTabs) {
 
 // Make sure pinned state is correctly loaded from session service.
 TEST_F(TabRestoreServiceTest, LoadPreviousSessionAndTabsPinned) {
-  if (!browser_defaults::kEnablePinnedTabs)
-    return;
-
   CreateSessionServiceWithOneWindow(true);
 
   profile()->GetSessionService()->MoveCurrentSessionToLastSession();

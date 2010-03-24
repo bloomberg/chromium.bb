@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved. Use of this
+// Copyright (c) 2010 The Chromium Authors. All rights reserved. Use of this
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
@@ -19,17 +19,15 @@ void TabMenuModel::Build() {
   AddItemWithStringId(TabStripModel::CommandReload, IDS_TAB_CXMENU_RELOAD);
   AddItemWithStringId(TabStripModel::CommandDuplicate,
                       IDS_TAB_CXMENU_DUPLICATE);
-  if (browser_defaults::kEnablePinnedTabs) {
   // On Mac the HIG prefers "pin/unpin" to a checkmark. The Mac code will fix up
   // the actual string based on the tab's state via the delegate.
 #if defined(OS_MACOSX)
-    AddItemWithStringId(TabStripModel::CommandTogglePinned,
-                        IDS_TAB_CXMENU_PIN_TAB);
+  AddItemWithStringId(TabStripModel::CommandTogglePinned,
+                      IDS_TAB_CXMENU_PIN_TAB);
 #else
-    AddCheckItemWithStringId(TabStripModel::CommandTogglePinned,
-                             IDS_TAB_CXMENU_PIN_TAB);
+  AddCheckItemWithStringId(TabStripModel::CommandTogglePinned,
+                           IDS_TAB_CXMENU_PIN_TAB);
 #endif
-  }
   AddSeparator();
   AddItemWithStringId(TabStripModel::CommandCloseTab,
                       IDS_TAB_CXMENU_CLOSETAB);

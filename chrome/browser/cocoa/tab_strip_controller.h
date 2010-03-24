@@ -136,8 +136,13 @@ class ToolbarModel;
 // window when we don't have access to the TabContents as part of our strip.
 // |frame| is in the coordinate system of the tab strip view and represents
 // where the user dropped the new tab so it can be animated into its correct
-// location when the tab is added to the model.
-- (void)dropTabContents:(TabContents*)contents withFrame:(NSRect)frame;
+// location when the tab is added to the model. If the tab was pinned in its
+// previous window, setting |pinned| to YES will propagate that state to the
+// new window. Mini-tabs are either app or pinned tabs; the app state is stored
+// by the |contents|, but the |pinned| state is the caller's responsibility.
+- (void)dropTabContents:(TabContents*)contents
+              withFrame:(NSRect)frame
+            asPinnedTab:(BOOL)pinned;
 
 // Returns the index of the subview |view|. Returns -1 if not present. Takes
 // closing tabs into account such that this index will correctly match the tab

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -63,12 +63,10 @@ void TabStripModelObserverBridge::TabMoved(TabContents* contents,
                                            int from_index,
                                            int to_index) {
   if ([controller_ respondsToSelector:
-       @selector(tabMovedWithContents:fromIndex:toIndex:pinnedStateChanged:)]) {
-    // TODO: clean this up, need to remove pinnedStateChanged param.
+       @selector(tabMovedWithContents:fromIndex:toIndex:)]) {
     [controller_ tabMovedWithContents:contents
                             fromIndex:from_index
-                              toIndex:to_index
-                   pinnedStateChanged:NO];
+                              toIndex:to_index];
   }
 }
 
@@ -83,12 +81,17 @@ void TabStripModelObserverBridge::TabChangedAt(TabContents* contents,
   }
 }
 
-void TabStripModelObserverBridge::TabPinnedStateChanged(TabContents* contents,
-                                                        int index) {
+void TabStripModelObserverBridge::TabReplacedAt(TabContents* old_contents,
+                                                TabContents* new_contents,
+                                                int index) {
+  TabChangedAt(new_contents, index, ALL);
+}
+
+void TabStripModelObserverBridge::TabMiniStateChanged(TabContents* contents,
+                                                      int index) {
   if ([controller_ respondsToSelector:
-          @selector(tabPinnedStateChangedWithContents:atIndex:)]) {
-    [controller_ tabPinnedStateChangedWithContents:contents
-                                           atIndex:index];
+          @selector(tabMiniStateChangedWithContents:atIndex:)]) {
+    [controller_ tabMiniStateChangedWithContents:contents atIndex:index];
   }
 }
 

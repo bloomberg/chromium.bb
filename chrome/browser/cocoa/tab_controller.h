@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,7 +44,8 @@ class MenuDelegate;
   NSRect originalIconFrame_;  // frame of iconView_ as loaded from nib
   BOOL isIconShowing_;  // last state of iconView_ in updateVisibility
   BOOL selected_;
-  BOOL pinned_;
+  BOOL mini_;
+  BOOL phantom_;
   TabLoadingState loadingState_;
   CGFloat iconTitleXOffset_;  // between left edges of icon and title
   CGFloat titleCloseWidthOffset_;  // between right edges of icon and close btn.
@@ -58,7 +59,8 @@ class MenuDelegate;
 @property(assign, nonatomic) TabLoadingState loadingState;
 
 @property(assign, nonatomic) BOOL selected;
-@property(assign, nonatomic) BOOL pinned;
+@property(assign, nonatomic) BOOL mini;
+@property(assign, nonatomic) BOOL phantom;
 @property(assign, nonatomic) id target;
 @property(assign, nonatomic) SEL action;
 
@@ -68,7 +70,7 @@ class MenuDelegate;
 + (CGFloat)minTabWidth;
 + (CGFloat)maxTabWidth;
 + (CGFloat)minSelectedTabWidth;
-+ (CGFloat)pinnedTabWidth;
++ (CGFloat)miniTabWidth;
 
 // The view associated with this controller, pre-casted as a TabView
 - (TabView*)tabView;

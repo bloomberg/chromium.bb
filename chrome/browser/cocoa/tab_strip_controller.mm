@@ -123,8 +123,8 @@ private:
                              finished:(BOOL)finished;
 - (NSInteger)indexFromModelIndex:(NSInteger)index;
 - (NSInteger)numberOfOpenTabs;
-- (NSInteger)numberOfOpenPinnedTabs;
-- (NSInteger)numberOfOpenUnpinnedTabs;
+- (NSInteger)numberOfOpenMiniTabs;
+- (NSInteger)numberOfOpenNonMiniTabs;
 - (void)mouseMoved:(NSEvent*)event;
 - (void)setTabTrackingAreasEnabled:(BOOL)enabled;
 - (void)droppingURLsAt:(NSPoint)point
@@ -462,18 +462,17 @@ private:
   return static_cast<NSInteger>(tabStripModel_->count());
 }
 
-// (Private) Returns the number of open, pinned tabs.
-- (NSInteger)numberOfOpenPinnedTabs {
-  // Ask the model for the number of pinned tabs. Note that tabs which are in
+// (Private) Returns the number of open, mini-tabs.
+- (NSInteger)numberOfOpenMiniTabs {
+  // Ask the model for the number of mini tabs. Note that tabs which are in
   // the process of closing (i.e., whose controllers are in
   // |closingControllers_|) have already been removed from the model.
-  // TODO: convert to apps.
-  return 0;
+  return tabStripModel_->IndexOfFirstNonMiniTab();
 }
 
-// (Private) Returns the number of open, unpinned tabs.
-- (NSInteger)numberOfOpenUnpinnedTabs {
-  NSInteger number = [self numberOfOpenTabs] - [self numberOfOpenPinnedTabs];
+// (Private) Returns the number of open, non-mini tabs.
+- (NSInteger)numberOfOpenNonMiniTabs {
+  NSInteger number = [self numberOfOpenTabs] - [self numberOfOpenMiniTabs];
   DCHECK_GE(number, 0);
   return number;
 }
@@ -655,7 +654,7 @@ private:
   const CGFloat kMaxTabWidth = [TabController maxTabWidth];
   const CGFloat kMinTabWidth = [TabController minTabWidth];
   const CGFloat kMinSelectedTabWidth = [TabController minSelectedTabWidth];
-  const CGFloat kPinnedTabWidth = [TabController pinnedTabWidth];
+  const CGFloat kMiniTabWidth = [TabController miniTabWidth];
 
   NSRect enclosingRect = NSZeroRect;
   ScopedNSAnimationContextGroup mainAnimationGroup(animate);
@@ -666,7 +665,7 @@ private:
     [self regenerateSubviewList];
 
   // Compute the base width of tabs given how much room we're allowed. Note that
-  // pinned tabs have a fixed width. We may not be able to use the entire width
+  // mini-tabs have a fixed width. We may not be able to use the entire width
   // if the user is quickly closing tabs. This may be negative, but that's okay
   // (taken care of by |MAX()| when calculating tab sizes).
   CGFloat availableWidth = 0;
@@ -683,22 +682,22 @@ private:
 
   // This may be negative, but that's okay (taken care of by |MAX()| when
   // calculating tab sizes).
-  CGFloat availableWidthForUnpinned = availableWidth -
-      [self numberOfOpenPinnedTabs] * (kPinnedTabWidth - kTabOverlap);
+  CGFloat availableWidthForNonMini = availableWidth -
+      [self numberOfOpenMiniTabs] * (kMiniTabWidth - kTabOverlap);
 
-  // Initialize |unpinnedTabWidth| in case there aren't any unpinned tabs; this
+  // Initialize |nonMiniTabWidth| in case there aren't any non-mini-tabs; this
   // value shouldn't actually be used.
-  CGFloat unpinnedTabWidth = kMaxTabWidth;
-  const NSInteger numberOfOpenUnpinnedTabs = [self numberOfOpenUnpinnedTabs];
-  if (numberOfOpenUnpinnedTabs) {  // Find the width of an unpinned tab.
+  CGFloat nonMiniTabWidth = kMaxTabWidth;
+  const NSInteger numberOfOpenNonMiniTabs = [self numberOfOpenNonMiniTabs];
+  if (numberOfOpenNonMiniTabs) {  // Find the width of a non-mini-tab.
     // Add in the amount we "get back" from the tabs overlapping.
-    availableWidthForUnpinned += (numberOfOpenUnpinnedTabs - 1) * kTabOverlap;
+    availableWidthForNonMini += (numberOfOpenNonMiniTabs - 1) * kTabOverlap;
 
-    // Divide up the space between the unpinned tabs.
-    unpinnedTabWidth = availableWidthForUnpinned / numberOfOpenUnpinnedTabs;
+    // Divide up the space between the non-mini-tabs.
+    nonMiniTabWidth = availableWidthForNonMini / numberOfOpenNonMiniTabs;
 
     // Clamp the width between the max and min.
-    unpinnedTabWidth = MAX(MIN(unpinnedTabWidth, kMaxTabWidth), kMinTabWidth);
+    nonMiniTabWidth = MAX(MIN(nonMiniTabWidth, kMaxTabWidth), kMinTabWidth);
   }
 
   const CGFloat minX = NSMinX(placeholderFrame_);
@@ -754,7 +753,7 @@ private:
 
     // Set the width. Selected tabs are slightly wider when things get really
     // small and thus we enforce a different minimum width.
-    tabFrame.size.width = [tab pinned] ? kPinnedTabWidth : unpinnedTabWidth;
+    tabFrame.size.width = [tab mini] ? kMiniTabWidth : nonMiniTabWidth;
     if ([tab selected])
       tabFrame.size.width = MAX(tabFrame.size.width, kMinSelectedTabWidth);
 
@@ -885,6 +884,7 @@ private:
 
   // Make a new tab and add it to the strip. Keep track of its controller.
   TabController* newController = [self newTab];
+  [newController setMini:tabStripModel_->IsMiniTab(modelIndex)];
   [tabArray_ insertObject:newController atIndex:index];
   NSView* newView = [newController view];
 
@@ -929,6 +929,23 @@ private:
   // Take closing tabs into account.
   NSInteger index = [self indexFromModelIndex:modelIndex];
 
+  if (oldContents) {
+    int oldModelIndex =
+        browser_->GetIndexOfController(&(oldContents->controller()));
+    if (oldModelIndex != -1) {  // When closing a tab, the old tab may be gone.
+      NSInteger oldIndex = [self indexFromModelIndex:oldModelIndex];
+      TabContentsController* oldController =
+          [tabContentsArray_ objectAtIndex:oldIndex];
+      [oldController willBecomeUnselectedTab];
+      oldContents->view()->StoreFocus();
+      oldContents->WasHidden();
+      // If the selection changed because the tab was made phantom, update the
+      // Cocoa side of the state.
+      TabController* tabController = [tabArray_ objectAtIndex:oldIndex];
+      [tabController setPhantom:tabStripModel_->IsPhantomTab(oldModelIndex)];
+    }
+  }
+
   // De-select all other tabs and select the new tab.
   int i = 0;
   for (TabController* current in tabArray_.get()) {
@@ -946,19 +963,6 @@ private:
   // size than surrounding tabs if the user has many. This also raises the
   // selected tab to the top.
   [self layoutTabs];
-
-  if (oldContents) {
-    int oldModelIndex =
-        browser_->GetIndexOfController(&(oldContents->controller()));
-    if (oldModelIndex != -1) {  // When closing a tab, the old tab may be gone.
-      NSInteger oldIndex = [self indexFromModelIndex:oldModelIndex];
-      TabContentsController* oldController =
-          [tabContentsArray_ objectAtIndex:oldIndex];
-      [oldController willBecomeUnselectedTab];
-      oldContents->view()->StoreFocus();
-      oldContents->WasHidden();
-    }
-  }
 
   // Swap in the contents for the new tab.
   [self swapInTabAtIndex:modelIndex];
@@ -1125,9 +1129,15 @@ private:
 
   TabController* tabController = [tabArray_ objectAtIndex:index];
 
+  // Since the tab is loading, it cannot be phantom any more.
+  if ([tabController phantom]) {
+    [tabController setPhantom:NO];
+    [[tabController view] setNeedsDisplay:YES];
+  }
+
   bool oldHasIcon = [tabController iconView] != nil;
   bool newHasIcon = contents->ShouldDisplayFavIcon() ||
-      tabStripModel_->IsTabPinned(modelIndex);  // always show icon if pinned
+      tabStripModel_->IsMiniTab(modelIndex);  // Always show icon if mini.
 
   TabLoadingState oldState = [tabController loadingState];
   TabLoadingState newState = kTabDone;
@@ -1188,8 +1198,15 @@ private:
     return;
   }
 
+  TabController* tabController = [tabArray_ objectAtIndex:index];
+
   if (change != TabStripModelObserver::LOADING_ONLY)
-    [self setTabTitle:[tabArray_ objectAtIndex:index] withContents:contents];
+    [self setTabTitle:tabController withContents:contents];
+
+  // See if the change was to/from phantom.
+  bool isPhantom = tabStripModel_->IsPhantomTab(modelIndex);
+  if (isPhantom != [tabController phantom])
+    [tabController setPhantom:isPhantom];
 
   [self updateFavIconForContents:contents atIndex:modelIndex];
 
@@ -1203,8 +1220,7 @@ private:
 // simultaneously, so we need to take care of that.
 - (void)tabMovedWithContents:(TabContents*)contents
                    fromIndex:(NSInteger)modelFrom
-                     toIndex:(NSInteger)modelTo
-          pinnedStateChanged:(BOOL)pinnedChanged {
+                     toIndex:(NSInteger)modelTo {
   // Take closing tabs into account.
   NSInteger from = [self indexFromModelIndex:modelFrom];
   NSInteger to = [self indexFromModelIndex:modelTo];
@@ -1220,32 +1236,22 @@ private:
   [tabArray_ removeObjectAtIndex:from];
   [tabArray_ insertObject:movedTabController.get() atIndex:to];
 
-  if (pinnedChanged) {
-    [movedTabController
-        setPinned:(tabStripModel_->IsTabPinned(modelTo) ? YES : NO)];
-    [self updateFavIconForContents:contents atIndex:modelTo];
-  }
-
-  // TODO(viettrungluu): I don't think this is needed. Investigate. See also
-  // |-tabPinnedStateChangedWithContents:...|.
-  [self layoutTabs];
+  // The tab moved, which means that the mini-tab state may have changed.
+  if (tabStripModel_->IsMiniTab(modelTo) != [movedTabController mini])
+    [self tabMiniStateChangedWithContents:contents atIndex:modelTo];
 }
 
 // Called when a tab is pinned or unpinned without moving.
-- (void)tabPinnedStateChangedWithContents:(TabContents*)contents
-                                  atIndex:(NSInteger)modelIndex {
+- (void)tabMiniStateChangedWithContents:(TabContents*)contents
+                                atIndex:(NSInteger)modelIndex {
   // Take closing tabs into account.
   NSInteger index = [self indexFromModelIndex:modelIndex];
 
   TabController* tabController = [tabArray_ objectAtIndex:index];
   DCHECK([tabController isKindOfClass:[TabController class]]);
-  [tabController setPinned:
-      (tabStripModel_->IsTabPinned(modelIndex) ? YES : NO)];
+  [tabController setMini:
+      (tabStripModel_->IsMiniTab(modelIndex) ? YES : NO)];
   [self updateFavIconForContents:contents atIndex:modelIndex];
-
-  // TODO(viettrungluu): I don't think this is needed. Investigate. See also
-  // |-tabMovedWithContents:...|.
-  [self layoutTabs];
 }
 
 - (void)setFrameOfSelectedTab:(NSRect)frame {
@@ -1311,8 +1317,13 @@ private:
 // window when we don't have access to the TabContents as part of our strip.
 // |frame| is in the coordinate system of the tab strip view and represents
 // where the user dropped the new tab so it can be animated into its correct
-// location when the tab is added to the model.
-- (void)dropTabContents:(TabContents*)contents withFrame:(NSRect)frame {
+// location when the tab is added to the model. If the tab was pinned in its
+// previous window, setting |pinned| to YES will propagate that state to the
+// new window. Mini-tabs are either app or pinned tabs; the app state is stored
+// by the |contents|, but the |pinned| state is the caller's responsibility.
+- (void)dropTabContents:(TabContents*)contents
+              withFrame:(NSRect)frame
+            asPinnedTab:(BOOL)pinned {
   int modelIndex = [self indexOfPlaceholder];
 
   // Mark that the new tab being created should start at |frame|. It will be
@@ -1321,19 +1332,8 @@ private:
 
   // Insert it into this tab strip. We want it in the foreground and to not
   // inherit the current tab's group.
-  tabStripModel_->InsertTabContentsAt(modelIndex, contents, true, false);
-
-  // Take closing tabs into account.
-  NSInteger index = [self indexFromModelIndex:modelIndex];
-
-  // The tab's pinned status may have changed.
-  // TODO(viettrungluu): Improve the behaviour for drops at the dividing point
-  // between pinned and unpinned tabs.
-  TabController* tabController = [tabArray_ objectAtIndex:index];
-  DCHECK([tabController isKindOfClass:[TabController class]]);
-  [tabController setPinned:
-      (tabStripModel_->IsTabPinned(modelIndex) ? YES : NO)];
-  [self updateFavIconForContents:contents atIndex:modelIndex];
+  tabStripModel_->InsertTabContentsAt(modelIndex, contents, true, false,
+                                      pinned);
 }
 
 // Called when the tab strip view changes size. As we only registered for

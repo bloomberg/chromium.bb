@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -582,9 +582,6 @@ TEST_F(SessionServiceTest, PersistApplicationExtensionID) {
 
 // Explicitly set the pinned state to true and make sure we get back true.
 TEST_F(SessionServiceTest, PinnedTrue) {
-  if (!browser_defaults::kEnablePinnedTabs)
-    return;
-
   EXPECT_TRUE(CreateAndWriteSessionWithOneTab(true, true));
 }
 
