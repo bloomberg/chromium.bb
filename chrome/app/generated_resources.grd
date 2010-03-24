@@ -3669,6 +3669,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_TOOLTIP_STOP" desc="The tooltip for the stop button">
         Stop loading this page
       </message>
+      <message name="IDS_TOOLTIP_CLOSE_TAB" desc="The tooltip for the close tab button">
+        Close
+      </message>
 
       <!--Accessible name/action strings-->
       <message name="IDS_ACCACTION_PRESS" desc="The accessible default action for a button.">
