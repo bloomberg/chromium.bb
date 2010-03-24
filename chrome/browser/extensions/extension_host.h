@@ -77,9 +77,6 @@ class ExtensionHost : public RenderViewHostDelegate,
   bool document_element_available() const {
     return document_element_available_;
   }
-  gfx::NativeView GetNativeViewOfHost() {
-    return view() ? view()->native_view() : NULL;
-  }
 
   Profile* profile() const { return profile_; }
 
@@ -200,14 +197,12 @@ class ExtensionHost : public RenderViewHostDelegate,
   void CreateRenderViewNow();
 
   // ExtensionFunctionDispatcher::Delegate
-  // If this ExtensionHost has a view, this returns the Browser that view is a
-  // part of.  If this is a global background page, we use the active Browser
-  // instead.
-  virtual Browser* GetBrowser(bool include_incognito) const;
-  virtual ExtensionHost* GetExtensionHost() { return this; }
-
-  virtual Browser* GetBrowser() const { return GetBrowser(true); }
-  virtual RenderViewHost* GetRenderViewHost() { return render_view_host(); }
+  virtual Browser* GetBrowser() const {
+    return view() ? view()->browser() : NULL;
+  }
+  virtual gfx::NativeView GetNativeViewOfHost() {
+    return view() ? view()->native_view() : NULL;
+  }
 
   // Handles keyboard events that were not handled by HandleKeyboardEvent().
   // Platform specific implementation may override this method to handle the

@@ -22,6 +22,7 @@
 #include "chrome/browser/dom_ui/dom_ui_factory.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
+#include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/in_process_webkit/dom_storage_context.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/message_box_handler.h"
@@ -547,14 +548,18 @@ void ExtensionHost::ShowCreatedWindow(int route_id,
                                       const gfx::Rect& initial_pos,
                                       bool user_gesture) {
   TabContents* contents = delegate_view_helper_.GetCreatedWindow(route_id);
-  if (contents) {
-    Browser* browser = GetBrowser();
-    DCHECK(browser);
-    if (!browser)
-      return;
-    browser->AddTabContents(contents, disposition, initial_pos,
-                            user_gesture);
-  }
+  if (!contents)
+    return;
+
+  Browser* browser = extension_function_dispatcher_->GetCurrentBrowser(
+      profile_->GetExtensionsService()->IsIncognitoEnabled(extension_));
+  if (!browser)
+    return;
+
+  // TODO(aa): It seems like this means popup windows don't work via
+  // window.open() from ExtensionHost?
+  browser->AddTabContents(contents, disposition, initial_pos,
+                          user_gesture);
 }
 
 void ExtensionHost::ShowCreatedWidget(int route_id,
@@ -646,40 +651,6 @@ void ExtensionHost::HandleMouseLeave() {
   if (view_.get())
     view_->HandleMouseLeave();
 #endif
-}
-
-Browser* ExtensionHost::GetBrowser(bool include_incognito) const {
-  Browser* browser = NULL;
-
-  if (view_.get())
-    browser = view_->browser();
-
-  if (!browser ||
-      (browser->profile()->IsOffTheRecord() && !include_incognito)) {
-    Profile* profile = render_view_host()->process()->profile();
-    // Make sure we don't return an incognito browser without proper access.
-    if (!include_incognito)
-      profile = profile->GetOriginalProfile();
-
-    browser = BrowserList::GetLastActiveWithProfile(profile);
-
-    // It's possible for a browser to exist, but to have never been active.
-    // This can happen if you launch the browser on a machine without an active
-    // desktop (a headless buildbot) or if you quickly give another app focus
-    // at launch time.  This is easy to do with browser_tests.
-    if (!browser)
-      browser = BrowserList::FindBrowserWithProfile(profile);
-  }
-
-  // TODO(erikkay): can this still return NULL?  Is Rafael's comment still
-  // valid here?
-  // NOTE(rafaelw): This can return NULL in some circumstances. In particular,
-  // a toolstrip or background_page onload chrome.tabs api call can make it
-  // into here before the browser is sufficiently initialized to return here.
-  // A similar situation may arise during shutdown.
-  // TODO(rafaelw): Delay creation of background_page until the browser
-  // is available. http://code.google.com/p/chromium/issues/detail?id=13284
-  return browser;
 }
 
 void ExtensionHost::SetRenderViewType(ViewType::Type type) {

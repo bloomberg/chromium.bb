@@ -41,13 +41,11 @@ class ExtensionDOMUI
                                    bool has_callback);
 
   // ExtensionFunctionDispatcher::Delegate
-  virtual Browser* GetBrowser(bool include_incognito) const;
-  virtual ExtensionDOMUI* GetExtensionDOMUI() { return this; }
-  virtual gfx::NativeWindow GetFrameNativeWindow();
-
-  virtual RenderViewHost* GetRenderViewHost();
-  virtual Profile* GetProfile();
+  virtual Browser* GetBrowser() const;
   virtual gfx::NativeView GetNativeViewOfHost();
+  virtual gfx::NativeWindow GetCustomFrameNativeWindow();
+
+  virtual Profile* GetProfile();
 
   virtual ExtensionBookmarkManagerEventRouter*
       extension_bookmark_manager_event_router() {

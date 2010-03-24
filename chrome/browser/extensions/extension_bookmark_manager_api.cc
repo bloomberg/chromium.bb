@@ -21,6 +21,7 @@
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
 
@@ -396,10 +397,18 @@ bool StartDragBookmarkManagerFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(
       GetNodesFromArguments(model, args_as_list(), &nodes));
 
-  bookmark_utils::DragBookmarks(profile(), nodes,
-      dispatcher()->GetExtensionDOMUI()->tab_contents()->GetNativeView());
+  if (dispatcher()->render_view_host()->delegate()->GetRenderViewType() ==
+      ViewType::TAB_CONTENTS) {
+    ExtensionDOMUI* dom_ui =
+        static_cast<ExtensionDOMUI*>(dispatcher()->delegate());
+    bookmark_utils::DragBookmarks(
+        profile(), nodes, dom_ui->tab_contents()->GetNativeView());
 
-  return true;
+    return true;
+  } else {
+    NOTREACHED();
+    return false;
+  }
 }
 
 bool DropBookmarkManagerFunction::RunImpl() {
@@ -432,15 +441,24 @@ bool DropBookmarkManagerFunction::RunImpl() {
   else
     drop_index = drop_parent->GetChildCount();
 
-  ExtensionBookmarkManagerEventRouter* router = dispatcher()->
-      GetExtensionDOMUI()->extension_bookmark_manager_event_router();
+  if (dispatcher()->render_view_host()->delegate()->GetRenderViewType() ==
+      ViewType::TAB_CONTENTS) {
+    ExtensionDOMUI* dom_ui =
+        static_cast<ExtensionDOMUI*>(dispatcher()->delegate());
+    ExtensionBookmarkManagerEventRouter* router =
+        dom_ui->extension_bookmark_manager_event_router();
 
-  DCHECK(router);
+    DCHECK(router);
 
-  bookmark_utils::PerformBookmarkDrop(profile(), *router->GetBookmarkDragData(),
-                                      drop_parent, drop_index);
+    bookmark_utils::PerformBookmarkDrop(profile(),
+                                        *router->GetBookmarkDragData(),
+                                        drop_parent, drop_index);
 
-  router->ClearBookmarkDragData();
-  SendResponse(true);
-  return true;
+    router->ClearBookmarkDragData();
+    SendResponse(true);
+    return true;
+  } else {
+    NOTREACHED();
+    return false;
+  }
 }

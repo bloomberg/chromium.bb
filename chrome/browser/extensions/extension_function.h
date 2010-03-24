@@ -97,8 +97,24 @@ class ExtensionFunction : public base::RefCounted<ExtensionFunction> {
       return NULL;
   }
 
-  Browser* GetBrowser() {
-    return dispatcher()->GetBrowser(include_incognito_);
+  // Gets the "current" browser, if any.
+  //
+  // Many extension APIs operate relative to the current browser, which is the
+  // browser the calling code is running inside of. For example, popups, tabs,
+  // and infobars all have a containing browser, but background pages and
+  // notification bubbles do not.
+  //
+  // If there is no containing window, the current browser defaults to the
+  // foremost one.
+  //
+  // Incognito browsers are not considered unless the calling extension has
+  // incognito access enabled.
+  //
+  // This method can return NULL if there is no matching browser, which can
+  // happen if only incognito windows are open, or early in startup or shutdown
+  // shutdown when there are no active windows.
+  Browser* GetCurrentBrowser() {
+    return dispatcher()->GetCurrentBrowser(include_incognito_);
   }
 
   // The peer to the dispatcher that will service this extension function call.

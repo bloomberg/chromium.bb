@@ -8,6 +8,7 @@
 #include "base/singleton.h"
 #include "base/values.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/extensions/execute_code_in_tab_function.h"
 #include "chrome/browser/extensions/extension_accessibility_api.h"
@@ -240,20 +241,6 @@ ExtensionFunction* FactoryRegistry::NewFunction(const std::string& name) {
 
 };  // namespace
 
-// ExtensionFunctionDispatcher::Delegate ---------------------------------------
-
-gfx::NativeWindow ExtensionFunctionDispatcher::Delegate::
-    GetFrameNativeWindow() {
-  Browser* browser = GetBrowser(true);
-  // If a browser is bound to this dispatcher, then return the widget hosting
-  // the window.  Extensions hosted in ExternalTabContainer objects may not
-  // have a running browser instance.
-  if (browser)
-    return browser->window()->GetNativeHandle();
-
-  return NULL;
-}
-
 // ExtensionFunctionDispatcher -------------------------------------------------
 
 void ExtensionFunctionDispatcher::GetAllFunctionNames(
@@ -328,16 +315,42 @@ ExtensionFunctionDispatcher::~ExtensionFunctionDispatcher() {
       Details<ExtensionFunctionDispatcher>(this));
 }
 
-Browser* ExtensionFunctionDispatcher::GetBrowser(bool include_incognito) {
-  return delegate_->GetBrowser(include_incognito);
-}
+Browser* ExtensionFunctionDispatcher::GetCurrentBrowser(
+    bool include_incognito) {
+  Browser* browser = delegate_->GetBrowser();
 
-ExtensionHost* ExtensionFunctionDispatcher::GetExtensionHost() {
-  return delegate_->GetExtensionHost();
-}
+  // If the delegate has an associated browser and that browser is in the right
+  // incognito state, we can return it.
+  if (browser) {
+    if (include_incognito || !browser->profile()->IsOffTheRecord())
+      return browser;
+  }
 
-ExtensionDOMUI* ExtensionFunctionDispatcher::GetExtensionDOMUI() {
-  return delegate_->GetExtensionDOMUI();
+  // Otherwise, try to default to a reasonable browser.
+  Profile* profile = render_view_host()->process()->profile();
+
+  // Make sure we don't return an incognito browser without proper access.
+  if (!include_incognito)
+    profile = profile->GetOriginalProfile();
+
+  browser = BrowserList::GetLastActiveWithProfile(profile);
+
+  // It's possible for a browser to exist, but to have never been active.
+  // This can happen if you launch the browser on a machine without an active
+  // desktop (a headless buildbot) or if you quickly give another app focus
+  // at launch time.  This is easy to do with browser_tests.
+  if (!browser)
+    browser = BrowserList::FindBrowserWithProfile(profile);
+
+  // TODO(erikkay): can this still return NULL?  Is Rafael's comment still
+  // valid here?
+  // NOTE(rafaelw): This can return NULL in some circumstances. In particular,
+  // a toolstrip or background_page onload chrome.tabs api call can make it
+  // into here before the browser is sufficiently initialized to return here.
+  // A similar situation may arise during shutdown.
+  // TODO(rafaelw): Delay creation of background_page until the browser
+  // is available. http://code.google.com/p/chromium/issues/detail?id=13284
+  return browser;
 }
 
 Extension* ExtensionFunctionDispatcher::GetExtension() {
@@ -397,8 +410,4 @@ void ExtensionFunctionDispatcher::HandleBadMessage(ExtensionFunction* api) {
 
 Profile* ExtensionFunctionDispatcher::profile() {
   return profile_;
-}
-
-gfx::NativeWindow ExtensionFunctionDispatcher::GetFrameNativeWindow() {
-  return delegate_ ? delegate_->GetFrameNativeWindow() : NULL;
 }

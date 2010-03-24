@@ -806,10 +806,10 @@ std::vector<ExtensionPage> ExtensionsDOMHandler::GetActivePagesForExtension(
       // because clicking the link would cause the popup to loose focus and
       // close. Instead, we display text that tells the developer to
       // right-click on popups to inspect them.
-      if ((*iter)->GetExtensionHost() &&
-          (ViewType::EXTENSION_POPUP ==
-              (*iter)->GetExtensionHost()->extension_host_type()))
+      if (ViewType::EXTENSION_POPUP ==
+          (*iter)->render_view_host()->delegate()->GetRenderViewType()) {
         continue;
+      }
 
       result.push_back(ExtensionPage((*iter)->url(),
                                      view->process()->id(),

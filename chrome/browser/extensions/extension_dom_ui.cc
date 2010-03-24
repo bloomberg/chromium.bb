@@ -96,18 +96,12 @@ void ExtensionDOMUI::ProcessDOMUIMessage(const std::string& message,
                                                 has_callback);
 }
 
-Browser* ExtensionDOMUI::GetBrowser(bool include_incognito) const {
+Browser* ExtensionDOMUI::GetBrowser() const {
   Browser* browser = NULL;
   TabContentsDelegate* tab_contents_delegate = tab_contents()->delegate();
-  if (tab_contents_delegate) {
+  if (tab_contents_delegate)
     browser = tab_contents_delegate->GetBrowser();
-    if (browser && browser->profile()->IsOffTheRecord() && !include_incognito) {
-      // Fall back to the toplevel regular browser if we don't want to include
-      // incognito browsers.
-      browser = BrowserList::GetLastActiveWithProfile(
-          browser->profile()->GetOriginalProfile());
-    }
-  }
+
   return browser;
 }
 
@@ -115,20 +109,18 @@ Profile* ExtensionDOMUI::GetProfile() {
   return DOMUI::GetProfile();
 }
 
-gfx::NativeWindow ExtensionDOMUI::GetFrameNativeWindow() {
-  gfx::NativeWindow native_window =
-      ExtensionFunctionDispatcher::Delegate::GetFrameNativeWindow();
+gfx::NativeWindow ExtensionDOMUI::GetCustomFrameNativeWindow() {
+  if (GetBrowser())
+    return NULL;
 
-  // If there was no window associated with the function dispatcher delegate,
+  // If there was no browser associated with the function dispatcher delegate,
   // then this DOMUI may be hosted in an ExternalTabContainer, and a framing
   // window will be accessible through the tab_contents.
-  if (!native_window) {
-    TabContentsDelegate* tab_contents_delegate = tab_contents()->delegate();
-    if (tab_contents_delegate)
-      native_window = tab_contents_delegate->GetFrameNativeWindow();
-  }
-
-  return native_window;
+  TabContentsDelegate* tab_contents_delegate = tab_contents()->delegate();
+  if (tab_contents_delegate)
+    return tab_contents_delegate->GetFrameNativeWindow();
+  else
+    return NULL;
 }
 
 gfx::NativeView ExtensionDOMUI::GetNativeViewOfHost() {
@@ -285,10 +277,6 @@ void ExtensionDOMUI::UnregisterChromeURLOverride(const std::string& page,
   } else {
     UnregisterAndReplaceOverride(page, profile, page_overrides, override);
   }
-}
-
-RenderViewHost* ExtensionDOMUI::GetRenderViewHost() {
-  return tab_contents() ? tab_contents()->render_view_host() : NULL;
 }
 
 // static

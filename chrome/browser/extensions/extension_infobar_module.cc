@@ -29,7 +29,7 @@ bool ShowInfoBarFunction::RunImpl() {
   Extension* extension = dispatcher()->GetExtension();
   GURL url = extension->GetResourceURL(extension->url(), html_path);
 
-  Browser* browser = dispatcher()->GetBrowser(true);
+  Browser* browser = dispatcher()->GetCurrentBrowser(true);
   if (!browser) {
     error_ = keys::kNoCurrentWindowError;
     return false;

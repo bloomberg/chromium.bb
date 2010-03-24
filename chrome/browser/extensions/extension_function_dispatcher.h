@@ -33,17 +33,20 @@ class ExtensionFunctionDispatcher {
  public:
   class Delegate {
    public:
-    // Returns the browser that this delegate is associated with. If the browser
-    // is incognito, but |include_incognito_windows| is false, we fall back to
-    // the toplevel browser in the original profile.
-    virtual Browser* GetBrowser(bool include_incognito_windows) const = 0;
+    // Returns the browser that this delegate is associated with, if any.
+    // Returns NULL otherwise.
+    virtual Browser* GetBrowser() const = 0;
 
-    // Returns the gfx::NativeWindow that contains the view hosting the
-    // environment in which the function dispatcher resides.
-    virtual gfx::NativeWindow GetFrameNativeWindow();
+    // Returns the native view for this extension view, if any. This may be NULL
+    // if the view is not visible.
+    virtual gfx::NativeView GetNativeViewOfHost() = 0;
 
-    virtual ExtensionHost* GetExtensionHost() { return NULL; }
-    virtual ExtensionDOMUI* GetExtensionDOMUI() { return NULL; }
+    // Typically, the window is assumed to be the window associated with the
+    // result of GetBrowser(). Implementations may override this behavior with
+    // this method.
+    virtual gfx::NativeWindow GetCustomFrameNativeWindow() {
+      return NULL;
+    }
 
    protected:
     virtual ~Delegate() {}
@@ -82,6 +85,8 @@ class ExtensionFunctionDispatcher {
                               const GURL& url);
   ~ExtensionFunctionDispatcher();
 
+  Delegate* delegate() { return delegate_; }
+
   // Handle a request to execute an extension function.
   void HandleRequest(const std::string& name, const Value* args,
                      int request_id, bool has_callback);
@@ -89,25 +94,13 @@ class ExtensionFunctionDispatcher {
   // Send a response to a function.
   void SendResponse(ExtensionFunction* api, bool success);
 
-  // Gets the browser extension functions should operate relative to. For
-  // example, for positioning windows, or alert boxes, or creating tabs.
-  // If |include_incognito| is false, and the appropriate browser is incognito,
-  // we will fall back to a regular browser window or NULL if unavailable.
-  Browser* GetBrowser(bool include_incognito);
-
-  // Gets the ExtensionHost associated with this object.  In the case of
-  // tab hosted extension pages, this will return NULL.
-  ExtensionHost* GetExtensionHost();
-
-  // Gets the ExtensionDOMUI associated with this object.  In the case of
-  // non-tab-hosted extension pages, this will return NULL.
-  ExtensionDOMUI* GetExtensionDOMUI();
-
-  // Returns the gfx::NativeWindow that frames the view of the extension
-  // containing the function dispatcher.  This may return NULL.  Refer to the
-  // ExtensionFunctionDispatcher::Delegate::GetFrameNativeWindow()
-  // implementation for an explanation.
-  gfx::NativeWindow GetFrameNativeWindow();
+  // Returns the current browser. Callers should generally prefer
+  // ExtensionFunction::GetCurrentBrowser() over this method, as that one
+  // provides the correct value for |include_incognito|.
+  //
+  // See the comments for ExtensionFunction::GetCurrentBrowser() for more
+  // details.
+  Browser* GetCurrentBrowser(bool include_incognito);
 
   // Gets the extension the function is being invoked by. This should not ever
   // return NULL.

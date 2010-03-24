@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_shelf_model.h"
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
 
 namespace extension_toolstrip_api_events {
 const char kOnToolstripExpanded[] = "toolstrip.onExpanded.%d";
@@ -35,26 +36,36 @@ namespace keys = extension_tabs_module_constants;
 namespace events = extension_toolstrip_api_events;
 
 bool ToolstripFunction::RunImpl() {
-  ExtensionHost* host = dispatcher()->GetExtensionHost();
-  if (!host) {
+  ViewType::Type view_type =
+      dispatcher()->render_view_host()->delegate()->GetRenderViewType();
+  if (view_type != ViewType::EXTENSION_TOOLSTRIP &&
+      view_type != ViewType::EXTENSION_MOLE) {
     error_ = kNotAToolstripError;
     return false;
   }
-  Browser* browser = GetBrowser();
+
+  Browser* browser = GetCurrentBrowser();
   if (!browser) {
     error_ = kNotAToolstripError;
     return false;
   }
+
   model_ = browser->extension_shelf_model();
   if (!model_) {
     error_ = kNotAToolstripError;
     return false;
   }
+
+  // Since this is an EXTENSION_TOOLSTRIP or EXTESION_MOLE view type, we know
+  // the delegate must be an ExtensionHost.
+  ExtensionHost* host =
+      static_cast<ExtensionHost*>(dispatcher()->delegate());
   toolstrip_ = model_->ToolstripForHost(host);
   if (toolstrip_ == model_->end()) {
     error_ = kNotAToolstripError;
     return false;
   }
+
   return true;
 }
 

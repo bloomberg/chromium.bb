@@ -28,10 +28,6 @@ class PopupShowFunction : public AsyncExtensionFunction,
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.popup.show")
 
  private:
-  // Computes the screen-space position of the frame-relative point in the
-  // extension view that is requesting to display a popup.
-  bool ConvertHostPointToScreen(gfx::Point* point);
-
   // NotificationObserver methods.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,

@@ -234,7 +234,7 @@ bool GetWindowFunction::RunImpl() {
 }
 
 bool GetCurrentWindowFunction::RunImpl() {
-  Browser* browser = GetBrowser();
+  Browser* browser = GetCurrentBrowser();
   if (!browser) {
     error_ = keys::kNoCurrentWindowError;
     return false;
@@ -312,10 +312,10 @@ bool CreateWindowFunction::RunImpl() {
   // The call offsets the bounds by kWindowTilePixels (defined in WindowSizer to
   // be 10)
   //
-  // NOTE(rafaelw): It's ok if dispatcher_->GetBrowser() returns NULL here.
+  // NOTE(rafaelw): It's ok if GetCurrentBrowser() returns NULL here.
   // GetBrowserWindowBounds will default to saved "default" values for the app.
   WindowSizer::GetBrowserWindowBounds(std::wstring(), empty_bounds,
-                                      GetBrowser(), &bounds,
+                                      GetCurrentBrowser(), &bounds,
                                       &maximized);
 
   Profile* window_profile = profile();
@@ -468,7 +468,7 @@ bool GetSelectedTabFunction::RunImpl() {
     browser = GetBrowserInProfileWithId(profile(), window_id,
                                         include_incognito(), &error_);
   } else {
-    browser = GetBrowser();
+    browser = GetCurrentBrowser();
     if (!browser)
       error_ = keys::kNoCurrentWindowError;
   }
@@ -495,7 +495,7 @@ bool GetAllTabsInWindowFunction::RunImpl() {
     browser = GetBrowserInProfileWithId(profile(), window_id,
                                         include_incognito(), &error_);
   } else {
-    browser = GetBrowser();
+    browser = GetCurrentBrowser();
     if (!browser)
       error_ = keys::kNoCurrentWindowError;
   }
@@ -520,7 +520,7 @@ bool CreateTabFunction::RunImpl() {
     browser = GetBrowserInProfileWithId(profile(), window_id,
                                         include_incognito(), &error_);
   } else {
-    browser = GetBrowser();
+    browser = GetCurrentBrowser();
     if (!browser)
       error_ = keys::kNoCurrentWindowError;
   }
@@ -792,7 +792,7 @@ bool CaptureVisibleTabFunction::RunImpl() {
     browser = GetBrowserInProfileWithId(profile(), window_id,
                                         include_incognito(), &error_);
   } else {
-    browser = GetBrowser();
+    browser = GetCurrentBrowser();
   }
 
   if (!browser) {
@@ -910,7 +910,7 @@ bool DetectTabLanguageFunction::RunImpl() {
     if (!browser || !contents)
       return false;
   } else {
-    browser = GetBrowser();
+    browser = GetCurrentBrowser();
     if (!browser)
       return false;
     contents = browser->tabstrip_model()->GetSelectedTabContents();

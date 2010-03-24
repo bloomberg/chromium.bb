@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/browser_window.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
@@ -112,10 +113,8 @@ class ExtensionPopupHost : public ExtensionPopup::Observer,
     if (router)
       router->UnregisterRenderViewHost(popup_->host()->render_view_host());
 
-    RenderViewHost* render_view_host =
-        GetRenderViewHostFromDispatcher(dispatcher_);
-    PopupEventRouter::OnPopupClosed(dispatcher_->profile(),
-                                    render_view_host->routing_id());
+    PopupEventRouter::OnPopupClosed(
+        dispatcher_->profile(), dispatcher_->render_view_host()->routing_id());
     dispatcher_ = NULL;
     Release();  // Balanced in ctor.
   }
@@ -126,9 +125,8 @@ class ExtensionPopupHost : public ExtensionPopup::Observer,
     // If no view is to be focused, then Chrome was deactivated, so hide the
     // popup.
     if (focused_now) {
-      gfx::NativeView host_view = dispatcher_->GetExtensionHost() ?
-          dispatcher_->GetExtensionHost()->GetNativeViewOfHost() :
-          dispatcher_->GetExtensionDOMUI()->GetNativeViewOfHost();
+      gfx::NativeView host_view =
+          dispatcher_->delegate()->GetNativeViewOfHost();
 
       // If the widget hosting the popup contains the newly focused view, then
       // don't dismiss the pop-up.
@@ -165,20 +163,11 @@ class ExtensionPopupHost : public ExtensionPopup::Observer,
     if (!dispatcher)
       return NULL;
 
-    RenderViewHost* render_view_host =
-      GetRenderViewHostFromDispatcher(dispatcher);
+    RenderViewHost* render_view_host = dispatcher->render_view_host();
     RenderViewHostDelegate* delegate =
         render_view_host ? render_view_host->delegate() : NULL;
 
     return delegate ? delegate->GetAutomationResourceRoutingDelegate() : NULL;
-  }
-
-  // Returns the RenderViewHost associated with |dispatcher|.
-  static RenderViewHost* GetRenderViewHostFromDispatcher(
-      ExtensionFunctionDispatcher* dispatcher) {
-    return dispatcher->GetExtensionHost() ?
-        dispatcher->GetExtensionHost()->render_view_host() :
-        dispatcher->GetExtensionDOMUI()->GetRenderViewHost();
   }
 
   // A pointer to the dispatcher that handled the request that opened this
@@ -285,24 +274,38 @@ bool PopupShowFunction::RunImpl() {
 
 #if defined(TOOLKIT_VIEWS)
   gfx::Point origin(dom_left, dom_top);
-  if (!ConvertHostPointToScreen(&origin)) {
+  if (!dispatcher()->render_view_host()->view()) {
     error_ = kNotAnExtension;
     return false;
   }
+
+  gfx::Rect content_bounds =
+      dispatcher()->render_view_host()->view()->GetViewBounds();
+  origin.Offset(content_bounds.x(), content_bounds.y());
   gfx::Rect rect(origin.x(), origin.y(), dom_width, dom_height);
 
   // Pop-up from extension views (ExtensionShelf, etc.), and drop-down when
   // in a TabContents view.
+  ViewType::Type view_type =
+      dispatcher()->render_view_host()->delegate()->GetRenderViewType();
   BubbleBorder::ArrowLocation arrow_location =
-      (NULL != dispatcher()->GetExtensionHost()) ? BubbleBorder::BOTTOM_LEFT :
-                                                   BubbleBorder::TOP_LEFT;
+      view_type == ViewType::TAB_CONTENTS ?
+          BubbleBorder::TOP_LEFT : BubbleBorder::BOTTOM_LEFT;
+
+  // Get the correct native window to pass to ExtensionPopup.
+  // ExtensionFunctionDispatcher::Delegate may provide a custom implementation
+  // of this.
+  gfx::NativeWindow window =
+      dispatcher()->delegate()->GetCustomFrameNativeWindow();
+  if (!window)
+    window = GetCurrentBrowser()->window()->GetNativeHandle();
 
   // ExtensionPopupHost manages it's own lifetime.
   ExtensionPopupHost* popup_host = new ExtensionPopupHost(dispatcher());
   popup_ = ExtensionPopup::Show(url,
-                                GetBrowser(),
+                                GetCurrentBrowser(),
                                 dispatcher()->profile(),
-                                dispatcher()->GetFrameNativeWindow(),
+                                window,
                                 rect,
                                 arrow_location,
                                 give_focus,
@@ -315,41 +318,6 @@ bool PopupShowFunction::RunImpl() {
   popup_->set_close_on_lost_focus(false);
   popup_host->set_popup(popup_);
 #endif  // defined(TOOLKIT_VIEWS)
-  return true;
-}
-
-bool PopupShowFunction::ConvertHostPointToScreen(gfx::Point* point) {
-  DCHECK(point);
-
-  // If the popup is being requested from an ExtensionHost, then compute
-  // the sreen coordinates based on the views::View object of the ExtensionHost.
-  if (dispatcher()->GetExtensionHost()) {
-    // A dispatcher cannot have both an ExtensionHost, and an ExtensionDOMUI.
-    DCHECK(!dispatcher()->GetExtensionDOMUI());
-
-#if defined(TOOLKIT_VIEWS)
-    views::View* extension_view = dispatcher()->GetExtensionHost()->view();
-    if (!extension_view)
-      return false;
-
-    views::View::ConvertPointToScreen(extension_view, point);
-#else
-    // TODO(port)
-    NOTIMPLEMENTED();
-#endif  // defined(TOOLKIT_VIEWS)
-  } else if (dispatcher()->GetExtensionDOMUI()) {
-    // Otherwise, the popup is being requested from a TabContents, so determine
-    // the screen-space position through the TabContentsView.
-    ExtensionDOMUI* dom_ui = dispatcher()->GetExtensionDOMUI();
-    TabContents* tab_contents = dom_ui->tab_contents();
-    if (!tab_contents)
-      return false;
-
-    gfx::Rect content_bounds;
-    tab_contents->GetContainerBounds(&content_bounds);
-    point->Offset(content_bounds.x(), content_bounds.y());
-  }
-
   return true;
 }
 

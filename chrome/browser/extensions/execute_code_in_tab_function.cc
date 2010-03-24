@@ -48,7 +48,7 @@ bool ExecuteCodeInTabFunction::RunImpl() {
   Value* tab_value = NULL;
   EXTENSION_FUNCTION_VALIDATE(args->Get(0, &tab_value));
   if (tab_value->IsType(Value::TYPE_NULL)) {
-    browser = GetBrowser();
+    browser = GetCurrentBrowser();
     if (!browser) {
       error_ = keys::kNoCurrentWindowError;
       return false;
