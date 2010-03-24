@@ -284,6 +284,7 @@
         '../third_party/libxml/libxml.gyp:libxml',
         '../third_party/libxslt/libxslt.gyp:libxslt',
         'chrome_frame_strings',
+        'chrome_frame_utils',
         'npchrome_frame',
         'xulrunner_sdk',
       ],
@@ -459,6 +460,7 @@
       'type': 'static_library',
       'dependencies': [
         'chrome_frame_strings',
+        'chrome_frame_utils',
         '../chrome/chrome.gyp:common',
         'xulrunner_sdk',
       ],
@@ -570,10 +572,24 @@
       ],
     },
     {
+      'target_name': 'chrome_frame_utils',
+       # The intent is that shared util code can be built into a separate lib.
+       # Currently on the resource loading code is here.
+      'type': 'static_library',
+      'dependencies': [
+        '../base/base.gyp:base_i18n',
+       ],
+      'sources': [
+        'simple_resource_loader.cc',
+        'simple_resource_loader.h',
+      ],
+    },
+    {
       'target_name': 'chrome_frame_ie',
       'type': 'static_library',
       'dependencies': [
         'chrome_frame_strings',
+        'chrome_frame_utils',
         '../chrome/chrome.gyp:common',
         '../chrome/chrome.gyp:utility',
         '../build/temp_gyp/googleurl.gyp:googleurl',
@@ -667,6 +683,7 @@
         'chrome_frame_ie',
         'chrome_frame_npapi',
         'chrome_frame_strings',
+        'chrome_frame_utils',
         'chrome_launcher',
         'xulrunner_sdk',
         '../chrome/chrome.gyp:common',

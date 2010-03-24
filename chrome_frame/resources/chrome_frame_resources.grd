@@ -20,20 +20,7 @@ for localizable strings
     <output filename="chrome_frame_resources.pak" type="data_package" />
   </outputs>
   <release seq="1">
-    <messages>
-      <message name="IDS_VERSIONMISMATCH_HEADER">
-        ChromeFrame Update.
-      </message>
-      <message name="IDS_VERSIONMISMATCH">
-        ChromeFrame has been updated. Please restart your browser. Chrome version: <ph name="TODO_0001">%ls<ex>TODO</ex></ph>, Chrome Frame version: <ph name="TODO_0002">%ls<ex>TODO</ex></ph>
-      </message>
-      <message name="IDS_VERSIONUNKNOWN">
-        Very old
-      </message>
-      <message name="IDS_CHROME_FRAME_MENU_ABOUT" desc="About Chrome Frame label">
-        About Chrome Frame...
-      </message>
-    </messages>
+    <!-- TODO(robertshield): All that's left now is to localize the dialog resource. -->
     <structures first_id="50000">
       <structure name="IDD_FIND_DIALOG" file="structured_resources.rc" type="dialog" >
       </structure>

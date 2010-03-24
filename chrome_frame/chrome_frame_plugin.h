@@ -8,7 +8,10 @@
 #include "base/ref_counted.h"
 #include "base/win_util.h"
 #include "chrome_frame/chrome_frame_automation.h"
+#include "chrome_frame/simple_resource_loader.h"
 #include "chrome_frame/utils.h"
+
+#include "grit/chromium_strings.h"
 
 #define IDC_ABOUT_CHROME_FRAME 40018
 
@@ -181,10 +184,8 @@ END_MSG_MAP()
   // Override in most-derived class if needed.
   bool PreProcessContextMenu(HMENU menu) {
     // Add an "About" item.
-    // TODO: The string should be localized and menu should
-    // be modified in ExternalTabContainer:: once we go public.
     AppendMenu(menu, MF_STRING, IDC_ABOUT_CHROME_FRAME,
-        L"About Chrome Frame...");
+               SimpleResourceLoader::Get(IDS_CHROME_FRAME_MENU_ABOUT).c_str());
     return true;
   }
 

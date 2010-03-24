@@ -142,6 +142,18 @@ be available for now. -->
         <message name="IDS_PRODUCT_FRAME_NAME" desc="The Chrome Frame application name">
           Chromium Frame
         </message>
+        <message name="IDS_VERSIONMISMATCH_HEADER">
+          Chromium Frame Update.
+        </message>
+        <message name="IDS_VERSIONMISMATCH">
+          Chromium Frame has been updated. Please restart your browser. Chrome version: <ph name="TODO_0001">%ls<ex>TODO</ex></ph>, Chromium Frame version: <ph name="TODO_0002">%ls<ex>TODO</ex></ph>
+        </message>
+        <message name="IDS_VERSIONUNKNOWN">
+          Unknown version.
+        </message>
+        <message name="IDS_CHROME_FRAME_MENU_ABOUT" desc="About Chrome Frame label">
+          About Chromium Frame...
+        </message>
       </if>
       <message name="IDS_CERT_ERROR_COMMON_NAME_INVALID_EXTRA_INFO_2" desc="2nd paragraph of extra information for an unsafe common name in an X509 certificate">
         In this case, the address listed in the certificate does not match the address of the website your browser tried to go to. One possible reason for this is that your communications are being intercepted by an attacker who is presenting a certificate for a different website, which would cause a mismatch. Another possible reason is that the server is set up to return the same certificate for multiple websites, including the one you are attempting to visit, even though that certificate is not valid for all of those websites. Chromium can say for sure that you reached &lt;strong&gt;<ph name="DOMAIN2">$1<ex>paypal.com</ex></ph>&lt;/strong&gt;, but cannot verify that that is the same site as &lt;strong&gt;<ph name="DOMAIN">$2<ex>www.paypal.com</ex></ph>&lt;/strong&gt; which you intended to reach. If you proceed, Chromium will not check for any further name mismatches. In general, it is best not to proceed past this point.

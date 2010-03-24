@@ -22,10 +22,12 @@
 #include "chrome/installer/util/chrome_frame_distribution.h"
 #include "chrome_frame/extra_system_apis.h"
 #include "chrome_frame/html_utils.h"
+#include "chrome_frame/simple_resource_loader.h"
 #include "chrome_frame/utils.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_canon.h"
-#include "grit/chrome_frame_resources.h"
+
+#include "grit/chromium_strings.h"
 
 // Note that these values are all lower case and are compared to
 // lower-case-transformed values.
@@ -285,19 +287,6 @@ HRESULT UtilGetXUACompatContentValue(const std::wstring& html_string,
   return E_FAIL;
 }
 
-std::wstring GetResourceString(int resource_id) {
-  std::wstring resource_string;
-  HMODULE this_module = reinterpret_cast<HMODULE>(&__ImageBase);
-  const ATLSTRINGRESOURCEIMAGE* image = AtlGetStringResourceImage(
-      this_module, resource_id);
-  if (image) {
-    resource_string.assign(image->achString, image->nLength);
-  } else {
-    NOTREACHED() << "Unable to find resource id " << resource_id;
-  }
-  return resource_string;
-}
-
 void DisplayVersionMismatchWarning(HWND parent,
                                    const std::string& server_version) {
   // Obtain the current module version.
@@ -307,14 +296,16 @@ void DisplayVersionMismatchWarning(HWND parent,
   std::wstring version_string(file_version_info->file_version());
   std::wstring wide_server_version;
   if (server_version.empty()) {
-    wide_server_version = GetResourceString(IDS_VERSIONUNKNOWN);
+    wide_server_version = SimpleResourceLoader::Get(IDS_VERSIONUNKNOWN);
   } else {
     wide_server_version = ASCIIToWide(server_version);
   }
-  std::wstring title = GetResourceString(IDS_VERSIONMISMATCH_HEADER);
+  std::wstring title = SimpleResourceLoader::Get(IDS_VERSIONMISMATCH_HEADER);
   std::wstring message;
-  SStringPrintf(&message, GetResourceString(IDS_VERSIONMISMATCH).c_str(),
-                wide_server_version.c_str(), version_string.c_str());
+  SStringPrintf(&message,
+                SimpleResourceLoader::Get(IDS_VERSIONMISMATCH).c_str(),
+                wide_server_version.c_str(),
+                version_string.c_str());
 
   ::MessageBox(parent, message.c_str(), title.c_str(), MB_OK);
 }
