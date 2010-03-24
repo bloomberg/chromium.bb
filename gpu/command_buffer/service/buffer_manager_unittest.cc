@@ -37,7 +37,7 @@ TEST_F(BufferManagerTest, Basic) {
   EXPECT_FALSE(info1->IsDeleted());
   EXPECT_EQ(kBuffer1Id, info1->buffer_id());
   info1->set_target(GL_ELEMENT_ARRAY_BUFFER);
-  EXPECT_EQ(GL_ELEMENT_ARRAY_BUFFER, info1->target());
+  EXPECT_EQ(static_cast<GLenum>(GL_ELEMENT_ARRAY_BUFFER), info1->target());
   // Check we and set its size.
   info1->SetSize(kBuffer1Size);
   EXPECT_EQ(kBuffer1Size, info1->size());
@@ -53,7 +53,6 @@ TEST_F(BufferManagerTest, Basic) {
 TEST_F(BufferManagerTest, SetRange) {
   const GLuint kBufferId = 1;
   const uint8 data[] = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
-  const uint8 new_data[] = {100, 120, 110};
   manager_.CreateBufferInfo(kBufferId);
   BufferManager::BufferInfo* info = manager_.GetBufferInfo(kBufferId);
   ASSERT_TRUE(info != NULL);

@@ -31,44 +31,6 @@ error::Error GLES2DecoderImpl::HandleAttachShader(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderImpl::HandleBindAttribLocation(
-    uint32 immediate_data_size, const gles2::BindAttribLocation& c) {
-  GLuint program;
-  if (!id_manager()->GetServiceId(c.program, &program)) {
-    SetGLError(GL_INVALID_VALUE);
-    return error::kNoError;
-  }
-  GLuint index = static_cast<GLuint>(c.index);
-  uint32 name_size = c.data_size;
-  const char* name = GetSharedMemoryAs<const char*>(
-      c.name_shm_id, c.name_shm_offset, name_size);
-  if (name == NULL) {
-    return error::kOutOfBounds;
-  }
-  String name_str(name, name_size);
-  glBindAttribLocation(program, index, name_str.c_str());
-  return error::kNoError;
-}
-
-error::Error GLES2DecoderImpl::HandleBindAttribLocationImmediate(
-    uint32 immediate_data_size, const gles2::BindAttribLocationImmediate& c) {
-  GLuint program;
-  if (!id_manager()->GetServiceId(c.program, &program)) {
-    SetGLError(GL_INVALID_VALUE);
-    return error::kNoError;
-  }
-  GLuint index = static_cast<GLuint>(c.index);
-  uint32 name_size = c.data_size;
-  const char* name = GetImmediateDataAs<const char*>(
-      c, name_size, immediate_data_size);
-  if (name == NULL) {
-    return error::kOutOfBounds;
-  }
-  String name_str(name, name_size);
-  glBindAttribLocation(program, index, name_str.c_str());
-  return error::kNoError;
-}
-
 error::Error GLES2DecoderImpl::HandleBindBuffer(
     uint32 immediate_data_size, const gles2::BindBuffer& c) {
   GLenum target = static_cast<GLenum>(c.target);

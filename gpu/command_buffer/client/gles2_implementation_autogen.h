@@ -17,10 +17,7 @@ void AttachShader(GLuint program, GLuint shader) {
   helper_->AttachShader(program, shader);
 }
 
-void BindAttribLocation(GLuint program, GLuint index, const char* name) {
-  // TODO(gman): This needs to change to use SendString.
-  helper_->BindAttribLocationImmediate(program, index, name);
-}
+void BindAttribLocation(GLuint program, GLuint index, const char* name);
 
 void BindBuffer(GLenum target, GLuint buffer) {
   helper_->BindBuffer(target, buffer);

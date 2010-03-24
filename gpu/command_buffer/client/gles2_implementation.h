@@ -85,6 +85,9 @@ class GLES2Implementation {
   // Sets the contents of a bucket.
   void SetBucketContents(uint32 bucket_id, const void* data, size_t size);
 
+  // Sets the contents of a bucket as a string.
+  void SetBucketAsCString(uint32 bucket_id, const char* str);
+
   // Gets the contents of a bucket as a string. Returns false if there is no
   // string available which is a separate case from the empty string.
   bool GetBucketAsString(uint32 bucket_id, std::string* str);

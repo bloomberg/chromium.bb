@@ -31,7 +31,6 @@ class TextureManagerTest : public testing::Test {
 
 TEST_F(TextureManagerTest, Basic) {
   const GLuint kTexture1Id = 1;
-  const GLsizeiptr kTexture1Size = 123;
   const GLuint kTexture2Id = 2;
   // Check we can create texture.
   manager_.CreateTextureInfo(kTexture1Id);
@@ -128,7 +127,7 @@ class TextureInfoTest : public testing::Test {
 };
 
 TEST_F(TextureInfoTest, Basic) {
-  EXPECT_EQ(0, info_->target());
+  EXPECT_EQ(0u, info_->target());
   EXPECT_FALSE(info_->texture_complete());
   EXPECT_FALSE(info_->cube_complete());
   EXPECT_FALSE(info_->CanGenerateMipmaps());
@@ -138,7 +137,7 @@ TEST_F(TextureInfoTest, Basic) {
 
 TEST_F(TextureInfoTest, POT2D) {
   manager_.SetInfoTarget(info_, GL_TEXTURE_2D);
-  EXPECT_EQ(GL_TEXTURE_2D, info_->target());
+  EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_2D), info_->target());
   // Check Setting level 0 to POT
   info_->SetLevelInfo(
       GL_TEXTURE_2D, 0, GL_RGBA, 4, 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE);
@@ -175,7 +174,7 @@ TEST_F(TextureInfoTest, POT2D) {
 
 TEST_F(TextureInfoTest, NPOT2D) {
   manager_.SetInfoTarget(info_, GL_TEXTURE_2D);
-  EXPECT_EQ(GL_TEXTURE_2D, info_->target());
+  EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_2D), info_->target());
   // Check Setting level 0 to NPOT
   info_->SetLevelInfo(
       GL_TEXTURE_2D, 0, GL_RGBA, 4, 5, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE);
@@ -199,7 +198,7 @@ TEST_F(TextureInfoTest, NPOT2D) {
 
 TEST_F(TextureInfoTest, POTCubeMap) {
   manager_.SetInfoTarget(info_, GL_TEXTURE_CUBE_MAP);
-  EXPECT_EQ(GL_TEXTURE_CUBE_MAP, info_->target());
+  EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_CUBE_MAP), info_->target());
   // Check Setting level 0 each face to POT
   info_->SetLevelInfo(
       GL_TEXTURE_CUBE_MAP_POSITIVE_X,

@@ -19,6 +19,8 @@ TEST(GLES2CommandIdTest, CommandIdsMatch) {
                  GLES2_BindAttribLocation_kCmdId_mismatch);
   COMPILE_ASSERT(BindAttribLocationImmediate::kCmdId == 259,
                  GLES2_BindAttribLocationImmediate_kCmdId_mismatch);
+  COMPILE_ASSERT(BindAttribLocationBucket::kCmdId == 432,
+                 GLES2_BindAttribLocationBucket_kCmdId_mismatch);
   COMPILE_ASSERT(BindBuffer::kCmdId == 260,
                  GLES2_BindBuffer_kCmdId_mismatch);
   COMPILE_ASSERT(BindFramebuffer::kCmdId == 261,
@@ -155,6 +157,8 @@ TEST(GLES2CommandIdTest, CommandIdsMatch) {
                  GLES2_GetAttribLocation_kCmdId_mismatch);
   COMPILE_ASSERT(GetAttribLocationImmediate::kCmdId == 327,
                  GLES2_GetAttribLocationImmediate_kCmdId_mismatch);
+  COMPILE_ASSERT(GetAttribLocationBucket::kCmdId == 434,
+                 GLES2_GetAttribLocationBucket_kCmdId_mismatch);
   COMPILE_ASSERT(GetBooleanv::kCmdId == 328,
                  GLES2_GetBooleanv_kCmdId_mismatch);
   COMPILE_ASSERT(GetBufferParameteriv::kCmdId == 329,
@@ -195,6 +199,8 @@ TEST(GLES2CommandIdTest, CommandIdsMatch) {
                  GLES2_GetUniformLocation_kCmdId_mismatch);
   COMPILE_ASSERT(GetUniformLocationImmediate::kCmdId == 347,
                  GLES2_GetUniformLocationImmediate_kCmdId_mismatch);
+  COMPILE_ASSERT(GetUniformLocationBucket::kCmdId == 433,
+                 GLES2_GetUniformLocationBucket_kCmdId_mismatch);
   COMPILE_ASSERT(GetVertexAttribfv::kCmdId == 348,
                  GLES2_GetVertexAttribfv_kCmdId_mismatch);
   COMPILE_ASSERT(GetVertexAttribiv::kCmdId == 349,
@@ -237,6 +243,8 @@ TEST(GLES2CommandIdTest, CommandIdsMatch) {
                  GLES2_ShaderSource_kCmdId_mismatch);
   COMPILE_ASSERT(ShaderSourceImmediate::kCmdId == 368,
                  GLES2_ShaderSourceImmediate_kCmdId_mismatch);
+  COMPILE_ASSERT(ShaderSourceBucket::kCmdId == 435,
+                 GLES2_ShaderSourceBucket_kCmdId_mismatch);
   COMPILE_ASSERT(StencilFunc::kCmdId == 369,
                  GLES2_StencilFunc_kCmdId_mismatch);
   COMPILE_ASSERT(StencilFuncSeparate::kCmdId == 370,

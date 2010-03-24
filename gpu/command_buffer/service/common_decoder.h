@@ -75,6 +75,11 @@ class CommonDecoder : public AsyncAPIInterface {
     // distinguish between empty string and no string.
     void SetFromString(const std::string& str);
 
+    // Gets the bucket data as a string. Strings are passed NULL terminated to
+    // distrinquish between empty string and no string. Returns False if there
+    // is no string.
+    bool GetAsString(std::string* str);
+
    private:
     bool OffsetSizeValid(size_t offset, size_t size) const {
       size_t temp = offset + size;

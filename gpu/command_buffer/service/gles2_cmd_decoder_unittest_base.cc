@@ -140,6 +140,8 @@ void GLES2DecoderTestBase::SetUp() {
 }
 
 void GLES2DecoderTestBase::TearDown() {
+  // All Tests should have read all their GLErrors before getting here.
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
   decoder_->Destroy();
   decoder_.reset();
   engine_.reset();
@@ -155,6 +157,21 @@ GLint GLES2DecoderTestBase::GetGLError() {
   cmd.Init(shared_memory_id_, shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   return static_cast<GLint>(*GetSharedMemoryAs<GLenum*>());
+}
+
+void GLES2DecoderTestBase::SetBucketAsCString(
+    uint32 bucket_id, const char* str) {
+  uint32 size = str ? (strlen(str) + 1) : 0;
+  cmd::SetBucketSize cmd1;
+  cmd1.Init(bucket_id, size);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd1));
+  if (str) {
+    memcpy(shared_memory_address_, str, size);
+    cmd::SetBucketData cmd2;
+    cmd2.Init(bucket_id, 0, size, kSharedMemoryId, kSharedMemoryOffset);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd2));
+    ClearSharedMemory();
+  }
 }
 
 void GLES2DecoderTestBase::DoBindFramebuffer(

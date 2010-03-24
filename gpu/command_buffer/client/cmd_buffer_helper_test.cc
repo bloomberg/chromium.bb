@@ -199,7 +199,7 @@ TEST_F(CommandBufferHelperTest, TestCommandWrapping) {
 // the command buffer.
 TEST_F(CommandBufferHelperTest, TestCommandWrappingExactMultiple) {
   const int32 kCommandSize = 5;
-  const int32 kNumArgs = kCommandSize - 1;
+  const size_t kNumArgs = kCommandSize - 1;
   COMPILE_ASSERT(kNumCommandEntries % kCommandSize == 0,
                  Not_multiple_of_num_command_entries);
   CommandBufferEntry args1[kNumArgs];

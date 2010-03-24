@@ -416,6 +416,14 @@ class GLES2DecoderImpl : public GLES2Decoder {
   // with deleted buffers.
   void RemoveBufferInfo(GLuint buffer_id);
 
+  error::Error GetAttribLocationHelper(
+    GLuint client_id, uint32 location_shm_id, uint32 location_shm_offset,
+    const std::string& name_str);
+
+  error::Error GetUniformLocationHelper(
+    GLuint client_id, uint32 location_shm_id, uint32 location_shm_offset,
+    const std::string& name_str);
+
   // Helper for glShaderSource.
   error::Error ShaderSourceHelper(
       GLuint shader, const char* data, uint32 data_size);
@@ -1439,6 +1447,62 @@ void GLES2DecoderImpl::DoGenerateMipmap(GLenum target) {
   glGenerateMipmapEXT(target);
 }
 
+error::Error GLES2DecoderImpl::HandleBindAttribLocation(
+    uint32 immediate_data_size, const gles2::BindAttribLocation& c) {
+  GLuint program;
+  if (!id_manager()->GetServiceId(c.program, &program)) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
+  GLuint index = static_cast<GLuint>(c.index);
+  uint32 name_size = c.data_size;
+  const char* name = GetSharedMemoryAs<const char*>(
+      c.name_shm_id, c.name_shm_offset, name_size);
+  if (name == NULL) {
+    return error::kOutOfBounds;
+  }
+  String name_str(name, name_size);
+  glBindAttribLocation(program, index, name_str.c_str());
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleBindAttribLocationImmediate(
+    uint32 immediate_data_size, const gles2::BindAttribLocationImmediate& c) {
+  GLuint program;
+  if (!id_manager()->GetServiceId(c.program, &program)) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
+  GLuint index = static_cast<GLuint>(c.index);
+  uint32 name_size = c.data_size;
+  const char* name = GetImmediateDataAs<const char*>(
+      c, name_size, immediate_data_size);
+  if (name == NULL) {
+    return error::kOutOfBounds;
+  }
+  String name_str(name, name_size);
+  glBindAttribLocation(program, index, name_str.c_str());
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleBindAttribLocationBucket(
+    uint32 immediate_data_size, const gles2::BindAttribLocationBucket& c) {
+  GLuint program;
+  if (!id_manager()->GetServiceId(c.program, &program)) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
+  GLuint index = static_cast<GLuint>(c.index);
+  Bucket* bucket = GetBucket(c.name_bucket_id);
+  if (!bucket || bucket->size() == 0) {
+    return error::kInvalidArguments;
+  }
+  std::string name_str;
+  bucket->GetAsString(&name_str);
+  glBindAttribLocation(program, index, name_str.c_str());
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleDeleteShader(
     uint32 immediate_data_size, const gles2::DeleteShader& c) {
   GLuint shader = c.shader;
@@ -1877,6 +1941,22 @@ error::Error GLES2DecoderImpl::HandleShaderSourceImmediate(
   return ShaderSourceHelper(shader, data, data_size);
 }
 
+error::Error GLES2DecoderImpl::HandleShaderSourceBucket(
+  uint32 immediate_data_size, const gles2::ShaderSourceBucket& c) {
+  GLuint shader;
+  if (!id_manager()->GetServiceId(c.shader, &shader)) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
+  Bucket* bucket = GetBucket(c.data_bucket_id);
+  if (!bucket || bucket->size() == 0) {
+    return error::kInvalidArguments;
+  }
+  return ShaderSourceHelper(
+      shader, bucket->GetDataAs<const char*>(0, bucket->size() - 1),
+      bucket->size() - 1);
+}
+
 void GLES2DecoderImpl::DoCompileShader(GLuint shader) {
   ShaderManager::ShaderInfo* info = GetShaderInfo(shader);
   if (!info) {
@@ -2168,10 +2248,11 @@ error::Error GLES2DecoderImpl::HandlePixelStorei(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderImpl::HandleGetAttribLocation(
-    uint32 immediate_data_size, const gles2::GetAttribLocation& c) {
+error::Error GLES2DecoderImpl::GetAttribLocationHelper(
+    GLuint client_id, uint32 location_shm_id, uint32 location_shm_offset,
+    const std::string& name_str) {
   GLuint program;
-  if (!id_manager()->GetServiceId(c.program, &program)) {
+  if (!id_manager()->GetServiceId(client_id, &program)) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
@@ -2181,23 +2262,63 @@ error::Error GLES2DecoderImpl::HandleGetAttribLocation(
     SetGLError(GL_INVALID_OPERATION);
     return error::kNoError;
   }
-  uint32 name_size = c.data_size;
-  const char* name = GetSharedMemoryAs<const char*>(
-      c.name_shm_id, c.name_shm_offset, name_size);
   GLint* location = GetSharedMemoryAs<GLint*>(
-      c.location_shm_id, c.location_shm_offset, sizeof(GLint));
-  if (!location || !name) {
+      location_shm_id, location_shm_offset, sizeof(GLint));
+  if (!location) {
     return error::kOutOfBounds;
   }
-  String name_str(name, name_size);
+  // Require the client to init this incase the context is lost and we are no
+  // longer executing commands.
+  if (*location != -1) {
+    return error::kGenericError;
+  }
   *location = info->GetAttribLocation(name_str);
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleGetAttribLocation(
+    uint32 immediate_data_size, const gles2::GetAttribLocation& c) {
+  uint32 name_size = c.data_size;
+  const char* name = GetSharedMemoryAs<const char*>(
+      c.name_shm_id, c.name_shm_offset, name_size);
+  if (!name) {
+    return error::kOutOfBounds;
+  }
+  String name_str(name, name_size);
+  return GetAttribLocationHelper(
+    c.program, c.location_shm_id, c.location_shm_offset, name_str);
+}
+
 error::Error GLES2DecoderImpl::HandleGetAttribLocationImmediate(
     uint32 immediate_data_size, const gles2::GetAttribLocationImmediate& c) {
+  uint32 name_size = c.data_size;
+  const char* name = GetImmediateDataAs<const char*>(
+      c, name_size, immediate_data_size);
+  if (!name) {
+    return error::kOutOfBounds;
+  }
+  String name_str(name, name_size);
+  return GetAttribLocationHelper(
+    c.program, c.location_shm_id, c.location_shm_offset, name_str);
+}
+
+error::Error GLES2DecoderImpl::HandleGetAttribLocationBucket(
+    uint32 immediate_data_size, const gles2::GetAttribLocationBucket& c) {
+  Bucket* bucket = GetBucket(c.name_bucket_id);
+  if (!bucket) {
+    return error::kInvalidArguments;
+  }
+  std::string name_str;
+  bucket->GetAsString(&name_str);
+  return GetAttribLocationHelper(
+    c.program, c.location_shm_id, c.location_shm_offset, name_str);
+}
+
+error::Error GLES2DecoderImpl::GetUniformLocationHelper(
+    GLuint client_id, uint32 location_shm_id, uint32 location_shm_offset,
+    const std::string& name_str) {
   GLuint program;
-  if (!id_manager()->GetServiceId(c.program, &program)) {
+  if (!id_manager()->GetServiceId(client_id, &program)) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
@@ -2207,69 +2328,56 @@ error::Error GLES2DecoderImpl::HandleGetAttribLocationImmediate(
     SetGLError(GL_INVALID_OPERATION);
     return error::kNoError;
   }
-  uint32 name_size = c.data_size;
-  const char* name = GetImmediateDataAs<const char*>(
-      c, name_size, immediate_data_size);
   GLint* location = GetSharedMemoryAs<GLint*>(
-      c.location_shm_id, c.location_shm_offset, sizeof(GLint));
-  if (!location || !name) {
+      location_shm_id, location_shm_offset, sizeof(GLint));
+  if (!location) {
     return error::kOutOfBounds;
   }
-  String name_str(name, name_size);
-  *location = info->GetAttribLocation(name_str);
+  // Require the client to init this incase the context is lost an we are no
+  // longer executing commands.
+  if (*location != -1) {
+    return error::kGenericError;
+  }
+  *location = info->GetUniformLocation(name_str);
   return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleGetUniformLocation(
     uint32 immediate_data_size, const gles2::GetUniformLocation& c) {
-  GLuint program;
-  if (!id_manager()->GetServiceId(c.program, &program)) {
-    SetGLError(GL_INVALID_VALUE);
-    return error::kNoError;
-  }
-  ProgramManager::ProgramInfo* info = GetProgramInfo(program);
-  if (!info) {
-    // Program was not linked successfully. (ie, glLinkProgram)
-    SetGLError(GL_INVALID_OPERATION);
-    return error::kNoError;
-  }
   uint32 name_size = c.data_size;
   const char* name = GetSharedMemoryAs<const char*>(
       c.name_shm_id, c.name_shm_offset, name_size);
-  GLint* location = GetSharedMemoryAs<GLint*>(
-      c.location_shm_id, c.location_shm_offset, sizeof(GLint));
-  if (!location || !name) {
+  if (!name) {
     return error::kOutOfBounds;
   }
   String name_str(name, name_size);
-  *location = info->GetUniformLocation(name_str);
-  return error::kNoError;
+  return GetUniformLocationHelper(
+    c.program, c.location_shm_id, c.location_shm_offset, name_str);
 }
 
 error::Error GLES2DecoderImpl::HandleGetUniformLocationImmediate(
     uint32 immediate_data_size, const gles2::GetUniformLocationImmediate& c) {
-  GLuint program;
-  if (!id_manager()->GetServiceId(c.program, &program)) {
-    SetGLError(GL_INVALID_VALUE);
-    return error::kNoError;
-  }
-  ProgramManager::ProgramInfo* info = GetProgramInfo(program);
-  if (!info) {
-    // Program was not linked successfully. (ie, glLinkProgram)
-    SetGLError(GL_INVALID_OPERATION);
-    return error::kNoError;
-  }
   uint32 name_size = c.data_size;
   const char* name = GetImmediateDataAs<const char*>(
       c, name_size, immediate_data_size);
-  GLint* location = GetSharedMemoryAs<GLint*>(
-      c.location_shm_id, c.location_shm_offset, sizeof(GLint));
-  if (!location || !name) {
+  if (!name) {
     return error::kOutOfBounds;
   }
   String name_str(name, name_size);
-  *location = info->GetUniformLocation(name_str);
-  return error::kNoError;
+  return GetUniformLocationHelper(
+    c.program, c.location_shm_id, c.location_shm_offset, name_str);
+}
+
+error::Error GLES2DecoderImpl::HandleGetUniformLocationBucket(
+    uint32 immediate_data_size, const gles2::GetUniformLocationBucket& c) {
+  Bucket* bucket = GetBucket(c.name_bucket_id);
+  if (!bucket) {
+    return error::kInvalidArguments;
+  }
+  std::string name_str;
+  bucket->GetAsString(&name_str);
+  return GetUniformLocationHelper(
+    c.program, c.location_shm_id, c.location_shm_offset, name_str);
 }
 
 error::Error GLES2DecoderImpl::HandleGetString(

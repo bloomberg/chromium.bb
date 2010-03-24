@@ -84,6 +84,24 @@ TEST(GLES2FormatTest, BindAttribLocationImmediate) {
   EXPECT_EQ(static_cast<uint32>(strlen(test_str)), cmd.data_size);
   EXPECT_EQ(0, memcmp(test_str, ImmediateDataAddress(&cmd), strlen(test_str)));
 }
+
+TEST(GLES2FormatTest, BindAttribLocationBucket) {
+  BindAttribLocationBucket cmd = { { 0 } };
+  void* next_cmd = cmd.Set(
+      &cmd,
+      static_cast<GLuint>(11),
+      static_cast<GLuint>(12),
+      static_cast<uint32>(13));
+  EXPECT_EQ(static_cast<uint32>(BindAttribLocationBucket::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<char*>(next_cmd),
+            reinterpret_cast<char*>(&cmd) + sizeof(cmd));
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.program);
+  EXPECT_EQ(static_cast<GLuint>(12), cmd.index);
+  EXPECT_EQ(static_cast<uint32>(13), cmd.name_bucket_id);
+}
+
 TEST(GLES2FormatTest, BindBuffer) {
   BindBuffer cmd = { { 0 } };
   void* next_cmd = cmd.Set(
@@ -1158,6 +1176,7 @@ TEST(GLES2FormatTest, GetAttachedShaders) {
 
 // TODO(gman): Write test for GetAttribLocation
 // TODO(gman): Write test for GetAttribLocationImmediate
+// TODO(gman): Write test for GetAttribLocationBucket
 TEST(GLES2FormatTest, GetBooleanv) {
   GetBooleanv cmd = { { 0 } };
   void* next_cmd = cmd.Set(
@@ -1478,6 +1497,7 @@ TEST(GLES2FormatTest, GetUniformiv) {
 
 // TODO(gman): Write test for GetUniformLocation
 // TODO(gman): Write test for GetUniformLocationImmediate
+// TODO(gman): Write test for GetUniformLocationBucket
 TEST(GLES2FormatTest, GetVertexAttribfv) {
   GetVertexAttribfv cmd = { { 0 } };
   void* next_cmd = cmd.Set(
@@ -1829,6 +1849,21 @@ TEST(GLES2FormatTest, ShaderSource) {
 }
 
 // TODO(gman): Implement test for ShaderSourceImmediate
+TEST(GLES2FormatTest, ShaderSourceBucket) {
+  ShaderSourceBucket cmd = { { 0 } };
+  void* next_cmd = cmd.Set(
+      &cmd,
+      static_cast<GLuint>(11),
+      static_cast<uint32>(12));
+  EXPECT_EQ(static_cast<uint32>(ShaderSourceBucket::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<char*>(next_cmd),
+            reinterpret_cast<char*>(&cmd) + sizeof(cmd));
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.shader);
+  EXPECT_EQ(static_cast<uint32>(12), cmd.data_bucket_id);
+}
+
 TEST(GLES2FormatTest, StencilFunc) {
   StencilFunc cmd = { { 0 } };
   void* next_cmd = cmd.Set(

@@ -42,8 +42,8 @@ TEST_F(IdManagerTest, Basic) {
   client_id = 0;
   EXPECT_FALSE(manager_.GetServiceId(kClientId2, &service_id));
   EXPECT_FALSE(manager_.GetClientId(kServiceId2, &client_id));
-  EXPECT_EQ(0, service_id);
-  EXPECT_EQ(0, client_id);
+  EXPECT_EQ(0u, service_id);
+  EXPECT_EQ(0u, client_id);
   // Check we can add a second id.
   EXPECT_TRUE(manager_.AddMapping(kClientId2, kServiceId2));
   // Check we can get that mapping

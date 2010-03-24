@@ -39,7 +39,6 @@ class ProgramManagerTest : public testing::Test {
 
 TEST_F(ProgramManagerTest, Basic) {
   const GLuint kProgram1Id = 1;
-  const GLsizeiptr kProgram1Size = 123;
   const GLuint kProgram2Id = 2;
   // Check we can create program.
   manager_.CreateProgramInfo(kProgram1Id);

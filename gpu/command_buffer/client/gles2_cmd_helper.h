@@ -46,6 +46,14 @@ class GLES2CmdHelper : public CommandBufferHelper {
     c.Init(program, name, location_shm_id, location_shm_offset);
   }
 
+  void GetAttribLocationBucket(
+      GLuint program, uint32 name_bucket_id,
+      uint32 location_shm_id, uint32 location_shm_offset) {
+    gles2::GetAttribLocationBucket& c =
+        GetCmdSpace<gles2::GetAttribLocationBucket>();
+    c.Init(program, name_bucket_id, location_shm_id, location_shm_offset);
+  }
+
   void GetUniformLocation(
       GLuint program, uint32 name_shm_id, uint32 name_shm_offset,
       uint32 location_shm_id, uint32 location_shm_offset, uint32 data_size) {
@@ -64,6 +72,13 @@ class GLES2CmdHelper : public CommandBufferHelper {
     c.Init(program, name, location_shm_id, location_shm_offset);
   }
 
+  void GetUniformLocationBucket(
+      GLuint program, uint32 name_bucket_id,
+      uint32 location_shm_id, uint32 location_shm_offset) {
+    gles2::GetUniformLocationBucket& c =
+        GetCmdSpace<gles2::GetUniformLocationBucket>();
+    c.Init(program, name_bucket_id, location_shm_id, location_shm_offset);
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GLES2CmdHelper);

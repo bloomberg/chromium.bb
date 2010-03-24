@@ -39,6 +39,15 @@ void CommonDecoder::Bucket::SetFromString(const std::string& str) {
   SetData(str.c_str(), 0, str.size() + 1);
 }
 
+bool CommonDecoder::Bucket::GetAsString(std::string* str) {
+  DCHECK(str);
+  if (size_ == 0) {
+    return false;
+  }
+  str->assign(GetDataAs<const char*>(0, size_ - 1), size_ - 1);
+  return true;
+}
+
 void* CommonDecoder::GetAddressAndCheckSize(unsigned int shm_id,
                                             unsigned int offset,
                                             unsigned int size) {

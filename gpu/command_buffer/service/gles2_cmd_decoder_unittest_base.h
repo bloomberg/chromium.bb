@@ -123,6 +123,8 @@ class GLES2DecoderTestBase : public testing::Test {
     return decoder_->GetServiceIdForTesting(client_id);
   }
 
+  void SetBucketAsCString(uint32 bucket_id, const char* str);
+
   // Note that the error is returned as GLint instead of GLenum.
   // This is because there is a mismatch in the types of GLenum and
   // the error values GL_NO_ERROR, GL_INVALID_ENUM, etc. GLenum is
@@ -140,7 +142,7 @@ class GLES2DecoderTestBase : public testing::Test {
                     uint32 shared_memory_id, uint32 shared_memory_offset);
 
   // Use StrictMock to make 100% sure we know how GL will be called.
-  scoped_ptr<::testing::StrictMock<::gles2::MockGLInterface> > gl_;
+  scoped_ptr< ::testing::StrictMock< ::gles2::MockGLInterface> > gl_;
   scoped_ptr<GLES2Decoder> decoder_;
 
   GLuint client_buffer_id_;
@@ -200,7 +202,7 @@ class GLES2DecoderTestBase : public testing::Test {
     Buffer invalid_buffer_;
   };
 
-  scoped_ptr<::testing::StrictMock<MockCommandBufferEngine> > engine_;
+  scoped_ptr< ::testing::StrictMock<MockCommandBufferEngine> > engine_;
   ContextGroup group_;
 };
 

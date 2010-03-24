@@ -144,6 +144,17 @@ void GLES2Implementation::SetBucketContents(
   }
 }
 
+void GLES2Implementation::SetBucketAsCString(
+    uint32 bucket_id, const char* str) {
+  // NOTE: strings are passed NULL terminated. That means the empty
+  // string will have a size of 1 and no-string will have a size of 0
+  if (str) {
+    SetBucketContents(bucket_id, str, strlen(str) + 1);
+  } else {
+    helper_->SetBucketSize(bucket_id, 0);
+  }
+}
+
 bool GLES2Implementation::GetBucketAsString(
     uint32 bucket_id, std::string* str) {
   DCHECK(str);
@@ -192,6 +203,13 @@ void GLES2Implementation::SwapBuffers() {
   Flush();
 }
 
+void GLES2Implementation::BindAttribLocation(
+  GLuint program, GLuint index, const char* name) {
+  SetBucketAsString(kResultBucketId, name);
+  helper_->BindAttribLocationBucket(program, index, kResultBucketId);
+  helper_->SetBucketSize(kResultBucketId, 0);
+}
+
 void GLES2Implementation::GetVertexAttribPointerv(
     GLuint index, GLenum pname, void** ptr) {
   helper_->GetVertexAttribPointerv(
@@ -203,23 +221,27 @@ void GLES2Implementation::GetVertexAttribPointerv(
 
 GLint GLES2Implementation::GetAttribLocation(
     GLuint program, const char* name) {
-  typedef cmd::GetBucketSize::Result Result;
+  typedef GetAttribLocationBucket::Result Result;
   Result* result = GetResultAs<Result*>();
   *result = -1;
-  helper_->GetAttribLocationImmediate(
-      program, name, result_shm_id(), result_shm_offset());
+  SetBucketAsCString(kResultBucketId, name);
+  helper_->GetAttribLocationBucket(program, kResultBucketId,
+                                   result_shm_id(), result_shm_offset());
   WaitForCmd();
+  helper_->SetBucketSize(kResultBucketId, 0);
   return *result;
 }
 
 GLint GLES2Implementation::GetUniformLocation(
     GLuint program, const char* name) {
-  typedef cmd::GetBucketSize::Result Result;
+  typedef GetUniformLocationBucket::Result Result;
   Result* result = GetResultAs<Result*>();
   *result = -1;
-  helper_->GetUniformLocationImmediate(
-      program, name, result_shm_id(), result_shm_offset());
+  SetBucketAsCString(kResultBucketId, name);
+  helper_->GetUniformLocationBucket(program, kResultBucketId,
+                                    result_shm_id(), result_shm_offset());
   WaitForCmd();
+  helper_->SetBucketSize(kResultBucketId, 0);
   return *result;
 }
 
@@ -251,29 +273,38 @@ void GLES2Implementation::ShaderSource(
     SetGLError(GL_INVALID_VALUE);
     return;
   }
-  // TODO(gman): change to use buckets and check that there is enough room.
 
   // Compute the total size.
-  uint32 total_size = 0;
+  uint32 total_size = 1;
   for (GLsizei ii = 0; ii < count; ++ii) {
     total_size += length ? length[ii] : strlen(source[ii]);
   }
 
-  // Concatenate all the strings in to the transfer buffer.
-  char* strings = transfer_buffer_.AllocTyped<char>(total_size);
+  // Concatenate all the strings in to a bucket on the service.
+  helper_->SetBucketSize(kResultBucketId, total_size);
+  uint32 max_size = transfer_buffer_.GetLargestFreeOrPendingSize();
   uint32 offset = 0;
-  for (GLsizei ii = 0; ii < count; ++ii) {
-    uint32 len = length ? length[ii] : strlen(source[ii]);
-    memcpy(strings + offset, source[ii], len);
-    offset += len;
+  for (GLsizei ii = 0; ii <= count; ++ii) {
+    const char* src = ii < count ? source[ii] : "";
+    uint32 size = ii < count ? (length ? length[ii] : strlen(src)) : 1;
+    while(size) {
+      uint32 part_size = std::min(size, max_size);
+      void* buffer = transfer_buffer_.Alloc(part_size);
+      memcpy(buffer, src, part_size);
+      helper_->SetBucketData(kResultBucketId, offset, part_size,
+                             transfer_buffer_id_,
+                             transfer_buffer_.GetOffset(buffer));
+      transfer_buffer_.FreePendingToken(buffer, helper_->InsertToken());
+      offset += part_size;
+      src += part_size;
+      size -= part_size;
+    }
   }
+
   DCHECK_EQ(total_size, offset);
 
-  helper_->ShaderSource(shader,
-                        transfer_buffer_id_,
-                        transfer_buffer_.GetOffset(strings),
-                        total_size);
-  transfer_buffer_.FreePendingToken(strings, helper_->InsertToken());
+  helper_->ShaderSourceBucket(shader, kResultBucketId);
+  helper_->SetBucketSize(kResultBucketId, 0);
 }
 
 void GLES2Implementation::BufferData(

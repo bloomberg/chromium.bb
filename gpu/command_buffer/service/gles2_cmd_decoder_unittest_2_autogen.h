@@ -16,6 +16,8 @@
 
 // TODO(gman): GetUniformLocationImmediate
 
+// TODO(gman): GetUniformLocationBucket
+
 
 TEST_F(GLES2DecoderTest2, GetVertexAttribfvValidArgs) {
   EXPECT_CALL(*gl_, GetError())
@@ -50,7 +52,7 @@ TEST_F(GLES2DecoderTest2, GetVertexAttribfvInvalidArgs2_0) {
   cmd.Init(
       1, GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING, kInvalidSharedMemoryId, 0);
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
-  EXPECT_EQ(0, result->size);
+  EXPECT_EQ(0u, result->size);
 }
 
 TEST_F(GLES2DecoderTest2, GetVertexAttribfvInvalidArgs2_1) {
@@ -64,7 +66,7 @@ TEST_F(GLES2DecoderTest2, GetVertexAttribfvInvalidArgs2_1) {
       1, GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING, shared_memory_id_,
       kInvalidSharedMemoryOffset);
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
-  EXPECT_EQ(0, result->size);
+  EXPECT_EQ(0u, result->size);
 }
 
 TEST_F(GLES2DecoderTest2, GetVertexAttribivValidArgs) {
@@ -100,7 +102,7 @@ TEST_F(GLES2DecoderTest2, GetVertexAttribivInvalidArgs2_0) {
   cmd.Init(
       1, GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING, kInvalidSharedMemoryId, 0);
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
-  EXPECT_EQ(0, result->size);
+  EXPECT_EQ(0u, result->size);
 }
 
 TEST_F(GLES2DecoderTest2, GetVertexAttribivInvalidArgs2_1) {
@@ -114,7 +116,7 @@ TEST_F(GLES2DecoderTest2, GetVertexAttribivInvalidArgs2_1) {
       1, GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING, shared_memory_id_,
       kInvalidSharedMemoryOffset);
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
-  EXPECT_EQ(0, result->size);
+  EXPECT_EQ(0u, result->size);
 }
 // TODO(gman): GetVertexAttribPointerv
 
@@ -398,6 +400,7 @@ TEST_F(GLES2DecoderTest2, ScissorInvalidArgs3_0) {
 
 // TODO(gman): ShaderSourceImmediate
 
+// TODO(gman): ShaderSourceBucket
 
 TEST_F(GLES2DecoderTest2, StencilFuncValidArgs) {
   EXPECT_CALL(*gl_, StencilFunc(GL_NEVER, 2, 3));

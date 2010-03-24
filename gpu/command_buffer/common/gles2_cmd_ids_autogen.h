@@ -184,6 +184,10 @@
   OP(VertexAttribPointer)                                      /* 429 */ \
   OP(Viewport)                                                 /* 430 */ \
   OP(SwapBuffers)                                              /* 431 */ \
+  OP(BindAttribLocationBucket)                                 /* 432 */ \
+  OP(GetUniformLocationBucket)                                 /* 433 */ \
+  OP(GetAttribLocationBucket)                                  /* 434 */ \
+  OP(ShaderSourceBucket)                                       /* 435 */ \
 
 enum CommandId {
   kStartPoint = cmd::kLastCommonId,  // All GLES2 commands start after this.

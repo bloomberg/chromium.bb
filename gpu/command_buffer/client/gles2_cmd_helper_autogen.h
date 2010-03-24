@@ -32,6 +32,13 @@
     c.Init(program, index, name, data_size);
   }
 
+  void BindAttribLocationBucket(
+      GLuint program, GLuint index, uint32 name_bucket_id) {
+    gles2::BindAttribLocationBucket& c =
+        GetCmdSpace<gles2::BindAttribLocationBucket>();
+    c.Init(program, index, name_bucket_id);
+  }
+
   void BindBuffer(GLenum target, GLuint buffer) {
     gles2::BindBuffer& c = GetCmdSpace<gles2::BindBuffer>();
     c.Init(target, buffer);
@@ -689,6 +696,11 @@
     gles2::ShaderSourceImmediate& c =
         GetImmediateCmdSpaceTotalSize<gles2::ShaderSourceImmediate>(s);
     c.Init(shader, data_size);
+  }
+
+  void ShaderSourceBucket(GLuint shader, uint32 data_bucket_id) {
+    gles2::ShaderSourceBucket& c = GetCmdSpace<gles2::ShaderSourceBucket>();
+    c.Init(shader, data_bucket_id);
   }
 
   void StencilFunc(GLenum func, GLint ref, GLuint mask) {

@@ -182,6 +182,49 @@ COMPILE_ASSERT(offsetof(BindAttribLocationImmediate, index) == 8,
 COMPILE_ASSERT(offsetof(BindAttribLocationImmediate, data_size) == 12,
                OffsetOf_BindAttribLocationImmediate_data_size_not_12);
 
+struct BindAttribLocationBucket {
+  typedef BindAttribLocationBucket ValueType;
+  static const CommandId kCmdId = kBindAttribLocationBucket;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(GLuint _program, GLuint _index, uint32 _name_bucket_id) {
+    SetHeader();
+    program = _program;
+    index = _index;
+    name_bucket_id = _name_bucket_id;
+  }
+
+  void* Set(
+      void* cmd, GLuint _program, GLuint _index, uint32 _name_bucket_id) {
+    static_cast<ValueType*>(cmd)->Init(_program, _index, _name_bucket_id);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32 program;
+  uint32 index;
+  uint32 name_bucket_id;
+};
+
+COMPILE_ASSERT(sizeof(BindAttribLocationBucket) == 16,
+               Sizeof_BindAttribLocationBucket_is_not_16);
+COMPILE_ASSERT(offsetof(BindAttribLocationBucket, header) == 0,
+               OffsetOf_BindAttribLocationBucket_header_not_0);
+COMPILE_ASSERT(offsetof(BindAttribLocationBucket, program) == 4,
+               OffsetOf_BindAttribLocationBucket_program_not_4);
+COMPILE_ASSERT(offsetof(BindAttribLocationBucket, index) == 8,
+               OffsetOf_BindAttribLocationBucket_index_not_8);
+COMPILE_ASSERT(offsetof(BindAttribLocationBucket, name_bucket_id) == 12,
+               OffsetOf_BindAttribLocationBucket_name_bucket_id_not_12);
+
 struct BindBuffer {
   typedef BindBuffer ValueType;
   static const CommandId kCmdId = kBindBuffer;
@@ -4999,6 +5042,44 @@ COMPILE_ASSERT(offsetof(ShaderSourceImmediate, shader) == 4,
                OffsetOf_ShaderSourceImmediate_shader_not_4);
 COMPILE_ASSERT(offsetof(ShaderSourceImmediate, data_size) == 8,
                OffsetOf_ShaderSourceImmediate_data_size_not_8);
+
+struct ShaderSourceBucket {
+  typedef ShaderSourceBucket ValueType;
+  static const CommandId kCmdId = kShaderSourceBucket;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(GLuint _shader, uint32 _data_bucket_id) {
+    SetHeader();
+    shader = _shader;
+    data_bucket_id = _data_bucket_id;
+  }
+
+  void* Set(void* cmd, GLuint _shader, uint32 _data_bucket_id) {
+    static_cast<ValueType*>(cmd)->Init(_shader, _data_bucket_id);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32 shader;
+  uint32 data_bucket_id;
+};
+
+COMPILE_ASSERT(sizeof(ShaderSourceBucket) == 12,
+               Sizeof_ShaderSourceBucket_is_not_12);
+COMPILE_ASSERT(offsetof(ShaderSourceBucket, header) == 0,
+               OffsetOf_ShaderSourceBucket_header_not_0);
+COMPILE_ASSERT(offsetof(ShaderSourceBucket, shader) == 4,
+               OffsetOf_ShaderSourceBucket_shader_not_4);
+COMPILE_ASSERT(offsetof(ShaderSourceBucket, data_bucket_id) == 8,
+               OffsetOf_ShaderSourceBucket_data_bucket_id_not_8);
 
 struct StencilFunc {
   typedef StencilFunc ValueType;

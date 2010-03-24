@@ -360,6 +360,10 @@ _CMD_ID_TABLE = {
   'VertexAttribPointer':                                       429,
   'Viewport':                                                  430,
   'SwapBuffers':                                               431,
+  'BindAttribLocationBucket':                                  432,
+  'GetUniformLocationBucket':                                  433,
+  'GetAttribLocationBucket':                                   434,
+  'ShaderSourceBucket':                                        435,
 }
 
 # This is a list of enum names and their valid values. It is used to map
@@ -934,6 +938,7 @@ _ENUM_LISTS = {
 # immediate:    Whether or not to generate an immediate command for the GL
 #               function. The default is if there is exactly 1 pointer argument
 #               in the GL function an immediate command is generated.
+# bucket:       True to generate a bucket version of the command.
 # impl_func:    Whether or not to generate the GLES2Implementation part of this
 #               command.
 # needs_size:   If true a data_size field is added to the command.
@@ -944,7 +949,7 @@ _ENUM_LISTS = {
 
 _FUNCTION_INFO = {
   'ActiveTexture': {'decoder_func': 'DoActiveTexture', 'unit_test': False},
-  'BindAttribLocation': {'type': 'GLchar'},
+  'BindAttribLocation': {'type': 'GLchar', 'bucket': True, 'needs_size': True},
   'BindBuffer': {'decoder_func': 'DoBindBuffer'},
   'BindFramebuffer': {
     'decoder_func': 'DoBindFramebuffer',
@@ -1040,6 +1045,7 @@ _FUNCTION_INFO = {
   'GetAttribLocation': {
     'type': 'HandWritten',
     'immediate': True,
+    'bucket': True,
     'needs_size': True,
     'cmd_args':
         'GLidProgram program, const char* name, NonImmediate GLint* location',
@@ -1122,6 +1128,7 @@ _FUNCTION_INFO = {
   'GetUniformLocation': {
     'type': 'HandWritten',
     'immediate': True,
+    'bucket': True,
     'needs_size': True,
     'cmd_args':
         'GLidProgram program, const char* name, NonImmediate GLint* location',
@@ -1166,6 +1173,7 @@ _FUNCTION_INFO = {
   'ShaderSource': {
     'type': 'Manual',
     'immediate': True,
+    'bucket': True,
     'needs_size': True,
     'cmd_args':
         'GLuint shader, const char* data',
@@ -1335,7 +1343,7 @@ class TypeHandler(object):
   def InitFunction(self, func):
     """Add or adjust anything type specific for this function."""
     if func.GetInfo('needs_size'):
-      func.AddCmdArg(Argument('data_size', 'uint32'))
+      func.AddCmdArg(DataSizeArgument('data_size'))
 
   def AddImmediateFunction(self, generator, func):
     """Adds an immediate version of a function."""
@@ -1344,6 +1352,14 @@ class TypeHandler(object):
     if immediate == True or immediate == None:
       if func.num_pointer_args == 1 or immediate:
         generator.AddFunction(ImmediateFunction(func))
+
+  def AddBucketFunction(self, generator, func):
+    """Adds a bucket version of a function."""
+    # Generate an immediate command if there is only 1 pointer arg.
+    bucket = func.GetInfo('bucket')  # can be True, False or None
+    if bucket:
+      generator.AddFunction(BucketFunction(func))
+
 
   def WriteStruct(self, func, file):
     """Writes a structure that matches the arguments to a function."""
@@ -1467,6 +1483,10 @@ COMPILE_ASSERT(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
     file.Write("}\n")
     file.Write("\n")
 
+  def WriteBucketFormatTest(self, func, file):
+    """Writes a format test for a bucket version of a command."""
+    pass
+
   def WriteGetDataSizeCode(self, func, file):
     """Writes the code to set data_size used in validation"""
     pass
@@ -1478,6 +1498,11 @@ COMPILE_ASSERT(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
 
   def WriteImmediateHandlerImplementation (self, func, file):
     """Writes the handler impl for the immediate version of a command."""
+    file.Write("  %s(%s);\n" %
+               (func.GetGLFunctionName(), func.MakeOriginalArgString("")))
+
+  def WriteBucketHandlerImplementation (self, func, file):
+    """Writes the handler impl for the bucket version of a command."""
     file.Write("  %s(%s);\n" %
                (func.GetGLFunctionName(), func.MakeOriginalArgString("")))
 
@@ -1502,6 +1527,24 @@ COMPILE_ASSERT(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
 
   def WriteImmediateServiceImplementation(self, func, file):
     """Writes the service implementation for an immediate version of command."""
+    file.Write(
+        "error::Error GLES2DecoderImpl::Handle%s(\n" % func.name)
+    file.Write(
+        "    uint32 immediate_data_size, const gles2::%s& c) {\n" % func.name)
+    last_arg = func.GetLastOriginalArg()
+    all_but_last_arg = func.GetOriginalArgs()[:-1]
+    for arg in all_but_last_arg:
+      arg.WriteGetCode(file)
+    self.WriteGetDataSizeCode(func, file)
+    last_arg.WriteGetCode(file)
+    func.WriteHandlerValidation(file)
+    func.WriteHandlerImplementation(file)
+    file.Write("  return error::kNoError;\n")
+    file.Write("}\n")
+    file.Write("\n")
+
+  def WriteBucketServiceImplementation(self, func, file):
+    """Writes the service implementation for a bucket version of command."""
     file.Write(
         "error::Error GLES2DecoderImpl::Handle%s(\n" % func.name)
     file.Write(
@@ -1621,6 +1664,14 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     """Writes the validation code for an immediate version of a command."""
     pass
 
+  def WriteBucketServiceUnitTest(self, func, file):
+    """Writes the service unit test for a bucket command."""
+    file.Write("// TODO(gman): %s\n" % func.name)
+
+  def WriteBucketValidationCode(self, func, file):
+    """Writes the validation code for a bucket version of a command."""
+    file.Write("// TODO(gman): %s\n" % func.name)
+
   def WriteGLES2ImplementationDeclaration(self, func, file):
     """Writes the GLES2 Implemention declaration."""
     file.Write("%s %s(%s);\n" %
@@ -1701,6 +1752,10 @@ class CustomHandler(TypeHandler):
     """Overrriden from TypeHandler."""
     pass
 
+  def WriteImmediateServiceImplementation(self, func, file):
+    """Overrriden from TypeHandler."""
+    pass
+
   def WriteServiceUnitTest(self, func, file):
     """Overrriden from TypeHandler."""
     file.Write("// TODO(gman): %s\n\n" % func.name)
@@ -1765,6 +1820,10 @@ class HandWrittenHandler(CustomHandler):
     """Overrriden from TypeHandler."""
     file.Write("// TODO(gman): %s\n\n" % func.name)
 
+  def WriteBucketServiceUnitTest(self, func, file):
+    """Overrriden from TypeHandler."""
+    file.Write("// TODO(gman): %s\n\n" % func.name)
+
   def WriteServiceImplementation(self, func, file):
     """Overrriden from TypeHandler."""
     pass
@@ -1773,7 +1832,15 @@ class HandWrittenHandler(CustomHandler):
     """Overrriden from TypeHandler."""
     pass
 
+  def WriteBucketServiceImplementation(self, func, file):
+    """Overrriden from TypeHandler."""
+    pass
+
   def WriteImmediateCmdHelper(self, func, file):
+    """Overrriden from TypeHandler."""
+    pass
+
+  def WriteBucketCmdHelper(self, func, file):
     """Overrriden from TypeHandler."""
     pass
 
@@ -1788,6 +1855,11 @@ class HandWrittenHandler(CustomHandler):
   def WriteImmediateFormatTest(self, func, file):
     """Overrriden from TypeHandler."""
     file.Write("// TODO(gman): Write test for %s\n" % func.name)
+
+  def WriteBucketFormatTest(self, func, file):
+    """Overrriden from TypeHandler."""
+    file.Write("// TODO(gman): Write test for %s\n" % func.name)
+
 
 
 class ManualHandler(CustomHandler):
@@ -2530,7 +2602,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
   %(name)s cmd;
   cmd.Init(%(args)s);
   EXPECT_EQ(error::%(parse_result)s, ExecuteCmd(cmd));
-  EXPECT_EQ(0, result->size);%(gl_error_test)s
+  EXPECT_EQ(0u, result->size);%(gl_error_test)s
 }
 """
     self.WriteInvalidUnitTest(func, file, invalid_test)
@@ -2894,85 +2966,11 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     file.Write("\n")
 
 
-class GLcharHandler(TypeHandler):
+class GLcharHandler(CustomHandler):
   """Handler for functions that pass a single string ."""
 
   def __init__(self):
-    TypeHandler.__init__(self)
-
-  def InitFunction(self, func):
-    """Overrriden from TypeHandler."""
-    func.AddCmdArg(Argument('data_size', 'uint32'))
-
-  def WriteServiceUnitTest(self, func, file):
-    """Overrriden from TypeHandler."""
-    file.Write("// TODO(gman): %s\n\n" % func.name)
-
-  def WriteImmediateServiceUnitTest(self, func, file):
-    """Overrriden from TypeHandler."""
-    file.Write("// TODO(gman): %s\n\n" % func.name)
-
-  def WriteServiceImplementation(self, func, file):
-    """Overrriden from TypeHandler."""
-    file.Write(
-        "error::Error GLES2DecoderImpl::Handle%s(\n" % func.name)
-    file.Write(
-        "    uint32 immediate_data_size, const gles2::%s& c) {\n" % func.name)
-    last_arg = func.GetLastOriginalArg()
-
-    all_but_last_arg = func.GetOriginalArgs()[:-1]
-    for arg in all_but_last_arg:
-      arg.WriteGetCode(file)
-
-    file.Write("  uint32 name_size = c.data_size;\n")
-    file.Write("  const char* name = GetSharedMemoryAs<%s>(\n" %
-               last_arg.type)
-    file.Write("      c.%s_shm_id, c.%s_shm_offset, name_size);\n" %
-               (last_arg.name, last_arg.name))
-    func.WriteHandlerValidation(file)
-    arg_string = ", ".join(["%s" % arg.name for arg in all_but_last_arg])
-    file.Write("  String name_str(name, name_size);\n")
-    file.Write("  %s(%s, name_str.c_str());\n" %
-               (func.GetGLFunctionName(), arg_string))
-    file.Write("  return error::kNoError;\n")
-    file.Write("}\n")
-    file.Write("\n")
-
-  def WriteImmediateServiceImplementation(self, func, file):
-    """Overrriden from TypeHandler."""
-    file.Write(
-        "error::Error GLES2DecoderImpl::Handle%s(\n" % func.name)
-    file.Write(
-        "    uint32 immediate_data_size, const gles2::%s& c) {\n" % func.name)
-    last_arg = func.GetLastOriginalArg()
-
-    all_but_last_arg = func.GetOriginalArgs()[:-1]
-    for arg in all_but_last_arg:
-      arg.WriteGetCode(file)
-
-    file.Write("  uint32 name_size = c.data_size;\n")
-    file.Write(
-        "  const char* name = GetImmediateDataAs<const char*>(\n")
-    file.Write("      c, name_size, immediate_data_size);\n")
-    func.WriteHandlerValidation(file)
-    arg_string = ", ".join(["%s" % arg.name for arg in all_but_last_arg])
-    file.Write("  String name_str(name, name_size);\n")
-    file.Write("  %s(%s, name_str.c_str());\n" %
-              (func.GetGLFunctionName(), arg_string))
-    file.Write("  return error::kNoError;\n")
-    file.Write("}\n")
-    file.Write("\n")
-
-  def WriteGLES2ImplementationHeader(self, func, file):
-    """Overrriden from TypeHandler."""
-    file.Write("%s %s(%s) {\n" %
-               (func.return_type, func.original_name,
-                func.MakeTypedOriginalArgString("")))
-    file.Write("  // TODO(gman): This needs to change to use SendString.\n")
-    file.Write("  helper_->%sImmediate(%s);\n" %
-               (func.name, func.MakeOriginalArgString("")))
-    file.Write("}\n")
-    file.Write("\n")
+    CustomHandler.__init__(self)
 
   def WriteImmediateCmdComputeSize(self, func, file):
     """Overrriden from TypeHandler."""
@@ -3072,186 +3070,13 @@ TEST(GLES2FormatTest, %(func_name)s) {
   EXPECT_EQ(static_cast<uint32>(strlen(test_str)), cmd.data_size);
   EXPECT_EQ(0, memcmp(test_str, ImmediateDataAddress(&cmd), strlen(test_str)));
 }
+
 """
     file.Write(code % {
           'func_name': func.name,
           'init_code': "\n".join(init_code),
           'check_code': "\n".join(check_code),
         })
-
-class GetGLcharHandler(GLcharHandler):
-  """Handler for glGetAttibLoc, glGetUniformLoc."""
-
-  def __init__(self):
-    GLcharHandler.__init__(self)
-
-  def WriteServiceUnitTest(self, func, file):
-    """Overrriden from TypeHandler."""
-    file.Write("// TODO(gman): %s\n\n" % func.name)
-
-  def WriteImmediateServiceUnitTest(self, func, file):
-    """Overrriden from TypeHandler."""
-    file.Write("// TODO(gman): %s\n\n" % func.name)
-
-  def WriteServiceImplementation(self, func, file):
-    """Overrriden from TypeHandler."""
-    file.Write(
-        "error::Error GLES2DecoderImpl::Handle%s(\n" % func.name)
-    file.Write(
-        "    uint32 immediate_data_size, const gles2::%s& c) {\n" % func.name)
-    last_arg = func.GetLastOriginalArg()
-
-    all_but_last_arg = func.GetOriginalArgs()
-    for arg in all_but_last_arg:
-      arg.WriteGetCode(file)
-
-    file.Write("  uint32 name_size = c.data_size;\n")
-    file.Write("  const char* name = GetSharedMemoryAs<%s>(\n" %
-               last_arg.type)
-    file.Write("      c.%s_shm_id, c.%s_shm_offset, name_size);\n" %
-               (last_arg.name, last_arg.name))
-    file.Write("  GLint* location = GetSharedMemoryAs<GLint*>(\n")
-    file.Write(
-        "      c.location_shm_id, c.location_shm_offset, sizeof(*location));\n")
-    file.Write("  // TODO(gman): Validate location.\n")
-    func.WriteHandlerValidation(file)
-    arg_string = ", ".join(["%s" % arg.name for arg in all_but_last_arg])
-    file.Write("  String name_str(name, name_size);\n")
-    file.Write("  *location = %s(%s, name_str.c_str());\n" %
-               (func.GetGLFunctionName(), arg_string))
-    file.Write("  return error::kNoError;\n")
-    file.Write("}\n")
-    file.Write("\n")
-
-  def WriteImmediateServiceImplementation(self, func, file):
-    """Overrriden from TypeHandler."""
-    file.Write(
-        "error::Error GLES2DecoderImpl::Handle%s(\n" % func.name)
-    file.Write(
-        "    uint32 immediate_data_size, const gles2::%s& c) {\n" % func.name)
-    last_arg = func.GetLastOriginalArg()
-
-    all_but_last_arg = func.GetOriginalArgs()[:-1]
-    for arg in all_but_last_arg:
-      arg.WriteGetCode(file)
-
-    file.Write("  uint32 name_size = c.data_size;\n")
-    file.Write(
-        "  const char* name = GetImmediateDataAs<const char*>(\n")
-    file.Write("      c, name_size, immediate_data_size);\n")
-    file.Write("  GLint* location = GetSharedMemoryAs<GLint*>(\n")
-    file.Write(
-        "      c.location_shm_id, c.location_shm_offset, sizeof(*location));\n")
-    file.Write("  // TODO(gman): Validate location.\n")
-    func.WriteHandlerValidation(file)
-    arg_string = ", ".join(["%s" % arg.name for arg in all_but_last_arg])
-    file.Write("  String name_str(name, name_size);\n")
-    file.Write("  *location = %s(%s, name_str.c_str());\n" %
-              (func.GetGLFunctionName(), arg_string))
-    file.Write("  return error::kNoError;\n")
-    file.Write("}\n")
-    file.Write("\n")
-
-  def WriteGLES2ImplementationHeader(self, func, file):
-    """Overrriden from TypeHandler."""
-    file.Write("%s %s(%s) {\n" %
-               (func.return_type, func.original_name,
-                func.MakeTypedOriginalArgString("")))
-    file.Write("  // TODO(gman): This needs to change to use SendString.\n")
-    file.Write("  GLint* result = shared_memory_.GetAddressAs<GLint*>(0);\n")
-    file.Write("  DCHECK(false);  // pass in shared memory\n")
-    file.Write("  helper_->%sImmediate(%s);\n" %
-               (func.name, func.MakeOriginalArgString("")))
-    file.Write("  int32 token = helper_->InsertToken();\n")
-    file.Write("  helper_->WaitForToken(token);\n")
-    file.Write("  return *result;\n")
-    file.Write("}\n")
-    file.Write("\n")
-
-  def WriteImmediateCmdComputeSize(self, func, file):
-    """Overrriden from TypeHandler."""
-    file.Write("  static uint32 ComputeDataSize(const char* s) {\n")
-    file.Write("    return strlen(s);\n")
-    file.Write("  }\n")
-    file.Write("\n")
-    file.Write("  static uint32 ComputeSize(const char* s) {\n")
-    file.Write("    return static_cast<uint32>(\n")
-    file.Write("        sizeof(ValueType) + ComputeDataSize(s));  // NOLINT\n")
-    file.Write("  }\n")
-    file.Write("\n")
-
-  def WriteImmediateCmdSetHeader(self, func, file):
-    """Overrriden from TypeHandler."""
-    file.Write("  void SetHeader(const char* s) {\n")
-    file.Write("    header.SetCmdByTotalSize<ValueType>(ComputeSize(s));\n")
-    file.Write("  }\n")
-    file.Write("\n")
-
-  def WriteImmediateCmdInit(self, func, file):
-    """Overrriden from TypeHandler."""
-    file.Write("  void Init(%s) {\n" % func.MakeTypedInitString("_"))
-    file.Write("    SetHeader(_name);\n")
-    args = func.GetInitArgs()
-    for arg in args:
-      file.Write("    %s = _%s;\n" % (arg.name, arg.name))
-    file.Write("    data_size = ComputeDataSize(_name);\n")
-    file.Write("    memcpy(ImmediateDataAddress(this), _name, data_size);\n")
-    file.Write("  }\n")
-    file.Write("\n")
-
-  def WriteImmediateCmdSet(self, func, file):
-    """Overrriden from TypeHandler."""
-    file.Write("  void* Set(void* cmd%s) {\n" %
-               func.MakeTypedInitString("_", True))
-    file.Write("    static_cast<ValueType*>(cmd)->Init(%s);\n" %
-               func.MakeInitString("_"))
-    file.Write("    const uint32 size = ComputeSize(_name);\n")
-    file.Write("    return NextImmediateCmdAddressTotalSize<ValueType>("
-               "cmd, size);\n")
-    file.Write("  }\n")
-    file.Write("\n")
-
-  def WriteImmediateCmdHelper(self, func, file):
-    """Overrriden from TypeHandler."""
-    file.Write("  void %s(%s) {\n" %
-               (func.name, func.MakeTypedCmdArgString("")))
-    file.Write("    const uint32 size = gles2::%s::ComputeSize(name);\n" %
-               func.name)
-    file.Write("    gles2::%s& c = GetImmediateCmdSpaceTotalSize<gles2::%s>("
-               "size);\n" %
-               (func.name, func.name))
-    file.Write("    c.Init(%s);\n" % func.MakeCmdArgString(""))
-    file.Write("  }\n\n")
-
-  def WriteImmediateFormatTest(self, func, file):
-    """Overrriden from TypeHandler."""
-    file.Write("TEST(GLES2FormatTest, %s) {\n" % func.name)
-    file.Write("  int8 buf[256] = { 0, };\n")
-    file.Write("  %s& cmd = *static_cast<%s*>(static_cast<void*>(&buf));\n" %
-               (func.name, func.name))
-    file.Write("  static const char* const test_str = \"test string\";\n")
-    file.Write("  void* next_cmd = cmd.Set(\n")
-    file.Write("      &cmd")
-    all_but_last_arg = func.GetCmdArgs()[:-1]
-    value = 11
-    for arg in all_but_last_arg:
-      file.Write(",\n      static_cast<%s>(%d)" % (arg.type, value))
-      value += 1
-    file.Write(",\n      test_str);\n")
-    value = 11
-    file.Write("  EXPECT_EQ(%s::kCmdId ^ cmd.header.command);\n" % func.name)
-    file.Write("  EXPECT_EQ(sizeof(cmd)\n")
-    file.Write("            RoundSizeToMultipleOfEntries(strlen(test_str)),\n")
-    file.Write("            cmd.header.size * 4u);\n")
-    file.Write("  EXPECT_EQ(static_cast<char*>(next_cmd),\n")
-    file.Write("            reinterpret_cast<char*>(&cmd) + sizeof(cmd));\n");
-    for arg in all_but_last_arg:
-      file.Write("  EXPECT_EQ(static_cast<%s>(%d), cmd.%s);\n" %
-                 (arg.type, value, arg.name))
-      value += 1
-    file.Write("  // TODO(gman): check that string got copied.\n")
-    file.Write("}\n")
-    file.Write("\n")
 
 
 class IsHandler(TypeHandler):
@@ -3568,6 +3393,19 @@ class Argument(object):
     """Gets the immediate version of this argument."""
     return self
 
+  def GetBucketVersion(self):
+    """Gets the bucket version of this argument."""
+    return self
+
+class DataSizeArgument(Argument):
+  """class for data_size which Bucket commands do not need."""
+
+  def __init__(self, name):
+    Argument.__init__(self, name, "uint32")
+
+  def GetBucketVersion(self):
+    return None
+
 
 class SizeArgument(Argument):
   """class for GLsizei and GLsizeiptr."""
@@ -3769,6 +3607,42 @@ class PointerArgument(Argument):
     """Overridden from Argument."""
     return ImmediatePointerArgument(self.name, self.type)
 
+  def GetBucketVersion(self):
+    """Overridden from Argument."""
+    if self.type == "const char*":
+      return InputStringBucketArgument(self.name, self.type)
+    return self
+
+
+class InputStringBucketArgument(Argument):
+  """An string input argument where the string is passed in a bucket."""
+
+  def __init__(self, name, type):
+    Argument.__init__(self, name + "_bucket_id", "uint32")
+
+  def WriteGetCode(self, file):
+    """Overridden from Argument."""
+    code = """
+  Bucket* %(name)s_bucket = GetBucket(c.%(name)s);
+  if (!%(name)s_bucket) {
+    return error::kInvalidArguments;
+  }
+  std::string %(name)s_str;
+  if (!%(name)s_bucket->GetAsString(&%(name)s_str)) {
+    return error::kInvalidArguments;
+  }
+  const char* %(name)s = %(name)s_str.c_str();
+"""
+    file.Write(code % {
+        'name': self.name,
+      })
+
+  def GetValidArg(self, offset, index):
+    return "kNameBucketId"
+
+  def GetValidGLArg(self, offset, index):
+    return "_"
+
 
 class NonImmediatePointerArgument(PointerArgument):
   """A pointer argument that stays a pointer even in an immediate cmd."""
@@ -3852,13 +3726,17 @@ class Function(object):
     self.can_auto_generate = num_pointer_args == 0 and return_type == "void"
     self.cmd_args = cmd_args
     self.init_args = init_args
+    self.InitFunction()
     self.args_for_cmds = args_for_cmds
-    self.type_handler.InitFunction(self)
     self.is_immediate = False
 
   def IsType(self, type_name):
     """Returns true if function is a certain type."""
     return self.info.type == type_name
+
+  def InitFunction(self):
+    """Calls the init function for the type handler."""
+    self.type_handler.InitFunction(self)
 
   def GetInfo(self, name):
     """Returns a value from the function info for this function."""
@@ -4116,6 +3994,57 @@ class ImmediateFunction(Function):
     self.type_handler.WriteImmediateFormatTest(self, file)
 
 
+class BucketFunction(Function):
+  """A class that represnets a bucket version of a function command."""
+
+  def __init__(self, func):
+    new_args = []
+    for arg in func.GetOriginalArgs():
+      new_arg = arg.GetBucketVersion()
+      if new_arg:
+        new_args.append(new_arg)
+
+    cmd_args = []
+    new_args_for_cmds = []
+    for arg in func.args_for_cmds:
+      new_arg = arg.GetBucketVersion()
+      if new_arg:
+        new_args_for_cmds.append(new_arg)
+        new_arg.AddCmdArgs(cmd_args)
+
+    new_init_args = []
+    for arg in new_args_for_cmds:
+      arg.AddInitArgs(new_init_args)
+
+    Function.__init__(
+        self,
+        func.original_name,
+        "%sBucket" % func.name,
+        func.info,
+        func.return_type,
+        new_args,
+        new_args_for_cmds,
+        cmd_args,
+        new_init_args,
+        0)
+
+  def InitFunction(self):
+    """Overridden from Function"""
+    pass
+
+  def WriteServiceImplementation(self, file):
+    """Overridden from Function"""
+    pass
+
+  def WriteHandlerImplementation(self, file):
+    """Overridden from Function"""
+    self.type_handler.WriteBucketHandlerImplementation(self, file)
+
+  def WriteServiceUnitTest(self, file):
+    """Writes the service implementation for a command."""
+    self.type_handler.WriteBucketServiceUnitTest(self, file)
+
+
 def CreateArg(arg_string):
   """Creates an Argument."""
   arg_parts = arg_string.split()
@@ -4170,7 +4099,6 @@ class GLGenerator(object):
       'DELn': DELnHandler(),
       'GENn': GENnHandler(),
       'GETn': GETnHandler(),
-      'GetGLchar': GetGLcharHandler(),
       'GLchar': GLcharHandler(),
       'HandWritten': HandWrittenHandler(),
       'Is': IsHandler(),
@@ -4279,6 +4207,7 @@ class GLGenerator(object):
           self.original_functions.append(f)
           self.AddFunction(f)
           f.type_handler.AddImmediateFunction(self, f)
+          f.type_handler.AddBucketFunction(self, f)
 
     self.Log("Auto Generated Functions    : %d" %
              len([f for f in self.functions if f.can_auto_generate or
@@ -4296,11 +4225,14 @@ class GLGenerator(object):
     """Writes the command buffer format"""
     file = CHeaderWriter(filename)
     file.Write("#define GLES2_COMMAND_LIST(OP) \\\n")
+    by_id = {}
     for func in self.functions:
       if not func.name in _CMD_ID_TABLE:
         self.Error("Command %s not in _CMD_ID_TABLE" % func.name)
+      by_id[_CMD_ID_TABLE[func.name]] = func
+    for id in sorted(by_id.keys()):
       file.Write("  %-60s /* %d */ \\\n" %
-                 ("OP(%s)" % func.name, _CMD_ID_TABLE[func.name]))
+                 ("OP(%s)" % by_id[id].name, id))
     file.Write("\n")
 
     file.Write("enum CommandId {\n")
