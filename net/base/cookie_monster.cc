@@ -104,11 +104,12 @@ void CookieMonster::EnableFileScheme() {
   enable_file_scheme_ = true;
 }
 
-CookieMonster::CookieMonster(PersistentCookieStore* store)
+CookieMonster::CookieMonster(PersistentCookieStore* store, Delegate* delegate)
     : initialized_(false),
       store_(store),
       last_access_threshold_(
-          TimeDelta::FromSeconds(kDefaultAccessUpdateThresholdSeconds)) {
+          TimeDelta::FromSeconds(kDefaultAccessUpdateThresholdSeconds)),
+      delegate_(delegate) {
   SetDefaultCookieableSchemes();
 }
 
@@ -607,6 +608,8 @@ void CookieMonster::InternalInsertCookie(const std::string& key,
   if (cc->IsPersistent() && store_ && sync_to_store)
     store_->AddCookie(key, *cc);
   cookies_.insert(CookieMap::value_type(key, cc));
+  if (delegate_.get())
+    delegate_->OnCookieChanged(key, *cc, false);
 }
 
 void CookieMonster::InternalUpdateCookieAccessTime(CanonicalCookie* cc) {
@@ -629,6 +632,8 @@ void CookieMonster::InternalDeleteCookie(CookieMap::iterator it,
   COOKIE_DLOG(INFO) << "InternalDeleteCookie() cc: " << cc->DebugString();
   if (cc->IsPersistent() && store_ && sync_to_store)
     store_->DeleteCookie(*cc);
+  if (delegate_.get())
+    delegate_->OnCookieChanged(it->first, *cc, true);
   cookies_.erase(it);
   delete cc;
 }

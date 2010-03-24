@@ -1518,6 +1518,7 @@
         'browser/nacl_host/nacl_process_host.h',
         'browser/net/browser_url_util.cc',
         'browser/net/browser_url_util.h',
+        'browser/net/chrome_cookie_notification_details.h',
         'browser/net/chrome_cookie_policy.cc',
         'browser/net/chrome_cookie_policy.h',
         'browser/net/chrome_net_log.cc',

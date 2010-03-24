@@ -7,6 +7,7 @@
 
 #include "base/file_path.h"
 #include "base/linked_ptr.h"
+#include "net/base/cookie_monster.h"
 #include "net/base/cookie_policy.h"
 #include "chrome/browser/appcache/chrome_appcache_service.h"
 #include "chrome/browser/host_content_settings_map.h"
@@ -384,6 +385,7 @@ class ChromeURLRequestContextFactory {
   scoped_refptr<Blacklist> privacy_blacklist_;
   scoped_refptr<net::TransportSecurityState> transport_security_state_;
   scoped_refptr<net::SSLConfigService> ssl_config_service_;
+  scoped_refptr<net::CookieMonster::Delegate> cookie_monster_delegate_;
 
   FilePath profile_dir_path_;
 
