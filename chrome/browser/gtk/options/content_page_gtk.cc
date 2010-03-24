@@ -557,11 +557,11 @@ void ContentPageGtk::OnSyncStartStopButtonClicked(GtkWidget* widget) {
                              IDS_SYNC_STOP_SYNCING_BUTTON_LABEL).c_str());
     gtk_dialog_add_buttons(
         GTK_DIALOG(dialog),
+        l10n_util::GetStringUTF8(IDS_CANCEL).c_str(),
+        GTK_RESPONSE_REJECT,
         l10n_util::GetStringUTF8(
             IDS_SYNC_STOP_SYNCING_CONFIRM_BUTTON_LABEL).c_str(),
         GTK_RESPONSE_ACCEPT,
-        l10n_util::GetStringUTF8(IDS_CANCEL).c_str(),
-        GTK_RESPONSE_REJECT,
         NULL);
 
     g_signal_connect(dialog, "response",
