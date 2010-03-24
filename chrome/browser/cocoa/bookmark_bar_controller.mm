@@ -976,9 +976,15 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 // Enable or disable items.  We are the menu delegate for both the bar
 // and for bookmark folder buttons.
 - (BOOL)validateUserInterfaceItem:(id)item {
+  // Yes for everything we don't explicitly deny.
   if (![item isKindOfClass:[NSMenuItem class]])
     return YES;
 
+  // Yes if we're not a special BookmarkMenu.
+  if (![[item menu] isKindOfClass:[BookmarkMenu class]])
+    return YES;
+
+  // No if we think it's a special BookmarkMenu but have trouble.
   const BookmarkNode* node = [self nodeFromMenuItem:item];
   if (!node)
     return NO;
