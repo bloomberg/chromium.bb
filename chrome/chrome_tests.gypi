@@ -1272,7 +1272,7 @@
         ['chromeos==0', {
           'sources/': [
             ['exclude', '^browser/chromeos'],
-            ['exclude', 'browser/dom_ui/mediaplayer_test.cc'],
+            ['exclude', 'browser/dom_ui/mediaplayer_browsertest.cc'],
           ],
         }],
         ['OS=="win"', {
