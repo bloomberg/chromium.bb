@@ -49,4 +49,10 @@ FocusManager* FocusManager::GetFocusManagerForNativeView(
   return focus_manager;
 }
 
+// static
+FocusManager* FocusManager::GetFocusManagerForNativeWindow(
+    gfx::NativeWindow native_window) {
+  return GetFocusManagerForNativeView(GTK_WIDGET(native_window));
+}
+
 }  // namespace views

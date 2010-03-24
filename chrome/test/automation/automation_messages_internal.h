@@ -1288,4 +1288,23 @@ IPC_BEGIN_MESSAGES(Automation)
                              int64 /* id */,
                              bool /* success */)
 
+  // Block until the focused view id changes to something other than
+  // |previous_view_id|.
+  IPC_SYNC_MESSAGE_ROUTED2_2(AutomationMsg_WaitForFocusedViewIDToChange,
+                             int /* window handle */,
+                             int /* previous_view_id */,
+                             bool /* success */,
+                             int /* new_view_id */)
+
+  // To avoid race conditions, waiting until a popup menu opens is a
+  // three-step process:
+  //   1. Call StartTrackingPopupMenus.
+  //   2. Call an automation method that results in opening the popup menu.
+  //   3. Call WaitForPopupMenuToOpen and check for success.
+  IPC_SYNC_MESSAGE_ROUTED1_1(AutomationMsg_StartTrackingPopupMenus,
+                             int /* browser handle */,
+                             bool /* success */)
+  IPC_SYNC_MESSAGE_ROUTED0_1(AutomationMsg_WaitForPopupMenuToOpen,
+                             bool /* success */)
+
 IPC_END_MESSAGES(Automation)

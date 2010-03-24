@@ -41,6 +41,7 @@
     '<(DEPTH)/chrome/test/interactive_ui/npapi_interactive_test.cc',
     '<(DEPTH)/chrome/test/interactive_ui/view_event_test_base.cc',
     '<(DEPTH)/chrome/test/interactive_ui/view_event_test_base.h',
+    '<(DEPTH)/chrome/test/interactive_ui/keyboard_access_uitest.cc',
     # TODO(jcampan): we should use in_proc_test_runner on Windows.
     '<(DEPTH)/chrome/test/test_launcher/out_of_proc_test_runner.cc',
     '<(DEPTH)/chrome/test/test_launcher/test_runner.cc',

@@ -91,7 +91,7 @@ bool BrowserProxy::GetActiveTabIndex(int* active_tab_index) const {
     *active_tab_index = active_tab_index_response;
     return true;
   }
-  
+
   return false;
 }
 
@@ -561,3 +561,24 @@ bool BrowserProxy::ShutdownSessionService() {
   return did_shutdown;
 }
 
+bool BrowserProxy::StartTrackingPopupMenus() {
+  if (!is_valid())
+    return false;
+
+  bool result = false;
+  if (!sender_->Send(new AutomationMsg_StartTrackingPopupMenus
+      (0, handle_, &result)))
+    return false;
+  return result;
+}
+
+bool BrowserProxy::WaitForPopupMenuToOpen() {
+  if (!is_valid())
+    return false;
+
+  bool result = false;
+  if (!sender_->Send(new AutomationMsg_WaitForPopupMenuToOpen
+      (0, &result)))
+    return false;
+  return result;
+}
