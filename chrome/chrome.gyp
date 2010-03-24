@@ -280,6 +280,9 @@
         '<@(chrome_strings_grds)',
         '<@(chrome_strings_inputs)',
       ],
+      'include_dirs': [
+        '<(grit_out_dir)',
+      ],
       'direct_dependent_settings': {
         'include_dirs': [
           '<(grit_out_dir)',

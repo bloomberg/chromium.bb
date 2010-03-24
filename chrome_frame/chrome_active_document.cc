@@ -98,8 +98,9 @@ HRESULT ChromeActiveDocument::FinalConstruct() {
   enabled_commands_map_[OLECMDID_SELECTALL] = true;
   enabled_commands_map_[OLECMDID_SAVEAS] = true;
 
+  HMODULE this_module = reinterpret_cast<HMODULE>(&__ImageBase);
   accelerator_table_ =
-    LoadAccelerators(GetModuleHandle(L"npchrome_frame.dll"),
+    LoadAccelerators(this_module,
                      MAKEINTRESOURCE(IDR_CHROME_FRAME_IE_FULL_TAB));
   DCHECK(accelerator_table_ != NULL);
   return S_OK;

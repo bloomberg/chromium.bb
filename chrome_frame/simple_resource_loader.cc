@@ -134,3 +134,7 @@ std::wstring SimpleResourceLoader::Get(int message_id) {
   SimpleResourceLoader* loader = SimpleResourceLoader::instance();
   return loader->GetLocalizedResource(message_id);
 }
+
+HINSTANCE SimpleResourceLoader::GetResourceModuleHandle() {
+  return locale_dll_handle_;
+}

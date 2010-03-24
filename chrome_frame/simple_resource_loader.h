@@ -26,6 +26,10 @@ class SimpleResourceLoader {
   // from the currently loaded locale dll.
   static std::wstring Get(int message_id);
 
+  // Retrieves the HINSTANCE of the loaded module handle. May be NULL if a
+  // resource DLL could not be loaded.
+  HINSTANCE GetResourceModuleHandle();
+
  private:
   SimpleResourceLoader();
 

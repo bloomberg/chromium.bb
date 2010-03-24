@@ -10,13 +10,13 @@
 
 #include "base/ref_counted.h"
 #include "resource.h"
-#include "grit/chrome_frame_resources.h"
+#include "grit/generated_resources.h"
 
 class ChromeFrameAutomationClient;
 
 class CFFindDialog : public CDialogImpl<CFFindDialog> {
  public:
-  enum { IDD = IDD_FIND_DIALOG };
+  enum { IDD = IDD_CHROME_FRAME_FIND_DIALOG };
 
   BEGIN_MSG_MAP(CFFindDialog)
     MESSAGE_HANDLER(WM_DESTROY, OnDestroy)

@@ -39,6 +39,7 @@
 #include "chrome_frame/chrome_frame_plugin.h"
 #include "chrome_frame/com_message_event.h"
 #include "chrome_frame/com_type_info_holder.h"
+#include "chrome_frame/simple_resource_loader.h"
 #include "chrome_frame/urlmon_url_request.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
@@ -235,7 +236,16 @@ END_MSG_MAP()
 
   DECLARE_PROTECT_FINAL_CONSTRUCT()
 
+  virtual void SetResourceModule() {
+    SimpleResourceLoader* loader_instance = SimpleResourceLoader::instance();
+    DCHECK(loader_instance);
+    HINSTANCE res_dll = loader_instance->GetResourceModuleHandle();
+    _AtlBaseModule.SetResourceInstance(res_dll);
+  }
+
   HRESULT FinalConstruct() {
+    SetResourceModule();
+
     if (!Initialize())
       return E_OUTOFMEMORY;
 
