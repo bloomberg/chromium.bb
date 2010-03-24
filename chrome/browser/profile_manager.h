@@ -83,6 +83,11 @@ class ProfileManager : public NonThreadSafe,
   // Same as instance method but provides the default user_data_dir as well.
   static Profile* GetDefaultProfile();
 
+#if defined(OS_CHROMEOS)
+  // Returns the default profile with extensions turned off
+  static Profile* GetWizardProfile();
+#endif
+
   // Returns a profile for a specific profile directory within the user data
   // dir. This will return an existing profile it had already been created,
   // otherwise it will create and manage it.
@@ -131,21 +136,19 @@ class ProfileManager : public NonThreadSafe,
   // return NULL).
   static Profile* CreateProfile(const FilePath& path);
 
-  // Adds a profile to the set of currently-loaded profiles.  Returns a
-  // pointer to a Profile object corresponding to the given path.
-  Profile* AddProfileByPath(const FilePath& path);
-
-  // Adds a pre-existing Profile object to the set managed by this
-  // ProfileManager.  This ProfileManager takes ownership of the Profile.
-  // The Profile should not already be managed by this ProfileManager.
-  // Returns true if the profile was added, false otherwise.
-  bool AddProfile(Profile* profile);
-
  private:
   // Hooks to suspend/resume per-profile network traffic.
   // These must be called on the IO thread.
   static void SuspendProfile(Profile*);
   static void ResumeProfile(Profile*);
+
+  // Adds a pre-existing Profile object to the set managed by this
+  // ProfileManager.  This ProfileManager takes ownership of the Profile.
+  // The Profile should not already be managed by this ProfileManager.
+  // Returns true if the profile was added, false otherwise.
+  bool AddProfile(Profile* profile, bool init_extensions);
+
+  Profile* GetProfile(const FilePath& profile_dir, bool init_extensions);
 
   // We keep a simple vector of profiles rather than something fancier
   // because we expect there to be a small number of profiles active.

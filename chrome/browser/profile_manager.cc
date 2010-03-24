@@ -136,7 +136,26 @@ Profile* ProfileManager::GetDefaultProfile(const FilePath& user_data_dir) {
 #endif
 }
 
+#if defined(OS_CHROMEOS)
+Profile* ProfileManager::GetWizardProfile() {
+  FilePath user_data_dir;
+  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  FilePath default_profile_dir(user_data_dir);
+  default_profile_dir = default_profile_dir.Append(
+      FilePath::FromWStringHack(chrome::kNotSignedInProfile));
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+
+  // Don't init extensions for this profile
+  return profile_manager->GetProfile(default_profile_dir, false);
+}
+#endif
+
 Profile* ProfileManager::GetProfile(const FilePath& profile_dir) {
+  return GetProfile(profile_dir, true);
+}
+
+Profile* ProfileManager::GetProfile(
+    const FilePath& profile_dir, bool init_extensions) {
   // If the profile is already loaded (e.g., chrome.exe launched twice), just
   // return it.
   Profile* profile = GetProfileByPath(profile_dir);
@@ -146,34 +165,19 @@ Profile* ProfileManager::GetProfile(const FilePath& profile_dir) {
   if (!ProfileManager::IsProfile(profile_dir)) {
     // If the profile directory doesn't exist, create it.
     profile = ProfileManager::CreateProfile(profile_dir);
-    if (!profile)
-      return NULL;
-    bool result = AddProfile(profile);
-    DCHECK(result);
   } else {
     // The profile already exists on disk, just load it.
-    profile = AddProfileByPath(profile_dir);
-    if (!profile)
-      return NULL;
+    profile = Profile::CreateProfile(profile_dir);
   }
   DCHECK(profile);
+  if (profile) {
+    bool result = AddProfile(profile, init_extensions);
+    DCHECK(result);
+  }
   return profile;
 }
 
-Profile* ProfileManager::AddProfileByPath(const FilePath& path) {
-  Profile* profile = GetProfileByPath(path);
-  if (profile)
-    return profile;
-
-  profile = Profile::CreateProfile(path);
-  if (AddProfile(profile)) {
-    return profile;
-  } else {
-    return NULL;
-  }
-}
-
-bool ProfileManager::AddProfile(Profile* profile) {
+bool ProfileManager::AddProfile(Profile* profile, bool init_extensions) {
   DCHECK(profile);
 
   // Make sure that we're not loading a profile with the same ID as a profile
@@ -186,7 +190,8 @@ bool ProfileManager::AddProfile(Profile* profile) {
   }
 
   profiles_.insert(profiles_.end(), profile);
-  profile->InitExtensions();
+  if (init_extensions)
+    profile->InitExtensions();
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (!command_line.HasSwitch(switches::kDisableWebResources))
     profile->InitWebResources();
