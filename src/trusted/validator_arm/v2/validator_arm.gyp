@@ -39,13 +39,6 @@
   # actual targets
   # ----------------------------------------------------------------------
     'targets': [
-    {
-      'target_name': 'arm-ncval-core',
-      'type': 'executable',
-      'sources': ['ncval.cc'],
-      'dependencies': ['arm_validator_core',
-                      '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:nchelper',],
-    },
     # ----------------------------------------------------------------------
     {
       'target_name': 'arm_validator_core',
