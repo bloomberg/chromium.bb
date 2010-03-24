@@ -1,0 +1,15 @@
+{
+  "name": "Event Tracking with Google Analytics",
+  "version": "1.0.0",
+  "description": "A sample extension which uses Google Analytics to track usage.",
+  "background_page": "background.html",
+  "browser_action": {
+    "default_title": "Open the popup",
+    "default_icon": "analytics-extension-icon-19.png",
+    "popup" : "popup.html"
+  },
+  "icons": {
+    "48": "analytics-extension-icon-48.png",
+    "128": "analytics-extension-icon-128.png"
+  }
+}

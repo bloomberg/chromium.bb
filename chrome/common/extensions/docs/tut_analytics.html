@@ -15,7 +15,7 @@
     </script>
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
-  <title>Background Pages - Google Chrome Extensions - Google Code</title></head><body>  <div id="gc-container" class="labs">
+  <title>Tutorial: Google Analytics - Google Chrome Extensions - Google Code</title></head><body>  <div id="gc-container" class="labs">
       <div id="devModeWarning">
         You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
       </div>
@@ -151,7 +151,7 @@
               </li>
               <li>Implementation
                 <ul>
-                  <li class="leftNavSelected">Background Pages</li>
+                  <li><a href="background_pages.html">Background Pages</a></li>
                   <li><a href="content_scripts.html">Content Scripts</a></li>
                   <li><a href="xhr.html">Cross-Origin XHR</a></li>
                   <li><a href="i18n.html">Internationalization</a></li>
@@ -171,7 +171,7 @@
           <li><h2><a href="tutorials.html">Tutorials</a></h2>
             <ul>
               <li><a href="tut_debugging.html">Debugging</a></li>
-              <li><a href="tut_analytics.html">Google Analytics</a></li>
+              <li class="leftNavSelected">Google Analytics</li>
               <li><a href="tut_oauth.html">OAuth</a></li>
             </ul>
           </li>
@@ -194,28 +194,42 @@
 
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">Background Pages</h1>
+        <h1 class="page_title">Tutorial: Google Analytics</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
         <div id="toc">
           <h2>Contents</h2>
           <ol>
             <li>
-              <a href="#manifest">Manifest</a>
+              <a href="#toc-requirements">Requirements</a>
               <ol>
                 <li style="display: none; ">
                   <a>h3Name</a>
                 </li>
               </ol>
             </li><li>
-              <a href="#H2-1">Details</a>
+              <a href="#toc-installing">Installing the tracking code</a>
               <ol>
                 <li style="display: none; ">
                   <a>h3Name</a>
                 </li>
               </ol>
             </li><li>
-              <a href="#example">Example</a>
+              <a href="#toc-tracking-pageviews">Tracking page views</a>
+              <ol>
+                <li style="display: none; ">
+                  <a>h3Name</a>
+                </li>
+              </ol>
+            </li><li>
+              <a href="#toc-tracking-events">Tracking events</a>
+              <ol>
+                <li style="display: none; ">
+                  <a>h3Name</a>
+                </li>
+              </ol>
+            </li><li>
+              <a href="#toc-samplecode">Sample code</a>
               <ol>
                 <li style="display: none; ">
                   <a>h3Name</a>
@@ -264,128 +278,182 @@
         <!-- /TABLE OF CONTENTS -->
 
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"><div id="pageData-name" class="pageData">Background Pages</div>
+        <div id="static"><div id="pageData-name" class="pageData">Tutorial: Google Analytics</div>
 <div id="pageData-showTOC" class="pageData">true</div>
 
+<p>This tutorial demonstrates using Google Analytics to track the usage of your
+extension.</p>
+
+<h2 id="toc-requirements">Requirements</h2>
 <p>
-A common need for extensions is to have
-a single long-running script to manage some task or state.
-Background pages to the rescue.
+  This tutorial expects that you have some familiarity writing extensions for
+  Google Chrome.  If you need information on how to write an extension, please
+  read the <a href="gettingstarted.html">Getting Started tutorial</a>.
 </p>
 
 <p>
-As the <a href="overview.html#arch">architecture overview</a> explains,
-the background page is an HTML page that runs in the extension process.
-It exists for the lifetime of your extension,
-and only one instance of it at a time is active.
+  You will also need a <a href="http://www.google.com/analytics">Google
+  Analytics account</a> set up to track your extension.  Note that when setting
+  up the account, you can use any value in the Website's URL field, as your
+  extension will not have an URL of its own.
+</p>
+
+<p style="text-align: center">
+  <img src="images/tut_analytics/screenshot01.png" style="width:400px;height:82px;" alt="The analytics setup with info for a chrome extension filled out.">
 </p>
 
 <p>
-In a typical extension with a background page,
-the UI —
-for example, the browser action or page action
-and any options page —
-is implemented by dumb views.
-When the view needs some state,
-it requests the state from the background page.
-When the background page notices a state change,
-the background page tells the views to update.
+  Also note that Google Analytics requires version <strong>4.0.302.2</strong>
+  of Google Chrome to work correctly.  Users with an earlier version of Google
+  Chrome will not show up on your Google Analytics reports.  View
+  <a href="faq.html#faq-dev-14">this FAQ entry</a> to learn how to check which
+  version of Google Chrome is deployed to which platform.
 </p>
 
-<h2 id="manifest">Manifest</h2>
+<h2 id="toc-installing">Installing the tracking code</h2>
 
 <p>
-Register your background page in the
-<a href="manifest.html">extension manifest</a>
-like this:
-</p>
-
-<pre>{
-  "name": "My extension",
-  ...
-  <b>"background_page": "background.html"</b>,
-  ...
-}</pre>
-
-<a name="H2-1"></a><h2>Details</h2>
-
-<p>
-You can communicate between your various pages using direct script calls,
-similar to how frames can communicate.
-The <a href="extension.html#method-getViews"><code>chrome.extension.getViews()</code></a> method
-returns a list of window objects
-for every active page belonging to your extension,
-and the
-<a href="extension.html#method-getBackgroundPage"><code>chrome.extension.getBackgroundPage()</code></a> method
-returns the background page.
-</p>
-
-<h2 id="example">Example</h2>
-
-<p>
-The following code snippet demonstrates
-how the background page
-can interact with other pages in the extension.
-It also shows how you can use
-the background page to handle events
-such as user clicks.
+  The standard Google Analytics tracking code snippet fetches a file named
+  <code>ga.js</code> from an SSL protected URL if the current page
+  was loaded using the <code>https://</code> protocol.  <strong>It is strongly
+  advised to use the SSL protected ga.js in an extension</strong>,
+  but Google Chrome extension
+  pages are hosted under <code>chrome-extension://</code> URLs, so the tracking
+  snippet must be modified slightly to pull <code>ga.js</code> directly from
+  <code>https://ssl.google-analytics.com/ga.js</code> instead of the default
+  location.
 </p>
 
 <p>
-The extension in this example
-has a background page
-and multiple pages created
-(with
-<a href="tabs.html#method-create"><code>chrome.tabs.create()</code></a>)
-from a file named <code>image.html</code>.
-<!-- [PENDING: Once we have our set of samples, we should point to the example this is from and to other relevant examples.  This is currently untested code derived from the screenshot sample.] -->
+  Below is a modified snippet for the
+  <a href="http://code.google.com/apis/analytics/docs/tracking/asyncTracking.html">asynchronous
+  tracking API</a> (the modified line is bolded):
 </p>
 
-<pre><em>//In the background page:</em>
+<pre>(function() {
+  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+  <strong>ga.src = 'https://ssl.google-analytics.com/ga.js';</strong>
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+})();
+</pre>
+
+<p>
+  Here is a background page which loads the asynchronous tracking code and
+  tracks a single page view:
+</p>
+
+<pre>&lt;!DOCTYPE html&gt;
 &lt;html&gt;
-  &lt;script&gt;
-    //React when a browser action's icon is clicked.
-    chrome.browserAction.onClicked.addListener(function(tab) {
-      var viewTabUrl = chrome.extension.getURL('image.html');
-      var imageUrl = <em>/* an image's URL */</em>;
+ &lt;head&gt;
+   ...
+ &lt;/head&gt;
+ &lt;body&gt;
+   &lt;script&gt;
+     var _gaq = _gaq || [];
+     _gaq.push(['_setAccount', 'UA-XXXXXXXX-X']);
+     _gaq.push(['_trackPageview']);
 
-      //Look through all the pages in this extension to find one we can use.
-      var views = chrome.extension.getViews();
-      for (var i = 0; i &lt; views.length; i++) {
-        var view = views[i];
+     (function() {
+       var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+       ga.src = 'https://ssl.google-analytics.com/ga.js';
+       (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+     })();
+   &lt;/script&gt;
 
-        //If this view has the right URL and hasn't been used yet...
-        if (view.location.href == viewTabUrl &amp;&amp; !view.imageAlreadySet) {
-
-          //...call one of its functions and set a property.
-          view.setImageUrl(imageUrl);
-          view.imageAlreadySet = true;
-          break; //we're done
-        }
-      }
-    });
-  &lt;/script&gt;
-&lt;/html&gt;
-
-<em>//In image.html:</em>
-&lt;html&gt;
-  &lt;script&gt;
-    function setImageUrl(url) {
-      document.getElementById('target').src = url;
-    }
-  &lt;/script&gt;
-
-  &lt;body&gt;
-    &lt;p&gt;
-    Image here:
-    &lt;/p&gt;
-
-    &lt;img id="target" src="white.png" width="640" height="480"&gt;
-
-  &lt;/body&gt;
+   ...
+ &lt;/body&gt;
 &lt;/html&gt;
 </pre>
 
+<p>
+  Keep in mind that the string <code>UA-XXXXXXXX-X</code> should be replaced
+  with your own Google Analytics account number.
+</p>
+
+<h2 id="toc-tracking-pageviews">Tracking page views</h2>
+
+<p>
+  The <code>_gaq.push(['_trackPageview']);</code> code will track a single
+  page view.  This code may be used on any page in your extension.  When
+  placed on a background page, it will register a view once per browser
+  session.  When placed on a popup, it will register a view once every time
+  the popup is opened.
+</p>
+
+<p>
+  By looking at the page view data for each page in your extension, you can
+  get an idea of how many times your users interact with your extension per
+  browser session:
+</p>
+
+<p style="text-align: center">
+  <img src="images/tut_analytics/screenshot02.png" style="width:300px;height:119px;" alt="Analytics view of the top content for a site.">
+</p>
+
+<h2 id="toc-tracking-events">Tracking events</h2>
+
+<p>
+  By configuring event tracking, you can determine which parts of your
+  extension your users interact with the most.  For example, if you have
+  three buttons users may click:
+</p>
+
+<pre>  &lt;button&gt;Button 1&lt;/button&gt;
+  &lt;button&gt;Button 2&lt;/button&gt;
+  &lt;button&gt;Button 3&lt;/button&gt;
+</pre>
+
+<p>
+  Write a function that sends click events to Google Analytics:
+</p>
+
+<pre>  function trackButton(button_id) {
+    _gaq.push(['_trackEvent', 'button' + button_id, 'clicked']);
+  };
+</pre>
+
+<p>
+  And call it when each button is pressed:
+</p>
+
+<pre>  &lt;button onclick="trackButton(1);"&gt;Button 1&lt;/button&gt;
+  &lt;button onclick="trackButton(2);"&gt;Button 2&lt;/button&gt;
+  &lt;button onclick="trackButton(3);"&gt;Button 3&lt;/button&gt;
+</pre>
+
+<p>
+  The Google Analytics event tracking overview page will give you metrics
+  regarding how many times each individual button is clicked:
+</p>
+
+<p style="text-align: center">
+  <img src="images/tut_analytics/screenshot03.png" style="width:300px;height:482px;" alt="Analytics view of the event tracking data for a site.">
+</p>
+
+<p>
+  By using this approach, you can see which parts of your extension are
+  under-or-overutilized.  This information can help guide decisions about UI
+  redesigns or additional functionality to implement.
+</p>
+
+<p>
+  For more information about using the event tracking API, see the
+  Google Analytics
+  <a href="http://code.google.com/apis/analytics/docs/tracking/eventTrackerOverview.html]">developer
+  documentation</a>.
+</p>
+
+<h2 id="toc-samplecode">Sample code</h2>
+
+<p>
+  A sample extension that uses these techniques is
+  available in the Chromium source tree:
+</p>
+
+<blockquote>
+  <a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/tutorials/analytics/">.../examples/tutorials/analytics/</a>
+</blockquote>
+<p></p>
 </div>
 
         <!-- API PAGE -->
